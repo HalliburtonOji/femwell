@@ -10,7 +10,7 @@ import { runNutritionMigrationsIfNeeded } from "@/utils/nutritionMigrations";
 const MEAL_TYPES = ["breakfast", "lunch", "dinner", "snack"];
 
 const card = { backgroundColor: "var(--surface)", border: "1px solid var(--border)", boxShadow: "var(--shadow-sm)" };
-const label = { fontSize: "0.65rem", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.1em", color: "var(--mauve)", fontFamily: "'Inter', sans-serif" };
+const label = { fontSize: "0.65rem", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.1em", color: "var(--mauve)", };
 
 export default function QuickMealLog({ user, profile }) {
   const [quickMealText, setQuickMealText] = useState("");
@@ -78,9 +78,9 @@ export default function QuickMealLog({ user, profile }) {
       <div className="flex items-center justify-between mb-4">
         <div>
           <p style={label}>Quick Meal Log</p>
-          <p className="text-sm font-semibold mt-0.5" style={{ color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>What did you eat?</p>
+          <p className="text-sm font-semibold mt-0.5" style={{ color: "var(--plum)", }}>What did you eat?</p>
         </div>
-        <a href={createPageUrl("Nutrition")} className="text-xs font-medium" style={{ color: "var(--rose-dust)", fontFamily: "'Inter', sans-serif" }}>Full tracker</a>
+        <a href={createPageUrl("Nutrition")} className="text-xs font-medium" style={{ color: "var(--rose-dust)", }}>Full tracker</a>
       </div>
       <textarea
         value={quickMealText}
@@ -89,7 +89,7 @@ export default function QuickMealLog({ user, profile }) {
         rows={2}
         aria-label="What did you eat?"
         className="w-full p-3.5 rounded-2xl text-sm resize-none focus:outline-none transition-all"
-        style={{ backgroundColor: "var(--ivory)", border: "1.5px solid var(--border)", color: "var(--plum)", fontFamily: "'Inter', sans-serif", lineHeight: 1.6 }}
+        style={{ backgroundColor: "var(--ivory)", border: "1.5px solid var(--border)", color: "var(--plum)", lineHeight: 1.6 }}
         onFocus={(e) => (e.target.style.borderColor = "var(--rose-dust-light)")}
         onBlur={(e) => (e.target.style.borderColor = "var(--border)")}
       />
@@ -110,8 +110,7 @@ export default function QuickMealLog({ user, profile }) {
                 backgroundColor: isActive ? "var(--plum)" : "var(--ivory)",
                 color: isActive ? "white" : "var(--mauve)",
                 border: `1px solid ${isActive ? "var(--plum)" : "var(--border)"}`,
-                fontFamily: "'Inter', sans-serif",
-              }}
+                }}
             >
               {t}
             </button>
@@ -123,7 +122,7 @@ export default function QuickMealLog({ user, profile }) {
         disabled={!quickMealText.trim() || quickLogging}
         aria-label="Log meal"
         className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-semibold transition-all"
-        style={{ backgroundColor: "var(--plum)", color: "white", fontFamily: "'Inter', sans-serif", opacity: !quickMealText.trim() || quickLogging ? 0.5 : 1 }}
+        style={{ backgroundColor: "var(--plum)", color: "white", opacity: !quickMealText.trim() || quickLogging ? 0.5 : 1 }}
       >
         {quickLogging ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
         {quickLogging ? "Logging…" : "Log Meal"}

@@ -30,8 +30,7 @@ export default function NotificationBellButton({ userId }) {
           <span style={{
             position: "absolute", top: -3, right: -3, width: 16, height: 16, borderRadius: 9999,
             backgroundColor: "var(--rose-dust)", color: "white", fontSize: 9, fontWeight: 700,
-            display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "'Inter', sans-serif",
-            border: "1.5px solid var(--surface)",
+            display: "flex", alignItems: "center", justifyContent: "center", border: "1.5px solid var(--surface)",
           }}>
             {unreadCount > 9 ? "9+" : unreadCount}
           </span>

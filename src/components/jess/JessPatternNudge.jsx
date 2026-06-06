@@ -275,11 +275,9 @@ export default function JessPatternNudge({ user, profile }) {
         <p style={{
           margin: 0, fontSize: 10, fontWeight: 700,
           letterSpacing: "0.16em", textTransform: "uppercase",
-          color: C.muted, fontFamily: "'Inter', sans-serif",
-        }}>Jess noticed · {patternSummary(hit)}</p>
+          color: C.muted, }}>Jess noticed · {patternSummary(hit)}</p>
         <p style={{
           margin: "4px 0 0", fontSize: 14,
-          fontFamily: "'Fraunces', Georgia, serif",
           color: C.espresso, lineHeight: 1.5,
         }}>{text}</p>
         {/* QA Fix 3 — two CTAs: open the assistant or mark "I'm okay"
@@ -296,7 +294,6 @@ export default function JessPatternNudge({ user, profile }) {
               background: C.espresso, color: C.cream, border: "none",
               borderRadius: 9999, cursor: "pointer",
               display: "inline-flex", alignItems: "center", gap: 6,
-              fontFamily: "'Inter', sans-serif",
               fontSize: 12, fontWeight: 700,
             }}
           ><MessageCircle size={12} /> Tell Jess</button>
@@ -309,7 +306,6 @@ export default function JessPatternNudge({ user, profile }) {
               border: `1px solid ${C.border}`,
               borderRadius: 9999, cursor: "pointer",
               display: "inline-flex", alignItems: "center", gap: 6,
-              fontFamily: "'Inter', sans-serif",
               fontSize: 12, fontWeight: 600,
             }}
           ><Check size={12} /> I'm okay</button>

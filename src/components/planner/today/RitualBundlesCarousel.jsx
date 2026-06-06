@@ -574,13 +574,11 @@ const kickerStyle = {
   fontWeight: 700,
   letterSpacing: "0.18em",
   color: "var(--plum-mute, #8A7584)",
-  fontFamily: "'Inter', sans-serif",
   textTransform: "uppercase",
 };
 const tinyHelperStyle = {
   fontSize: 10,
   color: "var(--plum-mute, #8A7584)",
-  fontFamily: "'Inter', sans-serif",
   fontStyle: "italic",
 };
 const trackStyle = {
@@ -615,7 +613,6 @@ const phaseDotStyle = {
   flexShrink: 0,
 };
 const cardTitleStyle = {
-  fontFamily: "'Fraunces', Georgia, serif",
   fontSize: 17,
   fontWeight: 500,
   color: "var(--plum, #4A2A3A)",
@@ -623,7 +620,6 @@ const cardTitleStyle = {
 };
 const forTodayChipStyle = {
   marginLeft: "auto",
-  fontFamily: "'Inter', sans-serif",
   fontSize: 8.5,
   fontWeight: 700,
   letterSpacing: "0.12em",
@@ -633,7 +629,6 @@ const forTodayChipStyle = {
   borderRadius: 9999,
 };
 const cardSubStyle = {
-  fontFamily: "Cormorant Garamond, Georgia, serif",
   fontStyle: "italic",
   fontSize: 12,
   color: "var(--plum-2, #6B4559)",
@@ -652,7 +647,6 @@ const ritualLineStyle = {
   display: "flex",
   alignItems: "center",
   gap: 6,
-  fontFamily: "'Inter', sans-serif",
   fontSize: 11.5,
   color: "var(--plum, #4A2A3A)",
   lineHeight: 1.3,
@@ -662,7 +656,6 @@ const addBtnStyle = {
   padding: "8px 0",
   borderRadius: 9999,
   border: "1px solid",
-  fontFamily: "'Inter', sans-serif",
   fontSize: 11.5,
   fontWeight: 700,
   letterSpacing: "0.04em",
@@ -680,7 +673,6 @@ const toastStyle = {
   background: "rgba(107,143,90,0.14)",
   border: "1px solid rgba(107,143,90,0.40)",
   borderRadius: 9999,
-  fontFamily: "'Inter', sans-serif",
   fontSize: 11.5,
   color: "var(--plum, #4A2A3A)",
   animation: "fwToastIn 220ms ease-out",
@@ -688,7 +680,6 @@ const toastStyle = {
 
 // ── Custom-bundle additions ─────────────────────────────────────────────────
 const customChipStyle = {
-  fontFamily: "'Inter', sans-serif",
   fontSize: 8.5,
   fontWeight: 700,
   letterSpacing: "0.12em",
@@ -744,13 +735,11 @@ const createIconCircleStyle = {
   justifyContent: "center",
 };
 const createTitleStyle = {
-  fontFamily: "'Fraunces', Georgia, serif",
   fontSize: 16,
   fontWeight: 500,
   color: "var(--plum, #4A2A3A)",
 };
 const createSubStyle = {
-  fontFamily: "Cormorant Garamond, Georgia, serif",
   fontStyle: "italic",
   fontSize: 11,
   color: "var(--plum-mute, #8A7584)",
@@ -775,7 +764,6 @@ const sheetCardStyle = {
   background: "#F4EDDB",
   borderRadius: "20px 20px 0 0",
   padding: "14px 16px 18px",
-  fontFamily: "'Inter', system-ui, sans-serif",
   boxShadow: "0 -8px 32px rgba(58,44,26,0.18)",
   maxHeight: "88vh",
   overflowY: "auto",
@@ -805,7 +793,6 @@ const sheetCloseBtnStyle = {
   justifyContent: "center",
 };
 const sheetTitleStyle = {
-  fontFamily: "'Fraunces', Georgia, serif",
   fontSize: 22,
   fontWeight: 500,
   color: "var(--plum, #4A2A3A)",
@@ -854,7 +841,6 @@ const chipStyle = {
   padding: "6px 10px",
   borderRadius: 9999,
   border: "1px solid",
-  fontFamily: "'Inter', sans-serif",
   fontSize: 11.5,
   fontWeight: 600,
   cursor: "pointer",
@@ -872,7 +858,6 @@ const addItemBtnStyle = {
   border: "1px solid rgba(58,44,26,0.18)",
   borderRadius: 9999,
   padding: "5px 10px",
-  fontFamily: "'Inter', sans-serif",
   fontSize: 11,
   fontWeight: 600,
   color: "var(--plum, #4A2A3A)",
@@ -912,7 +897,6 @@ const timeChipStyle = {
   padding: "4px 9px",
   borderRadius: 9999,
   border: "1px solid",
-  fontFamily: "'Inter', sans-serif",
   fontSize: 10.5,
   fontWeight: 600,
   cursor: "pointer",
@@ -948,7 +932,6 @@ const deleteSheetBtnStyle = {
   background: "transparent",
   border: "1px solid rgba(212,94,82,0.40)",
   color: "#D45E52",
-  fontFamily: "'Inter', sans-serif",
   fontSize: 12,
   fontWeight: 700,
   cursor: "pointer",
@@ -960,7 +943,6 @@ const cancelBtnStyle = {
   background: "transparent",
   border: "1px solid rgba(58,44,26,0.18)",
   color: "var(--plum, #4A2A3A)",
-  fontFamily: "'Inter', sans-serif",
   fontSize: 12,
   fontWeight: 700,
   cursor: "pointer",
@@ -971,7 +953,6 @@ const saveBtnStyle = {
   background: "var(--plum, #4A2A3A)",
   border: "1px solid var(--plum, #4A2A3A)",
   color: "var(--cream, #F4EDDB)",
-  fontFamily: "'Inter', sans-serif",
   fontSize: 12,
   fontWeight: 700,
 };

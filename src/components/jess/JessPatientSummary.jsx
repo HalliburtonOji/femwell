@@ -188,8 +188,7 @@ export default function JessPatientSummary({ user, profile, checkins, symptoms }
           <p style={{
             margin: 0, fontSize: 10, fontWeight: 700,
             letterSpacing: "0.16em", textTransform: "uppercase",
-            color: "#A6862B", fontFamily: "'Inter', sans-serif",
-          }}>Jess · Summary for your clinician</p>
+            color: "#A6862B", }}>Jess · Summary for your clinician</p>
         </div>
         <button
           type="button"
@@ -213,7 +212,7 @@ export default function JessPatientSummary({ user, profile, checkins, symptoms }
       </div>
       <p style={{
         margin: 0, fontSize: 14, color: "var(--plum, #3A2C1A)",
-        fontFamily: "'Inter', sans-serif", lineHeight: 1.55,
+        lineHeight: 1.55,
       }}>
         {loading && !summary ? (
           <span style={{ color: "#9B8B7A", fontStyle: "italic" }}>
@@ -235,7 +234,6 @@ export default function JessPatientSummary({ user, profile, checkins, symptoms }
             background: "#3A2C1A", color: "#F4EDDB",
             border: "none", cursor: summary && !loading ? "pointer" : "default",
             fontSize: 13, fontWeight: 600,
-            fontFamily: "'Inter', sans-serif",
             opacity: summary && !loading ? 1 : 0.55,
           }}
         >
@@ -244,7 +242,7 @@ export default function JessPatientSummary({ user, profile, checkins, symptoms }
         </button>
         <p style={{
           margin: 0, fontSize: 10, color: "#9B8B7A", fontStyle: "italic",
-          fontFamily: "'Inter', sans-serif", textAlign: "right",
+          textAlign: "right",
         }}>Not medical advice.</p>
       </div>
       <style>{`

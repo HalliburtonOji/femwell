@@ -235,16 +235,13 @@ export default function Profile() {
   const sLabel = {
     fontSize: "0.6rem", fontWeight: 600, textTransform: "uppercase",
     letterSpacing: "0.12em", color: "var(--mauve)",
-    fontFamily: "'Inter', sans-serif",
-  };
+    };
   const bodyText = {
     fontSize: "14px", color: "var(--plum)",
-    fontFamily: "'Inter', sans-serif",
-  };
+    };
   const mutedText = {
     fontSize: "12px", color: "var(--mauve)",
-    fontFamily: "'Inter', sans-serif",
-  };
+    };
   const rowItem = {
     display: "flex", alignItems: "center", gap: "12px",
     padding: "14px 16px", width: "100%", textAlign: "left",
@@ -297,7 +294,7 @@ export default function Profile() {
                 {profile?.avatar_url ? (
                   <img src={profile.avatar_url} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
                 ) : (
-                  <span style={{ fontFamily: "'Fraunces', serif", fontSize: 26, fontWeight: 700, color: "white" }}>
+                  <span style={{ fontSize: 26, fontWeight: 700, color: "white" }}>
                     {user?.full_name?.[0]?.toUpperCase() || "?"}
                   </span>
                 )}
@@ -317,16 +314,16 @@ export default function Profile() {
               border: "1px solid rgba(255,255,255,0.25)",
               borderRadius: 9999, padding: "4px 12px",
               fontSize: 11, fontWeight: 600, color: "white",
-              fontFamily: "'Inter', sans-serif", textDecoration: "none",
+              textDecoration: "none",
             }}>
               {profile?.plan ? `${profile.plan} Plan` : "Free Plan"}
             </a>
           </div>
           {/* Name row */}
-          <p style={{ fontSize: 18, fontWeight: 700, color: "white", fontFamily: "'Inter', sans-serif", marginBottom: 2 }}>
+          <p style={{ fontSize: 18, fontWeight: 700, color: "white", marginBottom: 2 }}>
             {user?.full_name}
           </p>
-          <p style={{ fontSize: 12, color: "rgba(255,255,255,0.6)", fontFamily: "'Inter', sans-serif", marginBottom: 0 }}>
+          <p style={{ fontSize: 12, color: "rgba(255,255,255,0.6)", marginBottom: 0 }}>
             {user?.email}
           </p>
           {/* Phase chips */}
@@ -342,8 +339,8 @@ export default function Profile() {
                   border: "1px solid rgba(255,255,255,0.15)",
                   borderRadius: 12, padding: "10px 14px", textAlign: "center",
                 }}>
-                  <p style={{ fontSize: 10, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.08em", color: "var(--rose-dust-light)", fontFamily: "'Inter', sans-serif", marginBottom: 3 }}>{chip.label}</p>
-                  <p style={{ fontSize: 14, fontWeight: 600, color: "white", fontFamily: "'Fraunces', serif" }}>{chip.value}</p>
+                  <p style={{ fontSize: 10, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.08em", color: "var(--rose-dust-light)", marginBottom: 3 }}>{chip.label}</p>
+                  <p style={{ fontSize: 14, fontWeight: 600, color: "white", }}>{chip.value}</p>
                 </div>
               ))}
             </div>
@@ -358,7 +355,7 @@ export default function Profile() {
             { label: "Streak", value: `${checkinStreak}d` },
           ].map(s => (
             <div key={s.label} style={{ flex: 1, ...card, padding: "12px 8px", textAlign: "center" }}>
-              <p style={{ fontSize: 20, fontWeight: 700, color: "var(--plum)", fontFamily: "'Fraunces', serif" }}>{s.value}</p>
+              <p style={{ fontSize: 20, fontWeight: 700, color: "var(--plum)", }}>{s.value}</p>
               <p style={{ ...sLabel, marginTop: 2 }}>{s.label}</p>
             </div>
           ))}
@@ -375,8 +372,8 @@ export default function Profile() {
           return (
             <div style={{ ...card, padding: "16px 20px", marginBottom: "16px" }}>
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
-                <p style={{ fontSize: 13, fontWeight: 600, color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>This week</p>
-                {checkinStreak > 0 && <p style={{ fontSize: 12, color: "var(--rose-dust)", fontFamily: "'Inter', sans-serif", fontWeight: 500 }}>{checkinStreak}-day streak</p>}
+                <p style={{ fontSize: 13, fontWeight: 600, color: "var(--plum)", }}>This week</p>
+                {checkinStreak > 0 && <p style={{ fontSize: 12, color: "var(--rose-dust)", fontWeight: 500 }}>{checkinStreak}-day streak</p>}
               </div>
               <div style={{ display: "flex", justifyContent: "space-between" }}>
                 {last7.map(dateStr => {
@@ -385,7 +382,7 @@ export default function Profile() {
                   return (
                     <div key={dateStr} style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 4 }}>
                       <div style={{ width: 28, height: 28, borderRadius: 9999, backgroundColor: hasCheckin ? "var(--rose-dust)" : "var(--ivory-dark)", border: hasCheckin ? "none" : "1px solid var(--border)" }} />
-                      <span style={{ fontSize: 9, color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>{dayLabel}</span>
+                      <span style={{ fontSize: 9, color: "var(--mauve)", }}>{dayLabel}</span>
                     </div>
                   );
                 })}
@@ -398,7 +395,7 @@ export default function Profile() {
         <div style={{ ...card, padding: "16px", marginBottom: "16px" }}>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
             <p style={sLabel}>Goals</p>
-            <button onClick={() => setEditGoals(v => !v)} style={{ fontSize: 11, fontWeight: 600, color: "var(--rose-dust)", background: "none", border: "none", cursor: "pointer", fontFamily: "'Inter', sans-serif" }}>
+            <button onClick={() => setEditGoals(v => !v)} style={{ fontSize: 11, fontWeight: 600, color: "var(--rose-dust)", background: "none", border: "none", cursor: "pointer", }}>
               {editGoals ? "Done" : "Edit"}
             </button>
           </div>
@@ -408,7 +405,7 @@ export default function Profile() {
                 const active = (profile?.goals || []).includes(g);
                 return (
                   <button key={g} onClick={() => toggleGoal(g)}
-                    style={{ borderRadius: 9999, padding: "5px 13px", fontSize: 12, fontWeight: 500, cursor: "pointer", fontFamily: "'Inter', sans-serif", border: "1.5px solid", textTransform: "capitalize",
+                    style={{ borderRadius: 9999, padding: "5px 13px", fontSize: 12, fontWeight: 500, cursor: "pointer", border: "1.5px solid", textTransform: "capitalize",
                       backgroundColor: active ? "var(--plum)" : "transparent",
                       borderColor: active ? "var(--plum)" : "var(--border)",
                       color: active ? "white" : "var(--mauve)" }}>
@@ -421,7 +418,7 @@ export default function Profile() {
             <div className="flex flex-wrap gap-2">
               {(profile?.goals || []).length === 0 && <p style={{ ...mutedText }}>No goals set. Tap Edit to add some.</p>}
               {(profile?.goals || []).map(g => (
-                <span key={g} style={{ backgroundColor: "var(--ivory-dark)", color: "var(--plum)", borderRadius: 9999, padding: "4px 12px", fontSize: 12, fontWeight: 500, fontFamily: "'Inter', sans-serif", textTransform: "capitalize" }}>
+                <span key={g} style={{ backgroundColor: "var(--ivory-dark)", color: "var(--plum)", borderRadius: 9999, padding: "4px 12px", fontSize: 12, fontWeight: 500, textTransform: "capitalize" }}>
                   {g.replace(/_/g, " ")}
                 </span>
               ))}
@@ -452,7 +449,6 @@ export default function Profile() {
               boxShadow: "var(--shadow-sm)",
             }}>
               <div style={{
-                fontFamily: "'Inter', sans-serif",
                 fontSize: 10,
                 fontWeight: 700,
                 letterSpacing: "0.22em",
@@ -460,7 +456,6 @@ export default function Profile() {
                 textTransform: "uppercase",
               }}>Your Femwell stage</div>
               <div style={{
-                fontFamily: "'Fraunces', Georgia, serif",
                 fontSize: 22,
                 fontWeight: 500,
                 fontStyle: "italic",
@@ -469,14 +464,12 @@ export default function Profile() {
                 lineHeight: 1.2,
               }}>{stage.label}</div>
               <p style={{
-                fontFamily: "'Inter', sans-serif",
                 fontSize: 12.5,
                 color: "var(--plum-2, #6B4559)",
                 lineHeight: 1.5,
                 margin: "0 0 10px",
               }}>{stage.hint}</p>
               <p style={{
-                fontFamily: "Cormorant Garamond, Georgia, serif",
                 fontStyle: "italic",
                 fontSize: 11.5,
                 color: "var(--plum-mute, #8A7584)",
@@ -498,7 +491,6 @@ export default function Profile() {
                   color: "#F4EDDB",
                   border: "none",
                   borderRadius: 9999,
-                  fontFamily: "'Inter', sans-serif",
                   fontSize: 12,
                   fontWeight: 700,
                   letterSpacing: "0.06em",
@@ -513,7 +505,6 @@ export default function Profile() {
                   background: "rgba(107,143,90,0.18)",
                   border: "1px solid rgba(107,143,90,0.45)",
                   borderRadius: 9999,
-                  fontFamily: "'Inter', sans-serif",
                   fontSize: 11.5,
                   color: "#2D4E1A",
                   display: "inline-block",
@@ -579,8 +570,7 @@ export default function Profile() {
                   const active = (preferences?.coach_tone || profile?.tone_preference) === t.id;
                   return (
                     <button key={t.id} onClick={() => updateTone(t.id)}
-                      style={{ textAlign: "left", borderRadius: 12, padding: "10px 12px", fontSize: 13, border: "1.5px solid", cursor: "pointer", fontFamily: "'Inter', sans-serif",
-                        backgroundColor: active ? "var(--plum)" : "var(--surface)",
+                      style={{ textAlign: "left", borderRadius: 12, padding: "10px 12px", fontSize: 13, border: "1.5px solid", cursor: "pointer", backgroundColor: active ? "var(--plum)" : "var(--surface)",
                         borderColor: active ? "var(--plum)" : "var(--border)",
                         color: active ? "white" : "var(--plum)", fontWeight: active ? 700 : 500 }}>
                       <p>{t.label}</p>
@@ -602,7 +592,7 @@ export default function Profile() {
               <p style={mutedText}>How you want to call your AI guide</p>
             </div>
             {savedField === 'ai_assistant_name'
-              ? <span style={{ fontSize: 11, color: "var(--sage)", fontFamily: "'Inter', sans-serif" }}>Saved</span>
+              ? <span style={{ fontSize: 11, color: "var(--sage)", }}>Saved</span>
               : <p style={{ ...mutedText, flexShrink: 0 }}>{profile?.ai_assistant_name || 'Guide'}</p>
             }
           </button>
@@ -612,10 +602,10 @@ export default function Profile() {
                 value={newAssistantName}
                 onChange={e => setNewAssistantName(e.target.value)}
                 placeholder="e.g. Luna, Sage, Guide..."
-                style={{ flex: 1, border: "1px solid var(--border)", borderRadius: 12, padding: "10px 12px", fontSize: 14, fontFamily: "'Inter', sans-serif", color: "var(--plum)", background: "var(--surface)", outline: "none" }}
+                style={{ flex: 1, border: "1px solid var(--border)", borderRadius: 12, padding: "10px 12px", fontSize: 14, color: "var(--plum)", background: "var(--surface)", outline: "none" }}
               />
               <button onClick={() => saveProfileField('ai_assistant_name', newAssistantName, setEditAssistantName)}
-                style={{ background: "var(--plum)", color: "white", borderRadius: 9999, padding: "6px 14px", fontSize: 12, fontFamily: "'Inter', sans-serif", border: "none", cursor: "pointer" }}>
+                style={{ background: "var(--plum)", color: "white", borderRadius: 9999, padding: "6px 14px", fontSize: 12, border: "none", cursor: "pointer" }}>
                 Save
               </button>
             </div>
@@ -633,7 +623,7 @@ export default function Profile() {
               <p style={mutedText}>Used for cycle insights and personalisation</p>
             </div>
             {savedField === 'birthday'
-              ? <span style={{ fontSize: 11, color: "var(--sage)", fontFamily: "'Inter', sans-serif" }}>Saved</span>
+              ? <span style={{ fontSize: 11, color: "var(--sage)", }}>Saved</span>
               : <p style={{ ...mutedText, flexShrink: 0 }}>
                   {profile?.birthday ? new Date(profile.birthday + 'T12:00:00').toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }) : 'Not set'}
                 </p>
@@ -645,10 +635,10 @@ export default function Profile() {
                 type="date"
                 value={newBirthday}
                 onChange={e => setNewBirthday(e.target.value)}
-                style={{ flex: 1, border: "1px solid var(--border)", borderRadius: 12, padding: "10px 12px", fontSize: 14, fontFamily: "'Inter', sans-serif", color: "var(--plum)", background: "var(--surface)", outline: "none" }}
+                style={{ flex: 1, border: "1px solid var(--border)", borderRadius: 12, padding: "10px 12px", fontSize: 14, color: "var(--plum)", background: "var(--surface)", outline: "none" }}
               />
               <button onClick={() => saveProfileField('birthday', newBirthday, setEditBirthday)}
-                style={{ background: "var(--plum)", color: "white", borderRadius: 9999, padding: "6px 14px", fontSize: 12, fontFamily: "'Inter', sans-serif", border: "none", cursor: "pointer" }}>
+                style={{ background: "var(--plum)", color: "white", borderRadius: 9999, padding: "6px 14px", fontSize: 12, border: "none", cursor: "pointer" }}>
                 Save
               </button>
             </div>
@@ -666,7 +656,7 @@ export default function Profile() {
               <p style={mutedText}>For personalised events and recommendations</p>
             </div>
             {savedField === 'location_city'
-              ? <span style={{ fontSize: 11, color: "var(--sage)", fontFamily: "'Inter', sans-serif" }}>Saved</span>
+              ? <span style={{ fontSize: 11, color: "var(--sage)", }}>Saved</span>
               : <p style={{ ...mutedText, flexShrink: 0 }}>{profile?.location_city || 'Not set'}</p>
             }
           </button>
@@ -676,10 +666,10 @@ export default function Profile() {
                 value={newCity}
                 onChange={e => setNewCity(e.target.value)}
                 placeholder="e.g. London, Manchester..."
-                style={{ flex: 1, border: "1px solid var(--border)", borderRadius: 12, padding: "10px 12px", fontSize: 14, fontFamily: "'Inter', sans-serif", color: "var(--plum)", background: "var(--surface)", outline: "none" }}
+                style={{ flex: 1, border: "1px solid var(--border)", borderRadius: 12, padding: "10px 12px", fontSize: 14, color: "var(--plum)", background: "var(--surface)", outline: "none" }}
               />
               <button onClick={() => saveProfileField('location_city', newCity, setEditCity)}
-                style={{ background: "var(--plum)", color: "white", borderRadius: 9999, padding: "6px 14px", fontSize: 12, fontFamily: "'Inter', sans-serif", border: "none", cursor: "pointer" }}>
+                style={{ background: "var(--plum)", color: "white", borderRadius: 9999, padding: "6px 14px", fontSize: 12, border: "none", cursor: "pointer" }}>
                 Save
               </button>
             </div>
@@ -794,7 +784,7 @@ export default function Profile() {
               <Shield className="w-4 h-4" style={{ color: "#D94F4F" }} />
             </div>
             <div className="flex-1">
-              <p style={{ fontSize: "14px", color: "#D94F4F", fontFamily: "'Inter', sans-serif", fontWeight: 600 }}>Delete my data</p>
+              <p style={{ fontSize: "14px", color: "#D94F4F", fontWeight: 600 }}>Delete my data</p>
               <p style={mutedText}>Request permanent deletion</p>
             </div>
             <ChevronRight className="w-4 h-4" style={{ color: "var(--border)" }} />

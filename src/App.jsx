@@ -284,7 +284,7 @@ function App() {
                 position: "fixed", top: 0, left: 0, right: 0, zIndex: 9999,
                 padding: "10px 16px", background: "#FFF1D6",
                 borderBottom: "1px solid #F4B860", color: "#7A4A0A",
-                fontFamily: "'Inter', system-ui, sans-serif", fontSize: 13,
+                fontSize: 13,
                 textAlign: "center", fontWeight: 600,
               }}
             >

@@ -30,8 +30,8 @@ function MigrationCard({ title, description, buttonLabel, onRun }) {
 
   return (
     <div className="rounded-2xl p-6 mb-4" style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)", boxShadow: "var(--shadow-sm)" }}>
-      <h2 className="text-base font-semibold mb-1" style={{ color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>{title}</h2>
-      <p className="text-sm mb-5" style={{ color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>{description}</p>
+      <h2 className="text-base font-semibold mb-1" style={{ color: "var(--plum)", }}>{title}</h2>
+      <p className="text-sm mb-5" style={{ color: "var(--mauve)", }}>{description}</p>
       <button
         onClick={run}
         disabled={running || done}
@@ -42,25 +42,24 @@ function MigrationCard({ title, description, buttonLabel, onRun }) {
           color: "white",
           opacity: running || done ? 0.7 : 1,
           cursor: running || done ? "not-allowed" : "pointer",
-          fontFamily: "'Inter', sans-serif",
           minHeight: 44,
         }}
       >
         {running ? `Running… (${count})` : done ? "✓ Done" : buttonLabel}
       </button>
       {done && (
-        <p className="mt-4 text-sm font-medium" style={{ color: "var(--sage)", fontFamily: "'Inter', sans-serif" }}>
+        <p className="mt-4 text-sm font-medium" style={{ color: "var(--sage)", }}>
           ✓ Updated {count} record{count !== 1 ? "s" : ""}.
         </p>
       )}
       {error && (
-        <p className="mt-4 text-sm" style={{ color: "var(--destructive, #e05252)", fontFamily: "'Inter', sans-serif" }}>
+        <p className="mt-4 text-sm" style={{ color: "var(--destructive, #e05252)", }}>
           Error: {error}
         </p>
       )}
       {log.length > 0 && (
         <details className="mt-3">
-          <summary style={{ fontSize: 11, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", cursor: "pointer" }}>
+          <summary style={{ fontSize: 11, color: "var(--mauve)", cursor: "pointer" }}>
             Log ({log.length})
           </summary>
           <pre style={{ fontSize: 10, color: "var(--mauve)", fontFamily: "monospace", backgroundColor: "var(--ivory)", padding: 10, borderRadius: 8, marginTop: 8, maxHeight: 200, overflow: "auto" }}>
@@ -88,7 +87,7 @@ export default function AdminMigrations() {
 
   if (!user || user.role !== "admin") return (
     <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: "var(--ivory)" }}>
-      <p style={{ color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>Access denied. Admins only.</p>
+      <p style={{ color: "var(--mauve)", }}>Access denied. Admins only.</p>
     </div>
   );
 
@@ -184,8 +183,8 @@ export default function AdminMigrations() {
   return (
     <div className="min-h-screen px-6 py-16" style={{ backgroundColor: "var(--ivory)" }}>
       <div className="max-w-lg mx-auto">
-        <h1 className="text-2xl font-bold mb-2" style={{ fontFamily: "'Fraunces', serif", color: "var(--plum)" }}>Admin · Data Migrations</h1>
-        <p className="text-sm mb-10" style={{ color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>One-time data fixes. Run carefully — each is idempotent.</p>
+        <h1 className="text-2xl font-bold mb-2" style={{ color: "var(--plum)" }}>Admin · Data Migrations</h1>
+        <p className="text-sm mb-10" style={{ color: "var(--mauve)", }}>One-time data fixes. Run carefully — each is idempotent.</p>
 
         <MigrationCard
           title="Fix legacy category labels"

@@ -16,7 +16,7 @@ export default function QuickAccessGrid({ onCycleClick }) {
   const items = QUICK_ITEMS(onCycleClick);
   return (
     <div style={{ marginBottom: "16px" }}>
-      <p style={{ fontSize: "0.6rem", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.1em", color: "var(--mauve)", fontFamily: "'Inter', sans-serif", marginBottom: "12px" }}>
+      <p style={{ fontSize: "0.6rem", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.1em", color: "var(--mauve)", marginBottom: "12px" }}>
         Quick access
       </p>
       <div className="grid grid-cols-3 gap-3">
@@ -26,7 +26,7 @@ export default function QuickAccessGrid({ onCycleClick }) {
               <div style={{ width: "36px", height: "36px", borderRadius: "12px", backgroundColor: a.bg, display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 8px" }}>
                 <a.Icon className="w-4 h-4" style={{ color: a.fg }} strokeWidth={1.5} />
               </div>
-              <p style={{ fontSize: "11px", fontWeight: 600, color: "var(--plum)", fontFamily: "'Inter', sans-serif", textAlign: "center" }}>{a.lab}</p>
+              <p style={{ fontSize: "11px", fontWeight: 600, color: "var(--plum)", textAlign: "center" }}>{a.lab}</p>
             </>
           );
           return a.href ? (

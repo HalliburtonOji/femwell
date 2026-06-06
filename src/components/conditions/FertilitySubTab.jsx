@@ -31,8 +31,7 @@ const card = {
 };
 const sLabel = {
   fontSize: "0.6rem", fontWeight: 600, textTransform: "uppercase",
-  letterSpacing: "0.12em", color: "var(--mauve)", fontFamily: "'Inter', sans-serif",
-};
+  letterSpacing: "0.12em", color: "var(--mauve)", };
 
 function cycleDay(date, lastPeriod, cycleLen) {
   if (!lastPeriod) return null;
@@ -105,9 +104,9 @@ export default function FertilitySubTab({ user, profile, selectedDate, units }) 
       {cDay && (
         <div style={{ ...card, backgroundColor: "var(--rose-dust-subtle)", borderColor: "var(--rose-dust-light)" }}>
           <p style={sLabel}>Cycle day</p>
-          <p style={{ fontSize: 22, fontWeight: 700, color: "var(--plum)", fontFamily: "'Fraunces', serif", marginTop: 4 }}>Day {cDay}</p>
+          <p style={{ fontSize: 22, fontWeight: 700, color: "var(--plum)", marginTop: 4 }}>Day {cDay}</p>
           {showPregnancyTest && (
-            <p style={{ fontSize: 12, color: "var(--rose-dust)", fontFamily: "'Inter', sans-serif", marginTop: 4 }}>Pregnancy test window — day 25+</p>
+            <p style={{ fontSize: 12, color: "var(--rose-dust)", marginTop: 4 }}>Pregnancy test window — day 25+</p>
           )}
         </div>
       )}
@@ -117,10 +116,10 @@ export default function FertilitySubTab({ user, profile, selectedDate, units }) 
 
         {/* BBT */}
         <div style={{ marginBottom: 14 }}>
-          <p style={{ fontSize: 11, fontWeight: 600, color: "var(--plum)", fontFamily: "'Inter', sans-serif", marginBottom: 2 }}>
+          <p style={{ fontSize: 11, fontWeight: 600, color: "var(--plum)", marginBottom: 2 }}>
             Basal body temperature ({useF ? "°F" : "°C"})
           </p>
-          <p style={{ fontSize: 10, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", marginBottom: 6 }}>
+          <p style={{ fontSize: 10, color: "var(--mauve)", marginBottom: 6 }}>
             Record before getting up
           </p>
           <div style={{ display: "flex", gap: 8 }}>
@@ -129,24 +128,24 @@ export default function FertilitySubTab({ user, profile, selectedDate, units }) 
               placeholder={useF ? "e.g. 98.2" : "e.g. 36.6"}
               value={bbtCelsius}
               onChange={e => setBbtCelsius(e.target.value)}
-              style={{ flex: 1, padding: "8px 12px", borderRadius: 10, border: "1px solid var(--border)", backgroundColor: "var(--ivory)", fontSize: 13, fontFamily: "'Inter', sans-serif", color: "var(--plum)", outline: "none" }}
+              style={{ flex: 1, padding: "8px 12px", borderRadius: 10, border: "1px solid var(--border)", backgroundColor: "var(--ivory)", fontSize: 13, color: "var(--plum)", outline: "none" }}
             />
             <input
               type="time"
               value={bbtTime}
               onChange={e => setBbtTime(e.target.value)}
-              style={{ flex: 1, padding: "8px 12px", borderRadius: 10, border: "1px solid var(--border)", backgroundColor: "var(--ivory)", fontSize: 13, fontFamily: "'Inter', sans-serif", color: "var(--plum)", outline: "none" }}
+              style={{ flex: 1, padding: "8px 12px", borderRadius: 10, border: "1px solid var(--border)", backgroundColor: "var(--ivory)", fontSize: 13, color: "var(--plum)", outline: "none" }}
             />
           </div>
         </div>
 
         {/* LH test */}
         <div style={{ marginBottom: 14 }}>
-          <p style={{ fontSize: 11, fontWeight: 600, color: "var(--plum)", fontFamily: "'Inter', sans-serif", marginBottom: 6 }}>LH test result</p>
+          <p style={{ fontSize: 11, fontWeight: 600, color: "var(--plum)", marginBottom: 6 }}>LH test result</p>
           <div style={{ display: "flex", flexWrap: "wrap", gap: 5 }}>
             {LH_OPTIONS.map(o => (
               <button key={o.value} onClick={() => setLhResult(o.value)}
-                style={{ borderRadius: 9999, padding: "5px 12px", fontSize: 11, fontWeight: 600, cursor: "pointer", fontFamily: "'Inter', sans-serif", border: "1.5px solid",
+                style={{ borderRadius: 9999, padding: "5px 12px", fontSize: 11, fontWeight: 600, cursor: "pointer", border: "1.5px solid",
                   backgroundColor: lhResult === o.value ? "var(--plum)" : "transparent",
                   borderColor: lhResult === o.value ? "var(--plum)" : "var(--border)",
                   color: lhResult === o.value ? "white" : "var(--mauve)" }}>
@@ -158,11 +157,11 @@ export default function FertilitySubTab({ user, profile, selectedDate, units }) 
 
         {/* Cervical mucus */}
         <div style={{ marginBottom: 14 }}>
-          <p style={{ fontSize: 11, fontWeight: 600, color: "var(--plum)", fontFamily: "'Inter', sans-serif", marginBottom: 6 }}>Cervical mucus</p>
+          <p style={{ fontSize: 11, fontWeight: 600, color: "var(--plum)", marginBottom: 6 }}>Cervical mucus</p>
           <div style={{ display: "flex", flexWrap: "wrap", gap: 5 }}>
             {CM_OPTIONS.map(o => (
               <button key={o.value} onClick={() => setCervicalMucus(cervicalMucus === o.value ? "" : o.value)}
-                style={{ borderRadius: 9999, padding: "5px 12px", fontSize: 11, fontWeight: 600, cursor: "pointer", fontFamily: "'Inter', sans-serif", border: "1.5px solid",
+                style={{ borderRadius: 9999, padding: "5px 12px", fontSize: 11, fontWeight: 600, cursor: "pointer", border: "1.5px solid",
                   backgroundColor: cervicalMucus === o.value ? "var(--plum)" : "transparent",
                   borderColor: cervicalMucus === o.value ? "var(--plum)" : "var(--border)",
                   color: cervicalMucus === o.value ? "white" : "var(--mauve)" }}>
@@ -179,18 +178,18 @@ export default function FertilitySubTab({ user, profile, selectedDate, units }) 
               style={{ width: 20, height: 20, borderRadius: 6, border: `2px solid ${intercourse ? "var(--rose-dust)" : "var(--border)"}`, backgroundColor: intercourse ? "var(--rose-dust)" : "transparent", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, cursor: "pointer" }}>
               {intercourse && <Check style={{ width: 11, height: 11, color: "white" }} />}
             </div>
-            <p style={{ fontSize: 13, fontWeight: 500, color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>Intimacy today</p>
+            <p style={{ fontSize: 13, fontWeight: 500, color: "var(--plum)", }}>Intimacy today</p>
           </label>
         </div>
 
         {/* Pregnancy test */}
         {showPregnancyTest && (
           <div style={{ marginBottom: 14 }}>
-            <p style={{ fontSize: 11, fontWeight: 600, color: "var(--plum)", fontFamily: "'Inter', sans-serif", marginBottom: 6 }}>Pregnancy test</p>
+            <p style={{ fontSize: 11, fontWeight: 600, color: "var(--plum)", marginBottom: 6 }}>Pregnancy test</p>
             <div style={{ display: "flex", gap: 5 }}>
               {PT_OPTIONS.map(o => (
                 <button key={o.value} onClick={() => setPregnancyTest(o.value)}
-                  style={{ flex: 1, borderRadius: 9999, padding: "5px 10px", fontSize: 11, fontWeight: 600, cursor: "pointer", fontFamily: "'Inter', sans-serif", border: "1.5px solid",
+                  style={{ flex: 1, borderRadius: 9999, padding: "5px 10px", fontSize: 11, fontWeight: 600, cursor: "pointer", border: "1.5px solid",
                     backgroundColor: pregnancyTest === o.value ? (o.value === "positive" ? "var(--sage)" : "var(--plum)") : "transparent",
                     borderColor: pregnancyTest === o.value ? (o.value === "positive" ? "var(--sage)" : "var(--plum)") : "var(--border)",
                     color: pregnancyTest === o.value ? "white" : "var(--mauve)" }}>
@@ -202,7 +201,7 @@ export default function FertilitySubTab({ user, profile, selectedDate, units }) 
         )}
 
         <button onClick={save} disabled={saving}
-          style={{ width: "100%", padding: 11, borderRadius: 12, fontWeight: 600, fontSize: 13, border: "none", cursor: "pointer", fontFamily: "'Inter', sans-serif", backgroundColor: saved ? "var(--sage)" : "var(--plum)", color: "white", display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}>
+          style={{ width: "100%", padding: 11, borderRadius: 12, fontWeight: 600, fontSize: 13, border: "none", cursor: "pointer", backgroundColor: saved ? "var(--sage)" : "var(--plum)", color: "white", display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}>
           {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : saved ? <Check className="w-4 h-4" /> : null}
           {saving ? "Saving..." : saved ? "Saved" : "Save log"}
         </button>

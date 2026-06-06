@@ -324,15 +324,15 @@ export default function GuideVoiceMode({
       <div className="flex items-center justify-between px-6 pt-12 pb-4">
         <button onClick={handleEnd}
           className="flex items-center gap-2 text-sm font-medium transition-opacity hover:opacity-75"
-          style={{ color: "rgba(255,255,255,0.45)", fontFamily: "'Inter', sans-serif" }}>
+          style={{ color: "rgba(255,255,255,0.45)", }}>
           <ArrowLeft className="w-4 h-4" />
           Back to chat
         </button>
         <div className="text-center">
-          <p className="text-xs font-semibold" style={{ color: "rgba(255,255,255,0.3)", letterSpacing: "0.12em", textTransform: "uppercase", fontFamily: "'Inter', sans-serif" }}>
+          <p className="text-xs font-semibold" style={{ color: "rgba(255,255,255,0.3)", letterSpacing: "0.12em", textTransform: "uppercase", }}>
             {guideName}
           </p>
-          <p className="text-[10px] mt-0.5" style={{ color: "rgba(255,255,255,0.2)", fontFamily: "'Inter', sans-serif", textTransform: "uppercase", letterSpacing: "0.08em" }}>
+          <p className="text-[10px] mt-0.5" style={{ color: "rgba(255,255,255,0.2)", textTransform: "uppercase", letterSpacing: "0.08em" }}>
             Live Voice
           </p>
         </div>
@@ -349,7 +349,7 @@ export default function GuideVoiceMode({
 
         {/* State label */}
         <p className="text-sm font-medium text-center transition-all duration-300"
-          style={{ color: stateInfo.color, fontFamily: "'Inter', sans-serif", letterSpacing: "0.01em" }}>
+          style={{ color: stateInfo.color, letterSpacing: "0.01em" }}>
           {stateInfo.label}
         </p>
 
@@ -357,7 +357,7 @@ export default function GuideVoiceMode({
         {error && (
           <div className="w-full max-w-xs rounded-2xl px-4 py-3 text-center"
             style={{ backgroundColor: "rgba(255,140,120,0.1)", border: "1px solid rgba(255,140,120,0.2)" }}>
-            <p className="text-xs leading-relaxed" style={{ color: "rgba(255,180,160,0.85)", fontFamily: "'Inter', sans-serif" }}>
+            <p className="text-xs leading-relaxed" style={{ color: "rgba(255,180,160,0.85)", }}>
               {error}
             </p>
             <button onClick={connect}
@@ -374,14 +374,14 @@ export default function GuideVoiceMode({
             style={{ backgroundColor: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.07)" }}>
             {userTranscript && (
               <div>
-                <p className="text-[10px] mb-1 uppercase tracking-widest" style={{ color: "rgba(255,255,255,0.3)", fontFamily: "'Inter', sans-serif" }}>You</p>
-                <p className="text-sm leading-relaxed" style={{ color: "rgba(255,255,255,0.7)", fontFamily: "'Inter', sans-serif" }}>{userTranscript}</p>
+                <p className="text-[10px] mb-1 uppercase tracking-widest" style={{ color: "rgba(255,255,255,0.3)", }}>You</p>
+                <p className="text-sm leading-relaxed" style={{ color: "rgba(255,255,255,0.7)", }}>{userTranscript}</p>
               </div>
             )}
             {assistantTranscript && (
               <div>
-                <p className="text-[10px] mb-1 uppercase tracking-widest" style={{ color: "rgba(255,255,255,0.3)", fontFamily: "'Inter', sans-serif" }}>{guideName}</p>
-                <p className="text-sm leading-relaxed" style={{ color: "rgba(255,255,255,0.65)", fontFamily: "'Inter', sans-serif" }}>
+                <p className="text-[10px] mb-1 uppercase tracking-widest" style={{ color: "rgba(255,255,255,0.3)", }}>{guideName}</p>
+                <p className="text-sm leading-relaxed" style={{ color: "rgba(255,255,255,0.65)", }}>
                   {assistantTranscript.slice(0, 280)}{assistantTranscript.length > 280 ? "…" : ""}
                 </p>
               </div>

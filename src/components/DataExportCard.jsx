@@ -128,7 +128,7 @@ export default function DataExportCard({ user }) {
     >
       <header style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
         <Download size={16} style={{ color: C.espresso }} aria-hidden />
-        <h2 style={{ fontFamily: "'Fraunces', serif", fontSize: 18, fontWeight: 700, color: C.espresso, margin: 0 }}>
+        <h2 style={{ fontSize: 18, fontWeight: 700, color: C.espresso, margin: 0 }}>
           Your data
         </h2>
       </header>
@@ -147,7 +147,7 @@ export default function DataExportCard({ user }) {
           color: done ? C.sage : "#FFFFFF",
           border: done ? "1px solid #8FAF8F" : "none",
           cursor: preparing ? "not-allowed" : "pointer",
-          fontFamily: "'Inter', sans-serif", fontSize: 13, fontWeight: 700,
+          fontSize: 13, fontWeight: 700,
           opacity: preparing ? 0.7 : 1,
         }}
       >

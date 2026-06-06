@@ -507,7 +507,6 @@ const iconWrap = {
   color: "#A6862B",
 };
 const eyebrowStyle = {
-  fontFamily: "'Inter', sans-serif",
   fontSize: 10,
   fontWeight: 700,
   letterSpacing: "0.18em",
@@ -516,7 +515,6 @@ const eyebrowStyle = {
   margin: 0,
 };
 const titleStyle = {
-  fontFamily: "'Fraunces', Georgia, serif",
   fontSize: 17,
   fontWeight: 500,
   lineHeight: 1.2,
@@ -524,14 +522,12 @@ const titleStyle = {
   margin: "2px 0 0",
 };
 const metaRow = {
-  fontFamily: "'Inter', sans-serif",
   fontSize: 12,
   color: "#6B5840",
   margin: "0 0 6px",
   lineHeight: 1.45,
 };
 const bodyMute = {
-  fontFamily: "'Inter', sans-serif",
   fontSize: 12.5,
   color: "#6B5840",
   margin: "0 0 10px",
@@ -547,7 +543,6 @@ const historyBtn = {
   background: "rgba(166,134,43,0.10)",
   border: "1px solid rgba(166,134,43,0.30)",
   color: "#6B5840",
-  fontFamily: "'Inter', sans-serif",
   fontSize: 11.5,
   fontWeight: 600,
   cursor: "pointer",
@@ -590,7 +585,6 @@ const backBtn = {
   background: "transparent",
   border: "1px solid rgba(58,44,26,0.18)",
   color: "#6B5840",
-  fontFamily: "'Inter', sans-serif",
   fontSize: 11.5,
   fontWeight: 600,
   cursor: "pointer",
@@ -601,7 +595,6 @@ const historyEmpty = {
   textAlign: "center",
 };
 const historyEmptyTitle = {
-  fontFamily: "'Fraunces', Georgia, serif",
   fontSize: 16,
   fontStyle: "italic",
   color: "#3A2C1A",
@@ -635,7 +628,6 @@ const methodPill = {
   borderRadius: 9999,
   background: "rgba(166,134,43,0.18)",
   color: "#3A2C1A",
-  fontFamily: "'Inter', sans-serif",
   fontSize: 11.5,
   fontWeight: 700,
 };
@@ -645,14 +637,12 @@ const activeTag = {
   borderRadius: 9999,
   background: "#3A2C1A",
   color: "#F4EDDB",
-  fontFamily: "'Inter', sans-serif",
   fontSize: 9.5,
   fontWeight: 700,
   letterSpacing: "0.06em",
   textTransform: "uppercase",
 };
 const historyDates = {
-  fontFamily: "'Inter', sans-serif",
   fontSize: 12,
   color: "#6B5840",
   fontStyle: "italic",
@@ -666,7 +656,6 @@ const ratingRow = {
 };
 const ratingNum = {
   marginLeft: 4,
-  fontFamily: "'Inter', sans-serif",
   fontSize: 11,
   fontWeight: 600,
   color: "#6B5840",
@@ -683,13 +672,11 @@ const historyChip = {
   borderRadius: 9999,
   background: "rgba(212,116,90,0.16)",
   color: "#7A3422",
-  fontFamily: "'Inter', sans-serif",
   fontSize: 10.5,
   fontWeight: 600,
   textTransform: "capitalize",
 };
 const historyNotes = {
-  fontFamily: "'Inter', sans-serif",
   fontSize: 12,
   color: "#3A2C1A",
   lineHeight: 1.5,
@@ -703,7 +690,6 @@ const historyFoot = {
 };
 const fieldLabel = {
   display: "block",
-  fontFamily: "'Inter', sans-serif",
   fontSize: 11,
   fontWeight: 600,
   color: "#6B5840",
@@ -719,7 +705,6 @@ const input = {
   border: "1px solid rgba(58,44,26,0.18)",
   background: "#FBF6E6",
   color: "#3A2C1A",
-  fontFamily: "'Inter', sans-serif",
   fontSize: 13,
   marginTop: 4,
 };
@@ -735,14 +720,12 @@ const chip = {
   border: "1px solid",
   fontSize: 11.5,
   fontWeight: 600,
-  fontFamily: "'Inter', sans-serif",
   cursor: "pointer",
   textTransform: "capitalize",
 };
 const ratingHint = {
   display: "inline-block",
   marginTop: 2,
-  fontFamily: "'Inter', sans-serif",
   fontSize: 11,
   color: "#6B5840",
 };
@@ -755,7 +738,6 @@ const primaryBtn = {
   background: "#3A2C1A",
   color: "#F4EDDB",
   border: "1px solid #3A2C1A",
-  fontFamily: "'Inter', sans-serif",
   fontSize: 12,
   fontWeight: 700,
   cursor: "pointer",
@@ -781,7 +763,6 @@ const ghostBtnLarge = {
   background: "transparent",
   border: "1px solid rgba(58,44,26,0.18)",
   color: "#6B5840",
-  fontFamily: "'Inter', sans-serif",
   fontSize: 12,
   fontWeight: 600,
   cursor: "pointer",

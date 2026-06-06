@@ -64,7 +64,6 @@ export default function HoroscopeToast({ message, type = "info", onDismiss }) {
         border: s.border,
         boxShadow: "0 4px 24px rgba(0,0,0,0.30)",
         backdropFilter: "blur(12px)",
-        fontFamily: "'Inter', sans-serif",
         fontSize: 13,
         fontWeight: 500,
         color: s.color,

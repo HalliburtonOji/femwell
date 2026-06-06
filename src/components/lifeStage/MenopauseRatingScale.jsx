@@ -153,8 +153,7 @@ export default function MenopauseRatingScale({ user, profile }) {
         borderRadius: 16,
         padding: "16px",
         display: "flex", flexDirection: "column", gap: 12,
-        fontFamily: "'Inter', system-ui, sans-serif",
-      }}>
+        }}>
         <header style={{ display: "flex", alignItems: "center", gap: 10 }}>
           <span style={{
             width: 32, height: 32, borderRadius: 10,
@@ -165,7 +164,7 @@ export default function MenopauseRatingScale({ user, profile }) {
             <p style={{ margin: 0, fontSize: 10, fontWeight: 700, letterSpacing: "0.18em", textTransform: "uppercase", color: C.rose }}>
               Clinical questionnaire
             </p>
-            <h3 style={{ margin: "2px 0 0", fontSize: 17, fontWeight: 600, fontFamily: "'Fraunces', Georgia, serif", color: C.espresso }}>
+            <h3 style={{ margin: "2px 0 0", fontSize: 17, fontWeight: 600, color: C.espresso }}>
               Menopause Rating Scale
             </h3>
           </div>
@@ -279,7 +278,6 @@ function MRSSheet({ user, profile, onClose, onComplete }) {
     <div style={{
       position: "fixed", inset: 0, zIndex: 240,
       background: C.cream, color: C.espresso,
-      fontFamily: "'Inter', system-ui, sans-serif",
       display: "flex", flexDirection: "column",
     }}>
       <header style={{
@@ -293,7 +291,7 @@ function MRSSheet({ user, profile, onClose, onComplete }) {
           </p>
           <h2 style={{
             margin: "4px 0 0", fontSize: 22, fontWeight: 600,
-            fontFamily: "'Fraunces', Georgia, serif", color: C.espressoDk,
+            color: C.espressoDk,
             lineHeight: 1.18, letterSpacing: -0.3,
           }}>This month's check-in</h2>
         </div>
@@ -421,7 +419,7 @@ function SubmittedResults({ submitted }) {
       <p style={{ margin: 0, fontSize: 10.5, fontWeight: 700, letterSpacing: "0.16em", textTransform: "uppercase", color: band.tint }}>
         Your MRS score this month
       </p>
-      <p style={{ margin: 0, fontSize: 28, fontWeight: 600, fontFamily: "'Fraunces', Georgia, serif", color: C.espressoDk, lineHeight: 1 }}>
+      <p style={{ margin: 0, fontSize: 28, fontWeight: 600, color: C.espressoDk, lineHeight: 1 }}>
         {submitted.total_score} <span style={{ fontSize: 14, color: C.muted, fontWeight: 400 }}>/ {max}</span>
       </p>
       <p style={{ margin: 0, fontSize: 14.5, color: C.espresso, lineHeight: 1.4 }}>

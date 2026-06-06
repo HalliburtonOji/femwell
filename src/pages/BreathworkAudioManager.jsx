@@ -13,7 +13,7 @@ const ROLES = [
 const PLAYER_STYLES = ["BREATH_RING", "BREATH_WAVES", "BREATH_GLOW"];
 
 const card = { backgroundColor: "var(--surface)", borderRadius: 16, padding: 20, boxShadow: "var(--shadow-sm)", border: "1px solid var(--border)", marginBottom: 16 };
-const inputStyle = { width: "100%", border: "1px solid var(--border)", borderRadius: 12, padding: "10px 12px", fontSize: 13, color: "var(--plum)", backgroundColor: "var(--ivory)", fontFamily: "'Inter', sans-serif", outline: "none", boxSizing: "border-box" };
+const inputStyle = { width: "100%", border: "1px solid var(--border)", borderRadius: 12, padding: "10px 12px", fontSize: 13, color: "var(--plum)", backgroundColor: "var(--ivory)", outline: "none", boxSizing: "border-box" };
 const labelStyle = { display: "block", fontSize: 11, fontWeight: 600, color: "var(--mauve)", marginBottom: 4 };
 
 function StatusBadge({ url }) {

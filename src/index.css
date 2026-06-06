@@ -7,9 +7,9 @@
    load the SAME fonts the journal uses, on every page + mobile, so .fw-display
    (Ephesis) and .fw-heading (Cormorant italic) render the real glyphs.
    Cormorant Garamond stays un-adjusted = the journal's exact reading face. */
-@font-face { font-family: 'Cormorant Garamond'; font-style: normal; font-weight: 400 700; font-display: swap; size-adjust: 112%;
+@font-face { font-family: 'Cormorant Garamond'; font-style: normal; font-weight: 400 700; font-display: swap; size-adjust: 140%;
   src: url(https://fonts.gstatic.com/s/cormorantgaramond/v21/co3bmX5slCNuHLi8bLeY9MK7whWMhyjYpHtKky2F7i6C.woff2) format('woff2'); }
-@font-face { font-family: 'Cormorant Garamond'; font-style: italic; font-weight: 400 700; font-display: swap; size-adjust: 112%;
+@font-face { font-family: 'Cormorant Garamond'; font-style: italic; font-weight: 400 700; font-display: swap; size-adjust: 140%;
   src: url(https://fonts.gstatic.com/s/cormorantgaramond/v21/co3ZmX5slCNuHLi8bLeY9MK7whWMhyjYrEtImSqn7B6D.woff2) format('woff2'); }
 @font-face { font-family: 'Ephesis'; font-style: normal; font-weight: 400; font-display: swap;
   src: url(https://fonts.gstatic.com/s/ephesis/v11/uU9PCBUS8IerL2VG3xTR396EilM.woff2) format('woff2'); }
@@ -211,7 +211,7 @@
      Body/reading = Cormorant via the size-adjusted 'Fraunces' face (so it's
      clearly larger, not tiny/faint), near-black ink, weight 500, open line. */
   body {
-    font-family: 'Fraunces', 'Cormorant Garamond', Georgia, serif;
+    font-family: 'Cormorant Garamond', Georgia, serif;  /* Cormorant-first: no 'Fraunces' alias in the cascade */
     font-weight: 600;              /* Halli: bolder reading text (was 500) */
     line-height: 1.55;
     background-color: var(--ivory);
@@ -226,7 +226,7 @@
      app-wide without the heavy SVG filter. The size-adjusted 'Fraunces' face
      makes them larger too. */
   h1, h2, h3, h4, h5, h6 {
-    font-family: 'Fraunces', 'Cormorant Garamond', Georgia, serif;
+    font-family: 'Cormorant Garamond', Georgia, serif;  /* Cormorant-first */
     font-weight: 700;             /* Halli: bolder headings (was 600) */
     color: var(--plum);
     letter-spacing: -0.005em;

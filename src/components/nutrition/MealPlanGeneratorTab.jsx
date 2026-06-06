@@ -33,8 +33,7 @@ const card = {
 
 const sLabel = {
   fontSize: "0.6rem", fontWeight: 600, textTransform: "uppercase",
-  letterSpacing: "0.12em", color: "var(--mauve)", fontFamily: "'Inter', sans-serif",
-};
+  letterSpacing: "0.12em", color: "var(--mauve)", };
 
 function TagInput({ tags, setTags, placeholder }) {
   const [input, setInput] = useState("");
@@ -61,7 +60,7 @@ function TagInput({ tags, setTags, placeholder }) {
           onKeyDown={(e) => { if (e.key === "Enter" || e.key === ",") { e.preventDefault(); add(); } }}
           placeholder={placeholder}
           className="flex-1 p-3 rounded-2xl text-sm focus:outline-none transition-all"
-          style={{ backgroundColor: "var(--ivory)", border: "1.5px solid var(--border)", color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}
+          style={{ backgroundColor: "var(--ivory)", border: "1.5px solid var(--border)", color: "var(--plum)", }}
           onFocus={e => e.target.style.borderColor = "var(--sage-light)"}
           onBlur={e => e.target.style.borderColor = "var(--border)"} />
         <button onClick={add} disabled={!input.trim()}
@@ -90,7 +89,7 @@ function MealPlanCard({ mealPlan, onSaveToPlan, saving }) {
   return (
     <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="rounded-[24px] overflow-hidden" style={card}>
       <div className="p-5" style={{ backgroundColor: "var(--plum)" }}>
-        <p className="font-bold text-base" style={{ color: "white", fontFamily: "'Fraunces', serif" }}>{mealPlan.plan_name}</p>
+        <p className="font-bold text-base" style={{ color: "white", }}>{mealPlan.plan_name}</p>
         {mealPlan.wellness_focus && (
           <p className="text-xs mt-0.5" style={{ color: "rgba(255,255,255,0.65)" }}>Focus: {mealPlan.wellness_focus}</p>
         )}
@@ -128,18 +127,18 @@ function MealPlanCard({ mealPlan, onSaveToPlan, saving }) {
                     <span className="text-[10px]" style={{ color: "var(--mauve)" }}>{meal.prep_minutes}m prep</span>
                   )}
                 </div>
-                <p className="text-sm font-semibold" style={{ color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>{meal.name}</p>
+                <p className="text-sm font-semibold" style={{ color: "var(--plum)", }}>{meal.name}</p>
                 {meal.description && <p className="text-xs mt-0.5" style={{ color: "var(--mauve)" }}>{meal.description}</p>}
                 {meal.cook_steps?.length > 0 && (
                   <div style={{ marginTop: 10, marginBottom: 8 }}>
                     <p style={{ fontSize: 11, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.1em",
-                      color: "var(--mauve)", fontFamily: "'Inter', sans-serif", marginBottom: 6 }}>
+                      color: "var(--mauve)", marginBottom: 6 }}>
                       How to make it
                     </p>
                     <ol style={{ margin: 0, paddingLeft: 16 }}>
                       {meal.cook_steps.map((step, i) => (
                         <li key={i} style={{ fontSize: 12, color: "var(--plum)", lineHeight: 1.55,
-                          marginBottom: 5, fontFamily: "'Inter', sans-serif" }}>
+                          marginBottom: 5, }}>
                           {step}
                         </li>
                       ))}
@@ -149,7 +148,7 @@ function MealPlanCard({ mealPlan, onSaveToPlan, saving }) {
                 <a
                   href={`https://www.youtube.com/results?search_query=${encodeURIComponent((meal.name || '') + ' recipe how to make')}`}
                   target="_blank" rel="noopener noreferrer"
-                  style={{ fontSize: 11, fontWeight: 500, color: "var(--rose-dust)", fontFamily: "'Inter', sans-serif", textDecoration: "none", display: "inline-block", marginTop: 4 }}
+                  style={{ fontSize: 11, fontWeight: 500, color: "var(--rose-dust)", textDecoration: "none", display: "inline-block", marginTop: 4 }}
                 >
                   Watch how to make it
                 </a>
@@ -323,7 +322,7 @@ Return JSON: {"items": [{"ingredient": "name", "category": "CategoryName", "quan
             <CalendarDays className="w-5 h-5 text-white" />
           </div>
           <div>
-            <p className="font-semibold" style={{ color: "var(--plum)", fontFamily: "'Fraunces', serif" }}>Meal Plan Generator</p>
+            <p className="font-semibold" style={{ color: "var(--plum)", }}>Meal Plan Generator</p>
             <p className="text-xs" style={{ color: "var(--mauve)" }}>Your personalised weekly eating plan</p>
           </div>
         </div>

@@ -14,8 +14,7 @@ const sLabel = {
   textTransform: "uppercase",
   letterSpacing: "0.12em",
   color: "var(--mauve)",
-  fontFamily: "'Inter', sans-serif",
-};
+  };
 
 function MacroBar({ label, actual, target, color, unit = "g" }) {
   const pct  = target > 0 ? Math.min(100, Math.round((actual / target) * 100)) : 0;
@@ -23,7 +22,7 @@ function MacroBar({ label, actual, target, color, unit = "g" }) {
   return (
     <div>
       <div className="flex justify-between items-center mb-1.5">
-        <span className="text-xs font-medium" style={{ color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>{label}</span>
+        <span className="text-xs font-medium" style={{ color: "var(--plum)", }}>{label}</span>
         <span className="text-xs font-semibold" style={{ color: over ? "var(--rose-dust)" : "var(--mauve)" }}>
           {Math.round(actual)}{unit}
           <span className="font-normal" style={{ color: "var(--border)" }}> / {target}{unit}</span>
@@ -105,7 +104,7 @@ export default function MacroDashboard({ meals, hydrationLogs, drinkLogs = [], n
           </div>
         </div>
         <div className="flex-1 min-w-0">
-          <p className="text-2xl font-bold" style={{ color: "var(--plum)", fontFamily: "'Fraunces', serif" }}>
+          <p className="text-2xl font-bold" style={{ color: "var(--plum)", }}>
             {displayCalories}
             <span className="text-sm font-normal ml-1" style={{ color: "var(--mauve)" }}>kcal</span>
           </p>

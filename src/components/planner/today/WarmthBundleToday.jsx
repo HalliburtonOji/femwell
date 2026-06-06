@@ -136,7 +136,6 @@ const kickerStyle = {
   textTransform: "uppercase",
   letterSpacing: "0.14em",
   color: "var(--plum-mute, #8A7584)",
-  fontFamily: "'Inter', sans-serif",
   margin: 0,
 };
 const tenseStyle = {
@@ -145,10 +144,8 @@ const tenseStyle = {
   letterSpacing: "0.12em",
   textTransform: "uppercase",
   color: "var(--plum-mute, #8A7584)",
-  fontFamily: "'Inter', sans-serif",
-};
+  };
 const mainStyle = {
-  fontFamily: "'Fraunces', serif",
   fontSize: 16,
   lineHeight: 1.4,
   color: "var(--plum, #4A2A3A)",
@@ -156,7 +153,6 @@ const mainStyle = {
   margin: "0 0 4px",
 };
 const subStyle = {
-  fontFamily: "'Inter', sans-serif",
   fontSize: 12.5,
   lineHeight: 1.55,
   color: "var(--plum-2, #6B4559)",
@@ -181,11 +177,9 @@ const hrtKickerStyle = {
   textTransform: "uppercase",
   letterSpacing: "0.10em",
   color: "var(--plum-mute, #8A7584)",
-  fontFamily: "'Inter', sans-serif",
   margin: "0 0 2px",
 };
 const hrtMainStyle = {
-  fontFamily: "'Fraunces', serif",
   fontSize: 14.5,
   fontWeight: 600,
   color: "var(--plum, #4A2A3A)",
@@ -193,7 +187,6 @@ const hrtMainStyle = {
   margin: 0,
 };
 const hrtSubStyle = {
-  fontFamily: "'Inter', sans-serif",
   fontSize: 12,
   color: "var(--plum-2, #6B4559)",
   margin: "2px 0 0",
@@ -204,7 +197,6 @@ const ghostBtnStyle = {
   border: "1px solid var(--plum, #4A2A3A)",
   background: "transparent",
   color: "var(--plum, #4A2A3A)",
-  fontFamily: "'Inter', sans-serif",
   fontSize: 12,
   fontWeight: 600,
   cursor: "pointer",
@@ -213,14 +205,12 @@ const ghostBtnStyle = {
 
 const shutListStyle = { margin: 0, paddingLeft: 18 };
 const shutItemStyle = {
-  fontFamily: "'Inter', sans-serif",
   fontSize: 13,
   lineHeight: 1.55,
   color: "var(--plum-2, #6B4559)",
   marginBottom: 2,
 };
 const shutFootStyle = {
-  fontFamily: "'Inter', sans-serif",
   fontSize: 11.5,
   fontStyle: "italic",
   color: "var(--plum-mute, #8A7584)",
@@ -230,7 +220,6 @@ const shutFootStyle = {
 
 const pacingListStyle = { listStyle: "none", margin: "4px 0 0", padding: 0 };
 const pacingItemStyle = {
-  fontFamily: "'Inter', sans-serif",
   fontSize: 13,
   lineHeight: 1.55,
   color: "var(--plum-2, #6B4559)",
@@ -249,7 +238,6 @@ const pacingDotStyle = {
   flexShrink: 0,
 };
 const pacingFootStyle = {
-  fontFamily: "'Inter', sans-serif",
   fontSize: 11.5,
   fontStyle: "italic",
   color: "var(--plum-mute, #8A7584)",

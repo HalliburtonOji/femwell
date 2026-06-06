@@ -57,8 +57,7 @@ const sLabel = {
   textTransform: "uppercase",
   letterSpacing: "0.12em",
   color: "var(--mauve)",
-  fontFamily: "'Inter', sans-serif",
-};
+  };
 
 function EmptyState({ icon: Icon, heading, sub }) {
   return (
@@ -67,8 +66,8 @@ function EmptyState({ icon: Icon, heading, sub }) {
         style={{ backgroundColor: "var(--ivory-dark)", color: "var(--mauve)" }}>
         <Icon className="w-5 h-5" strokeWidth={1.5} />
       </div>
-      <p className="text-sm font-medium mb-1" style={{ color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>{heading}</p>
-      {sub && <p className="text-xs" style={{ color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>{sub}</p>}
+      <p className="text-sm font-medium mb-1" style={{ color: "var(--plum)", }}>{heading}</p>
+      {sub && <p className="text-xs" style={{ color: "var(--mauve)", }}>{sub}</p>}
     </div>
   );
 }
@@ -85,7 +84,7 @@ function AddButton({ label, onClick, icon: Icon = Plus }) {
         style={{ backgroundColor: "var(--rose-dust-subtle)", color: "var(--rose-dust)" }}>
         <Icon className="w-4 h-4" />
       </div>
-      <p className="text-sm font-medium" style={{ color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>{label}</p>
+      <p className="text-sm font-medium" style={{ color: "var(--plum)", }}>{label}</p>
     </button>
   );
 }
@@ -270,10 +269,10 @@ export default function Track() {
         <div className="pt-10 pb-5">
           <p style={sLabel} className="mb-1.5">Daily Log</p>
           <h1 className="text-2xl font-bold leading-tight"
-            style={{ fontFamily: "'Fraunces', serif", color: "var(--plum)", letterSpacing: "-0.02em" }}>
+            style={{ color: "var(--plum)", letterSpacing: "-0.02em" }}>
             Track
           </h1>
-          <p className="text-sm mt-1" style={{ color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>
+          <p className="text-sm mt-1" style={{ color: "var(--mauve)", }}>
             Body signals, habits, and daily rhythm
           </p>
         </div>
@@ -288,9 +287,9 @@ export default function Track() {
             <ChevronLeft className="w-4 h-4" />
           </button>
           <div className="text-center">
-            <p className="font-semibold text-sm" style={{ color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>{displayDate}</p>
+            <p className="font-semibold text-sm" style={{ color: "var(--plum)", }}>{displayDate}</p>
             {!isToday && (
-              <p className="text-xs mt-0.5" style={{ color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>
+              <p className="text-xs mt-0.5" style={{ color: "var(--mauve)", }}>
                 {format(parseISO(selectedDate), "MMMM d, yyyy")}
               </p>
             )}
@@ -309,7 +308,7 @@ export default function Track() {
           <div className="flex flex-wrap gap-1.5 mb-4">
             {dailySummary.map((item) => (
               <span key={item} className="text-xs px-2.5 py-1 rounded-full font-medium"
-                style={{ backgroundColor: "var(--sage-subtle)", color: "var(--sage)", fontFamily: "'Inter', sans-serif" }}>
+                style={{ backgroundColor: "var(--sage-subtle)", color: "var(--sage)", }}>
                 {item}
               </span>
             ))}
@@ -324,8 +323,7 @@ export default function Track() {
               style={{
                 backgroundColor: activeTab === tab ? "var(--plum)" : "transparent",
                 color: activeTab === tab ? "white" : "var(--mauve)",
-                fontFamily: "'Inter', sans-serif",
-              }}>
+                }}>
               {tab}
             </button>
           ))}
@@ -340,11 +338,11 @@ export default function Track() {
                   <div className="w-1.5 self-stretch rounded-full flex-shrink-0"
                     style={{ backgroundColor: CYCLE_TYPE_ACCENTS[e.type] || "var(--rose-dust)", minHeight: "40px" }} />
                   <div>
-                    <p className="font-semibold text-sm" style={{ color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>
+                    <p className="font-semibold text-sm" style={{ color: "var(--plum)", }}>
                       {e.type === "PeriodStart" ? "Period Start" : e.type === "PeriodEnd" ? "Period End" : "Spotting"}
                     </p>
                     {e.flow_level && (
-                      <p className="text-xs mt-0.5 capitalize" style={{ color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>
+                      <p className="text-xs mt-0.5 capitalize" style={{ color: "var(--mauve)", }}>
                         {e.flow_level} flow
                       </p>
                     )}
@@ -352,7 +350,7 @@ export default function Track() {
                 </div>
                 <button onClick={() => deleteCycleEvent(e.id)}
                   className="px-4 text-xs font-medium h-full py-4 flex-shrink-0"
-                  style={{ color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>
+                  style={{ color: "var(--mauve)", }}>
                   Remove
                 </button>
               </div>
@@ -362,7 +360,7 @@ export default function Track() {
 
             {addingCycleEvent ? (
               <div className="rounded-[24px] p-5 space-y-4" style={card}>
-                <p className="font-semibold text-sm" style={{ color: "var(--plum)", fontFamily: "'Fraunces', serif" }}>Log Cycle Event</p>
+                <p className="font-semibold text-sm" style={{ color: "var(--plum)", }}>Log Cycle Event</p>
 
                 <div>
                   <p style={sLabel} className="mb-2">Event type</p>
@@ -374,8 +372,7 @@ export default function Track() {
                           backgroundColor: cycleEventType === t.value ? "var(--plum)" : "var(--ivory)",
                           color: cycleEventType === t.value ? "white" : "var(--mauve)",
                           border: `1px solid ${cycleEventType === t.value ? "var(--plum)" : "var(--border)"}`,
-                          fontFamily: "'Inter', sans-serif",
-                        }}>
+                          }}>
                         {t.label}
                       </button>
                     ))}
@@ -393,8 +390,7 @@ export default function Track() {
                             backgroundColor: flowLevel === f.value ? "var(--rose-dust-subtle)" : "var(--ivory)",
                             border: `1.5px solid ${flowLevel === f.value ? "var(--rose-dust)" : "var(--border)"}`,
                             color: flowLevel === f.value ? "var(--rose-dust)" : "var(--mauve)",
-                            fontFamily: "'Inter', sans-serif",
-                          }}>
+                            }}>
                           <span className="block font-semibold">{f.label}</span>
                           <span className="block text-[10px] mt-0.5 opacity-70">{f.desc}</span>
                         </button>
@@ -406,12 +402,12 @@ export default function Track() {
                 <div className="flex gap-2 pt-1">
                   <button onClick={() => setAddingCycleEvent(false)}
                     className="flex-1 py-2.5 rounded-xl text-sm font-semibold"
-                    style={{ border: "1.5px solid var(--border)", color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>
+                    style={{ border: "1.5px solid var(--border)", color: "var(--plum)", }}>
                     Cancel
                   </button>
                   <button onClick={saveCycleEvent}
                     className="flex-1 py-2.5 rounded-xl text-sm font-semibold"
-                    style={{ backgroundColor: "var(--plum)", color: "white", fontFamily: "'Inter', sans-serif" }}>
+                    style={{ backgroundColor: "var(--plum)", color: "white", }}>
                     Save
                   </button>
                 </div>
@@ -428,19 +424,19 @@ export default function Track() {
             {symptomLogs.length > 0 ? symptomLogs.map((s) => (
               <div key={s.id} className="flex items-start justify-between rounded-[20px] p-4" style={card}>
                 <div className="flex-1 min-w-0">
-                  <p className="font-semibold text-sm capitalize" style={{ color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>{s.symptom_type}</p>
-                  <p className="text-xs mt-0.5" style={{ color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>
+                  <p className="font-semibold text-sm capitalize" style={{ color: "var(--plum)", }}>{s.symptom_type}</p>
+                  <p className="text-xs mt-0.5" style={{ color: "var(--mauve)", }}>
                     {SEVERITY_LABELS[s.severity] || `Severity ${s.severity}`}
                   </p>
                   {s.notes && (
-                    <p className="text-xs mt-1 leading-relaxed" style={{ color: "var(--mauve)", fontStyle: "italic", fontFamily: "'Inter', sans-serif" }}>
+                    <p className="text-xs mt-1 leading-relaxed" style={{ color: "var(--mauve)", fontStyle: "italic", }}>
                       {s.notes}
                     </p>
                   )}
                 </div>
                 <button onClick={async () => { await base44.entities.SymptomLogs.delete(s.id); await loadData(user.id, selectedDate); }}
                   className="text-xs font-medium ml-3 flex-shrink-0"
-                  style={{ color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>
+                  style={{ color: "var(--mauve)", }}>
                   Remove
                 </button>
               </div>
@@ -450,7 +446,7 @@ export default function Track() {
 
             {addingSymptom ? (
               <div className="rounded-[24px] p-5 space-y-4" style={card}>
-                <p className="font-semibold text-sm" style={{ color: "var(--plum)", fontFamily: "'Fraunces', serif" }}>Log a Symptom</p>
+                <p className="font-semibold text-sm" style={{ color: "var(--plum)", }}>Log a Symptom</p>
 
                 <div>
                   <p style={sLabel} className="mb-2.5">Common symptoms</p>
@@ -462,8 +458,7 @@ export default function Track() {
                           backgroundColor: symptomType === s ? "var(--plum)" : "var(--ivory)",
                           color: symptomType === s ? "white" : "var(--plum)",
                           border: `1px solid ${symptomType === s ? "var(--plum)" : "var(--border)"}`,
-                          fontFamily: "'Inter', sans-serif",
-                        }}>
+                          }}>
                         {s}
                       </button>
                     ))}
@@ -473,14 +468,14 @@ export default function Track() {
                 <input type="text" placeholder="Or describe your own…" value={customSymptom}
                   onChange={(e) => { setCustomSymptom(e.target.value); setSymptomType(""); }}
                   className="w-full p-3.5 rounded-2xl text-sm focus:outline-none"
-                  style={{ backgroundColor: "var(--ivory)", border: "1.5px solid var(--border)", color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}
+                  style={{ backgroundColor: "var(--ivory)", border: "1.5px solid var(--border)", color: "var(--plum)", }}
                   onFocus={e => e.target.style.borderColor = "var(--rose-dust-light)"}
                   onBlur={e => e.target.style.borderColor = "var(--border)"} />
 
                 <div>
                   <div className="flex items-center justify-between mb-2">
                     <p style={sLabel}>Intensity</p>
-                    <span className="text-xs font-semibold" style={{ color: "var(--rose-dust)", fontFamily: "'Inter', sans-serif" }}>
+                    <span className="text-xs font-semibold" style={{ color: "var(--rose-dust)", }}>
                       {SEVERITY_LABELS[severity]}
                     </span>
                   </div>
@@ -490,19 +485,19 @@ export default function Track() {
                 <textarea placeholder="Notes (optional — how it felt, what you noticed)" value={symptomNotes}
                   onChange={(e) => setSymptomNotes(e.target.value)} rows={2}
                   className="w-full p-3.5 rounded-2xl text-sm resize-none focus:outline-none"
-                  style={{ backgroundColor: "var(--ivory)", border: "1.5px solid var(--border)", color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}
+                  style={{ backgroundColor: "var(--ivory)", border: "1.5px solid var(--border)", color: "var(--plum)", }}
                   onFocus={e => e.target.style.borderColor = "var(--rose-dust-light)"}
                   onBlur={e => e.target.style.borderColor = "var(--border)"} />
 
                 <div className="flex gap-2">
                   <button onClick={() => setAddingSymptom(false)}
                     className="flex-1 py-2.5 rounded-xl text-sm font-semibold"
-                    style={{ border: "1.5px solid var(--border)", color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>
+                    style={{ border: "1.5px solid var(--border)", color: "var(--plum)", }}>
                     Cancel
                   </button>
                   <button onClick={saveSymptom} disabled={!symptomType && !customSymptom.trim()}
                     className="flex-1 py-2.5 rounded-xl text-sm font-semibold"
-                    style={{ backgroundColor: "var(--plum)", color: "white", fontFamily: "'Inter', sans-serif", opacity: (!symptomType && !customSymptom.trim()) ? 0.45 : 1 }}>
+                    style={{ backgroundColor: "var(--plum)", color: "white", opacity: (!symptomType && !customSymptom.trim()) ? 0.45 : 1 }}>
                     Save
                   </button>
                 </div>
@@ -532,7 +527,6 @@ export default function Track() {
                 background: "transparent",
                 border: "1.5px dashed rgba(58,44,26,0.30)",
                 color: "var(--plum)", cursor: "pointer",
-                fontFamily: "'Inter', system-ui, sans-serif",
                 fontSize: 13.5, fontWeight: 700,
                 letterSpacing: "0.01em",
               }}
@@ -552,12 +546,12 @@ export default function Track() {
 
             {addingHabit ? (
               <div className="rounded-[24px] p-5 space-y-3.5" style={card}>
-                <p className="font-semibold text-sm" style={{ color: "var(--plum)", fontFamily: "'Fraunces', serif" }}>New Habit</p>
+                <p className="font-semibold text-sm" style={{ color: "var(--plum)", }}>New Habit</p>
                 <input type="text" placeholder="Name your habit…" value={newHabitName}
                   onChange={(e) => setNewHabitName(e.target.value)}
                   onKeyDown={(e) => e.key === "Enter" && handleAddHabit()}
                   className="w-full p-3.5 rounded-2xl text-sm focus:outline-none"
-                  style={{ backgroundColor: "var(--ivory)", border: "1.5px solid var(--border)", color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}
+                  style={{ backgroundColor: "var(--ivory)", border: "1.5px solid var(--border)", color: "var(--plum)", }}
                   autoFocus
                   onFocus={e => e.target.style.borderColor = "var(--rose-dust-light)"}
                   onBlur={e => e.target.style.borderColor = "var(--border)"} />
@@ -565,7 +559,7 @@ export default function Track() {
                   {["Drink water", "Morning walk", "Meditate", "Stretch", "Read", "Journal", "No screen before bed"].map((s) => (
                     <button key={s} onClick={() => setNewHabitName(s)}
                       className="text-xs px-3 py-1.5 rounded-full transition-all"
-                      style={{ backgroundColor: "var(--ivory)", color: "var(--plum)", border: "1px solid var(--border)", fontFamily: "'Inter', sans-serif" }}
+                      style={{ backgroundColor: "var(--ivory)", color: "var(--plum)", border: "1px solid var(--border)", }}
                       onMouseEnter={e => { e.currentTarget.style.backgroundColor = "var(--rose-dust-subtle)"; e.currentTarget.style.borderColor = "var(--rose-dust-light)"; }}
                       onMouseLeave={e => { e.currentTarget.style.backgroundColor = "var(--ivory)"; e.currentTarget.style.borderColor = "var(--border)"; }}>
                       {s}
@@ -575,12 +569,12 @@ export default function Track() {
                 <div className="flex gap-2">
                   <button onClick={() => { setAddingHabit(false); setNewHabitName(""); }}
                     className="flex-1 py-2.5 rounded-xl text-sm font-semibold"
-                    style={{ border: "1.5px solid var(--border)", color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>
+                    style={{ border: "1.5px solid var(--border)", color: "var(--plum)", }}>
                     Cancel
                   </button>
                   <button onClick={handleAddHabit} disabled={!newHabitName.trim() || savingHabit}
                     className="flex-1 py-2.5 rounded-xl text-sm font-semibold"
-                    style={{ backgroundColor: "var(--plum)", color: "white", fontFamily: "'Inter', sans-serif", opacity: (!newHabitName.trim() || savingHabit) ? 0.45 : 1 }}>
+                    style={{ backgroundColor: "var(--plum)", color: "white", opacity: (!newHabitName.trim() || savingHabit) ? 0.45 : 1 }}>
                     {savingHabit ? "Adding…" : "Add Habit"}
                   </button>
                 </div>
@@ -601,11 +595,11 @@ export default function Track() {
                   <Pill className="w-4 h-4" strokeWidth={1.5} />
                 </div>
                 <div>
-                  <p className="font-semibold text-sm" style={{ color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>
+                  <p className="font-semibold text-sm" style={{ color: "var(--plum)", }}>
                     {m.item_name || m.medication_name || "Medication"}
                   </p>
                   {(m.dose || m.dosage) && (
-                    <p className="text-xs mt-0.5" style={{ color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>{m.dose || m.dosage}</p>
+                    <p className="text-xs mt-0.5" style={{ color: "var(--mauve)", }}>{m.dose || m.dosage}</p>
                   )}
                 </div>
               </div>
@@ -615,10 +609,10 @@ export default function Track() {
                   style={{ backgroundColor: "var(--mauve-subtle)", color: "var(--mauve)" }}>
                   <Pill className="w-5 h-5" strokeWidth={1.5} />
                 </div>
-                <p className="text-sm font-medium mb-1" style={{ color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>
+                <p className="text-sm font-medium mb-1" style={{ color: "var(--plum)", }}>
                   Medication log
                 </p>
-                <p className="text-xs leading-relaxed" style={{ color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>
+                <p className="text-xs leading-relaxed" style={{ color: "var(--mauve)", }}>
                   Log medications and supplements from the Today page using the Meds section there, or view your reminders in your daily check-in.
                 </p>
               </div>
@@ -641,22 +635,21 @@ export default function Track() {
                     <Play className="w-4 h-4" strokeWidth={1.5} />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="font-semibold text-sm truncate" style={{ color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>
+                    <p className="font-semibold text-sm truncate" style={{ color: "var(--plum)", }}>
                       {content?.title || s.content_key || "Session"}
                     </p>
                     <div className="flex items-center gap-2 mt-1">
                       {typeLabel && (
-                        <span className="text-[10px] font-medium" style={{ color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>{typeLabel}</span>
+                        <span className="text-[10px] font-medium" style={{ color: "var(--mauve)", }}>{typeLabel}</span>
                       )}
                       {durationMin > 0 && (
-                        <span className="text-[10px]" style={{ color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>{durationMin} min</span>
+                        <span className="text-[10px]" style={{ color: "var(--mauve)", }}>{durationMin} min</span>
                       )}
                       <span className="text-[10px] px-2 py-0.5 rounded-full font-medium"
                         style={{
                           backgroundColor: isManual ? "#FFF8EE" : "var(--sage-subtle)",
                           color: isManual ? "#A07830" : "var(--sage)",
-                          fontFamily: "'Inter', sans-serif",
-                        }}>
+                          }}>
                         {isManual ? "Logged" : "Completed"}
                       </span>
                     </div>

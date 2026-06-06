@@ -167,7 +167,6 @@ export default function CycleMoonDial({
             x="65" y="62"
             textAnchor="middle"
             fill={INK_NIGHT}
-            fontFamily="Fraunces, serif"
             fontSize="20"
             fontWeight="500"
           >Today</text>
@@ -175,7 +174,6 @@ export default function CycleMoonDial({
             x="65" y="78"
             textAnchor="middle"
             fill="rgba(245,230,211,0.55)"
-            fontFamily="Inter, sans-serif"
             fontSize="9"
             letterSpacing="1.5"
           >{dateLabel}</text>
@@ -213,7 +211,6 @@ const dialHeadStyle = {
   gap: 6,
 };
 const dialTitleStyle = {
-  fontFamily: "'Fraunces', serif",
   fontSize: 22,
   fontWeight: 400,
   color: INK_NIGHT,
@@ -225,8 +222,7 @@ const dialMetaStyle = {
   textTransform: "uppercase",
   fontWeight: 700,
   color: "rgba(245,230,211,0.55)",
-  fontFamily: "'Inter', sans-serif",
-};
+  };
 const dialWrapStyle = {
   background: "rgba(245,230,211,0.04)",
   border: `1px solid ${RULE_NIGHT}`,
@@ -244,7 +240,6 @@ const dialSvgStyle = {
 };
 const legendStyle = {
   flex: 1,
-  fontFamily: "'Inter', sans-serif",
   fontSize: 11,
   color: "rgba(245,230,211,0.78)",
   lineHeight: 1.55,
@@ -271,5 +266,4 @@ const legendBodyStyle = {
   color: "rgba(245,230,211,0.55)",
   fontSize: 10,
   fontStyle: "italic",
-  fontFamily: "'Fraunces', serif",
-};
+  };

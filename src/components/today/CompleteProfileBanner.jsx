@@ -36,14 +36,12 @@ export default function CompleteProfileBanner({ shouldShow }) {
           fontSize: 10, fontWeight: 700,
           textTransform: "uppercase", letterSpacing: "0.1em",
           color: "var(--rose-dust)",
-          fontFamily: "'Inter', sans-serif",
-        }}>
+          }}>
           Complete your profile
         </p>
         <p style={{
           fontSize: 13, fontWeight: 600,
           color: "var(--plum)",
-          fontFamily: "'Inter', sans-serif",
           marginTop: 2,
         }}>
           Unlock cycle predictions and daily guidance

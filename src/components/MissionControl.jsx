@@ -161,8 +161,8 @@ function CapacityGauge({ value, animTarget }) {
         <circle cx={cx} cy={cy - r + 18} r="5" fill={T.paperUp} stroke={T.espresso} strokeWidth="1.5" />
         <circle cx={cx} cy={cy} r="4" fill={T.espresso} />
       </g>
-      <text x={cx - r - 6} y={cy + 18} fill={T.muted} fontSize="11" fontFamily="'Inter', sans-serif" fontWeight="700" letterSpacing="2" textAnchor="end">0</text>
-      <text x={cx + r + 6} y={cy + 18} fill={T.muted} fontSize="11" fontFamily="'Inter', sans-serif" fontWeight="700" letterSpacing="2" textAnchor="start">100</text>
+      <text x={cx - r - 6} y={cy + 18} fill={T.muted} fontSize="11" fontWeight="700" letterSpacing="2" textAnchor="end">0</text>
+      <text x={cx + r + 6} y={cy + 18} fill={T.muted} fontSize="11" fontWeight="700" letterSpacing="2" textAnchor="start">100</text>
     </svg>
   );
 }
@@ -691,8 +691,7 @@ const shell = {
   boxShadow: "0 1px 0 rgba(58,44,26,0.04), 0 24px 64px rgba(58,44,26,0.08)",
   maxWidth: 760,
   margin: "0 auto",
-  fontFamily: "'Inter', system-ui, sans-serif",
-};
+  };
 
 const topRow = { display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 };
 const eyebrowGroup = { display: "inline-flex", alignItems: "center", gap: 8 };
@@ -739,11 +738,10 @@ const gaugePanel = {
 };
 const gaugeNumWrap = { marginTop: -42, textAlign: "center" };
 const gaugeNum = {
-  fontFamily: "'Fraunces', Georgia, serif",
   fontSize: 56, fontWeight: 400, color: T.espresso,
   lineHeight: 1, letterSpacing: "-0.02em",
 };
-const gaugeNumOf = { fontFamily: "'Inter', sans-serif", fontSize: 12, color: T.muted, fontWeight: 600, marginLeft: 4, letterSpacing: 0 };
+const gaugeNumOf = { fontSize: 12, color: T.muted, fontWeight: 600, marginLeft: 4, letterSpacing: 0 };
 const gaugeSub = { fontSize: 11, color: T.muted, marginTop: 6, letterSpacing: "0.14em", textTransform: "uppercase", fontWeight: 700 };
 const chipRowGauge = { display: "flex", gap: 8, marginTop: 14, flexWrap: "wrap", justifyContent: "center" };
 const insightChip = {
@@ -803,7 +801,6 @@ const railTodayPill = {
   padding: "2px 8px", borderRadius: 9999,
 };
 const railCount = {
-  fontFamily: "'Fraunces', Georgia, serif",
   fontSize: 22, fontWeight: 400,
   marginRight: 4,
 };
@@ -906,7 +903,7 @@ const weekCol = {
   minHeight: 96,
 };
 const weekDay = { fontSize: 9, fontWeight: 700, color: T.muted, letterSpacing: "0.1em" };
-const weekDate = { fontFamily: "'Fraunces', Georgia, serif", fontSize: 14, color: T.espresso, fontWeight: 500 };
+const weekDate = { fontSize: 14, color: T.espresso, fontWeight: 500 };
 const weekBarTrack = {
   width: 8, height: 36, marginTop: 4,
   borderRadius: 9999, background: "rgba(58,44,26,0.06)",
@@ -997,7 +994,7 @@ const careSheet = {
 const careHandle = { width: 38, height: 4, borderRadius: 9999, background: "rgba(58,44,26,0.15)", margin: "0 auto 12px" };
 const careHead = { display: "flex", alignItems: "center", gap: 10, marginBottom: 10 };
 const careEyebrow = { fontSize: 10, fontWeight: 700, letterSpacing: "0.16em", color: T.muted };
-const careTitle = { fontFamily: "'Fraunces', Georgia, serif", fontSize: 18, fontWeight: 500, color: T.espresso, marginTop: 2 };
+const careTitle = { fontSize: 18, fontWeight: 500, color: T.espresso, marginTop: 2 };
 const careClose = {
   width: 30, height: 30, borderRadius: 9999,
   background: T.paper, border: "1px solid rgba(58,44,26,0.10)",
@@ -1069,7 +1066,7 @@ const dockTile = {
   cursor: "pointer", textAlign: "left", color: T.espresso,
 };
 const dockTileIcon = { width: 22, height: 22, borderRadius: 7, display: "flex", alignItems: "center", justifyContent: "center" };
-const dockTileValue = { fontFamily: "'Fraunces', Georgia, serif", fontSize: 16, fontWeight: 600, color: T.espresso, lineHeight: 1 };
+const dockTileValue = { fontSize: 16, fontWeight: 600, color: T.espresso, lineHeight: 1 };
 const dockTileUnit = { fontSize: 10, color: T.muted, marginLeft: 2 };
 const dockTileLabel = { fontSize: 10, fontWeight: 600, letterSpacing: "0.06em", textTransform: "uppercase", color: T.muted };
 const dockNote = { marginTop: 10, marginBottom: 0, fontSize: 10, color: T.muted, lineHeight: 1.4, fontStyle: "italic" };

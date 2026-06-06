@@ -3,8 +3,7 @@ import { useState } from "react";
 
 const sLabel = {
   fontSize: "0.6rem", fontWeight: 600, textTransform: "uppercase",
-  letterSpacing: "0.12em", color: "var(--mauve)", fontFamily: "'Inter', sans-serif",
-};
+  letterSpacing: "0.12em", color: "var(--mauve)", };
 
 export default function FilterDrawer({ filters, onApply, onClose }) {
   const [local, setLocal] = useState({ ...filters });
@@ -19,7 +18,7 @@ export default function FilterDrawer({ filters, onApply, onClose }) {
         <div className="w-8 h-1 rounded-full mx-auto -mt-1 mb-2" style={{ backgroundColor: "var(--border)" }} />
 
         <div className="flex items-center justify-between">
-          <p className="font-semibold" style={{ color: "var(--plum)", fontFamily: "'Fraunces', serif" }}>Filter sessions</p>
+          <p className="font-semibold" style={{ color: "var(--plum)", }}>Filter sessions</p>
           <button onClick={onClose}
             className="w-8 h-8 rounded-full flex items-center justify-center transition-colors"
             style={{ backgroundColor: "var(--ivory-dark)", color: "var(--mauve)" }}>
@@ -30,8 +29,8 @@ export default function FilterDrawer({ filters, onApply, onClose }) {
         {/* Free only */}
         <div className="flex items-center justify-between py-1">
           <div>
-            <p className="text-sm font-semibold" style={{ color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>Free content only</p>
-            <p className="text-xs mt-0.5" style={{ color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>Hide plus and pro sessions</p>
+            <p className="text-sm font-semibold" style={{ color: "var(--plum)", }}>Free content only</p>
+            <p className="text-xs mt-0.5" style={{ color: "var(--mauve)", }}>Hide plus and pro sessions</p>
           </div>
           <button onClick={() => setLocal((l) => ({ ...l, showFreeOnly: !l.showFreeOnly }))}
             className="relative w-11 h-6 rounded-full transition-colors flex-shrink-0"
@@ -52,8 +51,7 @@ export default function FilterDrawer({ filters, onApply, onClose }) {
                   backgroundColor: local.level === l ? "var(--plum)" : "var(--ivory)",
                   color: local.level === l ? "white" : "var(--mauve)",
                   border: `1px solid ${local.level === l ? "var(--plum)" : "var(--border)"}`,
-                  fontFamily: "'Inter', sans-serif",
-                }}>
+                  }}>
                 {l === "all" ? "Any level" : l}
               </button>
             ))}
@@ -76,8 +74,7 @@ export default function FilterDrawer({ filters, onApply, onClose }) {
                   backgroundColor: local.durationBucket === d.id ? "var(--plum)" : "var(--ivory)",
                   color: local.durationBucket === d.id ? "white" : "var(--mauve)",
                   border: `1px solid ${local.durationBucket === d.id ? "var(--plum)" : "var(--border)"}`,
-                  fontFamily: "'Inter', sans-serif",
-                }}>
+                  }}>
                 {d.label}
               </button>
             ))}
@@ -87,12 +84,12 @@ export default function FilterDrawer({ filters, onApply, onClose }) {
         <div className="space-y-2 pt-1">
           <button onClick={() => onApply(local)}
             className="w-full py-3 rounded-2xl text-sm font-semibold transition-all"
-            style={{ backgroundColor: "var(--plum)", color: "white", fontFamily: "'Inter', sans-serif" }}>
+            style={{ backgroundColor: "var(--plum)", color: "white", }}>
             Apply
           </button>
           <button onClick={() => onApply({ showFreeOnly: false, level: "all", durationBucket: "all" })}
             className="w-full text-center text-xs py-2"
-            style={{ color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>
+            style={{ color: "var(--mauve)", }}>
             Reset filters
           </button>
         </div>

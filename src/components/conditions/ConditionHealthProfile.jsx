@@ -63,8 +63,7 @@ const LEGACY_MAP = {
 
 const sLabel = {
   fontSize: "0.6rem", fontWeight: 600, textTransform: "uppercase",
-  letterSpacing: "0.12em", color: "var(--mauve)", fontFamily: "'Inter', sans-serif",
-};
+  letterSpacing: "0.12em", color: "var(--mauve)", };
 const card = {
   backgroundColor: "var(--surface)", border: "1px solid var(--border)",
   borderRadius: "20px", boxShadow: "var(--shadow-sm)",
@@ -173,14 +172,13 @@ export default function ConditionHealthProfile({ profile, onProfileUpdate }) {
       {/* Life stage picker */}
       <div style={{ marginBottom: "14px" }}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 6 }}>
-          <p style={{ fontSize: "11px", fontWeight: 600, color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>Life stage</p>
+          <p style={{ fontSize: "11px", fontWeight: 600, color: "var(--plum)", }}>Life stage</p>
           <button
             onClick={() => setEditStage((v) => !v)}
             style={{
               fontSize: 11, fontWeight: 600, color: "var(--rose-dust)",
               background: "none", border: "none", cursor: "pointer",
-              fontFamily: "'Inter', sans-serif",
-            }}
+              }}
           >
             {editStage ? "Done" : "Change"}
           </button>
@@ -199,7 +197,6 @@ export default function ConditionHealthProfile({ profile, onProfileUpdate }) {
                     borderRadius: 9999, padding: "5px 13px",
                     fontSize: 12, fontWeight: 500,
                     cursor: saving ? "wait" : "pointer",
-                    fontFamily: "'Inter', sans-serif",
                     border: "1.5px solid",
                     backgroundColor: isActive ? "var(--plum)" : "transparent",
                     borderColor: isActive ? "var(--plum)" : "var(--border)",
@@ -216,8 +213,7 @@ export default function ConditionHealthProfile({ profile, onProfileUpdate }) {
           <span
             style={{
               fontSize: 13, fontWeight: 500, color: "var(--plum)",
-              fontFamily: "'Inter', sans-serif",
-            }}
+              }}
           >
             {activeStage.label}
             {activeStage.group ? (
@@ -233,7 +229,7 @@ export default function ConditionHealthProfile({ profile, onProfileUpdate }) {
 
       {/* Conditions multi-select */}
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "10px" }}>
-        <p style={{ fontSize: "11px", fontWeight: 600, color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>
+        <p style={{ fontSize: "11px", fontWeight: 600, color: "var(--plum)", }}>
           Conditions <span style={{ color: "var(--mauve)", fontWeight: 400 }}>(cross-cutting)</span>
         </p>
         <button
@@ -241,8 +237,7 @@ export default function ConditionHealthProfile({ profile, onProfileUpdate }) {
           style={{
             fontSize: 11, fontWeight: 600, color: "var(--rose-dust)",
             background: "none", border: "none", cursor: "pointer",
-            fontFamily: "'Inter', sans-serif",
-          }}
+            }}
         >
           {editConditions ? "Done" : "Edit"}
         </button>
@@ -278,11 +273,11 @@ export default function ConditionHealthProfile({ profile, onProfileUpdate }) {
                   {isActive && <div style={{ width: 8, height: 8, borderRadius: 2, backgroundColor: "white" }} />}
                 </div>
                 <div>
-                  <p style={{ fontSize: 13, fontWeight: 600, color: isActive ? "white" : "var(--plum)", fontFamily: "'Inter', sans-serif" }}>
+                  <p style={{ fontSize: 13, fontWeight: 600, color: isActive ? "white" : "var(--plum)", }}>
                     {c.label}
                   </p>
                   {c.desc && (
-                    <p style={{ fontSize: 11, color: isActive ? "rgba(255,255,255,0.7)" : "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>
+                    <p style={{ fontSize: 11, color: isActive ? "rgba(255,255,255,0.7)" : "var(--mauve)", }}>
                       {c.desc}
                     </p>
                   )}
@@ -292,7 +287,7 @@ export default function ConditionHealthProfile({ profile, onProfileUpdate }) {
           })}
         </div>
       ) : activeConditions.length === 0 ? (
-        <p style={{ fontSize: 12, color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>
+        <p style={{ fontSize: 12, color: "var(--mauve)", }}>
           No conditions set. Tap Edit to add conditions — PCOS, endo, PMDD, or on HRT each reshape the Planner.
         </p>
       ) : (
@@ -304,8 +299,7 @@ export default function ConditionHealthProfile({ profile, onProfileUpdate }) {
                 backgroundColor: "var(--rose-dust-subtle)",
                 color: "var(--rose-dust)", borderRadius: 9999,
                 padding: "4px 12px", fontSize: 12, fontWeight: 600,
-                fontFamily: "'Inter', sans-serif",
-              }}
+                }}
             >
               {c.label}
             </span>
@@ -318,7 +312,7 @@ export default function ConditionHealthProfile({ profile, onProfileUpdate }) {
         style={{
           fontSize: 10.5, color: "var(--mauve)",
           marginTop: 12, lineHeight: 1.4,
-          fontFamily: "'Inter', sans-serif", fontStyle: "italic",
+          fontStyle: "italic",
         }}
       >
         Your stage and conditions are used to adapt the Planner, Daily Story, and Jess only — never shared.

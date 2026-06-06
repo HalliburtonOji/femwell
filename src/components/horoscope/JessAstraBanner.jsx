@@ -79,11 +79,10 @@ export default function JessAstraBanner() {
         <p style={{
           margin: "0 0 4px", fontSize: 10, fontWeight: 700,
           letterSpacing: "0.18em", textTransform: "uppercase",
-          color: "#D4AF37", fontFamily: "'Inter', sans-serif",
-        }}>{handoff.sentBy || "Jess"} sent you here</p>
+          color: "#D4AF37", }}>{handoff.sentBy || "Jess"} sent you here</p>
         <p style={{
           margin: "0 0 8px", fontSize: 14,
-          fontFamily: "'Fraunces', serif", lineHeight: 1.5,
+          lineHeight: 1.5,
         }}>
           Astra knows what you were chatting about.{phaseLabel ? ` You're in your ${phaseLabel} phase.` : ""}
         </p>
@@ -97,7 +96,6 @@ export default function JessAstraBanner() {
                 background: "rgba(244,237,219,0.10)",
                 border: "1px solid rgba(244,237,219,0.20)",
                 color: "#F4EDDB",
-                fontFamily: "'Inter', sans-serif",
                 maxWidth: "100%", whiteSpace: "nowrap",
                 overflow: "hidden", textOverflow: "ellipsis",
               }}>{t}</span>

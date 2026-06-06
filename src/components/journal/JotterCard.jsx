@@ -96,8 +96,7 @@ export default function JotterCard({ entry, onEdit, onDelete, onPin, onColorChan
           display: "inline-flex", alignItems: "center", gap: 5,
           backgroundColor: "rgba(255,255,255,0.55)", borderRadius: 999,
           padding: "3px 10px 3px 8px", fontSize: 11, fontWeight: 600,
-          color: "#2A2035", fontFamily: "'Inter', sans-serif",
-        }}>
+          color: "#2A2035", }}>
           <meta.Icon size={11} strokeWidth={2.2} /> {meta.label}
         </span>
         <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
@@ -126,7 +125,7 @@ export default function JotterCard({ entry, onEdit, onDelete, onPin, onColorChan
                 ].map((item) =>
                   item.id === "color" ? (
                     <div key="color" style={{ padding: "8px 14px", borderBottom: "1px solid #F5F1EE" }}>
-                      <p style={{ fontSize: 11, color: "#8A7E88", fontFamily: "'Inter', sans-serif", marginBottom: 6, display: "flex", alignItems: "center", gap: 6 }}>
+                      <p style={{ fontSize: 11, color: "#8A7E88", marginBottom: 6, display: "flex", alignItems: "center", gap: 6 }}>
                         <Palette size={11} /> Change colour
                       </p>
                       <div style={{ display: "flex", gap: 5, flexWrap: "wrap" }}>
@@ -151,8 +150,7 @@ export default function JotterCard({ entry, onEdit, onDelete, onPin, onColorChan
                       style={{
                         width: "100%", textAlign: "left", padding: "9px 14px",
                         background: "none", border: "none", cursor: "pointer",
-                        fontSize: 13, fontFamily: "'Inter', sans-serif",
-                        color: item.danger ? "#B85050" : "#2A2035",
+                        fontSize: 13, color: item.danger ? "#B85050" : "#2A2035",
                         borderBottom: "1px solid #F5F1EE",
                         display: "flex", alignItems: "center", gap: 8,
                       }}
@@ -168,7 +166,7 @@ export default function JotterCard({ entry, onEdit, onDelete, onPin, onColorChan
       </div>
 
       {/* Date */}
-      <p style={{ fontSize: 11, color: "#8A7E88", fontFamily: "'Inter', sans-serif", marginBottom: 8 }}>{dateLabel}</p>
+      <p style={{ fontSize: 11, color: "#8A7E88", marginBottom: 8 }}>{dateLabel}</p>
 
       {/* Todo list */}
       {entry.card_type === "todo" && localTodos.length > 0 ? (
@@ -191,7 +189,7 @@ export default function JotterCard({ entry, onEdit, onDelete, onPin, onColorChan
                 {item.done && <Check style={{ width: 10, height: 10, color: "white" }} />}
               </div>
               <span style={{
-                fontSize: 13, fontFamily: "'Inter', sans-serif", color: "#2A2035",
+                fontSize: 13, color: "#2A2035",
                 textDecoration: item.done ? "line-through" : "none",
                 opacity: item.done ? 0.5 : 1,
               }}>{item.text}</span>
@@ -204,7 +202,6 @@ export default function JotterCard({ entry, onEdit, onDelete, onPin, onColorChan
           <div style={{ marginBottom: 8 }}>
             <p style={{
               fontSize: 13, lineHeight: 1.65, color: "#2A2035",
-              fontFamily: "'Inter', sans-serif",
               display: "-webkit-box", WebkitLineClamp: expanded ? "unset" : 4,
               WebkitBoxOrient: "vertical", overflow: "hidden",
             }}>
@@ -216,7 +213,7 @@ export default function JotterCard({ entry, onEdit, onDelete, onPin, onColorChan
                 style={{
                   background: "none", border: "none", cursor: "pointer",
                   fontSize: 12, fontWeight: 600, color: "#8A7E88",
-                  fontFamily: "'Inter', sans-serif", marginTop: 4, padding: 0,
+                  marginTop: 4, padding: 0,
                 }}
               >
                 {expanded ? "Show less" : "Read more"}
@@ -245,8 +242,7 @@ export default function JotterCard({ entry, onEdit, onDelete, onPin, onColorChan
             style={{
               backgroundColor: "rgba(255,255,255,0.5)", borderRadius: 999,
               padding: "1px 7px", fontSize: 10, fontWeight: 600,
-              color: "#2A2035", fontFamily: "'Inter', sans-serif",
-            }}
+              color: "#2A2035", }}
           >
             {tag}
           </span>

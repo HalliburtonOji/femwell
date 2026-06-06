@@ -55,7 +55,7 @@ export default function ExploreContentCard({ item, locked, bookmarked, onToggleB
               )}
               {/* Type label centered for audio no-thumb */}
               <p className="absolute bottom-4 left-0 right-0 text-center text-xs font-semibold"
-                style={{ color: audioBg?.icon || "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>
+                style={{ color: audioBg?.icon || "var(--mauve)", }}>
                 {typeLabel}
               </p>
             </div>
@@ -102,7 +102,7 @@ export default function ExploreContentCard({ item, locked, bookmarked, onToggleB
       <div className="p-3">
         <Link to={playerUrl}>
           <p className="text-xs font-semibold leading-tight line-clamp-2 mb-1.5"
-            style={{ color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>
+            style={{ color: "var(--plum)", }}>
             {item.title}
           </p>
         </Link>
@@ -111,11 +111,11 @@ export default function ExploreContentCard({ item, locked, bookmarked, onToggleB
             <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full"
               style={isAudio && audioBg
                 ? { backgroundColor: audioBg.from, color: audioBg.icon }
-                : { backgroundColor: "var(--rose-dust-subtle)", color: "var(--rose-dust)", fontFamily: "'Inter', sans-serif" }}>
+                : { backgroundColor: "var(--rose-dust-subtle)", color: "var(--rose-dust)", }}>
               {typeLabel}
             </span>
             {item.level && (
-              <span className="text-[10px] capitalize" style={{ color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>{item.level}</span>
+              <span className="text-[10px] capitalize" style={{ color: "var(--mauve)", }}>{item.level}</span>
             )}
           </div>
           <button onClick={(e) => { e.stopPropagation(); onToggleBookmark(); }}

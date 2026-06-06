@@ -4,8 +4,7 @@ import { toast } from "sonner";
 const sLabel = {
   fontSize: "0.6rem", fontWeight: 600, textTransform: "uppercase",
   letterSpacing: "0.12em", color: "var(--mauve)",
-  fontFamily: "'Inter', sans-serif",
-};
+  };
 
 const card = {
   backgroundColor: "var(--surface)", border: "1px solid var(--border)",
@@ -17,7 +16,7 @@ const inputStyle = {
   border: "1.5px solid var(--border)",
   backgroundColor: "var(--surface)",
   fontSize: 14, color: "var(--plum)",
-  fontFamily: "'Inter', sans-serif", outline: "none", boxSizing: "border-box",
+  outline: "none", boxSizing: "border-box",
 };
 
 const todayISO = () => new Date().toISOString().split("T")[0];
@@ -62,17 +61,17 @@ export default function CycleBasicsStep({
     <div className="w-full space-y-5">
       <div>
         <p style={sLabel}>Cycle basics</p>
-        <h2 style={{ fontSize: "22px", fontWeight: 700, color: "var(--plum)", fontFamily: "'Fraunces', serif", marginTop: "4px", lineHeight: 1.2 }}>
+        <h2 style={{ fontSize: "22px", fontWeight: 700, color: "var(--plum)", marginTop: "4px", lineHeight: 1.2 }}>
           Let's personalize your experience
         </h2>
-        <p style={{ fontSize: "13px", color: "var(--mauve)", fontFamily: "'Inter', sans-serif", marginTop: "6px" }}>
+        <p style={{ fontSize: "13px", color: "var(--mauve)", marginTop: "6px" }}>
           Takes 30 seconds. We'll use this for cycle predictions and daily guidance.
         </p>
       </div>
 
       {/* Birthday (optional) */}
       <div>
-        <p style={{ fontSize: "12px", fontWeight: 600, color: "var(--plum)", fontFamily: "'Inter', sans-serif", marginBottom: 6 }}>
+        <p style={{ fontSize: "12px", fontWeight: 600, color: "var(--plum)", marginBottom: 6 }}>
           Your birthday <span style={{ color: "var(--mauve)", fontWeight: 400 }}>(optional)</span>
         </p>
         <input
@@ -97,7 +96,6 @@ export default function CycleBasicsStep({
           cursor: "pointer", textAlign: "left",
           fontSize: 13, fontWeight: 600,
           color: notSure ? "var(--rose-dust)" : "var(--plum)",
-          fontFamily: "'Inter', sans-serif",
           transition: "all 0.15s",
         }}
       >
@@ -108,7 +106,7 @@ export default function CycleBasicsStep({
       {!notSure && (
         <div style={{ ...card, padding: 16 }} className="space-y-4">
           <div>
-            <p style={{ fontSize: "12px", fontWeight: 600, color: "var(--plum)", fontFamily: "'Inter', sans-serif", marginBottom: 6 }}>
+            <p style={{ fontSize: "12px", fontWeight: 600, color: "var(--plum)", marginBottom: 6 }}>
               First day of your last period
             </p>
             <input
@@ -124,10 +122,10 @@ export default function CycleBasicsStep({
 
           <div>
             <div className="flex items-center justify-between mb-2">
-              <p style={{ fontSize: "12px", fontWeight: 600, color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>
+              <p style={{ fontSize: "12px", fontWeight: 600, color: "var(--plum)", }}>
                 Typical cycle length
               </p>
-              <p style={{ fontSize: "14px", fontWeight: 700, color: "var(--rose-dust)", fontFamily: "'Inter', sans-serif" }}>
+              <p style={{ fontSize: "14px", fontWeight: 700, color: "var(--rose-dust)", }}>
                 {cycleLen} days
               </p>
             </div>
@@ -138,17 +136,17 @@ export default function CycleBasicsStep({
               style={{ width: "100%", accentColor: "var(--rose-dust)" }}
             />
             <div className="flex justify-between" style={{ marginTop: 4 }}>
-              <span style={{ fontSize: 10, color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>21</span>
-              <span style={{ fontSize: 10, color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>40</span>
+              <span style={{ fontSize: 10, color: "var(--mauve)", }}>21</span>
+              <span style={{ fontSize: 10, color: "var(--mauve)", }}>40</span>
             </div>
           </div>
 
           <div>
             <div className="flex items-center justify-between mb-2">
-              <p style={{ fontSize: "12px", fontWeight: 600, color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>
+              <p style={{ fontSize: "12px", fontWeight: 600, color: "var(--plum)", }}>
                 Typical period length
               </p>
-              <p style={{ fontSize: "14px", fontWeight: 700, color: "var(--rose-dust)", fontFamily: "'Inter', sans-serif" }}>
+              <p style={{ fontSize: "14px", fontWeight: 700, color: "var(--rose-dust)", }}>
                 {periodLen} days
               </p>
             </div>
@@ -159,8 +157,8 @@ export default function CycleBasicsStep({
               style={{ width: "100%", accentColor: "var(--rose-dust)" }}
             />
             <div className="flex justify-between" style={{ marginTop: 4 }}>
-              <span style={{ fontSize: 10, color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>2</span>
-              <span style={{ fontSize: 10, color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>10</span>
+              <span style={{ fontSize: 10, color: "var(--mauve)", }}>2</span>
+              <span style={{ fontSize: 10, color: "var(--mauve)", }}>10</span>
             </div>
           </div>
         </div>
@@ -186,7 +184,7 @@ export default function CycleBasicsStep({
             display: "block", margin: "0 auto",
             background: "none", border: "none", cursor: "pointer",
             fontSize: 13, color: "var(--mauve)",
-            fontFamily: "'Inter', sans-serif", textDecoration: "underline",
+            textDecoration: "underline",
           }}
         >
           Skip for now

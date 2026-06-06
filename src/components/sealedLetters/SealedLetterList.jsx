@@ -7,7 +7,7 @@ export default function SealedLetterList({ letters, kind, onOpen }) {
 
   return (
     <div style={{ marginTop: 24, padding: "0 16px" }}>
-      <h3 style={{ fontFamily: "'Fraunces', serif", fontSize: 16, fontWeight: 500, color: "var(--plum-deep)", marginBottom: 8 }}>
+      <h3 style={{ fontSize: 16, fontWeight: 500, color: "var(--plum-deep)", marginBottom: 8 }}>
         {heading}
       </h3>
       <div style={{ backgroundColor: "var(--surface)", border: "1px solid var(--ink-line)", borderRadius: 14, overflow: "hidden" }}>

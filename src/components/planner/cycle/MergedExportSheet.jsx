@@ -229,7 +229,7 @@ export default function MergedExportSheet({ profile, plannerConfig, user, effect
                 <span style={checkHint}>{diaryWeeks}-week deep-pull aligned to NICE menopause guidance.</span>
                 {includeDiary && (
                   <span style={{ display: "block", marginTop: 6 }}>
-                    <label style={{ fontSize: 10.5, color: "#6B5840", marginRight: 6, fontFamily: "'Inter', sans-serif", fontWeight: 600 }}>Window</label>
+                    <label style={{ fontSize: 10.5, color: "#6B5840", marginRight: 6, fontWeight: 600 }}>Window</label>
                     <select
                       value={diaryWeeks}
                       onChange={(e) => setDiaryWeeks(Number(e.target.value))}
@@ -311,22 +311,20 @@ const wrap = {
 };
 const headRow = { display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 12, marginBottom: 10 };
 const eyebrow = {
-  fontFamily: "'Inter', sans-serif",
   fontSize: 9.5, fontWeight: 700,
   letterSpacing: "0.18em",
   color: "#A6862B",
   textTransform: "uppercase",
   marginBottom: 4,
 };
-const titleStyle = { fontFamily: "'Fraunces', Georgia, serif", fontSize: 18, fontWeight: 500, color: "var(--femwell-espresso, #3A2C1A)", letterSpacing: "-0.005em" };
-const hintStyle = { fontFamily: "'Inter', sans-serif", fontSize: 12, color: "#6B5840", lineHeight: 1.5, marginTop: 4 };
+const titleStyle = { fontSize: 18, fontWeight: 500, color: "var(--femwell-espresso, #3A2C1A)", letterSpacing: "-0.005em" };
+const hintStyle = { fontSize: 12, color: "#6B5840", lineHeight: 1.5, marginTop: 4 };
 const exportBtn = {
   display: "inline-flex", alignItems: "center", gap: 6,
   padding: "10px 18px",
   borderRadius: 9999,
   background: "var(--femwell-espresso, #3A2C1A)",
   color: "var(--femwell-cream, #F4EDDB)",
-  fontFamily: "'Inter', sans-serif",
   fontSize: 12, fontWeight: 700, letterSpacing: "0.06em",
   border: "none", cursor: "pointer",
   marginTop: 4,
@@ -350,13 +348,12 @@ const sheetStyle = {
   // dvh fixes the iOS Safari bottom-nav-bleed
   maxHeight: "100dvh",
   overflowY: "auto",
-  fontFamily: "'Inter', sans-serif",
   boxSizing: "border-box",
 };
 const sheetHeader = { display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 14 };
 const sheetTitleWrap = { flex: 1 };
 const sheetEyebrow = { ...eyebrow, marginBottom: 2 };
-const sheetTitle = { fontFamily: "'Fraunces', Georgia, serif", fontSize: 19, fontWeight: 500, color: "var(--femwell-espresso, #3A2C1A)" };
+const sheetTitle = { fontSize: 19, fontWeight: 500, color: "var(--femwell-espresso, #3A2C1A)" };
 const closeBtn = { width: 30, height: 30, borderRadius: 9999, background: "rgba(58,44,26,0.06)", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: "#6B5840" };
 
 const checkRow = {
@@ -373,10 +370,10 @@ const checkLabel = { display: "block", fontWeight: 700, fontSize: 13.5, color: "
 const checkHint = { display: "block", fontSize: 11.5, color: "#6B5840", marginTop: 2, lineHeight: 1.4 };
 const chipBlush = { display: "inline-block", marginLeft: 6, padding: "1px 7px", borderRadius: 9999, fontSize: 9.5, fontWeight: 700, letterSpacing: "0.06em", background: "rgba(232,180,184,0.30)", color: "#9A2845", verticalAlign: "middle" };
 const chipGold = { display: "inline-block", marginLeft: 6, padding: "1px 7px", borderRadius: 9999, fontSize: 9.5, fontWeight: 700, letterSpacing: "0.06em", background: "rgba(212,175,55,0.18)", color: "#A6862B", verticalAlign: "middle" };
-const selectStyle = { fontFamily: "'Inter', sans-serif", fontSize: 11.5, padding: "4px 8px", borderRadius: 8, border: "1px solid rgba(58,44,26,0.16)", background: "var(--surface, #FFFFFF)", color: "#3A2C1A" };
+const selectStyle = { fontSize: 11.5, padding: "4px 8px", borderRadius: 8, border: "1px solid rgba(58,44,26,0.16)", background: "var(--surface, #FFFFFF)", color: "#3A2C1A" };
 
 const toggleWrap = { marginTop: 12, marginBottom: 8 };
-const toggleLabel = { fontFamily: "'Inter', sans-serif", fontSize: 10.5, fontWeight: 700, letterSpacing: "0.14em", color: "#6B5840", textTransform: "uppercase", marginBottom: 6 };
+const toggleLabel = { fontSize: 10.5, fontWeight: 700, letterSpacing: "0.14em", color: "#6B5840", textTransform: "uppercase", marginBottom: 6 };
 const toggleRow = { display: "flex", gap: 6 };
 const toggleBtn = {
   flex: 1, padding: "9px 12px",
@@ -384,7 +381,6 @@ const toggleBtn = {
   border: "1px solid rgba(58,44,26,0.14)",
   background: "var(--surface, #FFFFFF)",
   color: "#6B5840",
-  fontFamily: "'Inter', sans-serif",
   fontSize: 12, fontWeight: 600,
   cursor: "pointer",
 };
@@ -403,6 +399,5 @@ const primaryBtn = {
   background: "var(--femwell-espresso, #3A2C1A)",
   color: "var(--femwell-cream, #F4EDDB)",
   border: "none", cursor: "pointer",
-  fontFamily: "'Inter', sans-serif",
   fontSize: 13, fontWeight: 700, letterSpacing: "0.06em",
 };

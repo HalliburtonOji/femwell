@@ -62,22 +62,22 @@ function MonthView({ month, today, data, profile, onDayPress }) {
 
       <div style={{ position: "relative", zIndex: 2, padding: "22px 14px 20px" }}>
         <div style={{ textAlign: "center", marginBottom: 18 }}>
-          <p style={{ fontSize: 28, fontWeight: 700, color: "white", fontFamily: "'Fraunces', serif", letterSpacing: "-0.02em", lineHeight: 1 }}>
+          <p style={{ fontSize: 28, fontWeight: 700, color: "white", letterSpacing: "-0.02em", lineHeight: 1 }}>
             {format(month, "MMMM")}
           </p>
-          <p style={{ fontSize: 12, color: "rgba(255,255,255,0.5)", fontFamily: "'Inter', sans-serif", marginTop: 3 }}>
+          <p style={{ fontSize: 12, color: "rgba(255,255,255,0.5)", marginTop: 3 }}>
             {format(month, "yyyy")}
           </p>
           {isCurrentMonth && (
             <div style={{ display: "inline-block", marginTop: 6, backgroundColor: "rgba(196,132,154,0.35)", border: "1px solid rgba(196,132,154,0.6)", borderRadius: 9999, padding: "2px 12px" }}>
-              <span style={{ fontSize: 10, fontWeight: 700, color: "#ffc8d8", fontFamily: "'Inter', sans-serif", letterSpacing: "0.08em", textTransform: "uppercase" }}>Current Month</span>
+              <span style={{ fontSize: 10, fontWeight: 700, color: "#ffc8d8", letterSpacing: "0.08em", textTransform: "uppercase" }}>Current Month</span>
             </div>
           )}
         </div>
 
         <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: 2, marginBottom: 5 }}>
           {["Mo","Tu","We","Th","Fr","Sa","Su"].map(d => (
-            <div key={d} style={{ textAlign: "center", fontSize: 9, fontWeight: 700, color: "rgba(255,255,255,0.35)", fontFamily: "'Inter', sans-serif", letterSpacing: "0.06em" }}>{d}</div>
+            <div key={d} style={{ textAlign: "center", fontSize: 9, fontWeight: 700, color: "rgba(255,255,255,0.35)", letterSpacing: "0.06em" }}>{d}</div>
           ))}
         </div>
 
@@ -101,7 +101,7 @@ function MonthView({ month, today, data, profile, onDayPress }) {
                   background: isToday ? "rgba(255,255,255,0.25)" : phaseColor && inMonth ? `${phaseColor}22` : "rgba(255,255,255,0.04)",
                   border: isToday ? "1.5px solid rgba(255,255,255,0.7)" : "1px solid rgba(255,255,255,0.06)",
                   opacity: inMonth ? 1 : 0.15, outline: "none" }}>
-                <span style={{ fontSize: 12, fontWeight: isToday ? 800 : 400, color: isToday ? "white" : "rgba(255,255,255,0.85)", fontFamily: "'Inter', sans-serif", lineHeight: 1 }}>{format(day, "d")}</span>
+                <span style={{ fontSize: 12, fontWeight: isToday ? 800 : 400, color: isToday ? "white" : "rgba(255,255,255,0.85)", lineHeight: 1 }}>{format(day, "d")}</span>
                 <div style={{ display: "flex", gap: 1.5, marginTop: 3, flexWrap: "wrap", justifyContent: "center", minHeight: 8 }}>
                   {hasPeriod && <div style={{ width: 4, height: 4, borderRadius: "50%", backgroundColor: "#ff8fab" }} />}
                   {isPredicted && !hasPeriod && <div style={{ width: 4, height: 4, borderRadius: "50%", border: "1.5px dashed #ff8fab" }} />}
@@ -117,7 +117,7 @@ function MonthView({ month, today, data, profile, onDayPress }) {
           {[{ color: "#ff8fab", label: "Period" }, { color: "#81C784", label: "Mood" }, { color: "#FFB347", label: "Symptoms" }].map(l => (
             <div key={l.label} style={{ display: "flex", alignItems: "center", gap: 3 }}>
               <div style={{ width: 5, height: 5, borderRadius: "50%", backgroundColor: l.color }} />
-              <span style={{ fontSize: 9, color: "rgba(255,255,255,0.35)", fontFamily: "'Inter', sans-serif" }}>{l.label}</span>
+              <span style={{ fontSize: 9, color: "rgba(255,255,255,0.35)", }}>{l.label}</span>
             </div>
           ))}
         </div>
@@ -196,7 +196,7 @@ export default function MonthlyCalendarCard({ userId, profile, onDayPress, refre
 
         <div style={{ display: "flex", gap: 6 }}>
           {currentOffset !== 0 && (
-            <button onClick={goToday} style={{ fontSize: 11, fontWeight: 600, color: "var(--rose-dust)", backgroundColor: "var(--rose-dust-subtle)", border: "1px solid var(--rose-dust-light)", borderRadius: 9999, padding: "4px 10px", cursor: "pointer", fontFamily: "'Inter', sans-serif" }}>
+            <button onClick={goToday} style={{ fontSize: 11, fontWeight: 600, color: "var(--rose-dust)", backgroundColor: "var(--rose-dust-subtle)", border: "1px solid var(--rose-dust-light)", borderRadius: 9999, padding: "4px 10px", cursor: "pointer", }}>
               Today
             </button>
           )}
@@ -238,10 +238,10 @@ export default function MonthlyCalendarCard({ userId, profile, onDayPress, refre
 
       {/* Month preview strip */}
       <div style={{ display: "flex", justifyContent: "space-between", marginTop: 12, padding: "0 4px" }}>
-        <button onClick={goPrev} style={{ fontSize: 12, color: "var(--mauve)", background: "none", border: "none", cursor: "pointer", fontFamily: "'Inter', sans-serif" }}>
+        <button onClick={goPrev} style={{ fontSize: 12, color: "var(--mauve)", background: "none", border: "none", cursor: "pointer", }}>
           ← {format(prevMonth, "MMMM")}
         </button>
-        <button onClick={goNext} style={{ fontSize: 12, color: "var(--mauve)", background: "none", border: "none", cursor: "pointer", fontFamily: "'Inter', sans-serif" }}>
+        <button onClick={goNext} style={{ fontSize: 12, color: "var(--mauve)", background: "none", border: "none", cursor: "pointer", }}>
           {format(nextMonth, "MMMM")} →
         </button>
       </div>

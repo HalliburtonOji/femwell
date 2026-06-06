@@ -60,14 +60,14 @@ export default function SealedLetterComposeSheet({ open, onClose, onSealed }) {
         </div>
 
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "6px 20px 12px", flexShrink: 0 }}>
-          <button onClick={onClose} style={{ background: "none", border: "none", cursor: "pointer", fontFamily: "'Inter', sans-serif", fontSize: 14, color: "var(--mauve)", padding: 0 }}>
+          <button onClick={onClose} style={{ background: "none", border: "none", cursor: "pointer", fontSize: 14, color: "var(--mauve)", padding: 0 }}>
             Cancel
           </button>
           <button
             onClick={handleSeal}
             disabled={!canSeal}
             style={{
-              fontFamily: "'Inter', sans-serif", fontSize: 14, fontWeight: 600,
+              fontSize: 14, fontWeight: 600,
               color: "var(--cream)", backgroundColor: canSeal ? "var(--rose-primary)" : "var(--mauve-light)",
               padding: "9px 22px", borderRadius: 9999, border: "none",
               cursor: canSeal ? "pointer" : "default", transition: "background-color 0.15s",
@@ -78,10 +78,10 @@ export default function SealedLetterComposeSheet({ open, onClose, onSealed }) {
         </div>
 
         <div style={{ flex: 1, overflowY: "auto", padding: "0 20px 48px" }}>
-          <h2 style={{ fontFamily: "'Fraunces', serif", fontSize: 22, fontWeight: 500, color: "var(--plum-deep)", marginBottom: 4, lineHeight: 1.3 }}>
+          <h2 style={{ fontSize: 22, fontWeight: 500, color: "var(--plum-deep)", marginBottom: 4, lineHeight: 1.3 }}>
             A letter to a future you
           </h2>
-          <p style={{ fontFamily: "'Inter', sans-serif", fontSize: 13, color: "var(--mauve)", lineHeight: 1.55, marginBottom: 18 }}>
+          <p style={{ fontSize: 13, color: "var(--mauve)", lineHeight: 1.55, marginBottom: 18 }}>
             Write what you want her to know. Pick when she gets to read it.
           </p>
 
@@ -91,13 +91,13 @@ export default function SealedLetterComposeSheet({ open, onClose, onSealed }) {
             placeholder="Dear future me…"
             style={{
               width: "100%", boxSizing: "border-box",
-              fontFamily: "'Fraunces', serif", fontSize: 17, fontStyle: "italic", lineHeight: 1.65,
+              fontSize: 17, fontStyle: "italic", lineHeight: 1.65,
               padding: 16, backgroundColor: "var(--cream-2)", border: "1px solid var(--ink-line)",
               borderRadius: 12, resize: "none", minHeight: "42vh",
               color: "var(--plum-deep)", outline: "none",
             }}
           />
-          {bodyError && <p style={{ fontFamily: "'Inter', sans-serif", fontSize: 12, color: "#D94F4F", marginTop: 4 }}>{bodyError}</p>}
+          {bodyError && <p style={{ fontSize: 12, color: "#D94F4F", marginTop: 4 }}>{bodyError}</p>}
 
           <input
             type="text"
@@ -106,14 +106,14 @@ export default function SealedLetterComposeSheet({ open, onClose, onSealed }) {
             placeholder="(optional) Give it a name"
             style={{
               width: "100%", boxSizing: "border-box", marginTop: 10,
-              fontFamily: "'Inter', sans-serif", fontSize: 14,
+              fontSize: 14,
               padding: "10px 14px", backgroundColor: "var(--cream-2)",
               border: "1px solid var(--ink-line)", borderRadius: 10,
               color: "var(--plum-deep)", outline: "none",
             }}
           />
 
-          <p style={{ fontFamily: "'Inter', sans-serif", fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.12em", color: "var(--mauve)", marginTop: 20, marginBottom: 10 }}>
+          <p style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.12em", color: "var(--mauve)", marginTop: 20, marginBottom: 10 }}>
             OPEN ON
           </p>
 
@@ -123,7 +123,7 @@ export default function SealedLetterComposeSheet({ open, onClose, onSealed }) {
                 key={chip.label}
                 onClick={() => { setSealDate(chip.dateISO); setCustomMode(false); setDateError(''); }}
                 style={{
-                  fontFamily: "'Inter', sans-serif", fontSize: 13, fontWeight: 600,
+                  fontSize: 13, fontWeight: 600,
                   padding: "8px 16px", borderRadius: 9999, border: "none", cursor: "pointer",
                   backgroundColor: sealDate === chip.dateISO ? "var(--rose-soft-bg)" : "var(--cream-2)",
                   color: sealDate === chip.dateISO ? "var(--rose-primary)" : "var(--plum-mute)",
@@ -136,7 +136,7 @@ export default function SealedLetterComposeSheet({ open, onClose, onSealed }) {
             <button
               onClick={() => setCustomMode(v => !v)}
               style={{
-                fontFamily: "'Inter', sans-serif", fontSize: 13, fontWeight: 600,
+                fontSize: 13, fontWeight: 600,
                 padding: "8px 16px", borderRadius: 9999, border: "none", cursor: "pointer",
                 backgroundColor: customMode ? "var(--rose-soft-bg)" : "var(--cream-2)",
                 color: customMode ? "var(--rose-primary)" : "var(--plum-mute)",
@@ -154,7 +154,7 @@ export default function SealedLetterComposeSheet({ open, onClose, onSealed }) {
               min={new Date(Date.now() + 86400000).toISOString().split('T')[0]}
               onChange={e => { setSealDate(e.target.value); setDateError(''); }}
               style={{
-                marginTop: 10, fontFamily: "'Inter', sans-serif", fontSize: 14,
+                marginTop: 10, fontSize: 14,
                 padding: "10px 14px", backgroundColor: "var(--cream-2)",
                 border: "1px solid var(--ink-line)", borderRadius: 10,
                 color: "var(--plum-deep)", outline: "none",
@@ -162,7 +162,7 @@ export default function SealedLetterComposeSheet({ open, onClose, onSealed }) {
             />
           )}
 
-          {dateError && <p style={{ fontFamily: "'Inter', sans-serif", fontSize: 12, color: "#D94F4F", marginTop: 6 }}>{dateError}</p>}
+          {dateError && <p style={{ fontSize: 12, color: "#D94F4F", marginTop: 6 }}>{dateError}</p>}
         </div>
       </div>
       {toast && <Toast message={toast} onDone={() => setToast(null)} />}

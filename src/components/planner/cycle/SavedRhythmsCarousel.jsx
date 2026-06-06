@@ -197,7 +197,6 @@ const divTitleStyle = {
   textTransform: "uppercase",
   letterSpacing: "0.14em",
   color: "var(--plum-mute, #8A7584)",
-  fontFamily: "'Inter', sans-serif",
   margin: 0,
 };
 const divMetaStyle = {
@@ -205,8 +204,7 @@ const divMetaStyle = {
   fontWeight: 600,
   letterSpacing: "0.12em",
   color: "var(--plum-mute, #8A7584)",
-  fontFamily: "'Inter', sans-serif",
-};
+  };
 const scrollerStyle = {
   display: "flex",
   gap: 10,
@@ -233,11 +231,9 @@ const bundleEyebrowStyle = {
   fontWeight: 700,
   textTransform: "uppercase",
   letterSpacing: "0.12em",
-  fontFamily: "'Inter', sans-serif",
   margin: "0 0 8px",
 };
 const bundleNameStyle = {
-  fontFamily: "'Fraunces', serif",
   fontSize: 17,
   fontWeight: 500,
   letterSpacing: "-0.005em",
@@ -245,7 +241,6 @@ const bundleNameStyle = {
   margin: "0 0 4px",
 };
 const bundleCountStyle = {
-  fontFamily: "'Inter', sans-serif",
   fontSize: 11,
   margin: "0 0 12px",
 };
@@ -254,7 +249,6 @@ const bundleCtaStyle = {
   border: "1px solid",
   borderRadius: 9999,
   padding: "5px 10px",
-  fontFamily: "'Inter', sans-serif",
   fontSize: 11,
   fontWeight: 600,
   letterSpacing: "0.02em",
@@ -268,7 +262,6 @@ const toastStyle = {
   borderRadius: 9999,
   background: "var(--plum, #4A2A3A)",
   color: "var(--cream, #FFFAF5)",
-  fontFamily: "'Inter', sans-serif",
   fontSize: 12,
   fontWeight: 600,
   display: "inline-block",

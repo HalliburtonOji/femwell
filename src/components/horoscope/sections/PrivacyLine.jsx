@@ -18,7 +18,6 @@ const shellStyle = {
   textAlign: "center",
 };
 const lineStyle = {
-  fontFamily: "'Inter', sans-serif",
   fontSize: 10,
   lineHeight: 1.5,
   color: "var(--plum-mute, rgba(107,74,86,0.74))",

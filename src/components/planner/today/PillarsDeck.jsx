@@ -541,10 +541,8 @@ const labelStyle = {
   textTransform: "uppercase",
   letterSpacing: "0.12em",
   color: "#6B5840",
-  fontFamily: "'Inter', sans-serif",
-};
+  };
 const valueStyle = {
-  fontFamily: "'Fraunces', Georgia, serif",
   fontSize: 22,
   fontWeight: 500,
   color: "#3A2C1A",
@@ -569,7 +567,6 @@ function deltaStyleFor(cls) {
     alignItems: "center",
     gap: 3,
     fontSize: 11,
-    fontFamily: "'Inter', sans-serif",
     fontWeight: 500,
     color: colorMap[cls] || colorMap.flat,
   };
@@ -583,7 +580,6 @@ const toastStyle = {
   background: "var(--plum, #4A2A3A)",
   color: "var(--cream, #FFFAF5)",
   borderRadius: 9999,
-  fontFamily: "'Inter', sans-serif",
   fontSize: 12,
   whiteSpace: "nowrap",
 };

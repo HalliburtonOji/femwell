@@ -25,8 +25,7 @@ export default function EmptyState({
       style={{
         textAlign: "center",
         padding: "40px 24px",
-        fontFamily: "'Inter', sans-serif",
-      }}
+        }}
     >
       <Icon
         aria-hidden="true"
@@ -77,6 +76,5 @@ const actionBtnStyle = {
   fontWeight: 600,
   border: "none",
   cursor: "pointer",
-  fontFamily: "'Inter', sans-serif",
   textDecoration: "none",
 };

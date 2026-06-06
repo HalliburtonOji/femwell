@@ -95,11 +95,9 @@ const kickerStyle = {
   textTransform: "uppercase",
   letterSpacing: "0.14em",
   color: "var(--sage, #7A9E8E)",
-  fontFamily: "'Inter', sans-serif",
   margin: "0 0 4px",
 };
 const mainStyle = {
-  fontFamily: "'Fraunces', serif",
   fontSize: 15,
   lineHeight: 1.4,
   color: "var(--plum, #4A2A3A)",
@@ -107,7 +105,6 @@ const mainStyle = {
   margin: "0 0 4px",
 };
 const subStyle = {
-  fontFamily: "'Inter', sans-serif",
   fontSize: 12.5,
   lineHeight: 1.5,
   color: "var(--plum-2, #6B4559)",
@@ -120,7 +117,6 @@ function undoBtnStyle(disabled) {
     border: "1px solid var(--plum, #4A2A3A)",
     background: "transparent",
     color: "var(--plum, #4A2A3A)",
-    fontFamily: "'Inter', sans-serif",
     fontSize: 12,
     fontWeight: 600,
     cursor: disabled ? "wait" : "pointer",
@@ -130,6 +126,5 @@ function undoBtnStyle(disabled) {
 const errStyle = {
   fontSize: 12,
   color: "var(--rose-primary, #D45E52)",
-  fontFamily: "'Inter', sans-serif",
   margin: "8px 0 0",
 };

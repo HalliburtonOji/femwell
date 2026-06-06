@@ -93,7 +93,6 @@ export default function ContextualFAB({ scrollRoot = null } = {}) {
         border: "1px solid rgba(212,175,55,0.45)",
         boxShadow: "0 10px 28px rgba(58,44,26,0.32), 0 2px 6px rgba(58,44,26,0.20)",
         cursor: "pointer",
-        fontFamily: "'Inter', system-ui, sans-serif",
         fontSize: 13.5, fontWeight: 700,
         letterSpacing: "0.02em",
         zIndex: 80,

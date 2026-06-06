@@ -21,8 +21,7 @@ const card = {
 
 const sLabel = {
   fontSize: "0.6rem", fontWeight: 600, textTransform: "uppercase",
-  letterSpacing: "0.12em", color: "var(--mauve)", fontFamily: "'Inter', sans-serif",
-};
+  letterSpacing: "0.12em", color: "var(--mauve)", };
 
 export default function NutritionProgressTab({ user, nutritionProfile, onProfileUpdated }) {
   const [metrics, setMetrics]         = useState([]);
@@ -149,7 +148,7 @@ export default function NutritionProgressTab({ user, nutritionProfile, onProfile
       {/* Goal card */}
       {showGoalPicker ? (
         <div className="rounded-[24px] p-5" style={card}>
-          <p className="font-semibold mb-1" style={{ color: "var(--plum)", fontFamily: "'Fraunces', serif" }}>What's your goal?</p>
+          <p className="font-semibold mb-1" style={{ color: "var(--plum)", }}>What's your goal?</p>
           <p className="text-xs mb-5" style={{ color: "var(--mauve)" }}>Choose what feels right for you right now. You can change this any time.</p>
           <div className="space-y-2 mb-5">
             {GOAL_MODES.map((g) => (
@@ -160,7 +159,7 @@ export default function NutritionProgressTab({ user, nutritionProfile, onProfile
                   backgroundColor: selectedGoal === g.key ? "var(--rose-dust-subtle)" : "var(--ivory)",
                 }}>
                 <div>
-                  <p className="text-sm font-semibold" style={{ color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>{g.label}</p>
+                  <p className="text-sm font-semibold" style={{ color: "var(--plum)", }}>{g.label}</p>
                   <p className="text-xs mt-0.5" style={{ color: "var(--mauve)" }}>{g.desc}</p>
                 </div>
               </button>
@@ -176,7 +175,7 @@ export default function NutritionProgressTab({ user, nutritionProfile, onProfile
         <div className="rounded-[24px] p-5 flex items-center gap-4" style={card}>
           <div className="flex-1">
             <p style={sLabel} className="mb-0.5">Current Goal</p>
-            <p className="text-sm font-semibold" style={{ color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>
+            <p className="text-sm font-semibold" style={{ color: "var(--plum)", }}>
               {goalInfo?.label || "Not set"}
             </p>
             {goalInfo?.desc && <p className="text-xs mt-0.5" style={{ color: "var(--mauve)" }}>{goalInfo.desc}</p>}
@@ -195,7 +194,7 @@ export default function NutritionProgressTab({ user, nutritionProfile, onProfile
           <p style={sLabel}>Daily targets</p>
           <button
             onClick={() => setEditingTargets(!editingTargets)}
-            style={{ fontSize: 12, fontWeight: 600, color: "var(--rose-dust)", fontFamily: "'Inter', sans-serif", background: "none", border: "none", cursor: "pointer" }}
+            style={{ fontSize: 12, fontWeight: 600, color: "var(--rose-dust)", background: "none", border: "none", cursor: "pointer" }}
           >
             {editingTargets ? "Cancel" : "Edit"}
           </button>
@@ -210,22 +209,22 @@ export default function NutritionProgressTab({ user, nutritionProfile, onProfile
               { key: "hydration_target_ml", label: "Hydration",  unit: "ml" },
             ].map(({ key, label, unit }) => (
               <div key={key} style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                <label style={{ fontSize: 12, fontWeight: 600, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", width: 80, flexShrink: 0 }}>{label}</label>
+                <label style={{ fontSize: 12, fontWeight: 600, color: "var(--mauve)", width: 80, flexShrink: 0 }}>{label}</label>
                 <input
                   type="number"
                   value={targetForm[key]}
                   onChange={(e) => setTargetForm((f) => ({ ...f, [key]: e.target.value }))}
-                  style={{ flex: 1, padding: "8px 12px", borderRadius: 12, border: "1.5px solid var(--border)", backgroundColor: "var(--ivory)", color: "var(--plum)", fontSize: 13, fontFamily: "'Inter', sans-serif", outline: "none" }}
+                  style={{ flex: 1, padding: "8px 12px", borderRadius: 12, border: "1.5px solid var(--border)", backgroundColor: "var(--ivory)", color: "var(--plum)", fontSize: 13, outline: "none" }}
                   onFocus={e => e.target.style.borderColor = "var(--rose-dust-light)"}
                   onBlur={e => e.target.style.borderColor = "var(--border)"}
                 />
-                <span style={{ fontSize: 11, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", width: 28, flexShrink: 0 }}>{unit}</span>
+                <span style={{ fontSize: 11, color: "var(--mauve)", width: 28, flexShrink: 0 }}>{unit}</span>
               </div>
             ))}
             <button
               onClick={saveTargets}
               disabled={savingTargets}
-              style={{ marginTop: 4, padding: "10px", borderRadius: 12, backgroundColor: "var(--plum)", color: "white", fontSize: 13, fontWeight: 600, fontFamily: "'Inter', sans-serif", border: "none", cursor: "pointer", opacity: savingTargets ? 0.6 : 1 }}
+              style={{ marginTop: 4, padding: "10px", borderRadius: 12, backgroundColor: "var(--plum)", color: "white", fontSize: 13, fontWeight: 600, border: "none", cursor: "pointer", opacity: savingTargets ? 0.6 : 1 }}
             >
               {savingTargets ? "Saving..." : "Save targets"}
             </button>
@@ -240,9 +239,9 @@ export default function NutritionProgressTab({ user, nutritionProfile, onProfile
               { label: "H\u2082O",  value: nutritionProfile?.hydration_target_ml || 2000, unit: "ml" },
             ].map(({ label, value, unit }) => (
               <div key={label} style={{ textAlign: "center", backgroundColor: "var(--ivory)", borderRadius: 12, padding: "10px 4px" }}>
-                <p style={{ fontSize: 13, fontWeight: 700, color: "var(--plum)", fontFamily: "'Fraunces', serif" }}>{value}</p>
-                <p style={{ fontSize: 9, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", marginTop: 1, textTransform: "uppercase", letterSpacing: "0.06em" }}>{label}</p>
-                <p style={{ fontSize: 9, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", opacity: 0.7 }}>{unit}</p>
+                <p style={{ fontSize: 13, fontWeight: 700, color: "var(--plum)", }}>{value}</p>
+                <p style={{ fontSize: 9, color: "var(--mauve)", marginTop: 1, textTransform: "uppercase", letterSpacing: "0.06em" }}>{label}</p>
+                <p style={{ fontSize: 9, color: "var(--mauve)", opacity: 0.7 }}>{unit}</p>
               </div>
             ))}
           </div>
@@ -256,7 +255,7 @@ export default function NutritionProgressTab({ user, nutritionProfile, onProfile
             style={{ backgroundColor: "var(--rose-dust-subtle)" }}>
             <Flame className="w-4 h-4" style={{ color: "var(--rose-dust)" }} />
           </div>
-          <p className="text-2xl font-bold" style={{ color: "var(--rose-dust)", fontFamily: "'Fraunces', serif" }}>{mealStreak}</p>
+          <p className="text-2xl font-bold" style={{ color: "var(--rose-dust)", }}>{mealStreak}</p>
           <p className="text-xs mt-1" style={{ color: "var(--mauve)" }}>Days logging meals</p>
         </div>
         <div className="rounded-[24px] p-5 text-center" style={card}>
@@ -264,7 +263,7 @@ export default function NutritionProgressTab({ user, nutritionProfile, onProfile
             style={{ backgroundColor: "var(--sage-subtle)" }}>
             <Droplets className="w-4 h-4" style={{ color: "var(--sage)" }} />
           </div>
-          <p className="text-2xl font-bold" style={{ color: "var(--sage)", fontFamily: "'Fraunces', serif" }}>{hydrationStreak}</p>
+          <p className="text-2xl font-bold" style={{ color: "var(--sage)", }}>{hydrationStreak}</p>
           <p className="text-xs mt-1" style={{ color: "var(--mauve)" }}>Days hitting water goal</p>
         </div>
       </div>
@@ -281,7 +280,7 @@ export default function NutritionProgressTab({ user, nutritionProfile, onProfile
               <CartesianGrid strokeDasharray="3 3" stroke="var(--border-subtle)" />
               <XAxis dataKey="date" tick={{ fontSize: 10, fill: "var(--mauve)" }} axisLine={false} tickLine={false} />
               <YAxis domain={["auto", "auto"]} tick={{ fontSize: 10, fill: "var(--mauve)" }} axisLine={false} tickLine={false} />
-              <Tooltip contentStyle={{ borderRadius: 12, border: "1px solid var(--border)", fontFamily: "'Inter', sans-serif", fontSize: 12 }} />
+              <Tooltip contentStyle={{ borderRadius: 12, border: "1px solid var(--border)", fontSize: 12 }} />
               <Line type="monotone" dataKey="weight" stroke="var(--rose-dust)" strokeWidth={2} dot={{ r: 3, fill: "var(--rose-dust)" }} />
             </LineChart>
           </ResponsiveContainer>
@@ -297,7 +296,7 @@ export default function NutritionProgressTab({ user, nutritionProfile, onProfile
               <CartesianGrid strokeDasharray="3 3" stroke="var(--border-subtle)" />
               <XAxis dataKey="date" tick={{ fontSize: 10, fill: "var(--mauve)" }} axisLine={false} tickLine={false} />
               <YAxis domain={["auto", "auto"]} tick={{ fontSize: 10, fill: "var(--mauve)" }} axisLine={false} tickLine={false} />
-              <Tooltip contentStyle={{ borderRadius: 12, border: "1px solid var(--border)", fontFamily: "'Inter', sans-serif", fontSize: 12 }} />
+              <Tooltip contentStyle={{ borderRadius: 12, border: "1px solid var(--border)", fontSize: 12 }} />
               <Line type="monotone" dataKey="waist" stroke="var(--rose-dust)" strokeWidth={2} dot={{ r: 3 }} name="Waist (cm)" />
               <Line type="monotone" dataKey="hips"  stroke="var(--sage)"      strokeWidth={2} dot={{ r: 3 }} name="Hips (cm)"  />
             </LineChart>
@@ -309,7 +308,7 @@ export default function NutritionProgressTab({ user, nutritionProfile, onProfile
       {addingMetric ? (
         <div className="rounded-[24px] p-5 space-y-4" style={card}>
           <div>
-            <p className="font-semibold text-sm mb-0.5" style={{ color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>Log today's measurements</p>
+            <p className="font-semibold text-sm mb-0.5" style={{ color: "var(--plum)", }}>Log today's measurements</p>
             <p className="text-xs" style={{ color: "var(--mauve)" }}>All fields optional — log only what you're comfortable with.</p>
           </div>
           {[
@@ -319,12 +318,12 @@ export default function NutritionProgressTab({ user, nutritionProfile, onProfile
             { key: "bust_cm",   label: "Bust (cm)"   },
           ].map(({ key, label }) => (
             <div key={key}>
-              <label className="block text-xs font-medium mb-1.5" style={{ color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>{label}</label>
+              <label className="block text-xs font-medium mb-1.5" style={{ color: "var(--mauve)", }}>{label}</label>
               <input type="number" value={metricForm[key]}
                 onChange={(e) => setMetricForm((f) => ({ ...f, [key]: e.target.value }))}
                 placeholder="Optional" step="0.1"
                 className="w-full p-3 rounded-2xl text-sm focus:outline-none transition-all"
-                style={{ backgroundColor: "var(--ivory)", border: "1.5px solid var(--border)", color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}
+                style={{ backgroundColor: "var(--ivory)", border: "1.5px solid var(--border)", color: "var(--plum)", }}
                 onFocus={e => e.target.style.borderColor = "var(--rose-dust-light)"}
                 onBlur={e => e.target.style.borderColor = "var(--border)"} />
             </div>
@@ -333,7 +332,7 @@ export default function NutritionProgressTab({ user, nutritionProfile, onProfile
             value={metricForm.notes}
             onChange={(e) => setMetricForm((f) => ({ ...f, notes: e.target.value }))} rows={2}
             className="w-full p-3 rounded-2xl text-sm resize-none focus:outline-none transition-all"
-            style={{ backgroundColor: "var(--ivory)", border: "1.5px solid var(--border)", color: "var(--plum)", fontFamily: "'Inter', sans-serif" }} />
+            style={{ backgroundColor: "var(--ivory)", border: "1.5px solid var(--border)", color: "var(--plum)", }} />
           <div className="flex gap-2">
             <button onClick={() => setAddingMetric(false)}
               className="flex-1 py-2.5 rounded-xl text-sm font-semibold"
@@ -357,7 +356,7 @@ export default function NutritionProgressTab({ user, nutritionProfile, onProfile
             style={{ backgroundColor: "var(--rose-dust-subtle)" }}>
             <Plus className="w-4 h-4" style={{ color: "var(--rose-dust)" }} />
           </div>
-          <p className="text-sm font-medium" style={{ color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>
+          <p className="text-sm font-medium" style={{ color: "var(--plum)", }}>
             Log measurements today
           </p>
         </button>

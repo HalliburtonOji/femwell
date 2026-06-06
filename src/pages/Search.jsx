@@ -136,7 +136,7 @@ export default function Search() {
             style={{
               flex: 1, padding: "8px 0",
               background: "transparent", border: "none", outline: "none",
-              fontFamily: "'Inter', sans-serif", fontSize: 16, color: C.espresso,
+              fontSize: 16, color: C.espresso,
             }}
           />
         </div>
@@ -195,11 +195,10 @@ export default function Search() {
                       >
                         <span style={{
                           flexShrink: 0, fontSize: 11, color: C.muted,
-                          fontFamily: "'Inter', sans-serif", paddingTop: 1, minWidth: 50,
+                          paddingTop: 1, minWidth: 50,
                         }}>{fmtDate(date)}</span>
                         <span style={{
                           flex: 1, fontSize: 13, color: C.espresso, lineHeight: 1.4,
-                          fontFamily: "'Inter', sans-serif",
                           display: "-webkit-box", WebkitLineClamp: 2,
                           WebkitBoxOrient: "vertical", overflow: "hidden",
                         }}>{excerpt(title)}</span>

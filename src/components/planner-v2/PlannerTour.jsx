@@ -191,18 +191,15 @@ export default function PlannerTour({ name = "there" }) {
         <p style={{
           margin: "0 0 4px", fontSize: 10, fontWeight: 700,
           letterSpacing: "0.18em", textTransform: "uppercase",
-          color: C.muted, fontFamily: "'Inter', sans-serif",
-        }}>{`${step + 1} of ${steps.length}`}</p>
+          color: C.muted, }}>{`${step + 1} of ${steps.length}`}</p>
         <h2 style={{
           margin: "0 0 8px",
-          fontFamily: "'Fraunces', Georgia, serif",
           fontSize: 19, fontWeight: 600, color: C.espresso,
           letterSpacing: "-0.01em", lineHeight: 1.3,
         }}>{current.title}</h2>
         <p style={{
           margin: "0 0 14px", fontSize: 13.5, lineHeight: 1.5,
-          color: C.espresso, fontFamily: "'Inter', sans-serif",
-        }}>{current.body}</p>
+          color: C.espresso, }}>{current.body}</p>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
           {!isLast ? (
             <button
@@ -210,8 +207,7 @@ export default function PlannerTour({ name = "there" }) {
               onClick={finish}
               style={{
                 background: "transparent", border: "none", cursor: "pointer",
-                color: C.muted, fontFamily: "'Inter', sans-serif",
-                fontSize: 12, fontWeight: 700, letterSpacing: "0.06em",
+                color: C.muted, fontSize: 12, fontWeight: 700, letterSpacing: "0.06em",
                 padding: 0,
               }}
             >Skip</button>
@@ -223,7 +219,6 @@ export default function PlannerTour({ name = "there" }) {
               padding: "9px 18px", borderRadius: 9999,
               background: C.gold, color: C.espresso,
               border: "none", cursor: "pointer",
-              fontFamily: "'Inter', sans-serif",
               fontSize: 12.5, fontWeight: 700, letterSpacing: "0.04em",
             }}
           >{isLast ? "Got it" : "Next →"}</button>

@@ -378,12 +378,12 @@ const sheetStyle = {
 };
 const headerRowStyle = { display: "flex", alignItems: "flex-start", gap: 16, marginBottom: 14 };
 const eyebrowStyle = {
-  fontFamily: "'Inter', sans-serif", fontWeight: 700, fontSize: 11,
+  fontWeight: 700, fontSize: 11,
   letterSpacing: "0.14em", textTransform: "uppercase",
   color: "var(--rose-primary, #D45E52)", margin: "0 0 6px",
 };
 const titleStyle = {
-  fontFamily: "'Fraunces', serif", fontWeight: 400, fontSize: 24,
+  fontWeight: 400, fontSize: 24,
   lineHeight: 1.15, color: "var(--plum-deep, #2b1e16)", margin: 0,
 };
 const closeBtnStyle = {
@@ -394,41 +394,40 @@ const closeBtnStyle = {
   flexShrink: 0,
 };
 const bodyTextStyle = {
-  fontFamily: "'Inter', sans-serif", fontSize: 14, lineHeight: 1.55,
+  fontSize: 14, lineHeight: 1.55,
   color: "var(--plum-mute, #6b4a56)", margin: "0 0 22px",
 };
 const fieldStyle = { marginBottom: 18 };
 const labelStyle = {
-  display: "block", fontFamily: "'Inter', sans-serif",
-  fontSize: 12, fontWeight: 600, color: "var(--plum-deep, #2b1e16)",
+  display: "block", fontSize: 12, fontWeight: 600, color: "var(--plum-deep, #2b1e16)",
   marginBottom: 6, letterSpacing: "0.02em",
 };
 const optionalStyle = { fontWeight: 400, color: "var(--plum-mute, #6b4a56)", marginLeft: 4 };
 const inputStyle = {
-  width: "100%", fontFamily: "'Inter', sans-serif", fontSize: 15,
+  width: "100%", fontSize: 15,
   padding: "12px 14px", borderRadius: 12,
   border: "1px solid var(--ink-line, rgba(43,30,22,0.12))",
   background: "var(--cream-2, rgba(255,255,255,0.6))",
   color: "var(--plum-deep, #2b1e16)", boxSizing: "border-box", minHeight: 44,
 };
 const hintStyle = {
-  fontFamily: "'Inter', sans-serif", fontSize: 12,
+  fontSize: 12,
   color: "var(--plum-mute, #6b4a56)", margin: "6px 0 0",
 };
 const errorStyle = {
-  fontFamily: "'Inter', sans-serif", fontSize: 13, fontWeight: 500,
+  fontSize: 13, fontWeight: 500,
   color: "#A0312A", background: "rgba(160,49,42,0.10)",
   padding: "10px 12px", borderRadius: 10, margin: "0 0 14px",
 };
 const actionsRowStyle = { display: "flex", gap: 12, marginTop: 10 };
 const secondaryBtnStyle = {
-  flex: 1, fontFamily: "'Inter', sans-serif", fontSize: 14, fontWeight: 600,
+  flex: 1, fontSize: 14, fontWeight: 600,
   color: "var(--plum-mute, #6b4a56)", background: "transparent",
   border: "1px solid var(--ink-line, rgba(43,30,22,0.12))",
   borderRadius: 9999, padding: "12px 18px", cursor: "pointer", minHeight: 44,
 };
 const primaryBtnStyle = {
-  flex: 2, fontFamily: "'Inter', sans-serif", fontSize: 14, fontWeight: 600,
+  flex: 2, fontSize: 14, fontWeight: 600,
   color: "var(--cream, #FAF4EA)", background: "var(--rose-primary, #D45E52)",
   border: "none", borderRadius: 9999, padding: "12px 18px",
   cursor: "pointer", minHeight: 44, boxShadow: "0 2px 8px rgba(212,94,82,0.30)",
@@ -438,12 +437,12 @@ const primaryBtnStyle = {
 const dpWrapStyle = { display: "flex", gap: 8 };
 const dpFieldStyle = { display: "flex", flexDirection: "column", flex: 1, minWidth: 0 };
 const dpLabelStyle = {
-  fontFamily: "'Inter', sans-serif", fontSize: 10, fontWeight: 600,
+  fontSize: 10, fontWeight: 600,
   color: "var(--plum-mute, #6b4a56)", marginBottom: 4, letterSpacing: "0.04em",
   textTransform: "uppercase",
 };
 const dpInputStyle = {
-  width: "100%", fontFamily: "'Inter', sans-serif", fontSize: 14,
+  width: "100%", fontSize: 14,
   padding: "10px 10px", borderRadius: 10,
   border: "1px solid var(--ink-line, rgba(43,30,22,0.12))",
   background: "var(--cream-2, rgba(255,255,255,0.6))",
@@ -472,7 +471,7 @@ const suggestionsListStyle = {
   maxHeight: 220, overflowY: "auto",
 };
 const suggestionItemStyle = {
-  fontFamily: "'Inter', sans-serif", fontSize: 13,
+  fontSize: 13,
   color: "var(--plum-deep, #2b1e16)",
   padding: "9px 14px",
   cursor: "pointer",

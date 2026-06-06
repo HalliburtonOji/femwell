@@ -64,17 +64,17 @@ export default function UnsealedLetterCard() {
       >
         <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 10 }}>
           <Mail size={14} color="var(--mauve)" />
-          <span style={{ fontFamily: "'Inter', sans-serif", fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.12em", color: "var(--mauve)" }}>
+          <span style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.12em", color: "var(--mauve)" }}>
             A LETTER OPENED FOR YOU
           </span>
         </div>
 
-        <p style={{ fontFamily: "'Fraunces', serif", fontSize: 17, fontStyle: "italic", fontWeight: 400, lineHeight: 1.55, color: "var(--plum-deep)", marginBottom: 16 }}>
+        <p style={{ fontSize: 17, fontStyle: "italic", fontWeight: 400, lineHeight: 1.55, color: "var(--plum-deep)", marginBottom: 16 }}>
           You wrote yourself a letter. The date arrived — it's ready to read.
         </p>
 
         <div style={{ display: "flex", justifyContent: "flex-end", alignItems: "center", gap: 4 }}>
-          <span style={{ fontFamily: "'Inter', sans-serif", fontSize: 13, fontWeight: 600, color: "var(--rose-primary)" }}>Read your letter</span>
+          <span style={{ fontSize: 13, fontWeight: 600, color: "var(--rose-primary)" }}>Read your letter</span>
           <ArrowRight size={14} color="var(--rose-primary)" />
         </div>
       </div>

@@ -68,16 +68,16 @@ export default function SealedLetters() {
           style={{ background: "none", border: "none", cursor: "pointer", padding: "0 0 16px", display: "flex", alignItems: "center", gap: 6 }}
         >
           <ArrowLeft size={16} color="var(--mauve)" />
-          <span style={{ fontFamily: "'Inter', sans-serif", fontSize: 13, color: "var(--mauve)" }}>Back</span>
+          <span style={{ fontSize: 13, color: "var(--mauve)" }}>Back</span>
         </button>
 
-        <p style={{ fontFamily: "'Inter', sans-serif", fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.12em", color: "var(--mauve)", marginBottom: 4 }}>
+        <p style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.12em", color: "var(--mauve)", marginBottom: 4 }}>
           LETTERS
         </p>
         <h1 className="fw-display" style={{ marginBottom: 4 }}>
           Letters to yourself
         </h1>
-        <p style={{ fontFamily: "'Inter', sans-serif", fontSize: 13, color: "var(--mauve)", lineHeight: 1.55, marginBottom: 24 }}>
+        <p style={{ fontSize: 13, color: "var(--mauve)", lineHeight: 1.55, marginBottom: 24 }}>
           Held in private until the date you picked.
         </p>
 
@@ -104,7 +104,7 @@ export default function SealedLetters() {
               <button
                 onClick={() => setComposeOpen(true)}
                 style={{
-                  fontFamily: "'Inter', sans-serif", fontSize: 14, fontWeight: 600,
+                  fontSize: 14, fontWeight: 600,
                   color: "var(--cream)", backgroundColor: "var(--rose-primary)",
                   padding: "12px 24px", borderRadius: 9999, border: "none", cursor: "pointer",
                   display: "flex", alignItems: "center", gap: 8,

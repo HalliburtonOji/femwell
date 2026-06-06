@@ -294,7 +294,6 @@ const shellStyle = {
   boxShadow: "0 2px 4px rgba(43,30,22,0.10), 0 12px 32px rgba(43,30,22,0.18)",
 };
 const eyebrowStyle = {
-  fontFamily: "'Inter', sans-serif",
   fontSize: 9,
   fontWeight: 700,
   letterSpacing: "0.18em",
@@ -303,7 +302,6 @@ const eyebrowStyle = {
   margin: "0 0 10px",
 };
 const titleStyle = {
-  fontFamily: "'Fraunces', serif",
   fontWeight: 400,
   fontSize: 22,
   lineHeight: 1.25,
@@ -312,7 +310,6 @@ const titleStyle = {
   letterSpacing: "-0.005em",
 };
 const italicBodyStyle = {
-  fontFamily: "'Fraunces', serif",
   fontStyle: "italic",
   fontSize: 13.5,
   lineHeight: 1.6,
@@ -327,7 +324,6 @@ const specimenStyle = {
   marginBottom: 16,
 };
 const specimenLineStyle = {
-  fontFamily: "'Fraunces', serif",
   fontStyle: "italic",
   fontSize: 12.5,
   lineHeight: 1.55,
@@ -339,7 +335,6 @@ const ctaStyle = {
   alignItems: "center",
   justifyContent: "center",
   gap: 8,
-  fontFamily: "'Inter', sans-serif",
   fontWeight: 600,
   fontSize: 14,
   color: "var(--plum-deep, #2b1e16)",
@@ -353,21 +348,18 @@ const ctaStyle = {
   boxShadow: "0 2px 8px rgba(232,196,208,0.22)",
 };
 const renewalStyle = {
-  fontFamily: "'Inter', sans-serif",
   fontSize: 10.5,
   color: "rgba(247,239,225,0.55)",
   margin: "10px 0 0",
   textAlign: "center",
 };
 const bodyHtmlStyle = {
-  fontFamily: "'Fraunces', serif",
   fontSize: 14,
   lineHeight: 1.65,
   color: "rgba(247,239,225,0.86)",
   margin: "0 0 14px",
 };
 const signoffStyle = {
-  fontFamily: "'Fraunces', serif",
   fontStyle: "italic",
   fontSize: 13,
   color: "rgba(247,239,225,0.72)",
@@ -383,7 +375,6 @@ const operatorShellStyle = {
   border: "1px dashed rgba(247,239,225,0.20)",
 };
 const operatorTitleStyle = {
-  fontFamily: "'Inter', sans-serif",
   fontSize: 10,
   fontWeight: 700,
   letterSpacing: "0.14em",
@@ -392,7 +383,6 @@ const operatorTitleStyle = {
   margin: "0 0 8px",
 };
 const operatorEmptyStyle = {
-  fontFamily: "'Inter', sans-serif",
   fontSize: 11,
   color: "rgba(247,239,225,0.55)",
   margin: 0,
@@ -414,7 +404,6 @@ const operatorRowStyle = {
   background: "rgba(247,239,225,0.04)",
 };
 const operatorRowTitleStyle = {
-  fontFamily: "'Fraunces', serif",
   fontSize: 13,
   color: "var(--cream, #FAF4EA)",
   margin: 0,
@@ -423,13 +412,11 @@ const operatorRowTitleStyle = {
   whiteSpace: "nowrap",
 };
 const operatorRowMetaStyle = {
-  fontFamily: "'Inter', sans-serif",
   fontSize: 10,
   color: "rgba(247,239,225,0.55)",
   margin: "2px 0 0",
 };
 const operatorPublishBtnStyle = {
-  fontFamily: "'Inter', sans-serif",
   fontWeight: 600,
   fontSize: 11,
   color: "var(--cream, #FAF4EA)",

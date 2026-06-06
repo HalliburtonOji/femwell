@@ -194,13 +194,11 @@ const headStyle = {
   gap: 6,
 };
 const titleStyle = {
-  fontFamily: "'Fraunces', serif",
   fontSize: 15,
   color: INK_NIGHT,
   fontWeight: 500,
 };
 const subStyle = {
-  fontFamily: "'Inter', sans-serif",
   fontSize: 9,
   color: "rgba(245,230,211,0.50)",
   letterSpacing: "0.06em",
@@ -236,7 +234,6 @@ const orbStyle = {
 };
 const nameStyle = {
   display: "block",
-  fontFamily: "'Fraunces', serif",
   fontSize: 10,
   fontWeight: 500,
   color: INK_NIGHT,
@@ -244,7 +241,6 @@ const nameStyle = {
 };
 const roleStyle = {
   display: "block",
-  fontFamily: "'Inter', sans-serif",
   fontSize: 8,
   color: "rgba(245,230,211,0.50)",
   marginTop: 1,
@@ -269,13 +265,11 @@ const expandHeadStyle = {
   flexWrap: "wrap",
 };
 const expandNameStyle = {
-  fontFamily: "'Fraunces', serif",
   fontSize: 14,
   fontWeight: 500,
   color: INK_NIGHT,
 };
 const expandRoleStyle = {
-  fontFamily: "'Inter', sans-serif",
   fontSize: 9,
   letterSpacing: "0.14em",
   textTransform: "uppercase",
@@ -283,7 +277,6 @@ const expandRoleStyle = {
   color: "rgba(245,230,211,0.55)",
 };
 const expandBodyStyle = {
-  fontFamily: "'Inter', sans-serif",
   fontSize: 12,
   lineHeight: 1.55,
   color: "rgba(245,230,211,0.84)",
@@ -291,7 +284,6 @@ const expandBodyStyle = {
 };
 const expandFootStyle = {
   marginTop: 8,
-  fontFamily: "'Inter', sans-serif",
   fontSize: 10,
   color: "rgba(245,230,211,0.55)",
   letterSpacing: "0.04em",
@@ -300,7 +292,6 @@ const readStyle = {
   marginTop: 10,
   paddingTop: 10,
   borderTop: "1px dashed rgba(245,230,211,0.14)",
-  fontFamily: "'Fraunces', serif",
   fontSize: 12,
   fontStyle: "italic",
   color: "rgba(245,230,211,0.78)",

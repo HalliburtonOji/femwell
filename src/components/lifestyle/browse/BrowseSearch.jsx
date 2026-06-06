@@ -55,7 +55,6 @@ export default function BrowseSearch({ value, onChange }) {
             backgroundColor: 'var(--cream-2)',
             border: '1px solid var(--ink-line)',
             borderRadius: 12,
-            fontFamily: "'Inter', sans-serif",
             fontSize: 14,
             fontWeight: 400,
             color: 'var(--plum-deep)',

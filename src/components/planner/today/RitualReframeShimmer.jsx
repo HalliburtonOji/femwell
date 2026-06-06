@@ -103,7 +103,6 @@ export default function RitualReframeShimmer({ ritualName, phase, state = "stuck
     <p
       data-ritual-reframe={ritualName}
       style={{
-        fontFamily: "'Fraunces', serif",
         fontSize: 12,
         fontStyle: "italic",
         color: "var(--gold, #C9A95C)",

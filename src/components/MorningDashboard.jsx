@@ -290,7 +290,7 @@ function renderBandCards(bandId, isLive, mock) {
                   }}>
                     <b.Icon size={10} />
                   </span>
-                  <div style={{ fontFamily: "'Inter', sans-serif", fontSize: 11, fontWeight: 700, color: T.plum, lineHeight: 1.05 }}>{b.value}</div>
+                  <div style={{ fontSize: 11, fontWeight: 700, color: T.plum, lineHeight: 1.05 }}>{b.value}</div>
                 </div>
               ))}
             </div>
@@ -457,8 +457,7 @@ function Card({ kind, accent, eyebrow, title, Icon, children }) {
 const shellStyle = {
   background: T.cream, minHeight: "100vh",
   padding: "26px 14px 40px",
-  fontFamily: "'Inter', system-ui, sans-serif",
-};
+  };
 const headStyle = {
   maxWidth: 880, margin: "0 auto 18px",
   display: "flex", flexDirection: "column", gap: 6,
@@ -468,7 +467,6 @@ const eyebrowStyle = {
   color: T.muted, fontWeight: 700, margin: 0,
 };
 const pageTitleStyle = {
-  fontFamily: "'Fraunces', Georgia, serif",
   fontSize: 36, fontWeight: 500, color: T.espresso,
   letterSpacing: "-0.02em", margin: "4px 0 4px", lineHeight: 1.05,
 };
@@ -514,7 +512,6 @@ const bandIconStyle = {
   flexShrink: 0,
 };
 const bandLabelStyle = {
-  fontFamily: "'Fraunces', Georgia, serif",
   fontSize: 16, fontWeight: 500, color: T.espresso,
   letterSpacing: "-0.005em",
 };
@@ -557,7 +554,6 @@ const cardEyebrowStyle = {
   color: T.muted, fontWeight: 700,
 };
 const cardKickerTitleStyle = {
-  fontFamily: "'Fraunces', Georgia, serif",
   fontSize: 15, fontWeight: 500, color: T.espresso,
   letterSpacing: "-0.005em",
   margin: 0, lineHeight: 1.2,
@@ -567,12 +563,10 @@ const cardChildrenStyle = {
 };
 
 const cardTitleStyle = {
-  fontFamily: "'Fraunces', Georgia, serif",
   fontSize: 16, fontWeight: 500, color: T.plum,
   margin: 0, lineHeight: 1.25,
 };
 const cardTitleSmStyle = {
-  fontFamily: "'Fraunces', Georgia, serif",
   fontSize: 14, fontWeight: 500, color: T.plum,
   margin: 0, lineHeight: 1.2,
 };
@@ -599,8 +593,7 @@ const stackTick = {
   flexShrink: 0,
 };
 const stackText = {
-  fontSize: 12, fontFamily: "'Inter', sans-serif",
-};
+  fontSize: 12, };
 const stackFootStyle = {
   fontSize: 10, color: T.muted, margin: "6px 0 0",
   fontStyle: "italic",
@@ -655,7 +648,6 @@ const weekDayStyle = {
   fontSize: 8, letterSpacing: "0.12em", color: T.muted, fontWeight: 700,
 };
 const weekDateStyle = {
-  fontFamily: "'Fraunces', Georgia, serif",
   fontSize: 13, fontWeight: 500, color: T.plum,
 };
 const weekBarStyle = {
@@ -714,7 +706,6 @@ const rhythmRowStyle = {
   background: T.paper,
 };
 const rhythmNameStyle = {
-  fontFamily: "'Fraunces', Georgia, serif",
   fontSize: 13, fontWeight: 500, color: T.plum,
   display: "flex", alignItems: "center", gap: 5,
 };
@@ -744,7 +735,7 @@ const insightKickerStyle = {
   color: T.goldDeep, fontWeight: 700,
 };
 const insightTextStyle = {
-  fontFamily: "Cormorant Garamond, Georgia, serif", fontStyle: "italic",
+  fontStyle: "italic",
   fontSize: 12, color: T.plum, lineHeight: 1.5, margin: "4px 0 0",
 };
 

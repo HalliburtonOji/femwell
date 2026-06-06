@@ -246,8 +246,7 @@ export default function ContentPlayer() {
                 color: PHASE_ACCENTS[currentPhase],
                 backgroundColor: `${PHASE_ACCENTS[currentPhase]}1F`,
                 border: `1px solid ${PHASE_ACCENTS[currentPhase]}40`,
-                fontFamily: "'Inter', sans-serif",
-              }}
+                }}
             >
               Recommended for your {currentPhase.charAt(0).toUpperCase() + currentPhase.slice(1)} phase
             </span>

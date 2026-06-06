@@ -329,11 +329,9 @@ const eyebrowStyle = {
   textTransform: "uppercase",
   letterSpacing: "0.16em",
   color: "var(--gold-deep, #A6862B)",
-  fontFamily: "'Inter', sans-serif",
   margin: "0 0 4px",
 };
 const msgStyle = {
-  fontFamily: "'Fraunces', Georgia, serif",
   fontSize: 14.5,
   lineHeight: 1.4,
   color: "var(--plum, #4A2A3A)",
@@ -346,7 +344,6 @@ const ctaBtnStyle = {
   border: "1px solid var(--plum, #4A2A3A)",
   background: "transparent",
   color: "var(--plum, #4A2A3A)",
-  fontFamily: "'Inter', sans-serif",
   fontSize: 12,
   fontWeight: 600,
   cursor: "pointer",
@@ -381,7 +378,6 @@ const sheetHeadStyle = {
   marginBottom: 10,
 };
 const sheetTitleStyle = {
-  fontFamily: "'Fraunces', Georgia, serif",
   fontSize: 18,
   color: "var(--plum, #4A2A3A)",
 };
@@ -412,12 +408,10 @@ const sheetOptionStyle = {
   minHeight: 56,
 };
 const sheetOptionTitleStyle = {
-  fontFamily: "'Fraunces', Georgia, serif",
   fontSize: 15,
   color: "var(--plum, #4A2A3A)",
 };
 const sheetOptionSubStyle = {
-  fontFamily: "'Inter', sans-serif",
   fontSize: 12,
   color: "var(--plum-2, #6B4559)",
 };

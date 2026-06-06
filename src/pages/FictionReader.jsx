@@ -302,12 +302,10 @@ function Frame({ children, onBack }) {
 const emptyStyle = {
   padding: "40px 24px",
   textAlign: "center",
-  fontFamily: "'Inter', sans-serif",
   fontSize: 14,
   color: "var(--plum-mute, #6b4a56)",
 };
 const errorTitleStyle = {
-  fontFamily: "'Fraunces', serif",
   fontWeight: 400,
   fontSize: 22,
   color: "var(--plum-deep)",
@@ -352,7 +350,6 @@ const coverInitialStyle = {
   position: "absolute",
   top: "20%", left: "50%",
   transform: "translate(-50%, -50%)",
-  fontFamily: "'Fraunces', serif",
   fontWeight: 300,
   fontSize: "clamp(160px, 38vw, 240px)",
   lineHeight: 1,
@@ -365,7 +362,6 @@ const coverTextStyle = {
   color: "rgba(255,250,242,0.96)",
 };
 const coverEyebrowStyle = {
-  fontFamily: "'Inter', sans-serif",
   fontWeight: 700,
   fontSize: 11,
   letterSpacing: "0.16em",
@@ -374,7 +370,6 @@ const coverEyebrowStyle = {
   margin: "0 0 10px",
 };
 const coverTitleStyle = {
-  fontFamily: "'Fraunces', serif",
   fontWeight: 400,
   fontSize: "clamp(28px, 6.5vw, 38px)",
   lineHeight: 1.1,
@@ -383,7 +378,6 @@ const coverTitleStyle = {
   textShadow: "0 1px 3px rgba(0,0,0,0.20)",
 };
 const coverSubtitleStyle = {
-  fontFamily: "'Fraunces', serif",
   fontStyle: "italic",
   fontWeight: 400,
   fontSize: 14,
@@ -393,7 +387,6 @@ const coverSubtitleStyle = {
   textShadow: "0 1px 2px rgba(0,0,0,0.20)",
 };
 const coverByStyle = {
-  fontFamily: "'Inter', sans-serif",
   fontSize: 12,
   fontWeight: 500,
   letterSpacing: "0.06em",
@@ -407,7 +400,6 @@ const tagsRowStyle = {
   justifyContent: "center",
 };
 const tagPillStyle = {
-  fontFamily: "'Inter', sans-serif",
   fontSize: 11,
   fontWeight: 600,
   letterSpacing: "0.04em",
@@ -418,7 +410,6 @@ const tagPillStyle = {
   border: "1px solid var(--ink-line, rgba(43,30,22,0.08))",
 };
 const openButtonStyle = {
-  fontFamily: "'Inter', sans-serif",
   fontWeight: 600,
   fontSize: 14,
   letterSpacing: "0.02em",

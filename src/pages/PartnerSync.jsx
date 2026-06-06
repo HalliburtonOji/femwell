@@ -268,7 +268,7 @@ export default function PartnerSync() {
   if (loading) {
     return (
       <div style={{ minHeight: "100vh", background: C.cream, display: "flex", alignItems: "center", justifyContent: "center" }}>
-        <p style={{ color: C.muted, fontFamily: "'Inter', system-ui, sans-serif" }}>Loading…</p>
+        <p style={{ color: C.muted, }}>Loading…</p>
       </div>
     );
   }
@@ -278,7 +278,6 @@ export default function PartnerSync() {
       minHeight: "100vh",
       background: C.cream,
       color: C.espresso,
-      fontFamily: "'Inter', system-ui, sans-serif",
       paddingBottom: 80,
     }}>
       <div style={{ maxWidth: 600, margin: "0 auto", padding: "18px 20px 32px" }}>
@@ -302,7 +301,7 @@ export default function PartnerSync() {
           <h1 style={{
             margin: "6px 0 6px",
             fontSize: 30, fontWeight: 600,
-            fontFamily: "'Fraunces', Georgia, serif", color: C.espressoDk,
+            color: C.espressoDk,
             letterSpacing: -0.4, lineHeight: 1.1,
           }}>Partner Sync</h1>
           <p style={{ margin: 0, fontSize: 15, color: C.muted, lineHeight: 1.5 }}>
@@ -324,7 +323,6 @@ export default function PartnerSync() {
             marginBottom: 10,
           }}>
             <span style={{
-              fontFamily: "'Fraunces', Georgia, serif",
               fontSize: 22, fontWeight: 600, letterSpacing: 4,
               color: C.espressoDk, flex: 1, textAlign: "center",
             }}>{shareCode || "------"}</span>
@@ -463,7 +461,7 @@ export default function PartnerSync() {
           }}>
             <div style={{ display: "flex", alignItems: "center", gap: 8, color: C.blush }}>
               <Heart size={18} />
-              <span style={{ fontWeight: 700, color: C.espresso, fontFamily: "'Fraunces', Georgia, serif", fontSize: 17 }}>
+              <span style={{ fontWeight: 700, color: C.espresso, fontSize: 17 }}>
                 Preview
               </span>
             </div>

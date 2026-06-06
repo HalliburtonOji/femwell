@@ -252,13 +252,11 @@ export default function RitualBuilder({ open, onClose, userId, onSaved }) {
                 marginBottom: 12,
               }}><Check size={26} /></div>
               <h3 style={{
-                margin: 0, fontFamily: "'Fraunces', Georgia, serif",
-                fontSize: 20, fontWeight: 500, color: C.espresso,
+                margin: 0, fontSize: 20, fontWeight: 500, color: C.espresso,
               }}>"{name}" saved</h3>
               <p style={{
                 margin: "6px 0 0", fontSize: 13, color: C.muted,
-                fontFamily: "'Inter', system-ui, sans-serif",
-              }}>You'll see it in the Rituals row when it's relevant.</p>
+                }}>You'll see it in the Rituals row when it's relevant.</p>
             </div>
           ) : (
             <>
@@ -355,7 +353,6 @@ function Step1({ name, setName, icon, setIcon }) {
             background: C.paper,
             border: `1px solid ${C.border}`,
             borderRadius: 12,
-            fontFamily: "'Inter', system-ui, sans-serif",
             fontSize: 14, color: C.espresso,
             outline: "none",
           }}
@@ -414,7 +411,6 @@ function Step2({ days, toggleDay, time, setTime }) {
                   background: on ? C.gold : C.paperHi,
                   color: on ? C.espresso : C.muted,
                   border: `1px solid ${on ? C.goldDeep : C.border}`,
-                  fontFamily: "'Inter', system-ui, sans-serif",
                   fontSize: 12.5, fontWeight: 700,
                   cursor: "pointer",
                   transition: "background 180ms ease",
@@ -440,7 +436,6 @@ function Step2({ days, toggleDay, time, setTime }) {
                   background: on ? C.espresso : C.paperHi,
                   color: on ? C.cream : C.espresso,
                   border: `1px solid ${on ? C.espresso : C.border}`,
-                  fontFamily: "'Inter', system-ui, sans-serif",
                   fontSize: 13, fontWeight: 600,
                   cursor: "pointer",
                   transition: "background 180ms ease",
@@ -459,7 +454,7 @@ function Step3({ phaseFilter, togglePhase, stageFilter, toggleStage }) {
     <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
       <p style={{
         margin: 0, fontSize: 13, color: C.muted, fontStyle: "italic",
-        fontFamily: "'Inter', system-ui, sans-serif", lineHeight: 1.5,
+        lineHeight: 1.5,
       }}>
         Leave both blank to show this ritual every day. Pick phases or stages to make it conditional.
       </p>
@@ -479,7 +474,6 @@ function Step3({ phaseFilter, togglePhase, stageFilter, toggleStage }) {
                   background: on ? p.tint : C.paperHi,
                   color: on ? C.cream : C.espresso,
                   border: `1px solid ${on ? p.tint : C.border}`,
-                  fontFamily: "'Inter', system-ui, sans-serif",
                   fontSize: 12.5, fontWeight: 600,
                   cursor: "pointer",
                 }}
@@ -504,7 +498,6 @@ function Step3({ phaseFilter, togglePhase, stageFilter, toggleStage }) {
                   background: on ? C.sage : C.paperHi,
                   color: on ? C.cream : C.espresso,
                   border: `1px solid ${on ? C.sage : C.border}`,
-                  fontFamily: "'Inter', system-ui, sans-serif",
                   fontSize: 12.5, fontWeight: 600,
                   cursor: "pointer",
                 }}
@@ -545,13 +538,11 @@ function Step4({ name, SelectedIcon, days, time, phaseFilter, stageFilter }) {
         }}><SelectedIcon size={20} /></span>
         <div style={{ flex: 1, minWidth: 0 }}>
           <h3 style={{
-            margin: 0, fontFamily: "'Fraunces', Georgia, serif",
-            fontSize: 18, fontWeight: 500, color: C.espresso,
+            margin: 0, fontSize: 18, fontWeight: 500, color: C.espresso,
           }}>{name || "Untitled ritual"}</h3>
           <p style={{
             margin: "2px 0 0", fontSize: 12, color: C.muted,
-            fontFamily: "'Inter', system-ui, sans-serif",
-          }}>{timeLabel}</p>
+            }}>{timeLabel}</p>
         </div>
       </div>
       <SummaryRow label="Days" value={daysLabel} />
@@ -570,13 +561,11 @@ function SummaryRow({ label, value }) {
       <span style={{
         fontSize: 11, fontWeight: 700, letterSpacing: "0.12em",
         textTransform: "uppercase", color: C.muted,
-        fontFamily: "'Inter', system-ui, sans-serif",
         flexShrink: 0,
       }}>{label}</span>
       <span style={{
         fontSize: 13, color: C.espresso, textAlign: "right",
-        fontFamily: "'Inter', system-ui, sans-serif",
-      }}>{value}</span>
+        }}>{value}</span>
     </div>
   );
 }
@@ -585,13 +574,11 @@ function SummaryRow({ label, value }) {
 const kicker = {
   margin: 0, fontSize: 10, fontWeight: 700,
   letterSpacing: "0.18em", textTransform: "uppercase",
-  color: C.muted, fontFamily: "'Inter', sans-serif",
-};
+  color: C.muted, };
 const fieldLabel = {
   margin: "0 0 8px", fontSize: 11, fontWeight: 700,
   letterSpacing: "0.12em", textTransform: "uppercase",
-  color: C.muted, fontFamily: "'Inter', sans-serif",
-};
+  color: C.muted, };
 const iconBtn = {
   width: 30, height: 30, borderRadius: 9999,
   background: "rgba(58,44,26,0.06)", border: "none",
@@ -602,7 +589,6 @@ const primaryBtn = {
   display: "inline-flex", alignItems: "center", gap: 6,
   padding: "10px 18px", borderRadius: 9999,
   background: C.espresso, color: C.cream, border: "none",
-  fontFamily: "'Inter', system-ui, sans-serif",
   fontSize: 13, fontWeight: 700,
   cursor: "pointer",
 };
@@ -611,7 +597,6 @@ const secondaryBtn = {
   padding: "8px 14px", borderRadius: 9999,
   background: "transparent", border: `1px solid ${C.muted}55`,
   color: C.muted,
-  fontFamily: "'Inter', system-ui, sans-serif",
   fontSize: 13, fontWeight: 600,
 };
 
@@ -626,7 +611,6 @@ export function CreateRitualEntryButton({ onTap }) {
         padding: "8px 14px", borderRadius: 9999,
         background: C.espresso, color: C.cream, border: "none",
         cursor: "pointer",
-        fontFamily: "'Inter', system-ui, sans-serif",
         fontSize: 12.5, fontWeight: 700,
       }}
     ><Plus size={12} /> Create ritual</button>

@@ -110,7 +110,7 @@ function GroundingCard({ onDone }) {
       <div style={{ fontSize: 64, textAlign: "center", marginBottom: 20, lineHeight: 1 }}>
         {["👀", "🤲", "👂", "👃", "👅"][senseIdx]}
       </div>
-      <div style={{ fontSize: 56, fontWeight: 800, color: "#A78BFA", textAlign: "center", marginBottom: 8, fontFamily: "'Inter', sans-serif", lineHeight: 1 }}>
+      <div style={{ fontSize: 56, fontWeight: 800, color: "#A78BFA", textAlign: "center", marginBottom: 8, lineHeight: 1 }}>
         {sense.n}
       </div>
       <CardTitle>{sense.label}</CardTitle>
@@ -142,10 +142,10 @@ function BreathCard() {
           transform: `scale(${scale})`,
           transition: "transform 1s ease-in-out",
         }}>
-          <span style={{ fontSize: 11, fontWeight: 700, color: "#818CF8", letterSpacing: "0.12em", textTransform: "uppercase", fontFamily: "'Inter', sans-serif" }}>
+          <span style={{ fontSize: 11, fontWeight: 700, color: "#818CF8", letterSpacing: "0.12em", textTransform: "uppercase", }}>
             {PHASE_LABELS[phase]}
           </span>
-          <span style={{ fontSize: 40, fontWeight: 800, color: "#6D28D9", fontFamily: "'Inter', sans-serif", lineHeight: 1 }}>
+          <span style={{ fontSize: 40, fontWeight: 800, color: "#6D28D9", lineHeight: 1 }}>
             {count}
           </span>
         </div>
@@ -169,7 +169,7 @@ function ReframeCard() {
     <CardShell accent="#F472B6">
       <CardLabel>A Gentle Reframe</CardLabel>
       <div style={{ fontSize: 36, textAlign: "center", marginBottom: 20 }}>💜</div>
-      <blockquote style={{ fontSize: 19, fontWeight: 600, color: "#2A2035", fontFamily: "'Fraunces', serif", lineHeight: 1.6, textAlign: "center", margin: 0 }}>
+      <blockquote style={{ fontSize: 19, fontWeight: 600, color: "#2A2035", lineHeight: 1.6, textAlign: "center", margin: 0 }}>
         "This feeling is real.<br />It is also temporary.<br /><br />My body is trying to protect me,<br />and I am safe right now."
       </blockquote>
     </CardShell>
@@ -181,7 +181,7 @@ function AffirmationCard({ text }) {
     <CardShell accent="#EC4899">
       <CardLabel>Affirmation</CardLabel>
       <div style={{ fontSize: 36, textAlign: "center", marginBottom: 24 }}>✨</div>
-      <blockquote style={{ fontSize: 22, fontWeight: 700, color: "#2A2035", fontFamily: "'Fraunces', serif", lineHeight: 1.6, textAlign: "center", margin: 0, padding: "0 8px" }}>
+      <blockquote style={{ fontSize: 22, fontWeight: 700, color: "#2A2035", lineHeight: 1.6, textAlign: "center", margin: 0, padding: "0 8px" }}>
         "{text}"
       </blockquote>
     </CardShell>
@@ -204,7 +204,7 @@ function BodyScanCard({ lines }) {
       ) : (
         <>
           <div style={{ textAlign: "center", marginBottom: 8 }}>
-            <span style={{ fontSize: 11, color: "#34D399", fontWeight: 600, letterSpacing: "0.1em", textTransform: "uppercase", fontFamily: "'Inter', sans-serif" }}>Step {step + 1} of {lines.length}</span>
+            <span style={{ fontSize: 11, color: "#34D399", fontWeight: 600, letterSpacing: "0.1em", textTransform: "uppercase", }}>Step {step + 1} of {lines.length}</span>
           </div>
           <CardTitle style={{ textAlign: "center" }}>{lines[step]}</CardTitle>
           <PillButton onClick={() => setStep(s => s + 1)} style={{ marginTop: 28, backgroundColor: "#34D399" }}>
@@ -228,7 +228,7 @@ function TinyActionCard({ onDone }) {
             style={{ display: "flex", alignItems: "center", gap: 14, padding: "14px 18px", borderRadius: 16,
               border: chosen === label ? "2px solid #FBBF24" : "2px solid #FEF3C7",
               backgroundColor: chosen === label ? "#FEF3C7" : "white",
-              cursor: "pointer", fontFamily: "'Inter', sans-serif", fontSize: 14, fontWeight: 600, color: "#2A2035",
+              cursor: "pointer", fontSize: 14, fontWeight: 600, color: "#2A2035",
               transition: "all 0.15s" }}>
             <span style={{ fontSize: 22 }}>{emoji}</span>
             {label}
@@ -255,8 +255,7 @@ function ClosingCard({ onRate, onClose }) {
         {[1, 2, 3, 4, 5].map(n => (
           <button key={n} onClick={() => setRating(n)}
             style={{ width: 52, height: 52, borderRadius: 14, border: "none", cursor: "pointer",
-              fontSize: 16, fontWeight: 700, fontFamily: "'Inter', sans-serif",
-              backgroundColor: rating === n ? "#C084FC" : "#EAD7FF",
+              fontSize: 16, fontWeight: 700, backgroundColor: rating === n ? "#C084FC" : "#EAD7FF",
               color: rating === n ? "white" : "#7C3AED",
               transition: "all 0.15s" }}>
             {n}
@@ -265,7 +264,7 @@ function ClosingCard({ onRate, onClose }) {
       </div>
       {rating && (
         <>
-          <blockquote style={{ fontSize: 16, color: "#2A2035", fontFamily: "'Fraunces', serif", lineHeight: 1.6, textAlign: "center", marginBottom: 24, fontStyle: "italic" }}>
+          <blockquote style={{ fontSize: 16, color: "#2A2035", lineHeight: 1.6, textAlign: "center", marginBottom: 24, fontStyle: "italic" }}>
             "You came back to yourself.<br />That's the whole thing."
           </blockquote>
           <PillButton onClick={() => { onRate(rating); onClose(); }}>
@@ -291,7 +290,7 @@ function CardShell({ children, accent }) {
 
 function CardLabel({ children }) {
   return (
-    <p style={{ fontSize: 11, fontWeight: 700, color: "#9D7EC7", textTransform: "uppercase", letterSpacing: "0.12em", fontFamily: "'Inter', sans-serif", textAlign: "center", marginBottom: 20 }}>
+    <p style={{ fontSize: 11, fontWeight: 700, color: "#9D7EC7", textTransform: "uppercase", letterSpacing: "0.12em", textAlign: "center", marginBottom: 20 }}>
       {children}
     </p>
   );
@@ -299,7 +298,7 @@ function CardLabel({ children }) {
 
 function CardTitle({ children, style }) {
   return (
-    <h2 style={{ fontSize: 24, fontWeight: 700, color: "#2A2035", fontFamily: "'Fraunces', serif", lineHeight: 1.35, textAlign: "center", margin: "0 0 12px", ...style }}>
+    <h2 style={{ fontSize: 24, fontWeight: 700, color: "#2A2035", lineHeight: 1.35, textAlign: "center", margin: "0 0 12px", ...style }}>
       {children}
     </h2>
   );
@@ -307,7 +306,7 @@ function CardTitle({ children, style }) {
 
 function CardBody({ children, style }) {
   return (
-    <p style={{ fontSize: 16, color: "#6B5E7A", fontFamily: "'Inter', sans-serif", lineHeight: 1.7, textAlign: "center", margin: 0, ...style }}>
+    <p style={{ fontSize: 16, color: "#6B5E7A", lineHeight: 1.7, textAlign: "center", margin: 0, ...style }}>
       {children}
     </p>
   );
@@ -318,8 +317,7 @@ function PillButton({ children, onClick, style }) {
     <button onClick={onClick} style={{
       display: "block", width: "100%", padding: "16px 24px", borderRadius: 9999,
       backgroundColor: "#C084FC", color: "white", border: "none", cursor: "pointer",
-      fontSize: 15, fontWeight: 700, fontFamily: "'Inter', sans-serif",
-      transition: "opacity 0.15s",
+      fontSize: 15, fontWeight: 700, transition: "opacity 0.15s",
       ...style,
     }}>
       {children}
@@ -398,7 +396,7 @@ export default function CalmCards({ userId, sessionId, panicLogId, onClose }) {
             ))}
           </div>
           {/* Skip / close */}
-          <button onClick={onClose} style={{ display: "flex", alignItems: "center", gap: 5, background: "none", border: "none", cursor: "pointer", fontSize: 12, fontWeight: 600, color: "#9D7EC7", fontFamily: "'Inter', sans-serif", padding: "6px 10px" }}>
+          <button onClick={onClose} style={{ display: "flex", alignItems: "center", gap: 5, background: "none", border: "none", cursor: "pointer", fontSize: 12, fontWeight: 600, color: "#9D7EC7", padding: "6px 10px" }}>
             <X style={{ width: 14, height: 14 }} /> Skip
           </button>
         </div>
@@ -429,12 +427,12 @@ export default function CalmCards({ userId, sessionId, panicLogId, onClose }) {
         {/* Bottom nav */}
         <div style={{ flexShrink: 0, padding: "12px 24px 32px", display: "flex", gap: 10 }}>
           {cardIdx > 0 && (
-            <button onClick={goPrev} style={{ flex: 1, height: 50, borderRadius: 9999, backgroundColor: "#EAD7FF", color: "#7C3AED", border: "none", cursor: "pointer", fontSize: 14, fontWeight: 600, fontFamily: "'Inter', sans-serif" }}>
+            <button onClick={goPrev} style={{ flex: 1, height: 50, borderRadius: 9999, backgroundColor: "#EAD7FF", color: "#7C3AED", border: "none", cursor: "pointer", fontSize: 14, fontWeight: 600, }}>
               ← Back
             </button>
           )}
           {cardIdx < TOTAL_CARDS - 1 && (
-            <button onClick={goNext} style={{ flex: 1, height: 50, borderRadius: 9999, backgroundColor: "#C084FC", color: "white", border: "none", cursor: "pointer", fontSize: 14, fontWeight: 600, fontFamily: "'Inter', sans-serif" }}>
+            <button onClick={goNext} style={{ flex: 1, height: 50, borderRadius: 9999, backgroundColor: "#C084FC", color: "white", border: "none", cursor: "pointer", fontSize: 14, fontWeight: 600, }}>
               Next →
             </button>
           )}

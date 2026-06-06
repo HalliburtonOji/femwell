@@ -256,16 +256,14 @@ const kickerStyle = {
   textTransform: "uppercase",
   letterSpacing: "0.14em",
   color: "var(--plum-mute, #8A7584)",
-  fontFamily: "'Inter', sans-serif",
-};
+  };
 const tenseStyle = {
   fontSize: 10,
   fontWeight: 600,
   letterSpacing: "0.12em",
   textTransform: "uppercase",
   color: "var(--plum-mute, #8A7584)",
-  fontFamily: "'Inter', sans-serif",
-};
+  };
 const chipRowStyle = {
   display: "flex",
   flexWrap: "wrap",
@@ -279,8 +277,7 @@ const chipStyle = {
   padding: "5px 10px",
   borderRadius: 9999,
   border: "1px solid var(--border-subtle, rgba(74,42,58,0.10))",
-  fontFamily: "'Inter', sans-serif",
-};
+  };
 const cardBodyStyle = {
   background: "var(--cream-deep, #FAF4ED)",
   borderRadius: 12,
@@ -299,8 +296,7 @@ const cardLabelStyle = {
   letterSpacing: "0.14em",
   textTransform: "uppercase",
   color: "var(--plum-mute, #8A7584)",
-  fontFamily: "'Inter', sans-serif",
-};
+  };
 const cardTodayChipStyle = {
   fontSize: 9,
   fontWeight: 700,
@@ -309,10 +305,8 @@ const cardTodayChipStyle = {
   borderRadius: 9999,
   background: "var(--plum, #4A2A3A)",
   color: "var(--cream, #FFFAF5)",
-  fontFamily: "'Inter', sans-serif",
-};
+  };
 const cardMainStyle = {
-  fontFamily: "'Fraunces', serif",
   fontSize: 17,
   lineHeight: 1.35,
   color: "var(--plum, #4A2A3A)",
@@ -320,21 +314,18 @@ const cardMainStyle = {
   margin: "0 0 6px",
 };
 const cardSubStyle = {
-  fontFamily: "'Inter', sans-serif",
   fontSize: 13,
   lineHeight: 1.55,
   color: "var(--plum-2, #6B4559)",
   margin: "0 0 6px",
 };
 const cardSigStyle = {
-  fontFamily: "'Inter', sans-serif",
   fontSize: 11,
   fontStyle: "italic",
   color: "var(--plum-mute, #8A7584)",
   margin: 0,
 };
 const goodForTitleStyle = {
-  fontFamily: "'Inter', sans-serif",
   fontSize: 12,
   fontWeight: 600,
   color: "var(--plum-2, #6B4559)",
@@ -344,7 +335,6 @@ const goodForTitleStyle = {
   gap: 6,
 };
 const infoIconStyle = {
-  fontFamily: "'Fraunces', serif",
   fontSize: 11,
   fontWeight: 700,
   fontStyle: "italic",
@@ -368,7 +358,6 @@ const goodForChipStyle = {
   display: "inline-flex",
   alignItems: "center",
   gap: 6,
-  fontFamily: "'Inter', sans-serif",
   fontSize: 12,
   color: "var(--plum-2, #6B4559)",
   padding: "5px 10px",

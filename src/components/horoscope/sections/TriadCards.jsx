@@ -124,10 +124,10 @@ export default function TriadCards({ chart, astro, reading, onAddBirthTime }) {
   return (
     <SectionWrap>
       <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", margin: "0 0 12px", flexWrap: "wrap", gap: 8 }}>
-        <h2 style={{ fontFamily: "'Fraunces', serif", fontWeight: 400, fontSize: 22, color: INK_NIGHT, margin: 0 }}>
+        <h2 style={{ fontWeight: 400, fontSize: 22, color: INK_NIGHT, margin: 0 }}>
           Your <GlossaryTip term="natal chart"><em style={{ fontStyle: "italic", color: ACCENT_NIGHT }}>triad</em></GlossaryTip>
         </h2>
-        {!hasBT && <span style={{ fontFamily: "'Inter', sans-serif", fontSize: 11, fontWeight: 500, color: ACCENT_NIGHT }}>Birth time unlocks moon + rising →</span>}
+        {!hasBT && <span style={{ fontSize: 11, fontWeight: 500, color: ACCENT_NIGHT }}>Birth time unlocks moon + rising →</span>}
       </div>
       <div style={rowStyle}>
         <TriadCard
@@ -171,14 +171,12 @@ const sectionHeadStyle = {
   gap: 8,
 };
 const sectionTitleStyle = {
-  fontFamily: "'Fraunces', serif",
   fontWeight: 400,
   fontSize: 22,
   color: INK_NIGHT,
   margin: 0,
 };
 const sectionLinkStyle = {
-  fontFamily: "'Inter', sans-serif",
   fontSize: 11,
   fontWeight: 500,
   color: ACCENT_NIGHT,
@@ -206,7 +204,6 @@ const iconStyle = {
   justifyContent: "center",
 };
 const eyebrowStyle = {
-  fontFamily: "'Inter', sans-serif",
   fontSize: 9,
   letterSpacing: "0.16em",
   textTransform: "uppercase",
@@ -215,14 +212,12 @@ const eyebrowStyle = {
   margin: 0,
 };
 const signStyle = {
-  fontFamily: "'Fraunces', serif",
   fontSize: 17,
   fontWeight: 500,
   color: INK_NIGHT,
   margin: "4px 0 4px",
 };
 const traitStyle = {
-  fontFamily: "'Inter', sans-serif",
   fontSize: 10,
   fontStyle: "italic",
   color: "rgba(245,230,211,0.70)",
@@ -230,7 +225,6 @@ const traitStyle = {
   margin: 0,
 };
 const lockedBodyStyle = {
-  fontFamily: "'Inter', sans-serif",
   fontSize: 10,
   color: "rgba(245,230,211,0.60)",
   lineHeight: 1.4,
@@ -238,7 +232,6 @@ const lockedBodyStyle = {
 };
 const addBtnStyle = {
   display: "inline-block",
-  fontFamily: "'Inter', sans-serif",
   fontSize: 11,
   fontWeight: 600,
   color: ACCENT_NIGHT,
@@ -256,7 +249,6 @@ const expandBodyStyle = {
   marginTop: 10,
   paddingTop: 10,
   borderTop: `1px dashed ${RULE_NIGHT}`,
-  fontFamily: "'Inter', sans-serif",
   fontSize: 12,
   lineHeight: 1.55,
   color: "rgba(245,230,211,0.86)",

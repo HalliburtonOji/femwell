@@ -145,7 +145,6 @@ const iconBubbleStyle = {
   margin: "20px auto 18px",
 };
 const titleStyle = {
-  fontFamily: "'Fraunces', serif",
   fontWeight: 400,
   fontSize: 26,
   letterSpacing: "-0.005em",
@@ -154,7 +153,6 @@ const titleStyle = {
   margin: "0 0 10px",
 };
 const bodyStyle = {
-  fontFamily: "'Inter', sans-serif",
   fontSize: 14,
   lineHeight: 1.6,
   color: "var(--mauve, #7a5d6a)",
@@ -162,7 +160,6 @@ const bodyStyle = {
   margin: "0 0 12px",
 };
 const metaStyle = {
-  fontFamily: "'Inter', sans-serif",
   fontSize: 12,
   color: "var(--mauve, #7a5d6a)",
   textAlign: "center",
@@ -171,7 +168,6 @@ const metaStyle = {
 const returnLinkStyle = {
   display: "block",
   textAlign: "center",
-  fontFamily: "'Inter', sans-serif",
   fontWeight: 600,
   fontSize: 13,
   color: "var(--rose-dust, #b65b66)",

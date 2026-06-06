@@ -221,8 +221,7 @@ export default function JessSettingsSheet({ open, onClose, user, profile, onProf
           gap: 10,
         }}>
           <h2 style={{
-            margin: 0, fontFamily: "'Fraunces', Georgia, serif",
-            fontSize: 22, fontWeight: 600, color: C.espresso, letterSpacing: "-0.01em",
+            margin: 0, fontSize: 22, fontWeight: 600, color: C.espresso, letterSpacing: "-0.01em",
           }}>Settings</h2>
           <button
             type="button"
@@ -255,13 +254,13 @@ export default function JessSettingsSheet({ open, onClose, user, profile, onProf
                 width: "100%", boxSizing: "border-box",
                 padding: "12px 14px", minHeight: 44, borderRadius: 12,
                 border: `1px solid ${C.border}`, background: C.paperHi,
-                fontFamily: "'Inter', sans-serif", fontSize: 14,
+                fontSize: 14,
                 color: C.espresso, outline: "none",
               }}
             />
             <p style={{
               margin: "8px 0 0", fontSize: 12, color: C.mutedText,
-              fontFamily: "'Inter', sans-serif", fontStyle: "italic",
+              fontStyle: "italic",
             }}>Hi {(jessName || "Jess").trim()}, I'm here for you.</p>
           </Section>
 
@@ -283,7 +282,6 @@ export default function JessSettingsSheet({ open, onClose, user, profile, onProf
                       border: active ? `2px solid ${C.gold}` : `1px solid ${C.border}`,
                       borderRadius: 14, padding: "12px 12px",
                       minHeight: 88, cursor: "pointer",
-                      fontFamily: "'Inter', sans-serif",
                       display: "flex", flexDirection: "column", gap: 4,
                     }}
                   >
@@ -320,7 +318,6 @@ export default function JessSettingsSheet({ open, onClose, user, profile, onProf
                         color: active ? C.cream : C.espresso,
                         border: active ? "1px solid " + C.espresso : `1px solid ${C.border}`,
                         borderRadius: 12, cursor: "pointer",
-                        fontFamily: "'Inter', sans-serif",
                         fontSize: 12, fontWeight: 700, padding: "6px 8px",
                       }}
                     >{lvl.label}</button>
@@ -348,7 +345,6 @@ export default function JessSettingsSheet({ open, onClose, user, profile, onProf
                         display: "inline-flex", alignItems: "center",
                         padding: "2px 8px", borderRadius: 9999,
                         background: badge.bg, color: badge.fg,
-                        fontFamily: "'Inter', sans-serif",
                         fontSize: 10, fontWeight: 700, letterSpacing: "0.06em",
                         textTransform: "uppercase",
                       }}>{badge.label}</span>
@@ -362,7 +358,7 @@ export default function JessSettingsSheet({ open, onClose, user, profile, onProf
                             width: "100%", boxSizing: "border-box",
                             padding: "8px 10px", borderRadius: 8,
                             border: `1px solid ${C.border}`, background: C.paperHi,
-                            fontFamily: "'Inter', sans-serif", fontSize: 13,
+                            fontSize: 13,
                             color: C.espresso, outline: "none", resize: "vertical",
                             lineHeight: 1.45,
                           }}
@@ -370,8 +366,7 @@ export default function JessSettingsSheet({ open, onClose, user, profile, onProf
                       ) : (
                         <span style={{
                           fontSize: 13, lineHeight: 1.45, color: C.espresso,
-                          fontFamily: "'Inter', sans-serif",
-                        }}>{m.content}</span>
+                          }}>{m.content}</span>
                       )}
                       {isEditing && (
                         <div style={{ display: "flex", gap: 6, marginTop: 4 }}>
@@ -391,7 +386,7 @@ export default function JessSettingsSheet({ open, onClose, user, profile, onProf
                               padding: "6px 12px", minHeight: 32,
                               background: C.espresso, color: C.cream, border: "none",
                               borderRadius: 9999, cursor: "pointer",
-                              fontFamily: "'Inter', sans-serif", fontSize: 12, fontWeight: 700,
+                              fontSize: 12, fontWeight: 700,
                             }}
                           >Save</button>
                           <button
@@ -402,7 +397,7 @@ export default function JessSettingsSheet({ open, onClose, user, profile, onProf
                               background: "transparent", color: C.muted,
                               border: `1px solid ${C.border}`,
                               borderRadius: 9999, cursor: "pointer",
-                              fontFamily: "'Inter', sans-serif", fontSize: 12, fontWeight: 600,
+                              fontSize: 12, fontWeight: 600,
                             }}
                           >Cancel</button>
                         </div>
@@ -479,7 +474,7 @@ export default function JessSettingsSheet({ open, onClose, user, profile, onProf
                   flex: 1, boxSizing: "border-box",
                   padding: "10px 12px", minHeight: 40, borderRadius: 12,
                   border: `1px solid ${C.border}`, background: C.paperHi,
-                  fontFamily: "'Inter', sans-serif", fontSize: 13,
+                  fontSize: 13,
                   color: C.espresso, outline: "none",
                 }}
               />
@@ -494,7 +489,7 @@ export default function JessSettingsSheet({ open, onClose, user, profile, onProf
                   display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 4,
                   cursor: (adding || addDraft.trim().length < 4) ? "not-allowed" : "pointer",
                   opacity: (adding || addDraft.trim().length < 4) ? 0.45 : 1,
-                  fontFamily: "'Inter', sans-serif", fontSize: 13, fontWeight: 700,
+                  fontSize: 13, fontWeight: 700,
                   padding: "0 12px",
                 }}
               ><Plus size={14} /> Add</button>
@@ -510,7 +505,6 @@ export default function JessSettingsSheet({ open, onClose, user, profile, onProf
                 display: "inline-flex", alignItems: "center", gap: 6,
                 cursor: memories.length === 0 ? "not-allowed" : "pointer",
                 opacity: memories.length === 0 ? 0.5 : 1,
-                fontFamily: "'Inter', sans-serif",
                 fontSize: 13, fontWeight: 700,
               }}
             ><Trash2 size={14} /> Clear all memory</button>
@@ -518,8 +512,7 @@ export default function JessSettingsSheet({ open, onClose, user, profile, onProf
               <div style={{
                 marginTop: 10, padding: 12, borderRadius: 12,
                 background: "#FFF1F2", border: "1px solid #FCA5A5",
-                fontFamily: "'Inter', sans-serif",
-              }}>
+                }}>
                 <div style={{ display: "flex", alignItems: "flex-start", gap: 8, marginBottom: 8 }}>
                   <AlertTriangle size={16} style={{ color: "#B91C1C", flexShrink: 0, marginTop: 2 }} />
                   <p style={{ margin: 0, fontSize: 13, color: "#7A1B1B", lineHeight: 1.5 }}>
@@ -540,7 +533,7 @@ export default function JessSettingsSheet({ open, onClose, user, profile, onProf
                       flex: 1, minHeight: 40, padding: "8px 14px",
                       background: "#B91C1C", color: "white", border: "none",
                       borderRadius: 9999, cursor: "pointer",
-                      fontFamily: "'Inter', sans-serif", fontSize: 13, fontWeight: 700,
+                      fontSize: 13, fontWeight: 700,
                     }}
                   >Yes, clear memory</button>
                   <button
@@ -550,7 +543,7 @@ export default function JessSettingsSheet({ open, onClose, user, profile, onProf
                       flex: 1, minHeight: 40, padding: "8px 14px",
                       background: "white", color: "var(--plum, #3A2C1A)",
                       border: `1px solid ${C.border}`, borderRadius: 9999, cursor: "pointer",
-                      fontFamily: "'Inter', sans-serif", fontSize: 13, fontWeight: 600,
+                      fontSize: 13, fontWeight: 600,
                     }}
                   >Cancel</button>
                 </div>
@@ -589,7 +582,7 @@ export default function JessSettingsSheet({ open, onClose, user, profile, onProf
             <span style={{
               fontSize: 12, color: "#3D6B3D",
               display: "inline-flex", alignItems: "center", gap: 4,
-              fontFamily: "'Inter', sans-serif", fontWeight: 600,
+              fontWeight: 600,
             }}><Check size={14} /> Saved</span>
           )}
           <button
@@ -600,7 +593,7 @@ export default function JessSettingsSheet({ open, onClose, user, profile, onProf
               flex: 1, minHeight: 48,
               padding: "12px 18px", borderRadius: 14,
               background: C.espresso, color: C.cream, border: "none",
-              fontFamily: "'Inter', sans-serif", fontSize: 14, fontWeight: 700,
+              fontSize: 14, fontWeight: 700,
               cursor: saving ? "default" : "pointer",
               opacity: saving ? 0.6 : 1,
             }}
@@ -616,7 +609,6 @@ function Section({ title, hint, children }) {
     <section>
       <h3 style={{
         margin: "0 0 8px",
-        fontFamily: "'Inter', sans-serif",
         fontSize: 11, fontWeight: 700,
         letterSpacing: "0.18em", textTransform: "uppercase",
         color: C.muted,
@@ -624,7 +616,7 @@ function Section({ title, hint, children }) {
       {hint && (
         <p style={{
           margin: "0 0 8px", fontSize: 12, color: C.mutedText,
-          fontFamily: "'Inter', sans-serif", lineHeight: 1.5,
+          lineHeight: 1.5,
         }}>{hint}</p>
       )}
       {children}
@@ -640,8 +632,7 @@ function ToggleRow({ label, checked, onChange }) {
     }}>
       <span style={{
         flex: 1, fontSize: 13, color: C.espresso, fontWeight: 600,
-        fontFamily: "'Inter', sans-serif",
-      }}>{label}</span>
+        }}>{label}</span>
       <button
         type="button"
         role="switch"

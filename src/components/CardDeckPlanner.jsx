@@ -533,8 +533,7 @@ function EveningBody() {
 const shellStyle = {
   background: T.cream, minHeight: "100vh",
   padding: "26px 14px 40px",
-  fontFamily: "'Inter', system-ui, sans-serif",
-};
+  };
 const headStyle = {
   maxWidth: 640, margin: "0 auto 16px",
   display: "flex", flexDirection: "column", gap: 4,
@@ -544,7 +543,6 @@ const eyebrowStyle = {
   color: T.muted, fontWeight: 700, margin: 0,
 };
 const pageTitleStyle = {
-  fontFamily: "'Fraunces', Georgia, serif",
   fontSize: 32, fontWeight: 500, color: T.espresso,
   letterSpacing: "-0.02em", margin: "4px 0", lineHeight: 1.05,
 };
@@ -568,7 +566,6 @@ const tabBtn = {
   padding: "5px 11px",
   borderRadius: 9999,
   border: "1px solid",
-  fontFamily: "'Inter', sans-serif",
   fontSize: 11, fontWeight: 700, letterSpacing: "0.02em",
   cursor: "pointer",
   whiteSpace: "nowrap",
@@ -636,7 +633,6 @@ const cardEyebrowStyle = {
   color: T.muted, fontWeight: 700,
 };
 const cardTitleStyle = {
-  fontFamily: "'Fraunces', Georgia, serif",
   fontSize: 26, fontWeight: 500, color: T.espresso,
   margin: "2px 0 4px", lineHeight: 1.1, letterSpacing: "-0.015em",
 };
@@ -673,7 +669,6 @@ const countLineStyle = {
 
 // Inner card body shared
 const innerTitleStyle = {
-  fontFamily: "'Fraunces', Georgia, serif",
   fontSize: 19, fontWeight: 500, color: T.plum,
   margin: 0, lineHeight: 1.25, letterSpacing: "-0.005em",
 };
@@ -732,8 +727,7 @@ const stackTickStyle = {
   flexShrink: 0,
 };
 const stackTextStyle = {
-  fontSize: 13.5, fontFamily: "'Inter', sans-serif",
-};
+  fontSize: 13.5, };
 
 // Smart view
 const statePillStyle = {
@@ -760,8 +754,7 @@ const ribbonHeadStyle = {
 const ribbonCellStyle = {
   display: "inline-flex", alignItems: "center", justifyContent: "center",
   borderRadius: 8, padding: "6px 0",
-  fontSize: 11, fontFamily: "'Inter', sans-serif",
-  border: "1px solid",
+  fontSize: 11, border: "1px solid",
 };
 const legendRowStyle = {
   display: "flex", flexWrap: "wrap", gap: 9, marginTop: 10,
@@ -784,7 +777,6 @@ const weekDayStyle = {
   fontSize: 8, letterSpacing: "0.12em", color: T.muted, fontWeight: 700,
 };
 const weekDateStyle = {
-  fontFamily: "'Fraunces', Georgia, serif",
   fontSize: 13, fontWeight: 500, color: T.plum,
 };
 const weekBarStyle = {

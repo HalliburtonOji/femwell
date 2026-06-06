@@ -187,7 +187,6 @@ export default function BookReader() {
 const emptyStyle = {
   padding: "60px 24px",
   textAlign: "center",
-  fontFamily: "'Inter', sans-serif",
   fontSize: 14,
   color: "var(--plum-mute, #6b4a56)",
 };
@@ -204,12 +203,12 @@ function Frame({ children, onBack, title, author, sourceUrl }) {
           <ArrowLeft className="w-4 h-4" style={{ color: "var(--plum)" }} />
         </button>
         {title && (
-          <h1 style={{ fontFamily: "'Fraunces', serif", fontSize: 28, fontWeight: 400, color: "var(--plum-deep)", margin: "0 0 8px 0", letterSpacing: "-0.015em" }}>
+          <h1 style={{ fontSize: 28, fontWeight: 400, color: "var(--plum-deep)", margin: "0 0 8px 0", letterSpacing: "-0.015em" }}>
             {title}
           </h1>
         )}
         {author && (
-          <p style={{ fontFamily: "'Inter', sans-serif", fontSize: 14, color: "var(--plum-mute)", marginBottom: 20 }}>
+          <p style={{ fontSize: 14, color: "var(--plum-mute)", marginBottom: 20 }}>
             {author} · Public domain
           </p>
         )}

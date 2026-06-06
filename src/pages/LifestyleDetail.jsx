@@ -257,7 +257,7 @@ export default function LifestyleDetail() {
       <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: "var(--ivory)" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
           <Loader2 style={{ width: 20, height: 20, color: "var(--rose-dust)", animation: "spin 0.7s linear infinite" }} />
-          <span style={{ fontSize: 14, color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>Loading…</span>
+          <span style={{ fontSize: 14, color: "var(--mauve)", }}>Loading…</span>
         </div>
         <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
       </div>
@@ -268,10 +268,10 @@ export default function LifestyleDetail() {
   if (!item) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center" style={{ backgroundColor: "var(--ivory)", padding: 24 }}>
-        <p style={{ fontSize: 18, color: "var(--plum)", fontFamily: "'Fraunces', serif", fontWeight: 500, marginBottom: 8 }}>
+        <p style={{ fontSize: 18, color: "var(--plum)", fontWeight: 500, marginBottom: 8 }}>
           That article isn't here.
         </p>
-        <p style={{ fontSize: 14, color: "var(--mauve)", marginBottom: 20, fontFamily: "'Inter', sans-serif" }}>
+        <p style={{ fontSize: 14, color: "var(--mauve)", marginBottom: 20, }}>
           It may have been removed or the link is out of date.
         </p>
         <button
@@ -285,8 +285,7 @@ export default function LifestyleDetail() {
             fontSize: 14,
             fontWeight: 600,
             cursor: "pointer",
-            fontFamily: "'Inter', sans-serif",
-          }}
+            }}
         >
           Go back
         </button>
@@ -476,7 +475,6 @@ export default function LifestyleDetail() {
           {useYouTubeHero ? (
             <div style={{ marginBottom: 24 }}>
               <p style={{
-                fontFamily: "'Inter', sans-serif",
                 fontSize: 11,
                 fontWeight: 700,
                 textTransform: "uppercase",
@@ -541,7 +539,6 @@ export default function LifestyleDetail() {
                 <p style={{
                   marginTop: 12,
                   marginBottom: 0,
-                  fontFamily: "'Inter', sans-serif",
                   fontSize: 12,
                   color: "var(--mauve)",
                 }}>
@@ -565,7 +562,6 @@ export default function LifestyleDetail() {
               <h1 style={{
                 marginTop: 20,
                 marginBottom: 0,
-                fontFamily: "'Fraunces', serif",
                 fontWeight: 400,
                 color: "var(--plum-deep)",
                 fontSize: 32,
@@ -615,7 +611,6 @@ export default function LifestyleDetail() {
               }}>
                 {eyebrowBits.length > 0 && (
                   <p style={{
-                    fontFamily: "'Inter', sans-serif",
                     fontSize: 11,
                     fontWeight: 700,
                     textTransform: "uppercase",
@@ -628,7 +623,6 @@ export default function LifestyleDetail() {
                   </p>
                 )}
                 <h1 style={{
-                  fontFamily: "'Fraunces', serif",
                   fontWeight: 400,
                   color: "var(--cream)",
                   fontSize: 38,
@@ -663,7 +657,7 @@ export default function LifestyleDetail() {
           {item.phase_tags?.length > 0 && (
             <div style={{ display: "flex", gap: 6, marginBottom: 14, flexWrap: "wrap" }}>
               {item.phase_tags.map((pt) => (
-                <span key={pt} style={{ fontSize: 10, fontWeight: 600, color: "var(--mauve)", backgroundColor: "var(--ivory-dark)", borderRadius: 9999, padding: "3px 10px", textTransform: "capitalize", fontFamily: "'Inter', sans-serif" }}>
+                <span key={pt} style={{ fontSize: 10, fontWeight: 600, color: "var(--mauve)", backgroundColor: "var(--ivory-dark)", borderRadius: 9999, padding: "3px 10px", textTransform: "capitalize", }}>
                   {pt} phase
                 </span>
               ))}
@@ -674,12 +668,12 @@ export default function LifestyleDetail() {
           {bodyLoading ? (
             <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "20px 0" }}>
               <Loader2 style={{ width: 18, height: 18, color: "var(--rose-dust)", animation: "spin 0.7s linear infinite" }} />
-              <span style={{ fontSize: 13, color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>Loading the rest…</span>
+              <span style={{ fontSize: 13, color: "var(--mauve)", }}>Loading the rest…</span>
             </div>
           ) : (
             <div>
               {blocks.length === 0 && (
-                <p className="fw-body-p" style={{ fontFamily: "'Inter', sans-serif", fontSize: 16, lineHeight: 1.78, color: "var(--plum)" }}>
+                <p className="fw-body-p" style={{ fontSize: 16, lineHeight: 1.78, color: "var(--plum)" }}>
                   {stripMarkdown(decodeHtmlEntities(item.summary || ""))}
                 </p>
               )}
@@ -741,7 +735,6 @@ export default function LifestyleDetail() {
                       }}
                     >
                       <p style={{
-                        fontFamily: "'Fraunces', serif",
                         fontStyle: "italic",
                         fontWeight: 400,
                         fontSize: 22,
@@ -785,7 +778,6 @@ export default function LifestyleDetail() {
               marginTop: 32,
             }}>
               <p style={{
-                fontFamily: "'Fraunces', serif",
                 fontStyle: "italic",
                 fontWeight: 400,
                 fontSize: 14,
@@ -814,7 +806,6 @@ export default function LifestyleDetail() {
                       borderRadius: "50%",
                       backgroundColor: "var(--rose-primary)",
                       color: "var(--cream)",
-                      fontFamily: "'Fraunces', serif",
                       fontSize: 16,
                       fontWeight: 500,
                       lineHeight: 1,
@@ -826,7 +817,6 @@ export default function LifestyleDetail() {
                       {i + 1}
                     </span>
                     <p style={{
-                      fontFamily: "'Inter', sans-serif",
                       fontSize: 15,
                       lineHeight: 1.55,
                       color: "var(--plum)",
@@ -858,7 +848,6 @@ export default function LifestyleDetail() {
                 color: "var(--cream)",
                 border: "none",
                 cursor: "pointer",
-                fontFamily: "'Inter', sans-serif",
                 boxShadow: "var(--shadow-sm)",
               }}
             >
@@ -871,7 +860,6 @@ export default function LifestyleDetail() {
         {relatedDecorated.length >= 2 && (
           <div style={{ marginTop: 40 }}>
             <p style={{
-              fontFamily: "'Fraunces', serif",
               fontStyle: "italic",
               fontWeight: 400,
               fontSize: 22,
@@ -917,7 +905,6 @@ export default function LifestyleDetail() {
                             position: "absolute", inset: 0,
                             display: "flex", alignItems: "center", justifyContent: "center",
                             padding: 12, textAlign: "center",
-                            fontFamily: "'Fraunces', serif",
                             fontStyle: "italic", fontWeight: 400, fontSize: 18,
                             color: "var(--cream)", opacity: 0.7,
                             pointerEvents: "none",
@@ -930,7 +917,6 @@ export default function LifestyleDetail() {
                     <p
                       className="fw-related-title-clamp"
                       style={{
-                        fontFamily: "'Fraunces', serif",
                         fontWeight: 500,
                         fontSize: 16,
                         lineHeight: 1.25,
@@ -942,7 +928,6 @@ export default function LifestyleDetail() {
                     </p>
                     {metaBits.length > 0 && (
                       <p style={{
-                        fontFamily: "'Inter', sans-serif",
                         fontSize: 11,
                         fontWeight: 600,
                         textTransform: "uppercase",

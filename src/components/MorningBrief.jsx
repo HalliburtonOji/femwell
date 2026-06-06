@@ -783,7 +783,6 @@ const shell = {
   boxShadow: "0 1px 0 rgba(58,44,26,0.04), 0 24px 64px rgba(58,44,26,0.08)",
   maxWidth: 600,
   margin: "0 auto",
-  fontFamily: "'Inter', system-ui, sans-serif",
   position: "relative",
 };
 
@@ -855,7 +854,7 @@ const jessAvatar = {
   display: "flex", alignItems: "center", justifyContent: "center",
   border: `1px solid ${T.blush}88`,
 };
-const jessName = { fontSize: 11, fontWeight: 700, color: T.espresso, fontStyle: "italic", fontFamily: "'Fraunces', Georgia, serif" };
+const jessName = { fontSize: 11, fontWeight: 700, color: T.espresso, fontStyle: "italic", };
 const jessDot = { color: T.muted, fontSize: 11 };
 const jessRole = { fontSize: 10, color: T.muted, letterSpacing: "0.06em", textTransform: "uppercase", fontWeight: 600 };
 
@@ -864,7 +863,6 @@ const cardEyebrow = {
   color: T.muted, textTransform: "uppercase", margin: "0 0 6px",
 };
 const cardTitle = {
-  fontFamily: "'Fraunces', Georgia, serif",
   fontSize: 24, fontWeight: 500, color: T.espresso,
   letterSpacing: "-0.01em", margin: "0 0 8px", lineHeight: 1.25,
 };
@@ -890,7 +888,6 @@ const cardActions = {
 };
 
 const greetingBig = {
-  fontFamily: "'Fraunces', Georgia, serif",
   fontSize: 32, fontWeight: 500, color: T.espresso,
   letterSpacing: "-0.02em", lineHeight: 1.2,
   margin: "0 0 8px",
@@ -1058,7 +1055,6 @@ const rhythmItem = { fontSize: 12, color: T.espresso, paddingLeft: 0, lineHeight
 
 // Summary
 const completionTitle = {
-  fontFamily: "'Fraunces', Georgia, serif",
   fontSize: 32, fontWeight: 500, color: T.espresso,
   letterSpacing: "-0.02em", margin: "8px 0 4px", lineHeight: 1.15,
 };
@@ -1074,12 +1070,10 @@ const summaryIcon = {
   display: "flex", alignItems: "center", justifyContent: "center",
 };
 const summaryVal = {
-  fontFamily: "'Fraunces', Georgia, serif",
   fontSize: 22, fontWeight: 500, color: T.espresso,
   lineHeight: 1, marginTop: 2,
 };
 const summaryValSmall = {
-  fontFamily: "'Fraunces', Georgia, serif",
   fontSize: 14, fontWeight: 500, color: T.espresso,
   lineHeight: 1.2, marginTop: 2,
 };
@@ -1158,7 +1152,6 @@ const star = {
   animation: "fwStar 2s ease-out forwards",
 };
 const goodNightTitle = {
-  fontFamily: "'Fraunces', Georgia, serif",
   fontSize: 22, fontWeight: 500, color: T.cream,
   margin: "0 0 6px", letterSpacing: "-0.01em",
 };

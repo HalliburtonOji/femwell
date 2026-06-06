@@ -344,8 +344,7 @@ function ArcDial({ label, value, onChange, colors }) {
       </svg>
       <div style={{
         fontSize: 13, fontWeight: 800, color: T.espresso,
-        marginTop: -10, fontFamily: "'Inter', system-ui, sans-serif",
-      }}>{value || 0}/5</div>
+        marginTop: -10, }}>{value || 0}/5</div>
     </div>
   );
 }
@@ -1286,8 +1285,7 @@ function NourishCard({ showToast }) {
           {quickCheck.headline && (
             <div style={{
               fontSize: 12, fontWeight: 700, color: "#1A6645", marginBottom: 4,
-              fontFamily: "'Fraunces', Georgia, serif",
-            }}>{quickCheck.headline}</div>
+              }}>{quickCheck.headline}</div>
           )}
           {quickCheck.wellness_impact && (
             <div style={{ fontSize: 11, color: "#2D5540", lineHeight: 1.4, marginBottom: 6 }}>

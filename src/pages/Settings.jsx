@@ -35,7 +35,6 @@ const inputStyle = {
   borderRadius: 10,
   border: "1.5px solid #D8CFBC",
   fontSize: 14,
-  fontFamily: "'Inter', sans-serif",
   color: "var(--plum)",
   backgroundColor: "#F4EFE3",
   outline: "none",
@@ -48,7 +47,6 @@ const labelStyle = {
   textTransform: "uppercase",
   letterSpacing: "0.1em",
   color: "var(--mauve)",
-  fontFamily: "'Inter', sans-serif",
   marginBottom: 6,
 };
 const primaryBtn = {
@@ -60,7 +58,6 @@ const primaryBtn = {
   fontWeight: 700,
   border: "none",
   cursor: "pointer",
-  fontFamily: "'Inter', sans-serif",
   display: "inline-flex",
   alignItems: "center",
   gap: 6,
@@ -106,7 +103,6 @@ function SettingsSidebar({ active, onSelect }) {
               marginBottom: 2,
               backgroundColor: isActive ? "#E11D48" : "transparent",
               color: isActive ? "white" : "var(--plum)",
-              fontFamily: "'Inter', sans-serif",
               fontSize: 13,
               fontWeight: 600,
               textAlign: "left",
@@ -169,7 +165,7 @@ function AccountSection({ user, profile, onProfileChange }) {
       footer={
         <>
           {saved && (
-            <span style={{ fontSize: 12, color: "#059669", fontFamily: "'Inter', sans-serif", display: "inline-flex", alignItems: "center", gap: 4 }}>
+            <span style={{ fontSize: 12, color: "#059669", display: "inline-flex", alignItems: "center", gap: 4 }}>
               <Check className="w-3.5 h-3.5" /> Saved
             </span>
           )}
@@ -233,7 +229,7 @@ function AccountSection({ user, profile, onProfileChange }) {
             placeholder="A short bio (max 200 chars)"
             style={{ ...inputStyle, resize: "vertical" }}
           />
-          <p style={{ fontSize: 11, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", textAlign: "right", marginTop: 4 }}>
+          <p style={{ fontSize: 11, color: "var(--mauve)", textAlign: "right", marginTop: 4 }}>
             {form.bio.length}/200
           </p>
         </div>
@@ -288,7 +284,7 @@ function NotificationsSection({ user, profile, onProfileChange }) {
       footer={
         <>
           {saved && (
-            <span style={{ fontSize: 12, color: "#059669", fontFamily: "'Inter', sans-serif", display: "inline-flex", alignItems: "center", gap: 4 }}>
+            <span style={{ fontSize: 12, color: "#059669", display: "inline-flex", alignItems: "center", gap: 4 }}>
               <Check className="w-3.5 h-3.5" /> Saved
             </span>
           )}
@@ -366,7 +362,7 @@ function PrivacySection({ user, profile, onProfileChange, onDownloadData }) {
         footer={
           <>
             {saved && (
-              <span style={{ fontSize: 12, color: "#059669", fontFamily: "'Inter', sans-serif", display: "inline-flex", alignItems: "center", gap: 4 }}>
+              <span style={{ fontSize: 12, color: "#059669", display: "inline-flex", alignItems: "center", gap: 4 }}>
                 <Check className="w-3.5 h-3.5" /> Saved
               </span>
             )}
@@ -521,14 +517,14 @@ function DataSection({ user, profile }) {
         <button onClick={exportJson} disabled={busy === "json"} style={{ ...primaryBtn, justifyContent: "center", width: "100%", opacity: busy === "json" ? 0.6 : 1 }}>
           <Download className="w-4 h-4" /> {busy === "json" ? "Preparing…" : "Export to JSON"}
         </button>
-        <p style={{ fontSize: 11, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", marginTop: -2, marginBottom: 4 }}>
+        <p style={{ fontSize: 11, color: "var(--mauve)", marginTop: -2, marginBottom: 4 }}>
           Everything: profile, cycles, check-ins, symptoms, habits, meds, sessions.
         </p>
 
         <button onClick={exportCsv} disabled={busy === "csv"} style={{ ...secondaryBtn, justifyContent: "center", width: "100%", opacity: busy === "csv" ? 0.6 : 1 }}>
           <FileText className="w-4 h-4" /> {busy === "csv" ? "Preparing…" : "Export to CSV"}
         </button>
-        <p style={{ fontSize: 11, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", marginTop: -2 }}>
+        <p style={{ fontSize: 11, color: "var(--mauve)", marginTop: -2 }}>
           Last 12 months — date, cycle day, flow, mood, energy, symptoms.
         </p>
       </div>
@@ -542,23 +538,23 @@ function AboutSection() {
     <SettingsCard title="About" description="App information and legal.">
       <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-          <span style={{ fontSize: 13, color: "var(--plum)", fontFamily: "'Inter', sans-serif", fontWeight: 600 }}>App version</span>
-          <span style={{ fontSize: 12, color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>{APP_VERSION}</span>
+          <span style={{ fontSize: 13, color: "var(--plum)", fontWeight: 600 }}>App version</span>
+          <span style={{ fontSize: 12, color: "var(--mauve)", }}>{APP_VERSION}</span>
         </div>
 
         <a href="/terms"
           style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 14px", borderRadius: 12, backgroundColor: "#F4EFE3", border: "1px solid #D8CFBC", textDecoration: "none" }}>
-          <span style={{ fontSize: 13, fontWeight: 600, color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>Terms of Service</span>
+          <span style={{ fontSize: 13, fontWeight: 600, color: "var(--plum)", }}>Terms of Service</span>
           <ChevronRight className="w-4 h-4" style={{ color: "#E11D48" }} />
         </a>
 
         <a href="/privacy"
           style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 14px", borderRadius: 12, backgroundColor: "#F4EFE3", border: "1px solid #D8CFBC", textDecoration: "none" }}>
-          <span style={{ fontSize: 13, fontWeight: 600, color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>Privacy Policy</span>
+          <span style={{ fontSize: 13, fontWeight: 600, color: "var(--plum)", }}>Privacy Policy</span>
           <ChevronRight className="w-4 h-4" style={{ color: "#E11D48" }} />
         </a>
 
-        <p style={{ fontSize: 12, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", textAlign: "center", marginTop: 8, display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 5 }}>
+        <p style={{ fontSize: 12, color: "var(--mauve)", textAlign: "center", marginTop: 8, display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 5 }}>
           Made with <Heart className="w-3.5 h-3.5" style={{ color: "#E11D48", fill: "#E11D48" }} /> for women everywhere
         </p>
       </div>
@@ -619,7 +615,7 @@ export default function Settings() {
       <div className="sticky top-0 z-30 px-4 pt-10 pb-3"
         style={{ backgroundColor: "rgba(250,248,245,0.97)", backdropFilter: "blur(20px)", borderBottom: "1px solid var(--border)" }}>
         <div className="max-w-4xl mx-auto">
-          <p style={{ fontSize: "0.6rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.14em", color: "#E11D48", fontFamily: "'Inter', sans-serif" }}>
+          <p style={{ fontSize: "0.6rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.14em", color: "#E11D48", }}>
             Your account
           </p>
           <h1 className="fw-display" style={{ marginTop: 2 }}>

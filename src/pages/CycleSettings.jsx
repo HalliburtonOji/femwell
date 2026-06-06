@@ -74,7 +74,7 @@ export default function CycleSettings() {
             }}>
             <ArrowLeft className="w-4 h-4" style={{ color: "var(--plum)" }} />
           </button>
-          <h1 style={{ fontSize: "20px", fontWeight: 700, fontFamily: "'Fraunces', serif", color: "var(--plum)", letterSpacing: "-0.01em" }}>
+          <h1 style={{ fontSize: "20px", fontWeight: 700, color: "var(--plum)", letterSpacing: "-0.01em" }}>
             Cycle Settings
           </h1>
         </div>
@@ -86,43 +86,43 @@ export default function CycleSettings() {
         <div style={{ ...card, padding: "24px" }} className="space-y-6">
 
           <div>
-            <p style={{ fontSize: "13px", fontWeight: 600, color: "var(--plum)", fontFamily: "'Inter', sans-serif", marginBottom: "4px" }}>
+            <p style={{ fontSize: "13px", fontWeight: 600, color: "var(--plum)", marginBottom: "4px" }}>
               Average cycle length
             </p>
-            <p style={{ fontSize: "28px", fontWeight: 700, color: "var(--rose-dust)", fontFamily: "'Inter', sans-serif", lineHeight: 1, marginBottom: "12px" }}>
+            <p style={{ fontSize: "28px", fontWeight: 700, color: "var(--rose-dust)", lineHeight: 1, marginBottom: "12px" }}>
               {cycleLength} days
             </p>
             <input type="range" min="21" max="40" value={cycleLength}
               onChange={(e) => setCycleLength(Number(e.target.value))}
               style={{ width: "100%", accentColor: "var(--rose-dust)" }} />
             <div className="flex justify-between" style={{ marginTop: "4px" }}>
-              <span style={{ fontSize: "11px", color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>21</span>
-              <span style={{ fontSize: "11px", color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>40</span>
+              <span style={{ fontSize: "11px", color: "var(--mauve)", }}>21</span>
+              <span style={{ fontSize: "11px", color: "var(--mauve)", }}>40</span>
             </div>
           </div>
 
           <div style={{ height: "1px", backgroundColor: "var(--border-subtle)" }} />
 
           <div>
-            <p style={{ fontSize: "13px", fontWeight: 600, color: "var(--plum)", fontFamily: "'Inter', sans-serif", marginBottom: "4px" }}>
+            <p style={{ fontSize: "13px", fontWeight: 600, color: "var(--plum)", marginBottom: "4px" }}>
               Period duration
             </p>
-            <p style={{ fontSize: "28px", fontWeight: 700, color: "var(--rose-dust)", fontFamily: "'Inter', sans-serif", lineHeight: 1, marginBottom: "12px" }}>
+            <p style={{ fontSize: "28px", fontWeight: 700, color: "var(--rose-dust)", lineHeight: 1, marginBottom: "12px" }}>
               {periodLength} days
             </p>
             <input type="range" min="2" max="10" value={periodLength}
               onChange={(e) => setPeriodLength(Number(e.target.value))}
               style={{ width: "100%", accentColor: "var(--rose-dust)" }} />
             <div className="flex justify-between" style={{ marginTop: "4px" }}>
-              <span style={{ fontSize: "11px", color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>2</span>
-              <span style={{ fontSize: "11px", color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>10</span>
+              <span style={{ fontSize: "11px", color: "var(--mauve)", }}>2</span>
+              <span style={{ fontSize: "11px", color: "var(--mauve)", }}>10</span>
             </div>
           </div>
 
           <div style={{ height: "1px", backgroundColor: "var(--border-subtle)" }} />
 
           <div>
-            <p style={{ fontSize: "13px", fontWeight: 600, color: "var(--plum)", fontFamily: "'Inter', sans-serif", marginBottom: "8px" }}>
+            <p style={{ fontSize: "13px", fontWeight: 600, color: "var(--plum)", marginBottom: "8px" }}>
               Last period start date
             </p>
             <input type="date" value={lastPeriod}
@@ -132,7 +132,7 @@ export default function CycleSettings() {
                 border: "1.5px solid var(--border)",
                 backgroundColor: "var(--surface)",
                 color: "var(--plum)", fontSize: "14px",
-                fontFamily: "'Inter', sans-serif", outline: "none"
+                outline: "none"
               }} />
           </div>
 

@@ -106,7 +106,7 @@ export default function TrackCalendar({ user, profile, onSelectDate, selectedDat
         >
           <ChevronLeft style={{ width: 16, height: 16, color: "var(--plum)" }} />
         </button>
-        <p style={{ fontSize: 16, fontWeight: 600, color: "var(--plum)", fontFamily: "'Fraunces', serif" }}>
+        <p style={{ fontSize: 16, fontWeight: 600, color: "var(--plum)", }}>
           {format(currentMonthDate, "MMMM yyyy")}
         </p>
         <button
@@ -121,7 +121,7 @@ export default function TrackCalendar({ user, profile, onSelectDate, selectedDat
       {/* Day headers */}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", marginBottom: 4 }}>
         {["Mo", "Tu", "We", "Th", "Fr", "Sa", "Su"].map(d => (
-          <div key={d} style={{ textAlign: "center", fontSize: 10, fontWeight: 600, color: "var(--mauve)", padding: "4px 0", fontFamily: "'Inter', sans-serif" }}>{d}</div>
+          <div key={d} style={{ textAlign: "center", fontSize: 10, fontWeight: 600, color: "var(--mauve)", padding: "4px 0", }}>{d}</div>
         ))}
       </div>
 
@@ -202,7 +202,7 @@ export default function TrackCalendar({ user, profile, onSelectDate, selectedDat
                   transition={{ type: "spring", stiffness: 380, damping: 35 }}
                 />
               )}
-              <span style={{ position: "relative", zIndex: 1, fontSize: 12, fontWeight, color: textColor, fontFamily: "'Inter', sans-serif", lineHeight: 1 }}>
+              <span style={{ position: "relative", zIndex: 1, fontSize: 12, fontWeight, color: textColor, lineHeight: 1 }}>
                 {format(day, "d")}
               </span>
               {(hasCheckin || dots.length > 0) && (
@@ -230,7 +230,7 @@ export default function TrackCalendar({ user, profile, onSelectDate, selectedDat
         ].map(({ color, label }) => (
           <div key={label} style={{ display: "flex", alignItems: "center", gap: 5 }}>
             <div style={{ width: 10, height: 10, borderRadius: 9999, backgroundColor: color }} />
-            <span style={{ fontSize: 11, color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>{label}</span>
+            <span style={{ fontSize: 11, color: "var(--mauve)", }}>{label}</span>
           </div>
         ))}
       </div>

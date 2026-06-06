@@ -138,7 +138,6 @@ const sectionStyle = {
   marginTop: 22,
 };
 const sectionTitleStyle = {
-  fontFamily: "'Fraunces', serif",
   fontSize: 17,
   fontWeight: 400,
   // H2-fix1: inside Plum Night SectionWrap — cream-on-night.
@@ -146,7 +145,6 @@ const sectionTitleStyle = {
   margin: "0 0 4px",
 };
 const sectionSubStyle = {
-  fontFamily: "'Fraunces', serif",
   fontStyle: "italic",
   fontSize: 12.5,
   lineHeight: 1.5,
@@ -184,7 +182,6 @@ const ribbonRowStyle = {
   gap: 10,
 };
 const ribbonLabelStyle = {
-  fontFamily: "'Inter', sans-serif",
   fontSize: 9,
   fontWeight: 700,
   letterSpacing: "0.16em",
@@ -192,7 +189,6 @@ const ribbonLabelStyle = {
   color: "rgba(247,239,225,0.62)",
 };
 const priceChipStyle = {
-  fontFamily: "'Fraunces', serif",
   fontSize: 15,
   color: "rgba(232,196,208,0.95)",
   background: "rgba(232,196,208,0.10)",
@@ -201,7 +197,6 @@ const priceChipStyle = {
   padding: "2px 10px",
 };
 const cardTitleStyle = {
-  fontFamily: "'Fraunces', serif",
   fontWeight: 400,
   fontSize: 17,
   lineHeight: 1.25,
@@ -209,7 +204,6 @@ const cardTitleStyle = {
   margin: "2px 0 0",
 };
 const cardSubStyle = {
-  fontFamily: "'Fraunces', serif",
   fontStyle: "italic",
   fontSize: 12,
   lineHeight: 1.5,
@@ -217,7 +211,6 @@ const cardSubStyle = {
   margin: 0,
 };
 const cardSpecimenStyle = {
-  fontFamily: "'Fraunces', serif",
   fontStyle: "italic",
   fontSize: 12,
   lineHeight: 1.55,
@@ -242,7 +235,6 @@ const cardFooterStyle = {
   paddingTop: 4,
 };
 const attributionStyle = {
-  fontFamily: "'Inter', sans-serif",
   fontSize: 9.5,
   fontWeight: 600,
   letterSpacing: "0.10em",
@@ -250,7 +242,6 @@ const attributionStyle = {
   color: "rgba(247,239,225,0.55)",
 };
 const ctaStyle = {
-  fontFamily: "'Inter', sans-serif",
   fontWeight: 600,
   fontSize: 12.5,
   color: "var(--plum-deep, #2b1e16)",

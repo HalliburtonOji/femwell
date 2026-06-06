@@ -236,8 +236,7 @@ export default function JessVoiceLogger({ open, onClose, user }) {
         padding: "max(env(safe-area-inset-top), 16px) 16px max(env(safe-area-inset-bottom), 16px)",
         boxSizing: "border-box",
         color: C.cream,
-        fontFamily: "'Inter', sans-serif",
-      }}
+        }}
     >
       <KeyframesBlock />
 
@@ -361,7 +360,6 @@ function TranscriptPanel({ stage, interim, final, errorMsg, extractedItemsCount 
         textAlign: "center",
         maxHeight: 160, overflowY: "auto",
         padding: "0 8px",
-        fontFamily: "'Fraunces', Georgia, serif",
         fontSize: 18, lineHeight: 1.5, fontStyle: "italic",
         color: C.cream,
         animation: "vl-bubble-in 320ms ease-out",
@@ -379,7 +377,6 @@ function TranscriptPanel({ stage, interim, final, errorMsg, extractedItemsCount 
       <p style={{
         margin: 0, fontSize: 12, letterSpacing: "0.08em",
         color: stage === "done" ? C.gold : C.muted,
-        fontFamily: "'Inter', sans-serif",
         textTransform: stage === "done" ? "uppercase" : "none",
         textAlign: "center",
       }}>{status}</p>
@@ -414,8 +411,7 @@ function BottomControls({
             flex: 1, minWidth: 0,
             background: "transparent", border: "none", outline: "none",
             color: C.cream, fontSize: 14,
-            fontFamily: "'Inter', sans-serif",
-          }}
+            }}
           onKeyDown={(e) => { if (e.key === "Enter") onFallbackSubmit(); }}
         />
         <button
@@ -475,7 +471,6 @@ function BottomControls({
               minWidth: 96, padding: "0 22px", height: 48,
               borderRadius: 9999, border: "none",
               background: C.espresso, color: C.cream, cursor: "pointer",
-              fontFamily: "'Inter', sans-serif",
               fontSize: 13.5, fontWeight: 700, letterSpacing: "0.04em",
             }}
           >Done</button>
@@ -488,7 +483,7 @@ function BottomControls({
           aria-label="Resume listening"
           style={{
             background: "transparent", color: C.muted, border: "none",
-            fontFamily: "'Inter', sans-serif", fontSize: 12,
+            fontSize: 12,
             cursor: "pointer",
             display: "inline-flex", alignItems: "center", gap: 4,
             opacity: 0,
@@ -519,13 +514,11 @@ function ConfirmationSheet({ items, onRemove, onSave, onTryAgain }) {
     >
       <p style={{
         margin: "0 0 4px",
-        fontFamily: "'Inter', sans-serif",
         fontSize: 10, fontWeight: 700, letterSpacing: "0.18em",
         textTransform: "uppercase", color: C.gold,
       }}>Jess heard this</p>
       <h2 style={{
         margin: "0 0 14px",
-        fontFamily: "'Fraunces', Georgia, serif",
         fontSize: 19, fontWeight: 600, color: C.espresso,
         letterSpacing: "-0.01em",
       }}>{items.length} thing{items.length === 1 ? "" : "s"} to log</h2>
@@ -550,13 +543,11 @@ function ConfirmationSheet({ items, onRemove, onSave, onTryAgain }) {
                   display: "inline-block", marginRight: 8,
                   padding: "1px 6px", borderRadius: 9999,
                   background: "rgba(255,255,255,0.5)",
-                  fontFamily: "'Inter', sans-serif",
                   fontSize: 9, fontWeight: 700, letterSpacing: "0.08em",
                   textTransform: "uppercase",
                   verticalAlign: "middle",
                 }}>{cat.label}</span>
                 <span style={{
-                  fontFamily: "'Inter', sans-serif",
                   fontSize: 13, lineHeight: 1.4,
                 }}>{item.display || JSON.stringify(item.data)}</span>
               </div>
@@ -587,7 +578,6 @@ function ConfirmationSheet({ items, onRemove, onSave, onTryAgain }) {
             cursor: items.length === 0 ? "not-allowed" : "pointer",
             opacity: items.length === 0 ? 0.5 : 1,
             display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 8,
-            fontFamily: "'Inter', sans-serif",
             fontSize: 13.5, fontWeight: 700, letterSpacing: "0.04em",
           }}
         ><Check size={14} aria-hidden /> Save {items.length} item{items.length === 1 ? "" : "s"}</button>
@@ -596,7 +586,6 @@ function ConfirmationSheet({ items, onRemove, onSave, onTryAgain }) {
           onClick={onTryAgain}
           style={{
             background: "transparent", color: C.muted, border: "none",
-            fontFamily: "'Inter', sans-serif",
             fontSize: 12, fontWeight: 700, letterSpacing: "0.04em",
             cursor: "pointer", padding: "8px 4px",
             display: "inline-flex", alignItems: "center", gap: 4,

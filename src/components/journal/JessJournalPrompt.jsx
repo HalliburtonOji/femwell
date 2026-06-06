@@ -181,8 +181,7 @@ export default function JessJournalPrompt({ user, profile, phase, lastEntry, onU
           <p style={{
             margin: 0, fontSize: 10, fontWeight: 700,
             letterSpacing: "0.16em", textTransform: "uppercase",
-            color: "#6B8F6B", fontFamily: "'Inter', sans-serif",
-          }}>Jess · Today's prompt</p>
+            color: "#6B8F6B", }}>Jess · Today's prompt</p>
         </div>
         <button
           type="button"
@@ -207,7 +206,6 @@ export default function JessJournalPrompt({ user, profile, phase, lastEntry, onU
       </div>
       <p style={{
         margin: 0, fontSize: 15,
-        fontFamily: "'Fraunces', serif",
         color: "#3A2C1A", lineHeight: 1.45,
       }}>
         {loading && !prompt ? (
@@ -227,7 +225,6 @@ export default function JessJournalPrompt({ user, profile, phase, lastEntry, onU
             background: "#3A2C1A", color: "#F4EDDB",
             border: "none", cursor: prompt && !loading ? "pointer" : "default",
             fontSize: 13, fontWeight: 600,
-            fontFamily: "'Inter', sans-serif",
             opacity: prompt && !loading ? 1 : 0.55,
           }}
         >
@@ -236,8 +233,7 @@ export default function JessJournalPrompt({ user, profile, phase, lastEntry, onU
         </button>
         <p style={{
           margin: 0, fontSize: 10, color: "#9B8B7A", fontStyle: "italic",
-          fontFamily: "'Inter', sans-serif",
-        }}>Not medical advice.</p>
+          }}>Not medical advice.</p>
       </div>
       <style>{`
         @keyframes jess-spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }

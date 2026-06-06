@@ -88,7 +88,6 @@ export default function GlossaryTip({ term, children }) {
             color: "#f5f0ff",
             fontSize: 12,
             lineHeight: 1.5,
-            fontFamily: "'Inter', sans-serif",
             fontWeight: 400,
             padding: "8px 12px",
             borderRadius: 8,

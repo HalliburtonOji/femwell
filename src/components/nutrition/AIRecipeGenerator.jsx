@@ -47,7 +47,7 @@ function TagInput({ tags, setTags, placeholder }) {
         <input value={input} onChange={(e) => setInput(e.target.value)}
           onKeyDown={(e) => { if (e.key === "Enter" || e.key === ",") { e.preventDefault(); add(); } }}
           placeholder={placeholder}
-          style={{ flex: 1, padding: "10px 12px", borderRadius: 12, border: "1px solid var(--border)", backgroundColor: "var(--ivory)", color: "var(--plum)", fontSize: 13, fontFamily: "'Inter', sans-serif", outline: "none" }}
+          style={{ flex: 1, padding: "10px 12px", borderRadius: 12, border: "1px solid var(--border)", backgroundColor: "var(--ivory)", color: "var(--plum)", fontSize: 13, outline: "none" }}
           onFocus={e => e.target.style.borderColor = "var(--rose-dust-light)"}
           onBlur={e => e.target.style.borderColor = "var(--border)"}
         />
@@ -401,8 +401,8 @@ export default function AIRecipeGenerator({ user, planGoal, plan, setPlan, onSav
           <Sparkles style={{ width: 16, height: 16, color: "var(--rose-dust)" }} />
         </div>
         <div className="flex-1">
-          <p style={{ fontSize: 14, fontWeight: 700, color: "var(--plum)", fontFamily: "'Inter', sans-serif", margin: 0 }}>AI Recipe and Meal Plan Generator</p>
-          <p style={{ fontSize: 12, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", margin: 0 }}>Tell the AI what you have, get a personalised plan</p>
+          <p style={{ fontSize: 14, fontWeight: 700, color: "var(--plum)", margin: 0 }}>AI Recipe and Meal Plan Generator</p>
+          <p style={{ fontSize: 12, color: "var(--mauve)", margin: 0 }}>Tell the AI what you have, get a personalised plan</p>
         </div>
         {open ? <ChevronUp style={{ width: 16, height: 16, color: "var(--mauve)" }} /> : <ChevronDown style={{ width: 16, height: 16, color: "var(--mauve)" }} />}
       </button>

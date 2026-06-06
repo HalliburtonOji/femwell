@@ -130,8 +130,7 @@ function computePhaseAverages(checkins, lastPeriodDate, cycleLen) {
 
 const sLabel = {
   fontSize: "0.6rem", fontWeight: 600, textTransform: "uppercase",
-  letterSpacing: "0.12em", color: "var(--mauve)", fontFamily: "'Inter', sans-serif",
-};
+  letterSpacing: "0.12em", color: "var(--mauve)", };
 
 const card = {
   backgroundColor: "var(--surface)", border: "1px solid var(--border)",
@@ -160,13 +159,13 @@ export default function PredictiveAnalysisCard({ profile, checkins }) {
     return (
       <div style={{ ...card, padding: "20px", marginBottom: "24px" }}>
         <p style={{ ...sLabel, marginBottom: "8px" }}>Predictive analysis</p>
-        <p style={{ fontSize: "14px", color: "var(--plum)", fontFamily: "'Fraunces', serif", marginBottom: "6px", fontWeight: 600 }}>
+        <p style={{ fontSize: "14px", color: "var(--plum)", marginBottom: "6px", fontWeight: 600 }}>
           No cycle data yet
         </p>
-        <p style={{ fontSize: "13px", color: "var(--mauve)", fontFamily: "'Inter', sans-serif", lineHeight: 1.6 }}>
+        <p style={{ fontSize: "13px", color: "var(--mauve)", lineHeight: 1.6 }}>
           Log your period start date in the Track tab to unlock cycle-based predictions.
         </p>
-        <Link to={createPageUrl("Today")} style={{ display: "inline-block", marginTop: "12px", backgroundColor: "var(--plum)", color: "white", borderRadius: "9999px", padding: "8px 18px", fontSize: "12px", fontWeight: 600, fontFamily: "'Inter', sans-serif", textDecoration: "none" }}>
+        <Link to={createPageUrl("Today")} style={{ display: "inline-block", marginTop: "12px", backgroundColor: "var(--plum)", color: "white", borderRadius: "9999px", padding: "8px 18px", fontSize: "12px", fontWeight: 600, textDecoration: "none" }}>
           Log cycle data
         </Link>
       </div>
@@ -183,7 +182,7 @@ export default function PredictiveAnalysisCard({ profile, checkins }) {
       {/* Section label */}
       <div style={{ marginBottom: "16px" }}>
         <p style={{ ...sLabel, color: "var(--rose-dust)" }}>Predictive analysis</p>
-        <p style={{ fontSize: "18px", fontWeight: 700, color: "var(--plum)", fontFamily: "'Inter', sans-serif", marginTop: "3px" }}>
+        <p style={{ fontSize: "18px", fontWeight: 700, color: "var(--plum)", marginTop: "3px" }}>
           Your next 14 days
         </p>
       </div>
@@ -200,7 +199,7 @@ export default function PredictiveAnalysisCard({ profile, checkins }) {
             const barHeight = Math.round(day.burden * 44);
             return (
               <div key={i} style={{ flexShrink: 0, width: 36, display: "flex", flexDirection: "column", alignItems: "center", gap: "4px" }}>
-                <div style={{ fontSize: "9px", color: isToday ? "var(--plum)" : "var(--mauve)", fontFamily: "'Inter', sans-serif", fontWeight: isToday ? 700 : 400 }}>
+                <div style={{ fontSize: "9px", color: isToday ? "var(--plum)" : "var(--mauve)", fontWeight: isToday ? 700 : 400 }}>
                   {isToday ? "Today" : format(day.date, "d")}
                 </div>
                 <div style={{ width: 28, height: 48, display: "flex", alignItems: "flex-end", justifyContent: "center" }}>
@@ -211,7 +210,7 @@ export default function PredictiveAnalysisCard({ profile, checkins }) {
                     transition: "height 0.3s",
                   }} />
                 </div>
-                <div style={{ fontSize: "8px", color: PHASE_COLORS[day.phase], fontFamily: "'Inter', sans-serif", fontWeight: 600 }}>
+                <div style={{ fontSize: "8px", color: PHASE_COLORS[day.phase], fontWeight: 600 }}>
                   {day.phase.slice(0, 3).toUpperCase()}
                 </div>
                 {isHigh && (
@@ -225,7 +224,7 @@ export default function PredictiveAnalysisCard({ profile, checkins }) {
           {[{ color: "var(--rose-dust)", label: "High load" }, { color: "#B89E6A", label: "Moderate" }, { color: "var(--sage)", label: "Low load" }].map(l => (
             <div key={l.label} style={{ display: "flex", alignItems: "center", gap: "5px" }}>
               <div style={{ width: 8, height: 8, borderRadius: 2, backgroundColor: l.color }} />
-              <span style={{ fontSize: "10px", color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>{l.label}</span>
+              <span style={{ fontSize: "10px", color: "var(--mauve)", }}>{l.label}</span>
             </div>
           ))}
         </div>
@@ -235,13 +234,13 @@ export default function PredictiveAnalysisCard({ profile, checkins }) {
       {upcomingHighDays && upcomingHighDays.length > 0 && (
         <div style={{ backgroundColor: "var(--rose-dust-subtle)", border: "1px solid var(--rose-dust-light)", borderRadius: "20px", padding: "16px 20px", marginBottom: "12px" }}>
           <p style={{ ...sLabel, color: "var(--rose-dust)", marginBottom: "8px" }}>High-symptom days ahead</p>
-          <p style={{ fontSize: "14px", color: "var(--plum)", fontFamily: "'Inter', sans-serif", lineHeight: 1.6 }}>
+          <p style={{ fontSize: "14px", color: "var(--plum)", lineHeight: 1.6 }}>
             Your {PHASE_LABELS[upcomingHighDays[0].phase].toLowerCase()} phase begins in{" "}
             <strong>{upcomingHighDays[0].daysFromNow} day{upcomingHighDays[0].daysFromNow !== 1 ? "s" : ""}</strong>.
             Based on your history, this is typically a higher-load window. Preparing now can make a real difference.
           </p>
           {upcomingHighDays.length > 1 && (
-            <p style={{ fontSize: "12px", color: "var(--mauve)", fontFamily: "'Inter', sans-serif", marginTop: "6px" }}>
+            <p style={{ fontSize: "12px", color: "var(--mauve)", marginTop: "6px" }}>
               {upcomingHighDays.length} high-load days in the next 10 days.
             </p>
           )}
@@ -257,11 +256,11 @@ export default function PredictiveAnalysisCard({ profile, checkins }) {
               In {nextTransition.daysUntil} day{nextTransition.daysUntil !== 1 ? "s" : ""} — {transitionInfo.label}
             </p>
           </div>
-          <p style={{ fontSize: "13px", color: "var(--plum)", fontFamily: "'Fraunces', serif", fontWeight: 600, marginBottom: "8px" }}>
+          <p style={{ fontSize: "13px", color: "var(--plum)", fontWeight: 600, marginBottom: "8px" }}>
             Watch for: {transitionInfo.symptoms.slice(0, 2).join(" · ")}
           </p>
           {transitionInfo.symptoms.length > 2 && (
-            <p style={{ fontSize: "12px", color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>
+            <p style={{ fontSize: "12px", color: "var(--mauve)", }}>
               Also possible: {transitionInfo.symptoms.slice(2).join(", ")}
             </p>
           )}
@@ -284,17 +283,17 @@ export default function PredictiveAnalysisCard({ profile, checkins }) {
                       backgroundColor: phase === currentPhase ? PHASE_COLORS[phase] : PHASE_COLORS[phase] + "70",
                     }} />
                   </div>
-                  <p style={{ fontSize: "8px", fontWeight: 700, color: PHASE_COLORS[phase], fontFamily: "'Inter', sans-serif", textTransform: "uppercase" }}>
+                  <p style={{ fontSize: "8px", fontWeight: 700, color: PHASE_COLORS[phase], textTransform: "uppercase" }}>
                     {phase.slice(0, 3)}
                   </p>
-                  <p style={{ fontSize: "10px", color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>
+                  <p style={{ fontSize: "10px", color: "var(--mauve)", }}>
                     {val != null ? `${val}/10` : "—"}
                   </p>
                 </div>
               );
             })}
           </div>
-          <p style={{ fontSize: "11px", color: "var(--mauve)", fontFamily: "'Inter', sans-serif", marginTop: "8px" }}>
+          <p style={{ fontSize: "11px", color: "var(--mauve)", marginTop: "8px" }}>
             Average symptom load from your check-in history
           </p>
         </div>
@@ -305,33 +304,33 @@ export default function PredictiveAnalysisCard({ profile, checkins }) {
         <p style={{ ...sLabel, marginBottom: "12px" }}>Prepare now — {PHASE_LABELS[currentPhase]} phase</p>
 
         {/* Recommended sessions */}
-        <p style={{ fontSize: "11px", fontWeight: 700, color: "var(--plum)", fontFamily: "'Inter', sans-serif", marginBottom: "8px", textTransform: "uppercase", letterSpacing: "0.06em" }}>Sessions</p>
+        <p style={{ fontSize: "11px", fontWeight: 700, color: "var(--plum)", marginBottom: "8px", textTransform: "uppercase", letterSpacing: "0.06em" }}>Sessions</p>
         <div style={{ display: "flex", gap: "8px", marginBottom: "14px", flexWrap: "wrap" }}>
           {selfCare.sessions.map((s, i) => (
             <Link key={i} to={s.route} style={{ display: "inline-block", backgroundColor: "var(--ivory-dark)", border: "1px solid var(--border)", borderRadius: "12px", padding: "8px 12px", textDecoration: "none" }}>
-              <p style={{ fontSize: "12px", fontWeight: 600, color: "var(--plum)", fontFamily: "'Inter', sans-serif", margin: 0 }}>{s.title}</p>
-              <p style={{ fontSize: "10px", color: "var(--mauve)", fontFamily: "'Inter', sans-serif", marginTop: "2px" }}>{s.type}</p>
+              <p style={{ fontSize: "12px", fontWeight: 600, color: "var(--plum)", margin: 0 }}>{s.title}</p>
+              <p style={{ fontSize: "10px", color: "var(--mauve)", marginTop: "2px" }}>{s.type}</p>
             </Link>
           ))}
         </div>
 
         {/* Nutrition */}
-        <p style={{ fontSize: "11px", fontWeight: 700, color: "var(--sage)", fontFamily: "'Inter', sans-serif", marginBottom: "8px", textTransform: "uppercase", letterSpacing: "0.06em" }}>Nutrition adjustments</p>
+        <p style={{ fontSize: "11px", fontWeight: 700, color: "var(--sage)", marginBottom: "8px", textTransform: "uppercase", letterSpacing: "0.06em" }}>Nutrition adjustments</p>
         <div style={{ marginBottom: "14px" }}>
           {selfCare.nutrition.map((tip, i) => (
             <div key={i} style={{ display: "flex", gap: "8px", marginBottom: "6px", alignItems: "flex-start" }}>
               <div style={{ width: 5, height: 5, borderRadius: "50%", backgroundColor: "var(--sage)", flexShrink: 0, marginTop: 5 }} />
-              <p style={{ fontSize: "12px", color: "var(--plum)", fontFamily: "'Inter', sans-serif", lineHeight: 1.5, margin: 0 }}>{tip}</p>
+              <p style={{ fontSize: "12px", color: "var(--plum)", lineHeight: 1.5, margin: 0 }}>{tip}</p>
             </div>
           ))}
         </div>
 
         {/* Content */}
-        <p style={{ fontSize: "11px", fontWeight: 700, color: "var(--rose-dust)", fontFamily: "'Inter', sans-serif", marginBottom: "8px", textTransform: "uppercase", letterSpacing: "0.06em" }}>Recommended reading</p>
+        <p style={{ fontSize: "11px", fontWeight: 700, color: "var(--rose-dust)", marginBottom: "8px", textTransform: "uppercase", letterSpacing: "0.06em" }}>Recommended reading</p>
         <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
           {selfCare.content.map((c, i) => (
             <Link key={i} to={c.route} style={{ display: "inline-block", backgroundColor: "var(--rose-dust-subtle)", border: "1px solid var(--rose-dust-light)", borderRadius: "9999px", padding: "6px 14px", textDecoration: "none" }}>
-              <p style={{ fontSize: "12px", fontWeight: 600, color: "var(--rose-dust)", fontFamily: "'Inter', sans-serif", margin: 0 }}>{c.label}</p>
+              <p style={{ fontSize: "12px", fontWeight: 600, color: "var(--rose-dust)", margin: 0 }}>{c.label}</p>
             </Link>
           ))}
         </div>

@@ -231,7 +231,6 @@ export default function MorningBriefSheet({ user, profile, onDismiss }) {
         position: "fixed", inset: 0, zIndex: 200,
         background: C.cream,
         color: C.espresso,
-        fontFamily: "'Inter', system-ui, sans-serif",
         display: "flex", flexDirection: "column",
         overflow: "hidden",
       }}
@@ -256,7 +255,6 @@ export default function MorningBriefSheet({ user, profile, onDismiss }) {
           <h1 className="fw-display" style={{ margin: "6px 0 14px" }}>{greeting}, {displayName}.</h1>
           <p style={{
             margin: 0, fontSize: 16, lineHeight: 1.55,
-            fontFamily: "'Fraunces', Georgia, serif",
             color: C.espresso, fontStyle: "italic",
           }}>{brief}</p>
           <p style={{

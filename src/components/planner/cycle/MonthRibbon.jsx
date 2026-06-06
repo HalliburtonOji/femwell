@@ -472,7 +472,6 @@ const emptyHintStyle = {
   marginBottom: 10,
 };
 const emptyHintLineStyle = {
-  fontFamily: "'Inter', sans-serif",
   fontSize: 12.5,
   lineHeight: 1.45,
   color: "var(--plum-2, #6B4559)",
@@ -487,7 +486,6 @@ const emptyHintCtaStyle = {
   borderRadius: 9999,
   background: "var(--plum, #4A2A3A)",
   color: "var(--cream, #FFFAF5)",
-  fontFamily: "'Inter', sans-serif",
   fontSize: 11.5,
   fontWeight: 700,
   letterSpacing: "0.02em",
@@ -505,7 +503,6 @@ const legendItemStyle = {
   display: "inline-flex",
   alignItems: "center",
   gap: 5,
-  fontFamily: "'Inter', sans-serif",
   fontSize: 9.5,
   fontWeight: 600,
   letterSpacing: "0.08em",
@@ -525,7 +522,6 @@ const headRowStyle = {
   marginBottom: 10,
 };
 const titleStyle = {
-  fontFamily: "'Fraunces', serif",
   fontSize: 22,
   fontWeight: 500,
   color: "var(--plum, #4A2A3A)",
@@ -533,7 +529,6 @@ const titleStyle = {
   margin: 0,
 };
 const metaStyle = {
-  fontFamily: "'Inter', sans-serif",
   fontSize: 11,
   fontWeight: 600,
   color: "var(--plum-mute, #8A7584)",
@@ -548,7 +543,6 @@ const chevBtnStyle = {
   border: "1px solid var(--border-subtle, rgba(74,42,58,0.10))",
   background: "var(--surface, #FFFFFF)",
   color: "var(--plum, #4A2A3A)",
-  fontFamily: "'Fraunces', serif",
   fontSize: 18,
   fontWeight: 600,
   lineHeight: 1,
@@ -563,7 +557,6 @@ const weekdayRowStyle = {
   marginBottom: 6,
 };
 const weekdayLabelStyle = {
-  fontFamily: "'Inter', sans-serif",
   fontSize: 9,
   fontWeight: 600,
   color: "var(--plum-mute, #8A7584)",
@@ -597,12 +590,10 @@ const cellBtnStyle = {
   minHeight: 56,
   border: "none",
   cursor: "pointer",
-  fontFamily: "'Inter', sans-serif",
   textAlign: "left",
   appearance: "none",
 };
 const dayNumStyle = {
-  fontFamily: "'Inter', sans-serif",
   fontWeight: 700,
   fontSize: 13,
   lineHeight: 1,

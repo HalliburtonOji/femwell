@@ -180,7 +180,6 @@ export default function PartnerPreviewBody({ user, profile, settings }) {
   return (
     <div style={{
       background: C.cream, color: C.espresso,
-      fontFamily: "'Inter', system-ui, sans-serif",
       padding: "20px 18px 32px",
       maxWidth: 560, margin: "0 auto",
     }}>
@@ -193,7 +192,7 @@ export default function PartnerPreviewBody({ user, profile, settings }) {
         </div>
         <h2 style={{
           margin: 0, fontSize: 22, fontWeight: 600,
-          fontFamily: "'Fraunces', Georgia, serif", color: C.espressoDk,
+          color: C.espressoDk,
           lineHeight: 1.18,
         }}>You've been shared someone's FemWell.</h2>
         <p style={{ margin: "6px 0 0", fontSize: 13, color: C.muted, lineHeight: 1.5 }}>
@@ -303,7 +302,6 @@ function iconChip(accent) {
 const cardTitle = {
   margin: 0,
   fontSize: 15, fontWeight: 600,
-  fontFamily: "'Fraunces', Georgia, serif",
   color: C.espressoDk,
 };
 const cardBody = {

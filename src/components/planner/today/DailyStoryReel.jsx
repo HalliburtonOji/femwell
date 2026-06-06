@@ -229,7 +229,6 @@ const reelHeadStyle = {
   letterSpacing: "0.22em",
   textTransform: "uppercase",
   color: "#A6862B",
-  fontFamily: "'Fraunces', Georgia, serif",
   margin: "0 0 8px",
 };
 const scrollRowStyle = {
@@ -280,7 +279,6 @@ const badgeStyle = {
   borderRadius: 9999,
   background: "rgba(20,16,32,0.55)",
   color: "var(--cream, #FFFAF5)",
-  fontFamily: "'Inter', sans-serif",
   fontSize: 10,
   fontWeight: 700,
   letterSpacing: "0.12em",
@@ -300,11 +298,9 @@ const eyebrowStyle = {
   textTransform: "uppercase",
   letterSpacing: "0.18em",
   color: "#A6862B",
-  fontFamily: "'Inter', sans-serif",
   margin: 0,
 };
 const titleStyle = {
-  fontFamily: "'Fraunces', Georgia, serif",
   fontSize: 17,
   fontWeight: 500,
   fontStyle: "italic",
@@ -318,7 +314,6 @@ const titleStyle = {
   overflow: "hidden",
 };
 const metaStyle = {
-  fontFamily: "'Inter', sans-serif",
   fontSize: 11,
   color: "#8A7458",
   margin: "auto 0 0",

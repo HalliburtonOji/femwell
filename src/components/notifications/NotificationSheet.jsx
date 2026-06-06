@@ -85,7 +85,7 @@ export default function NotificationSheet({ open, onClose, userId, onRead }) {
             {/* Header */}
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 18px 10px", borderBottom: "1px solid var(--border-subtle)", flexShrink: 0 }}>
               <div>
-                <p style={{ fontSize: 16, fontWeight: 700, color: "var(--plum)", fontFamily: "'Fraunces', serif" }}>Notifications</p>
+                <p style={{ fontSize: 16, fontWeight: 700, color: "var(--plum)", }}>Notifications</p>
               </div>
               <button onClick={onClose} style={{ width: 30, height: 30, borderRadius: 9999, border: "none", backgroundColor: "var(--ivory-dark)", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>
                 <X className="w-3.5 h-3.5" style={{ color: "var(--mauve)" }} />
@@ -101,7 +101,7 @@ export default function NotificationSheet({ open, onClose, userId, onRead }) {
               ) : notifications.length === 0 ? (
                 <div style={{ padding: "40px 20px", textAlign: "center" }}>
                   <Bell className="w-8 h-8 mx-auto mb-3" style={{ color: "var(--border)" }} />
-                  <p style={{ fontSize: 14, color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>No notifications yet</p>
+                  <p style={{ fontSize: 14, color: "var(--mauve)", }}>No notifications yet</p>
                 </div>
               ) : (
                 <div>
@@ -124,11 +124,11 @@ export default function NotificationSheet({ open, onClose, userId, onRead }) {
                         </div>
                         <div style={{ flex: 1, minWidth: 0 }}>
                           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, marginBottom: 2 }}>
-                            <p style={{ fontSize: 13, fontWeight: notif.is_read ? 500 : 700, color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>{notif.title}</p>
+                            <p style={{ fontSize: 13, fontWeight: notif.is_read ? 500 : 700, color: "var(--plum)", }}>{notif.title}</p>
                             {!notif.is_read && <div style={{ width: 7, height: 7, borderRadius: 9999, backgroundColor: "var(--rose-dust)", flexShrink: 0 }} />}
                           </div>
-                          {notif.body && <p style={{ fontSize: 12, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", lineHeight: 1.5 }}>{notif.body}</p>}
-                          {timeAgo && <p style={{ fontSize: 10, color: "var(--mauve-light)", fontFamily: "'Inter', sans-serif", marginTop: 3 }}>{timeAgo}</p>}
+                          {notif.body && <p style={{ fontSize: 12, color: "var(--mauve)", lineHeight: 1.5 }}>{notif.body}</p>}
+                          {timeAgo && <p style={{ fontSize: 10, color: "var(--mauve-light)", marginTop: 3 }}>{timeAgo}</p>}
                         </div>
                       </button>
                     );

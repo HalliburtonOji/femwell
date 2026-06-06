@@ -170,9 +170,9 @@ export default function DoctorReadyDiaryCard() {
         <Stethoscope size={20} style={{ color: "#A6862B" }} />
       </span>
       <span style={{ flex: 1, minWidth: 0 }}>
-        <span style={{ display: "block", fontFamily: "'Inter', sans-serif", fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.14em", color: "#8A7584", marginBottom: 4 }}>Doctor-Ready Diary</span>
-        <span style={{ display: "block", fontFamily: "'Fraunces', serif", fontSize: 18, fontWeight: 600, color: "var(--plum, #4A2A3A)", letterSpacing: "-0.01em", lineHeight: 1.25 }}>Build a GP-ready summary</span>
-        <span style={{ display: "block", fontFamily: "'Inter', sans-serif", fontSize: 12.5, color: "var(--plum-2, #6B4559)", lineHeight: 1.45, marginTop: 3 }}>
+        <span style={{ display: "block", fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.14em", color: "#8A7584", marginBottom: 4 }}>Doctor-Ready Diary</span>
+        <span style={{ display: "block", fontSize: 18, fontWeight: 600, color: "var(--plum, #4A2A3A)", letterSpacing: "-0.01em", lineHeight: 1.25 }}>Build a GP-ready summary</span>
+        <span style={{ display: "block", fontSize: 12.5, color: "var(--plum-2, #6B4559)", lineHeight: 1.45, marginTop: 3 }}>
           Choose your window and what to include, add your questions, and export a printable PDF — built on your device.
         </span>
       </span>

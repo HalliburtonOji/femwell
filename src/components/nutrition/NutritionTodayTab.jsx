@@ -80,8 +80,7 @@ const sLabel = {
   textTransform: "uppercase",
   letterSpacing: "0.12em",
   color: "var(--mauve)",
-  fontFamily: "'Inter', sans-serif",
-};
+  };
 
 function SkeletonCard() {
   return (
@@ -106,7 +105,7 @@ function QuickCheckCard({ analysis, onDismiss }) {
         <X className="w-4 h-4" />
       </button>
       {insight?.headline && (
-        <p className="text-sm font-semibold mb-1.5" style={{ color: "#1A6645", fontFamily: "'Fraunces', serif" }}>
+        <p className="text-sm font-semibold mb-1.5" style={{ color: "#1A6645", }}>
           {insight.headline}
         </p>
       )}
@@ -531,33 +530,33 @@ export default function NutritionTodayTab({ user, profile, nutritionProfile, day
           <div style={{ display: "flex", justifyContent: "center", marginBottom: 16 }}>
             <div style={{ width: 32, height: 4, borderRadius: 9999, backgroundColor: "var(--border)" }} />
           </div>
-          <p style={{ fontFamily: "'Fraunces', serif", fontSize: 17, fontWeight: 600, color: "var(--plum)", marginBottom: 20 }}>Log {drinkModal.label}</p>
+          <p style={{ fontSize: 17, fontWeight: 600, color: "var(--plum)", marginBottom: 20 }}>Log {drinkModal.label}</p>
           {CUSTOM_NAME_META[drinkModal.typeId] && (
             <div style={{ marginBottom: 16 }}>
-              <p style={{ fontSize: 11, fontWeight: 600, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", marginBottom: 6 }}>{CUSTOM_NAME_META[drinkModal.typeId].label}</p>
+              <p style={{ fontSize: 11, fontWeight: 600, color: "var(--mauve)", marginBottom: 6 }}>{CUSTOM_NAME_META[drinkModal.typeId].label}</p>
               <input
                 type="text"
                 value={drinkModal.customName}
                 onChange={e => setDrinkModal(prev => ({ ...prev, customName: e.target.value }))}
                 placeholder={CUSTOM_NAME_META[drinkModal.typeId].placeholder}
-                style={{ width: "100%", padding: "12px 14px", borderRadius: 14, border: "1px solid var(--border)", backgroundColor: "var(--ivory)", color: "var(--plum)", fontFamily: "'Inter', sans-serif", fontSize: 14, outline: "none", boxSizing: "border-box" }}
+                style={{ width: "100%", padding: "12px 14px", borderRadius: 14, border: "1px solid var(--border)", backgroundColor: "var(--ivory)", color: "var(--plum)", fontSize: 14, outline: "none", boxSizing: "border-box" }}
                 onFocus={e => e.target.style.borderColor = "var(--rose-dust-light)"}
                 onBlur={e => e.target.style.borderColor = "var(--border)"}
               />
             </div>
           )}
-          <p style={{ fontSize: 11, fontWeight: 600, color: "var(--mauve)", textTransform: "uppercase", letterSpacing: "0.1em", fontFamily: "'Inter', sans-serif", marginBottom: 10 }}>Size</p>
+          <p style={{ fontSize: 11, fontWeight: 600, color: "var(--mauve)", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 10 }}>Size</p>
           <div style={{ display: "flex", gap: 8, marginBottom: 24 }}>
             {DRINK_SIZES.map(sz => (
               <button key={sz.id} onClick={() => setDrinkModal(prev => ({ ...prev, size: sz.id }))}
-                style={{ flex: 1, padding: "10px 0", borderRadius: 14, cursor: "pointer", border: `1.5px solid ${drinkModal.size === sz.id ? "var(--plum)" : "var(--border)"}`, backgroundColor: drinkModal.size === sz.id ? "var(--plum)" : "var(--ivory)", color: drinkModal.size === sz.id ? "white" : "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>
+                style={{ flex: 1, padding: "10px 0", borderRadius: 14, cursor: "pointer", border: `1.5px solid ${drinkModal.size === sz.id ? "var(--plum)" : "var(--border)"}`, backgroundColor: drinkModal.size === sz.id ? "var(--plum)" : "var(--ivory)", color: drinkModal.size === sz.id ? "white" : "var(--mauve)", }}>
                 <p style={{ fontSize: 13, fontWeight: 600, margin: 0 }}>{sz.label}</p>
                 <p style={{ fontSize: 10, margin: 0, opacity: 0.7 }}>{sz.ml}ml</p>
               </button>
             ))}
           </div>
           <button onClick={confirmDrink} disabled={loggingDrink}
-            style={{ width: "100%", height: 52, borderRadius: 9999, backgroundColor: "var(--plum)", color: "white", border: "none", cursor: "pointer", fontSize: 15, fontWeight: 600, fontFamily: "'Inter', sans-serif", opacity: loggingDrink ? 0.6 : 1 }}>
+            style={{ width: "100%", height: 52, borderRadius: 9999, backgroundColor: "var(--plum)", color: "white", border: "none", cursor: "pointer", fontSize: 15, fontWeight: 600, opacity: loggingDrink ? 0.6 : 1 }}>
             {loggingDrink ? "Logging..." : "Log drink"}
           </button>
         </div>
@@ -569,8 +568,8 @@ export default function NutritionTodayTab({ user, profile, nutritionProfile, day
         {/* Calorie summary bar */}
         <div style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)", borderRadius: 20, padding: 20, boxShadow: "var(--shadow-sm)" }}>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
-            <p style={{ fontSize: 15, fontWeight: 600, color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>Today's nutrition</p>
-            <p style={{ fontSize: 13, color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>
+            <p style={{ fontSize: 15, fontWeight: 600, color: "var(--plum)", }}>Today's nutrition</p>
+            <p style={{ fontSize: 13, color: "var(--mauve)", }}>
               {grandTotalCalories > 0 ? `${Math.max(0, calorieTarget - grandTotalCalories)} remaining of ${calorieTarget}` : `Target: ${calorieTarget} kcal`}
             </p>
           </div>
@@ -585,8 +584,8 @@ export default function NutritionTodayTab({ user, profile, nutritionProfile, day
               { label: "Fat", value: `${Math.round(totalFat)}g` },
             ].map(chip => (
               <div key={chip.label} style={{ flex: 1, backgroundColor: "var(--ivory)", border: "1px solid var(--border)", borderRadius: 12, padding: "8px 4px", textAlign: "center" }}>
-                <p style={{ fontSize: 10, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 2 }}>{chip.label}</p>
-                <p style={{ fontSize: 14, fontWeight: 600, color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>{chip.value}</p>
+                <p style={{ fontSize: 10, color: "var(--mauve)", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 2 }}>{chip.label}</p>
+                <p style={{ fontSize: 14, fontWeight: 600, color: "var(--plum)", }}>{chip.value}</p>
               </div>
             ))}
           </div>
@@ -598,7 +597,7 @@ export default function NutritionTodayTab({ user, profile, nutritionProfile, day
         {/* Cycle wellness context */}
         {cycleWellnessTip && (
           <div className="rounded-[20px] px-4 py-3 mb-0" style={{ backgroundColor: "var(--rose-dust-subtle)", border: "1px solid var(--rose-dust-light)" }}>
-            <p className="text-xs leading-relaxed" style={{ color: "var(--rose-dust)", fontFamily: "'Inter', sans-serif" }}>
+            <p className="text-xs leading-relaxed" style={{ color: "var(--rose-dust)", }}>
               {cycleWellnessTip.tip}
             </p>
           </div>
@@ -645,7 +644,7 @@ export default function NutritionTodayTab({ user, profile, nutritionProfile, day
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
             <p style={sLabel}>Log a Meal</p>
             <button onClick={() => setShowFoodLookup(true)}
-              style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 11, fontWeight: 600, color: "var(--rose-dust)", backgroundColor: "var(--rose-dust-subtle)", border: "1px solid var(--rose-dust-light)", borderRadius: 9999, padding: "4px 10px", cursor: "pointer", fontFamily: "'Inter', sans-serif" }}>
+              style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 11, fontWeight: 600, color: "var(--rose-dust)", backgroundColor: "var(--rose-dust-subtle)", border: "1px solid var(--rose-dust-light)", borderRadius: 9999, padding: "4px 10px", cursor: "pointer", }}>
               <BookOpen style={{ width: 11, height: 11 }} /> Food library
             </button>
           </div>
@@ -655,7 +654,7 @@ export default function NutritionTodayTab({ user, profile, nutritionProfile, day
             placeholder="What did you eat? Describe naturally…"
             rows={2}
             className="w-full p-4 rounded-2xl text-sm resize-none focus:outline-none transition-all"
-            style={{ backgroundColor: "var(--ivory)", border: "1.5px solid var(--border)", color: "var(--plum)", fontFamily: "'Inter', sans-serif", lineHeight: 1.6 }}
+            style={{ backgroundColor: "var(--ivory)", border: "1.5px solid var(--border)", color: "var(--plum)", lineHeight: 1.6 }}
             onFocus={e => e.target.style.borderColor = "var(--rose-dust-light)"}
             onBlur={e => e.target.style.borderColor = "var(--border)"}
           />
@@ -675,8 +674,7 @@ export default function NutritionTodayTab({ user, profile, nutritionProfile, day
                     backgroundColor: isActive ? "var(--plum)" : "var(--ivory)",
                     color: isActive ? "white" : "var(--mauve)",
                     border: `1px solid ${isActive ? "var(--plum)" : "var(--border)"}`,
-                    fontFamily: "'Inter', sans-serif",
-                  }}>
+                    }}>
                   {MEAL_LABELS[t]}
                 </button>
               );
@@ -688,7 +686,7 @@ export default function NutritionTodayTab({ user, profile, nutritionProfile, day
             {PORTION_LABELS.map((p) => (
               <button key={p.id} onClick={() => setPortionSize(p.id)} style={{
                 flex: 1, padding: "7px 0", borderRadius: 12, fontSize: 12, fontWeight: 600,
-                fontFamily: "'Inter', sans-serif", cursor: "pointer", transition: "all 0.15s",
+                cursor: "pointer", transition: "all 0.15s",
                 border: portionSize === p.id ? "1.5px solid var(--plum)" : "1.5px solid var(--border)",
                 backgroundColor: portionSize === p.id ? "var(--plum)" : "var(--ivory)",
                 color: portionSize === p.id ? "white" : "var(--mauve)",
@@ -701,7 +699,7 @@ export default function NutritionTodayTab({ user, profile, nutritionProfile, day
           {/* Wellness goal */}
           <button onClick={() => setShowGoalPicker(!showGoalPicker)}
             className="flex items-center gap-1.5 text-xs font-medium mb-3 transition-colors"
-            style={{ color: selectedGoal ? "var(--rose-dust)" : "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>
+            style={{ color: selectedGoal ? "var(--rose-dust)" : "var(--mauve)", }}>
             <Target className="w-3.5 h-3.5" />
             {selectedGoalObj ? selectedGoalObj.label : "Set wellness focus (optional)"}
           </button>
@@ -757,7 +755,7 @@ export default function NutritionTodayTab({ user, profile, nutritionProfile, day
               {templates.map((t) => (
                 <button key={t.id} onClick={() => { setMealText(t.title); setMealType(t.default_meal_type); setShowTemplates(false); }}
                   className="w-full text-left px-4 py-3 text-sm transition-colors"
-                  style={{ color: "var(--plum)", borderBottom: "1px solid var(--border-subtle)", fontFamily: "'Inter', sans-serif" }}
+                  style={{ color: "var(--plum)", borderBottom: "1px solid var(--border-subtle)", }}
                   onMouseEnter={e => e.currentTarget.style.backgroundColor = "var(--ivory)"}
                   onMouseLeave={e => e.currentTarget.style.backgroundColor = "transparent"}>
                   <span className="font-medium text-xs capitalize mr-2" style={{ color: "var(--mauve)" }}>
@@ -773,10 +771,10 @@ export default function NutritionTodayTab({ user, profile, nutritionProfile, day
         {/* Drinks logger */}
         <div className="rounded-[24px] p-5" style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)", boxShadow: "var(--shadow-sm)" }}>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: showDrinks ? 14 : 0 }}>
-            <p style={{ fontSize: "0.6rem", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.12em", color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>Drinks</p>
+            <p style={{ fontSize: "0.6rem", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.12em", color: "var(--mauve)", }}>Drinks</p>
             <button
               onClick={() => setShowDrinks(!showDrinks)}
-              style={{ fontSize: 12, fontWeight: 600, color: "var(--rose-dust)", fontFamily: "'Inter', sans-serif", background: "none", border: "none", cursor: "pointer" }}
+              style={{ fontSize: 12, fontWeight: 600, color: "var(--rose-dust)", background: "none", border: "none", cursor: "pointer" }}
             >
               {showDrinks ? "Close" : "Log drink"}
             </button>
@@ -793,8 +791,8 @@ export default function NutritionTodayTab({ user, profile, nutritionProfile, day
                     disabled={loggingDrink}
                     style={{ display: "flex", flexDirection: "column", alignItems: "center", padding: "8px 14px", borderRadius: 9999, border: "1px solid var(--border)", backgroundColor: bg, cursor: "pointer", opacity: loggingDrink ? 0.5 : 1 }}
                   >
-                    <span style={{ fontSize: 12, fontWeight: 600, color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>{d.label}</span>
-                    {cals > 0 && <span style={{ fontSize: 10, color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>~{cals} kcal</span>}
+                    <span style={{ fontSize: 12, fontWeight: 600, color: "var(--plum)", }}>{d.label}</span>
+                    {cals > 0 && <span style={{ fontSize: 10, color: "var(--mauve)", }}>~{cals} kcal</span>}
                   </button>
                 );
               })}
@@ -802,42 +800,42 @@ export default function NutritionTodayTab({ user, profile, nutritionProfile, day
                 onClick={() => setShowCustomDrink(v => !v)}
                 style={{ display: "flex", flexDirection: "column", alignItems: "center", padding: "8px 14px", borderRadius: 9999, border: "1px solid var(--rose-dust-light)", backgroundColor: "var(--rose-dust-subtle)", cursor: "pointer" }}
               >
-                <span style={{ fontSize: 12, fontWeight: 600, color: "var(--rose-dust)", fontFamily: "'Inter', sans-serif" }}>+ Custom</span>
+                <span style={{ fontSize: 12, fontWeight: 600, color: "var(--rose-dust)", }}>+ Custom</span>
               </button>
             </div>
           )}
           {showDrinks && showCustomDrink && (
             <div style={{ backgroundColor: "var(--ivory)", borderRadius: 14, padding: 12, border: "1px solid var(--border)", marginBottom: 14 }}>
-              <p style={{ fontSize: 11, fontWeight: 600, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", marginBottom: 8 }}>Custom drink</p>
+              <p style={{ fontSize: 11, fontWeight: 600, color: "var(--mauve)", marginBottom: 8 }}>Custom drink</p>
               <input value={customDrinkName} onChange={e => setCustomDrinkName(e.target.value)} placeholder="e.g. matcha latte"
-                style={{ width: "100%", padding: "10px 12px", borderRadius: 12, border: "1px solid var(--border)", backgroundColor: "var(--surface)", color: "var(--plum)", fontSize: 13, fontFamily: "'Inter', sans-serif", outline: "none", boxSizing: "border-box", marginBottom: 8 }}
+                style={{ width: "100%", padding: "10px 12px", borderRadius: 12, border: "1px solid var(--border)", backgroundColor: "var(--surface)", color: "var(--plum)", fontSize: 13, outline: "none", boxSizing: "border-box", marginBottom: 8 }}
                 onFocus={e => e.target.style.borderColor = "var(--rose-dust-light)"} onBlur={e => e.target.style.borderColor = "var(--border)"} />
               <div style={{ display: "flex", gap: 8, marginBottom: 10 }}>
                 <div style={{ flex: 1 }}>
-                  <p style={{ fontSize: 10, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", marginBottom: 4 }}>Size (ml)</p>
+                  <p style={{ fontSize: 10, color: "var(--mauve)", marginBottom: 4 }}>Size (ml)</p>
                   <input type="number" value={customDrinkMl} onChange={e => setCustomDrinkMl(e.target.value)}
-                    style={{ width: "100%", padding: "8px 10px", borderRadius: 10, border: "1px solid var(--border)", backgroundColor: "var(--surface)", color: "var(--plum)", fontSize: 13, fontFamily: "'Inter', sans-serif", outline: "none", boxSizing: "border-box" }} />
+                    style={{ width: "100%", padding: "8px 10px", borderRadius: 10, border: "1px solid var(--border)", backgroundColor: "var(--surface)", color: "var(--plum)", fontSize: 13, outline: "none", boxSizing: "border-box" }} />
                 </div>
                 <div style={{ flex: 1 }}>
-                  <p style={{ fontSize: 10, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", marginBottom: 4 }}>Calories</p>
+                  <p style={{ fontSize: 10, color: "var(--mauve)", marginBottom: 4 }}>Calories</p>
                   <input type="number" value={customDrinkCals} onChange={e => setCustomDrinkCals(e.target.value)}
-                    style={{ width: "100%", padding: "8px 10px", borderRadius: 10, border: "1px solid var(--border)", backgroundColor: "var(--surface)", color: "var(--plum)", fontSize: 13, fontFamily: "'Inter', sans-serif", outline: "none", boxSizing: "border-box" }} />
+                    style={{ width: "100%", padding: "8px 10px", borderRadius: 10, border: "1px solid var(--border)", backgroundColor: "var(--surface)", color: "var(--plum)", fontSize: 13, outline: "none", boxSizing: "border-box" }} />
                 </div>
               </div>
               <button onClick={logCustomDrink} disabled={!customDrinkName.trim() || loggingDrink}
-                style={{ width: "100%", padding: "9px", borderRadius: 9999, backgroundColor: "var(--plum)", color: "white", border: "none", fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: "'Inter', sans-serif", opacity: !customDrinkName.trim() ? 0.5 : 1 }}>
+                style={{ width: "100%", padding: "9px", borderRadius: 9999, backgroundColor: "var(--plum)", color: "white", border: "none", fontSize: 12, fontWeight: 600, cursor: "pointer", opacity: !customDrinkName.trim() ? 0.5 : 1 }}>
                 {loggingDrink ? "Logging..." : "Log drink"}
               </button>
             </div>
           )}
           {drinkLogs.length === 0 ? (
-            <p style={{ fontSize: 12, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", marginTop: showDrinks ? 0 : 10 }}>No drinks logged today.</p>
+            <p style={{ fontSize: 12, color: "var(--mauve)", marginTop: showDrinks ? 0 : 10 }}>No drinks logged today.</p>
           ) : (
             <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginTop: showDrinks ? 0 : 10 }}>
               {drinkLogs.filter(Boolean).map((log, i) => {
                 const info = DRINK_TYPES.find((d) => d.id === log.drink_type);
                 return (
-                  <span key={i} style={{ fontSize: 11, fontWeight: 600, color: "var(--plum)", backgroundColor: "var(--ivory-dark)", borderRadius: 9999, padding: "4px 10px", fontFamily: "'Inter', sans-serif" }}>
+                  <span key={i} style={{ fontSize: 11, fontWeight: 600, color: "var(--plum)", backgroundColor: "var(--ivory-dark)", borderRadius: 9999, padding: "4px 10px", }}>
                     {info?.label || log.drink_type}{log.calories > 0 ? ` · ${log.calories} kcal` : ""}
                   </span>
                 );
@@ -845,7 +843,7 @@ export default function NutritionTodayTab({ user, profile, nutritionProfile, day
             </div>
           )}
           {totalDrinkCalories > 0 && (
-            <p style={{ fontSize: 11, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", marginTop: 8 }}>{totalDrinkCalories} kcal from drinks today</p>
+            <p style={{ fontSize: 11, color: "var(--mauve)", marginTop: 8 }}>{totalDrinkCalories} kcal from drinks today</p>
           )}
         </div>
 
@@ -871,10 +869,10 @@ export default function NutritionTodayTab({ user, profile, nutritionProfile, day
                     <div key={meal.id} className="rounded-2xl p-4" style={{ backgroundColor: "var(--ivory)", border: "1px solid var(--border-subtle)" }}>
                       <div className="flex items-start justify-between gap-2">
                         <div className="flex-1 min-w-0">
-                          <p className="text-sm font-medium leading-snug" style={{ color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>{meal.raw_text}</p>
+                          <p className="text-sm font-medium leading-snug" style={{ color: "var(--plum)", }}>{meal.raw_text}</p>
                           {meal.portion_size && meal.portion_size !== "medium" && (
                             <span style={{ fontSize: 10, fontWeight: 600, color: "var(--mauve)", backgroundColor: "var(--ivory-dark)",
-                              borderRadius: 20, padding: "2px 8px", marginLeft: 4, fontFamily: "'Inter', sans-serif" }}>
+                              borderRadius: 20, padding: "2px 8px", marginLeft: 4, }}>
                               {meal.portion_size.charAt(0).toUpperCase() + meal.portion_size.slice(1)}
                             </span>
                           )}
@@ -908,13 +906,13 @@ export default function NutritionTodayTab({ user, profile, nutritionProfile, day
                           )}
                           {/* Items list */}
                           {analysis?.items?.length > 0 && (
-                            <p className="text-[11px] mt-1.5" style={{ color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>
+                            <p className="text-[11px] mt-1.5" style={{ color: "var(--mauve)", }}>
                               {analysis.items.slice(0, 5).map(it => `${it.name}${it.calories ? ` ${it.calories}kcal` : ""}`).join(" · ")}
                             </p>
                           )}
                           {/* Insight headline */}
                           {analysis?.insight?.headline && (
-                            <p className="text-[11px] mt-1.5 italic" style={{ color: "var(--sage)", fontFamily: "'Inter', sans-serif" }}>
+                            <p className="text-[11px] mt-1.5 italic" style={{ color: "var(--sage)", }}>
                               {analysis.insight.headline}
                             </p>
                           )}
@@ -922,7 +920,7 @@ export default function NutritionTodayTab({ user, profile, nutritionProfile, day
                             {meal.logged_at ? format(new Date(meal.logged_at), "HH:mm") : ""}
                           </p>
                           {analysisSummary?.calories > 0 && (
-                            <span style={{ backgroundColor: "var(--ivory-dark)", borderRadius: "9999px", padding: "2px 8px", fontSize: "11px", fontWeight: 600, color: "var(--mauve)", marginTop: "4px", display: "inline-block", fontFamily: "'Inter', sans-serif" }}>
+                            <span style={{ backgroundColor: "var(--ivory-dark)", borderRadius: "9999px", padding: "2px 8px", fontSize: "11px", fontWeight: 600, color: "var(--mauve)", marginTop: "4px", display: "inline-block", }}>
                               ~{analysisSummary.calories} kcal
                             </span>
                           )}
@@ -956,7 +954,7 @@ export default function NutritionTodayTab({ user, profile, nutritionProfile, day
         {!loading && meals.length > 0 && (
           <button
             onClick={() => { document.querySelector('textarea')?.scrollIntoView({ behavior: 'smooth' }); document.querySelector('textarea')?.focus(); }}
-            style={{ display: "flex", alignItems: "center", gap: 8, width: "100%", padding: "12px 18px", borderRadius: 16, backgroundColor: "var(--rose-dust-subtle)", border: "1px solid var(--rose-dust-light)", cursor: "pointer", fontFamily: "'Inter', sans-serif" }}
+            style={{ display: "flex", alignItems: "center", gap: 8, width: "100%", padding: "12px 18px", borderRadius: 16, backgroundColor: "var(--rose-dust-subtle)", border: "1px solid var(--rose-dust-light)", cursor: "pointer", }}
           >
             <Plus style={{ width: 16, height: 16, color: "var(--rose-dust)", flexShrink: 0 }} />
             <span style={{ fontSize: 13, fontWeight: 600, color: "var(--rose-dust)" }}>Log another meal</span>
@@ -980,7 +978,7 @@ export default function NutritionTodayTab({ user, profile, nutritionProfile, day
           <div className="flex items-center justify-between mb-4">
             <div>
               <p style={sLabel} className="mb-0.5">Hydration</p>
-              <p className="text-sm font-semibold" style={{ color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>
+              <p className="text-sm font-semibold" style={{ color: "var(--plum)", }}>
                 {totalHydration}ml
                 <span className="text-xs font-normal ml-1" style={{ color: "var(--mauve)" }}>/ {hydrationTargetMl}ml</span>
               </p>

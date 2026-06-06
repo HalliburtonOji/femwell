@@ -96,8 +96,7 @@ export default function ExpandedPlayer() {
         flexDirection: 'column',
         padding: '24px 24px 48px',
         overflowY: 'auto',
-        fontFamily: "'Inter', sans-serif",
-      }}
+        }}
     >
       {/* Top row: close */}
       <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 12 }}>
@@ -162,7 +161,6 @@ export default function ExpandedPlayer() {
         </p>
         <h2
           style={{
-            fontFamily: "'Fraunces', serif",
             fontSize: 22,
             fontWeight: 500,
             color: 'var(--plum-deep, #2b1e16)',
@@ -419,7 +417,6 @@ const pillButton = {
   cursor: 'pointer',
   fontSize: 12,
   fontWeight: 600,
-  fontFamily: "'Inter', sans-serif",
   minHeight: 36,
 };
 
@@ -435,7 +432,6 @@ const menuItem = {
   background: 'transparent',
   border: 'none',
   textAlign: 'left',
-  fontFamily: "'Inter', sans-serif",
   fontSize: 13,
   fontWeight: 500,
   color: 'var(--plum-deep, #2b1e16)',

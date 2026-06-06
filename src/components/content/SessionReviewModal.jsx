@@ -43,7 +43,7 @@ export default function SessionReviewModal({ item, user, onClose }) {
 
   const skipJournal = () => setStep("done");
 
-  const inputStyle = { width: "100%", border: "1px solid var(--border)", borderRadius: 12, padding: "8px 12px", fontSize: 13, color: "var(--plum)", backgroundColor: "var(--ivory)", fontFamily: "'Inter', sans-serif", outline: "none", resize: "none", boxSizing: "border-box" };
+  const inputStyle = { width: "100%", border: "1px solid var(--border)", borderRadius: 12, padding: "8px 12px", fontSize: 13, color: "var(--plum)", backgroundColor: "var(--ivory)", outline: "none", resize: "none", boxSizing: "border-box" };
 
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center sm:items-center px-4 pb-4 sm:pb-0" style={{ backgroundColor: "rgba(0,0,0,0.6)", backdropFilter: "blur(4px)" }}>

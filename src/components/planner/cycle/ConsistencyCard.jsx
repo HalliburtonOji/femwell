@@ -120,7 +120,6 @@ const kickerStyle = {
   textTransform: "uppercase",
   letterSpacing: "0.14em",
   color: "var(--plum-mute, #8A7584)",
-  fontFamily: "'Inter', sans-serif",
   margin: 0,
 };
 const freezeChipStyle = {
@@ -132,12 +131,10 @@ const freezeChipStyle = {
   borderRadius: 9999,
   background: "var(--rose-soft, #F5D7CC)",
   color: "var(--rose-primary, #D45E52)",
-  fontFamily: "'Inter', sans-serif",
-};
+  };
 const emptyStyle = {
   fontSize: 12.5,
   color: "var(--plum-2, #6B4559)",
-  fontFamily: "'Inter', sans-serif",
   lineHeight: 1.5,
   margin: "4px 0 0",
 };
@@ -148,13 +145,11 @@ const rowNameStyle = {
   fontSize: 13,
   fontWeight: 600,
   color: "var(--plum, #4A2A3A)",
-  fontFamily: "'Inter', sans-serif",
-};
+  };
 const rowPctStyle = {
   fontSize: 12,
   fontWeight: 700,
   color: "var(--plum-2, #6B4559)",
-  fontFamily: "'Inter', sans-serif",
   letterSpacing: "0.02em",
 };
 const barOuterStyle = {
@@ -172,6 +167,5 @@ const footnoteStyle = {
   fontSize: 11.5,
   color: "var(--plum-mute, #8A7584)",
   fontStyle: "italic",
-  fontFamily: "'Inter', sans-serif",
   margin: "10px 0 0",
 };

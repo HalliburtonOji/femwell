@@ -149,8 +149,7 @@ export default function HrtTodayCard({ user, profile }) {
       borderRadius: 16,
       padding: "14px 14px 12px",
       display: "flex", flexDirection: "column", gap: 12,
-      fontFamily: "'Inter', system-ui, sans-serif",
-    }}>
+      }}>
       <header style={{ display: "flex", alignItems: "center", gap: 10 }}>
         <span style={{
           width: 32, height: 32, borderRadius: 10,
@@ -163,7 +162,7 @@ export default function HrtTodayCard({ user, profile }) {
           </p>
           <h3 style={{
             margin: "2px 0 0", fontSize: 16, fontWeight: 600,
-            fontFamily: "'Fraunces', Georgia, serif", color: C.espresso, lineHeight: 1.2,
+            color: C.espresso, lineHeight: 1.2,
             overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
           }}>{hrtName}</h3>
         </div>

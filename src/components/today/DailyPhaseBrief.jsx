@@ -82,7 +82,7 @@ export default function DailyPhaseBrief({ profile }) {
     }}>
       <div className="flex items-center gap-2 mb-3">
         <div>
-          <p style={{ fontSize: "0.6rem", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.12em", color: content.color, fontFamily: "'Inter', sans-serif" }}>
+          <p style={{ fontSize: "0.6rem", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.12em", color: content.color, }}>
             Day {info.dayOfCycle} · {info.phase.charAt(0).toUpperCase() + info.phase.slice(1)} phase
           </p>
           
@@ -98,8 +98,8 @@ export default function DailyPhaseBrief({ profile }) {
           { label: "Move", text: content.move },
         ].map(row => (
           <div key={row.label} style={{ display: "flex", gap: 8 }}>
-            <span style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.09em", color: content.color, fontFamily: "'Inter', sans-serif", width: 42, flexShrink: 0, paddingTop: 2 }}>{row.label}</span>
-            <p style={{ fontSize: 13.5, color: "var(--plum)", fontFamily: "'Cormorant Garamond', Georgia, serif", fontWeight: 600, lineHeight: 1.5 }}>{row.text}</p>
+            <span style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.09em", color: content.color, width: 42, flexShrink: 0, paddingTop: 2 }}>{row.label}</span>
+            <p style={{ fontSize: 13.5, color: "var(--plum)", fontWeight: 600, lineHeight: 1.5 }}>{row.text}</p>
           </div>
         ))}
       </div>

@@ -179,7 +179,6 @@ const headerRowStyle = {
   marginBottom: 14,
 };
 const eyebrowStyle = {
-  fontFamily: "'Inter', sans-serif",
   fontWeight: 700,
   fontSize: 11,
   letterSpacing: "0.14em",
@@ -188,7 +187,6 @@ const eyebrowStyle = {
   margin: "0 0 6px",
 };
 const titleStyle = {
-  fontFamily: "'Fraunces', serif",
   fontWeight: 400,
   fontSize: 24,
   lineHeight: 1.15,
@@ -206,7 +204,6 @@ const closeBtnStyle = {
   flexShrink: 0,
 };
 const bodyTextStyle = {
-  fontFamily: "'Inter', sans-serif",
   fontSize: 14,
   lineHeight: 1.55,
   color: "var(--plum-mute, #6b4a56)",
@@ -215,7 +212,6 @@ const bodyTextStyle = {
 const fieldStyle = { marginBottom: 18 };
 const labelStyle = {
   display: "block",
-  fontFamily: "'Inter', sans-serif",
   fontSize: 12,
   fontWeight: 600,
   color: "var(--plum-deep, #2b1e16)",
@@ -229,7 +225,6 @@ const optionalStyle = {
 };
 const inputStyle = {
   width: "100%",
-  fontFamily: "'Inter', sans-serif",
   fontSize: 15,
   padding: "12px 14px",
   borderRadius: 12,
@@ -240,13 +235,11 @@ const inputStyle = {
   minHeight: 44,
 };
 const hintStyle = {
-  fontFamily: "'Inter', sans-serif",
   fontSize: 12,
   color: "var(--plum-mute, #6b4a56)",
   margin: "6px 0 0",
 };
 const errorStyle = {
-  fontFamily: "'Inter', sans-serif",
   fontSize: 13,
   fontWeight: 500,
   color: "#A0312A",
@@ -262,7 +255,6 @@ const actionsRowStyle = {
 };
 const secondaryBtnStyle = {
   flex: 1,
-  fontFamily: "'Inter', sans-serif",
   fontSize: 14,
   fontWeight: 600,
   color: "var(--plum-mute, #6b4a56)",
@@ -275,7 +267,6 @@ const secondaryBtnStyle = {
 };
 const primaryBtnStyle = {
   flex: 2,
-  fontFamily: "'Inter', sans-serif",
   fontSize: 14,
   fontWeight: 600,
   color: "var(--cream, #FAF4EA)",

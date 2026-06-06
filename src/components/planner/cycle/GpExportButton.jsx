@@ -618,7 +618,6 @@ const headRow = {
   marginBottom: 10,
 };
 const eyebrow = {
-  fontFamily: "'Inter', system-ui, sans-serif",
   fontSize: 9.5,
   fontWeight: 700,
   letterSpacing: "0.18em",
@@ -626,7 +625,6 @@ const eyebrow = {
   textTransform: "uppercase",
 };
 const titleStyle = {
-  fontFamily: "'Fraunces', Georgia, serif",
   fontSize: 18,
   fontWeight: 500,
   color: "#3A2C1A",
@@ -635,7 +633,6 @@ const titleStyle = {
   letterSpacing: "-0.01em",
 };
 const hintStyle = {
-  fontFamily: "'Inter', system-ui, sans-serif",
   fontSize: 12.5,
   color: "#6B5840",
   lineHeight: 1.5,
@@ -650,7 +647,6 @@ const exportBtn = {
   color: "#F4EDDB",
   border: "none",
   borderRadius: 9999,
-  fontFamily: "'Inter', system-ui, sans-serif",
   fontSize: 12.5,
   fontWeight: 700,
   letterSpacing: "0.06em",
@@ -659,14 +655,12 @@ const exportBtn = {
 };
 const successHint = {
   marginTop: 8,
-  fontFamily: "Cormorant Garamond, Georgia, serif",
   fontStyle: "italic",
   fontSize: 12,
   color: "#6B8F5A",
 };
 const errorHint = {
   marginTop: 8,
-  fontFamily: "Cormorant Garamond, Georgia, serif",
   fontStyle: "italic",
   fontSize: 12,
   color: "#D45E52",

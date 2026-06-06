@@ -81,16 +81,16 @@ export default function UnsealedLetterReader({ letter, onClose, onMarkSeen }) {
 
         <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 20 }}>
           <MailOpen size={14} color="var(--mauve)" />
-          <span style={{ fontFamily: "'Inter', sans-serif", fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.12em", color: "var(--mauve)" }}>
+          <span style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.12em", color: "var(--mauve)" }}>
             FROM YOU · {formatLetterDate(letter.created_at)}
           </span>
         </div>
 
-        <p style={{ fontFamily: "'Fraunces', serif", fontSize: 18, fontStyle: "italic", lineHeight: 1.7, color: "var(--plum-deep)", whiteSpace: "pre-wrap", padding: "16px 0" }}>
+        <p style={{ fontSize: 18, fontStyle: "italic", lineHeight: 1.7, color: "var(--plum-deep)", whiteSpace: "pre-wrap", padding: "16px 0" }}>
           {decryptErr ? "This letter was sealed on another device, so it can\u2019t be opened here." : bodyText}
         </p>
 
-        <p style={{ fontFamily: "'Inter', sans-serif", fontSize: 11, color: "var(--mauve)", marginTop: 20 }}>
+        <p style={{ fontSize: 11, color: "var(--mauve)", marginTop: 20 }}>
           Sealed {formatLetterDate(letter.created_at)} · Opened {formatLetterDate(letter.unsealed_at || new Date().toISOString())}
         </p>
       </div>

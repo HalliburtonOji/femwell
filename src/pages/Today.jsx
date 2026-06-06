@@ -100,7 +100,7 @@ function HydrationRing({ glasses, target, onAdd, onRemove }) {
     <div style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)", borderRadius: 16, padding: "16px 18px", boxShadow: "var(--shadow-sm)" }}>
       <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 12 }}>
         <Droplets className="w-3.5 h-3.5" style={{ color: "#60B4FA" }} />
-        <p style={{ fontSize: "0.6rem", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.12em", color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>Hydration</p>
+        <p style={{ fontSize: "0.6rem", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.12em", color: "var(--mauve)", }}>Hydration</p>
       </div>
       <div style={{ display: "flex", alignItems: "center", gap: 20 }}>
         <div style={{ position: "relative", width: 80, height: 80, flexShrink: 0 }}>
@@ -109,12 +109,12 @@ function HydrationRing({ glasses, target, onAdd, onRemove }) {
             <circle cx="40" cy="40" r={r} fill="none" stroke="#60B4FA" strokeWidth="6" strokeDasharray={circumference} strokeDashoffset={offset} strokeLinecap="round" style={{ transition: "stroke-dashoffset 0.4s ease" }} />
           </svg>
           <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
-            <span style={{ fontSize: 17, fontWeight: 700, color: "var(--plum)", fontFamily: "'Inter', sans-serif", lineHeight: 1 }}>{glasses}</span>
-            <span style={{ fontSize: 9, color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>/ {target}</span>
+            <span style={{ fontSize: 17, fontWeight: 700, color: "var(--plum)", lineHeight: 1 }}>{glasses}</span>
+            <span style={{ fontSize: 9, color: "var(--mauve)", }}>/ {target}</span>
           </div>
         </div>
         <div style={{ flex: 1 }}>
-          <p style={{ fontSize: 12, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", marginBottom: 10 }}>{glasses >= target ? "Daily goal reached!" : `${target - glasses} more glasses to go`}</p>
+          <p style={{ fontSize: 12, color: "var(--mauve)", marginBottom: 10 }}>{glasses >= target ? "Daily goal reached!" : `${target - glasses} more glasses to go`}</p>
           <div style={{ display: "flex", gap: 8 }}>
             <button onClick={onRemove} disabled={glasses <= 0} style={{ flex: 1, height: 34, borderRadius: 9999, border: "1.5px solid var(--border)", backgroundColor: "var(--ivory)", color: "var(--plum)", fontSize: 18, cursor: "pointer", fontWeight: 700, opacity: glasses <= 0 ? 0.3 : 1 }}>−</button>
             <button onClick={onAdd} style={{ flex: 1, height: 34, borderRadius: 9999, border: "none", backgroundColor: "#60B4FA", color: "white", fontSize: 18, cursor: "pointer", fontWeight: 700 }}>+</button>
@@ -135,7 +135,7 @@ function QuickActionsRow({ onAddWater }) {
   ];
   return (
     <div style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)", borderRadius: 16, padding: "14px 16px", boxShadow: "var(--shadow-sm)" }}>
-      <p style={{ fontSize: "0.6rem", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.12em", color: "var(--mauve)", fontFamily: "'Inter', sans-serif", marginBottom: 12 }}>Quick actions</p>
+      <p style={{ fontSize: "0.6rem", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.12em", color: "var(--mauve)", marginBottom: 12 }}>Quick actions</p>
       <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 8 }}>
         {actions.map(({ icon: Icon, label, bg, color, href, onClick }) => {
           const inner = (
@@ -143,7 +143,7 @@ function QuickActionsRow({ onAddWater }) {
               <div style={{ width: 40, height: 40, borderRadius: 12, backgroundColor: bg, display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 6 }}>
                 <Icon className="w-4 h-4" style={{ color }} />
               </div>
-              <span style={{ fontSize: 10, fontWeight: 600, color: "var(--plum)", fontFamily: "'Inter', sans-serif", textAlign: "center", lineHeight: 1.3 }}>{label}</span>
+              <span style={{ fontSize: 10, fontWeight: 600, color: "var(--plum)", textAlign: "center", lineHeight: 1.3 }}>{label}</span>
             </>
           );
           const btnStyle = { display: "flex", flexDirection: "column", alignItems: "center", background: "none", border: "none", cursor: "pointer", padding: 0, textDecoration: "none" };
@@ -184,14 +184,14 @@ function TodayInsightCard({ userId }) {
           <div style={{ width: 28, height: 28, borderRadius: 8, backgroundColor: "#FEF3C7", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
             <Lightbulb className="w-3.5 h-3.5" style={{ color: "#D97706" }} />
           </div>
-          <p style={{ fontSize: "0.6rem", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.12em", color: "#D97706", fontFamily: "'Inter', sans-serif" }}>Today's Insight</p>
+          <p style={{ fontSize: "0.6rem", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.12em", color: "#D97706", }}>Today's Insight</p>
         </div>
         <button onClick={handleDismiss} style={{ background: "none", border: "none", cursor: "pointer", padding: 2, color: "var(--mauve)", flexShrink: 0 }}>
           <X className="w-3.5 h-3.5" />
         </button>
       </div>
-      {insight.title && <p style={{ fontSize: 13, fontWeight: 700, color: "var(--plum)", fontFamily: "'Inter', sans-serif", marginBottom: 4 }}>{insight.title}</p>}
-      <p style={{ fontSize: 13, color: "var(--plum)", fontFamily: "'Inter', sans-serif", lineHeight: 1.6 }}>{insight.insight_text}</p>
+      {insight.title && <p style={{ fontSize: 13, fontWeight: 700, color: "var(--plum)", marginBottom: 4 }}>{insight.title}</p>}
+      <p style={{ fontSize: 13, color: "var(--plum)", lineHeight: 1.6 }}>{insight.insight_text}</p>
     </div>
   );
 }
@@ -213,23 +213,23 @@ function ThisWeekCard({ userId }) {
     <div style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)", borderRadius: 16, padding: "14px 16px", boxShadow: "var(--shadow-sm)" }}>
       <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 10 }}>
         <TrendingUp className="w-3.5 h-3.5" style={{ color: "var(--sage)" }} />
-        <p style={{ fontSize: "0.6rem", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.12em", color: "var(--sage)", fontFamily: "'Inter', sans-serif" }}>This Week</p>
+        <p style={{ fontSize: "0.6rem", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.12em", color: "var(--sage)", }}>This Week</p>
       </div>
       {weekly.insight_text && (
-        <p style={{ fontSize: 13, color: "var(--plum)", fontFamily: "'Inter', sans-serif", lineHeight: 1.6, marginBottom: 12 }}>{weekly.insight_text}</p>
+        <p style={{ fontSize: 13, color: "var(--plum)", lineHeight: 1.6, marginBottom: 12 }}>{weekly.insight_text}</p>
       )}
       {(weekly.avg_mood || weekly.avg_energy) && (
         <div style={{ display: "flex", gap: 8 }}>
           {weekly.avg_mood != null && (
             <div style={{ flex: 1, backgroundColor: "var(--rose-dust-subtle)", borderRadius: 10, padding: "8px 10px", textAlign: "center" }}>
-              <p style={{ fontSize: 18, fontWeight: 700, color: "var(--rose-dust)", fontFamily: "'Inter', sans-serif", lineHeight: 1 }}>{Number(weekly.avg_mood).toFixed(1)}</p>
-              <p style={{ fontSize: 10, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", marginTop: 2 }}>Avg mood</p>
+              <p style={{ fontSize: 18, fontWeight: 700, color: "var(--rose-dust)", lineHeight: 1 }}>{Number(weekly.avg_mood).toFixed(1)}</p>
+              <p style={{ fontSize: 10, color: "var(--mauve)", marginTop: 2 }}>Avg mood</p>
             </div>
           )}
           {weekly.avg_energy != null && (
             <div style={{ flex: 1, backgroundColor: "var(--sage-subtle)", borderRadius: 10, padding: "8px 10px", textAlign: "center" }}>
-              <p style={{ fontSize: 18, fontWeight: 700, color: "var(--sage)", fontFamily: "'Inter', sans-serif", lineHeight: 1 }}>{Number(weekly.avg_energy).toFixed(1)}</p>
-              <p style={{ fontSize: 10, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", marginTop: 2 }}>Avg energy</p>
+              <p style={{ fontSize: 18, fontWeight: 700, color: "var(--sage)", lineHeight: 1 }}>{Number(weekly.avg_energy).toFixed(1)}</p>
+              <p style={{ fontSize: 10, color: "var(--mauve)", marginTop: 2 }}>Avg energy</p>
             </div>
           )}
         </div>
@@ -503,7 +503,7 @@ export default function Today() {
           <div className="flex gap-1 p-1 rounded-2xl" style={{ backgroundColor: "var(--ivory-dark)" }}>
             {[["today", "Today"], ["track", "Track"]].map(([key, display]) => (
               <button key={key} onClick={() => setMainTab(key)} className="flex-1 py-2.5 rounded-xl text-sm font-semibold transition-all"
-                style={{ backgroundColor: mainTab === key ? "var(--plum)" : "transparent", color: mainTab === key ? "white" : "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>
+                style={{ backgroundColor: mainTab === key ? "var(--plum)" : "transparent", color: mainTab === key ? "white" : "var(--mauve)", }}>
                 {display}
               </button>
             ))}
@@ -557,11 +557,11 @@ export default function Today() {
                       boxShadow: `0 0 6px ${PHASE_INFO[cycleInfo.phase].color}55`,
                       flexShrink: 0,
                     }} />
-                    <span style={{ fontSize: 11, fontWeight: 700, color: PHASE_INFO[cycleInfo.phase].color, textTransform: "uppercase", letterSpacing: "0.1em", fontFamily: "'Inter', sans-serif" }}>
+                    <span style={{ fontSize: 11, fontWeight: 700, color: PHASE_INFO[cycleInfo.phase].color, textTransform: "uppercase", letterSpacing: "0.1em", }}>
                       {PHASE_INFO[cycleInfo.phase].label} · Day {cycleInfo.day}
                     </span>
                   </div>
-                  <p style={{ fontSize: 13, color: "var(--plum)", fontFamily: "'Inter', sans-serif", lineHeight: 1.55 }}>{PHASE_INFO[cycleInfo.phase].tip}</p>
+                  <p style={{ fontSize: 13, color: "var(--plum)", lineHeight: 1.55 }}>{PHASE_INFO[cycleInfo.phase].tip}</p>
                 </div>
               );
             })()}
@@ -569,11 +569,11 @@ export default function Today() {
             {/* Calm Cards + Panic pills */}
             <div className="flex items-center justify-between gap-2">
               <button onClick={() => setCalmCardsOpen(true)}
-                style={{ display: "flex", alignItems: "center", gap: 6, padding: "5px 14px", borderRadius: 9999, border: "1px solid var(--border)", backgroundColor: "var(--surface)", color: "var(--mauve)", fontSize: 12, fontWeight: 600, fontFamily: "'Inter', sans-serif", cursor: "pointer" }}>
+                style={{ display: "flex", alignItems: "center", gap: 6, padding: "5px 14px", borderRadius: 9999, border: "1px solid var(--border)", backgroundColor: "var(--surface)", color: "var(--mauve)", fontSize: 12, fontWeight: 600, cursor: "pointer" }}>
                 Calm Cards
               </button>
               <button onClick={() => setPanicOpen(true)}
-                style={{ display: "flex", alignItems: "center", gap: 6, padding: "5px 14px", borderRadius: 9999, border: "1px solid var(--rose-dust-light)", backgroundColor: "var(--rose-dust-subtle)", color: "var(--rose-dust)", fontSize: 12, fontWeight: 600, fontFamily: "'Inter', sans-serif", cursor: "pointer" }}>
+                style={{ display: "flex", alignItems: "center", gap: 6, padding: "5px 14px", borderRadius: 9999, border: "1px solid var(--rose-dust-light)", backgroundColor: "var(--rose-dust-subtle)", color: "var(--rose-dust)", fontSize: 12, fontWeight: 600, cursor: "pointer" }}>
                 <AlertCircle className="w-3.5 h-3.5" />Panic mode
               </button>
             </div>
@@ -586,11 +586,11 @@ export default function Today() {
             {/* Quick mood + energy check-in */}
             <div style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)", borderRadius: 16, padding: "14px 16px", boxShadow: "var(--shadow-sm)" }}>
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
-                <p style={{ fontSize: "0.6rem", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.12em", color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>How are you feeling?</p>
-                {checkinSaved && <span style={{ fontSize: 11, color: "var(--sage)", fontFamily: "'Inter', sans-serif" }}>Saved</span>}
+                <p style={{ fontSize: "0.6rem", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.12em", color: "var(--mauve)", }}>How are you feeling?</p>
+                {checkinSaved && <span style={{ fontSize: 11, color: "var(--sage)", }}>Saved</span>}
               </div>
               <div style={{ marginBottom: 10 }}>
-                <p style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", color: "var(--mauve)", fontFamily: "'Inter', sans-serif", marginBottom: 6 }}>Mood</p>
+                <p style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", color: "var(--mauve)", marginBottom: 6 }}>Mood</p>
                 <div style={{ display: "flex", gap: 6 }}>
                   {MOOD_EMOJIS.map((e, i) => (
                     <button key={i} onClick={() => handleMoodSelect(i)}
@@ -601,7 +601,7 @@ export default function Today() {
                 </div>
               </div>
               <div>
-                <p style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", color: "var(--mauve)", fontFamily: "'Inter', sans-serif", marginBottom: 6 }}>Energy</p>
+                <p style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", color: "var(--mauve)", marginBottom: 6 }}>Energy</p>
                 <div style={{ display: "flex", gap: 6 }}>
                   {ENERGY_EMOJIS.map((e, i) => (
                     <button key={i} onClick={() => handleEnergySelect(i)}
@@ -628,7 +628,7 @@ export default function Today() {
                       <div style={{ width: 34, height: 34, borderRadius: 10, backgroundColor: meta.bg, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
                         <Icon className="w-4 h-4" style={{ color: meta.color }} />
                       </div>
-                      <p style={{ fontSize: 13, color: "var(--plum)", fontFamily: "'Inter', sans-serif", lineHeight: 1.5 }}>{dailyPlan[key]}</p>
+                      <p style={{ fontSize: 13, color: "var(--plum)", lineHeight: 1.5 }}>{dailyPlan[key]}</p>
                     </div>
                   );
                 })}
@@ -664,8 +664,8 @@ export default function Today() {
                 <Utensils className="w-4 h-4" strokeWidth={1.5} />
               </div>
               <div className="flex-1">
-                <p className="font-semibold text-sm" style={{ color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>Nutrition</p>
-                <p className="text-xs mt-0.5" style={{ color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>Log meals · Water · Weekly plan</p>
+                <p className="font-semibold text-sm" style={{ color: "var(--plum)", }}>Nutrition</p>
+                <p className="text-xs mt-0.5" style={{ color: "var(--mauve)", }}>Log meals · Water · Weekly plan</p>
               </div>
               <ChevronRight className="w-4 h-4" style={{ color: "var(--border)" }} />
             </a>
@@ -676,8 +676,8 @@ export default function Today() {
                   <Feather style={{ width: "15px", height: "15px", color: "white" }} />
                 </div>
                 <div style={{ flex: 1 }}>
-                  <p style={{ fontSize: "13px", fontWeight: 600, color: "var(--plum)", fontFamily: "'Inter', sans-serif", marginBottom: "2px" }}>How's your skin today?</p>
-                  <p style={{ fontSize: "12px", color: "var(--rose-dust)", fontFamily: "'Inter', sans-serif" }}>Add skin & hair to today's check-in</p>
+                  <p style={{ fontSize: "13px", fontWeight: 600, color: "var(--plum)", marginBottom: "2px" }}>How's your skin today?</p>
+                  <p style={{ fontSize: "12px", color: "var(--rose-dust)", }}>Add skin & hair to today's check-in</p>
                 </div>
                 <ChevronRight style={{ width: "15px", height: "15px", color: "var(--rose-dust)", flexShrink: 0 }} />
               </button>
@@ -686,9 +686,9 @@ export default function Today() {
             {/* Lifestyle nudge — no emoji */}
             <a href={createPageUrl("Lifestyle")} style={{ display: "flex", alignItems: "center", gap: "12px", textDecoration: "none", backgroundColor: "var(--rose-dust-subtle)", border: "1px solid var(--rose-dust-light)", borderRadius: "16px", padding: "14px 16px" }}>
               <div style={{ flex: 1 }}>
-                <p style={{ fontSize: "0.6rem", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.12em", color: "var(--rose-dust)", fontFamily: "'Inter', sans-serif", marginBottom: 3 }}>Lifestyle</p>
-                <p style={{ fontSize: 14, fontWeight: 600, color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>Stories, videos & reads for you</p>
-                <p style={{ fontSize: 12, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", marginTop: 2 }}>Curated for your cycle phase today</p>
+                <p style={{ fontSize: "0.6rem", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.12em", color: "var(--rose-dust)", marginBottom: 3 }}>Lifestyle</p>
+                <p style={{ fontSize: 14, fontWeight: 600, color: "var(--plum)", }}>Stories, videos & reads for you</p>
+                <p style={{ fontSize: 12, color: "var(--mauve)", marginTop: 2 }}>Curated for your cycle phase today</p>
               </div>
               <ChevronRight className="w-4 h-4" style={{ color: "var(--rose-dust)", flexShrink: 0 }} />
             </a>

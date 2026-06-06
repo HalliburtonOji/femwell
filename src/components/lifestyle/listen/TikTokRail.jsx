@@ -26,8 +26,7 @@ export default function TikTokRail({ items, savedSet, savedPhases, onSave, onUnt
         textTransform: 'uppercase',
         letterSpacing: '0.6px',
         color: 'var(--plum-mute)',
-        fontFamily: "'Inter', sans-serif",
-      }}>
+        }}>
         TRENDING ON TIKTOK
       </p>
 
@@ -102,7 +101,6 @@ function TikTokCard({ item, saved, hasPhaseTag, onOpen, onSave, onUntag }) {
               position: 'absolute', inset: 0,
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               padding: 12, textAlign: 'center',
-              fontFamily: "'Fraunces', serif",
               fontStyle: 'italic', fontWeight: 400, fontSize: 18,
               color: 'var(--cream)', opacity: 0.7,
               pointerEvents: 'none',
@@ -119,7 +117,6 @@ function TikTokCard({ item, saved, hasPhaseTag, onOpen, onSave, onUntag }) {
         fontSize: 9, fontWeight: 600, textTransform: 'uppercase',
         color: 'var(--cream)', background: 'rgba(0,0,0,0.45)',
         padding: '3px 6px', borderRadius: 4,
-        fontFamily: "'Inter', sans-serif",
         pointerEvents: 'none',
       }}>
         TIKTOK
@@ -149,7 +146,6 @@ function TikTokCard({ item, saved, hasPhaseTag, onOpen, onSave, onUntag }) {
       }}>
         <p style={{
           fontSize: 12, fontWeight: 500, color: 'var(--cream)',
-          fontFamily: "'Inter', sans-serif",
           whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
           margin: 0,
         }}>

@@ -38,7 +38,7 @@ function Spinner() {
 // ── Category pill ─────────────────────────────────────────────────────────────
 function Pill({ label, color = PRIMARY, bg = PRIMARY_LIGHT }) {
   return (
-    <span style={{ fontSize: 10, fontWeight: 600, color, backgroundColor: bg, borderRadius: 9999, padding: "2px 9px", fontFamily: "'Inter', sans-serif", display: "inline-block", flexShrink: 0 }}>
+    <span style={{ fontSize: 10, fontWeight: 600, color, backgroundColor: bg, borderRadius: 9999, padding: "2px 9px", display: "inline-block", flexShrink: 0 }}>
       {label}
     </span>
   );
@@ -118,7 +118,7 @@ function ArticleSheet({ item, onClose }) {
           <button onClick={onClose} style={{ width: 32, height: 32, borderRadius: 9999, backgroundColor: "var(--ivory-dark)", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>
             <X className="w-4 h-4" style={{ color: "var(--mauve)" }} />
           </button>
-          <button onClick={handleSave} style={{ display: "flex", alignItems: "center", gap: 5, padding: "6px 14px", borderRadius: 9999, border: "1px solid var(--border)", backgroundColor: saved ? PRIMARY_LIGHT : "transparent", cursor: "pointer", fontSize: 12, fontWeight: 600, color: saved ? PRIMARY : "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>
+          <button onClick={handleSave} style={{ display: "flex", alignItems: "center", gap: 5, padding: "6px 14px", borderRadius: 9999, border: "1px solid var(--border)", backgroundColor: saved ? PRIMARY_LIGHT : "transparent", cursor: "pointer", fontSize: 12, fontWeight: 600, color: saved ? PRIMARY : "var(--mauve)", }}>
             <Bookmark className="w-3.5 h-3.5" style={{ fill: saved ? PRIMARY : "none" }} />
             {saved ? "Saved" : "Save"}
           </button>
@@ -137,30 +137,30 @@ function ArticleSheet({ item, onClose }) {
             {item.emotional_tag && <Pill label={item.emotional_tag} color="var(--rose-primary)" bg="var(--rose-soft-bg)" />}
           </div>
           {/* Title */}
-          <h2 style={{ fontFamily: "'Fraunces', serif", fontSize: 22, fontWeight: 700, color: "var(--plum)", lineHeight: 1.3, marginBottom: 10 }}>{item.title}</h2>
+          <h2 style={{ fontSize: 22, fontWeight: 700, color: "var(--plum)", lineHeight: 1.3, marginBottom: 10 }}>{item.title}</h2>
           {/* Meta */}
           <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 20 }}>
-            {item.author_name && <span style={{ fontSize: 12, color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>{item.author_name}</span>}
-            {item.published_at && <span style={{ fontSize: 12, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", opacity: 0.7 }}>· {fmtDate(item.published_at)}</span>}
-            {item.source_name && <span style={{ fontSize: 12, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", opacity: 0.7 }}>· {item.source_name}</span>}
+            {item.author_name && <span style={{ fontSize: 12, color: "var(--mauve)", }}>{item.author_name}</span>}
+            {item.published_at && <span style={{ fontSize: 12, color: "var(--mauve)", opacity: 0.7 }}>· {fmtDate(item.published_at)}</span>}
+            {item.source_name && <span style={{ fontSize: 12, color: "var(--mauve)", opacity: 0.7 }}>· {item.source_name}</span>}
           </div>
           {/* Body paragraphs */}
           <div style={{ display: "flex", flexDirection: "column", gap: 16, marginBottom: 20 }}>
             {paragraphs.map((para, i) => (
-              <p key={i} style={{ fontSize: 15, color: "var(--plum)", fontFamily: "'Inter', sans-serif", lineHeight: 1.75, margin: 0 }}>{stripHtml(para)}</p>
+              <p key={i} style={{ fontSize: 15, color: "var(--plum)", lineHeight: 1.75, margin: 0 }}>{stripHtml(para)}</p>
             ))}
           </div>
           {/* Why it matters */}
           {item.why_it_matters && (
-            <p style={{ fontSize: 13, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", fontStyle: "italic", lineHeight: 1.65, marginBottom: 20 }}>{item.why_it_matters}</p>
+            <p style={{ fontSize: 13, color: "var(--mauve)", fontStyle: "italic", lineHeight: 1.65, marginBottom: 20 }}>{item.why_it_matters}</p>
           )}
           {/* Takeaways */}
           {takeaways.length > 0 && (
             <div style={{ backgroundColor: PRIMARY_LIGHT, borderRadius: 16, padding: "14px 16px", marginBottom: 20 }}>
-              <p style={{ fontSize: 10, fontWeight: 700, color: PRIMARY, textTransform: "uppercase", letterSpacing: "0.1em", fontFamily: "'Inter', sans-serif", marginBottom: 10 }}>Key takeaways</p>
+              <p style={{ fontSize: 10, fontWeight: 700, color: PRIMARY, textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 10 }}>Key takeaways</p>
               <ul style={{ margin: 0, paddingLeft: 18 }}>
                 {takeaways.map((t, i) => (
-                  <li key={i} style={{ fontSize: 13, color: "var(--plum)", fontFamily: "'Inter', sans-serif", lineHeight: 1.65, marginBottom: 6 }}>{t}</li>
+                  <li key={i} style={{ fontSize: 13, color: "var(--plum)", lineHeight: 1.65, marginBottom: 6 }}>{t}</li>
                 ))}
               </ul>
             </div>
@@ -168,7 +168,7 @@ function ArticleSheet({ item, onClose }) {
           {/* External link fallback */}
           {item.content_url && (
             <a href={item.content_url} target="_blank" rel="noopener noreferrer"
-              style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 13, fontWeight: 600, color: PRIMARY, fontFamily: "'Inter', sans-serif", textDecoration: "none" }}>
+              style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 13, fontWeight: 600, color: PRIMARY, textDecoration: "none" }}>
               Read on {item.source_name || "source"} <ExternalLink className="w-3.5 h-3.5" />
             </a>
           )}
@@ -251,10 +251,10 @@ function ContentCard({ item, compact = false }) {
           </div>
           <div style={{ flex: 1, padding: "12px 14px", minWidth: 0 }}>
             {item.category && <Pill label={item.category} />}
-            <p style={{ fontSize: 14, fontWeight: 700, color: "var(--plum)", fontFamily: "'Inter', sans-serif", lineHeight: 1.35, margin: "6px 0 4px", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>{item.title}</p>
+            <p style={{ fontSize: 14, fontWeight: 700, color: "var(--plum)", lineHeight: 1.35, margin: "6px 0 4px", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>{item.title}</p>
             <div style={{ display: "flex", alignItems: "center", gap: 5, flexWrap: "wrap", marginTop: 4 }}>
-              <span style={{ fontSize: 11, color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>{sourceName}</span>
-              {item.published_at && <span style={{ fontSize: 11, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", opacity: 0.6 }}>· {fmtDate(item.published_at)}</span>}
+              <span style={{ fontSize: 11, color: "var(--mauve)", }}>{sourceName}</span>
+              {item.published_at && <span style={{ fontSize: 11, color: "var(--mauve)", opacity: 0.6 }}>· {fmtDate(item.published_at)}</span>}
               {hasExternalLink && <ExternalLink style={{ width: 10, height: 10, color: "var(--mauve)", opacity: 0.5, flexShrink: 0 }} />}
             </div>
           </div>
@@ -269,17 +269,17 @@ function ContentCard({ item, compact = false }) {
           </div>
           <div style={{ padding: "14px 16px 16px" }} onClick={handleClick}>
             {item.category && <Pill label={item.category} />}
-            <p style={{ fontSize: 15, fontWeight: 700, color: "var(--plum)", fontFamily: "'Inter', sans-serif", lineHeight: 1.4, margin: "8px 0 4px", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>{item.title}</p>
-            {item.summary && <p style={{ fontSize: 13, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", lineHeight: 1.55, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden", margin: 0 }}>{stripHtml(item.summary)}</p>}
+            <p style={{ fontSize: 15, fontWeight: 700, color: "var(--plum)", lineHeight: 1.4, margin: "8px 0 4px", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>{item.title}</p>
+            {item.summary && <p style={{ fontSize: 13, color: "var(--mauve)", lineHeight: 1.55, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden", margin: 0 }}>{stripHtml(item.summary)}</p>}
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: 10 }}>
               <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
-                <span style={{ fontSize: 11, color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>{sourceName}</span>
+                <span style={{ fontSize: 11, color: "var(--mauve)", }}>{sourceName}</span>
                 {hasExternalLink && <ExternalLink style={{ width: 10, height: 10, color: "var(--mauve)", opacity: 0.5 }} />}
               </div>
               {hasExternalLink && (
                 <a href={item.content_url} target="_blank" rel="noopener noreferrer"
                   onClick={e => e.stopPropagation()}
-                  style={{ fontSize: 11, fontWeight: 600, color: PRIMARY, fontFamily: "'Inter', sans-serif", textDecoration: "none", display: "flex", alignItems: "center", gap: 3 }}>
+                  style={{ fontSize: 11, fontWeight: 600, color: PRIMARY, textDecoration: "none", display: "flex", alignItems: "center", gap: 3 }}>
                   Read more <ExternalLink style={{ width: 10, height: 10 }} />
                 </a>
               )}
@@ -323,7 +323,7 @@ function HoroscopeTab({ userProfile, lifestyleProfile }) {
 function EmptyState({ text }) {
   return (
     <div style={{ textAlign: "center", padding: "60px 24px" }}>
-      <p style={{ fontSize: 14, color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>{text}</p>
+      <p style={{ fontSize: 14, color: "var(--mauve)", }}>{text}</p>
     </div>
   );
 }
@@ -408,7 +408,6 @@ function InlineChipRow({ tab, activeChip, onChange }) {
               fontWeight: active ? 600 : 500,
               cursor: "pointer",
               border: active ? "1px solid var(--rose-primary)" : "1px solid var(--border)",
-              fontFamily: "'Inter', sans-serif",
               whiteSpace: "nowrap",
               minHeight: 36,
               display: "inline-flex",
@@ -480,7 +479,7 @@ function CategoryFilterDropdown({ selected, onChange, followedCategories = [], i
           display: "inline-flex", alignItems: "center", gap: 6,
           padding: inline ? "8px 12px" : "8px 14px",
           borderRadius: 9999,
-          fontFamily: "'Inter', sans-serif", fontSize: 12, fontWeight: 600,
+          fontSize: 12, fontWeight: 600,
           minHeight: 36, cursor: "pointer",
           border: "1px solid var(--border)",
           background: count ? "var(--rose-soft-bg)" : "var(--cream)",
@@ -520,8 +519,7 @@ function CategoryFilterDropdown({ selected, onChange, followedCategories = [], i
             boxShadow:
               "0 2px 4px rgba(43,30,22,0.06), 0 10px 24px rgba(43,30,22,0.10), 0 24px 56px rgba(43,30,22,0.08)",
             padding: 12,
-            fontFamily: "'Inter', sans-serif",
-          }}
+            }}
         >
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
             <p style={{ font: "700 11px/1 'Inter', sans-serif", color: "var(--plum-mute)", letterSpacing: "0.08em", textTransform: "uppercase", margin: 0 }}>
@@ -690,7 +688,7 @@ export default function Lifestyle() {
       {/* Sticky header */}
       <div className="sticky top-0 z-30" style={{ backgroundColor: "rgba(250,248,245,0.97)", backdropFilter: "blur(20px)", borderBottom: "1px solid var(--border)" }}>
         <div className="max-w-xl mx-auto px-4 pt-10 pb-3">
-          <p style={{ fontSize: "0.6rem", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.12em", color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>Discover</p>
+          <p style={{ fontSize: "0.6rem", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.12em", color: "var(--mauve)", }}>Discover</p>
           <h1 className="fw-display" style={{ marginBottom: 12 }}>Lifestyle</h1>
 
           <div className="lf-scroll" style={{ display: "flex", gap: 6, overflowX: "auto", paddingBottom: 2 }}>
@@ -698,7 +696,7 @@ export default function Lifestyle() {
               <button key={t.id} onClick={() => setTab(t.id)}
                 aria-label={`Switch to ${t.label} tab`}
                 aria-pressed={tab === t.id}
-                style={{ flexShrink: 0, padding: "7px 16px", borderRadius: 9999, fontSize: 12, fontWeight: 600, cursor: "pointer", border: "none", transition: "all 0.15s", fontFamily: "'Inter', sans-serif", whiteSpace: "nowrap", minHeight: 32,
+                style={{ flexShrink: 0, padding: "7px 16px", borderRadius: 9999, fontSize: 12, fontWeight: 600, cursor: "pointer", border: "none", transition: "all 0.15s", whiteSpace: "nowrap", minHeight: 32,
                   backgroundColor: tab === t.id ? PRIMARY : "var(--ivory-dark)",
                   color: tab === t.id ? "white" : "var(--mauve)" }}>
                 {t.label}

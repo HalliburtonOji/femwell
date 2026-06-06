@@ -80,13 +80,13 @@ export default function BrowseGrid({
   if (error) {
     return (
       <div style={{ textAlign: 'center', padding: '48px 24px' }}>
-        <p style={{ fontFamily: "'Inter', sans-serif", fontSize: 14, color: 'var(--plum-mute)', marginBottom: 12 }}>
+        <p style={{ fontSize: 14, color: 'var(--plum-mute)', marginBottom: 12 }}>
           Couldn't load.
         </p>
         <button
           type="button"
           onClick={onRetry}
-          style={{ fontFamily: "'Inter', sans-serif", fontSize: 14, color: 'var(--rose-primary)', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 600 }}
+          style={{ fontSize: 14, color: 'var(--rose-primary)', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 600 }}
         >
           Retry
         </button>
@@ -106,13 +106,13 @@ export default function BrowseGrid({
   if (items.length > 0 && filtered.length === 0) {
     return (
       <div style={{ textAlign: 'center', padding: '32px 24px' }}>
-        <p style={{ fontFamily: "'Inter', sans-serif", fontSize: 14, color: 'var(--plum-mute)', marginBottom: 10 }}>
+        <p style={{ fontSize: 14, color: 'var(--plum-mute)', marginBottom: 10 }}>
           Nothing here matches '{searchQuery}'.
         </p>
         <button
           type="button"
           onClick={() => onRetry('clearSearch')}
-          style={{ fontFamily: "'Inter', sans-serif", fontSize: 13, color: 'var(--rose-primary)', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 600 }}
+          style={{ fontSize: 13, color: 'var(--rose-primary)', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 600 }}
         >
           Clear search
         </button>
@@ -124,10 +124,10 @@ export default function BrowseGrid({
     const es = EMPTY_STATES[activeChip] || EMPTY_STATES.all;
     return (
       <div style={{ textAlign: 'center', padding: '48px 24px' }}>
-        <p style={{ fontFamily: "'Fraunces', serif", fontSize: 22, fontWeight: 400, color: 'var(--plum-deep)', marginBottom: 10 }}>
+        <p style={{ fontSize: 22, fontWeight: 400, color: 'var(--plum-deep)', marginBottom: 10 }}>
           {es.title}
         </p>
-        <p style={{ fontFamily: "'Inter', sans-serif", fontSize: 14, color: 'var(--plum-mute)' }}>
+        <p style={{ fontSize: 14, color: 'var(--plum-mute)' }}>
           {es.body}
         </p>
       </div>
@@ -190,7 +190,7 @@ export default function BrowseGrid({
                     position: 'absolute', top: 10, left: 10,
                     padding: '4px 10px', borderRadius: 9999,
                     background: 'rgba(0,0,0,0.35)', color: 'var(--cream)',
-                    fontFamily: "'Inter', sans-serif", fontSize: 11, fontWeight: 600,
+                    fontSize: 11, fontWeight: 600,
                     textTransform: 'uppercase', letterSpacing: '0.06em',
                   }}>
                     {item.category}
@@ -218,7 +218,6 @@ export default function BrowseGrid({
               {/* Body */}
               <div style={{ padding: 16 }}>
                 <p style={{
-                  fontFamily: "'Fraunces', serif",
                   fontSize: 20,
                   fontWeight: 400,
                   color: 'var(--plum-deep)',
@@ -233,7 +232,6 @@ export default function BrowseGrid({
                 </p>
                 {item.summary && (
                   <p style={{
-                    fontFamily: "'Inter', sans-serif",
                     fontSize: 13,
                     fontWeight: 400,
                     color: 'var(--plum-accent)',
@@ -250,7 +248,6 @@ export default function BrowseGrid({
                 )}
                 {byline && (
                   <p style={{
-                    fontFamily: "'Inter', sans-serif",
                     fontSize: 12,
                     fontWeight: 500,
                     color: 'var(--plum-mute)',

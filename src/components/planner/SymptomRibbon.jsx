@@ -257,7 +257,6 @@ const headRow = {
   marginBottom: 12,
 };
 const eyebrow = {
-  fontFamily: "'Inter', system-ui, sans-serif",
   fontSize: 9.5,
   fontWeight: 700,
   letterSpacing: "0.18em",
@@ -265,7 +264,6 @@ const eyebrow = {
   textTransform: "uppercase",
 };
 const titleStyle = {
-  fontFamily: "'Fraunces', Georgia, serif",
   fontSize: 18,
   fontWeight: 500,
   color: "#3A2C1A",
@@ -282,7 +280,6 @@ const logBtn = {
   color: "#F4EDDB",
   border: "none",
   borderRadius: 9999,
-  fontFamily: "'Inter', system-ui, sans-serif",
   fontSize: 11,
   fontWeight: 700,
   letterSpacing: "0.04em",
@@ -332,7 +329,6 @@ const legendItem = {
   display: "inline-flex",
   alignItems: "center",
   gap: 4,
-  fontFamily: "'Inter', system-ui, sans-serif",
   fontSize: 10.5,
   color: "#6B5840",
 };
@@ -344,14 +340,12 @@ const legendChip = {
   position: "relative",
 };
 const summaryLine = {
-  fontFamily: "'Inter', system-ui, sans-serif",
   fontSize: 12,
   color: "#6B5840",
   lineHeight: 1.4,
   margin: 0,
 };
 const emptyHint = {
-  fontFamily: "Cormorant Garamond, Georgia, serif",
   fontStyle: "italic",
   fontSize: 12.5,
   color: "#4A2A3A",

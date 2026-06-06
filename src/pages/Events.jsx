@@ -18,18 +18,17 @@ const TAG_COLORS = {
 
 const sLabel = {
   fontSize: "0.6rem", fontWeight: 600, textTransform: "uppercase",
-  letterSpacing: "0.12em", color: "var(--mauve)", fontFamily: "'Inter', sans-serif",
-};
+  letterSpacing: "0.12em", color: "var(--mauve)", };
 const pillActive = {
   borderRadius: "9999px", padding: "5px 12px", fontSize: "11px",
   fontWeight: 600, cursor: "pointer", whiteSpace: "nowrap",
-  fontFamily: "'Inter', sans-serif", textTransform: "capitalize",
+  textTransform: "capitalize",
   border: "none", backgroundColor: "var(--plum)", color: "white"
 };
 const pillInactive = {
   borderRadius: "9999px", padding: "5px 12px", fontSize: "11px",
   fontWeight: 600, cursor: "pointer", whiteSpace: "nowrap",
-  fontFamily: "'Inter', sans-serif", textTransform: "capitalize",
+  textTransform: "capitalize",
   border: "none", backgroundColor: "var(--ivory-dark)", color: "var(--mauve)"
 };
 
@@ -40,12 +39,12 @@ function topTagColor(tags) {
 
 function VerifiedBadge({ verified }) {
   if (verified === true) return (
-    <span style={{ backgroundColor: "var(--sage-subtle)", color: "var(--sage)", borderRadius: 9999, padding: "2px 8px", fontSize: 10, fontWeight: 600, fontFamily: "'Inter', sans-serif", whiteSpace: "nowrap" }}>
+    <span style={{ backgroundColor: "var(--sage-subtle)", color: "var(--sage)", borderRadius: 9999, padding: "2px 8px", fontSize: 10, fontWeight: 600, whiteSpace: "nowrap" }}>
       Verified
     </span>
   );
   if (verified === false) return (
-    <span style={{ backgroundColor: "var(--ivory-dark)", color: "var(--mauve)", borderRadius: 9999, padding: "2px 8px", fontSize: 10, fontWeight: 600, fontFamily: "'Inter', sans-serif", whiteSpace: "nowrap" }}>
+    <span style={{ backgroundColor: "var(--ivory-dark)", color: "var(--mauve)", borderRadius: 9999, padding: "2px 8px", fontSize: 10, fontWeight: 600, whiteSpace: "nowrap" }}>
       Link unverified
     </span>
   );
@@ -72,24 +71,24 @@ function EventCard({ item, saved, onSave }) {
             {/* Tags row */}
             <div style={{ display: "flex", flexWrap: "wrap", gap: 4, marginBottom: 6 }}>
               {tags.slice(0, 2).map(tag => (
-                <span key={tag} style={{ backgroundColor: "var(--ivory-dark)", color: "var(--mauve)", borderRadius: 9999, padding: "2px 8px", fontSize: 10, fontWeight: 600, fontFamily: "'Inter', sans-serif", textTransform: "capitalize" }}>{tag}</span>
+                <span key={tag} style={{ backgroundColor: "var(--ivory-dark)", color: "var(--mauve)", borderRadius: 9999, padding: "2px 8px", fontSize: 10, fontWeight: 600, textTransform: "capitalize" }}>{tag}</span>
               ))}
               {item.is_online && (
-                <span style={{ backgroundColor: "var(--sage-subtle)", color: "var(--sage)", borderRadius: 9999, padding: "2px 8px", fontSize: 10, fontWeight: 600, fontFamily: "'Inter', sans-serif" }}>Online</span>
+                <span style={{ backgroundColor: "var(--sage-subtle)", color: "var(--sage)", borderRadius: 9999, padding: "2px 8px", fontSize: 10, fontWeight: 600, }}>Online</span>
               )}
             </div>
 
             {/* Title */}
-            <p style={{ fontSize: 15, fontWeight: 600, color: "var(--plum)", fontFamily: "'Inter', sans-serif", lineHeight: 1.35, overflow: "hidden", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", marginBottom: 8 }}>
+            <p style={{ fontSize: 15, fontWeight: 600, color: "var(--plum)", lineHeight: 1.35, overflow: "hidden", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", marginBottom: 8 }}>
               {item.title}
             </p>
 
             {/* Date + Location */}
             <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
-              <span style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 12, color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>
+              <span style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 12, color: "var(--mauve)", }}>
                 <CalendarDays style={{ width: 12, height: 12 }} /> {item.date}
               </span>
-              <span style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 12, color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>
+              <span style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 12, color: "var(--mauve)", }}>
                 <MapPin style={{ width: 12, height: 12 }} /> {item.is_online ? "Online" : (item.location || item.city || "TBC")}
               </span>
             </div>
@@ -97,8 +96,7 @@ function EventCard({ item, saved, onSave }) {
             {/* Price row */}
             <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 8 }}>
               <span style={{
-                borderRadius: 9999, padding: "2px 8px", fontSize: 11, fontWeight: 600, fontFamily: "'Inter', sans-serif",
-                ...(item.is_free
+                borderRadius: 9999, padding: "2px 8px", fontSize: 11, fontWeight: 600, ...(item.is_free
                   ? { backgroundColor: "var(--sage-subtle)", color: "var(--sage)" }
                   : { backgroundColor: "var(--ivory-dark)", color: "var(--mauve)" }
                 )
@@ -106,7 +104,7 @@ function EventCard({ item, saved, onSave }) {
                 {item.is_free ? "Free" : (item.price || "Paid")}
               </span>
               {item.source_name && (
-                <span style={{ fontSize: 11, color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>{item.source_name}</span>
+                <span style={{ fontSize: 11, color: "var(--mauve)", }}>{item.source_name}</span>
               )}
             </div>
           </div>
@@ -118,7 +116,7 @@ function EventCard({ item, saved, onSave }) {
               onClick={() => onSave(item)}
               style={{
                 borderRadius: 9999, padding: "5px 12px", fontSize: 11, fontWeight: 600,
-                fontFamily: "'Inter', sans-serif", cursor: "pointer", border: "1px solid var(--border)",
+                cursor: "pointer", border: "1px solid var(--border)",
                 ...(saved
                   ? { backgroundColor: "var(--rose-dust-subtle)", color: "var(--rose-dust)", borderColor: "var(--rose-dust-light)" }
                   : { backgroundColor: "var(--ivory-dark)", color: "var(--mauve)" }
@@ -133,17 +131,17 @@ function EventCard({ item, saved, onSave }) {
 
       {/* Footer */}
       <div style={{ borderTop: "1px solid var(--border-subtle)", padding: "10px 16px", display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8 }}>
-        <span style={{ fontSize: 11, color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>{item.ticket_platform || item.source_name || ""}</span>
+        <span style={{ fontSize: 11, color: "var(--mauve)", }}>{item.ticket_platform || item.source_name || ""}</span>
         <div style={{ display: "flex", gap: 8 }}>
           <button
             onClick={() => window.open(`https://wa.me/?text=${encodeURIComponent((item.title || "") + " " + (item.link || ""))}`, "_blank")}
-            style={{ backgroundColor: "#25D366", color: "white", borderRadius: 9999, padding: "6px 12px", fontSize: 12, fontWeight: 600, border: "none", cursor: "pointer", fontFamily: "'Inter', sans-serif" }}
+            style={{ backgroundColor: "#25D366", color: "white", borderRadius: 9999, padding: "6px 12px", fontSize: 12, fontWeight: 600, border: "none", cursor: "pointer", }}
           >
             Share
           </button>
           <button
             onClick={() => item.link && window.open(item.link, "_blank")}
-            style={{ backgroundColor: "var(--plum)", color: "white", borderRadius: 9999, padding: "6px 14px", fontSize: 12, fontWeight: 600, border: "none", cursor: "pointer", fontFamily: "'Inter', sans-serif" }}
+            style={{ backgroundColor: "var(--plum)", color: "white", borderRadius: 9999, padding: "6px 14px", fontSize: 12, fontWeight: 600, border: "none", cursor: "pointer", }}
           >
             View event
           </button>
@@ -222,7 +220,7 @@ export default function Events() {
           <h1 className="fw-display">
             Events
           </h1>
-          <p style={{ fontSize: 13, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", marginTop: 6 }}>
+          <p style={{ fontSize: 13, color: "var(--mauve)", marginTop: 6 }}>
             Events, socials, networking, wellness and more — across the UK and online.
           </p>
         </div>
@@ -268,8 +266,8 @@ export default function Events() {
             <div style={{ width: 48, height: 48, borderRadius: 14, backgroundColor: "var(--rose-dust-subtle)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 16px" }}>
               <CalendarDays className="w-5 h-5" style={{ color: "var(--rose-dust)" }} />
             </div>
-            <p style={{ fontSize: 15, fontWeight: 600, color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>No events found</p>
-            <p style={{ fontSize: 13, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", marginTop: 4 }}>
+            <p style={{ fontSize: 15, fontWeight: 600, color: "var(--plum)", }}>No events found</p>
+            <p style={{ fontSize: 13, color: "var(--mauve)", marginTop: 4 }}>
               Try adjusting your filters or check back after the next refresh.
             </p>
           </div>

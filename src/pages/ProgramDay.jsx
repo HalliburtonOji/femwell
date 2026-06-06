@@ -302,10 +302,10 @@ export default function ProgramDay() {
         {!locked && tasks.length > 0 && (
           <div className="mt-4 rounded-[20px] p-4" style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)", boxShadow: "var(--shadow-sm)" }}>
             <div className="flex items-center justify-between mb-2">
-              <p className="text-xs font-semibold" style={{ color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>
+              <p className="text-xs font-semibold" style={{ color: "var(--plum)", }}>
                 {completedTaskCount === tasks.length ? "Day complete! 🎉" : `${completedTaskCount} of ${tasks.length} tasks done`}
               </p>
-              <p className="text-xs" style={{ color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>{Math.round(dayProgress)}%</p>
+              <p className="text-xs" style={{ color: "var(--mauve)", }}>{Math.round(dayProgress)}%</p>
             </div>
             <div className="w-full rounded-full overflow-hidden" style={{ height: 6, backgroundColor: "var(--ivory-dark)" }}>
               <div className="h-full rounded-full transition-all duration-500" style={{ width: `${dayProgress}%`, backgroundColor: dayProgress === 100 ? "var(--sage)" : "var(--rose-dust)" }} />

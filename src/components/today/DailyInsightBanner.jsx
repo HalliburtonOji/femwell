@@ -53,10 +53,9 @@ export default function DailyInsightBanner({ user }) {
         <div>
           <p style={{ fontSize: "0.6rem", fontWeight: 700,
                        textTransform: "uppercase", letterSpacing: "0.12em",
-                       color: "var(--rose-dust)", fontFamily: "'Inter', sans-serif",
-                       marginBottom: "4px" }}>Daily Insight</p>
+                       color: "var(--rose-dust)", marginBottom: "4px" }}>Daily Insight</p>
           <p style={{ fontSize: "13px", lineHeight: 1.6,
-                      color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>{insight.insight_text}</p>
+                      color: "var(--plum)", }}>{insight.insight_text}</p>
         </div>
       </div>
     </div>

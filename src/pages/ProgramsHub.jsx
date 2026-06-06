@@ -32,8 +32,7 @@ const card = {
 };
 const sLabel = {
   fontSize: "0.6rem", fontWeight: 600, textTransform: "uppercase",
-  letterSpacing: "0.12em", color: "var(--mauve)", fontFamily: "'Inter', sans-serif",
-};
+  letterSpacing: "0.12em", color: "var(--mauve)", };
 
 const PHASE_ACCENTS = {
   menstrual: "#C96B9E",
@@ -203,10 +202,10 @@ export default function ProgramsHub() {
         <div className="mx-auto max-w-6xl px-4 pb-6 pt-10 md:px-6">
           <p style={sLabel} className="mb-1.5">Guided journeys</p>
           <h1 className="text-3xl font-bold leading-tight md:text-4xl"
-            style={{ fontFamily: "'Fraunces', serif", color: "var(--plum)", letterSpacing: "-0.02em" }}>
+            style={{ color: "var(--plum)", letterSpacing: "-0.02em" }}>
             Programs
           </h1>
-          <p className="mt-1.5 text-sm md:text-base" style={{ color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>
+          <p className="mt-1.5 text-sm md:text-base" style={{ color: "var(--mauve)", }}>
             Multi-day structured journeys. Follow at your own pace, one day at a time.
           </p>
 
@@ -218,11 +217,11 @@ export default function ProgramsHub() {
               <input value={search} onChange={(e) => setSearch(e.target.value)}
                 placeholder="Search by title, need, or goal…"
                 className="w-full bg-transparent text-sm outline-none"
-                style={{ color: "var(--plum)", fontFamily: "'Inter', sans-serif" }} />
+                style={{ color: "var(--plum)", }} />
             </div>
             <select value={sort} onChange={(e) => setSort(e.target.value)}
               className="rounded-2xl px-3 py-2.5 text-xs font-semibold outline-none"
-              style={{ backgroundColor: "var(--ivory)", border: "1.5px solid var(--border)", color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>
+              style={{ backgroundColor: "var(--ivory)", border: "1.5px solid var(--border)", color: "var(--plum)", }}>
               <option value="recommended">Recommended</option>
               <option value="shortest">Shortest</option>
               <option value="newest">Newest</option>
@@ -238,8 +237,7 @@ export default function ProgramsHub() {
                   backgroundColor: activeNeed === need.id ? "var(--plum)" : "var(--ivory-dark)",
                   color: activeNeed === need.id ? "white" : "var(--mauve)",
                   border: `1px solid ${activeNeed === need.id ? "var(--plum)" : "var(--border)"}`,
-                  fontFamily: "'Inter', sans-serif",
-                }}>
+                  }}>
                 {need.label}
               </button>
             ))}
@@ -312,7 +310,7 @@ export default function ProgramsHub() {
         {currentPhase && phaseRecommendations.length > 0 && (
           <section>
             <div className="flex items-center justify-between mb-3">
-              <p style={{ color: "var(--plum)", fontSize: "16px", fontWeight: 700, fontFamily: "'Inter', sans-serif" }}>
+              <p style={{ color: "var(--plum)", fontSize: "16px", fontWeight: 700, }}>
                 For your {currentPhase.charAt(0).toUpperCase() + currentPhase.slice(1)} phase
               </p>
               <span
@@ -322,8 +320,7 @@ export default function ProgramsHub() {
                   color: PHASE_ACCENTS[currentPhase],
                   border: `1px solid ${PHASE_ACCENTS[currentPhase]}`,
                   backgroundColor: `${PHASE_ACCENTS[currentPhase]}1F`,
-                  fontFamily: "'Inter', sans-serif",
-                }}
+                  }}
               >
                 {currentPhase.charAt(0).toUpperCase() + currentPhase.slice(1)}
               </span>
@@ -350,10 +347,10 @@ export default function ProgramsHub() {
           <SectionLabel>Browse all journeys</SectionLabel>
           {visiblePrograms.length === 0 ? (
             <div className="rounded-[24px] p-12 text-center" style={card}>
-              <p className="text-sm font-medium mb-1.5" style={{ color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>Nothing matches that search</p>
+              <p className="text-sm font-medium mb-1.5" style={{ color: "var(--plum)", }}>Nothing matches that search</p>
               <button onClick={() => { setSearch(""); setActiveNeed(null); }}
                 className="text-xs font-semibold mt-1"
-                style={{ color: "var(--rose-dust)", fontFamily: "'Inter', sans-serif" }}>
+                style={{ color: "var(--rose-dust)", }}>
                 Clear filters
               </button>
             </div>
@@ -383,7 +380,7 @@ function MetaChip({ icon: Icon, label, value }) {
   if (!value) return null;
   return (
     <span className="inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-full"
-      style={{ backgroundColor: "var(--ivory-dark)", color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>
+      style={{ backgroundColor: "var(--ivory-dark)", color: "var(--mauve)", }}>
       <Icon className="w-3 h-3" /> {value} {label}
     </span>
   );
@@ -404,13 +401,13 @@ function ContinueCard({ program, userProgram, meta, thumb, locked, progress }) {
           <div className="absolute left-5 top-5 flex gap-2">
             <TierBadge tier={program.access_tier} />
             <span className="text-[10px] font-semibold px-2.5 py-1 rounded-full"
-              style={{ backgroundColor: "rgba(255,255,255,0.9)", color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>
+              style={{ backgroundColor: "rgba(255,255,255,0.9)", color: "var(--plum)", }}>
               Day {userProgram.current_day} of {totalDays}
             </span>
           </div>
           <div className="absolute bottom-5 left-5 right-5 text-white">
             <p style={{ fontSize: "0.6rem", fontWeight: 600, letterSpacing: "0.12em", textTransform: "uppercase", opacity: 0.7 }}>Continue</p>
-            <h3 className="mt-1 text-2xl font-bold leading-tight" style={{ fontFamily: "'Fraunces', serif" }}>{program.title}</h3>
+            <h3 className="mt-1 text-2xl font-bold leading-tight" style={{ }}>{program.title}</h3>
           </div>
         </div>
 
@@ -418,7 +415,7 @@ function ContinueCard({ program, userProgram, meta, thumb, locked, progress }) {
         <div className="space-y-4 p-5 md:p-6">
           <div>
             <div className="flex items-center justify-between text-xs mb-2"
-              style={{ color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>
+              style={{ color: "var(--mauve)", }}>
               <span>Progress</span>
               <span>{Math.round(progress)}%</span>
             </div>
@@ -444,7 +441,7 @@ function ContinueCard({ program, userProgram, meta, thumb, locked, progress }) {
           <div className="rounded-[16px] p-3.5"
             style={{ backgroundColor: "var(--ivory)", border: "1px solid var(--border)" }}>
             <p style={{ ...sLabel, marginBottom: "4px" }}>What's inside</p>
-            <p className="text-xs leading-relaxed" style={{ color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>
+            <p className="text-xs leading-relaxed" style={{ color: "var(--plum)", }}>
               {meta.sessions} audio sessions · {meta.videos} videos · {meta.readUps} read-ups across {totalDays} days
             </p>
           </div>
@@ -452,13 +449,13 @@ function ContinueCard({ program, userProgram, meta, thumb, locked, progress }) {
           <div className="flex gap-2">
             <a href={locked ? createPageUrl("Upgrade") : createPageUrl(`ProgramDay?key=${program.program_key}&day=${userProgram.current_day}`)}
               className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-sm font-semibold"
-              style={{ backgroundColor: "var(--plum)", color: "white", fontFamily: "'Inter', sans-serif" }}>
+              style={{ backgroundColor: "var(--plum)", color: "white", }}>
               Continue day {userProgram.current_day}
               <ArrowRight className="w-3.5 h-3.5" />
             </a>
             <a href={createPageUrl(`ProgramsHub?program_key=${program.program_key}`)}
               className="px-3 py-2.5 rounded-xl text-sm font-semibold flex items-center"
-              style={{ border: "1.5px solid var(--border)", color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>
+              style={{ border: "1.5px solid var(--border)", color: "var(--plum)", }}>
               <ChevronRight className="w-4 h-4" />
             </a>
           </div>
@@ -475,8 +472,8 @@ function ActiveMiniCard({ program, userProgram, meta, progress }) {
       <div className="flex items-start justify-between gap-2 mb-3">
         <div className="flex-1 min-w-0">
           <p style={sLabel} className="mb-1">Active</p>
-          <h3 className="font-semibold leading-tight" style={{ color: "var(--plum)", fontFamily: "'Fraunces', serif" }}>{program.title}</h3>
-          <p className="text-xs mt-1" style={{ color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>
+          <h3 className="font-semibold leading-tight" style={{ color: "var(--plum)", }}>{program.title}</h3>
+          <p className="text-xs mt-1" style={{ color: "var(--mauve)", }}>
             Day {userProgram.current_day} of {totalDays}
           </p>
         </div>
@@ -491,12 +488,12 @@ function ActiveMiniCard({ program, userProgram, meta, progress }) {
       <div className="mt-4 flex gap-2">
         <a href={createPageUrl(`ProgramDay?key=${program.program_key}&day=${userProgram.current_day}`)}
           className="flex-1 py-2 rounded-xl text-sm font-semibold text-center"
-          style={{ backgroundColor: "var(--plum)", color: "white", fontFamily: "'Inter', sans-serif" }}>
+          style={{ backgroundColor: "var(--plum)", color: "white", }}>
           Continue
         </a>
         <a href={createPageUrl(`ProgramsHub?program_key=${program.program_key}`)}
           className="flex-1 py-2 rounded-xl text-sm font-semibold text-center"
-          style={{ border: "1.5px solid var(--border)", color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>
+          style={{ border: "1.5px solid var(--border)", color: "var(--plum)", }}>
           Days
         </a>
       </div>
@@ -515,7 +512,7 @@ function FeaturedCard({ program, userProgram, locked, thumb, meta, progress }) {
           <div className="absolute left-5 top-5 flex gap-2">
             <TierBadge tier={program.access_tier} />
             <span className="text-[10px] font-semibold px-2.5 py-1 rounded-full"
-              style={{ backgroundColor: "rgba(255,255,255,0.9)", color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>
+              style={{ backgroundColor: "rgba(255,255,255,0.9)", color: "var(--plum)", }}>
               {totalDays} days
             </span>
           </div>
@@ -523,7 +520,7 @@ function FeaturedCard({ program, userProgram, locked, thumb, meta, progress }) {
             <p style={{ fontSize: "0.6rem", fontWeight: 600, letterSpacing: "0.12em", textTransform: "uppercase", opacity: 0.7 }}>
               {program.is_featured ? "Featured journey" : "Guided journey"}
             </p>
-            <h3 className="mt-1 text-2xl font-bold leading-tight" style={{ fontFamily: "'Fraunces', serif" }}>{program.title}</h3>
+            <h3 className="mt-1 text-2xl font-bold leading-tight" style={{ }}>{program.title}</h3>
             <p className="mt-2 text-sm leading-relaxed" style={{ color: "rgba(255,255,255,0.8)" }}>{program.summary || program.description}</p>
           </div>
         </div>
@@ -537,7 +534,7 @@ function FeaturedCard({ program, userProgram, locked, thumb, meta, progress }) {
 
           {userProgram && (
             <div>
-              <div className="flex justify-between text-xs mb-2" style={{ color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>
+              <div className="flex justify-between text-xs mb-2" style={{ color: "var(--mauve)", }}>
                 <span>Progress</span>
                 <span>Day {userProgram.current_day} / {totalDays}</span>
               </div>
@@ -547,7 +544,7 @@ function FeaturedCard({ program, userProgram, locked, thumb, meta, progress }) {
 
           <div className="rounded-[16px] p-3.5" style={{ backgroundColor: "var(--ivory)", border: "1px solid var(--border)" }}>
             <p style={{ ...sLabel, marginBottom: "4px" }}>How it works</p>
-            <p className="text-xs leading-relaxed" style={{ color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>
+            <p className="text-xs leading-relaxed" style={{ color: "var(--plum)", }}>
               Each day has one clear flow — a session, a supporting video, and a short educational card.
             </p>
           </div>
@@ -555,14 +552,14 @@ function FeaturedCard({ program, userProgram, locked, thumb, meta, progress }) {
           <div className="flex flex-wrap gap-2">
             <a href={createPageUrl(`ProgramsHub?program_key=${program.program_key}`)}
               className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-sm font-semibold"
-              style={{ backgroundColor: "var(--plum)", color: "white", fontFamily: "'Inter', sans-serif" }}>
+              style={{ backgroundColor: "var(--plum)", color: "white", }}>
               {userProgram ? `Continue day ${userProgram.current_day}` : locked ? "Preview journey" : "View journey"}
               <ArrowRight className="w-3.5 h-3.5" />
             </a>
             {locked && (
               <a href={createPageUrl("Upgrade")}
                 className="flex items-center gap-1.5 px-3 py-2.5 rounded-xl text-sm font-semibold"
-                style={{ border: "1.5px solid var(--border)", color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>
+                style={{ border: "1.5px solid var(--border)", color: "var(--plum)", }}>
                 <Lock className="w-3.5 h-3.5" /> Unlock
               </a>
             )}
@@ -623,18 +620,18 @@ function ProgramCard({ program, userProgram, locked, thumb, meta, progress }) {
       <div className="p-4 space-y-3.5">
         <div>
           <div className="flex items-center gap-1.5 mb-2">
-            <span className="inline-flex items-center gap-1 text-[10px]" style={{ color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>
+            <span className="inline-flex items-center gap-1 text-[10px]" style={{ color: "var(--mauve)", }}>
               <Clock className="w-3 h-3" /> {totalDays} days
             </span>
-            {program.level && <span className="text-[10px] capitalize" style={{ color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>{program.level}</span>}
+            {program.level && <span className="text-[10px] capitalize" style={{ color: "var(--mauve)", }}>{program.level}</span>}
           </div>
-          <h3 className="font-semibold leading-tight" style={{ color: "var(--plum)", fontFamily: "'Fraunces', serif" }}>{program.title}</h3>
-          <p className="mt-1.5 text-xs leading-relaxed line-clamp-2" style={{ color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>{program.summary || program.description}</p>
+          <h3 className="font-semibold leading-tight" style={{ color: "var(--plum)", }}>{program.title}</h3>
+          <p className="mt-1.5 text-xs leading-relaxed line-clamp-2" style={{ color: "var(--mauve)", }}>{program.summary || program.description}</p>
         </div>
 
         {userProgram && !isCompleted && (
           <div>
-            <div className="flex justify-between text-[10px] mb-1.5" style={{ color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>
+            <div className="flex justify-between text-[10px] mb-1.5" style={{ color: "var(--mauve)", }}>
               <span>Day {userProgram.current_day} / {totalDays}</span>
               <span>{Math.round(progress)}%</span>
             </div>
@@ -647,12 +644,12 @@ function ProgramCard({ program, userProgram, locked, thumb, meta, progress }) {
             <>
               <a href={createPageUrl(`ProgramsHub?program_key=${program.program_key}`)}
                 className="flex-1 py-2 rounded-xl text-xs font-semibold text-center"
-                style={{ border: "1.5px solid var(--border)", color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>
+                style={{ border: "1.5px solid var(--border)", color: "var(--plum)", }}>
                 Details
               </a>
               <button onClick={handleRestart}
                 className="flex-1 py-2 rounded-xl text-xs font-semibold text-center"
-                style={{ backgroundColor: "var(--sage)", color: "white", fontFamily: "'Inter', sans-serif", border: "none", cursor: "pointer" }}>
+                style={{ backgroundColor: "var(--sage)", color: "white", border: "none", cursor: "pointer" }}>
                 Restart
               </button>
             </>
@@ -660,12 +657,12 @@ function ProgramCard({ program, userProgram, locked, thumb, meta, progress }) {
             <>
               <a href={createPageUrl(`ProgramsHub?program_key=${program.program_key}`)}
                 className="flex-1 py-2 rounded-xl text-xs font-semibold text-center"
-                style={{ border: "1.5px solid var(--border)", color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>
+                style={{ border: "1.5px solid var(--border)", color: "var(--plum)", }}>
                 {locked ? "Preview" : "Details"}
               </a>
               <a href={userProgram ? createPageUrl(`ProgramDay?key=${program.program_key}&day=${userProgram.current_day}`) : locked ? createPageUrl("Upgrade") : createPageUrl(`ProgramDetail?key=${program.program_key}`)}
                 className="flex-1 py-2 rounded-xl text-xs font-semibold text-center"
-                style={{ backgroundColor: "var(--plum)", color: "white", fontFamily: "'Inter', sans-serif" }}>
+                style={{ backgroundColor: "var(--plum)", color: "white", }}>
                 {userProgram ? "Continue →" : locked ? "Unlock" : "Start"}
               </a>
             </>

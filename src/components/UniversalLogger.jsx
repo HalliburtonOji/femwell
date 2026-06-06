@@ -1071,7 +1071,6 @@ export function DetailForm({ type, onCancel, onSaved }) {
                 border: `1px solid ${on ? C.espresso : "rgba(58,44,26,0.15)"}`,
                 background: on ? C.espresso : C.paperHi,
                 color: on ? C.cream : C.muted,
-                fontFamily: "'Inter', sans-serif",
                 fontSize: 11.5, fontWeight: 600, cursor: "pointer",
               }}>{k}</button>
             );
@@ -1360,8 +1359,7 @@ const fabStyle = {
   display: "inline-flex", alignItems: "center", justifyContent: "center",
   boxShadow: "0 4px 16px rgba(212,175,55,0.40)",
   zIndex: 9000,
-  fontFamily: "'Inter', sans-serif",
-};
+  };
 const backdrop = {
   position: "fixed", inset: 0, zIndex: 9500,
   background: "rgba(58,44,26,0.50)",
@@ -1374,7 +1372,6 @@ const sheet = {
   padding: "16px 18px max(22px, env(safe-area-inset-bottom))",
   maxHeight: "90vh",
   overflowY: "auto",
-  fontFamily: "'Inter', system-ui, sans-serif",
   boxShadow: "0 -8px 32px rgba(58,44,26,0.20)",
 };
 const head = {
@@ -1417,7 +1414,6 @@ const voiceMicWrap = {
   cursor: "pointer",
 };
 const voiceTitle = {
-  fontFamily: "'Fraunces', Georgia, serif",
   fontSize: 17, fontWeight: 500, color: C.espresso, margin: "8px 0 0",
 };
 const voiceSub = { fontSize: 12, color: C.muted, margin: "4px 0 0" };
@@ -1444,7 +1440,6 @@ const manualSub = { fontSize: 10, color: C.muted, marginTop: 2, lineHeight: 1.3 
 const formShell = { display: "flex", flexDirection: "column", gap: 14 };
 const formTypeRow = { display: "flex", alignItems: "center", gap: 10 };
 const formTitle = {
-  fontFamily: "'Fraunces', Georgia, serif",
   fontSize: 24, fontWeight: 500, color: C.espresso,
   margin: 0, letterSpacing: "-0.01em", lineHeight: 1.15,
 };
@@ -1462,7 +1457,6 @@ const inputStyle = {
   borderRadius: 10, background: C.paperHi,
   border: "1px solid rgba(58,44,26,0.15)",
   fontSize: 14, color: C.espresso, outline: "none",
-  fontFamily: "'Inter', sans-serif",
   boxSizing: "border-box",
 };
 const inputUnitRow = { display: "flex", gap: 8, alignItems: "center" };
@@ -1474,7 +1468,6 @@ const chip = {
   display: "inline-flex", alignItems: "center",
   padding: "6px 12px", borderRadius: 9999,
   border: "1px solid",
-  fontFamily: "'Inter', sans-serif",
   fontSize: 11.5, fontWeight: 600, cursor: "pointer",
 };
 const toggleRow = {
@@ -1497,7 +1490,7 @@ const stepBtn = {
 };
 const stepValue = {
   flex: 1, textAlign: "center",
-  fontFamily: "'Fraunces', Georgia, serif", fontSize: 15, fontWeight: 500, color: C.espresso,
+  fontSize: 15, fontWeight: 500, color: C.espresso,
 };
 const faceRow = { display: "flex", gap: 6 };
 const faceBtn = {
@@ -1667,8 +1660,7 @@ function DrinkChipsRow() {
               border: `1px solid ${d.tone}55`,
               background: `${d.tone}1A`,
               color: C.espresso, fontSize: 11, fontWeight: 700,
-              cursor: "pointer", fontFamily: "'Inter', sans-serif",
-            }}
+              cursor: "pointer", }}
           >
             <d.Icon size={11} style={{ color: d.tone }} />
             {d.label}

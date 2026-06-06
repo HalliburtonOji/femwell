@@ -27,7 +27,7 @@ export function PageLoader({ message }) {
     >
       <LoadingSpinner size="md" />
       {message && (
-        <p style={{ fontSize: 13, color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>
+        <p style={{ fontSize: 13, color: "var(--mauve)", }}>
           {message}
         </p>
       )}

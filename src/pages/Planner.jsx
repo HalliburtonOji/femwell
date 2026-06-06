@@ -222,18 +222,15 @@ const todayWrap = {
   marginBottom: 12,
 };
 const todayEyebrow = {
-  fontFamily: "'Inter', sans-serif",
   fontSize: 10, fontWeight: 700, letterSpacing: "0.20em",
   color: "#3F6228", textTransform: "uppercase",
   margin: 0,
 };
 const todayHero = {
-  fontFamily: "'Fraunces', Georgia, serif",
   fontSize: 22, fontWeight: 500, lineHeight: 1.2,
   color: "#3A2C1A", margin: "4px 0 8px",
 };
 const todayMilestone = {
-  fontFamily: "'Inter', sans-serif",
   fontSize: 13, color: "#3A2C1A", lineHeight: 1.5,
   margin: "4px 0 0",
 };
@@ -244,12 +241,10 @@ const todayCta = {
   borderRadius: 9999,
   background: "#3A2C1A",
   color: "#F4EDDB",
-  fontFamily: "'Inter', sans-serif",
   fontSize: 12, fontWeight: 700,
   textDecoration: "none",
 };
 const todayDue = {
-  fontFamily: "'Inter', sans-serif",
   fontSize: 11, color: "#6B5840",
   fontStyle: "italic",
   margin: "8px 0 0",
@@ -293,21 +288,21 @@ const stageRibbonCardStyle = {
   marginBottom: 14,
 };
 const stageRibbonEyebrowStyle = {
-  fontFamily: "'Inter', system-ui, sans-serif", fontSize: 10,
+  fontSize: 10,
   fontWeight: 700, letterSpacing: "0.18em", color: "#A6862B",
   textTransform: "uppercase",
 };
 const stageRibbonTitleStyle = {
-  fontFamily: "'Fraunces', Georgia, serif", fontSize: 20,
+  fontSize: 20,
   fontWeight: 500, color: "#3A2C1A", fontStyle: "italic",
   margin: "4px 0 8px", letterSpacing: "-0.01em",
 };
 const stageRibbonBodyStyle = {
-  fontFamily: "'Inter', system-ui, sans-serif", fontSize: 12.5,
+  fontSize: 12.5,
   color: "#6B5840", lineHeight: 1.55, margin: "0 0 8px",
 };
 const stageRibbonHintStyle = {
-  fontFamily: "Cormorant Garamond, Georgia, serif", fontStyle: "italic", fontSize: 12,
+  fontStyle: "italic", fontSize: 12,
   color: "#4A2A3A", lineHeight: 1.5, margin: 0,
 };
 
@@ -1291,7 +1286,7 @@ export default function Planner() {
               Life Stage adapter: the cycle-view title is the per-stage label
               (Patterns / Journey / Clinical / Hormones / Recovery / Health),
               defaulting to "Cycle" when no override is set. */}
-          <p style={{ fontSize: "0.6rem", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.14em", color: "var(--plum-mute, #8A7584)", fontFamily: "'Inter', sans-serif" }}>
+          <p style={{ fontSize: "0.6rem", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.14em", color: "var(--plum-mute, #8A7584)", }}>
             {view === "cycle"
               ? `Your ${(plannerConfig?.cycleTabName || "Cycle").toLowerCase()}`
               : `Today · ${today.toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long" }).toUpperCase()}`}
@@ -1307,7 +1302,7 @@ export default function Planner() {
               stage is not cycle-anchored (peri, pregnancy, ttc, postpartum,
               post-meno, pcos / ha modifier). The cycle frame would mislead. */}
           {selectedPhase && selectedCycleDay && (plannerConfig?.ribbonType === "cycle") && (
-            <p style={{ fontSize: 12, color: "var(--plum-2, #6B4559)", fontFamily: "'Inter', sans-serif", marginBottom: 4 }}>
+            <p style={{ fontSize: 12, color: "var(--plum-2, #6B4559)", marginBottom: 4 }}>
               Day {selectedCycleDay} · <span style={{ color: PHASE_COLORS[selectedPhase], fontWeight: 600 }}>{phaseLabelOf(selectedPhase)}</span>
             </p>
           )}
@@ -1315,7 +1310,7 @@ export default function Planner() {
           {plannerConfig?.bannerText && (
             <p style={{
               fontSize: 11, fontWeight: 600, color: "var(--plum, #4A2A3A)",
-              fontFamily: "Cormorant Garamond, Georgia, serif", fontStyle: "italic",
+              fontStyle: "italic",
               marginBottom: 6, lineHeight: 1.4,
               padding: "6px 10px",
               background: "rgba(168,134,75,0.12)",
@@ -1324,7 +1319,7 @@ export default function Planner() {
             }}>{plannerConfig.bannerText}</p>
           )}
           {/* A2-4 (5): selected-crumb subtitle — italic plum-mute */}
-          <p style={{ fontSize: 11.5, fontStyle: "italic", color: "var(--plum-mute, #8A7584)", fontFamily: "'Inter', sans-serif", marginBottom: 8, lineHeight: 1.45 }}>
+          <p style={{ fontSize: 11.5, fontStyle: "italic", color: "var(--plum-mute, #8A7584)", marginBottom: 8, lineHeight: 1.45 }}>
             {view === "cycle"
               ? selectedCrumbCycle({ date: today })
               : selectedCrumbToday({ dailyPlan, phase: selectedPhase, date: today })}
@@ -1367,8 +1362,8 @@ export default function Planner() {
                       backgroundColor: sel ? "var(--plum, #4A2A3A)" : tod ? "rgba(212,94,82,0.10)" : "transparent",
                       transition: "background 120ms",
                     }}>
-                      <span style={{ fontSize: 9, fontWeight: 600, color: sel ? "var(--cream, #FFFAF5)" : "var(--plum-mute, #8A7584)", fontFamily: "'Inter', sans-serif", textTransform: "uppercase", letterSpacing: "0.06em" }}>{DAY_LABELS[i]}</span>
-                      <span style={{ fontSize: 15, fontWeight: 600, color: sel ? "var(--cream, #FFFAF5)" : tod ? "var(--rose-primary, #D45E52)" : "var(--plum, #4A2A3A)", fontFamily: "'Fraunces', Georgia, serif" }}>{d.getDate()}</span>
+                      <span style={{ fontSize: 9, fontWeight: 600, color: sel ? "var(--cream, #FFFAF5)" : "var(--plum-mute, #8A7584)", textTransform: "uppercase", letterSpacing: "0.06em" }}>{DAY_LABELS[i]}</span>
+                      <span style={{ fontSize: 15, fontWeight: 600, color: sel ? "var(--cream, #FFFAF5)" : tod ? "var(--rose-primary, #D45E52)" : "var(--plum, #4A2A3A)", }}>{d.getDate()}</span>
                       <span style={{
                         width: 5, height: 5, borderRadius: 9999,
                         background: phase ? PHASE_COLORS[phase] : "transparent",
@@ -1400,7 +1395,6 @@ export default function Planner() {
                   border: "1px solid var(--femwell-blush, #E8B4B8)",
                   background: "rgba(232,180,184,0.18)",
                   color: "var(--femwell-espresso, #3A2C1A)",
-                  fontFamily: "'Inter', sans-serif",
                   fontSize: 11,
                   fontWeight: 700,
                   letterSpacing: "0.06em",
@@ -1426,7 +1420,6 @@ export default function Planner() {
                         background: "rgba(143,175,143,0.18)",
                         border: "1px solid rgba(143,175,143,0.42)",
                         color: "var(--femwell-mauve, #9B8B7A)",
-                        fontFamily: "'Inter', sans-serif",
                         fontSize: 11, fontWeight: 700, letterSpacing: "0.06em",
                       }}>
                   <span aria-hidden="true">✓</span> Planned
@@ -1440,7 +1433,6 @@ export default function Planner() {
                           background: "rgba(232,180,184,0.30)",
                           border: "1px solid var(--femwell-blush, #E8B4B8)",
                           color: "var(--femwell-espresso, #3A2C1A)",
-                          fontFamily: "'Inter', sans-serif",
                           fontSize: 12, fontWeight: 700, letterSpacing: "0.06em",
                           cursor: "pointer",
                         }}>
@@ -1485,7 +1477,6 @@ export default function Planner() {
           which hid the strip (and every stage card) when on Cycle. ──── */}
       <div className="max-w-xl mx-auto px-4" style={{ marginTop: 8 }}>
         <div style={{
-          fontFamily: "'Inter', sans-serif",
           fontSize: 10,
           color: "var(--plum-mute, #8A7584)",
           padding: "4px 8px",
@@ -1692,7 +1683,7 @@ export default function Planner() {
         aria-labelledby="planner-tab-today"
         className="max-w-xl mx-auto px-4 pt-5"
       >
-        <p style={{ fontSize: 13, fontWeight: 600, color: "var(--plum, #4A2A3A)", fontFamily: "'Inter', sans-serif", marginBottom: 14 }}>
+        <p style={{ fontSize: 13, fontWeight: 600, color: "var(--plum, #4A2A3A)", marginBottom: 14 }}>
           {selectedDay.toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long" })}
         </p>
 
@@ -1846,7 +1837,7 @@ export default function Planner() {
                 <div style={stackHeadStyle}>
                   <span style={stackTitleStyle}>Morning stack</span>
                 </div>
-                <p style={{ fontSize: 12, color: "var(--plum-mute, #8A7584)", fontFamily: "'Inter', sans-serif", margin: "4px 0 0", fontStyle: "italic", lineHeight: 1.4 }}>
+                <p style={{ fontSize: 12, color: "var(--plum-mute, #8A7584)", margin: "4px 0 0", fontStyle: "italic", lineHeight: 1.4 }}>
                   Log a few habits in Track and they'll surface here as a checkable stack.
                 </p>
               </div>
@@ -1969,7 +1960,7 @@ export default function Planner() {
             <div style={{ marginBottom: 12 }}>
               <p style={dividerStyle}>Medications</p>
               {medications.length === 0 ? (
-                <p style={{ fontSize: 11.5, color: "var(--plum-mute, #8A7584)", fontFamily: "'Inter', sans-serif", fontStyle: "italic", margin: "0 0 4px", textAlign: "center", padding: "10px 8px", border: "1px dashed rgba(74,42,58,0.12)", borderRadius: 12 }}>
+                <p style={{ fontSize: 11.5, color: "var(--plum-mute, #8A7584)", fontStyle: "italic", margin: "0 0 4px", textAlign: "center", padding: "10px 8px", border: "1px dashed rgba(74,42,58,0.12)", borderRadius: 12 }}>
                   No medications logged — add one ↑
                 </p>
               ) : (
@@ -1987,11 +1978,11 @@ export default function Planner() {
                         <div style={{ flex: 1, minWidth: 0, display: "flex", alignItems: "center", gap: 8 }}>
                           <Pill className="w-4 h-4" style={{ color: "var(--plum-mute, #8A7584)", flexShrink: 0 }} />
                           <div style={{ flex: 1, minWidth: 0 }}>
-                            <p style={{ fontSize: 13.5, fontWeight: 600, color: "var(--plum, #4A2A3A)", fontFamily: "'Inter', sans-serif", textDecoration: taken ? "line-through" : "none", margin: 0, lineHeight: 1.2 }}>
+                            <p style={{ fontSize: 13.5, fontWeight: 600, color: "var(--plum, #4A2A3A)", textDecoration: taken ? "line-through" : "none", margin: 0, lineHeight: 1.2 }}>
                               {name}{dose ? ` · ${dose}` : ""}
                             </p>
                             {time && (
-                              <span style={{ fontSize: 10.5, color: "var(--plum-mute, #8A7584)", fontFamily: "'Inter', sans-serif", display: "inline-flex", alignItems: "center", gap: 3, marginTop: 2 }}>
+                              <span style={{ fontSize: 10.5, color: "var(--plum-mute, #8A7584)", display: "inline-flex", alignItems: "center", gap: 3, marginTop: 2 }}>
                                 <Clock className="w-3 h-3" />{time}
                               </span>
                             )}
@@ -2006,7 +1997,7 @@ export default function Planner() {
 
             {/* ── Commitments — PlannerItems + PersonalTasks unified ───── */}
             {dayItems.length === 0 ? (
-              <p style={{ fontSize: 12, color: "var(--plum-mute, #8A7584)", fontFamily: "'Inter', sans-serif", textAlign: "center", padding: "20px 0", fontStyle: "italic" }}>
+              <p style={{ fontSize: 12, color: "var(--plum-mute, #8A7584)", textAlign: "center", padding: "20px 0", fontStyle: "italic" }}>
                 Nothing more on the list. Tap + to add something.
               </p>
             ) : (
@@ -2021,19 +2012,19 @@ export default function Planner() {
                           {item.is_completed && <Check className="w-3 h-3" style={{ color: "white" }} />}
                         </button>
                         <div style={{ flex: 1, minWidth: 0 }}>
-                          <p style={{ fontSize: 14, fontWeight: 600, color: "var(--plum, #4A2A3A)", fontFamily: "'Inter', sans-serif", textDecoration: item.is_completed ? "line-through" : "none", marginBottom: 4 }}>{item.title}</p>
+                          <p style={{ fontSize: 14, fontWeight: 600, color: "var(--plum, #4A2A3A)", textDecoration: item.is_completed ? "line-through" : "none", marginBottom: 4 }}>{item.title}</p>
                           <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
-                            <span style={{ fontSize: 10, fontWeight: 600, backgroundColor: cat.bg, color: cat.color, borderRadius: 9999, padding: "2px 8px", fontFamily: "'Inter', sans-serif", textTransform: "capitalize" }}>{item.category}</span>
+                            <span style={{ fontSize: 10, fontWeight: 600, backgroundColor: cat.bg, color: cat.color, borderRadius: 9999, padding: "2px 8px", textTransform: "capitalize" }}>{item.category}</span>
                             {item.time && (
-                              <span style={{ fontSize: 11, color: "var(--plum-mute, #8A7584)", fontFamily: "'Inter', sans-serif", display: "flex", alignItems: "center", gap: 3 }}>
+                              <span style={{ fontSize: 11, color: "var(--plum-mute, #8A7584)", display: "flex", alignItems: "center", gap: 3 }}>
                                 <Clock className="w-3 h-3" />{item.time}
                               </span>
                             )}
                             {item.repeat && item.repeat !== "once" && (
-                              <span style={{ fontSize: 10, color: "var(--plum-mute, #8A7584)", fontFamily: "'Inter', sans-serif" }}>↻ {item.repeat}</span>
+                              <span style={{ fontSize: 10, color: "var(--plum-mute, #8A7584)", }}>↻ {item.repeat}</span>
                             )}
                           </div>
-                          {item.notes && <p style={{ fontSize: 12, color: "var(--plum-mute, #8A7584)", fontFamily: "'Inter', sans-serif", marginTop: 4, lineHeight: 1.5 }}>{item.notes}</p>}
+                          {item.notes && <p style={{ fontSize: 12, color: "var(--plum-mute, #8A7584)", marginTop: 4, lineHeight: 1.5 }}>{item.notes}</p>}
                         </div>
                         <button onClick={() => deleteItem(item)} aria-label="Delete" style={{ color: "var(--plum-mute, #8A7584)", background: "none", border: "none", cursor: "pointer", padding: 2, flexShrink: 0 }}>
                           <Trash2 className="w-4 h-4" />
@@ -2049,8 +2040,8 @@ export default function Planner() {
             {!dailyPlan && !activeProgram && ritualHabits.length === 0 && eveningRitualHabits.length === 0 && !dayMeals && dayItems.length === 0 && medications.length === 0 && (
               <div style={{ textAlign: "center", padding: "44px 24px" }}>
                 <Calendar className="w-9 h-9 mx-auto mb-3" style={{ color: "var(--rose-primary, #D45E52)", opacity: 0.5 }} />
-                <p style={{ fontSize: 15, fontWeight: 500, color: "var(--plum, #4A2A3A)", fontFamily: "'Fraunces', Georgia, serif", marginBottom: 4 }}>A soft, open day</p>
-                <p style={{ fontSize: 12, color: "var(--plum-mute, #8A7584)", fontFamily: "'Inter', sans-serif" }}>Tap + to add anything you want to make space for.</p>
+                <p style={{ fontSize: 15, fontWeight: 500, color: "var(--plum, #4A2A3A)", marginBottom: 4 }}>A soft, open day</p>
+                <p style={{ fontSize: 12, color: "var(--plum-mute, #8A7584)", }}>Tap + to add anything you want to make space for.</p>
               </div>
             )}
 
@@ -2125,7 +2116,7 @@ export default function Planner() {
               gives ~12px breathing room above the nav on all devices. */}
           <div style={{ position: "fixed", bottom: 0, left: 0, right: 0, zIndex: 50, backgroundColor: "var(--surface, #FFFFFF)", borderRadius: "24px 24px 0 0", padding: "20px 20px calc(80px + env(safe-area-inset-bottom, 0px))", maxHeight: "85vh", overflowY: "auto" }}>
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20 }}>
-              <h2 style={{ fontFamily: "'Fraunces', Georgia, serif", fontSize: 20, fontWeight: 500, color: "var(--plum, #4A2A3A)", margin: 0 }}>
+              <h2 style={{ fontSize: 20, fontWeight: 500, color: "var(--plum, #4A2A3A)", margin: 0 }}>
                 {addMode === "habit"  ? "Add a habit"
                  : addMode === "ritual" ? "Add a ritual"
                  : "Add to planner"}
@@ -2152,7 +2143,7 @@ export default function Planner() {
                     const active = newItem.category === cat;
                     return (
                       <button key={cat} onClick={() => setNewItem(p => ({ ...p, category: cat }))}
-                        style={{ borderRadius: 9999, padding: "5px 12px", fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: "'Inter', sans-serif", textTransform: "capitalize", border: "1.5px solid", backgroundColor: active ? c.bg : "transparent", borderColor: active ? c.color : "var(--border, rgba(74,42,58,0.16))", color: active ? c.color : "var(--plum-mute, #8A7584)" }}>
+                        style={{ borderRadius: 9999, padding: "5px 12px", fontSize: 12, fontWeight: 600, cursor: "pointer", textTransform: "capitalize", border: "1.5px solid", backgroundColor: active ? c.bg : "transparent", borderColor: active ? c.color : "var(--border, rgba(74,42,58,0.16))", color: active ? c.color : "var(--plum-mute, #8A7584)" }}>
                         {cat}
                       </button>
                     );
@@ -2177,7 +2168,7 @@ export default function Planner() {
                   const todayStr = toDateStr(today);
                   if (chosen < todayStr) {
                     return (
-                      <p style={{ fontSize: 11, color: "#A6862B", fontFamily: "'Inter', sans-serif", marginTop: 4, fontStyle: "italic" }}>
+                      <p style={{ fontSize: 11, color: "#A6862B", marginTop: 4, fontStyle: "italic" }}>
                         This date has passed — add anyway?
                       </p>
                     );
@@ -2216,7 +2207,7 @@ export default function Planner() {
               <button
                 onClick={handleAdd}
                 disabled={!newItem.title.trim() || saving}
-                style={{ width: "100%", height: 48, borderRadius: 9999, backgroundColor: "var(--rose-primary, #D45E52)", color: "white", fontSize: 14, fontWeight: 700, border: "none", cursor: "pointer", fontFamily: "'Inter', sans-serif", opacity: (!newItem.title.trim() || saving) ? 0.5 : 1 }}>
+                style={{ width: "100%", height: 48, borderRadius: 9999, backgroundColor: "var(--rose-primary, #D45E52)", color: "white", fontSize: 14, fontWeight: 700, border: "none", cursor: "pointer", opacity: (!newItem.title.trim() || saving) ? 0.5 : 1 }}>
                 {saving ? "Saving..." : "Add to planner"}
               </button>
             </div>
@@ -2236,7 +2227,7 @@ export default function Planner() {
               bottom nav (Today/Lifestyle/Jess/Profile/Menu) on mobile. */}
           <div style={{ position: "fixed", bottom: 0, left: 0, right: 0, zIndex: 50, backgroundColor: "var(--surface, #FFFFFF)", borderRadius: "24px 24px 0 0", padding: "20px 20px calc(80px + env(safe-area-inset-bottom, 0px))", maxHeight: "85vh", overflowY: "auto" }}>
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20 }}>
-              <h2 style={{ fontFamily: "'Fraunces', Georgia, serif", fontSize: 20, fontWeight: 500, color: "var(--plum, #4A2A3A)", margin: 0 }}>Add medication</h2>
+              <h2 style={{ fontSize: 20, fontWeight: 500, color: "var(--plum, #4A2A3A)", margin: 0 }}>Add medication</h2>
               <button onClick={() => setShowMedAdd(false)} aria-label="Close" style={{ width: 30, height: 30, borderRadius: 9999, backgroundColor: "var(--cream-2, #FFF5EC)", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>
                 <X className="w-4 h-4" style={{ color: "var(--plum-mute, #8A7584)" }} />
               </button>
@@ -2263,7 +2254,7 @@ export default function Planner() {
                   const todayStr = toDateStr(today);
                   if (chosen < todayStr) {
                     return (
-                      <p style={{ fontSize: 11, color: "#A6862B", fontFamily: "'Inter', sans-serif", marginTop: 4, fontStyle: "italic" }}>
+                      <p style={{ fontSize: 11, color: "#A6862B", marginTop: 4, fontStyle: "italic" }}>
                         This date has passed — add anyway?
                       </p>
                     );
@@ -2291,7 +2282,7 @@ export default function Planner() {
               <button
                 onClick={handleSaveMed}
                 disabled={!medForm.name.trim() || savingMed}
-                style={{ width: "100%", height: 48, borderRadius: 9999, backgroundColor: "var(--rose-primary, #D45E52)", color: "white", fontSize: 14, fontWeight: 700, border: "none", cursor: "pointer", fontFamily: "'Inter', sans-serif", opacity: (!medForm.name.trim() || savingMed) ? 0.5 : 1 }}>
+                style={{ width: "100%", height: 48, borderRadius: 9999, backgroundColor: "var(--rose-primary, #D45E52)", color: "white", fontSize: 14, fontWeight: 700, border: "none", cursor: "pointer", opacity: (!medForm.name.trim() || savingMed) ? 0.5 : 1 }}>
                 {savingMed ? "Saving..." : "Save medication"}
               </button>
             </div>
@@ -2363,29 +2354,29 @@ export default function Planner() {
 // ─── Inline style tokens (kept here for surgical patches; would migrate to CSS module in Phase 2) ──
 const navBtnStyle = { width: 28, height: 28, borderRadius: 9999, border: "1px solid var(--border, rgba(74,42,58,0.10))", backgroundColor: "var(--surface, #FFFFFF)", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", flexShrink: 0 };
 
-const smartLabelStyle = { fontSize: 9, letterSpacing: "0.18em", textTransform: "uppercase", color: "var(--plum-mute, #8A7584)", fontWeight: 700, fontFamily: "'Inter', sans-serif", display: "inline-flex", alignItems: "center" };
-const phaseChipStyle = { fontSize: 9, padding: "3px 8px", borderRadius: 10, letterSpacing: "0.08em", textTransform: "uppercase", fontWeight: 700, fontFamily: "'Inter', sans-serif" };
+const smartLabelStyle = { fontSize: 9, letterSpacing: "0.18em", textTransform: "uppercase", color: "var(--plum-mute, #8A7584)", fontWeight: 700, display: "inline-flex", alignItems: "center" };
+const phaseChipStyle = { fontSize: 9, padding: "3px 8px", borderRadius: 10, letterSpacing: "0.08em", textTransform: "uppercase", fontWeight: 700, };
 
 const intentionCardStyle = { background: "var(--surface)", border: "1px solid var(--border)", borderRadius: 16, padding: "16px 16px 14px", marginBottom: 12 };
-const intentionMainStyle = { fontFamily: "'Fraunces', Georgia, serif", fontSize: 18, fontStyle: "italic", color: "var(--plum, #4A2A3A)", fontWeight: 500, lineHeight: 1.32, margin: "0 0 6px" };
-const intentionSubStyle = { fontSize: 13, color: "var(--plum-2, #6B4559)", fontFamily: "'Inter', sans-serif", lineHeight: 1.5, margin: 0 };
+const intentionMainStyle = { fontSize: 18, fontStyle: "italic", color: "var(--plum, #4A2A3A)", fontWeight: 500, lineHeight: 1.32, margin: "0 0 6px" };
+const intentionSubStyle = { fontSize: 13, color: "var(--plum-2, #6B4559)", lineHeight: 1.5, margin: 0 };
 
 const programCardStyle = { position: "relative", background: "linear-gradient(135deg, rgba(138,95,116,0.15), rgba(201,169,92,0.10))", border: "1px solid rgba(138,95,116,0.18)", borderRadius: 16, padding: "14px 16px", marginBottom: 12, overflow: "hidden" };
-const programEyebrowStyle = { fontSize: 9, letterSpacing: "0.18em", textTransform: "uppercase", color: "var(--plum-mute, #8A7584)", fontWeight: 700, marginBottom: 8, fontFamily: "'Inter', sans-serif" };
-const programNameStyle = { fontFamily: "'Fraunces', Georgia, serif", fontSize: 17, fontWeight: 500, color: "var(--plum, #4A2A3A)", lineHeight: 1.2, margin: 0 };
-const programDayStyle = { fontSize: 12, color: "var(--plum-2, #6B4559)", fontFamily: "'Inter', sans-serif", marginTop: 4 };
-const programCtaStyle = { fontSize: 12, color: "var(--plum, #4A2A3A)", fontWeight: 700, background: "var(--cream, #FFFAF5)", padding: "7px 14px", borderRadius: 9999, flexShrink: 0, textDecoration: "none", fontFamily: "'Inter', sans-serif" };
+const programEyebrowStyle = { fontSize: 9, letterSpacing: "0.18em", textTransform: "uppercase", color: "var(--plum-mute, #8A7584)", fontWeight: 700, marginBottom: 8, };
+const programNameStyle = { fontSize: 17, fontWeight: 500, color: "var(--plum, #4A2A3A)", lineHeight: 1.2, margin: 0 };
+const programDayStyle = { fontSize: 12, color: "var(--plum-2, #6B4559)", marginTop: 4 };
+const programCtaStyle = { fontSize: 12, color: "var(--plum, #4A2A3A)", fontWeight: 700, background: "var(--cream, #FFFAF5)", padding: "7px 14px", borderRadius: 9999, flexShrink: 0, textDecoration: "none", };
 const programProgressOuterStyle = { height: 4, background: "rgba(255,250,245,0.6)", borderRadius: 4, marginTop: 10, overflow: "hidden" };
 const programProgressFillStyle = { height: "100%", background: "var(--plum, #4A2A3A)", borderRadius: 4, transition: "width 240ms" };
 
 const stackCardStyle = { background: "var(--surface)", border: "1px solid var(--border)", borderRadius: 16, padding: "14px 16px", marginBottom: 12 };
 const stackHeadStyle = { display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 8 };
-const stackTitleStyle = { fontFamily: "'Fraunces', Georgia, serif", fontSize: 16, fontWeight: 500, color: "var(--plum, #4A2A3A)" };
-const stackCountStyle = { fontSize: 10, color: "var(--plum-mute, #8A7584)", letterSpacing: "0.14em", textTransform: "uppercase", fontWeight: 700, fontFamily: "'Inter', sans-serif" };
+const stackTitleStyle = { fontSize: 16, fontWeight: 500, color: "var(--plum, #4A2A3A)" };
+const stackCountStyle = { fontSize: 10, color: "var(--plum-mute, #8A7584)", letterSpacing: "0.14em", textTransform: "uppercase", fontWeight: 700, };
 const ritualRowStyle = { display: "flex", alignItems: "center", gap: 12, padding: "10px 0", border: "none", background: "transparent", width: "100%", cursor: "pointer" };
 const ritualCheckStyle = { width: 22, height: 22, borderRadius: 9999, border: "1.5px solid", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, transition: "all 120ms" };
-const ritualNameStyle = { fontSize: 13, fontWeight: 600, fontFamily: "'Inter', sans-serif", lineHeight: 1.2, margin: 0 };
-const addToStackBtnStyle = { marginTop: 8, padding: "8px 12px", background: "transparent", border: "1px dashed rgba(74,42,58,0.22)", borderRadius: 9999, fontSize: 11, fontWeight: 600, color: "var(--plum-mute, #8A7584)", fontFamily: "'Inter', sans-serif", cursor: "pointer", letterSpacing: "0.04em" };
+const ritualNameStyle = { fontSize: 13, fontWeight: 600, lineHeight: 1.2, margin: 0 };
+const addToStackBtnStyle = { marginTop: 8, padding: "8px 12px", background: "transparent", border: "1px dashed rgba(74,42,58,0.22)", borderRadius: 9999, fontSize: 11, fontWeight: 600, color: "var(--plum-mute, #8A7584)", cursor: "pointer", letterSpacing: "0.04em" };
 
 // Phase 2 BUILD 3 — FAB satellite buttons (Task / Habit / Medication / Ritual / Journal).
 const fabSatelliteStyle = {
@@ -2401,7 +2392,6 @@ const fabSatelliteStyle = {
 const fabSatelliteLabelStyle = {
   background: "var(--surface, #FFFFFF)",
   color: "var(--plum, #4A2A3A)",
-  fontFamily: "'Inter', sans-serif",
   fontSize: 12,
   fontWeight: 600,
   padding: "6px 12px",
@@ -2422,28 +2412,27 @@ const fabSatelliteIconStyle = {
   flexShrink: 0,
 };
 
-const dividerStyle = { fontFamily: "'Fraunces', Georgia, serif", fontSize: 13, color: "var(--plum, #4A2A3A)", fontWeight: 500, margin: "16px 0 8px" };
+const dividerStyle = { fontSize: 13, color: "var(--plum, #4A2A3A)", fontWeight: 500, margin: "16px 0 8px" };
 
 const mealRowStyle = { display: "flex", alignItems: "center", gap: 12, background: "var(--surface)", border: "1px solid var(--border)", borderRadius: 12, padding: "10px 12px" };
-const mealTimeStyle = { fontFamily: "'Fraunces', Georgia, serif", fontSize: 10, color: "var(--plum-mute, #8A7584)", letterSpacing: "0.14em", textTransform: "uppercase", fontWeight: 600, minWidth: 70 };
-const mealNameStyle = { fontSize: 13, color: "var(--plum, #4A2A3A)", fontWeight: 600, fontFamily: "'Inter', sans-serif", margin: 0, lineHeight: 1.2 };
+const mealTimeStyle = { fontSize: 10, color: "var(--plum-mute, #8A7584)", letterSpacing: "0.14em", textTransform: "uppercase", fontWeight: 600, minWidth: 70 };
+const mealNameStyle = { fontSize: 13, color: "var(--plum, #4A2A3A)", fontWeight: 600, margin: 0, lineHeight: 1.2 };
 
 const listItemStyle = { backgroundColor: "var(--surface, #FFFFFF)", border: "1px solid var(--border, rgba(74,42,58,0.08))", borderRadius: 16, padding: "14px 16px", display: "flex", alignItems: "flex-start", gap: 12, transition: "opacity 0.2s" };
 const checkBtnStyle = { width: 22, height: 22, borderRadius: 9999, border: "2px solid", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, cursor: "pointer", marginTop: 1, transition: "all 120ms" };
 
-const inputStyle = { width: "100%", border: "1.5px solid var(--border, rgba(74,42,58,0.16))", borderRadius: 12, padding: "11px 14px", fontSize: 14, fontFamily: "'Inter', sans-serif", color: "var(--plum, #4A2A3A)", backgroundColor: "var(--cream, #FFFAF5)", outline: "none", boxSizing: "border-box" };
-const fieldLabelStyle = { fontSize: 11, fontWeight: 600, color: "var(--plum-mute, #8A7584)", textTransform: "uppercase", letterSpacing: "0.10em", fontFamily: "'Inter', sans-serif", marginBottom: 8 };
+const inputStyle = { width: "100%", border: "1.5px solid var(--border, rgba(74,42,58,0.16))", borderRadius: 12, padding: "11px 14px", fontSize: 14, color: "var(--plum, #4A2A3A)", backgroundColor: "var(--cream, #FFFAF5)", outline: "none", boxSizing: "border-box" };
+const fieldLabelStyle = { fontSize: 11, fontWeight: 600, color: "var(--plum-mute, #8A7584)", textTransform: "uppercase", letterSpacing: "0.10em", marginBottom: 8 };
 
 // ── Cycle-view stubs (C0 placeholders; C1+ populates each section) ──────────
 const cycleStubStyle = { background: "var(--surface)", border: "1px solid var(--border)", borderRadius: 16, padding: "16px 16px 14px", marginBottom: 12 };
-const cycleStubTitleStyle = { fontFamily: "'Fraunces', Georgia, serif", fontSize: 16, fontWeight: 500, color: "var(--plum, #4A2A3A)", margin: "0 0 4px" };
-const cycleStubBodyStyle = { fontSize: 13, color: "var(--plum-2, #6B4559)", fontFamily: "'Inter', sans-serif", lineHeight: 1.5, margin: 0 };
+const cycleStubTitleStyle = { fontSize: 16, fontWeight: 500, color: "var(--plum, #4A2A3A)", margin: "0 0 4px" };
+const cycleStubBodyStyle = { fontSize: 13, color: "var(--plum-2, #6B4559)", lineHeight: 1.5, margin: 0 };
 
 // ── 7-day energy summary (Phase 2 BUILD 1) ─────────────────────────────────
 const energySummaryStyle = {
   marginTop: 10,
   textAlign: "center",
-  fontFamily: "'Inter', sans-serif",
   fontSize: 11,
   fontWeight: 500,
   color: "var(--plum-mute, #8A7584)",
@@ -2462,7 +2451,6 @@ const toastStyle = {
   borderRadius: 12,
   background: "rgba(74,42,58,0.92)",
   color: "var(--cream, #FFFAF5)",
-  fontFamily: "'Inter', sans-serif",
   fontSize: 12,
   fontWeight: 600,
   letterSpacing: "0.01em",

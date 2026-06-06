@@ -4,8 +4,7 @@ import { Plus, Check, Loader2, Trash2, AlertTriangle } from "lucide-react";
 
 const sLabel = {
   fontSize: "0.6rem", fontWeight: 600, textTransform: "uppercase",
-  letterSpacing: "0.12em", color: "var(--mauve)", fontFamily: "'Inter', sans-serif",
-};
+  letterSpacing: "0.12em", color: "var(--mauve)", };
 const card = {
   backgroundColor: "var(--surface)", border: "1px solid var(--border)",
   borderRadius: 20, boxShadow: "var(--shadow-sm)",
@@ -13,7 +12,7 @@ const card = {
 const input = {
   width: "100%", padding: "8px 10px", borderRadius: 10,
   border: "1px solid var(--border)", backgroundColor: "var(--ivory)",
-  fontSize: 13, fontFamily: "'Inter', sans-serif", color: "var(--plum)",
+  fontSize: 13, color: "var(--plum)",
   outline: "none", boxSizing: "border-box",
 };
 
@@ -113,16 +112,16 @@ function WearableForm({ user, selectedDate }) {
     <div style={{ ...card, padding: 20 }}>
       <div className="flex items-center justify-between mb-4">
         <p style={sLabel}>Today's metrics — {selectedDate}</p>
-        {existingId && <span style={{ fontSize: 10, color: "var(--sage)", fontWeight: 600, fontFamily: "'Inter', sans-serif" }}>Edit mode</span>}
+        {existingId && <span style={{ fontSize: 10, color: "var(--sage)", fontWeight: 600, }}>Edit mode</span>}
       </div>
 
       {/* Source */}
       <div className="mb-4">
-        <p style={{ fontSize: 11, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", marginBottom: 6 }}>Source</p>
+        <p style={{ fontSize: 11, color: "var(--mauve)", marginBottom: 6 }}>Source</p>
         <div className="flex gap-2 flex-wrap">
           {SOURCES.map(s => (
             <button key={s} onClick={() => set("source", s)}
-              style={{ padding: "5px 12px", borderRadius: 9999, fontSize: 11, fontWeight: 600, border: "none", cursor: "pointer", fontFamily: "'Inter', sans-serif", backgroundColor: form.source === s ? "var(--plum)" : "var(--ivory-dark)", color: form.source === s ? "white" : "var(--mauve)" }}>
+              style={{ padding: "5px 12px", borderRadius: 9999, fontSize: 11, fontWeight: 600, border: "none", cursor: "pointer", backgroundColor: form.source === s ? "var(--plum)" : "var(--ivory-dark)", color: form.source === s ? "white" : "var(--mauve)" }}>
               {s}
             </button>
           ))}
@@ -142,7 +141,7 @@ function WearableForm({ user, selectedDate }) {
           { key: "sleep_light_hours", label: "Light sleep (hrs)", type: "number", step: 0.5 },
         ].map(f => (
           <div key={f.key}>
-            <p style={{ fontSize: 10, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", marginBottom: 4 }}>{f.label}</p>
+            <p style={{ fontSize: 10, color: "var(--mauve)", marginBottom: 4 }}>{f.label}</p>
             <input
               type={f.type}
               step={f.step}
@@ -160,14 +159,14 @@ function WearableForm({ user, selectedDate }) {
       {/* Readiness slider */}
       <div className="mb-4">
         <div className="flex justify-between mb-1">
-          <p style={{ fontSize: 10, color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>Readiness score</p>
-          <strong style={{ fontSize: 12, color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>{form.readiness_score}/100</strong>
+          <p style={{ fontSize: 10, color: "var(--mauve)", }}>Readiness score</p>
+          <strong style={{ fontSize: 12, color: "var(--plum)", }}>{form.readiness_score}/100</strong>
         </div>
         <input type="range" min={0} max={100} value={form.readiness_score} onChange={e => set("readiness_score", e.target.value)} style={{ width: "100%" }} />
       </div>
 
       <button onClick={save} disabled={saving}
-        style={{ width: "100%", padding: "11px", borderRadius: 12, fontWeight: 600, fontSize: 13, border: "none", cursor: "pointer", fontFamily: "'Inter', sans-serif", backgroundColor: saved ? "var(--sage)" : "var(--plum)", color: "white", display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}>
+        style={{ width: "100%", padding: "11px", borderRadius: 12, fontWeight: 600, fontSize: 13, border: "none", cursor: "pointer", backgroundColor: saved ? "var(--sage)" : "var(--plum)", color: "white", display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}>
         {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : saved ? <Check className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
         {saving ? "Saving…" : saved ? "Saved!" : existingId ? "Update metrics" : "Save metrics"}
       </button>
@@ -253,7 +252,7 @@ function LabResultsSection({ user }) {
       <div className="flex items-center justify-between mb-4">
         <p style={sLabel}>Lab Results</p>
         <button onClick={() => setShowForm(v => !v)}
-          style={{ display: "flex", alignItems: "center", gap: 5, padding: "6px 14px", borderRadius: 9999, fontSize: 12, fontWeight: 600, border: "none", cursor: "pointer", fontFamily: "'Inter', sans-serif", backgroundColor: "var(--plum)", color: "white" }}>
+          style={{ display: "flex", alignItems: "center", gap: 5, padding: "6px 14px", borderRadius: 9999, fontSize: 12, fontWeight: 600, border: "none", cursor: "pointer", backgroundColor: "var(--plum)", color: "white" }}>
           <Plus className="w-3 h-3" /> Add result
         </button>
       </div>
@@ -261,14 +260,14 @@ function LabResultsSection({ user }) {
       {showForm && (
         <div style={{ backgroundColor: "var(--ivory)", border: "1px solid var(--border)", borderRadius: 14, padding: 16, marginBottom: 16 }}>
           <div style={{ position: "relative", marginBottom: 10 }}>
-            <p style={{ fontSize: 10, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", marginBottom: 4 }}>Marker name *</p>
+            <p style={{ fontSize: 10, color: "var(--mauve)", marginBottom: 4 }}>Marker name *</p>
             <input value={form.marker_name} onChange={e => handleMarkerInput(e.target.value)} onBlur={() => setTimeout(() => setShowSuggestions(false), 150)}
               placeholder="e.g. FSH, Vitamin D" style={input} />
             {showSuggestions && (
               <div style={{ position: "absolute", left: 0, right: 0, top: "100%", zIndex: 10, backgroundColor: "var(--surface)", border: "1px solid var(--border)", borderRadius: 10, boxShadow: "var(--shadow-md)", overflow: "hidden" }}>
                 {markerSuggestions.map(m => (
                   <button key={m.name} onClick={() => selectMarker(m)}
-                    style={{ display: "block", width: "100%", textAlign: "left", padding: "8px 12px", fontSize: 12, fontFamily: "'Inter', sans-serif", color: "var(--plum)", background: "none", border: "none", cursor: "pointer", borderBottom: "1px solid var(--border-subtle)" }}>
+                    style={{ display: "block", width: "100%", textAlign: "left", padding: "8px 12px", fontSize: 12, color: "var(--plum)", background: "none", border: "none", cursor: "pointer", borderBottom: "1px solid var(--border-subtle)" }}>
                     {m.name} <span style={{ color: "var(--mauve)", fontSize: 10 }}>· {m.category}</span>
                   </button>
                 ))}
@@ -277,36 +276,36 @@ function LabResultsSection({ user }) {
           </div>
           <div className="grid grid-cols-2 gap-2 mb-2">
             <div>
-              <p style={{ fontSize: 10, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", marginBottom: 4 }}>Value *</p>
+              <p style={{ fontSize: 10, color: "var(--mauve)", marginBottom: 4 }}>Value *</p>
               <input type="number" value={form.value} onChange={e => set("value", e.target.value)} placeholder="0" style={input} />
             </div>
             <div>
-              <p style={{ fontSize: 10, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", marginBottom: 4 }}>Unit</p>
+              <p style={{ fontSize: 10, color: "var(--mauve)", marginBottom: 4 }}>Unit</p>
               <input value={form.unit} onChange={e => set("unit", e.target.value)} placeholder="e.g. nmol/L" style={input} />
             </div>
             <div>
-              <p style={{ fontSize: 10, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", marginBottom: 4 }}>Test date *</p>
+              <p style={{ fontSize: 10, color: "var(--mauve)", marginBottom: 4 }}>Test date *</p>
               <input type="date" value={form.test_date} onChange={e => set("test_date", e.target.value)} style={input} />
             </div>
             <div>
-              <p style={{ fontSize: 10, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", marginBottom: 4 }}>Lab name</p>
+              <p style={{ fontSize: 10, color: "var(--mauve)", marginBottom: 4 }}>Lab name</p>
               <input value={form.lab_name} onChange={e => set("lab_name", e.target.value)} placeholder="Optional" style={input} />
             </div>
             <div>
-              <p style={{ fontSize: 10, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", marginBottom: 4 }}>Normal min</p>
+              <p style={{ fontSize: 10, color: "var(--mauve)", marginBottom: 4 }}>Normal min</p>
               <input type="number" value={form.normal_range_min} onChange={e => set("normal_range_min", e.target.value)} placeholder="Optional" style={input} />
             </div>
             <div>
-              <p style={{ fontSize: 10, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", marginBottom: 4 }}>Normal max</p>
+              <p style={{ fontSize: 10, color: "var(--mauve)", marginBottom: 4 }}>Normal max</p>
               <input type="number" value={form.normal_range_max} onChange={e => set("normal_range_max", e.target.value)} placeholder="Optional" style={input} />
             </div>
           </div>
           <div className="mb-2">
-            <p style={{ fontSize: 10, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", marginBottom: 4 }}>Category</p>
+            <p style={{ fontSize: 10, color: "var(--mauve)", marginBottom: 4 }}>Category</p>
             <div className="flex gap-1.5 flex-wrap">
               {LAB_CATEGORIES.map(c => (
                 <button key={c} onClick={() => set("category", c)}
-                  style={{ padding: "4px 10px", borderRadius: 9999, fontSize: 11, fontWeight: 600, border: "none", cursor: "pointer", fontFamily: "'Inter', sans-serif", backgroundColor: form.category === c ? "var(--plum)" : "var(--ivory-dark)", color: form.category === c ? "white" : "var(--mauve)" }}>
+                  style={{ padding: "4px 10px", borderRadius: 9999, fontSize: 11, fontWeight: 600, border: "none", cursor: "pointer", backgroundColor: form.category === c ? "var(--plum)" : "var(--ivory-dark)", color: form.category === c ? "white" : "var(--mauve)" }}>
                   {c}
                 </button>
               ))}
@@ -324,11 +323,11 @@ function LabResultsSection({ user }) {
       )}
 
       {results.length === 0 ? (
-        <p style={{ fontSize: 13, color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>No lab results yet. Add your blood test results to track your hormone and health markers over time.</p>
+        <p style={{ fontSize: 13, color: "var(--mauve)", }}>No lab results yet. Add your blood test results to track your hormone and health markers over time.</p>
       ) : (
         Object.entries(grouped).map(([cat, items]) => (
           <div key={cat} className="mb-4">
-            <p style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", color: "var(--mauve)", fontFamily: "'Inter', sans-serif", marginBottom: 8 }}>{cat}</p>
+            <p style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", color: "var(--mauve)", marginBottom: 8 }}>{cat}</p>
             <div className="space-y-2">
               {items.map(r => {
                 const flagged = isOutOfRange(r);
@@ -336,10 +335,10 @@ function LabResultsSection({ user }) {
                   <div key={r.id} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "10px 12px", borderRadius: 12, backgroundColor: flagged ? "var(--rose-dust-subtle)" : "var(--ivory)", border: `1px solid ${flagged ? "var(--rose-dust-light)" : "var(--border-subtle)"}` }}>
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <div className="flex items-center gap-2">
-                        <p style={{ fontSize: 12, fontWeight: 600, color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>{r.marker_name}</p>
+                        <p style={{ fontSize: 12, fontWeight: 600, color: "var(--plum)", }}>{r.marker_name}</p>
                         {flagged && <AlertTriangle style={{ width: 12, height: 12, color: "var(--rose-dust)", flexShrink: 0 }} />}
                       </div>
-                      <p style={{ fontSize: 11, color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>
+                      <p style={{ fontSize: 11, color: "var(--mauve)", }}>
                         {r.value} {r.unit} · {r.test_date}
                         {r.lab_name ? ` · ${r.lab_name}` : ""}
                         {r.normal_range_min != null || r.normal_range_max != null ? ` (ref: ${r.normal_range_min ?? ""}–${r.normal_range_max ?? ""})` : ""}

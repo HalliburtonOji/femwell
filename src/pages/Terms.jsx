@@ -88,7 +88,7 @@ export default function Terms() {
   return (
     <div style={{
       minHeight: "100vh", background: C.cream, color: C.espresso,
-      fontFamily: "'Inter', system-ui, sans-serif", paddingBottom: 80,
+      paddingBottom: 80,
     }}>
       <div style={{ maxWidth: 720, margin: "0 auto", padding: "20px 22px 32px" }}>
         <Link to="/" style={{
@@ -101,7 +101,7 @@ export default function Terms() {
           <p style={{ margin: 0, fontSize: 11, fontWeight: 700, letterSpacing: "0.2em", textTransform: "uppercase", color: C.gold }}>FemWell</p>
           <h1 style={{
             margin: "6px 0 4px", fontSize: 30, fontWeight: 600,
-            fontFamily: "'Fraunces', Georgia, serif", color: C.espressoDk,
+            color: C.espressoDk,
             letterSpacing: -0.4, lineHeight: 1.1,
           }}>Terms &amp; Conditions</h1>
           <p style={{ margin: 0, fontSize: 13, color: C.muted }}>Last updated: May 2026</p>
@@ -121,7 +121,7 @@ export default function Terms() {
           }}>
             <h2 style={{
               margin: "0 0 8px", fontSize: 17, fontWeight: 600,
-              fontFamily: "'Fraunces', Georgia, serif", color: C.espressoDk,
+              color: C.espressoDk,
             }}>{sec.title}</h2>
             <ul style={{ margin: 0, padding: "0 0 0 18px", color: C.espresso, fontSize: 14, lineHeight: 1.6 }}>
               {sec.body.map((line, j) => <li key={j} style={{ marginBottom: 6 }}>{line}</li>)}

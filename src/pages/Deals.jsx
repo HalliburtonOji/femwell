@@ -10,8 +10,7 @@ const card = {
 };
 const sLabel = {
   fontSize: "0.6rem", fontWeight: 600, textTransform: "uppercase",
-  letterSpacing: "0.12em", color: "var(--mauve)", fontFamily: "'Inter', sans-serif",
-};
+  letterSpacing: "0.12em", color: "var(--mauve)", };
 
 const CAT_COLORS = {
   Supplements: { bg: "var(--sage-subtle)", color: "var(--sage)" },
@@ -63,7 +62,7 @@ export default function Deals() {
           <h1 className="fw-display" style={{ marginTop: 4 }}>
             Wellbeing picks
           </h1>
-          <p style={{ fontSize: 13, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", marginTop: 6 }}>
+          <p style={{ fontSize: 13, color: "var(--mauve)", marginTop: 6 }}>
             Products our community loves
           </p>
         </div>
@@ -76,8 +75,7 @@ export default function Deals() {
               className="deals-scroll"
               style={{
                 borderRadius: 9999, padding: "6px 16px", fontSize: 12, fontWeight: 600,
-                cursor: "pointer", whiteSpace: "nowrap", fontFamily: "'Inter', sans-serif",
-                border: "none", flexShrink: 0,
+                cursor: "pointer", whiteSpace: "nowrap", border: "none", flexShrink: 0,
                 backgroundColor: category === cat ? "var(--plum)" : "var(--surface)",
                 color: category === cat ? "white" : "var(--mauve)",
                 boxShadow: category === cat ? "var(--shadow-sm)" : "none",
@@ -91,8 +89,8 @@ export default function Deals() {
         {/* Deals grid */}
         {visibleItems.length === 0 ? (
           <div style={{ ...card, padding: "40px 20px", textAlign: "center" }}>
-            <p style={{ fontSize: 14, fontWeight: 600, color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>No deals in this category yet</p>
-            <p style={{ fontSize: 12, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", marginTop: 4 }}>Check back soon — new deals added regularly.</p>
+            <p style={{ fontSize: 14, fontWeight: 600, color: "var(--plum)", }}>No deals in this category yet</p>
+            <p style={{ fontSize: 12, color: "var(--mauve)", marginTop: 4 }}>Check back soon — new deals added regularly.</p>
           </div>
         ) : (
           <div className="grid gap-4 md:grid-cols-2">
@@ -110,35 +108,35 @@ export default function Deals() {
                   <div style={{ padding: "16px", flex: 1, display: "flex", flexDirection: "column" }}>
                     {/* Category + verified */}
                     <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
-                      <span style={{ fontSize: 10, fontWeight: 600, color: catStyle.color, backgroundColor: catStyle.bg, borderRadius: 9999, padding: "2px 9px", fontFamily: "'Inter', sans-serif" }}>
+                      <span style={{ fontSize: 10, fontWeight: 600, color: catStyle.color, backgroundColor: catStyle.bg, borderRadius: 9999, padding: "2px 9px", }}>
                         {item.category}
                       </span>
                       {item.is_verified && (
-                        <span style={{ display: "flex", alignItems: "center", gap: 3, fontSize: 10, fontWeight: 600, color: "var(--sage)", fontFamily: "'Inter', sans-serif" }}>
+                        <span style={{ display: "flex", alignItems: "center", gap: 3, fontSize: 10, fontWeight: 600, color: "var(--sage)", }}>
                           <ShieldCheck style={{ width: 12, height: 12 }} /> FemWell verified
                         </span>
                       )}
                     </div>
 
                     {/* Brand + title */}
-                    <p style={{ fontSize: 11, fontWeight: 600, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", marginBottom: 2 }}>{item.brand}</p>
-                    <h3 style={{ fontSize: 15, fontWeight: 700, color: "var(--plum)", fontFamily: "'Inter', sans-serif", lineHeight: 1.35, marginBottom: 6 }}>{item.title}</h3>
+                    <p style={{ fontSize: 11, fontWeight: 600, color: "var(--mauve)", marginBottom: 2 }}>{item.brand}</p>
+                    <h3 style={{ fontSize: 15, fontWeight: 700, color: "var(--plum)", lineHeight: 1.35, marginBottom: 6 }}>{item.title}</h3>
 
                     {item.description && (
-                      <p style={{ fontSize: 12, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", lineHeight: 1.55, marginBottom: 10, flex: 1 }}>{item.description}</p>
+                      <p style={{ fontSize: 12, color: "var(--mauve)", lineHeight: 1.55, marginBottom: 10, flex: 1 }}>{item.description}</p>
                     )}
 
                     {/* Discount badge */}
                     {item.discount_text && (
                       <div style={{ backgroundColor: "var(--rose-dust-subtle)", border: "1px solid var(--rose-dust-light)", borderRadius: 10, padding: "8px 12px", marginBottom: 12 }}>
-                        <p style={{ fontSize: 12, fontWeight: 700, color: "var(--rose-dust)", fontFamily: "'Inter', sans-serif" }}>{item.discount_text}</p>
+                        <p style={{ fontSize: 12, fontWeight: 700, color: "var(--rose-dust)", }}>{item.discount_text}</p>
                       </div>
                     )}
 
                     {/* CTA */}
                     {item.external_url && (
                       <a href={item.external_url} target="_blank" rel="noreferrer"
-                        style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 6, padding: "11px", borderRadius: 12, backgroundColor: "var(--plum)", color: "white", textDecoration: "none", fontSize: 13, fontWeight: 600, fontFamily: "'Inter', sans-serif" }}>
+                        style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 6, padding: "11px", borderRadius: 12, backgroundColor: "var(--plum)", color: "white", textDecoration: "none", fontSize: 13, fontWeight: 600, }}>
                         Shop now <ExternalLink style={{ width: 13, height: 13 }} />
                       </a>
                     )}

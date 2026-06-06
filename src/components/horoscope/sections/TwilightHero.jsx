@@ -134,7 +134,6 @@ const heroBodyStyle = {
   position: "relative",
 };
 const eyebrowStyle = {
-  fontFamily: "'Inter', sans-serif",
   fontSize: 9,
   letterSpacing: "0.22em",
   textTransform: "uppercase",
@@ -142,7 +141,6 @@ const eyebrowStyle = {
   fontWeight: 700,
 };
 const headlineStyle = {
-  fontFamily: "'Fraunces', serif",
   fontSize: 28,
   fontWeight: 400,
   lineHeight: 1.22,
@@ -151,7 +149,6 @@ const headlineStyle = {
   margin: "8px 0 14px",
 };
 const subStyle = {
-  fontFamily: "'Inter', sans-serif",
   fontSize: 12,
   lineHeight: 1.5,
   color: "rgba(245,230,211,0.78)",
@@ -165,7 +162,6 @@ const chipRowStyle = {
   flexWrap: "wrap",
 };
 const chipStyle = {
-  fontFamily: "'Inter', sans-serif",
   fontSize: 9,
   letterSpacing: "0.10em",
   textTransform: "uppercase",

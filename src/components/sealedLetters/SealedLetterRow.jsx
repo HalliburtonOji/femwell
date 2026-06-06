@@ -56,7 +56,6 @@ export default function SealedLetterRow({ letter, kind, onOpen }) {
 
       <div style={{ flex: 1, minWidth: 0 }}>
         <p style={{
-          fontFamily: "'Inter', sans-serif",
           fontSize: 13,
           color: kind === 'unsealed' ? "var(--plum-deep)" : "var(--plum-mute)",
           opacity: kind === 'sealed' ? 0.7 : 1,
@@ -69,7 +68,7 @@ export default function SealedLetterRow({ letter, kind, onOpen }) {
       </div>
 
       {kind === 'sealed' && (
-        <span style={{ fontFamily: "'Inter', sans-serif", fontSize: 12, fontWeight: 600, color: "var(--mauve)", flexShrink: 0 }}>
+        <span style={{ fontSize: 12, fontWeight: 600, color: "var(--mauve)", flexShrink: 0 }}>
           {showDate ? formatLetterDate(letter.seal_date) : formatCountdown(letter.seal_date)}
         </span>
       )}

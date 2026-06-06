@@ -409,15 +409,15 @@ const iconWrap = {
   background: "rgba(107,143,90,0.18)", color: "#3F6228",
 };
 const eyebrowStyle = {
-  fontFamily: "'Inter', sans-serif", fontSize: 10, fontWeight: 700,
+  fontSize: 10, fontWeight: 700,
   letterSpacing: "0.18em", color: "#3F6228", textTransform: "uppercase", margin: 0,
 };
 const titleStyle = {
-  fontFamily: "'Fraunces', Georgia, serif", fontSize: 17, fontWeight: 500,
+  fontSize: 17, fontWeight: 500,
   color: "#3A2C1A", lineHeight: 1.22, margin: "2px 0 0",
 };
 const metaRow = {
-  fontFamily: "'Inter', sans-serif", fontSize: 12, color: "#6B5840",
+  fontSize: 12, color: "#6B5840",
   fontStyle: "italic", lineHeight: 1.5, margin: "0 0 10px",
 };
 const stripRow = {
@@ -428,13 +428,13 @@ const stripCell = {
   position: "relative",
   display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
   borderRadius: 10, padding: "8px 2px",
-  fontFamily: "'Inter', sans-serif", minHeight: 50,
+  minHeight: 50,
 };
 const stripCdLabel   = { fontSize: 8.5, fontWeight: 700, letterSpacing: "0.12em", opacity: 0.7 };
 const stripCdNumber  = { fontSize: 16, fontWeight: 700, lineHeight: 1, marginTop: 2 };
 const peakDot        = { position: "absolute", top: 3, right: 6, fontSize: 9, color: "#3F6228" };
 const legendRow      = { display: "flex", justifyContent: "center", gap: 12, flexWrap: "wrap", marginBottom: 10 };
-const legendItem     = { display: "inline-flex", alignItems: "center", gap: 4, fontFamily: "'Inter', sans-serif", fontSize: 10.5, color: "#6B5840" };
+const legendItem     = { display: "inline-flex", alignItems: "center", gap: 4, fontSize: 10.5, color: "#6B5840" };
 const legendSwatch   = { width: 12, height: 12, borderRadius: 4 };
 const ctaRow         = { display: "flex", gap: 8, marginBottom: 4, flexWrap: "wrap" };
 const logBtn = {
@@ -443,7 +443,7 @@ const logBtn = {
   background: "rgba(255,255,255,0.55)",
   border: "1px solid rgba(58,44,26,0.18)",
   color: "#3A2C1A",
-  fontFamily: "'Inter', sans-serif", fontSize: 12, fontWeight: 600, cursor: "pointer",
+  fontSize: 12, fontWeight: 600, cursor: "pointer",
 };
 const logBtnActive = {
   background: "rgba(58,44,26,0.10)",
@@ -465,7 +465,7 @@ const cancelIconBtn = {
 };
 const fieldLabel = {
   display: "block",
-  fontFamily: "'Inter', sans-serif", fontSize: 11, fontWeight: 600,
+  fontSize: 11, fontWeight: 600,
   letterSpacing: "0.06em", textTransform: "uppercase",
   color: "#6B5840", marginBottom: 0,
 };
@@ -474,7 +474,7 @@ const input = {
   padding: "7px 10px", borderRadius: 8,
   border: "1px solid rgba(58,44,26,0.18)",
   background: "#FBF6E6", color: "#3A2C1A",
-  fontFamily: "'Inter', sans-serif", fontSize: 14, marginTop: 4,
+  fontSize: 14, marginTop: 4,
   boxSizing: "border-box",
 };
 const formActions = { display: "flex", gap: 8, marginTop: 4 };
@@ -483,16 +483,16 @@ const primaryBtn = {
   padding: "7px 14px", borderRadius: 9999,
   background: "#3A2C1A", color: "#F4EDDB",
   border: "1px solid #3A2C1A",
-  fontFamily: "'Inter', sans-serif", fontSize: 12, fontWeight: 700, cursor: "pointer",
+  fontSize: 12, fontWeight: 700, cursor: "pointer",
 };
 const ghostBtn = {
   padding: "7px 14px", borderRadius: 9999,
   background: "transparent",
   border: "1px solid rgba(58,44,26,0.18)",
   color: "#6B5840",
-  fontFamily: "'Inter', sans-serif", fontSize: 12, fontWeight: 600, cursor: "pointer",
+  fontSize: 12, fontWeight: 600, cursor: "pointer",
 };
 const errorLine = {
-  fontFamily: "'Inter', sans-serif", fontSize: 11, color: "#C0392B",
+  fontSize: 11, color: "#C0392B",
   margin: 0,
 };

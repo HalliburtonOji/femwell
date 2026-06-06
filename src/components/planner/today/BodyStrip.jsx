@@ -100,14 +100,13 @@ const expandedHead = {
   padding: "0 2px 6px",
 };
 const eyebrow = {
-  fontFamily: "'Inter', sans-serif",
   fontSize: 10, fontWeight: 700, letterSpacing: "0.18em",
   color: "var(--plum-mute, #8A7584)",
 };
 const chevBtn = {
   display: "inline-flex", alignItems: "center", gap: 4,
   background: "transparent", border: "none", cursor: "pointer",
-  fontFamily: "'Inter', sans-serif", fontSize: 11, fontWeight: 600,
+  fontSize: 11, fontWeight: 600,
   color: "var(--plum-mute, #8A7584)",
 };
 const collapsedBtn = {
@@ -136,7 +135,6 @@ const cellIcon = {
   flexShrink: 0,
 };
 const cellValue = {
-  fontFamily: "'Inter', sans-serif",
   fontSize: 12, fontWeight: 700,
   color: "var(--plum, #4A2A3A)",
 };

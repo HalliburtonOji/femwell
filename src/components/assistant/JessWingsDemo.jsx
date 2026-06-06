@@ -117,7 +117,6 @@ export default function JessWingsDemo() {
       borderRadius: 18, overflow: "hidden",
       border: `1px solid ${C.border}`,
       display: "flex", flexDirection: "column",
-      fontFamily: "'Inter', system-ui, sans-serif",
       color: C.espresso,
     }}>
       {/* Header */}
@@ -133,8 +132,7 @@ export default function JessWingsDemo() {
             Jess wings
           </p>
           <h1 style={{
-            margin: "2px 0 0", fontFamily: "'Fraunces', Georgia, serif",
-            fontSize: 18, fontWeight: 600, color: C.espresso, letterSpacing: "-0.01em",
+            margin: "2px 0 0", fontSize: 18, fontWeight: 600, color: C.espresso, letterSpacing: "-0.01em",
           }}>Where Jess lives across the app</h1>
         </div>
       </header>
@@ -273,8 +271,7 @@ function PlannerPanel() {
         <div style={{ flex: 1 }}>
           <p style={{ margin: 0, fontSize: 10, fontWeight: 700, letterSpacing: "0.18em", textTransform: "uppercase", color: "rgba(244,237,219,0.6)" }}>Jess</p>
           <p style={{
-            margin: "4px 0 8px", fontFamily: "'Fraunces', Georgia, serif",
-            fontSize: 17, fontWeight: 500, lineHeight: 1.4, color: C.cream,
+            margin: "4px 0 8px", fontSize: 17, fontWeight: 500, lineHeight: 1.4, color: C.cream,
           }}>"Morning, Halli. Day 12 — your energy is starting to build. I drafted a softer plan for today."</p>
           <div style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "3px 9px", borderRadius: 9999, background: "rgba(212,175,55,0.18)", color: C.gold, fontSize: 10, fontWeight: 700, letterSpacing: "0.08em" }}>
             <span aria-hidden style={{ width: 5, height: 5, borderRadius: 9999, background: C.gold }} />
@@ -339,8 +336,7 @@ function VoicePanel() {
       <div style={{ textAlign: "center" }}>
         <p style={{ margin: 0, fontSize: 10, color: C.muted, fontWeight: 700, letterSpacing: "0.18em", textTransform: "uppercase" }}>Jess is listening</p>
         <p style={{
-          margin: "8px 0 0", fontFamily: "'Fraunces', Georgia, serif",
-          fontSize: 17, fontStyle: "italic", color: C.espresso, lineHeight: 1.45, maxWidth: 320, marginLeft: "auto", marginRight: "auto",
+          margin: "8px 0 0", fontSize: 17, fontStyle: "italic", color: C.espresso, lineHeight: 1.45, maxWidth: 320, marginLeft: "auto", marginRight: "auto",
         }}>"Tell me what's circling, love. We can untangle it together."</p>
       </div>
       <div style={{ display: "flex", gap: 12 }}>
@@ -437,7 +433,7 @@ function AstraPanel() {
           <span aria-hidden style={{ color: C.gold, fontSize: 16 }}>✦</span>
           <p style={{ margin: 0, fontSize: 10, fontWeight: 700, letterSpacing: "0.18em", textTransform: "uppercase", color: "rgba(244,237,219,0.65)" }}>Astra</p>
         </div>
-        <h2 style={{ margin: 0, fontFamily: "'Fraunces', Georgia, serif", fontSize: 18, fontWeight: 500, lineHeight: 1.35 }}>
+        <h2 style={{ margin: 0, fontSize: 18, fontWeight: 500, lineHeight: 1.35 }}>
           Today · Moon in Cancer · 3rd house
         </h2>
         <p style={{ margin: 0, fontSize: 12, color: "rgba(244,237,219,0.78)", lineHeight: 1.5 }}>

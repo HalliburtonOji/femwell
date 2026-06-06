@@ -94,7 +94,6 @@ function VideoCard({ item, saved, hasPhaseTag, onSave, onUntag }) {
               position: 'absolute', inset: 0,
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               padding: 12, textAlign: 'center',
-              fontFamily: "'Fraunces', serif",
               fontStyle: 'italic', fontWeight: 400, fontSize: 18,
               color: 'var(--cream)', opacity: 0.7,
               pointerEvents: 'none',
@@ -111,7 +110,6 @@ function VideoCard({ item, saved, hasPhaseTag, onSave, onUntag }) {
           letterSpacing: '0.6px',
           color: 'var(--cream)', background: 'rgba(0,0,0,0.35)',
           padding: '4px 10px', borderRadius: 9999,
-          fontFamily: "'Inter', sans-serif",
           pointerEvents: 'none',
         }}>
           {`VIDEO${item.duration_label ? ' · ' + item.duration_label : ''}`}
@@ -139,7 +137,6 @@ function VideoCard({ item, saved, hasPhaseTag, onSave, onUntag }) {
       {/* Body */}
       <div style={{ padding: 16 }}>
         <h3 style={{
-          fontFamily: "'Fraunces', serif",
           fontSize: 20, fontWeight: 400,
           color: 'var(--plum-deep)',
           lineHeight: 1.3,
@@ -154,7 +151,6 @@ function VideoCard({ item, saved, hasPhaseTag, onSave, onUntag }) {
         <p style={{
           fontSize: 12, fontWeight: 500,
           color: 'var(--plum-mute)',
-          fontFamily: "'Inter', sans-serif",
           margin: 0,
         }}>
           {[item.channel_name, formatRelativeDate(item.published_at)].filter(Boolean).join(' · ')}
@@ -212,12 +208,12 @@ export default function ListenGrid({ items, activeChip, onSave, onUntag, savedSe
   if (error) {
     return (
       <div style={{ textAlign: 'center', padding: '40px 24px' }}>
-        <p style={{ fontSize: 14, color: 'var(--plum-mute)', fontFamily: "'Inter', sans-serif", marginBottom: 12 }}>
+        <p style={{ fontSize: 14, color: 'var(--plum-mute)', marginBottom: 12 }}>
           Couldn't load.
         </p>
         <button
           onClick={onRetry}
-          style={{ fontSize: 14, color: 'var(--rose-primary)', fontFamily: "'Inter', sans-serif", background: 'none', border: 'none', cursor: 'pointer', fontWeight: 600 }}
+          style={{ fontSize: 14, color: 'var(--rose-primary)', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 600 }}
         >
           Retry
         </button>
@@ -229,10 +225,10 @@ export default function ListenGrid({ items, activeChip, onSave, onUntag, savedSe
     const empty = EMPTY_STATES[activeChip] || EMPTY_STATES.all;
     return (
       <div style={{ textAlign: 'center', padding: '48px 24px' }}>
-        <h3 style={{ fontFamily: "'Fraunces', serif", fontSize: 22, fontWeight: 400, color: 'var(--plum-deep)', marginBottom: 8 }}>
+        <h3 style={{ fontSize: 22, fontWeight: 400, color: 'var(--plum-deep)', marginBottom: 8 }}>
           {empty.title}
         </h3>
-        <p style={{ fontSize: 14, color: 'var(--plum-mute)', fontFamily: "'Inter', sans-serif", margin: 0 }}>
+        <p style={{ fontSize: 14, color: 'var(--plum-mute)', margin: 0 }}>
           {empty.body}
         </p>
       </div>

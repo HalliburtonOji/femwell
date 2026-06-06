@@ -44,21 +44,21 @@ export default function StreakMilestoneToast({ streak, habitName, onDismiss }) {
         }}>
         <div className="w-10 h-10 rounded-2xl flex items-center justify-center flex-shrink-0"
           style={{ backgroundColor: "var(--sage-subtle)", color: "var(--sage)" }}>
-          <span className="text-sm font-bold" style={{ fontFamily: "'Fraunces', serif" }}>
+          <span className="text-sm font-bold" style={{ }}>
             {streak}
           </span>
         </div>
         <div className="flex-1 min-w-0">
-          <p className="font-semibold text-sm" style={{ color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>
+          <p className="font-semibold text-sm" style={{ color: "var(--plum)", }}>
             {milestone.label} — {habitName}
           </p>
-          <p className="text-xs mt-0.5" style={{ color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>
+          <p className="text-xs mt-0.5" style={{ color: "var(--mauve)", }}>
             {milestone.message}
           </p>
         </div>
         <button onClick={onDismiss}
           className="text-xs flex-shrink-0"
-          style={{ color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>
+          style={{ color: "var(--mauve)", }}>
           ✕
         </button>
       </div>

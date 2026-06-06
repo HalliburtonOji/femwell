@@ -751,7 +751,7 @@ function MoodCorrelationChart() {
           {[1, 2, 3, 4, 5].map((m) => (
             <g key={m}>
               <line x1={PADX} x2={W - PADX} y1={y(m)} y2={y(m)} stroke="rgba(58,44,26,0.08)" strokeDasharray="2 4" />
-              <text x={PADX - 4} y={y(m) + 3} fontSize="9" fill={T.plumMute} textAnchor="end" fontFamily="'Inter', sans-serif" fontWeight="600">{m}</text>
+              <text x={PADX - 4} y={y(m) + 3} fontSize="9" fill={T.plumMute} textAnchor="end" fontWeight="600">{m}</text>
             </g>
           ))}
           {/* Mood polylines */}
@@ -770,7 +770,7 @@ function MoodCorrelationChart() {
           ))}
           {/* X labels — sparse: every 7 days */}
           {MOOD_SERIES.map((d, i) => (i % 7 === 0 || i === n - 1) && (
-            <text key={i} x={x(i)} y={H - 4} fontSize="9" fill={T.plumMute} textAnchor="middle" fontFamily="'Inter', sans-serif" fontWeight="600">{d.date}</text>
+            <text key={i} x={x(i)} y={H - 4} fontSize="9" fill={T.plumMute} textAnchor="middle" fontWeight="600">{d.date}</text>
           ))}
         </svg>
       </div>
@@ -856,8 +856,7 @@ function Tier4Teaser() {
 const shellStyle = {
   background: T.cream, minHeight: "100vh",
   padding: "26px 14px 40px",
-  fontFamily: "'Inter', system-ui, sans-serif",
-};
+  };
 const headerStyle = {
   maxWidth: 640, margin: "0 auto 16px",
   display: "flex", flexDirection: "column", gap: 4,
@@ -867,7 +866,6 @@ const eyebrowStyle = {
   color: T.muted, fontWeight: 700, margin: 0,
 };
 const pageTitleStyle = {
-  fontFamily: "'Fraunces', Georgia, serif",
   fontSize: 36, fontWeight: 500, color: T.espresso,
   letterSpacing: "-0.02em", margin: "4px 0 4px", lineHeight: 1.05,
 };
@@ -887,7 +885,6 @@ function subTabBtn(active) {
     background: active ? T.espresso : "transparent",
     color: active ? T.cream : T.plumSoft,
     border: "none",
-    fontFamily: "'Inter', sans-serif",
     fontSize: 12, fontWeight: 700, letterSpacing: "0.04em",
     cursor: "pointer",
   };
@@ -915,14 +912,14 @@ const phaseLabel = {
 };
 const phaseDivider = { color: T.muted, fontSize: 11 };
 const phaseSeason = {
-  fontFamily: "'Fraunces', Georgia, serif", fontStyle: "italic",
+  fontStyle: "italic",
   fontSize: 13, fontWeight: 500, color: T.plum,
 };
 const phaseDay = {
   fontSize: 11, color: T.plumMute, fontWeight: 600,
 };
 const phaseLine = {
-  fontFamily: "Cormorant Garamond, Georgia, serif", fontStyle: "italic",
+  fontStyle: "italic",
   fontSize: 12, color: T.plumSoft, margin: "2px 0 0", lineHeight: 1.4,
 };
 
@@ -959,7 +956,6 @@ const promptArrow = {
   cursor: "pointer", padding: 0,
 };
 const promptTextStyle = {
-  fontFamily: "'Fraunces', Georgia, serif",
   fontSize: 20, fontWeight: 500, color: T.plum,
   letterSpacing: "-0.005em",
   margin: "12px 0 8px", lineHeight: 1.35,
@@ -976,7 +972,6 @@ const promptCtaStyle = {
   padding: "8px 14px", borderRadius: 9999,
   background: T.espresso, color: T.cream,
   border: "none",
-  fontFamily: "'Inter', sans-serif",
   fontSize: 12, fontWeight: 700, letterSpacing: "0.04em",
   cursor: "pointer",
 };
@@ -1003,7 +998,6 @@ const onThisDayIconStyle = {
   flexShrink: 0,
 };
 const onThisDayTitleStyle = {
-  fontFamily: "'Fraunces', Georgia, serif",
   fontSize: 14, fontWeight: 500, color: T.plum,
 };
 const onThisDayBadgeStyle = {
@@ -1028,8 +1022,7 @@ const onThisDayBodyStyle = {
 };
 const onThisDayFullStyle = {
   fontSize: 13, color: T.plum, lineHeight: 1.55, margin: 0,
-  fontFamily: "Cormorant Garamond, Georgia, serif",
-};
+  };
 const onThisDayFootStyle = {
   display: "flex", alignItems: "center", gap: 8,
   marginTop: 8, flexWrap: "wrap",
@@ -1046,7 +1039,6 @@ const replyBtnStyle = {
   padding: "5px 12px", borderRadius: 9999,
   background: "transparent", color: T.plum,
   border: `1px solid ${T.blush}`,
-  fontFamily: "'Inter', sans-serif",
   fontSize: 11, fontWeight: 700, letterSpacing: "0.04em",
   cursor: "pointer",
 };
@@ -1082,8 +1074,7 @@ const rhythmIconStyle = {
   flexShrink: 0,
 };
 const rhythmTextStyle = {
-  fontSize: 12, color: T.plum, fontFamily: "'Inter', sans-serif",
-};
+  fontSize: 12, color: T.plum, };
 
 // Entry list
 const entryListShellStyle = {
@@ -1102,7 +1093,6 @@ const filterChip = {
   padding: "5px 11px", borderRadius: 9999,
   background: T.paperHi, color: T.plumSoft,
   border: "1px solid rgba(58,44,26,0.15)",
-  fontFamily: "'Inter', sans-serif",
   fontSize: 11, fontWeight: 700, letterSpacing: "0.02em",
   cursor: "pointer",
 };
@@ -1118,7 +1108,6 @@ const entryHeadRow = {
   display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 8,
 };
 const entryTitleStyle = {
-  fontFamily: "'Fraunces', Georgia, serif",
   fontSize: 14, fontWeight: 500, color: T.plum,
   margin: 0, lineHeight: 1.2,
 };
@@ -1150,8 +1139,7 @@ const voiceChipStyle = {
 };
 const entryPreviewStyle = {
   fontSize: 12, color: T.plumSoft, lineHeight: 1.4, margin: 0,
-  fontFamily: "Cormorant Garamond, Georgia, serif",
-};
+  };
 const entryFootRow = {
   display: "flex", justifyContent: "flex-end",
 };
@@ -1172,7 +1160,6 @@ const modalCardStyle = {
   background: T.cream,
   borderRadius: "22px 22px 0 0",
   padding: "16px 18px 22px",
-  fontFamily: "'Inter', system-ui, sans-serif",
   boxShadow: "0 -8px 32px rgba(58,44,26,0.18)",
   maxHeight: "85vh", overflowY: "auto",
   animation: "fwSlideUp 280ms cubic-bezier(.16,1,.3,1) both",
@@ -1189,7 +1176,6 @@ const modalCloseStyle = {
   cursor: "pointer",
 };
 const modalTitleStyle = {
-  fontFamily: "'Fraunces', Georgia, serif",
   fontSize: 22, fontWeight: 500, color: T.plum,
   letterSpacing: "-0.01em", margin: "4px 0 14px", lineHeight: 1.25,
 };
@@ -1208,7 +1194,6 @@ const modalChoiceIconStyle = {
   display: "inline-flex", alignItems: "center", justifyContent: "center",
 };
 const modalChoiceTitleStyle = {
-  fontFamily: "'Fraunces', Georgia, serif",
   fontSize: 16, fontWeight: 500, color: T.plum,
 };
 const modalChoiceSubStyle = {
@@ -1216,7 +1201,7 @@ const modalChoiceSubStyle = {
 };
 const modalLinkStyle = {
   background: "transparent", border: "none",
-  fontFamily: "'Inter', sans-serif", fontSize: 12, color: T.plumMute,
+  fontSize: 12, color: T.plumMute,
   cursor: "pointer", textDecoration: "underline",
 };
 const modalPromptBoxStyle = {
@@ -1226,7 +1211,7 @@ const modalPromptBoxStyle = {
   marginBottom: 10,
 };
 const modalPromptTextStyle = {
-  fontFamily: "'Fraunces', Georgia, serif", fontStyle: "italic",
+  fontStyle: "italic",
   fontSize: 14, color: T.plum, margin: 0, lineHeight: 1.45,
 };
 const modalTextareaWrapStyle = {
@@ -1236,7 +1221,7 @@ const modalTextareaStyle = {
   width: "100%", padding: "10px 12px 22px",
   borderRadius: 12, background: T.paperHi,
   border: "1px solid rgba(58,44,26,0.15)",
-  fontFamily: "Cormorant Garamond, Georgia, serif", fontSize: 14,
+  fontSize: 14,
   color: T.plum, lineHeight: 1.55,
   outline: "none", resize: "vertical",
   boxSizing: "border-box",
@@ -1252,7 +1237,6 @@ const modalToolBtnStyle = {
   display: "inline-flex", alignItems: "center", gap: 5,
   padding: "5px 10px", borderRadius: 9999,
   border: "1px solid",
-  fontFamily: "'Inter', sans-serif",
   fontSize: 11, fontWeight: 700, cursor: "pointer",
 };
 const modalPhaseTagStyle = {
@@ -1266,7 +1250,7 @@ const modalQuickInputStyle = {
   width: "100%", padding: "10px 12px",
   borderRadius: 12, background: T.paperHi,
   border: "1px solid rgba(58,44,26,0.15)",
-  fontFamily: "'Inter', sans-serif", fontSize: 13,
+  fontSize: 13,
   color: T.plum, outline: "none",
   boxSizing: "border-box",
 };
@@ -1278,7 +1262,6 @@ const modalCancelStyle = {
   padding: "9px 14px", borderRadius: 9999,
   background: "transparent", color: T.plumSoft,
   border: "1px solid rgba(58,44,26,0.18)",
-  fontFamily: "'Inter', sans-serif",
   fontSize: 12, fontWeight: 700, letterSpacing: "0.02em",
   cursor: "pointer",
 };
@@ -1286,7 +1269,6 @@ const modalSaveStyle = {
   padding: "9px 18px", borderRadius: 9999,
   background: T.espresso, color: T.cream,
   border: "1px solid " + T.espresso,
-  fontFamily: "'Inter', sans-serif",
   fontSize: 12, fontWeight: 700, letterSpacing: "0.04em",
   cursor: "pointer",
 };
@@ -1319,7 +1301,6 @@ const savedSparkle = {
   animation: "fwSparkle 1200ms ease-out infinite",
 };
 const savedTitleStyle = {
-  fontFamily: "'Fraunces', Georgia, serif",
   fontSize: 20, fontWeight: 500, color: T.plum,
   margin: 0,
 };
@@ -1349,7 +1330,6 @@ const statValueRowStyle = {
   display: "flex", alignItems: "baseline", gap: 3,
 };
 const statValueStyle = {
-  fontFamily: "'Fraunces', Georgia, serif",
   fontSize: 22, fontWeight: 500, color: T.espresso,
   lineHeight: 1,
 };
@@ -1367,7 +1347,7 @@ const chartHeadStyle = {
   display: "flex", alignItems: "baseline",
 };
 const chartCaptionStyle = {
-  fontFamily: "Cormorant Garamond, Georgia, serif", fontStyle: "italic",
+  fontStyle: "italic",
   fontSize: 12, color: T.plumSoft, margin: 0, lineHeight: 1.5,
 };
 
@@ -1462,7 +1442,6 @@ const teaserLockStyle = {
   display: "inline-flex", alignItems: "center", justifyContent: "center",
 };
 const teaserTitleStyle = {
-  fontFamily: "'Fraunces', Georgia, serif",
   fontSize: 14, fontWeight: 500, color: T.plum,
   margin: 0, lineHeight: 1.2,
 };

@@ -79,7 +79,7 @@ function _TabBotanical({ tabId }) {
         <svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
           <circle cx="24" cy="24" r="22" fill="#D4AF37" opacity="0.15" />
           <circle cx="24" cy="24" r="22" stroke="#D4AF37" strokeWidth="1" fill="none" />
-          <text x="24" y="29" textAnchor="middle" fontFamily="Cormorant Garamond, serif" fontSize="16" fontWeight="600" fill="#D4AF37">FW</text>
+          <text x="24" y="29" textAnchor="middle" fontSize="16" fontWeight="600" fill="#D4AF37">FW</text>
         </svg>
       );
     case "cycle":
@@ -238,7 +238,6 @@ const RosebudProgress = memo(function RosebudProgress({ scrollPct }) {
       {fullyBloomed && (
         <div style={{
           marginTop: 4,
-          fontFamily: 'Cormorant Garamond, Georgia, serif',
           fontSize: 9, fontWeight: 700, letterSpacing: 1, textTransform: "uppercase",
           color: "#8FAF8F", whiteSpace: "nowrap",
         }}>
@@ -793,11 +792,9 @@ const JessObservationCard = memo(function JessObservationCard({ letterId, profil
         }}>✦</div>
         <div>
           <div style={{
-            fontFamily: 'Cormorant Garamond, Georgia, serif',
             fontSize: 12, fontWeight: 700, color: "#3A2C1A", letterSpacing: 0.5,
           }}>Jess noticed</div>
           <div style={{
-            fontFamily: 'Cormorant Garamond, Georgia, serif',
             fontSize: 10, color: "#9B8B7A",
           }}>Based on your recent activity</div>
         </div>
@@ -813,7 +810,6 @@ const JessObservationCard = memo(function JessObservationCard({ letterId, profil
             color: "#D4AF37", fontSize: 14, marginTop: 4, flexShrink: 0,
           }}>◆</span>
           <p style={{
-            fontFamily: "Cormorant Garamond, Georgia, serif",
             fontSize: 16, fontWeight: 500, color: "#3A2C1A",
             lineHeight: 1.7, fontStyle: "italic", margin: 0,
           }}>{o}</p>
@@ -843,8 +839,7 @@ function Term({ word, definition }) {
           transform: "translateX(-50%)",
           background: "#3A2C1A", color: "#F4EDDB",
           borderRadius: 6, padding: "10px 12px",
-          fontSize: 12.5, fontFamily: 'Cormorant Garamond, Georgia, serif',
-          fontStyle: "normal", lineHeight: 1.5,
+          fontSize: 12.5, fontStyle: "normal", lineHeight: 1.5,
           width: 220, zIndex: 30,
           boxShadow: "0 3px 14px rgba(40,30,18,0.16)", textAlign: "left",
         }}>
@@ -1246,14 +1241,12 @@ export default function Health() {
         }}>
           <div style={{ flex: 1, minWidth: 0 }}>
             <div style={{
-              fontFamily: "Cormorant Garamond, Georgia, serif",
               fontSize: 17, fontWeight: 700, color: "#F4EDDB",
               whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis",
             }}>
               <span aria-hidden="true">{currentLetter.icon}</span> {currentLetter.title}
             </div>
             <div style={{
-              fontFamily: 'Cormorant Garamond, Georgia, serif',
               fontSize: 10, color: "rgba(244,237,219,0.55)",
               letterSpacing: 0.5, marginTop: 1,
             }}>
@@ -1298,7 +1291,6 @@ export default function Health() {
               <rect x="10" y="9" width="6" height="5" rx="1" fill="#3A2C1A"/>
             </svg>
             <span style={{
-              fontFamily: 'Cormorant Garamond, Georgia, serif',
               fontSize: 13, fontWeight: 700, color: "#3A2C1A", letterSpacing: 0.3,
             }}>
               All letters
@@ -1312,7 +1304,6 @@ export default function Health() {
           display: "flex", alignItems: "center", justifyContent: "space-between",
         }}>
           <span style={{
-            fontFamily: 'Cormorant Garamond, Georgia, serif',
             fontSize: 11, color: "rgba(244,237,219,0.7)", letterSpacing: 0.5,
           }}>
             {phaseLbl}{cycle?.cycleDay ? ` · Day ${cycle.cycleDay}` : ""} · {stageLbl}
@@ -1343,7 +1334,6 @@ export default function Health() {
                   background: "none", border: "none", cursor: "pointer",
                   padding: "10px 16px",
                   borderBottom: on ? "2px solid #D4AF37" : "2px solid transparent",
-                  fontFamily: "Cormorant Garamond, Georgia, serif",
                   fontSize: 16,
                   fontWeight: on ? 700 : 500,
                   color: on ? "#3A2C1A" : "rgba(58,44,26,0.45)",
@@ -1376,7 +1366,6 @@ export default function Health() {
             borderRadius: "50%", width: 44, height: 44,
             display: "flex", alignItems: "center", justifyContent: "center",
             cursor: "pointer", zIndex: 20, pointerEvents: "auto",
-            fontFamily: 'Cormorant Garamond, Georgia, serif',
             fontSize: 22, color: "#3A2C1A", fontWeight: 600, paddingBottom: 2,
           }}>‹</button>
         )}
@@ -1388,7 +1377,6 @@ export default function Health() {
             borderRadius: "50%", width: 44, height: 44,
             display: "flex", alignItems: "center", justifyContent: "center",
             cursor: "pointer", zIndex: 20, pointerEvents: "auto",
-            fontFamily: 'Cormorant Garamond, Georgia, serif',
             fontSize: 22, color: "#3A2C1A", fontWeight: 600, paddingBottom: 2,
           }}>›</button>
         )}
@@ -1458,13 +1446,13 @@ export default function Health() {
               margin: "8px auto 12px",
             }} />
             <div style={{ textAlign: "center", marginTop: 12 }}>
-              <div style={{ fontFamily: 'Cormorant Garamond, Georgia, serif', fontSize: 13, fontWeight: 600, letterSpacing: 2, color: "#9B8B7A", textTransform: "uppercase" }}>
+              <div style={{ fontSize: 13, fontWeight: 600, letterSpacing: 2, color: "#9B8B7A", textTransform: "uppercase" }}>
                 FemWell Health Letter
               </div>
               <div className="fw-heading" style={{ marginTop: 4 }}>
                 {tab.label}
               </div>
-              <div style={{ fontFamily: 'Cormorant Garamond, Georgia, serif', fontSize: 13, fontWeight: 600, color: "#9B8B7A", marginTop: 6 }}>
+              <div style={{ fontSize: 13, fontWeight: 600, color: "#9B8B7A", marginTop: 6 }}>
                 {formattedDate} · {stageLbl}
               </div>
             </div>
@@ -1481,17 +1469,16 @@ export default function Health() {
 
           {/* ── Salutation ── */}
           <div style={{ marginBottom: 28, position: "relative" }}>
-            <div style={{ fontFamily: 'Cormorant Garamond, Georgia, serif', fontSize: 22, fontWeight: 600, color: "#3A2C1A", marginBottom: 16, fontStyle: "italic" }}>
+            <div style={{ fontSize: 22, fontWeight: 600, color: "#3A2C1A", marginBottom: 16, fontStyle: "italic" }}>
               Dear {name},
             </div>
             <p style={{
-              fontFamily: 'Cormorant Garamond, Georgia, serif',
               fontSize: 19, fontWeight: 500, lineHeight: 1.9, color: "#3A2C1A", margin: "0 0 16px",
             }}>
               <span style={{
                 float: "left", fontSize: 80, lineHeight: "0.75",
                 marginRight: 10, marginTop: 6,
-                fontFamily: 'Cormorant Garamond, Georgia, serif', fontWeight: 700, color: "#3A2C1A",
+                fontWeight: 700, color: "#3A2C1A",
               }}>{opener.charAt(0)}</span>
               {opener.slice(1)}
             </p>
@@ -1510,11 +1497,9 @@ export default function Health() {
             }}>
               <div style={{ display: "flex", alignItems: "baseline", gap: 10 }}>
                 <span style={{
-                  fontFamily: 'Cormorant Garamond, Georgia, serif',
                   fontSize: 18, fontWeight: 700, color: "#3A2C1A", letterSpacing: 0.5,
                 }}>In this letter</span>
                 <span style={{
-                  fontFamily: 'Cormorant Garamond, Georgia, serif',
                   fontSize: 10, color: "#9B8B7A", letterSpacing: 0.3,
                 }}>
                   ~{Math.ceil(sections.length * 1.5)} min read
@@ -1523,7 +1508,6 @@ export default function Health() {
               <button onClick={toggleAll} style={{
                 background: "none", border: "1px solid rgba(58,44,26,0.2)",
                 borderRadius: 14, padding: "5px 14px", cursor: "pointer",
-                fontFamily: 'Cormorant Garamond, Georgia, serif',
                 fontSize: 12, fontWeight: 600, color: "#3A2C1A", letterSpacing: 0.3,
               }}>
                 {allExpanded ? "Collapse all" : "Expand all"}
@@ -1541,12 +1525,10 @@ export default function Health() {
                 borderBottom: i < sections.length - 1 ? "1px solid rgba(58,44,26,0.06)" : "none",
               }}>
                 <span style={{
-                  fontFamily: 'Cormorant Garamond, Georgia, serif',
                   fontSize: 13, color: "#D4AF37", fontStyle: "italic",
                   minWidth: 20, textAlign: "left",
                 }}>{romanize(i)}</span>
                 <span style={{
-                  fontFamily: 'Cormorant Garamond, Georgia, serif',
                   fontSize: 17, fontWeight: 600, color: "#3A2C1A",
                   flex: 1, lineHeight: 1.3,
                 }}>{s.title}</span>
@@ -1600,7 +1582,6 @@ export default function Health() {
                 border: "1px solid #D4AF37",
                 borderRadius: 24, padding: "12px 20px",
                 cursor: "pointer",
-                fontFamily: 'Cormorant Garamond, Georgia, serif',
                 fontSize: 13, fontWeight: 700, color: "#F4EDDB", letterSpacing: 0.3,
               }}
             >
@@ -1629,13 +1610,13 @@ export default function Health() {
               width: 80, height: 1, background: "rgba(58,44,26,0.15)",
               margin: "0 0 20px",
             }} />
-            <div style={{ fontFamily: 'Cormorant Garamond, Georgia, serif', fontSize: 17, fontWeight: 500, color: "#3A2C1A", marginBottom: 4 }}>
+            <div style={{ fontSize: 17, fontWeight: 500, color: "#3A2C1A", marginBottom: 4 }}>
               With care,
             </div>
-            <div style={{ fontFamily: 'Cormorant Garamond, Georgia, serif', fontSize: 22, fontWeight: 700, color: "#3A2C1A", fontStyle: "italic" }}>
+            <div style={{ fontSize: 22, fontWeight: 700, color: "#3A2C1A", fontStyle: "italic" }}>
               {(SIGNATURES[activeTab] || SIGNATURES.overview).name}
             </div>
-            <div style={{ fontFamily: 'Cormorant Garamond, Georgia, serif', fontSize: 14, fontWeight: 600, color: "#9B8B7A", letterSpacing: 0.5, marginTop: 4, marginBottom: 20 }}>
+            <div style={{ fontSize: 14, fontWeight: 600, color: "#9B8B7A", letterSpacing: 0.5, marginTop: 4, marginBottom: 20 }}>
               {(SIGNATURES[activeTab] || SIGNATURES.overview).role}
             </div>
             {/* FW wax-seal mark — small circular gold monogram. */}
@@ -1644,7 +1625,6 @@ export default function Health() {
               background: "rgba(212,175,55,0.12)",
               border: "1px solid rgba(212,175,55,0.35)",
               display: "flex", alignItems: "center", justifyContent: "center",
-              fontFamily: "Cormorant Garamond, Georgia, serif",
               fontSize: 13, fontWeight: 700, color: "#D4AF37",
               letterSpacing: 0.5,
             }}>FW</div>
@@ -1653,7 +1633,7 @@ export default function Health() {
           {/* ── P.S. ── */}
           <div style={{ marginTop: 32, paddingTop: 24, borderTop: "1px solid rgba(58,44,26,0.10)", position: "relative" }}>
             <p style={{
-              fontFamily: 'Cormorant Garamond, Georgia, serif', fontSize: 17, fontWeight: 500, fontStyle: "italic",
+              fontSize: 17, fontWeight: 500, fontStyle: "italic",
               color: "#3A2C1A", lineHeight: 1.8, margin: 0,
             }}>
               <strong style={{ fontStyle: "normal", fontWeight: 600 }}>P.S.</strong> — {dynamicPostscript}
@@ -1661,7 +1641,7 @@ export default function Health() {
           </div>
 
           {/* ── In-paper disclaimer ── */}
-          <div style={{ marginTop: 16, fontFamily: 'Cormorant Garamond, Georgia, serif', fontSize: 10, color: "#9B8B7A", letterSpacing: 0.4, fontStyle: "italic", position: "relative" }}>
+          <div style={{ marginTop: 16, fontSize: 10, color: "#9B8B7A", letterSpacing: 0.4, fontStyle: "italic", position: "relative" }}>
             This letter is for informational purposes only and does not constitute medical advice. Always consult a qualified healthcare professional for personal health decisions.
           </div>
         </article>
@@ -1710,7 +1690,6 @@ export default function Health() {
             }}
           >
             <div style={{
-              fontFamily: "Cormorant Garamond, Georgia, serif",
               fontSize: 22, fontWeight: 700, color: "#3A2C1A",
               marginBottom: 20, textAlign: "center",
             }}>Your letters</div>
@@ -1727,13 +1706,11 @@ export default function Health() {
                   }}>
                     <div style={{ fontSize: 22, marginBottom: 6 }} aria-hidden="true">{L.icon}</div>
                     <div style={{
-                      fontFamily: "Cormorant Garamond, Georgia, serif",
                       fontSize: 16, fontWeight: 700,
                       color: on ? "#F4EDDB" : "#3A2C1A",
                       marginBottom: 3, lineHeight: 1.2,
                     }}>{L.title}</div>
                     <div style={{
-                      fontFamily: 'Cormorant Garamond, Georgia, serif',
                       fontSize: 10, color: on ? "rgba(244,237,219,0.55)" : "#9B8B7A",
                       lineHeight: 1.4,
                     }}>{L.subtitle}</div>
@@ -1752,7 +1729,7 @@ export default function Health() {
       <div className="hc-no-print" style={{
         background: "#3A2C1A", color: "rgba(244,237,219,0.6)",
         padding: "12px 20px", textAlign: "center",
-        fontFamily: 'Cormorant Garamond, Georgia, serif', fontSize: 10, letterSpacing: 0.5,
+        fontSize: 10, letterSpacing: 0.5,
       }}>
         This content is for informational purposes only and does not constitute medical advice. Always consult a qualified healthcare professional for personalised health decisions.
       </div>
@@ -1784,11 +1761,9 @@ export default function Health() {
             }}>
               <div>
                 <div style={{
-                  fontFamily: "Cormorant Garamond, Georgia, serif",
                   fontSize: 22, fontWeight: 700, color: "#3A2C1A",
                 }}>Your GP question list</div>
                 <div style={{
-                  fontFamily: 'Cormorant Garamond, Georgia, serif',
                   fontSize: 11, color: "#9B8B7A", marginTop: 2,
                 }}>
                   {gpQuestions.length} saved insight{gpQuestions.length === 1 ? "" : "s"} · {healthNotes.length} note{healthNotes.length === 1 ? "" : "s"}
@@ -1807,7 +1782,6 @@ export default function Health() {
             {/* Saved insights → reframed as clinical questions */}
             {gpQuestions.length === 0 && healthNotes.length === 0 ? (
               <div style={{
-                fontFamily: "Cormorant Garamond, Georgia, serif",
                 fontSize: 16, fontStyle: "italic", color: "#9B8B7A",
                 padding: "16px 4px",
               }}>
@@ -1818,7 +1792,6 @@ export default function Health() {
             {gpQuestions.length > 0 && (
               <div style={{ marginBottom: 18 }}>
                 <div style={{
-                  fontFamily: 'Cormorant Garamond, Georgia, serif',
                   fontSize: 10, fontWeight: 700, letterSpacing: 1.5, textTransform: "uppercase",
                   color: "#9B8B7A", marginBottom: 8,
                 }}>Questions to ask</div>
@@ -1830,12 +1803,10 @@ export default function Health() {
                     borderRadius: 8, marginBottom: 8,
                   }}>
                     <div style={{
-                      fontFamily: 'Cormorant Garamond, Georgia, serif',
                       fontSize: 10, color: "#D4AF37", fontWeight: 700,
                       letterSpacing: 1, textTransform: "uppercase", marginBottom: 4,
                     }}>{q.letterTitle} · {q.sectionTitle}</div>
                     <div style={{
-                      fontFamily: "Cormorant Garamond, Georgia, serif",
                       fontSize: 15, fontWeight: 600, color: "#3A2C1A",
                       lineHeight: 1.5, marginBottom: 6,
                     }}>
@@ -1845,7 +1816,6 @@ export default function Health() {
                       onClick={() => setGpQuestions((prev) => prev.filter((_, j) => j !== i))}
                       style={{
                         background: "none", border: "none", cursor: "pointer",
-                        fontFamily: 'Cormorant Garamond, Georgia, serif',
                         fontSize: 11, color: "#9B8B7A", padding: 0,
                       }}
                     >Remove</button>
@@ -1857,7 +1827,6 @@ export default function Health() {
             {healthNotes.length > 0 && (
               <div style={{ marginBottom: 18 }}>
                 <div style={{
-                  fontFamily: 'Cormorant Garamond, Georgia, serif',
                   fontSize: 10, fontWeight: 700, letterSpacing: 1.5, textTransform: "uppercase",
                   color: "#9B8B7A", marginBottom: 8,
                 }}>Your saved notes</div>
@@ -1869,11 +1838,9 @@ export default function Health() {
                     borderRadius: 8, marginBottom: 8,
                   }}>
                     <div style={{
-                      fontFamily: 'Cormorant Garamond, Georgia, serif',
                       fontSize: 10, color: "#9B8B7A", letterSpacing: 0.5, marginBottom: 4,
                     }}>{n.letterTitle} · {n.sectionTitle}</div>
                     <div style={{
-                      fontFamily: "Cormorant Garamond, Georgia, serif",
                       fontSize: 14, color: "#3A2C1A", lineHeight: 1.5,
                     }}>{n.text.length > 200 ? n.text.slice(0, 200) + "…" : n.text}</div>
                   </div>
@@ -1888,7 +1855,6 @@ export default function Health() {
                   width: "100%", padding: "14px 16px",
                   background: "#3A2C1A", color: "#F4EDDB",
                   border: "1px solid #D4AF37", borderRadius: 12,
-                  fontFamily: 'Cormorant Garamond, Georgia, serif',
                   fontSize: 14, fontWeight: 700, letterSpacing: 0.3,
                   cursor: "pointer",
                 }}
@@ -1908,7 +1874,6 @@ export default function Health() {
             transform: "translateX(-50%)",
             background: "#3A2C1A", color: "#F4EDDB",
             padding: "10px 18px", borderRadius: 999,
-            fontFamily: 'Cormorant Garamond, Georgia, serif',
             fontSize: 13, fontWeight: 600, letterSpacing: 0.3,
             boxShadow: "0 3px 14px rgba(40,30,18,0.16)",
             zIndex: 120,
@@ -1956,13 +1921,11 @@ const LetterSection = memo(function LetterSection({ section, isExpanded, onToggl
         borderBottom: "1px solid rgba(58,44,26,0.08)",
       }}>
         <span style={{
-          fontFamily: 'Cormorant Garamond, Georgia, serif',
           fontWeight: 700, fontSize: 22, color: "#3A2C1A", lineHeight: 1.2,
         }}>
           {section.title}
         </span>
         <span style={{
-          fontFamily: 'Cormorant Garamond, Georgia, serif',
           fontSize: 20, color: "#D4AF37", marginLeft: 12, flexShrink: 0,
           display: "inline-block",
           transform: isExpanded ? "rotate(180deg)" : "rotate(0deg)",
@@ -1985,18 +1948,16 @@ const LetterSection = memo(function LetterSection({ section, isExpanded, onToggl
         }}>
           <div aria-hidden="true" style={{
             position: "absolute", top: -4, left: 14,
-            fontFamily: "Cormorant Garamond, Georgia, serif", fontSize: 48,
+            fontSize: 48,
             color: "rgba(212,175,55,0.2)", lineHeight: 1,
             pointerEvents: "none", userSelect: "none",
           }}>&ldquo;</div>
           <div style={{
-            fontFamily: 'Cormorant Garamond, Georgia, serif',
             fontSize: 9, fontWeight: 700, letterSpacing: 2,
             textTransform: "uppercase", color: "#D4AF37",
             marginBottom: 6,
           }}>Key insight</div>
           <div style={{
-            fontFamily: 'Cormorant Garamond, Georgia, serif',
             fontSize: 16, fontWeight: 600, color: "#3A2C1A",
             fontStyle: "italic", lineHeight: 1.6,
           }}>{section.keyFact}</div>
@@ -2011,7 +1972,6 @@ const LetterSection = memo(function LetterSection({ section, isExpanded, onToggl
                 background: "rgba(58,44,26,0.06)",
                 border: "1px solid rgba(58,44,26,0.18)",
                 borderRadius: 999, padding: "4px 12px", cursor: "pointer",
-                fontFamily: 'Cormorant Garamond, Georgia, serif',
                 fontSize: 11, fontWeight: 700, color: "#3A2C1A", letterSpacing: 0.3,
               }}
             >
@@ -2027,7 +1987,6 @@ const LetterSection = memo(function LetterSection({ section, isExpanded, onToggl
         background: isExpanded ? "rgba(58,44,26,0.06)" : "rgba(212,175,55,0.12)",
         border: `1px solid ${isExpanded ? "rgba(58,44,26,0.15)" : "rgba(212,175,55,0.4)"}`,
         borderRadius: 20, padding: "8px 16px", cursor: "pointer",
-        fontFamily: 'Cormorant Garamond, Georgia, serif',
         fontSize: 13, fontWeight: 600,
         color: isExpanded ? "#9B8B7A" : "#3A2C1A",
         letterSpacing: 0.3, marginTop: 4, marginBottom: 4,
@@ -2048,7 +2007,7 @@ const LetterSection = memo(function LetterSection({ section, isExpanded, onToggl
                   onTouchMove={cancelLongPress}
                   onTouchCancel={cancelLongPress}
                   style={{
-                    fontFamily: 'Cormorant Garamond, Georgia, serif', fontSize: 19, fontWeight: 500, lineHeight: 1.9,
+                    fontSize: 19, fontWeight: 500, lineHeight: 1.9,
                     color: "#3A2C1A", margin: "0 0 16px",
                     WebkitUserSelect: "text",
                   }}
@@ -2063,11 +2022,11 @@ const LetterSection = memo(function LetterSection({ section, isExpanded, onToggl
                   borderRadius: "0 4px 4px 0",
                 }}>
                   <p style={{
-                    fontFamily: 'Cormorant Garamond, Georgia, serif', fontSize: 18, fontWeight: 500, fontStyle: "italic",
+                    fontSize: 18, fontWeight: 500, fontStyle: "italic",
                     color: "#3A2C1A", margin: "0 0 8px", lineHeight: 1.8,
                   }}>"{block.quote}"</p>
                   <div style={{
-                    fontFamily: 'Cormorant Garamond, Georgia, serif', fontSize: 14, fontWeight: 600, color: "#9B8B7A", letterSpacing: 0.4,
+                    fontSize: 14, fontWeight: 600, color: "#9B8B7A", letterSpacing: 0.4,
                   }}>— {block.attribution}</div>
                 </div>
               );
@@ -2075,7 +2034,7 @@ const LetterSection = memo(function LetterSection({ section, isExpanded, onToggl
             if (block.type === "list") {
               return (
                 <ul key={i} style={{
-                  fontFamily: 'Cormorant Garamond, Georgia, serif', fontSize: 18, fontWeight: 500, lineHeight: 1.85,
+                  fontSize: 18, fontWeight: 500, lineHeight: 1.85,
                   color: "#3A2C1A", paddingLeft: 24, margin: "0 0 16px",
                 }}>
                   {block.items.map((item, j) => <li key={j} style={{ marginBottom: 6 }}>{item}</li>)}
@@ -2089,10 +2048,10 @@ const LetterSection = memo(function LetterSection({ section, isExpanded, onToggl
                   border: "1px solid rgba(212,175,55,0.25)", borderRadius: 4,
                 }}>
                   <div style={{
-                    fontFamily: 'Cormorant Garamond, Georgia, serif', fontSize: 48, fontWeight: 700, color: "#D4AF37",
+                    fontSize: 48, fontWeight: 700, color: "#D4AF37",
                   }}>{block.number}</div>
                   <div style={{
-                    fontFamily: 'Cormorant Garamond, Georgia, serif', fontSize: 13, fontWeight: 600, color: "#9B8B7A",
+                    fontSize: 13, fontWeight: 600, color: "#9B8B7A",
                     letterSpacing: 1, textTransform: "uppercase", marginTop: 6,
                   }}>{block.label}</div>
                 </div>
@@ -2108,7 +2067,6 @@ const LetterSection = memo(function LetterSection({ section, isExpanded, onToggl
                 border: "1px solid rgba(212,175,55,0.35)",
                 borderRadius: 8, padding: "10px 18px",
                 cursor: "pointer", marginTop: 4,
-                fontFamily: 'Cormorant Garamond, Georgia, serif',
                 fontSize: 13, fontWeight: 600, color: "#3A2C1A", letterSpacing: 0.3,
               }}>
                 <span aria-hidden="true" style={{
@@ -2144,7 +2102,6 @@ const LetterHistoryStrip = memo(function LetterHistoryStrip({ currentPhase }) {
       position: "sticky", top: 84, zIndex: 9,
     }}>
       <span style={{
-        fontFamily: 'Cormorant Garamond, Georgia, serif',
         fontSize: 10, letterSpacing: 1.5, textTransform: "uppercase",
         color: "#9B8B7A", whiteSpace: "nowrap", marginRight: 6, fontWeight: 700,
       }}>Past letters</span>
@@ -2152,7 +2109,6 @@ const LetterHistoryStrip = memo(function LetterHistoryStrip({ currentPhase }) {
         const on = p === currentPhase;
         return (
           <div key={p} style={{
-            fontFamily: 'Cormorant Garamond, Georgia, serif',
             fontSize: 11, fontWeight: 600,
             background: on ? "#3A2C1A" : "transparent",
             color: on ? "#F4EDDB" : "#9B8B7A",
@@ -2182,7 +2138,6 @@ const NewsSection = memo(function NewsSection({ tabId }) {
       }}>
         <div style={{ flex: 1, height: 1, background: "rgba(58,44,26,0.1)" }} />
         <span style={{
-          fontFamily: 'Cormorant Garamond, Georgia, serif',
           fontSize: 14, fontStyle: "italic", color: "#9B8B7A", whiteSpace: "nowrap",
         }}>What's being written about</span>
         <div style={{ flex: 1, height: 1, background: "rgba(58,44,26,0.1)" }} />
@@ -2190,7 +2145,6 @@ const NewsSection = memo(function NewsSection({ tabId }) {
       {/* Cadence label so readers know news rotates monthly */}
       <div style={{
         textAlign: "center", marginBottom: 14,
-        fontFamily: 'Cormorant Garamond, Georgia, serif',
         fontSize: 10, color: "#9B8B7A", letterSpacing: 1, textTransform: "uppercase",
       }}>Updated monthly</div>
       {/* Clipping-style cards with stable alternating tilt */}
@@ -2207,12 +2161,10 @@ const NewsSection = memo(function NewsSection({ tabId }) {
             boxShadow: "0 1px 2px rgba(58,44,26,0.06)",
           }}>
             <div style={{
-              fontFamily: 'Cormorant Garamond, Georgia, serif',
               fontSize: 9, fontWeight: 700, letterSpacing: 1.5,
               textTransform: "uppercase", color: "#D4AF37", marginBottom: 6,
             }}>{item.source} · {item.date}</div>
             <div style={{
-              fontFamily: 'Cormorant Garamond, Georgia, serif',
               fontSize: 16, fontWeight: 700, color: "#3A2C1A",
               lineHeight: 1.35, marginBottom: 8,
             }}>{item.headline}</div>
@@ -2222,7 +2174,6 @@ const NewsSection = memo(function NewsSection({ tabId }) {
                 target="_blank"
                 rel="noopener noreferrer"
                 style={{
-                  fontFamily: 'Cormorant Garamond, Georgia, serif',
                   fontSize: 11, color: "#3A2C1A", letterSpacing: 0.3,
                   textDecoration: "none", fontWeight: 600,
                   display: "inline-flex", alignItems: "center", gap: 4,
@@ -2232,7 +2183,6 @@ const NewsSection = memo(function NewsSection({ tabId }) {
               </a>
             ) : (
               <div style={{
-                fontFamily: 'Cormorant Garamond, Georgia, serif',
                 fontSize: 11, color: "#9B8B7A", letterSpacing: 0.3,
               }}>→ Read</div>
             )}
@@ -2252,7 +2202,6 @@ const TILE = {
   borderRadius: 8, padding: 18, marginBottom: 14,
 };
 const TILE_LABEL = {
-  fontFamily: 'Cormorant Garamond, Georgia, serif',
   fontSize: 11, fontWeight: 700,
   letterSpacing: 1.5, textTransform: "uppercase",
   color: "#9B8B7A", marginBottom: 12,
@@ -2361,7 +2310,6 @@ function StoryDashboard({ profile, cycle, phase, recentCheckins, recentSymptoms,
       <div style={TILE}>
         <div style={TILE_LABEL}>Your cycle</div>
         <div style={{
-          fontFamily: 'Cormorant Garamond, Georgia, serif',
           fontSize: 17, fontWeight: 700, color: "#3A2C1A", marginBottom: 12,
           letterSpacing: 0.2,
         }}>
@@ -2396,7 +2344,6 @@ function StoryDashboard({ profile, cycle, phase, recentCheckins, recentSymptoms,
         {/* Phase legend chips */}
         <div style={{
           display: "flex", flexWrap: "wrap", gap: 10, marginTop: 14,
-          fontFamily: 'Cormorant Garamond, Georgia, serif',
           fontSize: 11, fontWeight: 600, color: "#9B8B7A",
         }}>
           {["menstrual","follicular","ovulatory","luteal"].map((p) => (
@@ -2410,8 +2357,7 @@ function StoryDashboard({ profile, cycle, phase, recentCheckins, recentSymptoms,
           ))}
         </div>
         <div style={{
-          marginTop: 12, fontFamily: 'Cormorant Garamond, Georgia, serif',
-          fontSize: 13, fontWeight: 500, fontStyle: "italic", color: "#9B8B7A",
+          marginTop: 12, fontSize: 13, fontWeight: 500, fontStyle: "italic", color: "#9B8B7A",
         }}>
           {cycleLen}-day cycle · the pulsing dot is today
         </div>
@@ -2426,7 +2372,6 @@ function StoryDashboard({ profile, cycle, phase, recentCheckins, recentSymptoms,
             <div style={{
               position: "absolute", top: -2, left: 0, bottom: 18,
               display: "flex", flexDirection: "column", justifyContent: "space-between",
-              fontFamily: 'Cormorant Garamond, Georgia, serif',
               fontSize: 10, color: "#9B8B7A", paddingRight: 6,
             }}>
               <span>High</span>
@@ -2466,7 +2411,6 @@ function StoryDashboard({ profile, cycle, phase, recentCheckins, recentSymptoms,
             {/* x axis day markers */}
             <div style={{
               display: "flex", justifyContent: "space-between", marginTop: 4, paddingLeft: 28,
-              fontFamily: 'Cormorant Garamond, Georgia, serif',
               fontSize: 10, color: "#9B8B7A",
             }}>
               <span>Day 1</span>
@@ -2474,11 +2418,11 @@ function StoryDashboard({ profile, cycle, phase, recentCheckins, recentSymptoms,
             </div>
           </div>
         ) : (
-          <div style={{ fontFamily: 'Cormorant Garamond, Georgia, serif', fontSize: 14, fontStyle: "italic", color: "#9B8B7A" }}>
+          <div style={{ fontSize: 14, fontStyle: "italic", color: "#9B8B7A" }}>
             No check-ins logged yet. Today is a good day to start.
           </div>
         )}
-        <div style={{ display: "flex", gap: 18, marginTop: 10, fontFamily: 'Cormorant Garamond, Georgia, serif', fontSize: 12, color: "#9B8B7A", fontWeight: 600 }}>
+        <div style={{ display: "flex", gap: 18, marginTop: 10, fontSize: 12, color: "#9B8B7A", fontWeight: 600 }}>
           <span><span style={{ display: "inline-block", width: 10, height: 10, borderRadius: "50%", background: "#E8B4B8", marginRight: 6, verticalAlign: "middle" }} />Mood</span>
           <span><span style={{ display: "inline-block", width: 10, height: 10, borderRadius: "50%", background: "#8FAF8F", marginRight: 6, verticalAlign: "middle" }} />Energy</span>
         </div>
@@ -2488,7 +2432,6 @@ function StoryDashboard({ profile, cycle, phase, recentCheckins, recentSymptoms,
       <div style={TILE}>
         <div style={TILE_LABEL}>Top symptoms</div>
         <div style={{
-          fontFamily: 'Cormorant Garamond, Georgia, serif',
           fontSize: 11, color: "#9B8B7A", marginTop: -8, marginBottom: 12, letterSpacing: 0.3,
         }}>Most frequent in last 14 days</div>
         {topSx.length ? (
@@ -2498,7 +2441,6 @@ function StoryDashboard({ profile, cycle, phase, recentCheckins, recentSymptoms,
                 display: "inline-flex", alignItems: "center", gap: 6,
                 background: "#3A2C1A", color: "#F4EDDB",
                 padding: "6px 12px", borderRadius: 999,
-                fontFamily: 'Cormorant Garamond, Georgia, serif',
                 fontSize: 13, fontWeight: 600,
               }}>
                 {String(name).replace(/_/g, " ")}
@@ -2507,7 +2449,7 @@ function StoryDashboard({ profile, cycle, phase, recentCheckins, recentSymptoms,
             ))}
           </div>
         ) : (
-          <div style={{ fontFamily: 'Cormorant Garamond, Georgia, serif', fontSize: 14, fontStyle: "italic", color: "#9B8B7A" }}>
+          <div style={{ fontSize: 14, fontStyle: "italic", color: "#9B8B7A" }}>
             No symptoms logged yet — start tracking to see patterns.
           </div>
         )}
@@ -2529,11 +2471,9 @@ function StoryDashboard({ profile, cycle, phase, recentCheckins, recentSymptoms,
                 }}>
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                     <span style={{
-                      fontFamily: 'Cormorant Garamond, Georgia, serif',
                       fontSize: 16, fontWeight: 600, color: "#3A2C1A",
                     }}>{String(h.name).replace(/_/g, " ")}</span>
                     <span style={{
-                      fontFamily: 'Cormorant Garamond, Georgia, serif',
                       fontSize: 12, fontWeight: 700, color: "#8FAF8F",
                       background: "rgba(143,175,143,0.15)",
                       padding: "3px 10px", borderRadius: 12,
@@ -2551,7 +2491,7 @@ function StoryDashboard({ profile, cycle, phase, recentCheckins, recentSymptoms,
             })}
           </div>
         ) : (
-          <div style={{ fontFamily: 'Cormorant Garamond, Georgia, serif', fontSize: 14, fontStyle: "italic", color: "#9B8B7A" }}>
+          <div style={{ fontSize: 14, fontStyle: "italic", color: "#9B8B7A" }}>
             No active streaks — build one today.
           </div>
         )}
@@ -2591,14 +2531,12 @@ function StoryDashboard({ profile, cycle, phase, recentCheckins, recentSymptoms,
               {/* Number + label */}
               <div>
                 <div style={{
-                  fontFamily: 'Cormorant Garamond, Georgia, serif',
                   fontSize: 28, fontWeight: 700, color: "#3A2C1A", lineHeight: 1,
                 }}>
                   {(avgMlPerDay / 1000).toFixed(1)}L / {(hydTarget / 1000).toFixed(1)}L today
                 </div>
                 <div style={{
                   marginTop: 6,
-                  fontFamily: 'Cormorant Garamond, Georgia, serif',
                   fontSize: 12, color: meetsTarget ? "#8FAF8F" : "#9B8B7A", fontWeight: 600, letterSpacing: 0.3,
                 }}>
                   {meetsTarget ? "Meeting your target ✓" : `${Math.round(pct * 100)}% of daily target`}

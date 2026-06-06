@@ -280,7 +280,6 @@ function PageHeader({ title, subtitle, badge, badgeTone = "red" }) {
       marginBottom: 22,
     }}>
       <div style={{
-        fontFamily: '"Fraunces", "Cormorant Garamond", Georgia, serif',
         fontSize: 28, fontWeight: 700, color: T.gold,
         letterSpacing: -0.4, lineHeight: 1.15, marginBottom: 6,
       }}>{title}</div>
@@ -319,7 +318,6 @@ function FeatureCard({ n, name, tagline, body, tier }) {
           color: tier === "addon" ? T.textMuted : T.gold,
           border: `1px solid ${tier === "addon" ? T.border : T.gold}`,
           display: "flex", alignItems: "center", justifyContent: "center",
-          fontFamily: '"Fraunces", "Cormorant Garamond", Georgia, serif',
           fontSize: 18, fontWeight: 700, flexShrink: 0,
         }}>{n}</div>
         <div style={{ flex: 1 }}>
@@ -334,14 +332,12 @@ function FeatureCard({ n, name, tagline, body, tier }) {
               }}>{tierStyle.label}</span>
             )}
             <div style={{
-              fontFamily: '"Fraunces", "Cormorant Garamond", Georgia, serif',
               fontSize: 18, fontWeight: 700, color: T.textHi,
               letterSpacing: -0.1, lineHeight: 1.25,
             }}>{name}</div>
           </div>
           {tagline && (
             <div style={{
-              fontFamily: '"Fraunces", "Cormorant Garamond", Georgia, serif',
               fontSize: 13.5, fontStyle: "italic", color: T.blush,
               lineHeight: 1.5, marginBottom: 8,
             }}>{tagline}</div>
@@ -389,8 +385,7 @@ function FullBleed({ children }) {
       color: T.textHi,
       minHeight: "100vh",
       width: "100%",
-      fontFamily: '"Inter", "SF Pro Text", system-ui, sans-serif',
-    }}>{children}</div>
+      }}>{children}</div>
   );
 }
 
@@ -407,7 +402,6 @@ function NotAuthorised() {
           border: `1px solid ${T.border}`, textAlign: "center",
         }}>
           <div style={{
-            fontFamily: '"Fraunces", "Cormorant Garamond", Georgia, serif',
             fontSize: 22, fontWeight: 600, color: T.gold, marginBottom: 10,
           }}>This page is private</div>
           <div style={{ color: T.textMuted, fontSize: 14, lineHeight: 1.6, marginBottom: 22 }}>
@@ -497,7 +491,6 @@ function FoundersInner({ user }) {
           }}>
             <div>
               <div style={{
-                fontFamily: '"Fraunces", "Cormorant Garamond", Georgia, serif',
                 fontSize: 24, fontWeight: 600, color: T.gold,
                 letterSpacing: -0.2, lineHeight: 1.1,
               }}>FemWell Founder OS</div>
@@ -594,17 +587,14 @@ function HealthCornerRedirectCard() {
         boxShadow: "0 10px 28px rgba(58,44,26,0.12)",
       }}>
         <div style={{
-          fontFamily: '"Inter", system-ui, sans-serif',
           fontSize: 11, letterSpacing: 2, color: "#9B8B7A", textTransform: "uppercase",
           fontWeight: 700, marginBottom: 8,
         }}>FemWell Health Letter</div>
         <div style={{
-          fontFamily: '"Fraunces", Georgia, serif',
           fontSize: 22, fontWeight: 700, color: "#3A2C1A",
           marginBottom: 12, lineHeight: 1.3,
         }}>The Health hub now lives at its own page.</div>
         <p style={{
-          fontFamily: 'Cormorant Garamond, Georgia, serif',
           fontSize: 15, lineHeight: 1.7, color: "#3A2C1A", marginBottom: 20,
         }}>
           The Letter-format Health page has replaced this preview, the old Skin &amp; Hair
@@ -618,7 +608,6 @@ function HealthCornerRedirectCard() {
           color: "#F4EDDB",
           textDecoration: "none",
           borderRadius: 999,
-          fontFamily: '"Inter", system-ui, sans-serif',
           fontSize: 13, fontWeight: 600, letterSpacing: 0.4,
         }}>Open Health &nbsp;&rarr;</a>
       </div>
@@ -1039,7 +1028,6 @@ function StrategyTab() {
             padding: "18px 16px 16px",
           }}>
             <div style={{
-              fontFamily: '"Fraunces", "Cormorant Garamond", Georgia, serif',
               fontSize: 30, fontWeight: 700, color: T.gold,
               lineHeight: 1.1, marginBottom: 8, letterSpacing: -0.5,
             }}>{s.number}</div>
@@ -1862,19 +1850,16 @@ function JournalDemosTab() {
                 background: T.goldSoft, color: d.accent,
                 border: `1px solid ${d.accent}`,
                 display: "flex", alignItems: "center", justifyContent: "center",
-                fontFamily: '"Fraunces", Georgia, serif',
                 fontSize: 17, fontWeight: 700, flexShrink: 0,
               }}>{d.n}</div>
               <div style={{ flex: 1 }}>
                 <div style={{
-                  fontFamily: '"Fraunces", Georgia, serif',
                   fontSize: 19, fontWeight: 700, color: T.textHi,
                   letterSpacing: -0.1, lineHeight: 1.25,
                 }}>
                   Demo {d.n} — {d.title}
                 </div>
                 <div style={{
-                  fontFamily: '"Fraunces", Georgia, serif',
                   fontStyle: "italic", fontSize: 13.5, color: d.accent,
                   marginTop: 2,
                 }}>{d.subtitle}</div>
@@ -1889,8 +1874,7 @@ function JournalDemosTab() {
                   fontSize: 10.5, color: T.textMid,
                   background: T.surfaceHi, border: `1px solid ${T.border}`,
                   borderRadius: 9999, padding: "3px 9px",
-                  fontFamily: '"Inter", system-ui, sans-serif',
-                }}>{tag}</span>
+                  }}>{tag}</span>
               ))}
             </div>
             <a href={`/${d.slug}`} style={{
@@ -1898,7 +1882,6 @@ function JournalDemosTab() {
               background: d.accent, color: T.bg,
               border: "none", borderRadius: 9999,
               padding: "8px 16px",
-              fontFamily: '"Inter", system-ui, sans-serif',
               fontSize: 13, fontWeight: 700, cursor: "pointer",
               textDecoration: "none",
             }}>Open demo →</a>
@@ -1989,19 +1972,16 @@ function CommunityDemosTab() {
                 background: T.goldSoft, color: d.accent,
                 border: `1px solid ${d.accent}`,
                 display: "flex", alignItems: "center", justifyContent: "center",
-                fontFamily: '"Fraunces", Georgia, serif',
                 fontSize: 17, fontWeight: 700, flexShrink: 0,
               }}>{d.n}</div>
               <div style={{ flex: 1 }}>
                 <div style={{
-                  fontFamily: '"Fraunces", Georgia, serif',
                   fontSize: 19, fontWeight: 700, color: T.textHi,
                   letterSpacing: -0.1, lineHeight: 1.25,
                 }}>
                   Demo {d.n} — {d.title}
                 </div>
                 <div style={{
-                  fontFamily: '"Fraunces", Georgia, serif',
                   fontStyle: "italic", fontSize: 13.5, color: d.accent,
                   marginTop: 2,
                 }}>{d.subtitle}</div>
@@ -2016,8 +1996,7 @@ function CommunityDemosTab() {
                   fontSize: 10.5, color: T.textMid,
                   background: T.surfaceHi, border: `1px solid ${T.border}`,
                   borderRadius: 9999, padding: "3px 9px",
-                  fontFamily: '"Inter", system-ui, sans-serif',
-                }}>{tag}</span>
+                  }}>{tag}</span>
               ))}
             </div>
             <a href={`/${d.slug}`} style={{
@@ -2025,7 +2004,6 @@ function CommunityDemosTab() {
               background: d.accent, color: T.bg,
               border: "none", borderRadius: 9999,
               padding: "8px 16px",
-              fontFamily: '"Inter", system-ui, sans-serif',
               fontSize: 13, fontWeight: 700, cursor: "pointer",
               textDecoration: "none",
             }}>Open demo →</a>
@@ -2122,11 +2100,11 @@ function AnotherYouTab() {
       }}>
         <div style={{ marginBottom: 10 }}>
           <span style={{ fontSize: 10.5, color: T.gold, fontWeight: 700, letterSpacing: 1.2, textTransform: "uppercase", marginRight: 8 }}>Recommended</span>
-          <span style={{ fontFamily: '"Fraunces", Georgia, serif', fontSize: 18, color: T.textHi, fontStyle: "italic" }}>"Another You"</span>
+          <span style={{ fontSize: 18, color: T.textHi, fontStyle: "italic" }}>"Another You"</span>
           <span style={{ color: T.textMuted, marginLeft: 8 }}>at /AnotherYou</span>
         </div>
         <p style={{
-          fontFamily: '"Fraunces", Georgia, serif', fontSize: 15, fontStyle: "italic", color: T.blush,
+          fontSize: 15, fontStyle: "italic", color: T.blush,
           margin: "0 0 12px", lineHeight: 1.5,
         }}>"The version of you that your data has been quietly describing."</p>
         <p style={{ fontSize: 12.5, color: T.textMid, lineHeight: 1.6, margin: 0 }}>
@@ -2147,7 +2125,6 @@ function AnotherYouTab() {
             borderRadius: 10, padding: "14px 14px",
           }}>
             <div style={{
-              fontFamily: '"Fraunces", Georgia, serif',
               fontSize: 18, color: T.gold, fontWeight: 600, marginBottom: 6,
               letterSpacing: -0.1,
             }}>[ {t.name} ]</div>
@@ -2312,7 +2289,6 @@ function UxPatternCard({ n, tier, title, body }) {
           width: 26, height: 26, borderRadius: "50%",
           background: t.bg, color: t.fg, border: `1px solid ${t.border}`,
           display: "flex", alignItems: "center", justifyContent: "center",
-          fontFamily: '"Fraunces", Georgia, serif',
           fontSize: 13, fontWeight: 700, flexShrink: 0,
         }}>{n}</div>
         <div style={{ flex: 1 }}>
@@ -2325,7 +2301,6 @@ function UxPatternCard({ n, tier, title, body }) {
             }}>{t.label}</span>
           </div>
           <div style={{
-            fontFamily: '"Fraunces", Georgia, serif',
             fontSize: 14.5, fontWeight: 700, color: T.textHi,
             letterSpacing: -0.1, lineHeight: 1.3,
           }}>{title}</div>
@@ -2374,11 +2349,9 @@ function UxDesignTab() {
                 background: T.goldSoft, color: T.gold,
                 border: `1px solid ${T.gold}`,
                 display: "flex", alignItems: "center", justifyContent: "center",
-                fontFamily: '"Fraunces", Georgia, serif',
                 fontSize: 16, fontWeight: 700, flexShrink: 0,
               }}>{a.n}</div>
               <div style={{
-                fontFamily: '"Fraunces", Georgia, serif',
                 fontSize: 19, fontWeight: 700, color: T.gold,
                 letterSpacing: -0.2, lineHeight: 1.25, paddingTop: 2,
               }}>{a.title}</div>
@@ -2556,11 +2529,9 @@ function DimensionCard({ d }) {
           background: T.goldSoft, color: T.gold,
           border: `1px solid ${T.gold}`,
           display: "flex", alignItems: "center", justifyContent: "center",
-          fontFamily: '"Fraunces", Georgia, serif',
           fontSize: 15, fontWeight: 700, flexShrink: 0,
         }}>{d.n}</div>
         <div style={{
-          fontFamily: '"Fraunces", Georgia, serif',
           fontSize: 17, fontWeight: 700, color: T.textHi,
           letterSpacing: 0.3, lineHeight: 1.3, paddingTop: 6,
         }}>{d.name}</div>
@@ -2683,7 +2654,7 @@ function WholenessTab() {
         </p>
         <p style={{
           fontSize: 14, color: T.bg, lineHeight: 1.65, margin: 0,
-          fontFamily: '"Fraunces", Georgia, serif', fontStyle: "italic", fontWeight: 600,
+          fontStyle: "italic", fontWeight: 600,
         }}>
           The vision isn't less cycle. It's: cycle as one of many intelligent lenses FemWell uses to understand
           and serve the whole woman.
@@ -2768,7 +2739,6 @@ function LgbtqTab() {
               border: `1px solid ${T.sage}`,
               borderRadius: "50%", width: 22, height: 22,
               display: "flex", alignItems: "center", justifyContent: "center",
-              fontFamily: '"Fraunces", Georgia, serif',
               fontSize: 12, fontWeight: 700, flexShrink: 0,
             }}>{i + 1}</span>
             <span style={{ fontSize: 13, color: T.textHi, lineHeight: 1.65 }}>{line}</span>
@@ -2790,7 +2760,6 @@ function LgbtqTab() {
                 border: `1px solid ${T.blush}`,
                 borderRadius: "50%", width: 28, height: 28,
                 display: "flex", alignItems: "center", justifyContent: "center",
-                fontFamily: '"Fraunces", Georgia, serif',
                 fontSize: 13, fontWeight: 700, flexShrink: 0,
               }}>{i + 1}</div>
               <div style={{

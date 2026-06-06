@@ -26,8 +26,7 @@ const sLabel = {
   textTransform: "uppercase",
   letterSpacing: "0.1em",
   color: "var(--mauve)",
-  fontFamily: "'Inter', sans-serif",
-};
+  };
 
 export default function Nutrition() {
   const [user, setUser]                       = useState(null);
@@ -106,10 +105,10 @@ export default function Nutrition() {
           <div>
             <p style={sLabel} className="mb-1.5">Wellness Studio</p>
             <h1 className="text-2xl md:text-3xl font-bold leading-tight"
-              style={{ fontFamily: "'Fraunces', serif", color: "var(--plum)", letterSpacing: "-0.02em" }}>
+              style={{ color: "var(--plum)", letterSpacing: "-0.02em" }}>
               Nutrition
             </h1>
-            <p className="text-sm mt-1" style={{ color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>
+            <p className="text-sm mt-1" style={{ color: "var(--mauve)", }}>
               Plan, log, and understand your food
             </p>
           </div>
@@ -125,7 +124,7 @@ export default function Nutrition() {
                 <ChevronLeft className="w-4 h-4" />
               </button>
               <div className="text-center min-w-[110px]">
-                <p className="text-sm font-semibold" style={{ color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>
+                <p className="text-sm font-semibold" style={{ color: "var(--plum)", }}>
                   {isToday ? "Today" : format(selectedDate, "EEEE")}
                 </p>
                 <p className="text-xs" style={{ color: "var(--mauve)" }}>{format(selectedDate, "MMMM d, yyyy")}</p>
@@ -151,8 +150,7 @@ export default function Nutrition() {
                 style={{
                   backgroundColor: activeTab === tab.id ? "var(--plum)" : "transparent",
                   color: activeTab === tab.id ? "white" : "var(--mauve)",
-                  fontFamily: "'Inter', sans-serif",
-                }}>
+                  }}>
                 {tab.label}
               </button>
             ))}

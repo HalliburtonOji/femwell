@@ -119,10 +119,10 @@ export default function QuickSwitchOverlay({ currentPageName, openQuickLog }) {
 
                 <div className="flex items-center justify-between mb-5">
                   <div>
-                    <p className="text-xs font-semibold uppercase tracking-widest mb-1" style={{ color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>
+                    <p className="text-xs font-semibold uppercase tracking-widest mb-1" style={{ color: "var(--mauve)", }}>
                       Always available
                     </p>
-                    <h2 className="text-lg font-semibold" style={{ color: "var(--plum)", fontFamily: "'Fraunces', serif" }}>
+                    <h2 className="text-lg font-semibold" style={{ color: "var(--plum)", }}>
                       Quick Switch
                     </h2>
                   </div>
@@ -148,7 +148,6 @@ export default function QuickSwitchOverlay({ currentPageName, openQuickLog }) {
                     color: "white",
                     fontSize: "15px",
                     fontWeight: 600,
-                    fontFamily: "'Inter', sans-serif",
                     border: "none",
                     cursor: "pointer",
                     marginBottom: "16px",
@@ -165,7 +164,7 @@ export default function QuickSwitchOverlay({ currentPageName, openQuickLog }) {
                     const inner = (
                       <>
                         <div className="w-8 h-8 flex items-center justify-center rounded-xl" style={{ backgroundColor: "var(--rose-dust-subtle)", color: "var(--rose-dust)" }}>{s.icon}</div>
-                        <p className="text-xs font-medium leading-tight" style={{ fontFamily: "'Inter', sans-serif", color: "var(--plum)" }}>{s.label}</p>
+                        <p className="text-xs font-medium leading-tight" style={{ color: "var(--plum)" }}>{s.label}</p>
                       </>
                     );
                     if (s.isAssistant) {
@@ -193,7 +192,7 @@ export default function QuickSwitchOverlay({ currentPageName, openQuickLog }) {
                 {/* Recent pages */}
                 {recentPages.length > 0 && (
                   <div className="mt-5">
-                    <p className="text-xs font-semibold uppercase tracking-widest mb-3" style={{ color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>
+                    <p className="text-xs font-semibold uppercase tracking-widest mb-3" style={{ color: "var(--mauve)", }}>
                       Recent
                     </p>
                     <div className="flex flex-wrap gap-2">
@@ -206,8 +205,7 @@ export default function QuickSwitchOverlay({ currentPageName, openQuickLog }) {
                             backgroundColor: "var(--ivory)",
                             border: "1px solid var(--border)",
                             color: "var(--plum)",
-                            fontFamily: "'Inter', sans-serif",
-                          }}
+                            }}
                         >
                           {PAGE_META[p].label}
                         </a>

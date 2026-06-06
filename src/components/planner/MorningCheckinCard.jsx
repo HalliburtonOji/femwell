@@ -128,11 +128,10 @@ export default function MorningCheckinCard({ user, onComplete }) {
         <p style={{
           margin: 0, fontSize: 10, fontWeight: 700,
           letterSpacing: "0.18em", textTransform: "uppercase",
-          color: C.gold, fontFamily: "'Inter', sans-serif",
-        }}>Morning check-in</p>
+          color: C.gold, }}>Morning check-in</p>
         <h3 style={{
           margin: "4px 0 0", fontSize: 17, fontWeight: 500,
-          fontFamily: "'Fraunces', Georgia, serif", color: C.espresso,
+          color: C.espresso,
           lineHeight: 1.25,
         }}>How are you starting today?</h3>
       </div>
@@ -178,7 +177,6 @@ export default function MorningCheckinCard({ user, onComplete }) {
                   color: on ? C.cream : C.espresso,
                   border: `1px solid ${on ? opt.tint : C.border}`,
                   cursor: "pointer",
-                  fontFamily: "'Inter', system-ui, sans-serif",
                   fontSize: 12.5, fontWeight: 600,
                   display: "flex", flexDirection: "column", alignItems: "center", gap: 3,
                   transition: "background 180ms ease, color 180ms ease",
@@ -209,7 +207,6 @@ export default function MorningCheckinCard({ user, onComplete }) {
             color: C.cream,
             border: "none",
             cursor: canSubmit && !saving ? "pointer" : "default",
-            fontFamily: "'Inter', system-ui, sans-serif",
             fontSize: 13, fontWeight: 700,
             opacity: canSubmit && !saving ? 1 : 0.6,
           }}
@@ -218,7 +215,6 @@ export default function MorningCheckinCard({ user, onComplete }) {
         </button>
         <p style={{
           margin: 0, fontSize: 10, color: C.muted, fontStyle: "italic",
-          fontFamily: "'Inter', system-ui, sans-serif",
           textAlign: "right", maxWidth: "55%",
         }}>
           Not medical advice — for your own self-tracking.
@@ -267,5 +263,4 @@ const rowLabel = {
   fontSize: 11, fontWeight: 700,
   letterSpacing: "0.12em", textTransform: "uppercase",
   color: "#9B8B7A",
-  fontFamily: "'Inter', system-ui, sans-serif",
-};
+  };

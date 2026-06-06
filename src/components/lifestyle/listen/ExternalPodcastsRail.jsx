@@ -251,7 +251,6 @@ function ExternalPodcastCard({ ep, os }) {
           display: 'inline-flex', alignItems: 'center', gap: 4,
           padding: '3px 9px', borderRadius: 9999,
           background: 'rgba(20,16,32,0.78)', color: 'var(--cream, #F4EDDB)',
-          fontFamily: "'Inter', sans-serif",
           fontSize: 9.5, fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase',
         }}>
           <ExternalLink size={10} />
@@ -262,7 +261,6 @@ function ExternalPodcastCard({ ep, os }) {
           bottom: 8, left: 8,
           padding: '3px 9px', borderRadius: 9999,
           background: 'rgba(20,16,32,0.55)', color: 'var(--cream, #F4EDDB)',
-          fontFamily: "'Inter', sans-serif",
           fontSize: 9.5, fontWeight: 700, letterSpacing: '0.10em', textTransform: 'uppercase',
         }}>
           PODCAST · {ep.duration}
@@ -272,17 +270,14 @@ function ExternalPodcastCard({ ep, os }) {
       {/* Body */}
       <div style={{ padding: '14px 16px 16px', display: 'flex', flexDirection: 'column', gap: 6 }}>
         <p style={{
-          fontFamily: "'Inter', sans-serif",
           fontSize: 10, fontWeight: 700, letterSpacing: '0.18em', textTransform: 'uppercase',
           color: 'var(--plum-mute, #8a7768)', margin: 0,
         }}>{ep.show}</p>
         <h3 style={{
-          fontFamily: "'Fraunces', serif",
           fontSize: 17, fontWeight: 500, color: 'var(--plum-deep, #3A2C1A)',
           lineHeight: 1.25, margin: 0,
         }}>{ep.title}</h3>
         <p style={{
-          fontFamily: "'Inter', sans-serif",
           fontSize: 12.5, color: 'var(--plum, #4A2A3A)',
           lineHeight: 1.5, margin: 0,
         }}>{ep.summary}</p>
@@ -317,17 +312,14 @@ export default function ExternalPodcastsRail() {
     <section style={{ marginTop: 24, marginBottom: 24 }} aria-label="External podcasts">
       <div style={{ padding: '0 16px', marginBottom: 12 }}>
         <p style={{
-          fontFamily: "'Inter', sans-serif",
           fontSize: 10, fontWeight: 700, letterSpacing: '0.18em', textTransform: 'uppercase',
           color: 'var(--plum-mute, #8a7768)', margin: 0,
         }}>EXTERNAL PODCASTS · LISTEN IN YOUR APP</p>
         <p style={{
-          fontFamily: "'Fraunces', serif",
           fontSize: 22, fontWeight: 500, color: 'var(--plum-deep, #3A2C1A)',
           letterSpacing: '-0.01em', margin: '4px 0 4px',
         }}>Women&apos;s health shows we love</p>
         <p style={{
-          fontFamily: "'Inter', sans-serif",
           fontSize: 12.5, color: 'var(--plum-mute, #8a7768)',
           margin: 0,
         }}>Tap a platform icon to open the show in your app.</p>

@@ -154,7 +154,6 @@ export default function JessHubDemo() {
       borderRadius: 18, overflow: "hidden",
       display: "flex", flexDirection: "column",
       border: `1px solid ${C.border}`,
-      fontFamily: "'Inter', system-ui, sans-serif",
       color: C.espresso,
     }}>
       {/* Header */}
@@ -177,8 +176,7 @@ export default function JessHubDemo() {
         <AvatarRing size={44}><Sigil size={28} /></AvatarRing>
         <div style={{ flex: 1, minWidth: 0 }}>
           <h1 style={{
-            margin: 0, fontFamily: "'Fraunces', Georgia, serif",
-            fontSize: 22, fontWeight: 600, color: C.espresso, letterSpacing: "-0.01em",
+            margin: 0, fontSize: 22, fontWeight: 600, color: C.espresso, letterSpacing: "-0.01em",
           }}>{name}</h1>
           <div style={{
             display: "inline-flex", alignItems: "center", gap: 6,
@@ -359,12 +357,12 @@ export default function JessHubDemo() {
             boxShadow: "0 -6px 28px rgba(58,44,26,0.18)",
           }}>
             <div style={{ width: 40, height: 4, borderRadius: 4, background: C.border, margin: "0 auto 14px" }} />
-            <h2 style={{ margin: "0 0 16px", fontFamily: "'Fraunces', Georgia, serif", fontSize: 20, fontWeight: 600 }}>Settings</h2>
+            <h2 style={{ margin: "0 0 16px", fontSize: 20, fontWeight: 600 }}>Settings</h2>
             {/* Rename */}
             <label style={{ display: "block", marginBottom: 16 }}>
               <span style={settingKicker}>NAME</span>
               <input type="text" value={name} onChange={(e) => setName(e.target.value || "Jess")}
-                style={{ width: "100%", marginTop: 6, padding: "10px 14px", borderRadius: 12, border: `1px solid ${C.border}`, background: C.paperHi, fontSize: 14, color: C.espresso, fontFamily: "'Inter', sans-serif" }} />
+                style={{ width: "100%", marginTop: 6, padding: "10px 14px", borderRadius: 12, border: `1px solid ${C.border}`, background: C.paperHi, fontSize: 14, color: C.espresso, }} />
             </label>
             {/* Character preset */}
             <p style={settingKicker}>CHARACTER</p>
@@ -476,8 +474,7 @@ function Bubble({ from, text, time }) {
 const kicker = {
   margin: "0 0 6px 4px", fontSize: 10, fontWeight: 700,
   letterSpacing: "0.18em", textTransform: "uppercase",
-  color: C.muted, fontFamily: "'Inter', sans-serif",
-};
+  color: C.muted, };
 const chipRow = {
   display: "flex", gap: 8, overflowX: "auto", paddingBottom: 4,
   scrollbarWidth: "none", WebkitOverflowScrolling: "touch",
@@ -486,15 +483,13 @@ const chipPill = {
   flexShrink: 0, padding: "0 14px", minHeight: 44, borderRadius: 9999,
   background: C.cream, border: `1px solid ${C.espresso}`,
   color: C.espresso, fontSize: 13, fontWeight: 600, cursor: "pointer",
-  fontFamily: "'Inter', sans-serif",
-};
+  };
 const card_ = {
   background: C.paperHi, border: `1px solid ${C.border}`,
   borderRadius: 14, padding: 14, boxShadow: "0 2px 10px rgba(58,44,26,0.06)",
 };
 const cardTitle = {
-  margin: "0 0 6px", fontFamily: "'Fraunces', Georgia, serif",
-  fontSize: 17, fontWeight: 600, color: C.espresso, lineHeight: 1.3,
+  margin: "0 0 6px", fontSize: 17, fontWeight: 600, color: C.espresso, lineHeight: 1.3,
 };
 const cardBody = {
   margin: 0, fontSize: 13, color: C.mutedText, lineHeight: 1.55,
@@ -534,7 +529,7 @@ const sendBtn = {
   padding: "0 18px", minWidth: 44, minHeight: 44, cursor: "pointer",
   display: "flex", alignItems: "center", justifyContent: "center",
 };
-const timeStamp = { fontSize: 10, color: C.muted, marginTop: 3, fontFamily: "'Inter', sans-serif" };
+const timeStamp = { fontSize: 10, color: C.muted, marginTop: 3, };
 const settingKicker = {
   display: "block", fontSize: 10, fontWeight: 700,
   letterSpacing: "0.18em", textTransform: "uppercase",

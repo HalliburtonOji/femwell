@@ -114,7 +114,7 @@ export default function AssistantOrb({ currentPageName }) {
           <div style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)", boxShadow: "var(--shadow-md)", borderRadius: 16, padding: "10px 12px" }}>
             <div style={{ display: "flex", alignItems: "flex-start", gap: 7 }}>
               <div style={{ flex: 1 }}>
-                <p style={{ fontSize: 9, fontWeight: 700, color: "var(--rose-dust)", textTransform: "uppercase", letterSpacing: ".08em", fontFamily: "'Inter', sans-serif", marginBottom: 3 }}>
+                <p style={{ fontSize: 9, fontWeight: 700, color: "var(--rose-dust)", textTransform: "uppercase", letterSpacing: ".08em", marginBottom: 3 }}>
                   {suggestion.type === "question" ? "Guide" : "Suggestion"}
                 </p>
                 <button onClick={() => {
@@ -130,7 +130,7 @@ export default function AssistantOrb({ currentPageName }) {
                     window.dispatchEvent(new CustomEvent("fw_open_assistant", { detail: { prompt: p } }));
                   }
                 }} style={{ border: "none", background: "none", padding: 0, textAlign: "left", cursor: "pointer" }}>
-                  <p style={{ fontSize: 12, color: "var(--plum)", lineHeight: 1.4, fontFamily: "'Inter', sans-serif", fontWeight: 500, margin: 0 }}>
+                  <p style={{ fontSize: 12, color: "var(--plum)", lineHeight: 1.4, fontWeight: 500, margin: 0 }}>
                     {suggestion.prompt}
                   </p>
                 </button>

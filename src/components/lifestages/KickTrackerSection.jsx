@@ -79,18 +79,18 @@ export default function KickTrackerSection({ user }) {
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
       <div style={{ ...card, textAlign: "center" }}>
-        <p style={{ fontSize: "0.6rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.12em", color: "var(--rose-dust)", marginBottom: 8, fontFamily: "'Inter', sans-serif" }}>Kick counter</p>
-        <p style={{ fontSize: 12, color: "var(--mauve)", marginBottom: 14, fontFamily: "'Inter', sans-serif" }}>Goal: {KICK_GOAL} kicks. Tap for each movement you feel.</p>
+        <p style={{ fontSize: "0.6rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.12em", color: "var(--rose-dust)", marginBottom: 8, }}>Kick counter</p>
+        <p style={{ fontSize: 12, color: "var(--mauve)", marginBottom: 14, }}>Goal: {KICK_GOAL} kicks. Tap for each movement you feel.</p>
 
         {sessionActive ? (
           <>
             <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 24, marginBottom: 16 }}>
               <div>
-                <p style={{ fontSize: 52, fontWeight: 700, color: "var(--plum)", fontFamily: "'Fraunces', serif", lineHeight: 1 }}>{kicks}</p>
+                <p style={{ fontSize: 52, fontWeight: 700, color: "var(--plum)", lineHeight: 1 }}>{kicks}</p>
                 <p style={{ fontSize: 10, color: "var(--mauve)" }}>kicks</p>
               </div>
               <div>
-                <p style={{ fontSize: 28, fontWeight: 600, color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>{mins}:{secs.toString().padStart(2, "0")}</p>
+                <p style={{ fontSize: 28, fontWeight: 600, color: "var(--mauve)", }}>{mins}:{secs.toString().padStart(2, "0")}</p>
                 <p style={{ fontSize: 10, color: "var(--mauve)" }}>elapsed</p>
               </div>
             </div>
@@ -100,21 +100,21 @@ export default function KickTrackerSection({ user }) {
             </button>
             <br />
             <button onClick={endAndSave} disabled={saving}
-              style={{ padding: "10px 24px", borderRadius: 9999, backgroundColor: "var(--plum)", color: "white", border: "none", cursor: "pointer", fontSize: 13, fontWeight: 600, fontFamily: "'Inter', sans-serif" }}>
+              style={{ padding: "10px 24px", borderRadius: 9999, backgroundColor: "var(--plum)", color: "white", border: "none", cursor: "pointer", fontSize: 13, fontWeight: 600, }}>
               {saving ? "Saving..." : "End + Save session"}
             </button>
           </>
         ) : (
           <button onClick={startSession}
-            style={{ padding: "12px 28px", borderRadius: 9999, backgroundColor: "var(--rose-dust)", color: "white", border: "none", cursor: "pointer", fontSize: 14, fontWeight: 600, fontFamily: "'Inter', sans-serif" }}>
+            style={{ padding: "12px 28px", borderRadius: 9999, backgroundColor: "var(--rose-dust)", color: "white", border: "none", cursor: "pointer", fontSize: 14, fontWeight: 600, }}>
             Start session
           </button>
         )}
       </div>
 
       <div style={{ backgroundColor: "#FFF8EE", border: "1px solid #F5DFA8", borderRadius: 16, padding: 14 }}>
-        <p style={{ fontSize: 12, fontWeight: 700, color: "#7A5A20", marginBottom: 6, fontFamily: "'Inter', sans-serif" }}>Movement check</p>
-        <p style={{ fontSize: 12, color: "#7A5A20", lineHeight: 1.7, fontFamily: "'Inter', sans-serif" }}>
+        <p style={{ fontSize: 12, fontWeight: 700, color: "#7A5A20", marginBottom: 6, }}>Movement check</p>
+        <p style={{ fontSize: 12, color: "#7A5A20", lineHeight: 1.7, }}>
           If your baby is moving less than usual, or the pattern changes, contact your midwife or maternity unit immediately. Do not wait until the next day. There is no required number of kicks — knowing your baby's usual pattern is what matters.
         </p>
       </div>
@@ -124,11 +124,11 @@ export default function KickTrackerSection({ user }) {
           <p style={{ fontSize: 13, fontWeight: 700, color: "var(--plum)", marginBottom: 12 }}>This week</p>
           <div style={{ display: "flex", gap: 12, marginBottom: 14 }}>
             <div style={{ textAlign: "center", flex: 1, backgroundColor: "var(--rose-dust-subtle)", borderRadius: 10, padding: 10 }}>
-              <p style={{ fontSize: 24, fontWeight: 700, color: "var(--rose-dust)", fontFamily: "'Fraunces', serif" }}>{weeklySessions.length}</p>
+              <p style={{ fontSize: 24, fontWeight: 700, color: "var(--rose-dust)", }}>{weeklySessions.length}</p>
               <p style={{ fontSize: 10, color: "var(--mauve)" }}>sessions</p>
             </div>
             <div style={{ textAlign: "center", flex: 1, backgroundColor: "var(--sage-subtle)", borderRadius: 10, padding: 10 }}>
-              <p style={{ fontSize: 24, fontWeight: 700, color: "var(--sage)", fontFamily: "'Fraunces', serif" }}>{avgKicks}</p>
+              <p style={{ fontSize: 24, fontWeight: 700, color: "var(--sage)", }}>{avgKicks}</p>
               <p style={{ fontSize: 10, color: "var(--mauve)" }}>avg kicks</p>
             </div>
           </div>

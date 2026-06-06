@@ -515,8 +515,7 @@ export default function VoiceScheduler({ open, onClose, userId, onSaved }) {
           borderBottom: "none",
           display: "flex", flexDirection: "column",
           maxHeight: "84vh",
-          fontFamily: '"Inter", system-ui, sans-serif',
-        }}
+          }}
       >
         {/* Header */}
         <div style={{
@@ -532,7 +531,6 @@ export default function VoiceScheduler({ open, onClose, userId, onSaved }) {
             }}>Voice to planner</p>
             <h2 style={{
               margin: "3px 0 0", fontSize: 17, fontWeight: 600,
-              fontFamily: '"Fraunces", Georgia, serif',
               color: C.cream, letterSpacing: -0.1,
             }}>{state === "saved" ? "Saved" : "What should I add?"}</h2>
           </div>
@@ -611,8 +609,7 @@ function UnsupportedState() {
         marginBottom: 14,
       }}><Mic size={22} /></div>
       <h3 style={{
-        margin: "0 0 6px", fontFamily: "'Fraunces', Georgia, serif",
-        fontSize: 17, fontWeight: 600, color: C.cream,
+        margin: "0 0 6px", fontSize: 17, fontWeight: 600, color: C.cream,
       }}>Voice entry isn't supported on this browser</h3>
       <p style={{
         margin: 0, fontSize: 13, color: C.muted, lineHeight: 1.55,
@@ -648,7 +645,7 @@ function ListeningState({ transcript, clarification, onStop }) {
         }}>{clarification}</p>
       ) : null}
       <p style={{
-        margin: 0, fontFamily: "'Fraunces', Georgia, serif", fontSize: 16,
+        margin: 0, fontSize: 16,
         color: transcript ? C.cream : C.muted, lineHeight: 1.5,
         textAlign: "center", maxWidth: 380, minHeight: 28,
         fontStyle: transcript ? "normal" : "italic",
@@ -670,8 +667,7 @@ function ProcessingState() {
         <Loader2 size={28} style={{ animation: "voice-spin 900ms linear infinite" }} />
       </div>
       <p style={{
-        margin: 0, fontFamily: "'Fraunces', Georgia, serif",
-        fontSize: 16, color: C.cream, fontStyle: "italic",
+        margin: 0, fontSize: 16, color: C.cream, fontStyle: "italic",
       }}>Working out what you said…</p>
     </>
   );
@@ -705,7 +701,7 @@ function ConfirmState({ parsed, saving, onSave, onTryAgain, onEdit }) {
             }}>{meta.label}</p>
             <h3 style={{
               margin: "3px 0 0", fontSize: 18, fontWeight: 600,
-              fontFamily: "'Fraunces', Georgia, serif", color: C.cream,
+              color: C.cream,
               lineHeight: 1.3, wordBreak: "break-word",
             }}>{parsed.title}</h3>
           </div>
@@ -881,7 +877,6 @@ function SavedToast({ parsed }) {
         }}>Added to your planner</p>
         <p style={{
           margin: "2px 0 0", fontSize: 14, color: C.cream,
-          fontFamily: "'Fraunces', Georgia, serif",
           overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
         }}>{parsed?.title}{parsed?.recurringLabel ? ` · ${parsed.recurringLabel}` : ""}</p>
       </div>

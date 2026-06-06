@@ -21,8 +21,7 @@ const card = {
 
 const sLabel = {
   fontSize: "0.6rem", fontWeight: 600, textTransform: "uppercase",
-  letterSpacing: "0.12em", color: "var(--mauve)", fontFamily: "'Inter', sans-serif",
-};
+  letterSpacing: "0.12em", color: "var(--mauve)", };
 
 export default function NutritionTrendDashboard({ days }) {
   const { hydrationAvg, topHydrationDay, avgCalories, totalMeals, labels, hydrationValues, calorieValues } = useMemo(() => {
@@ -99,7 +98,7 @@ export default function NutritionTrendDashboard({ days }) {
       <div className="flex items-start justify-between gap-4 flex-wrap">
         <div>
           <p style={sLabel} className="mb-1.5">7-Day Trends</p>
-          <p className="text-sm leading-relaxed" style={{ color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>
+          <p className="text-sm leading-relaxed" style={{ color: "var(--mauve)", }}>
             A clearer view of your hydration and food logging rhythm this week.
           </p>
         </div>
@@ -128,7 +127,7 @@ function SummaryCard({ label, value }) {
   return (
     <div className="rounded-[18px] px-4 py-3" style={{ backgroundColor: "var(--ivory)", border: "1px solid var(--border-subtle)" }}>
       <p style={sLabel} className="mb-1">{label}</p>
-      <p className="text-sm font-semibold" style={{ color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>{value}</p>
+      <p className="text-sm font-semibold" style={{ color: "var(--plum)", }}>{value}</p>
     </div>
   );
 }
@@ -136,7 +135,7 @@ function SummaryCard({ label, value }) {
 function ChartCard({ title, children }) {
   return (
     <div className="rounded-[20px] p-4" style={{ backgroundColor: "var(--ivory)", border: "1px solid var(--border-subtle)" }}>
-      <p className="text-xs font-semibold mb-3" style={{ color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>{title}</p>
+      <p className="text-xs font-semibold mb-3" style={{ color: "var(--plum)", }}>{title}</p>
       <div className="h-52">{children}</div>
     </div>
   );

@@ -96,8 +96,7 @@ const label = {
   textTransform: "uppercase",
   letterSpacing: "0.1em",
   color: "var(--rose-deep, #E11D74)",
-  fontFamily: "'Inter', sans-serif",
-};
+  };
 
 export default function CorrelationsCard({ checkins = [] }) {
   const { insufficient, bullets } = useMemo(() => buildCorrelations(checkins), [checkins]);
@@ -116,7 +115,7 @@ export default function CorrelationsCard({ checkins = [] }) {
           <Sparkles className="w-4 h-4" strokeWidth={1.5} style={{ color: "var(--rose-deep, #E11D74)" }} />
           <p style={label}>Correlations</p>
         </div>
-        <p style={{ fontSize: 13, color: "var(--plum)", fontFamily: "'Inter', sans-serif", lineHeight: 1.55 }}>
+        <p style={{ fontSize: 13, color: "var(--plum)", lineHeight: 1.55 }}>
           Keep logging to unlock correlations — we need at least 14 days in the last 60.
         </p>
       </div>
@@ -149,7 +148,6 @@ export default function CorrelationsCard({ checkins = [] }) {
               alignItems: "flex-start",
               fontSize: 13,
               color: "var(--plum)",
-              fontFamily: "'Inter', sans-serif",
               lineHeight: 1.55,
             }}
           >

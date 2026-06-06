@@ -657,7 +657,6 @@ const shell = {
   boxShadow: "0 1px 0 rgba(58,44,26,0.04), 0 24px 64px rgba(58,44,26,0.08)",
   maxWidth: 760,
   margin: "0 auto",
-  fontFamily: "'Inter', system-ui, sans-serif",
   position: "relative",
 };
 
@@ -897,7 +896,6 @@ const dockTileIcon = {
   display: "flex", alignItems: "center", justifyContent: "center",
 };
 const dockTileValue = {
-  fontFamily: "'Fraunces', Georgia, serif",
   fontSize: 18, fontWeight: 600, color: TOKENS.espresso,
   lineHeight: 1,
 };
@@ -1003,8 +1001,7 @@ const sheetWrap = {
   background: TOKENS.cream, borderRadius: 24,
   padding: "18px 20px 22px", zIndex: 81,
   boxShadow: "0 24px 64px rgba(58,44,26,0.30)",
-  fontFamily: "'Inter', system-ui, sans-serif",
-};
+  };
 const sheetHandle = {
   width: 38, height: 4, borderRadius: 9999,
   background: "rgba(58,44,26,0.15)",
@@ -1020,7 +1017,6 @@ const sheetEyebrow = {
   fontSize: 10, fontWeight: 700, letterSpacing: "0.16em", color: TOKENS.muted,
 };
 const sheetTitle = {
-  fontFamily: "'Fraunces', Georgia, serif",
   fontSize: 22, fontWeight: 500, color: TOKENS.espresso,
   letterSpacing: "-0.01em", lineHeight: 1.2, marginTop: 4,
 };
@@ -1154,7 +1150,7 @@ const careSheet = {
 const careHandle = { width: 38, height: 4, borderRadius: 9999, background: "rgba(58,44,26,0.15)", margin: "0 auto 12px" };
 const careHead = { display: "flex", alignItems: "center", gap: 10, marginBottom: 10 };
 const careEyebrow = { fontSize: 10, fontWeight: 700, letterSpacing: "0.16em", color: TOKENS.muted };
-const careTitle = { fontFamily: "'Fraunces', Georgia, serif", fontSize: 18, fontWeight: 500, color: TOKENS.espresso, marginTop: 2 };
+const careTitle = { fontSize: 18, fontWeight: 500, color: TOKENS.espresso, marginTop: 2 };
 const careClose = {
   width: 30, height: 30, borderRadius: 9999,
   background: TOKENS.paper, border: "1px solid rgba(58,44,26,0.10)",

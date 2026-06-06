@@ -422,10 +422,10 @@ function EpdsTrendSparkline({ history, onClearHistory }) {
         <line x1={PAD_X} x2={W - PAD_X} y1={y13} y2={y13}
               stroke="rgba(140,90,110,0.55)" strokeWidth="0.8" strokeDasharray="3 3"/>
         <text x={W - PAD_X - 2} y={y10 - 2} textAnchor="end"
-              fontSize="8" fontFamily="'Inter', sans-serif" fill="#C48A8C"
+              fontSize="8" fill="#C48A8C"
               style={{ letterSpacing: "0.08em" }}>10</text>
         <text x={W - PAD_X - 2} y={y13 - 2} textAnchor="end"
-              fontSize="8" fontFamily="'Inter', sans-serif" fill="#8C5A6E"
+              fontSize="8" fill="#8C5A6E"
               style={{ letterSpacing: "0.08em" }}>13</text>
 
         {/* Line in muted */}
@@ -452,11 +452,11 @@ function EpdsTrendSparkline({ history, onClearHistory }) {
 
         {/* X-axis labels — first + last only to keep it quiet */}
         <text x={PAD_X} y={H - 6}
-              fontSize="9" fontFamily="'Inter', sans-serif" fill="#9B8B7A">
+              fontSize="9" fill="#9B8B7A">
           {firstDate}
         </text>
         <text x={W - PAD_X} y={H - 6} textAnchor="end"
-              fontSize="9" fontFamily="'Inter', sans-serif" fill="#9B8B7A">
+              fontSize="9" fill="#9B8B7A">
           {lastDate}
         </text>
       </svg>
@@ -491,23 +491,19 @@ const iconWrap = {
   flexShrink: 0,
 };
 const eyebrowStyle = {
-  fontFamily: "'Inter', sans-serif",
   fontSize: 10, fontWeight: 700, letterSpacing: "0.18em",
   color: "#8C5A6E", textTransform: "uppercase",
   margin: 0,
 };
 const titleStyle = {
-  fontFamily: "'Fraunces', Georgia, serif",
   fontSize: 17, fontWeight: 500, lineHeight: 1.22,
   color: "#3A2C1A", margin: "2px 0 0", flex: 1,
 };
 const bodyMute = {
-  fontFamily: "'Inter', sans-serif",
   fontSize: 12.5, color: "#6B5840",
   lineHeight: 1.5, margin: "0 0 10px",
 };
 const bodyText = {
-  fontFamily: "'Inter', sans-serif",
   fontSize: 13, color: "#3A2C1A",
   lineHeight: 1.55, margin: "0 0 10px",
 };
@@ -520,16 +516,16 @@ const lastBox = {
   borderRadius: 10,
 };
 const lastEyebrow = {
-  fontFamily: "'Inter', sans-serif", fontSize: 9.5, fontWeight: 700,
+  fontSize: 9.5, fontWeight: 700,
   letterSpacing: "0.18em", color: "#9B8B7A", textTransform: "uppercase",
   margin: 0,
 };
 const lastTitle = {
-  fontFamily: "'Fraunces', Georgia, serif", fontSize: 14, fontWeight: 500,
+  fontSize: 14, fontWeight: 500,
   color: "#3A2C1A", margin: "2px 0 0", fontStyle: "italic",
 };
 const lastMeta = {
-  fontFamily: "'Inter', sans-serif", fontSize: 11, color: "#6B5840",
+  fontSize: 11, color: "#6B5840",
   margin: "2px 0 0",
 };
 const primaryBtn = {
@@ -539,7 +535,7 @@ const primaryBtn = {
   background: "#3A2C1A",
   color: "#F4EDDB",
   border: "1px solid #3A2C1A",
-  fontFamily: "'Inter', sans-serif", fontSize: 12, fontWeight: 700,
+  fontSize: 12, fontWeight: 700,
   cursor: "pointer",
 };
 const ghostBtn = {
@@ -548,7 +544,7 @@ const ghostBtn = {
   background: "transparent",
   border: "1px solid rgba(58,44,26,0.18)",
   color: "#6B5840",
-  fontFamily: "'Inter', sans-serif", fontSize: 12, fontWeight: 600,
+  fontSize: 12, fontWeight: 600,
   cursor: "pointer",
 };
 const ghostIconBtn = {
@@ -569,11 +565,11 @@ const qItem = {
   padding: "10px 12px",
 };
 const qText = {
-  fontFamily: "'Inter', sans-serif", fontSize: 12.5, fontWeight: 600,
+  fontSize: 12.5, fontWeight: 600,
   color: "#3A2C1A", margin: "0 0 6px", lineHeight: 1.4,
 };
 const qSafety = {
-  fontFamily: "'Inter', sans-serif", fontSize: 10, fontWeight: 700,
+  fontSize: 10, fontWeight: 700,
   letterSpacing: "0.12em", color: "#8C5A6E", textTransform: "uppercase",
 };
 const qOptionsCol = {
@@ -584,7 +580,7 @@ const qOptionBtn = {
   padding: "7px 10px",
   borderRadius: 8,
   border: "1px solid",
-  fontFamily: "'Inter', sans-serif", fontSize: 12, fontWeight: 600,
+  fontSize: 12, fontWeight: 600,
   cursor: "pointer",
 };
 const preview = {
@@ -596,19 +592,19 @@ const preview = {
   borderRadius: 10,
 };
 const previewTitle = {
-  fontFamily: "'Fraunces', Georgia, serif", fontSize: 15, fontWeight: 500,
+  fontSize: 15, fontWeight: 500,
   fontStyle: "italic", color: "#3A2C1A", margin: 0,
 };
 const previewBody = {
-  fontFamily: "'Inter', sans-serif", fontSize: 12.5, color: "#3A2C1A",
+  fontSize: 12.5, color: "#3A2C1A",
   lineHeight: 1.5, margin: "4px 0 0",
 };
 const previewCta = {
-  fontFamily: "'Inter', sans-serif", fontSize: 12, fontWeight: 700,
+  fontSize: 12, fontWeight: 700,
   color: "#8C5A6E", margin: "6px 0 0",
 };
 const resultMeta = {
-  fontFamily: "'Inter', sans-serif", fontSize: 11.5, color: "#9B8B7A",
+  fontSize: 11.5, color: "#9B8B7A",
   fontStyle: "italic", margin: "0 0 8px",
 };
 const ctaBox = {
@@ -620,15 +616,15 @@ const ctaBox = {
   borderRadius: 10,
 };
 const ctaText = {
-  fontFamily: "'Inter', sans-serif", fontSize: 12.5, fontWeight: 700,
+  fontSize: 12.5, fontWeight: 700,
   color: "#3A2C1A", margin: 0,
 };
 const ctaHint = {
-  fontFamily: "'Inter', sans-serif", fontSize: 11.5, color: "#6B5840",
+  fontSize: 11.5, color: "#6B5840",
   margin: "4px 0 0", lineHeight: 1.5,
 };
 const privacyLine = {
-  fontFamily: "'Inter', sans-serif", fontSize: 10.5, color: "#9B8B7A",
+  fontSize: 10.5, color: "#9B8B7A",
   fontStyle: "italic", margin: "10px 0 0",
 };
 const nudgeBox = {
@@ -646,7 +642,6 @@ const nudgeBox = {
   borderRadius: 10,
 };
 const nudgeText = {
-  fontFamily: "'Inter', sans-serif",
   fontSize: 12.5,
   color: "#3A2C1A",
   lineHeight: 1.45,
@@ -666,7 +661,6 @@ const trendHeadRow = {
   marginBottom: 4,
 };
 const trendEyebrow = {
-  fontFamily: "'Inter', sans-serif",
   fontSize: 9.5,
   fontWeight: 700,
   letterSpacing: "0.18em",
@@ -679,7 +673,6 @@ const trendClearBtn = {
   border: "1px solid rgba(58,44,26,0.16)",
   borderRadius: 9999,
   padding: "3px 8px",
-  fontFamily: "'Inter', sans-serif",
   fontSize: 9.5,
   fontWeight: 600,
   letterSpacing: "0.06em",
@@ -692,7 +685,6 @@ const trendSvg = {
   display: "block",
 };
 const trendNote = {
-  fontFamily: "'Inter', sans-serif",
   fontSize: 11,
   color: "#6B5840",
   fontStyle: "italic",

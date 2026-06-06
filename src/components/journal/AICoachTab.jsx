@@ -141,8 +141,7 @@ function extractContextLabel(content) {
 
 const sLabel = {
   fontSize: "0.6rem", fontWeight: 600, textTransform: "uppercase",
-  letterSpacing: "0.12em", color: "var(--mauve)", fontFamily: "'Inter', sans-serif",
-};
+  letterSpacing: "0.12em", color: "var(--mauve)", };
 
 // ── Main component ──────────────────────────────────────────────────────────
 export default function AICoachTab({ user }) {
@@ -474,7 +473,7 @@ export default function AICoachTab({ user }) {
             <div>
               <p style={sLabel} className="mb-0">Private</p>
               <h1 className="text-xl font-bold leading-tight"
-                style={{ fontFamily: "'Fraunces', serif", color: "var(--plum)", letterSpacing: "-0.02em" }}>
+                style={{ color: "var(--plum)", letterSpacing: "-0.02em" }}>
                 {guideName}
               </h1>
             </div>
@@ -482,7 +481,7 @@ export default function AICoachTab({ user }) {
 
           <div className="flex items-center gap-2">
             <div className="text-right mr-1 hidden sm:block">
-              <p className="text-xs font-semibold" style={{ color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>{guideName}</p>
+              <p className="text-xs font-semibold" style={{ color: "var(--plum)", }}>{guideName}</p>
               <p style={{ ...sLabel, fontSize: "0.55rem" }}>{styleDesc}</p>
             </div>
             <button onClick={() => setShowVoice(true)}
@@ -513,10 +512,10 @@ export default function AICoachTab({ user }) {
               <div className="space-y-5 pt-4">
                 <div className="rounded-[20px] p-5"
                   style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)", boxShadow: "var(--shadow-sm)" }}>
-                  <p className="text-sm font-semibold mb-1" style={{ color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>
+                  <p className="text-sm font-semibold mb-1" style={{ color: "var(--plum)", }}>
                     {guideName}
                   </p>
-                  <p className="text-xs leading-relaxed" style={{ color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>
+                  <p className="text-xs leading-relaxed" style={{ color: "var(--mauve)", }}>
                     Your private guide across all of FemWell. Ask anything, log something, or get a plan — I'll use your data to help you move forward.
                   </p>
                 </div>
@@ -532,7 +531,6 @@ export default function AICoachTab({ user }) {
                           backgroundColor: "var(--surface)",
                           border: "1px solid var(--border)",
                           color: "var(--plum)",
-                          fontFamily: "'Inter', sans-serif",
                           boxShadow: "var(--shadow-sm)",
                         }}
                         onMouseEnter={e => e.currentTarget.style.backgroundColor = "var(--ivory-dark)"}
@@ -556,7 +554,7 @@ export default function AICoachTab({ user }) {
                 return (
                   <div key={msg.id || i} className="flex flex-col items-start gap-2 max-w-[88%]">
                     {ctxLabel && (
-                      <p className="text-[10px] ml-1" style={{ color: "var(--mauve)", fontFamily: "'Inter', sans-serif", letterSpacing: "0.04em" }}>
+                      <p className="text-[10px] ml-1" style={{ color: "var(--mauve)", letterSpacing: "0.04em" }}>
                         {ctxLabel}
                       </p>
                     )}
@@ -573,11 +571,11 @@ export default function AICoachTab({ user }) {
                         <ReactMarkdown
                           className="text-sm leading-relaxed prose prose-sm max-w-none"
                           components={{
-                            p: ({ children }) => <p className="my-1.5 leading-relaxed" style={{ color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>{children}</p>,
+                            p: ({ children }) => <p className="my-1.5 leading-relaxed" style={{ color: "var(--plum)", }}>{children}</p>,
                             strong: ({ children }) => <strong style={{ color: "var(--plum)", fontWeight: 600 }}>{children}</strong>,
                             ul: ({ children }) => <ul className="my-1.5 ml-4 list-disc space-y-1">{children}</ul>,
-                            li: ({ children }) => <li style={{ color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>{children}</li>,
-                            h3: ({ children }) => <h3 className="text-sm font-semibold mt-3 mb-1" style={{ color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>{children}</h3>,
+                            li: ({ children }) => <li style={{ color: "var(--plum)", }}>{children}</li>,
+                            h3: ({ children }) => <h3 className="text-sm font-semibold mt-3 mb-1" style={{ color: "var(--plum)", }}>{children}</h3>,
                           }}>
                           {text}
                         </ReactMarkdown>
@@ -588,7 +586,7 @@ export default function AICoachTab({ user }) {
                         {options.map((opt) => (
                           <button key={opt} onClick={() => sendMessage(opt)}
                             className="text-xs px-3 py-1.5 rounded-full font-medium transition-all"
-                            style={{ backgroundColor: "var(--rose-dust-subtle)", color: "var(--rose-dust)", border: "1px solid var(--rose-dust-light)", fontFamily: "'Inter', sans-serif" }}>
+                            style={{ backgroundColor: "var(--rose-dust-subtle)", color: "var(--rose-dust)", border: "1px solid var(--rose-dust-light)", }}>
                             {opt}
                           </button>
                         ))}
@@ -602,7 +600,7 @@ export default function AICoachTab({ user }) {
                 <div key={msg.id || i} className="flex justify-end">
                   <div className="max-w-[80%] rounded-[20px] rounded-tr-sm px-4 py-3.5"
                     style={{ backgroundColor: "var(--plum)" }}>
-                    <p className="text-sm leading-relaxed" style={{ color: "white", fontFamily: "'Inter', sans-serif" }}>
+                    <p className="text-sm leading-relaxed" style={{ color: "white", }}>
                       {msg.content}
                     </p>
                   </div>
@@ -615,13 +613,13 @@ export default function AICoachTab({ user }) {
               <div className="flex items-center gap-3 pt-2">
                 <button onClick={handleSave} disabled={saved}
                   className="flex items-center gap-1.5 text-xs font-medium"
-                  style={{ color: saved ? "var(--sage)" : "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>
+                  style={{ color: saved ? "var(--sage)" : "var(--mauve)", }}>
                   {saved ? <CheckCircle2 className="w-3.5 h-3.5" /> : <BookmarkPlus className="w-3.5 h-3.5" />}
                   {saved ? "Saved" : "Save response"}
                 </button>
                 <button onClick={startNewThread}
                   className="text-xs font-medium ml-auto"
-                  style={{ color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>
+                  style={{ color: "var(--mauve)", }}>
                   New conversation
                 </button>
               </div>
@@ -651,7 +649,7 @@ export default function AICoachTab({ user }) {
                 placeholder={`Ask ${guideName}…`}
                 rows={1}
                 className="flex-1 px-4 py-3 bg-transparent text-sm resize-none focus:outline-none"
-                style={{ color: "var(--plum)", fontFamily: "'Inter', sans-serif", minHeight: "44px", maxHeight: "120px" }}
+                style={{ color: "var(--plum)", minHeight: "44px", maxHeight: "120px" }}
               />
               <button onClick={() => setShowVoice(true)}
                 className="px-3 py-3 flex-shrink-0 transition-opacity hover:opacity-70"

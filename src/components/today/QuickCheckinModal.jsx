@@ -9,8 +9,8 @@ function EmojiScale({ label, value, onChange, emojis }) {
   return (
     <div>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
-        <p style={{ fontSize: 12, fontWeight: 600, color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>{label}</p>
-        <span style={{ fontSize: 11, color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>{value}/5</span>
+        <p style={{ fontSize: 12, fontWeight: 600, color: "var(--plum)", }}>{label}</p>
+        <span style={{ fontSize: 11, color: "var(--mauve)", }}>{value}/5</span>
       </div>
       <div style={{ display: "flex", gap: 8, justifyContent: "space-between" }}>
         {emojis.map((emoji, i) => (
@@ -33,7 +33,7 @@ function EmojiScale({ label, value, onChange, emojis }) {
 function Chip({ label, selected, onToggle }) {
   return (
     <button type="button" onClick={onToggle}
-      style={{ borderRadius: 9999, padding: "7px 14px", fontSize: 12, fontFamily: "'Inter', sans-serif", fontWeight: 500, cursor: "pointer", transition: "all 0.15s", border: selected ? "1.5px solid var(--plum)" : "1.5px solid var(--border)", backgroundColor: selected ? "var(--plum)" : "var(--ivory-dark)", color: selected ? "white" : "var(--plum)" }}>
+      style={{ borderRadius: 9999, padding: "7px 14px", fontSize: 12, fontWeight: 500, cursor: "pointer", transition: "all 0.15s", border: selected ? "1.5px solid var(--plum)" : "1.5px solid var(--border)", backgroundColor: selected ? "var(--plum)" : "var(--ivory-dark)", color: selected ? "white" : "var(--plum)" }}>
       {label}
     </button>
   );
@@ -130,7 +130,7 @@ export default function QuickCheckinModal({ existing, onClose, onSave, userId, d
   const completionStatus = getCompletionStatus(existing);
 
   const sliderStyle = { width: "100%", accentColor: "var(--rose-dust)", marginTop: 6 };
-  const fieldLabel = { fontSize: 11, fontWeight: 600, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", display: "flex", justifyContent: "space-between", marginBottom: 4 };
+  const fieldLabel = { fontSize: 11, fontWeight: 600, color: "var(--mauve)", display: "flex", justifyContent: "space-between", marginBottom: 4 };
 
   return (
     <>
@@ -151,11 +151,11 @@ export default function QuickCheckinModal({ existing, onClose, onSave, userId, d
           <div style={{ width: 32, height: 4, borderRadius: 9999, backgroundColor: "var(--border)", margin: "0 auto 14px" }} />
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
             <div>
-              <h2 style={{ fontFamily: "'Fraunces', serif", fontSize: 18, color: "var(--plum)", fontWeight: 600, margin: 0 }}>
+              <h2 style={{ fontSize: 18, color: "var(--plum)", fontWeight: 600, margin: 0 }}>
                 How are you today?
               </h2>
               {completionStatus && (
-                <span style={{ fontSize: 11, color: completionStatus === "full" ? "var(--sage)" : "var(--rose-dust)", fontFamily: "'Inter', sans-serif", fontWeight: 600 }}>
+                <span style={{ fontSize: 11, color: completionStatus === "full" ? "var(--sage)" : "var(--rose-dust)", fontWeight: 600 }}>
                   {completionStatus === "full" ? "✓ Full check-in done" : "✓ Quick check-in done"}
                 </span>
               )}
@@ -199,7 +199,7 @@ export default function QuickCheckinModal({ existing, onClose, onSave, userId, d
           {/* Save step 1 button */}
           {!step1Saved && (
             <button onClick={saveStep1} disabled={step1Saving}
-              style={{ width: "100%", height: 48, borderRadius: 9999, backgroundColor: "var(--plum)", color: "white", border: "none", fontSize: 15, fontWeight: 600, fontFamily: "'Inter', sans-serif", cursor: step1Saving ? "default" : "pointer", opacity: step1Saving ? 0.75 : 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 8, marginBottom: 16 }}>
+              style={{ width: "100%", height: 48, borderRadius: 9999, backgroundColor: "var(--plum)", color: "white", border: "none", fontSize: 15, fontWeight: 600, cursor: step1Saving ? "default" : "pointer", opacity: step1Saving ? 0.75 : 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 8, marginBottom: 16 }}>
               {step1Saving && <div style={{ width: 16, height: 16, border: "2px solid rgba(255,255,255,0.4)", borderTopColor: "white", borderRadius: "50%", animation: "spin 0.7s linear infinite" }} />}
               {step1Saving ? "Saving..." : "Save quick check-in"}
             </button>
@@ -208,14 +208,14 @@ export default function QuickCheckinModal({ existing, onClose, onSave, userId, d
           {/* Step 2 toggle */}
           <button type="button" onClick={() => setDeepOpen(v => !v)}
             style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 16px", borderRadius: 16, border: "1px solid var(--border)", backgroundColor: "var(--ivory)", cursor: "pointer", marginBottom: deepOpen ? 0 : 20 }}>
-            <span style={{ fontSize: 13, fontWeight: 600, color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>Add more detail ↓</span>
+            <span style={{ fontSize: 13, fontWeight: 600, color: "var(--plum)", }}>Add more detail ↓</span>
             {deepOpen ? <ChevronUp className="w-4 h-4" style={{ color: "var(--mauve)" }} /> : <ChevronDown className="w-4 h-4" style={{ color: "var(--mauve)" }} />}
           </button>
 
           {/* Step 2 deep dive */}
           {deepOpen && (
             <div style={{ paddingTop: 16, paddingBottom: 24 }}>
-              <p style={{ fontSize: 10, fontWeight: 600, color: "var(--rose-dust)", textTransform: "uppercase", letterSpacing: "0.12em", fontFamily: "'Inter', sans-serif", marginBottom: 14 }}>Physical</p>
+              <p style={{ fontSize: 10, fontWeight: 600, color: "var(--rose-dust)", textTransform: "uppercase", letterSpacing: "0.12em", marginBottom: 14 }}>Physical</p>
 
               {[["Pain level", pain, setPain], ["Bloating", bloating, setBloating], ["Cramps", cramps, setCramps], ["Headache", headache, setHeadache], ["Breast tenderness", breastTenderness, setBreastTenderness]].map(([lbl, val, set]) => (
                 <div key={lbl} style={{ marginBottom: 14 }}>
@@ -231,7 +231,7 @@ export default function QuickCheckinModal({ existing, onClose, onSave, userId, d
                 </div>
               </div>
 
-              <p style={{ fontSize: 10, fontWeight: 600, color: "var(--rose-dust)", textTransform: "uppercase", letterSpacing: "0.12em", fontFamily: "'Inter', sans-serif", marginBottom: 14, marginTop: 20 }}>Wellness</p>
+              <p style={{ fontSize: 10, fontWeight: 600, color: "var(--rose-dust)", textTransform: "uppercase", letterSpacing: "0.12em", marginBottom: 14, marginTop: 20 }}>Wellness</p>
 
               <div style={{ marginBottom: 14 }}>
                 <div style={fieldLabel}><span>Hydration glasses</span><span style={{ color: "var(--rose-dust)", fontWeight: 700 }}>{hydrationGlasses}</span></div>
@@ -246,7 +246,7 @@ export default function QuickCheckinModal({ existing, onClose, onSave, userId, d
                 </div>
                 {exerciseDone && (
                   <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-                    <input type="text" value={exerciseType} onChange={e => setExerciseType(e.target.value)} placeholder="Type (e.g. yoga, run)" style={{ padding: "9px 12px", borderRadius: 10, border: "1px solid var(--border)", fontSize: 13, fontFamily: "'Inter', sans-serif", color: "var(--plum)", backgroundColor: "var(--ivory)", outline: "none" }} />
+                    <input type="text" value={exerciseType} onChange={e => setExerciseType(e.target.value)} placeholder="Type (e.g. yoga, run)" style={{ padding: "9px 12px", borderRadius: 10, border: "1px solid var(--border)", fontSize: 13, color: "var(--plum)", backgroundColor: "var(--ivory)", outline: "none" }} />
                     <div style={fieldLabel}><span>Minutes</span><span style={{ color: "var(--rose-dust)" }}>{exerciseMinutes} min</span></div>
                     <input type="range" min={5} max={120} step={5} value={exerciseMinutes} onChange={e => setExerciseMinutes(Number(e.target.value))} style={sliderStyle} />
                     <div style={{ display: "flex", gap: 6 }}>
@@ -256,7 +256,7 @@ export default function QuickCheckinModal({ existing, onClose, onSave, userId, d
                 )}
               </div>
 
-              <p style={{ fontSize: 10, fontWeight: 600, color: "var(--rose-dust)", textTransform: "uppercase", letterSpacing: "0.12em", fontFamily: "'Inter', sans-serif", marginBottom: 14, marginTop: 20 }}>Hormonal</p>
+              <p style={{ fontSize: 10, fontWeight: 600, color: "var(--rose-dust)", textTransform: "uppercase", letterSpacing: "0.12em", marginBottom: 14, marginTop: 20 }}>Hormonal</p>
 
               <div style={{ marginBottom: 14 }}>
                 <p style={{ ...fieldLabel, marginBottom: 8 }}><span>Cervical mucus</span></p>
@@ -272,7 +272,7 @@ export default function QuickCheckinModal({ existing, onClose, onSave, userId, d
                 </div>
               ))}
 
-              <p style={{ fontSize: 10, fontWeight: 600, color: "var(--rose-dust)", textTransform: "uppercase", letterSpacing: "0.12em", fontFamily: "'Inter', sans-serif", marginBottom: 14, marginTop: 20 }}>Mental</p>
+              <p style={{ fontSize: 10, fontWeight: 600, color: "var(--rose-dust)", textTransform: "uppercase", letterSpacing: "0.12em", marginBottom: 14, marginTop: 20 }}>Mental</p>
 
               {[["Focus", focus, setFocus], ["Social connection", socialConnection, setSocialConnection]].map(([lbl, val, set]) => (
                 <div key={lbl} style={{ marginBottom: 14 }}>
@@ -288,11 +288,11 @@ export default function QuickCheckinModal({ existing, onClose, onSave, userId, d
                 </div>
               </div>
 
-              <p style={{ fontSize: 10, fontWeight: 600, color: "var(--rose-dust)", textTransform: "uppercase", letterSpacing: "0.12em", fontFamily: "'Inter', sans-serif", marginBottom: 8, marginTop: 20 }}>Notes</p>
+              <p style={{ fontSize: 10, fontWeight: 600, color: "var(--rose-dust)", textTransform: "uppercase", letterSpacing: "0.12em", marginBottom: 8, marginTop: 20 }}>Notes</p>
               <textarea value={notes} onChange={e => setNotes(e.target.value)} placeholder="Anything else on your mind today?"
-                rows={3} style={{ width: "100%", border: "1px solid var(--border)", borderRadius: 14, padding: "10px 12px", fontSize: 13, fontFamily: "'Inter', sans-serif", color: "var(--plum)", backgroundColor: "var(--ivory)", resize: "none", outline: "none", boxSizing: "border-box", marginBottom: 8 }} />
+                rows={3} style={{ width: "100%", border: "1px solid var(--border)", borderRadius: 14, padding: "10px 12px", fontSize: 13, color: "var(--plum)", backgroundColor: "var(--ivory)", resize: "none", outline: "none", boxSizing: "border-box", marginBottom: 8 }} />
 
-              <p style={{ fontSize: 11, color: "var(--sage)", fontFamily: "'Inter', sans-serif" }}>Auto-saving as you type</p>
+              <p style={{ fontSize: 11, color: "var(--sage)", }}>Auto-saving as you type</p>
             </div>
           )}
         </div>
@@ -300,7 +300,7 @@ export default function QuickCheckinModal({ existing, onClose, onSave, userId, d
         {/* Footer */}
         <div style={{ flexShrink: 0, padding: "12px 20px 28px", borderTop: "1px solid var(--border-subtle)" }}>
           <button onClick={onClose}
-            style={{ width: "100%", height: 48, borderRadius: 9999, backgroundColor: "var(--ivory-dark)", color: "var(--plum)", border: "1.5px solid var(--border)", fontSize: 14, fontWeight: 600, fontFamily: "'Inter', sans-serif", cursor: "pointer" }}>
+            style={{ width: "100%", height: 48, borderRadius: 9999, backgroundColor: "var(--ivory-dark)", color: "var(--plum)", border: "1.5px solid var(--border)", fontSize: 14, fontWeight: 600, cursor: "pointer" }}>
             Done
           </button>
         </div>

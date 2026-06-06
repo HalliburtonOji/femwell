@@ -39,15 +39,15 @@ function RecommendationCard({ item, onTap }) {
       }}
     >
       <div style={{ width: 32, height: 32, borderRadius: 10, display: "flex", alignItems: "center", justifyContent: "center", backgroundColor: typeMeta.backgroundColor, color: typeMeta.color, flexShrink: 0 }}>
-        <span style={{ fontSize: 9, fontWeight: 700, lineHeight: 1, fontFamily: "'Inter', sans-serif" }}>{typeMeta.label}</span>
+        <span style={{ fontSize: 9, fontWeight: 700, lineHeight: 1, }}>{typeMeta.label}</span>
       </div>
-      <p style={{ color: "var(--plum)", fontSize: 14, fontWeight: 600, fontFamily: "'Inter', sans-serif", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden", marginTop: 10 }}>
+      <p style={{ color: "var(--plum)", fontSize: 14, fontWeight: 600, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden", marginTop: 10 }}>
         {item.title}
       </p>
-      <p style={{ color: "var(--mauve)", fontSize: 12, lineHeight: 1.4, fontFamily: "'Inter', sans-serif", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden", marginTop: 4, flex: 1 }}>
+      <p style={{ color: "var(--mauve)", fontSize: 12, lineHeight: 1.4, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden", marginTop: 4, flex: 1 }}>
         {item.reason}
       </p>
-      <p style={{ color: "var(--rose-dust)", fontSize: 11, fontWeight: 600, fontFamily: "'Inter', sans-serif", marginTop: 10 }}>View</p>
+      <p style={{ color: "var(--rose-dust)", fontSize: 11, fontWeight: 600, marginTop: 10 }}>View</p>
     </a>
   );
 }
@@ -57,8 +57,8 @@ export default function RecommendedForYouSection({ loading, items, onTap }) {
     <div className="mt-6 mb-4">
       <style>{`.recommended-scroll::-webkit-scrollbar{display:none;}`}</style>
       <div className="flex items-center justify-between mb-3">
-        <p style={{ color: "var(--plum)", fontSize: "16px", fontWeight: 700, fontFamily: "'Inter', sans-serif" }}>For you today</p>
-        <a href={createPageUrl("Lifestyle")} style={{ color: "var(--rose-dust)", fontSize: "12px", fontFamily: "'Inter', sans-serif", fontWeight: 600, textDecoration: "none" }}>See all</a>
+        <p style={{ color: "var(--plum)", fontSize: "16px", fontWeight: 700, }}>For you today</p>
+        <a href={createPageUrl("Lifestyle")} style={{ color: "var(--rose-dust)", fontSize: "12px", fontWeight: 600, textDecoration: "none" }}>See all</a>
       </div>
       <div className="recommended-scroll flex gap-3 overflow-x-auto pb-1" style={{ scrollbarWidth: "none", WebkitOverflowScrolling: "touch", scrollSnapType: "x mandatory" }}>
         {loading

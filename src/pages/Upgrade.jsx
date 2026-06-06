@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { ArrowLeft, Check, X, Sparkles, Shield, Lock } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 
-const sLabel = { fontSize: "0.6rem", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.12em", color: "var(--mauve)", fontFamily: "'Inter', sans-serif" };
+const sLabel = { fontSize: "0.6rem", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.12em", color: "var(--mauve)", };
 
 const FEATURES = [
   { label: "Cycle tracking",       free: true,  plus: true  },
@@ -56,7 +56,7 @@ export default function Upgrade() {
             <Sparkles className="w-6 h-6" style={{ color: "var(--rose-dust)" }} />
           </div>
           <h1 className="fw-display">FemWell Plus</h1>
-          <p style={{ fontSize: 15, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", marginTop: 8 }}>Unlock the full picture of your health.</p>
+          <p style={{ fontSize: 15, color: "var(--mauve)", marginTop: 8 }}>Unlock the full picture of your health.</p>
         </div>
 
         {/* Plan cards */}
@@ -64,13 +64,13 @@ export default function Upgrade() {
 
           {/* Free */}
           <div style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)", borderRadius: 20, padding: 20 }}>
-            <p style={{ fontSize: 16, fontWeight: 700, color: "var(--plum)", fontFamily: "'Fraunces', serif", marginBottom: 4 }}>Free</p>
-            <p style={{ fontSize: 12, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", marginBottom: 16 }}>Always free</p>
+            <p style={{ fontSize: 16, fontWeight: 700, color: "var(--plum)", marginBottom: 4 }}>Free</p>
+            <p style={{ fontSize: 12, color: "var(--mauve)", marginBottom: 16 }}>Always free</p>
             <ul className="space-y-2">
               {["Cycle tracking", "Basic check-in", "2 programs", "5 AI messages/month"].map(f => (
                 <li key={f} className="flex items-center gap-2">
                   <Check style={{ width: 14, height: 14, color: "var(--sage)", flexShrink: 0 }} />
-                  <span style={{ fontSize: 12, color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>{f}</span>
+                  <span style={{ fontSize: 12, color: "var(--mauve)", }}>{f}</span>
                 </li>
               ))}
             </ul>
@@ -78,17 +78,17 @@ export default function Upgrade() {
 
           {/* Plus — highlighted */}
           <div style={{ backgroundColor: "var(--plum)", border: "2px solid var(--rose-dust)", borderRadius: 20, padding: 20, position: "relative" }}>
-            <div style={{ position: "absolute", top: -10, left: "50%", transform: "translateX(-50%)", backgroundColor: "var(--rose-dust)", color: "white", borderRadius: 9999, padding: "2px 12px", fontSize: 10, fontWeight: 700, fontFamily: "'Inter', sans-serif", whiteSpace: "nowrap" }}>
+            <div style={{ position: "absolute", top: -10, left: "50%", transform: "translateX(-50%)", backgroundColor: "var(--rose-dust)", color: "white", borderRadius: 9999, padding: "2px 12px", fontSize: 10, fontWeight: 700, whiteSpace: "nowrap" }}>
               Most popular
             </div>
-            <p style={{ fontSize: 16, fontWeight: 700, color: "white", fontFamily: "'Fraunces', serif", marginBottom: 2 }}>Plus</p>
-            <p style={{ fontSize: 13, fontWeight: 700, color: "var(--rose-dust-light)", fontFamily: "'Inter', sans-serif", marginBottom: 2 }}>£6.99/month</p>
-            <p style={{ fontSize: 11, color: "rgba(255,255,255,0.5)", fontFamily: "'Inter', sans-serif", marginBottom: 16 }}>or £49.99/year</p>
+            <p style={{ fontSize: 16, fontWeight: 700, color: "white", marginBottom: 2 }}>Plus</p>
+            <p style={{ fontSize: 13, fontWeight: 700, color: "var(--rose-dust-light)", marginBottom: 2 }}>£6.99/month</p>
+            <p style={{ fontSize: 11, color: "rgba(255,255,255,0.5)", marginBottom: 16 }}>or £49.99/year</p>
             <ul className="space-y-2">
               {["Everything free", "All programs + condition tracks", "Unlimited AI coach", "Correlation insights", "Wearable data", "Lab tracker", "Doctor Export", "Partner mode"].map(f => (
                 <li key={f} className="flex items-center gap-2">
                   <Check style={{ width: 14, height: 14, color: "var(--rose-dust-light)", flexShrink: 0 }} />
-                  <span style={{ fontSize: 12, color: "rgba(255,255,255,0.85)", fontFamily: "'Inter', sans-serif" }}>{f}</span>
+                  <span style={{ fontSize: 12, color: "rgba(255,255,255,0.85)", }}>{f}</span>
                 </li>
               ))}
             </ul>
@@ -97,15 +97,15 @@ export default function Upgrade() {
           {/* Pro — coming soon */}
           <div style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)", borderRadius: 20, padding: 20, opacity: 0.6 }}>
             <div className="flex items-center gap-2 mb-1">
-              <p style={{ fontSize: 16, fontWeight: 700, color: "var(--plum)", fontFamily: "'Fraunces', serif" }}>Pro</p>
-              <span style={{ fontSize: 9, fontWeight: 700, color: "var(--mauve)", backgroundColor: "var(--ivory-dark)", borderRadius: 9999, padding: "2px 8px", fontFamily: "'Inter', sans-serif" }}>COMING SOON</span>
+              <p style={{ fontSize: 16, fontWeight: 700, color: "var(--plum)", }}>Pro</p>
+              <span style={{ fontSize: 9, fontWeight: 700, color: "var(--mauve)", backgroundColor: "var(--ivory-dark)", borderRadius: 9999, padding: "2px 8px", }}>COMING SOON</span>
             </div>
-            <p style={{ fontSize: 12, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", marginBottom: 16 }}>£12.99/month</p>
+            <p style={{ fontSize: 12, color: "var(--mauve)", marginBottom: 16 }}>£12.99/month</p>
             <ul className="space-y-2">
               {["Everything Plus", "Priority support", "Early access features"].map(f => (
                 <li key={f} className="flex items-center gap-2">
                   <Lock style={{ width: 13, height: 13, color: "var(--mauve)", flexShrink: 0 }} />
-                  <span style={{ fontSize: 12, color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>{f}</span>
+                  <span style={{ fontSize: 12, color: "var(--mauve)", }}>{f}</span>
                 </li>
               ))}
             </ul>
@@ -115,7 +115,7 @@ export default function Upgrade() {
         {/* Main CTA */}
         <button
           onClick={() => setShowModal(true)}
-          style={{ width: "100%", padding: "16px", borderRadius: 16, backgroundColor: "var(--plum)", color: "white", fontSize: 15, fontWeight: 700, border: "none", cursor: "pointer", fontFamily: "'Inter', sans-serif", marginBottom: 32, boxShadow: "var(--shadow-md)" }}
+          style={{ width: "100%", padding: "16px", borderRadius: 16, backgroundColor: "var(--plum)", color: "white", fontSize: 15, fontWeight: 700, border: "none", cursor: "pointer", marginBottom: 32, boxShadow: "var(--shadow-md)" }}
         >
           Start 7-day free trial
         </button>
@@ -127,7 +127,7 @@ export default function Upgrade() {
           </div>
           {FEATURES.map((row, i) => (
             <div key={row.label} style={{ display: "flex", alignItems: "center", padding: "11px 18px", borderBottom: i < FEATURES.length - 1 ? "1px solid var(--border-subtle)" : "none", backgroundColor: i % 2 === 0 ? "transparent" : "var(--ivory)" }}>
-              <span style={{ flex: 1, fontSize: 13, color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>{row.label}</span>
+              <span style={{ flex: 1, fontSize: 13, color: "var(--plum)", }}>{row.label}</span>
               <div style={{ display: "flex", gap: 40 }}>
                 <span style={{ width: 40, textAlign: "center" }}>
                   {row.free ? <Check style={{ width: 15, height: 15, color: "var(--sage)", display: "inline" }} /> : <X style={{ width: 14, height: 14, color: "var(--border)", display: "inline" }} />}
@@ -140,8 +140,8 @@ export default function Upgrade() {
           ))}
           <div style={{ display: "flex", padding: "8px 18px 10px", justifyContent: "flex-end" }}>
             <div style={{ display: "flex", gap: 40 }}>
-              <span style={{ width: 40, textAlign: "center", fontSize: 10, fontWeight: 600, color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>Free</span>
-              <span style={{ width: 40, textAlign: "center", fontSize: 10, fontWeight: 600, color: "var(--rose-dust)", fontFamily: "'Inter', sans-serif" }}>Plus</span>
+              <span style={{ width: 40, textAlign: "center", fontSize: 10, fontWeight: 600, color: "var(--mauve)", }}>Free</span>
+              <span style={{ width: 40, textAlign: "center", fontSize: 10, fontWeight: 600, color: "var(--rose-dust)", }}>Plus</span>
             </div>
           </div>
         </div>
@@ -151,7 +151,7 @@ export default function Upgrade() {
           {TRUST.map(t => (
             <div key={t} className="flex items-center gap-1.5" style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)", borderRadius: 9999, padding: "6px 14px" }}>
               <Shield style={{ width: 12, height: 12, color: "var(--sage)" }} />
-              <span style={{ fontSize: 11, fontWeight: 600, color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>{t}</span>
+              <span style={{ fontSize: 11, fontWeight: 600, color: "var(--plum)", }}>{t}</span>
             </div>
           ))}
         </div>
@@ -171,18 +171,18 @@ export default function Upgrade() {
             </div>
             {joinedWaitlist ? (
               <>
-                <h3 style={{ fontFamily: "'Fraunces', serif", fontSize: 20, fontWeight: 700, color: "var(--plum)", textAlign: "center", marginBottom: 8 }}>You're on the list!</h3>
-                <p style={{ fontSize: 14, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", textAlign: "center", lineHeight: 1.65, marginBottom: 24 }}>
+                <h3 style={{ fontSize: 20, fontWeight: 700, color: "var(--plum)", textAlign: "center", marginBottom: 8 }}>You're on the list!</h3>
+                <p style={{ fontSize: 14, color: "var(--mauve)", textAlign: "center", lineHeight: 1.65, marginBottom: 24 }}>
                   We'll notify you the moment Plus launches. Early members get a special discount.
                 </p>
-                <button onClick={() => { setShowModal(false); setJoinedWaitlist(false); }} style={{ width: "100%", padding: "13px", borderRadius: 12, backgroundColor: "var(--plum)", color: "white", fontSize: 14, fontWeight: 600, border: "none", cursor: "pointer", fontFamily: "'Inter', sans-serif" }}>
+                <button onClick={() => { setShowModal(false); setJoinedWaitlist(false); }} style={{ width: "100%", padding: "13px", borderRadius: 12, backgroundColor: "var(--plum)", color: "white", fontSize: 14, fontWeight: 600, border: "none", cursor: "pointer", }}>
                   Done
                 </button>
               </>
             ) : (
               <>
-                <h3 style={{ fontFamily: "'Fraunces', serif", fontSize: 20, fontWeight: 700, color: "var(--plum)", textAlign: "center", marginBottom: 8 }}>Plus is launching soon</h3>
-                <p style={{ fontSize: 14, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", textAlign: "center", lineHeight: 1.65, marginBottom: 20 }}>
+                <h3 style={{ fontSize: 20, fontWeight: 700, color: "var(--plum)", textAlign: "center", marginBottom: 8 }}>Plus is launching soon</h3>
+                <p style={{ fontSize: 14, color: "var(--mauve)", textAlign: "center", lineHeight: 1.65, marginBottom: 20 }}>
                   Join the waitlist and we'll notify you first. Early members get a special discount.
                 </p>
                 <input
@@ -190,10 +190,10 @@ export default function Upgrade() {
                   value={email}
                   onChange={e => setEmail(e.target.value)}
                   placeholder="Your email address"
-                  style={{ width: "100%", padding: "12px 14px", borderRadius: 12, border: "1.5px solid var(--border)", backgroundColor: "var(--ivory)", fontSize: 14, fontFamily: "'Inter', sans-serif", color: "var(--plum)", outline: "none", boxSizing: "border-box", marginBottom: 12 }}
+                  style={{ width: "100%", padding: "12px 14px", borderRadius: 12, border: "1.5px solid var(--border)", backgroundColor: "var(--ivory)", fontSize: 14, color: "var(--plum)", outline: "none", boxSizing: "border-box", marginBottom: 12 }}
                 />
                 <button onClick={handleJoinWaitlist} disabled={!email.trim() || savingWaitlist}
-                  style={{ width: "100%", padding: "13px", borderRadius: 12, backgroundColor: "var(--plum)", color: "white", fontSize: 14, fontWeight: 600, border: "none", cursor: "pointer", fontFamily: "'Inter', sans-serif", opacity: !email.trim() || savingWaitlist ? 0.6 : 1 }}>
+                  style={{ width: "100%", padding: "13px", borderRadius: 12, backgroundColor: "var(--plum)", color: "white", fontSize: 14, fontWeight: 600, border: "none", cursor: "pointer", opacity: !email.trim() || savingWaitlist ? 0.6 : 1 }}>
                   {savingWaitlist ? "Joining…" : "Join waitlist"}
                 </button>
               </>

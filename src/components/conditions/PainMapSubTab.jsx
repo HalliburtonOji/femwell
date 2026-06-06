@@ -21,8 +21,7 @@ const card = {
 };
 const sLabel = {
   fontSize: "0.6rem", fontWeight: 600, textTransform: "uppercase",
-  letterSpacing: "0.12em", color: "var(--mauve)", fontFamily: "'Inter', sans-serif",
-};
+  letterSpacing: "0.12em", color: "var(--mauve)", };
 
 export default function PainMapSubTab({ user, selectedDate }) {
   const [logs, setLogs] = useState([]);
@@ -67,7 +66,7 @@ export default function PainMapSubTab({ user, selectedDate }) {
     <div className="pt-4 space-y-4">
       <div style={card}>
         <p style={{ ...sLabel, marginBottom: 12 }}>Tap a region to log pain</p>
-        <p style={{ fontSize: 11, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", marginBottom: 14 }}>
+        <p style={{ fontSize: 11, color: "var(--mauve)", marginBottom: 14 }}>
           Select a body area, then fill in the details below.
         </p>
 
@@ -89,7 +88,7 @@ export default function PainMapSubTab({ user, selectedDate }) {
                     stroke={isSelected ? "var(--rose-dust)" : logged ? "var(--rose-dust-light)" : "var(--border)"}
                     strokeWidth="1.5"
                   />
-                  <text x={r.cx} y={r.cy + 4} textAnchor="middle" fontSize="7" fill={isSelected ? "white" : "var(--plum)"} fontFamily="Inter, sans-serif" fontWeight="600">
+                  <text x={r.cx} y={r.cy + 4} textAnchor="middle" fontSize="7" fill={isSelected ? "white" : "var(--plum)"} fontWeight="600">
                     {r.label.split(" ")[0]}
                   </text>
                 </g>
@@ -105,7 +104,7 @@ export default function PainMapSubTab({ user, selectedDate }) {
             const isSelected = selected === r.id;
             return (
               <button key={r.id} onClick={() => setSelected(isSelected ? null : r.id)}
-                style={{ borderRadius: 9999, padding: "5px 12px", fontSize: 11, fontWeight: 600, cursor: "pointer", fontFamily: "'Inter', sans-serif", border: "1.5px solid",
+                style={{ borderRadius: 9999, padding: "5px 12px", fontSize: 11, fontWeight: 600, cursor: "pointer", border: "1.5px solid",
                   backgroundColor: isSelected ? "var(--plum)" : logged ? "var(--rose-dust-subtle)" : "var(--ivory-dark)",
                   borderColor: isSelected ? "var(--plum)" : logged ? "var(--rose-dust-light)" : "var(--border)",
                   color: isSelected ? "white" : logged ? "var(--rose-dust)" : "var(--mauve)" }}>
@@ -118,22 +117,22 @@ export default function PainMapSubTab({ user, selectedDate }) {
 
         {selected && (
           <div style={{ backgroundColor: "var(--ivory)", border: "1px solid var(--border)", borderRadius: 14, padding: 14 }} className="space-y-3">
-            <p style={{ fontSize: 13, fontWeight: 600, color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>
+            <p style={{ fontSize: 13, fontWeight: 600, color: "var(--plum)", }}>
               {REGIONS.find(r => r.id === selected)?.label}
             </p>
             <div>
               <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}>
-                <p style={{ fontSize: 11, color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>Severity</p>
-                <strong style={{ fontSize: 11, color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>{severity}/5</strong>
+                <p style={{ fontSize: 11, color: "var(--mauve)", }}>Severity</p>
+                <strong style={{ fontSize: 11, color: "var(--plum)", }}>{severity}/5</strong>
               </div>
               <input type="range" min={1} max={5} value={severity} onChange={e => setSeverity(+e.target.value)} style={{ width: "100%" }} />
             </div>
             <div>
-              <p style={{ fontSize: 11, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", marginBottom: 6 }}>Pain type</p>
+              <p style={{ fontSize: 11, color: "var(--mauve)", marginBottom: 6 }}>Pain type</p>
               <div style={{ display: "flex", flexWrap: "wrap", gap: 5 }}>
                 {PAIN_TYPES.map(t => (
                   <button key={t} onClick={() => setPainType(t)}
-                    style={{ borderRadius: 9999, padding: "4px 10px", fontSize: 11, fontWeight: 500, cursor: "pointer", fontFamily: "'Inter', sans-serif", border: "1px solid", textTransform: "capitalize",
+                    style={{ borderRadius: 9999, padding: "4px 10px", fontSize: 11, fontWeight: 500, cursor: "pointer", border: "1px solid", textTransform: "capitalize",
                       backgroundColor: painType === t ? "var(--plum)" : "transparent",
                       borderColor: painType === t ? "var(--plum)" : "var(--border)",
                       color: painType === t ? "white" : "var(--mauve)" }}>
@@ -143,10 +142,10 @@ export default function PainMapSubTab({ user, selectedDate }) {
               </div>
             </div>
             <input value={notes} onChange={e => setNotes(e.target.value)} placeholder="Notes (optional)"
-              style={{ width: "100%", padding: "7px 12px", borderRadius: 10, border: "1px solid var(--border)", backgroundColor: "var(--surface)", fontSize: 12, fontFamily: "'Inter', sans-serif", color: "var(--plum)", outline: "none", boxSizing: "border-box" }}
+              style={{ width: "100%", padding: "7px 12px", borderRadius: 10, border: "1px solid var(--border)", backgroundColor: "var(--surface)", fontSize: 12, color: "var(--plum)", outline: "none", boxSizing: "border-box" }}
             />
             <button onClick={logPain} disabled={saving}
-              style={{ width: "100%", padding: 10, borderRadius: 10, fontWeight: 600, fontSize: 13, border: "none", cursor: "pointer", fontFamily: "'Inter', sans-serif", backgroundColor: "var(--plum)", color: "white", display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}>
+              style={{ width: "100%", padding: 10, borderRadius: 10, fontWeight: 600, fontSize: 13, border: "none", cursor: "pointer", backgroundColor: "var(--plum)", color: "white", display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}>
               {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
               {saving ? "Saving..." : "Log pain"}
             </button>
@@ -161,10 +160,10 @@ export default function PainMapSubTab({ user, selectedDate }) {
             {logs.map(l => (
               <div key={l.id} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "8px 12px", borderRadius: 10, backgroundColor: "var(--ivory)", border: "1px solid var(--border-subtle)" }}>
                 <div>
-                  <p style={{ fontSize: 12, fontWeight: 600, color: "var(--plum)", fontFamily: "'Inter', sans-serif", textTransform: "capitalize" }}>
+                  <p style={{ fontSize: 12, fontWeight: 600, color: "var(--plum)", textTransform: "capitalize" }}>
                     {REGIONS.find(r => r.id === l.region)?.label || l.region}
                   </p>
-                  <p style={{ fontSize: 11, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", textTransform: "capitalize" }}>
+                  <p style={{ fontSize: 11, color: "var(--mauve)", textTransform: "capitalize" }}>
                     {l.pain_type} · {l.severity}/5
                   </p>
                 </div>

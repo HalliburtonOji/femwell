@@ -49,28 +49,28 @@ function TrendCard({ label: caption, current, previous, unit = "", direction = "
       role="group"
       aria-label={`${caption} trend, ${verbMap[kind]}`}
     >
-      <p style={{ fontSize: "0.58rem", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.1em", color: accent, fontFamily: "'Inter', sans-serif" }}>
+      <p style={{ fontSize: "0.58rem", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.1em", color: accent, }}>
         {caption}
       </p>
       <div style={{ display: "flex", alignItems: "baseline", gap: 6 }}>
-        <p style={{ fontSize: 18, fontWeight: 700, color: "var(--plum)", fontFamily: "'Inter', sans-serif", lineHeight: 1.1 }}>
+        <p style={{ fontSize: 18, fontWeight: 700, color: "var(--plum)", lineHeight: 1.1 }}>
           {hasData ? `${current.toFixed(1)}${unit}` : "—"}
         </p>
         {hasData && (
-          <span style={{ fontSize: 10, color: "var(--slate-500, #64748B)", fontFamily: "'Inter', sans-serif" }}>
+          <span style={{ fontSize: 10, color: "var(--slate-500, #64748B)", }}>
             vs {previous.toFixed(1)}{unit}
           </span>
         )}
       </div>
       {hasData && (
-        <span style={{ display: "inline-flex", alignItems: "center", gap: 3, fontSize: 11, color: accent, fontFamily: "'Inter', sans-serif", fontWeight: 600 }}>
+        <span style={{ display: "inline-flex", alignItems: "center", gap: 3, fontSize: 11, color: accent, fontWeight: 600 }}>
           <Icon className="w-3 h-3" strokeWidth={2} />
           {pct != null ? `${pct > 0 ? "+" : ""}${pct.toFixed(0)}%` : verbMap[kind]}
           <span style={{ color: "var(--slate-500, #64748B)", fontWeight: 400, marginLeft: 2 }}>last 7d</span>
         </span>
       )}
       {!hasData && (
-        <p style={{ fontSize: 11, color: "var(--slate-500, #64748B)", fontFamily: "'Inter', sans-serif" }}>Not enough data</p>
+        <p style={{ fontSize: 11, color: "var(--slate-500, #64748B)", }}>Not enough data</p>
       )}
     </div>
   );

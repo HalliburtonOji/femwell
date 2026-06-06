@@ -34,7 +34,6 @@ const shellStyle = {
   borderRadius: 12,
 };
 const eyebrowStyle = {
-  fontFamily: "'Inter', sans-serif",
   fontSize: 9,
   fontWeight: 700,
   letterSpacing: "0.16em",
@@ -43,7 +42,6 @@ const eyebrowStyle = {
   margin: "0 0 8px",
 };
 const bodyStyle = {
-  fontFamily: "'Fraunces', serif",
   fontStyle: "italic",
   fontSize: 12,
   lineHeight: 1.55,
@@ -51,7 +49,6 @@ const bodyStyle = {
   margin: "0 0 8px",
 };
 const lineageStyle = {
-  fontFamily: "'Inter', sans-serif",
   fontSize: 10,
   lineHeight: 1.5,
   color: "rgba(245,230,211,0.62)",

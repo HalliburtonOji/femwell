@@ -186,7 +186,6 @@ const kickerStyle = {
   textTransform: "uppercase",
   letterSpacing: "0.14em",
   color: "var(--plum-mute, #8A7584)",
-  fontFamily: "'Inter', sans-serif",
   margin: 0,
 };
 const tenseStyle = {
@@ -195,13 +194,11 @@ const tenseStyle = {
   letterSpacing: "0.10em",
   textTransform: "uppercase",
   color: "var(--plum-mute, #8A7584)",
-  fontFamily: "'Inter', sans-serif",
-};
+  };
 const emptyStyle = {
   fontSize: 12.5,
   lineHeight: 1.55,
   color: "var(--plum-2, #6B4559)",
-  fontFamily: "'Inter', sans-serif",
   margin: 0,
 };
 const cellsRowStyle = {
@@ -222,11 +219,9 @@ const cellKickerStyle = {
   textTransform: "uppercase",
   letterSpacing: "0.10em",
   color: "var(--plum-mute, #8A7584)",
-  fontFamily: "'Inter', sans-serif",
   margin: "0 0 4px",
 };
 const cellValueStyle = {
-  fontFamily: "'Fraunces', serif",
   fontSize: 26,
   fontWeight: 600,
   color: "var(--plum, #4A2A3A)",
@@ -234,7 +229,6 @@ const cellValueStyle = {
   margin: 0,
 };
 const cellAnchorStyle = {
-  fontFamily: "'Fraunces', serif",
   fontSize: 16,
   fontWeight: 600,
   color: "var(--plum, #4A2A3A)",
@@ -246,19 +240,16 @@ const cellUnitStyle = {
   fontSize: 13,
   fontWeight: 500,
   color: "var(--plum-mute, #8A7584)",
-  fontFamily: "'Inter', sans-serif",
   marginLeft: 2,
 };
 const cellSubStyle = {
   fontSize: 11.5,
   color: "var(--plum-2, #6B4559)",
-  fontFamily: "'Inter', sans-serif",
   margin: "4px 0 0",
 };
 const ctaStyle = {
   fontSize: 12.5,
   color: "var(--plum-2, #6B4559)",
-  fontFamily: "'Inter', sans-serif",
   margin: 0,
   lineHeight: 1.55,
 };

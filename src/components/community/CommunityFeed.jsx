@@ -77,18 +77,18 @@ function PostCard({ post, onHide }) {
       {/* Header */}
       <div style={{ display: "flex", alignItems: "flex-start", gap: 12, marginBottom: 10 }}>
         <div style={{ width: 38, height: 38, borderRadius: "50%", backgroundColor: "var(--rose-dust-subtle)", border: "1.5px solid var(--rose-dust-light)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-          <span style={{ fontSize: 13, fontWeight: 700, color: "var(--rose-dust)", fontFamily: "'Inter', sans-serif" }}>{initials}</span>
+          <span style={{ fontSize: 13, fontWeight: 700, color: "var(--rose-dust)", }}>{initials}</span>
         </div>
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
-            <span style={{ fontSize: 13, fontWeight: 600, color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>{displayName}</span>
+            <span style={{ fontSize: 13, fontWeight: 600, color: "var(--plum)", }}>{displayName}</span>
             {post.category && post.category !== "general" && (
-              <span style={{ fontSize: 10, fontWeight: 600, backgroundColor: "var(--ivory-dark)", color: "var(--mauve)", borderRadius: 9999, padding: "2px 8px", fontFamily: "'Inter', sans-serif" }}>
+              <span style={{ fontSize: 10, fontWeight: 600, backgroundColor: "var(--ivory-dark)", color: "var(--mauve)", borderRadius: 9999, padding: "2px 8px", }}>
                 {CATEGORY_LABELS[post.category] || post.category}
               </span>
             )}
           </div>
-          <span style={{ fontSize: 11, color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>{timeAgo(post.created_at || post.created_date)}</span>
+          <span style={{ fontSize: 11, color: "var(--mauve)", }}>{timeAgo(post.created_at || post.created_date)}</span>
         </div>
         <div style={{ position: "relative" }}>
           <button onClick={() => setMenuOpen(m => !m)} style={{ background: "none", border: "none", cursor: "pointer", padding: 4, color: "var(--mauve)" }}>
@@ -96,17 +96,17 @@ function PostCard({ post, onHide }) {
           </button>
           {menuOpen && (
             <div style={{ position: "absolute", right: 0, top: 28, backgroundColor: "var(--surface)", border: "1px solid var(--border)", borderRadius: 12, boxShadow: "var(--shadow-md)", zIndex: 10, minWidth: 130 }}>
-              <button onClick={() => { setMenuOpen(false); onHide(post.id); }} style={{ display: "block", width: "100%", padding: "10px 14px", textAlign: "left", fontSize: 13, color: "var(--plum)", background: "none", border: "none", cursor: "pointer", fontFamily: "'Inter', sans-serif" }}>Hide post</button>
-              <button onClick={() => setMenuOpen(false)} style={{ display: "block", width: "100%", padding: "10px 14px", textAlign: "left", fontSize: 13, color: "var(--rose-dust)", background: "none", border: "none", cursor: "pointer", fontFamily: "'Inter', sans-serif" }}>Report</button>
+              <button onClick={() => { setMenuOpen(false); onHide(post.id); }} style={{ display: "block", width: "100%", padding: "10px 14px", textAlign: "left", fontSize: 13, color: "var(--plum)", background: "none", border: "none", cursor: "pointer", }}>Hide post</button>
+              <button onClick={() => setMenuOpen(false)} style={{ display: "block", width: "100%", padding: "10px 14px", textAlign: "left", fontSize: 13, color: "var(--rose-dust)", background: "none", border: "none", cursor: "pointer", }}>Report</button>
             </div>
           )}
         </div>
       </div>
 
       {/* Body */}
-      <p style={{ fontSize: 14, color: "var(--plum)", fontFamily: "'Inter', sans-serif", lineHeight: 1.65, marginBottom: isLong ? 6 : 14 }}>{displayContent}</p>
+      <p style={{ fontSize: 14, color: "var(--plum)", lineHeight: 1.65, marginBottom: isLong ? 6 : 14 }}>{displayContent}</p>
       {isLong && (
-        <button onClick={() => setExpanded(v => !v)} style={{ fontSize: 12, color: "var(--rose-dust)", fontWeight: 600, background: "none", border: "none", cursor: "pointer", padding: 0, marginBottom: 12, fontFamily: "'Inter', sans-serif" }}>
+        <button onClick={() => setExpanded(v => !v)} style={{ fontSize: 12, color: "var(--rose-dust)", fontWeight: 600, background: "none", border: "none", cursor: "pointer", padding: 0, marginBottom: 12, }}>
           {expanded ? "Show less" : "Read more"}
         </button>
       )}
@@ -115,7 +115,7 @@ function PostCard({ post, onHide }) {
       <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
         {REACTION_KEYS.map(({ key, label }) => (
           <button key={key} onClick={() => handleReact(key)}
-            style={{ padding: "5px 12px", borderRadius: 9999, fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: "'Inter', sans-serif", border: "1px solid", transition: "all 0.15s",
+            style={{ padding: "5px 12px", borderRadius: 9999, fontSize: 12, fontWeight: 600, cursor: "pointer", border: "1px solid", transition: "all 0.15s",
               backgroundColor: reacted[key] ? "var(--plum)" : "var(--ivory)",
               color: reacted[key] ? "white" : "var(--mauve)",
               borderColor: reacted[key] ? "var(--plum)" : "var(--border)" }}>
@@ -150,16 +150,16 @@ function ComposeModal({ onClose, onSubmit, currentPhase }) {
           <div style={{ width: 32, height: 4, borderRadius: 9999, backgroundColor: "var(--border)" }} />
         </div>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
-          <h3 style={{ fontFamily: "'Fraunces', serif", fontSize: 18, color: "var(--plum)", fontWeight: 600 }}>New post</h3>
+          <h3 style={{ fontSize: 18, color: "var(--plum)", fontWeight: 600 }}>New post</h3>
           <button onClick={onClose} style={{ background: "none", border: "none", cursor: "pointer", color: "var(--mauve)" }}><X style={{ width: 20, height: 20 }} /></button>
         </div>
 
         {done ? (
           <div style={{ textAlign: "center", padding: "24px 0" }}>
             <CheckCircle2 size={38} style={{ color: "var(--rose-dust)", marginBottom: 12 }} />
-            <p style={{ fontSize: 14, fontWeight: 600, color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>Your post is under review</p>
-            <p style={{ fontSize: 13, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", marginTop: 6 }}>It will appear shortly.</p>
-            <button onClick={onClose} style={{ marginTop: 20, padding: "10px 28px", borderRadius: 9999, backgroundColor: "var(--plum)", color: "white", fontSize: 13, fontWeight: 600, border: "none", cursor: "pointer", fontFamily: "'Inter', sans-serif" }}>Done</button>
+            <p style={{ fontSize: 14, fontWeight: 600, color: "var(--plum)", }}>Your post is under review</p>
+            <p style={{ fontSize: 13, color: "var(--mauve)", marginTop: 6 }}>It will appear shortly.</p>
+            <button onClick={onClose} style={{ marginTop: 20, padding: "10px 28px", borderRadius: 9999, backgroundColor: "var(--plum)", color: "white", fontSize: 13, fontWeight: 600, border: "none", cursor: "pointer", }}>Done</button>
           </div>
         ) : (
           <>
@@ -167,8 +167,7 @@ function ComposeModal({ onClose, onSubmit, currentPhase }) {
             <div className="flex gap-2 flex-wrap mb-4">
               {CATEGORY_TABS.filter(t => t.key !== "all").map(t => (
                 <button key={t.key} onClick={() => setCategory(t.key)}
-                  style={{ padding: "5px 12px", borderRadius: 9999, fontSize: 12, fontWeight: 600, cursor: "pointer", border: "1px solid", fontFamily: "'Inter', sans-serif",
-                    backgroundColor: category === t.key ? "var(--plum)" : "var(--ivory)",
+                  style={{ padding: "5px 12px", borderRadius: 9999, fontSize: 12, fontWeight: 600, cursor: "pointer", border: "1px solid", backgroundColor: category === t.key ? "var(--plum)" : "var(--ivory)",
                     color: category === t.key ? "white" : "var(--mauve)",
                     borderColor: category === t.key ? "transparent" : "var(--border)" }}>
                   {t.label}
@@ -178,13 +177,13 @@ function ComposeModal({ onClose, onSubmit, currentPhase }) {
 
             {/* Text */}
             <textarea value={text} onChange={e => setText(e.target.value.slice(0, 500))} placeholder="What's on your mind?" rows={5}
-              style={{ width: "100%", padding: 14, borderRadius: 16, border: "1.5px solid var(--border)", backgroundColor: "var(--ivory)", fontSize: 14, fontFamily: "'Inter', sans-serif", color: "var(--plum)", resize: "none", outline: "none", boxSizing: "border-box", lineHeight: 1.6 }}
+              style={{ width: "100%", padding: 14, borderRadius: 16, border: "1.5px solid var(--border)", backgroundColor: "var(--ivory)", fontSize: 14, color: "var(--plum)", resize: "none", outline: "none", boxSizing: "border-box", lineHeight: 1.6 }}
               autoFocus />
             <div style={{ display: "flex", justifyContent: "space-between", marginTop: 4, marginBottom: 16 }}>
-              <span style={{ fontSize: 11, color: text.length < 10 ? "var(--rose-dust)" : "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>
+              <span style={{ fontSize: 11, color: text.length < 10 ? "var(--rose-dust)" : "var(--mauve)", }}>
                 {text.length < 10 ? `${10 - text.length} more chars required` : ""}
               </span>
-              <span style={{ fontSize: 11, color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>{text.length}/500</span>
+              <span style={{ fontSize: 11, color: "var(--mauve)", }}>{text.length}/500</span>
             </div>
 
             {/* Anon toggle */}
@@ -193,10 +192,10 @@ function ComposeModal({ onClose, onSubmit, currentPhase }) {
                 <div onClick={() => setAnon(a => !a)} style={{ width: 36, height: 20, borderRadius: 9999, position: "relative", backgroundColor: anon ? "var(--plum)" : "var(--border)", transition: "background 0.2s", cursor: "pointer" }}>
                   <div style={{ position: "absolute", top: 2, left: anon ? 18 : 2, width: 16, height: 16, borderRadius: "50%", backgroundColor: "white", transition: "left 0.2s" }} />
                 </div>
-                <span style={{ fontSize: 13, color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>Post anonymously</span>
+                <span style={{ fontSize: 13, color: "var(--plum)", }}>Post anonymously</span>
               </label>
               <button onClick={handleSubmit} disabled={text.trim().length < 10 || submitting}
-                style={{ padding: "9px 22px", borderRadius: 9999, fontSize: 13, fontWeight: 600, backgroundColor: "var(--plum)", color: "white", border: "none", cursor: "pointer", fontFamily: "'Inter', sans-serif", opacity: text.trim().length < 10 || submitting ? 0.5 : 1, display: "flex", alignItems: "center", gap: 6 }}>
+                style={{ padding: "9px 22px", borderRadius: 9999, fontSize: 13, fontWeight: 600, backgroundColor: "var(--plum)", color: "white", border: "none", cursor: "pointer", opacity: text.trim().length < 10 || submitting ? 0.5 : 1, display: "flex", alignItems: "center", gap: 6 }}>
                 {submitting ? <Loader2 style={{ width: 14, height: 14 }} className="animate-spin" /> : null}
                 Share
               </button>
@@ -268,8 +267,8 @@ export default function CommunityFeed({ user, profile }) {
         style={{ backgroundColor: "rgba(250,248,245,0.97)", backdropFilter: "blur(20px)", borderBottom: "1px solid var(--border)" }}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 6 }}>
           <div>
-            <p style={{ fontSize: "0.6rem", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.12em", color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>Community</p>
-            <h1 style={{ fontFamily: "'Fraunces', serif", fontSize: 22, fontWeight: 700, color: "var(--plum)", letterSpacing: "-0.02em", marginTop: 2 }}>Feed</h1>
+            <p style={{ fontSize: "0.6rem", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.12em", color: "var(--mauve)", }}>Community</p>
+            <h1 style={{ fontSize: 22, fontWeight: 700, color: "var(--plum)", letterSpacing: "-0.02em", marginTop: 2 }}>Feed</h1>
           </div>
           <button onClick={() => setShowCompose(true)} style={{ width: 38, height: 38, borderRadius: "50%", backgroundColor: "var(--plum)", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>
             <Plus style={{ width: 18, height: 18, color: "white" }} />
@@ -279,8 +278,7 @@ export default function CommunityFeed({ user, profile }) {
         <div className="comm-scroll flex gap-1.5 overflow-x-auto pb-1" style={{ scrollbarWidth: "none" }}>
           {CATEGORY_TABS.map(t => (
             <button key={t.key} onClick={() => setActiveCategory(t.key)}
-              style={{ flexShrink: 0, padding: "6px 14px", borderRadius: 9999, fontSize: 12, fontWeight: 600, cursor: "pointer", border: "1px solid", fontFamily: "'Inter', sans-serif",
-                backgroundColor: activeCategory === t.key ? "var(--plum)" : "var(--surface)",
+              style={{ flexShrink: 0, padding: "6px 14px", borderRadius: 9999, fontSize: 12, fontWeight: 600, cursor: "pointer", border: "1px solid", backgroundColor: activeCategory === t.key ? "var(--plum)" : "var(--surface)",
                 color: activeCategory === t.key ? "white" : "var(--mauve)",
                 borderColor: activeCategory === t.key ? "transparent" : "var(--border)" }}>
               {t.label}
@@ -293,7 +291,7 @@ export default function CommunityFeed({ user, profile }) {
         {/* Phase solidarity */}
         {currentPhase && (
           <div style={{ background: "linear-gradient(135deg, var(--rose-dust-subtle), var(--mauve-subtle))", border: "1px solid var(--rose-dust-light)", borderRadius: 18, padding: "12px 16px" }}>
-            <p style={{ fontSize: 13, color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>
+            <p style={{ fontSize: 13, color: "var(--plum)", }}>
               You're not alone this <strong>{currentPhase}</strong> phase.
             </p>
           </div>
@@ -305,7 +303,7 @@ export default function CommunityFeed({ user, profile }) {
           <div style={{ width: 36, height: 36, borderRadius: "50%", backgroundColor: "var(--rose-dust-subtle)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
             <PenLine size={16} style={{ color: "var(--rose-dust)" }} />
           </div>
-          <p style={{ fontSize: 14, color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>Share something with the community…</p>
+          <p style={{ fontSize: 14, color: "var(--mauve)", }}>Share something with the community…</p>
         </button>
 
         {loading && (
@@ -316,7 +314,7 @@ export default function CommunityFeed({ user, profile }) {
 
         {!loading && filtered.length === 0 && (
           <div style={{ textAlign: "center", padding: "40px 20px", backgroundColor: "var(--surface)", borderRadius: 20, border: "1px solid var(--border)" }}>
-            <p style={{ fontSize: 14, color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>No posts here yet. Be the first to share!</p>
+            <p style={{ fontSize: 14, color: "var(--mauve)", }}>No posts here yet. Be the first to share!</p>
           </div>
         )}
 

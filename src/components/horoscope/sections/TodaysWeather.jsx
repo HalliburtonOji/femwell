@@ -198,7 +198,6 @@ const mainCardStyle = {
   padding: "18px 18px 16px",
 };
 const eyebrowStyle = {
-  fontFamily: "'Inter', sans-serif",
   fontSize: 9,
   letterSpacing: "0.16em",
   textTransform: "uppercase",
@@ -207,7 +206,6 @@ const eyebrowStyle = {
   marginBottom: 6,
 };
 const weatherLineStyle = {
-  fontFamily: "'Fraunces', serif",
   fontStyle: "italic",
   fontSize: 18,
   fontWeight: 400,
@@ -216,7 +214,6 @@ const weatherLineStyle = {
   margin: "0 0 8px",
 };
 const tailStyle = {
-  fontFamily: "'Inter', sans-serif",
   fontSize: 12,
   color: "rgba(245,230,211,0.72)",
   lineHeight: 1.5,
@@ -228,8 +225,7 @@ const statRowStyle = {
   flexWrap: "wrap",
   fontSize: 11,
   color: "rgba(245,230,211,0.78)",
-  fontFamily: "'Inter', sans-serif",
-};
+  };
 const statStyle = {
   display: "inline-flex",
   alignItems: "baseline",
@@ -253,7 +249,6 @@ const spotifyChipStyle = {
   background: SPOTIFY_GREEN,
   border: `1px solid ${SPOTIFY_GREEN}`,
   color: "#0a0a0a",
-  fontFamily: "'Inter', sans-serif",
   textDecoration: "none",
   transition: "transform 120ms ease, box-shadow 120ms ease",
   boxShadow: "0 6px 20px -8px rgba(29,185,84,0.55)",
@@ -311,7 +306,6 @@ const noticeHeadStyle = {
   marginBottom: 4,
 };
 const noticeEyebrowStyle = {
-  fontFamily: "'Inter', sans-serif",
   fontSize: 9,
   letterSpacing: "0.14em",
   textTransform: "uppercase",
@@ -319,7 +313,6 @@ const noticeEyebrowStyle = {
   color: "rgba(245,230,211,0.55)",
 };
 const noticeTitleStyle = {
-  fontFamily: "'Fraunces', serif",
   fontStyle: "italic",
   fontSize: 13,
   color: INK_NIGHT,
@@ -327,7 +320,6 @@ const noticeTitleStyle = {
   margin: "0 0 4px",
 };
 const noticeBodyStyle = {
-  fontFamily: "'Inter', sans-serif",
   fontSize: 11,
   color: "rgba(245,230,211,0.70)",
   lineHeight: 1.5,

@@ -91,8 +91,7 @@ const COMMON_SYMPTOMS = [
 
 const sLabel = {
   fontSize: "0.6rem", fontWeight: 600, textTransform: "uppercase",
-  letterSpacing: "0.12em", color: "var(--mauve)", fontFamily: "'Inter', sans-serif",
-};
+  letterSpacing: "0.12em", color: "var(--mauve)", };
 const card = {
   backgroundColor: "var(--surface)", border: "1px solid var(--border)",
   borderRadius: 20, boxShadow: "var(--shadow-sm)",
@@ -180,31 +179,31 @@ function CycleSubTab({ user, profile, selectedDate }) {
           <p style={sLabel}>Current cycle status</p>
           <div className="flex items-center gap-3 mt-3">
             <div style={{ flex: 1 }}>
-              <p style={{ fontSize: 22, fontWeight: 700, color: "var(--plum)", fontFamily: "'Fraunces', serif" }}>Day {cycleInfo.cycleDay}</p>
-              <p style={{ fontSize: 13, fontWeight: 600, color: cycleInfo.phaseColor, fontFamily: "'Inter', sans-serif", marginTop: 2 }}>{cycleInfo.phase} Phase</p>
+              <p style={{ fontSize: 22, fontWeight: 700, color: "var(--plum)", }}>Day {cycleInfo.cycleDay}</p>
+              <p style={{ fontSize: 13, fontWeight: 600, color: cycleInfo.phaseColor, marginTop: 2 }}>{cycleInfo.phase} Phase</p>
             </div>
             <div style={{ textAlign: "right" }}>
-              <p style={{ fontSize: 12, color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>Next period in</p>
-              <p style={{ fontSize: 20, fontWeight: 700, color: "var(--plum)", fontFamily: "'Fraunces', serif" }}>{cycleInfo.nextPeriod}d</p>
+              <p style={{ fontSize: 12, color: "var(--mauve)", }}>Next period in</p>
+              <p style={{ fontSize: 20, fontWeight: 700, color: "var(--plum)", }}>{cycleInfo.nextPeriod}d</p>
             </div>
           </div>
         </div>
       ) : (
         <div style={{ ...card, padding: 16 }}>
-          <p style={{ fontSize: 13, color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>Set your last period date in Cycle Settings to see your phase.</p>
-          <a href="/CycleSettings" style={{ fontSize: 12, color: "var(--rose-dust)", fontWeight: 600, fontFamily: "'Inter', sans-serif" }}>Go to settings →</a>
+          <p style={{ fontSize: 13, color: "var(--mauve)", }}>Set your last period date in Cycle Settings to see your phase.</p>
+          <a href="/CycleSettings" style={{ fontSize: 12, color: "var(--rose-dust)", fontWeight: 600, }}>Go to settings →</a>
         </div>
       )}
 
       <div style={{ ...card, padding: 20 }}>
         <p style={{ ...sLabel, marginBottom: 4 }}>Logging for {selectedDate}</p>
-        <p style={{ fontSize: 11, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", marginBottom: 14 }}>
+        <p style={{ fontSize: 11, color: "var(--mauve)", marginBottom: 14 }}>
           {selectedDate === todayStr ? "Today" : selectedDate}
         </p>
         <div className="flex gap-2 flex-wrap mb-3">
           {CYCLE_EVENT_TYPES.map(opt => (
             <button key={opt.value} onClick={() => setEventType(opt.value)}
-              style={{ padding: "6px 14px", borderRadius: 9999, fontSize: 12, fontWeight: 600, border: "none", cursor: "pointer", fontFamily: "'Inter', sans-serif", backgroundColor: eventType === opt.value ? "var(--plum)" : "var(--ivory-dark)", color: eventType === opt.value ? "white" : "var(--mauve)" }}>
+              style={{ padding: "6px 14px", borderRadius: 9999, fontSize: 12, fontWeight: 600, border: "none", cursor: "pointer", backgroundColor: eventType === opt.value ? "var(--plum)" : "var(--ivory-dark)", color: eventType === opt.value ? "white" : "var(--mauve)" }}>
               {opt.label}
             </button>
           ))}
@@ -213,14 +212,14 @@ function CycleSubTab({ user, profile, selectedDate }) {
           <div className="flex gap-2 mb-3">
             {FLOW_OPTIONS.map(f => (
               <button key={f} onClick={() => setFlow(f)}
-                style={{ flex: 1, padding: "6px 8px", borderRadius: 9999, fontSize: 11, fontWeight: 600, border: "none", cursor: "pointer", fontFamily: "'Inter', sans-serif", textTransform: "capitalize", backgroundColor: flow === f ? "var(--rose-dust)" : "var(--ivory-dark)", color: flow === f ? "white" : "var(--mauve)" }}>
+                style={{ flex: 1, padding: "6px 8px", borderRadius: 9999, fontSize: 11, fontWeight: 600, border: "none", cursor: "pointer", textTransform: "capitalize", backgroundColor: flow === f ? "var(--rose-dust)" : "var(--ivory-dark)", color: flow === f ? "white" : "var(--mauve)" }}>
                 {f}
               </button>
             ))}
           </div>
         )}
         <button onClick={logEvent} disabled={saving}
-          style={{ width: "100%", padding: "11px", borderRadius: 12, fontWeight: 600, fontSize: 13, border: "none", cursor: saving ? "default" : "pointer", fontFamily: "'Inter', sans-serif", backgroundColor: saved ? "var(--sage)" : "var(--plum)", color: "white", display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}>
+          style={{ width: "100%", padding: "11px", borderRadius: 12, fontWeight: 600, fontSize: 13, border: "none", cursor: saving ? "default" : "pointer", backgroundColor: saved ? "var(--sage)" : "var(--plum)", color: "white", display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}>
           {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : saved ? <Check className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
           {saving ? "Saving…" : saved ? "Logged!" : "Log Event"}
         </button>
@@ -233,8 +232,8 @@ function CycleSubTab({ user, profile, selectedDate }) {
             {events.map(e => (
               <div key={e.id} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "10px 12px", borderRadius: 12, backgroundColor: "var(--ivory)", border: "1px solid var(--border-subtle)" }}>
                 <div>
-                  <p style={{ fontSize: 12, fontWeight: 600, color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>{e.type?.replace(/([A-Z])/g, " $1").trim()}</p>
-                  {e.flow_level && <p style={{ fontSize: 11, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", textTransform: "capitalize" }}>{e.flow_level} flow</p>}
+                  <p style={{ fontSize: 12, fontWeight: 600, color: "var(--plum)", }}>{e.type?.replace(/([A-Z])/g, " $1").trim()}</p>
+                  {e.flow_level && <p style={{ fontSize: 11, color: "var(--mauve)", textTransform: "capitalize" }}>{e.flow_level} flow</p>}
                 </div>
                 <button onClick={() => deleteEvent(e.id)} style={{ background: "none", border: "none", cursor: "pointer", padding: 4 }}>
                   <Trash2 style={{ width: 14, height: 14, color: "var(--mauve)" }} />
@@ -281,13 +280,12 @@ function PMDDSeverityLogger({ user, profile, selectedDate }) {
     <div style={{ ...card, padding: 16, backgroundColor: "var(--mauve-subtle)", borderColor: "var(--mauve-light)" }}>
       <p style={{ ...sLabel, marginBottom: 8, color: "var(--mauve)" }}>PMDD severity — Luteal day {cycleDay - 13}</p>
       <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}>
-        <p style={{ fontSize: 12, color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>Today's severity</p>
-        <strong style={{ fontSize: 12, color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>{severity}/10</strong>
+        <p style={{ fontSize: 12, color: "var(--mauve)", }}>Today's severity</p>
+        <strong style={{ fontSize: 12, color: "var(--plum)", }}>{severity}/10</strong>
       </div>
       <input type="range" min={1} max={10} value={severity} onChange={e => setSeverity(+e.target.value)} style={{ width: "100%", marginBottom: 10 }} />
       <button onClick={log} disabled={saving || saved}
-        style={{ padding: "8px 18px", borderRadius: 9999, fontSize: 12, fontWeight: 600, border: "none", cursor: "pointer", fontFamily: "'Inter', sans-serif",
-          backgroundColor: saved ? "var(--sage)" : "var(--plum)", color: "white" }}>
+        style={{ padding: "8px 18px", borderRadius: 9999, fontSize: 12, fontWeight: 600, border: "none", cursor: "pointer", backgroundColor: saved ? "var(--sage)" : "var(--plum)", color: "white" }}>
         {saving ? "Saving..." : saved ? "Logged" : "Log severity"}
       </button>
     </div>
@@ -390,8 +388,8 @@ function SymptomsSubTab({ user, profile, selectedDate }) {
         }}
       >
         <div>
-          <p style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", color: "var(--rose-deep, #E11D74)", fontFamily: "'Inter', sans-serif" }}>Explore</p>
-          <p style={{ fontSize: 13, fontWeight: 600, color: "var(--plum)", fontFamily: "'Inter', sans-serif", marginTop: 2 }}>View full insights dashboard</p>
+          <p style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", color: "var(--rose-deep, #E11D74)", }}>Explore</p>
+          <p style={{ fontSize: 13, fontWeight: 600, color: "var(--plum)", marginTop: 2 }}>View full insights dashboard</p>
         </div>
         <span aria-hidden="true" style={{ fontSize: 18, color: "var(--rose-deep, #E11D74)" }}>→</span>
       </a>
@@ -413,8 +411,8 @@ function SymptomsSubTab({ user, profile, selectedDate }) {
           <div className="flex flex-wrap gap-2">
             {symptoms.map(s => (
               <div key={s.id} style={{ display: "flex", alignItems: "center", gap: 6, padding: "5px 10px 5px 12px", borderRadius: 9999, backgroundColor: "var(--rose-dust-subtle)", border: "1px solid var(--rose-dust-light)" }}>
-                <span style={{ fontSize: 12, fontWeight: 600, color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>{s.symptom_type}</span>
-                {s.severity && <span style={{ fontSize: 11, color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>· {severityLabel(s.severity)}</span>}
+                <span style={{ fontSize: 12, fontWeight: 600, color: "var(--plum)", }}>{s.symptom_type}</span>
+                {s.severity && <span style={{ fontSize: 11, color: "var(--mauve)", }}>· {severityLabel(s.severity)}</span>}
                 <button onClick={() => remove(s.id)} style={{ background: "none", border: "none", cursor: "pointer", padding: 0, lineHeight: 1 }}>
                   <Trash2 style={{ width: 12, height: 12, color: "var(--mauve)" }} />
                 </button>
@@ -429,7 +427,7 @@ function SymptomsSubTab({ user, profile, selectedDate }) {
         <div className="flex flex-wrap gap-2 mb-4">
           {[...COMMON_SYMPTOMS, ...(hasPCOS ? PCOS_SYMPTOMS : [])].map(s => (
             <button key={s} onClick={() => setSelected(selected === s ? null : s)}
-              style={{ padding: "6px 12px", borderRadius: 9999, fontSize: 12, fontWeight: 500, border: "none", cursor: "pointer", fontFamily: "'Inter', sans-serif", backgroundColor: selected === s ? "var(--plum)" : "var(--ivory-dark)", color: selected === s ? "white" : "var(--mauve)" }}>
+              style={{ padding: "6px 12px", borderRadius: 9999, fontSize: 12, fontWeight: 500, border: "none", cursor: "pointer", backgroundColor: selected === s ? "var(--plum)" : "var(--ivory-dark)", color: selected === s ? "white" : "var(--mauve)" }}>
               {s}
             </button>
           ))}
@@ -438,16 +436,16 @@ function SymptomsSubTab({ user, profile, selectedDate }) {
           <div className="space-y-3">
             <div>
               <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}>
-                <p style={{ fontSize: 11, color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>Severity</p>
-                <strong style={{ fontSize: 11, color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>{severityLabel(severity)} ({severity}/10)</strong>
+                <p style={{ fontSize: 11, color: "var(--mauve)", }}>Severity</p>
+                <strong style={{ fontSize: 11, color: "var(--plum)", }}>{severityLabel(severity)} ({severity}/10)</strong>
               </div>
               <input type="range" min={1} max={10} value={severity} onChange={e => setSeverity(+e.target.value)} style={{ width: "100%" }} />
             </div>
             <input value={notes} onChange={e => setNotes(e.target.value)} placeholder="Notes (optional)"
-              style={{ width: "100%", padding: "8px 12px", borderRadius: 12, border: "1px solid var(--border)", backgroundColor: "var(--ivory)", fontSize: 13, fontFamily: "'Inter', sans-serif", color: "var(--plum)", outline: "none", boxSizing: "border-box" }}
+              style={{ width: "100%", padding: "8px 12px", borderRadius: 12, border: "1px solid var(--border)", backgroundColor: "var(--ivory)", fontSize: 13, color: "var(--plum)", outline: "none", boxSizing: "border-box" }}
             />
             <button onClick={log} disabled={saving}
-              style={{ width: "100%", padding: "11px", borderRadius: 12, fontWeight: 600, fontSize: 13, border: "none", cursor: "pointer", fontFamily: "'Inter', sans-serif", backgroundColor: "var(--plum)", color: "white", display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}>
+              style={{ width: "100%", padding: "11px", borderRadius: 12, fontWeight: 600, fontSize: 13, border: "none", cursor: "pointer", backgroundColor: "var(--plum)", color: "white", display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}>
               {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
               {saving ? "Saving…" : `Log ${selected}`}
             </button>
@@ -537,8 +535,8 @@ function HabitsSubTab({ user, profile, selectedDate }) {
         <div style={{ ...card, padding: "14px 20px" }}>
           <p style={sLabel}>Hydration</p>
           <div style={{ display: "flex", alignItems: "flex-end", gap: 6, marginTop: 6 }}>
-            <p style={{ fontSize: 20, fontWeight: 700, color: "var(--sage)", fontFamily: "'Fraunces', serif" }}>{hydrationTotal} ml</p>
-            <p style={{ fontSize: 13, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", marginBottom: 2 }}>/ {hydrationTarget} ml goal</p>
+            <p style={{ fontSize: 20, fontWeight: 700, color: "var(--sage)", }}>{hydrationTotal} ml</p>
+            <p style={{ fontSize: 13, color: "var(--mauve)", marginBottom: 2 }}>/ {hydrationTarget} ml goal</p>
           </div>
           <div style={{ height: 6, backgroundColor: "var(--ivory-dark)", borderRadius: 3, overflow: "hidden", marginTop: 8 }}>
             <div style={{ height: "100%", width: `${Math.min(100, (hydrationTotal / hydrationTarget) * 100)}%`, backgroundColor: "var(--sage)", borderRadius: 3, transition: "width 0.4s" }} />
@@ -550,8 +548,8 @@ function HabitsSubTab({ user, profile, selectedDate }) {
       {total > 0 && (
         <div style={{ ...card, padding: "14px 20px" }}>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
-            <p style={{ fontSize: 13, fontWeight: 600, color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>{done}/{total} habits done</p>
-            <p style={{ fontSize: 12, color: "var(--sage)", fontWeight: 600, fontFamily: "'Inter', sans-serif" }}>{Math.round((done / total) * 100)}%</p>
+            <p style={{ fontSize: 13, fontWeight: 600, color: "var(--plum)", }}>{done}/{total} habits done</p>
+            <p style={{ fontSize: 12, color: "var(--sage)", fontWeight: 600, }}>{Math.round((done / total) * 100)}%</p>
           </div>
           <div style={{ height: 6, backgroundColor: "var(--ivory-dark)", borderRadius: 3, overflow: "hidden" }}>
             <div style={{ height: "100%", width: `${(done / total) * 100}%`, backgroundColor: done === total ? "var(--sage)" : "var(--rose-dust)", borderRadius: 3, transition: "width 0.4s" }} />
@@ -572,10 +570,10 @@ function HabitsSubTab({ user, profile, selectedDate }) {
                   style={{ width: 22, height: 22, borderRadius: 6, border: `2px solid ${isCompleted ? "var(--sage)" : "var(--border)"}`, backgroundColor: isCompleted ? "var(--sage)" : "transparent", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
                   {saving === preset.name ? <Loader2 style={{ width: 10, height: 10, color: "var(--mauve)" }} className="animate-spin" /> : isCompleted && <Check style={{ width: 12, height: 12, color: "white" }} />}
                 </button>
-                <p style={{ flex: 1, fontSize: 13, fontWeight: 500, color: isCompleted ? "var(--sage)" : "var(--plum)", fontFamily: "'Inter', sans-serif", textDecoration: isCompleted ? "line-through" : "none" }}>
+                <p style={{ flex: 1, fontSize: 13, fontWeight: 500, color: isCompleted ? "var(--sage)" : "var(--plum)", textDecoration: isCompleted ? "line-through" : "none" }}>
                   {preset.name}
                 </p>
-                <span style={{ fontSize: 10, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", textTransform: "capitalize" }}>{preset.category}</span>
+                <span style={{ fontSize: 10, color: "var(--mauve)", textTransform: "capitalize" }}>{preset.category}</span>
                 {logged && (
                   <button onClick={() => remove(logged.id)} style={{ background: "none", border: "none", cursor: "pointer", padding: 2, flexShrink: 0 }}>
                     <Trash2 style={{ width: 13, height: 13, color: "var(--mauve)" }} />
@@ -592,7 +590,7 @@ function HabitsSubTab({ user, profile, selectedDate }) {
                 style={{ width: 22, height: 22, borderRadius: 6, border: `2px solid ${h.completed ? "var(--sage)" : "var(--border)"}`, backgroundColor: h.completed ? "var(--sage)" : "transparent", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
                 {h.completed && <Check style={{ width: 12, height: 12, color: "white" }} />}
               </button>
-              <p style={{ flex: 1, fontSize: 13, fontWeight: 500, color: h.completed ? "var(--sage)" : "var(--plum)", fontFamily: "'Inter', sans-serif", textDecoration: h.completed ? "line-through" : "none" }}>{h.habit_type}</p>
+              <p style={{ flex: 1, fontSize: 13, fontWeight: 500, color: h.completed ? "var(--sage)" : "var(--plum)", textDecoration: h.completed ? "line-through" : "none" }}>{h.habit_type}</p>
               <button onClick={() => remove(h.id)} style={{ background: "none", border: "none", cursor: "pointer", padding: 2 }}>
                 <Trash2 style={{ width: 13, height: 13, color: "var(--mauve)" }} />
               </button>
@@ -605,14 +603,14 @@ function HabitsSubTab({ user, profile, selectedDate }) {
           {showCustom ? (
             <div className="flex gap-2">
               <input value={customName} onChange={e => setCustomName(e.target.value)} placeholder="Custom habit name"
-                style={{ flex: 1, padding: "7px 12px", borderRadius: 10, border: "1px solid var(--border)", backgroundColor: "var(--ivory)", fontSize: 13, fontFamily: "'Inter', sans-serif", color: "var(--plum)", outline: "none" }}
+                style={{ flex: 1, padding: "7px 12px", borderRadius: 10, border: "1px solid var(--border)", backgroundColor: "var(--ivory)", fontSize: 13, color: "var(--plum)", outline: "none" }}
                 onKeyDown={e => e.key === "Enter" && addCustom()}
               />
               <button onClick={addCustom} disabled={!customName.trim()} style={{ padding: "7px 14px", borderRadius: 10, border: "none", backgroundColor: "var(--plum)", color: "white", fontSize: 12, fontWeight: 600, cursor: "pointer" }}>Add</button>
               <button onClick={() => setShowCustom(false)} style={{ padding: "7px 10px", borderRadius: 10, border: "1px solid var(--border)", backgroundColor: "transparent", fontSize: 12, color: "var(--mauve)", cursor: "pointer" }}>×</button>
             </div>
           ) : (
-            <button onClick={() => setShowCustom(true)} style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 12, fontWeight: 600, color: "var(--mauve)", background: "none", border: "none", cursor: "pointer", fontFamily: "'Inter', sans-serif" }}>
+            <button onClick={() => setShowCustom(true)} style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 12, fontWeight: 600, color: "var(--mauve)", background: "none", border: "none", cursor: "pointer", }}>
               <Plus className="w-3.5 h-3.5" /> Add custom habit
             </button>
           )}
@@ -634,7 +632,6 @@ function HabitsSubTab({ user, profile, selectedDate }) {
             borderRadius: 9999,
             color: "#3A2C1A",
             fontSize: 13, fontWeight: 600,
-            fontFamily: "'Inter', system-ui, sans-serif",
             cursor: "pointer",
           }}
         >
@@ -713,29 +710,29 @@ function MedsSubTab({ user, selectedDate }) {
         <p style={{ ...sLabel, marginBottom: 14 }}>Log medication taken</p>
         <div className="space-y-2 mb-3">
           <input value={itemName} onChange={e => { setItemName(e.target.value); setNameError(false); }} placeholder="Medication name *"
-            style={{ width: "100%", padding: "8px 12px", borderRadius: 12, border: `1px solid ${nameError ? "var(--rose-dust)" : "var(--border)"}`, backgroundColor: "var(--ivory)", fontSize: 13, fontFamily: "'Inter', sans-serif", color: "var(--plum)", outline: "none", boxSizing: "border-box" }}
+            style={{ width: "100%", padding: "8px 12px", borderRadius: 12, border: `1px solid ${nameError ? "var(--rose-dust)" : "var(--border)"}`, backgroundColor: "var(--ivory)", fontSize: 13, color: "var(--plum)", outline: "none", boxSizing: "border-box" }}
           />
-          {nameError && <p style={{ fontSize: 11, color: "var(--rose-dust)", fontFamily: "'Inter', sans-serif" }}>Name is required.</p>}
+          {nameError && <p style={{ fontSize: 11, color: "var(--rose-dust)", }}>Name is required.</p>}
           <input value={dose} onChange={e => setDose(e.target.value)} placeholder="Dose (e.g. 500mg, optional)"
-            style={{ width: "100%", padding: "8px 12px", borderRadius: 12, border: "1px solid var(--border)", backgroundColor: "var(--ivory)", fontSize: 13, fontFamily: "'Inter', sans-serif", color: "var(--plum)", outline: "none", boxSizing: "border-box" }}
+            style={{ width: "100%", padding: "8px 12px", borderRadius: 12, border: "1px solid var(--border)", backgroundColor: "var(--ivory)", fontSize: 13, color: "var(--plum)", outline: "none", boxSizing: "border-box" }}
           />
         </div>
         <button onClick={logMed} disabled={saving}
-          style={{ width: "100%", padding: "11px", borderRadius: 12, fontWeight: 600, fontSize: 13, border: "none", cursor: "pointer", fontFamily: "'Inter', sans-serif", backgroundColor: "var(--plum)", color: "white", display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}>
+          style={{ width: "100%", padding: "11px", borderRadius: 12, fontWeight: 600, fontSize: 13, border: "none", cursor: "pointer", backgroundColor: "var(--plum)", color: "white", display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}>
           {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Pill className="w-4 h-4" />}
           {saving ? "Saving…" : "Log Medication"}
         </button>
 
         {todayLogs.length > 0 && (
           <div className="mt-4 space-y-2">
-            <p style={{ fontSize: 11, fontWeight: 600, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", textTransform: "uppercase", letterSpacing: "0.1em" }}>Taken on {selectedDate}</p>
+            <p style={{ fontSize: 11, fontWeight: 600, color: "var(--mauve)", textTransform: "uppercase", letterSpacing: "0.1em" }}>Taken on {selectedDate}</p>
             {todayLogs.map(l => (
               <div key={l.id} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "8px 12px", borderRadius: 12, backgroundColor: "var(--sage-subtle)", border: "1px solid var(--sage-light)" }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                   <Pill style={{ width: 13, height: 13, color: "var(--sage)" }} />
                   <div>
-                    <p style={{ fontSize: 12, fontWeight: 600, color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>{l.item_name}</p>
-                    {l.dose && <p style={{ fontSize: 11, color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>{l.dose}</p>}
+                    <p style={{ fontSize: 12, fontWeight: 600, color: "var(--plum)", }}>{l.item_name}</p>
+                    {l.dose && <p style={{ fontSize: 11, color: "var(--mauve)", }}>{l.dose}</p>}
                   </div>
                 </div>
                 <button onClick={() => remove(l.id)} style={{ background: "none", border: "none", cursor: "pointer", padding: 4 }}>
@@ -757,14 +754,14 @@ function MedsSubTab({ user, selectedDate }) {
               return (
                 <div key={rem.id} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "10px 12px", borderRadius: 12, backgroundColor: taken ? "var(--sage-subtle)" : "var(--ivory)", border: `1px solid ${taken ? "var(--sage-light)" : "var(--border-subtle)"}` }}>
                   <div>
-                    <p style={{ fontSize: 12, fontWeight: 600, color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>{rem.medication_name}</p>
-                    <p style={{ fontSize: 11, color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>{rem.reminder_time}{rem.dose ? ` · ${rem.dose}` : ""}</p>
+                    <p style={{ fontSize: 12, fontWeight: 600, color: "var(--plum)", }}>{rem.medication_name}</p>
+                    <p style={{ fontSize: 11, color: "var(--mauve)", }}>{rem.reminder_time}{rem.dose ? ` · ${rem.dose}` : ""}</p>
                   </div>
                   {taken ? (
-                    <span style={{ fontSize: 11, fontWeight: 600, color: "var(--sage)", fontFamily: "'Inter', sans-serif" }}>✓ Taken</span>
+                    <span style={{ fontSize: 11, fontWeight: 600, color: "var(--sage)", }}>✓ Taken</span>
                   ) : (
                     <button onClick={() => markReminderTaken(rem)}
-                      style={{ fontSize: 11, fontWeight: 600, color: "var(--plum)", backgroundColor: "var(--ivory-dark)", border: "1px solid var(--border)", borderRadius: 9999, padding: "4px 10px", cursor: "pointer", fontFamily: "'Inter', sans-serif" }}>
+                      style={{ fontSize: 11, fontWeight: 600, color: "var(--plum)", backgroundColor: "var(--ivory-dark)", border: "1px solid var(--border)", borderRadius: 9999, padding: "4px 10px", cursor: "pointer", }}>
                       Mark taken
                     </button>
                   )}
@@ -802,16 +799,16 @@ function SessionsSubTab({ user, selectedDate }) {
       {sessions.length === 0 ? (
         <div style={{ ...card, padding: 32, textAlign: "center" }}>
           <PlayCircle style={{ width: 28, height: 28, color: "var(--mauve)", margin: "0 auto 10px" }} />
-          <p style={{ fontSize: 13, color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>No sessions completed on this day.</p>
+          <p style={{ fontSize: 13, color: "var(--mauve)", }}>No sessions completed on this day.</p>
         </div>
       ) : (
         sessions.map(s => (
           <div key={s.id} style={{ ...card, padding: "14px 18px", display: "flex", alignItems: "center", gap: 12 }}>
             <PlayCircle style={{ width: 20, height: 20, color: "var(--rose-dust)", flexShrink: 0 }} />
             <div style={{ flex: 1 }}>
-              <p style={{ fontSize: 13, fontWeight: 600, color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>{s.content_key || s.content_id || "Session"}</p>
+              <p style={{ fontSize: 13, fontWeight: 600, color: "var(--plum)", }}>{s.content_key || s.content_id || "Session"}</p>
               {s.completed_at && (
-                <p style={{ fontSize: 11, color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>
+                <p style={{ fontSize: 11, color: "var(--mauve)", }}>
                   {format(parseISO(s.completed_at), "HH:mm")}
                   {s.duration_seconds ? ` · ${Math.round(s.duration_seconds / 60)} min` : ""}
                 </p>
@@ -841,7 +838,7 @@ export default function TrackTab({ user, profile }) {
         <div className="track-subtabs flex gap-1.5 overflow-x-auto pb-1" style={{ scrollbarWidth: "none" }}>
           {SUBTABS.map(({ key, label, Icon }) => (
             <button key={key} onClick={() => setSubTab(key)}
-              style={{ flexShrink: 0, display: "flex", alignItems: "center", gap: 5, padding: "7px 14px", borderRadius: 9999, fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: "'Inter', sans-serif", backgroundColor: subTab === key ? "var(--plum)" : "var(--surface)", color: subTab === key ? "white" : "var(--mauve)", boxShadow: subTab === key ? "none" : "var(--shadow-sm)", border: `1px solid ${subTab === key ? "transparent" : "var(--border)"}` }}>
+              style={{ flexShrink: 0, display: "flex", alignItems: "center", gap: 5, padding: "7px 14px", borderRadius: 9999, fontSize: 12, fontWeight: 600, cursor: "pointer", backgroundColor: subTab === key ? "var(--plum)" : "var(--surface)", color: subTab === key ? "white" : "var(--mauve)", boxShadow: subTab === key ? "none" : "var(--shadow-sm)", border: `1px solid ${subTab === key ? "transparent" : "var(--border)"}` }}>
               <Icon style={{ width: 13, height: 13 }} />
               {label}
             </button>
@@ -864,11 +861,11 @@ export default function TrackTab({ user, profile }) {
         })();
         return (
           <div style={{ marginTop: 12, marginBottom: 2, display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
-            <p style={{ fontSize: 11, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", margin: 0 }}>Date:</p>
-            <span style={{ fontSize: 12, fontWeight: 600, color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>{friendly}</span>
+            <p style={{ fontSize: 11, color: "var(--mauve)", margin: 0 }}>Date:</p>
+            <span style={{ fontSize: 12, fontWeight: 600, color: "var(--plum)", }}>{friendly}</span>
             <input type="date" value={selectedDate || todayStr} max={todayStr} onChange={e => setSelectedDate(e.target.value)}
               aria-label="Select date"
-              style={{ fontSize: 12, fontWeight: 600, color: "var(--plum)", fontFamily: "'Inter', sans-serif", border: "1px solid var(--border)", borderRadius: 10, padding: "4px 10px", backgroundColor: "var(--surface)", outline: "none" }}
+              style={{ fontSize: 12, fontWeight: 600, color: "var(--plum)", border: "1px solid var(--border)", borderRadius: 10, padding: "4px 10px", backgroundColor: "var(--surface)", outline: "none" }}
             />
           </div>
         );

@@ -41,7 +41,6 @@ export default function TeenSafetyNudge({ profile, surface = "default", style = 
         background: "#FFF8E6", // soft cream-gold
         border: "1px solid #E8C97A",
         color: "#4A3A1A",
-        fontFamily: "'Inter', system-ui, sans-serif",
         fontSize: 13,
         lineHeight: 1.5,
         margin: "10px 0",

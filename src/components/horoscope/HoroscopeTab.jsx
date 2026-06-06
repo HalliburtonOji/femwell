@@ -263,7 +263,6 @@ const onboardingGradientStyle = {
 };
 const onboardingTitleStyle = {
   position: "relative",
-  fontFamily: "'Fraunces', serif",
   fontWeight: 300,
   fontSize: 30,
   color: "var(--cream, #FAF4EA)",
@@ -272,7 +271,6 @@ const onboardingTitleStyle = {
 };
 const onboardingBodyStyle = {
   position: "relative",
-  fontFamily: "'Inter', sans-serif",
   fontSize: 14,
   lineHeight: 1.6,
   color: "rgba(247,239,225,0.84)",
@@ -281,7 +279,6 @@ const onboardingBodyStyle = {
 };
 const onboardingBtnStyle = {
   position: "relative",
-  fontFamily: "'Inter', sans-serif",
   fontWeight: 600,
   fontSize: 14,
   color: "var(--cream, #FAF4EA)",

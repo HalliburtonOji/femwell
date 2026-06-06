@@ -97,7 +97,6 @@ const moonGlyphStyle = {
 };
 const bodyStyle = { flex: 1, minWidth: 0 };
 const eyebrowStyle = {
-  fontFamily: "'Inter', sans-serif",
   fontSize: 9,
   fontWeight: 700,
   letterSpacing: "0.18em",
@@ -106,21 +105,18 @@ const eyebrowStyle = {
   margin: "0 0 4px",
 };
 const nameStyle = {
-  fontFamily: "'Fraunces', serif",
   fontWeight: 400,
   fontSize: 17,
   color: "var(--cream, #FAF4EA)",
   margin: "0 0 4px",
 };
 const descStyle = {
-  fontFamily: "'Inter', sans-serif",
   fontSize: 11,
   lineHeight: 1.55,
   color: "rgba(247,239,225,0.78)",
   margin: 0,
 };
 const emptyStateStyle = {
-  fontFamily: "'Fraunces', serif",
   fontStyle: "italic",
   fontSize: 13.5,
   lineHeight: 1.55,

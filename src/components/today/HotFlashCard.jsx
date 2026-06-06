@@ -113,8 +113,7 @@ export default function HotFlashCard({ user }) {
       borderRadius: 16,
       padding: "14px 14px 12px",
       display: "flex", flexDirection: "column", gap: 12,
-      fontFamily: "'Inter', system-ui, sans-serif",
-    }}>
+      }}>
       <header style={{ display: "flex", alignItems: "center", gap: 8 }}>
         <span style={{
           width: 28, height: 28, borderRadius: 8,
@@ -129,7 +128,7 @@ export default function HotFlashCard({ user }) {
           }}>Track</p>
           <h3 style={{
             margin: "2px 0 0", fontSize: 16, fontWeight: 600,
-            fontFamily: "'Fraunces', Georgia, serif", color: C.espresso, lineHeight: 1.2,
+            color: C.espresso, lineHeight: 1.2,
           }}>Hot Flashes Today</h3>
         </div>
       </header>

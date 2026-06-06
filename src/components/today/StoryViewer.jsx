@@ -69,19 +69,19 @@ export default function StoryViewer({ items: rawItems, initialIndex, onClose }) 
 
       {/* Content */}
       <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, padding: "0 24px 52px", zIndex: 2 }}>
-        <p style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.14em", color: "rgba(255,255,255,0.6)", fontFamily: "'Inter', sans-serif", marginBottom: 10 }}>
+        <p style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.14em", color: "rgba(255,255,255,0.6)", marginBottom: 10 }}>
           {item.theme}
         </p>
-        <h2 style={{ fontSize: 26, fontWeight: 700, color: "white", fontFamily: "'Fraunces', serif", lineHeight: 1.15, marginBottom: 12 }}>
+        <h2 style={{ fontSize: 26, fontWeight: 700, color: "white", lineHeight: 1.15, marginBottom: 12 }}>
           {item.title}
         </h2>
         {item.body_line_1 && (
-          <p style={{ fontSize: 15, color: "rgba(255,255,255,0.85)", fontFamily: "'Inter', sans-serif", lineHeight: 1.55, marginBottom: item.body_line_2 ? 4 : 0 }}>
+          <p style={{ fontSize: 15, color: "rgba(255,255,255,0.85)", lineHeight: 1.55, marginBottom: item.body_line_2 ? 4 : 0 }}>
             {item.body_line_1}
           </p>
         )}
         {item.body_line_2 && (
-          <p style={{ fontSize: 15, color: "rgba(255,255,255,0.7)", fontFamily: "'Inter', sans-serif", lineHeight: 1.55, marginBottom: 20 }}>
+          <p style={{ fontSize: 15, color: "rgba(255,255,255,0.7)", lineHeight: 1.55, marginBottom: 20 }}>
             {item.body_line_2}
           </p>
         )}
@@ -92,7 +92,7 @@ export default function StoryViewer({ items: rawItems, initialIndex, onClose }) 
               onClose();
               safeNavigate(item.route_key, (msg) => toast.error(msg));
             }}
-            style={{ backgroundColor: "var(--surface)", color: "var(--plum)", borderRadius: 9999, padding: "12px 24px", fontSize: 14, fontWeight: 700, border: "none", cursor: "pointer", fontFamily: "'Inter', sans-serif" }}
+            style={{ backgroundColor: "var(--surface)", color: "var(--plum)", borderRadius: 9999, padding: "12px 24px", fontSize: 14, fontWeight: 700, border: "none", cursor: "pointer", }}
           >
             {item.cta_label}
           </button>

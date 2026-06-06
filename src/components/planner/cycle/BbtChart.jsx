@@ -175,7 +175,6 @@ export default function BbtChart({ userId, refreshKey, profile }) {
                   x={280 - PAD.right - 2}
                   y={ry - 3}
                   textAnchor="end"
-                  fontFamily="Inter, sans-serif"
                   fontSize="9"
                   fontWeight="700"
                   fill={COLOUR_BLUSH}
@@ -207,7 +206,6 @@ export default function BbtChart({ userId, refreshKey, profile }) {
                 y={PAD.top + 6}
                 textAnchor="middle"
                 dominantBaseline="hanging"
-                fontFamily="Inter, sans-serif"
                 fontSize="8.5"
                 fontWeight="700"
                 fill={COLOUR_GOLD}
@@ -255,7 +253,6 @@ export default function BbtChart({ userId, refreshKey, profile }) {
             y={SVG_H / 2}
             textAnchor="middle"
             dominantBaseline="middle"
-            fontFamily="Inter, sans-serif"
             fontSize="10"
             fontStyle="italic"
             fill={COLOUR_MUTED}
@@ -288,7 +285,6 @@ const wrap = {
   borderRadius: 12,
 };
 const eyebrow = {
-  fontFamily: "'Inter', sans-serif",
   fontSize: 9,
   fontWeight: 700,
   letterSpacing: "0.18em",
@@ -297,7 +293,6 @@ const eyebrow = {
   margin: "0 0 6px",
 };
 const note = {
-  fontFamily: "'Inter', sans-serif",
   fontSize: 9.5,
   color: "#9A8A78",
   fontStyle: "italic",

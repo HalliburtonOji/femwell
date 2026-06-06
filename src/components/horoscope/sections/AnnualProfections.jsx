@@ -128,7 +128,6 @@ const profectionShellStyle = {
   boxShadow: "0 1px 2px rgba(43,30,22,0.20), 0 6px 18px rgba(184,158,106,0.18)",
 };
 const profectionEyeStyle = {
-  fontFamily: "'Inter', sans-serif",
   fontSize: 10,
   fontWeight: 700,
   letterSpacing: "0.16em",
@@ -138,7 +137,6 @@ const profectionEyeStyle = {
   margin: "0 0 8px",
 };
 const profectionTitleStyle = {
-  fontFamily: "'Fraunces', serif",
   fontWeight: 400,
   fontSize: 22,
   lineHeight: 1.3,
@@ -152,7 +150,6 @@ const profectionEmStyle = {
   color: "#D9B97A",
 };
 const profectionBodyStyle = {
-  fontFamily: "'Fraunces', serif",
   fontStyle: "italic",
   fontSize: 14.5,
   lineHeight: 1.65,
@@ -168,7 +165,6 @@ const profectionMetaRowStyle = {
   borderTop: "1px dashed rgba(184,158,106,0.40)",
 };
 const profectionMetaItemStyle = {
-  fontFamily: "'Inter', sans-serif",
   fontSize: 12,
   // H2-fix2: cream meta on dark.
   color: "rgba(245,230,211,0.82)",
@@ -193,7 +189,6 @@ const saturnShellStyle = {
   marginBottom: 14,
 };
 const saturnEyeStyle = {
-  fontFamily: "'Inter', sans-serif",
   fontSize: 10,
   fontWeight: 700,
   letterSpacing: "0.16em",
@@ -203,7 +198,6 @@ const saturnEyeStyle = {
   margin: "0 0 8px",
 };
 const saturnTitleStyle = {
-  fontFamily: "'Fraunces', serif",
   fontWeight: 400,
   fontSize: 17,
   lineHeight: 1.35,
@@ -217,7 +211,6 @@ const saturnEmStyle = {
   color: "#A6BEB0",
 };
 const saturnBodyStyle = {
-  fontFamily: "'Fraunces', serif",
   fontStyle: "italic",
   fontSize: 14,
   lineHeight: 1.65,
@@ -234,7 +227,6 @@ const saturnMetaRowStyle = {
   marginBottom: 8,
 };
 const saturnMetaItemStyle = {
-  fontFamily: "'Inter', sans-serif",
   fontSize: 11.5,
   // H2-fix2: cream meta.
   color: "rgba(245,230,211,0.82)",
@@ -247,7 +239,6 @@ const saturnMetaLabelStyle = {
   color: "#A6BEB0",
 };
 const saturnSignoffStyle = {
-  fontFamily: "'Fraunces', serif",
   fontStyle: "italic",
   fontSize: 12,
   // H2-fix2: muted cream signoff.

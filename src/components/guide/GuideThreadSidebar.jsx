@@ -20,8 +20,7 @@ function threadDate(convo) {
 
 const sLabel = {
   fontSize: "0.55rem", fontWeight: 600, textTransform: "uppercase",
-  letterSpacing: "0.12em", color: "var(--mauve)", fontFamily: "'Inter', sans-serif",
-};
+  letterSpacing: "0.12em", color: "var(--mauve)", };
 
 export default function GuideThreadSidebar({
   activeConversationId,
@@ -80,7 +79,7 @@ export default function GuideThreadSidebar({
         {!collapsed && (
           <div>
             <p style={sLabel} className="mb-0.5">Conversations</p>
-            <p className="text-sm font-semibold" style={{ color: "var(--plum)", fontFamily: "'Fraunces', serif" }}>Guide history</p>
+            <p className="text-sm font-semibold" style={{ color: "var(--plum)", }}>Guide history</p>
           </div>
         )}
         <button
@@ -97,7 +96,7 @@ export default function GuideThreadSidebar({
           <div className="px-3 pt-3 pb-2">
             <button onClick={onNewThread}
               className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-xs font-semibold transition-all"
-              style={{ backgroundColor: "var(--plum)", color: "white", fontFamily: "'Inter', sans-serif" }}>
+              style={{ backgroundColor: "var(--plum)", color: "white", }}>
               <Plus className="w-3.5 h-3.5" />
               New conversation
             </button>
@@ -111,7 +110,7 @@ export default function GuideThreadSidebar({
               </div>
             ) : threads.length === 0 ? (
               <div className="px-3 py-8 text-center">
-                <p className="text-xs" style={{ color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>No conversations yet</p>
+                <p className="text-xs" style={{ color: "var(--mauve)", }}>No conversations yet</p>
               </div>
             ) : (
               threads.map(convo => {
@@ -139,7 +138,7 @@ export default function GuideThreadSidebar({
                               onChange={e => setEditingTitle(e.target.value)}
                               onKeyDown={e => { if (e.key === "Enter") commitRename(convo.id); if (e.key === "Escape") setEditingId(null); }}
                               className="flex-1 text-xs bg-transparent border-b outline-none font-medium"
-                              style={{ borderColor: isActive ? "rgba(255,255,255,0.4)" : "var(--border)", color: isActive ? "white" : "var(--plum)", fontFamily: "'Inter', sans-serif" }} />
+                              style={{ borderColor: isActive ? "rgba(255,255,255,0.4)" : "var(--border)", color: isActive ? "white" : "var(--plum)", }} />
                             <button onClick={() => commitRename(convo.id)}>
                               <Check className="w-3 h-3" style={{ color: isActive ? "rgba(255,255,255,0.7)" : "var(--sage)" }} />
                             </button>
@@ -147,11 +146,11 @@ export default function GuideThreadSidebar({
                         ) : (
                           <>
                             <p className="text-xs font-medium leading-snug truncate"
-                              style={{ color: isActive ? "white" : "var(--plum)", fontFamily: "'Inter', sans-serif" }}>
+                              style={{ color: isActive ? "white" : "var(--plum)", }}>
                               {title}
                             </p>
                             {date && (
-                              <p className="text-[10px] mt-0.5" style={{ color: isActive ? "rgba(255,255,255,0.5)" : "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>
+                              <p className="text-[10px] mt-0.5" style={{ color: isActive ? "rgba(255,255,255,0.5)" : "var(--mauve)", }}>
                                 {date}
                               </p>
                             )}

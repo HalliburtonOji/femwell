@@ -356,7 +356,7 @@ export default function Compatibility({ userId, chart, userProfile }) {
 
 // ── Styles ────────────────────────────────────────────────────────────────────
 const sectionTitleStyle = {
-  fontFamily: "'Fraunces', serif", fontWeight: 400, fontSize: 22,
+  fontWeight: 400, fontSize: 22,
   color: "rgba(245,230,211,0.92)", margin: 0,
 };
 const compatHeadStyle = {
@@ -364,17 +364,17 @@ const compatHeadStyle = {
   gap: 12, marginBottom: 12, flexWrap: "wrap",
 };
 const compatSubStyle = {
-  fontFamily: "'Inter', sans-serif", fontSize: 13,
+  fontSize: 13,
   color: "rgba(245,230,211,0.70)", margin: "6px 0 0", lineHeight: 1.5,
 };
 const compatYouStyle = {
-  fontFamily: "'Inter', sans-serif", fontSize: 11, fontWeight: 600,
+  fontSize: 11, fontWeight: 600,
   letterSpacing: "0.04em", color: "rgba(245,230,211,0.82)",
   background: "rgba(245,230,211,0.06)", padding: "5px 12px",
   borderRadius: 9999, alignSelf: "flex-start",
 };
 const lastChipStyle = {
-  fontFamily: "'Inter', sans-serif", fontSize: 10.5, fontWeight: 600,
+  fontSize: 10.5, fontWeight: 600,
   letterSpacing: "0.04em", color: "rgba(245,230,211,0.82)",
   background: "rgba(245,230,211,0.06)", padding: "5px 12px",
   borderRadius: 9999, alignSelf: "flex-start",
@@ -382,11 +382,11 @@ const lastChipStyle = {
 const compatFormStyle = { display: "flex", flexDirection: "column", gap: 10, marginBottom: 10 };
 const compatFieldStyle = { display: "flex", flexDirection: "column", minWidth: 0 };
 const compatLabelStyle = {
-  fontFamily: "'Inter', sans-serif", fontSize: 11, fontWeight: 600,
+  fontSize: 11, fontWeight: 600,
   letterSpacing: "0.04em", color: "rgba(245,230,211,0.86)", marginBottom: 5,
 };
 const compatInputStyle = {
-  fontFamily: "'Inter', sans-serif", fontSize: 14,
+  fontSize: 14,
   padding: "10px 12px", borderRadius: 12,
   border: "1px solid var(--ink-line, rgba(43,30,22,0.12))",
   background: "var(--cream-2, rgba(255,255,255,0.6))",
@@ -397,14 +397,14 @@ const actionsRowStyle = {
   display: "flex", gap: 10, alignItems: "center", marginBottom: 12, flexWrap: "wrap",
 };
 const compatRunBtnStyle = {
-  fontFamily: "'Inter', sans-serif", fontWeight: 600, fontSize: 13,
+  fontWeight: 600, fontSize: 13,
   color: "var(--cream, #FAF4EA)", background: "var(--rose-primary, #D45E52)",
   border: "none", borderRadius: 9999, padding: "12px 18px",
   cursor: "pointer", minHeight: 44, whiteSpace: "nowrap",
   boxShadow: "0 2px 8px rgba(212,94,82,0.30)",
 };
 const copyLinkBtnStyle = {
-  fontFamily: "'Inter', sans-serif", fontWeight: 600, fontSize: 12,
+  fontWeight: 600, fontSize: 12,
   color: "rgba(245,230,211,0.82)", background: "transparent",
   border: "1px solid rgba(245,230,211,0.22)", borderRadius: 9999,
   padding: "10px 16px", cursor: "pointer", minHeight: 40,
@@ -412,14 +412,14 @@ const copyLinkBtnStyle = {
 };
 const historyRowStyle = { display: "flex", flexWrap: "wrap", gap: 6, margin: "0 0 12px" };
 const historyChipStyle = {
-  fontFamily: "'Inter', sans-serif", fontSize: 11, fontWeight: 600,
+  fontSize: 11, fontWeight: 600,
   letterSpacing: "0.03em", color: "rgba(245,230,211,0.78)",
   background: "transparent", border: "1px solid rgba(245,230,211,0.20)",
   borderRadius: 9999, padding: "5px 12px", cursor: "pointer", minHeight: 30,
 };
 const historyChipActiveStyle = { color: "#2B1E26", background: "#F5E6D3", borderColor: "#F5E6D3" };
 const compatErrorStyle = {
-  fontFamily: "'Inter', sans-serif", fontSize: 12, color: "#A0312A",
+  fontSize: 12, color: "#A0312A",
   background: "rgba(160,49,42,0.10)", padding: "8px 12px", borderRadius: 10, margin: "0 0 12px",
 };
 const compatResultStyle = {
@@ -432,7 +432,7 @@ const monogramRowStyle = { display: "flex", alignItems: "center", gap: 14, margi
 const monogramCircleStyle = {
   width: 44, height: 44, borderRadius: 999,
   display: "flex", alignItems: "center", justifyContent: "center",
-  fontFamily: "'Fraunces', serif", fontWeight: 500, fontSize: 19,
+  fontWeight: 500, fontSize: 19,
   color: "var(--cream, #FAF4EA)", boxShadow: "0 1px 2px rgba(0,0,0,0.10)",
 };
 const monogramUserStyle = {
@@ -445,30 +445,30 @@ const monogramPartnerStyle = {
 };
 const monogramLabelStyle = { marginLeft: 8, minWidth: 0 };
 const monogramWhoStyle = {
-  fontFamily: "'Fraunces', serif", fontWeight: 500, fontSize: 15,
+  fontWeight: 500, fontSize: 15,
   color: "var(--plum-deep, #2b1e16)", margin: 0,
 };
 const monogramWhatStyle = {
-  fontFamily: "'Inter', sans-serif", fontSize: 11.5,
+  fontSize: 11.5,
   color: "var(--plum-mute, #6b4a56)", margin: "2px 0 0",
 };
 const compatScoreRowStyle = { display: "flex", alignItems: "center", gap: 18, marginBottom: 14 };
 const compatScoreBigStyle = {
-  fontFamily: "'Fraunces', serif", fontWeight: 300, fontSize: 56,
+  fontWeight: 300, fontSize: 56,
   lineHeight: 1, color: "var(--rose-primary, #D45E52)",
   letterSpacing: "-0.02em", minWidth: 78,
 };
 const compatScoreLabelStyle = {
-  fontFamily: "'Inter', sans-serif", fontSize: 11, fontWeight: 700,
+  fontSize: 11, fontWeight: 700,
   letterSpacing: "0.14em", textTransform: "uppercase",
   color: "var(--plum-mute, #6b4a56)", margin: "0 0 4px",
 };
 const compatScoreDescStyle = {
-  fontFamily: "'Fraunces', serif", fontStyle: "italic",
+  fontStyle: "italic",
   fontSize: 16, color: "var(--plum-deep, #2b1e16)", margin: 0,
 };
 const compatNarrativeStyle = {
-  fontFamily: "'Inter', sans-serif", fontSize: 13.5,
+  fontSize: 13.5,
   lineHeight: 1.6, color: "var(--plum-mute, #6b4a56)", margin: "0 0 16px",
 };
 const dimsRowStyle = { display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 12 };
@@ -483,19 +483,19 @@ const dimFillStyle = {
   borderRadius: 999,
 };
 const dimLabelStyle = {
-  fontFamily: "'Inter', sans-serif", fontSize: 10, fontWeight: 700,
+  fontSize: 10, fontWeight: 700,
   letterSpacing: "0.12em", textTransform: "uppercase",
   color: "var(--plum-mute, #6b4a56)", margin: 0,
 };
 const dimValStyle = {
-  fontFamily: "'Fraunces', serif", fontSize: 16,
+  fontSize: 16,
   fontWeight: 500, color: "var(--plum-deep, #2b1e16)", margin: 0,
 };
 
 // ── Date picker styles ────────────────────────────────────────────────────────
 const dpWrapStyle = { display: "flex", gap: 6 };
 const dpInputStyle = {
-  fontFamily: "'Inter', sans-serif", fontSize: 13,
+  fontSize: 13,
   padding: "10px 8px", borderRadius: 10,
   border: "1px solid var(--ink-line, rgba(43,30,22,0.12))",
   background: "var(--cream-2, rgba(255,255,255,0.6))",

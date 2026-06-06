@@ -93,7 +93,6 @@ const wrapStyle = {
 };
 
 const tabBtnStyle = {
-  fontFamily: "'Inter', sans-serif",
   fontSize: 12,
   letterSpacing: "0.04em",
   padding: "7px 18px",

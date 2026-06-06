@@ -315,10 +315,8 @@ export default function JessVoiceMode({ open, onClose, user, profile, phase, cyc
           style={closeBtn}><X size={18} /></button>
         <div style={{
           maxWidth: 360, padding: 24, textAlign: "center",
-          color: C.cream, fontFamily: "'Inter', system-ui, sans-serif",
-        }}>
+          color: C.cream, }}>
           <p style={{
-            fontFamily: "'Fraunces', Georgia, serif",
             fontSize: 22, fontWeight: 500, margin: 0, lineHeight: 1.3,
           }}>Voice isn't available on this browser.</p>
           <p style={{ marginTop: 12, fontSize: 14, color: "rgba(244,237,219,0.7)", lineHeight: 1.55 }}>
@@ -343,8 +341,7 @@ export default function JessVoiceMode({ open, onClose, user, profile, phase, cyc
         position: "absolute", top: "max(env(safe-area-inset-top), 14px)",
         left: 0, right: 0, padding: "0 16px",
         display: "flex", alignItems: "center", justifyContent: "space-between",
-        color: C.cream, fontFamily: "'Inter', system-ui, sans-serif",
-      }}>
+        color: C.cream, }}>
         <span style={{
           fontSize: 11, fontWeight: 700, letterSpacing: "0.18em",
           textTransform: "uppercase", color: "rgba(244,237,219,0.75)",
@@ -358,7 +355,7 @@ export default function JessVoiceMode({ open, onClose, user, profile, phase, cyc
             background: "rgba(244,237,219,0.10)", color: C.cream,
             border: "1px solid rgba(244,237,219,0.25)",
             borderRadius: 9999, padding: "6px 14px",
-            fontFamily: "'Inter', sans-serif", fontSize: 12.5, fontWeight: 700,
+            fontSize: 12.5, fontWeight: 700,
             letterSpacing: "0.04em", cursor: "pointer",
           }}
         >Done</button>
@@ -386,7 +383,6 @@ export default function JessVoiceMode({ open, onClose, user, profile, phase, cyc
       <p style={{
         position: "absolute", left: 0, right: 0, bottom: 150,
         textAlign: "center", color: C.cream,
-        fontFamily: "'Inter', system-ui, sans-serif",
         fontSize: 13, fontWeight: 600,
         letterSpacing: "0.04em",
       }}>{statusCopy}</p>
@@ -486,7 +482,6 @@ function VoiceBubble({ role, text }) {
         background: "rgba(143,175,143,0.25)",
         color: "rgba(244,237,219,0.92)",
         border: "1px solid rgba(143,175,143,0.50)",
-        fontFamily: "'Inter', sans-serif",
         fontSize: 12, fontWeight: 700,
         letterSpacing: "0.02em",
         maxWidth: "86%",
@@ -504,7 +499,6 @@ function VoiceBubble({ role, text }) {
         ? "rgba(232,180,184,0.20)"
         : "rgba(244,237,219,0.10)",
       color: C.cream,
-      fontFamily: "'Inter', sans-serif",
       fontSize: 14, lineHeight: 1.5,
       border: isUser
         ? "1px solid rgba(232,180,184,0.35)"
@@ -520,8 +514,7 @@ const shellStyle = {
   position: "fixed", inset: 0, zIndex: 300,
   background: C.espressoDeep,
   display: "flex", alignItems: "center", justifyContent: "center",
-  fontFamily: "'Inter', system-ui, sans-serif",
-};
+  };
 const closeBtn = {
   position: "absolute", top: 14, right: 14,
   width: 36, height: 36, borderRadius: 9999,

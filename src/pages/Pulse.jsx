@@ -70,12 +70,12 @@ function MarkdownBlock({ text }) {
     <div className="space-y-3">
       {lines.map((line, index) => {
         if (line.startsWith("## ")) {
-          return <p key={index} className="text-base font-bold" style={{ color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>{line.replace(/^##\s*/, "")}</p>;
+          return <p key={index} className="text-base font-bold" style={{ color: "var(--plum)", }}>{line.replace(/^##\s*/, "")}</p>;
         }
         if (line.startsWith("# ")) {
-          return <p key={index} className="text-sm font-semibold" style={{ color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>{line.replace(/^#\s*/, "")}</p>;
+          return <p key={index} className="text-sm font-semibold" style={{ color: "var(--plum)", }}>{line.replace(/^#\s*/, "")}</p>;
         }
-        return <p key={index} className="text-sm leading-relaxed" style={{ color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>{renderInlineMarkdown(line)}</p>;
+        return <p key={index} className="text-sm leading-relaxed" style={{ color: "var(--mauve)", }}>{renderInlineMarkdown(line)}</p>;
       })}
     </div>
   );
@@ -270,13 +270,11 @@ export default function Pulse() {
             <p style={{
               fontSize: "0.6rem", fontWeight: 700, textTransform: "uppercase",
               letterSpacing: "0.14em", color: "var(--mauve)",
-              fontFamily: "'Inter', sans-serif"
-            }}>
+              }}>
               Your health intelligence
             </p>
             <h1 style={{
               fontSize: "28px", fontWeight: 700, lineHeight: 1.1,
-              fontFamily: "'Fraunces', serif",
               color: "var(--plum)", letterSpacing: "-0.02em", marginTop: "4px"
             }}>
               Pulse
@@ -288,8 +286,7 @@ export default function Pulse() {
             style={{
               border: "1px solid var(--border)", background: "var(--surface)",
               color: "var(--plum)", borderRadius: "9999px", padding: "7px 14px",
-              fontSize: "12px", fontWeight: 500, fontFamily: "'Inter', sans-serif",
-              cursor: "pointer", flexShrink: 0,
+              fontSize: "12px", fontWeight: 500, cursor: "pointer", flexShrink: 0,
             }}
           >
             Export PDF
@@ -300,9 +297,9 @@ export default function Pulse() {
         {checkins.length < 3 && (
           <div style={{ marginTop: 32, backgroundColor: "var(--surface)", border: "1px solid var(--border)", borderRadius: 24, padding: "36px 24px", textAlign: "center", boxShadow: "var(--shadow-sm)" }}>
             <div style={{ width: 48, height: 48, borderRadius: 16, backgroundColor: "var(--rose-dust-subtle)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 14px" }}><Activity style={{ width: 22, height: 22, color: "var(--rose-dust)" }} /></div>
-            <h3 style={{ fontFamily: "'Fraunces', serif", fontSize: 20, fontWeight: 700, color: "var(--plum)", marginBottom: 8 }}>Check in daily to unlock insights</h3>
-            <p style={{ fontSize: 14, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", lineHeight: 1.6, marginBottom: 20 }}>After a few check-ins, you'll see patterns in your mood, energy and sleep</p>
-            <a href="/Today?open_log=1" style={{ backgroundColor: "var(--plum)", color: "white", borderRadius: 9999, padding: "12px 28px", fontSize: 14, fontWeight: 600, fontFamily: "'Inter', sans-serif", textDecoration: "none", display: "inline-block" }}>
+            <h3 style={{ fontSize: 20, fontWeight: 700, color: "var(--plum)", marginBottom: 8 }}>Check in daily to unlock insights</h3>
+            <p style={{ fontSize: 14, color: "var(--mauve)", lineHeight: 1.6, marginBottom: 20 }}>After a few check-ins, you'll see patterns in your mood, energy and sleep</p>
+            <a href="/Today?open_log=1" style={{ backgroundColor: "var(--plum)", color: "white", borderRadius: 9999, padding: "12px 28px", fontSize: 14, fontWeight: 600, textDecoration: "none", display: "inline-block" }}>
               Do today's check-in
             </a>
           </div>
@@ -351,11 +348,10 @@ export default function Pulse() {
           <p style={{
             fontSize: "0.55rem", fontWeight: 700, textTransform: "uppercase",
             letterSpacing: "0.14em", color: "var(--rose-dust)",
-            fontFamily: "'Inter', sans-serif"
-          }}>This week</p>
+            }}>This week</p>
           <p style={{
             fontSize: "18px", fontWeight: 700, color: "var(--plum)",
-            fontFamily: "'Inter', sans-serif", marginTop: "3px"
+            marginTop: "3px"
           }}>Weekly summary</p>
         </div>
 
@@ -367,7 +363,7 @@ export default function Pulse() {
             boxShadow: "var(--shadow-sm)"
           }}>
             <p style={{ fontSize: "13px", lineHeight: 1.6,
-                        color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>
+                        color: "var(--mauve)", }}>
               Your first weekly summary will appear here automatically every Sunday.
               Keep logging check-ins to build your personal health picture.
             </p>
@@ -397,7 +393,7 @@ export default function Pulse() {
               <div style={{ textAlign: "center" }}>
                 {currentWeeklyItem?.summary_type === 'monthly' && (
                   <div style={{ marginBottom: 4 }}>
-                    <span style={{ backgroundColor: "var(--sage-subtle)", color: "var(--sage)", borderRadius: 9999, padding: "3px 10px", fontSize: 10, fontWeight: 600, fontFamily: "'Inter', sans-serif" }}>Monthly summary</span>
+                    <span style={{ backgroundColor: "var(--sage-subtle)", color: "var(--sage)", borderRadius: 9999, padding: "3px 10px", fontSize: 10, fontWeight: 600, }}>Monthly summary</span>
                   </div>
                 )}
                 <p style={{
@@ -441,56 +437,55 @@ export default function Pulse() {
                 <p style={{
                   fontSize: "0.55rem", fontWeight: 700,
                   textTransform: "uppercase", letterSpacing: "0.14em",
-                  color: "var(--mauve)", fontFamily: "'Inter', sans-serif",
-                  marginBottom: "10px"
+                  color: "var(--mauve)", marginBottom: "10px"
                 }}>This week at a glance</p>
                 <div className="flex gap-3 flex-wrap">
                   {skinMode && (
                     <div style={{ backgroundColor: "var(--rose-dust-subtle)", borderRadius: "12px", padding: "10px 14px" }}>
-                      <p style={{ fontSize: "10px", color: "var(--rose-dust)", fontWeight: 700, letterSpacing: "0.1em", fontFamily: "'Inter', sans-serif" }}>SKIN</p>
-                      <p style={{ fontSize: "14px", color: "var(--plum)", fontWeight: 700, fontFamily: "'Inter', sans-serif", marginTop: "2px" }}>{skinMode}</p>
-                      <p style={{ fontSize: "10px", color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>most logged</p>
+                      <p style={{ fontSize: "10px", color: "var(--rose-dust)", fontWeight: 700, letterSpacing: "0.1em", }}>SKIN</p>
+                      <p style={{ fontSize: "14px", color: "var(--plum)", fontWeight: 700, marginTop: "2px" }}>{skinMode}</p>
+                      <p style={{ fontSize: "10px", color: "var(--mauve)", }}>most logged</p>
                     </div>
                   )}
                   {hairMode && (
                     <div style={{ backgroundColor: "var(--sage-subtle)", borderRadius: "12px", padding: "10px 14px" }}>
-                      <p style={{ fontSize: "10px", color: "var(--sage)", fontWeight: 700, letterSpacing: "0.1em", fontFamily: "'Inter', sans-serif" }}>HAIR SHEDDING</p>
-                      <p style={{ fontSize: "14px", color: "var(--plum)", fontWeight: 700, fontFamily: "'Inter', sans-serif", marginTop: "2px" }}>{hairMode}</p>
-                      <p style={{ fontSize: "10px", color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>most logged</p>
+                      <p style={{ fontSize: "10px", color: "var(--sage)", fontWeight: 700, letterSpacing: "0.1em", }}>HAIR SHEDDING</p>
+                      <p style={{ fontSize: "14px", color: "var(--plum)", fontWeight: 700, marginTop: "2px" }}>{hairMode}</p>
+                      <p style={{ fontSize: "10px", color: "var(--mauve)", }}>most logged</p>
                     </div>
                   )}
                   {weekStats.journalCount > 0 && (
                     <div style={{ backgroundColor: "var(--ivory-dark)", borderRadius: "12px", padding: "10px 14px" }}>
-                      <p style={{ fontSize: "10px", color: "var(--mauve)", fontWeight: 700, letterSpacing: "0.1em", fontFamily: "'Inter', sans-serif" }}>JOURNAL</p>
-                      <p style={{ fontSize: "20px", color: "var(--plum)", fontWeight: 700, fontFamily: "'Fraunces', serif", marginTop: "2px" }}>{weekStats.journalCount}</p>
-                      <p style={{ fontSize: "10px", color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>entries</p>
+                      <p style={{ fontSize: "10px", color: "var(--mauve)", fontWeight: 700, letterSpacing: "0.1em", }}>JOURNAL</p>
+                      <p style={{ fontSize: "20px", color: "var(--plum)", fontWeight: 700, marginTop: "2px" }}>{weekStats.journalCount}</p>
+                      <p style={{ fontSize: "10px", color: "var(--mauve)", }}>entries</p>
                     </div>
                   )}
                   {weekStats.habitCount > 0 && (
                     <div style={{ backgroundColor: "var(--ivory-dark)", borderRadius: "12px", padding: "10px 14px" }}>
-                      <p style={{ fontSize: "10px", color: "var(--mauve)", fontWeight: 700, letterSpacing: "0.1em", fontFamily: "'Inter', sans-serif" }}>HABITS</p>
-                      <p style={{ fontSize: "20px", color: "var(--plum)", fontWeight: 700, fontFamily: "'Fraunces', serif", marginTop: "2px" }}>{weekStats.habitCount}</p>
-                      <p style={{ fontSize: "10px", color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>completed</p>
+                      <p style={{ fontSize: "10px", color: "var(--mauve)", fontWeight: 700, letterSpacing: "0.1em", }}>HABITS</p>
+                      <p style={{ fontSize: "20px", color: "var(--plum)", fontWeight: 700, marginTop: "2px" }}>{weekStats.habitCount}</p>
+                      <p style={{ fontSize: "10px", color: "var(--mauve)", }}>completed</p>
                     </div>
                   )}
                   {weekStats.mealCount > 0 && (
                     <div style={{ backgroundColor: "var(--ivory-dark)", borderRadius: "12px", padding: "10px 14px" }}>
-                      <p style={{ fontSize: "10px", color: "var(--mauve)", fontWeight: 700, letterSpacing: "0.1em", fontFamily: "'Inter', sans-serif" }}>MEALS</p>
-                      <p style={{ fontSize: "20px", color: "var(--plum)", fontWeight: 700, fontFamily: "'Fraunces', serif", marginTop: "2px" }}>{weekStats.mealCount}</p>
-                      <p style={{ fontSize: "10px", color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>logged</p>
+                      <p style={{ fontSize: "10px", color: "var(--mauve)", fontWeight: 700, letterSpacing: "0.1em", }}>MEALS</p>
+                      <p style={{ fontSize: "20px", color: "var(--plum)", fontWeight: 700, marginTop: "2px" }}>{weekStats.mealCount}</p>
+                      <p style={{ fontSize: "10px", color: "var(--mauve)", }}>logged</p>
                     </div>
                   )}
                   <Link
                     to={createPageUrl("SkinHair")}
                     style={{ backgroundColor: "var(--ivory-dark)", borderRadius: "12px", padding: "10px 14px", display: "flex", alignItems: "center", textDecoration: "none" }}
                   >
-                    <p style={{ fontSize: "12px", fontWeight: 600, color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>Full skin & hair trends</p>
+                    <p style={{ fontSize: "12px", fontWeight: 600, color: "var(--plum)", }}>Full skin & hair trends</p>
                   </Link>
                 </div>
               </div>
             )}
 
-            <p style={{ fontSize: "11px", color: "var(--mauve)", marginTop: "14px", fontFamily: "'Inter', sans-serif" }}>
+            <p style={{ fontSize: "11px", color: "var(--mauve)", marginTop: "14px", }}>
               Generated automatically every Sunday
             </p>
           </div>
@@ -503,8 +498,8 @@ export default function Pulse() {
             borderRadius: "20px", padding: "20px", marginBottom: "20px",
             boxShadow: "var(--shadow-sm)"
           }}>
-            <p style={{ fontFamily: "'Fraunces', serif", fontSize: "16px", fontWeight: 600, color: "var(--plum)", marginBottom: "10px" }}>This week, try</p>
-            <p style={{ fontSize: "14px", color: "var(--plum)", lineHeight: 1.6, fontFamily: "'Inter', sans-serif", marginBottom: "14px" }}>{currentWeeklyItem.ai_suggestion}</p>
+            <p style={{ fontSize: "16px", fontWeight: 600, color: "var(--plum)", marginBottom: "10px" }}>This week, try</p>
+            <p style={{ fontSize: "14px", color: "var(--plum)", lineHeight: 1.6, marginBottom: "14px" }}>{currentWeeklyItem.ai_suggestion}</p>
             <div className="flex flex-wrap gap-2">
               {[
                 { label: "Find a book",      href: createPageUrl("Lifestyle") + "?tab=books" },
@@ -514,7 +509,7 @@ export default function Pulse() {
                 <a key={chip.label} href={chip.href} style={{
                   backgroundColor: "var(--rose-dust-subtle)", color: "var(--rose-dust)",
                   borderRadius: "9999px", padding: "6px 14px", fontSize: "11px", fontWeight: 600,
-                  fontFamily: "'Inter', sans-serif", textDecoration: "none",
+                  textDecoration: "none",
                 }}>{chip.label}</a>
               ))}
             </div>
@@ -529,11 +524,10 @@ export default function Pulse() {
           <p style={{
             fontSize: "0.55rem", fontWeight: 700, textTransform: "uppercase",
             letterSpacing: "0.14em", color: "var(--rose-dust)",
-            fontFamily: "'Inter', sans-serif"
-          }}>Over time</p>
+            }}>Over time</p>
           <p style={{
             fontSize: "18px", fontWeight: 700, color: "var(--plum)",
-            fontFamily: "'Inter', sans-serif", marginTop: "3px"
+            marginTop: "3px"
           }}>Your patterns</p>
         </div>
 
@@ -549,7 +543,7 @@ export default function Pulse() {
                 border: timeRange === m ? "none" : "1px solid var(--border)",
                 borderRadius: "9999px", padding: "7px 16px",
                 fontSize: "12px", fontWeight: 600,
-                fontFamily: "'Inter', sans-serif", cursor: "pointer",
+                cursor: "pointer",
               }}
             >
               {m} months
@@ -585,8 +579,7 @@ export default function Pulse() {
               fontSize: "12px", fontWeight: 600, border: "none", cursor: "pointer",
               backgroundColor: dataSource === "checkins" ? "var(--plum)" : "transparent",
               color: dataSource === "checkins" ? "white" : "var(--mauve)",
-              fontFamily: "'Inter', sans-serif",
-            }}
+              }}
           >
             Daily Check-ins
           </button>
@@ -598,8 +591,7 @@ export default function Pulse() {
               fontSize: "12px", fontWeight: 600, border: "none", cursor: "pointer",
               backgroundColor: dataSource === "symptoms" ? "var(--plum)" : "transparent",
               color: dataSource === "symptoms" ? "white" : "var(--mauve)",
-              fontFamily: "'Inter', sans-serif",
-            }}
+              }}
           >
             Symptom Logs
           </button>
@@ -607,7 +599,7 @@ export default function Pulse() {
 
         {/* Metric chips */}
         <div className="mb-5">
-          <p style={{ fontSize: "12px", color: "var(--mauve)", marginBottom: "8px", fontFamily: "'Inter', sans-serif" }}>Select metric</p>
+          <p style={{ fontSize: "12px", color: "var(--mauve)", marginBottom: "8px", }}>Select metric</p>
           <div className="flex gap-2 overflow-x-auto pb-1">
             {(dataSource === "checkins" ? CHECKIN_METRICS : symptomTypes.map((t) => ({ id: t, label: t.replace(/_/g, " "), color: "#f472b6" }))).map((m) => (
               <button
@@ -619,8 +611,7 @@ export default function Pulse() {
                   border: "none", cursor: "pointer", textTransform: "capitalize",
                   backgroundColor: selectedMetric === m.id ? m.color : "var(--ivory-dark)",
                   color: selectedMetric === m.id ? "white" : "var(--mauve)",
-                  fontFamily: "'Inter', sans-serif",
-                }}
+                  }}
               >
                 {m.label}
               </button>
@@ -635,8 +626,8 @@ export default function Pulse() {
             borderRadius: "20px", padding: "20px", marginBottom: "16px",
             boxShadow: "var(--shadow-sm)", textAlign: "center"
           }}>
-            <p style={{ fontSize: "14px", fontWeight: 500, color: "var(--plum)", marginBottom: "4px", fontFamily: "'Inter', sans-serif" }}>No cycle data yet</p>
-            <p style={{ fontSize: "12px", color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>Log your period in Today — Track to see phase correlations.</p>
+            <p style={{ fontSize: "14px", fontWeight: 500, color: "var(--plum)", marginBottom: "4px", }}>No cycle data yet</p>
+            <p style={{ fontSize: "12px", color: "var(--mauve)", }}>Log your period in Today — Track to see phase correlations.</p>
           </div>
         )}
 
@@ -647,8 +638,8 @@ export default function Pulse() {
             borderRadius: "20px", padding: "16px", marginBottom: "16px",
             boxShadow: "var(--shadow-sm)"
           }}>
-            <h3 style={{ fontSize: "14px", fontWeight: 700, color: "var(--plum)", marginBottom: "2px", textTransform: "capitalize", fontFamily: "'Inter', sans-serif" }}>{currentLabel} by Cycle Phase</h3>
-            <p style={{ fontSize: "12px", color: "var(--mauve)", marginBottom: "16px", fontFamily: "'Inter', sans-serif" }}>Average score — last {timeRange} months</p>
+            <h3 style={{ fontSize: "14px", fontWeight: 700, color: "var(--plum)", marginBottom: "2px", textTransform: "capitalize", }}>{currentLabel} by Cycle Phase</h3>
+            <p style={{ fontSize: "12px", color: "var(--mauve)", marginBottom: "16px", }}>Average score — last {timeRange} months</p>
             {hasPhaseData ? (
               <ResponsiveContainer width="100%" height={200}>
                 <BarChart data={phaseData} margin={{ top: 5, right: 5, left: -20, bottom: 5 }}>
@@ -668,14 +659,14 @@ export default function Pulse() {
               </ResponsiveContainer>
             ) : (
               <div className="flex items-center justify-center h-40" style={{ color: "var(--mauve)" }}>
-                <p style={{ fontSize: "14px", textAlign: "center", fontFamily: "'Inter', sans-serif" }}>Not enough data yet —<br />keep logging daily!</p>
+                <p style={{ fontSize: "14px", textAlign: "center", }}>Not enough data yet —<br />keep logging daily!</p>
               </div>
             )}
             <div className="grid grid-cols-2 gap-1 mt-3">
               {PHASES.map((p) => (
                 <div key={p.key} className="flex items-center gap-1.5">
                   <div className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ backgroundColor: p.color }} />
-                  <span style={{ fontSize: "10px", color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>{p.label} <span style={{ color: "var(--border)" }}>({p.days})</span></span>
+                  <span style={{ fontSize: "10px", color: "var(--mauve)", }}>{p.label} <span style={{ color: "var(--border)" }}>({p.days})</span></span>
                 </div>
               ))}
             </div>
@@ -689,8 +680,8 @@ export default function Pulse() {
             borderRadius: "20px", padding: "16px", marginBottom: "16px",
             borderLeft: `4px solid ${PHASES.find((p) => p.key === patternInsight.highest.phase)?.color}`
           }}>
-            <p style={{ fontSize: "10px", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.12em", color: "var(--rose-dust)", marginBottom: "6px", fontFamily: "'Inter', sans-serif" }}>Pattern Insight</p>
-            <p style={{ fontSize: "14px", color: "var(--plum)", lineHeight: 1.6, fontFamily: "'Inter', sans-serif" }}>
+            <p style={{ fontSize: "10px", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.12em", color: "var(--rose-dust)", marginBottom: "6px", }}>Pattern Insight</p>
+            <p style={{ fontSize: "14px", color: "var(--plum)", lineHeight: 1.6, }}>
               Your <strong style={{ textTransform: "capitalize" }}>{currentLabel}</strong> tends to peak during the{" "}
               <strong style={{ color: PHASES.find((p) => p.key === patternInsight.highest.phase)?.color }}>
                 {patternInsight.highest.phase}
@@ -711,8 +702,8 @@ export default function Pulse() {
             borderRadius: "20px", padding: "16px", marginBottom: "16px",
             boxShadow: "var(--shadow-sm)"
           }}>
-            <h3 style={{ fontSize: "14px", fontWeight: 700, color: "var(--plum)", marginBottom: "2px", textTransform: "capitalize", fontFamily: "'Inter', sans-serif" }}>{currentLabel} over time</h3>
-            <p style={{ fontSize: "12px", color: "var(--mauve)", marginBottom: "16px", fontFamily: "'Inter', sans-serif" }}>Daily readings — {timeRange} months</p>
+            <h3 style={{ fontSize: "14px", fontWeight: 700, color: "var(--plum)", marginBottom: "2px", textTransform: "capitalize", }}>{currentLabel} over time</h3>
+            <p style={{ fontSize: "12px", color: "var(--mauve)", marginBottom: "16px", }}>Daily readings — {timeRange} months</p>
             <ResponsiveContainer width="100%" height={180}>
               <LineChart data={timeSeriesData} margin={{ top: 5, right: 5, left: -20, bottom: 5 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#f0e4e8" />
@@ -741,8 +732,8 @@ export default function Pulse() {
             borderRadius: "20px", padding: "20px", marginBottom: "16px",
             boxShadow: "var(--shadow-sm)", textAlign: "center"
           }}>
-            <p style={{ fontSize: "14px", fontWeight: 500, color: "var(--plum)", marginBottom: "4px", fontFamily: "'Inter', sans-serif" }}>No data for this metric yet</p>
-            <p style={{ fontSize: "12px", color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>Keep logging daily check-ins to see trends here.</p>
+            <p style={{ fontSize: "14px", fontWeight: 500, color: "var(--plum)", marginBottom: "4px", }}>No data for this metric yet</p>
+            <p style={{ fontSize: "12px", color: "var(--mauve)", }}>Keep logging daily check-ins to see trends here.</p>
           </div>
         )}
 
@@ -761,14 +752,14 @@ export default function Pulse() {
               borderRadius: "20px", padding: "16px", marginBottom: "16px",
               boxShadow: "var(--shadow-sm)"
             }}>
-              <h3 style={{ fontSize: "14px", fontWeight: 700, color: "var(--plum)", marginBottom: "2px", fontFamily: "'Inter', sans-serif" }}>Habit Completion Rates</h3>
-              <p style={{ fontSize: "12px", color: "var(--mauve)", marginBottom: "16px", fontFamily: "'Inter', sans-serif" }}>Last {timeRange} months</p>
+              <h3 style={{ fontSize: "14px", fontWeight: 700, color: "var(--plum)", marginBottom: "2px", }}>Habit Completion Rates</h3>
+              <p style={{ fontSize: "12px", color: "var(--mauve)", marginBottom: "16px", }}>Last {timeRange} months</p>
               <div className="space-y-3">
                 {habitData.map((h) => (
                   <div key={h.full}>
                     <div className="flex justify-between items-center mb-1">
-                      <span style={{ fontSize: "12px", fontWeight: 500, color: "var(--plum)", textTransform: "capitalize", fontFamily: "'Inter', sans-serif" }}>{h.name}</span>
-                      <span style={{ fontSize: "12px", fontWeight: 700, color: "var(--rose-dust)", fontFamily: "'Inter', sans-serif" }}>{h.pct}%</span>
+                      <span style={{ fontSize: "12px", fontWeight: 500, color: "var(--plum)", textTransform: "capitalize", }}>{h.name}</span>
+                      <span style={{ fontSize: "12px", fontWeight: 700, color: "var(--rose-dust)", }}>{h.pct}%</span>
                     </div>
                     <div style={{ width: "100%", height: "8px", backgroundColor: "var(--rose-dust-subtle)", borderRadius: "4px", overflow: "hidden" }}>
                       <div style={{ height: "100%", backgroundColor: "var(--rose-dust)", borderRadius: "4px", width: `${h.pct}%`, transition: "width 0.5s" }} />
@@ -792,8 +783,8 @@ export default function Pulse() {
               borderRadius: "20px", padding: "16px", marginBottom: "16px",
               boxShadow: "var(--shadow-sm)"
             }}>
-              <h3 style={{ fontSize: "14px", fontWeight: 700, color: "var(--plum)", marginBottom: "2px", fontFamily: "'Inter', sans-serif" }}>Sleep Quality vs Mood & Energy</h3>
-              <p style={{ fontSize: "12px", color: "var(--mauve)", marginBottom: "16px", fontFamily: "'Inter', sans-serif" }}>Last 30 data points</p>
+              <h3 style={{ fontSize: "14px", fontWeight: 700, color: "var(--plum)", marginBottom: "2px", }}>Sleep Quality vs Mood & Energy</h3>
+              <p style={{ fontSize: "12px", color: "var(--mauve)", marginBottom: "16px", }}>Last 30 data points</p>
               <ResponsiveContainer width="100%" height={180}>
                 <LineChart data={data} margin={{ top: 5, right: 5, left: -20, bottom: 5 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#f0e4e8" />
@@ -809,7 +800,7 @@ export default function Pulse() {
                 {[{c:"#34d399",l:"Sleep"},{c:"#f472b6",l:"Mood"},{c:"#fb923c",l:"Energy"}].map(x => (
                   <div key={x.l} className="flex items-center gap-1">
                     <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: x.c }} />
-                    <span style={{ fontSize: "10px", color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>{x.l}</span>
+                    <span style={{ fontSize: "10px", color: "var(--mauve)", }}>{x.l}</span>
                   </div>
                 ))}
               </div>
@@ -833,15 +824,15 @@ export default function Pulse() {
           <div>
             <p style={{ fontSize: "0.6rem", fontWeight: 600, textTransform: "uppercase",
                         letterSpacing: "0.12em", color: "var(--mauve)",
-                        fontFamily: "'Inter', sans-serif" }}>
+                        }}>
               Dedicated tracker
             </p>
             <p style={{ fontSize: "14px", fontWeight: 700, color: "var(--plum)",
-                        fontFamily: "'Inter', sans-serif", marginTop: "2px" }}>
+                        marginTop: "2px" }}>
               Skin &amp; Hair Trends
             </p>
             <p style={{ fontSize: "12px", color: "var(--mauve)",
-                        fontFamily: "'Inter', sans-serif", marginTop: "4px" }}>
+                        marginTop: "4px" }}>
               Phase-by-phase breakout patterns, shedding data and more
             </p>
           </div>
@@ -850,7 +841,6 @@ export default function Pulse() {
             style={{ backgroundColor: "var(--plum)", color: "white",
                      borderRadius: "9999px", padding: "8px 18px",
                      fontSize: "12px", fontWeight: 600,
-                     fontFamily: "'Inter', sans-serif",
                      textDecoration: "none", flexShrink: 0 }}
           >
             View

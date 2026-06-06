@@ -38,7 +38,7 @@ export default function GuideReadingPlayer({ item, user }) {
 
       {/* Content */}
       <div className="rounded-2xl p-5 space-y-4" style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)", boxShadow: "var(--shadow-sm)" }}>
-        <p className="text-sm leading-relaxed" style={{ color: "var(--plum)", fontFamily: "'Inter', sans-serif", lineHeight: 1.8 }}>
+        <p className="text-sm leading-relaxed" style={{ color: "var(--plum)", lineHeight: 1.8 }}>
           {content}
         </p>
 

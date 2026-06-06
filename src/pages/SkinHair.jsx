@@ -129,8 +129,7 @@ const sLabel = {
   textTransform: "uppercase",
   letterSpacing: "0.12em",
   color: "var(--mauve)",
-  fontFamily: "'Inter', sans-serif",
-};
+  };
 
 // ── Phase config ─────────────────────────────────────────────────────────────
 const PHASES = ["menstrual", "follicular", "ovulatory", "luteal"];
@@ -266,12 +265,12 @@ function PhaseBarChart({ data, color }) {
       <BarChart data={chartData} barSize={32} margin={{ top: 4, right: 4, left: -28, bottom: 0 }}>
         <XAxis
           dataKey="phase"
-          tick={{ fontSize: 11, fill: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}
+          tick={{ fontSize: 11, fill: "var(--mauve)", }}
           axisLine={false}
           tickLine={false}
         />
         <YAxis
-          tick={{ fontSize: 10, fill: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}
+          tick={{ fontSize: 10, fill: "var(--mauve)", }}
           axisLine={false}
           tickLine={false}
         />
@@ -281,7 +280,6 @@ function PhaseBarChart({ data, color }) {
             border: "1px solid var(--border)",
             borderRadius: "12px",
             fontSize: "12px",
-            fontFamily: "'Inter', sans-serif",
             color: "var(--plum)",
             boxShadow: "var(--shadow-sm)",
           }}
@@ -305,14 +303,14 @@ function ScoreLineChart({ data, color, dataKey, yDomain }) {
       <LineChart data={data} margin={{ top: 4, right: 4, left: -28, bottom: 0 }}>
         <XAxis
           dataKey="label"
-          tick={{ fontSize: 10, fill: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}
+          tick={{ fontSize: 10, fill: "var(--mauve)", }}
           axisLine={false}
           tickLine={false}
           interval="preserveStartEnd"
         />
         <YAxis
           domain={yDomain}
-          tick={{ fontSize: 10, fill: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}
+          tick={{ fontSize: 10, fill: "var(--mauve)", }}
           axisLine={false}
           tickLine={false}
         />
@@ -322,7 +320,6 @@ function ScoreLineChart({ data, color, dataKey, yDomain }) {
             border: "1px solid var(--border)",
             borderRadius: "12px",
             fontSize: "12px",
-            fontFamily: "'Inter', sans-serif",
             color: "var(--plum)",
             boxShadow: "var(--shadow-sm)",
           }}
@@ -355,7 +352,7 @@ function PhaseBriefCard({ phase, briefs }) {
         />
         <p style={{ ...sLabel, color: PHASE_COLORS[phase] }}>{brief.headline}</p>
       </div>
-      <p style={{ fontSize: "13px", color: "var(--plum)", fontFamily: "'Inter', sans-serif", lineHeight: 1.65 }}>
+      <p style={{ fontSize: "13px", color: "var(--plum)", lineHeight: 1.65 }}>
         {brief.tip}
       </p>
     </div>
@@ -370,23 +367,23 @@ function IngredientGuide({ phase, mode }) {
   return (
     <div style={card}>
       <p style={sLabel}>This week \u2014 what to use</p>
-      <p style={{ fontSize: "11px", fontWeight: 700, color: "var(--plum)", fontFamily: "'Inter', sans-serif", marginBottom: "8px", marginTop: "10px" }}>Use</p>
+      <p style={{ fontSize: "11px", fontWeight: 700, color: "var(--plum)", marginBottom: "8px", marginTop: "10px" }}>Use</p>
       {data.use.map((ing) => (
         <div key={ing.name} style={{ display: "flex", gap: "10px", marginBottom: "8px", alignItems: "flex-start" }}>
           <div style={{ width: "6px", height: "6px", borderRadius: "50%", backgroundColor: "var(--sage)", flexShrink: 0, marginTop: "5px" }} />
           <div style={{ display: "flex", flexDirection: "column" }}>
-            <span style={{ fontSize: "12px", fontWeight: 600, color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>{ing.name}</span>
-            <span style={{ fontSize: "11px", color: "var(--mauve)", fontFamily: "'Inter', sans-serif", lineHeight: 1.5 }}>{ing.why}</span>
+            <span style={{ fontSize: "12px", fontWeight: 600, color: "var(--plum)", }}>{ing.name}</span>
+            <span style={{ fontSize: "11px", color: "var(--mauve)", lineHeight: 1.5 }}>{ing.why}</span>
           </div>
         </div>
       ))}
-      <p style={{ fontSize: "11px", fontWeight: 700, color: "var(--rose-dust)", fontFamily: "'Inter', sans-serif", marginBottom: "8px", marginTop: "12px" }}>Avoid this week</p>
+      <p style={{ fontSize: "11px", fontWeight: 700, color: "var(--rose-dust)", marginBottom: "8px", marginTop: "12px" }}>Avoid this week</p>
       {data.avoid.map((ing) => (
         <div key={ing.name} style={{ display: "flex", gap: "10px", marginBottom: "8px", alignItems: "flex-start" }}>
           <div style={{ width: "6px", height: "6px", borderRadius: "50%", backgroundColor: "var(--rose-dust)", flexShrink: 0, marginTop: "5px" }} />
           <div style={{ display: "flex", flexDirection: "column" }}>
-            <span style={{ fontSize: "12px", fontWeight: 600, color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>{ing.name}</span>
-            <span style={{ fontSize: "11px", color: "var(--mauve)", fontFamily: "'Inter', sans-serif", lineHeight: 1.5 }}>{ing.why}</span>
+            <span style={{ fontSize: "12px", fontWeight: 600, color: "var(--plum)", }}>{ing.name}</span>
+            <span style={{ fontSize: "11px", color: "var(--mauve)", lineHeight: 1.5 }}>{ing.why}</span>
           </div>
         </div>
       ))}
@@ -444,20 +441,20 @@ function CycleSkinForecast({ profile }) {
               border: "1px solid " + PHASE_COLORS[seg.phase] + "40",
             }}
           >
-            <p style={{ fontSize: "8px", fontWeight: 700, color: PHASE_COLORS[seg.phase], fontFamily: "'Inter', sans-serif", textTransform: "uppercase" }}>
+            <p style={{ fontSize: "8px", fontWeight: 700, color: PHASE_COLORS[seg.phase], textTransform: "uppercase" }}>
               {PHASE_ABBR[seg.phase]}
             </p>
-            <p style={{ fontSize: "11px", fontWeight: 600, color: "var(--plum)", fontFamily: "'Inter', sans-serif", marginTop: "4px" }}>
+            <p style={{ fontSize: "11px", fontWeight: 600, color: "var(--plum)", marginTop: "4px" }}>
               {seg.days.length}d
             </p>
             {seg.startDaysFromNow === 0 && (
-              <p style={{ fontSize: "10px", fontWeight: 700, color: PHASE_COLORS[seg.phase], fontFamily: "'Inter', sans-serif", marginTop: "2px" }}>Today</p>
+              <p style={{ fontSize: "10px", fontWeight: 700, color: PHASE_COLORS[seg.phase], marginTop: "2px" }}>Today</p>
             )}
           </div>
         ))}
       </div>
       {nextSegment && (
-        <p style={{ fontSize: "12px", color: "var(--mauve)", fontFamily: "'Inter', sans-serif", marginTop: "12px", lineHeight: 1.6 }}>
+        <p style={{ fontSize: "12px", color: "var(--mauve)", marginTop: "12px", lineHeight: 1.6 }}>
           Your skin enters its {PHASE_LABELS[nextSegment.phase].toLowerCase()} phase in {nextSegment.startDaysFromNow} day{nextSegment.startDaysFromNow !== 1 ? "s" : ""} \u2014 {SKIN_FORECAST_COPY[nextSegment.phase]}
         </p>
       )}
@@ -509,7 +506,7 @@ function RoutinePhaseAlert({ skinRoutines, checkins, profile }) {
     <div style={{ backgroundColor: "var(--ivory)", border: "1px solid var(--border)", borderRadius: "20px", padding: "16px", marginBottom: "16px" }}>
       <p style={{ ...sLabel, color: "var(--rose-dust)" }}>Routine gap detected</p>
       {alerts.map((alert, i) => (
-        <p key={i} style={{ fontSize: "13px", color: "var(--plum)", fontFamily: "'Inter', sans-serif", lineHeight: 1.65, marginTop: "8px" }}>
+        <p key={i} style={{ fontSize: "13px", color: "var(--plum)", lineHeight: 1.65, marginTop: "8px" }}>
           {alert}
         </p>
       ))}
@@ -552,7 +549,7 @@ function PatternInsightCard({ checkins, profile }) {
   return (
     <div style={{ ...card, borderColor: "var(--rose-dust-light)", backgroundColor: "var(--rose-dust-subtle)" }}>
       <p style={{ ...sLabel, color: "var(--rose-dust)", marginBottom: "8px" }}>Pattern insight</p>
-      <p style={{ fontSize: "13px", color: "var(--plum)", fontFamily: "'Inter', sans-serif", lineHeight: 1.65 }}>
+      <p style={{ fontSize: "13px", color: "var(--plum)", lineHeight: 1.65 }}>
         {best && worst
           ? `Your skin tends to be clearest in your ${PHASE_LABELS[best].toLowerCase()} phase and most reactive in your ${PHASE_LABELS[worst].toLowerCase()} phase.`
           : "Keep logging to reveal your personal skin pattern."}
@@ -742,8 +739,7 @@ export default function SkinHair() {
                 backgroundColor: `${PHASE_COLORS[currentPhase]}20`,
                 color: PHASE_COLORS[currentPhase],
                 border: `1px solid ${PHASE_COLORS[currentPhase]}50`,
-                fontFamily: "'Inter', sans-serif",
-              }}
+                }}
             >
               {PHASE_LABELS[currentPhase]}
             </span>
@@ -760,20 +756,20 @@ export default function SkinHair() {
           return (
             <div style={{ background: "var(--rose-dust-subtle)", border: "1px solid var(--rose-dust-light)", borderRadius: 20, padding: 20 }}>
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
-                <span style={{ fontSize: 10, fontWeight: 600, color: "var(--rose-dust)", textTransform: "uppercase", letterSpacing: "0.1em", fontFamily: "'Inter', sans-serif" }}>Today's advice</span>
-                {currentPhase && <span style={{ fontSize: 10, fontWeight: 600, color: "var(--rose-dust)", background: "rgba(196,132,154,0.15)", borderRadius: 9999, padding: "2px 9px", fontFamily: "'Inter', sans-serif" }}>{PHASE_LABELS[currentPhase]}</span>}
+                <span style={{ fontSize: 10, fontWeight: 600, color: "var(--rose-dust)", textTransform: "uppercase", letterSpacing: "0.1em", }}>Today's advice</span>
+                {currentPhase && <span style={{ fontSize: 10, fontWeight: 600, color: "var(--rose-dust)", background: "rgba(196,132,154,0.15)", borderRadius: 9999, padding: "2px 9px", }}>{PHASE_LABELS[currentPhase]}</span>}
               </div>
               {parsed ? (
                 <>
-                  <p style={{ fontSize: 14, color: "var(--plum)", lineHeight: 1.6, fontFamily: "'Inter', sans-serif", margin: 0 }}>{parsed.skin_tip}</p>
+                  <p style={{ fontSize: 14, color: "var(--plum)", lineHeight: 1.6, margin: 0 }}>{parsed.skin_tip}</p>
                   <div style={{ borderTop: "1px solid var(--border-subtle)", margin: "10px 0" }} />
-                  <p style={{ fontSize: 10, fontWeight: 600, color: "var(--mauve)", textTransform: "uppercase", letterSpacing: "0.08em", fontFamily: "'Inter', sans-serif", marginBottom: 4 }}>Hair</p>
-                  <p style={{ fontSize: 14, color: "var(--plum)", lineHeight: 1.6, fontFamily: "'Inter', sans-serif", margin: 0 }}>{parsed.hair_tip}</p>
+                  <p style={{ fontSize: 10, fontWeight: 600, color: "var(--mauve)", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 4 }}>Hair</p>
+                  <p style={{ fontSize: 14, color: "var(--plum)", lineHeight: 1.6, margin: 0 }}>{parsed.hair_tip}</p>
                 </>
               ) : fallbackTip ? (
-                <p style={{ fontSize: 14, color: "var(--plum)", lineHeight: 1.6, fontFamily: "'Inter', sans-serif", margin: 0 }}>{fallbackTip}</p>
+                <p style={{ fontSize: 14, color: "var(--plum)", lineHeight: 1.6, margin: 0 }}>{fallbackTip}</p>
               ) : (
-                <p style={{ fontSize: 13, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", margin: 0 }}>Log your check-in daily to unlock personalised skin and hair tips.</p>
+                <p style={{ fontSize: 13, color: "var(--mauve)", margin: 0 }}>Log your check-in daily to unlock personalised skin and hair tips.</p>
               )}
             </div>
           );
@@ -782,12 +778,12 @@ export default function SkinHair() {
         {/* Hairstyle try-on entry card */}
         <div style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)", borderRadius: 20, padding: 20, marginBottom: 16, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
           <div>
-            <p style={{ fontSize: 15, fontWeight: 600, color: "var(--plum)", fontFamily: "'Inter', sans-serif", margin: 0 }}>Hairstyle try-on</p>
-            <p style={{ fontSize: 12, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", marginTop: 3 }}>See yourself in a different colour, style or length.</p>
+            <p style={{ fontSize: 15, fontWeight: 600, color: "var(--plum)", margin: 0 }}>Hairstyle try-on</p>
+            <p style={{ fontSize: 12, color: "var(--mauve)", marginTop: 3 }}>See yourself in a different colour, style or length.</p>
           </div>
           <button
             onClick={() => setTryOnOpen(true)}
-            style={{ backgroundColor: "var(--plum)", color: "white", borderRadius: 9999, padding: "8px 18px", fontSize: 13, fontWeight: 600, border: "none", cursor: "pointer", fontFamily: "'Inter', sans-serif", flexShrink: 0 }}
+            style={{ backgroundColor: "var(--plum)", color: "white", borderRadius: 9999, padding: "8px 18px", fontSize: 13, fontWeight: 600, border: "none", cursor: "pointer", flexShrink: 0 }}
           >
             Try it
           </button>
@@ -806,7 +802,7 @@ export default function SkinHair() {
                 <div style={{ width: 32, height: 4, borderRadius: 9999, backgroundColor: "var(--border)" }} />
               </div>
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", paddingLeft: 20, paddingRight: 20, marginBottom: 20 }}>
-                <h2 style={{ fontFamily: "'Fraunces', serif", fontSize: 18, fontWeight: 600, color: "var(--plum)", margin: 0 }}>Try a new look</h2>
+                <h2 style={{ fontSize: 18, fontWeight: 600, color: "var(--plum)", margin: 0 }}>Try a new look</h2>
                 <button
                   onClick={() => { setTryOnOpen(false); setTryOnPhoto(null); setTryOnResult(null); setTryOnError(null); }}
                   style={{ width: 28, height: 28, borderRadius: 9999, backgroundColor: "var(--ivory-dark)", color: "var(--mauve)", border: "none", cursor: "pointer", fontSize: 16, display: "flex", alignItems: "center", justifyContent: "center" }}
@@ -814,11 +810,11 @@ export default function SkinHair() {
               </div>
               <div style={{ padding: "0 20px 32px" }}>
                 {/* Photo upload */}
-                <p style={{ fontSize: 11, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.12em", color: "var(--mauve)", fontFamily: "'Inter', sans-serif", marginBottom: 8 }}>Your photo</p>
+                <p style={{ fontSize: 11, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.12em", color: "var(--mauve)", marginBottom: 8 }}>Your photo</p>
                 <label style={{ display: "block", border: "2px dashed var(--border)", borderRadius: 16, padding: 28, textAlign: "center", background: "var(--ivory)", cursor: "pointer", marginBottom: 20 }}>
                   {tryOnPhoto
                     ? <img src={tryOnPhoto} alt="Your photo" style={{ width: "100%", maxHeight: 200, objectFit: "cover", borderRadius: 12, display: "block" }} />
-                    : <p style={{ fontSize: 14, color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>Tap to add a photo</p>
+                    : <p style={{ fontSize: 14, color: "var(--mauve)", }}>Tap to add a photo</p>
                   }
                   <input
                     type="file" accept="image/*" capture="user" style={{ display: "none" }}
@@ -833,11 +829,11 @@ export default function SkinHair() {
                 </label>
 
                 {/* What to change */}
-                <p style={{ fontSize: 11, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.12em", color: "var(--mauve)", fontFamily: "'Inter', sans-serif", marginBottom: 8 }}>What to change</p>
+                <p style={{ fontSize: 11, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.12em", color: "var(--mauve)", marginBottom: 8 }}>What to change</p>
                 <div style={{ display: "flex", gap: 8, marginBottom: 20 }}>
                   {["colour", "style", "length"].map(t => (
                     <button key={t} onClick={() => setTryOnChangeType(t)}
-                      style={{ flex: 1, borderRadius: 9999, padding: "7px 14px", fontSize: 13, fontWeight: 500, border: "none", cursor: "pointer", fontFamily: "'Inter', sans-serif", textTransform: "capitalize",
+                      style={{ flex: 1, borderRadius: 9999, padding: "7px 14px", fontSize: 13, fontWeight: 500, border: "none", cursor: "pointer", textTransform: "capitalize",
                         backgroundColor: tryOnChangeType === t ? "var(--plum)" : "var(--ivory-dark)",
                         color: tryOnChangeType === t ? "white" : "var(--plum)"
                       }}>{t}</button>
@@ -845,12 +841,12 @@ export default function SkinHair() {
                 </div>
 
                 {/* Description */}
-                <p style={{ fontSize: 11, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.12em", color: "var(--mauve)", fontFamily: "'Inter', sans-serif", marginBottom: 8 }}>Describe the change</p>
+                <p style={{ fontSize: 11, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.12em", color: "var(--mauve)", marginBottom: 8 }}>Describe the change</p>
                 <input
                   value={tryOnChangeValue}
                   onChange={e => setTryOnChangeValue(e.target.value)}
                   placeholder={tryOnChangeType === "colour" ? "e.g. dark auburn, platinum blonde, jet black" : tryOnChangeType === "style" ? "e.g. soft beach waves, sleek straight, tight curls" : "e.g. short bob, shoulder length, waist length"}
-                  style={{ border: "1px solid var(--border)", borderRadius: 12, padding: "10px 12px", fontSize: 14, fontFamily: "'Inter', sans-serif", color: "var(--plum)", background: "var(--ivory)", width: "100%", boxSizing: "border-box", marginBottom: 16, outline: "none" }}
+                  style={{ border: "1px solid var(--border)", borderRadius: 12, padding: "10px 12px", fontSize: 14, color: "var(--plum)", background: "var(--ivory)", width: "100%", boxSizing: "border-box", marginBottom: 16, outline: "none" }}
                 />
 
                 {/* Generate button */}
@@ -870,13 +866,13 @@ export default function SkinHair() {
                       setTryOnLoading(false);
                     }
                   }}
-                  style={{ width: "100%", height: 52, borderRadius: 9999, background: "var(--rose-dust)", color: "white", fontSize: 15, fontWeight: 600, border: "none", cursor: "pointer", fontFamily: "'Inter', sans-serif", opacity: (tryOnLoading || !tryOnPhoto || !tryOnChangeValue.trim()) ? 0.5 : 1 }}
+                  style={{ width: "100%", height: 52, borderRadius: 9999, background: "var(--rose-dust)", color: "white", fontSize: 15, fontWeight: 600, border: "none", cursor: "pointer", opacity: (tryOnLoading || !tryOnPhoto || !tryOnChangeValue.trim()) ? 0.5 : 1 }}
                 >
                   {tryOnLoading ? "Generating..." : "Generate"}
                 </button>
 
                 {tryOnError && (
-                  <p style={{ fontSize: 13, color: "var(--rose-dust)", fontFamily: "'Inter', sans-serif", textAlign: "center", marginTop: 8 }}>{tryOnError}</p>
+                  <p style={{ fontSize: 13, color: "var(--rose-dust)", textAlign: "center", marginTop: 8 }}>{tryOnError}</p>
                 )}
 
                 {/* Result */}
@@ -884,8 +880,8 @@ export default function SkinHair() {
                   <div>
                     <img src={tryOnResult} alt="Your new look" style={{ width: "100%", borderRadius: 16, marginTop: 16, maxHeight: 360, objectFit: "cover", display: "block" }} />
                     <div style={{ display: "flex", gap: 8, marginTop: 12 }}>
-                      <button onClick={() => window.open(tryOnResult, "_blank")} style={{ flex: 1, borderRadius: 9999, padding: "10px", fontSize: 13, fontWeight: 600, backgroundColor: "var(--plum)", color: "white", border: "none", cursor: "pointer", fontFamily: "'Inter', sans-serif" }}>Save image</button>
-                      <button onClick={() => { setTryOnResult(null); setTryOnChangeValue(""); }} style={{ flex: 1, borderRadius: 9999, padding: "10px", fontSize: 13, fontWeight: 600, backgroundColor: "var(--ivory-dark)", color: "var(--plum)", border: "1px solid var(--border)", cursor: "pointer", fontFamily: "'Inter', sans-serif" }}>Try again</button>
+                      <button onClick={() => window.open(tryOnResult, "_blank")} style={{ flex: 1, borderRadius: 9999, padding: "10px", fontSize: 13, fontWeight: 600, backgroundColor: "var(--plum)", color: "white", border: "none", cursor: "pointer", }}>Save image</button>
+                      <button onClick={() => { setTryOnResult(null); setTryOnChangeValue(""); }} style={{ flex: 1, borderRadius: 9999, padding: "10px", fontSize: 13, fontWeight: 600, backgroundColor: "var(--ivory-dark)", color: "var(--plum)", border: "1px solid var(--border)", cursor: "pointer", }}>Try again</button>
                     </div>
                   </div>
                 )}
@@ -897,7 +893,7 @@ export default function SkinHair() {
         {/* Trending row */}
         {trendItems.length > 0 && (
           <div>
-            <p style={{ fontSize: 13, fontWeight: 600, color: "var(--plum)", fontFamily: "'Inter', sans-serif", marginBottom: 10 }}>Trending</p>
+            <p style={{ fontSize: 13, fontWeight: 600, color: "var(--plum)", marginBottom: 10 }}>Trending</p>
             <style>{`.sh-trend-scroll::-webkit-scrollbar{display:none}`}</style>
             <div className="sh-trend-scroll" style={{ display: "flex", gap: 12, overflowX: "auto", paddingBottom: 8, msOverflowStyle: "none", scrollbarWidth: "none" }}>
               {trendItems.map(item => (
@@ -910,8 +906,8 @@ export default function SkinHair() {
                     {item.image_url && <img src={item.image_url} alt="" loading="lazy" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} onError={e => { e.target.style.display = "none"; }} />}
                   </div>
                   <div style={{ padding: "10px 12px" }}>
-                    <p style={{ fontSize: 12, fontWeight: 600, color: "var(--plum)", fontFamily: "'Inter', sans-serif", lineHeight: 1.4, overflow: "hidden", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", margin: "0 0 4px" }}>{item.title}</p>
-                    <p style={{ fontSize: 10, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", margin: 0 }}>{item.source_name}</p>
+                    <p style={{ fontSize: 12, fontWeight: 600, color: "var(--plum)", lineHeight: 1.4, overflow: "hidden", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", margin: "0 0 4px" }}>{item.title}</p>
+                    <p style={{ fontSize: 10, color: "var(--mauve)", margin: 0 }}>{item.source_name}</p>
                   </div>
                 </div>
               ))}
@@ -931,7 +927,6 @@ export default function SkinHair() {
               <p style={sLabel} className="mb-1">{stat.label}</p>
               <p
                 style={{
-                  fontFamily: "'Fraunces', serif",
                   fontSize: "15px",
                   fontWeight: 700,
                   color: "var(--plum)",
@@ -954,8 +949,7 @@ export default function SkinHair() {
                 style={{
                   backgroundColor: activeTab === tab ? "var(--plum)" : "transparent",
                   color: activeTab === tab ? "white" : "var(--mauve)",
-                  fontFamily: "'Inter', sans-serif",
-                }}
+                  }}
               >
                 {tab}
               </button>
@@ -970,8 +964,7 @@ export default function SkinHair() {
                 style={{
                   backgroundColor: timeRange === r ? "var(--plum)" : "transparent",
                   color: timeRange === r ? "white" : "var(--mauve)",
-                  fontFamily: "'Inter', sans-serif",
-                }}
+                  }}
               >
                 {r}d
               </button>
@@ -990,7 +983,6 @@ export default function SkinHair() {
             </div>
             <h3
               style={{
-                fontFamily: "'Fraunces', serif",
                 fontSize: "18px",
                 color: "var(--plum)",
                 fontWeight: 700,
@@ -999,7 +991,7 @@ export default function SkinHair() {
             >
               No skin & hair data yet
             </h3>
-            <p style={{ fontSize: "13px", color: "var(--mauve)", fontFamily: "'Inter', sans-serif", lineHeight: 1.6 }}>
+            <p style={{ fontSize: "13px", color: "var(--mauve)", lineHeight: 1.6 }}>
               Log your skin condition and hair shedding in the daily check-in to see your trends here.
             </p>
             <a
@@ -1010,8 +1002,7 @@ export default function SkinHair() {
                 color: "white",
                 borderRadius: "12px",
                 padding: "12px 24px",
-                fontFamily: "'Inter', sans-serif",
-              }}
+                }}
             >
               Go to check-in
             </a>
@@ -1034,11 +1025,11 @@ export default function SkinHair() {
               {Object.values(skinPhaseData).some((v) => v > 0) ? (
                 <PhaseBarChart data={skinPhaseData} />
               ) : (
-                <p style={{ fontSize: "13px", color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>
+                <p style={{ fontSize: "13px", color: "var(--mauve)", }}>
                   Not enough data yet for this period.
                 </p>
               )}
-              <p style={{ fontSize: "11px", color: "var(--mauve)", fontFamily: "'Inter', sans-serif", marginTop: "8px" }}>
+              <p style={{ fontSize: "11px", color: "var(--mauve)", marginTop: "8px" }}>
                 Higher score = clearer skin in that phase
               </p>
             </div>
@@ -1062,10 +1053,10 @@ export default function SkinHair() {
                   {breakoutEntries.map(([loc, count]) => (
                     <div key={loc}>
                       <div className="flex items-center justify-between mb-1">
-                        <span style={{ fontSize: "12px", fontWeight: 500, color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>
+                        <span style={{ fontSize: "12px", fontWeight: 500, color: "var(--plum)", }}>
                           {loc}
                         </span>
-                        <span style={{ fontSize: "11px", color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>
+                        <span style={{ fontSize: "11px", color: "var(--mauve)", }}>
                           {count}x
                         </span>
                       </div>
@@ -1087,7 +1078,7 @@ export default function SkinHair() {
                     className="mt-3 rounded-xl p-3"
                     style={{ backgroundColor: "var(--rose-dust-subtle)", border: "1px solid var(--rose-dust-light)" }}
                   >
-                    <p style={{ fontSize: "12px", color: "var(--plum)", fontFamily: "'Inter', sans-serif", lineHeight: 1.6 }}>
+                    <p style={{ fontSize: "12px", color: "var(--plum)", lineHeight: 1.6 }}>
                       Chin and jaw account for over 60% of your logged breakouts — a pattern strongly associated with androgen-driven hormonal acne.
                     </p>
                   </div>
@@ -1139,20 +1130,20 @@ export default function SkinHair() {
                         className="flex items-center justify-between gap-3 rounded-[14px] px-4 py-3"
                         style={{ backgroundColor: "var(--ivory)", border: "1px solid var(--border-subtle)" }}
                       >
-                        <span style={{ fontSize: "12px", color: "var(--mauve)", fontFamily: "'Inter', sans-serif", flexShrink: 0 }}>
+                        <span style={{ fontSize: "12px", color: "var(--mauve)", flexShrink: 0 }}>
                           {format(parseISO(c.date), "d MMM")}
                         </span>
                         <div className="flex items-center gap-2 flex-wrap flex-1 justify-end">
                           <span
                             className="text-xs font-medium px-2.5 py-1 rounded-full"
-                            style={{ backgroundColor: pill.bg, color: pill.color, fontFamily: "'Inter', sans-serif" }}
+                            style={{ backgroundColor: pill.bg, color: pill.color, }}
                           >
                             {c.skin_condition}
                           </span>
                           {c.skin && (
                             <span
                               className="text-xs font-semibold px-2 py-1 rounded-full"
-                              style={{ backgroundColor: "var(--ivory-dark)", color: "var(--plum)", fontFamily: "'Inter', sans-serif", border: "1px solid var(--border)" }}
+                              style={{ backgroundColor: "var(--ivory-dark)", color: "var(--plum)", border: "1px solid var(--border)" }}
                             >
                               {c.skin}/5
                             </span>
@@ -1161,7 +1152,7 @@ export default function SkinHair() {
                             <span
                               key={loc}
                               className="text-xs px-2 py-0.5 rounded-full"
-                              style={{ backgroundColor: "var(--rose-dust-subtle)", color: "var(--rose-dust)", fontFamily: "'Inter', sans-serif" }}
+                              style={{ backgroundColor: "var(--rose-dust-subtle)", color: "var(--rose-dust)", }}
                             >
                               {loc}
                             </span>
@@ -1195,11 +1186,11 @@ export default function SkinHair() {
               {Object.values(hairPhaseData).some((v) => v > 0) ? (
                 <PhaseBarChart data={hairPhaseData} />
               ) : (
-                <p style={{ fontSize: "13px", color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>
+                <p style={{ fontSize: "13px", color: "var(--mauve)", }}>
                   Not enough data yet for this period.
                 </p>
               )}
-              <p style={{ fontSize: "11px", color: "var(--mauve)", fontFamily: "'Inter', sans-serif", marginTop: "8px" }}>
+              <p style={{ fontSize: "11px", color: "var(--mauve)", marginTop: "8px" }}>
                 Higher bar = more shedding in that phase
               </p>
             </div>
@@ -1220,10 +1211,10 @@ export default function SkinHair() {
                   {Object.entries(scalpCounts).filter(([, v]) => v > 0).sort((a, b) => b[1] - a[1]).map(([cond, count]) => (
                     <div key={cond}>
                       <div className="flex items-center justify-between mb-1">
-                        <span style={{ fontSize: "12px", fontWeight: 500, color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>
+                        <span style={{ fontSize: "12px", fontWeight: 500, color: "var(--plum)", }}>
                           {cond}
                         </span>
-                        <span style={{ fontSize: "11px", color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>
+                        <span style={{ fontSize: "11px", color: "var(--mauve)", }}>
                           {count}x · {Math.round((count / totalScalp) * 100)}%
                         </span>
                       </div>
@@ -1245,7 +1236,7 @@ export default function SkinHair() {
                     className="mt-3 rounded-xl p-3"
                     style={{ backgroundColor: "var(--mauve-subtle)", border: "1px solid var(--mauve-light)" }}
                   >
-                    <p style={{ fontSize: "12px", color: "var(--plum)", fontFamily: "'Inter', sans-serif", lineHeight: 1.6 }}>
+                    <p style={{ fontSize: "12px", color: "var(--plum)", lineHeight: 1.6 }}>
                       Oily scalp days are expected around ovulation due to a testosterone surge — this is a normal hormonal pattern, not a product issue.
                     </p>
                   </div>
@@ -1301,20 +1292,20 @@ export default function SkinHair() {
                         className="flex items-center justify-between gap-3 rounded-[14px] px-4 py-3"
                         style={{ backgroundColor: "var(--ivory)", border: "1px solid var(--border-subtle)" }}
                       >
-                        <span style={{ fontSize: "12px", color: "var(--mauve)", fontFamily: "'Inter', sans-serif", flexShrink: 0 }}>
+                        <span style={{ fontSize: "12px", color: "var(--mauve)", flexShrink: 0 }}>
                           {format(parseISO(c.date), "d MMM")}
                         </span>
                         <div className="flex items-center gap-2 flex-wrap flex-1 justify-end">
                           <span
                             className="text-xs font-medium px-2.5 py-1 rounded-full"
-                            style={{ backgroundColor: pill.bg, color: pill.color, fontFamily: "'Inter', sans-serif" }}
+                            style={{ backgroundColor: pill.bg, color: pill.color, }}
                           >
                             {c.hair_shedding}
                           </span>
                           {c.scalp_condition && (
                             <span
                               className="text-xs px-2.5 py-1 rounded-full"
-                              style={{ backgroundColor: scalpPill.bg, color: scalpPill.color, fontFamily: "'Inter', sans-serif" }}
+                              style={{ backgroundColor: scalpPill.bg, color: scalpPill.color, }}
                             >
                               {c.scalp_condition}
                             </span>
@@ -1341,12 +1332,12 @@ function SkincareRoutineSection({ isPremium, routines, showAdd, setShowAdd, newP
   const inner = (
     <div style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)", borderRadius: "20px", boxShadow: "var(--shadow-sm)", padding: "1.25rem" }}>
       <div className="flex items-center justify-between mb-3">
-        <p style={{ fontSize: "0.6rem", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.12em", color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>Skincare routine</p>
+        <p style={{ fontSize: "0.6rem", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.12em", color: "var(--mauve)", }}>Skincare routine</p>
         {isPremium && (
           <button
             onClick={() => setShowAdd((v) => !v)}
             className="flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-full transition-all"
-            style={{ backgroundColor: "var(--plum)", color: "white", fontFamily: "'Inter', sans-serif" }}
+            style={{ backgroundColor: "var(--plum)", color: "white", }}
           >
             <Plus className="w-3 h-3" /> Add product
           </button>
@@ -1360,14 +1351,14 @@ function SkincareRoutineSection({ isPremium, routines, showAdd, setShowAdd, newP
             value={newProduct.product_name}
             onChange={(e) => setNewProduct({ ...newProduct, product_name: e.target.value })}
             className="w-full px-3.5 py-2.5 rounded-xl text-sm focus:outline-none"
-            style={{ border: "1.5px solid var(--border)", fontFamily: "'Inter', sans-serif", color: "var(--plum)", backgroundColor: "var(--surface)" }}
+            style={{ border: "1.5px solid var(--border)", color: "var(--plum)", backgroundColor: "var(--surface)" }}
           />
           <div className="grid grid-cols-2 gap-2">
             <select
               value={newProduct.product_type}
               onChange={(e) => setNewProduct({ ...newProduct, product_type: e.target.value })}
               className="px-3 py-2.5 rounded-xl text-xs font-medium focus:outline-none capitalize"
-              style={{ border: "1.5px solid var(--border)", fontFamily: "'Inter', sans-serif", color: "var(--plum)", backgroundColor: "var(--surface)" }}
+              style={{ border: "1.5px solid var(--border)", color: "var(--plum)", backgroundColor: "var(--surface)" }}
             >
               {PRODUCT_TYPES.map((t) => <option key={t} value={t}>{t}</option>)}
             </select>
@@ -1375,7 +1366,7 @@ function SkincareRoutineSection({ isPremium, routines, showAdd, setShowAdd, newP
               value={newProduct.routine_slot}
               onChange={(e) => setNewProduct({ ...newProduct, routine_slot: e.target.value })}
               className="px-3 py-2.5 rounded-xl text-xs font-medium focus:outline-none capitalize"
-              style={{ border: "1.5px solid var(--border)", fontFamily: "'Inter', sans-serif", color: "var(--plum)", backgroundColor: "var(--surface)" }}
+              style={{ border: "1.5px solid var(--border)", color: "var(--plum)", backgroundColor: "var(--surface)" }}
             >
               {ROUTINE_SLOTS.map((s) => <option key={s} value={s}>{s}</option>)}
             </select>
@@ -1385,11 +1376,11 @@ function SkincareRoutineSection({ isPremium, routines, showAdd, setShowAdd, newP
             value={newProduct.notes}
             onChange={(e) => setNewProduct({ ...newProduct, notes: e.target.value })}
             className="w-full px-3.5 py-2.5 rounded-xl text-sm focus:outline-none"
-            style={{ border: "1.5px solid var(--border)", fontFamily: "'Inter', sans-serif", color: "var(--plum)", backgroundColor: "var(--surface)" }}
+            style={{ border: "1.5px solid var(--border)", color: "var(--plum)", backgroundColor: "var(--surface)" }}
           />
           <div className="flex gap-2">
-            <button onClick={() => setShowAdd(false)} className="flex-1 py-2 rounded-xl text-sm font-semibold" style={{ border: "1.5px solid var(--border)", color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>Cancel</button>
-            <button onClick={onSave} disabled={!newProduct.product_name.trim() || saving} className="flex-1 py-2 rounded-xl text-sm font-semibold" style={{ backgroundColor: "var(--plum)", color: "white", fontFamily: "'Inter', sans-serif", opacity: (!newProduct.product_name.trim() || saving) ? 0.5 : 1 }}>
+            <button onClick={() => setShowAdd(false)} className="flex-1 py-2 rounded-xl text-sm font-semibold" style={{ border: "1.5px solid var(--border)", color: "var(--mauve)", }}>Cancel</button>
+            <button onClick={onSave} disabled={!newProduct.product_name.trim() || saving} className="flex-1 py-2 rounded-xl text-sm font-semibold" style={{ backgroundColor: "var(--plum)", color: "white", opacity: (!newProduct.product_name.trim() || saving) ? 0.5 : 1 }}>
               {saving ? "Saving..." : "Save"}
             </button>
           </div>
@@ -1397,7 +1388,7 @@ function SkincareRoutineSection({ isPremium, routines, showAdd, setShowAdd, newP
       )}
 
       {routines.length === 0 ? (
-        <p style={{ fontSize: "13px", color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>No products logged yet. Add your current routine to track how products affect your skin.</p>
+        <p style={{ fontSize: "13px", color: "var(--mauve)", }}>No products logged yet. Add your current routine to track how products affect your skin.</p>
       ) : (
         <div className="space-y-2">
           {["morning", "evening", "both"].map((slot) => {
@@ -1405,12 +1396,12 @@ function SkincareRoutineSection({ isPremium, routines, showAdd, setShowAdd, newP
             if (!slotItems.length) return null;
             return (
               <div key={slot}>
-                <p style={{ fontSize: "10px", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.1em", color: "var(--mauve)", fontFamily: "'Inter', sans-serif", marginBottom: "6px", marginTop: "8px" }}>{slot}</p>
+                <p style={{ fontSize: "10px", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.1em", color: "var(--mauve)", marginBottom: "6px", marginTop: "8px" }}>{slot}</p>
                 {slotItems.map((r) => (
                   <div key={r.id} className="flex items-center justify-between gap-3 rounded-[12px] px-3.5 py-2.5 mb-1.5" style={{ backgroundColor: "var(--ivory)", border: "1px solid var(--border-subtle)" }}>
                     <div className="flex-1 min-w-0">
-                      <p style={{ fontSize: "13px", fontWeight: 500, color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>{r.product_name}</p>
-                      <p style={{ fontSize: "11px", color: "var(--mauve)", fontFamily: "'Inter', sans-serif", textTransform: "capitalize" }}>{r.product_type}</p>
+                      <p style={{ fontSize: "13px", fontWeight: 500, color: "var(--plum)", }}>{r.product_name}</p>
+                      <p style={{ fontSize: "11px", color: "var(--mauve)", textTransform: "capitalize" }}>{r.product_type}</p>
                     </div>
                     {isPremium && (
                       <button onClick={() => onRemove(r.id)} style={{ color: "var(--mauve)", padding: "4px" }}><X className="w-3.5 h-3.5" /></button>
@@ -1433,12 +1424,12 @@ function HairRoutineSection({ isPremium, routines, showAdd, setShowAdd, newWashD
   const inner = (
     <div style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)", borderRadius: "20px", boxShadow: "var(--shadow-sm)", padding: "1.25rem" }}>
       <div className="flex items-center justify-between mb-3">
-        <p style={{ fontSize: "0.6rem", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.12em", color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>Wash day log</p>
+        <p style={{ fontSize: "0.6rem", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.12em", color: "var(--mauve)", }}>Wash day log</p>
         {isPremium && (
           <button
             onClick={() => setShowAdd((v) => !v)}
             className="flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-full"
-            style={{ backgroundColor: "var(--sage)", color: "white", fontFamily: "'Inter', sans-serif" }}
+            style={{ backgroundColor: "var(--sage)", color: "white", }}
           >
             <Plus className="w-3 h-3" /> Log wash day
           </button>
@@ -1449,43 +1440,43 @@ function HairRoutineSection({ isPremium, routines, showAdd, setShowAdd, newWashD
         <div className="mb-4 space-y-3 rounded-[16px] p-4" style={{ backgroundColor: "var(--ivory)", border: "1px solid var(--border)" }}>
           <div className="grid grid-cols-2 gap-2">
             <div>
-              <p style={{ fontSize: "10px", color: "var(--mauve)", marginBottom: "4px", fontFamily: "'Inter', sans-serif" }}>Date</p>
+              <p style={{ fontSize: "10px", color: "var(--mauve)", marginBottom: "4px", }}>Date</p>
               <input
                 type="date"
                 value={newWashDay.wash_date}
                 onChange={(e) => setNewWashDay({ ...newWashDay, wash_date: e.target.value })}
                 className="w-full px-3 py-2.5 rounded-xl text-xs focus:outline-none"
-                style={{ border: "1.5px solid var(--border)", fontFamily: "'Inter', sans-serif", color: "var(--plum)", backgroundColor: "var(--surface)" }}
+                style={{ border: "1.5px solid var(--border)", color: "var(--plum)", backgroundColor: "var(--surface)" }}
               />
             </div>
             <div>
-              <p style={{ fontSize: "10px", color: "var(--mauve)", marginBottom: "4px", fontFamily: "'Inter', sans-serif" }}>Scalp</p>
+              <p style={{ fontSize: "10px", color: "var(--mauve)", marginBottom: "4px", }}>Scalp</p>
               <select
                 value={newWashDay.scalp_condition}
                 onChange={(e) => setNewWashDay({ ...newWashDay, scalp_condition: e.target.value })}
                 className="w-full px-3 py-2.5 rounded-xl text-xs focus:outline-none"
-                style={{ border: "1.5px solid var(--border)", fontFamily: "'Inter', sans-serif", color: "var(--plum)", backgroundColor: "var(--surface)" }}
+                style={{ border: "1.5px solid var(--border)", color: "var(--plum)", backgroundColor: "var(--surface)" }}
               >
                 {["Normal", "Oily", "Dry/flaky"].map((s) => <option key={s} value={s}>{s}</option>)}
               </select>
             </div>
           </div>
-          <input placeholder="Shampoo used" value={newWashDay.shampoo} onChange={(e) => setNewWashDay({ ...newWashDay, shampoo: e.target.value })} className="w-full px-3.5 py-2.5 rounded-xl text-sm focus:outline-none" style={{ border: "1.5px solid var(--border)", fontFamily: "'Inter', sans-serif", color: "var(--plum)", backgroundColor: "var(--surface)" }} />
-          <input placeholder="Conditioner" value={newWashDay.conditioner} onChange={(e) => setNewWashDay({ ...newWashDay, conditioner: e.target.value })} className="w-full px-3.5 py-2.5 rounded-xl text-sm focus:outline-none" style={{ border: "1.5px solid var(--border)", fontFamily: "'Inter', sans-serif", color: "var(--plum)", backgroundColor: "var(--surface)" }} />
-          <input placeholder="Treatment (mask, oil, deep condition — optional)" value={newWashDay.treatment} onChange={(e) => setNewWashDay({ ...newWashDay, treatment: e.target.value })} className="w-full px-3.5 py-2.5 rounded-xl text-sm focus:outline-none" style={{ border: "1.5px solid var(--border)", fontFamily: "'Inter', sans-serif", color: "var(--plum)", backgroundColor: "var(--surface)" }} />
+          <input placeholder="Shampoo used" value={newWashDay.shampoo} onChange={(e) => setNewWashDay({ ...newWashDay, shampoo: e.target.value })} className="w-full px-3.5 py-2.5 rounded-xl text-sm focus:outline-none" style={{ border: "1.5px solid var(--border)", color: "var(--plum)", backgroundColor: "var(--surface)" }} />
+          <input placeholder="Conditioner" value={newWashDay.conditioner} onChange={(e) => setNewWashDay({ ...newWashDay, conditioner: e.target.value })} className="w-full px-3.5 py-2.5 rounded-xl text-sm focus:outline-none" style={{ border: "1.5px solid var(--border)", color: "var(--plum)", backgroundColor: "var(--surface)" }} />
+          <input placeholder="Treatment (mask, oil, deep condition — optional)" value={newWashDay.treatment} onChange={(e) => setNewWashDay({ ...newWashDay, treatment: e.target.value })} className="w-full px-3.5 py-2.5 rounded-xl text-sm focus:outline-none" style={{ border: "1.5px solid var(--border)", color: "var(--plum)", backgroundColor: "var(--surface)" }} />
           <div className="flex items-center gap-3">
             <label className="flex items-center gap-2 cursor-pointer">
               <input type="checkbox" checked={newWashDay.heat_used} onChange={(e) => setNewWashDay({ ...newWashDay, heat_used: e.target.checked })} />
-              <span style={{ fontSize: "12px", color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>Heat used</span>
+              <span style={{ fontSize: "12px", color: "var(--plum)", }}>Heat used</span>
             </label>
             <label className="flex items-center gap-2 cursor-pointer">
               <input type="checkbox" checked={newWashDay.shedding_noted} onChange={(e) => setNewWashDay({ ...newWashDay, shedding_noted: e.target.checked })} />
-              <span style={{ fontSize: "12px", color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>Shedding noted</span>
+              <span style={{ fontSize: "12px", color: "var(--plum)", }}>Shedding noted</span>
             </label>
           </div>
           <div className="flex gap-2">
-            <button onClick={() => setShowAdd(false)} className="flex-1 py-2 rounded-xl text-sm font-semibold" style={{ border: "1.5px solid var(--border)", color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>Cancel</button>
-            <button onClick={onSave} disabled={saving} className="flex-1 py-2 rounded-xl text-sm font-semibold" style={{ backgroundColor: "var(--sage)", color: "white", fontFamily: "'Inter', sans-serif", opacity: saving ? 0.5 : 1 }}>
+            <button onClick={() => setShowAdd(false)} className="flex-1 py-2 rounded-xl text-sm font-semibold" style={{ border: "1.5px solid var(--border)", color: "var(--mauve)", }}>Cancel</button>
+            <button onClick={onSave} disabled={saving} className="flex-1 py-2 rounded-xl text-sm font-semibold" style={{ backgroundColor: "var(--sage)", color: "white", opacity: saving ? 0.5 : 1 }}>
               {saving ? "Saving..." : "Save"}
             </button>
           </div>
@@ -1493,24 +1484,24 @@ function HairRoutineSection({ isPremium, routines, showAdd, setShowAdd, newWashD
       )}
 
       {routines.length === 0 ? (
-        <p style={{ fontSize: "13px", color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>No wash days logged yet. Track your wash routine to spot patterns between products and shedding.</p>
+        <p style={{ fontSize: "13px", color: "var(--mauve)", }}>No wash days logged yet. Track your wash routine to spot patterns between products and shedding.</p>
       ) : (
         <div className="space-y-2">
           {routines.slice(0, 8).map((r) => (
             <div key={r.id} className="flex items-center justify-between gap-3 rounded-[12px] px-3.5 py-2.5" style={{ backgroundColor: "var(--ivory)", border: "1px solid var(--border-subtle)" }}>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2">
-                  <p style={{ fontSize: "12px", fontWeight: 600, color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>
+                  <p style={{ fontSize: "12px", fontWeight: 600, color: "var(--plum)", }}>
                     {r.wash_date ? format(parseISO(r.wash_date), "d MMM") : "—"}
                   </p>
                   {r.scalp_condition && (
-                    <span className="text-xs px-2 py-0.5 rounded-full" style={{ backgroundColor: r.scalp_condition === "Oily" ? "var(--mauve-subtle)" : r.scalp_condition === "Dry/flaky" ? "var(--rose-dust-subtle)" : "var(--sage-subtle)", color: r.scalp_condition === "Oily" ? "var(--mauve)" : r.scalp_condition === "Dry/flaky" ? "var(--rose-dust)" : "var(--sage)", fontFamily: "'Inter', sans-serif" }}>{r.scalp_condition}</span>
+                    <span className="text-xs px-2 py-0.5 rounded-full" style={{ backgroundColor: r.scalp_condition === "Oily" ? "var(--mauve-subtle)" : r.scalp_condition === "Dry/flaky" ? "var(--rose-dust-subtle)" : "var(--sage-subtle)", color: r.scalp_condition === "Oily" ? "var(--mauve)" : r.scalp_condition === "Dry/flaky" ? "var(--rose-dust)" : "var(--sage)", }}>{r.scalp_condition}</span>
                   )}
                   {r.shedding_noted && (
-                    <span className="text-xs px-2 py-0.5 rounded-full" style={{ backgroundColor: "var(--rose-dust-subtle)", color: "var(--rose-dust)", fontFamily: "'Inter', sans-serif" }}>Shedding</span>
+                    <span className="text-xs px-2 py-0.5 rounded-full" style={{ backgroundColor: "var(--rose-dust-subtle)", color: "var(--rose-dust)", }}>Shedding</span>
                   )}
                 </div>
-                {r.shampoo && <p style={{ fontSize: "11px", color: "var(--mauve)", fontFamily: "'Inter', sans-serif", marginTop: "2px" }}>{r.shampoo}{r.conditioner ? ` · ${r.conditioner}` : ""}</p>}
+                {r.shampoo && <p style={{ fontSize: "11px", color: "var(--mauve)", marginTop: "2px" }}>{r.shampoo}{r.conditioner ? ` · ${r.conditioner}` : ""}</p>}
               </div>
               {isPremium && (
                 <button onClick={() => onRemove(r.id)} style={{ color: "var(--mauve)", padding: "4px" }}><X className="w-3.5 h-3.5" /></button>
@@ -1541,7 +1532,7 @@ function SheddingTrendAlert({ checkins, currentPhase }) {
         style={{ backgroundColor: "var(--rose-dust-subtle)", border: "1px solid var(--rose-dust-light)" }}
       >
         <p style={{ ...sLabel, color: "var(--rose-dust)", marginBottom: "6px" }}>Shedding alert</p>
-        <p style={{ fontSize: "13px", color: "var(--plum)", fontFamily: "'Inter', sans-serif", lineHeight: 1.65 }}>
+        <p style={{ fontSize: "13px", color: "var(--plum)", lineHeight: 1.65 }}>
           You have logged significant shedding for {consecutive} consecutive days. High shedding can be linked to stress, iron deficiency, or hormonal shifts. Track your stress levels and consider speaking to a GP if it continues.
         </p>
       </div>
@@ -1558,7 +1549,7 @@ function SheddingTrendAlert({ checkins, currentPhase }) {
           style={{ backgroundColor: "var(--sage-subtle)", border: "1px solid var(--sage)" }}
         >
           <p style={{ ...sLabel, color: "var(--sage)", marginBottom: "6px" }}>Unusual shedding detected</p>
-          <p style={{ fontSize: "13px", color: "var(--plum)", fontFamily: "'Inter', sans-serif", lineHeight: 1.65 }}>
+          <p style={{ fontSize: "13px", color: "var(--plum)", lineHeight: 1.65 }}>
             You are in the follicular phase \u2014 normally your lowest-shedding window \u2014 but you have logged elevated shedding recently. This can indicate stress, nutritional deficiency, or a delayed response to the previous cycle\u2019s hormonal drop. Tracking consistently this week will reveal whether it continues into the next phase.
           </p>
         </div>

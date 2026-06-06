@@ -20,7 +20,7 @@ export default function Assistant() {
   return (
     <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: "var(--ivory)" }}>
       <div style={{ textAlign: "center" }}>
-        <p style={{ fontSize: 14, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", marginBottom: 16 }}>
+        <p style={{ fontSize: 14, color: "var(--mauve)", marginBottom: 16 }}>
           Assistant is open.
         </p>
         <button
@@ -28,7 +28,7 @@ export default function Assistant() {
             window.dispatchEvent(new Event("fw_close_assistant"));
             navigate("/Today", { replace: true });
           }}
-          style={{ fontSize: 13, color: "var(--rose-dust)", background: "none", border: "none", cursor: "pointer", fontFamily: "'Inter', sans-serif" }}
+          style={{ fontSize: 13, color: "var(--rose-dust)", background: "none", border: "none", cursor: "pointer", }}
         >
           Back to Today
         </button>

@@ -30,8 +30,7 @@ const card = {
 
 const sLabel = {
   fontSize: "0.6rem", fontWeight: 600, textTransform: "uppercase",
-  letterSpacing: "0.12em", color: "var(--mauve)", fontFamily: "'Inter', sans-serif",
-};
+  letterSpacing: "0.12em", color: "var(--mauve)", };
 
 export default function NutritionPlanTab({ user, nutritionProfile }) {
   const [plan, setPlan]           = useState(null);
@@ -182,7 +181,7 @@ export default function NutritionPlanTab({ user, nutritionProfile }) {
                 border: `1px solid ${isToday && !isActive ? "var(--rose-dust-light)" : isActive ? "var(--plum)" : "var(--border)"}`,
                 boxShadow: isActive ? "var(--shadow-sm)" : "none",
               }}>
-              <span style={{ fontFamily: "'Inter', sans-serif" }}>{format(day, "EEE")}</span>
+              <span style={{ }}>{format(day, "EEE")}</span>
               <span className="text-base font-bold mt-0.5" style={{ color: isActive ? "white" : "var(--plum)" }}>
                 {format(day, "d")}
               </span>
@@ -212,7 +211,7 @@ export default function NutritionPlanTab({ user, nutritionProfile }) {
                   {items.map((item, idx) => (
                     <div key={idx} className="flex items-center justify-between rounded-2xl px-4 py-3"
                       style={{ backgroundColor: "var(--ivory)", border: "1px solid var(--border-subtle)" }}>
-                      <p className="text-sm" style={{ color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>{item}</p>
+                      <p className="text-sm" style={{ color: "var(--plum)", }}>{item}</p>
                       <button onClick={() => removeMealFromSlot(activeDay, mealType, idx)}
                         style={{ color: "var(--border)" }}
                         onMouseEnter={e => e.currentTarget.style.color = "var(--rose-dust)"}
@@ -231,7 +230,7 @@ export default function NutritionPlanTab({ user, nutritionProfile }) {
                   <input value={mealInput} onChange={(e) => setMealInput(e.target.value)}
                     placeholder={`Add ${MEAL_LABELS[mealType].toLowerCase()}…`} autoFocus
                     className="w-full p-3.5 rounded-2xl text-sm focus:outline-none transition-all"
-                    style={{ backgroundColor: "var(--ivory)", border: "1.5px solid var(--border)", color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}
+                    style={{ backgroundColor: "var(--ivory)", border: "1.5px solid var(--border)", color: "var(--plum)", }}
                     onFocus={e => e.target.style.borderColor = "var(--rose-dust-light)"}
                     onBlur={e => e.target.style.borderColor = "var(--border)"} />
                   <div className="flex flex-wrap gap-1.5">

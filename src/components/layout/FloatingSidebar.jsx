@@ -38,15 +38,15 @@ function DesktopSidebar({ currentPageName }) {
           className="w-10 h-10 rounded-2xl flex items-center justify-center mb-4"
           style={{ backgroundColor: "var(--rose-dust-subtle)", border: "1px solid var(--rose-dust-light)" }}
         >
-          <span style={{ color: "var(--rose-dust)", fontSize: "1.1rem", fontWeight: 600, fontFamily: "serif" }}>F</span>
+          <span style={{ color: "var(--rose-dust)", fontSize: "1.1rem", fontWeight: 600, }}>F</span>
         </div>
         <h2
           className="text-xl font-bold leading-tight"
-          style={{ fontFamily: "'Fraunces', serif", color: "var(--plum)", letterSpacing: "-0.02em" }}
+          style={{ color: "var(--plum)", letterSpacing: "-0.02em" }}
         >
           FemWell
         </h2>
-        <p className="text-xs mt-1" style={{ color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>
+        <p className="text-xs mt-1" style={{ color: "var(--mauve)", }}>
           Private wellness
         </p>
       </div>
@@ -68,7 +68,7 @@ function DesktopSidebar({ currentPageName }) {
               onMouseLeave={e => { if (!active) { e.currentTarget.style.backgroundColor = "transparent"; e.currentTarget.style.color = "var(--mauve)"; }}}
             >
               <Icon className="w-4 h-4 flex-shrink-0" strokeWidth={active ? 2 : 1.5} />
-              <span className="font-medium text-sm" style={{ fontFamily: "'Inter', sans-serif", letterSpacing: "0.005em" }}>
+              <span className="font-medium text-sm" style={{ letterSpacing: "0.005em" }}>
                 {label}
               </span>
               {active && (
@@ -83,7 +83,7 @@ function DesktopSidebar({ currentPageName }) {
       </nav>
 
       <div className="px-7 py-5" style={{ borderTop: "1px solid var(--border-subtle)" }}>
-        <p className="text-xs" style={{ color: "var(--mauve-light)", fontFamily: "'Inter', sans-serif" }}>
+        <p className="text-xs" style={{ color: "var(--mauve-light)", }}>
           FemWell · Your wellness, your way
         </p>
       </div>
@@ -139,7 +139,7 @@ export default function FloatingSidebar({ currentPageName, mode = "full", openQu
 
               <div style={{ padding: "8px 16px 20px" }}>
                 {/* Section: Quick actions */}
-                <p style={{ fontSize: "0.55rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.14em", color: "var(--mauve)", fontFamily: "'Inter', sans-serif", marginBottom: 10 }}>Quick actions</p>
+                <p style={{ fontSize: "0.55rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.14em", color: "var(--mauve)", marginBottom: 10 }}>Quick actions</p>
 
                 {/* Log today — full width */}
                 <button
@@ -150,8 +150,8 @@ export default function FloatingSidebar({ currentPageName, mode = "full", openQu
                     <Sun className="w-5 h-5" style={{ color: "white" }} />
                   </div>
                   <div>
-                    <p style={{ fontSize: 14, fontWeight: 700, color: "white", fontFamily: "'Inter', sans-serif", marginBottom: 2 }}>Log today</p>
-                    <p style={{ fontSize: 11, color: "rgba(255,255,255,0.65)", fontFamily: "'Inter', sans-serif" }}>Check in, meals, symptoms</p>
+                    <p style={{ fontSize: 14, fontWeight: 700, color: "white", marginBottom: 2 }}>Log today</p>
+                    <p style={{ fontSize: 11, color: "rgba(255,255,255,0.65)", }}>Check in, meals, symptoms</p>
                   </div>
                 </button>
 
@@ -165,8 +165,8 @@ export default function FloatingSidebar({ currentPageName, mode = "full", openQu
                           <Icon className="w-4 h-4" style={{ color: "var(--rose-dust)" }} />
                         </div>
                         <div style={{ minWidth: 0 }}>
-                          <p style={{ fontSize: 12, fontWeight: 700, color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>{label}</p>
-                          <p style={{ fontSize: 10, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{sub}</p>
+                          <p style={{ fontSize: 12, fontWeight: 700, color: "var(--plum)", }}>{label}</p>
+                          <p style={{ fontSize: 10, color: "var(--mauve)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{sub}</p>
                         </div>
                       </>
                     );
@@ -191,7 +191,7 @@ export default function FloatingSidebar({ currentPageName, mode = "full", openQu
                 <div style={{ height: 1, backgroundColor: "var(--border-subtle)", marginBottom: 14 }} />
 
                 {/* Section: Navigate */}
-                <p style={{ fontSize: "0.55rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.14em", color: "var(--mauve)", fontFamily: "'Inter', sans-serif", marginBottom: 10 }}>Navigate</p>
+                <p style={{ fontSize: "0.55rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.14em", color: "var(--mauve)", marginBottom: 10 }}>Navigate</p>
                 <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 8 }}>
                   {NAV.map(({ label, icon: Icon, page }) => {
                     const active = currentPageName === page;
@@ -209,7 +209,7 @@ export default function FloatingSidebar({ currentPageName, mode = "full", openQu
                         }}
                       >
                         <Icon className="w-4 h-4" style={{ color: active ? "white" : "var(--mauve)" }} strokeWidth={active ? 2 : 1.5} />
-                        <span style={{ fontSize: 10, fontWeight: 600, color: active ? "white" : "var(--mauve)", fontFamily: "'Inter', sans-serif", textAlign: "center", lineHeight: 1.3 }}>{label}</span>
+                        <span style={{ fontSize: 10, fontWeight: 600, color: active ? "white" : "var(--mauve)", textAlign: "center", lineHeight: 1.3 }}>{label}</span>
                       </Link>
                     );
                   })}

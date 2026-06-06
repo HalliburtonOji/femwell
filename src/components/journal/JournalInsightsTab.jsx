@@ -26,8 +26,7 @@ const sLabel = {
   textTransform: "uppercase",
   letterSpacing: "0.12em",
   color: "var(--mauve)",
-  fontFamily: "'Inter', sans-serif",
-};
+  };
 
 export default function JournalInsightsTab({ user, entries }) {
   const [weeklySummary, setWeeklySummary] = useState(null);
@@ -165,15 +164,15 @@ Return as plain text, no markdown.`,
           <div className="mt-4 grid grid-cols-2 md:grid-cols-4 gap-2">
             {cyclePatternData.map((item) => (
               <div key={item.label} className="rounded-2xl px-3 py-3" style={{ backgroundColor: "var(--ivory)", border: "1px solid var(--border-subtle)" }}>
-                <p className="text-[10px] font-semibold uppercase mb-1" style={{ color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>{item.label}</p>
-                <p className="text-xs" style={{ color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>Mood {item.mood}/10</p>
-                <p className="text-xs" style={{ color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>Energy {item.energy}/10</p>
+                <p className="text-[10px] font-semibold uppercase mb-1" style={{ color: "var(--mauve)", }}>{item.label}</p>
+                <p className="text-xs" style={{ color: "var(--plum)", }}>Mood {item.mood}/10</p>
+                <p className="text-xs" style={{ color: "var(--plum)", }}>Energy {item.energy}/10</p>
               </div>
             ))}
           </div>
           {cyclePatternSummary && (
             <div className="mt-4 rounded-2xl p-4" style={{ backgroundColor: "var(--rose-dust-subtle)", border: "1px solid var(--rose-dust-light)" }}>
-              <p className="text-sm leading-relaxed" style={{ color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>{cyclePatternSummary}</p>
+              <p className="text-sm leading-relaxed" style={{ color: "var(--plum)", }}>{cyclePatternSummary}</p>
               {/* Sprint C C1 — MHRA disclaimer below AI summary. */}
               <AiDisclaimer style={{ marginTop: 8 }} />
             </div>
@@ -182,7 +181,7 @@ Return as plain text, no markdown.`,
       ) : (
         <div className="rounded-[24px] p-5" style={card}>
           <p style={sLabel} className="mb-2">Cycle & Mood Patterns</p>
-          <p className="text-sm" style={{ color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>
+          <p className="text-sm" style={{ color: "var(--mauve)", }}>
             Keep logging journal mood, energy, and cycle events to unlock this pattern view.
           </p>
         </div>
@@ -200,22 +199,22 @@ Return as plain text, no markdown.`,
                   backgroundColor: day.count > 0 ? "var(--rose-dust)" : "var(--ivory-dark)",
                   minHeight: "6px",
                 }} />
-              <p className="text-[10px]" style={{ color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>{day.label}</p>
+              <p className="text-[10px]" style={{ color: "var(--mauve)", }}>{day.label}</p>
             </div>
           ))}
         </div>
 
         <div className="flex gap-5 mt-4 pt-4" style={{ borderTop: "1px solid var(--border-subtle)" }}>
           <div>
-            <p className="text-xl font-bold" style={{ color: "var(--plum)", fontFamily: "'Fraunces', serif" }}>{streak}</p>
+            <p className="text-xl font-bold" style={{ color: "var(--plum)", }}>{streak}</p>
             <p style={sLabel}>day streak</p>
           </div>
           <div>
-            <p className="text-xl font-bold" style={{ color: "var(--plum)", fontFamily: "'Fraunces', serif" }}>{last7.length}</p>
+            <p className="text-xl font-bold" style={{ color: "var(--plum)", }}>{last7.length}</p>
             <p style={sLabel}>this week</p>
           </div>
           <div>
-            <p className="text-xl font-bold" style={{ color: "var(--plum)", fontFamily: "'Fraunces', serif" }}>{entries.length}</p>
+            <p className="text-xl font-bold" style={{ color: "var(--plum)", }}>{entries.length}</p>
             <p style={sLabel}>total entries</p>
           </div>
         </div>
@@ -232,8 +231,8 @@ Return as plain text, no markdown.`,
               return (
                 <div key={rating}>
                   <div className="flex items-center justify-between mb-1">
-                    <p className="text-xs font-semibold" style={{ color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>{m?.label}</p>
-                    <p className="text-xs" style={{ color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>{pct}%</p>
+                    <p className="text-xs font-semibold" style={{ color: "var(--plum)", }}>{m?.label}</p>
+                    <p className="text-xs" style={{ color: "var(--mauve)", }}>{pct}%</p>
                   </div>
                   <div className="h-1.5 rounded-full" style={{ backgroundColor: "var(--ivory-dark)" }}>
                     <div className="h-full rounded-full transition-all" style={{ width: `${pct}%`, backgroundColor: m?.accent }} />
@@ -253,7 +252,7 @@ Return as plain text, no markdown.`,
             {topTags.map(([tag, count]) => (
               <div key={tag} className="flex items-center gap-1.5 px-3 py-1.5 rounded-full"
                 style={{ backgroundColor: "var(--ivory-dark)", border: "1px solid var(--border)" }}>
-                <span className="text-xs font-semibold capitalize" style={{ color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>{tag}</span>
+                <span className="text-xs font-semibold capitalize" style={{ color: "var(--plum)", }}>{tag}</span>
                 <span className="text-[10px]" style={{ color: "var(--mauve)" }}>{count}</span>
               </div>
             ))}
@@ -267,23 +266,23 @@ Return as plain text, no markdown.`,
           <p style={sLabel}>Weekly Reflection</p>
           <button onClick={generateWeeklySummary} disabled={generatingSummary || last7.length === 0}
             className="flex items-center gap-1.5 text-xs font-semibold transition-colors disabled:opacity-40"
-            style={{ color: "var(--rose-dust)", fontFamily: "'Inter', sans-serif" }}>
+            style={{ color: "var(--rose-dust)", }}>
             {generatingSummary ? <Loader2 className="w-3 h-3 animate-spin" /> : <RefreshCw className="w-3 h-3" />}
             {weeklySummary ? "Refresh" : "Generate"}
           </button>
         </div>
 
         {last7.length === 0 ? (
-          <p className="text-sm" style={{ color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>
+          <p className="text-sm" style={{ color: "var(--mauve)", }}>
             Write a few entries this week to unlock your weekly reflection.
           </p>
         ) : weeklySummary ? (
           <p className="text-sm leading-relaxed"
-            style={{ color: "var(--plum)", fontFamily: "'Inter', sans-serif", lineHeight: "1.7" }}>
+            style={{ color: "var(--plum)", lineHeight: "1.7" }}>
             {weeklySummary}
           </p>
         ) : (
-          <p className="text-sm" style={{ color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>
+          <p className="text-sm" style={{ color: "var(--mauve)", }}>
             Tap Generate to see a gentle reflection on your week's writing.
           </p>
         )}
@@ -291,7 +290,7 @@ Return as plain text, no markdown.`,
 
       {entries.length === 0 && (
         <div className="rounded-[20px] p-10 text-center" style={card}>
-          <p className="text-sm font-medium mb-1" style={{ color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>Your insights will appear here</p>
+          <p className="text-sm font-medium mb-1" style={{ color: "var(--plum)", }}>Your insights will appear here</p>
           <p className="text-xs" style={{ color: "var(--mauve)" }}>Start writing to see mood patterns, themes, and your rhythm.</p>
         </div>
       )}

@@ -16,7 +16,6 @@ export default function SettingsToggle({ label, description, checked, onChange }
             fontSize: 13,
             fontWeight: 600,
             color: "var(--plum)",
-            fontFamily: "'Inter', sans-serif",
             margin: 0,
           }}
         >
@@ -27,7 +26,6 @@ export default function SettingsToggle({ label, description, checked, onChange }
             style={{
               fontSize: 11,
               color: "var(--mauve)",
-              fontFamily: "'Inter', sans-serif",
               margin: "2px 0 0",
               lineHeight: 1.4,
             }}

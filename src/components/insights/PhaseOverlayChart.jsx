@@ -122,15 +122,15 @@ export default function PhaseOverlayChart({ checkins = [], profile }) {
       role="group"
       aria-label="Mood and energy over last 60 days with cycle phase overlay"
     >
-      <p style={{ fontSize: "0.6rem", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.1em", color: "var(--slate-500, #64748B)", fontFamily: "'Inter', sans-serif" }}>
+      <p style={{ fontSize: "0.6rem", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.1em", color: "var(--slate-500, #64748B)", }}>
         Mood & energy · last 60 days
       </p>
-      <p style={{ fontSize: 11, color: "var(--slate-500, #64748B)", fontFamily: "'Inter', sans-serif", marginTop: 3 }}>
+      <p style={{ fontSize: 11, color: "var(--slate-500, #64748B)", marginTop: 3 }}>
         Shaded bands show your cycle phase
       </p>
 
       {!hasAnyData ? (
-        <p style={{ fontSize: 13, color: "var(--slate-500, #64748B)", fontFamily: "'Inter', sans-serif", marginTop: 18, textAlign: "center", padding: "20px 8px" }}>
+        <p style={{ fontSize: 13, color: "var(--slate-500, #64748B)", marginTop: 18, textAlign: "center", padding: "20px 8px" }}>
           Log mood and energy to see the pattern.
         </p>
       ) : (
@@ -172,7 +172,7 @@ export default function PhaseOverlayChart({ checkins = [], profile }) {
           </svg>
 
           {/* Legend */}
-          <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: 12, marginTop: 10, fontSize: 11, fontFamily: "'Inter', sans-serif", color: "var(--slate-500, #64748B)" }}>
+          <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: 12, marginTop: 10, fontSize: 11, color: "var(--slate-500, #64748B)" }}>
             <span style={{ display: "inline-flex", alignItems: "center", gap: 4 }}>
               <span style={{ width: 14, height: 2, backgroundColor: "var(--rose-deep, #E11D74)", borderRadius: 2 }} /> Mood
             </span>

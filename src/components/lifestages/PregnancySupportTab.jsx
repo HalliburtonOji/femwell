@@ -12,7 +12,7 @@ import { toast } from "sonner";
 
 const FOCUSES = ["Sleep", "Nausea", "Movement", "Nutrition", "Birth prep", "Calm", "Pelvic health", "Breastfeeding prep"];
 const todayStr = new Date().toISOString().split("T")[0];
-const inp = { width: "100%", padding: 12, borderRadius: 12, border: "1px solid var(--border)", backgroundColor: "var(--ivory)", color: "var(--plum)", fontSize: 13, fontFamily: "'Inter', sans-serif", outline: "none", resize: "none", boxSizing: "border-box" };
+const inp = { width: "100%", padding: 12, borderRadius: 12, border: "1px solid var(--border)", backgroundColor: "var(--ivory)", color: "var(--plum)", fontSize: 13, outline: "none", resize: "none", boxSizing: "border-box" };
 const card = { backgroundColor: "var(--surface)", border: "1px solid var(--border)", borderRadius: 16, padding: 16, boxShadow: "var(--shadow-sm)" };
 
 // Baby size comparisons by week
@@ -85,16 +85,16 @@ function KickCounter() {
 
   return (
     <div style={{ ...card, textAlign: "center" }}>
-      <p style={{ fontSize: "0.6rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.12em", color: "var(--rose-dust)", marginBottom: 8, fontFamily: "'Inter', sans-serif" }}>Kick counter</p>
-      <p style={{ fontSize: 12, color: "var(--mauve)", marginBottom: 12, fontFamily: "'Inter', sans-serif" }}>Goal: {KICK_COUNTER_GOAL} kicks. Tap for each movement.</p>
+      <p style={{ fontSize: "0.6rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.12em", color: "var(--rose-dust)", marginBottom: 8, }}>Kick counter</p>
+      <p style={{ fontSize: 12, color: "var(--mauve)", marginBottom: 12, }}>Goal: {KICK_COUNTER_GOAL} kicks. Tap for each movement.</p>
       <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 20, marginBottom: 14 }}>
         <div style={{ textAlign: "center" }}>
-          <p style={{ fontSize: 42, fontWeight: 700, color: "var(--plum)", fontFamily: "'Fraunces', serif", lineHeight: 1 }}>{kicks}</p>
+          <p style={{ fontSize: 42, fontWeight: 700, color: "var(--plum)", lineHeight: 1 }}>{kicks}</p>
           <p style={{ fontSize: 10, color: "var(--mauve)" }}>kicks</p>
         </div>
         {startTime && (
           <div style={{ textAlign: "center" }}>
-            <p style={{ fontSize: 24, fontWeight: 600, color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>{mins}:{secs.toString().padStart(2, "0")}</p>
+            <p style={{ fontSize: 24, fontWeight: 600, color: "var(--mauve)", }}>{mins}:{secs.toString().padStart(2, "0")}</p>
             <p style={{ fontSize: 10, color: "var(--mauve)" }}>elapsed</p>
           </div>
         )}
@@ -130,7 +130,7 @@ function HospitalBagChecklist() {
             <div style={{ width: 18, height: 18, borderRadius: 5, backgroundColor: checked.includes(item) ? "var(--sage)" : "var(--border)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
               {checked.includes(item) && <Check style={{ width: 10, height: 10, color: "white" }} />}
             </div>
-            <span style={{ fontSize: 12, color: checked.includes(item) ? "var(--mauve)" : "var(--plum)", textDecoration: checked.includes(item) ? "line-through" : "none", fontFamily: "'Inter', sans-serif" }}>{item}</span>
+            <span style={{ fontSize: 12, color: checked.includes(item) ? "var(--mauve)" : "var(--plum)", textDecoration: checked.includes(item) ? "line-through" : "none", }}>{item}</span>
           </button>
         ))}
       </div>
@@ -221,8 +221,8 @@ export default function PregnancySupportTab({ user, profile, setProfile, logs, s
           { label: "Baby size", value: babySize ? babySize.emoji : "🤰", color: "var(--mauve)", bg: "var(--mauve-subtle)" },
         ].map(s => (
           <div key={s.label} style={{ backgroundColor: s.bg, border: `1px solid ${s.color}30`, borderRadius: 16, padding: "14px", textAlign: "center" }}>
-            <p style={{ fontSize: 22, fontWeight: 700, color: s.color, fontFamily: "'Fraunces', serif" }}>{s.value}</p>
-            <p style={{ fontSize: 10, color: s.color, opacity: 0.7, textTransform: "uppercase", letterSpacing: "0.1em", fontFamily: "'Inter', sans-serif" }}>{s.label}</p>
+            <p style={{ fontSize: 22, fontWeight: 700, color: s.color, }}>{s.value}</p>
+            <p style={{ fontSize: 10, color: s.color, opacity: 0.7, textTransform: "uppercase", letterSpacing: "0.1em", }}>{s.label}</p>
           </div>
         ))}
       </div>
@@ -232,7 +232,7 @@ export default function PregnancySupportTab({ user, profile, setProfile, logs, s
         <div style={{ backgroundColor: "var(--rose-dust-subtle)", border: "1px solid var(--rose-dust-light)", borderRadius: 16, padding: "16px 20px", display: "flex", alignItems: "center", gap: 16 }}>
           <span style={{ fontSize: 42 }}>{babySize.emoji}</span>
           <div>
-            <p style={{ fontSize: 15, fontWeight: 700, color: "var(--plum)", fontFamily: "'Fraunces', serif" }}>Your baby is the size of a {babySize.fruit}</p>
+            <p style={{ fontSize: 15, fontWeight: 700, color: "var(--plum)", }}>Your baby is the size of a {babySize.fruit}</p>
             <p style={{ fontSize: 12, color: "var(--mauve)", marginTop: 2 }}>About {babySize.size} — Week {week}</p>
             <p style={{ fontSize: 12, color: "var(--rose-dust)", marginTop: 4 }}>{triInfo.tip}</p>
           </div>
@@ -243,7 +243,7 @@ export default function PregnancySupportTab({ user, profile, setProfile, logs, s
       <div style={{ display: "flex", gap: 6, overflowX: "auto", paddingBottom: 2, scrollbarWidth: "none" }}>
         {SECTIONS.map(s => (
           <button key={s.id} onClick={() => setActiveSection(s.id)}
-            style={{ flexShrink: 0, padding: "7px 14px", borderRadius: 9999, fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: "'Inter', sans-serif", border: "none",
+            style={{ flexShrink: 0, padding: "7px 14px", borderRadius: 9999, fontSize: 12, fontWeight: 600, cursor: "pointer", border: "none",
               backgroundColor: activeSection === s.id ? "var(--rose-dust)" : "var(--ivory-dark)",
               color: activeSection === s.id ? "white" : "var(--mauve)" }}>
             {s.label}
@@ -268,7 +268,7 @@ export default function PregnancySupportTab({ user, profile, setProfile, logs, s
               </button>
             </div>
             {aiInsight ? (
-              <p style={{ fontSize: 13, color: "var(--plum)", lineHeight: 1.7, fontFamily: "'Inter', sans-serif", whiteSpace: "pre-line" }}>{aiInsight}</p>
+              <p style={{ fontSize: 13, color: "var(--plum)", lineHeight: 1.7, whiteSpace: "pre-line" }}>{aiInsight}</p>
             ) : (
               <p style={{ fontSize: 12, color: "var(--mauve)" }}>Tap "Get update" for a personalised week-by-week summary.</p>
             )}

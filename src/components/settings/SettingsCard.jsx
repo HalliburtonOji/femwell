@@ -18,7 +18,6 @@ export default function SettingsCard({ title, description, children, footer }) {
       >
         <h2
           style={{
-            fontFamily: "'Fraunces', serif",
             fontSize: 18,
             fontWeight: 700,
             color: "var(--plum)",
@@ -33,7 +32,6 @@ export default function SettingsCard({ title, description, children, footer }) {
             style={{
               fontSize: 12,
               color: "var(--mauve)",
-              fontFamily: "'Inter', sans-serif",
               marginTop: 3,
               marginBottom: 0,
             }}

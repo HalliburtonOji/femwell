@@ -414,7 +414,7 @@ function MorningBody() {
             {r.done && <Sparkles size={9} style={{ color: T.cream }} />}
           </span>
           <span style={{
-            fontFamily: "'Inter', sans-serif", fontSize: 13,
+            fontSize: 13,
             color: r.done ? T.plumMute : T.plum,
             textDecoration: r.done ? "line-through" : "none",
           }}>
@@ -489,7 +489,7 @@ function ShutdownBody() {
       {MOCK.shutdown.map((s, i) => (
         <li key={s} style={shutdownRowStyle}>
           <span style={shutdownDotStyle}>{i + 1}</span>
-          <span style={{ fontFamily: "'Inter', sans-serif", fontSize: 13, color: T.plum }}>{s}</span>
+          <span style={{ fontSize: 13, color: T.plum }}>{s}</span>
         </li>
       ))}
     </ul>
@@ -590,7 +590,6 @@ function RhythmsBody() {
 // ── chipBtn helper ─────────────────────────────────────────────────────────
 function chipBtn(active) {
   return {
-    fontFamily: "'Inter', sans-serif",
     fontSize: 11, fontWeight: 700, letterSpacing: "0.06em",
     padding: "7px 12px", borderRadius: 9999,
     background: active ? T.plum : "transparent",
@@ -604,8 +603,7 @@ function chipBtn(active) {
 const shellStyle = {
   background: T.cream, minHeight: "100vh",
   padding: "26px 14px 40px",
-  fontFamily: "'Inter', system-ui, sans-serif",
-};
+  };
 const headStyle = {
   maxWidth: 560, margin: "0 auto 16px",
   display: "flex", flexDirection: "column", gap: 10,
@@ -616,7 +614,6 @@ const eyebrowStyle = {
   color: T.muted, fontWeight: 700, margin: 0,
 };
 const pageTitleStyle = {
-  fontFamily: "'Fraunces', Georgia, serif",
   fontSize: 36, fontWeight: 500, color: T.espresso,
   letterSpacing: "-0.02em", margin: "4px 0 4px", lineHeight: 1.05,
 };
@@ -658,7 +655,6 @@ const stripKickerStyle = {
   color: T.muted, fontWeight: 700,
 };
 const stripLabelStyle = {
-  fontFamily: "'Fraunces', Georgia, serif",
   fontSize: 15, fontWeight: 500, color: T.espresso,
   letterSpacing: "-0.005em", lineHeight: 1.2,
 };
@@ -687,12 +683,10 @@ const cycleSepLabelStyle = {
 
 // Body styles
 const bodyTitleStyle = {
-  fontFamily: "'Fraunces', Georgia, serif",
   fontSize: 19, fontWeight: 500, color: T.espresso,
   margin: 0, lineHeight: 1.25, letterSpacing: "-0.01em",
 };
 const bodyTitleSmStyle = {
-  fontFamily: "'Fraunces', Georgia, serif",
   fontSize: 16, fontWeight: 500, color: T.espresso,
   margin: "2px 0 6px", lineHeight: 1.25,
 };
@@ -747,7 +741,6 @@ const bundleCardStyle = {
   display: "flex", flexDirection: "column", gap: 4,
 };
 const bundleTitleStyle = {
-  fontFamily: "'Fraunces', Georgia, serif",
   fontSize: 15, fontWeight: 500, color: T.plum,
 };
 const forTodayPillStyle = {
@@ -757,7 +750,7 @@ const forTodayPillStyle = {
   padding: "2px 6px", borderRadius: 9999,
 };
 const bundleSubStyle = {
-  fontFamily: "Cormorant Garamond, Georgia, serif", fontStyle: "italic",
+  fontStyle: "italic",
   fontSize: 11, color: T.plumSoft, margin: 0, lineHeight: 1.3,
 };
 const bundleRitualStyle = {
@@ -799,8 +792,7 @@ const ribbonHeadStyle = {
 const ribbonCellStyle = {
   display: "inline-flex", alignItems: "center", justifyContent: "center",
   borderRadius: 8, padding: "6px 0",
-  fontSize: 11, fontFamily: "'Inter', sans-serif",
-  border: "1px solid",
+  fontSize: 11, border: "1px solid",
 };
 const ribbonLegendChip = {
   display: "inline-flex", alignItems: "center", gap: 5,
@@ -817,7 +809,6 @@ const weekDayStyle = {
   fontSize: 9, letterSpacing: "0.14em", color: T.muted, fontWeight: 700,
 };
 const weekDateStyle = {
-  fontFamily: "'Fraunces', Georgia, serif",
   fontSize: 14, fontWeight: 500, color: T.plum,
 };
 const weekBarStyle = {
@@ -834,7 +825,6 @@ const rhythmRowStyle = {
   background: T.cream,
 };
 const rhythmNameStyle = {
-  fontFamily: "'Fraunces', Georgia, serif",
   fontSize: 14, fontWeight: 500, color: T.plum,
 };
 const activeChipStyle = {
@@ -867,7 +857,7 @@ const insightKickerStyle = {
   color: T.goldDeep, fontWeight: 700,
 };
 const insightTextStyle = {
-  fontFamily: "Cormorant Garamond, Georgia, serif", fontStyle: "italic",
+  fontStyle: "italic",
   fontSize: 13, color: T.plum, lineHeight: 1.55, margin: "4px 0 0",
 };
 

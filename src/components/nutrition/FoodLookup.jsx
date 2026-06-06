@@ -114,8 +114,8 @@ export default function FoodLookup({ onSelect, onClose }) {
         {/* Header */}
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0 20px 14px" }}>
           <div>
-            <p style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.12em", color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>Food Library</p>
-            <h3 style={{ fontFamily: "'Fraunces', serif", fontSize: 20, fontWeight: 700, color: "var(--plum)", marginTop: 2 }}>Pick a food</h3>
+            <p style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.12em", color: "var(--mauve)", }}>Food Library</p>
+            <h3 style={{ fontSize: 20, fontWeight: 700, color: "var(--plum)", marginTop: 2 }}>Pick a food</h3>
           </div>
           <button onClick={onClose} style={{ width: 32, height: 32, borderRadius: 9999, backgroundColor: "var(--ivory-dark)", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>
             <X style={{ width: 14, height: 14, color: "var(--mauve)" }} />
@@ -130,7 +130,7 @@ export default function FoodLookup({ onSelect, onClose }) {
               value={query}
               onChange={e => handleQuery(e.target.value)}
               placeholder="Search foods…"
-              style={{ flex: 1, border: "none", background: "none", outline: "none", fontSize: 14, color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}
+              style={{ flex: 1, border: "none", background: "none", outline: "none", fontSize: 14, color: "var(--plum)", }}
             />
           </div>
         </div>
@@ -140,7 +140,7 @@ export default function FoodLookup({ onSelect, onClose }) {
           <style>{`.fl-scroll::-webkit-scrollbar{display:none}`}</style>
           {CATEGORIES.map(c => (
             <button key={c.id} onClick={() => handleCategory(c.id)}
-              style={{ flexShrink: 0, padding: "6px 14px", borderRadius: 9999, fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: "'Inter', sans-serif", border: "none",
+              style={{ flexShrink: 0, padding: "6px 14px", borderRadius: 9999, fontSize: 12, fontWeight: 600, cursor: "pointer", border: "none",
                 backgroundColor: category === c.id ? "var(--plum)" : "var(--ivory-dark)",
                 color: category === c.id ? "white" : "var(--mauve)",
               }}>
@@ -152,7 +152,7 @@ export default function FoodLookup({ onSelect, onClose }) {
         {/* Deck of cards */}
         <div style={{ flex: 1, overflowY: "auto", padding: "0 20px 24px" }}>
           {filtered.length === 0 ? (
-            <p style={{ textAlign: "center", color: "var(--mauve)", fontSize: 14, padding: "32px 0", fontFamily: "'Inter', sans-serif" }}>No foods found</p>
+            <p style={{ textAlign: "center", color: "var(--mauve)", fontSize: 14, padding: "32px 0", }}>No foods found</p>
           ) : (
             <>
               {/* Stacked deck visual */}
@@ -181,12 +181,12 @@ export default function FoodLookup({ onSelect, onClose }) {
                     <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 16 }}>
                       <div>
                         <span style={{ fontSize: 28, lineHeight: 1, display: "block", marginBottom: 6 }}>{currentFood.emoji}</span>
-                        <h4 style={{ fontFamily: "'Fraunces', serif", fontSize: 17, fontWeight: 700, color: "var(--plum)", lineHeight: 1.3, maxWidth: 220 }}>{currentFood.name}</h4>
-                        <p style={{ fontSize: 11, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", marginTop: 3 }}>{currentFood.portion}</p>
+                        <h4 style={{ fontSize: 17, fontWeight: 700, color: "var(--plum)", lineHeight: 1.3, maxWidth: 220 }}>{currentFood.name}</h4>
+                        <p style={{ fontSize: 11, color: "var(--mauve)", marginTop: 3 }}>{currentFood.portion}</p>
                       </div>
                       <div style={{ textAlign: "center", backgroundColor: "var(--rose-dust-subtle)", borderRadius: 14, padding: "10px 14px" }}>
-                        <p style={{ fontSize: 22, fontWeight: 700, color: "var(--plum)", fontFamily: "'Fraunces', serif", lineHeight: 1 }}>{macros.cal}</p>
-                        <p style={{ fontSize: 10, color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>kcal</p>
+                        <p style={{ fontSize: 22, fontWeight: 700, color: "var(--plum)", lineHeight: 1 }}>{macros.cal}</p>
+                        <p style={{ fontSize: 10, color: "var(--mauve)", }}>kcal</p>
                       </div>
                     </div>
 
@@ -198,15 +198,15 @@ export default function FoodLookup({ onSelect, onClose }) {
                         { label: "Fat", value: `${macros.fat}g`, color: "var(--mauve-subtle)", accent: "var(--mauve)" },
                       ].map(m => (
                         <div key={m.label} style={{ flex: 1, backgroundColor: m.color, borderRadius: 10, padding: "7px 6px", textAlign: "center" }}>
-                          <p style={{ fontSize: 13, fontWeight: 700, color: m.accent, fontFamily: "'Inter', sans-serif", lineHeight: 1 }}>{m.value}</p>
-                          <p style={{ fontSize: 9, color: m.accent, opacity: 0.75, fontFamily: "'Inter', sans-serif", textTransform: "uppercase", letterSpacing: "0.08em", marginTop: 2 }}>{m.label}</p>
+                          <p style={{ fontSize: 13, fontWeight: 700, color: m.accent, lineHeight: 1 }}>{m.value}</p>
+                          <p style={{ fontSize: 9, color: m.accent, opacity: 0.75, textTransform: "uppercase", letterSpacing: "0.08em", marginTop: 2 }}>{m.label}</p>
                         </div>
                       ))}
                     </div>
 
                     <button
                       onClick={() => handleSelect(currentFood)}
-                      style={{ width: "100%", padding: "11px", borderRadius: 14, backgroundColor: "var(--plum)", color: "white", border: "none", cursor: "pointer", fontSize: 13, fontWeight: 600, fontFamily: "'Inter', sans-serif', display: 'flex", alignItems: "center", justifyContent: "center", gap: 6 }}>
+                      style={{ width: "100%", padding: "11px", borderRadius: 14, backgroundColor: "var(--plum)", color: "white", border: "none", cursor: "pointer", fontSize: 13, fontWeight: 600, alignItems: "center", justifyContent: "center", gap: 6 }}>
                       <Plus style={{ width: 14, height: 14 }} /> Add to meal log
                     </button>
                   </div>
@@ -216,14 +216,14 @@ export default function FoodLookup({ onSelect, onClose }) {
               {/* Deck nav */}
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20 }}>
                 <button onClick={() => setDeckIndex(i => Math.max(0, i - 1))} disabled={deckIndex === 0}
-                  style={{ display: "flex", alignItems: "center", gap: 4, padding: "8px 14px", borderRadius: 9999, border: "1px solid var(--border)", backgroundColor: "var(--ivory)", cursor: deckIndex === 0 ? "default" : "pointer", opacity: deckIndex === 0 ? 0.4 : 1, fontFamily: "'Inter', sans-serif", fontSize: 12, fontWeight: 600, color: "var(--plum)" }}>
+                  style={{ display: "flex", alignItems: "center", gap: 4, padding: "8px 14px", borderRadius: 9999, border: "1px solid var(--border)", backgroundColor: "var(--ivory)", cursor: deckIndex === 0 ? "default" : "pointer", opacity: deckIndex === 0 ? 0.4 : 1, fontSize: 12, fontWeight: 600, color: "var(--plum)" }}>
                   <ChevronLeft style={{ width: 13, height: 13 }} /> Prev
                 </button>
-                <p style={{ fontSize: 12, color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>
+                <p style={{ fontSize: 12, color: "var(--mauve)", }}>
                   {deckIndex + 1} of {filtered.length}
                 </p>
                 <button onClick={() => setDeckIndex(i => Math.min(filtered.length - 1, i + 1))} disabled={deckIndex >= filtered.length - 1}
-                  style={{ display: "flex", alignItems: "center", gap: 4, padding: "8px 14px", borderRadius: 9999, border: "1px solid var(--border)", backgroundColor: "var(--ivory)", cursor: deckIndex >= filtered.length - 1 ? "default" : "pointer", opacity: deckIndex >= filtered.length - 1 ? 0.4 : 1, fontFamily: "'Inter', sans-serif", fontSize: 12, fontWeight: 600, color: "var(--plum)" }}>
+                  style={{ display: "flex", alignItems: "center", gap: 4, padding: "8px 14px", borderRadius: 9999, border: "1px solid var(--border)", backgroundColor: "var(--ivory)", cursor: deckIndex >= filtered.length - 1 ? "default" : "pointer", opacity: deckIndex >= filtered.length - 1 ? 0.4 : 1, fontSize: 12, fontWeight: 600, color: "var(--plum)" }}>
                   Next <ChevronRight style={{ width: 13, height: 13 }} />
                 </button>
               </div>
@@ -240,8 +240,8 @@ export default function FoodLookup({ onSelect, onClose }) {
                     >
                       <span style={{ fontSize: 20, flexShrink: 0 }}>{food.emoji}</span>
                       <div style={{ flex: 1, minWidth: 0 }}>
-                        <p style={{ fontSize: 13, fontWeight: 600, color: "var(--plum)", fontFamily: "'Inter', sans-serif", marginBottom: 1 }}>{food.name}</p>
-                        <p style={{ fontSize: 11, color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>{food.portion} · {m.cal} kcal · {m.protein}g protein</p>
+                        <p style={{ fontSize: 13, fontWeight: 600, color: "var(--plum)", marginBottom: 1 }}>{food.name}</p>
+                        <p style={{ fontSize: 11, color: "var(--mauve)", }}>{food.portion} · {m.cal} kcal · {m.protein}g protein</p>
                       </div>
                       <Plus style={{ width: 14, height: 14, color: "var(--rose-dust)", flexShrink: 0 }} />
                     </button>

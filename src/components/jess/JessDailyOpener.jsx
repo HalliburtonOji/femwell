@@ -153,17 +153,15 @@ export default function JessDailyOpener({ user, profile }) {
         <p style={{
           margin: 0, fontSize: 10, fontWeight: 700,
           letterSpacing: "0.16em", textTransform: "uppercase",
-          color: C.muted, fontFamily: "'Inter', sans-serif",
-        }}>Jess · Good morning</p>
+          color: C.muted, }}>Jess · Good morning</p>
         <p style={{
           margin: "4px 0 0", fontSize: 14,
-          fontFamily: "'Fraunces', Georgia, serif",
           color: C.espresso, lineHeight: 1.5,
         }}>{String(text || "").replace(/```[\s\S]*?```/g, "").replace(/\{[\s\S]*"actions"[\s\S]*\}\s*$/m, "").trim() || text}</p>
         {(phase || cycleDay) && (
           <p style={{
             margin: "4px 0 0", fontSize: 11, color: C.muted,
-            fontFamily: "'Inter', sans-serif", letterSpacing: "0.02em",
+            letterSpacing: "0.02em",
           }}>{cycleDay ? `Day ${cycleDay}` : ""}{cycleDay && phaseLabel ? " · " : ""}{phaseLabel}</p>
         )}
       </div>

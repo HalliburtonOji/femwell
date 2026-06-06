@@ -125,8 +125,7 @@ const shell = {
   borderRadius: 20,
   padding: "12px 14px 18px",
   maxWidth: 560, margin: "0 auto",
-  fontFamily: "'Inter', system-ui, sans-serif",
-};
+  };
 const topRow = {
   display: "flex", justifyContent: "space-between", alignItems: "center",
   marginBottom: 10,
@@ -155,7 +154,6 @@ const iconBubble = {
   marginBottom: 10,
 };
 const title = {
-  fontFamily: "'Fraunces', Georgia, serif",
   fontSize: 24, fontWeight: 500, color: T.espresso,
   letterSpacing: "-0.01em", margin: "0 0 8px", lineHeight: 1.25,
 };

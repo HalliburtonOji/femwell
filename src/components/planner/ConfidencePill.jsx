@@ -43,7 +43,6 @@ export default function ConfidencePill({ meta }) {
         borderRadius: 9999,
         fontSize: 11,
         fontWeight: 500,
-        fontFamily: "'Inter', sans-serif",
         backgroundColor: "var(--surface-raised, #F8F4F0)",
         color: "var(--plum-2, #6B4559)",
         border: "1px solid var(--border, rgba(74,42,58,0.08))",

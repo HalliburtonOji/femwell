@@ -46,7 +46,6 @@ export default function PhaseInboxRail({ items, currentPhase }) {
     <section style={{ marginTop: 20 }} aria-label="Phase inbox">
       <div style={{ padding: '0 16px', marginBottom: 10 }}>
         <h3 style={{
-          fontFamily: "'Fraunces', serif",
           fontSize: 22,
           fontWeight: 500,
           fontStyle: 'normal',
@@ -57,7 +56,6 @@ export default function PhaseInboxRail({ items, currentPhase }) {
           {copy.title}
         </h3>
         <p style={{
-          fontFamily: "'Inter', sans-serif",
           fontSize: 12,
           fontWeight: 400,
           color: 'var(--mauve)',
@@ -69,7 +67,6 @@ export default function PhaseInboxRail({ items, currentPhase }) {
 
       {phaseItems.length === 0 ? (
         <p style={{
-          fontFamily: "'Inter', sans-serif",
           fontSize: 13,
           color: 'var(--mauve)',
           padding: '0 16px',
@@ -123,7 +120,6 @@ export default function PhaseInboxRail({ items, currentPhase }) {
               </div>
               <div style={{ padding: '8px 10px' }}>
                 <p style={{
-                  fontFamily: "'Fraunces', serif",
                   fontSize: 13,
                   fontWeight: 400,
                   color: 'var(--plum-deep)',

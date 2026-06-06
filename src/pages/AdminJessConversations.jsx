@@ -25,7 +25,7 @@ function pill(status) {
     <span style={{
       fontSize: 11, fontWeight: 700, borderRadius: 9999,
       padding: "2px 10px", background: s.bg, color: s.color,
-      fontFamily: "'Inter', sans-serif", letterSpacing: "0.04em",
+      letterSpacing: "0.04em",
       textTransform: "uppercase",
     }}>
       {status || "—"}
@@ -61,12 +61,12 @@ export default function AdminJessConversations() {
   });
 
   return (
-    <div style={{ minHeight: "100vh", background: FW.cream, fontFamily: "'Inter', sans-serif", padding: "0 0 80px" }}>
+    <div style={{ minHeight: "100vh", background: FW.cream, padding: "0 0 80px" }}>
       {/* Header */}
       <div style={{ background: FW.espresso, color: FW.cream, padding: "16px 20px", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
           <MessageSquare size={18} style={{ color: FW.gold }} />
-          <span style={{ fontSize: 16, fontWeight: 700, fontFamily: "'Fraunces', Georgia, serif" }}>Jess Conversations</span>
+          <span style={{ fontSize: 16, fontWeight: 700, }}>Jess Conversations</span>
           <span style={{ fontSize: 12, background: "rgba(212,175,55,0.18)", color: FW.gold, borderRadius: 9999, padding: "2px 10px", fontWeight: 600 }}>
             Admin
           </span>

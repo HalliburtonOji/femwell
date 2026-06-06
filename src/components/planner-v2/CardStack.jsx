@@ -117,8 +117,7 @@ const rowHead = {
 const kicker = {
   fontSize: 10, letterSpacing: "0.18em", textTransform: "uppercase",
   color: C.muted, fontWeight: 700,
-  fontFamily: "'Inter', sans-serif",
-};
+  };
 const rowNav = { display: "flex", alignItems: "center", gap: 5 };
 const rowArrow = {
   width: 22, height: 22, borderRadius: 9999,

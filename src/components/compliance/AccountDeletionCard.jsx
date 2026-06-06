@@ -125,10 +125,10 @@ export default function AccountDeletionCard({ user, profile }) {
       <header style={{ display: "flex", alignItems: "flex-start", gap: 10, marginBottom: 8 }}>
         <AlertTriangle size={18} style={{ color: "#B91C1C", flexShrink: 0, marginTop: 2 }} />
         <div style={{ flex: 1 }}>
-          <h2 style={{ fontFamily: "'Fraunces', serif", fontSize: 18, fontWeight: 700, color: "#B91C1C", margin: 0 }}>
+          <h2 style={{ fontSize: 18, fontWeight: 700, color: "#B91C1C", margin: 0 }}>
             Delete my account
           </h2>
-          <p style={{ fontSize: 12, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", margin: "4px 0 0", lineHeight: 1.5 }}>
+          <p style={{ fontSize: 12, color: "var(--mauve)", margin: "4px 0 0", lineHeight: 1.5 }}>
             This will permanently delete all your health data, logs, journal
             entries, and account information. This cannot be undone.
           </p>
@@ -144,18 +144,18 @@ export default function AccountDeletionCard({ user, profile }) {
             padding: "8px 14px", borderRadius: 9999,
             background: "white", color: "#B91C1C",
             border: "1.5px solid #FCA5A5",
-            fontFamily: "'Inter', sans-serif", fontSize: 13, fontWeight: 700,
+            fontSize: 13, fontWeight: 700,
             cursor: "pointer", marginTop: 6,
           }}
         ><Trash2 className="w-4 h-4" /> Start deletion</button>
       ) : done ? (
         <div style={{ marginTop: 10 }}>
-          <p style={{ fontSize: 13, color: "#B91C1C", fontFamily: "'Inter', sans-serif", lineHeight: 1.5, margin: 0 }}>
+          <p style={{ fontSize: 13, color: "#B91C1C", lineHeight: 1.5, margin: 0 }}>
             Your data has been removed. Contact <a href="mailto:support@femwells.com" style={{ color: "#B91C1C", fontWeight: 700 }}>support@femwells.com</a> to fully remove your sign-in credentials.
             Redirecting…
           </p>
           {report && (
-            <details style={{ marginTop: 8, fontSize: 11, color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>
+            <details style={{ marginTop: 8, fontSize: 11, color: "var(--mauve)", }}>
               <summary style={{ cursor: "pointer" }}>Deletion log</summary>
               <pre style={{ background: "#FFF1F2", padding: 8, borderRadius: 8, overflowX: "auto" }}>
                 {JSON.stringify(report, null, 2)}
@@ -165,7 +165,7 @@ export default function AccountDeletionCard({ user, profile }) {
         </div>
       ) : (
         <div style={{ marginTop: 10, display: "flex", flexDirection: "column", gap: 10 }}>
-          <label style={{ fontSize: 12, color: "var(--plum)", fontFamily: "'Inter', sans-serif", fontWeight: 600 }}>
+          <label style={{ fontSize: 12, color: "var(--plum)", fontWeight: 600 }}>
             Type DELETE to confirm
           </label>
           <input
@@ -177,7 +177,7 @@ export default function AccountDeletionCard({ user, profile }) {
             style={{
               padding: "10px 12px", borderRadius: 10,
               border: "1.5px solid #FCA5A5",
-              fontFamily: "'Inter', sans-serif", fontSize: 14, fontWeight: 600,
+              fontSize: 14, fontWeight: 600,
               color: "var(--plum)", letterSpacing: "0.08em",
             }}
           />
@@ -190,7 +190,7 @@ export default function AccountDeletionCard({ user, profile }) {
                 flex: 1, padding: "10px 14px", borderRadius: 9999,
                 background: canDelete ? "#B91C1C" : "#FCA5A5",
                 color: "white", border: "none",
-                fontFamily: "'Inter', sans-serif", fontSize: 13, fontWeight: 700,
+                fontSize: 13, fontWeight: 700,
                 cursor: canDelete ? "pointer" : "not-allowed",
               }}
             >{running ? "Deleting…" : "Permanently delete my account"}</button>
@@ -202,12 +202,12 @@ export default function AccountDeletionCard({ user, profile }) {
                 padding: "10px 14px", borderRadius: 9999,
                 background: "white", color: "var(--plum)",
                 border: "1px solid #E5E7EB",
-                fontFamily: "'Inter', sans-serif", fontSize: 13, fontWeight: 600,
+                fontSize: 13, fontWeight: 600,
                 cursor: "pointer",
               }}
             ><X className="w-4 h-4" /> Cancel</button>
           </div>
-          <p style={{ fontSize: 11, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", margin: 0, lineHeight: 1.5 }}>
+          <p style={{ fontSize: 11, color: "var(--mauve)", margin: 0, lineHeight: 1.5 }}>
             Base44 doesn't expose a client-side auth-credential deletion endpoint,
             so after this finishes you'll need to email
             <a href="mailto:support@femwells.com" style={{ color: "#B91C1C", fontWeight: 600 }}> support@femwells.com</a>

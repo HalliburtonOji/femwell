@@ -35,20 +35,19 @@ export default function PeriodCountdownCard({ profile }) {
         <p style={{
           fontSize: "0.6rem", fontWeight: 700, textTransform: "uppercase",
           letterSpacing: "0.14em", color: urgency,
-          fontFamily: "'Inter', sans-serif", marginBottom: 4,
+          marginBottom: 4,
         }}>
           Coming up
         </p>
         <p style={{
           fontSize: 20, fontWeight: 700,
-          fontFamily: "'Fraunces', serif",
           color: "var(--plum)", lineHeight: 1.1,
         }}>
           🌹 Period in {pred.daysUntil} day{pred.daysUntil !== 1 ? "s" : ""}
         </p>
         <p style={{
           fontSize: 12, color: "var(--mauve)",
-          fontFamily: "'Inter', sans-serif", marginTop: 4,
+          marginTop: 4,
         }}>
           Predicted {format(parseISO(pred.date), "EEEE, MMM d")} · Based on your average cycle
         </p>
@@ -60,7 +59,6 @@ export default function PeriodCountdownCard({ profile }) {
         backgroundColor: urgency + "20",
         border: `1px solid ${urgency}40`,
         display: "flex", alignItems: "center", justifyContent: "center",
-        fontFamily: "'Fraunces', serif",
         fontSize: 22, fontWeight: 700, color: urgency,
       }}>
         {pred.daysUntil}

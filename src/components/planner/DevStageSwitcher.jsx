@@ -441,7 +441,6 @@ const pill = {
   borderRadius: 9999,
   border: "1px solid rgba(58,44,26,0.18)",
   cursor: "pointer",
-  fontFamily: "'Inter', system-ui, sans-serif",
   transition: "all 0.2s ease",
   minHeight: 28,
 };
@@ -477,7 +476,6 @@ const panelHead = {
   marginBottom: 8,
 };
 const panelEyebrow = {
-  fontFamily: "'Inter', system-ui, sans-serif",
   fontSize: 8.5,
   fontWeight: 700,
   letterSpacing: "0.20em",
@@ -485,7 +483,6 @@ const panelEyebrow = {
   textTransform: "uppercase",
 };
 const panelTitle = {
-  fontFamily: "'Fraunces', Georgia, serif",
   fontSize: 16,
   fontWeight: 500,
   color: "#3A2C1A",
@@ -505,7 +502,6 @@ const closeBtn = {
   color: "#6B5840",
 };
 const panelHint = {
-  fontFamily: "'Inter', system-ui, sans-serif",
   fontSize: 11,
   color: "#6B5840",
   lineHeight: 1.5,
@@ -517,7 +513,6 @@ const statusBanner = {
   padding: "6px 10px",
   fontSize: 11,
   fontWeight: 600,
-  fontFamily: "'Inter', system-ui, sans-serif",
   lineHeight: 1.4,
   marginBottom: 8,
 };
@@ -549,7 +544,6 @@ const conditionsHeadRow = {
   marginBottom: 6,
 };
 const conditionsHint = {
-  fontFamily: "'Inter', system-ui, sans-serif",
   fontSize: 10.5,
   color: "#6B5840",
   lineHeight: 1.5,
@@ -571,7 +565,6 @@ const conditionRow = {
   fontSize: 12,
   fontWeight: 600,
   cursor: "pointer",
-  fontFamily: "'Inter', system-ui, sans-serif",
   minHeight: 32,
 };
 const conditionDot = {
@@ -605,7 +598,6 @@ const conditionHintInline = {
   lineHeight: 1.35,
 };
 const clearBtn = {
-  fontFamily: "'Inter', system-ui, sans-serif",
   fontSize: 10,
   fontWeight: 700,
   letterSpacing: "0.06em",

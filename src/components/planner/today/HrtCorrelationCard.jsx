@@ -455,7 +455,6 @@ function CorrelationChart({ series, showHrtOverlay, hasAny }) {
           <text
             x={PAD_X} y={hrtY - 4}
             fontSize="8" fill="#3F6228"
-            fontFamily="'Inter', sans-serif"
             fontWeight="700"
             style={{ letterSpacing: "0.10em" }}
           >HRT</text>
@@ -489,7 +488,6 @@ function CorrelationChart({ series, showHrtOverlay, hasAny }) {
             x={xFor(i)} y={H - 6}
             fontSize="8" fill="#9B8B7A"
             textAnchor="middle"
-            fontFamily="'Inter', sans-serif"
           >{d.label}</text>
         ) : null))}
       </svg>
@@ -520,18 +518,15 @@ const iconWrap = {
   flexShrink: 0,
 };
 const eyebrowStyle = {
-  fontFamily: "'Inter', sans-serif",
   fontSize: 10, fontWeight: 700, letterSpacing: "0.18em",
   color: "#3F6228", textTransform: "uppercase",
   margin: 0,
 };
 const titleStyle = {
-  fontFamily: "'Fraunces', Georgia, serif",
   fontSize: 17, fontWeight: 500, lineHeight: 1.22,
   color: "#3A2C1A", margin: "2px 0 0",
 };
 const bodyMute = {
-  fontFamily: "'Inter', sans-serif",
   fontSize: 12.5, color: "#6B5840",
   lineHeight: 1.5, margin: "0 0 10px",
 };
@@ -548,7 +543,6 @@ const chartSvg = {
   display: "block",
 };
 const chartEmpty = {
-  fontFamily: "'Inter', sans-serif",
   fontSize: 11, color: "#9B8B7A", fontStyle: "italic",
   margin: "4px 0 0", textAlign: "center",
 };
@@ -562,12 +556,10 @@ const insightBox = {
   borderRadius: 10,
 };
 const insightText = {
-  fontFamily: "'Fraunces', Georgia, serif",
   fontStyle: "italic", fontSize: 13.5,
   color: "#3A2C1A", margin: 0, lineHeight: 1.4,
 };
 const legendNote = {
-  fontFamily: "'Inter', sans-serif",
   fontSize: 10.5, color: "#9B8B7A", fontStyle: "italic",
   margin: "8px 0 0", lineHeight: 1.5,
 };
@@ -600,8 +592,7 @@ const pillarRow = {
   background: "transparent",
   cursor: "pointer",
   textAlign: "left",
-  fontFamily: "'Inter', sans-serif",
-};
+  };
 const pillarLabel = {
   fontSize: 12.5,
   fontWeight: 700,
@@ -623,7 +614,6 @@ const pillarBarFill = {
   transition: "width 220ms ease",
 };
 const pillarAvgNum = {
-  fontFamily: "'Fraunces', Georgia, serif",
   fontSize: 13,
   fontWeight: 500,
   color: "#3A2C1A",
@@ -642,8 +632,7 @@ const pillarSubRow = {
   alignItems: "baseline",
   gap: 8,
   padding: "4px 0",
-  fontFamily: "'Inter', sans-serif",
-};
+  };
 const pillarSubLabel = {
   fontSize: 11.5,
   color: "#9B8B7A",

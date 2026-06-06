@@ -311,7 +311,6 @@ function KickWeekChart({ series, loading }) {
                   textAnchor="middle"
                   fontSize="9"
                   fontWeight="700"
-                  fontFamily="'Inter', sans-serif"
                   fill="#3F6228"
                 >{d.total}</text>
               )}
@@ -321,7 +320,6 @@ function KickWeekChart({ series, loading }) {
                 y={H - 10}
                 textAnchor="middle"
                 fontSize="9.5"
-                fontFamily="'Inter', sans-serif"
                 fontWeight={d.isToday ? "700" : "500"}
                 fill={d.isToday ? "#3A2C1A" : "#9B8B7A"}
               >{d.dayLabel}</text>
@@ -352,7 +350,6 @@ const card = {
   maxWidth: 390,
 };
 const eyebrow = {
-  fontFamily: "'Inter', sans-serif",
   fontSize: 10,
   fontWeight: 700,
   letterSpacing: "0.18em",
@@ -361,7 +358,6 @@ const eyebrow = {
   margin: 0,
 };
 const title = {
-  fontFamily: "'Fraunces', Georgia, serif",
   fontSize: 18,
   fontWeight: 500,
   color: "#3A2C1A",
@@ -376,7 +372,6 @@ const tabBtn = {
   padding: "5px 12px",
   borderRadius: 9999,
   border: "1px solid",
-  fontFamily: "'Inter', sans-serif",
   fontSize: 11.5,
   fontWeight: 700,
   cursor: "pointer",
@@ -407,14 +402,12 @@ const kickBtn = {
   userSelect: "none",
 };
 const kickNum = {
-  fontFamily: "'Fraunces', Georgia, serif",
   fontSize: 38,
   fontWeight: 600,
   color: "#3A2C1A",
   lineHeight: 1,
 };
 const kickLabel = {
-  fontFamily: "'Inter', sans-serif",
   fontSize: 11,
   fontWeight: 700,
   color: "#3A2C1A",
@@ -422,7 +415,6 @@ const kickLabel = {
   letterSpacing: "0.12em",
 };
 const timerText = {
-  fontFamily: "'Inter', sans-serif",
   fontSize: 12,
   color: "#6B5840",
   margin: 0,
@@ -433,7 +425,6 @@ const startBtn = {
   background: "#E8B4B8",
   border: "none",
   cursor: "pointer",
-  fontFamily: "'Inter', sans-serif",
   fontSize: 14,
   fontWeight: 700,
   color: "#3A2C1A",
@@ -445,7 +436,6 @@ const doneBtn = {
   background: "#8FAF8F",
   border: "none",
   cursor: "pointer",
-  fontFamily: "'Inter', sans-serif",
   fontSize: 13,
   fontWeight: 700,
   color: "#FFFFFF",
@@ -461,7 +451,6 @@ const sessionsList = {
   marginBottom: 12,
 };
 const sessionsLabel = {
-  fontFamily: "'Inter', sans-serif",
   fontSize: 10,
   fontWeight: 700,
   letterSpacing: "0.14em",
@@ -479,26 +468,22 @@ const sessionRow = {
   padding: "8px 12px",
 };
 const sessionTime = {
-  fontFamily: "'Inter', sans-serif",
   fontSize: 12,
   fontWeight: 600,
   color: "#3A2C1A",
   minWidth: 40,
 };
 const sessionKicks = {
-  fontFamily: "'Inter', sans-serif",
   fontSize: 12,
   fontWeight: 700,
   color: "#C48A8C",
   flex: 1,
 };
 const sessionDur = {
-  fontFamily: "'Inter', sans-serif",
   fontSize: 11,
   color: "#6B5840",
 };
 const nhsNote = {
-  fontFamily: "'Inter', sans-serif",
   fontSize: 11.5,
   color: "#6B5840",
   fontStyle: "italic",
@@ -524,7 +509,6 @@ const chartHeadRow = {
   marginBottom: 4,
 };
 const chartEyebrow = {
-  fontFamily: "'Inter', sans-serif",
   fontSize: 9,
   fontWeight: 700,
   letterSpacing: "0.16em",
@@ -533,7 +517,6 @@ const chartEyebrow = {
   margin: 0,
 };
 const chartTotal = {
-  fontFamily: "'Inter', sans-serif",
   fontSize: 11,
   fontWeight: 700,
   color: "#3A2C1A",
@@ -545,7 +528,6 @@ const chartSvg = {
   display: "block",
 };
 const chartLoadingNote = {
-  fontFamily: "'Inter', sans-serif",
   fontSize: 11,
   color: "#9B8B7A",
   fontStyle: "italic",
@@ -553,7 +535,6 @@ const chartLoadingNote = {
   margin: "4px 0 0",
 };
 const chartEmpty = {
-  fontFamily: "'Inter', sans-serif",
   fontSize: 11.5,
   color: "#9B8B7A",
   fontStyle: "italic",

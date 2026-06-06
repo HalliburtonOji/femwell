@@ -131,7 +131,6 @@ export default function CapacityTaxBar({
             textTransform: "uppercase",
             letterSpacing: "0.14em",
             color: "var(--plum-mute, #8A7584)",
-            fontFamily: "'Inter', sans-serif",
             margin: 0,
           }}
         >
@@ -143,7 +142,6 @@ export default function CapacityTaxBar({
             fontSize: 11,
             fontWeight: 600,
             color: barColor,
-            fontFamily: "'Inter', sans-serif",
             margin: 0,
             letterSpacing: "0.02em",
           }}
@@ -194,7 +192,6 @@ export default function CapacityTaxBar({
         style={{
           fontSize: 12.5,
           color: "var(--plum-2, #6B4559)",
-          fontFamily: "'Inter', sans-serif",
           lineHeight: 1.5,
           margin: "0 0 12px",
         }}
@@ -217,7 +214,6 @@ export default function CapacityTaxBar({
             border: "none",
             background: "var(--plum, #4A2A3A)",
             color: "var(--cream, #FFFAF5)",
-            fontFamily: "'Inter', sans-serif",
             fontSize: 13,
             fontWeight: 600,
             cursor: "pointer",

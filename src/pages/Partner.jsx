@@ -75,7 +75,7 @@ export default function Partner() {
   if (loading) {
     return (
       <div style={shell}>
-        <p style={{ color: C.muted, fontFamily: "'Inter', system-ui, sans-serif" }}>Loading…</p>
+        <p style={{ color: C.muted, }}>Loading…</p>
       </div>
     );
   }
@@ -87,7 +87,7 @@ export default function Partner() {
           <Heart size={22} style={{ color: C.blush, marginBottom: 8 }} />
           <h1 style={{
             margin: 0, fontSize: 20, fontWeight: 600,
-            fontFamily: "'Fraunces', Georgia, serif", color: C.espresso,
+            color: C.espresso,
             lineHeight: 1.2,
           }}>This link isn't valid or has expired.</h1>
           <p style={{ margin: "10px 0 0", fontSize: 13.5, color: C.muted, lineHeight: 1.55 }}>
@@ -132,5 +132,4 @@ const errorCard = {
   padding: "22px 22px 20px",
   maxWidth: 420,
   textAlign: "center",
-  fontFamily: "'Inter', system-ui, sans-serif",
-};
+  };

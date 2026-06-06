@@ -71,14 +71,13 @@ export default function HabitCard({ habit, habitLogs, allHabitLogs, selectedDate
             <p className="font-semibold text-sm truncate"
               style={{
                 color: isCompleted ? "var(--sage)" : "var(--plum)",
-                fontFamily: "'Inter', sans-serif",
                 textDecoration: isCompleted ? "line-through" : "none",
                 textDecorationColor: "var(--sage-light)",
               }}>
               {habit}
             </p>
             {streak > 0 && (
-              <p className="text-xs mt-0.5" style={{ color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>
+              <p className="text-xs mt-0.5" style={{ color: "var(--mauve)", }}>
                 {streak} day{streak !== 1 ? "s" : ""} in a row
               </p>
             )}
@@ -87,7 +86,7 @@ export default function HabitCard({ habit, habitLogs, allHabitLogs, selectedDate
           {/* Streak badge */}
           {streak >= 7 && (
             <span className="text-xs font-semibold px-2.5 py-1 rounded-full flex-shrink-0"
-              style={{ backgroundColor: "var(--sage-subtle)", color: "var(--sage)", fontFamily: "'Inter', sans-serif" }}>
+              style={{ backgroundColor: "var(--sage-subtle)", color: "var(--sage)", }}>
               {streak}d
             </span>
           )}
@@ -104,10 +103,10 @@ export default function HabitCard({ habit, habitLogs, allHabitLogs, selectedDate
         {isMilestone && isCompleted && (
           <div className="mt-3 rounded-[14px] px-3.5 py-2.5"
             style={{ backgroundColor: "var(--sage-subtle)", border: "1px solid var(--sage-light)" }}>
-            <p className="text-xs font-semibold" style={{ color: "var(--sage)", fontFamily: "'Inter', sans-serif" }}>
+            <p className="text-xs font-semibold" style={{ color: "var(--sage)", }}>
               {MILESTONE_LABELS[streak]} consistent
             </p>
-            <p className="text-xs mt-0.5" style={{ color: "var(--sage)", fontFamily: "'Inter', sans-serif", opacity: 0.75 }}>
+            <p className="text-xs mt-0.5" style={{ color: "var(--sage)", opacity: 0.75 }}>
               That's a meaningful rhythm you've built.
             </p>
           </div>
@@ -122,7 +121,7 @@ export default function HabitCard({ habit, habitLogs, allHabitLogs, selectedDate
           </div>
           <button onClick={() => onDelete(habit)}
             className="mt-3 text-xs font-medium"
-            style={{ color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>
+            style={{ color: "var(--mauve)", }}>
             Remove habit
           </button>
         </div>

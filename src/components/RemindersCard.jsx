@@ -68,7 +68,7 @@ export default function RemindersCard({ user, profile, onProfileChange }) {
     >
       <header style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10 }}>
         <Bell size={16} style={{ color: C.gold }} aria-hidden />
-        <h2 style={{ fontFamily: "'Fraunces', serif", fontSize: 18, fontWeight: 700, color: C.espresso, margin: 0 }}>
+        <h2 style={{ fontSize: 18, fontWeight: 700, color: C.espresso, margin: 0 }}>
           Reminders
         </h2>
       </header>
@@ -84,7 +84,7 @@ export default function RemindersCard({ user, profile, onProfileChange }) {
               display: "flex", alignItems: "center", justifyContent: "space-between",
               padding: "10px 0", borderBottom: `1px solid ${C.border}`, gap: 12,
             }}>
-              <span style={{ flex: 1, fontSize: 13, fontWeight: 600, color: C.espresso, fontFamily: "'Inter', sans-serif" }}>
+              <span style={{ flex: 1, fontSize: 13, fontWeight: 600, color: C.espresso, }}>
                 {r.label}
               </span>
               {r.time && enabled && (
@@ -96,7 +96,7 @@ export default function RemindersCard({ user, profile, onProfileChange }) {
                   style={{
                     minHeight: 36, padding: "4px 8px",
                     border: `1px solid ${C.border}`, borderRadius: 8,
-                    fontFamily: "'Inter', sans-serif", fontSize: 13,
+                    fontSize: 13,
                     color: C.espresso,
                   }}
                 />
@@ -135,7 +135,7 @@ export default function RemindersCard({ user, profile, onProfileChange }) {
 
       <footer style={{ display: "flex", alignItems: "center", justifyContent: "flex-end", gap: 10, marginTop: 14 }}>
         {saved && (
-          <span style={{ fontSize: 12, color: C.sage, display: "inline-flex", alignItems: "center", gap: 4, fontFamily: "'Inter', sans-serif" }}>
+          <span style={{ fontSize: 12, color: C.sage, display: "inline-flex", alignItems: "center", gap: 4, }}>
             <Check className="w-3.5 h-3.5" /> Saved
           </span>
         )}
@@ -147,7 +147,7 @@ export default function RemindersCard({ user, profile, onProfileChange }) {
             padding: "8px 16px", borderRadius: 9999,
             background: "#E11D48", color: "white",
             border: "none", cursor: "pointer", minHeight: 36,
-            fontFamily: "'Inter', sans-serif", fontSize: 13, fontWeight: 700,
+            fontSize: 13, fontWeight: 700,
             opacity: saving ? 0.6 : 1,
           }}
         >{saving ? "Saving…" : "Save reminders"}</button>

@@ -8,8 +8,7 @@ const card = {
 };
 const sLabel = {
   fontSize: "0.55rem", fontWeight: 600, textTransform: "uppercase",
-  letterSpacing: "0.12em", color: "var(--mauve)", fontFamily: "'Inter', sans-serif",
-};
+  letterSpacing: "0.12em", color: "var(--mauve)", };
 
 const STATUS_CONFIG = {
   completed: { label: "Done",     bg: "var(--sage-subtle)",      color: "var(--sage)"      },
@@ -40,41 +39,41 @@ export default function ProgramDayPreviewCard({ day, tasks, expanded, onToggle, 
               ? <CheckCircle2 className="w-4.5 h-4.5" style={{ color: "var(--sage)" }} />
               : status === "upcoming"
               ? <Lock className="w-3.5 h-3.5" style={{ color: "var(--mauve)" }} />
-              : <span className="text-sm font-bold" style={{ color: "white", fontFamily: "'Inter', sans-serif" }}>{day.day_number}</span>
+              : <span className="text-sm font-bold" style={{ color: "white", }}>{day.day_number}</span>
             }
           </div>
 
           <div className="flex-1 min-w-0">
             <div className="flex flex-wrap items-center gap-2 mb-1">
-              <h3 className="text-sm font-semibold" style={{ color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>{title}</h3>
+              <h3 className="text-sm font-semibold" style={{ color: "var(--plum)", }}>{title}</h3>
               <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full"
-                style={{ backgroundColor: cfg.bg, color: cfg.color, fontFamily: "'Inter', sans-serif" }}>
+                style={{ backgroundColor: cfg.bg, color: cfg.color, }}>
                 {cfg.label}
               </span>
               {day.estimated_minutes > 0 && (
-                <span className="inline-flex items-center gap-1 text-[10px]" style={{ color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>
+                <span className="inline-flex items-center gap-1 text-[10px]" style={{ color: "var(--mauve)", }}>
                   <Clock className="w-3 h-3" /> {day.estimated_minutes} min
                 </span>
               )}
             </div>
-            {summary && <p className="text-xs leading-relaxed" style={{ color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>{summary}</p>}
+            {summary && <p className="text-xs leading-relaxed" style={{ color: "var(--mauve)", }}>{summary}</p>}
 
             <div className="flex flex-wrap gap-1.5 mt-2.5">
               {sessionCount > 0 && (
                 <span className="inline-flex items-center gap-1 text-[10px] px-2.5 py-1 rounded-full"
-                  style={{ backgroundColor: "var(--mauve-subtle)", color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>
+                  style={{ backgroundColor: "var(--mauve-subtle)", color: "var(--mauve)", }}>
                   <Headphones className="w-2.5 h-2.5" /> {sessionCount} audio
                 </span>
               )}
               {externalCount > 0 && (
                 <span className="inline-flex items-center gap-1 text-[10px] px-2.5 py-1 rounded-full"
-                  style={{ backgroundColor: "var(--rose-dust-subtle)", color: "var(--rose-dust)", fontFamily: "'Inter', sans-serif" }}>
+                  style={{ backgroundColor: "var(--rose-dust-subtle)", color: "var(--rose-dust)", }}>
                   <Play className="w-2.5 h-2.5" /> {externalCount} video
                 </span>
               )}
               {readCount > 0 && (
                 <span className="inline-flex items-center gap-1 text-[10px] px-2.5 py-1 rounded-full"
-                  style={{ backgroundColor: "#FFF8EE", color: "#A07830", fontFamily: "'Inter', sans-serif" }}>
+                  style={{ backgroundColor: "#FFF8EE", color: "#A07830", }}>
                   <BookOpen className="w-2.5 h-2.5" /> {readCount} read
                 </span>
               )}
@@ -87,12 +86,12 @@ export default function ProgramDayPreviewCard({ day, tasks, expanded, onToggle, 
         style={{ borderTop: "1px solid var(--border-subtle)" }}>
         <a href={openHref}
           className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold"
-          style={{ backgroundColor: "var(--plum)", color: "white", fontFamily: "'Inter', sans-serif" }}>
+          style={{ backgroundColor: "var(--plum)", color: "white", }}>
           Open day
         </a>
         <button onClick={onToggle}
           className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold"
-          style={{ backgroundColor: "var(--ivory-dark)", color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>
+          style={{ backgroundColor: "var(--ivory-dark)", color: "var(--mauve)", }}>
           {expanded ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
           Preview
         </button>
@@ -103,7 +102,7 @@ export default function ProgramDayPreviewCard({ day, tasks, expanded, onToggle, 
           style={{ borderTop: "1px solid var(--border-subtle)" }}>
           {tasks.map((task, i) => (
             <div key={task.id} className="flex items-start gap-2.5 text-xs"
-              style={{ color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>
+              style={{ color: "var(--plum)", }}>
               <span className="flex-shrink-0 w-4 h-4 rounded-full flex items-center justify-center text-[9px] font-bold mt-0.5"
                 style={{ backgroundColor: "var(--ivory-dark)", color: "var(--mauve)" }}>
                 {i + 1}
@@ -116,7 +115,7 @@ export default function ProgramDayPreviewCard({ day, tasks, expanded, onToggle, 
             <div className="mt-3 rounded-[14px] px-3.5 py-3"
               style={{ backgroundColor: "var(--rose-dust-subtle)", border: "1px solid var(--rose-dust-light)" }}>
               <p style={{ ...sLabel, marginBottom: "4px" }}>Reflection prompt</p>
-              <p className="text-xs italic leading-relaxed" style={{ color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>
+              <p className="text-xs italic leading-relaxed" style={{ color: "var(--plum)", }}>
                 {day.reflection_prompt}
               </p>
             </div>

@@ -13,7 +13,6 @@ export default function AiDisclaimer({ style = {}, label }) {
         color: "#9B8B7A", // FemWell muted
         margin: "10px 0 0",
         lineHeight: 1.5,
-        fontFamily: "'Inter', system-ui, sans-serif",
         ...style,
       }}
       data-mhra-disclaimer="true"

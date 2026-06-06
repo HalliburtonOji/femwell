@@ -95,7 +95,7 @@ export default function DailyStoriesStrip({ user }) {
                   }} />
                   <span style={{
                     fontSize: 10, fontWeight: 500, color: "var(--plum)",
-                    fontFamily: "'Inter', sans-serif", marginTop: 5,
+                    marginTop: 5,
                     maxWidth: 64, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
                     textAlign: "center",
                   }}>

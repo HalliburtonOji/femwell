@@ -222,17 +222,15 @@ export default function JessWeeklySummary({ user, profile }) {
         <p style={{
           margin: 0, fontSize: 10, fontWeight: 700,
           letterSpacing: "0.16em", textTransform: "uppercase",
-          color: C.muted, fontFamily: "'Inter', sans-serif",
-        }}>Jess · your week</p>
+          color: C.muted, }}>Jess · your week</p>
         <p style={{
           margin: "4px 0 0", fontSize: 14,
-          fontFamily: "'Fraunces', Georgia, serif",
           color: C.espresso, lineHeight: 1.5,
         }}>{text}</p>
         {counts && (counts.checkinCount > 0 || counts.habitCount > 0) && (
           <p style={{
             margin: "6px 0 0", fontSize: 11, color: C.muted,
-            fontFamily: "'Inter', sans-serif", letterSpacing: "0.02em",
+            letterSpacing: "0.02em",
           }}>
             {[
               counts.checkinCount ? `${counts.checkinCount} check-in${counts.checkinCount === 1 ? "" : "s"}` : null,

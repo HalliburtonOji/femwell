@@ -6,7 +6,7 @@ import SupportMetricSlider from "../lifestages/SupportMetricSlider";
 function SliderRow({ label, value, onChange, min = 1, max = 5, unit = "/5" }) {
   return (
     <div>
-      <label style={{ fontSize: "13px", fontWeight: 600, color: "var(--plum)", fontFamily: "'Inter', sans-serif", display: "flex", justifyContent: "space-between", marginBottom: "6px" }}>
+      <label style={{ fontSize: "13px", fontWeight: 600, color: "var(--plum)", display: "flex", justifyContent: "space-between", marginBottom: "6px" }}>
         <span>{label}</span>
         <span style={{ color: "var(--rose-dust)", fontWeight: 700 }}>{value}{unit}</span>
       </label>
@@ -18,7 +18,7 @@ function SliderRow({ label, value, onChange, min = 1, max = 5, unit = "/5" }) {
 function Chip({ label, selected, onToggle }) {
   return (
     <button type="button" onClick={onToggle}
-      style={{ borderRadius: "9999px", padding: "8px 14px", fontSize: "13px", fontFamily: "'Inter', sans-serif", fontWeight: 500, cursor: "pointer", transition: "all 0.15s", border: selected ? "1.5px solid var(--plum)" : "1.5px solid var(--border)", backgroundColor: selected ? "var(--plum)" : "var(--ivory-dark)", color: selected ? "white" : "var(--plum)" }}>
+      style={{ borderRadius: "9999px", padding: "8px 14px", fontSize: "13px", fontWeight: 500, cursor: "pointer", transition: "all 0.15s", border: selected ? "1.5px solid var(--plum)" : "1.5px solid var(--border)", backgroundColor: selected ? "var(--plum)" : "var(--ivory-dark)", color: selected ? "white" : "var(--plum)" }}>
       {label}
     </button>
   );
@@ -27,7 +27,7 @@ function Chip({ label, selected, onToggle }) {
 function ChipSection({ title, children }) {
   return (
     <div style={{ marginBottom: "24px" }}>
-      <p style={{ fontSize: "11px", fontWeight: 600, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", textTransform: "uppercase", letterSpacing: "0.12em", marginBottom: "10px" }}>{title}</p>
+      <p style={{ fontSize: "11px", fontWeight: 600, color: "var(--mauve)", textTransform: "uppercase", letterSpacing: "0.12em", marginBottom: "10px" }}>{title}</p>
       <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>{children}</div>
     </div>
   );
@@ -71,7 +71,7 @@ const TABS = [
 
 const CHECKIN_TABS = new Set(["cycle", "body", "skin", "lifestyle", "vitals"]);
 
-const inp = { border: "1.5px solid var(--border)", borderRadius: 12, padding: "10px 12px", fontSize: 13, fontFamily: "'Inter', sans-serif", color: "var(--plum)", backgroundColor: "var(--ivory)", outline: "none", width: "100%", boxSizing: "border-box" };
+const inp = { border: "1.5px solid var(--border)", borderRadius: 12, padding: "10px 12px", fontSize: 13, color: "var(--plum)", backgroundColor: "var(--ivory)", outline: "none", width: "100%", boxSizing: "border-box" };
 
 export default function CheckinModal({ existing, onClose, onSave, userId, dateStr, initialTab }) {
   const init = existing || {};
@@ -340,8 +340,8 @@ export default function CheckinModal({ existing, onClose, onSave, userId, dateSt
           <div style={{ width: 32, height: 4, borderRadius: 9999, backgroundColor: "var(--border)", margin: "0 auto 16px" }} />
           <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: "14px" }}>
             <div>
-              <h2 style={{ fontFamily: "'Fraunces', serif", fontSize: "18px", color: "var(--plum)", fontWeight: 600, margin: 0 }}>Log your day</h2>
-              <p style={{ fontFamily: "'Inter', sans-serif", fontSize: "12px", color: "var(--mauve)", marginTop: 4 }}>Tap a section to log.</p>
+              <h2 style={{ fontSize: "18px", color: "var(--plum)", fontWeight: 600, margin: 0 }}>Log your day</h2>
+              <p style={{ fontSize: "12px", color: "var(--mauve)", marginTop: 4 }}>Tap a section to log.</p>
             </div>
             <button onClick={onClose} style={{ width: 28, height: 28, borderRadius: 9999, border: "none", backgroundColor: "var(--ivory-dark)", color: "var(--mauve)", fontSize: "18px", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>x</button>
           </div>
@@ -355,7 +355,7 @@ export default function CheckinModal({ existing, onClose, onSave, userId, dateSt
           <div className="checkin-rail" style={{ flexShrink: 0, width: 72, overflowY: "auto", padding: "10px 5px", display: "flex", flexDirection: "column", gap: 2, borderRight: "1px solid var(--border-subtle)" }}>
             {TABS.map(t => (
               <button key={t.id} type="button" onClick={() => setActiveTab(t.id)}
-                style={{ width: "100%", padding: "9px 3px", borderRadius: 10, border: "none", backgroundColor: activeTab === t.id ? "var(--plum)" : "transparent", color: activeTab === t.id ? "white" : "var(--mauve)", fontSize: 10, fontWeight: 600, fontFamily: "'Inter', sans-serif", textAlign: "center", cursor: "pointer", lineHeight: 1.3, wordBreak: "break-word", transition: "all 0.15s" }}>
+                style={{ width: "100%", padding: "9px 3px", borderRadius: 10, border: "none", backgroundColor: activeTab === t.id ? "var(--plum)" : "transparent", color: activeTab === t.id ? "white" : "var(--mauve)", fontSize: 10, fontWeight: 600, textAlign: "center", cursor: "pointer", lineHeight: 1.3, wordBreak: "break-word", transition: "all 0.15s" }}>
                 {t.label}
               </button>
             ))}
@@ -422,9 +422,9 @@ export default function CheckinModal({ existing, onClose, onSave, userId, dateSt
                 {["Stress","Meditation","Journaling","Breathing exercises","Kegel exercises","Travel","Alcohol","Disease or injury"].map(v => <Chip key={v} label={v} selected={otherTags.includes(v)} onToggle={() => toggleOtherTags(v)} />)}
               </ChipSection>
               <div style={{ marginBottom: 24 }}>
-                <p style={{ fontSize: "11px", fontWeight: 600, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", textTransform: "uppercase", letterSpacing: "0.12em", marginBottom: "10px" }}>Notes (optional)</p>
+                <p style={{ fontSize: "11px", fontWeight: 600, color: "var(--mauve)", textTransform: "uppercase", letterSpacing: "0.12em", marginBottom: "10px" }}>Notes (optional)</p>
                 <textarea value={notes} onChange={e => setNotes(e.target.value)} placeholder="Anything else on your mind today?"
-                  style={{ width: "100%", border: "1px solid var(--border)", borderRadius: "16px", padding: "12px", fontSize: "14px", fontFamily: "'Inter', sans-serif", color: "var(--plum)", background: "var(--ivory)", minHeight: "80px", resize: "none", outline: "none", boxSizing: "border-box" }} />
+                  style={{ width: "100%", border: "1px solid var(--border)", borderRadius: "16px", padding: "12px", fontSize: "14px", color: "var(--plum)", background: "var(--ivory)", minHeight: "80px", resize: "none", outline: "none", boxSizing: "border-box" }} />
               </div>
               <div style={{ display: "flex", flexDirection: "column", gap: 16, marginBottom: 24 }}>
                 <SliderRow label="Energy" value={energy} onChange={setEnergy} />
@@ -446,11 +446,11 @@ export default function CheckinModal({ existing, onClose, onSave, userId, dateSt
               <div>
                 {/* Meal */}
                 <div style={{ marginBottom: 22 }}>
-                  <p style={{ fontSize: 11, fontWeight: 600, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", textTransform: "uppercase", letterSpacing: "0.12em", marginBottom: 10 }}>Meal</p>
+                  <p style={{ fontSize: 11, fontWeight: 600, color: "var(--mauve)", textTransform: "uppercase", letterSpacing: "0.12em", marginBottom: 10 }}>Meal</p>
                   <div style={{ display: "flex", gap: 6, marginBottom: 8, flexWrap: "wrap" }}>
                     {["breakfast","lunch","dinner","snack"].map(mt => (
                       <button key={mt} onClick={() => setMealType(mt)}
-                        style={{ padding: "5px 12px", borderRadius: 9999, fontSize: 11, fontWeight: 600, border: "none", cursor: "pointer", fontFamily: "'Inter', sans-serif", textTransform: "capitalize", backgroundColor: mealType === mt ? "var(--plum)" : "var(--ivory-dark)", color: mealType === mt ? "white" : "var(--mauve)" }}>
+                        style={{ padding: "5px 12px", borderRadius: 9999, fontSize: 11, fontWeight: 600, border: "none", cursor: "pointer", textTransform: "capitalize", backgroundColor: mealType === mt ? "var(--plum)" : "var(--ivory-dark)", color: mealType === mt ? "white" : "var(--mauve)" }}>
                         {mt}
                       </button>
                     ))}
@@ -459,18 +459,18 @@ export default function CheckinModal({ existing, onClose, onSave, userId, dateSt
                     placeholder="e.g. oats with banana and almond milk..."
                     rows={2} style={{ ...inp, resize: "none", marginBottom: 8 }} />
                   <button onClick={logMeal} disabled={!mealText.trim()}
-                    style={{ padding: "9px 18px", borderRadius: 9999, backgroundColor: "var(--plum)", color: "white", border: "none", fontSize: 12, fontWeight: 600, cursor: !mealText.trim() ? "default" : "pointer", opacity: !mealText.trim() ? 0.5 : 1, fontFamily: "'Inter', sans-serif" }}>
+                    style={{ padding: "9px 18px", borderRadius: 9999, backgroundColor: "var(--plum)", color: "white", border: "none", fontSize: 12, fontWeight: 600, cursor: !mealText.trim() ? "default" : "pointer", opacity: !mealText.trim() ? 0.5 : 1, }}>
                     {mealSaved ? "Logged" : "Log meal"}
                   </button>
                 </div>
 
                 {/* Water */}
                 <div style={{ marginBottom: 22 }}>
-                  <p style={{ fontSize: 11, fontWeight: 600, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", textTransform: "uppercase", letterSpacing: "0.12em", marginBottom: 10 }}>Water</p>
+                  <p style={{ fontSize: 11, fontWeight: 600, color: "var(--mauve)", textTransform: "uppercase", letterSpacing: "0.12em", marginBottom: 10 }}>Water</p>
                   <div style={{ display: "flex", gap: 8 }}>
                     {[250, 500, 750].map(ml => (
                       <button key={ml} onClick={() => logWater(ml)}
-                        style={{ flex: 1, padding: "10px 8px", borderRadius: 12, backgroundColor: waterSaved === ml ? "var(--sage-subtle)" : "var(--ivory-dark)", color: waterSaved === ml ? "var(--sage)" : "var(--plum)", border: `1px solid ${waterSaved === ml ? "var(--sage-light)" : "var(--border)"}`, fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: "'Inter', sans-serif" }}>
+                        style={{ flex: 1, padding: "10px 8px", borderRadius: 12, backgroundColor: waterSaved === ml ? "var(--sage-subtle)" : "var(--ivory-dark)", color: waterSaved === ml ? "var(--sage)" : "var(--plum)", border: `1px solid ${waterSaved === ml ? "var(--sage-light)" : "var(--border)"}`, fontSize: 13, fontWeight: 600, cursor: "pointer", }}>
                         {waterSaved === ml ? "Added" : `+${ml}ml`}
                       </button>
                     ))}
@@ -479,12 +479,12 @@ export default function CheckinModal({ existing, onClose, onSave, userId, dateSt
 
                 {/* Drinks */}
                 <div style={{ marginBottom: 16 }}>
-                  <p style={{ fontSize: 11, fontWeight: 600, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", textTransform: "uppercase", letterSpacing: "0.12em", marginBottom: 10 }}>Drinks</p>
+                  <p style={{ fontSize: 11, fontWeight: 600, color: "var(--mauve)", textTransform: "uppercase", letterSpacing: "0.12em", marginBottom: 10 }}>Drinks</p>
                   <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 12 }}>
                     {DRINK_TYPES.map(d => (
                       <button key={d.id} onClick={() => logSuggestedDrink(d.id)} disabled={loggingDrink}
                         style={{ padding: "6px 12px", borderRadius: 9999, border: "1px solid var(--border)", backgroundColor: "var(--ivory-dark)", cursor: loggingDrink ? "default" : "pointer", opacity: loggingDrink ? 0.5 : 1 }}>
-                        <span style={{ fontSize: 12, fontWeight: 600, color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>{d.label}</span>
+                        <span style={{ fontSize: 12, fontWeight: 600, color: "var(--plum)", }}>{d.label}</span>
                         {DRINK_CALS[d.id] > 0 && <span style={{ fontSize: 10, color: "var(--mauve)", marginLeft: 4 }}>~{DRINK_CALS[d.id]} kcal</span>}
                       </button>
                     ))}
@@ -492,7 +492,7 @@ export default function CheckinModal({ existing, onClose, onSave, userId, dateSt
 
                   {/* Custom drink toggle */}
                   <button onClick={() => setShowCustomDrink(v => !v)}
-                    style={{ fontSize: 12, fontWeight: 600, color: "var(--rose-dust)", background: "none", border: "none", cursor: "pointer", fontFamily: "'Inter', sans-serif", marginBottom: showCustomDrink ? 10 : 0 }}>
+                    style={{ fontSize: 12, fontWeight: 600, color: "var(--rose-dust)", background: "none", border: "none", cursor: "pointer", marginBottom: showCustomDrink ? 10 : 0 }}>
                     {showCustomDrink ? "Hide custom drink" : "+ Custom drink"}
                   </button>
                   {showCustomDrink && (
@@ -509,23 +509,23 @@ export default function CheckinModal({ existing, onClose, onSave, userId, dateSt
                         </div>
                       </div>
                       <button onClick={logCustomDrink} disabled={!customDrinkName.trim() || loggingDrink}
-                        style={{ width: "100%", padding: "9px", borderRadius: 9999, backgroundColor: "var(--plum)", color: "white", border: "none", fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: "'Inter', sans-serif", opacity: !customDrinkName.trim() ? 0.5 : 1 }}>
+                        style={{ width: "100%", padding: "9px", borderRadius: 9999, backgroundColor: "var(--plum)", color: "white", border: "none", fontSize: 12, fontWeight: 600, cursor: "pointer", opacity: !customDrinkName.trim() ? 0.5 : 1 }}>
                         {loggingDrink ? "Logging..." : "Log drink"}
                       </button>
                     </div>
                   )}
 
-                  {drinkSaved && <p style={{ fontSize: 11, color: "var(--sage)", fontFamily: "'Inter', sans-serif", marginTop: 4 }}>Drink logged</p>}
+                  {drinkSaved && <p style={{ fontSize: 11, color: "var(--sage)", marginTop: 4 }}>Drink logged</p>}
 
                   {/* Today's drinks list */}
                   {drinkLogs.length > 0 && (
                     <div style={{ marginTop: 10 }}>
-                      <p style={{ fontSize: 10, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", marginBottom: 6 }}>Today</p>
+                      <p style={{ fontSize: 10, color: "var(--mauve)", marginBottom: 6 }}>Today</p>
                       <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
                         {drinkLogs.map(log => (
                           <div key={log.id} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", backgroundColor: "var(--ivory)", borderRadius: 10, padding: "6px 10px" }}>
                             <div>
-                              <span style={{ fontSize: 12, fontWeight: 600, color: "var(--plum)", fontFamily: "'Inter', sans-serif", textTransform: "capitalize" }}>{log.drink_type.replace(/_/g, " ")}</span>
+                              <span style={{ fontSize: 12, fontWeight: 600, color: "var(--plum)", textTransform: "capitalize" }}>{log.drink_type.replace(/_/g, " ")}</span>
                               {log.calories > 0 && <span style={{ fontSize: 10, color: "var(--mauve)", marginLeft: 6 }}>{log.calories} kcal</span>}
                               {log.amount_ml && <span style={{ fontSize: 10, color: "var(--mauve)", marginLeft: 6 }}>{log.amount_ml}ml</span>}
                             </div>
@@ -538,7 +538,7 @@ export default function CheckinModal({ existing, onClose, onSave, userId, dateSt
                 </div>
 
                 <a href="/Nutrition" onClick={onClose}
-                  style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 13, fontWeight: 600, color: "var(--rose-dust)", fontFamily: "'Inter', sans-serif", textDecoration: "none" }}>
+                  style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 13, fontWeight: 600, color: "var(--rose-dust)", textDecoration: "none" }}>
                   Open full Nutrition
                 </a>
               </div>
@@ -554,16 +554,16 @@ export default function CheckinModal({ existing, onClose, onSave, userId, dateSt
                 )}
                 {!lsLoading && !pregProfile && (
                   <div style={{ textAlign: "center", padding: "24px 0" }}>
-                    <p style={{ fontSize: 13, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", marginBottom: 16 }}>Set up pregnancy support to log here.</p>
+                    <p style={{ fontSize: 13, color: "var(--mauve)", marginBottom: 16 }}>Set up pregnancy support to log here.</p>
                     <a href="/LifeStageCare" onClick={onClose}
-                      style={{ display: "inline-block", padding: "10px 20px", borderRadius: 9999, backgroundColor: "var(--plum)", color: "white", fontSize: 13, fontWeight: 600, fontFamily: "'Inter', sans-serif", textDecoration: "none" }}>
+                      style={{ display: "inline-block", padding: "10px 20px", borderRadius: 9999, backgroundColor: "var(--plum)", color: "white", fontSize: 13, fontWeight: 600, textDecoration: "none" }}>
                       Set up pregnancy support
                     </a>
                   </div>
                 )}
                 {!lsLoading && pregProfile && (
                   <div>
-                    <p style={{ fontSize: 11, fontWeight: 600, color: "var(--rose-dust)", fontFamily: "'Inter', sans-serif", textTransform: "uppercase", letterSpacing: "0.12em", marginBottom: 14 }}>Pregnancy daily log</p>
+                    <p style={{ fontSize: 11, fontWeight: 600, color: "var(--rose-dust)", textTransform: "uppercase", letterSpacing: "0.12em", marginBottom: 14 }}>Pregnancy daily log</p>
                     <div style={{ display: "flex", flexDirection: "column", gap: 14, marginBottom: 14 }}>
                       <SupportMetricSlider label="Energy" value={pregEnergy} onChange={setPregEnergy} />
                       <SupportMetricSlider label="Mood" value={pregMood} onChange={setPregMood} />
@@ -575,7 +575,7 @@ export default function CheckinModal({ existing, onClose, onSave, userId, dateSt
                     <textarea value={pregNotes} onChange={e => setPregNotes(e.target.value)} placeholder="Notes (optional)"
                       rows={2} style={{ ...inp, resize: "none", marginBottom: 12 }} />
                     <button onClick={savePregLog} disabled={pregSaving}
-                      style={{ width: "100%", padding: "11px", borderRadius: 9999, backgroundColor: "var(--rose-dust)", color: "white", border: "none", fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: "'Inter', sans-serif", opacity: pregSaving ? 0.6 : 1 }}>
+                      style={{ width: "100%", padding: "11px", borderRadius: 9999, backgroundColor: "var(--rose-dust)", color: "white", border: "none", fontSize: 13, fontWeight: 600, cursor: "pointer", opacity: pregSaving ? 0.6 : 1 }}>
                       {pregSaved ? "Saved" : pregSaving ? "Saving..." : "Save pregnancy log"}
                     </button>
                   </div>
@@ -593,16 +593,16 @@ export default function CheckinModal({ existing, onClose, onSave, userId, dateSt
                 )}
                 {!lsLoading && !menoProfile && (
                   <div style={{ textAlign: "center", padding: "24px 0" }}>
-                    <p style={{ fontSize: 13, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", marginBottom: 16 }}>Set up menopause support to log here.</p>
+                    <p style={{ fontSize: 13, color: "var(--mauve)", marginBottom: 16 }}>Set up menopause support to log here.</p>
                     <a href="/LifeStageCare" onClick={onClose}
-                      style={{ display: "inline-block", padding: "10px 20px", borderRadius: 9999, backgroundColor: "var(--plum)", color: "white", fontSize: 13, fontWeight: 600, fontFamily: "'Inter', sans-serif", textDecoration: "none" }}>
+                      style={{ display: "inline-block", padding: "10px 20px", borderRadius: 9999, backgroundColor: "var(--plum)", color: "white", fontSize: 13, fontWeight: 600, textDecoration: "none" }}>
                       Set up menopause support
                     </a>
                   </div>
                 )}
                 {!lsLoading && menoProfile && (
                   <div>
-                    <p style={{ fontSize: 11, fontWeight: 600, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", textTransform: "uppercase", letterSpacing: "0.12em", marginBottom: 14 }}>Menopause daily log</p>
+                    <p style={{ fontSize: 11, fontWeight: 600, color: "var(--mauve)", textTransform: "uppercase", letterSpacing: "0.12em", marginBottom: 14 }}>Menopause daily log</p>
                     <div style={{ display: "flex", flexDirection: "column", gap: 14, marginBottom: 14 }}>
                       <SupportMetricSlider label="Hot flashes (1=none, 5=severe)" value={menoHotFlashes} onChange={setMenoHotFlashes} />
                       <SupportMetricSlider label="Night sweats" value={menoNightSweats} onChange={setMenoNightSweats} />
@@ -613,7 +613,7 @@ export default function CheckinModal({ existing, onClose, onSave, userId, dateSt
                     <textarea value={menoNotes} onChange={e => setMenoNotes(e.target.value)} placeholder="Notes (optional)"
                       rows={2} style={{ ...inp, resize: "none", marginBottom: 12 }} />
                     <button onClick={saveMenoLog} disabled={menoSaving}
-                      style={{ width: "100%", padding: "11px", borderRadius: 9999, backgroundColor: "var(--plum)", color: "white", border: "none", fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: "'Inter', sans-serif", opacity: menoSaving ? 0.6 : 1 }}>
+                      style={{ width: "100%", padding: "11px", borderRadius: 9999, backgroundColor: "var(--plum)", color: "white", border: "none", fontSize: 13, fontWeight: 600, cursor: "pointer", opacity: menoSaving ? 0.6 : 1 }}>
                       {menoSaved ? "Saved" : menoSaving ? "Saving..." : "Save menopause log"}
                     </button>
                   </div>
@@ -628,13 +628,13 @@ export default function CheckinModal({ existing, onClose, onSave, userId, dateSt
         <div style={{ flexShrink: 0, padding: "12px 20px 28px", borderTop: "1px solid var(--border-subtle)" }}>
           {isCheckinTab ? (
             <button onClick={handleSave} disabled={saving}
-              style={{ width: "100%", height: 52, borderRadius: 9999, backgroundColor: "var(--plum)", color: "white", border: "none", fontSize: "15px", fontWeight: 600, fontFamily: "'Inter', sans-serif", cursor: saving ? "default" : "pointer", opacity: saving ? 0.75 : 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
+              style={{ width: "100%", height: 52, borderRadius: 9999, backgroundColor: "var(--plum)", color: "white", border: "none", fontSize: "15px", fontWeight: 600, cursor: saving ? "default" : "pointer", opacity: saving ? 0.75 : 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
               {saving && <div style={{ width: 16, height: 16, border: "2px solid rgba(255,255,255,0.4)", borderTopColor: "white", borderRadius: "50%", animation: "spin 0.7s linear infinite" }} />}
               {saving ? "Saving..." : "Save check-in"}
             </button>
           ) : (
             <button onClick={onClose}
-              style={{ width: "100%", height: 52, borderRadius: 9999, backgroundColor: "var(--ivory-dark)", color: "var(--plum)", border: "1.5px solid var(--border)", fontSize: "15px", fontWeight: 600, fontFamily: "'Inter', sans-serif", cursor: "pointer" }}>
+              style={{ width: "100%", height: 52, borderRadius: 9999, backgroundColor: "var(--ivory-dark)", color: "var(--plum)", border: "1.5px solid var(--border)", fontSize: "15px", fontWeight: 600, cursor: "pointer" }}>
               Done
             </button>
           )}

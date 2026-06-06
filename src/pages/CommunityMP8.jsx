@@ -99,13 +99,13 @@ export default function CommunityMP8() {
       <div className="sticky top-0 z-30 px-4 pt-10 pb-3"
         style={{ backgroundColor: "rgba(250,248,245,0.97)", backdropFilter: "blur(20px)", borderBottom: "1px solid var(--border)" }}>
         <div className="max-w-xl mx-auto">
-          <p style={{ fontSize: "0.6rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.14em", color: "#E11D48", fontFamily: "'Inter', sans-serif" }}>
+          <p style={{ fontSize: "0.6rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.14em", color: "#E11D48", }}>
             FemWell Community
           </p>
-          <h1 style={{ fontSize: 22, fontWeight: 700, fontFamily: "'Fraunces', serif", color: "var(--plum)", letterSpacing: "-0.02em", marginTop: 2, marginBottom: 2 }}>
+          <h1 style={{ fontSize: 22, fontWeight: 700, color: "var(--plum)", letterSpacing: "-0.02em", marginTop: 2, marginBottom: 2 }}>
             your circle of support
           </h1>
-          <p style={{ fontSize: 12, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", marginBottom: 12 }}>
+          <p style={{ fontSize: 12, color: "var(--mauve)", marginBottom: 12 }}>
             Real people, real talk — be kind, be you.
           </p>
 
@@ -120,7 +120,7 @@ export default function CommunityMP8() {
                   style={{
                     flexShrink: 0, padding: "6px 14px", borderRadius: 9999,
                     fontSize: 11, fontWeight: 600, cursor: "pointer", border: "none",
-                    fontFamily: "'Inter', sans-serif", whiteSpace: "nowrap",
+                    whiteSpace: "nowrap",
                     backgroundColor: active ? "#E11D48" : "#FFF1F2",
                     color: active ? "white" : "#9F1239",
                   }}
@@ -142,7 +142,7 @@ export default function CommunityMP8() {
           </div>
         ) : filtered.length === 0 ? (
           <div style={{ textAlign: "center", padding: "60px 24px" }}>
-            <p style={{ fontSize: 14, color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>
+            <p style={{ fontSize: 14, color: "var(--mauve)", }}>
               No posts yet — be the first to share.
             </p>
           </div>
@@ -166,16 +166,14 @@ export default function CommunityMP8() {
                   <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 8 }}>
                     <span style={{
                       fontSize: 10, fontWeight: 700, color: meta.color, backgroundColor: meta.bg,
-                      borderRadius: 9999, padding: "3px 10px", fontFamily: "'Inter', sans-serif",
-                      textTransform: "capitalize",
+                      borderRadius: 9999, padding: "3px 10px", textTransform: "capitalize",
                     }}>
                       {meta.label}
                     </span>
                     {post.topic_tag && (
                       <span style={{
                         fontSize: 10, fontWeight: 600, color: "#B45309", backgroundColor: "#FEF3C7",
-                        borderRadius: 9999, padding: "3px 10px", fontFamily: "'Inter', sans-serif",
-                      }}>
+                        borderRadius: 9999, padding: "3px 10px", }}>
                         #{post.topic_tag}
                       </span>
                     )}
@@ -183,7 +181,6 @@ export default function CommunityMP8() {
 
                   {/* Title */}
                   <h3 style={{
-                    fontFamily: "'Fraunces', serif",
                     fontSize: 16, fontWeight: 700, color: "var(--plum)",
                     lineHeight: 1.35, marginBottom: 6,
                   }}>
@@ -193,7 +190,6 @@ export default function CommunityMP8() {
                   {/* Body */}
                   <p style={{
                     fontSize: 13, color: "var(--plum)",
-                    fontFamily: "'Inter', sans-serif",
                     lineHeight: 1.65, marginBottom: 12, whiteSpace: "pre-wrap",
                   }}>
                     {post.body}
@@ -201,7 +197,7 @@ export default function CommunityMP8() {
 
                   {/* Footer */}
                   <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                    <div style={{ fontSize: 11, color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>
+                    <div style={{ fontSize: 11, color: "var(--mauve)", }}>
                       <span style={{ fontWeight: 600, color: "var(--plum)" }}>{authorLabel(post)}</span>
                       <span> · {timeAgo(post.created_at)}</span>
                     </div>
@@ -216,8 +212,7 @@ export default function CommunityMP8() {
                         backgroundColor: liked ? "#E11D48" : "white",
                         color: liked ? "white" : "#E11D48",
                         cursor: liked ? "default" : "pointer",
-                        fontSize: 12, fontWeight: 600, fontFamily: "'Inter', sans-serif",
-                      }}
+                        fontSize: 12, fontWeight: 600, }}
                     >
                       <Heart className="w-3.5 h-3.5" style={{ fill: liked ? "white" : "none" }} />
                       {post.likes_count || 0}
@@ -240,7 +235,6 @@ export default function CommunityMP8() {
           height: 48, padding: "0 18px", borderRadius: 9999,
           backgroundColor: "#E11D48", color: "white", border: "none",
           cursor: "pointer", fontSize: 13, fontWeight: 700,
-          fontFamily: "'Inter', sans-serif",
           boxShadow: "0 6px 20px rgba(225,29,72,0.35)",
         }}
       >
@@ -264,7 +258,7 @@ export default function CommunityMP8() {
             }}
           >
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
-              <h2 style={{ fontFamily: "'Fraunces', serif", fontSize: 18, fontWeight: 700, color: "var(--plum)", margin: 0 }}>
+              <h2 style={{ fontSize: 18, fontWeight: 700, color: "var(--plum)", margin: 0 }}>
                 New post
               </h2>
               <button
@@ -278,7 +272,7 @@ export default function CommunityMP8() {
 
             {/* Title */}
             <label style={{ display: "block", marginBottom: 12 }}>
-              <span style={{ display: "block", fontSize: 11, fontWeight: 600, color: "var(--mauve)", textTransform: "uppercase", letterSpacing: "0.1em", fontFamily: "'Inter', sans-serif", marginBottom: 6 }}>
+              <span style={{ display: "block", fontSize: 11, fontWeight: 600, color: "var(--mauve)", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 6 }}>
                 Title
               </span>
               <input
@@ -286,13 +280,13 @@ export default function CommunityMP8() {
                 onChange={e => setForm(f => ({ ...f, title: e.target.value }))}
                 maxLength={120}
                 placeholder="What's this about?"
-                style={{ width: "100%", padding: "10px 12px", borderRadius: 12, border: "1.5px solid #FECACA", fontSize: 14, fontFamily: "'Inter', sans-serif", color: "var(--plum)", outline: "none", boxSizing: "border-box" }}
+                style={{ width: "100%", padding: "10px 12px", borderRadius: 12, border: "1.5px solid #FECACA", fontSize: 14, color: "var(--plum)", outline: "none", boxSizing: "border-box" }}
               />
             </label>
 
             {/* Body */}
             <label style={{ display: "block", marginBottom: 14 }}>
-              <span style={{ display: "block", fontSize: 11, fontWeight: 600, color: "var(--mauve)", textTransform: "uppercase", letterSpacing: "0.1em", fontFamily: "'Inter', sans-serif", marginBottom: 6 }}>
+              <span style={{ display: "block", fontSize: 11, fontWeight: 600, color: "var(--mauve)", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 6 }}>
                 Body
               </span>
               <textarea
@@ -301,13 +295,13 @@ export default function CommunityMP8() {
                 maxLength={2000}
                 rows={5}
                 placeholder="Share with the community…"
-                style={{ width: "100%", padding: "10px 12px", borderRadius: 12, border: "1.5px solid #FECACA", fontSize: 14, fontFamily: "'Inter', sans-serif", color: "var(--plum)", outline: "none", resize: "vertical", boxSizing: "border-box" }}
+                style={{ width: "100%", padding: "10px 12px", borderRadius: 12, border: "1.5px solid #FECACA", fontSize: 14, color: "var(--plum)", outline: "none", resize: "vertical", boxSizing: "border-box" }}
               />
             </label>
 
             {/* Category */}
             <div style={{ marginBottom: 14 }}>
-              <p style={{ fontSize: 11, fontWeight: 600, color: "var(--mauve)", textTransform: "uppercase", letterSpacing: "0.1em", fontFamily: "'Inter', sans-serif", marginBottom: 6 }}>
+              <p style={{ fontSize: 11, fontWeight: 600, color: "var(--mauve)", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 6 }}>
                 Category
               </p>
               <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
@@ -320,7 +314,6 @@ export default function CommunityMP8() {
                       style={{
                         borderRadius: 9999, padding: "5px 12px",
                         fontSize: 11, fontWeight: 600, cursor: "pointer",
-                        fontFamily: "'Inter', sans-serif",
                         border: "1.5px solid " + (active ? cat.color : "#FECACA"),
                         backgroundColor: active ? cat.bg : "transparent",
                         color: active ? cat.color : "var(--mauve)",
@@ -335,7 +328,7 @@ export default function CommunityMP8() {
 
             {/* Topic tag */}
             <div style={{ marginBottom: 14 }}>
-              <p style={{ fontSize: 11, fontWeight: 600, color: "var(--mauve)", textTransform: "uppercase", letterSpacing: "0.1em", fontFamily: "'Inter', sans-serif", marginBottom: 6 }}>
+              <p style={{ fontSize: 11, fontWeight: 600, color: "var(--mauve)", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 6 }}>
                 Topic
               </p>
               <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
@@ -348,7 +341,6 @@ export default function CommunityMP8() {
                       style={{
                         borderRadius: 9999, padding: "5px 12px",
                         fontSize: 11, fontWeight: 600, cursor: "pointer",
-                        fontFamily: "'Inter', sans-serif",
                         border: "1.5px solid " + (active ? "#B45309" : "#FEF3C7"),
                         backgroundColor: active ? "#FEF3C7" : "transparent",
                         color: active ? "#B45309" : "var(--mauve)",
@@ -369,7 +361,7 @@ export default function CommunityMP8() {
                 onChange={e => setForm(f => ({ ...f, is_anonymous: e.target.checked }))}
                 style={{ width: 18, height: 18, accentColor: "#E11D48", cursor: "pointer" }}
               />
-              <span style={{ fontSize: 13, color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>
+              <span style={{ fontSize: 13, color: "var(--plum)", }}>
                 Post anonymously
               </span>
             </label>
@@ -381,8 +373,7 @@ export default function CommunityMP8() {
                 width: "100%", height: 48, borderRadius: 9999,
                 backgroundColor: "#E11D48", color: "white",
                 fontSize: 14, fontWeight: 700, border: "none",
-                cursor: "pointer", fontFamily: "'Inter', sans-serif",
-                opacity: (!form.title.trim() || !form.body.trim() || posting) ? 0.5 : 1,
+                cursor: "pointer", opacity: (!form.title.trim() || !form.body.trim() || posting) ? 0.5 : 1,
               }}
             >
               {posting ? "Posting…" : "Share post"}

@@ -25,8 +25,7 @@ const card = {
 
 const sLabel = {
   fontSize: "0.6rem", fontWeight: 600, textTransform: "uppercase",
-  letterSpacing: "0.12em", color: "var(--mauve)", fontFamily: "'Inter', sans-serif",
-};
+  letterSpacing: "0.12em", color: "var(--mauve)", };
 
 export default function ShoppingListTab({ user }) {
   const [items, setItems]           = useState([]);
@@ -158,7 +157,7 @@ Return JSON: {"items": [{"ingredient": "name", "category": "CategoryName", "quan
         <div className="flex items-center justify-between">
           <div>
             <p style={sLabel} className="mb-0.5">This Week</p>
-            <p className="text-sm font-semibold" style={{ color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>
+            <p className="text-sm font-semibold" style={{ color: "var(--plum)", }}>
               {uncheckedCount} remaining
               <span className="font-normal ml-1.5" style={{ color: "var(--mauve)" }}>· {checkedCount} done</span>
             </p>
@@ -240,7 +239,7 @@ Return JSON: {"items": [{"ingredient": "name", "category": "CategoryName", "quan
                 style={{ backgroundColor: "var(--rose-dust-subtle)" }}>
                 <Icon className="w-3.5 h-3.5" style={{ color: "var(--rose-dust)" }} />
               </div>
-              <p className="text-xs font-semibold" style={{ color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>{category}</p>
+              <p className="text-xs font-semibold" style={{ color: "var(--plum)", }}>{category}</p>
               <span className="ml-auto text-[10px]" style={{ color: "var(--mauve)" }}>
                 {catItems.filter(i => !i.is_checked).length}/{catItems.length}
               </span>
@@ -266,7 +265,6 @@ Return JSON: {"items": [{"ingredient": "name", "category": "CategoryName", "quan
                       style={{
                         color: "var(--plum)",
                         textDecoration: item.is_checked ? "line-through" : "none",
-                        fontFamily: "'Inter', sans-serif",
                         fontWeight: item.is_checked ? 400 : 500,
                       }}>
                       {item.ingredient_name}
@@ -298,13 +296,13 @@ Return JSON: {"items": [{"ingredient": "name", "category": "CategoryName", "quan
                 onKeyDown={(e) => e.key === "Enter" && addCustomItem()}
                 placeholder="Ingredient name…" autoFocus
                 className="flex-1 p-3 rounded-2xl text-sm focus:outline-none transition-all"
-                style={{ backgroundColor: "var(--ivory)", border: "1.5px solid var(--border)", color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}
+                style={{ backgroundColor: "var(--ivory)", border: "1.5px solid var(--border)", color: "var(--plum)", }}
                 onFocus={e => e.target.style.borderColor = "var(--rose-dust-light)"}
                 onBlur={e => e.target.style.borderColor = "var(--border)"} />
               <input value={newQty} onChange={(e) => setNewQty(e.target.value)}
                 placeholder="Qty"
                 className="w-20 p-3 rounded-2xl text-sm focus:outline-none transition-all"
-                style={{ backgroundColor: "var(--ivory)", border: "1.5px solid var(--border)", color: "var(--plum)", fontFamily: "'Inter', sans-serif" }} />
+                style={{ backgroundColor: "var(--ivory)", border: "1.5px solid var(--border)", color: "var(--plum)", }} />
             </div>
             <div className="flex flex-wrap gap-1.5">
               {CATEGORIES.map(c => (

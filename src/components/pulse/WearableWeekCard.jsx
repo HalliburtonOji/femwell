@@ -5,8 +5,7 @@ import { Activity } from "lucide-react";
 
 const sLabel = {
   fontSize: "0.6rem", fontWeight: 600, textTransform: "uppercase",
-  letterSpacing: "0.12em", color: "var(--mauve)", fontFamily: "'Inter', sans-serif",
-};
+  letterSpacing: "0.12em", color: "var(--mauve)", };
 
 function avgOf(records, key) {
   const vals = records.map(r => r[key]).filter(v => v != null && !isNaN(v));
@@ -63,20 +62,20 @@ export default function WearableWeekCard({ userId }) {
         </div>
         <div>
           <p style={sLabel}>Wearable data</p>
-          <p style={{ fontSize: 13, fontWeight: 700, color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>Health metrics this week</p>
+          <p style={{ fontSize: 13, fontWeight: 700, color: "var(--plum)", }}>Health metrics this week</p>
         </div>
       </div>
       <div className="grid grid-cols-2 gap-3">
         {displayMetrics.map(m => (
           <div key={m.label} style={{ backgroundColor: "var(--ivory)", borderRadius: 12, padding: "10px 12px" }}>
-            <p style={{ fontSize: 10, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", marginBottom: 2 }}>{m.label}</p>
-            <p style={{ fontSize: 18, fontWeight: 700, color: "var(--plum)", fontFamily: "'Fraunces', serif" }}>
+            <p style={{ fontSize: 10, color: "var(--mauve)", marginBottom: 2 }}>{m.label}</p>
+            <p style={{ fontSize: 18, fontWeight: 700, color: "var(--plum)", }}>
               {m.value}<span style={{ fontSize: 11, color: "var(--mauve)", fontWeight: 400, marginLeft: 2 }}>{m.unit}</span>
             </p>
           </div>
         ))}
       </div>
-      <p style={{ fontSize: 10, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", marginTop: 10 }}>
+      <p style={{ fontSize: 10, color: "var(--mauve)", marginTop: 10 }}>
         Based on {records.length} day{records.length !== 1 ? "s" : ""} of data this week
       </p>
     </div>

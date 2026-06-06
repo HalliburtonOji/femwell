@@ -194,7 +194,7 @@ export default function Ideas() {
   return (
     <div style={{
       minHeight: "100vh", background: C.cream, paddingBottom: 100,
-      fontFamily: "'Inter', system-ui, sans-serif", color: C.espresso,
+      color: C.espresso,
     }}>
       {/* Dev banner */}
       <div style={{
@@ -213,7 +213,6 @@ export default function Ideas() {
         textAlign: "center",
       }}>
         <h1 style={{
-          fontFamily: "'Fraunces', Georgia, serif",
           fontSize: 36, fontWeight: 500, letterSpacing: "-0.02em",
           margin: 0, lineHeight: 1.05, color: C.espresso,
         }}>FemWell Design Lab</h1>
@@ -363,7 +362,7 @@ function FeatureCard({ f, onPick }) {
         </span>
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{
-            fontFamily: "'Fraunces', Georgia, serif", fontSize: 18, fontWeight: 500,
+            fontSize: 18, fontWeight: 500,
             color: C.espresso, lineHeight: 1.2,
           }}>{f.name}</div>
           <div style={{ fontSize: 11.5, color: C.muted, marginTop: 2 }}>{f.latest}</div>
@@ -448,10 +447,10 @@ function FeatureBody({ title, kicker, description, versions, activeId, onPick })
       {/* Title block */}
       <h2 style={{
         marginTop: 22,
-        fontFamily: "'Fraunces', Georgia, serif", fontSize: 24, fontWeight: 500,
+        fontSize: 24, fontWeight: 500,
         color: C.espresso, letterSpacing: "-0.015em",
       }}>{title} · <span style={{ color: C.goldDeep, fontStyle: "italic" }}>{active.label}</span>
-        <span style={{ marginLeft: 8, fontSize: 13, color: C.muted, fontWeight: 600, letterSpacing: "0.02em", fontFamily: "'Inter', system-ui, sans-serif" }}>{active.sub}</span>
+        <span style={{ marginLeft: 8, fontSize: 13, color: C.muted, fontWeight: 600, letterSpacing: "0.02em", }}>{active.sub}</span>
       </h2>
 
       {/* Active version render */}
@@ -503,7 +502,7 @@ function ArchiveCard({ version }) {
         color: C.muted, textTransform: "uppercase",
       }}>VERSION HISTORY · v{version}</span>
       <h3 style={{
-        fontFamily: "'Fraunces', Georgia, serif", fontSize: 22, fontWeight: 500,
+        fontSize: 22, fontWeight: 500,
         color: C.espresso, margin: "6px 0 4px", lineHeight: 1.2,
       }}>{m.tagline}</h3>
       <p style={{
@@ -563,7 +562,7 @@ function ComingSoonView({ name }) {
         <Layers size={22} />
       </span>
       <h3 style={{
-        fontFamily: "'Fraunces', Georgia, serif", fontSize: 22, fontWeight: 500,
+        fontSize: 22, fontWeight: 500,
         color: C.espresso, margin: 0, lineHeight: 1.2,
       }}>Coming soon</h3>
       <p style={{

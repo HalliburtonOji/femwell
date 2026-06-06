@@ -146,13 +146,13 @@ export default function Community() {
       {/* Header */}
       <div className="sticky top-0 z-30 px-4 pt-10 pb-3" style={{ backgroundColor: "rgba(250,248,245,0.97)", backdropFilter: "blur(20px)", borderBottom: "1px solid var(--border)" }}>
         <div className="max-w-xl mx-auto">
-          <p style={{ fontSize: "0.6rem", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.12em", color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>Safe space</p>
+          <p style={{ fontSize: "0.6rem", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.12em", color: "var(--mauve)", }}>Safe space</p>
           <h1 className="fw-display" style={{ marginBottom: 12 }}>Community</h1>
           {/* View toggle — Echo Wall (editorial, anonymous one-liners) vs the Posts feed */}
           <div style={{ display: "flex", gap: 6, marginBottom: 12 }}>
             {[{ id: "echo", label: "Echo Wall" }, { id: "posts", label: "Posts" }].map((v) => (
               <button key={v.id} onClick={() => setView(v.id)}
-                style={{ padding: "7px 16px", borderRadius: 9999, fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "'Inter', sans-serif", border: "none",
+                style={{ padding: "7px 16px", borderRadius: 9999, fontSize: 12, fontWeight: 700, cursor: "pointer", border: "none",
                   backgroundColor: view === v.id ? "var(--plum)" : "var(--ivory-dark)",
                   color: view === v.id ? "white" : "var(--mauve)" }}>
                 {v.label}
@@ -165,7 +165,7 @@ export default function Community() {
             <style>{`.lf-scroll::-webkit-scrollbar{display:none}`}</style>
             {CATEGORIES.map(cat => (
               <button key={cat.id} onClick={() => handleFilterChange(cat.id)}
-                style={{ flexShrink: 0, padding: "6px 14px", borderRadius: 9999, fontSize: 11, fontWeight: 600, cursor: "pointer", transition: "all 0.15s", fontFamily: "'Inter', sans-serif", border: "none",
+                style={{ flexShrink: 0, padding: "6px 14px", borderRadius: 9999, fontSize: 11, fontWeight: 600, cursor: "pointer", transition: "all 0.15s", border: "none",
                   backgroundColor: filter === cat.id ? "var(--plum)" : "var(--ivory-dark)",
                   color: filter === cat.id ? "white" : "var(--mauve)" }}>
                 {cat.label}
@@ -188,8 +188,8 @@ export default function Community() {
         ) : posts.length === 0 ? (
           <div style={{ textAlign: "center", padding: "60px 24px" }}>
             <MessageCircle className="w-10 h-10 mx-auto mb-4" style={{ color: "var(--rose-dust)", opacity: 0.4 }} />
-            <p style={{ fontSize: 16, fontWeight: 600, color: "var(--plum)", fontFamily: "'Fraunces', serif", marginBottom: 6 }}>No posts yet</p>
-            <p style={{ fontSize: 13, color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>Be the first to share something.</p>
+            <p style={{ fontSize: 16, fontWeight: 600, color: "var(--plum)", marginBottom: 6 }}>No posts yet</p>
+            <p style={{ fontSize: 13, color: "var(--mauve)", }}>Be the first to share something.</p>
           </div>
         ) : (
           <div className="space-y-4">
@@ -203,22 +203,22 @@ export default function Community() {
                   {/* Header row */}
                   <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 10 }}>
                     <div style={{ width: 36, height: 36, borderRadius: 9999, backgroundColor: "var(--rose-dust-subtle)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                      <span style={{ fontSize: 13, fontWeight: 700, color: "var(--rose-dust)", fontFamily: "'Inter', sans-serif" }}>{getInitials(post.display_name)}</span>
+                      <span style={{ fontSize: 13, fontWeight: 700, color: "var(--rose-dust)", }}>{getInitials(post.display_name)}</span>
                     </div>
                     <div style={{ flex: 1, minWidth: 0 }}>
-                      <p style={{ fontSize: 13, fontWeight: 600, color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>{post.display_name || "Anonymous"}</p>
-                      <p style={{ fontSize: 11, color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>{timeAgo(post.created_at)}</p>
+                      <p style={{ fontSize: 13, fontWeight: 600, color: "var(--plum)", }}>{post.display_name || "Anonymous"}</p>
+                      <p style={{ fontSize: 11, color: "var(--mauve)", }}>{timeAgo(post.created_at)}</p>
                     </div>
-                    <span style={{ fontSize: 10, fontWeight: 600, backgroundColor: cat.bg, color: cat.color, borderRadius: 9999, padding: "2px 9px", fontFamily: "'Inter', sans-serif", textTransform: "capitalize", flexShrink: 0 }}>
+                    <span style={{ fontSize: 10, fontWeight: 600, backgroundColor: cat.bg, color: cat.color, borderRadius: 9999, padding: "2px 9px", textTransform: "capitalize", flexShrink: 0 }}>
                       {(post.category || "general").replace(/_/g, " ")}
                     </span>
                   </div>
 
                   {/* Content */}
-                  <p style={{ fontSize: 14, color: "var(--plum)", fontFamily: "'Inter', sans-serif", lineHeight: 1.65, marginBottom: 12 }}>
+                  <p style={{ fontSize: 14, color: "var(--plum)", lineHeight: 1.65, marginBottom: 12 }}>
                     {truncated ? content.slice(0, 220) + "…" : content}
                     {content.length > 220 && (
-                      <button onClick={() => toggleExpand(post.id)} style={{ color: "var(--rose-dust)", fontSize: 12, fontWeight: 600, background: "none", border: "none", cursor: "pointer", fontFamily: "'Inter', sans-serif", marginLeft: 4 }}>
+                      <button onClick={() => toggleExpand(post.id)} style={{ color: "var(--rose-dust)", fontSize: 12, fontWeight: 600, background: "none", border: "none", cursor: "pointer", marginLeft: 4 }}>
                         {isExpanded ? "show less" : "read more"}
                       </button>
                     )}
@@ -228,12 +228,12 @@ export default function Community() {
                   <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
                     {[["feel_this", Heart], ["same", Users], ["sending_love", HeartHandshake]].map(([key, Icon]) => (
                       <button key={key} onClick={() => handleReact(post, key)}
-                        style={{ display: "flex", alignItems: "center", gap: 5, padding: "5px 10px", borderRadius: 9999, border: "1px solid var(--border)", backgroundColor: "var(--ivory)", cursor: "pointer", fontSize: 12, fontFamily: "'Inter', sans-serif", color: "var(--plum)", fontWeight: 500 }}>
+                        style={{ display: "flex", alignItems: "center", gap: 5, padding: "5px 10px", borderRadius: 9999, border: "1px solid var(--border)", backgroundColor: "var(--ivory)", cursor: "pointer", fontSize: 12, color: "var(--plum)", fontWeight: 500 }}>
                         <Icon className="w-3.5 h-3.5" /> {post.reactions?.[key] || 0}
                       </button>
                     ))}
                     {post.reply_count > 0 && (
-                      <span style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 12, color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>
+                      <span style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 12, color: "var(--mauve)", }}>
                         <MessageCircle className="w-3.5 h-3.5" /> {post.reply_count}
                       </span>
                     )}
@@ -248,7 +248,7 @@ export default function Community() {
             {hasMore && (
               <div className="flex justify-center py-4">
                 <button onClick={handleLoadMore} disabled={loadingMore}
-                  style={{ padding: "10px 28px", borderRadius: 9999, border: "1.5px solid var(--border)", backgroundColor: "var(--surface)", color: "var(--plum)", fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: "'Inter', sans-serif", opacity: loadingMore ? 0.5 : 1 }}>
+                  style={{ padding: "10px 28px", borderRadius: 9999, border: "1.5px solid var(--border)", backgroundColor: "var(--surface)", color: "var(--plum)", fontSize: 13, fontWeight: 600, cursor: "pointer", opacity: loadingMore ? 0.5 : 1 }}>
                   {loadingMore ? "Loading…" : "Load more"}
                 </button>
               </div>
@@ -281,7 +281,7 @@ export default function Community() {
 
             {/* Safe space notice */}
             <div style={{ backgroundColor: "var(--rose-dust-subtle)", border: "1px solid var(--rose-dust-light)", borderRadius: 12, padding: "10px 14px", marginBottom: 16 }}>
-              <p style={{ fontSize: 12, color: "var(--rose-dust)", fontFamily: "'Inter', sans-serif", lineHeight: 1.5 }}>This is a safe, supportive space. Be kind, be real, be you. Posts are reviewed before going live.</p>
+              <p style={{ fontSize: 12, color: "var(--rose-dust)", lineHeight: 1.5 }}>This is a safe, supportive space. Be kind, be real, be you. Posts are reviewed before going live.</p>
             </div>
 
             <textarea
@@ -290,19 +290,19 @@ export default function Community() {
               value={newPost.content}
               onChange={e => e.target.value.length <= 500 && setNewPost(p => ({ ...p, content: e.target.value }))}
               rows={5}
-              style={{ width: "100%", border: "1.5px solid var(--border)", borderRadius: 14, padding: "12px 14px", fontSize: 14, fontFamily: "'Inter', sans-serif", color: "var(--plum)", backgroundColor: "var(--ivory)", outline: "none", resize: "none", boxSizing: "border-box", marginBottom: 6 }}
+              style={{ width: "100%", border: "1.5px solid var(--border)", borderRadius: 14, padding: "12px 14px", fontSize: 14, color: "var(--plum)", backgroundColor: "var(--ivory)", outline: "none", resize: "none", boxSizing: "border-box", marginBottom: 6 }}
             />
-            <p style={{ fontSize: 11, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", textAlign: "right", marginBottom: 14 }}>{newPost.content.length}/500</p>
+            <p style={{ fontSize: 11, color: "var(--mauve)", textAlign: "right", marginBottom: 14 }}>{newPost.content.length}/500</p>
 
             <div style={{ marginBottom: 14 }}>
-              <p style={{ fontSize: 11, fontWeight: 600, color: "var(--mauve)", textTransform: "uppercase", letterSpacing: "0.1em", fontFamily: "'Inter', sans-serif", marginBottom: 8 }}>Category</p>
+              <p style={{ fontSize: 11, fontWeight: 600, color: "var(--mauve)", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 8 }}>Category</p>
               <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
                 {CATEGORIES.filter(c => c.id !== "all").map(cat => {
                   const c = CAT_COLORS[cat.id] || CAT_COLORS.general;
                   const active = newPost.category === cat.id;
                   return (
                     <button key={cat.id} onClick={() => setNewPost(p => ({ ...p, category: cat.id }))}
-                      style={{ borderRadius: 9999, padding: "5px 12px", fontSize: 11, fontWeight: 600, cursor: "pointer", fontFamily: "'Inter', sans-serif", border: "1.5px solid", backgroundColor: active ? c.bg : "transparent", borderColor: active ? c.color : "var(--border)", color: active ? c.color : "var(--mauve)" }}>
+                      style={{ borderRadius: 9999, padding: "5px 12px", fontSize: 11, fontWeight: 600, cursor: "pointer", border: "1.5px solid", backgroundColor: active ? c.bg : "transparent", borderColor: active ? c.color : "var(--border)", color: active ? c.color : "var(--mauve)" }}>
                       {cat.label}
                     </button>
                   );
@@ -315,11 +315,11 @@ export default function Community() {
                 style={{ width: 40, height: 22, borderRadius: 9999, backgroundColor: newPost.anonymous ? "var(--plum)" : "var(--border)", position: "relative", transition: "background 0.2s", cursor: "pointer", flexShrink: 0 }}>
                 <div style={{ position: "absolute", top: 2, left: newPost.anonymous ? 20 : 2, width: 18, height: 18, borderRadius: "50%", backgroundColor: "white", transition: "left 0.2s" }} />
               </div>
-              <span style={{ fontSize: 13, color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>Post anonymously</span>
+              <span style={{ fontSize: 13, color: "var(--plum)", }}>Post anonymously</span>
             </label>
 
             <button onClick={handlePost} disabled={!newPost.content.trim() || posting}
-              style={{ width: "100%", height: 48, borderRadius: 9999, backgroundColor: "var(--plum)", color: "white", fontSize: 14, fontWeight: 700, border: "none", cursor: "pointer", fontFamily: "'Inter', sans-serif", opacity: (!newPost.content.trim() || posting) ? 0.5 : 1 }}>
+              style={{ width: "100%", height: 48, borderRadius: 9999, backgroundColor: "var(--plum)", color: "white", fontSize: 14, fontWeight: 700, border: "none", cursor: "pointer", opacity: (!newPost.content.trim() || posting) ? 0.5 : 1 }}>
               {posting ? "Posting…" : "Share post"}
             </button>
           </div>

@@ -56,7 +56,7 @@ export default function AnalyticsConsentCard({ user, profile, onProfileChange })
       description="Choose how FemWell uses your data and find the policies."
       footer={
         saved ? (
-          <span style={{ fontSize: 12, color: "#059669", fontFamily: "'Inter', sans-serif", display: "inline-flex", alignItems: "center", gap: 4 }}>
+          <span style={{ fontSize: 12, color: "#059669", display: "inline-flex", alignItems: "center", gap: 4 }}>
             <Check className="w-3.5 h-3.5" /> Saved
           </span>
         ) : null
@@ -75,12 +75,11 @@ export default function AnalyticsConsentCard({ user, profile, onProfileChange })
           display: "flex", alignItems: "center", gap: 8,
           margin: "0 0 6px",
           fontSize: 13, color: "var(--plum, #3A2C1A)",
-          fontFamily: "'Inter', sans-serif",
-        }}>
+          }}>
           <Mail className="w-3.5 h-3.5" />
           <span>Questions? Contact us at <strong>privacy@femwells.com</strong></span>
         </p>
-        <p style={{ margin: 0, fontSize: 12, color: "var(--mauve, #9B8B7A)", fontFamily: "'Inter', sans-serif", lineHeight: 1.55 }}>
+        <p style={{ margin: 0, fontSize: 12, color: "var(--mauve, #9B8B7A)", lineHeight: 1.55 }}>
           <Link to="/Privacy" style={{ color: "var(--plum, #3A2C1A)", textDecoration: "underline" }}>Privacy Policy</Link>
           {" · "}
           <Link to="/Terms" style={{ color: "var(--plum, #3A2C1A)", textDecoration: "underline" }}>Terms &amp; Conditions</Link>

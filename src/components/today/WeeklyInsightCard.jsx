@@ -261,10 +261,10 @@ Honour the STAGE GUARD above without exception. Highlight patterns, celebrate wi
             <RefreshCw className="w-3.5 h-3.5" style={{ color: "var(--rose-dust)" }} />
           </div>
           <div>
-            <p style={{ fontSize: "14px", fontWeight: 700, color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>
+            <p style={{ fontSize: "14px", fontWeight: 700, color: "var(--plum)", }}>
               Weekly Insight
             </p>
-            <p style={{ fontSize: "11px", color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>
+            <p style={{ fontSize: "11px", color: "var(--mauve)", }}>
               {insight
                 ? `Generated ${format(new Date(insight.generated_at), "MMM d")}`
                 : "Get your weekly summary"}
@@ -317,8 +317,7 @@ Honour the STAGE GUARD above without exception. Highlight patterns, celebrate wi
             background: "rgba(168,134,75,0.10)",
             border: "1px solid rgba(168,134,75,0.32)",
             borderRadius: 10, cursor: "pointer", textAlign: "left",
-            fontFamily: "'Inter', sans-serif",
-          }}
+            }}
         >
           <AlertCircle className="w-3.5 h-3.5" style={{ color: "#A6862B", flexShrink: 0 }} />
           <span style={{ fontSize: 11.5, fontWeight: 600, color: "var(--plum)" }}>
@@ -331,7 +330,7 @@ Honour the STAGE GUARD above without exception. Highlight patterns, celebrate wi
         <div className="flex items-center gap-2 py-3">
           <div className="w-4 h-4 rounded-full border-2 border-t-transparent animate-spin"
                style={{ borderColor: "var(--rose-dust-light)", borderTopColor: "var(--rose-dust)" }} />
-          <p style={{ fontSize: "13px", color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>
+          <p style={{ fontSize: "13px", color: "var(--mauve)", }}>
             Scanning your week…
           </p>
         </div>
@@ -431,7 +430,6 @@ Honour the STAGE GUARD above without exception. Highlight patterns, celebrate wi
                   lineHeight: 1.65,
                   color: "var(--plum)",
                   marginBottom: "12px",
-                  fontFamily: "'Inter', sans-serif",
                   whiteSpace: "pre-wrap",
                 }}>
                   {para}
@@ -442,8 +440,7 @@ Honour the STAGE GUARD above without exception. Highlight patterns, celebrate wi
           <Link to={createPageUrl("Pulse")} style={{
             display: "inline-block", marginTop: "12px",
             fontSize: "12px", fontWeight: 600,
-            color: "var(--rose-dust)", fontFamily: "'Inter', sans-serif",
-            textDecoration: "none"
+            color: "var(--rose-dust)", textDecoration: "none"
           }}>
             View all insights in Pulse
           </Link>
@@ -453,8 +450,7 @@ Honour the STAGE GUARD above without exception. Highlight patterns, celebrate wi
       {insight && !expanded && (
         <p style={{
           fontSize: "12px", lineHeight: 1.5, color: "var(--mauve)",
-          marginTop: "6px", fontFamily: "'Inter', sans-serif",
-          display: "-webkit-box", WebkitLineClamp: 2,
+          marginTop: "6px", display: "-webkit-box", WebkitLineClamp: 2,
           WebkitBoxOrient: "vertical", overflow: "hidden"
         }}>
           {displayText?.replace(/[#*_]/g, "").slice(0, 120)}…

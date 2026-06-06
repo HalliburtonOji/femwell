@@ -382,10 +382,10 @@ export default function Explore() {
 
         <div className="flex items-center justify-between">
           <div>
-            <p style={{ fontSize: "0.6rem", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.12em", color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>Discovery</p>
-            <h1 className="text-xl font-bold leading-tight" style={{ fontFamily: "'Fraunces', serif", color: "var(--plum)", letterSpacing: "-0.02em" }}>Explore</h1>
+            <p style={{ fontSize: "0.6rem", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.12em", color: "var(--mauve)", }}>Discovery</p>
+            <h1 className="text-xl font-bold leading-tight" style={{ color: "var(--plum)", letterSpacing: "-0.02em" }}>Explore</h1>
           </div>
-          <p className="text-xs" style={{ color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>Sessions, videos &amp; guides</p>
+          <p className="text-xs" style={{ color: "var(--mauve)", }}>Sessions, videos &amp; guides</p>
         </div>
 
         <div className="flex items-center gap-2">
@@ -395,7 +395,7 @@ export default function Explore() {
             <input
               className="flex-1 bg-transparent text-sm outline-none"
               placeholder="Search sessions, topics…"
-              style={{ color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}
+              style={{ color: "var(--plum)", }}
               value={search}
               onChange={(e) => setSearch(e.target.value)}
             />
@@ -426,8 +426,7 @@ export default function Explore() {
                 backgroundColor: activeCollection === c.id ? "var(--plum)" : "var(--surface)",
                 color: activeCollection === c.id ? "white" : "var(--mauve)",
                 border: `1px solid ${activeCollection === c.id ? "var(--plum)" : "var(--border)"}`,
-                fontFamily: "'Inter', sans-serif",
-              }}>
+                }}>
               {c.label}
             </button>
           ))}
@@ -442,8 +441,7 @@ export default function Explore() {
               style={{
                 backgroundColor: activeType === t.id ? "var(--rose-dust-subtle)" : "transparent",
                 color: activeType === t.id ? "var(--rose-dust)" : "var(--mauve)",
-                fontFamily: "'Inter', sans-serif",
-              }}>
+                }}>
               {t.label}
             </button>
           ))}
@@ -455,10 +453,10 @@ export default function Explore() {
           <section>
             <div className="flex items-center justify-between mb-3">
               <div>
-                <p style={{ fontSize: "16px", fontWeight: 700, color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>
+                <p style={{ fontSize: "16px", fontWeight: 700, color: "var(--plum)", }}>
                   For your phase
                 </p>
-                <p style={{ fontSize: "12px", color: "var(--mauve)", fontFamily: "'Inter', sans-serif", marginTop: "2px" }}>
+                <p style={{ fontSize: "12px", color: "var(--mauve)", marginTop: "2px" }}>
                   {phaseMeta.label} · matched to where you are
                 </p>
               </div>
@@ -467,8 +465,7 @@ export default function Explore() {
                 color: phaseMeta.accent,
                 backgroundColor: phaseMeta.subtle,
                 padding: "4px 10px", borderRadius: "9999px",
-                fontFamily: "'Inter', sans-serif",
-              }}>
+                }}>
                 {phaseMeta.label}
               </div>
             </div>
@@ -495,20 +492,20 @@ export default function Explore() {
                         backgroundColor: "rgba(255,255,255,0.7)",
                         borderRadius: "8px", padding: "3px 8px", marginBottom: "10px",
                       }}>
-                        <span style={{ fontSize: "11px", fontWeight: 700, color: phaseMeta.accent, fontFamily: "'Inter', sans-serif" }}>
+                        <span style={{ fontSize: "11px", fontWeight: 700, color: phaseMeta.accent, }}>
                           {item.content_type}
                         </span>
                       </div>
                       <p style={{
                         fontSize: "13px", fontWeight: 700, color: "var(--plum)",
-                        fontFamily: "'Inter', sans-serif", lineHeight: 1.35,
+                        lineHeight: 1.35,
                         display: "-webkit-box", WebkitLineClamp: 2,
                         WebkitBoxOrient: "vertical", overflow: "hidden", marginBottom: "6px",
                       }}>
                         {item.title}
                       </p>
                       {item.duration_minutes && (
-                        <p style={{ fontSize: "11px", color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>
+                        <p style={{ fontSize: "11px", color: "var(--mauve)", }}>
                           {item.duration_minutes} min
                         </p>
                       )}
@@ -534,8 +531,8 @@ export default function Explore() {
         {!loading && !search && !activeCollection && activeType === "All" && newThisWeek.length > 0 && (
           <section>
             <div className="flex items-center justify-between mb-3">
-              <p style={{ fontSize: "16px", fontWeight: 700, color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>New this week</p>
-              <span style={{ fontSize: "11px", color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>{newThisWeek.length} new</span>
+              <p style={{ fontSize: "16px", fontWeight: 700, color: "var(--plum)", }}>New this week</p>
+              <span style={{ fontSize: "11px", color: "var(--mauve)", }}>{newThisWeek.length} new</span>
             </div>
             <div className="flex gap-3 overflow-x-auto pb-2" style={{ scrollbarWidth: "none", scrollSnapType: "x mandatory" }}>
               {newThisWeek.map(item => {
@@ -543,9 +540,9 @@ export default function Explore() {
                 return (
                   <div key={item.id} onClick={() => { if (!locked) window.location.href = createPageUrl("ContentPlayer") + "?id=" + item.id; }}
                     style={{ minWidth: 150, maxWidth: 150, flexShrink: 0, scrollSnapAlign: "start", borderRadius: 16, backgroundColor: "var(--surface)", border: "1px solid var(--border)", padding: 14, cursor: locked ? "default" : "pointer", boxShadow: "var(--shadow-sm)" }}>
-                    <p style={{ fontSize: 10, fontWeight: 700, color: "var(--sage)", textTransform: "uppercase", letterSpacing: "0.1em", fontFamily: "'Inter', sans-serif", marginBottom: 6 }}>{item.content_type}</p>
-                    <p style={{ fontSize: 13, fontWeight: 700, color: "var(--plum)", fontFamily: "'Inter', sans-serif", lineHeight: 1.35, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden", marginBottom: 4 }}>{item.title}</p>
-                    {item.duration_minutes && <p style={{ fontSize: 11, color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>{item.duration_minutes} min</p>}
+                    <p style={{ fontSize: 10, fontWeight: 700, color: "var(--sage)", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 6 }}>{item.content_type}</p>
+                    <p style={{ fontSize: 13, fontWeight: 700, color: "var(--plum)", lineHeight: 1.35, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden", marginBottom: 4 }}>{item.title}</p>
+                    {item.duration_minutes && <p style={{ fontSize: 11, color: "var(--mauve)", }}>{item.duration_minutes} min</p>}
                   </div>
                 );
               })}
@@ -559,15 +556,15 @@ export default function Explore() {
           if (!quickItems.length) return null;
           return (
             <section>
-              <p style={{ fontSize: "16px", fontWeight: 700, color: "var(--plum)", fontFamily: "'Inter', sans-serif", marginBottom: 10 }}>Quick sessions ≤ 5 min</p>
+              <p style={{ fontSize: "16px", fontWeight: 700, color: "var(--plum)", marginBottom: 10 }}>Quick sessions ≤ 5 min</p>
               <div className="flex gap-3 overflow-x-auto pb-2" style={{ scrollbarWidth: "none", scrollSnapType: "x mandatory" }}>
                 {quickItems.map(item => {
                   const locked = isLocked(item);
                   return (
                     <div key={item.id} onClick={() => { if (!locked) window.location.href = createPageUrl("ContentPlayer") + "?id=" + item.id; }}
                       style={{ minWidth: 140, maxWidth: 140, flexShrink: 0, scrollSnapAlign: "start", borderRadius: 16, backgroundColor: "var(--sage-subtle)", border: "1px solid var(--sage-light)", padding: 14, cursor: locked ? "default" : "pointer" }}>
-                      <p style={{ fontSize: 10, fontWeight: 700, color: "var(--sage)", textTransform: "uppercase", letterSpacing: "0.1em", fontFamily: "'Inter', sans-serif", marginBottom: 6 }}>{item.duration_minutes}m</p>
-                      <p style={{ fontSize: 13, fontWeight: 700, color: "var(--plum)", fontFamily: "'Inter', sans-serif", lineHeight: 1.35, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>{item.title}</p>
+                      <p style={{ fontSize: 10, fontWeight: 700, color: "var(--sage)", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 6 }}>{item.duration_minutes}m</p>
+                      <p style={{ fontSize: 13, fontWeight: 700, color: "var(--plum)", lineHeight: 1.35, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>{item.title}</p>
                     </div>
                   );
                 })}
@@ -589,11 +586,11 @@ export default function Explore() {
               style={{ backgroundColor: "var(--ivory-dark)", color: "var(--mauve)" }}>
               <Search className="w-5 h-5" />
             </div>
-            <p className="text-sm font-medium mb-1" style={{ color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>Nothing found</p>
-            <p className="text-xs mb-4" style={{ color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>Try adjusting your search or filters.</p>
+            <p className="text-sm font-medium mb-1" style={{ color: "var(--plum)", }}>Nothing found</p>
+            <p className="text-xs mb-4" style={{ color: "var(--mauve)", }}>Try adjusting your search or filters.</p>
             <button onClick={() => { setSearch(""); setActiveCollection(null); setActiveType("All"); }}
               className="text-xs font-semibold px-4 py-2 rounded-full"
-              style={{ backgroundColor: "var(--plum)", color: "white", fontFamily: "'Inter', sans-serif" }}>
+              style={{ backgroundColor: "var(--plum)", color: "white", }}>
               Clear all
             </button>
           </div>
@@ -601,7 +598,7 @@ export default function Explore() {
           <>
             {youtubeVideos.length > 0 && (
               <section>
-                <p className="mb-3" style={{ fontSize: "0.6rem", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.12em", color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>YouTube Videos</p>
+                <p className="mb-3" style={{ fontSize: "0.6rem", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.12em", color: "var(--mauve)", }}>YouTube Videos</p>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {youtubeVideos.map((video) => (
                     <YouTubeVideoCard
@@ -617,7 +614,7 @@ export default function Explore() {
 
             {audioItems.length > 0 && (
               <section>
-                <p className="mb-3" style={{ fontSize: "0.6rem", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.12em", color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>Audio Sessions</p>
+                <p className="mb-3" style={{ fontSize: "0.6rem", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.12em", color: "var(--mauve)", }}>Audio Sessions</p>
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
                   {audioItems.map((item) => (
                     <ExploreContentCard
@@ -635,7 +632,7 @@ export default function Explore() {
 
             {libraryVideoItems.length > 0 && (
               <section>
-                <p className="mb-3" style={{ fontSize: "0.6rem", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.12em", color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>App Sessions</p>
+                <p className="mb-3" style={{ fontSize: "0.6rem", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.12em", color: "var(--mauve)", }}>App Sessions</p>
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
                   {libraryVideoItems.map((item) => (
                     <ExploreContentCard
@@ -656,14 +653,14 @@ export default function Explore() {
               <section>
                 <div className="rounded-[24px] p-5 md:p-6"
                   style={{ backgroundColor: "var(--plum)" }}>
-                  <p style={{ fontSize: "0.6rem", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.12em", color: "rgba(255,255,255,0.55)", fontFamily: "'Inter', sans-serif", marginBottom: "6px" }}>Go deeper</p>
-                  <h3 className="text-lg font-bold leading-snug mb-1.5" style={{ color: "white", fontFamily: "'Fraunces', serif" }}>Ready for a guided journey?</h3>
-                  <p className="text-sm mb-4 leading-relaxed" style={{ color: "rgba(255,255,255,0.72)", fontFamily: "'Inter', sans-serif" }}>
+                  <p style={{ fontSize: "0.6rem", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.12em", color: "rgba(255,255,255,0.55)", marginBottom: "6px" }}>Go deeper</p>
+                  <h3 className="text-lg font-bold leading-snug mb-1.5" style={{ color: "white", }}>Ready for a guided journey?</h3>
+                  <p className="text-sm mb-4 leading-relaxed" style={{ color: "rgba(255,255,255,0.72)", }}>
                     Single sessions are great. Programs go further — day-by-day structure, built-in progress, and real consistency.
                   </p>
                   <a href="/ProgramsHub"
                     className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-semibold"
-                    style={{ backgroundColor: "var(--surface)", color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>
+                    style={{ backgroundColor: "var(--surface)", color: "var(--plum)", }}>
                     Browse programs
                   </a>
                 </div>

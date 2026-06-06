@@ -136,7 +136,6 @@ export default function PodcastCard({ item, saved, hasPhaseTag, onSave, onUntag 
           letterSpacing: '0.6px',
           color: 'var(--cream)', background: 'rgba(0,0,0,0.35)',
           padding: '4px 10px', borderRadius: 9999,
-          fontFamily: "'Inter', sans-serif",
           pointerEvents: 'none',
         }}>
           {`${pillKind}${item.duration_label ? ' · ' + item.duration_label : ' · ' + pillFallback}`}
@@ -165,7 +164,6 @@ export default function PodcastCard({ item, saved, hasPhaseTag, onSave, onUntag 
       {/* Body */}
       <div style={{ padding: 16, position: 'relative' }}>
         <h3 style={{
-          fontFamily: "'Fraunces', serif",
           fontSize: 20, fontWeight: 400,
           color: 'var(--plum-deep)',
           lineHeight: 1.3,
@@ -181,7 +179,6 @@ export default function PodcastCard({ item, saved, hasPhaseTag, onSave, onUntag 
         <p style={{
           fontSize: 12, fontWeight: 500,
           color: 'var(--plum-mute)',
-          fontFamily: "'Inter', sans-serif",
           margin: 0,
         }}>
           {[item.source_name, formatRelativeDate(item.published_at)].filter(Boolean).join(' · ')}

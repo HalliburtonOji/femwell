@@ -366,8 +366,7 @@ const shell = {
   padding: "12px 14px 18px",
   maxWidth: 600,
   margin: "0 auto",
-  fontFamily: "'Inter', system-ui, sans-serif",
-};
+  };
 const topRow = { display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 };
 const dotsRow = { display: "flex", alignItems: "center", gap: 6 };
 const dot = { height: 6, borderRadius: 9999, transition: "width 0.3s ease, background 0.3s ease" };
@@ -390,7 +389,6 @@ const eyebrowRow = { display: "flex", alignItems: "center", gap: 6, marginBottom
 const eyebrow = { fontSize: 10, fontWeight: 700, letterSpacing: "0.16em", color: T.muted, textTransform: "uppercase" };
 const eyebrowLine = { fontSize: 10, fontWeight: 700, letterSpacing: "0.16em", color: T.muted, textTransform: "uppercase", margin: "0 0 6px" };
 const title = {
-  fontFamily: "'Fraunces', Georgia, serif",
   fontSize: 24, fontWeight: 500, color: T.espresso,
   letterSpacing: "-0.01em", margin: "0 0 8px", lineHeight: 1.2,
 };

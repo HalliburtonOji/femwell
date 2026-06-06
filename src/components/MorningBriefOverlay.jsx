@@ -219,7 +219,7 @@ export default function MorningBriefOverlay({ user, profile, onDismiss }) {
           style={{
             background: "transparent", border: "none",
             color: C.muted, cursor: "pointer", padding: "6px 8px",
-            fontFamily: "'Inter', sans-serif", fontSize: 12, fontWeight: 700,
+            fontSize: 12, fontWeight: 700,
             letterSpacing: "0.12em", textTransform: "uppercase",
           }}
         >Skip</button>
@@ -253,11 +253,9 @@ export default function MorningBriefOverlay({ user, profile, onDismiss }) {
             <p style={{
               margin: 0, fontSize: 11, fontWeight: 700,
               letterSpacing: "0.18em", textTransform: "uppercase",
-              color: C.muted, fontFamily: "'Inter', sans-serif",
-            }}>{dateLine}</p>
+              color: C.muted, }}>{dateLine}</p>
             <h1 style={{
               margin: "10px 0 6px",
-              fontFamily: "'Fraunces', Georgia, serif",
               fontSize: "clamp(32px, 8vw, 44px)",
               fontWeight: 600, lineHeight: 1.05,
               color: C.espresso, letterSpacing: "-0.01em",
@@ -265,7 +263,6 @@ export default function MorningBriefOverlay({ user, profile, onDismiss }) {
             {(cycle.cycleDay || phaseLabel) && (
               <p style={{
                 margin: "8px 0 0",
-                fontFamily: "'Inter', sans-serif",
                 fontSize: 14, color: C.sage, fontWeight: 700,
                 letterSpacing: "0.04em",
               }}>
@@ -295,11 +292,9 @@ export default function MorningBriefOverlay({ user, profile, onDismiss }) {
                 <p style={{
                   margin: 0, fontSize: 10, fontWeight: 700,
                   letterSpacing: "0.16em", textTransform: "uppercase",
-                  color: C.muted, fontFamily: "'Inter', sans-serif",
-                }}>Jess</p>
+                  color: C.muted, }}>Jess</p>
                 <p style={{
                   margin: "4px 0 0", fontSize: 15,
-                  fontFamily: "'Fraunces', Georgia, serif",
                   color: C.espresso, lineHeight: 1.5,
                 }}>
                   {text || "Settling in…"}
@@ -313,11 +308,9 @@ export default function MorningBriefOverlay({ user, profile, onDismiss }) {
             <p style={{
               margin: 0, fontSize: 11, fontWeight: 700,
               letterSpacing: "0.18em", textTransform: "uppercase",
-              color: C.muted, fontFamily: "'Inter', sans-serif",
-            }}>Today's focus · {phaseLabel}</p>
+              color: C.muted, }}>Today's focus · {phaseLabel}</p>
             <h2 style={{
               margin: "8px 0 18px",
-              fontFamily: "'Fraunces', Georgia, serif",
               fontSize: "clamp(26px, 6.5vw, 34px)",
               fontWeight: 600, lineHeight: 1.1,
               color: C.espresso, letterSpacing: "-0.01em",
@@ -344,11 +337,9 @@ export default function MorningBriefOverlay({ user, profile, onDismiss }) {
             <p style={{
               margin: 0, fontSize: 11, fontWeight: 700,
               letterSpacing: "0.18em", textTransform: "uppercase",
-              color: C.muted, fontFamily: "'Inter', sans-serif",
-            }}>Your day</p>
+              color: C.muted, }}>Your day</p>
             <h2 style={{
               margin: "8px 0 18px",
-              fontFamily: "'Fraunces', Georgia, serif",
               fontSize: "clamp(26px, 6.5vw, 34px)",
               fontWeight: 600, lineHeight: 1.1,
               color: C.espresso, letterSpacing: "-0.01em",
@@ -356,8 +347,7 @@ export default function MorningBriefOverlay({ user, profile, onDismiss }) {
 
             {!snap.loaded && (
               <p style={{
-                margin: 0, color: C.muted, fontFamily: "'Inter', sans-serif",
-                fontSize: 14, fontStyle: "italic",
+                margin: 0, color: C.muted, fontSize: 14, fontStyle: "italic",
               }}>Loading…</p>
             )}
 
@@ -387,7 +377,6 @@ export default function MorningBriefOverlay({ user, profile, onDismiss }) {
               }}>
                 <p style={{
                   margin: 0, color: C.espresso,
-                  fontFamily: "'Fraunces', Georgia, serif",
                   fontSize: 15, lineHeight: 1.5,
                 }}>Nothing on your plate — a good day to rest or add something.</p>
               </article>
@@ -429,7 +418,6 @@ export default function MorningBriefOverlay({ user, profile, onDismiss }) {
             minHeight: 50, padding: "12px 18px", borderRadius: 14,
             background: C.gold, color: C.espresso, border: "none",
             display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 8,
-            fontFamily: "'Inter', sans-serif",
             fontSize: 15, fontWeight: 700,
             cursor: "pointer",
             boxShadow: "0 6px 18px rgba(212,175,55,0.25)",
@@ -475,11 +463,9 @@ function FocusCard({ icon, title, tip }) {
         <p style={{
           margin: 0, fontSize: 10, fontWeight: 700,
           letterSpacing: "0.16em", textTransform: "uppercase",
-          color: C.muted, fontFamily: "'Inter', sans-serif",
-        }}>{title}</p>
+          color: C.muted, }}>{title}</p>
         <p style={{
           margin: "4px 0 0", fontSize: 14,
-          fontFamily: "'Fraunces', Georgia, serif",
           color: C.espresso, lineHeight: 1.5,
         }}>{tip}</p>
       </div>
@@ -506,7 +492,7 @@ function SnapRow({ icon, label }) {
       <p style={{
         margin: 0, flex: 1, minWidth: 0,
         fontSize: 14, color: C.espresso,
-        fontFamily: "'Inter', sans-serif", fontWeight: 600,
+        fontWeight: 600,
       }}>{label}</p>
     </article>
   );

@@ -14,7 +14,7 @@ import HrtTodayCard from "../lifeStage/HrtTodayCard";
 
 const FOCUSES = ["Sleep", "Hot flashes", "Mood", "Energy", "Brain fog", "Joint comfort", "Weight balance", "Libido", "Vaginal health", "Bone health"];
 const todayStr = new Date().toISOString().split("T")[0];
-const inp = { width: "100%", padding: 12, borderRadius: 12, border: "1px solid var(--border)", backgroundColor: "var(--ivory)", color: "var(--plum)", fontSize: 13, fontFamily: "'Inter', sans-serif", outline: "none", resize: "none", boxSizing: "border-box" };
+const inp = { width: "100%", padding: 12, borderRadius: 12, border: "1px solid var(--border)", backgroundColor: "var(--ivory)", color: "var(--plum)", fontSize: 13, outline: "none", resize: "none", boxSizing: "border-box" };
 const card = { backgroundColor: "var(--surface)", border: "1px solid var(--border)", borderRadius: 16, padding: 16, boxShadow: "var(--shadow-sm)" };
 
 const STAGE_INFO = {
@@ -217,8 +217,8 @@ export default function MenopauseSupportTab({ user, profile, setProfile, logs, s
     <div className="space-y-4">
       {/* Hero */}
       <div style={{ backgroundColor: stageInfo.bg, border: `1px solid ${stageInfo.color}30`, borderRadius: 16, padding: "16px 20px" }}>
-        <p style={{ fontSize: "0.55rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.14em", color: stageInfo.color, marginBottom: 4, fontFamily: "'Inter', sans-serif" }}>Your stage</p>
-        <p style={{ fontSize: 20, fontWeight: 700, color: "var(--plum)", fontFamily: "'Fraunces', serif" }}>{stageInfo.label}</p>
+        <p style={{ fontSize: "0.55rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.14em", color: stageInfo.color, marginBottom: 4, }}>Your stage</p>
+        <p style={{ fontSize: 20, fontWeight: 700, color: "var(--plum)", }}>{stageInfo.label}</p>
         <p style={{ fontSize: 12, color: "var(--mauve)", marginTop: 4, lineHeight: 1.6 }}>{stageInfo.description}</p>
       </div>
 
@@ -236,7 +236,7 @@ export default function MenopauseSupportTab({ user, profile, setProfile, logs, s
           { label: "This week", value: `${logs.filter(l => l.date >= new Date(Date.now() - 7 * 86400000).toISOString().split("T")[0]).length}`, color: "#B89E6A" },
         ].map(s => (
           <div key={s.label} style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)", borderRadius: 14, padding: 12, textAlign: "center" }}>
-            <p style={{ fontSize: 24, fontWeight: 700, color: s.color, fontFamily: "'Fraunces', serif" }}>{s.value}</p>
+            <p style={{ fontSize: 24, fontWeight: 700, color: s.color, }}>{s.value}</p>
             <p style={{ fontSize: 10, color: "var(--mauve)", textTransform: "uppercase", letterSpacing: "0.08em" }}>{s.label}</p>
           </div>
         ))}
@@ -246,7 +246,7 @@ export default function MenopauseSupportTab({ user, profile, setProfile, logs, s
       <div style={{ display: "flex", gap: 6, overflowX: "auto", paddingBottom: 2, scrollbarWidth: "none" }}>
         {SECTIONS.map(s => (
           <button key={s.id} onClick={() => setActiveSection(s.id)}
-            style={{ flexShrink: 0, padding: "7px 14px", borderRadius: 9999, fontSize: 11, fontWeight: 600, cursor: "pointer", fontFamily: "'Inter', sans-serif", border: "none",
+            style={{ flexShrink: 0, padding: "7px 14px", borderRadius: 9999, fontSize: 11, fontWeight: 600, cursor: "pointer", border: "none",
               backgroundColor: activeSection === s.id ? stageInfo.color : "var(--ivory-dark)",
               color: activeSection === s.id ? "white" : "var(--mauve)" }}>
             {s.label}
@@ -378,11 +378,11 @@ export default function MenopauseSupportTab({ user, profile, setProfile, logs, s
             ].map(r => (
               <a key={r.label} href={r.url} target="_blank" rel="noopener noreferrer"
                 style={{ display: "block", padding: "10px 14px", borderRadius: 12, backgroundColor: "var(--ivory)", border: "1px solid var(--border-subtle)", marginBottom: 6, textDecoration: "none" }}>
-                <p style={{ fontSize: 13, fontWeight: 600, color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>{r.label}</p>
-                <p style={{ fontSize: 11, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", marginTop: 2 }}>Opens in new tab →</p>
+                <p style={{ fontSize: 13, fontWeight: 600, color: "var(--plum)", }}>{r.label}</p>
+                <p style={{ fontSize: 11, color: "var(--mauve)", marginTop: 2 }}>Opens in new tab →</p>
               </a>
             ))}
-            <p style={{ fontSize: 11, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", marginTop: 8, lineHeight: 1.6 }}>
+            <p style={{ fontSize: 11, color: "var(--mauve)", marginTop: 8, lineHeight: 1.6 }}>
               Please discuss HRT and treatment options with your GP. These resources offer evidence-based information to support your conversation.
             </p>
           </div>

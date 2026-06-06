@@ -65,7 +65,6 @@ const ACCOUNT_ROWS = [
 ];
 
 const SECTION_HDR = {
-  fontFamily: "'Inter', sans-serif",
   fontWeight: 600,
   fontSize: 12,
   letterSpacing: "0.25em",
@@ -258,7 +257,6 @@ export default function MenuSheet({ open, onClose, returnFocusRef }) {
         </div>
 
         <h2 style={{
-          fontFamily: "'Fraunces', serif",
           fontWeight: 300, fontSize: 28, color: "var(--plum-deep)",
           margin: "16px 0 12px",
         }}>
@@ -281,10 +279,10 @@ export default function MenuSheet({ open, onClose, returnFocusRef }) {
             <Sun size={22} aria-hidden="true" />
             <div>
               <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                <span style={{ fontFamily: "'Fraunces', serif", fontWeight: 500, fontSize: 18 }}>Log today</span>
+                <span style={{ fontWeight: 500, fontSize: 18 }}>Log today</span>
                 <span aria-hidden="true" style={{ width: 8, height: 8, borderRadius: 9999, backgroundColor: "var(--rose-primary)" }} />
               </div>
-              <div style={{ fontFamily: "'Inter', sans-serif", fontWeight: 400, fontSize: 12, color: "var(--rose-soft)" }}>
+              <div style={{ fontWeight: 400, fontSize: 12, color: "var(--rose-soft)" }}>
                 Check in, meals, symptoms
               </div>
             </div>
@@ -301,10 +299,10 @@ export default function MenuSheet({ open, onClose, returnFocusRef }) {
                 style={TILE_BASE}
               >
                 <Icon size={22} aria-hidden="true" style={{ color: "var(--plum-deep)" }} />
-                <div style={{ fontFamily: "'Fraunces', serif", fontWeight: 500, fontSize: 14, color: "var(--plum-deep)" }}>
+                <div style={{ fontWeight: 500, fontSize: 14, color: "var(--plum-deep)" }}>
                   {t.label}
                 </div>
-                <div style={{ fontFamily: "'Inter', sans-serif", fontWeight: 400, fontSize: 12, color: "var(--plum-mute)" }}>
+                <div style={{ fontWeight: 400, fontSize: 12, color: "var(--plum-mute)" }}>
                   {t.sub}
                 </div>
               </button>
@@ -320,7 +318,7 @@ export default function MenuSheet({ open, onClose, returnFocusRef }) {
             return (
               <button key={p.label} onClick={() => go(p.route)} style={{ ...TILE_BASE, minHeight: 76, justifyContent: "center" }}>
                 <Icon size={22} aria-hidden="true" style={{ color: "var(--plum-deep)" }} />
-                <div style={{ fontFamily: "'Fraunces', serif", fontWeight: 500, fontSize: 14, color: "var(--plum-deep)" }}>
+                <div style={{ fontWeight: 500, fontSize: 14, color: "var(--plum-deep)" }}>
                   {p.label}
                 </div>
               </button>
@@ -344,7 +342,7 @@ export default function MenuSheet({ open, onClose, returnFocusRef }) {
                 }}
               >
                 <Icon size={22} aria-hidden="true" style={{ color: "var(--plum-deep)" }} />
-                <span style={{ flex: 1, fontFamily: "'Fraunces', serif", fontWeight: 400, fontSize: 16, color: "var(--plum-deep)" }}>
+                <span style={{ flex: 1, fontWeight: 400, fontSize: 16, color: "var(--plum-deep)" }}>
                   {r.label}
                 </span>
                 <ChevronRight size={16} aria-hidden="true" style={{ color: "var(--plum-mute)" }} />
@@ -368,7 +366,7 @@ export default function MenuSheet({ open, onClose, returnFocusRef }) {
                 }}
               >
                 <Icon size={22} aria-hidden="true" style={{ color: "var(--plum-deep)" }} />
-                <span style={{ flex: 1, fontFamily: "'Fraunces', serif", fontWeight: 400, fontSize: 16, color: "var(--plum-deep)" }}>
+                <span style={{ flex: 1, fontWeight: 400, fontSize: 16, color: "var(--plum-deep)" }}>
                   {r.label}
                 </span>
                 <ChevronRight size={16} aria-hidden="true" style={{ color: "var(--plum-mute)" }} />
@@ -383,13 +381,13 @@ export default function MenuSheet({ open, onClose, returnFocusRef }) {
               style={ROW_BASE}
             >
               <LogOut size={22} aria-hidden="true" style={{ color: "var(--rose-primary)" }} />
-              <span style={{ flex: 1, fontFamily: "'Fraunces', serif", fontWeight: 400, fontSize: 16, color: "var(--rose-primary)" }}>
+              <span style={{ flex: 1, fontWeight: 400, fontSize: 16, color: "var(--rose-primary)" }}>
                 Sign out
               </span>
             </button>
           ) : (
             <div style={{ padding: "12px 16px", display: "flex", flexDirection: "column", gap: 8 }}>
-              <div style={{ fontFamily: "'Inter', sans-serif", fontSize: 14, color: "var(--plum-deep)" }}>
+              <div style={{ fontSize: 14, color: "var(--plum-deep)" }}>
                 Are you sure?
               </div>
               <div style={{ display: "flex", gap: 8 }}>
@@ -399,7 +397,7 @@ export default function MenuSheet({ open, onClose, returnFocusRef }) {
                     background: "var(--rose-primary)", color: "white",
                     border: "none", borderRadius: 9999,
                     padding: "10px 18px", minHeight: 44,
-                    fontFamily: "'Inter', sans-serif", fontWeight: 600, fontSize: 14,
+                    fontWeight: 600, fontSize: 14,
                     cursor: "pointer",
                   }}
                 >
@@ -411,7 +409,7 @@ export default function MenuSheet({ open, onClose, returnFocusRef }) {
                     background: "transparent", color: "var(--plum-mute)",
                     border: "none", borderRadius: 9999,
                     padding: "10px 18px", minHeight: 44,
-                    fontFamily: "'Inter', sans-serif", fontWeight: 500, fontSize: 14,
+                    fontWeight: 500, fontSize: 14,
                     cursor: "pointer",
                   }}
                 >

@@ -13,8 +13,7 @@ const sLabel = {
   textTransform: "uppercase",
   letterSpacing: "0.1em",
   color: "var(--mauve)",
-  fontFamily: "'Inter', sans-serif",
-};
+  };
 
 export default function SymptomPatternCard({ checkins }) {
   const { logCount, topSymptom, topCount } = useMemo(() => {
@@ -53,7 +52,7 @@ export default function SymptomPatternCard({ checkins }) {
         </div>
         <div style={{ flex: 1 }}>
           <p style={sLabel}>Pattern insight</p>
-          <p style={{ fontSize: 13, color: "var(--plum)", fontFamily: "'Inter', sans-serif", marginTop: 2 }}>
+          <p style={{ fontSize: 13, color: "var(--plum)", marginTop: 2 }}>
             Log 3+ days to unlock patterns.
           </p>
         </div>
@@ -65,7 +64,7 @@ export default function SymptomPatternCard({ checkins }) {
     return (
       <div style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)", borderRadius: 16, padding: "14px 16px" }}>
         <p style={sLabel}>Pattern insight</p>
-        <p style={{ fontSize: 13, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", marginTop: 6 }}>
+        <p style={{ fontSize: 13, color: "var(--mauve)", marginTop: 6 }}>
           No symptoms logged in the last 14 days.
         </p>
       </div>
@@ -78,7 +77,7 @@ export default function SymptomPatternCard({ checkins }) {
         <TrendingUp className="w-3.5 h-3.5" style={{ color: "var(--rose-dust)" }} />
         <p style={{ ...sLabel, color: "var(--rose-dust)" }}>Pattern insight</p>
       </div>
-      <p style={{ fontSize: 14, color: "var(--plum)", fontFamily: "'Inter', sans-serif", lineHeight: 1.55 }}>
+      <p style={{ fontSize: 14, color: "var(--plum)", lineHeight: 1.55 }}>
         You've logged <strong>{symptomLabel(topSymptom).toLowerCase()}</strong> in <strong>{topCount} of your last {logCount}</strong> check-ins.
       </p>
     </div>

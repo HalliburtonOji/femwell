@@ -14,8 +14,7 @@ const card = {
 
 const sLabel = {
   fontSize: "0.6rem", fontWeight: 600, textTransform: "uppercase",
-  letterSpacing: "0.12em", color: "var(--mauve)", fontFamily: "'Inter', sans-serif",
-};
+  letterSpacing: "0.12em", color: "var(--mauve)", };
 
 function RuleInsight({ logs, checkins }) {
   const insights  = [];
@@ -47,7 +46,7 @@ function RuleInsight({ logs, checkins }) {
           <div key={i} className="flex gap-3 rounded-2xl p-4"
             style={{ backgroundColor: "var(--ivory)", border: "1px solid var(--border-subtle)" }}>
             <div className="w-1.5 h-1.5 rounded-full flex-shrink-0 mt-1.5" style={{ backgroundColor: "var(--rose-dust)" }} />
-            <p className="text-xs leading-relaxed" style={{ color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>{ins.text}</p>
+            <p className="text-xs leading-relaxed" style={{ color: "var(--plum)", }}>{ins.text}</p>
           </div>
         ))}
       </div>
@@ -62,7 +61,7 @@ function SavedInsightCard({ insight, onFeedback }) {
       <div className="flex items-start justify-between gap-2">
         <div className="flex-1">
           {insight.headline && (
-            <p className="text-xs font-semibold mb-1" style={{ color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>
+            <p className="text-xs font-semibold mb-1" style={{ color: "var(--plum)", }}>
               {insight.headline}
             </p>
           )}
@@ -181,7 +180,7 @@ function FoodSkinCorrelation({ mealLogs, checkins }) {
   return (
     <div className="rounded-[24px] p-5" style={card}>
       <p style={sLabel} className="mb-1">Food & Skin Patterns</p>
-      <p style={{ fontSize: "12px", color: "var(--mauve)", fontFamily: "'Inter', sans-serif", marginBottom: "14px" }}>
+      <p style={{ fontSize: "12px", color: "var(--mauve)", marginBottom: "14px" }}>
         Based on {pairedDays.length} days where both food and skin were logged
       </p>
       <div className="space-y-3">
@@ -191,7 +190,7 @@ function FoodSkinCorrelation({ mealLogs, checkins }) {
                style={{ backgroundColor: "var(--ivory)", border: "1px solid var(--border-subtle)" }}>
             <div className="w-1.5 h-1.5 rounded-full flex-shrink-0 mt-1.5"
                  style={{ backgroundColor: "var(--rose-dust)" }} />
-            <p style={{ fontSize: "12px", lineHeight: 1.6, color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>
+            <p style={{ fontSize: "12px", lineHeight: 1.6, color: "var(--plum)", }}>
               <strong>{f.label.charAt(0).toUpperCase() + f.label.slice(1)}</strong>
               {" "}appeared more often on days when your skin was reactive
               than on clearer days. This is a personal pattern in your
@@ -200,7 +199,7 @@ function FoodSkinCorrelation({ mealLogs, checkins }) {
           </div>
         ))}
       </div>
-      <p style={{ fontSize: "10px", color: "var(--mauve)", marginTop: "12px", fontFamily: "'Inter', sans-serif", fontStyle: "italic" }}>
+      <p style={{ fontSize: "10px", color: "var(--mauve)", marginTop: "12px", fontStyle: "italic" }}>
         Pattern is based on keyword matching in your logged meals.
         Log more days for stronger signals.
       </p>
@@ -327,7 +326,7 @@ Guidelines:
       {topGoal && (
         <div className="rounded-[24px] p-5" style={card}>
           <p style={sLabel} className="mb-3">Your Top Focus</p>
-          <p className="text-sm leading-relaxed" style={{ color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>
+          <p className="text-sm leading-relaxed" style={{ color: "var(--plum)", }}>
             You've been focusing most on{" "}
             <span className="font-semibold" style={{ color: "var(--rose-dust)" }}>{topGoal[0]}</span>
             {" "}({topGoal[1]} meal{topGoal[1] !== 1 ? "s" : ""} tagged). Consistency with a clear intention can help you notice patterns over time.
@@ -370,7 +369,7 @@ Guidelines:
           <>
             <ReactMarkdown className="text-xs leading-relaxed prose prose-sm max-w-none"
               components={{
-                p: ({ children }) => <p className="my-1.5" style={{ color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>{children}</p>,
+                p: ({ children }) => <p className="my-1.5" style={{ color: "var(--plum)", }}>{children}</p>,
                 strong: ({ children }) => <strong style={{ color: "var(--plum)", fontWeight: 600 }}>{children}</strong>,
               }}>
               {weekInsight.insight_text}

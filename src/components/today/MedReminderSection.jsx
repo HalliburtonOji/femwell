@@ -43,7 +43,7 @@ export default function MedReminderSection({ user }) {
     setReminders(prev => prev.filter(r => r.id !== id));
   };
 
-  const inputStyle = { width: "100%", padding: "8px 10px", borderRadius: 10, border: "1px solid var(--border)", backgroundColor: "var(--ivory)", color: "var(--plum)", fontSize: 12, fontFamily: "'Inter', sans-serif", outline: "none" };
+  const inputStyle = { width: "100%", padding: "8px 10px", borderRadius: 10, border: "1px solid var(--border)", backgroundColor: "var(--ivory)", color: "var(--plum)", fontSize: 12, outline: "none" };
 
   return (
     <div className="mt-5 pt-4" style={{ borderTop: "1px solid var(--border-subtle)" }}>

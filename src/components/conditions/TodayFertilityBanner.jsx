@@ -62,17 +62,17 @@ export default function TodayFertilityBanner({ user, profile }) {
     }}>
       <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 12 }}>
         <div>
-          <p style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", color: colors.text, fontFamily: "'Inter', sans-serif", marginBottom: 3 }}>
+          <p style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", color: colors.text, marginBottom: 3 }}>
             Trying to conceive {cycleDay ? `· Day ${cycleDay}` : ""}
           </p>
-          <p style={{ fontSize: 16, fontWeight: 700, color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>
+          <p style={{ fontSize: 16, fontWeight: 700, color: "var(--plum)", }}>
             {colors.label}
           </p>
-          <p style={{ fontSize: 12, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", marginTop: 4 }}>
+          <p style={{ fontSize: 12, color: "var(--mauve)", marginTop: 4 }}>
             {fertileMsg}
           </p>
         </div>
-        <span style={{ flexShrink: 0, fontSize: 10, fontWeight: 600, color: colors.text, backgroundColor: `${colors.text}15`, borderRadius: 9999, padding: "3px 8px", fontFamily: "'Inter', sans-serif", whiteSpace: "nowrap" }}>
+        <span style={{ flexShrink: 0, fontSize: 10, fontWeight: 600, color: colors.text, backgroundColor: `${colors.text}15`, borderRadius: 9999, padding: "3px 8px", whiteSpace: "nowrap" }}>
           {confidenceLabel}
         </span>
       </div>

@@ -48,7 +48,6 @@ function ChipGrid({ chips, selected, onToggle, accent = C.gold, danger = [] }) {
             border: `1px solid ${on ? (isDanger ? C.rose : accent) : "rgba(58,44,26,0.16)"}`,
             background: on ? (isDanger ? `${C.rose}22` : `${accent}22`) : "transparent",
             color: isDanger ? C.rose : C.espresso,
-            fontFamily: "'Inter', system-ui, sans-serif",
             fontSize: 11, fontWeight: 600, cursor: "pointer",
             display: "inline-flex", alignItems: "center", gap: 4,
           }}>
@@ -448,8 +447,7 @@ function EndoPainMapCard() {
               stroke={picked.includes(z.id) ? C.rose : "rgba(58,44,26,0.30)"}
               strokeWidth={1.2} opacity={picked.includes(z.id) ? 0.7 : 0.9} />
             <text x={z.x} y={z.y + 3} textAnchor="middle"
-              fontSize={5} fill={picked.includes(z.id) ? "#fff" : C.espresso}
-              fontFamily="Inter, sans-serif" fontWeight="600">{z.label}</text>
+              fontSize={5} fill={picked.includes(z.id) ? "#fff" : C.espresso} fontWeight="600">{z.label}</text>
           </g>
         ))}
       </svg>
@@ -1319,7 +1317,6 @@ const adjustBtn = {
   flex: 1, padding: "8px 0", borderRadius: 9999,
   background: C.cream, color: C.espresso,
   border: "1px solid rgba(58,44,26,0.15)",
-  fontFamily: "'Inter', system-ui, sans-serif",
   fontSize: 14, fontWeight: 700, cursor: "pointer",
 };
 

@@ -63,7 +63,6 @@ export default function TodayDailyChapterCard() {
         boxShadow: "var(--shadow-card)",
       }}>
         <p style={{
-          fontFamily: "'Inter', sans-serif",
           fontSize: 10,
           fontWeight: 700,
           textTransform: "uppercase",
@@ -75,7 +74,6 @@ export default function TodayDailyChapterCard() {
           Today's chapter · Day {segment.day_number} of 30
         </p>
         <p style={{
-          fontFamily: "'Fraunces', serif",
           fontSize: 17,
           fontWeight: 400,
           fontStyle: "italic",
@@ -90,7 +88,6 @@ export default function TodayDailyChapterCard() {
           display: "inline-flex",
           alignItems: "center",
           gap: 6,
-          fontFamily: "'Inter', sans-serif",
           fontSize: 13,
           fontWeight: 600,
           color: ctaColor,

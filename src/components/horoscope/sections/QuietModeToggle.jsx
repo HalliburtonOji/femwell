@@ -160,12 +160,10 @@ const rowIndentStyle = {
 };
 const textStyle = { display: "flex", flexDirection: "column", minWidth: 0, gap: 4 };
 const nameStyle = {
-  fontFamily: "'Fraunces', serif",
   fontSize: 16,
   color: "var(--cream, #FAF4EA)",
 };
 const helpStyle = {
-  fontFamily: "'Fraunces', serif",
   fontStyle: "italic",
   fontSize: 12,
   lineHeight: 1.4,

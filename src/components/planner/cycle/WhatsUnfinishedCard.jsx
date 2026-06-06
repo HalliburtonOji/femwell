@@ -75,7 +75,6 @@ const kickerStyle = {
   textTransform: "uppercase",
   letterSpacing: "0.14em",
   color: "var(--plum-mute, #8A7584)",
-  fontFamily: "'Inter', sans-serif",
   margin: 0,
 };
 const tenseStyle = {
@@ -84,10 +83,8 @@ const tenseStyle = {
   letterSpacing: "0.12em",
   textTransform: "uppercase",
   color: "var(--plum-mute, #8A7584)",
-  fontFamily: "'Inter', sans-serif",
-};
+  };
 const subStyle = {
-  fontFamily: "'Inter', sans-serif",
   fontSize: 12.5,
   color: "var(--plum-2, #6B4559)",
   margin: "0 0 10px",
@@ -113,7 +110,6 @@ const rowStyle = {
   gap: 8,
 };
 const nameStyle = {
-  fontFamily: "'Fraunces', serif",
   fontSize: 14,
   fontWeight: 500,
   color: "var(--plum, #4A2A3A)",
@@ -127,5 +123,4 @@ const daysBadgeStyle = {
   borderRadius: 9999,
   background: "rgba(201, 169, 92, 0.18)",
   color: "var(--gold, #C9A95C)",
-  fontFamily: "'Inter', sans-serif",
-};
+  };

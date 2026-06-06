@@ -232,7 +232,6 @@ const kickerStyle = {
   textTransform: "uppercase",
   letterSpacing: "0.14em",
   color: "var(--plum-mute, #8A7584)",
-  fontFamily: "'Inter', sans-serif",
   margin: 0,
 };
 const tenseStyle = {
@@ -241,10 +240,8 @@ const tenseStyle = {
   letterSpacing: "0.12em",
   textTransform: "uppercase",
   color: "var(--plum-mute, #8A7584)",
-  fontFamily: "'Inter', sans-serif",
-};
+  };
 const mainStyle = {
-  fontFamily: "'Fraunces', serif",
   fontSize: 16,
   lineHeight: 1.4,
   color: "var(--plum, #4A2A3A)",
@@ -252,7 +249,6 @@ const mainStyle = {
   margin: "0 0 4px",
 };
 const subStyle = {
-  fontFamily: "'Inter', sans-serif",
   fontSize: 12.5,
   lineHeight: 1.55,
   color: "var(--plum-2, #6B4559)",
@@ -261,7 +257,6 @@ const subStyle = {
 const ctaStyle = {
   display: "inline-flex",
   alignItems: "center",
-  fontFamily: "'Inter', sans-serif",
   fontSize: 13,
   fontWeight: 700,
   color: "var(--plum, #4A2A3A)",
@@ -275,7 +270,6 @@ const primaryBtnStyle = {
   borderRadius: 9999,
   background: "var(--plum, #4A2A3A)",
   color: "var(--cream, #FFFAF5)",
-  fontFamily: "'Inter', sans-serif",
   fontSize: 13,
   fontWeight: 600,
   textDecoration: "none",
@@ -299,7 +293,6 @@ const chipStyle = {
   border: "1px solid var(--border-subtle, rgba(74,42,58,0.08))",
 };
 const chipDayStyle = {
-  fontFamily: "'Inter', sans-serif",
   fontSize: 9,
   fontWeight: 700,
   letterSpacing: "0.10em",
@@ -307,7 +300,6 @@ const chipDayStyle = {
   margin: 0,
 };
 const chipNumStyle = {
-  fontFamily: "'Fraunces', serif",
   fontSize: 18,
   fontWeight: 600,
   color: "var(--plum, #4A2A3A)",
@@ -331,7 +323,6 @@ const etaFooterStyle = {
   flexWrap: "wrap",
 };
 const etaTextStyle = {
-  fontFamily: "'Inter', sans-serif",
   fontSize: 10.5,
   color: "var(--plum-mute, #8A7584)",
   letterSpacing: "0.04em",
@@ -344,7 +335,6 @@ const primaryPillStyle = {
   borderRadius: 9999,
   background: "var(--plum, #4A2A3A)",
   color: "var(--cream, #FFFAF5)",
-  fontFamily: "'Inter', sans-serif",
   fontSize: 10.5,
   fontWeight: 700,
   letterSpacing: "0.04em",

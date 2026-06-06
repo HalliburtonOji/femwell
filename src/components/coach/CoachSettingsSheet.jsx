@@ -32,8 +32,7 @@ const MODES = [
 
 const sLabel = {
   fontSize: "0.6rem", fontWeight: 600, textTransform: "uppercase",
-  letterSpacing: "0.12em", color: "var(--mauve)", fontFamily: "'Inter', sans-serif",
-};
+  letterSpacing: "0.12em", color: "var(--mauve)", };
 
 export default function GuideSettingsSheet({ user, onClose, onSaved }) {
   const [guideName, setGuideName] = useState(user.coach_name || "Guide");
@@ -82,7 +81,7 @@ export default function GuideSettingsSheet({ user, onClose, onSaved }) {
         <div className="w-8 h-1 rounded-full mx-auto mb-5" style={{ backgroundColor: "var(--border)" }} />
 
         <div className="flex items-center justify-between mb-6">
-          <p className="font-semibold" style={{ color: "var(--plum)", fontFamily: "'Fraunces', serif", fontSize: "1.05rem" }}>
+          <p className="font-semibold" style={{ color: "var(--plum)", fontSize: "1.05rem" }}>
             Guide settings
           </p>
           <button onClick={onClose}
@@ -100,7 +99,7 @@ export default function GuideSettingsSheet({ user, onClose, onSaved }) {
             placeholder="e.g. Guide, Sage, Luna…"
             maxLength={20}
             className="w-full px-4 py-3 rounded-2xl text-sm focus:outline-none"
-            style={{ backgroundColor: "var(--ivory)", border: "1.5px solid var(--border)", color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}
+            style={{ backgroundColor: "var(--ivory)", border: "1.5px solid var(--border)", color: "var(--plum)", }}
             onFocus={e => e.target.style.borderColor = "var(--rose-dust-light)"}
             onBlur={e => e.target.style.borderColor = "var(--border)"} />
         </div>
@@ -117,8 +116,8 @@ export default function GuideSettingsSheet({ user, onClose, onSaved }) {
                   border: `1.5px solid ${archetype === s.id ? "var(--plum)" : "var(--border)"}`,
                 }}>
                 <div className="flex-1 min-w-0">
-                  <p className="text-xs font-semibold" style={{ color: archetype === s.id ? "white" : "var(--plum)", fontFamily: "'Inter', sans-serif" }}>{s.label}</p>
-                  <p className="text-[11px] mt-0.5" style={{ color: archetype === s.id ? "rgba(255,255,255,0.6)" : "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>{s.desc}</p>
+                  <p className="text-xs font-semibold" style={{ color: archetype === s.id ? "white" : "var(--plum)", }}>{s.label}</p>
+                  <p className="text-[11px] mt-0.5" style={{ color: archetype === s.id ? "rgba(255,255,255,0.6)" : "var(--mauve)", }}>{s.desc}</p>
                 </div>
                 {archetype === s.id && <Check className="w-4 h-4 flex-shrink-0 text-white" />}
               </button>
@@ -137,8 +136,7 @@ export default function GuideSettingsSheet({ user, onClose, onSaved }) {
                   backgroundColor: tone === t ? "var(--plum)" : "var(--ivory)",
                   color: tone === t ? "white" : "var(--mauve)",
                   border: `1px solid ${tone === t ? "var(--plum)" : "var(--border)"}`,
-                  fontFamily: "'Inter', sans-serif",
-                }}>
+                  }}>
                 {t}
               </button>
             ))}
@@ -157,8 +155,8 @@ export default function GuideSettingsSheet({ user, onClose, onSaved }) {
                   border: `1.5px solid ${voiceId === v.id ? "var(--rose-dust-light)" : "var(--border)"}`,
                 }}>
                 <div className="flex-1">
-                  <p className="text-xs font-semibold" style={{ color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>{v.label}</p>
-                  <p className="text-[11px] mt-0.5" style={{ color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>{v.desc}</p>
+                  <p className="text-xs font-semibold" style={{ color: "var(--plum)", }}>{v.label}</p>
+                  <p className="text-[11px] mt-0.5" style={{ color: "var(--mauve)", }}>{v.desc}</p>
                 </div>
                 {voiceId === v.id && <Check className="w-3.5 h-3.5 flex-shrink-0" style={{ color: "var(--rose-dust)" }} />}
               </button>
@@ -177,8 +175,7 @@ export default function GuideSettingsSheet({ user, onClose, onSaved }) {
                   backgroundColor: pace === p.id ? "var(--plum)" : "var(--ivory)",
                   color: pace === p.id ? "white" : "var(--mauve)",
                   border: `1px solid ${pace === p.id ? "var(--plum)" : "var(--border)"}`,
-                  fontFamily: "'Inter', sans-serif",
-                }}>
+                  }}>
                 {p.label}
               </button>
             ))}
@@ -196,8 +193,8 @@ export default function GuideSettingsSheet({ user, onClose, onSaved }) {
                   backgroundColor: mode === m.id ? "var(--plum)" : "var(--ivory)",
                   border: `1.5px solid ${mode === m.id ? "var(--plum)" : "var(--border)"}`,
                 }}>
-                <p className="text-xs font-semibold" style={{ color: mode === m.id ? "white" : "var(--plum)", fontFamily: "'Inter', sans-serif" }}>{m.label}</p>
-                <p className="text-[11px] mt-0.5" style={{ color: mode === m.id ? "rgba(255,255,255,0.6)" : "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>{m.desc}</p>
+                <p className="text-xs font-semibold" style={{ color: mode === m.id ? "white" : "var(--plum)", }}>{m.label}</p>
+                <p className="text-[11px] mt-0.5" style={{ color: mode === m.id ? "rgba(255,255,255,0.6)" : "var(--mauve)", }}>{m.desc}</p>
               </button>
             ))}
           </div>
@@ -205,7 +202,7 @@ export default function GuideSettingsSheet({ user, onClose, onSaved }) {
 
         <button onClick={handleSave} disabled={saving}
           className="w-full py-3 rounded-2xl text-sm font-semibold flex items-center justify-center gap-2"
-          style={{ backgroundColor: "var(--plum)", color: "white", fontFamily: "'Inter', sans-serif", opacity: saving ? 0.7 : 1 }}>
+          style={{ backgroundColor: "var(--plum)", color: "white", opacity: saving ? 0.7 : 1 }}>
           {saved ? <><Check className="w-4 h-4" /> Saved</> : saving ? "Saving…" : "Save settings"}
         </button>
       </div>

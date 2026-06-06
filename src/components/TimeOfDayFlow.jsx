@@ -515,8 +515,7 @@ const shellStyle = {
   position: "relative",
   background: T.cream, minHeight: "100vh",
   padding: "26px 14px 40px",
-  fontFamily: "'Inter', system-ui, sans-serif",
-};
+  };
 
 const railWrapStyle = {
   position: "sticky", top: 12,
@@ -540,7 +539,6 @@ const eyebrowStyle = {
   color: T.muted, fontWeight: 700, margin: 0,
 };
 const pageTitleStyle = {
-  fontFamily: "'Fraunces', Georgia, serif",
   fontSize: 36, fontWeight: 500, color: T.espresso,
   letterSpacing: "-0.02em", margin: "4px 0", lineHeight: 1.05,
 };
@@ -570,7 +568,6 @@ const miniKickerStyle = {
   color: T.muted, fontWeight: 700, margin: 0,
 };
 const sceneTitleStyle = {
-  fontFamily: "'Fraunces', Georgia, serif",
   fontSize: 22, fontWeight: 500, color: T.espresso,
   letterSpacing: "-0.01em", margin: "2px 0 0", lineHeight: 1.1,
 };
@@ -598,7 +595,6 @@ const heroChipStyle = {
   color: T.goldDeep, background: T.cream,
 };
 const heroTitleStyle = {
-  fontFamily: "'Fraunces', Georgia, serif",
   fontSize: 22, fontWeight: 500, color: T.plum,
   margin: 0, lineHeight: 1.25, letterSpacing: "-0.01em",
 };
@@ -617,7 +613,6 @@ const cardHeadRowStyle = {
   display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: 8,
 };
 const cardTitleStyle = {
-  fontFamily: "'Fraunces', Georgia, serif",
   fontSize: 17, fontWeight: 500, color: T.plum,
   margin: "2px 0 0", lineHeight: 1.25, letterSpacing: "-0.005em",
 };
@@ -664,8 +659,7 @@ const stackTickStyle = {
   flexShrink: 0,
 };
 const stackTextStyle = {
-  fontSize: 13, fontFamily: "'Inter', sans-serif",
-};
+  fontSize: 13, };
 
 const statePillStyle = {
   fontSize: 9, fontWeight: 700, letterSpacing: "0.10em",
@@ -746,7 +740,6 @@ const cycleEyebrowStyle = {
   color: T.muted, fontWeight: 700,
 };
 const cycleTitleStyle = {
-  fontFamily: "'Fraunces', Georgia, serif",
   fontSize: 24, fontWeight: 500, color: T.espresso,
   letterSpacing: "-0.01em", margin: "4px 0 6px", lineHeight: 1.15,
 };
@@ -761,8 +754,7 @@ const ribbonHeadStyle = {
 const ribbonCellStyle = {
   display: "inline-flex", alignItems: "center", justifyContent: "center",
   borderRadius: 8, padding: "6px 0",
-  fontSize: 11, fontFamily: "'Inter', sans-serif",
-  border: "1px solid",
+  fontSize: 11, border: "1px solid",
 };
 
 const weekStripGridStyle = {
@@ -777,7 +769,6 @@ const weekDayStyle = {
   fontSize: 8, letterSpacing: "0.12em", color: T.muted, fontWeight: 700,
 };
 const weekDateStyle = {
-  fontFamily: "'Fraunces', Georgia, serif",
   fontSize: 13, fontWeight: 500, color: T.plum,
 };
 const weekBarStyle = {
@@ -794,7 +785,6 @@ const rhythmRowStyle = {
 };
 const rhythmNameStyle = {
   flex: 1,
-  fontFamily: "'Fraunces', Georgia, serif",
   fontSize: 13, fontWeight: 500, color: T.plum,
   display: "flex", alignItems: "center", gap: 6,
 };
@@ -824,7 +814,7 @@ const insightKickerStyle = {
   color: T.goldDeep, fontWeight: 700,
 };
 const insightTextStyle = {
-  fontFamily: "Cormorant Garamond, Georgia, serif", fontStyle: "italic",
+  fontStyle: "italic",
   fontSize: 13, color: T.plum, lineHeight: 1.55, margin: "4px 0 0",
 };
 

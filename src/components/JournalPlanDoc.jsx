@@ -36,12 +36,12 @@ const J = {
 };
 
 const eyebrow = {
-  fontFamily: "'Inter', system-ui, sans-serif", fontSize: 10,
+  fontSize: 10,
   letterSpacing: "0.20em", textTransform: "uppercase",
   fontWeight: 700, color: J.espressoMid,
 };
 const subEyebrow = {
-  fontFamily: "'Inter', system-ui, sans-serif", fontSize: 9,
+  fontSize: 9,
   letterSpacing: "0.20em", textTransform: "uppercase",
   fontWeight: 700, color: J.goldDeep, margin: "16px 0 8px",
 };
@@ -51,18 +51,17 @@ const card = {
   marginTop: 14,
 };
 const h2 = {
-  fontFamily: "'Fraunces', Georgia, serif",
   fontSize: 24, fontWeight: 500, color: J.espresso,
   letterSpacing: "-0.015em", margin: "32px 0 4px", lineHeight: 1.2,
 };
 const introP = {
-  fontFamily: "'Inter', system-ui, sans-serif", fontSize: 13.5,
+  fontSize: 13.5,
   color: J.espressoMid, marginTop: 6, lineHeight: 1.55,
 };
 
 function Bullet({ children, dotColor = J.gold }) {
   return (
-    <li style={{ display: "flex", alignItems: "flex-start", gap: 10, fontFamily: "'Inter', system-ui, sans-serif", fontSize: 13.5, color: J.espresso, lineHeight: 1.5 }}>
+    <li style={{ display: "flex", alignItems: "flex-start", gap: 10, fontSize: 13.5, color: J.espresso, lineHeight: 1.5 }}>
       <span style={{ width: 5, height: 5, borderRadius: 9999, background: dotColor, marginTop: 8, flexShrink: 0 }} />
       <span>{children}</span>
     </li>
@@ -75,10 +74,10 @@ function NumberedItem({ idx, children }) {
       <span style={{
         width: 24, height: 24, borderRadius: 9999, background: J.plum, color: J.cream,
         display: "inline-flex", alignItems: "center", justifyContent: "center",
-        fontFamily: "'Fraunces', Georgia, serif", fontStyle: "italic",
+        fontStyle: "italic",
         fontSize: 12, fontWeight: 600, flexShrink: 0,
       }}>{idx + 1}</span>
-      <span style={{ flex: 1, fontFamily: "'Inter', system-ui, sans-serif", fontSize: 13.5, color: J.espresso, lineHeight: 1.5, paddingTop: 2 }}>{children}</span>
+      <span style={{ flex: 1, fontSize: 13.5, color: J.espresso, lineHeight: 1.5, paddingTop: 2 }}>{children}</span>
     </li>
   );
 }
@@ -89,7 +88,7 @@ function Pull({ children }) {
       margin: "18px 0 0", padding: "14px 16px",
       background: J.cream, borderRadius: 10,
       borderLeft: `3px solid ${J.gold}`,
-      fontFamily: "Cormorant Garamond, Georgia, serif", fontStyle: "italic",
+      fontStyle: "italic",
       fontSize: 14, color: J.plum, lineHeight: 1.55,
     }}>{children}</blockquote>
   );
@@ -388,7 +387,7 @@ export default function JournalPlanDoc() {
       <header style={{ paddingTop: 28 }}>
         <div style={eyebrow}>Master plan · Journal · May 2026</div>
         <h1 style={{
-          fontFamily: "'Fraunces', Georgia, serif", fontSize: 32,
+          fontSize: 32,
           fontWeight: 500, color: J.espresso, letterSpacing: "-0.022em",
           margin: "10px 0 0", lineHeight: 1.1,
         }}>
@@ -397,7 +396,7 @@ export default function JournalPlanDoc() {
           Let&apos;s give it shape.
         </h1>
         <p style={{
-          fontFamily: "'Inter', system-ui, sans-serif", fontSize: 14,
+          fontSize: 14,
           color: J.espressoMid, marginTop: 14, lineHeight: 1.55,
         }}>
           Four design demos, the live production code, and external best practice — all
@@ -422,25 +421,25 @@ export default function JournalPlanDoc() {
           }}>
             <div style={{ display: "flex", alignItems: "baseline", gap: 8, flexWrap: "wrap" }}>
               <span style={{
-                fontFamily: "'Fraunces', Georgia, serif", fontStyle: "italic",
+                fontStyle: "italic",
                 fontSize: 14, color: J.gold, fontWeight: 500,
               }}>{String(i + 1).padStart(2, "0")}</span>
               <span style={{
-                fontFamily: "'Fraunces', Georgia, serif", fontSize: 17,
+                fontSize: 17,
                 fontWeight: 500, color: J.espresso,
               }}>{d.label}</span>
             </div>
             <div style={{
-              fontFamily: "'Inter', system-ui, sans-serif", fontSize: 10,
+              fontSize: 10,
               fontWeight: 700, color: J.espressoMid, letterSpacing: "0.04em",
               marginTop: 2,
             }}>{d.file}</div>
             <p style={{
-              fontFamily: "Cormorant Garamond, Georgia, serif", fontStyle: "italic", fontSize: 13.5,
+              fontStyle: "italic", fontSize: 13.5,
               color: J.plum, marginTop: 8, lineHeight: 1.5,
             }}>{d.one_line}</p>
             <p style={{
-              fontFamily: "'Inter', system-ui, sans-serif", fontSize: 12.5,
+              fontSize: 12.5,
               color: J.espressoMid, marginTop: 6, lineHeight: 1.5,
             }}>{d.surface}</p>
           </article>
@@ -469,7 +468,6 @@ export default function JournalPlanDoc() {
         <div style={{
           display: "grid", gridTemplateColumns: "1.4fr 0.5fr 1.8fr",
           padding: "10px 14px", borderBottom: `1px solid ${J.rule}`,
-          fontFamily: "'Inter', system-ui, sans-serif",
           fontSize: 10, letterSpacing: "0.10em", fontWeight: 700,
           color: J.espressoMid, textTransform: "uppercase",
         }}>
@@ -484,11 +482,11 @@ export default function JournalPlanDoc() {
           }}>
             <div>
               <div style={{
-                fontFamily: "'Fraunces', Georgia, serif", fontSize: 14,
+                fontSize: 14,
                 fontWeight: 500, color: J.espresso, lineHeight: 1.3,
               }}>{row.surface}</div>
               <div style={{
-                fontFamily: "'Inter', system-ui, sans-serif", fontSize: 11,
+                fontSize: 11,
                 color: J.espressoMid, marginTop: 3, lineHeight: 1.45, fontStyle: "italic",
               }}>{row.gap}</div>
             </div>
@@ -497,12 +495,12 @@ export default function JournalPlanDoc() {
                 display: "inline-block", width: 22, height: 22, borderRadius: 9999,
                 background: row.live === "✓" || row.live.startsWith("✓") ? J.sage : J.rule,
                 color: row.live === "✓" || row.live.startsWith("✓") ? J.cream : J.espressoMid,
-                fontFamily: "'Inter', system-ui, sans-serif", fontSize: 12, fontWeight: 700,
+                fontSize: 12, fontWeight: 700,
                 lineHeight: "22px",
               }}>{row.live === "✓ (LLM)" ? "L" : row.live}</span>
             </div>
             <div style={{
-              fontFamily: "'Inter', system-ui, sans-serif", fontSize: 12.5,
+              fontSize: 12.5,
               color: J.espresso, lineHeight: 1.5,
             }}>{row.direction}</div>
           </div>
@@ -524,7 +522,7 @@ export default function JournalPlanDoc() {
       </div>
       <div style={{
         display: "flex", justifyContent: "space-between", marginTop: 8,
-        fontFamily: "'Inter', system-ui, sans-serif", fontSize: 10,
+        fontSize: 10,
         color: J.espressoMid, letterSpacing: "0.10em", fontWeight: 700,
         textTransform: "uppercase",
       }}>
@@ -555,21 +553,21 @@ export default function JournalPlanDoc() {
                   width: 28, height: 28, borderRadius: 9999, background: c.color,
                   color: J.cream, display: "inline-flex", alignItems: "center",
                   justifyContent: "center", flexShrink: 0,
-                  fontFamily: "'Fraunces', Georgia, serif", fontStyle: "italic",
+                  fontStyle: "italic",
                   fontSize: 13, fontWeight: 600,
                 }}>{c.pos}</span>
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{
-                    fontFamily: "'Fraunces', Georgia, serif", fontSize: 18,
+                    fontSize: 18,
                     fontWeight: 500, color: J.espresso, fontStyle: "italic",
                   }}>{c.label}</div>
                   <div style={{
-                    fontFamily: "Cormorant Garamond, Georgia, serif", fontStyle: "italic", fontSize: 12.5,
+                    fontStyle: "italic", fontSize: 12.5,
                     color: J.plumMid, marginTop: 2,
                   }}>{c.one_line}</div>
                 </div>
                 <span aria-hidden="true" style={{
-                  fontFamily: "'Inter', system-ui, sans-serif", fontSize: 14,
+                  fontSize: 14,
                   color: J.espressoMid, fontWeight: 700,
                   transform: open ? "rotate(180deg)" : "rotate(0deg)",
                   transition: "transform 0.2s ease",
@@ -578,20 +576,20 @@ export default function JournalPlanDoc() {
               {open && (
                 <div style={{ padding: "0 18px 18px" }}>
                   <p style={{
-                    fontFamily: "'Inter', system-ui, sans-serif", fontSize: 13.5,
+                    fontSize: 13.5,
                     color: J.espresso, lineHeight: 1.55, margin: 0,
                   }}>{c.body}</p>
 
                   <div style={subEyebrow}>Why it&apos;s a moat</div>
                   <p style={{
-                    fontFamily: "'Inter', system-ui, sans-serif", fontSize: 12.5,
+                    fontSize: 12.5,
                     color: J.espressoMid, lineHeight: 1.55, margin: 0,
                   }}>{c.moat}</p>
 
                   <div style={subEyebrow}>Voice</div>
                   <blockquote style={{
                     margin: 0, padding: "10px 12px", background: J.cream, borderRadius: 8,
-                    fontFamily: "Cormorant Garamond, Georgia, serif", fontStyle: "italic", fontSize: 13,
+                    fontStyle: "italic", fontSize: 13,
                     color: J.plum, lineHeight: 1.5,
                   }}>{c.copy}</blockquote>
 
@@ -599,7 +597,7 @@ export default function JournalPlanDoc() {
                     display: "inline-block", marginTop: 12,
                     padding: "4px 10px", borderRadius: 9999,
                     background: c.color, color: J.cream,
-                    fontFamily: "'Inter', system-ui, sans-serif", fontSize: 10,
+                    fontSize: 10,
                     fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase",
                   }}>{c.quarter}</div>
                 </div>
@@ -630,18 +628,18 @@ export default function JournalPlanDoc() {
                 display: "flex", alignItems: "baseline", gap: 8,
               }}>
                 <span style={{
-                  fontFamily: "'Inter', system-ui, sans-serif", fontSize: 11,
+                  fontSize: 11,
                   fontWeight: 700, color: J.rose, letterSpacing: "0.10em",
                   textTransform: "uppercase", flexShrink: 0,
                 }}>{String(i + 1).padStart(2, "0")}</span>
                 <span style={{
-                  fontFamily: "'Fraunces', Georgia, serif", fontSize: 15,
+                  fontSize: 15,
                   fontWeight: 500, color: J.espresso, flex: 1,
                 }}>{r.name}</span>
                 <span style={{ color: J.espressoMid, fontSize: 12 }}>{open ? "▾" : "▸"}</span>
               </button>
               {open && (
-                <div style={{ marginTop: 10, fontFamily: "'Inter', system-ui, sans-serif", fontSize: 12.5, color: J.espresso, lineHeight: 1.5 }}>
+                <div style={{ marginTop: 10, fontSize: 12.5, color: J.espresso, lineHeight: 1.5 }}>
                   <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 10 }}>
                     <div style={{ background: J.cream, borderRadius: 8, padding: "8px 10px" }}>
                       <div style={{ ...eyebrow, fontSize: 9, color: J.gold }}>Demo A</div>
@@ -677,11 +675,11 @@ export default function JournalPlanDoc() {
           {EVIDENCE_BASE.map((e) => (
             <li key={e.source} style={{ display: "flex", flexDirection: "column", gap: 3 }}>
               <span style={{
-                fontFamily: "'Fraunces', Georgia, serif", fontSize: 14,
+                fontSize: 14,
                 fontWeight: 600, color: J.espresso,
               }}>{e.source}</span>
               <span style={{
-                fontFamily: "'Inter', system-ui, sans-serif", fontSize: 12.5,
+                fontSize: 12.5,
                 color: J.espressoMid, lineHeight: 1.55,
               }}>{e.line}</span>
             </li>
@@ -709,15 +707,15 @@ export default function JournalPlanDoc() {
             alignItems: "start",
           }}>
             <div style={{
-              fontFamily: "'Fraunces', Georgia, serif", fontSize: 14,
+              fontSize: 14,
               fontWeight: 600, color: J.espresso,
             }}>{c.app}</div>
             <div style={{
-              fontFamily: "'Inter', system-ui, sans-serif", fontSize: 12,
+              fontSize: 12,
               color: J.sage, lineHeight: 1.5,
             }}><strong>Borrow:</strong> {c.strength}</div>
             <div style={{
-              fontFamily: "'Inter', system-ui, sans-serif", fontSize: 12,
+              fontSize: 12,
               color: J.rose, lineHeight: 1.5,
             }}><strong>Gap:</strong> {c.gap}</div>
           </div>
@@ -738,11 +736,11 @@ export default function JournalPlanDoc() {
           }}>
             <div style={{ display: "flex", alignItems: "baseline", gap: 12, flexWrap: "wrap" }}>
               <div style={{
-                fontFamily: "'Fraunces', Georgia, serif", fontSize: 26,
+                fontSize: 26,
                 fontWeight: 500, color: r.color, fontStyle: "italic",
               }}>{r.title}</div>
               <div style={{
-                fontFamily: "'Inter', system-ui, sans-serif", fontSize: 11,
+                fontSize: 11,
                 color: J.espressoMid, letterSpacing: "0.04em",
                 flex: 1, minWidth: 0,
               }}>{r.subtitle}</div>
@@ -774,16 +772,16 @@ export default function JournalPlanDoc() {
             padding: "12px 14px",
           }}>
             <div style={{
-              fontFamily: "'Inter', system-ui, sans-serif", fontSize: 10,
+              fontSize: 10,
               fontWeight: 700, color: J.rose, letterSpacing: "0.14em",
               textTransform: "uppercase",
             }}>Risk {String(i + 1).padStart(2, "0")}</div>
             <div style={{
-              fontFamily: "'Fraunces', Georgia, serif", fontSize: 15,
+              fontSize: 15,
               fontWeight: 500, color: J.espresso, marginTop: 3,
             }}>{r.name}</div>
             <div style={{
-              fontFamily: "'Inter', system-ui, sans-serif", fontSize: 12.5,
+              fontSize: 12.5,
               color: J.espressoMid, marginTop: 4, lineHeight: 1.55,
             }}>{r.body}</div>
           </article>
@@ -803,7 +801,7 @@ export default function JournalPlanDoc() {
         <ul style={{ listStyle: "none", margin: 0, padding: 0, display: "flex", flexDirection: "column", gap: 12 }}>
           {HERO_QUOTES.map((q, i) => (
             <li key={i} style={{
-              fontFamily: "Cormorant Garamond, Georgia, serif", fontStyle: "italic", fontSize: 14.5,
+              fontStyle: "italic", fontSize: 14.5,
               color: J.cream, lineHeight: 1.5, opacity: 0.95,
             }}>&ldquo;{q}&rdquo;</li>
           ))}
@@ -813,7 +811,7 @@ export default function JournalPlanDoc() {
       {/* ============ Footer ============ */}
       <footer style={{
         marginTop: 36, paddingTop: 20, borderTop: `1px solid ${J.rule}`,
-        fontFamily: "'Inter', system-ui, sans-serif", fontSize: 11,
+        fontSize: 11,
         color: J.espressoMid, lineHeight: 1.55, textAlign: "center",
       }}>
         Synthesis inputs: <code>femwell_journal_demo.html</code> · <code>femwell_journal_community_v2.html</code> · <code>femwell_journal_sharing_concepts.html</code> · <code>femwell_journal_sharing_deep.html</code> · live <code>src/pages/Journal.jsx</code> + <code>JournalEntries</code> · 7 external research threads.

@@ -74,7 +74,7 @@ export default function PartnerSettings() {
   };
 
   const card = { backgroundColor: "var(--surface)", border: "1px solid var(--border)", borderRadius: 20, padding: 20, marginBottom: 12, boxShadow: "var(--shadow-sm)" };
-  const sLabel = { fontSize: "0.6rem", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.12em", color: "var(--mauve)", fontFamily: "'Inter', sans-serif" };
+  const sLabel = { fontSize: "0.6rem", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.12em", color: "var(--mauve)", };
 
   if (loading) return (
     <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: "var(--ivory)" }}>
@@ -91,8 +91,8 @@ export default function PartnerSettings() {
             <ArrowLeft className="w-4 h-4" style={{ color: "var(--plum)" }} />
           </button>
           <div>
-            <h1 style={{ fontSize: 22, fontWeight: 700, color: "var(--plum)", fontFamily: "'Fraunces', serif" }}>Partner Access</h1>
-            <p style={{ fontSize: 12, color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>Share a read-only view with someone you trust</p>
+            <h1 style={{ fontSize: 22, fontWeight: 700, color: "var(--plum)", }}>Partner Access</h1>
+            <p style={{ fontSize: 12, color: "var(--mauve)", }}>Share a read-only view with someone you trust</p>
           </div>
         </div>
 
@@ -101,8 +101,8 @@ export default function PartnerSettings() {
           <div className="flex items-start gap-3">
             <Users className="w-5 h-5 flex-shrink-0 mt-0.5" style={{ color: "var(--rose-dust)" }} />
             <div>
-              <p style={{ fontSize: 14, fontWeight: 600, color: "var(--plum)", fontFamily: "'Inter', sans-serif", marginBottom: 4 }}>What partners can see</p>
-              <p style={{ fontSize: 13, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", lineHeight: 1.6 }}>
+              <p style={{ fontSize: 14, fontWeight: 600, color: "var(--plum)", marginBottom: 4 }}>What partners can see</p>
+              <p style={{ fontSize: 13, color: "var(--mauve)", lineHeight: 1.6 }}>
                 Only what you choose. Never symptoms, journal entries, or sexual health data — regardless of settings.
               </p>
             </div>
@@ -114,7 +114,7 @@ export default function PartnerSettings() {
           <button
             onClick={() => setShowForm(true)}
             className="w-full flex items-center justify-center gap-2 py-3 rounded-2xl mb-4"
-            style={{ backgroundColor: "var(--plum)", color: "white", fontSize: 14, fontWeight: 600, fontFamily: "'Inter', sans-serif", border: "none", cursor: "pointer" }}
+            style={{ backgroundColor: "var(--plum)", color: "white", fontSize: 14, fontWeight: 600, border: "none", cursor: "pointer" }}
           >
             <Plus className="w-4 h-4" /> Create partner link
           </button>
@@ -125,7 +125,7 @@ export default function PartnerSettings() {
               value={partnerEmail}
               onChange={e => setPartnerEmail(e.target.value)}
               placeholder="Partner's email (for your reference)"
-              style={{ width: "100%", border: "1.5px solid var(--border)", borderRadius: 12, padding: "10px 14px", fontSize: 14, fontFamily: "'Inter', sans-serif", color: "var(--plum)", background: "var(--ivory)", outline: "none", marginBottom: 16, boxSizing: "border-box" }}
+              style={{ width: "100%", border: "1.5px solid var(--border)", borderRadius: 12, padding: "10px 14px", fontSize: 14, color: "var(--plum)", background: "var(--ivory)", outline: "none", marginBottom: 16, boxSizing: "border-box" }}
             />
             <p style={{ ...sLabel, marginBottom: 10 }}>What to share</p>
             <div className="space-y-2 mb-5">
@@ -143,15 +143,15 @@ export default function PartnerSettings() {
                     {selectedPerms.includes(p.key) && <Check className="w-3 h-3" style={{ color: 'white' }} />}
                   </div>
                   <div>
-                    <p style={{ fontSize: 13, fontWeight: 600, color: selectedPerms.includes(p.key) ? 'white' : 'var(--plum)', fontFamily: "'Inter', sans-serif" }}>{p.label}</p>
-                    <p style={{ fontSize: 11, color: selectedPerms.includes(p.key) ? 'rgba(255,255,255,0.7)' : 'var(--mauve)', fontFamily: "'Inter', sans-serif" }}>{p.desc}</p>
+                    <p style={{ fontSize: 13, fontWeight: 600, color: selectedPerms.includes(p.key) ? 'white' : 'var(--plum)', }}>{p.label}</p>
+                    <p style={{ fontSize: 11, color: selectedPerms.includes(p.key) ? 'rgba(255,255,255,0.7)' : 'var(--mauve)', }}>{p.desc}</p>
                   </div>
                 </button>
               ))}
             </div>
             <div className="flex gap-2">
-              <button onClick={() => setShowForm(false)} style={{ flex: 1, padding: "11px", borderRadius: 9999, border: "1.5px solid var(--border)", background: "var(--surface)", fontSize: 13, fontWeight: 600, color: "var(--plum)", fontFamily: "'Inter', sans-serif", cursor: "pointer" }}>Cancel</button>
-              <button onClick={createAccess} disabled={creating || !partnerEmail.trim()} style={{ flex: 1, padding: "11px", borderRadius: 9999, border: "none", backgroundColor: "var(--plum)", fontSize: 13, fontWeight: 600, color: "white", fontFamily: "'Inter', sans-serif", cursor: creating ? "default" : "pointer", opacity: creating || !partnerEmail.trim() ? 0.6 : 1 }}>
+              <button onClick={() => setShowForm(false)} style={{ flex: 1, padding: "11px", borderRadius: 9999, border: "1.5px solid var(--border)", background: "var(--surface)", fontSize: 13, fontWeight: 600, color: "var(--plum)", cursor: "pointer" }}>Cancel</button>
+              <button onClick={createAccess} disabled={creating || !partnerEmail.trim()} style={{ flex: 1, padding: "11px", borderRadius: 9999, border: "none", backgroundColor: "var(--plum)", fontSize: 13, fontWeight: 600, color: "white", cursor: creating ? "default" : "pointer", opacity: creating || !partnerEmail.trim() ? 0.6 : 1 }}>
                 {creating ? "Creating…" : "Create link"}
               </button>
             </div>
@@ -166,31 +166,31 @@ export default function PartnerSettings() {
               <div key={access.id} style={{ ...card, opacity: access.is_active ? 1 : 0.5 }}>
                 <div className="flex items-start justify-between gap-3">
                   <div className="flex-1 min-w-0">
-                    <p style={{ fontSize: 14, fontWeight: 600, color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>
+                    <p style={{ fontSize: 14, fontWeight: 600, color: "var(--plum)", }}>
                       {access.partner_email || "Unnamed partner"}
                     </p>
                     <div className="flex flex-wrap gap-1 mt-1.5">
                       {(access.permissions || []).map(p => (
-                        <span key={p} style={{ fontSize: 11, fontWeight: 500, backgroundColor: "var(--ivory-dark)", color: "var(--mauve)", borderRadius: 9999, padding: "2px 8px", fontFamily: "'Inter', sans-serif" }}>{p.replace('_', ' ')}</span>
+                        <span key={p} style={{ fontSize: 11, fontWeight: 500, backgroundColor: "var(--ivory-dark)", color: "var(--mauve)", borderRadius: 9999, padding: "2px 8px", }}>{p.replace('_', ' ')}</span>
                       ))}
                     </div>
                     {access.last_accessed_at && (
-                      <p style={{ fontSize: 11, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", marginTop: 6 }}>Last viewed: {new Date(access.last_accessed_at).toLocaleDateString('en-GB')}</p>
+                      <p style={{ fontSize: 11, color: "var(--mauve)", marginTop: 6 }}>Last viewed: {new Date(access.last_accessed_at).toLocaleDateString('en-GB')}</p>
                     )}
                   </div>
-                  <span style={{ fontSize: 11, fontWeight: 600, padding: "3px 10px", borderRadius: 9999, backgroundColor: access.is_active ? "var(--sage-subtle)" : "var(--ivory-dark)", color: access.is_active ? "var(--sage)" : "var(--mauve)", fontFamily: "'Inter', sans-serif", flexShrink: 0 }}>
+                  <span style={{ fontSize: 11, fontWeight: 600, padding: "3px 10px", borderRadius: 9999, backgroundColor: access.is_active ? "var(--sage-subtle)" : "var(--ivory-dark)", color: access.is_active ? "var(--sage)" : "var(--mauve)", flexShrink: 0 }}>
                     {access.is_active ? "Active" : "Inactive"}
                   </span>
                 </div>
                 {access.is_active && (
                   <div className="flex gap-2 mt-4">
                     <button onClick={() => copyLink(access.access_token, access.id)} className="flex items-center gap-1.5 px-4 py-2 rounded-full text-xs font-semibold transition-all"
-                      style={{ backgroundColor: copiedId === access.id ? "var(--sage-subtle)" : "var(--ivory)", border: "1px solid var(--border)", color: copiedId === access.id ? "var(--sage)" : "var(--plum)", fontFamily: "'Inter', sans-serif" }}>
+                      style={{ backgroundColor: copiedId === access.id ? "var(--sage-subtle)" : "var(--ivory)", border: "1px solid var(--border)", color: copiedId === access.id ? "var(--sage)" : "var(--plum)", }}>
                       {copiedId === access.id ? <Check className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
                       {copiedId === access.id ? "Copied!" : "Copy link"}
                     </button>
                     <button onClick={() => deactivate(access.id)} className="flex items-center gap-1.5 px-4 py-2 rounded-full text-xs font-semibold"
-                      style={{ backgroundColor: "#FFF8F8", border: "1px solid #FCDCDC", color: "#D94F4F", fontFamily: "'Inter', sans-serif" }}>
+                      style={{ backgroundColor: "#FFF8F8", border: "1px solid #FCDCDC", color: "#D94F4F", }}>
                       <Trash2 className="w-3 h-3" /> Revoke
                     </button>
                   </div>
@@ -203,8 +203,8 @@ export default function PartnerSettings() {
         {accesses.length === 0 && !showForm && (
           <div style={{ textAlign: "center", padding: "40px 20px" }}>
             <span style={{ fontSize: 40 }}>💜</span>
-            <p style={{ fontSize: 15, fontWeight: 600, color: "var(--plum)", fontFamily: "'Fraunces', serif", marginTop: 12, marginBottom: 6 }}>No partner links yet</p>
-            <p style={{ fontSize: 13, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", lineHeight: 1.6 }}>Share a read-only view with a partner, family member, or friend who supports you.</p>
+            <p style={{ fontSize: 15, fontWeight: 600, color: "var(--plum)", marginTop: 12, marginBottom: 6 }}>No partner links yet</p>
+            <p style={{ fontSize: 13, color: "var(--mauve)", lineHeight: 1.6 }}>Share a read-only view with a partner, family member, or friend who supports you.</p>
           </div>
         )}
       </div>

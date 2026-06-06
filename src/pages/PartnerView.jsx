@@ -37,8 +37,8 @@ export default function PartnerView() {
   if (error) return (
     <div className="min-h-screen flex flex-col items-center justify-center px-6 text-center" style={{ backgroundColor: "var(--ivory)" }}>
       <span style={{ fontSize: 48 }}>💜</span>
-      <p style={{ fontSize: 18, fontWeight: 700, color: "var(--plum)", fontFamily: "'Fraunces', serif", marginTop: 16, marginBottom: 8 }}>Link unavailable</p>
-      <p style={{ fontSize: 14, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", lineHeight: 1.6 }}>{error}</p>
+      <p style={{ fontSize: 18, fontWeight: 700, color: "var(--plum)", marginTop: 16, marginBottom: 8 }}>Link unavailable</p>
+      <p style={{ fontSize: 14, color: "var(--mauve)", lineHeight: 1.6 }}>{error}</p>
     </div>
   );
 
@@ -51,9 +51,9 @@ export default function PartnerView() {
         <div className="pt-12 pb-6 text-center">
           <div className="flex items-center justify-center gap-2 mb-3">
             <Heart className="w-5 h-5" style={{ color: "var(--rose-dust)" }} />
-            <span style={{ fontSize: 14, fontWeight: 600, color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>FemWell Partner View</span>
+            <span style={{ fontSize: 14, fontWeight: 600, color: "var(--mauve)", }}>FemWell Partner View</span>
           </div>
-          <p style={{ fontSize: 12, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", lineHeight: 1.5 }}>A gentle window into how she's doing today.</p>
+          <p style={{ fontSize: 12, color: "var(--mauve)", lineHeight: 1.5 }}>A gentle window into how she's doing today.</p>
         </div>
 
         {/* Phase card */}
@@ -63,11 +63,11 @@ export default function PartnerView() {
             <div className="flex items-center gap-2 mb-3">
               <span style={{ fontSize: 28 }}>{data.phase_info.emoji}</span>
               <div>
-                <p style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.12em", color: "rgba(255,255,255,0.7)", fontFamily: "'Inter', sans-serif" }}>Right now</p>
-                <p style={{ fontSize: 18, fontWeight: 700, color: "white", fontFamily: "'Fraunces', serif" }}>{data.phase_info.label}</p>
+                <p style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.12em", color: "rgba(255,255,255,0.7)", }}>Right now</p>
+                <p style={{ fontSize: 18, fontWeight: 700, color: "white", }}>{data.phase_info.label}</p>
               </div>
             </div>
-            <p style={{ fontSize: 14, color: "rgba(255,255,255,0.9)", fontFamily: "'Inter', sans-serif", lineHeight: 1.7 }}>
+            <p style={{ fontSize: 14, color: "rgba(255,255,255,0.9)", lineHeight: 1.7 }}>
               {data.phase_info.description}
             </p>
           </div>
@@ -79,13 +79,13 @@ export default function PartnerView() {
             {data.mood_emoji && (
               <div style={{ flex: 1, textAlign: "center" }}>
                 <p style={{ fontSize: 36 }}>{data.mood_emoji}</p>
-                <p style={{ fontSize: 12, fontWeight: 600, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", marginTop: 6 }}>Mood today</p>
+                <p style={{ fontSize: 12, fontWeight: 600, color: "var(--mauve)", marginTop: 6 }}>Mood today</p>
               </div>
             )}
             {data.energy_emoji && (
               <div style={{ flex: 1, textAlign: "center" }}>
                 <p style={{ fontSize: 36 }}>{data.energy_emoji}</p>
-                <p style={{ fontSize: 12, fontWeight: 600, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", marginTop: 6 }}>Energy today</p>
+                <p style={{ fontSize: 12, fontWeight: 600, color: "var(--mauve)", marginTop: 6 }}>Energy today</p>
               </div>
             )}
           </div>
@@ -94,9 +94,9 @@ export default function PartnerView() {
         {/* Active program */}
         {data.active_program && (
           <div className="rounded-[24px] p-5 mb-4" style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)", boxShadow: "var(--shadow-sm)" }}>
-            <p style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.12em", color: "var(--mauve)", fontFamily: "'Inter', sans-serif", marginBottom: 8 }}>Active program</p>
-            <p style={{ fontSize: 16, fontWeight: 700, color: "var(--plum)", fontFamily: "'Fraunces', serif", marginBottom: 4 }}>{data.active_program.title}</p>
-            <p style={{ fontSize: 13, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", marginBottom: 12 }}>
+            <p style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.12em", color: "var(--mauve)", marginBottom: 8 }}>Active program</p>
+            <p style={{ fontSize: 16, fontWeight: 700, color: "var(--plum)", marginBottom: 4 }}>{data.active_program.title}</p>
+            <p style={{ fontSize: 13, color: "var(--mauve)", marginBottom: 12 }}>
               Day {data.active_program.current_day} of {data.active_program.duration_days}
               {data.active_program.streak > 0 ? ` · 🔥 ${data.active_program.streak}-day streak` : ""}
             </p>
@@ -109,13 +109,13 @@ export default function PartnerView() {
         {/* Weekly message */}
         {data.weekly_message && (
           <div className="rounded-[24px] p-5 mb-4" style={{ backgroundColor: "var(--rose-dust-subtle)", border: "1px solid var(--rose-dust-light)" }}>
-            <p style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.12em", color: "var(--rose-dust)", fontFamily: "'Inter', sans-serif", marginBottom: 8 }}>This week</p>
-            <p style={{ fontSize: 14, color: "var(--plum)", fontFamily: "'Inter', sans-serif", lineHeight: 1.7 }}>{data.weekly_message}</p>
+            <p style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.12em", color: "var(--rose-dust)", marginBottom: 8 }}>This week</p>
+            <p style={{ fontSize: 14, color: "var(--plum)", lineHeight: 1.7 }}>{data.weekly_message}</p>
           </div>
         )}
 
         {/* Footer */}
-        <p style={{ fontSize: 11, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", textAlign: "center", lineHeight: 1.6, paddingTop: 8 }}>
+        <p style={{ fontSize: 11, color: "var(--mauve)", textAlign: "center", lineHeight: 1.6, paddingTop: 8 }}>
           Shared via FemWell. Symptom details, journal entries, and sensitive data are never shown here.
         </p>
       </div>

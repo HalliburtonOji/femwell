@@ -62,12 +62,12 @@ export default function ConsentSettingsCard({ user, profile, onChange }) {
     >
       <header style={{ marginBottom: 12 }}>
         <h2 style={{
-          fontFamily: "'Fraunces', serif", fontSize: 18, fontWeight: 700,
+          fontSize: 18, fontWeight: 700,
           color: "var(--plum)", margin: 0,
         }}>What you're sharing with FemWell</h2>
         <p style={{
           fontSize: 12, color: "var(--mauve)",
-          fontFamily: "'Inter', sans-serif", margin: "4px 0 0", lineHeight: 1.5,
+          margin: "4px 0 0", lineHeight: 1.5,
         }}>
           Each toggle controls a specific category. You can change these at any
           time, and any data type you turn off stops being stored or processed.
@@ -89,8 +89,7 @@ export default function ConsentSettingsCard({ user, profile, onChange }) {
                 <div style={{
                   display: "flex", alignItems: "center", gap: 6,
                   fontSize: 13, fontWeight: 600, color: "var(--plum)",
-                  fontFamily: "'Inter', sans-serif",
-                }}>
+                  }}>
                   {f.label}
                   <a
                     href="/privacy"
@@ -103,7 +102,7 @@ export default function ConsentSettingsCard({ user, profile, onChange }) {
                 </div>
                 <p style={{
                   fontSize: 12, color: "var(--mauve)",
-                  fontFamily: "'Inter', sans-serif", margin: "2px 0 0", lineHeight: 1.4,
+                  margin: "2px 0 0", lineHeight: 1.4,
                 }}>{f.description}</p>
               </div>
               <button
@@ -142,8 +141,7 @@ export default function ConsentSettingsCard({ user, profile, onChange }) {
       <footer style={{ display: "flex", alignItems: "center", justifyContent: "flex-end", gap: 10, marginTop: 14 }}>
         {saved && (
           <span style={{
-            fontSize: 12, color: "#059669", fontFamily: "'Inter', sans-serif",
-            display: "inline-flex", alignItems: "center", gap: 4,
+            fontSize: 12, color: "#059669", display: "inline-flex", alignItems: "center", gap: 4,
           }}>
             <Check className="w-3.5 h-3.5" /> Saved
           </span>
@@ -156,7 +154,7 @@ export default function ConsentSettingsCard({ user, profile, onChange }) {
             padding: "8px 16px", borderRadius: 9999,
             background: "#E11D48", color: "white",
             border: "none", cursor: "pointer",
-            fontFamily: "'Inter', sans-serif", fontSize: 13, fontWeight: 700,
+            fontSize: 13, fontWeight: 700,
             opacity: saving ? 0.6 : 1,
           }}
         >{saving ? "Saving…" : "Save consents"}</button>

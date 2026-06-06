@@ -133,7 +133,6 @@ export default class JessErrorBoundary extends React.Component {
           border: `1px dashed ${C.border}`,
           borderRadius: 14,
           color: C.muted,
-          fontFamily: "'Inter', sans-serif",
           fontSize: 12.5,
           textAlign: "center",
         }}>
@@ -149,7 +148,7 @@ export default class JessErrorBoundary extends React.Component {
                     background: "transparent", border: "none",
                     color: C.espresso, cursor: "pointer", padding: 0,
                     fontWeight: 700, textDecoration: "underline",
-                    fontFamily: "'Inter', sans-serif", fontSize: 12.5,
+                    fontSize: 12.5,
                   }}
                 >Try again</button>
               </span>
@@ -181,11 +180,9 @@ export default class JessErrorBoundary extends React.Component {
         margin: 16,
         display: "flex", flexDirection: "column",
         alignItems: "center", justifyContent: "center", gap: 14,
-        fontFamily: "'Inter', sans-serif",
-      }}>
+        }}>
         <p style={{
           margin: 0,
-          fontFamily: "'Fraunces', Georgia, serif",
           fontSize: 22, fontWeight: 600, color: C.espresso,
           textAlign: "center", letterSpacing: "-0.01em",
         }}>{looped ? "Jess will be back shortly." : "Jess is taking a moment."}</p>
@@ -198,7 +195,7 @@ export default class JessErrorBoundary extends React.Component {
               background: C.gold, color: C.espresso, border: "none",
               borderRadius: 9999, cursor: "pointer",
               display: "inline-flex", alignItems: "center", gap: 6,
-              fontFamily: "'Inter', sans-serif", fontSize: 13.5, fontWeight: 700,
+              fontSize: 13.5, fontWeight: 700,
             }}
           ><RotateCcw size={14} /> Tap to retry</button>
         )}
@@ -229,7 +226,7 @@ export default class JessErrorBoundary extends React.Component {
                 marginTop: 8, padding: "5px 10px",
                 background: C.cream, border: `1px solid ${C.border}`,
                 borderRadius: 9999, color: C.muted, cursor: "pointer",
-                fontFamily: "'Inter', sans-serif", fontSize: 10.5, fontWeight: 700,
+                fontSize: 10.5, fontWeight: 700,
               }}
             >Copy error</button>
           </div>

@@ -50,8 +50,7 @@ function getWeekData(week) {
 
 const sLabel = {
   fontSize: "0.6rem", fontWeight: 600, textTransform: "uppercase",
-  letterSpacing: "0.12em", color: "var(--mauve)", fontFamily: "'Inter', sans-serif",
-};
+  letterSpacing: "0.12em", color: "var(--mauve)", };
 
 export default function PregnancyWeekCard({ profile }) {
   let week = null;
@@ -66,7 +65,7 @@ export default function PregnancyWeekCard({ profile }) {
     return (
       <div style={{ backgroundColor: "var(--rose-dust-subtle)", border: "1px solid var(--rose-dust-light)", borderRadius: 20, padding: 18, marginBottom: 14 }}>
         <p style={sLabel}>Your pregnancy</p>
-        <p style={{ fontSize: 13, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", marginTop: 6 }}>Set your pregnancy start date in your profile to see week-by-week tracking.</p>
+        <p style={{ fontSize: 13, color: "var(--mauve)", marginTop: 6 }}>Set your pregnancy start date in your profile to see week-by-week tracking.</p>
       </div>
     );
   }
@@ -78,17 +77,17 @@ export default function PregnancyWeekCard({ profile }) {
     <div style={{ background: "linear-gradient(135deg, var(--rose-dust-subtle) 0%, var(--mauve-subtle) 100%)", border: "1px solid var(--rose-dust-light)", borderRadius: 20, padding: 20, marginBottom: 14 }}>
       <p style={sLabel}>Your pregnancy</p>
       <div style={{ display: "flex", alignItems: "flex-end", gap: 8, marginTop: 8, marginBottom: 4 }}>
-        <p style={{ fontFamily: "'Fraunces', serif", fontSize: 32, fontWeight: 700, color: "var(--plum)", lineHeight: 1 }}>Week {week}</p>
-        <p style={{ fontSize: 14, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", marginBottom: 4 }}>of 40</p>
+        <p style={{ fontSize: 32, fontWeight: 700, color: "var(--plum)", lineHeight: 1 }}>Week {week}</p>
+        <p style={{ fontSize: 14, color: "var(--mauve)", marginBottom: 4 }}>of 40</p>
       </div>
       <div style={{ height: 6, backgroundColor: "rgba(196,132,154,0.2)", borderRadius: 3, overflow: "hidden", marginBottom: 14 }}>
         <div style={{ height: "100%", width: `${pct}%`, backgroundColor: "var(--rose-dust)", borderRadius: 3 }} />
       </div>
       <div style={{ backgroundColor: "rgba(255,255,255,0.6)", borderRadius: 14, padding: "12px 14px" }}>
-        <p style={{ fontSize: 12, fontWeight: 700, color: "var(--rose-dust)", fontFamily: "'Inter', sans-serif", marginBottom: 4 }}>
+        <p style={{ fontSize: 12, fontWeight: 700, color: "var(--rose-dust)", marginBottom: 4 }}>
           👶 About the size of {weekInfo.size}
         </p>
-        <p style={{ fontSize: 13, color: "var(--plum)", fontFamily: "'Inter', sans-serif", lineHeight: 1.6, margin: 0 }}>
+        <p style={{ fontSize: 13, color: "var(--plum)", lineHeight: 1.6, margin: 0 }}>
           {weekInfo.development}
         </p>
       </div>

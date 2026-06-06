@@ -205,7 +205,6 @@ export default function PodcastListenSheet({ item, source, onClose }) {
         <div style={{ marginBottom: 16, paddingRight: 32 }}>
           <p
             style={{
-              fontFamily: "'Inter', sans-serif",
               fontSize: 11,
               fontWeight: 600,
               textTransform: 'uppercase',
@@ -219,7 +218,6 @@ export default function PodcastListenSheet({ item, source, onClose }) {
           </p>
           <h3
             style={{
-              fontFamily: "'Fraunces', serif",
               fontSize: 20,
               fontWeight: 500,
               color: 'var(--plum-deep, #2b1e16)',
@@ -261,7 +259,6 @@ export default function PodcastListenSheet({ item, source, onClose }) {
                   color: disabled ? 'var(--plum-mute, #8a7768)' : cfg.fg,
                   cursor: disabled ? 'not-allowed' : 'pointer',
                   textAlign: 'left',
-                  fontFamily: "'Inter', sans-serif",
                   minHeight: 56,
                   opacity: disabled ? 0.6 : 1,
                   transition: 'transform 0.1s, filter 0.1s',
@@ -304,7 +301,6 @@ export default function PodcastListenSheet({ item, source, onClose }) {
         {links.pocketCastsWeb && (
           <p
             style={{
-              fontFamily: "'Inter', sans-serif",
               fontSize: 11,
               color: 'var(--plum-mute, #8a7768)',
               textAlign: 'center',

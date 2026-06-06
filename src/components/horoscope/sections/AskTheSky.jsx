@@ -186,7 +186,6 @@ const askHeadStyle = {
   marginBottom: 12,
 };
 const askEyebrowStyle = {
-  fontFamily: "'Fraunces', serif",
   fontWeight: 400,
   fontSize: 22,
   color: "var(--cream, #FAF4EA)",
@@ -198,7 +197,6 @@ const askEmStyle = {
   color: "rgba(255,250,242,0.92)",
 };
 const askSubChipStyle = {
-  fontFamily: "'Inter', sans-serif",
   fontSize: 10,
   color: "rgba(247,239,225,0.55)",
 };
@@ -211,7 +209,6 @@ const askInputWrapStyle = {
 };
 const askInputStyle = {
   flex: "1 1 240px",
-  fontFamily: "'Fraunces', serif",
   fontStyle: "italic",
   fontSize: 14,
   lineHeight: "1.7em",
@@ -228,7 +225,6 @@ const askInputStyle = {
   outline: "none",
 };
 const askSendBtnStyle = {
-  fontFamily: "'Inter', sans-serif",
   fontWeight: 600,
   fontSize: 13,
   color: "var(--plum-deep, #2b1e16)",
@@ -247,7 +243,6 @@ const askChipsStyle = {
   marginBottom: 16,
 };
 const askChipStyle = {
-  fontFamily: "'Inter', sans-serif",
   fontSize: 12,
   fontWeight: 500,
   color: "rgba(247,239,225,0.84)",
@@ -259,7 +254,6 @@ const askChipStyle = {
   minHeight: 36,
 };
 const askErrorStyle = {
-  fontFamily: "'Inter', sans-serif",
   fontSize: 12,
   color: "#FFC4BC",
   background: "rgba(255,180,170,0.10)",
@@ -274,7 +268,6 @@ const askAnswerStyle = {
   padding: "16px 18px 18px",
 };
 const askAnswerLabelStyle = {
-  fontFamily: "'Inter', sans-serif",
   fontSize: 10,
   fontWeight: 700,
   letterSpacing: "0.16em",
@@ -283,7 +276,6 @@ const askAnswerLabelStyle = {
   margin: "0 0 8px",
 };
 const askAnswerBodyStyle = {
-  fontFamily: "'Fraunces', serif",
   fontSize: 15.5,
   lineHeight: 1.6,
   color: "rgba(247,239,225,0.96)",
@@ -292,7 +284,6 @@ const askAnswerBodyStyle = {
 };
 const askHistoryStyle = { marginTop: 16 };
 const askHistoryLabelStyle = {
-  fontFamily: "'Inter', sans-serif",
   fontSize: 10,
   fontWeight: 700,
   letterSpacing: "0.16em",
@@ -302,7 +293,6 @@ const askHistoryLabelStyle = {
 };
 const askHistoryRowStyle = { display: "flex", flexWrap: "wrap", gap: 6 };
 const askHistoryChipStyle = {
-  fontFamily: "'Inter', sans-serif",
   fontSize: 11,
   fontWeight: 500,
   color: "rgba(247,239,225,0.82)",

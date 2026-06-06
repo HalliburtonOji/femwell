@@ -344,7 +344,6 @@ const iconWrap = {
   flexShrink: 0,
 };
 const eyebrow = {
-  fontFamily: "'Inter', system-ui, sans-serif",
   fontSize: 9.5,
   fontWeight: 700,
   letterSpacing: "0.18em",
@@ -352,7 +351,6 @@ const eyebrow = {
   textTransform: "uppercase",
 };
 const titleStyle = {
-  fontFamily: "'Fraunces', Georgia, serif",
   fontSize: 17,
   fontWeight: 500,
   color: "#3A2C1A",
@@ -370,7 +368,6 @@ const editBtn = {
   color: "#F4EDDB",
   border: "none",
   borderRadius: 9999,
-  fontFamily: "'Inter', system-ui, sans-serif",
   fontSize: 11,
   fontWeight: 700,
   letterSpacing: "0.04em",
@@ -394,7 +391,6 @@ const detailRow = {
   borderBottom: "1px dotted rgba(58,44,26,0.10)",
 };
 const detailKey = {
-  fontFamily: "'Inter', system-ui, sans-serif",
   fontSize: 11,
   color: "#6B5840",
   fontWeight: 600,
@@ -402,13 +398,11 @@ const detailKey = {
   textTransform: "uppercase",
 };
 const detailValue = {
-  fontFamily: "'Fraunces', Georgia, serif",
   fontSize: 14,
   color: "#3A2C1A",
   fontWeight: 500,
 };
 const hintStyle = {
-  fontFamily: "Cormorant Garamond, Georgia, serif",
   fontStyle: "italic",
   fontSize: 12.5,
   color: "#4A2A3A",
@@ -426,7 +420,6 @@ const labelStyle = {
   gap: 4,
 };
 const fieldLabel = {
-  fontFamily: "'Inter', system-ui, sans-serif",
   fontSize: 10.5,
   color: "#6B5840",
   fontWeight: 700,
@@ -435,7 +428,6 @@ const fieldLabel = {
 };
 const inputStyle = {
   padding: "8px 10px",
-  fontFamily: "'Inter', system-ui, sans-serif",
   fontSize: 13,
   color: "#3A2C1A",
   background: "var(--surface)",
@@ -459,7 +451,6 @@ const cancelBtn = {
   color: "#6B5840",
   border: "1px solid rgba(58,44,26,0.15)",
   borderRadius: 9999,
-  fontFamily: "'Inter', system-ui, sans-serif",
   fontSize: 12,
   fontWeight: 600,
   cursor: "pointer",
@@ -473,7 +464,6 @@ const saveBtn = {
   color: "#F4EDDB",
   border: "none",
   borderRadius: 9999,
-  fontFamily: "'Inter', system-ui, sans-serif",
   fontSize: 12,
   fontWeight: 700,
   letterSpacing: "0.04em",

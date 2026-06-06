@@ -325,7 +325,6 @@ const headRow = {
   marginBottom: 12,
 };
 const eyebrow = {
-  fontFamily: "'Inter', sans-serif",
   fontSize: 10,
   fontWeight: 700,
   letterSpacing: "0.18em",
@@ -334,7 +333,6 @@ const eyebrow = {
   margin: 0,
 };
 const title = {
-  fontFamily: "'Fraunces', Georgia, serif",
   fontSize: 17,
   fontWeight: 500,
   lineHeight: 1.22,
@@ -353,7 +351,6 @@ const streakBadge = {
   flexShrink: 0,
 };
 const rowNote = {
-  fontFamily: "'Inter', sans-serif",
   fontSize: 10.5,
   color: "#9B8B7A",
   fontStyle: "italic",
@@ -361,14 +358,12 @@ const rowNote = {
   marginTop: 2,
 };
 const streakNum = {
-  fontFamily: "'Fraunces', Georgia, serif",
   fontSize: 20,
   fontWeight: 600,
   color: "#3A2C1A",
   lineHeight: 1.1,
 };
 const streakLabel = {
-  fontFamily: "'Inter', sans-serif",
   fontSize: 9,
   fontWeight: 600,
   color: "#C48A8C",
@@ -411,20 +406,17 @@ const rowLabel = {
   flex: 1,
 };
 const rowName = {
-  fontFamily: "'Inter', sans-serif",
   fontSize: 13,
   fontWeight: 600,
   lineHeight: 1.2,
   transition: "color 120ms",
 };
 const rowDose = {
-  fontFamily: "'Inter', sans-serif",
   fontSize: 11,
   color: "#6B5840",
   lineHeight: 1.2,
 };
 const summary = {
-  fontFamily: "'Inter', sans-serif",
   fontSize: 11.5,
   color: "#6B5840",
   fontStyle: "italic",
@@ -450,7 +442,6 @@ const tabBtn = {
   padding: "5px 12px",
   borderRadius: 9999,
   border: "1px solid",
-  fontFamily: "'Inter', sans-serif",
   fontSize: 11.5,
   fontWeight: 700,
   cursor: "pointer",
@@ -475,7 +466,6 @@ const gridDot = {
   background: "transparent",
 };
 const gridStat = {
-  fontFamily: "'Inter', sans-serif",
   fontSize: 11.5,
   color: "#9B8B7A",
   fontStyle: "italic",

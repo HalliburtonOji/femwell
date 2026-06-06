@@ -17,8 +17,7 @@ const card = {
 };
 const sLabel = {
   fontSize: "0.6rem", fontWeight: 600, textTransform: "uppercase",
-  letterSpacing: "0.12em", color: "var(--mauve)", fontFamily: "'Inter', sans-serif",
-};
+  letterSpacing: "0.12em", color: "var(--mauve)", };
 
 export default function Saved() {
   const [user, setUser] = useState(null);
@@ -71,7 +70,7 @@ export default function Saved() {
           <h1 className="fw-display">
             Saved
           </h1>
-          <p style={{ fontSize: "13px", color: "var(--mauve)", fontFamily: "'Inter', sans-serif", marginTop: "6px" }}>
+          <p style={{ fontSize: "13px", color: "var(--mauve)", marginTop: "6px" }}>
             Advice, lifestyle finds, sessions, and programs.
           </p>
         </div>
@@ -81,8 +80,7 @@ export default function Saved() {
             <button key={item.id} onClick={() => setTab(item.id)}
               style={{
                 borderRadius: "9999px", padding: "7px 16px",
-                fontSize: "12px", fontWeight: 600, fontFamily: "'Inter', sans-serif",
-                whiteSpace: "nowrap", cursor: "pointer",
+                fontSize: "12px", fontWeight: 600, whiteSpace: "nowrap", cursor: "pointer",
                 border: tab === item.id ? "none" : "1px solid var(--border)",
                 backgroundColor: tab === item.id ? "var(--plum)" : "var(--surface)",
                 color: tab === item.id ? "white" : "var(--mauve)"
@@ -102,8 +100,8 @@ export default function Saved() {
             }}>
               <Bookmark className="w-5 h-5" style={{ color: "var(--rose-dust)" }} />
             </div>
-            <p style={{ fontSize: "15px", fontWeight: 600, color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>Nothing saved here yet</p>
-            <p style={{ fontSize: "13px", color: "var(--mauve)", fontFamily: "'Inter', sans-serif", marginTop: "4px" }}>
+            <p style={{ fontSize: "15px", fontWeight: 600, color: "var(--plum)", }}>Nothing saved here yet</p>
+            <p style={{ fontSize: "13px", color: "var(--mauve)", marginTop: "4px" }}>
               {tab === "LIFESTYLE"
                 ? "📚 Nothing saved yet — tap the bookmark icon on any article to save it here."
                 : "When you save something around the app, it appears here."}

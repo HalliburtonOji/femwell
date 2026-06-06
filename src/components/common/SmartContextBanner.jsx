@@ -84,8 +84,8 @@ export default function SmartContextBanner({ profile, todayCheckin, currentPage 
       {visible.map(s => (
         <div key={s.text} style={{ backgroundColor: s.bg, border: `1px solid ${s.color}30`, borderRadius: 14, padding: "10px 12px 10px 14px", display: "flex", alignItems: "center", gap: 10 }}>
           <div style={{ flex: 1, minWidth: 0 }}>
-            <p style={{ fontSize: 12, color: "var(--plum)", lineHeight: 1.5, margin: 0, fontFamily: "'Inter', sans-serif" }}>{s.text}</p>
-            <a href={s.route} style={{ fontSize: 11, fontWeight: 700, color: s.color, fontFamily: "'Inter', sans-serif", textDecoration: "none", display: "inline-flex", alignItems: "center", gap: 2, marginTop: 2 }}>
+            <p style={{ fontSize: 12, color: "var(--plum)", lineHeight: 1.5, margin: 0, }}>{s.text}</p>
+            <a href={s.route} style={{ fontSize: 11, fontWeight: 700, color: s.color, textDecoration: "none", display: "inline-flex", alignItems: "center", gap: 2, marginTop: 2 }}>
               {s.action} <ChevronRight style={{ width: 10, height: 10 }} />
             </a>
           </div>

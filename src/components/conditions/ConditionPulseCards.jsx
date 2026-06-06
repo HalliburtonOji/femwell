@@ -13,8 +13,7 @@ const card = {
 };
 const sLabel = {
   fontSize: "0.6rem", fontWeight: 600, textTransform: "uppercase",
-  letterSpacing: "0.12em", color: "var(--mauve)", fontFamily: "'Inter', sans-serif",
-};
+  letterSpacing: "0.12em", color: "var(--mauve)", };
 
 // ── PCOS insights ─────────────────────────────────────────────────────────────
 function PCOSInsights({ userId, cycleEvents }) {
@@ -41,13 +40,13 @@ function PCOSInsights({ userId, cycleEvents }) {
     <div style={card}>
       <p style={{ ...sLabel, marginBottom: 10, color: "var(--rose-dust)" }}>PCOS cycle patterns</p>
       {cycleLengths.length >= 2 && (
-        <p style={{ fontSize: 13, color: "var(--plum)", fontFamily: "'Inter', sans-serif", lineHeight: 1.6, marginBottom: 8 }}>
+        <p style={{ fontSize: 13, color: "var(--plum)", lineHeight: 1.6, marginBottom: 8 }}>
           Your cycle range over logged history: {minLen} to {maxLen} days.
           {irregularCount > 0 ? ` ${irregularCount} irregular cycle${irregularCount > 1 ? "s" : ""} logged.` : " Cycles within standard range."}
         </p>
       )}
       {recentStarts.length < 3 && (
-        <p style={{ fontSize: 12, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", lineHeight: 1.55 }}>
+        <p style={{ fontSize: 12, color: "var(--mauve)", lineHeight: 1.55 }}>
           Irregular cycles are expected with PCOS. Keep logging period starts to see your personal pattern emerge.
         </p>
       )}
@@ -80,18 +79,18 @@ function PMDDChart({ userId, cycleEvents }) {
   return (
     <div style={card}>
       <p style={{ ...sLabel, marginBottom: 4, color: "var(--mauve)" }}>PMDD severity</p>
-      <p style={{ fontSize: 12, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", marginBottom: 14 }}>Last 3 months — daily severity score</p>
+      <p style={{ fontSize: 12, color: "var(--mauve)", marginBottom: 14 }}>Last 3 months — daily severity score</p>
       <ResponsiveContainer width="100%" height={160}>
         <LineChart data={scores} margin={{ top: 4, right: 4, left: -28, bottom: 0 }}>
           <CartesianGrid strokeDasharray="3 3" stroke="var(--border-subtle)" />
-          <XAxis dataKey="label" tick={{ fontSize: 9, fill: "var(--mauve)", fontFamily: "'Inter', sans-serif" }} interval="preserveStartEnd" />
-          <YAxis domain={[0, 10]} tick={{ fontSize: 9, fill: "var(--mauve)", fontFamily: "'Inter', sans-serif" }} />
+          <XAxis dataKey="label" tick={{ fontSize: 9, fill: "var(--mauve)", }} interval="preserveStartEnd" />
+          <YAxis domain={[0, 10]} tick={{ fontSize: 9, fill: "var(--mauve)", }} />
           <Tooltip contentStyle={{ borderRadius: 10, fontSize: 11, border: "1px solid var(--border)" }} formatter={(v) => [v, "Severity"]} />
           <ReferenceLine y={7} stroke="var(--rose-dust)" strokeDasharray="4 2" label={{ value: "7", fontSize: 9, fill: "var(--rose-dust)" }} />
           <Line type="monotone" dataKey="severity" stroke="var(--mauve)" strokeWidth={2} dot={{ r: 2, fill: "var(--mauve)" }} activeDot={{ r: 4 }} />
         </LineChart>
       </ResponsiveContainer>
-      <p style={{ fontSize: 11, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", marginTop: 8 }}>Dashed line at 7 — consider speaking with a specialist if scores regularly exceed this.</p>
+      <p style={{ fontSize: 11, color: "var(--mauve)", marginTop: 8 }}>Dashed line at 7 — consider speaking with a specialist if scores regularly exceed this.</p>
     </div>
   );
 }
@@ -117,8 +116,8 @@ function PerimenopauseScore({ userId }) {
   return (
     <div style={{ ...card, backgroundColor: "var(--ivory-dark)", borderColor: "var(--border-subtle)" }}>
       <p style={{ ...sLabel, marginBottom: 8 }}>Perimenopause index</p>
-      <p style={{ fontSize: 26, fontWeight: 700, color: "var(--plum)", fontFamily: "'Fraunces', serif" }}>{score} <span style={{ fontSize: 13, fontWeight: 400, color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>/ 10</span></p>
-      <p style={{ fontSize: 12, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", marginTop: 4 }}>Average symptom severity across last 30 days of logged perimenopausal symptoms.</p>
+      <p style={{ fontSize: 26, fontWeight: 700, color: "var(--plum)", }}>{score} <span style={{ fontSize: 13, fontWeight: 400, color: "var(--mauve)", }}>/ 10</span></p>
+      <p style={{ fontSize: 12, color: "var(--mauve)", marginTop: 4 }}>Average symptom severity across last 30 days of logged perimenopausal symptoms.</p>
     </div>
   );
 }
@@ -154,7 +153,7 @@ function EndoPainInsight({ userId, cycleEvents }) {
   return (
     <div style={card}>
       <p style={{ ...sLabel, marginBottom: 8, color: "var(--rose-dust)" }}>Endometriosis pain patterns</p>
-      <p style={{ fontSize: 13, color: "var(--plum)", fontFamily: "'Inter', sans-serif", lineHeight: 1.6 }}>
+      <p style={{ fontSize: 13, color: "var(--plum)", lineHeight: 1.6 }}>
         Your pain tends to be highest during your <strong>{insight.worst.phase}</strong> phase — logged across {insight.count} entries.
         {insight.cycles >= 2 && ` Based on ${insight.cycles} logged cycles.`}
       </p>
@@ -193,7 +192,7 @@ function FertilityPulseChart({ userId, profile }) {
   return (
     <div style={card}>
       <p style={{ ...sLabel, marginBottom: 4 }}>Basal body temperature</p>
-      <p style={{ fontSize: 12, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", marginBottom: 14 }}>3-month chart — degrees Celsius</p>
+      <p style={{ fontSize: 12, color: "var(--mauve)", marginBottom: 14 }}>3-month chart — degrees Celsius</p>
       <ResponsiveContainer width="100%" height={160}>
         <LineChart data={bbtData} margin={{ top: 4, right: 4, left: -20, bottom: 0 }}>
           <CartesianGrid strokeDasharray="3 3" stroke="var(--border-subtle)" />
@@ -212,7 +211,7 @@ function FertilityPulseChart({ userId, profile }) {
         </LineChart>
       </ResponsiveContainer>
       {fertileStart && fertileEnd && (
-        <p style={{ fontSize: 11, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", marginTop: 8 }}>
+        <p style={{ fontSize: 11, color: "var(--mauve)", marginTop: 8 }}>
           Predicted fertile window: {format(parseISO(fertileStart), "MMM d")} – {format(parseISO(fertileEnd), "MMM d")}
         </p>
       )}
@@ -255,24 +254,24 @@ function CyclePatternsCard({ userId, profile, cycleEvents }) {
       <div className="grid grid-cols-2 gap-3">
         {minLen && maxLen && (
           <div style={{ backgroundColor: "var(--ivory-dark)", borderRadius: 12, padding: "10px 14px" }}>
-            <p style={{ fontSize: 10, color: "var(--mauve)", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.1em", fontFamily: "'Inter', sans-serif" }}>Range (6 months)</p>
-            <p style={{ fontSize: 18, fontWeight: 700, color: "var(--plum)", fontFamily: "'Fraunces', serif", marginTop: 2 }}>{minLen}–{maxLen}d</p>
+            <p style={{ fontSize: 10, color: "var(--mauve)", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.1em", }}>Range (6 months)</p>
+            <p style={{ fontSize: 18, fontWeight: 700, color: "var(--plum)", marginTop: 2 }}>{minLen}–{maxLen}d</p>
           </div>
         )}
         {avgLen && (
           <div style={{ backgroundColor: "var(--ivory-dark)", borderRadius: 12, padding: "10px 14px" }}>
-            <p style={{ fontSize: 10, color: "var(--mauve)", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.1em", fontFamily: "'Inter', sans-serif" }}>Average</p>
-            <p style={{ fontSize: 18, fontWeight: 700, color: "var(--plum)", fontFamily: "'Fraunces', serif", marginTop: 2 }}>{avgLen}d</p>
+            <p style={{ fontSize: 10, color: "var(--mauve)", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.1em", }}>Average</p>
+            <p style={{ fontSize: 18, fontWeight: 700, color: "var(--plum)", marginTop: 2 }}>{avgLen}d</p>
           </div>
         )}
         {nextDateStr && (
           <div style={{ backgroundColor: "var(--rose-dust-subtle)", borderRadius: 12, padding: "10px 14px", gridColumn: "span 2" }}>
             <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between" }}>
               <div>
-                <p style={{ fontSize: 10, color: "var(--rose-dust)", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.1em", fontFamily: "'Inter', sans-serif" }}>Predicted next period</p>
-                <p style={{ fontSize: 16, fontWeight: 700, color: "var(--plum)", fontFamily: "'Inter', sans-serif", marginTop: 2 }}>{nextDateStr} <span style={{ fontSize: 11, color: "var(--mauve)" }}>(±2 days)</span></p>
+                <p style={{ fontSize: 10, color: "var(--rose-dust)", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.1em", }}>Predicted next period</p>
+                <p style={{ fontSize: 16, fontWeight: 700, color: "var(--plum)", marginTop: 2 }}>{nextDateStr} <span style={{ fontSize: 11, color: "var(--mauve)" }}>(±2 days)</span></p>
               </div>
-              <span style={{ fontSize: 10, fontWeight: 600, color: "var(--rose-dust)", backgroundColor: "rgba(196,132,154,0.15)", borderRadius: 9999, padding: "2px 8px", fontFamily: "'Inter', sans-serif", flexShrink: 0 }}>
+              <span style={{ fontSize: 10, fontWeight: 600, color: "var(--rose-dust)", backgroundColor: "rgba(196,132,154,0.15)", borderRadius: 9999, padding: "2px 8px", flexShrink: 0 }}>
                 {confidenceLabel}
               </span>
             </div>

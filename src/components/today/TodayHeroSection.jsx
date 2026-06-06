@@ -194,7 +194,7 @@ export default function TodayHeroSection({
               </button>
               <p
                 className="text-xs font-medium tracking-widest uppercase"
-                style={{ color: "var(--mauve)", fontFamily: "'Inter', sans-serif", letterSpacing: "0.12em" }}
+                style={{ color: "var(--mauve)", letterSpacing: "0.12em" }}
               >
                 {format(today, "EEEE, MMMM d")}
               </p>
@@ -223,7 +223,6 @@ export default function TodayHeroSection({
                 backgroundColor: phaseMeta?.subtle || "var(--rose-dust-subtle)",
                 color: phaseMeta?.accent || "var(--rose-dust)",
                 border: "1px solid var(--border)",
-                fontFamily: "'Cormorant Garamond', Georgia, serif",
                 fontSize: "1.2rem",
                 cursor: "pointer",
                 transition: "opacity 0.15s",
@@ -252,7 +251,7 @@ export default function TodayHeroSection({
               <div className="flex items-center gap-2 flex-wrap mb-1">
                 <p
                   className="text-xs font-semibold uppercase tracking-widest"
-                  style={{ color: phaseMeta.accent, fontFamily: "'Inter', sans-serif", letterSpacing: "0.1em" }}
+                  style={{ color: phaseMeta.accent, letterSpacing: "0.1em" }}
                 >
                   {phaseMeta.label} · Day {cycleInfo.day}
                 </p>
@@ -264,8 +263,7 @@ export default function TodayHeroSection({
                     border: `1px solid ${daysUntilPeriod <= 3 ? "var(--rose-dust-light)" : "var(--border)"}`,
                     borderRadius: 9999, padding: "2px 9px",
                     fontSize: 10, fontWeight: 700,
-                    fontFamily: "'Inter', sans-serif",
-                  }}>
+                    }}>
                     Period in {daysUntilPeriod}d
                   </span>
                 )}
@@ -273,14 +271,14 @@ export default function TodayHeroSection({
               {morningMsg && (
                 <p
                   className="leading-relaxed mb-1"
-                  style={{ fontSize: 16, color: "var(--plum)", fontFamily: "'Cormorant Garamond', Georgia, serif", fontStyle: "italic", fontWeight: 500 }}
+                  style={{ fontSize: 16, color: "var(--plum)", fontStyle: "italic", fontWeight: 500 }}
                 >
                   {morningMsg}
                 </p>
               )}
               <p
                 className="leading-relaxed"
-                style={{ fontSize: 14, color: "var(--mauve)", fontFamily: "'Cormorant Garamond', Georgia, serif" }}
+                style={{ fontSize: 14, color: "var(--mauve)", }}
               >
                 {phaseMeta.tip}
               </p>
@@ -301,14 +299,14 @@ export default function TodayHeroSection({
             <div className="flex items-center justify-between mb-3">
               <p
                 className="text-xs font-semibold uppercase tracking-widest"
-                style={{ color: "var(--mauve)", fontFamily: "'Inter', sans-serif", letterSpacing: "0.1em" }}
+                style={{ color: "var(--mauve)", letterSpacing: "0.1em" }}
               >
                 Today's check-in
               </p>
               <button
                 onClick={onOpenCheckin}
                 className="text-xs font-medium transition-opacity hover:opacity-70"
-                style={{ color: phaseMeta?.accent || "var(--rose-dust)", fontFamily: "'Inter', sans-serif" }}
+                style={{ color: phaseMeta?.accent || "var(--rose-dust)", }}
               >
                 Edit
               </button>
@@ -324,14 +322,14 @@ export default function TodayHeroSection({
                 <div key={m.label} className="text-center">
                   <p
                     className="text-xl font-semibold leading-none"
-                    style={{ color: "var(--plum)", fontFamily: "'Fraunces', serif" }}
+                    style={{ color: "var(--plum)", }}
                   >
                     {m.value ?? "—"}
                     <span className="text-xs font-normal" style={{ color: "var(--mauve)" }}>{m.unit}</span>
                   </p>
                   <p
                     className="text-[10px] mt-1 uppercase tracking-wider"
-                    style={{ color: "var(--mauve)", fontFamily: "'Inter', sans-serif", letterSpacing: "0.08em" }}
+                    style={{ color: "var(--mauve)", letterSpacing: "0.08em" }}
                   >
                     {m.label}
                   </p>
@@ -361,13 +359,13 @@ export default function TodayHeroSection({
             </div>
             <div className="flex-1">
               <p
-                style={{ fontSize: 16, fontWeight: 600, color: "var(--plum)", fontFamily: "'Cormorant Garamond', Georgia, serif" }}
+                style={{ fontSize: 16, fontWeight: 600, color: "var(--plum)", }}
               >
                 How are you today?
               </p>
               <p
                 className="mt-0.5"
-                style={{ fontSize: 13, color: "var(--mauve)", fontFamily: "'Cormorant Garamond', Georgia, serif" }}
+                style={{ fontSize: 13, color: "var(--mauve)", }}
               >
                 Log mood, energy, sleep and more
               </p>

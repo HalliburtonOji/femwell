@@ -436,11 +436,9 @@ const eyebrowStyle = {
   textTransform: "uppercase",
   letterSpacing: "0.18em",
   color: "var(--gold-deep, #A6862B)",
-  fontFamily: "'Inter', sans-serif",
   margin: "0 0 8px",
 };
 const headlineStyle = {
-  fontFamily: "'Fraunces', Georgia, serif",
   fontSize: 26,
   fontWeight: 500,
   lineHeight: 1.18,
@@ -449,7 +447,6 @@ const headlineStyle = {
   margin: "0 0 10px",
 };
 const bodyStyle = {
-  fontFamily: "'Inter', sans-serif",
   fontSize: 14,
   lineHeight: 1.55,
   color: "var(--plum-2, #6B4559)",
@@ -459,7 +456,6 @@ const attributionStyle = {
   display: "inline-flex",
   alignItems: "center",
   gap: 5,
-  fontFamily: "'Inter', sans-serif",
   fontSize: 11,
   fontWeight: 500,
   color: "var(--plum-mute, #8A7584)",

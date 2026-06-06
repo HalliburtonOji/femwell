@@ -264,13 +264,11 @@ const transitTipStyle = {
 const transitTipDotStyle = { width: 7, height: 7, borderRadius: "50%", flexShrink: 0 };
 const transitTipBodyStyle = { display: "flex", flexDirection: "column", gap: 1 };
 const transitTipPlanetStyle = {
-  fontFamily: "'Fraunces', serif",
   fontSize: 12,
   color: "rgba(245,230,211,0.92)",
   fontWeight: 500,
 };
 const transitTipDateStyle = {
-  fontFamily: "'Inter', sans-serif",
   fontSize: 9,
   color: "rgba(245,230,211,0.55)",
   letterSpacing: "0.04em",
@@ -382,7 +380,6 @@ const sectionHeadStyle = {
   gap: 8,
 };
 const sectionTitleStyle = {
-  fontFamily: "'Fraunces', serif",
   fontWeight: 400,
   fontSize: 22,
   // H2-fix2: cream-on-night — sits inside Plum Night SectionWrap.
@@ -390,7 +387,6 @@ const sectionTitleStyle = {
   margin: 0,
 };
 const sectionLinkStyle = {
-  fontFamily: "'Inter', sans-serif",
   fontSize: 12,
   fontWeight: 500,
   // H2-fix2: muted cream on night.
@@ -438,7 +434,6 @@ const diaryMonthRowStyle = {
   marginBottom: 14,
 };
 const diaryMonthCellStyle = {
-  fontFamily: "'Inter', sans-serif",
   fontSize: 8,
   fontWeight: 600,
   letterSpacing: "0.02em",
@@ -455,7 +450,6 @@ const rightNowCardStyle = {
   padding: "12px 14px",
 };
 const rightNowEyeStyle = {
-  fontFamily: "'Inter', sans-serif",
   fontSize: 10,
   fontWeight: 700,
   letterSpacing: "0.16em",
@@ -464,7 +458,6 @@ const rightNowEyeStyle = {
   margin: "0 0 6px",
 };
 const rightNowTextStyle = {
-  fontFamily: "'Fraunces', serif",
   fontSize: 14.5,
   lineHeight: 1.6,
   color: "var(--plum-deep, #2b1e16)",
@@ -479,7 +472,6 @@ const vocPipStyle = {
   padding: "6px 12px",
   border: "1px dashed var(--plum-mute, rgba(107,74,86,0.45))",
   borderRadius: 9999,
-  fontFamily: "'Inter', sans-serif",
   fontSize: 11,
   fontWeight: 500,
   color: "var(--plum-mute, #6b4a56)",

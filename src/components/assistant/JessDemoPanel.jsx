@@ -601,7 +601,6 @@ function MhraNote({ style = {} }) {
       fontSize: 10, color: C.muted, fontStyle: "italic",
       margin: "4px 0 0", padding: "0 2px",
       maxWidth: "86%", lineHeight: 1.5,
-      fontFamily: "'Inter', system-ui, sans-serif",
       ...style,
     }}>Not medical advice. Always consult a healthcare professional.</p>
   );
@@ -2269,15 +2268,13 @@ function JessDemoPanelInner() {
         <div style={{ flex: 1, minWidth: 0 }}>
           <h1 style={{
             margin: 0,
-            fontFamily: "'Fraunces', Georgia, serif",
             fontSize: 22, fontWeight: 600,
             color: C.espresso, letterSpacing: "-0.01em",
           }}>{assistantName}</h1>
           <div style={{
             display: "inline-flex", alignItems: "center", gap: 6,
             marginTop: 2, fontSize: 12,
-            color: C.mutedText, fontFamily: "'Inter', sans-serif",
-          }}>
+            color: C.mutedText, }}>
             <span aria-hidden style={{ width: 6, height: 6, borderRadius: 9999, background: shell.accent }} />
             {/* Sprint 10 follow-on — the persistent header subtitle was
                 the second spot still rendering "Day N · Phase" for peri /
@@ -2300,8 +2297,7 @@ function JessDemoPanelInner() {
           <p style={{
             margin: "4px 0 0", fontSize: 10, lineHeight: 1.4,
             color: "#9B8B7A",
-            fontFamily: "'Inter', sans-serif",
-          }}>
+            }}>
             Jess is a wellness companion · Not medical advice · Your conversations are private
           </p>
         </div>
@@ -2314,7 +2310,6 @@ function JessDemoPanelInner() {
             padding: "0 10px", minHeight: 32, borderRadius: 9999,
             background: "transparent", color: C.espresso,
             border: `1px solid ${C.espresso}`,
-            fontFamily: "'Inter', sans-serif",
             fontSize: 11, fontWeight: 700, letterSpacing: "0.04em",
             cursor: "pointer", flexShrink: 0,
           }}
@@ -2374,7 +2369,6 @@ function JessDemoPanelInner() {
                 flex: 1, minHeight: 44,
                 display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 5,
                 background: "transparent", border: "none", cursor: "pointer",
-                fontFamily: "'Inter', sans-serif",
                 fontSize: 11, fontWeight: 500, letterSpacing: "0.5px",
                 color: active ? C.espresso : C.muted,
                 borderBottom: active ? `2px solid ${C.gold}` : "2px solid transparent",
@@ -2454,7 +2448,6 @@ function JessDemoPanelInner() {
               color: C.cream,
               border: `1px solid ${C.gold}`,
               cursor: "pointer",
-              fontFamily: "'Inter', sans-serif",
               fontSize: 13, fontWeight: 600,
               boxShadow: "0 6px 16px rgba(58,44,26,0.18)",
               maxWidth: "100%",
@@ -2486,7 +2479,6 @@ function JessDemoPanelInner() {
         }}>
           <p style={{
             margin: 0, fontSize: 10.5, color: C.muted, fontStyle: "italic",
-            fontFamily: "'Inter', system-ui, sans-serif",
             textAlign: "center", lineHeight: 1.4,
           }}>
             Not medical advice — Jess is a wellness companion.
@@ -2530,7 +2522,6 @@ function JessDemoPanelInner() {
               background: C.paper,
               padding: "11px 14px", minHeight: 44,
               fontSize: 14, color: C.espresso,
-              fontFamily: "'Inter', sans-serif",
               outline: "none",
             }}
           />
@@ -2662,8 +2653,7 @@ function ChatTab({
           <p style={{
             margin: "0 0 6px 4px", fontSize: 10, fontWeight: 700,
             letterSpacing: "0.18em", textTransform: "uppercase",
-            color: C.muted, fontFamily: "'Inter', sans-serif",
-          }}>Jess is thinking about you</p>
+            color: C.muted, }}>Jess is thinking about you</p>
           <div
             role="list"
             aria-label="Proactive questions from Jess"
@@ -2686,7 +2676,6 @@ function ChatTab({
                   background: C.cream,
                   border: `1px solid ${C.espresso}`,
                   color: C.espresso,
-                  fontFamily: "'Inter', sans-serif",
                   fontSize: 13, fontWeight: 600,
                   cursor: "pointer",
                   scrollSnapAlign: "start",
@@ -2821,7 +2810,6 @@ function HistoryDrawer({
           padding: "16px 16px 8px",
         }}>
           <span style={{
-            fontFamily: "'Inter', sans-serif",
             fontSize: 11, fontWeight: 700, letterSpacing: "0.18em",
             textTransform: "uppercase", color: C.cream, opacity: 0.85,
           }}>Conversations</span>
@@ -2859,8 +2847,7 @@ function HistoryDrawer({
               style={{
                 flex: 1, minWidth: 0,
                 background: "transparent", border: "none", outline: "none",
-                color: C.cream, fontFamily: "'Inter', sans-serif",
-                fontSize: 13.5, padding: "8px 0",
+                color: C.cream, fontSize: 13.5, padding: "8px 0",
               }}
             />
             {q && (
@@ -2888,7 +2875,6 @@ function HistoryDrawer({
             borderLeft: `3px solid ${C.gold}`,
             color: C.gold, cursor: "pointer",
             textAlign: "left",
-            fontFamily: "'Inter', sans-serif",
             fontSize: 13, fontWeight: 700,
           }}
         >
@@ -2946,8 +2932,7 @@ function DrawerSection({ label, rows, activeId, onSelect, onDelete }) {
         margin: "8px 16px 4px", fontSize: 10, fontWeight: 700,
         letterSpacing: "0.18em", textTransform: "uppercase",
         color: C.cream, opacity: 0.55,
-        fontFamily: "'Inter', sans-serif",
-      }}>{label}</p>
+        }}>{label}</p>
       {rows.map((r) => (
         <DrawerRow
           key={r.id}
@@ -3011,8 +2996,7 @@ function DrawerRow({ row, isActive, onSelect, onDelete }) {
           background: "transparent",
           border: "none",
           color: C.cream, cursor: "pointer",
-          fontFamily: "'Inter', sans-serif",
-        }}
+          }}
       >
         <div style={{
           display: "flex", alignItems: "baseline", gap: 8,
@@ -3057,7 +3041,6 @@ function DrawerRow({ row, isActive, onSelect, onDelete }) {
           background: "transparent",
           color: C.cream, opacity: 0.55,
           border: "none", cursor: "pointer",
-          fontFamily: "'Inter', sans-serif",
           padding: 0,
           margin: 0,
         }}
@@ -3086,7 +3069,7 @@ function DrawerEmpty({ hasQuery }) {
       </div>
       <p style={{
         margin: 0, fontSize: 13.5, color: C.cream, opacity: 0.85,
-        fontFamily: "'Inter', sans-serif", lineHeight: 1.5,
+        lineHeight: 1.5,
         maxWidth: 220,
       }}>
         {hasQuery
@@ -3110,7 +3093,6 @@ function TabChip({ chip, onTap }) {
         background: C.cream,
         border: `1px solid ${C.espresso}`,
         color: C.espresso, cursor: "pointer",
-        fontFamily: "'Inter', sans-serif",
         fontSize: 13, fontWeight: 600,
         alignSelf: "flex-start",
         marginBottom: 4,
@@ -3194,7 +3176,6 @@ function FeedbackRow({ feedback, onFeedback }) {
       {rated && !showReasons && (
         <span style={{
           fontSize: 10.5, color: C.muted,
-          fontFamily: "'Inter', sans-serif",
           letterSpacing: "0.04em",
         }}>
           {rating === "up" ? "Thanks — Jess will lean this way." :
@@ -3218,7 +3199,6 @@ function FeedbackRow({ feedback, onFeedback }) {
                 padding: "5px 10px", minHeight: 28,
                 background: C.creamDark, border: `1px solid ${C.border}`,
                 borderRadius: 9999, color: C.espresso, cursor: "pointer",
-                fontFamily: "'Inter', sans-serif",
                 fontSize: 11.5, fontWeight: 600,
               }}
             >{r.label}</button>
@@ -3265,7 +3245,6 @@ function MessageNode({ msg, shell, onChip, onToggleQuickLog, feedback, onFeedbac
       }} aria-hidden>
         <span style={{ flex: 1, height: 1, background: C.border, opacity: 0.55 }} />
         <span style={{
-          fontFamily: "'Inter', sans-serif",
           fontSize: 10.5, fontWeight: 700, letterSpacing: "0.18em",
           textTransform: "uppercase",
           color: C.muted,
@@ -3289,15 +3268,13 @@ function MessageNode({ msg, shell, onChip, onToggleQuickLog, feedback, onFeedbac
           background: "rgba(143,175,143,0.20)",
           color: "#3D6B3D",
           border: "1px solid rgba(143,175,143,0.45)",
-          fontFamily: "'Inter', sans-serif",
           fontSize: 12, fontWeight: 700,
           letterSpacing: "0.02em",
         }}>{msg.text || "✓ Done"}</span>
         {msg.time && (
           <span style={{
             fontSize: 10, color: C.muted, marginTop: 3,
-            fontFamily: "'Inter', sans-serif",
-          }}>Jess · {msg.time}</span>
+            }}>Jess · {msg.time}</span>
         )}
       </div>
     );
@@ -3342,18 +3319,16 @@ function MessageNode({ msg, shell, onChip, onToggleQuickLog, feedback, onFeedbac
             margin: 0, fontSize: 10, fontWeight: 700,
             letterSpacing: "0.16em", textTransform: "uppercase",
             color: isUrgent ? "#A23B30" : C.goldDeep || "#A6862B",
-            fontFamily: "'Inter', sans-serif",
-          }}>{label}</p>
+            }}>{label}</p>
           <p style={{
             margin: "2px 0 0", fontSize: 14.5, fontWeight: 600,
-            color: C.espresso, fontFamily: "'Fraunces', Georgia, serif",
-            lineHeight: 1.35,
+            color: C.espresso, lineHeight: 1.35,
           }}>{msg.title}</p>
           {Array.isArray(msg.lines) && msg.lines.length > 0 ? (
             <ul style={{
               margin: "4px 0 0", padding: "0 0 0 16px",
               fontSize: 13, color: C.espresso,
-              fontFamily: "'Inter', system-ui, sans-serif", lineHeight: 1.55,
+              lineHeight: 1.55,
             }}>
               {msg.lines.map((line, i) => (
                 <li key={i} style={{ marginTop: i === 0 ? 0 : 2 }}>{line}</li>
@@ -3362,15 +3337,14 @@ function MessageNode({ msg, shell, onChip, onToggleQuickLog, feedback, onFeedbac
           ) : (
             <p style={{
               margin: "2px 0 0", fontSize: 13, color: C.espresso,
-              fontFamily: "'Inter', system-ui, sans-serif", lineHeight: 1.5,
+              lineHeight: 1.5,
             }}>{msg.text}</p>
           )}
         </article>
         {msg.time && (
           <span style={{
             fontSize: 10, color: C.muted, marginTop: 3,
-            fontFamily: "'Inter', sans-serif",
-          }}>Jess · {msg.time}</span>
+            }}>Jess · {msg.time}</span>
         )}
       </div>
     );
@@ -3384,15 +3358,13 @@ function MessageNode({ msg, shell, onChip, onToggleQuickLog, feedback, onFeedbac
           borderRadius: "17px 17px 4px 17px",
           padding: "10px 13px",
           fontSize: 13.5, lineHeight: 1.6,
-          fontFamily: "'Inter', sans-serif",
           background: C.blush, color: C.espresso,
           animation: "jess-bubble-enter 280ms ease-out",
         }}>{msg.text}</div>
         {msg.time && (
           <span style={{
             fontSize: 10, color: C.muted, marginTop: 3,
-            fontFamily: "'Inter', sans-serif",
-          }}>{msg.time}</span>
+            }}>{msg.time}</span>
         )}
       </div>
     );
@@ -3407,7 +3379,6 @@ function MessageNode({ msg, shell, onChip, onToggleQuickLog, feedback, onFeedbac
         borderRadius: "17px 17px 17px 4px",
         padding: "10px 13px",
         fontSize: 13.5, lineHeight: 1.6,
-        fontFamily: "'Inter', sans-serif",
         background: C.espresso, color: C.cream,
         boxShadow: "0 1px 4px rgba(58,44,26,0.06)",
         animation: "jess-bubble-enter 280ms ease-out",
@@ -3421,8 +3392,7 @@ function MessageNode({ msg, shell, onChip, onToggleQuickLog, feedback, onFeedbac
       {msg.time && (
         <span style={{
           fontSize: 10, color: C.muted, marginTop: 3,
-          fontFamily: "'Inter', sans-serif",
-        }}>Jess · {msg.time}</span>
+          }}>Jess · {msg.time}</span>
       )}
       {/* Jess v2 J2-7 — feedback row. Compact thumbs row on every Jess
           bubble. Once rated, the row collapses to a small label so the
@@ -3450,7 +3420,6 @@ function MessageNode({ msg, shell, onChip, onToggleQuickLog, feedback, onFeedbac
                   border: `1px solid ${C.border}`,
                   borderRadius: 20,
                   color: C.espresso,
-                  fontFamily: "'Inter', sans-serif",
                   fontSize: 12.5, fontWeight: 500,
                   whiteSpace: "nowrap",
                   cursor: "pointer",
@@ -3514,12 +3483,11 @@ function BriefTab({ phase, dayInCycle, shell, tasks, energySpark, lifeStage, tab
       <Card animationDelay={0}>
         <p style={kicker}>{headerKicker}</p>
         <h2 style={{
-          margin: "2px 0 6px", fontFamily: "'Fraunces', Georgia, serif",
-          fontSize: 22, fontWeight: 600, color: C.espresso, letterSpacing: "-0.01em",
+          margin: "2px 0 6px", fontSize: 22, fontWeight: 600, color: C.espresso, letterSpacing: "-0.01em",
         }}>{headerTitle}</h2>
         <p style={{
           margin: 0, fontSize: 13, color: C.mutedText,
-          fontFamily: "'Inter', sans-serif", lineHeight: 1.55,
+          lineHeight: 1.55,
         }}>{copy.blurb}</p>
       </Card>
       <Card animationDelay={80}>
@@ -3527,20 +3495,18 @@ function BriefTab({ phase, dayInCycle, shell, tasks, energySpark, lifeStage, tab
         <Sparkline data={energySpark} width={300} height={56} stroke={C.sage} />
         <p style={{
           margin: "8px 0 0", fontSize: 13, color: C.espresso,
-          fontFamily: "'Inter', sans-serif", lineHeight: 1.55,
+          lineHeight: 1.55,
         }}>{copy.expect}</p>
         <p style={{
           margin: "6px 0 0", fontSize: 11, color: C.mutedText,
-          fontFamily: "'Inter', sans-serif",
-        }}>Today: <strong style={{ color: C.espresso }}>{todayEnergy?.toFixed?.(1) || todayEnergy}/5</strong> projected</p>
+          }}>Today: <strong style={{ color: C.espresso }}>{todayEnergy?.toFixed?.(1) || todayEnergy}/5</strong> projected</p>
       </Card>
       <Card animationDelay={160}>
         <p style={kicker}>Today's priorities</p>
         {tasks.length === 0 ? (
           <p style={{
             margin: 0, fontSize: 13, color: C.mutedText,
-            fontStyle: "italic", fontFamily: "'Inter', sans-serif",
-          }}>Nothing scheduled — that itself can be a kind of plan.</p>
+            fontStyle: "italic", }}>Nothing scheduled — that itself can be a kind of plan.</p>
         ) : (
           <ul style={{ margin: 0, padding: 0, listStyle: "none", display: "flex", flexDirection: "column", gap: 6 }}>
             {tasks.map((t) => (
@@ -3548,8 +3514,7 @@ function BriefTab({ phase, dayInCycle, shell, tasks, energySpark, lifeStage, tab
                 display: "flex", alignItems: "center", gap: 8,
                 padding: "10px 12px", borderRadius: 10,
                 background: C.paper, border: `1px solid ${C.border}`,
-                fontSize: 13, color: C.espresso, fontFamily: "'Inter', sans-serif",
-              }}>
+                fontSize: 13, color: C.espresso, }}>
                 <span aria-hidden style={{ width: 6, height: 6, borderRadius: 9999, background: shell.accent }} />
                 {t.title || "Task"}
               </li>
@@ -3560,16 +3525,14 @@ function BriefTab({ phase, dayInCycle, shell, tasks, energySpark, lifeStage, tab
       <Card animationDelay={240} accent={shell.accent}>
         <p style={kicker}>One observation from Jess</p>
         <p style={{
-          margin: 0, fontFamily: "'Fraunces', Georgia, serif",
-          fontSize: 17, fontWeight: 500, color: C.espresso, lineHeight: 1.4,
+          margin: 0, fontSize: 17, fontWeight: 500, color: C.espresso, lineHeight: 1.4,
         }}>Your sleep has been steady. That's worth more than you think — it's the lever everything else moves through.</p>
         <MhraNote />
       </Card>
       <div style={{
         background: C.creamDark, border: `1px dashed ${C.border}`,
         borderRadius: 12, padding: "10px 14px",
-        fontSize: 12, color: C.mutedText, fontFamily: "'Inter', sans-serif",
-        animation: "jess-card-rise 320ms ease-out 320ms backwards",
+        fontSize: 12, color: C.mutedText, animation: "jess-card-rise 320ms ease-out 320ms backwards",
       }}>
         <strong style={{ color: C.espresso }}>{upcomingPhase}</strong> in {daysAhead}. Jess will remind you.
       </div>
@@ -3673,8 +3636,7 @@ function InsightsTab({
           </div>
           <p style={{
             margin: "4px 0 8px", fontSize: 10, fontWeight: 700, letterSpacing: "0.12em",
-            color: C.muted, fontFamily: "'Inter', sans-serif",
-          }}>7-DAY MOOD</p>
+            color: C.muted, }}>7-DAY MOOD</p>
           <div style={{ display: "flex", gap: 8, paddingTop: 4 }}>
             {moodSpark.map((d, i) => {
               const isToday = i === moodSpark.length - 1;
@@ -3692,8 +3654,7 @@ function InsightsTab({
                   }} />
                   <span style={{
                     fontSize: 10, color: C.muted, fontWeight: 600,
-                    fontFamily: "'Inter', sans-serif",
-                  }}>{d.label}</span>
+                    }}>{d.label}</span>
                 </div>
               );
             })}
@@ -3714,7 +3675,7 @@ function InsightsTab({
           {topSymptoms.length === 0 ? (
             <p style={{
               margin: 0, fontSize: 13, color: C.muted, fontStyle: "italic",
-              fontFamily: "'Inter', sans-serif", lineHeight: 1.5,
+              lineHeight: 1.5,
             }}>Jess hasn't seen consistent symptom patterns yet. Keep logging and patterns will surface.</p>
           ) : (
             <ul style={{
@@ -3731,19 +3692,16 @@ function InsightsTab({
                     width: 22, height: 22, borderRadius: 9999,
                     background: C.gold, color: C.espresso,
                     display: "inline-flex", alignItems: "center", justifyContent: "center",
-                    fontFamily: "'Fraunces', Georgia, serif",
                     fontSize: 13, fontWeight: 700,
                     flexShrink: 0,
                   }}>{i + 1}</span>
                   <span style={{
                     flex: 1, fontSize: 13.5, fontWeight: 600, color: C.espresso,
-                    fontFamily: "'Inter', sans-serif",
-                  }}>{name}</span>
+                    }}>{name}</span>
                   <span style={{
                     padding: "3px 9px", borderRadius: 9999,
                     background: C.espresso, color: C.cream,
                     fontSize: 11, fontWeight: 700,
-                    fontFamily: "'Inter', sans-serif",
                     letterSpacing: "0.04em",
                   }}>×{count}</span>
                 </li>
@@ -3780,16 +3738,14 @@ function InsightsTab({
             </div>
           ) : (
             <p style={{
-              margin: 0, fontFamily: "'Fraunces', Georgia, serif",
-              fontSize: 15, fontStyle: "italic", lineHeight: 1.45, color: C.cream,
+              margin: 0, fontSize: 15, fontStyle: "italic", lineHeight: 1.45, color: C.cream,
             }}>
               {jessObservation || "I'm still learning the shape of your week. Log a couple more days and patterns will surface."}
             </p>
           )}
           <p style={{
             margin: "10px 0 0", fontSize: 10, fontStyle: "italic", lineHeight: 1.4,
-            color: "rgba(244,237,219,0.65)", fontFamily: "'Inter', sans-serif",
-          }}>Not medical advice. Always consult a healthcare professional.</p>
+            color: "rgba(244,237,219,0.65)", }}>Not medical advice. Always consult a healthcare professional.</p>
         </article>
       </section>
 
@@ -3836,14 +3792,12 @@ function ArcGauge({ label, value, max, color }) {
         <text
           x={38} y={42}
           textAnchor="middle"
-          fontFamily="'Fraunces', Georgia, serif"
           fontSize={18} fontWeight={600}
           fill={C.espresso}
         >{display}</text>
         <text
           x={38} y={56}
           textAnchor="middle"
-          fontFamily="'Inter', sans-serif"
           fontSize={8} fontWeight={600}
           fill={C.muted}
           letterSpacing="0.08em"
@@ -3851,7 +3805,7 @@ function ArcGauge({ label, value, max, color }) {
       </svg>
       <p style={{
         margin: 0, fontSize: 11, fontWeight: 600, color: C.espresso,
-        fontFamily: "'Inter', sans-serif", letterSpacing: "0.02em",
+        letterSpacing: "0.02em",
       }}>{label}</p>
     </div>
   );
@@ -3864,7 +3818,6 @@ const sectionHeader = {
   fontWeight: 700,
   letterSpacing: "1.5px",
   color: C.espresso,
-  fontFamily: "'Inter', sans-serif",
   textTransform: "uppercase",
 };
 
@@ -3878,8 +3831,7 @@ function DigDeeperRow() {
         cursor: "pointer", color: C.muted,
         display: "inline-flex", alignItems: "center", gap: 4,
         fontSize: 11, fontWeight: 700, letterSpacing: "0.04em",
-        fontFamily: "'Inter', sans-serif",
-      }}
+        }}
     >Dig deeper <ChevronRight size={12} /></button>
   );
 }
@@ -3950,8 +3902,7 @@ function ForYouTab({ phase, shell, profile, user, recentCheckins, symptoms, tabC
                   <p style={{
                     margin: 0, fontSize: 11, fontWeight: 700,
                     letterSpacing: "0.14em", textTransform: "uppercase",
-                    color: C.espresso, fontFamily: "'Inter', sans-serif",
-                  }}>{cat.label}</p>
+                    color: C.espresso, }}>{cat.label}</p>
                 </div>
                 <ul style={{
                   margin: 0, padding: 0, listStyle: "none",
@@ -3960,7 +3911,7 @@ function ForYouTab({ phase, shell, profile, user, recentCheckins, symptoms, tabC
                   {tips.map((tip, j) => (
                     <li key={j} style={{
                       fontSize: 12, color: C.espresso,
-                      fontFamily: "'Inter', sans-serif", lineHeight: 1.5,
+                      lineHeight: 1.5,
                       paddingLeft: 10, position: "relative",
                     }}>
                       <span aria-hidden style={{
@@ -3995,7 +3946,7 @@ function ForYouTab({ phase, shell, profile, user, recentCheckins, symptoms, tabC
           <Card animationDelay={120}>
             <p style={{
               margin: "0 0 12px", fontSize: 13.5, color: C.espresso,
-              fontFamily: "'Fraunces', serif", lineHeight: 1.55, fontStyle: "italic",
+              lineHeight: 1.55, fontStyle: "italic",
             }}>{nextPreview.preview}</p>
             <div style={{
               display: "flex", alignItems: "flex-start", gap: 10,
@@ -4005,7 +3956,7 @@ function ForYouTab({ phase, shell, profile, user, recentCheckins, symptoms, tabC
               <Sparkles size={14} style={{ color: C.gold, flexShrink: 0, marginTop: 3 }} aria-hidden />
               <p style={{
                 margin: 0, fontSize: 12.5, color: C.espresso,
-                fontFamily: "'Inter', sans-serif", lineHeight: 1.55,
+                lineHeight: 1.55,
               }}><strong style={{ fontWeight: 700 }}>Prep tip — </strong>{nextPreview.prepTip}</p>
             </div>
           </Card>
@@ -4152,13 +4103,13 @@ function JessNoticedCard({ user, recentCheckins, symptoms, phase }) {
             {loading ? (
               <p style={{
                 margin: 0, fontSize: 13, color: C.muted, fontStyle: "italic",
-                fontFamily: "'Inter', sans-serif", lineHeight: 1.55,
+                lineHeight: 1.55,
               }}>Looking for patterns in your last 7 days…</p>
             ) : text ? (
               <>
                 <p style={{
                   margin: 0, fontSize: 13.5, color: C.espresso,
-                  fontFamily: "'Inter', sans-serif", lineHeight: 1.55,
+                  lineHeight: 1.55,
                 }}>{text}</p>
                 <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 12 }}>
                   <button
@@ -4178,20 +4129,19 @@ function JessNoticedCard({ user, recentCheckins, symptoms, phase }) {
                   {feedback && (
                     <span style={{
                       fontSize: 11, color: C.muted, fontStyle: "italic",
-                      fontFamily: "'Inter', sans-serif",
-                    }}>Thanks — that helps Jess learn.</span>
+                      }}>Thanks — that helps Jess learn.</span>
                   )}
                 </div>
               </>
             ) : exhausted && !hasEnoughData ? (
               <p style={{
                 margin: 0, fontSize: 13, color: C.espresso,
-                fontFamily: "'Inter', sans-serif", lineHeight: 1.55,
+                lineHeight: 1.55,
               }}>I'll start spotting patterns once you've logged a few days. Try a quick check-in today — even just mood and energy.</p>
             ) : (
               <p style={{
                 margin: 0, fontSize: 13, color: C.muted, fontStyle: "italic",
-                fontFamily: "'Inter', sans-serif", lineHeight: 1.55,
+                lineHeight: 1.55,
               }}>Not enough variation yet to spot a clear pattern — keep logging.</p>
             )}
           </div>
@@ -4217,11 +4167,10 @@ function feedbackBtnStyle(active) {
 const kicker = {
   margin: "0 0 8px", fontSize: 10, fontWeight: 700,
   letterSpacing: "0.18em", textTransform: "uppercase",
-  color: C.muted, fontFamily: "'Inter', sans-serif",
-};
+  color: C.muted, };
 const bodyText = {
   fontSize: 13, color: C.mutedText,
-  fontFamily: "'Inter', sans-serif", lineHeight: 1.55,
+  lineHeight: 1.55,
 };
 
 function Card({ children, animationDelay = 0, accent }) {

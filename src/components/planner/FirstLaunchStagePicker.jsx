@@ -177,7 +177,6 @@ const head = {
   marginBottom: 14,
 };
 const eyebrow = {
-  fontFamily: "'Inter', sans-serif",
   fontSize: 10,
   fontWeight: 700,
   letterSpacing: "0.20em",
@@ -186,7 +185,6 @@ const eyebrow = {
   margin: 0,
 };
 const title = {
-  fontFamily: "'Fraunces', Georgia, serif",
   fontSize: 22,
   fontWeight: 500,
   color: "#3A2C1A",
@@ -194,7 +192,6 @@ const title = {
   lineHeight: 1.2,
 };
 const subtitle = {
-  fontFamily: "'Inter', sans-serif",
   fontSize: 12.5,
   color: "#6B5840",
   lineHeight: 1.55,
@@ -226,8 +223,7 @@ const row = {
   border: "1px solid",
   cursor: "pointer",
   minHeight: 44,
-  fontFamily: "'Inter', sans-serif",
-};
+  };
 const rowLabel = {
   fontSize: 13.5,
   fontWeight: 700,
@@ -239,7 +235,6 @@ const rowHint = {
   lineHeight: 1.4,
 };
 const errorLine = {
-  fontFamily: "'Inter', sans-serif",
   fontSize: 12,
   color: "#9A2845",
   margin: "0 0 10px",
@@ -258,7 +253,6 @@ const ghostBtn = {
   background: "transparent",
   border: "1px solid rgba(58,44,26,0.18)",
   color: "#6B5840",
-  fontFamily: "'Inter', sans-serif",
   fontSize: 12,
   fontWeight: 600,
   cursor: "pointer",
@@ -269,7 +263,6 @@ const primaryBtn = {
   background: "#3A2C1A",
   color: "#F4EDDB",
   border: "1px solid #3A2C1A",
-  fontFamily: "'Inter', sans-serif",
   fontSize: 12.5,
   fontWeight: 700,
   cursor: "pointer",

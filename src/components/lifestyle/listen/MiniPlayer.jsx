@@ -52,8 +52,7 @@ export default function MiniPlayer() {
         gap: 12,
         padding: '0 8px 0 8px',
         cursor: 'pointer',
-        fontFamily: "'Inter', sans-serif",
-      }}
+        }}
     >
       <style>{`
         @media (min-width: 768px) {

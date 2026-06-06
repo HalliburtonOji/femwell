@@ -25,8 +25,8 @@ const PERIOD_TYPES   = [{ v: "PeriodStart", l: "Period Start" }, { v: "PeriodEnd
 const SEVERITY_LABELS = ["", "Mild", "Moderate", "Significant", "Severe", "Extreme"];
 const COMMON_SYMPTOMS = ["cramps", "bloating", "headache", "fatigue", "mood swings", "breast tenderness", "back pain", "acne", "nausea", "insomnia", "anxiety", "brain fog", "hot flashes", "night sweats"];
 
-const sLabel = { fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.12em", color: "var(--mauve)", fontFamily: "'Inter', sans-serif", marginBottom: 8 };
-const inp = { border: "1.5px solid var(--border)", borderRadius: 12, padding: "10px 12px", fontSize: 13, fontFamily: "'Inter', sans-serif", color: "var(--plum)", backgroundColor: "var(--ivory)", outline: "none", width: "100%", boxSizing: "border-box" };
+const sLabel = { fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.12em", color: "var(--mauve)", marginBottom: 8 };
+const inp = { border: "1.5px solid var(--border)", borderRadius: 12, padding: "10px 12px", fontSize: 13, color: "var(--plum)", backgroundColor: "var(--ivory)", outline: "none", width: "100%", boxSizing: "border-box" };
 
 // ── Summary Tab ──────────────────────────────────────────────────────────────
 function SummaryTab({ dayData }) {
@@ -35,7 +35,7 @@ function SummaryTab({ dayData }) {
 
   if (!hasAnything) return (
     <div style={{ textAlign: "center", padding: "32px 0" }}>
-      <p style={{ fontSize: 13, color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>Nothing logged for this day yet. Use the tabs above to add data.</p>
+      <p style={{ fontSize: 13, color: "var(--mauve)", }}>Nothing logged for this day yet. Use the tabs above to add data.</p>
     </div>
   );
 
@@ -48,8 +48,8 @@ function SummaryTab({ dayData }) {
           <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 6 }}>
             {[["Mood", checkin.mood, "/5"], ["Energy", checkin.energy, "/5"], ["Stress", checkin.stress, "/5"], ["Sleep", checkin.sleep_hours, "h"]].map(([l, v, u]) => (
               <div key={l} style={{ textAlign: "center" }}>
-                <p style={{ fontSize: 18, fontWeight: 700, color: "var(--plum)", fontFamily: "'Fraunces', serif", lineHeight: 1 }}>{v ?? "—"}<span style={{ fontSize: 10, color: "var(--mauve)" }}>{u}</span></p>
-                <p style={{ fontSize: 10, color: "var(--mauve)", marginTop: 2, fontFamily: "'Inter', sans-serif" }}>{l}</p>
+                <p style={{ fontSize: 18, fontWeight: 700, color: "var(--plum)", lineHeight: 1 }}>{v ?? "—"}<span style={{ fontSize: 10, color: "var(--mauve)" }}>{u}</span></p>
+                <p style={{ fontSize: 10, color: "var(--mauve)", marginTop: 2, }}>{l}</p>
               </div>
             ))}
           </div>
@@ -62,7 +62,7 @@ function SummaryTab({ dayData }) {
           <p style={{ ...sLabel, color: "var(--rose-dust)" }}>Cycle</p>
           <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
             {cycleEvents.map(e => (
-              <span key={e.id} style={{ fontSize: 12, fontWeight: 500, padding: "4px 10px", borderRadius: 9999, backgroundColor: "var(--surface)", border: "1px solid var(--border)", color: "var(--rose-dust)", fontFamily: "'Inter', sans-serif" }}>
+              <span key={e.id} style={{ fontSize: 12, fontWeight: 500, padding: "4px 10px", borderRadius: 9999, backgroundColor: "var(--surface)", border: "1px solid var(--border)", color: "var(--rose-dust)", }}>
                 {e.type.replace(/([A-Z])/g, ' $1').trim()}{e.flow_level ? ` · ${e.flow_level}` : ""}
               </span>
             ))}
@@ -76,7 +76,7 @@ function SummaryTab({ dayData }) {
           <p style={sLabel}>Symptoms</p>
           <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
             {symptoms.map(s => (
-              <span key={s.id} style={{ fontSize: 12, fontWeight: 500, padding: "4px 10px", borderRadius: 9999, backgroundColor: "var(--rose-dust-subtle)", color: "var(--rose-dust)", fontFamily: "'Inter', sans-serif", textTransform: "capitalize" }}>
+              <span key={s.id} style={{ fontSize: 12, fontWeight: 500, padding: "4px 10px", borderRadius: 9999, backgroundColor: "var(--rose-dust-subtle)", color: "var(--rose-dust)", textTransform: "capitalize" }}>
                 {s.symptom_type}{s.severity ? ` · ${SEVERITY_LABELS[s.severity] || s.severity}` : ""}
               </span>
             ))}
@@ -90,7 +90,7 @@ function SummaryTab({ dayData }) {
           <p style={sLabel}>Habits completed</p>
           <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
             {habitLogs.filter(h => h.completed).map(h => (
-              <span key={h.id} style={{ fontSize: 12, fontWeight: 500, padding: "4px 10px", borderRadius: 9999, backgroundColor: "var(--sage-subtle)", color: "var(--sage)", fontFamily: "'Inter', sans-serif" }}>
+              <span key={h.id} style={{ fontSize: 12, fontWeight: 500, padding: "4px 10px", borderRadius: 9999, backgroundColor: "var(--sage-subtle)", color: "var(--sage)", }}>
                 {h.habit_name || h.habit_type}
               </span>
             ))}
@@ -107,7 +107,7 @@ function SummaryTab({ dayData }) {
               <div style={{ width: 16, height: 16, borderRadius: 5, backgroundColor: t.completed ? "var(--sage)" : "var(--border)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
                 {t.completed && <Check style={{ width: 9, height: 9, color: "white" }} />}
               </div>
-              <span style={{ fontSize: 13, color: t.completed ? "var(--mauve)" : "var(--plum)", fontFamily: "'Inter', sans-serif", textDecoration: t.completed ? "line-through" : "none" }}>{t.title}</span>
+              <span style={{ fontSize: 13, color: t.completed ? "var(--mauve)" : "var(--plum)", textDecoration: t.completed ? "line-through" : "none" }}>{t.title}</span>
             </div>
           ))}
         </div>
@@ -119,7 +119,7 @@ function SummaryTab({ dayData }) {
           <p style={sLabel}>Medications</p>
           <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
             {meds.map(m => (
-              <span key={m.id} style={{ fontSize: 12, fontWeight: 500, padding: "4px 10px", borderRadius: 9999, backgroundColor: "var(--mauve-subtle)", color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>
+              <span key={m.id} style={{ fontSize: 12, fontWeight: 500, padding: "4px 10px", borderRadius: 9999, backgroundColor: "var(--mauve-subtle)", color: "var(--mauve)", }}>
                 {m.item_name}{m.dose ? ` · ${m.dose}` : ""}
               </span>
             ))}
@@ -168,29 +168,29 @@ function CheckinTab({ dayData, dateStr, userId, onRefresh }) {
       {sliders.map(({ key, label }) => (
         <div key={key}>
           <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}>
-            <span style={{ fontSize: 12, fontWeight: 600, color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>{label}</span>
-            <span style={{ fontSize: 12, fontWeight: 700, color: "var(--rose-dust)", fontFamily: "'Inter', sans-serif" }}>{values[key] || "—"}/5</span>
+            <span style={{ fontSize: 12, fontWeight: 600, color: "var(--plum)", }}>{label}</span>
+            <span style={{ fontSize: 12, fontWeight: 700, color: "var(--rose-dust)", }}>{values[key] || "—"}/5</span>
           </div>
           <input type="range" min="1" max="5" value={values[key] || 3}
             onChange={e => setValues(v => ({ ...v, [key]: Number(e.target.value) }))} />
         </div>
       ))}
       <div>
-        <span style={{ fontSize: 12, fontWeight: 600, color: "var(--plum)", fontFamily: "'Inter', sans-serif", display: "block", marginBottom: 4 }}>Sleep (hours)</span>
+        <span style={{ fontSize: 12, fontWeight: 600, color: "var(--plum)", display: "block", marginBottom: 4 }}>Sleep (hours)</span>
         <input type="number" min="0" max="24" step="0.5" placeholder="e.g. 7.5"
           value={values.sleep_hours}
           onChange={e => setValues(v => ({ ...v, sleep_hours: e.target.value }))}
           style={{ ...inp, width: "auto" }} />
       </div>
       <div>
-        <span style={{ fontSize: 12, fontWeight: 600, color: "var(--plum)", fontFamily: "'Inter', sans-serif", display: "block", marginBottom: 4 }}>Notes</span>
+        <span style={{ fontSize: 12, fontWeight: 600, color: "var(--plum)", display: "block", marginBottom: 4 }}>Notes</span>
         <textarea placeholder="How are you feeling today?" rows={3}
           value={values.notes}
           onChange={e => setValues(v => ({ ...v, notes: e.target.value }))}
           style={{ ...inp, resize: "none" }} />
       </div>
       <button onClick={handleSave} disabled={saving}
-        style={{ backgroundColor: "var(--plum)", color: "white", border: "none", borderRadius: 12, padding: "12px", fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: "'Inter', sans-serif", opacity: saving ? 0.5 : 1 }}>
+        style={{ backgroundColor: "var(--plum)", color: "white", border: "none", borderRadius: 12, padding: "12px", fontSize: 13, fontWeight: 600, cursor: "pointer", opacity: saving ? 0.5 : 1 }}>
         {saving ? "Saving..." : existing ? "Update Check-in" : "Save Check-in"}
       </button>
     </div>
@@ -225,12 +225,12 @@ function CycleTab({ dayData, dateStr, userId, onRefresh }) {
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
       {events.length === 0 && !adding && (
-        <p style={{ fontSize: 13, color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>No cycle events logged.</p>
+        <p style={{ fontSize: 13, color: "var(--mauve)", }}>No cycle events logged.</p>
       )}
       {events.map(e => (
         <div key={e.id} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", backgroundColor: "var(--rose-dust-subtle)", borderRadius: 12, padding: "10px 14px" }}>
           <div>
-            <span style={{ fontSize: 13, fontWeight: 600, color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>{e.type.replace(/([A-Z])/g, ' $1').trim()}</span>
+            <span style={{ fontSize: 13, fontWeight: 600, color: "var(--plum)", }}>{e.type.replace(/([A-Z])/g, ' $1').trim()}</span>
             {e.flow_level && <span style={{ fontSize: 12, color: "var(--mauve)", marginLeft: 6, textTransform: "capitalize" }}>{e.flow_level}</span>}
           </div>
           <button onClick={() => handleDelete(e.id)} style={{ border: "none", background: "none", cursor: "pointer" }}>
@@ -244,7 +244,7 @@ function CycleTab({ dayData, dateStr, userId, onRefresh }) {
           <div style={{ display: "flex", gap: 6, marginBottom: 12, flexWrap: "wrap" }}>
             {PERIOD_TYPES.map(t => (
               <button key={t.v} onClick={() => setType(t.v)}
-                style={{ padding: "6px 12px", borderRadius: 9999, fontSize: 12, fontWeight: 600, border: "none", cursor: "pointer", fontFamily: "'Inter', sans-serif", backgroundColor: type === t.v ? "var(--plum)" : "var(--border)", color: type === t.v ? "white" : "var(--mauve)" }}>
+                style={{ padding: "6px 12px", borderRadius: 9999, fontSize: 12, fontWeight: 600, border: "none", cursor: "pointer", backgroundColor: type === t.v ? "var(--plum)" : "var(--border)", color: type === t.v ? "white" : "var(--mauve)" }}>
                 {t.l}
               </button>
             ))}
@@ -253,7 +253,7 @@ function CycleTab({ dayData, dateStr, userId, onRefresh }) {
             <div style={{ display: "flex", gap: 6, marginBottom: 12 }}>
               {FLOW_OPTIONS.map(f => (
                 <button key={f} onClick={() => setFlow(f)}
-                  style={{ flex: 1, padding: "6px", borderRadius: 9999, fontSize: 12, fontWeight: 600, border: "none", cursor: "pointer", fontFamily: "'Inter', sans-serif", textTransform: "capitalize", backgroundColor: flow === f ? "var(--rose-dust-subtle)" : "var(--ivory-dark)", color: flow === f ? "var(--rose-dust)" : "var(--mauve)" }}>
+                  style={{ flex: 1, padding: "6px", borderRadius: 9999, fontSize: 12, fontWeight: 600, border: "none", cursor: "pointer", textTransform: "capitalize", backgroundColor: flow === f ? "var(--rose-dust-subtle)" : "var(--ivory-dark)", color: flow === f ? "var(--rose-dust)" : "var(--mauve)" }}>
                   {f}
                 </button>
               ))}
@@ -272,7 +272,7 @@ function CycleTab({ dayData, dateStr, userId, onRefresh }) {
         <button onClick={() => setAdding(true)}
           style={{ display: "flex", alignItems: "center", gap: 8, backgroundColor: "var(--rose-dust-subtle)", border: "1px dashed var(--rose-dust-light)", borderRadius: 12, padding: "11px 14px", cursor: "pointer", width: "100%" }}>
           <Plus style={{ width: 14, height: 14, color: "var(--rose-dust)" }} />
-          <span style={{ fontSize: 13, fontWeight: 600, color: "var(--rose-dust)", fontFamily: "'Inter', sans-serif" }}>Log cycle event</span>
+          <span style={{ fontSize: 13, fontWeight: 600, color: "var(--rose-dust)", }}>Log cycle event</span>
         </button>
       )}
     </div>
@@ -303,12 +303,12 @@ function SymptomsTab({ dayData, dateStr, userId, onRefresh }) {
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
       {symptoms.length === 0 && !adding && (
-        <p style={{ fontSize: 13, color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>No symptoms logged.</p>
+        <p style={{ fontSize: 13, color: "var(--mauve)", }}>No symptoms logged.</p>
       )}
       {symptoms.map(s => (
         <div key={s.id} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", backgroundColor: "var(--ivory)", borderRadius: 12, padding: "10px 14px" }}>
           <div>
-            <span style={{ fontSize: 13, fontWeight: 600, color: "var(--plum)", fontFamily: "'Inter', sans-serif", textTransform: "capitalize" }}>{s.symptom_type}</span>
+            <span style={{ fontSize: 13, fontWeight: 600, color: "var(--plum)", textTransform: "capitalize" }}>{s.symptom_type}</span>
             <span style={{ fontSize: 11, color: "var(--mauve)", marginLeft: 6 }}>{SEVERITY_LABELS[s.severity] || ""}</span>
           </div>
           <button onClick={async () => { await base44.entities.SymptomLogs.delete(s.id); onRefresh(); }} style={{ border: "none", background: "none", cursor: "pointer" }}>
@@ -322,7 +322,7 @@ function SymptomsTab({ dayData, dateStr, userId, onRefresh }) {
           <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 10 }}>
             {COMMON_SYMPTOMS.map(s => (
               <button key={s} onClick={() => { setType(s); setCustom(""); }}
-                style={{ padding: "5px 10px", borderRadius: 9999, fontSize: 11, fontWeight: 600, border: "none", cursor: "pointer", fontFamily: "'Inter', sans-serif", textTransform: "capitalize", backgroundColor: type === s ? "var(--plum)" : "var(--ivory-dark)", color: type === s ? "white" : "var(--plum)" }}>
+                style={{ padding: "5px 10px", borderRadius: 9999, fontSize: 11, fontWeight: 600, border: "none", cursor: "pointer", textTransform: "capitalize", backgroundColor: type === s ? "var(--plum)" : "var(--ivory-dark)", color: type === s ? "white" : "var(--plum)" }}>
                 {s}
               </button>
             ))}
@@ -332,7 +332,7 @@ function SymptomsTab({ dayData, dateStr, userId, onRefresh }) {
             style={{ ...inp, marginBottom: 10 }} />
           <div style={{ marginBottom: 10 }}>
             <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}>
-              <span style={{ fontSize: 12, fontWeight: 600, color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>Severity</span>
+              <span style={{ fontSize: 12, fontWeight: 600, color: "var(--plum)", }}>Severity</span>
               <span style={{ fontSize: 12, fontWeight: 700, color: "var(--rose-dust)" }}>{SEVERITY_LABELS[severity]}</span>
             </div>
             <input type="range" min="1" max="5" value={severity} onChange={e => setSeverity(Number(e.target.value))} />
@@ -350,7 +350,7 @@ function SymptomsTab({ dayData, dateStr, userId, onRefresh }) {
       {!adding && (
         <button onClick={() => setAdding(true)} style={{ display: "flex", alignItems: "center", gap: 8, backgroundColor: "var(--ivory)", border: "1px dashed var(--border)", borderRadius: 12, padding: "11px 14px", cursor: "pointer", width: "100%" }}>
           <Plus style={{ width: 14, height: 14, color: "var(--rose-dust)" }} />
-          <span style={{ fontSize: 13, fontWeight: 600, color: "var(--rose-dust)", fontFamily: "'Inter', sans-serif" }}>Log a symptom</span>
+          <span style={{ fontSize: 13, fontWeight: 600, color: "var(--rose-dust)", }}>Log a symptom</span>
         </button>
       )}
     </div>
@@ -389,7 +389,7 @@ function TasksTab({ dayData, dateStr, userId, onRefresh }) {
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
       {tasks.length === 0 && !adding && (
-        <p style={{ fontSize: 13, color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>No tasks for this day.</p>
+        <p style={{ fontSize: 13, color: "var(--mauve)", }}>No tasks for this day.</p>
       )}
 
       {tasks.map(task => {
@@ -400,10 +400,10 @@ function TasksTab({ dayData, dateStr, userId, onRefresh }) {
               {task.completed && <Check style={{ width: 11, height: 11, color: "white" }} />}
             </button>
             <div style={{ flex: 1, minWidth: 0 }}>
-              <p style={{ fontSize: 13, fontWeight: 500, color: task.completed ? "var(--mauve)" : "var(--plum)", fontFamily: "'Inter', sans-serif", textDecoration: task.completed ? "line-through" : "none" }}>{task.title}</p>
+              <p style={{ fontSize: 13, fontWeight: 500, color: task.completed ? "var(--mauve)" : "var(--plum)", textDecoration: task.completed ? "line-through" : "none" }}>{task.title}</p>
               <div style={{ display: "flex", gap: 6, marginTop: 2 }}>
                 {task.time && <span style={{ fontSize: 10, color: "var(--mauve)" }}>{task.time}</span>}
-                <span style={{ fontSize: 10, fontWeight: 600, color: cat.color, backgroundColor: cat.bg, padding: "1px 7px", borderRadius: 9999, fontFamily: "'Inter', sans-serif" }}>{cat.label}</span>
+                <span style={{ fontSize: 10, fontWeight: 600, color: cat.color, backgroundColor: cat.bg, padding: "1px 7px", borderRadius: 9999, }}>{cat.label}</span>
               </div>
             </div>
             <button onClick={() => handleDelete(task.id)} style={{ border: "none", background: "none", cursor: "pointer" }}>
@@ -423,7 +423,7 @@ function TasksTab({ dayData, dateStr, userId, onRefresh }) {
           <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 12 }}>
             {Object.entries(CATEGORY_STYLES).map(([cat, { bg, color, label }]) => (
               <button key={cat} onClick={() => setCategory(cat)}
-                style={{ padding: "5px 12px", borderRadius: 9999, fontSize: 11, fontWeight: 600, cursor: "pointer", fontFamily: "'Inter', sans-serif", border: category === cat ? `1.5px solid ${color}` : "1.5px solid var(--border)", backgroundColor: category === cat ? bg : "transparent", color: category === cat ? color : "var(--mauve)" }}>
+                style={{ padding: "5px 12px", borderRadius: 9999, fontSize: 11, fontWeight: 600, cursor: "pointer", border: category === cat ? `1.5px solid ${color}` : "1.5px solid var(--border)", backgroundColor: category === cat ? bg : "transparent", color: category === cat ? color : "var(--mauve)" }}>
                 {label}
               </button>
             ))}
@@ -440,7 +440,7 @@ function TasksTab({ dayData, dateStr, userId, onRefresh }) {
       {!adding && (
         <button onClick={() => setAdding(true)} style={{ display: "flex", alignItems: "center", gap: 8, backgroundColor: "var(--ivory)", border: "1px dashed var(--border)", borderRadius: 12, padding: "11px 14px", cursor: "pointer", width: "100%" }}>
           <Plus style={{ width: 14, height: 14, color: "var(--rose-dust)" }} />
-          <span style={{ fontSize: 13, fontWeight: 600, color: "var(--rose-dust)", fontFamily: "'Inter', sans-serif" }}>Add task</span>
+          <span style={{ fontSize: 13, fontWeight: 600, color: "var(--rose-dust)", }}>Add task</span>
         </button>
       )}
     </div>
@@ -469,12 +469,12 @@ function MedsTab({ dayData, dateStr, userId, onRefresh }) {
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
       {meds.length === 0 && !adding && (
-        <p style={{ fontSize: 13, color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>No medications logged.</p>
+        <p style={{ fontSize: 13, color: "var(--mauve)", }}>No medications logged.</p>
       )}
       {meds.map(m => (
         <div key={m.id} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", backgroundColor: "var(--ivory)", borderRadius: 12, padding: "10px 14px" }}>
           <div>
-            <span style={{ fontSize: 13, fontWeight: 600, color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>{m.item_name}</span>
+            <span style={{ fontSize: 13, fontWeight: 600, color: "var(--plum)", }}>{m.item_name}</span>
             {m.dose && <span style={{ fontSize: 11, color: "var(--mauve)", marginLeft: 6 }}>{m.dose}</span>}
           </div>
           <button onClick={async () => { await base44.entities.MedicationLogs.delete(m.id); onRefresh(); }} style={{ border: "none", background: "none", cursor: "pointer" }}>
@@ -500,7 +500,7 @@ function MedsTab({ dayData, dateStr, userId, onRefresh }) {
       {!adding && (
         <button onClick={() => setAdding(true)} style={{ display: "flex", alignItems: "center", gap: 8, backgroundColor: "var(--mauve-subtle)", border: "1px dashed var(--mauve-light)", borderRadius: 12, padding: "11px 14px", cursor: "pointer", width: "100%" }}>
           <Plus style={{ width: 14, height: 14, color: "var(--mauve)" }} />
-          <span style={{ fontSize: 13, fontWeight: 600, color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>Log medication</span>
+          <span style={{ fontSize: 13, fontWeight: 600, color: "var(--mauve)", }}>Log medication</span>
         </button>
       )}
     </div>
@@ -558,8 +558,8 @@ export default function DayDetailSheet({ date, dayData: initialDayData, userId, 
         {/* Header */}
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0 20px 14px", flexShrink: 0 }}>
           <div>
-            <p style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.12em", color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>Day Log</p>
-            <h3 style={{ fontSize: 20, fontWeight: 700, color: "var(--plum)", fontFamily: "'Fraunces', serif", marginTop: 2 }}>{dateDisplay}</h3>
+            <p style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.12em", color: "var(--mauve)", }}>Day Log</p>
+            <h3 style={{ fontSize: 20, fontWeight: 700, color: "var(--plum)", marginTop: 2 }}>{dateDisplay}</h3>
           </div>
           <button onClick={onClose} style={{ width: 32, height: 32, borderRadius: 9999, backgroundColor: "var(--ivory-dark)", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>
             <X style={{ width: 14, height: 14, color: "var(--mauve)" }} />
@@ -577,7 +577,7 @@ export default function DayDetailSheet({ date, dayData: initialDayData, userId, 
                 display: "flex", alignItems: "center", gap: 5,
                 padding: "7px 12px", borderRadius: 9999, border: "none",
                 fontSize: 11, fontWeight: 600, cursor: "pointer",
-                fontFamily: "'Inter', sans-serif", whiteSpace: "nowrap",
+                whiteSpace: "nowrap",
                 flexShrink: 0,
                 backgroundColor: activeTab === id ? "var(--plum)" : "var(--ivory-dark)",
                 color: activeTab === id ? "white" : "var(--mauve)",

@@ -463,7 +463,6 @@ const DevPill = React.memo(function DevPill({ devStage, devConditions, onChangeS
           background: overrideActive || condCount > 0 ? C.espresso : "rgba(251,246,230,0.95)",
           color: overrideActive || condCount > 0 ? C.cream : C.espresso,
           cursor: "pointer", minHeight: 28,
-          fontFamily: "'Inter', system-ui, sans-serif",
           boxShadow: "0 2px 8px rgba(58,44,26,0.16)",
         }}
       >
@@ -483,7 +482,7 @@ const DevPill = React.memo(function DevPill({ devStage, devConditions, onChangeS
           <header style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 10, marginBottom: 10 }}>
             <div>
               <div style={{ fontSize: 9, letterSpacing: "0.20em", textTransform: "uppercase", color: C.goldDeep, fontWeight: 700 }}>DEV ONLY</div>
-              <div style={{ fontFamily: "'Fraunces', Georgia, serif", fontSize: 16, fontWeight: 500, color: C.espresso }}>Preview stage + conditions</div>
+              <div style={{ fontSize: 16, fontWeight: 500, color: C.espresso }}>Preview stage + conditions</div>
             </div>
             <button type="button" onClick={() => setOpen(false)} aria-label="Close" style={{
               width: 26, height: 26, borderRadius: 9999, background: "rgba(58,44,26,0.08)", border: "none",
@@ -499,7 +498,7 @@ const DevPill = React.memo(function DevPill({ devStage, devConditions, onChangeS
               return (
                 <button key={s.id || "__real__"} role="listitem" type="button" onClick={() => pickStage(s.id)} style={{
                   padding: "5px 11px", borderRadius: 9999,
-                  fontFamily: "'Inter', system-ui, sans-serif", fontSize: 11, fontWeight: 600, cursor: "pointer",
+                  fontSize: 11, fontWeight: 600, cursor: "pointer",
                   border: active ? `1px solid ${C.espresso}` : "1px solid rgba(58,44,26,0.16)",
                   background: active ? C.espresso : "transparent",
                   color: active ? C.cream : C.espresso,
@@ -517,8 +516,7 @@ const DevPill = React.memo(function DevPill({ devStage, devConditions, onChangeS
                   padding: "7px 10px", borderRadius: 10,
                   border: `1px solid ${on ? C.goldDeep : "rgba(58,44,26,0.10)"}`,
                   background: on ? "rgba(166,134,43,0.16)" : "transparent",
-                  color: C.espresso, fontFamily: "'Inter', system-ui, sans-serif",
-                  fontSize: 12, fontWeight: 600, cursor: "pointer", textAlign: "left",
+                  color: C.espresso, fontSize: 12, fontWeight: 600, cursor: "pointer", textAlign: "left",
                 }}>
                   <span style={{
                     width: 16, height: 16, borderRadius: 4,
@@ -1306,7 +1304,7 @@ function FutureBlueprintInline({ date, step, setStep, onClose }) {
           <div style={{ padding: "10px 14px", borderRadius: 12, background: `${PHASE_LIGHT[phase]}1F`, border: `1px solid ${PHASE_LIGHT[phase]}55`, display: "flex", alignItems: "center", gap: 10 }}>
             <span style={{ width: 14, height: 14, borderRadius: 9999, background: PHASE_LIGHT[phase] }} />
             <div>
-              <div style={{ fontFamily: "'Fraunces', Georgia, serif", fontSize: 17, fontWeight: 500, color: C.espresso }}>
+              <div style={{ fontSize: 17, fontWeight: 500, color: C.espresso }}>
                 {phase[0].toUpperCase() + phase.slice(1)} · Day {cycleDay}
               </div>
               <div style={{ fontSize: 11, color: C.muted }}>
@@ -1344,25 +1342,25 @@ function FutureBlueprintInline({ date, step, setStep, onClose }) {
           <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
             <div style={confirmLineStyle}>
               <span style={miniLabel}>DATE</span>
-              <span style={{ fontFamily: "'Fraunces', Georgia, serif", fontSize: 14, fontWeight: 500, color: C.espresso }}>
+              <span style={{ fontSize: 14, fontWeight: 500, color: C.espresso }}>
                 {d.toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric" })}
               </span>
             </div>
             <div style={confirmLineStyle}>
               <span style={miniLabel}>PHASE</span>
-              <span style={{ fontFamily: "'Fraunces', Georgia, serif", fontSize: 14, fontWeight: 500, color: C.espresso }}>
+              <span style={{ fontSize: 14, fontWeight: 500, color: C.espresso }}>
                 {phase[0].toUpperCase() + phase.slice(1)}
               </span>
             </div>
             <div style={confirmLineStyle}>
               <span style={miniLabel}>INTENTION</span>
-              <span style={{ fontFamily: "'Fraunces', Georgia, serif", fontSize: 14, fontWeight: 500, color: C.espresso }}>
+              <span style={{ fontSize: 14, fontWeight: 500, color: C.espresso }}>
                 {intention || "(none)"}
               </span>
             </div>
             <div style={confirmLineStyle}>
               <span style={miniLabel}>CAPACITY</span>
-              <span style={{ fontFamily: "'Fraunces', Georgia, serif", fontSize: 14, fontWeight: 500, color: C.espresso }}>
+              <span style={{ fontSize: 14, fontWeight: 500, color: C.espresso }}>
                 {capacity[0].toUpperCase() + capacity.slice(1)}
               </span>
             </div>
@@ -1688,8 +1686,7 @@ function InsightsHeroRow({ phase: phaseProp, dayInCycle, profile: profileProp, u
               {i === 0 && c.jessLive && (
                 <p style={{
                   margin: "6px 0 0", fontSize: 10, fontStyle: "italic",
-                  color: C.muted, fontFamily: "'Inter', sans-serif",
-                  lineHeight: 1.4,
+                  color: C.muted, lineHeight: 1.4,
                 }}>Wellness companion · not medical advice</p>
               )}
             </article>
@@ -2265,7 +2262,7 @@ function YourDayCard({ slot, phase, loading, bucket, streaks, onRefresh }) {
                 if (!tip) return null;
                 return (
                   <p style={{
-                    fontFamily: "Cormorant Garamond, Georgia, serif", fontStyle: "italic",
+                    fontStyle: "italic",
                     fontSize: 13, color: C.espresso, margin: 0,
                     lineHeight: 1.45, textAlign: "center", maxWidth: 240,
                   }}>
@@ -2275,7 +2272,7 @@ function YourDayCard({ slot, phase, loading, bucket, streaks, onRefresh }) {
               })()}
               <p style={{
                 fontSize: 12.5, color: C.muted, margin: 0,
-                fontFamily: "'Inter', sans-serif", lineHeight: 1.45, textAlign: "center",
+                lineHeight: 1.45, textAlign: "center",
               }}>
                 Nothing logged yet for{" "}
                 <span style={{ color: C.espresso, fontWeight: 700 }}>
@@ -2289,7 +2286,6 @@ function YourDayCard({ slot, phase, loading, bucket, streaks, onRefresh }) {
                   padding: "8px 14px", borderRadius: 9999,
                   background: accent, color: C.paperHi,
                   border: "none", cursor: "pointer",
-                  fontFamily: "'Inter', sans-serif",
                   fontSize: 11.5, fontWeight: 700, letterSpacing: "0.04em",
                   boxShadow: "0 2px 6px rgba(58,44,26,0.10)",
                 }}
@@ -2460,8 +2456,7 @@ function ListsSection({ user }) {
       {!previewText && lists.every((l) => l.tasks.length === 0) && (
         <p style={{
           fontSize: 12, color: C.muted, margin: "6px 16px 0",
-          fontStyle: "italic", fontFamily: "'Inter', system-ui, sans-serif",
-        }}>
+          fontStyle: "italic", }}>
           Nothing on your list — add a task to get started.
         </p>
       )}
@@ -2500,7 +2495,7 @@ function ListsSection({ user }) {
               padding: "5px 10px", borderRadius: 9999,
               background: "transparent", border: "1px dashed rgba(58,44,26,0.20)",
               color: C.muted, cursor: "pointer", fontStyle: "italic", fontWeight: 600,
-              fontFamily: "'Inter', system-ui, sans-serif", fontSize: 11,
+              fontSize: 11,
             }}
           >
             <Plus size={11} /> Add task
@@ -2553,7 +2548,6 @@ function SchedulePreviewCard({ blocks, onExpand }) {
           </span>
           <p style={{
             margin: 0,
-            fontFamily: "'Inter', system-ui, sans-serif",
             fontSize: 13, fontWeight: 500,
             color: C.espresso,
             lineHeight: 1.4,
@@ -2571,7 +2565,6 @@ function SchedulePreviewCard({ blocks, onExpand }) {
               borderRadius: 9999,
               color: C.muted,
               cursor: "pointer",
-              fontFamily: "'Inter', system-ui, sans-serif",
               fontSize: 11, fontWeight: 600,
               letterSpacing: "0.02em",
             }}
@@ -2800,7 +2793,7 @@ function ScaleArc({ value, tone = "#8FAF8F" }) {
         strokeLinecap="round"
         strokeDasharray={`${dash} ${CIRC}`}
       />
-      <text x="24" y="22" textAnchor="middle" fontFamily="'Inter', sans-serif" fontSize="9" fontWeight="700" fill="#3A2C1A">
+      <text x="24" y="22" textAnchor="middle" fontSize="9" fontWeight="700" fill="#3A2C1A">
         {Math.round(v)}
       </text>
     </svg>
@@ -2870,7 +2863,7 @@ function BodyTodayCard({ user }) {
           <circle cx={38} cy={38} r={R} fill="none" stroke={C.faint} strokeWidth={6} />
           <circle cx={38} cy={38} r={R} fill="none" stroke={phaseToneDeep} strokeWidth={6} strokeLinecap="round"
             strokeDasharray={CIRC} strokeDashoffset={offset} transform="rotate(-90 38 38)" />
-          <text x={38} y={42} textAnchor="middle" fontFamily="'Fraunces', Georgia, serif" fontSize={22} fontWeight="500" fill={C.espresso}>{pct}</text>
+          <text x={38} y={42} textAnchor="middle" fontSize={22} fontWeight="500" fill={C.espresso}>{pct}</text>
         </svg>
         <div style={{ flex: 1, marginLeft: 12 }}>
           <div style={ringTitle}>Capacity</div>
@@ -2883,7 +2876,7 @@ function BodyTodayCard({ user }) {
       {!checkin && (
         <p style={{
           margin: "2px 0 0", fontSize: 12, color: C.muted, fontStyle: "italic",
-          fontFamily: "'Inter', system-ui, sans-serif", lineHeight: 1.4,
+          lineHeight: 1.4,
         }}>
           No check-in yet — tap a chip below to log how you feel.
         </p>
@@ -3067,7 +3060,7 @@ function MorningStackCard({ user }) {
       <h3 style={cardTitle}>Morning stack</h3>
       {empty && (
         <p style={{
-          fontFamily: "'Inter', sans-serif", fontSize: 12, color: C.muted,
+          fontSize: 12, color: C.muted,
           padding: "12px 0",
         }}>
           {/* P2-3 — empty-state copy. */}
@@ -3114,11 +3107,11 @@ function ConsistencyCard() {
           {segments.map((s, i) => (
             <path key={i} d={s.path} fill="none" stroke={s.hit ? C.sage : "rgba(58,44,26,0.10)"} strokeWidth={8} strokeLinecap="round" />
           ))}
-          <text x={W/2} y={W/2 - 4} textAnchor="middle" fontFamily="'Fraunces', Georgia, serif" fontSize={26} fontWeight={500} fill={C.espresso}>{hits}</text>
-          <text x={W/2} y={W/2 + 16} textAnchor="middle" fontFamily="'Inter', sans-serif" fontSize={10} fill={C.muted} letterSpacing={1.2}>/ 28 DAYS</text>
+          <text x={W/2} y={W/2 - 4} textAnchor="middle" fontSize={26} fontWeight={500} fill={C.espresso}>{hits}</text>
+          <text x={W/2} y={W/2 + 16} textAnchor="middle" fontSize={10} fill={C.muted} letterSpacing={1.2}>/ 28 DAYS</text>
         </svg>
       </div>
-      <div style={{ textAlign: "center", fontFamily: "'Fraunces', Georgia, serif", fontSize: 14, color: C.espresso, marginTop: 4 }}>
+      <div style={{ textAlign: "center", fontSize: 14, color: C.espresso, marginTop: 4 }}>
         {hits} of 28 days this cycle
       </div>
       <div style={streakLeadersRow}>
@@ -3161,7 +3154,6 @@ function CustomRitualCard({ ritual }) {
           padding: "6px 10px", borderRadius: 9999,
           background: C.cream, border: "1px solid rgba(58,44,26,0.18)",
           color: C.espresso, cursor: "pointer",
-          fontFamily: "'Inter', system-ui, sans-serif",
           fontSize: 11.5, fontWeight: 700,
         }}
       ><Plus size={11} /> Mark done</button>
@@ -3271,8 +3263,7 @@ function RitualBundleCard({ bundle, user }) {
               padding: "2px 6px", borderRadius: 9999,
               background: "#FFF1E6", border: "1px solid #F4B860",
               color: "#A8580A", fontSize: 11, fontWeight: 700,
-              fontFamily: "'Inter', sans-serif",
-            }} aria-label={`Streak ${bestStreak} days`}>
+              }} aria-label={`Streak ${bestStreak} days`}>
               <span aria-hidden>🔥</span>{bestStreak}
             </span>
           )}
@@ -3676,7 +3667,7 @@ function MoodMentalHealthCard({ user, phase }) {
           onBlur={() => saveReflection("reflection_carrying", carrying, carryingEntryId, setCarryingEntryId)}
           placeholder="…"
           rows={2}
-          style={{ ...miniInput, minHeight: 44, resize: "vertical", fontFamily: "'Inter', sans-serif" }}
+          style={{ ...miniInput, minHeight: 44, resize: "vertical", }}
         />
       </label>
       <label style={miniInputLabel}>
@@ -3687,7 +3678,7 @@ function MoodMentalHealthCard({ user, phase }) {
           onBlur={() => saveReflection("reflection_relief", relief, reliefEntryId, setReliefEntryId)}
           placeholder="…"
           rows={2}
-          style={{ ...miniInput, minHeight: 44, resize: "vertical", fontFamily: "'Inter', sans-serif" }}
+          style={{ ...miniInput, minHeight: 44, resize: "vertical", }}
         />
       </label>
       <button
@@ -3771,7 +3762,7 @@ function CyclePsychologyCard() {
       <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 12px", borderRadius: 12, background: `${PHASE_DEEP[profile.phase]}1F`, border: `1px solid ${PHASE_DEEP[profile.phase]}33` }}>
         <span style={{ width: 12, height: 12, borderRadius: 9999, background: PHASE_DEEP[profile.phase] }} />
         <div>
-          <div style={{ fontFamily: "'Fraunces', Georgia, serif", fontSize: 16, fontWeight: 500, color: C.espresso }}>
+          <div style={{ fontSize: 16, fontWeight: 500, color: C.espresso }}>
             {profile.phase[0].toUpperCase() + profile.phase.slice(1)} · {seasonNames[profile.phase]}
           </div>
         </div>
@@ -3841,7 +3832,7 @@ function MacroTrackerCard({ user, profile: profileProp }) {
       {noMealsLoggedYet && (
         <p style={{
           margin: "2px 0 4px", fontSize: 12, color: C.muted, fontStyle: "italic",
-          fontFamily: "'Inter', system-ui, sans-serif", lineHeight: 1.4,
+          lineHeight: 1.4,
         }}>
           No meals logged today — tap + to add.
         </p>
@@ -3860,7 +3851,7 @@ function MacroTrackerCard({ user, profile: profileProp }) {
                 <circle cx={32} cy={32} r={R} fill="none" stroke={m.tone} strokeWidth={5}
                   strokeLinecap="round" strokeDasharray={CIRC} strokeDashoffset={offset}
                   transform="rotate(-90 32 32)" />
-                <text x={32} y={36} textAnchor="middle" fontFamily="'Fraunces', Georgia, serif" fontSize={15} fontWeight="500" fill={C.espresso}>{display}</text>
+                <text x={32} y={36} textAnchor="middle" fontSize={15} fontWeight="500" fill={C.espresso}>{display}</text>
               </svg>
               <div style={macroLabel}>{display}/{m.target}{m.unit}</div>
               <div style={macroSub}>{m.label}</div>
@@ -4156,7 +4147,7 @@ function MedsAndSuppsCard({ user }) {
           /* P2-3 — empty state when no medications are on file. */
           <p style={{
             margin: "4px 0 0", fontSize: 12, color: C.muted, fontStyle: "italic",
-            fontFamily: "'Inter', system-ui, sans-serif", lineHeight: 1.4,
+            lineHeight: 1.4,
           }}>
             No medications logged — tap + below to add one.
           </p>
@@ -4483,7 +4474,7 @@ function TomorrowPreviewCard({ user, phase: todayPhase, cycleDay: todayCycleDay,
       <h3 style={cardTitle}>{tomorrowLabel}</h3>
       <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "8px 12px", borderRadius: 10, background: `${PHASE_LIGHT[tmPhase]}22`, border: `1px solid ${PHASE_LIGHT[tmPhase]}55` }}>
         <span style={{ width: 10, height: 10, borderRadius: 9999, background: PHASE_LIGHT[tmPhase] }} />
-        <span style={{ fontFamily: "'Fraunces', Georgia, serif", fontSize: 15, fontWeight: 500, color: C.espresso }}>
+        <span style={{ fontSize: 15, fontWeight: 500, color: C.espresso }}>
           {phaseQualifier ? `${phaseQualifier} ` : ""}{tmPhase[0].toUpperCase() + tmPhase.slice(1)} · Day {tmCycleDay}
         </span>
       </div>
@@ -5078,7 +5069,7 @@ function DayDetailSheet({ iso, onClose }) {
       <div style={{ ...modalCard, maxHeight: "85vh", overflowY: "auto", maxWidth: 580 }} onClick={(e) => e.stopPropagation()}>
         <div style={modalHead}>
           <button onClick={onClose} style={drawerCloseBtn}><ArrowLeft size={14} /></button>
-          <span style={{ flex: 1, textAlign: "center", fontFamily: "'Fraunces', Georgia, serif", fontSize: 14, fontWeight: 500, color: C.espresso }}>
+          <span style={{ flex: 1, textAlign: "center", fontSize: 14, fontWeight: 500, color: C.espresso }}>
             {date.toLocaleDateString(undefined, { month: "long", day: "numeric", year: "numeric" })}
           </span>
           <button
@@ -5400,7 +5391,6 @@ function RowAddFooter({ label, loggerType }) {
           background: "transparent",
           border: `1px dashed ${C.muted}66`,
           color: C.espresso, cursor: "pointer",
-          fontFamily: "'Inter', system-ui, sans-serif",
           fontSize: 12, fontWeight: 600,
           letterSpacing: "0.02em",
         }}
@@ -5444,7 +5434,6 @@ function BodyTodayChips({ phase, lifeStage }) {
           background: "rgba(143, 175, 143, 0.16)", // sage @ 16%
           border: "1px solid rgba(143, 175, 143, 0.36)",
           color: "#2F4A2F",
-          fontFamily: "'Inter', system-ui, sans-serif",
           fontSize: 11.5, fontWeight: 600,
           lineHeight: 1.3,
           maxWidth: 320,
@@ -5501,8 +5490,7 @@ function ConditionEmptyPrompt() {
             cursor: "pointer",
             fontSize: 12.5,
             fontWeight: 700,
-            fontFamily: "'Inter', system-ui, sans-serif",
-          }}
+            }}
         >
           Open Profile
           <ChevronRight size={13} />
@@ -5556,13 +5544,11 @@ function DemoFooter() {
 // ─────────────────────────────────────────────────────────────────────────────
 const shell = {
   background: C.cream, minHeight: "100vh", paddingBottom: 120,
-  fontFamily: "'Inter', system-ui, sans-serif",
   position: "relative",
 };
 const headerStyle = { padding: "20px 16px 8px", background: C.cream };
 const greetingRow = { display: "flex", alignItems: "center", gap: 8 };
 const greetingText = {
-  fontFamily: "'Fraunces', Georgia, serif",
   fontSize: 22, fontWeight: 700, color: C.espresso, margin: 0, letterSpacing: "-0.01em",
 };
 const greetingSub = { fontSize: 13, color: C.muted, marginTop: 4 };
@@ -5669,7 +5655,6 @@ const cardHeadRow = { display: "flex", alignItems: "center", gap: 8 };
 // trailing button (RitualBundleCard, MedsAndSuppsCard, MedicationsTodayCard,
 // SleepTargetCard) now pass `flex: 1` inline.
 const cardTitle = {
-  fontFamily: "'Fraunces', Georgia, serif",
   fontSize: 17, fontWeight: 500, color: C.espresso,
   margin: "2px 0", lineHeight: 1.25, letterSpacing: "-0.005em",
 };
@@ -5716,7 +5701,7 @@ const miniWeekLetter = {
   fontSize: 9, fontWeight: 700, color: "rgba(255,255,255,0.85)", letterSpacing: "0.10em",
 };
 const miniWeekNum = {
-  fontFamily: "'Fraunces', Georgia, serif", fontSize: 14, fontWeight: 500,
+  fontSize: 14, fontWeight: 500,
 };
 
 // Body card
@@ -5732,7 +5717,7 @@ const expandBtn = {
   cursor: "pointer", padding: 0,
 };
 const ringRow = { display: "flex", alignItems: "center", marginTop: 4 };
-const ringTitle = { fontFamily: "'Fraunces', Georgia, serif", fontSize: 16, fontWeight: 500, color: C.espresso };
+const ringTitle = { fontSize: 16, fontWeight: 500, color: C.espresso };
 const ringSub = { fontSize: 11, color: C.muted, marginTop: 2, fontStyle: "italic" };
 const miniChipRow = { display: "flex", flexWrap: "wrap", gap: 5, marginTop: 6 };
 const miniChip = {
@@ -5777,7 +5762,6 @@ const cycleBanner = {
   borderBottom: `1px solid ${C.gold}33`,
 };
 const cycleBannerLabel = {
-  fontFamily: "'Fraunces', Georgia, serif",
   fontSize: 24, fontWeight: 500, color: C.espresso,
   letterSpacing: "-0.01em", lineHeight: 1.1,
 };
@@ -5795,8 +5779,7 @@ const openCycleBtn = {
   display: "inline-flex", alignItems: "center", gap: 4,
   background: "transparent", color: C.espresso,
   border: "1px solid rgba(58,44,26,0.18)", borderRadius: 9999,
-  padding: "6px 12px", fontFamily: "'Inter', sans-serif",
-  fontSize: 11, fontWeight: 700, cursor: "pointer",
+  padding: "6px 12px", fontSize: 11, fontWeight: 700, cursor: "pointer",
 };
 
 // Sections / streak
@@ -5842,7 +5825,7 @@ const createRitualIcon = {
   width: 48, height: 48, borderRadius: 9999,
   background: `${C.gold}1F`, display: "inline-flex", alignItems: "center", justifyContent: "center",
 };
-const createRitualTitle = { fontFamily: "'Fraunces', Georgia, serif", fontSize: 17, fontWeight: 500, color: C.espresso };
+const createRitualTitle = { fontSize: 17, fontWeight: 500, color: C.espresso };
 const createRitualSub = { fontSize: 11, color: C.muted, fontStyle: "italic", textAlign: "center" };
 const countChip = {
   marginLeft: "auto", fontSize: 9, fontWeight: 700, letterSpacing: "0.10em",
@@ -5915,26 +5898,26 @@ const weekChip = {
   cursor: "pointer", fontFamily: "inherit",
 };
 const weekChipLetter = { fontSize: 9, letterSpacing: "0.10em", fontWeight: 700 };
-const weekChipDate = { fontFamily: "'Fraunces', Georgia, serif", fontSize: 14, fontWeight: 500 };
+const weekChipDate = { fontSize: 14, fontWeight: 500 };
 const weekChipDot = { width: 6, height: 6, borderRadius: 9999 };
 const weekPopover = {
   marginTop: 8, padding: "8px 12px", borderRadius: 10,
   background: C.cream, border: "1px solid rgba(58,44,26,0.08)",
 };
 const weekPopText = {
-  fontFamily: "'Fraunces', Georgia, serif", fontSize: 13, color: C.espresso, margin: "4px 0 0",
+  fontSize: 13, color: C.espresso, margin: "4px 0 0",
 };
 
 // Intention
 const intentionPromptStyle = {
-  fontFamily: "Cormorant Garamond, Georgia, serif", fontStyle: "italic",
+  fontStyle: "italic",
   fontSize: 13, color: C.muted, margin: "4px 0",
 };
 const intentionTextarea = {
   width: "100%", padding: "10px 12px",
   borderRadius: 10, background: C.cream,
   border: "1px solid rgba(58,44,26,0.10)",
-  fontFamily: "Cormorant Garamond, Georgia, serif", fontSize: 13, color: C.espresso,
+  fontSize: 13, color: C.espresso,
   lineHeight: 1.55, outline: "none", resize: "vertical",
   boxSizing: "border-box",
 };
@@ -5952,7 +5935,6 @@ const astraAvatar = {
   display: "inline-flex", alignItems: "center", justifyContent: "center",
 };
 const astraShort = {
-  fontFamily: "Cormorant Garamond, Georgia, serif",
   fontSize: 13, color: C.espresso, lineHeight: 1.55, margin: 0,
 };
 const astraOpenBtn = {
@@ -5962,7 +5944,7 @@ const astraOpenBtn = {
   color: C.espresso, fontSize: 12, fontWeight: 700, cursor: "pointer", padding: 0,
 };
 const astraSheetText = {
-  fontFamily: "Cormorant Garamond, Georgia, serif", fontSize: 14, color: C.espresso,
+  fontSize: 14, color: C.espresso,
   lineHeight: 1.65, margin: 0,
 };
 
@@ -5991,7 +5973,7 @@ const hydroBtn = {
   cursor: "pointer", padding: 0,
 };
 const tipText = {
-  fontFamily: "Cormorant Garamond, Georgia, serif", fontStyle: "italic",
+  fontStyle: "italic",
   fontSize: 12, color: C.muted, margin: "8px 0 0", lineHeight: 1.55,
 };
 
@@ -6019,10 +6001,9 @@ const reflectionInput = {
   padding: "7px 10px", borderRadius: 8,
   background: C.cream, border: "1px solid rgba(58,44,26,0.10)",
   fontSize: 12, color: C.espresso, outline: "none",
-  fontFamily: "'Inter', sans-serif",
-};
+  };
 const sleepTargetTime = {
-  fontFamily: "'Fraunces', Georgia, serif", fontSize: 18, fontWeight: 500,
+  fontSize: 18, fontWeight: 500,
   color: C.espresso, margin: "4px 0",
 };
 const sleepLastNight = { padding: "8px 10px", borderRadius: 10, background: C.cream, marginTop: 4 };
@@ -6048,7 +6029,6 @@ const reportSectionRow = {
   background: C.paperHi, border: "1px solid rgba(58,44,26,0.08)",
 };
 const reportSectionLabel = {
-  fontFamily: "'Fraunces', Georgia, serif",
   fontSize: 14, fontWeight: 500, color: C.espresso,
 };
 const reportSectionDesc = { fontSize: 11, color: C.muted, marginTop: 2, lineHeight: 1.4 };
@@ -6058,8 +6038,7 @@ const overlayShell = {
   position: "fixed", inset: 0,
   background: C.cream, zIndex: 90,
   overflowY: "auto",
-  fontFamily: "'Inter', system-ui, sans-serif",
-};
+  };
 const overlayHead = {
   position: "sticky", top: 0, zIndex: 1,
   display: "flex", alignItems: "center", gap: 8,
@@ -6075,7 +6054,6 @@ const overlayClose = {
   cursor: "pointer", padding: 0,
 };
 const overlayTitle = {
-  fontFamily: "'Fraunces', Georgia, serif",
   fontSize: 22, fontWeight: 500, color: C.espresso,
   margin: "2px 0 0", letterSpacing: "-0.01em",
 };
@@ -6168,7 +6146,7 @@ const dayTileToday = {
   borderRadius: 10,
   boxShadow: "0 2px 8px rgba(58,44,26,0.15)",
 };
-const dayNum = { fontFamily: "'Fraunces', Georgia, serif", fontSize: 16, fontWeight: 500 };
+const dayNum = { fontSize: 16, fontWeight: 500 };
 const daySymptomDash = { width: 14, height: 2, borderRadius: 9999 };
 const cycleLegendRow = { display: "flex", flexWrap: "wrap", gap: 10, marginTop: 14, padding: "0 4px" };
 const cycleLegendChip = {
@@ -6236,7 +6214,7 @@ const voiceMicWrap = {
   width: 84, height: 84, borderRadius: 9999,
   display: "inline-flex", alignItems: "center", justifyContent: "center", cursor: "pointer",
 };
-const voiceTitle = { fontFamily: "'Fraunces', Georgia, serif", fontSize: 17, fontWeight: 500, color: C.espresso, margin: "8px 0 0" };
+const voiceTitle = { fontSize: 17, fontWeight: 500, color: C.espresso, margin: "8px 0 0" };
 const voiceSub = { fontSize: 12, color: C.muted, margin: "4px 0 0" };
 const parsedCard = {
   marginTop: 10, padding: "10px 12px", borderRadius: 12,
@@ -6291,7 +6269,6 @@ const drawerCloseBtn = {
   cursor: "pointer", flexShrink: 0,
 };
 const modalTitle = {
-  fontFamily: "'Fraunces', Georgia, serif",
   fontSize: 22, fontWeight: 500, color: C.espresso,
   letterSpacing: "-0.01em", margin: "4px 0 14px", lineHeight: 1.25,
 };
@@ -6305,7 +6282,6 @@ const modalInput = {
   borderRadius: 10, background: C.paperHi,
   border: "1px solid rgba(58,44,26,0.15)",
   fontSize: 14, color: C.espresso, outline: "none",
-  fontFamily: "'Inter', sans-serif",
   boxSizing: "border-box",
 };
 const chipRowSpacing = { display: "flex", flexWrap: "wrap", gap: 5, marginBottom: 14 };
@@ -6348,7 +6324,6 @@ const planPillBtn = {
   padding: "5px 12px", borderRadius: 9999,
   background: C.paperHi, color: C.espresso,
   border: "1px solid rgba(58,44,26,0.15)",
-  fontFamily: "'Inter', sans-serif",
   fontSize: 11, fontWeight: 700, letterSpacing: "0.04em",
   cursor: "pointer",
 };
@@ -6379,7 +6354,6 @@ const heroSunWrap = {
   opacity: 0.85,
 };
 const heroTitle = {
-  fontFamily: "'Fraunces', Georgia, serif",
   fontSize: 26, fontWeight: 500, color: C.espresso,
   margin: "4px 0 0", lineHeight: 1.2, letterSpacing: "-0.015em",
 };
@@ -6415,7 +6389,6 @@ const yourDayIconChip = {
   display: "inline-flex", alignItems: "center", justifyContent: "center",
 };
 const yourDayLabel = {
-  fontFamily: "'Inter', sans-serif",
   fontSize: 11, fontWeight: 700, letterSpacing: "0.18em",
 };
 const yourDaySectionLine = {
@@ -6431,8 +6404,7 @@ const yourDaySectionName = {
   // to feel like a section rule rather than content.
   fontSize: 10, fontWeight: 700, letterSpacing: "0.18em",
   color: C.muted,
-  fontFamily: "'Inter', sans-serif",
-};
+  };
 const yourDayItemRow = {
   display: "flex", alignItems: "center", gap: 8,
   padding: "4px 0",
@@ -6446,7 +6418,6 @@ const yourDayAddBtn = {
   padding: "5px 12px", borderRadius: 9999,
   background: "transparent",
   border: "1px dashed",
-  fontFamily: "'Inter', sans-serif",
   fontSize: 11, fontWeight: 700, letterSpacing: "0.04em",
   cursor: "pointer",
 };
@@ -6474,13 +6445,11 @@ const addPlanLineBtn = {
 
 // ── Cycle overlay roman numeral badge ─────────────────────────────────────
 const overlayTitleWithRoman = {
-  fontFamily: "'Fraunces', Georgia, serif",
   fontSize: 22, fontWeight: 500, color: C.espresso,
   margin: "2px 0 0", letterSpacing: "-0.01em",
   display: "inline-flex", alignItems: "baseline", gap: 8,
 };
 const cycleRomanBadge = {
-  fontFamily: "'Fraunces', Georgia, serif",
   fontSize: 14, fontWeight: 600, fontStyle: "italic",
   color: C.gold, letterSpacing: "0.04em",
 };
@@ -6507,7 +6476,7 @@ const miniInput = {
   padding: "7px 10px",
   borderRadius: 8, background: C.cream,
   border: "1px solid rgba(58,44,26,0.10)",
-  fontFamily: "'Inter', sans-serif", fontSize: 12,
+  fontSize: 12,
   color: C.espresso, outline: "none",
   boxSizing: "border-box",
 };
@@ -6528,7 +6497,6 @@ const breathwork = {
   width: "100%",
 };
 const breathName = {
-  fontFamily: "'Fraunces', Georgia, serif",
   fontSize: 14, fontWeight: 500, color: C.espresso, lineHeight: 1.2,
 };
 const breathMeta = {
@@ -6551,7 +6519,6 @@ const macroSub = {
 
 // Hydration
 const hydrationCount = {
-  fontFamily: "'Fraunces', Georgia, serif",
   fontSize: 28, fontWeight: 500, color: C.espresso, lineHeight: 1,
 };
 const hydroGlassRow = {

@@ -23,7 +23,6 @@ function BookCoverArt({ title, kindLabel }) {
       {/* Big translucent serif initial */}
       <span
         style={{
-          fontFamily: "'Fraunces', serif",
           fontWeight: 300,
           fontSize: 'clamp(120px, 32vw, 200px)',
           lineHeight: 1,
@@ -41,7 +40,6 @@ function BookCoverArt({ title, kindLabel }) {
         textAlign: 'center',
       }}>
         <p style={{
-          fontFamily: "'Fraunces', serif",
           fontStyle: 'italic',
           fontWeight: 400,
           fontSize: 'clamp(15px, 3.4vw, 18px)',
@@ -55,7 +53,6 @@ function BookCoverArt({ title, kindLabel }) {
         </p>
         {kindLabel && (
           <p style={{
-            fontFamily: "'Inter', sans-serif",
             fontSize: 10,
             fontWeight: 700,
             letterSpacing: '0.12em',
@@ -144,7 +141,6 @@ function FemwellBookCard({ book, isSaved, onHeartClick, onOpen }) {
             borderRadius: 9999,
             background: 'var(--rose-primary)',
             color: 'var(--cream)',
-            fontFamily: "'Inter', sans-serif",
             fontSize: 10,
             fontWeight: 700,
             letterSpacing: '0.08em',
@@ -172,7 +168,6 @@ function FemwellBookCard({ book, isSaved, onHeartClick, onOpen }) {
 
       <div style={{ padding: 16 }}>
         <p style={{
-          fontFamily: "'Fraunces', serif",
           fontSize: 17, fontWeight: 500,
           color: 'var(--plum-deep)',
           margin: 0, lineHeight: 1.3,
@@ -184,7 +179,6 @@ function FemwellBookCard({ book, isSaved, onHeartClick, onOpen }) {
             chapter prose here — that's what the reader is for. */}
         {book.summary && (
           <p style={{
-            fontFamily: "'Inter', sans-serif",
             fontSize: 13, fontWeight: 400,
             color: 'var(--plum-mute)',
             marginTop: 8, marginBottom: 0,
@@ -207,7 +201,6 @@ function FemwellBookCard({ book, isSaved, onHeartClick, onOpen }) {
               <span
                 key={tag}
                 style={{
-                  fontFamily: "'Inter', sans-serif",
                   fontSize: 10,
                   fontWeight: 600,
                   letterSpacing: '0.04em',
@@ -222,7 +215,6 @@ function FemwellBookCard({ book, isSaved, onHeartClick, onOpen }) {
             ))}
             {book.chapterCount > 1 && (
               <span style={{
-                fontFamily: "'Inter', sans-serif",
                 fontSize: 10,
                 fontWeight: 600,
                 letterSpacing: '0.04em',
@@ -291,7 +283,6 @@ function GutenbergBookCard({ book, isSaved, onHeartClick, onOpen }) {
 
       <div style={{ padding: 16 }}>
         <p style={{
-          fontFamily: "'Fraunces', serif",
           fontSize: 17, fontWeight: 500,
           color: 'var(--plum-deep)',
           margin: 0, lineHeight: 1.3,
@@ -300,7 +291,6 @@ function GutenbergBookCard({ book, isSaved, onHeartClick, onOpen }) {
           {book.title}
         </p>
         <p style={{
-          fontFamily: "'Inter', sans-serif",
           fontSize: 12, fontWeight: 500,
           color: 'var(--plum-mute)',
           marginTop: 6, marginBottom: 0,
@@ -336,7 +326,7 @@ export default function BooksGrid({ books, loading, savedSet, onHeartClick }) {
   if (loading) {
     return (
       <div style={{ textAlign: 'center', padding: '48px 24px' }}>
-        <p style={{ fontFamily: "'Inter', sans-serif", fontSize: 13, color: 'var(--plum-mute)' }}>
+        <p style={{ fontSize: 13, color: 'var(--plum-mute)' }}>
           Loading books&hellip;
         </p>
       </div>
@@ -346,10 +336,10 @@ export default function BooksGrid({ books, loading, savedSet, onHeartClick }) {
   if (!books || books.length === 0) {
     return (
       <div style={{ textAlign: 'center', padding: '48px 24px' }}>
-        <p style={{ fontFamily: "'Fraunces', serif", fontSize: 22, fontWeight: 400, color: 'var(--plum-deep)', marginBottom: 10 }}>
+        <p style={{ fontSize: 22, fontWeight: 400, color: 'var(--plum-deep)', marginBottom: 10 }}>
           No books here yet
         </p>
-        <p style={{ fontFamily: "'Inter', sans-serif", fontSize: 14, color: 'var(--plum-mute)' }}>
+        <p style={{ fontSize: 14, color: 'var(--plum-mute)' }}>
           FemWell originals + free public-domain books from Project Gutenberg.
         </p>
       </div>

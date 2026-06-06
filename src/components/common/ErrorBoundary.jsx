@@ -41,8 +41,7 @@ export default class ErrorBoundary extends React.Component {
           justifyContent: "center",
           padding: "24px",
           backgroundColor: "var(--ivory, #FAF8F5)",
-          fontFamily: "'Inter', sans-serif",
-        }}
+          }}
       >
         <div
           style={{
@@ -73,7 +72,6 @@ export default class ErrorBoundary extends React.Component {
           </div>
           <h2
             style={{
-              fontFamily: "'Fraunces', serif",
               fontSize: 22,
               fontWeight: 700,
               color: "var(--plum, #2A2035)",
@@ -106,8 +104,7 @@ export default class ErrorBoundary extends React.Component {
                 fontWeight: 600,
                 border: "none",
                 cursor: "pointer",
-                fontFamily: "'Inter', sans-serif",
-              }}
+                }}
             >
               Reload
             </button>
@@ -124,8 +121,7 @@ export default class ErrorBoundary extends React.Component {
                 fontSize: 13,
                 fontWeight: 600,
                 cursor: "pointer",
-                fontFamily: "'Inter', sans-serif",
-              }}
+                }}
             >
               Go Home
             </button>

@@ -479,7 +479,7 @@ export default function Trends() {
             <div className="space-y-2">
               {correlations.slice(0, 3).map((c, i) => (
                 <div key={i} className="rounded-xl px-4 py-3 text-sm"
-                  style={{ backgroundColor: "var(--rose-dust-subtle)", border: "1px solid var(--rose-dust-light)", color: "var(--plum)", fontFamily: "'Inter', sans-serif", lineHeight: 1.5 }}>
+                  style={{ backgroundColor: "var(--rose-dust-subtle)", border: "1px solid var(--rose-dust-light)", color: "var(--plum)", lineHeight: 1.5 }}>
                   {c.explanation_text || `${c.metric_a?.replace(/_/g," ")} correlates with ${c.metric_b?.replace(/_/g," ")}`}
                 </div>
               ))}
@@ -498,15 +498,15 @@ export default function Trends() {
           <div>
             <p style={{ fontSize: "0.6rem", fontWeight: 600, textTransform: "uppercase",
                         letterSpacing: "0.12em", color: "var(--mauve)",
-                        fontFamily: "'Inter', sans-serif" }}>
+                        }}>
               Dedicated tracker
             </p>
             <p style={{ fontSize: "14px", fontWeight: 700, color: "var(--plum)",
-                        fontFamily: "'Inter', sans-serif", marginTop: "2px" }}>
+                        marginTop: "2px" }}>
               Skin &amp; Hair Trends
             </p>
             <p style={{ fontSize: "12px", color: "var(--mauve)",
-                        fontFamily: "'Inter', sans-serif", marginTop: "4px" }}>
+                        marginTop: "4px" }}>
               Phase-by-phase breakout patterns, shedding data and more
             </p>
           </div>
@@ -515,7 +515,6 @@ export default function Trends() {
             style={{ backgroundColor: "var(--plum)", color: "white",
                      borderRadius: "9999px", padding: "8px 18px",
                      fontSize: "12px", fontWeight: 600,
-                     fontFamily: "'Inter', sans-serif",
                      textDecoration: "none", flexShrink: 0 }}
           >
             View

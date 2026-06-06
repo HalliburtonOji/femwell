@@ -43,11 +43,10 @@ export default function PatternInsightCards({ userId }) {
         <p style={{
           fontSize: "0.55rem", fontWeight: 700, textTransform: "uppercase",
           letterSpacing: "0.14em", color: "var(--rose-dust)",
-          fontFamily: "'Inter', sans-serif",
-        }}>Your patterns</p>
+          }}>Your patterns</p>
         <p style={{
           fontSize: "18px", fontWeight: 700, color: "var(--plum)",
-          fontFamily: "'Inter', sans-serif", marginTop: "3px",
+          marginTop: "3px",
         }}>AI-detected insights</p>
       </div>
 
@@ -83,7 +82,6 @@ export default function PatternInsightCards({ userId }) {
                   padding: "3px 10px",
                   fontSize: 10,
                   fontWeight: 700,
-                  fontFamily: "'Inter', sans-serif",
                   textTransform: "capitalize",
                   marginBottom: 10,
                 }}>
@@ -95,7 +93,7 @@ export default function PatternInsightCards({ userId }) {
               <p style={{
                 fontSize: 9, fontWeight: 700, textTransform: "uppercase",
                 letterSpacing: "0.1em", color: "var(--mauve)",
-                fontFamily: "'Inter', sans-serif", marginBottom: 6,
+                marginBottom: 6,
               }}>
                 {SOURCE_LABELS[card.source] || card.source}
               </p>
@@ -103,7 +101,6 @@ export default function PatternInsightCards({ userId }) {
               <p style={{
                 fontSize: 13, fontWeight: 700,
                 color: "var(--plum)",
-                fontFamily: "'Inter', sans-serif",
                 marginBottom: 8, lineHeight: 1.3,
               }}>
                 {card.title}
@@ -111,7 +108,6 @@ export default function PatternInsightCards({ userId }) {
 
               <p style={{
                 fontSize: 12, color: "var(--mauve)",
-                fontFamily: "'Inter', sans-serif",
                 lineHeight: 1.6,
               }}>
                 {card.insight_text}
@@ -123,7 +119,7 @@ export default function PatternInsightCards({ userId }) {
                   style={{
                     display: "inline-block", marginTop: 10,
                     fontSize: 11, fontWeight: 600, color: colors.text,
-                    fontFamily: "'Inter', sans-serif", textDecoration: "none",
+                    textDecoration: "none",
                   }}
                 >
                   Learn more →

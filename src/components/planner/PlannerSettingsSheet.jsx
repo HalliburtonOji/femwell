@@ -176,11 +176,10 @@ export default function PlannerSettingsSheet({ open, onClose, userId, profileId,
             <p style={{
               margin: 0, fontSize: 10, fontWeight: 700,
               letterSpacing: "0.18em", textTransform: "uppercase",
-              color: C.muted, fontFamily: "'Inter', sans-serif",
-            }}>Personalise</p>
+              color: C.muted, }}>Personalise</p>
             <h2 style={{
               margin: "2px 0 0", fontSize: 18, fontWeight: 500,
-              fontFamily: "'Fraunces', Georgia, serif", color: C.espresso,
+              color: C.espresso,
             }}>Planner rows</h2>
           </div>
           <button
@@ -240,14 +239,12 @@ export default function PlannerSettingsSheet({ open, onClose, userId, profileId,
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <p style={{
                     margin: 0, fontSize: 14, color: C.espresso,
-                    fontFamily: "'Inter', system-ui, sans-serif",
                     fontWeight: 600,
                     textDecoration: hidden ? "line-through" : "none",
                   }}>{def.label}</p>
                   {def.core && (
                     <p style={{
                       margin: "2px 0 0", fontSize: 10, color: C.muted,
-                      fontFamily: "'Inter', system-ui, sans-serif",
                       fontStyle: "italic",
                     }}>Always shown</p>
                   )}
@@ -297,7 +294,6 @@ export default function PlannerSettingsSheet({ open, onClose, userId, profileId,
               padding: "8px 12px", borderRadius: 9999,
               background: "transparent", border: `1px solid ${C.muted}55`,
               color: C.muted, cursor: "pointer",
-              fontFamily: "'Inter', system-ui, sans-serif",
               fontSize: 12, fontWeight: 600,
             }}
           ><RotateCcw size={12} /> Reset</button>
@@ -310,7 +306,6 @@ export default function PlannerSettingsSheet({ open, onClose, userId, profileId,
               padding: "10px 18px", borderRadius: 9999,
               background: C.espresso, color: C.cream, border: "none",
               cursor: "pointer",
-              fontFamily: "'Inter', system-ui, sans-serif",
               fontSize: 13, fontWeight: 700,
             }}
           ><Check size={13} /> Save</button>

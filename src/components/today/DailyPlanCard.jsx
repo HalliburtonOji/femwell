@@ -47,7 +47,7 @@ export default function DailyPlanCard({ user }) {
   return (
     <div style={card}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
-        <p style={{ fontSize: "0.6rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.12em", color: "var(--rose-dust)", fontFamily: "'Inter', sans-serif" }}>Your plan today</p>
+        <p style={{ fontSize: "0.6rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.12em", color: "var(--rose-dust)", }}>Your plan today</p>
         <button onClick={() => generate(true)} disabled={generating}
           style={{ border: "none", background: "none", cursor: "pointer", color: "var(--mauve)", display: "flex", alignItems: "center", padding: 2 }}>
           <RefreshCw style={{ width: 13, height: 13 }} className={generating ? "animate-spin" : ""} />
@@ -55,7 +55,7 @@ export default function DailyPlanCard({ user }) {
       </div>
       {p.focus_for_today && (
         <div style={{ backgroundColor: "var(--rose-dust-subtle)", borderRadius: 12, padding: "10px 14px", marginBottom: 12 }}>
-          <p style={{ fontSize: 14, fontWeight: 600, color: "var(--plum)", fontFamily: "'Fraunces', serif", lineHeight: 1.3 }}>{p.focus_for_today}</p>
+          <p style={{ fontSize: 14, fontWeight: 600, color: "var(--plum)", lineHeight: 1.3 }}>{p.focus_for_today}</p>
         </div>
       )}
       <div style={{ display: "flex", flexDirection: "column", gap: 7 }}>
@@ -66,8 +66,8 @@ export default function DailyPlanCard({ user }) {
           { label: "Read", value: p.lifestyle_suggestion },
         ].filter(item => item.value).map(({ label, value }) => (
           <div key={label} style={{ display: "flex", gap: 8, alignItems: "flex-start" }}>
-            <span style={{ fontSize: 9, fontWeight: 700, color: "var(--rose-dust)", backgroundColor: "var(--rose-dust-subtle)", borderRadius: 6, padding: "2px 6px", textTransform: "uppercase", letterSpacing: "0.06em", flexShrink: 0, marginTop: 1, fontFamily: "'Inter', sans-serif" }}>{label}</span>
-            <p style={{ fontSize: 12, color: "var(--plum)", lineHeight: 1.5, fontFamily: "'Inter', sans-serif" }}>{value}</p>
+            <span style={{ fontSize: 9, fontWeight: 700, color: "var(--rose-dust)", backgroundColor: "var(--rose-dust-subtle)", borderRadius: 6, padding: "2px 6px", textTransform: "uppercase", letterSpacing: "0.06em", flexShrink: 0, marginTop: 1, }}>{label}</span>
+            <p style={{ fontSize: 12, color: "var(--plum)", lineHeight: 1.5, }}>{value}</p>
           </div>
         ))}
       </div>

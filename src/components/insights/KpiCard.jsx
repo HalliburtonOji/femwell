@@ -6,8 +6,7 @@ const label = {
   textTransform: "uppercase",
   letterSpacing: "0.1em",
   color: "var(--slate-500, #64748B)",
-  fontFamily: "'Inter', sans-serif",
-};
+  };
 
 export function Sparkline({ values = [], color = "var(--rose-deep, #E11D74)" }) {
   if (!values.length) return null;
@@ -39,7 +38,7 @@ function TrendBadge({ delta, unit = "" }) {
   const rounded = Math.round(delta * 10) / 10;
   if (rounded === 0) {
     return (
-      <span style={{ display: "inline-flex", alignItems: "center", gap: 2, fontSize: 10, color: "var(--slate-500, #64748B)", fontFamily: "'Inter', sans-serif" }}>
+      <span style={{ display: "inline-flex", alignItems: "center", gap: 2, fontSize: 10, color: "var(--slate-500, #64748B)", }}>
         <Minus className="w-3 h-3" strokeWidth={1.8} />
         flat
       </span>
@@ -49,7 +48,7 @@ function TrendBadge({ delta, unit = "" }) {
   const color = positive ? "#15803D" : "#B91C1C";
   const Icon = positive ? ArrowUp : ArrowDown;
   return (
-    <span style={{ display: "inline-flex", alignItems: "center", gap: 2, fontSize: 10, color, fontFamily: "'Inter', sans-serif", fontWeight: 600 }}>
+    <span style={{ display: "inline-flex", alignItems: "center", gap: 2, fontSize: 10, color, fontWeight: 600 }}>
       <Icon className="w-3 h-3" strokeWidth={2} />
       {Math.abs(rounded)}{unit}
     </span>
@@ -76,11 +75,11 @@ export default function KpiCard({ label: caption, value, subtext, sparkline, spa
       <p style={label}>{caption}</p>
       <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", gap: 8, marginTop: 6 }}>
         <div>
-          <p style={{ fontSize: 22, fontWeight: 700, color: "var(--plum)", fontFamily: "'Inter', sans-serif", lineHeight: 1.1 }}>
+          <p style={{ fontSize: 22, fontWeight: 700, color: "var(--plum)", lineHeight: 1.1 }}>
             {value ?? "—"}
           </p>
           {subtext && (
-            <p style={{ fontSize: 11, color: "var(--slate-500, #64748B)", fontFamily: "'Inter', sans-serif", marginTop: 3 }}>
+            <p style={{ fontSize: 11, color: "var(--slate-500, #64748B)", marginTop: 3 }}>
               {subtext}
             </p>
           )}

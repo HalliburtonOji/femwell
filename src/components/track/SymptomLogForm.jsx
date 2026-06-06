@@ -12,15 +12,14 @@ const sLabel = {
   textTransform: "uppercase",
   letterSpacing: "0.1em",
   color: "var(--mauve)",
-  fontFamily: "'Inter', sans-serif",
-};
+  };
 
 function Slider({ label, value, onChange, ariaLabel }) {
   return (
     <div style={{ marginBottom: 14 }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
-        <span style={{ fontSize: 13, fontWeight: 600, color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>{label}</span>
-        <span style={{ fontSize: 12, color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>{value || "—"}/5</span>
+        <span style={{ fontSize: 13, fontWeight: 600, color: "var(--plum)", }}>{label}</span>
+        <span style={{ fontSize: 12, color: "var(--mauve)", }}>{value || "—"}/5</span>
       </div>
       <div style={{ display: "flex", gap: 6 }}>
         {[1, 2, 3, 4, 5].map(n => (
@@ -32,8 +31,7 @@ function Slider({ label, value, onChange, ariaLabel }) {
             aria-pressed={value === n}
             style={{
               flex: 1, minHeight: 44, borderRadius: 10, border: "none", cursor: "pointer",
-              fontSize: 14, fontWeight: 700, fontFamily: "'Inter', sans-serif",
-              backgroundColor: value === n ? "var(--plum)" : "var(--ivory-dark)",
+              fontSize: 14, fontWeight: 700, backgroundColor: value === n ? "var(--plum)" : "var(--ivory-dark)",
               color: value === n ? "white" : "var(--mauve)",
             }}
           >
@@ -108,14 +106,14 @@ export default function SymptomLogForm({ userId, dateStr, existing, onSaved }) {
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
         <p style={sLabel}>Log today</p>
         {savedAt && (
-          <span style={{ fontSize: 10, color: "var(--sage)", fontFamily: "'Inter', sans-serif" }}>
+          <span style={{ fontSize: 10, color: "var(--sage)", }}>
             Updated {new Date(savedAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
           </span>
         )}
       </div>
 
       {/* Symptom chip picker */}
-      <p style={{ fontSize: 11, fontWeight: 600, color: "var(--mauve)", textTransform: "uppercase", letterSpacing: "0.08em", fontFamily: "'Inter', sans-serif", marginBottom: 8 }}>Symptoms</p>
+      <p style={{ fontSize: 11, fontWeight: 600, color: "var(--mauve)", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 8 }}>Symptoms</p>
       <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 16 }}>
         {SYMPTOM_VOCAB.map(slug => {
           const active = symptoms.includes(slug);
@@ -132,8 +130,7 @@ export default function SymptomLogForm({ userId, dateStr, existing, onSaved }) {
                 backgroundColor: active ? "var(--plum)" : "transparent",
                 color: active ? "white" : "var(--mauve)",
                 fontSize: 12, fontWeight: 600, cursor: "pointer",
-                fontFamily: "'Inter', sans-serif",
-              }}
+                }}
             >
               {symptomLabel(slug)}
             </button>
@@ -148,7 +145,7 @@ export default function SymptomLogForm({ userId, dateStr, existing, onSaved }) {
       <div style={{ marginBottom: 14 }}>
         <label
           htmlFor="sleep-hours-input"
-          style={{ display: "block", fontSize: 13, fontWeight: 600, color: "var(--plum)", fontFamily: "'Inter', sans-serif", marginBottom: 6 }}
+          style={{ display: "block", fontSize: 13, fontWeight: 600, color: "var(--plum)", marginBottom: 6 }}
         >
           Sleep hours (optional)
         </label>
@@ -165,7 +162,7 @@ export default function SymptomLogForm({ userId, dateStr, existing, onSaved }) {
             width: "100%", minHeight: 44, padding: "10px 14px",
             borderRadius: 12, border: "1.5px solid var(--border)",
             backgroundColor: "var(--ivory)", color: "var(--plum)",
-            fontSize: 14, fontFamily: "'Inter', sans-serif", outline: "none",
+            fontSize: 14, outline: "none",
           }}
         />
       </div>
@@ -173,7 +170,7 @@ export default function SymptomLogForm({ userId, dateStr, existing, onSaved }) {
       <div style={{ marginBottom: 16 }}>
         <label
           htmlFor="checkin-notes"
-          style={{ display: "block", fontSize: 13, fontWeight: 600, color: "var(--plum)", fontFamily: "'Inter', sans-serif", marginBottom: 6 }}
+          style={{ display: "block", fontSize: 13, fontWeight: 600, color: "var(--plum)", marginBottom: 6 }}
         >
           Notes (optional)
         </label>
@@ -187,10 +184,10 @@ export default function SymptomLogForm({ userId, dateStr, existing, onSaved }) {
             width: "100%", padding: "10px 14px", resize: "vertical",
             borderRadius: 12, border: "1.5px solid var(--border)",
             backgroundColor: "var(--ivory)", color: "var(--plum)",
-            fontSize: 14, fontFamily: "'Inter', sans-serif", outline: "none",
+            fontSize: 14, outline: "none",
           }}
         />
-        <p style={{ fontSize: 10, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", marginTop: 4, textAlign: "right" }}>
+        <p style={{ fontSize: 10, color: "var(--mauve)", marginTop: 4, textAlign: "right" }}>
           {notesRemaining} characters left
         </p>
       </div>
@@ -204,7 +201,7 @@ export default function SymptomLogForm({ userId, dateStr, existing, onSaved }) {
           width: "100%", minHeight: 48, borderRadius: 9999,
           backgroundColor: "var(--plum)", color: "white", border: "none",
           fontSize: 14, fontWeight: 600, cursor: "pointer",
-          fontFamily: "'Inter', sans-serif", opacity: saving ? 0.6 : 1,
+          opacity: saving ? 0.6 : 1,
         }}
       >
         {saving ? <><Loader2 className="w-4 h-4 animate-spin" /> Saving…</> : <><Check className="w-4 h-4" /> Save log</>}

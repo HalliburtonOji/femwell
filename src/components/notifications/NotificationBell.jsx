@@ -75,7 +75,7 @@ export default function NotificationBell({ userId }) {
         <Bell className="w-4 h-4" style={{ color: "var(--plum)" }} />
         {unreadCount > 0 && (
           <span className="absolute -top-1 -right-1 flex items-center justify-center rounded-full text-white"
-            style={{ backgroundColor: "var(--rose-dust)", minWidth: 16, height: 16, fontSize: 9, fontWeight: 700, fontFamily: "'Inter', sans-serif", padding: "0 3px" }}>
+            style={{ backgroundColor: "var(--rose-dust)", minWidth: 16, height: 16, fontSize: 9, fontWeight: 700, padding: "0 3px" }}>
             {unreadCount > 9 ? "9+" : unreadCount}
           </span>
         )}
@@ -90,10 +90,10 @@ export default function NotificationBell({ userId }) {
           >
             {/* Header */}
             <div className="flex items-center justify-between px-5 py-4" style={{ borderBottom: "1px solid var(--border)" }}>
-              <h3 style={{ fontSize: 17, fontWeight: 700, color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>Notifications</h3>
+              <h3 style={{ fontSize: 17, fontWeight: 700, color: "var(--plum)", }}>Notifications</h3>
               <div className="flex items-center gap-3">
                 {unreadCount > 0 && (
-                  <button onClick={markAllRead} style={{ fontSize: 12, color: "var(--rose-dust)", fontFamily: "'Inter', sans-serif", fontWeight: 600, background: "none", border: "none", cursor: "pointer" }}>
+                  <button onClick={markAllRead} style={{ fontSize: 12, color: "var(--rose-dust)", fontWeight: 600, background: "none", border: "none", cursor: "pointer" }}>
                     Mark all read
                   </button>
                 )}
@@ -108,8 +108,8 @@ export default function NotificationBell({ userId }) {
               {notifications.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-16 px-8 text-center">
                   <Bell size={36} style={{ color: "var(--mauve)" }} />
-                  <p style={{ fontSize: 15, fontWeight: 600, color: "var(--plum)", fontFamily: "'Inter', sans-serif", marginTop: 12 }}>All quiet</p>
-                  <p style={{ fontSize: 13, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", marginTop: 4 }}>Your notifications will appear here</p>
+                  <p style={{ fontSize: 15, fontWeight: 600, color: "var(--plum)", marginTop: 12 }}>All quiet</p>
+                  <p style={{ fontSize: 13, color: "var(--mauve)", marginTop: 4 }}>Your notifications will appear here</p>
                 </div>
               ) : (
                 notifications.map(notif => (
@@ -124,9 +124,9 @@ export default function NotificationBell({ userId }) {
                   >
                     {(() => { const TIcon = TYPE_ICONS[notif.notification_type] || Bell; return <TIcon size={20} style={{ flexShrink: 0, marginTop: 1, color: "var(--rose-dust)" }} />; })()}
                     <div className="flex-1 min-w-0">
-                      <p style={{ fontSize: 14, fontWeight: notif.is_read ? 500 : 700, color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>{notif.title}</p>
-                      <p style={{ fontSize: 12, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", marginTop: 2, lineHeight: 1.5 }}>{notif.body}</p>
-                      <p style={{ fontSize: 11, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", marginTop: 4, opacity: 0.7 }}>{timeAgo(notif.sent_at)}</p>
+                      <p style={{ fontSize: 14, fontWeight: notif.is_read ? 500 : 700, color: "var(--plum)", }}>{notif.title}</p>
+                      <p style={{ fontSize: 12, color: "var(--mauve)", marginTop: 2, lineHeight: 1.5 }}>{notif.body}</p>
+                      <p style={{ fontSize: 11, color: "var(--mauve)", marginTop: 4, opacity: 0.7 }}>{timeAgo(notif.sent_at)}</p>
                     </div>
                     {!notif.is_read && (
                       <div className="w-2 h-2 rounded-full flex-shrink-0 mt-2" style={{ backgroundColor: "var(--rose-dust)" }} />

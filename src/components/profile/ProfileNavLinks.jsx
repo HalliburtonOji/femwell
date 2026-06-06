@@ -4,8 +4,8 @@ import { useState } from "react";
 import { base44 } from "@/api/base44Client";
 
 const card = { backgroundColor: "var(--surface)", border: "1px solid var(--border)", borderRadius: "20px", boxShadow: "var(--shadow-sm)" };
-const bodyText = { fontSize: "14px", color: "var(--plum)", fontFamily: "'Inter', sans-serif" };
-const mutedText = { fontSize: "12px", color: "var(--mauve)", fontFamily: "'Inter', sans-serif" };
+const bodyText = { fontSize: "14px", color: "var(--plum)", };
+const mutedText = { fontSize: "12px", color: "var(--mauve)", };
 const rowItem = { display: "flex", alignItems: "center", gap: "12px", padding: "16px", width: "100%", textAlign: "left", backgroundColor: "transparent", border: "none", cursor: "pointer", textDecoration: "none" };
 const iconBox = (bg) => ({ width: "34px", height: "34px", borderRadius: "10px", backgroundColor: bg, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 });
 
@@ -47,9 +47,9 @@ export default function ProfileNavLinks({ profile, daysLoggedSkin, skinCondition
         </div>
         {daysLoggedSkin > 0 && (
           <div className="flex gap-2 flex-wrap mt-3">
-            <span style={{ backgroundColor: "var(--rose-dust-subtle)", color: "var(--rose-dust)", fontSize: "11px", fontWeight: 600, borderRadius: "9999px", padding: "3px 10px", fontFamily: "'Inter', sans-serif" }}>{daysLoggedSkin} days logged</span>
-            {skinConditionMode && <span style={{ backgroundColor: "var(--rose-dust-subtle)", color: "var(--rose-dust)", fontSize: "11px", fontWeight: 600, borderRadius: "9999px", padding: "3px 10px", fontFamily: "'Inter', sans-serif" }}>{skinConditionMode}</span>}
-            {profile?.skin_type && <span style={{ backgroundColor: "var(--rose-dust-subtle)", color: "var(--rose-dust)", fontSize: "11px", fontWeight: 600, borderRadius: "9999px", padding: "3px 10px", fontFamily: "'Inter', sans-serif" }}>{profile.skin_type} skin</span>}
+            <span style={{ backgroundColor: "var(--rose-dust-subtle)", color: "var(--rose-dust)", fontSize: "11px", fontWeight: 600, borderRadius: "9999px", padding: "3px 10px", }}>{daysLoggedSkin} days logged</span>
+            {skinConditionMode && <span style={{ backgroundColor: "var(--rose-dust-subtle)", color: "var(--rose-dust)", fontSize: "11px", fontWeight: 600, borderRadius: "9999px", padding: "3px 10px", }}>{skinConditionMode}</span>}
+            {profile?.skin_type && <span style={{ backgroundColor: "var(--rose-dust-subtle)", color: "var(--rose-dust)", fontSize: "11px", fontWeight: 600, borderRadius: "9999px", padding: "3px 10px", }}>{profile.skin_type} skin</span>}
           </div>
         )}
       </a>
@@ -125,18 +125,18 @@ export default function ProfileNavLinks({ profile, daysLoggedSkin, skinCondition
 
       {/* Footer legal links */}
       <div style={{ display: "flex", justifyContent: "center", gap: 14, marginBottom: 16, fontSize: 12 }}>
-        <a href={createPageUrl("Settings")} style={{ color: "#E11D48", fontWeight: 600, fontFamily: "'Inter', sans-serif", textDecoration: "none" }}>Settings</a>
+        <a href={createPageUrl("Settings")} style={{ color: "#E11D48", fontWeight: 600, textDecoration: "none" }}>Settings</a>
         <span style={{ color: "var(--border)" }}>·</span>
-        <a href="/terms" style={{ color: "var(--mauve)", fontFamily: "'Inter', sans-serif", textDecoration: "none" }}>Terms</a>
+        <a href="/terms" style={{ color: "var(--mauve)", textDecoration: "none" }}>Terms</a>
         <span style={{ color: "var(--border)" }}>·</span>
-        <a href="/privacy" style={{ color: "var(--mauve)", fontFamily: "'Inter', sans-serif", textDecoration: "none" }}>Privacy</a>
+        <a href="/privacy" style={{ color: "var(--mauve)", textDecoration: "none" }}>Privacy</a>
       </div>
 
       {/* Sign out */}
       <button onClick={async () => { await base44.auth.logout(); window.location.href = "/"; }}
         style={{ ...card, cursor: "pointer", border: "none", backgroundColor: "var(--surface)", padding: "16px", marginBottom: "16px", display: "flex", alignItems: "center", gap: "12px", width: "100%" }}>
         <div style={iconBox("#FFF0F0")}><LogOut className="w-4 h-4" style={{ color: "#D94F4F" }} /></div>
-        <p style={{ fontSize: "14px", fontWeight: 600, color: "#D94F4F", fontFamily: "'Inter', sans-serif" }}>Sign out</p>
+        <p style={{ fontSize: "14px", fontWeight: 600, color: "#D94F4F", }}>Sign out</p>
       </button>
 
       {/* Delete Account */}
@@ -144,17 +144,17 @@ export default function ProfileNavLinks({ profile, daysLoggedSkin, skinCondition
         <button onClick={() => setShowDeleteConfirm(true)}
           style={{ ...card, cursor: "pointer", border: "1px solid #FCDCDC", backgroundColor: "#FFF8F8", padding: "16px", marginBottom: "32px", display: "flex", alignItems: "center", gap: "12px", width: "100%" }}>
           <div style={iconBox("#FFF0F0")}><Trash2 className="w-4 h-4" style={{ color: "#D94F4F" }} /></div>
-          <p style={{ fontSize: "14px", fontWeight: 600, color: "#D94F4F", fontFamily: "'Inter', sans-serif" }}>Delete account</p>
+          <p style={{ fontSize: "14px", fontWeight: 600, color: "#D94F4F", }}>Delete account</p>
         </button>
       ) : (
         <div style={{ ...card, border: "1px solid #FCDCDC", backgroundColor: "#FFF8F8", padding: "20px", marginBottom: "32px" }}>
-          <p style={{ fontSize: "14px", fontWeight: 700, color: "#D94F4F", fontFamily: "'Inter', sans-serif", marginBottom: "8px" }}>Are you sure?</p>
-          <p style={{ fontSize: "13px", color: "var(--mauve)", fontFamily: "'Inter', sans-serif", lineHeight: 1.6, marginBottom: "16px" }}>
+          <p style={{ fontSize: "14px", fontWeight: 700, color: "#D94F4F", marginBottom: "8px" }}>Are you sure?</p>
+          <p style={{ fontSize: "13px", color: "var(--mauve)", lineHeight: 1.6, marginBottom: "16px" }}>
             This will permanently delete your profile, cycle data, check-ins, and all personalisation. This cannot be undone.
           </p>
           <div style={{ display: "flex", gap: 10 }}>
             <button onClick={() => setShowDeleteConfirm(false)}
-              style={{ flex: 1, padding: "11px", borderRadius: 9999, border: "1.5px solid var(--border)", backgroundColor: "var(--surface)", fontSize: 13, fontWeight: 600, color: "var(--plum)", fontFamily: "'Inter', sans-serif", cursor: "pointer" }}>
+              style={{ flex: 1, padding: "11px", borderRadius: 9999, border: "1.5px solid var(--border)", backgroundColor: "var(--surface)", fontSize: 13, fontWeight: 600, color: "var(--plum)", cursor: "pointer" }}>
               Cancel
             </button>
             <button disabled={deleting}
@@ -166,7 +166,7 @@ export default function ProfileNavLinks({ profile, daysLoggedSkin, skinCondition
                   window.location.href = "/";
                 } catch { setDeleting(false); }
               }}
-              style={{ flex: 1, padding: "11px", borderRadius: 9999, border: "none", backgroundColor: "#D94F4F", fontSize: 13, fontWeight: 600, color: "white", fontFamily: "'Inter', sans-serif", cursor: deleting ? "default" : "pointer", opacity: deleting ? 0.6 : 1 }}>
+              style={{ flex: 1, padding: "11px", borderRadius: 9999, border: "none", backgroundColor: "#D94F4F", fontSize: 13, fontWeight: 600, color: "white", cursor: deleting ? "default" : "pointer", opacity: deleting ? 0.6 : 1 }}>
               {deleting ? "Deleting..." : "Yes, delete"}
             </button>
           </div>

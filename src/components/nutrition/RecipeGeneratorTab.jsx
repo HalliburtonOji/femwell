@@ -24,8 +24,7 @@ const card = {
 
 const sLabel = {
   fontSize: "0.6rem", fontWeight: 600, textTransform: "uppercase",
-  letterSpacing: "0.12em", color: "var(--mauve)", fontFamily: "'Inter', sans-serif",
-};
+  letterSpacing: "0.12em", color: "var(--mauve)", };
 
 function TagInput({ tags, setTags, placeholder }) {
   const [input, setInput] = useState("");
@@ -52,7 +51,7 @@ function TagInput({ tags, setTags, placeholder }) {
           onKeyDown={(e) => { if (e.key === "Enter" || e.key === ",") { e.preventDefault(); add(); } }}
           placeholder={placeholder}
           className="flex-1 p-3 rounded-2xl text-sm focus:outline-none transition-all"
-          style={{ backgroundColor: "var(--ivory)", border: "1.5px solid var(--border)", color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}
+          style={{ backgroundColor: "var(--ivory)", border: "1.5px solid var(--border)", color: "var(--plum)", }}
           onFocus={e => e.target.style.borderColor = "var(--rose-dust-light)"}
           onBlur={e => e.target.style.borderColor = "var(--border)"} />
         <button onClick={add} disabled={!input.trim()}
@@ -101,14 +100,14 @@ function RecipeCard({ recipe, onSaveAsTemplate }) {
       <div className="p-5" style={{ backgroundColor: "var(--plum)" }}>
         <div className="flex items-start justify-between gap-2 mb-3">
           <div>
-            <p className="font-bold text-base leading-snug" style={{ color: "white", fontFamily: "'Fraunces', serif" }}>
+            <p className="font-bold text-base leading-snug" style={{ color: "white", }}>
               {recipe.recipe_name}
             </p>
             {recipe.tagline && <p className="text-xs mt-0.5" style={{ color: "rgba(255,255,255,0.65)" }}>{recipe.tagline}</p>}
             <a
               href={`https://www.youtube.com/results?search_query=${encodeURIComponent((recipe.recipe_name || '') + ' recipe how to make')}`}
               target="_blank" rel="noopener noreferrer"
-              style={{ fontSize: 12, fontWeight: 500, color: "rgba(255,255,255,0.75)", fontFamily: "'Inter', sans-serif", textDecoration: "none", display: "inline-block", marginTop: 4 }}
+              style={{ fontSize: 12, fontWeight: 500, color: "rgba(255,255,255,0.75)", textDecoration: "none", display: "inline-block", marginTop: 4 }}
             >
               Watch how to make it
             </a>
@@ -302,7 +301,7 @@ export default function RecipeGeneratorTab({ user }) {
             <ChefHat className="w-5 h-5 text-white" />
           </div>
           <div>
-            <p className="font-semibold" style={{ color: "var(--plum)", fontFamily: "'Fraunces', serif" }}>Recipe Generator</p>
+            <p className="font-semibold" style={{ color: "var(--plum)", }}>Recipe Generator</p>
             <p className="text-xs" style={{ color: "var(--mauve)" }}>AI-crafted recipes tailored to you</p>
           </div>
         </div>

@@ -271,7 +271,7 @@ export default function HealthDashboard() {
   if (loading) {
     return (
       <div style={shell}>
-        <p style={{ color: C.muted, fontFamily: "'Inter', system-ui, sans-serif" }}>Loading your health story…</p>
+        <p style={{ color: C.muted, }}>Loading your health story…</p>
       </div>
     );
   }
@@ -279,7 +279,7 @@ export default function HealthDashboard() {
   return (
     <div style={{
       minHeight: "100vh", background: C.cream, color: C.espresso,
-      fontFamily: "'Inter', system-ui, sans-serif", paddingBottom: 120,
+      paddingBottom: 120,
     }}>
       <div style={{ maxWidth: 640, margin: "0 auto", padding: "18px 18px 32px" }}>
         <Link to="/Today" style={backLink}>
@@ -290,7 +290,7 @@ export default function HealthDashboard() {
           <p style={{ margin: 0, fontSize: 11, fontWeight: 700, letterSpacing: "0.2em", textTransform: "uppercase", color: C.rose }}>
             Your story so far
           </p>
-          <h1 style={{ margin: "6px 0 6px", fontSize: 30, fontWeight: 600, fontFamily: "'Fraunces', Georgia, serif", color: C.espressoDk, lineHeight: 1.1, letterSpacing: -0.4 }}>
+          <h1 style={{ margin: "6px 0 6px", fontSize: 30, fontWeight: 600, color: C.espressoDk, lineHeight: 1.1, letterSpacing: -0.4 }}>
             Your Health Story
           </h1>
           <p style={{ margin: 0, fontSize: 14.5, color: C.muted, lineHeight: 1.55 }}>
@@ -366,7 +366,7 @@ export default function HealthDashboard() {
             </span>
             <div>
               <p style={{ margin: 0, fontSize: 10, fontWeight: 700, letterSpacing: "0.18em", textTransform: "uppercase", color: C.gold }}>From Jess</p>
-              <h3 style={{ margin: "2px 0 0", fontSize: 16, fontWeight: 600, fontFamily: "'Fraunces', Georgia, serif", color: C.espressoDk }}>
+              <h3 style={{ margin: "2px 0 0", fontSize: 16, fontWeight: 600, color: C.espressoDk }}>
                 A quiet observation
               </h3>
             </div>
@@ -421,7 +421,7 @@ function Section({ title, subtitle, icon, accent, children }) {
         </span>
         <div style={{ flex: 1, minWidth: 0 }}>
           <p style={{ margin: 0, fontSize: 10, fontWeight: 700, letterSpacing: "0.16em", textTransform: "uppercase", color: C.muted }}>{subtitle}</p>
-          <h2 style={{ margin: "2px 0 0", fontSize: 17, fontWeight: 600, fontFamily: "'Fraunces', Georgia, serif", color: C.espressoDk, lineHeight: 1.2 }}>{title}</h2>
+          <h2 style={{ margin: "2px 0 0", fontSize: 17, fontWeight: 600, color: C.espressoDk, lineHeight: 1.2 }}>{title}</h2>
         </div>
       </header>
       {children}
@@ -452,7 +452,7 @@ function LifeStageStrip({ stage }) {
       padding: "14px 16px", margin: "0 0 14px",
     }}>
       <p style={{ margin: 0, fontSize: 10, fontWeight: 700, letterSpacing: "0.16em", textTransform: "uppercase", color: C.rose }}>Life stage</p>
-      <h2 style={{ margin: "4px 0 4px", fontSize: 18, fontWeight: 600, fontFamily: "'Fraunces', Georgia, serif", color: C.espressoDk }}>
+      <h2 style={{ margin: "4px 0 4px", fontSize: 18, fontWeight: 600, color: C.espressoDk }}>
         Life stage: {info.label}
       </h2>
       <p style={{ margin: 0, fontSize: 13.5, color: C.muted, lineHeight: 1.5 }}>{info.line}</p>
@@ -489,7 +489,7 @@ function CycleStrip({ cycle, profile }) {
         </span>
         <div style={{ flex: 1 }}>
           <p style={{ margin: 0, fontSize: 10, fontWeight: 700, letterSpacing: "0.16em", textTransform: "uppercase", color: C.muted }}>Cycle</p>
-          <h2 style={{ margin: "2px 0 0", fontSize: 17, fontWeight: 600, fontFamily: "'Fraunces', Georgia, serif", color: C.espressoDk }}>
+          <h2 style={{ margin: "2px 0 0", fontSize: 17, fontWeight: 600, color: C.espressoDk }}>
             {PHASE_LABEL[phase]} · Day {day}
           </h2>
         </div>
@@ -612,7 +612,7 @@ function NutritionBlock({ onTrackDays, totalMeals, planName }) {
           strokeDasharray={`${(circ * pct).toFixed(2)} ${circ.toFixed(2)}`}
           transform={`rotate(-90 ${CENTER} ${CENTER})`}
         />
-        <text x={CENTER} y={CENTER + 5} textAnchor="middle" fontFamily="'Fraunces', Georgia, serif" fontSize="20" fontWeight="600" fill={C.espressoDk}>{onTrackDays}/7</text>
+        <text x={CENTER} y={CENTER + 5} textAnchor="middle" fontSize="20" fontWeight="600" fill={C.espressoDk}>{onTrackDays}/7</text>
       </svg>
       <div style={{ flex: 1, minWidth: 160 }}>
         <p style={{ margin: 0, fontSize: 14.5, color: C.espresso, lineHeight: 1.5 }}>

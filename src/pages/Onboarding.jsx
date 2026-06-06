@@ -72,8 +72,7 @@ const SKIN_TYPES = [
 const sLabel = {
   fontSize: "0.6rem", fontWeight: 600, textTransform: "uppercase",
   letterSpacing: "0.12em", color: "var(--mauve)",
-  fontFamily: "'Inter', sans-serif",
-};
+  };
 
 const card = {
   backgroundColor: "var(--surface)", border: "1px solid var(--border)",
@@ -325,13 +324,13 @@ export default function Onboarding() {
               display: "flex", alignItems: "center", justifyContent: "center",
               backgroundColor: "var(--rose-dust-subtle)", border: "1px solid var(--rose-dust-light)"
             }}>
-              <span style={{ fontSize: "36px", fontWeight: 700, fontFamily: "'Fraunces', serif", color: "var(--rose-dust)" }}>F</span>
+              <span style={{ fontSize: "36px", fontWeight: 700, color: "var(--rose-dust)" }}>F</span>
             </div>
             <div>
-              <h1 style={{ fontSize: "28px", fontWeight: 700, lineHeight: 1.1, fontFamily: "'Fraunces', serif", color: "var(--plum)", letterSpacing: "-0.02em" }}>
+              <h1 style={{ fontSize: "28px", fontWeight: 700, lineHeight: 1.1, color: "var(--plum)", letterSpacing: "-0.02em" }}>
                 Welcome to FemWell
               </h1>
-              <p style={{ fontSize: "15px", lineHeight: 1.6, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", marginTop: "8px" }}>
+              <p style={{ fontSize: "15px", lineHeight: 1.6, color: "var(--mauve)", marginTop: "8px" }}>
                 Let's shape your feed, guidance style, and daily rhythm in under a minute.
               </p>
             </div>
@@ -364,10 +363,10 @@ export default function Onboarding() {
         {current === "display_name" && (
           <div className="w-full space-y-6">
             <div>
-              <h2 style={{ fontSize: "22px", fontWeight: 700, color: "var(--plum)", fontFamily: "'Fraunces', serif", marginTop: "4px", lineHeight: 1.2 }}>
+              <h2 style={{ fontSize: "22px", fontWeight: 700, color: "var(--plum)", marginTop: "4px", lineHeight: 1.2 }}>
                 What should we call you?
               </h2>
-              <p style={{ fontSize: "13px", color: "var(--mauve)", fontFamily: "'Inter', sans-serif", marginTop: "6px" }}>
+              <p style={{ fontSize: "13px", color: "var(--mauve)", marginTop: "6px" }}>
                 Just your first name is perfect.
               </p>
             </div>
@@ -381,12 +380,12 @@ export default function Onboarding() {
                 border: "1.5px solid var(--border)",
                 backgroundColor: "var(--surface)",
                 fontSize: 16, color: "var(--plum)",
-                fontFamily: "'Inter', sans-serif", outline: "none", boxSizing: "border-box",
+                outline: "none", boxSizing: "border-box",
               }}
               onFocus={e => e.target.style.borderColor = "var(--rose-dust-light)"}
               onBlur={e => e.target.style.borderColor = "var(--border)"}
             />
-            <p style={{ fontSize: 11, color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>You can skip this — we will use your email if blank.</p>
+            <p style={{ fontSize: 11, color: "var(--mauve)", }}>You can skip this — we will use your email if blank.</p>
           </div>
         )}
 
@@ -394,10 +393,10 @@ export default function Onboarding() {
           <div className="w-full space-y-6">
             <div>
               <p style={sLabel}>Step 1 of 6</p>
-              <h2 style={{ fontSize: "22px", fontWeight: 700, color: "var(--plum)", fontFamily: "'Fraunces', serif", marginTop: "4px", lineHeight: 1.2 }}>
+              <h2 style={{ fontSize: "22px", fontWeight: 700, color: "var(--plum)", marginTop: "4px", lineHeight: 1.2 }}>
                 What do you want more of?
               </h2>
-              <p style={{ fontSize: "13px", color: "var(--mauve)", fontFamily: "'Inter', sans-serif", marginTop: "6px" }}>
+              <p style={{ fontSize: "13px", color: "var(--mauve)", marginTop: "6px" }}>
                 Pick everything that matters right now.
               </p>
             </div>
@@ -410,7 +409,7 @@ export default function Onboarding() {
                     backgroundColor: goals.includes(goal.id) ? "var(--rose-dust-subtle)" : "var(--surface)",
                     transition: "all 0.15s", cursor: "pointer"
                   }}>
-                  <p style={{ fontSize: "13px", fontWeight: 600, color: goals.includes(goal.id) ? "var(--rose-dust)" : "var(--plum)", fontFamily: "'Inter', sans-serif" }}>
+                  <p style={{ fontSize: "13px", fontWeight: 600, color: goals.includes(goal.id) ? "var(--rose-dust)" : "var(--plum)", }}>
                     {goal.label}
                   </p>
                 </button>
@@ -423,10 +422,10 @@ export default function Onboarding() {
           <div className="w-full space-y-6">
             <div>
               <p style={sLabel}>Step 2 of 6</p>
-              <h2 style={{ fontSize: "22px", fontWeight: 700, color: "var(--plum)", fontFamily: "'Fraunces', serif", marginTop: "4px", lineHeight: 1.2 }}>
+              <h2 style={{ fontSize: "22px", fontWeight: 700, color: "var(--plum)", marginTop: "4px", lineHeight: 1.2 }}>
                 Where are you based?
               </h2>
-              <p style={{ fontSize: "13px", color: "var(--mauve)", fontFamily: "'Inter', sans-serif", marginTop: "6px" }}>
+              <p style={{ fontSize: "13px", color: "var(--mauve)", marginTop: "6px" }}>
                 Used to show local events and personalise your feed.
               </p>
             </div>
@@ -438,14 +437,13 @@ export default function Onboarding() {
                 border: "1.5px solid var(--rose-dust-light)",
                 backgroundColor: geoFound ? "var(--sage-subtle)" : "var(--rose-dust-subtle)",
                 cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 10,
-                fontSize: 14, fontWeight: 600, fontFamily: "'Inter', sans-serif",
-                color: geoFound ? "var(--sage)" : "var(--rose-dust)",
+                fontSize: 14, fontWeight: 600, color: geoFound ? "var(--sage)" : "var(--rose-dust)",
               }}
             >
               {geoLoading ? "Finding location..." : geoFound ? `Found: ${geoFound}` : "Use my location"}
             </button>
             <div>
-              <p style={{ fontSize: "13px", fontWeight: 600, color: "var(--plum)", fontFamily: "'Inter', sans-serif", marginBottom: "8px" }}>Or type your city</p>
+              <p style={{ fontSize: "13px", fontWeight: 600, color: "var(--plum)", marginBottom: "8px" }}>Or type your city</p>
               <input
                 type="text"
                 value={locationCity}
@@ -456,13 +454,13 @@ export default function Onboarding() {
                   border: "1.5px solid var(--border)",
                   backgroundColor: "var(--surface)",
                   fontSize: 14, color: "var(--plum)",
-                  fontFamily: "'Inter', sans-serif", outline: "none", boxSizing: "border-box",
+                  outline: "none", boxSizing: "border-box",
                 }}
                 onFocus={e => e.target.style.borderColor = "var(--rose-dust-light)"}
                 onBlur={e => e.target.style.borderColor = "var(--border)"}
               />
             </div>
-            <p style={{ fontSize: 11, color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>You can skip this and set it later in your profile.</p>
+            <p style={{ fontSize: 11, color: "var(--mauve)", }}>You can skip this and set it later in your profile.</p>
           </div>
         )}
 
@@ -470,10 +468,10 @@ export default function Onboarding() {
           <div className="w-full space-y-6">
             <div>
               <p style={sLabel}>Step 2 of 5</p>
-              <h2 style={{ fontSize: "22px", fontWeight: 700, color: "var(--plum)", fontFamily: "'Fraunces', serif", marginTop: "4px", lineHeight: 1.2 }}>
+              <h2 style={{ fontSize: "22px", fontWeight: 700, color: "var(--plum)", marginTop: "4px", lineHeight: 1.2 }}>
                 Your lifestyle interests
               </h2>
-              <p style={{ fontSize: "13px", color: "var(--mauve)", fontFamily: "'Inter', sans-serif", marginTop: "6px" }}>
+              <p style={{ fontSize: "13px", color: "var(--mauve)", marginTop: "6px" }}>
                 Powers your personalised feed from day one.
               </p>
             </div>
@@ -482,8 +480,7 @@ export default function Onboarding() {
                 <button key={interest} onClick={() => toggleValue(interest, setInterests)}
                   style={{
                     borderRadius: "9999px", padding: "8px 16px",
-                    fontSize: "13px", fontWeight: 500, fontFamily: "'Inter', sans-serif",
-                    border: interests.includes(interest) ? "1.5px solid var(--rose-dust)" : "1.5px solid var(--border)",
+                    fontSize: "13px", fontWeight: 500, border: interests.includes(interest) ? "1.5px solid var(--rose-dust)" : "1.5px solid var(--border)",
                     backgroundColor: interests.includes(interest) ? "var(--rose-dust-subtle)" : "var(--surface)",
                     color: interests.includes(interest) ? "var(--rose-dust)" : "var(--plum)",
                     transition: "all 0.15s", cursor: "pointer"
@@ -499,10 +496,10 @@ export default function Onboarding() {
           <div className="w-full space-y-6">
             <div>
               <p style={sLabel}>Step 3 of 5</p>
-              <h2 style={{ fontSize: "22px", fontWeight: 700, color: "var(--plum)", fontFamily: "'Fraunces', serif", marginTop: "4px", lineHeight: 1.2 }}>
+              <h2 style={{ fontSize: "22px", fontWeight: 700, color: "var(--plum)", marginTop: "4px", lineHeight: 1.2 }}>
                 How should FemWell show up?
               </h2>
-              <p style={{ fontSize: "13px", color: "var(--mauve)", fontFamily: "'Inter', sans-serif", marginTop: "6px" }}>
+              <p style={{ fontSize: "13px", color: "var(--mauve)", marginTop: "6px" }}>
                 Choose your guidance style.
               </p>
             </div>
@@ -515,13 +512,13 @@ export default function Onboarding() {
                     backgroundColor: tone === item.id ? "var(--rose-dust-subtle)" : "var(--surface)",
                     transition: "all 0.15s"
                   }}>
-                  <p style={{ fontSize: "14px", fontWeight: 600, color: tone === item.id ? "var(--rose-dust)" : "var(--plum)", fontFamily: "'Inter', sans-serif" }}>{item.label}</p>
-                  <p style={{ fontSize: "12px", color: "var(--mauve)", fontFamily: "'Inter', sans-serif", marginTop: "3px" }}>{item.description}</p>
+                  <p style={{ fontSize: "14px", fontWeight: 600, color: tone === item.id ? "var(--rose-dust)" : "var(--plum)", }}>{item.label}</p>
+                  <p style={{ fontSize: "12px", color: "var(--mauve)", marginTop: "3px" }}>{item.description}</p>
                 </button>
               ))}
             </div>
             <div>
-              <p style={{ fontSize: "13px", fontWeight: 600, color: "var(--plum)", fontFamily: "'Inter', sans-serif", marginBottom: "6px" }}>Name your assistant</p>
+              <p style={{ fontSize: "13px", fontWeight: 600, color: "var(--plum)", marginBottom: "6px" }}>Name your assistant</p>
               <input
                 type="text"
                 value={assistantName}
@@ -532,15 +529,15 @@ export default function Onboarding() {
                   border: "1.5px solid var(--border)",
                   backgroundColor: "var(--surface)",
                   fontSize: 14, color: "var(--plum)",
-                  fontFamily: "'Inter', sans-serif", outline: "none", boxSizing: "border-box",
+                  outline: "none", boxSizing: "border-box",
                 }}
                 onFocus={e => e.target.style.borderColor = "var(--rose-dust-light)"}
                 onBlur={e => e.target.style.borderColor = "var(--border)"}
               />
-              <p style={{ fontSize: 11, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", marginTop: 5, marginBottom: 14 }}>You can change it later.</p>
+              <p style={{ fontSize: 11, color: "var(--mauve)", marginTop: 5, marginBottom: 14 }}>You can change it later.</p>
             </div>
             <div>
-              <p style={{ fontSize: "13px", fontWeight: 600, color: "var(--plum)", fontFamily: "'Inter', sans-serif", marginBottom: "8px" }}>Reminder time</p>
+              <p style={{ fontSize: "13px", fontWeight: 600, color: "var(--plum)", marginBottom: "8px" }}>Reminder time</p>
               <div className="grid grid-cols-2 gap-3">
                 {[{ id: "morning", label: "Morning" }, { id: "evening", label: "Evening" }].map((item) => (
                   <button key={item.id} onClick={() => setNotificationTime(item.id)} className="text-left"
@@ -550,7 +547,7 @@ export default function Onboarding() {
                       backgroundColor: notificationTime === item.id ? "var(--rose-dust-subtle)" : "var(--surface)",
                       transition: "all 0.15s"
                     }}>
-                    <p style={{ fontSize: "13px", fontWeight: 600, color: notificationTime === item.id ? "var(--rose-dust)" : "var(--plum)", fontFamily: "'Inter', sans-serif" }}>{item.label}</p>
+                    <p style={{ fontSize: "13px", fontWeight: 600, color: notificationTime === item.id ? "var(--rose-dust)" : "var(--plum)", }}>{item.label}</p>
                   </button>
                 ))}
               </div>
@@ -562,27 +559,27 @@ export default function Onboarding() {
           <div className="w-full space-y-6">
             <div>
               <p style={sLabel}>Step 4 of 5</p>
-              <h2 style={{ fontSize: "22px", fontWeight: 700, color: "var(--plum)", fontFamily: "'Fraunces', serif", marginTop: "4px", lineHeight: 1.2 }}>
+              <h2 style={{ fontSize: "22px", fontWeight: 700, color: "var(--plum)", marginTop: "4px", lineHeight: 1.2 }}>
                 A few more details
               </h2>
             </div>
 
             <div style={{ ...card, padding: "16px" }}>
-              <p style={{ fontSize: "13px", fontWeight: 600, color: "var(--plum)", fontFamily: "'Inter', sans-serif", marginBottom: "4px" }}>Daily hydration target</p>
-              <p style={{ fontSize: "22px", fontWeight: 700, color: "var(--rose-dust)", fontFamily: "'Inter', sans-serif", marginBottom: "12px" }}>
+              <p style={{ fontSize: "13px", fontWeight: 600, color: "var(--plum)", marginBottom: "4px" }}>Daily hydration target</p>
+              <p style={{ fontSize: "22px", fontWeight: 700, color: "var(--rose-dust)", marginBottom: "12px" }}>
                 {(hydrationTarget / 1000).toFixed(1)}L
               </p>
               <input type="range" min="1000" max="4000" step="250" value={hydrationTarget}
                 onChange={(e) => setHydrationTarget(Number(e.target.value))}
                 style={{ width: "100%", accentColor: "var(--rose-dust)" }} />
               <div className="flex justify-between" style={{ marginTop: "4px" }}>
-                <span style={{ fontSize: "11px", color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>1.0L</span>
-                <span style={{ fontSize: "11px", color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>4.0L</span>
+                <span style={{ fontSize: "11px", color: "var(--mauve)", }}>1.0L</span>
+                <span style={{ fontSize: "11px", color: "var(--mauve)", }}>4.0L</span>
               </div>
             </div>
 
             <div style={{ ...card, padding: "16px" }}>
-              <p style={{ fontSize: "13px", fontWeight: 600, color: "var(--plum)", fontFamily: "'Inter', sans-serif", marginBottom: "10px" }}>Body goal (optional)</p>
+              <p style={{ fontSize: "13px", fontWeight: 600, color: "var(--plum)", marginBottom: "10px" }}>Body goal (optional)</p>
               <div className="grid grid-cols-2 gap-2">
                 {BODY_GOALS.map((item) => (
                   <button key={item.id} onClick={() => setBodyGoal(item.id)} className="text-left"
@@ -592,7 +589,7 @@ export default function Onboarding() {
                       backgroundColor: bodyGoal === item.id ? "var(--rose-dust-subtle)" : "var(--surface)",
                       transition: "all 0.15s"
                     }}>
-                    <p style={{ fontSize: "12px", fontWeight: 600, color: bodyGoal === item.id ? "var(--rose-dust)" : "var(--plum)", fontFamily: "'Inter', sans-serif" }}>{item.label}</p>
+                    <p style={{ fontSize: "12px", fontWeight: 600, color: bodyGoal === item.id ? "var(--rose-dust)" : "var(--plum)", }}>{item.label}</p>
                   </button>
                 ))}
               </div>
@@ -600,8 +597,8 @@ export default function Onboarding() {
 
             <div style={{ ...card, padding: "16px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
               <div>
-                <p style={{ fontSize: "13px", fontWeight: 600, color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>Cycle tracking</p>
-                <p style={{ fontSize: "11px", color: "var(--mauve)", fontFamily: "'Inter', sans-serif", marginTop: "2px" }}>
+                <p style={{ fontSize: "13px", fontWeight: 600, color: "var(--plum)", }}>Cycle tracking</p>
+                <p style={{ fontSize: "11px", color: "var(--mauve)", marginTop: "2px" }}>
                   Turn on for phase-aware tips and trends.
                 </p>
               </div>
@@ -628,10 +625,10 @@ export default function Onboarding() {
           <div className="w-full space-y-6">
             <div>
               {(() => { const n = PROGRESS_STEPS.indexOf(current) + 1; return n > 0 && <p style={sLabel}>Step {n} of {PROGRESS_STEPS.length}</p>; })()}
-              <h2 style={{ fontSize: "22px", fontWeight: 700, color: "var(--plum)", fontFamily: "'Fraunces', serif", marginTop: "4px", lineHeight: 1.2 }}>
+              <h2 style={{ fontSize: "22px", fontWeight: 700, color: "var(--plum)", marginTop: "4px", lineHeight: 1.2 }}>
                 What is your skin type?
               </h2>
-              <p style={{ fontSize: "13px", color: "var(--mauve)", fontFamily: "'Inter', sans-serif", marginTop: "6px" }}>
+              <p style={{ fontSize: "13px", color: "var(--mauve)", marginTop: "6px" }}>
                 Helps us tailor your skin guidance from the start.
               </p>
             </div>
@@ -644,8 +641,8 @@ export default function Onboarding() {
                     backgroundColor: skinType === item.value ? "var(--rose-dust-subtle)" : "var(--surface)",
                     transition: "all 0.15s"
                   }}>
-                  <p style={{ fontSize: "14px", fontWeight: 600, color: skinType === item.value ? "var(--rose-dust)" : "var(--plum)", fontFamily: "'Inter', sans-serif" }}>{item.label}</p>
-                  <p style={{ fontSize: "12px", color: "var(--mauve)", fontFamily: "'Inter', sans-serif", marginTop: "2px" }}>{item.desc}</p>
+                  <p style={{ fontSize: "14px", fontWeight: 600, color: skinType === item.value ? "var(--rose-dust)" : "var(--plum)", }}>{item.label}</p>
+                  <p style={{ fontSize: "12px", color: "var(--mauve)", marginTop: "2px" }}>{item.desc}</p>
                 </button>
               ))}
             </div>
@@ -656,10 +653,10 @@ export default function Onboarding() {
           <div className="w-full space-y-6">
             <div>
               {(() => { const n = PROGRESS_STEPS.indexOf(current) + 1; return n > 0 && <p style={sLabel}>Step {n} of {PROGRESS_STEPS.length}</p>; })()}
-              <h2 style={{ fontSize: "22px", fontWeight: 700, color: "var(--plum)", fontFamily: "'Fraunces', serif", marginTop: "4px", lineHeight: 1.2 }}>
+              <h2 style={{ fontSize: "22px", fontWeight: 700, color: "var(--plum)", marginTop: "4px", lineHeight: 1.2 }}>
                 Are you in a life stage we should know about?
               </h2>
-              <p style={{ fontSize: "13px", color: "var(--mauve)", fontFamily: "'Inter', sans-serif", marginTop: "6px" }}>Helps personalise care, logging, and recommendations.</p>
+              <p style={{ fontSize: "13px", color: "var(--mauve)", marginTop: "6px" }}>Helps personalise care, logging, and recommendations.</p>
             </div>
             <div className="space-y-3">
               {[
@@ -678,24 +675,24 @@ export default function Onboarding() {
               ].map(item => (
                 <button key={item.id} onClick={() => { setLifeStage(item.id); setLifeStageFocus([]); }} className="w-full text-left"
                   style={{ borderRadius: "16px", padding: "14px 16px", cursor: "pointer", border: lifeStage === item.id ? "2px solid var(--rose-dust)" : "1.5px solid var(--border)", backgroundColor: lifeStage === item.id ? "var(--rose-dust-subtle)" : "var(--surface)", transition: "all 0.15s" }}>
-                  <p style={{ fontSize: "14px", fontWeight: 600, color: lifeStage === item.id ? "var(--rose-dust)" : "var(--plum)", fontFamily: "'Inter', sans-serif" }}>{item.label}</p>
-                  <p style={{ fontSize: "12px", color: "var(--mauve)", fontFamily: "'Inter', sans-serif", marginTop: "3px" }}>{item.desc}</p>
+                  <p style={{ fontSize: "14px", fontWeight: 600, color: lifeStage === item.id ? "var(--rose-dust)" : "var(--plum)", }}>{item.label}</p>
+                  <p style={{ fontSize: "12px", color: "var(--mauve)", marginTop: "3px" }}>{item.desc}</p>
                 </button>
               ))}
             </div>
-            <p style={{ fontSize: "11px", color: "var(--mauve)", fontFamily: "'Inter', sans-serif", marginTop: "10px", fontStyle: "italic", lineHeight: 1.5 }}>
+            <p style={{ fontSize: "11px", color: "var(--mauve)", marginTop: "10px", fontStyle: "italic", lineHeight: 1.5 }}>
               This shapes every Planner surface, every Jess message, and every content card. You can change it any time from Profile.
             </p>
             {(lifeStage === "pregnant-t1" || lifeStage === "pregnant-t2" || lifeStage === "pregnant-t3" || lifeStage === "pregnancy") && (
               <div style={{ ...card, padding: "16px" }} className="space-y-3">
-                <p style={{ fontSize: "13px", fontWeight: 600, color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>Pregnancy details (optional)</p>
+                <p style={{ fontSize: "13px", fontWeight: 600, color: "var(--plum)", }}>Pregnancy details (optional)</p>
                 <div>
                   <p style={{ fontSize: "11px", color: "var(--mauve)", marginBottom: 4 }}>Due date</p>
-                  <input type="date" value={pregDueDate} onChange={e => setPregDueDate(e.target.value)} style={{ width: "100%", padding: "12px", borderRadius: 12, border: "1px solid var(--border)", backgroundColor: "var(--surface)", color: "var(--plum)", fontSize: 13, fontFamily: "'Inter', sans-serif", outline: "none", boxSizing: "border-box" }} />
+                  <input type="date" value={pregDueDate} onChange={e => setPregDueDate(e.target.value)} style={{ width: "100%", padding: "12px", borderRadius: 12, border: "1px solid var(--border)", backgroundColor: "var(--surface)", color: "var(--plum)", fontSize: 13, outline: "none", boxSizing: "border-box" }} />
                 </div>
                 <div>
                   <p style={{ fontSize: "11px", color: "var(--mauve)", marginBottom: 4 }}>Current week</p>
-                  <input type="number" min="1" max="42" placeholder="e.g. 20" value={pregWeek} onChange={e => setPregWeek(e.target.value)} style={{ width: "100%", padding: "12px", borderRadius: 12, border: "1px solid var(--border)", backgroundColor: "var(--surface)", color: "var(--plum)", fontSize: 13, fontFamily: "'Inter', sans-serif", outline: "none", boxSizing: "border-box" }} />
+                  <input type="number" min="1" max="42" placeholder="e.g. 20" value={pregWeek} onChange={e => setPregWeek(e.target.value)} style={{ width: "100%", padding: "12px", borderRadius: 12, border: "1px solid var(--border)", backgroundColor: "var(--surface)", color: "var(--plum)", fontSize: 13, outline: "none", boxSizing: "border-box" }} />
                 </div>
                 <Select value={pregTrimester} onValueChange={setPregTrimester}>
                   <SelectTrigger style={{ borderRadius: 12, border: "1px solid var(--border)", height: 44 }}>
@@ -720,7 +717,7 @@ export default function Onboarding() {
             )}
             {(lifeStage === "menopause" || lifeStage === "perimenopause" || lifeStage === "post-menopause") && (
               <div style={{ ...card, padding: "16px" }} className="space-y-3">
-                <p style={{ fontSize: "13px", fontWeight: 600, color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>Menopause stage</p>
+                <p style={{ fontSize: "13px", fontWeight: 600, color: "var(--plum)", }}>Menopause stage</p>
                 <Select value={menoStage} onValueChange={setMenoStage}>
                   <SelectTrigger style={{ borderRadius: 12, border: "1px solid var(--border)", height: 44 }}>
                     <SelectValue />
@@ -748,10 +745,10 @@ export default function Onboarding() {
           <div className="w-full space-y-6">
             <div>
               {(() => { const n = PROGRESS_STEPS.indexOf(current) + 1; return n > 0 && <p style={sLabel}>Step {n} of {PROGRESS_STEPS.length}</p>; })()}
-              <h2 style={{ fontSize: "22px", fontWeight: 700, color: "var(--plum)", fontFamily: "'Fraunces', serif", marginTop: "4px", lineHeight: 1.2 }}>
+              <h2 style={{ fontSize: "22px", fontWeight: 700, color: "var(--plum)", marginTop: "4px", lineHeight: 1.2 }}>
                 Any diagnosed conditions?
               </h2>
-              <p style={{ fontSize: "13px", color: "var(--mauve)", fontFamily: "'Inter', sans-serif", marginTop: "6px", lineHeight: 1.5 }}>
+              <p style={{ fontSize: "13px", color: "var(--mauve)", marginTop: "6px", lineHeight: 1.5 }}>
                 Select all that apply — this helps us personalize your plan. You can change this any time from Profile.
               </p>
             </div>
@@ -774,7 +771,6 @@ export default function Onboarding() {
                     style={{
                       padding: "8px 16px",
                       borderRadius: 9999,
-                      fontFamily: "'Inter', sans-serif",
                       fontSize: 13,
                       fontWeight: 600,
                       cursor: "pointer",
@@ -802,7 +798,6 @@ export default function Onboarding() {
                     style={{
                       padding: "8px 16px",
                       borderRadius: 9999,
-                      fontFamily: "'Inter', sans-serif",
                       fontSize: 13,
                       fontWeight: 600,
                       fontStyle: "italic",
@@ -838,15 +833,15 @@ export default function Onboarding() {
             {!showVoice && (
               <>
                 <div style={{ width: 72, height: 72, borderRadius: 9999, margin: "0 auto", backgroundColor: "var(--rose-dust-subtle)", border: "1px solid var(--rose-dust-light)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                  <span style={{ fontSize: 28, fontWeight: 700, fontFamily: "'Fraunces', serif", color: "var(--rose-dust)" }}>{(assistantName || "G")[0].toUpperCase()}</span>
+                  <span style={{ fontSize: 28, fontWeight: 700, color: "var(--rose-dust)" }}>{(assistantName || "G")[0].toUpperCase()}</span>
                 </div>
                 <div>
-                  <h2 style={{ fontSize: "22px", fontWeight: 700, color: "var(--plum)", fontFamily: "'Fraunces', serif", lineHeight: 1.2 }}>Meet {assistantName || "your assistant"}</h2>
-                  <p style={{ fontSize: "14px", color: "var(--mauve)", fontFamily: "'Inter', sans-serif", marginTop: 8, lineHeight: 1.6 }}>Turn your volume up. We will do a short one minute check-in.</p>
+                  <h2 style={{ fontSize: "22px", fontWeight: 700, color: "var(--plum)", lineHeight: 1.2 }}>Meet {assistantName || "your assistant"}</h2>
+                  <p style={{ fontSize: "14px", color: "var(--mauve)", marginTop: 8, lineHeight: 1.6 }}>Turn your volume up. We will do a short one minute check-in.</p>
                 </div>
                 {micDenied && (
                   <div style={{ ...card, padding: "14px 16px" }}>
-                    <p style={{ fontSize: 13, color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>Microphone permission is needed for voice. You can continue without it.</p>
+                    <p style={{ fontSize: 13, color: "var(--plum)", }}>Microphone permission is needed for voice. You can continue without it.</p>
                   </div>
                 )}
                 <button
@@ -869,10 +864,10 @@ export default function Onboarding() {
                 >
                   Start
                 </button>
-                <p style={{ fontSize: 11, color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>Microphone permission is required for voice.</p>
+                <p style={{ fontSize: 11, color: "var(--mauve)", }}>Microphone permission is required for voice.</p>
                 <button
                   onClick={() => setStep(s => s + 1)}
-                  style={{ background: "none", border: "none", cursor: "pointer", fontSize: 13, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", textDecoration: "underline" }}
+                  style={{ background: "none", border: "none", cursor: "pointer", fontSize: 13, color: "var(--mauve)", textDecoration: "underline" }}
                 >
                   Skip
                 </button>
@@ -884,25 +879,25 @@ export default function Onboarding() {
         {current === "done" && (
           <div className="space-y-6 text-center w-full">
             <div style={{ width: 72, height: 72, borderRadius: 9999, margin: "0 auto", backgroundColor: "var(--rose-dust-subtle)", border: "1px solid var(--rose-dust-light)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-              <span style={{ fontSize: 28, fontWeight: 700, fontFamily: "'Fraunces', serif", color: "var(--rose-dust)" }}>F</span>
+              <span style={{ fontSize: 28, fontWeight: 700, color: "var(--rose-dust)" }}>F</span>
             </div>
             <div>
-              <h2 style={{ fontSize: "26px", fontWeight: 700, fontFamily: "'Fraunces', serif", color: "var(--plum)", lineHeight: 1.1 }}>You're all set</h2>
-              <p style={{ fontSize: "14px", color: "var(--mauve)", fontFamily: "'Inter', sans-serif", marginTop: 8, lineHeight: 1.6 }}>
+              <h2 style={{ fontSize: "26px", fontWeight: 700, color: "var(--plum)", lineHeight: 1.1 }}>You're all set</h2>
+              <p style={{ fontSize: "14px", color: "var(--mauve)", marginTop: 8, lineHeight: 1.6 }}>
                 {assistantName || "Guide"} is ready to support you. Your feed, guidance, and daily rhythm are now tuned to you.
               </p>
             </div>
             <div style={{ ...card, padding: "16px", textAlign: "left", background: "var(--rose-dust-subtle)", borderColor: "var(--rose-dust-light)" }}>
               <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 8 }}>
-                <p style={{ fontSize: 13, fontWeight: 700, color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>Meet {assistantName || "Guide"}</p>
+                <p style={{ fontSize: 13, fontWeight: 700, color: "var(--plum)", }}>Meet {assistantName || "Guide"}</p>
               </div>
-              <p style={{ fontSize: 13, color: "var(--plum)", lineHeight: 1.6, fontFamily: "'Inter', sans-serif" }}>Your personal wellness guide is waiting on the Today page. Tap the orb any time to ask for help, get phase insights, or just talk.</p>
+              <p style={{ fontSize: 13, color: "var(--plum)", lineHeight: 1.6, }}>Your personal wellness guide is waiting on the Today page. Tap the orb any time to ask for help, get phase insights, or just talk.</p>
             </div>
             <button className="btn-primary w-full" onClick={handleFinish} disabled={saving}
               style={{ fontSize: 16, padding: "16px" }}>
               {saving ? "Setting up..." : "Start your journey →"}
             </button>
-            {saveError && <p style={{ fontSize: 13, color: "var(--rose-dust)", fontFamily: "'Inter', sans-serif", marginTop: 8 }}>Something went wrong. Please try again.</p>}
+            {saveError && <p style={{ fontSize: 13, color: "var(--rose-dust)", marginTop: 8 }}>Something went wrong. Please try again.</p>}
           </div>
         )}
 

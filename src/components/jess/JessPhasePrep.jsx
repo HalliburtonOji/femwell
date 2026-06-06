@@ -197,11 +197,9 @@ export default function JessPhasePrep({ user, profile }) {
         <p style={{
           margin: 0, fontSize: 10, fontWeight: 700,
           letterSpacing: "0.16em", textTransform: "uppercase",
-          color: C.muted, fontFamily: "'Inter', sans-serif",
-        }}>Jess · {phaseLabel} phase in {next.daysToTransition} day{next.daysToTransition === 1 ? "" : "s"}</p>
+          color: C.muted, }}>Jess · {phaseLabel} phase in {next.daysToTransition} day{next.daysToTransition === 1 ? "" : "s"}</p>
         <p style={{
           margin: "4px 0 0", fontSize: 14,
-          fontFamily: "'Fraunces', Georgia, serif",
           color: C.espresso, lineHeight: 1.5,
         }}>{text}</p>
       </div>

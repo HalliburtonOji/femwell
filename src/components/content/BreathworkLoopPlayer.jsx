@@ -477,7 +477,7 @@ export default function BreathworkLoopPlayer({ item, user }) {
                 }} />
               ))}
             </div>
-            <p className="text-xs mt-1" style={{ color: `${accent}88`, fontFamily: "'Inter', sans-serif" }}>
+            <p className="text-xs mt-1" style={{ color: `${accent}88`, }}>
               Round {breathRound} of {totalRounds}
             </p>
           </div>

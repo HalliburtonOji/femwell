@@ -324,7 +324,6 @@ export default function SmartLoggerDemo() {
     <div style={{
       background: C.ink, minHeight: "100vh",
       padding: "32px 16px 80px",
-      fontFamily: "'Inter', system-ui, sans-serif",
       color: C.cream,
     }}>
       {/* Headline */}
@@ -334,7 +333,6 @@ export default function SmartLoggerDemo() {
           color: "rgba(244,237,219,0.55)", textTransform: "uppercase",
         }}>Design Lab · Concept Demo · v3</div>
         <h1 style={{
-          fontFamily: "'Fraunces', Georgia, serif",
           fontSize: 32, fontWeight: 500, color: C.cream,
           letterSpacing: "-0.02em", margin: "10px 0 8px", lineHeight: 1.1,
         }}>Smart Logger</h1>
@@ -470,8 +468,7 @@ function Phone({ stageId, sheetOpen, setSheetOpen, walkStep, setWalkStep }) {
       background: C.cream,
       boxShadow: "0 30px 80px rgba(0,0,0,0.55), 0 0 0 8px #1A1410, 0 0 0 9px rgba(212,175,55,0.18)",
       overflow: "hidden",
-      fontFamily: "'Inter', system-ui, sans-serif",
-    }}>
+      }}>
       <div style={{
         position: "absolute", top: 8, left: "50%", transform: "translateX(-50%)",
         width: 110, height: 26, borderRadius: 14, background: "#1A1410", zIndex: 3,
@@ -630,7 +627,7 @@ function PlannerBg({ S }) {
         color: C.muted, textTransform: "uppercase", marginTop: 6,
       }}>{S.headerKicker}</div>
       <h2 style={{
-        fontFamily: "'Fraunces', Georgia, serif", fontSize: 22, fontWeight: 500,
+        fontSize: 22, fontWeight: 500,
         color: C.espresso, margin: "4px 0 2px", lineHeight: 1.15, letterSpacing: "-0.01em",
       }}>{S.greeting}</h2>
       <div style={{
@@ -694,7 +691,7 @@ function PlannerRow({ kicker, title, sub, accent, children }) {
         color: C.muted, textTransform: "uppercase",
       }}>{kicker}</div>
       <div style={{
-        fontFamily: "'Fraunces', Georgia, serif", fontSize: 15, fontWeight: 500,
+        fontSize: 15, fontWeight: 500,
         color: C.espresso, margin: "2px 0 6px",
       }}>{title}</div>
       {sub && (
@@ -801,7 +798,7 @@ function LoggerSheet({ S, walkStep, setWalkStep, onClose }) {
           display: "flex", alignItems: "center", gap: 10, marginBottom: 12,
         }}>
           <span style={{
-            fontFamily: "'Fraunces', Georgia, serif", fontSize: 17, fontWeight: 500, color: C.espresso,
+            fontSize: 17, fontWeight: 500, color: C.espresso,
           }}>Log anything</span>
           <span style={{ fontSize: 11, color: C.muted }}>· {S.timeBlock}</span>
           <span style={{ flex: 1 }} />
@@ -894,7 +891,7 @@ function LoggerSheet({ S, walkStep, setWalkStep, onClose }) {
                     }}
                   >
                     <span style={{
-                      fontFamily: "'Fraunces', Georgia, serif", fontSize: 14, fontWeight: 500,
+                      fontSize: 14, fontWeight: 500,
                       color: C.espresso, flex: 1,
                     }}>{g.label}</span>
                     <span style={{
@@ -981,7 +978,7 @@ function SmartCard({ S, state, mood, setMood, influences, toggleInfluence, onSav
         }}><Check size={18} strokeWidth={3} /></span>
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{
-            fontFamily: "'Fraunces', Georgia, serif", fontSize: 15, fontWeight: 500,
+            fontSize: 15, fontWeight: 500,
             color: C.espresso, lineHeight: 1.25,
           }}>{S.savedMessage.headline}</div>
           <div style={{ fontSize: 11.5, color: C.muted, marginTop: 2 }}>
@@ -1007,7 +1004,7 @@ function SmartCard({ S, state, mood, setMood, influences, toggleInfluence, onSav
         <Sparkles size={10} /> {S.smartCard.kicker}
       </div>
       <div style={{
-        fontFamily: "'Fraunces', Georgia, serif", fontSize: 17, fontWeight: 500,
+        fontSize: 17, fontWeight: 500,
         color: C.espresso, margin: "8px 0 2px", lineHeight: 1.25,
       }}>{S.smartCard.question}</div>
       <div style={{ fontSize: 11.5, color: C.muted, lineHeight: 1.5, marginBottom: 12 }}>
@@ -1104,7 +1101,7 @@ function JessInline({ S, state, onAccept, onDismiss }) {
         }}><Check size={18} strokeWidth={3} /></span>
         <div style={{ flex: 1 }}>
           <div style={{
-            fontFamily: "'Fraunces', Georgia, serif", fontSize: 15, fontWeight: 500,
+            fontSize: 15, fontWeight: 500,
             color: C.espresso,
           }}>{S.insight.confirmation}</div>
           <div style={{ fontSize: 11.5, color: C.muted, marginTop: 2 }}>
@@ -1139,7 +1136,7 @@ function JessInline({ S, state, onAccept, onDismiss }) {
             color: C.goldDeep, textTransform: "uppercase",
           }}>{S.insight.kicker}</div>
           <div style={{
-            fontFamily: "'Fraunces', Georgia, serif", fontSize: 14.5, fontWeight: 500,
+            fontSize: 14.5, fontWeight: 500,
             color: C.espresso, margin: "3px 0 0", lineHeight: 1.35,
           }}>{S.insight.body}</div>
         </div>
@@ -1192,7 +1189,7 @@ function RailCard({ card }) {
           color: t.accent, textTransform: "uppercase", marginBottom: 4,
         }}>{card.typeLabel}</div>
         <div style={{
-          fontFamily: "'Fraunces', Georgia, serif", fontSize: 12.5, fontWeight: 500,
+          fontSize: 12.5, fontWeight: 500,
           color: C.cream, lineHeight: 1.25,
         }}>{card.title}</div>
       </div>

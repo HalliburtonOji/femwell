@@ -10,8 +10,7 @@ const sLabel = {
   textTransform: "uppercase",
   letterSpacing: "0.1em",
   color: "var(--mauve)",
-  fontFamily: "'Inter', sans-serif",
-};
+  };
 
 function dateKey(d) {
   return new Date(d).toISOString().split("T")[0];
@@ -77,7 +76,7 @@ export default function SymptomHeatmap({ checkins }) {
     return (
       <div style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)", borderRadius: 16, padding: "16px 18px" }}>
         <p style={sLabel}>14-day trend</p>
-        <p style={{ fontSize: 13, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", marginTop: 8 }}>
+        <p style={{ fontSize: 13, color: "var(--mauve)", marginTop: 8 }}>
           Not enough data yet — log a few days to see your patterns.
         </p>
       </div>
@@ -92,7 +91,7 @@ export default function SymptomHeatmap({ checkins }) {
           <tbody>
             {topSymptoms.map(sym => (
               <tr key={sym}>
-                <td style={{ fontSize: 11, fontWeight: 600, color: "var(--plum)", fontFamily: "'Inter', sans-serif", paddingRight: 8, whiteSpace: "nowrap" }}>
+                <td style={{ fontSize: 11, fontWeight: 600, color: "var(--plum)", paddingRight: 8, whiteSpace: "nowrap" }}>
                   {symptomLabel(sym)}
                 </td>
                 {days.map(d => (
@@ -114,7 +113,7 @@ export default function SymptomHeatmap({ checkins }) {
               {days.map(d => {
                 const day = new Date(d).getDate();
                 return (
-                  <td key={d} style={{ fontSize: 8, color: "var(--mauve)", textAlign: "center", fontFamily: "'Inter', sans-serif", paddingTop: 4 }}>
+                  <td key={d} style={{ fontSize: 8, color: "var(--mauve)", textAlign: "center", paddingTop: 4 }}>
                     {day}
                   </td>
                 );
@@ -124,12 +123,12 @@ export default function SymptomHeatmap({ checkins }) {
         </table>
       </div>
       <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 10, flexWrap: "wrap" }}>
-        <span style={{ fontSize: 10, color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>Less</span>
+        <span style={{ fontSize: 10, color: "var(--mauve)", }}>Less</span>
         {[1, 2, 3, 4, 5].map(n => (
           <div key={n} style={{ width: 12, height: 12, borderRadius: 3, backgroundColor: severityColor(n) }} />
         ))}
-        <span style={{ fontSize: 10, color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>More</span>
-        <span style={{ fontSize: 10, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", marginLeft: "auto" }}>Dashed = no log</span>
+        <span style={{ fontSize: 10, color: "var(--mauve)", }}>More</span>
+        <span style={{ fontSize: 10, color: "var(--mauve)", marginLeft: "auto" }}>Dashed = no log</span>
       </div>
     </div>
   );

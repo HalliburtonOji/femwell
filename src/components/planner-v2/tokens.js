@@ -56,7 +56,6 @@ export const kicker = {
   color: C.muted, fontWeight: 700,
 };
 export const cardTitle = {
-  fontFamily: "'Fraunces', Georgia, serif",
   fontSize: 17, fontWeight: 500, color: C.espresso,
   margin: "2px 0", lineHeight: 1.25, letterSpacing: "-0.005em",
   flex: 1,
