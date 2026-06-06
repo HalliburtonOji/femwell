@@ -1,16 +1,19 @@
+import { Sparkles } from "lucide-react";
+
 /**
  * EmptyState — friendly placeholder for empty lists.
  *
  * Usage:
  *   <EmptyState
- *     emoji="📚"
+ *     icon={BookOpen}              // a Lucide component (emoji are banned brand-wide)
  *     message="Your reading list is empty."
  *     actionLabel="Explore the library"
  *     onAction={() => navigate('/Lifestyle?tab=books')}
  *   />
  */
 export default function EmptyState({
-  emoji = "✨",
+  icon: Icon = Sparkles,
+  emoji, // legacy/no-op — kept only so old callers don't break; pass `icon` instead
   message = "Nothing here yet.",
   actionLabel,
   onAction,
@@ -25,16 +28,14 @@ export default function EmptyState({
         fontFamily: "'Inter', sans-serif",
       }}
     >
-      <div
+      <Icon
         aria-hidden="true"
+        size={34}
         style={{
-          fontSize: 40,
+          color: "var(--rose-dust, #C4849A)",
           marginBottom: 12,
-          lineHeight: 1,
         }}
-      >
-        {emoji}
-      </div>
+      />
       <p
         style={{
           fontSize: 14,

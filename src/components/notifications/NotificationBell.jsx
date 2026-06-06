@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
-import { Bell, X, ChevronRight } from "lucide-react";
+import { Bell, X, ChevronRight, Flower2, Pill, BookOpen, Flame, Moon, Sparkles, Heart, AlertTriangle, Droplet } from "lucide-react";
 import { createPageUrl } from "@/utils";
 
 function timeAgo(isoStr) {
@@ -14,15 +14,15 @@ function timeAgo(isoStr) {
 }
 
 const TYPE_ICONS = {
-  daily_checkin_reminder: "🌸",
-  medication_reminder: "💊",
-  program_reminder: "📚",
-  streak_alert: "🔥",
-  phase_change: "🌙",
-  insight_ready: "✨",
-  panic_followup: "💜",
-  symptom_alert: "⚠️",
-  hydration_nudge: "💧",
+  daily_checkin_reminder: Flower2,
+  medication_reminder: Pill,
+  program_reminder: BookOpen,
+  streak_alert: Flame,
+  phase_change: Moon,
+  insight_ready: Sparkles,
+  panic_followup: Heart,
+  symptom_alert: AlertTriangle,
+  hydration_nudge: Droplet,
 };
 
 export default function NotificationBell({ userId }) {
@@ -107,7 +107,7 @@ export default function NotificationBell({ userId }) {
             <div className="overflow-y-auto flex-1">
               {notifications.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-16 px-8 text-center">
-                  <span style={{ fontSize: 40 }}>🔔</span>
+                  <Bell size={36} style={{ color: "var(--mauve)" }} />
                   <p style={{ fontSize: 15, fontWeight: 600, color: "var(--plum)", fontFamily: "'Inter', sans-serif", marginTop: 12 }}>All quiet</p>
                   <p style={{ fontSize: 13, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", marginTop: 4 }}>Your notifications will appear here</p>
                 </div>
@@ -122,7 +122,7 @@ export default function NotificationBell({ userId }) {
                       borderBottom: "1px solid var(--border-subtle)",
                     }}
                   >
-                    <span style={{ fontSize: 22, flexShrink: 0, marginTop: 1 }}>{TYPE_ICONS[notif.notification_type] || "🔔"}</span>
+                    {(() => { const TIcon = TYPE_ICONS[notif.notification_type] || Bell; return <TIcon size={20} style={{ flexShrink: 0, marginTop: 1, color: "var(--rose-dust)" }} />; })()}
                     <div className="flex-1 min-w-0">
                       <p style={{ fontSize: 14, fontWeight: notif.is_read ? 500 : 700, color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>{notif.title}</p>
                       <p style={{ fontSize: 12, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", marginTop: 2, lineHeight: 1.5 }}>{notif.body}</p>

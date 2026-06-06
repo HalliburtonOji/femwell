@@ -1,4 +1,5 @@
 import React from "react";
+import { Heart } from "lucide-react";
 
 /**
  * ErrorBoundary — catches any React rendering error below it and shows
@@ -68,7 +69,7 @@ export default class ErrorBoundary extends React.Component {
               fontSize: 28,
             }}
           >
-            💛
+            <Heart size={26} style={{ color: "#BC2E27" }} fill="#BC2E27" />
           </div>
           <h2
             style={{

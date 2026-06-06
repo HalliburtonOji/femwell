@@ -1,8 +1,9 @@
 import { phaseLabel } from "@/utils/cyclePhase";
+import { Star } from "lucide-react";
 
 const VALID_PHASES = ["menstrual", "follicular", "ovulatory", "luteal"];
 
-// "★ Luteal match" pill — transparent plum tint, used on matched cards
+// "Luteal match" pill (Lucide Star + label) — transparent plum tint, used on matched cards
 // (NOT the editorial hero). Star is U+2605 (typeset glyph, not emoji).
 // Bug #5 (2026-06-01) — refuse sentinel values like "any"/"all"/"none"
 // that occasionally leak in from legacy seed data; fall through to
@@ -36,7 +37,7 @@ export default function PhasePill({ phase, fallbackPhase, style = {} }) {
         ...style,
       }}
     >
-      <span aria-hidden="true">★</span>
+      <Star aria-hidden="true" size={11} fill="currentColor" style={{ flexShrink: 0 }} />
       {label} match
     </span>
   );

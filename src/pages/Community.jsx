@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { base44 } from "@/api/base44Client";
-import { Plus, X, Flag, MessageCircle } from "lucide-react";
+import { Plus, X, Flag, MessageCircle, Heart, Users, HeartHandshake } from "lucide-react";
 import EchoWall from "../components/journal/echo/EchoWall";
 
 const CATEGORIES = [
@@ -226,10 +226,10 @@ export default function Community() {
 
                   {/* Reactions + actions */}
                   <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
-                    {[["feel_this", "💜"], ["same", "🙌"], ["sending_love", "💗"]].map(([key, emoji]) => (
+                    {[["feel_this", Heart], ["same", Users], ["sending_love", HeartHandshake]].map(([key, Icon]) => (
                       <button key={key} onClick={() => handleReact(post, key)}
-                        style={{ display: "flex", alignItems: "center", gap: 4, padding: "5px 10px", borderRadius: 9999, border: "1px solid var(--border)", backgroundColor: "var(--ivory)", cursor: "pointer", fontSize: 12, fontFamily: "'Inter', sans-serif", color: "var(--plum)", fontWeight: 500 }}>
-                        {emoji} {post.reactions?.[key] || 0}
+                        style={{ display: "flex", alignItems: "center", gap: 5, padding: "5px 10px", borderRadius: 9999, border: "1px solid var(--border)", backgroundColor: "var(--ivory)", cursor: "pointer", fontSize: 12, fontFamily: "'Inter', sans-serif", color: "var(--plum)", fontWeight: 500 }}>
+                        <Icon className="w-3.5 h-3.5" /> {post.reactions?.[key] || 0}
                       </button>
                     ))}
                     {post.reply_count > 0 && (
@@ -281,7 +281,7 @@ export default function Community() {
 
             {/* Safe space notice */}
             <div style={{ backgroundColor: "var(--rose-dust-subtle)", border: "1px solid var(--rose-dust-light)", borderRadius: 12, padding: "10px 14px", marginBottom: 16 }}>
-              <p style={{ fontSize: 12, color: "var(--rose-dust)", fontFamily: "'Inter', sans-serif", lineHeight: 1.5 }}>💜 This is a safe, supportive space. Be kind, be real, be you. Posts are reviewed before going live.</p>
+              <p style={{ fontSize: 12, color: "var(--rose-dust)", fontFamily: "'Inter', sans-serif", lineHeight: 1.5 }}>This is a safe, supportive space. Be kind, be real, be you. Posts are reviewed before going live.</p>
             </div>
 
             <textarea

@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { differenceInDays, differenceInHours, differenceInMinutes, parseISO } from "date-fns";
-import { MoreHorizontal, X, Loader2, Plus } from "lucide-react";
+import { MoreHorizontal, X, Loader2, Plus, CheckCircle2, PenLine } from "lucide-react";
 
 const CATEGORY_TABS = [
   { key: "all",           label: "All" },
@@ -15,10 +15,10 @@ const CATEGORY_TABS = [
 ];
 
 const CATEGORY_LABELS = {
-  cycle: "Cycle 🌸", pcos: "PCOS", endometriosis: "Endo",
-  pmdd: "PMDD", pregnancy: "Pregnancy 🤰", menopause: "Menopause",
-  general: "General", gratitude: "Gratitude 🙏", real_talk: "Real Talk 💬",
-  question: "Question ❓", milestone: "Milestone 🎉",
+  cycle: "Cycle", pcos: "PCOS", endometriosis: "Endo",
+  pmdd: "PMDD", pregnancy: "Pregnancy", menopause: "Menopause",
+  general: "General", gratitude: "Gratitude", real_talk: "Real Talk",
+  question: "Question", milestone: "Milestone",
 };
 
 const REACTION_KEYS = [
@@ -156,7 +156,7 @@ function ComposeModal({ onClose, onSubmit, currentPhase }) {
 
         {done ? (
           <div style={{ textAlign: "center", padding: "24px 0" }}>
-            <div style={{ fontSize: 40, marginBottom: 12 }}>🌸</div>
+            <CheckCircle2 size={38} style={{ color: "var(--rose-dust)", marginBottom: 12 }} />
             <p style={{ fontSize: 14, fontWeight: 600, color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>Your post is under review</p>
             <p style={{ fontSize: 13, color: "var(--mauve)", fontFamily: "'Inter', sans-serif", marginTop: 6 }}>It will appear shortly.</p>
             <button onClick={onClose} style={{ marginTop: 20, padding: "10px 28px", borderRadius: 9999, backgroundColor: "var(--plum)", color: "white", fontSize: 13, fontWeight: 600, border: "none", cursor: "pointer", fontFamily: "'Inter', sans-serif" }}>Done</button>
@@ -294,7 +294,7 @@ export default function CommunityFeed({ user, profile }) {
         {currentPhase && (
           <div style={{ background: "linear-gradient(135deg, var(--rose-dust-subtle), var(--mauve-subtle))", border: "1px solid var(--rose-dust-light)", borderRadius: 18, padding: "12px 16px" }}>
             <p style={{ fontSize: 13, color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>
-              You're not alone this <strong>{currentPhase}</strong> phase 🌸
+              You're not alone this <strong>{currentPhase}</strong> phase.
             </p>
           </div>
         )}
@@ -303,7 +303,7 @@ export default function CommunityFeed({ user, profile }) {
         <button onClick={() => setShowCompose(true)}
           style={{ width: "100%", display: "flex", alignItems: "center", gap: 12, backgroundColor: "var(--surface)", border: "1.5px solid var(--border)", borderRadius: 20, padding: "14px 18px", cursor: "pointer", textAlign: "left", boxShadow: "var(--shadow-sm)" }}>
           <div style={{ width: 36, height: 36, borderRadius: "50%", backgroundColor: "var(--rose-dust-subtle)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-            <span style={{ fontSize: 16, color: "var(--rose-dust)" }}>✏️</span>
+            <PenLine size={16} style={{ color: "var(--rose-dust)" }} />
           </div>
           <p style={{ fontSize: 14, color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}>Share something with the community…</p>
         </button>
