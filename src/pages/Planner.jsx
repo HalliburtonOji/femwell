@@ -2366,7 +2366,7 @@ const navBtnStyle = { width: 28, height: 28, borderRadius: 9999, border: "1px so
 const smartLabelStyle = { fontSize: 9, letterSpacing: "0.18em", textTransform: "uppercase", color: "var(--plum-mute, #8A7584)", fontWeight: 700, fontFamily: "'Inter', sans-serif", display: "inline-flex", alignItems: "center" };
 const phaseChipStyle = { fontSize: 9, padding: "3px 8px", borderRadius: 10, letterSpacing: "0.08em", textTransform: "uppercase", fontWeight: 700, fontFamily: "'Inter', sans-serif" };
 
-const intentionCardStyle = { background: "#FFFFFF", border: "1px solid rgba(74,42,58,0.08)", borderRadius: 16, padding: "16px 16px 14px", marginBottom: 12, boxShadow: "0 2px 8px rgba(74,42,58,0.04)" };
+const intentionCardStyle = { background: "var(--surface)", border: "1px solid var(--border)", borderRadius: 16, padding: "16px 16px 14px", marginBottom: 12 };
 const intentionMainStyle = { fontFamily: "'Fraunces', Georgia, serif", fontSize: 18, fontStyle: "italic", color: "var(--plum, #4A2A3A)", fontWeight: 500, lineHeight: 1.32, margin: "0 0 6px" };
 const intentionSubStyle = { fontSize: 13, color: "var(--plum-2, #6B4559)", fontFamily: "'Inter', sans-serif", lineHeight: 1.5, margin: 0 };
 
@@ -2378,7 +2378,7 @@ const programCtaStyle = { fontSize: 12, color: "var(--plum, #4A2A3A)", fontWeigh
 const programProgressOuterStyle = { height: 4, background: "rgba(255,250,245,0.6)", borderRadius: 4, marginTop: 10, overflow: "hidden" };
 const programProgressFillStyle = { height: "100%", background: "var(--plum, #4A2A3A)", borderRadius: 4, transition: "width 240ms" };
 
-const stackCardStyle = { background: "#FFFFFF", border: "1px solid rgba(74,42,58,0.08)", borderRadius: 16, padding: "14px 16px", marginBottom: 12 };
+const stackCardStyle = { background: "var(--surface)", border: "1px solid var(--border)", borderRadius: 16, padding: "14px 16px", marginBottom: 12 };
 const stackHeadStyle = { display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 8 };
 const stackTitleStyle = { fontFamily: "'Fraunces', Georgia, serif", fontSize: 16, fontWeight: 500, color: "var(--plum, #4A2A3A)" };
 const stackCountStyle = { fontSize: 10, color: "var(--plum-mute, #8A7584)", letterSpacing: "0.14em", textTransform: "uppercase", fontWeight: 700, fontFamily: "'Inter', sans-serif" };
@@ -2424,7 +2424,7 @@ const fabSatelliteIconStyle = {
 
 const dividerStyle = { fontFamily: "'Fraunces', Georgia, serif", fontSize: 13, color: "var(--plum, #4A2A3A)", fontWeight: 500, margin: "16px 0 8px" };
 
-const mealRowStyle = { display: "flex", alignItems: "center", gap: 12, background: "#FFFFFF", border: "1px solid rgba(74,42,58,0.06)", borderRadius: 12, padding: "10px 12px" };
+const mealRowStyle = { display: "flex", alignItems: "center", gap: 12, background: "var(--surface)", border: "1px solid var(--border)", borderRadius: 12, padding: "10px 12px" };
 const mealTimeStyle = { fontFamily: "'Fraunces', Georgia, serif", fontSize: 10, color: "var(--plum-mute, #8A7584)", letterSpacing: "0.14em", textTransform: "uppercase", fontWeight: 600, minWidth: 70 };
 const mealNameStyle = { fontSize: 13, color: "var(--plum, #4A2A3A)", fontWeight: 600, fontFamily: "'Inter', sans-serif", margin: 0, lineHeight: 1.2 };
 
@@ -2435,7 +2435,7 @@ const inputStyle = { width: "100%", border: "1.5px solid var(--border, rgba(74,4
 const fieldLabelStyle = { fontSize: 11, fontWeight: 600, color: "var(--plum-mute, #8A7584)", textTransform: "uppercase", letterSpacing: "0.10em", fontFamily: "'Inter', sans-serif", marginBottom: 8 };
 
 // ── Cycle-view stubs (C0 placeholders; C1+ populates each section) ──────────
-const cycleStubStyle = { background: "#FFFFFF", border: "1px solid rgba(74,42,58,0.08)", borderRadius: 16, padding: "16px 16px 14px", marginBottom: 12, boxShadow: "0 2px 8px rgba(74,42,58,0.04)" };
+const cycleStubStyle = { background: "var(--surface)", border: "1px solid var(--border)", borderRadius: 16, padding: "16px 16px 14px", marginBottom: 12 };
 const cycleStubTitleStyle = { fontFamily: "'Fraunces', Georgia, serif", fontSize: 16, fontWeight: 500, color: "var(--plum, #4A2A3A)", margin: "0 0 4px" };
 const cycleStubBodyStyle = { fontSize: 13, color: "var(--plum-2, #6B4559)", fontFamily: "'Inter', sans-serif", lineHeight: 1.5, margin: 0 };
 

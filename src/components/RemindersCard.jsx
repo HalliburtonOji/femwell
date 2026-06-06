@@ -10,7 +10,7 @@ import { readPrefs, scheduleNotifications } from "@/utils/notifications";
 
 const C = {
   espresso: "#3A2C1A",
-  paperHi:  "#FFFFFF",
+  paperHi:  "#F4EFE3",
   muted:    "#6B5B4E",
   sage:     "#3D6B3D",
   gold:     "#7A6000",

@@ -16,7 +16,7 @@ const J = {
   cream:       "#F4EDDB",
   creamWarm:   "#FBF6E6",
   paper:       "#F8F2E4",
-  paperHi:     "#FFFFFF",
+  paperHi:     "#F4EFE3",
   espresso:    "#3A2C1A",
   espressoMid: "#6B5840",
   plum:        "#4A2A3A",

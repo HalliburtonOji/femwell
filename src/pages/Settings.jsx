@@ -33,11 +33,11 @@ const inputStyle = {
   width: "100%",
   padding: "10px 12px",
   borderRadius: 10,
-  border: "1.5px solid #FECACA",
+  border: "1.5px solid #D8CFBC",
   fontSize: 14,
   fontFamily: "'Inter', sans-serif",
   color: "var(--plum)",
-  backgroundColor: "white",
+  backgroundColor: "#F4EFE3",
   outline: "none",
   boxSizing: "border-box",
 };
@@ -67,9 +67,9 @@ const primaryBtn = {
 };
 const secondaryBtn = {
   ...primaryBtn,
-  backgroundColor: "white",
+  backgroundColor: "#F4EFE3",
   color: "#E11D48",
-  border: "1.5px solid #FECACA",
+  border: "1.5px solid #D8CFBC",
 };
 
 // ── Nav sidebar ──────────────────────────────────────────────────────────────
@@ -78,8 +78,8 @@ function SettingsSidebar({ active, onSelect }) {
     <nav
       aria-label="Settings sections"
       style={{
-        backgroundColor: "#FFF1F2",
-        border: "1px solid #FECACA",
+        backgroundColor: "#F4EFE3",
+        border: "1px solid #D8CFBC",
         borderRadius: 16,
         padding: 8,
         boxShadow: "var(--shadow-sm)",
@@ -197,7 +197,7 @@ function AccountSection({ user, profile, onProfileChange }) {
             id="st-email"
             value={user?.email || ""}
             readOnly
-            style={{ ...inputStyle, backgroundColor: "#FFF1F2", color: "var(--mauve)", cursor: "not-allowed" }}
+            style={{ ...inputStyle, backgroundColor: "#F4EFE3", color: "var(--mauve)", cursor: "not-allowed" }}
           />
         </div>
 
@@ -547,13 +547,13 @@ function AboutSection() {
         </div>
 
         <a href="/terms"
-          style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 14px", borderRadius: 12, backgroundColor: "#FFF1F2", border: "1px solid #FECACA", textDecoration: "none" }}>
+          style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 14px", borderRadius: 12, backgroundColor: "#F4EFE3", border: "1px solid #D8CFBC", textDecoration: "none" }}>
           <span style={{ fontSize: 13, fontWeight: 600, color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>Terms of Service</span>
           <ChevronRight className="w-4 h-4" style={{ color: "#E11D48" }} />
         </a>
 
         <a href="/privacy"
-          style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 14px", borderRadius: 12, backgroundColor: "#FFF1F2", border: "1px solid #FECACA", textDecoration: "none" }}>
+          style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 14px", borderRadius: 12, backgroundColor: "#F4EFE3", border: "1px solid #D8CFBC", textDecoration: "none" }}>
           <span style={{ fontSize: 13, fontWeight: 600, color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>Privacy Policy</span>
           <ChevronRight className="w-4 h-4" style={{ color: "#E11D48" }} />
         </a>
@@ -632,7 +632,7 @@ export default function Settings() {
         {loading ? (
           <div className="flex justify-center py-10">
             <div className="w-7 h-7 rounded-full border-2 border-t-transparent animate-spin"
-              style={{ borderColor: "#FECACA", borderTopColor: "#E11D48" }} />
+              style={{ borderColor: "#D8CFBC", borderTopColor: "#E11D48" }} />
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-[220px,1fr] gap-4">

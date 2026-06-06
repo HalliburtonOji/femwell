@@ -258,40 +258,40 @@ export default function ProgramDay() {
         </div>
 
         <div className="grid gap-4 md:grid-cols-[1.15fr_0.85fr]">
-          <div className="rounded-[28px] border border-rose-100 bg-white p-5 shadow-sm md:p-6">
-            <div className="inline-flex items-center gap-2 rounded-full bg-rose-50 px-3 py-1 text-xs font-semibold text-rose-600">
+          <div className="rounded-[28px] border border-[#D8CFBC] bg-[#F4EFE3] p-5 shadow-sm md:p-6">
+            <div className="inline-flex items-center gap-2 rounded-full bg-[#EDE7DA] px-3 py-1 text-xs font-semibold text-[#A8893F]">
               <Sparkles className="h-3.5 w-3.5" /> Today’s flow
             </div>
-            <h2 className="mt-4 text-xl font-semibold text-gray-900">{dayTitle}</h2>
-            {daySummary && <p className="mt-2 text-sm leading-relaxed text-gray-600">{daySummary}</p>}
+            <h2 className="mt-4 text-xl font-semibold text-[#1A130C]">{dayTitle}</h2>
+            {daySummary && <p className="mt-2 text-sm leading-relaxed text-[#4F473A]">{daySummary}</p>}
             <div className="mt-4 flex flex-wrap gap-2 text-xs font-medium">
               {programDay?.estimated_minutes && (
-                <div className="inline-flex items-center gap-2 rounded-full bg-rose-50 px-3 py-1.5 text-rose-600">
+                <div className="inline-flex items-center gap-2 rounded-full bg-[#EDE7DA] px-3 py-1.5 text-[#A8893F]">
                   <Clock className="h-3.5 w-3.5" /> Around {programDay.estimated_minutes} minutes
                 </div>
               )}
               {userProgram?.streak_count > 0 && (
-                <div className="inline-flex items-center gap-2 rounded-full bg-rose-50 px-3 py-1.5 text-rose-600">
+                <div className="inline-flex items-center gap-2 rounded-full bg-[#EDE7DA] px-3 py-1.5 text-[#A8893F]">
                   <Flame className="h-3.5 w-3.5" /> {userProgram.streak_count} day streak
                 </div>
               )}
               {reminderDue && userProgram?.reminder_time && (
-                <div className="inline-flex items-center gap-2 rounded-full bg-amber-50 px-3 py-1.5 text-amber-700">
+                <div className="inline-flex items-center gap-2 rounded-full bg-[#EDE7DA] px-3 py-1.5 text-[#A8893F]">
                   <Bell className="h-3.5 w-3.5" /> Day {dayNumber} is ready
                 </div>
               )}
             </div>
           </div>
 
-          <div className="rounded-[28px] border border-rose-100 bg-white p-5 shadow-sm md:p-6">
-            <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-amber-50 text-amber-700">
+          <div className="rounded-[28px] border border-[#D8CFBC] bg-[#F4EFE3] p-5 shadow-sm md:p-6">
+            <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[#EDE7DA] text-[#A8893F]">
               <BookOpen className="h-5 w-5" />
             </div>
-            <h3 className="mt-4 text-lg font-semibold text-gray-900">Day progress</h3>
-            <p className="mt-2 text-sm leading-relaxed text-gray-600">{completedTaskCount}/{tasks.length} tasks done · {Math.max(remainingMinutes, 0)} min remaining</p>
+            <h3 className="mt-4 text-lg font-semibold text-[#1A130C]">Day progress</h3>
+            <p className="mt-2 text-sm leading-relaxed text-[#4F473A]">{completedTaskCount}/{tasks.length} tasks done · {Math.max(remainingMinutes, 0)} min remaining</p>
             <ProgramProgressBar value={dayProgress} className="mt-4" />
             {programDay?.reflection_prompt && (
-              <div className="mt-4 rounded-2xl bg-rose-50 px-4 py-3 text-sm italic text-gray-600">
+              <div className="mt-4 rounded-2xl bg-[#EDE7DA] px-4 py-3 text-sm italic text-[#4F473A]">
                 Reflection: {programDay.reflection_prompt}
               </div>
             )}

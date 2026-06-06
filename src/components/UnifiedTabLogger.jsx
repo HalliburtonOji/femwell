@@ -45,7 +45,7 @@ export { openLogger, closeLogger };
 // ── Tokens ──────────────────────────────────────────────────────────────────
 const T = {
   cream:    "#F4EDDB",
-  paperHi:  "#FFFFFF",
+  paperHi:  "#F4EFE3",
   espresso: "#3A2C1A",
   blush:    "#E8B4B8",
   sage:     "#8FAF8F",

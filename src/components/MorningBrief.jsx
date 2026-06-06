@@ -32,7 +32,7 @@ import {
 // ── Tokens ──────────────────────────────────────────────────────────────────
 const T = {
   cream:    "#F4EDDB",
-  paper:    "#FFFFFF",
+  paper:    "#F4EFE3",
   espresso: "#3A2C1A",
   espressoSoft: "rgba(58,44,26,0.10)",
   plum:     "#4A2A3A",

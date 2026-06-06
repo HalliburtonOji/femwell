@@ -28,7 +28,7 @@ import {
 const T = {
   cream:    "#F4EDDB",
   paper:    "#FBF6E6",
-  paperHi:  "#FFFFFF",
+  paperHi:  "#F4EFE3",
   espresso: "#3A2C1A",
   plum:     "#4A2A3A",
   plumSoft: "#6B4559",

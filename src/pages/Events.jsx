@@ -12,7 +12,7 @@ const TAG_COLORS = {
   fitness: "var(--sage)",
   nightlife: "var(--plum)",
   culture: "#B89E6A",
-  online: "#6B8AC4",
+  online: "var(--sage)",
   default: "var(--mauve)",
 };
 

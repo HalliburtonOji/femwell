@@ -17,7 +17,7 @@ const CAT_COLORS = {
   Supplements: { bg: "var(--sage-subtle)", color: "var(--sage)" },
   "Period care": { bg: "var(--rose-dust-subtle)", color: "var(--rose-dust)" },
   Skincare: { bg: "var(--mauve-subtle)", color: "var(--mauve)" },
-  Fitness: { bg: "#EBF2EF", color: "#4A8C7E" },
+  Fitness: { bg: "var(--sage-subtle)", color: "var(--sage)" },
   Books: { bg: "#FFF8EE", color: "#B89E6A" },
 };
 

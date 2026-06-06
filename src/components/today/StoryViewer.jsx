@@ -50,7 +50,7 @@ export default function StoryViewer({ items: rawItems, initialIndex, onClose }) 
         {items.map((_, i) => (
           <div key={i} style={{ flex: 1, height: 2, borderRadius: 2, backgroundColor: "rgba(255,255,255,0.3)", overflow: "hidden" }}>
             <div style={{
-              height: "100%", backgroundColor: "white", borderRadius: 2,
+              height: "100%", backgroundColor: "var(--surface)", borderRadius: 2,
               width: i < idx ? "100%" : i === idx ? undefined : "0%",
               animation: i === idx ? `prog 7s linear forwards` : undefined,
             }} />
@@ -92,7 +92,7 @@ export default function StoryViewer({ items: rawItems, initialIndex, onClose }) 
               onClose();
               safeNavigate(item.route_key, (msg) => toast.error(msg));
             }}
-            style={{ backgroundColor: "white", color: "var(--plum)", borderRadius: 9999, padding: "12px 24px", fontSize: 14, fontWeight: 700, border: "none", cursor: "pointer", fontFamily: "'Inter', sans-serif" }}
+            style={{ backgroundColor: "var(--surface)", color: "var(--plum)", borderRadius: 9999, padding: "12px 24px", fontSize: 14, fontWeight: 700, border: "none", cursor: "pointer", fontFamily: "'Inter', sans-serif" }}
           >
             {item.cta_label}
           </button>

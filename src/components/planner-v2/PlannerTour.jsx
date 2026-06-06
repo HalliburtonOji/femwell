@@ -28,7 +28,7 @@ const STORAGE_KEY = "planner_tour_v1";
 
 const C = {
   cream:    "#F4EDDB",
-  paperHi:  "#FFFFFF",
+  paperHi:  "#F4EFE3",
   espresso: "#3A2C1A",
   muted:    "#9B8B7A",
   gold:     "#D4AF37",

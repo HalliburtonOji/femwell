@@ -62,7 +62,7 @@ function SummaryTab({ dayData }) {
           <p style={{ ...sLabel, color: "var(--rose-dust)" }}>Cycle</p>
           <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
             {cycleEvents.map(e => (
-              <span key={e.id} style={{ fontSize: 12, fontWeight: 500, padding: "4px 10px", borderRadius: 9999, backgroundColor: "white", color: "var(--rose-dust)", fontFamily: "'Inter', sans-serif" }}>
+              <span key={e.id} style={{ fontSize: 12, fontWeight: 500, padding: "4px 10px", borderRadius: 9999, backgroundColor: "var(--surface)", border: "1px solid var(--border)", color: "var(--rose-dust)", fontFamily: "'Inter', sans-serif" }}>
                 {e.type.replace(/([A-Z])/g, ' $1').trim()}{e.flow_level ? ` · ${e.flow_level}` : ""}
               </span>
             ))}

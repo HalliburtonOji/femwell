@@ -20,7 +20,7 @@ const C = {
   muted:    "#6B5B4E",
   sage:     "#3D6B3D",
   border:   "#E5DCC9",
-  paperHi:  "#FFFFFF",
+  paperHi:  "#F4EFE3",
 };
 
 function fmtDateStamp() {

@@ -37,7 +37,7 @@ export default function FilterDrawer({ filters, onApply, onClose }) {
             className="relative w-11 h-6 rounded-full transition-colors flex-shrink-0"
             style={{ backgroundColor: local.showFreeOnly ? "var(--plum)" : "var(--border)" }}>
             <div className={`absolute top-1 w-4 h-4 rounded-full shadow transition-transform ${local.showFreeOnly ? "translate-x-6" : "translate-x-1"}`}
-              style={{ backgroundColor: "white" }} />
+              style={{ backgroundColor: "var(--surface)" }} />
           </button>
         </div>
 

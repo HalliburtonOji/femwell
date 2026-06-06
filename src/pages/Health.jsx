@@ -846,7 +846,7 @@ function Term({ word, definition }) {
           fontSize: 12.5, fontFamily: 'Cormorant Garamond, Georgia, serif',
           fontStyle: "normal", lineHeight: 1.5,
           width: 220, zIndex: 30,
-          boxShadow: "0 4px 12px rgba(0,0,0,0.25)", textAlign: "left",
+          boxShadow: "0 3px 14px rgba(40,30,18,0.16)", textAlign: "left",
         }}>
           {definition}
           <span aria-hidden="true" style={{
@@ -1910,7 +1910,7 @@ export default function Health() {
             padding: "10px 18px", borderRadius: 999,
             fontFamily: 'Cormorant Garamond, Georgia, serif',
             fontSize: 13, fontWeight: 600, letterSpacing: 0.3,
-            boxShadow: "0 4px 16px rgba(0,0,0,0.18)",
+            boxShadow: "0 3px 14px rgba(40,30,18,0.16)",
             zIndex: 120,
           }}
         >

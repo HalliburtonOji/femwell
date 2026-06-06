@@ -16,7 +16,7 @@ import DayBlueprint from "@/components/DayBlueprint";
 
 const T = {
   cream:    "#F4EDDB",
-  paper:    "#FFFFFF",
+  paper:    "#F4EFE3",
   espresso: "#3A2C1A",
   blush:    "#E8B4B8",
   blushSoft:"rgba(232,180,184,0.18)",

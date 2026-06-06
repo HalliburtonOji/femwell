@@ -450,14 +450,14 @@ export default function LifestyleDetail() {
 
       <div className="max-w-2xl mx-auto px-4 pt-12">
         <div className="flex items-center justify-between mb-6">
-          <button onClick={() => window.history.back()} className="w-10 h-10 rounded-xl flex items-center justify-center shadow-sm" style={{ backgroundColor: "rgba(255,255,255,0.85)" }}>
+          <button onClick={() => window.history.back()} className="w-10 h-10 rounded-xl flex items-center justify-center shadow-sm" style={{ backgroundColor: "rgba(244,239,227,0.9)", border: "1px solid var(--border)" }}>
             <ArrowLeft className="w-4 h-4" style={{ color: "var(--plum)" }} />
           </button>
           <div className="flex items-center gap-2">
-            <button onClick={toggleLiked} className="w-10 h-10 rounded-xl flex items-center justify-center shadow-sm" style={{ backgroundColor: "rgba(255,255,255,0.85)" }}>
+            <button onClick={toggleLiked} className="w-10 h-10 rounded-xl flex items-center justify-center shadow-sm" style={{ backgroundColor: "rgba(244,239,227,0.9)", border: "1px solid var(--border)" }}>
               {liked ? <Heart className="w-4 h-4" style={{ color: "var(--rose-dust)", fill: "var(--rose-dust)" }} /> : <HeartOff className="w-4 h-4" style={{ color: "var(--mauve)" }} />}
             </button>
-            <button onClick={toggleSaved} className="w-10 h-10 rounded-xl flex items-center justify-center shadow-sm" style={{ backgroundColor: "rgba(255,255,255,0.85)" }}>
+            <button onClick={toggleSaved} className="w-10 h-10 rounded-xl flex items-center justify-center shadow-sm" style={{ backgroundColor: "rgba(244,239,227,0.9)", border: "1px solid var(--border)" }}>
               {saved ? <BookmarkCheck className="w-4 h-4" style={{ color: "#A07830" }} /> : <Bookmark className="w-4 h-4" style={{ color: "var(--mauve)" }} />}
             </button>
           </div>

@@ -114,7 +114,7 @@ const collapsedBtn = {
   width: "100%",
   display: "flex", alignItems: "center", gap: 10,
   padding: "9px 12px",
-  background: "#FFFFFF",
+  background: "var(--surface)",
   border: "1px solid rgba(74,42,58,0.10)",
   borderRadius: 14,
   boxShadow: "0 2px 8px rgba(74,42,58,0.04)",

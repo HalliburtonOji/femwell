@@ -26,8 +26,8 @@ export default function YouTubeVideoCard({ video, bookmarked, onToggleBookmark }
   }, [video.url, video.title, video.thumbnail_url, fallbackThumbnail]);
 
   return (
-    <div className="overflow-hidden rounded-3xl border border-rose-100 bg-white shadow-sm">
-      <div className="relative aspect-video bg-rose-50">
+    <div className="overflow-hidden rounded-3xl border border-[#D8CFBC] bg-[#F4EFE3] shadow-sm">
+      <div className="relative aspect-video bg-[#EDE7DA]">
         {playing ? (
           <iframe
             src={embedUrl}
@@ -42,8 +42,8 @@ export default function YouTubeVideoCard({ video, bookmarked, onToggleBookmark }
             <img src={thumbnail || fallbackThumbnail} alt={title || "YouTube video"} className="h-full w-full object-cover" loading="lazy" />
             <div className="absolute inset-0 bg-black/20" />
             <div className="absolute inset-0 flex items-center justify-center">
-              <div className="flex h-14 w-14 items-center justify-center rounded-full bg-white/90 shadow-lg">
-                <Play className="ml-1 h-6 w-6 text-rose-500" fill="currentColor" />
+              <div className="flex h-14 w-14 items-center justify-center rounded-full bg-[#F4EFE3]/90 shadow">
+                <Play className="ml-1 h-6 w-6 text-[#BC2E27]" fill="currentColor" />
               </div>
             </div>
           </button>
@@ -51,22 +51,22 @@ export default function YouTubeVideoCard({ video, bookmarked, onToggleBookmark }
       </div>
       <div className="space-y-2 p-4">
         <div className="flex items-start justify-between gap-3">
-          <p className="line-clamp-2 text-sm font-semibold text-gray-800">{title || "Loading title..."}</p>
+          <p className="line-clamp-2 text-sm font-semibold text-[#1A130C]">{title || "Loading title..."}</p>
           <button
             onClick={onToggleBookmark}
-            className="flex-shrink-0 text-gray-300 hover:text-rose-400 transition-colors"
+            className="flex-shrink-0 text-[#9B8B7A] hover:text-[#BC2E27] transition-colors"
             aria-label={bookmarked ? "Remove favorite" : "Add favorite"}
           >
-            {bookmarked ? <BookmarkCheck className="h-4 w-4 text-rose-400" /> : <Bookmark className="h-4 w-4" />}
+            {bookmarked ? <BookmarkCheck className="h-4 w-4 text-[#BC2E27]" /> : <Bookmark className="h-4 w-4" />}
           </button>
         </div>
         <div className="flex items-center justify-between">
-          <p className="text-xs text-gray-400">YouTube</p>
+          <p className="text-xs text-[#4F473A]">YouTube</p>
           <a
             href={video.url}
             target="_blank"
             rel="noreferrer"
-            className="text-xs font-medium text-rose-500 hover:text-rose-600"
+            className="text-xs font-medium text-[#BC2E27] hover:text-[#9A241F]"
           >
             Open on YouTube
           </a>

@@ -21,7 +21,7 @@ const C = {
   cream:     "#F4EDDB",
   creamDark: "#EDE6D5",
   paper:     "#FBF6E6",
-  paperHi:   "#FFFFFF",
+  paperHi:   "#F4EFE3",
   espresso:  "#3A2C1A",
   espressoDeep: "#2A1E0E",
   blush:     "#E8B4B8",

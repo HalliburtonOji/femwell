@@ -100,7 +100,7 @@ import { Layers as DevLayersIcon, X as DevXIcon } from "lucide-react";
 const C = {
   cream:    "#F4EDDB",
   paper:    "#FBF6E6",
-  paperHi:  "#FFFFFF",
+  paperHi:  "#F4EFE3",
   espresso: "#3A2C1A",
   blush:    "#E8B4B8",
   sage:     "#8FAF8F",
@@ -6162,7 +6162,7 @@ const dayTile = {
   cursor: "pointer", fontFamily: "inherit",
 };
 const dayTileToday = {
-  background: "#FFFFFF", border: "none", padding: "8px 0",
+  background: "var(--surface)", border: "none", padding: "8px 0",
   display: "flex", flexDirection: "column", alignItems: "center", gap: 3,
   cursor: "pointer", fontFamily: "inherit",
   borderRadius: 10,

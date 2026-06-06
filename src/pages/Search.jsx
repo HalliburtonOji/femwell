@@ -10,7 +10,7 @@ import { base44 } from "@/api/base44Client";
 
 const C = {
   cream:    "#F4EDDB",
-  paperHi:  "#FFFFFF",
+  paperHi:  "#F4EFE3",
   espresso: "#3A2C1A",
   muted:    "#6B5B4E",
   gold:     "#D4AF37",

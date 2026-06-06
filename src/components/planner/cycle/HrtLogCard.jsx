@@ -438,7 +438,7 @@ const inputStyle = {
   fontFamily: "'Inter', system-ui, sans-serif",
   fontSize: 13,
   color: "#3A2C1A",
-  background: "#FFFFFF",
+  background: "var(--surface)",
   border: "1px solid rgba(58,44,26,0.15)",
   borderRadius: 8,
   outline: "none",

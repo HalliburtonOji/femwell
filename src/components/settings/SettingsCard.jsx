@@ -43,7 +43,7 @@ export default function SettingsCard({ title, description, children, footer }) {
         )}
       </header>
 
-      <div style={{ padding: "16px 20px", backgroundColor: "white" }}>
+      <div style={{ padding: "16px 20px", backgroundColor: "var(--surface)" }}>
         {children}
       </div>
 

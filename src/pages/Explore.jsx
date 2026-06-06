@@ -517,7 +517,7 @@ export default function Explore() {
                       <div style={{
                         position: "absolute", top: "10px", right: "10px",
                         width: "22px", height: "22px", borderRadius: "50%",
-                        backgroundColor: "white", display: "flex",
+                        backgroundColor: "var(--surface)", display: "flex",
                         alignItems: "center", justifyContent: "center",
                         boxShadow: "0 1px 4px rgba(0,0,0,0.12)",
                       }}>
@@ -663,7 +663,7 @@ export default function Explore() {
                   </p>
                   <a href="/ProgramsHub"
                     className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-semibold"
-                    style={{ backgroundColor: "white", color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>
+                    style={{ backgroundColor: "var(--surface)", color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}>
                     Browse programs
                   </a>
                 </div>

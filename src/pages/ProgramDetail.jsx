@@ -301,7 +301,7 @@ export default function ProgramDetail() {
                   <span>Program progress</span>
                   <span>{completedDays.size}/{totalDays} days</span>
                 </div>
-                <ProgramProgressBar value={programProgress} className="bg-white/20" />
+                <ProgramProgressBar value={programProgress} className="bg-[#F4EFE3]/20" />
               </div>
             </div>
           </div>
@@ -315,7 +315,7 @@ export default function ProgramDetail() {
             <MetricCard icon={<BookOpen className="h-4 w-4" style={{ color: "#A07830" }} />} value={totalReadUps} label="Read-ups" />
           </div>
 
-          <div className="rounded-[28px] border border-rose-100 bg-white p-4 shadow-sm">
+          <div className="rounded-[28px] border border-[#D8CFBC] bg-[#F4EFE3] p-4 shadow-sm">
             <div className="flex gap-2 overflow-x-auto" style={{ scrollbarWidth: "none" }}>
               {days.map((day) => (
                 <a
@@ -363,12 +363,12 @@ export default function ProgramDetail() {
                   </div>
 
                   {userProgram ? (
-                    <div className="rounded-3xl bg-rose-50 p-4 text-sm text-gray-600">
-                      <p className="font-semibold text-gray-800">You’re on Day {currentDay}</p>
+                    <div className="rounded-3xl bg-[#EDE7DA] p-4 text-sm text-[#4F473A]">
+                      <p className="font-semibold text-[#1A130C]">You’re on Day {currentDay}</p>
                       <p className="mt-1">{completedDays.size} of {totalDays} days completed.</p>
                     </div>
                   ) : (
-                    <p className="text-sm text-gray-500">Ready to begin? You’ll start at Day 1 and can come back where you left off.</p>
+                    <p className="text-sm text-[#4F473A]">Ready to begin? You’ll start at Day 1 and can come back where you left off.</p>
                   )}
 
                   {reminderIsDue && userProgram?.reminder_time && (

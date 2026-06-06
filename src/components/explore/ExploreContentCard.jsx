@@ -30,8 +30,8 @@ export default function ExploreContentCard({ item, locked, bookmarked, onToggleB
     : { background: "linear-gradient(135deg, var(--ivory-dark) 0%, var(--rose-dust-subtle) 100%)" };
 
   const typeTagStyle = audioBg
-    ? { backgroundColor: "rgba(255,255,255,0.85)", color: audioBg.icon }
-    : { backgroundColor: "rgba(255,255,255,0.85)", color: "var(--rose-dust)" };
+    ? { backgroundColor: "rgba(244,239,227,0.85)", color: audioBg.icon }
+    : { backgroundColor: "rgba(244,239,227,0.85)", color: "var(--rose-dust)" };
 
   return (
     <div className="relative group rounded-[20px] overflow-hidden transition-all hover:-translate-y-0.5"
@@ -44,12 +44,12 @@ export default function ExploreContentCard({ item, locked, bookmarked, onToggleB
             <div className="w-full h-full flex items-center justify-center" style={placeholderStyle}>
               {isAudio ? (
                 <div className="w-12 h-12 rounded-2xl flex items-center justify-center"
-                  style={{ backgroundColor: "rgba(255,255,255,0.7)" }}>
+                  style={{ backgroundColor: "rgba(244,239,227,0.7)" }}>
                   <Headphones className="w-5 h-5" style={{ color: audioBg?.icon || "var(--mauve)" }} />
                 </div>
               ) : (
                 <div className="w-12 h-12 rounded-2xl flex items-center justify-center"
-                  style={{ backgroundColor: "rgba(255,255,255,0.7)" }}>
+                  style={{ backgroundColor: "rgba(244,239,227,0.7)" }}>
                   <Play className="w-5 h-5" style={{ color: "var(--rose-dust)" }} />
                 </div>
               )}
@@ -73,7 +73,7 @@ export default function ExploreContentCard({ item, locked, bookmarked, onToggleB
           {/* Audio badge on thumbnail */}
           {isAudio && item.thumbnail_url && (
             <div className="absolute bottom-2 right-2 w-6 h-6 rounded-lg flex items-center justify-center"
-              style={{ backgroundColor: "rgba(255,255,255,0.88)" }}>
+              style={{ backgroundColor: "rgba(244,239,227,0.88)" }}>
               <Headphones className="w-3.5 h-3.5" style={{ color: audioBg?.icon || "var(--mauve)" }} />
             </div>
           )}
@@ -83,7 +83,7 @@ export default function ExploreContentCard({ item, locked, bookmarked, onToggleB
             <div className="absolute inset-0 flex items-center justify-center"
               style={{ backgroundColor: "rgba(42,32,53,0.45)" }}>
               <div className="w-9 h-9 rounded-full flex items-center justify-center"
-                style={{ backgroundColor: "rgba(255,255,255,0.9)" }}>
+                style={{ backgroundColor: "rgba(244,239,227,0.9)" }}>
                 <Lock className="w-4 h-4" style={{ color: "var(--plum)" }} />
               </div>
             </div>

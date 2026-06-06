@@ -39,7 +39,7 @@ import {
 const C = {
   cream:    "#F4EDDB",
   paper:    "#FBF6E6",
-  paperHi:  "#FFFFFF",
+  paperHi:  "#F4EFE3",
   espresso: "#3A2C1A",
   blush:    "#E8B4B8",
   sage:     "#8FAF8F",
