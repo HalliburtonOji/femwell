@@ -4,6 +4,20 @@
 
 # FemWell — STATUS (the shared baton) — SINGLE SOURCE OF TRUTH
 
+## UPDATE 2026-06-05 (session AD) — TRUE editorial transformation of /Today to the Community standard (the flagship bar-setter) (pushed, pending deploy)
+- **Built on origin/main `f8b7679`.** Halli proved the token-swap conformity (AB) was too conservative with side-by-side shots: `/Community` reads as the editorial publication (visible paper, carved script title, small-caps eyebrows, cream cards, Cormorant voice) while `/Today` looked like a different app (gradient hero card boxing/hiding the paper, upright serif greeting, translucent-white check-in cards). This pass does a TRUE per-page transformation of Today, content/functionality identical.
+- **DIAGNOSIS (empirical, WebKit):** the global cotton paper WAS on Today's page root (`#main-content>div` paints it — confirmed `hasPaper:true` on both `/` and `/Community`). The flat look came from `TodayHeroSection`'s **gradient hero card** (`rounded-[28px]` + `<HeroAmbient>` image/gradient layers + `shadow-md`) covering the paper, plus an **upright `Fraunces`/Cormorant greeting** (not the carved script) and **translucent-white** (`rgba(255,255,255,0.7)`) check-in cards.
+- **TRANSFORM (`TodayHeroSection.jsx` + `Today.jsx`, visual only):**
+  - **Killed the gradient hero card + `<HeroAmbient>`** → greeting now sits directly on the global paper (Community-masthead pattern); paper texture visible.
+  - **Greeting → tier-1 carved Ephesis script** (`<h1 className="fw-display">`): "Good evening" + "{firstName}." (name carries the script), replacing upright Cormorant. Date line → small-caps letter-spaced eyebrow.
+  - **Check-in cards** ("How are you today?" CTA + today's-check-in summary) translucent-white → **editorial cream `var(--surface)` + 1px hairline `var(--border)`** (dropped backdrop-blur); prompt copy → Cormorant; metric numbers stay Cormorant.
+  - **Cycle context** → hairline rule `var(--border)`, accent dot kept, morning message + phase tip ("Wind down… nourish") → **Cormorant italic / Cormorant** (were Inter). Avatar → cream + hairline + Cormorant initial.
+  - `Today.jsx`: off-palette purple "Calm Cards" pill (`#FAF5FF`/`#7C3AED`) → editorial cream + hairline.
+  - **PRESERVED:** every card, datum, handler, life-stage gating, tabs, mood/energy check-in, quick actions, stories strip — only the visual treatment changed.
+- **VERIFIED (WebKit, 390×844, dev app, side-by-side):** `/Today` now renders the same publication as `/Community` — visible cotton paper, "SATURDAY, JUNE 6" small-caps eyebrow, **"Good evening" in carved Ephesis script**, cream hairline cards, Cormorant voice. Screenshots judged as a designer: paper / type hierarchy / card language all match. Build GREEN (`index-DvYE6mRP.js` local), lint clean (only a dead-code `HeroAmbient` warning, tree-shaken).
+- **NOT deployed** (Halli deploys, then reviews Today specifically as the bar-setter before we repeat across remaining pages). Files: `src/components/today/TodayHeroSection.jsx`, `src/pages/Today.jsx`.
+- **Deploy check:** `/Today` shows visible paper texture, the greeting in Ephesis carved script (`.fw-display`), and cream hairline check-in cards (no gradient hero, no white cards).
+
 ## UPDATE 2026-06-05 (session AC) — honor the FULL design contract: emoji sweep (Community + shared chrome) + contract-compliance audit (pushed, pending deploy)
 - **Built on origin/main `f9f836b`.** Halli: the pass must honor ALL previously-agreed LOCKED DECISIONS (STATUS), not just the Echo Wall shot. Read the locked decisions + session log; applied the clearly-in-scope items and audited the rest.
 - **CONTRACT-COMPLIANCE AUDIT (what already holds vs what this pass did):**

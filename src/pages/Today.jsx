@@ -569,7 +569,7 @@ export default function Today() {
             {/* Calm Cards + Panic pills */}
             <div className="flex items-center justify-between gap-2">
               <button onClick={() => setCalmCardsOpen(true)}
-                style={{ display: "flex", alignItems: "center", gap: 6, padding: "5px 14px", borderRadius: 9999, border: "1px solid #E9D5FF", backgroundColor: "#FAF5FF", color: "#7C3AED", fontSize: 12, fontWeight: 600, fontFamily: "'Inter', sans-serif", cursor: "pointer" }}>
+                style={{ display: "flex", alignItems: "center", gap: 6, padding: "5px 14px", borderRadius: 9999, border: "1px solid var(--border)", backgroundColor: "var(--surface)", color: "var(--mauve)", fontSize: 12, fontWeight: 600, fontFamily: "'Inter', sans-serif", cursor: "pointer" }}>
                 Calm Cards
               </button>
               <button onClick={() => setPanicOpen(true)}

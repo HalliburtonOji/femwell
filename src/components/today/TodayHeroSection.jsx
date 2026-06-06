@@ -170,11 +170,9 @@ export default function TodayHeroSection({
   const daysUntilPeriod = cycleAnchored ? computeNextPeriod(profile) : null;
 
   return (
-    <div className="relative rounded-[28px] overflow-hidden mb-6" style={{ boxShadow: "var(--shadow-md)" }}>
-      <HeroAmbient phase={cycleInfo?.phase} />
-
-      {/* Content layer */}
-      <div className="relative z-10 px-6 pt-8 pb-6 md:px-8 md:pt-10 md:pb-8">
+    // No gradient hero card — the greeting sits on the global cotton paper,
+    // like the Community masthead, so the texture stays visible.
+    <div className="mb-6">
 
         {/* Welcome row */}
         <div className="flex items-start justify-between gap-4 mb-6">
@@ -185,9 +183,9 @@ export default function TodayHeroSection({
                 onClick={onOpenCalendar}
                 title="Open tracker"
                 style={{
-                  width: 34, height: 34, borderRadius: 10,
-                  border: "1px solid rgba(255,255,255,0.8)",
-                  backgroundColor: "rgba(255,255,255,0.55)",
+                  width: 32, height: 32, borderRadius: 9,
+                  border: "1px solid var(--border)",
+                  backgroundColor: "var(--surface)",
                   cursor: "pointer", display: "flex", alignItems: "center",
                   justifyContent: "center", flexShrink: 0,
                 }}
@@ -202,19 +200,11 @@ export default function TodayHeroSection({
               </p>
             </div>
 
-            {/* Greeting */}
-            <h1
-              className="text-3xl md:text-4xl leading-tight"
-              style={{
-                fontFamily: "'Fraunces', serif",
-                color: "var(--plum)",
-                letterSpacing: "-0.02em",
-                fontWeight: 600,
-              }}
-            >
+            {/* Greeting — tier-1 carved Ephesis script (the Community standard) */}
+            <h1 className="fw-display" style={{ marginBottom: 0 }}>
               {greetWord}
               {firstName && (
-                <span style={{ color: phaseMeta?.accent || "var(--rose-dust)", display: "block" }}>
+                <span style={{ display: "block" }}>
                   {firstName}.
                 </span>
               )}
@@ -232,9 +222,9 @@ export default function TodayHeroSection({
               style={{
                 backgroundColor: phaseMeta?.subtle || "var(--rose-dust-subtle)",
                 color: phaseMeta?.accent || "var(--rose-dust)",
-                border: `1.5px solid ${phaseMeta?.accent || "var(--rose-dust-light)"}40`,
-                fontFamily: "'Fraunces', serif",
-                fontSize: "1.1rem",
+                border: "1px solid var(--border)",
+                fontFamily: "'Cormorant Garamond', Georgia, serif",
+                fontSize: "1.2rem",
                 cursor: "pointer",
                 transition: "opacity 0.15s",
               }}
@@ -246,9 +236,9 @@ export default function TodayHeroSection({
           </Link>
         </div>
 
-        {/* Divider */}
+        {/* Hairline rule */}
         <div
-          style={{ height: "1px", backgroundColor: `${phaseMeta?.accent || "var(--rose-dust)"}20`, marginBottom: "1.25rem" }}
+          style={{ height: "1px", backgroundColor: "var(--border)", marginBottom: "1.25rem" }}
         />
 
         {/* Cycle context — premium, text-led */}
@@ -282,15 +272,15 @@ export default function TodayHeroSection({
               </div>
               {morningMsg && (
                 <p
-                  className="text-sm leading-relaxed mb-1"
-                  style={{ color: "var(--plum)", fontFamily: "'Inter', sans-serif", fontWeight: 500 }}
+                  className="leading-relaxed mb-1"
+                  style={{ fontSize: 16, color: "var(--plum)", fontFamily: "'Cormorant Garamond', Georgia, serif", fontStyle: "italic", fontWeight: 500 }}
                 >
                   {morningMsg}
                 </p>
               )}
               <p
-                className="text-xs leading-relaxed"
-                style={{ color: "var(--plum)", opacity: 0.6, fontFamily: "'Inter', sans-serif" }}
+                className="leading-relaxed"
+                style={{ fontSize: 14, color: "var(--mauve)", fontFamily: "'Cormorant Garamond', Georgia, serif" }}
               >
                 {phaseMeta.tip}
               </p>
@@ -301,11 +291,11 @@ export default function TodayHeroSection({
         {/* Primary daily focus — check-in CTA or summary */}
         {todayCheckin ? (
           <div
-            className="rounded-2xl px-4 py-4"
+            className="px-4 py-4"
             style={{
-              backgroundColor: "rgba(255,255,255,0.7)",
-              border: "1px solid rgba(255,255,255,0.9)",
-              backdropFilter: "blur(8px)",
+              backgroundColor: "var(--surface)",
+              border: "1px solid var(--border)",
+              borderRadius: 16,
             }}
           >
             <div className="flex items-center justify-between mb-3">
@@ -352,11 +342,12 @@ export default function TodayHeroSection({
         ) : (
           <button
             onClick={onOpenCheckin}
-            className="w-full flex items-center gap-4 rounded-2xl px-4 py-4 text-left transition-all duration-200 group"
+            className="w-full flex items-center gap-4 px-4 py-4 text-left transition-all duration-200 group"
             style={{
-              backgroundColor: "rgba(255,255,255,0.65)",
-              border: "1px solid rgba(255,255,255,0.9)",
-              backdropFilter: "blur(8px)",
+              backgroundColor: "var(--surface)",
+              border: "1px solid var(--border)",
+              borderRadius: 16,
+              cursor: "pointer",
             }}
           >
             <div
@@ -370,14 +361,13 @@ export default function TodayHeroSection({
             </div>
             <div className="flex-1">
               <p
-                className="font-semibold text-sm"
-                style={{ color: "var(--plum)", fontFamily: "'Inter', sans-serif" }}
+                style={{ fontSize: 16, fontWeight: 600, color: "var(--plum)", fontFamily: "'Cormorant Garamond', Georgia, serif" }}
               >
                 How are you today?
               </p>
               <p
-                className="text-xs mt-0.5"
-                style={{ color: "var(--mauve)", fontFamily: "'Inter', sans-serif" }}
+                className="mt-0.5"
+                style={{ fontSize: 13, color: "var(--mauve)", fontFamily: "'Cormorant Garamond', Georgia, serif" }}
               >
                 Log mood, energy, sleep and more
               </p>
@@ -390,7 +380,6 @@ export default function TodayHeroSection({
             </div>
           </button>
         )}
-      </div>
     </div>
   );
 }
