@@ -242,8 +242,9 @@ export default function ProgramDay() {
       <ProgramPageToolbar title={dayTitle} subtitle={program?.title} showToday />
       <div className="mx-auto max-w-4xl px-4 md:px-6">
         <div className="pb-5 pt-8">
+          <h1 className="fw-display" style={{ margin: "0 0 8px" }}>Programme</h1>
           <p className="text-xs font-medium" style={{ color: "var(--rose-dust)" }}>{program?.title} · Day {dayNumber}</p>
-          <h1 className="text-2xl font-bold" style={{ color: "var(--plum)" }}>{dayTitle}</h1>
+          <h2 className="fw-heading" style={{ color: "var(--plum)" }}>{dayTitle}</h2>
         </div>
 
         <ProgramDayStickyNav programKey={programKey} currentDay={dayNumber} days={allDays} />

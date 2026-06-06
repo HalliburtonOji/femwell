@@ -235,6 +235,10 @@ export default function ContentPlayer() {
           </button>
         </div>
 
+        <div style={{ textAlign: "center", padding: "8px 0" }}>
+          <h1 className="fw-display" style={{ fontSize: 32, margin: 0 }}>Session</h1>
+        </div>
+
         {currentPhase && (
           <div className="mb-3">
             <span
@@ -309,7 +313,7 @@ export default function ContentPlayer() {
         <div className="mt-5 space-y-3">
           <div>
             <div className="flex items-start justify-between gap-2">
-              <h1 className="fw-heading leading-tight">{item.title}</h1>
+              <h2 className="fw-heading leading-tight">{item.title}</h2>
               {item.access_tier && item.access_tier !== "free" && (
                 <span className="flex-shrink-0 text-xs font-bold px-2 py-1 rounded-full uppercase"
                   style={{ backgroundColor: "var(--rose-dust-subtle)", color: "var(--rose-dust)" }}>{item.access_tier}</span>

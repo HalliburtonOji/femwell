@@ -91,7 +91,9 @@ export default function PartnerSettings() {
             <ArrowLeft className="w-4 h-4" style={{ color: "var(--plum)" }} />
           </button>
           <div>
-            <h1 style={{ fontSize: 22, fontWeight: 700, color: "var(--plum)", }}>Partner Access</h1>
+            <p style={{ fontSize: "0.6rem", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.12em", color: "var(--mauve)" }}>Settings</p>
+            <h1 className="fw-display" style={{ marginBottom: 2 }}>Partner</h1>
+            <h2 className="fw-heading" style={{ marginBottom: 2 }}>Partner Access</h2>
             <p style={{ fontSize: 12, color: "var(--mauve)", }}>Share a read-only view with someone you trust</p>
           </div>
         </div>

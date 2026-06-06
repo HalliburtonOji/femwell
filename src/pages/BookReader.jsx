@@ -202,10 +202,11 @@ function Frame({ children, onBack, title, author, sourceUrl }) {
         >
           <ArrowLeft className="w-4 h-4" style={{ color: "var(--plum)" }} />
         </button>
+        <h1 className="fw-display" style={{ margin: "0 0 10px 0" }}>Library</h1>
         {title && (
-          <h1 style={{ fontSize: 28, fontWeight: 400, color: "var(--plum-deep)", margin: "0 0 8px 0", letterSpacing: "-0.015em" }}>
+          <h2 className="fw-heading" style={{ color: "var(--plum-deep)", margin: "0 0 8px 0" }}>
             {title}
-          </h1>
+          </h2>
         )}
         {author && (
           <p style={{ fontSize: 14, color: "var(--plum-mute)", marginBottom: 20 }}>

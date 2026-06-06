@@ -114,6 +114,10 @@ export default function Partner() {
 
   return (
     <div style={{ minHeight: "100vh", background: C.cream }}>
+      <div style={{ padding: "20px 16px 0", textAlign: "center" }}>
+        <p style={{ margin: 0, fontSize: 11, fontWeight: 700, letterSpacing: "0.18em", textTransform: "uppercase", color: C.muted }}>FemWell</p>
+        <h1 className="fw-display" style={{ margin: "4px 0 0" }}>Partner</h1>
+      </div>
       <PartnerPreviewBody user={shareUser} profile={profile} settings={settings} />
     </div>
   );

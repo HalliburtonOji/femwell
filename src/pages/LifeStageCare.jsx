@@ -58,8 +58,9 @@ export default function LifeStageCare() {
             <ChevronLeft className="w-4 h-4" style={{ color: "var(--mauve)" }} />
           </a>
           <div>
-            <p className="text-sm" style={{ color: "var(--mauve)" }}>Personalized care</p>
-            <h1 className="fw-heading">Pregnancy & Menopause Support</h1>
+            <p className="text-sm" style={{ color: "var(--mauve)" }}>Personalised care</p>
+            <h1 className="fw-display" style={{ marginBottom: 4 }}>Care</h1>
+            <h2 className="fw-heading">Pregnancy & Menopause Support</h2>
           </div>
         </div>
 

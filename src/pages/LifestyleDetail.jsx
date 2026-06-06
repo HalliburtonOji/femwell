@@ -462,6 +462,8 @@ export default function LifestyleDetail() {
           </div>
         </div>
 
+        <h1 className="fw-display" style={{ margin: "0 0 16px" }}>Lifestyle</h1>
+
         <div
           className="fw-reader-card p-6 md:p-10"
           style={{
@@ -559,14 +561,9 @@ export default function LifestyleDetail() {
                 </p>
               )}
 
-              <h1 style={{
+              <h1 className="fw-heading" style={{
                 marginTop: 20,
                 marginBottom: 0,
-                fontWeight: 400,
-                color: "var(--plum-deep)",
-                fontSize: 32,
-                lineHeight: 1.1,
-                letterSpacing: "-0.015em",
               }}>
                 {decodedTitle}
               </h1>
@@ -623,11 +620,8 @@ export default function LifestyleDetail() {
                   </p>
                 )}
                 <h1 style={{
-                  fontWeight: 400,
                   color: "var(--cream)",
-                  fontSize: 38,
                   lineHeight: 1.08,
-                  letterSpacing: "-0.015em",
                   margin: 0,
                   // Clamp long titles to 3 lines so they never push out of the
                   // visible hero area. Combined with a hero min-height below,
@@ -636,7 +630,7 @@ export default function LifestyleDetail() {
                   WebkitBoxOrient: "vertical",
                   WebkitLineClamp: 3,
                   overflow: "hidden",
-                }} className="fw-reader-title">
+                }} className="fw-heading fw-reader-title">
                   {decodedTitle}
                 </h1>
               </div>

@@ -1437,13 +1437,15 @@ export default function Health() {
               margin: "8px auto 12px",
             }} />
             <div style={{ textAlign: "center", marginTop: 12 }}>
-              <div style={{ fontSize: 13, fontWeight: 600, letterSpacing: 2, color: "#9B8B7A", textTransform: "uppercase" }}>
+              <div style={{ fontSize: 13, fontWeight: 600, letterSpacing: 2, color: "var(--mauve)", textTransform: "uppercase" }}>
                 FemWell Health Letter
               </div>
-              <div className="fw-heading" style={{ marginTop: 4 }}>
+              {/* Static script page-title (Halli's bar: every page opens with the carved script). */}
+              <h1 className="fw-display" style={{ marginTop: 2 }}>Health</h1>
+              <div className="fw-heading" style={{ marginTop: 2 }}>
                 {tab.label}
               </div>
-              <div style={{ fontSize: 13, fontWeight: 600, color: "#9B8B7A", marginTop: 6 }}>
+              <div style={{ fontSize: 13, fontWeight: 600, color: "var(--mauve)", marginTop: 6 }}>
                 {formattedDate} · {stageLbl}
               </div>
             </div>

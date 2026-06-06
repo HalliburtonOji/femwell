@@ -49,10 +49,11 @@ export default function PartnerView() {
       <div className="max-w-md mx-auto px-4">
         {/* Header */}
         <div className="pt-12 pb-6 text-center">
-          <div className="flex items-center justify-center gap-2 mb-3">
+          <div className="flex items-center justify-center gap-2 mb-2">
             <Heart className="w-5 h-5" style={{ color: "var(--rose-dust)" }} />
             <span style={{ fontSize: 14, fontWeight: 600, color: "var(--mauve)", }}>FemWell Partner View</span>
           </div>
+          <h1 className="fw-display" style={{ marginBottom: 4 }}>Partner</h1>
           <p style={{ fontSize: 12, color: "var(--mauve)", lineHeight: 1.5 }}>A gentle window into how she's doing today.</p>
         </div>
 

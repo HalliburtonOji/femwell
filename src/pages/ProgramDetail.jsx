@@ -228,9 +228,10 @@ export default function ProgramDetail() {
   if (isUnseeded) {
     return (
       <div className="min-h-screen" style={{ backgroundColor: "var(--ivory)", padding: "32px 20px 80px" }}>
-        <h1 style={{ font: '300 24px/1.2 "Fraunces", Georgia, serif', color: "var(--plum-deep)", margin: "0 0 6px" }}>
+        <h1 className="fw-display" style={{ margin: "0 0 10px" }}>Programme</h1>
+        <h2 className="fw-heading" style={{ color: "var(--plum-deep)", margin: "0 0 6px" }}>
           {program.title || "Program"}
-        </h1>
+        </h2>
         <p style={{ font: '400 14px/1.55 "Inter", system-ui, sans-serif', color: "var(--mauve)", margin: "0 0 18px" }}>
           {program.description || program.subtitle || "Tailored sessions and read-ups for this stage."}
         </p>
@@ -271,6 +272,9 @@ export default function ProgramDetail() {
     <div className="min-h-screen pb-10" style={{ backgroundColor: "var(--ivory)" }}>
       <ProgramPageToolbar title={program.title} subtitle="Program detail" showToday />
       <div className="mx-auto max-w-6xl">
+        <div className="px-4 pt-10 md:px-6">
+          <h1 className="fw-display" style={{ margin: 0 }}>Programme</h1>
+        </div>
         <div className="relative overflow-hidden" style={{ backgroundColor: "var(--rose-dust)" }}>
           <div className="absolute inset-0">
             {thumb && <img src={thumb} alt={program.title} className="h-full w-full object-cover" />}
@@ -293,7 +297,7 @@ export default function ProgramDetail() {
               </div>
               <div>
                 <p className="text-sm uppercase tracking-[0.25em] text-white/70">{program.category || "Program"}</p>
-                <h1 className="mt-2 text-3xl font-bold leading-tight md:text-4xl">{program.title}</h1>
+                <h2 className="fw-heading mt-2 leading-tight">{program.title}</h2>
                 <p className="mt-3 max-w-2xl text-sm leading-relaxed text-white/85 md:text-base">{program.summary || program.description}</p>
               </div>
               <div className="max-w-md rounded-3xl p-4 backdrop-blur-sm" style={{ backgroundColor: "rgba(255,255,255,0.15)" }}>

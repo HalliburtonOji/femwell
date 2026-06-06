@@ -256,7 +256,7 @@ function CoverPage({ item, pageCount, chapterCount, onOpen }) {
         <span style={{ ...coverInitialStyle, color: accent }}>{initial}</span>
         <div style={coverTextStyle}>
           <p style={coverEyebrowStyle}>FemWell Fiction</p>
-          <h1 style={coverTitleStyle}>{item.title}</h1>
+          <h2 className="fw-heading" style={coverTitleStyle}>{item.title}</h2>
           {subtitle && (
             <p style={coverSubtitleStyle}>{subtitle}</p>
           )}
@@ -291,6 +291,7 @@ function Frame({ children, onBack }) {
           >
             <ArrowLeft size={16} />
           </button>
+          <h1 className="fw-display" style={{ fontSize: 32, margin: 0 }}>Library</h1>
         </div>
       </div>
       <div style={frameBodyStyle}>{children}</div>
@@ -370,11 +371,8 @@ const coverEyebrowStyle = {
   margin: "0 0 10px",
 };
 const coverTitleStyle = {
-  fontWeight: 400,
-  fontSize: "clamp(28px, 6.5vw, 38px)",
   lineHeight: 1.1,
   margin: "0 0 10px",
-  letterSpacing: "-0.01em",
   textShadow: "0 1px 3px rgba(0,0,0,0.20)",
 };
 const coverSubtitleStyle = {

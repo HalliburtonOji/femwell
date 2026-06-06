@@ -20,6 +20,7 @@ export default function Assistant() {
   return (
     <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: "var(--ivory)" }}>
       <div style={{ textAlign: "center" }}>
+        <h1 className="fw-display" style={{ marginBottom: 16 }}>Jess</h1>
         <p style={{ fontSize: 14, color: "var(--mauve)", marginBottom: 16 }}>
           Assistant is open.
         </p>

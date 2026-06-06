@@ -99,11 +99,8 @@ export default function Terms() {
         </Link>
         <header style={{ margin: "12px 0 18px" }}>
           <p style={{ margin: 0, fontSize: 11, fontWeight: 700, letterSpacing: "0.2em", textTransform: "uppercase", color: C.gold }}>FemWell</p>
-          <h1 style={{
-            margin: "6px 0 4px", fontSize: 30, fontWeight: 600,
-            color: C.espressoDk,
-            letterSpacing: -0.4, lineHeight: 1.1,
-          }}>Terms &amp; Conditions</h1>
+          <h1 className="fw-display" style={{ margin: "6px 0 4px" }}>Terms</h1>
+          <h2 className="fw-heading" style={{ margin: "0 0 4px" }}>Terms &amp; Conditions</h2>
           <p style={{ margin: 0, fontSize: 13, color: C.muted }}>Last updated: May 2026</p>
         </header>
 
