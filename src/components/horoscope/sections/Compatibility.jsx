@@ -479,7 +479,7 @@ const dimBarStyle = {
 };
 const dimFillStyle = {
   height: "100%",
-  background: "linear-gradient(90deg, var(--rose-primary, #D45E52), var(--gold, #B89E6A))",
+  background: "var(--rose-dust)",
   borderRadius: 999,
 };
 const dimLabelStyle = {

@@ -302,7 +302,7 @@ export default function AudioPlayer({ item }) {
             className="h-full rounded-full transition-all"
             style={{
               width: `${progress * 100}%`,
-              background: `linear-gradient(90deg, ${colors.from}, ${colors.to})`,
+              background: colors.from,
             }}
           />
         </div>

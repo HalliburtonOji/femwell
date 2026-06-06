@@ -1933,8 +1933,8 @@ const LetterSection = memo(function LetterSection({ section, isExpanded, onToggl
       {section.keyFact && (
         <div className="hc-letter-keyfact" style={{
           padding: "14px 18px",
-          background: "linear-gradient(135deg, rgba(212,175,55,0.10), rgba(212,175,55,0.05))",
-          borderLeft: "3px solid #D4AF37",
+          background: "rgba(168,137,63,0.08)",
+          borderLeft: "3px solid var(--gold)",
           borderRadius: "0 6px 6px 0",
           margin: "8px 0 12px",
           position: "relative",
@@ -2057,7 +2057,7 @@ const LetterSection = memo(function LetterSection({ section, isExpanded, onToggl
             <div style={{ marginTop: 16 }}>
               <button onClick={() => askJess(section.title)} style={{
                 display: "inline-flex", alignItems: "center", gap: 8,
-                background: "linear-gradient(135deg, rgba(212,175,55,0.12), rgba(212,175,55,0.06))",
+                background: "rgba(168,137,63,0.10)",
                 border: "1px solid rgba(212,175,55,0.35)",
                 borderRadius: 8, padding: "10px 18px",
                 cursor: "pointer", marginTop: 4,

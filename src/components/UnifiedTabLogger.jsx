@@ -2453,12 +2453,12 @@ export default function UnifiedTabLogger() {
           bottom: "calc(88px + env(safe-area-inset-bottom, 0px))",
           right: 18, zIndex: 998,
           width: 56, height: 56, borderRadius: "50%",
-          background: `linear-gradient(145deg, ${T.gold}, ${T.goldDeep})`,
+          background: "var(--plum)",
           border: "none", cursor: "pointer",
-          boxShadow: "0 12px 28px rgba(212,175,55,0.55), 0 0 0 4px rgba(244,237,219,0.85)",
+          boxShadow: "0 10px 24px rgba(11,8,5,0.30), 0 0 0 4px rgba(244,237,219,0.85)",
           display: "flex", alignItems: "center", justifyContent: "center",
         }}>
-          <Plus size={26} style={{ color: T.cream }} strokeWidth={2.6} />
+          <Plus size={26} style={{ color: "var(--surface)" }} strokeWidth={2.6} />
         </button>
       )}
 

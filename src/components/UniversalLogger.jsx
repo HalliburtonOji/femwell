@@ -317,7 +317,7 @@ const dualFabStack = {
 };
 const dualFabSmartLogger = {
   width: 48, height: 48, borderRadius: "50%",
-  background: `linear-gradient(145deg, ${C.gold}, ${C.goldDeep})`,
+  background: "var(--plum)",
   color: C.cream,
   border: "none", cursor: "pointer",
   display: "flex", alignItems: "center", justifyContent: "center",

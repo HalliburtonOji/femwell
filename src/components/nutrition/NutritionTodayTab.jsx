@@ -988,7 +988,7 @@ export default function NutritionTodayTab({ user, profile, nutritionProfile, day
           <div className="w-full h-2 rounded-full mb-4 overflow-hidden" style={{ backgroundColor: "var(--sage-subtle)" }}>
             <motion.div className="h-full rounded-full"
               initial={{ width: 0 }} animate={{ width: `${hydrationPct}%` }} transition={{ duration: 0.5 }}
-              style={{ background: "linear-gradient(90deg, var(--sage-light), var(--sage))" }} />
+              style={{ backgroundColor: "var(--sage)" }} />
           </div>
           {/* Glass dots */}
           <div className="flex gap-1.5 mb-4 flex-wrap">
