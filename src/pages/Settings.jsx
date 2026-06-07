@@ -31,32 +31,36 @@ const DEFAULT_NOTIFS = {
 // ── Shared styles ────────────────────────────────────────────────────────────
 const inputStyle = {
   width: "100%",
-  padding: "10px 12px",
-  borderRadius: 10,
-  border: "1.5px solid var(--border)",
-  fontSize: 14,
-  color: "var(--plum)",
-  backgroundColor: "var(--surface)",
+  padding: "10px 14px",
+  borderRadius: 2,
+  border: "1px solid rgba(58,44,26,0.2)",
+  fontSize: 16,
+  fontFamily: "Cormorant Garamond, Georgia, serif",
+  fontWeight: 500,
+  color: "#3A2C1A",
+  backgroundColor: "var(--ivory)",
   outline: "none",
   boxSizing: "border-box",
 };
 const labelStyle = {
   display: "block",
-  fontSize: 11,
+  fontFamily: "ui-sans-serif, system-ui, sans-serif",
+  fontSize: 10,
   fontWeight: 700,
   textTransform: "uppercase",
-  letterSpacing: "0.1em",
-  color: "var(--mauve)",
+  letterSpacing: "0.12em",
+  color: "#9B8B7A",
   marginBottom: 6,
 };
 const primaryBtn = {
-  padding: "9px 18px",
-  borderRadius: 9999,
-  backgroundColor: "var(--rose-dust)",
-  color: "white",
-  fontSize: 13,
+  padding: "9px 20px",
+  borderRadius: 2,
+  backgroundColor: "#3A2C1A",
+  color: "#F4EDDB",
+  border: "1px solid #D4AF37",
+  fontFamily: "Cormorant Garamond, Georgia, serif",
+  fontSize: 16,
   fontWeight: 700,
-  border: "none",
   cursor: "pointer",
   display: "inline-flex",
   alignItems: "center",
@@ -65,8 +69,8 @@ const primaryBtn = {
 const secondaryBtn = {
   ...primaryBtn,
   backgroundColor: "var(--surface)",
-  color: "var(--rose-dust)",
-  border: "1.5px solid var(--border)",
+  color: "#3A2C1A",
+  border: "1px solid rgba(58,44,26,0.2)",
 };
 
 // ── Nav sidebar ──────────────────────────────────────────────────────────────
@@ -545,19 +549,19 @@ function AboutSection() {
         </div>
 
         <a href="/terms"
-          style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 14px", borderRadius: 12, backgroundColor: "var(--surface)", border: "1px solid var(--border)", textDecoration: "none" }}>
-          <span style={{ fontSize: 13, fontWeight: 600, color: "var(--plum)", }}>Terms of Service</span>
-          <ChevronRight className="w-4 h-4" style={{ color: "var(--rose-dust)" }} />
+          style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "13px 16px", borderRadius: 2, backgroundColor: "var(--ivory)", border: "1px solid rgba(58,44,26,0.1)", textDecoration: "none", marginBottom: 8 }}>
+          <span style={{ fontFamily: "Cormorant Garamond, Georgia, serif", fontSize: 17, fontWeight: 600, color: "#3A2C1A" }}>Terms of Service</span>
+          <ChevronRight size={15} style={{ color: "#D4AF37", flexShrink: 0 }} />
         </a>
 
         <a href="/privacy"
-          style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 14px", borderRadius: 12, backgroundColor: "var(--surface)", border: "1px solid var(--border)", textDecoration: "none" }}>
-          <span style={{ fontSize: 13, fontWeight: 600, color: "var(--plum)", }}>Privacy Policy</span>
-          <ChevronRight className="w-4 h-4" style={{ color: "var(--rose-dust)" }} />
+          style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "13px 16px", borderRadius: 2, backgroundColor: "var(--ivory)", border: "1px solid rgba(58,44,26,0.1)", textDecoration: "none" }}>
+          <span style={{ fontFamily: "Cormorant Garamond, Georgia, serif", fontSize: 17, fontWeight: 600, color: "#3A2C1A" }}>Privacy Policy</span>
+          <ChevronRight size={15} style={{ color: "#D4AF37", flexShrink: 0 }} />
         </a>
 
-        <p style={{ fontSize: 12, color: "var(--mauve)", textAlign: "center", marginTop: 8, display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 5 }}>
-          Made with <Heart className="w-3.5 h-3.5" style={{ color: "var(--rose-dust)", fill: "var(--rose-dust)" }} /> for women everywhere
+        <p style={{ fontFamily: "Cormorant Garamond, Georgia, serif", fontSize: 15, fontStyle: "italic", color: "#9B8B7A", textAlign: "center", marginTop: 14, display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 5 }}>
+          Made with <Heart size={13} style={{ color: "#C4849A", fill: "#C4849A" }} /> for women everywhere
         </p>
       </div>
     </SettingsCard>
