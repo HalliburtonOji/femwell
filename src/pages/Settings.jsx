@@ -31,36 +31,32 @@ const DEFAULT_NOTIFS = {
 // ── Shared styles ────────────────────────────────────────────────────────────
 const inputStyle = {
   width: "100%",
-  padding: "10px 14px",
-  borderRadius: 2,
-  border: "1px solid rgba(58,44,26,0.2)",
-  fontSize: 16,
-  fontFamily: "Cormorant Garamond, Georgia, serif",
-  fontWeight: 500,
-  color: "#3A2C1A",
-  backgroundColor: "var(--ivory)",
+  padding: "10px 12px",
+  borderRadius: 10,
+  border: "1.5px solid var(--border)",
+  fontSize: 14,
+  color: "var(--plum)",
+  backgroundColor: "var(--surface)",
   outline: "none",
   boxSizing: "border-box",
 };
 const labelStyle = {
   display: "block",
-  fontFamily: "ui-sans-serif, system-ui, sans-serif",
-  fontSize: 10,
+  fontSize: 11,
   fontWeight: 700,
   textTransform: "uppercase",
-  letterSpacing: "0.12em",
-  color: "#9B8B7A",
+  letterSpacing: "0.1em",
+  color: "var(--mauve)",
   marginBottom: 6,
 };
 const primaryBtn = {
-  padding: "9px 20px",
-  borderRadius: 2,
-  backgroundColor: "#3A2C1A",
-  color: "#F4EDDB",
-  border: "1px solid #D4AF37",
-  fontFamily: "Cormorant Garamond, Georgia, serif",
-  fontSize: 16,
+  padding: "9px 18px",
+  borderRadius: 9999,
+  backgroundColor: "var(--rose-dust)",
+  color: "white",
+  fontSize: 13,
   fontWeight: 700,
+  border: "none",
   cursor: "pointer",
   display: "inline-flex",
   alignItems: "center",
@@ -69,8 +65,8 @@ const primaryBtn = {
 const secondaryBtn = {
   ...primaryBtn,
   backgroundColor: "var(--surface)",
-  color: "#3A2C1A",
-  border: "1px solid rgba(58,44,26,0.2)",
+  color: "var(--rose-dust)",
+  border: "1.5px solid var(--border)",
 };
 
 // ── Nav sidebar ──────────────────────────────────────────────────────────────
@@ -79,13 +75,13 @@ function SettingsSidebar({ active, onSelect }) {
     <nav
       aria-label="Settings sections"
       style={{
-        background: "var(--surface)",
-        border: "1px solid rgba(58,44,26,0.12)",
-        borderRadius: 4,
-        padding: 6,
-        boxShadow: "0 2px 8px rgba(58,44,26,0.08)",
+        backgroundColor: "var(--surface)",
+        border: "1px solid var(--border)",
+        borderRadius: 16,
+        padding: 8,
+        boxShadow: "var(--shadow-sm)",
         position: "sticky",
-        top: 58,
+        top: 90,
       }}
     >
       {SECTIONS.map(({ id, label, icon: Icon }) => {
@@ -101,22 +97,20 @@ function SettingsSidebar({ active, onSelect }) {
               gap: 10,
               width: "100%",
               padding: "10px 12px",
-              borderRadius: 3,
+              borderRadius: 10,
               border: "none",
               cursor: "pointer",
               marginBottom: 2,
-              backgroundColor: isActive ? "#3A2C1A" : "transparent",
-              color: isActive ? "#F4EDDB" : "#3A2C1A",
+              backgroundColor: isActive ? "var(--plum)" : "transparent",
+              color: isActive ? "var(--ivory)" : "var(--plum)",
               fontSize: 13,
               fontWeight: 600,
               textAlign: "left",
-              borderBottom: isActive ? "none" : "none",
-              fontFamily: "ui-sans-serif, system-ui, sans-serif",
             }}
           >
-            <Icon size={15} strokeWidth={1.75} />
+            <Icon className="w-4 h-4" />
             <span style={{ flex: 1 }}>{label}</span>
-            {!isActive && <ChevronRight size={13} style={{ opacity: 0.35 }} />}
+            {!isActive && <ChevronRight className="w-3.5 h-3.5" style={{ opacity: 0.4 }} />}
           </button>
         );
       })}
@@ -549,19 +543,19 @@ function AboutSection() {
         </div>
 
         <a href="/terms"
-          style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "13px 16px", borderRadius: 2, backgroundColor: "var(--ivory)", border: "1px solid rgba(58,44,26,0.1)", textDecoration: "none", marginBottom: 8 }}>
-          <span style={{ fontFamily: "Cormorant Garamond, Georgia, serif", fontSize: 17, fontWeight: 600, color: "#3A2C1A" }}>Terms of Service</span>
-          <ChevronRight size={15} style={{ color: "#D4AF37", flexShrink: 0 }} />
+          style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 14px", borderRadius: 12, backgroundColor: "var(--surface)", border: "1px solid var(--border)", textDecoration: "none" }}>
+          <span style={{ fontSize: 13, fontWeight: 600, color: "var(--plum)", }}>Terms of Service</span>
+          <ChevronRight className="w-4 h-4" style={{ color: "var(--rose-dust)" }} />
         </a>
 
         <a href="/privacy"
-          style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "13px 16px", borderRadius: 2, backgroundColor: "var(--ivory)", border: "1px solid rgba(58,44,26,0.1)", textDecoration: "none" }}>
-          <span style={{ fontFamily: "Cormorant Garamond, Georgia, serif", fontSize: 17, fontWeight: 600, color: "#3A2C1A" }}>Privacy Policy</span>
-          <ChevronRight size={15} style={{ color: "#D4AF37", flexShrink: 0 }} />
+          style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 14px", borderRadius: 12, backgroundColor: "var(--surface)", border: "1px solid var(--border)", textDecoration: "none" }}>
+          <span style={{ fontSize: 13, fontWeight: 600, color: "var(--plum)", }}>Privacy Policy</span>
+          <ChevronRight className="w-4 h-4" style={{ color: "var(--rose-dust)" }} />
         </a>
 
-        <p style={{ fontFamily: "Cormorant Garamond, Georgia, serif", fontSize: 15, fontStyle: "italic", color: "#9B8B7A", textAlign: "center", marginTop: 14, display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 5 }}>
-          Made with <Heart size={13} style={{ color: "#C4849A", fill: "#C4849A" }} /> for women everywhere
+        <p style={{ fontSize: 12, color: "var(--mauve)", textAlign: "center", marginTop: 8, display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 5 }}>
+          Made with <Heart className="w-3.5 h-3.5" style={{ color: "var(--rose-dust)", fill: "var(--rose-dust)" }} /> for women everywhere
         </p>
       </div>
     </SettingsCard>
@@ -617,19 +611,20 @@ export default function Settings() {
 
   return (
     <div className="min-h-screen pb-28" style={{ backgroundColor: "var(--ivory)" }}>
-      {/* Espresso sticky header */}
-      <div style={{ position: "sticky", top: 0, zIndex: 20, background: "#3A2C1A" }}>
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "10px 16px" }}>
-          <div>
-            <div style={{ fontSize: 17, fontWeight: 700, color: "#F4EDDB", fontFamily: "Cormorant Garamond, Georgia, serif" }}>Settings</div>
-            <div style={{ fontSize: 10, color: "rgba(244,237,219,0.5)", letterSpacing: 0.5, marginTop: 1, fontFamily: "ui-sans-serif, system-ui, sans-serif" }}>
-              Your account
-            </div>
-          </div>
+      {/* Header */}
+      <div className="sticky top-0 z-30 px-4 pt-10 pb-3"
+        style={{ backgroundColor: "rgba(250,248,245,0.97)", backdropFilter: "blur(20px)", borderBottom: "1px solid var(--border)" }}>
+        <div className="max-w-4xl mx-auto">
+          <p style={{ fontSize: "0.6rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.14em", color: "var(--rose-dust)", }}>
+            Your account
+          </p>
+          <h1 className="fw-display" style={{ marginTop: 2 }}>
+            Settings
+          </h1>
         </div>
       </div>
 
-      <div className="max-w-4xl mx-auto px-4 pt-6">
+      <div className="max-w-4xl mx-auto px-4 pt-5">
         {loading ? (
           <div className="flex justify-center py-10">
             <div className="w-7 h-7 rounded-full border-2 border-t-transparent animate-spin"
