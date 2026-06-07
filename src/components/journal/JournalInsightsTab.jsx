@@ -5,6 +5,12 @@ import { Loader2, RefreshCw } from "lucide-react";
 import CycleMoodPatternChart from "./CycleMoodPatternChart";
 import AiDisclaimer from "@/components/compliance/AiDisclaimer";
 
+const WHOLENESS_TYPES = ["relationships","career","creativity","money","grief","joy","identity"];
+const WHOLENESS_LABELS = {
+  relationships: "Relationships", career: "Career", creativity: "Creativity",
+  money: "Money", grief: "Grief", joy: "Joy", identity: "Identity",
+};
+
 const MOOD_MAP = {
   1: { label: "Calm",      accent: "var(--sage)"       },
   2: { label: "Stressed",  accent: "#C4884A"            },
@@ -66,6 +72,13 @@ export default function JournalInsightsTab({ user, entries }) {
     if (e.mood_rating) moodCounts[e.mood_rating] = (moodCounts[e.mood_rating] || 0) + 1;
   });
   const topMoods = Object.entries(moodCounts).sort(([,a],[,b]) => b - a).slice(0, 3);
+
+  // Wholeness dimension breakdown (last 30)
+  const wholeness30 = last30.filter(e => WHOLENESS_TYPES.includes(e.card_type));
+  const wholeness7  = last7.filter(e => WHOLENESS_TYPES.includes(e.card_type));
+  const wholenessCounts = {};
+  wholeness30.forEach(e => { wholenessCounts[e.card_type] = (wholenessCounts[e.card_type] || 0) + 1; });
+  const topWholeness = Object.entries(wholenessCounts).sort(([,a],[,b]) => b - a);
 
   // Tag frequency (last 30) — tolerate string OR array OR null
   const tagCounts = {};
@@ -241,6 +254,28 @@ Return as plain text, no markdown.`,
               );
             })}
           </div>
+        </div>
+      )}
+
+      {/* Wholeness dimensions */}
+      {topWholeness.length > 0 && (
+        <div className="rounded-[24px] p-5" style={card}>
+          <p style={sLabel} className="mb-3">Life Dimensions — Last 30 Days</p>
+          <div className="flex flex-wrap gap-2">
+            {topWholeness.map(([type, count]) => (
+              <div key={type} className="flex items-center gap-1.5 px-3 py-1.5 rounded-full"
+                style={{ backgroundColor: "var(--ivory-dark)", border: "1px solid var(--border)" }}>
+                <span className="text-xs font-semibold" style={{ color: "var(--plum)" }}>{WHOLENESS_LABELS[type]}</span>
+                <span className="text-[10px]" style={{ color: "var(--mauve)" }}>{count}</span>
+              </div>
+            ))}
+          </div>
+          {wholeness7.length > 0 && (
+            <p className="text-xs mt-3 leading-relaxed" style={{ color: "var(--mauve)" }}>
+              You wrote {wholeness7.length} {wholeness7.length === 1 ? "entry" : "entries"} about life dimensions this week.
+              {wholeness30.length > wholeness7.length ? ` ${wholeness30.length} in the last month.` : ""}
+            </p>
+          )}
         </div>
       )}
 

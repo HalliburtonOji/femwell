@@ -1,0 +1,101 @@
+{
+  "name": "Echo",
+  "type": "object",
+  "properties": {
+    "body": {
+      "type": "string",
+      "description": "The anonymous echo text content"
+    },
+    "author_hash": {
+      "type": "string",
+      "description": "Hashed author identifier \u2014 never raw user ID"
+    },
+    "phase": {
+      "type": "string",
+      "enum": [
+        "menstrual",
+        "follicular",
+        "ovulatory",
+        "luteal",
+        "unknown"
+      ],
+      "default": "unknown",
+      "description": "Cycle phase of the author at time of posting"
+    },
+    "life_stage": {
+      "type": "string",
+      "description": "Life stage of the author (e.g. ttc, pregnant, menopause)"
+    },
+    "cycle_day": {
+      "type": "number",
+      "description": "Cycle day of the author at time of posting"
+    },
+    "source_entry_hash": {
+      "type": "string",
+      "description": "Hash of the originating journal entry, if shared from one"
+    },
+    "live_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO timestamp when the echo becomes visible on the wall"
+    },
+    "expires_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO timestamp when the echo is removed from the wall"
+    },
+    "held_count": {
+      "type": "number",
+      "default": 0,
+      "description": "Number of users who tapped 'I hold this'"
+    },
+    "metoo_count": {
+      "type": "number",
+      "default": 0,
+      "description": "Number of users who tapped 'Me too'"
+    },
+    "report_count": {
+      "type": "number",
+      "default": 0,
+      "description": "Number of reports flagging this echo for review"
+    },
+    "hidden": {
+      "type": "boolean",
+      "default": false,
+      "description": "When true, echo is suppressed from the wall (moderation)"
+    },
+    "visibility": {
+      "type": "string",
+      "enum": [
+        "same_phase",
+        "circles",
+        "all"
+      ],
+      "default": "all",
+      "description": "Audience scope for this echo"
+    }
+  },
+  "required": [
+    "body",
+    "author_hash",
+    "live_at",
+    "expires_at"
+  ],
+  "indexes": [
+    {
+      "fields": [
+        "phase"
+      ]
+    },
+    {
+      "fields": [
+        "expires_at"
+      ]
+    },
+    {
+      "fields": [
+        "hidden"
+      ]
+    }
+  ]
+}

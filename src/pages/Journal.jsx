@@ -24,15 +24,25 @@ import {
 } from "../components/journal/Editorial";
 
 const FILTER_TYPES = [
-  { id: "all",         label: "All" },
-  { id: "free",        label: "Free" },
-  { id: "gratitude",   label: "Gratitude" },
-  { id: "todo",        label: "Todo" },
-  { id: "mood",        label: "Mood" },
-  { id: "reflection",  label: "Reflection" },
-  { id: "affirmation", label: "Affirmation" },
-  { id: "dream",       label: "Dream" },
+  { id: "all",           label: "All" },
+  { id: "free",          label: "Free" },
+  { id: "gratitude",     label: "Gratitude" },
+  { id: "todo",          label: "Todo" },
+  { id: "mood",          label: "Mood" },
+  { id: "reflection",    label: "Reflection" },
+  { id: "affirmation",   label: "Affirmation" },
+  { id: "dream",         label: "Dream" },
+  // Wholeness
+  { id: "relationships", label: "Relationships" },
+  { id: "career",        label: "Career" },
+  { id: "creativity",    label: "Creativity" },
+  { id: "money",         label: "Money" },
+  { id: "grief",         label: "Grief" },
+  { id: "joy",           label: "Joy" },
+  { id: "identity",      label: "Identity" },
 ];
+
+const WHOLENESS_TYPES = new Set(["relationships","career","creativity","money","grief","joy","identity"]);
 
 // Phase -> Inner Season name + italic seasonal line.
 const PHASE_SEASON = {
@@ -416,6 +426,22 @@ export default function Journal() {
             {/* Threads browse strip */}
             <ThreadsStrip threads={threads} onOpen={(t) => setThreadFilter(t)} />
 
+            {/* Jess witness note — appears when viewing a Wholeness dimension */}
+            {WHOLENESS_TYPES.has(filterType) && (
+              <div style={{ marginBottom: 18, padding: "14px 18px", background: T.paperHi, border: `1px solid ${T.paperDeep}`, borderRadius: 3 }}>
+                <Eyebrow mb={6}>A note from Jess</Eyebrow>
+                <Hand size={17} color={T.inkSoft} carve={false}>
+                  {filterType === "grief" && "Grief has no timeline. I am not here to move you through it — only to sit with you in it."}
+                  {filterType === "identity" && "There is no right answer here. I am not observing you — I am holding space for the person you are still becoming."}
+                  {filterType === "money" && "Money is not a moral story. What you write here stays here, and I will not conflate your worth with your numbers."}
+                  {filterType === "relationships" && "Relationships are rarely simple. Write the complicated truth — I am not here to advise, only to witness."}
+                  {filterType === "career" && "Ambition and exhaustion can live in the same body. What you feel about your work is allowed to be contradictory."}
+                  {filterType === "creativity" && "Nothing you make here needs to be good. The making is the point."}
+                  {filterType === "joy" && "Joy is allowed to exist without justification. Let this be easy."}
+                </Hand>
+              </div>
+            )}
+
             {/* Filter pills */}
             <style>{`.jfilter-scroll::-webkit-scrollbar{display:none}`}</style>
             <div className="jfilter-scroll" style={{ display: "flex", gap: 6, overflowX: "auto", paddingBottom: 4, marginBottom: 18, scrollbarWidth: "none" }}>
@@ -438,12 +464,12 @@ export default function Journal() {
                 <Hand size={20} color={T.inkSoft} style={{ marginBottom: 22 }}>
                   Nothing here yet. Begin with a line — it is locked to you, always.
                 </Hand>
-                <div style={{ display: "flex", gap: 14, justifyContent: "center", flexWrap: "wrap" }}>
-                  {[{ label: "Free write" }, { label: "Gratitude" }, { label: "Reflection" }].map((t) => (
-                    <button key={t.label} onClick={openBlank} style={{
-                      background: "transparent", border: `1px solid ${T.gold}`, borderRadius: 3, padding: "10px 18px",
-                      cursor: "pointer", fontFamily: HAND, fontSize: 18, fontWeight: 600, color: T.ink, textShadow: PRESS,
-                    }}>{t.label}</button>
+                <div style={{ display: "flex", gap: 10, justifyContent: "center", flexWrap: "wrap" }}>
+                  {["Free write", "Gratitude", "Reflection", "Relationships", "Grief", "Joy"].map((label) => (
+                    <button key={label} onClick={openBlank} style={{
+                      background: "transparent", border: `1px solid ${T.gold}`, borderRadius: 3, padding: "9px 16px",
+                      cursor: "pointer", fontFamily: HAND, fontSize: 17, fontWeight: 600, color: T.ink, textShadow: PRESS,
+                    }}>{label}</button>
                   ))}
                 </div>
               </div>

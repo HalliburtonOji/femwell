@@ -20,10 +20,16 @@ import { threadOf } from "./threads";
 export const TYPE_COLOUR = {
   free: "#2A2118", gratitude: "#947216", mood: "#C77B86", todo: "#3F5C5C",
   reflection: "#5F7E5F", affirmation: "#A56A18", dream: "#54407F",
+  // Wholeness dimensions
+  relationships: "#7A5E8C", career: "#4A6B7A", creativity: "#8C6A3E",
+  money: "#4A6B4A", grief: "#5A5A7A", joy: "#8C7A2E", identity: "#7A4A4A",
 };
 export const TYPE_LABEL = {
   free: "Free write", gratitude: "Gratitude", mood: "Mood", todo: "To-do",
   reflection: "Reflection", affirmation: "Affirmation", dream: "Dream",
+  // Wholeness dimensions
+  relationships: "Relationships", career: "Career", creativity: "Creativity",
+  money: "Money", grief: "Grief", joy: "Joy", identity: "Identity",
 };
 
 function preview(entry) {

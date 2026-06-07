@@ -12,14 +12,24 @@ const COLOR_MAP = {
 const COLOR_NAMES = Object.keys(COLOR_MAP);
 
 // Brand rule — no emoji. Text labels (editorial type row) + Lucide icons only.
+// Wholeness taxonomy: health/productivity types + life-dimension types.
 const CARD_TYPES = [
-  { id: "free",        label: "Free write" },
-  { id: "reflection",  label: "Reflection" },
-  { id: "gratitude",   label: "Gratitude" },
-  { id: "mood",        label: "Mood" },
-  { id: "affirmation", label: "Affirmation" },
-  { id: "dream",       label: "Dream" },
-  { id: "todo",        label: "To-do" },
+  // Core
+  { id: "free",         label: "Free write",   group: "core" },
+  { id: "reflection",   label: "Reflection",   group: "core" },
+  { id: "gratitude",    label: "Gratitude",    group: "core" },
+  { id: "mood",         label: "Mood",         group: "core" },
+  { id: "affirmation",  label: "Affirmation",  group: "core" },
+  { id: "dream",        label: "Dream",        group: "core" },
+  { id: "todo",         label: "To-do",        group: "core" },
+  // Wholeness dimensions
+  { id: "relationships", label: "Relationships", group: "wholeness" },
+  { id: "career",        label: "Career",        group: "wholeness" },
+  { id: "creativity",    label: "Creativity",    group: "wholeness" },
+  { id: "money",         label: "Money",         group: "wholeness" },
+  { id: "grief",         label: "Grief",         group: "wholeness" },
+  { id: "joy",           label: "Joy",           group: "wholeness" },
+  { id: "identity",      label: "Identity",      group: "wholeness" },
 ];
 const LABEL_OF = Object.fromEntries(CARD_TYPES.map((t) => [t.id, t.label]));
 
@@ -33,6 +43,50 @@ const PHASE_PROMPTS = {
   ovulatory:  ["Who or what am I showing up for today?", "What am I most proud of this week?", "How am I connecting with others?"],
   luteal:     ["What's weighing on me that I haven't said out loud?", "What does my body need right now?", "What patterns do I notice in myself?"],
   default:    ["How am I feeling right now?", "What made today meaningful?", "What do I want to remember about today?"],
+};
+
+// Wholeness-dimension prompts — phase-aware where relevant, honest otherwise.
+const WHOLENESS_PROMPTS = {
+  relationships: {
+    menstrual:  ["What do I need from others right now that I haven't asked for?", "Which relationship feels heavy — and why might that be?"],
+    follicular: ["Who do I want to grow closer to, and what's one small step?", "What do I want more of in my connections?"],
+    ovulatory:  ["What am I giving to others right now? Is it sustainable?", "Where am I at my most magnetic — and who sees it?"],
+    luteal:     ["Which relationship is draining me, and what boundary do I need?", "What unsaid thing is sitting between me and someone I love?"],
+    default:    ["What does a good relationship feel like in my body?", "Who do I feel most myself around, and why?"],
+  },
+  career: {
+    menstrual:  ["What part of my work feels misaligned with who I am right now?", "If I could pause one obligation this week, what would it be?"],
+    follicular: ["What professional risk have I been too cautious to take?", "What does ambition feel like in my body today?"],
+    ovulatory:  ["What am I building and who benefits from it?", "Where is my confidence loudest at work right now?"],
+    luteal:     ["What resentment am I carrying about work that I haven't named?", "What would I do professionally if failure weren't possible?"],
+    default:    ["What does meaningful work look like for me?", "What am I proud of professionally that no one else knows about?"],
+  },
+  creativity: {
+    menstrual:  ["What creative thing am I resting so it can be born later?", "What wants to emerge from this quiet time?"],
+    follicular: ["What creative idea has been circling me that I keep dismissing?", "What would I make if no one would ever see it?"],
+    ovulatory:  ["What creative work feels alive in me right now?", "Who inspires me, and what do they give me permission to try?"],
+    luteal:     ["What creative project have I abandoned that deserves honesty?", "What am I afraid to make, and why?"],
+    default:    ["What am I making, even in small ways?", "Where do I feel most creative — and when did I last go there?"],
+  },
+  money: {
+    default: ["What feeling does money most often carry for me?", "What story about money did I inherit that I'm still living by?", "What would financial safety actually feel like?"],
+  },
+  grief: {
+    menstrual:  ["What am I mourning that I haven't given space to?", "What grief is living in my body right now?"],
+    luteal:     ["What loss am I still carrying that I haven't been allowed to name?"],
+    default:    ["What have I lost that I haven't fully grieved?", "What would I want to say to someone or something I've lost?", "What does grief feel like — not look like — for me?"],
+  },
+  joy: {
+    follicular: ["What delights me that I've been too serious to admit?", "What made me laugh or feel light this week?"],
+    ovulatory:  ["What is joy actually asking of me right now?", "What is the most joyful version of my day?"],
+    default:    ["What brings me joy that requires no explanation?", "When did I last feel uncomplicated happiness, and what was I doing?"],
+  },
+  identity: {
+    menstrual:  ["Who am I when no one needs anything from me?", "What part of myself do I hide, and from whom?"],
+    follicular: ["What is becoming true about me that I haven't said out loud yet?", "What do I believe about myself that used to not be true?"],
+    luteal:     ["Which version of myself am I most afraid people see?", "What identity am I ready to shed?"],
+    default:    ["Who am I outside of my roles?", "What do I know about myself that I can't yet explain to anyone else?"],
+  },
 };
 
 // Guided compose — a short, phase-aware question sequence. Each step is a
@@ -106,7 +160,12 @@ export default function NewEntrySheet({
     return !!(window.SpeechRecognition || window.webkitSpeechRecognition);
   }, []);
 
-  const prompts = PHASE_PROMPTS[phase] || PHASE_PROMPTS.default;
+  // Resolve prompts — wholeness types get their own dimension-aware set.
+  const isWholeness = ["relationships","career","creativity","money","grief","joy","identity"].includes(cardType);
+  const wholenessBank = isWholeness ? (WHOLENESS_PROMPTS[cardType] || {}) : null;
+  const prompts = isWholeness
+    ? (wholenessBank[phase] || wholenessBank.default || PHASE_PROMPTS.default)
+    : (PHASE_PROMPTS[phase] || PHASE_PROMPTS.default);
   const guidedSteps = GUIDED_FLOW[phase] || GUIDED_FLOW.default;
 
   // Pre-fill gratitudes from existing text if editing a gratitude entry.
@@ -453,16 +512,31 @@ export default function NewEntrySheet({
         {/* ══ WRITE MODE (the normal form) ══ */}
         {mode === "Write" && (
           <>
-            {/* type picker — editorial underline row */}
-            <div style={{ display: "flex", flexWrap: "wrap", gap: 12, marginBottom: 22 }}>
-              {CARD_TYPES.map((t) => (
-                <button key={t.id} onClick={() => setCardType(t.id)} style={{
-                  background: "transparent", border: "none", cursor: "pointer", padding: 0, paddingBottom: 2,
-                  fontFamily: UI, fontSize: 12.5, letterSpacing: 0.4,
-                  color: t.id === cardType ? T.ink : T.muted, fontWeight: t.id === cardType ? 800 : 500,
-                  borderBottom: t.id === cardType ? `1px solid ${T.gold}` : "none",
-                }}>{t.label}</button>
-              ))}
+            {/* type picker — two groups: core and wholeness */}
+            <div style={{ marginBottom: 22 }}>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 10, marginBottom: 10 }}>
+                {CARD_TYPES.filter(t => t.group === "core").map((t) => (
+                  <button key={t.id} onClick={() => setCardType(t.id)} style={{
+                    background: "transparent", border: "none", cursor: "pointer", padding: 0, paddingBottom: 2,
+                    fontFamily: UI, fontSize: 12.5, letterSpacing: 0.4,
+                    color: t.id === cardType ? T.ink : T.muted, fontWeight: t.id === cardType ? 800 : 500,
+                    borderBottom: t.id === cardType ? `1px solid ${T.gold}` : "none",
+                  }}>{t.label}</button>
+                ))}
+              </div>
+              <div style={{ marginBottom: 6 }}>
+                <span style={{ fontFamily: UI, fontSize: 9.5, letterSpacing: 1.4, fontWeight: 700, textTransform: "uppercase", color: T.muted }}>Wholeness</span>
+              </div>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 10 }}>
+                {CARD_TYPES.filter(t => t.group === "wholeness").map((t) => (
+                  <button key={t.id} onClick={() => setCardType(t.id)} style={{
+                    background: "transparent", border: "none", cursor: "pointer", padding: 0, paddingBottom: 2,
+                    fontFamily: UI, fontSize: 12.5, letterSpacing: 0.4,
+                    color: t.id === cardType ? T.ink : T.muted, fontWeight: t.id === cardType ? 800 : 500,
+                    borderBottom: t.id === cardType ? `1px solid ${T.gold}` : "none",
+                  }}>{t.label}</button>
+                ))}
+              </div>
             </div>
 
             {/* ── per-type form ── */}
