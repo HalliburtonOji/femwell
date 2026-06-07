@@ -75,13 +75,13 @@ function SettingsSidebar({ active, onSelect }) {
     <nav
       aria-label="Settings sections"
       style={{
-        backgroundColor: "var(--surface)",
-        border: "1px solid var(--border)",
-        borderRadius: 16,
-        padding: 8,
-        boxShadow: "var(--shadow-sm)",
+        background: "var(--surface)",
+        border: "1px solid rgba(58,44,26,0.12)",
+        borderRadius: 4,
+        padding: 6,
+        boxShadow: "0 2px 8px rgba(58,44,26,0.08)",
         position: "sticky",
-        top: 90,
+        top: 58,
       }}
     >
       {SECTIONS.map(({ id, label, icon: Icon }) => {
@@ -97,20 +97,22 @@ function SettingsSidebar({ active, onSelect }) {
               gap: 10,
               width: "100%",
               padding: "10px 12px",
-              borderRadius: 10,
+              borderRadius: 3,
               border: "none",
               cursor: "pointer",
               marginBottom: 2,
-              backgroundColor: isActive ? "var(--plum)" : "transparent",
-              color: isActive ? "var(--ivory)" : "var(--plum)",
+              backgroundColor: isActive ? "#3A2C1A" : "transparent",
+              color: isActive ? "#F4EDDB" : "#3A2C1A",
               fontSize: 13,
               fontWeight: 600,
               textAlign: "left",
+              borderBottom: isActive ? "none" : "none",
+              fontFamily: "ui-sans-serif, system-ui, sans-serif",
             }}
           >
-            <Icon className="w-4 h-4" />
+            <Icon size={15} strokeWidth={1.75} />
             <span style={{ flex: 1 }}>{label}</span>
-            {!isActive && <ChevronRight className="w-3.5 h-3.5" style={{ opacity: 0.4 }} />}
+            {!isActive && <ChevronRight size={13} style={{ opacity: 0.35 }} />}
           </button>
         );
       })}
@@ -611,20 +613,19 @@ export default function Settings() {
 
   return (
     <div className="min-h-screen pb-28" style={{ backgroundColor: "var(--ivory)" }}>
-      {/* Header */}
-      <div className="sticky top-0 z-30 px-4 pt-10 pb-3"
-        style={{ backgroundColor: "rgba(250,248,245,0.97)", backdropFilter: "blur(20px)", borderBottom: "1px solid var(--border)" }}>
-        <div className="max-w-4xl mx-auto">
-          <p style={{ fontSize: "0.6rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.14em", color: "var(--rose-dust)", }}>
-            Your account
-          </p>
-          <h1 className="fw-display" style={{ marginTop: 2 }}>
-            Settings
-          </h1>
+      {/* Espresso sticky header */}
+      <div style={{ position: "sticky", top: 0, zIndex: 20, background: "#3A2C1A" }}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "10px 16px" }}>
+          <div>
+            <div style={{ fontSize: 17, fontWeight: 700, color: "#F4EDDB", fontFamily: "Cormorant Garamond, Georgia, serif" }}>Settings</div>
+            <div style={{ fontSize: 10, color: "rgba(244,237,219,0.5)", letterSpacing: 0.5, marginTop: 1, fontFamily: "ui-sans-serif, system-ui, sans-serif" }}>
+              Your account
+            </div>
+          </div>
         </div>
       </div>
 
-      <div className="max-w-4xl mx-auto px-4 pt-5">
+      <div className="max-w-4xl mx-auto px-4 pt-6">
         {loading ? (
           <div className="flex justify-center py-10">
             <div className="w-7 h-7 rounded-full border-2 border-t-transparent animate-spin"
