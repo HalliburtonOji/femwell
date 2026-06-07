@@ -105,40 +105,44 @@ export default function Search() {
     <div style={{ minHeight: "100vh", background: C.cream, paddingBottom: 96 }}>
       <header style={{
         position: "sticky", top: 0, zIndex: 10,
-        background: C.cream,
-        padding: "max(env(safe-area-inset-top), 12px) 16px 12px",
-        borderBottom: "1px solid rgba(58,44,26,0.08)",
+        background: "#3A2C1A",
       }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 10 }}>
+        {/* Row 1 — espresso bar */}
+        <div style={{ padding: "10px 16px", display: "flex", alignItems: "center", gap: 10 }}>
           <button
             type="button"
             aria-label="Back"
             onClick={() => navigate(-1)}
             style={{
               width: 36, height: 36, borderRadius: 9999, border: "none",
-              background: "transparent", cursor: "pointer",
+              background: "rgba(244,237,219,0.12)", cursor: "pointer",
               display: "inline-flex", alignItems: "center", justifyContent: "center",
-              color: C.espresso,
+              color: "#F4EDDB", flexShrink: 0,
             }}
           ><ArrowLeft size={18} /></button>
-          <h1 className="fw-display" style={{ margin: 0 }}>Search your logs</h1>
+          <div>
+            <div style={{ fontSize: 10, color: "rgba(244,237,219,0.5)", letterSpacing: 1.5, textTransform: "uppercase", fontWeight: 700, marginBottom: 1 }}>Your logs</div>
+            <div style={{ fontSize: 17, fontWeight: 700, color: "#F4EDDB" }}>Search</div>
+          </div>
         </div>
-        <div style={{ display: "flex", alignItems: "center", gap: 8, paddingBottom: 4,
-          borderBottom: `2px solid ${C.espresso}` }}>
-          <SearchIcon size={18} style={{ color: C.muted }} aria-hidden />
-          <input
-            ref={inputRef}
-            type="search"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search journal, symptoms, meals, tasks…"
-            aria-label="Search query"
-            style={{
-              flex: 1, padding: "8px 0",
-              background: "transparent", border: "none", outline: "none",
-              fontSize: 16, color: C.espresso,
-            }}
-          />
+        {/* Row 2 — search input */}
+        <div style={{ padding: "0 16px 10px" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "8px 12px", borderRadius: 10, background: "rgba(244,237,219,0.10)", border: "1px solid rgba(244,237,219,0.18)" }}>
+            <SearchIcon size={16} style={{ color: "rgba(244,237,219,0.6)" }} aria-hidden />
+            <input
+              ref={inputRef}
+              type="search"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="Search journal, symptoms, meals, tasks…"
+              aria-label="Search query"
+              style={{
+                flex: 1, padding: 0,
+                background: "transparent", border: "none", outline: "none",
+                fontSize: 15, color: "#F4EDDB",
+              }}
+            />
+          </div>
         </div>
       </header>
 

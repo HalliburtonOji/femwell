@@ -498,12 +498,24 @@ export default function Today() {
       )}
 
       {/* ── STICKY TAB HEADER */}
-      <div className="sticky top-0 z-30 px-4 pt-10 pb-3" style={{ backgroundColor: "rgba(250,248,245,0.97)", backdropFilter: "blur(20px)", borderBottom: "1px solid var(--border)" }}>
-        <div className="max-w-3xl lg:max-w-5xl mx-auto">
-          <div className="flex gap-1 p-1 rounded-2xl" style={{ backgroundColor: "var(--ivory-dark)" }}>
+      <div className="sticky top-0 z-30" style={{ background: "#3A2C1A" }}>
+        {/* Row 1 — espresso bar with title */}
+        <div style={{ padding: "10px 16px", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
+          <div>
+            <div style={{ fontSize: 17, fontWeight: 700, color: "#F4EDDB" }}>Today</div>
+            <div style={{ fontSize: 10, color: "rgba(244,237,219,0.5)", letterSpacing: 0.5, marginTop: 1 }}>
+              {new Date().toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long" }).toUpperCase()}
+            </div>
+          </div>
+          <div style={{ display: "flex", gap: 6 }}>
             {[["today", "Today"], ["track", "Track"]].map(([key, display]) => (
-              <button key={key} onClick={() => setMainTab(key)} className="flex-1 py-2.5 rounded-xl text-sm font-semibold transition-all"
-                style={{ backgroundColor: mainTab === key ? "var(--plum)" : "transparent", color: mainTab === key ? "white" : "var(--mauve)", }}>
+              <button key={key} onClick={() => setMainTab(key)}
+                style={{
+                  padding: "7px 16px", borderRadius: 8, fontSize: 13, fontWeight: 700,
+                  border: "none", cursor: "pointer",
+                  backgroundColor: mainTab === key ? "#D4AF37" : "rgba(244,237,219,0.12)",
+                  color: mainTab === key ? "#3A2C1A" : "rgba(244,237,219,0.8)",
+                }}>
                 {display}
               </button>
             ))}

@@ -686,30 +686,32 @@ export default function Lifestyle() {
       <style>{`.lf-scroll::-webkit-scrollbar{display:none}.lf-scroll{-ms-overflow-style:none;scrollbar-width:none}@keyframes lf-spin{to{transform:rotate(360deg)}}.space-y-3>*+*{margin-top:12px}.space-y-4>*+*{margin-top:16px}.space-y-2>*+*{margin-top:8px}`}</style>
 
       {/* Sticky header */}
-      <div className="sticky top-0 z-30" style={{ backgroundColor: "rgba(250,248,245,0.97)", backdropFilter: "blur(20px)", borderBottom: "1px solid var(--border)" }}>
-        <div className="max-w-xl mx-auto px-4 pt-10 pb-3">
-          <p style={{ fontSize: "0.6rem", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.12em", color: "var(--mauve)", }}>Discover</p>
-          <h1 className="fw-display" style={{ marginBottom: 12 }}>Lifestyle</h1>
-
+      <div className="sticky top-0 z-30" style={{ background: "#3A2C1A" }}>
+        {/* Row 1 — espresso bar */}
+        <div style={{ padding: "10px 16px", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
+          <div>
+            <div style={{ fontSize: 10, color: "rgba(244,237,219,0.5)", letterSpacing: 1.5, textTransform: "uppercase", fontWeight: 700, marginBottom: 1 }}>Discover</div>
+            <div style={{ fontSize: 17, fontWeight: 700, color: "#F4EDDB" }}>Lifestyle</div>
+          </div>
+        </div>
+        {/* Row 2 — tab pills */}
+        <div style={{ background: "rgba(58,44,26,0.85)", padding: "0 16px 10px" }}>
           <div className="lf-scroll" style={{ display: "flex", gap: 6, overflowX: "auto", paddingBottom: 2 }}>
             {TABS.map(t => (
               <button key={t.id} onClick={() => setTab(t.id)}
                 aria-label={`Switch to ${t.label} tab`}
                 aria-pressed={tab === t.id}
                 style={{ flexShrink: 0, padding: "7px 16px", borderRadius: 9999, fontSize: 12, fontWeight: 600, cursor: "pointer", transition: "all 0.15s", whiteSpace: "nowrap", minHeight: 32,
-                  border: tab === t.id ? "1px solid var(--plum)" : "1px solid var(--border)",
-                  backgroundColor: tab === t.id ? PRIMARY : "transparent",
-                  color: tab === t.id ? "#F4EFE3" : "var(--mauve)" }}>
+                  border: tab === t.id ? "none" : "1px solid rgba(244,237,219,0.25)",
+                  backgroundColor: tab === t.id ? "#D4AF37" : "transparent",
+                  color: tab === t.id ? "#3A2C1A" : "rgba(244,237,219,0.75)" }}>
                 {t.label}
               </button>
             ))}
           </div>
-          {/* Filter row — Read and Listen render their content-type chips on
-              the SAME horizontal line as the category filter dropdown, all
-              sticky under the tabs. Other tabs (For You, Daily Story, Horoscope)
-              only show the category filter, or nothing if it doesn't apply. */}
+          {/* Filter row */}
           {(tab === "read" || tab === "listen") ? (
-            <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 12 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 8 }}>
               <InlineChipRow
                 tab={tab}
                 activeChip={activeChip}
@@ -723,11 +725,13 @@ export default function Lifestyle() {
               />
             </div>
           ) : tab !== "daily_story" && tab !== "horoscope" ? (
-            <CategoryFilterDropdown
-              selected={categoryFilter}
-              onChange={setCategoryFilter}
-              followedCategories={followedCategories}
-            />
+            <div style={{ marginTop: 8 }}>
+              <CategoryFilterDropdown
+                selected={categoryFilter}
+                onChange={setCategoryFilter}
+                followedCategories={followedCategories}
+              />
+            </div>
           ) : null}
         </div>
       </div>

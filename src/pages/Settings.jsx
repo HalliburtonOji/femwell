@@ -612,15 +612,12 @@ export default function Settings() {
   return (
     <div className="min-h-screen pb-28" style={{ backgroundColor: "var(--ivory)" }}>
       {/* Header */}
-      <div className="sticky top-0 z-30 px-4 pt-10 pb-3"
-        style={{ backgroundColor: "rgba(250,248,245,0.97)", backdropFilter: "blur(20px)", borderBottom: "1px solid var(--border)" }}>
-        <div className="max-w-4xl mx-auto">
-          <p style={{ fontSize: "0.6rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.14em", color: "var(--rose-dust)", }}>
-            Your account
-          </p>
-          <h1 className="fw-display" style={{ marginTop: 2 }}>
-            Settings
-          </h1>
+      <div className="sticky top-0 z-30" style={{ background: "#3A2C1A" }}>
+        <div style={{ padding: "10px 16px", display: "flex", alignItems: "center", gap: 12 }}>
+          <div>
+            <div style={{ fontSize: 10, color: "rgba(244,237,219,0.5)", letterSpacing: 1.5, textTransform: "uppercase", fontWeight: 700, marginBottom: 1 }}>Your account</div>
+            <div style={{ fontSize: 17, fontWeight: 700, color: "#F4EDDB" }}>Settings</div>
+          </div>
         </div>
       </div>
 
