@@ -1,5 +1,5 @@
-import { X, Stethoscope, Waves, Lock, BarChart2, Hash } from "lucide-react";
-import { T, UI, HAND, PRESS, Eyebrow, Hand } from "../journal/Editorial";
+import { X, Stethoscope, Waves, Lock, BarChart2, Hash, Eye } from "lucide-react";
+import { T, UI, HAND, PRESS } from "../journal/Editorial";
 
 const ACTIONS = [
   {
@@ -31,6 +31,12 @@ const ACTIONS = [
     icon: Waves,
     label: "Echo Wall",
     sub: "Share one line, anonymously",
+  },
+  {
+    id: "witness",
+    icon: Eye,
+    label: "Witness",
+    sub: "Hold space for one sister, or ask one to hold yours",
   },
 ];
 

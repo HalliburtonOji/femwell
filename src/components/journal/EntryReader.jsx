@@ -5,7 +5,7 @@
 // regresses when entries move from sticky-notes to the ledger+reader model.
 
 import { useState } from "react";
-import { Pin, PenLine, Trash2, X, Sparkles } from "lucide-react";
+import { Pin, PenLine, Trash2, X, Sparkles, Eye } from "lucide-react";
 import { T, UI, SERIF, HAND, PRESS, Eyebrow, Rule } from "./Editorial";
 import { relativeDate } from "./journalDates";
 import { TYPE_COLOUR, TYPE_LABEL } from "./JournalLedger";
@@ -41,7 +41,7 @@ function Body({ entry }) {
   return <p style={base}>{entry.text || "(no words yet)"}</p>;
 }
 
-export default function EntryReader({ entry, profile, phase, onClose, onEdit, onDelete, onPin }) {
+export default function EntryReader({ entry, profile, phase, onClose, onEdit, onDelete, onPin, onWitness }) {
   const [confirm, setConfirm] = useState(false);
   const [unpack, setUnpack] = useState(false);
   if (!entry) return null;
@@ -87,6 +87,9 @@ export default function EntryReader({ entry, profile, phase, onClose, onEdit, on
           <Action icon={Pin} label={entry.is_pinned ? "Unpin" : "Pin"} onClick={() => onPin && onPin(entry)} />
           <Action icon={PenLine} label="Edit" onClick={() => onEdit && onEdit(entry)} />
           <Action icon={Sparkles} label={unpack ? "Close" : "Unpack with Jess"} onClick={() => setUnpack((v) => !v)} />
+          {onWitness && (entry.text || "").trim() && (
+            <Action icon={Eye} label="Ask for a witness" onClick={() => onWitness(entry)} />
+          )}
           {confirm ? (
             <span style={{ display: "inline-flex", alignItems: "center", gap: 12, marginLeft: "auto" }}>
               <span style={{ fontFamily: UI, fontSize: 12, color: T.muted, fontWeight: 600 }}>Delete this entry?</span>

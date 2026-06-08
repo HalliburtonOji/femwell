@@ -16,6 +16,8 @@ import InsightTeaser from "../components/journal/InsightTeaser";
 import JournalSearch from "../components/journal/JournalSearch";
 import SealedLettersSection from "../components/journal/sealed/SealedLettersSection";
 import ShareAsEchoSheet from "../components/journal/echo/ShareAsEchoSheet";
+import AskForWitnessSheet from "../components/journal/witness/AskForWitnessSheet";
+import WitnessInbox from "../components/journal/witness/WitnessInbox";
 import JournalHubSheet from "../components/journal/JournalHubSheet";
 import { collectThreads, entriesInThread } from "../components/journal/threads";
 import JessErrorBoundary from "@/components/jess/JessErrorBoundary";
@@ -250,6 +252,9 @@ export default function Journal() {
   const [searching, setSearching] = useState(false);
   const [showShareEcho, setShowShareEcho] = useState(false);
   const [showSealedLetters, setShowSealedLetters] = useState(false);
+  const [showWitnessInbox, setShowWitnessInbox] = useState(false);
+  const [showAskWitness, setShowAskWitness] = useState(false);
+  const [witnessEntry, setWitnessEntry] = useState(null);
 
   useEffect(() => {
     (async () => {
@@ -320,6 +325,7 @@ export default function Journal() {
     if (id === "insights")        { setShowInsights(true); return; }
     if (id === "doctor")          { navigate("/DoctorExport"); return; }
     if (id === "echo")            { setShowShareEcho(true); return; }
+    if (id === "witness")         { setShowWitnessInbox(true); return; }
     if (id === "letters")         { setShowSealedLetters(true); return; }
     if (id === "threads")         { /* scroll into view below */ return; }
     if (id.startsWith("thread:")) { setThreadFilter(id.replace("thread:", "")); return; }
@@ -389,6 +395,7 @@ export default function Journal() {
         onClose={() => setReadEntry(null)}
         onEdit={handleEditFromReader}
         onDelete={handleDelete} onPin={handlePin}
+        onWitness={(entry) => { setWitnessEntry(entry); setReadEntry(null); setShowAskWitness(true); }}
       />
 
       {/* ── Echo sheet ── */}
@@ -397,6 +404,21 @@ export default function Journal() {
           user={user} profile={profile} phase={phase}
           cycleDay={cycleDay} lifeStage={profile?.life_stage || null}
           seedText="" onClose={() => setShowShareEcho(false)}
+        />
+      )}
+
+      {/* ── Witness Mode (Q3) ── */}
+      {showAskWitness && user && (
+        <AskForWitnessSheet
+          user={user} phase={phase} profile={profile} entry={witnessEntry}
+          onClose={() => { setShowAskWitness(false); setWitnessEntry(null); }}
+          onOpenInbox={() => { setShowAskWitness(false); setWitnessEntry(null); setShowWitnessInbox(true); }}
+        />
+      )}
+      {showWitnessInbox && user && (
+        <WitnessInbox
+          user={user} phase={phase} profile={profile}
+          onClose={() => setShowWitnessInbox(false)}
         />
       )}
 
