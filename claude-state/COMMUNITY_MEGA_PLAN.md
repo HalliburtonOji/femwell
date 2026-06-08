@@ -264,7 +264,7 @@ The interlock map. Direction notation: → (data/affordance flows that way). **S
 
 ## 6.3 Health / Pulse ↔ Community
 - **Health → Community** *(planned):* the **phase + life-stage anchor** (cycle day, stage) that drives Echo weighting, Witness/Twin matching, and Tier-0 cohorts comes from the Health/cycle model. A logged symptom severity (e.g. luteal "heavy" signal) feeds the **anonymised aggregate count only** — never content.
-- **Contract:** Community reads phase/stage; it **never writes** to Health, and никогда exposes an individual's Health data to peers.
+- **Contract:** Community reads phase/stage; it **never writes** to Health, and never exposes an individual's Health data to peers.
 
 ## 6.4 Planner ↔ Community
 - **Planner → Community** *(planned):* a **Circle** can be program-scoped (e.g. "Sleep Reset cohort") so a Planner program spawns a closing, time-boxed support cohort. Late-luteal Planner days can surface the gentler community copy.
