@@ -22,10 +22,15 @@ export const PHASE_MATCH_BOOST = 600;         // score points added when echo.ph
 export const LIFE_STAGE_BOOST = 150;          // smaller boost for same life stage
 export const RECENCY_HALFLIFE_MIN = 360;      // recency score halves every 6h
 
-// ── the reaction lexicon (fixed; emotional, not transactional; no free text) ──
+// ── the reaction lexicon (master plan: same · hold · hear you · saved) ────────
+// Emotional, not transactional; no free text. "same"/"hold" reuse the original
+// metoo_count/held_count fields (no data loss on existing echoes); "hearyou" and
+// "saved" use two additive Echo fields (see base44/entities/Echo.jsonc).
 export const REACTIONS = [
-  { id: "held",  label: "Held",   field: "held_count" },
-  { id: "metoo", label: "Me too", field: "metoo_count" },
+  { id: "same",    label: "Same",     field: "metoo_count"   },
+  { id: "hold",    label: "Hold",     field: "held_count"    },
+  { id: "hearyou", label: "Hear you", field: "hearyou_count" },
+  { id: "saved",   label: "Saved",    field: "saved_count"   },
 ];
 
 // ── phase cohort copy ────────────────────────────────────────────────────────

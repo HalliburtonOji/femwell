@@ -69,7 +69,10 @@ export default function ShareAsEchoSheet({
       const ah = await authorHash(user?.id);
       const seh = sourceEntryId ? await sourceEntryHash(sourceEntryId) : null;
       const c = computeCooling({ phase, cycleDay });
-      const saved = await base44.entities.Echo.create({
+      // Write through the postEcho function — it creates the row under the service
+      // identity so created_by never carries the author's user id (true anonymity).
+      const res = await base44.functions.invoke("postEcho", {
+        user_id: user?.id,
         body: scrub.line,
         author_hash: ah,
         phase: phase || "unknown",
@@ -78,10 +81,13 @@ export default function ShareAsEchoSheet({
         source_entry_hash: seh || undefined,
         live_at: c.liveAt.toISOString(),
         expires_at: c.expiresAt.toISOString(),
-        held_count: 0, metoo_count: 0, report_count: 0,
-        hidden: false, visibility: "all",
+        visibility: "all",
       });
-      if (saved?.id) rememberMine(saved.id);
+      const data = res?.data ?? res;
+      if (data?.intercept) { setStage("crisis"); return; }
+      const saved = data?.echo;
+      if (!saved?.id) throw new Error(data?.error || "no echo returned");
+      rememberMine(saved.id);
       bumpEchoesToday();
       onShared?.(saved);
       setStage("done");

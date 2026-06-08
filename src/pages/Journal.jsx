@@ -93,23 +93,25 @@ function StickyHeader({ phase, season, cycleDay, onWrite, onOpenHub }) {
   return (
     <div style={{
       position: "sticky", top: 0, zIndex: 20,
-      background: "#3A2C1A",
+      background: "rgba(244,239,227,0.97)", backdropFilter: "blur(8px)",
+      WebkitBackdropFilter: "blur(8px)",
+      borderBottom: "1px solid var(--border)",
     }}>
-      {/* Row 1 — espresso bar */}
+      {/* Row 1 — editorial bar */}
       <div style={{
         display: "flex", alignItems: "center", justifyContent: "space-between",
         padding: "10px 16px", gap: 12,
       }}>
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{
-            fontSize: 17, fontWeight: 700, color: "#F4EDDB",
+            fontSize: 18, fontWeight: 700, color: "var(--plum)",
             whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis",
           }}>
             The Journal
           </div>
           <div style={{
-            fontSize: 10, color: "rgba(244,237,219,0.5)",
-            letterSpacing: 0.5, marginTop: 1,
+            fontSize: 10, color: "var(--mauve)",
+            letterSpacing: 0.5, marginTop: 1, opacity: 0.75,
           }}>
             {phaseWord}{cycleDay ? ` · Day ${cycleDay}` : ""} · {dateLine}
           </div>
@@ -119,13 +121,13 @@ function StickyHeader({ phase, season, cycleDay, onWrite, onOpenHub }) {
           onClick={onWrite}
           aria-label="New entry"
           style={{
-            background: "#D4AF37", border: "none", borderRadius: 8,
+            background: "var(--plum)", border: "none", borderRadius: 8,
             padding: "8px 14px", cursor: "pointer",
             display: "flex", alignItems: "center", gap: 6, flexShrink: 0,
           }}
         >
-          <Feather size={15} style={{ color: "#3A2C1A" }} />
-          <span style={{ fontSize: 13, fontWeight: 700, color: "#3A2C1A", letterSpacing: 0.3 }}>
+          <Feather size={15} style={{ color: "var(--surface)" }} />
+          <span style={{ fontSize: 13, fontWeight: 700, color: "var(--surface)", letterSpacing: 0.3 }}>
             Write
           </span>
         </button>
@@ -134,22 +136,23 @@ function StickyHeader({ phase, season, cycleDay, onWrite, onOpenHub }) {
           onClick={onOpenHub}
           aria-label="Open journal menu"
           style={{
-            background: "rgba(244,237,219,0.12)", border: "1px solid rgba(244,237,219,0.22)",
+            background: "transparent", border: "1px solid var(--border)",
             borderRadius: 8, width: 36, height: 36,
             display: "flex", alignItems: "center", justifyContent: "center",
             cursor: "pointer", flexShrink: 0,
           }}
         >
-          <AlignJustify size={17} style={{ color: "#F4EDDB" }} />
+          <AlignJustify size={17} style={{ color: "var(--plum)" }} />
         </button>
       </div>
       {/* Row 2 — season strip */}
       {season && (
         <div style={{
-          background: "rgba(58,44,26,0.85)", padding: "5px 16px",
+          background: "var(--ivory)", padding: "5px 16px",
+          borderTop: "1px solid var(--border)",
           display: "flex", alignItems: "center", justifyContent: "space-between",
         }}>
-          <span style={{ fontSize: 11, color: "rgba(244,237,219,0.6)", letterSpacing: 0.5 }}>
+          <span style={{ fontSize: 11, color: "var(--mauve)", letterSpacing: 0.5 }}>
             {season.name} · {season.line}
           </span>
         </div>

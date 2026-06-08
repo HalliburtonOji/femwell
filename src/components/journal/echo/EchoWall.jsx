@@ -10,7 +10,7 @@
 // Editorial cream/ink system, Lucide icons only, no emoji, UK voice.
 
 import { useState, useEffect, useMemo, useCallback } from "react";
-import { Waves, HeartHandshake, Users, Flag, Undo2, Clock } from "lucide-react";
+import { Waves, HeartHandshake, Users, Ear, Bookmark, Flag, Undo2, Clock } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { computeCycleDay } from "@/hooks/useCycleDay";
 import {
@@ -22,7 +22,7 @@ import {
 } from "./echoAnon";
 import { REACTIONS, REPORT_AUTOHIDE_THRESHOLD, PHASE_COHORT } from "./echoConfig";
 
-const REACTION_ICON = { held: HeartHandshake, metoo: Users };
+const REACTION_ICON = { same: Users, hold: HeartHandshake, hearyou: Ear, saved: Bookmark };
 
 function liveCohortLine(echoes, viewerPhase) {
   const n = echoes.filter((e) => viewerPhase && e.phase === viewerPhase).length;
@@ -104,7 +104,14 @@ export default function EchoWall({ user, profile, phase = null, lifeStage = null
 
   const handleRetract = async (echo) => {
     setRaw((prev) => prev.filter((e) => e.id !== echo.id));
-    try { await base44.entities.Echo.delete(echo.id); forgetMine(echo.id); } catch (err) { console.error("Retract failed:", err); }
+    // Echoes are service-owned (see postEcho), so deletion goes through retractEcho,
+    // which verifies our author_hash against the row before removing it.
+    try {
+      await base44.functions.invoke("retractEcho", {
+        user_id: user?.id, echo_id: echo.id, author_hash: myHash || echo.author_hash,
+      });
+      forgetMine(echo.id);
+    } catch (err) { console.error("Retract failed:", err); }
   };
 
   // ── loading ──

@@ -52,7 +52,17 @@
     "metoo_count": {
       "type": "number",
       "default": 0,
-      "description": "Number of users who tapped 'Me too'"
+      "description": "Number of users who tapped 'Same' (formerly 'Me too')"
+    },
+    "hearyou_count": {
+      "type": "number",
+      "default": 0,
+      "description": "Number of users who tapped 'Hear you'"
+    },
+    "saved_count": {
+      "type": "number",
+      "default": 0,
+      "description": "Number of users who tapped 'Saved'"
     },
     "report_count": {
       "type": "number",
