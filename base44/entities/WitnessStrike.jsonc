@@ -1,0 +1,57 @@
+{
+  "name": "WitnessStrike",
+  "type": "object",
+  "properties": {
+    "receiver_hash": {
+      "type": "string",
+      "description": "Double-hashed receiver token the strike counts against — never joined to a user"
+    },
+    "request_ref": {
+      "type": "string",
+      "description": "Id/hash of the WitnessRequest that triggered the strike (audit only; no identity join)"
+    },
+    "reason": {
+      "type": "string",
+      "enum": [
+        "reported",
+        "charter_breach",
+        "capture_attempt",
+        "ignored_repeat",
+        "other"
+      ],
+      "default": "other",
+      "description": "Why the strike was issued"
+    },
+    "struck_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When the strike was recorded"
+    },
+    "active": {
+      "type": "boolean",
+      "default": true,
+      "description": "Whether this strike still counts toward the 3-strike removal"
+    },
+    "expires_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Optional decay point after which the strike stops counting"
+    }
+  },
+  "required": [
+    "receiver_hash",
+    "struck_at"
+  ],
+  "indexes": [
+    {
+      "fields": [
+        "receiver_hash"
+      ]
+    },
+    {
+      "fields": [
+        "active"
+      ]
+    }
+  ]
+}
