@@ -44,6 +44,12 @@ End-to-end QA/security audit before Community. `claude-state/JOURNAL_AUDIT.html`
 - **What's solid:** anonymity (asServiceRole, namespaced hashes), ZK FWWT2 keyless-at-rest + FWWT1 compat, crisis on Echo+Witness, real empty/loading/error states on most surfaces, token kit, zero emoji, on-device privacy framing.
 - **NEXT (Halli's call):** fix the 3 Blockers + the High list before Community. The #1 is B3 — live-probe the entity permissions; if open, lock them server-side. Halli to also do his own live pass.
 
+### AUDIT FIX — BATCH 1 (the 3 Blockers) — DONE + VERIFIED + PUSHED (commit `ddeb9b4`, pending deploy)
+- **B3 entity lock:** added an RLS deny-block (service-role only) to `WitnessRequest`/`WitnessStrike`/`TwinPair`/`TwinEntry` .jsonc — Base44 supports `rls` in-repo (per IngestErrorLog). Client never reads these directly (all via asServiceRole functions) so app behaviour is unchanged. **HALLI DEPLOY-VERIFY:** (a) witness/twin functions still succeed, (b) re-run the B3 probe — direct client GET on each entity now **403**. *Echo left public-read (fields non-sensitive); Echo WRITES (react/report/delete) still client-direct → flagged follow-up.*
+- **B1 Phase Twin crisis:** client `crisisCheck` before `postTwinEntry` (→ UK-resources crisis view, never delivered) + server CRISIS_PATTERNS mirror in postTwinEntry. The one peer surface that had none.
+- **B2 ZK dead-end:** keypending re-claim loop now bounded (~3 min / expires_at) → terminal "Still sealed" state with a way out, instead of polling forever.
+- Verified webkit: Twin crisis → crisis view + not delivered; B2 terminal strings shipped; build green, lint clean, postTwinEntry transpiles, 4 entities parse. **Batches 2-4 (8 High, 11 Med, 6 Low, 4 Polish) next.**
+
 ## PLAN-DOC INDEX (the full plans live in these — this file points to them)
 | Doc | What it is | Status |
 |---|---|---|
