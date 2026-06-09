@@ -1,5 +1,6 @@
-import { X, Stethoscope, Waves, Lock, BarChart2, Hash, Eye } from "lucide-react";
+import { X, Stethoscope, Waves, Lock, BarChart2, Hash, Eye, Users } from "lucide-react";
 import { T, UI, HAND, PRESS } from "../journal/Editorial";
+import { TWIN_ENABLED } from "../journal/twin/twinConfig";
 
 const ACTIONS = [
   {
@@ -38,6 +39,14 @@ const ACTIONS = [
     label: "Witness",
     sub: "Hold space for one sister, or ask one to hold yours",
   },
+  // Phase Twin (Q4) — only appears once its entities + functions are deployed
+  // and TWIN_ENABLED is flipped on (default off, so live stays clean).
+  ...(TWIN_ENABLED ? [{
+    id: "twin",
+    icon: Users,
+    label: "Phase Twin",
+    sub: "Twelve days, paired with one woman in your phase",
+  }] : []),
 ];
 
 export default function JournalHubSheet({ open, onClose, onSelect, threads = [] }) {

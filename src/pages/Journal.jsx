@@ -20,6 +20,7 @@ import SealedLetterCompose from "../components/journal/sealed/SealedLetterCompos
 import ShareAsEchoSheet from "../components/journal/echo/ShareAsEchoSheet";
 import AskForWitnessSheet from "../components/journal/witness/AskForWitnessSheet";
 import WitnessInbox from "../components/journal/witness/WitnessInbox";
+import PhaseTwin from "../components/journal/twin/PhaseTwin";
 import JournalHubSheet from "../components/journal/JournalHubSheet";
 import { collectThreads, entriesInThread } from "../components/journal/threads";
 import JessErrorBoundary from "@/components/jess/JessErrorBoundary";
@@ -257,6 +258,7 @@ export default function Journal() {
   const [showWitnessInbox, setShowWitnessInbox] = useState(false);
   const [showAskWitness, setShowAskWitness] = useState(false);
   const [witnessEntry, setWitnessEntry] = useState(null);
+  const [showTwin, setShowTwin] = useState(false);   // Phase Twin (Q4, flag-gated)
   // "One entry, four lives" — the unified chooser + its echo/seal seeds.
   const [chooseEntry, setChooseEntry] = useState(null);   // entry whose fate is being chosen
   const [echoSeed, setEchoSeed] = useState(null);         // { text, sourceId } seeded into the Echo sheet
@@ -336,6 +338,7 @@ export default function Journal() {
     if (id === "doctor")          { navigate("/DoctorExport"); return; }
     if (id === "echo")            { setShowShareEcho(true); return; }
     if (id === "witness")         { setShowWitnessInbox(true); return; }
+    if (id === "twin")            { setShowTwin(true); return; }
     if (id === "letters")         { setShowSealedLetters(true); return; }
     if (id === "threads")         { /* scroll into view below */ return; }
     if (id.startsWith("thread:")) { setThreadFilter(id.replace("thread:", "")); return; }
@@ -444,6 +447,12 @@ export default function Journal() {
           user={user} phase={phase} profile={profile} entry={witnessEntry}
           onClose={() => { setShowAskWitness(false); setWitnessEntry(null); }}
           onOpenInbox={() => { setShowAskWitness(false); setWitnessEntry(null); setShowWitnessInbox(true); }}
+        />
+      )}
+      {showTwin && user && (
+        <PhaseTwin
+          user={user} phase={phase} profile={profile}
+          onClose={() => setShowTwin(false)}
         />
       )}
       {showWitnessInbox && user && (

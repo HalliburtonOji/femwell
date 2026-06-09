@@ -1,0 +1,35 @@
+{
+  // Phase Twin daily answer. One per (pair_id, author_hash, day). The twin's
+  // answer is "blurred until you write": getTwinDay only releases the OTHER
+  // member's body for a day once the caller has posted their own for that day —
+  // the gate is enforced server-side, not just in the UI. Hashes only; service-role.
+  "name": "TwinEntry",
+  "type": "object",
+  "properties": {
+    "pair_id": {
+      "type": "string",
+      "description": "The TwinPair this answer belongs to."
+    },
+    "author_hash": {
+      "type": "string",
+      "description": "Which member wrote it — matches the pair's a_hash or b_hash. Never a raw user id."
+    },
+    "day": {
+      "type": "number",
+      "description": "Day of the 12 (1..12) this answer is for."
+    },
+    "prompt_key": {
+      "type": "string",
+      "description": "Index/key of the shared daily prompt this answers (prompts live in twinConfig)."
+    },
+    "body": {
+      "type": "string",
+      "description": "The member's answer text. Shared mutually with the twin (anonymous), so stored as text under the service identity — not E2E (a future hardening). Capped client-side."
+    }
+  },
+  "required": ["pair_id", "author_hash", "day"],
+  "indexes": [
+    { "fields": ["pair_id"] },
+    { "fields": ["author_hash"] }
+  ]
+}

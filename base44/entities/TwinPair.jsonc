@@ -1,0 +1,60 @@
+{
+  // Phase Twin (Q4) — a 12-day anonymous pairing between two women in the same
+  // cycle phase. Hashes only; all writes via asServiceRole so created_by is the
+  // service, never a member. Mirrors the Witness anonymity model.
+  "name": "TwinPair",
+  "type": "object",
+  "properties": {
+    "a_hash": {
+      "type": "string",
+      "description": "Device-derived twin token of the member who opened the pairing (separate secret from Echo/Witness). Never a raw user id."
+    },
+    "b_hash": {
+      "type": "string",
+      "description": "Twin token of the matched second member; empty until the pairing engine fills it."
+    },
+    "match_phase": {
+      "type": "string",
+      "enum": ["menstrual", "follicular", "ovulatory", "luteal", "unknown"],
+      "default": "unknown",
+      "description": "Cycle phase both members share (the pairing criterion)."
+    },
+    "match_life_stage": {
+      "type": "string",
+      "description": "Life stage to match on (optional pairing criterion), e.g. ttc, pregnant, menopause."
+    },
+    "match_language": {
+      "type": "string",
+      "default": "en-GB",
+      "description": "Language both members share."
+    },
+    "status": {
+      "type": "string",
+      "enum": ["pending", "active", "archived", "abandoned"],
+      "default": "pending",
+      "description": "pending = waiting for a second member; active = paired, 12 days running; archived = day 12 reached; abandoned = expired before pairing."
+    },
+    "start_date": {
+      "type": "string",
+      "format": "date",
+      "description": "Day 1 of the 12 — set when the second member joins (status -> active)."
+    },
+    "archive_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "start_date + 12 days; after this the pairing archives."
+    },
+    "last_active_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Last time either member posted — drives quiet-abandon cleanup."
+    }
+  },
+  "required": ["a_hash", "status"],
+  "indexes": [
+    { "fields": ["a_hash"] },
+    { "fields": ["b_hash"] },
+    { "fields": ["status"] },
+    { "fields": ["match_phase"] }
+  ]
+}
