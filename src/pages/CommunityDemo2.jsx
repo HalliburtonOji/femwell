@@ -1,309 +1,278 @@
-// CommunityDemo2 — "Witness Mode" (Community design demo · /Ideas → Community Demos)
+// CommunityDemo2 — "The Lounge + Echo" (Community design demo · /Ideas → Community Demos)
 // ─────────────────────────────────────────────────────────────────────────────
-// "Read this. Hold it." One entry handed to one matched sister. Four fixed
-// responses or pass silently. No thread, no chat, no screenshot. The writer can
-// cancel before she reads. The receiver never uses her own words.
+// The anonymous warm vent / "AIBU" / spill-it room — the daily-engagement engine.
+// WHOLE-LIFE, not clinical: career, friendship, dating, money, small joys, hot-takes.
+// Kindness-by-design: one-way reactions (held · me too · hear you · saved), NO scores,
+// no handles, no leaderboards. Compose runs a mock crisis-lexicon scan → if it reads
+// as crisis it NEVER posts and routes to a UK-resources intercept card instead. A small
+// Echo Wall strip shows the bridge: a vent can become one scrubbed one-line echo.
 //
-// Captures, from COMMUNITY_BUILD_SPEC §2.C: writer toggle + match (2–4h) ·
-// the Witness dock (receive one) · receiver view with the 4 fixed Fraunces/Cormorant
-// lines + pass-silently · the held-3 gate ("witnessed 2 times, one more to
-// unlock") · the 6-rail charter. The dark plum "trust-ink" gradient is reserved
-// for these fragile surfaces (never an ordinary card).
-//
-// Self-contained, mock data only, no entities. UK voice, no emoji, Lucide only.
+// From WHOLE_LIFE_REBALANCE.html (The Lounge) + COMMUNITY_MEGA_PLAN §0.5 (D).
+// Self-contained, mock data + useState only — no base44/entities. UK voice, no emoji,
+// Lucide/SVG only. Palette via T; primary buttons = ink bg + cream text (no gold/espresso).
 import { useState } from "react";
 import {
-  BookOpen, Send, Lock, EyeOff, Check, ArrowRight, ShieldCheck, Heart,
+  HeartHandshake, Users, Ear, Bookmark, Sparkles, PenLine, ShieldAlert,
+  Phone, Check, X, Waves, Heart,
 } from "lucide-react";
 import {
-  T, SERIF, UI, Eyebrow, Script, InkFilter, useEditorialFonts, PAPER_BG,
+  T, SERIF, UI, Eyebrow, Rule, Script, Hand, InkFilter, EditorialFooter,
+  useEditorialFonts, PAPER_BG,
 } from "@/components/journal/Editorial";
 
-// the dark plum trust-ink gradient (reserved for fragile surfaces, per the craft bar)
-const PLUM = "linear-gradient(165deg, #2E1C2A 0%, #3A2233 55%, #241420 100%)";
-const PLUM_INK = "#F0E4EC";
-const PLUM_SOFT = "rgba(240,228,236,0.62)";
+const CREAM = "#F4EFE3"; // cream text on ink buttons
 
-const FIXED_RESPONSES = [
-  "I'm holding this with you.",
-  "Me too.",
-  "You're not alone in this.",
-  "I hear you.",
+// ── the vent feed — whole-life, NOT health-only (silly → serious) ─────────────
+const SEED = [
+  { id: "v1", era: "career", body: "Told my manager no for the first time today. Out loud. The ceiling did not cave in. I think I forgot you were allowed to do that.", crest: true,  held: 22, metoo: 9,  hear: 14, saved: 6 },
+  { id: "v2", era: "friendship", body: "My oldest friend went quiet for three weeks and I cannot tell if I have done something or if she is just drowning in her own week. Hate the not-knowing.", crest: false, held: 11, metoo: 18, hear: 7,  saved: 2 },
+  { id: "v3", era: "dating", body: "He texted back after nine days like nothing happened. Reader, I did not reply with the paragraph I wrote at 1am. Growth, possibly.", crest: false, held: 8,  metoo: 13, hear: 5,  saved: 3 },
+  { id: "v4", era: "a small joy", body: "Found a tenner in a coat I had not worn since spring. Bought myself the good coffee. Nobody can take this from me.", crest: true,  held: 31, metoo: 6,  hear: 4,  saved: 9 },
+  { id: "v5", era: "money", body: "Opened the banking app for the first time in a fortnight and it was not as bad as the story in my head. Still not great. But the story was worse.", crest: false, held: 19, metoo: 21, hear: 11, saved: 8 },
+  { id: "v6", era: null, body: "Is it just me, or is 'let's circle back' the most threatening sentence in the English language.", crest: false, held: 27, metoo: 24, hear: 3,  saved: 4 },
 ];
 
-const CHARTER = [
-  ["Anonymous", "She sees the entry, your phase and your life stage — never a handle, a photo, or a region."],
-  ["One-shot", "One read, one fixed response. No DM, no follow, no re-view. Then it seals again."],
-  ["Cancel before she reads", "A two-hour window. Pull it back and it re-seals — she never knew."],
-  ["Not for crisis", "Anything heavy routes to Panic Mode and trained resources, never to a peer."],
-  ["No names or places", "If Jess detects an identifying detail, she asks you to edit before it sends."],
-  ["You choose her shape", "Default is your phase and life stage. Tighten or loosen the match."],
+// one-way kind reactions — NO competitive counts shown, no scoreboard
+const REACTIONS = [
+  { key: "held",  icon: HeartHandshake, label: "held" },
+  { key: "metoo", icon: Users,          label: "me too" },
+  { key: "hear",  icon: Ear,            label: "hear you" },
+  { key: "saved", icon: Bookmark,       label: "saved" },
 ];
 
-const ENTRY = "I keep telling everyone I'm fine. I am the one who holds it together. Tonight I just wanted one person to know that holding it together is heavy, and I am tired, and I don't actually need them to fix anything.";
+// one-line scrubbed echoes that fade (the bridge from a vent)
+const ECHOES = [
+  "Said the quieter no today. It cost me nothing I'll miss.",
+  "The story in my head was worse than the bank app.",
+  "Growth looks like the paragraph I didn't send.",
+];
+
+// a deliberately broad mock crisis lexicon (mirrors echoConfig.CRISIS_PATTERNS shape)
+const CRISIS = ["end it", "no point", "hurt myself", "kill myself", "can't go on", "worthless", "better off without me"];
 
 export default function CommunityDemo2() {
   useEditorialFonts();
-  // demo navigation across the three faces of the feature
-  const [view, setView] = useState("writer");        // writer · dock · receiver
-  const [held, setHeld] = useState(2);               // held-3 gate progress
+  const [feed, setFeed] = useState(SEED);
+  const [reacted, setReacted] = useState({});       // { [id]: { held:true, ... } }
+  const [composeOpen, setComposeOpen] = useState(false);
+  const [echoes, setEchoes] = useState(ECHOES);
+
+  const react = (id, key) => {
+    if (reacted[id]?.[key]) return;                  // one-way, on-device dedup
+    setReacted((r) => ({ ...r, [id]: { ...r[id], [key]: true } }));
+  };
 
   return (
     <div style={{ ...PAPER_BG, minHeight: "100vh", fontFamily: SERIF, color: T.ink, paddingBottom: 60 }}>
       <InkFilter />
-      <DemoBanner label="Community · Witness Mode — design demo · mock data" />
+      <DemoBanner label="Community · The Lounge + Echo — design demo · mock data" />
 
-      <div style={{ maxWidth: 600, margin: "0 auto", padding: "26px 20px 0" }}>
+      <div style={{ maxWidth: 430, margin: "0 auto", padding: "24px 18px 0" }}>
+        {/* masthead */}
         <header style={{ textAlign: "center", marginBottom: 16 }}>
-          <Eyebrow mb={10} color={T.muted}>Witness Mode</Eyebrow>
-          <Script size={50} carve>Read this. Hold it.</Script>
-          <p style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 15, color: T.inkSoft, margin: "10px auto 0", maxWidth: 430, lineHeight: 1.5 }}>
-            One entry, handed to one matched sister. Four ways to answer, or pass in
-            silence. Never a conversation.
-          </p>
+          <Eyebrow mb={9} color={T.muted}>The Lounge · anonymous · 18+</Eyebrow>
+          <Script size={54} carve>The Lounge</Script>
+          <Hand size={19} color={T.inkSoft} style={{ display: "block", margin: "10px auto 0", maxWidth: 350 }}>
+            spill it — silly to serious, kind, no names, no judgment
+          </Hand>
         </header>
 
-        {/* demo face switcher */}
-        <div style={{ display: "flex", gap: 6, justifyContent: "center", marginBottom: 20 }}>
-          {[["writer", "Writer"], ["dock", "Dock"], ["receiver", "Receiver"]].map(([id, lbl]) => (
-            <button key={id} onClick={() => setView(id)} style={faceBtn(view === id)}>{lbl}</button>
-          ))}
+        {/* be-kind norm line */}
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, padding: "9px 13px", margin: "0 0 16px", background: T.paperHi, border: `1px solid ${T.paperDeep}`, borderRadius: 12 }}>
+          <Heart size={13} style={{ color: T.crimson }} />
+          <span style={{ fontFamily: UI, fontSize: 11.5, color: T.inkSoft, letterSpacing: 0.2 }}>
+            <strong style={{ color: T.ink }}>Be kind, be you.</strong> No names go out. Jess holds the door.
+          </span>
         </div>
 
-        {view === "writer"   && <WriterFace held={held} />}
-        {view === "dock"     && <DockFace onOpen={() => setView("receiver")} />}
-        {view === "receiver" && <ReceiverFace onDone={() => { setHeld((h) => Math.min(3, h + 1)); setView("dock"); }} />}
-      </div>
-    </div>
-  );
-}
-
-// ── Writer: toggle → matching → matched, + the held-3 gate ───────────────────
-function WriterFace({ held }) {
-  const [stage, setStage] = useState("toggle");   // toggle · charter · matching · matched · cancelled
-  const unlocked = held >= 3;
-
-  return (
-    <div>
-      {/* the entry being handed over (reading engine — the page is the screen) */}
-      <article style={{ background: T.paperHi, border: `1px solid ${T.paperDeep}`, borderRadius: 16, padding: "20px 20px", marginBottom: 16 }}>
-        <Eyebrow mb={9} color={T.muted}>From your Journal · luteal d19</Eyebrow>
-        <p style={{ fontFamily: SERIF, fontSize: 16.5, lineHeight: 1.66, color: T.ink, margin: 0 }}>{ENTRY}</p>
-      </article>
-
-      {/* held-3 pathway card */}
-      <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "13px 15px", border: `1px solid ${T.paperDeep}`, borderRadius: 13, marginBottom: 16, background: T.paperHi }}>
-        <div style={{ display: "flex", gap: 5 }}>
-          {[0, 1, 2].map((i) => (
-            <span key={i} style={{ width: 9, height: 9, borderRadius: 999, background: i < held ? T.gold : T.paperDeep }} />
-          ))}
-        </div>
-        <span style={{ fontFamily: UI, fontSize: 12, color: T.inkSoft, lineHeight: 1.45 }}>
-          {unlocked
-            ? "You can hold someone — you've been held three times."
-            : `You can hold someone when you've been held. Witnessed ${held} times — one more to unlock.`}
-        </span>
-      </div>
-
-      {stage === "toggle" && (
-        <PlumCard>
-          <div style={{ display: "flex", alignItems: "center", gap: 9, marginBottom: 10 }}>
-            <Send size={18} color={T.gold} />
-            <span style={{ fontFamily: UI, fontSize: 11, fontWeight: 800, letterSpacing: 1.4, textTransform: "uppercase", color: PLUM_SOFT }}>Want one sister to witness this?</span>
-          </div>
-          <div style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 17, color: PLUM_INK, lineHeight: 1.5, marginBottom: 16 }}>
-            Sent to one witness · matched in the next 2–4 hours · no handle exchanged ·
-            you can cancel before it's read.
-          </div>
-          <button onClick={() => setStage("charter")} style={plumBtn}>
-            Send to one witness <ArrowRight size={15} />
-          </button>
-        </PlumCard>
-      )}
-
-      {stage === "charter" && <Charter onAgree={() => setStage("matching")} side="writer" />}
-
-      {stage === "matching" && (
-        <PlumCard>
-          <div style={{ textAlign: "center", padding: "8px 0 4px" }}>
-            <Pulse />
-            <div style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 18, color: PLUM_INK, marginTop: 14 }}>A sister is being matched…</div>
-            <div style={{ fontFamily: UI, fontSize: 12, color: PLUM_SOFT, marginTop: 8, lineHeight: 1.5 }}>
-              Same phase, same life stage. No profile is read. No handle is exchanged.
-            </div>
-            <button onClick={() => setStage("matched")} style={{ ...plumBtn, margin: "16px auto 0" }}>Skip the wait (demo)</button>
-          </div>
-        </PlumCard>
-      )}
-
-      {stage === "matched" && (
-        <PlumCard>
-          <div style={{ display: "flex", alignItems: "center", gap: 9, marginBottom: 10 }}>
-            <ShieldCheck size={18} color={T.gold} />
-            <span style={{ fontFamily: UI, fontSize: 11, fontWeight: 800, letterSpacing: 1.4, textTransform: "uppercase", color: PLUM_SOFT }}>Held</span>
-          </div>
-          <div style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 17, color: PLUM_INK, lineHeight: 1.5, marginBottom: 16 }}>
-            One sister is holding your entry now. You'll see only her chosen line — never
-            her name. Cancel any time in the next two hours.
-          </div>
-          <div style={{ display: "flex", gap: 9 }}>
-            <button onClick={() => setStage("cancelled")} style={{ ...plumBtn, background: "transparent", color: PLUM_INK, border: `1px solid ${PLUM_SOFT}` }}>Cancel — re-seal it</button>
-          </div>
-        </PlumCard>
-      )}
-
-      {stage === "cancelled" && (
-        <PlumCard>
-          <div style={{ display: "flex", alignItems: "center", gap: 9 }}>
-            <Lock size={17} color={T.gold} />
-            <div style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 16.5, color: PLUM_INK, lineHeight: 1.5 }}>
-              Re-sealed. She never knew. It's back in your Journal, under your lock.
-            </div>
-          </div>
-          <button onClick={() => setStage("toggle")} style={{ ...plumBtn, marginTop: 14 }}>Start over (demo)</button>
-        </PlumCard>
-      )}
-    </div>
-  );
-}
-
-// ── Dock: receive one ────────────────────────────────────────────────────────
-function DockFace({ onOpen }) {
-  return (
-    <PlumCard>
-      <div style={{ display: "flex", alignItems: "center", gap: 9, marginBottom: 12 }}>
-        <Heart size={18} color={T.gold} />
-        <span style={{ fontFamily: UI, fontSize: 11, fontWeight: 800, letterSpacing: 1.4, textTransform: "uppercase", color: PLUM_SOFT }}>A sister shared once</span>
-      </div>
-      <div style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 19, color: PLUM_INK, lineHeight: 1.5, marginBottom: 6 }}>
-        Will you read one thing, once?
-      </div>
-      <div style={{ fontFamily: UI, fontSize: 12.5, color: PLUM_SOFT, lineHeight: 1.55, marginBottom: 18 }}>
-        She's in your phase and life stage. One read, one line back — or pass in silence.
-        No thread opens. Nothing can be copied.
-      </div>
-      <button onClick={onOpen} style={plumBtn}><BookOpen size={15} /> Read it</button>
-      <div style={{ fontFamily: UI, fontSize: 11, color: PLUM_SOFT, marginTop: 14, display: "flex", alignItems: "center", gap: 6 }}>
-        <EyeOff size={12} /> Witness Mode is a dock, not a page — receive one, be one.
-      </div>
-    </PlumCard>
-  );
-}
-
-// ── Receiver: locked entry + 4 fixed lines + pass silently ───────────────────
-function ReceiverFace({ onDone }) {
-  const [chosen, setChosen] = useState(null);
-  const [sealed, setSealed] = useState(false);
-
-  if (sealed) {
-    return (
-      <PlumCard>
-        <div style={{ textAlign: "center", padding: "6px 0" }}>
-          <Lock size={22} color={T.gold} />
-          <div style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 18, color: PLUM_INK, lineHeight: 1.5, margin: "12px 0 4px" }}>
-            {chosen ? "Your line was passed to her. The entry has sealed again." : "You passed in silence. She won't know you read it."}
-          </div>
-          <div style={{ fontFamily: UI, fontSize: 12, color: PLUM_SOFT, marginTop: 8 }}>It leaves no history, on either side.</div>
-          <button onClick={onDone} style={{ ...plumBtn, margin: "16px auto 0" }}>Done</button>
-        </div>
-      </PlumCard>
-    );
-  }
-
-  return (
-    <div>
-      {/* no-copy locked entry */}
-      <article style={{ position: "relative", background: PLUM, color: PLUM_INK, border: "1px solid rgba(240,228,236,0.14)", borderRadius: 16, padding: "20px 20px 16px", marginBottom: 16, userSelect: "none" }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 7, marginBottom: 11 }}>
-          <Lock size={13} color={T.gold} />
-          <span style={{ fontFamily: UI, fontSize: 10, fontWeight: 800, letterSpacing: 1.3, textTransform: "uppercase", color: PLUM_SOFT }}>One read · no copy · no screenshot · luteal · reproductive</span>
-        </div>
-        <p style={{ fontFamily: SERIF, fontSize: 17, lineHeight: 1.66, margin: 0 }}>{ENTRY}</p>
-      </article>
-
-      <div style={{ fontFamily: UI, fontSize: 11, fontWeight: 800, letterSpacing: 1.3, textTransform: "uppercase", color: T.muted, margin: "0 0 11px", textAlign: "center" }}>
-        Choose one line — never your own words
-      </div>
-      <div style={{ display: "flex", flexDirection: "column", gap: 9, marginBottom: 14 }}>
-        {FIXED_RESPONSES.map((r) => (
-          <button key={r} onClick={() => setChosen(r)} style={{
-            textAlign: "left", padding: "14px 16px", borderRadius: 13, cursor: "pointer",
-            background: chosen === r ? `${T.gold}1F` : T.paperHi,
-            border: `1px solid ${chosen === r ? T.gold : T.paperDeep}`,
-            fontFamily: SERIF, fontStyle: "italic", fontSize: 16.5, color: T.ink,
-            display: "flex", alignItems: "center", gap: 10,
-          }}>
-            {chosen === r ? <Check size={16} color={T.gold} /> : <span style={{ width: 16 }} />}
-            {r}
-          </button>
-        ))}
-      </div>
-      <div style={{ display: "flex", gap: 9 }}>
-        <button onClick={() => { setChosen(null); setSealed(true); }} style={{ ...faceBtn(false), flex: 1, padding: "12px 0" }}>Pass silently</button>
-        <button onClick={() => setSealed(true)} disabled={!chosen} style={{ ...darkBtn, flex: 2, justifyContent: "center", opacity: chosen ? 1 : 0.4 }}>
-          <Send size={14} /> Send this line
+        {/* compose affordance */}
+        <button onClick={() => setComposeOpen(true)} style={{ ...pillBtn(true), width: "100%", justifyContent: "center", padding: "13px 0", marginBottom: 8 }}>
+          <PenLine size={15} /> Say it here — Jess keeps it anonymous
         </button>
+
+        {/* Echo Wall strip — the bridge: a vent can become one scrubbed echo */}
+        <section style={{ border: `1px dashed ${T.paperDeep}`, borderRadius: 14, padding: "13px 15px 14px", margin: "8px 0 20px", background: "transparent" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 7, marginBottom: 9 }}>
+            <Waves size={14} color={T.gold} />
+            <span style={{ fontFamily: UI, fontSize: 10, fontWeight: 800, letterSpacing: 1.3, textTransform: "uppercase", color: T.muted }}>
+              The Echo Wall · one-line, scrubbed, fading
+            </span>
+          </div>
+          {echoes.map((e, i) => (
+            <div key={i} style={{ display: "flex", gap: 8, alignItems: "flex-start", padding: "5px 0", opacity: 1 - i * 0.22 }}>
+              <span style={{ width: 4, height: 4, borderRadius: 999, background: T.gold, marginTop: 11, flexShrink: 0 }} />
+              <Hand size={18} color={T.inkSoft}>{e}</Hand>
+            </div>
+          ))}
+          <div style={{ fontFamily: UI, fontSize: 10.5, color: T.muted, fontStyle: "italic", marginTop: 7 }}>
+            A vent can leave one line here — names stripped, gone in 48h.
+          </div>
+        </section>
+
+        {/* the vent feed */}
+        {feed.map((v) => (
+          <VentCard key={v.id} v={v} reacted={reacted[v.id] || {}} onReact={react} />
+        ))}
+
+        <div style={{ marginTop: 28 }}><EditorialFooter /></div>
       </div>
+
+      {composeOpen && (
+        <Compose
+          onClose={() => setComposeOpen(false)}
+          onPost={(body) => {
+            setFeed((f) => [{ id: "n" + Date.now(), era: "just now", body, crest: false, held: 0, metoo: 0, hear: 0, saved: 0 }, ...f]);
+            setComposeOpen(false);
+          }}
+          onEcho={(line) => { setEchoes((e) => [line, ...e].slice(0, 4)); }}
+        />
+      )}
     </div>
   );
 }
 
-// ── the 6-rail charter ───────────────────────────────────────────────────────
-function Charter({ onAgree }) {
+// ── one vent ─────────────────────────────────────────────────────────────────
+function VentCard({ v, reacted, onReact }) {
   return (
-    <PlumCard>
-      <Eyebrow mb={12} color={T.gold}>The witness charter · read once</Eyebrow>
-      <div style={{ display: "flex", flexDirection: "column", gap: 13 }}>
-        {CHARTER.map(([h, b]) => (
-          <div key={h} style={{ display: "flex", gap: 11 }}>
-            <ShieldCheck size={16} color={T.gold} style={{ flexShrink: 0, marginTop: 3 }} />
-            <div>
-              <div style={{ fontFamily: UI, fontSize: 13, fontWeight: 700, color: PLUM_INK }}>{h}</div>
-              <div style={{ fontFamily: UI, fontSize: 12, color: PLUM_SOFT, lineHeight: 1.5, marginTop: 2 }}>{b}</div>
-            </div>
-          </div>
-        ))}
+    <article style={{ background: T.paperHi, border: `1px solid ${T.paperDeep}`, borderRadius: 16, padding: "16px 17px 13px", marginBottom: 13 }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10 }}>
+        {v.era && (
+          <span style={{ display: "inline-flex", alignItems: "center", padding: "2px 9px", borderRadius: 999, background: `${T.gold}1A`, fontFamily: UI, fontSize: 9.5, fontWeight: 800, letterSpacing: 1, textTransform: "uppercase", color: T.gold }}>
+            {v.era}
+          </span>
+        )}
+        {v.crest && (
+          <span title="A kindness crest — this one drew especially kind holds" style={{ display: "inline-flex", alignItems: "center", gap: 4, marginLeft: "auto", fontFamily: UI, fontSize: 9.5, fontWeight: 700, letterSpacing: 0.6, color: T.sage }}>
+            <Sparkles size={12} /> kindness crest
+          </span>
+        )}
       </div>
-      <button onClick={onAgree} style={{ ...plumBtn, marginTop: 18 }}>I understand — match me <ArrowRight size={15} /></button>
-    </PlumCard>
+
+      <Hand size={22} carve style={{ marginBottom: 12 }}>{v.body}</Hand>
+      <Rule c={T.paperDeep} mb={11} />
+
+      {/* kind reactions — one-way, NO counts, no scoreboard */}
+      <div style={{ display: "flex", alignItems: "center", gap: 7, flexWrap: "wrap" }}>
+        {REACTIONS.map(({ key, icon: Icon, label }) => {
+          const on = !!reacted[key];
+          return (
+            <button key={key} onClick={() => onReact(v.id, key)} disabled={on} style={{
+              display: "inline-flex", alignItems: "center", gap: 5, padding: "5px 10px", borderRadius: 999,
+              background: on ? `${T.gold}22` : "transparent", border: `1px solid ${on ? T.gold : T.paperDeep}`,
+              color: on ? T.gold : T.inkSoft, fontFamily: UI, fontSize: 11.5, fontWeight: 600,
+              cursor: on ? "default" : "pointer", letterSpacing: 0.2,
+            }}>
+              <Icon size={13} /> {label}{on && <Check size={11} />}
+            </button>
+          );
+        })}
+      </div>
+    </article>
+  );
+}
+
+// ── compose → mock crisis scan → post OR intercept ───────────────────────────
+function Compose({ onClose, onPost, onEcho }) {
+  const [raw, setRaw] = useState("");
+  const [stage, setStage] = useState("write");      // write · crisis · posted
+  const [alsoEcho, setAlsoEcho] = useState(true);
+
+  const submit = () => {
+    const lc = raw.toLowerCase();
+    if (CRISIS.some((p) => lc.includes(p))) { setStage("crisis"); return; }   // NEVER posts
+    if (alsoEcho) {
+      // demo scrub → one ≤120-char line, names softened, weekday stripped
+      let line = raw.replace(/\b(on )?(mon|tues|wednes|thurs|fri|satur|sun)day\b/gi, "")
+        .replace(/\b([A-Z][a-z]{2,})\b/g, (m) => (["The", "I", "My", "It", "She", "He", "We", "Reader"].includes(m) ? m : "someone"))
+        .replace(/\s+/g, " ").trim().slice(0, 120);
+      if (line) onEcho(line);
+    }
+    onPost(raw.trim());
+    setStage("posted");
+  };
+
+  return (
+    <Sheet onClose={onClose}>
+      {stage === "crisis" ? (
+        <div>
+          <div style={{ display: "flex", alignItems: "center", gap: 9, marginBottom: 12 }}>
+            <ShieldAlert size={20} color={T.crimson} />
+            <Eyebrow color={T.crimson}>This one isn't for the room</Eyebrow>
+          </div>
+          <Script size={30} carve>You deserve more than the Lounge can hold.</Script>
+          <p style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 14.5, color: T.inkSoft, margin: "10px 0 16px", lineHeight: 1.55 }}>
+            Not less — more. The room is for venting, not for this. Nothing was posted; this
+            stays with you. People are waiting to talk, day or night.
+          </p>
+          {[["Samaritans", "116 123"], ["NHS", "111"], ["Shout", "text 85258"], ["Mind", "0300 123 3393"]].map(([n, v]) => (
+            <div key={n} style={{ display: "flex", alignItems: "center", gap: 10, padding: "11px 13px", border: `1px solid ${T.paperDeep}`, borderRadius: 12, marginBottom: 8, background: T.paperHi }}>
+              <Phone size={15} color={T.gold} />
+              <span style={{ fontFamily: UI, fontSize: 13, color: T.ink, fontWeight: 600 }}>{n}</span>
+              <div style={{ flex: 1 }} />
+              <span style={{ fontFamily: UI, fontSize: 13, color: T.inkSoft }}>{v}</span>
+            </div>
+          ))}
+          <button onClick={onClose} style={{ ...pillBtn(true), width: "100%", justifyContent: "center", marginTop: 8 }}>Keep it private</button>
+        </div>
+      ) : (
+        <div>
+          <Eyebrow mb={9} color={T.muted}>Spill it — Jess keeps it anonymous</Eyebrow>
+          <Script size={30} carve>What's on your chest?</Script>
+          <textarea
+            value={raw} onChange={(e) => setRaw(e.target.value)} rows={4} autoFocus
+            placeholder="Silly to serious. Career, a friend, a date, a small win, money, a hot-take — no names go out."
+            style={{ width: "100%", marginTop: 12, padding: "12px 13px", borderRadius: 12, border: `1px solid ${T.paperDeep}`, background: T.paperHi, fontFamily: SERIF, fontSize: 15.5, color: T.ink, resize: "none", boxSizing: "border-box", outline: "none", lineHeight: 1.5 }}
+          />
+          <button onClick={() => setAlsoEcho((v) => !v)} style={{
+            display: "flex", alignItems: "center", gap: 8, marginTop: 11, width: "100%", textAlign: "left",
+            background: "transparent", border: "none", cursor: "pointer", padding: 0,
+          }}>
+            <span style={{ width: 17, height: 17, borderRadius: 5, border: `1.5px solid ${alsoEcho ? T.gold : T.paperDeep}`, background: alsoEcho ? T.gold : "transparent", display: "inline-flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+              {alsoEcho && <Check size={12} color={CREAM} />}
+            </span>
+            <span style={{ fontFamily: UI, fontSize: 12, color: T.inkSoft, lineHeight: 1.45 }}>
+              Also leave one scrubbed line on the Echo Wall — names stripped, fades in 48h.
+            </span>
+          </button>
+          <button onClick={submit} disabled={!raw.trim()} style={{ ...pillBtn(true), width: "100%", justifyContent: "center", marginTop: 14, opacity: raw.trim() ? 1 : 0.4 }}>
+            Spill it
+          </button>
+          <div style={{ fontFamily: UI, fontSize: 10.5, color: T.muted, marginTop: 10, textAlign: "center", lineHeight: 1.5 }}>
+            Anonymous · 18+ · be kind, be you. Jess reads for distress before anything posts.
+          </div>
+        </div>
+      )}
+    </Sheet>
   );
 }
 
 // ── shared bits ──────────────────────────────────────────────────────────────
-function PlumCard({ children }) {
+function Sheet({ children, onClose }) {
   return (
-    <div style={{ background: PLUM, borderRadius: 18, padding: "20px 20px", boxShadow: "0 10px 34px rgba(36,20,32,0.34)", border: "1px solid rgba(240,228,236,0.12)" }}>
-      {children}
+    <div onClick={onClose} style={{ position: "fixed", inset: 0, zIndex: 50, background: "rgba(20,16,11,0.42)", display: "flex", alignItems: "flex-end", justifyContent: "center" }}>
+      <div onClick={(e) => e.stopPropagation()} style={{ ...PAPER_BG, width: "100%", maxWidth: 460, borderRadius: "20px 20px 0 0", padding: "18px 20px 30px", maxHeight: "88vh", overflowY: "auto", boxShadow: "0 -8px 40px rgba(20,16,11,0.25)" }}>
+        <InkFilter />
+        <div style={{ display: "flex", justifyContent: "flex-end" }}>
+          <button onClick={onClose} style={{ background: "none", border: "none", cursor: "pointer", color: T.muted, padding: 2 }}><X size={20} /></button>
+        </div>
+        {children}
+      </div>
     </div>
   );
 }
-function Pulse() {
-  return (
-    <span style={{ display: "inline-flex", position: "relative", width: 46, height: 46 }}>
-      <span style={{ position: "absolute", inset: 0, borderRadius: 999, background: `${T.gold}33`, animation: "fwpulse 1.8s ease-out infinite" }} />
-      <span style={{ position: "absolute", inset: 14, borderRadius: 999, background: T.gold }} />
-      <style>{"@keyframes fwpulse{0%{transform:scale(.6);opacity:.8}100%{transform:scale(1.5);opacity:0}}"}</style>
-    </span>
-  );
-}
+
 function DemoBanner({ label }) {
   return (
-    <div style={{ background: T.ink, color: T.paper, padding: "8px 16px", textAlign: "center", fontFamily: UI, fontSize: 10, letterSpacing: 2, fontWeight: 700, textTransform: "uppercase" }}>{label}</div>
+    <div style={{ background: T.ink, color: CREAM, padding: "8px 16px", textAlign: "center", fontFamily: UI, fontSize: 10, letterSpacing: 2, fontWeight: 700, textTransform: "uppercase" }}>
+      {label}
+    </div>
   );
 }
-const faceBtn = (active) => ({
-  padding: "8px 16px", borderRadius: 999, cursor: "pointer",
-  fontFamily: UI, fontSize: 12, fontWeight: 700, letterSpacing: 0.3,
-  background: active ? T.ink : "transparent", color: active ? T.paper : T.inkSoft,
-  border: `1px solid ${active ? T.ink : T.paperDeep}`,
+
+const pillBtn = (solid) => ({
+  display: "inline-flex", alignItems: "center", gap: 7,
+  padding: "9px 15px", borderRadius: 999, cursor: "pointer",
+  fontFamily: UI, fontSize: 12.5, fontWeight: 700, letterSpacing: 0.3,
+  background: solid ? T.ink : "transparent", color: solid ? CREAM : T.inkSoft,
+  border: `1px solid ${solid ? T.ink : T.paperDeep}`,
 });
-const plumBtn = {
-  display: "inline-flex", alignItems: "center", gap: 8, padding: "11px 18px", borderRadius: 999,
-  background: T.gold, color: "#241420", border: "none", cursor: "pointer",
-  fontFamily: UI, fontSize: 13, fontWeight: 700, letterSpacing: 0.3,
-};
-const darkBtn = {
-  display: "inline-flex", alignItems: "center", gap: 7, padding: "12px 18px", borderRadius: 999,
-  background: T.ink, color: T.paper, border: "none", cursor: "pointer",
-  fontFamily: UI, fontSize: 13, fontWeight: 700,
-};

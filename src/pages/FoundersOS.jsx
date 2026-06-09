@@ -1915,43 +1915,43 @@ function JournalDemosTab() {
 const COMMUNITY_DEMOS = [
   {
     n: 1, slug: "CommunityDemo1",
-    title: "Echo Wall",
-    subtitle: "A room of one-liners — anonymous, phase-weighted, fading",
-    accent: T.gold,
-    body: "The editorial iteration of the shipped Echo Wall. A phase-weighted feed of anonymous one-line entries with a live cohort line, a \"your phase\" chip on sister echoes, held / me-too reactions (non-transactional, one-way), a still-cooling \"Pull it back\" strip, a 48h fade label, and report → auto-hide. The Share-as-Echo flow is wired end to end: write → Jess scrubs identifying detail (and shows what was removed) → crisis intercept routes to UK resources, never to the wall → cooling notice.",
-    tags: ["Phase-weighted feed", "Held / me too", "Still-cooling pull-back", "Jess scrub + crisis intercept"],
+    title: "Community Home + Question of the Day",
+    subtitle: "The whole-life home & the daily heartbeat",
+    accent: T.sage,
+    body: "The new editorial Community home — whole-life, not clinical (\"health is one room, not the house\"). A warm carved masthead, an ambient aggregate presence line (\"31 women are here right now — you're not alone\", never a named/competitive count), the Question of the Day (one-tap answer → a descriptive-norm reveal \"most women said…\", no per-person counts), and the rooms grid: The Lounge, Circles, Love & Relationships, Money & Work, Style, The Lighter Side, Echo Wall, Witness, and Health (one room, not the house).",
+    tags: ["Whole-life rooms grid", "Question of the Day", "Ambient presence (aggregate)", "No scoreboards"],
   },
   {
     n: 2, slug: "CommunityDemo2",
-    title: "Witness Mode",
-    subtitle: "Read this. Hold it. — one entry, one matched sister",
+    title: "The Lounge + Echo",
+    subtitle: "Spill it — silly to serious, kind, anonymous",
     accent: T.blush,
-    body: "All three faces of the dock. Writer: a toggle → the 6-rail charter → a pulsing match (2–4h) → the held / cancel state. Receiver: a no-copy locked entry + the four fixed Fraunces lines (\"I'm holding this with you / Me too / You're not alone in this / I hear you\") or pass silently. Plus the held-3 gate (\"witnessed 2 times, one more to unlock\") that earns the right to be a witness. The dark plum trust-ink gradient is reserved for these fragile surfaces.",
-    tags: ["Writer toggle + match", "4 fixed responses", "Held-3 gate", "6-rail charter", "Trust-ink gradient"],
+    body: "The anonymous warm vent / \"AIBU\" / spill-it room — the daily-engagement engine, whole-life (a career rant, a friendship wobble, a dating story, a money worry, a small joy), NOT clinical-only. Kind reactions (held · me too · hear you · saved — one-way, no visible counts), a compose flow with a crisis intercept that routes to UK resources rather than posting, and an Echo Wall strip showing how a vent can become one scrubbed fading line. Kindness-by-design, 18+.",
+    tags: ["Anonymous vent feed", "Kind reactions (no counts)", "Crisis intercept", "Echo bridge"],
   },
   {
     n: 3, slug: "CommunityDemo3",
-    title: "Phase Twin",
-    subtitle: "Twelve days. One shape. — a finite paired container",
-    accent: T.sage,
-    body: "The deepest peer surface. Match screen (shared tags, today's prompt), the 12-day contract with the shared / not-shared matrix, a day-in with the both-wrote reveal gate (her entry stays blurred until you write yours) plus Jess's one bridging note a day, and the day-12 closing ritual with the parting-line exchange. \"A 12-day container. Not a friendship.\" Opens at matching, closes at next period day 1, no re-entry that cycle.",
-    tags: ["12-day container", "Both-wrote reveal gate", "Jess bridging note", "Closing ritual"],
+    title: "A Circle + a game",
+    subtitle: "Interest rooms & joyful, non-clinical play",
+    accent: T.gold,
+    body: "The non-clinical belonging + play layer. An interest-first Circle (match on what you love — books, films, charity-shop finds — never a lead photo) with a Join / Joined toggle and warm whole-life member posts. Plus cooperative games that finish in minutes, no leaderboards: This-or-That / Kind Hot-Takes (tap reveals how the room split — a descriptive norm, no winner) and a One-Line Story (exquisite-corpse — add the next line). Reactions, not scores.",
+    tags: ["Interest Circle (join/joined)", "This-or-That / hot-takes", "One-Line Story", "No leaderboards"],
   },
   {
     n: 4, slug: "CommunityDemo4",
-    title: "Circles + belonging",
-    subtitle: "Rooms you can belong to — plus who's here tonight",
-    accent: T.gold,
-    body: "The belonging layer. A browsable taxonomy of cohorts — Phase, Program, Region, Life stage, Condition — with join / joined states and circle-scoped echo visibility. Above it, the research-driven \"others in your phase\" aggregate card: a zero-moderation-cost belonging signal (\"you're one of 312 in your inner autumn tonight\") with a k-anonymity floor that suppresses the count rather than risk naming anyone when a cohort is too small.",
-    tags: ["5-key taxonomy", "Join / joined", "Aggregate belonging card", "k-anonymity floor"],
+    title: "One entry, four lives + Witness",
+    subtitle: "The entry-level chooser & the held entry",
+    accent: T.blush,
+    body: "The signature journal→community bridge. A whole-life entry (a hard week at work + a friendship) with the four-lives chooser — stay locked (default) · become an echo · be sealed to future-you · handed to a witness — decided at the entry level, never by default. Choosing witness flows into the held-3 gate, the 6-rail charter, a pulsing match → held (2h cancel), and the receiver face (a no-copy entry + the four fixed lines or pass silently). Dark-plum trust-ink reserved for the fragile Witness cards.",
+    tags: ["Four-lives chooser", "Witness flow", "6-rail charter", "4 fixed responses"],
   },
   {
     n: 5, slug: "CommunityDemo5",
-    title: "Community Home",
-    subtitle: "The two-home story — where the peer shapes connect",
-    accent: T.blush,
-    body: "The page that ties it together. \"Journal owns the writer. Community owns the peer shapes.\" The two-home split, \"one entry, four lives\" (stay locked · become an echo · be sealed · handed to a witness), the interactive solitude → witness gradient (Cycle Mirror → Sealed Letters → Echo Wall → Witness → Phase Twin; solo surfaces earn the paired ones), and link cards into all four peer surfaces. Footed by the no-scoreboard rules: no handles, threads, DMs, likes or leaderboards.",
-    tags: ["Two-home split", "One entry, four lives", "Solitude→witness gradient", "Links the four surfaces"],
+    title: "Talk It Out — audio",
+    subtitle: "Being heard out loud — async first, then live",
+    accent: T.sage,
+    body: "The spoken sibling of Echo / Witness, three modes (mock — no real mic). Mode A async voice-note (\"a voice echo\": record → optional voice-mask with the honest \"harder to recognise, not anonymous\" note → held by a phase-sister → fades). Mode B 1:1 turn-based \"talk it out\" (3-min turn timer, \"hold, don't fix\", swap, panic-exit, closing reflection — on the calm plum fragile surface). Mode C small status-flattened live Circle (no stage, muted-by-default, request-to-speak). Always-on crisis signpost; honest LiveKit / async-first infra note.",
+    tags: ["Async voice-note", "1:1 turn-based talk", "Live Circle", "No recording · signpost"],
   },
 ];
 
@@ -1959,8 +1959,8 @@ function CommunityDemosTab() {
   return (
     <div>
       <PageHeader
-        title="Community — 5 Peer-Shape Demos"
-        subtitle="The anonymous-first peer half of the system: Echo Wall → Witness → Phase Twin, plus Circles and the home that ties them together. Self-contained concepts on the Editorial kit; mock data, no entities queried."
+        title="Community — 5 Whole-Life Demos"
+        subtitle="The rebuilt, whole-life Community (health is one room, not the house): the home + Question of the Day, the Lounge, a non-clinical Circle + a game, the four-lives chooser + Witness, and Talk It Out (audio). Anonymous-first, 18+, no scoreboards. Self-contained on the Editorial kit; mock data, no entities queried. Built against COMMUNITY_MEGA_PLAN v2-FINAL."
         badge="INTERACTIVE"
         badgeTone="gold"
       />
