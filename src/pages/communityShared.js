@@ -18,7 +18,7 @@ export const MASTHEAD = {
   title: "For the whole of you",
   subtitle: "Health is one room here — not the whole house. For the love, the laugh, the money question, the late-night vent. Anonymous, 18+, a room everyone's in.",
 };
-export const PRESENCE = { count: 31, line: "women are here right now — you're not alone tonight." };
+export const PRESENCE = { count: 31, line: "are here right now — you're not alone tonight." };
 
 // ── Question of the Day (one tap → descriptive-norm reveal, no counts) ────────
 export const QOTD = {
