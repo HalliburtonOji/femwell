@@ -4,7 +4,7 @@ description: The master plan at mnt/femwell/femwell_master_plan_2026-05-13.md is
 type: project
 originSessionId: 49ba5fb3-cabd-41d2-a37d-e0e88e084bfb
 ---
-The master plan at `/sessions/relaxed-loving-brahmagupta/mnt/femwell/femwell_master_plan_2026-05-13.md` is the **single source of truth** for FemWell's whole-app direction. Ms Strategy authored it 2026-05-13 (rev 2 same day after the user answered the open questions). It's a living doc — not a snapshot.
+The master plan now lives in-repo at **`claude-state/master-plan.md`** (rev 5, 2026-05-14) — that is the foundational whole-app direction doc. _(Pointer corrected 2026-06-09: the old `/sessions/relaxed-loving-brahmagupta/mnt/femwell/femwell_master_plan_2026-05-13.md` sandbox path is DEAD — do not use it.)_ It's a living doc — bump version + add a changelog line on every touch. **Note:** the canonical current-state baton + plan index is `claude-state/STATUS.md`; master-plan is the strategy ledger and currently needs a rev-6 (Echo Wall + Witness shipped 2026-06-08; the 2026-06-09 whole-life correction is unabsorbed).
 
 **Why this exists:** User said "i would be getting crazy ideas to add on and our deep brainstorming would be uncovering new stuff the mega plan needs to be flexable and updated constantly like an md file, itll help us control the project too." The doc is how we keep direction coherent across many MPs, demos, brainstorm passes, and surface redesigns.
 

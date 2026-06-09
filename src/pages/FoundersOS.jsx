@@ -31,6 +31,10 @@
 import { useEffect, useMemo, useState, useCallback } from "react";
 import { useAuth } from "@/lib/AuthContext";
 import { base44 } from "@/api/base44Client";
+// In-app readable mirrors of the canonical claude-state plan docs (Phase 1c).
+import CommunityPlanDoc from "@/components/founders/CommunityPlanDoc";
+import WholeLifeDoc from "@/components/founders/WholeLifeDoc";
+import AudioPlanDoc from "@/components/founders/AudioPlanDoc";
 // HealthCornerDemo was the multi-layout preview. The canonical health
 // experience now lives at /Health (src/pages/Health.jsx). The Health Corner
 // tab in /Ideas renders <HealthCornerRedirectCard /> instead.
@@ -60,7 +64,7 @@ const ALLOWED = new Set([
   "ojihalliburton57@gmail.com",
 ]);
 
-const TABS = ["Lab", "Pages", "Roadmap", "Ideas", "Strategy", "Legal", "Decisions", "Journal", "Journal Demos", "Community Demos", "Another You", "UX & Design", "Wholeness", "LGBTQ+", "🏥 Health Corner"];
+const TABS = ["Lab", "Pages", "Roadmap", "Community Plan", "Whole-Life", "Audio", "Ideas", "Strategy", "Legal", "Decisions", "Journal", "Journal Demos", "Community Demos", "Another You", "UX & Design", "Wholeness", "LGBTQ+", "🏥 Health Corner"];
 
 const IDEAS_KEY  = "femwell_ideas";
 const CHECKS_KEY = "femwell_founder_checks";
@@ -554,6 +558,9 @@ function FoundersInner({ user }) {
         {tab === "Lab"       && <LabTab />}
         {tab === "Pages"     && <PagesTab />}
         {tab === "Roadmap"   && <RoadmapTab />}
+        {tab === "Community Plan" && <CommunityPlanDoc />}
+        {tab === "Whole-Life"     && <WholeLifeDoc />}
+        {tab === "Audio"          && <AudioPlanDoc />}
         {tab === "Ideas"     && <IdeasTab user={user} />}
         {tab === "Strategy"  && <StrategyTab />}
         {tab === "Legal"     && <LegalTab />}

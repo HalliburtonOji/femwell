@@ -1,3 +1,31 @@
+# FEMWELL — CANONICAL STATUS INDEX (read first · updated 2026-06-09)
+**This file is the single source of truth AND the index to every plan doc. If anything else disagrees, this wins.** (The long ship-log history continues below the index.)
+
+## CURRENT STATE
+- **Live + verified:** **Echo Wall** (anonymous one-line phase-cohort wall) + **Witness Mode** (one entry held by one matched sister, 4 fixed responses) are BUILT, deployed, live-verified — Echo bundle `index-CfnX9e_7.js`, Witness bundle `index-BEPB6rBK.js`; entities `Echo` / `WitnessRequest` / `WitnessStrike` live.
+- **Community is being REBUILT:** the editorial anonymity-first surface replaces the off-thesis MP8 likes-forum; **18+ adults-only** (Halli = named senior accountable person for OSA/ICO); **whole-life, not clinical-only** ("health is one room, not the house").
+- **In flight:** Phase 1 (this index + Community plan **v2-final** + FoundersOS in-app mirror pages), then Phase 2 (rebuild the 5 Community demos in FoundersOS against the new plan).
+- **Deploy:** Halli fires deploys via the direct API (UI Publish hangs). After deploy, verify the bundle-hash flip and record it here per the BATON RULE.
+
+## PLAN-DOC INDEX (the full plans live in these — this file points to them)
+| Doc | What it is | Status |
+|---|---|---|
+| `claude-state/COMMUNITY_MEGA_PLAN.md` | **THE authoritative Community spec (v2-final)** — editorial surface, one-entry-four-lives, Echo+Witness (built), Shared-Experience pillar, whole-life rooms, audio modes | CANONICAL |
+| `claude-state/WHOLE_LIFE_REBALANCE.html` | Per-page whole-life rebalance + surface clinical-skew audit + non-clinical rooms & 22 activities | CANONICAL companion |
+| `claude-state/AUDIO_TALK_IT_OUT.html` | Audio / Talk-It-Out design (async voice-notes → 1:1 turn-based → live Circles) + Base44 feasibility | CANONICAL companion |
+| `claude-state/JOURNAL_BUILD_SPEC.md` | Journal spec (Cycle Mirror, Sealed Letters, Echo, Witness, Phase Twin) | CANONICAL |
+| `claude-state/SPEC_FRAMEWORK.md` | The 12-section depth standard every spec is graded against | CANONICAL (process) |
+| `claude-state/master-plan.md` | Whole-app strategy ledger (rev 5, 2026-05-14) | CANONICAL strategy — **needs rev-6** (Echo/Witness now shipped; whole-life correction unabsorbed) |
+| In-app: `/Ideas` (FoundersOS) → **Community Plan / Whole-Life / Audio** tabs | Readable in-app mirror of the above (dev surface) | live after Phase 1 commit |
+
+## SUPERSEDED / forgotten docs (DO NOT treat as current)
+- **`.claude/memory/project_femwell_design_status.md` — SUPERSEDED** (the "forgotten" doc; froze **2026-04-21**; still calls Echo Wall + Witness *unbuilt* and describes the *retired* anonymous-feed Community). Banner added in-file.
+- `.claude/memory/project_femwell_master_plan_living_doc.md` — pointer **fixed** (pointed at a dead sandbox path → now `claude-state/master-plan.md`).
+- root `README.md` — Base44 boilerplate; ignore (use `claude-state/ONBOARDING_READ_FIRST.md`).
+- **Carry-forward open item:** the H2 "Astra Cole, MA, FAS" astrologer-credential / due-diligence legal exposure — re-verify 4–6 weeks before the sale window (from `H2_DECISIONS.md` D6).
+
+---
+
 > SNAPSHOT 2026-06-05 (session p) — APP-WIDE EDITORIAL UNIFICATION via the global CSS token layer (no per-page rewrites): remapped the neutral palette tokens in src/index.css to the editorial paper/ink system (cream `#ECE7DA` page · warm-cream `#F4EFE3` cards · espresso `#3A2C1A` ink · deckle `#D8CFBC` borders + matching shadcn HSL), loaded Cormorant/Ephesis/Caveat globally, painted PAPER_BG (real grain) on the Layout shell, and fixed the white-strip-at-end-of-scroll GLOBALLY (html+body cream + min-height in CSS — replaces the Journal-only body-paint hack). Accent rose/sage kept for contrast. Journal unchanged (Editorial-T driven). Built on origin/main `1aaad2e`. Build + lint green, nothing broke. Pushed (pending deploy by Halli/Code). Canonical = repo claude-state/STATUS.md.
 
 > SNAPSHOT 2026-06-05 (session q) — UNIVERSAL EDITORIAL FONT actually applied: the prior session loaded the editorial fonts but never SET them as the default, so pages still rendered Inter sans. Fixed by setting `body` + all headings (h1–h6) to **Cormorant Garamond** in src/index.css (+ tailwind `fontFamily.sans=Inter`/`serif=Cormorant`), with a chrome safeguard keeping dense controls (button/input/etc.) in Inter. Verified in the COMPILED CSS: `body{font-family:Cormorant Garamond…}` (was Inter). Built on `2517f2a`. Font-family only — no layout change. Pushed (pending deploy). Canonical = repo claude-state/STATUS.md.

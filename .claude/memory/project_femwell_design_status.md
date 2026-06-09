@@ -4,6 +4,9 @@ description: Which FemWell pages have been redesigned and signed off vs still pe
 type: project
 originSessionId: current
 ---
+
+> **⚠ SUPERSEDED 2026-06-09.** This tracker froze on **2026-04-21** and is NO LONGER current. Two contradictions with reality: (1) it lists **Echo Wall + Witness as future/unbuilt** — both are now **BUILT and live**; (2) it describes the **old anonymous-feed Community**, since **RETIRED** for the editorial + whole-life + 18+ rebuild. Do NOT use its sign-off states or rollout ladder. Canonical state → `claude-state/STATUS.md`; canonical Community plan → `claude-state/COMMUNITY_MEGA_PLAN.md`; surface sign-off ledger → `claude-state/master-plan.md` §5. Kept only as a 2026-04-21 design snapshot.
+
 The user is running a visual redesign of FemWell page by page. Each page gets an HTML demo in `/sessions/relaxed-loving-brahmagupta/mnt/femwell/` then approval before moving on. When a page is signed off, **do not suggest redesigning it again or include it in "what's next" lists** — only reference it for visual consistency.
 
 **Why:** User corrected me on 2026-04-17: "i signed off on the new today page new design but you suggesting it again." They want Claude to track sign-off state and only offer genuinely-pending pages.
