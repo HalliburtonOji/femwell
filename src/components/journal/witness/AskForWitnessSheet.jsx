@@ -15,12 +15,20 @@ import { crisisCheck } from "../echo/echoScrub";
 import { CRISIS_RESOURCES } from "../echo/echoConfig";
 import {
   witnessHash, witnessAvailable, rememberSent, mySentId, forgetSent, heldCountLocal,
+  rememberDek, getDek, forgetDek,
 } from "./witnessAnon";
-import { sealForWitness, witnessCryptoAvailable } from "./witnessCrypto";
+import { sealForWitness, witnessCryptoAvailable, sealForWitnessZK } from "./witnessCrypto";
+import {
+  witnessKeysAvailable, getDevicePublicJwk, getDevicePrivateKey, deriveSharedWrapKey, wrapDek,
+} from "./witnessKeys";
 import {
   GATE_HOLDS, CANCEL_HOURS, OPEN_HOURS, EXPIRE_HOURS, SEND_PER_DAY,
-  PHASE_COHORT, RESPONSE_LABEL, MAX_ENTRY_CHARS,
+  PHASE_COHORT, RESPONSE_LABEL, MAX_ENTRY_CHARS, WITNESS_ZK_ENABLED,
 } from "./witnessConfig";
+
+// Whether this send should use the zero-knowledge (FWWT2) path. OFF by default
+// (flag in witnessConfig) until the server side is deployed; falls back to FWWT1.
+const zkActive = () => WITNESS_ZK_ENABLED && witnessKeysAvailable();
 
 function minsLeft(iso) {
   return Math.max(0, Math.round((new Date(iso).getTime() - Date.now()) / 60000));
@@ -42,6 +50,7 @@ export default function AskForWitnessSheet({
   const [sent, setSent] = useState(existingSent ? { id: existingSent } : null);
   const [status, setStatus] = useState(null);   // lifecycle from getWitnessStatus
   const pollRef = useRef(null);
+  const deliveredRef = useRef(false);            // ZK: wrapped-key delivered to the receiver?
 
   // Poll the handoff lifecycle while it's live (writer sees holding / answered / passed).
   useEffect(() => {
@@ -55,6 +64,27 @@ export default function AskForWitnessSheet({
       if (stop || !d) return;
       if (d.gone) { setStatus({ gone: true }); return; }
       setStatus(d);
+      // ZK (FWWT2): once the receiver has claimed (their public key is published) and
+      // we haven't delivered yet, wrap this entry's DEK to them and hand it over. The
+      // server relays the wrapped blob but can never unwrap it. Only the writer's
+      // device can do this — it holds the DEK + its own private key.
+      if (zkActive() && d.env_version === 2 && d.receiver_pub && !d.key_delivered && !deliveredRef.current) {
+        deliveredRef.current = true;
+        try {
+          const dekB64 = getDek(sent.id);
+          if (dekB64) {
+            const priv = await getDevicePrivateKey();
+            const wrapKey = await deriveSharedWrapKey(priv, JSON.parse(d.receiver_pub));
+            const wrapped = await wrapDek(dekB64, wrapKey);
+            const dr = await base44.functions.invoke("deliverWitnessKey", {
+              user_id: user?.id, writer_hash: await witnessHash(user?.id),
+              request_id: sent.id, wrapped_key: wrapped,
+            }).catch(() => null);
+            const dd = dr?.data ?? dr;
+            if (dd?.ok) forgetDek(sent.id); else deliveredRef.current = false;   // retry next tick
+          }
+        } catch (e) { console.error("Witness key delivery failed:", e); deliveredRef.current = false; }
+      }
       if (["responded", "passed", "archived", "expired"].includes(d.status)) {
         clearInterval(pollRef.current);
       }
@@ -77,8 +107,23 @@ export default function AskForWitnessSheet({
     setStage("sending");
     try {
       const wh = await witnessHash(user?.id);
-      const ciphertext = await sealForWitness(entryText.slice(0, MAX_ENTRY_CHARS));
+      const text = entryText.slice(0, MAX_ENTRY_CHARS);
       const now = Date.now();
+
+      // Zero-knowledge (FWWT2): seal with a DEK that is NOT sent — keep it on this
+      // device, post only the keyless envelope + this device's public key, and
+      // deliver the DEK (wrapped to the receiver) after they claim. Else FWWT1.
+      const zk = zkActive();
+      let ciphertext, env_version, writer_pub, pendingDek = null;
+      if (zk) {
+        const sealed = await sealForWitnessZK(text);
+        ciphertext = sealed.envelope; pendingDek = sealed.dekB64;
+        env_version = 2;
+        writer_pub = JSON.stringify(await getDevicePublicJwk());
+      } else {
+        ciphertext = await sealForWitness(text);
+      }
+
       const res = await base44.functions.invoke("postWitnessRequest", {
         user_id: user?.id,
         writer_hash: wh,
@@ -90,11 +135,13 @@ export default function AskForWitnessSheet({
         cancel_until: new Date(now + CANCEL_HOURS * 3600e3).toISOString(),
         open_deadline: new Date(now + OPEN_HOURS * 3600e3).toISOString(),
         expires_at: new Date(now + EXPIRE_HOURS * 3600e3).toISOString(),
+        ...(zk ? { env_version, writer_pub } : {}),
       });
       const d = res?.data ?? res;
       if (d?.error === "gate") { setReason("gate"); setStage("gate"); return; }
       if (d?.error === "rate") { setReason("rate"); setStage("blocked"); return; }
       if (!d?.ok || !d.request?.id) { setReason("network"); setStage("blocked"); return; }
+      if (zk && pendingDek) rememberDek(d.request.id, pendingDek);   // hold the DEK until delivery
       rememberSent(d.request.id);
       setSent(d.request);
       setStage("sent");

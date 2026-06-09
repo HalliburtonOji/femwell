@@ -120,6 +120,23 @@
       "type": "number",
       "default": 0,
       "description": "Reports the receiver has filed against this entry"
+    },
+    "env_version": {
+      "type": "number",
+      "default": 1,
+      "description": "Encryption envelope scheme: 1 = legacy FWWT1 (key inside, at-rest + access-gated); 2 = FWWT2 zero-knowledge (key never stored; wrapped to the receiver out-of-band). Absent/1 = legacy. Additive — old rows read as 1."
+    },
+    "writer_pub": {
+      "type": "string",
+      "description": "ZK only (env_version 2): the writer device's ECDH P-256 PUBLIC key (JWK string). Used by the receiver to derive the shared wrap key. Public — safe to store."
+    },
+    "receiver_pub": {
+      "type": "string",
+      "description": "ZK only: the assigned receiver device's ECDH P-256 PUBLIC key (JWK string), set at claim. The writer uses it to wrap the data-key to this receiver. Public — safe to store."
+    },
+    "wrapped_key": {
+      "type": "string",
+      "description": "ZK only: the entry's data-key (DEK) AES-wrapped under the writer<->receiver ECDH shared secret, delivered by the writer AFTER claim (deliverWitnessKey). The server cannot unwrap it — it holds neither private key. Empty until delivered."
     }
   },
   "required": [

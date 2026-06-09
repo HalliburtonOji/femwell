@@ -82,6 +82,30 @@ export function forgetClaim() {
   try { window.localStorage.removeItem(CLAIM_KEY); } catch { /* ignore */ }
 }
 
+// ── writer-held data-keys for zero-knowledge handoffs (FWWT2) ────────────────
+// Under ZK the DEK is NOT sent with the entry; the writer's device keeps it here,
+// keyed by request id, until a receiver claims and the writer wraps + delivers it.
+// Dropped after delivery. (Only ever on this device; never sent as plaintext.)
+const DEK_KEY = "fw_witness_dek_v1";
+function readMap(key) {
+  try { return JSON.parse(window.localStorage.getItem(key) || "{}") || {}; } catch { return {}; }
+}
+function writeMap(key, map) {
+  try { window.localStorage.setItem(key, JSON.stringify(map)); } catch { /* ignore */ }
+}
+export function rememberDek(requestId, dekB64) {
+  if (!requestId || !dekB64) return;
+  const m = readMap(DEK_KEY); m[requestId] = dekB64; writeMap(DEK_KEY, m);
+}
+export function getDek(requestId) {
+  if (!requestId) return null;
+  return readMap(DEK_KEY)[requestId] || null;
+}
+export function forgetDek(requestId) {
+  if (!requestId) return;
+  const m = readMap(DEK_KEY); delete m[requestId]; writeMap(DEK_KEY, m);
+}
+
 // ── my own sent request (writer side) ────────────────────────────────────────
 export function rememberSent(requestId) {
   try { window.localStorage.setItem(SENT_KEY, requestId || ""); } catch { /* ignore */ }

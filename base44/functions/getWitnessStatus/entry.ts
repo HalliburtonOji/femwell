@@ -38,5 +38,11 @@ Deno.serve(async (req) => {
     read_at: row.read_at || null, responded_at: row.responded_at || null,
     cancel_until: row.cancel_until || null,
     reroute_count: row.reroute_count || 0, rerouted: !!row.rerouted_from_hash,
+    // ZK (FWWT2): once a receiver has claimed, their PUBLIC key appears here so the
+    // writer's device can wrap the data-key to them and call deliverWitnessKey.
+    // `key_delivered` lets the writer stop once it's done. Absent for legacy FWWT1.
+    env_version: row.env_version || 1,
+    receiver_pub: row.receiver_pub || null,
+    key_delivered: !!row.wrapped_key,
   });
 });

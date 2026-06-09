@@ -16,8 +16,13 @@ import {
   witnessHash, witnessAvailable, charterAccepted, acceptCharter,
   rememberHeld, heldCountLocal, rememberClaim, forgetClaim,
 } from "./witnessAnon";
-import { openWitness } from "./witnessCrypto";
-import { RESPONSES, GATE_HOLDS, PHASE_COHORT, CHARTER } from "./witnessConfig";
+import { openWitness, decryptWithDek } from "./witnessCrypto";
+import {
+  witnessKeysAvailable, getDevicePublicJwk, getDevicePrivateKey, deriveSharedWrapKey, unwrapDek,
+} from "./witnessKeys";
+import { RESPONSES, GATE_HOLDS, PHASE_COHORT, CHARTER, WITNESS_ZK_ENABLED } from "./witnessConfig";
+
+const zkActive = () => WITNESS_ZK_ENABLED && witnessKeysAvailable();
 
 const RESPONSE_ICON = {
   holding_with_you: HeartHandshake, me_too: Users, not_alone: HandHeart, i_hear_you: Ear,
@@ -34,6 +39,31 @@ export default function WitnessInbox({ user, phase = null, profile = null, onClo
   const [held, setHeld] = useState(heldCountLocal());
   const openedRef = useRef(false);
 
+  // Decode the handed entry for whichever envelope it uses. FWWT1 opens directly
+  // (key inside). FWWT2 (zero-knowledge) needs the writer's wrapped data-key: if it
+  // has been delivered we derive the shared secret + unwrap + decrypt; if not yet,
+  // we wait in "keypending" and poll until the writer's device hands it over.
+  const decodeAndShow = async (request) => {
+    const ev = zkActive() ? (request.env_version || 1) : 1;
+    if (ev === 2) {
+      if (request.wrapped_key && request.writer_pub) {
+        try {
+          const priv = await getDevicePrivateKey();
+          const wrapKey = await deriveSharedWrapKey(priv, JSON.parse(request.writer_pub));
+          const dekB64 = await unwrapDek(request.wrapped_key, wrapKey);
+          setEntryText(await decryptWithDek(request.entry_ciphertext, dekB64));
+        } catch { setEntryText(""); }
+        setStage("reading");
+      } else {
+        setStage("keypending");
+      }
+      return;
+    }
+    try { setEntryText(await openWitness(request.entry_ciphertext)); }
+    catch { setEntryText(""); }
+    setStage("reading");
+  };
+
   const claim = async () => {
     if (!available) { setStage("error"); return; }
     setStage("loading");
@@ -44,19 +74,45 @@ export default function WitnessInbox({ user, phase = null, profile = null, onClo
         user_id: user?.id, receiver_hash: wh,
         phase: phase || "unknown", life_stage: profile?.life_stage || undefined,
         language: profile?.language || "en-GB",
+        // ZK (FWWT2): publish this device's public key so the writer can wrap to us.
+        ...(zkActive() ? { receiver_pub: JSON.stringify(await getDevicePublicJwk()) } : {}),
       });
       const d = res?.data ?? res;
       if (d?.removed) { setStage("removed"); return; }
       if (d?.request?.id) {
         setRequest(d.request); setRerouted(!!d.rerouted); rememberClaim(d.request.id);
-        try { setEntryText(await openWitness(d.request.entry_ciphertext)); }
-        catch { setEntryText(""); }
-        setStage("reading");
+        await decodeAndShow(d.request);
       } else {
         setStage("idle");
       }
     } catch (err) { console.error("claimWitness failed:", err); setStage("error"); }
   };
+
+  // ZK (FWWT2): while waiting for the writer to deliver the wrapped key, re-claim
+  // (the in-flight path returns our same row) until wrapped_key appears, then decode.
+  useEffect(() => {
+    if (stage !== "keypending" || !request?.id) return;
+    let stop = false;
+    const tick = async () => {
+      try {
+        const wh = await witnessHash(user?.id);
+        const res = await base44.functions.invoke("claimWitness", {
+          user_id: user?.id, receiver_hash: wh,
+          phase: phase || "unknown", life_stage: profile?.life_stage || undefined,
+          language: profile?.language || "en-GB",
+          receiver_pub: JSON.stringify(await getDevicePublicJwk()),
+        }).catch(() => null);
+        const d = res?.data ?? res;
+        if (stop) return;
+        if (d?.request?.id === request.id && d.request.wrapped_key) {
+          setRequest(d.request);
+          await decodeAndShow(d.request);
+        }
+      } catch { /* keep waiting */ }
+    };
+    const iv = setInterval(tick, 8000);
+    return () => { stop = true; clearInterval(iv); };
+  }, [stage, request, user, phase, profile]);
 
   useEffect(() => { if (stage === "loading") claim(); }, []);
 
@@ -170,6 +226,20 @@ export default function WitnessInbox({ user, phase = null, profile = null, onClo
           <div style={{ paddingTop: 90, textAlign: "center" }}>
             <Hand size={22} color={T.inkSoft}>Looking for someone to hold…</Hand>
           </div>
+        )}
+
+        {stage === "keypending" && (
+          <>
+            {head("Held under lock")}
+            <div style={{ display: "inline-flex", alignItems: "center", gap: 6, marginTop: 12, marginBottom: 14 }}>
+              <Lock size={14} style={{ color: T.gold }} />
+              <span style={{ fontFamily: UI, fontSize: 11.5, color: T.muted, fontWeight: 600 }}>End-to-end encrypted</span>
+            </div>
+            <Hand size={21} color={T.inkSoft} style={{ marginBottom: 22 }}>
+              She wrote this for one pair of hands only. Her key is on its way to yours — no one in between can read it, not even us. This opens the moment it arrives.
+            </Hand>
+            <button onClick={onClose} style={primaryBtn}>I{"’"}ll come back</button>
+          </>
         )}
 
         {stage === "idle" && (

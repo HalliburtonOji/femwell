@@ -36,7 +36,7 @@ Deno.serve(async (req) => {
   try { p = await req.json(); }
   catch { return Response.json({ error: 'Bad JSON' }, { status: 400 }); }
 
-  const { user_id, receiver_hash, phase, life_stage, language } = p || {};
+  const { user_id, receiver_hash, phase, life_stage, language, receiver_pub } = p || {};
   if (user_id && me.role !== 'admin' && me.id !== user_id) {
     return Response.json({ error: 'Forbidden' }, { status: 403 });
   }
@@ -91,6 +91,9 @@ Deno.serve(async (req) => {
   const patch: any = {
     receiver_hash, matched_at: nowISO, status: 'matched',
     open_deadline: iso(T + OPEN_HOURS * 3600e3),
+    // ZK (FWWT2): publish the receiver's PUBLIC key so the writer can wrap the
+    // data-key to them. No-op for legacy FWWT1 rows (receiver_pub absent).
+    ...(receiver_pub ? { receiver_pub: String(receiver_pub) } : {}),
   };
   if (pick.reroute) {
     patch.reroute_count = (live.reroute_count || 0) + 1;
@@ -116,5 +119,11 @@ function shape(r: any) {
     match_phase: r.match_phase, match_life_stage: r.match_life_stage,
     status: r.status, matched_at: r.matched_at, open_deadline: r.open_deadline,
     expires_at: r.expires_at, sent_at: r.sent_at,
+    // ZK (FWWT2): the receiver needs the scheme + the writer's public key + the
+    // wrapped data-key (once the writer has delivered it) to unwrap + decrypt. For
+    // legacy FWWT1 rows these are absent and the receiver opens the envelope directly.
+    env_version: r.env_version || 1,
+    writer_pub: r.writer_pub || null,
+    wrapped_key: r.wrapped_key || null,
   };
 }

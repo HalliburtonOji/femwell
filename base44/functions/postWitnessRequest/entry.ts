@@ -34,6 +34,7 @@ Deno.serve(async (req) => {
   const {
     user_id, writer_hash, entry_ciphertext, match_phase, match_life_stage,
     match_language, sent_at, cancel_until, open_deadline, expires_at,
+    env_version, writer_pub,   // ZK (FWWT2) — optional; absent = legacy FWWT1
   } = p || {};
 
   if (user_id && me.role !== 'admin' && me.id !== user_id) {
@@ -79,6 +80,11 @@ Deno.serve(async (req) => {
     reroute_count: 0,
     hidden: false,
     report_count: 0,
+    // ZK (FWWT2): record the scheme + the writer's PUBLIC key when supplied. The
+    // server never receives the data-key here — under ZK the ciphertext carries no
+    // key, and the key is wrapped + delivered post-claim (deliverWitnessKey).
+    env_version: env_version === 2 ? 2 : 1,
+    ...(writer_pub ? { writer_pub: String(writer_pub) } : {}),
   }).catch((err: any) => { console.error('postWitnessRequest create failed:', err?.message || err); return null; });
 
   if (!request) return Response.json({ error: 'Write failed' }, { status: 500 });
