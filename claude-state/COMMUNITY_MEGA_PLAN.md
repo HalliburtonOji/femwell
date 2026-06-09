@@ -18,6 +18,7 @@ This is the authoritative Community spec. It supersedes `COMMUNITY_BUILD_SPEC.md
 - **§3** Full feature inventory (the build queue) — every surface, all states, entities, edge cases, phase tag.
 - **§4** External research, cited (4 streams).
 - **§5** Competitive read (EMULATE/AVOID + cautionary tale + the wedge).
+- **PILLAR — Community as a SHARED EXPERIENCE (not a feed):** the shared things we DO together (Question of the Day, Book Club on the BookReader, cooperative games, collective build, shared rituals/presence) — vision fit, per-activity spec, Jess-as-host guardrails, cross-page wiring, rollout slotting, research. *(Sits between §5 and §6; added v1.1.)*
 - **§6** Cross-app relationships — the dedicated section: Journal · Today · Health/Pulse · Planner · Lifestyle · Doctor-export · Jess · Horoscope · onboarding · Settings · notifications.
 - **§7** Safety · privacy · compliance (anonymity limits, tiers, OSA/ICO floor).
 - **§8** Risk register. **§9** Phased rollout. **§10** Source map. **§11** Open decisions for Halli. **§12** Definition-of-Done checklist (self-graded).
@@ -246,6 +247,105 @@ Confidence: **[HIGH]** peer-reviewed/statutory · **[DIR]** directional. Full UR
 
 ---
 
+# PILLAR — COMMUNITY AS A SHARED EXPERIENCE (not a feed)
+_Added v1.1 (2026-06-09) per Halli: "shared activities and stuff, maybe a book, a game and stuff, something to keep people engaged, questions to drive people talking — it needs to be a shared app experience." Written to the SPEC_FRAMEWORK depth standard; built from a fresh three-stream cited research pass (cooperative/collective engagement · book-club / shared reading · question-of-the-day + cooperative games)._
+
+## P.0 Why a pillar, not a feature
+The §1–§5 surfaces (Echo Wall, Witness, Circles) are **places to be anonymous together**. This pillar is the **shared things we DO together** — the daily heartbeat, the book we're reading, the gentle game, the collective build, the weekly close — that make Community feel like *one room everyone is in*, not a scroll. It is the antidote to the death-spiral (a feed looks dead at low activity; a shared ritual + ever-present aggregate never does) and the engine of belonging (SDT: relatedness without competition).
+
+## P.1 Vision fit + the locked form
+Every activity in this pillar takes the **same shape**, derived directly from the research and the locked principles:
+- **Collective, not competitive.** Cooperative play promotes prosocial sharing; competition in mental-health contexts is *contraindicated* and disproportionately harms the anxious/comparison-sensitive — exactly FemWell's audience. **[HIGH]** *(PLOS One coop-play; JMIR 2020 social-comparison meta-review; CHI 2025)*
+- **Aggregate, never individual.** Replace every count with a community aggregate ("together, women here logged 412 moments of rest"). Surface the **descriptive norm** ("most women in their luteal phase said they felt more tired"), which normalises without shaming — never a per-person number. **[HIGH]** *(social-norms literature; Gas/tbh equity design)*
+- **One gentle thing per day, same for everyone, hard-capped (the Wordle law).** One puzzle/prompt a day, identical for all, no second helping — this is *intrinsically* anti-addiction (predictable + scarce, not variable-reward) and creates the shared-experience bond. **[HIGH]** *(Psychology Today on Wordle)*
+- **No streaks, no scoreboards, no loss-aversion.** Streaks weaponise loss aversion and add guilt on bad days (luteal, postpartum, loss); the evidence makes "no scoreboard" an *evidence-based requirement*, not a brand preference. **[HIGH]** *(NerdSip; Medium/Bootcamp; the streak-abandonment literature)*
+- **Lurking is full membership; design for the 90%.** 90-9-1: ~90% lurk, 9% occasional, 1% create. One-tap/one-word floors let the 90% belong; presence itself feeds the aggregate. Never over-reward the 1% (another reason no leaderboard). **[HIGH]** *(NN/g participation inequality)*
+- **Jess is the host — warm, never a roast.** Jess generates prompts/picks/facts/bridges, **tone-locked + template-bounded + reviewed**. The explicit anti-pattern: Fable's Dec-2024 LLM "roast" summaries produced bigoted output about race/disability/sexuality and Fable pulled *all* AI in response. Jess must never be snarky or judge identity/body/life-stage. **[HIGH]** *(Literary Hub; Book Riot; AI Incident DB #882)*
+- **Ambient presence, never named.** "31 women are reflecting right now" builds belonging via ambient awareness; a *named* presence ("Sarah is online") imports the FOMO/status pressure we forbid. Aggregate, user-controllable, temporally fading. **[HIGH]** *(ambient-awareness PMC4853799; FOMO Frontiers 2025)*
+- **Soft windows, not timed pings.** BeReal's single timed prompt manufactured the very pressure it tried to remove, and bred authenticity-policing — so communal moments are **opt-in soft windows with no record of who skipped.** **[HIGH]** *(CHI 2024 BeReal; Sage 2025)*
+- **18+, anonymous-first, no paywalls, UK, no emoji** — inherited, unchanged.
+
+## P.2 The shared-experience surfaces (each fully specced)
+
+### P.2.1 Question of the Day — the daily heartbeat  **[Plan → Phase 3.5]**
+- **Purpose:** one low-pressure daily prompt that drives talking and makes Community feel alive every day; the descriptive-norm reveal tells a woman her experience is normal.
+- **IA:** top of `CommunityHome` + a card on **Today**; one-tap answerable in place. (Ties to Echo Wall: the one-line format is the same.)
+- **UX:** ONE prompt/day, same for everyone. **One-tap or one-word floor** + an *optional* open line (graded depth ladder — light/closed default, depth earned, WNRS model). After answering → **aggregate reveal** ("most women said…", k-floored). **Phase-aware tone:** gentler, validating, non-probing in late luteal (heightened negative-stimulus salience is real, [HIGH]); skip at **zero cost**. Jess draws from a large curated, clinician-screened bank with no near-term repeats; **run ≥60 days consistently** before judging (Reddit ritual rule).
+- **States:** unanswered · answered (shows aggregate) · below-k-floor (prompt shown, aggregate suppressed) · skipped · no-phase-anchor (neutral tone) · crisis-intercepted (open line) · offline (cached).
+- **Data:** `DailyPrompt` (id, text, type[one_tap/one_word/open], options[], phase_tone[gentle/neutral], life_stage_scope, date) · `PromptAnswer` (prompt_id, author_hash, choice/one_word/line, phase, created_date). Aggregate computed server-side, k-floor 20. Writes `asServiceRole`.
+- **Safety:** bank screened for comparison/loss/fertility landmines; phase-tone gating; crisis check on any open line; aggregate-only; zero-cost skip.
+- **Metrics:** breadth (% who tapped), prompt-bank diversity, skip rate, "felt seen" qualitative — **never** per-user streaks.
+- **Edge cases:** tiny cohort (suppress aggregate); prompt fatigue (large rotated bank; give the aggregate back as the daily payoff); awkward prompt (skip + report a prompt).
+
+### P.2.2 The Book Club / Shared Reading — on the existing BookReader  **[Plan → Phase 4]**
+- **Purpose:** shared reading as a **wellbeing intervention** (bibliotherapy/The Reader evidence: reduces isolation, eases loneliness via "feeling understood") — one curated pick, Jess host, predictable cadence.
+- **IA:** built **ON the Lifestyle Library/BookReader**; a Book Club card on `CommunityHome`; reading + discussion happen inside the existing reader.
+- **UX:** ONE curated pick per cadence (**monthly or 6-weekly — never weekly**, the Oprah-burnout + phase-energy lesson), revealed on a fixed day (ritual). Free **per-life-stage Folios** (curated lists, Fable's free-Folio pattern). **Section-boundary "Let's discuss" prompts** authored by Jess, surfaced inside BookReader **with a tutorial** (avoid Fable's "buried treasure"). **Position-gated spoiler safety** (StoryGraph): a checkpoint's discussion unlocks only when *your* progress reaches it → spoiler-safe AND latecomer-safe. **Persistent per-checkpoint async threads** — "the thread is waiting when you arrive; no one is late." **The Reader's "no pressure to speak or read aloud" norm** — lurking, highlighting, reacting all count. **Soft progress indicator, never a "books-read" leaderboard or streak** (performative-reading evidence; StoryGraph's anti-performative model). **Content/trigger warnings per pick** (loss/fertility/trauma).
+- **States:** pick-revealed · reading · checkpoint-unlocked (thread open) · checkpoint-locked (not yet reached) · finished · didn't-finish (no penalty, archived) · tiny-club (k-floor counts) · between-picks.
+- **Data:** reuses the existing **Library/BookReader** book entity. New: `BookClubPick` (book_id, host_intro, cadence_start, life_stage_scope, trigger_warnings[]) · `ClubCheckpoint` (pick_id, index, label, unlock_position, jess_prompt) · `ClubNote` (pick_id, checkpoint_index, author_hash, line, created_date) · `ClubProgress` (pick_id, reader_hash, position). Tier 2, anonymous hashes, `asServiceRole`.
+- **Safety:** spoiler-gating; trigger warnings; crisis check on notes; moderation; **Jess prompts tone-locked (Fable cautionary tale)**; no scoreboard.
+- **Metrics:** % who started a pick, checkpoint-thread breadth, "felt less alone" — **never** books-read counts.
+- **Edge cases:** latecomer (threads persist, unlock on catch-up); book not in Library (curate from the existing Library, or flag for acquisition — no new store); club goes quiet (Jess keeps cadence — Goodreads' dead-group lesson).
+
+### P.2.3 Cooperative light games / gentle play  **[Plan → Phase 4 (myth-buster variant 3.5)]**
+- **Purpose:** shared ritual play without competition or addiction (the Wordle pattern).
+- **Formats (one unit/day max, same for everyone, no leaderboard, predictable reward):**
+  - **Body-literacy myth-buster** — supportive, *teaching not testing*: a fact + gentle reassurance on **every** answer, **clinician-checked**, **NHS-signposted**, no score/rank/timer. (Body-literacy field is explicit this must empower, not test punitively.)
+  - **Collective story-building** — one line each, shared authorship, no right/wrong (defined by shared authorship, non-competitive).
+  - **Guess-the-aggregate / word-association** — the "answer" is the community's collective response, not an individual's score.
+- **States:** open · contributed · revealed-aggregate · below-k-floor · crisis-intercepted (free contribution).
+- **Data:** `DailyActivity` (id, type[trivia/story/aggregate], date, payload, jess_facts[], nhs_links[]) · `ActivityContribution` (activity_id, author_hash, contribution, created_date).
+- **Safety:** trivia facts **pre-authored + clinician-checked + NHS-signposted** — never crowdsource medical claims (the JMIR misinformation evidence: ~60% of peer health-threads carry uncorrected misinformation). **No weight/calorie/competitive content** (banned). Crisis check on free contributions.
+- **Metrics:** participation breadth; learning (qualitative). **No scores.**
+- **Edge cases:** low participation (a collective story reads fine with few lines); misinformation in a free contribution (moderation + facts are authored, not crowdsourced).
+
+### P.2.4 Collective build / shared-goal pool  **[Plan → Phase 4-5]**
+- **Purpose:** belonging via a shared, growing artefact or collective goal — **contribution, not competition** (r/place "impossible to build alone" + collective-impact + gift-economy).
+- **UX:** a **collective build** (a community garden / quilt / constellation that grows from contributions — every contribution adds *equally*, none ranked or attributed competitively) OR a **collective wellbeing pool** ("together this week, women here logged 412 moments of rest" — ONE shared bar that only rises, never zeroes, never per-person). Gentle health-positive behaviours only (rest, hydration, gentle movement, a mindful pause).
+- **States:** contributing · shared-progress · milestone-reached · cycle-reset (new build) · stalled (Jess gently reframes, never shames).
+- **Data:** `CollectiveGoal` (id, kind[build/pool], theme, target, cadence, current_total) · `GoalContribution` (goal_id, author_hash, amount/element, created_date). Aggregate only.
+- **Safety:** no individual ranking/attribution; no streak; behaviours screened (no weight/calorie); k-floor on any sub-counts.
+- **Metrics:** community-level progress + breadth of contribution. **No individual streaks.**
+- **Edge cases:** goal stalls (reframe, never shame); a single contribution still visibly "lands" in the pool (anti-death-spiral).
+
+### P.2.5 Shared rituals & ambient presence  **[Plan → presence 3.5, rituals 4]**
+- **Purpose:** belonging without pressure.
+- **UX:** **Ambient aggregate presence** ("31 women are reflecting right now / you're not alone") — never named, never online-dots, **user-controllable, temporally fading**. **Recurring communal moments** — a weekly **"close the week"** reflection, seasonal/monthly (new-moon/solstice) gentle moments — delivered as a **soft window**, opt-in, **no record of who skipped** (BeReal lesson).
+- **States:** presence-shown · presence-below-k-floor ("among a quiet few tonight" or suppress) · ritual-open (window) · ritual-contributed · ritual-closed (archives) · opted-out.
+- **Data:** `PresenceSignal` (derived count, k-floor) · `RitualMoment` (id, kind[weekly_close/seasonal], window_start/end, jess_prompt) · `RitualContribution` (moment_id, author_hash, line).
+- **Safety:** aggregate-only presence (k-floor); soft windows not pings; no skip-record; crisis check.
+- **Metrics:** ritual participation breadth; presence as a belonging cue (never shown competitively).
+- **Edge cases:** missed window (no penalty, contribution archives); quiet night (gentle copy, never "nobody's here").
+
+## P.3 Jess as host (the spine) — guardrails
+Jess generates/curates **all** of it: QOTD prompts, book-club discussion prompts, clinician-checked trivia facts, daily bridges, ritual prompts. **Hard rules:** warm + supportive; **never roasting, snarky, or judging identity/body/life-stage**; template-bounded; tone-locked; reviewed; clinical facts clinician-checked + NHS-signposted. **Cautionary tale in-spec:** Fable's 2025 AI-roast incident (and its all-AI pullback) is the explicit thing not to do.
+
+## P.4 Cross-page wiring (this pillar's interlocks)
+- **Book Club ↔ Lifestyle Library / BookReader** *(planned):* the club is built **on** the existing BookReader; picks come from the Library; reading + section-boundary discussion prompts happen inside the reader. The single biggest reuse — no new reading engine.
+- **QOTD ↔ Today + cycle phase + Echo Wall** *(planned):* QOTD is the daily heartbeat surfaced on **Today**; **phase drives tone** (gentler in luteal); the one-tap/one-line format **is** the Echo Wall format — a QOTD open answer can *optionally* become an echo (one-tap → "share as a line").
+- **Games / collective pools ↔ Planner + Health** *(planned):* a logged gentle behaviour the **Planner/Health** already tracks (a rest moment, a glass of water) can be **contributed to the community pool** — **aggregate only, never the individual's data exposed to peers** (the §6.3 Health contract holds). Body-literacy trivia ties to the cycle/Health model.
+- **Jess (AI) as host** *(shipped scrub/crisis; planned generation):* the prompt/pick/fact generator for every surface, tone-locked.
+- **Circles as the container** *(planned):* a Circle (stage/interest cohort, §3.6) can run **its own** QOTD, book pick, collective build or ritual — the shared-experience surfaces are the *content* that fills the Circles container. Global vs Circle-scoped is an open question (P.6).
+- **Notifications** *(planned):* informational only ("the new book pick is live", "this week's close-the-week is open") — **never** FOMO/streak/count nudges (§6.11 holds).
+
+## P.5 Rollout slotting (into the existing phases)
+- **Phase 3.5 (with the route correction):** **QOTD** (the daily heartbeat — makes the new `/Community` feel alive from day one and defeats the death-spiral); **ambient aggregate presence**; a **body-literacy myth-buster** as a QOTD variant. Low entity cost; high belonging payoff.
+- **Phase 4:** **Book Club** on BookReader; **cooperative games** (story-building, guess-the-aggregate); **collective build / pool**; **weekly/seasonal rituals**; **Circles-as-container**.
+- **Phase 5:** deepen — per-cohort activities, expert-led / clinician-curated book picks (ties to the §3.9 expert layer), seasonal events.
+- **Paywall:** all free by principle. Expert-curated picks/AMAs are the only monetisable depth — never the activities themselves.
+
+## P.6 New open questions (this pillar — folded into §11)
+- **Book-club cadence:** monthly vs 6-weekly? *(Rec: 6-weekly — gentler for low-energy phases.)*
+- **Collective-build metaphor:** garden / quilt / constellation / tapestry? *(Rec: a seasonal one that resets per cycle — Ms Atelier to choose.)*
+- **Do QOTD answers feed the Echo Wall** (one-tap → optional echo), or stay separate? *(Rec: optional opt-in bridge, never automatic.)*
+- **Trivia fact-bank clinician sign-off owner** — ties to the §3.9 expert layer. *(Rec: same verified-clinician pool.)*
+- **Activity scope:** global, Circle-scoped, or both? *(Rec: global at launch, Circle-scoped in Phase 4 once Circles exist.)*
+
+## P.7 Research basis (cited; full lists in the three agent passes + §10)
+Cooperative > competitive for wellbeing/inclusion: PLOS One coop-play (https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0221092) [HIGH]; competition contraindicated in mental-health apps: JMIR 2020 (https://www.jmir.org/2020/3/e15642/) [HIGH]. Collective build / contribution-not-competition: r/place (https://en.wikipedia.org/wiki/R/place) [DIR]; gift-economy First Monday (https://firstmonday.org/ojs/index.php/fm/article/download/1101/1021) [HIGH]. Streak/loss-aversion harm: NerdSip (https://nerdsip.com/blog/gamification-gone-wrong-when-streaks-become-the-point) [HIGH]. Participation inequality 90-9-1: NN/g (https://www.nngroup.com/articles/participation-inequality/) [HIGH]. Ambient presence: PMC4853799 (https://pmc.ncbi.nlm.nih.gov/articles/PMC4853799/) [HIGH]; FOMO: Frontiers 2025 (https://www.frontiersin.org/journals/psychology/articles/10.3389/fpsyg.2025.1582572/full) [HIGH]. BeReal soft-moment lesson: CHI 2024 (https://dl.acm.org/doi/10.1145/3613904.3642690) [HIGH]. Wordle once-a-day shared-not-competitive: Psychology Today (https://www.psychologytoday.com/ca/blog/the-asymmetric-brain/202201/the-psychology-behind-wordle) [HIGH]. Book club: StoryGraph buddy-reads/spoiler-gating (https://thestorygraph.freshdesk.com/support/solutions/articles/79000141943-buddy-reads-and-readalongs-on-the-storygraph) [HIGH]; Fable mechanics + AI cautionary tale (https://bookriot.com/fable-book-club-app-review/ , https://lithub.com/fables-ai-generated-end-of-year-reading-summaries-veered-into-bigotry/) [HIGH]; Reese/Oprah/Jenna curated-pick model (https://reesesbookclub.com/faqs/) [HIGH]; bibliotherapy/The Reader wellbeing evidence (https://www.thereader.org.uk/shared-reading-wwd/our-research/ , https://www.frontiersin.org/journals/psychiatry/articles/10.3389/fpsyt.2025.1681462/full) [HIGH]. QOTD/descriptive-norm + one-tap floor: Nulab QOTD (https://nulab.com/learn/collaboration/question-of-the-day-examples/) [HIGH], Gas equity design (https://en.wikipedia.org/wiki/Gas_(app)) [HIGH], WNRS depth ladder (https://www.werenotreallystrangers.com/) [HIGH]. Luteal emotional-salience (phase-aware prompts): PLOS One (https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0059780) [HIGH]. Health-trivia misinformation guardrail: JMIR 2025 (https://www.jmir.org/2025/1/e71140) [HIGH].
+
+---
+
 # §6 — CROSS-APP / CROSS-FEATURE RELATIONSHIPS
 
 The interlock map. Direction notation: → (data/affordance flows that way). **Shipped** vs **Planned** marked per block.
@@ -325,8 +425,8 @@ The interlock map. Direction notation: → (data/affordance flows that way). **S
 **This is the deploy-blocker for any scaled real-traffic wall.** Three statutes stack:
 - **[LEGAL — REQUIRED] Online Safety Act 2023.** The Community is a **regulated user-to-user service**; baseline duties bind *all* in-scope services regardless of size (Ofcom runs a "small but risky" taskforce). Required: a written **illegal-content risk assessment** (was due **16 Mar 2025**), **content-reporting (s.20) + complaints (s.21)** systems, a named **senior accountable individual**, **ToS** describing protections + any proactive tech; and — because the **teen** life-stage can reach a social surface — a **children's-access assessment** (due 16 Apr 2025) and likely a **children's risk assessment** (due 24 Jul 2025) with Primary-Priority-Content gating (self-harm/ED/suicide/porn). Fines up to **£18m or 10% of qualifying worldwide revenue**; senior-manager criminal liability for ignoring Ofcom. **Owner: Halli (must appoint the accountable individual + commission the risk assessments).**
 - **[LEGAL — REQUIRED] UK GDPR / DPA 2018.** Every health post is **special-category (Art. 9)** data → Art. 6 basis **+** a separate Art. 9 condition. **Use explicit consent (Art. 9(2)(a))**, captured in onboarding, withdrawable — **not** 9(2)(e) "made public" (it's narrow and forfeits erasure rights). Required artefacts: an **Appropriate Policy Document**, a **DPIA** (health + likely-children = high-risk), a documented retention/deletion policy, working erasure. **Owner: Halli / DPO.**
-- **[LEGAL — REQUIRED] ICO Children's Code.** Because the service is "likely accessed by children": high-privacy defaults, data minimisation, **geolocation off by default**, risk-proportionate **age assurance**. **Owner: Halli.**
-- **[RECOMMENDED SCOPING DECISION] Teen routing.** The lowest-risk path for a small team is to **keep under-18s off the peer-posting surface** (read-only / no-post for the teen stage), which materially shrinks the children's-RA + high-assurance-age-check burden. Flagged as a §11 decision.
+- **[RESOLVED BY THE 18+ DECISION] ICO Children's Code.** Community is **18+ adults-only**, so the Children's Code does not bind the peer surface (no minors reach it). High-privacy defaults, data minimisation and geolocation-off remain good practice for the wider app. **An 18+ age-gate is required at the Community boundary. Owner: Halli.**
+- **[✅ DECIDED 2026-06-09 — 18+ ONLY] Teen routing.** Community is **adults-only (18+)**; under-18s have **no access** to any peer surface. This removes the ICO Children's Code + OSA children's-RA + minor age-assurance burden **entirely** — only an **18+ age-gate** remains at the Community boundary. **Named senior accountable person: Halli.**
 - **Status:** all of the above is **specced, none executed.** Safe for a **controlled sale demo with seeded/no real user data**; **required before any real user posts at scale.**
 
 ---
@@ -412,9 +512,9 @@ Mapped to FemWell's phase numbering. Each phase is independently shippable + liv
 # §11 — OPEN DECISIONS FOR HALLI
 
 **Blocking (deploy of a scaled, real-traffic Community can't proceed without these):**
-1. **[BLOCKING] MP8's fate / the route correction.** The live `/Community` is the off-thesis likes-forum. **Options:** (a) replace `/Community` with the editorial surface and retire MP8 entirely; (b) keep MP8 as a "general chat" tab alongside the editorial surfaces, **with `likes_count` removed** to honour principle #5; (c) leave as-is. **Recommendation: (a)** — it is the locked thesis, honours every principle, and is the diligence story. *(This is also the single biggest visible gap.)*
-2. **[BLOCKING] OSA/ICO legal-floor owner + timeline.** Who appoints the **senior accountable individual**, commissions the **illegal-content + children's risk assessments**, writes the **APD + DPIA + special-category consent flow**, and stands up **age assurance** — and by when? Deadlines are already past in statute. **Recommendation:** Halli owns; treat as a Phase 3.5 gate; safe to demo on seeded data meanwhile.
-3. **[BLOCKING] Teen routing.** Keep under-18s **off the peer-posting surface** (read-only), or build a fully Children's-Code-compliant teen community? **Recommendation: read-only for the teen stage** — slashes the age-assurance + children's-RA burden for a small team.
+1. **✅ DECIDED (2026-06-09) — MP8's fate / route correction.** Option (a) ACCEPTED: **retire the MP8 forum entirely and make the editorial anonymity-first surface the real `/Community`.** (MP8's `likes_count`/handles violated principles #5/#8; this is the locked thesis + the diligence story.) Now a Phase 3.5 build item, not an open question.
+2. **✅ DECIDED (2026-06-09) — OSA/ICO owner.** **Halli is the named senior accountable person.** Community is **18+ adults-only**, which removes the children's risk assessments + minor age-assurance. Still to execute (Phase 3.5 gate, Halli-owned): the **illegal-content risk assessment**, **s.20/s.21** report+complaints UI, **APD**, **DPIA**, **explicit special-category consent flow**, and an **18+ age-gate**. Safe to demo on seeded data meanwhile.
+3. **✅ DECIDED (2026-06-09) — Community is 18+ (adults only).** Under-18s have **no access** to any peer surface. Removes the ICO Children's Code + OSA children's-RA + minor age-assurance burden entirely; only an **18+ age-gate** (self-declared + proportionate assurance) remains.
 
 **Important (shape the build, not blocking a demo):**
 4. **Per-card hold-count visibility** — keep small aggregate counts on echoes, or move counts to the author's private "My Echoes" only (the reconciliation said "private to writer")? **Recommendation:** keep small counts but review against de-anonymisation in tiny cohorts (k-floor logic).
@@ -424,6 +524,8 @@ Mapped to FemWell's phase numbering. Each phase is independently shippable + liv
 8. **Circles investment** — build the full phase/program/region/life-stage/condition taxonomy with circle-scoped echoes, or stay light? **Recommendation:** yes in Phase 4 — it is the evidence-backed "small cohort" unit (§4), but **match on stage+interest, never phase-as-wall.**
 9. **Expert AMA layer** — in scope before the sale demo (a strong buyer signal + the misinformation wedge), or post-sale? **Recommendation:** a lightweight async "Ask an Expert" before the demo if a verified clinician is available; full live AMAs post-demo.
 10. **Separate track** — do Circle of Three / Partner Sync / Care Bridge v2 join the Community roadmap or stay separate? **Recommendation:** stay separate (narrow-private/clinical, not anonymous-peer).
+
+**Shared-experience pillar (new, 2026-06-09 — full detail in P.6):** book-club cadence (rec: 6-weekly); collective-build metaphor (garden/quilt/constellation — Atelier's call); whether QOTD answers can opt-in to become echoes (rec: optional, never automatic); who clinician-signs-off the body-literacy fact bank (rec: the §3.9 expert pool); activity scope global vs Circle-scoped (rec: global at launch, Circle-scoped in Phase 4).
 
 **Carried from source docs (still open):** the "Witness" vs "Hold" naming sweep (gesture vs feature name); the legacy `Posts` feed's long-term fate; the Living Wisdom holds-threshold (recommended 5) after data.
 
