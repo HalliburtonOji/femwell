@@ -7,11 +7,13 @@
 // and one answer each, mutual. Editorial cream/ink, Lucide only, no emoji.
 
 import { useState, useEffect, useRef, useMemo } from "react";
-import { Users, Lock, Check, X, ArrowRight } from "lucide-react";
+import { Users, Lock, Check, X, ArrowRight, ShieldAlert, Phone, MessageSquareText } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { PAPER_BG, T, UI, Script, Hand, Eyebrow, Rule } from "../Editorial";
 import { twinHash, twinAvailable, currentPair, rememberPair, forgetPair } from "./twinAnon";
 import { TWIN_DAYS, MAX_ANSWER_CHARS, promptForDay, PHASE_COHORT } from "./twinConfig";
+import { crisisCheck } from "../echo/echoScrub";
+import { CRISIS_RESOURCES } from "../echo/echoConfig";
 
 export default function PhaseTwin({ user, phase = null, profile = null, onClose }) {
   const available = useMemo(() => twinAvailable(), []);
@@ -75,14 +77,19 @@ export default function PhaseTwin({ user, phase = null, profile = null, onClose 
   };
 
   const handleShare = async () => {
-    if (busy || draft.trim().length < 1 || !pair?.id) return; setBusy(true);
+    if (busy || draft.trim().length < 1 || !pair?.id) return;
+    // Crisis interception (B1) — a heavy disclosure never goes to a stranger.
+    if (crisisCheck(draft).intercept) { setView("crisis"); return; }
+    setBusy(true);
     try {
       const wh = await twinHash(user?.id);
       const day = pair.currentDay || pair.day;
       const prompt = promptForDay(day);
-      await base44.functions.invoke("postTwinEntry", {
+      const res = await base44.functions.invoke("postTwinEntry", {
         user_id: user?.id, twin_hash: wh, pair_id: pair.id, day, prompt_key: prompt.key, body: draft.trim(),
       });
+      const d = res?.data ?? res;
+      if (d?.intercept) { setView("crisis"); return; }     // server belt-and-braces
       await loadDay(pair.id, day);
     } catch (e) { console.error("postTwinEntry failed:", e); }
     finally { setBusy(false); }
@@ -216,6 +223,29 @@ export default function PhaseTwin({ user, phase = null, profile = null, onClose 
               <Users size={16} style={{ color: T.paperHi }} /> Find a new twin
             </button>
             <button onClick={onClose} style={{ ...secondaryBtn, marginTop: 12 }}>Done</button>
+          </>
+        )}
+
+        {view === "crisis" && (
+          <>
+            <Eyebrow mb={10}>Someone is there, right now</Eyebrow>
+            <div style={{ background: T.ink, borderRadius: 14, padding: "20px 20px 22px", marginTop: 12, marginBottom: 18 }}>
+              <ShieldAlert size={22} style={{ color: T.blush, marginBottom: 8 }} />
+              <Hand size={21} color={T.paperHi} carve={false}>
+                This reads as heavy. A twin isn{"’"}t the right shape for tonight — you deserve more than one person can hold, not less. These people are there now.
+              </Hand>
+            </div>
+            {CRISIS_RESOURCES.map((r) => (
+              <div key={r.name} style={{ background: T.paperHi, border: `1px solid ${T.paperDeep}`, borderRadius: 12, padding: "12px 14px", marginBottom: 10, display: "flex", gap: 10, alignItems: "flex-start" }}>
+                {r.sms ? <MessageSquareText size={16} style={{ color: T.gold, marginTop: 2 }} /> : <Phone size={16} style={{ color: T.gold, marginTop: 2 }} />}
+                <div>
+                  <div style={{ fontFamily: UI, fontSize: 13, fontWeight: 700, color: T.ink }}>{r.name}</div>
+                  <div style={{ fontFamily: UI, fontSize: 12.5, color: T.muted }}>{r.detail}</div>
+                </div>
+              </div>
+            ))}
+            <button onClick={() => setView(pair?.status === "active" ? "day" : "intro")} style={{ ...secondaryBtn, marginTop: 8 }}>Back</button>
+            <button onClick={onClose} style={{ ...primaryBtn, marginTop: 12 }}>Close</button>
           </>
         )}
 

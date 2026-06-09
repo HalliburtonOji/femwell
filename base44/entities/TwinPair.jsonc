@@ -56,5 +56,14 @@
     { "fields": ["b_hash"] },
     { "fields": ["status"] },
     { "fields": ["match_phase"] }
-  ]
+  ],
+  // Anonymity lock (B3): service-role only. All access via joinTwin / getTwinDay /
+  // postTwinEntry (asServiceRole, which bypass RLS). A plain client must NOT be able
+  // to .filter() pairings (hashes, the blur-gated bodies). Verify direct GET → 403.
+  "rls": {
+    "create": { "user_condition": { "role": "admin" } },
+    "read":   { "user_condition": { "role": "admin" } },
+    "update": { "user_condition": { "role": "admin" } },
+    "delete": { "user_condition": { "role": "admin" } }
+  }
 }

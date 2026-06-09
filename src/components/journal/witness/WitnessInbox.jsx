@@ -39,6 +39,8 @@ export default function WitnessInbox({ user, phase = null, profile = null, onClo
   const [outcome, setOutcome] = useState("");      // responded label | passed | reported
   const [held, setHeld] = useState(heldCountLocal());
   const openedRef = useRef(false);
+  const keyTriesRef = useRef(0);          // B2: bound the ZK key-pending wait
+  const MAX_KEY_WAITS = 22;               // ~3 min of 8s polls before we stop waiting
 
   // Decode the handed entry for whichever envelope it uses. FWWT1 opens directly
   // (key inside). FWWT2 (zero-knowledge) needs the writer's wrapped data-key: if it
@@ -91,10 +93,18 @@ export default function WitnessInbox({ user, phase = null, profile = null, onClo
 
   // ZK (FWWT2): while waiting for the writer to deliver the wrapped key, re-claim
   // (the in-flight path returns our same row) until wrapped_key appears, then decode.
+  // B2: while waiting for the writer to deliver the wrapped key, re-claim until it
+  // arrives — but DON'T wait forever. Stop after MAX_KEY_WAITS (or if the handoff
+  // expired) and show an honest "still sealed" terminal state with a way out.
   useEffect(() => {
     if (stage !== "keypending" || !request?.id) return;
     let stop = false;
+    keyTriesRef.current = 0;
     const tick = async () => {
+      keyTriesRef.current += 1;
+      if (request.expires_at && new Date(request.expires_at).getTime() < Date.now()) {
+        if (!stop) setStage("keytimeout"); return;
+      }
       try {
         const wh = await witnessHash(user?.id);
         const res = await base44.functions.invoke("claimWitness", {
@@ -108,8 +118,10 @@ export default function WitnessInbox({ user, phase = null, profile = null, onClo
         if (d?.request?.id === request.id && d.request.wrapped_key) {
           setRequest(d.request);
           await decodeAndShow(d.request);
+          return;
         }
       } catch { /* keep waiting */ }
+      if (!stop && keyTriesRef.current >= MAX_KEY_WAITS) setStage("keytimeout");
     };
     const iv = setInterval(tick, 8000);
     return () => { stop = true; clearInterval(iv); };
@@ -244,6 +256,22 @@ export default function WitnessInbox({ user, phase = null, profile = null, onClo
               She wrote this for one pair of hands only. Her key is on its way to yours — no one in between can read it, not even us. This opens the moment it arrives.
             </Hand>
             <button onClick={onClose} style={primaryBtn}>I{"’"}ll come back</button>
+          </>
+        )}
+
+        {stage === "keytimeout" && (
+          <>
+            {head("Still sealed")}
+            <div style={{ display: "inline-flex", alignItems: "center", gap: 6, marginTop: 12, marginBottom: 14 }}>
+              <Lock size={14} style={{ color: T.gold }} />
+              <span style={{ fontFamily: UI, fontSize: 11.5, color: T.muted, fontWeight: 600 }}>End-to-end encrypted</span>
+            </div>
+            <Hand size={21} color={T.inkSoft} style={{ marginBottom: 22 }}>
+              Her key hasn{"’"}t reached your device yet — with maximum-privacy entries, only her device can hand it over, and she hasn{"’"}t been back since. Nothing is lost: it can still open if she returns, and it goes back to her if it isn{"’"}t opened in time. You don{"’"}t need to keep waiting.
+            </Hand>
+            <button onClick={() => { keyTriesRef.current = 0; setStage("keypending"); }} style={secondaryBtn}>Check once more</button>
+            <button onClick={claim} style={{ ...secondaryBtn, marginTop: 12 }}>Hold someone else</button>
+            <button onClick={onClose} style={{ ...primaryBtn, marginTop: 12 }}>Done</button>
           </>
         )}
 
