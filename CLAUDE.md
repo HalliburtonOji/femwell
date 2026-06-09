@@ -32,6 +32,13 @@ FemWell has a standing team of named subagents, bound by specs at `.claude/agent
 - Test user: ojihalliburton57 / ojihalliburton57@gmail.com
 - Market is UK (NHS, GMC/NMC/HCPC, £, UK GDPR). No emoji anywhere (Fraunces + Inter + Lucide/SVG only). One unified bottom nav at all viewports.
 
+## WHOLE-LIFE WELLNESS — NOT A CLINICAL TRACKER (bake into EVERY build):
+FemWell is a **whole-life wellness app for women, not a health/clinical tracker. Health is one room, not the house.** Women won't open a wholesome app just to log symptoms and discuss their cycle all day. Every feature, every page, and every cross-surface connection must span life domains — not just health.
+- **The life domains to serve (alongside, not instead of, health/cycle):** relationships · dating/marriage · friendship · career/work · money/finance · interests/hobbies · fashion/beauty · creativity · identity/self-expression · joy/fun · entertainment · community/"gossip"/venting.
+- **RULE 1 — span life, not just health.** Do NOT make features clinical-only. A game isn't a cycle quiz; a prompt isn't a symptom check; a community room isn't only "PMDD support." Add role-play, fashion, interests, career, friendship, lighthearted fun. **Lighthearted by default; let life-stage gently TINT, never dominate.**
+- **RULE 2 — wire ALL the surfaces, every time.** The recurring failure is wiring only 2–3 (always the health) surfaces and ignoring the rest. Every cross-page design MUST account for ALL of: **Today · Journal · Community · Nutrition · Lifestyle (+ its sub-divisions: For You / Read / Listen / Daily Story / Horoscope) · Health · Pulse/Trends/Insights · Planner · Profile · Programs · Doctor Export · Jess · Events · Deals.** Name each surface's role explicitly; never default to Health/Cycle/Planner.
+- **Voice + feel:** warm "smart-friend" tone, not a clinician; joyful, wholesome, anonymous-safe; never cold/clinical. Reference plan: `claude-state/WHOLE_LIFE_REBALANCE.html`.
+
 ## WHEN DISPATCH (ORCHESTRATOR) RESETS:
 If you see "This session is being continued from a previous conversation that ran out of context" — you have reset. STOP. Tell the user: "I've just reset and lost workflow memory. I'm reading STATUS.md + ONBOARDING_READ_FIRST.md for the rules and current state. Ready to continue — what's next?" Then wait for instruction before doing anything.
 
