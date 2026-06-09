@@ -1917,6 +1917,14 @@ function JournalDemosTab() {
 // picks the UI direction. Shared content: src/pages/communityShared.js.
 const COMMUNITY_DEMOS = [
   {
+    n: 6, slug: "CommunityDemo6",
+    title: "★ PRODUCTION CANDIDATE — Rooms + Tabs hybrid (chosen)",
+    subtitle: "Halli's pick: doors to jump in, tabs to move around — plus Comments & Jess-as-games-master",
+    accent: T.crimson,
+    body: "The chosen production direction: a ~65/35 HYBRID of Rooms-as-doors (Demo 2) + Tabbed (Demo 3). The home is a grid of doors (the easy jump-in); once inside a room, a sticky tab bar flicks you between rooms (Lounge · Echo · Lighter · Share · Talk) with a Doors pill back to the home. NEW: the COMMENTS feature — the poster chooses per post whether replies are OPEN (flat, anonymous, readable by all, kindness prompt + 'peer support not medical advice' + crisis pre-check + char limit) or REACTION-ONLY; lurking is first-class (threads are visible read-only); empty threads softened, never '0 comments'; no counts anywhere. Plus a light JESS-AS-GAMES-MASTER round (a gentle countdown, simultaneous reveal, 'most of you said…', no winner). Same palette / paper / Ephesis+Cormorant as the others.",
+    tags: ["Rooms-as-doors home", "Tabs inside a room", "Comments on/off (poster's choice)", "Crisis-safe compose", "Jess games-master (timed, no winner)"],
+  },
+  {
     n: 1, slug: "CommunityDemo1",
     title: "UX 1 — Calm long-scroll editorial",
     subtitle: "The whole Community as a quiet magazine read",

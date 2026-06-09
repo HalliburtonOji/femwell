@@ -123,5 +123,42 @@ export const UK_RESOURCES = [
   { name: "Mind",       detail: "Call 0300 123 3393 (Mon–Fri).", Icon: Phone },
 ];
 
-export const FOOTER_LINE = "No handles. No threads. No DMs. No likes, no leaderboards. Anonymous, 18+ — a room everyone's in.";
+export const FOOTER_LINE = "No handles. No DMs. No likes, no leaderboards. Anonymous, 18+ — a room everyone's in.";
+
+// ── COMMENTS (per-post on/off; FLAT, anonymous, no counts; poster chooses) ────
+// The poster decides per post: "open to comments" or "reaction-only". Comments
+// are publicly readable (lurking is first-class), flat (no reply-to-reply), kind
+// by design. Empty open threads are softened, never shown as "0 comments".
+export const COMMENTS_BY_POST = {
+  l1: { open: true,  list: [
+    { id: "c1", body: "This made me sit up straighter. Well done you." },
+    { id: "c2", body: "The ceiling never does. Holding this with you." },
+  ] },
+  l2: { open: true,  list: [
+    { id: "c3", body: "I'd want to know too. Maybe a gentle 'I missed you on the day'?" },
+  ] },
+  l3: { open: false, list: [] },   // reaction-only (poster's choice)
+  l4: { open: true,  list: [] },   // open but empty → soften, never "0 comments"
+  l5: { open: false, list: [] },   // reaction-only
+  l6: { open: true,  list: [
+    { id: "c4", body: "Not just you. I mute them for whole afternoons now." },
+  ] },
+};
+export const COMMENT_DISCLAIMER = "Peer support, not medical advice. For anything medical, speak to your GP or NHS 111.";
+export const COMMENT_KINDNESS = "Share what helped you — you don't have to fix it. “I hear you” is enough.";
+export const COMMENT_MAX = 400;
+export const COMMENT_EMPTY = "No replies yet — be the first kind voice, or just send a reaction.";
+
+// ── JESS AS GAMES MASTER — a gentle, timed, simultaneous-reveal round ─────────
+// One shared prompt, a generous countdown, everyone answers privately, then Jess
+// reveals only the AGGREGATE warmly. No winner, no score, no leaderboard.
+export const GM_ROUND = {
+  host: "Jess",
+  intro: "I'm hosting a tiny round — answer whenever, the room reveals together. No winners here, just company.",
+  prompt: "If today had a weather, what was yours?",
+  options: ["bright spells", "a bit grey", "stormy then calm", "soft and still"],
+  seconds: 30,
+  reveal: "Most of you said “a bit grey” — and a good few found the calm after the storm. You're in good company tonight.",
+};
+
 export { ShieldAlert };

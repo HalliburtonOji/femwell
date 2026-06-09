@@ -103,6 +103,7 @@ import CommunityDemo2 from './pages/CommunityDemo2';
 import CommunityDemo3 from './pages/CommunityDemo3';
 import CommunityDemo4 from './pages/CommunityDemo4';
 import CommunityDemo5 from './pages/CommunityDemo5';
+import CommunityDemo6 from './pages/CommunityDemo6';   // production candidate: rooms+tabs hybrid + comments + games-master
 // Sprint 10 — Partner Sync hub (user's share-code page). The
 // matching public /partner?code=… read-only view (Partner.jsx) is
 // wired separately in App.jsx OUTSIDE this PAGES map so it can run
@@ -166,6 +167,7 @@ export const PAGES = {
     "CommunityDemo3": CommunityDemo3,
     "CommunityDemo4": CommunityDemo4,
     "CommunityDemo5": CommunityDemo5,
+    "CommunityDemo6": CommunityDemo6,
     // HealthDashboard intentionally NOT registered — see import comment above.
     // "HealthDashboard": HealthDashboard,
 }

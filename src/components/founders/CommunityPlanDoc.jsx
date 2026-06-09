@@ -2,7 +2,7 @@
 // FoundersOS dev surface. Editorial, readable. Source of truth remains the .md.
 
 import React from "react";
-import { DocShell, Eyebrow, Title, H2, P, Card, Bullets, Pull, Badge, Pills, Table, Foot, D } from "./DocKit";
+import { DocShell, Eyebrow, Title, H2, H3, P, Card, Bullets, Pull, Badge, Pills, Table, Foot, D } from "./DocKit";
 
 export default function CommunityPlanDoc() {
   return (
@@ -92,6 +92,28 @@ export default function CommunityPlanDoc() {
         ["5", "Phase Twin + 1:1 audio + live audio Circles + expert AMA layer"],
       ]} />
       <P><strong>Money:</strong> all peer surfaces free by principle; monetise expert depth only (AMAs, specialist content) — never the wall, Witness, Twin, or the rooms.</P>
+
+      <H2>I · Chosen UX + Comments + Jess-as-games-master (2026-06-09)</H2>
+      <P><strong>Chosen production UX:</strong> the <strong>Rooms + Tabs hybrid</strong> (~65/35) — rooms-as-doors is the home (the easy jump-in); a sticky tab bar is the in-room navigation. Demo: <strong>CommunityDemo6</strong> (the production candidate).</P>
+      <H3>Comments (new — a careful shift from react-only)</H3>
+      <Bullets items={[
+        <span><strong>Poster chooses per post:</strong> Open to comments vs Reaction-only (gentler default); flippable, never deletes.</span>,
+        <span><strong>Flat, not threaded</strong> — every comment addresses the poster; removes the pile-on / co-rumination substrate.</span>,
+        <span><strong>Lurking first-class</strong> — comments publicly readable (reading replies lowers anxiety); empty threads softened, never "0 comments".</span>,
+        <span><strong>Kind-by-design compose</strong> — "peer support, not medical advice", a kindness prompt, char limit, slow-mode, no counts, report→hide-not-delete.</span>,
+        <span><strong>Crisis-safe pipeline</strong> — pre-publication: crisis pre-check → UK support (never silent-drop) → abuse check → publish / rephrase-nudge / hold; a health-vocab allowlist so clinical words are never auto-blocked.</span>,
+      ]} />
+      <H3>Jess as games master</H3>
+      <P>One shared prompt, a generous countdown, everyone answers privately, then Jess reveals <strong>only the aggregate</strong> ("most of you said…") — <strong>no winner, no score</strong>. Jess celebrates, never judges (the post-Fable safe line).</P>
+      <H3>AI moderation — feasibility verdicts</H3>
+      <Table rows={[
+        ["Capability", "Verdict"],
+        ["Jess games-master (timed)", "Buildable on Base44 now — client countdown + a Deno fn calling the built-in Claude integration; NOT live multiplayer"],
+        ["Comment moderation", "Buildable now — needs only an OpenAI API key (free Moderation API) + the keyword crisis-check + health allowlist"],
+        ["Async voice-note moderation", "Buildable — needs an external STT (AssemblyAI / Deepgram) → classify → hold-before-delivery"],
+        ["Live audio moderation", "DEFER — can't pre-screen live safely; use structural + human (no recording)"],
+      ]} />
+      <P style={{ fontSize: 14 }}><em>OSA: AI pre-screening helps the legal floor, but the ToS must disclose proactive-tech use + keep human oversight + appeals. Owner: Halli.</em></P>
 
       <Foot>
         Mirror of <strong>claude-state/COMMUNITY_MEGA_PLAN.md (v2-FINAL)</strong> · companions: Whole-Life &amp; Audio tabs · FoundersOS dev surface. The .md remains the source of truth.
