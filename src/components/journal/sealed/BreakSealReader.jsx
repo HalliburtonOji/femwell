@@ -6,13 +6,14 @@
 // different browser), we say so honestly rather than show nothing.
 
 import { useState } from "react";
-import { X, Lock } from "lucide-react";
+import { X, Lock, Feather } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { T, UI, SERIF, HAND, PRESS, Eyebrow, Rule, Heart, Script, Hand } from "../Editorial";
 import { decryptText, isEncryptedEnvelope } from "@/utils/journalCrypto";
 import { formatLetterDate } from "@/utils/sealedLetters";
+import { isAnniversaryLetter } from "./sealedThreads";
 
-export default function BreakSealReader({ letter, onClose, onSeen }) {
+export default function BreakSealReader({ letter, onClose, onSeen, onWriteBack }) {
   const [stage, setStage] = useState("sealed"); // sealed | opening | revealed | error
   const [text, setText] = useState("");
 
@@ -91,6 +92,19 @@ export default function BreakSealReader({ letter, onClose, onSeen }) {
             <div style={{ display: "inline-flex", alignItems: "center", gap: 6, marginTop: 14, fontFamily: UI, fontSize: 10.5, color: T.muted, letterSpacing: 0.5, fontWeight: 600 }}>
               <Lock size={11} /> Decrypted on this device. The server only ever held the cipher.
             </div>
+
+            {/* v2: write back into the same thread (continue the correspondence / annual ritual) */}
+            {onWriteBack && (
+              <div style={{ marginTop: 20, paddingTop: 16, borderTop: `1px solid ${T.paperDeep}` }}>
+                <button onClick={() => onWriteBack(letter)} style={{
+                  display: "inline-flex", alignItems: "center", gap: 7, background: "transparent",
+                  border: `1px solid ${T.gold}`, padding: "10px 22px", cursor: "pointer",
+                  fontFamily: HAND, fontWeight: 600, fontSize: 18, color: T.ink, textShadow: PRESS, borderRadius: 3,
+                }}>
+                  <Feather size={14} /> {isAnniversaryLetter(letter) ? "Seal one for next year" : "Write back to her"}
+                </button>
+              </div>
+            )}
           </div>
         )}
 

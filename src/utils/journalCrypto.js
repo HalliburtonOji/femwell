@@ -104,7 +104,11 @@ export function isEncryptedEnvelope(str) {
 
 // Encrypt a letter body. `trigger` is a small, non-sensitive label object stored
 // in the clear inside the envelope so the sealed list can describe the unlock.
-export async function encryptText(plaintext, trigger = null) {
+// `extraMeta` carries small NON-SECRET facts stored in the clear envelope header
+// (e.g. Sealed Letters v2 threading: { thread: { rootId, replyTo, seq } }) so the
+// vault can group letters into threads without decrypting any of them. Never put
+// anything private here — only the ciphertext (ct) is secret.
+export async function encryptText(plaintext, trigger = null, extraMeta = null) {
   if (!cryptoAvailable()) throw new Error("crypto-unavailable");
   const secret = getDeviceSecret();
   const salt = new Uint8Array(16);
@@ -125,18 +129,19 @@ export async function encryptText(plaintext, trigger = null) {
     iv: bytesToB64(iv),
     ct: bytesToB64(new Uint8Array(ctBuf)),
     trg: trigger || undefined,
+    meta: extraMeta || undefined,
   };
   return ENVELOPE_PREFIX + btoa(unescape(encodeURIComponent(JSON.stringify(envelope))));
 }
 
 // Parse the non-secret header of an envelope WITHOUT decrypting (for the list:
-// trigger label, version). Returns null if not a valid envelope.
+// trigger label, version, thread meta). Returns null if not a valid envelope.
 export function readEnvelopeMeta(envelope) {
   if (!isEncryptedEnvelope(envelope)) return null;
   try {
     const json = decodeURIComponent(escape(atob(envelope.slice(ENVELOPE_PREFIX.length))));
     const obj = JSON.parse(json);
-    return { v: obj.v, trigger: obj.trg || null };
+    return { v: obj.v, trigger: obj.trg || null, meta: obj.meta || null };
   } catch {
     return null;
   }

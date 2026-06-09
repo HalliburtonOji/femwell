@@ -21,10 +21,13 @@ const inputStyle = {
   fontFamily: UI, fontSize: 14, color: T.ink, outline: "none",
 };
 
-export default function SealedLetterCompose({ profile, onClose, onSealed, seedBody = "" }) {
+export default function SealedLetterCompose({
+  profile, onClose, onSealed, seedBody = "",
+  thread = null, seedTriggerType = null, replyToLabel = "",   // v2: writing back into a thread
+}) {
   const [body, setBody] = useState(seedBody || "");
   const [title, setTitle] = useState("");
-  const [triggerType, setTriggerType] = useState("future");
+  const [triggerType, setTriggerType] = useState(seedTriggerType || "future");
   const [futureDate, setFutureDate] = useState("");
   const [phase, setPhase] = useState("follicular");
   const [customDate, setCustomDate] = useState(false);
@@ -48,7 +51,8 @@ export default function SealedLetterCompose({ profile, onClose, onSealed, seedBo
     if (!canEncrypt) { setError("This device can't encrypt right now, so the letter won't be stored. Try a different browser."); return; }
     setSealing(true);
     try {
-      const envelope = await encryptText(body.trim(), resolved.trigger);
+      // v2: thread linkage rides in the CLEAR envelope meta (no entity change).
+      const envelope = await encryptText(body.trim(), resolved.trigger, thread ? { thread } : null);
       const saved = await base44.entities.SealedLetters.create({
         body: envelope,             // CIPHERTEXT — never plaintext
         seal_date: resolved.sealDate,
@@ -72,9 +76,11 @@ export default function SealedLetterCompose({ profile, onClose, onSealed, seedBo
           <button onClick={onClose} style={{ background: "transparent", border: "none", cursor: "pointer", fontFamily: UI, fontSize: 13, color: T.muted, fontWeight: 600 }}>Close</button>
         </div>
 
-        <Script size={46} style={{ marginBottom: 6 }}>A letter to a future you</Script>
+        <Script size={46} style={{ marginBottom: 6 }}>{thread ? "Write back to her" : "A letter to a future you"}</Script>
         <Hand size={20} color={T.inkSoft} style={{ marginBottom: 18 }}>
-          Write what you want her to know. Pick when she gets to read it. Sealed and encrypted until then — not even Jess can peek.
+          {thread
+            ? `Answering ${replyToLabel || "your last letter"} — this seals into the same thread, so you can follow the whole correspondence later.`
+            : "Write what you want her to know. Pick when she gets to read it. Sealed and encrypted until then — not even Jess can peek."}
         </Hand>
 
         {!canEncrypt && (
