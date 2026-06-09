@@ -8,7 +8,7 @@
 // attempt records a strike. Report hides a harmful entry. All writes go through
 // service functions, so the writer stays anonymous.
 
-import { useState, useEffect, useMemo, useRef } from "react";
+import { useState, useEffect, useMemo, useRef, useCallback } from "react";
 import { Eye, HeartHandshake, Users, HandHeart, Ear, Flag, X, Check, Lock, ShieldOff } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { PAPER_BG, T, UI, Script, Hand, Eyebrow, Rule } from "../Editorial";
@@ -21,6 +21,7 @@ import {
   witnessKeysAvailable, getDevicePublicJwk, getDevicePrivateKey, deriveSharedWrapKey, unwrapDek,
 } from "./witnessKeys";
 import { RESPONSES, GATE_HOLDS, PHASE_COHORT, CHARTER, WITNESS_ZK_ENABLED } from "./witnessConfig";
+import { useCaptureGuard } from "../../safety/CaptureShield";
 
 const zkActive = () => WITNESS_ZK_ENABLED && witnessKeysAvailable();
 
@@ -126,17 +127,21 @@ export default function WitnessInbox({ user, phase = null, profile = null, onClo
     })();
   }, [stage, request, user]);
 
-  // Best-effort capture discouragement: an explicit copy attempt earns a strike.
-  useEffect(() => {
-    if (stage !== "reading" || !request?.id) return;
-    const onCopy = async (e) => {
-      e.preventDefault();
+  // Best-effort capture discouragement (CaptureShield): copy/context-menu are
+  // blocked + earn a strike; the entry blurs the moment the app is backgrounded
+  // (so the OS app-switcher thumbnail shows nothing); a PrintScreen flashes a
+  // reminder. True OS-level blocking (FLAG_SECURE) needs a native wrapper.
+  const onCapture = useCallback((kind) => {
+    if (!request?.id) return;
+    (async () => {
       const wh = await witnessHash(user?.id);
-      base44.functions.invoke("flagWitness", { user_id: user?.id, request_id: request.id, receiver_hash: wh, kind: "strike", reason: "capture_attempt" }).catch(() => {});
-    };
-    document.addEventListener("copy", onCopy);
-    return () => document.removeEventListener("copy", onCopy);
-  }, [stage, request, user]);
+      base44.functions.invoke("flagWitness", {
+        user_id: user?.id, request_id: request.id, receiver_hash: wh,
+        kind: "strike", reason: kind === "screenshot" ? "screenshot_attempt" : "capture_attempt",
+      }).catch(() => {});
+    })();
+  }, [request, user]);
+  const { obscured } = useCaptureGuard({ onCapture, enabled: stage === "reading" });
 
   useEffect(() => {
     const onKey = (e) => { if (e.key === "Escape") onClose?.(); };
@@ -264,7 +269,7 @@ export default function WitnessInbox({ user, phase = null, profile = null, onClo
               <ShieldOff size={13} style={{ color: T.muted }} />
               <span style={{ fontFamily: UI, fontSize: 11, color: T.muted }}>Held in confidence — please don{"’"}t screenshot or copy.</span>
             </div>
-            <div style={{ background: T.paperHi, border: `1px solid ${T.paperDeep}`, borderRadius: 14, padding: "20px 20px 22px", marginBottom: 20, userSelect: "none", WebkitUserSelect: "none" }}>
+            <div style={{ background: T.paperHi, border: `1px solid ${T.paperDeep}`, borderRadius: 14, padding: "20px 20px 22px", marginBottom: 20, userSelect: "none", WebkitUserSelect: "none", WebkitTouchCallout: "none", filter: obscured ? "blur(18px)" : "none", transition: "filter 80ms" }}>
               <Hand size={22} color={T.ink}>{entryText ? `“${entryText}”` : "This entry couldn’t be opened on this device."}</Hand>
             </div>
 
