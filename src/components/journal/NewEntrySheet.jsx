@@ -3,6 +3,7 @@ import { Plus, Frown, Meh, Smile, Mic, Square, Moon, Lock, Sparkles, ArrowLeft, 
 import { base44 } from "@/api/base44Client";
 import { PAPER_BG, T, UI, HAND, SERIF, PRESS, Script, Hand, Eyebrow, Rule, Chip } from "./Editorial";
 import ShareAsEchoSheet from "./echo/ShareAsEchoSheet";
+import { liveTranscript, tidyTranscript } from "./voiceTranscribe";
 
 // Card colours (kept — saved to card_color, used by pinned strip / future surfaces).
 const COLOR_MAP = {
@@ -153,8 +154,11 @@ export default function NewEntrySheet({
   // (same engine the Planner's VoiceScheduler ships). Whisper-small on-device
   // remains the master-plan upgrade; this is the honest interim real path.
   const recRef = useRef(null);
+  const wantRef = useRef(false);     // user wants to keep listening (drives auto-restart)
+  const finalRef = useRef("");       // accumulated FINAL transcript (raw, pre-tidy)
   const [listening, setListening] = useState(false);
   const [voiceText, setVoiceText] = useState("");
+  const [voiceError, setVoiceError] = useState("");
   const voiceSupported = useMemo(() => {
     if (typeof window === "undefined") return false;
     return !!(window.SpeechRecognition || window.webkitSpeechRecognition);
@@ -177,7 +181,7 @@ export default function NewEntrySheet({
   }, [editEntry]);
 
   // Stop any live recognition when the sheet unmounts.
-  useEffect(() => () => { try { recRef.current && recRef.current.abort(); } catch { /* swallow */ } }, []);
+  useEffect(() => () => { wantRef.current = false; try { recRef.current && recRef.current.abort(); } catch { /* swallow */ } }, []);
 
   // ── save logic — payload shape UNCHANGED; tags rebuilt from thread + extras ──
   const handleSave = async () => {
@@ -245,8 +249,12 @@ export default function NewEntrySheet({
     setMode("Write"); // land on the normal form to add thread / mood / colour and save
   };
 
-  // ── Voice helpers (Web Speech API) ──
-  const startVoice = () => {
+  // ── Voice helpers (Web Speech API) — on-device, quality-tidied ──
+  // Web Speech stops itself after a pause or ~a minute; while the user still
+  // wants to dictate we AUTO-RESTART, so long entries don't get cut off. Each
+  // final chunk is run through liveTranscript (spoken punctuation + caps) so the
+  // words read cleanly as they land, and once more (tidyTranscript) on "keep".
+  const beginRec = () => {
     const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
     if (!SR) return;
     const rec = new SR();
@@ -254,27 +262,54 @@ export default function NewEntrySheet({
     rec.interimResults = true;
     rec.continuous = true;
     rec.maxAlternatives = 1;
-    let finalText = voiceText ? voiceText + " " : "";
     rec.onresult = (e) => {
       let interim = "";
       for (let i = e.resultIndex; i < e.results.length; i++) {
         const piece = e.results[i][0].transcript;
-        if (e.results[i].isFinal) finalText += piece + " ";
+        if (e.results[i].isFinal) finalRef.current += piece + " ";
         else interim += piece;
       }
-      setVoiceText((finalText + interim).trim());
+      setVoiceText(liveTranscript(finalRef.current + interim));
     };
-    rec.onerror = () => { /* swallow — onend handles the transition */ };
-    rec.onend = () => setListening(false);
+    rec.onerror = (ev) => {
+      const err = ev?.error;
+      if (err === "not-allowed" || err === "service-not-allowed") {
+        wantRef.current = false;
+        setVoiceError("Microphone access is off. Allow it in your browser to dictate.");
+        setListening(false);
+      }
+      // no-speech / network / aborted: let onend decide whether to restart
+    };
+    rec.onend = () => {
+      if (wantRef.current) {
+        try { rec.start(); }              // resume — Web Speech ended on a pause
+        catch { wantRef.current = false; setListening(false); }
+      } else {
+        setListening(false);
+      }
+    };
     recRef.current = rec;
-    setListening(true);
     try { rec.start(); } catch { /* re-entrant start is harmless */ }
   };
-  const stopVoice = () => { try { recRef.current && recRef.current.stop(); } catch { /* swallow */ } setListening(false); };
+  const startVoice = () => {
+    if (!(window.SpeechRecognition || window.webkitSpeechRecognition)) return;
+    setVoiceError("");
+    finalRef.current = voiceText ? voiceText + " " : "";
+    wantRef.current = true;
+    setListening(true);
+    beginRec();
+  };
+  const stopVoice = () => {
+    wantRef.current = false;
+    try { recRef.current && recRef.current.stop(); } catch { /* swallow */ }
+    setListening(false);
+  };
   const useVoice = () => {
     stopVoice();
-    if (voiceText.trim()) setText((t) => (t ? t + "\n" : "") + voiceText.trim());
+    const tidy = tidyTranscript(voiceText);
+    if (tidy) setText((t) => (t ? t + "\n" : "") + tidy);
     setVoiceText("");
+    finalRef.current = "";
     setMode("Write");
   };
 
@@ -456,6 +491,12 @@ export default function NewEntrySheet({
                     color: listening ? "#fff" : T.gold,
                   }}>{listening ? <Square size={18} /> : <Mic size={20} />}</button>
                   <Hand size={19} color={T.inkSoft}>{listening ? "Listening… tap to stop." : "Tap the mic and speak."}</Hand>
+                </div>
+                {voiceError && (
+                  <div style={{ fontFamily: UI, fontSize: 12.5, color: T.crimson, marginBottom: 10 }}>{voiceError}</div>
+                )}
+                <div style={{ fontFamily: UI, fontSize: 11.5, color: T.muted, marginBottom: 10, lineHeight: 1.5 }}>
+                  Say {"“"}full stop{"”"}, {"“"}comma{"”"} or {"“"}new line{"”"} for punctuation — it tidies as you go. Edit anything before you keep it.
                 </div>
                 <textarea
                   value={voiceText}
