@@ -1912,55 +1912,64 @@ function JournalDemosTab() {
 // ════════════════════════════════════════════════════════════════════════════
 // Tab — Community Demos (5 peer-shape design concepts)
 // ════════════════════════════════════════════════════════════════════════════
+// Each demo is the SAME complete whole-life Community (every feature) — they
+// differ ONLY in UX/UI. Same palette, background and fonts throughout. Halli
+// picks the UI direction. Shared content: src/pages/communityShared.js.
 const COMMUNITY_DEMOS = [
   {
     n: 1, slug: "CommunityDemo1",
-    title: "Community Home + Question of the Day",
-    subtitle: "The whole-life home & the daily heartbeat",
+    title: "UX 1 — Calm long-scroll editorial",
+    subtitle: "The whole Community as a quiet magazine read",
     accent: T.sage,
-    body: "The new editorial Community home — whole-life, not clinical (\"health is one room, not the house\"). A warm carved masthead, an ambient aggregate presence line (\"31 women are here right now — you're not alone\", never a named/competitive count), the Question of the Day (one-tap answer → a descriptive-norm reveal \"most women said…\", no per-person counts), and the rooms grid: The Lounge, Circles, Love & Relationships, Money & Work, Style, The Lighter Side, Echo Wall, Witness, and Health (one room, not the house).",
-    tags: ["Whole-life rooms grid", "Question of the Day", "Ambient presence (aggregate)", "No scoreboards"],
+    body: "The complete whole-life Community as one unbroken vertical read — sections stacked like a magazine, big carved Script headers, hairline rules, airy understated cards, no tabs or nav. Everything is visible by scrolling. Contains every feature (see below); this demo's only difference from the others is the long-scroll layout.",
+    tags: ["Long-scroll / magazine", "No nav — scroll only", "Airy editorial cards"],
   },
   {
     n: 2, slug: "CommunityDemo2",
-    title: "The Lounge + Echo",
-    subtitle: "Spill it — silly to serious, kind, anonymous",
+    title: "UX 2 — Rooms as doors (spatial)",
+    subtitle: "The whole Community as doors you enter & leave",
     accent: T.blush,
-    body: "The anonymous warm vent / \"AIBU\" / spill-it room — the daily-engagement engine, whole-life (a career rant, a friendship wobble, a dating story, a money worry, a small joy), NOT clinical-only. Kind reactions (held · me too · hear you · saved — one-way, no visible counts), a compose flow with a crisis intercept that routes to UK resources rather than posting, and an Echo Wall strip showing how a vent can become one scrubbed fading line. Kindness-by-design, 18+.",
-    tags: ["Anonymous vent feed", "Kind reactions (no counts)", "Crisis intercept", "Echo bridge"],
+    body: "The complete Community as a spatial grid of \"doors\" on the home; tapping a door opens it full-screen (with a Leave threshold bar) into that feature, then you step back out. Navigation = entering and leaving rooms. Same features as the others, arranged as a hallway of doors.",
+    tags: ["Doors grid", "Enter / leave rooms", "Full-screen room views"],
   },
   {
     n: 3, slug: "CommunityDemo3",
-    title: "A Circle + a game",
-    subtitle: "Interest rooms & joyful, non-clinical play",
+    title: "UX 3 — Tabbed / segmented",
+    subtitle: "The whole Community with a sticky pill-tab subnav",
     accent: T.gold,
-    body: "The non-clinical belonging + play layer. An interest-first Circle (match on what you love — books, films, charity-shop finds — never a lead photo) with a Join / Joined toggle and warm whole-life member posts. Plus cooperative games that finish in minutes, no leaderboards: This-or-That / Kind Hot-Takes (tap reveals how the room split — a descriptive norm, no winner) and a One-Line Story (exquisite-corpse — add the next line). Reactions, not scores.",
-    tags: ["Interest Circle (join/joined)", "This-or-That / hot-takes", "One-Line Story", "No leaderboards"],
+    body: "The complete Community with a sticky segmented control pinned at the top (Home · Lounge · Rooms · Play · Share · Talk) for fast, app-like section switching. Compact and quick. Same features as the others, organised under sticky tabs.",
+    tags: ["Sticky pill tabs", "Fast section switching", "App-like / compact"],
   },
   {
     n: 4, slug: "CommunityDemo4",
-    title: "One entry, four lives + Witness",
-    subtitle: "The entry-level chooser & the held entry",
+    title: "UX 4 — Jess-guided conversation",
+    subtitle: "The whole Community walked through as a chat",
     accent: T.blush,
-    body: "The signature journal→community bridge. A whole-life entry (a hard week at work + a friendship) with the four-lives chooser — stay locked (default) · become an echo · be sealed to future-you · handed to a witness — decided at the entry level, never by default. Choosing witness flows into the held-3 gate, the 6-rail charter, a pulsing match → held (2h cancel), and the receiver face (a no-copy entry + the four fixed lines or pass silently). Dark-plum trust-ink reserved for the fragile Witness cards.",
-    tags: ["Four-lives chooser", "Witness flow", "6-rail charter", "4 fixed responses"],
+    body: "The complete Community revealed as a guided conversation — Jess (the warm host, scripted) walks you in, asks the Question of the Day, offers the Lounge, shows the rooms, the games, the four-lives choice, Witness and Talk-It-Out, each surfacing as an inline interactive card in the chat. Your taps appear as reply chips; a single \"show me more\" advances. Same features as the others, chat-led.",
+    tags: ["Chat-led flow", "Jess bubbles + inline cards", "Progressive reveal"],
   },
   {
     n: 5, slug: "CommunityDemo5",
-    title: "Talk It Out — audio",
-    subtitle: "Being heard out loud — async first, then live",
+    title: "UX 5 — Bento dashboard",
+    subtitle: "The whole Community as expandable tiles at a glance",
     accent: T.sage,
-    body: "The spoken sibling of Echo / Witness, three modes (mock — no real mic). Mode A async voice-note (\"a voice echo\": record → optional voice-mask with the honest \"harder to recognise, not anonymous\" note → held by a phase-sister → fades). Mode B 1:1 turn-based \"talk it out\" (3-min turn timer, \"hold, don't fix\", swap, panic-exit, closing reflection — on the calm plum fragile surface). Mode C small status-flattened live Circle (no stage, muted-by-default, request-to-speak). Always-on crisis signpost; honest LiveKit / async-first infra note.",
-    tags: ["Async voice-note", "1:1 turn-based talk", "Live Circle", "No recording · signpost"],
+    body: "The complete Community as a bento grid — varied-size tiles, everything at a glance; tapping a tile expands it (a bottom-sheet overlay) into the full interactive feature, then collapses. Dashboard density, tap-to-expand. Same features as the others, tiled.",
+    tags: ["Bento grid", "Tap-to-expand tiles", "At-a-glance dashboard"],
   },
 ];
+// Every demo above contains ALL of: home masthead + ambient presence · Question
+// of the Day · the whole-life rooms (Lounge, Circles, Love & Relationships, Money
+// & Work, Style, The Lighter Side, Health) · Echo Wall · the non-clinical games
+// (This-or-That, kind hot-takes, one-line story, role-play) · the "one entry,
+// four lives" chooser · Witness · Audio "Talk It Out". Identical palette / paper
+// background / Ephesis+Cormorant fonts. Only the UX/UI differs.
 
 function CommunityDemosTab() {
   return (
     <div>
       <PageHeader
-        title="Community — 5 Whole-Life Demos"
-        subtitle="The rebuilt, whole-life Community (health is one room, not the house): the home + Question of the Day, the Lounge, a non-clinical Circle + a game, the four-lives chooser + Witness, and Talk It Out (audio). Anonymous-first, 18+, no scoreboards. Self-contained on the Editorial kit; mock data, no entities queried. Built against COMMUNITY_MEGA_PLAN v2-FINAL."
+        title="Community — 5 UX Directions (same complete page)"
+        subtitle="FIVE UX/UI interpretations of the SAME complete whole-life Community — every demo contains every feature (home + Question of the Day, the whole-life rooms, Echo Wall, the Lounge, the games, the four-lives chooser, Witness, and Talk-It-Out audio). They differ ONLY in layout / navigation / components / interaction; the palette, paper background and fonts are identical throughout. Pick the UI direction. Anonymous-first, 18+, no scoreboards. Mock data, no entities queried."
         badge="INTERACTIVE"
         badgeTone="gold"
       />

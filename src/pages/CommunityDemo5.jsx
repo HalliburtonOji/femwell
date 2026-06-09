@@ -1,451 +1,733 @@
-// CommunityDemo5 — "Talk It Out — audio" (Community design demo · /Ideas → Community Demos)
+// CommunityDemo5 — "Bento-Grid Dashboard"
 // ─────────────────────────────────────────────────────────────────────────────
-// The spoken sibling of Echo Wall + Witness Mode. Being heard out loud, anonymously,
-// without anyone fixing you. Three modes in one warm room: (A) async voice-note —
-// a "voice echo" a phase-sister holds; (B) 1:1 turn-based "talk it out" — the
-// talking-stick vent (talk / hold / swap, "hold, don't fix"); (C) a small live
-// status-flattened Circle (5–8, no stage, listen-only allowed).
+// The whole-life Community as a bento box: a responsive grid of varied-size tiles,
+// everything at a glance. A masthead strip sits above the grid; each feature is a
+// compact live tile that EXPANDS on tap (useState expandedTile) into its full
+// interactive content, then collapses. Dashboard density, tap-to-expand.
 //
-// Source: claude-state/AUDIO_TALK_IT_OUT.html + COMMUNITY_MEGA_PLAN §0.5(F).
-// HONEST: this is a MOCK — no real mic, no getUserMedia, no audio. The flow is
-// simulated with useState only. Live audio (B/C) needs an external provider
-// (LiveKit); async (A) ships first — said plainly on the page.
+// Feature-identical to all other CommunityDemo pages — only the UX/UI differs.
+// All 9 surfaces present: presence+masthead · Question of the Day · Rooms ·
+// Echo Wall · Lounge (feed + compose + crisisCheck) · Games · Four Lives ·
+// Witness · Talk It Out.
 //
-// Brand-pure: UK voice, no emoji, Lucide + the shared Editorial kit only. The 1:1
-// "talk" surface uses the calm dark-plum fragile-surface treatment.
+// Self-contained, mock data + useState only, no entities. UK voice, no emoji,
+// Lucide/SVG only. No scoreboards/counts/streaks/handles.
 import { useState } from "react";
 import {
-  Mic, Hand, Clock, ShieldAlert, Phone, Repeat, PhoneOff, MicOff,
-  UserX, Flag, Check, Radio, Volume2, ArrowRight,
+  Users, ChevronRight, X, Check, Send, Sparkles, Plus,
 } from "lucide-react";
 import {
-  T, SERIF, UI, Eyebrow, Rule, Script, Hand as Voice, InkFilter, EditorialFooter,
+  T, SERIF, UI, Eyebrow, Rule, Script, Hand, InkFilter, EditorialFooter,
   useEditorialFonts, PAPER_BG,
 } from "@/components/journal/Editorial";
+import {
+  MASTHEAD, PRESENCE, QOTD, ROOMS, ECHOES, ECHO_REACTIONS, LOUNGE,
+  THIS_OR_THAT, HOT_TAKES, STORY_SEED, ROLEPLAY, SAMPLE_ENTRY, FOUR_LIVES,
+  WITNESS, AUDIO_MODES, AUDIO_NOTE, crisisCheck, UK_RESOURCES, FOOTER_LINE,
+  ShieldAlert,
+} from "./communityShared";
 
-// the calm dark-plum "fragile surface" (reserved — never an ordinary card)
 const PLUM = "#241a26";
-const PLUM_INK = "#F0E4EC";
-const PLUM_SOFT = "rgba(240,228,236,0.62)";
-
-const SIGNPOST = [
-  ["Samaritans", "116 123"], ["NHS", "111"], ["Shout", "text 85258"], ["Mind", "0300 123 3393"],
-];
+const PLUM_HI = "#2f2233";
+const PLUM_LINE = "#42324a";
 
 export default function CommunityDemo5() {
   useEditorialFonts();
-  const [mode, setMode] = useState("A");   // A async · B 1:1 · C circle
+  const [expanded, setExpanded] = useState(null); // which tile is open (key) or null
+
+  const open = (k) => setExpanded(k);
+  const close = () => setExpanded(null);
 
   return (
-    <div style={{ ...PAPER_BG, minHeight: "100vh", fontFamily: SERIF, color: T.ink, paddingBottom: 60 }}>
+    <div style={{ ...PAPER_BG, minHeight: "100vh", fontFamily: SERIF, color: T.ink, paddingBottom: 56 }}>
       <InkFilter />
-      <DemoBanner label="Community · Talk It Out — design demo · mock, no real audio" />
+      <Banner label="Community · Bento Dashboard — design demo · mock data" />
 
-      <div style={{ maxWidth: 430, margin: "0 auto", padding: "26px 20px 0" }}>
-        <header style={{ textAlign: "center", marginBottom: 16 }}>
-          <Eyebrow mb={10} color={T.muted}>Talk It Out · audio</Eyebrow>
-          <Script size={48} carve>Say it out loud.</Script>
-          <p style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 15, color: T.inkSoft, margin: "10px auto 0", maxWidth: 380, lineHeight: 1.5 }}>
-            Being heard, not advised. The spoken sibling of the Echo Wall — three ways
-            to be held out loud. No recording, ever.
+      <div style={{ maxWidth: 430, margin: "0 auto", padding: "26px 16px 40px" }}>
+        {/* ── masthead strip (above the grid) ──────────────────────────────── */}
+        <header style={{
+          background: T.paperHi, border: `1px solid ${T.paperDeep}`, borderRadius: 16,
+          padding: "16px 18px", marginBottom: 12,
+        }}>
+          <Eyebrow mb={7} color={T.muted}>{MASTHEAD.eyebrow}</Eyebrow>
+          <Script size={38} carve>{MASTHEAD.title}</Script>
+          <p style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 13, color: T.inkSoft, margin: "8px 0 12px", lineHeight: 1.5 }}>
+            {MASTHEAD.subtitle}
           </p>
+          {/* presence — ambient, aggregate, never named */}
+          <div style={{ display: "flex", alignItems: "center", gap: 8, paddingTop: 11, borderTop: `1px solid ${T.paperDeep}` }}>
+            <span style={{ width: 7, height: 7, borderRadius: 999, background: T.sage, flexShrink: 0 }} />
+            <span style={{ fontFamily: UI, fontSize: 11.5, color: T.inkSoft, letterSpacing: 0.2 }}>
+              <strong style={{ color: T.ink }}>{PRESENCE.count} women</strong> {PRESENCE.line}
+            </span>
+          </div>
         </header>
 
-        {/* always-visible signpost */}
-        <Signpost />
-
-        {/* mode switcher */}
-        <div style={{ display: "flex", gap: 6, justifyContent: "center", margin: "18px 0 18px" }}>
-          {[["A", "Voice note"], ["B", "Talk 1:1"], ["C", "Circle"]].map(([id, lbl]) => (
-            <button key={id} onClick={() => setMode(id)} style={modeBtn(mode === id)}>{lbl}</button>
-          ))}
+        {/* ── the bento grid ──────────────────────────────────────────────── */}
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+          {/* Question of the Day — spans 2 cols */}
+          <Tile span={2} label="Question of the day" title={QOTD.question}
+            peek="One tap reveals the shape of the room — no counts." onOpen={() => open("qotd")} />
+          {/* Rooms — 1 col */}
+          <Tile label="The rooms" title="Whole-life"
+            peek={`${ROOMS.length} rooms · health is one of them`} onOpen={() => open("rooms")} />
+          {/* Echo Wall — 1 col */}
+          <Tile label="Echo wall" title="Echoes"
+            peek="Scrubbed one-liners · fade in 48h" onOpen={() => open("echoes")} />
+          {/* Lounge — spans 2 cols */}
+          <Tile span={2} label="The lounge" title="Vent, spill it, be heard"
+            peek={LOUNGE[0].body} onOpen={() => open("lounge")} />
+          {/* Games — 1 col */}
+          <Tile label="The lighter side" title="Games"
+            peek="This-or-that · hot takes · a shared story" onOpen={() => open("games")} />
+          {/* Four Lives — 1 col */}
+          <Tile label="One entry" title="Four lives"
+            peek="One thing you wrote · four homes for it" onOpen={() => open("four")} />
+          {/* Witness — plum, spans 2 cols */}
+          <Tile span={2} dark label="Witness" title="Held once, by one"
+            peek="Slow, earned, anonymous — a single matched sister." onOpen={() => open("witness")} />
+          {/* Talk It Out — plum, spans 2 cols */}
+          <Tile span={2} dark label="Talk it out" title="Say it aloud"
+            peek="Voice note · turn-based 1:1 · a small live circle." onOpen={() => open("talk")} />
         </div>
 
-        {mode === "A" && <ModeAsync />}
-        {mode === "B" && <ModeTalk />}
-        {mode === "C" && <ModeCircle />}
-
-        {/* honest infra note */}
-        <div style={{ display: "flex", gap: 9, padding: "12px 14px", marginTop: 20, border: `1px dashed ${T.paperDeep}`, borderRadius: 12, background: "transparent" }}>
-          <Radio size={15} color={T.muted} style={{ flexShrink: 0, marginTop: 2 }} />
-          <span style={{ fontFamily: UI, fontSize: 11.5, color: T.muted, lineHeight: 1.5 }}>
-            Live audio (Talk 1:1 and Circles) needs an external provider — LiveKit. The
-            async <strong>Voice note</strong> ships first; live follows. This screen is a
-            mock — no microphone is used.
-          </span>
-        </div>
-
-        <div style={{ marginTop: 28 }}><EditorialFooter /></div>
+        {/* footer line under the grid */}
+        <p style={{ textAlign: "center", fontFamily: UI, fontSize: 11, color: T.muted, lineHeight: 1.65, margin: "20px auto 0", maxWidth: 380 }}>
+          {FOOTER_LINE}
+        </p>
+        <div style={{ marginTop: 22 }}><EditorialFooter /></div>
       </div>
-    </div>
-  );
-}
 
-// ── Mode A — async voice-note (a "voice echo") ───────────────────────────────
-function ModeAsync() {
-  const [stage, setStage] = useState("idle");   // idle · recording · review · held
-  const [masked, setMasked] = useState(false);
-
-  return (
-    <div>
-      <Eyebrow mb={8} color={T.muted}>Mode A · a voice echo</Eyebrow>
-      <p style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 14.5, color: T.inkSoft, margin: "0 0 16px", lineHeight: 1.5 }}>
-        Whisper one true line. A phase-sister holds it, once. It fades in 48 hours —
-        like an echo you can hear.
-      </p>
-
-      {stage === "held" ? (
-        <article style={{ background: T.paperHi, border: `1px solid ${T.paperDeep}`, borderRadius: 16, padding: "20px 18px", textAlign: "center" }}>
-          <Check size={22} color={T.sage} />
-          <Voice size={22} carve style={{ display: "block", margin: "12px 0 4px" }}>Held for you by a phase-sister.</Voice>
-          <p style={{ fontFamily: UI, fontSize: 12, color: T.muted, lineHeight: 1.5, margin: "8px 0 16px" }}>
-            She listened once. She sent back one line — <em style={{ color: T.inkSoft }}>"Holding with you"</em> —
-            or she held in silence. No thread opens. It fades in 48 hours.
-          </p>
-          <button onClick={() => { setStage("idle"); setMasked(false); }} style={pillBtn(false)}>Record another (demo)</button>
-        </article>
-      ) : (
-        <article style={{ background: T.paperHi, border: `1px solid ${T.paperDeep}`, borderRadius: 16, padding: "20px 18px" }}>
-          {/* mic affordance */}
-          <div style={{ textAlign: "center" }}>
-            <button
-              onClick={() => setStage(stage === "recording" ? "review" : "recording")}
-              style={{
-                width: 66, height: 66, borderRadius: 999, cursor: "pointer",
-                border: `1.5px solid ${stage === "recording" ? T.crimson : T.paperDeep}`,
-                background: stage === "recording" ? `${T.crimson}14` : "transparent",
-                color: stage === "recording" ? T.crimson : T.ink,
-                display: "inline-flex", alignItems: "center", justifyContent: "center",
-              }}
-            >
-              <Mic size={26} />
-            </button>
-            <div style={{ fontFamily: UI, fontSize: 11.5, color: T.muted, marginTop: 9 }}>
-              {stage === "recording" ? "Listening… tap to stop" : stage === "review" ? "0:18 · ready to hand over" : "Tap to record — up to 60 seconds"}
-            </div>
-          </div>
-
-          {/* mock waveform */}
-          {(stage === "recording" || stage === "review") && (
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 3, height: 36, margin: "16px 0 4px" }}>
-              {WAVE.map((h, i) => (
-                <span key={i} style={{
-                  width: 3, borderRadius: 999, height: `${stage === "recording" ? h : h * 0.7}%`,
-                  background: stage === "recording" ? T.crimson : T.muted, opacity: stage === "review" ? 0.6 : 1,
-                }} />
-              ))}
-            </div>
-          )}
-
-          {/* voice-mask toggle */}
-          <button onClick={() => setMasked((m) => !m)} style={{ ...maskRow, marginTop: 16 }}>
-            <span style={{ width: 34, height: 19, borderRadius: 999, background: masked ? T.sage : T.paperDeep, position: "relative", flexShrink: 0 }}>
-              <span style={{ position: "absolute", top: 2, left: masked ? 17 : 2, width: 15, height: 15, borderRadius: 999, background: T.paperHi, transition: "left .15s" }} />
-            </span>
-            <span style={{ textAlign: "left" }}>
-              <span style={{ fontFamily: UI, fontSize: 12.5, fontWeight: 700, color: T.ink, display: "block" }}>Mask my voice</span>
-              <span style={{ fontFamily: UI, fontSize: 11, color: T.muted }}>Harder to recognise — not anonymous.</span>
-            </span>
-          </button>
-
-          {stage === "review" && (
-            <button onClick={() => setStage("held")} style={{ ...pillBtn(true), width: "100%", justifyContent: "center", marginTop: 14 }}>
-              Hand it to a phase-sister
-            </button>
-          )}
-        </article>
+      {/* ── expanded overlay (the live feature) ───────────────────────────── */}
+      {expanded && (
+        <Overlay onClose={close} dark={expanded === "witness" || expanded === "talk"}>
+          {expanded === "qotd"    && <QotdPanel />}
+          {expanded === "rooms"   && <RoomsPanel />}
+          {expanded === "echoes"  && <EchoesPanel />}
+          {expanded === "lounge"  && <LoungePanel />}
+          {expanded === "games"   && <GamesPanel />}
+          {expanded === "four"    && <FourLivesPanel />}
+          {expanded === "witness" && <WitnessPanel />}
+          {expanded === "talk"    && <TalkPanel />}
+        </Overlay>
       )}
     </div>
   );
 }
 
-// ── Mode B — 1:1 turn-based "talk it out" (the centrepiece) ──────────────────
-function ModeTalk() {
-  const [stage, setStage] = useState("charter");   // charter · matching · talking · closing · ended
-  const [turn, setTurn] = useState("you");          // you · her — who is talking
-
-  if (stage === "charter") {
-    return (
-      <PlumCard>
-        <Eyebrow mb={12} color={T.gold}>The talk-it-out charter · read once</Eyebrow>
-        <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-          {[
-            ["Anonymous", "No name, no handle, no photo — only your phase and life stage match her."],
-            ["No recording — ever", "Nothing is stored. When it ends, it's gone, on both sides."],
-            ["Hold, don't fix", "You're here to be heard, not advised. One talks, the other holds."],
-            ["18+ · leave any time", "Mute, block, report, or panic-exit at any moment. No one performs."],
-          ].map(([h, b]) => (
-            <div key={h} style={{ display: "flex", gap: 11 }}>
-              <Check size={15} color={T.gold} style={{ flexShrink: 0, marginTop: 3 }} />
-              <div>
-                <div style={{ fontFamily: UI, fontSize: 13, fontWeight: 700, color: PLUM_INK }}>{h}</div>
-                <div style={{ fontFamily: UI, fontSize: 11.5, color: PLUM_SOFT, lineHeight: 1.5, marginTop: 2 }}>{b}</div>
-              </div>
-            </div>
-          ))}
-        </div>
-        <button onClick={() => setStage("matching")} style={{ ...plumBtn, marginTop: 18 }}>
-          I understand — match a sister <ArrowRight size={15} />
-        </button>
-      </PlumCard>
-    );
-  }
-
-  if (stage === "matching") {
-    return (
-      <PlumCard>
-        <div style={{ textAlign: "center", padding: "10px 0 6px" }}>
-          <Pulse />
-          <div style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 18, color: PLUM_INK, marginTop: 14 }}>Matching a sister…</div>
-          <div style={{ fontFamily: UI, fontSize: 11.5, color: PLUM_SOFT, marginTop: 8, lineHeight: 1.5 }}>
-            Same phase, same life stage. No profile is read. No handle is exchanged.
-          </div>
-          <button onClick={() => { setTurn("you"); setStage("talking"); }} style={{ ...plumBtn, margin: "16px auto 0" }}>Skip the wait (demo)</button>
-        </div>
-      </PlumCard>
-    );
-  }
-
-  if (stage === "closing") {
-    return (
-      <PlumCard>
-        <Eyebrow mb={10} color={T.gold}>Closing reflection</Eyebrow>
-        <div style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 18, color: PLUM_INK, lineHeight: 1.5, marginBottom: 6 }}>
-          One thing that would help this week?
-        </div>
-        <div style={{ fontFamily: UI, fontSize: 11.5, color: PLUM_SOFT, lineHeight: 1.55, marginBottom: 16 }}>
-          A gentle close, so it doesn't become a doom-loop — narrate, make meaning, move on.
-          Say one line each, then it seals.
-        </div>
-        <button onClick={() => setStage("ended")} style={plumBtn}>Seal the conversation</button>
-      </PlumCard>
-    );
-  }
-
-  if (stage === "ended") {
-    return (
-      <PlumCard>
-        <div style={{ textAlign: "center", padding: "6px 0" }}>
-          <PhoneOff size={20} color={T.gold} />
-          <div style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 17, color: PLUM_INK, lineHeight: 1.5, margin: "12px 0 4px" }}>
-            Sealed. Nothing was recorded — it leaves no history, on either side.
-          </div>
-          <button onClick={() => { setStage("charter"); setTurn("you"); }} style={{ ...plumBtn, margin: "14px auto 0" }}>Start over (demo)</button>
-        </div>
-      </PlumCard>
-    );
-  }
-
-  // talking
-  const youTalking = turn === "you";
+// ── bento tile (compact, tap to expand) ──────────────────────────────────────
+function Tile({ span = 1, dark = false, label, title, peek, onOpen }) {
+  const bg = dark ? PLUM : T.paperHi;
+  const border = dark ? PLUM_LINE : T.paperDeep;
+  const ink = dark ? "#F4EFE3" : T.ink;
+  const soft = dark ? "#cdbcd0" : T.inkSoft;
+  const mut = dark ? "#9a86a0" : T.muted;
   return (
-    <PlumCard>
-      <div style={{ display: "flex", alignItems: "center", gap: 7, marginBottom: 14 }}>
-        <span style={{ width: 7, height: 7, borderRadius: 999, background: T.crimson }} />
-        <span style={{ fontFamily: UI, fontSize: 10, fontWeight: 800, letterSpacing: 1.3, textTransform: "uppercase", color: PLUM_SOFT }}>
-          Live · anonymous · not recorded
-        </span>
-      </div>
-
-      {/* turn timer ring (static mock at 3:00) */}
-      <div style={{ textAlign: "center", marginBottom: 8 }}>
-        <TimerRing label="3:00" />
-        <div style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 17, color: PLUM_INK, marginTop: 12 }}>
-          {youTalking ? "You're talking — she's holding" : "She's talking — you're holding"}
-        </div>
-        <div style={{ display: "inline-flex", alignItems: "center", gap: 6, marginTop: 8, fontFamily: UI, fontSize: 11.5, color: PLUM_SOFT }}>
-          <span style={{ width: 6, height: 6, borderRadius: 999, background: T.sage }} /> holding with you
-        </div>
-      </div>
-
-      <button onClick={() => setTurn(youTalking ? "her" : "you")} style={{ ...plumBtn, width: "100%", justifyContent: "center", margin: "14px 0 12px" }}>
-        <Repeat size={15} /> Swap — pass the turn
-      </button>
-
-      {/* leave / mute / block / report */}
-      <div style={{ display: "flex", gap: 7, justifyContent: "center", marginBottom: 12 }}>
-        <CtrlBtn icon={MicOff} label="Mute" />
-        <CtrlBtn icon={UserX} label="Block" />
-        <CtrlBtn icon={Flag} label="Report" note="report ends the call instantly" />
-      </div>
-
-      <button onClick={() => setStage("closing")} style={{ ...plumGhost, width: "100%", justifyContent: "center", marginBottom: 9 }}>
-        Wind down — closing reflection
-      </button>
-
-      {/* panic-exit */}
-      <button onClick={() => setStage("ended")} style={{
-        width: "100%", display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 8,
-        padding: "11px 0", borderRadius: 999, cursor: "pointer",
-        background: `${T.crimson}1F`, color: T.crimson, border: `1px solid ${T.crimson}`,
-        fontFamily: UI, fontSize: 12.5, fontWeight: 800, letterSpacing: 0.4,
-      }}>
-        <PhoneOff size={15} /> Leave now — panic exit
-      </button>
-    </PlumCard>
-  );
-}
-
-// small control button used inside the talk surface
-function CtrlBtn({ icon: Icon, label, note }) {
-  return (
-    <span title={note || label} style={{ display: "inline-flex", flexDirection: "column", alignItems: "center", gap: 4 }}>
-      <span style={{ width: 38, height: 38, borderRadius: 999, border: `1px solid ${PLUM_SOFT}`, display: "inline-flex", alignItems: "center", justifyContent: "center", color: PLUM_INK }}>
-        <Icon size={16} />
+    <button
+      onClick={onOpen}
+      style={{
+        gridColumn: span === 2 ? "span 2" : "auto",
+        background: bg, border: `1px solid ${border}`, borderRadius: 16,
+        padding: "13px 14px", textAlign: "left", cursor: "pointer",
+        display: "flex", flexDirection: "column", gap: 6, minHeight: 104,
+        transition: "transform .15s ease, box-shadow .15s ease",
+      }}
+      onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.boxShadow = "0 6px 18px rgba(11,8,5,0.07)"; }}
+      onMouseLeave={(e) => { e.currentTarget.style.transform = "none"; e.currentTarget.style.boxShadow = "none"; }}
+    >
+      <span style={{ display: "flex", alignItems: "center", gap: 7 }}>
+        <span style={{ width: 16, height: 1, background: T.gold }} />
+        <Eyebrow color={mut}>{label}</Eyebrow>
       </span>
-      <span style={{ fontFamily: UI, fontSize: 10, color: PLUM_SOFT }}>{label}</span>
-    </span>
+      <span style={{ fontFamily: SERIF, fontSize: span === 2 ? 23 : 19, color: ink, lineHeight: 1.15 }}>{title}</span>
+      <span style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 12, color: soft, lineHeight: 1.45, flex: 1,
+        display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>
+        {peek}
+      </span>
+      <span style={{ display: "inline-flex", alignItems: "center", gap: 4, fontFamily: UI, fontSize: 9.5, fontWeight: 800, letterSpacing: 1, textTransform: "uppercase", color: mut, marginTop: "auto" }}>
+        Open <ChevronRight size={12} />
+      </span>
+    </button>
   );
 }
 
-// ── Mode C — small live status-flattened Circle ──────────────────────────────
-function ModeCircle() {
-  const [raised, setRaised] = useState(false);
-  // status-flattened: no stage, everyone equal. host flagged only, not elevated.
-  const room = [
-    { name: "Host", host: true, speaking: true },
-    { name: "A sister", speaking: false }, { name: "A sister", speaking: false },
-    { name: "A sister", speaking: false }, { name: "A sister", speaking: false },
-    { name: "A sister", speaking: false },
-  ];
-
+// ── expanded overlay shell ───────────────────────────────────────────────────
+function Overlay({ children, onClose, dark }) {
+  const bg = dark ? PLUM : T.paper;
+  const ink = dark ? "#F4EFE3" : T.ink;
   return (
-    <div>
-      <Eyebrow mb={8} color={T.muted}>Mode C · a small live Circle</Eyebrow>
-      <article style={{ background: T.paperHi, border: `1px solid ${T.paperDeep}`, borderRadius: 16, padding: "18px 18px" }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
-          <Radio size={15} color={T.crimson} />
-          <span style={{ fontFamily: UI, fontSize: 10.5, fontWeight: 800, letterSpacing: 1.1, textTransform: "uppercase", color: T.muted }}>Live now · 6 here</span>
-        </div>
-        <Voice size={23} carve style={{ display: "block", margin: "2px 0 4px" }}>Career vent night</Voice>
-        <p style={{ fontFamily: UI, fontSize: 11.5, color: T.muted, lineHeight: 1.5, margin: "0 0 14px" }}>
-          A whole-life room, not a clinical one. No stage — everyone equal. Muted by default;
-          listening only is full membership.
-        </p>
-
-        {/* status-flattened grid — no podium */}
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 10, marginBottom: 14 }}>
-          {room.map((p, i) => (
-            <div key={i} style={{ textAlign: "center" }}>
-              <span style={{
-                width: 44, height: 44, borderRadius: 999, display: "inline-flex", alignItems: "center", justifyContent: "center",
-                background: T.paper, border: `1.5px solid ${p.speaking ? T.sage : T.paperDeep}`,
-                color: p.speaking ? T.sage : T.muted,
-              }}>
-                {p.speaking ? <Volume2 size={17} /> : <MicOff size={15} />}
-              </span>
-              <div style={{ fontFamily: UI, fontSize: 10.5, color: T.muted, marginTop: 5 }}>
-                {p.host ? <strong style={{ color: T.inkSoft }}>Host</strong> : p.name}
-              </div>
-            </div>
-          ))}
-        </div>
-
-        <Rule c={T.paperDeep} mb={12} />
-
-        {/* request-to-speak (hand-raise) */}
-        <button onClick={() => setRaised((r) => !r)} style={{ ...pillBtn(raised), width: "100%", justifyContent: "center" }}>
-          <Hand size={15} /> {raised ? "Hand raised — host will call you" : "Request to speak"}
+    <div
+      onClick={onClose}
+      style={{
+        position: "fixed", inset: 0, zIndex: 50, background: "rgba(11,8,5,0.42)",
+        display: "flex", alignItems: "flex-end", justifyContent: "center",
+        backdropFilter: "blur(2px)",
+      }}
+    >
+      <div
+        onClick={(e) => e.stopPropagation()}
+        style={{
+          width: "100%", maxWidth: 430, maxHeight: "90vh", overflowY: "auto",
+          background: bg, color: ink, borderRadius: "20px 20px 0 0",
+          border: `1px solid ${dark ? PLUM_LINE : T.paperDeep}`, borderBottom: "none",
+          padding: "16px 18px 32px", boxShadow: "0 -10px 40px rgba(11,8,5,0.25)",
+        }}
+      >
+        <button onClick={onClose} style={{
+          display: "inline-flex", alignItems: "center", gap: 6, marginBottom: 12,
+          background: "transparent", border: "none", cursor: "pointer",
+          fontFamily: UI, fontSize: 10.5, fontWeight: 800, letterSpacing: 1,
+          textTransform: "uppercase", color: dark ? "#9a86a0" : T.muted,
+        }}>
+          <X size={13} /> Close
         </button>
-        <div style={{ fontFamily: UI, fontSize: 11, color: T.muted, textAlign: "center", marginTop: 9, lineHeight: 1.5 }}>
-          You can stay muted and just listen. A gentle topic only — book chat, a vent — never clinical.
-        </div>
-      </article>
+        {children}
+      </div>
     </div>
   );
 }
 
-// ── shared bits ──────────────────────────────────────────────────────────────
-function Signpost() {
+// ── panel header helper ──────────────────────────────────────────────────────
+function PanelHead({ label, title, dark }) {
   return (
-    <div style={{ border: `1px solid ${T.paperDeep}`, borderRadius: 13, padding: "12px 14px", background: T.paperHi }}>
-      <div style={{ display: "flex", alignItems: "center", gap: 7, marginBottom: 9 }}>
-        <ShieldAlert size={14} color={T.crimson} />
-        <span style={{ fontFamily: UI, fontSize: 10, fontWeight: 800, letterSpacing: 1.1, textTransform: "uppercase", color: T.muted }}>
-          If it's heavier than a sister can hold
-        </span>
+    <div style={{ marginBottom: 14 }}>
+      <Eyebrow mb={6} color={dark ? "#9a86a0" : T.muted}>{label}</Eyebrow>
+      <Script size={30} carve style={dark ? { color: "#F4EFE3" } : undefined}>{title}</Script>
+    </div>
+  );
+}
+
+// ── (1) Question of the Day ──────────────────────────────────────────────────
+function QotdPanel() {
+  const [picked, setPicked] = useState(null);
+  const matched = picked === QOTD.norm;
+  return (
+    <div>
+      <PanelHead label="Question of the day" title={QOTD.question} />
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 9 }}>
+        {QOTD.options.map((o) => {
+          const on = picked === o;
+          const dim = picked && !on;
+          return (
+            <button key={o} onClick={() => setPicked(o)} disabled={!!picked}
+              style={{
+                display: "inline-flex", alignItems: "center", gap: 8, padding: "12px 13px",
+                borderRadius: 13, textAlign: "left", background: on ? T.ink : "transparent",
+                border: `1px solid ${on ? T.ink : T.paperDeep}`,
+                color: on ? T.paper : (dim ? T.muted : T.inkSoft),
+                fontFamily: UI, fontSize: 12.5, fontWeight: 600, letterSpacing: 0.2,
+                cursor: picked ? "default" : "pointer", opacity: dim ? 0.55 : 1, transition: "all .18s ease",
+              }}>
+              <span style={{ flex: 1 }}>{o}</span>
+              {on && <Check size={14} style={{ flexShrink: 0 }} />}
+            </button>
+          );
+        })}
       </div>
-      <div style={{ display: "flex", flexWrap: "wrap", gap: 7 }}>
-        {SIGNPOST.map(([n, v]) => (
-          <span key={n} style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "5px 10px", border: `1px solid ${T.paperDeep}`, borderRadius: 999, fontFamily: UI, fontSize: 11.5 }}>
-            <Phone size={12} color={T.gold} />
-            <span style={{ color: T.ink, fontWeight: 600 }}>{n}</span>
-            <span style={{ color: T.inkSoft }}>{v}</span>
-          </span>
+      {picked && (
+        <div style={{ marginTop: 15 }}>
+          <Rule c={T.paperDeep} mb={12} />
+          <div style={{ display: "flex", alignItems: "flex-start", gap: 9 }}>
+            <Users size={15} color={T.gold} style={{ marginTop: 2, flexShrink: 0 }} />
+            <div>
+              <Hand size={20} carve>
+                {matched ? `Most women said the same as you — ${QOTD.norm}.` : QOTD.normLine}
+              </Hand>
+              <p style={{ fontFamily: UI, fontSize: 11, color: T.muted, fontStyle: "italic", margin: "6px 0 0", lineHeight: 1.5 }}>
+                A little company in the small things. No tally, no names — just the shape of the room.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ── (2) Rooms ────────────────────────────────────────────────────────────────
+function RoomsPanel() {
+  return (
+    <div>
+      <PanelHead label="The rooms" title="For the whole of you" />
+      <p style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 13, color: T.inkSoft, margin: "0 0 14px", lineHeight: 1.5 }}>
+        Health is one room here — not the whole house.
+      </p>
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 9 }}>
+        {ROOMS.map((r) => (
+          <div key={r.key} style={{
+            background: T.paperHi, border: `1px solid ${T.paperDeep}`, borderRadius: 14, padding: "13px 13px",
+            display: "flex", flexDirection: "column", gap: 7,
+          }}>
+            <span style={{
+              width: 36, height: 36, borderRadius: 10, display: "inline-flex",
+              alignItems: "center", justifyContent: "center", background: `${T.ink}0E`, color: T.ink,
+            }}>
+              <r.Icon size={17} />
+            </span>
+            <span style={{ fontFamily: SERIF, fontSize: 15.5, color: T.ink, lineHeight: 1.2 }}>{r.name}</span>
+            <span style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 11.5, color: T.inkSoft, lineHeight: 1.45 }}>{r.line}</span>
+            <span style={{ display: "inline-flex", alignItems: "center", gap: 5, fontFamily: UI, fontSize: 9, fontWeight: 800, letterSpacing: 0.8, textTransform: "uppercase", color: T.muted, marginTop: "auto" }}>
+              <span style={{ width: 5, height: 5, borderRadius: 999, background: T.sage }} /> {r.hint}
+            </span>
+          </div>
         ))}
       </div>
     </div>
   );
 }
 
-function TimerRing({ label }) {
-  // static mock ring — calm, not ticking. shows the "talking-stick" turn budget.
-  const r = 30, c = 2 * Math.PI * r;
+// ── (3) Echo Wall ────────────────────────────────────────────────────────────
+function EchoesPanel() {
+  const [reacted, setReacted] = useState({}); // id -> reaction label
   return (
-    <span style={{ display: "inline-flex", position: "relative", width: 76, height: 76 }}>
-      <svg width="76" height="76" style={{ transform: "rotate(-90deg)" }}>
-        <circle cx="38" cy="38" r={r} fill="none" stroke="rgba(240,228,236,0.16)" strokeWidth="4" />
-        <circle cx="38" cy="38" r={r} fill="none" stroke={T.gold} strokeWidth="4" strokeLinecap="round"
-          strokeDasharray={c} strokeDashoffset={c * 0.22} />
-      </svg>
-      <span style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", gap: 4, fontFamily: UI, fontSize: 14, fontWeight: 700, color: PLUM_INK }}>
-        <Clock size={13} color={PLUM_SOFT} /> {label}
-      </span>
-    </span>
-  );
-}
-
-function Pulse() {
-  return (
-    <span style={{ display: "inline-flex", position: "relative", width: 46, height: 46 }}>
-      <span style={{ position: "absolute", inset: 0, borderRadius: 999, background: `${T.gold}33`, animation: "fwpulse 1.8s ease-out infinite" }} />
-      <span style={{ position: "absolute", inset: 14, borderRadius: 999, background: T.gold }} />
-      <style>{"@keyframes fwpulse{0%{transform:scale(.6);opacity:.8}100%{transform:scale(1.5);opacity:0}}"}</style>
-    </span>
-  );
-}
-
-function PlumCard({ children }) {
-  return (
-    <div style={{ background: PLUM, borderRadius: 18, padding: "20px 18px", boxShadow: "0 10px 34px rgba(36,26,38,0.34)", border: "1px solid rgba(240,228,236,0.12)" }}>
-      {children}
+    <div>
+      <PanelHead label="Echo wall" title="Lines, held not replied" />
+      <p style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 13, color: T.inkSoft, margin: "0 0 14px", lineHeight: 1.5 }}>
+        One scrubbed line, to women in your phase. Fades in 48 hours. A kind, one-way hold — never a thread.
+      </p>
+      <div style={{ display: "flex", flexDirection: "column", gap: 11 }}>
+        {ECHOES.map((e) => {
+          const mine = reacted[e.id];
+          return (
+            <div key={e.id} style={{ background: T.paperHi, border: `1px solid ${T.paperDeep}`, borderRadius: 14, padding: "14px 15px" }}>
+              <p style={{ fontFamily: SERIF, fontSize: 15, color: T.ink, lineHeight: 1.5, margin: "0 0 9px" }}>"{e.body}"</p>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8 }}>
+                <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+                  {ECHO_REACTIONS.map((rx) => {
+                    const on = mine === rx;
+                    return (
+                      <button key={rx} onClick={() => setReacted((p) => ({ ...p, [e.id]: on ? undefined : rx }))}
+                        style={{
+                          padding: "5px 10px", borderRadius: 999, cursor: "pointer",
+                          background: on ? T.ink : "transparent", border: `1px solid ${on ? T.ink : T.paperDeep}`,
+                          color: on ? T.paper : T.muted, fontFamily: UI, fontSize: 10.5, fontWeight: 700, letterSpacing: 0.3,
+                        }}>
+                        {rx}
+                      </button>
+                    );
+                  })}
+                </div>
+                <span style={{ fontFamily: UI, fontSize: 9.5, color: T.muted, whiteSpace: "nowrap" }}>fades in {e.fadeH}h</span>
+              </div>
+            </div>
+          );
+        })}
+      </div>
     </div>
   );
 }
 
-function DemoBanner({ label }) {
+// ── (4) Lounge — feed + compose + crisisCheck → UK resources ─────────────────
+function LoungePanel() {
+  const [feed, setFeed] = useState(LOUNGE);
+  const [draft, setDraft] = useState("");
+  const [crisis, setCrisis] = useState(false);
+
+  const post = () => {
+    const text = draft.trim();
+    if (!text) return;
+    if (crisisCheck(text)) { setCrisis(true); return; }
+    setFeed((f) => [{ id: `new-${Date.now()}`, domain: "You", body: text, warm: true }, ...f]);
+    setDraft("");
+    setCrisis(false);
+  };
+
   return (
-    <div style={{ background: T.ink, color: T.paper, padding: "8px 16px", textAlign: "center", fontFamily: UI, fontSize: 10, letterSpacing: 2, fontWeight: 700, textTransform: "uppercase" }}>{label}</div>
+    <div>
+      <PanelHead label="The lounge" title="Vent, spill it, be heard" />
+      {/* compose */}
+      <div style={{ background: T.paperHi, border: `1px solid ${T.paperDeep}`, borderRadius: 14, padding: "12px 13px", marginBottom: 14 }}>
+        <textarea
+          value={draft}
+          onChange={(e) => { setDraft(e.target.value); if (crisis) setCrisis(false); }}
+          placeholder="Silly to serious — no names. What's on your mind?"
+          rows={2}
+          style={{
+            width: "100%", resize: "none", border: "none", outline: "none", background: "transparent",
+            fontFamily: SERIF, fontSize: 14, color: T.ink, lineHeight: 1.5,
+          }}
+        />
+        <div style={{ display: "flex", justifyContent: "flex-end", marginTop: 6 }}>
+          <button onClick={post} disabled={!draft.trim()} style={{
+            display: "inline-flex", alignItems: "center", gap: 6, padding: "8px 14px", borderRadius: 11,
+            background: draft.trim() ? T.ink : T.paperDeep, color: T.paper, border: "none",
+            cursor: draft.trim() ? "pointer" : "default", fontFamily: UI, fontSize: 11.5, fontWeight: 700, letterSpacing: 0.3,
+          }}>
+            Share <Send size={13} />
+          </button>
+        </div>
+      </div>
+
+      {/* crisis routing — heavy never goes to a peer */}
+      {crisis && (
+        <div style={{ background: `${T.crimson}0D`, border: `1px solid ${T.crimson}55`, borderRadius: 14, padding: "14px 15px", marginBottom: 14 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
+            <ShieldAlert size={16} color={T.crimson} />
+            <span style={{ fontFamily: UI, fontSize: 12, fontWeight: 800, letterSpacing: 0.3, color: T.crimson }}>Some things deserve more than a peer</span>
+          </div>
+          <p style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 12.5, color: T.inkSoft, margin: "0 0 10px", lineHeight: 1.5 }}>
+            This sounds heavy — and you deserve real support, not a stranger's reply. Please reach one of these now.
+          </p>
+          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+            {UK_RESOURCES.map((r) => (
+              <div key={r.name} style={{ display: "flex", alignItems: "center", gap: 9 }}>
+                <r.Icon size={15} color={T.crimson} style={{ flexShrink: 0 }} />
+                <span style={{ fontFamily: UI, fontSize: 12, color: T.ink }}>
+                  <strong>{r.name}</strong> — {r.detail}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* feed */}
+      <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+        {feed.map((p) => (
+          <div key={p.id} style={{
+            background: T.paperHi, border: `1px solid ${p.warm ? T.sage + "55" : T.paperDeep}`,
+            borderRadius: 14, padding: "13px 15px",
+          }}>
+            <span style={{ display: "inline-block", fontFamily: UI, fontSize: 9, fontWeight: 800, letterSpacing: 1, textTransform: "uppercase", color: T.muted, marginBottom: 6 }}>
+              {p.domain}
+            </span>
+            <p style={{ fontFamily: SERIF, fontSize: 14.5, color: T.ink, lineHeight: 1.5, margin: 0 }}>{p.body}</p>
+          </div>
+        ))}
+      </div>
+    </div>
   );
 }
 
-const WAVE = [30, 55, 80, 45, 65, 95, 50, 70, 40, 85, 60, 35, 75, 50, 90, 45, 65, 30, 55, 80];
+// ── (5) Games — this-or-that, hot takes, one-line story, role-play ───────────
+function GamesPanel() {
+  const [tapped, setTapped] = useState({});       // this-or-that: id -> "a"|"b"
+  const [takeIdx, setTakeIdx] = useState(0);
+  const [story, setStory] = useState(STORY_SEED);
+  const [line, setLine] = useState("");
+  const [cafe, setCafe] = useState(ROLEPLAY.entries);
+  const [cafeDraft, setCafeDraft] = useState("");
 
-const modeBtn = (active) => ({
-  padding: "8px 15px", borderRadius: 999, cursor: "pointer",
-  fontFamily: UI, fontSize: 12, fontWeight: 700, letterSpacing: 0.3,
-  background: active ? T.ink : "transparent", color: active ? T.paper : T.inkSoft,
-  border: `1px solid ${active ? T.ink : T.paperDeep}`,
-});
-const pillBtn = (solid) => ({
-  display: "inline-flex", alignItems: "center", gap: 7,
-  padding: "10px 15px", borderRadius: 999, cursor: "pointer",
-  fontFamily: UI, fontSize: 12.5, fontWeight: 700, letterSpacing: 0.3,
-  background: solid ? T.ink : "transparent", color: solid ? T.paper : T.inkSoft,
-  border: `1px solid ${solid ? T.ink : T.paperDeep}`,
-});
-const maskRow = {
-  display: "flex", alignItems: "center", gap: 11, width: "100%",
-  background: "transparent", border: `1px solid ${T.paperDeep}`, borderRadius: 12,
-  padding: "11px 13px", cursor: "pointer",
-};
-const plumBtn = {
-  display: "inline-flex", alignItems: "center", gap: 8, padding: "11px 18px", borderRadius: 999,
-  background: T.gold, color: "#241420", border: "none", cursor: "pointer",
-  fontFamily: UI, fontSize: 13, fontWeight: 700, letterSpacing: 0.3,
-};
-const plumGhost = {
-  display: "inline-flex", alignItems: "center", gap: 8, padding: "10px 16px", borderRadius: 999,
-  background: "transparent", color: PLUM_INK, border: `1px solid ${PLUM_SOFT}`, cursor: "pointer",
-  fontFamily: UI, fontSize: 12.5, fontWeight: 700,
-};
+  const addLine = () => { if (line.trim()) { setStory((s) => [...s, line.trim()]); setLine(""); } };
+  const addCafe = () => { if (cafeDraft.trim()) { setCafe((c) => [...c, cafeDraft.trim()]); setCafeDraft(""); } };
+
+  return (
+    <div>
+      <PanelHead label="The lighter side" title="A proper laugh" />
+
+      {/* This or That */}
+      <Eyebrow mb={9} color={T.muted}>This or that</Eyebrow>
+      <div style={{ display: "flex", flexDirection: "column", gap: 11, marginBottom: 20 }}>
+        {THIS_OR_THAT.map((q) => {
+          const choice = tapped[q.id];
+          return (
+            <div key={q.id} style={{ background: T.paperHi, border: `1px solid ${T.paperDeep}`, borderRadius: 14, padding: "13px 14px" }}>
+              <p style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 14, color: T.ink, margin: "0 0 10px" }}>{q.prompt}</p>
+              <div style={{ display: "flex", gap: 9 }}>
+                {[["a", q.a, q.split[0]], ["b", q.b, q.split[1]]].map(([k, lbl, pct]) => {
+                  const on = choice === k;
+                  return (
+                    <button key={k} onClick={() => setTapped((p) => ({ ...p, [q.id]: k }))}
+                      style={{
+                        flex: 1, padding: "10px 12px", borderRadius: 12, cursor: "pointer",
+                        background: on ? T.ink : "transparent", border: `1px solid ${on ? T.ink : T.paperDeep}`,
+                        color: on ? T.paper : T.inkSoft, fontFamily: UI, fontSize: 12, fontWeight: 700, position: "relative", overflow: "hidden",
+                      }}>
+                      {choice && (
+                        <span style={{ position: "absolute", insetBlock: 0, left: 0,
+                          background: on ? "rgba(244,239,227,0.12)" : `${T.sage}1F`, width: `${pct}%`, zIndex: 0 }} />
+                      )}
+                      <span style={{ position: "relative", zIndex: 1, display: "flex", justifyContent: "space-between", gap: 6 }}>
+                        <span>{lbl}</span>
+                        {choice && <span style={{ opacity: 0.85 }}>{pct}%</span>}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+              {choice && <p style={{ fontFamily: UI, fontSize: 10, color: T.muted, fontStyle: "italic", margin: "8px 0 0" }}>Just the shape of the room — no winners.</p>}
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Hot Takes */}
+      <Eyebrow mb={9} color={T.muted}>Hot takes</Eyebrow>
+      <div style={{ background: T.paperHi, border: `1px solid ${T.paperDeep}`, borderRadius: 14, padding: "14px 15px", marginBottom: 20 }}>
+        <Hand size={20} carve>{HOT_TAKES[takeIdx]}</Hand>
+        <button onClick={() => setTakeIdx((i) => (i + 1) % HOT_TAKES.length)}
+          style={{
+            marginTop: 11, display: "inline-flex", alignItems: "center", gap: 6, padding: "7px 12px", borderRadius: 10,
+            background: "transparent", border: `1px solid ${T.paperDeep}`, color: T.inkSoft, cursor: "pointer",
+            fontFamily: UI, fontSize: 11, fontWeight: 700, letterSpacing: 0.3,
+          }}>
+          <Sparkles size={12} /> Another
+        </button>
+      </div>
+
+      {/* One-Line Story */}
+      <Eyebrow mb={9} color={T.muted}>One-line story</Eyebrow>
+      <div style={{ background: T.paperHi, border: `1px solid ${T.paperDeep}`, borderRadius: 14, padding: "14px 15px", marginBottom: 20 }}>
+        <div style={{ display: "flex", flexDirection: "column", gap: 6, marginBottom: 11 }}>
+          {story.map((s, i) => (
+            <p key={i} style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 13.5, color: T.inkSoft, margin: 0, lineHeight: 1.5 }}>
+              {s}
+            </p>
+          ))}
+        </div>
+        <div style={{ display: "flex", gap: 8 }}>
+          <input value={line} onChange={(e) => setLine(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && addLine()}
+            placeholder="Add the next line…"
+            style={{ flex: 1, padding: "9px 11px", borderRadius: 10, border: `1px solid ${T.paperDeep}`, background: T.paper, fontFamily: SERIF, fontSize: 13, color: T.ink, outline: "none" }} />
+          <button onClick={addLine} disabled={!line.trim()} style={{
+            display: "inline-flex", alignItems: "center", padding: "0 13px", borderRadius: 10,
+            background: line.trim() ? T.ink : T.paperDeep, color: T.paper, border: "none",
+            cursor: line.trim() ? "pointer" : "default",
+          }}>
+            <Plus size={15} />
+          </button>
+        </div>
+      </div>
+
+      {/* Role-Play */}
+      <Eyebrow mb={9} color={T.muted}>Role-play</Eyebrow>
+      <div style={{ background: T.paperHi, border: `1px solid ${T.paperDeep}`, borderRadius: 14, padding: "14px 15px" }}>
+        <p style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 14, color: T.ink, margin: "0 0 10px" }}>{ROLEPLAY.prompt}</p>
+        <div style={{ display: "flex", gap: 7, flexWrap: "wrap", marginBottom: 11 }}>
+          {cafe.map((c, i) => (
+            <span key={i} style={{ padding: "6px 11px", borderRadius: 999, background: `${T.blush}26`, border: `1px solid ${T.blush}77`, fontFamily: SERIF, fontSize: 12.5, color: T.ink }}>
+              {c}
+            </span>
+          ))}
+        </div>
+        <div style={{ display: "flex", gap: 8 }}>
+          <input value={cafeDraft} onChange={(e) => setCafeDraft(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && addCafe()}
+            placeholder="Your café's name…"
+            style={{ flex: 1, padding: "9px 11px", borderRadius: 10, border: `1px solid ${T.paperDeep}`, background: T.paper, fontFamily: SERIF, fontSize: 13, color: T.ink, outline: "none" }} />
+          <button onClick={addCafe} disabled={!cafeDraft.trim()} style={{
+            display: "inline-flex", alignItems: "center", padding: "0 13px", borderRadius: 10,
+            background: cafeDraft.trim() ? T.ink : T.paperDeep, color: T.paper, border: "none",
+            cursor: cafeDraft.trim() ? "pointer" : "default",
+          }}>
+            <Plus size={15} />
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── (6) Four Lives — sample entry + chooser ──────────────────────────────────
+function FourLivesPanel() {
+  const [chosen, setChosen] = useState("lock");
+  return (
+    <div>
+      <PanelHead label="One entry" title="Four lives" />
+      <div style={{ background: T.paperHi, border: `1px solid ${T.paperDeep}`, borderRadius: 14, padding: "14px 15px", marginBottom: 14 }}>
+        <Eyebrow mb={7} color={T.muted}>What you wrote</Eyebrow>
+        <p style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 14, color: T.ink, lineHeight: 1.55, margin: 0 }}>
+          "{SAMPLE_ENTRY}"
+        </p>
+      </div>
+      <p style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 13, color: T.inkSoft, margin: "0 0 12px", lineHeight: 1.5 }}>
+        One thing you wrote — four homes it could have. Choose where it goes.
+      </p>
+      <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+        {FOUR_LIVES.map((l) => {
+          const on = chosen === l.key;
+          return (
+            <button key={l.key} onClick={() => setChosen(l.key)}
+              style={{
+                display: "flex", alignItems: "flex-start", gap: 12, textAlign: "left", cursor: "pointer",
+                background: on ? T.ink : T.paperHi, border: `1px solid ${on ? T.ink : T.paperDeep}`,
+                borderRadius: 14, padding: "13px 14px", transition: "all .16s ease",
+              }}>
+              <span style={{
+                width: 36, height: 36, borderRadius: 10, flexShrink: 0, display: "inline-flex",
+                alignItems: "center", justifyContent: "center",
+                background: on ? "rgba(244,239,227,0.14)" : `${T.ink}0E`, color: on ? T.paper : T.ink,
+              }}>
+                <l.Icon size={17} />
+              </span>
+              <div style={{ flex: 1 }}>
+                <span style={{ fontFamily: SERIF, fontSize: 16, color: on ? T.paper : T.ink, display: "block" }}>{l.label}</span>
+                <span style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 12, color: on ? "#E7DFCF" : T.inkSoft, lineHeight: 1.45 }}>{l.line}</span>
+              </div>
+              {on && <Check size={16} color={T.paper} style={{ marginTop: 4, flexShrink: 0 }} />}
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+// ── (7) Witness — gate + charter + responses (plum fragile surface) ──────────
+function WitnessPanel() {
+  const [step, setStep] = useState("gate"); // gate -> charter -> respond -> sent
+  const [reply, setReply] = useState(null);
+  const inkP = "#F4EFE3", softP = "#cdbcd0", mutP = "#9a86a0";
+
+  return (
+    <div>
+      <PanelHead label="Witness" title="Held once, by one" dark />
+
+      {step === "gate" && (
+        <div>
+          <div style={{ background: PLUM_HI, border: `1px solid ${PLUM_LINE}`, borderRadius: 14, padding: "16px", marginBottom: 14 }}>
+            <p style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 14.5, color: inkP, lineHeight: 1.55, margin: 0 }}>
+              {WITNESS.gate.line}
+            </p>
+            <div style={{ display: "flex", gap: 7, marginTop: 13 }}>
+              {Array.from({ length: WITNESS.gate.need }).map((_, i) => (
+                <span key={i} style={{
+                  flex: 1, height: 5, borderRadius: 999,
+                  background: i < WITNESS.gate.held ? T.blush : PLUM_LINE,
+                }} />
+              ))}
+            </div>
+          </div>
+          <button onClick={() => setStep("charter")} style={{
+            width: "100%", padding: "13px", borderRadius: 12, background: T.blush, color: PLUM, border: "none",
+            cursor: "pointer", fontFamily: UI, fontSize: 12.5, fontWeight: 800, letterSpacing: 0.4,
+          }}>
+            Hold space for a sister
+          </button>
+        </div>
+      )}
+
+      {step === "charter" && (
+        <div>
+          <Eyebrow mb={11} color={mutP}>The charter — how it's held</Eyebrow>
+          <div style={{ display: "flex", flexDirection: "column", gap: 11, marginBottom: 16 }}>
+            {WITNESS.charter.map(([k, v]) => (
+              <div key={k} style={{ display: "flex", gap: 11 }}>
+                <span style={{ width: 6, height: 6, borderRadius: 999, background: T.blush, flexShrink: 0, marginTop: 6 }} />
+                <div>
+                  <span style={{ fontFamily: SERIF, fontSize: 15, color: inkP, display: "block" }}>{k}</span>
+                  <span style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 12.5, color: softP, lineHeight: 1.5 }}>{v}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+          <button onClick={() => setStep("respond")} style={{
+            width: "100%", padding: "13px", borderRadius: 12, background: T.blush, color: PLUM, border: "none",
+            cursor: "pointer", fontFamily: UI, fontSize: 12.5, fontWeight: 800, letterSpacing: 0.4,
+          }}>
+            Read her entry
+          </button>
+        </div>
+      )}
+
+      {step === "respond" && (
+        <div>
+          <div style={{ background: PLUM_HI, border: `1px solid ${PLUM_LINE}`, borderRadius: 14, padding: "16px", marginBottom: 14 }}>
+            <Eyebrow mb={7} color={mutP}>She wrote · reproductive · TTC</Eyebrow>
+            <p style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 14.5, color: inkP, lineHeight: 1.55, margin: 0 }}>
+              "{SAMPLE_ENTRY}"
+            </p>
+          </div>
+          <p style={{ fontFamily: UI, fontSize: 11, color: mutP, fontStyle: "italic", margin: "0 0 11px", lineHeight: 1.5 }}>
+            One read, one fixed response. Hold, don't fix. Then it seals.
+          </p>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 9 }}>
+            {WITNESS.responses.map((r) => {
+              const on = reply === r;
+              return (
+                <button key={r} onClick={() => setReply(r)}
+                  style={{
+                    padding: "12px", borderRadius: 12, cursor: "pointer",
+                    background: on ? T.blush : "transparent", border: `1px solid ${on ? T.blush : PLUM_LINE}`,
+                    color: on ? PLUM : inkP, fontFamily: SERIF, fontSize: 14, fontStyle: "italic",
+                  }}>
+                  {r}
+                </button>
+              );
+            })}
+          </div>
+          <button onClick={() => reply && setStep("sent")} disabled={!reply} style={{
+            width: "100%", marginTop: 14, padding: "13px", borderRadius: 12,
+            background: reply ? T.blush : PLUM_LINE, color: reply ? PLUM : mutP, border: "none",
+            cursor: reply ? "pointer" : "default", fontFamily: UI, fontSize: 12.5, fontWeight: 800, letterSpacing: 0.4,
+          }}>
+            Send once, then seal
+          </button>
+        </div>
+      )}
+
+      {step === "sent" && (
+        <div style={{ textAlign: "center", padding: "20px 8px" }}>
+          <span style={{
+            width: 52, height: 52, borderRadius: 999, display: "inline-flex", alignItems: "center", justifyContent: "center",
+            background: `${T.blush}2E`, border: `1px solid ${T.blush}`, marginBottom: 14,
+          }}>
+            <Check size={22} color={T.blush} />
+          </span>
+          <Hand size={24} carve style={{ color: inkP }}>"{reply}" — held with her, then sealed.</Hand>
+          <p style={{ fontFamily: UI, fontSize: 11, color: mutP, fontStyle: "italic", margin: "10px auto 0", maxWidth: 280, lineHeight: 1.5 }}>
+            No DM, no follow, no re-view. She felt it once. That was enough.
+          </p>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ── (8) Talk It Out — audio modes + note + signpost (plum) ───────────────────
+function TalkPanel() {
+  const [mode, setMode] = useState(null);
+  const inkP = "#F4EFE3", softP = "#cdbcd0", mutP = "#9a86a0";
+  const active = AUDIO_MODES.find((m) => m.key === mode);
+  return (
+    <div>
+      <PanelHead label="Talk it out" title="Say it aloud" dark />
+      <div style={{ display: "flex", flexDirection: "column", gap: 10, marginBottom: 14 }}>
+        {AUDIO_MODES.map((m) => {
+          const on = mode === m.key;
+          return (
+            <button key={m.key} onClick={() => setMode(on ? null : m.key)}
+              style={{
+                display: "flex", alignItems: "flex-start", gap: 12, textAlign: "left", cursor: "pointer",
+                background: on ? PLUM_HI : "transparent", border: `1px solid ${on ? T.blush : PLUM_LINE}`,
+                borderRadius: 14, padding: "13px 14px", transition: "all .16s ease",
+              }}>
+              <span style={{
+                width: 38, height: 38, borderRadius: 11, flexShrink: 0, display: "inline-flex",
+                alignItems: "center", justifyContent: "center",
+                background: on ? `${T.blush}26` : "rgba(244,239,227,0.06)", color: on ? T.blush : inkP,
+              }}>
+                <m.Icon size={18} />
+              </span>
+              <div style={{ flex: 1 }}>
+                <span style={{ fontFamily: SERIF, fontSize: 16, color: inkP, display: "block" }}>{m.name}</span>
+                <span style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 12.5, color: softP, lineHeight: 1.5 }}>{m.line}</span>
+              </div>
+            </button>
+          );
+        })}
+      </div>
+
+      {active && (
+        <div style={{ background: PLUM_HI, border: `1px solid ${PLUM_LINE}`, borderRadius: 14, padding: "14px 15px", marginBottom: 12 }}>
+          <Hand size={20} carve style={{ color: inkP }}>You chose: {active.name}. Held by a phase-sister — hold, don't fix.</Hand>
+        </div>
+      )}
+
+      <div style={{ display: "flex", gap: 9, alignItems: "flex-start", padding: "12px 13px", borderRadius: 12, background: "rgba(244,239,227,0.04)", border: `1px solid ${PLUM_LINE}` }}>
+        <ShieldAlert size={15} color={T.blush} style={{ flexShrink: 0, marginTop: 1 }} />
+        <p style={{ fontFamily: UI, fontSize: 11, color: mutP, lineHeight: 1.55, margin: 0 }}>{AUDIO_NOTE}</p>
+      </div>
+    </div>
+  );
+}
+
+// ── demo banner ──────────────────────────────────────────────────────────────
+function Banner({ label }) {
+  return (
+    <div style={{ background: T.ink, color: T.paper, padding: "8px 16px", textAlign: "center", fontFamily: UI, fontSize: 10, letterSpacing: 2, fontWeight: 700, textTransform: "uppercase" }}>
+      {label}
+    </div>
+  );
+}

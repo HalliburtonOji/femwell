@@ -1,255 +1,817 @@
-// CommunityDemo3 — "A Circle + a game" (Community design demo · /Ideas → Community Demos)
+// CommunityDemo3 — "Tabbed / Segmented Control" UX
 // ─────────────────────────────────────────────────────────────────────────────
-// The whole-life, NON-CLINICAL face of Community. A friendship Circle matched on
-// what you LOVE (never a lead photo, never a competitive count) + two cooperative
-// games in play: a This-or-That / Kind Hot-Take that reveals how the ROOM split
-// (a descriptive-norm aggregate bar — never a leaderboard), and a One-Line Story
-// (exquisite-corpse) the room builds together, a line at a time.
+// The SAME complete whole-life Community as every other demo — only the UX
+// differs. Here the signature is a STICKY segmented control (a pill-tab row:
+// Home · Lounge · Rooms · Play · Share · Talk) pinned to the top of the column.
+// It stays put while you flick between sections fast (useState activeTab),
+// app-like and compact. Health is one room, not the house. Anonymous, 18+,
+// whole-life not clinical. No scoreboards, no handles, no emoji.
 //
-// From WHOLE_LIFE_REBALANCE §4 (Circles: interest-first friendship, never a lead
-// photo) + §5 non-clinical catalogue (Kind Hot-Takes · This-or-That · One-Line
-// Story · Recommend-Me). Joyful, warm, equal — NOT clinical. No cycle-quiz.
-//
-// Self-contained, mock data only, no entities. UK voice, no emoji, Lucide only.
+// Self-contained, mock data + useState only, no entities. UK voice, Lucide only.
 import { useState } from "react";
 import {
-  Heart, BookOpen, Tv, Tag, Users, Feather, Check, Sparkles, Coffee, Plus,
+  Home as HomeIcon, MessageCircle, Grid3x3, Dices, Send, Mic2,
+  Check, Users, Waves, Heart, ArrowRight, Lock, Quote, Plus, ChevronRight,
 } from "lucide-react";
 import {
   T, SERIF, UI, Eyebrow, Rule, Script, Hand, InkFilter, EditorialFooter,
   useEditorialFonts, PAPER_BG,
 } from "@/components/journal/Editorial";
+import {
+  MASTHEAD, PRESENCE, QOTD, ROOMS, ECHOES, ECHO_REACTIONS, LOUNGE,
+  THIS_OR_THAT, HOT_TAKES, STORY_SEED, ROLEPLAY, SAMPLE_ENTRY, FOUR_LIVES,
+  WITNESS, AUDIO_MODES, AUDIO_NOTE, crisisCheck, UK_RESOURCES, FOOTER_LINE,
+  ShieldAlert,
+} from "./communityShared";
 
-// ── the Circle (interest-first, whole-life — NOT a count, a warm "who's here") ─
-const CIRCLE = {
-  name: "Bookworms & Binge-watchers",
-  blurb: "Match on what you love — never a photo. A handful of women who read past midnight and have strong feelings about a season finale.",
-  tags: ["#cosy-crime", "#a-good-cry-film", "#charity-shop-finds"],
-  whoHint: "A small, settled room — some new this week, most have been here a while.",
-};
-
-const POSTS = [
-  { id: "p1", icon: BookOpen, kind: "a film rec",
-    body: "Watched a quiet little film about a baker who learns to swim. Nothing exploded. I cried twice and felt completely held. Putting it here for anyone who needs the gentle kind tonight." },
-  { id: "p2", icon: Tag, kind: "a great find",
-    body: "£3.50 in the charity shop for a coat I'd have stared at in a window for a month and never bought. It has POCKETS. I walked home feeling like the main character." },
-  { id: "p3", icon: Sparkles, kind: "a whole-life win",
-    body: "Job interview tomorrow for something I actually want — the first time in years I've wanted a thing for me. Not asking for advice, just wanted to say it out loud somewhere kind." },
-];
-
-// ── This-or-That / Kind Hot-Take — reveals the ROOM's split (no ranking) ──────
-const SPLITS = [
-  { id: "s1", icon: Coffee, q: "The eternal question:", a: "Tea", b: "Coffee", pctA: 58 },
-  { id: "s2", icon: Tv,     q: "An unpopular telly opinion:", a: "Adverts are a nice break", b: "Adverts are a crime", pctA: 22 },
-];
-
-// ── One-Line Story (exquisite-corpse) — the room builds it together ───────────
-const STORY_SEED = [
-  "On the last Tuesday of the longest month, Maureen decided the recipe was wrong.",
-  "She had followed it for thirty years, and for thirty years the cake had sunk.",
-  "So she opened the window, tipped the flour into the wind, and watched the garden go white.",
+const TABS = [
+  { key: "home",   label: "Home",   Icon: HomeIcon },
+  { key: "lounge", label: "Lounge", Icon: MessageCircle },
+  { key: "rooms",  label: "Rooms",  Icon: Grid3x3 },
+  { key: "play",   label: "Play",   Icon: Dices },
+  { key: "share",  label: "Share",  Icon: Send },
+  { key: "talk",   label: "Talk",   Icon: Mic2 },
 ];
 
 export default function CommunityDemo3() {
   useEditorialFonts();
-
-  // Circle join toggle
-  const [joined, setJoined] = useState(false);
-
-  // This-or-That: which prompts the user has answered, and which side they tapped
-  const [voted, setVoted] = useState({}); // { [id]: "a" | "b" }
-
-  // One-Line Story
-  const [story, setStory] = useState(STORY_SEED);
-  const [draft, setDraft] = useState("");
-
-  const vote = (id, side) =>
-    setVoted((v) => (v[id] ? v : { ...v, [id]: side }));
-
-  const addLine = () => {
-    const line = draft.trim();
-    if (!line) return;
-    setStory((s) => [...s, line.replace(/\s+/g, " ").slice(0, 140)]);
-    setDraft("");
-  };
+  const [tab, setTab] = useState("home");
 
   return (
-    <div style={{ ...PAPER_BG, minHeight: "100vh", fontFamily: SERIF, color: T.ink, paddingBottom: 60 }}>
+    <div style={{ ...PAPER_BG, minHeight: "100vh", fontFamily: SERIF, color: T.ink }}>
       <InkFilter />
-      <DemoBanner label="Community · A Circle + a game — design demo · mock data" />
+      <DemoBanner label="Community · Tabbed — design demo · mock data" />
 
-      <div style={{ maxWidth: 430, margin: "0 auto", padding: "26px 20px 0" }}>
-        {/* masthead */}
-        <header style={{ textAlign: "center", marginBottom: 20 }}>
-          <Eyebrow mb={10} color={T.muted}>Circles</Eyebrow>
-          <Script size={52} carve>The Circle</Script>
-          <Hand size={19} carve style={{ display: "block", marginTop: 8, color: T.inkSoft }}>
-            rooms by what you love — match on interest, never a photo
-          </Hand>
-        </header>
-
-        {/* ── the Circle ─────────────────────────────────────────────── */}
-        <section style={{ background: T.paperHi, border: `1px solid ${T.paperDeep}`, borderRadius: 18, padding: "18px 18px 16px", marginBottom: 22 }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
-            <BookOpen size={16} color={T.gold} />
-            <Tv size={16} color={T.gold} />
-            <span style={{ fontFamily: UI, fontSize: 10.5, fontWeight: 800, letterSpacing: 1.2, textTransform: "uppercase", color: T.muted }}>
-              Interest Circle
-            </span>
+      <div style={{ maxWidth: 430, margin: "0 auto", position: "relative" }}>
+        {/* ── STICKY segmented control — the signature of this UX ─────────── */}
+        <nav style={{
+          position: "sticky", top: 0, zIndex: 20,
+          background: T.paperHi, borderBottom: `1px solid ${T.paperDeep}`,
+          padding: "9px 12px",
+        }}>
+          <div style={{
+            display: "flex", gap: 6, overflowX: "auto",
+            WebkitOverflowScrolling: "touch", scrollbarWidth: "none",
+          }}>
+            {TABS.map((tb) => {
+              const on = tab === tb.key;
+              return (
+                <button
+                  key={tb.key}
+                  onClick={() => setTab(tb.key)}
+                  style={{
+                    display: "inline-flex", alignItems: "center", gap: 6,
+                    padding: "8px 13px", borderRadius: 999, flexShrink: 0,
+                    background: on ? T.ink : "transparent",
+                    border: `1px solid ${on ? T.ink : T.paperDeep}`,
+                    color: on ? T.paper : T.muted,
+                    fontFamily: UI, fontSize: 12, fontWeight: 700,
+                    letterSpacing: 0.3, cursor: "pointer",
+                    transition: "all .16s ease", whiteSpace: "nowrap",
+                  }}
+                >
+                  <tb.Icon size={13} style={{ flexShrink: 0 }} />
+                  {tb.label}
+                </button>
+              );
+            })}
           </div>
-          <Script size={30} carve>{CIRCLE.name}</Script>
-          <p style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 14.5, color: T.inkSoft, margin: "8px 0 12px", lineHeight: 1.5 }}>
-            {CIRCLE.blurb}
-          </p>
-          <div style={{ display: "flex", gap: 7, flexWrap: "wrap", marginBottom: 13 }}>
-            {CIRCLE.tags.map((t) => (
-              <span key={t} style={{ display: "inline-flex", alignItems: "center", gap: 5, fontFamily: UI, fontSize: 11.5, fontWeight: 600, color: T.inkSoft, background: T.paper, border: `1px solid ${T.paperDeep}`, borderRadius: 999, padding: "4px 11px" }}>
-                <Tag size={11} color={T.gold} /> {t.replace("#", "")}
-              </span>
-            ))}
-          </div>
+        </nav>
 
-          {/* a gentle "who's here" hint — NEVER a competitive count */}
-          <div style={{ display: "flex", alignItems: "flex-start", gap: 8, padding: "10px 12px", background: T.paper, border: `1px solid ${T.paperDeep}`, borderRadius: 12, marginBottom: 14 }}>
-            <Users size={14} color={T.muted} style={{ flexShrink: 0, marginTop: 2 }} />
-            <span style={{ fontFamily: UI, fontSize: 12, color: T.inkSoft, lineHeight: 1.45 }}>
-              {CIRCLE.whoHint}
-            </span>
-          </div>
+        <div style={{ padding: "22px 20px 56px" }}>
+          {tab === "home"   && <HomeTab onJump={setTab} />}
+          {tab === "lounge" && <LoungeTab />}
+          {tab === "rooms"  && <RoomsTab />}
+          {tab === "play"   && <PlayTab />}
+          {tab === "share"  && <ShareTab />}
+          {tab === "talk"   && <TalkTab />}
 
-          <button onClick={() => setJoined((j) => !j)} style={joinBtn(joined)}>
-            {joined ? <><Check size={15} /> You're in this Circle</> : <><Plus size={15} /> Join the Circle</>}
-          </button>
-          {joined && (
-            <div style={{ fontFamily: UI, fontSize: 11.5, color: T.muted, fontStyle: "italic", textAlign: "center", marginTop: 9 }}>
-              Welcome in. No introductions required — just say the thing you loved this week.
+          <div style={{ marginTop: 34 }}>
+            <Rule c={T.paperDeep} mb={14} />
+            <p style={{ textAlign: "center", fontFamily: UI, fontSize: 11, color: T.muted, lineHeight: 1.6, margin: "0 auto", maxWidth: 360 }}>
+              {FOOTER_LINE}
+            </p>
+            <div style={{ marginTop: 22 }}><EditorialFooter /></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ════════════════════════════ HOME ═══════════════════════════════════════
+   masthead + presence · QOTD · Echo Wall · quick links into the rooms       */
+function HomeTab({ onJump }) {
+  const [picked, setPicked] = useState(null);
+  const matched = picked === QOTD.norm;
+
+  return (
+    <section>
+      {/* masthead */}
+      <header style={{ textAlign: "center", marginBottom: 14 }}>
+        <Eyebrow mb={9} color={T.muted}>{MASTHEAD.eyebrow}</Eyebrow>
+        <Script size={50} carve>{MASTHEAD.title}</Script>
+        <p style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 14.5, color: T.inkSoft, margin: "11px auto 0", maxWidth: 350, lineHeight: 1.55 }}>
+          {MASTHEAD.subtitle}
+        </p>
+      </header>
+
+      {/* ambient presence */}
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 9, padding: "10px 14px", margin: "0 0 22px", background: T.paperHi, border: `1px solid ${T.paperDeep}`, borderRadius: 12 }}>
+        <span style={{ width: 7, height: 7, borderRadius: 999, background: T.sage, flexShrink: 0 }} />
+        <span style={{ fontFamily: UI, fontSize: 12, color: T.inkSoft, letterSpacing: 0.2 }}>
+          <strong style={{ color: T.ink }}>{PRESENCE.count} women</strong> {PRESENCE.line}
+        </span>
+      </div>
+
+      {/* Question of the Day */}
+      <article style={{ background: T.paperHi, border: `1px solid ${T.paperDeep}`, borderRadius: 16, padding: "18px 16px", marginBottom: 26 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 11 }}>
+          <span style={{ width: 22, height: 1, background: T.gold }} />
+          <Eyebrow color={T.muted}>Question of the day</Eyebrow>
+        </div>
+        <Script size={27} carve style={{ marginBottom: 13 }}>{QOTD.question}</Script>
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+          {QOTD.options.map((o) => {
+            const on = picked === o;
+            const dim = picked && !on;
+            return (
+              <button
+                key={o}
+                onClick={() => setPicked(o)}
+                disabled={!!picked}
+                style={{
+                  display: "inline-flex", alignItems: "center", gap: 7,
+                  padding: "10px 12px", borderRadius: 12, textAlign: "left",
+                  background: on ? T.ink : "transparent",
+                  border: `1px solid ${on ? T.ink : T.paperDeep}`,
+                  color: on ? T.paper : (dim ? T.muted : T.inkSoft),
+                  fontFamily: UI, fontSize: 12, fontWeight: 600, letterSpacing: 0.2,
+                  cursor: picked ? "default" : "pointer", opacity: dim ? 0.55 : 1,
+                  transition: "all .18s ease",
+                }}
+              >
+                <span style={{ flex: 1 }}>{o}</span>
+                {on && <Check size={13} style={{ flexShrink: 0 }} />}
+              </button>
+            );
+          })}
+        </div>
+        {picked && (
+          <div style={{ marginTop: 14 }}>
+            <Rule c={T.paperDeep} mb={11} />
+            <div style={{ display: "flex", alignItems: "flex-start", gap: 9 }}>
+              <Users size={15} color={T.gold} style={{ marginTop: 2, flexShrink: 0 }} />
+              <div>
+                <Hand size={19} carve>
+                  {matched ? "Most women said the same as you — a text from a friend." : QOTD.normLine}
+                </Hand>
+                <p style={{ fontFamily: UI, fontSize: 10.5, color: T.muted, fontStyle: "italic", margin: "5px 0 0", lineHeight: 1.5 }}>
+                  A little company in the small things. No tally, no names — just the shape of the room.
+                </p>
+              </div>
             </div>
-          )}
-        </section>
+          </div>
+        )}
+      </article>
 
-        {/* ── warm member posts ──────────────────────────────────────── */}
-        <Eyebrow mb={11} color={T.muted}>What's being shared</Eyebrow>
-        {POSTS.map((p) => (
-          <article key={p.id} style={{ background: T.paperHi, border: `1px solid ${T.paperDeep}`, borderRadius: 16, padding: "15px 16px 13px", marginBottom: 12 }}>
-            <div style={{ display: "inline-flex", alignItems: "center", gap: 6, marginBottom: 9 }}>
-              <p.icon size={13} color={T.gold} />
-              <span style={{ fontFamily: UI, fontSize: 10, fontWeight: 800, letterSpacing: 1, textTransform: "uppercase", color: T.muted }}>{p.kind}</span>
-            </div>
-            <p style={{ fontFamily: SERIF, fontSize: 15.5, lineHeight: 1.55, color: T.ink, margin: 0 }}>{p.body}</p>
-            <Rule c={T.paperDeep} mt={12} mb={10} />
-            <span style={{ display: "inline-flex", alignItems: "center", gap: 6, fontFamily: UI, fontSize: 11.5, color: T.muted, fontStyle: "italic" }}>
-              <Heart size={12} color={T.crimson} /> a reaction, not a score — reply if it moved you
-            </span>
-          </article>
-        ))}
+      {/* Echo Wall — prominent on Home */}
+      <EchoWall />
 
-        {/* ── This-or-That / Kind Hot-Takes — descriptive-norm reveal ── */}
-        <div style={{ marginTop: 26 }}>
-          <Eyebrow mb={4} color={T.muted}>Tonight's game · This-or-That</Eyebrow>
-          <Hand size={22} carve style={{ display: "block", marginBottom: 13, color: T.inkSoft }}>
-            tap your side — then see how the room landed
-          </Hand>
-          {SPLITS.map((s) => (
-            <ThisOrThat key={s.id} s={s} chose={voted[s.id]} onVote={vote} />
+      {/* quick links into the deeper tabs */}
+      <div style={{ marginTop: 26 }}>
+        <Eyebrow color={T.muted} mb={11}>Jump in</Eyebrow>
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 9 }}>
+          {[
+            { to: "lounge", label: "The Lounge", line: "Vent · be heard" },
+            { to: "rooms",  label: "The rooms",  line: "Whole-life" },
+            { to: "play",   label: "Play",       line: "Games · no scores" },
+            { to: "share",  label: "Share one entry", line: "Four lives" },
+          ].map((q) => (
+            <button
+              key={q.to}
+              onClick={() => onJump(q.to)}
+              style={{
+                textAlign: "left", padding: "13px 14px", borderRadius: 13,
+                background: T.paperHi, border: `1px solid ${T.paperDeep}`,
+                cursor: "pointer",
+              }}
+            >
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                <span style={{ fontFamily: SERIF, fontSize: 16, color: T.ink }}>{q.label}</span>
+                <ArrowRight size={14} color={T.muted} />
+              </div>
+              <span style={{ fontFamily: UI, fontSize: 10.5, color: T.muted, letterSpacing: 0.3 }}>{q.line}</span>
+            </button>
           ))}
         </div>
+      </div>
+    </section>
+  );
+}
 
-        {/* ── One-Line Story (exquisite-corpse) ──────────────────────── */}
-        <section style={{ marginTop: 26, background: T.paperHi, border: `1px solid ${T.paperDeep}`, borderRadius: 18, padding: "18px 18px 16px" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 7, marginBottom: 4 }}>
-            <Feather size={15} color={T.gold} />
-            <Eyebrow color={T.muted}>One-Line Story</Eyebrow>
+/* ── Echo Wall (anonymous one-liners, fade 48h, kind one-way reactions) ──── */
+function EchoWall() {
+  const [reacted, setReacted] = useState({});  // id -> reaction label
+
+  return (
+    <div>
+      <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 11 }}>
+        <Waves size={15} color={T.gold} />
+        <Eyebrow color={T.muted}>Echo Wall</Eyebrow>
+        <span style={{ fontFamily: UI, fontSize: 9.5, color: T.muted, fontStyle: "italic", marginLeft: "auto" }}>
+          scrubbed lines · fade in 48h
+        </span>
+      </div>
+      <div style={{ display: "flex", flexDirection: "column", gap: 9 }}>
+        {ECHOES.map((e) => {
+          const mine = reacted[e.id];
+          return (
+            <div key={e.id} style={{ background: T.paperHi, border: `1px solid ${T.paperDeep}`, borderRadius: 13, padding: "13px 14px" }}>
+              <p style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 14.5, color: T.ink, margin: 0, lineHeight: 1.5 }}>
+                “{e.body}”
+              </p>
+              <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 10, flexWrap: "wrap" }}>
+                {ECHO_REACTIONS.map((r) => {
+                  const on = mine === r;
+                  return (
+                    <button
+                      key={r}
+                      onClick={() => setReacted((p) => ({ ...p, [e.id]: on ? null : r }))}
+                      style={{
+                        padding: "5px 11px", borderRadius: 999,
+                        background: on ? T.ink : "transparent",
+                        border: `1px solid ${on ? T.ink : T.paperDeep}`,
+                        color: on ? T.paper : T.muted,
+                        fontFamily: UI, fontSize: 10.5, fontWeight: 600,
+                        cursor: "pointer", transition: "all .15s ease",
+                      }}
+                    >
+                      {r}
+                    </button>
+                  );
+                })}
+                <span style={{ fontFamily: UI, fontSize: 9.5, color: T.muted, marginLeft: "auto" }}>
+                  fades in {e.fadeH}h
+                </span>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+/* ════════════════════════════ LOUNGE ═════════════════════════════════════
+   the whole-life feed + compose with crisisCheck → UK_RESOURCES routing      */
+function LoungeTab() {
+  const [draft, setDraft] = useState("");
+  const [posted, setPosted] = useState(false);
+  const crisis = crisisCheck(draft);
+
+  const send = () => { if (!crisis && draft.trim()) { setPosted(true); setDraft(""); } };
+
+  return (
+    <section>
+      <header style={{ marginBottom: 16 }}>
+        <Eyebrow mb={8} color={T.muted}>The Lounge</Eyebrow>
+        <Script size={34} carve>Spill it, kindly</Script>
+        <p style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 14, color: T.inkSoft, margin: "8px 0 0", lineHeight: 1.5 }}>
+          Silly to serious, no names. Whole-life — the win, the wobble, the “is it just me”.
+        </p>
+      </header>
+
+      {/* compose */}
+      <div style={{ background: T.paperHi, border: `1px solid ${T.paperDeep}`, borderRadius: 15, padding: "14px", marginBottom: 22 }}>
+        <textarea
+          value={draft}
+          onChange={(e) => { setDraft(e.target.value); setPosted(false); }}
+          placeholder="Say it here — anonymously."
+          rows={3}
+          style={{
+            width: "100%", boxSizing: "border-box", resize: "none",
+            background: T.paper, border: `1px solid ${T.paperDeep}`, borderRadius: 11,
+            padding: "11px 12px", fontFamily: SERIF, fontSize: 14.5, color: T.ink,
+            lineHeight: 1.5, outline: "none",
+          }}
+        />
+        {crisis ? (
+          <div style={{ marginTop: 12, background: T.paper, border: `1px solid ${T.crimson}`, borderRadius: 12, padding: "13px 14px" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 9 }}>
+              <ShieldAlert size={16} color={T.crimson} />
+              <span style={{ fontFamily: UI, fontSize: 12, fontWeight: 800, color: T.crimson, letterSpacing: 0.3 }}>
+                This belongs with someone trained — not a peer.
+              </span>
+            </div>
+            <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+              {UK_RESOURCES.map((r) => (
+                <div key={r.name} style={{ display: "flex", alignItems: "center", gap: 9 }}>
+                  <r.Icon size={14} color={T.crimson} style={{ flexShrink: 0 }} />
+                  <span style={{ fontFamily: UI, fontSize: 12, color: T.ink }}>
+                    <strong>{r.name}</strong> — {r.detail}
+                  </span>
+                </div>
+              ))}
+            </div>
           </div>
-          <Hand size={20} carve style={{ display: "block", marginBottom: 14, color: T.inkSoft }}>
-            the room writes one wild tale, a line each
-          </Hand>
-
-          <ol style={{ listStyle: "none", margin: 0, padding: 0, borderLeft: `2px solid ${T.paperDeep}`, paddingLeft: 14 }}>
-            {story.map((line, i) => (
-              <li key={i} style={{ marginBottom: 12, position: "relative" }}>
-                <span style={{ position: "absolute", left: -22, top: 2, fontFamily: UI, fontSize: 10, fontWeight: 800, color: T.muted }}>{i + 1}</span>
-                <span style={{ fontFamily: SERIF, fontSize: 15.5, lineHeight: 1.55, color: T.ink, fontStyle: i === story.length - 1 ? "italic" : "normal" }}>{line}</span>
-              </li>
-            ))}
-          </ol>
-
-          <div style={{ marginTop: 6 }}>
-            <textarea
-              value={draft}
-              onChange={(e) => setDraft(e.target.value)}
-              onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); addLine(); } }}
-              rows={2}
-              placeholder="Add the next line — where does it go?"
-              style={{ width: "100%", padding: "11px 12px", borderRadius: 12, border: `1px solid ${T.paperDeep}`, background: T.paper, fontFamily: SERIF, fontSize: 15, color: T.ink, resize: "none", boxSizing: "border-box", outline: "none" }}
-            />
-            <button onClick={addLine} disabled={!draft.trim()} style={{ ...inkBtn, width: "100%", justifyContent: "center", marginTop: 10, opacity: draft.trim() ? 1 : 0.4 }}>
-              <Plus size={14} /> Add your line
+        ) : (
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: 11 }}>
+            <span style={{ fontFamily: UI, fontSize: 10.5, color: T.muted, fontStyle: "italic" }}>
+              {posted ? "Shared with the room." : "No handle attached."}
+            </span>
+            <button
+              onClick={send}
+              disabled={!draft.trim()}
+              style={{
+                display: "inline-flex", alignItems: "center", gap: 7,
+                padding: "9px 16px", borderRadius: 999,
+                background: draft.trim() ? T.ink : "transparent",
+                border: `1px solid ${draft.trim() ? T.ink : T.paperDeep}`,
+                color: draft.trim() ? T.paper : T.muted,
+                fontFamily: UI, fontSize: 12, fontWeight: 700,
+                cursor: draft.trim() ? "pointer" : "default",
+              }}
+            >
+              Share <Send size={12} />
             </button>
           </div>
-        </section>
-
-        {/* ── the gentle note ────────────────────────────────────────── */}
-        <div style={{ display: "flex", alignItems: "flex-start", gap: 9, marginTop: 22, padding: "13px 15px", border: `1px dashed ${T.paperDeep}`, borderRadius: 14 }}>
-          <Heart size={15} color={T.crimson} style={{ flexShrink: 0, marginTop: 2 }} />
-          <span style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 14, color: T.inkSoft, lineHeight: 1.55 }}>
-            No scores here, no winners — just reactions. Every line and every vote counts the same.
-            The room is built one small, kind contribution at a time.
-          </span>
-        </div>
-
-        <div style={{ marginTop: 30 }}><EditorialFooter /></div>
+        )}
       </div>
-    </div>
+
+      {/* feed */}
+      <div style={{ display: "flex", flexDirection: "column", gap: 11 }}>
+        {LOUNGE.map((p) => (
+          <div key={p.id} style={{ background: T.paperHi, border: `1px solid ${T.paperDeep}`, borderRadius: 14, padding: "14px 15px" }}>
+            <span style={{
+              display: "inline-block", fontFamily: UI, fontSize: 9, fontWeight: 800,
+              letterSpacing: 1, textTransform: "uppercase", color: p.warm ? T.sage : T.muted,
+              marginBottom: 7,
+            }}>
+              {p.domain}
+            </span>
+            <p style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 15, color: T.ink, margin: 0, lineHeight: 1.5 }}>
+              {p.body}
+            </p>
+          </div>
+        ))}
+      </div>
+    </section>
   );
 }
 
-// ── This-or-That card: tap a side, then the room's split is revealed ──────────
-function ThisOrThat({ s, chose, onVote }) {
-  const revealed = !!chose;
-  const pctA = s.pctA, pctB = 100 - s.pctA;
+/* ════════════════════════════ ROOMS ══════════════════════════════════════
+   the whole-life rooms in detail                                            */
+function RoomsTab() {
+  const [open, setOpen] = useState(null);
+
   return (
-    <article style={{ background: T.paperHi, border: `1px solid ${T.paperDeep}`, borderRadius: 16, padding: "15px 16px 14px", marginBottom: 12 }}>
-      <div style={{ display: "inline-flex", alignItems: "center", gap: 6, marginBottom: 11 }}>
-        <s.icon size={13} color={T.gold} />
-        <span style={{ fontFamily: UI, fontSize: 11.5, fontWeight: 600, color: T.muted }}>{s.q}</span>
+    <section>
+      <header style={{ marginBottom: 16 }}>
+        <Eyebrow mb={8} color={T.muted}>The rooms</Eyebrow>
+        <Script size={34} carve>One room, not the house</Script>
+        <p style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 14, color: T.inkSoft, margin: "8px 0 0", lineHeight: 1.5 }}>
+          Rooms for the whole of your life. Health is the clinical one — it doesn’t run the place.
+        </p>
+      </header>
+
+      <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+        {ROOMS.map((r) => {
+          const isOpen = open === r.key;
+          return (
+            <button
+              key={r.key}
+              onClick={() => setOpen(isOpen ? null : r.key)}
+              style={{
+                textAlign: "left", width: "100%",
+                background: T.paperHi, border: `1px solid ${isOpen ? T.ink : T.paperDeep}`,
+                borderRadius: 14, padding: "14px 15px", cursor: "pointer",
+                transition: "border-color .15s ease",
+              }}
+            >
+              <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                <span style={{
+                  width: 38, height: 38, borderRadius: 11, flexShrink: 0,
+                  display: "inline-flex", alignItems: "center", justifyContent: "center",
+                  background: T.paper, border: `1px solid ${T.paperDeep}`, color: T.ink,
+                }}>
+                  <r.Icon size={17} />
+                </span>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <span style={{ fontFamily: SERIF, fontSize: 18, color: T.ink }}>{r.name}</span>
+                  <div style={{ display: "inline-flex", alignItems: "center", gap: 5, marginLeft: 9, fontFamily: UI, fontSize: 9, fontWeight: 800, letterSpacing: 1, textTransform: "uppercase", color: T.muted }}>
+                    <span style={{ width: 5, height: 5, borderRadius: 999, background: T.sage }} />
+                    {r.hint}
+                  </div>
+                </div>
+                <ChevronRight size={15} color={T.muted} style={{ transform: isOpen ? "rotate(90deg)" : "none", transition: "transform .18s ease", flexShrink: 0 }} />
+              </div>
+              {isOpen && (
+                <p style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 14, color: T.inkSoft, margin: "11px 0 0 50px", lineHeight: 1.55 }}>
+                  {r.line}
+                </p>
+              )}
+            </button>
+          );
+        })}
+      </div>
+    </section>
+  );
+}
+
+/* ════════════════════════════ PLAY ═══════════════════════════════════════
+   This-or-That tap→split · Hot Takes · One-Line Story add · Role-Play        */
+function PlayTab() {
+  const [votes, setVotes] = useState({});       // t.id -> "a" | "b"
+  const [takeIdx, setTakeIdx] = useState(0);
+  const [story, setStory] = useState([...STORY_SEED]);
+  const [line, setLine] = useState("");
+  const [cafes, setCafes] = useState([...ROLEPLAY.entries]);
+  const [name, setName] = useState("");
+
+  const addLine = () => { if (line.trim()) { setStory((s) => [...s, line.trim()]); setLine(""); } };
+  const addCafe = () => { if (name.trim()) { setCafes((c) => [...c, name.trim()]); setName(""); } };
+
+  return (
+    <section>
+      <header style={{ marginBottom: 16 }}>
+        <Eyebrow mb={8} color={T.muted}>The Lighter Side</Eyebrow>
+        <Script size={34} carve>Play, no scores</Script>
+        <p style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 14, color: T.inkSoft, margin: "8px 0 0", lineHeight: 1.5 }}>
+          Tap, take, build a line. Nobody’s keeping count.
+        </p>
+      </header>
+
+      {/* This or That */}
+      <Eyebrow color={T.muted} mb={10}>This or that</Eyebrow>
+      <div style={{ display: "flex", flexDirection: "column", gap: 12, marginBottom: 26 }}>
+        {THIS_OR_THAT.map((t) => {
+          const v = votes[t.id];
+          return (
+            <div key={t.id} style={{ background: T.paperHi, border: `1px solid ${T.paperDeep}`, borderRadius: 14, padding: "14px" }}>
+              <p style={{ fontFamily: SERIF, fontSize: 16, color: T.ink, margin: "0 0 11px" }}>{t.prompt}</p>
+              {!v ? (
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 9 }}>
+                  {["a", "b"].map((side) => (
+                    <button
+                      key={side}
+                      onClick={() => setVotes((p) => ({ ...p, [t.id]: side }))}
+                      style={{
+                        padding: "12px", borderRadius: 12, background: "transparent",
+                        border: `1px solid ${T.paperDeep}`, color: T.ink,
+                        fontFamily: UI, fontSize: 13, fontWeight: 700, cursor: "pointer",
+                      }}
+                    >
+                      {t[side]}
+                    </button>
+                  ))}
+                </div>
+              ) : (
+                <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                  {["a", "b"].map((side) => {
+                    const pct = side === "a" ? t.split[0] : t.split[1];
+                    const mine = v === side;
+                    return (
+                      <div key={side}>
+                        <div style={{ display: "flex", justifyContent: "space-between", fontFamily: UI, fontSize: 11.5, fontWeight: 600, color: mine ? T.ink : T.muted, marginBottom: 4 }}>
+                          <span>{t[side]}{mine && " · you"}</span>
+                          <span>{pct}%</span>
+                        </div>
+                        <div style={{ height: 8, borderRadius: 999, background: T.paper, border: `1px solid ${T.paperDeep}`, overflow: "hidden" }}>
+                          <div style={{ width: `${pct}%`, height: "100%", background: mine ? T.ink : T.muted, opacity: mine ? 1 : 0.4 }} />
+                        </div>
+                      </div>
+                    );
+                  })}
+                  <p style={{ fontFamily: UI, fontSize: 10, color: T.muted, fontStyle: "italic", margin: "3px 0 0" }}>
+                    How the room leans — not a score.
+                  </p>
+                </div>
+              )}
+            </div>
+          );
+        })}
       </div>
 
-      {!revealed ? (
-        <div style={{ display: "flex", gap: 10 }}>
-          {[["a", s.a], ["b", s.b]].map(([side, label]) => (
-            <button key={side} onClick={() => onVote(s.id, side)} style={choiceBtn}>{label}</button>
+      {/* Hot Takes */}
+      <Eyebrow color={T.muted} mb={10}>Hot take</Eyebrow>
+      <div style={{ background: T.paperHi, border: `1px solid ${T.paperDeep}`, borderRadius: 14, padding: "16px", marginBottom: 26 }}>
+        <Quote size={16} color={T.gold} style={{ marginBottom: 8 }} />
+        <p style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 16.5, color: T.ink, margin: "0 0 13px", lineHeight: 1.45 }}>
+          {HOT_TAKES[takeIdx]}
+        </p>
+        <button
+          onClick={() => setTakeIdx((i) => (i + 1) % HOT_TAKES.length)}
+          style={{
+            padding: "8px 15px", borderRadius: 999, background: "transparent",
+            border: `1px solid ${T.paperDeep}`, color: T.muted,
+            fontFamily: UI, fontSize: 11.5, fontWeight: 700, cursor: "pointer",
+          }}
+        >
+          Another
+        </button>
+      </div>
+
+      {/* One-Line Story */}
+      <Eyebrow color={T.muted} mb={10}>One-line story</Eyebrow>
+      <div style={{ background: T.paperHi, border: `1px solid ${T.paperDeep}`, borderRadius: 14, padding: "15px", marginBottom: 26 }}>
+        <div style={{ display: "flex", flexDirection: "column", gap: 7, marginBottom: 12 }}>
+          {story.map((s, i) => (
+            <p key={i} style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 14, color: i < STORY_SEED.length ? T.inkSoft : T.ink, margin: 0, lineHeight: 1.5 }}>
+              {s}
+            </p>
           ))}
         </div>
-      ) : (
-        <>
-          <RevealRow label={s.a} pct={pctA} mine={chose === "a"} />
-          <RevealRow label={s.b} pct={pctB} mine={chose === "b"} />
-          <div style={{ fontFamily: UI, fontSize: 11, color: T.muted, fontStyle: "italic", marginTop: 8 }}>
-            How the room split — no winner, just where everyone landed.
-          </div>
-        </>
-      )}
-    </article>
+        <div style={{ display: "flex", gap: 8 }}>
+          <input
+            value={line}
+            onChange={(e) => setLine(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && addLine()}
+            placeholder="Add the next line…"
+            style={{
+              flex: 1, minWidth: 0, background: T.paper, border: `1px solid ${T.paperDeep}`,
+              borderRadius: 10, padding: "10px 12px", fontFamily: SERIF, fontSize: 13.5,
+              color: T.ink, outline: "none",
+            }}
+          />
+          <button
+            onClick={addLine}
+            style={{
+              display: "inline-flex", alignItems: "center", justifyContent: "center",
+              width: 40, borderRadius: 10, background: T.ink, border: "none",
+              color: T.paper, cursor: "pointer", flexShrink: 0,
+            }}
+          >
+            <Plus size={16} />
+          </button>
+        </div>
+      </div>
+
+      {/* Role-Play */}
+      <Eyebrow color={T.muted} mb={10}>Role-play</Eyebrow>
+      <div style={{ background: T.paperHi, border: `1px solid ${T.paperDeep}`, borderRadius: 14, padding: "15px" }}>
+        <p style={{ fontFamily: SERIF, fontSize: 16, color: T.ink, margin: "0 0 11px" }}>{ROLEPLAY.prompt}</p>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 12 }}>
+          {cafes.map((c, i) => (
+            <span key={i} style={{
+              padding: "7px 13px", borderRadius: 999, background: T.paper,
+              border: `1px solid ${T.paperDeep}`, fontFamily: SERIF, fontStyle: "italic",
+              fontSize: 13.5, color: T.ink,
+            }}>
+              {c}
+            </span>
+          ))}
+        </div>
+        <div style={{ display: "flex", gap: 8 }}>
+          <input
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && addCafe()}
+            placeholder="Name yours…"
+            style={{
+              flex: 1, minWidth: 0, background: T.paper, border: `1px solid ${T.paperDeep}`,
+              borderRadius: 10, padding: "10px 12px", fontFamily: SERIF, fontSize: 13.5,
+              color: T.ink, outline: "none",
+            }}
+          />
+          <button
+            onClick={addCafe}
+            style={{
+              display: "inline-flex", alignItems: "center", justifyContent: "center",
+              width: 40, borderRadius: 10, background: T.ink, border: "none",
+              color: T.paper, cursor: "pointer", flexShrink: 0,
+            }}
+          >
+            <Plus size={16} />
+          </button>
+        </div>
+      </div>
+    </section>
   );
 }
 
-function RevealRow({ label, pct, mine }) {
+/* ════════════════════════════ SHARE ══════════════════════════════════════
+   "one entry, four lives" chooser + Witness (gate/charter/4 responses)       */
+function ShareTab() {
+  const [life, setLife] = useState(FOUR_LIVES.find((l) => l.defaultLife)?.key || "lock");
+  const [sent, setSent] = useState(false);
+  const g = WITNESS.gate;
+  const unlocked = g.held >= g.need;
+
   return (
-    <div style={{ marginBottom: 9 }}>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 5 }}>
-        <span style={{ fontFamily: SERIF, fontSize: 15, color: T.ink, fontWeight: mine ? 700 : 400 }}>
-          {label}{mine && <span style={{ fontFamily: UI, fontSize: 10, fontWeight: 800, letterSpacing: 1, textTransform: "uppercase", color: T.crimson, marginLeft: 8 }}>your side</span>}
-        </span>
-        <span style={{ fontFamily: UI, fontSize: 12, fontWeight: 700, color: T.inkSoft }}>{pct}%</span>
+    <section>
+      <header style={{ marginBottom: 16 }}>
+        <Eyebrow mb={8} color={T.muted}>One entry, four lives</Eyebrow>
+        <Script size={34} carve>Where does it go?</Script>
+        <p style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 14, color: T.inkSoft, margin: "8px 0 0", lineHeight: 1.5 }}>
+          You wrote one thing. You decide its life.
+        </p>
+      </header>
+
+      {/* the entry */}
+      <div style={{ background: T.paperHi, border: `1px solid ${T.paperDeep}`, borderRadius: 14, padding: "15px 16px", marginBottom: 16 }}>
+        <Quote size={15} color={T.gold} style={{ marginBottom: 7 }} />
+        <p style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 15, color: T.ink, margin: 0, lineHeight: 1.55 }}>
+          {SAMPLE_ENTRY}
+        </p>
       </div>
-      <div style={{ height: 8, borderRadius: 999, background: T.paper, border: `1px solid ${T.paperDeep}`, overflow: "hidden" }}>
-        <div style={{ width: `${pct}%`, height: "100%", background: mine ? T.crimson : T.muted, transition: "width .5s ease" }} />
+
+      {/* four lives chooser */}
+      <div style={{ display: "flex", flexDirection: "column", gap: 9, marginBottom: 28 }}>
+        {FOUR_LIVES.map((l) => {
+          const on = life === l.key;
+          return (
+            <button
+              key={l.key}
+              onClick={() => setLife(l.key)}
+              style={{
+                display: "flex", alignItems: "flex-start", gap: 12, textAlign: "left",
+                background: on ? T.ink : T.paperHi,
+                border: `1px solid ${on ? T.ink : T.paperDeep}`,
+                borderRadius: 13, padding: "13px 14px", cursor: "pointer",
+                transition: "all .16s ease",
+              }}
+            >
+              <span style={{
+                width: 32, height: 32, borderRadius: 9, flexShrink: 0, marginTop: 1,
+                display: "inline-flex", alignItems: "center", justifyContent: "center",
+                background: on ? "rgba(244,239,227,0.14)" : T.paper,
+                border: `1px solid ${on ? "transparent" : T.paperDeep}`,
+                color: on ? T.paper : T.ink,
+              }}>
+                <l.Icon size={15} />
+              </span>
+              <div style={{ flex: 1 }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 7 }}>
+                  <span style={{ fontFamily: SERIF, fontSize: 16, color: on ? T.paper : T.ink }}>{l.label}</span>
+                  {on && <Check size={14} color={T.paper} style={{ marginLeft: "auto" }} />}
+                </div>
+                <p style={{ fontFamily: UI, fontSize: 11.5, color: on ? "rgba(244,239,227,0.75)" : T.muted, margin: "3px 0 0", lineHeight: 1.45 }}>
+                  {l.line}
+                </p>
+              </div>
+            </button>
+          );
+        })}
       </div>
-    </div>
+
+      {/* Witness — appears when "handed to a witness" is chosen (plum fragile surface) */}
+      {life === "witness" ? (
+        <div style={{ background: "#241a26", borderRadius: 16, padding: "20px 18px", color: "#EFE7DA" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
+            <Heart size={15} color={T.blush} />
+            <span style={{ fontFamily: UI, fontSize: 10, fontWeight: 800, letterSpacing: 2, textTransform: "uppercase", color: T.blush }}>
+              Witness
+            </span>
+          </div>
+          <Script size={26} carve style={{ color: "#F4EFE3" }}>Held once, by one</Script>
+
+          {/* gate */}
+          <div style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(232,180,184,0.3)", borderRadius: 12, padding: "13px 14px", margin: "15px 0" }}>
+            <p style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 14, color: "#EFE7DA", margin: "0 0 9px", lineHeight: 1.5 }}>
+              {g.line}
+            </p>
+            <div style={{ display: "flex", gap: 6 }}>
+              {Array.from({ length: g.need }).map((_, i) => (
+                <span key={i} style={{
+                  flex: 1, height: 5, borderRadius: 999,
+                  background: i < g.held ? T.blush : "rgba(255,255,255,0.15)",
+                }} />
+              ))}
+            </div>
+          </div>
+
+          {/* charter */}
+          <span style={{ fontFamily: UI, fontSize: 9.5, fontWeight: 800, letterSpacing: 1.5, textTransform: "uppercase", color: "rgba(232,180,184,0.8)" }}>
+            The charter
+          </span>
+          <div style={{ display: "flex", flexDirection: "column", gap: 11, margin: "11px 0 16px" }}>
+            {WITNESS.charter.map(([title, body]) => (
+              <div key={title} style={{ display: "flex", gap: 9 }}>
+                <Check size={13} color={T.sage} style={{ marginTop: 3, flexShrink: 0 }} />
+                <div>
+                  <span style={{ fontFamily: SERIF, fontSize: 14, color: "#F4EFE3" }}>{title}</span>
+                  <p style={{ fontFamily: UI, fontSize: 11, color: "rgba(239,231,218,0.7)", margin: "2px 0 0", lineHeight: 1.5 }}>{body}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* her four lines back */}
+          <span style={{ fontFamily: UI, fontSize: 9.5, fontWeight: 800, letterSpacing: 1.5, textTransform: "uppercase", color: "rgba(232,180,184,0.8)" }}>
+            She can only say
+          </span>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 8, margin: "11px 0 16px" }}>
+            {WITNESS.responses.map((r) => (
+              <span key={r} style={{
+                padding: "7px 13px", borderRadius: 999,
+                background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.14)",
+                fontFamily: SERIF, fontStyle: "italic", fontSize: 13, color: "#EFE7DA",
+              }}>
+                “{r}”
+              </span>
+            ))}
+            <span style={{ padding: "7px 13px", fontFamily: UI, fontSize: 11.5, color: "rgba(239,231,218,0.55)", fontStyle: "italic" }}>
+              …or silence.
+            </span>
+          </div>
+
+          <button
+            onClick={() => unlocked && setSent(true)}
+            disabled={!unlocked || sent}
+            style={{
+              width: "100%", padding: "13px", borderRadius: 12, marginTop: 4,
+              background: unlocked && !sent ? T.blush : "rgba(255,255,255,0.08)",
+              border: "none",
+              color: unlocked && !sent ? "#241a26" : "rgba(239,231,218,0.5)",
+              fontFamily: UI, fontSize: 13, fontWeight: 800, letterSpacing: 0.3,
+              cursor: unlocked && !sent ? "pointer" : "default",
+            }}
+          >
+            {sent ? "Handed over — cancel within 2 hours" : unlocked ? "Hand it to a witness" : `Hold ${g.need - g.held} more to unlock`}
+          </button>
+        </div>
+      ) : (
+        <div style={{ display: "flex", alignItems: "center", gap: 9, background: T.paperHi, border: `1px solid ${T.paperDeep}`, borderRadius: 13, padding: "13px 14px" }}>
+          <Lock size={15} color={T.muted} style={{ flexShrink: 0 }} />
+          <span style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 13.5, color: T.inkSoft, lineHeight: 1.5 }}>
+            {FOUR_LIVES.find((l) => l.key === life)?.line}
+          </span>
+        </div>
+      )}
+    </section>
   );
 }
 
-// ── shared bits ──────────────────────────────────────────────────────────────
+/* ════════════════════════════ TALK ═══════════════════════════════════════
+   Audio "Talk It Out" — mode switcher + note + signpost                      */
+function TalkTab() {
+  const [mode, setMode] = useState(AUDIO_MODES[0].key);
+  const active = AUDIO_MODES.find((m) => m.key === mode);
+
+  return (
+    <section>
+      <header style={{ marginBottom: 16 }}>
+        <Eyebrow mb={8} color={T.muted}>Talk it out</Eyebrow>
+        <Script size={34} carve>Use your voice</Script>
+        <p style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 14, color: T.inkSoft, margin: "8px 0 0", lineHeight: 1.5 }}>
+          When typing isn’t enough. Hold, don’t fix.
+        </p>
+      </header>
+
+      {/* mode switcher — segmented, echoing the page signature */}
+      <div style={{ display: "flex", gap: 7, marginBottom: 18 }}>
+        {AUDIO_MODES.map((m) => {
+          const on = mode === m.key;
+          return (
+            <button
+              key={m.key}
+              onClick={() => setMode(m.key)}
+              style={{
+                flex: 1, display: "inline-flex", alignItems: "center", justifyContent: "center",
+                gap: 6, padding: "10px 8px", borderRadius: 11,
+                background: on ? T.ink : "transparent",
+                border: `1px solid ${on ? T.ink : T.paperDeep}`,
+                color: on ? T.paper : T.muted,
+                fontFamily: UI, fontSize: 11, fontWeight: 700, cursor: "pointer",
+                transition: "all .16s ease",
+              }}
+            >
+              <m.Icon size={13} />
+              {m.name}
+            </button>
+          );
+        })}
+      </div>
+
+      {/* active mode — plum card (the only other dark surface allowed) */}
+      <div style={{ background: "#241a26", borderRadius: 16, padding: "22px 18px", color: "#EFE7DA", marginBottom: 18 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 11, marginBottom: 13 }}>
+          <span style={{
+            width: 44, height: 44, borderRadius: 13, flexShrink: 0,
+            display: "inline-flex", alignItems: "center", justifyContent: "center",
+            background: "rgba(232,180,184,0.16)", color: T.blush,
+          }}>
+            <active.Icon size={20} />
+          </span>
+          <Script size={26} carve style={{ color: "#F4EFE3" }}>{active.name}</Script>
+        </div>
+        <p style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 15, color: "rgba(239,231,218,0.9)", margin: 0, lineHeight: 1.6 }}>
+          {active.line}
+        </p>
+      </div>
+
+      {/* signpost note */}
+      <div style={{ display: "flex", gap: 9, background: T.paperHi, border: `1px solid ${T.paperDeep}`, borderRadius: 13, padding: "13px 14px" }}>
+        <ShieldAlert size={15} color={T.muted} style={{ marginTop: 2, flexShrink: 0 }} />
+        <p style={{ fontFamily: UI, fontSize: 11.5, color: T.muted, margin: 0, lineHeight: 1.6 }}>
+          {AUDIO_NOTE}
+        </p>
+      </div>
+    </section>
+  );
+}
+
 function DemoBanner({ label }) {
   return (
     <div style={{ background: T.ink, color: T.paper, padding: "8px 16px", textAlign: "center", fontFamily: UI, fontSize: 10, letterSpacing: 2, fontWeight: 700, textTransform: "uppercase" }}>
@@ -257,24 +819,3 @@ function DemoBanner({ label }) {
     </div>
   );
 }
-
-const inkBtn = {
-  display: "inline-flex", alignItems: "center", gap: 7, padding: "11px 16px", borderRadius: 999,
-  background: T.ink, color: T.paper, border: "none", cursor: "pointer",
-  fontFamily: UI, fontSize: 12.5, fontWeight: 700, letterSpacing: 0.3,
-};
-
-const joinBtn = (joined) => ({
-  display: "flex", alignItems: "center", justifyContent: "center", gap: 8, width: "100%",
-  padding: "12px 16px", borderRadius: 999, cursor: "pointer",
-  fontFamily: UI, fontSize: 13, fontWeight: 700, letterSpacing: 0.3,
-  background: joined ? "transparent" : T.ink,
-  color: joined ? T.ink : T.paper,
-  border: `1.5px solid ${T.ink}`,
-});
-
-const choiceBtn = {
-  flex: 1, padding: "13px 12px", borderRadius: 13, cursor: "pointer",
-  background: T.paper, border: `1px solid ${T.paperDeep}`,
-  fontFamily: SERIF, fontSize: 16, fontWeight: 600, color: T.ink,
-};
