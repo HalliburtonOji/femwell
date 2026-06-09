@@ -10,7 +10,7 @@
 // OFF until the TwinPair/TwinEntry entities + joinTwin/postTwinEntry/getTwinDay
 // functions are deployed AND probe-verified (200) by Halli. With this false the
 // Phase Twin entry point does not appear and nothing calls the (absent) functions.
-export const TWIN_ENABLED = false;
+export const TWIN_ENABLED = true;
 
 // ── shape ────────────────────────────────────────────────────────────────────
 export const TWIN_DAYS = 12;            // a pairing runs 12 days

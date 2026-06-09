@@ -8,7 +8,7 @@
 // back within 2h. Crisis content routes to UK support instead of to a stranger.
 
 import { useState, useMemo, useEffect, useRef } from "react";
-import { Eye, ShieldAlert, Check, X, Phone, MessageSquareText, Clock, Undo2 } from "lucide-react";
+import { Eye, ShieldAlert, Check, X, Phone, MessageSquareText, Clock, Undo2, Lock } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { PAPER_BG, T, UI, Script, Hand, Eyebrow, Rule } from "../Editorial";
 import { crisisCheck } from "../echo/echoScrub";
@@ -49,6 +49,8 @@ export default function AskForWitnessSheet({
   const [busy, setBusy] = useState(false);
   const [sent, setSent] = useState(existingSent ? { id: existingSent } : null);
   const [status, setStatus] = useState(null);   // lifecycle from getWitnessStatus
+  const [maxPrivacy, setMaxPrivacy] = useState(false);   // ZK opt-in (off = instant default)
+  const zkOffered = zkActive();                          // ZK available to offer at all?
   const pollRef = useRef(null);
   const deliveredRef = useRef(false);            // ZK: wrapped-key delivered to the receiver?
 
@@ -110,10 +112,11 @@ export default function AskForWitnessSheet({
       const text = entryText.slice(0, MAX_ENTRY_CHARS);
       const now = Date.now();
 
-      // Zero-knowledge (FWWT2): seal with a DEK that is NOT sent — keep it on this
-      // device, post only the keyless envelope + this device's public key, and
-      // deliver the DEK (wrapped to the receiver) after they claim. Else FWWT1.
-      const zk = zkActive();
+      // Zero-knowledge (FWWT2) only when the writer opted into "maximum privacy".
+      // Default (toggle off) = FWWT1, instant for the receiver. Seal with a DEK that
+      // is NOT sent — keep it on this device, post only the keyless envelope + this
+      // device's public key, and deliver the DEK (wrapped to the receiver) post-claim.
+      const zk = zkOffered && maxPrivacy;
       let ciphertext, env_version, writer_pub, pendingDek = null;
       if (zk) {
         const sealed = await sealForWitnessZK(text);
@@ -224,11 +227,36 @@ export default function AskForWitnessSheet({
             <div style={{ background: T.paperHi, border: `1px solid ${T.paperDeep}`, borderRadius: 12, padding: "16px 18px", marginBottom: 18 }}>
               <Hand size={19} color={T.ink}>{entryText ? `“${entryText.slice(0, 600)}”` : "This entry has no words to hand."}</Hand>
             </div>
-            <p style={{ fontFamily: UI, fontSize: 12.5, color: T.muted, marginBottom: 18, display: "flex", gap: 6, alignItems: "center" }}>
+            <p style={{ fontFamily: UI, fontSize: 12.5, color: T.muted, marginBottom: 16, display: "flex", gap: 6, alignItems: "center" }}>
               <Clock size={13} /> You can take it back within {CANCEL_HOURS}h. {SEND_PER_DAY} send a day.
             </p>
+
+            {/* ZK opt-in — OFF by default (instant). On = true end-to-end, slower to reach her. */}
+            {zkOffered && (
+              <button onClick={() => setMaxPrivacy((v) => !v)} aria-pressed={maxPrivacy} style={{
+                display: "flex", alignItems: "flex-start", gap: 10, width: "100%", textAlign: "left",
+                background: maxPrivacy ? T.paperHi : "transparent", border: `1px solid ${maxPrivacy ? T.gold : T.paperDeep}`,
+                borderRadius: 12, padding: "12px 14px", marginBottom: 16, cursor: "pointer",
+              }}>
+                <span style={{ width: 18, height: 18, borderRadius: 5, flexShrink: 0, marginTop: 1,
+                  border: `1.5px solid ${maxPrivacy ? T.gold : T.paperDeep}`, background: maxPrivacy ? T.gold : "transparent",
+                  display: "flex", alignItems: "center", justifyContent: "center" }}>
+                  {maxPrivacy && <Check size={12} style={{ color: T.paperHi }} />}
+                </span>
+                <span style={{ flex: 1 }}>
+                  <span style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                    <Lock size={13} style={{ color: T.gold }} />
+                    <span style={{ fontFamily: UI, fontSize: 13, fontWeight: 700, color: T.ink }}>Maximum privacy (end-to-end)</span>
+                  </span>
+                  <span style={{ display: "block", fontFamily: UI, fontSize: 11.5, color: T.muted, lineHeight: 1.45, marginTop: 3 }}>
+                    Only she can ever read it — not even us. She opens it once your device hands her the key, so it may reach her a little slower.
+                  </span>
+                </span>
+              </button>
+            )}
+
             <button onClick={handleSend} disabled={!entryText || !available} style={{ ...primaryBtn, opacity: (!entryText || !available) ? 0.5 : 1 }}>
-              <Eye size={16} style={{ color: T.paperHi }} /> Send to a witness
+              <Eye size={16} style={{ color: T.paperHi }} /> {maxPrivacy ? "Send privately to a witness" : "Send to a witness"}
             </button>
             {!available && (
               <p style={{ fontFamily: UI, fontSize: 12, color: T.muted, marginTop: 12 }}>

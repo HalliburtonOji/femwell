@@ -16,24 +16,23 @@ export const RECEIVE_PER_DAY = 3;     // 3 receives/day
 export const STRIKE_LIMIT = 3;        // 3 active strikes removes a receiver from the pool
 export const MAX_ENTRY_CHARS = 1200;  // soft cap on the handed entry length
 
-// ── ZERO-KNOWLEDGE E2E (FWWT2) — OFF until the server side is deployed ────────
-// When false (the shipped default), Witness uses the FWWT1 envelope exactly as
-// today: at-rest + access-gated, the receiver reads instantly on claim. NOTHING
-// changes. When true, new handoffs use the FWWT2 zero-knowledge path — the entry's
-// data-key never reaches the server; the writer's device wraps it to the receiver's
-// public key AFTER the receiver claims (per-device ECDH keypairs in witnessKeys.js).
+// ── ZERO-KNOWLEDGE E2E (FWWT2) — ON, as an OPT-IN "maximum privacy" choice ────
+// When true, the FWWT2 zero-knowledge path becomes AVAILABLE on the send screen as
+// an optional toggle — it is NOT the default. With the toggle OFF (the default), a
+// send uses the FWWT1 envelope exactly as before: at-rest + access-gated, the
+// receiver reads instantly on claim. With the toggle ON, the entry's data-key never
+// reaches the server; the writer's device wraps it to the receiver's public key
+// AFTER she claims (per-device ECDH keypairs in witnessKeys.js) — so she reads it
+// once the writer's device delivers the key, not instantly. Old FWWT1 rows always
+// remain readable either way (env_version detected per row). The receiver side
+// handles either envelope automatically.
 //
-// DO NOT flip this to true until ALL of these are deployed + probe-verified by Halli:
+// SERVER REQUIREMENTS (deploy + probe-verify before relying on a real ZK send):
 //   1. WitnessRequest entity has env_version / writer_pub / receiver_pub / wrapped_key
 //   2. functions deployed: deliverWitnessKey (new) + the additive edits to
 //      postWitnessRequest / claimWitness / getWitnessStatus
-//   3. a real round-trip confirmed live (send ZK -> claim -> writer delivers key ->
-//      receiver unwraps + reads)
-// PRODUCT NOTE (Halli's call): under ZK the receiver can NOT read instantly on
-// claim — they wait for the writer's device to return online and deliver the wrapped
-// key. Recommend shipping ZK as an OPT-IN per-send "maximum privacy" choice so the
-// default Witness stays instant. (Old FWWT1 rows always remain readable either way.)
-export const WITNESS_ZK_ENABLED = false;
+//   3. one real round-trip live (send ZK -> claim -> writer delivers key -> read)
+export const WITNESS_ZK_ENABLED = true;
 
 // ── the 4 fixed responses (decided: "Holding with you / Me too / Not alone / I hear you") ──
 // Stable codes match the WitnessRequest.response enum; labels are display-only and
