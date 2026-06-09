@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>FemWell — Audio / Talk-It-Out Design</title>
+<style>
+  :root{--ivory:#F4EFE3;--paper:#ECE7DA;--ink:#1A140D;--plum:#0B0805;--mauve:#5b4f3e;
+    --border:#D8CFBC;--gold:#A8893F;--rose:#C4849A;--sage:#7A9E8E;--red:#BC2E27;}
+  *{box-sizing:border-box} html{-webkit-text-size-adjust:100%}
+  body{margin:0;background:var(--ivory);color:var(--ink);font-family:"Georgia","Cormorant Garamond",serif;line-height:1.62;font-size:18px;}
+  .wrap{max-width:820px;margin:0 auto;padding:28px 20px 80px;}
+  h1{font-size:30px;line-height:1.18;margin:0 0 6px;color:var(--plum);}
+  h2{font-size:23px;margin:38px 0 8px;color:var(--plum);border-bottom:2px solid var(--border);padding-bottom:6px;}
+  h3{font-size:19px;margin:24px 0 4px;color:var(--plum);}
+  h4{font-size:15px;margin:14px 0 2px;color:var(--mauve);font-variant:small-caps;letter-spacing:.4px;}
+  p,li{font-size:17px} .sub{color:var(--mauve);font-style:italic;margin:0 0 18px}
+  .eyebrow{font-family:ui-sans-serif,system-ui,sans-serif;font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--gold);font-weight:700;margin:0 0 4px}
+  .kicker{font-family:ui-sans-serif,system-ui,sans-serif;font-size:13px;color:var(--mauve)}
+  .card{background:var(--paper);border:1px solid var(--border);border-radius:12px;padding:14px 16px;margin:14px 0;}
+  .lead{background:#fff8ec;border-left:4px solid var(--gold);border-radius:8px;padding:12px 16px;margin:14px 0}
+  .verdict{background:#eef5f0;border-left:4px solid var(--sage);border-radius:8px;padding:12px 16px;margin:14px 0}
+  .warn{background:#fbeceb;border-left:4px solid var(--red);border-radius:8px;padding:12px 16px;margin:14px 0}
+  table{width:100%;border-collapse:collapse;margin:14px 0;font-size:14.5px;font-family:ui-sans-serif,system-ui,sans-serif;}
+  th,td{text-align:left;padding:7px 9px;border-bottom:1px solid var(--border);vertical-align:top}
+  th{background:var(--paper);font-size:12px;letter-spacing:.5px;text-transform:uppercase;color:var(--mauve)}
+  .badge{display:inline-block;border-radius:999px;padding:2px 9px;font-size:12px;font-weight:700;font-family:ui-sans-serif,system-ui,sans-serif;color:#fff}
+  .b-go{background:var(--sage)} .b-need{background:var(--gold)} .b-no{background:var(--red)}
+  ul{padding-left:20px;margin:6px 0} li{margin:3px 0}
+  code{background:var(--paper);padding:1px 5px;border-radius:4px;font-size:14px}
+  .flow{font-family:ui-sans-serif,system-ui,sans-serif;font-size:14px;background:var(--paper);border:1px solid var(--border);border-radius:10px;padding:12px 14px;margin:10px 0}
+  .flow b{color:var(--plum)}
+  .foot{margin-top:40px;border-top:2px solid var(--border);padding-top:14px;color:var(--mauve);font-size:14px;font-family:ui-sans-serif,system-ui,sans-serif}
+  a{color:var(--gold)}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<p class="eyebrow">FemWell · New Feature Design · 2026-06-09</p>
+<h1>Audio / Talk-It-Out</h1>
+<p class="sub">Being heard out loud — anonymously, safely, without anyone fixing you. Three modes, one warm room. 18+, anonymity-first, no recordings, no scoreboards.</p>
+
+<div class="lead">
+<strong>The idea.</strong> Sometimes a woman doesn't want to type — she wants to <em>say it out loud</em> and be heard. Talk-It-Out gives three ways: <strong>(A) async voice-notes</strong> (whisper a line, a phase-sister holds it), <strong>(B) 1:1 turn-based "talk it out"</strong> (3-min talk / listen / swap, "hold, don't fix"), and <strong>(C) small live Circles</strong> (5–8, status-flattened, Jess-seeded). It is the spoken sibling of the Echo Wall (anonymous one-liners) and Witness (one entry, one holder).
+</div>
+
+<div class="verdict">
+<strong>Headline feasibility verdict.</strong> <strong>Mode A (async voice-notes) is buildable in-repo today</strong> — record in-browser (MediaRecorder) → Base44 file upload → a <code>VoiceNote</code> entity, reusing the Echo anonymity/fade/crisis scaffolding. <strong>Modes B &amp; C (live audio) are NOT possible on Base44 alone</strong> — live media must route through an external WebRTC provider (recommend <strong>LiveKit</strong>); Base44 can host the token function, but Halli must create a provider account + keys, create the entity, and commission an OSA risk assessment first. <strong>Ship async-first; live later.</strong>
+</div>
+
+<h2>1 · Why audio, and the two hard truths</h2>
+<p><strong>Being heard (not advised) helps.</strong> 7 Cups trains every listener and <em>forbids advice</em>; the Samaritans model is "listening is active… reflect back without adding our own suggestions." A turn-based "talking-stick" timer operationalises exactly this — one speaks, the other holds. <a href="https://www.samaritans.org/how-we-can-help/schools/deal/deal-resources/connecting-others/listening-skills/">[HIGH]</a> <a href="https://www.7cups.com/listener/become-a-volunteer-listener.php">[HIGH]</a></p>
+<div class="warn">
+<strong>Hard truth 1 — co-rumination.</strong> Venting isn't automatically good: two people rehashing distress without resolution <em>worsens</em> depression/anxiety, and distress is contagious between friends. <strong>Design requirement:</strong> a turn timer + a gentle closing reflection ("what would help right now?") to steer toward <em>expressive disclosure</em> (narrate → make meaning → move on), not a doom-loop. <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC12217408/">[HIGH]</a>
+<br><br>
+<strong>Hard truth 2 — live-only kills products.</strong> Clubhouse went 0→10M then lost ~93% of engagement; liveness is high-friction. <strong>Async is the healthy core; live is an occasional layer.</strong> <a href="https://www.justanotherpm.com/blog/the-rise-and-fall-of-clubhouse-what-product-managers-learn-from-it">[HIGH]</a>
+</div>
+
+<h2>2 · Mode A — Async voice-notes (ship first)</h2>
+<p class="kicker">The lowest-pressure, healthiest, simplest. The "voice Echo."</p>
+<h4>UX flow</h4>
+<div class="flow"><b>Record</b> a short voice note (cap ~60s) → <b>optional voice-mask</b> (pitch/formant) → <b>on-device STT crisis-scan</b> (the existing text lexicon) + <b>cooling hold</b> (reuse echoSafety) → <b>deliver</b> to a phase/interest-matched sister's "held for you" inbox → it <b>fades</b> (48h, like an echo). The holder can send back <b>one fixed spoken/text response</b> (the Witness 4 lines) or <b>hold in silence</b> — never a back-and-forth thread.</div>
+<h4>Matching</h4><p>Same as Echo/Witness: phase + life-stage + interest, never self; pull-based claim from a held queue.</p>
+<h4>Anonymity</h4><p>Device-derived hash (separate namespace, like witnessHash). <strong>Optional voice masking</strong> (pitch/formant shift). <span class="warn" style="display:inline;padding:2px 6px">Honest limit:</span> masking makes a voice <em>harder to recognise</em>, not anonymous — voiceprints can survive naive modulation (V-Cloak/VoicePM research). Frame as "harder to recognise," pair with no-PII.</p>
+<h4>Safety</h4><p>Async's big advantage: <strong>you can scan/hold the recording BEFORE delivery</strong> — STT → text crisis lexicon → if tripped, route to support, never deliver. No recording stored long-term beyond the fade; report→hide (Echo pattern).</p>
+<h4>Data model</h4><p>New entity <code>VoiceNote</code> (audio_url, author_hash, phase, life_stage, masked, live_at, expires_at, held_by_hash, response_code, hidden, report_count) — directly parallels <code>Echo</code>.</p>
+<h4>Infra</h4><p>In-browser <code>MediaRecorder</code> → Base44 <code>UploadFile</code> (CDN URL → entity field) → entity row. <strong>No realtime provider.</strong> <span class="badge b-need">verify</span> confirm Base44 UploadFile accepts audio MIME in a 10-min spike (documented for image/PDF; audio is on the feature board).</p>
+
+<h2>3 · Mode B — 1:1 turn-based "Talk It Out"</h2>
+<p class="kicker">The talking-stick vent. Live, but structured so it can't become advice-giving or cross-talk.</p>
+<h4>UX flow</h4>
+<div class="flow"><b>Charter</b> (shown once: anonymous · no recording · "hold, don't fix" · 18+ · leave/mute/block/report any time) → <b>match</b> a phase/interest sister → <b>connect</b> (voice only, optional mask) → <b>turn 1:</b> you talk 3 min, she holds (her mic auto-muted, a "holding with you" indicator) → <b>swap:</b> she talks 3 min, you hold → <b>optional second round</b> → <b>closing reflection</b> ("one thing that would help this week") → <b>seal</b> (nothing stored). A visible <b>timer</b> runs each turn; either can <b>leave / mute / block / report</b> at any moment; a <b>panic-exit</b> ends instantly.</div>
+<h4>Matching / pairing</h4><p>Like Witness — pull-based, phase + life-stage + language + (optionally) the vent topic (a Lounge/Circle tag); never self-match.</p>
+<h4>Timers</h4><p>3-min talk / 3-min listen / swap (tunable). The timer is the "talking stick" — it enforces being-heard and prevents the co-rumination doom-loop.</p>
+<h4>Anonymity</h4><p>Hash identity; no names; optional voice mask (same honest limit as Mode A). No recording — ever.</p>
+<h4>Safety / moderation (audio is harder)</h4>
+<ul>
+<li><strong>No keyword scan in live audio</strong> (you can't regex a live stream). So crisis safety is <strong>human + structural</strong>: an always-visible <strong>signpost card</strong> (Samaritans 116 123 · NHS 111 · Shout 85258 · Mind), a one-tap <strong>panic-exit</strong>, and a "this needs more than us" escalation that ends the turn and surfaces resources.</li>
+<li><strong>Report → instant leave + block</strong> (never make the victim moderate in real time — Clubhouse's mistake).</li>
+<li><strong>No recording</strong> by default (privacy + ephemerality), stated visibly.</li>
+<li>Closing reflection nudges toward resolution (anti-co-rumination).</li>
+</ul>
+<h4>Data model</h4><p><code>TalkSession</code> (a_hash, b_hash, topic, started_at, ended_at, ended_reason) + <code>TalkStrike</code> (reuse the Witness strike pattern for repeat reporters). <strong>No audio stored.</strong> A LiveKit room name + tokens are ephemeral, never persisted.</p>
+<h4>Infra</h4><p>Needs a realtime provider (LiveKit) + a Base44 token function. See §5.</p>
+
+<h2>4 · Mode C — Small live audio Circles (last)</h2>
+<p class="kicker">5–8 women, a gentle topic, Jess-seeded. The whole-life voice room — book chat, career vent, "spill it" night — not clinical-only.</p>
+<h4>UX flow</h4>
+<div class="flow"><b>Scheduled or ad-hoc</b> room with a topic (from a Circle — dating, career, a book, a vent) → <b>status-flattened</b> (Peanut Pods model: <em>no stage/podium</em>, everyone equal) → audience <b>muted by default</b>, <b>request-to-speak</b> (hand-raise) so no one talks over → a <b>host present</b> (a trained member or Jess-seeded prompts) → <b>listen-only is allowed</b> (lurking is full membership) → ephemeral, no recording → ends.</div>
+<h4>Why status-flattened</h4><p>Peanut deliberately removed Clubhouse's "stage" to give everyone equal status whether speaking or not — the right fit for anonymity-first / no-scoreboard. <a href="https://techcrunch.com/2021/04/27/social-networking-app-for-women-peanut-adds-live-audio-rooms/">[HIGH]</a></p>
+<h4>Safety</h4><p>Muted-by-default audience + request-to-speak + host + always-on signpost + panic-exit + report→remove. Highest moderation/legal burden of the three → ships last.</p>
+<h4>Data model</h4><p><code>AudioRoom</code> (topic, circle_id, host_hash, started_at, max_size, status) + ephemeral participant tokens. No audio stored.</p>
+
+<h2>5 · Realtime infrastructure — the critical dependency</h2>
+<p>Every live mode (B, C) uses the same architecture: <strong>React client ⇄ WebRTC media via an external SFU provider</strong>, with a <strong>backend token function</strong> holding the API secret. Provider comparison (all WebRTC SFUs):</p>
+<table>
+<thead><tr><th>Provider</th><th>Token model</th><th>Audio free tier</th><th>Fit</th></tr></thead>
+<tbody>
+<tr><td><strong>LiveKit ★ rec.</strong></td><td>Stateless JWT signed by API key/secret — "ideal for serverless"</td><td>~5,000 part-min/mo</td><td>Excellent; open-source core (self-host escape hatch)</td></tr>
+<tr><td>Daily</td><td>Meeting token via REST</td><td>~10,000 min/mo</td><td>Excellent, easiest; near-tie</td></tr>
+<tr><td>Agora</td><td>Token-server RTC token</td><td>~10,000 min/mo</td><td>Excellent; more to wire</td></tr>
+<tr><td>Twilio</td><td>Access tokens</td><td>custom</td><td>Only if already using Twilio for SMS</td></tr>
+<tr><td>100ms / Vonage</td><td>Server token</td><td>trial</td><td>Good; heavier</td></tr>
+</tbody>
+</table>
+<p><strong>Why LiveKit:</strong> token generation is a stateless JWT-signing function (exactly what Base44 Deno functions are); generous audio free tier for a long pilot; open-source core means an exit if cost/Base44 ever forces self-hosting. <a href="https://docs.livekit.io/guides/access-tokens/">[HIGH]</a></p>
+
+<h3>Base44 feasibility verdict</h3>
+<table>
+<thead><tr><th>Piece</th><th>Verdict</th><th>Detail</th></tr></thead>
+<tbody>
+<tr><td>Async voice-notes (Mode A) end-to-end</td><td><span class="badge b-go">IN-REPO NOW</span></td><td>MediaRecorder → Base44 UploadFile → VoiceNote entity; reuses Echo scaffolding. (Verify audio MIME.)</td></tr>
+<tr><td>LiveKit token function</td><td><span class="badge b-go">IN-REPO</span></td><td>A Deno function: read LIVEKIT_API_KEY/SECRET from Base44 secrets → sign AccessToken JWT → return {server_url, token}. No socket, no state.</td></tr>
+<tr><td>Realtime media (Modes B, C)</td><td><span class="badge b-no">NOT ON BASE44</span></td><td>Base44 has no SFU/websocket server — media MUST go through the external provider. No path to live audio without one.</td></tr>
+<tr><td>Provider account + API keys</td><td><span class="badge b-need">NEEDS HALLI</span></td><td>Create LiveKit/Daily account → keys into Base44 secrets. The only true blocker for live.</td></tr>
+<tr><td>VoiceNote / TalkSession / AudioRoom entities</td><td><span class="badge b-need">NEEDS SYNC</span></td><td>Create via repo .jsonc + sync (the verified free path) — same as Echo/Witness entities.</td></tr>
+<tr><td>OSA risk assessment for live audio</td><td><span class="badge b-need">NEEDS HALLI</span></td><td>Written illegal-content RA before live audio scales (see §6).</td></tr>
+</tbody>
+</table>
+
+<h2>6 · UK legal note (audio)</h2>
+<p>The Online Safety Act 2023 contemplates <strong>voice and text chat</strong> in user-to-user services. A "one-to-one live aural communication" <em>may</em> be exempt — <strong>but only if truly peer-to-peer</strong>; routing voice through a provider SFU (which we will) likely brings it in scope. So <strong>do not assume the 1:1 exemption applies</strong> — a written illegal-content risk assessment is the safe default before live audio carries real traffic (Halli/legal, consistent with the Community 18+ / named-accountable-person decisions). <a href="https://www.gov.uk/government/publications/online-safety-act-explainer/online-safety-act-explainer">[HIGH]</a></p>
+
+<h2>7 · How it ties to Echo / Witness / Circles</h2>
+<ul>
+<li><strong>Echo Wall ↔ Mode A:</strong> a voice-note is "an echo you can hear" — same anonymity, fade, crisis, hold-don't-reply ethos; an Echo line can offer "say this out loud instead."</li>
+<li><strong>Witness ↔ Mode B:</strong> Talk-It-Out is Witness in voice — one held entry becomes one held conversation; the 4 fixed responses + "pass in silence" carry over; the held-3 gate could apply.</li>
+<li><strong>Circles ↔ Mode C:</strong> a live audio room is a Circle's voice session — dating/career/book/vent topics, not clinical-only.</li>
+<li><strong>Lounge ↔ all:</strong> a Lounge vent can escalate to "talk it out with one sister" or "join tonight's voice room."</li>
+<li><strong>Jess:</strong> hosts/seeds room prompts, scaffolds the closing reflection, never records or advises clinically.</li>
+</ul>
+
+<h2>8 · End-to-end + build verdict</h2>
+<div class="verdict">
+<p><strong>How it actually works (async-first):</strong> a woman taps "say it out loud" → records 40s about a rubbish day → optional mask → her phone transcribes + scans for crisis + holds it 10 min → it lands in a phase-sister's "held for you" → the sister listens once, taps "holding with you" → both fade in 48h. No thread, no names, no recording kept. <strong>This is fully buildable in-repo</strong> (pending the audio-MIME spike + the VoiceNote entity sync).</p>
+<p><strong>Live (B/C) is a Phase-later build</strong> gated on: Halli creating a LiveKit account + keys, the entities, and an OSA risk assessment. The code (token function + client SDK join) is small and self-contained once those exist.</p>
+<p><strong>Recommended phasing:</strong> A (async voice-notes) → B (1:1 talk-it-out) → C (live Circles).</p>
+</div>
+
+<h2>9 · Open decisions (folded into mega plan §11)</h2>
+<ul>
+<li><strong>Build async voice-notes (Mode A) now</strong> as the next Community ship? <em>(Rec: yes — healthiest, simplest, in-repo.)</em></li>
+<li><strong>Voice masking</strong> — offer it, with the honest "harder to recognise, not anonymous" framing? <em>(Rec: yes, opt-in.)</em></li>
+<li><strong>Realtime provider</strong> for live: LiveKit vs Daily? <em>(Rec: LiveKit.)</em> Halli to create the account when live is greenlit.</li>
+<li><strong>Live audio OSA risk assessment</strong> owner/timing (Halli, as named accountable person).</li>
+<li><strong>Does the held-3 gate apply to 1:1 Talk-It-Out</strong> (like Witness), or is it open? <em>(Rec: apply a lighter gate.)</em></li>
+</ul>
+
+<div class="foot">
+FemWell · Audio / Talk-It-Out · v1 · 2026-06-09 · companion: <strong>WHOLE_LIFE_REBALANCE.html</strong> · folds into COMMUNITY_MEGA_PLAN.md. Research &amp; planning only — no features built. Sources: 7 Cups/Samaritans (listening), co-rumination PMC12217408, Clubhouse post-mortems, Peanut Pods (TechCrunch), V-Cloak/VoicePM (voice-mask limits), LiveKit/Daily/Agora docs, Base44 backend-functions + UploadFile docs, OSA explainer (gov.uk). Full URLs in the agent research pass.
+</div>
+
+</div>
+</body>
+</html>
