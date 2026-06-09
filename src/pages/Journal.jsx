@@ -11,10 +11,12 @@ import CycleMirror from "../components/journal/CycleMirror";
 import JournalLedger from "../components/journal/JournalLedger";
 import ThreadView from "../components/journal/ThreadView";
 import EntryReader from "../components/journal/EntryReader";
+import FourLivesChooser from "../components/journal/FourLivesChooser";
 import TonightReflection from "../components/journal/TonightReflection";
 import InsightTeaser from "../components/journal/InsightTeaser";
 import JournalSearch from "../components/journal/JournalSearch";
 import SealedLettersSection from "../components/journal/sealed/SealedLettersSection";
+import SealedLetterCompose from "../components/journal/sealed/SealedLetterCompose";
 import ShareAsEchoSheet from "../components/journal/echo/ShareAsEchoSheet";
 import AskForWitnessSheet from "../components/journal/witness/AskForWitnessSheet";
 import WitnessInbox from "../components/journal/witness/WitnessInbox";
@@ -255,6 +257,10 @@ export default function Journal() {
   const [showWitnessInbox, setShowWitnessInbox] = useState(false);
   const [showAskWitness, setShowAskWitness] = useState(false);
   const [witnessEntry, setWitnessEntry] = useState(null);
+  // "One entry, four lives" — the unified chooser + its echo/seal seeds.
+  const [chooseEntry, setChooseEntry] = useState(null);   // entry whose fate is being chosen
+  const [echoSeed, setEchoSeed] = useState(null);         // { text, sourceId } seeded into the Echo sheet
+  const [sealSeed, setSealSeed] = useState(null);         // string seeded into the Sealed-letter composer
 
   useEffect(() => {
     (async () => {
@@ -296,11 +302,15 @@ export default function Journal() {
 
   const handleSaved = (entry) => {
     if (!entry) return;
+    const wasNew = !entries.some((e) => e.id === entry.id);
     setEntries((prev) => {
       const idx = prev.findIndex((e) => e.id === entry.id);
       if (idx >= 0) { const next = [...prev]; next[idx] = entry; return next; }
       return [entry, ...prev];
     });
+    // After WRITING a new entry, offer the four lives. Locked stays the default —
+    // nothing leaves the journal unless she picks a door.
+    if (wasNew && (entry.text || "").trim()) setChooseEntry(entry);
   };
 
   const handleDelete = async (entry) => {
@@ -395,15 +405,36 @@ export default function Journal() {
         onClose={() => setReadEntry(null)}
         onEdit={handleEditFromReader}
         onDelete={handleDelete} onPin={handlePin}
-        onWitness={(entry) => { setWitnessEntry(entry); setReadEntry(null); setShowAskWitness(true); }}
+        onShare={(entry) => { setChooseEntry(entry); setReadEntry(null); }}
       />
 
-      {/* ── Echo sheet ── */}
+      {/* ── One entry, four lives (the unified chooser) ── */}
+      {chooseEntry && (
+        <FourLivesChooser
+          entry={chooseEntry}
+          onClose={() => setChooseEntry(null)}
+          onEcho={() => { setEchoSeed({ text: chooseEntry.text || "", sourceId: chooseEntry.id || null }); setShowShareEcho(true); setChooseEntry(null); }}
+          onSeal={() => { setSealSeed(chooseEntry.text || ""); setChooseEntry(null); }}
+          onWitness={() => { setWitnessEntry(chooseEntry); setShowAskWitness(true); setChooseEntry(null); }}
+        />
+      )}
+
+      {/* ── Echo sheet (seeded when opened from the chooser) ── */}
       {showShareEcho && user && (
         <ShareAsEchoSheet
           user={user} profile={profile} phase={phase}
           cycleDay={cycleDay} lifeStage={profile?.life_stage || null}
-          seedText="" onClose={() => setShowShareEcho(false)}
+          seedText={echoSeed?.text || ""} sourceEntryId={echoSeed?.sourceId || null}
+          onClose={() => { setShowShareEcho(false); setEchoSeed(null); }}
+        />
+      )}
+
+      {/* ── Sealed-letter composer (seeded when sealing from the chooser) ── */}
+      {sealSeed !== null && user && (
+        <SealedLetterCompose
+          profile={profile} seedBody={sealSeed}
+          onClose={() => setSealSeed(null)}
+          onSealed={() => setSealSeed(null)}
         />
       )}
 

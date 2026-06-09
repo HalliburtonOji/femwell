@@ -21,8 +21,8 @@ const inputStyle = {
   fontFamily: UI, fontSize: 14, color: T.ink, outline: "none",
 };
 
-export default function SealedLetterCompose({ profile, onClose, onSealed }) {
-  const [body, setBody] = useState("");
+export default function SealedLetterCompose({ profile, onClose, onSealed, seedBody = "" }) {
+  const [body, setBody] = useState(seedBody || "");
   const [title, setTitle] = useState("");
   const [triggerType, setTriggerType] = useState("future");
   const [futureDate, setFutureDate] = useState("");
