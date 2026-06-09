@@ -13,6 +13,7 @@
 | `claude-state/COMMUNITY_MEGA_PLAN.md` | **THE authoritative Community spec (v2-final)** — editorial surface, one-entry-four-lives, Echo+Witness (built), Shared-Experience pillar, whole-life rooms, audio modes | CANONICAL |
 | `claude-state/WHOLE_LIFE_REBALANCE.html` | Per-page whole-life rebalance + surface clinical-skew audit + non-clinical rooms & 22 activities | CANONICAL companion |
 | `claude-state/AUDIO_TALK_IT_OUT.html` | Audio / Talk-It-Out design (async voice-notes → 1:1 turn-based → live Circles) + Base44 feasibility | CANONICAL companion |
+| `claude-state/COMMUNITY_BUILD_PLAN.html` | **Production build plan** — Demo 6 → real `/Community`: entities, serverless functions, secrets, sequenced M1-M4 rollout, blocked-on-Halli, checklist. Mirrored in FoundersOS → **Build Plan** tab | CANONICAL (build) |
 | `claude-state/JOURNAL_BUILD_SPEC.md` | Journal spec (Cycle Mirror, Sealed Letters, Echo, Witness, Phase Twin) | CANONICAL |
 | `claude-state/SPEC_FRAMEWORK.md` | The 12-section depth standard every spec is graded against | CANONICAL (process) |
 | `claude-state/master-plan.md` | Whole-app strategy ledger (rev 5, 2026-05-14) | CANONICAL strategy — **needs rev-6** (Echo/Witness now shipped; whole-life correction unabsorbed) |

@@ -35,6 +35,7 @@ import { base44 } from "@/api/base44Client";
 import CommunityPlanDoc from "@/components/founders/CommunityPlanDoc";
 import WholeLifeDoc from "@/components/founders/WholeLifeDoc";
 import AudioPlanDoc from "@/components/founders/AudioPlanDoc";
+import BuildPlanDoc from "@/components/founders/BuildPlanDoc";
 // HealthCornerDemo was the multi-layout preview. The canonical health
 // experience now lives at /Health (src/pages/Health.jsx). The Health Corner
 // tab in /Ideas renders <HealthCornerRedirectCard /> instead.
@@ -64,7 +65,7 @@ const ALLOWED = new Set([
   "ojihalliburton57@gmail.com",
 ]);
 
-const TABS = ["Lab", "Pages", "Roadmap", "Community Plan", "Whole-Life", "Audio", "Ideas", "Strategy", "Legal", "Decisions", "Journal", "Journal Demos", "Community Demos", "Another You", "UX & Design", "Wholeness", "LGBTQ+", "Health Corner"];
+const TABS = ["Lab", "Pages", "Roadmap", "Community Plan", "Build Plan", "Whole-Life", "Audio", "Ideas", "Strategy", "Legal", "Decisions", "Journal", "Journal Demos", "Community Demos", "Another You", "UX & Design", "Wholeness", "LGBTQ+", "Health Corner"];
 
 const IDEAS_KEY  = "femwell_ideas";
 const CHECKS_KEY = "femwell_founder_checks";
@@ -559,6 +560,7 @@ function FoundersInner({ user }) {
         {tab === "Pages"     && <PagesTab />}
         {tab === "Roadmap"   && <RoadmapTab />}
         {tab === "Community Plan" && <CommunityPlanDoc />}
+        {tab === "Build Plan"     && <BuildPlanDoc />}
         {tab === "Whole-Life"     && <WholeLifeDoc />}
         {tab === "Audio"          && <AudioPlanDoc />}
         {tab === "Ideas"     && <IdeasTab user={user} />}
