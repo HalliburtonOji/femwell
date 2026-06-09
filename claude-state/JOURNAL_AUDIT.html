@@ -1,0 +1,219 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>FemWell — Journal Audit (2026-06-10)</title>
+<style>
+  :root{
+    --paper:#ECE7DA; --paperHi:#F4EFE3; --paperDeep:#D8CFBC; --ink:#0B0805;
+    --inkSoft:#1A140D; --muted:#2E261B; --gold:#A8893F; --crimson:#BC2E27; --sage:#5E7E62;
+    --blocker:#BC2E27; --high:#C0651F; --medium:#A8893F; --low:#5E7E62; --polish:#7A6E5A;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;background:var(--paper);color:var(--ink);
+    font-family:"Cormorant Garamond",Georgia,serif;-webkit-font-smoothing:antialiased;}
+  .wrap{max-width:780px;margin:0 auto;padding:32px 20px 80px;}
+  .ey{font-family:ui-sans-serif,system-ui,sans-serif;font-size:11px;font-weight:800;
+    letter-spacing:1.6px;text-transform:uppercase;color:var(--muted);}
+  h1{font-size:40px;line-height:1.1;margin:6px 0 4px;font-weight:600;}
+  h2{font-size:25px;margin:38px 0 4px;font-weight:600;border-top:1px solid var(--paperDeep);padding-top:22px;}
+  h3{font-size:19px;margin:22px 0 6px;font-weight:600;}
+  p,li{font-size:16.5px;line-height:1.6;color:var(--inkSoft);}
+  .sub{font-style:italic;color:var(--muted);font-size:17px;margin:0 0 8px;}
+  .rule{height:1px;background:var(--gold);width:40px;margin:14px 0 6px;}
+  .ui{font-family:ui-sans-serif,system-ui,sans-serif;}
+  .verdict{background:var(--paperHi);border:1px solid var(--paperDeep);border-left:4px solid var(--crimson);
+    border-radius:4px;padding:18px 20px;margin:18px 0;}
+  .verdict b{font-family:ui-sans-serif,system-ui,sans-serif;}
+  .legend{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0;}
+  .tag{font-family:ui-sans-serif,system-ui,sans-serif;font-size:10.5px;font-weight:800;letter-spacing:.4px;
+    text-transform:uppercase;padding:3px 9px;border-radius:999px;color:#fff;white-space:nowrap;}
+  .t-blocker{background:var(--blocker)} .t-high{background:var(--high)} .t-medium{background:var(--medium)}
+  .t-low{background:var(--low)} .t-polish{background:var(--polish)}
+  .t-area{background:transparent;color:var(--muted);border:1px solid var(--paperDeep);}
+  .f{background:var(--paperHi);border:1px solid var(--paperDeep);border-radius:5px;padding:15px 17px;margin:12px 0;}
+  .f .head{display:flex;gap:7px;align-items:center;flex-wrap:wrap;margin-bottom:6px;}
+  .f .ttl{font-size:18px;font-weight:700;color:var(--ink);}
+  .f .loc{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px;color:var(--muted);
+    background:var(--paper);padding:2px 6px;border-radius:3px;display:inline-block;margin:2px 0;}
+  .f .d{margin:6px 0 4px;}
+  .f .fix{font-size:15.5px;color:var(--muted);}
+  .f .fix b{color:var(--sage);font-family:ui-sans-serif,system-ui,sans-serif;font-size:12px;letter-spacing:.4px;text-transform:uppercase;}
+  ol.must{padding-left:0;list-style:none;counter-reset:m;}
+  ol.must li{counter-increment:m;position:relative;padding:8px 0 8px 38px;border-top:1px solid var(--paperDeep);}
+  ol.must li:before{content:counter(m);position:absolute;left:0;top:8px;width:26px;height:26px;border-radius:50%;
+    background:var(--ink);color:var(--paper);font-family:ui-sans-serif,system-ui,sans-serif;font-weight:800;
+    font-size:13px;display:flex;align-items:center;justify-content:center;}
+  .solid li{margin-bottom:5px;}
+  .meta{font-family:ui-sans-serif,system-ui,sans-serif;font-size:12px;color:var(--muted);}
+  .count{display:inline-block;background:var(--paper);border:1px solid var(--paperDeep);border-radius:999px;
+    padding:1px 9px;font-family:ui-sans-serif,system-ui,sans-serif;font-size:12px;font-weight:700;margin-left:6px;}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="ey">FemWell · Journal · Full QA / Security Audit · 2026-06-10</div>
+  <h1>The Journal — audited end to end</h1>
+  <div class="rule"></div>
+  <p class="sub">Front + back + process + edge cases, before Community. Live bundle <span class="ui">index--wKXIhLD.js</span>. Method: 3 parallel deep-inspection passes (back-end / front-end / UX+edge) over the full Journal source, every finding then re-verified against the code, plus Playwright webkit renders. Genuinely critical — not a rubber-stamp.</p>
+
+  <div class="verdict">
+    <p style="margin:0 0 6px"><b class="ui" style="font-size:13px;letter-spacing:.5px;text-transform:uppercase;color:var(--crimson)">Is it 100%? — No, not yet.</b></p>
+    <p style="margin:0">The <b>core journaling surface is mature and genuinely well-built</b> — compose, ledger, reader, search, Insights, Cycle Mirror, Sealed Letters, Echo and Witness all have real empty/loading/error states, the editorial token kit is strong, there is <b>zero emoji</b> anywhere, and the anonymity + on-device-crypto design is thoughtful. But the <b>newest peer-to-peer features carry real risk</b>: <b>3 Blockers</b> and several High issues must be fixed before this is safe to put adults into community-style contact. The single biggest unknown is <b>not in the repo at all</b> — whether the Base44 entities are actually locked server-side (see B3).</p>
+  </div>
+
+  <div class="legend">
+    <span class="tag t-blocker">Blocker ×3</span>
+    <span class="tag t-high">High ×8</span>
+    <span class="tag t-medium">Medium ×11</span>
+    <span class="tag t-low">Low ×6</span>
+    <span class="tag t-polish">Polish ×4</span>
+  </div>
+
+  <h2>Must fix before Community</h2>
+  <ol class="must">
+    <li><b>Lock the peer entities server-side</b> (Echo, WitnessRequest, WitnessStrike, TwinPair, TwinEntry): deny client read/write of others' rows; service-role only. The Echo wall proves clients currently have direct cross-user entity access — so the whole anonymity guarantee rests on out-of-repo config. <b>Verify live</b> that a direct client <span class="ui">.filter()</span> on each returns empty/forbidden. <span class="meta">(B3 — the #1 item)</span></li>
+    <li><b>Add crisis interception to Phase Twin</b> — client (<span class="ui">crisisCheck</span> before <span class="ui">postTwinEntry</span>) <em>and</em> server (mirror in the function). It's the one peer surface with none. <span class="meta">(B1)</span></li>
+    <li><b>Fix the ZK "maximum privacy" key-delivery lifecycle</b> so the receiver can't dead-end forever waiting for a writer who closed the app. Bounded wait + terminal state + opportunistic delivery on the writer's next app-open. <span class="meta">(B2)</span></li>
+    <li><b>Unify the mood lexicon</b> — Insights mislabels every mood today (logs "Bright", reports "Angry"). <span class="meta">(H2)</span></li>
+    <li><b>Reconcile witness state against the server</b> — clear a stale <span class="ui">SENT_KEY</span> that locks a writer out, and resume <span class="ui">currentClaim()</span> instead of always re-claiming. <span class="meta">(H3, H4)</span></li>
+    <li><b>Server-side Echo rate limit</b> (the 5/day cap is client-only → floodable). <span class="meta">(H5)</span></li>
+    <li><b>Editorial cleanup</b> — bring the sticky masthead onto tokens + a script title, and remove off-palette fills (gold pill, purple "dusk" card, espresso mood face, ledger rainbow). <span class="meta">(H1, H6)</span></li>
+    <li><b>Z-index discipline</b> — one scale; the 18+ AgeGate must always sit on top before Community wraps a surface in it. <span class="meta">(H8)</span></li>
+  </ol>
+
+  <h2>Blockers <span class="count">3</span></h2>
+
+  <div class="f">
+    <div class="head"><span class="tag t-blocker">Blocker</span><span class="tag t-area">back · privacy</span></div>
+    <div class="ttl">B3 · Peer entities are directly client-accessible — anonymity rests on out-of-repo config</div>
+    <span class="loc">EchoWall.jsx:59,65,93,102 · base44/entities/*.jsonc (no permissions block)</span>
+    <p class="d">The Echo wall <b>reads every non-hidden row</b> and <b>updates/deletes rows it doesn't own</b> (reactions, reports, hide, cleanup) via direct <span class="ui">base44.entities.Echo.*</span> calls — proving clients have cross-user entity access in this app. None of the anonymity entities (WitnessRequest/WitnessStrike/TwinPair/TwinEntry) declare access control in the repo, so a tampered client could in principle <span class="ui">.filter()</span> them and read every ciphertext, hash, <span class="ui">wrapped_key</span> and pairing — exactly the correlation the design forbids. The service functions are the privileged path but not the <em>only</em> path. <b>Cannot be confirmed from the repo</b> — needs a live authed probe.</p>
+    <div class="fix"><b>Fix</b> &nbsp;Deny-by-default entity permissions (service-role only) checked into the repo; route Echo react/report through service functions; live-verify a direct client read of each entity is forbidden.</div>
+  </div>
+
+  <div class="f">
+    <div class="head"><span class="tag t-blocker">Blocker</span><span class="tag t-area">back · safety</span></div>
+    <div class="ttl">B1 · Phase Twin delivers peer text with no crisis interception (client or server)</div>
+    <span class="loc">twin/PhaseTwin.jsx:handleShare · base44/functions/postTwinEntry/entry.ts</span>
+    <p class="d">A daily twin answer is shared verbatim with the paired stranger, yet neither the client (<span class="ui">handleShare</span> posts raw <span class="ui">draft.trim()</span>) nor the server screens for crisis content — on a surface built for exactly the heavy disclosures (e.g. prompt d10 "what's taking up space you haven't said out loud"). Echo and Witness both gate on <span class="ui">crisisCheck</span>; Twin is the hole. This is safety-of-life, not privacy.</p>
+    <div class="fix"><b>Fix</b> &nbsp;<span class="ui">crisisCheck(draft)</span> before posting (divert to UK resources like AskForWitnessSheet) + mirror the check server-side in postTwinEntry so a bypassed client can't deliver crisis text to a peer.</div>
+  </div>
+
+  <div class="f">
+    <div class="head"><span class="tag t-blocker">Blocker</span><span class="tag t-area">edge · process</span></div>
+    <div class="ttl">B2 · ZK "maximum privacy" receiver dead-ends forever if the writer never returns</div>
+    <span class="loc">WitnessInbox.jsx (keypending stage) · AskForWitnessSheet.jsx (delivery only while sheet polls)</span>
+    <p class="d">Under the opt-in ZK path the DEK is wrapped + delivered only by the <em>writer's device</em>, and only while <span class="ui">AskForWitnessSheet</span> is open and its 20s poller runs. The instant the writer taps "Done", delivery can never fire. The receiver who claimed sits in <span class="ui">keypending</span> ("this opens the moment it arrives") polling every 8s <b>forever</b> — no timeout, no terminal state, no pass-back. This is the inherent pull-pairing-ZK tradeoff we flagged at build time, but it is currently unhandled in the UI.</p>
+    <div class="fix"><b>Fix</b> &nbsp;Bound the keypending wait to <span class="ui">open_deadline/expires_at</span> with an explicit "she hasn't handed her key — back in the pool" terminal state; move wrapping off the live sheet to a background reconcile on the writer's next app-open (scan <span class="ui">rememberDek</span> entries vs a published <span class="ui">receiver_pub</span>).</p>
+  </div>
+
+  <h2>High <span class="count">8</span></h2>
+
+  <div class="f">
+    <div class="head"><span class="tag t-high">High</span><span class="tag t-area">process · data</span></div>
+    <div class="ttl">H2 · Insights mislabels every mood — two incompatible scales</div>
+    <span class="loc">JournalInsightsTab.jsx:14 (MOOD_MAP 1 Calm/2 Stressed/3 Low/4 Energized/5 Angry/6 Anxious) vs NewEntrySheet.jsx:107 (1 Low→5 Bright)</span>
+    <p class="d">The composer only writes <span class="ui">mood_rating</span> 1–5 on a Low→Bright valence scale; Insights maps the same integers through a different 6-value lexicon. A user who logged <b>Bright (5)</b> sees "Angry"; <b>Neutral (3)</b> shows as "Low". The reader + Cycle Mirror use the correct scale, so the same entry is described two contradictory ways. Users will read this as the app being wrong about them.</p>
+    <div class="fix"><b>Fix</b> &nbsp;One mood lexicon (1–5 Low→Bright) imported everywhere; drop the unused 6th value.</div>
+  </div>
+
+  <div class="f">
+    <div class="head"><span class="tag t-high">High</span><span class="tag t-area">front · brand</span></div>
+    <div class="ttl">H1 · Sticky masthead runs on the legacy plum/mauve palette + a non-script title</div>
+    <span class="loc">Journal.jsx:103,112,118,129,134,135,144,150,156 (var(--plum/--mauve/--ivory/--surface/--border)); title :111 bare sans</span>
+    <p class="d">The whole sticky header — title, dates, the Write CTA (a solid <span class="ui">var(--plum)</span> purple button), Hub button, season strip — is coloured with the app's old purple/mauve CSS vars, not <span class="ui">T.*</span> tokens, and the title "The Journal" is bare system-sans, not Ephesis. It's the first thing the eye hits and it clashes with the editorial byline directly beneath it.</p>
+    <div class="fix"><b>Fix</b> &nbsp;Tokens throughout (ink/muted/paperDeep/paperHi, CTA = <span class="ui">T.ink</span>); render the title with <span class="ui">&lt;Script&gt;</span>.</div>
+  </div>
+
+  <div class="f">
+    <div class="head"><span class="tag t-high">High</span><span class="tag t-area">front · brand</span></div>
+    <div class="ttl">H6 · Off-palette fills: gold pill, purple "dusk" card, espresso mood, ledger rainbow</div>
+    <span class="loc">Journal.jsx:200 (gold fill) · TonightReflection.jsx:21 (#2B2230→#3A2C30 purple) · NewEntrySheet.jsx:111 (#3A2C1A espresso "Bright") · JournalLedger.jsx:20 (14 indigo/teal/purple type hues)</span>
+    <p class="d">Brand bans bright-gold fills, espresso-brown fills, and off-palette colour. The active wholeness filter pill is a solid gold block; the "Tonight" card is a violet-charcoal gradient; the brightest mood face is espresso; and the ledger encodes card type as an off-palette rainbow (also colour-only state, with a 10px label). These leak into the reader too via <span class="ui">TYPE_COLOUR</span>.</p>
+    <div class="fix"><b>Fix</b> &nbsp;Active pill = ink fill / gold border only; add a single dark "dusk" token (no violet); brightest mood = ink; collapse ledger type colours to gold-hairline + ink label (reserve crimson for the one heart pop).</div>
+  </div>
+
+  <div class="f">
+    <div class="head"><span class="tag t-high">High</span><span class="tag t-area">edge</span></div>
+    <div class="ttl">H3 · Stale SENT_KEY strands the writer on a "Held by one sister" screen — locked out</div>
+    <span class="loc">AskForWitnessSheet.jsx:44 (existingSent → initial 'sent'), :297; witnessAnon.forgetSent</span>
+    <p class="d">On open, any value in <span class="ui">mySentId()</span> jumps straight to the "sent" screen with no entry, then polls status. If that lookup fails or the row is gone, status stays null forever, "Take it back" never renders (no <span class="ui">cancel_until</span>), and — because it's 1 send/day — the user is locked out of Witness with a meaningless card. <span class="ui">forgetSent()</span> only fires on a successful cancel.</p>
+    <div class="fix"><b>Fix</b> &nbsp;On restore, fetch real status first; if gone/failed, clear SENT_KEY and fall through to gate/confirm; always render a "Done/clear" affordance.</div>
+  </div>
+
+  <div class="f">
+    <div class="head"><span class="tag t-high">High</span><span class="tag t-area">edge</span></div>
+    <div class="ttl">H4 · WitnessInbox always re-claims instead of resuming the in-flight hold</div>
+    <span class="loc">WitnessInbox.jsx:118 (loading→claim()) vs witnessAnon.currentClaim (written, never read on load)</span>
+    <p class="d"><span class="ui">rememberClaim()</span> is stored on every claim but never read on mount — the inbox unconditionally re-claims. A receiver who closes before responding can, on re-open, pull a <em>second</em> stranger's entry while the first is still assigned to her (or lose the one she held). The persisted claim id is dead code on the read path.</p>
+    <div class="fix"><b>Fix</b> &nbsp;On load, if <span class="ui">currentClaim()</span> exists, re-fetch that request and resume; only claim anew when there's no live claim.</div>
+  </div>
+
+  <div class="f">
+    <div class="head"><span class="tag t-high">High</span><span class="tag t-area">back · safety</span></div>
+    <div class="ttl">H5 · Echo 5/day cap is client-only — the wall is floodable</div>
+    <span class="loc">base44/functions/postEcho/entry.ts (no count check) · echoAnon.js bumpEchoesToday (localStorage)</span>
+    <p class="d">postEcho does crisis + length checks but never counts the author_hash's prior echoes; the daily cap lives only in localStorage. A scripted or storage-cleared client can flood the lightest-moderation peer surface unbounded. postWitnessRequest correctly enforces 1/day server-side — Echo should match.</p>
+    <div class="fix"><b>Fix</b> &nbsp;Count <span class="ui">Echo.filter({author_hash})</span> since start-of-day in postEcho; return <span class="ui">{error:'rate'}</span> past the cap.</div>
+  </div>
+
+  <div class="f">
+    <div class="head"><span class="tag t-high">High</span><span class="tag t-area">edge</span></div>
+    <div class="ttl">H7 · Insights tab has no loading/error state + an uncaught Promise.all</div>
+    <span class="loc">JournalInsightsTab.jsx:43 (DailyCheckins/CycleEvents fetch, no try/catch, no loading flag)</span>
+    <p class="d">The overlay renders while data is still empty (cards flash "keep logging to unlock" then pop), and the <span class="ui">Promise.all</span> has no <span class="ui">.catch</span> — a rejected request throws unhandled and cards silently stay empty, looking broken. Unlike the parent page + SealedLettersSection, there's no error fallback.</p>
+    <div class="fix"><b>Fix</b> &nbsp;Loading skeleton + a <span class="ui">.catch</span> setting a "couldn't load your insights" state.</div>
+  </div>
+
+  <div class="f">
+    <div class="head"><span class="tag t-high">High</span><span class="tag t-area">front · a11y</span></div>
+    <div class="ttl">H8 · Z-index ladder is incoherent — the 18+ AgeGate isn't guaranteed on top</div>
+    <span class="loc">AgeGate.jsx:25 (z 90) = NewEntrySheet.jsx:348 (z 90) &lt; SealedLetterCompose.jsx:72 (z 92); child sheets nested below parents</span>
+    <p class="d">The overlay stack is unsorted (Echo/Twin/Witness 60, EntryReader 70, Insights 75, FourLives/Hub/Sealed 80, NewEntry 90, SealedCompose 92, AgeGate 90), and child sheets render <em>inside</em> higher-z parents (their value only "works" by DOM order). A safety boundary (AgeGate) below a composer is wrong; any refactor will mis-stack.</p>
+    <div class="fix"><b>Fix</b> &nbsp;A single <span class="ui">Z</span> scale in Editorial (sheet/modal/gate); AgeGate at the top, non-dismissible by backdrop.</div>
+  </div>
+
+  <h2>Medium <span class="count">11</span></h2>
+  <div class="f"><div class="head"><span class="tag t-medium">Medium</span><span class="tag t-area">front · a11y</span></div><div class="ttl">Inconsistent Escape-to-close + no focus trap across 12 modals (only 3 handle Escape)</div><span class="loc">have: ShareAsEcho/AskForWitness/WitnessInbox · missing: EntryReader, FourLives, NewEntry, SealedCompose, BreakSeal, Hub, AgeGate, PhaseTwin, Insights</span><p class="d">Keyboard users get unpredictable dismissal; no focus-restore; containers lack <span class="ui">role="dialog"/aria-modal</span>.</p><div class="fix"><b>Fix</b> &nbsp;One <span class="ui">useSheet()</span> hook (Escape + focus trap + restore + scroll-lock + dialog roles).</div></div>
+  <div class="f"><div class="head"><span class="tag t-medium">Medium</span><span class="tag t-area">process</span></div><div class="ttl">"Sealed Letters" hub item opens an inline section below the feed — reads as a dead tap</div><span class="loc">Journal.jsx:619 (SealedLettersSection appended after ledger) vs four-lives onSeal → full composer</span><p class="d">Tapping the hub item appears to do nothing (the section is off-screen), while the four-lives seal path opens a proper sheet — two mental models for one feature.</p><div class="fix"><b>Fix</b> &nbsp;Open Sealed Letters as an overlay/sheet (or scroll-to), consistent with Insights/Witness/Twin.</div></div>
+  <div class="f"><div class="head"><span class="tag t-medium">Medium</span><span class="tag t-area">process</span></div><div class="ttl">Burn mode shares the composer's text state — can persist or wipe unexpectedly</div><span class="loc">NewEntrySheet.jsx:323 chooseMode (Burn uses shared `text`)</span><p class="d">Typing a burn then switching to Write keeps the text (could be saved — the opposite of "leaves no trace"); composing in Write then tapping Burn shows the real entry in the burn box where "Release" wipes it.</p><div class="fix"><b>Fix</b> &nbsp;Isolated Burn buffer that never feeds <span class="ui">handleSave</span>; confirm on leaving Burn with unreleased text.</div></div>
+  <div class="f"><div class="head"><span class="tag t-medium">Medium</span><span class="tag t-area">back</span></div><div class="ttl">postTwinEntry result never checked — silent failures (not-active / wrong-day / write-fail)</div><span class="loc">PhaseTwin.jsx:83</span><p class="d">The response is discarded and <span class="ui">loadDay</span> runs regardless; on error the blur-gate just won't lift and the user can't tell why.</p><div class="fix"><b>Fix</b> &nbsp;Read <span class="ui">res?.data ?? res</span> and surface <span class="ui">d?.error</span>.</div></div>
+  <div class="f"><div class="head"><span class="tag t-medium">Medium</span><span class="tag t-area">back</span></div><div class="ttl">claimWitness / joinTwin assign races are read-then-write, not atomic</div><span class="loc">claimWitness/entry.ts (stillFree→update); joinTwin/entry.ts (cand→get→update)</span><p class="d">Two concurrent claimers/joiners can both pass the free-check before either write lands (last-writer-wins): a witness entry reassigned out from under a reader (and under ZK, the DEK wrapped to the losing receiver_pub), or a stranded solo twin pair.</p><div class="fix"><b>Fix</b> &nbsp;Conditional/CAS update guarded on <span class="ui">status=='pending'</span>, or a version/claim-token re-verified after write.</div></div>
+  <div class="f"><div class="head"><span class="tag t-medium">Medium</span><span class="tag t-area">back</span></div><div class="ttl">deliverWitnessKey can wrap to a stale receiver after a reroute (silent unreadable entry)</div><span class="loc">deliverWitnessKey/entry.ts</span><p class="d">It writes <span class="ui">wrapped_key</span> without checking the <span class="ui">receiver_pub</span> still matches what the writer wrapped against; after a reroute the new receiver holds a key it can't unwrap.</p><div class="fix"><b>Fix</b> &nbsp;Writer passes the <span class="ui">receiver_pub</span> it wrapped against; reject on mismatch; don't silently overwrite a delivered key.</div></div>
+  <div class="f"><div class="head"><span class="tag t-medium">Medium</span><span class="tag t-area">edge</span></div><div class="ttl">No-cycle user: phase lenses/letters silently vanish with no explanation</div><span class="loc">CycleMirror.jsx (lenses empty when !hasCycle) · SealedLetterCompose phase tab · masthead "Journal"</span><p class="d">Without <span class="ui">last_period_start_date</span>, On-this-day/This-phase/year lenses go empty and the "across a full cycle" cold-start card is shown to users who can never satisfy it — feels arbitrarily broken.</p><div class="fix"><b>Fix</b> &nbsp;One coherent "add your cycle to unlock the mirror" nudge; suppress the cold-start card when there's no anchor.</div></div>
+  <div class="f"><div class="head"><span class="tag t-medium">Medium</span><span class="tag t-area">edge</span></div><div class="ttl">Encryption-unavailable Sealed letter lets the user write a long letter, then can't seal it</div><span class="loc">SealedLetterCompose.jsx:37 canEncrypt, :44 canSeal</span><p class="d">The full composer renders even when <span class="ui">cryptoAvailable()</span> is false; the user pours out an emotional letter before finding "Seal it" permanently disabled and nothing stored.</p><div class="fix"><b>Fix</b> &nbsp;Lead with the limitation; offer to save the words as a normal locked entry instead of losing them.</div></div>
+  <div class="f"><div class="head"><span class="tag t-medium">Medium</span><span class="tag t-area">process</span></div><div class="ttl">Witness gate ("hold 3 first") is discoverable only by being blocked, and counts from localStorage</div><span class="loc">AskForWitnessSheet.jsx gate stage · heldCountLocal()</span><p class="d">The four-lives witness option gives no hint sending is gated; clearing storage / switching device resets progress to 0/3 even if the server considers you gated.</p><div class="fix"><b>Fix</b> &nbsp;Surface the expectation in the chooser; reconcile gate progress against the server count.</div></div>
+  <div class="f"><div class="head"><span class="tag t-medium">Medium</span><span class="tag t-area">back</span></div><div class="ttl">flagWitness "strike" has no authorisation — any user can strike any receiver_hash</div><span class="loc">flagWitness/entry.ts (kind==='strike')</span><p class="d">The strike path takes a <span class="ui">receiver_hash</span> from the body with no proof the caller is involved — a griefer can rack up 3 strikes to evict any receiver from the pool.</p><div class="fix"><b>Fix</b> &nbsp;Require a <span class="ui">request_id</span> and verify the caller is its writer before striking.</div></div>
+  <div class="f"><div class="head"><span class="tag t-medium">Medium</span><span class="tag t-area">edge</span></div><div class="ttl">Phase Twin "cancel the search" never tells the server; abandons silently after 72h</div><span class="loc">PhaseTwin.jsx:149 handleLeave (local only) · twinConfig ABANDON_HOURS</span><p class="d">Cancel only clears local state, and a 72h-abandoned pair returns the user to "intro" with no "your search expired" explanation.</p><div class="fix"><b>Fix</b> &nbsp;Server cancel on leave; surface an explicit "earlier search expired" when a remembered pair resolves to gone.</div></div>
+
+  <h2>Low <span class="count">6</span> &amp; Polish <span class="count">4</span></h2>
+  <div class="f"><div class="head"><span class="tag t-low">Low</span><span class="tag t-area">front</span></div><div class="ttl">Ledger entry row is a clickable div — not keyboard-operable; type is colour-only</div><span class="loc">JournalLedger.jsx:166</span><div class="fix"><b>Fix</b> &nbsp;<span class="ui">&lt;button&gt;</span> / role+tabindex + Enter/Space + aria-label.</div></div>
+  <div class="f"><div class="head"><span class="tag t-low">Low</span><span class="tag t-area">edge</span></div><div class="ttl">Voice auto-restart can silently stop on network/no-speech with no message</div><span class="loc">NewEntrySheet.jsx:283 onend / :274 onerror</span><div class="fix"><b>Fix</b> &nbsp;Soft "dictation paused — tap to resume" when restart fails.</div></div>
+  <div class="f"><div class="head"><span class="tag t-low">Low</span><span class="tag t-area">process</span></div><div class="ttl">Delete is permanent with no undo; failed delete still removes the row locally</div><span class="loc">EntryReader.jsx:93 / Journal.handleDelete:318</span><div class="fix"><b>Fix</b> &nbsp;Brief undo window; re-insert + notify on failure.</div></div>
+  <div class="f"><div class="head"><span class="tag t-low">Low</span><span class="tag t-area">edge</span></div><div class="ttl">Echo react/report/retract optimistically mutate and swallow server errors</div><span class="loc">EchoWall.jsx:88,96,105</span><div class="fix"><b>Fix</b> &nbsp;Roll back on failure with a quiet "didn't go through".</div></div>
+  <div class="f"><div class="head"><span class="tag t-low">Low</span><span class="tag t-area">back</span></div><div class="ttl">getTwinDay returns twinAnswered before the caller writes — small metadata lurk</div><span class="loc">getTwinDay/entry.ts</span><div class="fix"><b>Fix</b> &nbsp;Gate <span class="ui">twinAnswered</span> behind <span class="ui">mineWritten</span> too if strict mutual blur is intended.</div></div>
+  <div class="f"><div class="head"><span class="tag t-low">Low</span><span class="tag t-area">front</span></div><div class="ttl">Un-tokenised creams (#EFE3C9) + CaptureShield hardcodes #2E261B instead of T.muted</div><span class="loc">ShareAsEcho:248 · BreakSeal:62 · NewEntry:490 · CaptureShield.jsx:67</span><div class="fix"><b>Fix</b> &nbsp;Use <span class="ui">T.paperHi</span> / <span class="ui">T.muted</span>.</div></div>
+  <div class="f"><div class="head"><span class="tag t-polish">Polish</span><span class="tag t-area">process</span></div><div class="ttl">Close affordances inconsistent (text "Close" vs circular X vs backdrop) across sheets</div><div class="fix"><b>Fix</b> &nbsp;One close pattern + one cancel/confirm button style.</div></div>
+  <div class="f"><div class="head"><span class="tag t-polish">Polish</span><span class="tag t-area">process</span></div><div class="ttl">"Share" offered in 3 subtly different forms (composer echo-only, reader four-lives, post-save chooser)</div><div class="fix"><b>Fix</b> &nbsp;Route the composer's inline share through the same FourLivesChooser.</div></div>
+  <div class="f"><div class="head"><span class="tag t-polish">Polish</span><span class="tag t-area">front</span></div><div class="ttl">Tiny type — FourLives "Default" badge 9px; mood-face tap targets ~38px (&lt;40)</div><div class="fix"><b>Fix</b> &nbsp;Raise to ~10.5px; bump mood padding to ~44px hit area.</div></div>
+  <div class="f"><div class="head"><span class="tag t-polish">Polish</span><span class="tag t-area">back</span></div><div class="ttl">Gate/rate "errors" return HTTP 200 with {error} — status-only clients fail open</div><div class="fix"><b>Fix</b> &nbsp;Use 429/403, or document the 200+error contract explicitly.</div></div>
+
+  <h2>What's genuinely solid</h2>
+  <ul class="solid">
+    <li><b>Anonymity model</b> — every peer write is <span class="ui">asServiceRole</span> (created_by = service, never a user id); device-derived hashes in separate namespaces (<span class="ui">echo::</span>/<span class="ui">witness::</span>/<span class="ui">twin::</span>, distinct secrets) with no cross-surface correlation.</li>
+    <li><b>Witness zero-knowledge (FWWT2)</b> is correctly keyless at rest — DEK never reaches the server, wrapped to the receiver's ECDH P-256 key post-claim; FWWT1 + pre-encryption plaintext both still open (clean version detection, additive fields).</li>
+    <li><b>Crisis interception</b> is consistently wired on Echo + Witness (re-checked on send, diverts to correct UK resources — Samaritans 116 123 / NHS 111 / Shout 85258 / Mind), never posting. (Twin is the gap — B1.)</li>
+    <li><b>Empty / loading / error states</b> are real on the parent page, Echo Wall, Sealed Letters, Search and BreakSeal; cold-start + no-results copy is on-brand. The honest "sealed on another device, key never left it" message is exactly right.</li>
+    <li><b>Editorial token kit</b> (T / Script / Hand / Eyebrow / Rule / ink-carve) is well-built and mostly consumed cleanly; <b>zero emoji</b> anywhere; layouts fluid at 390px with no fixed widths over ~360px.</li>
+    <li><b>On-device privacy framing</b> (scrub → encrypt → "never leaves the device") is consistent; long-entry caps (1200 chars, 600-char previews) respected in Witness/Twin.</li>
+  </ul>
+
+  <h2 class="meta" style="border:0">Method &amp; scope</h2>
+  <p class="meta">Three parallel deep-inspection passes (back-end · front-end · UX+edge) over <span class="ui">src/pages/Journal.jsx</span>, all of <span class="ui">src/components/journal/**</span>, <span class="ui">src/components/safety/**</span>, the Journal <span class="ui">base44/entities/*.jsonc</span> + <span class="ui">base44/functions/*</span>, and the crypto/anon utils. Every Blocker + High re-verified directly against the code (grep/read) before inclusion; Playwright webkit 390×844 renders used throughout the build. Not covered: live entity-permission config (out of repo — B3 needs an authed probe), real multi-user concurrency, and native screenshot blocking (requires the native shell). Counts: 3 Blocker · 8 High · 11 Medium · 6 Low · 4 Polish = 32 findings.</p>
+
+</div>
+</body>
+</html>
