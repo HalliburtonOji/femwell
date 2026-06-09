@@ -95,16 +95,16 @@ export default function CommunityPlanDoc() {
 
       <H2>I · Chosen UX + Comments + Jess-as-games-master (2026-06-09)</H2>
       <P><strong>Chosen production UX:</strong> the <strong>Rooms + Tabs hybrid</strong> (~65/35) — rooms-as-doors is the home (the easy jump-in); a sticky tab bar is the in-room navigation. Demo: <strong>CommunityDemo6</strong> (the production candidate).</P>
-      <H3>Comments (new — a careful shift from react-only)</H3>
+      <H3>Comments (decided 2026-06-09)</H3>
       <Bullets items={[
-        <span><strong>Poster chooses per post:</strong> Open to comments vs Reaction-only (gentler default); flippable, never deletes.</span>,
-        <span><strong>Flat, not threaded</strong> — every comment addresses the poster; removes the pile-on / co-rumination substrate.</span>,
-        <span><strong>Lurking first-class</strong> — comments publicly readable (reading replies lowers anxiety); empty threads softened, never "0 comments".</span>,
-        <span><strong>Kind-by-design compose</strong> — "peer support, not medical advice", a kindness prompt, char limit, slow-mode, no counts, report→hide-not-delete.</span>,
-        <span><strong>Crisis-safe pipeline</strong> — pre-publication: crisis pre-check → UK support (never silent-drop) → abuse check → publish / rephrase-nudge / hold; a health-vocab allowlist so clinical words are never auto-blocked.</span>,
+        <span><strong>OPEN-write by default</strong> — anyone can write a comment; the poster keeps the option to switch a post to reaction-only (flippable, never deletes).</span>,
+        <span><strong>Backend auto-moderation that REMOVES</strong> — every comment is screened server-side; harmful / out-of-place ones are auto-removed, shown as a gentle "Removed by Jess" tombstone. Real = OpenAI Moderation API + crisis check via a Base44 fn (needs the OpenAI key).</span>,
+        <span><strong>Jess is an active participant</strong> — she chips in with warm support inline in threads (a reply, a nudge, surfacing help on heavy topics), distinct from members, tone-locked, never clinical/preachy.</span>,
+        <span><strong>Flat, not threaded</strong> — every comment addresses the poster; removes the pile-on / co-rumination substrate. Lurking first-class (publicly readable; reading replies lowers anxiety); empty threads softened, never "0 comments".</span>,
+        <span><strong>Kind-by-design + crisis-safe</strong> — "peer support, not medical advice", a kindness prompt, char limit, slow-mode, no counts; crisis pre-check routes to UK support (never silent-drop); a health-vocab allowlist so clinical words are never auto-blocked.</span>,
       ]} />
-      <H3>Jess as games master</H3>
-      <P>One shared prompt, a generous countdown, everyone answers privately, then Jess reveals <strong>only the aggregate</strong> ("most of you said…") — <strong>no winner, no score</strong>. Jess celebrates, never judges (the post-Fable safe line).</P>
+      <H3>Jess as host — games master + support</H3>
+      <P>Jess hosts a gentle timed round (one shared prompt, generous countdown, then she reveals <strong>only the aggregate</strong> — "most of you said…", <strong>no winner</strong>), AND participates as warm support inline in comment threads. She celebrates, never judges (the post-Fable safe line); never clinical or preachy.</P>
       <H3>AI moderation — feasibility verdicts</H3>
       <Table rows={[
         ["Capability", "Verdict"],

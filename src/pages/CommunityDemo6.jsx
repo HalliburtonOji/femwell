@@ -30,7 +30,7 @@ import {
   THIS_OR_THAT, HOT_TAKES, STORY_SEED, SAMPLE_ENTRY, FOUR_LIVES,
   WITNESS, AUDIO_MODES, AUDIO_NOTE, crisisCheck, UK_RESOURCES, FOOTER_LINE,
   COMMENTS_BY_POST, COMMENT_DISCLAIMER, COMMENT_KINDNESS, COMMENT_MAX, COMMENT_EMPTY,
-  GM_ROUND,
+  MOD_NOTE, MOD_REMOVED, modCheck, GM_ROUND,
 } from "./communityShared";
 
 const PLUM = "#241a26"; // the one permitted dark surface (Witness / Talk)
@@ -181,32 +181,36 @@ function LoungeRoom() {
   const [draft, setDraft] = useState("");
   const [crisisFor, setCrisisFor] = useState(null);
   const [reacted, setReacted] = useState({});      // postId -> reaction label
-  const [myMode, setMyMode] = useState("reactions"); // my new post's comments mode
+  const [myMode, setMyMode] = useState("open"); // open-write by default; poster may switch to reactions-only
+  const [removedFor, setRemovedFor] = useState(null); // post whose just-typed comment Jess auto-removed
 
   const addComment = (pid) => {
     const t = draft.trim();
     if (!t) return;
-    if (crisisCheck(t)) { setCrisisFor(pid); return; }
+    if (crisisCheck(t)) { setCrisisFor(pid); return; }                 // heavy → route to support, never posts
+    if (modCheck(t)) { setRemovedFor(pid); setDraft(""); setOpenFor(null); return; } // unkind → backend auto-removes it
     setLists((L) => ({ ...L, [pid]: { ...L[pid], list: [...L[pid].list, { id: "n" + Date.now(), body: t }] } }));
-    setDraft(""); setOpenFor(null);
+    setDraft(""); setOpenFor(null); setRemovedFor(null);
   };
 
   return (
     <>
-      <RoomHead title="The Lounge" sub="Spill it — silly to serious, kind, no names. You choose if a post is open to comments." />
+      <RoomHead title="The Lounge" sub="Spill it — silly to serious, kind, no names. Comments are open by default; you can switch a post to reaction-only." />
 
-      {/* your-own composer with the comments on/off toggle (the poster's choice) */}
+      {/* your-own composer — replies OPEN by default; poster may switch off */}
       <div style={cardStyle}>
         <Eyebrow color={T.muted}>Say something — Jess keeps it anonymous</Eyebrow>
         <div style={{ background: T.paper, border: `1px solid ${T.paperDeep}`, borderRadius: 10, padding: "10px 12px", fontFamily: SERIF, fontStyle: "italic", fontSize: 14.5, color: T.muted, margin: "8px 0 10px" }}>
           What's true for you right now…
         </div>
         <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
-          <span style={{ fontFamily: UI, fontSize: 11.5, color: T.muted }}>When you post, replies are:</span>
-          <button onClick={() => setMyMode("reactions")} style={togglePill(myMode === "reactions")}><Lock size={12} /> Reactions only</button>
+          <span style={{ fontFamily: UI, fontSize: 11.5, color: T.muted }}>Replies:</span>
           <button onClick={() => setMyMode("open")} style={togglePill(myMode === "open")}><Unlock size={12} /> Open to comments</button>
+          <button onClick={() => setMyMode("reactions")} style={togglePill(myMode === "reactions")}><Lock size={12} /> Reactions only</button>
+          <span style={{ fontFamily: UI, fontSize: 10.5, color: T.muted }}>{myMode === "open" ? "· default — anyone can write" : "· you've switched this off"}</span>
         </div>
-        <div style={{ fontFamily: UI, fontSize: 11, color: T.muted, marginTop: 8 }}>{COMMENT_DISCLAIMER}</div>
+        <div style={{ fontFamily: UI, fontSize: 11, color: T.muted, marginTop: 8, display: "flex", alignItems: "center", gap: 6 }}><Sparkles size={12} style={{ color: T.gold }} /> {MOD_NOTE}</div>
+        <div style={{ fontFamily: UI, fontSize: 11, color: T.muted, marginTop: 5 }}>{COMMENT_DISCLAIMER}</div>
       </div>
 
       {/* the feed — each post shows its comment mode */}
@@ -230,16 +234,18 @@ function LoungeRoom() {
               })}
             </div>
 
-            {/* comments — visible to all (lurking), flat, no counts */}
+            {/* comments — open-write, visible to all (lurking), flat, no counts, auto-moderated */}
             {c.open ? (
               <div style={{ marginTop: 12, borderTop: `1px solid ${T.paperDeep}`, paddingTop: 10 }}>
                 {c.list.length === 0
                   ? <Hand size={14} color={T.muted}>{COMMENT_EMPTY}</Hand>
-                  : c.list.map((cm) => (
-                      <div key={cm.id} style={{ background: T.paper, border: `1px solid ${T.paperDeep}`, borderRadius: 10, padding: "9px 12px", marginBottom: 7 }}>
-                        <Hand size={15} color={T.inkSoft}>{cm.body}</Hand>
-                      </div>
-                    ))}
+                  : c.list.map((cm) => <CommentItem key={cm.id} cm={cm} />)}
+                {removedFor === p.id && (
+                  <div style={{ display: "flex", gap: 8, alignItems: "flex-start", background: T.paper, border: `1px dashed ${T.gold}`, borderRadius: 10, padding: "9px 12px", marginBottom: 7 }}>
+                    <Sparkles size={14} style={{ color: T.gold, marginTop: 2 }} />
+                    <span style={{ fontFamily: UI, fontSize: 12, color: T.muted, fontStyle: "italic" }}>Jess kept that one out — it didn't keep the room kind. Try again, gently?</span>
+                  </div>
+                )}
                 {crisisFor === p.id ? (
                   <CrisisCard onClose={() => { setCrisisFor(null); setOpenFor(null); setDraft(""); }} />
                 ) : openFor === p.id ? (
@@ -248,17 +254,17 @@ function LoungeRoom() {
                     <textarea value={draft} onChange={(e) => setDraft(e.target.value.slice(0, COMMENT_MAX))} placeholder="A kind word…"
                       style={{ width: "100%", minHeight: 56, resize: "none", fontFamily: SERIF, fontSize: 15, color: T.ink, background: T.paperHi, border: `1px solid ${T.paperDeep}`, borderRadius: 10, padding: "9px 11px", boxSizing: "border-box" }} />
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 6 }}>
-                      <span style={{ fontFamily: UI, fontSize: 10.5, color: T.muted }}>{draft.length}/{COMMENT_MAX}</span>
+                      <span style={{ fontFamily: UI, fontSize: 10.5, color: T.muted }}>{draft.length}/{COMMENT_MAX} · Jess screens before it posts</span>
                       <button onClick={() => addComment(p.id)} style={inkBtnSm}><Send size={13} /> Send kindly</button>
                     </div>
                   </div>
                 ) : (
-                  <button onClick={() => { setOpenFor(p.id); setDraft(""); }} style={ghostBtnSm}><Plus size={13} /> Add a kind word</button>
+                  <button onClick={() => { setOpenFor(p.id); setDraft(""); setRemovedFor(null); }} style={ghostBtnSm}><Plus size={13} /> Add a comment</button>
                 )}
               </div>
             ) : (
               <div style={{ marginTop: 10, fontFamily: UI, fontSize: 11.5, color: T.muted, display: "flex", alignItems: "center", gap: 6 }}>
-                <Lock size={12} /> Comments are off for this one — reactions welcome.
+                <Lock size={12} /> The poster turned comments off here — reactions welcome.
               </div>
             )}
           </div>
@@ -484,6 +490,32 @@ function LifeRoom({ room }) {
 // ════════════════════════════════════════════════════════════════════════════
 // small shared bits
 // ════════════════════════════════════════════════════════════════════════════
+function CommentItem({ cm }) {
+  if (cm.status === "removed") {
+    return (
+      <div style={{ display: "flex", gap: 8, alignItems: "center", border: `1px dashed ${T.paperDeep}`, borderRadius: 10, padding: "8px 12px", marginBottom: 7 }}>
+        <ShieldAlert size={13} style={{ color: T.muted, flexShrink: 0 }} />
+        <span style={{ fontFamily: UI, fontSize: 11.5, color: T.muted, fontStyle: "italic" }}>{MOD_REMOVED}</span>
+      </div>
+    );
+  }
+  if (cm.by === "jess") {
+    return (
+      <div style={{ display: "flex", gap: 9, alignItems: "flex-start", background: "#F4EFDF", border: `1px solid ${T.gold}`, borderRadius: 10, padding: "10px 12px", marginBottom: 7 }}>
+        <span style={{ width: 24, height: 24, borderRadius: 999, background: T.paperHi, border: `1px solid ${T.gold}`, color: T.gold, display: "inline-flex", alignItems: "center", justifyContent: "center", flexShrink: 0, marginTop: 1 }}><Sparkles size={13} /></span>
+        <div>
+          <div style={{ fontFamily: UI, fontSize: 9.5, fontWeight: 800, letterSpacing: 1.2, textTransform: "uppercase", color: T.gold, marginBottom: 3 }}>Jess · here with you</div>
+          <Hand size={15} color={T.ink}>{cm.body}</Hand>
+        </div>
+      </div>
+    );
+  }
+  return (
+    <div style={{ background: T.paper, border: `1px solid ${T.paperDeep}`, borderRadius: 10, padding: "9px 12px", marginBottom: 7 }}>
+      <Hand size={15} color={T.inkSoft}>{cm.body}</Hand>
+    </div>
+  );
+}
 function RoomHead({ title, sub }) {
   return (
     <header style={{ marginBottom: 10 }}>

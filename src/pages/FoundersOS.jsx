@@ -64,7 +64,7 @@ const ALLOWED = new Set([
   "ojihalliburton57@gmail.com",
 ]);
 
-const TABS = ["Lab", "Pages", "Roadmap", "Community Plan", "Whole-Life", "Audio", "Ideas", "Strategy", "Legal", "Decisions", "Journal", "Journal Demos", "Community Demos", "Another You", "UX & Design", "Wholeness", "LGBTQ+", "🏥 Health Corner"];
+const TABS = ["Lab", "Pages", "Roadmap", "Community Plan", "Whole-Life", "Audio", "Ideas", "Strategy", "Legal", "Decisions", "Journal", "Journal Demos", "Community Demos", "Another You", "UX & Design", "Wholeness", "LGBTQ+", "Health Corner"];
 
 const IDEAS_KEY  = "femwell_ideas";
 const CHECKS_KEY = "femwell_founder_checks";
@@ -572,7 +572,7 @@ function FoundersInner({ user }) {
         {tab === "UX & Design" && <UxDesignTab />}
         {tab === "Wholeness"   && <WholenessTab />}
         {tab === "LGBTQ+"      && <LgbtqTab />}
-        {tab === "🏥 Health Corner" && <HealthCornerRedirectCard />}
+        {tab === "Health Corner" && <HealthCornerRedirectCard />}
       </main>
     </FullBleed>
   );
@@ -1918,11 +1918,11 @@ function JournalDemosTab() {
 const COMMUNITY_DEMOS = [
   {
     n: 6, slug: "CommunityDemo6",
-    title: "★ PRODUCTION CANDIDATE — Rooms + Tabs hybrid (chosen)",
-    subtitle: "Halli's pick: doors to jump in, tabs to move around — plus Comments & Jess-as-games-master",
+    title: "★ PRODUCTION CANDIDATE — Rooms + Tabs hybrid (with open comments, backend moderation, Jess host+support)",
+    subtitle: "Halli's chosen direction — open this one",
     accent: T.crimson,
-    body: "The chosen production direction: a ~65/35 HYBRID of Rooms-as-doors (Demo 2) + Tabbed (Demo 3). The home is a grid of doors (the easy jump-in); once inside a room, a sticky tab bar flicks you between rooms (Lounge · Echo · Lighter · Share · Talk) with a Doors pill back to the home. NEW: the COMMENTS feature — the poster chooses per post whether replies are OPEN (flat, anonymous, readable by all, kindness prompt + 'peer support not medical advice' + crisis pre-check + char limit) or REACTION-ONLY; lurking is first-class (threads are visible read-only); empty threads softened, never '0 comments'; no counts anywhere. Plus a light JESS-AS-GAMES-MASTER round (a gentle countdown, simultaneous reveal, 'most of you said…', no winner). Same palette / paper / Ephesis+Cormorant as the others.",
-    tags: ["Rooms-as-doors home", "Tabs inside a room", "Comments on/off (poster's choice)", "Crisis-safe compose", "Jess games-master (timed, no winner)"],
+    body: "The chosen production direction: a ~65/35 HYBRID of Rooms-as-doors (Demo 2) + Tabbed (Demo 3). Home = a grid of doors (the jump-in); inside a room a sticky tab bar flicks between rooms (Lounge · Echo · Lighter · Share · Talk), a Doors pill returns home. COMMENTS are OPEN by default — anyone can write a comment — with the poster keeping the option to switch a post to reaction-only. BACKEND AUTO-MODERATION screens every comment and removes anything harmful or out of place (shown here as a gentle 'Removed by Jess' tombstone; real = OpenAI Moderation API + crisis check via a Base44 serverless fn — needs the OpenAI key). JESS is an ACTIVE participant, not just a gatekeeper — she chips in with warm support inline in threads, and hosts a gentle timed games-master round (simultaneous reveal, 'most of you said…', no winner). Flat, lurkable, no counts; crisis routes to UK support, never posts. Same palette / paper / Ephesis+Cormorant as the others.",
+    tags: ["Rooms-as-doors + tabs-inside", "OPEN comments (poster can switch off)", "Backend auto-moderation (auto-removes)", "Jess: host + inline support", "Crisis-safe · no counts"],
   },
   {
     n: 1, slug: "CommunityDemo1",
@@ -1976,8 +1976,8 @@ function CommunityDemosTab() {
   return (
     <div>
       <PageHeader
-        title="Community — 5 UX Directions (same complete page)"
-        subtitle="FIVE UX/UI interpretations of the SAME complete whole-life Community — every demo contains every feature (home + Question of the Day, the whole-life rooms, Echo Wall, the Lounge, the games, the four-lives chooser, Witness, and Talk-It-Out audio). They differ ONLY in layout / navigation / components / interaction; the palette, paper background and fonts are identical throughout. Pick the UI direction. Anonymous-first, 18+, no scoreboards. Mock data, no entities queried."
+        title="Community — ★ Production Candidate (Demo 6) + earlier explorations"
+        subtitle="THE CHOSEN DIRECTION is Demo 6 — the Rooms + Tabs hybrid, with OPEN comments, backend auto-moderation, and Jess as host + active support — pinned at the top (Open demo → /CommunityDemo6). The five UX directions below were the explorations Halli chose from (each the same complete whole-life Community in a different layout). Anonymous-first, 18+, no scoreboards. Mock data, no entities queried."
         badge="INTERACTIVE"
         badgeTone="gold"
       />

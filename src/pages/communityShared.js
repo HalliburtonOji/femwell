@@ -125,10 +125,12 @@ export const UK_RESOURCES = [
 
 export const FOOTER_LINE = "No handles. No DMs. No likes, no leaderboards. Anonymous, 18+ — a room everyone's in.";
 
-// ── COMMENTS (per-post on/off; FLAT, anonymous, no counts; poster chooses) ────
-// The poster decides per post: "open to comments" or "reaction-only". Comments
-// are publicly readable (lurking is first-class), flat (no reply-to-reply), kind
-// by design. Empty open threads are softened, never shown as "0 comments".
+// ── COMMENTS (OPEN-WRITE BY DEFAULT; FLAT, anonymous, no counts) ──────────────
+// Comments are OPEN by default — anyone can write one. The poster keeps the
+// option to switch a post to reaction-only. Threads are publicly readable
+// (lurking is first-class), flat (no reply-to-reply), kind by design. Jess is an
+// active participant (by:"jess") — she chips in with support, not just gatekeeps.
+// Backend moderation AUTO-REMOVES anything harmful/out-of-place (status:"removed").
 export const COMMENTS_BY_POST = {
   l1: { open: true,  list: [
     { id: "c1", body: "This made me sit up straighter. Well done you." },
@@ -136,18 +138,30 @@ export const COMMENTS_BY_POST = {
   ] },
   l2: { open: true,  list: [
     { id: "c3", body: "I'd want to know too. Maybe a gentle 'I missed you on the day'?" },
+    { id: "jx", by: "jess", body: "Birthdays landing quietly can sting more than we expect — you're allowed to want to be remembered. Whatever you decide to say, take your time." },
   ] },
-  l3: { open: false, list: [] },   // reaction-only (poster's choice)
-  l4: { open: true,  list: [] },   // open but empty → soften, never "0 comments"
-  l5: { open: false, list: [] },   // reaction-only
+  l3: { open: false, list: [] },   // the poster switched THIS one to reaction-only (still an option)
+  l4: { open: true,  list: [
+    { id: "c5", body: "Same boat. The app-guilt is real." },
+    { id: "rm", status: "removed" },   // auto-removed by backend moderation (shown as a tombstone)
+  ] },
+  l5: { open: true,  list: [] },   // open but empty → soften, never "0 comments"
   l6: { open: true,  list: [
     { id: "c4", body: "Not just you. I mute them for whole afternoons now." },
+    { id: "jy", by: "jess", body: "Group chats can quietly drain you. It's kind — to you — to step back when you need to." },
   ] },
 };
 export const COMMENT_DISCLAIMER = "Peer support, not medical advice. For anything medical, speak to your GP or NHS 111.";
 export const COMMENT_KINDNESS = "Share what helped you — you don't have to fix it. “I hear you” is enough.";
 export const COMMENT_MAX = 400;
 export const COMMENT_EMPTY = "No replies yet — be the first kind voice, or just send a reaction.";
+// Backend auto-moderation (mock here; real = OpenAI Moderation API + crisis check
+// via a Base44 serverless function). Every comment is screened; harmful or
+// out-of-place ones are AUTO-REMOVED and shown as a gentle tombstone.
+export const MOD_NOTE = "Jess screens every comment — anything unkind or out of place is removed.";
+export const MOD_REMOVED = "Removed by Jess — this didn't keep the room kind.";
+export const MOD_BANNED = ["idiot", "stupid", "shut up", "loser", "ugly", "pathetic", "hate you", "shut it"];
+export function modCheck(text) { const t = (text || "").toLowerCase(); return MOD_BANNED.some((w) => t.includes(w)); }
 
 // ── JESS AS GAMES MASTER — a gentle, timed, simultaneous-reveal round ─────────
 // One shared prompt, a generous countdown, everyone answers privately, then Jess
