@@ -4,7 +4,7 @@
 ## CURRENT STATE
 - **Live + verified:** **Echo Wall** (anonymous one-line phase-cohort wall) + **Witness Mode** (one entry held by one matched sister, 4 fixed responses) are BUILT, deployed, live-verified — Echo bundle `index-CfnX9e_7.js`, Witness bundle `index-BEPB6rBK.js`; entities `Echo` / `WitnessRequest` / `WitnessStrike` live.
 - **Community is being REBUILT:** the editorial anonymity-first surface replaces the off-thesis MP8 likes-forum; **18+ adults-only** (Halli = named senior accountable person for OSA/ICO); **whole-life, not clinical-only** ("health is one room, not the house").
-- **In flight:** Phase 1 (this index + Community plan **v2-final** + FoundersOS in-app mirror pages), then Phase 2 (rebuild the 5 Community demos in FoundersOS against the new plan).
+- **Just shipped (2026-06-09, pending deploy):** **Phase 1** — this STATUS index + Community plan **v2-FINAL** + FoundersOS in-app mirror tabs (Community Plan / Whole-Life / Audio at /Ideas), forgotten doc `project_femwell_design_status.md` marked SUPERSEDED, dead pointer fixed (commit `90ff98d`). **Phase 2** — rebuilt the 5 Community demos as **whole-life editorial concepts** in FoundersOS (D1 Home+QOTD · D2 Lounge+Echo · D3 Circle+game · D4 four-lives+Witness · D5 Talk-It-Out audio); webkit-verified, zero console errors, no espresso/gold/emoji/scoreboards (commit `2a99135`). Both FoundersOS dev-surface; Halli deploys + reviews each demo for approval.
 - **Deploy:** Halli fires deploys via the direct API (UI Publish hangs). After deploy, verify the bundle-hash flip and record it here per the BATON RULE.
 
 ## PLAN-DOC INDEX (the full plans live in these — this file points to them)
