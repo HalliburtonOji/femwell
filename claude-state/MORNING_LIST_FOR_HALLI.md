@@ -29,3 +29,12 @@ Running list of everything that needs Halli (deploy, probe, keys, legal). Update
 - **Live 2-account round-trips** — witness send + claim; twin pairing (same phase); a real Community post→comment; a game round; once confirmed, mark those features fully verified.
 - **OSA / legal floor (before PUBLIC Community launch)** — illegal-content risk assessment; ToS proactive-moderation disclosure; APD + DPIA; explicit special-category consent; 18+ age-assurance method sign-off (AgeGate copy is placeholder); named human-review + appeals owner (Halli).
 - **Base44 fn-deploy gotchas** (for re-firing): a NEW `_shared/*.ts` isn't picked up same-sync (inline instead); a failed registration is sticky per name (rename to a fresh endpoint). A bundle-hash flip ≠ functions registered — probe each 400-not-404.
+
+## "COMMUNITY COMPLETE" — WHAT'S LEFT (needs your steer, not built overnight)
+The overnight run finished the four named tasks (TASK 1 Journal redesign + Community **M2 moderation/Jess**, **M3 games-master**, **M4 voice-notes dormant**). M1's rooms/QOTD/Lounge/comments/reactions/report are already live. The rest of `COMMUNITY_BUILD_SPEC.md` is **Phase-4 pillars** — bigger features still tagged Demo/Plan that I deliberately did NOT build unsupervised because they need your direction first:
+- **Tier-0 "Others in your phase" belonging card** (spec §2.0 — flagged "recommend pulling forward to 3.5"; smallest + highest-belonging, a good next pick).
+- **Circles** (interest-first rooms, match on interest+stage) · **Book Club** · **collective build / rituals / Wednesday Wins** (the wider Shared-Experience pillar).
+- **Living Wisdom** (Echo × Jess flywheel) · **Echo Wall depth** (My Echoes tab, Echo settings).
+- **Expert/AMA layer** (the monetisable depth; all peer surfaces stay free).
+- **The OSA/legal floor** (already in the needs-Halli list) — the gate before ANY scaled public-traffic launch, regardless of features.
+→ Tell me which of these to build next and I'll scope + build them the same way (build → verify → commit per batch).
