@@ -41,6 +41,9 @@ import {
 } from "@/components/community/circlesConfig";
 import { WISDOM_TOPICS, WISDOM_SEED, featuredWisdom } from "@/components/community/wisdomLibrary";
 import { SEED_PICK, clubReached, setClubReached } from "@/components/community/bookClubConfig";
+import {
+  POOL_MOMENTS, REVEAL_K_FLOOR, weekKey, closePromptForWeek, closedThisWeek, markClosedWeek,
+} from "@/components/community/ritualsConfig";
 import { createPageUrl } from "@/utils";
 
 const PLUM = "#241a26"; // the single permitted dark surface
@@ -523,6 +526,110 @@ function WisdomLibrary({ onBack }) {
   );
 }
 
+// ── Collective pool (Phase 4, §P.2.4) — "together this week", aggregate only ──
+function PoolCard({ user }) {
+  const [total, setTotal] = useState(null);
+  const [capped, setCapped] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const load = useCallback(async () => {
+    try {
+      const wh = await communityHash(user?.id);
+      const r = await base44.functions.invoke("collectivePool", { user_id: user?.id, author_hash: wh });
+      const d = r?.data ?? r;
+      if (typeof d?.total === "number") setTotal(d.total);
+    } catch { /* quiet */ }
+  }, [user?.id]);
+  useEffect(() => { load(); }, [load]);
+  const add = async (moment) => {
+    if (busy) return; setBusy(true);
+    try {
+      const wh = await communityHash(user?.id);
+      const r = await base44.functions.invoke("collectivePool", { user_id: user?.id, author_hash: wh, moment });
+      const d = r?.data ?? r;
+      if (typeof d?.total === "number") setTotal(d.total);
+      if (d?.capped) setCapped(true);
+    } catch (e) { console.error("pool add failed:", e); }
+    finally { setBusy(false); }
+  };
+  const n = total ?? 0;
+  const milestone = Math.max(50, Math.ceil((n + 1) / 50) * 50);   // soft, ever-receding target
+  const pct = Math.min(100, Math.round((n / milestone) * 100));
+  return (
+    <section style={{ background: T.paperHi, border: `1px solid ${T.paperDeep}`, borderRadius: 6, padding: "18px 18px 16px", marginBottom: 26 }}>
+      <Eyebrow color={T.gold} mb={8}>Together this week</Eyebrow>
+      <Hand size={18} color={T.ink} style={{ marginBottom: 10 }}>
+        {total === null ? "Counting the small kindnesses…" : `Women here have made ${n} small kindnesses to themselves this week.`}
+      </Hand>
+      <div style={{ height: 8, borderRadius: 999, background: T.paperDeep, overflow: "hidden", marginBottom: 14 }}>
+        <div style={{ width: `${pct}%`, height: "100%", background: T.gold, transition: "width .4s ease" }} />
+      </div>
+      <div style={{ fontFamily: UI, fontSize: 11, color: T.muted, marginBottom: 12 }}>It only rises. No names, no scores — just us, adding up.</div>
+      <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+        {POOL_MOMENTS.map((m) => (
+          <button key={m.key} onClick={() => add(m.key)} disabled={busy} style={{
+            fontFamily: UI, fontSize: 12, fontWeight: 700, cursor: busy ? "default" : "pointer",
+            padding: "8px 13px", borderRadius: 999, border: `1px solid ${T.paperDeep}`, background: "transparent", color: T.inkSoft, opacity: busy ? 0.6 : 1,
+          }}>{m.label}</button>
+        ))}
+      </div>
+      {capped && <div style={{ fontFamily: UI, fontSize: 11, color: T.muted, marginTop: 10 }}>You've added plenty today — lovely. The pool keeps going.</div>}
+    </section>
+  );
+}
+
+// ── Close the week (Phase 4, §P.2.5) — soft weekly reflection + aggregate reveal ──
+function CloseWeekCard({ user, onCrisis }) {
+  const wk = useMemo(() => weekKey(), []);
+  const prompt = useMemo(() => closePromptForWeek(wk), [wk]);
+  const [closed, setClosed] = useState(() => closedThisWeek(wk));
+  const [draft, setDraft] = useState("");
+  const [lines, setLines] = useState(null);
+  const [busy, setBusy] = useState(false);
+  const loadReveal = useCallback(async () => {
+    const rows = await base44.entities.RitualContribution.filter({ week_key: wk, hidden: false }, "-created_date", 40).catch(() => []);
+    setLines(Array.isArray(rows) ? rows.filter((r) => r.status !== "removed" && r.body) : []);
+  }, [wk]);
+  useEffect(() => { if (closed) loadReveal(); }, [closed, loadReveal]);
+  const send = async () => {
+    const text = draft.trim(); if (!text || busy) return;
+    if (crisisCheck(text).intercept) { onCrisis(); return; }
+    setBusy(true);
+    try {
+      const wh = await communityHash(user?.id);
+      const r = await base44.functions.invoke("closeTheWeek", { user_id: user?.id, author_hash: wh, body: text });
+      const d = r?.data ?? r;
+      if (d?.intercept) { onCrisis(); return; }
+      markClosedWeek(wk); setClosed(true); setDraft("");
+    } catch (e) { console.error("close week failed:", e); }
+    finally { setBusy(false); }
+  };
+  return (
+    <section style={{ background: T.paperHi, border: `1px solid ${T.paperDeep}`, borderRadius: 6, padding: "20px 18px 16px", marginBottom: 26 }}>
+      <Eyebrow color={T.gold} mb={8}>Close the week</Eyebrow>
+      <Script size={24} style={{ marginBottom: 12 }}>{prompt}</Script>
+      {!closed ? (
+        <>
+          <textarea value={draft} onChange={(e) => setDraft(e.target.value)} maxLength={280} placeholder="One line. No one's keeping count of who joins in." style={{ ...inputStyle, minHeight: 60 }} />
+          <div style={{ display: "flex", justifyContent: "flex-end", marginTop: 8 }}>
+            <button onClick={send} disabled={!draft.trim() || busy} style={{ ...primaryBtn, opacity: (!draft.trim() || busy) ? 0.5 : 1 }}><Send size={13} /> {busy ? "Closing…" : "Close my week"}</button>
+          </div>
+        </>
+      ) : (
+        <div>
+          <Hand size={16} color={T.sage} style={{ marginBottom: 10 }}>Closed. Here's how the room is letting this week go —</Hand>
+          {lines === null && <Hand size={15} color={T.muted}>Gathering the room…</Hand>}
+          {lines && lines.length < REVEAL_K_FLOOR && <Hand size={16} color={T.muted}>Among a quiet few this week. Yours is held.</Hand>}
+          {lines && lines.length >= REVEAL_K_FLOOR && lines.map((l) => (
+            <div key={l.id} style={{ borderLeft: `2px solid ${T.gold}`, padding: "3px 0 3px 12px", marginBottom: 10 }}>
+              <Hand size={16} color={T.inkSoft}>{l.body}</Hand>
+            </div>
+          ))}
+        </div>
+      )}
+    </section>
+  );
+}
+
 function BookClubCard({ onOpen }) {
   return (
     <button onClick={onOpen} style={{
@@ -546,6 +653,10 @@ function Home({ presence, onEnter, user, onCrisis }) {
       <div style={{ fontFamily: UI, fontSize: 12.5, color: T.muted, fontWeight: 600, marginBottom: 22 }}>{presence}</div>
 
       <QotdCard user={user} onCrisis={onCrisis} />
+
+      <PoolCard user={user} />
+
+      <CloseWeekCard user={user} onCrisis={onCrisis} />
 
       <BookClubCard onOpen={() => onEnter("bookclub")} />
 

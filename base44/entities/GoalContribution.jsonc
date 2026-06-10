@@ -1,0 +1,22 @@
+{
+  // Community Phase 4 (§P.2.4) — one anonymous contribution to the weekly "together this week"
+  // pool (a gentle self-kindness moment: rest/water/move/pause). The pool is AGGREGATE-ONLY:
+  // the number that rises is a COUNT of these rows for the current week — never a per-person
+  // total, never ranked, never a streak. READ is locked to the service role (the collectivePool
+  // function returns only the k-safe aggregate; the raw contribution stream is never exposed).
+  "name": "GoalContribution",
+  "type": "object",
+  "properties": {
+    "goal_key": { "type": "string", "description": "Week key (Monday YYYY-MM-DD) the contribution counts toward." },
+    "moment": { "type": "string", "description": "rest | water | move | pause (flavour only; all count equally)." },
+    "author_hash": { "type": "string", "description": "Device-derived anonymous token (used only for the per-device daily cap)." }
+  },
+  "required": ["goal_key", "author_hash"],
+  "indexes": [{ "fields": ["goal_key"] }, { "fields": ["author_hash"] }],
+  "rls": {
+    "create": { "user_condition": { "role": "system" } },
+    "read":   { "user_condition": { "role": "system" } },
+    "update": { "user_condition": { "role": "system" } },
+    "delete": { "user_condition": { "role": "system" } }
+  }
+}

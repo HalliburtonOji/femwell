@@ -1,0 +1,23 @@
+{
+  // Community Phase 4 (§P.2.5) — one anonymous "close the week" reflection line. Keyed by week.
+  // READ is PUBLIC (the aggregate reveal — the room's lines, k-floored — IS the point), writes
+  // service-role. Crisis-checked + moderated server-side. No record of who skipped (BeReal
+  // lesson): we only ever store the lines people chose to leave, never an attendance list.
+  "name": "RitualContribution",
+  "type": "object",
+  "properties": {
+    "week_key": { "type": "string", "description": "Monday YYYY-MM-DD of the week being closed." },
+    "author_hash": { "type": "string", "description": "Device-derived anonymous token (dedup: one close per week per device)." },
+    "body": { "type": "string", "description": "The reflection line (scrubbed + screened server-side)." },
+    "status": { "type": "string", "enum": ["visible", "removed"], "default": "visible" },
+    "flagged": { "type": "boolean", "default": false },
+    "hidden": { "type": "boolean", "default": false }
+  },
+  "required": ["week_key", "author_hash"],
+  "indexes": [{ "fields": ["week_key"] }, { "fields": ["author_hash"] }],
+  "rls": {
+    "create": { "user_condition": { "role": "system" } },
+    "update": { "user_condition": { "role": "system" } },
+    "delete": { "user_condition": { "role": "system" } }
+  }
+}
