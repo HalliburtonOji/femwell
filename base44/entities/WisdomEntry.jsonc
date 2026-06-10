@@ -1,0 +1,32 @@
+{
+  // Community Phase 4 (§3.8 Living Wisdom) — one evergreen line in the wisdom library.
+  // The best anonymous one-liners outlive the 48h Echo fade by being captured here. Two
+  // sources: "curated" (an editorial pick, written/anonymised in the community's voice) and
+  // "community" (a well-held Echo — clean ∧ holds≥5 ∧ recent — promoted before it fades).
+  // READ is PUBLIC (the library is meant to be read by everyone — that's the point); writes
+  // are locked to the service role (promoteWisdom). No author identity is ever stored — a
+  // promoted echo carries only its scrubbed line, never its author_hash.
+  "name": "WisdomEntry",
+  "type": "object",
+  "properties": {
+    "body": { "type": "string", "description": "The one-line piece of wisdom (already scrubbed + screened)." },
+    "topic": { "type": "string", "description": "Light topic tag (motherhood, cycles, work, grief, rest, body, identity, love)." },
+    "life_stage": { "type": "string", "description": "Optional life-stage tag for matching/filtering." },
+    "source": { "type": "string", "enum": ["curated", "community"], "default": "curated", "description": "curated = editorial pick; community = a promoted well-held echo." },
+    "holds": { "type": "number", "default": 0, "description": "For community entries: how held the source echo was (≥5 to qualify). Never shown as a vanity count." },
+    "source_echo_id": { "type": "string", "description": "Dedup key for promoted echoes — never the author, only the echo row id." }
+  },
+  "required": ["body"],
+  "indexes": [
+    { "fields": ["topic"] },
+    { "fields": ["source"] }
+  ],
+  // Write-lock (create/update/delete service-role); READ left PUBLIC (no read rule) — the
+  // library is lurkable by design. Verify on deploy: WisdomEntry.filter (read) 200; direct
+  // client create/update/delete 403.
+  "rls": {
+    "create": { "user_condition": { "role": "system" } },
+    "update": { "user_condition": { "role": "system" } },
+    "delete": { "user_condition": { "role": "system" } }
+  }
+}

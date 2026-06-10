@@ -39,6 +39,7 @@ import {
   CIRCLES, CIRCLE_CATEGORIES, circleByKey, SENSITIVE_CONSENT,
   isJoined, markJoined, clearJoined,
 } from "@/components/community/circlesConfig";
+import { WISDOM_TOPICS, WISDOM_SEED, featuredWisdom } from "@/components/community/wisdomLibrary";
 
 const PLUM = "#241a26"; // the single permitted dark surface
 const HANDFAM = '"Cormorant Garamond","Fraunces",Georgia,serif';
@@ -354,6 +355,67 @@ function QotdCard({ user, onCrisis }) {
   );
 }
 
+// ── Living Wisdom (Phase 4, §3.8) — the evergreen collection ──────────────────
+function WisdomCard({ onOpen }) {
+  const pick = useMemo(() => featuredWisdom(), []);
+  return (
+    <section style={{ background: PLUM, borderRadius: 6, padding: "20px 20px 16px", marginBottom: 26, color: "#F4EFE3" }}>
+      <Eyebrow color={T.gold} mb={10}>Living wisdom</Eyebrow>
+      <div style={{ fontFamily: HANDFAM, fontStyle: "italic", fontSize: 22, lineHeight: 1.4, color: "#F4EFE3", marginBottom: 14 }}>
+        &ldquo;{pick.body}&rdquo;
+      </div>
+      <button onClick={onOpen} style={{
+        fontFamily: UI, fontSize: 12, fontWeight: 700, cursor: "pointer", padding: "8px 14px",
+        borderRadius: 999, border: "1px solid rgba(212,175,55,0.5)", background: "rgba(212,175,55,0.12)", color: "#F4EFE3",
+      }}>Read the collection</button>
+    </section>
+  );
+}
+
+function WisdomLibrary({ onBack }) {
+  const [rows, setRows] = useState(null);   // promoted WisdomEntry rows
+  const [topic, setTopic] = useState("All");
+  useEffect(() => {
+    base44.entities.WisdomEntry.filter({}, "-created_date", 200)
+      .then((r) => setRows(Array.isArray(r) ? r : []))
+      .catch(() => setRows([]));
+  }, []);
+  // merge curated seed + promoted rows (source unlabelled — it's shared wisdom either way)
+  const all = useMemo(() => {
+    const promoted = (rows || []).map((r) => ({ body: r.body, topic: r.topic || "Identity" }));
+    return [...promoted, ...WISDOM_SEED];
+  }, [rows]);
+  const shown = topic === "All" ? all : all.filter((w) => (w.topic || "") === topic);
+  return (
+    <div style={{ padding: "26px 18px 60px" }}>
+      <button onClick={onBack} style={{ ...ghostBtn, marginBottom: 14, padding: "7px 11px" }}><ChevronLeft size={14} /> Community</button>
+      <Eyebrow color={T.gold} mb={8}>Living wisdom</Eyebrow>
+      <Script size={34} style={{ marginBottom: 6 }}>What the room knows</Script>
+      <Hand size={17} color={T.muted} style={{ marginBottom: 16 }}>
+        The lines worth keeping — held by women who came before, saved here so they outlast the day they were said.
+      </Hand>
+
+      <div style={{ display: "flex", gap: 7, flexWrap: "wrap", marginBottom: 18 }}>
+        {WISDOM_TOPICS.map((tp) => (
+          <button key={tp} onClick={() => setTopic(tp)} style={{
+            fontFamily: UI, fontSize: 11.5, fontWeight: 700, letterSpacing: 0.2, cursor: "pointer",
+            padding: "5px 12px", borderRadius: 999, border: `1px solid ${topic === tp ? T.gold : T.paperDeep}`,
+            background: topic === tp ? T.paper : "transparent", color: topic === tp ? T.gold : T.muted,
+          }}>{tp}</button>
+        ))}
+      </div>
+
+      {rows === null && <Hand size={17} color={T.muted}>Gathering the collection…</Hand>}
+      {shown.map((w, i) => (
+        <div key={i} style={{ borderLeft: `2px solid ${T.gold}`, padding: "4px 0 4px 14px", marginBottom: 18 }}>
+          <div style={{ fontFamily: HANDFAM, fontStyle: "italic", fontSize: 19, lineHeight: 1.45, color: T.ink }}>{w.body}</div>
+          {w.topic && <div style={{ fontFamily: UI, fontSize: 10.5, color: T.muted, marginTop: 5, letterSpacing: 0.4 }}>{w.topic}</div>}
+        </div>
+      ))}
+    </div>
+  );
+}
+
 // ── rooms-as-doors home ──────────────────────────────────────────────────────
 function Home({ presence, onEnter, user, onCrisis }) {
   return (
@@ -364,6 +426,8 @@ function Home({ presence, onEnter, user, onCrisis }) {
       <div style={{ fontFamily: UI, fontSize: 12.5, color: T.muted, fontWeight: 600, marginBottom: 22 }}>{presence}</div>
 
       <QotdCard user={user} onCrisis={onCrisis} />
+
+      <WisdomCard onOpen={() => onEnter("wisdom")} />
 
       <Eyebrow mb={12}>The rooms — step into any one</Eyebrow>
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
@@ -684,6 +748,8 @@ function CommunityInner() {
       <div style={{ maxWidth: 460, margin: "0 auto", padding: view === "home" ? "30px 18px 50px" : "0 0 50px" }}>
         {view === "home"
           ? <Home presence={presence} onEnter={setView} user={user} onCrisis={() => setCrisis(true)} />
+          : view === "wisdom"
+          ? <WisdomLibrary onBack={() => setView("home")} />
           : <RoomView key={tick} roomKey={view} posts={posts} loading={loading} user={user} onNav={setView} onCrisis={() => setCrisis(true)} onReload={reload} />}
         {view === "home" && (
           <>
