@@ -81,7 +81,14 @@ Deno.serve(async (req) => {
         archive_at: iso(T + TWIN_DAYS * 86400e3), last_active_at: nowISO,
       };
       const updated = await sb.entities.TwinPair.update(live.id, patch).catch(() => null);
-      if (updated) return Response.json({ ok: true, pair: shape({ ...live, ...patch }, twin_hash) });
+      if (updated) {
+        // M5: confirm we actually won the pairing (concurrent joiner could have
+        // filled b_hash first). If someone else got it, fall through to open a new one.
+        const after = await sb.entities.TwinPair.get(live.id).catch(() => null);
+        if (!after || after.b_hash === twin_hash) {
+          return Response.json({ ok: true, pair: shape(after || { ...live, ...patch }, twin_hash) });
+        }
+      }
       // lost the race — fall through to open a new one
     }
   }

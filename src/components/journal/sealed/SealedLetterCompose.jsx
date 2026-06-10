@@ -87,17 +87,19 @@ export default function SealedLetterCompose({
           <div style={{ display: "flex", gap: 10, alignItems: "flex-start", background: T.paperHi, border: `1px solid ${T.paperDeep}`, borderRadius: 3, padding: "12px 14px", marginBottom: 16 }}>
             <ShieldAlert size={16} style={{ color: T.crimson, flexShrink: 0, marginTop: 1 }} />
             <span style={{ fontFamily: UI, fontSize: 12.5, color: T.inkSoft, lineHeight: 1.5 }}>
-              This browser can{"’"}t encrypt on-device, so a letter can{"’"}t be sealed here. We won{"’"}t store it unencrypted. Try a recent browser over https.
+              <strong>This browser can{"’"}t encrypt on-device</strong>, so a sealed letter can{"’"}t be made here — and we won{"’"}t store your words unencrypted. Rather than lose them, write it as a normal journal entry for now (it{"’"}s still private to you), or come back on a recent browser over https.
             </span>
           </div>
         )}
 
-        {/* the letter */}
+        {/* the letter — M8: don't let her pour out a long letter that can't be sealed */}
         <textarea
           value={body}
           onChange={(e) => setBody(e.target.value)}
-          placeholder="Dear future me…"
+          disabled={!canEncrypt}
+          placeholder={canEncrypt ? "Dear future me…" : "Sealing isn’t available on this browser — see above."}
           style={{
+            opacity: canEncrypt ? 1 : 0.55,
             width: "100%", minHeight: 240, background: T.paperHi, border: `1px solid ${T.paperDeep}`,
             padding: "18px 20px", borderRadius: 3, resize: "none", fontFamily: SERIF, fontSize: 21,
             lineHeight: 1.6, color: T.ink, outline: "none", boxSizing: "border-box", marginBottom: 12,

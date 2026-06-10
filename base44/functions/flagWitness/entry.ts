@@ -48,9 +48,20 @@ Deno.serve(async (req) => {
   }
 
   if (kind === 'strike') {
+    // M10: a strike must be tied to a real request the CALLER is the assigned
+    // receiver of (capture/charter breach detected on their own read view). This
+    // stops a malicious client striking an arbitrary receiver_hash to evict anyone
+    // from the pool. (The internal 'ignored_repeat' strike is written by
+    // claimWitness via asServiceRole, never through here.)
+    if (!request_id) return Response.json({ error: 'request_id required' }, { status: 400 });
+    const row = await sb.entities.WitnessRequest.get(request_id).catch(() => null);
+    if (!row) return Response.json({ error: 'Not found' }, { status: 404 });
+    if (me.role !== 'admin' && row.receiver_hash !== receiver_hash) {
+      return Response.json({ error: 'Not your witness' }, { status: 403 });
+    }
     const r = STRIKE_REASONS.includes(reason) ? reason : 'other';
     const ok = await sb.entities.WitnessStrike.create({
-      receiver_hash, request_ref: request_id || undefined,
+      receiver_hash, request_ref: request_id,
       reason: r, struck_at: nowISO, active: true,
     }).catch(() => null);
     if (!ok) return Response.json({ error: 'Write failed' }, { status: 500 });

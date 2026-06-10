@@ -108,7 +108,14 @@ Deno.serve(async (req) => {
   }
   const updated = await sb.entities.WitnessRequest.update(live.id, patch).catch(() => null);
   if (!updated) return Response.json({ error: 'Assign failed' }, { status: 500 });
-  return Response.json({ ok: true, request: shape({ ...live, ...patch }), rerouted: pick.reroute });
+  // M5: read-then-write isn't atomic, so confirm WE actually hold it after writing.
+  // If a concurrent claimer won (last-write-wins left a different receiver_hash),
+  // don't hand this receiver an entry that's now someone else's — return empty.
+  const after = await sb.entities.WitnessRequest.get(live.id).catch(() => null);
+  if (after && after.receiver_hash !== receiver_hash) {
+    return Response.json({ ok: true, empty: true });
+  }
+  return Response.json({ ok: true, request: shape(after || { ...live, ...patch }), rerouted: pick.reroute });
 });
 
 // Only the fields a receiver needs to read + respond. entry_ciphertext IS included

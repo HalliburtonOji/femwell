@@ -1,5 +1,5 @@
 import { X, Stethoscope, Waves, Lock, BarChart2, Hash, Eye, Users } from "lucide-react";
-import { T, UI, HAND, PRESS } from "../journal/Editorial";
+import { T, UI, HAND, PRESS, useEscape } from "../journal/Editorial";
 import { TWIN_ENABLED } from "../journal/twin/twinConfig";
 
 const ACTIONS = [
@@ -50,6 +50,7 @@ const ACTIONS = [
 ];
 
 export default function JournalHubSheet({ open, onClose, onSelect, threads = [] }) {
+  useEscape(open ? onClose : null);
   if (!open) return null;
   return (
     <div
@@ -61,6 +62,7 @@ export default function JournalHubSheet({ open, onClose, onSelect, threads = [] 
       }}
     >
       <div
+        role="dialog" aria-modal="true" aria-label="Journal menu"
         onClick={(e) => e.stopPropagation()}
         style={{
           background: "var(--surface)",

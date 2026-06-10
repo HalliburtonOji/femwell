@@ -24,6 +24,17 @@ export const T = {
 // AgeGate always wins. Reference these instead of ad-hoc zIndex numbers.
 export const Z = { sheet: 60, raised: 80, modal: 100, composer: 120, gate: 3000 };
 
+// ── M1: shared Escape-to-close for every overlay (consistent dismissal). Pair with
+// role="dialog" aria-modal on the container. (React import is at file top.)
+export function useEscape(onClose) {
+  useEffect(() => {
+    if (!onClose) return;
+    const onKey = (e) => { if (e.key === "Escape") onClose(); };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [onClose]);
+}
+
 // ── type roles ──
 export const SCRIPT = '"Ephesis","Pinyon Script",cursive';        // display voice — MONOLINE roundhand matched to IMG_9854 (Ephesis: closest real web font)
 export const HAND   = '"Cormorant Garamond","Fraunces",Georgia,serif'; // secondary VOICE — Cormorant (rendered italic by <Hand>). Caveat REMOVED per Halli: palette = Ephesis + Cormorant only.

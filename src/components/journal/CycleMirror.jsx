@@ -154,16 +154,21 @@ export default function CycleMirror({ entries, profile, phase, todayCycleDay, on
   const activeKey = (active && lenses.some((l) => l.key === active)) ? active : (lenses[0]?.key || null);
   const lens = lenses.find((l) => l.key === activeKey) || null;
 
-  // Cold start — entries exist but no lens has content yet (needs ≥1 prior cycle).
+  // Cold start — entries exist but no lens has content yet.
   if (!data || !data.decorated?.length || !lenses.length) {
     if (!entries?.length) return null; // page-level empty state covers the cold start
+    // M7: a no-cycle user can never satisfy "across a full cycle" — give them a
+    // cycle-agnostic line (and a nudge) instead of an unreachable promise.
+    const hasCycle = !!profile?.last_period_start_date;
     return (
       <section style={{ marginBottom: 46, background: T.paperHi, borderRadius: 3, padding: "24px 26px",
         boxShadow: "0 0 0 1px rgba(51,41,28,0.05)" }}>
-        <Eyebrow mb={8}>On this day</Eyebrow>
+        <Eyebrow mb={8}>{hasCycle ? "On this day" : "Your mirror"}</Eyebrow>
         <Rule w={28} c={T.gold} mb={12} />
         <Hand size={20} color={T.inkSoft}>
-          Once you've written across a full cycle, your words from this same day will surface here — past-you as witness.
+          {hasCycle
+            ? "Once you've written across a full cycle, your words from this same day will surface here — past-you as witness."
+            : "As you keep writing, your past words will surface here — by feeling, by theme, by a year ago. Add your cycle in Settings to unlock the same-phase and same-day lenses too."}
         </Hand>
       </section>
     );

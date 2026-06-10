@@ -147,8 +147,11 @@ export default function NewEntrySheet({
   const [guidedStep, setGuidedStep] = useState(0);
   const [guidedAnswers, setGuidedAnswers] = useState([]);
 
-  // Burn state — the release lifecycle (write -> release -> gone, never saved)
+  // Burn state — the release lifecycle (write -> release -> gone, never saved).
+  // M3: burn has its OWN buffer, isolated from `text`, so switching modes can never
+  // carry a burn into a saveable entry (or show the real entry in the burn box).
   const [burning, setBurning] = useState(false);
+  const [burnText, setBurnText] = useState("");
 
   // Voice state — real on-device transcription via the Web Speech API
   // (same engine the Planner's VoiceScheduler ships). Whisper-small on-device
@@ -315,9 +318,9 @@ export default function NewEntrySheet({
 
   // ── Burn helpers — release, never persisted (no entity is ever created) ──
   const handleRelease = () => {
-    if (!text.trim()) { onClose(); return; }
+    if (!burnText.trim()) { onClose(); return; }
     setBurning(true);
-    setTimeout(() => { setText(""); onClose(); }, 720);
+    setTimeout(() => { setBurnText(""); onClose(); }, 720);
   };
 
   const chooseMode = (m) => {
@@ -528,8 +531,8 @@ export default function NewEntrySheet({
             </Hand>
             <textarea
               className={burning ? "fw-burning" : undefined}
-              value={text}
-              onChange={(e) => setText(e.target.value)}
+              value={burnText}
+              onChange={(e) => setBurnText(e.target.value)}
               disabled={burning}
               placeholder="Say it here. No one will ever read this — not even you."
               style={{

@@ -24,7 +24,7 @@ Deno.serve(async (req) => {
   try { p = await req.json(); }
   catch { return Response.json({ error: 'Bad JSON' }, { status: 400 }); }
 
-  const { user_id, writer_hash, request_id, wrapped_key } = p || {};
+  const { user_id, writer_hash, request_id, wrapped_key, against_pub } = p || {};
   if (user_id && me.role !== 'admin' && me.id !== user_id) {
     return Response.json({ error: 'Forbidden' }, { status: 403 });
   }
@@ -47,6 +47,13 @@ Deno.serve(async (req) => {
   // A receiver must have claimed (and published their key) before a wrap is meaningful.
   if (!row.receiver_hash || !row.receiver_pub) {
     return Response.json({ error: 'No receiver yet' }, { status: 409 });
+  }
+  // M6: the writer wraps the DEK to a SPECIFIC receiver_pub. If the request was
+  // rerouted to a new receiver after the writer fetched the old pub, the wrapped key
+  // would be undecryptable for the new receiver. Reject a stale wrap so the writer
+  // re-wraps to the current receiver instead of silently delivering a dead key.
+  if (against_pub && String(against_pub) !== String(row.receiver_pub)) {
+    return Response.json({ error: 'receiver changed', receiver_pub: row.receiver_pub }, { status: 409 });
   }
 
   const ok = await sb.entities.WitnessRequest

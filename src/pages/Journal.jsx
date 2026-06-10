@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { base44 } from "@/api/base44Client";
 import { format, parseISO } from "date-fns";
 import { useNavigate } from "react-router-dom";
@@ -260,6 +260,7 @@ export default function Journal() {
   const [witnessEntry, setWitnessEntry] = useState(null);
   const [showTwin, setShowTwin] = useState(false);   // Phase Twin (Q4, flag-gated)
   // "One entry, four lives" — the unified chooser + its echo/seal seeds.
+  const sealedRef = useRef(null);   // M2: scroll the inline Sealed Letters section into view when hub-opened
   const [chooseEntry, setChooseEntry] = useState(null);   // entry whose fate is being chosen
   const [echoSeed, setEchoSeed] = useState(null);         // { text, sourceId } seeded into the Echo sheet
   const [sealSeed, setSealSeed] = useState(null);         // string seeded into the Sealed-letter composer
@@ -339,7 +340,7 @@ export default function Journal() {
     if (id === "echo")            { setShowShareEcho(true); return; }
     if (id === "witness")         { setShowWitnessInbox(true); return; }
     if (id === "twin")            { setShowTwin(true); return; }
-    if (id === "letters")         { setShowSealedLetters(true); return; }
+    if (id === "letters")         { setShowSealedLetters(true); setTimeout(() => sealedRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }), 60); return; }   // M2
     if (id === "threads")         { /* scroll into view below */ return; }
     if (id.startsWith("thread:")) { setThreadFilter(id.replace("thread:", "")); return; }
   };
@@ -618,7 +619,7 @@ export default function Journal() {
 
                 {/* Sealed letters (shown inline when hub-opened, otherwise hidden here) */}
                 {showSealedLetters && (
-                  <div style={{ marginTop: 16 }}>
+                  <div ref={sealedRef} style={{ marginTop: 16 }}>
                     <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
                       <Eyebrow>Sealed Letters</Eyebrow>
                       <button onClick={() => setShowSealedLetters(false)} style={{

@@ -6,7 +6,7 @@
 
 import { useState } from "react";
 import { Pin, PenLine, Trash2, X, Sparkles, Send } from "lucide-react";
-import { T, UI, SERIF, HAND, PRESS, Eyebrow, Rule } from "./Editorial";
+import { T, UI, SERIF, HAND, PRESS, Eyebrow, Rule, useEscape } from "./Editorial";
 import { relativeDate } from "./journalDates";
 import { TYPE_COLOUR, TYPE_LABEL } from "./JournalLedger";
 import UnpackWithJess from "./UnpackWithJess";
@@ -44,6 +44,7 @@ function Body({ entry }) {
 export default function EntryReader({ entry, profile, phase, onClose, onEdit, onDelete, onPin, onShare }) {
   const [confirm, setConfirm] = useState(false);
   const [unpack, setUnpack] = useState(false);
+  useEscape(onClose);
   if (!entry) return null;
   const colour = TYPE_COLOUR[entry.card_type] || T.muted;
   const label = TYPE_LABEL[entry.card_type] || "Entry";
@@ -60,7 +61,7 @@ export default function EntryReader({ entry, profile, phase, onClose, onEdit, on
 
   return (
     <div onClick={onClose} style={{ position: "fixed", inset: 0, zIndex: 70, background: "rgba(51,41,28,0.42)", display: "flex", alignItems: "center", justifyContent: "center", padding: "0 22px" }}>
-      <div onClick={(e) => e.stopPropagation()} style={{ background: T.paperHi, width: "100%", maxWidth: 580, maxHeight: "86vh", overflowY: "auto", padding: "32px 30px 26px", borderRadius: 3, boxShadow: "0 8px 40px rgba(51,41,28,0.20)" }}>
+      <div role="dialog" aria-modal="true" aria-label={`${label} entry`} onClick={(e) => e.stopPropagation()} style={{ background: T.paperHi, width: "100%", maxWidth: 580, maxHeight: "86vh", overflowY: "auto", padding: "32px 30px 26px", borderRadius: 3, boxShadow: "0 8px 40px rgba(51,41,28,0.20)" }}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
           <Eyebrow color={colour}>{label}{entry.is_pinned ? " · Pinned" : ""}</Eyebrow>
           <button onClick={onClose} aria-label="Close" style={{ background: "transparent", border: "none", cursor: "pointer", color: T.muted, padding: 0, display: "inline-flex" }}><X size={18} /></button>

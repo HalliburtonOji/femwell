@@ -14,9 +14,10 @@
 // The chooser itself moves nothing; it only hands the entry to the chosen service.
 
 import { Lock, Waves, Mail, HeartHandshake, X } from "lucide-react";
-import { T, UI, HAND, Script, Eyebrow, Rule, InkFilter } from "./Editorial";
+import { T, UI, HAND, Script, Eyebrow, Rule, InkFilter, useEscape } from "./Editorial";
 
 export default function FourLivesChooser({ entry, onClose, onEcho, onSeal, onWitness }) {
+  useEscape(onClose);
   if (!entry) return null;
   const hasText = (entry?.text || "").trim().length > 0;
 
@@ -38,7 +39,7 @@ export default function FourLivesChooser({ entry, onClose, onEcho, onSeal, onWit
     },
     {
       key: "witness", Icon: HeartHandshake, label: "Ask for a witness",
-      sub: "One sister holds it. No advice — just held.",
+      sub: "One sister holds it. No advice — just held. (You hold space for three others first.)",
       onClick: onWitness, enabled: hasText,
     },
   ];
@@ -46,7 +47,7 @@ export default function FourLivesChooser({ entry, onClose, onEcho, onSeal, onWit
   return (
     <div onClick={onClose} style={{ position: "fixed", inset: 0, zIndex: 80, background: "rgba(51,41,28,0.46)", display: "flex", alignItems: "center", justifyContent: "center", padding: "0 22px" }}>
       <InkFilter />
-      <div onClick={(e) => e.stopPropagation()} style={{ background: T.paperHi, width: "100%", maxWidth: 480, maxHeight: "88vh", overflowY: "auto", padding: "30px 26px 24px", borderRadius: 3, boxShadow: "0 8px 40px rgba(51,41,28,0.22)" }}>
+      <div role="dialog" aria-modal="true" aria-label="What happens to this entry" onClick={(e) => e.stopPropagation()} style={{ background: T.paperHi, width: "100%", maxWidth: 480, maxHeight: "88vh", overflowY: "auto", padding: "30px 26px 24px", borderRadius: 3, boxShadow: "0 8px 40px rgba(51,41,28,0.22)" }}>
         <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 4 }}>
           <Eyebrow color={T.muted}>What happens to this</Eyebrow>
           <button onClick={onClose} aria-label="Close" style={{ background: "transparent", border: "none", cursor: "pointer", color: T.muted, padding: 0, display: "inline-flex" }}><X size={18} /></button>

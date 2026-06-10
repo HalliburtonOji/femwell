@@ -8,7 +8,7 @@
 import { useState } from "react";
 import { X, Lock, Feather } from "lucide-react";
 import { base44 } from "@/api/base44Client";
-import { T, UI, SERIF, HAND, PRESS, Eyebrow, Rule, Heart, Script, Hand } from "../Editorial";
+import { T, UI, SERIF, HAND, PRESS, Eyebrow, Rule, Heart, Script, Hand, useEscape } from "../Editorial";
 import { decryptText, isEncryptedEnvelope } from "@/utils/journalCrypto";
 import { formatLetterDate } from "@/utils/sealedLetters";
 import { isAnniversaryLetter } from "./sealedThreads";
@@ -16,6 +16,7 @@ import { isAnniversaryLetter } from "./sealedThreads";
 export default function BreakSealReader({ letter, onClose, onSeen, onWriteBack }) {
   const [stage, setStage] = useState("sealed"); // sealed | opening | revealed | error
   const [text, setText] = useState("");
+  useEscape(onClose);
 
   if (!letter) return null;
 

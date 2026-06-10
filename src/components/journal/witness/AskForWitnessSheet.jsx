@@ -83,6 +83,7 @@ export default function AskForWitnessSheet({
             const dr = await base44.functions.invoke("deliverWitnessKey", {
               user_id: user?.id, writer_hash: await witnessHash(user?.id),
               request_id: sent.id, wrapped_key: wrapped,
+              against_pub: d.receiver_pub,   // M6: reject if the receiver changed; retry re-wraps
             }).catch(() => null);
             const dd = dr?.data ?? dr;
             if (dd?.ok) forgetDek(sent.id); else deliveredRef.current = false;   // retry next tick

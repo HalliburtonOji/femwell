@@ -9,7 +9,7 @@
 import { useState, useEffect, useRef, useMemo } from "react";
 import { Users, Lock, Check, X, ArrowRight, ShieldAlert, Phone, MessageSquareText } from "lucide-react";
 import { base44 } from "@/api/base44Client";
-import { PAPER_BG, T, UI, Script, Hand, Eyebrow, Rule } from "../Editorial";
+import { PAPER_BG, T, UI, Script, Hand, Eyebrow, Rule, useEscape } from "../Editorial";
 import { twinHash, twinAvailable, currentPair, rememberPair, forgetPair } from "./twinAnon";
 import { TWIN_DAYS, MAX_ANSWER_CHARS, promptForDay, PHASE_COHORT } from "./twinConfig";
 import { crisisCheck } from "../echo/echoScrub";
@@ -22,8 +22,10 @@ export default function PhaseTwin({ user, phase = null, profile = null, onClose 
   const [dayData, setDayData] = useState(null);
   const [draft, setDraft] = useState("");
   const [busy, setBusy] = useState(false);
+  const [staleNote, setStaleNote] = useState(false);   // M11: an earlier pairing closed
   const pollRef = useRef(null);
   const cohort = PHASE_COHORT[phase] || PHASE_COHORT.unknown;
+  useEscape(onClose);
 
   const join = async () => {
     const wh = await twinHash(user?.id);
@@ -40,7 +42,9 @@ export default function PhaseTwin({ user, phase = null, profile = null, onClose 
       user_id: user?.id, twin_hash: wh, pair_id: pairId, day,
     }).catch(() => null);
     const d = r?.data ?? r;
-    if (!d || d.gone) { forgetPair(); setPair(null); setView("intro"); return; }
+    // M11: a remembered pairing that's gone/abandoned shouldn't silently dump the
+    // user at "intro" with no explanation — note it so we can say so.
+    if (!d || d.gone) { forgetPair(); setPair(null); setStaleNote(true); setView("intro"); return; }
     setPair((prev) => ({ ...(prev || {}), id: pairId, status: d.status, day: d.day, currentDay: d.currentDay, paired: d.paired }));
     if (d.status === "pending") { setView("pending"); startPoll(); return; }
     setDayData({ day: d.day, mine: d.mine, twin: d.twin, twinAnswered: d.twinAnswered });
@@ -90,12 +94,24 @@ export default function PhaseTwin({ user, phase = null, profile = null, onClose 
       });
       const d = res?.data ?? res;
       if (d?.intercept) { setView("crisis"); return; }     // server belt-and-braces
+      // M4: don't ignore the result — on a server error (not active / wrong day) the
+      // reload below resyncs the UI to the true state rather than failing silently.
+      if (d?.error) console.warn("postTwinEntry rejected:", d.error);
       await loadDay(pair.id, day);
     } catch (e) { console.error("postTwinEntry failed:", e); }
     finally { setBusy(false); }
   };
 
   const handleLeave = () => {
+    // M11: tell the server to drop a pending search so it doesn't linger in the pool.
+    if (pair?.id) {
+      (async () => {
+        try {
+          const wh = await twinHash(user?.id);
+          base44.functions.invoke("cancelTwin", { user_id: user?.id, twin_hash: wh, pair_id: pair.id }).catch(() => {});
+        } catch { /* best effort */ }
+      })();
+    }
     forgetPair(); clearInterval(pollRef.current);
     setPair(null); setDayData(null); setDraft(""); setView("intro");
   };
@@ -130,7 +146,7 @@ export default function PhaseTwin({ user, phase = null, profile = null, onClose 
   const prompt = promptForDay(day);
 
   return (
-    <div style={{ position: "fixed", inset: 0, zIndex: 60, overflowY: "auto", ...PAPER_BG }}>
+    <div role="dialog" aria-modal="true" aria-label="Phase Twin" style={{ position: "fixed", inset: 0, zIndex: 60, overflowY: "auto", ...PAPER_BG }}>
       <div style={{ maxWidth: 560, margin: "0 auto", padding: "40px 22px 60px", position: "relative" }}>
         {close}
 
@@ -143,6 +159,11 @@ export default function PhaseTwin({ user, phase = null, profile = null, onClose 
         {view === "intro" && (
           <>
             {head("Twelve days, alongside someone")}
+            {staleNote && (
+              <div style={{ marginTop: 12, marginBottom: 4, background: T.paperHi, border: `1px solid ${T.paperDeep}`, borderRadius: 10, padding: "10px 13px" }}>
+                <span style={{ fontFamily: UI, fontSize: 12.5, color: T.muted, fontWeight: 600 }}>Your earlier pairing has closed. You can find a new twin whenever you{"’"}re ready.</span>
+              </div>
+            )}
             <Hand size={20} color={T.inkSoft} style={{ marginTop: 8, marginBottom: 16 }}>
               You{"’"}ll be paired with {cohort} for twelve days. One shared question a day. You answer; her answer stays sealed until you write yours. No names, no chat — just two people moving through the same season, side by side.
             </Hand>
