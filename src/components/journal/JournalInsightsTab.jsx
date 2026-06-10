@@ -11,13 +11,15 @@ const WHOLENESS_LABELS = {
   money: "Money", grief: "Grief", joy: "Joy", identity: "Identity",
 };
 
+// H2 fix: ONE mood lexicon, matching what the composer writes (NewEntrySheet
+// MOOD_FACES + EntryReader/CycleMirror MOOD_WORD): mood_rating is 1-5, Low->Bright.
+// The old 6-value Calm/Stressed/Angry map mislabelled every logged mood.
 const MOOD_MAP = {
-  1: { label: "Calm",      accent: "var(--sage)"       },
-  2: { label: "Stressed",  accent: "#C4884A"            },
-  3: { label: "Low",       accent: "#8A96B8"            },
-  4: { label: "Energized", accent: "#B8A040"            },
-  5: { label: "Angry",     accent: "#B85050"            },
-  6: { label: "Anxious",   accent: "var(--rose-dust)"   },
+  1: { label: "Low",     accent: "#8A96B8"     },
+  2: { label: "Down",    accent: "#9B8B7A"     },
+  3: { label: "Neutral", accent: "var(--mauve)" },
+  4: { label: "Good",    accent: "var(--sage)" },
+  5: { label: "Bright",  accent: "#C4884A"     },
 };
 
 const card = {
@@ -39,16 +41,28 @@ export default function JournalInsightsTab({ user, entries }) {
   const [generatingSummary, setGeneratingSummary] = useState(false);
   const [checkins, setCheckins] = useState([]);
   const [cycleEvents, setCycleEvents] = useState([]);
+  const [loadingAux, setLoadingAux] = useState(true);   // H7: cycle-pattern fetch state
+  const [auxError, setAuxError] = useState(false);
 
   useEffect(() => {
+    let cancelled = false;
     (async () => {
-      const [dailyCheckins, events] = await Promise.all([
-        base44.entities.DailyCheckins.filter({ user_id: user.id }),
-        base44.entities.CycleEvents.filter({ user_id: user.id }, '-date', 100),
-      ]);
-      setCheckins(dailyCheckins);
-      setCycleEvents(events);
+      try {
+        const [dailyCheckins, events] = await Promise.all([
+          base44.entities.DailyCheckins.filter({ user_id: user.id }),
+          base44.entities.CycleEvents.filter({ user_id: user.id }, '-date', 100),
+        ]);
+        if (cancelled) return;
+        setCheckins(Array.isArray(dailyCheckins) ? dailyCheckins : []);
+        setCycleEvents(Array.isArray(events) ? events : []);
+      } catch (err) {
+        console.error("Insights aux load failed:", err);
+        if (!cancelled) setAuxError(true);
+      } finally {
+        if (!cancelled) setLoadingAux(false);
+      }
     })();
+    return () => { cancelled = true; };
   }, [user.id]);
 
   // Compute stats
@@ -170,9 +184,21 @@ Return as plain text, no markdown.`,
   return (
     <div className="space-y-4">
 
-      {cyclePatternData.length > 0 ? (
+      {loadingAux ? (
         <div className="rounded-[24px] p-5" style={card}>
-          <p style={sLabel} className="mb-4">Cycle & Mood Patterns</p>
+          <p style={sLabel} className="mb-3">Cycle &amp; Mood Patterns</p>
+          <div style={{ display: "flex", alignItems: "center", gap: 8, color: "var(--mauve)" }}>
+            <Loader2 className="animate-spin" size={16} /> <span className="text-sm">Gathering your patterns…</span>
+          </div>
+        </div>
+      ) : auxError ? (
+        <div className="rounded-[24px] p-5" style={card}>
+          <p style={sLabel} className="mb-2">Cycle &amp; Mood Patterns</p>
+          <p className="text-sm" style={{ color: "var(--mauve)" }}>We couldn{"’"}t load your cycle patterns just now. The entries above are unaffected — try again later.</p>
+        </div>
+      ) : cyclePatternData.length > 0 ? (
+        <div className="rounded-[24px] p-5" style={card}>
+          <p style={sLabel} className="mb-4">Cycle &amp; Mood Patterns</p>
           <CycleMoodPatternChart data={cyclePatternData} />
           <div className="mt-4 grid grid-cols-2 md:grid-cols-4 gap-2">
             {cyclePatternData.map((item) => (

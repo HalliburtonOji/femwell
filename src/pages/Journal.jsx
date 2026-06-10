@@ -26,7 +26,7 @@ import { collectThreads, entriesInThread } from "../components/journal/threads";
 import JessErrorBoundary from "@/components/jess/JessErrorBoundary";
 import {
   PAPER_BG, InkFilter, EditorialFooter, useEditorialFonts,
-  T, UI, HAND, PRESS, Script, Hand, Eyebrow, Rule, Heart,
+  T, UI, SCRIPT, HAND, PRESS, Script, Hand, Eyebrow, Rule, Heart,
 } from "../components/journal/Editorial";
 
 // ── Filter types ──────────────────────────────────────────────────────────────
@@ -100,23 +100,23 @@ function StickyHeader({ phase, season, cycleDay, onWrite, onOpenHub }) {
       position: "sticky", top: 0, zIndex: 20,
       background: "rgba(244,239,227,0.97)", backdropFilter: "blur(8px)",
       WebkitBackdropFilter: "blur(8px)",
-      borderBottom: "1px solid var(--border)",
+      borderBottom: `1px solid ${T.paperDeep}`,
     }}>
-      {/* Row 1 — editorial bar */}
+      {/* Row 1 — editorial bar (H1: editorial tokens + script title) */}
       <div style={{
         display: "flex", alignItems: "center", justifyContent: "space-between",
-        padding: "10px 16px", gap: 12,
+        padding: "9px 16px", gap: 12,
       }}>
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{
-            fontSize: 18, fontWeight: 700, color: "var(--plum)",
+            fontFamily: SCRIPT, fontWeight: 400, fontSize: 27, lineHeight: 1.05, color: T.ink,
             whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis",
           }}>
             The Journal
           </div>
           <div style={{
-            fontSize: 10, color: "var(--mauve)",
-            letterSpacing: 0.5, marginTop: 1, opacity: 0.75,
+            fontFamily: UI, fontSize: 10, color: T.muted, fontWeight: 600,
+            letterSpacing: 0.5, marginTop: 1,
           }}>
             {phaseWord}{cycleDay ? ` · Day ${cycleDay}` : ""} · {dateLine}
           </div>
@@ -126,13 +126,13 @@ function StickyHeader({ phase, season, cycleDay, onWrite, onOpenHub }) {
           onClick={onWrite}
           aria-label="New entry"
           style={{
-            background: "var(--plum)", border: "none", borderRadius: 8,
+            background: T.ink, border: "none", borderRadius: 8,
             padding: "8px 14px", cursor: "pointer",
             display: "flex", alignItems: "center", gap: 6, flexShrink: 0,
           }}
         >
-          <Feather size={15} style={{ color: "var(--surface)" }} />
-          <span style={{ fontSize: 13, fontWeight: 700, color: "var(--surface)", letterSpacing: 0.3 }}>
+          <Feather size={15} style={{ color: T.paperHi }} />
+          <span style={{ fontFamily: UI, fontSize: 13, fontWeight: 700, color: T.paperHi, letterSpacing: 0.3 }}>
             Write
           </span>
         </button>
@@ -141,23 +141,23 @@ function StickyHeader({ phase, season, cycleDay, onWrite, onOpenHub }) {
           onClick={onOpenHub}
           aria-label="Open journal menu"
           style={{
-            background: "transparent", border: "1px solid var(--border)",
+            background: "transparent", border: `1px solid ${T.paperDeep}`,
             borderRadius: 8, width: 36, height: 36,
             display: "flex", alignItems: "center", justifyContent: "center",
             cursor: "pointer", flexShrink: 0,
           }}
         >
-          <AlignJustify size={17} style={{ color: "var(--plum)" }} />
+          <AlignJustify size={17} style={{ color: T.ink }} />
         </button>
       </div>
       {/* Row 2 — season strip */}
       {season && (
         <div style={{
-          background: "var(--ivory)", padding: "5px 16px",
-          borderTop: "1px solid var(--border)",
+          background: T.paper, padding: "5px 16px",
+          borderTop: `1px solid ${T.paperDeep}`,
           display: "flex", alignItems: "center", justifyContent: "space-between",
         }}>
-          <span style={{ fontSize: 11, color: "var(--mauve)", letterSpacing: 0.5 }}>
+          <span style={{ fontFamily: UI, fontSize: 11, color: T.muted, letterSpacing: 0.5 }}>
             {season.name} · {season.line}
           </span>
         </div>
@@ -195,9 +195,9 @@ function FilterBar({ filterType, onChange }) {
           {WHOLENESS_FILTERS.map((f) => (
             <button key={f.id} onClick={() => onChange(f.id)} style={{
               flexShrink: 0, borderRadius: 9999, padding: "5px 12px", fontSize: 11, fontWeight: 700,
-              fontFamily: UI, border: `1px solid ${filterType === f.id ? T.gold : T.paperDeep}`,
+              fontFamily: UI, border: `1px solid ${filterType === f.id ? T.ink : T.paperDeep}`,
               cursor: "pointer", letterSpacing: 0.3,
-              backgroundColor: filterType === f.id ? T.gold : "transparent",
+              backgroundColor: filterType === f.id ? T.ink : "transparent",  /* H6: ink fill, not gold */
               color: filterType === f.id ? T.paper : T.muted,
             }}>{f.label}</button>
           ))}

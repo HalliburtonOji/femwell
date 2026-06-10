@@ -108,7 +108,7 @@ const MOOD_FACES = [
   { Icon: Frown, fill: "#C17B4E", label: "Down" },
   { Icon: Meh,   fill: "#6E6557", label: "Neutral" },
   { Icon: Smile, fill: "#6B8F5A", label: "Good" },
-  { Icon: Smile, fill: "#3A2C1A", label: "Bright" },
+  { Icon: Smile, fill: T.ink, label: "Bright" },
 ];
 
 function randomColor() { return COLOR_NAMES[Math.floor(Math.random() * COLOR_NAMES.length)]; }

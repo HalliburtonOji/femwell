@@ -5,7 +5,7 @@
 // the locked decision (not the Planner).
 
 import { Moon, ArrowRight } from "lucide-react";
-import { HAND, PRESS_DARK, Script, Eyebrow } from "./Editorial";
+import { HAND, PRESS_DARK, Script, Eyebrow, T } from "./Editorial";
 
 const TONIGHT = {
   menstrual:  "Before the day closes — what did your body ask for today, and did you listen?",
@@ -18,9 +18,9 @@ const DEFAULT_TONIGHT = "Before the day closes — name one thing your body carr
 export default function TonightReflection({ phase, onWrite }) {
   const prompt = TONIGHT[phase] || DEFAULT_TONIGHT;
   return (
-    <section style={{ marginBottom: 44, background: "linear-gradient(135deg, #2B2230 0%, #3A2C30 100%)", borderRadius: 3, padding: "28px 30px 26px" }}>
+    <section style={{ marginBottom: 44, background: `linear-gradient(135deg, ${T.dusk} 0%, ${T.muted} 100%)`, borderRadius: 3, padding: "28px 30px 26px" }}>
       <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 14 }}>
-        <Moon size={14} style={{ color: "#E8B4B8" }} />
+        <Moon size={14} style={{ color: T.blush }} />
         <Eyebrow color="#D3C3BB">Tonight's reflection · 90 seconds</Eyebrow>
       </div>
       <Script size={30} color="#F6ECE0" carve={false}>{prompt}</Script>

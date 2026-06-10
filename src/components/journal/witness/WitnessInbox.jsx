@@ -81,11 +81,16 @@ export default function WitnessInbox({ user, phase = null, profile = null, onClo
         ...(zkActive() ? { receiver_pub: JSON.stringify(await getDevicePublicJwk()) } : {}),
       });
       const d = res?.data ?? res;
-      if (d?.removed) { setStage("removed"); return; }
+      // H4: claimWitness's inFlight path RESUMES a held row (returns the one already
+      // matched to me rather than a new stranger), so re-opening resumes correctly.
+      // Keep currentClaim() consistent: remember the active row, forget it when the
+      // server hands back nothing (the held row expired/was removed) so it can't go stale.
+      if (d?.removed) { forgetClaim(); setStage("removed"); return; }
       if (d?.request?.id) {
         setRequest(d.request); setRerouted(!!d.rerouted); rememberClaim(d.request.id);
         await decodeAndShow(d.request);
       } else {
+        forgetClaim();
         setStage("idle");
       }
     } catch (err) { console.error("claimWitness failed:", err); setStage("error"); }

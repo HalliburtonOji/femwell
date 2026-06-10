@@ -64,7 +64,9 @@ export default function AskForWitnessSheet({
       }).catch(() => null);
       const d = r?.data ?? r;
       if (stop || !d) return;
-      if (d.gone) { setStatus({ gone: true }); return; }
+      // H3: a gone handoff must clear the stale SENT_KEY, or the writer is trapped on
+      // this screen next open (and locked out by the 1-send/day cap).
+      if (d.gone) { forgetSent(); setStatus({ gone: true }); clearInterval(pollRef.current); return; }
       setStatus(d);
       // ZK (FWWT2): once the receiver has claimed (their public key is published) and
       // we haven't delivered yet, wrap this entry's DEK to them and hand it over. The
@@ -89,6 +91,7 @@ export default function AskForWitnessSheet({
       }
       if (["responded", "passed", "archived", "expired"].includes(d.status)) {
         clearInterval(pollRef.current);
+        forgetSent();   // H3: handoff is finished — free the slot so next open isn't stuck here
       }
     };
     poll();
@@ -308,6 +311,15 @@ export default function AskForWitnessSheet({
               </button>
             )}
             <button onClick={onClose} style={{ ...primaryBtn, marginTop: 12 }}>Done</button>
+            {/* H3 escape hatch: never let a stale/failed status trap the writer here. */}
+            {(status?.gone || !status) && (
+              <button
+                onClick={() => { forgetSent(); setSent(null); setStatus(null); setStage(heldLocal < GATE_HOLDS ? "gate" : "confirm"); }}
+                style={{ display: "block", margin: "14px auto 0", background: "transparent", border: "none", cursor: "pointer",
+                  fontFamily: UI, fontSize: 12.5, fontWeight: 600, color: T.muted, textDecoration: "underline" }}>
+                This one{"’"}s finished — start a new one
+              </button>
+            )}
           </>
         )}
 

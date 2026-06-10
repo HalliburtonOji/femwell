@@ -42,6 +42,14 @@ function isCrisis(text: string): boolean {
 const PHASES = ['menstrual', 'follicular', 'ovulatory', 'luteal', 'unknown'];
 const VISIBILITIES = ['same_phase', 'circles', 'all'];
 
+// H5: the 5/day cap was client-only (localStorage) and so floodable. Enforce it
+// server-side too, matching postWitnessRequest's pattern.
+const DAILY_ECHO_LIMIT = 5;
+function startOfTodayISO(): string {
+  const n = new Date();
+  return new Date(Date.UTC(n.getUTCFullYear(), n.getUTCMonth(), n.getUTCDate())).toISOString();
+}
+
 Deno.serve(async (req) => {
   const base44 = createClientFromRequest(req);
   const me = await base44.auth.me().catch(() => null);
@@ -73,6 +81,16 @@ Deno.serve(async (req) => {
 
   // Crisis re-check — route to support instead of writing a public echo.
   if (isCrisis(line)) return Response.json({ ok: false, intercept: true }, { status: 200 });
+
+  // Rate limit (H5) — 5 echoes/day per author_hash, enforced server-side so a
+  // tampered / storage-cleared client can't flood the wall.
+  const since = startOfTodayISO();
+  const mine = await base44.asServiceRole.entities.Echo
+    .filter({ author_hash: String(author_hash) }, '-live_at', 50).catch(() => []);
+  const today = (Array.isArray(mine) ? mine : []).filter((e: any) => (e.live_at || e.created_date || '') >= since).length;
+  if (today >= DAILY_ECHO_LIMIT) {
+    return Response.json({ error: 'rate', today }, { status: 200 });
+  }
 
   // The anonymity boundary: asServiceRole means created_by is the service, not the
   // author. No user_id, no account reference is ever written to the row.

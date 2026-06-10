@@ -16,14 +16,15 @@ import { T, UI, SERIF } from "./Editorial";
 import { relativeDate } from "./journalDates";
 import { threadOf } from "./threads";
 
-// Accent label colours per card_type — the only quiet colour on the cream.
-export const TYPE_COLOUR = {
-  free: "#2A2118", gratitude: "#947216", mood: "#C77B86", todo: "#3F5C5C",
-  reflection: "#5F7E5F", affirmation: "#A56A18", dream: "#54407F",
-  // Wholeness dimensions
-  relationships: "#7A5E8C", career: "#4A6B7A", creativity: "#8C6A3E",
-  money: "#4A6B4A", grief: "#5A5A7A", joy: "#8C7A2E", identity: "#7A4A4A",
-};
+// H6: card-type accent. Was an off-palette rainbow (indigo/teal/purple…) — collapsed
+// to one muted ink tone on the cream, so the TYPE LABEL (not colour) carries the type
+// and the palette stays cream/ink/gold/crimson. The single crimson pop is reserved
+// for the heart elsewhere; gold stays the hairline accent.
+const TYPE_KEYS = [
+  "free", "gratitude", "mood", "todo", "reflection", "affirmation", "dream",
+  "relationships", "career", "creativity", "money", "grief", "joy", "identity",
+];
+export const TYPE_COLOUR = Object.fromEntries(TYPE_KEYS.map((k) => [k, T.muted]));
 export const TYPE_LABEL = {
   free: "Free write", gratitude: "Gratitude", mood: "Mood", todo: "To-do",
   reflection: "Reflection", affirmation: "Affirmation", dream: "Dream",

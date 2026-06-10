@@ -14,7 +14,7 @@
 
 import { useState } from "react";
 import { ShieldCheck } from "lucide-react";
-import { PAPER_BG, T, UI, Script, Hand, Eyebrow, Rule } from "../journal/Editorial";
+import { PAPER_BG, T, UI, Script, Hand, Eyebrow, Rule, Z } from "../journal/Editorial";
 import { isAdultConfirmed, confirmAdult } from "./ageAssurance";
 
 export default function AgeGate({ children, surfaceName = "this space", onDecline }) {
@@ -22,7 +22,7 @@ export default function AgeGate({ children, surfaceName = "this space", onDeclin
   if (ok) return children;
 
   return (
-    <div style={{ position: "fixed", inset: 0, zIndex: 90, overflowY: "auto", ...PAPER_BG }}>
+    <div style={{ position: "fixed", inset: 0, zIndex: Z.gate, overflowY: "auto", ...PAPER_BG }}>
       <div style={{ maxWidth: 480, margin: "0 auto", padding: "56px 24px 60px" }}>
         <Eyebrow mb={12}>Before you go in</Eyebrow>
         <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 8 }}>

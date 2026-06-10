@@ -85,6 +85,7 @@ export default function ShareAsEchoSheet({
       });
       const data = res?.data ?? res;
       if (data?.intercept) { setStage("crisis"); return; }
+      if (data?.error === "rate") { setReason("rate"); setStage("blocked"); return; }   // H5 server cap
       const saved = data?.echo;
       if (!saved?.id) throw new Error(data?.error || "no echo returned");
       rememberMine(saved.id);
@@ -261,7 +262,9 @@ export default function ShareAsEchoSheet({
           <div style={{ padding: "10px 0" }}>
             <div style={{ ...panel }}>
               <Hand size={20} color={T.inkSoft}>
-                {reason === "network"
+                {reason === "rate"
+                  ? "That’s five echoes today — the wall rests after that. Come back tomorrow."
+                  : reason === "network"
                   ? "That didn’t send just now — check your connection and try again. Nothing was shared."
                   : reason === "too-little-left"
                   ? "Once the identifying parts were removed, there wasn’t enough left to share safely. Try a more general feeling."

@@ -17,7 +17,12 @@ export const T = {
   gold:     "#A8893F",   // deepened muted hairline accent
   crimson:  "#BC2E27",   // THE heart — the single colour pop
   blush:    "#E8B4B8", sage: "#8FAF8F",
+  dusk:     "#211A12",   // the one warm near-black "dusk" surface (Tonight card) — NOT a violet
 };
+
+// ── z-index scale (H8) — one ladder so overlay peers don't collide and the 18+
+// AgeGate always wins. Reference these instead of ad-hoc zIndex numbers.
+export const Z = { sheet: 60, raised: 80, modal: 100, composer: 120, gate: 3000 };
 
 // ── type roles ──
 export const SCRIPT = '"Ephesis","Pinyon Script",cursive';        // display voice — MONOLINE roundhand matched to IMG_9854 (Ephesis: closest real web font)
