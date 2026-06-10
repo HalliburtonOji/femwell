@@ -3,7 +3,7 @@ import { base44 } from "@/api/base44Client";
 import { format, parseISO } from "date-fns";
 import { useNavigate } from "react-router-dom";
 import { computeCycleDay } from "@/hooks/useCycleDay";
-import { Feather, AlignJustify, X } from "lucide-react";
+import { Feather, AlignJustify, X, ChevronDown, ChevronUp } from "lucide-react";
 import NewEntrySheet from "../components/journal/NewEntrySheet";
 import JournalInsightsTab from "../components/journal/JournalInsightsTab";
 import PromptCarousel from "../components/journal/PromptCarousel";
@@ -29,30 +29,29 @@ import {
   T, UI, SCRIPT, HAND, PRESS, Script, Hand, Eyebrow, Rule, Heart,
 } from "../components/journal/Editorial";
 
-// ── Filter types ──────────────────────────────────────────────────────────────
-const CORE_FILTERS = [
-  { id: "all",          label: "All" },
-  { id: "free",         label: "Free" },
-  { id: "gratitude",    label: "Gratitude" },
-  { id: "mood",         label: "Mood" },
+// ── Filter taxonomy — mirrors the compose sheet (FORMAT vs TOPIC), so the ledger
+//    filter is ONE coherent system, not a redundant third one. ──────────────────
+const FORMAT_FILTERS = [
+  { id: "all",       label: "All" },
+  { id: "free",      label: "Notes" },
+  { id: "gratitude", label: "Gratitude" },
+  { id: "mood",      label: "Mood" },
+  { id: "todo",      label: "To-do" },
+];
+const TOPIC_FILTERS = [
   { id: "reflection",   label: "Reflection" },
   { id: "affirmation",  label: "Affirmation" },
-  { id: "todo",         label: "Todo" },
   { id: "dream",        label: "Dream" },
-];
-
-const WHOLENESS_FILTERS = [
   { id: "relationships", label: "Relationships" },
-  { id: "career",        label: "Career" },
-  { id: "creativity",    label: "Creativity" },
-  { id: "money",         label: "Money" },
-  { id: "grief",         label: "Grief" },
-  { id: "joy",           label: "Joy" },
-  { id: "identity",      label: "Identity" },
+  { id: "career",       label: "Career" },
+  { id: "creativity",   label: "Creativity" },
+  { id: "money",        label: "Money" },
+  { id: "grief",        label: "Grief" },
+  { id: "joy",          label: "Joy" },
+  { id: "identity",     label: "Identity" },
 ];
-
-const FILTER_TYPES = [...CORE_FILTERS, ...WHOLENESS_FILTERS];
-const WHOLENESS_TYPES = new Set(WHOLENESS_FILTERS.map((f) => f.id));
+const TOPIC_FILTER_IDS = new Set(TOPIC_FILTERS.map((f) => f.id));
+const WHOLENESS_TYPES = new Set(["relationships", "career", "creativity", "money", "grief", "joy", "identity"]);
 
 // ── Phase -> season ────────────────────────────────────────────────────────────
 const PHASE_SEASON = {
@@ -168,40 +167,36 @@ function StickyHeader({ phase, season, cycleDay, onWrite, onOpenHub }) {
 
 // ── Filter pill bar ────────────────────────────────────────────────────────────
 function FilterBar({ filterType, onChange }) {
+  // One coherent system: a FORMAT row (always) + a collapsible TOPICS row — mirrors
+  // the compose sheet, so the ledger filter isn't a redundant third taxonomy.
+  const [topicsOpen, setTopicsOpen] = useState(() => TOPIC_FILTER_IDS.has(filterType));
+  const pill = (f) => (
+    <button key={f.id} onClick={() => onChange(f.id)} style={{
+      flexShrink: 0, borderRadius: 9999, padding: "6px 13px", fontSize: 11.5, fontWeight: 700,
+      fontFamily: UI, border: `1px solid ${filterType === f.id ? T.ink : T.paperDeep}`,
+      cursor: "pointer", letterSpacing: 0.4, textTransform: "uppercase", whiteSpace: "nowrap",
+      backgroundColor: filterType === f.id ? T.ink : "transparent",
+      color: filterType === f.id ? T.paper : T.muted,
+    }}>{f.label}</button>
+  );
   return (
     <>
       <style>{`.jfilter-scroll::-webkit-scrollbar{display:none}`}</style>
       <div style={{ marginBottom: 4 }}>
-        {/* Core types */}
-        <div className="jfilter-scroll" style={{
-          display: "flex", gap: 6, overflowX: "auto",
-          paddingBottom: 4, scrollbarWidth: "none",
-        }}>
-          {CORE_FILTERS.map((f) => (
-            <button key={f.id} onClick={() => onChange(f.id)} style={{
-              flexShrink: 0, borderRadius: 9999, padding: "6px 14px", fontSize: 12, fontWeight: 700,
-              fontFamily: UI, border: `1px solid ${filterType === f.id ? T.ink : T.paperDeep}`,
-              cursor: "pointer", letterSpacing: 0.4, textTransform: "uppercase",
-              backgroundColor: filterType === f.id ? T.ink : "transparent",
-              color: filterType === f.id ? T.paper : T.muted,
-            }}>{f.label}</button>
-          ))}
+        <div className="jfilter-scroll" style={{ display: "flex", gap: 6, overflowX: "auto", paddingBottom: 4, scrollbarWidth: "none", alignItems: "center" }}>
+          {FORMAT_FILTERS.map(pill)}
+          <button onClick={() => setTopicsOpen((v) => !v)} style={{
+            flexShrink: 0, display: "inline-flex", alignItems: "center", gap: 4, background: "transparent",
+            border: `1px solid ${T.paperDeep}`, borderRadius: 9999, padding: "6px 12px",
+            fontFamily: UI, fontSize: 11.5, fontWeight: 700, letterSpacing: 0.4, textTransform: "uppercase",
+            color: TOPIC_FILTER_IDS.has(filterType) ? T.ink : T.muted, cursor: "pointer", whiteSpace: "nowrap",
+          }}>Topics {topicsOpen ? <ChevronUp size={12} /> : <ChevronDown size={12} />}</button>
         </div>
-        {/* Wholeness types — second row, slightly smaller */}
-        <div className="jfilter-scroll" style={{
-          display: "flex", gap: 5, overflowX: "auto",
-          paddingBottom: 4, paddingTop: 6, scrollbarWidth: "none",
-        }}>
-          {WHOLENESS_FILTERS.map((f) => (
-            <button key={f.id} onClick={() => onChange(f.id)} style={{
-              flexShrink: 0, borderRadius: 9999, padding: "5px 12px", fontSize: 11, fontWeight: 700,
-              fontFamily: UI, border: `1px solid ${filterType === f.id ? T.ink : T.paperDeep}`,
-              cursor: "pointer", letterSpacing: 0.3,
-              backgroundColor: filterType === f.id ? T.ink : "transparent",  /* H6: ink fill, not gold */
-              color: filterType === f.id ? T.paper : T.muted,
-            }}>{f.label}</button>
-          ))}
-        </div>
+        {topicsOpen && (
+          <div style={{ display: "flex", gap: 6, flexWrap: "wrap", paddingTop: 8 }}>
+            {TOPIC_FILTERS.map(pill)}
+          </div>
+        )}
       </div>
     </>
   );

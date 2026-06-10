@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useMemo } from "react";
-import { Plus, Frown, Meh, Smile, Mic, Square, Moon, Lock, Sparkles, ArrowLeft, ArrowRight, Waves } from "lucide-react";
+import { Plus, Frown, Meh, Smile, Mic, Square, Moon, Lock, Sparkles, ArrowLeft, ArrowRight, Waves, ChevronDown, ChevronUp } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { PAPER_BG, T, UI, HAND, SERIF, PRESS, Script, Hand, Eyebrow, Rule, Chip } from "./Editorial";
 import ShareAsEchoSheet from "./echo/ShareAsEchoSheet";
@@ -37,6 +37,32 @@ const LABEL_OF = Object.fromEntries(CARD_TYPES.map((t) => [t.id, t.label]));
 // Compose modes — all five are built in Phase 2:
 //   Write · Guided · One-line · Voice (Web Speech transcription) · Burn (release, never saved).
 const COMPOSE_MODES = ["Write", "Guided", "One-line", "Voice", "Burn"];
+
+// TASK 1 redesign — the SUBJECT axis ("what it's about"), split into two clear tiers
+// so it never competes with the MODE axis ("how you capture"):
+//   FORMAT — changes the INPUT form (a note, three gratitudes, a mood face, a checklist)
+//   TOPIC  — an optional lens; all freeform, just a different prompt
+// (cardType is still ONE field that takes every value below — no data change.)
+const FORMATS = [
+  { id: "free",      label: "Note" },
+  { id: "gratitude", label: "Gratitude" },
+  { id: "mood",      label: "Mood" },
+  { id: "todo",      label: "To-do" },
+];
+const TOPICS = [
+  { id: "reflection",   label: "Reflection" },
+  { id: "affirmation",  label: "Affirmation" },
+  { id: "dream",        label: "Dream" },
+  { id: "relationships", label: "Relationships" },
+  { id: "career",       label: "Career" },
+  { id: "creativity",   label: "Creativity" },
+  { id: "money",        label: "Money" },
+  { id: "grief",        label: "Grief" },
+  { id: "joy",          label: "Joy" },
+  { id: "identity",     label: "Identity" },
+];
+const SPECIAL_FORMATS = new Set(["gratitude", "mood", "todo"]); // these change the input form
+const TOPIC_IDS = new Set(TOPICS.map((t) => t.id));
 
 const PHASE_PROMPTS = {
   menstrual:  ["What do I need to release this cycle?", "How can I be gentler with myself today?", "What am I letting go of?"],
@@ -133,6 +159,7 @@ export default function NewEntrySheet({
   const [mode, setMode] = useState("Write"); // all five modes built (Phase 2)
   const [showShareEcho, setShowShareEcho] = useState(false);
   const [cardType, setCardType] = useState(editEntry?.card_type || seedCardType || "free");
+  const [topicOpen, setTopicOpen] = useState(() => TOPIC_IDS.has(editEntry?.card_type || seedCardType));  // TASK1: topic tray open if editing a topic entry
   const [color, setColor] = useState(editEntry?.card_color || randomColor());
   const [text, setText] = useState(editEntry?.text || seedText || "");
   const [mood, setMood] = useState(editEntry?.mood_rating || 0);
@@ -334,6 +361,13 @@ export default function NewEntrySheet({
     if (m === "One-line") setCardType("free");
   };
 
+  // TASK1 subject-axis derivations (one cardType field, presented as format + topic)
+  const formatActiveId = SPECIAL_FORMATS.has(cardType) ? cardType : "free";  // free + topics → "Note"
+  const selectedTopic = TOPIC_IDS.has(cardType) ? cardType : null;
+  const isFreeformKind = !SPECIAL_FORMATS.has(cardType);                      // a note (incl. a topic)
+  const pickFormat = (id) => { setCardType(id); if (SPECIAL_FORMATS.has(id)) setTopicOpen(false); };
+  const pickTopic = (id) => { setCardType(selectedTopic === id ? "free" : id); };
+
   const guided = mode === "Guided";
   const oneLine = mode === "One-line";
   const voice = mode === "Voice";
@@ -365,15 +399,21 @@ export default function NewEntrySheet({
 
         <Script size={46} style={{ marginBottom: 14 }}>{titleText}</Script>
 
-        {/* compose modes — all five built */}
-        <div style={{ display: "flex", gap: 16, marginBottom: 18, flexWrap: "wrap", alignItems: "center" }}>
+        {/* HOW you capture — one bounded segmented control (was a loose tab row) */}
+        <div style={{ fontFamily: UI, fontSize: 9.5, letterSpacing: 1.4, fontWeight: 700, textTransform: "uppercase", color: T.muted, marginBottom: 7 }}>How you write</div>
+        <style>{`.fw-modeseg::-webkit-scrollbar{display:none}`}</style>
+        <div className="fw-modeseg" style={{
+          display: "flex", gap: 3, marginBottom: 20, padding: 3, borderRadius: 999,
+          background: T.paper, border: `1px solid ${T.paperDeep}`, overflowX: "auto", scrollbarWidth: "none",
+        }}>
           {COMPOSE_MODES.map((m) => {
             const on = m === mode;
             return (
               <button key={m} onClick={() => chooseMode(m)} style={{
-                background: "transparent", border: "none", padding: "0 0 2px", cursor: "pointer",
-                fontFamily: UI, fontSize: 12.5, letterSpacing: 0.4, display: "inline-flex", alignItems: "center", gap: 5,
-                color: on ? T.ink : T.muted, fontWeight: on ? 800 : 600, borderBottom: on ? `1px solid ${T.gold}` : "none",
+                flexShrink: 0, display: "inline-flex", alignItems: "center", gap: 4, cursor: "pointer",
+                background: on ? T.ink : "transparent", color: on ? T.paperHi : T.muted,
+                border: "none", borderRadius: 999, padding: "7px 13px",
+                fontFamily: UI, fontSize: 12, fontWeight: on ? 800 : 600, letterSpacing: 0.3, whiteSpace: "nowrap",
               }}>
                 {m === "Voice" && <Mic size={12} />}
                 {m === "Guided" && <Sparkles size={12} />}
@@ -559,31 +599,35 @@ export default function NewEntrySheet({
         {/* ══ WRITE MODE (the normal form) ══ */}
         {mode === "Write" && (
           <>
-            {/* type picker — two groups: core and wholeness */}
-            <div style={{ marginBottom: 22 }}>
-              <div style={{ display: "flex", flexWrap: "wrap", gap: 10, marginBottom: 10 }}>
-                {CARD_TYPES.filter(t => t.group === "core").map((t) => (
-                  <button key={t.id} onClick={() => setCardType(t.id)} style={{
-                    background: "transparent", border: "none", cursor: "pointer", padding: 0, paddingBottom: 2,
-                    fontFamily: UI, fontSize: 12.5, letterSpacing: 0.4,
-                    color: t.id === cardType ? T.ink : T.muted, fontWeight: t.id === cardType ? 800 : 500,
-                    borderBottom: t.id === cardType ? `1px solid ${T.gold}` : "none",
-                  }}>{t.label}</button>
+            {/* WHAT it's about — Tier 1: FORMAT chips (always visible) ───────────── */}
+            <div style={{ marginBottom: 18 }}>
+              <div style={{ fontFamily: UI, fontSize: 9.5, letterSpacing: 1.4, fontWeight: 700, textTransform: "uppercase", color: T.muted, marginBottom: 8 }}>What kind</div>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 7 }}>
+                {FORMATS.map((f) => (
+                  <Chip key={f.id} active={f.id === formatActiveId} onClick={() => pickFormat(f.id)}>{f.label}</Chip>
                 ))}
               </div>
-              <div style={{ marginBottom: 6 }}>
-                <span style={{ fontFamily: UI, fontSize: 9.5, letterSpacing: 1.4, fontWeight: 700, textTransform: "uppercase", color: T.muted }}>Wholeness</span>
-              </div>
-              <div style={{ display: "flex", flexWrap: "wrap", gap: 10 }}>
-                {CARD_TYPES.filter(t => t.group === "wholeness").map((t) => (
-                  <button key={t.id} onClick={() => setCardType(t.id)} style={{
-                    background: "transparent", border: "none", cursor: "pointer", padding: 0, paddingBottom: 2,
-                    fontFamily: UI, fontSize: 12.5, letterSpacing: 0.4,
-                    color: t.id === cardType ? T.ink : T.muted, fontWeight: t.id === cardType ? 800 : 500,
-                    borderBottom: t.id === cardType ? `1px solid ${T.gold}` : "none",
-                  }}>{t.label}</button>
-                ))}
-              </div>
+
+              {/* Tier 2: TOPIC — an optional lens, collapsed by default (only for a Note) */}
+              {isFreeformKind && (
+                <div style={{ marginTop: 12 }}>
+                  <button onClick={() => setTopicOpen((v) => !v)} style={{
+                    display: "inline-flex", alignItems: "center", gap: 6, background: "transparent", border: "none",
+                    cursor: "pointer", padding: 0, fontFamily: UI, fontSize: 12, fontWeight: 700, color: T.muted, letterSpacing: 0.3,
+                  }}>
+                    {topicOpen ? <ChevronUp size={13} /> : <ChevronDown size={13} />}
+                    {selectedTopic ? `About · ${(TOPICS.find((t) => t.id === selectedTopic) || {}).label}` : "Add a topic"}
+                    <span style={{ fontWeight: 500, color: T.muted, opacity: 0.7 }}>(optional)</span>
+                  </button>
+                  {topicOpen && (
+                    <div style={{ display: "flex", flexWrap: "wrap", gap: 7, marginTop: 10 }}>
+                      {TOPICS.map((t) => (
+                        <Chip key={t.id} active={t.id === selectedTopic} onClick={() => pickTopic(t.id)}>{t.label}</Chip>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
 
             {/* ── per-type form ── */}
