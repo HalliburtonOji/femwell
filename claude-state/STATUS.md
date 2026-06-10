@@ -53,7 +53,11 @@ End-to-end QA/security audit before Community. `claude-state/JOURNAL_AUDIT.html`
 
 ### AUDIT FIX — BATCH 2 (the 8 High) — DONE + VERIFIED + PUSHED (commit `89df8d2`, pending deploy)
 - **H2** Insights mood mislabel: 6-value Calm/Stressed/Angry MOOD_MAP → the 1-5 Low→Bright lexicon the composer writes (verified mood 5 → "Bright"). **H3** stale SENT_KEY: clears on gone/terminal + a "start a new one" escape hatch (no more lock-out). **H4** WitnessInbox claim lifecycle: forgetClaim on removed/idle (inFlight already resumes). **H5** Echo 5/day now server-enforced in postEcho (was floodable). **H1** masthead off legacy plum/mauve → editorial tokens + Ephesis script title + ink CTA. **H6** off-palette fills: pill gold→ink, Tonight violet→new `T.dusk`, espresso mood→ink, ledger rainbow→muted. **H7** Insights loading/error + try/catch on the Promise.all. **H8** `Z` scale in Editorial; AgeGate at `Z.gate` (3000), always top.
-- Verified webkit: Insights "Bright" + clean load; Tonight no #2B2230 (dusk); masthead 0 legacy vars; build green, lint clean, postEcho transpiles. **Batches 3 (11 Med) + 4 (6 Low/4 Polish) next.**
+- Verified webkit: Insights "Bright" + clean load; Tonight no #2B2230 (dusk); masthead 0 legacy vars; build green, lint clean, postEcho transpiles.
+
+### AUDIT FIX — BATCH 3 (the 11 Medium) — DONE + VERIFIED + PUSHED (commit `02f6bc6`, pending deploy)
+M1 modal a11y (shared `useEscape` + role=dialog on read/chooser/menu overlays; composers + AgeGate excluded by design) · M2 Sealed Letters hub scroll-into-view · M3 Burn isolated `burnText` buffer · M4 postTwinEntry result handled · M5 claim/join race re-read-after-write · M6 deliverWitnessKey `against_pub` stale-receiver guard · M7 no-cycle cold-start copy · M8 encryption-unavailable Sealed leads-with-limitation + disabled textarea · M9 four-lives witness gate hint · M10 flagWitness strike requires request_id + receiver match · M11 new `cancelTwin` fn + stale-pairing note.
+- Verified webkit: four-lives Escape→onClose + role=dialog, gate hint present; build green, lint clean, all 5 functions transpile. **NEEDS HALLI DEPLOY:** `cancelTwin` (new) + edited witness/twin functions; a live witness send + twin pairing confirms race/stale-key/strike. **Batch 4 (6 Low + 4 Polish) next.**
 
 ## PLAN-DOC INDEX (the full plans live in these — this file points to them)
 | Doc | What it is | Status |
