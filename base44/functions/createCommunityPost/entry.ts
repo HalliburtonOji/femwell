@@ -81,6 +81,12 @@ async function moderate(text: string): Promise<{ crisis?: boolean; remove?: bool
 }
 
 const ROOMS = ['lounge', 'circles', 'love', 'money', 'style', 'lighter', 'health'];
+// Phase-4 Circles — keep in sync with src/components/community/circlesConfig.js CIRCLE_KEYS.
+const CIRCLE_KEYS = new Set([
+  'ttc', 'pregnancy', 'postpartum', 'perimenopause', 'menopause',
+  'pcos', 'endo', 'pmdd',
+  'books', 'career', 'creativity', 'movement',
+]);
 const MAX_LEN = 800;
 const DAILY_CAP = 12;
 function startOfTodayISO(): string {
@@ -100,6 +106,9 @@ Deno.serve(async (req) => {
     return Response.json({ error: 'Forbidden' }, { status: 403 });
   }
   if (!author_hash) return Response.json({ error: 'author_hash required' }, { status: 400 });
+  // Phase-4 Circles: a post may be scoped to a curated circle. A valid circle pins the post
+  // to the 'circles' room so it shows ONLY inside that circle, not in the open rooms.
+  const circle = p?.circle && CIRCLE_KEYS.has(String(p.circle)) ? String(p.circle) : '';
   const text = String(body || '').trim();
   if (!text) return Response.json({ error: 'Empty post' }, { status: 400 });
   if (text.length > MAX_LEN) return Response.json({ error: 'Post too long' }, { status: 400 });
@@ -117,7 +126,8 @@ Deno.serve(async (req) => {
   if (today >= DAILY_CAP) return Response.json({ error: 'rate', today }, { status: 200 });
 
   const post = await sb.entities.CommunityPost.create({
-    room: ROOMS.includes(room) ? room : 'lounge',
+    room: circle ? 'circles' : (ROOMS.includes(room) ? room : 'lounge'),
+    circle: circle || undefined,
     author_hash: String(author_hash),
     body: text,
     comments_mode: comments_mode === 'reaction' ? 'reaction' : 'open',
@@ -129,7 +139,7 @@ Deno.serve(async (req) => {
   if (!post) return Response.json({ error: 'Write failed' }, { status: 500 });
 
   return Response.json({ ok: true, post: {
-    id: post.id, room: post.room, body: post.body, comments_mode: post.comments_mode,
+    id: post.id, room: post.room, circle: post.circle || null, body: post.body, comments_mode: post.comments_mode,
     by: post.by, domain: post.domain || null, created_date: post.created_date,
   } });
 });

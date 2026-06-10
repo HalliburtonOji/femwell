@@ -1,0 +1,27 @@
+{
+  // Community Phase 4 (§3.6) — one anonymous opt-in membership of a curated Circle.
+  // Only a device-derived author_hash + the circle key; written asServiceRole. Membership
+  // is identity-adjacent (who is in a PCOS/PMDD/endo circle is special-category), so READ
+  // is locked to the service role too — there is NO public enumeration of who belongs to
+  // what. The client tracks its own joined-state in localStorage for the UI; this row is
+  // the durable opt-in record (future per-circle k-anon presence, posting integrity). No
+  // member counts are shown anywhere.
+  "name": "CircleMembership",
+  "type": "object",
+  "properties": {
+    "circle_key": { "type": "string", "description": "Curated circle key (ttc, pcos, books, …)." },
+    "author_hash": { "type": "string", "description": "Device-derived anonymous author token." },
+    "consented": { "type": "boolean", "default": false, "description": "For special-category circles: the member explicitly acknowledged the sensitive-data note." }
+  },
+  "required": ["circle_key", "author_hash"],
+  "indexes": [
+    { "fields": ["circle_key"] },
+    { "fields": ["author_hash"] }
+  ],
+  "rls": {
+    "create": { "user_condition": { "role": "system" } },
+    "read":   { "user_condition": { "role": "system" } },
+    "update": { "user_condition": { "role": "system" } },
+    "delete": { "user_condition": { "role": "system" } }
+  }
+}

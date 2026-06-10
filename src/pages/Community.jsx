@@ -17,7 +17,7 @@ import { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Grid2x2, MessageCircle, Send, Lock, Unlock, Plus, Flag,
-  ShieldAlert, Phone,
+  ShieldAlert, Phone, Mic, Check, ChevronLeft, Users,
 } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import {
@@ -35,6 +35,10 @@ import {
   VOICE_NOTES_ENABLED, qotdForDay, presenceLine, crisisCheck,
 } from "@/components/community/communityConfig";
 import VoiceNoteComposer from "@/components/community/VoiceNoteComposer";
+import {
+  CIRCLES, CIRCLE_CATEGORIES, circleByKey, SENSITIVE_CONSENT,
+  isJoined, markJoined, clearJoined,
+} from "@/components/community/circlesConfig";
 
 const PLUM = "#241a26"; // the single permitted dark surface
 const HANDFAM = '"Cormorant Garamond","Fraunces",Georgia,serif';
@@ -249,7 +253,7 @@ function PostCard({ post, user, onCrisis, onChanged }) {
 }
 
 // ── room composer ────────────────────────────────────────────────────────────
-function RoomComposer({ room, user, onCrisis, onPosted, onCancel }) {
+function RoomComposer({ room, circle, user, onCrisis, onPosted, onCancel }) {
   const [body, setBody] = useState("");
   const [mode, setMode] = useState("open");
   const [busy, setBusy] = useState(false);
@@ -262,7 +266,7 @@ function RoomComposer({ room, user, onCrisis, onPosted, onCancel }) {
     setDeclined(false);
     try {
       const wh = await communityHash(user?.id);
-      const r = await base44.functions.invoke("createCommunityPost", { user_id: user?.id, author_hash: wh, room, body: text, comments_mode: mode });
+      const r = await base44.functions.invoke("createCommunityPost", { user_id: user?.id, author_hash: wh, room, circle: circle || undefined, body: text, comments_mode: mode });
       const d = r?.data ?? r;
       if (d?.intercept) { onCrisis(); return; }
       if (d?.error === "rate") { setBusy(false); return; }
@@ -461,6 +465,133 @@ function GameRoundCard({ user, onCrisis }) {
   );
 }
 
+// ── Circles (Phase 4) — curated whole-life cohorts inside the Circles door ────
+function CircleCard({ circle, joined, onOpen }) {
+  return (
+    <button onClick={() => onOpen(circle.key)} style={{
+      display: "block", width: "100%", textAlign: "left", cursor: "pointer",
+      background: T.paperHi, border: `1px solid ${joined ? T.gold : T.paperDeep}`, borderRadius: 6,
+      padding: "14px 15px", marginBottom: 10,
+    }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
+        <Script size={21} color={T.ink}>{circle.name}</Script>
+        {joined && <span style={{ display: "inline-flex", alignItems: "center", gap: 3, fontFamily: UI, fontSize: 10.5, fontWeight: 700, color: T.gold }}><Check size={12} /> Joined</span>}
+        {circle.sensitive && <span style={{ marginLeft: "auto", fontFamily: UI, fontSize: 10, color: T.muted, display: "inline-flex", alignItems: "center", gap: 3 }}><Lock size={11} /> sensitive</span>}
+      </div>
+      <Hand size={16} color={T.muted}>{circle.line}</Hand>
+    </button>
+  );
+}
+
+function CirclesDirectory({ onOpen }) {
+  const [, force] = useState(0);   // re-render after join-state changes elsewhere
+  useEffect(() => { force((n) => n + 1); }, []);
+  return (
+    <div>
+      <Script size={30} style={{ marginBottom: 4 }}>Circles</Script>
+      <Hand size={17} color={T.muted} style={{ marginBottom: 18 }}>
+        Smaller rooms by what you're living and what you love. Lurk freely; join the ones that are yours.
+      </Hand>
+      {CIRCLE_CATEGORIES.map((cat) => (
+        <div key={cat} style={{ marginBottom: 18 }}>
+          <Eyebrow color={T.gold} mb={8}>{cat}</Eyebrow>
+          {CIRCLES.filter((c) => c.category === cat).map((c) => (
+            <CircleCard key={c.key} circle={c} joined={isJoined(c.key)} onOpen={onOpen} />
+          ))}
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function CircleView({ circleKey, user, onCrisis, onBack }) {
+  const circle = circleByKey(circleKey);
+  const [joined, setJoined] = useState(() => isJoined(circleKey));
+  const [posts, setPosts] = useState(null);
+  const [composing, setComposing] = useState(false);
+  const [needConsent, setNeedConsent] = useState(false);
+  const [busy, setBusy] = useState(false);
+
+  const load = useCallback(async () => {
+    const rows = await base44.entities.CommunityPost.filter({ circle: circleKey, hidden: false }, "-created_date", 100).catch(() => []);
+    setPosts(Array.isArray(rows) ? rows : []);
+  }, [circleKey]);
+  useEffect(() => { load(); }, [load]);
+
+  const doJoin = async (consented) => {
+    if (busy) return;
+    setBusy(true);
+    try {
+      const wh = await communityHash(user?.id);
+      await base44.functions.invoke("joinCircle", { user_id: user?.id, author_hash: wh, circle_key: circleKey, consented: !!consented });
+      markJoined(circleKey); setJoined(true); setNeedConsent(false);
+    } catch (e) { console.error("join failed:", e); }
+    finally { setBusy(false); }
+  };
+  const onJoinClick = () => { if (circle?.sensitive) setNeedConsent(true); else doJoin(false); };
+  const leave = async () => {
+    if (busy) return;
+    setBusy(true);
+    try {
+      const wh = await communityHash(user?.id);
+      await base44.functions.invoke("leaveCircle", { user_id: user?.id, author_hash: wh, circle_key: circleKey });
+      clearJoined(circleKey); setJoined(false);
+    } catch (e) { console.error("leave failed:", e); }
+    finally { setBusy(false); }
+  };
+
+  if (!circle) return <Hand size={17} color={T.muted}>That circle has wandered off. Go back to Circles.</Hand>;
+
+  return (
+    <div>
+      <button onClick={onBack} style={{ ...ghostBtn, marginBottom: 14, padding: "7px 11px" }}><ChevronLeft size={14} /> Circles</button>
+      <Script size={30} style={{ marginBottom: 4 }}>{circle.name}</Script>
+      <Hand size={17} color={T.muted} style={{ marginBottom: 14 }}>{circle.line}</Hand>
+
+      {needConsent ? (
+        <section style={{ background: T.paperHi, border: `1px solid ${T.gold}`, borderRadius: 6, padding: "15px 16px", marginBottom: 16 }}>
+          <Eyebrow color={T.gold} mb={6}>Before you join</Eyebrow>
+          <Hand size={16} color={T.inkSoft} style={{ marginBottom: 12 }}>{SENSITIVE_CONSENT(circle.name)}</Hand>
+          <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+            <button onClick={() => doJoin(true)} disabled={busy} style={{ ...primaryBtn, opacity: busy ? 0.6 : 1 }}><Check size={14} /> I understand — join</button>
+            <button onClick={() => setNeedConsent(false)} style={ghostBtn}>Not now</button>
+          </div>
+        </section>
+      ) : (
+        <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 16, flexWrap: "wrap" }}>
+          {joined
+            ? <><span style={{ display: "inline-flex", alignItems: "center", gap: 5, fontFamily: UI, fontSize: 12.5, fontWeight: 700, color: T.gold }}><Check size={14} /> You're in this circle</span>
+                <button onClick={leave} disabled={busy} style={{ ...ghostBtn, border: "none", color: T.muted }}>Leave</button></>
+            : <button onClick={onJoinClick} disabled={busy} style={{ ...primaryBtn, opacity: busy ? 0.6 : 1 }}><Users size={14} /> Join this circle</button>}
+        </div>
+      )}
+
+      {!composing && joined && (
+        <button onClick={() => setComposing(true)} style={{ ...primaryBtn, marginBottom: 16 }}><Plus size={14} /> Add to {circle.name}</button>
+      )}
+      {composing && (
+        <RoomComposer room="circles" circle={circleKey} user={user} onCrisis={onCrisis}
+          onPosted={() => { setComposing(false); load(); }} onCancel={() => setComposing(false)} />
+      )}
+
+      {posts === null && <Hand size={18} color={T.muted}>Opening the circle…</Hand>}
+      {posts && posts.length === 0 && (
+        <Hand size={18} color={T.inkSoft}>Quiet in here so far. {joined ? "Leave the first word — someone always comes by." : "Join to leave the first word."}</Hand>
+      )}
+      {posts && posts.map((p) => (
+        <PostCard key={p.id} post={p} user={user} onCrisis={onCrisis} onChanged={load} />
+      ))}
+    </div>
+  );
+}
+
+function CirclesView({ user, onCrisis }) {
+  const [active, setActive] = useState(null);   // null = directory; else circle key
+  return active
+    ? <CircleView circleKey={active} user={user} onCrisis={onCrisis} onBack={() => setActive(null)} />
+    : <CirclesDirectory onOpen={setActive} />;
+}
+
 function RoomView({ roomKey, posts, loading, user, onNav, onCrisis, onReload }) {
   const [composing, setComposing] = useState(false);
   const [voicing, setVoicing] = useState(false);
@@ -481,6 +612,10 @@ function RoomView({ roomKey, posts, loading, user, onNav, onCrisis, onReload }) 
       </div>
 
       <div style={{ padding: "20px 18px 60px" }}>
+        {roomKey === "circles" ? (
+          <CirclesView user={user} onCrisis={onCrisis} />
+        ) : (
+        <>
         <Script size={32} style={{ marginBottom: 4 }}>{room.name}</Script>
         <Hand size={17} color={T.muted} style={{ marginBottom: 16 }}>{room.line}</Hand>
 
@@ -508,6 +643,8 @@ function RoomView({ roomKey, posts, loading, user, onNav, onCrisis, onReload }) 
         {!loading && feed.map((p) => (
           <PostCard key={p.id} post={p} user={user} onCrisis={onCrisis} onChanged={onReload} />
         ))}
+        </>
+        )}
       </div>
     </div>
   );

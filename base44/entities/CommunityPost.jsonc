@@ -8,6 +8,7 @@
   "type": "object",
   "properties": {
     "room": { "type": "string", "description": "Room key (lounge, love, money, style, lighter, circles, health)." },
+    "circle": { "type": "string", "description": "Phase-4 Circles: if set, the post is scoped to this curated circle (room is 'circles'); it shows only inside that circle, not in the open rooms." },
     "author_hash": { "type": "string", "description": "Device-derived anonymous author token. Never a user id." },
     "body": { "type": "string", "description": "The post text (scrubbed + crisis-checked client + server before posting)." },
     "comments_mode": { "type": "string", "enum": ["open", "reaction"], "default": "open", "description": "open = anyone can comment; reaction = reaction-only (poster's choice)." },
