@@ -33,6 +33,11 @@ export default function JournalAuditDoc() {
 
       <Pull>Is it 100%? — No, not yet. The core journaling surface is mature and well-built (real empty/loading/error states, strong token kit, zero emoji, thoughtful anonymity + on-device crypto). But the newest peer-to-peer features carry real risk: 3 Blockers + several High issues must be fixed before adults are put into community-style contact. The biggest unknown isn't in the repo — whether the Base44 entities are actually locked server-side (B3).</Pull>
 
+      <Card accent="#BC2E27">
+        <P><Badge tone="red">PENDING · Halli</Badge> <strong>Verify the peer-table RLS lock for non-owners.</strong> All 32 audit findings are remediated + deployed, BUT the anonymity lock (rls role:system on WitnessRequest / WitnessStrike / TwinPair / TwinEntry, + Echo writes) can{"'"}t be confirmed from an owner token — owners bypass RLS, so an owner GET returns 200 whether it{"'"}s locked or not.</P>
+        <P style={{ fontSize: 14.5 }}>Two ways to confirm it{"'"}s really enforced: <strong>(1) Base44 dashboard</strong> — each entity{"'"}s read/write gated to <em>system</em> (Echo: write-only, read public); or <strong>(2) non-owner probe</strong> — sign in as the test account <code>ojihalliburton57</code> and do a direct <code>entities.WitnessRequest.filter({})</code> → expect <strong>403/empty</strong>. For Echo: a direct client <code>Echo.create/update/delete</code> → <strong>403</strong>, while <code>Echo.filter</code> (read) stays <strong>200</strong>.</P>
+      </Card>
+
       <P>
         <Badge tone="red">Blocker ×3</Badge>{"  "}<Badge tone="amber">High ×8</Badge>{"  "}<Badge tone="plum">Medium ×11</Badge>{"  "}<Badge tone="green">Low ×6</Badge>{"  "}<Badge tone="gold">Polish ×4</Badge>
       </P>

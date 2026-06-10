@@ -1,5 +1,11 @@
-# FEMWELL — CANONICAL STATUS INDEX (read first · updated 2026-06-09)
+# FEMWELL — CANONICAL STATUS INDEX (read first · updated 2026-06-10)
 **This file is the single source of truth AND the index to every plan doc. If anything else disagrees, this wins.** (The long ship-log history continues below the index.)
+
+## ⏳ PENDING ACTIONS — HALLI TO VERIFY (don't lose these)
+- **PENDING — verify peer-table RLS (non-owner 403).** The B3 anonymity lock (`rls` role:system on **WitnessRequest / WitnessStrike / TwinPair / TwinEntry**, and now **Echo writes**) is shipped + deployed, but CANNOT be confirmed from an owner token (owners bypass RLS → owner GET returns 200 either way). **Two ways to confirm it's actually enforced for normal users:**
+  1. **Base44 dashboard** — open each entity's access/permissions and confirm read/write (or write-only for Echo) is gated to **system** (service-role), not public.
+  2. **Non-owner probe** — sign in as the test account **`ojihalliburton57`** (a normal, non-owner user), do a direct client `entities.WitnessRequest.filter({})` (+ TwinPair / TwinEntry / WitnessStrike) → **expect 403 / empty**. For Echo: a direct client `entities.Echo.create/update/delete` → **expect 403**, while `entities.Echo.filter({hidden:false})` (read) **stays 200** (the wall must remain publicly readable).
+  - Until one of these is done, treat the peer-table lock as **implemented-but-unverified**. (Mirrored in FoundersOS → Journal Audit tab.)
 
 ## CURRENT STATE
 - **Live + verified:** **Echo Wall** (anonymous one-line phase-cohort wall) + **Witness Mode** (one entry held by one matched sister, 4 fixed responses) are BUILT, deployed, live-verified — Echo bundle `index-CfnX9e_7.js`, Witness bundle `index-BEPB6rBK.js`; entities `Echo` / `WitnessRequest` / `WitnessStrike` live.
