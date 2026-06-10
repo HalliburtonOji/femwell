@@ -35,7 +35,7 @@ export default function BuildPlanDoc() {
         ["postCommunityPost", "Create a post under the service identity", "—"],
         ["postComment ★", "Crisis pre-check → OpenAI Moderation API → auto-remove harmful (tombstone) / publish; health-vocab allowlist", "OpenAI key"],
         ["jessSupport", "One warm Jess support comment on heavy threads (by:jess), tone-locked", "Claude"],
-        ["openGameRound / closeGameRound", "Claude generates prompt; close → aggregate + warm reveal (no winner)", "Claude (+ cron/lazy)"],
+        ["openGameRound / finalizeGameRound", "Claude generates prompt; close → aggregate + warm reveal (no winner)", "Claude (+ cron/lazy)"],
         ["postQotd / react / reportContent", "QOTD answer + norm; one-way reaction; report→hide", "—"],
         ["postVoiceNote (audio)", "STT → classify → hold-before-delivery", "STT (AssemblyAI/Deepgram)"],
       ]} />
@@ -56,7 +56,7 @@ export default function BuildPlanDoc() {
         <P><strong>M2 · Phase 3.5b — Comment auto-moderation + Jess support</strong> <Badge tone="amber">needs OpenAI key</Badge>. postComment = the safety spine: crisis check → Moderation API → auto-remove harmful (tombstone) / publish; health allowlist; human-review queue for borderline + appeals. jessSupport (Claude) inline support. ToS MUST disclose proactive moderation; name the human-review owner (Halli). <em>Exit: harmful comment auto-removed server-side; Jess support posts; clinical words never blocked.</em></P>
       </Card>
       <Card accent={D.gold}>
-        <P><strong>M3 · Phase 3.6 — Jess games-master.</strong> Daily gentle round: one shared prompt, generous countdown, simultaneous aggregate reveal, no winner. GameRound/GameResponse + openGameRound/closeGameRound (Claude; cron or lazy). Client countdown cosmetic; round server-authoritative; reveal via real-time sync. NOT live multiplayer. <em>Exit: a daily round runs end-to-end.</em></P>
+        <P><strong>M3 · Phase 3.6 — Jess games-master.</strong> Daily gentle round: one shared prompt, generous countdown, simultaneous aggregate reveal, no winner. GameRound/GameResponse + openGameRound/finalizeGameRound (Claude; cron or lazy). Client countdown cosmetic; round server-authoritative; reveal via real-time sync. NOT live multiplayer. <em>Exit: a daily round runs end-to-end.</em></P>
       </Card>
       <Card accent={D.rose}>
         <P><strong>M4 · Phase 4 — Async voice-notes</strong> <Badge tone="amber">needs STT</Badge>. Record → optional mask → STT → classify → hold-before-delivery → a sister holds it → fades. VoiceNote + postVoiceNote. <em>Exit: a note is screened + held before delivery.</em></P>

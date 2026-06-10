@@ -71,7 +71,7 @@
 <tr><td><code>postCommunityPost</code></td><td>Create a Lounge/room post under the service identity (comments_mode set by poster).</td><td>—</td></tr>
 <tr><td><code>postComment</code> ★</td><td>The safety spine. Receives a comment → <strong>(a)</strong> crisis pre-check (existing keyword lexicon) → if crisis, return support card, don't post; <strong>(b)</strong> <strong>OpenAI Moderation API</strong> → if flagged harmful/out-of-place, write <code>status:removed</code> (the "Removed by Jess" tombstone); else write <code>status:visible</code>. Health-vocab allowlist so clinical words aren't auto-blocked.</td><td><strong>OpenAI key</strong></td></tr>
 <tr><td><code>jessSupport</code></td><td>When a thread reads as heavy / on request, generate ONE warm Jess support comment (tone-locked, never clinical/preachy) and write it as <code>by:jess</code>.</td><td>Claude integration</td></tr>
-<tr><td><code>openGameRound</code> / <code>closeGameRound</code></td><td>Games-master: open a round (Claude generates the gentle prompt); on close, compute the aggregate + Claude writes the warm "most of you said…" reveal (no winner).</td><td>Claude integration (+ cron or lazy open)</td></tr>
+<tr><td><code>openGameRound</code> / <code>finalizeGameRound</code></td><td>Games-master: open a round (Claude generates the gentle prompt); on close, compute the aggregate + Claude writes the warm "most of you said…" reveal (no winner).</td><td>Claude integration (+ cron or lazy open)</td></tr>
 <tr><td><code>postQotd</code> / aggregate</td><td>Record a QOTD answer; return the descriptive-norm aggregate (k-floored, no per-person counts).</td><td>—</td></tr>
 <tr><td><code>react</code> / <code>reportContent</code></td><td>One-way reaction (dedup); report → hide-from-others (not silent delete).</td><td>—</td></tr>
 <tr><td><code>postVoiceNote</code> (audio phase)</td><td>STT the note → classify → <strong>hold-before-delivery</strong> if it fails; deliver/expire if clean.</td><td>STT (AssemblyAI/Deepgram)</td></tr>
@@ -108,7 +108,7 @@
 
 <div class="ph" style="border-left-color:var(--gold)">
 <h3>M3 · Phase 3.6 — Jess games-master</h3>
-<p><strong>Built:</strong> the daily gentle round — one shared prompt, a generous countdown, simultaneous reveal of the aggregate ("most of you said…"), no winner. <strong>Entities:</strong> <code>GameRound</code>, <code>GameResponse</code>. <strong>Functions:</strong> <code>openGameRound</code> (Claude generates the prompt; via cron <em>or</em> lazy open-on-first-view) + <code>closeGameRound</code> (aggregate + Claude warm reveal). Client countdown is cosmetic; the round lifecycle is server-authoritative; reveal pushed via real-time sync.</p>
+<p><strong>Built:</strong> the daily gentle round — one shared prompt, a generous countdown, simultaneous reveal of the aggregate ("most of you said…"), no winner. <strong>Entities:</strong> <code>GameRound</code>, <code>GameResponse</code>. <strong>Functions:</strong> <code>openGameRound</code> (Claude generates the prompt; via cron <em>or</em> lazy open-on-first-view) + <code>finalizeGameRound</code> (aggregate + Claude warm reveal). Client countdown is cosmetic; the round lifecycle is server-authoritative; reveal pushed via real-time sync.</p>
 <p><strong>Needs:</strong> Claude integration on; a cron (else lazy open). <strong>NOT a live frame-synced multiplayer</strong> (avoided — async simultaneous-reveal sidesteps the latency/desync failure class). <strong>Verify:</strong> a round opens, answers record, close reveals the aggregate; Jess never names a winner / comments on identity. <strong>Exit gate:</strong> a daily round runs end-to-end.</p>
 </div>
 
@@ -143,7 +143,7 @@
 <li>☐ <strong>M1d</strong> — Verify (build/lint/Playwright/live-walk) + deploy + hash-flip confirm.</li>
 <li>☐ <strong>M2a</strong> — [needs OpenAI key] <code>postComment</code> with crisis-check + Moderation API + health allowlist + review queue.</li>
 <li>☐ <strong>M2b</strong> — <code>jessSupport</code> (Claude) inline support; human-review + appeals owner named.</li>
-<li>☐ <strong>M3</strong> — Games-master: <code>GameRound</code>/<code>GameResponse</code> + <code>openGameRound</code>/<code>closeGameRound</code> (Claude; cron or lazy).</li>
+<li>☐ <strong>M3</strong> — Games-master: <code>GameRound</code>/<code>GameResponse</code> + <code>openGameRound</code>/<code>finalizeGameRound</code> (Claude; cron or lazy).</li>
 <li>☐ <strong>M4</strong> — [needs STT] Async voice-notes (<code>VoiceNote</code> + <code>postVoiceNote</code>).</li>
 <li>☐ <strong>Deferred</strong> — live audio · Phase Twin · expert AMA · Circles · Witness ZK-E2E.</li>
 </ol>
