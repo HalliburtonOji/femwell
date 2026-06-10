@@ -32,8 +32,9 @@ import {
 import {
   MASTHEAD, ROOMS, REACTIONS, POST_MAX, COMMENT_DISCLAIMER, COMMENT_KINDNESS,
   COMMENT_MAX, COMMENT_EMPTY, MOD_REMOVED, UK_RESOURCES, FOOTER_LINE, PRESENCE_WINDOW_HRS,
-  qotdForDay, presenceLine, crisisCheck,
+  VOICE_NOTES_ENABLED, qotdForDay, presenceLine, crisisCheck,
 } from "@/components/community/communityConfig";
+import VoiceNoteComposer from "@/components/community/VoiceNoteComposer";
 
 const PLUM = "#241a26"; // the single permitted dark surface
 const HANDFAM = '"Cormorant Garamond","Fraunces",Georgia,serif';
@@ -462,6 +463,7 @@ function GameRoundCard({ user, onCrisis }) {
 
 function RoomView({ roomKey, posts, loading, user, onNav, onCrisis, onReload }) {
   const [composing, setComposing] = useState(false);
+  const [voicing, setVoicing] = useState(false);
   const room = ROOMS.find((r) => r.key === roomKey) || ROOMS[0];
   const feed = posts.filter((p) => p.room === roomKey);
   return (
@@ -483,6 +485,13 @@ function RoomView({ roomKey, posts, loading, user, onNav, onCrisis, onReload }) 
         <Hand size={17} color={T.muted} style={{ marginBottom: 16 }}>{room.line}</Hand>
 
         {roomKey === "lighter" && <GameRoundCard user={user} onCrisis={onCrisis} />}
+
+        {/* M4 async voice-notes — dormant until VOICE_NOTES_ENABLED + an STT key */}
+        {VOICE_NOTES_ENABLED && roomKey === "lounge" && (
+          voicing
+            ? <VoiceNoteComposer user={user} onCancel={() => setVoicing(false)} />
+            : <button onClick={() => setVoicing(true)} style={{ ...ghostBtn, marginBottom: 16 }}><Mic size={14} /> Leave a voice note</button>
+        )}
 
         {!composing && (
           <button onClick={() => setComposing(true)} style={{ ...primaryBtn, marginBottom: 16 }}><Plus size={14} /> Add to {room.name.replace(/^The /, "")}</button>

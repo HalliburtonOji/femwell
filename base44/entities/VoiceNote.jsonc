@@ -1,0 +1,39 @@
+{
+  // Community M4 — an async voice-note ("a voice echo"). Recorded in-browser
+  // (MediaRecorder) → uploaded (Base44 UploadFile) → this row. Reuses Echo's anonymity +
+  // fade model. CRITICAL SAFETY INVARIANT: a voice-note is NEVER delivered to a listener
+  // until its audio has been transcribed (STT) and the transcript passes the same crisis +
+  // moderation screen as text. Until an STT provider key exists, delivery is dormant: notes
+  // are stored 'pending_screening' and held — the audio never reaches another member.
+  //
+  // Unlike posts, audio is sensitive + identifying (a voice), so READ is locked to the
+  // service role too — there is no public enumeration of audio. Delivery, when it lands,
+  // happens through a function that hands one screened note to one phase-sister.
+  "name": "VoiceNote",
+  "type": "object",
+  "properties": {
+    "author_hash": { "type": "string", "description": "Device-derived anonymous author token." },
+    "surface": { "type": "string", "default": "community", "description": "Where it was recorded (community/voice)." },
+    "audio_url": { "type": "string", "description": "Uploaded audio file URL (Base44 UploadFile)." },
+    "duration_sec": { "type": "number", "description": "Clip length in seconds." },
+    "masked": { "type": "boolean", "default": false, "description": "Voice masking applied (honest framing: harder to recognise, NOT anonymous)." },
+    "transcript": { "type": "string", "description": "STT transcript — filled ONLY when transcription is enabled; the screen runs on this." },
+    "transcript_confidence": { "type": "number", "description": "STT confidence; low confidence fails safe to human review." },
+    "status": { "type": "string", "enum": ["pending_screening", "held", "delivered", "blocked"], "default": "pending_screening", "description": "pending_screening = stored but NOT delivered (no STT yet). held = flagged for human review. delivered = screened + handed to a holder. blocked = failed the screen." },
+    "holder_hash": { "type": "string", "description": "The phase-sister currently holding a delivered note (set at delivery, never before)." },
+    "live_at": { "type": "string", "format": "date-time", "description": "When it becomes deliverable — set ONLY after a passing screen." },
+    "expires_at": { "type": "string", "format": "date-time", "description": "Fades ~48h after delivery." }
+  },
+  "required": ["author_hash", "audio_url"],
+  "indexes": [
+    { "fields": ["author_hash"] },
+    { "fields": ["status"] }
+  ],
+  // Fully service-role locked, INCLUDING read (audio is sensitive — no public listing).
+  "rls": {
+    "create": { "user_condition": { "role": "system" } },
+    "read":   { "user_condition": { "role": "system" } },
+    "update": { "user_condition": { "role": "system" } },
+    "delete": { "user_condition": { "role": "system" } }
+  }
+}

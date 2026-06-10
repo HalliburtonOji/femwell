@@ -20,6 +20,12 @@ export const REACTIONS = ECHO_REACTIONS;       // held / me too / hear you / sav
 export const POST_MAX = 800;
 export const PRESENCE_WINDOW_HRS = 12;         // "active" = posted/answered in the last N hrs
 
+// M4 async voice-notes — DORMANT until an STT provider key exists. Capture/store/UI are
+// fully built; this flag keeps them out of the live app. Flip to true ONLY together with
+// the server `TRANSCRIPTION_ENABLED` env + an STT key — otherwise nothing is ever
+// delivered (postVoiceNote holds every note). See MORNING_LIST_FOR_HALLI.md.
+export const VOICE_NOTES_ENABLED = false;
+
 // The room the Lounge maps to + the daily rooms shown as doors (Demo 6 order).
 export const ROOM_KEYS = ROOMS.map((r) => r.key);
 
