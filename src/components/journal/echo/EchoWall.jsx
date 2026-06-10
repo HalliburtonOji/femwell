@@ -85,24 +85,32 @@ export default function EchoWall({ user, profile, phase = null, lifeStage = null
     [raw, myHash]
   );
 
+  // L4: each of these optimistically mutates local state — roll back on failure so
+  // the UI can't drift from the server (a failed retract no longer vanishes a live
+  // echo; a failed report doesn't show it hidden when it isn't).
   const handleReact = async (echo, kind, field) => {
     if (hasReacted(echo.id, kind)) return;
+    const snapshot = raw;
     markReacted(echo.id, kind);
     const next = (echo[field] || 0) + 1;
     setRaw((prev) => prev.map((e) => (e.id === echo.id ? { ...e, [field]: next } : e)));
-    try { await base44.entities.Echo.update(echo.id, { [field]: next }); } catch (err) { console.error("React failed:", err); }
+    try { await base44.entities.Echo.update(echo.id, { [field]: next }); }
+    catch (err) { console.error("React failed:", err); setRaw(snapshot); }
   };
 
   const handleReport = async (echo) => {
     if (hasReported(echo.id)) return;
+    const snapshot = raw;
     markReported(echo.id);
     const count = (echo.report_count || 0) + 1;
     const hide = count >= REPORT_AUTOHIDE_THRESHOLD;
     setRaw((prev) => (hide ? prev.filter((e) => e.id !== echo.id) : prev.map((e) => (e.id === echo.id ? { ...e, report_count: count } : e))));
-    try { await base44.entities.Echo.update(echo.id, { report_count: count, hidden: hide }); } catch (err) { console.error("Report failed:", err); }
+    try { await base44.entities.Echo.update(echo.id, { report_count: count, hidden: hide }); }
+    catch (err) { console.error("Report failed:", err); setRaw(snapshot); }
   };
 
   const handleRetract = async (echo) => {
+    const snapshot = raw;
     setRaw((prev) => prev.filter((e) => e.id !== echo.id));
     // Echoes are service-owned (see postEcho), so deletion goes through retractEcho,
     // which verifies our author_hash against the row before removing it.
@@ -111,7 +119,7 @@ export default function EchoWall({ user, profile, phase = null, lifeStage = null
         user_id: user?.id, echo_id: echo.id, author_hash: myHash || echo.author_hash,
       });
       forgetMine(echo.id);
-    } catch (err) { console.error("Retract failed:", err); }
+    } catch (err) { console.error("Retract failed:", err); setRaw(snapshot); }
   };
 
   // ── loading ──

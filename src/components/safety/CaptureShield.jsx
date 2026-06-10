@@ -16,6 +16,7 @@
 // the same behaviour to an existing one (as the Witness reader does).
 
 import { useEffect, useState } from "react";
+import { T, UI } from "../journal/Editorial";
 
 export function useCaptureGuard({ onCapture, enabled = true } = {}) {
   const [obscured, setObscured] = useState(false);
@@ -64,7 +65,7 @@ export default function CaptureShield({ children, onCapture, enabled = true, not
           position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center",
           background: "rgba(244,239,227,0.86)", borderRadius: 3, textAlign: "center", padding: 24,
         }}>
-          <span style={{ fontFamily: 'ui-sans-serif,system-ui,sans-serif', fontSize: 12.5, fontWeight: 700, letterSpacing: 0.4, color: "#2E261B" }}>
+          <span style={{ fontFamily: UI, fontSize: 12.5, fontWeight: 700, letterSpacing: 0.4, color: T.muted }}>
             {note || "Held in confidence — please don’t screenshot or copy."}
           </span>
         </div>

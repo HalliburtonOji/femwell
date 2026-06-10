@@ -59,8 +59,10 @@ Deno.serve(async (req) => {
   const twinRow = rows.find((r: any) => r.author_hash === otherHash && Number(r.day) === wantDay) || null;
 
   // Blur gate: only release the twin's words once the caller has written theirs.
+  // L5: also withhold the mere FACT she answered until you've written — strict
+  // mutual blur, so you can't lurk to see if she showed up first.
   const mineWritten = !!(mineRow && (mineRow.body || '').trim());
-  const twinAnswered = !!(twinRow && (twinRow.body || '').trim());
+  const twinAnswered = mineWritten && !!(twinRow && (twinRow.body || '').trim());
 
   return Response.json({
     ok: true, status, day: wantDay, currentDay, paired: true,

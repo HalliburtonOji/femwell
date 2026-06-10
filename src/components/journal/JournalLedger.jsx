@@ -119,7 +119,9 @@ function Stack({ entry, thread, count, onOpen }) {
     }} />
   );
   return (
-    <div onClick={onOpen} style={{ position: "relative", cursor: "pointer", marginBottom: 24 }}>
+    <div onClick={onOpen} role="button" tabIndex={0} aria-label="Open entry"
+      onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onOpen && onOpen(); } }}
+      style={{ position: "relative", cursor: "pointer", marginBottom: 24 }}>
       {count > 2 && backLayer(8, 9, 1.6, "2E")}
       {backLayer(4, 4.5, -1.1, "3D")}
       <div style={{ position: "relative" }}>
@@ -164,7 +166,9 @@ export default function JournalLedger({ entries, onTap, onThread }) {
           <Stack key={`stack-${r.thread}`} entry={r.entry} thread={r.thread} count={r.count}
             onOpen={() => onThread && onThread(r.thread)} />
         ) : (
-          <div key={r.entry.id} onClick={() => onTap && onTap(r.entry)} style={{ cursor: "pointer", marginBottom: 14 }}>
+          <div key={r.entry.id} onClick={() => onTap && onTap(r.entry)} role="button" tabIndex={0} aria-label="Open entry"
+            onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onTap && onTap(r.entry); } }}
+            style={{ cursor: "pointer", marginBottom: 14 }}>
             <StickerFace entry={r.entry} onThread={onThread} />
           </div>
         )

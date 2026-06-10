@@ -60,7 +60,7 @@ export default function BreakSealReader({ letter, onClose, onSeen, onWriteBack }
             <div className="fw-seal-anim" style={{
               width: 76, height: 76, borderRadius: "50%", margin: "0 auto 18px",
               display: "flex", alignItems: "center", justifyContent: "center",
-              background: "#EFE3C9", border: `1.5px solid ${T.gold}`,
+              background: T.wax, border: `1.5px solid ${T.gold}`,
               animation: stage === "opening" ? "fwSealGive 620ms ease-in forwards" : "none",
             }}>
               <Heart size={26} />

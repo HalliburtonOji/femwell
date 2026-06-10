@@ -286,7 +286,10 @@ export default function NewEntrySheet({
     rec.onend = () => {
       if (wantRef.current) {
         try { rec.start(); }              // resume — Web Speech ended on a pause
-        catch { wantRef.current = false; setListening(false); }
+        catch {                            // L2: couldn't auto-resume — tell her, don't die silent
+          wantRef.current = false; setListening(false);
+          setVoiceError("Dictation paused — tap the mic to pick up where you left off.");
+        }
       } else {
         setListening(false);
       }
@@ -490,7 +493,7 @@ export default function NewEntrySheet({
                   <button onClick={listening ? stopVoice : startVoice} aria-label={listening ? "Stop" : "Start speaking"} style={{
                     width: 56, height: 56, borderRadius: "50%", flexShrink: 0, cursor: "pointer",
                     display: "flex", alignItems: "center", justifyContent: "center",
-                    background: listening ? T.crimson : "#EFE3C9", border: `1.5px solid ${listening ? T.crimson : T.gold}`,
+                    background: listening ? T.crimson : T.wax, border: `1.5px solid ${listening ? T.crimson : T.gold}`,
                     color: listening ? "#fff" : T.gold,
                   }}>{listening ? <Square size={18} /> : <Mic size={20} />}</button>
                   <Hand size={19} color={T.inkSoft}>{listening ? "Listening… tap to stop." : "Tap the mic and speak."}</Hand>
@@ -608,7 +611,8 @@ export default function NewEntrySheet({
                     return (
                       <button key={n} onClick={() => setMood(n)} aria-label={f.label} style={{
                         background: "none", border: "none", cursor: "pointer", color: f.fill,
-                        transform: mood === n ? "scale(1.3)" : "scale(1)", transition: "transform 0.15s", padding: 4,
+                        transform: mood === n ? "scale(1.3)" : "scale(1)", transition: "transform 0.15s",
+                        padding: 7, minWidth: 44, minHeight: 44,   /* P2: ~44px tap target */
                       }}><I size={30} strokeWidth={2} /></button>
                     );
                   })}

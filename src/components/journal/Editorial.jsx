@@ -18,6 +18,7 @@ export const T = {
   crimson:  "#BC2E27",   // THE heart — the single colour pop
   blush:    "#E8B4B8", sage: "#8FAF8F",
   dusk:     "#211A12",   // the one warm near-black "dusk" surface (Tonight card) — NOT a violet
+  wax:      "#EFE3C9",   // warm-cream inset for wax seals / mic / reaction discs (named, was a literal)
 };
 
 // ── z-index scale (H8) — one ladder so overlay peers don't collide and the 18+

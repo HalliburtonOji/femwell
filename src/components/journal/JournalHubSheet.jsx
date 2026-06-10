@@ -65,7 +65,7 @@ export default function JournalHubSheet({ open, onClose, onSelect, threads = [] 
         role="dialog" aria-modal="true" aria-label="Journal menu"
         onClick={(e) => e.stopPropagation()}
         style={{
-          background: "var(--surface)",
+          background: T.paperHi,
           width: "100%",
           borderRadius: "18px 18px 0 0",
           padding: "20px 16px 36px",

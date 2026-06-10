@@ -211,7 +211,7 @@ export default function ShareAsEchoSheet({
         {/* ── CRISIS INTERCEPT (never posts) ── */}
         {stage === "crisis" && (
           <>
-            <div style={{ ...panel, background: "#2B1E26", border: "none" }}>
+            <div style={{ ...panel, background: T.dusk, border: "none" }}>
               <Hand size={22} color="#F5E6D3" carve={false} style={{ lineHeight: 1.45 }}>
                 This sounds heavy. A peer isn{"’"}t the right shape for tonight. You deserve more than a sister can hold — not less. More.
               </Hand>
@@ -246,7 +246,7 @@ export default function ShareAsEchoSheet({
         {/* ── DONE ── */}
         {stage === "done" && (
           <div style={{ textAlign: "center", padding: "20px 0" }}>
-            <div style={{ width: 46, height: 46, borderRadius: "50%", margin: "0 auto 14px", background: "#EFE3C9", border: `1px solid ${T.gold}`, display: "flex", alignItems: "center", justifyContent: "center" }}>
+            <div style={{ width: 46, height: 46, borderRadius: "50%", margin: "0 auto 14px", background: T.wax, border: `1px solid ${T.gold}`, display: "flex", alignItems: "center", justifyContent: "center" }}>
               <Check size={20} style={{ color: T.gold }} />
             </div>
             <Script size={34} style={{ marginBottom: 8 }}>It{"’"}s held</Script>
