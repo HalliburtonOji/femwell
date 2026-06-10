@@ -58,11 +58,14 @@ export default function EchoWall({ user, profile, phase = null, lifeStage = null
       // Fetch recent, non-hidden echoes; live/cooling/expired is decided on-device.
       const rows = await base44.entities.Echo.filter({ hidden: false }, "-created_date", 200).catch(() => []);
       const list = Array.isArray(rows) ? rows : [];
-      // Auto-unpost: clean up the viewer's OWN expired echoes.
+      // Auto-unpost: clean up the viewer's OWN expired echoes — via retractEcho
+      // (owner-proof delete under the service identity), since the Echo write policy
+      // is now locked and clients can't delete rows directly.
       if (ah) {
         const mineExpired = list.filter((e) => e.author_hash === ah && isExpired(e));
         await Promise.all(mineExpired.map((e) =>
-          base44.entities.Echo.delete(e.id).then(() => forgetMine(e.id)).catch(() => {})
+          base44.functions.invoke("retractEcho", { user_id: user?.id, echo_id: e.id, author_hash: ah })
+            .then(() => forgetMine(e.id)).catch(() => {})
         ));
       }
       setRaw(list);
@@ -94,8 +97,11 @@ export default function EchoWall({ user, profile, phase = null, lifeStage = null
     markReacted(echo.id, kind);
     const next = (echo[field] || 0) + 1;
     setRaw((prev) => prev.map((e) => (e.id === echo.id ? { ...e, [field]: next } : e)));
-    try { await base44.entities.Echo.update(echo.id, { [field]: next }); }
-    catch (err) { console.error("React failed:", err); setRaw(snapshot); }
+    // Through reactEcho (service-role) now that the Echo write policy is locked.
+    try {
+      const r = await base44.functions.invoke("reactEcho", { user_id: user?.id, echo_id: echo.id, field });
+      if (!(r?.data ?? r)?.ok) throw new Error("react rejected");
+    } catch (err) { console.error("React failed:", err); setRaw(snapshot); }
   };
 
   const handleReport = async (echo) => {
@@ -105,8 +111,10 @@ export default function EchoWall({ user, profile, phase = null, lifeStage = null
     const count = (echo.report_count || 0) + 1;
     const hide = count >= REPORT_AUTOHIDE_THRESHOLD;
     setRaw((prev) => (hide ? prev.filter((e) => e.id !== echo.id) : prev.map((e) => (e.id === echo.id ? { ...e, report_count: count } : e))));
-    try { await base44.entities.Echo.update(echo.id, { report_count: count, hidden: hide }); }
-    catch (err) { console.error("Report failed:", err); setRaw(snapshot); }
+    try {
+      const r = await base44.functions.invoke("reportEcho", { user_id: user?.id, echo_id: echo.id });
+      if (!(r?.data ?? r)?.ok) throw new Error("report rejected");
+    } catch (err) { console.error("Report failed:", err); setRaw(snapshot); }
   };
 
   const handleRetract = async (echo) => {

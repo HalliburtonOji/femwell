@@ -107,5 +107,18 @@
         "hidden"
       ]
     }
-  ]
+  ],
+  // Echo-write lock (final audit residual): the WALL MUST STAY PUBLICLY READABLE, so
+  // `read` is intentionally OMITTED here (it keeps the entity's public-read default —
+  // do NOT add a read rule). Only WRITES are locked to the service role: all of
+  // create / update / delete now go through asServiceRole functions (postEcho /
+  // reactEcho / reportEcho / retractEcho), so a plain client can no longer set
+  // arbitrary fields, fake counts, hide, or delete others' echoes directly.
+  // VERIFY ON DEPLOY: Echo.filter (read) still 200; a direct client Echo.create /
+  // .update / .delete now 403 (owner token still bypasses — same caveat as B3).
+  "rls": {
+    "create": { "user_condition": { "role": "system" } },
+    "update": { "user_condition": { "role": "system" } },
+    "delete": { "user_condition": { "role": "system" } }
+  }
 }
