@@ -1,4 +1,4 @@
-// postCommunityPost (Community M1):
+// createCommunityPost (Community M1) — renamed from postCommunityPost (Base44 sticky-failure re-register):
 // Creates a room post under the service identity (asServiceRole → created_by is the
 // service, never the author). Only the device-derived author_hash is stored. Crisis
 // content routes to support and is NEVER posted. Generous per-day cap, server-side.
@@ -7,7 +7,20 @@
 // Returns: { ok, post } | { error } | { intercept: true }
 
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
-import { isCrisis } from '../_shared/communityModeration.ts';
+
+// Crisis check inlined (self-contained — keeps this function structurally identical
+// to the proven postEcho pattern; no cross-file imports that the function deploy
+// might not pick up). Same patterns as postEcho / postTwinEntry.
+const CRISIS_PATTERNS = [
+  /\bkill(ing)?\s+myself\b/i, /\bend(ing)?\s+(it|my life|things)\b/i,
+  /\b(want|wanting|going)\s+to\s+die\b/i, /\bdon'?t\s+want\s+to\s+(be here|live|wake up|exist)\b/i,
+  /\bno\s+(reason|point)\s+(to|in)\s+(living|going on|being here)\b/i, /\bsuicid(e|al)\b/i,
+  /\bself[-\s]?harm(ing)?\b/i, /\bhurt(ing)?\s+myself\b/i, /\bcut(ting)?\s+myself\b/i,
+  /\boverdos(e|ing)\b/i, /\bcan'?t\s+(go on|do this|cope)\s+(any\s*more|anymore)?\b/i,
+  /\bbetter\s+off\s+without\s+me\b/i, /\bnothing\s+to\s+live\s+for\b/i,
+  /\bhe\s+(hits|beats|hurts)\s+me\b/i, /\bnot\s+safe\s+(at home|here|with him|with her)\b/i,
+];
+function isCrisis(text: string): boolean { return CRISIS_PATTERNS.some((re) => re.test(text || '')); }
 
 const ROOMS = ['lounge', 'circles', 'love', 'money', 'style', 'lighter', 'health'];
 const MAX_LEN = 800;

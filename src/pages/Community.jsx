@@ -120,7 +120,7 @@ function PostCard({ post, user, onCrisis, onChanged }) {
     setBusy(true);
     try {
       const wh = await communityHash(user?.id);
-      const r = await base44.functions.invoke("postComment", { user_id: user?.id, author_hash: wh, post_id: post.id, body: text });
+      const r = await base44.functions.invoke("addComment", { user_id: user?.id, author_hash: wh, post_id: post.id, body: text });
       const d = r?.data ?? r;
       if (d?.intercept) { onCrisis(); return; }
       setDraft("");
@@ -206,7 +206,7 @@ function RoomComposer({ room, user, onCrisis, onPosted, onCancel }) {
     setBusy(true);
     try {
       const wh = await communityHash(user?.id);
-      const r = await base44.functions.invoke("postCommunityPost", { user_id: user?.id, author_hash: wh, room, body: text, comments_mode: mode });
+      const r = await base44.functions.invoke("createCommunityPost", { user_id: user?.id, author_hash: wh, room, body: text, comments_mode: mode });
       const d = r?.data ?? r;
       if (d?.intercept) { onCrisis(); return; }
       if (d?.error === "rate") { setBusy(false); return; }
@@ -253,7 +253,7 @@ function QotdCard({ user, onCrisis }) {
     setBusy(true);
     try {
       const wh = await communityHash(user?.id);
-      const r = await base44.functions.invoke("postQotdResponse", { user_id: user?.id, author_hash: wh, prompt_day: qotd.day, prompt_key: qotd.key, body: text });
+      const r = await base44.functions.invoke("answerQotd", { user_id: user?.id, author_hash: wh, prompt_day: qotd.day, prompt_key: qotd.key, body: text });
       const d = r?.data ?? r;
       if (d?.intercept) { onCrisis(); return; }
       markQotd(qotd.day); setAnswered(true); setDraft("");

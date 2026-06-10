@@ -1,4 +1,4 @@
-// postComment (Community M1):
+// addComment (Community M1) — renamed from postComment (Base44 sticky-failure re-register):
 // Adds a flat, anonymous comment to a post — IF that post is open to comments.
 // Moderation spine: crisis → route to support (never posted); harmful/out-of-place →
 // stored as status:"removed" (a gentle tombstone, body withheld); else visible.
@@ -8,7 +8,29 @@
 // Returns: { ok, comment } | { intercept: true } | { error }
 
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
-import { moderate } from '../_shared/communityModeration.ts';
+
+// Moderation inlined (self-contained — no cross-file import that the function deploy
+// might miss). crisis → route to support (never post); harmful → auto-remove
+// (tombstone). M2 (with the OpenAI key) upgrades shouldRemove to the Moderation API.
+const CRISIS_PATTERNS = [
+  /\bkill(ing)?\s+myself\b/i, /\bend(ing)?\s+(it|my life|things)\b/i,
+  /\b(want|wanting|going)\s+to\s+die\b/i, /\bdon'?t\s+want\s+to\s+(be here|live|wake up|exist)\b/i,
+  /\bno\s+(reason|point)\s+(to|in)\s+(living|going on|being here)\b/i, /\bsuicid(e|al)\b/i,
+  /\bself[-\s]?harm(ing)?\b/i, /\bhurt(ing)?\s+myself\b/i, /\bcut(ting)?\s+myself\b/i,
+  /\boverdos(e|ing)\b/i, /\bcan'?t\s+(go on|do this|cope)\s+(any\s*more|anymore)?\b/i,
+  /\bbetter\s+off\s+without\s+me\b/i, /\bnothing\s+to\s+live\s+for\b/i,
+  /\bhe\s+(hits|beats|hurts)\s+me\b/i, /\bnot\s+safe\s+(at home|here|with him|with her)\b/i,
+];
+const BANNED = [
+  'idiot', 'stupid', 'shut up', 'loser', 'ugly', 'pathetic', 'hate you', 'shut it',
+  'kill yourself', 'kys', 'slut', 'whore', 'bitch', 'retard',
+];
+function moderate(text: string): { crisis?: boolean; remove?: boolean; ok?: boolean } {
+  if (CRISIS_PATTERNS.some((re) => re.test(text || ''))) return { crisis: true };
+  const t = (text || '').toLowerCase();
+  if (BANNED.some((w) => t.includes(w))) return { remove: true };
+  return { ok: true };
+}
 
 const MAX_LEN = 400;
 
@@ -36,7 +58,7 @@ Deno.serve(async (req) => {
     return Response.json({ error: 'reaction-only' }, { status: 409 });
   }
 
-  const mod = await moderate(text);
+  const mod = moderate(text);
   if (mod.crisis) return Response.json({ ok: false, intercept: true }, { status: 200 });
   const status = mod.remove ? 'removed' : 'visible';
 
