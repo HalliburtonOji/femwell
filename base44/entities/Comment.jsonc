@@ -13,7 +13,8 @@
     "by": { "type": "string", "enum": ["member", "jess"], "default": "member", "description": "member or Jess (host/support)." },
     "status": { "type": "string", "enum": ["visible", "removed"], "default": "visible", "description": "removed = auto-moderated; rendered as a tombstone, body withheld." },
     "report_count": { "type": "number", "default": 0 },
-    "hidden": { "type": "boolean", "default": false }
+    "hidden": { "type": "boolean", "default": false },
+    "flagged": { "type": "boolean", "default": false, "description": "M2: OpenAI moderation flagged this as borderline (visible but queued for human review). Clearly-harmful comments are status:removed instead." }
   },
   "required": ["post_id", "author_hash"],
   "indexes": [

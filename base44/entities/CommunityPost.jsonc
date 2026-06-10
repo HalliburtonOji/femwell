@@ -15,6 +15,7 @@
     "domain": { "type": "string", "description": "Optional light label (Career, Dating, Joy…) — never a category that identifies." },
     "report_count": { "type": "number", "default": 0, "description": "Reports; auto-hides past the threshold." },
     "hidden": { "type": "boolean", "default": false, "description": "Suppressed from the room (moderation/report)." },
+    "flagged": { "type": "boolean", "default": false, "description": "M2: OpenAI moderation flagged this as borderline (visible but queued for human review). Clearly-harmful posts are rejected at creation, not stored." },
     "expires_at": { "type": "string", "format": "date-time", "description": "Optional soft expiry for ambient/older posts." }
   },
   "required": ["room", "author_hash", "body"],

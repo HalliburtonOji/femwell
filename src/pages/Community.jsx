@@ -10,9 +10,10 @@
 // per-post reaction-only) + kind reactions (never counted) + report→hide. Every
 // text input runs a crisis pre-check (UK resources) and posts via service-role
 // functions (created_by = service; only a device hash stored). Wrapped in the 18+
-// AgeGate. (Jess auto-support + AI auto-moderation = M2, needs the OpenAI key.)
+// AgeGate. M2: OpenAI moderation (harmful→removed/declined, health-allowlisted,
+// borderline→flagged review queue) + Jess auto-support replies (judicious, tone-locked).
 
-import { useState, useEffect, useMemo, useCallback } from "react";
+import { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Grid2x2, MessageCircle, Send, Lock, Unlock, Plus, Flag,
@@ -36,6 +37,27 @@ import {
 
 const PLUM = "#241a26"; // the single permitted dark surface
 const HANDFAM = '"Cormorant Garamond","Fraunces",Georgia,serif';
+
+// ── Jess support (M2): judicious client gate ─────────────────────────────────
+// Jess only ever leaves ONE reply, only on heavier/asking posts, and the server
+// re-checks heaviness + dedups + lets the model decline. The client mirrors a light
+// heaviness pre-check and a per-post-per-device "already asked" flag so we don't fire
+// a function call on every thread that opens.
+const JESS_CUES = [
+  "struggl", "lonely", "alone", "scared", "afraid", "anxious", "anxiety", "overwhelm",
+  "exhausted", "burnt out", "burnout", "cry", "tears", "breaking", "broken", "lost",
+  "hopeless", "numb", "empty", "guilt", "ashamed", "shame", "grief", "grieving", "loss",
+  "failed", "failing", "failure", "hurt", "pain", "low", "depress", "cope", "no one",
+  "nobody", "unseen", "invisible", "worthless", "help", "advice", "anyone else",
+  "does anyone", "is it normal", "worried", "frightened", "falling apart", "too much",
+];
+function clientHeavy(text) {
+  const t = (text || "").toLowerCase();
+  if ((text || "").trim().endsWith("?")) return true;
+  return JESS_CUES.some((w) => t.includes(w));
+}
+const jessAsked = (id) => { try { return localStorage.getItem("fw_jess_req_" + id) === "1"; } catch { return false; } };
+const markJessAsked = (id) => { try { localStorage.setItem("fw_jess_req_" + id, "1"); } catch { /* ignore */ } };
 
 const inputStyle = {
   width: "100%", background: T.paperHi, border: `1px solid ${T.paperDeep}`,
@@ -84,11 +106,30 @@ function PostCard({ post, user, onCrisis, onChanged }) {
   const [draft, setDraft] = useState("");
   const [busy, setBusy] = useState(false);
   const isOpen = post.comments_mode !== "reaction";
+  const jessTried = useRef(false);
 
   const loadComments = useCallback(async () => {
     const rows = await base44.entities.Comment.filter({ post_id: post.id, hidden: false }, "created_date", 100).catch(() => []);
-    setComments(Array.isArray(rows) ? rows : []);
-  }, [post.id]);
+    const list = Array.isArray(rows) ? rows : [];
+    setComments(list);
+
+    // Judicious Jess: once per post per device, only if the thread is open, has no Jess
+    // reply yet, and reads as heavier/asking. The server re-gates + the model may decline,
+    // so a fired call can still come back empty — that's fine, we just don't ask again.
+    if (!jessTried.current && isOpen && !list.some((c) => c.by === "jess")
+        && clientHeavy(post.body) && !jessAsked(post.id)) {
+      jessTried.current = true;
+      markJessAsked(post.id);
+      try {
+        const r = await base44.functions.invoke("jessSupport", { post_id: post.id });
+        const d = r?.data ?? r;
+        if (d?.comment) {
+          const rows2 = await base44.entities.Comment.filter({ post_id: post.id, hidden: false }, "created_date", 100).catch(() => []);
+          if (Array.isArray(rows2)) setComments(rows2);
+        }
+      } catch { /* Jess staying quiet is acceptable; never block the thread */ }
+    }
+  }, [post.id, isOpen, post.body]);
 
   const toggleComments = () => { const next = !open; setOpen(next); if (next && comments === null) loadComments(); };
 
@@ -199,17 +240,20 @@ function RoomComposer({ room, user, onCrisis, onPosted, onCancel }) {
   const [body, setBody] = useState("");
   const [mode, setMode] = useState("open");
   const [busy, setBusy] = useState(false);
+  const [declined, setDeclined] = useState(false);
   const send = async () => {
     const text = body.trim();
     if (!text || busy) return;
     if (crisisCheck(text).intercept) { onCrisis(); return; }
     setBusy(true);
+    setDeclined(false);
     try {
       const wh = await communityHash(user?.id);
       const r = await base44.functions.invoke("createCommunityPost", { user_id: user?.id, author_hash: wh, room, body: text, comments_mode: mode });
       const d = r?.data ?? r;
       if (d?.intercept) { onCrisis(); return; }
       if (d?.error === "rate") { setBusy(false); return; }
+      if (d?.removed) { setDeclined(true); setBusy(false); return; }  // moderation declined it
       onPosted?.();
     } catch (e) { console.error("post failed:", e); }
     finally { setBusy(false); }
@@ -217,7 +261,12 @@ function RoomComposer({ room, user, onCrisis, onPosted, onCancel }) {
   return (
     <div style={{ background: T.paperHi, border: `1px solid ${T.gold}`, borderRadius: 4, padding: "15px 16px", marginBottom: 16 }}>
       <Eyebrow mb={8}>Add to the room</Eyebrow>
-      <textarea value={body} onChange={(e) => setBody(e.target.value)} maxLength={POST_MAX} placeholder="Say it plainly — silly to serious, no names." style={{ ...inputStyle, minHeight: 90 }} />
+      <textarea value={body} onChange={(e) => { setBody(e.target.value); if (declined) setDeclined(false); }} maxLength={POST_MAX} placeholder="Say it plainly — silly to serious, no names." style={{ ...inputStyle, minHeight: 90 }} />
+      {declined && (
+        <div style={{ marginTop: 8, fontFamily: UI, fontSize: 12, color: T.crimson, lineHeight: 1.45 }}>
+          Jess held this one back — it reads as unkind for the room. Reword it and it'll go up.
+        </div>
+      )}
       <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap", marginTop: 10 }}>
         <button onClick={() => setMode(mode === "open" ? "reaction" : "open")} style={{ ...ghostBtn }}>
           {mode === "open" ? <Unlock size={13} /> : <Lock size={13} />}
