@@ -1,0 +1,25 @@
+{
+  // Community Phase 4 (§P.2.2) — one anonymous note in a checkpoint discussion thread. Only a
+  // device-derived author_hash; written asServiceRole. Crisis-checked + OpenAI-moderated server-
+  // side (a harmful note is stored status:removed, body withheld). READ public (threads are
+  // lurkable); writes service-role. No counts. Position-gating is enforced client-side (you only
+  // see a checkpoint's thread once you've attested you reached it).
+  "name": "ClubNote",
+  "type": "object",
+  "properties": {
+    "pick_key": { "type": "string", "description": "The BookClubPick." },
+    "checkpoint_index": { "type": "number", "description": "Which checkpoint thread." },
+    "author_hash": { "type": "string", "description": "Device-derived anonymous author token." },
+    "body": { "type": "string", "description": "The note (scrubbed + screened server-side)." },
+    "status": { "type": "string", "enum": ["visible", "removed"], "default": "visible" },
+    "flagged": { "type": "boolean", "default": false, "description": "M2 borderline → human review queue." },
+    "hidden": { "type": "boolean", "default": false }
+  },
+  "required": ["pick_key", "checkpoint_index", "author_hash"],
+  "indexes": [{ "fields": ["pick_key"] }, { "fields": ["author_hash"] }],
+  "rls": {
+    "create": { "user_condition": { "role": "system" } },
+    "update": { "user_condition": { "role": "system" } },
+    "delete": { "user_condition": { "role": "system" } }
+  }
+}

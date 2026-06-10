@@ -1,0 +1,21 @@
+{
+  // Community Phase 4 (§P.2.2) — a spoiler-safe discussion checkpoint within a Book Club pick.
+  // Position-gated: a checkpoint's thread unlocks only when the reader attests they've reached
+  // it → spoiler-safe AND latecomer-safe (threads persist; no one is late). READ public; writes
+  // service-role (curated). Jess authors each prompt (tone-locked — the Fable cautionary tale).
+  "name": "ClubCheckpoint",
+  "type": "object",
+  "properties": {
+    "pick_key": { "type": "string", "description": "The BookClubPick this belongs to." },
+    "index": { "type": "number", "description": "Order (0-based). A reader unlocks checkpoint i once they've reached it." },
+    "label": { "type": "string", "description": "Spoiler-free position label, e.g. 'Up to the first Christmas'." },
+    "jess_prompt": { "type": "string", "description": "Jess's discussion prompt for this checkpoint." }
+  },
+  "required": ["pick_key", "index", "label"],
+  "indexes": [{ "fields": ["pick_key"] }],
+  "rls": {
+    "create": { "user_condition": { "role": "system" } },
+    "update": { "user_condition": { "role": "system" } },
+    "delete": { "user_condition": { "role": "system" } }
+  }
+}

@@ -1,0 +1,25 @@
+{
+  // Community Phase 4 (§P.2.2) — the current Book Club pick. Reading happens in the EXISTING
+  // Lifestyle BookReader (/BookReader?gutenberg_id=N, free public-domain books) — no new
+  // reader. One curated pick per cadence (monthly / 6-weekly, never weekly). Jess hosts.
+  // READ public (lurkable); writes service-role (curated/admin). No "books-read" counts ever.
+  "name": "BookClubPick",
+  "type": "object",
+  "properties": {
+    "pick_key": { "type": "string", "description": "Stable key for this pick (joins checkpoints + notes). e.g. littlewomen-2026q3." },
+    "gutenberg_id": { "type": "string", "description": "Project Gutenberg id → opens in the existing BookReader." },
+    "title": { "type": "string" },
+    "author": { "type": "string" },
+    "host_intro": { "type": "string", "description": "Jess's warm host intro (tone-locked)." },
+    "cadence": { "type": "string", "description": "e.g. 'Six weeks · ends 21 July'." },
+    "trigger_warnings": { "type": "array", "items": { "type": "string" }, "description": "Per-pick content notes (loss/fertility/trauma)." },
+    "active": { "type": "boolean", "default": true, "description": "The single live pick." }
+  },
+  "required": ["pick_key", "title"],
+  "indexes": [{ "fields": ["active"] }, { "fields": ["pick_key"] }],
+  "rls": {
+    "create": { "user_condition": { "role": "system" } },
+    "update": { "user_condition": { "role": "system" } },
+    "delete": { "user_condition": { "role": "system" } }
+  }
+}

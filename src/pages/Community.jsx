@@ -40,6 +40,8 @@ import {
   isJoined, markJoined, clearJoined,
 } from "@/components/community/circlesConfig";
 import { WISDOM_TOPICS, WISDOM_SEED, featuredWisdom } from "@/components/community/wisdomLibrary";
+import { SEED_PICK, clubReached, setClubReached } from "@/components/community/bookClubConfig";
+import { createPageUrl } from "@/utils";
 
 const PLUM = "#241a26"; // the single permitted dark surface
 const HANDFAM = '"Cormorant Garamond","Fraunces",Georgia,serif';
@@ -355,6 +357,111 @@ function QotdCard({ user, onCrisis }) {
   );
 }
 
+// ── Book Club (Phase 4, §P.2.2) — on the existing BookReader ──────────────────
+function ClubCheckpointThread({ pickKey, cp, user, onCrisis }) {
+  const [notes, setNotes] = useState(null);
+  const [draft, setDraft] = useState("");
+  const [busy, setBusy] = useState(false);
+  const load = useCallback(async () => {
+    const rows = await base44.entities.ClubNote.filter({ pick_key: pickKey, checkpoint_index: cp.index, hidden: false }, "created_date", 100).catch(() => []);
+    setNotes(Array.isArray(rows) ? rows : []);
+  }, [pickKey, cp.index]);
+  useEffect(() => { load(); }, [load]);
+  const send = async () => {
+    const text = draft.trim(); if (!text || busy) return;
+    if (crisisCheck(text).intercept) { onCrisis(); return; }
+    setBusy(true);
+    try {
+      const wh = await communityHash(user?.id);
+      const r = await base44.functions.invoke("postClubNote", { user_id: user?.id, author_hash: wh, pick_key: pickKey, checkpoint_index: cp.index, body: text });
+      const d = r?.data ?? r;
+      if (d?.intercept) { onCrisis(); return; }
+      setDraft(""); await load();
+    } catch (e) { console.error("club note failed:", e); }
+    finally { setBusy(false); }
+  };
+  return (
+    <div style={{ marginTop: 10 }}>
+      <Hand size={17} color={T.inkSoft} style={{ marginBottom: 10, fontStyle: "italic" }}>{cp.jess_prompt}</Hand>
+      {notes === null && <Hand size={15} color={T.muted}>Opening the thread…</Hand>}
+      {notes && notes.length === 0 && <Hand size={15} color={T.muted}>No one's spoken here yet. The thread waits — no one is late.</Hand>}
+      {notes && notes.map((n) => (
+        n.status === "removed"
+          ? <div key={n.id} style={{ fontFamily: UI, fontSize: 12, color: T.muted, fontStyle: "italic", padding: "6px 0" }}>{MOD_REMOVED}</div>
+          : <div key={n.id} style={{ padding: "6px 0", borderTop: `1px solid ${T.paperDeep}` }}><Hand size={16} color={T.inkSoft}>{n.body}</Hand></div>
+      ))}
+      <textarea value={draft} onChange={(e) => setDraft(e.target.value)} maxLength={600} placeholder="A few words — lurking counts too." style={{ ...inputStyle, minHeight: 52, fontSize: 16, marginTop: 8 }} />
+      <div style={{ display: "flex", justifyContent: "flex-end", marginTop: 6 }}>
+        <button onClick={send} disabled={!draft.trim() || busy} style={{ ...primaryBtn, padding: "8px 14px", opacity: (!draft.trim() || busy) ? 0.5 : 1 }}><Send size={13} /> {busy ? "Adding…" : "Add a note"}</button>
+      </div>
+    </div>
+  );
+}
+
+function BookClubView({ user, onCrisis, onBack }) {
+  const navigate = useNavigate();
+  const [pick, setPick] = useState(null);
+  const [checkpoints, setCheckpoints] = useState([]);
+  const [reached, setReached] = useState(-1);
+  useEffect(() => {
+    (async () => {
+      const picks = await base44.entities.BookClubPick.filter({ active: true }, "-created_date", 1).catch(() => []);
+      if (Array.isArray(picks) && picks.length) {
+        const p0 = picks[0];
+        const cps = await base44.entities.ClubCheckpoint.filter({ pick_key: p0.pick_key }, "index", 50).catch(() => []);
+        setPick(p0);
+        setCheckpoints(Array.isArray(cps) && cps.length ? cps : SEED_PICK.checkpoints);
+        setReached(clubReached(p0.pick_key));
+      } else {
+        setPick(SEED_PICK); setCheckpoints(SEED_PICK.checkpoints); setReached(clubReached(SEED_PICK.pick_key));
+      }
+    })();
+  }, []);
+  if (!pick) return <div style={{ padding: "26px 18px" }}><Hand size={17} color={T.muted}>Finding this season's read…</Hand></div>;
+  const attest = (idx) => { setClubReached(pick.pick_key, idx); setReached((r) => Math.max(r, idx)); };
+  return (
+    <div style={{ padding: "26px 18px 60px" }}>
+      <button onClick={onBack} style={{ ...ghostBtn, marginBottom: 14, padding: "7px 11px" }}><ChevronLeft size={14} /> Community</button>
+      <Eyebrow color={T.gold} mb={8}>Book club · Jess hosts</Eyebrow>
+      <Script size={32} style={{ marginBottom: 2 }}>{pick.title}</Script>
+      <div style={{ fontFamily: UI, fontSize: 12.5, color: T.muted, marginBottom: 12 }}>{pick.author}{pick.cadence ? ` · ${pick.cadence}` : ""}</div>
+      <Hand size={17} color={T.inkSoft} style={{ marginBottom: 14 }}>{pick.host_intro}</Hand>
+
+      {Array.isArray(pick.trigger_warnings) && pick.trigger_warnings.length > 0 && (
+        <div style={{ background: T.paperHi, border: `1px solid ${T.paperDeep}`, borderRadius: 6, padding: "11px 13px", marginBottom: 14 }}>
+          <Eyebrow color={T.muted} mb={5}>A gentle heads-up</Eyebrow>
+          {pick.trigger_warnings.map((w, i) => <div key={i} style={{ fontFamily: UI, fontSize: 12, color: T.inkSoft, lineHeight: 1.5 }}>· {w}</div>)}
+        </div>
+      )}
+
+      {pick.gutenberg_id && (
+        <button onClick={() => navigate(createPageUrl(`BookReader?gutenberg_id=${pick.gutenberg_id}`))} style={{ ...primaryBtn, marginBottom: 22 }}>
+          <MessageCircle size={14} /> Read it in the Library
+        </button>
+      )}
+
+      <Eyebrow color={T.gold} mb={10}>Checkpoints — open one when you reach it</Eyebrow>
+      {checkpoints.map((cp) => {
+        const unlocked = reached >= cp.index;
+        return (
+          <div key={cp.index} style={{ background: T.paperHi, border: `1px solid ${unlocked ? T.gold : T.paperDeep}`, borderRadius: 6, padding: "13px 14px", marginBottom: 12 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              {unlocked ? <MessageCircle size={14} style={{ color: T.gold }} /> : <Lock size={14} style={{ color: T.muted }} />}
+              <div style={{ fontFamily: HANDFAM, fontStyle: "italic", fontWeight: 700, fontSize: 17, color: unlocked ? T.ink : T.muted }}>{cp.label}</div>
+            </div>
+            {unlocked
+              ? <ClubCheckpointThread pickKey={pick.pick_key} cp={cp} user={user} onCrisis={onCrisis} />
+              : <div style={{ marginTop: 8 }}>
+                  <div style={{ fontFamily: UI, fontSize: 11.5, color: T.muted, marginBottom: 8 }}>Spoiler-safe: the discussion opens once you've read this far.</div>
+                  <button onClick={() => attest(cp.index)} style={{ ...ghostBtn }}>I've read this far — open it</button>
+                </div>}
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
 // ── Living Wisdom (Phase 4, §3.8) — the evergreen collection ──────────────────
 function WisdomCard({ onOpen }) {
   const pick = useMemo(() => featuredWisdom(), []);
@@ -416,6 +523,19 @@ function WisdomLibrary({ onBack }) {
   );
 }
 
+function BookClubCard({ onOpen }) {
+  return (
+    <button onClick={onOpen} style={{
+      display: "block", width: "100%", textAlign: "left", cursor: "pointer",
+      background: T.paperHi, border: `1px solid ${T.gold}`, borderRadius: 6, padding: "16px 16px", marginBottom: 26,
+    }}>
+      <Eyebrow color={T.gold} mb={6}>Book club · Jess hosts</Eyebrow>
+      <div style={{ fontFamily: HANDFAM, fontStyle: "italic", fontWeight: 700, fontSize: 19, color: T.ink, marginBottom: 4 }}>A book, together — at our own pace.</div>
+      <div style={{ fontFamily: UI, fontSize: 12, color: T.muted }}>One read, spoiler-safe checkpoints, no streaks. Lurking counts. Come in →</div>
+    </button>
+  );
+}
+
 // ── rooms-as-doors home ──────────────────────────────────────────────────────
 function Home({ presence, onEnter, user, onCrisis }) {
   return (
@@ -426,6 +546,8 @@ function Home({ presence, onEnter, user, onCrisis }) {
       <div style={{ fontFamily: UI, fontSize: 12.5, color: T.muted, fontWeight: 600, marginBottom: 22 }}>{presence}</div>
 
       <QotdCard user={user} onCrisis={onCrisis} />
+
+      <BookClubCard onOpen={() => onEnter("bookclub")} />
 
       <WisdomCard onOpen={() => onEnter("wisdom")} />
 
@@ -750,6 +872,8 @@ function CommunityInner() {
           ? <Home presence={presence} onEnter={setView} user={user} onCrisis={() => setCrisis(true)} />
           : view === "wisdom"
           ? <WisdomLibrary onBack={() => setView("home")} />
+          : view === "bookclub"
+          ? <BookClubView user={user} onCrisis={() => setCrisis(true)} onBack={() => setView("home")} />
           : <RoomView key={tick} roomKey={view} posts={posts} loading={loading} user={user} onNav={setView} onCrisis={() => setCrisis(true)} onReload={reload} />}
         {view === "home" && (
           <>
