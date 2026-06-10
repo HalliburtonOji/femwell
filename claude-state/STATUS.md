@@ -57,7 +57,13 @@ End-to-end QA/security audit before Community. `claude-state/JOURNAL_AUDIT.html`
 
 ### AUDIT FIX — BATCH 3 (the 11 Medium) — DONE + VERIFIED + PUSHED (commit `02f6bc6`, pending deploy)
 M1 modal a11y (shared `useEscape` + role=dialog on read/chooser/menu overlays; composers + AgeGate excluded by design) · M2 Sealed Letters hub scroll-into-view · M3 Burn isolated `burnText` buffer · M4 postTwinEntry result handled · M5 claim/join race re-read-after-write · M6 deliverWitnessKey `against_pub` stale-receiver guard · M7 no-cycle cold-start copy · M8 encryption-unavailable Sealed leads-with-limitation + disabled textarea · M9 four-lives witness gate hint · M10 flagWitness strike requires request_id + receiver match · M11 new `cancelTwin` fn + stale-pairing note.
-- Verified webkit: four-lives Escape→onClose + role=dialog, gate hint present; build green, lint clean, all 5 functions transpile. **NEEDS HALLI DEPLOY:** `cancelTwin` (new) + edited witness/twin functions; a live witness send + twin pairing confirms race/stale-key/strike. **Batch 4 (6 Low + 4 Polish) next.**
+- Verified webkit: four-lives Escape→onClose + role=dialog, gate hint present; build green, lint clean, all 5 functions transpile. **NEEDS HALLI DEPLOY:** `cancelTwin` (new) + edited witness/twin functions; a live witness send + twin pairing confirms race/stale-key/strike.
+
+### AUDIT FIX — BATCH 4 (6 Low + 4 Polish) — DONE + VERIFIED + PUSHED (commit `77fb0d7`)
+L1 ledger rows keyboard-operable · L2 voice "dictation paused" message · L3 delete already correct (noted) · L4 Echo react/report/retract roll back on failure · L5 getTwinDay `twinAnswered` gated behind writing · L6 token cleanup (`T.wax`/`T.muted`/`T.paperHi`, CaptureShield) · P2 tiny-type + 44px mood targets · P4 crisis panel → `T.dusk`. P1 (close-consistency) + P3 (200-error contract) = documented intentional decisions. Build green, lint clean, getTwinDay transpiles.
+
+## ✅ JOURNAL AUDIT FULLY REMEDIATED (2026-06-10) — all 32 findings addressed across Batches 1-4
+Commits: B1 `ddeb9b4`(+`42ffa13`) · B2 `89df8d2` · B3 `02f6bc6` · B4 `77fb0d7`. **3 RESIDUALS flagged for Halli:** (1) **B3 non-owner RLS probe** — verify a direct client `.filter()` on WitnessRequest/WitnessStrike/TwinPair/TwinEntry returns 403 for a NON-owner (test account `ojihalliburton57`) or via the dashboard; owner-200 is inconclusive. (2) **Echo writes** (react/report/delete) still client-direct — route through a service fn + lock Echo write policy (left out to not touch the live wall's public read path). (3) **P1/P3** intentional deferrals. NEW functions/edits needing deploy: `cancelTwin` + edited postEcho/claimWitness/joinTwin/getTwinDay/deliverWitnessKey/flagWitness/postTwinEntry + the RLS entity changes. Deploy backlog: Batches 2-4 bundles await Halli's diagnostic-200 fires (live still `index-DoPp8qqD.js` as of B2 watch).
 
 ## PLAN-DOC INDEX (the full plans live in these — this file points to them)
 | Doc | What it is | Status |
