@@ -90,49 +90,10 @@ async function writeReveal(sb: any, round: any): Promise<string> {
   return 'However you answered, the room leaned warm tonight — a good spread, and nobody got it wrong.';
 }
 
-Deno.serve(async (req) => {
-  const base44 = createClientFromRequest(req);
-  const me = await base44.auth.me().catch(() => null);
-  if (!me?.id) return Response.json({ error: 'Sign in required' }, { status: 401 });
-
-  let p: any = {};
-  try { p = await req.json(); } catch { p = {}; }
-  const room = ROOMS.includes(p?.room) ? p.room : 'lighter';
-
-  const sb = base44.asServiceRole;
-  const now = Date.now();
-  const latestArr = await sb.entities.GameRound.filter({ room }, '-created_date', 1).catch(() => []);
-  const latest = Array.isArray(latestArr) && latestArr.length ? latestArr[0] : null;
-
-  const ms = (s: any) => { const t = Date.parse(s || ''); return Number.isFinite(t) ? t : 0; };
-
-  if (latest && latest.status === 'open') {
-    if (now < ms(latest.closes_at)) {
-      return Response.json({ ok: true, round: shape(latest) });   // live, still open
-    }
-    // expired → close it with Jess's reveal
-    const reveal = await writeReveal(sb, latest);
-    const closed = await sb.entities.GameRound.update(latest.id, { status: 'closed', reveal }).catch(() => ({ ...latest, status: 'closed', reveal }));
-    return Response.json({ ok: true, round: shape({ ...latest, ...closed, status: 'closed', reveal }) });
-  }
-
-  if (latest && latest.status === 'closed' && (now - ms(latest.closes_at)) < LINGER_MS) {
-    return Response.json({ ok: true, round: shape(latest) });      // keep showing the reveal
-  }
-
-  // open a fresh round
-  const kindDef = pickKind();
-  const { prompt, options } = await genPrompt(sb, kindDef);
-  const created = await sb.entities.GameRound.create({
-    room, kind: kindDef.kind, prompt, options,
-    opens_at: new Date(now).toISOString(),
-    closes_at: new Date(now + OPEN_MS).toISOString(),
-    status: 'open',
-  }).catch((e: any) => { console.error('openGameRound create failed:', e?.message || e); return null; });
-  if (!created) return Response.json({ error: 'Write failed' }, { status: 500 });
-  return Response.json({ ok: true, round: shape(created) });
-});
-
+// Defined BEFORE Deno.serve so that NOTHING is declared after the serve call — some
+// build/registration steps treat Deno.serve as the module entry/end and drop or break
+// any trailing top-level declaration, which would make every invoke (incl. the deploy
+// probe) throw and the function fail to register.
 function shape(r: any) {
   return {
     id: r.id, room: r.room, kind: r.kind, prompt: r.prompt,
@@ -141,3 +102,56 @@ function shape(r: any) {
     reveal: r.status === 'closed' ? (r.reveal || '') : '',   // never leak a reveal early
   };
 }
+
+Deno.serve(async (req) => {
+  try {
+    const base44 = createClientFromRequest(req);
+    const me = await base44.auth.me().catch(() => null);
+    if (!me?.id) return Response.json({ error: 'Sign in required' }, { status: 401 });
+
+    let p: any = {};
+    try { const j = await req.json(); if (j && typeof j === 'object') p = j; } catch { p = {}; }
+    // Require a valid room. An empty/invalid call (e.g. a registration probe) gets a clean
+    // 400 and triggers NO side effects — no stray round, no LLM call — never a 500.
+    const room = p?.room ? String(p.room) : '';
+    if (!ROOMS.includes(room)) {
+      return Response.json({ error: 'valid room required' }, { status: 400 });
+    }
+
+    const sb = base44.asServiceRole;
+    const now = Date.now();
+    const latestArr = await sb.entities.GameRound.filter({ room }, '-created_date', 1).catch(() => []);
+    const latest = Array.isArray(latestArr) && latestArr.length ? latestArr[0] : null;
+
+    const ms = (s: any) => { const t = Date.parse(s || ''); return Number.isFinite(t) ? t : 0; };
+
+    if (latest && latest.status === 'open') {
+      if (now < ms(latest.closes_at)) {
+        return Response.json({ ok: true, round: shape(latest) });   // live, still open
+      }
+      // expired → close it with Jess's reveal
+      const reveal = await writeReveal(sb, latest);
+      const closed = await sb.entities.GameRound.update(latest.id, { status: 'closed', reveal }).catch(() => ({ ...latest, status: 'closed', reveal }));
+      return Response.json({ ok: true, round: shape({ ...latest, ...closed, status: 'closed', reveal }) });
+    }
+
+    if (latest && latest.status === 'closed' && (now - ms(latest.closes_at)) < LINGER_MS) {
+      return Response.json({ ok: true, round: shape(latest) });      // keep showing the reveal
+    }
+
+    // open a fresh round
+    const kindDef = pickKind();
+    const { prompt, options } = await genPrompt(sb, kindDef);
+    const created = await sb.entities.GameRound.create({
+      room, kind: kindDef.kind, prompt, options,
+      opens_at: new Date(now).toISOString(),
+      closes_at: new Date(now + OPEN_MS).toISOString(),
+      status: 'open',
+    }).catch((e: any) => { console.error('openGameRound create failed:', e?.message || e); return null; });
+    if (!created) return Response.json({ error: 'Write failed' }, { status: 500 });
+    return Response.json({ ok: true, round: shape(created) });
+  } catch (e: any) {
+    console.error('openGameRound error:', e?.message || e);
+    return Response.json({ error: 'Could not open the round' }, { status: 500 });
+  }
+});
