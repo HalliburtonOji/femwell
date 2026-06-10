@@ -1,0 +1,30 @@
+{
+  // Community M3 — a Jess games-master round (The Lighter Side). A timed, low-stakes,
+  // whole-life prompt (this-or-that, one word, caption, a one-line story, a kind
+  // confession, a recommend). Opens, collects anonymous responses, then at close Jess
+  // writes a warm AGGREGATE reveal — never winners, never scores, never per-person
+  // counts. Cron-free: opened/closed lazily on first view (openGameRound). Reads PUBLIC
+  // (the room is lurkable); writes locked to the service role.
+  "name": "GameRound",
+  "type": "object",
+  "properties": {
+    "room": { "type": "string", "description": "Room key (normally 'lighter')." },
+    "kind": { "type": "string", "description": "Game format: this_or_that | one_word | caption | one_line_story | kind_confession | recommend." },
+    "prompt": { "type": "string", "description": "Jess-generated prompt for the round." },
+    "options": { "type": "array", "items": { "type": "string" }, "description": "For this_or_that: the two choices. Empty for open formats." },
+    "opens_at": { "type": "string", "format": "date-time" },
+    "closes_at": { "type": "string", "format": "date-time" },
+    "status": { "type": "string", "enum": ["open", "closed"], "default": "open" },
+    "reveal": { "type": "string", "description": "Jess's warm aggregate reveal, written at close. No winners, no counts." }
+  },
+  "required": ["room", "kind", "prompt", "opens_at", "closes_at"],
+  "indexes": [
+    { "fields": ["room"] },
+    { "fields": ["status"] }
+  ],
+  "rls": {
+    "create": { "user_condition": { "role": "system" } },
+    "update": { "user_condition": { "role": "system" } },
+    "delete": { "user_condition": { "role": "system" } }
+  }
+}

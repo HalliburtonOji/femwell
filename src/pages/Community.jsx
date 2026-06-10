@@ -59,6 +59,18 @@ function clientHeavy(text) {
 const jessAsked = (id) => { try { return localStorage.getItem("fw_jess_req_" + id) === "1"; } catch { return false; } };
 const markJessAsked = (id) => { try { localStorage.setItem("fw_jess_req_" + id, "1"); } catch { /* ignore */ } };
 
+// ── games (M3): per-device "answered this round" flag (anonymous, like QOTD) ──
+const gameAnswered = (id) => { try { return localStorage.getItem("fw_game_" + id) === "1"; } catch { return false; } };
+const markGameAnswered = (id) => { try { localStorage.setItem("fw_game_" + id, "1"); } catch { /* ignore */ } };
+function closesInLabel(closesAt) {
+  const ms = Date.parse(closesAt || "") - Date.now();
+  if (!Number.isFinite(ms) || ms <= 0) return "closing now";
+  const h = Math.round(ms / 3600000);
+  if (h >= 2) return `closes in about ${h} hours`;
+  const m = Math.max(1, Math.round(ms / 60000));
+  return h === 1 ? "closes in about an hour" : `closes in about ${m} minutes`;
+}
+
 const inputStyle = {
   width: "100%", background: T.paperHi, border: `1px solid ${T.paperDeep}`,
   padding: "12px 14px", borderRadius: 3, resize: "none", fontFamily: SERIF, fontSize: 18,
@@ -369,6 +381,85 @@ function Home({ presence, onEnter, user, onCrisis }) {
 }
 
 // ── a room (sticky tabs + feed + composer) ───────────────────────────────────
+// ── Jess's round (M3) — The Lighter Side games-master ────────────────────────
+function GameRoundCard({ user, onCrisis }) {
+  const [round, setRound] = useState(null);   // null = loading; false = none/error
+  const [answered, setAnswered] = useState(false);
+  const [draft, setDraft] = useState("");
+  const [busy, setBusy] = useState(false);
+  const tried = useRef(false);
+
+  useEffect(() => {
+    if (tried.current) return; tried.current = true;
+    (async () => {
+      try {
+        const r = await base44.functions.invoke("openGameRound", { room: "lighter" });
+        const d = r?.data ?? r;
+        if (d?.round) { setRound(d.round); setAnswered(gameAnswered(d.round.id)); }
+        else setRound(false);
+      } catch (e) { console.error("game load failed:", e); setRound(false); }
+    })();
+  }, []);
+
+  const submit = async (payload) => {
+    if (busy || !round) return;
+    if (payload.text && crisisCheck(payload.text).intercept) { onCrisis(); return; }
+    setBusy(true);
+    try {
+      const wh = await communityHash(user?.id);
+      const r = await base44.functions.invoke("submitGameResponse", { user_id: user?.id, author_hash: wh, round_id: round.id, ...payload });
+      const d = r?.data ?? r;
+      if (d?.intercept) { onCrisis(); return; }
+      // rejected (harmful) or ok or already → either way the round is now "answered" for this device
+      markGameAnswered(round.id); setAnswered(true); setDraft("");
+    } catch (e) { console.error("game answer failed:", e); }
+    finally { setBusy(false); }
+  };
+
+  if (round === null || round === false) return null;   // quiet if nothing to show
+
+  const isClosed = round.status === "closed";
+  const hasOptions = Array.isArray(round.options) && round.options.length >= 2;
+
+  return (
+    <section style={{ background: PLUM, borderRadius: 6, padding: "18px 18px 16px", marginBottom: 18, color: "#F4EFE3" }}>
+      <Eyebrow color={T.gold} mb={8}>Jess's round{isClosed ? " · the reveal" : " · tonight"}</Eyebrow>
+      <Script size={25} color="#F4EFE3" style={{ marginBottom: 12 }}>{round.prompt}</Script>
+
+      {isClosed ? (
+        <div style={{ fontFamily: HANDFAM, fontSize: 18, lineHeight: 1.5, color: "#EBD9C4" }}>{round.reveal}</div>
+      ) : answered ? (
+        <div style={{ fontFamily: UI, fontSize: 12.5, color: "#CDBBA6", lineHeight: 1.5 }}>
+          You're in. Come back when it closes and Jess will gather what the room said — no winners, just us. <span style={{ opacity: 0.8 }}>({closesInLabel(round.closes_at)}.)</span>
+        </div>
+      ) : hasOptions ? (
+        <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+          {round.options.map((o) => (
+            <button key={o} onClick={() => submit({ choice: o })} disabled={busy} style={{
+              fontFamily: UI, fontSize: 13, fontWeight: 700, cursor: busy ? "default" : "pointer",
+              padding: "10px 16px", borderRadius: 999, border: "1px solid rgba(212,175,55,0.5)",
+              background: "rgba(212,175,55,0.12)", color: "#F4EFE3", opacity: busy ? 0.6 : 1,
+            }}>{o}</button>
+          ))}
+        </div>
+      ) : (
+        <div>
+          <textarea value={draft} onChange={(e) => setDraft(e.target.value)} maxLength={160}
+            placeholder="One line — for fun, no names." rows={2}
+            style={{ width: "100%", boxSizing: "border-box", fontFamily: HANDFAM, fontSize: 17, padding: "10px 12px", borderRadius: 6, border: "1px solid rgba(244,239,227,0.25)", background: "rgba(244,239,227,0.06)", color: "#F4EFE3", resize: "none" }} />
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: 8 }}>
+            <span style={{ fontFamily: UI, fontSize: 10.5, color: "#A9967F" }}>{closesInLabel(round.closes_at)}</span>
+            <button onClick={() => draft.trim() && submit({ text: draft.trim() })} disabled={!draft.trim() || busy} style={{
+              fontFamily: UI, fontSize: 12, fontWeight: 700, cursor: (!draft.trim() || busy) ? "default" : "pointer",
+              padding: "8px 16px", borderRadius: 999, border: "none", background: T.gold, color: PLUM, opacity: (!draft.trim() || busy) ? 0.5 : 1,
+            }}>{busy ? "Adding…" : "Add mine"}</button>
+          </div>
+        </div>
+      )}
+    </section>
+  );
+}
+
 function RoomView({ roomKey, posts, loading, user, onNav, onCrisis, onReload }) {
   const [composing, setComposing] = useState(false);
   const room = ROOMS.find((r) => r.key === roomKey) || ROOMS[0];
@@ -390,6 +481,8 @@ function RoomView({ roomKey, posts, loading, user, onNav, onCrisis, onReload }) 
       <div style={{ padding: "20px 18px 60px" }}>
         <Script size={32} style={{ marginBottom: 4 }}>{room.name}</Script>
         <Hand size={17} color={T.muted} style={{ marginBottom: 16 }}>{room.line}</Hand>
+
+        {roomKey === "lighter" && <GameRoundCard user={user} onCrisis={onCrisis} />}
 
         {!composing && (
           <button onClick={() => setComposing(true)} style={{ ...primaryBtn, marginBottom: 16 }}><Plus size={14} /> Add to {room.name.replace(/^The /, "")}</button>

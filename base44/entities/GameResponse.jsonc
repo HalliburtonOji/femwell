@@ -1,0 +1,24 @@
+{
+  // Community M3 — one anonymous answer to a GameRound. Either a choice (this_or_that)
+  // or a short line (open formats). Only a device-derived author_hash is stored; written
+  // asServiceRole so created_by is the service. No counts shown anywhere — responses feed
+  // ONLY Jess's aggregate reveal at close. Reads PUBLIC; writes locked to the service role.
+  "name": "GameResponse",
+  "type": "object",
+  "properties": {
+    "round_id": { "type": "string", "description": "The GameRound this answers." },
+    "author_hash": { "type": "string", "description": "Device-derived anonymous author token." },
+    "choice": { "type": "string", "description": "For this_or_that: the chosen option." },
+    "text": { "type": "string", "description": "For open formats: a short line (crisis + moderation checked server-side)." }
+  },
+  "required": ["round_id", "author_hash"],
+  "indexes": [
+    { "fields": ["round_id"] },
+    { "fields": ["author_hash"] }
+  ],
+  "rls": {
+    "create": { "user_condition": { "role": "system" } },
+    "update": { "user_condition": { "role": "system" } },
+    "delete": { "user_condition": { "role": "system" } }
+  }
+}
