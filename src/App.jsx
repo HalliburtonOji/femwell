@@ -218,8 +218,10 @@ const AuthenticatedApp = () => {
           <Route path="/DoctorExport" element={<LayoutWrapper currentPageName="DoctorExport"><DoctorExport /></LayoutWrapper>} />
           <Route path="/PartnerSettings" element={<LayoutWrapper currentPageName="PartnerSettings"><PartnerSettings /></LayoutWrapper>} />
           <Route path="/PartnerView" element={<PartnerView />} />
-          <Route path="/Community" element={<LayoutWrapper currentPageName="Community"><CommunityMP8 /></LayoutWrapper>} />
-          <Route path="/CommunityLegacy" element={<LayoutWrapper currentPageName="Community"><Community /></LayoutWrapper>} />
+          {/* M1 route correction: /Community now serves the editorial hybrid (Community.jsx).
+              MP8 (the retired likes-forum) kept at /CommunityMP8 only for reference. */}
+          <Route path="/Community" element={<LayoutWrapper currentPageName="Community"><Community /></LayoutWrapper>} />
+          <Route path="/CommunityMP8" element={<LayoutWrapper currentPageName="Community"><CommunityMP8 /></LayoutWrapper>} />
           <Route path="/Settings" element={<LayoutWrapper currentPageName="Settings"><Settings /></LayoutWrapper>} />
           <Route path="/terms" element={<LayoutWrapper currentPageName="Terms"><Terms /></LayoutWrapper>} />
           <Route path="/privacy" element={<LayoutWrapper currentPageName="Privacy"><Privacy /></LayoutWrapper>} />

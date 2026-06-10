@@ -1,0 +1,24 @@
+{
+  // Community M1 — a kind one-way reaction on a post or comment. Stored ONLY for
+  // per-identity dedup and a qualitative "others felt this too" — NEVER shown as a
+  // number (no likes, no leaderboards). asServiceRole writes only.
+  "name": "Reaction",
+  "type": "object",
+  "properties": {
+    "target_type": { "type": "string", "enum": ["post", "comment"], "description": "What was reacted to." },
+    "target_id": { "type": "string", "description": "The post/comment id." },
+    "author_hash": { "type": "string", "description": "Device-derived anonymous reactor token (for dedup)." },
+    "kind": { "type": "string", "description": "Reaction lexicon value (held / me too / hear you / saved)." }
+  },
+  "required": ["target_id", "author_hash"],
+  "indexes": [
+    { "fields": ["target_id"] },
+    { "fields": ["author_hash"] }
+  ],
+  // Write-lock; read public (no counts are ever rendered from it).
+  "rls": {
+    "create": { "user_condition": { "role": "system" } },
+    "update": { "user_condition": { "role": "system" } },
+    "delete": { "user_condition": { "role": "system" } }
+  }
+}

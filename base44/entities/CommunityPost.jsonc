@@ -1,0 +1,34 @@
+{
+  // Community M1 — a post in a whole-life room (the Lounge + the life rooms).
+  // Anonymous: only a device-derived author_hash, written via asServiceRole so
+  // created_by is the service, never the author. No vanity/like counts stored or
+  // shown. Reads are PUBLIC (the rooms are meant to be lurkable); writes are locked
+  // to the service role (postCommunityPost / reportCommunity).
+  "name": "CommunityPost",
+  "type": "object",
+  "properties": {
+    "room": { "type": "string", "description": "Room key (lounge, love, money, style, lighter, circles, health)." },
+    "author_hash": { "type": "string", "description": "Device-derived anonymous author token. Never a user id." },
+    "body": { "type": "string", "description": "The post text (scrubbed + crisis-checked client + server before posting)." },
+    "comments_mode": { "type": "string", "enum": ["open", "reaction"], "default": "open", "description": "open = anyone can comment; reaction = reaction-only (poster's choice)." },
+    "by": { "type": "string", "enum": ["member", "jess"], "default": "member", "description": "member or Jess (host)." },
+    "domain": { "type": "string", "description": "Optional light label (Career, Dating, Joy…) — never a category that identifies." },
+    "report_count": { "type": "number", "default": 0, "description": "Reports; auto-hides past the threshold." },
+    "hidden": { "type": "boolean", "default": false, "description": "Suppressed from the room (moderation/report)." },
+    "expires_at": { "type": "string", "format": "date-time", "description": "Optional soft expiry for ambient/older posts." }
+  },
+  "required": ["room", "author_hash", "body"],
+  "indexes": [
+    { "fields": ["room"] },
+    { "fields": ["hidden"] },
+    { "fields": ["author_hash"] }
+  ],
+  // Write-lock (same pattern as Echo): create/update/delete via asServiceRole only;
+  // READ left public (no read rule) so the rooms stay lurkable. Verify on deploy:
+  // CommunityPost.filter (read) 200; direct client create/update/delete 403.
+  "rls": {
+    "create": { "user_condition": { "role": "system" } },
+    "update": { "user_condition": { "role": "system" } },
+    "delete": { "user_condition": { "role": "system" } }
+  }
+}

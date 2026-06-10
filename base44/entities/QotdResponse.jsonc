@@ -1,0 +1,26 @@
+{
+  // Community M1 — an anonymous answer to the Question of the Day. The prompt itself
+  // is a static daily rotation in code (communityConfig), so no prompt entity/seed
+  // is needed. Answers are anonymous + publicly readable (you see the day's answers
+  // once you've added yours). No counts beyond a k-anon-floored "others". Service
+  // writes only.
+  "name": "QotdResponse",
+  "type": "object",
+  "properties": {
+    "prompt_day": { "type": "string", "format": "date", "description": "YYYY-MM-DD of the prompt this answers." },
+    "prompt_key": { "type": "string", "description": "Which rotation prompt (for display)." },
+    "author_hash": { "type": "string", "description": "Device-derived anonymous author token (1/day enforced)." },
+    "body": { "type": "string", "description": "The answer (crisis-checked + scrubbed)." },
+    "hidden": { "type": "boolean", "default": false }
+  },
+  "required": ["prompt_day", "author_hash", "body"],
+  "indexes": [
+    { "fields": ["prompt_day"] },
+    { "fields": ["author_hash"] }
+  ],
+  "rls": {
+    "create": { "user_condition": { "role": "system" } },
+    "update": { "user_condition": { "role": "system" } },
+    "delete": { "user_condition": { "role": "system" } }
+  }
+}

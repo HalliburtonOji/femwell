@@ -1,0 +1,29 @@
+{
+  // Community M1 — a flat, anonymous comment on a CommunityPost. Open-write by
+  // default (the post's comments_mode gates it). Publicly readable (lurking is
+  // first-class). Moderation: a harmful/out-of-place comment is stored with
+  // status:"removed" and shown as a gentle tombstone ("Removed by Jess"). Jess can
+  // also comment (by:"jess"). No counts. asServiceRole writes only.
+  "name": "Comment",
+  "type": "object",
+  "properties": {
+    "post_id": { "type": "string", "description": "The CommunityPost this comments on." },
+    "author_hash": { "type": "string", "description": "Device-derived anonymous author token." },
+    "body": { "type": "string", "description": "The comment text (crisis-checked + moderated server-side)." },
+    "by": { "type": "string", "enum": ["member", "jess"], "default": "member", "description": "member or Jess (host/support)." },
+    "status": { "type": "string", "enum": ["visible", "removed"], "default": "visible", "description": "removed = auto-moderated; rendered as a tombstone, body withheld." },
+    "report_count": { "type": "number", "default": 0 },
+    "hidden": { "type": "boolean", "default": false }
+  },
+  "required": ["post_id", "author_hash"],
+  "indexes": [
+    { "fields": ["post_id"] },
+    { "fields": ["author_hash"] }
+  ],
+  // Write-lock; READ public (rooms + their comments are lurkable).
+  "rls": {
+    "create": { "user_condition": { "role": "system" } },
+    "update": { "user_condition": { "role": "system" } },
+    "delete": { "user_condition": { "role": "system" } }
+  }
+}
