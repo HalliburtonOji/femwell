@@ -11,7 +11,7 @@
 // no emoji; Lucide only. Uses the app design tokens so it fits content surfaces.
 
 import { Link } from "react-router-dom";
-import { Feather, Users, Sparkles } from "lucide-react";
+import { Feather, Users, Sparkles, HeartHandshake } from "lucide-react";
 import { createPageUrl } from "@/utils";
 
 const pill = {
@@ -22,7 +22,11 @@ const pill = {
   whiteSpace: "nowrap",
 };
 
-export default function ContentActionBar({ reflect, discuss, jess, label = "Take it further" }) {
+// `belong` is the PRIVACY-SAFE Community link for analytics/insight surfaces: a
+// plain, count-free "you're not the only one" door to /Community — it carries NO
+// seed and NO user data (never the user's symptom/mood numbers). Pass a string to
+// override the copy, or `true` for the default.
+export default function ContentActionBar({ reflect, discuss, belong, jess, label = "Take it further" }) {
   const reflectHref = reflect
     ? createPageUrl(`Journal?compose=1&seed=${encodeURIComponent(reflect.seed || "")}${reflect.type ? `&type=${reflect.type}` : ""}`)
     : null;
@@ -30,7 +34,7 @@ export default function ContentActionBar({ reflect, discuss, jess, label = "Take
     ? createPageUrl(`Community?room=${discuss.room || "lounge"}&seed=${encodeURIComponent(discuss.seed || "")}`)
     : null;
 
-  if (!reflect && !discuss && !jess) return null;
+  if (!reflect && !discuss && !belong && !jess) return null;
 
   return (
     <div style={{ margin: "16px 0" }}>
@@ -46,6 +50,11 @@ export default function ContentActionBar({ reflect, discuss, jess, label = "Take
         {discuss && (
           <Link to={discussHref} style={pill}>
             <Users className="w-3.5 h-3.5" style={{ color: "var(--sage)" }} /> Discuss in Community
+          </Link>
+        )}
+        {belong && (
+          <Link to={createPageUrl("Community")} style={pill}>
+            <HeartHandshake className="w-3.5 h-3.5" style={{ color: "var(--sage)" }} /> {typeof belong === "string" ? belong : "You're not the only one"}
           </Link>
         )}
         {jess && (

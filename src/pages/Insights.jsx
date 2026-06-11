@@ -10,6 +10,7 @@ import PhaseOverlayChart from "@/components/insights/PhaseOverlayChart";
 import CorrelationsCard from "@/components/insights/CorrelationsCard";
 import SymptomHeatmap from "@/components/track/SymptomHeatmap";
 import InsightsSkeleton from "@/components/insights/InsightsSkeleton";
+import ContentActionBar from "@/components/common/ContentActionBar";
 
 function avg(arr) {
   const n = arr.filter(x => x != null && !isNaN(x));
@@ -334,6 +335,15 @@ export default function Insights() {
 
             {/* Correlations */}
             <CorrelationsCard checkins={checkins} />
+
+            {/* Connectivity — reflect privately, find belonging (count-free, never your
+                numbers), or ask Jess. Analytics → Community is a belonging nudge ONLY. */}
+            <ContentActionBar
+              label="What now"
+              reflect={{ seed: "A pattern I noticed in myself this week — ", type: "reflection" }}
+              belong="Others in your season"
+              jess="my health patterns this week"
+            />
           </div>
         )}
       </div>
