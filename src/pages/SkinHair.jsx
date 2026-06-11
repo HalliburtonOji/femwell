@@ -1,13 +1,13 @@
 import { useState, useEffect } from "react";
 import { PageLoader } from "../components/common/LoadingSpinner";
-import { Lock, Plus, X, ChevronDown, ChevronUp } from "lucide-react";
+import { Plus, X } from "lucide-react";
 import ContentActionBar from "@/components/common/ContentActionBar";
 import { base44 } from "@/api/base44Client";
 import { differenceInDays, subDays, parseISO, format, addDays } from "date-fns";
 import { createPageUrl } from "@/utils";
 import {
   BarChart, Bar, LineChart, Line, XAxis, YAxis, Tooltip,
-  ResponsiveContainer, Cell, ReferenceLine
+  ResponsiveContainer, Cell
 } from "recharts";
 
 // ── Ingredient data ─────────────────────────────────────────────────────────
