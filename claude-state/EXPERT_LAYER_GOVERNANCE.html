@@ -1,0 +1,201 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>FemWell — Expert Layer Governance Framework</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Ephesis&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --cream:#F4EDDB; --paper:#FBF6E6; --paperHi:#F8F2E4; --page:#ECE7DA;
+    --ink:#2E261B; --inkSoft:#5b4f3e; --plum:#4A2A3A; --plumMid:#7B5E6B;
+    --rose:#C4849A; --sage:#6B8F5A; --gold:#A6862B; --red:#BC2E27;
+    --rule:rgba(58,44,26,0.12);
+    --sans:ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;
+    --serif:"Cormorant Garamond","Georgia",serif;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--page);color:var(--ink);font-family:var(--serif);line-height:1.6;}
+  .wrap{max-width:780px;margin:0 auto;padding:28px 18px 72px;}
+  .eyebrow{font-family:var(--sans);font-size:11px;letter-spacing:.2em;text-transform:uppercase;font-weight:700;color:var(--gold);margin:0 0 6px;}
+  h1{font-size:32px;line-height:1.12;margin:6px 0 8px;color:var(--plum);font-weight:600;}
+  .sub{font-family:var(--sans);font-size:13.5px;color:var(--inkSoft);margin:0 0 4px;line-height:1.55;}
+  h2{font-size:24px;font-weight:600;color:var(--plum);margin:34px 0 6px;line-height:1.2;border-bottom:2px solid var(--rule);padding-bottom:6px;}
+  h3{font-size:18.5px;font-weight:600;color:var(--ink);margin:20px 0 2px;}
+  p{font-size:16.5px;margin:8px 0;}
+  ul{margin:8px 0;padding-left:0;list-style:none;}
+  li{display:flex;gap:10px;align-items:flex-start;margin:6px 0;font-size:15.5px;line-height:1.5;}
+  li::before{content:"";width:6px;height:6px;border-radius:99px;background:var(--gold);margin-top:9px;flex-shrink:0;}
+  .card{background:var(--paper);border:1px solid var(--rule);border-left:3px solid var(--gold);border-radius:12px;padding:14px 16px;margin:14px 0;}
+  .card.plum{border-left-color:var(--plum);}
+  .card.rose{border-left-color:var(--rose);}
+  .card.red{border-left-color:var(--red);}
+  .card.sage{border-left-color:var(--sage);}
+  .card h3{margin-top:0;}
+  blockquote{margin:16px 0;padding:14px 16px;background:var(--cream);border-radius:10px;border-left:3px solid var(--rose);font-style:italic;font-size:17px;color:var(--plum);}
+  .badge{display:inline-block;border-radius:99px;padding:2px 9px;font-size:11px;font-weight:700;font-family:var(--sans);color:#fff;white-space:nowrap;vertical-align:middle;}
+  .b-product{background:var(--sage);}
+  .b-legal{background:var(--red);}
+  .b-commercial{background:var(--plum);}
+  .b-clinical{background:var(--gold);}
+  .rec{font-family:var(--sans);font-size:14.5px;background:var(--paperHi);border:1px solid var(--rule);border-radius:9px;padding:10px 13px;margin:8px 0;}
+  .rec b{color:var(--plum);}
+  table{width:100%;border-collapse:collapse;font-family:var(--sans);font-size:13px;margin:12px 0;}
+  th{text-align:left;padding:7px 9px;background:var(--paperHi);color:var(--inkSoft);font-size:11px;letter-spacing:.5px;text-transform:uppercase;border-bottom:1px solid var(--rule);}
+  td{padding:7px 9px;border-bottom:1px solid var(--rule);vertical-align:top;}
+  .tablewrap{overflow-x:auto;}
+  .key{font-family:var(--sans);font-size:13px;color:var(--inkSoft);margin:10px 0 0;}
+  .foot{margin-top:40px;border-top:2px solid var(--rule);padding-top:14px;font-family:var(--sans);font-size:12.5px;color:var(--inkSoft);}
+  .lede{font-size:18px;color:var(--ink);}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="eyebrow">FemWell · Community Phase 4 · Pillar 5</div>
+  <h1>Expert Layer — Governance Framework</h1>
+  <p class="sub">Decided product positions + the items a qualified lawyer must ratify before launch. Source: <i>EXPERT_LAYER_SCOPE.md</i> · mega-plan §3.9 + locked principle #11 + §5 monetisation. Dated 2026-06-11.</p>
+
+  <div class="card plum">
+    <p class="lede" style="margin-top:0">Halli asked us to <i>"do the governance calls."</i> This turns the open questions in the scope doc into a decided framework: a recommended answer for every gate, with the rationale, each one tagged as a <span class="badge b-product">PRODUCT</span> call we have decided, a <span class="badge b-commercial">COMMERCIAL</span>/<span class="badge b-clinical">CLINICAL</span> call Halli owns, or a <span class="badge b-legal">LEGAL-RATIFY</span> item that needs a qualified UK lawyer's sign-off before any launch.</p>
+    <p style="margin-bottom:0"><b>We are not lawyers.</b> Everything below is a recommended product position to take <i>to</i> counsel — it is not legal advice and does not bind. The <span class="badge b-legal">LEGAL-RATIFY</span> items must be signed off by a qualified UK lawyer (with clinical-governance input) before the expert layer carries any real traffic. <b>No code is to be written until the gate checklist at the end is green.</b></p>
+  </div>
+
+  <h2>0. What the layer is (unchanged from scope)</h2>
+  <p>A trust + anti-misinformation wedge: <b>verified UK clinicians</b> (GMC / NMC / HCPC) provide <b>general, non-individualised</b> information and misinformation correction in a surface <b>quarantined from peer chat</b> (the Flo model). It is the one monetisable layer — every peer surface stays free. Askers are anonymous (<code>author_hash</code>, crisis-checked + moderated like every other input); only the expert is identified, because accountable authority is the whole point.</p>
+
+  <h2>1. Clinician verification method <span class="badge b-product">PRODUCT</span> <span class="badge b-legal">LEGAL-RATIFY</span></h2>
+  <p>"Verified" has to mean something — a fake clinician badge is a serious harm and liability. Verification is three checks, not one:</p>
+  <ul>
+    <li><b>Register check (the credential is real + current).</b> Confirm the registrant exists, the number matches the name, and status is "Registered" with <i>no</i> conditions/suspensions/sanctions, on the live public register: <b>GMC</b> — the online List of Registered Medical Practitioners (LRMP); <b>NMC</b> — the online register search; <b>HCPC</b> — the online register search. All three are free public lookups and are the source of truth.</li>
+    <li><b>Identity check (the person is that registrant).</b> The register proves a number exists; it does not prove the applicant owns it. Add a one-time identity step: a live video ID check against photo ID, plus a corroborating link to the registration (e.g. an employer / practising-privileges letter, or a GMC "registrant connect" / confirmation in the registrant's own name).</li>
+    <li><b>Scope + standing.</b> Record their declared scope of practice (a dietitian does not answer about prescribing); confirm good standing at point of check.</li>
+  </ul>
+  <div class="rec"><b>Recommendation:</b> <b>manual vetting by a named owner at launch</b> (volume is low; a vendor or register-API automation comes later). Re-verify <b>every 6–12 months and before each AMA</b> — registration status, conditions and sanctions change over time. Store: name, body, number, <code>verified_at</code>, <code>verified_by</code>, <code>status_at_check</code>, <code>scope_of_practice</code>. The public badge shows <b>body + registration number</b> so any member can self-verify on the register.</div>
+  <p class="key"><b>Decided (product):</b> the three-check process + manual-at-launch + re-verification cadence + what the badge shows. <b>Needs ratify (legal/ICO):</b> whether the identity-proofing standard is sufficient, and the lawful basis + retention policy for storing verification evidence (it is personal data).</p>
+
+  <h2>2. Medical-advice boundary, scope limits + disclaimers <span class="badge b-product">PRODUCT</span> <span class="badge b-clinical">CLINICAL</span> <span class="badge b-legal">LEGAL-RATIFY</span></h2>
+  <p>The danger is an answer drifting from <i>general information</i> into <i>individualised advice</i>, which creates a clinician–patient duty of care and professional + platform liability (GMC Good Medical Practice; the Bolam standard). The boundary is enforced by product design, not just copy.</p>
+  <h3>Hard scope limits (enforced, not aspirational)</h3>
+  <ul>
+    <li><b>No diagnosis.</b> Experts never tell an individual what they have.</li>
+    <li><b>No prescription or medication changes.</b> No "start/stop/change your dose."</li>
+    <li><b>No individualised treatment advice or triage.</b> No "you should…", no interpreting a specific person's results, scans, or symptoms.</li>
+    <li><b>No emergency handling.</b> Anything acute routes to 999 / NHS 111, never to an expert queue.</li>
+    <li><b>General framing only.</b> Answers address the <i>theme</i> ("people with PCOS often find…"), never the person.</li>
+  </ul>
+  <h3>The disclaimer / interstitial</h3>
+  <p>Every expert answer carries a persistent, non-dismissable line:</p>
+  <blockquote>This is general information, not personal medical advice. For advice about you, see your GP or call NHS 111. In an emergency, call 999.</blockquote>
+  <h3>Enforcement mechanics</h3>
+  <ul>
+    <li><b>Banned-topic routing:</b> questions seeking diagnosis, dosage, "should I stop my meds," or result interpretation are auto-flagged and answered with a templated "we can't advise on your individual care — here's who can" response; they never reach an expert.</li>
+    <li><b>Pre-publication review (async):</b> a named reviewer with clinical input signs off each answer before it publishes. (This is why async-first — see §7.)</li>
+    <li><b>Clinician guidance/training:</b> experts get a one-page content policy (general-only, the banned list, the framing) before they answer.</li>
+  </ul>
+  <p class="key"><b>Decided (product):</b> the hard scope limits, general-only framing, the interstitial's presence, banned-topic routing, pre-publication review. <b>Needs ratify (legal + clinical):</b> the exact disclaimer wording and whether it is contractually sufficient; where precisely the duty-of-care line sits (Bolam / GMC GMP); sign-off of the clinician guidance by a qualified clinician.</p>
+
+  <h2>3. How experts stay quarantined from peer chat <span class="badge b-product">PRODUCT</span></h2>
+  <p>This is the single clearest call, and it is fully a product decision.</p>
+  <div class="rec"><b>Recommendation:</b> experts operate <b>only</b> inside the dedicated "Ask an Expert" / AMA surface — a separate IA node. They do <b>not</b> post in rooms, Circles, the Lounge, comments, Echo Wall, Witness, Phase Twin, games, or Book Club. No expert badge appears in any peer surface. Technically the expert role is <b>scoped to the AMA entities only</b> — expert accounts cannot author <code>CommunityPost</code> / <code>Comment</code> / <code>Echo</code> / etc. The peer wall stays free and peer-only; clinicians never carry medical authority into casual chat (locked principle #11; the Flo separation of peer "Secret Chats" from expert content).</p>
+  <p class="key"><b>Decided (product):</b> full quarantine, role-scoped to the AMA surface, no expert presence anywhere peer-to-peer. Askers stay anonymous; only the expert is identified.</p>
+
+  <h2>4. Reporting / escalation + crisis handling <span class="badge b-product">PRODUCT</span> <span class="badge b-legal">LEGAL-RATIFY</span></h2>
+  <ul>
+    <li><b>Crisis intercept on the question input</b> — the same UK-resources crisis pre-check as every other text box, fired <i>before</i> a question can reach an expert or queue. A crisis disclosure never becomes an expert Q. (Reuses the existing spine; must be wired, not assumed.)</li>
+    <li><b>Question moderation</b> — the same OpenAI-moderation + keyword + health-vocab allowlist as comments, so clinical talk is not wrongly removed but abuse is.</li>
+    <li><b>Reporting an answer</b> — members can report an expert answer; reports route to the named human reviewer. A serious clinical-safety report temporarily hides the answer pending review.</li>
+    <li><b>Escalation ladder</b> — member report → human reviewer → (clinical-safety concern) de-list the expert → (a clinician acted unprofessionally) consider a referral to their regulator (GMC/NMC/HCPC). Complaints + appeals owner is named (Halli).</li>
+    <li><b>Crisis inside a thread</b> — if an asker replies with crisis content, the crisis intercept fires again.</li>
+  </ul>
+  <p class="key"><b>Decided (product):</b> crisis-on-question, moderation reuse, report routing, the escalation ladder, named complaints owner. <b>Needs ratify (legal / OSA):</b> the threshold + duty for referring a clinician to their regulator; appeals-process adequacy under the Online Safety Act.</p>
+
+  <h2>5. How it sits under UK rules <span class="badge b-legal">LEGAL-RATIFY</span></h2>
+  <div class="tablewrap">
+  <table>
+    <thead><tr><th>Regime</th><th>The line</th><th>Our position (recommended)</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><b>CQC</b> (Care Quality Commission)</td>
+        <td>General health information + peer support is <b>not</b> a "regulated activity." The line is crossed only by "treatment of disease, disorder or injury" or "diagnostic and screening procedures" via a clinician–service-user relationship.</td>
+        <td>Design so <b>no regulated activity occurs</b> — the §2 scope limits (no diagnosis / treatment / triage) are exactly what keeps the surface outside CQC registration. Re-test if scope ever expands toward individualised advice. <i>Lawyer confirms the surface as designed is not a regulated activity.</i></td>
+      </tr>
+      <tr>
+        <td><b>Advertising of health services</b> (ASA/CAP + GMC/NMC social-media + advertising guidance)</td>
+        <td>Health claims must be truthful and not misleading; testimonials for health services can mislead; clinicians must follow their regulator's advertising/social-media rules.</td>
+        <td>No efficacy/cure claims; "general information" framing throughout; experts bound by a content policy reflecting their regulator's guidance; the monetised badge must not imply individualised care. <i>Counsel + each regulator's guidance.</i></td>
+      </tr>
+      <tr>
+        <td><b>OSA 2023</b> (Online Safety Act / Ofcom)</td>
+        <td>The asker side is user-generated content on a user-to-user service → illegal-content + moderation + reporting + appeals duties already apply. Expert answers add a provider-content dimension.</td>
+        <td>Fold the expert surface into the <b>same OSA risk assessment + moderation/reporting/appeals</b> already required for Community; the 18+ gate applies. <i>Part of the Community legal floor.</i></td>
+      </tr>
+      <tr>
+        <td><b>ICO / UK GDPR</b></td>
+        <td>Questions can contain special-category (health) data → explicit consent + lawful basis. Expert verification data (name, number, ID evidence) is personal data needing a retention policy.</td>
+        <td>Extend the Community <b>DPIA</b> to cover both the asker's health data <i>and</i> the expert verification data; explicit special-category consent on the ask flow; a defined retention policy for verification evidence.</td>
+      </tr>
+    </tbody>
+  </table>
+  </div>
+  <p class="key"><b>All four are LEGAL-RATIFY.</b> The product positions above are designed to keep the surface in the safest lane (general-info, not a CQC regulated activity, no misleading claims, OSA-covered, DPIA-extended) — but a qualified UK lawyer must confirm each before launch. These overlap the OSA/ICO legal floor already on the needs-Halli list.</p>
+
+  <h2>6. Named accountable owner <span class="badge b-product">PRODUCT</span> <span class="badge b-clinical">CLINICAL</span></h2>
+  <div class="rec"><b>Recommendation:</b> Halli is already the named OSA/ICO accountable person and owns expert vetting, complaints, and de-listing. <b>Add a named clinical reviewer</b> — a registered clinician — to sign off answer-review, because Halli is not a clinician and clinical-safety review needs qualified input. Until that reviewer exists, the layer does not launch.</div>
+  <p class="key"><b>Decided (product):</b> Halli owns governance/complaints/de-listing. <b>Open (clinical hire):</b> name the clinical reviewer for answer sign-off.</p>
+
+  <h2>7. Scope at launch — async vs live <span class="badge b-product">PRODUCT</span></h2>
+  <div class="rec"><b>Recommendation: async-only first.</b> Every answer is reviewable before it publishes, which is the entire safety model. Live AMA is far harder to moderate in real time and raises real-time crisis + advice-drift risk. Add live AMA only once async is proven and a real-time moderation capability exists.</div>
+  <p class="key"><b>Decided (product):</b> async-only at launch.</p>
+
+  <h2>8. Doctor-Export exclusion <span class="badge b-product">PRODUCT</span></h2>
+  <div class="rec"><b>Recommendation:</b> the GP/Doctor-Export <b>excludes</b> expert Q&amp;A. It is general information, not the user's clinical record, and bundling it could imply individualised advice. (Already specced as a whole-life rule — verify when built.)</div>
+
+  <h2>9. Commercial model <span class="badge b-commercial">COMMERCIAL</span> <span class="badge b-legal">LEGAL-RATIFY</span></h2>
+  <div class="rec"><b>Recommendation:</b> experts are the <b>one</b> monetisable layer (peer surfaces always free). At launch, a small number of vetted clinicians on a <b>paid sessional/honorarium basis</b> or a reputable-organisation partnership (e.g. a menopause clinic). <b>Avoid</b> pure-volunteer (weak accountability/reliability) and <b>avoid</b> pharma-sponsored experts (conflict of interest + advertising-rule exposure).</div>
+  <p class="key"><b>Halli's call (commercial):</b> paid vs partnership. <b>Needs ratify (legal):</b> the expert contract — duties, indemnity, the experts' own professional cover, and the liability carve-outs (overlaps §2 + the ToS work below).</p>
+
+  <h2>10. Liability / ToS / indemnity / insurance <span class="badge b-legal">LEGAL-RATIFY</span></h2>
+  <p>Who carries the risk when an answer is wrong or read as advice? This is wholly a legal item: platform ToS carve-outs, the "not medical advice" framing as a contractual term, the experts' own professional indemnity, and the platform's insurance. Draft + sign off alongside the OSA/ICO legal floor.</p>
+  <p class="key"><b>Entirely LEGAL-RATIFY.</b> Nothing here is a product call — it is drafted and signed off by counsel.</p>
+
+  <h2>Summary — every gate at a glance</h2>
+  <div class="tablewrap">
+  <table>
+    <thead><tr><th>#</th><th>Gate</th><th>Decided position</th><th>Type</th><th>Owner</th></tr></thead>
+    <tbody>
+      <tr><td>1</td><td>Clinician verification</td><td>3-check (register + identity + scope), manual at launch, re-verify 6–12mo</td><td><span class="badge b-product">PRODUCT</span> <span class="badge b-legal">RATIFY</span></td><td>Halli + counsel</td></tr>
+      <tr><td>2</td><td>Medical-advice boundary</td><td>Hard scope limits + interstitial + banned-topic routing + pre-pub review</td><td><span class="badge b-product">PRODUCT</span> <span class="badge b-clinical">CLINICAL</span> <span class="badge b-legal">RATIFY</span></td><td>Halli + clinician + counsel</td></tr>
+      <tr><td>3</td><td>Quarantine from peer chat</td><td>AMA-only, role-scoped, no badge anywhere peer-to-peer</td><td><span class="badge b-product">PRODUCT</span></td><td>Product</td></tr>
+      <tr><td>4</td><td>Reporting / escalation / crisis</td><td>Crisis-on-question + moderation reuse + report→reviewer→de-list/regulator ladder</td><td><span class="badge b-product">PRODUCT</span> <span class="badge b-legal">RATIFY</span></td><td>Halli + counsel</td></tr>
+      <tr><td>5</td><td>UK rules (CQC/ASA/OSA/ICO)</td><td>Stay general-info (not a regulated activity); fold into OSA RA + DPIA</td><td><span class="badge b-legal">RATIFY</span></td><td>Counsel</td></tr>
+      <tr><td>6</td><td>Accountable owner</td><td>Halli (governance) + a named clinical reviewer (answer sign-off)</td><td><span class="badge b-product">PRODUCT</span> <span class="badge b-clinical">CLINICAL</span></td><td>Halli</td></tr>
+      <tr><td>7</td><td>Launch scope</td><td>Async-only first; live AMA later</td><td><span class="badge b-product">PRODUCT</span></td><td>Product</td></tr>
+      <tr><td>8</td><td>Doctor-Export exclusion</td><td>Excludes expert Q&amp;A</td><td><span class="badge b-product">PRODUCT</span></td><td>Product</td></tr>
+      <tr><td>9</td><td>Commercial model</td><td>Paid sessional / partnership; never pharma-sponsored or pure-volunteer</td><td><span class="badge b-commercial">COMMERCIAL</span> <span class="badge b-legal">RATIFY</span></td><td>Halli + counsel</td></tr>
+      <tr><td>10</td><td>Liability / ToS / indemnity</td><td>ToS carve-outs + experts' indemnity + platform insurance</td><td><span class="badge b-legal">RATIFY</span></td><td>Counsel</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h2>Build gate — green ALL of these before any code</h2>
+  <div class="card red">
+    <ul>
+      <li>Verification process written + a named owner assigned, and a clinical reviewer named for answer sign-off. <span class="badge b-product">PRODUCT</span>/<span class="badge b-clinical">CLINICAL</span> — decided in principle here; execution is Halli's.</li>
+      <li>The disclaimer wording, the duty-of-care boundary, and the clinician guidance signed off by a qualified lawyer + clinician. <span class="badge b-legal">LEGAL-RATIFY</span></li>
+      <li>Liability / ToS / indemnity / insurance drafted + signed off (with the OSA/ICO floor). <span class="badge b-legal">LEGAL-RATIFY</span></li>
+      <li>CQC / ASA / OSA / ICO positions confirmed by counsel; DPIA extended to the expert surface. <span class="badge b-legal">LEGAL-RATIFY</span></li>
+      <li>Commercial model + expert contract chosen + drafted. <span class="badge b-commercial">COMMERCIAL</span>/<span class="badge b-legal">RATIFY</span></li>
+    </ul>
+    <p style="margin-bottom:0"><b>When this gate is green</b>, the build itself is small and reuses the existing anonymity + crisis + moderation spine on the question side. The hard part was never the code — it is this governance, and it is now <i>decided where it can be decided</i> and <i>scoped where a lawyer must decide it</i>.</p>
+  </div>
+
+  <div class="foot">
+    FemWell — Expert Layer Governance Framework · 2026-06-11. Companion to <i>claude-state/EXPERT_LAYER_SCOPE.md</i>. Recommendations only; not legal advice; the LEGAL-RATIFY items bind no one until a qualified UK lawyer signs them off. The expert feature remains <b>SCOPED, NOT BUILT</b>.
+  </div>
+
+</div>
+</body>
+</html>
