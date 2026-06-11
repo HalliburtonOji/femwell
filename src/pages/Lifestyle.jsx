@@ -6,6 +6,7 @@ import ForYouTab from "@/components/lifestyle/foryou/ForYouTab";
 import BrowseTab from "@/components/lifestyle/browse/BrowseTab";
 import ListenTab from "@/components/lifestyle/listen/ListenTab";
 import DailyStoryReader from "@/components/lifestyle/DailyStoryReader";
+import ContentActionBar from "@/components/common/ContentActionBar";
 import HoroscopeTabImpl from "@/components/horoscope/HoroscopeTab";
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
@@ -300,7 +301,18 @@ function ContentCard({ item, compact = false }) {
 // DailyStory entity, so the page indicator stays honest if the arc length
 // changes. Series fallback is "Daily Story" inside the reader itself.
 function DailyStoryTab() {
-  return <DailyStoryReader />;
+  return (
+    <>
+      <DailyStoryReader />
+      <div style={{ padding: "0 16px 20px" }}>
+        <ContentActionBar
+          label="Stay with it"
+          reflect={{ seed: "What today's story stirred in me — ", type: "reflection" }}
+          discuss={{ room: "lounge", seed: "Anyone else reading the daily story? What did it stir?" }}
+        />
+      </div>
+    </>
+  );
 }
 
 

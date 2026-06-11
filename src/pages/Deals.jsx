@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { ExternalLink, ShieldCheck } from "lucide-react";
+import ContentActionBar from "@/components/common/ContentActionBar";
 
 const CATEGORIES = ["All", "Supplements", "Period care", "Skincare", "Fitness", "Books"];
 
@@ -146,6 +147,12 @@ export default function Deals() {
             })}
           </div>
         )}
+
+        {/* Connectivity — honest peer opinion, never shilling */}
+        <ContentActionBar
+          discuss={{ room: "style", seed: "Is it worth it? After honest opinions before I buy." }}
+          jess="whether something's worth buying"
+        />
       </div>
     </div>
   );

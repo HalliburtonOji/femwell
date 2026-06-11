@@ -358,6 +358,12 @@ export default function ProgramDay() {
                 onSave={saveReflection}
                 saving={savingReflection}
               />
+              {/* Connectivity — a program reflection IS a Journal entry; offer a way in */}
+              {reflectionEntry && (
+                <a href={createPageUrl("Journal")} style={{ display: "inline-flex", alignItems: "center", gap: 6, marginTop: 10, fontSize: 12.5, fontWeight: 700, color: "var(--rose-dust)", textDecoration: "none" }}>
+                  <BookOpen className="w-3.5 h-3.5" /> See this in your Journal
+                </a>
+              )}
             </div>
           </>
         )}

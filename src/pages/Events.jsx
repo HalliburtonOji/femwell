@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { CalendarDays, MapPin } from "lucide-react";
 import { toggleSavedItem } from "@/lib/savedItems";
+import ContentActionBar from "@/components/common/ContentActionBar";
 
 const TAG_FILTERS = ["all", "social", "fitness", "networking", "culture", "food", "online", "wellness", "nightlife", "dating"];
 const PRICE_FILTERS = ["all", "free", "paid"];
@@ -278,6 +279,12 @@ export default function Events() {
             ))}
           </div>
         )}
+
+        {/* Connectivity — turn going-out into company */}
+        <ContentActionBar
+          discuss={{ room: "lounge", seed: "Anywhere good to go lately? Sharing events worth knowing about." }}
+          jess="things to do near me"
+        />
       </div>
     </div>
   );

@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { base44 } from '@/api/base44Client';
+import ContentActionBar from '@/components/common/ContentActionBar';
 import TikTokRail from './TikTokRail';
 import PodcastRail from './PodcastRail';
 import ExternalPodcastsRail from './ExternalPodcastsRail';
@@ -232,6 +233,13 @@ export default function ListenTab({ categoryFilter, activeChip = 'all' }) {
           loading={loading}
           error={error}
           onRetry={handleRetry}
+        />
+      </div>
+
+      <div style={{ padding: "8px 16px 0" }}>
+        <ContentActionBar
+          reflect={{ seed: "Something I listened to that stayed with me — ", type: "reflection" }}
+          discuss={{ room: "lounge", seed: "What are you all listening to? After good recommendations." }}
         />
       </div>
 
