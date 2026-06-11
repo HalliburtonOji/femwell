@@ -3,6 +3,16 @@ import { base44 } from "@/api/base44Client";
 import { ArrowLeft, Bookmark, BookmarkCheck, Heart, HeartOff, Loader2, PlayCircle } from "lucide-react";
 import { format } from "date-fns";
 import { getCategoryGradient, attachFallbackOverlay } from "@/utils/imageFallback";
+import ContentActionBar from "@/components/common/ContentActionBar";
+
+// Map a content category to the best-fit whole-life Community room (default: the Lounge).
+const CATEGORY_ROOM = {
+  love: "love", relationships: "love", dating: "love", sex: "love",
+  money: "money", career: "money", work: "money", finance: "money",
+  style: "style", fashion: "style", beauty: "style",
+  health: "health", wellness: "lounge", mind: "lounge", body: "lounge",
+};
+const roomForCategory = (cat) => CATEGORY_ROOM[String(cat || "").toLowerCase()] || "lounge";
 
 const FEMWELL_GENERATED_PROVIDERS = new Set([
   "FEMWELL_AI",
@@ -849,6 +859,13 @@ export default function LifestyleDetail() {
             </button>
           )}
         </div>
+
+        {/* Connectivity keystone — thread this read into the doing-surfaces */}
+        <ContentActionBar
+          reflect={{ seed: `On reading "${decodedTitle}" — `, type: "reflection" }}
+          discuss={{ room: roomForCategory(item.category), seed: `Been reading about ${decodedTitle.toLowerCase()} — has anyone else?` }}
+          jess={decodedTitle}
+        />
 
         {/* More like this rail */}
         {relatedDecorated.length >= 2 && (

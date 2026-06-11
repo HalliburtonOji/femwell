@@ -269,8 +269,8 @@ function PostCard({ post, user, onCrisis, onChanged }) {
 }
 
 // ── room composer ────────────────────────────────────────────────────────────
-function RoomComposer({ room, circle, club, user, onCrisis, onPosted, onCancel }) {
-  const [body, setBody] = useState("");
+function RoomComposer({ room, circle, club, user, onCrisis, onPosted, onCancel, initialBody = "" }) {
+  const [body, setBody] = useState(initialBody);
   const [mode, setMode] = useState("open");
   const [busy, setBusy] = useState(false);
   const [declined, setDeclined] = useState(false);
@@ -1225,8 +1225,8 @@ function GamesView({ user, onCrisis }) {
   );
 }
 
-function RoomView({ roomKey, posts, loading, error, user, onNav, onCrisis, onReload }) {
-  const [composing, setComposing] = useState(false);
+function RoomView({ roomKey, posts, loading, error, user, onNav, onCrisis, onReload, seed = "" }) {
+  const [composing, setComposing] = useState(() => !!seed);
   const [voicing, setVoicing] = useState(false);
   const room = ROOMS.find((r) => r.key === roomKey) || ROOMS[0];
   const feed = posts.filter((p) => p.room === roomKey);
@@ -1267,7 +1267,7 @@ function RoomView({ roomKey, posts, loading, error, user, onNav, onCrisis, onRel
           <button onClick={() => setComposing(true)} style={{ ...primaryBtn, marginBottom: 16 }}><Plus size={14} /> Add to {room.name.replace(/^The /, "")}</button>
         )}
         {composing && (
-          <RoomComposer room={roomKey} user={user} onCrisis={onCrisis}
+          <RoomComposer room={roomKey} user={user} onCrisis={onCrisis} initialBody={seed}
             onPosted={() => { setComposing(false); onReload(); }} onCancel={() => setComposing(false)} />
         )}
 
@@ -1301,6 +1301,22 @@ function CommunityInner() {
 
   const [lifeStage, setLifeStage] = useState(null);
   const [profile, setProfile] = useState(null);
+  const [roomSeed, setRoomSeed] = useState("");   // connectivity P2 — seeded composer from a deep-link
+
+  // Connectivity P2 — deep-link: /Community?room=<feed-room>&seed=<text> opens that room
+  // with the composer pre-filled. Only the open feed rooms accept a seed.
+  useEffect(() => {
+    try {
+      const sp = new URLSearchParams(window.location.search);
+      const room = sp.get("room");
+      const FEED_ROOMS = ["lounge", "love", "money", "style", "lighter", "health"];
+      if (room && FEED_ROOMS.includes(room)) {
+        setView(room);
+        const seed = sp.get("seed");
+        if (seed) setRoomSeed(decodeURIComponent(seed));
+      }
+    } catch { /* ignore */ }
+  }, []);
 
   useEffect(() => { base44.auth.me().then(setUser).catch(() => setUser(null)); }, []);
   useEffect(() => {
@@ -1345,7 +1361,7 @@ function CommunityInner() {
               <button onClick={() => setView("home")} style={{ ...ghostBtn, marginBottom: 14, padding: "7px 11px" }}><ChevronLeft size={14} /> Community</button>
               <EchoWall user={user} profile={profile} lifeStage={lifeStage} />
             </div>
-          : <RoomView key={tick} roomKey={view} posts={posts} loading={loading} error={loadErr} user={user} onNav={setView} onCrisis={() => setCrisis(true)} onReload={reload} />}
+          : <RoomView key={tick} roomKey={view} posts={posts} loading={loading} error={loadErr} user={user} onNav={setView} onCrisis={() => setCrisis(true)} onReload={reload} seed={roomSeed} />}
         {view === "home" && (
           <>
             <Rule mt={30} mb={14} />

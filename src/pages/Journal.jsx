@@ -309,6 +309,22 @@ export default function Journal() {
   const replyToPast = () => openSeeded("Replying to who I was…\n\n", "reflection");
   const closeComposer = () => { setShowNewEntry(false); setEditEntry(null); setSeedText(""); setSeedType(null); setSeedThread(""); };
 
+  // Connectivity P1 — deep-link: open the composer seeded from another surface
+  // (a read, a horoscope, an insight) via /Journal?compose=1&seed=…&type=…
+  const composeSeedDone = useRef(false);
+  useEffect(() => {
+    if (composeSeedDone.current) return;
+    try {
+      const sp = new URLSearchParams(window.location.search);
+      if (sp.get("compose") === "1") {
+        composeSeedDone.current = true;
+        const seed = sp.get("seed") || "";
+        const type = sp.get("type") || null;
+        openSeeded(seed ? decodeURIComponent(seed) : "", type);
+      }
+    } catch { /* ignore */ }
+  });
+
   const handleSaved = (entry) => {
     if (!entry) return;
     const wasNew = !entries.some((e) => e.id === entry.id);
