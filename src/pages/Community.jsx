@@ -36,6 +36,7 @@ import {
   VOICE_NOTES_ENABLED, qotdForDay, presenceLine, crisisCheck,
 } from "@/components/community/communityConfig";
 import VoiceNoteComposer from "@/components/community/VoiceNoteComposer";
+import ShareButton from "@/components/share/ShareButton";
 import EchoWall from "@/components/journal/echo/EchoWall";
 import {
   CIRCLES, CIRCLE_CATEGORIES, circleByKey, SENSITIVE_CONSENT,
@@ -522,10 +523,16 @@ function WisdomCard({ onOpen }) {
       <div style={{ fontFamily: HANDFAM, fontStyle: "italic", fontSize: 22, lineHeight: 1.4, color: "#F4EFE3", marginBottom: 14 }}>
         &ldquo;{pick.body}&rdquo;
       </div>
-      <button onClick={onOpen} style={{
-        fontFamily: UI, fontSize: 12, fontWeight: 700, cursor: "pointer", padding: "8px 14px",
-        borderRadius: 999, border: "1px solid rgba(212,175,55,0.5)", background: "rgba(212,175,55,0.12)", color: "#F4EFE3",
-      }}>Read the collection</button>
+      <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
+        <button onClick={onOpen} style={{
+          fontFamily: UI, fontSize: 12, fontWeight: 700, cursor: "pointer", padding: "8px 14px",
+          borderRadius: 999, border: "1px solid rgba(212,175,55,0.5)", background: "rgba(212,175,55,0.12)", color: "#F4EFE3",
+        }}>Read the collection</button>
+        <ShareButton tone="light" label="Share this line" artifact={{
+          kind: "wisdom", source: "wisdom-seed", line: pick.body,
+          shareText: "A line that stayed with me, from FemWell.", footer: "Living wisdom", url: "https://femwells.com",
+        }} />
+      </div>
     </section>
   );
 }
@@ -813,6 +820,16 @@ function Home({ presence, lifeStage, onEnter, user, onCrisis }) {
       }}>
         <HeartHandshake size={14} style={{ color: T.gold }} /> Need a quiet word? Talk to Jess
       </button>
+
+      {/* Invite — a non-personal, on-brand card (organic growth). No personal content leaves. */}
+      <div style={{ display: "flex", justifyContent: "center", marginTop: 14 }}>
+        <ShareButton label="Invite a friend" artifact={{
+          kind: "invite",
+          line: "Come find your people — anonymous, whole-life, kind. For all of you, not just your cycle.",
+          footer: "An invitation", url: "https://femwells.com",
+          shareText: "I think you'd like FemWell — a whole-life space for women. Anonymous, 18+.",
+        }} />
+      </div>
     </div>
   );
 }
