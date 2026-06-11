@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import { Sparkles } from "lucide-react";
 import ContentActionBar from "@/components/common/ContentActionBar";
+import ShareButton from "@/components/share/ShareButton";
 import {
   getSunSign,
   getSunDegree,
@@ -153,6 +154,15 @@ export default function HoroscopeTab(props) {
               reflect={{ seed: "What today's sky stirred in me — ", type: "reflection" }}
               discuss={{ room: "lighter", seed: "Today's stars felt close — anyone else feeling it?" }}
             />
+            {reading?.headline && (
+              <div style={{ marginTop: 4 }}>
+                <ShareButton label="Share today's sky" artifact={{
+                  kind: "horoscope", source: "horoscope", line: reading.headline,
+                  footer: "Today's sky", url: "https://femwells.com",
+                  shareText: "Today's sky, from FemWell.",
+                }} />
+              </div>
+            )}
           </div>
 
           <CycleMoonDial

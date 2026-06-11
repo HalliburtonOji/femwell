@@ -545,10 +545,12 @@ function WisdomLibrary({ onBack }) {
       .then((r) => setRows(Array.isArray(r) ? r : []))
       .catch(() => setRows([]));
   }, []);
-  // merge curated seed + promoted rows (source unlabelled — it's shared wisdom either way)
+  // merge curated seed + promoted rows. Source is tracked for THE WALL: only the CURATED
+  // seed lines (FemWell-authored) may be shared externally; promoted lines come from
+  // anonymous echoes (source:"echo") and are NOT externally shareable.
   const all = useMemo(() => {
-    const promoted = (rows || []).map((r) => ({ body: r.body, topic: r.topic || "Identity" }));
-    return [...promoted, ...WISDOM_SEED];
+    const promoted = (rows || []).map((r) => ({ body: r.body, topic: r.topic || "Identity", _src: "echo" }));
+    return [...promoted, ...WISDOM_SEED.map((w) => ({ ...w, _src: "wisdom-seed" }))];
   }, [rows]);
   const shown = topic === "All" ? all : all.filter((w) => (w.topic || "") === topic);
   return (
@@ -577,7 +579,13 @@ function WisdomLibrary({ onBack }) {
       {shown.map((w, i) => (
         <div key={i} style={{ borderLeft: `2px solid ${T.gold}`, padding: "4px 0 4px 14px", marginBottom: 18 }}>
           <div style={{ fontFamily: HANDFAM, fontStyle: "italic", fontSize: 19, lineHeight: 1.45, color: T.ink }}>{w.body}</div>
-          {w.topic && <div style={{ fontFamily: UI, fontSize: 10.5, color: T.muted, marginTop: 5, letterSpacing: 0.4 }}>{w.topic}</div>}
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10, marginTop: 5 }}>
+            {w.topic ? <div style={{ fontFamily: UI, fontSize: 10.5, color: T.muted, letterSpacing: 0.4 }}>{w.topic}</div> : <span />}
+            {/* Only curated seed lines may leave the app; echo-derived lines are not shareable (THE WALL). */}
+            {w._src === "wisdom-seed" && (
+              <ShareButton label="Share" artifact={{ kind: "wisdom", source: "wisdom-seed", line: w.body, shareText: "A line worth keeping, from FemWell.", footer: "Living wisdom", url: "https://femwells.com" }} />
+            )}
+          </div>
         </div>
       ))}
     </div>
@@ -1330,6 +1338,13 @@ function LibraryView({ user, onCrisis, onNav, onOpenCorner }) {
         <div style={{ fontFamily: HANDFAM, fontStyle: "italic", fontWeight: 700, fontSize: 19, color: T.ink, marginBottom: 4 }}>A book, together — at our own pace.</div>
         <div style={{ fontFamily: UI, fontSize: 12, color: T.muted }}>One read, spoiler-safe checkpoints, no streaks. Come in →</div>
       </button>
+      <div style={{ marginBottom: 14 }}>
+        <ShareButton label="Share this read" artifact={{
+          kind: "bookpick", source: "bookpick", line: SEED_PICK.title, sub: SEED_PICK.author,
+          footer: "On the FemWell shelf", url: "https://femwells.com",
+          shareText: `Reading ${SEED_PICK.title} with FemWell's book club.`,
+        }} />
+      </div>
 
       {/* Daily-read readers' corners — a light, spoiler-safe per-book chat for whatever you're reading */}
       <button onClick={() => onOpenCorner && onOpenCorner(flagshipCorner, SEED_PICK.title)} style={{
