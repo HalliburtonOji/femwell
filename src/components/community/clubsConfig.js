@@ -26,6 +26,26 @@ export const CLUB_CATEGORIES = ["Together"];
 export const CLUB_KEYS = CLUBS.map((c) => c.key);
 export const clubByKey = (key) => CLUBS.find((c) => c.key === key) || null;
 
+// ── Daily-read readers' corners ──────────────────────────────────────────────
+// Every "daily read" book gets a LIGHT per-book readers' corner — the same Club /
+// club-scoped-CommunityPost mechanism as the Book Club, but general (no mandatory
+// chapter checkpoints), kept spoiler-safe by norm. The corner key is derived from the
+// book id (e.g. a Gutenberg id), so it works against whatever the Daily Read serves
+// and scales to Halli's eventual ~10-book set with no per-book registration. The server
+// (joinClub / createCommunityPost) allows any `dailyread-<id>` key by prefix.
+export const DAILYREAD_PREFIX = "dailyread-";
+export const dailyReadClubKey = (bookId) =>
+  DAILYREAD_PREFIX + String(bookId || "").toLowerCase().replace(/[^a-z0-9_-]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 40);
+export const isDailyReadClub = (key) => typeof key === "string" && key.startsWith(DAILYREAD_PREFIX);
+// Resolve a daily-read club to a display object (it isn't in the static catalogue).
+export const dailyReadClubFromKey = (key, title) => ({
+  key,
+  name: (title && String(title).trim()) ? `${String(title).trim()} — readers' corner` : "Readers' corner",
+  line: "Everyone reading this, talking about it — generally, and spoiler-safe. No endings, no plot twists given away.",
+  category: "Reading",
+  dailyRead: true,
+});
+
 // Member-created Clubs: OFF until the OSA/ICO legal floor is in place (mirrors the server
 // createClub `CLUBS_USER_CREATE_ENABLED` env gate). Keep false — flip ONLY with the server flag.
 export const CLUBS_USER_CREATE_ENABLED = false;

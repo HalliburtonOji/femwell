@@ -120,7 +120,7 @@ Deno.serve(async (req) => {
   let club = '';
   if (p?.club) {
     const k = String(p.club);
-    if (CLUB_KEYS.has(k)) club = k;
+    if (CLUB_KEYS.has(k) || /^dailyread-[a-z0-9_-]{1,48}$/i.test(k)) club = k;
     else {
       const cr = await base44.asServiceRole.entities.Club.filter({ club_key: k, hidden: false }, '-created_date', 1).catch(() => []);
       if (Array.isArray(cr) && cr.length) club = k;

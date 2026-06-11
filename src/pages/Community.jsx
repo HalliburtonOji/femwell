@@ -44,6 +44,7 @@ import {
 import {
   CLUBS, CLUB_CATEGORIES, clubByKey, CLUBS_USER_CREATE_ENABLED,
   isClubJoined, markClubJoined, clearClubJoined,
+  isDailyReadClub, dailyReadClubFromKey,
 } from "@/components/community/clubsConfig";
 import { WISDOM_TOPICS, WISDOM_SEED, featuredWisdom } from "@/components/community/wisdomLibrary";
 import { SEED_PICK, clubReached, setClubReached } from "@/components/community/bookClubConfig";
@@ -1117,8 +1118,9 @@ function ClubsDirectory({ onOpen, onBack }) {
   );
 }
 
-function ClubView({ clubKey, user, onCrisis, onBack }) {
-  const club = clubByKey(clubKey);
+function ClubView({ clubKey, user, onCrisis, onBack, clubTitle = "" }) {
+  // Resolve from the static catalogue, or derive a daily-read readers' corner (per book).
+  const club = clubByKey(clubKey) || (isDailyReadClub(clubKey) ? dailyReadClubFromKey(clubKey, clubTitle) : null);
   const [joined, setJoined] = useState(() => isClubJoined(clubKey));
   const [posts, setPosts] = useState(null);
   const [composing, setComposing] = useState(false);
@@ -1161,6 +1163,12 @@ function ClubView({ clubKey, user, onCrisis, onBack }) {
       <Script size={30} style={{ marginBottom: 4 }}>{club.name}</Script>
       <Hand size={17} color={T.muted} style={{ marginBottom: 14 }}>{club.line}</Hand>
 
+      {club.dailyRead && (
+        <div style={{ background: T.paperHi, border: `1px solid ${T.paperDeep}`, borderLeft: `3px solid ${T.gold}`, borderRadius: 6, padding: "10px 13px", marginBottom: 14 }}>
+          <span style={{ display: "inline-flex", alignItems: "center", gap: 6, fontFamily: UI, fontSize: 11.5, fontWeight: 700, color: T.inkSoft }}><Lock size={12} color={T.gold} /> Spoiler-safe — keep it general, no endings or twists given away.</span>
+        </div>
+      )}
+
       <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 16, flexWrap: "wrap" }}>
         {joined
           ? <><span style={{ display: "inline-flex", alignItems: "center", gap: 5, fontFamily: UI, fontSize: 12.5, fontWeight: 700, color: T.gold }}><Check size={14} /> You're in this club</span>
@@ -1188,15 +1196,16 @@ function ClubView({ clubKey, user, onCrisis, onBack }) {
   );
 }
 
-function ClubsView({ user, onCrisis, onBack }) {
-  const [active, setActive] = useState(null);
+function ClubsView({ user, onCrisis, onBack, initialActive = null, clubTitle = "" }) {
+  const [active, setActive] = useState(initialActive);
   return active
-    ? <ClubView clubKey={active} user={user} onCrisis={onCrisis} onBack={() => setActive(null)} />
+    ? <ClubView clubKey={active} user={user} onCrisis={onCrisis} onBack={() => setActive(null)} clubTitle={clubTitle} />
     : <ClubsDirectory onOpen={setActive} onBack={onBack} />;
 }
 
 // ── The Library room — reading home (Book Club + reading) ─────────────────────
-function LibraryView({ user, onCrisis, onNav }) {
+function LibraryView({ user, onCrisis, onNav, onOpenCorner }) {
+  const flagshipCorner = dailyReadClubKey(SEED_PICK.gutenberg_id);
   return (
     <div>
       <Script size={32} style={{ marginBottom: 4 }}>The Library</Script>
@@ -1211,9 +1220,19 @@ function LibraryView({ user, onCrisis, onNav }) {
         <div style={{ fontFamily: UI, fontSize: 12, color: T.muted }}>One read, spoiler-safe checkpoints, no streaks. Come in →</div>
       </button>
 
+      {/* Daily-read readers' corners — a light, spoiler-safe per-book chat for whatever you're reading */}
+      <button onClick={() => onOpenCorner && onOpenCorner(flagshipCorner, SEED_PICK.title)} style={{
+        display: "block", width: "100%", textAlign: "left", cursor: "pointer",
+        background: T.paperHi, border: `1px solid ${T.paperDeep}`, borderRadius: 6, padding: "14px 15px", marginBottom: 14,
+      }}>
+        <Eyebrow color={T.gold} mb={6}>Readers' corners</Eyebrow>
+        <div style={{ fontFamily: HANDFAM, fontStyle: "italic", fontWeight: 700, fontSize: 17, color: T.ink, marginBottom: 4 }}>Talk about the book you're reading.</div>
+        <div style={{ fontFamily: UI, fontSize: 12, color: T.muted }}>Every book has a small, spoiler-safe corner — others reading the same one, talking about it. Open {SEED_PICK.title}'s corner →</div>
+      </button>
+
       <section style={{ background: T.paperHi, border: `1px dashed ${T.paperDeep}`, borderRadius: 6, padding: "13px 15px" }}>
-        <Eyebrow color={T.muted} mb={6}>More reading clubs — coming</Eyebrow>
-        <Hand size={15.5} color={T.muted}>More reads, and member-led book clubs, are on their way. For now, our book club above is open to everyone.</Hand>
+        <Eyebrow color={T.muted} mb={6}>From the reader</Eyebrow>
+        <Hand size={15.5} color={T.muted}>Open any book in the Library and you'll find its readers' corner from the reader — general chat, no endings spoiled.</Hand>
       </section>
     </div>
   );
@@ -1234,7 +1253,7 @@ function GamesView({ user, onCrisis }) {
   );
 }
 
-function RoomView({ roomKey, posts, loading, error, user, onNav, onCrisis, onReload, seed = "", initialCircle = null, profile = null }) {
+function RoomView({ roomKey, posts, loading, error, user, onNav, onCrisis, onReload, seed = "", initialCircle = null, profile = null, onOpenCorner }) {
   const [composing, setComposing] = useState(() => !!seed);
   const [voicing, setVoicing] = useState(false);
   const room = ROOMS.find((r) => r.key === roomKey) || ROOMS[0];
@@ -1257,7 +1276,7 @@ function RoomView({ roomKey, posts, loading, error, user, onNav, onCrisis, onRel
         {roomKey === "circles" ? (
           <CirclesView user={user} onCrisis={onCrisis} initialActive={initialCircle} profile={profile} />
         ) : roomKey === "library" ? (
-          <LibraryView user={user} onCrisis={onCrisis} onNav={onNav} />
+          <LibraryView user={user} onCrisis={onCrisis} onNav={onNav} onOpenCorner={onOpenCorner} />
         ) : roomKey === "games" ? (
           <GamesView user={user} onCrisis={onCrisis} />
         ) : (
@@ -1312,6 +1331,8 @@ function CommunityInner() {
   const [profile, setProfile] = useState(null);
   const [roomSeed, setRoomSeed] = useState("");   // connectivity P2 — seeded composer from a deep-link
   const [initialCircle, setInitialCircle] = useState(null);   // P6/P7 — open a circle from a deep-link
+  const [initialClub, setInitialClub] = useState(null);       // daily-read readers' corner from a deep-link
+  const [clubTitle, setClubTitle] = useState("");             // book title for a derived daily-read club
 
   // Connectivity deep-links: /Community?room=<feed-room>&seed=<text> opens that room with the
   // composer pre-filled (only the open feed rooms accept a seed); /Community?circle=<key> opens
@@ -1328,6 +1349,12 @@ function CommunityInner() {
       }
       const circle = sp.get("circle");
       if (circle && circleByKey(circle)) { setView("circles"); setInitialCircle(circle); }
+      const club = sp.get("club");
+      if (club && (clubByKey(club) || isDailyReadClub(club))) {
+        setView("clubs"); setInitialClub(club);
+        const title = sp.get("title");
+        if (title) setClubTitle(decodeURIComponent(title));
+      }
     } catch { /* ignore */ }
   }, []);
 
@@ -1368,13 +1395,14 @@ function CommunityInner() {
           : view === "bookclub"
           ? <BookClubView user={user} onCrisis={() => setCrisis(true)} onBack={() => setView("library")} />
           : view === "clubs"
-          ? <div style={{ padding: "30px 18px 50px" }}><ClubsView user={user} onCrisis={() => setCrisis(true)} onBack={() => setView("home")} /></div>
+          ? <div style={{ padding: "30px 18px 50px" }}><ClubsView user={user} onCrisis={() => setCrisis(true)} onBack={() => setView("home")} initialActive={initialClub} clubTitle={clubTitle} /></div>
           : view === "echo"
           ? <div style={{ padding: "26px 18px 50px" }}>
               <button onClick={() => setView("home")} style={{ ...ghostBtn, marginBottom: 14, padding: "7px 11px" }}><ChevronLeft size={14} /> Community</button>
               <EchoWall user={user} profile={profile} lifeStage={lifeStage} />
             </div>
-          : <RoomView key={tick} roomKey={view} posts={posts} loading={loading} error={loadErr} user={user} onNav={setView} onCrisis={() => setCrisis(true)} onReload={reload} seed={roomSeed} initialCircle={initialCircle} profile={profile} />}
+          : <RoomView key={tick} roomKey={view} posts={posts} loading={loading} error={loadErr} user={user} onNav={setView} onCrisis={() => setCrisis(true)} onReload={reload} seed={roomSeed} initialCircle={initialCircle} profile={profile}
+              onOpenCorner={(key, title) => { setInitialClub(key); setClubTitle(title || ""); setView("clubs"); }} />}
         {view === "home" && (
           <>
             <Rule mt={30} mb={14} />

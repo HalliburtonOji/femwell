@@ -1,7 +1,8 @@
 import { useState, useEffect, useMemo } from "react";
-import { ArrowLeft, ExternalLink } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { ArrowLeft, ExternalLink, Users } from "lucide-react";
+import { useNavigate, Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
+import { dailyReadClubKey } from "@/components/community/clubsConfig";
 import { base44 } from "@/api/base44Client";
 import DailyStoryReader from "@/components/lifestyle/DailyStoryReader";
 
@@ -170,6 +171,7 @@ export default function BookReader() {
       title={book?.title}
       author={book?.author}
       sourceUrl={book?.source_url}
+      cornerHref={gutenbergId ? createPageUrl(`Community?club=${dailyReadClubKey(gutenbergId)}&title=${encodeURIComponent(book?.title || "")}`) : null}
     >
       <DailyStoryReader
         source={{
@@ -191,7 +193,7 @@ const emptyStyle = {
   color: "var(--plum-mute, #6b4a56)",
 };
 
-function Frame({ children, onBack, title, author, sourceUrl }) {
+function Frame({ children, onBack, title, author, sourceUrl, cornerHref }) {
   return (
     <div style={{ minHeight: "100vh", backgroundColor: "var(--ivory)" }}>
       <div className="max-w-2xl mx-auto px-4 pt-8 pb-8">
@@ -223,6 +225,15 @@ function Frame({ children, onBack, title, author, sourceUrl }) {
             <ExternalLink className="w-3 h-3" />
             Read at gutenberg.org
           </a>
+        )}
+        {cornerHref && (
+          <Link
+            to={cornerHref}
+            style={{ display: "flex", alignItems: "center", gap: 7, fontSize: 13, color: "var(--plum)", textDecoration: "none", marginBottom: 20, padding: "9px 13px", borderRadius: 12, border: "1px solid var(--border)", backgroundColor: "var(--surface)" }}
+          >
+            <Users className="w-3.5 h-3.5" style={{ color: "var(--rose-dust)" }} />
+            Others reading this — join the readers' corner (spoiler-safe)
+          </Link>
         )}
       </div>
       <div className="max-w-2xl mx-auto px-4">

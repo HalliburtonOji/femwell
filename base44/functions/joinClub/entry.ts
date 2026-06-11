@@ -27,8 +27,10 @@ Deno.serve(async (req) => {
     if (!author_hash || !club_key) return Response.json({ error: 'author_hash + club_key required' }, { status: 400 });
 
     const sb = base44.asServiceRole;
-    // A valid Club is either a known Jess-hosted key OR a live Club entity row (future member Clubs).
-    let known = CLUB_KEYS.has(String(club_key));
+    // A valid Club is a known Jess-hosted key, a per-book daily-read readers' corner
+    // (dailyread-<bookId>, opened on demand — no pre-registration needed), or a live
+    // Club entity row (future member Clubs).
+    let known = CLUB_KEYS.has(String(club_key)) || /^dailyread-[a-z0-9_-]{1,48}$/i.test(String(club_key));
     if (!known) {
       const rows = await sb.entities.Club.filter({ club_key: String(club_key), hidden: false }, '-created_date', 1).catch(() => []);
       known = Array.isArray(rows) && rows.length > 0;
