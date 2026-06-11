@@ -1,0 +1,166 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>FemWell — Sharing Proposal</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Ephesis&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --cream:#F4EDDB; --paper:#FBF6E6; --paperHi:#F8F2E4; --page:#ECE7DA;
+    --ink:#2E261B; --inkSoft:#5b4f3e; --plum:#4A2A3A; --plumMid:#7B5E6B;
+    --rose:#C4849A; --sage:#6B8F5A; --gold:#A6862B; --red:#BC2E27;
+    --rule:rgba(58,44,26,0.12);
+    --sans:ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;
+    --serif:"Cormorant Garamond","Georgia",serif;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--page);color:var(--ink);font-family:var(--serif);line-height:1.55;}
+  .wrap{max-width:840px;margin:0 auto;padding:28px 16px 72px;}
+  .eyebrow{font-family:var(--sans);font-size:11px;letter-spacing:.2em;text-transform:uppercase;font-weight:700;color:var(--gold);margin:0 0 6px;}
+  h1{font-size:33px;line-height:1.08;margin:6px 0 8px;color:var(--plum);font-weight:600;}
+  .sub{font-family:var(--sans);font-size:13.5px;color:var(--inkSoft);margin:0 0 4px;line-height:1.55;}
+  h2{font-size:24px;font-weight:600;color:var(--plum);margin:34px 0 6px;line-height:1.18;border-bottom:2px solid var(--rule);padding-bottom:6px;}
+  h3{font-size:18px;font-weight:600;color:var(--ink);margin:18px 0 4px;}
+  p{font-size:15.5px;margin:8px 0;}
+  .card{background:var(--paper);border:1px solid var(--rule);border-left:3px solid var(--gold);border-radius:12px;padding:13px 15px;margin:12px 0;}
+  .card.red{border-left-color:var(--red);} .card.plum{border-left-color:var(--plum);} .card.sage{border-left-color:var(--sage);} .card.rose{border-left-color:var(--rose);}
+  blockquote{margin:14px 0;padding:13px 15px;background:var(--cream);border-radius:10px;border-left:3px solid var(--rose);font-style:italic;font-size:16.5px;color:var(--plum);}
+  .badge{display:inline-block;border-radius:99px;padding:1px 8px;font-size:10.5px;font-weight:700;font-family:var(--sans);color:#fff;white-space:nowrap;}
+  .hi{background:var(--red);} .med{background:var(--gold);} .lo{background:var(--plumMid);}
+  .rec-y{background:var(--sage);} .rec-o{background:var(--plumMid);} .rec-l{background:var(--inkSoft);}
+  .chk{display:inline-block;width:13px;height:13px;border:1.5px solid var(--plumMid);border-radius:3px;vertical-align:middle;}
+  table{width:100%;border-collapse:collapse;font-family:var(--sans);font-size:12px;margin:8px 0;}
+  th{text-align:left;padding:6px 8px;background:var(--paperHi);color:var(--inkSoft);font-size:10.5px;letter-spacing:.4px;text-transform:uppercase;border-bottom:1px solid var(--rule);}
+  td{padding:6px 8px;border-bottom:1px solid var(--rule);vertical-align:top;}
+  .tablewrap{overflow-x:auto;}
+  ul{margin:6px 0;padding-left:0;list-style:none;}
+  li{display:flex;gap:9px;align-items:flex-start;margin:5px 0;font-size:14.5px;line-height:1.45;}
+  li::before{content:"";width:6px;height:6px;border-radius:99px;background:var(--gold);margin-top:8px;flex-shrink:0;}
+  a{color:var(--plum);}
+  code{font-family:ui-monospace,Menlo,monospace;font-size:11.5px;background:var(--paperHi);padding:1px 4px;border-radius:4px;color:var(--plum);}
+  .foot{margin-top:36px;border-top:2px solid var(--rule);padding-top:12px;font-family:var(--sans);font-size:12px;color:var(--inkSoft);}
+  .lede{font-size:18px;}
+  .wall{font-family:var(--sans);font-size:13px;text-align:center;font-weight:700;color:var(--plum);background:var(--paperHi);border:1px dashed var(--rose);border-radius:10px;padding:10px;margin:10px 0;}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="eyebrow">FemWell · Sharing · PROPOSAL — research + brainstorm, approval only, NOT built</div>
+  <h1>How sharing ties to the app</h1>
+  <p class="sub">"People also like to share things — how can this tie to the app so people can share their personal lives <i>on</i> the app, or share things <i>outside</i>?" Two tracks, split by one hard wall: privacy. Cited research; approval checklist with effort×impact. Nothing built. 2026-06-11.</p>
+
+  <div class="card plum">
+    <p class="lede" style="margin-top:0"><b>The architecture is the safety model.</b> There are two completely separate sharing systems, and the wall between them is non-negotiable: <b>(1) INTERNAL</b> — sharing your personal life <i>into</i> safe in-app spaces (Circles, Clubs, the wall, a 1:1 witness), anonymous-first and consented; <b>(2) EXTERNAL</b> — sharing <i>non-personal</i> artifacts (a wisdom line, a horoscope, an affirmation, a book pick, an invite) <i>out</i> to Instagram/WhatsApp/links as a polished on-brand card. <b>Personal or anonymous content never leaves the app. The only thing that goes external is the user's OWN non-personal words, by explicit opt-in, as a card.</b></p>
+  </div>
+
+  <div class="wall">THE WALL — anyone's anonymous echo · any journal entry · any witnessed disclosure · any other member's post → can NEVER leave the app by any share path.</div>
+
+  <h2>Why the wall is regulation, not just taste</h2>
+  <ul>
+    <li><b>Anonymous health posts are re-identifiable.</b> Authorship-attribution re-identified anonymous IVF-forum posters at <b>97.9% accuracy</b> (≥300-word messages); rare-condition + reused usernames enable linkage attacks (<a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC3806358/">PMC3806358</a>; <a href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC7457524/">PMC7457524</a>). Letting one member screenshot/share another's anonymous post out of the app effectively re-publishes special-category-by-inference data.</li>
+    <li><b>UK GDPR:</b> health data is special-category — and is triggered <b>by inference</b>, not just explicit statements; needs an Article 6 basis + an Article 9 condition (<a href="https://ico.org.uk/for-organisations/uk-gdpr-guidance-and-resources/lawful-basis/special-category-data/what-are-the-conditions-for-processing/">ICO</a>). <b>OSA + ICO cross-over:</b> UGC is personal data and a <b>DPIA is required before processing</b> (<a href="https://www.pinsentmasons.com/out-law/news/ico-guide-addresses-online-safety-act-and-gdpr-cross-over">Pinsent Masons / ICO</a>).</li>
+    <li><b>The cautionary cases are women's-health-shaped.</b> <b>Flo Health</b> (FTC, 2021) shared sensitive fertility data with Facebook/Google despite privacy promises — outbound data flows are a regulator magnet for this exact app category (<a href="https://www.ftc.gov/news-events/news/press-releases/2021/06/ftc-finalizes-order-flo-health-fertility-tracking-app-shared-sensitive-health-data-facebook-google">FTC</a>). <b>Strava</b>'s default-public sharing leaked military base locations — default-public is the anti-pattern (<a href="https://techcrunch.com/2018/01/29/us-military-reviewing-tech-use-after-strava-privacy-snafu/">TechCrunch</a>).</li>
+  </ul>
+
+  <h2>Track 1 — INTERNAL sharing (personal life, into safe spaces)</h2>
+  <p>This is sharing <i>on</i> the app: her personal life, on her terms, anonymous-first, staying inside the safe container. Much of the plumbing now exists (the four-lives chooser, Circles/Clubs, the Echo Wall, Witness, the connectivity action bar).</p>
+  <p><b>Exists:</b> four-lives chooser (lock/echo/seal/witness) · Echo Wall (now on Community) · circle/club scoped posts · 1:1 Witness · "Discuss in Community" seeded composer (just built).</p>
+  <div class="tablewrap"><table>
+    <thead><tr><th></th><th>Proposal</th><th>Mechanism</th><th>E×I</th><th>Rec</th></tr></thead>
+    <tbody>
+      <tr><td><span class="chk"></span></td><td>A unified "Share to…" sheet from any entry/moment</td><td>one sheet → Circle · Club · the wall (Echo) · a 1:1 witness — surfaces the existing destinations in one consistent place</td><td><span class="badge med">M</span>·<span class="badge hi">High</span></td><td><span class="badge rec-y">DO</span></td></tr>
+      <tr><td><span class="chk"></span></td><td>Richer "this is me" — taste/life-stage into chosen spaces</td><td>opt-in profile facets (interests, season) shown only inside circles she joins; never a public profile</td><td><span class="badge med">M</span>·<span class="badge med">Med</span></td><td><span class="badge rec-o">OPT</span></td></tr>
+      <tr><td><span class="chk"></span></td><td>Share a content artifact <i>internally</i> (a read, a recipe, a horoscope) to a room/club</td><td>the connectivity "Discuss in Community" path, extended to carry an anonymised card</td><td><span class="badge med">M</span>·<span class="badge med">Med</span></td><td><span class="badge rec-o">OPT</span></td></tr>
+      <tr><td><span class="chk"></span></td><td>"My echoes / my shares" — see what you've shared, retract</td><td>a private archive of the user's own internal shares (device-keyed)</td><td><span class="badge med">M</span>·<span class="badge med">Med</span></td><td><span class="badge rec-o">OPT</span></td></tr>
+    </tbody>
+  </table></div>
+  <div class="card rose"><p style="margin:0"><b>Track-1 guardrails:</b> anonymous-first (device hash, never a name); explicit consent on sensitive circles; crisis routing on every input; 18+; no scoreboards; everything stays <b>inside</b> the app — no Track-1 surface ever exposes an external-share button.</p></div>
+
+  <h2>Track 2 — EXTERNAL sharing (non-personal artifacts, out to the world)</h2>
+  <p>This is the growth track — and it only ever touches the <b>curated non-personal artifact set</b>: a Living Wisdom line, today's horoscope, an affirmation, a book-club pick, "this resonated," and the invite link. Rendered as a beautiful on-brand <b>share-card</b>.</p>
+
+  <h3>The share-card system (design + branding)</h3>
+  <ul>
+    <li><b>Render server-side from a templated SVG → PNG</b> (placeholder substitution; embed the brand fonts) — the proven pipeline behind Spotify Wrapped / Strava cards (<a href="https://docs.rowy.io/tutorials/spotify-wrapped">Rowy</a>). On Base44: a self-contained function renders the card.</li>
+    <li><b>1080×1920, 9:16</b>, Story-shaped, high contrast, one hero line. Brand tokens (cream/espresso/blush/sage), Fraunces + Inter, <b>no emoji</b>, a small wordmark + the invite (a short link or QR). Built to the social canvas (<a href="https://blog.duolingo.com/streak-milestone-design-animation/">Duolingo</a>; <a href="https://developers.facebook.com/docs/instagram-platform/sharing-to-stories/">Meta</a>).</li>
+    <li><b>Identity-signalling, never data-dumping</b> — "a humble-brag wrapped in beauty" the user is proud to be seen with; never her logged health data (<a href="https://startupspells.com/p/duolingo-screenshot-tracking-viral-strategy">startupspells</a>).</li>
+    <li><b>No PII on the card</b> — no username, handle, or avatar (username reuse enables linkage).</li>
+  </ul>
+
+  <h3>The mechanisms</h3>
+  <ul>
+    <li><b>Primary: Web Share API</b> — render the card → <code>navigator.share({ files:[png] })</code> after a <code>navigator.canShare</code> feature-check; this surfaces Instagram, WhatsApp, Messages as targets. Must be tap-triggered + HTTPS (<a href="https://developer.mozilla.org/en-US/docs/Web/API/Navigator/share">MDN</a>).</li>
+    <li><b>Fallbacks (Web Share isn't universal):</b> download-image, copy-link, and WhatsApp/Telegram text-link shares.</li>
+    <li><b>Instagram Stories caveat:</b> the direct <code>instagram-stories://</code> background-image handoff is <b>native-only</b> (needs a Facebook App ID + the IG app; no web path) — so on mobile web the card + <code>navigator.share</code> route is the realistic one (<a href="https://developers.facebook.com/docs/instagram-platform/sharing-to-stories/">Meta</a>).</li>
+    <li><b>Deep links back in:</b> every shared card carries a link to the app surface it came from (a wisdom collection, the book club, the invite) — the inbound loop.</li>
+  </ul>
+
+  <h3>What ties to which surface (the external artifacts)</h3>
+  <div class="tablewrap"><table>
+    <thead><tr><th></th><th>Artifact → external card</th><th>Source surface</th><th>E×I</th><th>Rec</th></tr></thead>
+    <tbody>
+      <tr><td><span class="chk"></span></td><td>A Living Wisdom line</td><td>Community → Living Wisdom</td><td><span class="badge med">M</span>·<span class="badge hi">High</span></td><td><span class="badge rec-y">DO</span></td></tr>
+      <tr><td><span class="chk"></span></td><td>Today's horoscope / "today's sky"</td><td>Lifestyle → Horoscope</td><td><span class="badge med">M</span>·<span class="badge hi">High</span></td><td><span class="badge rec-y">DO</span></td></tr>
+      <tr><td><span class="chk"></span></td><td>An affirmation</td><td>Journal affirmations / daily</td><td><span class="badge lo">S</span>·<span class="badge med">Med</span></td><td><span class="badge rec-y">DO</span></td></tr>
+      <tr><td><span class="chk"></span></td><td>A book-club pick / "currently reading"</td><td>Library / Book Club</td><td><span class="badge med">M</span>·<span class="badge med">Med</span></td><td><span class="badge rec-o">OPT</span></td></tr>
+      <tr><td><span class="chk"></span></td><td>"This resonated" — the user's OWN one line, opt-in, as a card</td><td>Journal (her words only, never an echo) </td><td><span class="badge med">M</span>·<span class="badge med">Med</span></td><td><span class="badge rec-o">OPT</span></td></tr>
+      <tr><td><span class="chk"></span></td><td>Invite / referral card (organic growth)</td><td>anywhere (rides a wisdom/horoscope card)</td><td><span class="badge med">M</span>·<span class="badge hi">High</span></td><td><span class="badge rec-y">DO</span></td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>Invite / referral growth (done right)</h3>
+  <ul>
+    <li><b>Content-led, not a naked link</b> — the invite rides a beautiful wisdom/horoscope card, not a spammy "refer 5 friends" blast. (Broadcasting links to strangers is the spam/fraud anti-pattern — <a href="https://www.alloy.com/blog/how-to-outsmart-referral-fraud">Alloy</a>.)</li>
+    <li><b>Double-sided, non-cash</b> — both sides get something gentle (a feature, a credit), not money; wellness users respond to <b>alignment over discounts</b> (<a href="https://www.referralcandy.com/health-wellness">ReferralCandy</a>; <a href="https://www.yotpo.com/blog/how-do-referral-programs-work/">Yotpo</a>).</li>
+    <li><b>Never scrape contacts; never auto-broadcast.</b> Instrument which cards get shared (like Duolingo's screenshot tracking) to learn what spreads — Duolingo reports ~80% organic acquisition from these loops (<a href="https://www.youngurbanproject.com/duolingo-case-study/">case study</a>).</li>
+  </ul>
+
+  <h2>Hard privacy rules (apply to ALL of Track 2)</h2>
+  <div class="card red">
+    <ul>
+      <li><span class="chk"></span> &nbsp;Two tracks, hard wall — Track-1 personal/anonymous content has <b>zero</b> external-share affordance.</li>
+      <li><span class="chk"></span> &nbsp;<b>Never let one user share another user's content</b> externally — the single hardest "never."</li>
+      <li><span class="chk"></span> &nbsp;No health/logged data ever on a card; treat any user-authored text as special-category-by-inference.</li>
+      <li><span class="chk"></span> &nbsp;Default to private; never opt a user into outbound sharing (the Strava lesson).</li>
+      <li><span class="chk"></span> &nbsp;No PII / handle / avatar on cards; no third-party analytics or marketing SDK anywhere in the share path (the Flo lesson).</li>
+      <li><span class="chk"></span> &nbsp;Only the user's OWN non-personal artifact leaves, by explicit per-share opt-in.</li>
+      <li><span class="chk"></span> &nbsp;<b>DPIA before launch</b> of the outbound-share feature; the OSA/ICO floor (already on the list) covers it.</li>
+    </ul>
+  </div>
+
+  <h2>The growth / marketing upside</h2>
+  <ul>
+    <li>The external card is the <b>organic-growth engine</b> — Duolingo's shareable cards drove a reported 5x–10x sharing lift and ~80% organic acquisition (<a href="https://startupspells.com/p/duolingo-screenshot-tracking-viral-strategy">startupspells</a>). For FemWell the wisdom line + horoscope are the natural, on-brand, <i>safe-by-construction</i> artifacts to carry an invite.</li>
+    <li>It's growth <b>without compromising the thesis</b> — the safe container stays sealed; only the beautiful, non-personal, identity-signalling lines go out. The brand <i>is</i> the marketing.</li>
+  </ul>
+
+  <h2>Top recommendations</h2>
+  <div class="card sage">
+    <ul>
+      <li><span class="chk"></span> &nbsp;<b>1. Build the share-card engine</b> (templated SVG→PNG Base44 function + a `ShareCard` client + Web Share with fallbacks). The reusable keystone for Track 2. <span class="badge med">M</span>×<span class="badge hi">High</span> <span class="badge rec-y">DO</span></li>
+      <li><span class="chk"></span> &nbsp;<b>2. First cards: Living Wisdom + Horoscope + invite</b> — the safest, most shareable, highest-growth artifacts. <span class="badge med">M</span>×<span class="badge hi">High</span> <span class="badge rec-y">DO</span></li>
+      <li><span class="chk"></span> &nbsp;<b>3. The unified internal "Share to…" sheet</b> (Track 1) — one consistent destination picker over the existing surfaces. <span class="badge med">M</span>×<span class="badge hi">High</span> <span class="badge rec-y">DO</span></li>
+      <li><span class="chk"></span> &nbsp;<b>4. DPIA + legal sign-off</b> on the outbound path before it ships. <span class="badge med">M</span>×<span class="badge hi">High</span> <span class="badge rec-y">DO</span> (legal-gated)</li>
+    </ul>
+  </div>
+
+  <h2>Open questions for Halli</h2>
+  <ul>
+    <li>Invite reward model — double-sided non-cash (a feature unlock / credit)? Confirm there's no cash incentive (keeps it aligned, not spammy).</li>
+    <li>Card rendering — server-side Base44 function (recommended, crisp + consistent) vs on-device canvas?</li>
+    <li>"This resonated" (the user's own one line, opt-in) — in scope for v1, or wisdom/horoscope/invite only first?</li>
+    <li>Do we instrument share events (privacy-safe, no content) to learn what spreads — or keep zero analytics in the share path?</li>
+    <li>Confirm the legal floor (DPIA + OSA/ICO) gates the outbound launch, same as member-created Clubs.</li>
+  </ul>
+
+  <div class="foot">
+    FemWell — Sharing Proposal · 2026-06-11. PROPOSAL for approval — nothing built. Cited research: <code>claude-state/product-research/sharing_patterns_2026-06-11.md</code>. Two tracks; one hard wall. Guardrails: anonymity, two-track separation, no personal/anonymous content leaves, default-private, no PII on cards, no marketing SDK in the share path, DPIA before launch. (ICO facts cross-checked via Pinsent Masons; verify live ICO pages before legal sign-off.)
+  </div>
+
+</div>
+</body>
+</html>
