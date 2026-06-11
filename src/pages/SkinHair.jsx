@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { PageLoader } from "../components/common/LoadingSpinner";
 import { Lock, Plus, X, ChevronDown, ChevronUp } from "lucide-react";
+import ContentActionBar from "@/components/common/ContentActionBar";
 import { base44 } from "@/api/base44Client";
 import { differenceInDays, subDays, parseISO, format, addDays } from "date-fns";
 import { createPageUrl } from "@/utils";
@@ -1018,6 +1019,13 @@ export default function SkinHair() {
 
             {/* Ingredient guide */}
             <IngredientGuide phase={currentPhase} mode="skin" />
+
+            {/* Connectivity — reflect / compare notes on phase skin + hair */}
+            <ContentActionBar
+              reflect={{ seed: "What my skin and hair seem to need this phase — ", type: "reflection" }}
+              discuss={{ room: "style", seed: "Phase skincare — what's actually working for you?" }}
+              jess="skincare for my cycle phase"
+            />
 
             {/* Phase correlation */}
             <div style={card}>

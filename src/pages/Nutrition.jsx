@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { format } from "date-fns";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import ContentActionBar from "@/components/common/ContentActionBar";
 import NutritionTodayTab from "../components/nutrition/NutritionTodayTab";
 import NutritionPlanTab from "../components/nutrition/NutritionPlanTab";
 import NutritionProgressTab from "../components/nutrition/NutritionProgressTab";
@@ -164,6 +165,15 @@ export default function Nutrition() {
         {activeTab === "shopping" && user && <ShoppingListTab user={user} />}
         {activeTab === "progress" && user && <NutritionProgressTab user={user} nutritionProfile={nutritionProfile} onProfileUpdated={loadNutritionProfile} />}
         {activeTab === "insights" && user && <NutritionInsightsTab user={user} profile={profile} />}
+
+        {/* Connectivity — thread eating into the doing-surfaces */}
+        <div style={{ padding: "0 16px" }}>
+          <ContentActionBar
+            reflect={{ seed: "How eating felt for me this week — ", type: "reflection" }}
+            discuss={{ room: "lounge", seed: "Any phase-friendly meals you swear by? Sharing notes." }}
+            jess="eating well for my phase"
+          />
+        </div>
       </div>
     </div>
   );
