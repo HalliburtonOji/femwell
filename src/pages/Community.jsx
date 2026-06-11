@@ -1034,8 +1034,8 @@ function CircleView({ circleKey, user, onCrisis, onBack }) {
   );
 }
 
-function CirclesView({ user, onCrisis }) {
-  const [active, setActive] = useState(null);   // null = directory; else circle key
+function CirclesView({ user, onCrisis, initialActive = null }) {
+  const [active, setActive] = useState(initialActive);   // null = directory; else circle key
   return active
     ? <CircleView circleKey={active} user={user} onCrisis={onCrisis} onBack={() => setActive(null)} />
     : <CirclesDirectory onOpen={setActive} />;
@@ -1225,7 +1225,7 @@ function GamesView({ user, onCrisis }) {
   );
 }
 
-function RoomView({ roomKey, posts, loading, error, user, onNav, onCrisis, onReload, seed = "" }) {
+function RoomView({ roomKey, posts, loading, error, user, onNav, onCrisis, onReload, seed = "", initialCircle = null }) {
   const [composing, setComposing] = useState(() => !!seed);
   const [voicing, setVoicing] = useState(false);
   const room = ROOMS.find((r) => r.key === roomKey) || ROOMS[0];
@@ -1246,7 +1246,7 @@ function RoomView({ roomKey, posts, loading, error, user, onNav, onCrisis, onRel
 
       <div style={{ padding: "20px 18px 60px" }}>
         {roomKey === "circles" ? (
-          <CirclesView user={user} onCrisis={onCrisis} />
+          <CirclesView user={user} onCrisis={onCrisis} initialActive={initialCircle} />
         ) : roomKey === "library" ? (
           <LibraryView user={user} onCrisis={onCrisis} onNav={onNav} />
         ) : roomKey === "games" ? (
@@ -1302,9 +1302,11 @@ function CommunityInner() {
   const [lifeStage, setLifeStage] = useState(null);
   const [profile, setProfile] = useState(null);
   const [roomSeed, setRoomSeed] = useState("");   // connectivity P2 — seeded composer from a deep-link
+  const [initialCircle, setInitialCircle] = useState(null);   // P6/P7 — open a circle from a deep-link
 
-  // Connectivity P2 — deep-link: /Community?room=<feed-room>&seed=<text> opens that room
-  // with the composer pre-filled. Only the open feed rooms accept a seed.
+  // Connectivity deep-links: /Community?room=<feed-room>&seed=<text> opens that room with the
+  // composer pre-filled (only the open feed rooms accept a seed); /Community?circle=<key> opens
+  // that Circle directly (P6 interests → circle, P7 life-stage → circle).
   useEffect(() => {
     try {
       const sp = new URLSearchParams(window.location.search);
@@ -1315,6 +1317,8 @@ function CommunityInner() {
         const seed = sp.get("seed");
         if (seed) setRoomSeed(decodeURIComponent(seed));
       }
+      const circle = sp.get("circle");
+      if (circle && circleByKey(circle)) { setView("circles"); setInitialCircle(circle); }
     } catch { /* ignore */ }
   }, []);
 
@@ -1361,7 +1365,7 @@ function CommunityInner() {
               <button onClick={() => setView("home")} style={{ ...ghostBtn, marginBottom: 14, padding: "7px 11px" }}><ChevronLeft size={14} /> Community</button>
               <EchoWall user={user} profile={profile} lifeStage={lifeStage} />
             </div>
-          : <RoomView key={tick} roomKey={view} posts={posts} loading={loading} error={loadErr} user={user} onNav={setView} onCrisis={() => setCrisis(true)} onReload={reload} seed={roomSeed} />}
+          : <RoomView key={tick} roomKey={view} posts={posts} loading={loading} error={loadErr} user={user} onNav={setView} onCrisis={() => setCrisis(true)} onReload={reload} seed={roomSeed} initialCircle={initialCircle} />}
         {view === "home" && (
           <>
             <Rule mt={30} mb={14} />

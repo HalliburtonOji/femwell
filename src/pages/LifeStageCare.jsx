@@ -87,6 +87,15 @@ export default function LifeStageCare() {
           </button>
         </div>
 
+        {/* Connectivity P7 — hand off to the matching whole-life Community Circle */}
+        <a href={createPageUrl(`Community?circle=${activeTab === "pregnancy" ? "pregnancy" : "menopause"}`)}
+          style={{ display: "block", textDecoration: "none", backgroundColor: "var(--surface)", border: "1px solid var(--rose-dust-light)", borderRadius: 18, padding: "13px 16px", marginBottom: 16 }}>
+          <p style={{ fontSize: "0.6rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.12em", color: "var(--mauve)", marginBottom: 3 }}>You're not alone in this</p>
+          <p style={{ fontSize: 14, color: "var(--plum)", lineHeight: 1.5 }}>
+            Find your people in the {activeTab === "pregnancy" ? "Pregnancy" : "Menopause & after"} circle — anonymous, 18+, women in your season. Step in &rarr;
+          </p>
+        </a>
+
         {activeTab === "pregnancy" ? (
           <PregnancySupportTab
             user={user}
