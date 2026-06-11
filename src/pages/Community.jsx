@@ -774,6 +774,16 @@ function Home({ presence, lifeStage, onEnter, user, onCrisis }) {
           );
         })}
       </div>
+
+      {/* W3 — a quiet door to Jess (the host) from Community, via the existing assistant event */}
+      <button onClick={() => window.dispatchEvent(new CustomEvent("fw_open_assistant", { detail: { from: "community" } }))} style={{
+        display: "flex", alignItems: "center", gap: 9, width: "100%", justifyContent: "center",
+        marginTop: 22, padding: "12px 14px", cursor: "pointer",
+        background: "transparent", border: `1px solid ${T.paperDeep}`, borderRadius: 999,
+        fontFamily: UI, fontSize: 12.5, fontWeight: 700, color: T.inkSoft,
+      }}>
+        <HeartHandshake size={14} style={{ color: T.gold }} /> Need a quiet word? Talk to Jess
+      </button>
     </div>
   );
 }
