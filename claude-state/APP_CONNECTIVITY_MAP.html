@@ -1,0 +1,247 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>FemWell — App Connectivity Map (proposal)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Ephesis&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --cream:#F4EDDB; --paper:#FBF6E6; --paperHi:#F8F2E4; --page:#ECE7DA;
+    --ink:#2E261B; --inkSoft:#5b4f3e; --plum:#4A2A3A; --plumMid:#7B5E6B;
+    --rose:#C4849A; --sage:#6B8F5A; --gold:#A6862B; --red:#BC2E27;
+    --rule:rgba(58,44,26,0.12);
+    --sans:ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;
+    --serif:"Cormorant Garamond","Georgia",serif;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--page);color:var(--ink);font-family:var(--serif);line-height:1.55;}
+  .wrap{max-width:860px;margin:0 auto;padding:28px 16px 72px;}
+  .eyebrow{font-family:var(--sans);font-size:11px;letter-spacing:.2em;text-transform:uppercase;font-weight:700;color:var(--gold);margin:0 0 6px;}
+  h1{font-size:33px;line-height:1.08;margin:6px 0 8px;color:var(--plum);font-weight:600;}
+  .sub{font-family:var(--sans);font-size:13.5px;color:var(--inkSoft);margin:0 0 4px;line-height:1.55;}
+  h2{font-size:23px;font-weight:600;color:var(--plum);margin:32px 0 6px;line-height:1.18;border-bottom:2px solid var(--rule);padding-bottom:6px;}
+  h3{font-size:17.5px;font-weight:600;color:var(--ink);margin:18px 0 4px;}
+  p{font-size:15.5px;margin:8px 0;}
+  .card{background:var(--paper);border:1px solid var(--rule);border-left:3px solid var(--gold);border-radius:12px;padding:13px 15px;margin:12px 0;}
+  .card.plum{border-left-color:var(--plum);} .card.sage{border-left-color:var(--sage);} .card.rose{border-left-color:var(--rose);}
+  .badge{display:inline-block;border-radius:99px;padding:1px 8px;font-size:10.5px;font-weight:700;font-family:var(--sans);color:#fff;white-space:nowrap;}
+  .hi{background:var(--red);} .med{background:var(--gold);} .lo{background:var(--plumMid);}
+  .rec-y{background:var(--sage);} .rec-o{background:var(--plumMid);} .rec-l{background:var(--inkSoft);}
+  table{width:100%;border-collapse:collapse;font-family:var(--sans);font-size:12px;margin:8px 0 4px;}
+  th{text-align:left;padding:6px 8px;background:var(--paperHi);color:var(--inkSoft);font-size:10.5px;letter-spacing:.4px;text-transform:uppercase;border-bottom:1px solid var(--rule);}
+  td{padding:6px 8px;border-bottom:1px solid var(--rule);vertical-align:top;}
+  .tablewrap{overflow-x:auto;}
+  .chk{display:inline-block;width:13px;height:13px;border:1.5px solid var(--plumMid);border-radius:3px;vertical-align:middle;}
+  .exist{font-family:var(--sans);font-size:12.5px;color:var(--sage);font-weight:700;}
+  .pat{font-family:var(--sans);font-size:12px;background:var(--paperHi);border:1px solid var(--rule);border-radius:6px;padding:2px 7px;color:var(--plum);white-space:nowrap;font-weight:700;}
+  ul{margin:6px 0;padding-left:0;list-style:none;}
+  li{display:flex;gap:9px;align-items:flex-start;margin:5px 0;font-size:14.5px;line-height:1.45;}
+  li::before{content:"";width:6px;height:6px;border-radius:99px;background:var(--gold);margin-top:8px;flex-shrink:0;}
+  .foot{margin-top:36px;border-top:2px solid var(--rule);padding-top:12px;font-family:var(--sans);font-size:12px;color:var(--inkSoft);}
+  code{font-family:ui-monospace,Menlo,monospace;font-size:11.5px;background:var(--paperHi);padding:1px 4px;border-radius:4px;color:var(--plum);}
+  .key{font-family:var(--sans);font-size:12px;color:var(--inkSoft);margin-top:6px;}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="eyebrow">FemWell · Whole-app connective tissue · PROPOSAL — approval only, NOT built</div>
+  <h1>App Connectivity Map</h1>
+  <p class="sub">Every surface, and the concrete links it <i>could</i> have to Community, Journal, Jess, and each other. An approval checklist: tick the lines to greenlight. Each line gives the FROM→TO, the mechanism, an effort×impact tag, and a recommendation. Nothing here is built. 2026-06-11.</p>
+
+  <div class="card plum">
+    <p style="margin-top:0"><b>The core finding:</b> the app's <i>doing</i> surfaces (Journal, Community, Jess) and its <i>content</i> surfaces (Lifestyle reads, Horoscope, Daily Story, Listen, Nutrition, Programs, Events, Deals, SkinHair) live in <b>near-total isolation</b>. A woman reads a beautiful piece, finishes a program day, or gets her horoscope — and there is <b>no thread back into reflecting, discussing, or asking Jess.</b> The single highest-leverage move is one reusable <b>"Reflect · Discuss · Ask Jess" action bar</b> dropped onto every content surface. Most other proposals are small variations on three mechanisms.</p>
+  </div>
+
+  <h2>How to read this</h2>
+  <p><b>Effort</b> <span class="badge lo">S</span> small <span class="badge med">M</span> medium <span class="badge hi">L</span> large &nbsp;·&nbsp; <b>Impact</b> shown as <span class="badge hi">High</span> <span class="badge med">Med</span> <span class="badge lo">Low</span> &nbsp;·&nbsp; <b>Rec</b> <span class="badge rec-y">DO</span> recommended <span class="badge rec-o">OPTIONAL</span> <span class="badge rec-l">LATER</span>. <span class="exist">EXISTS</span> = already wired (don't re-propose). The <span class="chk"></span> box is the tick target.</p>
+
+  <h2>The reusable mechanisms (build once, reuse everywhere)</h2>
+  <div class="tablewrap"><table>
+    <thead><tr><th>Pattern</th><th>What it is</th><th>Enabling primitive</th></tr></thead>
+    <tbody>
+      <tr><td><span class="pat">P1 Reflect→Journal</span></td><td>An action that opens the Journal composer seeded with a prompt about the thing you just read/did.</td><td>Journal composer already accepts a seed (used by Cycle Mirror / four-lives). Add a <code>/Journal?compose=1&amp;seed=…</code> deep-link handler.</td></tr>
+      <tr><td><span class="pat">P2 Discuss→Community</span></td><td>An action that drops you into a relevant Community room with a seeded composer (or seeds the day's question).</td><td>Add a <code>/Community?room=…&amp;seed=…</code> deep-link the room composer reads.</td></tr>
+      <tr><td><span class="pat">P3 Ask Jess</span></td><td>Opens the Jess assistant with the current context.</td><td><code>fw_open_assistant</code> event already exists (nav/Health/Community).</td></tr>
+      <tr><td><span class="pat">P4 Content→QOTD/Echo seed</span></td><td>Editorial content (a read, a horoscope) seeds the day's Community talking point.</td><td>QOTD is a static rotation today; add an editorial seed source.</td></tr>
+      <tr><td><span class="pat">P5 Aggregate belonging</span></td><td>A count-free "others in your season notice this too" line that links to Community — never exposes the user's data.</td><td>Reuse the SeasonCard framing (already built on Community home).</td></tr>
+      <tr><td><span class="pat">P6 Interests→Circles</span></td><td>Map onboarding <code>followed_categories</code> to suggested Circles/Clubs.</td><td>Interests captured at onboarding; Circles are a static catalogue — a simple map.</td></tr>
+      <tr><td><span class="pat">P7 Stage→Circle handoff</span></td><td>A life-stage hub hands off to its matching life-stage Circle.</td><td>The Circles (Pregnancy, Menopause, PCOS…) already exist.</td></tr>
+    </tbody>
+  </table></div>
+  <p class="key"><b>The keystone:</b> P1+P2+P3 packaged as one <b>"Reflect · Discuss · Ask Jess"</b> component (the action bar) is the build that unlocks ~15 of the lines below. Approving it once is the big decision.</p>
+
+  <h2>Top recommendations (highest leverage)</h2>
+  <div class="card sage">
+    <ul>
+      <li><span class="chk"></span> &nbsp;<b>1. The "Reflect · Discuss · Ask Jess" action bar</b> on every content surface (Lifestyle Detail, Horoscope, Daily Story, Listen, Programs, Health letters, BookReader). <span class="badge med">M</span>×<span class="badge hi">High</span> <span class="badge rec-y">DO</span> — one component, threads all content into the doing-surfaces.</li>
+      <li><span class="chk"></span> &nbsp;<b>2. Horoscope → journal prompt + a Lighter-Side talking point</b> (Halli's example). P1 + P4. <span class="badge lo">S</span>×<span class="badge hi">High</span> <span class="badge rec-y">DO</span></li>
+      <li><span class="chk"></span> &nbsp;<b>3. Daily Read / article → Reflect + Discuss</b> (Halli's example). P1 + P2. <span class="badge lo">S</span>×<span class="badge hi">High</span> <span class="badge rec-y">DO</span></li>
+      <li><span class="chk"></span> &nbsp;<b>4. Lifestyle interests → Circle/Club suggestions</b> (data already captured). P6, on Community + at onboarding's end. <span class="badge med">M</span>×<span class="badge hi">High</span> <span class="badge rec-y">DO</span></li>
+      <li><span class="chk"></span> &nbsp;<b>5. LifeStageCare → its matching Circle</b> (Pregnancy/Menopause Circles already exist). P7. <span class="badge lo">S</span>×<span class="badge hi">High</span> <span class="badge rec-y">DO</span></li>
+      <li><span class="chk"></span> &nbsp;<b>6. Analytics → "reflect on this in Journal" + a count-free belonging link</b> (Pulse/Insights/Trends/HealthDashboard). P1 + P5. <span class="badge med">M</span>×<span class="badge med">Med</span> <span class="badge rec-y">DO</span></li>
+      <li><span class="chk"></span> &nbsp;<b>7. Onboarding → special-category consent + Tier-0 belonging</b> (compliance + the §6.9 belonging-from-day-one). <span class="badge med">M</span>×<span class="badge hi">High</span> <span class="badge rec-y">DO</span></li>
+      <li><span class="chk"></span> &nbsp;<b>8. Jess as the connective host</b> — Jess proactively offers "want to reflect on this?" / "others in your season are talking about this." <span class="badge hi">L</span>×<span class="badge hi">High</span> <span class="badge rec-o">OPTIONAL</span> (ongoing).</li>
+    </ul>
+  </div>
+
+  <h2>Lifestyle — Read / Daily Read / Article Detail</h2>
+  <p class="exist">EXISTS: save/like to UserProfile · interests (followed_categories) filter the For You tab. No reflect/discuss/Jess.</p>
+  <div class="tablewrap"><table>
+    <thead><tr><th></th><th>Connection</th><th>Mechanism</th><th>E×I</th><th>Rec</th></tr></thead>
+    <tbody>
+      <tr><td><span class="chk"></span></td><td>Article → Journal</td><td>P1 "Reflect on this" — composer seeded with a prompt naming the piece</td><td><span class="badge lo">S</span>·<span class="badge hi">Hi</span></td><td><span class="badge rec-y">DO</span></td></tr>
+      <tr><td><span class="chk"></span></td><td>Article → Community</td><td>P2 "Discuss in Community" — opens the on-topic room (Lounge/Style/Money…) seeded</td><td><span class="badge med">M</span>·<span class="badge hi">Hi</span></td><td><span class="badge rec-y">DO</span></td></tr>
+      <tr><td><span class="chk"></span></td><td>Article → Jess</td><td>P3 "Ask Jess about this"</td><td><span class="badge lo">S</span>·<span class="badge med">Med</span></td><td><span class="badge rec-y">DO</span></td></tr>
+      <tr><td><span class="chk"></span></td><td>The day's lead read → QOTD</td><td>P4 — the editorial read seeds the Community Question of the Day</td><td><span class="badge med">M</span>·<span class="badge med">Med</span></td><td><span class="badge rec-o">OPT</span></td></tr>
+    </tbody>
+  </table></div>
+
+  <h2>Lifestyle — Horoscope</h2>
+  <p class="exist">EXISTS: nothing — fully isolated. (Keep astrology in the lighter lane; it must never gate or moralise health.)</p>
+  <div class="tablewrap"><table>
+    <thead><tr><th></th><th>Connection</th><th>Mechanism</th><th>E×I</th><th>Rec</th></tr></thead>
+    <tbody>
+      <tr><td><span class="chk"></span></td><td>Horoscope → Journal</td><td>P1 "Write to today's sky" — seeds a reflection from the day's reading</td><td><span class="badge lo">S</span>·<span class="badge hi">Hi</span></td><td><span class="badge rec-y">DO</span></td></tr>
+      <tr><td><span class="chk"></span></td><td>Horoscope → Community (The Lighter Side)</td><td>P4 a daily "today's sky" talking point / QOTD-style thread (opt-in, never health)</td><td><span class="badge med">M</span>·<span class="badge med">Med</span></td><td><span class="badge rec-o">OPT</span></td></tr>
+      <tr><td><span class="chk"></span></td><td>Horoscope "inner season" voice → Community tone</td><td>borrow the phase-cohort voice (cosmetic; keep clinical framing neutral)</td><td><span class="badge lo">S</span>·<span class="badge lo">Low</span></td><td><span class="badge rec-l">LATER</span></td></tr>
+    </tbody>
+  </table></div>
+
+  <h2>Lifestyle — Daily Story / Listen (audio)</h2>
+  <div class="tablewrap"><table>
+    <thead><tr><th></th><th>Connection</th><th>Mechanism</th><th>E×I</th><th>Rec</th></tr></thead>
+    <tbody>
+      <tr><td><span class="chk"></span></td><td>Daily Story → Library room</td><td>surface the serialized fiction inside Community's new Library room</td><td><span class="badge lo">S</span>·<span class="badge med">Med</span></td><td><span class="badge rec-o">OPT</span></td></tr>
+      <tr><td><span class="chk"></span></td><td>Story chapter → Journal / Community</td><td>P1/P2 "what did this stir?" reflect, or a spoiler-safe club thread</td><td><span class="badge med">M</span>·<span class="badge med">Med</span></td><td><span class="badge rec-o">OPT</span></td></tr>
+      <tr><td><span class="chk"></span></td><td>After a podcast/session → reflect/discuss</td><td>P1/P2 on the audio player's end-state</td><td><span class="badge lo">S</span>·<span class="badge lo">Low</span></td><td><span class="badge rec-l">LATER</span></td></tr>
+    </tbody>
+  </table></div>
+
+  <h2>Analytics — Pulse · Trends · Insights · HealthDashboard</h2>
+  <p class="exist">EXISTS: HealthDashboard → Jess (<code>/Assistant</code> button). Health letters → Jess (<code>fw_open_assistant</code>) + → Doctor Export. Pulse/Trends/Insights: no cross-links. No aggregate belonging signal anywhere.</p>
+  <div class="tablewrap"><table>
+    <thead><tr><th></th><th>Connection</th><th>Mechanism</th><th>E×I</th><th>Rec</th></tr></thead>
+    <tbody>
+      <tr><td><span class="chk"></span></td><td>An insight/pattern → Journal</td><td>P1 "Reflect on this pattern" — seeds a journal entry about the trend</td><td><span class="badge med">M</span>·<span class="badge hi">Hi</span></td><td><span class="badge rec-y">DO</span></td></tr>
+      <tr><td><span class="chk"></span></td><td>Analytics → Community belonging</td><td>P5 a count-free "others in your season notice this too" line → /Community (NEVER the user's numbers)</td><td><span class="badge med">M</span>·<span class="badge med">Med</span></td><td><span class="badge rec-y">DO</span></td></tr>
+      <tr><td><span class="chk"></span></td><td>Pulse/Insights → Jess</td><td>P3 "Ask Jess about this trend" (extend the HealthDashboard pattern)</td><td><span class="badge lo">S</span>·<span class="badge med">Med</span></td><td><span class="badge rec-y">DO</span></td></tr>
+      <tr><td><span class="chk"></span></td><td>An insight → Doctor Export</td><td>"Bring this to your GP" — extend the existing Health→DoctorExport handoff to Pulse/Insights</td><td><span class="badge lo">S</span>·<span class="badge med">Med</span></td><td><span class="badge rec-o">OPT</span></td></tr>
+    </tbody>
+  </table></div>
+  <div class="card rose"><p style="margin:0"><b>Privacy guardrail:</b> analytics→Community is a <b>belonging nudge only</b> — a generic, count-free line keyed to life-stage/phase. It must never post, expose, or aggregate the user's own symptom/mood numbers to peers. Doctor Export stays isolated (no Community content in, no peer content out).</p></div>
+
+  <h2>Planner · Track</h2>
+  <p class="exist">EXISTS: Planner → Journal (<code>/Journal?date=…</code> via FAB) · Planner → ProgramsHub (active-program widget) · Planner diary → Doctor Export. Track: no cross-links.</p>
+  <div class="tablewrap"><table>
+    <thead><tr><th></th><th>Connection</th><th>Mechanism</th><th>E×I</th><th>Rec</th></tr></thead>
+    <tbody>
+      <tr><td><span class="chk"></span></td><td>Late-luteal Planner day → gentler Community copy / belonging</td><td>P5 a soft "be kind to yourself — others are too" nudge on hard days</td><td><span class="badge med">M</span>·<span class="badge med">Med</span></td><td><span class="badge rec-o">OPT</span></td></tr>
+      <tr><td><span class="chk"></span></td><td>A logged win → the "Together this week" pool / Wednesday-Wins</td><td>P2 "add this to the room" (aggregate-only, no scoreboard)</td><td><span class="badge med">M</span>·<span class="badge med">Med</span></td><td><span class="badge rec-o">OPT</span></td></tr>
+      <tr><td><span class="chk"></span></td><td>Track habit streak → reflect-in-Journal</td><td>P1 a gentle milestone reflection (never a public count)</td><td><span class="badge lo">S</span>·<span class="badge lo">Low</span></td><td><span class="badge rec-l">LATER</span></td></tr>
+    </tbody>
+  </table></div>
+
+  <h2>Nutrition</h2>
+  <p class="exist">EXISTS: nothing — fully siloed (meal log, recipes, shopping, hydration).</p>
+  <div class="tablewrap"><table>
+    <thead><tr><th></th><th>Connection</th><th>Mechanism</th><th>E×I</th><th>Rec</th></tr></thead>
+    <tbody>
+      <tr><td><span class="chk"></span></td><td>Recipe → Community (a food thread / a future food Club)</td><td>P2 "share this recipe" — an anonymised recipe card into a Nutrition/Lounge thread</td><td><span class="badge med">M</span>·<span class="badge med">Med</span></td><td><span class="badge rec-o">OPT</span></td></tr>
+      <tr><td><span class="chk"></span></td><td>Recipe / meal → Jess</td><td>P3 "ask Jess to tweak this for my phase"</td><td><span class="badge lo">S</span>·<span class="badge med">Med</span></td><td><span class="badge rec-o">OPT</span></td></tr>
+      <tr><td><span class="chk"></span></td><td>Nutrition insight → Journal</td><td>P1 "note how eating felt this phase"</td><td><span class="badge lo">S</span>·<span class="badge lo">Low</span></td><td><span class="badge rec-l">LATER</span></td></tr>
+    </tbody>
+  </table></div>
+
+  <h2>Programs (Hub · Detail · Day)</h2>
+  <p class="exist">EXISTS: ProgramDay reflection WRITES to JournalEntries (program_key + day) — but no "view in Journal" after, no share, no cohort. Planner → ProgramsHub.</p>
+  <div class="tablewrap"><table>
+    <thead><tr><th></th><th>Connection</th><th>Mechanism</th><th>E×I</th><th>Rec</th></tr></thead>
+    <tbody>
+      <tr><td><span class="chk"></span></td><td>Program day reflection → "view in Journal"</td><td>after the existing save, a link into the Journal entry it created</td><td><span class="badge lo">S</span>·<span class="badge med">Med</span></td><td><span class="badge rec-y">DO</span></td></tr>
+      <tr><td><span class="chk"></span></td><td>A program → a program-scoped Club/cohort</td><td>a time-boxed Club (e.g. "Sleep Reset cohort") that closes with the program</td><td><span class="badge hi">L</span>·<span class="badge hi">Hi</span></td><td><span class="badge rec-o">OPT</span></td></tr>
+      <tr><td><span class="chk"></span></td><td>Program completion → a gentle Community milestone</td><td>P5 aggregate "others finished this too" (no scoreboard)</td><td><span class="badge med">M</span>·<span class="badge med">Med</span></td><td><span class="badge rec-o">OPT</span></td></tr>
+    </tbody>
+  </table></div>
+
+  <h2>Reading — BookReader · FictionReader</h2>
+  <p class="exist">EXISTS: Browse/BooksGrid → BookReader (gutenberg deep-link) · Community Book Club → BookReader. No reader → Journal/Community back-link.</p>
+  <div class="tablewrap"><table>
+    <thead><tr><th></th><th>Connection</th><th>Mechanism</th><th>E×I</th><th>Rec</th></tr></thead>
+    <tbody>
+      <tr><td><span class="chk"></span></td><td>Reader → the Book Club checkpoint thread</td><td>P2 "discuss this far" back into the Community Library Book Club (checkpoints exist)</td><td><span class="badge med">M</span>·<span class="badge med">Med</span></td><td><span class="badge rec-y">DO</span></td></tr>
+      <tr><td><span class="chk"></span></td><td>Reader → Journal</td><td>P1 "reflect on what you read"</td><td><span class="badge lo">S</span>·<span class="badge med">Med</span></td><td><span class="badge rec-o">OPT</span></td></tr>
+    </tbody>
+  </table></div>
+
+  <h2>SkinHair · LifeStageCare · PartnerSync</h2>
+  <div class="tablewrap"><table>
+    <thead><tr><th></th><th>Connection</th><th>Mechanism</th><th>E×I</th><th>Rec</th></tr></thead>
+    <tbody>
+      <tr><td><span class="chk"></span></td><td><b>LifeStageCare → matching Circle</b> (Pregnancy/Menopause)</td><td>P7 a direct "find your people" handoff to the life-stage Circle that already exists</td><td><span class="badge lo">S</span>·<span class="badge hi">Hi</span></td><td><span class="badge rec-y">DO</span></td></tr>
+      <tr><td><span class="chk"></span></td><td>SkinHair → Style room / Journal</td><td>P2/P1 "phase skincare — compare notes" / "note how your skin feels"</td><td><span class="badge lo">S</span>·<span class="badge lo">Low</span></td><td><span class="badge rec-l">LATER</span></td></tr>
+      <tr><td><span class="chk"></span></td><td>PartnerSync — keep private</td><td>(no Community link by design; optionally a Journal "write to your partner" sealed letter)</td><td><span class="badge lo">S</span>·<span class="badge lo">Low</span></td><td><span class="badge rec-l">LATER</span></td></tr>
+    </tbody>
+  </table></div>
+
+  <h2>Events · Deals</h2>
+  <div class="tablewrap"><table>
+    <thead><tr><th></th><th>Connection</th><th>Mechanism</th><th>E×I</th><th>Rec</th></tr></thead>
+    <tbody>
+      <tr><td><span class="chk"></span></td><td>Event → Community</td><td>P2 "anyone else going?" — discuss an event (a Lounge thread or a meet-up Club)</td><td><span class="badge med">M</span>·<span class="badge med">Med</span></td><td><span class="badge rec-o">OPT</span></td></tr>
+      <tr><td><span class="chk"></span></td><td>Deal → Style/Money room</td><td>P2 "is this worth it?" peer opinion (no shilling; honest peer talk only)</td><td><span class="badge lo">S</span>·<span class="badge lo">Low</span></td><td><span class="badge rec-l">LATER</span></td></tr>
+    </tbody>
+  </table></div>
+
+  <h2>Profile · Onboarding · Settings (identity + consent plumbing)</h2>
+  <p class="exist">EXISTS: Profile → Community (row link, just built) · Settings has <code>allow_anonymous_community_posts</code> + <code>show_in_circle_finder</code> toggles · Onboarding captures interests + life_stage + conditions (feeds Lifestyle/Jess, NOT Circles) · consent lives in Settings (not Onboarding).</p>
+  <div class="tablewrap"><table>
+    <thead><tr><th></th><th>Connection</th><th>Mechanism</th><th>E×I</th><th>Rec</th></tr></thead>
+    <tbody>
+      <tr><td><span class="chk"></span></td><td>Onboarding interests → suggested Circles/Clubs</td><td>P6 map followed_categories → Circles, surfaced at onboarding's end + first Community visit</td><td><span class="badge med">M</span>·<span class="badge hi">Hi</span></td><td><span class="badge rec-y">DO</span></td></tr>
+      <tr><td><span class="chk"></span></td><td>Onboarding → special-category consent + Tier-0 belonging</td><td>capture the §7 health-data consent here (compliance) + deliver the belonging signal from day one (§6.9)</td><td><span class="badge med">M</span>·<span class="badge hi">Hi</span></td><td><span class="badge rec-y">DO</span></td></tr>
+      <tr><td><span class="chk"></span></td><td>Settings → Echo/Community privacy controls</td><td>echo visibility, consent withdrawal, and a delete-cascade that burns echoes/witness/twin (§6.10 GDPR)</td><td><span class="badge med">M</span>·<span class="badge med">Med</span></td><td><span class="badge rec-o">OPT</span></td></tr>
+      <tr><td><span class="chk"></span></td><td>Profile taste/interests → Circle suggestions</td><td>P6 editing interests suggests Circles to join</td><td><span class="badge med">M</span>·<span class="badge med">Med</span></td><td><span class="badge rec-o">OPT</span></td></tr>
+    </tbody>
+  </table></div>
+
+  <h2>Jess / Assistant — the connective host</h2>
+  <div class="tablewrap"><table>
+    <thead><tr><th></th><th>Connection</th><th>Mechanism</th><th>E×I</th><th>Rec</th></tr></thead>
+    <tbody>
+      <tr><td><span class="chk"></span></td><td>Jess surfaces cross-links</td><td>Jess proactively offers "want to reflect on this in your journal?" / "others in your season are talking about this in Community"</td><td><span class="badge hi">L</span>·<span class="badge hi">Hi</span></td><td><span class="badge rec-o">OPT</span></td></tr>
+      <tr><td><span class="chk"></span></td><td>"Ask Jess" entry on every surface</td><td>P3 — extend the existing event to analytics + lifestyle (Health/HealthDashboard/Community already have it)</td><td><span class="badge lo">S</span>·<span class="badge med">Med</span></td><td><span class="badge rec-y">DO</span></td></tr>
+    </tbody>
+  </table></div>
+
+  <h2>Already wired (do NOT re-propose)</h2>
+  <ul>
+    <li>Community ↔ Journal: four-lives chooser (echo/seal/witness), and the new Witness/Twin deep-links from Community.</li>
+    <li>Echo Wall now surfaced on Community; "Ask Jess", Today→Community card, Profile→Community row (all just built).</li>
+    <li>Planner → Journal (FAB) · Planner → ProgramsHub · Planner diary → Doctor Export.</li>
+    <li>Health letters → Jess + → Doctor Export · HealthDashboard → Jess.</li>
+    <li>ProgramDay reflection → JournalEntries (write only).</li>
+    <li>Browse → BookReader · Community Book Club → BookReader.</li>
+    <li>Onboarding interests → Lifestyle For-You · life_stage → Jess/Planner/SeasonCard.</li>
+    <li>Settings: anonymous-posts + circle-finder toggles.</li>
+  </ul>
+
+  <h2>Locked guardrails (apply to every line above)</h2>
+  <ul>
+    <li><b>Doctor's Export stays isolated</b> — no Community/Echo/Witness/Twin in; no peer content out.</li>
+    <li><b>Whole-life, not clinical</b> — content links route to the right whole-life room, not a clinical frame.</li>
+    <li><b>Anonymity + no scoreboards</b> — any content→Community share is anonymous; no counts, streaks, or vanity metrics; aggregate-only for belonging.</li>
+    <li><b>Crisis routing</b> on every new text input; <b>18+</b> gate on anything entering Community; <b>no emoji</b>; cream/plum + Ephesis/Cormorant; Lucide only.</li>
+    <li><b>Astrology never gates health</b> — horoscope links stay in the lighter lane.</li>
+  </ul>
+
+  <div class="foot">
+    FemWell — App Connectivity Map · 2026-06-11. PROPOSAL for approval — nothing built. Surfaces enumerated from <code>pages.config.js</code> (45 routes) + a 4-agent code sweep; existing cross-links verified in code. Tick the lines to greenlight; the "Reflect · Discuss · Ask Jess" action bar (rec #1) is the keystone that unlocks most of them.
+  </div>
+
+</div>
+</body>
+</html>
