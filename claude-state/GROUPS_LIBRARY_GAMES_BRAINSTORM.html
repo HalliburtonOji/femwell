@@ -1,0 +1,235 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>FemWell — Library, Games & User-Created Groups (Brainstorm)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Ephesis&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --cream:#F4EDDB; --paper:#FBF6E6; --paperHi:#F8F2E4; --page:#ECE7DA;
+    --ink:#2E261B; --inkSoft:#5b4f3e; --plum:#4A2A3A; --plumMid:#7B5E6B;
+    --rose:#C4849A; --sage:#6B8F5A; --gold:#A6862B; --red:#BC2E27;
+    --rule:rgba(58,44,26,0.12);
+    --sans:ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;
+    --serif:"Cormorant Garamond","Georgia",serif;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--page);color:var(--ink);font-family:var(--serif);line-height:1.6;}
+  .wrap{max-width:800px;margin:0 auto;padding:28px 18px 72px;}
+  .eyebrow{font-family:var(--sans);font-size:11px;letter-spacing:.2em;text-transform:uppercase;font-weight:700;color:var(--gold);margin:0 0 6px;}
+  h1{font-size:33px;line-height:1.1;margin:6px 0 8px;color:var(--plum);font-weight:600;}
+  .sub{font-family:var(--sans);font-size:13.5px;color:var(--inkSoft);margin:0 0 4px;line-height:1.55;}
+  h2{font-size:25px;font-weight:600;color:var(--plum);margin:36px 0 6px;line-height:1.18;border-bottom:2px solid var(--rule);padding-bottom:6px;}
+  h3{font-size:19px;font-weight:600;color:var(--ink);margin:22px 0 2px;}
+  p{font-size:16.5px;margin:8px 0;}
+  ul{margin:8px 0;padding-left:0;list-style:none;}
+  li{display:flex;gap:10px;align-items:flex-start;margin:6px 0;font-size:15.5px;line-height:1.5;}
+  li::before{content:"";width:6px;height:6px;border-radius:99px;background:var(--gold);margin-top:9px;flex-shrink:0;}
+  .card{background:var(--paper);border:1px solid var(--rule);border-left:3px solid var(--gold);border-radius:12px;padding:14px 16px;margin:14px 0;}
+  .card.plum{border-left-color:var(--plum);}
+  .card.rose{border-left-color:var(--rose);}
+  .card.red{border-left-color:var(--red);}
+  .card.sage{border-left-color:var(--sage);}
+  .card h3{margin-top:0;}
+  blockquote{margin:16px 0;padding:14px 16px;background:var(--cream);border-radius:10px;border-left:3px solid var(--rose);font-style:italic;font-size:17px;color:var(--plum);}
+  .badge{display:inline-block;border-radius:99px;padding:2px 9px;font-size:11px;font-weight:700;font-family:var(--sans);color:#fff;white-space:nowrap;vertical-align:middle;}
+  .b-now{background:var(--sage);} .b-next{background:var(--gold);} .b-later{background:var(--plumMid);} .b-gate{background:var(--red);}
+  .rec{font-family:var(--sans);font-size:14.5px;background:var(--paperHi);border:1px solid var(--rule);border-radius:9px;padding:10px 13px;margin:8px 0;}
+  .rec b{color:var(--plum);}
+  table{width:100%;border-collapse:collapse;font-family:var(--sans);font-size:12.5px;margin:12px 0;}
+  th{text-align:left;padding:7px 9px;background:var(--paperHi);color:var(--inkSoft);font-size:11px;letter-spacing:.5px;text-transform:uppercase;border-bottom:1px solid var(--rule);}
+  td{padding:7px 9px;border-bottom:1px solid var(--rule);vertical-align:top;}
+  .tablewrap{overflow-x:auto;}
+  .ia{font-family:var(--sans);font-size:13px;background:var(--paper);border:1px solid var(--rule);border-radius:10px;padding:14px 16px;white-space:pre;overflow-x:auto;color:var(--ink);line-height:1.5;}
+  .key{font-family:var(--sans);font-size:13px;color:var(--inkSoft);margin:10px 0 0;}
+  .foot{margin-top:40px;border-top:2px solid var(--rule);padding-top:14px;font-family:var(--sans);font-size:12.5px;color:var(--inkSoft);}
+  .lede{font-size:18px;}
+  a{color:var(--plum);}
+  .q{counter-increment:q;}
+  .q b::before{content:"Q" counter(q) ". ";color:var(--gold);}
+  ol.qs{counter-reset:q;list-style:none;padding:0;}
+  ol.qs li{display:block;margin:12px 0;font-size:15.5px;}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="eyebrow">FemWell · Community · Research + Brainstorm (NO build)</div>
+  <h1>Library, Games &amp; User-Created Groups</h1>
+  <p class="sub">A heavyweight brainstorm reconciling Halli's new idea — a Library room, a Games room, and member-creatable groups (book clubs hosted by Jess OR members) — with the Circles work already built. Research + thinking only; nothing here is built. Dated 2026-06-11.</p>
+
+  <div class="card plum">
+    <p class="lede" style="margin-top:0">Halli's words: <i>"a room called library and another specifically for games, and specific groups users can create and join and have meaningful conversations… book clubs hosted by Jess or others hosted by users and can let others join. So basically groups for different things."</i></p>
+    <p style="margin-bottom:0">The single hardest question this raises is not "can we build groups" — it's <b>how does a user-created, member-hosted space sit safely inside an 18+, anonymous-first, UK women's-health app under the Online Safety Act</b>, and <b>how does it relate to the curated Circles we already shipped</b>. This doc answers both, then sketches the IA, the safety model, the flows, and a phased path — and ends with the calls only Halli can make. Web research is cited inline; the full brief is in <i>claude-state/product-research/user_created_groups_2026-06-11.md</i>.</p>
+  </div>
+
+  <h2>1. The reconciliation — two primitives, one spine</h2>
+  <p>The instinct is to make "Circles" and "user-created groups" the same feature. <b>They should not be.</b> They answer different human questions, carry different risk, and need different governance:</p>
+  <div class="tablewrap">
+  <table>
+    <thead><tr><th></th><th>Circles (built)</th><th>Clubs / Groups (new)</th></tr></thead>
+    <tbody>
+      <tr><td><b>Answers</b></td><td><b>Who you are</b> — identity / experience cohorts</td><td><b>What you're doing together</b> — an activity or intention, with specific people</td></tr>
+      <tr><td><b>Origin</b></td><td>Curated, fixed catalogue (like the rooms)</td><td>Created by a member <i>or</i> by Jess</td></tr>
+      <tr><td><b>Examples</b></td><td>Perimenopause · PCOS · Books &amp; reading</td><td>"Little Women, together" · "Tuesday morning walkers" · "TTC cycle-6 buddies"</td></tr>
+      <tr><td><b>Size / feel</b></td><td>Large, low-commitment, lurk-first belonging</td><td>Smaller, higher-commitment, ongoing conversation</td></tr>
+      <tr><td><b>Safety surface</b></td><td>Safe by construction (no user creation, no host power)</td><td>The real new risk surface — member hosting, OSA, abandonment</td></tr>
+      <tr><td><b>Lifecycle</b></td><td>Permanent</td><td>Forms → active → can go dormant → can end</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p>This mirrors how mature platforms split the two: Reddit's fixed-topic subreddits vs small created chats; Facebook's broad interest vs intentional groups. Keeping them distinct means the <b>safe, curated Circles never inherit the user-created-moderation risk</b> — and the new primitive can carry its own, heavier governance without dragging Circles into it.</p>
+  <div class="rec"><b>Recommendation:</b> <b>two distinct user-facing primitives, one shared safety + data spine.</b> Circles stay exactly as built. The new thing is a separate primitive. Both ride the same anonymity (author_hash), the same crisis intercept on every input, the same moderation (OpenAI + keyword + health allowlist), the same reaction/report tools, and the same <code>CommunityPost</code> backbone — a group-scoped post is just <code>CommunityPost.group_id</code>, exactly as a circle-scoped post is <code>CommunityPost.circle</code> today.</div>
+
+  <h3>A naming call (real UX risk)</h3>
+  <p>"Circles" (cohorts) and "Groups" (user-created) will confuse people — they sound identical. Proposed three-word taxonomy that stays warm and distinct:</p>
+  <blockquote><b>Rooms</b> — the fixed houses Jess keeps. &nbsp;·&nbsp; <b>Circles</b> — who you are. &nbsp;·&nbsp; <b>Clubs</b> — what you do together.</blockquote>
+  <p>"Clubs" is warm, matches the lead use-case ("a book club, a walking club, a creativity club"), and is clearly distinct from Circles. <i>(Open question Q1.)</i> The rest of this doc uses <b>Clubs</b> for the new member/Jess-created primitive.</p>
+
+  <h2>2. The unified information architecture</h2>
+  <p>Everything — including Library, Games, and Book Club — slots into one coherent map. Library and Games are <b>fixed Rooms</b> (homes); Book Club becomes a <b>Club living in the Library</b>; the Jess games-master lives in the Games room.</p>
+  <div class="ia">Community  (18+ gate · crisis intercept on every input)
+│
+├─ HOME — rooms-as-doors · Question of the Day · Living Wisdom · "Together this week" pool
+│
+├─ ROOMS  (fixed · Jess-presided · never user-created → no abandonment)
+│    Lounge · Love · Money · Style · The Lighter Side · Health Corner
+│    ├─ LIBRARY  (NEW fixed room)  →  the BookReader catalogue  +  Book Clubs
+│    │     • Jess's flagship Book Club (the Little Women pillar, reframed as a Jess-hosted Club)
+│    │     • a directory of member-made Book Clubs (Clubs of type "book")
+│    └─ GAMES  (NEW fixed room)  →  Jess games-master  +  light social games  (+ member game-nights, later)
+│
+├─ CIRCLES  (fixed curated cohorts)        ——  WHO YOU ARE
+│    Life stages · Living with (consent-gated) · Shared loves
+│
+└─ CLUBS  (NEW · created by a member OR Jess · hosted)   ——  WHAT YOU DO TOGETHER
+     book clubs · walking/movement clubs · creativity clubs · stage-buddy clubs · …
+     surfaced in a Clubs directory AND inside their related Room (book clubs in Library, etc.)</div>
+  <p class="key">A <b>Club</b> is the one new primitive. A book club is a Club that surfaces in the Library; a game night is a Club that surfaces in Games. "Book Club" and "Games" stop being one-off features and become <i>instances</i> of Rooms + Clubs — which is what makes the whole thing cohere instead of sprawling.</p>
+
+  <h2>3. Library &amp; Games as rooms (the low-risk half)</h2>
+  <h3>Library</h3>
+  <ul>
+    <li>The reading home: the existing <b>BookReader</b> catalogue (already live) becomes a Room, not a buried link.</li>
+    <li><b>Jess's flagship Book Club</b> = today's Book Club pillar (curated pick, Jess intro, trigger warnings, position-gated spoiler-safe checkpoint threads) — reframed as a <i>Jess-hosted Club</i> so it's the same primitive as member book clubs.</li>
+    <li>A directory of <b>member-made Book Clubs</b> (Phase C), each = a Club of type "book": pick a book from the Library, set a cadence, others join, progress-gated discussion. Borrow Fable's spoiler-free chapter rooms + StoryGraph's page/percentage-locked comments (<a href="https://bookriot.com/fable-book-club-app-review/">Book Riot</a>; <a href="https://roadmap.thestorygraph.com/features/posts/users-can-create-groups-book-clubs-on-the-storygraph">StoryGraph</a>).</li>
+  </ul>
+  <h3>Games</h3>
+  <ul>
+    <li>The play home: today's <b>Jess-as-games-master</b> (timed round, aggregate reveal, no winners/scores) gets a proper room instead of living only in The Lighter Side.</li>
+    <li>Light, kind, async social games — would-you-rather, this-or-that, a daily one-line prompt — all Jess-hosted, aggregate-only, no scoreboards (locked constraint).</li>
+    <li>Member-run "game nights" are a <i>later</i> Club type — lower priority, since Jess-hosted play covers most of the need with none of the member-hosting risk.</li>
+  </ul>
+  <div class="rec"><b>Why this half is low-risk:</b> Rooms are fixed and Jess-presided — no user creation, no host powers, no abandonment, no new OSA surface. Library + Games are mostly <b>IA + reusing pieces already built</b> (BookReader, Book Club pillar, games-master). This can move well before member-created Clubs.</div>
+
+  <h2>4. Member-hosted Clubs — the safety model (the crux)</h2>
+  <p>This is the genuinely new risk, and it is significant. The research is blunt: <b>under the UK Online Safety Act, FemWell — not the volunteer host — is liable for everything posted inside a member-run space.</b> The duties apply "regardless of the service's size and composition," there is no exemption for small or private spaces, and <b>delegating hosting to a member does not transfer the duty</b> (<a href="https://inquisitiveminds.bristows.com/post/102k11s/my-organisation-runs-a-small-online-forum-is-it-in-scope-of-the-osa">Bristows</a>; <a href="https://www.ofcom.org.uk/online-safety/illegal-and-harmful-content/illegal-content-duties-under-the-online-safety-act">Ofcom</a>). So the model keeps <b>central control</b> while giving hosts <b>limited, supervised</b> powers.</p>
+
+  <h3>4.1 Auto-moderation always applies — centrally, never delegated</h3>
+  <p>Every post and comment inside a Club runs the <b>same pipeline as the open rooms</b>: crisis intercept first, then OpenAI moderation + keyword + the health-vocab allowlist. <b>The host cannot turn this off.</b> The host facilitates; the platform is the moderator-of-record. This is exactly the OSA-required central content-moderation system, and it's the single most important design rule. (Discord's layered model — auto-filters + human mods + central Trust &amp; Safety — is the reference: <a href="https://discord.com/safety/our-approach-to-content-moderation">Discord</a>.)</p>
+
+  <h3>4.2 Host powers are limited + supervised — not unilateral</h3>
+  <div class="tablewrap">
+  <table>
+    <thead><tr><th>A Club host CAN</th><th>A Club host CANNOT</th></tr></thead>
+    <tbody>
+      <tr><td>Set the topic, intro, cadence, and prompts</td><td>See any member's identity (everyone stays author_hash-anonymous, <i>including to the host</i>)</td></tr>
+      <tr><td>Pin a message; seed a discussion prompt</td><td>Ban or block a person platform-wide</td></tr>
+      <tr><td>Remove a post <i>from their Club</i> → routed to the central review queue (not a silent delete)</td><td>Override or disable the central auto-moderation</td></tr>
+      <tr><td>Close the Club they created</td><td>Read DMs or export member data</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p class="key">Deliberately narrower than Facebook (admins can unilaterally ban/delete) or Discord (owners hold sweeping permissions) — because concentrating unvetted unilateral power in one volunteer is the documented host-abuse + single-point-abandonment risk (<a href="https://news.northwestern.edu/stories/2022/05/unpaid-social-media-moderators">Northwestern</a>; <a href="https://arxiv.org/abs/2205.14529">arXiv 2205.14529</a>).</p>
+
+  <h3>4.3 Vetting + friction to create (anti-proliferation)</h3>
+  <p>Letting anyone instantly spin up groups produces proliferation + dead groups. <b>Recommend gated at launch: request-to-host, reviewed by Halli</b> (low volume, safest, matches the research's "manual vetting at launch"). Later, open it with guardrails: a host caps (e.g. host at most 1–2 active Clubs), a cooldown, and a one-tap <b>host pledge</b> (agree to the host code of conduct) — never a frictionless "create" button.</p>
+
+  <h3>4.4 Co-hosts (≥2) for member Clubs</h3>
+  <p>Solo hosting drives burnout and single-point abandonment; moderators "prefer to work in teams to split the workload" (<a href="https://arxiv.org/abs/2205.14529">arXiv 2205.14529</a>). Nudge two co-hosts at creation; consider <i>requiring</i> a second host above a size threshold. <i>(Open question Q3.)</i></p>
+
+  <h3>4.5 Abandonment &amp; the "dead group" problem — Jess as fallback host</h3>
+  <p>Reddit formalises abandoned/unmoderated communities and <b>reassigns</b> them via r/redditrequest (<a href="https://support.reddithelp.com/hc/en-us/articles/29187257932308">Reddit Help</a>). FemWell's version, with a unique advantage — <b>Jess is always available as a caretaker host</b>:</p>
+  <div class="ia">forming → active → (no host activity N days) DORMANT → prompt host
+        → still dormant → offer co-host hand-off
+        → no taker → JESS ADOPTS as caretaker host  (Clubs never go un-moderated)
+        → zero activity, long window → ARCHIVED (read-only, gracefully)</div>
+  <p class="key">Jess-as-fallback solves the two hardest problems at once — the dead-group decay and the "no qualified human host" gap. It is the move no big platform can make because they have no trusted always-present host. <i>(Open question Q5.)</i></p>
+
+  <h3>4.6 Reporting &amp; escalation</h3>
+  <ul>
+    <li>Member report inside a Club → the same <b>central human review queue</b> (Halli) and the same de-list / remove / "Removed by Jess" tombstone tools as the open rooms.</li>
+    <li>A host who misuses power (repeatedly removing benign posts, steering toward harm) → host privileges revoked; the Club is reassigned to Jess or closed.</li>
+    <li>Crisis content anywhere in a Club → the crisis intercept fires (UK resources), exactly as everywhere else.</li>
+  </ul>
+
+  <h3>4.7 Anonymity within small Clubs (the k-anonymity trap)</h3>
+  <p>A real, specific danger: a small Club + FemWell's 11 life stages + free-text health detail can <b>re-identify</b> a member — the smaller the cohort, the smaller the anonymity set (<a href="https://en.wikipedia.org/wiki/K-anonymity">k-anonymity</a>). Mitigations:</p>
+  <ul>
+    <li><b>Minimum viable size (k):</b> a Club stays "forming" (not publicly discoverable, or posts held) until it reaches k members, so no one is the identifiable "only person in the PMDD club from Leeds." <i>(What k? — Q6.)</i></li>
+    <li><b>Per-Club namespaced pseudonym:</b> keep author_hash stable <i>within</i> a Club but salted per-Club, so a member can't be tracked <i>across</i> Clubs/surfaces — stable identity for moderation, no cross-surface linkage (<a href="https://arxiv.org/pdf/1211.5613">pseudonymity-as-a-spectrum</a>).</li>
+    <li><b>On-device scrub warning</b> before posting identifying detail (reuse the Echo scrub pattern); discourage location precision.</li>
+    <li>Identity link held <b>platform-side only</b>, used solely for safety escalation (<a href="https://arxiv.org/pdf/1004.3057">accountable-anonymity</a>).</li>
+  </ul>
+
+  <h3>4.8 Privacy taxonomy</h3>
+  <p>Borrow Mighty Networks' clean model (<a href="https://faq.mightynetworks.com/en/articles/9140691">Mighty Networks</a>): <b>Open</b> (discoverable, anyone joins, lurkable) · <b>Closed</b> (discoverable, posts hidden until joined, join auto or host-approved) · <b>Secret</b> (invite-only, not discoverable). <b>Recommend Open + Closed at launch only.</b> Secret + anonymity + health data is the highest k-anonymity + hardest-to-moderate combination — defer it. <i>(Q4.)</i></p>
+
+  <h2>5. Discovery, join &amp; lifecycle flows</h2>
+  <ul>
+    <li><b>Clubs directory</b> (like the Circles directory): browse by type (book · movement · creativity · stage-buddies), each card shows the intro, host, cadence — <b>no member counts</b> (locked constraint). "Join" or "Lurk."</li>
+    <li><b>Lurk-first everywhere</b> — read before committing, the same gentle on-ramp Circles use.</li>
+    <li><b>Cross-surfacing:</b> book Clubs also appear in the Library; movement Clubs near the relevant room; Jess can recommend a Club from your stage/interests.</li>
+    <li><b>Seasons:</b> a Club can run for a season (a book club for the book; a stage-buddy club for a cycle) and sunset gracefully — avoiding infinite zombie groups.</li>
+    <li><b>Anti-silence design:</b> engagement ≠ membership — a 2,000-member club had ~20 comments (<a href="https://bookriot.com/fable-book-club-app-review/">Book Riot</a>). So: small prompted cohorts; Jess seeds a prompt when a Club goes quiet; scheduled book-club checkpoints; progress-gated reveals. Small + nudged beats big + passive.</li>
+  </ul>
+
+  <h2>6. What we reuse (this is mostly assembly)</h2>
+  <p>The Club primitive is not a from-scratch build — it reuses the spine already shipped:</p>
+  <ul>
+    <li><b>Data:</b> <code>CommunityPost.group_id</code> mirrors today's <code>CommunityPost.circle</code>; a <code>Club</code> entity + a <code>ClubMembership</code> entity mirror <code>CircleMembership</code> (RLS-locked). A book Club reuses <code>BookClubPick</code> / <code>ClubCheckpoint</code> / <code>ClubNote</code>.</li>
+    <li><b>Functions:</b> <code>createClub</code> / <code>joinClub</code> / <code>leaveClub</code> mirror <code>joinCircle</code> / <code>leaveCircle</code>; posting reuses <code>createCommunityPost</code> + <code>addComment</code> (already moderated).</li>
+    <li><b>Safety:</b> crisis intercept, OpenAI moderation, health allowlist, report→tombstone, reaction-only mode, the on-device scrub — all already built.</li>
+    <li><b>Host:</b> Jess (the games-master / Book-Club host pattern) is the ready-made flagship + fallback host.</li>
+  </ul>
+
+  <h2>7. A phased path (with the legal gate in the right place)</h2>
+  <div class="tablewrap">
+  <table>
+    <thead><tr><th>Phase</th><th>What</th><th>New risk</th><th>Gate</th></tr></thead>
+    <tbody>
+      <tr><td><span class="badge b-now">A</span></td><td>Add fixed <b>Library</b> + <b>Games</b> rooms; reframe Book Club as a Jess-hosted Club; games-master gets a room. Mostly IA + reuse.</td><td>None new (Jess-presided, fixed)</td><td>—</td></tr>
+      <tr><td><span class="badge b-next">B</span></td><td><b>Jess-hosted Clubs</b> beyond books (a Jess walking club, a Jess creativity club). Proves the Club primitive with no member hosting.</td><td>Low (no member power)</td><td>—</td></tr>
+      <tr><td><span class="badge b-gate">C</span></td><td><b>Member-created Clubs</b>: gated request-to-host, Open/Closed only, ≥2 co-hosts nudged, full central moderation, Jess-fallback lifecycle, k-anon guards.</td><td><b>High — the real OSA surface</b></td><td><span class="badge b-gate">OSA / ICO legal floor</span></td></tr>
+      <tr><td><span class="badge b-later">D</span></td><td>Open host creation (cap + cooldown + pledge), Secret Clubs, member game-nights.</td><td>High</td><td>Post-floor, with tooling</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <div class="card red">
+    <p style="margin-top:0"><b>The hard sequencing rule:</b> <b>member-created Clubs (Phase C+) wait behind the same OSA / ICO legal floor as the public Community launch</b> — illegal-content risk assessment, proactive-moderation disclosure, DPIA + explicit special-category consent, the 18+ age-assurance sign-off, and a named human-review + appeals owner (Halli). User-led spaces <i>materially increase</i> the illegal-content + moderation surface, so they cannot precede the floor. Library + Games + Jess-hosted Clubs (Phases A–B) carry no new user-hosting risk and can move earlier.</p>
+  </div>
+
+  <h2>8. Open questions for Halli</h2>
+  <ol class="qs">
+    <li class="q"><b>One system or two?</b> Recommend <b>two distinct primitives on one spine</b> — Circles (who you are) stay as-is; Clubs (what you do together) are new. And the naming: <b>Rooms · Circles · Clubs</b> — does "Clubs" work for the user-created primitive, or prefer "Tables" / "Gatherings"?</li>
+    <li class="q"><b>Member-hosting at launch</b> — gated <b>request-to-host reviewed by you</b> (recommended), or open-with-cap from day one?</li>
+    <li class="q"><b>Co-hosts</b> — just nudged, or <b>required</b> above a size threshold (and what threshold)?</li>
+    <li class="q"><b>Privacy types at launch</b> — <b>Open + Closed only</b> (recommended), or include Secret/invite-only too?</li>
+    <li class="q"><b>Jess as fallback host</b> — OK for Jess to "adopt" an abandoned Club as caretaker so it's never un-moderated?</li>
+    <li class="q"><b>Minimum Club size (k)</b> before it's live/discoverable — what k balances belonging vs k-anonymity (e.g. 5? 8?)?</li>
+    <li class="q"><b>Sequencing</b> — confirm member-created Clubs wait behind the OSA/ICO legal floor, while Library + Games + Jess-hosted Clubs move earlier.</li>
+    <li class="q"><b>Games scope</b> — Jess-only games at launch (recommended), with member game-nights deferred to Phase D?</li>
+    <li class="q"><b>Monetisation</b> — Clubs stay <b>free</b> (peer surface; monetise only the expert layer)? Recommend yes, per the locked principle.</li>
+    <li class="q"><b>Book-club spoiler model</b> — adopt progress/percentage-gated comments (Fable/StoryGraph), reusing the existing self-attested checkpoint gate?</li>
+  </ol>
+
+  <div class="foot">
+    FemWell — Library, Games &amp; User-Created Groups brainstorm · 2026-06-11. Research + thinking only; nothing here is built. Cited research brief: <i>claude-state/product-research/user_created_groups_2026-06-11.md</i>. Locked constraints honoured throughout: whole-life not clinical, anonymous-first, 18+, Jess as host, no scoreboards/vanity counts, crisis routing on every input, no emoji.
+  </div>
+
+</div>
+</body>
+</html>
