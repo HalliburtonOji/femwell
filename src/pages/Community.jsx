@@ -18,6 +18,7 @@ import { useNavigate } from "react-router-dom";
 import {
   Grid2x2, MessageCircle, Send, Lock, Unlock, Plus, Flag,
   ShieldAlert, Phone, Mic, Check, ChevronLeft, Users,
+  HeartHandshake,
 } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import {
@@ -39,6 +40,10 @@ import {
   CIRCLES, CIRCLE_CATEGORIES, circleByKey, SENSITIVE_CONSENT,
   isJoined, markJoined, clearJoined,
 } from "@/components/community/circlesConfig";
+import {
+  CLUBS, CLUB_CATEGORIES, clubByKey, CLUBS_USER_CREATE_ENABLED,
+  isClubJoined, markClubJoined, clearClubJoined,
+} from "@/components/community/clubsConfig";
 import { WISDOM_TOPICS, WISDOM_SEED, featuredWisdom } from "@/components/community/wisdomLibrary";
 import { SEED_PICK, clubReached, setClubReached } from "@/components/community/bookClubConfig";
 import {
@@ -259,7 +264,7 @@ function PostCard({ post, user, onCrisis, onChanged }) {
 }
 
 // ── room composer ────────────────────────────────────────────────────────────
-function RoomComposer({ room, circle, user, onCrisis, onPosted, onCancel }) {
+function RoomComposer({ room, circle, club, user, onCrisis, onPosted, onCancel }) {
   const [body, setBody] = useState("");
   const [mode, setMode] = useState("open");
   const [busy, setBusy] = useState(false);
@@ -272,7 +277,7 @@ function RoomComposer({ room, circle, user, onCrisis, onPosted, onCancel }) {
     setDeclined(false);
     try {
       const wh = await communityHash(user?.id);
-      const r = await base44.functions.invoke("createCommunityPost", { user_id: user?.id, author_hash: wh, room, circle: circle || undefined, body: text, comments_mode: mode });
+      const r = await base44.functions.invoke("createCommunityPost", { user_id: user?.id, author_hash: wh, room, circle: circle || undefined, club: club || undefined, body: text, comments_mode: mode });
       const d = r?.data ?? r;
       if (d?.intercept) { onCrisis(); return; }
       if (d?.error === "rate") { setBusy(false); return; }
@@ -630,15 +635,15 @@ function CloseWeekCard({ user, onCrisis }) {
   );
 }
 
-function BookClubCard({ onOpen }) {
+function ClubsCard({ onOpen }) {
   return (
     <button onClick={onOpen} style={{
       display: "block", width: "100%", textAlign: "left", cursor: "pointer",
-      background: T.paperHi, border: `1px solid ${T.gold}`, borderRadius: 6, padding: "16px 16px", marginBottom: 26,
+      background: T.paperHi, border: `1px solid ${T.paperDeep}`, borderRadius: 6, padding: "16px 16px", marginBottom: 26,
     }}>
-      <Eyebrow color={T.gold} mb={6}>Book club · Jess hosts</Eyebrow>
-      <div style={{ fontFamily: HANDFAM, fontStyle: "italic", fontWeight: 700, fontSize: 19, color: T.ink, marginBottom: 4 }}>A book, together — at our own pace.</div>
-      <div style={{ fontFamily: UI, fontSize: 12, color: T.muted }}>One read, spoiler-safe checkpoints, no streaks. Lurking counts. Come in →</div>
+      <Eyebrow color={T.gold} mb={6}>Clubs · Jess hosts</Eyebrow>
+      <div style={{ fontFamily: HANDFAM, fontStyle: "italic", fontWeight: 700, fontSize: 19, color: T.ink, marginBottom: 4 }}>Small groups for doing a thing together.</div>
+      <div style={{ fontFamily: UI, fontSize: 12, color: T.muted }}>Slow mornings, creativity — lurk freely, join what's yours. No counts, no pressure →</div>
     </button>
   );
 }
@@ -658,7 +663,7 @@ function Home({ presence, onEnter, user, onCrisis }) {
 
       <CloseWeekCard user={user} onCrisis={onCrisis} />
 
-      <BookClubCard onOpen={() => onEnter("bookclub")} />
+      <ClubsCard onOpen={() => onEnter("clubs")} />
 
       <WisdomCard onOpen={() => onEnter("wisdom")} />
 
@@ -889,6 +894,173 @@ function CirclesView({ user, onCrisis }) {
     : <CirclesDirectory onOpen={setActive} />;
 }
 
+// ── Clubs — "what you do together" (Jess-hosted; member-created flagged off) ──
+function ClubCard({ club, joined, onOpen }) {
+  return (
+    <button onClick={() => onOpen(club.key)} style={{
+      display: "block", width: "100%", textAlign: "left", cursor: "pointer",
+      background: T.paperHi, border: `1px solid ${joined ? T.gold : T.paperDeep}`, borderRadius: 6,
+      padding: "14px 15px", marginBottom: 10,
+    }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
+        <Script size={21} color={T.ink}>{club.name}</Script>
+        {joined && <span style={{ display: "inline-flex", alignItems: "center", gap: 3, fontFamily: UI, fontSize: 10.5, fontWeight: 700, color: T.gold }}><Check size={12} /> Joined</span>}
+        <span style={{ marginLeft: "auto", fontFamily: UI, fontSize: 10, color: T.muted, display: "inline-flex", alignItems: "center", gap: 3 }}><HeartHandshake size={11} /> Jess hosts</span>
+      </div>
+      <Hand size={16} color={T.muted}>{club.line}</Hand>
+    </button>
+  );
+}
+
+function ClubsDirectory({ onOpen, onBack }) {
+  const [, force] = useState(0);
+  useEffect(() => { force((n) => n + 1); }, []);
+  return (
+    <div>
+      {onBack && <button onClick={onBack} style={{ ...ghostBtn, marginBottom: 14, padding: "7px 11px" }}><Grid2x2 size={13} /> Doors</button>}
+      <Script size={30} style={{ marginBottom: 4 }}>Clubs</Script>
+      <Hand size={17} color={T.muted} style={{ marginBottom: 18 }}>
+        Small groups for doing a thing together — hosted by Jess. Lurk freely; join the ones that are yours.
+      </Hand>
+      {CLUB_CATEGORIES.map((cat) => {
+        const inCat = CLUBS.filter((c) => c.category === cat);
+        if (!inCat.length) return null;
+        return (
+          <div key={cat} style={{ marginBottom: 18 }}>
+            <Eyebrow color={T.gold} mb={8}>{cat}</Eyebrow>
+            {inCat.map((c) => (
+              <ClubCard key={c.key} club={c} joined={isClubJoined(c.key)} onOpen={onOpen} />
+            ))}
+          </div>
+        );
+      })}
+      {/* Member-created Clubs — BUILT, flagged off (gated behind the OSA/ICO legal floor) */}
+      <section style={{ background: T.paperHi, border: `1px dashed ${T.paperDeep}`, borderRadius: 6, padding: "13px 15px", marginTop: 6 }}>
+        <Eyebrow color={T.muted} mb={6}>Start your own — coming</Eyebrow>
+        <Hand size={15.5} color={T.muted}>
+          {CLUBS_USER_CREATE_ENABLED
+            ? "Start a Club and host it yourself."
+            : "Soon you'll be able to start a Club of your own — a walking club, a quiet-evening club, whatever's yours. We're getting the safety right first."}
+        </Hand>
+      </section>
+    </div>
+  );
+}
+
+function ClubView({ clubKey, user, onCrisis, onBack }) {
+  const club = clubByKey(clubKey);
+  const [joined, setJoined] = useState(() => isClubJoined(clubKey));
+  const [posts, setPosts] = useState(null);
+  const [composing, setComposing] = useState(false);
+  const [busy, setBusy] = useState(false);
+
+  const load = useCallback(async () => {
+    const rows = await base44.entities.CommunityPost.filter({ club: clubKey, hidden: false }, "-created_date", 100).catch(() => []);
+    setPosts(Array.isArray(rows) ? rows : []);
+  }, [clubKey]);
+  useEffect(() => { load(); }, [load]);
+
+  const join = async () => {
+    if (busy) return;
+    setBusy(true);
+    try {
+      const wh = await communityHash(user?.id);
+      await base44.functions.invoke("joinClub", { user_id: user?.id, author_hash: wh, club_key: clubKey });
+      markClubJoined(clubKey); setJoined(true);
+    } catch (e) { console.error("join club failed:", e); }
+    finally { setBusy(false); }
+  };
+  const leave = async () => {
+    if (busy) return;
+    setBusy(true);
+    try {
+      const wh = await communityHash(user?.id);
+      await base44.functions.invoke("leaveClub", { user_id: user?.id, author_hash: wh, club_key: clubKey });
+      clearClubJoined(clubKey); setJoined(false);
+    } catch (e) { console.error("leave club failed:", e); }
+    finally { setBusy(false); }
+  };
+
+  if (!club) return <Hand size={17} color={T.muted}>That club has wandered off. Go back to Clubs.</Hand>;
+
+  return (
+    <div>
+      <button onClick={onBack} style={{ ...ghostBtn, marginBottom: 14, padding: "7px 11px" }}><ChevronLeft size={14} /> Clubs</button>
+      <Script size={30} style={{ marginBottom: 4 }}>{club.name}</Script>
+      <Hand size={17} color={T.muted} style={{ marginBottom: 14 }}>{club.line}</Hand>
+
+      <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 16, flexWrap: "wrap" }}>
+        {joined
+          ? <><span style={{ display: "inline-flex", alignItems: "center", gap: 5, fontFamily: UI, fontSize: 12.5, fontWeight: 700, color: T.gold }}><Check size={14} /> You're in this club</span>
+              <button onClick={leave} disabled={busy} style={{ ...ghostBtn, border: "none", color: T.muted }}>Leave</button></>
+          : <button onClick={join} disabled={busy} style={{ ...primaryBtn, opacity: busy ? 0.6 : 1 }}><HeartHandshake size={14} /> Join this club</button>}
+      </div>
+
+      {!composing && joined && (
+        <button onClick={() => setComposing(true)} style={{ ...primaryBtn, marginBottom: 16 }}><Plus size={14} /> Add to {club.name}</button>
+      )}
+      {composing && (
+        <RoomComposer room="clubs" club={clubKey} user={user} onCrisis={onCrisis}
+          onPosted={() => { setComposing(false); load(); }} onCancel={() => setComposing(false)} />
+      )}
+
+      {posts === null && <Hand size={18} color={T.muted}>Opening the club…</Hand>}
+      {posts && posts.length === 0 && (
+        <Hand size={18} color={T.inkSoft}>Quiet in here so far. {joined ? "Leave the first word — Jess and the others come by." : "Join to leave the first word."}</Hand>
+      )}
+      {posts && posts.map((p) => (
+        <PostCard key={p.id} post={p} user={user} onCrisis={onCrisis} onChanged={load} />
+      ))}
+    </div>
+  );
+}
+
+function ClubsView({ user, onCrisis, onBack }) {
+  const [active, setActive] = useState(null);
+  return active
+    ? <ClubView clubKey={active} user={user} onCrisis={onCrisis} onBack={() => setActive(null)} />
+    : <ClubsDirectory onOpen={setActive} onBack={onBack} />;
+}
+
+// ── The Library room — reading home (Book Club + reading) ─────────────────────
+function LibraryView({ user, onCrisis, onNav }) {
+  return (
+    <div>
+      <Script size={32} style={{ marginBottom: 4 }}>The Library</Script>
+      <Hand size={17} color={T.muted} style={{ marginBottom: 16 }}>Read together — at our own pace, spoiler-safe. Lurking counts.</Hand>
+
+      <button onClick={() => onNav("bookclub")} style={{
+        display: "block", width: "100%", textAlign: "left", cursor: "pointer",
+        background: T.paperHi, border: `1px solid ${T.gold}`, borderRadius: 6, padding: "16px 16px", marginBottom: 14,
+      }}>
+        <Eyebrow color={T.gold} mb={6}>Book club · Jess hosts</Eyebrow>
+        <div style={{ fontFamily: HANDFAM, fontStyle: "italic", fontWeight: 700, fontSize: 19, color: T.ink, marginBottom: 4 }}>A book, together — at our own pace.</div>
+        <div style={{ fontFamily: UI, fontSize: 12, color: T.muted }}>One read, spoiler-safe checkpoints, no streaks. Come in →</div>
+      </button>
+
+      <section style={{ background: T.paperHi, border: `1px dashed ${T.paperDeep}`, borderRadius: 6, padding: "13px 15px" }}>
+        <Eyebrow color={T.muted} mb={6}>More reading clubs — coming</Eyebrow>
+        <Hand size={15.5} color={T.muted}>More reads, and member-led book clubs, are on their way. For now, our book club above is open to everyone.</Hand>
+      </section>
+    </div>
+  );
+}
+
+// ── The Games Room — play, lightly (Jess's round) ────────────────────────────
+function GamesView({ user, onCrisis }) {
+  return (
+    <div>
+      <Script size={32} style={{ marginBottom: 4 }}>The Games Room</Script>
+      <Hand size={17} color={T.muted} style={{ marginBottom: 16 }}>Play, lightly. Jess hosts a round — no winners, no scores, just a little fun together.</Hand>
+      <GameRoundCard user={user} onCrisis={onCrisis} />
+      <section style={{ background: T.paperHi, border: `1px dashed ${T.paperDeep}`, borderRadius: 6, padding: "13px 15px", marginTop: 4 }}>
+        <Eyebrow color={T.muted} mb={6}>More games — coming</Eyebrow>
+        <Hand size={15.5} color={T.muted}>Would-you-rather, this-or-that, a daily little prompt. Always kind, always aggregate — never a leaderboard.</Hand>
+      </section>
+    </div>
+  );
+}
+
 function RoomView({ roomKey, posts, loading, user, onNav, onCrisis, onReload }) {
   const [composing, setComposing] = useState(false);
   const [voicing, setVoicing] = useState(false);
@@ -911,12 +1083,14 @@ function RoomView({ roomKey, posts, loading, user, onNav, onCrisis, onReload }) 
       <div style={{ padding: "20px 18px 60px" }}>
         {roomKey === "circles" ? (
           <CirclesView user={user} onCrisis={onCrisis} />
+        ) : roomKey === "library" ? (
+          <LibraryView user={user} onCrisis={onCrisis} onNav={onNav} />
+        ) : roomKey === "games" ? (
+          <GamesView user={user} onCrisis={onCrisis} />
         ) : (
         <>
         <Script size={32} style={{ marginBottom: 4 }}>{room.name}</Script>
         <Hand size={17} color={T.muted} style={{ marginBottom: 16 }}>{room.line}</Hand>
-
-        {roomKey === "lighter" && <GameRoundCard user={user} onCrisis={onCrisis} />}
 
         {/* M4 async voice-notes — dormant until VOICE_NOTES_ENABLED + an STT key */}
         {VOICE_NOTES_ENABLED && roomKey === "lounge" && (
@@ -984,7 +1158,9 @@ function CommunityInner() {
           : view === "wisdom"
           ? <WisdomLibrary onBack={() => setView("home")} />
           : view === "bookclub"
-          ? <BookClubView user={user} onCrisis={() => setCrisis(true)} onBack={() => setView("home")} />
+          ? <BookClubView user={user} onCrisis={() => setCrisis(true)} onBack={() => setView("library")} />
+          : view === "clubs"
+          ? <div style={{ padding: "30px 18px 50px" }}><ClubsView user={user} onCrisis={() => setCrisis(true)} onBack={() => setView("home")} /></div>
           : <RoomView key={tick} roomKey={view} posts={posts} loading={loading} user={user} onNav={setView} onCrisis={() => setCrisis(true)} onReload={reload} />}
         {view === "home" && (
           <>

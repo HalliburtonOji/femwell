@@ -9,7 +9,7 @@
 
 import {
   MessageCircle, Users, Heart, Briefcase, Sparkles, Moon, Waves, HeartHandshake,
-  Stethoscope, Lock, Mail, Mic, Phone, ShieldAlert, Repeat,
+  Stethoscope, Lock, Mail, Mic, Phone, ShieldAlert, Repeat, BookOpen, Dices,
 } from "lucide-react";
 
 // ── masthead + ambient presence ──────────────────────────────────────────────
@@ -32,6 +32,8 @@ export const QOTD = {
 export const ROOMS = [
   { key: "lounge",   name: "The Lounge",            line: "Vent, spill it, be heard — silly to serious, no names.", Icon: MessageCircle, hint: "busy tonight" },
   { key: "circles",  name: "Circles",               line: "Rooms by what you love — books, walks, late nights.",     Icon: Users,         hint: "a few new rooms" },
+  { key: "library",  name: "The Library",           line: "Read together — a book club, spoiler-safe, at our own pace.", Icon: BookOpen,    hint: "Jess hosts" },
+  { key: "games",    name: "The Games Room",        line: "Play, lightly — Jess's nightly round, no winners, just us.", Icon: Dices,       hint: "tonight's round" },
   { key: "love",     name: "Love & Relationships",  line: "Dating, friendship, marriage — ask the room, kindly.",    Icon: Heart,         hint: "open" },
   { key: "money",    name: "Money & Work",          line: "Careers, pay, pensions — the questions you'd never ask aloud.", Icon: Briefcase, hint: "open" },
   { key: "style",    name: "Style & Self-Expression", line: "Fashion as confidence — rate the choice, never the body.", Icon: Sparkles,    hint: "open" },

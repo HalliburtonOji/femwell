@@ -1,0 +1,26 @@
+{
+  // Community v2 — one anonymous opt-in membership of a Club ("what you do together":
+  // a Jess-hosted activity/reading group; later, member-created). Mirrors CircleMembership:
+  // only a device-derived author_hash + the club key, written asServiceRole. Membership is
+  // identity-adjacent, so READ is locked to the service role too — there is NO public
+  // enumeration of who belongs to which Club. The client tracks its own joined-state in
+  // localStorage for the UI; this row is the durable opt-in record. No member counts anywhere.
+  "name": "ClubMembership",
+  "type": "object",
+  "properties": {
+    "club_key": { "type": "string", "description": "Club key (a Jess-hosted club, e.g. littlewomen, slow-mornings, creativity)." },
+    "author_hash": { "type": "string", "description": "Device-derived anonymous author token." },
+    "consented": { "type": "boolean", "default": false, "description": "Reserved for any future sensitive Club: the member acknowledged the note." }
+  },
+  "required": ["club_key", "author_hash"],
+  "indexes": [
+    { "fields": ["club_key"] },
+    { "fields": ["author_hash"] }
+  ],
+  "rls": {
+    "create": { "user_condition": { "role": "system" } },
+    "read":   { "user_condition": { "role": "system" } },
+    "update": { "user_condition": { "role": "system" } },
+    "delete": { "user_condition": { "role": "system" } }
+  }
+}

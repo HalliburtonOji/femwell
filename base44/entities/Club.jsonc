@@ -1,0 +1,36 @@
+{
+  // Community v2 — a Club ("what you do together"). Phase-1 LIVE Clubs are Jess-HOSTED and
+  // ship as a STATIC client catalogue (src/components/community/clubsConfig.js) — like the
+  // Circles + Book Club seed — so they're live with no DB seeding. This entity is the schema
+  // for FUTURE MEMBER-CREATED Clubs (createClub), which are BUILT BUT FLAGGED OFF
+  // (CLUBS_USER_CREATE_ENABLED=false) and gated behind the OSA/ICO legal floor. No live rows
+  // exist yet. READ is public (so a member-created Club can be discovered once enabled); WRITE
+  // is service-role only (a Club is only ever created via the createClub function, never a
+  // direct client write). No member counts. Verify on deploy: Club.filter read 200; direct
+  // client create 403.
+  "name": "Club",
+  "type": "object",
+  "properties": {
+    "club_key": { "type": "string", "description": "Stable slug for the Club." },
+    "name": { "type": "string", "description": "Display name." },
+    "line": { "type": "string", "description": "One-line description." },
+    "category": { "type": "string", "description": "Reading | Together | Games — where the Club surfaces." },
+    "host": { "type": "string", "enum": ["jess", "member"], "default": "jess", "description": "Jess-hosted (curated/flagship) or member-hosted (future, flagged off)." },
+    "host_hash": { "type": "string", "description": "For member-hosted Clubs: the host's anonymous author_hash. Empty for Jess-hosted." },
+    "privacy": { "type": "string", "enum": ["open", "closed"], "default": "open", "description": "open = lurkable + anyone joins; closed = posts hidden until joined. (Secret deferred.)" },
+    "status": { "type": "string", "enum": ["forming", "active", "dormant", "archived"], "default": "active", "description": "Lifecycle. Member Clubs stay 'forming' until a minimum k members." },
+    "intro": { "type": "string", "description": "Host intro / welcome." },
+    "hidden": { "type": "boolean", "default": false, "description": "Suppressed (moderation)." }
+  },
+  "required": ["club_key", "name", "category"],
+  "indexes": [
+    { "fields": ["category"] },
+    { "fields": ["host"] },
+    { "fields": ["status"] }
+  ],
+  "rls": {
+    "create": { "user_condition": { "role": "system" } },
+    "update": { "user_condition": { "role": "system" } },
+    "delete": { "user_condition": { "role": "system" } }
+  }
+}

@@ -87,6 +87,10 @@ const CIRCLE_KEYS = new Set([
   'pcos', 'endo', 'pmdd',
   'books', 'career', 'creativity', 'movement',
 ]);
+// Community v2 Clubs (Jess-hosted, live). Keep in sync with clubsConfig.js CLUB_KEYS.
+const CLUB_KEYS = new Set([
+  'slow-mornings', 'creativity-corner',
+]);
 const MAX_LEN = 800;
 const DAILY_CAP = 12;
 function startOfTodayISO(): string {
@@ -109,6 +113,19 @@ Deno.serve(async (req) => {
   // Phase-4 Circles: a post may be scoped to a curated circle. A valid circle pins the post
   // to the 'circles' room so it shows ONLY inside that circle, not in the open rooms.
   const circle = p?.circle && CIRCLE_KEYS.has(String(p.circle)) ? String(p.circle) : '';
+  // Community v2 Clubs: a post may be scoped to a Club. A valid club pins the post to the
+  // 'clubs' room so it shows ONLY inside that Club, not in the open rooms. (Club takes
+  // precedence over circle if somehow both are sent.) Member-Club keys are validated against
+  // the live Club entity; Jess-hosted keys against the inlined set.
+  let club = '';
+  if (p?.club) {
+    const k = String(p.club);
+    if (CLUB_KEYS.has(k)) club = k;
+    else {
+      const cr = await base44.asServiceRole.entities.Club.filter({ club_key: k, hidden: false }, '-created_date', 1).catch(() => []);
+      if (Array.isArray(cr) && cr.length) club = k;
+    }
+  }
   const text = String(body || '').trim();
   if (!text) return Response.json({ error: 'Empty post' }, { status: 400 });
   if (text.length > MAX_LEN) return Response.json({ error: 'Post too long' }, { status: 400 });
@@ -126,8 +143,9 @@ Deno.serve(async (req) => {
   if (today >= DAILY_CAP) return Response.json({ error: 'rate', today }, { status: 200 });
 
   const post = await sb.entities.CommunityPost.create({
-    room: circle ? 'circles' : (ROOMS.includes(room) ? room : 'lounge'),
+    room: club ? 'clubs' : circle ? 'circles' : (ROOMS.includes(room) ? room : 'lounge'),
     circle: circle || undefined,
+    club: club || undefined,
     author_hash: String(author_hash),
     body: text,
     comments_mode: comments_mode === 'reaction' ? 'reaction' : 'open',
@@ -139,7 +157,7 @@ Deno.serve(async (req) => {
   if (!post) return Response.json({ error: 'Write failed' }, { status: 500 });
 
   return Response.json({ ok: true, post: {
-    id: post.id, room: post.room, circle: post.circle || null, body: post.body, comments_mode: post.comments_mode,
+    id: post.id, room: post.room, circle: post.circle || null, club: post.club || null, body: post.body, comments_mode: post.comments_mode,
     by: post.by, domain: post.domain || null, created_date: post.created_date,
   } });
 });
