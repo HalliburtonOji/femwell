@@ -131,6 +131,7 @@ function CrisisSheet({ onClose }) {
 // ── one post + its comments ──────────────────────────────────────────────────
 function PostCard({ post, user, onCrisis, onChanged }) {
   const [comments, setComments] = useState(null);   // null = not loaded
+  const [commentsErr, setCommentsErr] = useState(false);   // W5 — distinguish error from empty
   const [open, setOpen] = useState(false);
   const [draft, setDraft] = useState("");
   const [busy, setBusy] = useState(false);
@@ -138,7 +139,9 @@ function PostCard({ post, user, onCrisis, onChanged }) {
   const jessTried = useRef(false);
 
   const loadComments = useCallback(async () => {
-    const rows = await base44.entities.Comment.filter({ post_id: post.id, hidden: false }, "created_date", 100).catch(() => []);
+    let rows;
+    try { rows = await base44.entities.Comment.filter({ post_id: post.id, hidden: false }, "created_date", 100); setCommentsErr(false); }
+    catch (e) { console.error("comments load failed:", e); setCommentsErr(true); setComments([]); return; }
     const list = Array.isArray(rows) ? rows : [];
     setComments(list);
 
@@ -236,7 +239,8 @@ function PostCard({ post, user, onCrisis, onChanged }) {
         {isOpen && open && (
           <div style={{ marginTop: 10 }}>
             {comments === null && <Hand size={16} color={T.muted}>Loading the kind voices…</Hand>}
-            {comments && comments.length === 0 && <Hand size={16} color={T.muted}>{COMMENT_EMPTY}</Hand>}
+            {commentsErr && <Hand size={16} color={T.muted}>Couldn{"’"}t load replies just now. Try again in a moment.</Hand>}
+            {!commentsErr && comments && comments.length === 0 && <Hand size={16} color={T.muted}>{COMMENT_EMPTY}</Hand>}
             {comments && comments.map((c) => (
               c.status === "removed" ? (
                 <div key={c.id} style={{ fontFamily: UI, fontSize: 12, color: T.muted, fontStyle: "italic", padding: "7px 0" }}>{MOD_REMOVED}</div>

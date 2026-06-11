@@ -3,7 +3,7 @@ import { base44 } from "@/api/base44Client";
 import { createPageUrl } from "@/utils";
 import {
   ChevronRight, Bell, Moon, Heart, Shield,
-  Calendar, MapPin, Sparkles, Camera
+  Calendar, MapPin, Sparkles, Camera, Users
 } from "lucide-react";
 import ConditionHealthProfile from "../components/conditions/ConditionHealthProfile";
 import ProfileNavLinks from "../components/profile/ProfileNavLinks";
@@ -677,6 +677,20 @@ export default function Profile() {
           )}
 
           <div style={divider} />
+
+          <div style={divider} />
+
+          {/* W5 — Community link (a door from Profile into the peer space) */}
+          <a href={createPageUrl("Community")} style={rowItem}>
+            <div style={iconBox("var(--rose-dust-subtle)")}>
+              <Users className="w-4 h-4" style={{ color: "var(--rose-dust)" }} />
+            </div>
+            <div className="flex-1">
+              <p style={{ ...bodyText, fontWeight: 600 }}>Community</p>
+              <p style={mutedText}>Anonymous, 18+ — a room everyone&apos;s in</p>
+            </div>
+            <ChevronRight className="w-4 h-4" style={{ color: "var(--border)" }} />
+          </a>
 
           <div style={divider} />
 
