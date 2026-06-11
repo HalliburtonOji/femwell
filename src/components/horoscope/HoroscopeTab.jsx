@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
 import { Sparkles } from "lucide-react";
+import ContentActionBar from "@/components/common/ContentActionBar";
 import {
   getSunSign,
   getSunDegree,
@@ -143,6 +144,17 @@ export default function HoroscopeTab(props) {
           />
           <GoddessBench astro={astro} userProfile={userProfile} reading={reading} />
           <TodaysWeather reading={reading} chart={chart} />
+
+          {/* Connectivity — turn today's sky into a journal prompt or a Lighter-Side
+              talking point. Astrology stays lighter-lane; never a Jess/health frame here. */}
+          <div style={{ padding: "0 4px" }}>
+            <ContentActionBar
+              label="Carry it with you"
+              reflect={{ seed: "What today's sky stirred in me — ", type: "reflection" }}
+              discuss={{ room: "lighter", seed: "Today's stars felt close — anyone else feeling it?" }}
+            />
+          </div>
+
           <CycleMoonDial
             cyclePhase={cyclePhase}
             cycleDay={cycleDay}
