@@ -887,6 +887,14 @@ export default function Onboarding() {
                 {assistantName || "Guide"} is ready to support you. Your feed, guidance, and daily rhythm are now tuned to you.
               </p>
             </div>
+            {/* Connectivity §6.9 — a Tier-0 day-one belonging signal (count-free, opt-in). */}
+            <div style={{ ...card, padding: "16px", textAlign: "left" }}>
+              <p style={{ fontSize: 13, fontWeight: 700, color: "var(--plum)", marginBottom: 6 }}>You're not doing this alone</p>
+              <p style={{ fontSize: 13, color: "var(--plum)", lineHeight: 1.6 }}>
+                There's a Community of women in your season here whenever you want it — anonymous, 18+, no names. Anything you share is private and on your terms; you decide what (if anything) you ever say.
+              </p>
+            </div>
+
             <div style={{ ...card, padding: "16px", textAlign: "left", background: "var(--rose-dust-subtle)", borderColor: "var(--rose-dust-light)" }}>
               <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 8 }}>
                 <p style={{ fontSize: 13, fontWeight: 700, color: "var(--plum)", }}>Meet {assistantName || "Guide"}</p>
