@@ -675,6 +675,36 @@ function CloseWeekCard({ user, onCrisis }) {
   );
 }
 
+// ── Tier-0 belonging: "others in your season" (mega-plan §2.0) ───────────────
+// The smallest, highest-belonging surface. NO count of any kind (k-anon by
+// construction — there is no number to narrow) — purely a warm "you're in
+// company this season" beat, keyed to the viewer's life stage. Zero-moderation,
+// read-only. Hidden gracefully when the stage is unknown.
+const SEASONS = {
+  "teen":           { label: "your early years",        line: "Others finding their feet are here too. You don't have to have it figured out." },
+  "reproductive":   { label: "your cycling years",      line: "Other women riding the same monthly tides are here. You're in good company." },
+  "pre-ttc":        { label: "the before",              line: "Others getting ready, in their own time, are here too. No rush, no race." },
+  "ttc":            { label: "the trying",              line: "Others in the two-week waits and the hoping are here. You're not waiting alone." },
+  "pregnant-t1":    { label: "your first trimester",    line: "Others early in it — the wonder and the worry — are here too." },
+  "pregnant-t2":    { label: "your second trimester",   line: "Others carrying alongside you are here. You're in company." },
+  "pregnant-t3":    { label: "your third trimester",    line: "Others near the end of the wait are here too. Nearly there, together." },
+  "postpartum":     { label: "the fourth trimester",    line: "Others in the newborn fog and the healing are here. You're held." },
+  "perimenopause":  { label: "the shift",               line: "Others naming what no one warned them about are here. You're not imagining it." },
+  "menopause":      { label: "menopause",               line: "Others through it and out the other side are here. Honest, together." },
+  "post-menopause": { label: "beyond menopause",        line: "Others in this next chapter are here too. There's a lot of life in it." },
+};
+
+function SeasonCard({ stage }) {
+  const s = SEASONS[stage];
+  if (!s) return null;
+  return (
+    <section style={{ background: T.paperHi, border: `1px solid ${T.paperDeep}`, borderLeft: `3px solid ${T.gold}`, borderRadius: 4, padding: "13px 16px", marginBottom: 22 }}>
+      <Eyebrow color={T.gold} mb={5}>You're in good company</Eyebrow>
+      <Hand size={17} color={T.inkSoft}>{s.line}</Hand>
+    </section>
+  );
+}
+
 function ClubsCard({ onOpen }) {
   return (
     <button onClick={onOpen} style={{
@@ -689,13 +719,15 @@ function ClubsCard({ onOpen }) {
 }
 
 // ── rooms-as-doors home ──────────────────────────────────────────────────────
-function Home({ presence, onEnter, user, onCrisis }) {
+function Home({ presence, lifeStage, onEnter, user, onCrisis }) {
   return (
     <div>
       <Eyebrow mb={8}>{MASTHEAD.eyebrow}</Eyebrow>
       <Script size={42} style={{ marginBottom: 8 }}>{MASTHEAD.title}</Script>
       <Hand size={19} color={T.inkSoft} style={{ marginBottom: 14 }}>{MASTHEAD.subtitle}</Hand>
       <div style={{ fontFamily: UI, fontSize: 12.5, color: T.muted, fontWeight: 600, marginBottom: 22 }}>{presence}</div>
+
+      <SeasonCard stage={lifeStage} />
 
       <QotdCard user={user} onCrisis={onCrisis} />
 
@@ -1210,7 +1242,14 @@ function CommunityInner() {
   const [crisis, setCrisis] = useState(false);
   const [tick, setTick] = useState(0);
 
+  const [lifeStage, setLifeStage] = useState(null);
+
   useEffect(() => { base44.auth.me().then(setUser).catch(() => setUser(null)); }, []);
+  useEffect(() => {
+    base44.entities.UserProfile.filter({}, "-created_date", 1)
+      .then((r) => setLifeStage(Array.isArray(r) && r[0]?.life_stage ? r[0].life_stage : null))
+      .catch(() => setLifeStage(null));
+  }, []);
 
   const load = useCallback(async () => {
     try {
@@ -1236,7 +1275,7 @@ function CommunityInner() {
       <InkFilter />
       <div style={{ maxWidth: 460, margin: "0 auto", padding: view === "home" ? "30px 18px 50px" : "0 0 50px" }}>
         {view === "home"
-          ? <Home presence={presence} onEnter={setView} user={user} onCrisis={() => setCrisis(true)} />
+          ? <Home presence={presence} lifeStage={lifeStage} onEnter={setView} user={user} onCrisis={() => setCrisis(true)} />
           : view === "wisdom"
           ? <WisdomLibrary onBack={() => setView("home")} />
           : view === "bookclub"
