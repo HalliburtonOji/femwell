@@ -1196,6 +1196,7 @@ function ClubView({ clubKey, user, onCrisis, onBack, clubTitle = "" }) {
   const [joined, setJoined] = useState(() => isClubJoined(clubKey));
   const [posts, setPosts] = useState(null);
   const [composing, setComposing] = useState(false);
+  const [voicing, setVoicing] = useState(false);
   const [busy, setBusy] = useState(false);
 
   const load = useCallback(async () => {
@@ -1259,6 +1260,23 @@ function ClubView({ clubKey, user, onCrisis, onBack, clubTitle = "" }) {
         <RoomComposer room="clubs" club={clubKey} user={user} onCrisis={onCrisis}
           onPosted={() => { setComposing(false); load(); }} onCancel={() => setComposing(false)} />
       )}
+
+      {/* Async voice-notes about the book — gated behind VOICE_NOTES_ENABLED + an STT key.
+          Audio is NEVER delivered unscreened: postVoiceNote HOLDS every note until it's
+          transcribed + screened (crisis + moderation), failing closed with no STT. */}
+      {VOICE_NOTES_ENABLED && joined && (
+        voicing
+          ? <VoiceNoteComposer user={user} surface={`club:${clubKey}`} onCancel={() => setVoicing(false)} />
+          : <button onClick={() => setVoicing(true)} style={{ ...ghostBtn, marginBottom: 16 }}><Mic size={14} /> Leave a voice note about it</button>
+      )}
+
+      {/* Live audio chats — DEFERRED by design (can't pre-moderate live speech; OSA-weighty).
+          Placeholder only; NOT built. */}
+      <section style={{ background: T.paperHi, border: `1px dashed ${T.paperDeep}`, borderRadius: 6, padding: "11px 14px", marginBottom: 16 }}>
+        <Eyebrow color={T.muted} mb={4}>Live audio chats — later</Eyebrow>
+        <Hand size={14.5} color={T.muted}>Scheduled live book chats are on the horizon. They need real-time safety we won't rush — for now it's words, and (soon) voice notes you can listen to.</Hand>
+      </section>
+
 
       {posts === null && <Hand size={18} color={T.muted}>Opening the club…</Hand>}
       {posts === false && <Hand size={18} color={T.muted}>Couldn{"’"}t reach the club just now. Pull down to try again.</Hand>}

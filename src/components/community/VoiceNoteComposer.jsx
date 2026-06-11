@@ -56,7 +56,7 @@ async function maskBlob(blob) {
   } catch (e) { console.error("mask failed, sending unmasked:", e); return blob; }
 }
 
-export default function VoiceNoteComposer({ user, onCancel }) {
+export default function VoiceNoteComposer({ user, onCancel, surface = "community" }) {
   const [phase, setPhase] = useState("idle");   // idle | recording | recorded | posting | held
   const [secs, setSecs] = useState(0);
   const [masked, setMasked] = useState(false);
@@ -124,7 +124,7 @@ export default function VoiceNoteComposer({ user, onCancel }) {
       if (!audio_url) throw new Error("upload failed");
       const wh = await communityHash(user?.id);
       const r = await base44.functions.invoke("postVoiceNote", {
-        user_id: user?.id, author_hash: wh, audio_url, duration_sec: secs, masked, surface: "community",
+        user_id: user?.id, author_hash: wh, audio_url, duration_sec: secs, masked, surface: String(surface).slice(0, 40),
       });
       const d = r?.data ?? r;
       if (!d?.ok) throw new Error("post failed");
