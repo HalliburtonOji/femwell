@@ -12,6 +12,7 @@ import { Link } from "react-router-dom";
 import HealthOverviewSection from "../components/trends/HealthOverviewSection";
 import AIHealthSummaryCard from "../components/trends/AIHealthSummaryCard";
 import PredictiveAnalysisCard from "../components/trends/PredictiveAnalysisCard";
+import ContentActionBar from "@/components/common/ContentActionBar";
 import PeriodCountdownCard from "../components/pulse/PeriodCountdownCard";
 import PatternInsightCards from "../components/pulse/PatternInsightCards";
 import ConditionPulseCards from "../components/conditions/ConditionPulseCards";
@@ -564,6 +565,14 @@ export default function Pulse() {
           symptomLogs={symptomLogs}
           habitLogs={habitLogs}
           cutoffDate={cutoffDate}
+        />
+
+        {/* Connectivity — reflect privately + a count-free belonging door (never your numbers) */}
+        <ContentActionBar
+          label="What now"
+          reflect={{ seed: "A pattern I noticed in myself lately — ", type: "reflection" }}
+          belong="Others in your season"
+          jess="my health patterns lately"
         />
 
         {/* Data source toggle */}

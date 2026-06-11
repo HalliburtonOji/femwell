@@ -24,9 +24,10 @@ import { Link } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { useCycleDay } from "@/hooks/useCycleDay";
 import {
-  BarChart2, Heart, Zap, Activity, Utensils, Pill, Moon, ListChecks,
+  Heart, Zap, Activity, Utensils, Pill, Moon, ListChecks,
   Sparkles, ChevronLeft, ArrowRight,
 } from "lucide-react";
+import ContentActionBar from "@/components/common/ContentActionBar";
 
 const C = {
   cream:      "#F4EDDB",
@@ -395,6 +396,14 @@ export default function HealthDashboard() {
             Chat with Jess <ArrowRight size={14} />
           </Link>
         </article>
+
+        {/* Connectivity — reflect privately + a count-free belonging door (never your numbers) */}
+        <ContentActionBar
+          label="What now"
+          reflect={{ seed: "Looking at my health this month — ", type: "reflection" }}
+          belong="Others in your season"
+        />
+
 
         <p style={{
           margin: "16px 4px 0", fontSize: 11, color: C.muted,

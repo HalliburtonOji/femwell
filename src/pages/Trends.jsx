@@ -10,6 +10,7 @@ import { createPageUrl } from "@/utils";
 import { Link } from "react-router-dom";
 import HealthOverviewSection from "../components/trends/HealthOverviewSection";
 import AIHealthSummaryCard from "../components/trends/AIHealthSummaryCard";
+import ContentActionBar from "@/components/common/ContentActionBar";
 
 // Stress heatmap helpers
 const STRESS_COLORS = ["#ECE7DA","#D8CFBC","#B3A48E","#756450","#2E261B","#0B0805"];
@@ -231,6 +232,14 @@ export default function Trends() {
           symptomLogs={symptomLogs}
           habitLogs={habitLogs}
           cutoffDate={cutoffDate}
+        />
+
+        {/* Connectivity — reflect privately + a count-free belonging door (never your numbers) */}
+        <ContentActionBar
+          label="What now"
+          reflect={{ seed: "A pattern I noticed in myself lately — ", type: "reflection" }}
+          belong="Others in your season"
+          jess="my health trends"
         />
 
         {/* Data source toggle */}
