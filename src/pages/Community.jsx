@@ -316,12 +316,27 @@ function QotdCard({ user, onCrisis }) {
   const [draft, setDraft] = useState("");
   const [answers, setAnswers] = useState(null);
   const [busy, setBusy] = useState(false);
+  const [showThread, setShowThread] = useState(false);
+  const [thread, setThread] = useState(null);   // null=unloaded, false=error, []=none
 
   const loadAnswers = useCallback(async () => {
     const rows = await base44.entities.QotdResponse.filter({ prompt_day: qotd.day, hidden: false }, "-created_date", 30).catch(() => []);
     setAnswers(Array.isArray(rows) ? rows : []);
   }, [qotd.day]);
   useEffect(() => { if (answered) loadAnswers(); }, [answered, loadAnswers]);
+
+  // v2 — your own thread of days: your past answers, gently, with each day's question.
+  // No streak, no count — just a thread of you. Read by your own anonymous author_hash.
+  const loadThread = useCallback(async () => {
+    setShowThread(true);
+    if (thread !== null && thread !== false) return;
+    try {
+      const wh = await communityHash(user?.id);
+      const rows = await base44.entities.QotdResponse.filter({ author_hash: wh }, "-created_date", 40);
+      const list = (Array.isArray(rows) ? rows : []).filter((r) => r.prompt_day !== qotd.day);
+      setThread(list);
+    } catch (e) { console.error("qotd thread failed:", e); setThread(false); }
+  }, [user?.id, qotd.day, thread]);
 
   const send = async () => {
     const text = draft.trim();
@@ -359,6 +374,28 @@ function QotdCard({ user, onCrisis }) {
               <Hand size={17} color={T.inkSoft}>{a.body}</Hand>
             </div>
           ))}
+
+          {/* v2 — your own thread of days (gentle archive, no streak/count) */}
+          <div style={{ marginTop: 12, paddingTop: 10, borderTop: `1px solid ${T.paperDeep}` }}>
+            {!showThread ? (
+              <button onClick={loadThread} style={{ background: "transparent", border: "none", cursor: "pointer", fontFamily: UI, fontSize: 12, fontWeight: 700, color: T.muted, display: "inline-flex", alignItems: "center", gap: 6, padding: 0 }}>
+                <MessageCircle size={13} /> See your thread of days
+              </button>
+            ) : (
+              <>
+                <Eyebrow color={T.gold} mb={8}>Your thread of days</Eyebrow>
+                {thread === null && <Hand size={16} color={T.muted}>Gathering your days…</Hand>}
+                {thread === false && <Hand size={16} color={T.muted}>Couldn{"’"}t reach your thread just now.</Hand>}
+                {thread && thread.length === 0 && <Hand size={16} color={T.muted}>Today is the first thread of yours. More will gather, gently.</Hand>}
+                {thread && thread.map((r) => (
+                  <div key={r.id} style={{ borderTop: `1px solid ${T.paperDeep}`, padding: "9px 0" }}>
+                    <div style={{ fontFamily: UI, fontSize: 10.5, color: T.muted, letterSpacing: 0.3, marginBottom: 3 }}>{qotdForDay(r.prompt_day).text}</div>
+                    <Hand size={17} color={T.inkSoft}>{r.body}</Hand>
+                  </div>
+                ))}
+              </>
+            )}
+          </div>
         </>
       )}
     </section>
@@ -521,6 +558,9 @@ function WisdomLibrary({ onBack }) {
       </div>
 
       {rows === null && <Hand size={17} color={T.muted}>Gathering the collection…</Hand>}
+      {rows !== null && shown.length === 0 && (
+        <Hand size={17} color={T.muted}>No lines under {topic} yet — they gather over time. Try another, or read them all.</Hand>
+      )}
       {shown.map((w, i) => (
         <div key={i} style={{ borderLeft: `2px solid ${T.gold}`, padding: "4px 0 4px 14px", marginBottom: 18 }}>
           <div style={{ fontFamily: HANDFAM, fontStyle: "italic", fontSize: 19, lineHeight: 1.45, color: T.ink }}>{w.body}</div>
@@ -788,12 +828,27 @@ function CircleCard({ circle, joined, onOpen }) {
 function CirclesDirectory({ onOpen }) {
   const [, force] = useState(0);   // re-render after join-state changes elsewhere
   useEffect(() => { force((n) => n + 1); }, []);
+  const mine = CIRCLES.filter((c) => isJoined(c.key));   // v2 — your circles, device-local
   return (
     <div>
       <Script size={30} style={{ marginBottom: 4 }}>Circles</Script>
       <Hand size={17} color={T.muted} style={{ marginBottom: 18 }}>
         Smaller rooms by what you're living and what you love. Lurk freely; join the ones that are yours.
       </Hand>
+      {mine.length > 0 && (
+        <div style={{ marginBottom: 20 }}>
+          <Eyebrow color={T.gold} mb={8}>Circles you're in</Eyebrow>
+          <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+            {mine.map((c) => (
+              <button key={c.key} onClick={() => onOpen(c.key)} style={{
+                fontFamily: UI, fontSize: 12, fontWeight: 700, letterSpacing: 0.2, cursor: "pointer",
+                padding: "7px 13px", borderRadius: 999, border: `1px solid ${T.gold}`,
+                background: T.paper, color: T.ink, display: "inline-flex", alignItems: "center", gap: 5,
+              }}><Check size={12} color={T.gold} /> {c.name}</button>
+            ))}
+          </div>
+        </div>
+      )}
       {CIRCLE_CATEGORIES.map((cat) => (
         <div key={cat} style={{ marginBottom: 18 }}>
           <Eyebrow color={T.gold} mb={8}>{cat}</Eyebrow>
@@ -815,8 +870,10 @@ function CircleView({ circleKey, user, onCrisis, onBack }) {
   const [busy, setBusy] = useState(false);
 
   const load = useCallback(async () => {
-    const rows = await base44.entities.CommunityPost.filter({ circle: circleKey, hidden: false }, "-created_date", 100).catch(() => []);
-    setPosts(Array.isArray(rows) ? rows : []);
+    try {
+      const rows = await base44.entities.CommunityPost.filter({ circle: circleKey, hidden: false }, "-created_date", 100);
+      setPosts(Array.isArray(rows) ? rows : []);
+    } catch (e) { console.error("circle feed failed:", e); setPosts(false); }
   }, [circleKey]);
   useEffect(() => { load(); }, [load]);
 
@@ -877,6 +934,7 @@ function CircleView({ circleKey, user, onCrisis, onBack }) {
       )}
 
       {posts === null && <Hand size={18} color={T.muted}>Opening the circle…</Hand>}
+      {posts === false && <Hand size={18} color={T.muted}>Couldn{"’"}t reach the circle just now. Pull down to try again.</Hand>}
       {posts && posts.length === 0 && (
         <Hand size={18} color={T.inkSoft}>Quiet in here so far. {joined ? "Leave the first word — someone always comes by." : "Join to leave the first word."}</Hand>
       )}
@@ -922,6 +980,20 @@ function ClubsDirectory({ onOpen, onBack }) {
       <Hand size={17} color={T.muted} style={{ marginBottom: 18 }}>
         Small groups for doing a thing together — hosted by Jess. Lurk freely; join the ones that are yours.
       </Hand>
+      {CLUBS.filter((c) => isClubJoined(c.key)).length > 0 && (
+        <div style={{ marginBottom: 20 }}>
+          <Eyebrow color={T.gold} mb={8}>Clubs you're in</Eyebrow>
+          <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+            {CLUBS.filter((c) => isClubJoined(c.key)).map((c) => (
+              <button key={c.key} onClick={() => onOpen(c.key)} style={{
+                fontFamily: UI, fontSize: 12, fontWeight: 700, letterSpacing: 0.2, cursor: "pointer",
+                padding: "7px 13px", borderRadius: 999, border: `1px solid ${T.gold}`,
+                background: T.paper, color: T.ink, display: "inline-flex", alignItems: "center", gap: 5,
+              }}><Check size={12} color={T.gold} /> {c.name}</button>
+            ))}
+          </div>
+        </div>
+      )}
       {CLUB_CATEGORIES.map((cat) => {
         const inCat = CLUBS.filter((c) => c.category === cat);
         if (!inCat.length) return null;
@@ -955,8 +1027,10 @@ function ClubView({ clubKey, user, onCrisis, onBack }) {
   const [busy, setBusy] = useState(false);
 
   const load = useCallback(async () => {
-    const rows = await base44.entities.CommunityPost.filter({ club: clubKey, hidden: false }, "-created_date", 100).catch(() => []);
-    setPosts(Array.isArray(rows) ? rows : []);
+    try {
+      const rows = await base44.entities.CommunityPost.filter({ club: clubKey, hidden: false }, "-created_date", 100);
+      setPosts(Array.isArray(rows) ? rows : []);
+    } catch (e) { console.error("club feed failed:", e); setPosts(false); }
   }, [clubKey]);
   useEffect(() => { load(); }, [load]);
 
@@ -1005,6 +1079,7 @@ function ClubView({ clubKey, user, onCrisis, onBack }) {
       )}
 
       {posts === null && <Hand size={18} color={T.muted}>Opening the club…</Hand>}
+      {posts === false && <Hand size={18} color={T.muted}>Couldn{"’"}t reach the club just now. Pull down to try again.</Hand>}
       {posts && posts.length === 0 && (
         <Hand size={18} color={T.inkSoft}>Quiet in here so far. {joined ? "Leave the first word — Jess and the others come by." : "Join to leave the first word."}</Hand>
       )}
@@ -1061,7 +1136,7 @@ function GamesView({ user, onCrisis }) {
   );
 }
 
-function RoomView({ roomKey, posts, loading, user, onNav, onCrisis, onReload }) {
+function RoomView({ roomKey, posts, loading, error, user, onNav, onCrisis, onReload }) {
   const [composing, setComposing] = useState(false);
   const [voicing, setVoicing] = useState(false);
   const room = ROOMS.find((r) => r.key === roomKey) || ROOMS[0];
@@ -1108,10 +1183,13 @@ function RoomView({ roomKey, posts, loading, user, onNav, onCrisis, onReload }) 
         )}
 
         {loading && <Hand size={18} color={T.muted}>Opening the room…</Hand>}
-        {!loading && feed.length === 0 && (
+        {!loading && error && (
+          <Hand size={18} color={T.muted}>Couldn{"’"}t reach the rooms just now. Check your connection and try again.</Hand>
+        )}
+        {!loading && !error && feed.length === 0 && (
           <Hand size={18} color={T.inkSoft}>Quiet in here right now. Leave the first word — someone always comes by.</Hand>
         )}
-        {!loading && feed.map((p) => (
+        {!loading && !error && feed.map((p) => (
           <PostCard key={p.id} post={p} user={user} onCrisis={onCrisis} onChanged={onReload} />
         ))}
         </>
@@ -1128,15 +1206,19 @@ function CommunityInner() {
   const [view, setView] = useState("home");      // "home" | room key
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [loadErr, setLoadErr] = useState(false);
   const [crisis, setCrisis] = useState(false);
   const [tick, setTick] = useState(0);
 
   useEffect(() => { base44.auth.me().then(setUser).catch(() => setUser(null)); }, []);
 
   const load = useCallback(async () => {
-    const rows = await base44.entities.CommunityPost.filter({ hidden: false }, "-created_date", 200).catch(() => []);
-    setPosts(Array.isArray(rows) ? rows : []);
-    setLoading(false);
+    try {
+      const rows = await base44.entities.CommunityPost.filter({ hidden: false }, "-created_date", 200);
+      setPosts(Array.isArray(rows) ? rows : []);
+      setLoadErr(false);
+    } catch (e) { console.error("community feed failed:", e); setLoadErr(true); }
+    finally { setLoading(false); }
   }, []);
   useEffect(() => { load(); }, [load]);
 
@@ -1161,7 +1243,7 @@ function CommunityInner() {
           ? <BookClubView user={user} onCrisis={() => setCrisis(true)} onBack={() => setView("library")} />
           : view === "clubs"
           ? <div style={{ padding: "30px 18px 50px" }}><ClubsView user={user} onCrisis={() => setCrisis(true)} onBack={() => setView("home")} /></div>
-          : <RoomView key={tick} roomKey={view} posts={posts} loading={loading} user={user} onNav={setView} onCrisis={() => setCrisis(true)} onReload={reload} />}
+          : <RoomView key={tick} roomKey={view} posts={posts} loading={loading} error={loadErr} user={user} onNav={setView} onCrisis={() => setCrisis(true)} onReload={reload} />}
         {view === "home" && (
           <>
             <Rule mt={30} mb={14} />

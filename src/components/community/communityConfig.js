@@ -53,12 +53,19 @@ export function qotdForDay(dateISO) {
 
 // ── k-anon presence — bucketed, never an identifying count ───────────────────
 // We NEVER show an exact small number. 0 = quiet · 1-4 = "a few" · 5+ = "several".
-export function presenceLine(activeCount) {
+// v2: warmer + gently time-aware (evening = "tonight", otherwise "today"). Still purely
+// bucketed — the wording never narrows to an identifying number.
+export function presenceLine(activeCount, now) {
   const n = Number(activeCount) || 0;
-  if (n <= 0) return "It's quiet here right now — a good time to leave the first word.";
-  if (n < 5) return "A few women are around right now — you're not the only one here.";
-  if (n < 15) return "Several women are here tonight. You're in company.";
-  return "The rooms are busy tonight — plenty of company, no names.";
+  const hr = (now instanceof Date ? now : new Date()).getHours();
+  const evening = hr >= 18 || hr < 5;
+  const when = evening ? "tonight" : "today";
+  if (n <= 0) return evening
+    ? "It's quiet here tonight — a good time to leave the first word for whoever comes next."
+    : "It's quiet here right now — a good time to leave the first word.";
+  if (n < 5) return `A few women are around ${when} — you're not the only one here.`;
+  if (n < 15) return `Several women are here ${when}. You're in good company.`;
+  return `The rooms are full of women ${when} — plenty of company, no names, no count.`;
 }
 
 // Re-export the proven Journal crisis check so Community matches it exactly.
