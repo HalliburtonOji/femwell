@@ -40,6 +40,32 @@ export const CIRCLE_CATEGORIES = ["Life stages", "Living with", "Shared loves"];
 export const CIRCLE_KEYS = CIRCLES.map((c) => c.key);
 export const circleByKey = (key) => CIRCLES.find((c) => c.key === key) || null;
 
+// Connectivity P6 — suggest circles from the profile's life_stage + interests
+// (followed_categories), so onboarding/Profile taste feeds Circle discovery.
+const STAGE_TO_CIRCLE = {
+  ttc: "ttc", "pre-ttc": "ttc",
+  "pregnant-t1": "pregnancy", "pregnant-t2": "pregnancy", "pregnant-t3": "pregnancy", pregnant: "pregnancy",
+  postpartum: "postpartum", perimenopause: "perimenopause",
+  menopause: "menopause", "post-menopause": "menopause",
+};
+const INTEREST_TO_CIRCLE = {
+  books: "books", reading: "books", book: "books",
+  career: "career", work: "career", money: "career", finance: "career",
+  creativity: "creativity", art: "creativity", craft: "creativity", creative: "creativity",
+  movement: "movement", fitness: "movement", walking: "movement", walks: "movement", exercise: "movement", yoga: "movement",
+};
+export function suggestedCircles(profile) {
+  const keys = new Set();
+  const stage = profile?.life_stage;
+  if (stage && STAGE_TO_CIRCLE[stage]) keys.add(STAGE_TO_CIRCLE[stage]);
+  const interests = Array.isArray(profile?.followed_categories) ? profile.followed_categories : [];
+  for (const raw of interests) {
+    const k = INTEREST_TO_CIRCLE[String(raw || "").toLowerCase()];
+    if (k) keys.add(k);
+  }
+  return [...keys].map(circleByKey).filter(Boolean);
+}
+
 // The careful, consent-first note shown before joining a special-category circle.
 export const SENSITIVE_CONSENT = (name) =>
   `This circle gathers people living with ${name}. What's shared here is sensitive — post anonymously, never anything that could identify you. Joining is your choice, and you can leave any time.`;

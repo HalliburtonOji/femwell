@@ -39,7 +39,7 @@ import VoiceNoteComposer from "@/components/community/VoiceNoteComposer";
 import EchoWall from "@/components/journal/echo/EchoWall";
 import {
   CIRCLES, CIRCLE_CATEGORIES, circleByKey, SENSITIVE_CONSENT,
-  isJoined, markJoined, clearJoined,
+  isJoined, markJoined, clearJoined, suggestedCircles,
 } from "@/components/community/circlesConfig";
 import {
   CLUBS, CLUB_CATEGORIES, clubByKey, CLUBS_USER_CREATE_ENABLED,
@@ -914,10 +914,11 @@ function CircleCard({ circle, joined, onOpen }) {
   );
 }
 
-function CirclesDirectory({ onOpen }) {
+function CirclesDirectory({ onOpen, profile = null }) {
   const [, force] = useState(0);   // re-render after join-state changes elsewhere
   useEffect(() => { force((n) => n + 1); }, []);
   const mine = CIRCLES.filter((c) => isJoined(c.key));   // v2 — your circles, device-local
+  const suggested = suggestedCircles(profile).filter((c) => !isJoined(c.key));   // P6 — from stage + interests
   return (
     <div>
       <Script size={30} style={{ marginBottom: 4 }}>Circles</Script>
@@ -936,6 +937,14 @@ function CirclesDirectory({ onOpen }) {
               }}><Check size={12} color={T.gold} /> {c.name}</button>
             ))}
           </div>
+        </div>
+      )}
+      {suggested.length > 0 && (
+        <div style={{ marginBottom: 20 }}>
+          <Eyebrow color={T.gold} mb={8}>Suggested for you</Eyebrow>
+          {suggested.map((c) => (
+            <CircleCard key={c.key} circle={c} joined={false} onOpen={onOpen} />
+          ))}
         </div>
       )}
       {CIRCLE_CATEGORIES.map((cat) => (
@@ -1034,11 +1043,11 @@ function CircleView({ circleKey, user, onCrisis, onBack }) {
   );
 }
 
-function CirclesView({ user, onCrisis, initialActive = null }) {
+function CirclesView({ user, onCrisis, initialActive = null, profile = null }) {
   const [active, setActive] = useState(initialActive);   // null = directory; else circle key
   return active
     ? <CircleView circleKey={active} user={user} onCrisis={onCrisis} onBack={() => setActive(null)} />
-    : <CirclesDirectory onOpen={setActive} />;
+    : <CirclesDirectory onOpen={setActive} profile={profile} />;
 }
 
 // ── Clubs — "what you do together" (Jess-hosted; member-created flagged off) ──
@@ -1225,7 +1234,7 @@ function GamesView({ user, onCrisis }) {
   );
 }
 
-function RoomView({ roomKey, posts, loading, error, user, onNav, onCrisis, onReload, seed = "", initialCircle = null }) {
+function RoomView({ roomKey, posts, loading, error, user, onNav, onCrisis, onReload, seed = "", initialCircle = null, profile = null }) {
   const [composing, setComposing] = useState(() => !!seed);
   const [voicing, setVoicing] = useState(false);
   const room = ROOMS.find((r) => r.key === roomKey) || ROOMS[0];
@@ -1246,7 +1255,7 @@ function RoomView({ roomKey, posts, loading, error, user, onNav, onCrisis, onRel
 
       <div style={{ padding: "20px 18px 60px" }}>
         {roomKey === "circles" ? (
-          <CirclesView user={user} onCrisis={onCrisis} initialActive={initialCircle} />
+          <CirclesView user={user} onCrisis={onCrisis} initialActive={initialCircle} profile={profile} />
         ) : roomKey === "library" ? (
           <LibraryView user={user} onCrisis={onCrisis} onNav={onNav} />
         ) : roomKey === "games" ? (
@@ -1365,7 +1374,7 @@ function CommunityInner() {
               <button onClick={() => setView("home")} style={{ ...ghostBtn, marginBottom: 14, padding: "7px 11px" }}><ChevronLeft size={14} /> Community</button>
               <EchoWall user={user} profile={profile} lifeStage={lifeStage} />
             </div>
-          : <RoomView key={tick} roomKey={view} posts={posts} loading={loading} error={loadErr} user={user} onNav={setView} onCrisis={() => setCrisis(true)} onReload={reload} seed={roomSeed} initialCircle={initialCircle} />}
+          : <RoomView key={tick} roomKey={view} posts={posts} loading={loading} error={loadErr} user={user} onNav={setView} onCrisis={() => setCrisis(true)} onReload={reload} seed={roomSeed} initialCircle={initialCircle} profile={profile} />}
         {view === "home" && (
           <>
             <Rule mt={30} mb={14} />
