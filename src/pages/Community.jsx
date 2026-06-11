@@ -756,7 +756,7 @@ function ClubsCard({ onOpen }) {
 }
 
 // ── rooms-as-doors home ──────────────────────────────────────────────────────
-function Home({ presence, lifeStage, onEnter, user, onCrisis }) {
+function Home({ presence, lifeStage, onEnter, user, onCrisis, onShareTo }) {
   return (
     <div>
       <Eyebrow mb={8}>{MASTHEAD.eyebrow}</Eyebrow>
@@ -765,6 +765,17 @@ function Home({ presence, lifeStage, onEnter, user, onCrisis }) {
       <div style={{ fontFamily: UI, fontSize: 12.5, color: T.muted, fontWeight: 600, marginBottom: 22 }}>{presence}</div>
 
       <SeasonCard stage={lifeStage} />
+
+      {onShareTo && (
+        <button onClick={onShareTo} style={{
+          display: "flex", alignItems: "center", gap: 8, width: "100%", justifyContent: "center",
+          marginBottom: 22, padding: "11px 14px", cursor: "pointer",
+          background: "transparent", border: `1px solid ${T.paperDeep}`, borderRadius: 999,
+          fontFamily: UI, fontSize: 12.5, fontWeight: 700, color: T.inkSoft,
+        }}>
+          <Send size={14} style={{ color: T.gold }} /> Share a thought to one of your spaces
+        </button>
+      )}
 
       <EchoCard onOpen={() => onEnter("echo")} />
 
@@ -1443,6 +1454,88 @@ function RoomView({ roomKey, posts, loading, error, user, onNav, onCrisis, onRel
 }
 
 // ── inner (after the age gate) ───────────────────────────────────────────────
+// ── Track 1 — the unified "Share to…" sheet (internal, anonymous-first) ──────
+// One thought → a safe space of your choosing: a Circle or Club you're in (posted
+// via the same moderated createCommunityPost path), the Echo Wall, or a 1:1 Witness
+// (these two open in the Journal where the on-device scrub / encryption lives). Nothing
+// leaves the app. Crisis-checked on every input.
+function ShareToSheet({ user, onClose }) {
+  const [text, setText] = useState("");
+  const [dest, setDest] = useState(null);   // { type:'circle'|'club', key, name }
+  const [busy, setBusy] = useState(false);
+  const [done, setDone] = useState(false);
+  const myCircles = CIRCLES.filter((c) => isJoined(c.key));
+  const myClubs = CLUBS.filter((c) => isClubJoined(c.key));
+
+  const post = async () => {
+    const body = text.trim();
+    if (!body || !dest || busy) return;
+    if (crisisCheck(body).intercept) { onClose(); return; }
+    setBusy(true);
+    try {
+      const wh = await communityHash(user?.id);
+      const payload = { user_id: user?.id, author_hash: wh, body, comments_mode: "open" };
+      if (dest.type === "circle") payload.circle = dest.key; else payload.club = dest.key;
+      await base44.functions.invoke("createCommunityPost", payload);
+      setDone(true);
+    } catch (e) { console.error("share-to failed:", e); }
+    finally { setBusy(false); }
+  };
+
+  return (
+    <div onClick={onClose} style={{ position: "fixed", inset: 0, zIndex: 2000, background: "rgba(36,26,38,0.45)", display: "flex", alignItems: "flex-end", justifyContent: "center" }}>
+      <div onClick={(e) => e.stopPropagation()} role="dialog" aria-label="Share to a space" style={{ width: "100%", maxWidth: 460, background: T.paper, borderRadius: "14px 14px 0 0", padding: "20px 18px 28px", maxHeight: "88vh", overflowY: "auto" }}>
+        <Eyebrow color={T.gold} mb={8}>Share to…</Eyebrow>
+        {done ? (
+          <>
+            <Hand size={19} color={T.ink} style={{ marginBottom: 14 }}>It's shared with {dest?.name}. Held there, on your terms.</Hand>
+            <button onClick={onClose} style={{ ...primaryBtn }}><Check size={14} /> Done</button>
+          </>
+        ) : (
+          <>
+            <Hand size={17} color={T.muted} style={{ marginBottom: 12 }}>A thought, into a space that's yours. Anonymous — no names, ever.</Hand>
+            <textarea value={text} onChange={(e) => setText(e.target.value)} maxLength={POST_MAX} placeholder="Say it plainly…" style={{ ...inputStyle, minHeight: 84, marginBottom: 12 }} />
+
+            {(myCircles.length > 0 || myClubs.length > 0) ? (
+              <>
+                <div style={{ fontFamily: UI, fontSize: 11, fontWeight: 700, letterSpacing: ".06em", textTransform: "uppercase", color: T.muted, marginBottom: 7 }}>Your spaces</div>
+                <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 14 }}>
+                  {myCircles.map((c) => (
+                    <DestChip key={"ci" + c.key} active={dest?.key === c.key} label={c.name} onClick={() => setDest({ type: "circle", key: c.key, name: c.name })} />
+                  ))}
+                  {myClubs.map((c) => (
+                    <DestChip key={"cl" + c.key} active={dest?.key === c.key} label={c.name} onClick={() => setDest({ type: "club", key: c.key, name: c.name })} />
+                  ))}
+                </div>
+                <button onClick={post} disabled={!text.trim() || !dest || busy} style={{ ...primaryBtn, opacity: (!text.trim() || !dest || busy) ? 0.5 : 1, marginBottom: 16 }}>
+                  <Send size={14} /> {busy ? "Sharing…" : dest ? `Share to ${dest.name}` : "Pick a space"}
+                </button>
+              </>
+            ) : (
+              <Hand size={15.5} color={T.muted} style={{ marginBottom: 14 }}>Join a Circle or Club first, and you can share a thought straight into it.</Hand>
+            )}
+
+            <div style={{ fontFamily: UI, fontSize: 11, fontWeight: 700, letterSpacing: ".06em", textTransform: "uppercase", color: T.muted, marginBottom: 7 }}>Or, more privately</div>
+            <Link to={createPageUrl("Journal?compose=1")} style={{ ...ghostBtn, textDecoration: "none", display: "inline-flex", marginRight: 8, marginBottom: 8 }}><Waves size={13} /> The Echo Wall (in your Journal)</Link>
+            <Link to={createPageUrl("Journal?open=witness")} style={{ ...ghostBtn, textDecoration: "none", display: "inline-flex", marginBottom: 8 }}><HeartHandshake size={13} /> Ask a witness</Link>
+            <div style={{ fontFamily: UI, fontSize: 10.5, color: T.muted, marginTop: 8, lineHeight: 1.5 }}>The Echo Wall scrubs your line and a witness encrypts it — both happen in your Journal, on your device.</div>
+            <button onClick={onClose} style={{ ...ghostBtn, border: "none", marginTop: 8 }}>Cancel</button>
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function DestChip({ active, label, onClick }) {
+  return (
+    <button onClick={onClick} style={{
+      fontFamily: UI, fontSize: 12, fontWeight: 700, cursor: "pointer", padding: "7px 13px", borderRadius: 999,
+      border: `1px solid ${active ? T.gold : T.paperDeep}`, background: active ? T.paper : "transparent", color: active ? T.ink : T.muted,
+    }}>{label}</button>
+  );
+}
+
 function CommunityInner() {
   useEditorialFonts();
   const [user, setUser] = useState(null);
@@ -1451,6 +1544,7 @@ function CommunityInner() {
   const [loading, setLoading] = useState(true);
   const [loadErr, setLoadErr] = useState(false);
   const [crisis, setCrisis] = useState(false);
+  const [shareTo, setShareTo] = useState(false);
   const [tick, setTick] = useState(0);
 
   const [lifeStage, setLifeStage] = useState(null);
@@ -1515,7 +1609,7 @@ function CommunityInner() {
       <InkFilter />
       <div style={{ maxWidth: 460, margin: "0 auto", padding: view === "home" ? "30px 18px 50px" : "0 0 50px" }}>
         {view === "home"
-          ? <Home presence={presence} lifeStage={lifeStage} onEnter={setView} user={user} onCrisis={() => setCrisis(true)} />
+          ? <Home presence={presence} lifeStage={lifeStage} onEnter={setView} user={user} onCrisis={() => setCrisis(true)} onShareTo={() => setShareTo(true)} />
           : view === "wisdom"
           ? <WisdomLibrary onBack={() => setView("home")} />
           : view === "bookclub"
@@ -1538,6 +1632,7 @@ function CommunityInner() {
         )}
       </div>
       {crisis && <CrisisSheet onClose={() => setCrisis(false)} />}
+      {shareTo && <ShareToSheet user={user} onClose={() => setShareTo(false)} />}
     </div>
   );
 }
