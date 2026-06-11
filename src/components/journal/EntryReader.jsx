@@ -10,6 +10,7 @@ import { T, UI, SERIF, HAND, PRESS, Eyebrow, Rule, useEscape } from "./Editorial
 import { relativeDate } from "./journalDates";
 import { TYPE_COLOUR, TYPE_LABEL } from "./JournalLedger";
 import UnpackWithJess from "./UnpackWithJess";
+import ShareButton from "@/components/share/ShareButton";
 
 const MOOD_WORD = { 1: "Low", 2: "Down", 3: "Neutral", 4: "Good", 5: "Bright" };
 
@@ -39,6 +40,33 @@ function Body({ entry }) {
     );
   }
   return <p style={base}>{entry.text || "(no words yet)"}</p>;
+}
+
+// OwnWordsShare — the ONE personal external-share case: the user's OWN words, by explicit
+// opt-in, as a card. Everything else in the Journal stays inside the app (THE WALL). The
+// guard (assertExternallyShareable) requires optIn:true for kind "own-words".
+function OwnWordsShare({ entry }) {
+  const [opt, setOpt] = useState(false);
+  const line = (entry.text || "").trim().replace(/\s+/g, " ").slice(0, 240);
+  return (
+    <div style={{ marginTop: 18, paddingTop: 14, borderTop: `1px solid ${T.paperDeep}` }}>
+      {!opt ? (
+        <button onClick={() => setOpt(true)} style={{ background: "transparent", border: "none", cursor: "pointer", fontFamily: UI, fontSize: 12, fontWeight: 700, color: T.muted, display: "inline-flex", alignItems: "center", gap: 6, padding: 0 }}>
+          <Send size={13} /> Share a line of your own, outside the app
+        </button>
+      ) : (
+        <div>
+          <div style={{ fontFamily: UI, fontSize: 11.5, color: T.muted, lineHeight: 1.5, marginBottom: 10 }}>
+            This makes a card of <b>your own words only</b> — nothing else from your journal, and never anyone else's. Only you can do this, and only when you choose to.
+          </div>
+          <ShareButton label="Make a card of these words" artifact={{
+            kind: "own-words", source: "own", optIn: true, line,
+            footer: "In my words", url: "https://femwells.com", shareText: "",
+          }} />
+        </div>
+      )}
+    </div>
+  );
 }
 
 export default function EntryReader({ entry, profile, phase, onClose, onEdit, onDelete, onPin, onShare }) {
@@ -107,6 +135,8 @@ export default function EntryReader({ entry, profile, phase, onClose, onEdit, on
         </div>
 
         {unpack && <UnpackWithJess entry={entry} profile={profile} phase={phase} />}
+
+        {(entry.text || "").trim() && <OwnWordsShare entry={entry} />}
       </div>
     </div>
   );
