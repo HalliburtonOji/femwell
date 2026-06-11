@@ -1,0 +1,171 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>FemWell — Community Integration Audit</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Ephesis&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --cream:#F4EDDB; --paper:#FBF6E6; --paperHi:#F8F2E4; --page:#ECE7DA;
+    --ink:#2E261B; --inkSoft:#5b4f3e; --plum:#4A2A3A; --plumMid:#7B5E6B;
+    --rose:#C4849A; --sage:#6B8F5A; --gold:#A6862B; --red:#BC2E27;
+    --rule:rgba(58,44,26,0.12);
+    --sans:ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;
+    --serif:"Cormorant Garamond","Georgia",serif;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--page);color:var(--ink);font-family:var(--serif);line-height:1.6;}
+  .wrap{max-width:820px;margin:0 auto;padding:28px 18px 72px;}
+  .eyebrow{font-family:var(--sans);font-size:11px;letter-spacing:.2em;text-transform:uppercase;font-weight:700;color:var(--gold);margin:0 0 6px;}
+  h1{font-size:33px;line-height:1.1;margin:6px 0 8px;color:var(--plum);font-weight:600;}
+  .sub{font-family:var(--sans);font-size:13.5px;color:var(--inkSoft);margin:0 0 4px;line-height:1.55;}
+  h2{font-size:24px;font-weight:600;color:var(--plum);margin:34px 0 6px;line-height:1.18;border-bottom:2px solid var(--rule);padding-bottom:6px;}
+  h3{font-size:18px;font-weight:600;color:var(--ink);margin:20px 0 2px;}
+  p{font-size:16px;margin:8px 0;}
+  ul{margin:8px 0;padding-left:0;list-style:none;}
+  li{display:flex;gap:10px;align-items:flex-start;margin:6px 0;font-size:15px;line-height:1.5;}
+  li::before{content:"";width:6px;height:6px;border-radius:99px;background:var(--gold);margin-top:9px;flex-shrink:0;}
+  .card{background:var(--paper);border:1px solid var(--rule);border-left:3px solid var(--gold);border-radius:12px;padding:14px 16px;margin:14px 0;}
+  .card.red{border-left-color:var(--red);} .card.plum{border-left-color:var(--plum);} .card.sage{border-left-color:var(--sage);}
+  blockquote{margin:16px 0;padding:14px 16px;background:var(--cream);border-radius:10px;border-left:3px solid var(--rose);font-style:italic;font-size:17px;color:var(--plum);}
+  .badge{display:inline-block;border-radius:99px;padding:2px 9px;font-size:11px;font-weight:700;font-family:var(--sans);color:#fff;white-space:nowrap;vertical-align:middle;}
+  .b-crit{background:var(--red);} .b-high{background:var(--gold);} .b-med{background:var(--plumMid);} .b-low{background:var(--sage);}
+  .b-build{background:var(--sage);} .b-decide{background:var(--plum);}
+  .st{font-family:var(--sans);font-size:11px;font-weight:700;letter-spacing:.05em;padding:1px 7px;border-radius:5px;}
+  .wired{background:#e3efe0;color:#3c6b32;} .partial{background:#f6ecd2;color:#7a5e16;} .missing{background:#f3dcd9;color:#9c2a23;}
+  table{width:100%;border-collapse:collapse;font-family:var(--sans);font-size:12.5px;margin:12px 0;}
+  th{text-align:left;padding:7px 9px;background:var(--paperHi);color:var(--inkSoft);font-size:11px;letter-spacing:.5px;text-transform:uppercase;border-bottom:1px solid var(--rule);}
+  td{padding:7px 9px;border-bottom:1px solid var(--rule);vertical-align:top;}
+  .tablewrap{overflow-x:auto;}
+  .key{font-family:var(--sans);font-size:13px;color:var(--inkSoft);margin:10px 0 0;}
+  .foot{margin-top:40px;border-top:2px solid var(--rule);padding-top:14px;font-family:var(--sans);font-size:12.5px;color:var(--inkSoft);}
+  code{font-family:ui-monospace,Menlo,monospace;font-size:12.5px;background:var(--paperHi);padding:1px 5px;border-radius:4px;color:var(--plum);}
+  .lede{font-size:18px;}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="eyebrow">FemWell · Community · Cross-surface integration audit</div>
+  <h1>How well is Community connected?</h1>
+  <p class="sub">Maps how the live <code>/Community</code> actually connects to every other surface vs. the intended connections in COMMUNITY_MEGA_PLAN §6. Evidence-based (file:line, 4-agent code sweep). Each gap tagged by severity + <span class="badge b-build">BUILD</span> (clear fix) vs <span class="badge b-decide">DECISION</span> (needs Halli). Dated 2026-06-11.</p>
+
+  <div class="card red">
+    <p class="lede" style="margin-top:0"><b>Headline:</b> the bones are wired — Community is reachable, the rooms/QOTD/Clubs/Book-Club work, and the <b>Doctor's Export privacy contract holds (no peer-content leak)</b>. But Community is <b>siloed from the peer features the mega-plan calls its spine</b>: the <b>Echo Wall is displayed nowhere live</b> (echoes are written but never readable), and Witness, Phase Twin, Today, and the Jess assistant have <b>no entry points to/from Community</b>. Five clear build-wins + a short decision list below.</p>
+  </div>
+
+  <h2>The one that matters most — the Echo Wall is dark</h2>
+  <div class="card red">
+    <p style="margin-top:0"><span class="badge b-crit">CRITICAL</span> <span class="badge b-build">BUILD</span> &nbsp; <b>The Echo Wall is mounted nowhere in the live app.</b></p>
+    <p>The Journal can <i>write</i> an echo (FourLivesChooser → <code>ShareAsEchoSheet</code> → <code>postEcho</code>, wired). But the wall that <i>displays</i> echoes — the built <code>src/components/journal/echo/EchoWall.jsx</code> — is rendered <b>only inside <code>CommunityDemo3.jsx</code></b> (a FoundersOS demo). No live page calls <code>Echo.filter</code>. So a woman can share a line into the void, and <b>no one — not even she — can ever read the wall.</b> The core "share-as-echo → wall" loop is broken; it was dropped when Community was rebuilt as Demo 6.</p>
+    <p style="margin-bottom:0"><b>Fix (clear):</b> mount the existing <code>EchoWall.jsx</code> on Community as its own surface (a home card + view, or an "Echo Wall" entry). The component is self-contained (its own load/empty/error states, reactions, retract). This restores the flagship anonymous wall with no new backend.</p>
+  </div>
+
+  <h2>1. Journal ↔ Community  (mega-plan §6.1 — "the spine")</h2>
+  <div class="tablewrap"><table>
+    <thead><tr><th>Connection</th><th>State</th><th>Evidence</th><th>Gap / tag</th></tr></thead>
+    <tbody>
+      <tr><td>"One entry, four lives" chooser (lock/echo/seal/witness)</td><td><span class="st wired">WIRED</span></td><td><code>Journal.jsx:412</code> · <code>FourLivesChooser.jsx</code></td><td>Works — but Journal-only entry (fine; entries live in the Journal).</td></tr>
+      <tr><td><b>Echo Wall display</b></td><td><span class="st missing">MISSING</span></td><td><code>EchoWall.jsx</code> mounted only in <code>CommunityDemo3.jsx:179</code></td><td><span class="badge b-crit">CRIT</span> <span class="badge b-build">BUILD</span> Echoes written, never displayed live. (See above.)</td></tr>
+      <tr><td>Witness inbox ("hold space")</td><td><span class="st partial">PARTIAL</span></td><td>Journal tab only — <code>Journal.jsx:336 id==="witness"</code></td><td><span class="badge b-high">HIGH</span> <span class="badge b-build">BUILD</span> Not discoverable from Community; no "someone's waiting to be held" signal.</td></tr>
+      <tr><td>Phase Twin entry</td><td><span class="st partial">PARTIAL</span></td><td>Journal tab only — <code>Journal.jsx:337 id==="twin"</code></td><td><span class="badge b-med">MED</span> <span class="badge b-build">BUILD</span> No "find a twin" affordance in Community.</td></tr>
+      <tr><td>"My echoes" — writer sees their own posted echoes</td><td><span class="st missing">MISSING</span></td><td>no archive view found</td><td><span class="badge b-med">MED</span> <span class="badge b-decide">DECISION</span> Where it lives (Journal vs Community).</td></tr>
+      <tr><td>Living Wisdom reverse (faded echo → Journal compose as company)</td><td><span class="st missing">MISSING</span></td><td>mega-plan §6.1 (planned)</td><td><span class="badge b-low">LOW</span> <span class="badge b-decide">DECISION</span> Unbuilt by design (planned).</td></tr>
+    </tbody>
+  </table></div>
+
+  <h2>2. Today ↔ Community  (§6.2)</h2>
+  <div class="card red">
+    <p style="margin-top:0"><span class="badge b-high">HIGH</span> <span class="badge b-build">BUILD</span> <span class="st missing">MISSING</span> &nbsp; <b>Today surfaces nothing from Community.</b> No Question-of-the-Day teaser, no Tier-0 "others in your season" belonging card, no Living Wisdom card, no gentle "share an echo on a heavy day." (<code>Today.jsx</code> has zero Community references; its "Echo" string is a cycle-symptom mirror, unrelated.)</p>
+    <p style="margin-bottom:0"><b>Fix (clear):</b> add one quiet Today → Community card (recommend the season-belonging line + a QOTD teaser that deep-links into <code>/Community</code>). One-way, opt-in, no counts — exactly the §6.2 contract.</p>
+  </div>
+
+  <h2>3. Health / cycle ↔ Community  (§6.3)</h2>
+  <div class="tablewrap"><table>
+    <thead><tr><th>Connection</th><th>State</th><th>Evidence</th><th>Gap / tag</th></tr></thead>
+    <tbody>
+      <tr><td><code>life_stage</code> → SeasonCard + tone</td><td><span class="st wired">WIRED</span></td><td><code>Community.jsx:~1248</code> reads <code>UserProfile.life_stage</code>; SeasonCard renders it</td><td>Good — the belonging card is real once a profile exists.</td></tr>
+      <tr><td>Cycle <b>phase</b> → phase-aware tone (late-luteal gentler copy, Echo weighting)</td><td><span class="st missing">MISSING</span></td><td><code>useCycleDay</code>/<code>phaseForDay</code> exist (used by Today/Planner) but Community never imports them</td><td><span class="badge b-med">MED</span> <span class="badge b-decide">DECISION</span> Phase data is available but unused in Community; the §6.3 "gentler late-luteal copy" is unbuilt.</td></tr>
+      <tr><td>Privacy: Community never writes Health / never exposes a symptom to peers</td><td><span class="st wired">WIRED</span></td><td>Community only reads <code>life_stage</code>; no Health writes</td><td>Contract holds.</td></tr>
+    </tbody>
+  </table></div>
+
+  <h2>4. Lifestyle / Library / Book Club ↔ Community  (§6.5)</h2>
+  <div class="tablewrap"><table>
+    <thead><tr><th>Connection</th><th>State</th><th>Evidence</th><th>Gap / tag</th></tr></thead>
+    <tbody>
+      <tr><td>Book Club → real BookReader</td><td><span class="st wired">WIRED</span></td><td><code>Community.jsx:483</code> → <code>createPageUrl("BookReader?gutenberg_id=514")</code>; <code>BookReader.jsx</code> validates the param</td><td>Good — reading happens in the real reader.</td></tr>
+      <tr><td>The Library room → a real book catalogue</td><td><span class="st partial">PARTIAL</span></td><td>LibraryView is a stub (one club + "more coming"); only <code>BookReader.jsx</code> exists, no catalogue page</td><td><span class="badge b-med">MED</span> <span class="badge b-decide">DECISION</span> Is there/should there be a browsable Library catalogue, or is one curated club enough for now?</td></tr>
+      <tr><td>Lifestyle interest tags → interest-Circle matching</td><td><span class="st missing">MISSING</span></td><td>Circles are a static curated set; no Lifestyle feed</td><td><span class="badge b-low">LOW</span> <span class="badge b-decide">DECISION</span> Bigger feature; matching axis design.</td></tr>
+      <tr><td>"Discuss in Community" affordance on reads / Daily Story / Horoscope</td><td><span class="st missing">MISSING</span></td><td>no cross-links in <code>Lifestyle*.jsx</code></td><td><span class="badge b-low">LOW</span> <span class="badge b-decide">DECISION</span> Nice-to-have cross-promo.</td></tr>
+    </tbody>
+  </table></div>
+
+  <h2>5. Jess ↔ Community  (§6.7 — the connective tissue)</h2>
+  <div class="tablewrap"><table>
+    <thead><tr><th>Connection</th><th>State</th><th>Evidence</th><th>Gap / tag</th></tr></thead>
+    <tbody>
+      <tr><td>Jess as host (QOTD, games-master, moderation, support replies)</td><td><span class="st wired">WIRED</span></td><td><code>jessSupport</code> (Community.jsx:152), "Jess · here with you", "Jess hosts" on Book Club/Clubs/Games</td><td>Consistent host voice across Community.</td></tr>
+      <tr><td>Entry point Community → the Jess assistant (chat)</td><td><span class="st missing">MISSING</span></td><td>the <code>fw_open_assistant</code> event opens Jess from nav/Health — but Community never dispatches it</td><td><span class="badge b-med">MED</span> <span class="badge b-build">BUILD</span> Add an "Ask Jess" affordance in Community (dispatch the existing event).</td></tr>
+    </tbody>
+  </table></div>
+
+  <h2>6. Doctor's Export ↔ Community  (§6.6 — the privacy check)</h2>
+  <div class="card sage">
+    <p style="margin:0"><span class="badge b-low">PASS</span> <span class="st wired">WIRED · PRIVATE</span> &nbsp; <b>No leak.</b> <code>DoctorExport.jsx</code> reads only <code>UserProfile</code>, <code>DailyCheckins</code>, <code>SymptomLogs</code>, <code>MedicationLogs/Reminders</code>, <code>JournalEntries</code>, <code>Correlations</code> — and contains <b>zero</b> references to <code>Echo</code> / <code>Witness</code> / <code>Twin</code> / <code>CommunityPost</code> / <code>Comment</code>. Community-tier content is structurally unreachable from the GP export, exactly as §6.6 requires. <b>Keep it that way</b> when wiring anything new.</p>
+  </div>
+
+  <h2>7. Planner · Nutrition · Programs · Profile</h2>
+  <div class="tablewrap"><table>
+    <thead><tr><th>Surface</th><th>State</th><th>Gap / tag</th></tr></thead>
+    <tbody>
+      <tr><td>Planner ↔ Community (§6.4: program-scoped circles, late-luteal copy)</td><td><span class="st missing">MISSING</span></td><td><span class="badge b-low">LOW</span> <span class="badge b-decide">DECISION</span> "Planned" — program-cohort Circles are a feature, not a quick wire.</td></tr>
+      <tr><td>Nutrition ↔ Community</td><td><span class="st missing">MISSING</span></td><td><span class="badge b-low">LOW</span> <span class="badge b-decide">DECISION</span> Not specced; likely N/A.</td></tr>
+      <tr><td>Programs ↔ Community</td><td><span class="st missing">MISSING</span></td><td><span class="badge b-low">LOW</span> <span class="badge b-decide">DECISION</span> No cross-promo today.</td></tr>
+      <tr><td>Profile ↔ Community (life_stage)</td><td><span class="st partial">PARTIAL</span></td><td><span class="badge b-low">LOW</span> <span class="badge b-build">BUILD</span> Profile reads/writes <code>life_stage</code> (drives SeasonCard) but there's no Profile → Community link; no taste/interest identity feeding Circles.</td></tr>
+    </tbody>
+  </table></div>
+
+  <h2>8. Navigation, orphans &amp; general feature gaps</h2>
+  <ul>
+    <li><b>Reachability — GOOD.</b> Community is in the mobile bottom nav, the floating sidebar, and the menu sheet; routed in <code>App.jsx:223</code> behind the 18+ AgeGate. Appropriate prominence.</li>
+    <li><b>Deep links — OK.</b> The BookReader link validates its param; AgeGate decline → <code>/Today</code> (exists). No broken routes from Community.</li>
+    <li><span class="badge b-low">LOW</span> <span class="badge b-build">BUILD</span> <b>Orphaned dead code:</b> <code>CommunityFeed.jsx</code> is imported nowhere and uses the legacy <code>Posts</code> entity — safe to remove.</li>
+    <li><span class="badge b-low">LOW</span> <span class="badge b-build">BUILD</span> <b>Comment-fetch has no error state</b> (<code>.catch(() => [])</code>) — a network failure shows "Loading…" or empty, not an error. (Batch-2 added feed error states; comments were missed.)</li>
+    <li><span class="badge b-low">LOW</span> <span class="badge b-decide">DECISION</span> <b>Legacy entities</b> (<code>CommunityPosts</code> plural, <code>Posts</code>, <code>Reaction(s)</code>, <code>Reports</code>) linger unused — the live app uses <code>CommunityPost</code> (singular) + <code>Comment</code> + function-side reactions/reports. Cleanup is optional.</li>
+    <li><b>Demos / MP8 — acceptable.</b> <code>CommunityDemo1–6</code> + <code>CommunityMP8</code> are URL-routable but absent from user nav (FoundersOS-only). Note: the only live home of <code>EchoWall.jsx</code> being a demo is the bug above, not a nav issue.</li>
+    <li><span class="badge b-med">MED</span> <span class="badge b-decide">DECISION</span> <b>Living Wisdom population:</b> <code>promoteWisdom</code> (admin) exists and the library reads <code>WisdomEntry</code> + a curated seed, but there's <b>no auto-promotion</b> of well-held Echoes → Wisdom (needs the curation-weighting decision + a cron). Known open item.</li>
+  </ul>
+
+  <h2>Phase 2 — the clear build-wins (proposed, in batches)</h2>
+  <div class="card sage">
+    <ul>
+      <li><b>W1 — Mount the Echo Wall on Community</b> <span class="badge b-crit">CRIT</span>. Surface <code>EchoWall.jsx</code> as a Community home card + view. Restores the write→read loop. (No backend change.)</li>
+      <li><b>W2 — Today → Community card</b> <span class="badge b-high">HIGH</span>. A quiet belonging + QOTD teaser on Today, deep-linking into <code>/Community</code>.</li>
+      <li><b>W3 — "Ask Jess" entry from Community</b> <span class="badge b-med">MED</span>. Dispatch the existing <code>fw_open_assistant</code> event.</li>
+      <li><b>W4 — Witness + Phase Twin discoverable from Community</b> <span class="badge b-med">MED</span>. A gentle "peer support" entry that opens the inbox/twin (needs a small Journal deep-link param — flagged where it edges into a decision).</li>
+      <li><b>W5 — Cleanups</b> <span class="badge b-low">LOW</span>. Remove orphaned <code>CommunityFeed.jsx</code>; add the comment-fetch error state; a Profile → Community link.</li>
+    </ul>
+  </div>
+
+  <h2>Decisions for Halli (won't guess)</h2>
+  <ul>
+    <li><b>Echo Wall placement:</b> its own home card + full-screen view, or a dedicated "Echo Wall" room door? (Recommend a card + view, near the top — it's the emotional heart.)</li>
+    <li><b>Witness/Twin from Community:</b> deep-link into the Journal's existing overlays (needs a URL param handler on Journal), or surface light pointers only?</li>
+    <li><b>Phase-aware tone</b> (late-luteal gentler community copy) — worth wiring the cycle phase into Community?</li>
+    <li><b>"My echoes" archive</b> — Journal or Community?</li>
+    <li><b>Library catalogue</b> — build a browsable reading catalogue, or keep one curated club for now?</li>
+    <li><b>Lifestyle interest → Circle matching</b>, program-scoped Circles (Planner), Living-Wisdom auto-promotion — bigger features; prioritise?</li>
+    <li><b>Legacy entity cleanup</b> (CommunityPosts/Posts/Reaction/Reports) — do it or leave it?</li>
+  </ul>
+
+  <div class="foot">
+    FemWell — Community Integration Audit · 2026-06-11. Evidence from a 4-agent read-only code sweep of <code>C:\…\femwell</code> against COMMUNITY_MEGA_PLAN §6. Severity: <span class="badge b-crit">CRITICAL</span> <span class="badge b-high">HIGH</span> <span class="badge b-med">MED</span> <span class="badge b-low">LOW</span>; fix type: <span class="badge b-build">BUILD</span> (clear) vs <span class="badge b-decide">DECISION</span> (Halli). Doctor's-Export privacy contract verified intact. No locked constraints touched by this audit.
+  </div>
+
+</div>
+</body>
+</html>

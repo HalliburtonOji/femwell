@@ -39,6 +39,7 @@ import BuildPlanDoc from "@/components/founders/BuildPlanDoc";
 import JournalAuditDoc from "@/components/founders/JournalAuditDoc";
 import ExpertGovernanceDoc from "@/components/founders/ExpertGovernanceDoc";
 import GroupsLibraryGamesDoc from "@/components/founders/GroupsLibraryGamesDoc";
+import IntegrationAuditDoc from "@/components/founders/IntegrationAuditDoc";
 // HealthCornerDemo was the multi-layout preview. The canonical health
 // experience now lives at /Health (src/pages/Health.jsx). The Health Corner
 // tab in /Ideas renders <HealthCornerRedirectCard /> instead.
@@ -68,7 +69,7 @@ const ALLOWED = new Set([
   "ojihalliburton57@gmail.com",
 ]);
 
-const TABS = ["Lab", "Pages", "Roadmap", "Community Plan", "Build Plan", "Journal Audit", "Expert Governance", "Library & Groups", "Whole-Life", "Audio", "Ideas", "Strategy", "Legal", "Decisions", "Journal", "Journal Demos", "Community Demos", "Another You", "UX & Design", "Wholeness", "LGBTQ+", "Health Corner"];
+const TABS = ["Lab", "Pages", "Roadmap", "Community Plan", "Build Plan", "Journal Audit", "Expert Governance", "Library & Groups", "Integration Audit", "Whole-Life", "Audio", "Ideas", "Strategy", "Legal", "Decisions", "Journal", "Journal Demos", "Community Demos", "Another You", "UX & Design", "Wholeness", "LGBTQ+", "Health Corner"];
 
 const IDEAS_KEY  = "femwell_ideas";
 const CHECKS_KEY = "femwell_founder_checks";
@@ -567,6 +568,7 @@ function FoundersInner({ user }) {
         {tab === "Journal Audit"  && <JournalAuditDoc />}
         {tab === "Expert Governance" && <ExpertGovernanceDoc />}
         {tab === "Library & Groups" && <GroupsLibraryGamesDoc />}
+        {tab === "Integration Audit" && <IntegrationAuditDoc />}
         {tab === "Whole-Life"     && <WholeLifeDoc />}
         {tab === "Audio"          && <AudioPlanDoc />}
         {tab === "Ideas"     && <IdeasTab user={user} />}
