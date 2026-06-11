@@ -33,7 +33,12 @@ Deno.serve(async (req) => {
     if (!author_hash || !name) return Response.json({ error: 'author_hash + name required' }, { status: 400 });
     if (!enabled) return Response.json({ ok: false, disabled: true, reason: 'Member-created Clubs are not enabled yet.' }, { status: 200 });
 
-    const category = CATEGORIES.has(String(p?.category)) ? String(p.category) : 'Together';
+    // A user-started BOOK club is themed to ANY book (on or off the app) — free-text
+    // title/author, NOT tied to a reader id. category defaults to 'Reading' when a book
+    // is named. (Central auto-moderation still applies to every post in this club via
+    // createCommunityPost — the host cannot disable it.)
+    const book_title = p?.book_title ? String(p.book_title).slice(0, 120) : '';
+    const category = book_title ? 'Reading' : (CATEGORIES.has(String(p?.category)) ? String(p.category) : 'Together');
     const club_key = slugify(name) + '-' + String(author_hash).slice(0, 6);
 
     const sb = base44.asServiceRole;
@@ -47,6 +52,8 @@ Deno.serve(async (req) => {
       privacy: p?.privacy === 'closed' ? 'closed' : 'open',
       status: 'forming',
       intro: p?.intro ? String(p.intro).slice(0, 600) : undefined,
+      book_title: book_title || undefined,
+      book_author: p?.book_author ? String(p.book_author).slice(0, 80) : undefined,
       hidden: false,
     }).catch((e: any) => { console.error('createClub create failed:', e?.message || e); return null; });
     if (!club) return Response.json({ error: 'Write failed' }, { status: 500 });

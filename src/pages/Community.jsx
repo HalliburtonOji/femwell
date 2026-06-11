@@ -1069,7 +1069,7 @@ function ClubCard({ club, joined, onOpen }) {
   );
 }
 
-function ClubsDirectory({ onOpen, onBack }) {
+function ClubsDirectory({ onOpen, onBack, user }) {
   const [, force] = useState(0);
   useEffect(() => { force((n) => n + 1); }, []);
   return (
@@ -1105,22 +1105,94 @@ function ClubsDirectory({ onOpen, onBack }) {
           </div>
         );
       })}
-      {/* Member-created Clubs — BUILT, flagged off (gated behind the OSA/ICO legal floor) */}
-      <section style={{ background: T.paperHi, border: `1px dashed ${T.paperDeep}`, borderRadius: 6, padding: "13px 15px", marginTop: 6 }}>
-        <Eyebrow color={T.muted} mb={6}>Start your own — coming</Eyebrow>
-        <Hand size={15.5} color={T.muted}>
-          {CLUBS_USER_CREATE_ENABLED
-            ? "Start a Club and host it yourself."
-            : "Soon you'll be able to start a Club of your own — a walking club, a quiet-evening club, whatever's yours. We're getting the safety right first."}
-        </Hand>
-      </section>
+      {/* Member-created book clubs — BUILT, flagged OFF behind CLUBS_USER_CREATE_ENABLED
+          (the OSA/ICO legal floor). Renders as "coming" until the flag flips. */}
+      {CLUBS_USER_CREATE_ENABLED
+        ? <StartBookClub user={user} onCreated={onOpen} />
+        : (
+          <section style={{ background: T.paperHi, border: `1px dashed ${T.paperDeep}`, borderRadius: 6, padding: "13px 15px", marginTop: 6 }}>
+            <Eyebrow color={T.muted} mb={6}>Start a book club — coming</Eyebrow>
+            <Hand size={15.5} color={T.muted}>
+              Soon you'll be able to start a book club for any book — even one not on the app — and host the conversation yourself. We're getting the safety right first.
+            </Hand>
+          </section>
+        )}
     </div>
   );
 }
 
+// Member-started book club creator — gated; renders only when CLUBS_USER_CREATE_ENABLED.
+// The book can be ANY title (on or off the app), free-text. Central auto-moderation
+// still applies to every post in the club (createCommunityPost) — the host can't disable it.
+function StartBookClub({ user, onCreated }) {
+  const [open, setOpen] = useState(false);
+  const [bookTitle, setBookTitle] = useState("");
+  const [bookAuthor, setBookAuthor] = useState("");
+  const [why, setWhy] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState("");
+
+  const create = async () => {
+    const title = bookTitle.trim();
+    if (!title || busy) return;
+    setBusy(true); setErr("");
+    try {
+      const wh = await communityHash(user?.id);
+      const r = await base44.functions.invoke("createClub", {
+        user_id: user?.id, author_hash: wh,
+        name: `${title} — book club`,
+        book_title: title, book_author: bookAuthor.trim() || undefined,
+        category: "Reading", line: why.trim() || undefined,
+      });
+      const d = r?.data ?? r;
+      if (d?.disabled) { setErr("Member book clubs aren't enabled yet."); setBusy(false); return; }
+      if (d?.ok && d?.club?.club_key) { onCreated?.(d.club.club_key); return; }
+      setErr("Couldn't start the club just now.");
+    } catch (e) { console.error("create book club failed:", e); setErr("Couldn't start the club just now."); }
+    finally { setBusy(false); }
+  };
+
+  if (!open) {
+    return (
+      <button onClick={() => setOpen(true)} style={{ ...primaryBtn, marginTop: 6 }}><Plus size={14} /> Start a book club</button>
+    );
+  }
+  return (
+    <section style={{ background: T.paperHi, border: `1px solid ${T.gold}`, borderRadius: 6, padding: "15px 16px", marginTop: 6 }}>
+      <Eyebrow color={T.gold} mb={8}>Start a book club</Eyebrow>
+      <Hand size={15} color={T.muted} style={{ marginBottom: 10 }}>Any book — on the app or off it. Name it, and host a spoiler-safe, kind conversation. Jess's moderation still watches over every post.</Hand>
+      <input value={bookTitle} onChange={(e) => setBookTitle(e.target.value)} maxLength={120} placeholder="Book title (e.g. Tomorrow, and Tomorrow…)" style={{ ...inputStyle, minHeight: 0, padding: "10px 12px", marginBottom: 8 }} />
+      <input value={bookAuthor} onChange={(e) => setBookAuthor(e.target.value)} maxLength={80} placeholder="Author (optional)" style={{ ...inputStyle, minHeight: 0, padding: "10px 12px", marginBottom: 8 }} />
+      <textarea value={why} onChange={(e) => setWhy(e.target.value)} maxLength={140} placeholder="A line on why (optional)" style={{ ...inputStyle, minHeight: 52, marginBottom: 8 }} />
+      {err && <div style={{ fontFamily: UI, fontSize: 12, color: T.crimson, marginBottom: 8 }}>{err}</div>}
+      <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
+        <button onClick={create} disabled={!bookTitle.trim() || busy} style={{ ...primaryBtn, opacity: (!bookTitle.trim() || busy) ? 0.5 : 1 }}><Check size={14} /> {busy ? "Starting…" : "Start it"}</button>
+        <button onClick={() => setOpen(false)} style={{ ...ghostBtn, border: "none" }}>Cancel</button>
+      </div>
+    </section>
+  );
+}
+
 function ClubView({ clubKey, user, onCrisis, onBack, clubTitle = "" }) {
-  // Resolve from the static catalogue, or derive a daily-read readers' corner (per book).
-  const club = clubByKey(clubKey) || (isDailyReadClub(clubKey) ? dailyReadClubFromKey(clubKey, clubTitle) : null);
+  // Resolve from the static catalogue, or derive a daily-read readers' corner (per book),
+  // or fetch a member-started club from the Club entity (public read; gated path).
+  const staticOrDaily = clubByKey(clubKey) || (isDailyReadClub(clubKey) ? dailyReadClubFromKey(clubKey, clubTitle) : null);
+  const [memberClub, setMemberClub] = useState(staticOrDaily ? "static" : null);   // null=resolving, false=gone
+  useEffect(() => {
+    if (staticOrDaily) return;
+    base44.entities.Club.filter({ club_key: clubKey, hidden: false }, "-created_date", 1)
+      .then((rows) => {
+        const c = Array.isArray(rows) ? rows[0] : null;
+        if (!c) { setMemberClub(false); return; }
+        setMemberClub({
+          key: c.club_key, name: c.name,
+          line: c.line || (c.book_title ? `A book club for ${c.book_title}${c.book_author ? " by " + c.book_author : ""}.` : ""),
+          category: c.category, member: true, dailyRead: !!c.book_title,
+        });
+      })
+      .catch(() => setMemberClub(false));
+  }, [clubKey, staticOrDaily]);
+  const club = staticOrDaily || (memberClub && memberClub !== "static" ? memberClub : null);
   const [joined, setJoined] = useState(() => isClubJoined(clubKey));
   const [posts, setPosts] = useState(null);
   const [composing, setComposing] = useState(false);
@@ -1155,7 +1227,11 @@ function ClubView({ clubKey, user, onCrisis, onBack, clubTitle = "" }) {
     finally { setBusy(false); }
   };
 
-  if (!club) return <Hand size={17} color={T.muted}>That club has wandered off. Go back to Clubs.</Hand>;
+  if (!club) {
+    return memberClub === false
+      ? <Hand size={17} color={T.muted}>That club has wandered off. Go back to Clubs.</Hand>
+      : <Hand size={18} color={T.muted}>Opening the club…</Hand>;
+  }
 
   return (
     <div>
@@ -1200,7 +1276,7 @@ function ClubsView({ user, onCrisis, onBack, initialActive = null, clubTitle = "
   const [active, setActive] = useState(initialActive);
   return active
     ? <ClubView clubKey={active} user={user} onCrisis={onCrisis} onBack={() => setActive(null)} clubTitle={clubTitle} />
-    : <ClubsDirectory onOpen={setActive} onBack={onBack} />;
+    : <ClubsDirectory onOpen={setActive} onBack={onBack} user={user} />;
 }
 
 // ── The Library room — reading home (Book Club + reading) ─────────────────────

@@ -19,6 +19,9 @@
     "host_hash": { "type": "string", "description": "For member-hosted Clubs: the host's anonymous author_hash. Empty for Jess-hosted." },
     "privacy": { "type": "string", "enum": ["open", "closed"], "default": "open", "description": "open = lurkable + anyone joins; closed = posts hidden until joined. (Secret deferred.)" },
     "status": { "type": "string", "enum": ["forming", "active", "dormant", "archived"], "default": "active", "description": "Lifecycle. Member Clubs stay 'forming' until a minimum k members." },
+    "book_title": { "type": "string", "description": "For a user-started BOOK club: the book's title — ANY book, on or off the app (free text; not tied to a reader id)." },
+    "book_author": { "type": "string", "description": "Optional author for a user-started book club." },
+    "book_cover": { "type": "string", "description": "Optional cover image URL for a user-started book club." },
     "intro": { "type": "string", "description": "Host intro / welcome." },
     "hidden": { "type": "boolean", "default": false, "description": "Suppressed (moderation)." }
   },
