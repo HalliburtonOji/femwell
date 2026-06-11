@@ -37,6 +37,7 @@ import {
 } from "@/components/community/communityConfig";
 import VoiceNoteComposer from "@/components/community/VoiceNoteComposer";
 import ShareButton from "@/components/share/ShareButton";
+import JessNudge from "@/components/jess/JessNudge";
 import EchoWall from "@/components/journal/echo/EchoWall";
 import {
   CIRCLES, CIRCLE_CATEGORIES, circleByKey, SENSITIVE_CONSENT,
@@ -765,6 +766,13 @@ function Home({ presence, lifeStage, onEnter, user, onCrisis, onShareTo }) {
       <div style={{ fontFamily: UI, fontSize: 12.5, color: T.muted, fontWeight: 600, marginBottom: 22 }}>{presence}</div>
 
       <SeasonCard stage={lifeStage} />
+
+      <JessNudge
+        id="community-reflect-v1"
+        line="Some of what's said here is worth keeping. Want a quiet place to write your own?"
+        to="Journal?compose=1"
+        actionLabel="Open my journal"
+      />
 
       {onShareTo && (
         <button onClick={onShareTo} style={{

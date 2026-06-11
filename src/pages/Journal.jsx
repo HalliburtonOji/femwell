@@ -7,6 +7,7 @@ import { Feather, AlignJustify, X, ChevronDown, ChevronUp } from "lucide-react";
 import NewEntrySheet from "../components/journal/NewEntrySheet";
 import JournalInsightsTab from "../components/journal/JournalInsightsTab";
 import PromptCarousel from "../components/journal/PromptCarousel";
+import JessNudge from "@/components/jess/JessNudge";
 import CycleMirror from "../components/journal/CycleMirror";
 import JournalLedger from "../components/journal/JournalLedger";
 import ThreadView from "../components/journal/ThreadView";
@@ -595,6 +596,13 @@ export default function Journal() {
                     todayCycleDay={cycleDay} onReply={replyToPast}
                   />
                 )}
+
+                <JessNudge
+                  id="journal-community-v1"
+                  line="You don't have to carry it alone. Others in your season are here too, anonymously, whenever you want them."
+                  to="Community"
+                  actionLabel="Step into Community"
+                />
 
                 {/* Filter bar — two rows (core + wholeness) */}
                 <div style={{ marginBottom: 16, marginTop: 8 }}>
