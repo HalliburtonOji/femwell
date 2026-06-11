@@ -18,7 +18,7 @@ import { useNavigate } from "react-router-dom";
 import {
   Grid2x2, MessageCircle, Send, Lock, Unlock, Plus, Flag,
   ShieldAlert, Phone, Mic, Check, ChevronLeft, Users,
-  HeartHandshake,
+  HeartHandshake, Waves,
 } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import {
@@ -36,6 +36,7 @@ import {
   VOICE_NOTES_ENABLED, qotdForDay, presenceLine, crisisCheck,
 } from "@/components/community/communityConfig";
 import VoiceNoteComposer from "@/components/community/VoiceNoteComposer";
+import EchoWall from "@/components/journal/echo/EchoWall";
 import {
   CIRCLES, CIRCLE_CATEGORIES, circleByKey, SENSITIVE_CONSENT,
   isJoined, markJoined, clearJoined,
@@ -705,6 +706,22 @@ function SeasonCard({ stage }) {
   );
 }
 
+function EchoCard({ onOpen }) {
+  return (
+    <button onClick={onOpen} style={{
+      display: "block", width: "100%", textAlign: "left", cursor: "pointer",
+      background: T.paperHi, border: `1px solid ${T.gold}`, borderRadius: 6, padding: "16px 16px", marginBottom: 26,
+    }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 5 }}>
+        <Waves size={16} style={{ color: T.gold }} />
+        <Eyebrow color={T.gold} mb={0}>The Echo Wall</Eyebrow>
+      </div>
+      <div style={{ fontFamily: HANDFAM, fontStyle: "italic", fontWeight: 700, fontSize: 19, color: T.ink, marginBottom: 4 }}>One line, held by the room.</div>
+      <div style={{ fontFamily: UI, fontSize: 12, color: T.muted }}>Anonymous lines from women across the cycle — each fades in 48 hours. Read the wall, or share a line from your journal →</div>
+    </button>
+  );
+}
+
 function ClubsCard({ onOpen }) {
   return (
     <button onClick={onOpen} style={{
@@ -728,6 +745,8 @@ function Home({ presence, lifeStage, onEnter, user, onCrisis }) {
       <div style={{ fontFamily: UI, fontSize: 12.5, color: T.muted, fontWeight: 600, marginBottom: 22 }}>{presence}</div>
 
       <SeasonCard stage={lifeStage} />
+
+      <EchoCard onOpen={() => onEnter("echo")} />
 
       <QotdCard user={user} onCrisis={onCrisis} />
 
@@ -1243,12 +1262,13 @@ function CommunityInner() {
   const [tick, setTick] = useState(0);
 
   const [lifeStage, setLifeStage] = useState(null);
+  const [profile, setProfile] = useState(null);
 
   useEffect(() => { base44.auth.me().then(setUser).catch(() => setUser(null)); }, []);
   useEffect(() => {
     base44.entities.UserProfile.filter({}, "-created_date", 1)
-      .then((r) => setLifeStage(Array.isArray(r) && r[0]?.life_stage ? r[0].life_stage : null))
-      .catch(() => setLifeStage(null));
+      .then((r) => { const p = Array.isArray(r) ? r[0] : null; setProfile(p || null); setLifeStage(p?.life_stage || null); })
+      .catch(() => { setProfile(null); setLifeStage(null); });
   }, []);
 
   const load = useCallback(async () => {
@@ -1282,6 +1302,11 @@ function CommunityInner() {
           ? <BookClubView user={user} onCrisis={() => setCrisis(true)} onBack={() => setView("library")} />
           : view === "clubs"
           ? <div style={{ padding: "30px 18px 50px" }}><ClubsView user={user} onCrisis={() => setCrisis(true)} onBack={() => setView("home")} /></div>
+          : view === "echo"
+          ? <div style={{ padding: "26px 18px 50px" }}>
+              <button onClick={() => setView("home")} style={{ ...ghostBtn, marginBottom: 14, padding: "7px 11px" }}><ChevronLeft size={14} /> Community</button>
+              <EchoWall user={user} profile={profile} lifeStage={lifeStage} />
+            </div>
           : <RoomView key={tick} roomKey={view} posts={posts} loading={loading} error={loadErr} user={user} onNav={setView} onCrisis={() => setCrisis(true)} onReload={reload} />}
         {view === "home" && (
           <>

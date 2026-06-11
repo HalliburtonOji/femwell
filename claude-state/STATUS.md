@@ -1,6 +1,10 @@
 # FEMWELL — CANONICAL STATUS INDEX (read first · updated 2026-06-11)
 **This file is the single source of truth AND the index to every plan doc. If anything else disagrees, this wins.** (The long ship-log history continues below the index.)
 
+## 🔗 COMMUNITY INTEGRATION — PHASE 2 wire-up (2026-06-11) — building the audit's clear wins
+Audit = `claude-state/COMMUNITY_INTEGRATION_AUDIT.html` (FoundersOS → Integration Audit). Phase 2 = W1–W5 clear wins; Halli deploys + live-verifies.
+- **W1 — ECHO WALL ON COMMUNITY (commit `pending`) — the critical write→read fix.** The built `EchoWall.jsx` was mounted nowhere live (only in CommunityDemo3) → echoes were written but never readable. Now surfaced on Community: a home **Echo Wall** card (near the top, after the season card) → a full-screen `view==="echo"` that mounts `<EchoWall user profile lifeStage/>` with a back button. Reads live echoes (`Echo.filter({hidden:false})`, public read), 48h-fade framing, phase-sister weighting (now passed the real `UserProfile` row so it can derive phase), reactions/report/retract via the existing `reactEcho`/`reportEcho`/`retractEcho` fns. Self-contained loading/empty/error states. **No new entities/functions** — pure client wire-up of existing infra. Verified: vite build + eslint green; webkit — card renders, opens the wall, graceful empty state ("Quiet, for now"), back works, no emoji. **Probe:** none new (uses existing Echo + reactEcho/reportEcho/retractEcho). Live walk: Community home → Echo Wall card → the wall shows live echoes (or empty) → react/retract.
+
 ## 🆕 COMMUNITY v2 — ALL 3 BATCHES BUILT + VERIFIED + PUSHED (2026-06-11) — awaiting ONE consolidated Halli deploy
 Scope = `claude-state/COMMUNITY_V2_SCOPE.md`. Batches 1–3 done; Halli does one deploy + full live-verify at the end.
 - **Batch 1 (`5b874ce`)** — Library + Games rooms + the Club primitive (see block below).
