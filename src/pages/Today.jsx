@@ -23,6 +23,7 @@ import DailyStoriesStrip from "../components/today/DailyStoriesStrip";
 import TodayDailyChapterCard from "@/components/today/TodayDailyChapterCard";
 import OnThisDayLastCycleCard from "@/components/today/OnThisDayLastCycleCard";
 import CommunityTodayCard from "@/components/today/CommunityTodayCard";
+import JessNudge from "@/components/jess/JessNudge";
 import FriendFrom6MonthsAgoCard from "@/components/today/FriendFrom6MonthsAgoCard";
 import UnsealedLetterCard from "@/components/today/UnsealedLetterCard";
 import TrackTab from "../components/today/TrackTab";
@@ -595,6 +596,13 @@ export default function Today() {
             <TodayDailyChapterCard />
             <OnThisDayLastCycleCard />
             <CommunityTodayCard profile={profile} />
+            <JessNudge
+              id="today-journal-v1"
+              line="However today landed, a line or two in your journal can hold it. Want to?"
+              to="Journal?compose=1"
+              actionLabel="Write a line"
+            />
+
 
             {/* Quick mood + energy check-in */}
             <div style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)", borderRadius: 16, padding: "14px 16px", boxShadow: "var(--shadow-sm)" }}>
