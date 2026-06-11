@@ -1,6 +1,21 @@
 # FEMWELL — CANONICAL STATUS INDEX (read first · updated 2026-06-11)
 **This file is the single source of truth AND the index to every plan doc. If anything else disagrees, this wins.** (The long ship-log history continues below the index.)
 
+## 🆕 COMMUNITY v2 — ALL 3 BATCHES BUILT + VERIFIED + PUSHED (2026-06-11) — awaiting ONE consolidated Halli deploy
+Scope = `claude-state/COMMUNITY_V2_SCOPE.md`. Batches 1–3 done; Halli does one deploy + full live-verify at the end.
+- **Batch 1 (`5b874ce`)** — Library + Games rooms + the Club primitive (see block below).
+- **Batch 2 (`4683631`)** — v2 polish, CLIENT-ONLY (no new entities/functions): QOTD "your thread of days" archive (no streak/count) · "Circles you're in" + "Clubs you're in" quick strips · warmer time-aware k-anon presence · genuine feed ERROR states (main feed + CircleView + ClubView) distinct from empty · Living Wisdom topic empty-state.
+- **Batch 3 (`0a27724`)** — CLIENT-ONLY: Tier-0 "others in your season" belonging card (count-free, k-anon by construction, keyed to `UserProfile.life_stage`, 11 stages, hides if unknown) + final brand/a11y pass (emoji scan zero, 9-room nav coherent).
+
+### ⬇️ CONSOLIDATED DEPLOY + PROBE — Community v2 (Batches 1–3)  [the only backend bits are from Batch 1]
+- **NEW entities:** `Club` (read PUBLIC → `Club.filter` **200**; client create **403**; schema for future member clubs, NO live rows) · `ClubMembership` (full role:system RLS incl. read → direct client `.filter` **403** non-owner).
+- **CHANGED entity:** `CommunityPost` gained **`club`** field + circle/club indexes (still reads **200**).
+- **NEW functions (probe 400-not-404):** `joinClub` · `leaveClub` · `createClub` (double-gated `CLUBS_USER_CREATE_ENABLED=false` + admin → `{disabled:true}`; flag stays OFF until the OSA/ICO floor).
+- **CHANGED function:** `createCommunityPost` (re-deploy; now accepts `club` scope; still **400** on empty). All `deno check`-green, self-contained, `Deno.serve` last.
+- **Batches 2–3 are pure client** — they ride the bundle; nothing else to deploy.
+- **Live walk:** home → Library + Games doors + **Clubs** card + (with a real profile) the **"You're in good company"** season card + QOTD "**See your thread of days**". Open a club → Join → post (club-scoped). Circles/Clubs show a "you're in" strip once joined. Kill connectivity → feeds show a kind "couldn't reach…" error (not a false "quiet"). **No counts/streaks anywhere; no emoji.**
+- **Verified each batch:** deno check + vite build + eslint green; Playwright webkit 390px (home/Library/Games/Clubs/ClubView/Circles-depth/presence all render; brand intact; console = backend-404s only in local preview). **Member-created Clubs remain OFF pending the OSA/ICO legal floor.**
+
 ## 🆕 COMMUNITY v2 — BATCH 1 BUILT + VERIFIED + PUSHED (2026-06-11, commit `5b874ce`) — awaiting Halli deploy
 Scope = `claude-state/COMMUNITY_V2_SCOPE.md` (commit `1fcc437`). **Batch 1 = Library + Games rooms + the Club primitive.**
 - **Library + Games** are now fixed Jess-presided **rooms** (doors grid + 9-room tab strip). Games-master moved out of The Lighter Side into the **Games Room**; Lighter keeps telly/stars. **Library** houses the Book Club (flagship Jess-hosted reading club) + a reading-clubs "coming" note (home Book Club card folded into the Library).
