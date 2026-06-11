@@ -1290,6 +1290,18 @@ function ClubView({ clubKey, user, onCrisis, onBack, clubTitle = "" }) {
         </div>
       )}
 
+      {club.dailyRead && (() => {
+        const bookName = (clubTitle || club.name.replace(/ — (readers'? corner|book club)$/i, "")).trim();
+        return bookName ? (
+          <div style={{ marginBottom: 14 }}>
+            <ShareButton label="Share this read" artifact={{
+              kind: "bookpick", source: "bookpick", line: bookName, footer: "Reading this",
+              url: "https://femwells.com", shareText: `Reading ${bookName} — others are too, on FemWell.`,
+            }} />
+          </div>
+        ) : null;
+      })()}
+
       <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 16, flexWrap: "wrap" }}>
         {joined
           ? <><span style={{ display: "inline-flex", alignItems: "center", gap: 5, fontFamily: UI, fontSize: 12.5, fontWeight: 700, color: T.gold }}><Check size={14} /> You're in this club</span>

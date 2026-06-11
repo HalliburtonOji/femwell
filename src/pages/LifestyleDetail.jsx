@@ -4,6 +4,7 @@ import { ArrowLeft, Bookmark, BookmarkCheck, Heart, HeartOff, Loader2, PlayCircl
 import { format } from "date-fns";
 import { getCategoryGradient, attachFallbackOverlay } from "@/utils/imageFallback";
 import ContentActionBar from "@/components/common/ContentActionBar";
+import ShareButton from "@/components/share/ShareButton";
 
 // Map a content category to the best-fit whole-life Community room (default: the Lounge).
 const CATEGORY_ROOM = {
@@ -866,6 +867,16 @@ export default function LifestyleDetail() {
           discuss={{ room: roomForCategory(item.category), seed: `Been reading about ${decodedTitle.toLowerCase()} — has anyone else?` }}
           jess={decodedTitle}
         />
+
+        {/* "This resonated" — an external share-card of the (non-personal) read title */}
+        {decodedTitle && (
+          <div style={{ marginTop: 4 }}>
+            <ShareButton label="This resonated — share it" artifact={{
+              kind: "resonated", source: "resonated", line: decodedTitle, footer: "This resonated",
+              url: "https://femwells.com", shareText: "This resonated with me — on FemWell.",
+            }} />
+          </div>
+        )}
 
         {/* More like this rail */}
         {relatedDecorated.length >= 2 && (
