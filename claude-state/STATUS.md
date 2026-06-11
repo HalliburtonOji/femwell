@@ -1,6 +1,16 @@
 # FEMWELL — CANONICAL STATUS INDEX (read first · updated 2026-06-11)
 **This file is the single source of truth AND the index to every plan doc. If anything else disagrees, this wins.** (The long ship-log history continues below the index.)
 
+## 📤 SHARING SYSTEM + JESS-HOST (2026-06-11) — BUILT + VERIFIED + PUSHED (client-only, no gate)
+Per `claude-state/SHARING_PROPOSAL.html`. Both tracks + THE WALL enforced in code. All client-only.
+- **THE WALL (code guard, `src/lib/shareCard.js`):** `assertExternallyShareable()` whitelists only NON-personal kinds (wisdom/horoscope/affirmation/bookpick/resonated/invite/own-words) and BLOCKS any personal/anonymous source (echo/witness/twin/member-post/journal-entry/sealed). `own-words` (the one personal case) needs explicit `optIn:true`. `shareArtifact()` calls the guard FIRST. **Node-tested 8/8.**
+- **S1 (`6128b35`):** on-device share-card engine (canvas→PNG, 1080×1920, cream/plum, Ephesis+Cormorant, no emoji) + `navigator.share({files})` with Save-image/Copy-link/WhatsApp fallbacks (IG-Stories handoff is native-only — not attempted). `ShareButton` component. First entries: Living Wisdom card + an "Invite a friend" home card.
+- **S2 (`0b5cb03`):** Wisdom collection (only CURATED seed lines share; echo-derived lines are tagged source:"echo" → NO share), Horoscope ("today's sky" headline), Book pick (Library).
+- **S3 (`344aecd`):** own-words opt-in external share in the Journal EntryReader (the one personal case, explicit opt-in).
+- **S4 (`d0aa762`):** Track-1 internal "Share to…" sheet — a thought → a Circle/Club you're in (moderated createCommunityPost) or the Echo Wall / a Witness (deep-link to the Journal where the scrub/crypto live). Crisis-checked.
+- **JESS-HOST J1 (`5adcf1d`):** `JessNudge` — proactive, tone-locked, dismissible one-line cross-link nudges; once-per-id, dismissal persists (no nagging). Mounted on Community home (→ Journal) + Journal (→ Community).
+- **NEEDS-HALLI (sharing):** the invite/share URL is hardcoded `https://femwells.com` — a real referral-code / deep-link scheme + UTM is config Halli sets. Sharing open-questions (reward model, server vs client render, share-event analytics) in the proposal.
+
 ## 🧵 CONNECTIVITY BUILD (2026-06-11) — building the APPROVED App Connectivity Map (all of it)
 Map = `claude-state/APP_CONNECTIVITY_MAP.html` (FoundersOS → Connectivity Map). Halli approved the whole checklist; building in batches, client-only where possible, Halli deploys + verifies.
 - **CONNECTIVITY SET COMPLETE + GATED BOOK-CLUB SCAFFOLDING (2026-06-11).**
