@@ -2,7 +2,6 @@ import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import GuideVoiceMode from "../components/guide/GuideVoiceMode";
-import { createPageUrl } from "@/utils";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import CycleBasicsStep from "../components/onboarding/CycleBasicsStep";
