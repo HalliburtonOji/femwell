@@ -9,6 +9,11 @@
 // IMPORTANT: the CIRCLE_KEYS here must stay in sync with the inlined key allowlists in the
 // self-contained functions createCommunityPost / joinCircle / leaveCircle (Base44 deploy
 // gotcha #1 — no shared import across the function boundary).
+//
+// DECISION (2026-06-11): the catalogue is a STATIC constant — there is deliberately NO `Circle`
+// DB entity (a `GET /entities/Circle` 404 is expected/correct). Who-joined lives in the
+// `CircleMembership` entity (RLS-locked); a post's circle scope lives in `CommunityPost.circle`.
+// Do NOT add a `Circle` entity — a fixed, curated cohort set belongs in code, like the rooms.
 
 export const CIRCLES = [
   // ── Life stages ──────────────────────────────────────────────────────────
