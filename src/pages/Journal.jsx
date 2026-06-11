@@ -280,6 +280,17 @@ export default function Journal() {
     })();
   }, []);
 
+  // W4 — deep-link: open the Witness inbox or Phase Twin directly from another
+  // surface (e.g. Community) via /Journal?open=witness | ?open=twin. Reuses the
+  // existing overlays; the param is read once on mount.
+  useEffect(() => {
+    try {
+      const open = new URLSearchParams(window.location.search).get("open");
+      if (open === "witness") setShowWitnessInbox(true);
+      else if (open === "twin") setShowTwin(true);
+    } catch { /* ignore */ }
+  }, []);
+
   const phase = getCurrentPhase(profile);
   const cycleDay = cycleDayOf(profile);
   const season = phase ? PHASE_SEASON[phase] : null;

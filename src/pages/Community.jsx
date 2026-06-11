@@ -14,7 +14,7 @@
 // borderline→flagged review queue) + Jess auto-support replies (judicious, tone-locked).
 
 import { useState, useEffect, useMemo, useCallback, useRef } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import {
   Grid2x2, MessageCircle, Send, Lock, Unlock, Plus, Flag,
   ShieldAlert, Phone, Mic, Check, ChevronLeft, Users,
@@ -773,6 +773,30 @@ function Home({ presence, lifeStage, onEnter, user, onCrisis }) {
             </button>
           );
         })}
+      </div>
+
+      {/* W4 — discreet entry to the one-to-one peer features (live in the Journal). Deep-links
+          open the existing Witness inbox / Phase Twin overlays. Quiet by design — these are intense. */}
+      <div style={{ marginTop: 26 }}>
+        <Eyebrow mb={10}>Quietly, one to one</Eyebrow>
+        <Link to={createPageUrl("Journal?open=witness")} style={{ textDecoration: "none", display: "block", marginBottom: 10 }}>
+          <div style={{ background: T.paperHi, border: `1px solid ${T.paperDeep}`, borderRadius: 6, padding: "13px 15px" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 3 }}>
+              <HeartHandshake size={15} style={{ color: T.gold }} />
+              <span style={{ fontFamily: HANDFAM, fontStyle: "italic", fontWeight: 700, fontSize: 17, color: T.ink }}>Hold space for a sister</span>
+            </div>
+            <div style={{ fontFamily: UI, fontSize: 11.5, color: T.muted, lineHeight: 1.4 }}>Someone may be waiting to be witnessed — one entry, held by one woman. Open your inbox →</div>
+          </div>
+        </Link>
+        <Link to={createPageUrl("Journal?open=twin")} style={{ textDecoration: "none", display: "block" }}>
+          <div style={{ background: T.paperHi, border: `1px solid ${T.paperDeep}`, borderRadius: 6, padding: "13px 15px" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 3 }}>
+              <Users size={15} style={{ color: T.gold }} />
+              <span style={{ fontFamily: HANDFAM, fontStyle: "italic", fontWeight: 700, fontSize: 17, color: T.ink }}>Phase Twin</span>
+            </div>
+            <div style={{ fontFamily: UI, fontSize: 11.5, color: T.muted, lineHeight: 1.4 }}>Twelve days, paired with one woman in your season — one shared prompt a day. Find your twin →</div>
+          </div>
+        </Link>
       </div>
 
       {/* W3 — a quiet door to Jess (the host) from Community, via the existing assistant event */}
