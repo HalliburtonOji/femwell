@@ -22,6 +22,14 @@ function startOfTodayISO(): string {
   return new Date(Date.UTC(n.getUTCFullYear(), n.getUTCMonth(), n.getUTCDate())).toISOString();
 }
 
+// Timeout guard — an awaited platform read/write that HANGS would wedge the function.
+function withTimeout(p: Promise<any>, ms: number, label: string): Promise<any> {
+  return new Promise((resolve, reject) => {
+    const t = setTimeout(() => reject(new Error(`${label}-timeout-${ms}ms`)), ms);
+    p.then((v) => { clearTimeout(t); resolve(v); }, (e) => { clearTimeout(t); reject(e); });
+  });
+}
+
 Deno.serve(async (req) => {
   const base44 = createClientFromRequest(req);
   const me = await base44.auth.me().catch(() => null);
@@ -49,8 +57,8 @@ Deno.serve(async (req) => {
   const sb = base44.asServiceRole;
 
   // Witness gate — count holds this writer has given (as a receiver who responded/passed).
-  const heldRows = await sb.entities.WitnessRequest
-    .filter({ receiver_hash: writer_hash }, undefined, 500).catch(() => []);
+  const heldRows = await withTimeout(sb.entities.WitnessRequest
+    .filter({ receiver_hash: writer_hash }, undefined, 500), 2500, 'filter').catch(() => []);
   const held = heldRows.filter((r: any) => r.status === 'responded' || r.status === 'passed').length;
   if (held < GATE_HOLDS) {
     return Response.json({ error: 'gate', held, need: GATE_HOLDS }, { status: 200 });
@@ -58,14 +66,14 @@ Deno.serve(async (req) => {
 
   // Rate limit — 1 send/day.
   const since = startOfTodayISO();
-  const mine = await sb.entities.WitnessRequest
-    .filter({ writer_hash }, '-sent_at', 50).catch(() => []);
+  const mine = await withTimeout(sb.entities.WitnessRequest
+    .filter({ writer_hash }, '-sent_at', 50), 2500, 'filter').catch(() => []);
   const sentToday = mine.filter((r: any) => (r.sent_at || '') >= since).length;
   if (sentToday >= SEND_PER_DAY) {
     return Response.json({ error: 'rate', sentToday }, { status: 200 });
   }
 
-  const request = await sb.entities.WitnessRequest.create({
+  const request = await withTimeout(sb.entities.WitnessRequest.create({
     writer_hash: String(writer_hash),
     entry_ciphertext: String(entry_ciphertext),
     match_phase: PHASES.includes(match_phase) ? match_phase : 'unknown',
@@ -85,7 +93,7 @@ Deno.serve(async (req) => {
     // key, and the key is wrapped + delivered post-claim (deliverWitnessKey).
     env_version: env_version === 2 ? 2 : 1,
     ...(writer_pub ? { writer_pub: String(writer_pub) } : {}),
-  }).catch((err: any) => { console.error('postWitnessRequest create failed:', err?.message || err); return null; });
+  }), 6000, 'create').catch((err: any) => { console.error('postWitnessRequest create failed:', err?.message || err); return null; });
 
   if (!request) return Response.json({ error: 'Write failed' }, { status: 500 });
   // Return only non-sensitive lifecycle fields (never re-emit the ciphertext here).

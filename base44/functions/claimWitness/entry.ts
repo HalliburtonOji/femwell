@@ -27,6 +27,14 @@ function startOfTodayISO(): string {
 }
 const lifeMatch = (a: any, b: any) => !a || !b || a === b;
 
+// Timeout guard — an awaited platform read/write that HANGS would wedge the function.
+function withTimeout(p: Promise<any>, ms: number, label: string): Promise<any> {
+  return new Promise((resolve, reject) => {
+    const t = setTimeout(() => reject(new Error(`${label}-timeout-${ms}ms`)), ms);
+    p.then((v) => { clearTimeout(t); resolve(v); }, (e) => { clearTimeout(t); reject(e); });
+  });
+}
+
 Deno.serve(async (req) => {
   const base44 = createClientFromRequest(req);
   const me = await base44.auth.me().catch(() => null);
@@ -47,12 +55,12 @@ Deno.serve(async (req) => {
   const nowISO = iso(T);
 
   // Pool eligibility — 3 active strikes removes a receiver.
-  const strikes = await sb.entities.WitnessStrike.filter({ receiver_hash }, undefined, 50).catch(() => []);
+  const strikes = await withTimeout(sb.entities.WitnessStrike.filter({ receiver_hash }, undefined, 50), 2500, 'filter').catch(() => []);
   const active = strikes.filter((s: any) => s.active !== false && (!s.expires_at || s.expires_at > nowISO)).length;
   if (active >= STRIKE_LIMIT) return Response.json({ ok: true, removed: true });
 
   // If they already hold one in flight (matched/opened), hand that back — no hoarding.
-  const mine = await sb.entities.WitnessRequest.filter({ receiver_hash }, '-matched_at', 50).catch(() => []);
+  const mine = await withTimeout(sb.entities.WitnessRequest.filter({ receiver_hash }, '-matched_at', 50), 2500, 'filter').catch(() => []);
   const inFlight = mine.find((r: any) => (r.status === 'matched' || r.status === 'opened') && !r.hidden && (r.expires_at || '') > nowISO);
   if (inFlight) {
     return Response.json({ ok: true, request: shape(inFlight), rerouted: !!inFlight.rerouted_from_hash });
@@ -65,8 +73,8 @@ Deno.serve(async (req) => {
 
   // Candidate pool: pending + stale-matched (rerouteable), matched on phase+language server-side.
   const baseFilter = { match_phase: phase || 'unknown', match_language: language || 'en-GB', hidden: false };
-  const pending = await sb.entities.WitnessRequest.filter({ ...baseFilter, status: 'pending' }, 'sent_at', 100).catch(() => []);
-  const matched = await sb.entities.WitnessRequest.filter({ ...baseFilter, status: 'matched' }, 'sent_at', 100).catch(() => []);
+  const pending = await withTimeout(sb.entities.WitnessRequest.filter({ ...baseFilter, status: 'pending' }, 'sent_at', 100), 2500, 'filter').catch(() => []);
+  const matched = await withTimeout(sb.entities.WitnessRequest.filter({ ...baseFilter, status: 'matched' }, 'sent_at', 100), 2500, 'filter').catch(() => []);
 
   const fresh = pending.filter((r: any) =>
     r.writer_hash !== receiver_hash && lifeMatch(r.match_life_stage, life_stage) && (r.expires_at || '') > nowISO);
@@ -81,7 +89,7 @@ Deno.serve(async (req) => {
 
   // Assign the oldest. Re-read to reduce (not eliminate) the claim race.
   const pick = candidates[0];
-  const live = await sb.entities.WitnessRequest.get(pick.r.id).catch(() => null);
+  const live = await withTimeout(sb.entities.WitnessRequest.get(pick.r.id), 2500, 'get').catch(() => null);
   if (!live) return Response.json({ ok: true, empty: true });
   const stillFree = pick.reroute
     ? (live.status === 'matched' && !live.read_at && (live.open_deadline || '') < nowISO && (live.reroute_count || 0) < REROUTE_CAP && live.receiver_hash !== receiver_hash)
@@ -100,18 +108,18 @@ Deno.serve(async (req) => {
     patch.rerouted_from_hash = live.receiver_hash || undefined;
     // Strike the receiver who let it lapse unopened.
     if (live.receiver_hash) {
-      await sb.entities.WitnessStrike.create({
+      await withTimeout(sb.entities.WitnessStrike.create({
         receiver_hash: live.receiver_hash, request_ref: live.id,
         reason: 'ignored_repeat', struck_at: nowISO, active: true,
-      }).catch(() => {});
+      }), 6000, 'create').catch(() => {});
     }
   }
-  const updated = await sb.entities.WitnessRequest.update(live.id, patch).catch(() => null);
+  const updated = await withTimeout(sb.entities.WitnessRequest.update(live.id, patch), 6000, 'update').catch(() => null);
   if (!updated) return Response.json({ error: 'Assign failed' }, { status: 500 });
   // M5: read-then-write isn't atomic, so confirm WE actually hold it after writing.
   // If a concurrent claimer won (last-write-wins left a different receiver_hash),
   // don't hand this receiver an entry that's now someone else's — return empty.
-  const after = await sb.entities.WitnessRequest.get(live.id).catch(() => null);
+  const after = await withTimeout(sb.entities.WitnessRequest.get(live.id), 2500, 'get').catch(() => null);
   if (after && after.receiver_hash !== receiver_hash) {
     return Response.json({ ok: true, empty: true });
   }

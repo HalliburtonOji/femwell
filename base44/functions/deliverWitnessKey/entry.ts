@@ -15,6 +15,14 @@
 
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 
+// Timeout guard — an awaited platform read/write that HANGS would wedge the function.
+function withTimeout(p: Promise<any>, ms: number, label: string): Promise<any> {
+  return new Promise((resolve, reject) => {
+    const t = setTimeout(() => reject(new Error(`${label}-timeout-${ms}ms`)), ms);
+    p.then((v) => { clearTimeout(t); resolve(v); }, (e) => { clearTimeout(t); reject(e); });
+  });
+}
+
 Deno.serve(async (req) => {
   const base44 = createClientFromRequest(req);
   const me = await base44.auth.me().catch(() => null);
@@ -36,7 +44,7 @@ Deno.serve(async (req) => {
   }
 
   const sb = base44.asServiceRole;
-  const row = await sb.entities.WitnessRequest.get(request_id).catch(() => null);
+  const row = await withTimeout(sb.entities.WitnessRequest.get(request_id), 2500, 'get').catch(() => null);
   if (!row) return Response.json({ error: 'Not found' }, { status: 404 });
   if (me.role !== 'admin' && row.writer_hash !== writer_hash) {
     return Response.json({ error: 'Not your request' }, { status: 403 });
@@ -56,8 +64,8 @@ Deno.serve(async (req) => {
     return Response.json({ error: 'receiver changed', receiver_pub: row.receiver_pub }, { status: 409 });
   }
 
-  const ok = await sb.entities.WitnessRequest
-    .update(request_id, { wrapped_key: String(wrapped_key) })
+  const ok = await withTimeout(sb.entities.WitnessRequest
+    .update(request_id, { wrapped_key: String(wrapped_key) }), 6000, 'update')
     .catch((err: any) => { console.error('deliverWitnessKey update failed:', err?.message || err); return null; });
   if (!ok) return Response.json({ error: 'Write failed' }, { status: 500 });
   return Response.json({ ok: true });

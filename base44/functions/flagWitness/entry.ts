@@ -14,6 +14,14 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 const REPORT_AUTOHIDE_THRESHOLD = 2;
 const STRIKE_REASONS = ['reported', 'charter_breach', 'capture_attempt', 'ignored_repeat', 'other'];
 
+// Timeout guard — an awaited platform read/write that HANGS would wedge the function.
+function withTimeout(p: Promise<any>, ms: number, label: string): Promise<any> {
+  return new Promise((resolve, reject) => {
+    const t = setTimeout(() => reject(new Error(`${label}-timeout-${ms}ms`)), ms);
+    p.then((v) => { clearTimeout(t); resolve(v); }, (e) => { clearTimeout(t); reject(e); });
+  });
+}
+
 Deno.serve(async (req) => {
   const base44 = createClientFromRequest(req);
   const me = await base44.auth.me().catch(() => null);
@@ -34,14 +42,14 @@ Deno.serve(async (req) => {
 
   if (kind === 'report') {
     if (!request_id) return Response.json({ error: 'request_id required' }, { status: 400 });
-    const row = await sb.entities.WitnessRequest.get(request_id).catch(() => null);
+    const row = await withTimeout(sb.entities.WitnessRequest.get(request_id), 2500, 'get').catch(() => null);
     if (!row) return Response.json({ error: 'Not found' }, { status: 404 });
     if (row.receiver_hash !== receiver_hash) {
       return Response.json({ error: 'Not your witness' }, { status: 403 });
     }
     const report_count = (row.report_count || 0) + 1;
     const hidden = report_count >= REPORT_AUTOHIDE_THRESHOLD;
-    const ok = await sb.entities.WitnessRequest.update(request_id, { report_count, hidden }).catch(() => null);
+    const ok = await withTimeout(sb.entities.WitnessRequest.update(request_id, { report_count, hidden }), 6000, 'update').catch(() => null);
     if (!ok) return Response.json({ error: 'Write failed' }, { status: 500 });
     // A reported entry also strikes nothing on the receiver; it's content moderation.
     return Response.json({ ok: true, report_count, hidden });
@@ -54,16 +62,16 @@ Deno.serve(async (req) => {
     // from the pool. (The internal 'ignored_repeat' strike is written by
     // claimWitness via asServiceRole, never through here.)
     if (!request_id) return Response.json({ error: 'request_id required' }, { status: 400 });
-    const row = await sb.entities.WitnessRequest.get(request_id).catch(() => null);
+    const row = await withTimeout(sb.entities.WitnessRequest.get(request_id), 2500, 'get').catch(() => null);
     if (!row) return Response.json({ error: 'Not found' }, { status: 404 });
     if (me.role !== 'admin' && row.receiver_hash !== receiver_hash) {
       return Response.json({ error: 'Not your witness' }, { status: 403 });
     }
     const r = STRIKE_REASONS.includes(reason) ? reason : 'other';
-    const ok = await sb.entities.WitnessStrike.create({
+    const ok = await withTimeout(sb.entities.WitnessStrike.create({
       receiver_hash, request_ref: request_id,
       reason: r, struck_at: nowISO, active: true,
-    }).catch(() => null);
+    }), 6000, 'create').catch(() => null);
     if (!ok) return Response.json({ error: 'Write failed' }, { status: 500 });
     return Response.json({ ok: true });
   }
