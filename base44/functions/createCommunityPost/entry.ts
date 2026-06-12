@@ -112,11 +112,10 @@ Deno.serve(async (req) => {
 
   const sb = base44.asServiceRole;
   const since = startOfTodayISO();
-  // Rate-cap READ — timeout-guarded + fail-open. This is the ONLY non-create await that
-  // createPostDiag does NOT exercise (it does raw create+delete, never this filter-with-sort);
-  // an unguarded read here that hung was wedging the function for 27s+ even though the raw
-  // create is fast. If it doesn't resolve in 2.5s we skip the cap and still publish — a hung
-  // anti-flood read must never block a real post.
+  // Rate-cap READ — timeout-guarded + fail-open. An unguarded sorted read here once wedged the
+  // function for 27s+ (the '-created_date' sort was unindexed; now indexed). If it doesn't
+  // resolve in 2.5s we skip the cap and still publish — a hung anti-flood read must never block
+  // a real post.
   const mine = await withTimeout(sb.entities.CommunityPost.filter({ author_hash: String(author_hash) }, '-created_date', 50), 2500, 'rate-read').catch(() => []);
   const today = (Array.isArray(mine) ? mine : []).filter((e: any) => (e.created_date || '') >= since).length;
   if (today >= DAILY_CAP) return Response.json({ error: 'rate', today }, { status: 200 });
