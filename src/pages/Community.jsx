@@ -47,7 +47,7 @@ import {
 import {
   CLUBS, CLUB_CATEGORIES, clubByKey, CLUBS_USER_CREATE_ENABLED,
   isClubJoined, markClubJoined, clearClubJoined,
-  isDailyReadClub, dailyReadClubFromKey,
+  isDailyReadClub, dailyReadClubFromKey, dailyReadClubKey,
 } from "@/components/community/clubsConfig";
 import { WISDOM_TOPICS, WISDOM_SEED, featuredWisdom } from "@/components/community/wisdomLibrary";
 import { SEED_PICK, clubReached, setClubReached } from "@/components/community/bookClubConfig";
@@ -140,6 +140,7 @@ function PostCard({ post, user, onCrisis, onChanged }) {
   const [draft, setDraft] = useState("");
   const [busy, setBusy] = useState(false);
   const [commentErr, setCommentErr] = useState(false);
+  const [reactErr, setReactErr] = useState(false);
   const isOpen = post.comments_mode !== "reaction";
   const jessTried = useRef(false);
 
@@ -172,13 +173,22 @@ function PostCard({ post, user, onCrisis, onChanged }) {
 
   const react = async (kind) => {
     if (hasReacted(post.id, kind)) return;
-    markReacted(post.id, kind);
+    markReacted(post.id, kind);   // optimistic — the pill visibly registers the tap immediately
+    setReactErr(false);
     onChanged?.();
     try {
       const wh = await communityHash(user?.id);
-      const r = await base44.functions.invoke("reactCommunity", { user_id: user?.id, author_hash: wh, target_type: "post", target_id: post.id, kind });
+      // client-side timeout so a stalled call can't hang the tap silently
+      const r = await Promise.race([
+        base44.functions.invoke("reactCommunity", { user_id: user?.id, author_hash: wh, target_type: "post", target_id: post.id, kind }),
+        new Promise((_, rej) => setTimeout(() => rej(new Error("timeout")), 8000)),
+      ]);
       if (!(r?.data ?? r)?.ok) throw new Error("react rejected");
-    } catch (e) { console.error("react failed:", e); unmarkReacted(post.id, kind); onChanged?.(); }
+    } catch (e) {
+      // Roll the pill back AND surface a brief error so the failed tap isn't silent.
+      console.error("react failed:", e); unmarkReacted(post.id, kind); onChanged?.();
+      setReactErr(true); setTimeout(() => setReactErr(false), 3000);
+    }
   };
 
   const report = async () => {
@@ -236,6 +246,7 @@ function PostCard({ post, user, onCrisis, onChanged }) {
           <Flag size={13} />
         </button>
       </div>
+      {reactErr && <div style={{ fontFamily: UI, fontSize: 11, color: T.crimson, marginTop: 5 }}>Couldn{"’"}t register that — try again.</div>}
 
       {/* comments */}
       <div style={{ marginTop: 12, paddingTop: 10, borderTop: `1px solid ${T.paperDeep}` }}>
@@ -1034,6 +1045,7 @@ function CircleView({ circleKey, user, onCrisis, onBack }) {
   const [posts, setPosts] = useState(null);
   const [composing, setComposing] = useState(false);
   const [needConsent, setNeedConsent] = useState(false);
+  const [joinErr, setJoinErr] = useState(false);
   const [busy, setBusy] = useState(false);
 
   const load = useCallback(async () => {
@@ -1046,12 +1058,15 @@ function CircleView({ circleKey, user, onCrisis, onBack }) {
 
   const doJoin = async (consented) => {
     if (busy) return;
-    setBusy(true);
+    setBusy(true); setJoinErr(false);
     try {
       const wh = await communityHash(user?.id);
-      await base44.functions.invoke("joinCircle", { user_id: user?.id, author_hash: wh, circle_key: circleKey, consented: !!consented });
+      await Promise.race([
+        base44.functions.invoke("joinCircle", { user_id: user?.id, author_hash: wh, circle_key: circleKey, consented: !!consented }),
+        new Promise((_, rej) => setTimeout(() => rej(new Error("timeout")), 8000)),
+      ]);
       markJoined(circleKey); setJoined(true); setNeedConsent(false);
-    } catch (e) { console.error("join failed:", e); }
+    } catch (e) { console.error("join failed:", e); setJoinErr(true); }   // visible error instead of a silent hang
     finally { setBusy(false); }
   };
   const onJoinClick = () => { if (circle?.sensitive) setNeedConsent(true); else doJoin(false); };
@@ -1091,6 +1106,7 @@ function CircleView({ circleKey, user, onCrisis, onBack }) {
             : <button onClick={onJoinClick} disabled={busy} style={{ ...primaryBtn, opacity: busy ? 0.6 : 1 }}><Users size={14} /> Join this circle</button>}
         </div>
       )}
+      {joinErr && <div style={{ fontFamily: UI, fontSize: 12, color: T.crimson, marginBottom: 12 }}>Couldn{"’"}t join just now — please try again.</div>}
 
       {!composing && joined && (
         <button onClick={() => setComposing(true)} style={{ ...primaryBtn, marginBottom: 16 }}><Plus size={14} /> Add to {circle.name}</button>
@@ -1266,6 +1282,7 @@ function ClubView({ clubKey, user, onCrisis, onBack, clubTitle = "" }) {
   const [composing, setComposing] = useState(false);
   const [voicing, setVoicing] = useState(false);
   const [busy, setBusy] = useState(false);
+  const [joinErr, setJoinErr] = useState(false);
 
   const load = useCallback(async () => {
     try {
@@ -1277,12 +1294,15 @@ function ClubView({ clubKey, user, onCrisis, onBack, clubTitle = "" }) {
 
   const join = async () => {
     if (busy) return;
-    setBusy(true);
+    setBusy(true); setJoinErr(false);
     try {
       const wh = await communityHash(user?.id);
-      await base44.functions.invoke("joinClub", { user_id: user?.id, author_hash: wh, club_key: clubKey });
+      await Promise.race([
+        base44.functions.invoke("joinClub", { user_id: user?.id, author_hash: wh, club_key: clubKey }),
+        new Promise((_, rej) => setTimeout(() => rej(new Error("timeout")), 8000)),
+      ]);
       markClubJoined(clubKey); setJoined(true);
-    } catch (e) { console.error("join club failed:", e); }
+    } catch (e) { console.error("join club failed:", e); setJoinErr(true); }   // visible error instead of a silent hang
     finally { setBusy(false); }
   };
   const leave = async () => {
@@ -1332,6 +1352,7 @@ function ClubView({ clubKey, user, onCrisis, onBack, clubTitle = "" }) {
               <button onClick={leave} disabled={busy} style={{ ...ghostBtn, border: "none", color: T.muted }}>Leave</button></>
           : <button onClick={join} disabled={busy} style={{ ...primaryBtn, opacity: busy ? 0.6 : 1 }}><HeartHandshake size={14} /> Join this club</button>}
       </div>
+      {joinErr && <div style={{ fontFamily: UI, fontSize: 12, color: T.crimson, marginBottom: 12 }}>Couldn{"’"}t join just now — please try again.</div>}
 
       {!composing && joined && (
         <button onClick={() => setComposing(true)} style={{ ...primaryBtn, marginBottom: 16 }}><Plus size={14} /> Add to {club.name}</button>
