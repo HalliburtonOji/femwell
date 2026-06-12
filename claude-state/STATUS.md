@@ -1,6 +1,21 @@
 # FEMWELL — CANONICAL STATUS INDEX (read first · updated 2026-06-12)
 **This file is the single source of truth AND the index to every plan doc. If anything else disagrees, this wins.** (The long ship-log history continues below the index.)
 
+## 🅰️ REMAINING-ITEMS WAVE (A1–A4) DEPLOYED + VERIFIED + 🅱️ COMMUNITY VERDICT (2026-06-12) — live hash `index-Cajl1CGV.js`
+**Part A — all 4 remaining optional items, deployed (`4ca92a5`) + verified:**
+- **A1 (`1388f4e`)** Journal Guide/Coach onto cream/plum — the flagged "off-palette set" was mostly brand vars already; remapped the real hardcoded hex (mood gradient, cycle-phase rainbow→blush/sage/gold/plum, chart greys). 0 off-brand hex; deployed.
+- **A2 (`0cc3335`)** Profile field-saves → visible save toast (success + error) on every previously-silent write. **LIVE-VERIFIED** (toast renders on a settings change).
+- **A3 (`e394521`)** index tail — added sort indexes to **63 more entities** (every real `.filter(...,'-field')`). With B2, no community/core read sorts unindexed. Synced.
+- **A4 (`4ca92a5`)** service-only RLS hardening — CONSERVATIVE per guardrail. Locked writes→role:admin (reads public) on **5 verified-safe content catalogs** (DealsItems, EventsItems, StoryVisualPool, WeeklyBookPick, VoiceScripts — all asServiceRole-written, zero client writes). **LIVE-VERIFIED:** DealsItems read 200, client write 403 (locked, no breakage). **Flagged-not-locked:** StoryItem/StoryPack/FictionWork (have NON-asServiceRole writes in functions → would break); 11 no-in-repo-writer catalogs; all per-user/health/billing entities (owner-writable).
+- Deploy gotcha reconfirmed: keepalive POST + poll the hash + webhook lags ~5-8 min on big entity changesets.
+
+**Part B — UNBIASED Community sweep (adversarial subagent drove live) + MY CRITICAL CORRECTION:**
+- ⚠️ **The subagent's headline "entire community backend 503/DOWN" was a TRANSIENT artifact of my Part-A deploy window** (functions briefly 503 while regenerating during its ~14-min sweep). **I verified by curl (bypassing the frozen browser): every community fn returns 401 (healthy/auth-gating), NOT 503.** Community backend is UP. (Earlier this session the full live write-sweep passed end-to-end.)
+- **Real findings (backend-independent):** Echo Wall renders blank (reproduced, but under heavy renderer-freeze — needs a clean repro); Library reported→error-boundary (not re-confirmed); "Talk to Jess" footer link = no-op; reactions show no pressed/count state; circle/club-join flows lack timeout/error handling (hung during the 503 window).
+- **Whole-life framing: genuinely balanced, NOT clinical-skewed** (strong copy/IA, "Health is one room"). But breadth is mostly empty rooms + per-room "signature features" (Style rate-the-fit, Lighter horoscope, Health NHS) don't exist — taglines over-promise. No seed content.
+- **Confirmed working:** Living Wisdom collection, Jump-to hub, posting (verified live earlier).
+- **⚠️ PENDING:** purgeTestPosts of the sweep's "qa community sweep"/"qa recheck" Lounge posts couldn't run through the frozen browser — run it once. Re-verify Echo Wall + Library with a fresh browser.
+
 ## 🚀 SCAN-2 + CLEANUP DEPLOYED + LIVE-VERIFIED (2026-06-12) — both waves live on femwells.com
 Deployed + verified BOTH the Scan-2 UI fixes and the cleanup wave via Chrome MCP.
 - **Deploy 1 (Scan-2 UI fixes, commit 49f8b94):** bundle `index-ueVuHO0i.js` → `index-ngK6X6j4.js`.
