@@ -43,6 +43,7 @@ export default function NutritionProgressTab({ user, nutritionProfile, onProfile
     hydration_target_ml: nutritionProfile?.hydration_target_ml || 2000,
   });
   const [savingTargets, setSavingTargets] = useState(false);
+  const [saveError, setSaveError] = useState(null);
 
   useEffect(() => { loadData(); }, []);
 
@@ -63,18 +64,25 @@ export default function NutritionProgressTab({ user, nutritionProfile, onProfile
   const saveGoal = async () => {
     if (!selectedGoal) return;
     setSavingGoal(true);
-    if (nutritionProfile?.id) {
-      await base44.entities.NutritionProfile.update(nutritionProfile.id, { goal_mode: selectedGoal });
-    } else {
-      await base44.entities.NutritionProfile.create({ user_id: user.id, goal_mode: selectedGoal });
+    setSaveError(null);
+    try {
+      if (nutritionProfile?.id) {
+        await base44.entities.NutritionProfile.update(nutritionProfile.id, { goal_mode: selectedGoal });
+      } else {
+        await base44.entities.NutritionProfile.create({ user_id: user.id, goal_mode: selectedGoal });
+      }
+      onProfileUpdated?.();
+      setShowGoalPicker(false);
+    } catch (e) {
+      console.error(e);
+      setSaveError("Couldn't save your goal. Please try again.");
     }
-    onProfileUpdated?.();
-    setShowGoalPicker(false);
     setSavingGoal(false);
   };
 
   const saveTargets = async () => {
     setSavingTargets(true);
+    setSaveError(null);
     const payload = {
       calories_target: parseInt(targetForm.calories_target) || 2000,
       protein_target_g: parseInt(targetForm.protein_target_g) || 120,
@@ -82,13 +90,18 @@ export default function NutritionProgressTab({ user, nutritionProfile, onProfile
       fat_target_g: parseInt(targetForm.fat_target_g) || 65,
       hydration_target_ml: parseInt(targetForm.hydration_target_ml) || 2000,
     };
-    if (nutritionProfile?.id) {
-      await base44.entities.NutritionProfile.update(nutritionProfile.id, payload);
-    } else {
-      await base44.entities.NutritionProfile.create({ user_id: user.id, ...payload });
+    try {
+      if (nutritionProfile?.id) {
+        await base44.entities.NutritionProfile.update(nutritionProfile.id, payload);
+      } else {
+        await base44.entities.NutritionProfile.create({ user_id: user.id, ...payload });
+      }
+      onProfileUpdated?.();
+      setEditingTargets(false);
+    } catch (e) {
+      console.error(e);
+      setSaveError("Couldn't save your targets. Please try again.");
     }
-    onProfileUpdated?.();
-    setEditingTargets(false);
     setSavingTargets(false);
   };
 
@@ -99,10 +112,16 @@ export default function NutritionProgressTab({ user, nutritionProfile, onProfile
     if (metricForm.hips_cm)   payload.hips_cm   = parseFloat(metricForm.hips_cm);
     if (metricForm.bust_cm)   payload.bust_cm   = parseFloat(metricForm.bust_cm);
     setSavingMetric(true);
-    await base44.entities.BodyMetrics.create(payload);
-    loadData(); // background refetch — don't gate the UI on the read
-    setAddingMetric(false);
-    setMetricForm({ weight_kg: "", waist_cm: "", hips_cm: "", bust_cm: "", notes: "" });
+    setSaveError(null);
+    try {
+      await base44.entities.BodyMetrics.create(payload);
+      loadData(); // background refetch — don't gate the UI on the read
+      setAddingMetric(false);
+      setMetricForm({ weight_kg: "", waist_cm: "", hips_cm: "", bust_cm: "", notes: "" });
+    } catch (e) {
+      console.error(e);
+      setSaveError("Couldn't save your measurements. Please try again.");
+    }
     setSavingMetric(false);
   };
 
@@ -144,6 +163,12 @@ export default function NutritionProgressTab({ user, nutritionProfile, onProfile
 
   return (
     <div className="space-y-4">
+
+      {saveError && (
+        <p className="text-xs text-center rounded-xl p-2.5" style={{ backgroundColor: "var(--rose-dust-subtle)", color: "var(--rose-dust)" }}>
+          {saveError}
+        </p>
+      )}
 
       {/* Goal card */}
       {showGoalPicker ? (

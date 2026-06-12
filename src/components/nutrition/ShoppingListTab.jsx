@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { format, startOfWeek } from "date-fns";
-import { Loader2, Plus, Trash2, Check, RefreshCw, Mail, Copy, CheckCircle, ShoppingCart, Package, Leaf, Egg, Fish, Archive, Snowflake, Wheat, Droplets, Apple, MoreHorizontal } from "lucide-react";
+import { Loader2, Plus, Trash2, Check, RefreshCw, Mail, Copy, CheckCircle, ShoppingCart, Package, Leaf, Egg, Fish, Archive, Snowflake, Wheat, Droplets, Apple } from "lucide-react";
 
 const CATEGORIES = ["Produce", "Dairy & Eggs", "Meat & Seafood", "Pantry", "Frozen", "Bakery", "Beverages", "Snacks", "Other"];
 
@@ -37,6 +37,7 @@ export default function ShoppingListTab({ user }) {
   const [addingItem, setAddingItem] = useState(false);
   const [copied, setCopied]         = useState(false);
   const [emailSent, setEmailSent]   = useState(false);
+  const [actionError, setActionError] = useState(null);
 
   const weekStart = format(startOfWeek(new Date(), { weekStartsOn: 1 }), "yyyy-MM-dd");
 
@@ -51,35 +52,41 @@ export default function ShoppingListTab({ user }) {
 
   const syncFromMealPlan = async () => {
     setSyncing(true);
-    const plans = await base44.entities.MealPlans.filter({ user_id: user.id, week_start: weekStart, is_active: true });
-    const plan = plans[0];
-    if (!plan) { setSyncing(false); return; }
-    // shopping items come from the ShoppingList entity (synced when plan was saved)
-    // Re-extract ingredient names from existing meal_plan-sourced ShoppingList rows
-    const existingItems = await base44.entities.ShoppingList.filter({ user_id: user.id, week_start: weekStart, source: "meal_plan" });
-    const shoppingItems = existingItems.map(i => i.ingredient_name).filter(Boolean);
-    if (shoppingItems.length > 0) {
-      let categorized = shoppingItems.map(i => ({ ingredient: i, category: "Other", quantity: "" }));
-      try {
-        const catRes = await base44.integrations.Core.InvokeLLM({
-          prompt: `Categorize these grocery items into: Produce, Dairy & Eggs, Meat & Seafood, Pantry, Frozen, Bakery, Beverages, Snacks, Other.
+    setActionError(null);
+    try {
+      const plans = await base44.entities.MealPlans.filter({ user_id: user.id, week_start: weekStart, is_active: true });
+      const plan = plans[0];
+      if (!plan) { setSyncing(false); return; }
+      // shopping items come from the ShoppingList entity (synced when plan was saved)
+      // Re-extract ingredient names from existing meal_plan-sourced ShoppingList rows
+      const existingItems = await base44.entities.ShoppingList.filter({ user_id: user.id, week_start: weekStart, source: "meal_plan" });
+      const shoppingItems = existingItems.map(i => i.ingredient_name).filter(Boolean);
+      if (shoppingItems.length > 0) {
+        let categorized = shoppingItems.map(i => ({ ingredient: i, category: "Other", quantity: "" }));
+        try {
+          const catRes = await base44.integrations.Core.InvokeLLM({
+            prompt: `Categorize these grocery items into: Produce, Dairy & Eggs, Meat & Seafood, Pantry, Frozen, Bakery, Beverages, Snacks, Other.
 Items: ${shoppingItems.join(", ")}
 Return JSON: {"items": [{"ingredient": "name", "category": "CategoryName", "quantity": "estimated amount or empty string"}]}`,
-          response_json_schema: { type: "object", properties: { items: { type: "array", items: { type: "object", properties: { ingredient: { type: "string" }, category: { type: "string" }, quantity: { type: "string" } } } } } }
-        });
-        if (catRes.items?.length) categorized = catRes.items;
-      } catch {}
-      const old = items.filter(i => i.source === "meal_plan");
-      await Promise.all(old.map(i => base44.entities.ShoppingList.delete(i.id)));
-      await base44.entities.ShoppingList.bulkCreate(
-        categorized.map(ci => ({
-          user_id: user.id, week_start: weekStart,
-          ingredient_name: ci.ingredient, quantity_text: ci.quantity || "",
-          category: CATEGORIES.includes(ci.category) ? ci.category : "Other",
-          is_checked: false, source: "meal_plan", meal_plan_id: plan.id,
-        }))
-      );
-      loadItems(); // background refetch — don't gate the UI on the read
+            response_json_schema: { type: "object", properties: { items: { type: "array", items: { type: "object", properties: { ingredient: { type: "string" }, category: { type: "string" }, quantity: { type: "string" } } } } } }
+          });
+          if (catRes.items?.length) categorized = catRes.items;
+        } catch {}
+        const old = items.filter(i => i.source === "meal_plan");
+        await Promise.all(old.map(i => base44.entities.ShoppingList.delete(i.id)));
+        await base44.entities.ShoppingList.bulkCreate(
+          categorized.map(ci => ({
+            user_id: user.id, week_start: weekStart,
+            ingredient_name: ci.ingredient, quantity_text: ci.quantity || "",
+            category: CATEGORIES.includes(ci.category) ? ci.category : "Other",
+            is_checked: false, source: "meal_plan", meal_plan_id: plan.id,
+          }))
+        );
+        loadItems(); // background refetch — don't gate the UI on the read
+      }
+    } catch (e) {
+      console.error(e);
+      setActionError("Couldn't sync your plan. Please try again.");
     }
     setSyncing(false);
   };
@@ -118,19 +125,25 @@ Return JSON: {"items": [{"ingredient": "name", "category": "CategoryName", "quan
   };
 
   const emailList = async () => {
-    const me = await base44.auth.me();
-    const html = CATEGORIES.map(cat => {
-      const catItems = items.filter(i => i.category === cat && !i.is_checked);
-      if (!catItems.length) return null;
-      return `<b>${cat}</b><br>${catItems.map(i => `&nbsp;&nbsp;• ${i.quantity_text ? i.quantity_text + " " : ""}${i.ingredient_name}`).join("<br>")}`;
-    }).filter(Boolean).join("<br><br>");
-    await base44.integrations.Core.SendEmail({
-      to: me.email,
-      subject: `Shopping List — Week of ${weekStart}`,
-      body: `<h2 style="color:#2A2035;font-family:serif">Your Shopping List</h2><p style="color:#8A7E88">Week of ${weekStart}</p><br>${html}`,
-    });
-    setEmailSent(true);
-    setTimeout(() => setEmailSent(false), 3000);
+    setActionError(null);
+    try {
+      const me = await base44.auth.me();
+      const html = CATEGORIES.map(cat => {
+        const catItems = items.filter(i => i.category === cat && !i.is_checked);
+        if (!catItems.length) return null;
+        return `<b>${cat}</b><br>${catItems.map(i => `&nbsp;&nbsp;• ${i.quantity_text ? i.quantity_text + " " : ""}${i.ingredient_name}`).join("<br>")}`;
+      }).filter(Boolean).join("<br><br>");
+      await base44.integrations.Core.SendEmail({
+        to: me.email,
+        subject: `Shopping List — Week of ${weekStart}`,
+        body: `<h2 style="color:#2A2035;font-family:serif">Your Shopping List</h2><p style="color:#8A7E88">Week of ${weekStart}</p><br>${html}`,
+      });
+      setEmailSent(true);
+      setTimeout(() => setEmailSent(false), 3000);
+    } catch (e) {
+      console.error(e);
+      setActionError("Couldn't email your list. Please try again.");
+    }
   };
 
   const groupedItems = CATEGORIES.reduce((acc, cat) => {
@@ -207,6 +220,12 @@ Return JSON: {"items": [{"ingredient": "name", "category": "CategoryName", "quan
             </button>
           )}
         </div>
+
+        {actionError && (
+          <p className="text-xs text-center rounded-xl p-2.5" style={{ backgroundColor: "var(--rose-dust-subtle)", color: "var(--rose-dust)" }}>
+            {actionError}
+          </p>
+        )}
       </div>
 
       {/* Empty state */}

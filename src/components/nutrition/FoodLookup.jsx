@@ -4,39 +4,39 @@ import { Search, X, Plus, ChevronLeft, ChevronRight } from "lucide-react";
 // Common foods database with macro estimates per 100g
 const FOOD_DB = [
   // Proteins
-  { name: "Chicken breast (cooked)", cal: 165, protein: 31, carbs: 0, fat: 3.6, portion: "150g", emoji: "🍗" },
-  { name: "Salmon (cooked)", cal: 208, protein: 20, carbs: 0, fat: 13, portion: "150g", emoji: "🐟" },
-  { name: "Eggs (2 large)", cal: 143, protein: 13, carbs: 1, fat: 10, portion: "100g", emoji: "🥚" },
-  { name: "Greek yoghurt (full fat)", cal: 97, protein: 9, carbs: 4, fat: 5, portion: "200g", emoji: "🥛" },
-  { name: "Lentils (cooked)", cal: 116, protein: 9, carbs: 20, fat: 0.4, portion: "200g", emoji: "🫘" },
-  { name: "Tofu (firm)", cal: 76, protein: 8, carbs: 2, fat: 4.2, portion: "150g", emoji: "🧆" },
-  { name: "Tuna (canned)", cal: 128, protein: 26, carbs: 0, fat: 2.5, portion: "120g", emoji: "🐠" },
+  { name: "Chicken breast (cooked)", cal: 165, protein: 31, carbs: 0, fat: 3.6, portion: "150g" },
+  { name: "Salmon (cooked)", cal: 208, protein: 20, carbs: 0, fat: 13, portion: "150g" },
+  { name: "Eggs (2 large)", cal: 143, protein: 13, carbs: 1, fat: 10, portion: "100g" },
+  { name: "Greek yoghurt (full fat)", cal: 97, protein: 9, carbs: 4, fat: 5, portion: "200g" },
+  { name: "Lentils (cooked)", cal: 116, protein: 9, carbs: 20, fat: 0.4, portion: "200g" },
+  { name: "Tofu (firm)", cal: 76, protein: 8, carbs: 2, fat: 4.2, portion: "150g" },
+  { name: "Tuna (canned)", cal: 128, protein: 26, carbs: 0, fat: 2.5, portion: "120g" },
   // Grains / Carbs
-  { name: "Oats (dry)", cal: 389, protein: 17, carbs: 66, fat: 7, portion: "50g", emoji: "🌾" },
-  { name: "Brown rice (cooked)", cal: 111, protein: 2.6, carbs: 23, fat: 0.9, portion: "180g", emoji: "🍚" },
-  { name: "Whole wheat bread", cal: 247, protein: 13, carbs: 41, fat: 3.4, portion: "2 slices (70g)", emoji: "🍞" },
-  { name: "Pasta (cooked)", cal: 158, protein: 6, carbs: 31, fat: 0.9, portion: "200g", emoji: "🍝" },
-  { name: "Sweet potato (cooked)", cal: 90, protein: 2, carbs: 21, fat: 0.1, portion: "150g", emoji: "🍠" },
-  { name: "Quinoa (cooked)", cal: 120, protein: 4.4, carbs: 21, fat: 1.9, portion: "185g", emoji: "🌿" },
+  { name: "Oats (dry)", cal: 389, protein: 17, carbs: 66, fat: 7, portion: "50g" },
+  { name: "Brown rice (cooked)", cal: 111, protein: 2.6, carbs: 23, fat: 0.9, portion: "180g" },
+  { name: "Whole wheat bread", cal: 247, protein: 13, carbs: 41, fat: 3.4, portion: "2 slices (70g)" },
+  { name: "Pasta (cooked)", cal: 158, protein: 6, carbs: 31, fat: 0.9, portion: "200g" },
+  { name: "Sweet potato (cooked)", cal: 90, protein: 2, carbs: 21, fat: 0.1, portion: "150g" },
+  { name: "Quinoa (cooked)", cal: 120, protein: 4.4, carbs: 21, fat: 1.9, portion: "185g" },
   // Fruits & Veg
-  { name: "Banana", cal: 89, protein: 1.1, carbs: 23, fat: 0.3, portion: "1 medium (120g)", emoji: "🍌" },
-  { name: "Apple", cal: 52, protein: 0.3, carbs: 14, fat: 0.2, portion: "1 medium (182g)", emoji: "🍎" },
-  { name: "Avocado", cal: 160, protein: 2, carbs: 9, fat: 15, portion: "½ avocado (75g)", emoji: "🥑" },
-  { name: "Spinach (raw)", cal: 23, protein: 2.9, carbs: 3.6, fat: 0.4, portion: "80g", emoji: "🥬" },
-  { name: "Broccoli (cooked)", cal: 55, protein: 3.7, carbs: 11, fat: 0.6, portion: "150g", emoji: "🥦" },
-  { name: "Berries (mixed)", cal: 57, protein: 0.7, carbs: 14, fat: 0.3, portion: "150g", emoji: "🫐" },
+  { name: "Banana", cal: 89, protein: 1.1, carbs: 23, fat: 0.3, portion: "1 medium (120g)" },
+  { name: "Apple", cal: 52, protein: 0.3, carbs: 14, fat: 0.2, portion: "1 medium (182g)" },
+  { name: "Avocado", cal: 160, protein: 2, carbs: 9, fat: 15, portion: "½ avocado (75g)" },
+  { name: "Spinach (raw)", cal: 23, protein: 2.9, carbs: 3.6, fat: 0.4, portion: "80g" },
+  { name: "Broccoli (cooked)", cal: 55, protein: 3.7, carbs: 11, fat: 0.6, portion: "150g" },
+  { name: "Berries (mixed)", cal: 57, protein: 0.7, carbs: 14, fat: 0.3, portion: "150g" },
   // Dairy / Fats
-  { name: "Cheddar cheese", cal: 402, protein: 25, carbs: 1.3, fat: 33, portion: "30g", emoji: "🧀" },
-  { name: "Almond butter", cal: 614, protein: 21, carbs: 19, fat: 56, portion: "2 tbsp (32g)", emoji: "🥜" },
-  { name: "Whole milk", cal: 61, protein: 3.2, carbs: 4.8, fat: 3.3, portion: "250ml", emoji: "🥛" },
-  { name: "Olive oil", cal: 884, protein: 0, carbs: 0, fat: 100, portion: "1 tbsp (14g)", emoji: "🫙" },
+  { name: "Cheddar cheese", cal: 402, protein: 25, carbs: 1.3, fat: 33, portion: "30g" },
+  { name: "Almond butter", cal: 614, protein: 21, carbs: 19, fat: 56, portion: "2 tbsp (32g)" },
+  { name: "Whole milk", cal: 61, protein: 3.2, carbs: 4.8, fat: 3.3, portion: "250ml" },
+  { name: "Olive oil", cal: 884, protein: 0, carbs: 0, fat: 100, portion: "1 tbsp (14g)" },
   // Meals
-  { name: "Porridge with milk", cal: 140, protein: 6, carbs: 22, fat: 3.5, portion: "1 bowl (300g)", emoji: "🍲" },
-  { name: "Caesar salad", cal: 190, protein: 9, carbs: 12, fat: 13, portion: "1 serving (250g)", emoji: "🥗" },
-  { name: "Scrambled eggs on toast", cal: 310, protein: 18, carbs: 28, fat: 13, portion: "1 serving", emoji: "🍳" },
-  { name: "Chicken stir-fry", cal: 230, protein: 22, carbs: 18, fat: 7, portion: "1 serving (300g)", emoji: "🥘" },
-  { name: "Protein shake", cal: 150, protein: 25, carbs: 8, fat: 3, portion: "1 scoop (300ml)", emoji: "🥤" },
-  { name: "Dark chocolate (70%+)", cal: 598, protein: 7.8, carbs: 46, fat: 43, portion: "30g (3 squares)", emoji: "🍫" },
+  { name: "Porridge with milk", cal: 140, protein: 6, carbs: 22, fat: 3.5, portion: "1 bowl (300g)" },
+  { name: "Caesar salad", cal: 190, protein: 9, carbs: 12, fat: 13, portion: "1 serving (250g)" },
+  { name: "Scrambled eggs on toast", cal: 310, protein: 18, carbs: 28, fat: 13, portion: "1 serving" },
+  { name: "Chicken stir-fry", cal: 230, protein: 22, carbs: 18, fat: 7, portion: "1 serving (300g)" },
+  { name: "Protein shake", cal: 150, protein: 25, carbs: 8, fat: 3, portion: "1 scoop (300ml)" },
+  { name: "Dark chocolate (70%+)", cal: 598, protein: 7.8, carbs: 46, fat: 43, portion: "30g (3 squares)" },
 ];
 
 const CATEGORIES = [
@@ -180,7 +180,6 @@ export default function FoodLookup({ onSelect, onClose }) {
                   }}>
                     <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 16 }}>
                       <div>
-                        <span style={{ fontSize: 28, lineHeight: 1, display: "block", marginBottom: 6 }}>{currentFood.emoji}</span>
                         <h4 style={{ fontSize: 17, fontWeight: 700, color: "var(--plum)", lineHeight: 1.3, maxWidth: 220 }}>{currentFood.name}</h4>
                         <p style={{ fontSize: 11, color: "var(--mauve)", marginTop: 3 }}>{currentFood.portion}</p>
                       </div>
@@ -238,7 +237,6 @@ export default function FoodLookup({ onSelect, onClose }) {
                       onMouseEnter={e => { if (i !== deckIndex) e.currentTarget.style.backgroundColor = "var(--ivory-dark)"; }}
                       onMouseLeave={e => { if (i !== deckIndex) e.currentTarget.style.backgroundColor = "var(--ivory)"; }}
                     >
-                      <span style={{ fontSize: 20, flexShrink: 0 }}>{food.emoji}</span>
                       <div style={{ flex: 1, minWidth: 0 }}>
                         <p style={{ fontSize: 13, fontWeight: 600, color: "var(--plum)", marginBottom: 1 }}>{food.name}</p>
                         <p style={{ fontSize: 11, color: "var(--mauve)", }}>{food.portion} · {m.cal} kcal · {m.protein}g protein</p>

@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { base44 } from "@/api/base44Client";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import { Loader2, X, CalendarDays, Plus, CheckCircle, Copy, BookmarkPlus } from "lucide-react";
 import { format, startOfWeek } from "date-fns";
 
@@ -257,6 +257,8 @@ export default function MealPlanGeneratorTab({ user, nutritionProfile }) {
 
   const handleSaveMealPlan = async (mealPlan) => {
     setSaving(true);
+    setError(null);
+    try {
     const weekStart = format(startOfWeek(new Date(), { weekStartsOn: 1 }), "yyyy-MM-dd");
     const plan_days = (mealPlan.days || []).map((d) => {
       const dayIdx = (d.day_number - 1) % 7;
@@ -309,7 +311,12 @@ Return JSON: {"items": [{"ingredient": "name", "category": "CategoryName", "quan
         }))
       );
     }
-    setSaving(false); setSaved(true);
+    setSaved(true);
+    } catch (e) {
+      console.error(e);
+      setError("Couldn't save your plan. Please try again.");
+    }
+    setSaving(false);
   };
 
   return (

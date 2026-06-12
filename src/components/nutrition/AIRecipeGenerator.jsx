@@ -238,9 +238,9 @@ function MealPlanCard({ mealPlan, onSaveToPlan }) {
 
   const copyPlan = () => {
     const text = mealPlan.days?.map(d =>
-      `${d.day_label}:\n  🌅 B: ${d.meals?.breakfast?.name}\n  ☀️ L: ${d.meals?.lunch?.name}\n  🌙 D: ${d.meals?.dinner?.name}\n  🍎 S: ${d.meals?.snack?.name}`
+      `${d.day_label}:\n  Breakfast: ${d.meals?.breakfast?.name || "-"}\n  Lunch: ${d.meals?.lunch?.name || "-"}\n  Dinner: ${d.meals?.dinner?.name || "-"}\n  Snack: ${d.meals?.snack?.name || "-"}`
     ).join("\n\n");
-    navigator.clipboard.writeText(`${mealPlan.plan_name}\n\n${text}\n\n🛒 Shopping:\n${mealPlan.shopping_list?.join(", ")}`);
+    navigator.clipboard.writeText(`${mealPlan.plan_name}\n\n${text}\n\nShopping:\n${mealPlan.shopping_list?.join(", ")}`);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };

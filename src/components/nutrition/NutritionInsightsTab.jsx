@@ -210,6 +210,7 @@ function FoodSkinCorrelation({ mealLogs, checkins }) {
 export default function NutritionInsightsTab({ user, profile }) {
   const [loading, setLoading]       = useState(true);
   const [generating, setGenerating] = useState(false);
+  const [weekError, setWeekError]   = useState(null);
   const [weekInsight, setWeekInsight] = useState(null);
   const [mealLogs, setMealLogs]     = useState([]);
   const [hydrationLogs, setHydrationLogs] = useState([]);
@@ -244,6 +245,7 @@ export default function NutritionInsightsTab({ user, profile }) {
 
   const generateWeekInsight = async () => {
     setGenerating(true);
+    setWeekError(null);
     const weekStart    = startOfWeek(new Date(), { weekStartsOn: 1 });
     const weekStartKey = format(weekStart, "yyyy-MM-dd");
     const weekEndKey   = format(endOfWeek(new Date(), { weekStartsOn: 1 }), "yyyy-MM-dd");
@@ -272,12 +274,17 @@ Guidelines:
 - Never mention weight or calories unless mentioned by user
 - Keep it warm, not clinical`;
 
-    const res     = await base44.integrations.Core.InvokeLLM({ prompt });
-    const insight = await base44.entities.WeeklyInsights.create({
-      user_id: user.id, week_start: weekStartKey, week_end: weekEndKey,
-      insight_text: res, generated_at: new Date().toISOString(),
-    });
-    setWeekInsight(insight);
+    try {
+      const res     = await base44.integrations.Core.InvokeLLM({ prompt });
+      const insight = await base44.entities.WeeklyInsights.create({
+        user_id: user.id, week_start: weekStartKey, week_end: weekEndKey,
+        insight_text: res, generated_at: new Date().toISOString(),
+      });
+      setWeekInsight(insight);
+    } catch (e) {
+      console.error(e);
+      setWeekError("Couldn't generate your summary just now. Please try again.");
+    }
     setGenerating(false);
   };
 
@@ -378,9 +385,14 @@ Guidelines:
             <AiDisclaimer />
           </>
         )}
-        {!weekInsight && !generating && (
+        {!weekInsight && !generating && !weekError && (
           <p className="text-xs" style={{ color: "var(--mauve)" }}>
             Tap "Generate" for your personalised weekly nutrition summary.
+          </p>
+        )}
+        {weekError && !generating && (
+          <p className="text-xs text-center rounded-xl p-2.5" style={{ backgroundColor: "var(--rose-dust-subtle)", color: "var(--rose-dust)" }}>
+            {weekError}
           </p>
         )}
       </div>

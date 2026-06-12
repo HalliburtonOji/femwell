@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { motion, AnimatePresence } from "framer-motion";
-import { Loader2, X, ChefHat, Plus, CheckCircle, Copy, BookmarkPlus, ChevronDown, ChevronUp, Shuffle } from "lucide-react";
+import { Loader2, X, ChefHat, Plus, CheckCircle, Copy, BookmarkPlus, ChevronDown, ChevronUp, Shuffle, Star } from "lucide-react";
 
 const WELLNESS_GOALS = [
   { id: "energy",    label: "Energy"          },
@@ -232,10 +232,10 @@ function RecipeCard({ recipe, onSaveAsTemplate }) {
           <p style={sLabel}>Rate this recipe</p>
           <div className="flex gap-0.5">
             {[1,2,3,4,5].map((star) => (
-              <button key={star} onClick={() => setRating(star)}
-                className="text-xl transition-transform hover:scale-110"
-                style={{ color: rating >= star ? "var(--gold)" : "var(--border)" }}>
-                ★
+              <button key={star} onClick={() => setRating(star)} aria-label={`Rate ${star} star${star !== 1 ? "s" : ""}`}
+                className="transition-transform hover:scale-110"
+                style={{ background: "none", border: "none", cursor: "pointer", padding: 2 }}>
+                <Star className="w-4 h-4" style={{ color: rating >= star ? "var(--gold)" : "var(--border)", fill: rating >= star ? "var(--gold)" : "none" }} />
               </button>
             ))}
           </div>

@@ -1,5 +1,6 @@
 import { useMemo } from "react";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from "recharts";
+import { Lightbulb } from "lucide-react";
 import { format, subDays, parseISO } from "date-fns";
 import { getMealSummary } from "@/utils/nutritionAiAnalysis";
 
@@ -71,7 +72,7 @@ export default function WeeklyCaloriesChart({ allMealLogs, profile }) {
       {/* Phase tip banner */}
       {phaseTip && (
         <div style={{ backgroundColor: "var(--rose-dust-subtle)", border: "1px solid var(--rose-dust-light)", borderRadius: 14, padding: "10px 14px", marginBottom: 16, display: "flex", alignItems: "flex-start", gap: 8 }}>
-          <span style={{ fontSize: 14, flexShrink: 0 }}>💡</span>
+          <Lightbulb style={{ width: 14, height: 14, flexShrink: 0, color: "var(--rose-dust)", marginTop: 1 }} />
           <div>
             <span style={{ fontSize: 10, fontWeight: 700, color: "var(--rose-dust)", textTransform: "uppercase", letterSpacing: "0.1em", }}>
               {currentPhase ? `${currentPhase.charAt(0).toUpperCase() + currentPhase.slice(1)} phase` : ""} · {phaseTip.highlight}
