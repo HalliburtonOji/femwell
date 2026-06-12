@@ -43,5 +43,6 @@
     "user_id",
     "date",
     "habit_type"
-  ]
+  ],
+  "indexes": [ { "fields": ["date"] }, { "fields": ["created_date"] } ]
 }

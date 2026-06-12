@@ -135,5 +135,6 @@
   "required": [
     "user_id",
     "date"
-  ]
+  ],
+  "indexes": [ { "fields": ["date"] }, { "fields": ["created_date"] } ]
 }

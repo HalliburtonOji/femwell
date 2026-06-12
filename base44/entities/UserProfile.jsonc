@@ -369,5 +369,6 @@
   },
   "required": [
     "user_id"
-  ]
+  ],
+  "indexes": [ { "fields": ["created_date"] } ]
 }

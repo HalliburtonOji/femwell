@@ -245,5 +245,6 @@
   "required": [
     "title",
     "content_url"
-  ]
+  ],
+  "indexes": [ { "fields": ["published_at"] }, { "fields": ["created_date"] } ]
 }

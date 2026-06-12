@@ -64,5 +64,6 @@
     "user_id",
     "program_id",
     "program_key"
-  ]
+  ],
+  "indexes": [ { "fields": ["created_date"] } ]
 }

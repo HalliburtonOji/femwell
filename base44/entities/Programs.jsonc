@@ -99,5 +99,6 @@
   "required": [
     "title",
     "program_key"
-  ]
+  ],
+  "indexes": [ { "fields": ["created_date"] } ]
 }
