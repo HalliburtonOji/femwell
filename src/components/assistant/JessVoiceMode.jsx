@@ -290,7 +290,7 @@ export default function JessVoiceMode({ open, onClose, user, profile, phase, cyc
           .filter((t) => t.role === "user" || t.role === "jess")
           .map((t) => `${t.role === "user" ? "User" : "Jess"}: ${t.text}`)
           .join("\n\n");
-        await base44.entities.JessConversations?.create({
+        await base44.entities.JessConversation.create({
           user_id: user.id,
           conversation_type: "voice_session",
           name: `Voice session · ${new Date().toLocaleString("en-GB", { hour: "2-digit", minute: "2-digit" })}`,

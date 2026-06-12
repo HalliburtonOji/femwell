@@ -79,7 +79,7 @@ Return JSON: {"items": [{"ingredient": "name", "category": "CategoryName", "quan
           is_checked: false, source: "meal_plan", meal_plan_id: plan.id,
         }))
       );
-      await loadItems();
+      loadItems(); // background refetch — don't gate the UI on the read
     }
     setSyncing(false);
   };

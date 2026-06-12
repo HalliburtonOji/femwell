@@ -100,7 +100,7 @@ export default function NutritionProgressTab({ user, nutritionProfile, onProfile
     if (metricForm.bust_cm)   payload.bust_cm   = parseFloat(metricForm.bust_cm);
     setSavingMetric(true);
     await base44.entities.BodyMetrics.create(payload);
-    await loadData();
+    loadData(); // background refetch — don't gate the UI on the read
     setAddingMetric(false);
     setMetricForm({ weight_kg: "", waist_cm: "", hips_cm: "", bust_cm: "", notes: "" });
     setSavingMetric(false);

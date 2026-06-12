@@ -48,7 +48,7 @@ export default function PainMapSubTab({ user, selectedDate }) {
       pain_type: painType,
       notes: notes.trim() || undefined,
     });
-    await load();
+    load(); // background refetch — don't gate the UI on the read
     setSelected(null);
     setNotes("");
     setSeverity(3);

@@ -67,7 +67,7 @@ export default function KickTrackerSection({ user }) {
       kicks, duration_seconds: elapsed,
     }).catch(() => {});
     toast.success("Kick session saved");
-    await loadWeeklySessions();
+    loadWeeklySessions(); // background refetch — don't gate the UI on the read
     setSaving(false);
     setKicks(0); setStartTime(null); setElapsed(0);
   };

@@ -41,7 +41,7 @@ export default function SymptomDiarySection({ user }) {
     }).catch(() => {});
     toast.success("Symptom logged");
     setSelectedSymptom(null); setSeverity(3); setSelectedTriggers([]); setNotes("");
-    await loadEntries();
+    loadEntries(); // background refetch — don't gate the UI on the read
     setSaving(false);
   };
 

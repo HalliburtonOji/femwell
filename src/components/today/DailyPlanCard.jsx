@@ -23,7 +23,7 @@ export default function DailyPlanCard({ user }) {
   const generate = async (force = false) => {
     setGenerating(true);
     await base44.functions.invoke("generateDailyPlan", { user_id: user.id, day_key: todayStr, force }).catch(() => {});
-    await loadPlan();
+    loadPlan(); // background refetch — don't gate the UI on the read
     setGenerating(false);
   };
 

@@ -30,7 +30,7 @@ export default function MedReminderSection({ user }) {
       is_active: true,
     });
     setName(""); setDose(""); setTime("08:00"); setAdding(false); setSaving(false);
-    await loadReminders();
+    loadReminders(); // background refetch — don't gate the UI on the read
   };
 
   const toggleReminder = async (rem) => {

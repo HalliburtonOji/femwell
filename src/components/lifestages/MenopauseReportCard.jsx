@@ -30,7 +30,7 @@ export default function MenopauseReportCard({ user }) {
   const generate = async () => {
     setGenerating(true);
     await base44.functions.invoke("generateMenopauseWeeklySummary", { user_id: user.id, week_start: weekStart, force: !!report }).catch(() => {});
-    await loadReport();
+    loadReport(); // background refetch — don't gate the UI on the read
     setGenerating(false);
   };
 

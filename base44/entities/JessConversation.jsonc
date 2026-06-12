@@ -32,6 +32,14 @@
       "type": "boolean",
       "default": false,
       "description": "Soft delete flag"
+    },
+    "conversation_type": {
+      "type": "string",
+      "description": "Origin of the thread, e.g. 'voice_session' for Jess voice mode."
+    },
+    "transcript": {
+      "type": "string",
+      "description": "Full text transcript (e.g. a saved voice session)."
     }
   },
   "required": [

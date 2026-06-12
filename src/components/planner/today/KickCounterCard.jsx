@@ -109,7 +109,7 @@ export default function KickCounterCard({ userId }) {
       setSessionStart(null);
       setKickCount(0);
       setElapsed(0);
-      await loadSessions();
+      loadSessions(); // background refetch — don't gate the UI on the read
     } finally {
       setSaving(false);
     }

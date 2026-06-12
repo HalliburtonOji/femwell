@@ -65,7 +65,7 @@ export default function GuideThreadSidebar({
     if (editingTitle.trim()) {
       try {
         await base44.agents.updateConversation(id, { metadata: { custom_title: editingTitle.trim() } });
-        await load();
+        load(); // background refetch — don't gate the UI on the read
       } catch {}
     }
     setEditingId(null);

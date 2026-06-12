@@ -340,7 +340,7 @@ function SymptomsSubTab({ user, profile, selectedDate }) {
       severity,            // 1-10
       notes: notes.trim() || undefined,
     });
-    await load();          // refresh from DB
+    load();          // background refetch — don't gate the UI on the read
     setSelected(null);
     setNotes("");
     setSeverity(5);
