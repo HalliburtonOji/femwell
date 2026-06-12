@@ -28,7 +28,15 @@ Deno.serve(async (req) => {
     const base44 = createClientFromRequest(req);
     const me = await base44.auth.me().catch(() => null);
     if (!me?.id) return Response.json({ error: 'Sign in required' }, { status: 401 });
-    if (me.role !== 'admin') return Response.json({ error: 'Admin only' }, { status: 403 });
+    // Owner/admin gate. The app OWNER's `role` isn't literally "admin" (same role-confusion class
+    // as the RLS bug), so accept any of: role admin, the internal `_app_role` admin, or the owner
+    // email allowlist. Echo the presented identity in the 403 so a reject is diagnosable.
+    const OWNER_EMAILS = ['halliburtonoji@gmail.com', 'ojihalliburton57@gmail.com'];
+    const email = String(me.email || '').toLowerCase();
+    const isOwner = me.role === 'admin' || me._app_role === 'admin' || OWNER_EMAILS.includes(email);
+    if (!isOwner) {
+      return Response.json({ error: 'Owner/admin only', seen: { role: me.role, _app_role: me._app_role, email } }, { status: 403 });
+    }
 
     let p: any;
     try { p = await req.json(); } catch { p = {}; }
