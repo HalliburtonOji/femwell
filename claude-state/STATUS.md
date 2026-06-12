@@ -1,6 +1,19 @@
 # FEMWELL — CANONICAL STATUS INDEX (read first · updated 2026-06-12)
 **This file is the single source of truth AND the index to every plan doc. If anything else disagrees, this wins.** (The long ship-log history continues below the index.)
 
+## 🧹 SCAN 2 — DEEP PER-PAGE UI PASS (2026-06-12) — committed + build-green · awaiting Halli deploy + live-verify
+Parallel per-area audit (Today/Journal/Nutrition/Health/Lifestyle/Programs/Profile/DoctorExport/Jess). Report updated (`5269f4b`). Headline: a **white-screen crash** + a **dead button** + a **data-losing save** + a broad **silent-write-failure** class.
+- **`7e1ff83` Health — CRASH FIX:** stray `},,` → sparse-array holes → `sections.map` threw → **Cycle & Body letters white-screened**. Fixed both + de-emoji.
+- **`ce45fc2` Today:** de-emoji (CalmCards etc.) + ~15 silent-write-failure fixes (check-in stuck on "Saving…"; **DailyPromptCard was swallowing the error + dismissing → losing the entry**) + empty state.
+- **`3ce5f77` Nutrition:** de-emoji (all 29 FoodLookup entries) + write error states (email send had no catch; weekly LLM; goal/targets/metrics; save-to-plan).
+- **`0f44df7` Programs:** de-emoji + stuck-flag fixes (start/save/restart/reminder; task complete/skip; reflection save).
+- **`1299244` Journal:** 3 stuck-spinner/silent-save fixes (NewEntry save; weekly-summary LLM; cycle dashboard load). Crypto untouched.
+- **`3aa8097` Profile + Jess:** **dead "Reminders" button** (no onClick) wired to /Settings; stuck tone-save fixed; emoji removed from live Jess surfaces.
+- **Lifestyle + Doctor Export:** clean (no fixes needed). The Atelier/RedWhiteMoon "field mismatch" I'd flagged was a **FALSE ALARM** (grep prefix-match) — code correctly reads `body_html`/`signed_by` + `red_white_archetype`. No reconcile needed.
+- **Jump-to switcher verified app-wide** (Journal/Community/Health/Nutrition/Lifestyle/Jess/DoctorExport all have one).
+- All build + eslint green. **Every write/button change is needs-live-verify.** Flags for next wave: off-palette modals (CalmCards/PanicMode — Ms Atelier), dead components (QuickCheckinModal, HealthCornerDemo, JotterCard), Profile field-saves silent (no data loss), B2 index tail, service-only RLS hardening.
+- **⚠️ NEEDS HALLI:** deploy (client bundle — these are all client-side) + live-verify the write/button changes (esp. **open Health Cycle & Body letters → confirm they render**, the logging-form error states, Profile Reminders row + tone save).
+
 ## ✅ DEPLOYED + LIVE WRITE-SWEEP PASSED (2026-06-12) — audit changes verified on the real backend
 Did the consolidated deploy + live verification via Chrome MCP (femwells.com + Base44 API).
 - **Deploy:** GitHub auto-sync → `ready` at `064572d` → POST /deploy 200 → **live bundle flipped `index-OO5jFb7r.js` → `index-ueVuHO0i.js`** on femwells.com. All probed touched functions return 403 not 404 (registered live). Entity schemas ingested: JessConversation gained `conversation_type`+`transcript`; all 8 B2 index blocks present. (Note: the `entities_agents_jsonc_synced_at` field is a red herring — schemas DID update; verify via /entity-schemas.)
