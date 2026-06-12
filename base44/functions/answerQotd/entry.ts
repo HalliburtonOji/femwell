@@ -21,6 +21,14 @@ function isCrisis(text: string): boolean { return CRISIS_PATTERNS.some((re) => r
 
 const MAX_LEN = 280;
 
+// Timeout guard — an awaited platform read/write that HANGS would wedge the function.
+function withTimeout(p: Promise<any>, ms: number, label: string): Promise<any> {
+  return new Promise((resolve, reject) => {
+    const t = setTimeout(() => reject(new Error(`${label}-timeout-${ms}ms`)), ms);
+    p.then((v) => { clearTimeout(t); resolve(v); }, (e) => { clearTimeout(t); reject(e); });
+  });
+}
+
 Deno.serve(async (req) => {
   const base44 = createClientFromRequest(req);
   const me = await base44.auth.me().catch(() => null);
@@ -40,18 +48,18 @@ Deno.serve(async (req) => {
 
   const sb = base44.asServiceRole;
   // One answer per day per author_hash.
-  const mine = await sb.entities.QotdResponse
-    .filter({ author_hash: String(author_hash), prompt_day: String(prompt_day) }, undefined, 5).catch(() => []);
+  const mine = await withTimeout(sb.entities.QotdResponse
+    .filter({ author_hash: String(author_hash), prompt_day: String(prompt_day) }, undefined, 5), 2500, 'filter').catch(() => []);
   if ((Array.isArray(mine) ? mine : []).length > 0) {
     return Response.json({ ok: true, already: true });
   }
 
-  const response = await sb.entities.QotdResponse.create({
+  const response = await withTimeout(sb.entities.QotdResponse.create({
     prompt_day: String(prompt_day),
     prompt_key: prompt_key ? String(prompt_key) : undefined,
     author_hash: String(author_hash),
     body: text, hidden: false,
-  }).catch((e: any) => { console.error('postQotdResponse create failed:', e?.message || e); return null; });
+  }), 6000, 'create').catch((e: any) => { console.error('postQotdResponse create failed:', e?.message || e); return null; });
   if (!response) return Response.json({ error: 'Write failed' }, { status: 500 });
   return Response.json({ ok: true, response: { id: response.id, body: response.body, created_date: response.created_date } });
 });

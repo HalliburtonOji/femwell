@@ -14,6 +14,14 @@ const CLUB_KEYS = new Set([
   'slow-mornings', 'creativity-corner',
 ]);
 
+// Timeout guard — an awaited platform read/write that HANGS would wedge the function.
+function withTimeout(p: Promise<any>, ms: number, label: string): Promise<any> {
+  return new Promise((resolve, reject) => {
+    const t = setTimeout(() => reject(new Error(`${label}-timeout-${ms}ms`)), ms);
+    p.then((v) => { clearTimeout(t); resolve(v); }, (e) => { clearTimeout(t); reject(e); });
+  });
+}
+
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
@@ -32,19 +40,19 @@ Deno.serve(async (req) => {
     // Club entity row (future member Clubs).
     let known = CLUB_KEYS.has(String(club_key)) || /^dailyread-[a-z0-9_-]{1,48}$/i.test(String(club_key));
     if (!known) {
-      const rows = await sb.entities.Club.filter({ club_key: String(club_key), hidden: false }, '-created_date', 1).catch(() => []);
+      const rows = await withTimeout(sb.entities.Club.filter({ club_key: String(club_key), hidden: false }, '-created_date', 1), 2500, 'filter').catch(() => []);
       known = Array.isArray(rows) && rows.length > 0;
     }
     if (!known) return Response.json({ error: 'unknown club' }, { status: 400 });
 
-    const existing = await sb.entities.ClubMembership.filter({ club_key: String(club_key), author_hash: String(author_hash) }, '-created_date', 1).catch(() => []);
+    const existing = await withTimeout(sb.entities.ClubMembership.filter({ club_key: String(club_key), author_hash: String(author_hash) }, '-created_date', 1), 2500, 'filter').catch(() => []);
     if (Array.isArray(existing) && existing.length) return Response.json({ ok: true, already: true }, { status: 200 });
 
-    const row = await sb.entities.ClubMembership.create({
+    const row = await withTimeout(sb.entities.ClubMembership.create({
       club_key: String(club_key),
       author_hash: String(author_hash),
       consented: !!p?.consented,
-    }).catch((e: any) => { console.error('joinClub create failed:', e?.message || e); return null; });
+    }), 6000, 'create').catch((e: any) => { console.error('joinClub create failed:', e?.message || e); return null; });
     if (!row) return Response.json({ error: 'Write failed' }, { status: 500 });
 
     return Response.json({ ok: true, joined: { club_key: row.club_key } });

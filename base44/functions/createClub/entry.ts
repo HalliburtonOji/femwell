@@ -16,6 +16,14 @@ function slugify(s: string): string {
   return String(s || '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 40);
 }
 
+// Timeout guard — an awaited platform read/write that HANGS would wedge the function.
+function withTimeout(p: Promise<any>, ms: number, label: string): Promise<any> {
+  return new Promise((resolve, reject) => {
+    const t = setTimeout(() => reject(new Error(`${label}-timeout-${ms}ms`)), ms);
+    p.then((v) => { clearTimeout(t); resolve(v); }, (e) => { clearTimeout(t); reject(e); });
+  });
+}
+
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
@@ -42,7 +50,7 @@ Deno.serve(async (req) => {
     const club_key = slugify(name) + '-' + String(author_hash).slice(0, 6);
 
     const sb = base44.asServiceRole;
-    const club = await sb.entities.Club.create({
+    const club = await withTimeout(sb.entities.Club.create({
       club_key,
       name: String(name).slice(0, 60),
       line: p?.line ? String(p.line).slice(0, 140) : undefined,
@@ -55,7 +63,7 @@ Deno.serve(async (req) => {
       book_title: book_title || undefined,
       book_author: p?.book_author ? String(p.book_author).slice(0, 80) : undefined,
       hidden: false,
-    }).catch((e: any) => { console.error('createClub create failed:', e?.message || e); return null; });
+    }), 6000, 'create').catch((e: any) => { console.error('createClub create failed:', e?.message || e); return null; });
     if (!club) return Response.json({ error: 'Write failed' }, { status: 500 });
 
     return Response.json({ ok: true, club: { club_key: club.club_key, name: club.name, status: club.status } });

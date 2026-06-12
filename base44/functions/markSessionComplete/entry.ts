@@ -1,5 +1,13 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.20';
 
+// Timeout guard — an awaited platform read/write that HANGS would wedge the function.
+function withTimeout(p: Promise<any>, ms: number, label: string): Promise<any> {
+  return new Promise((resolve, reject) => {
+    const t = setTimeout(() => reject(new Error(`${label}-timeout-${ms}ms`)), ms);
+    p.then((v) => { clearTimeout(t); resolve(v); }, (e) => { clearTimeout(t); reject(e); });
+  });
+}
+
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
@@ -15,12 +23,12 @@ Deno.serve(async (req) => {
     const todayStr = new Date().toISOString().split('T')[0];
 
     // Anti-duplicate: check for existing record today
-    const existing = await base44.entities.ContentHistory.filter({
+    const existing = await withTimeout(base44.entities.ContentHistory.filter({
       user_id: user.id,
       session_date: todayStr,
       is_deleted: false,
       ...(content_id ? { content_id } : { content_key }),
-    });
+    }), 2500, 'filter').catch(() => []);
 
     const record = {
       user_id: user.id,
@@ -39,13 +47,13 @@ Deno.serve(async (req) => {
     let result;
     if (existing.length > 0 && !existing[0].is_deleted) {
       // Update existing
-      result = await base44.entities.ContentHistory.update(existing[0].id, record);
+      result = await withTimeout(base44.entities.ContentHistory.update(existing[0].id, record), 6000, 'update');
     } else {
-      result = await base44.entities.ContentHistory.create(record);
+      result = await withTimeout(base44.entities.ContentHistory.create(record), 6000, 'create');
     }
 
     return Response.json({ success: true, record: result });
-  } catch (error) {
-    return Response.json({ error: error.message }, { status: 500 });
+  } catch (error: any) {
+    return Response.json({ error: error?.message || String(error) }, { status: 500 });
   }
 });

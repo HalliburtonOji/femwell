@@ -27,6 +27,14 @@ const KINDS = [
   { kind: 'recommend', ask: 'ask the room to recommend ONE small comfort (a comfort show, a cosy recipe, a feel-good song).' },
 ];
 
+// Timeout guard — an awaited platform read/write that HANGS would wedge the function.
+function withTimeout(p: Promise<any>, ms: number, label: string): Promise<any> {
+  return new Promise((resolve, reject) => {
+    const t = setTimeout(() => reject(new Error(`${label}-timeout-${ms}ms`)), ms);
+    p.then((v) => { clearTimeout(t); resolve(v); }, (e) => { clearTimeout(t); reject(e); });
+  });
+}
+
 function pickKind(): typeof KINDS[number] {
   // rotate by day-of-year so it varies but is deterministic within a day
   const n = new Date();
@@ -44,14 +52,14 @@ const JESS_VOICE = [
 
 async function genPrompt(sb: any, kindDef: typeof KINDS[number]): Promise<{ prompt: string; options: string[] }> {
   try {
-    const ai = await sb.integrations.Core.InvokeLLM({
+    const ai = await withTimeout(sb.integrations.Core.InvokeLLM({
       prompt: JESS_VOICE + '\n\nWrite ' + kindDef.ask + '\nReturn JSON: { "prompt": string, "options": string[] }. options is [] unless this is a two-choice format.',
       response_json_schema: {
         type: 'object',
         properties: { prompt: { type: 'string' }, options: { type: 'array', items: { type: 'string' } } },
         required: ['prompt'],
       },
-    });
+    }), 12000, 'llm');
     const data = ai?.output ?? ai ?? {};
     const prompt = String(data?.prompt || '').trim();
     const options = Array.isArray(data?.options) ? data.options.map((o: any) => String(o).slice(0, 40)).slice(0, 2) : [];
@@ -70,19 +78,19 @@ async function genPrompt(sb: any, kindDef: typeof KINDS[number]): Promise<{ prom
 }
 
 async function writeReveal(sb: any, round: any): Promise<string> {
-  const rows = await sb.entities.GameResponse.filter({ round_id: String(round.id) }, '-created_date', 80).catch(() => []);
+  const rows = await withTimeout(sb.entities.GameResponse.filter({ round_id: String(round.id) }, '-created_date', 80), 2500, 'filter').catch(() => []);
   const list = Array.isArray(rows) ? rows : [];
   if (list.length < K_FLOOR) {
     return 'Only a couple of us played this one tonight — and that\'s allowed. Quiet rounds count too.';
   }
   const answers = list.map((r: any) => (r.choice || r.text || '').toString().slice(0, 120)).filter(Boolean);
   try {
-    const ai = await sb.integrations.Core.InvokeLLM({
+    const ai = await withTimeout(sb.integrations.Core.InvokeLLM({
       prompt: JESS_VOICE + '\n\nThe round asked: "' + String(round.prompt || '').slice(0, 300) + '"\n\nHere are the anonymous answers:\n' +
         answers.map((a: string) => '- ' + a).join('\n') +
         '\n\nWrite a warm 2-3 sentence AGGREGATE reveal that names the shared mood or the spread of answers. Absolutely NO winners, NO scores, NO "the most popular was X by N votes", no numbers-as-competition. Just gather the room together. Return JSON: { "reveal": string }.',
       response_json_schema: { type: 'object', properties: { reveal: { type: 'string' } }, required: ['reveal'] },
-    });
+    }), 12000, 'llm');
     const data = ai?.output ?? ai ?? {};
     const reveal = String(data?.reveal || '').trim();
     if (reveal) return reveal.slice(0, 600);
@@ -120,7 +128,7 @@ Deno.serve(async (req) => {
 
     const sb = base44.asServiceRole;
     const now = Date.now();
-    const latestArr = await sb.entities.GameRound.filter({ room }, '-created_date', 1).catch(() => []);
+    const latestArr = await withTimeout(sb.entities.GameRound.filter({ room }, '-created_date', 1), 2500, 'filter').catch(() => []);
     const latest = Array.isArray(latestArr) && latestArr.length ? latestArr[0] : null;
 
     const ms = (s: any) => { const t = Date.parse(s || ''); return Number.isFinite(t) ? t : 0; };
@@ -131,7 +139,7 @@ Deno.serve(async (req) => {
       }
       // expired → close it with Jess's reveal
       const reveal = await writeReveal(sb, latest);
-      const closed = await sb.entities.GameRound.update(latest.id, { status: 'closed', reveal }).catch(() => ({ ...latest, status: 'closed', reveal }));
+      const closed = await withTimeout(sb.entities.GameRound.update(latest.id, { status: 'closed', reveal }), 6000, 'update').catch(() => ({ ...latest, status: 'closed', reveal }));
       return Response.json({ ok: true, round: shape({ ...latest, ...closed, status: 'closed', reveal }) });
     }
 
@@ -142,12 +150,12 @@ Deno.serve(async (req) => {
     // open a fresh round
     const kindDef = pickKind();
     const { prompt, options } = await genPrompt(sb, kindDef);
-    const created = await sb.entities.GameRound.create({
+    const created = await withTimeout(sb.entities.GameRound.create({
       room, kind: kindDef.kind, prompt, options,
       opens_at: new Date(now).toISOString(),
       closes_at: new Date(now + OPEN_MS).toISOString(),
       status: 'open',
-    }).catch((e: any) => { console.error('openGameRound create failed:', e?.message || e); return null; });
+    }), 6000, 'create').catch((e: any) => { console.error('openGameRound create failed:', e?.message || e); return null; });
     if (!created) return Response.json({ error: 'Write failed' }, { status: 500 });
     return Response.json({ ok: true, round: shape(created) });
   } catch (e: any) {

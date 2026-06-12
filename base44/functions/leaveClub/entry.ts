@@ -6,6 +6,14 @@
 
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 
+// Timeout guard — an awaited platform read/write that HANGS would wedge the function.
+function withTimeout(p: Promise<any>, ms: number, label: string): Promise<any> {
+  return new Promise((resolve, reject) => {
+    const t = setTimeout(() => reject(new Error(`${label}-timeout-${ms}ms`)), ms);
+    p.then((v) => { clearTimeout(t); resolve(v); }, (e) => { clearTimeout(t); reject(e); });
+  });
+}
+
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
@@ -19,10 +27,10 @@ Deno.serve(async (req) => {
     if (!author_hash || !club_key) return Response.json({ error: 'author_hash + club_key required' }, { status: 400 });
 
     const sb = base44.asServiceRole;
-    const rows = await sb.entities.ClubMembership.filter({ club_key: String(club_key), author_hash: String(author_hash) }, '-created_date', 10).catch(() => []);
+    const rows = await withTimeout(sb.entities.ClubMembership.filter({ club_key: String(club_key), author_hash: String(author_hash) }, '-created_date', 10), 2500, 'filter').catch(() => []);
     let left = 0;
     for (const row of (Array.isArray(rows) ? rows : [])) {
-      const ok = await sb.entities.ClubMembership.delete(row.id).then(() => true).catch(() => false);
+      const ok = await withTimeout(sb.entities.ClubMembership.delete(row.id), 6000, 'delete').then(() => true).catch(() => false);
       if (ok) left += 1;
     }
     return Response.json({ ok: true, left });

@@ -31,6 +31,14 @@ function isHealthContext(text: string): boolean {
   return HEALTH_VOCAB.some((w) => t.includes(w));
 }
 
+// Timeout guard — an awaited platform read/write that HANGS would wedge the function.
+function withTimeout(p: Promise<any>, ms: number, label: string): Promise<any> {
+  return new Promise((resolve, reject) => {
+    const t = setTimeout(() => reject(new Error(`${label}-timeout-${ms}ms`)), ms);
+    p.then((v) => { clearTimeout(t); resolve(v); }, (e) => { clearTimeout(t); reject(e); });
+  });
+}
+
 // OpenAI Moderation (omni-moderation-latest). Off the user path, but still hard-timed so a
 // background invocation can't pile up. available:false → caller leaves the content as-is.
 async function openaiModerate(text: string): Promise<{ available: boolean; flagged: boolean; categories: Record<string, boolean> }> {
@@ -68,7 +76,7 @@ Deno.serve(async (req) => {
 
     const sb = base44.asServiceRole;
     const entity = kind === 'post' ? sb.entities.CommunityPost : sb.entities.Comment;
-    const row = await entity.get(id).catch(() => null);
+    const row = await withTimeout(entity.get(id), 2500, 'get').catch(() => null);
     if (!row) return Response.json({ ok: true, skipped: 'gone' }, { status: 200 });
     const text = String(row.body || '');
     if (!text) return Response.json({ ok: true, skipped: 'empty' }, { status: 200 });
@@ -85,11 +93,11 @@ Deno.serve(async (req) => {
     const shouldRemove = hit.length > 0 && !(onlySexual && isHealthContext(text));
 
     if (shouldRemove) {
-      if (kind === 'post') await entity.update(id, { hidden: true }).catch(() => {});
-      else await entity.update(id, { status: 'removed', body: '' }).catch(() => {});
+      if (kind === 'post') await withTimeout(entity.update(id, { hidden: true }), 6000, 'update').catch(() => {});
+      else await withTimeout(entity.update(id, { status: 'removed', body: '' }), 6000, 'update').catch(() => {});
       return Response.json({ ok: true, action: 'removed' }, { status: 200 });
     }
-    await entity.update(id, { flagged: true }).catch(() => {});
+    await withTimeout(entity.update(id, { flagged: true }), 6000, 'update').catch(() => {});
     return Response.json({ ok: true, action: 'flagged' }, { status: 200 });
   } catch (e: any) {
     console.error('screenContent error:', e?.message || e);

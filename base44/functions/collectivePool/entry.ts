@@ -24,6 +24,14 @@ function startOfTodayISO(): string {
   return new Date(Date.UTC(n.getUTCFullYear(), n.getUTCMonth(), n.getUTCDate())).toISOString();
 }
 
+// Timeout guard — an awaited platform read/write that HANGS would wedge the function.
+function withTimeout(p: Promise<any>, ms: number, label: string): Promise<any> {
+  return new Promise((resolve, reject) => {
+    const t = setTimeout(() => reject(new Error(`${label}-timeout-${ms}ms`)), ms);
+    p.then((v) => { clearTimeout(t); resolve(v); }, (e) => { clearTimeout(t); reject(e); });
+  });
+}
+
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
@@ -41,11 +49,11 @@ Deno.serve(async (req) => {
     const since = startOfTodayISO();
 
     const countTotal = async () => {
-      const rows = await sb.entities.GoalContribution.filter({ goal_key: gk }, '-created_date', 2000).catch(() => []);
+      const rows = await withTimeout(sb.entities.GoalContribution.filter({ goal_key: gk }, '-created_date', 2000), 2500, 'filter').catch(() => []);
       return Array.isArray(rows) ? rows.length : 0;
     };
     const mineToday = async () => {
-      const rows = await sb.entities.GoalContribution.filter({ goal_key: gk, author_hash: String(author_hash) }, '-created_date', 50).catch(() => []);
+      const rows = await withTimeout(sb.entities.GoalContribution.filter({ goal_key: gk, author_hash: String(author_hash) }, '-created_date', 50), 2500, 'filter').catch(() => []);
       return (Array.isArray(rows) ? rows : []).filter((r: any) => (r.created_date || '') >= since).length;
     };
 
@@ -59,9 +67,9 @@ Deno.serve(async (req) => {
     if (today >= DAILY_CAP) {
       return Response.json({ ok: true, total: await countTotal(), mine_today: today, added: false, capped: true });
     }
-    await sb.entities.GoalContribution.create({
+    await withTimeout(sb.entities.GoalContribution.create({
       goal_key: gk, moment, author_hash: String(author_hash),
-    }).catch((e: any) => { console.error('collectivePool create failed:', e?.message || e); return null; });
+    }), 6000, 'create').catch((e: any) => { console.error('collectivePool create failed:', e?.message || e); return null; });
 
     return Response.json({ ok: true, total: await countTotal(), mine_today: today + 1, added: true });
   } catch (e: any) {

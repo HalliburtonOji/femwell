@@ -15,6 +15,14 @@ const CIRCLE_KEYS = new Set([
   'books', 'career', 'creativity', 'movement',
 ]);
 
+// Timeout guard — an awaited platform read/write that HANGS would wedge the function.
+function withTimeout(p: Promise<any>, ms: number, label: string): Promise<any> {
+  return new Promise((resolve, reject) => {
+    const t = setTimeout(() => reject(new Error(`${label}-timeout-${ms}ms`)), ms);
+    p.then((v) => { clearTimeout(t); resolve(v); }, (e) => { clearTimeout(t); reject(e); });
+  });
+}
+
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
@@ -29,14 +37,14 @@ Deno.serve(async (req) => {
     if (!CIRCLE_KEYS.has(String(circle_key))) return Response.json({ error: 'unknown circle' }, { status: 400 });
 
     const sb = base44.asServiceRole;
-    const existing = await sb.entities.CircleMembership.filter({ circle_key: String(circle_key), author_hash: String(author_hash) }, '-created_date', 1).catch(() => []);
+    const existing = await withTimeout(sb.entities.CircleMembership.filter({ circle_key: String(circle_key), author_hash: String(author_hash) }, '-created_date', 1), 2500, 'filter').catch(() => []);
     if (Array.isArray(existing) && existing.length) return Response.json({ ok: true, already: true }, { status: 200 });
 
-    const row = await sb.entities.CircleMembership.create({
+    const row = await withTimeout(sb.entities.CircleMembership.create({
       circle_key: String(circle_key),
       author_hash: String(author_hash),
       consented: !!p?.consented,
-    }).catch((e: any) => { console.error('joinCircle create failed:', e?.message || e); return null; });
+    }), 6000, 'create').catch((e: any) => { console.error('joinCircle create failed:', e?.message || e); return null; });
     if (!row) return Response.json({ error: 'Write failed' }, { status: 500 });
 
     return Response.json({ ok: true, joined: { circle_key: row.circle_key } });

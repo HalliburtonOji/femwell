@@ -50,6 +50,14 @@ function startOfTodayISO(): string {
   return new Date(Date.UTC(n.getUTCFullYear(), n.getUTCMonth(), n.getUTCDate())).toISOString();
 }
 
+// Timeout guard — an awaited platform read/write that HANGS would wedge the function.
+function withTimeout(p: Promise<any>, ms: number, label: string): Promise<any> {
+  return new Promise((resolve, reject) => {
+    const t = setTimeout(() => reject(new Error(`${label}-timeout-${ms}ms`)), ms);
+    p.then((v) => { clearTimeout(t); resolve(v); }, (e) => { clearTimeout(t); reject(e); });
+  });
+}
+
 Deno.serve(async (req) => {
   const base44 = createClientFromRequest(req);
   const me = await base44.auth.me().catch(() => null);
@@ -85,8 +93,8 @@ Deno.serve(async (req) => {
   // Rate limit (H5) — 5 echoes/day per author_hash, enforced server-side so a
   // tampered / storage-cleared client can't flood the wall.
   const since = startOfTodayISO();
-  const mine = await base44.asServiceRole.entities.Echo
-    .filter({ author_hash: String(author_hash) }, '-live_at', 50).catch(() => []);
+  const mine = await withTimeout(base44.asServiceRole.entities.Echo
+    .filter({ author_hash: String(author_hash) }, '-live_at', 50), 2500, 'filter').catch(() => []);
   const today = (Array.isArray(mine) ? mine : []).filter((e: any) => (e.live_at || e.created_date || '') >= since).length;
   if (today >= DAILY_ECHO_LIMIT) {
     return Response.json({ error: 'rate', today }, { status: 200 });
@@ -94,7 +102,7 @@ Deno.serve(async (req) => {
 
   // The anonymity boundary: asServiceRole means created_by is the service, not the
   // author. No user_id, no account reference is ever written to the row.
-  const echo = await base44.asServiceRole.entities.Echo.create({
+  const echo = await withTimeout(base44.asServiceRole.entities.Echo.create({
     body: line,
     author_hash: String(author_hash),
     phase: PHASES.includes(phase) ? phase : 'unknown',
@@ -106,7 +114,7 @@ Deno.serve(async (req) => {
     held_count: 0, metoo_count: 0, hearyou_count: 0, saved_count: 0,
     report_count: 0, hidden: false,
     visibility: VISIBILITIES.includes(visibility) ? visibility : 'all',
-  }).catch((err: any) => {
+  }), 6000, 'create').catch((err: any) => {
     console.error('postEcho create failed:', err?.message || err);
     return null;
   });
