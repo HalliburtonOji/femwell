@@ -1,7 +1,17 @@
 # FEMWELL — CANONICAL STATUS INDEX (read first · updated 2026-06-12)
 **This file is the single source of truth AND the index to every plan doc. If anything else disagrees, this wins.** (The long ship-log history continues below the index.)
 
-## ✅ POSTING WORKS + PERSISTS (2026-06-12) — now UX polish: instant-show + fast reads — `661e338` · awaiting Halli DEPLOY (bundle + ENTITY sync) + live drive
+## ✅✅ POSTING SAGA — CLOSED (2026-06-12) — confirmed fixed end-to-end live · cleanups in `a29ad35`
+**Posting works + persists** (UI compose → appears instantly → persists on reload; direct create 1.5s/200 + id). The bug was THREE stacked root causes, each masking the next — only fixed once all three were:
+1. **RLS write-lock denied ALL service writes app-wide** — the B3 audit set `user_condition:{role:"system"}` on 22 entities; `asServiceRole` is admin-level, not "system", so every service create/update/delete was denied. → **`role:"admin"`** (`8d4f79f`). *Found by createPostDiag's "Permission denied" + Echo control.*
+2. **Unguarded, unindexed `-created_date` rate-cap read hung the function** — even after RLS, an awaited sorted read with no index never settled (a `.catch` only catches a throw). → **timeout-guard every entity read/create** (`d1eeafc`) + **`created_date` index** on 10 community entities (`661e338`).
+3. **Client gated the success UI on the slow refetch** — composer sat in "Posting…" ~16s, post showed only on reload. → **optimistic insert + background (non-awaited) refetch** for posts/comments/circle/club/club-notes; pill/close-week/QOTD already instant (`661e338`).
+- **Cleanups (`a29ad35`):** removed the temporary `createPostDiag` probe; added **`purgeTestPosts`** (ADMIN-ONLY, hides leftover QA rows by id or body-prefix — reversible, since client owner-deletes are now correctly blocked by the role:admin lock).
+- **Process lesson (logged to memory [[base44-service-role-rls-admin]]):** the exit-gate MUST include a real end-to-end WRITE that you read back — reads-200 + function-registration-400 hid all three bugs for ages.
+- **⚠️ NEEDS HALLI:** deploy the latest (functions: remove createPostDiag, add purgeTestPosts; entities already synced for the index). Optional: call `purgeTestPosts` (admin) to hide the QA rows ("qa …"/"[diag]"), or dashboard-purge. Then the saga is fully closed.
+
+### (history below — the chain that got us here)
+## ✅ POSTING WORKS + PERSISTS (2026-06-12) — UX polish: instant-show + fast reads — `661e338`
 **Posting confirmed live:** direct createCommunityPost → 1.5s/200 + id; a direct test post AND a real UI post both appear in the Lounge after reload + persist. RLS fix + read-timeout-guard fixed the SAVE. Remaining was pure UX: composer sat in "Posting…" ~16s and the post only showed on reload, because the success UI was gated behind the slow unindexed `-created_date` feed refetch.
 - **FIX (`661e338`), two parts:**
   - **CLIENT — optimistic + non-blocking:** on the create's 200, close composer + insert the returned post/comment into the feed IMMEDIATELY; background refetch is never awaited and no longer tick-remounts (which had forced a stale-feed flash + blocking read). Room feed (`onPostCreated` prepend), Circle + Club feeds (prepend), comments (append returned comment; was `await loadComments()` — the gate), club notes (append; was awaited). Verified already-instant: kindness pill (optimistic + rollback), close-week (`setClosed` instant), QOTD (`setAnswered` instant).
