@@ -169,6 +169,7 @@ export default function NewEntrySheet({
   const [todoItems, setTodoItems] = useState(editEntry?.todo_items || []);
   const [newTodoText, setNewTodoText] = useState("");
   const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState("");
 
   // Guided state
   const [guidedStep, setGuidedStep] = useState(0);
@@ -216,6 +217,7 @@ export default function NewEntrySheet({
   // ── save logic — payload shape UNCHANGED; tags rebuilt from thread + extras ──
   const handleSave = async () => {
     setSaving(true);
+    setSaveError("");
     let finalText = text;
     if (cardType === "gratitude") finalText = gratitudes.filter(Boolean).join("\n");
 
@@ -249,6 +251,7 @@ export default function NewEntrySheet({
       onClose();
     } catch (err) {
       console.error("Save journal entry failed:", err);
+      setSaveError("We couldn’t save your entry just now. Your words are still here — try again.");
       setSaving(false);
     }
   };
@@ -508,6 +511,9 @@ export default function NewEntrySheet({
               cursor: (saving || !text.trim()) ? "default" : "pointer", fontFamily: HAND, fontWeight: 600, fontSize: 19,
               color: T.ink, textShadow: PRESS, borderRadius: 3, opacity: (saving || !text.trim()) ? 0.5 : 1,
             }}>{saving ? "Saving…" : "Save line"}</button>
+            {saveError && (
+              <div role="alert" style={{ marginTop: 12, fontFamily: UI, fontSize: 12.5, color: T.crimson, lineHeight: 1.5 }}>{saveError}</div>
+            )}
             <div style={{ display: "inline-flex", alignItems: "center", gap: 6, marginTop: 18, marginLeft: 14, fontFamily: UI, fontSize: 10.5, color: T.muted, letterSpacing: 0.6, fontWeight: 600 }}>
               <Lock size={11} /> Locked to you, always.
             </div>
@@ -774,6 +780,9 @@ export default function NewEntrySheet({
                 color: T.ink, textShadow: PRESS, borderRadius: 3, opacity: saveDisabled ? 0.5 : 1,
               }}>{saving ? "Saving…" : editEntry ? "Save changes" : "Save entry"}</button>
             </div>
+            {saveError && (
+              <div role="alert" style={{ marginTop: 12, fontFamily: UI, fontSize: 12.5, color: T.crimson, lineHeight: 1.5 }}>{saveError}</div>
+            )}
             <div style={{ display: "inline-flex", alignItems: "center", gap: 6, marginTop: 18, fontFamily: UI, fontSize: 10.5, color: T.muted, letterSpacing: 0.6, fontWeight: 600 }}>
               <Lock size={11} /> Encrypted on this device. Jess reads it only if you hand it to her.
             </div>

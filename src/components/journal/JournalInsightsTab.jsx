@@ -39,6 +39,7 @@ const sLabel = {
 export default function JournalInsightsTab({ user, entries }) {
   const [weeklySummary, setWeeklySummary] = useState(null);
   const [generatingSummary, setGeneratingSummary] = useState(false);
+  const [summaryError, setSummaryError] = useState(false);
   const [checkins, setCheckins] = useState([]);
   const [cycleEvents, setCycleEvents] = useState([]);
   const [loadingAux, setLoadingAux] = useState(true);   // H7: cycle-pattern fetch state
@@ -129,18 +130,25 @@ export default function JournalInsightsTab({ user, entries }) {
 
   const generateWeeklySummary = async () => {
     setGeneratingSummary(true);
+    setSummaryError(false);
     const recentEntries = last7.slice(0, 6);
     const text = recentEntries.map(e => e.text?.slice(0, 200)).join("\n---\n");
-    const res = await base44.integrations.Core.InvokeLLM({
-      prompt: `You are a calm, supportive wellness journaling guide. Based on these journal entries from the past week, write a brief, warm, non-judgmental weekly reflection (2-3 sentences max). Note any patterns in themes, emotions, or energy without making clinical claims. End with one gentle question or observation for next week. Keep it personal, calm, and supportive.
+    try {
+      const res = await base44.integrations.Core.InvokeLLM({
+        prompt: `You are a calm, supportive wellness journaling guide. Based on these journal entries from the past week, write a brief, warm, non-judgmental weekly reflection (2-3 sentences max). Note any patterns in themes, emotions, or energy without making clinical claims. End with one gentle question or observation for next week. Keep it personal, calm, and supportive.
 
 Entries:
 ${text}
 
 Return as plain text, no markdown.`,
-    });
-    setWeeklySummary(res);
-    setGeneratingSummary(false);
+      });
+      setWeeklySummary(res);
+    } catch (err) {
+      console.error("Weekly reflection generation failed:", err);
+      setSummaryError(true);
+    } finally {
+      setGeneratingSummary(false);
+    }
   };
 
   const cyclePatternData = useMemo(() => {
@@ -341,6 +349,10 @@ Return as plain text, no markdown.`,
           <p className="text-sm leading-relaxed"
             style={{ color: "var(--plum)", lineHeight: "1.7" }}>
             {weeklySummary}
+          </p>
+        ) : summaryError ? (
+          <p role="alert" className="text-sm" style={{ color: "var(--rose-dust)", }}>
+            We couldn{"’"}t generate your reflection just now. Please try again in a moment.
           </p>
         ) : (
           <p className="text-sm" style={{ color: "var(--mauve)", }}>

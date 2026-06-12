@@ -27,6 +27,7 @@ function getPhase(dayOfCycle, cycleLength, periodLength) {
 
 export default function CycleSymptomDashboard({ user, profile }) {
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
   const [chartData, setChartData] = useState([]);
   const [topSymptoms, setTopSymptoms] = useState([]);
   const [selectedSymptom, setSelectedSymptom] = useState(null);
@@ -34,6 +35,7 @@ export default function CycleSymptomDashboard({ user, profile }) {
   useEffect(() => {
     if (!profile?.last_period_start_date) { setLoading(false); return; }
     (async () => {
+     try {
       const threeMonthsAgo = subMonths(new Date(), 3).toISOString().split("T")[0];
       const [symptoms, cycles] = await Promise.all([
         base44.entities.SymptomLogs.filter({ user_id: user.id }),
@@ -66,7 +68,12 @@ export default function CycleSymptomDashboard({ user, profile }) {
         return entry;
       });
       setChartData(data);
+     } catch (err) {
+      console.error("Cycle symptom dashboard load failed:", err);
+      setError(true);
+     } finally {
       setLoading(false);
+     }
     })();
   }, [user, profile]);
 
@@ -79,6 +86,12 @@ export default function CycleSymptomDashboard({ user, profile }) {
   if (!profile?.last_period_start_date) return (
     <div className="rounded-2xl p-6 text-center" style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)" }}>
       <p className="text-sm" style={{ color: "var(--mauve)" }}>Set your last period date in Profile to see cycle insights.</p>
+    </div>
+  );
+
+  if (error) return (
+    <div className="rounded-2xl p-6 text-center" style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)" }}>
+      <p className="text-sm" style={{ color: "var(--mauve)" }}>We couldn{"’"}t load your cycle insights just now. Please try again later.</p>
     </div>
   );
 
