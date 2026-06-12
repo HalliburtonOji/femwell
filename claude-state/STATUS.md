@@ -1,6 +1,13 @@
 # FEMWELL — CANONICAL STATUS INDEX (read first · updated 2026-06-12)
 **This file is the single source of truth AND the index to every plan doc. If anything else disagrees, this wins.** (The long ship-log history continues below the index.)
 
+## 🚨 POSTING HANG — FIXED (2026-06-12) — `128d891` · awaiting Halli REDEPLOY of functions + live re-drive
+**CRITICAL bug Halli found live:** a real Lounge post fired `POST /functions/createCommunityPost` but the request stayed **pending 50s+ and never resolved** — post never saved, UI did nothing, no console error.
+- **Root cause (confirmed by reading the code):** the M2 moderation helper `openaiModerate()` did `fetch('https://api.openai.com/v1/moderations', …)` with **NO timeout**. A slow/unresponsive OpenAI endpoint → the fetch never settles → the whole function hangs forever. The existing keyword-fallback `catch` never ran because an unresponsive fetch never throws.
+- **Fix (`128d891`):** added an **AbortController 4s hard timeout** to EVERY OpenAI moderation fetch on the write paths — `createCommunityPost`, `addComment`, `closeTheWeek`, `submitGameResponse`. On timeout the fetch aborts → throws → the existing **keyword crisis/scrub floor runs and the post STILL goes through** (fail-safe, never blocks). `jessSupport`'s `InvokeLLM` (no abort signal) is raced against a **12s** timeout. Functions now return ~1s (clean) / ≤4s (moderation hung). `answerQotd` + `collectivePool` audited — no external calls, already safe. Note: Deno.serve already returns 500 on any throw, so the unresolved fetch was the *only* hang vector.
+- **Verified:** `deno check` green on all five (temp SDK stub + import map). Client unchanged — the composer's success path already calls `onPosted()` (refetch) and `finally` clears `busy`; it only ever hung because the request never returned.
+- **⚠️ NEEDS HALLI:** **REDEPLOY the functions** (not just the bundle — this is server-function code), then re-drive a live Lounge post end-to-end (write → Post → request returns 200 in ~1–3s AND the post appears). Record outcome + live bundle/function state here per the baton rule.
+
 ## 🚪 COMMUNITY HOME — OPTION B "CALM DOORWAY" REBUILD (2026-06-12) — BUILT + WEBKIT-VERIFIED + PUSHED · awaiting Halli deploy
 Per `claude-state/COMMUNITY_HOME_REDESIGN.html` (FoundersOS → Home Redesign), Halli picked **Option B + DAILY rotation**.
 - **`b5969de` — Community home is now a calm doorway:** masthead → presence (with the season-belonging line folded in, count-free) + Jump → **Question of the day** → **"Today in the community"** ONE rotating slot → **rooms/doors** → slim links + Jess nudge. **Before→after: ~14 blocks → ~6.**
