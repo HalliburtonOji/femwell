@@ -1,7 +1,19 @@
 # FEMWELL — CANONICAL STATUS INDEX (read first · updated 2026-06-12)
 **This file is the single source of truth AND the index to every plan doc. If anything else disagrees, this wins.** (The long ship-log history continues below the index.)
 
-## 🛑→✅ APP-WIDE WRITE-LOCK ROOT CAUSE FIXED (2026-06-12) — `8d4f79f` · awaiting Halli ENTITY SYNC + createPostDiag re-run + full write sweep
+## 🩹 RATE-CAP READ WAS THE LEFTOVER HANG — ALL ENTITY READS NOW GUARDED (2026-06-12) — `d1eeafc` · awaiting Halli REDEPLOY + direct-call <3s + UI persist
+RLS fix confirmed live ✅ — createPostDiag now returns ALL steps + Echo control `ok:true` (~200-350ms). But createCommunityPost THE FUNCTION still hung 27s+. Read the deployed file line-by-line: refactor IS in place (no OpenAI fetch, no awaited screenContent/jessSupport). The one awaited call createPostDiag does NOT exercise = the **rate-cap READ** `CommunityPost.filter({author_hash}, '-created_date', 50)` — **unguarded**. createPostDiag does raw create+delete only, never this filter → diag fast, function wedged. (`.catch` only catches a THROW; a hung read never settles. The create was already withTimeout'd, so the hang was BEFORE it.)
+- **FIX (`d1eeafc`):** timeout-guard EVERY awaited platform read AND create on ALL write paths (fail-open on a read timeout so a hung anti-flood/dedup read can never block a write):
+  - createCommunityPost: rate-cap read (2.5s) + club-validate read (2.5s); create already guarded.
+  - addComment: post-lookup `.get` was unguarded AND the create was NOT guarded → both now guarded.
+  - closeTheWeek: once-per-week dedup read (same `-created_date` shape) + create.
+  - submitGameResponse: round `.get` + once-per-round dedup read + create.
+  - postClubNote: create.
+  Only unguarded awaits left = `auth.me()` (proven fast) + `req.json()` (local). Audited: zero un-guarded `sb.entities`/`asServiceRole.entities` awaits remain. deno check green on all 5.
+- **⚠️ NEEDS HALLI:** REDEPLOY the 5 functions, then call createCommunityPost **directly** (fetch, valid author_hash) → require **<3s + 200 + post id**, then UI post + comment persist on reload. Plus the full write sweep (echo/pill/witness). Once green, remove createPostDiag.
+- **Open Q for later (non-blocking):** WHY the `-created_date` filter hangs on Base44 (likely an unindexed-sort issue — CommunityPost has no created_date index). Guard makes it moot for posting; if posts consistently take ~2.5s, the read is hanging every time and we should drop/replace that sorted rate query.
+
+## 🛑→✅ APP-WIDE WRITE-LOCK ROOT CAUSE FIXED (2026-06-12) — `8d4f79f` · CONFIRMED live (createPostDiag all ok:true) — RLS no longer the blocker
 **createPostDiag gave the decisive answer:** `required-only` CommunityPost.create AND the **Echo.create control** BOTH returned **"Permission denied for create operation"** (~250-400ms, fast deny — not a hang, not a field, not moderation).
 - **ROOT CAUSE (app-wide):** the B3 audit added a write-lock rls `user_condition: { role: "system" }` to **22 entities**. **asServiceRole does NOT satisfy `role:system`** → EVERY service-role create/update/delete was DENIED. Posting, echoes, comments, reactions, QOTD, witness, twin, clubs, **kindness pool**, wisdom — every write blocked. Missed because we only ever verified reads(200)+function-registration(400), **never a real end-to-end write**.
 - **FIX (`8d4f79f`):** replaced every `"role": "system"` → `"role": "admin"` across all 22 locked entities (create/update/delete + read on the 8 private peer entities). **Why admin:** SDK docs — asServiceRole = "admin-level permissions, any data available to the app's admin"; the diag proved it is SUBJECT to rls (denied, not bypassed) so it's evaluated as `role:"admin"`. So `{role:"admin"}` PASSES for the service and still BLOCKS a normal client (`role:"user"`) → **B3 direct-client-write block preserved.** Strictly safe: a client is denied under BOTH system and admin (access never loosens); only the service goes denied→allowed. 14 lurkable-room entities keep public read; 8 peer entities keep read locked (now service-readable). All 22 JSONC parse-validated.
