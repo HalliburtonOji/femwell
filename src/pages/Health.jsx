@@ -17,7 +17,7 @@
 
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Circle, CircleDot, RefreshCw, Flower2, Leaf, PlusCircle, Sparkles, Check } from "lucide-react";
+import { Circle, CircleDot, RefreshCw, Flower2, Leaf, PlusCircle, Sparkles, Check, Flame } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { useCycleDay } from "@/hooks/useCycleDay";
 
@@ -350,7 +350,7 @@ const HEALTH_CONTENT = {
             "Don't defer cervical screening — uptake is at its lowest in 20 years",
           ] },
         ],
-      },,
+      },
     ],
   },
   body: {
@@ -417,7 +417,7 @@ const HEALTH_CONTENT = {
             "Days 1–4 (period): just nourish — no exfoliants",
           ] },
         ],
-      },,
+      },
     ],
   },
   mind: {
@@ -791,7 +791,7 @@ const JessObservationCard = memo(function JessObservationCard({ letterId, profil
           background: "rgba(212,175,55,0.12)",
           display: "flex", alignItems: "center", justifyContent: "center",
           fontSize: 14, color: "#D4AF37", flexShrink: 0,
-        }}>✦</div>
+        }}><Sparkles size={14} strokeWidth={1.75} /></div>
         <div>
           <div style={{
             fontSize: 12, fontWeight: 700, color: "#3A2C1A", letterSpacing: 0.5,
@@ -1873,7 +1873,7 @@ export default function Health() {
             zIndex: 120,
           }}
         >
-          {toast} <span aria-hidden="true" style={{ marginLeft: 4 }}>✓</span>
+          {toast} <Check size={13} strokeWidth={2.5} aria-hidden="true" style={{ marginLeft: 4, verticalAlign: "middle" }} />
         </div>
       )}
     </div>
@@ -2068,7 +2068,7 @@ const LetterSection = memo(function LetterSection({ section, isExpanded, onToggl
                   background: "rgba(212,175,55,0.2)",
                   display: "inline-flex", alignItems: "center", justifyContent: "center",
                   fontSize: 12, flexShrink: 0, color: "#D4AF37",
-                }}>✦</span>
+                }}><Sparkles size={12} strokeWidth={1.75} /></span>
                 <span>
                   Ask Jess — <em style={{ fontStyle: "italic", fontWeight: 400 }}>{String(section.title).toLowerCase()}</em>
                 </span>
@@ -2472,7 +2472,7 @@ function StoryDashboard({ profile, cycle, phase, recentCheckins, recentSymptoms,
                       background: "rgba(143,175,143,0.15)",
                       padding: "3px 10px", borderRadius: 12,
                       display: "inline-flex", alignItems: "center", gap: 4,
-                    }}>{showFire && <span aria-hidden="true">🔥</span>}{h.streak} day{h.streak === 1 ? "" : "s"}</span>
+                    }}>{showFire && <Flame size={11} strokeWidth={2} aria-hidden="true" style={{ marginRight: 2 }} />}{h.streak} day{h.streak === 1 ? "" : "s"}</span>
                   </div>
                   <div style={{
                     marginTop: 6, height: 3, background: "rgba(58,44,26,0.06)",
@@ -2533,7 +2533,7 @@ function StoryDashboard({ profile, cycle, phase, recentCheckins, recentSymptoms,
                   marginTop: 6,
                   fontSize: 12, color: meetsTarget ? "#8FAF8F" : "#9B8B7A", fontWeight: 600, letterSpacing: 0.3,
                 }}>
-                  {meetsTarget ? "Meeting your target ✓" : `${Math.round(pct * 100)}% of daily target`}
+                  {meetsTarget ? (<>Meeting your target <Check size={12} strokeWidth={2.5} aria-hidden="true" style={{ verticalAlign: "middle" }} /></>) : `${Math.round(pct * 100)}% of daily target`}
                 </div>
               </div>
             </div>
