@@ -1,5 +1,13 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
 
+// Timeout guard — an awaited platform/AI call that HANGS would wedge the function.
+function withTimeout(p: Promise<any>, ms: number, label: string): Promise<any> {
+  return new Promise((resolve, reject) => {
+    const t = setTimeout(() => reject(new Error(`${label}-timeout-${ms}ms`)), ms);
+    p.then((v) => { clearTimeout(t); resolve(v); }, (e) => { clearTimeout(t); reject(e); });
+  });
+}
+
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
@@ -12,7 +20,7 @@ Deno.serve(async (req) => {
     const apiKey = Deno.env.get('OPENAI_API_KEY');
     if (!apiKey) return Response.json({ error: 'Voice not configured.' }, { status: 500 });
 
-    const sessionRes = await fetch('https://api.openai.com/v1/realtime/sessions', {
+    const sessionRes = await withTimeout(fetch('https://api.openai.com/v1/realtime/sessions', {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${apiKey}`,
@@ -31,7 +39,7 @@ Deno.serve(async (req) => {
           silence_duration_ms: turn_detection_mode === 'semantic' ? 1200 : 700,
         },
       }),
-    });
+    }), 8000, 'fetch');
 
     if (!sessionRes.ok) {
       const errText = await sessionRes.text();

@@ -1,6 +1,14 @@
 /* global Deno */
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 
+// Timeout guard — an awaited platform/AI call that HANGS would wedge the function.
+function withTimeout(p: Promise<any>, ms: number, label: string): Promise<any> {
+  return new Promise((resolve, reject) => {
+    const t = setTimeout(() => reject(new Error(`${label}-timeout-${ms}ms`)), ms);
+    p.then((v) => { clearTimeout(t); resolve(v); }, (e) => { clearTimeout(t); reject(e); });
+  });
+}
+
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
@@ -11,16 +19,16 @@ Deno.serve(async (req) => {
     const dayKey = day_key || new Date().toISOString().split('T')[0];
 
     // Check cache
-    const existing = await base44.asServiceRole.entities.DailyPlan.filter({ user_id: user.id, day_key: dayKey });
+    const existing = await withTimeout(base44.asServiceRole.entities.DailyPlan.filter({ user_id: user.id, day_key: dayKey }), 2500, 'read').catch(() => []);
     if (existing[0]) return Response.json(existing[0]);
 
     // Gather context
     const [profiles, checkins, promptResponses, userPrograms, allPrograms] = await Promise.all([
-      base44.asServiceRole.entities.UserProfile.filter({ user_id: user.id }),
-      base44.asServiceRole.entities.DailyCheckins.filter({ user_id: user.id }).catch(() => []),
-      base44.asServiceRole.entities.DailyPromptResponse.filter({ user_id: user.id, day_key: dayKey }).catch(() => []),
-      base44.asServiceRole.entities.UserPrograms.filter({ user_id: user.id }).catch(() => []),
-      base44.asServiceRole.entities.Programs.list('-created_date', 50).catch(() => []),
+      withTimeout(base44.asServiceRole.entities.UserProfile.filter({ user_id: user.id }), 2500, 'read').catch(() => []),
+      withTimeout(base44.asServiceRole.entities.DailyCheckins.filter({ user_id: user.id }), 2500, 'read').catch(() => []),
+      withTimeout(base44.asServiceRole.entities.DailyPromptResponse.filter({ user_id: user.id, day_key: dayKey }), 2500, 'read').catch(() => []),
+      withTimeout(base44.asServiceRole.entities.UserPrograms.filter({ user_id: user.id }), 2500, 'read').catch(() => []),
+      withTimeout(base44.asServiceRole.entities.Programs.list('-created_date', 50), 2500, 'read').catch(() => []),
     ]);
 
     const profile = profiles[0] || {};
@@ -40,7 +48,7 @@ Deno.serve(async (req) => {
       activeProgramTitle ? `Active program: ${activeProgramTitle}, Day ${activeProgram.current_day || 1}` : '',
     ].filter(Boolean).join('\n');
 
-    const planJson = await base44.asServiceRole.integrations.Core.InvokeLLM({
+    const planJson = await withTimeout(base44.asServiceRole.integrations.Core.InvokeLLM({
       prompt: `You are a wellness planner for a women's wellness app. Create a concise daily plan for today based on this user context:\n\n${context}\n\nReturn ONLY valid JSON with these fields:\n{\n  "focus_for_today": "1-2 sentence theme for the day",\n  "one_session": "name of one breathwork/meditation/movement session to do",\n  "one_nutrition_nudge": "one specific food/nutrition tip for today",\n  "one_mental_tool_prompt": "one short journaling or mindfulness prompt",\n  "one_lifestyle_card": "one lifestyle area to focus on today"\n}`,
       response_json_schema: {
         type: 'object',
@@ -52,9 +60,9 @@ Deno.serve(async (req) => {
           one_lifestyle_card: { type: 'string' },
         },
       },
-    });
+    }), 20000, 'llm');
 
-    const saved = await base44.asServiceRole.entities.DailyPlan.create({
+    const saved = await withTimeout(base44.asServiceRole.entities.DailyPlan.create({
       user_id: user.id,
       day_key: dayKey,
       focus_for_today: planJson.focus_for_today || '',
@@ -63,10 +71,10 @@ Deno.serve(async (req) => {
       mental_tool: planJson.one_mental_tool_prompt || '',
       lifestyle_suggestion: planJson.one_lifestyle_card || '',
       created_at: new Date().toISOString(),
-    });
+    }), 6000, 'write');
 
     return Response.json(saved);
-  } catch (error) {
+  } catch (error: any) {
     return Response.json({ error: error.message }, { status: 500 });
   }
 });

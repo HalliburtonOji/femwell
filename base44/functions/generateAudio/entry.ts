@@ -1,6 +1,14 @@
 /* eslint-disable no-undef */
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 
+// Timeout guard — an awaited platform/AI call that HANGS would wedge the function.
+function withTimeout(p: Promise<any>, ms: number, label: string): Promise<any> {
+  return new Promise((resolve, reject) => {
+    const t = setTimeout(() => reject(new Error(`${label}-timeout-${ms}ms`)), ms);
+    p.then((v) => { clearTimeout(t); resolve(v); }, (e) => { clearTimeout(t); reject(e); });
+  });
+}
+
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
@@ -14,7 +22,7 @@ Deno.serve(async (req) => {
     if (!OPENAI_API_KEY) return Response.json({ error: 'OPENAI_API_KEY not set' }, { status: 500 });
 
     // Call OpenAI TTS
-    const ttsRes = await fetch('https://api.openai.com/v1/audio/speech', {
+    const ttsRes = await withTimeout(fetch('https://api.openai.com/v1/audio/speech', {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${OPENAI_API_KEY}`,
@@ -27,7 +35,7 @@ Deno.serve(async (req) => {
         speed,
         response_format: 'mp3',
       }),
-    });
+    }), 8000, 'fetch');
 
     if (!ttsRes.ok) {
       const err = await ttsRes.text();
@@ -43,7 +51,7 @@ Deno.serve(async (req) => {
     const blob = new Blob([audioBuffer], { type: 'audio/mpeg' });
     let audio_url = null;
     try {
-      const uploadResult = await base44.asServiceRole.integrations.Core.UploadFile({ file: blob });
+      const uploadResult = await withTimeout(base44.asServiceRole.integrations.Core.UploadFile({ file: blob }), 20000, 'gen');
       audio_url = uploadResult.file_url;
     } catch {
       // fallback: return data URL

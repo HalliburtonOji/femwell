@@ -17,6 +17,14 @@ const THEME_PROMPTS = {
   sleep:         "Moonlit bedroom interior, deep indigo and lavender tones, peaceful and restful",
 };
 
+// Timeout guard — an awaited platform/AI call that HANGS would wedge the function.
+function withTimeout(p: Promise<any>, ms: number, label: string): Promise<any> {
+  return new Promise((resolve, reject) => {
+    const t = setTimeout(() => reject(new Error(`${label}-timeout-${ms}ms`)), ms);
+    p.then((v) => { clearTimeout(t); resolve(v); }, (e) => { clearTimeout(t); reject(e); });
+  });
+}
+
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
@@ -28,16 +36,16 @@ Deno.serve(async (req) => {
     if (!pack_id) return Response.json({ error: 'pack_id required' }, { status: 400 });
 
     // Find first pending item in this pack
-    const items = await base44.entities.StoryItem.filter({ pack_id });
+    const items = await withTimeout(base44.entities.StoryItem.filter({ pack_id }), 2500, 'read').catch(() => []);
     const pendingItem = items.sort((a, b) => a.slot_index - b.slot_index).find(i => i.item_status === 'PENDING');
     if (!pendingItem) return Response.json({ done: true });
 
     // Build personalization context
     const today = new Date().toISOString().split('T')[0];
     const [profiles, checkins, userPrograms] = await Promise.all([
-      base44.entities.UserProfile.filter({ user_id: user.id }),
-      base44.entities.DailyCheckins.filter({ user_id: user.id, date: today }).catch(() => []),
-      base44.entities.UserPrograms.filter({ user_id: user.id }).catch(() => []),
+      withTimeout(base44.entities.UserProfile.filter({ user_id: user.id }), 2500, 'read').catch(() => []),
+      withTimeout(base44.entities.DailyCheckins.filter({ user_id: user.id, date: today }), 2500, 'read').catch(() => []),
+      withTimeout(base44.entities.UserPrograms.filter({ user_id: user.id }), 2500, 'read').catch(() => []),
     ]);
 
     const profile = profiles[0] || {};
@@ -57,7 +65,7 @@ Deno.serve(async (req) => {
     const themes = ['calm', 'energy', 'relationships', 'nutrition', 'cycle', 'skin', 'growth', 'sleep'];
     const theme = themes[(pendingItem.slot_index - 1) % themes.length];
 
-    const copy = await base44.integrations.Core.InvokeLLM({
+    const copy = await withTimeout(base44.integrations.Core.InvokeLLM({
       prompt: `You are creating a daily wellness story card for a women's wellness app.
 Context: ${JSON.stringify(ctx)}
 Theme: ${theme}
@@ -83,13 +91,13 @@ Rules: No emoji. Max 50 chars per text field. route_key must be one of: ${VALID_
         },
         required: ['title', 'body_line_1', 'body_line_2', 'cta_label', 'route_key'],
       },
-    });
+    }), 20000, 'llm');
 
     // Validate route_key
     const routeKey = VALID_ROUTE_KEYS.includes(copy.route_key) ? copy.route_key : 'Today';
 
     // Visual: check pool first
-    const pool = await base44.asServiceRole.entities.StoryVisualPool.filter({ theme, is_active: true }).catch(() => []);
+    const pool = await withTimeout(base44.asServiceRole.entities.StoryVisualPool.filter({ theme, is_active: true }), 2500, 'read').catch(() => []);
     let imageUrl = null;
     let imagePrompt = THEME_PROMPTS[theme] || 'Elegant wellness lifestyle photography, soft natural light';
 
@@ -98,21 +106,21 @@ Rules: No emoji. Max 50 chars per text field. route_key must be one of: ${VALID_
       imageUrl = pool[Math.floor(Math.random() * pool.length)].image_url;
     } else {
       // Generate new image and add to pool
-      const imgResult = await base44.integrations.Core.GenerateImage({ prompt: imagePrompt });
+      const imgResult = await withTimeout(base44.integrations.Core.GenerateImage({ prompt: imagePrompt }), 20000, 'gen');
       imageUrl = imgResult?.url || null;
       if (imageUrl) {
-        await base44.asServiceRole.entities.StoryVisualPool.create({
+        await withTimeout(base44.asServiceRole.entities.StoryVisualPool.create({
           theme,
           image_url: imageUrl,
           image_prompt: imagePrompt,
           created_at: new Date().toISOString(),
           is_active: true,
-        }).catch(() => {});
+        }), 6000, 'write').catch(() => {});
       }
     }
 
     // Save item
-    await base44.entities.StoryItem.update(pendingItem.id, {
+    await withTimeout(base44.entities.StoryItem.update(pendingItem.id, {
       title: copy.title,
       body_line_1: copy.body_line_1,
       body_line_2: copy.body_line_2,
@@ -123,16 +131,16 @@ Rules: No emoji. Max 50 chars per text field. route_key must be one of: ${VALID_
       image_prompt: imagePrompt,
       item_status: 'DONE',
       generated_at: new Date().toISOString(),
-    });
+    }), 6000, 'write').catch(() => null);
 
     // Check if pack is now complete
-    const allItems = await base44.entities.StoryItem.filter({ pack_id: pendingItem.pack_id });
+    const allItems = await withTimeout(base44.entities.StoryItem.filter({ pack_id: pendingItem.pack_id }), 2500, 'read').catch(() => []);
     const allDone = allItems.every(i => i.item_status === 'DONE');
     if (allDone) {
-      await base44.entities.StoryPack.update(pendingItem.pack_id, {
+      await withTimeout(base44.entities.StoryPack.update(pendingItem.pack_id, {
         status: 'READY',
         updated_at: new Date().toISOString(),
-      });
+      }), 6000, 'write').catch(() => null);
     }
 
     return Response.json({ ok: true, slot: pendingItem.slot_index });

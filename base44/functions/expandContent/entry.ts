@@ -6,11 +6,19 @@
 
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 
+// Timeout guard — an awaited platform/AI call that HANGS would wedge the function.
+function withTimeout(p: Promise<any>, ms: number, label: string): Promise<any> {
+  return new Promise((resolve, reject) => {
+    const t = setTimeout(() => reject(new Error(`${label}-timeout-${ms}ms`)), ms);
+    p.then((v) => { clearTimeout(t); resolve(v); }, (e) => { clearTimeout(t); reject(e); });
+  });
+}
+
 // ── Inlined helper: structured ingest error log ────────────────────────────
 async function logIngestError(base44, function_name, stage, ctx, err) {
   try {
     const e = err && typeof err === 'object' ? err : new Error(String(err));
-    await base44.asServiceRole.entities.IngestErrorLog.create({
+    await withTimeout(base44.asServiceRole.entities.IngestErrorLog.create({
       function_name,
       stage,
       source_identifier: ctx.source_identifier || '',
@@ -20,7 +28,7 @@ async function logIngestError(base44, function_name, stage, ctx, err) {
       raw_payload: ctx.raw_payload ? JSON.stringify(ctx.raw_payload).slice(0, 4000) : '',
       logged_at: new Date().toISOString(),
       status: 'logged',
-    });
+    }), 6000, 'write');
   } catch (logErr) {
     console.error(`[ingest-error-log-failed] ${function_name} ${stage}`, logErr?.message);
   }
@@ -63,7 +71,7 @@ Deno.serve(async (req) => {
     const storySpec =
       "short story of 560-720 words. Use plain language; aim for a Year 9 " +
       "reading level. Avoid jargon. No markdown — clean prose only.";
-    const result = await base44.asServiceRole.integrations.Core.InvokeLLM({
+    const result = await withTimeout(base44.asServiceRole.integrations.Core.InvokeLLM({
       prompt:
         `Write a complete, engaging ${isStory ? storySpec : articleSpec} ` +
         `for women. Title: "${title}". Opening: "${summary}". Write the ` +
@@ -73,7 +81,7 @@ Deno.serve(async (req) => {
         type: 'object',
         properties: { body: { type: 'string' } },
       },
-    });
+    }), 20000, 'llm');
 
     const body = result?.body || '';
 
@@ -81,7 +89,7 @@ Deno.serve(async (req) => {
     // We fetch the row to inspect URLs; only update fields when needed.
     let row = null;
     try {
-      const rows = await base44.asServiceRole.entities.LifestyleItems.filter({ id: item_id });
+      const rows = await withTimeout(base44.asServiceRole.entities.LifestyleItems.filter({ id: item_id }), 2500, 'read').catch(() => []);
       row = rows[0] || null;
     } catch (err) {
       await logIngestError(base44, 'expandContent', 'publish', { item_id }, err);
@@ -111,7 +119,7 @@ Deno.serve(async (req) => {
     }
 
     if (Object.keys(updates).length > 0) {
-      await base44.asServiceRole.entities.LifestyleItems.update(item_id, updates).catch((err) =>
+      await withTimeout(base44.asServiceRole.entities.LifestyleItems.update(item_id, updates), 6000, 'write').catch((err) =>
         logIngestError(base44, 'expandContent', 'publish', { item_id }, err));
     }
 

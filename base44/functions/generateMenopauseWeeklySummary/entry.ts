@@ -12,6 +12,14 @@ function getMondayWeekStart() {
   return d.toISOString().split('T')[0];
 }
 
+// Timeout guard — an awaited platform/AI call that HANGS would wedge the function.
+function withTimeout(p: Promise<any>, ms: number, label: string): Promise<any> {
+  return new Promise((resolve, reject) => {
+    const t = setTimeout(() => reject(new Error(`${label}-timeout-${ms}ms`)), ms);
+    p.then((v) => { clearTimeout(t); resolve(v); }, (e) => { clearTimeout(t); reject(e); });
+  });
+}
+
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
@@ -23,15 +31,15 @@ Deno.serve(async (req) => {
     const force = body.force || false;
 
     if (!force) {
-      const existing = await base44.asServiceRole.entities.MenopauseWeeklyReport.filter({ user_id: user.id, week_start }).catch(() => []);
+      const existing = await withTimeout(base44.asServiceRole.entities.MenopauseWeeklyReport.filter({ user_id: user.id, week_start }), 2500, 'read').catch(() => []);
       if (existing[0]) return Response.json({ success: true, report: existing[0] });
     }
 
     const week_end = new Date(new Date(week_start).getTime() + 7 * 86400000).toISOString().split('T')[0];
 
     const [symptomEntries, dailyLogs] = await Promise.all([
-      base44.asServiceRole.entities.MenopauseSymptomEntry.filter({ user_id: user.id }).catch(() => []),
-      base44.asServiceRole.entities.MenopauseDailyLog.filter({ user_id: user.id }).catch(() => []),
+      withTimeout(base44.asServiceRole.entities.MenopauseSymptomEntry.filter({ user_id: user.id }), 2500, 'read').catch(() => []),
+      withTimeout(base44.asServiceRole.entities.MenopauseDailyLog.filter({ user_id: user.id }), 2500, 'read').catch(() => []),
     ]);
 
     const weekSymptoms = symptomEntries.filter(e => e.day_key >= week_start && e.day_key < week_end);
@@ -45,7 +53,7 @@ Deno.serve(async (req) => {
       ? weekLogs.map(l => `hot_flashes:${l.hot_flashes} sleep:${l.sleep_quality} mood:${l.mood} energy:${l.energy}`).join('; ')
       : 'no daily logs';
 
-    const response = await openai.chat.completions.create({
+    const response = await withTimeout(openai.chat.completions.create({
       model: 'gpt-4o-mini',
       messages: [
         { role: 'system', content: 'You are a supportive menopause health advisor. This is for informational purposes only, not medical advice. Return JSON only.' },
@@ -53,14 +61,14 @@ Deno.serve(async (req) => {
       ],
       response_format: { type: 'json_object' },
       max_tokens: 500,
-    });
+    }), 20000, 'llm');
 
     const parsed = JSON.parse(response.choices[0].message.content);
 
-    const existing = await base44.asServiceRole.entities.MenopauseWeeklyReport.filter({ user_id: user.id, week_start }).catch(() => []);
-    for (const e of existing) await base44.asServiceRole.entities.MenopauseWeeklyReport.delete(e.id).catch(() => {});
+    const existing = await withTimeout(base44.asServiceRole.entities.MenopauseWeeklyReport.filter({ user_id: user.id, week_start }), 2500, 'read').catch(() => []);
+    for (const e of existing) await withTimeout(base44.asServiceRole.entities.MenopauseWeeklyReport.delete(e.id), 6000, 'write').catch(() => {});
 
-    const saved = await base44.asServiceRole.entities.MenopauseWeeklyReport.create({
+    const saved = await withTimeout(base44.asServiceRole.entities.MenopauseWeeklyReport.create({
       user_id: user.id, week_start,
       top_symptoms: parsed.top_symptoms || [],
       severity_trend: parsed.severity_trend || '',
@@ -69,7 +77,7 @@ Deno.serve(async (req) => {
       self_care_plan: parsed.self_care_plan || [],
       report_data: parsed,
       created_at: new Date().toISOString(),
-    });
+    }), 6000, 'write');
 
     return Response.json({ success: true, report: saved });
   } catch (error) {

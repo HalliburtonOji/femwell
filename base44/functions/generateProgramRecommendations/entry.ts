@@ -1,6 +1,14 @@
 /* global Deno */
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 
+// Timeout guard — an awaited platform/AI call that HANGS would wedge the function.
+function withTimeout(p: Promise<any>, ms: number, label: string): Promise<any> {
+  return new Promise((resolve, reject) => {
+    const t = setTimeout(() => reject(new Error(`${label}-timeout-${ms}ms`)), ms);
+    p.then((v) => { clearTimeout(t); resolve(v); }, (e) => { clearTimeout(t); reject(e); });
+  });
+}
+
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
@@ -11,11 +19,11 @@ Deno.serve(async (req) => {
     const userId = body.user_id || user.id;
 
     const [profiles, checkins, phases, userPrograms, allPrograms] = await Promise.all([
-      base44.asServiceRole.entities.UserProfile.filter({ user_id: userId }),
-      base44.asServiceRole.entities.DailyCheckins.filter({ user_id: userId }),
-      base44.asServiceRole.entities.PhaseHistory.filter({ user_id: userId }),
-      base44.asServiceRole.entities.UserPrograms.filter({ user_id: userId }),
-      base44.asServiceRole.entities.Programs.list('-is_featured', 100),
+      withTimeout(base44.asServiceRole.entities.UserProfile.filter({ user_id: userId }), 2500, 'read').catch(() => []),
+      withTimeout(base44.asServiceRole.entities.DailyCheckins.filter({ user_id: userId }), 2500, 'read').catch(() => []),
+      withTimeout(base44.asServiceRole.entities.PhaseHistory.filter({ user_id: userId }), 2500, 'read').catch(() => []),
+      withTimeout(base44.asServiceRole.entities.UserPrograms.filter({ user_id: userId }), 2500, 'read').catch(() => []),
+      withTimeout(base44.asServiceRole.entities.Programs.list('-is_featured', 100), 2500, 'read').catch(() => []),
     ]);
 
     const profile = profiles[0] || {};
@@ -61,17 +69,17 @@ Deno.serve(async (req) => {
       .slice(0, 3);
 
     // Delete old recs for user and write fresh ones
-    const oldRecs = await base44.asServiceRole.entities.ProgramRecommendations.filter({ user_id: userId });
-    await Promise.all(oldRecs.map(r => base44.asServiceRole.entities.ProgramRecommendations.delete(r.id).catch(() => {})));
+    const oldRecs = await withTimeout(base44.asServiceRole.entities.ProgramRecommendations.filter({ user_id: userId }), 2500, 'read').catch(() => []);
+    await Promise.all(oldRecs.map(r => withTimeout(base44.asServiceRole.entities.ProgramRecommendations.delete(r.id), 6000, 'write').catch(() => {})));
 
     const created = await Promise.all(scored.map(rec =>
-      base44.asServiceRole.entities.ProgramRecommendations.create({
+      withTimeout(base44.asServiceRole.entities.ProgramRecommendations.create({
         user_id: userId,
         program_id: rec.program_id,
         reason: rec.reason,
         priority: rec.score,
         created_at: new Date().toISOString(),
-      })
+      }), 6000, 'write')
     ));
 
     return Response.json({ success: true, count: created.length, recommendations: scored });

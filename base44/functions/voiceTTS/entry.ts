@@ -1,5 +1,13 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 
+// Timeout guard — an awaited platform/AI call that HANGS would wedge the function.
+function withTimeout(p: Promise<any>, ms: number, label: string): Promise<any> {
+  return new Promise((resolve, reject) => {
+    const t = setTimeout(() => reject(new Error(`${label}-timeout-${ms}ms`)), ms);
+    p.then((v) => { clearTimeout(t); resolve(v); }, (e) => { clearTimeout(t); reject(e); });
+  });
+}
+
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
@@ -17,7 +25,7 @@ Deno.serve(async (req) => {
     let scriptProfileKey = dynamic_profile_key || null;
 
     if (voice_script_key && !scriptText) {
-      const scripts = await base44.asServiceRole.entities.VoiceScripts.filter({ voice_script_key });
+      const scripts = await withTimeout(base44.asServiceRole.entities.VoiceScripts.filter({ voice_script_key }), 2500, 'read').catch(() => []);
       if (!scripts.length) return Response.json({ error: 'Script not found' }, { status: 404 });
       const script = scripts[0];
 
@@ -31,11 +39,11 @@ Deno.serve(async (req) => {
 
     let speed = 0.9;
     if (scriptProfileKey) {
-      const profiles = await base44.asServiceRole.entities.VoiceProfiles.filter({ profile_key: scriptProfileKey });
+      const profiles = await withTimeout(base44.asServiceRole.entities.VoiceProfiles.filter({ profile_key: scriptProfileKey }), 2500, 'read').catch(() => []);
       if (profiles.length && profiles[0].speed) speed = Math.min(Math.max(profiles[0].speed, 0.25), 4.0);
     }
 
-    const ttsRes = await fetch('https://api.openai.com/v1/audio/speech', {
+    const ttsRes = await withTimeout(fetch('https://api.openai.com/v1/audio/speech', {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${OPENAI_API_KEY}`,
@@ -47,7 +55,7 @@ Deno.serve(async (req) => {
         voice: openaiVoice,
         speed,
       }),
-    });
+    }), 8000, 'fetch');
 
     if (!ttsRes.ok) {
       const err = await ttsRes.text();

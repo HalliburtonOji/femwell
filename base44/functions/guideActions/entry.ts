@@ -1,6 +1,14 @@
 /* global Deno */
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 
+// Timeout guard — an awaited platform/AI call that HANGS would wedge the function.
+function withTimeout(p: Promise<any>, ms: number, label: string): Promise<any> {
+  return new Promise((resolve, reject) => {
+    const t = setTimeout(() => reject(new Error(`${label}-timeout-${ms}ms`)), ms);
+    p.then((v) => { clearTimeout(t); resolve(v); }, (e) => { clearTimeout(t); reject(e); });
+  });
+}
+
 const MEDICATION_FAMILIES = {
   paracetamol: ["paracetamol", "acetaminophen", "tylenol", "panadol", "calpol"],
   ibuprofen: ["ibuprofen", "advil", "nurofen", "motrin"],
@@ -105,12 +113,12 @@ Deno.serve(async (req) => {
             message: 'What time should I set it for? For example: 9pm.',
           });
         }
-        const programs = await base44.entities.UserPrograms.filter({ user_id: user.id });
+        const programs = await withTimeout(base44.entities.UserPrograms.filter({ user_id: user.id }), 2500, 'read').catch(() => []);
         const activeProgram = programs.find(p => p.is_saved || p.status === 'active');
         if (!activeProgram) {
           return Response.json({ success: false, message: "I couldn't find an active program reminder to update." });
         }
-        await base44.entities.UserPrograms.update(activeProgram.id, { reminder_time });
+        await withTimeout(base44.entities.UserPrograms.update(activeProgram.id, { reminder_time }), 6000, 'write').catch(() => null);
         return Response.json({
           success: true,
           message: `Done — I set your program reminder for ${reminder_time}.`,
@@ -122,10 +130,10 @@ Deno.serve(async (req) => {
     // ── GET COACH CONTEXT (personalised system prompt context) ────────────
     if (action === 'get_coach_context') {
       const [profiles, recentCheckins, phaseHistory, correlations] = await Promise.all([
-        base44.entities.UserProfile.filter({ user_id: user.id }),
-        base44.entities.DailyCheckins.filter({ user_id: user.id }, '-date', 7),
-        base44.entities.PhaseHistory.filter({ user_id: user.id }, '-date', 1),
-        base44.entities.Correlations.filter({ user_id: user.id }),
+        withTimeout(base44.entities.UserProfile.filter({ user_id: user.id }), 2500, 'read').catch(() => []),
+        withTimeout(base44.entities.DailyCheckins.filter({ user_id: user.id }, '-date', 7), 2500, 'read').catch(() => []),
+        withTimeout(base44.entities.PhaseHistory.filter({ user_id: user.id }, '-date', 1), 2500, 'read').catch(() => []),
+        withTimeout(base44.entities.Correlations.filter({ user_id: user.id }), 2500, 'read').catch(() => []),
       ]);
       const profile = profiles[0] || {};
       const lastCheckin = recentCheckins[0] || null;
@@ -196,20 +204,20 @@ ${context.life_stage === 'menopause' ? 'Note: User is in menopause — tailor ad
         programs, userPrograms, hydration, journals,
         meals, mealPlan, todayRecs, recentSessions, savedItems,
       ] = await Promise.all([
-        base44.entities.UserProfile.filter({ user_id: user.id }),
-        base44.entities.UserPreferences.filter({ user_id: user.id }),
-        base44.entities.DailyCheckins.filter({ user_id: user.id, date: today }),
-        base44.entities.HabitLogs.filter({ user_id: user.id, date: today }),
-        base44.entities.CycleEvents.filter({ user_id: user.id }, '-date', 10),
-        base44.entities.Programs.list('-created_date', 20),
-        base44.entities.UserPrograms.filter({ user_id: user.id }),
-        base44.entities.HydrationLog.filter({ user_id: user.id, day_key: today }),
-        base44.entities.JournalEntries.filter({ user_id: user.id }, '-created_date', 3),
-        base44.entities.MealLog.filter({ user_id: user.id, day_key: today }),
-        base44.entities.MealPlans.filter({ user_id: user.id }, '-created_date', 1),
-        base44.entities.TodayRecommendations.filter({ user_id: user.id, date: today }),
-        base44.entities.ContentHistory.filter({ user_id: user.id }, '-created_date', 5),
-        base44.entities.SavedItems.filter({ user_id: user.id }, '-created_date', 5),
+        withTimeout(base44.entities.UserProfile.filter({ user_id: user.id }), 2500, 'read').catch(() => []),
+        withTimeout(base44.entities.UserPreferences.filter({ user_id: user.id }), 2500, 'read').catch(() => []),
+        withTimeout(base44.entities.DailyCheckins.filter({ user_id: user.id, date: today }), 2500, 'read').catch(() => []),
+        withTimeout(base44.entities.HabitLogs.filter({ user_id: user.id, date: today }), 2500, 'read').catch(() => []),
+        withTimeout(base44.entities.CycleEvents.filter({ user_id: user.id }, '-date', 10), 2500, 'read').catch(() => []),
+        withTimeout(base44.entities.Programs.list('-created_date', 20), 2500, 'read').catch(() => []),
+        withTimeout(base44.entities.UserPrograms.filter({ user_id: user.id }), 2500, 'read').catch(() => []),
+        withTimeout(base44.entities.HydrationLog.filter({ user_id: user.id, day_key: today }), 2500, 'read').catch(() => []),
+        withTimeout(base44.entities.JournalEntries.filter({ user_id: user.id }, '-created_date', 3), 2500, 'read').catch(() => []),
+        withTimeout(base44.entities.MealLog.filter({ user_id: user.id, day_key: today }), 2500, 'read').catch(() => []),
+        withTimeout(base44.entities.MealPlans.filter({ user_id: user.id }, '-created_date', 1), 2500, 'read').catch(() => []),
+        withTimeout(base44.entities.TodayRecommendations.filter({ user_id: user.id, date: today }), 2500, 'read').catch(() => []),
+        withTimeout(base44.entities.ContentHistory.filter({ user_id: user.id }, '-created_date', 5), 2500, 'read').catch(() => []),
+        withTimeout(base44.entities.SavedItems.filter({ user_id: user.id }, '-created_date', 5), 2500, 'read').catch(() => []),
       ]);
 
       const activeUp = userPrograms.filter(u => u.is_saved || u.status === 'active');
@@ -259,14 +267,14 @@ ${context.life_stage === 'menopause' ? 'Note: User is in menopause — tailor ad
     // ── LOG HYDRATION ──────────────────────────────────────────────────────
     if (action === 'log_hydration') {
       const amount_ml = payload?.amount_ml || 250;
-      const existing = await base44.entities.HydrationLog.filter({ user_id: user.id, day_key: today });
+      const existing = await withTimeout(base44.entities.HydrationLog.filter({ user_id: user.id, day_key: today }), 2500, 'read').catch(() => []);
       let total_ml;
       if (existing[0]) {
         total_ml = (existing[0].total_ml || 0) + amount_ml;
-        await base44.entities.HydrationLog.update(existing[0].id, { total_ml, updated_at: new Date().toISOString() });
+        await withTimeout(base44.entities.HydrationLog.update(existing[0].id, { total_ml, updated_at: new Date().toISOString() }), 6000, 'write').catch(() => null);
       } else {
         total_ml = amount_ml;
-        await base44.entities.HydrationLog.create({ user_id: user.id, day_key: today, total_ml, glasses: Math.round(total_ml / 250) });
+        await withTimeout(base44.entities.HydrationLog.create({ user_id: user.id, day_key: today, total_ml, glasses: Math.round(total_ml / 250) }), 6000, 'write').catch(() => null);
       }
       return Response.json({ success: true, message: `Done — I logged ${amount_ml} ml of water for today. Your total is now ${total_ml} ml.`, data: { total_ml } });
     }
@@ -275,11 +283,11 @@ ${context.life_stage === 'menopause' ? 'Note: User is in menopause — tailor ad
     if (action === 'log_meal') {
       const { meal_text, meal_type = 'meal' } = payload || {};
       if (!meal_text) return Response.json({ success: false, message: 'What did you eat? Give me a quick description.' });
-      await base44.entities.MealLog.create({
+      await withTimeout(base44.entities.MealLog.create({
         user_id: user.id, day_key: today,
         logged_at: new Date().toISOString(),
         meal_type, method: 'guide', raw_text: meal_text,
-      });
+      }), 6000, 'write').catch(() => null);
       return Response.json({ success: true, message: `Logged — "${meal_text}" added to your ${meal_type} for today.` });
     }
 
@@ -287,14 +295,14 @@ ${context.life_stage === 'menopause' ? 'Note: User is in menopause — tailor ad
     if (action === 'log_symptom') {
       const { symptom_type, severity = 3, notes } = payload || {};
       if (!symptom_type) return Response.json({ success: false, message: 'Which symptom should I log?' });
-      await base44.entities.SymptomLogs.create({ user_id: user.id, date: today, symptom_type, severity, notes });
+      await withTimeout(base44.entities.SymptomLogs.create({ user_id: user.id, date: today, symptom_type, severity, notes }), 6000, 'write').catch(() => null);
       return Response.json({ success: true, message: `Logged ${symptom_type} (severity ${severity}) for today.` });
     }
 
     // ── LOG CYCLE EVENT ────────────────────────────────────────────────────
     if (action === 'log_cycle_event') {
       const { type = 'PeriodStart', flow_level = 'medium' } = payload || {};
-      await base44.entities.CycleEvents.create({ user_id: user.id, date: today, type, flow_level });
+      await withTimeout(base44.entities.CycleEvents.create({ user_id: user.id, date: today, type, flow_level }), 6000, 'write').catch(() => null);
       return Response.json({ success: true, message: `Logged ${type.replace(/([A-Z])/g, ' $1').trim()} for today.` });
     }
 
@@ -302,11 +310,11 @@ ${context.life_stage === 'menopause' ? 'Note: User is in menopause — tailor ad
     if (action === 'complete_habit') {
       const { habit_name } = payload || {};
       if (!habit_name) return Response.json({ success: false, message: 'Which habit should I mark complete?' });
-      const existing = await base44.entities.HabitLogs.filter({ user_id: user.id, date: today, habit_type: habit_name });
+      const existing = await withTimeout(base44.entities.HabitLogs.filter({ user_id: user.id, date: today, habit_type: habit_name }), 2500, 'read').catch(() => []);
       if (existing[0]) {
-        await base44.entities.HabitLogs.update(existing[0].id, { completed: true });
+        await withTimeout(base44.entities.HabitLogs.update(existing[0].id, { completed: true }), 6000, 'write').catch(() => null);
       } else {
-        await base44.entities.HabitLogs.create({ user_id: user.id, date: today, habit_type: habit_name, habit_name, completed: true });
+        await withTimeout(base44.entities.HabitLogs.create({ user_id: user.id, date: today, habit_type: habit_name, habit_name, completed: true }), 6000, 'write').catch(() => null);
       }
       return Response.json({ success: true, message: `Done — "${habit_name}" marked complete for today.` });
     }
@@ -314,7 +322,7 @@ ${context.life_stage === 'menopause' ? 'Note: User is in menopause — tailor ad
     // ── SET PROGRAM REMINDER ───────────────────────────────────────────────
     if (action === 'set_program_reminder') {
       const reminder_time = parseReminderTime(payload?.reminder_time || '');
-      const programs = await base44.entities.UserPrograms.filter({ user_id: user.id });
+      const programs = await withTimeout(base44.entities.UserPrograms.filter({ user_id: user.id }), 2500, 'read').catch(() => []);
       const activeProgram = programs.find(p => p.is_saved || p.status === 'active');
       if (!activeProgram) {
         return Response.json({ success: false, message: "You don't have an active program yet, so I can't set that reminder." });
@@ -327,7 +335,7 @@ ${context.life_stage === 'menopause' ? 'Note: User is in menopause — tailor ad
           message: 'What time should I set the reminder?',
         });
       }
-      await base44.entities.UserPrograms.update(activeProgram.id, { reminder_time });
+      await withTimeout(base44.entities.UserPrograms.update(activeProgram.id, { reminder_time }), 6000, 'write').catch(() => null);
       return Response.json({
         success: true,
         message: `Done — I set your program reminder for ${reminder_time}.`,
@@ -337,13 +345,13 @@ ${context.life_stage === 'menopause' ? 'Note: User is in menopause — tailor ad
 
     // ── GET NEXT PROGRAM DAY ───────────────────────────────────────────────
     if (action === 'get_program_next') {
-      const ups = await base44.entities.UserPrograms.filter({ user_id: user.id });
+      const ups = await withTimeout(base44.entities.UserPrograms.filter({ user_id: user.id }), 2500, 'read').catch(() => []);
       const active = ups.find(u => u.is_saved || u.status === 'active');
       if (!active) return Response.json({ success: false, message: "You don't have an active program yet. You can start one from Programs." });
-      const progs = await base44.entities.Programs.filter({});
+      const progs = await withTimeout(base44.entities.Programs.filter({}), 2500, 'read').catch(() => []);
       const prog = progs.find(p => p.id === active.program_id);
       const currentDay = active.current_day || 1;
-      const tasks = await base44.entities.ProgramTasks.filter({ program_key: prog?.program_key, day_number: currentDay });
+      const tasks = await withTimeout(base44.entities.ProgramTasks.filter({ program_key: prog?.program_key, day_number: currentDay }), 2500, 'read').catch(() => []);
       return Response.json({
         success: true,
         message: `Your next program day is Day ${currentDay} of "${prog?.title}".`,
@@ -361,7 +369,7 @@ ${context.life_stage === 'menopause' ? 'Note: User is in menopause — tailor ad
     // ── SEARCH CONTENT ─────────────────────────────────────────────────────
     if (action === 'search_content') {
       const { query, content_type, limit = 3 } = payload || {};
-      const all = await base44.entities.ContentItems.list('-created_date', 60);
+      const all = await withTimeout(base44.entities.ContentItems.list('-created_date', 60), 2500, 'read').catch(() => []);
       const q = (query || '').toLowerCase();
       const results = all
         .filter(item => {
@@ -386,9 +394,9 @@ ${context.life_stage === 'menopause' ? 'Note: User is in menopause — tailor ad
     if (action === 'log_medication') {
       const { item_name, dose, notes } = payload || {};
       if (!item_name) return Response.json({ success: false, message: 'What medication should I log?' });
-      const history = await base44.entities.MedicationLogs.filter({ user_id: user.id }, '-created_date', 50);
+      const history = await withTimeout(base44.entities.MedicationLogs.filter({ user_id: user.id }, '-created_date', 50), 2500, 'read').catch(() => []);
       const safety = evaluateMedicationSafety(history, item_name, dose || '');
-      await base44.entities.MedicationLogs.create({ user_id: user.id, date: today, item_name: safety.canonical_name || item_name, dose: dose || '', notes: notes || '', taken: true });
+      await withTimeout(base44.entities.MedicationLogs.create({ user_id: user.id, date: today, item_name: safety.canonical_name || item_name, dose: dose || '', notes: notes || '', taken: true }), 6000, 'write').catch(() => null);
       return Response.json({
         success: true,
         message: safety.display_message
@@ -402,12 +410,12 @@ ${context.life_stage === 'menopause' ? 'Note: User is in menopause — tailor ad
     if (action === 'toggle_saved_item') {
       const { item_id, item_type = 'CONTENT', title, preview_text } = payload || {};
       if (!item_id || !title) return Response.json({ success: false, message: 'Missing item details.' });
-      const existing = await base44.entities.SavedItems.filter({ user_id: user.id, item_id });
+      const existing = await withTimeout(base44.entities.SavedItems.filter({ user_id: user.id, item_id }), 2500, 'read').catch(() => []);
       if (existing.length > 0) {
-        await base44.entities.SavedItems.delete(existing[0].id);
+        await withTimeout(base44.entities.SavedItems.delete(existing[0].id), 6000, 'write').catch(() => null);
         return Response.json({ success: true, message: `Removed "${title}" from your saved items.` });
       }
-      await base44.entities.SavedItems.create({ user_id: user.id, item_id, item_type, title, preview_text: preview_text || '', created_at: new Date().toISOString() });
+      await withTimeout(base44.entities.SavedItems.create({ user_id: user.id, item_id, item_type, title, preview_text: preview_text || '', created_at: new Date().toISOString() }), 6000, 'write').catch(() => null);
       return Response.json({ success: true, message: `Saved "${title}" to your items.` });
     }
 
@@ -416,11 +424,11 @@ ${context.life_stage === 'menopause' ? 'Note: User is in menopause — tailor ad
       const { text, voice_id = 'EXAVITQu4vr4xnSDxMaL' } = payload || {};
       if (!text) return Response.json({ success: false });
       const apiKey = Deno.env.get('ELEVENLABS_API_KEY');
-      const res = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${voice_id}`, {
+      const res = await withTimeout(fetch(`https://api.elevenlabs.io/v1/text-to-speech/${voice_id}`, {
         method: 'POST',
         headers: { 'xi-api-key': apiKey, 'Content-Type': 'application/json' },
         body: JSON.stringify({ text: text.slice(0, 500), model_id: 'eleven_turbo_v2', voice_settings: { stability: 0.5, similarity_boost: 0.75 } }),
-      });
+      }), 8000, 'fetch');
       if (!res.ok) return Response.json({ success: false });
       const buf = await res.arrayBuffer();
       const base64 = btoa(String.fromCharCode(...new Uint8Array(buf)));

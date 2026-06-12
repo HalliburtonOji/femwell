@@ -25,6 +25,14 @@ function clamp(str, max) {
   return s.length > max ? s.slice(0, max) : s;
 }
 
+// Timeout guard — an awaited platform/AI call that HANGS would wedge the function.
+function withTimeout(p: Promise<any>, ms: number, label: string): Promise<any> {
+  return new Promise((resolve, reject) => {
+    const t = setTimeout(() => reject(new Error(`${label}-timeout-${ms}ms`)), ms);
+    p.then((v) => { clearTimeout(t); resolve(v); }, (e) => { clearTimeout(t); reject(e); });
+  });
+}
+
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
@@ -56,11 +64,11 @@ Return ONE short reframe — 6 to 14 words, no quotes, no full stop, no markdown
 
 Reply with just the reframe text.`;
 
-    const result = await base44.asServiceRole.integrations.Core.InvokeLLM({
+    const result = await withTimeout(base44.asServiceRole.integrations.Core.InvokeLLM({
       model: 'gpt_5_mini',
       prompt,
       max_tokens: 60,
-    }).catch((err) => ({ error: String(err?.message || err) }));
+    }), 20000, 'llm').catch((err) => ({ error: String(err?.message || err) }));
 
     if (!result || result.error) {
       return Response.json({ ok: false, error: result?.error || 'LLM unavailable' }, { status: 502 });

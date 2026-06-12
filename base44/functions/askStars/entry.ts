@@ -111,6 +111,14 @@ async function callOpenAI(userPrompt: string, systemPrompt: string = SYSTEM) {
   return data?.choices?.[0]?.message?.content?.trim() || '';
 }
 
+// Timeout guard — an awaited platform/AI call that HANGS would wedge the function.
+function withTimeout(p: Promise<any>, ms: number, label: string): Promise<any> {
+  return new Promise((resolve, reject) => {
+    const t = setTimeout(() => reject(new Error(`${label}-timeout-${ms}ms`)), ms);
+    p.then((v) => { clearTimeout(t); resolve(v); }, (e) => { clearTimeout(t); reject(e); });
+  });
+}
+
 // ── Main ────────────────────────────────────────────────────────────────────
 Deno.serve(async (req) => {
   const base44 = createClientFromRequest(req);
@@ -133,9 +141,9 @@ Deno.serve(async (req) => {
 
   // Load chart + cycle context + tone preferences
   const [aps, ups, prefs] = await Promise.all([
-    sb.entities.AstroProfile.filter({ user_id }, undefined, 1).catch(() => []),
-    sb.entities.UserProfile.filter({ user_id }, undefined, 1).catch(() => []),
-    sb.entities.UserPreferences.filter({ user_id }, '-updated_at', 1).catch(() => []),
+    withTimeout(sb.entities.AstroProfile.filter({ user_id }, undefined, 1), 2500, 'read').catch(() => []),
+    withTimeout(sb.entities.UserProfile.filter({ user_id }, undefined, 1), 2500, 'read').catch(() => []),
+    withTimeout(sb.entities.UserPreferences.filter({ user_id }, '-updated_at', 1), 2500, 'read').catch(() => []),
   ]);
   const astro = aps[0];
   if (!astro) return Response.json({ error: 'No AstroProfile — onboard first.' }, { status: 422 });
@@ -168,7 +176,7 @@ Question: "${String(question).trim()}"
 Answer in 80-130 words. Be specific to their chart + today's sky + cycle phase. One paragraph. End with a small concrete suggestion.`;
 
   let answer = '';
-  try { answer = await callOpenAI(prompt, composeSystem(quietMode, softSky)); }
+  try { answer = await withTimeout(callOpenAI(prompt, composeSystem(quietMode, softSky)), 20000, 'llm'); }
   catch (err: any) { return Response.json({ error: err?.message || 'LLM failed' }, { status: 502 }); }
   if (!answer) return Response.json({ error: 'Empty answer' }, { status: 502 });
 
@@ -177,39 +185,39 @@ Answer in 80-130 words. Be specific to their chart + today's sky + cycle phase. 
   // questions are different threads).
   let thread;
   try {
-    thread = await sb.entities.AdviceThreads.create({
+    thread = await withTimeout(sb.entities.AdviceThreads.create({
       user_id,
       topic: 'horoscope',
       title: String(question).slice(0, 80),
-    });
+    }), 6000, 'write');
   } catch {
     // Persist-on-fail: if the thread create blew up, the user still deserves
     // to see their answer AND the operator deserves to be able to recover
     // the exchange. Log to IngestErrorLog so a human can replay it later.
-    await sb.entities.IngestErrorLog.create({
+    await withTimeout(sb.entities.IngestErrorLog.create({
       function_name: 'askStars',
       source_identifier: 'askStars',
       stage: 'publish',
       error_message: 'AdviceThreads.create failed — answer returned to user with thread_id: null',
       raw_payload: JSON.stringify({ user_id, question: String(question).trim(), answer }),
       logged_at: new Date().toISOString(),
-    }).catch(() => { /* swallow — answer is more important than the log */ });
+    }), 6000, 'write').catch(() => { /* swallow — answer is more important than the log */ });
     return Response.json({ ok: true, answer, thread_id: null });
   }
 
-  const questionMsg = await sb.entities.AdviceMessages.create({
+  const questionMsg = await withTimeout(sb.entities.AdviceMessages.create({
     thread_id: thread.id,
     user_id,
     role: 'user',
     content: String(question).trim(),
-  }).catch(() => null);
+  }), 6000, 'write').catch(() => null);
 
-  const answerMsg = await sb.entities.AdviceMessages.create({
+  const answerMsg = await withTimeout(sb.entities.AdviceMessages.create({
     thread_id: thread.id,
     user_id,
     role: 'assistant',
     content: answer,
-  }).catch(() => null);
+  }), 6000, 'write').catch(() => null);
 
   return Response.json({
     ok: true,

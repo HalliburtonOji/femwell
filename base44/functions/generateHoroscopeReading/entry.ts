@@ -201,10 +201,18 @@ async function callOpenAI(systemPrompt: string, userPrompt: string, model = 'gpt
   return JSON.parse(content);
 }
 
+// Timeout guard — an awaited platform/AI call that HANGS would wedge the function.
+function withTimeout(p: Promise<any>, ms: number, label: string): Promise<any> {
+  return new Promise((resolve, reject) => {
+    const t = setTimeout(() => reject(new Error(`${label}-timeout-${ms}ms`)), ms);
+    p.then((v) => { clearTimeout(t); resolve(v); }, (e) => { clearTimeout(t); reject(e); });
+  });
+}
+
 async function estimateChart(astro: any) {
   const prompt = `Birth date: ${astro.birth_date}\nBirth time: ${astro.birth_time || 'unknown'}\nBirth place: ${astro.birth_place || 'unknown'}\n\nReturn JSON: { "moon_sign": <zodiac sign or null>, "rising_sign": <zodiac sign or null>, "mercury_sign": <zodiac sign>, "sun_degree": <whole 0-29> }. Use the 12 sign names exactly as: Aries, Taurus, Gemini, Cancer, Leo, Virgo, Libra, Scorpio, Sagittarius, Capricorn, Aquarius, Pisces.`;
   try {
-    return await callOpenAI(CHART_SYSTEM, prompt);
+    return await withTimeout(callOpenAI(CHART_SYSTEM, prompt), 20000, 'llm');
   } catch {
     return null;
   }
@@ -232,7 +240,7 @@ Deno.serve(async (req) => {
   const today = todayISO();
 
   // Load AstroProfile
-  const aps = await sb.entities.AstroProfile.filter({ user_id: requestedUserId }, undefined, 1).catch(() => []);
+  const aps = await withTimeout(sb.entities.AstroProfile.filter({ user_id: requestedUserId }, undefined, 1), 2500, 'read').catch(() => []);
   const astro = aps[0];
   if (!astro) return Response.json({ error: 'No AstroProfile — user has not onboarded.' }, { status: 422 });
 
@@ -245,11 +253,11 @@ Deno.serve(async (req) => {
   // new triad descriptions. Otherwise the user has to wait until tomorrow.
   let existingToday: any = null;
   if (!force) {
-    const existing = await sb.entities.HoroscopeReading.filter(
+    const existing = await withTimeout(sb.entities.HoroscopeReading.filter(
       { user_id: requestedUserId, reading_date: today },
       '-created_date',
       1,
-    ).catch(() => []);
+    ), 2500, 'read').catch(() => []);
     existingToday = existing[0] || null;
     if (existingToday) {
       const chartComplete = !astro.birth_time ||
@@ -262,14 +270,14 @@ Deno.serve(async (req) => {
   }
 
   // Load UserProfile for cycle phase + display name
-  const ups = await sb.entities.UserProfile.filter({ user_id: requestedUserId }, undefined, 1).catch(() => []);
+  const ups = await withTimeout(sb.entities.UserProfile.filter({ user_id: requestedUserId }, undefined, 1), 2500, 'read').catch(() => []);
   const userProfile = ups[0] || {};
   const cyclePhase = getCyclePhase(userProfile);
   const name = userProfile.preferred_name || userProfile.first_name || userProfile.display_name || '';
 
   // Load UserPreferences for Quiet Mode + Soft Sky (A3) tone flags.
   // Soft Sky is only honoured when Quiet Mode is also on (see composeSystemPrompt).
-  const prefsRows = await sb.entities.UserPreferences.filter({ user_id: requestedUserId }, '-updated_at', 1).catch(() => []);
+  const prefsRows = await withTimeout(sb.entities.UserPreferences.filter({ user_id: requestedUserId }, '-updated_at', 1), 2500, 'read').catch(() => []);
   const prefs = prefsRows[0] || {};
   const quietMode = !!prefs.horoscope_quiet_mode;
   const softSky = !!prefs.horoscope_soft_sky;
@@ -291,7 +299,7 @@ Deno.serve(async (req) => {
       if (!astro.sun_degree && typeof estimated.sun_degree === 'number') patch.sun_degree = estimated.sun_degree;
       if (Object.keys(patch).length > 0) {
         try {
-          astroUpdated = await sb.entities.AstroProfile.update(astro.id, patch);
+          astroUpdated = await withTimeout(sb.entities.AstroProfile.update(astro.id, patch), 6000, 'write');
         } catch {
           astroUpdated = { ...astro, ...patch };
         }
@@ -307,10 +315,10 @@ Deno.serve(async (req) => {
     const hasAny = Object.values(asteroidSigns).some((v) => !!v);
     if (hasAny) {
       try {
-        astroUpdated = await sb.entities.AstroProfile.update(astroUpdated.id, {
+        astroUpdated = await withTimeout(sb.entities.AstroProfile.update(astroUpdated.id, {
           asteroid_signs: asteroidSigns,
           asteroids_computed_at: new Date().toISOString(),
-        });
+        }), 6000, 'write');
       } catch {
         astroUpdated = { ...astroUpdated, asteroid_signs: asteroidSigns };
       }
@@ -364,7 +372,7 @@ Return only valid JSON.`;
   let narrative: any;
   try {
     const systemPrompt = composeSystemPrompt(NARRATIVE_SYSTEM, quietMode, softSky);
-    narrative = await callOpenAI(systemPrompt, narrPrompt);
+    narrative = await withTimeout(callOpenAI(systemPrompt, narrPrompt), 20000, 'llm');
   } catch (err: any) {
     return Response.json({ error: err?.message || 'LLM failed' }, { status: 502 });
   }
@@ -418,9 +426,9 @@ Return only valid JSON.`;
   let saved;
   try {
     if (existingToday) {
-      saved = await sb.entities.HoroscopeReading.update(existingToday.id, reading);
+      saved = await withTimeout(sb.entities.HoroscopeReading.update(existingToday.id, reading), 6000, 'write');
     } else {
-      saved = await sb.entities.HoroscopeReading.create(reading);
+      saved = await withTimeout(sb.entities.HoroscopeReading.create(reading), 6000, 'write');
     }
   } catch (err: any) {
     return Response.json({ error: err?.message || 'Save failed' }, { status: 500 });

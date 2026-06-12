@@ -40,6 +40,14 @@ const PRODUCT_META: Record<string, { price_pence: number; label: string; envVar:
   },
 };
 
+// Timeout guard — an awaited platform/AI call that HANGS would wedge the function.
+function withTimeout(p: Promise<any>, ms: number, label: string): Promise<any> {
+  return new Promise((resolve, reject) => {
+    const t = setTimeout(() => reject(new Error(`${label}-timeout-${ms}ms`)), ms);
+    p.then((v) => { clearTimeout(t); resolve(v); }, (e) => { clearTimeout(t); reject(e); });
+  });
+}
+
 Deno.serve(async (req) => {
   const base44 = createClientFromRequest(req);
   const user = await base44.auth.me().catch(() => null);
@@ -69,13 +77,13 @@ Deno.serve(async (req) => {
   if (!priceId) {
     let row: any = null;
     try {
-      row = await sb.entities.OneShotPurchases.create({
+      row = await withTimeout(sb.entities.OneShotPurchases.create({
         user_id: user.id,
         product,
         price_pence: meta.price_pence,
         status: 'simulated',
         created_at: now,
-      });
+      }), 15000, 'stripe');
     } catch (err: any) {
       return Response.json({
         error: err?.message || 'Failed to log interest',
@@ -100,7 +108,7 @@ Deno.serve(async (req) => {
 
   let session;
   try {
-    session = await stripe.checkout.sessions.create({
+    session = await withTimeout(stripe.checkout.sessions.create({
       mode: 'payment',
       line_items: [{ price: priceId, quantity: 1 }],
       success_url: `${thankYouUrl}&session_id={CHECKOUT_SESSION_ID}`,
@@ -112,7 +120,7 @@ Deno.serve(async (req) => {
         kind: 'one_shot',
       },
       customer_email: user.email,
-    });
+    }), 15000, 'stripe');
   } catch (err: any) {
     return Response.json({
       error: err?.message || 'Stripe checkout creation failed',
@@ -121,14 +129,14 @@ Deno.serve(async (req) => {
 
   let row: any = null;
   try {
-    row = await sb.entities.OneShotPurchases.create({
+    row = await withTimeout(sb.entities.OneShotPurchases.create({
       user_id: user.id,
       product,
       price_pence: meta.price_pence,
       stripe_session_id: session.id,
       status: 'pending_payment',
       created_at: now,
-    });
+    }), 15000, 'stripe');
   } catch (err: any) {
     // The Stripe session was created — let the user proceed; the webhook
     // will reconcile via the session_id metadata even without a row.

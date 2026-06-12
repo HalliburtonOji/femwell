@@ -28,6 +28,14 @@ The script should:
 Tone: clear, warm, informative. Use "you" throughout.`,
 };
 
+// Timeout guard — an awaited platform/AI call that HANGS would wedge the function.
+function withTimeout(p: Promise<any>, ms: number, label: string): Promise<any> {
+  return new Promise((resolve, reject) => {
+    const t = setTimeout(() => reject(new Error(`${label}-timeout-${ms}ms`)), ms);
+    p.then((v) => { clearTimeout(t); resolve(v); }, (e) => { clearTimeout(t); reject(e); });
+  });
+}
+
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
@@ -40,16 +48,16 @@ Deno.serve(async (req) => {
     // Fetch the content item
     let items = [];
     if (content_key) {
-      items = await base44.asServiceRole.entities.ContentItems.filter({ content_key });
+      items = await withTimeout(base44.asServiceRole.entities.ContentItems.filter({ content_key }), 2500, 'read').catch(() => []);
     } else {
-      items = await base44.asServiceRole.entities.ContentItems.filter({ id: content_id });
+      items = await withTimeout(base44.asServiceRole.entities.ContentItems.filter({ id: content_id }), 2500, 'read').catch(() => []);
     }
     if (!items.length) return Response.json({ error: 'Content item not found' }, { status: 404 });
     const item = items[0];
 
     // Check if this content already has its own unique generated script (starts with "gen_")
     if (item.voice_script_key && item.voice_script_key.startsWith('gen_')) {
-      const existing = await base44.asServiceRole.entities.VoiceScripts.filter({ voice_script_key: item.voice_script_key });
+      const existing = await withTimeout(base44.asServiceRole.entities.VoiceScripts.filter({ voice_script_key: item.voice_script_key }), 2500, 'read').catch(() => []);
       if (existing.length) {
         return Response.json({ voice_script_key: item.voice_script_key, text: existing[0].text, already_existed: true });
       }
@@ -69,7 +77,7 @@ Generate a unique, personalized voice script SPECIFICALLY for this content title
 The script must reference this specific practice by name and feel tailored to it — not generic.
 Output ONLY the script text — no titles, no labels, no explanations.`;
 
-    const completion = await openai.chat.completions.create({
+    const completion = await withTimeout(openai.chat.completions.create({
       model: 'gpt-4o-mini',
       messages: [
         { role: 'system', content: systemPrompt },
@@ -77,7 +85,7 @@ Output ONLY the script text — no titles, no labels, no explanations.`;
       ],
       temperature: 0.75,
       max_tokens: 600,
-    });
+    }), 20000, 'llm');
 
     const scriptText = completion.choices[0].message.content.trim();
 
@@ -85,17 +93,17 @@ Output ONLY the script text — no titles, no labels, no explanations.`;
     const scriptKey = `gen_${item.content_key || item.id}`;
 
     // Save the generated script
-    await base44.asServiceRole.entities.VoiceScripts.create({
+    await withTimeout(base44.asServiceRole.entities.VoiceScripts.create({
       voice_script_key: scriptKey,
       title: `Auto-generated: ${item.title}`,
       voice_profile_key: item.voice_profile_key || 'vp_calm_coach',
       text: scriptText,
-    });
+    }), 6000, 'write').catch(() => null);
 
     // Update the ContentItem to link to its own unique script
-    await base44.asServiceRole.entities.ContentItems.update(item.id, {
+    await withTimeout(base44.asServiceRole.entities.ContentItems.update(item.id, {
       voice_script_key: scriptKey,
-    });
+    }), 6000, 'write').catch(() => null);
 
     return Response.json({ voice_script_key: scriptKey, text: scriptText, already_existed: false });
   } catch (error) {

@@ -4,6 +4,14 @@ import OpenAI from 'npm:openai';
 
 const openai = new OpenAI({ apiKey: Deno.env.get("OPENAI_API_KEY") });
 
+// Timeout guard — an awaited platform/AI call that HANGS would wedge the function.
+function withTimeout(p: Promise<any>, ms: number, label: string): Promise<any> {
+  return new Promise((resolve, reject) => {
+    const t = setTimeout(() => reject(new Error(`${label}-timeout-${ms}ms`)), ms);
+    p.then((v) => { clearTimeout(t); resolve(v); }, (e) => { clearTimeout(t); reject(e); });
+  });
+}
+
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
@@ -29,7 +37,7 @@ Deno.serve(async (req) => {
     let resolvedPhase = cycle_phase || null;
     if (!resolvedPhase) {
       try {
-        const phases = await base44.asServiceRole.entities.PhaseHistory.filter({ user_id: user.id });
+        const phases = await withTimeout(base44.asServiceRole.entities.PhaseHistory.filter({ user_id: user.id }), 2500, 'read').catch(() => []);
         const latest = phases.sort((a, b) => (b.date || '').localeCompare(a.date || ''))[0];
         resolvedPhase = latest?.phase || null;
       } catch {}
@@ -52,7 +60,7 @@ Deno.serve(async (req) => {
 
     // ── Short-input quality guard: compact output only ────────────────────
     if (short_input) {
-      const compactResponse = await openai.chat.completions.create({
+      const compactResponse = await withTimeout(openai.chat.completions.create({
         model: "gpt-4o-mini",
         messages: [
           {
@@ -71,7 +79,7 @@ Sum items into summary. Max 3 items.${swapExclusionNote}`
           }
         ],
         response_format: { type: "json_object" }
-      });
+      }), 20000, 'llm');
       const compact = JSON.parse(compactResponse.choices[0].message.content);
       const items = (compact.items || []).slice(0, 3);
       compact.items = items;
@@ -90,7 +98,7 @@ Sum items into summary. Max 3 items.${swapExclusionNote}`
 
       if (meal_log_id && items.length > 0) {
         await Promise.all(items.map(item =>
-          base44.asServiceRole.entities.MealItems.create({
+          withTimeout(base44.asServiceRole.entities.MealItems.create({
             meal_log_id,
             name: item.name,
             quantity_text: item.quantity_text || '',
@@ -100,7 +108,7 @@ Sum items into summary. Max 3 items.${swapExclusionNote}`
             fat_g: item.fat_g || 0,
             fiber_g: item.fiber_g || 0,
             source: 'ai',
-          }).catch(() => {})
+          }), 6000, 'write').catch(() => {})
         ));
       }
 
@@ -108,7 +116,7 @@ Sum items into summary. Max 3 items.${swapExclusionNote}`
     }
 
     // ── Full-length analysis ──────────────────────────────────────────────
-    const response = await openai.chat.completions.create({
+    const response = await withTimeout(openai.chat.completions.create({
       model: "gpt-4o-mini",
       messages: [
         {
@@ -151,7 +159,7 @@ IMPORTANT:
         }
       ],
       response_format: { type: "json_object" }
-    });
+    }), 20000, 'llm');
 
     const data = JSON.parse(response.choices[0].message.content);
 
@@ -187,7 +195,7 @@ IMPORTANT:
     // Write MealItems records if meal_log_id provided.
     if (meal_log_id && items.length > 0) {
       await Promise.all(items.map(item =>
-        base44.asServiceRole.entities.MealItems.create({
+        withTimeout(base44.asServiceRole.entities.MealItems.create({
           meal_log_id,
           name: item.name,
           quantity_text: item.quantity_text || '',
@@ -197,12 +205,12 @@ IMPORTANT:
           fat_g: item.fat_g || 0,
           fiber_g: item.fiber_g || 0,
           source: 'ai',
-        }).catch(() => {})
+        }), 6000, 'write').catch(() => {})
       ));
     }
 
     return Response.json(data);
-  } catch (error) {
+  } catch (error: any) {
     return Response.json({ error: error.message }, { status: 500 });
   }
 });

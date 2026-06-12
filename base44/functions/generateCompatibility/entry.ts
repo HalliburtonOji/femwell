@@ -125,6 +125,14 @@ async function callOpenAI(userPrompt: string, systemPrompt: string = COMPAT_SYST
   return JSON.parse(data?.choices?.[0]?.message?.content || '{}');
 }
 
+// Timeout guard — an awaited platform/AI call that HANGS would wedge the function.
+function withTimeout(p: Promise<any>, ms: number, label: string): Promise<any> {
+  return new Promise((resolve, reject) => {
+    const t = setTimeout(() => reject(new Error(`${label}-timeout-${ms}ms`)), ms);
+    p.then((v) => { clearTimeout(t); resolve(v); }, (e) => { clearTimeout(t); reject(e); });
+  });
+}
+
 // ── Main ────────────────────────────────────────────────────────────────────
 Deno.serve(async (req) => {
   const base44 = createClientFromRequest(req);
@@ -146,19 +154,19 @@ Deno.serve(async (req) => {
 
   // Cache check
   if (!force) {
-    const existing = await sb.entities.CompatibilityReading.filter(
+    const existing = await withTimeout(sb.entities.CompatibilityReading.filter(
       { user_id, their_birthday },
       '-created_date',
       10,
-    ).catch(() => []);
+    ), 2500, 'read').catch(() => []);
     const cached = existing.find((r: any) => normaliseName(r.their_name) === nameKey);
     if (cached) return Response.json({ ok: true, reading: cached, cached: true });
   }
 
   // Load the user's astro profile + tone preferences in parallel
   const [aps, prefs] = await Promise.all([
-    sb.entities.AstroProfile.filter({ user_id }, undefined, 1).catch(() => []),
-    sb.entities.UserPreferences.filter({ user_id }, '-updated_at', 1).catch(() => []),
+    withTimeout(sb.entities.AstroProfile.filter({ user_id }, undefined, 1), 2500, 'read').catch(() => []),
+    withTimeout(sb.entities.UserPreferences.filter({ user_id }, '-updated_at', 1), 2500, 'read').catch(() => []),
   ]);
   const astro = aps[0];
   if (!astro) return Response.json({ error: 'No AstroProfile — onboard first.' }, { status: 422 });
@@ -191,7 +199,7 @@ Return JSON with exactly these keys:
 All four dimension scores should sit roughly within ±15 of "score". Return only valid JSON.`;
 
   let parsed: any;
-  try { parsed = await callOpenAI(prompt, composeSystem(quietMode, softSky)); }
+  try { parsed = await withTimeout(callOpenAI(prompt, composeSystem(quietMode, softSky)), 20000, 'llm'); }
   catch (err: any) { return Response.json({ error: err?.message || 'LLM failed' }, { status: 502 }); }
 
   const clamp = (n: any) => {
@@ -217,7 +225,7 @@ All four dimension scores should sit roughly within ±15 of "score". Return only
   };
 
   let saved;
-  try { saved = await sb.entities.CompatibilityReading.create(row); }
+  try { saved = await withTimeout(sb.entities.CompatibilityReading.create(row), 6000, 'write'); }
   catch (err: any) { return Response.json({ error: err?.message || 'Save failed' }, { status: 500 }); }
 
   return Response.json({ ok: true, reading: saved });

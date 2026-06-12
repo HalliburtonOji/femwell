@@ -1,5 +1,13 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
 
+// Timeout guard — an awaited platform/AI call that HANGS would wedge the function.
+function withTimeout(p: Promise<any>, ms: number, label: string): Promise<any> {
+  return new Promise((resolve, reject) => {
+    const t = setTimeout(() => reject(new Error(`${label}-timeout-${ms}ms`)), ms);
+    p.then((v) => { clearTimeout(t); resolve(v); }, (e) => { clearTimeout(t); reject(e); });
+  });
+}
+
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
@@ -12,18 +20,18 @@ Deno.serve(async (req) => {
     const hour = new Date().getHours();
 
     const [profiles, checkins, habits, journal, programs, hydration, mealLogs, symptoms, pregProfiles, kicks, contractions, lifestyleItems] = await Promise.all([
-      base44.entities.UserProfile.filter({ user_id: user.id }),
-      base44.entities.DailyCheckins.filter({ user_id: user.id, date: today }),
-      base44.entities.HabitLogs.filter({ user_id: user.id, date: today }),
-      base44.entities.JournalEntries.filter({ user_id: user.id }, '-date', 3),
-      base44.entities.UserPrograms.filter({ user_id: user.id, status: 'active' }),
-      base44.entities.HydrationLog.filter({ user_id: user.id, day_key: today }),
-      base44.entities.MealLog.filter({ user_id: user.id, log_date: today }),
-      base44.entities.SymptomLogs.filter({ user_id: user.id }, '-date', 5),
-      base44.entities.PregnancyProfile.filter({ user_id: user.id }),
-      base44.entities.PregnancyKickSession.filter({ user_id: user.id, day_key: today }),
-      base44.entities.ContractionSession.filter({ user_id: user.id, day_key: today }),
-      base44.entities.LifestyleItems.filter({ status: 'PUBLISHED' }, '-pub_date', 6),
+      withTimeout(base44.entities.UserProfile.filter({ user_id: user.id }), 2500, 'read').catch(() => []),
+      withTimeout(base44.entities.DailyCheckins.filter({ user_id: user.id, date: today }), 2500, 'read').catch(() => []),
+      withTimeout(base44.entities.HabitLogs.filter({ user_id: user.id, date: today }), 2500, 'read').catch(() => []),
+      withTimeout(base44.entities.JournalEntries.filter({ user_id: user.id }, '-date', 3), 2500, 'read').catch(() => []),
+      withTimeout(base44.entities.UserPrograms.filter({ user_id: user.id, status: 'active' }), 2500, 'read').catch(() => []),
+      withTimeout(base44.entities.HydrationLog.filter({ user_id: user.id, day_key: today }), 2500, 'read').catch(() => []),
+      withTimeout(base44.entities.MealLog.filter({ user_id: user.id, log_date: today }), 2500, 'read').catch(() => []),
+      withTimeout(base44.entities.SymptomLogs.filter({ user_id: user.id }, '-date', 5), 2500, 'read').catch(() => []),
+      withTimeout(base44.entities.PregnancyProfile.filter({ user_id: user.id }), 2500, 'read').catch(() => []),
+      withTimeout(base44.entities.PregnancyKickSession.filter({ user_id: user.id, day_key: today }), 2500, 'read').catch(() => []),
+      withTimeout(base44.entities.ContractionSession.filter({ user_id: user.id, day_key: today }), 2500, 'read').catch(() => []),
+      withTimeout(base44.entities.LifestyleItems.filter({ status: 'PUBLISHED' }, '-pub_date', 6), 2500, 'read').catch(() => []),
     ]);
 
     const profile = profiles[0] || {};
@@ -90,7 +98,7 @@ RULES:
 Return JSON only:
 { "type": "question"|"suggestion", "title": string (2-3 words), "prompt": string (max 55 chars), "action_route": string, "category": string }`;
 
-    const result = await base44.integrations.Core.InvokeLLM({
+    const result = await withTimeout(base44.integrations.Core.InvokeLLM({
       prompt,
       response_json_schema: {
         type: 'object',
@@ -102,7 +110,7 @@ Return JSON only:
         },
         required: ['type', 'title', 'prompt', 'action_route', 'category']
       }
-    });
+    }), 20000, 'llm');
 
     // Enforce max length on prompt
     if (result.prompt && result.prompt.length > 60) {
@@ -110,7 +118,7 @@ Return JSON only:
     }
 
     return Response.json(result);
-  } catch (error) {
+  } catch (error: any) {
     return Response.json({ error: error.message }, { status: 500 });
   }
 });

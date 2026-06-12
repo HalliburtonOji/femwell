@@ -20,6 +20,14 @@
 
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 
+// Timeout guard — an awaited platform/AI call that HANGS would wedge the function.
+function withTimeout(p: Promise<any>, ms: number, label: string): Promise<any> {
+  return new Promise((resolve, reject) => {
+    const t = setTimeout(() => reject(new Error(`${label}-timeout-${ms}ms`)), ms);
+    p.then((v) => { clearTimeout(t); resolve(v); }, (e) => { clearTimeout(t); reject(e); });
+  });
+}
+
 const CHROME_UA =
   'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 ' +
   '(KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36';
@@ -101,7 +109,7 @@ Deno.serve(async (req) => {
   let raw: string | null = null;
   let source_url = '';
   for (const url of URL_VARIANTS(id)) {
-    raw = await fetchOnce(url);
+    raw = await withTimeout(fetchOnce(url), 8000, 'fetch').catch(() => null);
     if (raw) {
       source_url = url;
       break;
