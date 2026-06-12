@@ -251,6 +251,7 @@ export default function Journal() {
   const [searching, setSearching] = useState(false);
   const [showShareEcho, setShowShareEcho] = useState(false);
   const [showSealedLetters, setShowSealedLetters] = useState(false);
+  const [deleteErr, setDeleteErr] = useState(false);   // brief notice if a delete fails
   const [showWitnessInbox, setShowWitnessInbox] = useState(false);
   const [showAskWitness, setShowAskWitness] = useState(false);
   const [witnessEntry, setWitnessEntry] = useState(null);
@@ -342,8 +343,11 @@ export default function Journal() {
   const handleDelete = async (entry) => {
     try {
       await base44.entities.JournalEntries.delete(entry.id);
-      setEntries((prev) => prev.filter((e) => e.id !== entry.id));
-    } catch (err) { console.error("Delete entry failed:", err); }
+      setEntries((prev) => prev.filter((e) => e.id !== entry.id));   // remove only after the delete succeeds — a failed delete keeps the entry
+    } catch (err) {
+      console.error("Delete entry failed:", err);
+      setDeleteErr(true); setTimeout(() => setDeleteErr(false), 3500);   // tell her instead of failing silently
+    }
   };
 
   const handlePin = async (entry) => {
@@ -397,6 +401,13 @@ export default function Journal() {
   return (
     <div className="min-h-screen pb-28" style={{ position: "relative", ...PAPER_BG }}>
       <InkFilter />
+      {deleteErr && (
+        <div role="alert" style={{
+          position: "fixed", left: "50%", bottom: 90, transform: "translateX(-50%)", zIndex: 4000,
+          padding: "9px 16px", borderRadius: 9999, fontFamily: UI, fontSize: 13, fontWeight: 700,
+          color: T.paper, background: T.crimson || "#A84E56", boxShadow: PRESS,
+        }}>Couldn{"’"}t delete that just now — the entry is still here. Try again.</div>
+      )}
 
       {/* ── Sticky header ── */}
       <StickyHeader
