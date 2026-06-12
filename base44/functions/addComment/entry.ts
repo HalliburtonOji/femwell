@@ -43,6 +43,16 @@ function localScreen(text: string): { crisis?: boolean; remove?: boolean; ok?: b
 
 const MAX_LEN = 400;
 
+// Timeout guard — any awaited platform read/create that HANGS (vs throws) would wedge the
+// function forever (a plain .catch only catches a throw). Racing each against a timeout turns
+// a hang into a fast rejection so the handler always returns.
+function withTimeout(p: Promise<any>, ms: number, label: string): Promise<any> {
+  return new Promise((resolve, reject) => {
+    const t = setTimeout(() => reject(new Error(`${label}-timeout-${ms}ms`)), ms);
+    p.then((v) => { clearTimeout(t); resolve(v); }, (e) => { clearTimeout(t); reject(e); });
+  });
+}
+
 Deno.serve(async (req) => {
   const base44 = createClientFromRequest(req);
   const me = await base44.auth.me().catch(() => null);
@@ -60,7 +70,7 @@ Deno.serve(async (req) => {
   if (text.length > MAX_LEN) return Response.json({ error: 'Comment too long' }, { status: 400 });
 
   const sb = base44.asServiceRole;
-  const post = await sb.entities.CommunityPost.get(post_id).catch(() => null);
+  const post = await withTimeout(sb.entities.CommunityPost.get(post_id), 2500, 'post-read').catch(() => null);
   if (!post) return Response.json({ error: 'Not found' }, { status: 404 });
   if (post.hidden) return Response.json({ error: 'unavailable' }, { status: 409 });
   if (post.comments_mode === 'reaction') {
@@ -80,12 +90,12 @@ Deno.serve(async (req) => {
     hidden: false,
   };
   let createErr = '';
-  // Primary create — full payload (flagged/report_count managed by screening).
-  let comment = await sb.entities.Comment.create({ ...core, flagged: false, report_count: 0 })
+  // Primary create — full payload (flagged/report_count managed by screening). Timeout-guarded.
+  let comment = await withTimeout(sb.entities.Comment.create({ ...core, flagged: false, report_count: 0 }), 6000, 'create-full')
     .catch((e: any) => { createErr = e?.message || String(e); console.error('addComment full create failed:', createErr); return null; });
   // Fallback — the comment MUST still post if an optional field isn't on the deployed entity.
   if (!comment) {
-    comment = await sb.entities.Comment.create(core)
+    comment = await withTimeout(sb.entities.Comment.create(core), 6000, 'create-core')
       .catch((e: any) => { createErr = e?.message || String(e); console.error('addComment core create failed:', createErr); return null; });
   }
   if (!comment) return Response.json({ error: 'Write failed', detail: createErr }, { status: 500 });

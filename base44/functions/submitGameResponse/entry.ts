@@ -29,6 +29,15 @@ function localHarmful(text: string): boolean {
 
 const MAX_LEN = 160;
 
+// Timeout guard — any awaited platform read/create that HANGS would wedge the function
+// (a plain .catch only catches a throw). Race each against a timeout so it always returns.
+function withTimeout(p: Promise<any>, ms: number, label: string): Promise<any> {
+  return new Promise((resolve, reject) => {
+    const t = setTimeout(() => reject(new Error(`${label}-timeout-${ms}ms`)), ms);
+    p.then((v) => { clearTimeout(t); resolve(v); }, (e) => { clearTimeout(t); reject(e); });
+  });
+}
+
 Deno.serve(async (req) => {
   const base44 = createClientFromRequest(req);
   const me = await base44.auth.me().catch(() => null);
@@ -45,14 +54,14 @@ Deno.serve(async (req) => {
   if (!choice && !text) return Response.json({ error: 'Empty answer' }, { status: 400 });
 
   const sb = base44.asServiceRole;
-  const round = await sb.entities.GameRound.get(String(round_id)).catch(() => null);
+  const round = await withTimeout(sb.entities.GameRound.get(String(round_id)), 2500, 'round-read').catch(() => null);
   if (!round) return Response.json({ error: 'Not found' }, { status: 404 });
   if (round.status !== 'open' || Date.parse(round.closes_at || '') <= Date.now()) {
     return Response.json({ error: 'closed' }, { status: 409 });
   }
 
   // one answer per device per round
-  const mine = await sb.entities.GameResponse.filter({ round_id: String(round_id), author_hash: String(author_hash) }, '-created_date', 1).catch(() => []);
+  const mine = await withTimeout(sb.entities.GameResponse.filter({ round_id: String(round_id), author_hash: String(author_hash) }, '-created_date', 1), 2500, 'dedupe-read').catch(() => []);
   if (Array.isArray(mine) && mine.length) return Response.json({ ok: true, already: true }, { status: 200 });
 
   if (text) {
@@ -60,12 +69,12 @@ Deno.serve(async (req) => {
     if (localHarmful(text)) return Response.json({ ok: false, rejected: true }, { status: 200 });
   }
 
-  const response = await sb.entities.GameResponse.create({
+  const response = await withTimeout(sb.entities.GameResponse.create({
     round_id: String(round_id),
     author_hash: String(author_hash),
     choice: choice || undefined,
     text: text || undefined,
-  }).catch((e: any) => { console.error('submitGameResponse create failed:', e?.message || e); return null; });
+  }), 6000, 'create').catch((e: any) => { console.error('submitGameResponse create failed:', e?.message || e); return null; });
   if (!response) return Response.json({ error: 'Write failed' }, { status: 500 });
 
   return Response.json({ ok: true, response: { id: response.id, round_id: response.round_id } });

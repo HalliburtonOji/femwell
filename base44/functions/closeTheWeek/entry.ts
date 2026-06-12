@@ -35,6 +35,15 @@ function weekKey(): string {
   return mon.toISOString().slice(0, 10);
 }
 
+// Timeout guard — any awaited platform read/create that HANGS would wedge the function
+// (a plain .catch only catches a throw). Race each against a timeout so it always returns.
+function withTimeout(p: Promise<any>, ms: number, label: string): Promise<any> {
+  return new Promise((resolve, reject) => {
+    const t = setTimeout(() => reject(new Error(`${label}-timeout-${ms}ms`)), ms);
+    p.then((v) => { clearTimeout(t); resolve(v); }, (e) => { clearTimeout(t); reject(e); });
+  });
+}
+
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
@@ -52,17 +61,17 @@ Deno.serve(async (req) => {
 
     const sb = base44.asServiceRole;
     const wk = weekKey();
-    const mine = await sb.entities.RitualContribution.filter({ week_key: wk, author_hash: String(author_hash) }, '-created_date', 1).catch(() => []);
+    const mine = await withTimeout(sb.entities.RitualContribution.filter({ week_key: wk, author_hash: String(author_hash) }, '-created_date', 1), 2500, 'dedupe-read').catch(() => []);
     if (Array.isArray(mine) && mine.length) return Response.json({ ok: true, already: true }, { status: 200 });
 
     const verdict = localFlaggedHarmful(text);
     if (verdict.crisis) return Response.json({ ok: false, intercept: true }, { status: 200 });
     const status = verdict.remove ? 'removed' : 'visible';
 
-    const c = await sb.entities.RitualContribution.create({
+    const c = await withTimeout(sb.entities.RitualContribution.create({
       week_key: wk, author_hash: String(author_hash),
       body: status === 'removed' ? '' : text, status, flagged: false, hidden: false,
-    }).catch((e: any) => { console.error('closeTheWeek create failed:', e?.message || e); return null; });
+    }), 6000, 'create').catch((e: any) => { console.error('closeTheWeek create failed:', e?.message || e); return null; });
     if (!c) return Response.json({ error: 'Write failed' }, { status: 500 });
 
     return Response.json({ ok: true, contribution: { id: c.id, week_key: c.week_key, status: c.status } });

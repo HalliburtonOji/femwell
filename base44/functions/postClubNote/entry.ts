@@ -33,6 +33,15 @@ function localScreen(text: string): { crisis?: boolean; remove?: boolean; ok?: b
 
 const MAX_LEN = 600;
 
+// Timeout guard — an awaited create that HANGS would wedge the function (a plain .catch
+// only catches a throw). Race it against a timeout so the handler always returns.
+function withTimeout(p: Promise<any>, ms: number, label: string): Promise<any> {
+  return new Promise((resolve, reject) => {
+    const t = setTimeout(() => reject(new Error(`${label}-timeout-${ms}ms`)), ms);
+    p.then((v) => { clearTimeout(t); resolve(v); }, (e) => { clearTimeout(t); reject(e); });
+  });
+}
+
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
@@ -55,13 +64,13 @@ Deno.serve(async (req) => {
     const status = mod.remove ? 'removed' : 'visible';
 
     const sb = base44.asServiceRole;
-    const note = await sb.entities.ClubNote.create({
+    const note = await withTimeout(sb.entities.ClubNote.create({
       pick_key: String(pick_key),
       checkpoint_index: Math.floor(checkpoint_index),
       author_hash: String(author_hash),
       body: status === 'removed' ? '' : text,
       status, flagged: false, hidden: false,
-    }).catch((e: any) => { console.error('postClubNote create failed:', e?.message || e); return null; });
+    }), 6000, 'create').catch((e: any) => { console.error('postClubNote create failed:', e?.message || e); return null; });
     if (!note) return Response.json({ error: 'Write failed' }, { status: 500 });
 
     return Response.json({ ok: true, note: { id: note.id, pick_key: note.pick_key, checkpoint_index: note.checkpoint_index, body: note.body, status: note.status, created_date: note.created_date } });

@@ -95,7 +95,7 @@ Deno.serve(async (req) => {
     const k = String(p.club);
     if (CLUB_KEYS.has(k) || /^dailyread-[a-z0-9_-]{1,48}$/i.test(k)) club = k;
     else {
-      const cr = await base44.asServiceRole.entities.Club.filter({ club_key: k, hidden: false }, '-created_date', 1).catch(() => []);
+      const cr = await withTimeout(base44.asServiceRole.entities.Club.filter({ club_key: k, hidden: false }, '-created_date', 1), 2500, 'club-read').catch(() => []);
       if (Array.isArray(cr) && cr.length) club = k;
     }
   }
@@ -112,7 +112,12 @@ Deno.serve(async (req) => {
 
   const sb = base44.asServiceRole;
   const since = startOfTodayISO();
-  const mine = await sb.entities.CommunityPost.filter({ author_hash: String(author_hash) }, '-created_date', 50).catch(() => []);
+  // Rate-cap READ — timeout-guarded + fail-open. This is the ONLY non-create await that
+  // createPostDiag does NOT exercise (it does raw create+delete, never this filter-with-sort);
+  // an unguarded read here that hung was wedging the function for 27s+ even though the raw
+  // create is fast. If it doesn't resolve in 2.5s we skip the cap and still publish — a hung
+  // anti-flood read must never block a real post.
+  const mine = await withTimeout(sb.entities.CommunityPost.filter({ author_hash: String(author_hash) }, '-created_date', 50), 2500, 'rate-read').catch(() => []);
   const today = (Array.isArray(mine) ? mine : []).filter((e: any) => (e.created_date || '') >= since).length;
   if (today >= DAILY_CAP) return Response.json({ error: 'rate', today }, { status: 200 });
 
