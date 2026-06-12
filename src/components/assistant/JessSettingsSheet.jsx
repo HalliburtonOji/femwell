@@ -12,7 +12,7 @@
 // follow-up when the JessMemory entity exists.
 
 import { useEffect, useState, useCallback } from "react";
-import { X, Check, Trash2, AlertTriangle, Pencil, Plus } from "lucide-react";
+import { X, Check, Trash2, AlertTriangle, Pencil, Plus, Leaf, Zap, FlaskConical, Sun } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import {
   loadTopMemories,
@@ -40,10 +40,10 @@ const C = {
 };
 
 const CHARACTERS = [
-  { id: "nurturing", emoji: "🌿", label: "Nurturing", desc: "Warm, supportive, checks in on how you're feeling" },
-  { id: "coach",     emoji: "⚡", label: "Coach",     desc: "Direct, motivational, focuses on habits and goals" },
-  { id: "clinical",  emoji: "🔬", label: "Clinical",  desc: "Factual, precise, minimal emotional framing" },
-  { id: "friend",    emoji: "☀️", label: "Friend",    desc: "Casual, playful, uses humour" },
+  { id: "nurturing", Icon: Leaf,         label: "Nurturing", desc: "Warm, supportive, checks in on how you're feeling" },
+  { id: "coach",     Icon: Zap,          label: "Coach",     desc: "Direct, motivational, focuses on habits and goals" },
+  { id: "clinical",  Icon: FlaskConical, label: "Clinical",  desc: "Factual, precise, minimal emotional framing" },
+  { id: "friend",    Icon: Sun,          label: "Friend",    desc: "Casual, playful, uses humour" },
 ];
 
 const PROACTIVITY_LEVELS = [
@@ -285,7 +285,7 @@ export default function JessSettingsSheet({ open, onClose, user, profile, onProf
                       display: "flex", flexDirection: "column", gap: 4,
                     }}
                   >
-                    <span style={{ fontSize: 18 }} aria-hidden>{c.emoji}</span>
+                    <c.Icon size={18} style={{ color: C.gold }} aria-hidden />
                     <span style={{ fontSize: 13, fontWeight: 700, color: C.espresso }}>{c.label}</span>
                     <span style={{ fontSize: 11, color: C.mutedText, lineHeight: 1.4 }}>{c.desc}</span>
                   </button>

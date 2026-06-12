@@ -116,14 +116,21 @@ export default function Profile() {
   const updateTone = async (tone) => {
     if (!profile) return;
     setSaving(true);
-    await base44.entities.UserProfile.update(profile.id, { tone_preference: tone });
-    setProfile((p) => ({ ...p, tone_preference: tone }));
-    if (preferences) {
-      await base44.entities.UserPreferences.update(preferences.id, { coach_tone: tone });
-      setPreferences((current) => ({ ...current, coach_tone: tone }));
+    try {
+      await base44.entities.UserProfile.update(profile.id, { tone_preference: tone });
+      setProfile((p) => ({ ...p, tone_preference: tone }));
+      if (preferences) {
+        await base44.entities.UserPreferences.update(preferences.id, { coach_tone: tone });
+        setPreferences((current) => ({ ...current, coach_tone: tone }));
+      }
+      setEditTone(false);
+    } catch (err) {
+      // Keep the tone editor open on failure rather than leaving the
+      // row stuck in a "Saving…" state (UI audit — clear busy flag).
+      console.error("Tone update failed:", err);
+    } finally {
+      setSaving(false);
     }
-    setSaving(false);
-    setEditTone(false);
   };
 
   const tones = [
@@ -710,8 +717,10 @@ export default function Profile() {
 
           <div style={divider} />
 
-          {/* Reminders */}
-          <button style={rowItem}>
+          {/* Reminders — deep-links to the Settings > Notifications section
+              where check-in / session reminder prefs actually live. Was a
+              dead <button> with no onClick (UI audit fix). */}
+          <a href={`${createPageUrl("Settings")}?section=notifications`} style={rowItem}>
             <div style={iconBox("#FFF8EE")}>
               <Bell className="w-4 h-4" style={{ color: "#B89E6A" }} />
             </div>
@@ -720,7 +729,7 @@ export default function Profile() {
               <p style={mutedText}>Check-in & session alerts</p>
             </div>
             <ChevronRight className="w-4 h-4" style={{ color: "var(--border)" }} />
-          </button>
+          </a>
 
           <div style={divider} />
 

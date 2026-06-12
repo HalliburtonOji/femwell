@@ -101,7 +101,7 @@ const SEED_CONVOS = [
 const SEED_MESSAGES = [
   { from: "jess", text: "Hello, Halli. I can see you're on day 12 of your follicular phase — your energy is starting to build. How are you feeling?", time: "9:03am" },
   { from: "user", text: "Actually a bit tired despite the phase. Why?", time: "9:04am" },
-  { from: "jess", text: "Three things converge in your follicular phase to affect energy:\n\n1️⃣ Progesterone is still at baseline, so the lift comes from estrogen — and estrogen rises slowly until day 11.\n\n2️⃣ Sleep is the lever. Two short nights this week show up in today's reading.\n\n3️⃣ Your nervous system is catching up from last week's heavy admin.\n\nEnergy typically lifts further around day 13. Want me to draft a softer plan for today?", time: "9:04am" },
+  { from: "jess", text: "Three things converge in your follicular phase to affect energy:\n\n1. Progesterone is still at baseline, so the lift comes from estrogen — and estrogen rises slowly until day 11.\n\n2. Sleep is the lever. Two short nights this week show up in today's reading.\n\n3. Your nervous system is catching up from last week's heavy admin.\n\nEnergy typically lifts further around day 13. Want me to draft a softer plan for today?", time: "9:04am" },
 ];
 
 const TODAY_PLAN = [

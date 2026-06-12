@@ -433,28 +433,28 @@ const NEXT_PHASE_INFO = {
 
 const SUGGESTION_RESPONSES = {
   "What should I eat today?":
-    "On day {cycleDay}, your body needs:\n\n🩸 Iron-rich foods — lentils, spinach, dark chocolate, red meat if you eat it — to replenish what you're losing\n\n🌿 Omega-3s — salmon, walnuts, flaxseed — reduce prostaglandin activity which is causing your cramps\n\n🍫 Magnesium — dark chocolate, pumpkin seeds, avocado — eases muscle tension including the back ache\n\nAvoid alcohol and excess caffeine today — they increase inflammation and can worsen cramping.",
+    "On day {cycleDay}, your body needs:\n\n- Iron-rich foods — lentils, spinach, dark chocolate, red meat if you eat it — to replenish what you're losing\n\n- Omega-3s — salmon, walnuts, flaxseed — reduce prostaglandin activity which is causing your cramps\n\n- Magnesium — dark chocolate, pumpkin seeds, avocado — eases muscle tension including the back ache\n\nAvoid alcohol and excess caffeine today — they increase inflammation and can worsen cramping.",
 
   "Best movement for right now":
-    "Day {cycleDay} in your {phase} phase calls for something specific.\n\nWhat actually helps:\n\n🚶‍♀️ A 10–15 minute walk — enough to release endorphins and ease cramping through improved circulation\n\n🧘‍♀️ Yin yoga or gentle stretching — especially hip openers and child's pose\n\n💆‍♀️ A heating pad while you rest — this is movement's peer right now\n\nThe research is clear: light movement beats rest for period pain, but don't push. Listen to what your body is telling you today.",
+    "Day {cycleDay} in your {phase} phase calls for something specific.\n\nWhat actually helps:\n\n- A 10–15 minute walk — enough to release endorphins and ease cramping through improved circulation\n\n- Yin yoga or gentle stretching — especially hip openers and child's pose\n\n- A heating pad while you rest — this is movement's peer right now\n\nThe research is clear: light movement beats rest for period pain, but don't push. Listen to what your body is telling you today.",
 
   "Why am I so tired?":
-    "Three things converge in your {phase} phase to affect your energy:\n\n1️⃣ Progesterone shift — your progesterone is {progesteroneContext} which directly impacts energy levels.\n\n2️⃣ Your body is doing significant work internally right now — that's metabolically costly.\n\n3️⃣ Prostaglandins — the chemicals that regulate your cycle also trigger systemic inflammation, which makes you feel heavy and fatigued.\n\nThis is your body doing exactly what it should. Energy typically shifts again around day {energyReturnDay}.",
+    "Three things converge in your {phase} phase to affect your energy:\n\n1. Progesterone shift — your progesterone is {progesteroneContext} which directly impacts energy levels.\n\n2. Your body is doing significant work internally right now — that's metabolically costly.\n\n3. Prostaglandins — the chemicals that regulate your cycle also trigger systemic inflammation, which makes you feel heavy and fatigued.\n\nThis is your body doing exactly what it should. Energy typically shifts again around day {energyReturnDay}.",
 
   "What's coming in my cycle?":
-    "Based on your profile:\n\n📍 You're on day {cycleDay} of your {phase} phase.\n\n✨ {nextPhase}: {nextPhaseDescription}\n\n🌸 {ovulatoryNote}\n\n🌙 {lutealNote}\n\nWant me to mark any of these in your planner?",
+    "Based on your profile:\n\n- You're on day {cycleDay} of your {phase} phase.\n\n- {nextPhase}: {nextPhaseDescription}\n\n- {ovulatoryNote}\n\n- {lutealNote}\n\nWant me to mark any of these in your planner?",
 
   "Help me sleep tonight":
-    "Here's what actually helps:\n\n🌡️ Warm shower or bath about an hour before bed — drops your core temperature when you get out, which signals sleep\n\n💊 200–400mg magnesium glycinate is the most evidence-backed sleep supplement — especially effective in the {phase} phase\n\n🛏️ Sleep position: fetal position (on your side, knees pulled up) reduces pressure and eases any discomfort\n\n🌡️ Warm compress on your lower abdomen if needed\n\nAvoid your phone for the last 30 mins — blue light plus stress content are a bad combination when your nervous system is activated.",
+    "Here's what actually helps:\n\n- Warm shower or bath about an hour before bed — drops your core temperature when you get out, which signals sleep\n\n- 200–400mg magnesium glycinate is the most evidence-backed sleep supplement — especially effective in the {phase} phase\n\n- Sleep position: fetal position (on your side, knees pulled up) reduces pressure and eases any discomfort\n\n- Warm compress on your lower abdomen if needed\n\nAvoid your phone for the last 30 mins — blue light plus stress content are a bad combination when your nervous system is activated.",
 
   "How do I manage cramps?":
-    "Cramps come from prostaglandins — chemicals that signal your uterus to contract. A few things move that dial:\n\n🌡️ A heating pad on your lower abdomen for 20 minutes — heat dilates blood vessels and relaxes the muscle directly.\n\n💊 Ibuprofen taken at the first sign (rather than once pain has set in) is the most effective NSAID for period pain — it blocks prostaglandin production at the source.\n\n🚶‍♀️ Light walking releases endorphins, your body's own pain modulators.\n\n🧘‍♀️ Hip-opening stretches — child's pose, supine twist — give the pelvis space.\n\nIf cramps are stopping your day three months in a row, that's worth flagging to a clinician.",
+    "Cramps come from prostaglandins — chemicals that signal your uterus to contract. A few things move that dial:\n\n- A heating pad on your lower abdomen for 20 minutes — heat dilates blood vessels and relaxes the muscle directly.\n\n- Ibuprofen taken at the first sign (rather than once pain has set in) is the most effective NSAID for period pain — it blocks prostaglandin production at the source.\n\n- Light walking releases endorphins, your body's own pain modulators.\n\n- Hip-opening stretches — child's pose, supine twist — give the pelvis space.\n\nIf cramps are stopping your day three months in a row, that's worth flagging to a clinician.",
 
   "What's my energy like this week?":
-    "You're on day {cycleDay} of your {phase} phase, which means:\n\n⚡ Right now, your hormones are {hormoneState} — that's why today feels the way it does.\n\n📈 Looking ahead: {nextPhase} starts in {daysToNextPhase} day(s). {nextPhaseDescription}\n\n🌗 The rest of this week tracks the same arc — Jess will surface gentler suggestions when your body asks for them.",
+    "You're on day {cycleDay} of your {phase} phase, which means:\n\n- Right now, your hormones are {hormoneState} — that's why today feels the way it does.\n\n- Looking ahead: {nextPhase} starts in {daysToNextPhase} day(s). {nextPhaseDescription}\n\n- The rest of this week tracks the same arc — Jess will surface gentler suggestions when your body asks for them.",
 
   "Tell me about tomorrow":
-    "Tomorrow you'll be on day {tomorrowDay} of your cycle — still in your {phase} phase.\n\n🌱 What that means in practice:\n• Energy is {hormoneState}\n• Sleep tends to {sleepTrend} in this window\n• Best work for tomorrow: {workMode}\n\nWant me to draft a soft schedule that respects this?",
+    "Tomorrow you'll be on day {tomorrowDay} of your cycle — still in your {phase} phase.\n\nWhat that means in practice:\n\n- Energy is {hormoneState}\n- Sleep tends to {sleepTrend} in this window\n- Best work for tomorrow: {workMode}\n\nWant me to draft a soft schedule that respects this?",
 };
 
 const DEFAULT_RESPONSES = [
@@ -1334,7 +1334,7 @@ function JessDemoPanelInner() {
             // chunk that produces a parse result), not every chunk.
             if (!loggedSubscribeIdsRef.current.has(m.id + ":actions")) {
               loggedSubscribeIdsRef.current.add(m.id + ":actions");
-              // eslint-disable-next-line no-console
+               
               console.log("[jess-actions]", {
                 messageId: m.id,
                 fallback: !!tryParse._fallback,
@@ -1428,7 +1428,7 @@ function JessDemoPanelInner() {
           // console stays readable.
           if ((chips || sanitized !== raw) && !loggedSubscribeIdsRef.current.has(m.id)) {
             loggedSubscribeIdsRef.current.add(m.id);
-            // eslint-disable-next-line no-console
+             
             console.log("[jess-subscribe]", {
               messageId: m.id,
               strippedToolLine: sanitized !== raw,
@@ -1557,25 +1557,25 @@ function JessDemoPanelInner() {
     try {
       const snap = closingThreadRef.current;
       if (!snap?.userId || !Array.isArray(snap.messages)) {
-        // eslint-disable-next-line no-console
+         
         console.log("[jess-memory] unmount: skip (no snap)", snap);
         return;
       }
       const hasUserTurn = snap.messages.some((m) => m?.role === "user");
       if (!hasUserTurn || snap.messages.length < 2) {
-        // eslint-disable-next-line no-console
+         
         console.log("[jess-memory] unmount: skip (insufficient turns)",
           { count: snap.messages.length, hasUserTurn });
         return;
       }
-      // eslint-disable-next-line no-console
+       
       console.log("[jess-memory] unmount: firing extractor",
         { messageCount: snap.messages.length, convId: snap.convId });
       // Don't await — the component is tearing down. Service has its
       // own guards.
       extractMemoriesFromConversation(snap.messages, snap.userId, snap.convId, snap.name);
     } catch (e) {
-      // eslint-disable-next-line no-console
+       
       console.warn("[jess-memory] unmount: threw", e?.message || e);
     }
   }, []);
@@ -1593,7 +1593,7 @@ function JessDemoPanelInner() {
   const startNewConversation = useCallback(async () => {
     // QA round 3 — unconditional entry breadcrumb. Use console.log
     // (not info) so it shows even with strict console filters.
-    // eslint-disable-next-line no-console
+     
     console.log("[jess-memory] ✦New tapped — entering startNewConversation");
     // Snapshot the active thread for the memory extractor BEFORE we
     // clear messages state. Skip if there's no live thread yet, or if
@@ -1604,22 +1604,22 @@ function JessDemoPanelInner() {
     if (user?.id && hasUserTurn && closingMessages.length >= 2) {
       // Fire-and-forget — don't block the new-convo creation on the
       // extractor's LLM round-trip. reloadMemories() runs after.
-      // eslint-disable-next-line no-console
+       
       console.log("[jess-memory] new-convo: firing extractor",
         { messageCount: closingMessages.length, convId: closingConvId });
       (async () => {
         try {
           const result = await extractMemoriesFromConversation(closingMessages, user.id, closingConvId, assistantName);
-          // eslint-disable-next-line no-console
+           
           console.log("[jess-memory] new-convo: extractor returned", result);
           await reloadMemories();
         } catch (e) {
-          // eslint-disable-next-line no-console
+           
           console.warn("[jess-memory] new-convo: extractor threw", e?.message || e);
         }
       })();
     } else {
-      // eslint-disable-next-line no-console
+       
       console.log("[jess-memory] new-convo: skip extraction",
         { hasUserId: !!user?.id, hasUserTurn, messageCount: closingMessages.length });
     }
@@ -1782,7 +1782,7 @@ function JessDemoPanelInner() {
       category  = classifySensitiveTopic(msg) || null;
       crisisCfg = category ? (getCrisisConfig(category) || null) : null;
     } catch (e) {
-      // eslint-disable-next-line no-console
+       
       console.error("[jess-crisis] classifier threw:", e?.message || e);
       category  = null;
       crisisCfg = null;
