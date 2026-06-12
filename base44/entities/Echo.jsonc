@@ -117,8 +117,8 @@
   // VERIFY ON DEPLOY: Echo.filter (read) still 200; a direct client Echo.create /
   // .update / .delete now 403 (owner token still bypasses — same caveat as B3).
   "rls": {
-    "create": { "user_condition": { "role": "system" } },
-    "update": { "user_condition": { "role": "system" } },
-    "delete": { "user_condition": { "role": "system" } }
+    "create": { "user_condition": { "role": "admin" } },
+    "update": { "user_condition": { "role": "admin" } },
+    "delete": { "user_condition": { "role": "admin" } }
   }
 }

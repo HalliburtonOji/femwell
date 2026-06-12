@@ -58,7 +58,7 @@
   "rls": {
     "create": {
       "user_condition": {
-        "role": "system"
+        "role": "admin"
       }
     },
     "read": {

@@ -32,8 +32,8 @@
   // READ left public (no read rule) so the rooms stay lurkable. Verify on deploy:
   // CommunityPost.filter (read) 200; direct client create/update/delete 403.
   "rls": {
-    "create": { "user_condition": { "role": "system" } },
-    "update": { "user_condition": { "role": "system" } },
-    "delete": { "user_condition": { "role": "system" } }
+    "create": { "user_condition": { "role": "admin" } },
+    "update": { "user_condition": { "role": "admin" } },
+    "delete": { "user_condition": { "role": "admin" } }
   }
 }

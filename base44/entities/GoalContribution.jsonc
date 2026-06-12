@@ -14,9 +14,9 @@
   "required": ["goal_key", "author_hash"],
   "indexes": [{ "fields": ["goal_key"] }, { "fields": ["author_hash"] }],
   "rls": {
-    "create": { "user_condition": { "role": "system" } },
-    "read":   { "user_condition": { "role": "system" } },
-    "update": { "user_condition": { "role": "system" } },
-    "delete": { "user_condition": { "role": "system" } }
+    "create": { "user_condition": { "role": "admin" } },
+    "read":   { "user_condition": { "role": "admin" } },
+    "update": { "user_condition": { "role": "admin" } },
+    "delete": { "user_condition": { "role": "admin" } }
   }
 }
