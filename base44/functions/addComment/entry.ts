@@ -71,16 +71,24 @@ Deno.serve(async (req) => {
   if (mod.crisis) return Response.json({ ok: false, intercept: true }, { status: 200 });
   const status = mod.remove ? 'removed' : 'visible';   // local keyword removal only; subtler harm caught post-publish
 
-  const comment = await sb.entities.Comment.create({
+  const core: Record<string, unknown> = {
     post_id: String(post_id),
     author_hash: String(author_hash),
     body: status === 'removed' ? '' : text,   // never persist the harmful body
     by: 'member',
     status,
-    flagged: false,   // borderline flagging now happens post-publish via screenContent
-    report_count: 0, hidden: false,
-  }).catch((e: any) => { console.error('addComment create failed:', e?.message || e); return null; });
-  if (!comment) return Response.json({ error: 'Write failed' }, { status: 500 });
+    hidden: false,
+  };
+  let createErr = '';
+  // Primary create — full payload (flagged/report_count managed by screening).
+  let comment = await sb.entities.Comment.create({ ...core, flagged: false, report_count: 0 })
+    .catch((e: any) => { createErr = e?.message || String(e); console.error('addComment full create failed:', createErr); return null; });
+  // Fallback — the comment MUST still post if an optional field isn't on the deployed entity.
+  if (!comment) {
+    comment = await sb.entities.Comment.create(core)
+      .catch((e: any) => { createErr = e?.message || String(e); console.error('addComment core create failed:', createErr); return null; });
+  }
+  if (!comment) return Response.json({ error: 'Write failed', detail: createErr }, { status: 500 });
 
   return Response.json({ ok: true, comment: {
     id: comment.id, post_id: comment.post_id, body: comment.body,

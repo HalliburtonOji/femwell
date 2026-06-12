@@ -139,6 +139,7 @@ function PostCard({ post, user, onCrisis, onChanged }) {
   const [open, setOpen] = useState(false);
   const [draft, setDraft] = useState("");
   const [busy, setBusy] = useState(false);
+  const [commentErr, setCommentErr] = useState(false);
   const isOpen = post.comments_mode !== "reaction";
   const jessTried = useRef(false);
 
@@ -195,16 +196,19 @@ function PostCard({ post, user, onCrisis, onChanged }) {
     if (!text || busy) return;
     if (crisisCheck(text).intercept) { onCrisis(); return; }
     setBusy(true);
+    setCommentErr(false);
     try {
       const wh = await communityHash(user?.id);
       const r = await base44.functions.invoke("addComment", { user_id: user?.id, author_hash: wh, post_id: post.id, body: text });
       const d = r?.data ?? r;
       if (d?.intercept) { onCrisis(); return; }
+      // A failed comment must NOT hang the box — surface an error and unblock.
+      if (!d?.comment?.id) { setCommentErr(true); setBusy(false); return; }
       // Publish-then-screen: the comment is live now; screen it out-of-band (fire-and-forget).
-      if (d?.comment?.id) base44.functions.invoke("screenContent", { kind: "comment", id: d.comment.id }).catch(() => {});
+      base44.functions.invoke("screenContent", { kind: "comment", id: d.comment.id }).catch(() => {});
       setDraft("");
       await loadComments();
-    } catch (e) { console.error("comment failed:", e); }
+    } catch (e) { console.error("comment failed:", e); setCommentErr(true); }
     finally { setBusy(false); }
   };
 
@@ -258,7 +262,8 @@ function PostCard({ post, user, onCrisis, onChanged }) {
               )
             ))}
             <div style={{ marginTop: 8 }}>
-              <textarea value={draft} onChange={(e) => setDraft(e.target.value)} maxLength={COMMENT_MAX} placeholder="A kind word… you don't have to fix it." style={{ ...inputStyle, minHeight: 56, fontSize: 16 }} />
+              <textarea value={draft} onChange={(e) => { setDraft(e.target.value); if (commentErr) setCommentErr(false); }} maxLength={COMMENT_MAX} placeholder="A kind word… you don't have to fix it." style={{ ...inputStyle, minHeight: 56, fontSize: 16 }} />
+              {commentErr && <div style={{ fontFamily: UI, fontSize: 12, color: T.crimson, lineHeight: 1.45, marginTop: 6 }}>Couldn{"’"}t add that just now — give it another try in a moment.</div>}
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: 6 }}>
                 <span style={{ fontFamily: UI, fontSize: 10.5, color: T.muted }}>{COMMENT_KINDNESS}</span>
                 <button onClick={sendComment} disabled={!draft.trim() || busy} style={{ ...primaryBtn, padding: "8px 14px", opacity: (!draft.trim() || busy) ? 0.5 : 1 }}>
@@ -280,12 +285,14 @@ function RoomComposer({ room, circle, club, user, onCrisis, onPosted, onCancel, 
   const [mode, setMode] = useState("open");
   const [busy, setBusy] = useState(false);
   const [declined, setDeclined] = useState(false);
+  const [err, setErr] = useState(false);
   const send = async () => {
     const text = body.trim();
     if (!text || busy) return;
     if (crisisCheck(text).intercept) { onCrisis(); return; }
     setBusy(true);
     setDeclined(false);
+    setErr(false);
     try {
       const wh = await communityHash(user?.id);
       const r = await base44.functions.invoke("createCommunityPost", { user_id: user?.id, author_hash: wh, room, circle: circle || undefined, club: club || undefined, body: text, comments_mode: mode });
@@ -293,20 +300,27 @@ function RoomComposer({ room, circle, club, user, onCrisis, onPosted, onCancel, 
       if (d?.intercept) { onCrisis(); return; }
       if (d?.error === "rate") { setBusy(false); return; }
       if (d?.removed) { setDeclined(true); setBusy(false); return; }  // local floor declined it
+      // A failed create must NOT hang the composer — surface an error and unblock.
+      if (!d?.post?.id) { setErr(true); setBusy(false); return; }
       // Publish-then-screen: the post is live now; screen it out-of-band (fire-and-forget,
       // never awaited). If OpenAI flags it, screenContent pulls it within moments.
-      if (d?.post?.id) base44.functions.invoke("screenContent", { kind: "post", id: d.post.id }).catch(() => {});
+      base44.functions.invoke("screenContent", { kind: "post", id: d.post.id }).catch(() => {});
       onPosted?.();
-    } catch (e) { console.error("post failed:", e); }
+    } catch (e) { console.error("post failed:", e); setErr(true); }
     finally { setBusy(false); }
   };
   return (
     <div style={{ background: T.paperHi, border: `1px solid ${T.gold}`, borderRadius: 4, padding: "15px 16px", marginBottom: 16 }}>
       <Eyebrow mb={8}>Add to the room</Eyebrow>
-      <textarea value={body} onChange={(e) => { setBody(e.target.value); if (declined) setDeclined(false); }} maxLength={POST_MAX} placeholder="Say it plainly — silly to serious, no names." style={{ ...inputStyle, minHeight: 90 }} />
+      <textarea value={body} onChange={(e) => { setBody(e.target.value); if (declined) setDeclined(false); if (err) setErr(false); }} maxLength={POST_MAX} placeholder="Say it plainly — silly to serious, no names." style={{ ...inputStyle, minHeight: 90 }} />
       {declined && (
         <div style={{ marginTop: 8, fontFamily: UI, fontSize: 12, color: T.crimson, lineHeight: 1.45 }}>
           Jess held this one back — it reads as unkind for the room. Reword it and it'll go up.
+        </div>
+      )}
+      {err && (
+        <div style={{ marginTop: 8, fontFamily: UI, fontSize: 12, color: T.crimson, lineHeight: 1.45 }}>
+          Couldn't post that just now — give it another try in a moment.
         </div>
       )}
       <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap", marginTop: 10 }}>

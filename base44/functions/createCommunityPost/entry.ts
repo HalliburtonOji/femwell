@@ -105,19 +105,33 @@ Deno.serve(async (req) => {
   const today = (Array.isArray(mine) ? mine : []).filter((e: any) => (e.created_date || '') >= since).length;
   if (today >= DAILY_CAP) return Response.json({ error: 'rate', today }, { status: 200 });
 
-  const post = await sb.entities.CommunityPost.create({
-    room: club ? 'clubs' : circle ? 'circles' : (ROOMS.includes(room) ? room : 'lounge'),
-    circle: circle || undefined,
-    club: club || undefined,
+  // Build the payload WITHOUT any undefined-valued keys (optional fields are added only when
+  // set). `hidden: false` is always included so the new post matches the rooms' hidden:false read.
+  const roomVal = club ? 'clubs' : circle ? 'circles' : (ROOMS.includes(room) ? room : 'lounge');
+  const core: Record<string, unknown> = {
+    room: roomVal,
     author_hash: String(author_hash),
     body: text,
     comments_mode: comments_mode === 'reaction' ? 'reaction' : 'open',
     by: 'member',
-    domain: domain ? String(domain).slice(0, 40) : undefined,
-    flagged: false,   // borderline flagging now happens post-publish via screenContent
-    report_count: 0, hidden: false,
-  }).catch((e: any) => { console.error('createCommunityPost create failed:', e?.message || e); return null; });
-  if (!post) return Response.json({ error: 'Write failed' }, { status: 500 });
+    hidden: false,
+  };
+  if (circle) core.circle = circle;
+  if (club) core.club = club;
+
+  let createErr = '';
+  // Primary create — full payload (flagged/report_count managed by screening; domain optional).
+  let post = await sb.entities.CommunityPost.create({
+    ...core, flagged: false, report_count: 0,
+    ...(domain ? { domain: String(domain).slice(0, 40) } : {}),
+  }).catch((e: any) => { createErr = e?.message || String(e); console.error('createCommunityPost full create failed:', createErr); return null; });
+  // Fallback — if an optional field isn't present on the deployed entity, the post MUST still
+  // publish: retry with the core fields only (still hidden:false → visible in the room).
+  if (!post) {
+    post = await sb.entities.CommunityPost.create(core)
+      .catch((e: any) => { createErr = e?.message || String(e); console.error('createCommunityPost core create failed:', createErr); return null; });
+  }
+  if (!post) return Response.json({ error: 'Write failed', detail: createErr }, { status: 500 });
 
   return Response.json({ ok: true, post: {
     id: post.id, room: post.room, circle: post.circle || null, club: post.club || null, body: post.body, comments_mode: post.comments_mode,
