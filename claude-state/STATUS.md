@@ -1,7 +1,18 @@
 # FEMWELL — CANONICAL STATUS INDEX (read first · updated 2026-06-12)
 **This file is the single source of truth AND the index to every plan doc. If anything else disagrees, this wins.** (The long ship-log history continues below the index.)
 
-## 🅰️ REMAINING-ITEMS WAVE (A1–A4) DEPLOYED + VERIFIED + 🅱️ COMMUNITY VERDICT (2026-06-12) — live hash `index-Cajl1CGV.js`
+## 🩹 COMMUNITY FRONT-END FIXES — real-vs-artifact verdict + fixes DEPLOYED + VERIFIED (2026-06-12) — live hash `index-CF5vX-Ai.js`
+Used a FRESH browser tab (cleared the freeze) to re-verify the sweep's findings:
+- **Cleanup:** confirmed 0 qa/diag posts visible on the wall (earlier purges cleared them).
+- **Echo Wall — NOT a bug** (FREEZE ARTIFACT): renders fine in a fresh tab (echoUI + heading present, no crash). The earlier "blank" was the frozen renderer not finishing mount.
+- **Library — REAL crash, FIXED (`11f71da`):** `LibraryView` called `dailyReadClubKey(SEED_PICK.gutenberg_id)` but `dailyReadClubKey` was never imported (clubsConfig exported it; the import only pulled isDailyReadClub/dailyReadClubFromKey) → ReferenceError → error boundary. Added the import. **Verified LIVE:** Library now renders (errorBoundary:false, libraryUI:true) — was error-boundary before.
+- **"Talk to Jess" — NOT a bug** (false-positive): dispatching `fw_open_assistant` opens the assistant (Layout listener exists). Verified live (assistant opened).
+- **Reactions:** the pressed/gold state already existed (the sweep's "no feedback" was the 503-window rollback). Added an 8s client timeout + a visible "couldn't register" on failure (no more silent revert).
+- **Circle/Club join:** added 8s timeout + visible "couldn't join" error so they can't hang silently (what the sweep hit during the 503 window).
+- Deployed via keepalive POST; bundle `index-Cajl1CGV.js` → `index-CF5vX-Ai.js`. Build+eslint green.
+- **Net correction:** of the sweep's "BROKEN" list, only **Library was a real bug** (now fixed+live). Echo Wall, Talk-to-Jess, and reaction-feedback were all freeze/503-window artifacts — verified, not real. The genuine remaining items are the PRODUCT calls held for Halli (per-room signature features, seed content, wiring the Games room) — NOT built, awaiting direction.
+
+## 🅰️ REMAINING-ITEMS WAVE (A1–A4) DEPLOYED + VERIFIED + 🅱️ COMMUNITY VERDICT (2026-06-12) — superseded hash; see above
 **Part A — all 4 remaining optional items, deployed (`4ca92a5`) + verified:**
 - **A1 (`1388f4e`)** Journal Guide/Coach onto cream/plum — the flagged "off-palette set" was mostly brand vars already; remapped the real hardcoded hex (mood gradient, cycle-phase rainbow→blush/sage/gold/plum, chart greys). 0 off-brand hex; deployed.
 - **A2 (`0cc3335`)** Profile field-saves → visible save toast (success + error) on every previously-silent write. **LIVE-VERIFIED** (toast renders on a settings change).
