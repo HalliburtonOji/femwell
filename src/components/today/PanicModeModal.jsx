@@ -100,7 +100,7 @@ export default function PanicModeModal({ userId, onClose }) {
 
   return (
     <>
-      <div onClick={onClose} style={{ position: "fixed", inset: 0, zIndex: 95, backgroundColor: "rgba(42,32,53,0.45)", backdropFilter: "blur(8px)" }} />
+      <div onClick={onClose} style={{ position: "fixed", inset: 0, zIndex: 95, backgroundColor: "rgba(58,44,26,0.45)", backdropFilter: "blur(8px)" }} />
       <div style={{ position: "fixed", bottom: 0, left: 0, right: 0, zIndex: 96, backgroundColor: "var(--surface)", borderRadius: "28px 28px 0 0", maxHeight: "92vh", overflowY: "auto", boxShadow: "var(--shadow-lg)" }}>
         <style>{`@keyframes breath-in{0%,100%{transform:scale(1)}50%{transform:scale(1.18)}}`}</style>
         <div style={{ display: "flex", justifyContent: "center", paddingTop: 14, paddingBottom: 8 }}>
@@ -171,7 +171,7 @@ export default function PanicModeModal({ userId, onClose }) {
               </p>
               <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
                 <button onClick={() => handleLog(true)} disabled={saving}
-                  style={{ height: 56, borderRadius: 9999, backgroundColor: "#C084FC", color: "white", fontSize: 15, fontWeight: 700, border: "none", cursor: "pointer", opacity: saving ? 0.6 : 1 }}>
+                  style={{ height: 56, borderRadius: 9999, backgroundColor: "#4A2A3A", color: "white", fontSize: 15, fontWeight: 700, border: "none", cursor: "pointer", opacity: saving ? 0.6 : 1 }}>
                   {saving ? "One sec…" : "Yes, guide me"}
                 </button>
                 <button onClick={() => handleLog(false)} disabled={saving}
@@ -222,8 +222,8 @@ export default function PanicModeModal({ userId, onClose }) {
               )}
 
               {intensity >= 4 && (
-                <div style={{ marginTop: 14, padding: "12px 14px", borderRadius: 14, backgroundColor: "#FFF8EE", border: "1px solid #F5DFA8" }}>
-                  <p style={{ fontSize: 12, color: "#7A5A20", lineHeight: 1.6 }}>
+                <div style={{ marginTop: 14, padding: "12px 14px", borderRadius: 14, backgroundColor: "#FBF7EC", border: "1px solid #A8893F" }}>
+                  <p style={{ fontSize: 12, color: "#7A6000", lineHeight: 1.6 }}>
                     {intensity === 5
                       ? "If you need immediate support, consider talking to a professional. You don't have to go through this alone."
                       : "If you're feeling overwhelmed, it's okay to reach out to someone you trust."}

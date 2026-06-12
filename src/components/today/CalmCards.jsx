@@ -97,7 +97,7 @@ function WelcomeCard() {
       <div style={{ display: "flex", justifyContent: "center", marginBottom: 24 }}><Leaf size={48} style={{ color: "var(--sage)" }} strokeWidth={1.5} /></div>
       <CardTitle>You're here. That's enough.</CardTitle>
       <CardBody>Take one slow breath before we begin. Breathe in through your nose… and out through your mouth.</CardBody>
-      <CardBody style={{ marginTop: 12, color: "#9D7EC7", fontSize: 13 }}>Swipe or tap to continue when you're ready.</CardBody>
+      <CardBody style={{ marginTop: 12, color: "#6B5B4E", fontSize: 13 }}>Swipe or tap to continue when you're ready.</CardBody>
     </CardShell>
   );
 }
@@ -108,15 +108,15 @@ function GroundingCard({ onDone }) {
   const isLast = senseIdx === SENSES.length - 1;
 
   return (
-    <CardShell accent="#A78BFA">
+    <CardShell accent="#4A2A3A">
       <CardLabel>5-4-3-2-1 Grounding</CardLabel>
       <div style={{ display: "flex", justifyContent: "center", marginBottom: 20, lineHeight: 1 }}>
         {(() => {
           const SenseIcon = [Eye, Hand, Ear, Nose, Smile][senseIdx];
-          return <SenseIcon size={56} style={{ color: "#A78BFA" }} strokeWidth={1.5} />;
+          return <SenseIcon size={56} style={{ color: "#4A2A3A" }} strokeWidth={1.5} />;
         })()}
       </div>
-      <div style={{ fontSize: 56, fontWeight: 800, color: "#A78BFA", textAlign: "center", marginBottom: 8, lineHeight: 1 }}>
+      <div style={{ fontSize: 56, fontWeight: 800, color: "#4A2A3A", textAlign: "center", marginBottom: 8, lineHeight: 1 }}>
         {sense.n}
       </div>
       <CardTitle>{sense.label}</CardTitle>
@@ -137,21 +137,21 @@ function BreathCard() {
   const scale = PHASE_SCALES[phase];
 
   return (
-    <CardShell accent="#818CF8">
+    <CardShell accent="#4A2A3A">
       <CardLabel>Box Breathing</CardLabel>
       <div style={{ display: "flex", justifyContent: "center", marginBottom: 24, marginTop: 8 }}>
         <div style={{
           width: 140, height: 140, borderRadius: "50%",
           backgroundColor: "var(--surface)",
-          border: "3px solid #A78BFA",
+          border: "3px solid #4A2A3A",
           display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
           transform: `scale(${scale})`,
           transition: "transform 1s ease-in-out",
         }}>
-          <span style={{ fontSize: 11, fontWeight: 700, color: "#818CF8", letterSpacing: "0.12em", textTransform: "uppercase", }}>
+          <span style={{ fontSize: 11, fontWeight: 700, color: "#7A6000", letterSpacing: "0.12em", textTransform: "uppercase", }}>
             {PHASE_LABELS[phase]}
           </span>
-          <span style={{ fontSize: 40, fontWeight: 800, color: "#6D28D9", lineHeight: 1 }}>
+          <span style={{ fontSize: 40, fontWeight: 800, color: "#4A2A3A", lineHeight: 1 }}>
             {count}
           </span>
         </div>
@@ -162,7 +162,7 @@ function BreathCard() {
       {!done && (
         <div style={{ display: "flex", justifyContent: "center", gap: 6, marginTop: 16 }}>
           {[0,1,2].map(i => (
-            <div key={i} style={{ width: 8, height: 8, borderRadius: "50%", backgroundColor: i < cycle ? "#A78BFA" : "var(--surface)" }} />
+            <div key={i} style={{ width: 8, height: 8, borderRadius: "50%", backgroundColor: i < cycle ? "#4A2A3A" : "var(--surface)" }} />
           ))}
         </div>
       )}
@@ -172,10 +172,10 @@ function BreathCard() {
 
 function ReframeCard() {
   return (
-    <CardShell accent="#F472B6">
+    <CardShell accent="#A84E56">
       <CardLabel>A Gentle Reframe</CardLabel>
-      <div style={{ display: "flex", justifyContent: "center", marginBottom: 20 }}><Heart size={36} style={{ color: "#9D7EC7" }} strokeWidth={1.5} /></div>
-      <blockquote style={{ fontSize: 19, fontWeight: 600, color: "#2A2035", lineHeight: 1.6, textAlign: "center", margin: 0 }}>
+      <div style={{ display: "flex", justifyContent: "center", marginBottom: 20 }}><Heart size={36} style={{ color: "#A84E56" }} strokeWidth={1.5} /></div>
+      <blockquote style={{ fontSize: 19, fontWeight: 600, color: "#3A2C1A", lineHeight: 1.6, textAlign: "center", margin: 0 }}>
         "This feeling is real.<br />It is also temporary.<br /><br />My body is trying to protect me,<br />and I am safe right now."
       </blockquote>
     </CardShell>
@@ -184,10 +184,10 @@ function ReframeCard() {
 
 function AffirmationCard({ text }) {
   return (
-    <CardShell accent="#EC4899">
+    <CardShell accent="#A84E56">
       <CardLabel>Affirmation</CardLabel>
-      <div style={{ display: "flex", justifyContent: "center", marginBottom: 24 }}><Sparkles size={36} style={{ color: "#EC4899" }} strokeWidth={1.5} /></div>
-      <blockquote style={{ fontSize: 22, fontWeight: 700, color: "#2A2035", lineHeight: 1.6, textAlign: "center", margin: 0, padding: "0 8px" }}>
+      <div style={{ display: "flex", justifyContent: "center", marginBottom: 24 }}><Sparkles size={36} style={{ color: "#A84E56" }} strokeWidth={1.5} /></div>
+      <blockquote style={{ fontSize: 22, fontWeight: 700, color: "#3A2C1A", lineHeight: 1.6, textAlign: "center", margin: 0, padding: "0 8px" }}>
         "{text}"
       </blockquote>
     </CardShell>
@@ -199,9 +199,9 @@ function BodyScanCard({ lines }) {
   const done = step >= lines.length;
 
   return (
-    <CardShell accent="#34D399">
+    <CardShell accent="#7A9E8E">
       <CardLabel>Body Scan</CardLabel>
-      <div style={{ display: "flex", justifyContent: "center", marginBottom: 20 }}><Wind size={48} style={{ color: "#34D399" }} strokeWidth={1.5} /></div>
+      <div style={{ display: "flex", justifyContent: "center", marginBottom: 20 }}><Wind size={48} style={{ color: "#3D6B3D" }} strokeWidth={1.5} /></div>
       {done ? (
         <>
           <CardTitle>Well done.</CardTitle>
@@ -210,10 +210,10 @@ function BodyScanCard({ lines }) {
       ) : (
         <>
           <div style={{ textAlign: "center", marginBottom: 8 }}>
-            <span style={{ fontSize: 11, color: "#34D399", fontWeight: 600, letterSpacing: "0.1em", textTransform: "uppercase", }}>Step {step + 1} of {lines.length}</span>
+            <span style={{ fontSize: 11, color: "#3D6B3D", fontWeight: 600, letterSpacing: "0.1em", textTransform: "uppercase", }}>Step {step + 1} of {lines.length}</span>
           </div>
           <CardTitle style={{ textAlign: "center" }}>{lines[step]}</CardTitle>
-          <PillButton onClick={() => setStep(s => s + 1)} style={{ marginTop: 28, backgroundColor: "#34D399" }}>
+          <PillButton onClick={() => setStep(s => s + 1)} style={{ marginTop: 28, backgroundColor: "#7A9E8E" }}>
             <span style={{ display: "inline-flex", alignItems: "center", gap: 6, justifyContent: "center" }}>Done <Check size={16} /></span>
           </PillButton>
         </>
@@ -225,24 +225,24 @@ function BodyScanCard({ lines }) {
 function TinyActionCard({ onDone }) {
   const [chosen, setChosen] = useState(null);
   return (
-    <CardShell accent="#FBBF24">
+    <CardShell accent="#A8893F">
       <CardLabel>One Small Step</CardLabel>
       <CardBody style={{ marginBottom: 20 }}>Which of these feels possible right now?</CardBody>
       <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
         {TINY_ACTIONS.map(({ Icon, label }) => (
           <button key={label} onClick={() => setChosen(label)}
             style={{ display: "flex", alignItems: "center", gap: 14, padding: "14px 18px", borderRadius: 16,
-              border: chosen === label ? "2px solid #FBBF24" : "2px solid #FEF3C7",
-              backgroundColor: chosen === label ? "#FEF3C7" : "white",
-              cursor: "pointer", fontSize: 14, fontWeight: 600, color: "#2A2035",
+              border: chosen === label ? "2px solid #A8893F" : "2px solid #F4EDDB",
+              backgroundColor: chosen === label ? "#F4EDDB" : "var(--surface)",
+              cursor: "pointer", fontSize: 14, fontWeight: 600, color: "#3A2C1A",
               transition: "all 0.15s" }}>
-            <Icon size={22} style={{ color: "#D49A4E", flexShrink: 0 }} strokeWidth={1.5} />
+            <Icon size={22} style={{ color: "#A8893F", flexShrink: 0 }} strokeWidth={1.5} />
             {label}
           </button>
         ))}
       </div>
       {chosen && (
-        <PillButton onClick={onDone} style={{ marginTop: 20, backgroundColor: "#FBBF24", color: "white" }}>
+        <PillButton onClick={onDone} style={{ marginTop: 20, backgroundColor: "#A8893F", color: "white" }}>
           <span style={{ display: "inline-flex", alignItems: "center", gap: 6, justifyContent: "center" }}>I'll do that <ArrowRight size={16} /></span>
         </PillButton>
       )}
@@ -270,7 +270,7 @@ function ClosingCard({ onRate, onClose }) {
       </div>
       {rating && (
         <>
-          <blockquote style={{ fontSize: 16, color: "#2A2035", lineHeight: 1.6, textAlign: "center", marginBottom: 24, fontStyle: "italic" }}>
+          <blockquote style={{ fontSize: 16, color: "#3A2C1A", lineHeight: 1.6, textAlign: "center", marginBottom: 24, fontStyle: "italic" }}>
             "You came back to yourself.<br />That's the whole thing."
           </blockquote>
           <PillButton onClick={() => { onRate(rating); onClose(); }}>
@@ -296,7 +296,7 @@ function CardShell({ children, accent }) {
 
 function CardLabel({ children }) {
   return (
-    <p style={{ fontSize: 11, fontWeight: 700, color: "#9D7EC7", textTransform: "uppercase", letterSpacing: "0.12em", textAlign: "center", marginBottom: 20 }}>
+    <p style={{ fontSize: 11, fontWeight: 700, color: "#4A2A3A", textTransform: "uppercase", letterSpacing: "0.12em", textAlign: "center", marginBottom: 20 }}>
       {children}
     </p>
   );
@@ -304,7 +304,7 @@ function CardLabel({ children }) {
 
 function CardTitle({ children, style }) {
   return (
-    <h2 style={{ fontSize: 24, fontWeight: 700, color: "#2A2035", lineHeight: 1.35, textAlign: "center", margin: "0 0 12px", ...style }}>
+    <h2 style={{ fontFamily: "'Fraunces', serif", fontSize: 24, fontWeight: 700, color: "#3A2C1A", lineHeight: 1.35, textAlign: "center", margin: "0 0 12px", ...style }}>
       {children}
     </h2>
   );
@@ -312,7 +312,7 @@ function CardTitle({ children, style }) {
 
 function CardBody({ children, style }) {
   return (
-    <p style={{ fontSize: 16, color: "#6B5E7A", lineHeight: 1.7, textAlign: "center", margin: 0, ...style }}>
+    <p style={{ fontSize: 16, color: "#6B5B4E", lineHeight: 1.7, textAlign: "center", margin: 0, ...style }}>
       {children}
     </p>
   );
@@ -402,7 +402,7 @@ export default function CalmCards({ userId, sessionId, panicLogId, onClose }) {
             ))}
           </div>
           {/* Skip / close */}
-          <button onClick={onClose} style={{ display: "flex", alignItems: "center", gap: 5, background: "none", border: "none", cursor: "pointer", fontSize: 12, fontWeight: 600, color: "#9D7EC7", padding: "6px 10px" }}>
+          <button onClick={onClose} style={{ display: "flex", alignItems: "center", gap: 5, background: "none", border: "none", cursor: "pointer", fontSize: 12, fontWeight: 600, color: "#6B5B4E", padding: "6px 10px" }}>
             <X style={{ width: 14, height: 14 }} /> Skip
           </button>
         </div>
