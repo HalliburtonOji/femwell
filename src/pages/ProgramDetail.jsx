@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { createPageUrl } from "@/utils";
 import { saveItem, removeSavedItem } from "@/lib/savedItems";
-import { ArrowLeft, Bell, BookOpen, Bookmark, BookmarkCheck, Clock, Flame, Headphones, Lock, Play, RotateCcw } from "lucide-react";
+import { Bell, BookOpen, Bookmark, BookmarkCheck, Clock, Flame, Headphones, Lock, Play, RotateCcw } from "lucide-react";
 import ProgramDayPreviewCard from "../components/programs/ProgramDayPreviewCard";
 import ProgramProgressBar from "../components/programs/ProgramProgressBar";
 import ProgramPageToolbar from "../components/programs/ProgramPageToolbar";
@@ -39,6 +39,7 @@ export default function ProgramDetail() {
   const [savingReminder, setSavingReminder] = useState(false);
   const [expandedDay, setExpandedDay] = useState(1);
   const [reminderTime, setReminderTime] = useState("");
+  const [actionError, setActionError] = useState("");
 
   useEffect(() => {
     if (!programKey) return;
@@ -96,64 +97,77 @@ export default function ProgramDetail() {
 
   const startProgram = async () => {
     setStarting(true);
-    let nextProgram = userProgram;
+    setActionError("");
+    try {
+      let nextProgram = userProgram;
 
-    if (userProgram) {
-      nextProgram = await base44.entities.UserPrograms.update(userProgram.id, {
-        status: "active",
-        is_saved: true,
-        started_at: userProgram.started_at || new Date().toISOString(),
-        current_day: userProgram.current_day || 1,
-      });
-    } else {
-      nextProgram = await base44.entities.UserPrograms.create({
-        user_id: user.id,
-        program_id: program.id,
-        started_at: new Date().toISOString(),
-        current_day: 1,
-        status: "active",
-        is_saved: true,
-      });
+      if (userProgram) {
+        nextProgram = await base44.entities.UserPrograms.update(userProgram.id, {
+          status: "active",
+          is_saved: true,
+          started_at: userProgram.started_at || new Date().toISOString(),
+          current_day: userProgram.current_day || 1,
+        });
+      } else {
+        nextProgram = await base44.entities.UserPrograms.create({
+          user_id: user.id,
+          program_id: program.id,
+          started_at: new Date().toISOString(),
+          current_day: 1,
+          status: "active",
+          is_saved: true,
+        });
+      }
+
+      setUserProgram(nextProgram);
+      window.location.href = createPageUrl(`ProgramDay?key=${programKey}&day=${nextProgram.current_day || 1}`);
+    } catch (err) {
+      console.error("startProgram failed:", err);
+      setActionError("Couldn't start the program just now. Please try again.");
+      setStarting(false);
     }
-
-    setUserProgram(nextProgram);
-    setStarting(false);
-    window.location.href = createPageUrl(`ProgramDay?key=${programKey}&day=${nextProgram.current_day || 1}`);
   };
 
   const toggleSaved = async () => {
     setSavingProgram(true);
-    let nextProgram = userProgram;
+    setActionError("");
+    try {
+      let nextProgram = userProgram;
 
-    if (userProgram) {
-      nextProgram = await base44.entities.UserPrograms.update(userProgram.id, {
-        is_saved: !userProgram.is_saved,
-      });
-    } else {
-      nextProgram = await base44.entities.UserPrograms.create({
-        user_id: user.id,
-        program_id: program.id,
-        started_at: new Date().toISOString(),
-        current_day: 1,
-        status: "paused",
-        is_saved: true,
-      });
+      if (userProgram) {
+        nextProgram = await base44.entities.UserPrograms.update(userProgram.id, {
+          is_saved: !userProgram.is_saved,
+        });
+      } else {
+        nextProgram = await base44.entities.UserPrograms.create({
+          user_id: user.id,
+          program_id: program.id,
+          started_at: new Date().toISOString(),
+          current_day: 1,
+          status: "paused",
+          is_saved: true,
+        });
+      }
+
+      if (nextProgram.is_saved) {
+        await saveItem({
+          itemType: "PROGRAM",
+          itemId: program.id,
+          title: program.title,
+          previewText: program.summary || program.description || "",
+          meta: { route: createPageUrl(`ProgramsHub?program_key=${programKey}`) },
+        });
+      } else {
+        await removeSavedItem("PROGRAM", program.id);
+      }
+
+      setUserProgram(nextProgram);
+    } catch (err) {
+      console.error("toggleSaved failed:", err);
+      setActionError("Couldn't update your saved programs. Please try again.");
+    } finally {
+      setSavingProgram(false);
     }
-
-    if (nextProgram.is_saved) {
-      await saveItem({
-        itemType: "PROGRAM",
-        itemId: program.id,
-        title: program.title,
-        previewText: program.summary || program.description || "",
-        meta: { route: createPageUrl(`ProgramsHub?program_key=${programKey}`) },
-      });
-    } else {
-      await removeSavedItem("PROGRAM", program.id);
-    }
-
-    setUserProgram(nextProgram);
-    setSavingProgram(false);
   };
 
   const restartProgram = async () => {
@@ -162,45 +176,58 @@ export default function ProgramDetail() {
     if (!shouldRestart) return;
 
     setRestarting(true);
-    await Promise.all(completions.map((entry) => base44.entities.UserTaskCompletions.delete(entry.id)));
-    const updatedProgram = await base44.entities.UserPrograms.update(userProgram.id, {
-      current_day: 1,
-      status: "active",
-      completed_at: "",
-      last_activity_date: "",
-      streak_count: 0,
-      is_saved: true,
-    });
+    setActionError("");
+    try {
+      await Promise.all(completions.map((entry) => base44.entities.UserTaskCompletions.delete(entry.id)));
+      const updatedProgram = await base44.entities.UserPrograms.update(userProgram.id, {
+        current_day: 1,
+        status: "active",
+        completed_at: "",
+        last_activity_date: "",
+        streak_count: 0,
+        is_saved: true,
+      });
 
-    setCompletions([]);
-    setUserProgram(updatedProgram);
-    setRestarting(false);
+      setCompletions([]);
+      setUserProgram(updatedProgram);
+    } catch (err) {
+      console.error("restartProgram failed:", err);
+      setActionError("Couldn't restart the program just now. Please try again.");
+    } finally {
+      setRestarting(false);
+    }
   };
 
   const saveReminder = async () => {
     if (!reminderTime) return;
     setSavingReminder(true);
+    setActionError("");
+    try {
+      let nextProgram = userProgram;
+      if (userProgram) {
+        nextProgram = await base44.entities.UserPrograms.update(userProgram.id, {
+          reminder_time: reminderTime,
+          is_saved: true,
+        });
+      } else {
+        nextProgram = await base44.entities.UserPrograms.create({
+          user_id: user.id,
+          program_id: program.id,
+          started_at: new Date().toISOString(),
+          current_day: 1,
+          status: "paused",
+          is_saved: true,
+          reminder_time: reminderTime,
+        });
+      }
 
-    let nextProgram = userProgram;
-    if (userProgram) {
-      nextProgram = await base44.entities.UserPrograms.update(userProgram.id, {
-        reminder_time: reminderTime,
-        is_saved: true,
-      });
-    } else {
-      nextProgram = await base44.entities.UserPrograms.create({
-        user_id: user.id,
-        program_id: program.id,
-        started_at: new Date().toISOString(),
-        current_day: 1,
-        status: "paused",
-        is_saved: true,
-        reminder_time: reminderTime,
-      });
+      setUserProgram(nextProgram);
+    } catch (err) {
+      console.error("saveReminder failed:", err);
+      setActionError("Couldn't save your reminder just now. Please try again.");
+    } finally {
+      setSavingReminder(false);
     }
-
-    setUserProgram(nextProgram);
-    setSavingReminder(false);
   };
 
   if (loading) {
@@ -365,6 +392,12 @@ export default function ProgramDetail() {
                       {userProgram?.is_saved ? <BookmarkCheck className="h-4 w-4" /> : <Bookmark className="h-4 w-4" />}
                     </button>
                   </div>
+
+                  {actionError && (
+                    <div role="alert" className="rounded-2xl px-4 py-3 text-sm" style={{ backgroundColor: "var(--rose-dust-subtle)", border: "1px solid var(--rose-dust-light)", color: "var(--rose-dust)" }}>
+                      {actionError}
+                    </div>
+                  )}
 
                   {userProgram ? (
                     <div className="rounded-3xl bg-[#EDE7DA] p-4 text-sm text-[#4F473A]">

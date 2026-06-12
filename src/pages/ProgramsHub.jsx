@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { createPageUrl } from "@/utils";
-import { ArrowRight, Bell, BookOpen, Clock, Flame, Headphones, Lock, Play, Search, ChevronRight } from "lucide-react";
+import { ArrowRight, Bell, BookOpen, Check, Clock, Flame, Headphones, Lock, Play, Search, ChevronRight } from "lucide-react";
 import ProgramProgressBar from "../components/programs/ProgramProgressBar";
 
 const NEEDS = [
@@ -573,13 +573,23 @@ function ProgramCard({ program, userProgram, locked, thumb, meta, progress }) {
   const totalDays = meta.dayCount || program.duration_days;
   const isCompleted = userProgram?.status === "completed";
   const streak = userProgram?.streak_count || 0;
+  const [restarting, setRestarting] = useState(false);
+  const [restartError, setRestartError] = useState(false);
 
   const handleRestart = async () => {
-    if (!userProgram) return;
-    await base44.entities.UserPrograms.update(userProgram.id, {
-      current_day: 1, status: "active", completed_at: null, streak_count: 0,
-    });
-    window.location.href = createPageUrl(`ProgramDay?key=${program.program_key}&day=1`);
+    if (!userProgram || restarting) return;
+    setRestarting(true);
+    setRestartError(false);
+    try {
+      await base44.entities.UserPrograms.update(userProgram.id, {
+        current_day: 1, status: "active", completed_at: null, streak_count: 0,
+      });
+      window.location.href = createPageUrl(`ProgramDay?key=${program.program_key}&day=1`);
+    } catch (err) {
+      console.error("Program restart failed:", err);
+      setRestartError(true);
+      setRestarting(false);
+    }
   };
 
   return (
@@ -598,13 +608,13 @@ function ProgramCard({ program, userProgram, locked, thumb, meta, progress }) {
           {isCompleted && (
             <span className="inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full"
               style={{ backgroundColor: "rgba(122,158,142,0.92)", color: "white" }}>
-              ✓ Complete
+              <Check className="w-2.5 h-2.5" /> Complete
             </span>
           )}
           {streak > 0 && !isCompleted && (
             <span className="inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full"
               style={{ backgroundColor: "rgba(255,255,255,0.9)", color: "var(--rose-dust)" }}>
-              🔥 {streak}d streak
+              <Flame className="w-2.5 h-2.5" /> {streak}d streak
             </span>
           )}
         </div>
@@ -646,10 +656,10 @@ function ProgramCard({ program, userProgram, locked, thumb, meta, progress }) {
                 style={{ border: "1.5px solid var(--border)", color: "var(--plum)", }}>
                 Details
               </a>
-              <button onClick={handleRestart}
+              <button onClick={handleRestart} disabled={restarting}
                 className="flex-1 py-2 rounded-xl text-xs font-semibold text-center"
-                style={{ backgroundColor: "var(--sage)", color: "white", border: "none", cursor: "pointer" }}>
-                Restart
+                style={{ backgroundColor: "var(--sage)", color: "white", border: "none", cursor: restarting ? "default" : "pointer", opacity: restarting ? 0.6 : 1 }}>
+                {restarting ? "Restarting…" : restartError ? "Retry" : "Restart"}
               </button>
             </>
           ) : (

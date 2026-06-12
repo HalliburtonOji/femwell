@@ -43,6 +43,8 @@ export default function ProgramDay() {
   const [reflectionEntry, setReflectionEntry] = useState(null);
   const [reflectionText, setReflectionText] = useState("");
   const [savingReflection, setSavingReflection] = useState(false);
+  const [reflectionError, setReflectionError] = useState(false);
+  const [taskError, setTaskError] = useState(false);
   const [loading, setLoading] = useState(true);
   const [showMilestone, setShowMilestone] = useState(false);
 
@@ -120,86 +122,105 @@ export default function ProgramDay() {
 
   const completeTask = async (taskId) => {
     if (completions.includes(taskId)) return;
+    setTaskError(false);
 
-    const activeUserProgram = await ensureUserProgram();
+    try {
+      const activeUserProgram = await ensureUserProgram();
 
-    await base44.entities.UserTaskCompletions.create({
-      user_id: user.id,
-      program_id: program.id,
-      task_id: taskId,
-      day_number: dayNumber,
-      completed_at: new Date().toISOString(),
-      skipped: false,
-    });
-
-    const updatedCompletions = [...completions, taskId];
-    setCompletions(updatedCompletions);
-
-    const requiredTasks = tasks.filter((t) => !t.is_optional);
-    const allRequiredDone = requiredTasks.length > 0 && requiredTasks.every((t) => updatedCompletions.includes(t.id));
-    if (allRequiredDone) {
-      const todayKey = new Date().toISOString().split("T")[0];
-      const yesterdayKey = getYesterdayKey();
-      const currentStreak = activeUserProgram.streak_count || 0;
-      const lastDate = activeUserProgram.last_activity_date;
-      const nextStreak = lastDate === todayKey
-        ? currentStreak || 1
-        : lastDate === yesterdayKey
-          ? currentStreak + 1
-          : 1;
-      const totalDays = allDays.length || program.duration_days || dayNumber;
-      const isLastDay = dayNumber >= totalDays;
-      const updatedProgram = await base44.entities.UserPrograms.update(activeUserProgram.id, {
-        current_day: isLastDay ? dayNumber : Math.max(activeUserProgram.current_day || 1, dayNumber + 1),
-        status: isLastDay ? "completed" : "active",
-        completed_at: isLastDay ? new Date().toISOString() : null,
-        last_activity_date: todayKey,
-        streak_count: nextStreak,
-        is_saved: true,
+      await base44.entities.UserTaskCompletions.create({
+        user_id: user.id,
+        program_id: program.id,
+        task_id: taskId,
+        day_number: dayNumber,
+        completed_at: new Date().toISOString(),
+        skipped: false,
       });
-      setUserProgram(updatedProgram);
+
+      const updatedCompletions = [...completions, taskId];
+      setCompletions(updatedCompletions);
+
+      const requiredTasks = tasks.filter((t) => !t.is_optional);
+      const allRequiredDone = requiredTasks.length > 0 && requiredTasks.every((t) => updatedCompletions.includes(t.id));
+      if (allRequiredDone) {
+        const todayKey = new Date().toISOString().split("T")[0];
+        const yesterdayKey = getYesterdayKey();
+        const currentStreak = activeUserProgram.streak_count || 0;
+        const lastDate = activeUserProgram.last_activity_date;
+        const nextStreak = lastDate === todayKey
+          ? currentStreak || 1
+          : lastDate === yesterdayKey
+            ? currentStreak + 1
+            : 1;
+        const totalDays = allDays.length || program.duration_days || dayNumber;
+        const isLastDay = dayNumber >= totalDays;
+        const updatedProgram = await base44.entities.UserPrograms.update(activeUserProgram.id, {
+          current_day: isLastDay ? dayNumber : Math.max(activeUserProgram.current_day || 1, dayNumber + 1),
+          status: isLastDay ? "completed" : "active",
+          completed_at: isLastDay ? new Date().toISOString() : null,
+          last_activity_date: todayKey,
+          streak_count: nextStreak,
+          is_saved: true,
+        });
+        setUserProgram(updatedProgram);
+      }
+    } catch (err) {
+      console.error("completeTask failed:", err);
+      setTaskError(true);
     }
   };
 
   const skipTask = async (taskId) => {
     if (completions.includes(taskId)) return;
+    setTaskError(false);
 
-    await ensureUserProgram();
-    await base44.entities.UserTaskCompletions.create({
-      user_id: user.id,
-      program_id: program.id,
-      task_id: taskId,
-      day_number: dayNumber,
-      completed_at: new Date().toISOString(),
-      skipped: true,
-    });
+    try {
+      await ensureUserProgram();
+      await base44.entities.UserTaskCompletions.create({
+        user_id: user.id,
+        program_id: program.id,
+        task_id: taskId,
+        day_number: dayNumber,
+        completed_at: new Date().toISOString(),
+        skipped: true,
+      });
 
-    setCompletions((current) => [...current, taskId]);
+      setCompletions((current) => [...current, taskId]);
+    } catch (err) {
+      console.error("skipTask failed:", err);
+      setTaskError(true);
+    }
   };
 
   const saveReflection = async () => {
     setSavingReflection(true);
-    if (reflectionEntry) {
-      const updated = await base44.entities.JournalEntries.update(reflectionEntry.id, {
-        text: reflectionText,
-        session_date: new Date().toISOString().split("T")[0],
-        prompt: programDay?.reflection_prompt || "",
-      });
-      setReflectionEntry(updated);
-    } else {
-      const created = await base44.entities.JournalEntries.create({
-        user_id: user.id,
-        content_id: program.id,
-        content_key: programKey,
-        session_date: new Date().toISOString().split("T")[0],
-        text: reflectionText,
-        program_key: programKey,
-        day_number: dayNumber,
-        prompt: programDay?.reflection_prompt || "",
-      });
-      setReflectionEntry(created);
+    setReflectionError(false);
+    try {
+      if (reflectionEntry) {
+        const updated = await base44.entities.JournalEntries.update(reflectionEntry.id, {
+          text: reflectionText,
+          session_date: new Date().toISOString().split("T")[0],
+          prompt: programDay?.reflection_prompt || "",
+        });
+        setReflectionEntry(updated);
+      } else {
+        const created = await base44.entities.JournalEntries.create({
+          user_id: user.id,
+          content_id: program.id,
+          content_key: programKey,
+          session_date: new Date().toISOString().split("T")[0],
+          text: reflectionText,
+          program_key: programKey,
+          day_number: dayNumber,
+          prompt: programDay?.reflection_prompt || "",
+        });
+        setReflectionEntry(created);
+      }
+    } catch (err) {
+      console.error("saveReflection failed:", err);
+      setReflectionError(true);
+    } finally {
+      setSavingReflection(false);
     }
-    setSavingReflection(false);
   };
 
   if (loading) {
@@ -304,7 +325,7 @@ export default function ProgramDay() {
           <div className="mt-4 rounded-[20px] p-4" style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)", boxShadow: "var(--shadow-sm)" }}>
             <div className="flex items-center justify-between mb-2">
               <p className="text-xs font-semibold" style={{ color: "var(--plum)", }}>
-                {completedTaskCount === tasks.length ? "Day complete! 🎉" : `${completedTaskCount} of ${tasks.length} tasks done`}
+                {completedTaskCount === tasks.length ? "Day complete" : `${completedTaskCount} of ${tasks.length} tasks done`}
               </p>
               <p className="text-xs" style={{ color: "var(--mauve)", }}>{Math.round(dayProgress)}%</p>
             </div>
@@ -334,6 +355,11 @@ export default function ProgramDay() {
           </div>
         ) : (
           <>
+            {taskError && (
+              <div role="alert" className="mt-6 rounded-2xl px-4 py-3 text-sm" style={{ backgroundColor: "var(--rose-dust-subtle)", border: "1px solid var(--rose-dust-light)", color: "var(--rose-dust)" }}>
+                Couldn't save that just now. Please check your connection and tap the task again.
+              </div>
+            )}
             <div className="mt-6 space-y-4">
               {tasks.map((task, index) => (
                 <ProgramTaskCard
@@ -358,6 +384,11 @@ export default function ProgramDay() {
                 onSave={saveReflection}
                 saving={savingReflection}
               />
+              {reflectionError && (
+                <p role="alert" className="mt-2 text-xs font-semibold" style={{ color: "var(--rose-dust)" }}>
+                  Couldn't save your reflection just now. Your note is still here — please try again.
+                </p>
+              )}
               {/* Connectivity — a program reflection IS a Journal entry; offer a way in */}
               {reflectionEntry && (
                 <a href={createPageUrl("Journal")} style={{ display: "inline-flex", alignItems: "center", gap: 6, marginTop: 10, fontSize: 12.5, fontWeight: 700, color: "var(--rose-dust)", textDecoration: "none" }}>
