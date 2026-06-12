@@ -4,11 +4,12 @@ import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 
 import { differenceInDays, parseISO, subMonths } from "date-fns";
 import { Loader2 } from "lucide-react";
 
+// Brand-aligned cycle-phase tones (blush · sage · gold · plum) — was an off-palette rainbow.
 const PHASE_COLORS = {
-  menstrual: "#f87171",
-  follicular: "#34d399",
-  ovulatory: "#fbbf24",
-  luteal: "#a78bfa",
+  menstrual: "#C4849A",
+  follicular: "#7A9E8E",
+  ovulatory: "#A8893F",
+  luteal: "#4A2A3A",
 };
 
 const PHASE_LABELS = {

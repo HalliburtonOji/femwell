@@ -35,10 +35,10 @@ export default function CycleMoodPatternChart({ data }) {
     plugins: {
       legend: {
         position: "top",
-        labels: { usePointStyle: true, boxWidth: 8, color: "#8A7E88", font: { size: 11 } },
+        labels: { usePointStyle: true, boxWidth: 8, color: "#6B5B4E", font: { size: 11 } },
       },
       tooltip: {
-        backgroundColor: "rgba(42,32,53,0.92)",
+        backgroundColor: "rgba(58,44,26,0.92)",
         titleColor: "#fff",
         bodyColor: "#fff",
         cornerRadius: 12,
@@ -47,13 +47,13 @@ export default function CycleMoodPatternChart({ data }) {
     scales: {
       x: {
         grid: { display: false },
-        ticks: { color: "#8A7E88", font: { size: 11 } },
+        ticks: { color: "#6B5B4E", font: { size: 11 } },
         border: { display: false },
       },
       y: {
         min: 0,
         max: 10,
-        ticks: { stepSize: 2, color: "#8A7E88", font: { size: 11 } },
+        ticks: { stepSize: 2, color: "#6B5B4E", font: { size: 11 } },
         grid: { color: "rgba(237,232,228,0.8)" },
         border: { display: false },
       },

@@ -15,11 +15,11 @@ const WHOLENESS_LABELS = {
 // MOOD_FACES + EntryReader/CycleMirror MOOD_WORD): mood_rating is 1-5, Low->Bright.
 // The old 6-value Calm/Stressed/Angry map mislabelled every logged mood.
 const MOOD_MAP = {
-  1: { label: "Low",     accent: "#8A96B8"     },
-  2: { label: "Down",    accent: "#9B8B7A"     },
+  1: { label: "Low",     accent: "#6B5B4E"      },
+  2: { label: "Down",    accent: "#9B8B7A"      },
   3: { label: "Neutral", accent: "var(--mauve)" },
-  4: { label: "Good",    accent: "var(--sage)" },
-  5: { label: "Bright",  accent: "#C4884A"     },
+  4: { label: "Good",    accent: "var(--sage)"  },
+  5: { label: "Bright",  accent: "var(--gold)"  },
 };
 
 const card = {
