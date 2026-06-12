@@ -22,57 +22,58 @@ small{color:var(--muted)}
 ul{margin:6px 0 6px 0;padding-left:20px}li{margin:3px 0}
 </style></head><body><div class="wrap">
 
-<h1>App Health Audit — Scan 1</h1>
-<div class="sub">The write-failure / hang class, app-wide. 2026-06-12. Companion to the posting saga (commits 8d4f79f · d1eeafc · 661e338). <b>Method:</b> findings are by <b>code inspection</b> (RLS, unguarded awaits, unindexed sorts, awaited reads). The local mock harness hid the posting bug, so nothing here is "verified working" — write-path fixes are tagged <b>needs live-verify</b> (Halli confirms against the live app).</div>
+<h1>App Health Audit — Scan 1 + 2</h1>
+<div class="sub">The write-failure / hang class, app-wide, plus a functional sweep. 2026-06-12. Companion to the posting saga (8d4f79f · d1eeafc · 661e338). <b>Method:</b> findings by <b>code inspection</b>. The local mock harness hid the posting bug, so every write-path fix is tagged <b>needs live-verify</b> — Halli runs the real action on the live backend.</div>
 
 <div class="legend card plum">
-<b>Severity:</b> <span><span class="tag b">BLOCKER</span> breaks a feature</span>
-<span><span class="tag h">HIGH</span> latent hang/fail under load</span>
-<span><span class="tag m">MED</span></span>
-<span><span class="tag l">LOW</span></span>
-&nbsp;·&nbsp; <b>Action:</b> <span><span class="tag fix">CLEAR-FIX</span> I fix it</span> <span><span class="tag halli">NEEDS-HALLI</span> judgment/deploy</span>
+<b>Severity:</b> <span><span class="tag b">BLOCKER</span></span> <span><span class="tag h">HIGH</span></span> <span><span class="tag m">MED</span></span> <span><span class="tag l">LOW</span></span>
+&nbsp;·&nbsp; <span><span class="tag fix">FIXED</span></span> <span><span class="tag halli">NEEDS-HALLI</span></span>
 </div>
 
-<h2>SCAN 1(a) — RLS / write-permission audit · VERDICT: <span class="tag fix">CLEAN</span></h2>
-<div class="card ok"><b>No entity currently denies a legitimate write.</b> Enumerated all <b>134</b> entities (parsed, comment-stripped).
-<ul>
-<li><b>22 entities</b> carry the write-lock, now <code>role:"admin"</code> on create/update/delete — <b>asServiceRole (admin-level) satisfies it; direct clients (role:"user") are blocked</b> (the intended B3 protection). <b>Zero</b> <code>role:"system"</code> remain (that was the app-wide bug — it denied the service too).</li>
-<li><b>112 entities</b> have no RLS block → platform default → authenticated owner writes + service writes both succeed (JournalEntries, DailyCheckins, PlannerItems, MealLog, SealedLetters, UserProfile, …).</li>
-<li><b>Read policies correct:</b> 13 of the locked entities keep <b>public read</b> (lurkable rooms/wall/wisdom); 9 are <b>read-locked to admin</b> (private peer data: Witness*, Twin*, *Membership, VoiceNote, GoalContribution, IngestErrorLog). Confirmed <b>no client code reads any of those 9 directly</b> (the only reference is documentation text in a FoundersOS doc) — all their reads go through service functions, so the lock doesn't break a client read.</li>
-</ul>
-<small>Residual to watch (LOW): the 112 default entities permit a signed-in client to write its <i>own</i> rows directly — fine for personal data, but if any should be service-only that's a separate hardening pass (not a write-failure).</small></div>
+<div class="card ok"><b>STATUS: B1 + B2 + Scan-2 first pass COMPLETE.</b> All 59 interactive functions guarded; 8 hot entities indexed; the JessConversation silent-no-save bug fixed; 11 client write-flows de-gated. Awaiting one consolidated deploy + Halli's live write-sweep. Open flags listed at the end.</div>
 
-<h2>SCAN 1(b) — function hang audit · VERDICT: <span class="tag h">SYSTEMIC RISK</span></h2>
+<h2>SCAN 1(a) — RLS / write-permission · <span class="tag fix">CLEAN</span></h2>
+<div class="card ok"><b>No entity denies a legitimate write.</b> All 134 entities enumerated. 22 are <code>role:admin</code> (service writes ok, client blocked — intended); 112 platform-default (owner + service ok); <b>zero</b> <code>role:system</code> remain. The 9 read-locked private entities are never read directly by the client (confirmed) — reads correct (13 public-lurkable / 9 admin-private).
+<br><small>Residual (LOW): the 112 default entities let a client write its own rows directly — fine for personal data; a service-only hardening pass is separate.</small></div>
 
-<h3>B1 — Unguarded awaited calls in interactive functions <span class="tag h">HIGH</span> <span class="tag fix">CLEAR-FIX (batched)</span></h3>
-<div class="card warn"><b>49 of 59</b> client-invoked functions have an awaited platform/entity call (get/filter/create/update/delete) or external <code>fetch</code>/<code>InvokeLLM</code> that is <b>NOT timeout-guarded</b>. This is the exact posting class: a plain <code>.catch()</code> only catches a <i>throw</i> — a call that <b>hangs</b> never settles, wedging the whole function (the user sees an endless spinner). Only the 5 community write fns + jessSupport were guarded before this audit.</div>
-<table><tr><th>Batch</th><th>Functions</th><th>State</th></tr>
-<tr><td><b>1 — Echo + Community react/report</b></td><td>reactCommunity, reportCommunity, reactEcho, reportEcho, retractEcho <small>(retractEcho had a <b>bare uncaught</b> <code>await delete</code>)</small></td><td><span class="tag fix">FIXED</span> <code>af70814</code> · needs live-verify</td></tr>
-<tr><td>2 — Memberships</td><td>joinCircle, leaveCircle, joinClub, leaveClub, createClub</td><td><span class="tag halli">QUEUED</span> next batch</td></tr>
-<tr><td>3 — Peer 1:1 (Witness/Twin)</td><td>postWitnessRequest, claimWitness, respondWitness, cancelWitness, flagWitness, deliverWitnessKey, getWitnessStatus, joinTwin, postTwinEntry, getTwinDay, cancelTwin</td><td><span class="tag halli">QUEUED</span></td></tr>
-<tr><td>4 — Pool / game / voice</td><td>collectivePool, openGameRound, markSessionComplete, postVoiceNote</td><td><span class="tag halli">QUEUED</span></td></tr>
-<tr><td>5 — AI / content-gen</td><td>generate* (×14), askStars, analyzeMeal, expandContent, guideActions, getPartnerView, fetchGutenbergBook, voiceTTS, generateAudio, … — guard the <code>InvokeLLM</code>/<code>fetch</code> so a slow model fails gracefully, not forever</td><td><span class="tag halli">QUEUED</span></td></tr>
+<h2>SCAN 1(b) — function hang audit</h2>
+<h3>B1 — every interactive function timeout-guarded <span class="tag fix">FIXED</span> · needs live-verify</h3>
+<div class="card ok"><b>Was: 49/59 functions with unguarded awaited calls. Now: 0.</b> Every awaited entity read/write, external <code>fetch</code>, and <code>InvokeLLM</code>/<code>GenerateImage</code> is guarded (via <code>withTimeout</code>, <code>Promise.race</code>, or <code>AbortSignal</code>). Verified by re-running the guard audit (0 unguarded lines) + deno check.</div>
+<table><tr><th>Batch</th><th>Functions</th><th>Commit</th></tr>
+<tr><td>1 — Echo + Community react/report</td><td>reactCommunity, reportCommunity, reactEcho, reportEcho, retractEcho <small>(retractEcho had a bare uncaught <code>await delete</code>)</small></td><td><code>af70814</code></td></tr>
+<tr><td>2 — Membership / echo / game / QOTD / pool / screen</td><td>joinCircle, leaveCircle, joinClub, leaveClub, createClub, openGameRound, markSessionComplete, postEcho, answerQotd, collectivePool, screenContent</td><td><code>a9268eb</code></td></tr>
+<tr><td>3 — Witness peer-support</td><td>postWitnessRequest, claimWitness, respondWitness, cancelWitness, flagWitness, deliverWitnessKey, getWitnessStatus</td><td><code>c5ce77b</code></td></tr>
+<tr><td>4 — Twin / voice / partner / Jess</td><td>joinTwin, postTwinEntry, getTwinDay, cancelTwin, postVoiceNote, getPartnerView, jessSupport</td><td><code>b2620c5</code></td></tr>
+<tr><td>5 — AI / content-gen + guideActions + checkout</td><td>generate* ×11, askStars, analyzeMeal, expandContent, guideActions (22 calls), fetchGutenbergBook, voiceTTS, generateAudio, guideVoiceSession, generateNextStoryItem, ensure/finalizeStoryPack, createOneShotCheckout (Stripe @15s, no retries, charge logic untouched)</td><td><code>a4fc91a</code></td></tr>
 </table>
-<small>Fix pattern (proven on posting): wrap every awaited platform/external call in <code>withTimeout(p, ms)</code> (race against a timer) — reads fail-open (skip + proceed), writes return a clean 500. Guards are the <b>universal</b> protection: they hold regardless of index state or model latency.</small>
+<small>Reads fail-open (2.5s → skip + proceed); writes return a clean 500 (6s); LLM/gen 20s; fetch 8s. AI-gen functions are JS-in-<code>.ts</code> with pre-existing type noise (0 new errors introduced; Base44 deploys via SWC).</small>
 
-<h3>B2 — App-wide unindexed sorts <span class="tag h">HIGH</span> <span class="tag halli">NEEDS-HALLI (prioritize)</span></h3>
-<div class="card warn"><b>~100 sorted reads across the app sort on a field with NO index.</b> An unindexed sort is what tipped the posting rate-cap read into a 27s+ hang. Only the <b>10 community entities</b> indexed in <code>661e338</code> are covered; everything else sorts unindexed — e.g. <code>DailyCheckins</code> by <code>date</code> ×14, <code>LifestyleItems</code> by <code>published_at</code> ×15, <code>UserProfile</code> by <code>created_date</code> ×9 / <code>date</code> ×9, <code>JournalEntries</code>, <code>MealLog</code>, <code>HabitLogs</code>, <code>Programs</code>, <code>UserPrograms</code>, <code>MedicationLogs</code>, <code>SymptomLogs</code>, <code>CycleEvents</code>, <code>ContentItems</code>…
-<br><br><b>Judgment call (why not auto-add 100 indexes):</b> the app runs daily on these reads, so unindexed sorts <i>degrade/crawl</i> but don't <i>universally</i> hang — the posting hang needed a large table + the RLS-denial interaction to tip over. So:
+<h3>B2 — sort indexes on the hot-path entities <span class="tag fix">FIXED</span> (<code>da31c53</code>) · needs live-verify</h3>
+<div class="card ok">8 highest-traffic entities had <b>no indexes block at all</b> and were sorted on every read (the unindexed-sort class behind the posting hang). Added the hot sort fields (targeted, not all ~100): <code>DailyCheckins</code>(date, created_date), <code>JournalEntries</code>(created_date, session_date), <code>MealLog</code>(created_date, day_key), <code>UserProfile</code>(created_date), <code>HabitLogs</code>(date, created_date), <code>LifestyleItems</code>(published_at, created_date), <code>Programs</code>(created_date), <code>UserPrograms</code>(created_date).
+<br><small><b>Deliberately NOT done</b> (flagged, needs-Halli): the remaining ~90 entities with unindexed sorts. The B1 guards make these safe (can't hang); add indexes only where live latency shows slowness — say the word and I emit the lines.</small></div>
+
+<h2>SCAN 2 — functional sweep</h2>
+<h3>S2.1 — JessConversation silent no-save <span class="tag b">BLOCKER</span> <span class="tag fix">FIXED</span> (<code>cd6bbc9</code>)</h3>
+<div class="card warn"><code>JessVoiceMode</code> wrote to <code>entities.JessConversations</code> (PLURAL — nonexistent) with optional chaining <code>?.create</code>, so it was <code>undefined</code>, the call <b>silently no-op'd, and voice sessions were never saved</b> (no error). Fixed to <code>JessConversation</code> (the real entity) + added the two fields the payload needs (<code>conversation_type</code>, <code>transcript</code>) so the full transcript persists. Needs live-verify (run a voice session → it appears in Jess history).</div>
+
+<h3>S2.2 — gate-UI-on-slow-read (B3) <span class="tag m">MED</span> <span class="tag fix">FIXED</span> (<code>cd6bbc9</code>)</h3>
+<div class="card">11 submit handlers awaited a refetch after their write, freezing the spinner/form on the read. Converted each <code>await loadX()</code> → background <code>loadX()</code> (write still awaited; nothing after depends on the read): SymptomDiarySection, ShoppingListTab, TrackTab, NutritionProgressTab, KickTrackerSection, KickCounterCard, MedReminderSection, MenopauseReportCard, DailyPlanCard, PainMapSubTab, GuideThreadSidebar. (Community posts/comments were already optimistic, 661e338.) B2 indexes also speed these reads.</div>
+
+<h3>S2.3 — referenced-but-undeployed entities <span class="tag h">HIGH</span> <span class="tag halli">NEEDS-HALLI</span></h3>
+<div class="card warn">3 entities are read/written by the client but have <b>no repo <code>.jsonc</code></b> — either deployed-via-UI (untracked) or genuinely missing (the feature silently fails). <b>Confirm on Base44:</b>
 <ul>
-<li><b>Primary fix = the B1 guards</b> (universal, already in motion) — no read can wedge a function regardless of index.</li>
-<li><b>Indexes = targeted optimization</b> where live latency shows slowness. Recommend a prioritized add (highest-traffic + largest tables first): <code>DailyCheckins.date</code>, <code>JournalEntries.created_date/session_date</code>, <code>MealLog</code>, <code>UserProfile</code>, <code>HabitLogs.date</code>, <code>LifestyleItems.published_at</code>, <code>Programs</code>, <code>UserPrograms</code>. <b>Halli decides scope</b> (each is an additive, low-risk schema change like the community ones; cost is the entity sync + your call on which tables are big enough to matter).</li>
+<li><code>AtelierLetters</code> ← AtelierReading.jsx (filter + draft)</li>
+<li><code>HoroscopePersistedClassification</code> ← useRedWhiteMoon.js (filter)</li>
+<li><code>PodcastListens</code> ← PodcastPlayerProvider.jsx (filter + update)</li>
 </ul>
-<small>Full per-entity/field map captured in the audit run; I can emit the exact index lines for any subset you greenlight.</small></div>
+If deployed: commit their <code>.jsonc</code> to the repo for source-of-truth. If not: those features are broken. (The 4th, <code>JessConversations</code>, was the typo fixed in S2.1.)</div>
 
-<h3>B3 — Client write-flows gating success on a slow read <span class="tag m">MED</span> <span class="tag fix">CLEAR-FIX</span></h3>
-<div class="card">The "Posting…" hang class on the <i>client</i>. Community posts/comments/circle/club/club-notes were fixed to optimistic-insert + background refetch (<code>661e338</code>). Next: sweep other pages' submit handlers (journal, planner, logs, nutrition) for <code>await reload()</code> after a write that gates the UI — convert to optimistic where it's a write. <span class="tag halli">part of SCAN 2</span></div>
+<h2>Remaining flags (next wave)</h2>
+<div class="card plum"><ul>
+<li><b>B2 index tail</b> — ~90 more entities sort unindexed; guarded so safe; add per live latency (needs-Halli scope).</li>
+<li><b>Scan-2 deep UI pass</b> — a per-page audit of dead/mis-wired buttons + missing empty/loading/<b>error</b> states is its own wave (this pass covered the programmatic + write-flow classes). Recommend a page-by-page sweep next.</li>
+<li><b>Service-only hardening</b> — decide which default-RLS entities (if any) should block direct client writes.</li>
+</ul></div>
 
-<h2>Method &amp; next waves</h2>
-<div class="card plum">
-<b>This wave delivered:</b> 1(a) verdict (clean) · 1(b) full risk map · batch-1 guards fixed (<code>af70814</code>).<br>
-<b>Next waves:</b> B1 batches 2–5 (guards, committed per batch for you to deploy+verify) · B2 index subset (on your greenlight) · <b>SCAN 2</b> (dead/mis-wired buttons, missing empty/loading/error states, referenced-but-undeployed entities, awaited fire-and-forget) across all pages.<br>
-<b>Live-verify, not mock:</b> every write-path fix is tagged needs-live-verify — Halli runs the real end-to-end action; the mock harness is not trusted to declare a write working.
-</div>
-
-<small>FemWell — App Health Audit · Scan 1 · 2026-06-12. Companion to STATUS.md posting-saga close-out.</small>
+<small>FemWell — App Health Audit · Scan 1 + 2 first pass · 2026-06-12. Commits: af70814 · a9268eb · c5ce77b · b2620c5 · a4fc91a (B1) · da31c53 (B2) · cd6bbc9 (Scan 2) · 453378f (report). Awaiting consolidated deploy + live write-sweep.</small>
 </div></body></html>
