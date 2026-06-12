@@ -11,6 +11,14 @@
 
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 
+// Timeout guard — an awaited platform read/write that HANGS would wedge the function.
+function withTimeout(p: Promise<any>, ms: number, label: string): Promise<any> {
+  return new Promise((resolve, reject) => {
+    const t = setTimeout(() => reject(new Error(`${label}-timeout-${ms}ms`)), ms);
+    p.then((v) => { clearTimeout(t); resolve(v); }, (e) => { clearTimeout(t); reject(e); });
+  });
+}
+
 Deno.serve(async (req) => {
   const base44 = createClientFromRequest(req);
   const me = await base44.auth.me().catch(() => null);
@@ -28,7 +36,7 @@ Deno.serve(async (req) => {
   if (!author_hash) return Response.json({ error: 'author_hash required' }, { status: 400 });
 
   const sb = base44.asServiceRole;
-  const echo = await sb.entities.Echo.get(echo_id).catch(() => null);
+  const echo = await withTimeout(sb.entities.Echo.get(echo_id), 2500, 'get').catch(() => null);
   if (!echo) return Response.json({ error: 'Not found' }, { status: 404 });
 
   // Ownership proof: the hash on the row must match the caller's hash (admins exempt).
@@ -36,6 +44,8 @@ Deno.serve(async (req) => {
     return Response.json({ error: 'Not your echo' }, { status: 403 });
   }
 
-  await sb.entities.Echo.delete(echo_id);
+  // Was a bare uncaught `await delete` — a hang/throw here would wedge the function.
+  const del = await withTimeout(sb.entities.Echo.delete(echo_id), 6000, 'delete').then(() => true).catch(() => false);
+  if (!del) return Response.json({ error: 'Delete failed' }, { status: 500 });
   return Response.json({ ok: true });
 });

@@ -10,6 +10,15 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 
 const KINDS = ['held', 'me too', 'hear you', 'saved'];
 
+// Timeout guard — an awaited platform read/write that HANGS would wedge the function
+// (a plain .catch only catches a throw). Race each against a timeout so it always returns.
+function withTimeout(p: Promise<any>, ms: number, label: string): Promise<any> {
+  return new Promise((resolve, reject) => {
+    const t = setTimeout(() => reject(new Error(`${label}-timeout-${ms}ms`)), ms);
+    p.then((v) => { clearTimeout(t); resolve(v); }, (e) => { clearTimeout(t); reject(e); });
+  });
+}
+
 Deno.serve(async (req) => {
   const base44 = createClientFromRequest(req);
   const me = await base44.auth.me().catch(() => null);
@@ -27,15 +36,15 @@ Deno.serve(async (req) => {
 
   const sb = base44.asServiceRole;
   // Dedup: same reactor + target + kind already exists → no-op.
-  const existing = await sb.entities.Reaction
-    .filter({ target_id: String(target_id), author_hash: String(author_hash) }, undefined, 20).catch(() => []);
+  const existing = await withTimeout(sb.entities.Reaction
+    .filter({ target_id: String(target_id), author_hash: String(author_hash) }, undefined, 20), 2500, 'dedupe-read').catch(() => []);
   if ((Array.isArray(existing) ? existing : []).some((r: any) => r.kind === k)) {
     return Response.json({ ok: true, deduped: true });
   }
 
-  const ok = await sb.entities.Reaction.create({
+  const ok = await withTimeout(sb.entities.Reaction.create({
     target_type: tt, target_id: String(target_id), author_hash: String(author_hash), kind: k,
-  }).catch((e: any) => { console.error('reactCommunity create failed:', e?.message || e); return null; });
+  }), 6000, 'create').catch((e: any) => { console.error('reactCommunity create failed:', e?.message || e); return null; });
   if (!ok) return Response.json({ error: 'Write failed' }, { status: 500 });
   return Response.json({ ok: true });
 });

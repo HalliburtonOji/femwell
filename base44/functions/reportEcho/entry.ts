@@ -11,6 +11,14 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 
 const REPORT_AUTOHIDE_THRESHOLD = 2;
 
+// Timeout guard — an awaited platform read/write that HANGS would wedge the function.
+function withTimeout(p: Promise<any>, ms: number, label: string): Promise<any> {
+  return new Promise((resolve, reject) => {
+    const t = setTimeout(() => reject(new Error(`${label}-timeout-${ms}ms`)), ms);
+    p.then((v) => { clearTimeout(t); resolve(v); }, (e) => { clearTimeout(t); reject(e); });
+  });
+}
+
 Deno.serve(async (req) => {
   const base44 = createClientFromRequest(req);
   const me = await base44.auth.me().catch(() => null);
@@ -25,12 +33,12 @@ Deno.serve(async (req) => {
   if (!echo_id) return Response.json({ error: 'echo_id required' }, { status: 400 });
 
   const sb = base44.asServiceRole;
-  const echo = await sb.entities.Echo.get(echo_id).catch(() => null);
+  const echo = await withTimeout(sb.entities.Echo.get(echo_id), 2500, 'get').catch(() => null);
   if (!echo) return Response.json({ error: 'Not found' }, { status: 404 });
 
   const report_count = (echo.report_count || 0) + 1;
   const hidden = report_count >= REPORT_AUTOHIDE_THRESHOLD;
-  const ok = await sb.entities.Echo.update(echo_id, { report_count, hidden })
+  const ok = await withTimeout(sb.entities.Echo.update(echo_id, { report_count, hidden }), 6000, 'update')
     .catch((e: any) => { console.error('reportEcho update failed:', e?.message || e); return null; });
   if (!ok) return Response.json({ error: 'Write failed' }, { status: 500 });
   return Response.json({ ok: true, report_count, hidden });
