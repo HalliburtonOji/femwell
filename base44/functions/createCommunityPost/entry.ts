@@ -22,67 +22,24 @@ const CRISIS_PATTERNS = [
 ];
 function isCrisis(text: string): boolean { return CRISIS_PATTERNS.some((re) => re.test(text || '')); }
 
-// M2 moderation (self-contained, mirrors addComment). Whole-life women's community:
-// clinical/reproductive language is allowlisted; crisis routes to support; clearly
-// harmful posts are rejected at creation (never stored); borderline → flagged for review.
+// PUBLISH-THEN-SCREEN (re-architecture, 2026-06-12). The write path runs ONLY fast LOCAL
+// checks — crisis intercept + a keyword floor — with NO blocking network call. The post is
+// created and returned immediately (<1.5s target); OpenAI moderation runs OUT-OF-BAND
+// afterwards via the `screenContent` function (the client fires it fire-and-forget right
+// after a successful create), which pulls anything harmful (hidden:true) or flags borderline.
+// This removes the posting hang at the root — there is NO awaited external call on the write
+// path — and means no paid/blocking API per post.
 const BANNED = [
   'idiot', 'stupid', 'shut up', 'loser', 'ugly', 'pathetic', 'hate you', 'shut it',
   'kill yourself', 'kys', 'slut', 'whore', 'bitch', 'retard',
 ];
-const HEALTH_VOCAB = [
-  'period', 'menstru', 'menopaus', 'perimenopaus', 'ovula', 'cycle', 'cramp', 'pms', 'pmdd',
-  'pregnan', 'miscarriage', 'miscarry', 'stillbirth', 'postpartum', 'breastfeed', 'nipple',
-  'cervix', 'cervical', 'vagina', 'vulva', 'discharge', 'uterus', 'endometri', 'fibroid',
-  'pcos', 'fertility', 'ttc', 'ivf', 'hormone', 'oestrogen', 'estrogen', 'progesterone',
-  'libido', 'sex drive', 'incontinence', 'pelvic', 'smear', 'mammogram', 'hrt', 'coil', 'iud',
-  'abortion', 'termination', 'bleeding', 'spotting', 'hot flush', 'night sweat', 'gp', 'nhs',
-];
-const REMOVE_CATEGORIES = [
-  'harassment', 'harassment/threatening', 'hate', 'hate/threatening',
-  'violence', 'violence/graphic', 'sexual/minors',
-];
-function isHealthContext(text: string): boolean {
+// Local-only verdict (instant, no network): crisis (route to support, never post) |
+// remove (a clear slur/abuse — rejected at creation) | ok (publish, screen post-hoc).
+function localScreen(text: string): { crisis?: boolean; remove?: boolean; ok?: boolean } {
+  if (isCrisis(text)) return { crisis: true };
   const t = (text || '').toLowerCase();
-  return HEALTH_VOCAB.some((w) => t.includes(w));
-}
-async function openaiModerate(text: string): Promise<{ available: boolean; flagged: boolean; categories: Record<string, boolean> }> {
-  const key = Deno.env.get('OPENAI_API_KEY');
-  if (!key) return { available: false, flagged: false, categories: {} };
-  try {
-    // Hard 4s timeout: a slow/hung moderation endpoint must NEVER block the post path.
-    // On abort the fetch throws → caught below → caller falls back to the keyword floor.
-    const ctrl = new AbortController();
-    const timer = setTimeout(() => ctrl.abort(), 4000);
-    const r = await fetch('https://api.openai.com/v1/moderations', {
-      method: 'POST',
-      headers: { 'Authorization': `Bearer ${key}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ model: 'omni-moderation-latest', input: String(text || '').slice(0, 4000) }),
-      signal: ctrl.signal,
-    }).finally(() => clearTimeout(timer));
-    if (!r.ok) return { available: false, flagged: false, categories: {} };
-    const j = await r.json();
-    const res = j?.results?.[0] || {};
-    return { available: true, flagged: !!res.flagged, categories: res.categories || {} };
-  } catch { return { available: false, flagged: false, categories: {} }; }
-}
-async function moderate(text: string): Promise<{ crisis?: boolean; remove?: boolean; flag?: boolean; ok?: boolean; via?: string }> {
-  if (isCrisis(text)) return { crisis: true, via: 'crisis' };
-  const ai = await openaiModerate(text);
-  if (ai.available && ai.flagged) {
-    if (ai.categories['self-harm'] || ai.categories['self-harm/intent'] || ai.categories['self-harm/instructions']) {
-      return { crisis: true, via: 'openai-self-harm' };
-    }
-    const hit = REMOVE_CATEGORIES.filter((c) => ai.categories[c]);
-    if (hit.length) {
-      const onlySexual = hit.every((c) => c.startsWith('sexual')) && !hit.includes('sexual/minors');
-      if (onlySexual && isHealthContext(text)) return { flag: true, via: 'openai-health-review' };
-      return { remove: true, via: 'openai:' + hit.join(',') };
-    }
-    return { flag: true, via: 'openai-flag' };
-  }
-  const t = (text || '').toLowerCase();
-  if (BANNED.some((w) => t.includes(w))) return { remove: true, via: 'keyword' };
-  return { ok: true, via: ai.available ? 'openai-clean' : 'keyword-clean' };
+  if (BANNED.some((w) => t.includes(w))) return { remove: true };
+  return { ok: true };
 }
 
 const ROOMS = ['lounge', 'circles', 'love', 'money', 'style', 'lighter', 'health'];
@@ -135,10 +92,11 @@ Deno.serve(async (req) => {
   if (!text) return Response.json({ error: 'Empty post' }, { status: 400 });
   if (text.length > MAX_LEN) return Response.json({ error: 'Post too long' }, { status: 400 });
 
-  const mod = await moderate(text);
+  const mod = localScreen(text);
   if (mod.crisis) return Response.json({ ok: false, intercept: true }, { status: 200 });
-  // A clearly-harmful post is the thread root — there is nothing to tombstone, so it is
-  // rejected at creation and never stored. Jess declines it gently on the client.
+  // A clearly-harmful (local keyword) post is the thread root — nothing to tombstone, so it
+  // is rejected at creation and never stored. Subtler harm is caught moments later by the
+  // out-of-band screenContent pass. Jess declines it gently on the client.
   if (mod.remove) return Response.json({ ok: false, removed: true }, { status: 200 });
 
   const sb = base44.asServiceRole;
@@ -156,7 +114,7 @@ Deno.serve(async (req) => {
     comments_mode: comments_mode === 'reaction' ? 'reaction' : 'open',
     by: 'member',
     domain: domain ? String(domain).slice(0, 40) : undefined,
-    flagged: !!mod.flag,   // borderline: visible, but queued for human review
+    flagged: false,   // borderline flagging now happens post-publish via screenContent
     report_count: 0, hidden: false,
   }).catch((e: any) => { console.error('createCommunityPost create failed:', e?.message || e); return null; });
   if (!post) return Response.json({ error: 'Write failed' }, { status: 500 });

@@ -26,88 +26,19 @@ const BANNED = [
   'kill yourself', 'kys', 'slut', 'whore', 'bitch', 'retard',
 ];
 
-// Health-vocab allowlist (M2). This is a women's whole-life community: clinical and
-// reproductive language is the POINT, never a violation. If OpenAI flags a comment but
-// the only categories are self-harm-adjacent OR the text reads as health discussion, we
-// do NOT auto-remove — crisis routing (above) handles genuine self-harm, and borderline
-// health talk is queued for human review (flagged:true) rather than silently deleted.
-const HEALTH_VOCAB = [
-  'period', 'menstru', 'menopaus', 'perimenopaus', 'ovula', 'cycle', 'cramp', 'pms', 'pmdd',
-  'pregnan', 'miscarriage', 'miscarry', 'stillbirth', 'postpartum', 'breastfeed', 'nipple',
-  'cervix', 'cervical', 'vagina', 'vulva', 'discharge', 'uterus', 'endometri', 'fibroid',
-  'pcos', 'fertility', 'ttc', 'ivf', 'hormone', 'oestrogen', 'estrogen', 'progesterone',
-  'libido', 'sex drive', 'incontinence', 'pelvic', 'smear', 'mammogram', 'hrt', 'coil', 'iud',
-  'abortion', 'termination', 'bleeding', 'spotting', 'hot flush', 'night sweat', 'gp', 'nhs',
-];
-// Categories that warrant removal in a kind, anonymous community. self_harm is handled by
-// crisis routing → support (never removal). sexual health talk is allowlisted above.
-const REMOVE_CATEGORIES = [
-  'harassment', 'harassment/threatening', 'hate', 'hate/threatening',
-  'violence', 'violence/graphic', 'sexual/minors',
-];
-
-function isHealthContext(text: string): boolean {
+// PUBLISH-THEN-SCREEN (re-architecture, 2026-06-12). The comment write path runs ONLY fast
+// LOCAL checks — crisis intercept + a keyword floor — with NO blocking network call. The
+// comment is created and returned immediately; OpenAI moderation runs OUT-OF-BAND afterwards
+// via `screenContent` (the client fires it fire-and-forget post-create), which removes
+// anything harmful (status:'removed', body withheld) or flags borderline. No awaited external
+// call on the write path → no hang, no per-comment paid API.
+// Local-only verdict (instant, no network): crisis (route to support, never post) |
+// remove (a clear slur/abuse — stored as a tombstone) | ok (publish, screen post-hoc).
+function localScreen(text: string): { crisis?: boolean; remove?: boolean; ok?: boolean } {
+  if (CRISIS_PATTERNS.some((re) => re.test(text || ''))) return { crisis: true };
   const t = (text || '').toLowerCase();
-  return HEALTH_VOCAB.some((w) => t.includes(w));
-}
-
-// OpenAI Moderation API (omni-moderation-latest). Returns availability so the caller can
-// fall back to the keyword floor if the key is missing or the API errors (M1-safe).
-async function openaiModerate(text: string): Promise<{
-  available: boolean; flagged: boolean; categories: Record<string, boolean>;
-}> {
-  const key = Deno.env.get('OPENAI_API_KEY');
-  if (!key) return { available: false, flagged: false, categories: {} };
-  try {
-    // Hard 4s timeout: a slow/hung moderation endpoint must NEVER block the comment path.
-    // On abort the fetch throws → caught below → caller falls back to the keyword floor.
-    const ctrl = new AbortController();
-    const timer = setTimeout(() => ctrl.abort(), 4000);
-    const r = await fetch('https://api.openai.com/v1/moderations', {
-      method: 'POST',
-      headers: { 'Authorization': `Bearer ${key}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ model: 'omni-moderation-latest', input: String(text || '').slice(0, 4000) }),
-      signal: ctrl.signal,
-    }).finally(() => clearTimeout(timer));
-    if (!r.ok) return { available: false, flagged: false, categories: {} };
-    const j = await r.json();
-    const res = j?.results?.[0] || {};
-    return { available: true, flagged: !!res.flagged, categories: res.categories || {} };
-  } catch {
-    return { available: false, flagged: false, categories: {} };
-  }
-}
-
-// Verdict: crisis (route to support, never post) | remove (tombstone) | flag (visible,
-// queued for human review) | ok (visible). Order: crisis first, then OpenAI, then the
-// keyword floor as backstop.
-async function moderate(text: string): Promise<{
-  crisis?: boolean; remove?: boolean; flag?: boolean; ok?: boolean; via?: string;
-}> {
-  if (CRISIS_PATTERNS.some((re) => re.test(text || ''))) return { crisis: true, via: 'crisis' };
-
-  const ai = await openaiModerate(text);
-  if (ai.available && ai.flagged) {
-    const hit = REMOVE_CATEGORIES.filter((c) => ai.categories[c]);
-    // self_harm without crisis-keyword: route to support rather than remove.
-    if (ai.categories['self-harm'] || ai.categories['self-harm/intent'] || ai.categories['self-harm/instructions']) {
-      return { crisis: true, via: 'openai-self-harm' };
-    }
-    if (hit.length) {
-      // Allowlist guard: sexual category alone, in clear health context, is not removed —
-      // it's queued for review instead (avoids deleting legit sexual-health discussion).
-      const onlySexual = hit.every((c) => c.startsWith('sexual')) && !hit.includes('sexual/minors');
-      if (onlySexual && isHealthContext(text)) return { flag: true, via: 'openai-health-review' };
-      return { remove: true, via: 'openai:' + hit.join(',') };
-    }
-    // flagged but not in a removal category (e.g. low-grade sexual) → review queue.
-    return { flag: true, via: 'openai-flag' };
-  }
-
-  // Keyword floor as backstop (also covers the no-key fallback path).
-  const t = (text || '').toLowerCase();
-  if (BANNED.some((w) => t.includes(w))) return { remove: true, via: 'keyword' };
-  return { ok: true, via: ai.available ? 'openai-clean' : 'keyword-clean' };
+  if (BANNED.some((w) => t.includes(w))) return { remove: true };
+  return { ok: true };
 }
 
 const MAX_LEN = 400;
@@ -136,10 +67,9 @@ Deno.serve(async (req) => {
     return Response.json({ error: 'reaction-only' }, { status: 409 });
   }
 
-  const mod = await moderate(text);
+  const mod = localScreen(text);
   if (mod.crisis) return Response.json({ ok: false, intercept: true }, { status: 200 });
-  const status = mod.remove ? 'removed' : 'visible';
-  const flagged = !!mod.flag;   // borderline: visible, but queued for human review
+  const status = mod.remove ? 'removed' : 'visible';   // local keyword removal only; subtler harm caught post-publish
 
   const comment = await sb.entities.Comment.create({
     post_id: String(post_id),
@@ -147,7 +77,7 @@ Deno.serve(async (req) => {
     body: status === 'removed' ? '' : text,   // never persist the harmful body
     by: 'member',
     status,
-    flagged,
+    flagged: false,   // borderline flagging now happens post-publish via screenContent
     report_count: 0, hidden: false,
   }).catch((e: any) => { console.error('addComment create failed:', e?.message || e); return null; });
   if (!comment) return Response.json({ error: 'Write failed' }, { status: 500 });

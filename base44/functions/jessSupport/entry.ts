@@ -81,6 +81,12 @@ Deno.serve(async (req) => {
     return Response.json({ ok: true, skipped: 'light' }, { status: 200 });
   }
 
+  // Gate 2.5 — SAMPLING: Jess replies are OCCASIONAL, not one per eligible heavy thread.
+  // A deterministic hash of the post id (stable per thread) keeps paid LLM calls to ~1 in 3.
+  let _h = 0; const _pid = String(post_id);
+  for (let i = 0; i < _pid.length; i++) _h = (_h * 31 + _pid.charCodeAt(i)) | 0;
+  if (Math.abs(_h) % 3 !== 0) return Response.json({ ok: true, skipped: 'sampled-out' }, { status: 200 });
+
   // Gate 3 — the model may still decline.
   let ai: any = null;
   try {

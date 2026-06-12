@@ -200,6 +200,8 @@ function PostCard({ post, user, onCrisis, onChanged }) {
       const r = await base44.functions.invoke("addComment", { user_id: user?.id, author_hash: wh, post_id: post.id, body: text });
       const d = r?.data ?? r;
       if (d?.intercept) { onCrisis(); return; }
+      // Publish-then-screen: the comment is live now; screen it out-of-band (fire-and-forget).
+      if (d?.comment?.id) base44.functions.invoke("screenContent", { kind: "comment", id: d.comment.id }).catch(() => {});
       setDraft("");
       await loadComments();
     } catch (e) { console.error("comment failed:", e); }
@@ -290,7 +292,10 @@ function RoomComposer({ room, circle, club, user, onCrisis, onPosted, onCancel, 
       const d = r?.data ?? r;
       if (d?.intercept) { onCrisis(); return; }
       if (d?.error === "rate") { setBusy(false); return; }
-      if (d?.removed) { setDeclined(true); setBusy(false); return; }  // moderation declined it
+      if (d?.removed) { setDeclined(true); setBusy(false); return; }  // local floor declined it
+      // Publish-then-screen: the post is live now; screen it out-of-band (fire-and-forget,
+      // never awaited). If OpenAI flags it, screenContent pulls it within moments.
+      if (d?.post?.id) base44.functions.invoke("screenContent", { kind: "post", id: d.post.id }).catch(() => {});
       onPosted?.();
     } catch (e) { console.error("post failed:", e); }
     finally { setBusy(false); }

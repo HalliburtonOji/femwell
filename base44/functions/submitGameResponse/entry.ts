@@ -19,28 +19,12 @@ const CRISIS_PATTERNS = [
 function isCrisis(text: string): boolean { return CRISIS_PATTERNS.some((re) => re.test(text || '')); }
 
 const BANNED = ['idiot', 'stupid', 'shut up', 'loser', 'ugly', 'pathetic', 'hate you', 'kill yourself', 'kys', 'slut', 'whore', 'bitch', 'retard'];
-const REMOVE_CATEGORIES = ['harassment', 'harassment/threatening', 'hate', 'hate/threatening', 'violence', 'violence/graphic', 'sexual/minors'];
 
-async function openaiFlaggedHarmful(text: string): Promise<boolean> {
-  const key = Deno.env.get('OPENAI_API_KEY');
-  if (!key) return BANNED.some((w) => (text || '').toLowerCase().includes(w));
-  try {
-    // Hard 4s timeout: a slow/hung moderation endpoint must NEVER block the game-answer path.
-    const ctrl = new AbortController();
-    const timer = setTimeout(() => ctrl.abort(), 4000);
-    const r = await fetch('https://api.openai.com/v1/moderations', {
-      method: 'POST',
-      headers: { 'Authorization': `Bearer ${key}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ model: 'omni-moderation-latest', input: String(text || '').slice(0, 1000) }),
-      signal: ctrl.signal,
-    }).finally(() => clearTimeout(timer));
-    if (!r.ok) return BANNED.some((w) => (text || '').toLowerCase().includes(w));
-    const j = await r.json();
-    const res = j?.results?.[0] || {};
-    if (!res.flagged) return false;
-    const cats = res.categories || {};
-    return REMOVE_CATEGORIES.some((c) => cats[c]);
-  } catch { return BANNED.some((w) => (text || '').toLowerCase().includes(w)); }
+// PUBLISH-THEN-SCREEN (re-architecture, 2026-06-12): local-only screen — NO blocking network
+// call. Game answers are one short line, aggregate-revealed; the keyword floor is the screen
+// here (crisis is checked separately before this). No awaited external call → no hang.
+function localHarmful(text: string): boolean {
+  return BANNED.some((w) => (text || '').toLowerCase().includes(w));
 }
 
 const MAX_LEN = 160;
@@ -73,7 +57,7 @@ Deno.serve(async (req) => {
 
   if (text) {
     if (isCrisis(text)) return Response.json({ ok: false, intercept: true }, { status: 200 });
-    if (await openaiFlaggedHarmful(text)) return Response.json({ ok: false, rejected: true }, { status: 200 });
+    if (localHarmful(text)) return Response.json({ ok: false, rejected: true }, { status: 200 });
   }
 
   const response = await sb.entities.GameResponse.create({

@@ -17,29 +17,14 @@ const CRISIS_PATTERNS = [
   /\bbetter\s+off\s+without\s+me\b/i, /\bnothing\s+to\s+live\s+for\b/i,
 ];
 const BANNED = ['idiot', 'stupid', 'shut up', 'loser', 'ugly', 'pathetic', 'hate you', 'kill yourself', 'kys', 'slut', 'whore', 'bitch', 'retard'];
-const REMOVE_CATEGORIES = ['harassment', 'harassment/threatening', 'hate', 'hate/threatening', 'violence', 'violence/graphic', 'sexual/minors'];
 
-async function openaiFlaggedHarmful(text: string): Promise<{ crisis: boolean; remove: boolean }> {
+// PUBLISH-THEN-SCREEN (re-architecture, 2026-06-12): local-only screen — NO blocking network
+// call. Crisis → route to support (never stored); a clear keyword hit → kept out of the
+// aggregate reveal (status:removed); else visible. Reflections are short and revealed only
+// in aggregate, so the local floor is the screen here. No awaited external call → no hang.
+function localFlaggedHarmful(text: string): { crisis: boolean; remove: boolean } {
   if (CRISIS_PATTERNS.some((re) => re.test(text || ''))) return { crisis: true, remove: false };
-  const key = Deno.env.get('OPENAI_API_KEY');
-  if (!key) return { crisis: false, remove: BANNED.some((w) => (text || '').toLowerCase().includes(w)) };
-  try {
-    // Hard 4s timeout: a slow/hung moderation endpoint must NEVER block the reflection path.
-    const ctrl = new AbortController();
-    const timer = setTimeout(() => ctrl.abort(), 4000);
-    const r = await fetch('https://api.openai.com/v1/moderations', {
-      method: 'POST', headers: { 'Authorization': `Bearer ${key}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ model: 'omni-moderation-latest', input: String(text || '').slice(0, 1000) }),
-      signal: ctrl.signal,
-    }).finally(() => clearTimeout(timer));
-    if (!r.ok) return { crisis: false, remove: BANNED.some((w) => (text || '').toLowerCase().includes(w)) };
-    const j = await r.json();
-    const res = j?.results?.[0] || {};
-    const cats = res.categories || {};
-    if (cats['self-harm'] || cats['self-harm/intent'] || cats['self-harm/instructions']) return { crisis: true, remove: false };
-    if (res.flagged && REMOVE_CATEGORIES.some((c) => cats[c])) return { crisis: false, remove: true };
-    return { crisis: false, remove: false };
-  } catch { return { crisis: false, remove: BANNED.some((w) => (text || '').toLowerCase().includes(w)) }; }
+  return { crisis: false, remove: BANNED.some((w) => (text || '').toLowerCase().includes(w)) };
 }
 
 const MAX_LEN = 280;
@@ -70,7 +55,7 @@ Deno.serve(async (req) => {
     const mine = await sb.entities.RitualContribution.filter({ week_key: wk, author_hash: String(author_hash) }, '-created_date', 1).catch(() => []);
     if (Array.isArray(mine) && mine.length) return Response.json({ ok: true, already: true }, { status: 200 });
 
-    const verdict = await openaiFlaggedHarmful(text);
+    const verdict = localFlaggedHarmful(text);
     if (verdict.crisis) return Response.json({ ok: false, intercept: true }, { status: 200 });
     const status = verdict.remove ? 'removed' : 'visible';
 

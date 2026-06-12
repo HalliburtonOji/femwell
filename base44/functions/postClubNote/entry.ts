@@ -18,41 +18,14 @@ const CRISIS_PATTERNS = [
   /\bbetter\s+off\s+without\s+me\b/i, /\bnothing\s+to\s+live\s+for\b/i,
 ];
 const BANNED = ['idiot', 'stupid', 'shut up', 'loser', 'ugly', 'pathetic', 'hate you', 'kill yourself', 'kys', 'slut', 'whore', 'bitch', 'retard'];
-const HEALTH_VOCAB = [
-  'period', 'menstru', 'menopaus', 'perimenopaus', 'ovula', 'cycle', 'cramp', 'pms', 'pmdd',
-  'pregnan', 'miscarriage', 'postpartum', 'cervix', 'vagina', 'uterus', 'endometri', 'fibroid',
-  'pcos', 'fertility', 'ttc', 'ivf', 'hormone', 'oestrogen', 'estrogen', 'menopause', 'hrt',
-];
-const REMOVE_CATEGORIES = ['harassment', 'harassment/threatening', 'hate', 'hate/threatening', 'violence', 'violence/graphic', 'sexual/minors'];
-function isHealthContext(text: string): boolean { const t = (text || '').toLowerCase(); return HEALTH_VOCAB.some((w) => t.includes(w)); }
 
-async function openaiModerate(text: string): Promise<{ available: boolean; flagged: boolean; categories: Record<string, boolean> }> {
-  const key = Deno.env.get('OPENAI_API_KEY');
-  if (!key) return { available: false, flagged: false, categories: {} };
-  try {
-    const r = await fetch('https://api.openai.com/v1/moderations', {
-      method: 'POST', headers: { 'Authorization': `Bearer ${key}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ model: 'omni-moderation-latest', input: String(text || '').slice(0, 4000) }),
-    });
-    if (!r.ok) return { available: false, flagged: false, categories: {} };
-    const j = await r.json();
-    const res = j?.results?.[0] || {};
-    return { available: true, flagged: !!res.flagged, categories: res.categories || {} };
-  } catch { return { available: false, flagged: false, categories: {} }; }
-}
-async function moderate(text: string): Promise<{ crisis?: boolean; remove?: boolean; flag?: boolean; ok?: boolean }> {
+// PUBLISH-THEN-SCREEN (re-architecture, 2026-06-12). Club-note writes run ONLY fast LOCAL
+// checks (crisis intercept + a keyword floor) — NO blocking network call, so the note is
+// created and returned immediately. Club-note threads are short and checkpoint-scoped; the
+// local floor is the screen here (OpenAI post-hoc screening can be added via screenContent
+// later if needed). No awaited external call → no hang.
+function localScreen(text: string): { crisis?: boolean; remove?: boolean; ok?: boolean } {
   if (CRISIS_PATTERNS.some((re) => re.test(text || ''))) return { crisis: true };
-  const ai = await openaiModerate(text);
-  if (ai.available && ai.flagged) {
-    if (ai.categories['self-harm'] || ai.categories['self-harm/intent'] || ai.categories['self-harm/instructions']) return { crisis: true };
-    const hit = REMOVE_CATEGORIES.filter((c) => ai.categories[c]);
-    if (hit.length) {
-      const onlySexual = hit.every((c) => c.startsWith('sexual')) && !hit.includes('sexual/minors');
-      if (onlySexual && isHealthContext(text)) return { flag: true };
-      return { remove: true };
-    }
-    return { flag: true };
-  }
   const t = (text || '').toLowerCase();
   if (BANNED.some((w) => t.includes(w))) return { remove: true };
   return { ok: true };
@@ -77,7 +50,7 @@ Deno.serve(async (req) => {
     if (!text) return Response.json({ error: 'Empty note' }, { status: 400 });
     if (text.length > MAX_LEN) return Response.json({ error: 'Note too long' }, { status: 400 });
 
-    const mod = await moderate(text);
+    const mod = localScreen(text);
     if (mod.crisis) return Response.json({ ok: false, intercept: true }, { status: 200 });
     const status = mod.remove ? 'removed' : 'visible';
 
@@ -87,7 +60,7 @@ Deno.serve(async (req) => {
       checkpoint_index: Math.floor(checkpoint_index),
       author_hash: String(author_hash),
       body: status === 'removed' ? '' : text,
-      status, flagged: !!mod.flag, hidden: false,
+      status, flagged: false, hidden: false,
     }).catch((e: any) => { console.error('postClubNote create failed:', e?.message || e); return null; });
     if (!note) return Response.json({ error: 'Write failed' }, { status: 500 });
 
