@@ -87,5 +87,6 @@
   "required": [
     "user_id",
     "reading_date"
-  ]
+  ],
+  "indexes": [ { "fields": ["created_date"] }, { "fields": ["reading_date"] } ]
 }

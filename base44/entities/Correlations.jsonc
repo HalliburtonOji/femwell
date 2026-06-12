@@ -52,5 +52,6 @@
     "user_id",
     "metric_a",
     "metric_b"
-  ]
+  ],
+  "indexes": [ { "fields": ["created_date"] } ]
 }

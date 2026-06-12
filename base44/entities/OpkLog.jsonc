@@ -33,5 +33,6 @@
     "date",
     "result",
     "user_id"
-  ]
+  ],
+  "indexes": [ { "fields": ["date"] } ]
 }

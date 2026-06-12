@@ -51,7 +51,7 @@
     }
   },
   "required": ["a_hash", "status"],
-  "indexes": [
+  "indexes": [ { "fields": ["created_date"] },
     { "fields": ["a_hash"] },
     { "fields": ["b_hash"] },
     { "fields": ["status"] },

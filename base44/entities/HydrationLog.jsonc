@@ -37,5 +37,6 @@
     "user_id",
     "day_key",
     "amount_ml"
-  ]
+  ],
+  "indexes": [ { "fields": ["logged_at"] }, { "fields": ["day_key"] } ]
 }

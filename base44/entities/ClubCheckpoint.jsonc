@@ -12,7 +12,7 @@
     "jess_prompt": { "type": "string", "description": "Jess's discussion prompt for this checkpoint." }
   },
   "required": ["pick_key", "index", "label"],
-  "indexes": [{ "fields": ["pick_key"] }],
+  "indexes": [ { "fields": ["index"] },{ "fields": ["pick_key"] }],
   "rls": {
     "create": { "user_condition": { "role": "admin" } },
     "update": { "user_condition": { "role": "admin" } },

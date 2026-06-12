@@ -27,5 +27,6 @@
   "required": [
     "user_id",
     "day_key"
-  ]
+  ],
+  "indexes": [ { "fields": ["created_at"] } ]
 }

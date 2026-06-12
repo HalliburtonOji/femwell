@@ -62,5 +62,6 @@
   },
   "required": [
     "user_id"
-  ]
+  ],
+  "indexes": [ { "fields": ["updated_at"] }, { "fields": ["created_date"] } ]
 }

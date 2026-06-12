@@ -246,5 +246,5 @@
     "title",
     "content_url"
   ],
-  "indexes": [ { "fields": ["published_at"] }, { "fields": ["created_date"] } ]
+  "indexes": [ { "fields": ["ingested_at"] }, { "fields": ["engagement_score"] }, { "fields": ["revalidated_at"] }, { "fields": ["published_at"] }, { "fields": ["created_date"] } ]
 }

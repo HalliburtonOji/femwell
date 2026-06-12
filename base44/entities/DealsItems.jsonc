@@ -46,5 +46,6 @@
   "required": [
     "store_name",
     "code"
-  ]
+  ],
+  "indexes": [ { "fields": ["created_date"] } ]
 }

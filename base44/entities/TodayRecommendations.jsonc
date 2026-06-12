@@ -35,5 +35,6 @@
     "date",
     "type",
     "title"
-  ]
+  ],
+  "indexes": [ { "fields": ["created_date"] } ]
 }

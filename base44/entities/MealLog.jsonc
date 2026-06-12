@@ -196,5 +196,5 @@
     "day_key",
     "meal_type"
   ],
-  "indexes": [ { "fields": ["created_date"] }, { "fields": ["day_key"] } ]
+  "indexes": [ { "fields": ["logged_at"] }, { "fields": ["created_date"] }, { "fields": ["day_key"] } ]
 }

@@ -76,5 +76,6 @@
         "role": "admin"
       }
     }
-  }
+  },
+  "indexes": [ { "fields": ["logged_at"] } ]
 }

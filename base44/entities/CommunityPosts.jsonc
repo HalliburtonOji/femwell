@@ -53,5 +53,6 @@
     "title",
     "body",
     "category"
-  ]
+  ],
+  "indexes": [ { "fields": ["created_at"] } ]
 }

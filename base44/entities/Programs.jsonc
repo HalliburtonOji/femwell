@@ -100,5 +100,5 @@
     "title",
     "program_key"
   ],
-  "indexes": [ { "fields": ["created_date"] } ]
+  "indexes": [ { "fields": ["is_featured"] }, { "fields": ["created_date"] } ]
 }

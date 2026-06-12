@@ -68,5 +68,6 @@
     "title",
     "date",
     "link"
-  ]
+  ],
+  "indexes": [ { "fields": ["date"] }, { "fields": ["created_date"] } ]
 }

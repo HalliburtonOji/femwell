@@ -45,5 +45,6 @@
     "day_number",
     "segment_text",
     "published_date"
-  ]
+  ],
+  "indexes": [ { "fields": ["published_date"] }, { "fields": ["day_number"] } ]
 }

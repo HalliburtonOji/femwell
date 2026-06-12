@@ -18,7 +18,7 @@
     "reveal": { "type": "string", "description": "Jess's warm aggregate reveal, written at close. No winners, no counts." }
   },
   "required": ["room", "kind", "prompt", "opens_at", "closes_at"],
-  "indexes": [
+  "indexes": [ { "fields": ["created_date"] },
     { "fields": ["room"] },
     { "fields": ["status"] }
   ],

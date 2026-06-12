@@ -51,5 +51,6 @@
   "required": [
     "user_id",
     "notification_type"
-  ]
+  ],
+  "indexes": [ { "fields": ["sent_at"] } ]
 }

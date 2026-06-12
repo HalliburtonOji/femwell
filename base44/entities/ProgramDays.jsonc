@@ -36,5 +36,6 @@
   "required": [
     "program_key",
     "day_number"
-  ]
+  ],
+  "indexes": [ { "fields": ["created_date"] }, { "fields": ["day_number"] } ]
 }

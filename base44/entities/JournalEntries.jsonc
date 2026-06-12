@@ -91,5 +91,5 @@
   "required": [
     "user_id"
   ],
-  "indexes": [ { "fields": ["created_date"] }, { "fields": ["session_date"] } ]
+  "indexes": [ { "fields": ["updated_date"] }, { "fields": ["created_date"] }, { "fields": ["session_date"] } ]
 }

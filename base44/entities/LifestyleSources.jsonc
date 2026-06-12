@@ -111,5 +111,6 @@
   },
   "required": [
     "name"
-  ]
+  ],
+  "indexes": [ { "fields": ["created_date"] }, { "fields": ["updated_date"] }, { "fields": ["priority"] } ]
 }

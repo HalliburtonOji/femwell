@@ -50,5 +50,6 @@
     "user_email",
     "date",
     "phase"
-  ]
+  ],
+  "indexes": [ { "fields": ["date"] } ]
 }

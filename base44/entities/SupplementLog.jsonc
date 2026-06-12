@@ -39,5 +39,6 @@
   "required": [
     "date",
     "user_id"
-  ]
+  ],
+  "indexes": [ { "fields": ["date"] } ]
 }

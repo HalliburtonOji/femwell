@@ -33,5 +33,6 @@
     "session_start",
     "kick_count",
     "user_id"
-  ]
+  ],
+  "indexes": [ { "fields": ["session_start"] }, { "fields": ["date"] } ]
 }

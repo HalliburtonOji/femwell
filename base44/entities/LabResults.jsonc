@@ -53,5 +53,6 @@
     "marker_name",
     "value",
     "test_date"
-  ]
+  ],
+  "indexes": [ { "fields": ["test_date"] } ]
 }

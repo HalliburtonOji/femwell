@@ -31,7 +31,7 @@
     "body",
     "seal_date"
   ],
-  "indexes": [
+  "indexes": [ { "fields": ["unsealed_at"] },
     {
       "fields": [
         "user_id"

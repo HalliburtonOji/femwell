@@ -41,5 +41,6 @@
     "item_type",
     "item_id",
     "title"
-  ]
+  ],
+  "indexes": [ { "fields": ["created_date"] }, { "fields": ["created_at"] } ]
 }

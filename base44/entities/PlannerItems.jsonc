@@ -53,5 +53,6 @@
   "required": [
     "user_id",
     "title"
-  ]
+  ],
+  "indexes": [ { "fields": ["created_date"] } ]
 }

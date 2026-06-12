@@ -158,5 +158,6 @@
   "required": [
     "title",
     "content_type"
-  ]
+  ],
+  "indexes": [ { "fields": ["created_date"] } ]
 }

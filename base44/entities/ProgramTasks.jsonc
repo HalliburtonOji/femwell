@@ -59,5 +59,6 @@
     "program_key",
     "day_number",
     "task_type"
-  ]
+  ],
+  "indexes": [ { "fields": ["order_index"] } ]
 }

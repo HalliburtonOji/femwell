@@ -32,5 +32,6 @@
     "user_id",
     "date",
     "item_name"
-  ]
+  ],
+  "indexes": [ { "fields": ["created_date"] }, { "fields": ["date"] } ]
 }

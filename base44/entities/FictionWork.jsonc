@@ -63,5 +63,6 @@
   "required": [
     "scope",
     "week_start"
-  ]
+  ],
+  "indexes": [ { "fields": ["created_at"] } ]
 }

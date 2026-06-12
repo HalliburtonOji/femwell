@@ -64,5 +64,6 @@
     "user_id",
     "insight_text",
     "title"
-  ]
+  ],
+  "indexes": [ { "fields": ["created_date"] }, { "fields": ["insight_date"] } ]
 }

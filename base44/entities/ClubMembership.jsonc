@@ -13,7 +13,7 @@
     "consented": { "type": "boolean", "default": false, "description": "Reserved for any future sensitive Club: the member acknowledged the note." }
   },
   "required": ["club_key", "author_hash"],
-  "indexes": [
+  "indexes": [ { "fields": ["created_date"] },
     { "fields": ["club_key"] },
     { "fields": ["author_hash"] }
   ],

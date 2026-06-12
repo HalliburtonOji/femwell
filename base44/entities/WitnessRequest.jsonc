@@ -147,7 +147,7 @@
     "open_deadline",
     "expires_at"
   ],
-  "indexes": [
+  "indexes": [ { "fields": ["matched_at"] }, { "fields": ["sent_at"] },
     {
       "fields": [
         "receiver_hash"

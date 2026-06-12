@@ -36,5 +36,6 @@
   "required": [
     "user_id",
     "timestamp"
-  ]
+  ],
+  "indexes": [ { "fields": ["created_date"] } ]
 }

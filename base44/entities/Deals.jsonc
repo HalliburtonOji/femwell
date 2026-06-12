@@ -50,5 +50,6 @@
     "updated_at": {
       "type": "string"
     }
-  }
+  },
+  "indexes": [ { "fields": ["created_date"] } ]
 }

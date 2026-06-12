@@ -59,5 +59,6 @@
   "required": [
     "user_id",
     "their_birthday"
-  ]
+  ],
+  "indexes": [ { "fields": ["created_date"] } ]
 }

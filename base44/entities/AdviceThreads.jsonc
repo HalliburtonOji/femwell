@@ -21,5 +21,6 @@
   "required": [
     "user_id",
     "topic"
-  ]
+  ],
+  "indexes": [ { "fields": ["created_date"] } ]
 }

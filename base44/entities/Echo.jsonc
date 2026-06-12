@@ -91,7 +91,7 @@
     "live_at",
     "expires_at"
   ],
-  "indexes": [
+  "indexes": [ { "fields": ["created_date"] },
     {
       "fields": [
         "phase"

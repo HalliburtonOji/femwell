@@ -28,5 +28,6 @@
     "date",
     "temp_celsius",
     "user_id"
-  ]
+  ],
+  "indexes": [ { "fields": ["date"] } ]
 }

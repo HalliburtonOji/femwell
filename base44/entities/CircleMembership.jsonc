@@ -14,7 +14,7 @@
     "consented": { "type": "boolean", "default": false, "description": "For special-category circles: the member explicitly acknowledged the sensitive-data note." }
   },
   "required": ["circle_key", "author_hash"],
-  "indexes": [
+  "indexes": [ { "fields": ["created_date"] },
     { "fields": ["circle_key"] },
     { "fields": ["author_hash"] }
   ],

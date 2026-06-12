@@ -31,5 +31,6 @@
     "user_id",
     "date",
     "symptom_type"
-  ]
+  ],
+  "indexes": [ { "fields": ["date"] }, { "fields": ["created_date"] } ]
 }

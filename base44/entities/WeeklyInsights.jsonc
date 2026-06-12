@@ -74,5 +74,6 @@
   "required": [
     "user_id",
     "week_start"
-  ]
+  ],
+  "indexes": [ { "fields": ["generated_at"] }, { "fields": ["week_start"] } ]
 }
