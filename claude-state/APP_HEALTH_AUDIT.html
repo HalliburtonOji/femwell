@@ -68,6 +68,21 @@ ul{margin:6px 0 6px 0;padding-left:20px}li{margin:3px 0}
 </ul>
 If deployed: commit their <code>.jsonc</code> to the repo for source-of-truth. If not: those features are broken. (The 4th, <code>JessConversations</code>, was the typo fixed in S2.1.)</div>
 
+<h2>SCAN 2 — deep per-page UI pass (all surfaces)</h2>
+<div class="card ok"><b>Audited every user-facing area</b> (Today · Journal · Nutrition · Health · Lifestyle+subdivisions · Planner/Programs · Profile · Doctor Export · Jess) via parallel per-area passes. Headline catches: a <b>white-screen crash</b> on the Health Cycle/Body letters, a <b>dead Profile button</b>, a <b>data-losing</b> Today daily-prompt save, and a broad <b>silent-write-failure</b> class (stuck "Saving…" spinners with no error) across logging forms.</div>
+<table><tr><th>Area</th><th>Fixed</th><th>Notable flags</th></tr>
+<tr><td><b>Health</b> <span class="tag b">CRASH</span></td><td>Stray <code>},,</code> made sparse-array holes → <code>sections.map</code> threw → <b>Cycle &amp; Body letters white-screened</b>. Fixed both. + emoji→Lucide.</td><td>HealthDashboard/HealthCornerDemo are dead/unrouted (emoji there, no live impact).</td></tr>
+<tr><td><b>Today</b></td><td>Emoji→Lucide (CalmCards et al.); ~15 silent-write-failure fixes (check-in modal was stuck on "Saving…"; <b>DailyPromptCard was swallowing the error + dismissing, losing the entry</b>); empty state.</td><td>CalmCards/PanicModeModal off-palette (purple/amber) — Ms Atelier pass. QuickCheckinModal is dead+emoji.</td></tr>
+<tr><td><b>Nutrition</b></td><td>De-emoji incl. all 29 FoodLookup entries; write error states (email send had no catch; weekly InvokeLLM; goal/targets/metrics; save-to-plan).</td><td>FoodLookup hand-maintained category indices (brittle).</td></tr>
+<tr><td><b>Programs</b></td><td>Emoji→Lucide; stuck-flag fixes (start/save/restart/reminder; task complete/skip; reflection save w/ input preserved).</td><td>MorningCheckinCard silent create (no slot); a "coming soon" CTA stub.</td></tr>
+<tr><td><b>Journal</b></td><td>3 stuck-spinner/silent-save fixes (NewEntry save; weekly-summary LLM; cycle dashboard load). Crypto untouched.</td><td>JotterCard (dead/legacy) unhandled toggle; WitnessInbox console-only (crypto-entangled).</td></tr>
+<tr><td><b>Profile + Jess</b></td><td><b>Dead "Reminders" button</b> (no onClick) wired to Settings; stuck tone-save fixed; emoji removed from live Jess surfaces (scripted replies, character picker).</td><td>Profile field-saves silent (no data loss); a few decorative <code>✦/✓</code> glyphs in Jess action layer.</td></tr>
+<tr><td><b>Lifestyle</b> (Read/Listen/Story/Horoscope)</td><td>None needed — clean (sound loading/empty/error states; no emoji; jump-switcher present).</td><td>The two flagged Atelier/RedWhiteMoon field mismatches were a <b>FALSE ALARM</b> (grep prefix-match): code correctly reads <code>body_html</code>/<code>signed_by</code> + <code>red_white_archetype</code>. No fix needed.</td></tr>
+<tr><td><b>Doctor Export</b></td><td>Clean — write/output paths have error slots + fallbacks; 3-step rail = switcher.</td><td>—</td></tr>
+</table>
+<div class="card"><b>Jump-to switcher rule — verified across the app:</b> Journal (JournalHubSheet) · Community (CommunityHubSheet) · Health (letter strip) · Nutrition (tab bar) · Lifestyle (5-tab pill row) · Jess (4 tabs + history) · Doctor Export (3-step rail) — all present. No multi-layer page is missing one.</div>
+<small>All Scan-2 UI fixes: build + eslint green. Every write/button change is <b>needs-live-verify</b> (listed in the hand-off). Commits: <code>ce45fc2</code> Today · <code>1299244</code> Journal · <code>3ce5f77</code> Nutrition · <code>7e1ff83</code> Health · <code>0f44df7</code> Programs · <code>3aa8097</code> Profile+Jess.</small>
+
 <h2>Remaining flags (next wave)</h2>
 <div class="card plum"><ul>
 <li><b>B2 index tail</b> — ~90 more entities sort unindexed; guarded so safe; add per live latency (needs-Halli scope).</li>

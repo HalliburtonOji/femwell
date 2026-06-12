@@ -51,6 +51,20 @@ export default function AppHealthAuditDoc() {
         <P><b>S2.3 — referenced-but-undeployed entities.</b> {HIGH} {HALLI} &nbsp; 3 entities are read/written by the client but have no repo .jsonc — confirm on Base44 (commit their schema if deployed; the feature is broken if not): <code>AtelierLetters</code>, <code>HoroscopePersistedClassification</code>, <code>PodcastListens</code>.</P>
       </Card>
 
+      <H2>Scan 2 — deep per-page UI pass {FIXED}</H2>
+      <P>Audited every user-facing area (Today · Journal · Nutrition · Health · Lifestyle+subdivisions · Planner/Programs · Profile · Doctor Export · Jess) via parallel passes. Headline catches: a white-screen crash, a dead button, a data-losing save, and a broad silent-write-failure class.</P>
+      <Table rows={[
+        ["Area", "Fixed"],
+        ["Health (CRASH)", "Stray },, → sparse-array holes → Cycle & Body letters white-screened. Fixed + de-emoji."],
+        ["Today", "De-emoji; ~15 silent-write-failure fixes (check-in stuck on Saving…; DailyPrompt was losing the entry); empty state."],
+        ["Nutrition", "De-emoji incl. 29 FoodLookup entries; write error states (email/LLM/goal/targets/save-plan)."],
+        ["Programs", "De-emoji; stuck-flag fixes (start/save/restart/reminder; task complete/skip; reflection)."],
+        ["Journal", "3 stuck-spinner/silent-save fixes; crypto untouched."],
+        ["Profile + Jess", "Dead Reminders button wired; stuck tone-save; emoji off live Jess surfaces."],
+        ["Lifestyle / Doctor Export", "Clean. The Atelier/RedWhiteMoon 'field mismatch' was a FALSE ALARM (code reads body_html/signed_by + red_white_archetype)."],
+      ]} />
+      <P><b>Jump-to switcher verified app-wide:</b> Journal · Community · Health · Nutrition · Lifestyle · Jess · Doctor Export all have one. Commits: ce45fc2 · 1299244 · 3ce5f77 · 7e1ff83 · 0f44df7 · 3aa8097. All build+eslint green; every write/button change is needs-live-verify.</P>
+
       <H2>Remaining flags (next wave)</H2>
       <Card accent="#4A2A3A">
         <Bullets items={[
