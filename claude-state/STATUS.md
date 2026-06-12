@@ -1,5 +1,15 @@
-# FEMWELL — CANONICAL STATUS INDEX (read first · updated 2026-06-11)
+# FEMWELL — CANONICAL STATUS INDEX (read first · updated 2026-06-12)
 **This file is the single source of truth AND the index to every plan doc. If anything else disagrees, this wins.** (The long ship-log history continues below the index.)
+
+## 🚪 COMMUNITY HOME — OPTION B "CALM DOORWAY" REBUILD (2026-06-12) — BUILT + WEBKIT-VERIFIED + PUSHED · awaiting Halli deploy
+Per `claude-state/COMMUNITY_HOME_REDESIGN.html` (FoundersOS → Home Redesign), Halli picked **Option B + DAILY rotation**.
+- **`b5969de` — Community home is now a calm doorway:** masthead → presence (with the season-belonging line folded in, count-free) + Jump → **Question of the day** → **"Today in the community"** ONE rotating slot → **rooms/doors** → slim links + Jess nudge. **Before→after: ~14 blocks → ~6.**
+  - **Daily rotating slot (`todaySlot()`):** epoch-day index `mod 4` over `["wisdom","pool","close","club"]` — deterministic, stable within a UTC day, advances each day. The slot renders the **real working component** (not a teaser): when it's the pool's turn the (fixed) pills + kind zero state work; when it's close-the-week's turn the composer + error state work.
+  - **What moved:** Echo Wall + Clubs → **doors** in the rooms grid (consistent with Lounge/Circles/Library/Games/etc.). Living wisdom · kindness pool · close-the-week → **the daily slot**. Season belonging → **folded into the presence line** (count-free, no card). Share-a-thought · Quietly one-to-one (Witness/Twin) · Invite · Talk-to-Jess → **slim links** (all still reachable via the Jump hub).
+  - **Preserved:** the Jump "Jump to" switcher (CommunityHubSheet) reaches every area · the shipped pool fixes (kind zero state + optimistic pill feedback) · close-week error state · Jess nudge (once-per-id) · all locked constraints (no emoji, cream/plum, Ephesis+Cormorant, Lucide, aggregate-only).
+  - **Cleanup:** removed the now-unused `EchoCard` + `SeasonCard` components (SEASONS map kept — it feeds the folded belonging line).
+  - **Verified (Playwright webkit 390px):** structure correct (~6 blocks, order QOTD < slot < rooms; today's live variant = `wisdom`) · Echo Wall + Clubs are doors · no emoji · Jump hub reaches every area · force-tested the **pool** variant (kind zero state + responsive pills) and the **close-week** variant (composer + button) via temporary slot override → then reverted to `todaySlot()`. **Build + eslint green.**
+  - **Shipped-vs-demo:** SHIPPED (real Home, client-only — no new entities/functions). **Live bundle hash:** pending Halli deploy + live-walk.
 
 ## 📤 SHARING SYSTEM + JESS-HOST (2026-06-11) — BUILT + VERIFIED + PUSHED (client-only, no gate)
 Per `claude-state/SHARING_PROPOSAL.html`. Both tracks + THE WALL enforced in code. All client-only.
