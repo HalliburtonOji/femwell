@@ -737,32 +737,7 @@ const SEASONS = {
   "post-menopause": { label: "beyond menopause",        line: "Others in this next chapter are here too. There's a lot of life in it." },
 };
 
-function SeasonCard({ stage }) {
-  const s = SEASONS[stage];
-  if (!s) return null;
-  return (
-    <section style={{ background: T.paperHi, border: `1px solid ${T.paperDeep}`, borderLeft: `3px solid ${T.gold}`, borderRadius: 4, padding: "13px 16px", marginBottom: 22 }}>
-      <Eyebrow color={T.gold} mb={5}>You're in good company</Eyebrow>
-      <Hand size={17} color={T.inkSoft}>{s.line}</Hand>
-    </section>
-  );
-}
-
-function EchoCard({ onOpen }) {
-  return (
-    <button onClick={onOpen} style={{
-      display: "block", width: "100%", textAlign: "left", cursor: "pointer",
-      background: T.paperHi, border: `1px solid ${T.gold}`, borderRadius: 6, padding: "16px 16px", marginBottom: 26,
-    }}>
-      <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 5 }}>
-        <Waves size={16} style={{ color: T.gold }} />
-        <Eyebrow color={T.gold} mb={0}>The Echo Wall</Eyebrow>
-      </div>
-      <div style={{ fontFamily: HANDFAM, fontStyle: "italic", fontWeight: 700, fontSize: 19, color: T.ink, marginBottom: 4 }}>One line, held by the room.</div>
-      <div style={{ fontFamily: UI, fontSize: 12, color: T.muted }}>Anonymous lines from women across the cycle — each fades in 48 hours. Read the wall, or share a line from your journal →</div>
-    </button>
-  );
-}
+// SEASONS (above) feeds the folded, count-free belonging line on the home (Option B).
 
 function ClubsCard({ onOpen }) {
   return (
@@ -777,15 +752,52 @@ function ClubsCard({ onOpen }) {
   );
 }
 
-// ── rooms-as-doors home ──────────────────────────────────────────────────────
+// "Today in the community" — ONE rotating slot, changing daily (deterministic by date so it's
+// stable within a day, rotates each day) through these four. The slot renders the REAL working
+// component, not a static teaser.
+const SLOT_VARIANTS = ["wisdom", "pool", "close", "club"];
+function todaySlot() {
+  const day = new Date().toISOString().split("T")[0];
+  const epoch = Math.floor(new Date(day + "T00:00:00Z").getTime() / 86400000);
+  return SLOT_VARIANTS[((epoch % SLOT_VARIANTS.length) + SLOT_VARIANTS.length) % SLOT_VARIANTS.length];
+}
+
+// A slim home affordance (the demoted links).
+function SlimLink({ icon: Ic, onClick, children }) {
+  return (
+    <button onClick={onClick} style={{
+      display: "inline-flex", alignItems: "center", gap: 7, cursor: "pointer",
+      padding: "9px 14px", borderRadius: 999, border: `1px solid ${T.paperDeep}`, background: "transparent",
+      fontFamily: UI, fontSize: 12, fontWeight: 700, color: T.inkSoft,
+    }}>
+      <Ic size={13} style={{ color: T.gold }} /> {children}
+    </button>
+  );
+}
+
+// ── rooms-as-doors home — the calm doorway (Option B) ────────────────────────
 function Home({ presence, lifeStage, onEnter, user, onCrisis, onShareTo, onOpenHub }) {
+  const season = lifeStage ? SEASONS[lifeStage] : null;
+  const slot = todaySlot();
+  // The doors are the spine. Echo Wall + Clubs join the topic rooms as doors.
+  const doors = [
+    { key: "echo", Icon: Waves, name: "Echo Wall", line: "Anonymous lines, held by the room — each fades in 48h." },
+    ...ROOMS,
+    { key: "clubs", Icon: HeartHandshake, name: "Clubs", line: "Small groups for what you do together." },
+  ];
   return (
     <div>
+      {/* masthead — the doorway's voice */}
       <Eyebrow mb={8}>{MASTHEAD.eyebrow}</Eyebrow>
       <Script size={42} style={{ marginBottom: 8 }}>{MASTHEAD.title}</Script>
       <Hand size={19} color={T.inkSoft} style={{ marginBottom: 14 }}>{MASTHEAD.subtitle}</Hand>
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10, marginBottom: 22 }}>
-        <div style={{ fontFamily: UI, fontSize: 12.5, color: T.muted, fontWeight: 600 }}>{presence}</div>
+
+      {/* ambient presence (+ a folded, count-free belonging line) + the central Jump control */}
+      <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 10, marginBottom: 24 }}>
+        <div>
+          <div style={{ fontFamily: UI, fontSize: 12.5, color: T.muted, fontWeight: 600, lineHeight: 1.5 }}>{presence}</div>
+          {season && <div style={{ fontFamily: UI, fontSize: 12, color: T.muted, lineHeight: 1.5, marginTop: 3 }}>{season.line}</div>}
+        </div>
         {onOpenHub && (
           <button onClick={onOpenHub} aria-label="Jump to any area" style={{
             display: "inline-flex", alignItems: "center", gap: 6, flexShrink: 0, cursor: "pointer",
@@ -795,41 +807,20 @@ function Home({ presence, lifeStage, onEnter, user, onCrisis, onShareTo, onOpenH
         )}
       </div>
 
-      <SeasonCard stage={lifeStage} />
-
-      <JessNudge
-        id="community-reflect-v1"
-        line="Some of what's said here is worth keeping. Want a quiet place to write your own?"
-        to="Journal?compose=1"
-        actionLabel="Open my journal"
-      />
-
-      {onShareTo && (
-        <button onClick={onShareTo} style={{
-          display: "flex", alignItems: "center", gap: 8, width: "100%", justifyContent: "center",
-          marginBottom: 22, padding: "11px 14px", cursor: "pointer",
-          background: "transparent", border: `1px solid ${T.paperDeep}`, borderRadius: 999,
-          fontFamily: UI, fontSize: 12.5, fontWeight: 700, color: T.inkSoft,
-        }}>
-          <Send size={14} style={{ color: T.gold }} /> Share a thought to one of your spaces
-        </button>
-      )}
-
-      <EchoCard onOpen={() => onEnter("echo")} />
-
+      {/* the ONE focal point */}
       <QotdCard user={user} onCrisis={onCrisis} />
 
-      <PoolCard user={user} />
+      {/* the ONE rotating "Today in the community" slot — the real working component */}
+      <Eyebrow color={T.gold} mb={8}>Today in the community</Eyebrow>
+      {slot === "wisdom" && <WisdomCard onOpen={() => onEnter("wisdom")} />}
+      {slot === "pool" && <PoolCard user={user} />}
+      {slot === "close" && <CloseWeekCard user={user} onCrisis={onCrisis} />}
+      {slot === "club" && <ClubsCard onOpen={() => onEnter("clubs")} />}
 
-      <CloseWeekCard user={user} onCrisis={onCrisis} />
-
-      <ClubsCard onOpen={() => onEnter("clubs")} />
-
-      <WisdomCard onOpen={() => onEnter("wisdom")} />
-
+      {/* the rooms — the spine (Echo Wall + Clubs are doors here) */}
       <Eyebrow mb={12}>The rooms — step into any one</Eyebrow>
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
-        {ROOMS.map((r) => {
+        {doors.map((r) => {
           const Icon = r.Icon;
           return (
             <button key={r.key} onClick={() => onEnter(r.key)} style={{
@@ -844,42 +835,19 @@ function Home({ presence, lifeStage, onEnter, user, onCrisis, onShareTo, onOpenH
         })}
       </div>
 
-      {/* W4 — discreet entry to the one-to-one peer features (live in the Journal). Deep-links
-          open the existing Witness inbox / Phase Twin overlays. Quiet by design — these are intense. */}
-      <div style={{ marginTop: 26 }}>
-        <Eyebrow mb={10}>Quietly, one to one</Eyebrow>
-        <Link to={createPageUrl("Journal?open=witness")} style={{ textDecoration: "none", display: "block", marginBottom: 10 }}>
-          <div style={{ background: T.paperHi, border: `1px solid ${T.paperDeep}`, borderRadius: 6, padding: "13px 15px" }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 3 }}>
-              <HeartHandshake size={15} style={{ color: T.gold }} />
-              <span style={{ fontFamily: HANDFAM, fontStyle: "italic", fontWeight: 700, fontSize: 17, color: T.ink }}>Hold space for a sister</span>
-            </div>
-            <div style={{ fontFamily: UI, fontSize: 11.5, color: T.muted, lineHeight: 1.4 }}>Someone may be waiting to be witnessed — one entry, held by one woman. Open your inbox →</div>
-          </div>
-        </Link>
-        <Link to={createPageUrl("Journal?open=twin")} style={{ textDecoration: "none", display: "block" }}>
-          <div style={{ background: T.paperHi, border: `1px solid ${T.paperDeep}`, borderRadius: 6, padding: "13px 15px" }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 3 }}>
-              <Users size={15} style={{ color: T.gold }} />
-              <span style={{ fontFamily: HANDFAM, fontStyle: "italic", fontWeight: 700, fontSize: 17, color: T.ink }}>Phase Twin</span>
-            </div>
-            <div style={{ fontFamily: UI, fontSize: 11.5, color: T.muted, lineHeight: 1.4 }}>Twelve days, paired with one woman in your season — one shared prompt a day. Find your twin →</div>
-          </div>
-        </Link>
-      </div>
+      {/* a gentle, dismissible Jess nudge (once-per-id) */}
+      <JessNudge
+        id="community-reflect-v1"
+        line="Some of what's said here is worth keeping. Want a quiet place to write your own?"
+        to="Journal?compose=1"
+        actionLabel="Open my journal"
+      />
 
-      {/* W3 — a quiet door to Jess (the host) from Community, via the existing assistant event */}
-      <button onClick={() => window.dispatchEvent(new CustomEvent("fw_open_assistant", { detail: { from: "community" } }))} style={{
-        display: "flex", alignItems: "center", gap: 9, width: "100%", justifyContent: "center",
-        marginTop: 22, padding: "12px 14px", cursor: "pointer",
-        background: "transparent", border: `1px solid ${T.paperDeep}`, borderRadius: 999,
-        fontFamily: UI, fontSize: 12.5, fontWeight: 700, color: T.inkSoft,
-      }}>
-        <HeartHandshake size={14} style={{ color: T.gold }} /> Need a quiet word? Talk to Jess
-      </button>
-
-      {/* Invite — a non-personal, on-brand card (organic growth). No personal content leaves. */}
-      <div style={{ display: "flex", justifyContent: "center", marginTop: 14 }}>
+      {/* the demoted affordances — small links; everything's also in the Jump hub */}
+      <div style={{ display: "flex", gap: 8, flexWrap: "wrap", justifyContent: "center", marginTop: 18 }}>
+        {onShareTo && <SlimLink icon={Send} onClick={onShareTo}>Share a thought</SlimLink>}
+        {onOpenHub && <SlimLink icon={HeartHandshake} onClick={onOpenHub}>Quietly, one to one</SlimLink>}
+        <SlimLink icon={HeartHandshake} onClick={() => window.dispatchEvent(new CustomEvent("fw_open_assistant", { detail: { from: "community" } }))}>Talk to Jess</SlimLink>
         <ShareButton label="Invite a friend" artifact={{
           kind: "invite",
           line: "Come find your people — anonymous, whole-life, kind. For all of you, not just your cycle.",
