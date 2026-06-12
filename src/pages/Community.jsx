@@ -18,7 +18,7 @@ import { useNavigate, Link } from "react-router-dom";
 import {
   Grid2x2, MessageCircle, Send, Lock, Unlock, Plus, Flag,
   ShieldAlert, Phone, Mic, Check, ChevronLeft, Users,
-  HeartHandshake, Waves,
+  HeartHandshake, Waves, Compass,
 } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import {
@@ -38,6 +38,7 @@ import {
 import VoiceNoteComposer from "@/components/community/VoiceNoteComposer";
 import ShareButton from "@/components/share/ShareButton";
 import JessNudge from "@/components/jess/JessNudge";
+import CommunityHubSheet from "@/components/community/CommunityHubSheet";
 import EchoWall from "@/components/journal/echo/EchoWall";
 import {
   CIRCLES, CIRCLE_CATEGORIES, circleByKey, SENSITIVE_CONSENT,
@@ -595,51 +596,69 @@ function WisdomLibrary({ onBack }) {
 
 // ── Collective pool (Phase 4, §P.2.4) — "together this week", aggregate only ──
 function PoolCard({ user }) {
-  const [total, setTotal] = useState(null);
+  const [total, setTotal] = useState(null);   // null = loading; number = count
   const [capped, setCapped] = useState(false);
   const [busy, setBusy] = useState(false);
+  const [thanks, setThanks] = useState("");   // gentle feedback after a tap
+  const [err, setErr] = useState(false);
   const load = useCallback(async () => {
     try {
       const wh = await communityHash(user?.id);
       const r = await base44.functions.invoke("collectivePool", { user_id: user?.id, author_hash: wh });
       const d = r?.data ?? r;
-      if (typeof d?.total === "number") setTotal(d.total);
-    } catch { /* quiet */ }
+      if (typeof d?.total === "number") setTotal(d.total); else setTotal(0);
+    } catch { setTotal((t) => (typeof t === "number" ? t : 0)); }
   }, [user?.id]);
   useEffect(() => { load(); }, [load]);
-  const add = async (moment) => {
-    if (busy) return; setBusy(true);
+
+  const add = async (moment, label) => {
+    if (busy) return;
+    setBusy(true); setErr(false);
+    const before = typeof total === "number" ? total : 0;
+    setTotal(before + 1);              // optimistic — the tap visibly registers
+    setThanks(`${label} — that's one. Thank you.`);
     try {
       const wh = await communityHash(user?.id);
       const r = await base44.functions.invoke("collectivePool", { user_id: user?.id, author_hash: wh, moment });
       const d = r?.data ?? r;
-      if (typeof d?.total === "number") setTotal(d.total);
-      if (d?.capped) setCapped(true);
-    } catch (e) { console.error("pool add failed:", e); }
-    finally { setBusy(false); }
+      if (typeof d?.total === "number") setTotal(d.total);   // reconcile with the server
+      if (d?.capped) { setCapped(true); setThanks("You've added plenty today — lovely. The pool keeps going."); }
+    } catch (e) {
+      console.error("pool add failed:", e);
+      setTotal(before); setThanks(""); setErr(true);          // roll back on failure
+    } finally {
+      setBusy(false);
+      setTimeout(() => setThanks(""), 4000);
+    }
   };
-  const n = total ?? 0;
+
+  const n = Math.max(0, Math.round(Number(total) || 0));
   const milestone = Math.max(50, Math.ceil((n + 1) / 50) * 50);   // soft, ever-receding target
   const pct = Math.min(100, Math.round((n / milestone) * 100));
+  const line = total === null
+    ? "Counting the small kindnesses…"
+    : n === 0
+      ? "Be the first small kindness this week — add one below, and the bar starts to rise."
+      : `Women here have added ${n} small ${n === 1 ? "kindness" : "kindnesses"} to themselves this week.`;
+
   return (
     <section style={{ background: T.paperHi, border: `1px solid ${T.paperDeep}`, borderRadius: 6, padding: "18px 18px 16px", marginBottom: 26 }}>
       <Eyebrow color={T.gold} mb={8}>Together this week</Eyebrow>
-      <Hand size={18} color={T.ink} style={{ marginBottom: 10 }}>
-        {total === null ? "Counting the small kindnesses…" : `Women here have made ${n} small kindnesses to themselves this week.`}
-      </Hand>
+      <Hand size={18} color={T.ink} style={{ marginBottom: 10 }}>{line}</Hand>
       <div style={{ height: 8, borderRadius: 999, background: T.paperDeep, overflow: "hidden", marginBottom: 14 }}>
         <div style={{ width: `${pct}%`, height: "100%", background: T.gold, transition: "width .4s ease" }} />
       </div>
       <div style={{ fontFamily: UI, fontSize: 11, color: T.muted, marginBottom: 12 }}>It only rises. No names, no scores — just us, adding up.</div>
       <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
         {POOL_MOMENTS.map((m) => (
-          <button key={m.key} onClick={() => add(m.key)} disabled={busy} style={{
+          <button key={m.key} onClick={() => add(m.key, m.label)} disabled={busy} style={{
             fontFamily: UI, fontSize: 12, fontWeight: 700, cursor: busy ? "default" : "pointer",
             padding: "8px 13px", borderRadius: 999, border: `1px solid ${T.paperDeep}`, background: "transparent", color: T.inkSoft, opacity: busy ? 0.6 : 1,
           }}>{m.label}</button>
         ))}
       </div>
-      {capped && <div style={{ fontFamily: UI, fontSize: 11, color: T.muted, marginTop: 10 }}>You've added plenty today — lovely. The pool keeps going.</div>}
+      {thanks && <div style={{ fontFamily: UI, fontSize: 11.5, fontWeight: 700, color: T.gold, marginTop: 10, display: "inline-flex", alignItems: "center", gap: 5 }}><Check size={12} /> {thanks}</div>}
+      {err && <div style={{ fontFamily: UI, fontSize: 11, color: T.muted, marginTop: 10 }}>Couldn't reach the pool just now — try again in a moment.</div>}
     </section>
   );
 }
@@ -652,6 +671,7 @@ function CloseWeekCard({ user, onCrisis }) {
   const [draft, setDraft] = useState("");
   const [lines, setLines] = useState(null);
   const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState(false);
   const loadReveal = useCallback(async () => {
     const rows = await base44.entities.RitualContribution.filter({ week_key: wk, hidden: false }, "-created_date", 40).catch(() => []);
     setLines(Array.isArray(rows) ? rows.filter((r) => r.status !== "removed" && r.body) : []);
@@ -660,14 +680,14 @@ function CloseWeekCard({ user, onCrisis }) {
   const send = async () => {
     const text = draft.trim(); if (!text || busy) return;
     if (crisisCheck(text).intercept) { onCrisis(); return; }
-    setBusy(true);
+    setBusy(true); setErr(false);
     try {
       const wh = await communityHash(user?.id);
       const r = await base44.functions.invoke("closeTheWeek", { user_id: user?.id, author_hash: wh, body: text });
       const d = r?.data ?? r;
       if (d?.intercept) { onCrisis(); return; }
       markClosedWeek(wk); setClosed(true); setDraft("");
-    } catch (e) { console.error("close week failed:", e); }
+    } catch (e) { console.error("close week failed:", e); setErr(true); }
     finally { setBusy(false); }
   };
   return (
@@ -680,6 +700,7 @@ function CloseWeekCard({ user, onCrisis }) {
           <div style={{ display: "flex", justifyContent: "flex-end", marginTop: 8 }}>
             <button onClick={send} disabled={!draft.trim() || busy} style={{ ...primaryBtn, opacity: (!draft.trim() || busy) ? 0.5 : 1 }}><Send size={13} /> {busy ? "Closing…" : "Close my week"}</button>
           </div>
+          {err && <div style={{ fontFamily: UI, fontSize: 11, color: T.muted, marginTop: 8, textAlign: "right" }}>Couldn't close it just now — try again in a moment.</div>}
         </>
       ) : (
         <div>
@@ -757,13 +778,22 @@ function ClubsCard({ onOpen }) {
 }
 
 // ── rooms-as-doors home ──────────────────────────────────────────────────────
-function Home({ presence, lifeStage, onEnter, user, onCrisis, onShareTo }) {
+function Home({ presence, lifeStage, onEnter, user, onCrisis, onShareTo, onOpenHub }) {
   return (
     <div>
       <Eyebrow mb={8}>{MASTHEAD.eyebrow}</Eyebrow>
       <Script size={42} style={{ marginBottom: 8 }}>{MASTHEAD.title}</Script>
       <Hand size={19} color={T.inkSoft} style={{ marginBottom: 14 }}>{MASTHEAD.subtitle}</Hand>
-      <div style={{ fontFamily: UI, fontSize: 12.5, color: T.muted, fontWeight: 600, marginBottom: 22 }}>{presence}</div>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10, marginBottom: 22 }}>
+        <div style={{ fontFamily: UI, fontSize: 12.5, color: T.muted, fontWeight: 600 }}>{presence}</div>
+        {onOpenHub && (
+          <button onClick={onOpenHub} aria-label="Jump to any area" style={{
+            display: "inline-flex", alignItems: "center", gap: 6, flexShrink: 0, cursor: "pointer",
+            padding: "7px 13px", borderRadius: 999, border: `1px solid ${T.paperDeep}`, background: T.paperHi,
+            fontFamily: UI, fontSize: 12, fontWeight: 700, color: T.inkSoft,
+          }}><Grid2x2 size={13} style={{ color: T.gold }} /> Jump to</button>
+        )}
+      </div>
 
       <SeasonCard stage={lifeStage} />
 
@@ -1410,7 +1440,7 @@ function GamesView({ user, onCrisis }) {
   );
 }
 
-function RoomView({ roomKey, posts, loading, error, user, onNav, onCrisis, onReload, seed = "", initialCircle = null, profile = null, onOpenCorner }) {
+function RoomView({ roomKey, posts, loading, error, user, onNav, onCrisis, onReload, seed = "", initialCircle = null, profile = null, onOpenCorner, onOpenHub }) {
   const [composing, setComposing] = useState(() => !!seed);
   const [voicing, setVoicing] = useState(false);
   const room = ROOMS.find((r) => r.key === roomKey) || ROOMS[0];
@@ -1420,6 +1450,7 @@ function RoomView({ roomKey, posts, loading, error, user, onNav, onCrisis, onRel
       {/* sticky tab bar */}
       <div style={{ position: "sticky", top: 0, zIndex: 10, background: "rgba(244,239,227,0.97)", backdropFilter: "blur(8px)", borderBottom: `1px solid ${T.paperDeep}`, padding: "9px 12px", display: "flex", alignItems: "center", gap: 6, overflowX: "auto" }}>
         <button onClick={() => onNav("home")} aria-label="All rooms" style={{ ...ghostBtn, flexShrink: 0, padding: "7px 11px" }}><Grid2x2 size={13} /> Doors</button>
+        {onOpenHub && <button onClick={onOpenHub} aria-label="Jump to any area" style={{ ...ghostBtn, flexShrink: 0, padding: "7px 11px" }}><Compass size={13} style={{ color: T.gold }} /> Jump</button>}
         {ROOMS.map((r) => (
           <button key={r.key} onClick={() => onNav(r.key)} style={{
             flexShrink: 0, fontFamily: UI, fontSize: 12, fontWeight: 700, letterSpacing: 0.2, cursor: "pointer",
@@ -1565,6 +1596,14 @@ function CommunityInner() {
   const [loadErr, setLoadErr] = useState(false);
   const [crisis, setCrisis] = useState(false);
   const [shareTo, setShareTo] = useState(false);
+  const [hubOpen, setHubOpen] = useState(false);
+  const navigate = useNavigate();
+  const onHubSelect = (id) => {
+    if (id === "witness") { navigate(createPageUrl("Journal?open=witness")); return; }
+    if (id === "twin") { navigate(createPageUrl("Journal?open=twin")); return; }
+    setView(id === "qotd" ? "home" : id);
+    try { window.scrollTo({ top: 0, behavior: "instant" }); } catch { /* ignore */ }
+  };
   const [tick, setTick] = useState(0);
 
   const [lifeStage, setLifeStage] = useState(null);
@@ -1629,7 +1668,7 @@ function CommunityInner() {
       <InkFilter />
       <div style={{ maxWidth: 460, margin: "0 auto", padding: view === "home" ? "30px 18px 50px" : "0 0 50px" }}>
         {view === "home"
-          ? <Home presence={presence} lifeStage={lifeStage} onEnter={setView} user={user} onCrisis={() => setCrisis(true)} onShareTo={() => setShareTo(true)} />
+          ? <Home presence={presence} lifeStage={lifeStage} onEnter={setView} user={user} onCrisis={() => setCrisis(true)} onShareTo={() => setShareTo(true)} onOpenHub={() => setHubOpen(true)} />
           : view === "wisdom"
           ? <WisdomLibrary onBack={() => setView("home")} />
           : view === "bookclub"
@@ -1642,6 +1681,7 @@ function CommunityInner() {
               <EchoWall user={user} profile={profile} lifeStage={lifeStage} />
             </div>
           : <RoomView key={tick} roomKey={view} posts={posts} loading={loading} error={loadErr} user={user} onNav={setView} onCrisis={() => setCrisis(true)} onReload={reload} seed={roomSeed} initialCircle={initialCircle} profile={profile}
+              onOpenHub={() => setHubOpen(true)}
               onOpenCorner={(key, title) => { setInitialClub(key); setClubTitle(title || ""); setView("clubs"); }} />}
         {view === "home" && (
           <>
@@ -1653,6 +1693,7 @@ function CommunityInner() {
       </div>
       {crisis && <CrisisSheet onClose={() => setCrisis(false)} />}
       {shareTo && <ShareToSheet user={user} onClose={() => setShareTo(false)} />}
+      <CommunityHubSheet open={hubOpen} onClose={() => setHubOpen(false)} onSelect={onHubSelect} />
     </div>
   );
 }
