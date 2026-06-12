@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>FemWell — Nutrition: 5 UX Demos</title>
+<style>
+:root{--cream:#F4EDDB;--ink:#3A2C1A;--plum:#4A2A3A;--gold:#A6862B;--sage:#6B8F5A;--rose:#C4849A;--muted:#9B8B7A;--paper:#FBF7EC;--crimson:#BC2E27;}
+*{box-sizing:border-box}body{margin:0;background:var(--cream);color:var(--ink);font-family:-apple-system,Inter,system-ui,sans-serif;line-height:1.55;padding:0 0 60px}
+.wrap{max-width:840px;margin:0 auto;padding:24px 18px}
+h1{font-family:Georgia,serif;font-size:28px;margin:0 0 4px}
+h2{font-family:Georgia,serif;font-size:20px;margin:30px 0 8px;border-bottom:1px solid #e3d9c2;padding-bottom:5px}
+h3{font-family:Georgia,serif;font-size:16px;margin:4px 0 2px}
+.sub{color:var(--muted);font-size:13px;margin-bottom:18px}
+.card{background:var(--paper);border-left:3px solid var(--gold);border-radius:6px;padding:14px 16px;margin:13px 0}
+.demo{border-left-width:5px}
+.n{display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:50%;background:var(--gold);color:#fff;font-weight:700;font-size:14px;margin-right:8px;vertical-align:middle}
+.meta{font-style:italic;color:var(--gold);font-size:14px;margin:0 0 8px}
+.row{margin:7px 0;font-size:13.5px}
+.k{font-weight:700;text-transform:uppercase;letter-spacing:.4px;font-size:10.5px;color:var(--muted);display:block;margin-bottom:1px}
+.good{color:#3f6d3a}.tradeoff{color:#9e3b3b}
+.url{font-family:ui-monospace,Menlo,monospace;font-size:12.5px;background:#efe7d2;border-radius:4px;padding:2px 7px;display:inline-block;margin-top:6px}
+.tags{margin-top:8px}.tag{display:inline-block;font-size:10.5px;color:var(--muted);background:#efe7d2;border:1px solid #e3d9c2;border-radius:999px;padding:2px 9px;margin:2px 4px 2px 0}
+table{border-collapse:collapse;width:100%;font-size:12.5px;margin:10px 0}
+th,td{border:1px solid #e3d9c2;padding:6px 9px;text-align:left;vertical-align:top}
+th{background:#efe7d2;font-size:10.5px;letter-spacing:.3px;text-transform:uppercase}
+a{color:var(--gold)}code{background:#efe7d2;padding:1px 5px;border-radius:3px;font-size:12px}
+ul{margin:6px 0;padding-left:18px}li{margin:4px 0;font-size:13px}small{color:var(--muted)}
+.cite{font-size:12px;color:var(--muted);margin:3px 0 0}
+</style></head><body><div class="wrap">
+
+<h1>Nutrition — 5 UX demo directions</h1>
+<div class="sub">2026-06-12 · Same complete feature set, five genuinely different layouts — each built to <b>kill decision fatigue</b> on a feature-dense page and use richer UI than a 7-tab wall. Open each on your phone. Mock data, no entities. Live after deploy (hash logged in STATUS).</div>
+
+<div class="card"><b>The brief, restated:</b> the current Nutrition page is 7 tabs (Today · My Plan · Recipes · AI Plan · Shop · Progress · Insights). That's a wall of equal choices every time you arrive — classic overwhelm. Your note was right: we weren't using rich components. <b>"A big card slider in the middle solves a lot — you can do a lot on one line."</b> So each demo below keeps ALL the features but reorganises them around ONE strong UX metaphor, so at any moment there's one obvious thing in front of you.</div>
+
+<h2>The five, at a glance</h2>
+<table>
+<tr><th>#</th><th>Metaphor</th><th>The one idea</th><th>Best for</th></tr>
+<tr><td>1</td><td><b>Hero Card Slider</b></td><td>Swipe through tall cards; next one peeks</td><td>Your "a lot on one line" instinct, made literal</td></tr>
+<tr><td>2</td><td><b>Daily Hub</b></td><td>One calm home + one action; rest in bottom sheets</td><td>Reducing the page to a single next step</td></tr>
+<tr><td>3</td><td><b>Log-First</b></td><td>A persistent "+ Log"; everything else demoted</td><td>People who mostly just want to log fast</td></tr>
+<tr><td>4</td><td><b>Day-as-a-Story Timeline</b></td><td>One scroll = your day, narrated by Jess</td><td>The warmest, least "app-like" feel</td></tr>
+<tr><td>5</td><td><b>Editorial Magazine</b></td><td>Full-bleed spreads you read one at a time</td><td>The most premium, brand-forward look</td></tr>
+</table>
+
+<h2>1 · Hero Card Slider <span class="url">/NutritionDemo1</span></h2>
+<div class="card demo" style="border-left-color:var(--gold)">
+<h3><span class="n">1</span>Hero Card Slider</h3>
+<p class="meta">A big swipeable card slider is the spine of the page.</p>
+<div class="row"><span class="k">Metaphor</span>The 7-tab bar is gone. A horizontal scroll-snap slider sits in the middle — each of the 8 surfaces is one tall, rich card, with the next card peeking at the right edge so you know there's more. Dots + a label rail tell you where you are; each card carries exactly one primary action.</div>
+<div class="row"><span class="k">Decision fatigue it kills</span>Collapses eight choices into one gesture — at any moment there's one card in front of you and one obvious action, instead of seven tabs competing up-front.</div>
+<div class="row good"><span class="k">Good</span>Directly your idea; rich and modern; one-thing-at-a-time; the peek invites exploration without pressure.</div>
+<div class="row tradeoff"><span class="k">Trade-off</span>Weaker random access — to reach Shop or Insights you swipe past the others or use the label rail; each card is a fixed height, so the longest content (full meal plan, micro list) scrolls within the card.</div>
+<div class="tags"><span class="tag">card slider</span><span class="tag">scroll-snap + peek</span><span class="tag">one action per card</span></div>
+</div>
+
+<h2>2 · Daily Hub <span class="url">/NutritionDemo2</span></h2>
+<div class="card demo" style="border-left-color:var(--sage)">
+<h3><span class="n" style="background:var(--sage)">2</span>Daily Hub</h3>
+<p class="meta">One calm screen, one action — the rest in bottom sheets.</p>
+<div class="row"><span class="k">Metaphor</span>Home is a single quiet screen: a "today's plate" ring, Jess's one line, a single "Log a meal" button, and exactly ONE suggested next action (tonight's dinner). The other surfaces are minimal tiles in a 2-column grid that slide up as bottom sheets.</div>
+<div class="row"><span class="k">Decision fatigue it kills</span>Answers "what do I do now?" with one obvious action on load. The screen is never a wall of tabs — depth is one calm tap away.</div>
+<div class="row good"><span class="k">Good</span>The calmest landing; strong "one primary action" discipline; bottom sheets are native and familiar; great for a quick daily glance.</div>
+<div class="row tradeoff"><span class="k">Trade-off</span>Everything beyond the hub is one extra tap and never glanceable together — scanning your whole picture means opening/closing sheets one by one.</div>
+<div class="tags"><span class="tag">hub-and-spoke</span><span class="tag">one primary action</span><span class="tag">bottom sheets</span></div>
+</div>
+
+<h2>3 · Log-First <span class="url">/NutritionDemo3</span></h2>
+<div class="card demo" style="border-left-color:var(--rose)">
+<h3><span class="n" style="background:var(--rose)">3</span>Log-First</h3>
+<p class="meta">A persistent "+ Log" button and a rich quick-add sheet.</p>
+<div class="row"><span class="k">Metaphor</span>Built around the one frequent job — logging in seconds. A pinned "+ Log" (plus an inline hero) opens a segmented sheet: Search / Recents / Favourites / Photo / Voice / Barcode. A slim "today" strip sits above; everything else (Plan, Recipes, Meal Plan, Shop, Progress, Insights) lives behind one quiet "Everything else" menu.</div>
+<div class="row"><span class="k">Decision fatigue it kills</span>Makes the #1 action a single thumb-tap and demotes the rest to progressive disclosure, so the screen is never busy.</div>
+<div class="row good"><span class="k">Good</span>Fastest possible logging; honest about what people do most; the quick-add sheet (recents/favourites) is the real friction-killer from the plan.</div>
+<div class="row tradeoff"><span class="k">Trade-off</span>Optimises hard for the logger at the explorer's expense — someone who loves recipes/planning has to dig through "Everything else" to find the app's richest features.</div>
+<div class="tags"><span class="tag">log-first</span><span class="tag">action button</span><span class="tag">segmented quick-add</span></div>
+</div>
+
+<h2>4 · Day-as-a-Story Timeline <span class="url">/NutritionDemo4</span></h2>
+<div class="card demo" style="border-left-color:var(--plum)">
+<h3><span class="n" style="background:var(--plum)">4</span>Day-as-a-Story Timeline</h3>
+<p class="meta">One vertical scroll — your day, narrated. No tabs at all.</p>
+<div class="row"><span class="k">Metaphor</span>The whole page is one calm top-to-bottom scroll. Meals sit as time-stamped entries on a timeline spine; between them Jess weaves a morning greeting, a hydration nudge, the "afternoons run light" pattern, an iron note and an evening recipe. Plan / Week / Insights unfold as script-titled section-breaks. A slim sticky rail (Morning/Plan/Week/Insights) + a floating "+ Log" are the only navigation.</div>
+<div class="row"><span class="k">Decision fatigue it kills</span>Removes navigation entirely — you never choose a section, you scroll your own day in a calm, fixed narrative order.</div>
+<div class="row good"><span class="k">Good</span>The warmest, most whole-life and least "tracker" feel; Jess as a companion really lands; reads beautifully in our editorial type.</div>
+<div class="row tradeoff"><span class="k">Trade-off</span>Direct, repeated access (jump straight to the shopping list mid-cook) is deeper down; the jump-rail + floating Log mitigate it, but it trades fast random-access for a guided narrative.</div>
+<div class="tags"><span class="tag">single feed</span><span class="tag">narrative order</span><span class="tag">zero navigation</span></div>
+</div>
+
+<h2>5 · Editorial Magazine <span class="url">/NutritionDemo5</span></h2>
+<div class="card demo" style="border-left-color:var(--crimson)">
+<h3><span class="n" style="background:var(--crimson)">5</span>Editorial Magazine</h3>
+<p class="meta">Swipeable full-bleed spreads you read one at a time.</p>
+<div class="row"><span class="k">Metaphor</span>Five immersive, one-per-screen spreads — <i>The Plate · The Kitchen · The Pantry · The Body · The Week</i> — each a finished magazine page with a cover block, a big Ephesis script title, strong type hierarchy and exactly one CTA. A segmented control + page dots turn the pages.</div>
+<div class="row"><span class="k">Decision fatigue it kills</span>At any moment you're reading one finished, rich page with a single action — never scanning a grid of competing cards and controls.</div>
+<div class="row good"><span class="k">Good</span>The most premium, brand-forward direction; makes nutrition feel aspirational, not clinical; showcases the Ephesis/Cormorant identity at its best.</div>
+<div class="row tradeoff"><span class="k">Trade-off</span>One-spread-per-screen costs cross-surface comparison — checking today's iron against your meal plan and shopping list means paging between three spreads rather than seeing them together.</div>
+<div class="tags"><span class="tag">magazine spreads</span><span class="tag">segmented control</span><span class="tag">immersive</span></div>
+</div>
+
+<h2>What every demo contains (the full feature set)</h2>
+<div class="card"><ul>
+<li><b>Today's plate</b> — gentle energy + macro picture (a guide, never a calorie scoreboard) + hydration.</li>
+<li><b>Frictionless logging</b> — recents, favourites, photo, voice, barcode, food search (the P0/P1 logging layer).</li>
+<li><b>My Plan</b> — soft targets framed as "what your body's asking for" (energy + the 5 women's micronutrients).</li>
+<li><b>Recipes</b> — saved recipes + an AI generator that cooks from what you have in.</li>
+<li><b>AI Meal Plan</b> — a gentle, stage-aware week (weekends left open on purpose).</li>
+<li><b>Shop</b> — the shopping list grouped by aisle, with a rough £ estimate.</li>
+<li><b>Progress</b> — gentle patterns over time. No streaks, no scores, no vanity counts.</li>
+<li><b>Insights</b> — women's stage-aware micronutrient nudges (iron · fibre · calcium · protein · folate) in Jess's voice.</li>
+</ul>
+<small>Locked constraints held across all five: cream/ink palette, Ephesis + Cormorant only, Lucide/SVG icons, no emoji, no scoreboards, whole-life not clinical, Jess present. Mock data only; <code>useState</code> only; no entities queried — safe to ship alongside production.</small></div>
+
+<h2>Why these patterns — cited research</h2>
+<div class="sub">Modern mobile UX patterns that reduce decision fatigue on feature-dense screens. The five demos each lead with one of these.</div>
+<div class="card">
+<p class="row"><b>0 · The principle — Hick's Law / choice overload.</b> Decision time rises with the number and complexity of simultaneous choices; cutting concurrent options is the root mechanism behind every pattern here.<br><span class="cite">Laws of UX, "Hick's Law" (lawsofux.com/hicks-law) · NN/g, "Simplicity Wins over Abundance of Choice" — an excess of choices leads to fatigue or abandonment.</span></p>
+<p class="row"><b>1 · Horizontal card sliders with peek + scroll-snap</b> (→ Demo 1). Half-cut next cards are a strong cue that more lies sideways; scroll-snap clicks each into place.<br><span class="cite">NN/g, "Carousels on Mobile Devices" · web.dev, "Well-controlled scrolling with CSS Scroll Snap." Risk: horizontally-hidden content has lower discovery — never hide crucial info there.</span></p>
+<p class="row"><b>2 · Bottom sheets for quick actions / progressive disclosure</b> (→ Demos 2 & 3). A partial overlay summons detail on demand and keeps the base screen sparse.<br><span class="cite">NN/g, "Bottom Sheets: Definition and UX Guidelines" (a form of progressive disclosure) · Apple HIG, "Sheets." Risk: hidden content is less discoverable; don't nest navigation inside.</span></p>
+<p class="row"><b>3 · Hub-and-spoke + "one primary action per screen"</b> (→ Demo 2). A central hub branches to focused, low-choice tasks.<br><span class="cite">NN/g, "Basic Patterns for Mobile Navigation." Risk: costly for users who switch sections often (constant return-to-hub).</span></p>
+<p class="row"><b>4 · Progressive disclosure / staged reveal</b> (→ Demos 3 & 4). Show only what the current step needs; defer the rest.<br><span class="cite">NN/g, "Minimize Cognitive Load to Maximize Usability" (Nielsen, orig. 1995). Risk: over-disclosure buries features users want up-front.</span></p>
+<p class="row"><b>5 · Single-feed / timeline-as-narrative</b> (→ Demo 4). Consolidate sections into one ordered scroll; imposing sequence lowers cognitive load even when not required.<br><span class="cite">NN/g, "Minimize Cognitive Load" — "impose sequence… to reduce cognitive load." Risk: long feeds hurt random access; needs anchors/sticky markers.</span></p>
+<p class="row"><b>6 · Segmented controls (2–5 items)</b> (→ Demo 5). Best for a small set of mutually-exclusive views swapped in place.<br><span class="cite">Material Design 3, "Segmented button — Guidelines" (2–5 options) · Apple HIG, "Tab bars" (3–5 persistent destinations). Risk: doesn't scale past ~5 — a 7-way segment reproduces the 7-tab overwhelm.</span></p>
+<p class="row"><b>7 · Peek/snap affordances & the "illusion of completeness"</b> (→ Demos 1 & 5). A visible peeking edge signals "more this way"; if nothing peeks, users assume the screen is complete and never find the rest.<br><span class="cite">web.dev / MDN, CSS Scroll Snap (scroll-padding "sneak-peek") · NN/g, "The Illusion of Completeness."</span></p>
+<p class="row"><b>8 · Chunking & grouping</b> (the connective tissue). NN/g pairs grouping with Hick's Law — the eye reads 3–4 labelled clusters far faster than 11 flat items.<br><span class="cite">NN/g, "Hick's Law: Designing Long Menu Lists."</span></p>
+</div>
+
+<h2>How to view + a recommendation</h2>
+<div class="card">
+<b>On your phone, open each:</b> <code>femwells.com/NutritionDemo1</code> … <code>/NutritionDemo5</code>. Or from <b>FoundersOS → Nutrition Demos</b> (femwells.com/Ideas), tap "Open demo →".<br><br>
+<b>My read:</b> your "card slider" instinct (<b>Demo 1</b>) is the most direct answer to the brief and the most novel. But <b>Demo 2 (Daily Hub)</b> is the safest everyday workhorse, and <b>Demo 4 (Timeline)</b> is the most on-brand / least clinical. A strong production direction could be a <b>hybrid</b>: Daily-Hub home (one action on load) with the Hero Card Slider as the "explore everything" surface, and Jess's narration from the Timeline woven through. Tell me which one (or which mix) feels right and I'll build the real one against production data.
+</div>
+
+<small>FemWell · Nutrition UX demos · 2026-06-12 · all five share <code>nutritionDemoShared.js</code> mock data · commit <code>92b2a27</code>.</small>
+</div></body></html>
