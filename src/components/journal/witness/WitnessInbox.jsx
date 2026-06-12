@@ -37,6 +37,7 @@ export default function WitnessInbox({ user, phase = null, profile = null, onClo
   const [rerouted, setRerouted] = useState(false);
   const [busy, setBusy] = useState(false);
   const [outcome, setOutcome] = useState("");      // responded label | passed | reported
+  const [actErr, setActErr] = useState("");        // visible feedback if respond/report fails
   const [held, setHeld] = useState(heldCountLocal());
   const openedRef = useRef(false);
   const keyTriesRef = useRef(0);          // B2: bound the ZK key-pending wait
@@ -169,6 +170,7 @@ export default function WitnessInbox({ user, phase = null, profile = null, onClo
   const act = async (action, response) => {
     if (!request?.id || busy) return;
     setBusy(true);
+    setActErr("");
     try {
       const wh = await witnessHash(user?.id);
       await base44.functions.invoke("respondWitness", { user_id: user?.id, request_id: request.id, receiver_hash: wh, action, response });
@@ -176,20 +178,21 @@ export default function WitnessInbox({ user, phase = null, profile = null, onClo
       setHeld(heldCountLocal());
       setOutcome(action === "pass" ? "passed" : response);
       setStage("done");
-    } catch (err) { console.error("respondWitness failed:", err); }
+    } catch (err) { console.error("respondWitness failed:", err); setActErr("Couldn’t send that just now — please try again."); }
     finally { setBusy(false); }
   };
 
   const report = async () => {
     if (!request?.id || busy) return;
     setBusy(true);
+    setActErr("");
     try {
       const wh = await witnessHash(user?.id);
       await base44.functions.invoke("flagWitness", { user_id: user?.id, request_id: request.id, receiver_hash: wh, kind: "report" });
       forgetClaim();
       setOutcome("reported");
       setStage("done");
-    } catch (err) { console.error("flagWitness failed:", err); }
+    } catch (err) { console.error("flagWitness failed:", err); setActErr("Couldn’t report that just now — please try again."); }
     finally { setBusy(false); }
   };
 
@@ -329,6 +332,9 @@ export default function WitnessInbox({ user, phase = null, profile = null, onClo
                 <Flag size={15} style={{ color: T.muted }} />
               </button>
             </div>
+            {actErr && (
+              <p role="alert" style={{ margin: "4px 0 0", fontSize: 12, color: T.crimson || "#A84E56", fontWeight: 600 }}>{actErr}</p>
+            )}
           </>
         )}
 

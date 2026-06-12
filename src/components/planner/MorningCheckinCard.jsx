@@ -64,6 +64,7 @@ export default function MorningCheckinCard({ user, onComplete }) {
   const [energy, setEnergy] = useState(null);
   const [sleep, setSleep] = useState(null);
   const [saving, setSaving] = useState(false);
+  const [err, setErr] = useState(false);
   const [justDismissed, setJustDismissed] = useState(false);
 
   useEffect(() => {
@@ -95,6 +96,7 @@ export default function MorningCheckinCard({ user, onComplete }) {
   async function handleSubmit() {
     if (!canSubmit || saving || !user?.id) return;
     setSaving(true);
+    setErr(false);
     const sleepOption = SLEEP_OPTIONS.find((o) => o.value === sleep);
     try {
       await base44.entities.DailyCheckins.create({
@@ -109,6 +111,7 @@ export default function MorningCheckinCard({ user, onComplete }) {
       setJustDismissed(true);
       try { onComplete && onComplete(); } catch { /* swallow */ }
     } catch {
+      setErr(true);
       setSaving(false);
     }
   }
@@ -213,6 +216,11 @@ export default function MorningCheckinCard({ user, onComplete }) {
         >
           <Check size={13} /> {saving ? "Saving…" : "Save check-in"}
         </button>
+        {err && (
+          <p style={{ margin: 0, fontSize: 11, color: C.crimson || "#A84E56", fontWeight: 600, width: "100%", order: 9 }}>
+            Couldn{"’"}t save your check-in — please try again.
+          </p>
+        )}
         <p style={{
           margin: 0, fontSize: 10, color: C.muted, fontStyle: "italic",
           textAlign: "right", maxWidth: "55%",
