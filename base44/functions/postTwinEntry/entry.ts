@@ -42,6 +42,14 @@ function dayFromStart(startISO: string | null): number {
   return Math.min(TWIN_DAYS, Math.floor((today - start) / 86400000) + 1);
 }
 
+// Timeout guard — an awaited platform read/write that HANGS would wedge the function.
+function withTimeout(p: Promise<any>, ms: number, label: string): Promise<any> {
+  return new Promise((resolve, reject) => {
+    const t = setTimeout(() => reject(new Error(`${label}-timeout-${ms}ms`)), ms);
+    p.then((v) => { clearTimeout(t); resolve(v); }, (e) => { clearTimeout(t); reject(e); });
+  });
+}
+
 Deno.serve(async (req) => {
   const base44 = createClientFromRequest(req);
   const me = await base44.auth.me().catch(() => null);
@@ -57,7 +65,7 @@ Deno.serve(async (req) => {
   if (!body || !String(body).trim()) return Response.json({ error: 'body required' }, { status: 400 });
 
   const sb = base44.asServiceRole;
-  const pair = await sb.entities.TwinPair.get(pair_id).catch(() => null);
+  const pair = await withTimeout(sb.entities.TwinPair.get(pair_id), 2500, 'get').catch(() => null);
   if (!pair) return Response.json({ error: 'Not found' }, { status: 404 });
   if (pair.a_hash !== twin_hash && pair.b_hash !== twin_hash) {
     return Response.json({ error: 'Not your pairing' }, { status: 403 });
@@ -77,20 +85,20 @@ Deno.serve(async (req) => {
 
   const nowISO = new Date().toISOString();
 
-  const rows = await sb.entities.TwinEntry.filter({ pair_id }, undefined, 200).catch(() => []);
+  const rows = await withTimeout(sb.entities.TwinEntry.filter({ pair_id }, undefined, 200), 2500, 'filter').catch(() => []);
   const existing = rows.find((r: any) => r.author_hash === twin_hash && Number(r.day) === currentDay);
 
   let ok;
   if (existing) {
-    ok = await sb.entities.TwinEntry.update(existing.id, { body: text, prompt_key: prompt_key || existing.prompt_key })
+    ok = await withTimeout(sb.entities.TwinEntry.update(existing.id, { body: text, prompt_key: prompt_key || existing.prompt_key }), 6000, 'update')
       .catch((e: any) => { console.error('postTwinEntry update failed:', e?.message || e); return null; });
   } else {
-    ok = await sb.entities.TwinEntry.create({
+    ok = await withTimeout(sb.entities.TwinEntry.create({
       pair_id, author_hash: twin_hash, day: currentDay, prompt_key: prompt_key || `d${currentDay}`, body: text,
-    }).catch((e: any) => { console.error('postTwinEntry create failed:', e?.message || e); return null; });
+    }), 6000, 'create').catch((e: any) => { console.error('postTwinEntry create failed:', e?.message || e); return null; });
   }
   if (!ok) return Response.json({ error: 'Write failed' }, { status: 500 });
 
-  await sb.entities.TwinPair.update(pair_id, { last_active_at: nowISO }).catch(() => {});
+  await withTimeout(sb.entities.TwinPair.update(pair_id, { last_active_at: nowISO }), 6000, 'update').catch(() => {});
   return Response.json({ ok: true });
 });

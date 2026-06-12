@@ -19,6 +19,14 @@ function dayFromStart(startISO: string | null): number {
   return Math.min(TWIN_DAYS, Math.floor((today - start) / 86400000) + 1);
 }
 
+// Timeout guard — an awaited platform read/write that HANGS would wedge the function.
+function withTimeout(p: Promise<any>, ms: number, label: string): Promise<any> {
+  return new Promise((resolve, reject) => {
+    const t = setTimeout(() => reject(new Error(`${label}-timeout-${ms}ms`)), ms);
+    p.then((v) => { clearTimeout(t); resolve(v); }, (e) => { clearTimeout(t); reject(e); });
+  });
+}
+
 Deno.serve(async (req) => {
   const base44 = createClientFromRequest(req);
   const me = await base44.auth.me().catch(() => null);
@@ -33,7 +41,7 @@ Deno.serve(async (req) => {
   if (!twin_hash || !pair_id) return Response.json({ error: 'twin_hash + pair_id required' }, { status: 400 });
 
   const sb = base44.asServiceRole;
-  const pair = await sb.entities.TwinPair.get(pair_id).catch(() => null);
+  const pair = await withTimeout(sb.entities.TwinPair.get(pair_id), 2500, 'get').catch(() => null);
   if (!pair) return Response.json({ ok: true, gone: true });
   if (pair.a_hash !== twin_hash && pair.b_hash !== twin_hash) {
     return Response.json({ error: 'Not your pairing' }, { status: 403 });
@@ -43,7 +51,7 @@ Deno.serve(async (req) => {
   let status = pair.status;
   const currentDay = dayFromStart(pair.start_date);
   if (status === 'active' && currentDay >= TWIN_DAYS && (pair.archive_at || '') <= nowISO) {
-    await sb.entities.TwinPair.update(pair.id, { status: 'archived' }).catch(() => {});
+    await withTimeout(sb.entities.TwinPair.update(pair.id, { status: 'archived' }), 6000, 'update').catch(() => {});
     status = 'archived';
   }
   if (status === 'pending') {
@@ -54,7 +62,7 @@ Deno.serve(async (req) => {
   // Which day to read — never a future day.
   const wantDay = Math.max(1, Math.min(currentDay, Number(day) || currentDay));
 
-  const rows = await sb.entities.TwinEntry.filter({ pair_id }, undefined, 200).catch(() => []);
+  const rows = await withTimeout(sb.entities.TwinEntry.filter({ pair_id }, undefined, 200), 2500, 'filter').catch(() => []);
   const mineRow = rows.find((r: any) => r.author_hash === twin_hash && Number(r.day) === wantDay) || null;
   const twinRow = rows.find((r: any) => r.author_hash === otherHash && Number(r.day) === wantDay) || null;
 

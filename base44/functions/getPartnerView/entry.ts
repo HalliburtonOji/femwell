@@ -13,6 +13,14 @@ function getCyclePhase(lastPeriodDate, cycleLen, periodLen) {
   return 'luteal';
 }
 
+// Timeout guard — an awaited platform read/write that HANGS would wedge the function.
+function withTimeout(p: Promise<any>, ms: number, label: string): Promise<any> {
+  return new Promise((resolve, reject) => {
+    const t = setTimeout(() => reject(new Error(`${label}-timeout-${ms}ms`)), ms);
+    p.then((v) => { clearTimeout(t); resolve(v); }, (e) => { clearTimeout(t); reject(e); });
+  });
+}
+
 const PHASE_PARTNER_MSG = {
   menstrual: { label: "Menstrual phase", description: "She's in her menstrual phase — energy tends to be lower and rest is important right now. A quiet evening in or gentle support goes a long way.", emoji: "🌙" },
   follicular: { label: "Follicular phase", description: "She's in her follicular phase — energy is rising and she may feel more social and enthusiastic. A great time for new plans or activities together.", emoji: "🌱" },
@@ -29,7 +37,7 @@ Deno.serve(async (req) => {
     if (!access_token) return Response.json({ error: 'access_token required' }, { status: 400 });
 
     // Find the PartnerAccess record
-    const accesses = await base44.asServiceRole.entities.PartnerAccess.filter({ access_token, is_active: true });
+    const accesses = await withTimeout(base44.asServiceRole.entities.PartnerAccess.filter({ access_token, is_active: true }), 2500, 'filter').catch(() => []);
     const access = accesses[0];
     if (!access) return Response.json({ error: 'Invalid or expired link' }, { status: 404 });
 
@@ -39,16 +47,16 @@ Deno.serve(async (req) => {
     }
 
     // Update last_accessed_at
-    await base44.asServiceRole.entities.PartnerAccess.update(access.id, { last_accessed_at: new Date().toISOString() });
+    await withTimeout(base44.asServiceRole.entities.PartnerAccess.update(access.id, { last_accessed_at: new Date().toISOString() }), 6000, 'update').catch(() => null);
 
     const permissions = access.permissions || [];
     const uid = access.owner_user_id;
 
     const [profiles, todayCheckins, userPrograms, allPrograms] = await Promise.all([
-      base44.asServiceRole.entities.UserProfile.filter({ user_id: uid }),
-      base44.asServiceRole.entities.DailyCheckins.filter({ user_id: uid, date: new Date().toISOString().split('T')[0] }),
-      permissions.includes('programs') ? base44.asServiceRole.entities.UserPrograms.filter({ user_id: uid }) : Promise.resolve([]),
-      permissions.includes('programs') ? base44.asServiceRole.entities.Programs.list('-created_date', 20) : Promise.resolve([]),
+      withTimeout(base44.asServiceRole.entities.UserProfile.filter({ user_id: uid }), 2500, 'filter').catch(() => []),
+      withTimeout(base44.asServiceRole.entities.DailyCheckins.filter({ user_id: uid, date: new Date().toISOString().split('T')[0] }), 2500, 'filter').catch(() => []),
+      permissions.includes('programs') ? withTimeout(base44.asServiceRole.entities.UserPrograms.filter({ user_id: uid }), 2500, 'filter').catch(() => []) : Promise.resolve([]),
+      permissions.includes('programs') ? withTimeout(base44.asServiceRole.entities.Programs.list('-created_date', 20), 2500, 'list').catch(() => []) : Promise.resolve([]),
     ]);
 
     const profile = profiles[0];
@@ -96,7 +104,7 @@ Deno.serve(async (req) => {
     }
 
     return Response.json({ success: true, data: responseData });
-  } catch (error) {
+  } catch (error: any) {
     return Response.json({ error: error.message }, { status: 500 });
   }
 });

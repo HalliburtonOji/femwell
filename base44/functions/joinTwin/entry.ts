@@ -32,6 +32,14 @@ function shape(r: any, myHash: string) {
   };
 }
 
+// Timeout guard — an awaited platform read/write that HANGS would wedge the function.
+function withTimeout(p: Promise<any>, ms: number, label: string): Promise<any> {
+  return new Promise((resolve, reject) => {
+    const t = setTimeout(() => reject(new Error(`${label}-timeout-${ms}ms`)), ms);
+    p.then((v) => { clearTimeout(t); resolve(v); }, (e) => { clearTimeout(t); reject(e); });
+  });
+}
+
 Deno.serve(async (req) => {
   const base44 = createClientFromRequest(req);
   const me = await base44.auth.me().catch(() => null);
@@ -51,12 +59,12 @@ Deno.serve(async (req) => {
 
   // Already in a live (pending/active, not yet archived) pairing? Hand it back —
   // and lazily archive any of mine that have run their 12 days.
-  const asA = await sb.entities.TwinPair.filter({ a_hash: twin_hash }, '-created_date', 20).catch(() => []);
-  const asB = await sb.entities.TwinPair.filter({ b_hash: twin_hash }, '-created_date', 20).catch(() => []);
+  const asA = await withTimeout(sb.entities.TwinPair.filter({ a_hash: twin_hash }, '-created_date', 20), 2500, 'filter').catch(() => []);
+  const asB = await withTimeout(sb.entities.TwinPair.filter({ b_hash: twin_hash }, '-created_date', 20), 2500, 'filter').catch(() => []);
   const both = [...asA, ...asB];
   for (const r of both) {
     if (r.status === 'active' && dayFromStart(r.start_date) >= TWIN_DAYS && (r.archive_at || '') <= nowISO) {
-      await sb.entities.TwinPair.update(r.id, { status: 'archived' }).catch(() => {});
+      await withTimeout(sb.entities.TwinPair.update(r.id, { status: 'archived' }), 6000, 'update').catch(() => {});
       r.status = 'archived';
     }
   }
@@ -65,8 +73,8 @@ Deno.serve(async (req) => {
 
   // Find a pending pair to join (same phase + language, not mine, not lapsed).
   const ph = PHASES.includes(phase) ? phase : 'unknown';
-  const pendings = await sb.entities.TwinPair
-    .filter({ status: 'pending', match_phase: ph, match_language: language || 'en-GB' }, 'created_date', 50).catch(() => []);
+  const pendings = await withTimeout(sb.entities.TwinPair
+    .filter({ status: 'pending', match_phase: ph, match_language: language || 'en-GB' }, 'created_date', 50), 2500, 'filter').catch(() => []);
   const lapseBefore = iso(T - ABANDON_HOURS * 3600e3);
   const cand = pendings.find((r: any) =>
     r.a_hash !== twin_hash &&
@@ -74,17 +82,17 @@ Deno.serve(async (req) => {
     (r.created_date || r.last_active_at || nowISO) > lapseBefore);
 
   if (cand) {
-    const live = await sb.entities.TwinPair.get(cand.id).catch(() => null);
+    const live = await withTimeout(sb.entities.TwinPair.get(cand.id), 2500, 'get').catch(() => null);
     if (live && live.status === 'pending' && live.a_hash !== twin_hash) {
       const patch = {
         b_hash: twin_hash, status: 'active', start_date: dateISO(T),
         archive_at: iso(T + TWIN_DAYS * 86400e3), last_active_at: nowISO,
       };
-      const updated = await sb.entities.TwinPair.update(live.id, patch).catch(() => null);
+      const updated = await withTimeout(sb.entities.TwinPair.update(live.id, patch), 6000, 'update').catch(() => null);
       if (updated) {
         // M5: confirm we actually won the pairing (concurrent joiner could have
         // filled b_hash first). If someone else got it, fall through to open a new one.
-        const after = await sb.entities.TwinPair.get(live.id).catch(() => null);
+        const after = await withTimeout(sb.entities.TwinPair.get(live.id), 2500, 'get').catch(() => null);
         if (!after || after.b_hash === twin_hash) {
           return Response.json({ ok: true, pair: shape(after || { ...live, ...patch }, twin_hash) });
         }
@@ -93,10 +101,10 @@ Deno.serve(async (req) => {
     }
   }
 
-  const created = await sb.entities.TwinPair.create({
+  const created = await withTimeout(sb.entities.TwinPair.create({
     a_hash: twin_hash, match_phase: ph, match_life_stage: life_stage || undefined,
     match_language: language || 'en-GB', status: 'pending', last_active_at: nowISO,
-  }).catch((e: any) => { console.error('joinTwin create failed:', e?.message || e); return null; });
+  }), 6000, 'create').catch((e: any) => { console.error('joinTwin create failed:', e?.message || e); return null; });
   if (!created) return Response.json({ error: 'Write failed' }, { status: 500 });
   return Response.json({ ok: true, pair: shape(created, twin_hash) });
 });

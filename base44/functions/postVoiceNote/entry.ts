@@ -16,6 +16,14 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 
 const MAX_DURATION = 90;   // seconds — async voice-notes are short by design
 
+// Timeout guard — an awaited platform read/write that HANGS would wedge the function.
+function withTimeout(p: Promise<any>, ms: number, label: string): Promise<any> {
+  return new Promise((resolve, reject) => {
+    const t = setTimeout(() => reject(new Error(`${label}-timeout-${ms}ms`)), ms);
+    p.then((v) => { clearTimeout(t); resolve(v); }, (e) => { clearTimeout(t); reject(e); });
+  });
+}
+
 Deno.serve(async (req) => {
   const base44 = createClientFromRequest(req);
   const me = await base44.auth.me().catch(() => null);
@@ -53,7 +61,7 @@ Deno.serve(async (req) => {
   }
 
   const sb = base44.asServiceRole;
-  const note = await sb.entities.VoiceNote.create({
+  const note = await withTimeout(sb.entities.VoiceNote.create({
     author_hash: String(author_hash),
     surface,
     audio_url: String(audio_url),
@@ -61,7 +69,7 @@ Deno.serve(async (req) => {
     masked,
     status,
     // live_at / expires_at / holder_hash deliberately UNSET — set only on a passing screen.
-  }).catch((e: any) => { console.error('postVoiceNote create failed:', e?.message || e); return null; });
+  }), 6000, 'create').catch((e: any) => { console.error('postVoiceNote create failed:', e?.message || e); return null; });
   if (!note) return Response.json({ error: 'Write failed' }, { status: 500 });
 
   return Response.json({

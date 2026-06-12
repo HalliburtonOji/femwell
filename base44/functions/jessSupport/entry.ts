@@ -53,6 +53,14 @@ const JESS_SYSTEM = [
   '  often the kinder host. Only reply when there is something real to hold.',
 ].join('\n');
 
+// Timeout guard — an awaited platform read/write that HANGS would wedge the function.
+function withTimeout(p: Promise<any>, ms: number, label: string): Promise<any> {
+  return new Promise((resolve, reject) => {
+    const t = setTimeout(() => reject(new Error(`${label}-timeout-${ms}ms`)), ms);
+    p.then((v) => { clearTimeout(t); resolve(v); }, (e) => { clearTimeout(t); reject(e); });
+  });
+}
+
 Deno.serve(async (req) => {
   const base44 = createClientFromRequest(req);
   const me = await base44.auth.me().catch(() => null);
@@ -64,14 +72,14 @@ Deno.serve(async (req) => {
   if (!post_id) return Response.json({ error: 'post_id required' }, { status: 400 });
 
   const sb = base44.asServiceRole;
-  const post = await sb.entities.CommunityPost.get(String(post_id)).catch(() => null);
+  const post = await withTimeout(sb.entities.CommunityPost.get(String(post_id)), 2500, 'get').catch(() => null);
   if (!post) return Response.json({ error: 'Not found' }, { status: 404 });
   if (post.hidden || post.comments_mode === 'reaction') {
     return Response.json({ ok: true, skipped: 'closed' }, { status: 200 });
   }
 
   // Gate 1 — dedup: never a second Jess reply on the same thread.
-  const existing = await sb.entities.Comment.filter({ post_id: String(post_id), by: 'jess' }, '-created_date', 1).catch(() => []);
+  const existing = await withTimeout(sb.entities.Comment.filter({ post_id: String(post_id), by: 'jess' }, '-created_date', 1), 2500, 'filter').catch(() => []);
   if (Array.isArray(existing) && existing.length) {
     return Response.json({ ok: true, skipped: 'exists' }, { status: 200 });
   }
@@ -118,7 +126,7 @@ Deno.serve(async (req) => {
     return Response.json({ ok: true, skipped: 'declined' }, { status: 200 });
   }
 
-  const comment = await sb.entities.Comment.create({
+  const comment = await withTimeout(sb.entities.Comment.create({
     post_id: String(post_id),
     author_hash: 'jess',
     body: reply.slice(0, 400),
@@ -126,7 +134,7 @@ Deno.serve(async (req) => {
     status: 'visible',
     flagged: false,
     report_count: 0, hidden: false,
-  }).catch((e: any) => { console.error('jessSupport create failed:', e?.message || e); return null; });
+  }), 6000, 'create').catch((e: any) => { console.error('jessSupport create failed:', e?.message || e); return null; });
   if (!comment) return Response.json({ error: 'Write failed' }, { status: 500 });
 
   return Response.json({ ok: true, comment: {
