@@ -14,7 +14,7 @@
     "hidden": { "type": "boolean", "default": false }
   },
   "required": ["prompt_day", "author_hash", "body"],
-  "indexes": [
+  "indexes": [{ "fields": ["created_date"] }, 
     { "fields": ["prompt_day"] },
     { "fields": ["author_hash"] }
   ],

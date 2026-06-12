@@ -21,7 +21,7 @@
     "expires_at": { "type": "string", "format": "date-time", "description": "Optional soft expiry for ambient/older posts." }
   },
   "required": ["room", "author_hash", "body"],
-  "indexes": [
+  "indexes": [{ "fields": ["created_date"] }, 
     { "fields": ["room"] },
     { "fields": ["circle"] },
     { "fields": ["club"] },

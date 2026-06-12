@@ -12,7 +12,7 @@
     "author_hash": { "type": "string", "description": "Device-derived anonymous token (used only for the per-device daily cap)." }
   },
   "required": ["goal_key", "author_hash"],
-  "indexes": [{ "fields": ["goal_key"] }, { "fields": ["author_hash"] }],
+  "indexes": [{ "fields": ["created_date"] }, { "fields": ["goal_key"] }, { "fields": ["author_hash"] }],
   "rls": {
     "create": { "user_condition": { "role": "admin" } },
     "read":   { "user_condition": { "role": "admin" } },

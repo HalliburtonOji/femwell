@@ -206,8 +206,11 @@ function PostCard({ post, user, onCrisis, onChanged }) {
       if (!d?.comment?.id) { setCommentErr(true); setBusy(false); return; }
       // Publish-then-screen: the comment is live now; screen it out-of-band (fire-and-forget).
       base44.functions.invoke("screenContent", { kind: "comment", id: d.comment.id }).catch(() => {});
+      // Optimistic: append the returned comment immediately (chronological order) so it shows
+      // in <1s; reconcile with a background refetch (NOT awaited — never gate on the sorted read).
+      setComments((prev) => [...(Array.isArray(prev) ? prev : []), d.comment]);
       setDraft("");
-      await loadComments();
+      loadComments();
     } catch (e) { console.error("comment failed:", e); setCommentErr(true); }
     finally { setBusy(false); }
   };
@@ -305,7 +308,9 @@ function RoomComposer({ room, circle, club, user, onCrisis, onPosted, onCancel, 
       // Publish-then-screen: the post is live now; screen it out-of-band (fire-and-forget,
       // never awaited). If OpenAI flags it, screenContent pulls it within moments.
       base44.functions.invoke("screenContent", { kind: "post", id: d.post.id }).catch(() => {});
-      onPosted?.();
+      // Optimistic: hand the created post up so it's inserted into the feed immediately —
+      // the composer close + the post appearing are NEVER gated on the slow feed refetch.
+      onPosted?.(d.post);
     } catch (e) { console.error("post failed:", e); setErr(true); }
     finally { setBusy(false); }
   };
@@ -449,7 +454,9 @@ function ClubCheckpointThread({ pickKey, cp, user, onCrisis }) {
       const r = await base44.functions.invoke("postClubNote", { user_id: user?.id, author_hash: wh, pick_key: pickKey, checkpoint_index: cp.index, body: text });
       const d = r?.data ?? r;
       if (d?.intercept) { onCrisis(); return; }
-      setDraft(""); await load();
+      // Optimistic: append the returned note immediately; reconcile via background load (not awaited).
+      if (d?.note?.id) setNotes((prev) => [...(Array.isArray(prev) ? prev : []), d.note]);
+      setDraft(""); load();
     } catch (e) { console.error("club note failed:", e); }
     finally { setBusy(false); }
   };
@@ -1090,7 +1097,7 @@ function CircleView({ circleKey, user, onCrisis, onBack }) {
       )}
       {composing && (
         <RoomComposer room="circles" circle={circleKey} user={user} onCrisis={onCrisis}
-          onPosted={() => { setComposing(false); load(); }} onCancel={() => setComposing(false)} />
+          onPosted={(post) => { setComposing(false); if (post?.id) setPosts((prev) => [post, ...(Array.isArray(prev) ? prev : [])]); load(); }} onCancel={() => setComposing(false)} />
       )}
 
       {posts === null && <Hand size={18} color={T.muted}>Opening the circle…</Hand>}
@@ -1331,7 +1338,7 @@ function ClubView({ clubKey, user, onCrisis, onBack, clubTitle = "" }) {
       )}
       {composing && (
         <RoomComposer room="clubs" club={clubKey} user={user} onCrisis={onCrisis}
-          onPosted={() => { setComposing(false); load(); }} onCancel={() => setComposing(false)} />
+          onPosted={(post) => { setComposing(false); if (post?.id) setPosts((prev) => [post, ...(Array.isArray(prev) ? prev : [])]); load(); }} onCancel={() => setComposing(false)} />
       )}
 
       {/* Async voice-notes about the book — gated behind VOICE_NOTES_ENABLED + an STT key.
@@ -1427,7 +1434,7 @@ function GamesView({ user, onCrisis }) {
   );
 }
 
-function RoomView({ roomKey, posts, loading, error, user, onNav, onCrisis, onReload, seed = "", initialCircle = null, profile = null, onOpenCorner, onOpenHub }) {
+function RoomView({ roomKey, posts, loading, error, user, onNav, onCrisis, onReload, onPostCreated, seed = "", initialCircle = null, profile = null, onOpenCorner, onOpenHub }) {
   const [composing, setComposing] = useState(() => !!seed);
   const [voicing, setVoicing] = useState(false);
   const room = ROOMS.find((r) => r.key === roomKey) || ROOMS[0];
@@ -1471,7 +1478,7 @@ function RoomView({ roomKey, posts, loading, error, user, onNav, onCrisis, onRel
         )}
         {composing && (
           <RoomComposer room={roomKey} user={user} onCrisis={onCrisis} initialBody={seed}
-            onPosted={() => { setComposing(false); onReload(); }} onCancel={() => setComposing(false)} />
+            onPosted={(post) => { setComposing(false); (onPostCreated || onReload)(post); }} onCancel={() => setComposing(false)} />
         )}
 
         {loading && <Hand size={18} color={T.muted}>Opening the room…</Hand>}
@@ -1650,6 +1657,14 @@ function CommunityInner() {
 
   const reload = useCallback(() => { setTick((t) => t + 1); load(); }, [load]);
 
+  // Optimistic post insert — prepend the just-created post to the feed IMMEDIATELY so the UI
+  // reflects success in <1s, never gated behind the slow (unindexed) -created_date refetch.
+  // A background load() (NOT awaited, no tick remount) reconciles shortly after.
+  const onPostCreated = useCallback((post) => {
+    if (post?.id) setPosts((prev) => [post, ...prev.filter((x) => x.id !== post.id)]);
+    load();
+  }, [load]);
+
   return (
     <div style={{ minHeight: "100vh", ...PAPER_BG }}>
       <InkFilter />
@@ -1667,7 +1682,7 @@ function CommunityInner() {
               <button onClick={() => setView("home")} style={{ ...ghostBtn, marginBottom: 14, padding: "7px 11px" }}><ChevronLeft size={14} /> Community</button>
               <EchoWall user={user} profile={profile} lifeStage={lifeStage} />
             </div>
-          : <RoomView key={tick} roomKey={view} posts={posts} loading={loading} error={loadErr} user={user} onNav={setView} onCrisis={() => setCrisis(true)} onReload={reload} seed={roomSeed} initialCircle={initialCircle} profile={profile}
+          : <RoomView key={tick} roomKey={view} posts={posts} loading={loading} error={loadErr} user={user} onNav={setView} onCrisis={() => setCrisis(true)} onReload={reload} onPostCreated={onPostCreated} seed={roomSeed} initialCircle={initialCircle} profile={profile}
               onOpenHub={() => setHubOpen(true)}
               onOpenCorner={(key, title) => { setInitialClub(key); setClubTitle(title || ""); setView("clubs"); }} />}
         {view === "home" && (

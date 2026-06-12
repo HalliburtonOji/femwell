@@ -14,7 +14,7 @@
     "hidden": { "type": "boolean", "default": false }
   },
   "required": ["week_key", "author_hash"],
-  "indexes": [{ "fields": ["week_key"] }, { "fields": ["author_hash"] }],
+  "indexes": [{ "fields": ["created_date"] }, { "fields": ["week_key"] }, { "fields": ["author_hash"] }],
   "rls": {
     "create": { "user_condition": { "role": "admin" } },
     "update": { "user_condition": { "role": "admin" } },

@@ -12,7 +12,7 @@
     "text": { "type": "string", "description": "For open formats: a short line (crisis + moderation checked server-side)." }
   },
   "required": ["round_id", "author_hash"],
-  "indexes": [
+  "indexes": [{ "fields": ["created_date"] }, 
     { "fields": ["round_id"] },
     { "fields": ["author_hash"] }
   ],

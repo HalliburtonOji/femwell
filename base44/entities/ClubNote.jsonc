@@ -16,7 +16,7 @@
     "hidden": { "type": "boolean", "default": false }
   },
   "required": ["pick_key", "checkpoint_index", "author_hash"],
-  "indexes": [{ "fields": ["pick_key"] }, { "fields": ["author_hash"] }],
+  "indexes": [{ "fields": ["created_date"] }, { "fields": ["pick_key"] }, { "fields": ["author_hash"] }],
   "rls": {
     "create": { "user_condition": { "role": "admin" } },
     "update": { "user_condition": { "role": "admin" } },

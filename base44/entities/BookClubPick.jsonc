@@ -16,7 +16,7 @@
     "active": { "type": "boolean", "default": true, "description": "The single live pick." }
   },
   "required": ["pick_key", "title"],
-  "indexes": [{ "fields": ["active"] }, { "fields": ["pick_key"] }],
+  "indexes": [{ "fields": ["created_date"] }, { "fields": ["active"] }, { "fields": ["pick_key"] }],
   "rls": {
     "create": { "user_condition": { "role": "admin" } },
     "update": { "user_condition": { "role": "admin" } },

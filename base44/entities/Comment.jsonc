@@ -17,7 +17,7 @@
     "flagged": { "type": "boolean", "default": false, "description": "M2: OpenAI moderation flagged this as borderline (visible but queued for human review). Clearly-harmful comments are status:removed instead." }
   },
   "required": ["post_id", "author_hash"],
-  "indexes": [
+  "indexes": [{ "fields": ["created_date"] }, 
     { "fields": ["post_id"] },
     { "fields": ["author_hash"] }
   ],

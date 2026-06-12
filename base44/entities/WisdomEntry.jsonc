@@ -17,7 +17,7 @@
     "source_echo_id": { "type": "string", "description": "Dedup key for promoted echoes — never the author, only the echo row id." }
   },
   "required": ["body"],
-  "indexes": [
+  "indexes": [{ "fields": ["created_date"] }, 
     { "fields": ["topic"] },
     { "fields": ["source"] }
   ],
