@@ -1,6 +1,13 @@
 # FEMWELL — CANONICAL STATUS INDEX (read first · updated 2026-06-12)
 **This file is the single source of truth AND the index to every plan doc. If anything else disagrees, this wins.** (The long ship-log history continues below the index.)
 
+## 🔍 APP HEALTH AUDIT — SCAN 1 wave (2026-06-12) — `453378f` (report) + `af70814` (batch-1 fix) · awaiting Halli deploy + next-wave greenlight
+Full-app hunt for the posting bug's class. Report: `claude-state/APP_HEALTH_AUDIT.html` + FoundersOS → **Health Audit** tab. Method = code inspection (mock harness not trusted); write fixes tagged needs-live-verify.
+- **1(a) RLS/write — VERDICT CLEAN:** all 134 entities enumerated. 0 `role:system` remain; 22 `role:admin` (service writes ok, client blocked); 112 default (owner+service ok); the 9 read-locked private entities are never read directly by the client. **No entity denies a legitimate write.**
+- **1(b) function hang — SYSTEMIC:** **B1 (HIGH)** 49/59 interactive fns have unguarded awaited calls (same posting class). **B2 (HIGH, needs-Halli)** ~100 app-wide sorted reads on **unindexed** fields (only the 10 community entities indexed) — but guards (B1) are the universal fix; mass-indexing is a judgment call (app runs daily on them, so they crawl not universally-hang) → targeted index subset on Halli's greenlight. **B3 (MED)** client gating-on-slow-read beyond community → Scan 2.
+- **FIXED batch 1 (`af70814`):** timeout-guarded reactCommunity, reportCommunity, reactEcho, reportEcho, retractEcho (retractEcho had a BARE uncaught `await delete`). deno check green. **Needs live-verify** (tap reaction/report/retract).
+- **⚠️ NEEDS HALLI:** deploy batch-1 functions + bundle (the new tab); live-verify the 3 actions; greenlight next waves — B1 batches 2 (memberships) → 3 (witness/twin) → 4 (pool/game/voice) → 5 (AI guard); the B2 index subset; then **SCAN 2** (dead/mis-wired buttons, missing empty/loading/error states, undeployed-entity refs, awaited fire-and-forget) across all pages.
+
 ## ✅✅ POSTING SAGA — CLOSED (2026-06-12) — confirmed fixed end-to-end live · cleanups in `a29ad35`
 **Posting works + persists** (UI compose → appears instantly → persists on reload; direct create 1.5s/200 + id). The bug was THREE stacked root causes, each masking the next — only fixed once all three were:
 1. **RLS write-lock denied ALL service writes app-wide** — the B3 audit set `user_condition:{role:"system"}` on 22 entities; `asServiceRole` is admin-level, not "system", so every service create/update/delete was denied. → **`role:"admin"`** (`8d4f79f`). *Found by createPostDiag's "Permission denied" + Echo control.*
