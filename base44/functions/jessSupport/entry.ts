@@ -84,7 +84,9 @@ Deno.serve(async (req) => {
   // Gate 3 — the model may still decline.
   let ai: any = null;
   try {
-    ai = await sb.integrations.Core.InvokeLLM({
+    // Hard 12s cap: InvokeLLM takes no abort signal, so race it against a timeout.
+    // Jess is best-effort enrichment — a slow/hung model must never hang this function.
+    const llm = sb.integrations.Core.InvokeLLM({
       prompt: JESS_SYSTEM + '\n\nThe member wrote:\n"""\n' + String(post.body || '').slice(0, 1200) + '\n"""\n\nReturn JSON only.',
       response_json_schema: {
         type: 'object',
@@ -95,6 +97,10 @@ Deno.serve(async (req) => {
         required: ['should_reply'],
       },
     });
+    ai = await Promise.race([
+      llm,
+      new Promise((_, reject) => setTimeout(() => reject(new Error('llm-timeout')), 12000)),
+    ]);
   } catch (e: any) {
     console.error('jessSupport InvokeLLM failed:', e?.message || e);
     return Response.json({ ok: true, skipped: 'llm-error' }, { status: 200 });

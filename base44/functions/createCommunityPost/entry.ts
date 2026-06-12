@@ -49,11 +49,16 @@ async function openaiModerate(text: string): Promise<{ available: boolean; flagg
   const key = Deno.env.get('OPENAI_API_KEY');
   if (!key) return { available: false, flagged: false, categories: {} };
   try {
+    // Hard 4s timeout: a slow/hung moderation endpoint must NEVER block the post path.
+    // On abort the fetch throws → caught below → caller falls back to the keyword floor.
+    const ctrl = new AbortController();
+    const timer = setTimeout(() => ctrl.abort(), 4000);
     const r = await fetch('https://api.openai.com/v1/moderations', {
       method: 'POST',
       headers: { 'Authorization': `Bearer ${key}`, 'Content-Type': 'application/json' },
       body: JSON.stringify({ model: 'omni-moderation-latest', input: String(text || '').slice(0, 4000) }),
-    });
+      signal: ctrl.signal,
+    }).finally(() => clearTimeout(timer));
     if (!r.ok) return { available: false, flagged: false, categories: {} };
     const j = await r.json();
     const res = j?.results?.[0] || {};

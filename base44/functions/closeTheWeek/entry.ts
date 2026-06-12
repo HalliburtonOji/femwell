@@ -24,10 +24,14 @@ async function openaiFlaggedHarmful(text: string): Promise<{ crisis: boolean; re
   const key = Deno.env.get('OPENAI_API_KEY');
   if (!key) return { crisis: false, remove: BANNED.some((w) => (text || '').toLowerCase().includes(w)) };
   try {
+    // Hard 4s timeout: a slow/hung moderation endpoint must NEVER block the reflection path.
+    const ctrl = new AbortController();
+    const timer = setTimeout(() => ctrl.abort(), 4000);
     const r = await fetch('https://api.openai.com/v1/moderations', {
       method: 'POST', headers: { 'Authorization': `Bearer ${key}`, 'Content-Type': 'application/json' },
       body: JSON.stringify({ model: 'omni-moderation-latest', input: String(text || '').slice(0, 1000) }),
-    });
+      signal: ctrl.signal,
+    }).finally(() => clearTimeout(timer));
     if (!r.ok) return { crisis: false, remove: BANNED.some((w) => (text || '').toLowerCase().includes(w)) };
     const j = await r.json();
     const res = j?.results?.[0] || {};
