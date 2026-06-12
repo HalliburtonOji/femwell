@@ -104,6 +104,15 @@ import CommunityDemo3 from './pages/CommunityDemo3';
 import CommunityDemo4 from './pages/CommunityDemo4';
 import CommunityDemo5 from './pages/CommunityDemo5';
 import CommunityDemo6 from './pages/CommunityDemo6';   // production candidate: rooms+tabs hybrid + comments + games-master
+// 5 Nutrition UX demos (mounted at /NutritionDemo1..5). Linked from the
+// "Nutrition Demos" tab in FoundersOS. Self-contained, mock data only (all from
+// ./pages/nutritionDemoShared), NO entity queries — 5 distinct decision-fatigue
+// directions: 1 card-slider · 2 daily-hub · 3 log-first · 4 timeline · 5 magazine.
+import NutritionDemo1 from './pages/NutritionDemo1';
+import NutritionDemo2 from './pages/NutritionDemo2';
+import NutritionDemo3 from './pages/NutritionDemo3';
+import NutritionDemo4 from './pages/NutritionDemo4';
+import NutritionDemo5 from './pages/NutritionDemo5';
 // Sprint 10 — Partner Sync hub (user's share-code page). The
 // matching public /partner?code=… read-only view (Partner.jsx) is
 // wired separately in App.jsx OUTSIDE this PAGES map so it can run
@@ -168,6 +177,11 @@ export const PAGES = {
     "CommunityDemo4": CommunityDemo4,
     "CommunityDemo5": CommunityDemo5,
     "CommunityDemo6": CommunityDemo6,
+    "NutritionDemo1": NutritionDemo1,
+    "NutritionDemo2": NutritionDemo2,
+    "NutritionDemo3": NutritionDemo3,
+    "NutritionDemo4": NutritionDemo4,
+    "NutritionDemo5": NutritionDemo5,
     // HealthDashboard intentionally NOT registered — see import comment above.
     // "HealthDashboard": HealthDashboard,
 }

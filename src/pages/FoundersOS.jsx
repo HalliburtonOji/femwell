@@ -74,7 +74,7 @@ const ALLOWED = new Set([
   "ojihalliburton57@gmail.com",
 ]);
 
-const TABS = ["Lab", "Pages", "Roadmap", "Health Audit", "Nutrition Plan", "Community Plan", "Build Plan", "Journal Audit", "Expert Governance", "Library & Groups", "Integration Audit", "Connectivity Map", "Sharing", "Home Redesign", "Whole-Life", "Audio", "Ideas", "Strategy", "Legal", "Decisions", "Journal", "Journal Demos", "Community Demos", "Another You", "UX & Design", "Wholeness", "LGBTQ+", "Health Corner"];
+const TABS = ["Lab", "Pages", "Roadmap", "Health Audit", "Nutrition Plan", "Nutrition Demos", "Community Plan", "Build Plan", "Journal Audit", "Expert Governance", "Library & Groups", "Integration Audit", "Connectivity Map", "Sharing", "Home Redesign", "Whole-Life", "Audio", "Ideas", "Strategy", "Legal", "Decisions", "Journal", "Journal Demos", "Community Demos", "Another You", "UX & Design", "Wholeness", "LGBTQ+", "Health Corner"];
 
 const IDEAS_KEY  = "femwell_ideas";
 const CHECKS_KEY = "femwell_founder_checks";
@@ -588,6 +588,7 @@ function FoundersInner({ user }) {
         {tab === "Journal"        && <JournalTab />}
         {tab === "Journal Demos"  && <JournalDemosTab />}
         {tab === "Community Demos" && <CommunityDemosTab />}
+        {tab === "Nutrition Demos" && <NutritionDemosTab />}
         {tab === "Another You"    && <AnotherYouTab />}
         {tab === "UX & Design" && <UxDesignTab />}
         {tab === "Wholeness"   && <WholenessTab />}
@@ -1924,6 +1925,115 @@ function JournalDemosTab() {
         Jess phase prompt · entry type chooser · entry list · Burn Mode indicator ·
         On This Day · community signal · full composer · writing rhythm dots.
         Every interaction is wired with useState; no real entities are queried.
+      </div>
+    </div>
+  );
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+// Tab — Nutrition Demos (5 decision-fatigue UX directions)
+// ════════════════════════════════════════════════════════════════════════════
+// Each demo is the SAME complete nutrition feature set (Today, Log w/ recents+
+// favourites+photo+voice, My Plan, Recipes incl. AI, AI Meal Plan, Shop, Progress,
+// Insights w/ women's stage micros) laid out under a DIFFERENT organising metaphor
+// to kill decision fatigue. Mock data only (./nutritionDemoShared), no entities.
+const NUTRITION_DEMOS = [
+  { n: 1, slug: "NutritionDemo1", title: "Hero Card Slider", accent: T.gold,
+    subtitle: "A big swipeable card slider is the spine",
+    body: "The 7-tab bar is gone — a horizontal scroll-snap slider sits in the middle, each surface a tall rich card with the next peeking at the edge. One card, one obvious action, swipe for more. (Halli's “a lot on one line” idea.)",
+    tags: ["card slider", "scroll-snap + peek", "one action per card"] },
+  { n: 2, slug: "NutritionDemo2", title: "Daily Hub", accent: T.sage,
+    subtitle: "One calm screen + bottom-sheet spokes",
+    body: "Home shows a today's-plate ring, Jess's one line, a single “Log a meal” button and ONE suggested next action. The other surfaces are calm tiles that open as bottom sheets — never a wall of choices.",
+    tags: ["hub-and-spoke", "one primary action", "bottom sheets"] },
+  { n: 3, slug: "NutritionDemo3", title: "Log-First", accent: T.blush,
+    subtitle: "A persistent + Log button + rich sheet",
+    body: "Built around the one frequent job: logging in seconds. A pinned “+ Log” opens a segmented sheet (Search / Recents / Favourites / Photo / Voice / Barcode). Everything else lives behind one quiet “Everything else” menu.",
+    tags: ["log-first", "FAB", "segmented quick-add"] },
+  { n: 4, slug: "NutritionDemo4", title: "Day-as-a-Story Timeline", accent: T.gold,
+    subtitle: "One vertical scroll — no tabs at all",
+    body: "Your day told top-to-bottom on a timeline spine: meals as time-stamped entries, with Jess weaving hydration, an afternoon-dip note, an iron nudge and an evening recipe between them. Plan/Week/Insights unfold as section-breaks. You don't navigate — you scroll your day.",
+    tags: ["single feed", "narrative order", "zero navigation"] },
+  { n: 5, slug: "NutritionDemo5", title: "Editorial Magazine", accent: T.blush,
+    subtitle: "Swipeable full-bleed magazine spreads",
+    body: "Five immersive one-per-screen spreads — The Plate, The Kitchen, The Pantry, The Body, The Week — each a finished magazine page with a cover block, a big script title and one CTA. You read a spread, not a grid.",
+    tags: ["magazine spreads", "segmented control", "immersive"] },
+];
+
+function NutritionDemosTab() {
+  return (
+    <div>
+      <PageHeader
+        title="Nutrition — 5 UX Demos"
+        subtitle="Same full nutrition feature set, five genuinely different layouts — each designed to kill decision fatigue and use richer UI (sliders, sheets, timelines, spreads) instead of a 7-tab wall. Open each on your phone. Mock data, no entities queried."
+        badge="INTERACTIVE"
+        badgeTone="gold"
+      />
+      <div style={{ display: "flex", flexDirection: "column", gap: 14, marginBottom: 24 }}>
+        {NUTRITION_DEMOS.map((d) => (
+          <article key={d.n} style={{
+            background: T.surface,
+            border: `1px solid ${T.border}`,
+            borderLeft: `4px solid ${d.accent}`,
+            borderRadius: 14,
+            padding: "18px 20px 16px",
+          }}>
+            <div style={{ display: "flex", alignItems: "flex-start", gap: 14, marginBottom: 10 }}>
+              <div style={{
+                width: 38, height: 38, borderRadius: "50%",
+                background: T.goldSoft, color: d.accent,
+                border: `1px solid ${d.accent}`,
+                display: "flex", alignItems: "center", justifyContent: "center",
+                fontSize: 17, fontWeight: 700, flexShrink: 0,
+              }}>{d.n}</div>
+              <div style={{ flex: 1 }}>
+                <div style={{
+                  fontSize: 19, fontWeight: 700, color: T.textHi,
+                  letterSpacing: -0.1, lineHeight: 1.25,
+                }}>
+                  Demo {d.n} — {d.title}
+                </div>
+                <div style={{
+                  fontStyle: "italic", fontSize: 13.5, color: d.accent,
+                  marginTop: 2,
+                }}>{d.subtitle}</div>
+              </div>
+            </div>
+            <p style={{
+              fontSize: 13, color: T.textMid, lineHeight: 1.65, margin: "0 0 12px",
+            }}>{d.body}</p>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 14 }}>
+              {d.tags.map((tag) => (
+                <span key={tag} style={{
+                  fontSize: 10.5, color: T.textMid,
+                  background: T.surfaceHi, border: `1px solid ${T.border}`,
+                  borderRadius: 9999, padding: "3px 9px",
+                  }}>{tag}</span>
+              ))}
+            </div>
+            <a href={`/${d.slug}`} style={{
+              display: "inline-block",
+              background: d.accent, color: T.bg,
+              border: "none", borderRadius: 9999,
+              padding: "8px 16px",
+              fontSize: 13, fontWeight: 700, cursor: "pointer",
+              textDecoration: "none",
+            }}>Open demo →</a>
+          </article>
+        ))}
+      </div>
+      <div style={{
+        background: T.surface, border: `1px dashed ${T.border}`,
+        borderRadius: 12, padding: "12px 16px",
+        fontSize: 12, color: T.textMid, lineHeight: 1.6,
+      }}>
+        All 5 demos share the SAME complete feature set: today's plate · frictionless
+        logging (recents, favourites, photo, voice, barcode) · My Plan targets ·
+        Recipes incl. an AI generator · AI meal plan · shopping list by aisle ·
+        gentle progress (no streaks, no scores) · women's stage-aware micronutrient
+        insights with Jess. Every interaction is wired with useState; no real entities
+        are queried. Locked constraints held: cream/ink palette, Ephesis + Cormorant,
+        Lucide/SVG only, no emoji, whole-life not clinical.
       </div>
     </div>
   );
