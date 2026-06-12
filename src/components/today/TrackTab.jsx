@@ -130,6 +130,7 @@ function CycleSubTab({ user, profile, selectedDate }) {
   const [flow, setFlow] = useState("medium");
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [error, setError] = useState(false);
 
   useEffect(() => {
     base44.entities.CycleEvents.filter({ user_id: user.id, date: selectedDate })
@@ -138,16 +139,22 @@ function CycleSubTab({ user, profile, selectedDate }) {
 
   const logEvent = async () => {
     setSaving(true);
-    const created = await base44.entities.CycleEvents.create({
-      user_id: user.id,
-      date: selectedDate,
-      type: eventType,
-      flow_level: eventType === "PeriodStart" ? flow : undefined,
-    });
-    setEvents(prev => [created, ...prev]);
-    setSaving(false);
-    setSaved(true);
-    setTimeout(() => setSaved(false), 2000);
+    setError(false);
+    try {
+      const created = await base44.entities.CycleEvents.create({
+        user_id: user.id,
+        date: selectedDate,
+        type: eventType,
+        flow_level: eventType === "PeriodStart" ? flow : undefined,
+      });
+      setEvents(prev => [created, ...prev]);
+      setSaving(false);
+      setSaved(true);
+      setTimeout(() => setSaved(false), 2000);
+    } catch {
+      setSaving(false);
+      setError(true);
+    }
   };
 
   const deleteEvent = async (id) => {
@@ -223,6 +230,7 @@ function CycleSubTab({ user, profile, selectedDate }) {
           {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : saved ? <Check className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
           {saving ? "Saving…" : saved ? "Logged!" : "Log Event"}
         </button>
+        {error && <p style={{ fontSize: 12, color: "var(--rose-dust)", marginTop: 8 }}>Couldn't log event. Please try again.</p>}
       </div>
 
       {events.length > 0 && (
@@ -252,6 +260,7 @@ function PMDDSeverityLogger({ user, profile, selectedDate }) {
   const [severity, setSeverity] = useState(5);
   const [saved, setSaved] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [error, setError] = useState(false);
 
   const cycleDay = (() => {
     if (!profile?.last_period_start_date) return null;
@@ -265,15 +274,21 @@ function PMDDSeverityLogger({ user, profile, selectedDate }) {
 
   const log = async () => {
     setSaving(true);
-    await base44.entities.SymptomLogs.create({
-      user_id: user.id,
-      date: selectedDate,
-      symptom_type: "PMDD Severity",
-      severity,
-    });
-    setSaved(true);
-    setSaving(false);
-    setTimeout(() => setSaved(false), 2000);
+    setError(false);
+    try {
+      await base44.entities.SymptomLogs.create({
+        user_id: user.id,
+        date: selectedDate,
+        symptom_type: "PMDD Severity",
+        severity,
+      });
+      setSaved(true);
+      setSaving(false);
+      setTimeout(() => setSaved(false), 2000);
+    } catch {
+      setSaving(false);
+      setError(true);
+    }
   };
 
   return (
@@ -288,6 +303,7 @@ function PMDDSeverityLogger({ user, profile, selectedDate }) {
         style={{ padding: "8px 18px", borderRadius: 9999, fontSize: 12, fontWeight: 600, border: "none", cursor: "pointer", backgroundColor: saved ? "var(--sage)" : "var(--plum)", color: "white" }}>
         {saving ? "Saving..." : saved ? "Logged" : "Log severity"}
       </button>
+      {error && <p style={{ fontSize: 12, color: "var(--rose-dust)", marginTop: 8 }}>Couldn't log. Please try again.</p>}
     </div>
   );
 }
@@ -308,6 +324,7 @@ function SymptomsSubTab({ user, profile, selectedDate }) {
   const [severity, setSeverity] = useState(5);
   const [notes, setNotes] = useState("");
   const [saving, setSaving] = useState(false);
+  const [logError, setLogError] = useState(false);
 
   // New: daily check-in for the selected date + recent 14 days for heatmap/patterns.
   const [todayCheckin, setTodayCheckin] = useState(null);
@@ -333,18 +350,24 @@ function SymptomsSubTab({ user, profile, selectedDate }) {
   const log = async () => {
     if (!selected) return;
     setSaving(true);
-    await base44.entities.SymptomLogs.create({
-      user_id: user.id,
-      date: selectedDate,
-      symptom_type: toTitleCase(selected),
-      severity,            // 1-10
-      notes: notes.trim() || undefined,
-    });
-    load();          // background refetch — don't gate the UI on the read
-    setSelected(null);
-    setNotes("");
-    setSeverity(5);
-    setSaving(false);
+    setLogError(false);
+    try {
+      await base44.entities.SymptomLogs.create({
+        user_id: user.id,
+        date: selectedDate,
+        symptom_type: toTitleCase(selected),
+        severity,            // 1-10
+        notes: notes.trim() || undefined,
+      });
+      load();          // background refetch — don't gate the UI on the read
+      setSelected(null);
+      setNotes("");
+      setSeverity(5);
+      setSaving(false);
+    } catch {
+      setSaving(false);
+      setLogError(true);
+    }
   };
 
   const remove = async (id) => {
@@ -449,6 +472,7 @@ function SymptomsSubTab({ user, profile, selectedDate }) {
               {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
               {saving ? "Saving…" : `Log ${selected}`}
             </button>
+            {logError && <p style={{ fontSize: 12, color: "var(--rose-dust)" }}>Couldn't log symptom. Please try again.</p>}
           </div>
         )}
       </div>
@@ -487,18 +511,26 @@ function HabitsSubTab({ user, profile, selectedDate }) {
   const togglePreset = async (preset) => {
     const existing = habits.find(h => h.habit_type === preset.name);
     if (existing) {
-      await base44.entities.HabitLogs.update(existing.id, { completed: !existing.completed });
-      setHabits(prev => prev.map(h => h.id === existing.id ? { ...h, completed: !h.completed } : h));
+      const next = !existing.completed;
+      // Optimistic toggle; revert if the write fails.
+      setHabits(prev => prev.map(h => h.id === existing.id ? { ...h, completed: next } : h));
+      try {
+        await base44.entities.HabitLogs.update(existing.id, { completed: next });
+      } catch {
+        setHabits(prev => prev.map(h => h.id === existing.id ? { ...h, completed: !next } : h));
+      }
     } else {
       setSaving(preset.name);
-      const created = await base44.entities.HabitLogs.create({
-        user_id: user.id,
-        date: selectedDate,
-        habit_type: preset.name,
-        habit_category: preset.category,
-        completed: true,
-      });
-      setHabits(prev => [...prev, created]);
+      try {
+        const created = await base44.entities.HabitLogs.create({
+          user_id: user.id,
+          date: selectedDate,
+          habit_type: preset.name,
+          habit_category: preset.category,
+          completed: true,
+        });
+        setHabits(prev => [...prev, created]);
+      } catch { /* swallow — checkbox stays unchecked, no stuck spinner */ }
       setSaving(null);
     }
   };
@@ -507,16 +539,18 @@ function HabitsSubTab({ user, profile, selectedDate }) {
     if (!customName.trim()) return;
     setSaving("custom");
     const name = customName.trim();
-    const created = await base44.entities.HabitLogs.create({
-      user_id: user.id,
-      date: selectedDate,
-      habit_type: name,
-      habit_category: habitCategory(name),
-      completed: false,
-    });
-    setHabits(prev => [...prev, created]);
-    setCustomName("");
-    setShowCustom(false);
+    try {
+      const created = await base44.entities.HabitLogs.create({
+        user_id: user.id,
+        date: selectedDate,
+        habit_type: name,
+        habit_category: habitCategory(name),
+        completed: false,
+      });
+      setHabits(prev => [...prev, created]);
+      setCustomName("");
+      setShowCustom(false);
+    } catch { /* swallow — input retained so the user can retry */ }
     setSaving(null);
   };
 
@@ -657,6 +691,7 @@ function MedsSubTab({ user, selectedDate }) {
   const [dose, setDose] = useState("");
   const [saving, setSaving] = useState(false);
   const [nameError, setNameError] = useState(false);
+  const [saveError, setSaveError] = useState(false);
 
   const load = async () => {
     const [logs, rems] = await Promise.all([
@@ -672,18 +707,24 @@ function MedsSubTab({ user, selectedDate }) {
   const logMed = async () => {
     if (!itemName.trim()) { setNameError(true); return; }
     setNameError(false);
+    setSaveError(false);
     setSaving(true);
-    const created = await base44.entities.MedicationLogs.create({
-      user_id: user.id,
-      date: selectedDate,
-      item_name: itemName.trim(),
-      dose: dose.trim() || undefined,
-      taken: true,
-    });
-    setTodayLogs(prev => [...prev, created]);
-    setItemName("");
-    setDose("");
-    setSaving(false);
+    try {
+      const created = await base44.entities.MedicationLogs.create({
+        user_id: user.id,
+        date: selectedDate,
+        item_name: itemName.trim(),
+        dose: dose.trim() || undefined,
+        taken: true,
+      });
+      setTodayLogs(prev => [...prev, created]);
+      setItemName("");
+      setDose("");
+      setSaving(false);
+    } catch {
+      setSaving(false);
+      setSaveError(true);
+    }
   };
 
   const markReminderTaken = async (rem) => {
@@ -722,6 +763,7 @@ function MedsSubTab({ user, selectedDate }) {
           {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Pill className="w-4 h-4" />}
           {saving ? "Saving…" : "Log Medication"}
         </button>
+        {saveError && <p style={{ fontSize: 12, color: "var(--rose-dust)", marginTop: 8 }}>Couldn't log medication. Please try again.</p>}
 
         {todayLogs.length > 0 && (
           <div className="mt-4 space-y-2">
@@ -758,7 +800,7 @@ function MedsSubTab({ user, selectedDate }) {
                     <p style={{ fontSize: 11, color: "var(--mauve)", }}>{rem.reminder_time}{rem.dose ? ` · ${rem.dose}` : ""}</p>
                   </div>
                   {taken ? (
-                    <span style={{ fontSize: 11, fontWeight: 600, color: "var(--sage)", }}>✓ Taken</span>
+                    <span style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 11, fontWeight: 600, color: "var(--sage)", }}><Check style={{ width: 12, height: 12 }} /> Taken</span>
                   ) : (
                     <button onClick={() => markReminderTaken(rem)}
                       style={{ fontSize: 11, fontWeight: 600, color: "var(--plum)", backgroundColor: "var(--ivory-dark)", border: "1px solid var(--border)", borderRadius: 9999, padding: "4px 10px", cursor: "pointer", }}>

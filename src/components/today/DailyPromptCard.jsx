@@ -27,17 +27,22 @@ export default function DailyPromptCard({ user }) {
   const save = async () => {
     if (!form.main_focus.trim()) return;
     setSaving(true);
-    await base44.entities.DailyPromptResponse.create({
-      user_id: user.id,
-      day_key: todayStr,
-      main_focus: form.main_focus.trim(),
-      mood: form.mood,
-      energy: form.energy,
-    }).catch(() => {});
-    setSaving(false);
-    localStorage.setItem("fw_prompt_dismissed", todayStr);
-    toast.success("Saved. Your plan will reflect this.");
-    setDismissed(true);
+    try {
+      await base44.entities.DailyPromptResponse.create({
+        user_id: user.id,
+        day_key: todayStr,
+        main_focus: form.main_focus.trim(),
+        mood: form.mood,
+        energy: form.energy,
+      });
+      setSaving(false);
+      localStorage.setItem("fw_prompt_dismissed", todayStr);
+      toast.success("Saved. Your plan will reflect this.");
+      setDismissed(true);
+    } catch {
+      setSaving(false);
+      toast.error("Couldn't save. Please try again.");
+    }
   };
 
   const dismiss = () => {

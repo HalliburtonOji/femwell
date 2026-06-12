@@ -44,6 +44,7 @@ function WearableForm({ user, selectedDate }) {
   const [existingId, setExistingId] = useState(null);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [saveError, setSaveError] = useState(false);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -81,6 +82,7 @@ function WearableForm({ user, selectedDate }) {
 
   const save = async () => {
     setSaving(true);
+    setSaveError(false);
     const payload = {
       user_id: user.id, date: selectedDate, source: form.source,
       ...(form.resting_heart_rate !== "" && { resting_heart_rate: Number(form.resting_heart_rate) }),
@@ -95,15 +97,20 @@ function WearableForm({ user, selectedDate }) {
       ...(form.spo2_percent !== "" && { spo2_percent: Number(form.spo2_percent) }),
       updated_at: new Date().toISOString(),
     };
-    if (existingId) {
-      await base44.entities.WearableSync.update(existingId, payload);
-    } else {
-      const created = await base44.entities.WearableSync.create({ ...payload, created_at: new Date().toISOString() });
-      setExistingId(created.id);
+    try {
+      if (existingId) {
+        await base44.entities.WearableSync.update(existingId, payload);
+      } else {
+        const created = await base44.entities.WearableSync.create({ ...payload, created_at: new Date().toISOString() });
+        setExistingId(created.id);
+      }
+      setSaving(false);
+      setSaved(true);
+      setTimeout(() => setSaved(false), 2000);
+    } catch {
+      setSaving(false);
+      setSaveError(true);
     }
-    setSaving(false);
-    setSaved(true);
-    setTimeout(() => setSaved(false), 2000);
   };
 
   if (loading) return <div className="flex justify-center py-8"><Loader2 className="w-5 h-5 animate-spin" style={{ color: "var(--mauve)" }} /></div>;
@@ -170,6 +177,7 @@ function WearableForm({ user, selectedDate }) {
         {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : saved ? <Check className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
         {saving ? "Saving…" : saved ? "Saved!" : existingId ? "Update metrics" : "Save metrics"}
       </button>
+      {saveError && <p style={{ fontSize: 12, color: "var(--rose-dust)", marginTop: 8, textAlign: "center" }}>Couldn't save metrics. Please try again.</p>}
     </div>
   );
 }
@@ -181,6 +189,7 @@ function LabResultsSection({ user }) {
   const [form, setForm] = useState(emptyForm);
   const [showForm, setShowForm] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState(false);
   const [markerSuggestions, setMarkerSuggestions] = useState([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
 
@@ -210,23 +219,29 @@ function LabResultsSection({ user }) {
   const save = async () => {
     if (!form.marker_name || !form.value || !form.test_date) return;
     setSaving(true);
-    const created = await base44.entities.LabResults.create({
-      user_id: user.id,
-      marker_name: form.marker_name,
-      value: Number(form.value),
-      unit: form.unit,
-      test_date: form.test_date,
-      lab_name: form.lab_name || undefined,
-      normal_range_min: form.normal_range_min !== "" ? Number(form.normal_range_min) : undefined,
-      normal_range_max: form.normal_range_max !== "" ? Number(form.normal_range_max) : undefined,
-      category: form.category,
-      notes: form.notes || undefined,
-      created_at: new Date().toISOString(),
-    });
-    setResults(prev => [created, ...prev]);
-    setForm(emptyForm);
-    setShowForm(false);
-    setSaving(false);
+    setSaveError(false);
+    try {
+      const created = await base44.entities.LabResults.create({
+        user_id: user.id,
+        marker_name: form.marker_name,
+        value: Number(form.value),
+        unit: form.unit,
+        test_date: form.test_date,
+        lab_name: form.lab_name || undefined,
+        normal_range_min: form.normal_range_min !== "" ? Number(form.normal_range_min) : undefined,
+        normal_range_max: form.normal_range_max !== "" ? Number(form.normal_range_max) : undefined,
+        category: form.category,
+        notes: form.notes || undefined,
+        created_at: new Date().toISOString(),
+      });
+      setResults(prev => [created, ...prev]);
+      setForm(emptyForm);
+      setShowForm(false);
+      setSaving(false);
+    } catch {
+      setSaving(false);
+      setSaveError(true);
+    }
   };
 
   const remove = async (id) => {
@@ -319,6 +334,7 @@ function LabResultsSection({ user }) {
               {saving ? "Saving…" : "Save result"}
             </button>
           </div>
+          {saveError && <p style={{ fontSize: 11, color: "var(--rose-dust)", marginTop: 8 }}>Couldn't save result. Please try again.</p>}
         </div>
       )}
 

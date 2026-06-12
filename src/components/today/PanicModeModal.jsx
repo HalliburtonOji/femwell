@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { X, AlertCircle } from "lucide-react";
+import { X, AlertCircle, Leaf } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { createPageUrl } from "@/utils";
 import { toast } from "sonner";
@@ -164,7 +164,7 @@ export default function PanicModeModal({ userId, onClose }) {
 
           {step === "offer" && (
             <div style={{ textAlign: "center" }}>
-              <div style={{ fontSize: 48, marginBottom: 16 }}>🌿</div>
+              <div style={{ display: "flex", justifyContent: "center", marginBottom: 16 }}><Leaf size={48} style={{ color: "var(--sage)" }} strokeWidth={1.5} /></div>
               <h3 style={{ fontSize: 20, fontWeight: 700, color: "var(--plum)", marginBottom: 10 }}>Would you like a moment?</h3>
               <p style={{ fontSize: 14, color: "var(--mauve)", lineHeight: 1.65, marginBottom: 28 }}>
                 The Calm Cards guide you through grounding, breathwork, and a gentle reframe — usually about 5 minutes.
@@ -172,7 +172,7 @@ export default function PanicModeModal({ userId, onClose }) {
               <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
                 <button onClick={() => handleLog(true)} disabled={saving}
                   style={{ height: 56, borderRadius: 9999, backgroundColor: "#C084FC", color: "white", fontSize: 15, fontWeight: 700, border: "none", cursor: "pointer", opacity: saving ? 0.6 : 1 }}>
-                  {saving ? "One sec…" : "Yes, guide me 💜"}
+                  {saving ? "One sec…" : "Yes, guide me"}
                 </button>
                 <button onClick={() => handleLog(false)} disabled={saving}
                   style={{ height: 48, borderRadius: 9999, backgroundColor: "transparent", color: "var(--mauve)", fontSize: 13, fontWeight: 600, border: "1px solid var(--border)", cursor: "pointer", }}>

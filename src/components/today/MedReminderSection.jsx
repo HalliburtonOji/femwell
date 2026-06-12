@@ -9,6 +9,7 @@ export default function MedReminderSection({ user }) {
   const [dose, setDose] = useState("");
   const [time, setTime] = useState("08:00");
   const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState(false);
 
   useEffect(() => {
     if (user) loadReminders();
@@ -22,15 +23,21 @@ export default function MedReminderSection({ user }) {
   const addReminder = async () => {
     if (!name.trim() || !time) return;
     setSaving(true);
-    await base44.entities.MedicationReminders.create({
-      user_id: user.id,
-      medication_name: name.trim(),
-      dose: dose.trim() || undefined,
-      reminder_time: time,
-      is_active: true,
-    });
-    setName(""); setDose(""); setTime("08:00"); setAdding(false); setSaving(false);
-    loadReminders(); // background refetch — don't gate the UI on the read
+    setSaveError(false);
+    try {
+      await base44.entities.MedicationReminders.create({
+        user_id: user.id,
+        medication_name: name.trim(),
+        dose: dose.trim() || undefined,
+        reminder_time: time,
+        is_active: true,
+      });
+      setName(""); setDose(""); setTime("08:00"); setAdding(false); setSaving(false);
+      loadReminders(); // background refetch — don't gate the UI on the read
+    } catch {
+      setSaving(false);
+      setSaveError(true);
+    }
   };
 
   const toggleReminder = async (rem) => {
@@ -109,6 +116,7 @@ export default function MedReminderSection({ user }) {
               {saving ? "Saving..." : "Set Reminder"}
             </button>
           </div>
+          {saveError && <p className="text-xs" style={{ color: "var(--rose-dust)" }}>Couldn't save reminder. Please try again.</p>}
         </div>
       ) : (
         <button onClick={() => setAdding(true)} className="flex items-center gap-1.5 text-xs font-medium"

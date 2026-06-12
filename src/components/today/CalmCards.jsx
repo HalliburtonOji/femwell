@@ -1,6 +1,9 @@
 import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X } from "lucide-react";
+import {
+  X, Leaf, Droplet, Footprints, MessageCircle, Waves, Move, Wind, Coffee,
+  Eye, Hand, Ear, Wind as Nose, Smile, Heart, Sparkles, Check, ArrowRight, Flower2,
+} from "lucide-react";
 import { base44 } from "@/api/base44Client";
 
 // ── Affirmation pool ───────────────────────────────────────────────────────
@@ -39,13 +42,13 @@ const BODY_SCANS = [
 
 // ── Tiny actions ──────────────────────────────────────────────────────────
 const TINY_ACTIONS = [
-  { emoji: "💧", label: "Sip some water" },
-  { emoji: "🚶", label: "Step outside for 60 seconds" },
-  { emoji: "📱", label: "Text someone you trust" },
-  { emoji: "🌊", label: "Splash cold water on your face" },
-  { emoji: "🤸", label: "Stretch your arms overhead" },
-  { emoji: "🫁", label: "Take 3 slow deep breaths" },
-  { emoji: "☕", label: "Make yourself a warm drink" },
+  { Icon: Droplet, label: "Sip some water" },
+  { Icon: Footprints, label: "Step outside for 60 seconds" },
+  { Icon: MessageCircle, label: "Text someone you trust" },
+  { Icon: Waves, label: "Splash cold water on your face" },
+  { Icon: Move, label: "Stretch your arms overhead" },
+  { Icon: Wind, label: "Take 3 slow deep breaths" },
+  { Icon: Coffee, label: "Make yourself a warm drink" },
 ];
 
 // ── Grounding senses ──────────────────────────────────────────────────────
@@ -91,7 +94,7 @@ const PHASE_SCALES = { inhale: 1.25, hold1: 1.25, exhale: 0.85, hold2: 0.85 };
 function WelcomeCard() {
   return (
     <CardShell accent="var(--rose-dust)">
-      <div style={{ fontSize: 48, textAlign: "center", marginBottom: 24 }}>🌿</div>
+      <div style={{ display: "flex", justifyContent: "center", marginBottom: 24 }}><Leaf size={48} style={{ color: "var(--sage)" }} strokeWidth={1.5} /></div>
       <CardTitle>You're here. That's enough.</CardTitle>
       <CardBody>Take one slow breath before we begin. Breathe in through your nose… and out through your mouth.</CardBody>
       <CardBody style={{ marginTop: 12, color: "#9D7EC7", fontSize: 13 }}>Swipe or tap to continue when you're ready.</CardBody>
@@ -107,8 +110,11 @@ function GroundingCard({ onDone }) {
   return (
     <CardShell accent="#A78BFA">
       <CardLabel>5-4-3-2-1 Grounding</CardLabel>
-      <div style={{ fontSize: 64, textAlign: "center", marginBottom: 20, lineHeight: 1 }}>
-        {["👀", "🤲", "👂", "👃", "👅"][senseIdx]}
+      <div style={{ display: "flex", justifyContent: "center", marginBottom: 20, lineHeight: 1 }}>
+        {(() => {
+          const SenseIcon = [Eye, Hand, Ear, Nose, Smile][senseIdx];
+          return <SenseIcon size={56} style={{ color: "#A78BFA" }} strokeWidth={1.5} />;
+        })()}
       </div>
       <div style={{ fontSize: 56, fontWeight: 800, color: "#A78BFA", textAlign: "center", marginBottom: 8, lineHeight: 1 }}>
         {sense.n}
@@ -116,10 +122,10 @@ function GroundingCard({ onDone }) {
       <CardTitle>{sense.label}</CardTitle>
       <CardBody>Take your time. Really look, listen, or feel.</CardBody>
       {isLast ? (
-        <PillButton onClick={onDone} style={{ marginTop: 28 }}>Done ✓</PillButton>
+        <PillButton onClick={onDone} style={{ marginTop: 28 }}><span style={{ display: "inline-flex", alignItems: "center", gap: 6, justifyContent: "center" }}>Done <Check size={16} /></span></PillButton>
       ) : (
         <PillButton onClick={() => setSenseIdx(i => i + 1)} style={{ marginTop: 28 }}>
-          Next sense →
+          <span style={{ display: "inline-flex", alignItems: "center", gap: 6, justifyContent: "center" }}>Next sense <ArrowRight size={16} /></span>
         </PillButton>
       )}
     </CardShell>
@@ -168,7 +174,7 @@ function ReframeCard() {
   return (
     <CardShell accent="#F472B6">
       <CardLabel>A Gentle Reframe</CardLabel>
-      <div style={{ fontSize: 36, textAlign: "center", marginBottom: 20 }}>💜</div>
+      <div style={{ display: "flex", justifyContent: "center", marginBottom: 20 }}><Heart size={36} style={{ color: "#9D7EC7" }} strokeWidth={1.5} /></div>
       <blockquote style={{ fontSize: 19, fontWeight: 600, color: "#2A2035", lineHeight: 1.6, textAlign: "center", margin: 0 }}>
         "This feeling is real.<br />It is also temporary.<br /><br />My body is trying to protect me,<br />and I am safe right now."
       </blockquote>
@@ -180,7 +186,7 @@ function AffirmationCard({ text }) {
   return (
     <CardShell accent="#EC4899">
       <CardLabel>Affirmation</CardLabel>
-      <div style={{ fontSize: 36, textAlign: "center", marginBottom: 24 }}>✨</div>
+      <div style={{ display: "flex", justifyContent: "center", marginBottom: 24 }}><Sparkles size={36} style={{ color: "#EC4899" }} strokeWidth={1.5} /></div>
       <blockquote style={{ fontSize: 22, fontWeight: 700, color: "#2A2035", lineHeight: 1.6, textAlign: "center", margin: 0, padding: "0 8px" }}>
         "{text}"
       </blockquote>
@@ -195,7 +201,7 @@ function BodyScanCard({ lines }) {
   return (
     <CardShell accent="#34D399">
       <CardLabel>Body Scan</CardLabel>
-      <div style={{ fontSize: 48, textAlign: "center", marginBottom: 20 }}>🫁</div>
+      <div style={{ display: "flex", justifyContent: "center", marginBottom: 20 }}><Wind size={48} style={{ color: "#34D399" }} strokeWidth={1.5} /></div>
       {done ? (
         <>
           <CardTitle>Well done.</CardTitle>
@@ -208,7 +214,7 @@ function BodyScanCard({ lines }) {
           </div>
           <CardTitle style={{ textAlign: "center" }}>{lines[step]}</CardTitle>
           <PillButton onClick={() => setStep(s => s + 1)} style={{ marginTop: 28, backgroundColor: "#34D399" }}>
-            Done ✓
+            <span style={{ display: "inline-flex", alignItems: "center", gap: 6, justifyContent: "center" }}>Done <Check size={16} /></span>
           </PillButton>
         </>
       )}
@@ -223,21 +229,21 @@ function TinyActionCard({ onDone }) {
       <CardLabel>One Small Step</CardLabel>
       <CardBody style={{ marginBottom: 20 }}>Which of these feels possible right now?</CardBody>
       <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-        {TINY_ACTIONS.map(({ emoji, label }) => (
+        {TINY_ACTIONS.map(({ Icon, label }) => (
           <button key={label} onClick={() => setChosen(label)}
             style={{ display: "flex", alignItems: "center", gap: 14, padding: "14px 18px", borderRadius: 16,
               border: chosen === label ? "2px solid #FBBF24" : "2px solid #FEF3C7",
               backgroundColor: chosen === label ? "#FEF3C7" : "white",
               cursor: "pointer", fontSize: 14, fontWeight: 600, color: "#2A2035",
               transition: "all 0.15s" }}>
-            <span style={{ fontSize: 22 }}>{emoji}</span>
+            <Icon size={22} style={{ color: "#D49A4E", flexShrink: 0 }} strokeWidth={1.5} />
             {label}
           </button>
         ))}
       </div>
       {chosen && (
         <PillButton onClick={onDone} style={{ marginTop: 20, backgroundColor: "#FBBF24", color: "white" }}>
-          I'll do that →
+          <span style={{ display: "inline-flex", alignItems: "center", gap: 6, justifyContent: "center" }}>I'll do that <ArrowRight size={16} /></span>
         </PillButton>
       )}
     </CardShell>
@@ -248,7 +254,7 @@ function ClosingCard({ onRate, onClose }) {
   const [rating, setRating] = useState(null);
   return (
     <CardShell accent="var(--rose-dust)">
-      <div style={{ fontSize: 48, textAlign: "center", marginBottom: 16 }}>🌸</div>
+      <div style={{ display: "flex", justifyContent: "center", marginBottom: 16 }}><Flower2 size={48} style={{ color: "var(--rose-dust)" }} strokeWidth={1.5} /></div>
       <CardTitle>How do you feel now?</CardTitle>
       <CardBody style={{ marginBottom: 24 }}>1 = still struggling · 5 = much better</CardBody>
       <div style={{ display: "flex", gap: 10, justifyContent: "center", marginBottom: 24 }}>
@@ -268,7 +274,7 @@ function ClosingCard({ onRate, onClose }) {
             "You came back to yourself.<br />That's the whole thing."
           </blockquote>
           <PillButton onClick={() => { onRate(rating); onClose(); }}>
-            I'm okay now 💜
+            <span style={{ display: "inline-flex", alignItems: "center", gap: 6, justifyContent: "center" }}>I'm okay now <Heart size={16} /></span>
           </PillButton>
         </>
       )}

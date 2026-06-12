@@ -64,6 +64,8 @@ export default function RecommendedForYouSection({ loading, items, onTap }) {
       <div className="recommended-scroll flex gap-3 overflow-x-auto pb-1" style={{ scrollbarWidth: "none", WebkitOverflowScrolling: "touch", scrollSnapType: "x mandatory" }}>
         {loading
           ? [0, 1, 2].map((i) => <SkeletonCard key={i} />)
+          : items.length === 0
+          ? <p style={{ fontSize: 13, color: "var(--mauve)", padding: "4px 2px" }}>No recommendations yet — log a check-in to get personalised suggestions.</p>
           : items.map((item) => <RecommendationCard key={item.id} item={item} onTap={onTap} />)}
       </div>
     </div>

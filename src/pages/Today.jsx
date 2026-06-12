@@ -271,6 +271,7 @@ export default function Today() {
   const [mood, setMood] = useState(null);
   const [energy, setEnergy] = useState(null);
   const [checkinSaved, setCheckinSaved] = useState(false);
+  const [checkinError, setCheckinError] = useState(false);
 
   // Daily plan recs
   const [dailyPlan, setDailyPlan] = useState(null);
@@ -387,15 +388,20 @@ export default function Today() {
   const saveMoodEnergy = async (newMood, newEnergy) => {
     if (!user) return;
     const payload = { user_id: user.id, date: todayStr, mood: (newMood ?? mood ?? 0) + 1, energy: (newEnergy ?? energy ?? 0) + 1 };
-    if (todayCheckin) {
-      await base44.entities.DailyCheckins.update(todayCheckin.id, payload);
-      setTodayCheckin(prev => ({ ...prev, ...payload }));
-    } else {
-      const created = await base44.entities.DailyCheckins.create(payload);
-      setTodayCheckin(created);
+    setCheckinError(false);
+    try {
+      if (todayCheckin) {
+        await base44.entities.DailyCheckins.update(todayCheckin.id, payload);
+        setTodayCheckin(prev => ({ ...prev, ...payload }));
+      } else {
+        const created = await base44.entities.DailyCheckins.create(payload);
+        setTodayCheckin(created);
+      }
+      setCheckinSaved(true);
+      setTimeout(() => setCheckinSaved(false), 2000);
+    } catch {
+      setCheckinError(true);
     }
-    setCheckinSaved(true);
-    setTimeout(() => setCheckinSaved(false), 2000);
   };
 
   const handleMoodSelect = (i) => {
@@ -609,6 +615,7 @@ export default function Today() {
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
                 <p style={{ fontSize: "0.6rem", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.12em", color: "var(--mauve)", }}>How are you feeling?</p>
                 {checkinSaved && <span style={{ fontSize: 11, color: "var(--sage)", }}>Saved</span>}
+                {checkinError && <span style={{ fontSize: 11, color: "var(--rose-dust)", }}>Couldn't save — tap to retry</span>}
               </div>
               <div style={{ marginBottom: 10 }}>
                 <p style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", color: "var(--mauve)", marginBottom: 6 }}>Mood</p>

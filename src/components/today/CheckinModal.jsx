@@ -100,12 +100,15 @@ export default function CheckinModal({ existing, onClose, onSave, userId, dateSt
   const [cramps, setCramps] = useState(init.cramps ?? 1);
   const [notes, setNotes]   = useState(init.notes ?? "");
   const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState(false);
   const [activeTab, setActiveTab] = useState(initialTab || "cycle");
 
   // ── Nutrition tab state ────────────────────────────────────────────────────
   const [mealType, setMealType]   = useState("lunch");
   const [mealText, setMealText]   = useState("");
   const [mealSaved, setMealSaved] = useState(false);
+  const [mealError, setMealError] = useState(false);
+  const [waterError, setWaterError] = useState(false);
   const [waterSaved, setWaterSaved] = useState(null);
   // Drinks
   const [drinkLogs, setDrinkLogs]       = useState([]);
@@ -143,6 +146,8 @@ export default function CheckinModal({ existing, onClose, onSave, userId, dateSt
   const [menoNotes, setMenoNotes]               = useState("");
   const [menoSaving, setMenoSaving]             = useState(false);
   const [menoSaved, setMenoSaved]               = useState(false);
+  const [pregError, setPregError]               = useState(false);
+  const [menoError, setMenoError]               = useState(false);
 
   // Load life stage data when pregnancy or menopause tab opens
   useEffect(() => {
@@ -196,6 +201,7 @@ export default function CheckinModal({ existing, onClose, onSave, userId, dateSt
   // ── Save checkin ───────────────────────────────────────────────────────────
   const handleSave = async () => {
     setSaving(true);
+    setSaveError(false);
     const exerciseDone = activityTags.length > 0 && !activityTags.includes("Didn't exercise");
     const exerciseType = activityTags.filter(t => t !== "Didn't exercise").join(", ");
     const hairSheddingMap = { "Normal shedding": "Normal", "More than usual": "More than usual", "A lot of shedding": "A lot" };
@@ -204,45 +210,60 @@ export default function CheckinModal({ existing, onClose, onSave, userId, dateSt
     const headache = symptoms.includes("Headache") ? 3 : init.headache ?? 1;
     const breastTenderness = symptoms.includes("Tender breasts") ? 3 : init.breast_tenderness ?? 1;
 
-    await onSave({
-      mood, energy, stress, sleep_hours: sleep, sleep_quality: init.sleep_quality ?? 3,
-      focus, pain, cramps, bloating, headache, breast_tenderness: breastTenderness,
-      digestion: init.digestion ?? 3, skin: init.skin ?? 3,
-      libido: sexTags.includes("High sex drive") ? 5 : sexTags.includes("Low sex drive") ? 1 : init.libido ?? 3,
-      social_connection: init.social_connection ?? 3, hydration_glasses: init.hydration_glasses ?? 6,
-      exercise_done: exerciseDone, exercise_type: exerciseDone ? exerciseType : undefined,
-      exercise_minutes: init.exercise_minutes ?? undefined, exercise_intensity: init.exercise_intensity ?? undefined,
-      appetite: init.appetite ?? null, body_temp_feel: init.body_temp_feel ?? null,
-      cervical_mucus: discharge || init.cervical_mucus || null,
-      skin_condition: skinCondition, breakout_location: init.breakout_location ?? [],
-      hair_shedding: hairSheddingVal, scalp_condition: init.scalp_condition ?? null,
-      notes, period_flow: periodFlow, period_events: periodEvents, mood_tags: moodTags,
-      symptoms, discharge, sex_tags: sexTags, activity_tags: activityTags,
-      sleep_quality_tag: sleepQualityTag, digestion_tags: digestionTags,
-      meds_tags: medsTags, other_tags: otherTags,
-    });
-    setSaving(false);
-    onClose();
+    try {
+      await onSave({
+        mood, energy, stress, sleep_hours: sleep, sleep_quality: init.sleep_quality ?? 3,
+        focus, pain, cramps, bloating, headache, breast_tenderness: breastTenderness,
+        digestion: init.digestion ?? 3, skin: init.skin ?? 3,
+        libido: sexTags.includes("High sex drive") ? 5 : sexTags.includes("Low sex drive") ? 1 : init.libido ?? 3,
+        social_connection: init.social_connection ?? 3, hydration_glasses: init.hydration_glasses ?? 6,
+        exercise_done: exerciseDone, exercise_type: exerciseDone ? exerciseType : undefined,
+        exercise_minutes: init.exercise_minutes ?? undefined, exercise_intensity: init.exercise_intensity ?? undefined,
+        appetite: init.appetite ?? null, body_temp_feel: init.body_temp_feel ?? null,
+        cervical_mucus: discharge || init.cervical_mucus || null,
+        skin_condition: skinCondition, breakout_location: init.breakout_location ?? [],
+        hair_shedding: hairSheddingVal, scalp_condition: init.scalp_condition ?? null,
+        notes, period_flow: periodFlow, period_events: periodEvents, mood_tags: moodTags,
+        symptoms, discharge, sex_tags: sexTags, activity_tags: activityTags,
+        sleep_quality_tag: sleepQualityTag, digestion_tags: digestionTags,
+        meds_tags: medsTags, other_tags: otherTags,
+      });
+      setSaving(false);
+      onClose();
+    } catch {
+      setSaving(false);
+      setSaveError(true);
+    }
   };
 
   // ── Nutrition helpers ──────────────────────────────────────────────────────
   const logMeal = async () => {
     if (!mealText.trim() || !userId) return;
-    const log = await base44.entities.MealLog.create({
-      user_id: userId, day_key: todayDs, logged_at: new Date().toISOString(),
-      meal_type: mealType, method: "text", raw_text: mealText.trim(), portion_size: "medium",
-    });
-    base44.functions.invoke("analyzeMeal", { raw_text: log.raw_text }).catch(() => {});
-    setMealText("");
-    setMealSaved(true);
-    setTimeout(() => setMealSaved(false), 2500);
+    setMealError(false);
+    try {
+      const log = await base44.entities.MealLog.create({
+        user_id: userId, day_key: todayDs, logged_at: new Date().toISOString(),
+        meal_type: mealType, method: "text", raw_text: mealText.trim(), portion_size: "medium",
+      });
+      base44.functions.invoke("analyzeMeal", { raw_text: log.raw_text }).catch(() => {});
+      setMealText("");
+      setMealSaved(true);
+      setTimeout(() => setMealSaved(false), 2500);
+    } catch {
+      setMealError(true);
+    }
   };
 
   const logWater = async (ml) => {
     if (!userId) return;
-    await base44.entities.HydrationLog.create({ user_id: userId, day_key: todayDs, amount_ml: ml, logged_at: new Date().toISOString() });
-    setWaterSaved(ml);
-    setTimeout(() => setWaterSaved(null), 2000);
+    setWaterError(false);
+    try {
+      await base44.entities.HydrationLog.create({ user_id: userId, day_key: todayDs, amount_ml: ml, logged_at: new Date().toISOString() });
+      setWaterSaved(ml);
+      setTimeout(() => setWaterSaved(null), 2000);
+    } catch {
+      setWaterError(true);
+    }
   };
 
   const logSuggestedDrink = async (typeId) => {
@@ -292,29 +313,39 @@ export default function CheckinModal({ existing, onClose, onSave, userId, dateSt
   const savePregLog = async () => {
     if (!userId) return;
     setPregSaving(true);
+    setPregError(false);
     const data = { user_id: userId, date: todayDs, energy: pregEnergy, mood: pregMood, sleep_quality: pregSleepQuality, nausea: pregNausea, pelvic_pain: pregPelvicPain, swelling: pregSwelling, notes: pregNotes };
-    if (existingPregLogId) {
-      await base44.entities.PregnancyDailyLog.update(existingPregLogId, data);
-    } else {
-      const created = await base44.entities.PregnancyDailyLog.create(data);
-      setExistingPregLogId(created.id);
+    try {
+      if (existingPregLogId) {
+        await base44.entities.PregnancyDailyLog.update(existingPregLogId, data);
+      } else {
+        const created = await base44.entities.PregnancyDailyLog.create(data);
+        setExistingPregLogId(created.id);
+      }
+      setPregSaving(false); setPregSaved(true);
+      setTimeout(() => setPregSaved(false), 2500);
+    } catch {
+      setPregSaving(false); setPregError(true);
     }
-    setPregSaving(false); setPregSaved(true);
-    setTimeout(() => setPregSaved(false), 2500);
   };
 
   const saveMenoLog = async () => {
     if (!userId) return;
     setMenoSaving(true);
+    setMenoError(false);
     const data = { user_id: userId, date: todayDs, hot_flashes: menoHotFlashes, night_sweats: menoNightSweats, sleep_quality: menoSleepQuality, mood: menoMood, energy: menoEnergy, notes: menoNotes };
-    if (existingMenoLogId) {
-      await base44.entities.MenopauseDailyLog.update(existingMenoLogId, data);
-    } else {
-      const created = await base44.entities.MenopauseDailyLog.create(data);
-      setExistingMenoLogId(created.id);
+    try {
+      if (existingMenoLogId) {
+        await base44.entities.MenopauseDailyLog.update(existingMenoLogId, data);
+      } else {
+        const created = await base44.entities.MenopauseDailyLog.create(data);
+        setExistingMenoLogId(created.id);
+      }
+      setMenoSaving(false); setMenoSaved(true);
+      setTimeout(() => setMenoSaved(false), 2500);
+    } catch {
+      setMenoSaving(false); setMenoError(true);
     }
-    setMenoSaving(false); setMenoSaved(true);
-    setTimeout(() => setMenoSaved(false), 2500);
   };
 
   const isCheckinTab = CHECKIN_TABS.has(activeTab);
@@ -462,6 +493,7 @@ export default function CheckinModal({ existing, onClose, onSave, userId, dateSt
                     style={{ padding: "9px 18px", borderRadius: 9999, backgroundColor: "var(--plum)", color: "white", border: "none", fontSize: 12, fontWeight: 600, cursor: !mealText.trim() ? "default" : "pointer", opacity: !mealText.trim() ? 0.5 : 1, }}>
                     {mealSaved ? "Logged" : "Log meal"}
                   </button>
+                  {mealError && <p style={{ fontSize: 11, color: "var(--rose-dust)", marginTop: 6 }}>Couldn't log meal. Please try again.</p>}
                 </div>
 
                 {/* Water */}
@@ -475,6 +507,7 @@ export default function CheckinModal({ existing, onClose, onSave, userId, dateSt
                       </button>
                     ))}
                   </div>
+                  {waterError && <p style={{ fontSize: 11, color: "var(--rose-dust)", marginTop: 6 }}>Couldn't log water. Please try again.</p>}
                 </div>
 
                 {/* Drinks */}
@@ -578,6 +611,7 @@ export default function CheckinModal({ existing, onClose, onSave, userId, dateSt
                       style={{ width: "100%", padding: "11px", borderRadius: 9999, backgroundColor: "var(--rose-dust)", color: "white", border: "none", fontSize: 13, fontWeight: 600, cursor: "pointer", opacity: pregSaving ? 0.6 : 1 }}>
                       {pregSaved ? "Saved" : pregSaving ? "Saving..." : "Save pregnancy log"}
                     </button>
+                    {pregError && <p style={{ fontSize: 12, color: "var(--rose-dust)", marginTop: 8 }}>Couldn't save. Please try again.</p>}
                   </div>
                 )}
               </div>
@@ -616,6 +650,7 @@ export default function CheckinModal({ existing, onClose, onSave, userId, dateSt
                       style={{ width: "100%", padding: "11px", borderRadius: 9999, backgroundColor: "var(--plum)", color: "white", border: "none", fontSize: 13, fontWeight: 600, cursor: "pointer", opacity: menoSaving ? 0.6 : 1 }}>
                       {menoSaved ? "Saved" : menoSaving ? "Saving..." : "Save menopause log"}
                     </button>
+                    {menoError && <p style={{ fontSize: 12, color: "var(--rose-dust)", marginTop: 8 }}>Couldn't save. Please try again.</p>}
                   </div>
                 )}
               </div>
@@ -627,11 +662,18 @@ export default function CheckinModal({ existing, onClose, onSave, userId, dateSt
         {/* Footer */}
         <div style={{ flexShrink: 0, padding: "12px 20px 28px", borderTop: "1px solid var(--border-subtle)" }}>
           {isCheckinTab ? (
-            <button onClick={handleSave} disabled={saving}
-              style={{ width: "100%", height: 52, borderRadius: 9999, backgroundColor: "var(--plum)", color: "white", border: "none", fontSize: "15px", fontWeight: 600, cursor: saving ? "default" : "pointer", opacity: saving ? 0.75 : 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
-              {saving && <div style={{ width: 16, height: 16, border: "2px solid rgba(255,255,255,0.4)", borderTopColor: "white", borderRadius: "50%", animation: "spin 0.7s linear infinite" }} />}
-              {saving ? "Saving..." : "Save check-in"}
-            </button>
+            <>
+              {saveError && (
+                <p style={{ fontSize: 12, color: "var(--rose-dust)", textAlign: "center", marginBottom: 8 }}>
+                  Couldn't save your check-in. Please try again.
+                </p>
+              )}
+              <button onClick={handleSave} disabled={saving}
+                style={{ width: "100%", height: 52, borderRadius: 9999, backgroundColor: "var(--plum)", color: "white", border: "none", fontSize: "15px", fontWeight: 600, cursor: saving ? "default" : "pointer", opacity: saving ? 0.75 : 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
+                {saving && <div style={{ width: 16, height: 16, border: "2px solid rgba(255,255,255,0.4)", borderTopColor: "white", borderRadius: "50%", animation: "spin 0.7s linear infinite" }} />}
+                {saving ? "Saving..." : "Save check-in"}
+              </button>
+            </>
           ) : (
             <button onClick={onClose}
               style={{ width: "100%", height: 52, borderRadius: 9999, backgroundColor: "var(--ivory-dark)", color: "var(--plum)", border: "1.5px solid var(--border)", fontSize: "15px", fontWeight: 600, cursor: "pointer" }}>
