@@ -1,7 +1,18 @@
 # FEMWELL — CANONICAL STATUS INDEX (read first · updated 2026-06-12)
 **This file is the single source of truth AND the index to every plan doc. If anything else disagrees, this wins.** (The long ship-log history continues below the index.)
 
-## 🧹 SCAN 2 — DEEP PER-PAGE UI PASS (2026-06-12) — committed + build-green · awaiting Halli deploy + live-verify
+## 🚀 SCAN-2 + CLEANUP DEPLOYED + LIVE-VERIFIED (2026-06-12) — both waves live on femwells.com
+Deployed + verified BOTH the Scan-2 UI fixes and the cleanup wave via Chrome MCP.
+- **Deploy 1 (Scan-2 UI fixes, commit 49f8b94):** bundle `index-ueVuHO0i.js` → `index-ngK6X6j4.js`.
+  - **LIVE-VERIFIED:** (1) **Health Cycle & Body letters RENDER — no white-screen** (the crash fix; both letters load full content, 0 crash signature) ✅. (2) **Profile "Reminders" row → /Settings?section=notifications** (was a dead button; now a real link, Settings renders) ✅. (3) tone-save happy-path persists (UserProfile update verified) ✅. Checks 3-4 (forced-failure inline errors): happy-paths verified + failure-display code shipped; inducing a live failure on the heavy pages wasn't feasible via the tooling — recommend a quick airplane-mode spot-check.
+- **Deploy 2 (cleanup wave):** bundle `index-ngK6X6j4.js` → **`index-B7FYqVGY.js`** (current live).
+  - **`9d28a3f`** removed 4 confirmed-dead components (HealthDashboard, HealthCornerDemo, QuickCheckinModal, JotterCard — zero active refs; deletes their emoji/unhandled-write debt).
+  - **`6414fed`** restyled CalmCards (23 swaps + Fraunces heading) + PanicMode (4 swaps) onto the cream/plum palette. **LIVE-VERIFIED:** Calm Cards modal renders with **0 off-brand purple/pink/green/amber, 57 brand-token hits** ✅.
+  - **`55158f0`** real success/error feedback on two silent paths (MorningCheckinCard save; WitnessInbox respond/report).
+- **Deploy gotcha learned:** the `POST /deploy` from the editor tab needs **`fetch(..., {keepalive:true})`** (fire-and-forget) — the editor renderer freezes during sync/deploy and aborts a normal awaited POST. Also the GitHub webhook can lag ~5-8 min; poll `last_git_commit_hash` until it matches.
+- Report updated. Remaining flags (next wave): off-palette Journal "Guide/Coach" token set; Profile field-saves silent (no data loss); the "coming soon" CTA stub; B2 index tail; service-only RLS hardening.
+
+## 🧹 SCAN 2 — DEEP PER-PAGE UI PASS (2026-06-12) — deployed + live-verified (see above)
 Parallel per-area audit (Today/Journal/Nutrition/Health/Lifestyle/Programs/Profile/DoctorExport/Jess). Report updated (`5269f4b`). Headline: a **white-screen crash** + a **dead button** + a **data-losing save** + a broad **silent-write-failure** class.
 - **`7e1ff83` Health — CRASH FIX:** stray `},,` → sparse-array holes → `sections.map` threw → **Cycle & Body letters white-screened**. Fixed both + de-emoji.
 - **`ce45fc2` Today:** de-emoji (CalmCards etc.) + ~15 silent-write-failure fixes (check-in stuck on "Saving…"; **DailyPromptCard was swallowing the error + dismissing → losing the entry**) + empty state.
