@@ -42,6 +42,17 @@ function localScreen(text: string): { crisis?: boolean; remove?: boolean; ok?: b
   return { ok: true };
 }
 
+// Timeout guard — an asServiceRole create that HANGS (vs throws) would never settle, so a
+// plain .catch() fallback never runs. Racing it against a timeout turns a hang into a
+// catchable rejection, so the function always returns (with a diagnostic) and the fallback
+// create can actually run. (This is what made the previous .catch fallback ineffective.)
+function withTimeout(p: Promise<any>, ms: number, label: string): Promise<any> {
+  return new Promise((resolve, reject) => {
+    const t = setTimeout(() => reject(new Error(`${label}-timeout-${ms}ms`)), ms);
+    p.then((v) => { clearTimeout(t); resolve(v); }, (e) => { clearTimeout(t); reject(e); });
+  });
+}
+
 const ROOMS = ['lounge', 'circles', 'love', 'money', 'style', 'lighter', 'health'];
 // Phase-4 Circles — keep in sync with src/components/community/circlesConfig.js CIRCLE_KEYS.
 const CIRCLE_KEYS = new Set([
@@ -121,14 +132,16 @@ Deno.serve(async (req) => {
 
   let createErr = '';
   // Primary create — full payload (flagged/report_count managed by screening; domain optional).
-  let post = await sb.entities.CommunityPost.create({
+  // Timeout-guarded so a hang can't wedge the function.
+  let post = await withTimeout(sb.entities.CommunityPost.create({
     ...core, flagged: false, report_count: 0,
     ...(domain ? { domain: String(domain).slice(0, 40) } : {}),
-  }).catch((e: any) => { createErr = e?.message || String(e); console.error('createCommunityPost full create failed:', createErr); return null; });
-  // Fallback — if an optional field isn't present on the deployed entity, the post MUST still
-  // publish: retry with the core fields only (still hidden:false → visible in the room).
+  }), 6000, 'create-full')
+    .catch((e: any) => { createErr = e?.message || String(e); console.error('createCommunityPost full create failed:', createErr); return null; });
+  // Fallback — if an optional field is rejected/hangs on the deployed entity, the post MUST
+  // still publish: retry with the core fields only (still hidden:false → visible in the room).
   if (!post) {
-    post = await sb.entities.CommunityPost.create(core)
+    post = await withTimeout(sb.entities.CommunityPost.create(core), 6000, 'create-core')
       .catch((e: any) => { createErr = e?.message || String(e); console.error('createCommunityPost core create failed:', createErr); return null; });
   }
   if (!post) return Response.json({ error: 'Write failed', detail: createErr }, { status: 500 });
