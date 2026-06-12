@@ -43,6 +43,7 @@ import IntegrationAuditDoc from "@/components/founders/IntegrationAuditDoc";
 import ConnectivityMapDoc from "@/components/founders/ConnectivityMapDoc";
 import SharingProposalDoc from "@/components/founders/SharingProposalDoc";
 import HomeRedesignDoc from "@/components/founders/HomeRedesignDoc";
+import AppHealthAuditDoc from "@/components/founders/AppHealthAuditDoc";
 // HealthCornerDemo was the multi-layout preview. The canonical health
 // experience now lives at /Health (src/pages/Health.jsx). The Health Corner
 // tab in /Ideas renders <HealthCornerRedirectCard /> instead.
@@ -72,7 +73,7 @@ const ALLOWED = new Set([
   "ojihalliburton57@gmail.com",
 ]);
 
-const TABS = ["Lab", "Pages", "Roadmap", "Community Plan", "Build Plan", "Journal Audit", "Expert Governance", "Library & Groups", "Integration Audit", "Connectivity Map", "Sharing", "Home Redesign", "Whole-Life", "Audio", "Ideas", "Strategy", "Legal", "Decisions", "Journal", "Journal Demos", "Community Demos", "Another You", "UX & Design", "Wholeness", "LGBTQ+", "Health Corner"];
+const TABS = ["Lab", "Pages", "Roadmap", "Health Audit", "Community Plan", "Build Plan", "Journal Audit", "Expert Governance", "Library & Groups", "Integration Audit", "Connectivity Map", "Sharing", "Home Redesign", "Whole-Life", "Audio", "Ideas", "Strategy", "Legal", "Decisions", "Journal", "Journal Demos", "Community Demos", "Another You", "UX & Design", "Wholeness", "LGBTQ+", "Health Corner"];
 
 const IDEAS_KEY  = "femwell_ideas";
 const CHECKS_KEY = "femwell_founder_checks";
@@ -566,6 +567,7 @@ function FoundersInner({ user }) {
         {tab === "Lab"       && <LabTab />}
         {tab === "Pages"     && <PagesTab />}
         {tab === "Roadmap"   && <RoadmapTab />}
+        {tab === "Health Audit" && <AppHealthAuditDoc />}
         {tab === "Community Plan" && <CommunityPlanDoc />}
         {tab === "Build Plan"     && <BuildPlanDoc />}
         {tab === "Journal Audit"  && <JournalAuditDoc />}

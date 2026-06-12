@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>FemWell — App Health Audit</title>
+<style>
+:root{--cream:#F4EDDB;--ink:#3A2C1A;--plum:#4A2A3A;--gold:#A6862B;--sage:#6B8F5A;--rose:#C4849A;--muted:#9B8B7A;--paper:#FBF7EC;}
+*{box-sizing:border-box}body{margin:0;background:var(--cream);color:var(--ink);font-family:-apple-system,Inter,system-ui,sans-serif;line-height:1.55;padding:0 0 60px}
+.wrap{max-width:820px;margin:0 auto;padding:24px 18px}
+h1{font-family:Georgia,'Cormorant Garamond',serif;font-size:30px;margin:0 0 4px}
+h2{font-family:Georgia,serif;font-size:21px;margin:30px 0 8px;border-bottom:1px solid #e3d9c2;padding-bottom:5px}
+h3{font-size:15px;margin:18px 0 6px}
+.sub{color:var(--muted);font-size:13px;margin-bottom:18px}
+.card{background:var(--paper);border-left:3px solid var(--gold);border-radius:5px;padding:12px 15px;margin:12px 0}
+.card.ok{border-left-color:var(--sage)}.card.warn{border-left-color:var(--rose)}.card.plum{border-left-color:var(--plum)}
+table{border-collapse:collapse;width:100%;font-size:12.5px;margin:10px 0}
+th,td{border:1px solid #e3d9c2;padding:5px 8px;text-align:left;vertical-align:top}
+th{background:#efe7d2;font-size:11px;letter-spacing:.3px;text-transform:uppercase}
+.tag{display:inline-block;font-size:10px;font-weight:700;padding:1px 7px;border-radius:999px;color:#fff;letter-spacing:.4px}
+.b{background:#9e2b2b}.h{background:#c4843a}.m{background:#6b8f5a}.l{background:#7c93a6}.fix{background:var(--sage)}.halli{background:var(--plum)}
+code{background:#efe7d2;padding:1px 5px;border-radius:3px;font-size:12px}
+.legend span{margin-right:14px;font-size:12px}
+small{color:var(--muted)}
+ul{margin:6px 0 6px 0;padding-left:20px}li{margin:3px 0}
+</style></head><body><div class="wrap">
+
+<h1>App Health Audit — Scan 1</h1>
+<div class="sub">The write-failure / hang class, app-wide. 2026-06-12. Companion to the posting saga (commits 8d4f79f · d1eeafc · 661e338). <b>Method:</b> findings are by <b>code inspection</b> (RLS, unguarded awaits, unindexed sorts, awaited reads). The local mock harness hid the posting bug, so nothing here is "verified working" — write-path fixes are tagged <b>needs live-verify</b> (Halli confirms against the live app).</div>
+
+<div class="legend card plum">
+<b>Severity:</b> <span><span class="tag b">BLOCKER</span> breaks a feature</span>
+<span><span class="tag h">HIGH</span> latent hang/fail under load</span>
+<span><span class="tag m">MED</span></span>
+<span><span class="tag l">LOW</span></span>
+&nbsp;·&nbsp; <b>Action:</b> <span><span class="tag fix">CLEAR-FIX</span> I fix it</span> <span><span class="tag halli">NEEDS-HALLI</span> judgment/deploy</span>
+</div>
+
+<h2>SCAN 1(a) — RLS / write-permission audit · VERDICT: <span class="tag fix">CLEAN</span></h2>
+<div class="card ok"><b>No entity currently denies a legitimate write.</b> Enumerated all <b>134</b> entities (parsed, comment-stripped).
+<ul>
+<li><b>22 entities</b> carry the write-lock, now <code>role:"admin"</code> on create/update/delete — <b>asServiceRole (admin-level) satisfies it; direct clients (role:"user") are blocked</b> (the intended B3 protection). <b>Zero</b> <code>role:"system"</code> remain (that was the app-wide bug — it denied the service too).</li>
+<li><b>112 entities</b> have no RLS block → platform default → authenticated owner writes + service writes both succeed (JournalEntries, DailyCheckins, PlannerItems, MealLog, SealedLetters, UserProfile, …).</li>
+<li><b>Read policies correct:</b> 13 of the locked entities keep <b>public read</b> (lurkable rooms/wall/wisdom); 9 are <b>read-locked to admin</b> (private peer data: Witness*, Twin*, *Membership, VoiceNote, GoalContribution, IngestErrorLog). Confirmed <b>no client code reads any of those 9 directly</b> (the only reference is documentation text in a FoundersOS doc) — all their reads go through service functions, so the lock doesn't break a client read.</li>
+</ul>
+<small>Residual to watch (LOW): the 112 default entities permit a signed-in client to write its <i>own</i> rows directly — fine for personal data, but if any should be service-only that's a separate hardening pass (not a write-failure).</small></div>
+
+<h2>SCAN 1(b) — function hang audit · VERDICT: <span class="tag h">SYSTEMIC RISK</span></h2>
+
+<h3>B1 — Unguarded awaited calls in interactive functions <span class="tag h">HIGH</span> <span class="tag fix">CLEAR-FIX (batched)</span></h3>
+<div class="card warn"><b>49 of 59</b> client-invoked functions have an awaited platform/entity call (get/filter/create/update/delete) or external <code>fetch</code>/<code>InvokeLLM</code> that is <b>NOT timeout-guarded</b>. This is the exact posting class: a plain <code>.catch()</code> only catches a <i>throw</i> — a call that <b>hangs</b> never settles, wedging the whole function (the user sees an endless spinner). Only the 5 community write fns + jessSupport were guarded before this audit.</div>
+<table><tr><th>Batch</th><th>Functions</th><th>State</th></tr>
+<tr><td><b>1 — Echo + Community react/report</b></td><td>reactCommunity, reportCommunity, reactEcho, reportEcho, retractEcho <small>(retractEcho had a <b>bare uncaught</b> <code>await delete</code>)</small></td><td><span class="tag fix">FIXED</span> <code>af70814</code> · needs live-verify</td></tr>
+<tr><td>2 — Memberships</td><td>joinCircle, leaveCircle, joinClub, leaveClub, createClub</td><td><span class="tag halli">QUEUED</span> next batch</td></tr>
+<tr><td>3 — Peer 1:1 (Witness/Twin)</td><td>postWitnessRequest, claimWitness, respondWitness, cancelWitness, flagWitness, deliverWitnessKey, getWitnessStatus, joinTwin, postTwinEntry, getTwinDay, cancelTwin</td><td><span class="tag halli">QUEUED</span></td></tr>
+<tr><td>4 — Pool / game / voice</td><td>collectivePool, openGameRound, markSessionComplete, postVoiceNote</td><td><span class="tag halli">QUEUED</span></td></tr>
+<tr><td>5 — AI / content-gen</td><td>generate* (×14), askStars, analyzeMeal, expandContent, guideActions, getPartnerView, fetchGutenbergBook, voiceTTS, generateAudio, … — guard the <code>InvokeLLM</code>/<code>fetch</code> so a slow model fails gracefully, not forever</td><td><span class="tag halli">QUEUED</span></td></tr>
+</table>
+<small>Fix pattern (proven on posting): wrap every awaited platform/external call in <code>withTimeout(p, ms)</code> (race against a timer) — reads fail-open (skip + proceed), writes return a clean 500. Guards are the <b>universal</b> protection: they hold regardless of index state or model latency.</small>
+
+<h3>B2 — App-wide unindexed sorts <span class="tag h">HIGH</span> <span class="tag halli">NEEDS-HALLI (prioritize)</span></h3>
+<div class="card warn"><b>~100 sorted reads across the app sort on a field with NO index.</b> An unindexed sort is what tipped the posting rate-cap read into a 27s+ hang. Only the <b>10 community entities</b> indexed in <code>661e338</code> are covered; everything else sorts unindexed — e.g. <code>DailyCheckins</code> by <code>date</code> ×14, <code>LifestyleItems</code> by <code>published_at</code> ×15, <code>UserProfile</code> by <code>created_date</code> ×9 / <code>date</code> ×9, <code>JournalEntries</code>, <code>MealLog</code>, <code>HabitLogs</code>, <code>Programs</code>, <code>UserPrograms</code>, <code>MedicationLogs</code>, <code>SymptomLogs</code>, <code>CycleEvents</code>, <code>ContentItems</code>…
+<br><br><b>Judgment call (why not auto-add 100 indexes):</b> the app runs daily on these reads, so unindexed sorts <i>degrade/crawl</i> but don't <i>universally</i> hang — the posting hang needed a large table + the RLS-denial interaction to tip over. So:
+<ul>
+<li><b>Primary fix = the B1 guards</b> (universal, already in motion) — no read can wedge a function regardless of index.</li>
+<li><b>Indexes = targeted optimization</b> where live latency shows slowness. Recommend a prioritized add (highest-traffic + largest tables first): <code>DailyCheckins.date</code>, <code>JournalEntries.created_date/session_date</code>, <code>MealLog</code>, <code>UserProfile</code>, <code>HabitLogs.date</code>, <code>LifestyleItems.published_at</code>, <code>Programs</code>, <code>UserPrograms</code>. <b>Halli decides scope</b> (each is an additive, low-risk schema change like the community ones; cost is the entity sync + your call on which tables are big enough to matter).</li>
+</ul>
+<small>Full per-entity/field map captured in the audit run; I can emit the exact index lines for any subset you greenlight.</small></div>
+
+<h3>B3 — Client write-flows gating success on a slow read <span class="tag m">MED</span> <span class="tag fix">CLEAR-FIX</span></h3>
+<div class="card">The "Posting…" hang class on the <i>client</i>. Community posts/comments/circle/club/club-notes were fixed to optimistic-insert + background refetch (<code>661e338</code>). Next: sweep other pages' submit handlers (journal, planner, logs, nutrition) for <code>await reload()</code> after a write that gates the UI — convert to optimistic where it's a write. <span class="tag halli">part of SCAN 2</span></div>
+
+<h2>Method &amp; next waves</h2>
+<div class="card plum">
+<b>This wave delivered:</b> 1(a) verdict (clean) · 1(b) full risk map · batch-1 guards fixed (<code>af70814</code>).<br>
+<b>Next waves:</b> B1 batches 2–5 (guards, committed per batch for you to deploy+verify) · B2 index subset (on your greenlight) · <b>SCAN 2</b> (dead/mis-wired buttons, missing empty/loading/error states, referenced-but-undeployed entities, awaited fire-and-forget) across all pages.<br>
+<b>Live-verify, not mock:</b> every write-path fix is tagged needs-live-verify — Halli runs the real end-to-end action; the mock harness is not trusted to declare a write working.
+</div>
+
+<small>FemWell — App Health Audit · Scan 1 · 2026-06-12. Companion to STATUS.md posting-saga close-out.</small>
+</div></body></html>
