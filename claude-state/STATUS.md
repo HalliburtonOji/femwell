@@ -1,7 +1,13 @@
 # FEMWELL — CANONICAL STATUS INDEX (read first · updated 2026-06-12)
 **This file is the single source of truth AND the index to every plan doc. If anything else disagrees, this wins.** (The long ship-log history continues below the index.)
 
-## 🩹 COMMUNITY FRONT-END FIXES — real-vs-artifact verdict + fixes DEPLOYED + VERIFIED (2026-06-12) — live hash `index-CF5vX-Ai.js`
+## 📓➕🥗 JOURNAL COMPLETED + NUTRITION PLAN delivered (2026-06-12) — live hash `index-CmBBK1ET.js` · summary: `claude-state/WORK_SUMMARY_2026-06-12.html`
+- **JOURNAL — genuinely complete.** Re-audit: 30/32 findings already done (all named blockers/highs closed). **B3 LIVE-VERIFIED** as non-owner test user: WitnessRequest/TwinPair/TwinEntry reads → 0 rows; Echo read 200/public, client Echo.create → 403. Anonymity lock holds at runtime. **L3 fixed (`13afe38`):** delete already kept the entry on failure (no data loss) — added a visible "couldn't delete" notice. Crypto/back-compat untouched. Deferred (cosmetic, flagged): H8 z-literals, M2 sealed-letters overlay, P1/P2 close-button styles.
+- **NUTRITION PLAN (`4364601`)** — serious cited build plan (NOT built; for Halli's approval). `claude-state/NUTRITION_PLAN.html` + FoundersOS "Nutrition Plan" tab. Headline: be the whole-life, non-scoreboard, women-aware nutrition layer (Flo/Clue have women+community but no nutrition; MFP/ZOE have tracking + diet-culture baggage). P0: fix legacy-shape calorie bug, real targets, recents/favourites, a real food DB (Open Food Facts). Flags cycle-syncing/microbiome as weak-evidence/optional.
+- **NEEDS HALLI:** approve Nutrition P0/P1 + gated deps (food-DB API/key, photo/voice, medical-claims legal review); Community product calls (per-room features, seed content, Games round); confirm FoundersOS Nutrition Plan + Health Audit tabs render for him (FoundersOS errors for non-owner sessions — pre-existing, not from this change; standalone HTML docs work regardless).
+- Deploy: keepalive POST; `index-CF5vX-Ai.js` → `index-CmBBK1ET.js`. Build+eslint green.
+
+## 🩹 COMMUNITY FRONT-END FIXES — real-vs-artifact verdict + fixes DEPLOYED + VERIFIED (2026-06-12) — superseded hash; see above
 Used a FRESH browser tab (cleared the freeze) to re-verify the sweep's findings:
 - **Cleanup:** confirmed 0 qa/diag posts visible on the wall (earlier purges cleared them).
 - **Echo Wall — NOT a bug** (FREEZE ARTIFACT): renders fine in a fresh tab (echoUI + heading present, no crash). The earlier "blank" was the frozen renderer not finishing mount.
