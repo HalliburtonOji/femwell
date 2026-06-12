@@ -1,0 +1,24 @@
+{
+  // Atelier Reading letters — the monthly astrology "letter" drafted by draftAtelierLetter
+  // (asServiceRole) and published to a user; AtelierReading.jsx reads/publishes them.
+  // Was referenced by code but had no committed schema (feature silently failed). Fields are
+  // the superset of what draftAtelierLetter writes (body_html/signed_by) and what the client
+  // reads (body/sign), so neither side breaks. Personal data — default owner-based RLS.
+  "name": "AtelierLetters",
+  "type": "object",
+  "properties": {
+    "user_id": { "type": "string", "description": "Recipient of the letter." },
+    "month": { "type": "string", "description": "Month key the letter is for (e.g. 2026-06)." },
+    "title": { "type": "string", "description": "Letter title." },
+    "body_html": { "type": "string", "description": "Letter body (HTML), written by draftAtelierLetter." },
+    "body": { "type": "string", "description": "Letter body (plain) — read by the client renderer." },
+    "sign": { "type": "string", "description": "Astrology sign / context tag read by the client." },
+    "signed_by": { "type": "string", "description": "Signature line (e.g. the astrologer persona)." },
+    "draft": { "type": "boolean", "default": false, "description": "True while an unpublished operator draft." },
+    "published_at": { "type": "string", "format": "date-time", "description": "When the draft was published." },
+    "created_at": { "type": "string" },
+    "updated_at": { "type": "string" }
+  },
+  "required": [ "user_id" ],
+  "indexes": [ { "fields": ["created_at"] }, { "fields": ["user_id"] }, { "fields": ["draft"] } ]
+}

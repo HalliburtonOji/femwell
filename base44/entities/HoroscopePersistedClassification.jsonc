@@ -1,0 +1,22 @@
+{
+  // Red/White Moon classification cache — computeRedWhiteMoon (asServiceRole) writes it;
+  // useRedWhiteMoon.js reads the latest by -last_computed_at. Was referenced by code but had
+  // no committed schema (feature silently failed). Fields are the superset of what
+  // computeRedWhiteMoon writes (red_white_archetype/confidence/bleeds_at_phases) and what the
+  // client reads (red_white/result). Personal data — default owner-based RLS.
+  "name": "HoroscopePersistedClassification",
+  "type": "object",
+  "properties": {
+    "user_id": { "type": "string", "description": "Owner of the classification." },
+    "red_white_archetype": { "type": "string", "description": "Computed archetype (e.g. insufficient_data, red, white…)." },
+    "red_white": { "type": "string", "description": "Archetype label read by the client." },
+    "result": { "type": "object", "description": "Optional structured result read by the client." },
+    "confidence": { "type": "number", "default": 0, "description": "Classifier confidence 0-1." },
+    "bleeds_at_phases": { "type": "array", "items": { "type": "string" }, "description": "Phases the user tends to bleed at." },
+    "last_computed_at": { "type": "string", "format": "date-time", "description": "When this classification was last computed." },
+    "created_at": { "type": "string" },
+    "updated_at": { "type": "string" }
+  },
+  "required": [ "user_id" ],
+  "indexes": [ { "fields": ["last_computed_at"] }, { "fields": ["user_id"] } ]
+}
