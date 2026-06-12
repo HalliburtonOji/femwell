@@ -1,0 +1,169 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>FemWell — Community Home Redesign</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Ephesis&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --cream:#F4EDDB; --paper:#FBF6E6; --paperHi:#F8F2E4; --page:#ECE7DA;
+    --ink:#2E261B; --inkSoft:#5b4f3e; --plum:#4A2A3A; --plumMid:#7B5E6B;
+    --rose:#C4849A; --sage:#6B8F5A; --gold:#A6862B; --red:#BC2E27;
+    --rule:rgba(58,44,26,0.12);
+    --sans:ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;
+    --serif:"Cormorant Garamond","Georgia",serif;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--page);color:var(--ink);font-family:var(--serif);line-height:1.55;}
+  .wrap{max-width:820px;margin:0 auto;padding:28px 16px 72px;}
+  .eyebrow{font-family:var(--sans);font-size:11px;letter-spacing:.2em;text-transform:uppercase;font-weight:700;color:var(--gold);margin:0 0 6px;}
+  h1{font-size:33px;line-height:1.08;margin:6px 0 8px;color:var(--plum);font-weight:600;}
+  .sub{font-family:var(--sans);font-size:13.5px;color:var(--inkSoft);margin:0 0 4px;line-height:1.55;}
+  h2{font-size:24px;font-weight:600;color:var(--plum);margin:34px 0 6px;line-height:1.18;border-bottom:2px solid var(--rule);padding-bottom:6px;}
+  h3{font-size:18px;font-weight:600;color:var(--ink);margin:18px 0 4px;}
+  p{font-size:15.5px;margin:8px 0;}
+  .card{background:var(--paper);border:1px solid var(--rule);border-left:3px solid var(--gold);border-radius:12px;padding:13px 15px;margin:12px 0;}
+  .card.plum{border-left-color:var(--plum);} .card.sage{border-left-color:var(--sage);} .card.rose{border-left-color:var(--rose);}
+  blockquote{margin:14px 0;padding:13px 15px;background:var(--cream);border-radius:10px;border-left:3px solid var(--rose);font-style:italic;font-size:17px;color:var(--plum);}
+  .badge{display:inline-block;border-radius:99px;padding:1px 8px;font-size:10.5px;font-weight:700;font-family:var(--sans);color:#fff;white-space:nowrap;}
+  .keep{background:var(--sage);} .move{background:var(--gold);} .slot{background:var(--rose);} .hub{background:var(--plumMid);} .demote{background:var(--inkSoft);}
+  .chk{display:inline-block;width:13px;height:13px;border:1.5px solid var(--plumMid);border-radius:3px;vertical-align:middle;}
+  table{width:100%;border-collapse:collapse;font-family:var(--sans);font-size:12.5px;margin:10px 0;}
+  th{text-align:left;padding:7px 8px;background:var(--paperHi);color:var(--inkSoft);font-size:10.5px;letter-spacing:.4px;text-transform:uppercase;border-bottom:1px solid var(--rule);}
+  td{padding:7px 8px;border-bottom:1px solid var(--rule);vertical-align:top;}
+  .tablewrap{overflow-x:auto;}
+  .cols{display:flex;gap:14px;flex-wrap:wrap;}
+  .col{flex:1;min-width:240px;background:var(--paper);border:1px solid var(--rule);border-radius:12px;padding:14px 15px;}
+  .stack{font-family:var(--sans);font-size:12px;line-height:1.9;color:var(--ink);}
+  .stack .x{color:var(--inkSoft);text-decoration:line-through;opacity:.6;}
+  .stack .keepl{color:var(--sage);font-weight:700;}
+  ul{margin:6px 0;padding-left:0;list-style:none;}
+  li{display:flex;gap:9px;align-items:flex-start;margin:5px 0;font-size:14.5px;line-height:1.45;}
+  li::before{content:"";width:6px;height:6px;border-radius:99px;background:var(--gold);margin-top:8px;flex-shrink:0;}
+  .foot{margin-top:36px;border-top:2px solid var(--rule);padding-top:12px;font-family:var(--sans);font-size:12px;color:var(--inkSoft);}
+  .lede{font-size:18px;}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="eyebrow">FemWell · Community · Home redesign · PROPOSAL — approval only, NOT built</div>
+  <h1>A calmer Community doorway</h1>
+  <p class="sub">The home has become a wall of cards. This proposes a quieter information architecture — a doorway, not a noticeboard — now that the central <b>Jump</b> switcher guarantees access to everything. Pick an option; nothing gets rebuilt until you do. 2026-06-12.</p>
+
+  <div class="card plum">
+    <p class="lede" style="margin-top:0"><b>The principle:</b> the Community home is a <b>calm doorway</b> — a quiet masthead + ambient presence, <b>one</b> gentle "today" focal point, and the <b>rooms/doors as the spine</b>. Everything else either becomes a door, rotates through a single "today" slot, lives in the Jump hub, or demotes to a small link. <b>Because the Jump hub now reaches every area, no secondary card needs to occupy the home.</b></p>
+  </div>
+
+  <h2>1. The current home — honest inventory</h2>
+  <p>Today the home stacks <b>~14 blocks</b> before and around the doors. It reads as a noticeboard: no clear focal point, and the rooms (the actual spine) are buried below six-plus cards. In order:</p>
+  <div class="tablewrap"><table>
+    <thead><tr><th>#</th><th>Block</th><th>What it is</th></tr></thead>
+    <tbody>
+      <tr><td>1</td><td>Masthead</td><td>Eyebrow + "For the whole of you" + subtitle</td></tr>
+      <tr><td>2</td><td>Presence line + Jump</td><td>"A few women are around…" + the new Jump-to control</td></tr>
+      <tr><td>3</td><td>Season belonging card</td><td>"You're in good company" (life-stage line)</td></tr>
+      <tr><td>4</td><td>"Share a thought…" button</td><td>Opens the internal Share-to sheet</td></tr>
+      <tr><td>5</td><td>Jess nudge</td><td>Dismissible "want a quiet place to write?"</td></tr>
+      <tr><td>6</td><td>Echo Wall card</td><td>Opens the anonymous wall</td></tr>
+      <tr><td>7</td><td>Question of the day</td><td>Today's one-line prompt + the room's answers</td></tr>
+      <tr><td>8</td><td>"Together this week" pool</td><td>Collective-ritual kindness bar + 4 pills</td></tr>
+      <tr><td>9</td><td>Close the week</td><td>Weekly reflection + reveal</td></tr>
+      <tr><td>10</td><td>Clubs card</td><td>Opens the Clubs directory</td></tr>
+      <tr><td>11</td><td>Living wisdom card</td><td>Featured line + "read the collection"</td></tr>
+      <tr><td>12</td><td>Rooms grid (the spine)</td><td>9 doors — Lounge, Circles, Library, Games, Love, Money, Style, Lighter, Health</td></tr>
+      <tr><td>13</td><td>"Quietly, one to one"</td><td>Witness + Phase Twin (→ Journal)</td></tr>
+      <tr><td>14</td><td>Talk to Jess · Invite · footer</td><td>Slim affordances + the footer</td></tr>
+    </tbody>
+  </table></div>
+  <p class="card rose" style="margin-top:10px"><b>The density problem, named:</b> three "collective" cards (pool, close-week, wisdom) + two belonging beats (season, presence) + two actions (share-a-thought, invite) + Echo + Clubs all compete <i>above and around</i> the doors. A first-time visitor scrolls a wall before she understands the place is <b>rooms she can walk into</b>. The doors — the whole point — arrive at block 12.</p>
+
+  <h2>2. Recommendation per card</h2>
+  <p>Legend: <span class="badge keep">KEEP</span> stays on the home · <span class="badge move">DOOR</span> becomes a room door · <span class="badge slot">SLOT</span> into one rotating "Today in the community" slot · <span class="badge hub">HUB</span> reached via Jump · <span class="badge demote">LINK</span> demote to a small link.</p>
+  <div class="tablewrap"><table>
+    <thead><tr><th>Card</th><th>Rec</th><th>Rationale (one line)</th></tr></thead>
+    <tbody>
+      <tr><td>Masthead</td><td><span class="badge keep">KEEP</span></td><td>The doorway's voice — sets the whole-life tone in one breath.</td></tr>
+      <tr><td>Presence line</td><td><span class="badge keep">KEEP</span></td><td>Ambient "you're not alone" — one quiet line, no card.</td></tr>
+      <tr><td>Season belonging</td><td><span class="badge keep">KEEP</span>→fold</td><td>Fold the life-stage line INTO the presence line (one ambient sentence, not a card).</td></tr>
+      <tr><td>Question of the day</td><td><span class="badge keep">KEEP</span></td><td><b>The one "today" focal point.</b> Sits directly under the masthead.</td></tr>
+      <tr><td>Rooms grid</td><td><span class="badge keep">KEEP</span>↑</td><td>The spine — move it UP, right under Today, so doors lead.</td></tr>
+      <tr><td>Echo Wall card</td><td><span class="badge move">DOOR</span></td><td>Add Echo Wall as a door in the grid (it's a place) — no separate card needed.</td></tr>
+      <tr><td>Clubs card</td><td><span class="badge move">DOOR</span></td><td>Add Clubs as a door in the grid — consistent with Circles/Library/Games.</td></tr>
+      <tr><td>"Together this week" pool</td><td><span class="badge slot">SLOT</span></td><td>A collective ritual — rotate it through the single Today slot; full version in a "Together" door/hub.</td></tr>
+      <tr><td>Close the week</td><td><span class="badge slot">SLOT</span></td><td>Pairs with the pool — same rotating slot (surfaces near week's end).</td></tr>
+      <tr><td>Living wisdom</td><td><span class="badge slot">SLOT</span></td><td>The featured line is a lovely ambient beat — rotate it through the Today slot; collection via Jump.</td></tr>
+      <tr><td>"Share a thought…"</td><td><span class="badge demote">LINK</span></td><td>An action, not a card — a small link under Today (or fold into the room composers).</td></tr>
+      <tr><td>Jess nudge</td><td><span class="badge keep">KEEP</span></td><td>Already conditional, once-per-id, dismissible — low footprint; keep but cap at one.</td></tr>
+      <tr><td>"Quietly, one to one" (Witness/Twin)</td><td><span class="badge hub">HUB</span>+link</td><td>Already in the Jump hub — demote the home block to a single discreet "Quietly, one to one →" link.</td></tr>
+      <tr><td>Talk to Jess</td><td><span class="badge keep">KEEP</span></td><td>A slim footer affordance already — keep as-is.</td></tr>
+      <tr><td>Invite a friend</td><td><span class="badge demote">LINK</span></td><td>Organic growth, low-frequency — a small footer link (also lives in the hub).</td></tr>
+    </tbody>
+  </table></div>
+
+  <h2>3. Two layout options</h2>
+  <div class="cols">
+    <div class="col">
+      <div class="eyebrow" style="color:var(--plumMid)">Option A · Minimal doorway</div>
+      <h3 style="margin-top:4px">Just the essentials</h3>
+      <div class="stack">
+        Masthead<br>
+        Presence + belonging (one line) · <b>Jump</b><br>
+        <b>Question of the day</b> (the one focal point)<br>
+        <span class="keepl">Rooms / doors</span> (incl. Echo Wall + Clubs)<br>
+        <span style="color:var(--inkSoft)">— small links: Quietly one-to-one → · Share a thought → —</span><br>
+        Talk to Jess · Invite · footer
+      </div>
+      <p style="font-size:13px;margin-top:10px"><b>Before→after:</b> ~14 blocks → <b>5</b>. Everything else lives in the doors + the Jump hub.</p>
+      <p style="font-size:12.5px;color:var(--inkSoft)"><span class="badge move">M effort</span> · <span class="badge keep">High impact</span> — calmest; loses the daily ambient warmth of wisdom/pool from the home.</p>
+    </div>
+    <div class="col" style="border-color:var(--gold)">
+      <div class="eyebrow">Option B · Doorway + one rotating "today" slot &nbsp;<span class="badge keep">RECOMMENDED</span></div>
+      <h3 style="margin-top:4px">Calm, with one warm beat</h3>
+      <div class="stack">
+        Masthead<br>
+        Presence + belonging (one line) · <b>Jump</b><br>
+        <b>Question of the day</b> (the focal point)<br>
+        <b>"Today in the community"</b> — ONE rotating slot:<br>
+        <span style="color:var(--inkSoft)">&nbsp;&nbsp;a wisdom line · or the kindness pool · or close-the-week · or a book/club spotlight (one at a time, never all)</span><br>
+        <span class="keepl">Rooms / doors</span> (incl. Echo Wall + Clubs)<br>
+        <span style="color:var(--inkSoft)">— small links: Quietly one-to-one → · Share a thought → —</span><br>
+        Talk to Jess · Invite · footer
+      </div>
+      <p style="font-size:13px;margin-top:10px"><b>Before→after:</b> ~14 blocks → <b>6</b> (one of which gently rotates). Keeps the warmth without the wall.</p>
+      <p style="font-size:12.5px;color:var(--inkSoft)"><span class="badge move">M effort</span> · <span class="badge keep">High impact</span> — the calm doorway, plus one daily "today" beat that still surfaces rituals/wisdom in turn.</p>
+    </div>
+  </div>
+
+  <div class="card sage">
+    <p style="margin:0"><b>Recommendation: Option B.</b> It delivers the calm doorway (masthead → one focal Today → doors), but a single rotating <i>"Today in the community"</i> slot keeps the collective warmth (wisdom, the kindness pool, close-the-week, a club spotlight) alive — one at a time, never a stack. The pool's four pills + the close-week composer still work inside that slot when it's their turn; the full versions live in a "Together" door / the Jump hub. Nothing is lost, nothing is loud.</p>
+  </div>
+
+  <h2>Approval checklist (tick to greenlight)</h2>
+  <ul>
+    <li><span class="chk"></span> &nbsp;<b>Option B</b> — doorway + one rotating "Today in the community" slot (recommended)</li>
+    <li><span class="chk"></span> &nbsp;<b>Option A</b> — minimal doorway (no rotating slot)</li>
+    <li><span class="chk"></span> &nbsp;Add <b>Echo Wall</b> + <b>Clubs</b> as doors in the rooms grid</li>
+    <li><span class="chk"></span> &nbsp;Move the <b>rooms grid up</b> (directly under Today)</li>
+    <li><span class="chk"></span> &nbsp;Fold the <b>season belonging</b> line into the presence line</li>
+    <li><span class="chk"></span> &nbsp;Demote <b>Share-a-thought</b>, <b>Quietly-one-to-one</b>, <b>Invite</b> to small links (all still in the Jump hub)</li>
+    <li><span class="chk"></span> &nbsp;Rotating slot content set: wisdom · kindness pool · close-the-week · club/book spotlight (confirm the rotation rule — daily? weighted to week's end for close-the-week?)</li>
+  </ul>
+
+  <h2>Guardrails (unchanged)</h2>
+  <ul>
+    <li><b>Nothing becomes unreachable</b> — the Jump hub reaches every area; Echo/Clubs become doors; pool/close-week/wisdom live in the slot + a door + the hub.</li>
+    <li>Whole-life not clinical · anonymous-first · <b>no scoreboards / vanity counts</b> (the pool stays aggregate-only) · cream/plum · Ephesis + Cormorant · Lucide only · <b>no emoji</b> · 18+ · crisis routing on every input.</li>
+    <li>The fixes already shipped (the kind zero state + the pills' feedback) carry into whichever slot the pool lives in.</li>
+  </ul>
+
+  <div class="foot">
+    FemWell — Community Home Redesign · 2026-06-12. PROPOSAL for approval — nothing rebuilt. Once Halli ticks an option, the home is rebuilt to match (the Jump hub already guarantees access to every area). Companion to the QA fixes in commit 841d137 (pool zero-state + pill feedback + the Jump switcher).
+  </div>
+
+</div>
+</body>
+</html>
