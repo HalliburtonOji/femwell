@@ -3,7 +3,8 @@ import { base44 } from "@/api/base44Client";
 import { createPageUrl } from "@/utils";
 import {
   ChevronRight, Bell, Moon, Heart, Shield,
-  Calendar, MapPin, Sparkles, Camera, Users
+  Calendar, MapPin, Sparkles, Camera, Users,
+  Check, AlertCircle
 } from "lucide-react";
 import ConditionHealthProfile from "../components/conditions/ConditionHealthProfile";
 import ProfileNavLinks from "../components/profile/ProfileNavLinks";
@@ -59,6 +60,8 @@ export default function Profile() {
   const [newBirthday, setNewBirthday] = useState('');
   const [newCity, setNewCity] = useState('');
   const [savedField, setSavedField] = useState(null);
+  const [saveToast, setSaveToast] = useState(null); // { ok, msg } — visible save confirmation / error
+  const flash = (ok, msg) => { setSaveToast({ ok, msg }); setTimeout(() => setSaveToast(null), 2200); };
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
   const [showDataExportModal, setShowDataExportModal] = useState(false);
   const [showDataDeleteModal, setShowDataDeleteModal] = useState(false);
@@ -76,17 +79,24 @@ export default function Profile() {
       const { file_url } = await base44.integrations.Core.UploadFile({ file });
       await base44.entities.UserProfile.update(profile.id, { avatar_url: file_url });
       setProfile(p => ({ ...p, avatar_url: file_url }));
-    } catch (_) {}
+      flash(true, "Photo updated");
+    } catch (_) { flash(false, "Couldn’t update photo — try again."); }
     setUploadingPhoto(false);
   };
 
   const saveProfileField = async (field, value, setEdit) => {
     if (!profile) return;
-    await base44.entities.UserProfile.update(profile.id, { [field]: value });
-    setProfile(p => ({ ...p, [field]: value }));
-    setSavedField(field);
-    setEdit(false);
-    setTimeout(() => setSavedField(null), 2000);
+    try {
+      await base44.entities.UserProfile.update(profile.id, { [field]: value });
+      setProfile(p => ({ ...p, [field]: value }));
+      setSavedField(field);
+      setEdit(false);
+      setTimeout(() => setSavedField(null), 2000);
+      flash(true, "Saved");
+    } catch (_) {
+      // Keep the editor open with the input intact so nothing is lost.
+      flash(false, "Couldn’t save — try again.");
+    }
   };
 
   useEffect(() => {
@@ -124,10 +134,12 @@ export default function Profile() {
         setPreferences((current) => ({ ...current, coach_tone: tone }));
       }
       setEditTone(false);
+      flash(true, "Saved");
     } catch (err) {
       // Keep the tone editor open on failure rather than leaving the
       // row stuck in a "Saving…" state (UI audit — clear busy flag).
       console.error("Tone update failed:", err);
+      flash(false, "Couldn’t save tone — try again.");
     } finally {
       setSaving(false);
     }
@@ -153,8 +165,11 @@ export default function Profile() {
     if (!profile) return;
     const current = profile.goals || [];
     const next = current.includes(g) ? current.filter(x => x !== g) : [...current, g];
-    await base44.entities.UserProfile.update(profile.id, { goals: next });
-    setProfile(p => ({ ...p, goals: next }));
+    try {
+      await base44.entities.UserProfile.update(profile.id, { goals: next });
+      setProfile(p => ({ ...p, goals: next }));
+      flash(true, "Saved");
+    } catch (_) { flash(false, "Couldn’t save — try again."); }
   };
 
   const toggleCondition = async (c) => {
@@ -167,8 +182,11 @@ export default function Profile() {
       const withoutNone = current.filter(x => x !== "None");
       next = withoutNone.includes(c) ? withoutNone.filter(x => x !== c) : [...withoutNone, c];
     }
-    await base44.entities.UserProfile.update(profile.id, { condition_flags: next });
-    setProfile(p => ({ ...p, condition_flags: next }));
+    try {
+      await base44.entities.UserProfile.update(profile.id, { condition_flags: next });
+      setProfile(p => ({ ...p, condition_flags: next }));
+      flash(true, "Saved");
+    } catch (_) { flash(false, "Couldn’t save — try again."); }
   };
 
   const updateLifeStage = async (stage) => {
@@ -176,12 +194,15 @@ export default function Profile() {
     // Sprint C C3 — set is_under_18 alongside life_stage so any future
     // consumer can read it without inferring from life_stage.
     const isUnder18 = stage === "teen";
-    await base44.entities.UserProfile.update(profile.id, {
-      life_stage: stage,
-      is_under_18: isUnder18,
-    });
+    try {
+      await base44.entities.UserProfile.update(profile.id, {
+        life_stage: stage,
+        is_under_18: isUnder18,
+      });
+    } catch (_) { flash(false, "Couldn’t save — try again."); return; }
     setProfile(p => ({ ...p, life_stage: stage, is_under_18: isUnder18 }));
     setEditLifeStage(false);
+    flash(true, "Saved");
     // Notify any other tab/route (esp. /Planner) that the profile changed
     // so they re-fetch and reshape stage-gated cards immediately rather
     // than waiting for focus / 6s poll.
@@ -275,6 +296,18 @@ export default function Profile() {
 
   return (
     <div className="min-h-screen pb-28" style={{ backgroundColor: "var(--ivory)" }}>
+      {/* Save confirmation / error toast — profile edits are no longer silent */}
+      {saveToast && (
+        <div role="status" style={{
+          position: "fixed", left: "50%", bottom: 90, transform: "translateX(-50%)", zIndex: 90,
+          display: "inline-flex", alignItems: "center", gap: 7, padding: "9px 16px", borderRadius: 9999,
+          fontFamily: "Inter, sans-serif", fontSize: 13, fontWeight: 700, color: "#F4EDDB",
+          background: saveToast.ok ? "#4A2A3A" : "#A84E56",
+          boxShadow: "0 6px 20px rgba(58,44,26,0.28)",
+        }}>
+          {saveToast.ok ? <Check size={14} /> : <AlertCircle size={14} />} {saveToast.msg}
+        </div>
+      )}
       <div className="max-w-3xl lg:max-w-5xl mx-auto px-4">
 
         {/* Header */}
@@ -778,8 +811,11 @@ export default function Profile() {
               onClick={async () => {
                 if (!profile) return;
                 const next = !profile.anonymous_mode;
-                await base44.entities.UserProfile.update(profile.id, { anonymous_mode: next });
-                setProfile(p => ({ ...p, anonymous_mode: next }));
+                try {
+                  await base44.entities.UserProfile.update(profile.id, { anonymous_mode: next });
+                  setProfile(p => ({ ...p, anonymous_mode: next }));
+                  flash(true, next ? "Anonymous mode on" : "Anonymous mode off");
+                } catch (_) { flash(false, "Couldn’t save — try again."); }
               }}
               style={{ width: 40, height: 22, borderRadius: 9999, position: "relative", backgroundColor: profile?.anonymous_mode ? "var(--plum)" : "var(--border)", transition: "background 0.2s", cursor: "pointer", flexShrink: 0 }}>
               <div style={{ position: "absolute", top: 2, left: profile?.anonymous_mode ? 20 : 2, width: 18, height: 18, borderRadius: "50%", backgroundColor: "white", transition: "left 0.2s" }} />
