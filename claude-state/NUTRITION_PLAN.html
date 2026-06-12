@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>FemWell — Nutrition Build Plan</title>
+<style>
+:root{--cream:#F4EDDB;--ink:#3A2C1A;--plum:#4A2A3A;--gold:#A6862B;--sage:#6B8F5A;--rose:#C4849A;--muted:#9B8B7A;--paper:#FBF7EC;}
+*{box-sizing:border-box}body{margin:0;background:var(--cream);color:var(--ink);font-family:-apple-system,Inter,system-ui,sans-serif;line-height:1.55;padding:0 0 60px}
+.wrap{max-width:820px;margin:0 auto;padding:24px 18px}
+h1{font-family:Georgia,'Cormorant Garamond',serif;font-size:30px;margin:0 0 4px}
+h2{font-family:Georgia,serif;font-size:21px;margin:30px 0 8px;border-bottom:1px solid #e3d9c2;padding-bottom:5px}
+h3{font-size:15px;margin:18px 0 6px}
+.sub{color:var(--muted);font-size:13px;margin-bottom:18px}
+.card{background:var(--paper);border-left:3px solid var(--gold);border-radius:5px;padding:12px 15px;margin:12px 0}
+.card.ok{border-left-color:var(--sage)}.card.warn{border-left-color:var(--rose)}.card.plum{border-left-color:var(--plum)}
+table{border-collapse:collapse;width:100%;font-size:12.5px;margin:10px 0}
+th,td{border:1px solid #e3d9c2;padding:5px 8px;text-align:left;vertical-align:top}
+th{background:#efe7d2;font-size:11px;letter-spacing:.3px;text-transform:uppercase}
+.tag{display:inline-block;font-size:10px;font-weight:700;padding:1px 7px;border-radius:999px;color:#fff;letter-spacing:.4px}
+.p0{background:#9e2b2b}.p1{background:#c4843a}.p2{background:#6b8f5a}.fut{background:#7c93a6}.solid{background:var(--sage)}.weak{background:var(--rose)}.halli{background:var(--plum)}.gate{background:#7c93a6}
+code{background:#efe7d2;padding:1px 5px;border-radius:3px;font-size:12px}
+.legend span{margin-right:14px;font-size:12px}
+small{color:var(--muted)}
+ul{margin:6px 0 6px 0;padding-left:20px}li{margin:3px 0}
+.cite{color:var(--muted);font-size:11px}
+</style></head><body><div class="wrap">
+
+<h1>Nutrition — Build Plan</h1>
+<div class="sub">A whole-life, non-scoreboard, women-aware nutrition layer. PLAN for Halli to approve — nothing built yet. 2026-06-12. Method: code inventory of the 7 Nutrition tabs + cited research synthesis (best-in-class apps, logging-friction evidence, women-specific UK nutrition) + a themed feature superset and a prioritized roadmap. No emoji.</div>
+
+<div class="legend card plum">
+<b>Priority:</b> <span><span class="tag p0">P0 FIX/FOUNDATION</span></span> <span><span class="tag p1">P1 GREAT</span></span> <span><span class="tag p2">P2 NICE</span></span> <span><span class="tag fut">FUTURE/GATED</span></span>
+&nbsp;·&nbsp; <span><span class="tag solid">SOLID</span></span> <span><span class="tag weak">WEAK</span></span> <span><span class="tag halli">NEEDS-HALLI</span></span>
+</div>
+
+<div class="card plum"><b>Headline:</b> the biggest opportunity is to be the <b>whole-life, non-scoreboard, women-aware nutrition layer</b> that the calorie apps and the period apps both miss. Lead with frictionless logging + a real food database + intuitive/whole-life framing + evidence-based (not faddy) women's nutrition. Treat cycle-syncing macro prescriptions and microbiome "personalization" as flagged/optional, never as the spine.</div>
+
+<h2>1. Where Nutrition is today (honest inventory)</h2>
+<div class="card"><b>Seven tabs:</b> Today · My Plan · Recipes · AI Plan · Shop · Progress · Insights. There is real, working machinery here — more than most v1 nutrition modules — but it leans <b>clinical / macro-heavy with a wellness veneer</b>. Cycle-awareness lives in <i>tips</i>, not in adaptive targets, and the joy / culture / intuitive-eating dimension isn't a first-class part of the UI.</div>
+
+<h3>What's SOLID <span class="tag solid">SOLID</span></h3>
+<table><tr><th>Capability</th><th>Detail</th></tr>
+<tr><td>Free-text meal logging + AI macro analysis</td><td><code>analyzeMeal</code> on gpt-4o-mini: cycle-phase-aware, returns a <code>meal_score</code> and smart-swap suggestions. The conversational, type-what-you-ate flow is genuinely on-brand.</td></tr>
+<tr><td>Hydration + drinks loggers</td><td>Water and other drinks tracked with their own loggers.</td></tr>
+<tr><td>AI meal-plan + recipe generators</td><td>Generate a meal plan and recipes on demand.</td></tr>
+<tr><td>Shopping list</td><td>Full CRUD + email-the-list.</td></tr>
+<tr><td>Body metrics + charts</td><td>Metrics captured and charted over time.</td></tr>
+<tr><td>AI weekly summary</td><td>A generated weekly read of how eating went.</td></tr>
+</table>
+
+<h3>What's HALF-BUILT / WEAK <span class="tag weak">WEAK</span></h3>
+<table><tr><th>Gap</th><th>Why it matters</th></tr>
+<tr><td>No real food database</td><td>Only a <b>28-item hardcoded <code>FOOD_DB</code></b>. No food API. Everything outside those 28 items round-trips the LLM.</td></tr>
+<tr><td>No barcode / photo / voice logging</td><td>Schema hints exist but there is <b>no UI</b>. These are exactly the friction-reducers the evidence says matter most.</td></tr>
+<tr><td>Macro accuracy = LLM round-trip</td><td>Every estimate depends on a slow, variably-accurate model call. No deterministic floor.</td></tr>
+<tr><td>Calorie targets are guessed defaults</td><td>No TDEE / no derivation from the user's body metrics + stage. The number on screen is essentially arbitrary.</td></tr>
+<tr><td>Two disconnected planners</td><td>Manual <b>My Plan</b> vs <b>AI Plan</b> don't talk to each other — duplicated mental model.</td></tr>
+<tr><td>Recipes don't persist</td><td>Recipe ratings and full recipes aren't saved.</td></tr>
+<tr><td><code>MealItems</code> written but never read</td><td>Data captured and orphaned.</td></tr>
+<tr><td>Orphan <code>AIRecipeGenerator.jsx</code></td><td>Stale schema, dead component.</td></tr>
+</table>
+
+<div class="card warn"><b>A real bug (P0):</b> <code>NutritionInsightsTab</code>'s 7-day calorie trend reads the <b>legacy</b> field <code>ai_analysis.nutritional_summary</code>. New-shape meals don't have that field, so they <b>read as 0</b> — the trend silently undercounts every recent meal. This is a foundation fix, not a feature.</div>
+
+<h2>2. Research synthesis (cited)</h2>
+
+<h3>Best-in-class apps — what they nail, what they miss</h3>
+<table><tr><th>App</th><th>Signal</th></tr>
+<tr><td>MyFitnessPal</td><td>14M crowdsourced DB — but <b>~37% of entries have &gt;20% energy error</b>. The real speed driver is <b>recents/favourites</b>, not the database size. Barcode is now paywalled.</td></tr>
+<tr><td>Cronometer</td><td>Lab-verified USDA / NCCDB, <b>82 micronutrients</b>, ~3-5% accuracy. The accuracy benchmark.</td></tr>
+<tr><td>Noom</td><td>The product is <b>human coaching + psychology lessons</b>, not the tracker.</td></tr>
+<tr><td>Yazio / Lifesum</td><td>Structured plans; Lifesum's "Life Score" reframes away from raw calories.</td></tr>
+<tr><td>ZOE</td><td>Gut-biome 0-100 food scores; <b>scrapped CGM in 2025</b>; £268 bundle; Which? found <b>personalization claims run ahead of the evidence</b>.</td></tr>
+<tr><td>WeightWatchers</td><td>Photo Food Scanner; "Connect" judgment-free community.</td></tr>
+<tr><td>Lose It!</td><td>Snap It photo + voice logging.</td></tr>
+<tr><td>Fastic</td><td>AI scanner + generous free tier — but <b>streak-for-reward</b> gamification (anti-pattern for us).</td></tr>
+<tr><td>Foodnoms</td><td>Label / barcode / photo / text, <b>privacy-first</b>.</td></tr>
+<tr><td>SnapCalorie</td><td>AI photo/voice — good for simple foods; complex meals need user correction.</td></tr>
+<tr><td>Flo / Clue</td><td>Community + cycle data but <b>essentially NO nutrition feature</b> — a genuine whitespace for FemWell.</td></tr>
+</table>
+<div class="cite">Sources: calorie-trackers.com · fitia.app · Which? ZOE review · eathealthy365 · weightwatchers.com · nutriscan.app · tribe.ai · wondershare.</div>
+
+<h3>Logging-friction &amp; harm evidence (a hard ethical constraint, not a nicety)</h3>
+<div class="card warn">
+<ul>
+<li><b>&gt;70%</b> find logging burdensome (PMC5537862).</li>
+<li>Guilt / shame drives discontinuation (Lindgreen 2021, <i>Brain &amp; Behavior</i>).</li>
+<li>A <b>2026 systematic review</b> (Wallace et al., SAGE <i>J Health Psychology</i>): tracking may increase disordered-eating risk — <b>~half</b> reported increased self-consciousness/guilt after a month; <b>~40%</b> of male MFP users perceived it as contributing to ED symptoms.</li>
+</ul>
+<b>What works:</b> recents/favourites + photo/voice/natural-language + "good enough" editable estimates. <b>What to AVOID:</b> daily pass/fail and calorie scoreboards. This is an ethical design line for FemWell, not a preference.</div>
+
+<h3>Women-specific nutrition — STRONG evidence (UK figures)</h3>
+<table><tr><th>Need</th><th>Evidence</th></tr>
+<tr><td>Iron</td><td><b>14.8mg/day</b> menstruating vs <b>8.7mg</b> at 50+; <b>&gt;1/4</b> of women have inadequate intakes; pair with vitamin C. <i>The single most solid cycle angle: iron during menstruation.</i></td></tr>
+<tr><td>Fibre</td><td>Target <b>30g</b> vs <b>~17g</b> actual.</td></tr>
+<tr><td>Calcium + vit D</td><td><b>700mg</b> calcium + <b>10µg</b> vitamin D.</td></tr>
+<tr><td>Folic acid</td><td><b>400µg</b> pre-conception → week 12.</td></tr>
+<tr><td>Peri / menopause</td><td><b>~1.2g/kg protein</b> + calcium + vit D + resistance training for bone/muscle (BDA, ESPEN). Hot-flush triggers: caffeine / alcohol / spicy (BDA); phytoestrogens emerging.</td></tr>
+<tr><td>Postpartum</td><td>Protein / iron / omega-3 / fibre.</td></tr>
+</table>
+<div class="cite">British Nutrition Foundation · BDA · ESPEN.</div>
+
+<div class="card warn"><b>CONTESTED — flag clearly:</b> cycle-syncing macro <i>prescriptions</i> have weak dietitian consensus — position as <b>self-awareness only</b> (the one solid angle is iron during menstruation). ZOE-style "truly personalized" claims overreach the evidence (Which?). <b>Intuitive Eating IS evidence-based</b> (Tribole &amp; Resch; Cedars-Sinai; PubMed 28619668) — it directly validates the no-scoreboard stance.</div>
+
+<h3>WHOLE-LIFE / joy evidence (under-used by every competitor)</h3>
+<div class="card ok"><ul>
+<li>Cooking confidence ↔ <b>lower depression / higher wellbeing</b> (Frontiers).</li>
+<li>Cooking brings joy to <b>58%</b> across 142 countries; cooking <i>together</i> <b>+232% joy</b>; eating with someone <b>cuts rejection feelings 23.5%</b> (Gallup).</li>
+<li>Budget/skills programs (Cooking Matters, Jamie's Ministry of Food) <b>raise veg intake + cut food insecurity</b>.</li>
+</ul>This is the dimension FemWell can own that no calorie tracker and no period app touches.</div>
+
+<h2>3. Deep brainstorm — themed feature superset</h2>
+
+<div class="card"><b>(a) Frictionless logging</b> — recents/favourites strip; "repeat yesterday" / one-tap re-log; photo AI log; voice / natural-language entry; quick-add; barcode via Open Food Facts (free API). The friction-reducers the evidence backs, made FemWell-warm.</div>
+
+<div class="card"><b>(b) A real food database</b> — replace the 28-item <code>FOOD_DB</code>. Trade-off: <b>Open Food Facts</b> (free, barcode-rich, crowdsourced/variable, UK-strong) and/or <b>USDA FDC</b> (free, lab-verified, generic foods, US-centric, no barcodes) as a deterministic floor, with the LLM as the <i>fallback / parser</i> for free-text — not the only source. Cache hot lookups.</div>
+
+<div class="card"><b>(c) Whole-life &amp; joy</b> — a "how did it feel" non-macro log (satisfied? rushed? with people?); cooking-confidence prompts; cultural / world-cuisine celebration; a budget mode (cost-aware swaps, batch-cook); cook-together / social; ties into the Community food-room. The differentiator.</div>
+
+<div class="card"><b>(d) Evidence-based women's nutrition done right</b> — iron / protein / fibre / calcium as <b>gentle micronutrient nudges, never scoreboards</b>; menopause / perimenopause / pregnancy / postpartum modes; the <b>honest cycle-aware framing</b> (iron-during-menstruation is the solid one; everything else is self-awareness, clearly labelled).</div>
+
+<div class="card"><b>(e) Intuitive / non-diet framing</b> — replace calorie pass/fail with <b>qualitative reflection</b>; hunger / fullness check-ins; anti-diet-culture copy throughout. Aligns the whole module with the Intuitive Eating evidence and the harm literature.</div>
+
+<div class="card"><b>(f) Smarter insights</b> — <b>fix the legacy-shape calorie bug first</b>; surface mood-food / energy-food patterns from <code>DailyCheckins</code>; a gentle <b>weekly story</b> in Jess's voice, not a report card.</div>
+
+<div class="card"><b>(g) Planning &amp; shopping</b> — <b>unify the two planners</b> (manual + AI into one model); smarter shopping (auto-build from the plan, de-dupe); a pantry / "what's in the cupboard" layer.</div>
+
+<div class="card"><b>(h) Jess as nutrition companion</b> — ask-Jess about food; gentle, opt-in nudges; "what could I make with this" meal ideas. Voice continuity, not a separate chatbot.</div>
+
+<div class="card"><b>(i) Hydration / drinks polish</b> — keep what works; lighten the UI; fold into the daily snapshot rather than a separate chore.</div>
+
+<h2>4. Prioritized roadmap</h2>
+<table>
+<tr><th>Item</th><th>Pri</th><th>Rationale (one line)</th><th>FemWell-fit</th><th>Cmplx</th><th>Gated dependency</th></tr>
+
+<tr><td>Fix legacy-shape calorie bug in Insights</td><td><span class="tag p0">P0</span></td><td>7-day trend reads 0 for new-shape meals — silent data loss.</td><td>Honest data; no UX change.</td><td>S</td><td>None.</td></tr>
+<tr><td>TDEE / target derivation</td><td><span class="tag p0">P0</span></td><td>Replace guessed defaults with a real estimate from body metrics + stage.</td><td>Quiet default, not a goal screen; whole-life stages.</td><td>S</td><td>None (formula only). Frame gently.</td></tr>
+<tr><td>Recents / favourites</td><td><span class="tag p0">P0</span></td><td>The #1 logging-speed driver per the evidence.</td><td>Anonymity-safe; no vanity; pure speed.</td><td>M</td><td>None.</td></tr>
+<tr><td>Real food DB (Open Food Facts)</td><td><span class="tag p0">P0</span></td><td>Deterministic floor under the LLM; UK-strong, free.</td><td>Whole-life; reliable; on-palette wrapper.</td><td>L</td><td>Free API; rate-limit / caching; attribution.</td></tr>
+<tr><td>Unify the two planners</td><td><span class="tag p0">P0</span></td><td>Manual + AI into one model — kills the duplicate mental model.</td><td>Calmer surface; whole-life.</td><td>M</td><td>None.</td></tr>
+
+<tr><td>Photo AI logging</td><td><span class="tag p1">P1</span></td><td>Top friction-reducer; SnapCalorie-style with edit-to-correct.</td><td>Jess-warm; editable "good enough."</td><td>L</td><td>Vision model cost; correction UX.</td></tr>
+<tr><td>Voice / natural-language logging</td><td><span class="tag p1">P1</span></td><td>Speak a meal; reuses existing analyzeMeal flow.</td><td>Smart-friend Jess voice continuity.</td><td>M</td><td>LLM round-trip (already in use).</td></tr>
+<tr><td>Women's micronutrient gentle nudges</td><td><span class="tag p1">P1</span></td><td>Iron / fibre / protein / calcium — STRONG UK evidence.</td><td><b>Nudge, never scoreboard</b>; women-aware; per stage.</td><td>M</td><td>Light medical-claims review of copy.</td></tr>
+<tr><td>"How it felt" + intuitive framing</td><td><span class="tag p1">P1</span></td><td>Qualitative reflection replaces pass/fail — the harm-evidence response.</td><td>The differentiator; anti-diet copy.</td><td>M</td><td>None. Copy review.</td></tr>
+<tr><td>Insights upgrade (mood-food story)</td><td><span class="tag p1">P1</span></td><td>Gentle weekly story from DailyCheckins, not a report card.</td><td>Jess voice; no vanity metrics.</td><td>M</td><td>Depends on P0 bug fix.</td></tr>
+<tr><td>Stage modes (meno / preg / postpartum)</td><td><span class="tag p1">P1</span></td><td>Protein + calcium + vit D + the right framing per life stage.</td><td>Whole-life spine; 11 stages.</td><td>M</td><td>Medical-claims copy review.</td></tr>
+
+<tr><td>Persist recipes + ratings</td><td><span class="tag p2">P2</span></td><td>Stop dropping generated recipes and ratings.</td><td>Quiet quality.</td><td>S</td><td>None.</td></tr>
+<tr><td>Budget mode</td><td><span class="tag p2">P2</span></td><td>Cost-aware swaps + batch-cook; food-security evidence.</td><td>Whole-life; inclusive.</td><td>M</td><td>None (heuristic).</td></tr>
+<tr><td>Pantry / "what's in the cupboard"</td><td><span class="tag p2">P2</span></td><td>Plan + shop from what you already have.</td><td>Practical, calm.</td><td>M</td><td>None.</td></tr>
+<tr><td>Hydration/drinks UI polish</td><td><span class="tag p2">P2</span></td><td>Fold into the daily snapshot; lighten.</td><td>Less chore, more glance.</td><td>S</td><td>None.</td></tr>
+<tr><td>Retire orphans (AIRecipeGenerator, MealItems)</td><td><span class="tag p2">P2</span></td><td>Remove dead/stale code + orphaned writes.</td><td>Hygiene.</td><td>S</td><td>None.</td></tr>
+
+<tr><td>Barcode at scale</td><td><span class="tag fut">FUT</span></td><td>Great once the DB is proven; needs robust scanning UX.</td><td>Frictionless; gated on DB maturity.</td><td>L</td><td>Open Food Facts coverage; camera UX.</td></tr>
+<tr><td>Social cook-together</td><td><span class="tag fut">FUT</span></td><td>+232% joy evidence — but needs Community maturity + moderation.</td><td>Anonymity-first social is hard; gate it.</td><td>L</td><td>Community + moderation; legal.</td></tr>
+<tr><td>Microbiome / ZOE-style personalization</td><td><span class="tag fut">FUT</span></td><td>Evidence runs ahead of claims (Which?). Optional, flagged.</td><td>Off-brand if over-claimed; keep optional.</td><td>L</td><td>Paid data/APIs; medical-claims/legal.</td></tr>
+<tr><td>Cycle-syncing macro prescriptions</td><td><span class="tag fut">FUT</span></td><td>Weak consensus — self-awareness framing only, never targets.</td><td>Honesty gate; iron-only is the solid bit.</td><td>M</td><td>Medical-claims review; positioning.</td></tr>
+</table>
+<small><b>Complexity:</b> S = small · M = medium · L = large. Anything touching micronutrient or stage copy gets a light <b>medical-claims pass</b> before ship.</small>
+
+<h2>5. Connectivity — wire ALL surfaces</h2>
+<table><tr><th>Surface</th><th>Tie-in</th></tr>
+<tr><td>Community</td><td>A <b>food / nutrition room</b>: share a recipe or a small win anonymously; trade budget tips; the cook-together future hook.</td></tr>
+<tr><td>Journal</td><td>Reflect on eating + <b>mood-food</b>; the "how it felt" log can flow into a journal prompt.</td></tr>
+<tr><td>Today</td><td>The <b>daily nutrition snapshot</b> (a glance, not a score) + couple it to the daily check-in so energy/mood and food sit together.</td></tr>
+<tr><td>Lifestyle daily-read</td><td>Food articles + recipes surfaced in the daily read; seasonal / cultural cuisine.</td></tr>
+<tr><td>Planner</td><td>Drop the unified meal plan <b>into the week</b>; shopping list builds from it.</td></tr>
+</table>
+
+<h2>6. Headline recommendation</h2>
+<div class="card plum"><b>Be the whole-life, non-scoreboard, women-aware nutrition layer</b> that the calorie apps and the period apps both miss — Flo/Clue have the women + community and no nutrition; MyFitnessPal/ZOE have the tracking and the diet-culture baggage (and, in ZOE's case, over-claimed personalization). <b>Lead with</b> frictionless logging (recents/favourites + photo/voice), a real food DB (Open Food Facts under the LLM), intuitive/whole-life framing (qualitative reflection, joy, budget, cultural cooking), and evidence-based — not faddy — women's nutrition (iron / fibre / protein / calcium as gentle nudges per life stage). <b>Treat</b> cycle-syncing macro prescriptions and microbiome "personalization" as flagged, optional extras — never the spine — because the evidence doesn't support selling them as truth. <b>Do first:</b> fix the legacy-shape calorie bug, derive real targets, ship recents/favourites, and put a real food database under the whole thing.</div>
+
+<small>FemWell — Nutrition Build Plan · 2026-06-12 · PLAN only, nothing built. Companion in-app mirror: <code>src/components/founders/NutritionPlanDoc.jsx</code>. Awaiting Halli's approval to scope P0.</small>
+</div></body></html>
