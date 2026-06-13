@@ -74,7 +74,7 @@ const ALLOWED = new Set([
   "ojihalliburton57@gmail.com",
 ]);
 
-const TABS = ["Lab", "Pages", "Roadmap", "Health Audit", "Nutrition Plan", "Nutrition Demos", "Community Plan", "Build Plan", "Journal Audit", "Expert Governance", "Library & Groups", "Integration Audit", "Connectivity Map", "Sharing", "Home Redesign", "Whole-Life", "Audio", "Ideas", "Strategy", "Legal", "Decisions", "Journal", "Journal Demos", "Community Demos", "Another You", "UX & Design", "Wholeness", "LGBTQ+", "Health Corner"];
+const TABS = ["Lab", "Previews", "Pages", "Roadmap", "Health Audit", "Nutrition Plan", "Nutrition Demos", "Community Plan", "Build Plan", "Journal Audit", "Expert Governance", "Library & Groups", "Integration Audit", "Connectivity Map", "Sharing", "Home Redesign", "Whole-Life", "Audio", "Ideas", "Strategy", "Legal", "Decisions", "Journal", "Journal Demos", "Community Demos", "Another You", "UX & Design", "Wholeness", "LGBTQ+", "Health Corner"];
 
 const IDEAS_KEY  = "femwell_ideas";
 const CHECKS_KEY = "femwell_founder_checks";
@@ -586,6 +586,7 @@ function FoundersInner({ user }) {
         {tab === "Legal"     && <LegalTab />}
         {tab === "Decisions" && <DecisionsTab />}
         {tab === "Journal"        && <JournalTab />}
+        {tab === "Previews"       && <PreviewsTab />}
         {tab === "Journal Demos"  && <JournalDemosTab />}
         {tab === "Community Demos" && <CommunityDemosTab />}
         {tab === "Nutrition Demos" && <NutritionDemosTab />}
@@ -1817,6 +1818,74 @@ function JournalTab() {
 
 
 // ════════════════════════════════════════════════════════════════════════════
+// Tab — Previews (ONE place to reach every previewable route — no typing URLs)
+// ════════════════════════════════════════════════════════════════════════════
+// Single index of everything tap-through-able: the now-LIVE Nutrition Hub, the 5
+// Nutrition UX demos, and the Journal + Community redesign previews. Each opens
+// its real route. Keeps the per-area demo tabs too; this is the discoverable hub.
+function PreviewLink({ slug, title, note, accent, live }) {
+  return (
+    <article style={{
+      background: T.surface, border: `1px solid ${T.border}`,
+      borderLeft: `4px solid ${accent}`, borderRadius: 12, padding: "13px 15px",
+    }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 3 }}>
+        <div style={{ fontSize: 15, fontWeight: 700, color: T.textHi }}>{title}</div>
+        {live && (
+          <span style={{
+            fontSize: 9.5, fontWeight: 700, letterSpacing: 0.5, textTransform: "uppercase",
+            color: T.bg, background: T.sage, borderRadius: 9999, padding: "2px 7px",
+          }}>Live</span>
+        )}
+      </div>
+      <div style={{ fontSize: 12, color: T.textMid, lineHeight: 1.5, marginBottom: 10 }}>{note}</div>
+      <a href={`/${slug}`} style={{
+        display: "inline-block", background: accent, color: T.bg,
+        borderRadius: 9999, padding: "7px 15px", fontSize: 12.5, fontWeight: 700, textDecoration: "none",
+      }}>Open →</a>
+    </article>
+  );
+}
+
+function PreviewsTab() {
+  return (
+    <div>
+      <PageHeader
+        title="Previews — everything in one place"
+        subtitle="Tap through to every previewable surface — no typing URLs. The chosen Nutrition direction is now the LIVE Nutrition page; the Journal and Community redesigns are previews awaiting your approval before they go live."
+        badge="START HERE"
+        badgeTone="gold"
+      />
+
+      <SectionLabel>Live now</SectionLabel>
+      <div style={{ display: "flex", flexDirection: "column", gap: 10, margin: "8px 0 22px" }}>
+        <PreviewLink live slug="Nutrition" accent={T.sage}
+          title="Nutrition — the real page (Hub + Slider)"
+          note="The chosen Demo 1 + 2 hybrid, now the live Nutrition page on real data: a calm Daily Hub, a Hero-Card-Slider spine, and every feature in bottom sheets. This is what's in the app's bottom nav." />
+      </div>
+
+      <SectionLabel>Nutrition — 5 UX demo directions (mock data)</SectionLabel>
+      <div style={{ display: "flex", flexDirection: "column", gap: 10, margin: "8px 0 22px" }}>
+        {NUTRITION_DEMOS.map((d) => (
+          <PreviewLink key={d.slug} slug={d.slug} accent={d.accent}
+            title={`Demo ${d.n} — ${d.title}`} note={d.subtitle} />
+        ))}
+      </div>
+
+      <SectionLabel>Redesign previews — for your approval (live pages untouched)</SectionLabel>
+      <div style={{ display: "flex", flexDirection: "column", gap: 10, marginTop: 8 }}>
+        <PreviewLink slug="JournalRedesign1" accent={T.blush}
+          title="Journal — redesign preview"
+          note="The demos' richer component language (hero cards, sheets, calmer density) brought to Journal — carved masthead + identity preserved. Not yet live." />
+        <PreviewLink slug="CommunityRedesign1" accent={T.gold}
+          title="Community — redesign preview"
+          note="Demo 6's rooms elevated with a calm hero, a peeking room slider, and bottom sheets — anonymity / 18+ / crisis routing / Jess preserved. Not yet live." />
+      </div>
+    </div>
+  );
+}
+
+// ════════════════════════════════════════════════════════════════════════════
 // Tab — Journal Demos (4 fully interactive theme directions)
 // ════════════════════════════════════════════════════════════════════════════
 const JOURNAL_DEMOS = [
@@ -2037,25 +2106,27 @@ function NutritionDemosTab() {
       </div>
 
       <div style={{ marginTop: 18 }}>
-        <SectionLabel>The real build + redesign previews</SectionLabel>
+        <SectionLabel>The chosen direction is now live</SectionLabel>
         <div style={{ display: "flex", flexDirection: "column", gap: 10, marginTop: 8 }}>
-          {[
-            { slug: "NutritionHub", title: "Nutrition — REAL page (Hub + Slider hybrid)", note: "Chosen direction (Demo 1 + 2), wired to real data. Live-verify before it replaces /Nutrition.", accent: T.gold },
-            { slug: "JournalRedesign1", title: "Journal — redesign preview", note: "Demos' richer components brought to Journal; carved masthead + identity preserved.", accent: T.blush },
-            { slug: "CommunityRedesign1", title: "Community — redesign preview", note: "Demo 6 rooms elevated with hero slider + sheets; anonymity/18+/crisis preserved.", accent: T.sage },
-          ].map((r) => (
-            <article key={r.slug} style={{
-              background: T.surface, border: `1px solid ${T.border}`,
-              borderLeft: `4px solid ${r.accent}`, borderRadius: 12, padding: "12px 14px",
-            }}>
-              <div style={{ fontSize: 14.5, fontWeight: 700, color: T.textHi, marginBottom: 3 }}>{r.title}</div>
-              <div style={{ fontSize: 12, color: T.textMid, lineHeight: 1.5, marginBottom: 9 }}>{r.note}</div>
-              <a href={`/${r.slug}`} style={{
-                display: "inline-block", background: r.accent, color: T.bg,
-                borderRadius: 9999, padding: "7px 14px", fontSize: 12.5, fontWeight: 700, textDecoration: "none",
-              }}>Open →</a>
-            </article>
-          ))}
+          <article style={{
+            background: T.surface, border: `1px solid ${T.border}`,
+            borderLeft: `4px solid ${T.sage}`, borderRadius: 12, padding: "12px 14px",
+          }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 3 }}>
+              <div style={{ fontSize: 14.5, fontWeight: 700, color: T.textHi }}>Nutrition — Demo 1 + 2 hybrid (Hub + Slider)</div>
+              <span style={{ fontSize: 9.5, fontWeight: 700, letterSpacing: 0.5, textTransform: "uppercase", color: T.bg, background: T.sage, borderRadius: 9999, padding: "2px 7px" }}>Live</span>
+            </div>
+            <div style={{ fontSize: 12, color: T.textMid, lineHeight: 1.5, marginBottom: 9 }}>
+              Halli chose the Daily-Hub + Hero-Card-Slider hybrid — it&apos;s now the real, live Nutrition page (in the app bottom nav), wired to real data with the full feature set. The 5 demos above were the mock-data explorations it came from.
+            </div>
+            <a href="/Nutrition" style={{
+              display: "inline-block", background: T.sage, color: T.bg,
+              borderRadius: 9999, padding: "7px 14px", fontSize: 12.5, fontWeight: 700, textDecoration: "none",
+            }}>Open live Nutrition →</a>
+          </article>
+          <div style={{ fontSize: 11.5, color: T.textMuted, lineHeight: 1.5 }}>
+            Journal &amp; Community redesign previews live in the <b>Previews</b> tab (top of the rail) — awaiting your approval before they go live.
+          </div>
         </div>
       </div>
     </div>

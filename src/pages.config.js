@@ -54,7 +54,10 @@ import Explore from './pages/Explore';
 import Journal from './pages/Journal';
 import LifeStageCare from './pages/LifeStageCare';
 import Lifestyle from './pages/Lifestyle';
-import Nutrition from './pages/Nutrition';
+// NOTE: the old Nutrition page (./pages/Nutrition) is intentionally NO LONGER
+// IMPORTED/ROUTED — the "Nutrition" route now renders NutritionHub (the chosen
+// Daily-Hub + Hero-Card-Slider hybrid). The old file is kept in the repo as a
+// fallback; re-add this import + map "Nutrition" back to it to revert.
 import Onboarding from './pages/Onboarding';
 import Profile from './pages/Profile';
 import ProgramDay from './pages/ProgramDay';
@@ -144,7 +147,7 @@ export const PAGES = {
     "Journal": Journal,
     "LifeStageCare": LifeStageCare,
     "Lifestyle": Lifestyle,
-    "Nutrition": Nutrition,
+    "Nutrition": NutritionHub,
     "Onboarding": Onboarding,
     "Profile": Profile,
     "ProgramDay": ProgramDay,
