@@ -2035,6 +2035,29 @@ function NutritionDemosTab() {
         are queried. Locked constraints held: cream/ink palette, Ephesis + Cormorant,
         Lucide/SVG only, no emoji, whole-life not clinical.
       </div>
+
+      <div style={{ marginTop: 18 }}>
+        <SectionLabel>The real build + redesign previews</SectionLabel>
+        <div style={{ display: "flex", flexDirection: "column", gap: 10, marginTop: 8 }}>
+          {[
+            { slug: "NutritionHub", title: "Nutrition — REAL page (Hub + Slider hybrid)", note: "Chosen direction (Demo 1 + 2), wired to real data. Live-verify before it replaces /Nutrition.", accent: T.gold },
+            { slug: "JournalRedesign1", title: "Journal — redesign preview", note: "Demos' richer components brought to Journal; carved masthead + identity preserved.", accent: T.blush },
+            { slug: "CommunityRedesign1", title: "Community — redesign preview", note: "Demo 6 rooms elevated with hero slider + sheets; anonymity/18+/crisis preserved.", accent: T.sage },
+          ].map((r) => (
+            <article key={r.slug} style={{
+              background: T.surface, border: `1px solid ${T.border}`,
+              borderLeft: `4px solid ${r.accent}`, borderRadius: 12, padding: "12px 14px",
+            }}>
+              <div style={{ fontSize: 14.5, fontWeight: 700, color: T.textHi, marginBottom: 3 }}>{r.title}</div>
+              <div style={{ fontSize: 12, color: T.textMid, lineHeight: 1.5, marginBottom: 9 }}>{r.note}</div>
+              <a href={`/${r.slug}`} style={{
+                display: "inline-block", background: r.accent, color: T.bg,
+                borderRadius: 9999, padding: "7px 14px", fontSize: 12.5, fontWeight: 700, textDecoration: "none",
+              }}>Open →</a>
+            </article>
+          ))}
+        </div>
+      </div>
     </div>
   );
 }
