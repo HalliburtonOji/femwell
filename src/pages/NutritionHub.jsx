@@ -34,15 +34,17 @@ import { HubSheet, SoftBar, SurfaceCard } from "@/components/nutrition/hub/HubSh
 
 import NutritionTodayTab from "../components/nutrition/NutritionTodayTab";
 import NutritionPlanTab from "../components/nutrition/NutritionPlanTab";
-import NutritionProgressTab from "../components/nutrition/NutritionProgressTab";
-import NutritionInsightsTab from "../components/nutrition/NutritionInsightsTab";
+import UnifiedProgressTab from "../components/nutrition/UnifiedProgressTab";
+import UnifiedInsightsTab from "../components/nutrition/UnifiedInsightsTab";
 import UnifiedRecipesTab from "../components/nutrition/UnifiedRecipesTab";
 // RecipeGeneratorTab + AIRecipeGenerator remain in the repo as unrouted fallbacks;
 // the live "recipes" surface is now the UnifiedRecipesTab (rebuilt per Master Plan §7).
 // MealPlanGeneratorTab + NutritionPlanTab remain in the repo as unrouted fallbacks;
 // the live "mealgen" surface is now the UnifiedMealPlanTab (manual + AI = one plan).
 import UnifiedMealPlanTab from "../components/nutrition/UnifiedMealPlanTab";
-import ShoppingListTab from "../components/nutrition/ShoppingListTab";
+// ShoppingListTab + NutritionProgressTab + NutritionInsightsTab remain in the repo as
+// unrouted fallbacks; the live shopping/progress/insights surfaces are now the Unified* tabs.
+import UnifiedShoppingTab from "../components/nutrition/UnifiedShoppingTab";
 import UnifiedLogger from "../components/nutrition/UnifiedLogger";
 
 const COL = 430;     // phone column (matches NutritionDemo1 — bigger cards)
@@ -330,9 +332,9 @@ export default function NutritionHub() {
       case "plan":     return <NutritionPlanTab user={user} nutritionProfile={nutritionProfile} />;
       case "recipes":  return <UnifiedRecipesTab user={user} profile={profile} nutritionProfile={nutritionProfile} />;
       case "mealgen":  return <UnifiedMealPlanTab user={user} profile={profile} nutritionProfile={nutritionProfile} />;
-      case "shopping": return <ShoppingListTab user={user} />;
-      case "progress": return <NutritionProgressTab user={user} nutritionProfile={nutritionProfile} onProfileUpdated={loadNutritionProfile} />;
-      case "insights": return <NutritionInsightsTab user={user} profile={profile} />;
+      case "shopping": return <UnifiedShoppingTab user={user} profile={profile} />;
+      case "progress": return <UnifiedProgressTab user={user} profile={profile} nutritionProfile={nutritionProfile} onProfileUpdated={loadNutritionProfile} />;
+      case "insights": return <UnifiedInsightsTab user={user} profile={profile} nutritionProfile={nutritionProfile} />;
       default:         return null;
     }
   };
