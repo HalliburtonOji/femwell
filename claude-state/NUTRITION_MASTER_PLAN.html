@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>FemWell — Nutrition Feature-Depth Master Plan</title>
+<style>
+:root{--cream:#F4EDDB;--ink:#3A2C1A;--plum:#4A2A3A;--gold:#A6862B;--sage:#6B8F5A;--rose:#C4849A;--muted:#9B8B7A;--paper:#FBF7EC;--crimson:#BC2E27;}
+*{box-sizing:border-box}body{margin:0;background:var(--cream);color:var(--ink);font-family:-apple-system,Inter,system-ui,sans-serif;line-height:1.55;padding:0 0 70px}
+.wrap{max-width:840px;margin:0 auto;padding:22px 16px}
+h1{font-family:Georgia,'Cormorant Garamond',serif;font-size:30px;margin:0 0 4px;line-height:1.1}
+h2{font-family:Georgia,serif;font-size:22px;margin:34px 0 6px;border-bottom:2px solid var(--gold);padding-bottom:6px}
+h3{font-family:Georgia,serif;font-size:17px;margin:20px 0 4px;color:var(--plum)}
+.sub{color:var(--muted);font-size:13px;margin-bottom:16px}
+.lede{font-size:15px;background:var(--paper);border-left:4px solid var(--plum);border-radius:6px;padding:14px 16px;margin:14px 0}
+.card{background:var(--paper);border-left:3px solid var(--gold);border-radius:6px;padding:12px 15px;margin:11px 0}
+.card.ok{border-left-color:var(--sage)}.card.warn{border-left-color:var(--crimson)}.card.plum{border-left-color:var(--plum)}.card.now{border-left-color:var(--rose)}
+.feat{background:#fff;border:1px solid #e3d9c2;border-radius:10px;padding:0;margin:16px 0;overflow:hidden}
+.feat>.head{background:var(--plum);color:var(--cream);padding:11px 16px;font-family:Georgia,serif;font-size:18px;display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.feat>.body{padding:6px 16px 14px}
+.now-row{font-size:13px;color:var(--muted);margin:8px 0;padding:8px 11px;background:#f3ece0;border-radius:6px}
+.now-row b{color:var(--crimson)}
+.v{margin:9px 0}
+.v .k{display:block;font-size:10.5px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--gold);margin-bottom:2px}
+.v .k.logic{color:var(--plum)}.v .k.life{color:var(--sage)}
+table{border-collapse:collapse;width:100%;font-size:12.5px;margin:10px 0}
+th,td{border:1px solid #e3d9c2;padding:6px 8px;text-align:left;vertical-align:top}
+th{background:#efe7d2;font-size:10.5px;letter-spacing:.3px;text-transform:uppercase}
+.tag{display:inline-block;font-size:10px;font-weight:700;padding:2px 8px;border-radius:999px;color:#fff;letter-spacing:.4px;white-space:nowrap}
+.p0{background:var(--crimson)}.p1{background:#c4843a}.p2{background:var(--sage)}.fut{background:#7c93a6}.cmplx{background:var(--muted)}.gate{background:var(--plum)}
+code{background:#efe7d2;padding:1px 5px;border-radius:3px;font-size:12px}
+ul{margin:5px 0;padding-left:19px}li{margin:3px 0}
+small,.cite{color:var(--muted);font-size:11px}
+.legend span{margin-right:12px;font-size:12px;display:inline-block}
+.toc{font-size:13px;columns:2;column-gap:20px}.toc a{color:var(--plum);text-decoration:none;display:block;margin:3px 0}
+</style></head><body><div class="wrap">
+
+<h1>Nutrition — Feature-Depth Master Plan</h1>
+<div class="sub">The document we build from, feature by feature. 2026-06-13 · PLAN ONLY — nothing built; approve, then we build one feature at a time. Method: full Founders-Corner read + honest per-feature code inventory + cited per-feature research (best-in-class layout, interaction AND underlying logic) + women-aware/whole-life synthesis. No emoji.</div>
+
+<div class="lede"><b>What changed since the last plan.</b> The first Nutrition plan was <i>page-level</i> — a roadmap of what to add. The Hub we shipped delivered the <b>shell</b> (Daily-Hub + Hero-Card-Slider) but it re-wrapped the <b>existing</b> feature components unchanged. This plan is the missing half: each individual feature reimagined to be ~<b>4&times; better</b> — its own layout, its own interaction logic, and its own data/AI/computation logic. The bar is the one the Founders Corner sets for the Journal: <i>"the feature no competitor can copy because it requires months of relationship, not months of data."</i></div>
+
+<div class="legend card plum">
+<b>Priority:</b> <span><span class="tag p0">P0 FOUNDATION</span></span><span><span class="tag p1">P1 THE 4&times; WORK</span></span><span><span class="tag p2">P2 DEEPEN</span></span><span><span class="tag fut">FUTURE/GATED</span></span><br>
+<b>Build size:</b> <span class="tag cmplx">S / M / L</span> &nbsp; <b>Gated:</b> <span class="tag gate">needs key / API / legal / Halli</span>
+</div>
+
+<h2>How to read this</h2>
+<div class="toc">
+<a href="#phil">0 · The philosophy (what the Founders Corner demands)</a>
+<a href="#spine">1 · The spine: one connected model</a>
+<a href="#f-log">2 · Logging — the heart</a>
+<a href="#f-db">3 · The food database — the floor</a>
+<a href="#f-targets">4 · Targets &amp; the gentle engine</a>
+<a href="#f-hydration">5 · Hydration &amp; drinks</a>
+<a href="#f-plan">6 · The unified planner</a>
+<a href="#f-recipes">7 · Recipes &amp; cook-from-what-you-have</a>
+<a href="#f-shop">8 · Shopping &amp; pantry</a>
+<a href="#f-progress">9 · Progress — patterns, not scores</a>
+<a href="#f-insights">10 · Insights &amp; the weekly story</a>
+<a href="#f-women">11 · Women's nutrition intelligence</a>
+<a href="#f-joy">12 · The whole-life &amp; joy layer</a>
+<a href="#f-jess">13 · Jess as nutrition companion</a>
+<a href="#connect">14 · Connectivity — wire every surface</a>
+<a href="#build">15 · Build sequence</a>
+<a href="#gated">16 · Gated deps &amp; compliance</a>
+</div>
+
+<h2 id="phil">0 · The philosophy — what the Founders Corner demands</h2>
+<div class="card plum">Straight from the Founders Corner, these are non-negotiable for every feature below:
+<ul>
+<li><b>"Health is one room, not the house."</b> RULE 1: span life, not just health — life-stage gently <i>tints</i>, never dominates. Nutrition's whole-life face is <b>food-as-joy &amp; culture</b> (Recipe Joy Swap, dining-out, cooking-for-friends, &pound; filters, a community cookbook). <b>Macros are opt-in</b>, never the spine.</li>
+<li><b>No scoreboard — an ethical line, not a taste.</b> No daily pass/fail, no calorie "budget remaining" gate, no streaks, no good/bad food colouring. This is backed by hard evidence (below) and is the thing that separates us from MyFitnessPal/ZOE.</li>
+<li><b>Jess is a companion, never clinical.</b> Mirror the Journal's three-role model: <b>Prompter</b> (gentle, stage-aware nudges), <b>Witness</b> (a weekly observation, not a verdict), <b>Analyst</b> (patterns, always labelled, always "not medical advice").</li>
+<li><b>RULE 2: wire ALL surfaces.</b> Every feature names a tie to Today, Journal, Community, Lifestyle, Planner, Jess, Doctor Export. Shared entities are sacred (hydration/meals logged on Today AND Nutrition hit the SAME tables).</li>
+<li><b>11 life stages</b> (teen &rarr; post-menopause) reshape every screen. <b>UK market</b> (NHS/BDA/BNF figures, &pound;, UK GDPR). Cream/plum, Ephesis + Cormorant, Lucide/SVG, zero emoji.</li>
+</ul></div>
+
+<h2 id="spine">1 · The spine — one connected model (why depth needs this first)</h2>
+<div class="card">Today the features are <b>islands</b>: two planners that don't talk, a shopping list that re-derives by naive text-split, <code>MealItems</code> written but never read, recipes that vanish, insights from 4 hardcoded if-rules. "4&times; per feature" only works if they share one spine:
+<ul>
+<li><b>One food/item model.</b> A logged meal, a recipe ingredient, a plan slot and a shopping line are all the <i>same</i> normalised food row (name &rarr; canonical food &rarr; macros + micros + portion). This is what lets logging, recipes, plan and shop finally talk.</li>
+<li><b>One plan object.</b> Manual edits and AI generation are both edits to the same <code>plan</code>; the shopping list and pantry derive from it; locked slots survive regeneration.</li>
+<li><b>One intelligence loop.</b> Logging &rarr; targets &rarr; progress &rarr; insights &rarr; Jess, all reading the same history. Fix the orphans (read <code>MealItems</code>; persist recipes; surface subscores).</li>
+</ul>
+This spine is the real reason the current page feels thin: the data is captured then dropped. Building it is P0 and unlocks every feature.</div>
+
+<!-- ============ FEATURE 1: LOGGING ============ -->
+<h2 id="f-log">2 · Logging — the heart of the page</h2>
+<div class="feat">
+<div class="head"><span>Frictionless Logging</span><span><span class="tag p0">P0</span> <span class="tag p1">P1</span> <span class="tag cmplx">L</span></span></div>
+<div class="body">
+<div class="now-row"><b>Today:</b> a 2-row textarea + meal-type + portion buttons; every estimate round-trips the <code>analyzeMeal</code> LLM (slow, ~&plusmn;20% error); a 28-item hardcoded <code>FOOD_DB</code> behind a card-deck modal; <b>no photo, voice, or barcode UI</b>; recents/favourites don't exist; portion is regex-parsed from a string.</div>
+
+<div class="v"><span class="k">a · New layout</span><b>Camera-first, search-second.</b> The primary affordance is a big "Log" that opens a calm sheet with one row of methods — <b>Snap · Say · Scan · Search · Recents</b> — recents/favourites as one-tap chips right there (the single biggest speed driver in the evidence). The result of any method renders as an <b>editable line-item list</b> (a confirmable draft), never a locked verdict. A "no-numbers" journal mode is available for users who never want to see calories.</div>
+
+<div class="v"><span class="k">b · New interaction logic</span>The four fast paths, each one or two taps:
+<ul>
+<li><b>Snap</b> — photo &rarr; AI proposes items + portions &rarr; user adjusts/removes/swaps &rarr; confirm. The correction <i>is</i> the training signal (SnapCalorie pattern).</li>
+<li><b>Say / natural language</b> — "two eggs and toast with butter" parsed into editable items (~6s/meal — the lowest-friction method).</li>
+<li><b>Scan</b> — barcode &rarr; exact DB match.</li>
+<li><b>Recents / Favourites / "Repeat yesterday"</b> — one tap to re-log; "copy yesterday's lunch."</li>
+</ul>
+Every result is "good-enough, one tap from edit." Lose It! measured 3.5&times; faster logging and 2&times; more foods logged from exactly this.</div>
+
+<div class="v"><span class="k logic">c · New data / AI / computation logic</span><b>DB-first, LLM-as-fallback</b> (see &sect;3): a barcode or search hit returns deterministic macros instantly; the LLM is only the <i>parser</i> for free-text/voice/photo and maps its output back onto DB rows where it can. Photo uses a vision model with volumetric portion estimation, always returned as an estimate. <b>Stop the data loss:</b> persist the item breakdown and actually <i>read</i> <code>MealItems</code>; keep meal_score subscores instead of crunching them to one number. Learn the user's top ~30 foods to rank recents.</div>
+
+<div class="v"><span class="k life">d · Whole-life + FemWell-fit</span>After a log, surface a <b>nutrient relevant to her stage</b>, not a calorie tally — iron after a meal during menstruation, folate in pre-TTC/TTC, calcium+protein in peri/menopause. Optional "<b>how did it feel?</b>" (satisfied / rushed / with people) — qualitative, never scored. Calories opt-in; no good/bad colour. This is the harm-evidence response, made warm.</div>
+
+<div class="v"><span class="k">e · Build size + gated deps</span><span class="tag cmplx">L</span> overall, but shippable in slices. <span class="tag gate">Vision model cost</span> (photo), <span class="tag gate">food-DB API</span> (scan/search), voice via Web Speech API (no third-party — matches Sprint 7). Recents/favourites + natural-language reuse what exists = <span class="tag cmplx">M</span> and first.</div>
+
+<div class="v"><span class="k">f · Priority</span><span class="tag p0">P0</span> recents/favourites + the editable-draft pattern + read MealItems. <span class="tag p1">P1</span> photo + voice + barcode.</div>
+<div class="cite">Evidence: Lose It! Snap It (TechCrunch); SnapCalorie + Nutrition5k (CVPR 2021), independent &plusmn;19.8% MAPE; Passio voice ~6s/meal; WW Food Scanner editable-list. Harm: Levinson et al. (Int. J. Eating Disorders) ~75% of an ED sample used MFP, 73% felt it contributed; Flinders review of 38 studies; balanced by a low-risk-user RCT (PubMed 34427188) — so: opt-in numbers, no scoreboard, no shame.</div>
+</div></div>
+
+<!-- ============ FEATURE 2: FOOD DB ============ -->
+<h2 id="f-db">3 · The food database — the deterministic floor</h2>
+<div class="feat">
+<div class="head"><span>Real Food Database</span><span><span class="tag p0">P0</span> <span class="tag cmplx">L</span> <span class="tag gate">API + attribution</span></span></div>
+<div class="body">
+<div class="now-row"><b>Today:</b> a <b>28-item hardcoded array</b>. Everything else round-trips the LLM. No barcode, no UK foods, no micronutrients, no personal history.</div>
+<div class="v"><span class="k">a · Layout</span>Invisible by design — it powers Search/Scan/Recents (&sect;2). A clean result row: food name, brand if any, portion picker (sensible UK units, not regex), macro + key-micro chips, "add."</div>
+<div class="v"><span class="k logic">b/c · Logic &amp; architecture (the important part)</span><b>Three layers:</b>
+<ol>
+<li><b>UK CoFID lab floor</b> (McCance &amp; Widdowson, ~3,300 UK generic foods, Crown-open, free) — the trusted generic-food base, and it already carries <b>iron, folate, calcium</b> per food, so the women's-nutrition layer (&sect;11) comes for free.</li>
+<li><b>Barcode &rarr; Open Food Facts</b> (2.5M+ products, UK-strong, free, barcode-native) for packaged foods.</li>
+<li><b>LLM parser only on a miss</b>, mapped back onto DB rows; free-form text only as last resort, always editable.</li>
+</ol>
+<b>Cache hot lookups</b> from Open Food Facts' nightly bulk dumps so we don't hammer the API. This is the architecture that gives Cronometer its accuracy edge (lab-sourced) over MyFitnessPal (crowdsourced, ~37% of entries &gt;20% energy error).</div>
+<div class="v"><span class="k life">d · Whole-life + fit</span>UK-first foods (CoFID) make it feel local and trustworthy; micronutrient fields enable stage-aware surfacing without a paid add-on.</div>
+<div class="v"><span class="k">e · Gated</span><span class="tag gate">Open Food Facts = ODbL attribution + share-alike; images CC-BY-SA — must credit.</span> CoFID is Crown-open (safest, no fee). Caching/rate-limit eng. <span class="tag cmplx">L</span>.</div>
+<div class="v"><span class="k">f · Priority</span><span class="tag p0">P0</span> — the floor under logging, recipes, plan and insights. Build CoFID + a barcode source first; LLM stays as the parser.</div>
+<div class="cite">Open Food Facts data/licensing; gov.uk CoFID; FatSecret/Nutritionix (paid barcode alts); Macronutrient-calculator Cronometer 30/30 vs MFP 11/30 (indicative).</div>
+</div></div>
+
+<!-- ============ FEATURE 3: TARGETS ============ -->
+<h2 id="f-targets">4 · Targets &amp; the gentle engine</h2>
+<div class="feat">
+<div class="head"><span>Targets / Macro Engine</span><span><span class="tag p0">P0</span> <span class="tag cmplx">S</span></span></div>
+<div class="body">
+<div class="now-row"><b>Today:</b> calorie target is a <b>hardcoded 2000 default</b> (with a dual-key bug <code>calories_target</code> vs <code>calorie_target</code>); macro targets are flat constants; "goal mode" is a label that changes nothing; phase-awareness is cosmetic tips.</div>
+<div class="v"><span class="k">a · Layout</span>Not a goal screen. A <b>quiet, derived default</b> that lives behind the day-glance; editable, framed as "a gentle guide, not a cap."</div>
+<div class="v"><span class="k logic">b/c · Logic</span>Derive a real estimate from body metrics + activity + life stage (a transparent TDEE-style formula, no external API), expressed as a <b>range</b> (e.g. 1800–2200) not a single number. Stage tilts it: +protein and calcium/vit-D weighting in peri/menopause; folate emphasis pre-conception; gentle iron focus during menstruation. <b>Fix the dual-key + the legacy-shape calorie bug</b> so history reads correctly.</div>
+<div class="v"><span class="k life">d · Fit</span>Targets are <b>opt-in and de-emphasised</b> — the no-scoreboard line. They tune nudges underneath; they never gate the day.</div>
+<div class="v"><span class="k">e · Gated</span>Formula only — none. <span class="tag gate">Light medical-claims pass on stage copy.</span> <span class="tag cmplx">S</span>.</div>
+<div class="v"><span class="k">f · Priority</span><span class="tag p0">P0</span> — without real targets, every macro/progress number is arbitrary.</div>
+</div></div>
+
+<!-- ============ FEATURE 4: HYDRATION ============ -->
+<h2 id="f-hydration">5 · Hydration &amp; drinks</h2>
+<div class="feat">
+<div class="head"><span>Hydration &amp; Drinks</span><span><span class="tag p1">P1</span> <span class="tag p2">P2</span> <span class="tag cmplx">S</span></span></div>
+<div class="body">
+<div class="now-row"><b>Today:</b> works, but it's a separate chore — progress bar + glass dots + +250/500/750 buttons; drink calories are blanket hardcoded constants; flat 2000ml target.</div>
+<div class="v"><span class="k">a · Layout</span><b>Glance, not chore.</b> One fill-level ring folded into the daily snapshot (WaterMinder/Waterllama pattern), one-tap preset cups, a warm recap rather than a deficit tally.</div>
+<div class="v"><span class="k logic">b/c · Logic</span>Personalised goal from weight + activity + <b>life stage</b> (higher in pregnancy T1–T3 and breastfeeding/postpartum, per BNF/NHS), not flat 2L. <b>Count all fluids</b> (NHS Eatwell: 6–8 glasses of fluids incl. teas/milk) — don't penalise non-water; gentle note on caffeine/alcohol rather than fake "dehydration maths." Schedule-aware reminders.</div>
+<div class="v"><span class="k life">d · Fit</span>Framed as care/energy ("a glass for you"), tied to the joy framing — never a quota to fail.</div>
+<div class="v"><span class="k">e/f</span>None gated. <span class="tag cmplx">S</span>. <span class="tag p1">P1</span> fold-into-snapshot + stage goal; <span class="tag p2">P2</span> reminders/recap.</div>
+<div class="cite">WaterMinder; Waterllama; Hydro Coach (weight/activity/weather goal); BNF "Hydration and pregnancy"; NHS Eatwell.</div>
+</div></div>
+
+<!-- ============ FEATURE 5: PLANNER ============ -->
+<h2 id="f-plan">6 · The unified planner (manual + AI = one model)</h2>
+<div class="feat">
+<div class="head"><span>Meal Planning</span><span><span class="tag p0">P0</span> <span class="tag p1">P1</span> <span class="tag cmplx">M</span></span></div>
+<div class="body">
+<div class="now-row"><b>Today:</b> <b>two disconnected planners</b> — "My Plan" (manual, 4 hardcoded suggestion strings per slot, no macros, dumb text-split shopping) and "AI Plan" (generates, but <b>save overwrites the whole week</b> and clobbers manual work). No locking, no pantry awareness.</div>
+<div class="v"><span class="k">a · Layout</span>One <b>week grid</b> (days &times; slots), each cell a tappable recipe/meal card, a persistent preference rail, a single "regenerate." "Doable in real life," not a maximal grid (Mealime).</div>
+<div class="v"><span class="k logic">b/c · Logic</span><b>Manual and AI are edits to the SAME plan object.</b> AI proposes; the user drags/swaps/<b>locks</b> cells; locked cells survive regeneration. Per-cell swap and per-day regenerate (Eat This Much / Mealime granularity). Allergies = hard constraints; budget + preferences + stage = soft weights. <b>Pantry-aware</b> generation (uses what you already own). A live macro/nutrient preview so you see the week before committing.</div>
+<div class="v"><span class="k life">d · Fit</span>Stage-aware as a <b>soft nudge</b> (gently weight iron-rich meals when menstruating; calcium/protein peri/menopause) — never a calorie engine. Lead with "an enjoyable, doable week," &pound;-filter available.</div>
+<div class="v"><span class="k">e/f</span>None gated (reuses the generate fn). <span class="tag cmplx">M</span>. <span class="tag p0">P0</span> unify into one model (kills the duplicate mental model); <span class="tag p1">P1</span> lock/swap/pantry-aware + macro preview.</div>
+<div class="cite">Mealime (doable weeks, per-meal swap); Eat This Much (target-driven, lock/regenerate); PlateJoy (preference + pantry-aware; service discontinued Jul 2025 — historical).</div>
+</div></div>
+
+<!-- ============ FEATURE 6: RECIPES ============ -->
+<h2 id="f-recipes">7 · Recipes &amp; cook-from-what-you-have</h2>
+<div class="feat">
+<div class="head"><span>Recipes</span><span><span class="tag p1">P1</span> <span class="tag p2">P2</span> <span class="tag cmplx">M</span></span></div>
+<div class="body">
+<div class="now-row"><b>Today:</b> two recipe generators (one a stale orphan, <code>AIRecipeGenerator</code>); <b>recipes aren't persisted</b> (lost unless copy-pasted); no scaling, no photo, no ratings, no history, ingredients not cross-referenced with plan/shop.</div>
+<div class="v"><span class="k">a · Layout</span>A single scrollable recipe object: hero block &rarr; time/servings/difficulty chips &rarr; ingredient list (toggleable against your pantry) &rarr; <b>per-step "guided mode" cards</b> with timers (SideChef pattern). One saved library, ratings, collections.</div>
+<div class="v"><span class="k logic">b/c · Logic</span><b>Photo-to-recipe:</b> snap the fridge &rarr; AI returns a recipe + a shopping list for only the <b>missing</b> items. <b>Non-destructive single-ingredient swaps</b> ("swap this, keep the flavour/nutrient profile"). <b>Persist recipes as a real entity</b> (ingredients + steps + nutrition), <b>scale to servings</b>, rate, and feed ratings into future suggestions. Ingredients are the shared food model, so they cross-reference plan + shop automatically.</div>
+<div class="v"><span class="k life">d · Fit — the differentiator</span>This is the whole-life face: <b>cooking confidence as the outcome, not weight</b>. "You tried something new" moments; cultural/world-cuisine celebration; cook-for-friends; a community cookbook hook. The cooking-RCT evidence supports <i>joy &amp; confidence</i> claims (do NOT claim "cooking improves your diet" — it didn't move intake in the trial).</div>
+<div class="v"><span class="k">e/f</span><span class="tag gate">Vision model for photo-to-recipe.</span> Persistence/scaling = <span class="tag cmplx">M</span>. <span class="tag p1">P1</span> persist + scale + save/rate + swaps; <span class="tag p2">P2</span> photo-to-recipe + guided mode.</div>
+<div class="cite">SideChef AI (guided steps, RecipeGen, MySubstitution); Samsung Food (import/normalise/collections, Vision AI); cooking-confidence RCT Begley et al. (PMC8970183) — confidence/wellbeing up, diet unchanged.</div>
+</div></div>
+
+<!-- ============ FEATURE 7: SHOPPING ============ -->
+<h2 id="f-shop">8 · Shopping &amp; pantry</h2>
+<div class="feat">
+<div class="head"><span>Shopping &amp; Pantry</span><span><span class="tag p1">P1</span> <span class="tag p2">P2</span> <span class="tag cmplx">M</span></span></div>
+<div class="body">
+<div class="now-row"><b>Today:</b> list groups by category but is built by a <b>naive text-split + an LLM categorise call</b> ("Chicken + sweet potato &amp; greens" &rarr; 3 items); sync is destructive; quantities are rough guesses; no pantry; "sorted by aisle" is copy, not built.</div>
+<div class="v"><span class="k">a · Layout</span>Auto-generated list <b>grouped by aisle</b> so the store path is linear; manual vs plan-sourced items distinguished; a pantry view.</div>
+<div class="v"><span class="k logic">b/c · Logic</span>Built from the <b>shared plan/food model</b> (no text-splitting): ingredient normalise &rarr; <b>unit-aware merge</b> (Monday's + Tuesday's onions &rarr; "2 onions") &rarr; <b>set-subtract the pantry</b> (what you already own, added by type or camera-scan) &rarr; aisle classify. Re-syncs non-destructively when the plan changes.</div>
+<div class="v"><span class="k life">d · Fit</span><b>Budget mode</b>: cheaper-swap suggestions framed as <i>money-saving</i> (not calorie-cutting), tied to UK budget-cooking guidance — inclusive, whole-life, opt-in.</div>
+<div class="v"><span class="k">e/f</span>None gated (heuristics). <span class="tag cmplx">M</span>. <span class="tag p1">P1</span> auto-build + merge + aisle from the shared model; <span class="tag p2">P2</span> pantry set-subtract + budget swaps.</div>
+<div class="cite">Fond (auto-build, merge, pantry set-subtract); Samsung Food pantry/Food-List; Meal2Shop (aisle order, price compare).</div>
+</div></div>
+
+<!-- ============ FEATURE 8: PROGRESS ============ -->
+<h2 id="f-progress">9 · Progress — patterns, not scores</h2>
+<div class="feat">
+<div class="head"><span>Progress / Metrics</span><span><span class="tag p1">P1</span> <span class="tag cmplx">M</span></span></div>
+<div class="body">
+<div class="now-row"><b>Today:</b> body metrics are <b>stored but never visualised</b>; "progress" is a 7-day calorie line + hydration bar; the legacy-shape bug makes recent meals read 0; phase colour is cosmetic; goal mode does nothing.</div>
+<div class="v"><span class="k">a · Layout</span>A single <b>gentle composite</b> ("how nourished has the week felt") in the spirit of Lifesum's Life Score — positive reinforcement, not a calorie verdict — plus <b>correlation cards</b>: food&harr;mood, food&harr;energy.</div>
+<div class="v"><span class="k logic">b/c · Logic</span>Compute <b>correlations over time</b> from the shared history + <code>DailyCheckins</code> (energy/mood/digestion) — "your brightest-energy days line up with iron-rich meals." Show trends, not streaks. Cycle as an <b>observed-pattern lens</b> for <i>her own</i> data (legitimate), never a prescription. Visualise the body metrics that exist; let weight be optional and never the headline.</div>
+<div class="v"><span class="k life">d · Fit — what we NEVER show</span>No calorie pass/fail, no weight-as-headline, no streaks that punish a missed day, no "you failed." Progress-not-perfection. This is the intuitive-eating evidence in UI form.</div>
+<div class="v"><span class="k">e/f</span>Depends on the P0 bug fix + the spine. <span class="tag cmplx">M</span>. <span class="tag p1">P1</span>.</div>
+<div class="cite">Lifesum Life Score (Scientific Reports 2025 — self-monitoring &rarr; mindfulness); Intuitive Eating evidence (Tribole &amp; Resch; PubMed 28619668).</div>
+</div></div>
+
+<!-- ============ FEATURE 9: INSIGHTS ============ -->
+<h2 id="f-insights">10 · Insights &amp; the weekly story</h2>
+<div class="feat">
+<div class="head"><span>Insights (Jess's Analyst voice)</span><span><span class="tag p1">P1</span> <span class="tag cmplx">M</span></span></div>
+<div class="body">
+<div class="now-row"><b>Today:</b> "Today's Signals" is <b>4 hardcoded if-rules</b>; per-meal insights are saved but there's no weekly rollup, no pattern detection, no narrative.</div>
+<div class="v"><span class="k">a · Layout</span>A <b>weekly story</b> in Jess's warm voice — "this week you cooked something new; your energy dipped on the low-iron days" — not a report card. 1–2 surfaced patterns, never a wall of metrics.</div>
+<div class="v"><span class="k logic">b/c · Logic</span>Mirror the Journal's <b>tiered insight</b> model: Tier 1 from day one (gentle rhythm), richer tiers as history accrues. Surface real <b>mood-food / energy-food</b> patterns (Noom's psychology-first, motivational-interviewing tone — minus the scoreboard). Layer stage-aware micronutrient nudges (&sect;11) as gentle prompts.</div>
+<div class="v"><span class="k life">d · Fit</span>Jess's Analyst role: always labelled, always "not medical advice," never a verdict. Flows into a Journal prompt and the Doctor Export when consented.</div>
+<div class="v"><span class="k">e/f</span><span class="tag gate">Light medical-claims pass.</span> Depends on the spine + bug fix. <span class="tag cmplx">M</span>. <span class="tag p1">P1</span>.</div>
+<div class="cite">Noom 4-Cs / behaviour-change science (narrative, MI voice); FemWell Journal master-plan tiered-insight convention.</div>
+</div></div>
+
+<!-- ============ FEATURE 10: WOMEN ============ -->
+<h2 id="f-women">11 · Women's nutrition intelligence (cross-cutting)</h2>
+<div class="feat">
+<div class="head"><span>The stage-aware micronutrient layer</span><span><span class="tag p1">P1</span> <span class="tag gate">medical-claims</span> <span class="tag cmplx">M</span></span></div>
+<div class="body">
+<div class="now-row"><b>Today:</b> cycle-awareness lives in a few hardcoded tips; no real per-stage nutrient intelligence; nothing uses the food DB's micros (because there is no real DB yet).</div>
+<div class="v"><span class="k logic">The intelligence (grounded in UK evidence — gentle nudges, NEVER scoreboards):</span>
+<table><tr><th>Nutrient</th><th>UK figure</th><th>Stage relevance</th></tr>
+<tr><td>Iron</td><td>RNI 14.8 mg/day (19–50) vs 8.7 at 50+</td><td>Menstruating / teen — the single most solid cycle angle</td></tr>
+<tr><td>Folate / folic acid</td><td>200&micro;g base; 400&micro;g pre-conception&rarr;wk12</td><td>pre-TTC, TTC, pregnant-T1</td></tr>
+<tr><td>Calcium (+vit D)</td><td>700 mg (1000–1200 if Rx); vit D 10&micro;g</td><td>peri/menopause — bone as oestrogen falls</td></tr>
+<tr><td>Fibre</td><td>30 g vs ~17g actual</td><td>all stages</td></tr>
+<tr><td>Protein</td><td>~1.2 g/kg (qualitative)</td><td>peri/menopause + postpartum — muscle/bone</td></tr>
+</table>
+Surfaced as warm "foods rich in iron this week" prompts after logging and in the weekly story; the food DB's CoFID micros make it computable, not guessed.</div>
+<div class="v"><span class="k warn" style="color:var(--crimson)">EVIDENCE GUARDRAILS — honesty as a feature</span>
+<ul>
+<li><b>Strong / ship it:</b> iron (menstruation), folate (pre-conception), calcium+vit-D+protein (peri/menopause) — established BDA/NHS guidance, as gentle nudges.</li>
+<li><b>Weak — do NOT prescribe:</b> <b>cycle-syncing macros</b>. A systematic review found "lack of consistency to confidently advise" and no macro&harr;symptom correlation; an expert panel "unanimously agreed the evidence isn't there." Frame as self-awareness only.</li>
+<li><b>Weak — do NOT overclaim:</b> <b>microbiome / ZOE-style personalisation</b>. Which? was "not convinced it offered truly personalised advice"; ZOE dropped its CGM in 2025. Generic-but-true nudges beat fake precision — and that honesty is a UK-market trust differentiator.</li>
+</ul></div>
+<div class="v"><span class="k">Priority</span><span class="tag p1">P1</span>, riding on the food DB (&sect;3) + insights (&sect;10). <span class="tag gate">Medical-claims copy review before ship.</span></div>
+<div class="cite">BDA Food Fact Sheets (menopause, fibre, calcium); BNF women's nutrition; NHS DRVs; Cambridge Core systematic review (cycle-syncing); Which? ZOE review. <b>Verify exact RNIs against SACN/BNF before shipping copy.</b></div>
+</div></div>
+
+<!-- ============ FEATURE 11: JOY ============ -->
+<h2 id="f-joy">12 · The whole-life &amp; joy layer (the thing no competitor has)</h2>
+<div class="feat">
+<div class="head"><span>Food as joy &amp; culture</span><span><span class="tag p2">P2</span> <span class="tag fut">FUT</span> <span class="tag cmplx">M</span></span></div>
+<div class="body">
+<div class="now-row"><b>Today:</b> essentially absent — the module is macro-first with a wellness veneer; joy/culture/social isn't first-class UI. Yet the Founders Corner names this as nutrition's whole-life face.</div>
+<div class="v"><span class="k life">The layer (Founders-Corner aligned)</span>
+<ul>
+<li><b>"How did it feel" log</b> — satisfied / rushed / with people — a non-macro reflection that can flow into a Journal prompt.</li>
+<li><b>Recipe Joy Swap</b>, dining-out mode, <b>cook-for-friends</b>, cultural/world-cuisine celebration.</li>
+<li><b>Budget (&pound;) filters</b> and batch-cook — inclusive, food-security-aware.</li>
+<li><b>Community cookbook</b> — share a recipe or a small win anonymously; the cook-together future hook (+232% joy when cooking together — Gallup).</li>
+</ul>
+This is the differentiator: Flo/Clue have women + community but no nutrition; MFP/ZOE have tracking + diet-culture baggage. <b>No one owns food-as-joy for women across 11 life stages.</b></div>
+<div class="v"><span class="k">Priority</span><span class="tag p2">P2</span> for the solo joy bits (how-it-felt, joy swap, &pound; filters); <span class="tag fut">FUT</span> for social cook-together (gated on Community maturity + moderation + legal).</div>
+<div class="cite">WholeLifeDoc ("food-as-joy &amp; culture… macros opt-in"); Gallup cooking-joy; cooking-confidence&harr;wellbeing (Frontiers).</div>
+</div></div>
+
+<!-- ============ FEATURE 12: JESS ============ -->
+<h2 id="f-jess">13 · Jess as nutrition companion (cross-cutting)</h2>
+<div class="card plum">Not a separate chatbot — the same Jess, three roles (mirroring the Journal):
+<ul>
+<li><b>Prompter</b> — gentle, opt-in, stage-aware nudges ("a little iron at dinner would round today out"); never nags, never scores.</li>
+<li><b>Witness</b> — a warm weekly observation from how you ate, not interpreted into a verdict.</li>
+<li><b>Analyst</b> — the weekly story + pattern surfacing (&sect;10), always labelled, always "not medical advice," never clinical (MHRA risk if she sounds diagnostic).</li>
+</ul>
+"Ask Jess about food" / "what could I make with this" reuses the <code>fw_open_assistant</code> connectivity event — voice continuity, not a new surface. Any new nutrition entity MUST be exposed to Jess's context (critical data rule).</div>
+
+<h2 id="connect">14 · Connectivity — wire every surface (RULE 2)</h2>
+<table><tr><th>Surface</th><th>Nutrition's tie-in</th></tr>
+<tr><td>Today</td><td>The daily nutrition <b>glance</b> (not a score) sits beside the check-in so food + energy/mood read together; shared HydrationLog/MealLog.</td></tr>
+<tr><td>Journal</td><td>"How it felt" + mood-food flows into a Journal prompt (<code>/Journal?compose=1&amp;seed=…</code>); eating reflection is whole-life, not clinical.</td></tr>
+<tr><td>Community</td><td>A food room: share a recipe / small win anonymously, trade budget tips, the cook-together hook (the community cookbook).</td></tr>
+<tr><td>Lifestyle (daily read)</td><td>Seasonal/cultural recipes + food articles surfaced in the daily read.</td></tr>
+<tr><td>Planner</td><td>The unified plan drops into the week; the shopping list builds from it.</td></tr>
+<tr><td>Doctor Export</td><td>Consented nutrition patterns (e.g. iron trend) can feed the GP report — isolated, never auto-shared to peers.</td></tr>
+<tr><td>Jess</td><td>Reads the whole nutrition history for prompts/insights; new entities exposed to her context.</td></tr>
+</table>
+<div class="card">The Founders Corner's <b>"Reflect · Discuss · Ask Jess"</b> keystone bar should sit on recipes, insights and the weekly story — one component unlocks most of these ties.</div>
+
+<h2 id="build">15 · Build sequence (one feature at a time)</h2>
+<table><tr><th>Phase</th><th>What ships</th><th>Why this order</th></tr>
+<tr><td><b>P0 — Foundation</b></td><td>The shared spine (one food/item + one plan model; read MealItems; persist recipes) · real food DB (CoFID + barcode) · derived targets + fix the calorie bugs · recents/favourites + editable-draft logging</td><td>Every "4&times;" feature depends on the spine + a real DB + real targets. Nothing deep is possible until the data stops being dropped.</td></tr>
+<tr><td><b>P1 — The 4&times; work</b></td><td>Photo + voice + barcode logging · unified planner (lock/swap/pantry-aware) · recipes (persist/scale/rate/swap) · smart shopping (merge/aisle) · progress (patterns) · weekly-story insights · women's micronutrient layer · hydration fold-in</td><td>The features themselves, each reimagined on top of the foundation.</td></tr>
+<tr><td><b>P2 — Deepen</b></td><td>Pantry set-subtract · budget mode · guided-cook + photo-to-recipe · the joy layer (how-it-felt, joy swap, cookbook) · reminders/recap</td><td>The whole-life differentiators once the core is excellent.</td></tr>
+<tr><td><b>FUTURE — gated</b></td><td>Barcode-at-scale · social cook-together · (explicitly NOT cycle-syncing macros / microbiome precision — flagged, optional, honesty-gated)</td><td>Needs Community maturity, moderation, legal, or runs ahead of the evidence.</td></tr>
+</table>
+
+<h2 id="gated">16 · Gated dependencies &amp; compliance (the Halli calls)</h2>
+<div class="card halli" style="border-left-color:var(--plum)"><ul>
+<li><b>Food DB</b> — Open Food Facts (free, ODbL attribution + share-alike, CC-BY-SA images) + UK CoFID (Crown-open). Caching infra. <b>Decision:</b> approve the DB architecture + attribution.</li>
+<li><b>Vision model</b> (photo logging + photo-to-recipe) — cost per call. <b>Decision:</b> approve a vision model + budget.</li>
+<li><b>Voice</b> — Web Speech API (no third-party, matches Sprint 7) — no gate.</li>
+<li><b>Medical-claims pass</b> — any micronutrient / stage / cycle copy gets a light legal/claims review before ship (MHRA: Jess must never read clinical).</li>
+<li><b>Honesty guardrails</b> — cycle-syncing macros + microbiome personalisation stay flagged/optional, never the spine (the evidence doesn't support selling them as truth; saying so is a trust differentiator).</li>
+</ul></div>
+
+<div class="lede"><b>Headline.</b> Build the spine first so the data stops being dropped; put a real UK food database under everything; make logging frictionless and kind (snap/say/scan/recents, editable drafts, no scoreboard); then reimagine each feature on top — a unified planner, a real recipe library with joy at its centre, smart shopping, pattern-not-score progress, a Jess weekly story, and a gentle stage-aware micronutrient layer grounded in BDA/NHS. Lead with the thing no competitor has: <b>food as joy &amp; culture for women across 11 life stages</b>, macros opt-in. That is the nutrition feature "no competitor can copy."</div>
+
+<small>FemWell — Nutrition Feature-Depth Master Plan · 2026-06-13 · PLAN only, nothing built. Sources: full Founders-Corner read (FoundersOS.jsx + founders/*Doc) · per-feature code inventory · cited research (NHS/BDA/BNF/CoFID, Open Food Facts, SnapCalorie/Nutrition5k, Lose It!, Lifesum, Noom, SideChef/Samsung Food, Mealime/Eat This Much, Cambridge systematic review, Which? ZOE, ED-harm literature). In-app mirror: FoundersOS &rarr; "Nutrition Master Plan" tab. Awaiting Halli's approval to scope P0.</small>
+</div></body></html>

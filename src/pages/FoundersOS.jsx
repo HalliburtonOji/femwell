@@ -45,6 +45,7 @@ import SharingProposalDoc from "@/components/founders/SharingProposalDoc";
 import HomeRedesignDoc from "@/components/founders/HomeRedesignDoc";
 import AppHealthAuditDoc from "@/components/founders/AppHealthAuditDoc";
 import NutritionPlanDoc from "@/components/founders/NutritionPlanDoc";
+import NutritionMasterPlanDoc from "@/components/founders/NutritionMasterPlanDoc";
 // HealthCornerDemo was the multi-layout preview. The canonical health
 // experience now lives at /Health (src/pages/Health.jsx). The Health Corner
 // tab in /Ideas renders <HealthCornerRedirectCard /> instead.
@@ -74,7 +75,7 @@ const ALLOWED = new Set([
   "ojihalliburton57@gmail.com",
 ]);
 
-const TABS = ["Lab", "Previews", "Pages", "Roadmap", "Health Audit", "Nutrition Plan", "Nutrition Demos", "Community Plan", "Build Plan", "Journal Audit", "Expert Governance", "Library & Groups", "Integration Audit", "Connectivity Map", "Sharing", "Home Redesign", "Whole-Life", "Audio", "Ideas", "Strategy", "Legal", "Decisions", "Journal", "Journal Demos", "Community Demos", "Another You", "UX & Design", "Wholeness", "LGBTQ+", "Health Corner"];
+const TABS = ["Lab", "Previews", "Pages", "Roadmap", "Health Audit", "Nutrition Master Plan", "Nutrition Plan", "Nutrition Demos", "Community Plan", "Build Plan", "Journal Audit", "Expert Governance", "Library & Groups", "Integration Audit", "Connectivity Map", "Sharing", "Home Redesign", "Whole-Life", "Audio", "Ideas", "Strategy", "Legal", "Decisions", "Journal", "Journal Demos", "Community Demos", "Another You", "UX & Design", "Wholeness", "LGBTQ+", "Health Corner"];
 
 const IDEAS_KEY  = "femwell_ideas";
 const CHECKS_KEY = "femwell_founder_checks";
@@ -587,6 +588,7 @@ function FoundersInner({ user }) {
         {tab === "Decisions" && <DecisionsTab />}
         {tab === "Journal"        && <JournalTab />}
         {tab === "Previews"       && <PreviewsTab />}
+        {tab === "Nutrition Master Plan" && <NutritionMasterPlanDoc />}
         {tab === "Journal Demos"  && <JournalDemosTab />}
         {tab === "Community Demos" && <CommunityDemosTab />}
         {tab === "Nutrition Demos" && <NutritionDemosTab />}
