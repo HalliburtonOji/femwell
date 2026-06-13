@@ -1,6 +1,11 @@
 # FEMWELL — CANONICAL STATUS INDEX (read first · updated 2026-06-12)
 **This file is the single source of truth AND the index to every plan doc. If anything else disagrees, this wins.** (The long ship-log history continues below the index.)
 
+## 🃏 NUTRITION HUB CARDS BUMPED TO DEMO-1-LARGE + plan principle (2026-06-13) — live `index-QLTWC1Cs.js` · commit `806d77a`
+- **Concrete fix (live /Nutrition):** hero card-slider bumped to NutritionDemo1 sizing — CARD_W 320→365, COL 460→430, card minHeight 420→528, padding 18→20; peek-of-next preserved. **LIVE-VERIFIED:** cards measure **365×528** on femwells.com/Nutrition (were 320×420). Bigger canvas so each feature can surface more inline (Halli's point: bigger cards = each feature does more on the surface).
+- **Plan principle folded in:** added "card canvas is Demo-1-LARGE → surface more inline, less buried in sheets (sheet = go-deeper layer)" as a cross-cutting principle in the feature-depth master plan — HTML + handoff + FoundersOS "Nutrition Master Plan" DocKit mirror. Every feature's "(a) layout" assumes the big card. No features rebuilt yet.
+- Deploy: keepalive POST 200; bundle `index-DdC26UwE.js` → **`index-QLTWC1Cs.js`**. Build+eslint green.
+
 ## 📋 NUTRITION FEATURE-DEPTH MASTER PLAN delivered (2026-06-13) — live `index-DdC26UwE.js` · commit `9e7b2be` · PLAN ONLY (no features built)
 Halli's correction: the Hub re-wrapped existing feature components unchanged; he wants each INDIVIDUAL feature made ~4x better (own layout + own logic), per the master-plan approach — and asked "did you read the founders corner in detail?"
 - **Did the deep read.** Founders Corner (/Ideas) vision confirmed: "Health is one room, not the house"; RULE 1 (life-stage tints, never dominates); RULE 2 (wire all surfaces); no-scoreboard as an ethical line; Jess 3 roles (Prompter/Witness/Analyst, from the Journal master plan — the depth EXEMPLAR: "the feature no competitor can copy"); nutrition's whole-life face = food-as-joy & culture, macros opt-in; 11 stages; UK.
