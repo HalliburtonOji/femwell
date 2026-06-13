@@ -360,6 +360,14 @@ export default function NutritionTodayTab({ user, profile, nutritionProfile, day
       }), 18000, "analysis");
       const res = response?.data || response;
       if (!res || typeof res !== "object") { setLogging(false); return; }
+      // Clean degrade: the function returns analysis_unavailable when its LLM was
+      // slow/errored. The meal is already saved — show a tidy note, don't store a
+      // misleading all-zero analysis.
+      if (res.analysis_unavailable) {
+        toast("Meal saved — couldn't estimate calories just now");
+        setLogging(false);
+        return;
+      }
       if (!(res.summary || res.nutritional_summary || res.items)) { setLogging(false); return; }
 
       // Normalize to new schema: { summary, items, ... }. Prefer res.summary, fall back to nutritional_summary.

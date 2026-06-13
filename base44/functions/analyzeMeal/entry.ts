@@ -15,10 +15,18 @@ function withTimeout(p: Promise<any>, ms: number, label: string): Promise<any> {
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
-    const user = await base44.auth.me();
+    // Guard the platform auth + body-parse so a stalled platform call can never
+    // wedge the function with no response (the unguarded-await hang class).
+    let user;
+    try {
+      user = await withTimeout(base44.auth.me(), 5000, 'auth');
+    } catch {
+      return Response.json({ error: 'Auth unavailable', analysis_unavailable: true }, { status: 503 });
+    }
     if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
 
-    const body = await req.json();
+    const body = await withTimeout(req.json(), 4000, 'parse').catch(() => null);
+    if (!body) return Response.json({ error: 'Bad request', analysis_unavailable: true }, { status: 400 });
     const {
       raw_text,
       cycle_phase,
@@ -58,29 +66,44 @@ Deno.serve(async (req) => {
       ? `\n\nDo NOT repeat any of these recent smart_swaps (user has seen them): ${excluded_swaps.slice(0, 20).join('; ')}.`
       : '';
 
+    // Clean fast-degrade payload: returned (HTTP 200) whenever the LLM is slow
+    // or errors, so the client never waits past its own guard and can show a
+    // tidy "couldn't estimate" state instead of a spinner that never resolves.
+    const UNAVAILABLE = {
+      summary: { calories: 0, protein_g: 0, carbs_g: 0, fat_g: 0, fiber_g: 0 },
+      items: [], smart_swaps: [], analysis_unavailable: true,
+    };
+
     // ── Short-input quality guard: compact output only ────────────────────
     if (short_input) {
-      const compactResponse = await withTimeout(openai.chat.completions.create({
-        model: "gpt-4o-mini",
-        messages: [
-          {
-            role: "system",
-            content: "You are a concise nutrition assistant. Return valid JSON only. Keep output minimal."
-          },
-          {
-            role: "user",
-            content: `Short meal input: "${raw_text}". Return this exact JSON (keep it minimal — up to 3 items, no prose):
+      let compact;
+      try {
+        // LLM guard (13s) sits BELOW the client's 18s guard so a slow call
+        // degrades to a clean response here rather than being abandoned client-side.
+        const compactResponse = await withTimeout(openai.chat.completions.create({
+          model: "gpt-4o-mini",
+          messages: [
+            {
+              role: "system",
+              content: "You are a concise nutrition assistant. Return valid JSON only. Keep output minimal."
+            },
+            {
+              role: "user",
+              content: `Short meal input: "${raw_text}". Return this exact JSON (keep it minimal — up to 3 items, no prose):
 {
   "summary": { "calories": 0, "protein_g": 0, "carbs_g": 0, "fat_g": 0, "fiber_g": 0 },
   "items": [ { "name": "string", "quantity_text": "string", "calories": 0, "protein_g": 0, "carbs_g": 0, "fat_g": 0, "fiber_g": 0 } ],
   "smart_swaps": ["one brief swap"]
 }
 Sum items into summary. Max 3 items.${swapExclusionNote}`
-          }
-        ],
-        response_format: { type: "json_object" }
-      }), 20000, 'llm');
-      const compact = JSON.parse(compactResponse.choices[0].message.content);
+            }
+          ],
+          response_format: { type: "json_object" }
+        }), 13000, 'llm');
+        compact = JSON.parse(compactResponse.choices[0].message.content);
+      } catch {
+        return Response.json(UNAVAILABLE);
+      }
       const items = (compact.items || []).slice(0, 3);
       compact.items = items;
       compact.summary = {
@@ -116,7 +139,9 @@ Sum items into summary. Max 3 items.${swapExclusionNote}`
     }
 
     // ── Full-length analysis ──────────────────────────────────────────────
-    const response = await withTimeout(openai.chat.completions.create({
+    let data;
+    try {
+      const response = await withTimeout(openai.chat.completions.create({
       model: "gpt-4o-mini",
       messages: [
         {
@@ -159,9 +184,11 @@ IMPORTANT:
         }
       ],
       response_format: { type: "json_object" }
-    }), 20000, 'llm');
-
-    const data = JSON.parse(response.choices[0].message.content);
+      }), 13000, 'llm');
+      data = JSON.parse(response.choices[0].message.content);
+    } catch {
+      return Response.json(UNAVAILABLE);
+    }
 
     // Server-side sum recompute to guarantee summary never stays zero.
     const items = data.items || [];
