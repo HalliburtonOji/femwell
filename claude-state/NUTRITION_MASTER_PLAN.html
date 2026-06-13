@@ -73,6 +73,8 @@ small,.cite{color:var(--muted);font-size:11px}
 <li><b>11 life stages</b> (teen &rarr; post-menopause) reshape every screen. <b>UK market</b> (NHS/BDA/BNF figures, &pound;, UK GDPR). Cream/plum, Ephesis + Cormorant, Lucide/SVG, zero emoji.</li>
 </ul></div>
 
+<div class="card now"><b>Cross-cutting layout principle — the card canvas is Demo-1-LARGE.</b> Every feature's hero card uses the <b>bigger NutritionDemo1 sizing</b> (~365px wide in a 430 column, ~528px tall, next card peeking) — NOT a small tile. The bigger canvas is a design lever, not decoration: <b>each card surfaces more of its feature inline</b> (real numbers, a mini-list, a chart, the primary action) so far less is buried behind a bottom sheet. The sheet becomes the "go deeper / edit everything" layer, not the place the feature actually lives. So in every "(a) layout" below, assume a large card doing real work on the surface; the sheet holds the long tail. <i>(The live hub has been bumped to this size now; the per-feature rebuild fills the extra canvas.)</i></div>
+
 <h2 id="spine">1 · The spine — one connected model (why depth needs this first)</h2>
 <div class="card">Today the features are <b>islands</b>: two planners that don't talk, a shopping list that re-derives by naive text-split, <code>MealItems</code> written but never read, recipes that vanish, insights from 4 hardcoded if-rules. "4&times; per feature" only works if they share one spine:
 <ul>

@@ -116,7 +116,7 @@ export function SurfaceCard({ cardW, label, blurb, accent = T.gold, onOpen, prim
       style={{
         scrollSnapAlign: "center", flex: `0 0 ${cardW}px`, width: cardW,
         background: T.paperHi, border: `1px solid ${T.paperDeep}`, borderRadius: 20,
-        padding: 18, display: "flex", flexDirection: "column", minHeight: 420,
+        padding: 20, display: "flex", flexDirection: "column", minHeight: 528,
         boxShadow: "0 10px 26px -18px rgba(11,8,5,0.5)",
       }}
     >

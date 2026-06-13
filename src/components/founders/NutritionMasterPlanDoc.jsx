@@ -45,6 +45,10 @@ export default function NutritionMasterPlanDoc() {
         ]} />
       </Card>
 
+      <Card accent="#C4849A">
+        <P><b>Cross-cutting layout principle — the card canvas is Demo-1-LARGE.</b> Every feature's hero card uses the bigger NutritionDemo1 sizing (~365px wide in a 430 column, ~528px tall, next card peeking) — not a small tile. The bigger canvas is a design lever: each card surfaces more of its feature inline (real numbers, a mini-list, a chart, the primary action) so far less is buried behind a bottom sheet — the sheet becomes the "go deeper / edit everything" layer, not where the feature lives. Assume this large card in every "(a) layout" below. (The live hub has been bumped to this size now; the per-feature rebuild fills the extra canvas.)</P>
+      </Card>
+
       {/* ============ 1 · SPINE ============ */}
       <H2>1 · The spine — one connected model (why depth needs this first)</H2>
       <Card>

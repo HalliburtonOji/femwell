@@ -40,8 +40,8 @@ import RecipeGeneratorTab from "../components/nutrition/RecipeGeneratorTab";
 import MealPlanGeneratorTab from "../components/nutrition/MealPlanGeneratorTab";
 import ShoppingListTab from "../components/nutrition/ShoppingListTab";
 
-const COL = 460;     // phone column
-const CARD_W = 320;  // < column so the next card peeks at the right edge
+const COL = 430;     // phone column (matches NutritionDemo1 — bigger cards)
+const CARD_W = 365;  // ~85vw — Demo-1-large; next card still peeks at the right edge
 const GAP = 14;
 
 // Surface registry — id + meta drives the slider cards AND the sheets. The id
