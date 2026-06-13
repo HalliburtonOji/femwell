@@ -23,14 +23,14 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { base44 } from "@/api/base44Client";
 import { format, startOfWeek } from "date-fns";
 import {
-  UtensilsCrossed, Droplet, Target, BookOpen, CalendarDays,
+  UtensilsCrossed, Target, BookOpen, CalendarDays,
   ShoppingBasket, TrendingUp, Sparkles, ChevronLeft, ChevronRight, Leaf, Plus,
 } from "lucide-react";
 import {
   T, UI, SERIF, Eyebrow, Rule, Script, Hand, InkFilter, useEditorialFonts, PAPER_BG,
 } from "@/components/journal/Editorial";
 import { getMealSummary } from "@/utils/nutritionAiAnalysis";
-import { HubSheet, SoftBar, Ring, SurfaceCard } from "@/components/nutrition/hub/HubShell";
+import { HubSheet, SoftBar, SurfaceCard } from "@/components/nutrition/hub/HubShell";
 
 import NutritionTodayTab from "../components/nutrition/NutritionTodayTab";
 import NutritionPlanTab from "../components/nutrition/NutritionPlanTab";
@@ -364,86 +364,12 @@ export default function NutritionHub() {
           </div>
         </header>
 
-        {/* ── gentle today glance (REAL data) ────────────────────────────── */}
-        <div style={{ padding: "0 18px" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
-            <Ring value={summary.kcal} guide={calorieTarget} size={92} />
-            <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{ fontFamily: SERIF, fontSize: 18, color: T.ink, fontWeight: 600, lineHeight: 1.2 }}>
-                {summary.meals === 0 ? "A fresh plate" : "Still room to nourish"}
-              </div>
-              <div style={{ fontFamily: UI, fontSize: 11, color: T.muted, marginTop: 3 }}>
-                {summary.kcal > 0
-                  ? `${kcalLeft} kcal left in today’s gentle guide`
-                  : `Today’s gentle guide is about ${calorieTarget} kcal`}
-              </div>
-              {/* hydration glance */}
-              <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 10 }}>
-                <Droplet size={13} color={T.sage} />
-                <div style={{ flex: 1 }}>
-                  <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4, fontFamily: UI, fontSize: 10, color: T.muted }}>
-                    <span>Hydration</span>
-                    <span>{summary.hydrationMl}ml of {hydrationTarget}ml</span>
-                  </div>
-                  <SoftBar value={summary.hydrationMl} guide={hydrationTarget} color={T.sage} />
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* ── Jess's one line ────────────────────────────────────────────── */}
-        <div style={{ padding: "16px 18px 0" }}>
-          <div style={{ background: T.dusk, color: T.paper, borderRadius: 16, padding: "15px 16px" }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 7 }}>
-              <span style={{ width: 24, height: 24, borderRadius: 999, background: T.sage, display: "grid", placeItems: "center" }}>
-                <Leaf size={13} color={T.dusk} />
-              </span>
-              <span style={{ fontFamily: UI, fontSize: 9.5, letterSpacing: 1.4, color: T.wax, textTransform: "uppercase", fontWeight: 700 }}>Jess</span>
-            </div>
-            <Hand size={17} color={T.paper} carve={false}>{jessLine(profile)}</Hand>
-          </div>
-        </div>
-
-        {/* ── ONE primary action + ONE suggested next ────────────────────── */}
-        <div style={{ padding: "14px 18px 0" }}>
-          <button
-            onClick={() => setOpenSheet("today")}
-            style={{
-              display: "flex", alignItems: "center", justifyContent: "center", gap: 10, width: "100%",
-              background: T.crimson, color: T.paper, border: "none", borderRadius: 16, padding: "16px",
-              cursor: "pointer", boxShadow: "0 6px 18px rgba(188,46,39,0.22)",
-            }}
-          >
-            <UtensilsCrossed size={18} />
-            <span style={{ fontFamily: UI, fontSize: 13, letterSpacing: 1, textTransform: "uppercase", fontWeight: 700 }}>Log a meal</span>
-          </button>
-
-          <button
-            onClick={() => setOpenSheet("recipes")}
-            style={{
-              display: "flex", alignItems: "center", gap: 12, width: "100%", textAlign: "left",
-              background: T.paperHi, border: `1px solid ${T.paperDeep}`, borderRadius: 14,
-              padding: "13px 15px", cursor: "pointer", marginTop: 10,
-            }}
-          >
-            <span style={{ width: 38, height: 38, borderRadius: 11, background: T.ink, color: T.paper, display: "grid", placeItems: "center", flexShrink: 0 }}>
-              <BookOpen size={17} />
-            </span>
-            <span style={{ flex: 1, minWidth: 0 }}>
-              <span style={{ fontFamily: UI, fontSize: 9, letterSpacing: 1, color: T.muted, textTransform: "uppercase", display: "block" }}>Suggested next</span>
-              <span style={{ fontFamily: SERIF, fontSize: 16, color: T.ink, display: "block", lineHeight: 1.15 }}>
-                {summary.lastMeal ? "Cook something that fits today" : "Find a recipe for tonight"}
-              </span>
-              <span style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 13, color: T.muted }}>
-                Phase-friendly, from what you have in
-              </span>
-            </span>
-          </button>
-        </div>
+        {/* The today glance, Jess line, log action and suggested-next now live
+            INSIDE the big cards below — so the Hero Card Slider is the hero of the
+            screen (Demo-1 prominence), not buried under a tall preamble. */}
 
         {/* ── THE SPINE — Hero Card Slider of surfaces ───────────────────── */}
-        <div style={{ marginTop: 22 }}>
+        <div style={{ marginTop: 6 }}>
           <div style={{ padding: "0 18px 10px" }}>
             <Hand size={15} color={T.muted}>Swipe through your kitchen — each card opens the full thing.</Hand>
           </div>
