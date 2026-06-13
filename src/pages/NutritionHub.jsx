@@ -24,7 +24,7 @@ import { base44 } from "@/api/base44Client";
 import { format, startOfWeek } from "date-fns";
 import {
   UtensilsCrossed, Target, BookOpen, CalendarDays,
-  ShoppingBasket, TrendingUp, Sparkles, ChevronLeft, ChevronRight, Leaf, Plus,
+  ShoppingBasket, TrendingUp, Sparkles, ChevronLeft, ChevronRight, Leaf, Plus, Star,
 } from "lucide-react";
 import {
   T, UI, SERIF, Eyebrow, Rule, Script, Hand, InkFilter, useEditorialFonts, PAPER_BG,
@@ -36,7 +36,9 @@ import NutritionTodayTab from "../components/nutrition/NutritionTodayTab";
 import NutritionPlanTab from "../components/nutrition/NutritionPlanTab";
 import NutritionProgressTab from "../components/nutrition/NutritionProgressTab";
 import NutritionInsightsTab from "../components/nutrition/NutritionInsightsTab";
-import RecipeGeneratorTab from "../components/nutrition/RecipeGeneratorTab";
+import UnifiedRecipesTab from "../components/nutrition/UnifiedRecipesTab";
+// RecipeGeneratorTab + AIRecipeGenerator remain in the repo as unrouted fallbacks;
+// the live "recipes" surface is now the UnifiedRecipesTab (rebuilt per Master Plan §7).
 // MealPlanGeneratorTab + NutritionPlanTab remain in the repo as unrouted fallbacks;
 // the live "mealgen" surface is now the UnifiedMealPlanTab (manual + AI = one plan).
 import UnifiedMealPlanTab from "../components/nutrition/UnifiedMealPlanTab";
@@ -224,11 +226,22 @@ export default function NutritionHub() {
     const [plans, shopping, recipes] = await Promise.all([
       base44.entities.MealPlans.filter({ user_id: u.id, week_start: weekStart }).catch(() => []),
       base44.entities.ShoppingList.filter({ user_id: u.id, week_start: weekStart }).catch(() => []),
-      base44.entities.MealTemplates.filter({ user_id: u.id }, "-created_date", 6).catch(() => []),
+      base44.entities.MealTemplates.filter({ user_id: u.id }, "-created_date", 50).catch(() => []),
     ]);
     setMealPlan((plans || []).filter(Boolean)[0] || null);
     setShopItems((shopping || []).filter(Boolean));
-    setSavedRecipes((recipes || []).filter(Boolean));
+    // SAVED RECIPES (real): only MealTemplates rows the UnifiedRecipesTab persists
+    // (category "recipe" + recipe_json). Title comes from the parsed recipe, rated
+    // ones first. Falls back to the row title so it never shows blank.
+    const savedRecipeRows = (recipes || [])
+      .filter((r) => r && r.category === "recipe" && r.recipe_json)
+      .map((r) => {
+        let title = r.title;
+        try { title = JSON.parse(r.recipe_json)?.recipe_name || r.title; } catch { /* keep row title */ }
+        return { id: r.id, title, rating: r.rating || 0 };
+      })
+      .sort((a, b) => (b.rating || 0) - (a.rating || 0));
+    setSavedRecipes(savedRecipeRows);
   }, []);
 
   const loadNutritionProfile = useCallback(async () => {
@@ -315,7 +328,7 @@ export default function NutritionHub() {
     switch (id) {
       case "today":    return <NutritionTodayTab user={user} profile={profile} nutritionProfile={nutritionProfile} dayKey={dayKey} checkin={checkin} />;
       case "plan":     return <NutritionPlanTab user={user} nutritionProfile={nutritionProfile} />;
-      case "recipes":  return <RecipeGeneratorTab user={user} />;
+      case "recipes":  return <UnifiedRecipesTab user={user} profile={profile} nutritionProfile={nutritionProfile} />;
       case "mealgen":  return <UnifiedMealPlanTab user={user} profile={profile} nutritionProfile={nutritionProfile} />;
       case "shopping": return <ShoppingListTab user={user} />;
       case "progress": return <NutritionProgressTab user={user} nutritionProfile={nutritionProfile} onProfileUpdated={loadNutritionProfile} />;
@@ -618,25 +631,38 @@ function PlanCard({ nutritionProfile, profile, calorieTarget }) {
 
 // ── RECIPES · saved recipe titles if any, else an honest invitation ──────────
 function RecipesCard({ savedRecipes }) {
+  const recipes = (savedRecipes || []).filter(Boolean);
+  const n = recipes.length;
   return (
     <div style={{ display: "flex", flexDirection: "column", flex: 1 }}>
       <Script size={26} style={{ marginBottom: 2 }}>Cook what you have</Script>
-      <Hand size={14} color={T.muted} style={{ marginBottom: 12 }}>Your saved recipes — and new ones from what’s already in.</Hand>
+      <Hand size={14} color={T.muted} style={{ marginBottom: 12 }}>
+        {n > 0
+          ? `${n} saved recipe${n === 1 ? "" : "s"} — and new ones from what’s already in.`
+          : "Your saved recipes — and new ones from what’s already in."}
+      </Hand>
 
-      {savedRecipes.length > 0 ? (
+      {n > 0 ? (
         <div style={{ display: "grid", gap: 9 }}>
-          {savedRecipes.slice(0, 5).map((r) => (
-            <div key={r.id} style={{ borderLeft: `2px solid ${T.sage}`, paddingLeft: 11 }}>
-              <div style={{ fontFamily: SERIF, fontSize: 14.5, color: T.ink, fontWeight: 600, lineHeight: 1.2 }}>
+          {recipes.slice(0, 5).map((r) => (
+            <div key={r.id} style={{ borderLeft: `2px solid ${T.sage}`, paddingLeft: 11, display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: 8 }}>
+              <div style={{ fontFamily: SERIF, fontSize: 14.5, color: T.ink, fontWeight: 600, lineHeight: 1.2, minWidth: 0 }}>
                 {r.title || r.name || "Saved recipe"}
               </div>
-              {r.default_meal_type ? (
-                <div style={{ fontFamily: UI, fontSize: 9.5, color: T.muted, textTransform: "uppercase", letterSpacing: 0.5, marginTop: 2 }}>
-                  {r.default_meal_type}
+              {r.rating > 0 ? (
+                <div style={{ display: "inline-flex", gap: 1, flexShrink: 0 }}>
+                  {Array.from({ length: r.rating }).map((_, i) => (
+                    <Star key={i} size={11} style={{ color: T.gold, fill: T.gold }} />
+                  ))}
                 </div>
               ) : null}
             </div>
           ))}
+          {n > 5 ? (
+            <div style={{ fontFamily: UI, fontSize: 10.5, color: T.muted, marginTop: 2 }}>
+              + {n - 5} more in Recipes
+            </div>
+          ) : null}
         </div>
       ) : (
         <Empty>No saved recipes yet. Open Recipes to generate one from what’s in your kitchen, or save a favourite — they’ll gather here.</Empty>

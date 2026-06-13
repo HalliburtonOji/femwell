@@ -277,6 +277,10 @@ export default function UnifiedLogger({ user, profile, onLogged }) {
   const [listening, setListening] = useState(false);
   const recognitionRef = useRef(null);
 
+  // photo
+  const [photoState, setPhotoState] = useState("idle"); // idle | reading | error
+  const photoInputRef = useRef(null);
+
   // draft + save
   const [draft, setDraft] = useState(null);
   const [saving, setSaving] = useState(false);
@@ -375,7 +379,13 @@ export default function UnifiedLogger({ user, profile, onLogged }) {
     try {
       const hasMacros = num(draft.kcal) || num(draft.protein_g) || num(draft.carbs_g) || num(draft.fat_g);
       const rawText = draft.portion?.trim() ? `${draft.name.trim()} (${draft.portion.trim()})` : draft.name.trim();
-      await createMeal({ rawText, type: mealType, analysis: hasMacros ? draftToAnalysis(draft) : null });
+      // For a photo draft, keep the rich returned analysis (items / smart_swaps)
+      // but overlay the (possibly edited) summary macros so the user's edits win.
+      let analysis = hasMacros ? draftToAnalysis(draft) : null;
+      if (analysis && draft.source === "photo" && draft.ai_analysis) {
+        analysis = { ...draft.ai_analysis, summary: analysis.summary, source: "photo" };
+      }
+      await createMeal({ rawText, type: mealType, analysis });
       toast.success("Added to today");
       finishLog();
     } catch (e) {
@@ -524,11 +534,98 @@ export default function UnifiedLogger({ user, profile, onLogged }) {
     }
   };
 
+  // ── PHOTO (analyzeMealPhoto — gpt-4o-mini vision via the existing key) ────────
+  // Downscale the chosen image onto a canvas (max ~900px long edge) → a JPEG data
+  // URL, so the payload stays small. Then invoke with a timeout guard. Clean
+  // degrade on slow/unreadable/not-food — never crash, never invent macros.
+  const PHOTO_MAX_EDGE = 900;
+
+  const downscaleToDataUrl = (file) =>
+    new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onerror = () => reject(new Error("read"));
+      reader.onload = () => {
+        const img = new Image();
+        img.onerror = () => reject(new Error("decode"));
+        img.onload = () => {
+          try {
+            const longEdge = Math.max(img.width, img.height) || 1;
+            const scale = Math.min(1, PHOTO_MAX_EDGE / longEdge);
+            const w = Math.max(1, Math.round(img.width * scale));
+            const h = Math.max(1, Math.round(img.height * scale));
+            const canvas = document.createElement("canvas");
+            canvas.width = w;
+            canvas.height = h;
+            const ctx = canvas.getContext("2d");
+            if (!ctx) return reject(new Error("ctx"));
+            ctx.drawImage(img, 0, 0, w, h);
+            resolve(canvas.toDataURL("image/jpeg", 0.7));
+          } catch {
+            reject(new Error("canvas"));
+          }
+        };
+        img.src = reader.result;
+      };
+      reader.readAsDataURL(file);
+    });
+
+  const handlePhotoPicked = async (e) => {
+    const file = e.target.files?.[0];
+    // allow re-picking the same file next time
+    if (e.target) e.target.value = "";
+    if (!file) return;
+    setPhotoState("reading");
+    let imageBase64;
+    try {
+      imageBase64 = await downscaleToDataUrl(file);
+    } catch {
+      setPhotoState("error");
+      return;
+    }
+    try {
+      const response = await withTimeout(
+        base44.functions.invoke("analyzeMealPhoto", {
+          image_base64: imageBase64,
+          cycle_phase: profile?.cycle_phase,
+          wellness_goal: profile?.wellness_goal,
+        }),
+        28000, "photo"
+      );
+      const res = response?.data || response;
+      const summary = res?.summary;
+      const firstItem = Array.isArray(res?.items) ? res.items[0] : null;
+      // Clean degrade: explicit unavailable flag, or nothing usable came back.
+      if (res?.analysis_unavailable || (!summary && !firstItem)) {
+        setPhotoState("error");
+        return;
+      }
+      const lowConfidence =
+        typeof res.photo_confidence === "number" && res.photo_confidence < 0.5;
+      const name = (firstItem?.name || "").trim() || "Photographed meal";
+      setDraft({
+        name,
+        portion: firstItem?.quantity_text || "",
+        kcal: summary?.calories ? Math.round(summary.calories) : (firstItem?.calories ? Math.round(firstItem.calories) : ""),
+        protein_g: summary?.protein_g ? Math.round(summary.protein_g) : "",
+        carbs_g: summary?.carbs_g ? Math.round(summary.carbs_g) : "",
+        fat_g: summary?.fat_g ? Math.round(summary.fat_g) : "",
+        source: "photo",
+        ai_analysis: { ...res, source: "photo" },
+        lowConfidence,
+      });
+      setPhotoState("idle");
+      setView("draft");
+    } catch {
+      // timeout / network / function error — calm degrade, never crash
+      setPhotoState("error");
+    }
+  };
+
   // ── views ────────────────────────────────────────────────────────────────────
   const goHome = () => {
     stopCameraScan();
     try { recognitionRef.current?.stop(); } catch { /* no-op */ }
-    setResults([]); setSearched(false); setScanState("idle");
+    setResults([]); setSearched(false); setScanState("idle"); setPhotoState("idle");
     setView("home");
   };
 
@@ -777,24 +874,63 @@ export default function UnifiedLogger({ user, profile, onLogged }) {
     );
   }
 
-  // PHOTO — gated, clearly flagged. No fake macros.
+  // PHOTO — real: capture → downscale → analyzeMealPhoto → editable draft.
   if (view === "photo") {
     return (
       <div>
         <BackBar onBack={goHome} title="Snap a photo" />
-        <div style={{ ...sheetCard, padding: 22, textAlign: "center" }}>
-          <div style={{ width: 56, height: 56, borderRadius: 999, margin: "0 auto 14px", display: "grid", placeItems: "center", background: T.paperHi, border: `1px solid ${T.paperDeep}` }}>
-            <Camera size={24} color={T.muted} />
+        <input
+          ref={photoInputRef}
+          type="file"
+          accept="image/*"
+          capture="environment"
+          onChange={handlePhotoPicked}
+          style={{ display: "none" }}
+        />
+
+        {photoState === "reading" ? (
+          <div style={{ ...sheetCard, padding: 24, textAlign: "center" }}>
+            <Loader2 size={26} color={T.crimson} className="animate-spin" style={{ margin: "0 auto 12px", display: "block" }} />
+            <div style={{ fontFamily: SERIF, fontSize: 15, color: T.ink, marginBottom: 4 }}>Reading your photo…</div>
+            <div style={{ fontFamily: SERIF, fontSize: 12.5, color: T.muted, fontStyle: "italic" }}>
+              This can take a few seconds — hang tight.
+            </div>
           </div>
-          <div style={{ fontFamily: SERIF, fontSize: 16, color: T.ink, marginBottom: 6, fontWeight: 600 }}>Photo logging is on its way</div>
-          <div style={{ fontFamily: SERIF, fontSize: 13.5, color: T.muted, fontStyle: "italic", lineHeight: 1.5, marginBottom: 16 }}>
-            Photo logging needs a vision model — we'll switch it on once the key's set.
+        ) : photoState === "error" ? (
+          <div style={{ ...sheetCard, padding: 20, textAlign: "center" }}>
+            <div style={{ width: 56, height: 56, borderRadius: 999, margin: "0 auto 14px", display: "grid", placeItems: "center", background: T.paperHi, border: `1px solid ${T.paperDeep}` }}>
+              <Camera size={24} color={T.muted} />
+            </div>
+            <div style={{ fontFamily: SERIF, fontSize: 15.5, color: T.ink, marginBottom: 6, fontWeight: 600 }}>Couldn't read that photo</div>
+            <div style={{ fontFamily: SERIF, fontSize: 13, color: T.muted, fontStyle: "italic", lineHeight: 1.5, marginBottom: 16 }}>
+              Try again with a clearer shot, or type it instead.
+            </div>
+            <div style={{ display: "flex", gap: 8 }}>
+              <button onClick={() => { setPhotoState("idle"); photoInputRef.current?.click(); }}
+                style={{ flex: 1, background: T.ink, color: T.paper, border: "none", borderRadius: 12, padding: "11px", fontFamily: UI, fontSize: 12, fontWeight: 700, textTransform: "uppercase", letterSpacing: 0.5, cursor: "pointer" }}>
+                Try again
+              </button>
+              <button onClick={() => { setPhotoState("idle"); setView("type"); }}
+                style={{ flex: 1, background: T.paperHi, color: T.ink, border: `1px solid ${T.paperDeep}`, borderRadius: 12, padding: "11px", fontFamily: UI, fontSize: 12, fontWeight: 700, textTransform: "uppercase", letterSpacing: 0.5, cursor: "pointer" }}>
+                Type it instead
+              </button>
+            </div>
           </div>
-          <button onClick={() => setView("search")}
-            style={{ background: T.ink, color: T.paper, border: "none", borderRadius: 12, padding: "11px 18px", fontFamily: UI, fontSize: 12, fontWeight: 700, textTransform: "uppercase", letterSpacing: 0.5, cursor: "pointer" }}>
-            Search the database instead
-          </button>
-        </div>
+        ) : (
+          <div style={{ ...sheetCard, padding: 22, textAlign: "center" }}>
+            <div style={{ width: 56, height: 56, borderRadius: 999, margin: "0 auto 14px", display: "grid", placeItems: "center", background: T.paperHi, border: `1px solid ${T.paperDeep}` }}>
+              <Camera size={24} color={T.crimson} />
+            </div>
+            <div style={{ fontFamily: SERIF, fontSize: 16, color: T.ink, marginBottom: 6, fontWeight: 600 }}>Snap your meal</div>
+            <div style={{ fontFamily: SERIF, fontSize: 13.5, color: T.muted, fontStyle: "italic", lineHeight: 1.5, marginBottom: 16 }}>
+              Take a photo of your plate — we'll estimate it, and you can check every number before logging.
+            </div>
+            <button onClick={() => photoInputRef.current?.click()}
+              style={{ width: "100%", display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 8, background: T.ink, color: T.paper, border: "none", borderRadius: 12, padding: "13px", fontFamily: UI, fontSize: 12, fontWeight: 700, textTransform: "uppercase", letterSpacing: 0.5, cursor: "pointer" }}>
+              <Camera size={15} /> Take or choose a photo
+            </button>
+          </div>
+        )}
       </div>
     );
   }
@@ -804,6 +940,11 @@ export default function UnifiedLogger({ user, profile, onLogged }) {
     return (
       <div>
         <BackBar onBack={goHome} title="Check & confirm" />
+        {draft.lowConfidence && (
+          <div style={{ ...sheetCard, padding: "10px 12px", marginBottom: 10, fontFamily: SERIF, fontSize: 12.5, color: T.muted, fontStyle: "italic" }}>
+            Rough estimate from the photo — please check the numbers below.
+          </div>
+        )}
         <EditableDraft
           draft={draft}
           onChange={setDraft}
