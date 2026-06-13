@@ -1,6 +1,13 @@
 # FEMWELL — CANONICAL STATUS INDEX (read first · updated 2026-06-12)
 **This file is the single source of truth AND the index to every plan doc. If anything else disagrees, this wins.** (The long ship-log history continues below the index.)
 
+## ✅ NUTRITION SWAPPED LIVE + FOUNDERS-CORNER PREVIEWS REACHABLE (2026-06-13) — live `index-Cn7AmWsG.js` · commit `d863c0c`
+Two corrections Halli flagged, both fixed + live-verified:
+- **NUTRITION SWAP (the real intent):** `pages.config` `"Nutrition"` now renders **NutritionHub** (the chosen Demo 1+2 Hub+Slider hybrid). **LIVE-VERIFIED:** femwells.com/**Nutrition** (normal bottom-nav route) loads the Hub (title "Nutrition Hub", markers OPEN TODAY / SUGGESTED NEXT, Jess), reads REAL data, no 404. **Write persists end-to-end on live /Nutrition:** hydration 500ml → +250ml → reload reads back **750ml/2000ml**. analyzeMeal fix carried (analysis_unavailable in bundle). Old `src/pages/Nutrition.jsx` kept in repo as **unrouted fallback** (import removed; 1 line to revert).
+- **ORPHANED-PAGES FIX (reachability):** added a **"Previews" tab** (2nd in the FoundersOS /Ideas rail) — one tap-through index of EVERY preview, no URLs. **LIVE-VERIFIED:** "Previews" in the rail, activates on tap, renders all 8 links with correct hrefs: `/Nutrition` (live), `/NutritionDemo1..5`, `/JournalRedesign1`, `/CommunityRedesign1`. Nutrition Demos tab footer updated (Hub now live; redesigns → Previews tab).
+- **Journal & Community live pages NOT swapped** — they remain previews (reachable via the Previews tab) pending Halli's approval.
+- Deploy: keepalive POST (200), sync→ready fast, bundle flipped `index-DSvdpMus.js` → **`index-Cn7AmWsG.js`**. Build+eslint green.
+
 ## 🔧 analyzeMeal STALL — root-caused + hardened + DEPLOYED (2026-06-13) · commit `824ee9a` · deployed 15:48:48
 - **Root cause (code review):** `base44/functions/analyzeMeal/entry.ts` had **unguarded awaits at the top** — `base44.auth.me()` and `req.json()` — so a stalled platform call wedged the whole function with NO response (never reaching its internal LLM guard) = the >60s hang. Plus a **timeout mismatch** (client 18s < function LLM 20s → a slow-but-working analysis was abandoned client-side) and **500-on-failure** (no clean degrade).
 - **Fix (deployed):** guard `auth.me()` (5s) + `req.json()` (4s) → fast 503/400 instead of hang; lower OpenAI guard **20s→13s** (below client's 18s) on both short+full paths; on any LLM slowness/error **return a clean 200 `{analysis_unavailable:true}`** instead of 500; client (NutritionTodayTab) shows a tidy "Meal saved — couldn't estimate calories just now" note and keeps the meal. `deno lint` clean (only pre-existing style warns).
