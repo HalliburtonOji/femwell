@@ -22,15 +22,19 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { base44 } from "@/api/base44Client";
 import { format, startOfWeek } from "date-fns";
+import { toast } from "sonner";
 import {
   UtensilsCrossed, Target, BookOpen, CalendarDays,
   ShoppingBasket, TrendingUp, Sparkles, ChevronLeft, ChevronRight, Leaf, Plus, Star,
+  Search, Clock, Camera, Mic, ScanLine, LayoutGrid,
 } from "lucide-react";
 import {
   T, UI, SERIF, Eyebrow, Rule, Script, Hand, InkFilter, useEditorialFonts, PAPER_BG,
 } from "@/components/journal/Editorial";
-import { getMealSummary } from "@/utils/nutritionAiAnalysis";
+import { getMealSummary, inferMealTypeFromTime } from "@/utils/nutritionAiAnalysis";
+import { withTimeout } from "@/utils/safeEntity";
 import { HubSheet, SoftBar, SurfaceCard } from "@/components/nutrition/hub/HubShell";
+import NutritionHubSheet from "@/components/nutrition/NutritionHubSheet";
 
 import NutritionTodayTab from "../components/nutrition/NutritionTodayTab";
 import NutritionPlanTab from "../components/nutrition/NutritionPlanTab";
@@ -54,6 +58,7 @@ const GAP = 14;
 // Surface registry — id + meta drives the slider cards AND the sheets. The id
 // matches the ?tab= deep-link target so links land on the right surface.
 const SURFACES = [
+  { id: "log",      label: "Log",      eyebrow: "Add a meal in seconds",   sheetTitle: "log a meal",   accent: T.crimson, Icon: UtensilsCrossed },
   { id: "today",    label: "Today",    eyebrow: "Your plate so far",       sheetTitle: "today",        accent: T.gold, Icon: UtensilsCrossed },
   { id: "plan",     label: "My Plan",  eyebrow: "A guide, never a cap",     sheetTitle: "my plan",      accent: T.gold, Icon: Target },
   { id: "recipes",  label: "Recipes",  eyebrow: "Cook what you have in",    sheetTitle: "recipes",      accent: T.sage, Icon: BookOpen },
@@ -146,6 +151,7 @@ export default function NutritionHub() {
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [openSheet, setOpenSheet] = useState(null);   // surface id or null
   const [openLogger, setOpenLogger] = useState(false); // the UnifiedLogger sheet
+  const [hubMenuOpen, setHubMenuOpen] = useState(false); // the "Jump to" switcher
   const [active, setActive] = useState(0);            // slider index
 
   // Home summary (real MealLog + HydrationLog for the selected day)
@@ -220,6 +226,34 @@ export default function NutritionHub() {
     }
     setRecents(distinct);
   }, []);
+
+  // re-log a recent meal for real (guarded write + refresh), one tap from the Log card.
+  // The hub's `recents` chips carry only { id, name } — so we re-create a MealLog with
+  // the same raw_text, day_key = today, an inferred meal_type, then refresh the summary.
+  const reLogRecent = useCallback(async (name) => {
+    const text = (name || "").trim();
+    if (!user || !text) return;
+    const todayKey = format(new Date(), "yyyy-MM-dd");
+    try {
+      await withTimeout(
+        base44.entities.MealLog.create({
+          user_id: user.id,
+          day_key: todayKey,
+          logged_at: new Date().toISOString(),
+          meal_type: inferMealTypeFromTime(),
+          method: "text",
+          raw_text: text,
+        }),
+        6000, "save"
+      );
+      toast.success("Added to today");
+      loadSummary(user, todayKey);
+      loadRecents(user);
+    } catch (err) {
+      console.error("re-log recent failed:", err);
+      toast.error("Couldn’t add that just now — try again.");
+    }
+  }, [user, loadSummary, loadRecents]);
 
   // a saved meal plan + its shopping list + saved recipes for the richer cards (real)
   const loadKitchen = useCallback(async (u) => {
@@ -339,6 +373,15 @@ export default function NutritionHub() {
     }
   };
 
+  // open a surface by id — the "log" surface has no entity sheet; it opens the real
+  // UnifiedLogger instead. Everything else opens its full surface in the HubSheet.
+  const openSurface = (id) => {
+    if (id === "log") { setOpenLogger(true); return; }
+    setOpenSheet(id);
+  };
+
+  // openSheet never holds "log" (it routes to the logger), so this only ever
+  // resolves to a real entity surface.
   const openMeta = openSheet ? SURFACES.find((s) => s.id === openSheet) : null;
 
   if (loading) {
@@ -363,32 +406,52 @@ export default function NutritionHub() {
               <Eyebrow mb={4}>Wellness Studio · Nutrition</Eyebrow>
               <Script size={40} carve>your plate today</Script>
             </div>
-            <div style={{
-              display: "flex", alignItems: "center", gap: 4, flexShrink: 0,
-              background: T.paperHi, border: `1px solid ${T.paperDeep}`, borderRadius: 14, padding: "5px 6px",
-            }}>
-              <button onClick={() => changeDay(-1)} aria-label="Previous day"
-                style={{ width: 26, height: 26, borderRadius: 9, border: "none", background: "transparent", color: T.muted, cursor: "pointer", display: "grid", placeItems: "center" }}>
-                <ChevronLeft size={16} />
+            <div style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
+              {/* universal "Jump to" switcher trigger (matches Journal/Community) */}
+              <button onClick={() => setHubMenuOpen(true)} aria-label="Jump to" style={{
+                width: 36, height: 36, borderRadius: 12, display: "grid", placeItems: "center",
+                background: T.paperHi, border: `1px solid ${T.paperDeep}`, color: T.ink, cursor: "pointer",
+              }}>
+                <LayoutGrid size={17} />
               </button>
-              <div style={{ textAlign: "center", minWidth: 74 }}>
-                <div style={{ fontFamily: UI, fontSize: 11, fontWeight: 700, color: T.ink }}>{isToday ? "Today" : format(selectedDate, "EEE")}</div>
-                <div style={{ fontFamily: UI, fontSize: 9.5, color: T.muted }}>{format(selectedDate, "d MMM")}</div>
+              <div style={{
+                display: "flex", alignItems: "center", gap: 4,
+                background: T.paperHi, border: `1px solid ${T.paperDeep}`, borderRadius: 14, padding: "5px 6px",
+              }}>
+                <button onClick={() => changeDay(-1)} aria-label="Previous day"
+                  style={{ width: 26, height: 26, borderRadius: 9, border: "none", background: "transparent", color: T.muted, cursor: "pointer", display: "grid", placeItems: "center" }}>
+                  <ChevronLeft size={16} />
+                </button>
+                <div style={{ textAlign: "center", minWidth: 74 }}>
+                  <div style={{ fontFamily: UI, fontSize: 11, fontWeight: 700, color: T.ink }}>{isToday ? "Today" : format(selectedDate, "EEE")}</div>
+                  <div style={{ fontFamily: UI, fontSize: 9.5, color: T.muted }}>{format(selectedDate, "d MMM")}</div>
+                </div>
+                <button onClick={() => changeDay(1)} disabled={isToday} aria-label="Next day"
+                  style={{ width: 26, height: 26, borderRadius: 9, border: "none", background: "transparent", color: T.muted, cursor: isToday ? "default" : "pointer", opacity: isToday ? 0.3 : 1, display: "grid", placeItems: "center" }}>
+                  <ChevronRight size={16} />
+                </button>
               </div>
-              <button onClick={() => changeDay(1)} disabled={isToday} aria-label="Next day"
-                style={{ width: 26, height: 26, borderRadius: 9, border: "none", background: "transparent", color: T.muted, cursor: isToday ? "default" : "pointer", opacity: isToday ? 0.3 : 1, display: "grid", placeItems: "center" }}>
-                <ChevronRight size={16} />
-              </button>
             </div>
           </div>
         </header>
 
-        {/* The today glance, Jess line, log action and suggested-next now live
-            INSIDE the big cards below — so the Hero Card Slider is the hero of the
-            screen (Demo-1 prominence), not buried under a tall preamble. */}
+        {/* ── RED LOG A MEAL header — the prominent logger entry ──────────── */}
+        <div style={{ padding: "0 18px 4px" }}>
+          <button onClick={() => setOpenLogger(true)} style={{
+            width: "100%", display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 10,
+            background: T.crimson, color: T.paper, border: "none", borderRadius: 14, padding: "15px 18px",
+            fontFamily: UI, fontSize: 13, fontWeight: 700, letterSpacing: 0.6, textTransform: "uppercase", cursor: "pointer",
+          }}>
+            <UtensilsCrossed size={17} /> Log a meal
+          </button>
+        </div>
+
+        {/* Arrangement: greeting + day · RED LOG A MEAL header · slider. The today
+            glance, Jess line and suggested-next live INSIDE the big cards below —
+            nothing else sits between the red logger and the slider. */}
 
         {/* ── THE SPINE — Hero Card Slider of surfaces ───────────────────── */}
-        <div style={{ marginTop: 6 }}>
+        <div style={{ marginTop: 10 }}>
           <div style={{ padding: "0 18px 10px" }}>
             <Hand size={15} color={T.muted}>Swipe through your kitchen — each card opens the full thing.</Hand>
           </div>
@@ -418,8 +481,8 @@ export default function NutritionHub() {
                 label={s.label}
                 blurb={s.id === "today" && !isToday ? format(selectedDate, "d MMM") : null}
                 accent={s.accent}
-                onOpen={() => setOpenSheet(s.id)}
-                primaryLabel={`Open ${s.label}`}
+                onOpen={() => openSurface(s.id)}
+                primaryLabel={s.id === "log" ? "Open logger" : `Open ${s.label}`}
                 primaryIcon={s.Icon}
               >
                 <CardSummary
@@ -438,6 +501,7 @@ export default function NutritionHub() {
                   jess={jessLine(profile)}
                   onOpen={setOpenSheet}
                   onLog={() => setOpenLogger(true)}
+                  onReLog={reLogRecent}
                 />
               </SurfaceCard>
             ))}
@@ -476,6 +540,13 @@ export default function NutritionHub() {
           </div>
         </footer>
 
+        {/* ── the universal "Jump to" switcher ───────────────────────────── */}
+        <NutritionHubSheet
+          open={hubMenuOpen}
+          onClose={() => setHubMenuOpen(false)}
+          onSelect={(id) => openSurface(id)}
+        />
+
         {/* ── the bottom sheet — the FULL real surface ───────────────────── */}
         {openMeta && (
           <HubSheet title={openMeta.sheetTitle} eyebrow={openMeta.eyebrow} onClose={() => setOpenSheet(null)}>
@@ -511,9 +582,10 @@ function navBtn(disabled) {
 // state, never a mock figure. The bottom sheet stays the "go deeper / edit" layer.
 function CardSummary({
   surface, summary, dayMeals, recents, mealPlan, shopItems, savedRecipes,
-  nutritionProfile, profile, calorieTarget, hydrationTarget, kcalLeft, jess, onOpen, onLog,
+  nutritionProfile, profile, calorieTarget, hydrationTarget, kcalLeft, jess, onOpen, onLog, onReLog,
 }) {
   switch (surface.id) {
+    case "log":      return <LogCard {...{ surface, recents, onLog, onReLog }} />;
     case "today":    return <TodayCard {...{ summary, dayMeals, recents, calorieTarget, hydrationTarget, kcalLeft, onLog }} />;
     case "plan":     return <PlanCard {...{ nutritionProfile, profile, calorieTarget }} />;
     case "recipes":  return <RecipesCard {...{ savedRecipes }} />;
@@ -523,6 +595,79 @@ function CardSummary({
     case "insights": return <InsightsCard {...{ jess, profile }} />;
     default:         return null;
   }
+}
+
+// ── LOG · Demo-1's CardLog look, wired to the REAL logger + REAL recents ─────
+// The 6 method tiles all open the UnifiedLogger (with an optional initial-method
+// hint). Recents chips re-log for real via onReLog; "+ Add a recent" opens the logger.
+const LOG_METHODS = [
+  { id: "search",  label: "Search foods", Icon: Search },
+  { id: "recent",  label: "Recents",      Icon: Clock },
+  { id: "fave",    label: "Favourites",   Icon: Star },
+  { id: "photo",   label: "Snap a photo", Icon: Camera },
+  { id: "voice",   label: "Say it",       Icon: Mic },
+  { id: "barcode", label: "Scan barcode", Icon: ScanLine },
+];
+function LogCard({ surface, recents, onLog, onReLog }) {
+  const list = (recents || []).filter(Boolean);
+  return (
+    <div style={{ display: "flex", flexDirection: "column", flex: 1 }}>
+      <Eyebrow mb={6} color={surface.accent}>{surface.eyebrow}</Eyebrow>
+      <Script size={30} style={{ marginBottom: 2 }}>Add a meal</Script>
+      <Hand size={15} color={T.muted} style={{ marginBottom: 14 }}>In seconds — tap how you’d like to log.</Hand>
+
+      {/* the 6 method tiles — each opens the real UnifiedLogger */}
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 8, marginBottom: 16 }}>
+        {LOG_METHODS.map((mth) => {
+          const Icon = mth.Icon;
+          return (
+            <button key={mth.id} onClick={() => onLog(mth.id)} style={{
+              display: "flex", flexDirection: "column", alignItems: "center", gap: 5, padding: "11px 4px",
+              background: "transparent", color: T.ink,
+              border: `1px solid ${T.paperDeep}`, borderRadius: 12, cursor: "pointer",
+            }}>
+              <Icon size={16} />
+              <span style={{ fontFamily: UI, fontSize: 9.5, fontWeight: 700, letterSpacing: 0.3, textAlign: "center" }}>{mth.label}</span>
+            </button>
+          );
+        })}
+      </div>
+
+      {/* recents — one tap re-adds for real */}
+      <div style={{ flex: 1 }}>
+        {list.length > 0 ? (
+          <>
+            <Eyebrow mb={9}>Recents — one tap to re-add</Eyebrow>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+              {list.slice(0, 6).map((r) => (
+                <button key={r.id} onClick={() => onReLog(r.name)} style={{
+                  display: "inline-flex", alignItems: "center", gap: 7, background: T.wax,
+                  border: `1px solid ${T.paperDeep}`, borderRadius: 999, padding: "7px 12px 7px 10px", cursor: "pointer",
+                }}>
+                  <Plus size={12} color={T.crimson} />
+                  <span style={{ fontFamily: SERIF, fontSize: 13, color: T.ink }}>{r.name}</span>
+                  {r.kcal ? <span style={{ fontFamily: UI, fontSize: 9.5, color: T.muted }}>{r.kcal} kcal</span> : null}
+                </button>
+              ))}
+            </div>
+          </>
+        ) : (
+          <Hand size={14} color={T.muted}>Log a meal and your recents will gather here for one-tap re-adding.</Hand>
+        )}
+      </div>
+
+      {/* + Add a recent — opens the real logger */}
+      <div style={{ marginTop: 14 }}>
+        <button onClick={() => onLog("recent")} style={{
+          width: "100%", display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 8,
+          background: T.crimson, color: T.paper, border: "none", borderRadius: 12, padding: "12px 16px",
+          fontFamily: UI, fontSize: 12, fontWeight: 700, letterSpacing: 0.5, textTransform: "uppercase", cursor: "pointer",
+        }}>
+          <Plus size={15} /> Add a recent
+        </button>
+      </div>
+    </div>
+  );
 }
 
 // ── TODAY · the plate + logged meals + recents to re-add (all real) ──────────
@@ -535,16 +680,6 @@ function TodayCard({ summary, dayMeals, recents, calorieTarget, hydrationTarget,
           ? "Nothing logged yet — whenever you’re ready."
           : `${summary.meals} logged · ${kcalLeft} kcal of gentle room left.`}
       </Hand>
-
-      {/* the primary logging action — opens the UnifiedLogger sheet */}
-      <button onClick={onLog} style={{
-        display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 8,
-        background: T.crimson, color: T.paper, border: "none", borderRadius: 12, padding: "12px 16px",
-        fontFamily: UI, fontSize: 12, fontWeight: 700, letterSpacing: 0.5, textTransform: "uppercase",
-        cursor: "pointer", marginBottom: 14,
-      }}>
-        <Plus size={15} /> Log a meal
-      </button>
 
       <div style={{ display: "grid", gap: 11, marginBottom: 14 }}>
         <Glance label="Energy" value={`${summary.kcal} of ${calorieTarget} kcal`} v={summary.kcal} guide={calorieTarget} color={T.gold} />
