@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { format, startOfWeek } from "date-fns";
 import { Loader2, Plus, Trash2, Check, RefreshCw, Mail, Copy, CheckCircle, ShoppingCart, Package, Leaf, Egg, Fish, Archive, Snowflake, Wheat, Droplets, Apple } from "lucide-react";
+import { withTimeout } from "@/utils/safeEntity";
 
 const CATEGORIES = ["Produce", "Dairy & Eggs", "Meat & Seafood", "Pantry", "Frozen", "Bakery", "Beverages", "Snacks", "Other"];
 
@@ -64,24 +65,24 @@ export default function ShoppingListTab({ user }) {
       if (shoppingItems.length > 0) {
         let categorized = shoppingItems.map(i => ({ ingredient: i, category: "Other", quantity: "" }));
         try {
-          const catRes = await base44.integrations.Core.InvokeLLM({
+          const catRes = await withTimeout(base44.integrations.Core.InvokeLLM({
             prompt: `Categorize these grocery items into: Produce, Dairy & Eggs, Meat & Seafood, Pantry, Frozen, Bakery, Beverages, Snacks, Other.
 Items: ${shoppingItems.join(", ")}
 Return JSON: {"items": [{"ingredient": "name", "category": "CategoryName", "quantity": "estimated amount or empty string"}]}`,
             response_json_schema: { type: "object", properties: { items: { type: "array", items: { type: "object", properties: { ingredient: { type: "string" }, category: { type: "string" }, quantity: { type: "string" } } } } } }
-          });
+          }), 18000, "categorisation");
           if (catRes.items?.length) categorized = catRes.items;
         } catch {}
         const old = items.filter(i => i.source === "meal_plan");
-        await Promise.all(old.map(i => base44.entities.ShoppingList.delete(i.id)));
-        await base44.entities.ShoppingList.bulkCreate(
+        await withTimeout(Promise.all(old.map(i => base44.entities.ShoppingList.delete(i.id))), 6000, "save");
+        await withTimeout(base44.entities.ShoppingList.bulkCreate(
           categorized.map(ci => ({
             user_id: user.id, week_start: weekStart,
             ingredient_name: ci.ingredient, quantity_text: ci.quantity || "",
             category: CATEGORIES.includes(ci.category) ? ci.category : "Other",
             is_checked: false, source: "meal_plan", meal_plan_id: plan.id,
           }))
-        );
+        ), 6000, "save");
         loadItems(); // background refetch — don't gate the UI on the read
       }
     } catch (e) {
@@ -92,25 +93,47 @@ Return JSON: {"items": [{"ingredient": "name", "category": "CategoryName", "quan
   };
 
   const toggleCheck = async (item) => {
-    await base44.entities.ShoppingList.update(item.id, { is_checked: !item.is_checked });
+    setActionError(null);
+    // Optimistic toggle, with rollback on failure.
     setItems(prev => prev.map(i => i.id === item.id ? { ...i, is_checked: !i.is_checked } : i));
+    try {
+      await withTimeout(base44.entities.ShoppingList.update(item.id, { is_checked: !item.is_checked }), 6000, "save");
+    } catch (e) {
+      console.error(e);
+      setItems(prev => prev.map(i => i.id === item.id ? { ...i, is_checked: item.is_checked } : i));
+      setActionError("Couldn't update your list. Please try again.");
+    }
   };
 
   const addCustomItem = async () => {
     if (!newItem.trim()) return;
-    const created = await base44.entities.ShoppingList.create({
-      user_id: user.id, week_start: weekStart,
-      ingredient_name: newItem.trim(), quantity_text: newQty.trim(),
-      category: newCategory, is_checked: false, source: "manual",
-    });
-    setItems(prev => [...prev, created]);
-    setNewItem(""); setNewQty(""); setAddingItem(false);
+    setActionError(null);
+    try {
+      const created = await withTimeout(base44.entities.ShoppingList.create({
+        user_id: user.id, week_start: weekStart,
+        ingredient_name: newItem.trim(), quantity_text: newQty.trim(),
+        category: newCategory, is_checked: false, source: "manual",
+      }), 6000, "save");
+      setItems(prev => [...prev, created]);
+      setNewItem(""); setNewQty(""); setAddingItem(false);
+    } catch (e) {
+      console.error(e);
+      setActionError("Couldn't add your item. Please try again.");
+    }
   };
 
   const clearChecked = async () => {
+    setActionError(null);
     const checked = items.filter(i => i.is_checked);
-    await Promise.all(checked.map(i => base44.entities.ShoppingList.delete(i.id)));
+    // Optimistic removal, with rollback on failure.
     setItems(prev => prev.filter(i => !i.is_checked));
+    try {
+      await withTimeout(Promise.all(checked.map(i => base44.entities.ShoppingList.delete(i.id))), 6000, "delete");
+    } catch (e) {
+      console.error(e);
+      setItems(prev => [...prev, ...checked]);
+      setActionError("Couldn't clear items. Please try again.");
+    }
   };
 
   const copyList = () => {

@@ -2,6 +2,8 @@ import { useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { motion, AnimatePresence } from "framer-motion";
 import { Loader2, X, ChefHat, Plus, CheckCircle, Copy, BookmarkPlus, ChevronDown, ChevronUp, Shuffle, Star } from "lucide-react";
+import { toast } from "sonner";
+import { withTimeout } from "@/utils/safeEntity";
 
 const WELLNESS_GOALS = [
   { id: "energy",    label: "Energy"          },
@@ -274,21 +276,32 @@ export default function RecipeGeneratorTab({ user }) {
 
   const generate = async (surpriseMe = false) => {
     setGenerating(true); setResult(null); setError(null);
-    const res = await base44.functions.invoke("generateMealPlan", {
-      mode: "recipe", wellness_goal: goal || undefined,
-      ingredients: surpriseMe ? [] : ingredients,
-      usual_meals: surpriseMe ? [] : usualMeals,
-      dietary_preferences: dietary,
-      cuisine_preference: cuisine !== "Any" ? cuisine : undefined,
-      surprise_me: surpriseMe,
-    });
-    if (res.data?.error) setError(res.data.error);
-    else setResult(res.data);
+    try {
+      const res = await withTimeout(base44.functions.invoke("generateMealPlan", {
+        mode: "recipe", wellness_goal: goal || undefined,
+        ingredients: surpriseMe ? [] : ingredients,
+        usual_meals: surpriseMe ? [] : usualMeals,
+        dietary_preferences: dietary,
+        cuisine_preference: cuisine !== "Any" ? cuisine : undefined,
+        surprise_me: surpriseMe,
+      }), 18000, "recipe");
+      if (res.data?.error) setError(res.data.error);
+      else setResult(res.data);
+    } catch (e) {
+      console.error(e);
+      setError("Couldn't generate your recipe just now. Please try again.");
+    }
     setGenerating(false);
   };
 
   const handleSaveTemplate = async (name) => {
-    await base44.entities.MealTemplates.create({ user_id: user.id, title: name, default_meal_type: "lunch" });
+    try {
+      await withTimeout(base44.entities.MealTemplates.create({ user_id: user.id, title: name, default_meal_type: "lunch" }), 6000, "save");
+      toast.success("Saved to favourites");
+    } catch (e) {
+      console.error(e);
+      toast.error("Couldn't save — try again");
+    }
   };
 
   return (

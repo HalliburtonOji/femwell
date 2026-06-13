@@ -1,7 +1,9 @@
 import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
-import { Plus, Loader2, X, Copy } from "lucide-react";
+import { Plus, X, Copy } from "lucide-react";
 import { format, startOfWeek, addDays } from "date-fns";
+import { toast } from "sonner";
+import { withTimeout } from "@/utils/safeEntity";
 
 const MEAL_TYPES = ["breakfast", "lunch", "dinner", "snack"];
 const MEAL_LABELS = { breakfast: "Morning", lunch: "Midday", dinner: "Evening", snack: "Snack" };
@@ -59,12 +61,17 @@ export default function NutritionPlanTab({ user, nutritionProfile }) {
       setPlan(plans[0]);
       if (plans[0].wellness_goal) setPlanGoal(plans[0].wellness_goal);
     } else {
-      const newPlan = await base44.entities.MealPlans.create({
-        user_id: user.id, week_start: weekKey,
-        plan_days: [], is_active: true,
-        created_at: new Date().toISOString(),
-      });
-      setPlan(newPlan);
+      try {
+        const newPlan = await withTimeout(base44.entities.MealPlans.create({
+          user_id: user.id, week_start: weekKey,
+          plan_days: [], is_active: true,
+          created_at: new Date().toISOString(),
+        }), 6000, "save");
+        setPlan(newPlan);
+      } catch (e) {
+        console.error(e);
+        toast.error("Couldn't save — try again");
+      }
     }
     setLoading(false);
   };
@@ -102,11 +109,16 @@ export default function NutritionPlanTab({ user, nutritionProfile }) {
     const key = `${dayIndex}_${mealType}`;
     if (!data[key]) data[key] = [];
     data[key].push(text.trim());
-    const updated = await base44.entities.MealPlans.update(plan.id, {
-      plan_days: updatePlanDays(data),
-      updated_at: new Date().toISOString(),
-    });
-    setPlan(updated); setMealInput(""); setAddingSlot(null);
+    try {
+      const updated = await withTimeout(base44.entities.MealPlans.update(plan.id, {
+        plan_days: updatePlanDays(data),
+        updated_at: new Date().toISOString(),
+      }), 6000, "save");
+      setPlan(updated); setMealInput(""); setAddingSlot(null);
+    } catch (e) {
+      console.error(e);
+      toast.error("Couldn't save — try again");
+    }
   };
 
   const removeMealFromSlot = async (dayIndex, mealType, idx) => {
@@ -115,17 +127,27 @@ export default function NutritionPlanTab({ user, nutritionProfile }) {
     const key = `${dayIndex}_${mealType}`;
     if (!data[key]) return;
     data[key].splice(idx, 1);
-    const updated = await base44.entities.MealPlans.update(plan.id, {
-      plan_days: updatePlanDays(data),
-      updated_at: new Date().toISOString(),
-    });
-    setPlan(updated);
+    try {
+      const updated = await withTimeout(base44.entities.MealPlans.update(plan.id, {
+        plan_days: updatePlanDays(data),
+        updated_at: new Date().toISOString(),
+      }), 6000, "save");
+      setPlan(updated);
+    } catch (e) {
+      console.error(e);
+      toast.error("Couldn't save — try again");
+    }
   };
 
   const savePlanGoal = async (goalId) => {
     if (!plan) return;
-    const updated = await base44.entities.MealPlans.update(plan.id, { wellness_goal: goalId });
-    setPlan(updated); setPlanGoal(goalId);
+    try {
+      const updated = await withTimeout(base44.entities.MealPlans.update(plan.id, { wellness_goal: goalId }), 6000, "save");
+      setPlan(updated); setPlanGoal(goalId);
+    } catch (e) {
+      console.error(e);
+      toast.error("Couldn't save — try again");
+    }
   };
 
   const generateShoppingList = () => {

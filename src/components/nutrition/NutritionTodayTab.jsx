@@ -12,6 +12,7 @@ import { getCyclePhaseOrNull, getCyclePhaseStatus } from "@/utils/cyclePhase";
 import { readAiAnalysis, getMealSummary, inferMealTypeFromTime } from "@/utils/nutritionAiAnalysis";
 import { logAppEvent } from "@/utils/appEvents";
 import { runNutritionMigrationsIfNeeded } from "@/utils/nutritionMigrations";
+import { withTimeout } from "@/utils/safeEntity";
 
 const DISCLAIMER_THROTTLE_MS = 7 * 24 * 60 * 60 * 1000; // 7 days
 
@@ -204,16 +205,21 @@ export default function NutritionTodayTab({ user, profile, nutritionProfile, day
   const logCustomDrink = async () => {
     if (!customDrinkName.trim()) return;
     setLoggingDrink(true);
-    const newLog = await base44.entities.DrinkLog.create({
-      user_id: user.id, day_key: dayKey,
-      drink_type: customDrinkName.trim(),
-      amount_ml: Number(customDrinkMl) || 250,
-      calories: Number(customDrinkCals) || 0,
-      logged_at: new Date().toISOString(),
-    });
-    setDrinkLogs(prev => [...prev, newLog]);
-    setCustomDrinkName(""); setCustomDrinkMl(250); setCustomDrinkCals(0);
-    setShowCustomDrink(false);
+    try {
+      const newLog = await withTimeout(base44.entities.DrinkLog.create({
+        user_id: user.id, day_key: dayKey,
+        drink_type: customDrinkName.trim(),
+        amount_ml: Number(customDrinkMl) || 250,
+        calories: Number(customDrinkCals) || 0,
+        logged_at: new Date().toISOString(),
+      }), 6000, "save");
+      setDrinkLogs(prev => [...prev, newLog]);
+      setCustomDrinkName(""); setCustomDrinkMl(250); setCustomDrinkCals(0);
+      setShowCustomDrink(false);
+    } catch (e) {
+      console.error(e);
+      toast.error("Couldn't save — try again");
+    }
     setLoggingDrink(false);
   };
 
@@ -258,20 +264,20 @@ export default function NutritionTodayTab({ user, profile, nutritionProfile, day
       const sizeInfo = DRINK_SIZES.find(s => s.id === drinkModal.size) || DRINK_SIZES[1];
       const multiplier = drinkModal.size === "small" ? 0.6 : drinkModal.size === "large" ? 1.6 : 1.0;
       const scaledCals = Math.round((DRINK_CALS[drinkModal.typeId] || 0) * multiplier);
-      const newLog = await base44.entities.DrinkLog.create({
+      const newLog = await withTimeout(base44.entities.DrinkLog.create({
         user_id: user.id, day_key: dayKey,
         drink_type: drinkModal.typeId,
         amount_ml: sizeInfo.ml,
         calories: scaledCals,
         logged_at: new Date().toISOString(),
-      });
+      }), 6000, "save");
       setDrinkLogs(prev => [...prev, newLog]);
       if (["water","tea","coffee","juice","smoothie","milk"].includes(drinkModal.typeId)) {
         const newMl = [...drinkLogs, newLog].reduce((s, l) => s + (l.amount_ml || 0), 0);
-        if (checkin?.id) base44.entities.DailyCheckins.update(checkin.id, { hydration_glasses: Math.round(newMl / 250) }).catch(() => {});
+        if (checkin?.id) withTimeout(base44.entities.DailyCheckins.update(checkin.id, { hydration_glasses: Math.round(newMl / 250) }), 6000, "save").catch(() => {});
       }
       setDrinkModal(null);
-    } catch (e) { console.error(e); }
+    } catch (e) { console.error(e); toast.error("Couldn't save — try again"); }
     setLoggingDrink(false);
   };
 
@@ -292,14 +298,22 @@ export default function NutritionTodayTab({ user, profile, nutritionProfile, day
     const phaseStatus = getCyclePhaseStatus(profile);
     const isShortInput = trimmed.length <= 8;
 
-    const log = await base44.entities.MealLog.create({
-      user_id: user.id, day_key: dayKey,
-      logged_at: new Date().toISOString(),
-      meal_type: resolvedMealType, method, raw_text: trimmed,
-      wellness_goal: selectedGoal || undefined,
-      portion_size: portionSize,
-      cycle_phase_at_log: cyclePhaseAtLog,
-    });
+    let log;
+    try {
+      log = await withTimeout(base44.entities.MealLog.create({
+        user_id: user.id, day_key: dayKey,
+        logged_at: new Date().toISOString(),
+        meal_type: resolvedMealType, method, raw_text: trimmed,
+        wellness_goal: selectedGoal || undefined,
+        portion_size: portionSize,
+        cycle_phase_at_log: cyclePhaseAtLog,
+      }), 6000, "save");
+    } catch (e) {
+      console.error(e);
+      toast.error("Couldn't save — try again");
+      setLogging(false);
+      return;
+    }
     setMeals((prev) => [...prev, log]);
     setMealText("");
     toast.success("Meal logged");
@@ -333,7 +347,7 @@ export default function NutritionTodayTab({ user, profile, nutritionProfile, day
         ? ` The user is currently in their ${phaseStatus.phase} phase.`
         : "";
 
-      const response = await base44.functions.invoke("analyzeMeal", {
+      const response = await withTimeout(base44.functions.invoke("analyzeMeal", {
         raw_text: trimmed,
         energy_level: checkin?.energy,
         digestion_score: checkin?.digestion,
@@ -343,7 +357,7 @@ export default function NutritionTodayTab({ user, profile, nutritionProfile, day
         meal_log_id: log.id,
         cycle_phase: cyclePhaseAtLog,
         excluded_swaps: recentSwaps,
-      });
+      }), 18000, "analysis");
       const res = response?.data || response;
       if (!res || typeof res !== "object") { setLogging(false); return; }
       if (!(res.summary || res.nutritional_summary || res.items)) { setLogging(false); return; }
@@ -420,9 +434,10 @@ export default function NutritionTodayTab({ user, profile, nutritionProfile, day
       } else if (structured.tone_safety_note || structured.insight?.tone_safety_note) {
         // Mark shown.
         if (profile?.id) {
-          base44.entities.UserProfile
-            .update(profile.id, { last_disclaimer_shown_at: new Date().toISOString() })
-            .catch(() => {});
+          withTimeout(
+            base44.entities.UserProfile.update(profile.id, { last_disclaimer_shown_at: new Date().toISOString() }),
+            6000, "save"
+          ).catch(() => {});
         }
       }
 
@@ -432,26 +447,38 @@ export default function NutritionTodayTab({ user, profile, nutritionProfile, day
       const updatePayload = { ai_analysis: structured };
       if (overallScore != null) updatePayload.meal_score = overallScore;
 
-      await base44.entities.MealLog.update(log.id, updatePayload);
+      await withTimeout(base44.entities.MealLog.update(log.id, updatePayload), 6000, "save");
       setMeals((prev) => prev.map((m) => m.id === log.id ? { ...m, ...updatePayload } : m));
 
       if (structured.insight) {
         const { headline, wellness_impact, action_items, smart_swap, confidence, tone_safety_note } = structured.insight;
-        const saved = await base44.entities.NutritionInsight.create({
+        const saved = await withTimeout(base44.entities.NutritionInsight.create({
           user_id: user.id, meal_log_id: log.id, day_key: dayKey,
           meal_description: trimmed, wellness_goal: selectedGoal || "general wellness",
           headline, wellness_impact, action_items, smart_swap,
           confidence: confidence || "medium", tone_safety_note, user_feedback: "none",
-        });
+        }), 6000, "save");
         setInsights((prev) => [...prev, saved]);
       }
-    } catch (_) {}
+    } catch (_) {
+      // Meal is already saved; analysis/insight enrichment failed or timed out.
+      // The meal stays in the timeline — just surface that insights are unavailable.
+      toast.error("Meal saved, but insights couldn't load");
+    }
     setLogging(false);
   };
 
   const handleInsightFeedback = async (insight, feedback) => {
-    await base44.entities.NutritionInsight.update(insight.id, { user_feedback: feedback });
+    const prevFeedback = insight.user_feedback;
+    // Optimistic update, with rollback on failure.
     setInsights((prev) => prev.map((i) => i.id === insight.id ? { ...i, user_feedback: feedback } : i));
+    try {
+      await withTimeout(base44.entities.NutritionInsight.update(insight.id, { user_feedback: feedback }), 6000, "save");
+    } catch (e) {
+      console.error(e);
+      setInsights((prev) => prev.map((i) => i.id === insight.id ? { ...i, user_feedback: prevFeedback } : i));
+      toast.error("Couldn't save — try again");
+    }
   };
 
   const repeatLast = () => {
@@ -466,22 +493,42 @@ export default function NutritionTodayTab({ user, profile, nutritionProfile, day
   const saveAsTemplate = async () => {
     if (!mealText.trim()) return;
     setSavingTemplate(true);
-    await base44.entities.MealTemplates.create({ user_id: user.id, title: mealText.trim(), default_meal_type: mealType });
+    try {
+      await withTimeout(base44.entities.MealTemplates.create({ user_id: user.id, title: mealText.trim(), default_meal_type: mealType }), 6000, "save");
+      setTemplates(await base44.entities.MealTemplates.filter({ user_id: user.id }));
+    } catch (e) {
+      console.error(e);
+      toast.error("Couldn't save — try again");
+    }
     setSavingTemplate(false);
-    setTemplates(await base44.entities.MealTemplates.filter({ user_id: user.id }));
   };
 
   const logWater = async (ml) => {
-    const log = await base44.entities.HydrationLog.create({ user_id: user.id, day_key: dayKey, amount_ml: ml, logged_at: new Date().toISOString() });
+    let log;
+    try {
+      log = await withTimeout(base44.entities.HydrationLog.create({ user_id: user.id, day_key: dayKey, amount_ml: ml, logged_at: new Date().toISOString() }), 6000, "save");
+    } catch (e) {
+      console.error(e);
+      toast.error("Couldn't save — try again");
+      return;
+    }
     setHydrationLogs((prev) => [...prev, log]);
     const totalGlasses = Math.round((totalHydration + ml) / 250);
-    if (checkin?.id) base44.entities.DailyCheckins.update(checkin.id, { hydration_glasses: totalGlasses });
+    if (checkin?.id) withTimeout(base44.entities.DailyCheckins.update(checkin.id, { hydration_glasses: totalGlasses }), 6000, "save").catch(() => {});
   };
 
   const deleteMeal = async (id) => {
-    await base44.entities.MealLog.delete(id);
+    // Optimistic removal, with rollback on failure.
+    const removed = meals.find((m) => m.id === id);
     setMeals((prev) => prev.filter((m) => m.id !== id));
-    toast.success("Meal removed");
+    try {
+      await withTimeout(base44.entities.MealLog.delete(id), 6000, "delete");
+      toast.success("Meal removed");
+    } catch (e) {
+      console.error(e);
+      if (removed) setMeals((prev) => [...prev, removed]);
+      toast.error("Couldn't remove — try again");
+    }
   };
 
   const mealsByType = MEAL_TYPES.reduce((acc, t) => {

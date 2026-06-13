@@ -3,6 +3,7 @@ import { base44 } from "@/api/base44Client";
 import { Loader2, TrendingUp, Plus, Flame, Droplets } from "lucide-react";
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from "recharts";
 import { format, subDays, parseISO } from "date-fns";
+import { withTimeout } from "@/utils/safeEntity";
 
 const GOAL_MODES = [
   { key: "fat_loss",         label: "Fat Loss",              desc: "Steady, sustainable progress" },
@@ -67,9 +68,9 @@ export default function NutritionProgressTab({ user, nutritionProfile, onProfile
     setSaveError(null);
     try {
       if (nutritionProfile?.id) {
-        await base44.entities.NutritionProfile.update(nutritionProfile.id, { goal_mode: selectedGoal });
+        await withTimeout(base44.entities.NutritionProfile.update(nutritionProfile.id, { goal_mode: selectedGoal }), 6000, "save");
       } else {
-        await base44.entities.NutritionProfile.create({ user_id: user.id, goal_mode: selectedGoal });
+        await withTimeout(base44.entities.NutritionProfile.create({ user_id: user.id, goal_mode: selectedGoal }), 6000, "save");
       }
       onProfileUpdated?.();
       setShowGoalPicker(false);
@@ -92,9 +93,9 @@ export default function NutritionProgressTab({ user, nutritionProfile, onProfile
     };
     try {
       if (nutritionProfile?.id) {
-        await base44.entities.NutritionProfile.update(nutritionProfile.id, payload);
+        await withTimeout(base44.entities.NutritionProfile.update(nutritionProfile.id, payload), 6000, "save");
       } else {
-        await base44.entities.NutritionProfile.create({ user_id: user.id, ...payload });
+        await withTimeout(base44.entities.NutritionProfile.create({ user_id: user.id, ...payload }), 6000, "save");
       }
       onProfileUpdated?.();
       setEditingTargets(false);
@@ -114,7 +115,7 @@ export default function NutritionProgressTab({ user, nutritionProfile, onProfile
     setSavingMetric(true);
     setSaveError(null);
     try {
-      await base44.entities.BodyMetrics.create(payload);
+      await withTimeout(base44.entities.BodyMetrics.create(payload), 6000, "save");
       loadData(); // background refetch — don't gate the UI on the read
       setAddingMetric(false);
       setMetricForm({ weight_kg: "", waist_cm: "", hips_cm: "", bust_cm: "", notes: "" });

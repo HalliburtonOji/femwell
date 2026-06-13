@@ -304,7 +304,10 @@ Guidelines:
         if (!meal.ai_analysis) return sum;
         const a = typeof meal.ai_analysis === 'string' ? JSON.parse(meal.ai_analysis) : meal.ai_analysis;
         const mult = meal.portion_size === "small" ? 0.7 : meal.portion_size === "large" ? 1.4 : 1.0;
-        if (a.nutritional_summary?.calories) return sum + Math.round(a.nutritional_summary.calories * mult);
+        // New-shape meals store macros under `summary`; legacy rows under `nutritional_summary`.
+        // Normalize so both shapes count (matches getMealSummary() in nutritionAiAnalysis).
+        const summary = a.summary || a.nutritional_summary;
+        if (summary?.calories) return sum + Math.round(summary.calories * mult);
         return sum + Math.round((a.items || []).reduce((s, item) => s + (item.calories || item.estimated_calories || 0), 0) * mult);
       } catch { return sum; }
     }, 0);

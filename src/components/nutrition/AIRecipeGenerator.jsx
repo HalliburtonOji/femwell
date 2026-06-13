@@ -2,6 +2,8 @@ import { useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { motion, AnimatePresence } from "framer-motion";
 import { Sparkles, Loader2, X, ChefHat, CalendarDays, Plus, CheckCircle, Copy, BookmarkPlus, ChevronDown, ChevronUp } from "lucide-react";
+import { toast } from "sonner";
+import { withTimeout } from "@/utils/safeEntity";
 
 const WELLNESS_GOALS = [
   { id: "energy",     label: "Boost Energy"     },
@@ -354,21 +356,32 @@ export default function AIRecipeGenerator({ user, planGoal, plan, setPlan, onSav
     setGenerating(true);
     setResult(null);
     setError(null);
-    const res = await base44.functions.invoke("generateMealPlan", {
-      mode,
-      wellness_goal: goal || undefined,
-      ingredients,
-      usual_meals: usualMeals,
-      duration_days: duration,
-    });
-    if (res.data?.error) { setError(res.data.error); }
-    else { setResult(res.data); }
+    try {
+      const res = await withTimeout(base44.functions.invoke("generateMealPlan", {
+        mode,
+        wellness_goal: goal || undefined,
+        ingredients,
+        usual_meals: usualMeals,
+        duration_days: duration,
+      }), 18000, mode === "recipe" ? "recipe" : "meal plan");
+      if (res.data?.error) { setError(res.data.error); }
+      else { setResult(res.data); }
+    } catch (e) {
+      console.error(e);
+      setError("Couldn't generate just now. Please try again.");
+    }
     setGenerating(false);
   };
 
   const handleSaveTemplate = async (name) => {
-    await base44.entities.MealTemplates.create({ user_id: user.id, title: name, default_meal_type: "lunch" });
-    if (onSaveTemplate) onSaveTemplate();
+    try {
+      await withTimeout(base44.entities.MealTemplates.create({ user_id: user.id, title: name, default_meal_type: "lunch" }), 6000, "save");
+      if (onSaveTemplate) onSaveTemplate();
+      toast.success("Saved to favourites");
+    } catch (e) {
+      console.error(e);
+      toast.error("Couldn't save — try again");
+    }
   };
 
   const handleSaveMealPlan = async (mealPlan) => {
@@ -382,12 +395,18 @@ export default function AIRecipeGenerator({ user, planGoal, plan, setPlan, onSav
       });
     });
     const shoppingList = mealPlan.shopping_list || [];
-    const updated = await base44.entities.MealPlans.update(plan.id, {
-      plan_json: JSON.stringify(planData),
-      shopping_list_json: JSON.stringify(shoppingList),
-      wellness_goal: goal || undefined,
-    });
-    setPlan(updated);
+    try {
+      const updated = await withTimeout(base44.entities.MealPlans.update(plan.id, {
+        plan_json: JSON.stringify(planData),
+        shopping_list_json: JSON.stringify(shoppingList),
+        wellness_goal: goal || undefined,
+      }), 6000, "save");
+      setPlan(updated);
+      toast.success("Saved to your plan");
+    } catch (e) {
+      console.error(e);
+      toast.error("Couldn't save — try again");
+    }
   };
 
   const QUICK_INGREDIENTS = ["chicken", "eggs", "oats", "spinach", "sweet potato", "salmon", "lentils", "chickpeas", "avocado", "banana", "Greek yoghurt", "brown rice", "broccoli", "tofu"];

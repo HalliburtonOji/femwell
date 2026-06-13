@@ -3,6 +3,7 @@ import { base44 } from "@/api/base44Client";
 import { motion } from "framer-motion";
 import { Loader2, X, CalendarDays, Plus, CheckCircle, Copy, BookmarkPlus } from "lucide-react";
 import { format, startOfWeek } from "date-fns";
+import { withTimeout } from "@/utils/safeEntity";
 
 const WELLNESS_GOALS = [
   { id: "energy",    label: "Energy"          },
@@ -242,16 +243,21 @@ export default function MealPlanGeneratorTab({ user, nutritionProfile }) {
 
   const generate = async () => {
     setGenerating(true); setResult(null); setSaved(false); setError(null);
-    const res = await base44.functions.invoke("generateMealPlan", {
-      mode: "meal_plan", wellness_goal: goal || undefined,
-      ingredients, usual_meals: usualMeals,
-      duration_days: duration, dietary_preferences: dietary,
-      included_meal_types: includedMeals,
-      calorie_target: nutritionProfile?.calories_target,
-      protein_target: nutritionProfile?.protein_target_g,
-    });
-    if (res.data?.error) setError(res.data.error);
-    else setResult(res.data);
+    try {
+      const res = await withTimeout(base44.functions.invoke("generateMealPlan", {
+        mode: "meal_plan", wellness_goal: goal || undefined,
+        ingredients, usual_meals: usualMeals,
+        duration_days: duration, dietary_preferences: dietary,
+        included_meal_types: includedMeals,
+        calorie_target: nutritionProfile?.calories_target,
+        protein_target: nutritionProfile?.protein_target_g,
+      }), 18000, "meal plan");
+      if (res.data?.error) setError(res.data.error);
+      else setResult(res.data);
+    } catch (e) {
+      console.error(e);
+      setError("Couldn't generate your plan just now. Please try again.");
+    }
     setGenerating(false);
   };
 
@@ -273,43 +279,43 @@ export default function MealPlanGeneratorTab({ user, nutritionProfile }) {
     const existing = await base44.entities.MealPlans.filter({ user_id: user.id, week_start: weekStart });
     let planId;
     if (existing[0]) {
-      const updated = await base44.entities.MealPlans.update(existing[0].id, {
+      const updated = await withTimeout(base44.entities.MealPlans.update(existing[0].id, {
         plan_days,
         wellness_goal: goal || undefined, is_active: true,
         updated_at: new Date().toISOString(),
-      });
+      }), 6000, "save");
       planId = updated.id;
     } else {
-      const created = await base44.entities.MealPlans.create({
+      const created = await withTimeout(base44.entities.MealPlans.create({
         user_id: user.id, week_start: weekStart,
         plan_days,
         wellness_goal: goal || undefined, is_active: true,
         created_at: new Date().toISOString(),
-      });
+      }), 6000, "save");
       planId = created.id;
     }
     const shoppingItems = mealPlan.shopping_list || [];
     if (shoppingItems.length > 0) {
       let categorized = shoppingItems.map(i => ({ ingredient: i, category: "Other", quantity: "" }));
       try {
-        const catRes = await base44.integrations.Core.InvokeLLM({
+        const catRes = await withTimeout(base44.integrations.Core.InvokeLLM({
           prompt: `Categorize these grocery items into: Produce, Dairy & Eggs, Meat & Seafood, Pantry, Frozen, Bakery, Beverages, Snacks, Other.
 Items: ${shoppingItems.join(", ")}
 Return JSON: {"items": [{"ingredient": "name", "category": "CategoryName", "quantity": "estimated amount or empty"}]}`,
           response_json_schema: { type: "object", properties: { items: { type: "array", items: { type: "object", properties: { ingredient: { type: "string" }, category: { type: "string" }, quantity: { type: "string" } } } } } }
-        });
+        }), 18000, "categorisation");
         if (catRes.items?.length) categorized = catRes.items;
       } catch {}
       const oldItems = await base44.entities.ShoppingList.filter({ user_id: user.id, week_start: weekStart, source: "meal_plan" });
-      await Promise.all(oldItems.map(i => base44.entities.ShoppingList.delete(i.id)));
-      await base44.entities.ShoppingList.bulkCreate(
+      await withTimeout(Promise.all(oldItems.map(i => base44.entities.ShoppingList.delete(i.id))), 6000, "save");
+      await withTimeout(base44.entities.ShoppingList.bulkCreate(
         categorized.map(ci => ({
           user_id: user.id, week_start: weekStart,
           ingredient_name: ci.ingredient, quantity_text: ci.quantity || "",
           category: SHOPPING_CATEGORIES.includes(ci.category) ? ci.category : "Other",
           is_checked: false, source: "meal_plan", meal_plan_id: planId,
         }))
-      );
+      ), 6000, "save");
     }
     setSaved(true);
     } catch (e) {

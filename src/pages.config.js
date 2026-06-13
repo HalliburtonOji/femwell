@@ -113,6 +113,14 @@ import NutritionDemo2 from './pages/NutritionDemo2';
 import NutritionDemo3 from './pages/NutritionDemo3';
 import NutritionDemo4 from './pages/NutritionDemo4';
 import NutritionDemo5 from './pages/NutritionDemo5';
+// NutritionHub = the REAL new Nutrition page (Daily Hub + Hero Card Slider hybrid,
+// wired to real entities, reuses the hardened nutrition components). Lives at
+// /NutritionHub for live-verify; once verified it replaces the "Nutrition" route.
+import NutritionHub from './pages/NutritionHub';
+// Journal + Community design-uplift PREVIEWS (richer component language from the
+// nutrition demos, identity preserved). Preview routes only — live pages untouched.
+import JournalRedesign1 from './pages/JournalRedesign1';
+import CommunityRedesign1 from './pages/CommunityRedesign1';
 // Sprint 10 — Partner Sync hub (user's share-code page). The
 // matching public /partner?code=… read-only view (Partner.jsx) is
 // wired separately in App.jsx OUTSIDE this PAGES map so it can run
@@ -182,6 +190,9 @@ export const PAGES = {
     "NutritionDemo3": NutritionDemo3,
     "NutritionDemo4": NutritionDemo4,
     "NutritionDemo5": NutritionDemo5,
+    "NutritionHub": NutritionHub,
+    "JournalRedesign1": JournalRedesign1,
+    "CommunityRedesign1": CommunityRedesign1,
     // HealthDashboard intentionally NOT registered — see import comment above.
     // "HealthDashboard": HealthDashboard,
 }
