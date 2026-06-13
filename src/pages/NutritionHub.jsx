@@ -37,7 +37,9 @@ import NutritionPlanTab from "../components/nutrition/NutritionPlanTab";
 import NutritionProgressTab from "../components/nutrition/NutritionProgressTab";
 import NutritionInsightsTab from "../components/nutrition/NutritionInsightsTab";
 import RecipeGeneratorTab from "../components/nutrition/RecipeGeneratorTab";
-import MealPlanGeneratorTab from "../components/nutrition/MealPlanGeneratorTab";
+// MealPlanGeneratorTab + NutritionPlanTab remain in the repo as unrouted fallbacks;
+// the live "mealgen" surface is now the UnifiedMealPlanTab (manual + AI = one plan).
+import UnifiedMealPlanTab from "../components/nutrition/UnifiedMealPlanTab";
 import ShoppingListTab from "../components/nutrition/ShoppingListTab";
 
 const COL = 430;     // phone column (matches NutritionDemo1 — bigger cards)
@@ -312,7 +314,7 @@ export default function NutritionHub() {
       case "today":    return <NutritionTodayTab user={user} profile={profile} nutritionProfile={nutritionProfile} dayKey={dayKey} checkin={checkin} />;
       case "plan":     return <NutritionPlanTab user={user} nutritionProfile={nutritionProfile} />;
       case "recipes":  return <RecipeGeneratorTab user={user} />;
-      case "mealgen":  return <MealPlanGeneratorTab user={user} nutritionProfile={nutritionProfile} />;
+      case "mealgen":  return <UnifiedMealPlanTab user={user} profile={profile} nutritionProfile={nutritionProfile} />;
       case "shopping": return <ShoppingListTab user={user} />;
       case "progress": return <NutritionProgressTab user={user} nutritionProfile={nutritionProfile} onProfileUpdated={loadNutritionProfile} />;
       case "insights": return <NutritionInsightsTab user={user} profile={profile} />;
@@ -619,29 +621,55 @@ function RecipesCard({ savedRecipes }) {
   );
 }
 
-// ── AI PLAN · the real week scaffold if a MealPlan exists, else honest empty ──
+// ── AI PLAN · the REAL week scaffold from the unified plan (plan_days), a few
+// days' B/L/D inline. Reads the live MealPlans.plan_days shape the UnifiedMealPlanTab
+// writes ({day, breakfast:[str], lunch:[str], dinner:[str], snack:[str]}), with a
+// fallback to the legacy generator shape (days[].meals[].name) so old rows still show.
+const DOW_SHORT = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 function MealgenCard({ mealPlan }) {
-  const days = (mealPlan?.days || []).filter(Boolean);
+  // normalise either shape → [{ label, breakfast, lunch, dinner }]
+  const cellName = (v) => (Array.isArray(v) ? (v[0] || "") : (typeof v === "string" ? v : (v?.name || "")));
+  let rows = [];
+  const planDays = (mealPlan?.plan_days || []).filter(Boolean);
+  if (planDays.length > 0) {
+    rows = planDays
+      .filter((d) => typeof d?.day === "number" && (d.breakfast?.length || d.lunch?.length || d.dinner?.length || d.snack?.length))
+      .sort((a, b) => a.day - b.day)
+      .map((d) => ({
+        label: DOW_SHORT[d.day] || `D${d.day + 1}`,
+        breakfast: cellName(d.breakfast), lunch: cellName(d.lunch), dinner: cellName(d.dinner),
+      }));
+  } else if (Array.isArray(mealPlan?.days)) {
+    rows = mealPlan.days.filter(Boolean).map((d, i) => ({
+      label: (d.day_label || `D${d.day_number || i + 1}`).slice(0, 3),
+      breakfast: cellName(d.meals?.breakfast), lunch: cellName(d.meals?.lunch), dinner: cellName(d.meals?.dinner),
+    }));
+  }
+  const lockedCount = (mealPlan?.locked_cells || []).length;
   return (
     <div style={{ display: "flex", flexDirection: "column", flex: 1 }}>
       <Script size={26} style={{ marginBottom: 2 }}>A gentle week</Script>
       <Hand size={14} color={T.muted} style={{ marginBottom: 12 }}>
-        {mealPlan?.plan_name ? mealPlan.plan_name : "A soft week of meals, built around your stage."}
+        {mealPlan?.plan_name
+          ? mealPlan.plan_name
+          : lockedCount > 0
+            ? `${lockedCount} meal${lockedCount === 1 ? "" : "s"} pinned — the rest stays open.`
+            : "One plan — edit, lock, and regenerate the rest."}
       </Hand>
 
-      {days.length > 0 ? (
+      {rows.length > 0 ? (
         <div style={{ display: "grid", gridTemplateColumns: "30px 1fr", gap: "0 8px" }}>
-          {days.slice(0, 5).map((d, i) => (
+          {rows.slice(0, 5).map((d, i) => (
             <div key={i} style={{ display: "contents" }}>
               <div style={{ fontFamily: UI, fontSize: 10, fontWeight: 700, color: T.gold, letterSpacing: 0.5, textTransform: "uppercase", paddingTop: 9, borderTop: `1px solid ${T.paperDeep}` }}>
-                {(d.day_label || `D${d.day_number || i + 1}`).slice(0, 3)}
+                {d.label}
               </div>
               <div style={{ paddingTop: 9, paddingBottom: 9, borderTop: `1px solid ${T.paperDeep}` }}>
-                {[["B", d.meals?.breakfast], ["L", d.meals?.lunch], ["D", d.meals?.dinner]].map(([slot, meal]) => (
+                {[["B", d.breakfast], ["L", d.lunch], ["D", d.dinner]].map(([slot, name]) => (
                   <div key={slot} style={{ display: "flex", gap: 7, alignItems: "baseline", marginBottom: 3 }}>
                     <span style={{ fontFamily: UI, fontSize: 9, fontWeight: 700, color: T.muted, width: 12 }}>{slot}</span>
-                    <span style={{ fontFamily: SERIF, fontSize: 12.5, color: meal?.name ? T.ink : T.muted, lineHeight: 1.2 }}>
-                      {meal?.name || "—"}
+                    <span style={{ fontFamily: SERIF, fontSize: 12.5, color: name ? T.ink : T.muted, lineHeight: 1.2 }}>
+                      {name || "—"}
                     </span>
                   </div>
                 ))}
@@ -650,7 +678,7 @@ function MealgenCard({ mealPlan }) {
           ))}
         </div>
       ) : (
-        <Empty>No plan generated this week yet. Open AI Plan to create a gentle few days around your stage and what you fancy — it lands here and feeds your shopping list.</Empty>
+        <Empty>No plan this week yet. Open AI Plan to build a gentle week — edit cells by hand, lock the ones you love, and regenerate the rest around your stage.</Empty>
       )}
     </div>
   );
