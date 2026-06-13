@@ -1,6 +1,13 @@
 # FEMWELL — CANONICAL STATUS INDEX (read first · updated 2026-06-12)
 **This file is the single source of truth AND the index to every plan doc. If anything else disagrees, this wins.** (The long ship-log history continues below the index.)
 
+## 🧩 NUTRITION COMBINED LAYOUT RESTORED + LOG-GRID CARD + JUMP-TO SWITCHER (2026-06-13) — live `index-XguCsmWL.js` · commit `ffd9e8c`
+Reconciled Wave-1's overcorrection per Halli's 2 screenshots (per-feature logic ALL kept). SCREENSHOT-VERIFIED on authed Chrome @390px:
+- **(1) Combined arrangement** (`nutrition-11-combined-redlogger-and-logcard.png`): greeting+day-stepper → prominent full-width **RED "LOG A MEAL"** header (opens UnifiedLogger) → big Demo-1 slider directly beneath. Dropped only the glance/Jess/suggested clutter (NOT the whole preamble).
+- **(2) First card = Demo1 LOG GRID** (same screenshot): "Add a meal / In seconds — tap how you'd like to log" + 3-col grid of 6 tiles (Search foods·Recents·Favourites / Snap a photo·Say it·Scan barcode) + "RECENTS — one tap to re-add" real recents chips + "+ Add a recent". New `log` surface at index 0; Today card now 2nd (redundant red button removed). Tiles open the real UnifiedLogger; recents chips re-log for real (guarded).
+- **(3) Jump-to switcher** (`nutrition-12-jump-to-switcher.png`): new `src/components/nutrition/NutritionHubSheet.jsx` mirroring JournalHubSheet/CommunityHubSheet — "Your Nutrition / Jump to" + 2-col destination grid (Log/Today/My Plan/Recipes/AI Plan/Shop/Progress/Insights); LayoutGrid "Jump to" header trigger → opens surface sheets. Matches the universal app pattern.
+- Deploy: bundle `index-nUiQ80ON.js` → **`index-XguCsmWL.js`**. Build+eslint green. Per-feature logic (UnifiedLogger/MealPlan/Recipes/Shopping/Progress/Insights/photo-vision) untouched.
+
 ## ✅ NUTRITION PER-FEATURE REBUILD COMPLETE — Shopping + Progress + Insights + Women's layer SHIPPED (2026-06-13) — live `index-nUiQ80ON.js` · commit `cc60fc6`
 Final 3 components, wired into the hub (old tabs kept unrouted), all real-data/guarded/screenshot-proven:
 - **SHOPPING** (UnifiedShoppingTab): aisle-grouped list built from the real MealPlans plan via a keyword ingredient dictionary (not naive split) + unit-aware merge + PANTRY set-subtract + opt-in £ budget estimate/cheaper-swaps; non-destructive re-sync. Screenshot `nutrition-8-shopping-rebuilt.png`.
