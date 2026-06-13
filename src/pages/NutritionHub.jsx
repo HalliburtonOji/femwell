@@ -21,10 +21,10 @@
 // glances not scoreboards, Jess present, phone-first.
 import { useState, useEffect, useRef, useCallback } from "react";
 import { base44 } from "@/api/base44Client";
-import { format } from "date-fns";
+import { format, startOfWeek } from "date-fns";
 import {
   UtensilsCrossed, Droplet, Target, BookOpen, CalendarDays,
-  ShoppingBasket, TrendingUp, Sparkles, ChevronLeft, ChevronRight, Leaf,
+  ShoppingBasket, TrendingUp, Sparkles, ChevronLeft, ChevronRight, Leaf, Plus,
 } from "lucide-react";
 import {
   T, UI, SERIF, Eyebrow, Rule, Script, Hand, InkFilter, useEditorialFonts, PAPER_BG,
@@ -76,6 +76,57 @@ function jessLine(profile) {
   return "However today went, the next plate is a fresh start. One nourishing thing is plenty.";
 }
 
+// Stage-aware micronutrient NUDGES (qualitative, never targets/numbers). These are
+// the foods-and-why the stage quietly benefits from — drawn from the real life_stage.
+function stageNudges(profile) {
+  const stage = profile?.life_stage || profile?.stage;
+  const byStage = {
+    perimenopause: [
+      { key: "iron",    label: "Iron",    foods: "lentils · leafy greens · red meat", why: "heavier cycles can dip your stores" },
+      { key: "protein", label: "Protein", foods: "eggs · fish · beans",                why: "steadies energy through the swings" },
+      { key: "calcium", label: "Calcium", foods: "yoghurt · tinned sardines · tofu",   why: "bones need a little more from here" },
+    ],
+    menopause: [
+      { key: "calcium", label: "Calcium", foods: "dairy · fortified plant milk · greens", why: "protective as oestrogen settles" },
+      { key: "protein", label: "Protein", foods: "fish · eggs · pulses",                  why: "helps hold onto muscle" },
+      { key: "fibre",   label: "Fibre",   foods: "oats · beans · wholegrains",            why: "kind to digestion and heart" },
+    ],
+    pregnant: [
+      { key: "iron",   label: "Iron",   foods: "red meat · lentils · spinach", why: "your blood volume is rising" },
+      { key: "calcium",label: "Calcium",foods: "milk · yoghurt · cheese",      why: "building baby's bones" },
+      { key: "fibre",  label: "Fibre",  foods: "fruit · veg · wholegrains",    why: "eases the slower digestion" },
+    ],
+    postpartum: [
+      { key: "iron",    label: "Iron",    foods: "red meat · lentils · greens",  why: "replenishing after birth" },
+      { key: "protein", label: "Protein", foods: "eggs · chicken · beans",       why: "for recovery and feeding" },
+      { key: "fibre",   label: "Fibre",   foods: "oats · fruit · wholegrains",   why: "gentle on a healing gut" },
+    ],
+    ttc: [
+      { key: "iron",   label: "Iron",        foods: "lentils · greens · red meat", why: "supports a regular cycle" },
+      { key: "fats",   label: "Healthy fats",foods: "avocado · olive oil · oily fish", why: "quietly doing a lot this season" },
+      { key: "fibre",  label: "Fibre",       foods: "wholegrains · beans · fruit",  why: "helps hormones clear well" },
+    ],
+  };
+  return byStage[stage] || [
+    { key: "protein", label: "Protein", foods: "eggs · fish · beans",        why: "keeps energy steady" },
+    { key: "fibre",   label: "Fibre",   foods: "oats · veg · wholegrains",   why: "kind to digestion" },
+    { key: "iron",    label: "Iron",    foods: "leafy greens · lentils",     why: "supports energy" },
+  ];
+}
+
+// Human label for a life stage (for the Plan / Insights framing line).
+function stageLabel(profile) {
+  const stage = profile?.life_stage || profile?.stage;
+  const map = {
+    teen: "Teen", reproductive: "Reproductive years", "pre-ttc": "Preparing to conceive",
+    ttc: "Trying to conceive", pregnant: "Pregnancy", "pregnant-t1": "Pregnancy · first trimester",
+    "pregnant-t2": "Pregnancy · second trimester", "pregnant-t3": "Pregnancy · third trimester",
+    postpartum: "Postpartum", perimenopause: "Perimenopause", menopause: "Menopause",
+    "post-menopause": "Post-menopause",
+  };
+  return (stage && map[stage]) || "Your stage";
+}
+
 export default function NutritionHub() {
   useEditorialFonts();
 
@@ -91,6 +142,14 @@ export default function NutritionHub() {
 
   // Home summary (real MealLog + HydrationLog for the selected day)
   const [summary, setSummary] = useState({ kcal: 0, meals: 0, hydrationMl: 0, lastMeal: null });
+  // the selected day's logged meals (real, for the Today card's inline list)
+  const [dayMeals, setDayMeals] = useState([]);
+  // distinct recent meals across history (real, for the "one tap to re-add" chips)
+  const [recents, setRecents] = useState([]);
+  // a saved meal plan + shopping list + saved recipes for the richer cards (real)
+  const [mealPlan, setMealPlan] = useState(null);
+  const [shopItems, setShopItems] = useState([]);
+  const [savedRecipes, setSavedRecipes] = useState([]);
 
   const dayKey = format(selectedDate, "yyyy-MM-dd");
   const isToday = dayKey === format(new Date(), "yyyy-MM-dd");
@@ -119,11 +178,53 @@ export default function NutritionHub() {
     const safeMeals = (meals || []).filter(Boolean);
     const kcal = safeMeals.reduce((sum, m) => sum + (getMealSummary(m).summary?.calories || 0), 0);
     const hydrationMl = (hydration || []).filter(Boolean).reduce((s, l) => s + (l.amount_ml || 0), 0);
-    const lastMeal = [...safeMeals]
-      .sort((a, b) => (a.logged_at || "").localeCompare(b.logged_at || ""))
-      .reverse()
-      .find((m) => m.raw_text)?.raw_text || null;
+    const ordered = [...safeMeals].sort((a, b) => (a.logged_at || "").localeCompare(b.logged_at || ""));
+    const lastMeal = [...ordered].reverse().find((m) => m.raw_text)?.raw_text || null;
     setSummary({ kcal: Math.round(kcal), meals: safeMeals.length, hydrationMl, lastMeal });
+    // the day's logged meals as a calm inline list (slot · title · kcal) — all real
+    setDayMeals(
+      ordered
+        .filter((m) => m.raw_text)
+        .map((m) => ({
+          id: m.id,
+          slot: m.meal_type || "meal",
+          title: m.raw_text,
+          kcal: getMealSummary(m).summary?.calories || 0,
+        }))
+    );
+  }, []);
+
+  // recent distinct meals (real) — deduped by raw_text, newest first, ~6 for chips
+  const loadRecents = useCallback(async (u) => {
+    if (!u) return;
+    const rows = await base44.entities.MealLog
+      .filter({ user_id: u.id }, "-created_date", 12)
+      .catch(() => []);
+    const seen = new Set();
+    const distinct = [];
+    for (const m of (rows || []).filter(Boolean)) {
+      const text = (m.raw_text || "").trim();
+      const key = text.toLowerCase();
+      if (!text || seen.has(key)) continue;
+      seen.add(key);
+      distinct.push({ id: m.id, name: text, kcal: getMealSummary(m).summary?.calories || 0 });
+      if (distinct.length >= 6) break;
+    }
+    setRecents(distinct);
+  }, []);
+
+  // a saved meal plan + its shopping list + saved recipes for the richer cards (real)
+  const loadKitchen = useCallback(async (u) => {
+    if (!u) return;
+    const weekStart = format(startOfWeek(new Date(), { weekStartsOn: 1 }), "yyyy-MM-dd");
+    const [plans, shopping, recipes] = await Promise.all([
+      base44.entities.MealPlans.filter({ user_id: u.id, week_start: weekStart }).catch(() => []),
+      base44.entities.ShoppingList.filter({ user_id: u.id, week_start: weekStart }).catch(() => []),
+      base44.entities.MealTemplates.filter({ user_id: u.id }, "-created_date", 6).catch(() => []),
+    ]);
+    setMealPlan((plans || []).filter(Boolean)[0] || null);
+    setShopItems((shopping || []).filter(Boolean));
+    setSavedRecipes((recipes || []).filter(Boolean));
   }, []);
 
   const loadNutritionProfile = useCallback(async () => {
@@ -148,9 +249,12 @@ export default function NutritionHub() {
         if (profiles[0]) setProfile(profiles[0]);
         if (nutProfiles[0]) setNutritionProfile(nutProfiles[0]);
         if (checkins[0]) setCheckin(checkins[0]);
+        // richer-card data (real, guarded — never blocks the page)
+        loadRecents(u);
+        loadKitchen(u);
         // a new log anywhere → nudge selectedDate so the summary effect re-runs
         try { unsubHydration = base44.entities.HydrationLog.subscribe(() => setSelectedDate((d) => new Date(d))); } catch { /* no-op */ }
-        try { unsubMeals = base44.entities.MealLog.subscribe(() => setSelectedDate((d) => new Date(d))); } catch { /* no-op */ }
+        try { unsubMeals = base44.entities.MealLog.subscribe(() => { setSelectedDate((d) => new Date(d)); loadRecents(u); }); } catch { /* no-op */ }
       } catch (err) {
         console.error("NutritionHub init failed:", err);
       } finally {
@@ -376,10 +480,18 @@ export default function NutritionHub() {
                 <CardSummary
                   surface={s}
                   summary={summary}
+                  dayMeals={dayMeals}
+                  recents={recents}
+                  mealPlan={mealPlan}
+                  shopItems={shopItems}
+                  savedRecipes={savedRecipes}
+                  nutritionProfile={nutritionProfile}
+                  profile={profile}
                   calorieTarget={calorieTarget}
                   hydrationTarget={hydrationTarget}
                   kcalLeft={kcalLeft}
                   jess={jessLine(profile)}
+                  onOpen={setOpenSheet}
                 />
               </SurfaceCard>
             ))}
@@ -437,59 +549,315 @@ function navBtn(disabled) {
   };
 }
 
-// ── per-card rich summary (the "peek" before opening the full surface) ───────
-// REAL numbers for Today; calm framing copy for the rest. No mock figures — the
-// non-Today cards intentionally read as invitations into the real surface.
-function CardSummary({ surface, summary, calorieTarget, hydrationTarget, kcalLeft, jess }) {
-  if (surface.id === "today") {
-    return (
-      <div>
-        <Script size={26} style={{ marginBottom: 2 }}>Today’s plate</Script>
-        <Hand size={14} color={T.muted} style={{ marginBottom: 12 }}>
-          {summary.meals === 0 ? "Nothing logged yet — whenever you’re ready." : `${summary.meals} logged so far.`}
-        </Hand>
+// ── per-card rich summary — each card holds a FULL inline preview of its feature,
+// built ONLY from real data the hub loaded. Missing data → a calm honest empty
+// state, never a mock figure. The bottom sheet stays the "go deeper / edit" layer.
+function CardSummary({
+  surface, summary, dayMeals, recents, mealPlan, shopItems, savedRecipes,
+  nutritionProfile, profile, calorieTarget, hydrationTarget, kcalLeft, jess, onOpen,
+}) {
+  switch (surface.id) {
+    case "today":    return <TodayCard {...{ summary, dayMeals, recents, calorieTarget, hydrationTarget, kcalLeft, onOpen }} />;
+    case "plan":     return <PlanCard {...{ nutritionProfile, profile, calorieTarget }} />;
+    case "recipes":  return <RecipesCard {...{ savedRecipes }} />;
+    case "mealgen":  return <MealgenCard {...{ mealPlan }} />;
+    case "shopping": return <ShoppingCard {...{ shopItems }} />;
+    case "progress": return <ProgressCard {...{ recents, dayMeals, summary }} />;
+    case "insights": return <InsightsCard {...{ jess, profile }} />;
+    default:         return null;
+  }
+}
 
-        <div style={{ display: "grid", gap: 11 }}>
-          <Glance label="Energy" value={`${summary.kcal} of ${calorieTarget} kcal`} v={summary.kcal} guide={calorieTarget} color={T.gold} />
-          <Glance label="Hydration" value={`${summary.hydrationMl} of ${hydrationTarget} ml`} v={summary.hydrationMl} guide={hydrationTarget} color={T.sage} />
-        </div>
+// ── TODAY · the plate + logged meals + recents to re-add (all real) ──────────
+function TodayCard({ summary, dayMeals, recents, calorieTarget, hydrationTarget, kcalLeft, onOpen }) {
+  return (
+    <div style={{ display: "flex", flexDirection: "column", flex: 1 }}>
+      <Script size={26} style={{ marginBottom: 2 }}>Today’s plate</Script>
+      <Hand size={14} color={T.muted} style={{ marginBottom: 12 }}>
+        {summary.meals === 0
+          ? "Nothing logged yet — whenever you’re ready."
+          : `${summary.meals} logged · ${kcalLeft} kcal of gentle room left.`}
+      </Hand>
 
-        {summary.lastMeal ? (
-          <div style={{ marginTop: 14 }}>
-            <Eyebrow mb={6}>Last logged</Eyebrow>
-            <div style={{ fontFamily: SERIF, fontSize: 14, color: T.ink, lineHeight: 1.3 }}>{summary.lastMeal}</div>
+      <div style={{ display: "grid", gap: 11, marginBottom: 14 }}>
+        <Glance label="Energy" value={`${summary.kcal} of ${calorieTarget} kcal`} v={summary.kcal} guide={calorieTarget} color={T.gold} />
+        <Glance label="Hydration" value={`${summary.hydrationMl} of ${hydrationTarget} ml`} v={summary.hydrationMl} guide={hydrationTarget} color={T.sage} />
+      </div>
+
+      <Eyebrow mb={8}>Logged today</Eyebrow>
+      <div style={{ display: "grid", gap: 7, marginBottom: 14 }}>
+        {dayMeals.length === 0 ? (
+          <div style={{ fontFamily: SERIF, fontSize: 13, color: T.muted, fontStyle: "italic" }}>
+            A fresh plate — nothing logged yet.
           </div>
         ) : (
-          <div style={{ marginTop: 14, fontFamily: UI, fontSize: 11, color: T.muted }}>
-            {kcalLeft} kcal of gentle room left today.
+          dayMeals.slice(0, 4).map((m) => (
+            <div key={m.id} style={{ display: "flex", gap: 10, alignItems: "baseline" }}>
+              <span style={{ fontFamily: UI, fontSize: 9, color: T.muted, fontWeight: 700, width: 52, textTransform: "uppercase", flexShrink: 0 }}>{m.slot}</span>
+              <span style={{ flex: 1, fontFamily: SERIF, fontSize: 13.5, color: T.ink, lineHeight: 1.25, minWidth: 0 }}>{m.title}</span>
+              {m.kcal ? <span style={{ fontFamily: UI, fontSize: 10, color: T.muted, flexShrink: 0 }}>{m.kcal} kcal</span> : null}
+            </div>
+          ))
+        )}
+      </div>
+
+      <div style={{ marginTop: "auto" }}>
+        {recents.length > 0 ? (
+          <>
+            <Eyebrow mb={8}>Recents — one tap to re-add</Eyebrow>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 7 }}>
+              {recents.slice(0, 5).map((r) => (
+                <button key={r.id} onClick={() => onOpen("today")} style={chipBtn}>
+                  <Plus size={11} color={T.crimson} />
+                  <span style={{ fontFamily: SERIF, fontSize: 12.5, color: T.ink }}>{r.name}</span>
+                </button>
+              ))}
+            </div>
+          </>
+        ) : (
+          <div style={{ fontFamily: UI, fontSize: 11, color: T.muted }}>
+            Log a meal and your recents will appear here for one-tap re-adding.
           </div>
         )}
       </div>
-    );
-  }
-
-  // framing-only cards (open the real surface for the detail)
-  const blurbs = {
-    plan:     { line: "What your body’s asking for this stage — guides, not caps.", icon: Target },
-    recipes:  { line: "Saved and AI recipes, sorted by what’s already in your kitchen.", icon: BookOpen },
-    mealgen:  { line: "A gentle week, generated around your stage and your week.", icon: CalendarDays },
-    shopping: { line: "Everything your plan needs, sorted by aisle and ready to tick off.", icon: ShoppingBasket },
-    progress: { line: "Patterns across your fortnight — a soft line, never a score.", icon: TrendingUp },
-    insights: { line: jess, icon: Sparkles },
-  };
-  const b = blurbs[surface.id] || { line: "", icon: Sparkles };
-  const Icon = b.icon;
-  return (
-    <div>
-      <div style={{ width: 40, height: 40, borderRadius: 12, background: T.paper, border: `1px solid ${T.paperDeep}`, display: "grid", placeItems: "center", marginBottom: 12 }}>
-        <Icon size={19} color={T.ink} />
-      </div>
-      <Script size={26} style={{ marginBottom: 6 }}>{surface.label}</Script>
-      <Hand size={15} color={T.muted}>{b.line}</Hand>
     </div>
   );
 }
 
+// ── PLAN · the real targets + stage framing (guides, never caps) ─────────────
+function PlanCard({ nutritionProfile, profile, calorieTarget }) {
+  const np = nutritionProfile || {};
+  const targets = [
+    np.protein_target_g ? { label: "Protein", guide: `${np.protein_target_g}g`, why: "steadies energy and holds muscle" } : null,
+    np.carbs_target_g   ? { label: "Carbs",   guide: `${np.carbs_target_g}g`,   why: "your gentle daily fuel" } : null,
+    np.fat_target_g     ? { label: "Healthy fats", guide: `${np.fat_target_g}g`, why: "for hormones and absorption" } : null,
+    np.hydration_target_ml ? { label: "Water", guide: `${np.hydration_target_ml}ml`, why: "small and often beats one big glass" } : null,
+  ].filter(Boolean);
+  return (
+    <div style={{ display: "flex", flexDirection: "column", flex: 1 }}>
+      <Script size={24} style={{ marginBottom: 2 }}>What your body’s asking for</Script>
+      <Hand size={14} color={T.muted} style={{ marginBottom: 12 }}>
+        {stageLabel(profile)} — a guide for the week, never a cap.
+      </Hand>
+
+      <div style={{ display: "flex", alignItems: "baseline", gap: 8, marginBottom: 14 }}>
+        <span style={{ fontFamily: SERIF, fontSize: 30, color: T.ink, fontWeight: 600 }}>{calorieTarget}</span>
+        <span style={{ fontFamily: UI, fontSize: 11, color: T.muted, letterSpacing: 0.5 }}>kcal · gentle energy guide</span>
+      </div>
+
+      {targets.length > 0 ? (
+        <div style={{ display: "grid", gap: 12 }}>
+          {targets.map((t) => (
+            <div key={t.label}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
+                <span style={{ fontFamily: SERIF, fontSize: 15, color: T.ink, fontWeight: 600 }}>{t.label}</span>
+                <span style={{ fontFamily: UI, fontSize: 11, color: T.gold, fontWeight: 700 }}>{t.guide}</span>
+              </div>
+              <div style={{ fontFamily: SERIF, fontSize: 12.5, color: T.muted, fontStyle: "italic", marginTop: 2 }}>{t.why}</div>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <Empty>Set your gentle targets in the full plan and they’ll show here — protein, carbs, fats and water for your stage.</Empty>
+      )}
+    </div>
+  );
+}
+
+// ── RECIPES · saved recipe titles if any, else an honest invitation ──────────
+function RecipesCard({ savedRecipes }) {
+  return (
+    <div style={{ display: "flex", flexDirection: "column", flex: 1 }}>
+      <Script size={26} style={{ marginBottom: 2 }}>Cook what you have</Script>
+      <Hand size={14} color={T.muted} style={{ marginBottom: 12 }}>Your saved recipes — and new ones from what’s already in.</Hand>
+
+      {savedRecipes.length > 0 ? (
+        <div style={{ display: "grid", gap: 9 }}>
+          {savedRecipes.slice(0, 5).map((r) => (
+            <div key={r.id} style={{ borderLeft: `2px solid ${T.sage}`, paddingLeft: 11 }}>
+              <div style={{ fontFamily: SERIF, fontSize: 14.5, color: T.ink, fontWeight: 600, lineHeight: 1.2 }}>
+                {r.title || r.name || "Saved recipe"}
+              </div>
+              {r.default_meal_type ? (
+                <div style={{ fontFamily: UI, fontSize: 9.5, color: T.muted, textTransform: "uppercase", letterSpacing: 0.5, marginTop: 2 }}>
+                  {r.default_meal_type}
+                </div>
+              ) : null}
+            </div>
+          ))}
+        </div>
+      ) : (
+        <Empty>No saved recipes yet. Open Recipes to generate one from what’s in your kitchen, or save a favourite — they’ll gather here.</Empty>
+      )}
+    </div>
+  );
+}
+
+// ── AI PLAN · the real week scaffold if a MealPlan exists, else honest empty ──
+function MealgenCard({ mealPlan }) {
+  const days = (mealPlan?.days || []).filter(Boolean);
+  return (
+    <div style={{ display: "flex", flexDirection: "column", flex: 1 }}>
+      <Script size={26} style={{ marginBottom: 2 }}>A gentle week</Script>
+      <Hand size={14} color={T.muted} style={{ marginBottom: 12 }}>
+        {mealPlan?.plan_name ? mealPlan.plan_name : "A soft week of meals, built around your stage."}
+      </Hand>
+
+      {days.length > 0 ? (
+        <div style={{ display: "grid", gridTemplateColumns: "30px 1fr", gap: "0 8px" }}>
+          {days.slice(0, 5).map((d, i) => (
+            <div key={i} style={{ display: "contents" }}>
+              <div style={{ fontFamily: UI, fontSize: 10, fontWeight: 700, color: T.gold, letterSpacing: 0.5, textTransform: "uppercase", paddingTop: 9, borderTop: `1px solid ${T.paperDeep}` }}>
+                {(d.day_label || `D${d.day_number || i + 1}`).slice(0, 3)}
+              </div>
+              <div style={{ paddingTop: 9, paddingBottom: 9, borderTop: `1px solid ${T.paperDeep}` }}>
+                {[["B", d.meals?.breakfast], ["L", d.meals?.lunch], ["D", d.meals?.dinner]].map(([slot, meal]) => (
+                  <div key={slot} style={{ display: "flex", gap: 7, alignItems: "baseline", marginBottom: 3 }}>
+                    <span style={{ fontFamily: UI, fontSize: 9, fontWeight: 700, color: T.muted, width: 12 }}>{slot}</span>
+                    <span style={{ fontFamily: SERIF, fontSize: 12.5, color: meal?.name ? T.ink : T.muted, lineHeight: 1.2 }}>
+                      {meal?.name || "—"}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <Empty>No plan generated this week yet. Open AI Plan to create a gentle few days around your stage and what you fancy — it lands here and feeds your shopping list.</Empty>
+      )}
+    </div>
+  );
+}
+
+// ── SHOP · real item counts by aisle if present, else honest empty ───────────
+function ShoppingCard({ shopItems }) {
+  const items = (shopItems || []).filter(Boolean);
+  const open = items.filter((i) => !i.is_checked);
+  const byAisle = {};
+  for (const it of open) {
+    const aisle = it.category || "Other";
+    byAisle[aisle] = (byAisle[aisle] || 0) + 1;
+  }
+  const aisles = Object.entries(byAisle).sort((a, b) => b[1] - a[1]);
+  return (
+    <div style={{ display: "flex", flexDirection: "column", flex: 1 }}>
+      <Script size={26} style={{ marginBottom: 2 }}>The list</Script>
+      <Hand size={14} color={T.muted} style={{ marginBottom: 12 }}>Sorted by aisle, straight from your plan.</Hand>
+
+      {items.length > 0 ? (
+        <>
+          <div style={{ display: "flex", gap: 18, marginBottom: 14 }}>
+            <div>
+              <div style={{ fontFamily: SERIF, fontSize: 20, color: T.ink, fontWeight: 600 }}>{open.length}</div>
+              <div style={{ fontFamily: UI, fontSize: 9.5, color: T.muted, textTransform: "uppercase", letterSpacing: 0.5 }}>to get</div>
+            </div>
+            <div>
+              <div style={{ fontFamily: SERIF, fontSize: 20, color: T.ink, fontWeight: 600 }}>{items.length - open.length}</div>
+              <div style={{ fontFamily: UI, fontSize: 9.5, color: T.muted, textTransform: "uppercase", letterSpacing: 0.5 }}>ticked</div>
+            </div>
+            <div>
+              <div style={{ fontFamily: SERIF, fontSize: 20, color: T.ink, fontWeight: 600 }}>{aisles.length}</div>
+              <div style={{ fontFamily: UI, fontSize: 9.5, color: T.muted, textTransform: "uppercase", letterSpacing: 0.5 }}>aisles</div>
+            </div>
+          </div>
+          <div style={{ display: "grid", gap: 8 }}>
+            {aisles.slice(0, 6).map(([aisle, n]) => (
+              <div key={aisle} style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", borderTop: `1px solid ${T.paperDeep}`, paddingTop: 7 }}>
+                <span style={{ fontFamily: SERIF, fontSize: 14, color: T.ink }}>{aisle}</span>
+                <span style={{ fontFamily: UI, fontSize: 11, color: T.muted }}>{n} item{n === 1 ? "" : "s"}</span>
+              </div>
+            ))}
+          </div>
+        </>
+      ) : (
+        <Empty>Your list is empty. Generate a meal plan and sync it, or add items in the full list — they’ll gather here sorted by aisle.</Empty>
+      )}
+    </div>
+  );
+}
+
+// ── PROGRESS · a gentle real sparkline + soft patterns from logged meals ─────
+function ProgressCard({ recents, dayMeals, summary }) {
+  // a soft real signal: kcal across the meals logged today (patterns, not scores)
+  const series = dayMeals.map((m) => m.kcal).filter((n) => n > 0);
+  const haveSignal = series.length >= 2;
+  return (
+    <div style={{ display: "flex", flexDirection: "column", flex: 1 }}>
+      <Script size={26} style={{ marginBottom: 2 }}>Patterns, not scores</Script>
+      <Hand size={14} color={T.muted} style={{ marginBottom: 12 }}>A soft line across your day — never a grade.</Hand>
+
+      {haveSignal ? (
+        <>
+          <Eyebrow mb={8}>Today’s meals, by energy</Eyebrow>
+          <Sparkline data={series} />
+        </>
+      ) : (
+        <div style={{ marginBottom: 12 }}>
+          <Empty>Once you’ve logged a few meals, a gentle shape of your days appears here — energy, hydration and rhythm, framed as patterns.</Empty>
+        </div>
+      )}
+
+      <div style={{ display: "grid", gap: 10, marginTop: haveSignal ? 16 : 4 }}>
+        <Pattern tone={summary.meals > 0 ? "good" : "soft"} title={summary.meals > 0 ? `${summary.meals} meal${summary.meals === 1 ? "" : "s"} logged today` : "No meals logged today yet"} detail={summary.meals > 0 ? "Showing up is the pattern that matters." : "Whenever you’re ready — one is plenty."} />
+        <Pattern tone={summary.hydrationMl > 0 ? "good" : "soft"} title={summary.hydrationMl > 0 ? `${summary.hydrationMl}ml of water so far` : "No water logged today"} detail={summary.hydrationMl > 0 ? "Little sips through the day add up." : "A glass now is a kind start."} />
+        {recents.length > 0 ? (
+          <Pattern tone="good" title={`${recents.length} go-to meals you return to`} detail="Familiar food is a quiet strength, not a rut." />
+        ) : null}
+      </div>
+    </div>
+  );
+}
+function Pattern({ tone, title, detail }) {
+  return (
+    <div style={{ display: "flex", gap: 10 }}>
+      <span style={{ width: 6, borderRadius: 999, background: tone === "good" ? T.sage : T.gold, flex: "none" }} />
+      <div>
+        <div style={{ fontFamily: SERIF, fontSize: 14.5, color: T.ink, fontWeight: 600, lineHeight: 1.2 }}>{title}</div>
+        <div style={{ fontFamily: SERIF, fontSize: 12.5, color: T.muted, fontStyle: "italic", marginTop: 1 }}>{detail}</div>
+      </div>
+    </div>
+  );
+}
+function Sparkline({ data }) {
+  const w = 320, h = 52, max = Math.max(...data), min = Math.min(...data);
+  const x = (i) => (i / (data.length - 1)) * w;
+  const y = (v) => h - 6 - ((v - min) / (max - min || 1)) * (h - 12);
+  const d = data.map((v, i) => `${i ? "L" : "M"}${x(i).toFixed(1)},${y(v).toFixed(1)}`).join(" ");
+  return (
+    <svg width="100%" viewBox={`0 0 ${w} ${h}`} preserveAspectRatio="none" style={{ display: "block" }} aria-hidden>
+      <path d={d} fill="none" stroke={T.gold} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
+      {data.map((v, i) => <circle key={i} cx={x(i)} cy={y(v)} r={2.4} fill={T.gold} />)}
+    </svg>
+  );
+}
+
+// ── INSIGHTS · Jess's stage line + stage-aware micronutrient nudges (real) ───
+function InsightsCard({ jess, profile }) {
+  const nudges = stageNudges(profile);
+  return (
+    <div style={{ display: "flex", flexDirection: "column", flex: 1 }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
+        <Leaf size={15} color={T.sage} />
+        <Eyebrow color={T.sage}>Jess · {stageLabel(profile)}</Eyebrow>
+      </div>
+      <Hand size={15} color={T.ink} style={{ marginBottom: 14 }}>{jess}</Hand>
+
+      <Eyebrow mb={8}>Gentle nudges for your stage</Eyebrow>
+      <div style={{ display: "grid", gap: 11 }}>
+        {nudges.map((m) => (
+          <div key={m.key} style={{ borderLeft: `2px solid ${T.paperDeep}`, paddingLeft: 11 }}>
+            <div style={{ fontFamily: SERIF, fontSize: 14.5, color: T.ink, fontWeight: 600 }}>{m.label}</div>
+            <div style={{ fontFamily: UI, fontSize: 10.5, color: T.muted, marginTop: 2 }}>{m.foods}</div>
+            <div style={{ fontFamily: SERIF, fontSize: 12.5, color: T.muted, fontStyle: "italic", marginTop: 1 }}>{m.why}</div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ── small shared bits ────────────────────────────────────────────────────────
 function Glance({ label, value, v, guide, color }) {
   return (
     <div>
@@ -501,3 +869,14 @@ function Glance({ label, value, v, guide, color }) {
     </div>
   );
 }
+function Empty({ children }) {
+  return (
+    <div style={{ border: `1px dashed ${T.paperDeep}`, borderRadius: 12, padding: "14px 13px" }}>
+      <div style={{ fontFamily: SERIF, fontSize: 13, color: T.muted, fontStyle: "italic", lineHeight: 1.4 }}>{children}</div>
+    </div>
+  );
+}
+const chipBtn = {
+  display: "inline-flex", alignItems: "center", gap: 6, background: T.wax,
+  border: `1px solid ${T.paperDeep}`, borderRadius: 999, padding: "6px 11px 6px 9px", cursor: "pointer",
+};
