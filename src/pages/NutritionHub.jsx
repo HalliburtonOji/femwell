@@ -41,6 +41,7 @@ import RecipeGeneratorTab from "../components/nutrition/RecipeGeneratorTab";
 // the live "mealgen" surface is now the UnifiedMealPlanTab (manual + AI = one plan).
 import UnifiedMealPlanTab from "../components/nutrition/UnifiedMealPlanTab";
 import ShoppingListTab from "../components/nutrition/ShoppingListTab";
+import UnifiedLogger from "../components/nutrition/UnifiedLogger";
 
 const COL = 430;     // phone column (matches NutritionDemo1 — bigger cards)
 const CARD_W = 365;  // ~85vw — Demo-1-large; next card still peeks at the right edge
@@ -140,6 +141,7 @@ export default function NutritionHub() {
 
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [openSheet, setOpenSheet] = useState(null);   // surface id or null
+  const [openLogger, setOpenLogger] = useState(false); // the UnifiedLogger sheet
   const [active, setActive] = useState(0);            // slider index
 
   // Home summary (real MealLog + HydrationLog for the selected day)
@@ -420,6 +422,7 @@ export default function NutritionHub() {
                   kcalLeft={kcalLeft}
                   jess={jessLine(profile)}
                   onOpen={setOpenSheet}
+                  onLog={() => setOpenLogger(true)}
                 />
               </SurfaceCard>
             ))}
@@ -464,6 +467,17 @@ export default function NutritionHub() {
             {renderSurface(openMeta.id)}
           </HubSheet>
         )}
+
+        {/* ── the UnifiedLogger sheet — the new heart of logging ─────────── */}
+        {openLogger && user && (
+          <HubSheet title="log a meal" eyebrow="Snap · Say · Scan · Search · Recents" onClose={() => setOpenLogger(false)}>
+            <UnifiedLogger
+              user={user}
+              profile={profile}
+              onLogged={() => { loadSummary(user, dayKey); loadRecents(user); }}
+            />
+          </HubSheet>
+        )}
       </div>
     </div>
   );
@@ -482,10 +496,10 @@ function navBtn(disabled) {
 // state, never a mock figure. The bottom sheet stays the "go deeper / edit" layer.
 function CardSummary({
   surface, summary, dayMeals, recents, mealPlan, shopItems, savedRecipes,
-  nutritionProfile, profile, calorieTarget, hydrationTarget, kcalLeft, jess, onOpen,
+  nutritionProfile, profile, calorieTarget, hydrationTarget, kcalLeft, jess, onOpen, onLog,
 }) {
   switch (surface.id) {
-    case "today":    return <TodayCard {...{ summary, dayMeals, recents, calorieTarget, hydrationTarget, kcalLeft, onOpen }} />;
+    case "today":    return <TodayCard {...{ summary, dayMeals, recents, calorieTarget, hydrationTarget, kcalLeft, onLog }} />;
     case "plan":     return <PlanCard {...{ nutritionProfile, profile, calorieTarget }} />;
     case "recipes":  return <RecipesCard {...{ savedRecipes }} />;
     case "mealgen":  return <MealgenCard {...{ mealPlan }} />;
@@ -497,7 +511,7 @@ function CardSummary({
 }
 
 // ── TODAY · the plate + logged meals + recents to re-add (all real) ──────────
-function TodayCard({ summary, dayMeals, recents, calorieTarget, hydrationTarget, kcalLeft, onOpen }) {
+function TodayCard({ summary, dayMeals, recents, calorieTarget, hydrationTarget, kcalLeft, onLog }) {
   return (
     <div style={{ display: "flex", flexDirection: "column", flex: 1 }}>
       <Script size={26} style={{ marginBottom: 2 }}>Today’s plate</Script>
@@ -506,6 +520,16 @@ function TodayCard({ summary, dayMeals, recents, calorieTarget, hydrationTarget,
           ? "Nothing logged yet — whenever you’re ready."
           : `${summary.meals} logged · ${kcalLeft} kcal of gentle room left.`}
       </Hand>
+
+      {/* the primary logging action — opens the UnifiedLogger sheet */}
+      <button onClick={onLog} style={{
+        display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 8,
+        background: T.crimson, color: T.paper, border: "none", borderRadius: 12, padding: "12px 16px",
+        fontFamily: UI, fontSize: 12, fontWeight: 700, letterSpacing: 0.5, textTransform: "uppercase",
+        cursor: "pointer", marginBottom: 14,
+      }}>
+        <Plus size={15} /> Log a meal
+      </button>
 
       <div style={{ display: "grid", gap: 11, marginBottom: 14 }}>
         <Glance label="Energy" value={`${summary.kcal} of ${calorieTarget} kcal`} v={summary.kcal} guide={calorieTarget} color={T.gold} />
@@ -535,7 +559,7 @@ function TodayCard({ summary, dayMeals, recents, calorieTarget, hydrationTarget,
             <Eyebrow mb={8}>Recents — one tap to re-add</Eyebrow>
             <div style={{ display: "flex", flexWrap: "wrap", gap: 7 }}>
               {recents.slice(0, 5).map((r) => (
-                <button key={r.id} onClick={() => onOpen("today")} style={chipBtn}>
+                <button key={r.id} onClick={onLog} style={chipBtn}>
                   <Plus size={11} color={T.crimson} />
                   <span style={{ fontFamily: SERIF, fontSize: 12.5, color: T.ink }}>{r.name}</span>
                 </button>
