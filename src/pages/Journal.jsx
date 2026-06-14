@@ -3,7 +3,7 @@ import { base44 } from "@/api/base44Client";
 import { format, parseISO } from "date-fns";
 import { useNavigate } from "react-router-dom";
 import { computeCycleDay } from "@/hooks/useCycleDay";
-import { Feather, AlignJustify, X, ChevronDown, ChevronUp } from "lucide-react";
+import { Feather, X, ChevronDown, ChevronUp } from "lucide-react";
 import NewEntrySheet from "../components/journal/NewEntrySheet";
 import JournalInsightsTab from "../components/journal/JournalInsightsTab";
 import PromptCarousel from "../components/journal/PromptCarousel";
@@ -23,6 +23,7 @@ import AskForWitnessSheet from "../components/journal/witness/AskForWitnessSheet
 import WitnessInbox from "../components/journal/witness/WitnessInbox";
 import PhaseTwin from "../components/journal/twin/PhaseTwin";
 import JournalHubSheet from "../components/journal/JournalHubSheet";
+import JumpToButton from "@/components/layout/JumpToButton";
 import { collectThreads, entriesInThread } from "../components/journal/threads";
 import JessErrorBoundary from "@/components/jess/JessErrorBoundary";
 import {
@@ -136,19 +137,8 @@ function StickyHeader({ phase, season, cycleDay, onWrite, onOpenHub }) {
             Write
           </span>
         </button>
-        {/* Hub button */}
-        <button
-          onClick={onOpenHub}
-          aria-label="Open journal menu"
-          style={{
-            background: "transparent", border: `1px solid ${T.paperDeep}`,
-            borderRadius: 8, width: 36, height: 36,
-            display: "flex", alignItems: "center", justifyContent: "center",
-            cursor: "pointer", flexShrink: 0,
-          }}
-        >
-          <AlignJustify size={17} style={{ color: T.ink }} />
-        </button>
+        {/* Hub button — shared "Jump to" pill (identical chrome across pages) */}
+        <JumpToButton onClick={onOpenHub} />
       </div>
       {/* Row 2 — season strip */}
       {season && (

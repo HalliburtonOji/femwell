@@ -37,11 +37,11 @@ export default function CommunityHubSheet({ open, onClose, onSelect }) {
       <div
         role="dialog" aria-modal="true" aria-label="Community menu"
         onClick={(e) => e.stopPropagation()}
-        style={{ background: T.paperHi, width: "100%", maxWidth: 460, margin: "0 auto", borderRadius: "18px 18px 0 0", padding: "20px 16px 36px", maxHeight: "82vh", overflowY: "auto", paddingBottom: "calc(36px + env(safe-area-inset-bottom, 0))" }}
+        style={{ background: T.paperHi, width: "100%", borderRadius: "18px 18px 0 0", padding: "20px 16px 36px", maxHeight: "82vh", overflowY: "auto", paddingBottom: "calc(36px + env(safe-area-inset-bottom, 0))" }}
       >
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20, paddingBottom: 14, borderBottom: `1px solid ${T.paperDeep}` }}>
           <div>
-            <div style={{ fontFamily: UI, fontSize: 11, fontWeight: 700, letterSpacing: 1.5, textTransform: "uppercase", color: T.muted, marginBottom: 2 }}>Community</div>
+            <div style={{ fontFamily: UI, fontSize: 11, fontWeight: 700, letterSpacing: 1.5, textTransform: "uppercase", color: T.muted, marginBottom: 2 }}>Your Community</div>
             <div style={{ fontFamily: HAND, fontSize: 22, fontWeight: 700, color: T.ink, textShadow: PRESS }}>Jump to</div>
           </div>
           <button onClick={onClose} aria-label="Close" style={{ background: "transparent", border: "none", cursor: "pointer", color: T.muted, padding: 4, display: "inline-flex" }}>
@@ -53,7 +53,7 @@ export default function CommunityHubSheet({ open, onClose, onSelect }) {
           {AREAS.map((a) => {
             const Ic = a.icon;
             return (
-              <button key={a.id} onClick={() => { onSelect(a.id); onClose(); }} style={{ background: T.paperHi, border: `1px solid ${T.paperDeep}`, borderRadius: 12, padding: "16px 14px", textAlign: "left", cursor: "pointer" }}>
+              <button key={a.id} onClick={() => { onSelect(a.id); onClose(); }} style={{ background: T.paperHi, border: `1px solid ${T.paperDeep}`, borderRadius: 12, padding: "16px 14px", textAlign: "left", cursor: "pointer", transition: "background 0.15s" }}>
                 <div style={{ marginBottom: 8 }}><Ic size={20} style={{ color: T.gold }} /></div>
                 <div style={{ fontFamily: HAND, fontWeight: 700, fontSize: 17, color: T.ink, textShadow: PRESS, marginBottom: 2, lineHeight: 1.2 }}>{a.label}</div>
                 <div style={{ fontFamily: UI, fontSize: 11, color: T.muted, lineHeight: 1.4 }}>{a.sub}</div>

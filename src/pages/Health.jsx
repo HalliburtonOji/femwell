@@ -20,6 +20,7 @@ import { useNavigate } from "react-router-dom";
 import { Circle, CircleDot, RefreshCw, Flower2, Leaf, PlusCircle, Sparkles, Check, Flame } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { useCycleDay } from "@/hooks/useCycleDay";
+import JumpToButton from "@/components/layout/JumpToButton";
 
 // ════════════════════════════════════════════════════════════════════════════
 // TABS
@@ -1272,31 +1273,8 @@ export default function Health() {
               <rect x="6" y="14" width="12" height="8" rx="1" stroke="#F4EDDB" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
             </svg>
           </button>
-          <button
-            onClick={() => setShowLibrary(true)}
-            aria-label="Open letter library"
-            style={{
-              background: "#D4AF37",
-              border: "none",
-              borderRadius: 8,
-              padding: "8px 14px",
-              cursor: "pointer",
-              display: "flex", alignItems: "center", gap: 6,
-              flexShrink: 0,
-            }}
-          >
-            <svg width="16" height="14" viewBox="0 0 16 14" fill="none" aria-hidden="true">
-              <rect x="0" y="0" width="6" height="5" rx="1" fill="#3A2C1A"/>
-              <rect x="10" y="0" width="6" height="5" rx="1" fill="#3A2C1A"/>
-              <rect x="0" y="9" width="6" height="5" rx="1" fill="#3A2C1A"/>
-              <rect x="10" y="9" width="6" height="5" rx="1" fill="#3A2C1A"/>
-            </svg>
-            <span style={{
-              fontSize: 13, fontWeight: 700, color: "#3A2C1A", letterSpacing: 0.3,
-            }}>
-              All letters
-            </span>
-          </button>
+          {/* Shared "Jump to" pill — identical chrome across Journal/Community/Nutrition/Health */}
+          <JumpToButton onClick={() => setShowLibrary(true)} />
         </div>
         {/* Row 2 — phase / day / life stage strip */}
         <div style={{
@@ -1678,14 +1656,38 @@ export default function Health() {
           <div
             onClick={(e) => e.stopPropagation()}
             style={{
-              background: "var(--surface)", width: "100%", borderRadius: "16px 16px 0 0",
-              padding: "24px 16px 40px", maxHeight: "75vh", overflowY: "auto",
+              background: "var(--surface)", width: "100%", borderRadius: "18px 18px 0 0",
+              padding: "20px 16px 36px", maxHeight: "82vh", overflowY: "auto",
             }}
           >
+            {/* Header — shared eyebrow "Your Health" + big "Jump to" (matches the other hub sheets) */}
             <div style={{
-              fontSize: 22, fontWeight: 700, color: "#3A2C1A",
-              marginBottom: 20, textAlign: "center",
-            }}>Your letters</div>
+              display: "flex", alignItems: "center", justifyContent: "space-between",
+              marginBottom: 20, paddingBottom: 14,
+              borderBottom: "1px solid rgba(58,44,26,0.12)",
+            }}>
+              <div>
+                <div style={{
+                  fontSize: 11, fontWeight: 700, letterSpacing: 1.5,
+                  textTransform: "uppercase", color: "#9B8B7A", marginBottom: 2,
+                }}>Your Health</div>
+                <div style={{
+                  fontSize: 22, fontWeight: 700, color: "#3A2C1A",
+                }}>Jump to</div>
+              </div>
+              <button
+                onClick={() => setShowLibrary(false)}
+                aria-label="Close"
+                style={{
+                  background: "transparent", border: "none", cursor: "pointer",
+                  color: "#9B8B7A", padding: 4, display: "inline-flex", lineHeight: 0,
+                }}
+              >
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                  <path d="M6 6l12 12M18 6L6 18" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" />
+                </svg>
+              </button>
+            </div>
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
               {LETTERS.map((L, i) => {
                 const on = i === letterIndex;

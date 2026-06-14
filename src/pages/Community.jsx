@@ -18,7 +18,7 @@ import { useNavigate, Link } from "react-router-dom";
 import {
   Grid2x2, MessageCircle, Send, Lock, Unlock, Plus, Flag,
   ShieldAlert, Phone, Mic, Check, ChevronLeft, Users,
-  HeartHandshake, Waves, Compass,
+  HeartHandshake, Waves,
 } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import {
@@ -39,6 +39,7 @@ import VoiceNoteComposer from "@/components/community/VoiceNoteComposer";
 import ShareButton from "@/components/share/ShareButton";
 import JessNudge from "@/components/jess/JessNudge";
 import CommunityHubSheet from "@/components/community/CommunityHubSheet";
+import JumpToButton from "@/components/layout/JumpToButton";
 import EchoWall from "@/components/journal/echo/EchoWall";
 import {
   CIRCLES, CIRCLE_CATEGORIES, circleByKey, SENSITIVE_CONSENT,
@@ -835,13 +836,7 @@ function Home({ presence, lifeStage, onEnter, user, onCrisis, onShareTo, onOpenH
           <div style={{ fontFamily: UI, fontSize: 12.5, color: T.muted, fontWeight: 600, lineHeight: 1.5 }}>{presence}</div>
           {season && <div style={{ fontFamily: UI, fontSize: 12, color: T.muted, lineHeight: 1.5, marginTop: 3 }}>{season.line}</div>}
         </div>
-        {onOpenHub && (
-          <button onClick={onOpenHub} aria-label="Jump to any area" style={{
-            display: "inline-flex", alignItems: "center", gap: 6, flexShrink: 0, cursor: "pointer",
-            padding: "7px 13px", borderRadius: 999, border: `1px solid ${T.paperDeep}`, background: T.paperHi,
-            fontFamily: UI, fontSize: 12, fontWeight: 700, color: T.inkSoft,
-          }}><Grid2x2 size={13} style={{ color: T.gold }} /> Jump to</button>
-        )}
+        {onOpenHub && <JumpToButton onClick={onOpenHub} />}
       </div>
 
       {/* the ONE focal point */}
@@ -1465,7 +1460,7 @@ function RoomView({ roomKey, posts, loading, error, user, onNav, onCrisis, onRel
       {/* sticky tab bar */}
       <div style={{ position: "sticky", top: 0, zIndex: 10, background: "rgba(244,239,227,0.97)", backdropFilter: "blur(8px)", borderBottom: `1px solid ${T.paperDeep}`, padding: "9px 12px", display: "flex", alignItems: "center", gap: 6, overflowX: "auto" }}>
         <button onClick={() => onNav("home")} aria-label="All rooms" style={{ ...ghostBtn, flexShrink: 0, padding: "7px 11px" }}><Grid2x2 size={13} /> Doors</button>
-        {onOpenHub && <button onClick={onOpenHub} aria-label="Jump to any area" style={{ ...ghostBtn, flexShrink: 0, padding: "7px 11px" }}><Compass size={13} style={{ color: T.gold }} /> Jump</button>}
+        {onOpenHub && <JumpToButton onClick={onOpenHub} />}
         {ROOMS.map((r) => (
           <button key={r.key} onClick={() => onNav(r.key)} style={{
             flexShrink: 0, fontFamily: UI, fontSize: 12, fontWeight: 700, letterSpacing: 0.2, cursor: "pointer",

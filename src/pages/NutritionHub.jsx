@@ -26,15 +26,17 @@ import { toast } from "sonner";
 import {
   UtensilsCrossed, Target, BookOpen, CalendarDays,
   ShoppingBasket, TrendingUp, Sparkles, ChevronLeft, ChevronRight, Leaf, Plus, Star,
-  Search, Clock, Camera, Mic, ScanLine, LayoutGrid,
+  Search, Clock, Camera, Mic, ScanLine,
 } from "lucide-react";
 import {
   T, UI, SERIF, Eyebrow, Rule, Script, Hand, InkFilter, useEditorialFonts, PAPER_BG,
 } from "@/components/journal/Editorial";
-import { getMealSummary, inferMealTypeFromTime } from "@/utils/nutritionAiAnalysis";
+import { getMealSummary, readAiAnalysis, inferMealTypeFromTime } from "@/utils/nutritionAiAnalysis";
+import { getCurrentCyclePhase, phaseLabel } from "@/utils/cyclePhase";
 import { withTimeout } from "@/utils/safeEntity";
-import { HubSheet, SoftBar, SurfaceCard } from "@/components/nutrition/hub/HubShell";
+import { HubSheet, SoftBar, SurfaceCard, Ring } from "@/components/nutrition/hub/HubShell";
 import NutritionHubSheet from "@/components/nutrition/NutritionHubSheet";
+import JumpToButton from "@/components/layout/JumpToButton";
 
 import NutritionTodayTab from "../components/nutrition/NutritionTodayTab";
 import NutritionPlanTab from "../components/nutrition/NutritionPlanTab";
@@ -137,6 +139,98 @@ function stageLabel(profile) {
     "post-menopause": "Post-menopause",
   };
   return (stage && map[stage]) || "Your stage";
+}
+
+// Time-of-day greeting (gentle, no emoji).
+function greetingForNow(d = new Date()) {
+  const h = d.getHours();
+  if (h < 12) return "Good morning";
+  if (h < 18) return "Good afternoon";
+  return "Good evening";
+}
+
+// The user's first name, from full_name → email local-part → a warm fallback.
+function firstNameOf(user) {
+  const full = (user?.full_name || "").trim();
+  if (full) return full.split(/\s+/)[0];
+  const email = (user?.email || "").trim();
+  if (email) {
+    const local = email.split("@")[0].replace(/[._-]+/g, " ").trim();
+    if (local) return local.charAt(0).toUpperCase() + local.slice(1).split(/\s+/)[0].slice(1);
+  }
+  return "there";
+}
+
+// Day-of-cycle (1-based) from the profile, matching NutritionTodayTab's logic.
+// Returns null when there's no last-period date to honour "missing → no cycle".
+function dayOfCycleOf(profile) {
+  if (!profile?.last_period_start_date) return null;
+  const cycleLen = profile.cycle_avg_length || 28;
+  const daysSince = Math.floor((Date.now() - new Date(profile.last_period_start_date).getTime()) / 86400000);
+  if (!Number.isFinite(daysSince) || daysSince < 0) return null;
+  return (daysSince % cycleLen) + 1;
+}
+
+// Iron (mg) for one meal — read from ai_analysis.summary.iron_mg, else sum items[].iron_mg.
+// Never invents a number: missing → 0.
+function ironMgOf(meal) {
+  const a = readAiAnalysis(meal);
+  if (!a) return 0;
+  const s = a.summary || {};
+  if (Number(s.iron_mg) > 0) return Number(s.iron_mg);
+  const items = a.items || [];
+  return items.reduce((acc, it) => acc + (Number(it?.iron_mg) || 0), 0);
+}
+
+// Sum today's macros from the real logged meals (protein, fibre, iron) — all guarded.
+function macroSums(dayMealRows) {
+  return (dayMealRows || []).filter(Boolean).reduce(
+    (acc, m) => {
+      const s = getMealSummary(m).summary || {};
+      acc.protein += Number(s.protein_g) || 0;
+      acc.fibre += Number(s.fiber_g) || 0;
+      acc.iron += ironMgOf(m);
+      return acc;
+    },
+    { protein: 0, fibre: 0, iron: 0 }
+  );
+}
+
+// Tonight's suggested dinner — from this week's plan (today's row), else a saved
+// recipe, else a gentle stage-appropriate idea. Always returns { name, why } or null.
+const DINNER_BY_STAGE = {
+  perimenopause: { name: "Salmon with greens and lentils", why: "iron and omega-3 for where you are in your cycle" },
+  menopause: { name: "Tofu and broccoli stir-fry", why: "calcium and protein, gentle on the evening" },
+  pregnant: { name: "Lentil and spinach dahl", why: "iron and folate, easy to keep down" },
+  postpartum: { name: "Chicken and vegetable soup", why: "warm, iron-rich and one-handed" },
+  ttc: { name: "Salmon traybake with roast veg", why: "good fats and colour for the season" },
+};
+function suggestedDinner(mealPlan, savedRecipes, profile) {
+  // 1) this week's plan — today's dinner cell (plan_days uses 0=Mon … 6=Sun)
+  const planDays = (mealPlan?.plan_days || []).filter(Boolean);
+  if (planDays.length > 0) {
+    const todayIdx = (new Date().getDay() + 6) % 7; // JS Sun=0 → Mon=0 index
+    const row = planDays.find((d) => d?.day === todayIdx);
+    const cell = row?.dinner;
+    const name = Array.isArray(cell) ? cell[0] : (typeof cell === "string" ? cell : cell?.name);
+    if (name) return { name, why: "from your plan for tonight" };
+  }
+  // legacy plan shape
+  if (Array.isArray(mealPlan?.days) && mealPlan.days.length > 0) {
+    const todayIdx = (new Date().getDay() + 6) % 7;
+    const d = mealPlan.days[todayIdx] || mealPlan.days[0];
+    const cell = d?.meals?.dinner;
+    const name = Array.isArray(cell) ? cell[0] : (typeof cell === "string" ? cell : cell?.name);
+    if (name) return { name, why: "from your plan for tonight" };
+  }
+  // 2) a saved recipe (highest-rated first — already sorted)
+  const saved = (savedRecipes || []).filter(Boolean);
+  if (saved.length > 0 && (saved[0].title || saved[0].name)) {
+    return { name: saved[0].title || saved[0].name, why: "one of your saved recipes" };
+  }
+  // 3) a gentle stage idea — honest fallback, never a mock figure
+  const stage = profile?.life_stage || profile?.stage;
+  return DINNER_BY_STAGE[stage] || { name: "Something warm with greens and protein", why: "a gentle, balanced plate for tonight" };
 }
 
 export default function NutritionHub() {
@@ -358,6 +452,18 @@ export default function NutritionHub() {
   const hydrationTarget = nutritionProfile?.hydration_target_ml || 2000;
   const kcalLeft = Math.max(0, calorieTarget - summary.kcal);
 
+  // ── header values (real, guarded) ───────────────────────────────────────────
+  const greeting = greetingForNow();
+  const firstName = firstNameOf(user);
+  const cyclePhase = getCurrentCyclePhase(profile);          // null when no cycle data
+  const cyclePhaseLabel = phaseLabel(cyclePhase);             // null when no phase
+  const cycleDay = dayOfCycleOf(profile);                     // null when no cycle data
+  const sums = macroSums(dayMeals);                           // { protein, fibre, iron }
+  const proteinTarget = nutritionProfile?.protein_target_g || 80;
+  const fibreTarget = nutritionProfile?.fiber_target_g || nutritionProfile?.fibre_target_g || 30;
+  const ironTarget = nutritionProfile?.iron_target_mg || 14;  // gentle, not a hard cap
+  const dinner = suggestedDinner(mealPlan, savedRecipes, profile);
+
   // ── the real surface for the open sheet ────────────────────────────────────
   const renderSurface = (id) => {
     if (!user) return null;
@@ -399,21 +505,21 @@ export default function NutritionHub() {
       <InkFilter />
       <div style={{ maxWidth: COL, margin: "0 auto", position: "relative" }}>
 
-        {/* ── greeting + day stepper ─────────────────────────────────────── */}
-        <header style={{ padding: "22px 18px 12px" }}>
-          <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 12 }}>
-            <div style={{ minWidth: 0 }}>
-              <Eyebrow mb={4}>Wellness Studio · Nutrition</Eyebrow>
-              <Script size={40} carve>your plate today</Script>
+        {/* ── DAILY HUB header — Demo2's full summary, wired to real data ───── */}
+        <header style={{ padding: "22px 18px 4px" }}>
+          {/* top row: greeting eyebrow + (switcher · day stepper) controls */}
+          <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 12, marginBottom: 4 }}>
+            <div style={{ minWidth: 0, flex: 1 }}>
+              {/* 1 · greeting line: GOOD EVENING, NAME · STAGE · PHASE · DAY N */}
+              <Eyebrow mb={4}>
+                {`${greeting}, ${firstName} · ${stageLabel(profile)}`}
+                {cyclePhaseLabel ? ` · ${cyclePhaseLabel}` : ""}
+                {cyclePhaseLabel && cycleDay ? ` · Day ${cycleDay}` : ""}
+              </Eyebrow>
             </div>
             <div style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
-              {/* universal "Jump to" switcher trigger (matches Journal/Community) */}
-              <button onClick={() => setHubMenuOpen(true)} aria-label="Jump to" style={{
-                width: 36, height: 36, borderRadius: 12, display: "grid", placeItems: "center",
-                background: T.paperHi, border: `1px solid ${T.paperDeep}`, color: T.ink, cursor: "pointer",
-              }}>
-                <LayoutGrid size={17} />
-              </button>
+              {/* universal "Jump to" switcher trigger (shared chrome — matches Journal/Community/Health) */}
+              <JumpToButton onClick={() => setHubMenuOpen(true)} />
               <div style={{
                 display: "flex", alignItems: "center", gap: 4,
                 background: T.paperHi, border: `1px solid ${T.paperDeep}`, borderRadius: 14, padding: "5px 6px",
@@ -433,22 +539,84 @@ export default function NutritionHub() {
               </div>
             </div>
           </div>
-        </header>
 
-        {/* ── RED LOG A MEAL header — the prominent logger entry ──────────── */}
-        <div style={{ padding: "0 18px 4px" }}>
+          {/* 2 · the Ephesis script heading */}
+          <Script size={40} carve>your plate today</Script>
+
+          {/* 3 · big energy ring — real summary.kcal of calorieTarget, room for more */}
+          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", marginTop: 12 }}>
+            <div style={{ position: "relative", width: 184, height: 184 }}>
+              <Ring value={summary.kcal} guide={calorieTarget} size={184} label="" />
+              <div style={{ position: "absolute", inset: 0, display: "grid", placeItems: "center", textAlign: "center" }}>
+                <div>
+                  <Script size={44} carve>today</Script>
+                  <div style={{ fontFamily: UI, fontSize: 10, letterSpacing: 0.8, color: T.muted, marginTop: -4 }}>
+                    {summary.kcal} of {calorieTarget} kcal
+                  </div>
+                  <div style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 13, color: T.gold, marginTop: 1 }}>
+                    room for {kcalLeft} more
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* 4 · macro row — protein / fibre / iron, real sums, SoftBar beneath */}
+            <div style={{ display: "flex", gap: 18, marginTop: 14, width: "100%", justifyContent: "center" }}>
+              {[
+                { label: "Protein", had: Math.round(sums.protein), guide: proteinTarget, unit: "g" },
+                { label: "Fibre", had: Math.round(sums.fibre), guide: fibreTarget, unit: "g" },
+                { label: "Iron", had: Math.round(sums.iron), guide: ironTarget, unit: "mg" },
+              ].map((m) => (
+                <div key={m.label} style={{ textAlign: "center", minWidth: 78 }}>
+                  <div style={{ fontFamily: SERIF, fontSize: 18, color: T.ink, lineHeight: 1 }}>
+                    {m.had}<span style={{ fontSize: 11, color: T.muted }}>/{m.guide}{m.unit}</span>
+                  </div>
+                  <div style={{ fontFamily: UI, fontSize: 9, letterSpacing: 0.8, color: T.muted, textTransform: "uppercase", margin: "3px 0 5px" }}>{m.label}</div>
+                  <SoftBar value={m.had} guide={m.guide} color={T.sage} />
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* 5 · Jess card — warm, cycle-aware (dusk surface, leaf chip + JESS) */}
+          <div style={{ background: T.dusk, color: T.paper, borderRadius: 16, padding: "15px 16px", marginTop: 18 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 7 }}>
+              <span style={{ width: 24, height: 24, borderRadius: 999, background: T.sage, display: "grid", placeItems: "center" }}>
+                <Leaf size={13} color={T.dusk} />
+              </span>
+              <span style={{ fontFamily: UI, fontSize: 9.5, letterSpacing: 1.4, color: T.wax, textTransform: "uppercase", fontWeight: 700 }}>Jess</span>
+            </div>
+            <Hand size={18} color={T.paper}>{jessLine(profile)}</Hand>
+          </div>
+
+          {/* 6 · red LOG A MEAL button — the prominent logger entry */}
           <button onClick={() => setOpenLogger(true)} style={{
             width: "100%", display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 10,
-            background: T.crimson, color: T.paper, border: "none", borderRadius: 14, padding: "15px 18px",
-            fontFamily: UI, fontSize: 13, fontWeight: 700, letterSpacing: 0.6, textTransform: "uppercase", cursor: "pointer",
+            background: T.crimson, color: T.paper, border: "none", borderRadius: 16, padding: "17px 18px",
+            fontFamily: UI, fontSize: 14, fontWeight: 700, letterSpacing: 1, textTransform: "uppercase", cursor: "pointer",
+            marginTop: 14, boxShadow: "0 6px 18px rgba(188,46,39,0.25)",
           }}>
-            <UtensilsCrossed size={17} /> Log a meal
+            <UtensilsCrossed size={19} /> Log a meal
           </button>
-        </div>
 
-        {/* Arrangement: greeting + day · RED LOG A MEAL header · slider. The today
-            glance, Jess line and suggested-next live INSIDE the big cards below —
-            nothing else sits between the red logger and the slider. */}
+          {/* 7 · suggested · dinner — from plan / saved recipe / gentle stage idea */}
+          {dinner ? (
+            <button onClick={() => openSurface(mealPlan?.plan_days?.length || mealPlan?.days?.length ? "mealgen" : "recipes")} style={{
+              display: "flex", alignItems: "center", gap: 12, width: "100%", textAlign: "left",
+              background: T.paperHi, border: `1px solid ${T.paperDeep}`, borderRadius: 14,
+              padding: "13px 15px", cursor: "pointer", marginTop: 10,
+            }}>
+              <span style={{ width: 38, height: 38, borderRadius: 11, background: T.ink, color: T.paper, display: "grid", placeItems: "center", flexShrink: 0 }}>
+                <UtensilsCrossed size={17} />
+              </span>
+              <span style={{ flex: 1, minWidth: 0 }}>
+                <span style={{ fontFamily: UI, fontSize: 9, letterSpacing: 1, color: T.muted, textTransform: "uppercase", display: "block" }}>Suggested · dinner</span>
+                <span style={{ fontFamily: SERIF, fontSize: 17, color: T.ink, display: "block", lineHeight: 1.15 }}>{dinner.name}</span>
+                <span style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 13, color: T.muted }}>{dinner.why}</span>
+              </span>
+            </button>
+          ) : null}
+        </header>
 
         {/* ── THE SPINE — Hero Card Slider of surfaces ───────────────────── */}
         <div style={{ marginTop: 10 }}>
