@@ -45,6 +45,7 @@ import { T, UI, SERIF, Eyebrow, Hand, Rule } from "@/components/journal/Editoria
 import { getMealSummary } from "@/utils/nutritionAiAnalysis";
 import { rangeNutrition, microNudgeForStage } from "@/utils/foodModel";
 import { learnedPatternLine } from "@/utils/personalisation";
+import { getCurrentCyclePhase, phaseLabel } from "@/utils/cyclePhase";
 import { withTimeout } from "@/utils/safeEntity";
 import AiDisclaimer from "@/components/compliance/AiDisclaimer";
 
@@ -136,6 +137,32 @@ function stageLabel(profile) {
 // Foods that lean iron-rich — used ONLY for a self-awareness pattern, never a diagnosis.
 const IRON_TERMS = ["spinach", "lentil", "lentils", "red meat", "beef", "steak", "liver",
   "kale", "chard", "beans", "chickpea", "tofu", "greens", "broccoli", "sardine", "egg"];
+const PROTEIN_TERMS = ["chicken", "egg", "eggs", "fish", "salmon", "tuna", "tofu", "beans",
+  "lentil", "lentils", "chickpea", "yoghurt", "yogurt", "cheese", "beef", "pork", "turkey",
+  "prawn", "tempeh", "edamame", "nuts", "peanut"];
+
+// ── CYCLE-AWARE soft food nudge (qualitative, never a macro prescription) ─────
+// A gentle, phase-appropriate FOOD lean for menstruating women — only when the cycle
+// phase is genuinely known (last period logged) and the stage is one that cycles.
+// HONESTY GUARDRAIL (master plan §11): qualitative food leans only — NO cycle-syncing
+// macro targets, no numbers, framed "a gentle lean, not a rule". Returns { phase,
+// label, line } or null. Post-menopause / pregnancy / unknown → null (no fake phase).
+const CYCLING_STAGES = new Set(["teen", "reproductive", "pre-ttc", "ttc", "perimenopause"]);
+function cyclePhaseNudge(profile) {
+  const stage = profile?.life_stage || profile?.stage;
+  if (stage && !CYCLING_STAGES.has(stage)) return null;
+  const phase = getCurrentCyclePhase(profile);
+  if (!phase) return null;
+  const LINES = {
+    menstrual: "While you're bleeding, iron-rich foods — leafy greens, lentils, red meat — paired with a little vitamin C (peppers, a squeeze of lemon) help replenish gently. Warmth and rest count too. A gentle lean, not a rule.",
+    follicular: "Energy often lifts now. Fresh veg, lean protein and wholegrains ride that wave nicely — a good window for the meals that take a little more doing. A gentle lean, not a rule.",
+    ovulatory: "Around this peak, a bright, colourful, fibre-rich plate sits well — plenty of veg and wholegrains, with protein to keep things steady. A gentle lean, not a rule.",
+    luteal: "The days before your period can crave comfort. Slow carbs (oats, sweet potato), magnesium-rich foods (dark greens, nuts, a little dark chocolate) and steady protein can ease the dip. Be kind to the cravings. A gentle lean, not a rule.",
+  };
+  const line = LINES[phase];
+  if (!line) return null;
+  return { phase, label: phaseLabel(phase), line };
+}
 
 // ── shared card shell (Editorial paper inset) ────────────────────────────────
 const cardStyle = {
@@ -289,6 +316,28 @@ function buildPatterns({ meals, checkins }) {
       out.push(
         "Your energy tended to read a little higher on the days iron-rich foods — greens, lentils, red meat — turned up in your log. It's a pattern in your data, not a rule, but a kind one to lean into."
       );
+    }
+  }
+
+  // 1b) PROTEIN-leaning foods × energy — a second gentle nutrition↔feeling link
+  if (out.length < 2) {
+    const protDays = [];
+    const nonProtDays = [];
+    mealDays.forEach((d) => {
+      const dayText = meals.filter((m) => m.day_key === d)
+        .map((m) => (m.raw_text || "").toLowerCase()).join(" ");
+      const hasProt = PROTEIN_TERMS.some((t) => dayText.includes(t));
+      const energy = checkinByDay[d]?.energy;
+      if (typeof energy === "number") (hasProt ? protDays : nonProtDays).push(energy);
+    });
+    if (protDays.length >= 2 && nonProtDays.length >= 2) {
+      const avgP = protDays.reduce((s, v) => s + v, 0) / protDays.length;
+      const avgN = nonProtDays.reduce((s, v) => s + v, 0) / nonProtDays.length;
+      if (avgP - avgN >= 0.8) {
+        out.push(
+          "On the days a good protein source — eggs, fish, beans, yoghurt — turned up in your log, your energy tended to sit a little steadier. A pattern in your data, not a rule, but a gentle one to lean on."
+        );
+      }
     }
   }
 
@@ -502,6 +551,7 @@ export default function UnifiedInsightsTab({ user, profile, nutritionProfile, ta
   );
 
   const nudges = useMemo(() => stageNudges(profile), [profile]);
+  const cycleNudge = useMemo(() => cyclePhaseNudge(profile), [profile]);
 
   // MEMORY: ONE warm "what you reach for" line from the user's own logged habits
   // (30-day window). Real, or null when too sparse to honestly say — never a verdict,
@@ -703,6 +753,22 @@ ${localText}`;
           </p>
         )}
       </section>
+
+      {/* 2b · CYCLE-AWARE soft nudge — only when the phase is genuinely known */}
+      {cycleNudge && (
+        <section style={cardStyle}>
+          <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
+            <Sparkles size={15} color={T.crimson} />
+            <Eyebrow color={T.crimson}>Where you are in your cycle · {cycleNudge.label}</Eyebrow>
+          </div>
+          <p style={{ fontFamily: SERIF, fontSize: 14, lineHeight: 1.55, color: T.inkSoft, margin: 0 }}>
+            {cycleNudge.line}
+          </p>
+          <p style={{ fontFamily: UI, fontSize: 10.5, fontStyle: "italic", color: T.muted, margin: "10px 0 0" }}>
+            A qualitative lean for the phase you're in — never a macro target, never medical advice.
+          </p>
+        </section>
+      )}
 
       {/* 3 · WOMEN'S MICRONUTRIENT LAYER — "For your stage" */}
       <section style={cardStyle}>
