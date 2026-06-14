@@ -11,6 +11,9 @@
     "weight_kg": {
       "type": "number"
     },
+    "height_cm": {
+      "type": "number"
+    },
     "waist_cm": {
       "type": "number"
     },

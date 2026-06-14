@@ -26,7 +26,7 @@ import { toast } from "sonner";
 import {
   UtensilsCrossed, Target, BookOpen, CalendarDays,
   ShoppingBasket, TrendingUp, Sparkles, ChevronLeft, ChevronRight, Leaf, Plus, Star,
-  Search, Clock, Camera, Mic, ScanLine,
+  Search, Clock, Camera, Mic, ScanLine, Check,
 } from "lucide-react";
 import {
   T, UI, SERIF, Eyebrow, Rule, Script, Hand, InkFilter, useEditorialFonts, PAPER_BG,
@@ -316,7 +316,7 @@ export default function NutritionHub() {
   // re-log a recent meal for real (guarded write + refresh), one tap from the Log card.
   // The hub's `recents` chips carry only { id, name } — so we re-create a MealLog with
   // the same raw_text, day_key = today, an inferred meal_type, then refresh the summary.
-  const reLogRecent = useCallback(async (name) => {
+  const reLogRecent = useCallback(async (name, mealType) => {
     const text = (name || "").trim();
     if (!user || !text) return;
     const todayKey = format(new Date(), "yyyy-MM-dd");
@@ -326,7 +326,7 @@ export default function NutritionHub() {
           user_id: user.id,
           day_key: todayKey,
           logged_at: new Date().toISOString(),
-          meal_type: inferMealTypeFromTime(),
+          meal_type: mealType || inferMealTypeFromTime(),
           method: "text",
           raw_text: text,
         }),
@@ -606,22 +606,29 @@ export default function NutritionHub() {
             <UtensilsCrossed size={19} /> Log a meal
           </button>
 
-          {/* 7 · suggested · dinner — from plan / saved recipe / gentle stage idea */}
+          {/* 7 · suggested · dinner — from plan / saved recipe / gentle stage idea.
+              Now one-tap loggable (plan→log→insights): the "Log it" pill creates a real
+              MealLog for tonight; the body still opens the plan/recipes surface. */}
           {dinner ? (
-            <button onClick={() => openSurface(mealPlan?.plan_days?.length || mealPlan?.days?.length ? "mealgen" : "recipes")} style={{
-              display: "flex", alignItems: "center", gap: 12, width: "100%", textAlign: "left",
+            <div style={{
+              display: "flex", alignItems: "center", gap: 12, width: "100%",
               background: T.paperHi, border: `1px solid ${T.paperDeep}`, borderRadius: 14,
-              padding: "13px 15px", cursor: "pointer", marginTop: 10,
+              padding: "13px 15px", marginTop: 10,
             }}>
               <span style={{ width: 38, height: 38, borderRadius: 11, background: T.ink, color: T.paper, display: "grid", placeItems: "center", flexShrink: 0 }}>
                 <UtensilsCrossed size={17} />
               </span>
-              <span style={{ flex: 1, minWidth: 0 }}>
+              <button onClick={() => openSurface(mealPlan?.plan_days?.length || mealPlan?.days?.length ? "mealgen" : "recipes")}
+                style={{ flex: 1, minWidth: 0, textAlign: "left", background: "transparent", border: "none", cursor: "pointer", padding: 0 }}>
                 <span style={{ fontFamily: UI, fontSize: 9, letterSpacing: 1, color: T.muted, textTransform: "uppercase", display: "block" }}>Suggested · dinner</span>
                 <span style={{ fontFamily: SERIF, fontSize: 17, color: T.ink, display: "block", lineHeight: 1.15 }}>{dinner.name}</span>
                 <span style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 13, color: T.muted }}>{dinner.why}</span>
-              </span>
-            </button>
+              </button>
+              <button onClick={() => reLogRecent(dinner.name, "dinner")} aria-label="Log tonight's dinner"
+                style={{ flexShrink: 0, display: "inline-flex", alignItems: "center", gap: 5, background: T.ink, color: T.paper, border: "none", borderRadius: 999, padding: "8px 13px", fontFamily: UI, fontSize: 10.5, fontWeight: 700, letterSpacing: 0.4, textTransform: "uppercase", cursor: "pointer" }}>
+                <Check size={13} /> Log it
+              </button>
+            </div>
           ) : null}
         </header>
 

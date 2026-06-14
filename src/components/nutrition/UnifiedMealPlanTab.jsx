@@ -260,6 +260,43 @@ export default function UnifiedMealPlanTab({ user, profile, nutritionProfile, ta
     await persistCells(next);
   };
 
+  // ── PLAN → LOG (one-tap): cook a planned cell straight into TODAY's MealLog. ───
+  // Closes the plan→log→insights loop — the planned meal flows into the spine
+  // (dayNutrition) so the hub header/macros update, and into personalisation so it
+  // resurfaces as a learned favourite. We carry the cell's macro HINT into
+  // ai_analysis.summary so the numbers compound immediately (not zeroes). Guarded.
+  const [loggingKey, setLoggingKey] = useState(null);
+  const logCell = async (day, slot) => {
+    const k = cellKey(day, slot);
+    const cell = cells[k];
+    const name = (cell?.name || "").trim();
+    if (!name || loggingKey) return;
+    setLoggingKey(k);
+    const m = cell.macros || {};
+    const summary = {};
+    if (Number.isFinite(Number(m.calories))) summary.calories = Math.round(Number(m.calories));
+    if (Number.isFinite(Number(m.protein_g))) summary.protein_g = Math.round(Number(m.protein_g));
+    if (Number.isFinite(Number(m.carbs_g))) summary.carbs_g = Math.round(Number(m.carbs_g));
+    if (Number.isFinite(Number(m.fat_g))) summary.fat_g = Math.round(Number(m.fat_g));
+    const payload = {
+      user_id: user.id,
+      day_key: format(new Date(), "yyyy-MM-dd"),
+      logged_at: new Date().toISOString(),
+      meal_type: slot,
+      method: "plan",
+      raw_text: name,
+      ai_analysis: Object.keys(summary).length ? { summary } : undefined,
+    };
+    try {
+      await withTimeout(base44.entities.MealLog.create(payload), 6000, "log");
+      toast.success(`Logged “${name}” for today`);
+    } catch (e) {
+      console.error(e);
+      toast.error("Couldn't log it — try again");
+    }
+    setLoggingKey(null);
+  };
+
   // ── shared generator call → maps the function output into a cells map, filling
   //    ONLY the unlocked cells in `targetKeys`. Locked cells are never touched. ──
   const runGenerate = async (scope, targetKeys) => {
@@ -621,10 +658,16 @@ export default function UnifiedMealPlanTab({ user, profile, nutritionProfile, ta
               )}
 
               {c.name && !isEditing && (
-                <button onClick={() => clearCell(activeDay, slot)} disabled={!!regenScope}
-                  style={{ marginTop: 8, background: "transparent", border: "none", cursor: "pointer", fontFamily: UI, fontSize: 10, color: T.muted }}>
-                  Clear
-                </button>
+                <div style={{ display: "flex", alignItems: "center", gap: 12, marginTop: 8 }}>
+                  <button onClick={() => logCell(activeDay, slot)} disabled={loggingKey === cellKey(activeDay, slot)}
+                    style={{ display: "inline-flex", alignItems: "center", gap: 5, background: "transparent", border: "none", cursor: "pointer", fontFamily: UI, fontSize: 10.5, fontWeight: 700, letterSpacing: 0.3, color: T.crimson, padding: 0, opacity: loggingKey === cellKey(activeDay, slot) ? 0.5 : 1 }}>
+                    <Check size={12} /> {loggingKey === cellKey(activeDay, slot) ? "Logging…" : "Log today"}
+                  </button>
+                  <button onClick={() => clearCell(activeDay, slot)} disabled={!!regenScope}
+                    style={{ background: "transparent", border: "none", cursor: "pointer", fontFamily: UI, fontSize: 10, color: T.muted }}>
+                    Clear
+                  </button>
+                </div>
               )}
             </div>
           );

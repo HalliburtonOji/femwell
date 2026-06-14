@@ -174,7 +174,7 @@ export default function UnifiedProgressTab({ user, profile, nutritionProfile, on
 
   // editing state
   const [addingMetric, setAddingMetric] = useState(false);
-  const [metricForm, setMetricForm] = useState({ weight_kg: "", waist_cm: "", hips_cm: "", bust_cm: "", notes: "" });
+  const [metricForm, setMetricForm] = useState({ weight_kg: "", height_cm: "", waist_cm: "", hips_cm: "", bust_cm: "", notes: "" });
   const [savingMetric, setSavingMetric] = useState(false);
 
   const [editingTargets, setEditingTargets] = useState(false);
@@ -375,6 +375,7 @@ export default function UnifiedProgressTab({ user, profile, nutritionProfile, on
     if (!user?.id) return;
     const payload = { user_id: user.id, day_key: format(new Date(), "yyyy-MM-dd"), notes: metricForm.notes || undefined };
     if (metricForm.weight_kg) payload.weight_kg = parseFloat(metricForm.weight_kg);
+    if (metricForm.height_cm) payload.height_cm = parseFloat(metricForm.height_cm);
     if (metricForm.waist_cm) payload.waist_cm = parseFloat(metricForm.waist_cm);
     if (metricForm.hips_cm) payload.hips_cm = parseFloat(metricForm.hips_cm);
     if (metricForm.bust_cm) payload.bust_cm = parseFloat(metricForm.bust_cm);
@@ -385,8 +386,21 @@ export default function UnifiedProgressTab({ user, profile, nutritionProfile, on
     setMetrics(optimistic);
     try {
       await withTimeout(base44.entities.BodyMetrics.create(payload), 6000, "save");
+      // Height is a stable, body-level fact — persist it durably to the NutritionProfile too
+      // so the derived energy guide stays "fully derived" on days without a new metrics row.
+      const h = parseFloat(metricForm.height_cm);
+      if (Number.isFinite(h) && h >= 120 && h <= 220 && h !== Number(nutritionProfile?.height_cm)) {
+        try {
+          if (nutritionProfile?.id) {
+            await withTimeout(base44.entities.NutritionProfile.update(nutritionProfile.id, { height_cm: h }), 6000, "save");
+          } else {
+            await withTimeout(base44.entities.NutritionProfile.create({ user_id: user.id, height_cm: h }), 6000, "save");
+          }
+          onProfileUpdated?.(); // recompute the derived targets with the new height
+        } catch (he) { console.error(he); /* height write-through is best-effort, never blocks */ }
+      }
       setAddingMetric(false);
-      setMetricForm({ weight_kg: "", waist_cm: "", hips_cm: "", bust_cm: "", notes: "" });
+      setMetricForm({ weight_kg: "", height_cm: "", waist_cm: "", hips_cm: "", bust_cm: "", notes: "" });
       loadData(); // reconcile in background
     } catch (e) {
       console.error(e);
@@ -613,6 +627,7 @@ export default function UnifiedProgressTab({ user, profile, nutritionProfile, on
           </div>
           {[
             { key: "weight_kg", label: "Weight (kg)" },
+            { key: "height_cm", label: "Height (cm) — set once, tunes your energy guide" },
             { key: "waist_cm", label: "Waist (cm)" },
             { key: "hips_cm", label: "Hips (cm)" },
             { key: "bust_cm", label: "Bust (cm)" },
@@ -647,7 +662,13 @@ export default function UnifiedProgressTab({ user, profile, nutritionProfile, on
           </div>
         </div>
       ) : (
-        <button onClick={() => setAddingMetric(true)}
+        <button onClick={() => {
+            // prefill height from the durable NutritionProfile, falling back to the last metrics row
+            const known = nutritionProfile?.height_cm
+              || metrics.slice().reverse().find((x) => x.height_cm)?.height_cm || "";
+            setMetricForm((f) => ({ ...f, height_cm: known ? String(known) : "" }));
+            setAddingMetric(true);
+          }}
           className="w-full rounded-[24px] p-5 flex items-center gap-3.5 transition-all"
           style={{ ...card }}
           onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "var(--ivory)")}

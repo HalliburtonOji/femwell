@@ -30,6 +30,9 @@
     "allergens_avoid": {
       "type": "string"
     },
+    "height_cm": {
+      "type": "number"
+    },
     "calories_target": {
       "type": "number"
     },
