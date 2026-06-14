@@ -918,23 +918,19 @@ function GameRoundCard({ user, onCrisis, kind = null, name = null, blurb = null 
 
   useEffect(() => {
     if (tried.current) return; tried.current = true;
+    // Show a PLAYABLE local round immediately — never a "setting up" wait, and robust to a
+    // slow/wedged function tier (the original openGameRound got stuck after an LLM-hang
+    // deploy; hence the V2 rename + this local-first approach, which needs no timer).
+    const fb = localRound();
+    setRound(fb); setAnswered(gameAnswered(fb.id));
+    // Then try to UPGRADE to the real cross-device backend round in the background. Only
+    // swap in the real round if the player hasn't already answered the local one.
     (async () => {
       try {
-        // openGameRoundV2 is the real round backend (LLM-free). Race it against an 8s
-        // timeout: if the function tier is slow/unavailable, fall back to a local round so
-        // the game is always playable. (The original openGameRound got wedged by an earlier
-        // LLM-hang deploy — hence the V2 rename AND this graceful fallback.)
-        const r = await Promise.race([
-          base44.functions.invoke("openGameRoundV2", named ? { kind } : { room: "lighter" }),
-          new Promise((_, rej) => setTimeout(() => rej(new Error("timeout")), 8000)),
-        ]);
+        const r = await base44.functions.invoke("openGameRoundV2", named ? { kind } : { room: "lighter" });
         const d = r?.data ?? r;
-        if (d?.round) { setRound(d.round); setAnswered(gameAnswered(d.round.id)); }
-        else { const fb = localRound(); setRound(fb); setAnswered(gameAnswered(fb.id)); }
-      } catch (e) {
-        console.error("game load fell back to local:", e?.message || e);
-        const fb = localRound(); setRound(fb); setAnswered(gameAnswered(fb.id));
-      }
+        if (d?.round && !gameAnswered(fb.id)) { setRound(d.round); setAnswered(gameAnswered(d.round.id)); }
+      } catch (e) { /* keep the local round — the game stays playable */ }
     })();
   }, []);
 
@@ -956,9 +952,10 @@ function GameRoundCard({ user, onCrisis, kind = null, name = null, blurb = null 
     finally { setBusy(false); }
   };
 
-  // The nightly headline stays QUIET if there's nothing; a named game card always shows
-  // its name + how-to, with a gentle "setting up" state while its round spins.
-  if (!named && (round === null || round === false)) return null;
+  // The nightly headline stays QUIET unless the BACKEND supplies a real round (showing the
+  // local fallback here would duplicate the named "This or That" card). Named game cards
+  // always render — they carry the experience whether the round is real or local.
+  if (!named && (round === null || round === false || round?._local)) return null;
 
   const isClosed = round && round.status === "closed";
   const hasOptions = round && Array.isArray(round.options) && round.options.length >= 2;
