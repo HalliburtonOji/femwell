@@ -724,7 +724,7 @@ function HubPromptLine(props) {
     <div style={{ background: T.dusk, color: T.paper, borderRadius: 16, padding: "14px 16px 10px" }}>
       <div className="jhub-prompt">
         <style>{`.jhub-prompt :is(section){margin-bottom:0!important}`}</style>
-        <PromptCarousel {...props} />
+        <PromptCarousel {...props} onDark />
       </div>
     </div>
   );

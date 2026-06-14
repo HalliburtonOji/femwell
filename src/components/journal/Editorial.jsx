@@ -71,7 +71,11 @@ export const PAPER_BG = {
     `url("${PAPER_TEX}")`,                                                                        // real paper-grain image
   backgroundSize: "auto, auto, auto, 300px 300px",
   backgroundRepeat: "no-repeat, no-repeat, repeat, repeat",
-  backgroundAttachment: "fixed, fixed, fixed, fixed",
+  // SCROLL (not fixed): a fixed texture stays pinned to the viewport while content
+  // scrolls — that read as a "second background scrolling separately" (parallax artifact),
+  // and doubled when two PAPER_BG layers nested (page + hub root). Scroll = one coherent
+  // background that moves with the page. (Also avoids the known iOS fixed-bg bugs.)
+  backgroundAttachment: "scroll, scroll, scroll, scroll",
   backgroundBlendMode: "normal, normal, normal, multiply",
 };
 

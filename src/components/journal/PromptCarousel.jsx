@@ -49,7 +49,12 @@ const PHASE_TUNED = {
 };
 const tunedFor = (phase) => PHASE_TUNED[phase] || PHASE_TUNED.follicular;
 
-export default function PromptCarousel({ user, profile, phase, cycleDay, lastEntry, onWrite }) {
+export default function PromptCarousel({ user, profile, phase, cycleDay, lastEntry, onWrite, onDark = false }) {
+  // on a DARK (dusk) surface, text must use the light/cream tokens for contrast — the
+  // default dark-ink tokens are for light paper. (carve relief is for paper, off on dark.)
+  const cMain = onDark ? T.paper : T.ink;
+  const cSoft = onDark ? T.wax : T.muted;
+  const cEyebrow = onDark ? T.wax : T.muted;
   const tuned = useMemo(() => tunedFor(phase), [phase]);
   const [lead, setLead] = useState("");     // Jess's live daily prompt
   const [loading, setLoading] = useState(false);
@@ -104,17 +109,17 @@ export default function PromptCarousel({ user, profile, phase, cycleDay, lastEnt
     <section style={{ marginBottom: 46 }}>
       <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 14 }}>
         <Heart size={14} />
-        <Eyebrow>
+        <Eyebrow color={cEyebrow}>
           A note from Jess · {phaseWord}{cycleDay ? ` · Day ${cycleDay}` : ""}
         </Eyebrow>
       </div>
 
       {loading && !lead ? (
-        <Script size={32} color={T.inkSoft} carve={false} style={{ letterSpacing: 0.2, opacity: 0.75 }}>
+        <Script size={32} color={onDark ? T.paper : T.inkSoft} carve={false} style={{ letterSpacing: 0.2, opacity: onDark ? 0.85 : 0.75 }}>
           Jess is thinking…
         </Script>
       ) : (
-        <Script size={34} style={{ letterSpacing: 0.2 }}>{current}</Script>
+        <Script size={34} color={cMain} carve={!onDark} style={{ letterSpacing: 0.2 }}>{current}</Script>
       )}
 
       <div style={{ display: "flex", gap: 26, marginTop: 18, alignItems: "center", flexWrap: "wrap" }}>
@@ -124,7 +129,7 @@ export default function PromptCarousel({ user, profile, phase, cycleDay, lastEnt
           style={{
             display: "inline-flex", alignItems: "center", gap: 6, background: "transparent",
             border: "none", cursor: current ? "pointer" : "default", padding: 0, paddingBottom: 3,
-            fontFamily: HAND, fontWeight: 600, fontSize: 20, color: T.ink, textShadow: PRESS,
+            fontFamily: HAND, fontWeight: 600, fontSize: 20, color: cMain, textShadow: onDark ? "none" : PRESS,
             borderBottom: `1px solid ${T.gold}`, opacity: current ? 1 : 0.5,
           }}
         >
@@ -134,12 +139,12 @@ export default function PromptCarousel({ user, profile, phase, cycleDay, lastEnt
           onClick={() => setI((x) => x + 1)}
           style={{
             background: "transparent", border: "none", cursor: "pointer", padding: 0,
-            fontFamily: UI, fontSize: 12.5, color: T.muted, letterSpacing: 0.4, fontWeight: 600,
+            fontFamily: UI, fontSize: 12.5, color: cSoft, letterSpacing: 0.4, fontWeight: 600,
           }}
         >
           Another prompt
         </button>
-        <span style={{ fontFamily: UI, fontSize: 10, color: T.muted, letterSpacing: 0.4, fontWeight: 600, fontStyle: "italic", marginLeft: "auto" }}>
+        <span style={{ fontFamily: UI, fontSize: 10, color: cSoft, letterSpacing: 0.4, fontWeight: 600, fontStyle: "italic", marginLeft: "auto" }}>
           {onLead ? "Jess · today" : "Phase prompt"} · not medical advice
         </span>
       </div>
