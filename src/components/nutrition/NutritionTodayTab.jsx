@@ -227,16 +227,23 @@ export default function NutritionTodayTab({ user, profile, nutritionProfile, day
   const totalHydration    = hydrationLogs.reduce((sum, l) => sum + (l.amount_ml || 0), 0);
   const hydrationPct      = Math.min(100, Math.round((totalHydration / hydrationTargetMl) * 100));
 
-  useEffect(() => { loadData(); }, [dayKey]);
+  // depend on user.id too — the sheet can mount before auth resolves; without this the
+  // fetch would run once with no user (or never re-run when user arrives) and the sheet
+  // would sit empty while the hub card shows the real meals.
+  useEffect(() => { loadData(); }, [dayKey, user?.id]);
 
   const loadData = async () => {
+    if (!user?.id || !dayKey) { setLoading(false); return; }
     setLoading(true);
+    // GUARD EACH read independently (.catch -> []). Previously an unguarded sibling reject
+    // (e.g. NutritionInsight) rejected the whole Promise.all, so setMeals never ran and the
+    // sheet showed 0 meals / 0 kcal even though MealLog had data — the card-vs-sheet split.
     const [mealLogs, hydration, userTmpl, systemTmpl, ins] = await Promise.all([
-      base44.entities.MealLog.filter({ user_id: user.id, day_key: dayKey }),
-      base44.entities.HydrationLog.filter({ user_id: user.id, day_key: dayKey }),
-      base44.entities.MealTemplates.filter({ user_id: user.id }),
+      base44.entities.MealLog.filter({ user_id: user.id, day_key: dayKey }).catch(() => []),
+      base44.entities.HydrationLog.filter({ user_id: user.id, day_key: dayKey }).catch(() => []),
+      base44.entities.MealTemplates.filter({ user_id: user.id }).catch(() => []),
       base44.entities.MealTemplates.filter({ user_id: "system" }).catch(() => []),
-      base44.entities.NutritionInsight.filter({ user_id: user.id, day_key: dayKey }),
+      base44.entities.NutritionInsight.filter({ user_id: user.id, day_key: dayKey }).catch(() => []),
     ]);
     setMeals(mealLogs.filter(Boolean));
     setHydrationLogs(hydration.filter(Boolean));
