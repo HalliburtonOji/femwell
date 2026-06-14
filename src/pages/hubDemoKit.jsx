@@ -17,19 +17,20 @@ import {
 } from "@/components/journal/Editorial";
 
 const COL = 430;        // phone column
-const CARD_VW = 0.86;   // each big card ~86% of the column → a peek of the next
+const CARD_W = 365;     // EXACT match to the live Nutrition hub card width (CARD_W=365)
 
-// one large feature card frame — icon disc + title + essence header, then the body
+// one large feature card frame — sized + chromed to MATCH the live Nutrition SurfaceCard
+// (minHeight 528, padding 20, radius 20, same shadow) so the demo feels like the live page.
 function BigCard({ card, w }) {
   const Icon = card.icon;
   return (
     <section className="hd-card" style={{
       scrollSnapAlign: "center", flex: `0 0 ${w}px`, width: w,
-      background: T.paperHi, border: `1px solid ${T.paperDeep}`, borderRadius: 26,
-      boxShadow: "0 18px 44px -28px rgba(33,26,18,0.5), inset 0 1px 0 rgba(255,253,247,0.7)",
-      padding: 18, display: "flex", flexDirection: "column", minHeight: 470, maxHeight: "84vh", position: "relative", overflow: "hidden",
+      background: T.paperHi, border: `1px solid ${T.paperDeep}`, borderRadius: 20,
+      boxShadow: "0 10px 26px -18px rgba(11,8,5,0.5)",
+      padding: 20, display: "flex", flexDirection: "column", minHeight: 528, maxHeight: "84vh", position: "relative", overflow: "hidden",
     }}>
-      <div aria-hidden style={{ position: "absolute", top: 0, left: 0, right: 0, height: 78, borderRadius: "26px 26px 0 0", background: `linear-gradient(${card.accent}12, ${card.accent}00)`, pointerEvents: "none" }} />
+      <div aria-hidden style={{ position: "absolute", top: 0, left: 0, right: 0, height: 78, borderRadius: "20px 20px 0 0", background: `linear-gradient(${card.accent}12, ${card.accent}00)`, pointerEvents: "none" }} />
       <div style={{ display: "flex", alignItems: "flex-start", gap: 12, marginBottom: 14, flex: "none" }}>
         <span style={{
           width: 44, height: 44, borderRadius: 13, flex: "none", display: "inline-flex",
@@ -61,7 +62,7 @@ export default function HubDemo({ banner, header, cards, footer }) {
   const [active, setActive] = useState(0);
   const trackRef = useRef(null);
   const cardRefs = useRef({});
-  const cardW = Math.round(COL * CARD_VW);
+  const cardW = CARD_W;
 
   // track which card is centred for the dot/label state
   useEffect(() => {
