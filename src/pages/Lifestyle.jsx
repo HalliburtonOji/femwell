@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { base44 } from "@/api/base44Client";
 import { ExternalLink, X, Bookmark, SlidersHorizontal, Check } from "lucide-react";
+import { T, UI, SCRIPT, Eyebrow } from "@/components/journal/Editorial";
 import { CONTENT_CATEGORIES, categoryLabel } from "@/utils/contentCategory";
 import ForYouTab from "@/components/lifestyle/foryou/ForYouTab";
 import BrowseTab from "@/components/lifestyle/browse/BrowseTab";
@@ -108,7 +109,7 @@ function ArticleSheet({ item, onClose }) {
 
   return (
     <>
-      <div onClick={onClose} style={{ position: "fixed", inset: 0, zIndex: 60, backgroundColor: "rgba(42,32,53,0.55)", backdropFilter: "blur(6px)" }} />
+      <div onClick={onClose} style={{ position: "fixed", inset: 0, zIndex: 60, backgroundColor: "rgba(11,8,5,0.55)", backdropFilter: "blur(6px)" }} />
       <div style={{ position: "fixed", bottom: 0, left: 0, right: 0, zIndex: 61, backgroundColor: "var(--surface)", borderRadius: "24px 24px 0 0", maxHeight: "92vh", display: "flex", flexDirection: "column" }}>
         {/* Drag handle */}
         <div style={{ display: "flex", justifyContent: "center", padding: "10px 0 6px", flexShrink: 0 }}>
@@ -184,23 +185,28 @@ function ArticleSheet({ item, onClose }) {
 // summarizeLifestyleItem (see entity samples — "Women's Health",
 // "Mental Wellness", etc.). Match-by-keyword so a sub-category like
 // "Gut Health" still resolves cleanly.
+// On-brand only: every placeholder is a warm cream→palette-tint wash drawn from
+// the locked palette (sage / blush / gold / paper). No generic blues, greens,
+// or violets — categories are differentiated by which palette accent they lean
+// into (sage for health/movement, blush for cycle/skin/relationships, gold for
+// nutrition/gut/culture), all over the editorial paper cream.
 const CAT_GRADIENTS = {
-  "Women's Health":  "linear-gradient(135deg, #EBF2EF 0%, #B5CEC5 100%)",
-  "Mental Wellness": "linear-gradient(135deg, #F0EBF5 0%, #DDD0FF 100%)",
-  "Gut Health":      "linear-gradient(135deg, #F5F0E0 0%, #E0CCA0 100%)",
-  "Nutrition":       "linear-gradient(135deg, #FFF8E6 0%, #FFE8A0 100%)",
-  "Movement":        "linear-gradient(135deg, #E8F4FF 0%, #C8DEFF 100%)",
-  "Fitness":         "linear-gradient(135deg, #E8F4FF 0%, #C8DEFF 100%)",
-  "Cycle":           "linear-gradient(135deg, #F5ECF0 0%, #E8C4D0 100%)",
-  "Hormones":        "linear-gradient(135deg, #F5ECF0 0%, #E8C4D0 100%)",
-  "Menopause":       "linear-gradient(135deg, #F1E5E5 0%, #D8B0B0 100%)",
-  "Skin":            "linear-gradient(135deg, #FFF0F5 0%, #FFD6E7 100%)",
-  "Skin & Hair":     "linear-gradient(135deg, #FFF0F5 0%, #FFD6E7 100%)",
-  "Sleep":           "linear-gradient(135deg, #EBE8F5 0%, #C8BEFF 100%)",
-  "Relationships":   "linear-gradient(135deg, #FCEAEA 0%, #F2C0C0 100%)",
-  "Self Care":       "linear-gradient(135deg, #F2E6FF 0%, #D5B8FF 100%)",
-  "Lifestyle":       "linear-gradient(135deg, #FFF1E6 0%, #FFD3A8 100%)",
-  "Culture":         "linear-gradient(135deg, #F4F1E8 0%, #D7CDB0 100%)",
+  "Women's Health":  `linear-gradient(135deg, ${T.paperHi} 0%, ${T.sage} 100%)`,
+  "Mental Wellness": `linear-gradient(135deg, ${T.paperHi} 0%, ${T.blush} 100%)`,
+  "Gut Health":      `linear-gradient(135deg, ${T.paperHi} 0%, ${T.gold} 100%)`,
+  "Nutrition":       `linear-gradient(135deg, ${T.paperHi} 0%, ${T.gold} 100%)`,
+  "Movement":        `linear-gradient(135deg, ${T.paperHi} 0%, ${T.sage} 100%)`,
+  "Fitness":         `linear-gradient(135deg, ${T.paperHi} 0%, ${T.sage} 100%)`,
+  "Cycle":           `linear-gradient(135deg, ${T.paperHi} 0%, ${T.blush} 100%)`,
+  "Hormones":        `linear-gradient(135deg, ${T.paperHi} 0%, ${T.blush} 100%)`,
+  "Menopause":       `linear-gradient(135deg, ${T.paperHi} 0%, ${T.blush} 100%)`,
+  "Skin":            `linear-gradient(135deg, ${T.paperHi} 0%, ${T.blush} 100%)`,
+  "Skin & Hair":     `linear-gradient(135deg, ${T.paperHi} 0%, ${T.blush} 100%)`,
+  "Sleep":           `linear-gradient(135deg, ${T.paperHi} 0%, ${T.paperDeep} 100%)`,
+  "Relationships":   `linear-gradient(135deg, ${T.paperHi} 0%, ${T.blush} 100%)`,
+  "Self Care":       `linear-gradient(135deg, ${T.paperHi} 0%, ${T.blush} 100%)`,
+  "Lifestyle":       `linear-gradient(135deg, ${T.paperHi} 0%, ${T.gold} 100%)`,
+  "Culture":         `linear-gradient(135deg, ${T.paperHi} 0%, ${T.gold} 100%)`,
   "default":         "linear-gradient(135deg, var(--surface) 0%, var(--cream-2) 100%)",
 };
 
@@ -697,26 +703,28 @@ export default function Lifestyle() {
     <div className="min-h-screen pb-28" style={{ backgroundColor: "var(--ivory)" }}>
       <style>{`.lf-scroll::-webkit-scrollbar{display:none}.lf-scroll{-ms-overflow-style:none;scrollbar-width:none}@keyframes lf-spin{to{transform:rotate(360deg)}}.space-y-3>*+*{margin-top:12px}.space-y-4>*+*{margin-top:16px}.space-y-2>*+*{margin-top:8px}`}</style>
 
-      {/* Sticky header */}
-      <div className="sticky top-0 z-30" style={{ background: "#3A2C1A" }}>
-        {/* Row 1 — espresso bar */}
+      {/* Sticky header — editorial dusk bar (matches NutritionHub's T.dusk
+          header). Eyebrow + Ephesis script title; gold active pill on dusk. */}
+      <div className="sticky top-0 z-30" style={{ background: T.dusk }}>
+        {/* Row 1 — dusk masthead */}
         <div style={{ padding: "10px 16px", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
           <div>
-            <div style={{ fontSize: 10, color: "rgba(244,237,219,0.5)", letterSpacing: 1.5, textTransform: "uppercase", fontWeight: 700, marginBottom: 1 }}>Discover</div>
-            <div style={{ fontSize: 17, fontWeight: 700, color: "#F4EDDB" }}>Lifestyle</div>
+            <Eyebrow color="rgba(244,237,219,0.55)" mb={1}>Discover</Eyebrow>
+            <div style={{ fontFamily: SCRIPT, fontWeight: 400, fontSize: 30, lineHeight: 1.05, color: T.paper }}>Lifestyle</div>
           </div>
         </div>
         {/* Row 2 — tab pills */}
-        <div style={{ background: "rgba(58,44,26,0.85)", padding: "0 16px 10px" }}>
+        <div style={{ background: "rgba(11,8,5,0.28)", padding: "0 16px 10px" }}>
           <div className="lf-scroll" style={{ display: "flex", gap: 6, overflowX: "auto", paddingBottom: 2 }}>
             {TABS.map(t => (
               <button key={t.id} onClick={() => setTab(t.id)}
                 aria-label={`Switch to ${t.label} tab`}
                 aria-pressed={tab === t.id}
                 style={{ flexShrink: 0, padding: "7px 16px", borderRadius: 9999, fontSize: 12, fontWeight: 600, cursor: "pointer", transition: "all 0.15s", whiteSpace: "nowrap", minHeight: 32,
+                  fontFamily: UI,
                   border: tab === t.id ? "none" : "1px solid rgba(244,237,219,0.25)",
-                  backgroundColor: tab === t.id ? "#D4AF37" : "transparent",
-                  color: tab === t.id ? "#3A2C1A" : "rgba(244,237,219,0.75)" }}>
+                  backgroundColor: tab === t.id ? T.gold : "transparent",
+                  color: tab === t.id ? T.ink : "rgba(244,237,219,0.78)" }}>
                 {t.label}
               </button>
             ))}

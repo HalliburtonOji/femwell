@@ -2,15 +2,17 @@ import { useState, useEffect, useRef } from 'react';
 import { X, Play, Pause, ExternalLink } from 'lucide-react';
 import SaveHeartButton from '@/components/lifestyle/foryou/SaveHeartButton';
 
+// On-brand washes only: cream paper → palette accent (blush / sage / gold).
+// No generic blues or greens — categories lean into a palette accent instead.
 function getCategoryGradient(category) {
   const map = {
-    'Relationships': 'linear-gradient(135deg, #f7e0e8 0%, #edd5e0 100%)',
-    'Mental Wellness': 'linear-gradient(135deg, #e0e8f7 0%, #d5dded 100%)',
-    'Culture': 'linear-gradient(135deg, #f7f0e0 0%, #ede5d5 100%)',
-    'Mindfulness': 'linear-gradient(135deg, #e0f7ee 0%, #d5ede4 100%)',
-    'Lifestyle': 'linear-gradient(135deg, #f7e8e0 0%, #edddd5 100%)',
+    'Relationships': 'linear-gradient(135deg, #F4EFE3 0%, #E8B4B8 100%)',
+    'Mental Wellness': 'linear-gradient(135deg, #F4EFE3 0%, #8FAF8F 100%)',
+    'Culture': 'linear-gradient(135deg, #F4EFE3 0%, #A8893F 100%)',
+    'Mindfulness': 'linear-gradient(135deg, #F4EFE3 0%, #8FAF8F 100%)',
+    'Lifestyle': 'linear-gradient(135deg, #F4EFE3 0%, #A8893F 100%)',
   };
-  return map[category] || 'linear-gradient(135deg, #f3ede6 0%, #e8e0d8 100%)';
+  return map[category] || 'linear-gradient(135deg, #F4EFE3 0%, #D8CFBC 100%)';
 }
 
 function formatDuration(sec) {

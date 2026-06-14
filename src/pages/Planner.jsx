@@ -20,7 +20,6 @@ import EpdsScreenCard from "@/components/planner/today/EpdsScreenCard";
 import HrtCorrelationCard from "@/components/planner/today/HrtCorrelationCard";
 import FertileWindowCard from "@/components/planner/cycle/FertileWindowCard";
 import FirstLaunchStagePicker, { shouldShowFirstLaunch } from "@/components/planner/FirstLaunchStagePicker";
-import GpExportButton from "@/components/planner/cycle/GpExportButton";
 import MergedExportSheet from "@/components/planner/cycle/MergedExportSheet";
 import QuietModeBanner from "@/components/planner/cycle/QuietModeBanner";
 import SavedRhythmsCarousel from "@/components/planner/cycle/SavedRhythmsCarousel";
@@ -28,7 +27,6 @@ import WhatsUnfinishedCard from "@/components/planner/cycle/WhatsUnfinishedCard"
 import DailyStoryReel from "@/components/planner/today/DailyStoryReel";
 import FreshStartBanner from "@/components/planner/today/FreshStartBanner";
 import JessNarrativeHero from "@/components/planner/today/JessNarrativeHero";
-import PillarsDeck from "@/components/planner/today/PillarsDeck";
 import BodyStrip from "@/components/planner/today/BodyStrip";
 import RitualReframeShimmer from "@/components/planner/today/RitualReframeShimmer";
 import SmartViewCard from "@/components/planner/today/SmartViewCard";
@@ -38,7 +36,6 @@ import { WeekAheadCard, AstraSidecar, PlanMyNextCycleCTA } from "@/components/pl
 import { selectedCrumbToday, selectedCrumbCycle } from "@/components/planner/selectedCrumb";
 import { getPlannerConfig, filterProgramsByStage } from "@/utils/plannerAdapter";
 import DevStageSwitcher from "@/components/planner/DevStageSwitcher";
-import MorningBrief from "@/components/MorningBrief";
 import PlanADaySheet from "@/components/PlanADaySheet";
 // Phase 2 (2026-05-18) — unified v2 layout is ALWAYS rendered. The
 // localStorage flag (femwell_planner_v2) is gone entirely. The legacy
@@ -328,10 +325,12 @@ const stageRibbonHintStyle = {
 // Phase 1 reference demo: workspace/femwell_planner_final.html.
 // ─────────────────────────────────────────────────────────────────────────────
 
+// Category chips — all drawn from the locked palette (blush / sage / gold /
+// rose / espresso washes over cream). No generic reds or lavenders.
 const CATEGORY_COLORS = {
-  health:    { bg: "#FEE2E2", color: "#DC2626" },
+  health:    { bg: "#FBE9E6", color: "#BC2E27" }, // blush wash + brand crimson
   personal:  { bg: "#FBE9E6", color: "#B84A41" },
-  work:      { bg: "#E8E0EF", color: "#5E3E50" },
+  work:      { bg: "#F0E5D8", color: "#3A2C1A" }, // warm cream + espresso ink
   social:    { bg: "#E6EDE3", color: "#5F8A6F" },
   wellbeing: { bg: "#FEF3C7", color: "#A6862B" },
   reminder:  { bg: "#F0E5D8", color: "#6B4559" },

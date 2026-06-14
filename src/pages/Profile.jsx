@@ -301,7 +301,7 @@ export default function Profile() {
         <div role="status" style={{
           position: "fixed", left: "50%", bottom: 90, transform: "translateX(-50%)", zIndex: 90,
           display: "inline-flex", alignItems: "center", gap: 7, padding: "9px 16px", borderRadius: 9999,
-          fontFamily: "Inter, sans-serif", fontSize: 13, fontWeight: 700, color: "#F4EDDB",
+          fontSize: 13, fontWeight: 700, color: "#F4EDDB",
           background: saveToast.ok ? "#4A2A3A" : "#A84E56",
           boxShadow: "0 6px 20px rgba(58,44,26,0.28)",
         }}>
