@@ -908,19 +908,33 @@ function GameRoundCard({ user, onCrisis, kind = null, name = null, blurb = null 
   const [busy, setBusy] = useState(false);
   const tried = useRef(false);
 
+  // a fully-local round from the curated prompts — used when the backend is slow/unavailable
+  // so a game is ALWAYS playable (never stuck on "setting up").
+  const localRound = () => {
+    const k = named ? kind : "this_or_that";
+    const def = CLIENT_GAME_PROMPTS[k] || CLIENT_GAME_PROMPTS.one_word;
+    return { id: "local_" + k, kind: k, prompt: def.prompt, options: def.options, status: "open", closes_at: null, _local: true };
+  };
+
   useEffect(() => {
     if (tried.current) return; tried.current = true;
     (async () => {
       try {
-        // openGameRoundV2: the original openGameRound function got stuck (a prior LLM-hang
-        // deploy wedged it; same-name redeploys wouldn't recover — every call hung/503'd).
-        // Re-registered under a fresh name per the base44 sticky-registration gotcha. The V2
-        // function is fully LLM-free (curated prompts + static reveal) so it can never hang.
-        const r = await base44.functions.invoke("openGameRoundV2", named ? { kind } : { room: "lighter" });
+        // openGameRoundV2 is the real round backend (LLM-free). Race it against an 8s
+        // timeout: if the function tier is slow/unavailable, fall back to a local round so
+        // the game is always playable. (The original openGameRound got wedged by an earlier
+        // LLM-hang deploy — hence the V2 rename AND this graceful fallback.)
+        const r = await Promise.race([
+          base44.functions.invoke("openGameRoundV2", named ? { kind } : { room: "lighter" }),
+          new Promise((_, rej) => setTimeout(() => rej(new Error("timeout")), 8000)),
+        ]);
         const d = r?.data ?? r;
         if (d?.round) { setRound(d.round); setAnswered(gameAnswered(d.round.id)); }
-        else setRound(false);
-      } catch (e) { console.error("game load failed:", e); setRound(false); }
+        else { const fb = localRound(); setRound(fb); setAnswered(gameAnswered(fb.id)); }
+      } catch (e) {
+        console.error("game load fell back to local:", e?.message || e);
+        const fb = localRound(); setRound(fb); setAnswered(gameAnswered(fb.id));
+      }
     })();
   }, []);
 
@@ -929,13 +943,16 @@ function GameRoundCard({ user, onCrisis, kind = null, name = null, blurb = null 
     if (payload.text && crisisCheck(payload.text).intercept) { onCrisis(); return; }
     setBusy(true);
     try {
-      const wh = await communityHash(user?.id);
-      const r = await base44.functions.invoke("submitGameResponse", { user_id: user?.id, author_hash: wh, round_id: round.id, ...payload });
-      const d = r?.data ?? r;
-      if (d?.intercept) { onCrisis(); return; }
-      // rejected (harmful) or ok or already → either way the round is now "answered" for this device
+      // local round → keep the answer on-device (no backend); real round → the proven write
+      if (!round._local) {
+        const wh = await communityHash(user?.id);
+        const r = await base44.functions.invoke("submitGameResponse", { user_id: user?.id, author_hash: wh, round_id: round.id, ...payload });
+        const d = r?.data ?? r;
+        if (d?.intercept) { onCrisis(); return; }
+      }
+      // rejected (harmful) / ok / already / local → either way the round is now "answered" here
       markGameAnswered(round.id); setAnswered(true); setDraft("");
-    } catch (e) { console.error("game answer failed:", e); }
+    } catch (e) { console.error("game answer failed:", e); markGameAnswered(round.id); setAnswered(true); setDraft(""); }
     finally { setBusy(false); }
   };
 
@@ -960,7 +977,9 @@ function GameRoundCard({ user, onCrisis, kind = null, name = null, blurb = null 
     <div style={{ fontFamily: HANDFAM, fontSize: named ? 16.5 : 18, lineHeight: 1.5, color: revealColor }}>{round.reveal}</div>
   ) : answered ? (
     <div style={{ fontFamily: UI, fontSize: 12.5, color: answeredColor, lineHeight: 1.5 }}>
-      You{"’"}re in. Come back when it closes and Jess will gather what the room said — no winners, just us. <span style={{ opacity: 0.8 }}>({closesInLabel(round.closes_at)}.)</span>
+      {round._local
+        ? CLIENT_GAME_REVEAL
+        : <>You{"’"}re in. Come back when it closes and Jess will gather what the room said — no winners, just us. <span style={{ opacity: 0.8 }}>({closesInLabel(round.closes_at)}.)</span></>}
     </div>
   ) : hasOptions ? (
     <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
@@ -981,7 +1000,7 @@ function GameRoundCard({ user, onCrisis, kind = null, name = null, blurb = null 
           border: named ? `1px solid ${T.paperDeep}` : "1px solid rgba(244,239,227,0.25)",
           background: named ? T.paper : "rgba(244,239,227,0.06)", color: named ? T.ink : "#F4EFE3", resize: "none" }} />
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: 8 }}>
-        <span style={{ fontFamily: UI, fontSize: 10.5, color: metaColor }}>{closesInLabel(round.closes_at)}</span>
+        <span style={{ fontFamily: UI, fontSize: 10.5, color: metaColor }}>{round._local ? "just for fun" : closesInLabel(round.closes_at)}</span>
         <button onClick={() => draft.trim() && submit({ text: draft.trim() })} disabled={!draft.trim() || busy} style={{
           fontFamily: UI, fontSize: 12, fontWeight: 700, cursor: (!draft.trim() || busy) ? "default" : "pointer",
           padding: "8px 16px", borderRadius: 999, border: "none", background: T.gold, color: PLUM, opacity: (!draft.trim() || busy) ? 0.5 : 1,
@@ -1016,6 +1035,20 @@ function GameRoundCard({ user, onCrisis, kind = null, name = null, blurb = null 
     </section>
   );
 }
+
+// Client-side fallback prompts (mirror the backend's curated set). If the games
+// function is slow/unavailable, the round still opens from these so the game is ALWAYS
+// playable — answers are kept on-device and Jess gives a warm, count-free reveal. When
+// the backend is healthy it takes over (real cross-device rounds + aggregate).
+const CLIENT_GAME_PROMPTS = {
+  this_or_that:    { prompt: "Cosy night in, or a big night out?", options: ["Cosy night in", "Big night out"] },
+  one_word:        { prompt: "One word for how today has felt so far?", options: [] },
+  caption:         { prompt: "A kettle clicking off in a quiet kitchen at dawn — caption the feeling.", options: [] },
+  one_line_story:  { prompt: "She opened the door she had walked past a hundred times, and…", options: [] },
+  kind_confession: { prompt: "A tiny, harmless habit no one knows you have?", options: [] },
+  recommend:       { prompt: "Recommend the room one small comfort — a show, a song, or a snack.", options: [] },
+};
+const CLIENT_GAME_REVEAL = "Lovely — your answer's in. When the room's all played, Jess gathers the warm whole of it. No winners here, just us.";
 
 // The named games lineup — each a real, separately-playable GameRound (its own format).
 const NAMED_GAMES = [
