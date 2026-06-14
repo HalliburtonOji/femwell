@@ -30,11 +30,18 @@
 // scoreboards, phone-first.
 import { useState, useEffect, useCallback, useRef } from "react";
 import { base44 } from "@/api/base44Client";
+import { format, startOfWeek } from "date-fns";
 import { motion, AnimatePresence } from "framer-motion";
+
+// plan shape helpers (mirror UnifiedMealPlanTab's legacy plan_days / cell_macros)
+const PLAN_SLOTS = ["breakfast", "lunch", "dinner", "snack"];
+const PLAN_DAY_LABELS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+const PLAN_SLOT_LABELS = { breakfast: "Morning", lunch: "Midday", dinner: "Evening", snack: "Snack" };
+const todayPlanIdx = () => { const dow = new Date().getDay(); return dow === 0 ? 6 : dow - 1; }; // Mon=0
 import {
   ChefHat, Plus, X, Star, Clock, Users, ChevronLeft, ChevronRight,
   Loader2, Check, Circle, CheckCircle2, Timer, Play, Pause, RotateCcw,
-  Sparkles, BookOpen, ArrowLeft, Minus, BookmarkPlus, Search, Heart,
+  Sparkles, BookOpen, ArrowLeft, Minus, BookmarkPlus, Search, Heart, CalendarPlus,
 } from "lucide-react";
 import { toast } from "sonner";
 import {
@@ -343,10 +350,16 @@ function GuidedCook({ recipe, onExit }) {
 // ════════════════════════════════════════════════════════════════════════════
 function RecipeObject({
   recipe, joyLine, onBack, onSave, saving, savedId, rating, onRate, onCook,
+  onAddToPlan, addingToPlan,
 }) {
   const baseServings = recipe.servings || 1;
   const [servings, setServings] = useState(baseServings);
   const factor = baseServings ? servings / baseServings : 1;
+
+  // RECIPE → PLAN picker (day + slot)
+  const [planOpen, setPlanOpen] = useState(false);
+  const [pDay, setPDay] = useState(todayPlanIdx());
+  const [pSlot, setPSlot] = useState("dinner");
 
   const ingredients = Array.isArray(recipe.ingredients) ? recipe.ingredients : [];
   // have-it / need-it: default everything to "need it"; toggling to "have it"
@@ -542,6 +555,44 @@ function RecipeObject({
         </div>
       )}
 
+      {/* RECIPE → PLAN: add this recipe to a day/slot of this week's plan */}
+      {onAddToPlan && (
+        <div style={{ ...cardShell, padding: 14, marginBottom: 16 }}>
+          {!planOpen ? (
+            <button onClick={() => setPlanOpen(true)}
+              style={{ width: "100%", display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 8, padding: "12px 0", borderRadius: 10, background: T.paper, border: `1px solid ${T.paperDeep}`, color: T.ink, cursor: "pointer", fontFamily: UI, fontSize: 12, fontWeight: 700, letterSpacing: 0.5, textTransform: "uppercase" }}>
+              <CalendarPlus size={15} color={T.gold} /> Add to this week's plan
+            </button>
+          ) : (
+            <div>
+              <div style={sLabel}>Add to which day</div>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 6, margin: "10px 0 12px" }}>
+                {PLAN_DAY_LABELS.map((d, i) => (
+                  <button key={d} onClick={() => setPDay(i)} style={planChip(pDay === i)}>{d}</button>
+                ))}
+              </div>
+              <div style={sLabel}>Which meal</div>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 6, margin: "10px 0 14px" }}>
+                {PLAN_SLOTS.map((s) => (
+                  <button key={s} onClick={() => setPSlot(s)} style={planChip(pSlot === s)}>{PLAN_SLOT_LABELS[s]}</button>
+                ))}
+              </div>
+              <div style={{ display: "flex", gap: 10 }}>
+                <button onClick={() => setPlanOpen(false)}
+                  style={{ flex: 1, padding: "11px 0", borderRadius: 10, background: T.paper, border: `1px solid ${T.paperDeep}`, color: T.ink, cursor: "pointer", fontFamily: UI, fontSize: 12, fontWeight: 700, letterSpacing: 0.4 }}>
+                  Cancel
+                </button>
+                <button onClick={async () => { await onAddToPlan(pDay, pSlot); setPlanOpen(false); }} disabled={addingToPlan}
+                  style={{ flex: 1, display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 7, padding: "11px 0", borderRadius: 10, background: T.gold, color: T.paper, border: "none", cursor: addingToPlan ? "default" : "pointer", fontFamily: UI, fontSize: 12, fontWeight: 700, letterSpacing: 0.4, opacity: addingToPlan ? 0.7 : 1 }}>
+                  {addingToPlan ? <Loader2 size={14} className="animate-spin" /> : <Check size={14} />}
+                  Add to {PLAN_DAY_LABELS[pDay]} · {PLAN_SLOT_LABELS[pSlot]}
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
       {/* sticky-ish actions */}
       <div style={{ display: "flex", gap: 10 }}>
         {steps.length > 0 && (
@@ -584,6 +635,12 @@ const stepperBtn = {
   width: 32, height: 32, borderRadius: 999, background: T.paper, border: `1px solid ${T.paperDeep}`,
   color: T.ink, cursor: "pointer", display: "grid", placeItems: "center",
 };
+const planChip = (on) => ({
+  padding: "6px 12px", borderRadius: 999, cursor: "pointer",
+  background: on ? T.ink : T.paper, color: on ? T.paper : T.ink,
+  border: `1px solid ${on ? T.ink : T.paperDeep}`,
+  fontFamily: UI, fontSize: 11, fontWeight: 700, letterSpacing: 0.3,
+});
 const ghostBtn = {
   marginTop: 14, background: T.paper, border: `1px solid ${T.paperDeep}`, borderRadius: 10,
   padding: "10px 16px", fontFamily: UI, fontSize: 12, fontWeight: 700, color: T.ink, cursor: "pointer",
@@ -683,6 +740,53 @@ export default function UnifiedRecipesTab({ user, profile, nutritionProfile }) {
     setView("recipe");
   };
 
+  // ── RECIPE → PLAN: drop the active recipe into a cell of THIS WEEK's plan ──────
+  // Writes the recipe name into MealPlans.plan_days[dayIdx][slot] and its macros into
+  // cell_macros — the same legacy shape UnifiedMealPlanTab reads, so it appears in the
+  // planner (and flows on to Shop + the one-tap Log). Guarded; creates the week row if
+  // none exists. Closes the discover→plan→shop→cook loop.
+  const [addingToPlan, setAddingToPlan] = useState(false);
+  const addRecipeToPlan = async (dayIdx, slot) => {
+    if (!user?.id || !active?.recipe || addingToPlan) return;
+    setAddingToPlan(true);
+    const r = active.recipe;
+    const name = (r.recipe_name || "Recipe").trim();
+    const weekKey = format(startOfWeek(new Date(), { weekStartsOn: 1 }), "yyyy-MM-dd");
+    const nut = r.nutritional_summary || {};
+    const macro = {};
+    ["calories", "protein_g", "carbs_g", "fat_g"].forEach((k) => {
+      if (Number.isFinite(Number(nut[k]))) macro[k] = Math.round(Number(nut[k]));
+    });
+    try {
+      const rows = await withTimeout(
+        base44.entities.MealPlans.filter({ user_id: user.id, week_start: weekKey }), 6000, "plan"
+      ).catch(() => []);
+      const row = (rows || []).filter(Boolean)[0] || null;
+      const planDays = Array.isArray(row?.plan_days) ? row.plan_days.map((d) => ({ ...d })) : [];
+      let dayEntry = planDays.find((d) => d?.day === dayIdx);
+      if (!dayEntry) { dayEntry = { day: dayIdx }; planDays.push(dayEntry); }
+      PLAN_SLOTS.forEach((s) => { if (!Array.isArray(dayEntry[s])) dayEntry[s] = dayEntry[s] ? [dayEntry[s]] : []; });
+      dayEntry[slot] = [name];
+      const cellMacros = { ...(row?.cell_macros || {}) };
+      if (Object.keys(macro).length) cellMacros[`${dayIdx}_${slot}`] = macro;
+      if (row?.id) {
+        await withTimeout(base44.entities.MealPlans.update(row.id, {
+          plan_days: planDays, cell_macros: cellMacros, updated_at: new Date().toISOString(),
+        }), 6000, "save");
+      } else {
+        await withTimeout(base44.entities.MealPlans.create({
+          user_id: user.id, week_start: weekKey, plan_days: planDays, cell_macros: cellMacros,
+          locked_cells: [], is_active: true, created_at: new Date().toISOString(),
+        }), 6000, "save");
+      }
+      toast.success(`Added to ${PLAN_DAY_LABELS[dayIdx]} · ${PLAN_SLOT_LABELS[slot]}`);
+    } catch (e) {
+      console.error("addRecipeToPlan failed", e);
+      toast.error("Couldn't add to your plan — try again");
+    }
+    setAddingToPlan(false);
+  };
+
   // ── save the active (generated) recipe — full JSON, optimistic, guarded ──────
   const saveActive = async () => {
     if (!active?.recipe || !user?.id) return;
@@ -756,6 +860,8 @@ export default function UnifiedRecipesTab({ user, profile, nutritionProfile }) {
         rating={active.rating}
         onRate={rateActive}
         onCook={() => setView("cook")}
+        onAddToPlan={addRecipeToPlan}
+        addingToPlan={addingToPlan}
       />
     );
   }
