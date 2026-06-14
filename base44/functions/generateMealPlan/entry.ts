@@ -126,7 +126,9 @@ Create a ${duration_days}-day meal plan that:
 - Includes only the specified meal types per day
 - Includes "add-on suggestions" — simple extras to boost wellness benefits
 
-Return ONLY valid JSON:
+Return ONLY valid JSON. Keep it COMPACT — names + macros only, NO cook steps, NO long
+descriptions (the planner shows the meal name and its macros; full recipes are generated
+separately on demand). This keeps the response fast.
 {
   "plan_name": "string",
   "wellness_focus": "string",
@@ -135,16 +137,14 @@ Return ONLY valid JSON:
       "day_number": number,
       "day_label": "Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday",
       "meals": {
-        "breakfast": {"name": "string", "description": "string", "cuisine": "string", "prep_minutes": number, "cook_steps": ["string"]},
-        "lunch": {"name": "string", "description": "string", "cuisine": "string", "prep_minutes": number, "cook_steps": ["string"]},
-        "dinner": {"name": "string", "description": "string", "cuisine": "string", "prep_minutes": number, "cook_steps": ["string"]},
-        "snack": {"name": "string", "description": "string", "cuisine": "string", "prep_minutes": number, "cook_steps": ["string"]}
-      },
-      "daily_wellness_tip": "string"
+        "breakfast": {"name": "string", "cuisine": "string", "nutritional_summary": {"calories": number, "protein_g": number, "carbs_g": number, "fat_g": number}},
+        "lunch": {"name": "string", "cuisine": "string", "nutritional_summary": {"calories": number, "protein_g": number, "carbs_g": number, "fat_g": number}},
+        "dinner": {"name": "string", "cuisine": "string", "nutritional_summary": {"calories": number, "protein_g": number, "carbs_g": number, "fat_g": number}},
+        "snack": {"name": "string", "cuisine": "string", "nutritional_summary": {"calories": number, "protein_g": number, "carbs_g": number, "fat_g": number}}
+      }
     }
   ],
   "shopping_list": ["string"],
-  "addon_suggestions": [{"name": "string", "reason": "string", "applies_to": "all|breakfast|lunch|dinner|snack"}],
   "weekly_tip": "string"
 }
 
@@ -152,12 +152,10 @@ Only include the meal types specified (${mealTypesStr}) in each day's meals obje
 
 CRITICAL CUISINE DIVERSITY — follow ALL of these or the plan fails:
 (0) Each day MUST have at least one non-Western meal. Rotate through these cuisines across the 7 days: Day 1: Nigerian/West African, Day 2: Indian/South Asian, Day 3: Thai/Vietnamese, Day 4: Mediterranean/Greek, Day 5: Lebanese/Middle Eastern, Day 6: Mexican/Caribbean, Day 7: Japanese/Korean. Include the cuisine name in each meal object as a 'cuisine' field.
-(1) No protein source (chicken, beef, fish, eggs, tofu, lentils, etc.) should appear more than once in the full plan.
+(1) Apart from the user's LOVED meals (the welcome exception above), no protein source (chicken, beef, fish, eggs, tofu, lentils, etc.) should appear more than once in the full plan.
 (2) No two meals should share the same primary cooking method (stir-fry, baked, roasted, grilled, raw, steamed, soup).
-(3) Every meal must include an estimated calorie count and a macro breakdown (protein_g, carbs_g, fat_g) in the nutritional_summary field of each day.
-(4) The shopping list must be deduplicated — if an ingredient appears in multiple meals, list it once with the combined quantity.
-(5) The shopping list maximum is 25 items total. Prioritise staples that appear in multiple meals.
-(6) Each meal must include cook_steps: an array of 3–5 actionable cooking steps, each a full sentence.`;
+(3) Every meal MUST include its nutritional_summary (calories + protein_g + carbs_g + fat_g) — these drive the planner's macro preview.
+(4) The shopping list must be deduplicated and a maximum of 25 items; prioritise staples used across multiple meals.`;
     }
 
     const response = await openai.chat.completions.create({
