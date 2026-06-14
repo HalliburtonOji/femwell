@@ -262,7 +262,10 @@
       url('/paper-texture.png');
     background-size: auto, auto, auto, 300px 300px;
     background-repeat: no-repeat, no-repeat, repeat, repeat;
-    background-attachment: fixed, fixed, fixed, fixed;
+    /* scroll (not fixed): a viewport-pinned texture read as a second background
+       scrolling separately from content; doubled where a page ALSO set an inline
+       paper bg. scroll = one coherent background that moves with the page. */
+    background-attachment: scroll, scroll, scroll, scroll;
     background-blend-mode: normal, normal, normal, multiply;
   }
 

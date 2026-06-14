@@ -124,7 +124,7 @@ const PAPER_BG = {
     `url("${PAPER_TEX}")`,                                                                        // real paper-grain image
   backgroundSize: "auto, auto, auto, 300px 300px",
   backgroundRepeat: "no-repeat, no-repeat, repeat, repeat",
-  backgroundAttachment: "fixed, fixed, fixed, fixed",
+  backgroundAttachment: "scroll, scroll, scroll, scroll",
   backgroundBlendMode: "normal, normal, normal, multiply",
 };
 
