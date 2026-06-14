@@ -27,6 +27,22 @@ const KINDS = [
   { kind: 'recommend', ask: 'ask the room to recommend ONE small comfort (a comfort show, a cosy recipe, a feel-good song).' },
 ];
 
+// Curated prompts for the NAMED games (the {kind} path). These are used INSTEAD of an LLM
+// call when opening a named-game round — opening several named games at once would mean
+// several concurrent InvokeLLM calls, and an awaited LLM call on the request path can HANG
+// the function (a known base44 trap; the timeout race rejects but the socket can stay
+// wedged). Static prompts make each named round a single fast entity write — never a hang.
+const NAMED_PROMPTS: Record<string, { prompt: string; options: string[] }> = {
+  this_or_that:    { prompt: 'Cosy night in, or a big night out?', options: ['Cosy night in', 'Big night out'] },
+  one_word:        { prompt: 'One word for how today has felt so far?', options: [] },
+  caption:         { prompt: 'A kettle clicking off in a quiet kitchen at dawn — caption the feeling.', options: [] },
+  one_line_story:  { prompt: 'She opened the door she had walked past a hundred times, and…', options: [] },
+  kind_confession: { prompt: 'A tiny, harmless habit no one knows you have?', options: [] },
+  recommend:       { prompt: 'Recommend the room one small comfort — a show, a song, or a snack.', options: [] },
+};
+// A warm, count-free static reveal for named games (no LLM on the close path either).
+const NAMED_REVEAL = 'However you all answered, the room leaned warm — a good mix, and nobody got it wrong. Play again whenever you like.';
+
 // Timeout guard — an awaited platform read/write that HANGS would wedge the function.
 function withTimeout(p: Promise<any>, ms: number, label: string): Promise<any> {
   return new Promise((resolve, reject) => {
@@ -150,8 +166,9 @@ Deno.serve(async (req) => {
       if (now < ms(latest.closes_at)) {
         return Response.json({ ok: true, round: shape(latest) });   // live, still open
       }
-      // expired → close it with Jess's reveal
-      const reveal = await writeReveal(sb, latest);
+      // expired → close it with a reveal. Named games use a STATIC reveal (no LLM on the
+      // request path → never hangs); the day-rotated nightly round keeps Jess's LLM reveal.
+      const reveal = forced ? NAMED_REVEAL : await writeReveal(sb, latest);
       const closed = await withTimeout(sb.entities.GameRound.update(latest.id, { status: 'closed', reveal }), 6000, 'update').catch(() => ({ ...latest, status: 'closed', reveal }));
       return Response.json({ ok: true, round: shape({ ...latest, ...closed, status: 'closed', reveal }) });
     }
@@ -160,9 +177,11 @@ Deno.serve(async (req) => {
       return Response.json({ ok: true, round: shape(latest) });      // keep showing the reveal
     }
 
-    // open a fresh round — forced format for a named game, else the day-rotated pick
+    // open a fresh round — forced format for a named game, else the day-rotated pick.
+    // Named games use a curated static prompt (NO LLM → fast, never hangs); the nightly
+    // round generates a fresh prompt via the LLM (with its own timeout + fallback).
     const kindDef = forced || pickKind();
-    const { prompt, options } = await genPrompt(sb, kindDef);
+    const { prompt, options } = forced ? NAMED_PROMPTS[forced.kind] : await genPrompt(sb, kindDef);
     const created = await withTimeout(sb.entities.GameRound.create({
       room, kind: kindDef.kind, prompt, options,
       opens_at: new Date(now).toISOString(),
