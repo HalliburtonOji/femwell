@@ -373,9 +373,10 @@ export default function UnifiedMealPlanTab({ user, profile, nutritionProfile, ta
         // gentle SOFT targets — explicit user value wins, else the derived guide
         calorie_target: nutritionProfile?.calories_target || targets?.energy_kcal,
         protein_target: nutritionProfile?.protein_target_g || targets?.protein_g,
-        // a full 7-day plan with the diversity ruleset legitimately takes ~20–30s on
-        // gpt-4o-mini; 35s gives it headroom so a valid plan isn't discarded mid-flight.
-      }), 35000, "meal plan");
+        // a full 7-day plan with the cuisine-diversity ruleset legitimately takes
+        // ~35–45s on gpt-4o-mini even with the slimmed output; 60s headroom so a valid
+        // plan is never discarded mid-flight (observed: 35s clipped real responses).
+      }), 60000, "meal plan");
 
       const data = res?.data?.data || res?.data; // function returns { mode, data }
       if (!data || res?.data?.error) {
@@ -612,7 +613,9 @@ export default function UnifiedMealPlanTab({ user, profile, nutritionProfile, ta
           : <><Sparkles size={15} /> Generate / Regenerate week</>}
       </button>
       <p style={{ fontFamily: UI, fontSize: 10.5, color: T.muted, textAlign: "center", marginTop: -6 }}>
-        Locked meals are always kept — only open cells are refreshed.
+        {busyWeek
+          ? "Building your week — this can take up to a minute."
+          : "Locked meals are always kept — only open cells are refreshed."}
       </p>
 
       {/* ── day rail ──────────────────────────────────────────────────────────── */}
