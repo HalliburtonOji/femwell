@@ -22,7 +22,7 @@ import {
 import { format, subDays } from "date-fns";
 import { base44 } from "@/api/base44Client";
 import { withTimeout } from "@/utils/safeEntity";
-import { getMealSummary } from "@/utils/nutritionAiAnalysis";
+import { dayNutrition } from "@/utils/foodModel";
 
 /* ---------------------------------------------------------------- tokens */
 
@@ -77,29 +77,49 @@ function phaseForDate(dateStr, p) {
   return "luteal";
 }
 
-// Build a per-day map of nutrition signals from MealLog. Uses getMealSummary so the
-// legacy-shape zero bug is avoided (it normalises a.summary || a.nutritional_summary).
+// Build a per-day map of nutrition signals from MealLog. Per-day macro AND micro
+// totals come from the nutrition spine — dayNutrition(rows for that day) — so Progress
+// reads the SAME compounded numbers as the hub header and Insights (legacy-shape zero
+// bug already handled inside getMealSummary, which dayNutrition uses). Keyword name
+// aggregation is kept for the qualitative "leaning" hints; real micro data (iron_mg)
+// now also trips leanIron, so the differentiator gets sharper as logged micros compound.
 function buildDayMap(mealLogs) {
-  const map = {}; // day_key -> { meals, calories, protein, fibre, items:[names], leanIron, leanProtein, leanFibre }
+  // group raw rows by day_key first, then run the spine once per day
+  const byDay = {};
   (mealLogs || []).forEach((m) => {
     const key = m.day_key;
     if (!key) return;
-    if (!map[key]) map[key] = { meals: 0, calories: 0, protein: 0, fibre: 0, items: [], names: "" };
-    const { summary } = getMealSummary(m) || {};
-    const s = summary || {};
-    map[key].meals += 1;
-    map[key].calories += Number(s.calories) || 0;
-    map[key].protein += Number(s.protein_g) || 0;
-    map[key].fibre += Number(s.fiber_g) || 0;
-    const itemNames = ((m.ai_analysis && m.ai_analysis.items) || [])
-      .map((it) => (it && it.name ? String(it.name) : ""))
-      .filter(Boolean);
-    map[key].items.push(...itemNames);
-    map[key].names += " " + (m.raw_text || "") + " " + itemNames.join(" ");
+    (byDay[key] || (byDay[key] = [])).push(m);
   });
+
+  const map = {}; // day_key -> { meals, calories, protein, fibre, iron, items:[names], leanIron, leanProtein, leanFibre }
+  Object.entries(byDay).forEach(([key, rows]) => {
+    const n = dayNutrition(rows); // one source of truth (macros + micros)
+    const items = [];
+    let names = "";
+    rows.forEach((m) => {
+      const itemNames = ((m.ai_analysis && m.ai_analysis.items) || [])
+        .map((it) => (it && it.name ? String(it.name) : ""))
+        .filter(Boolean);
+      items.push(...itemNames);
+      names += " " + (m.raw_text || "") + " " + itemNames.join(" ");
+    });
+    map[key] = {
+      meals: rows.length,
+      calories: n.kcal,
+      protein: n.protein_g,
+      fibre: n.fiber_g,
+      iron: n.iron_mg,
+      ironKnown: !!n.known?.iron_mg,
+      items,
+      names,
+    };
+  });
+
   Object.values(map).forEach((d) => {
     const hay = d.names.toLowerCase();
-    d.leanIron = IRON_HINTS.some((w) => hay.includes(w));
+    // real iron data (compounded from logs) OR an iron-leaning food name trips the lean
+    d.leanIron = (d.ironKnown && d.iron >= 7) || IRON_HINTS.some((w) => hay.includes(w));
     d.leanProtein = (d.protein >= 60) || PROTEIN_HINTS.some((w) => hay.includes(w));
     d.leanFibre = (d.fibre >= 20) || FIBRE_HINTS.some((w) => hay.includes(w));
     d.variety = new Set(d.items.map((x) => x.toLowerCase())).size;

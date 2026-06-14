@@ -45,6 +45,7 @@ import {
 } from "lucide-react";
 import { T, UI, SERIF } from "@/components/journal/Editorial";
 import { withTimeout } from "@/utils/safeEntity";
+import { extractIngredients } from "@/utils/foodModel";
 
 // ── aisle order = the linear store path ────────────────────────────────────────
 const AISLES = ["Produce", "Protein", "Dairy", "Bakery", "Cupboard", "Frozen", "Other"];
@@ -77,50 +78,10 @@ const CATEGORY_TO_AISLE = {
 };
 const toAisle = (cat) => CATEGORY_TO_AISLE[cat] || (AISLES.includes(cat) ? cat : "Other");
 
-// ── deterministic ingredient dictionary: keyword (found in a meal NAME) → canonical
-//    ingredient + aisle. This is the "not a naive text-split" core. We scan each meal
-//    name for known food words and pull THOSE out, rather than blindly splitting on
-//    spaces. Order matters a little (longer phrases first) but we match all hits. ────
-const INGREDIENT_DB = [
-  // Produce
-  ["spinach", "Spinach", "Produce"], ["kale", "Kale", "Produce"], ["rocket", "Rocket", "Produce"],
-  ["onion", "Onion", "Produce"], ["red onion", "Red onion", "Produce"], ["garlic", "Garlic", "Produce"],
-  ["tomato", "Tomatoes", "Produce"], ["cherry tomato", "Cherry tomatoes", "Produce"],
-  ["pepper", "Pepper", "Produce"], ["courgette", "Courgette", "Produce"], ["aubergine", "Aubergine", "Produce"],
-  ["mushroom", "Mushrooms", "Produce"], ["carrot", "Carrots", "Produce"], ["broccoli", "Broccoli", "Produce"],
-  ["cauliflower", "Cauliflower", "Produce"], ["potato", "Potatoes", "Produce"], ["sweet potato", "Sweet potato", "Produce"],
-  ["cucumber", "Cucumber", "Produce"], ["lettuce", "Lettuce", "Produce"], ["avocado", "Avocado", "Produce"],
-  ["lemon", "Lemon", "Produce"], ["lime", "Lime", "Produce"], ["ginger", "Ginger", "Produce"],
-  ["banana", "Banana", "Produce"], ["apple", "Apple", "Produce"], ["berries", "Berries", "Produce"],
-  ["blueberr", "Blueberries", "Produce"], ["strawberr", "Strawberries", "Produce"], ["spring onion", "Spring onions", "Produce"],
-  ["peas", "Peas", "Produce"], ["leek", "Leek", "Produce"], ["celery", "Celery", "Produce"], ["beetroot", "Beetroot", "Produce"],
-  // Protein
-  ["chicken", "Chicken", "Protein"], ["beef", "Beef", "Protein"], ["mince", "Mince", "Protein"],
-  ["pork", "Pork", "Protein"], ["lamb", "Lamb", "Protein"], ["turkey", "Turkey", "Protein"],
-  ["salmon", "Salmon", "Protein"], ["tuna", "Tuna", "Protein"], ["cod", "Cod", "Protein"],
-  ["prawn", "Prawns", "Protein"], ["fish", "Fish", "Protein"], ["sausage", "Sausages", "Protein"],
-  ["bacon", "Bacon", "Protein"], ["tofu", "Tofu", "Protein"], ["chickpea", "Chickpeas", "Cupboard"],
-  ["lentil", "Lentils", "Cupboard"], ["bean", "Beans", "Cupboard"], ["egg", "Eggs", "Dairy"],
-  // Dairy
-  ["milk", "Milk", "Dairy"], ["cheese", "Cheese", "Dairy"], ["feta", "Feta", "Dairy"],
-  ["yoghurt", "Yoghurt", "Dairy"], ["yogurt", "Yoghurt", "Dairy"], ["butter", "Butter", "Dairy"],
-  ["cream", "Cream", "Dairy"], ["halloumi", "Halloumi", "Dairy"], ["mozzarella", "Mozzarella", "Dairy"],
-  // Bakery
-  ["bread", "Bread", "Bakery"], ["toast", "Bread", "Bakery"], ["bagel", "Bagels", "Bakery"],
-  ["wrap", "Wraps", "Bakery"], ["tortilla", "Tortillas", "Bakery"], ["pitta", "Pitta", "Bakery"],
-  ["roll", "Rolls", "Bakery"], ["muffin", "Muffins", "Bakery"],
-  // Cupboard
-  ["rice", "Rice", "Cupboard"], ["pasta", "Pasta", "Cupboard"], ["noodle", "Noodles", "Cupboard"],
-  ["oats", "Oats", "Cupboard"], ["porridge", "Oats", "Cupboard"], ["quinoa", "Quinoa", "Cupboard"],
-  ["couscous", "Couscous", "Cupboard"], ["flour", "Flour", "Cupboard"], ["sugar", "Sugar", "Cupboard"],
-  ["oil", "Olive oil", "Cupboard"], ["olive oil", "Olive oil", "Cupboard"], ["honey", "Honey", "Cupboard"],
-  ["stock", "Stock", "Cupboard"], ["curry", "Curry paste", "Cupboard"], ["coconut milk", "Coconut milk", "Cupboard"],
-  ["soy sauce", "Soy sauce", "Cupboard"], ["peanut butter", "Peanut butter", "Cupboard"], ["nuts", "Nuts", "Cupboard"],
-  ["almond", "Almonds", "Cupboard"], ["seeds", "Seeds", "Cupboard"], ["granola", "Granola", "Cupboard"],
-  ["passata", "Passata", "Cupboard"], ["tinned tomato", "Tinned tomatoes", "Cupboard"],
-  // Frozen
-  ["frozen pea", "Frozen peas", "Frozen"], ["ice cream", "Ice cream", "Frozen"],
-];
+// NOTE: the deterministic ingredient dictionary + per-name extractor now live in the
+// shared nutrition spine (src/utils/foodModel.js → extractIngredients / extractFromName),
+// so logging and shopping read ONE extractor. This tab consumes extractIngredients()
+// below in buildFromPlan; the aisle keyword→canonical mapping is owned there.
 
 // pricey staples → a money-saving swap hint (opt-in budget feature). Heuristic only.
 const SWAP_HINTS = {
@@ -177,21 +138,6 @@ function mergeItems(rows) {
     aisle: v.aisle || "Other",
     qty: v.mixed ? "" : fmtQty({ count: v.count, unit: v.unit }),
   }));
-}
-
-// Extract ingredients from ONE meal name using the dictionary (deterministic).
-function extractFromName(name) {
-  const text = (name || "").toLowerCase();
-  if (!text) return [];
-  const hits = [];
-  const seen = new Set();
-  for (const [kw, canon, aisle] of INGREDIENT_DB) {
-    if (text.includes(kw) && !seen.has(canon)) {
-      seen.add(canon);
-      hits.push({ name: canon, aisle, qty: "" });
-    }
-  }
-  return hits;
 }
 
 const sLabel = {
@@ -263,30 +209,22 @@ export default function UnifiedShoppingTab({ user, profile }) {
         return;
       }
 
-      // 1) collect every meal NAME from the real plan_days
-      const names = [];
-      for (const pd of plan.plan_days || []) {
-        if (!pd) continue;
-        for (const slot of ["breakfast", "lunch", "dinner", "snack"]) {
-          const arr = pd[slot];
-          if (Array.isArray(arr)) arr.forEach((n) => n && names.push(n));
-          else if (typeof arr === "string" && arr) names.push(arr);
-        }
-      }
+      // 1+2) SHARED extractor: collect every meal NAME from the real plan_days and run
+      //       the deterministic dictionary extraction (NOT a naive split) — now owned by
+      //       the nutrition spine (foodModel.extractIngredients), so logging and shopping
+      //       share one extractor. Returns { items:[{name,aisle}], unreadNames, names }.
+      const { items: dictItems, unreadNames, names } = extractIngredients(plan.plan_days);
       if (names.length === 0) {
         setError("Your plan has no meals yet — add some in the planner, then build.");
         setBuilding(false);
         return;
       }
 
-      // 2) deterministic dictionary extraction (NOT a naive split)
-      let extracted = [];
-      for (const n of names) extracted.push(...extractFromName(n));
+      let extracted = dictItems.map((it) => ({ name: it.name, aisle: it.aisle, qty: "" }));
 
       // 3) names the dictionary couldn't read at all → ONE guarded LLM categorise.
       //    We only ask the model for the meals that produced zero dictionary hits,
       //    keeping the call small. Local "Other" fallback if it stalls/fails.
-      const unreadNames = names.filter((n) => extractFromName(n).length === 0);
       if (unreadNames.length > 0) {
         try {
           const res = await withTimeout(

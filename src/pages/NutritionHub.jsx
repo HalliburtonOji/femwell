@@ -31,7 +31,8 @@ import {
 import {
   T, UI, SERIF, Eyebrow, Rule, Script, Hand, InkFilter, useEditorialFonts, PAPER_BG,
 } from "@/components/journal/Editorial";
-import { getMealSummary, readAiAnalysis, inferMealTypeFromTime } from "@/utils/nutritionAiAnalysis";
+import { getMealSummary, inferMealTypeFromTime } from "@/utils/nutritionAiAnalysis";
+import { dayNutrition } from "@/utils/foodModel";
 import { getCurrentCyclePhase, phaseLabel } from "@/utils/cyclePhase";
 import { withTimeout } from "@/utils/safeEntity";
 import { HubSheet, SoftBar, SurfaceCard, Ring } from "@/components/nutrition/hub/HubShell";
@@ -171,29 +172,12 @@ function dayOfCycleOf(profile) {
   return (daysSince % cycleLen) + 1;
 }
 
-// Iron (mg) for one meal — read from ai_analysis.summary.iron_mg, else sum items[].iron_mg.
-// Never invents a number: missing → 0.
-function ironMgOf(meal) {
-  const a = readAiAnalysis(meal);
-  if (!a) return 0;
-  const s = a.summary || {};
-  if (Number(s.iron_mg) > 0) return Number(s.iron_mg);
-  const items = a.items || [];
-  return items.reduce((acc, it) => acc + (Number(it?.iron_mg) || 0), 0);
-}
-
-// Sum today's macros from the real logged meals (protein, fibre, iron) — all guarded.
-function macroSums(dayMealRows) {
-  return (dayMealRows || []).filter(Boolean).reduce(
-    (acc, m) => {
-      const s = getMealSummary(m).summary || {};
-      acc.protein += Number(s.protein_g) || 0;
-      acc.fibre += Number(s.fiber_g) || 0;
-      acc.iron += ironMgOf(m);
-      return acc;
-    },
-    { protein: 0, fibre: 0, iron: 0 }
-  );
+// Today's macro row (protein / fibre / iron) now reads through the ONE source of
+// truth — dayNutrition(rawDayMeals) from the nutrition spine — so the header compounds
+// the same real numbers logging persists (macros AND micros). Missing → 0, never invented.
+function macroSums(rawDayMeals) {
+  const n = dayNutrition(rawDayMeals);
+  return { protein: n.protein_g, fibre: n.fiber_g, iron: n.iron_mg };
 }
 
 // Tonight's suggested dinner — from this week's plan (today's row), else a saved
@@ -252,6 +236,9 @@ export default function NutritionHub() {
   const [summary, setSummary] = useState({ kcal: 0, meals: 0, hydrationMl: 0, lastMeal: null });
   // the selected day's logged meals (real, for the Today card's inline list)
   const [dayMeals, setDayMeals] = useState([]);
+  // the selected day's RAW MealLog rows (with ai_analysis) — fed to the nutrition
+  // spine (dayNutrition) so the header macro row reads the one source of truth.
+  const [dayMealRows, setDayMealRows] = useState([]);
   // distinct recent meals across history (real, for the "one tap to re-add" chips)
   const [recents, setRecents] = useState([]);
   // a saved meal plan + shopping list + saved recipes for the richer cards (real)
@@ -289,6 +276,8 @@ export default function NutritionHub() {
     const ordered = [...safeMeals].sort((a, b) => (a.logged_at || "").localeCompare(b.logged_at || ""));
     const lastMeal = [...ordered].reverse().find((m) => m.raw_text)?.raw_text || null;
     setSummary({ kcal: Math.round(kcal), meals: safeMeals.length, hydrationMl, lastMeal });
+    // keep the raw rows (with ai_analysis) for the nutrition spine's macro/micro sums
+    setDayMealRows(ordered);
     // the day's logged meals as a calm inline list (slot · title · kcal) — all real
     setDayMeals(
       ordered
@@ -458,7 +447,7 @@ export default function NutritionHub() {
   const cyclePhase = getCurrentCyclePhase(profile);          // null when no cycle data
   const cyclePhaseLabel = phaseLabel(cyclePhase);             // null when no phase
   const cycleDay = dayOfCycleOf(profile);                     // null when no cycle data
-  const sums = macroSums(dayMeals);                           // { protein, fibre, iron }
+  const sums = macroSums(dayMealRows);                        // { protein, fibre, iron } via dayNutrition
   const proteinTarget = nutritionProfile?.protein_target_g || 80;
   const fibreTarget = nutritionProfile?.fiber_target_g || nutritionProfile?.fibre_target_g || 30;
   const ironTarget = nutritionProfile?.iron_target_mg || 14;  // gentle, not a hard cap

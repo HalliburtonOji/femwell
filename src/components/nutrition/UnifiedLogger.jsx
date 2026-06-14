@@ -27,6 +27,7 @@ import {
 import { T, UI, SERIF } from "@/components/journal/Editorial";
 import { withTimeout } from "@/utils/safeEntity";
 import { inferMealTypeFromTime } from "@/utils/nutritionAiAnalysis";
+import { offMicrosFromNutriments } from "@/utils/foodModel";
 
 const OFF_TIMEOUT_MS = 6000;
 const MEAL_TYPES = ["breakfast", "lunch", "dinner", "snack"];
@@ -72,6 +73,10 @@ function productToDraft(product, fallbackName) {
   const name = (product.product_name || fallbackName || "").trim();
   if (!name) return null;
   const brand = (product.brands || "").split(",")[0]?.trim();
+  // MICROS: OFF stores iron/calcium/folate per 100g in grams; scale to our default
+  // 100g portion and convert to mg/µg via the shared spine helper (handles OFF units
+  // defensively). These ride along on the draft so the saved meal carries micros.
+  const micros = offMicrosFromNutriments(n, 100);
   return {
     name: brand ? `${name} (${brand})` : name,
     portion: "100g",
@@ -80,6 +85,10 @@ function productToDraft(product, fallbackName) {
     protein_g: Math.round(num(n.proteins_100g)),
     carbs_g: Math.round(num(n.carbohydrates_100g)),
     fat_g: Math.round(num(n.fat_100g)),
+    // carried-through micros (mg / µg); undefined when OFF had none for this product
+    iron_mg: micros.iron_mg,
+    folate_ug: micros.folate_ug,
+    calcium_mg: micros.calcium_mg,
     source: "openfoodfacts",
   };
 }
@@ -340,23 +349,32 @@ export default function UnifiedLogger({ user, profile, onLogged }) {
     return withTimeout(base44.entities.MealLog.create(payload), 6000, "save");
   }, [user, mealType]);
 
-  // turn an editable draft → ai_analysis shape the app understands
-  const draftToAnalysis = (d) => ({
-    summary: {
-      calories: num(d.kcal),
-      protein_g: num(d.protein_g),
-      carbs_g: num(d.carbs_g),
-      fat_g: num(d.fat_g),
-    },
-    items: [{
-      name: d.name,
-      calories: num(d.kcal),
-      protein_g: num(d.protein_g),
-      carbs_g: num(d.carbs_g),
-      fat_g: num(d.fat_g),
-    }],
-    source: d.source || "manual",
-  });
+  // turn an editable draft → ai_analysis shape the app understands.
+  // MICROS (iron_mg / folate_ug / calcium_mg) ride along on summary AND items when
+  // present, so the nutrition spine (dayNutrition) can read them. Only attach a micro
+  // when it actually has a value — never invent a 0 that looks like real data.
+  const draftToAnalysis = (d) => {
+    const micro = (k) => (num(d[k]) > 0 ? { [k]: num(d[k]) } : null);
+    const micros = Object.assign({}, micro("iron_mg"), micro("folate_ug"), micro("calcium_mg"));
+    return {
+      summary: {
+        calories: num(d.kcal),
+        protein_g: num(d.protein_g),
+        carbs_g: num(d.carbs_g),
+        fat_g: num(d.fat_g),
+        ...micros,
+      },
+      items: [{
+        name: d.name,
+        calories: num(d.kcal),
+        protein_g: num(d.protein_g),
+        carbs_g: num(d.carbs_g),
+        fat_g: num(d.fat_g),
+        ...micros,
+      }],
+      source: d.source || "manual",
+    };
+  };
 
   // ── one-tap re-log of a recent / favourite (optimistic, guarded) ─────────────
   const reLog = async (name, type, analysis) => {
@@ -377,7 +395,8 @@ export default function UnifiedLogger({ user, profile, onLogged }) {
     if (!draft?.name?.trim()) return;
     setSaving(true);
     try {
-      const hasMacros = num(draft.kcal) || num(draft.protein_g) || num(draft.carbs_g) || num(draft.fat_g);
+      const hasMacros = num(draft.kcal) || num(draft.protein_g) || num(draft.carbs_g) || num(draft.fat_g)
+        || num(draft.iron_mg) || num(draft.folate_ug) || num(draft.calcium_mg);
       const rawText = draft.portion?.trim() ? `${draft.name.trim()} (${draft.portion.trim()})` : draft.name.trim();
       // For a photo draft, keep the rich returned analysis (items / smart_swaps)
       // but overlay the (possibly edited) summary macros so the user's edits win.
@@ -490,6 +509,9 @@ export default function UnifiedLogger({ user, profile, onLogged }) {
       const firstItem = Array.isArray(res?.items) ? res.items[0] : null;
       // Build a draft from whatever the parser returned; macros are real or blank
       // (never invented). User edits before confirming.
+      // keep any micros analyzeMeal returned (summary-first, item-fallback) so they
+      // persist through to ai_analysis via draftToAnalysis.
+      const micro = (k) => num(summary?.[k]) || num(firstItem?.[k]) || undefined;
       setDraft({
         name: trimmed,
         portion: "",
@@ -497,6 +519,9 @@ export default function UnifiedLogger({ user, profile, onLogged }) {
         protein_g: summary?.protein_g ? Math.round(summary.protein_g) : "",
         carbs_g: summary?.carbs_g ? Math.round(summary.carbs_g) : "",
         fat_g: summary?.fat_g ? Math.round(summary.fat_g) : "",
+        iron_mg: micro("iron_mg"),
+        folate_ug: micro("folate_ug"),
+        calcium_mg: micro("calcium_mg"),
         source: "manual",
       });
       setView("draft");
@@ -602,6 +627,7 @@ export default function UnifiedLogger({ user, profile, onLogged }) {
       const lowConfidence =
         typeof res.photo_confidence === "number" && res.photo_confidence < 0.5;
       const name = (firstItem?.name || "").trim() || "Photographed meal";
+      const micro = (k) => num(summary?.[k]) || num(firstItem?.[k]) || undefined;
       setDraft({
         name,
         portion: firstItem?.quantity_text || "",
@@ -609,6 +635,9 @@ export default function UnifiedLogger({ user, profile, onLogged }) {
         protein_g: summary?.protein_g ? Math.round(summary.protein_g) : "",
         carbs_g: summary?.carbs_g ? Math.round(summary.carbs_g) : "",
         fat_g: summary?.fat_g ? Math.round(summary.fat_g) : "",
+        iron_mg: micro("iron_mg"),
+        folate_ug: micro("folate_ug"),
+        calcium_mg: micro("calcium_mg"),
         source: "photo",
         ai_analysis: { ...res, source: "photo" },
         lowConfidence,

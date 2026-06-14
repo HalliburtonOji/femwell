@@ -43,6 +43,7 @@ import {
 import { format, subDays, startOfWeek, endOfWeek } from "date-fns";
 import { T, UI, SERIF, Eyebrow, Hand, Rule } from "@/components/journal/Editorial";
 import { getMealSummary } from "@/utils/nutritionAiAnalysis";
+import { rangeNutrition, microNudgeForStage } from "@/utils/foodModel";
 import { withTimeout } from "@/utils/safeEntity";
 import AiDisclaimer from "@/components/compliance/AiDisclaimer";
 
@@ -455,6 +456,36 @@ export default function UnifiedInsightsTab({ user, profile, nutritionProfile }) 
 
   const nudges = useMemo(() => stageNudges(profile), [profile]);
 
+  // DATA-DRIVEN women's layer: this week's real totals (macros + micros) from the
+  // nutrition spine, then which of this stage's reference nutrients are leaning light.
+  // A picture, not a target — microNudgeForStage only flags a lean when real data
+  // backs it (missing micros = a gap, not a lean), and never returns a number to show.
+  const weekNutrition = useMemo(
+    () => rangeNutrition(weekMeals, 7),
+    [weekMeals]
+  );
+  const microNudge = useMemo(
+    () => microNudgeForStage(profile, weekNutrition),
+    [profile, weekNutrition]
+  );
+  // which stage cards to lead with: the leaning ones (by real data) first, then the
+  // rest of the stage set; falls back to the full gentle generic set when no data yet.
+  // map spine nutrient keys (iron_mg…) → stageNudges card keys (iron / fibre…)
+  const SPINE_TO_NUDGE = { iron_mg: "iron", folate_ug: "folate", calcium_mg: "calcium", protein_g: "protein", fiber_g: "fibre" };
+  const orderedNudges = useMemo(() => {
+    if (!microNudge.hasData || microNudge.leaning.length === 0) return nudges;
+    const leaningKeys = new Set(microNudge.leaning.map((l) => SPINE_TO_NUDGE[l.key] || l.key));
+    const lead = nudges.filter((m) => leaningKeys.has(m.key));
+    const rest = nudges.filter((m) => !leaningKeys.has(m.key));
+    return [...lead, ...rest];
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [microNudge, nudges]);
+  const leaningCardKeys = useMemo(
+    () => new Set((microNudge.leaning || []).map((l) => SPINE_TO_NUDGE[l.key] || l.key)),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [microNudge]
+  );
+
   // Optional guarded LLM polish of the story phrasing. The LOCAL story is the source
   // of truth + fallback; the LLM only restyles it. withTimeout means it can never
   // hang; any failure silently keeps the local story. Honesty guardrail baked into
@@ -610,16 +641,34 @@ ${localText}`;
           <Eyebrow color={T.sage}>For your stage · {stageLabel(profile)}</Eyebrow>
         </div>
         <p style={{ fontFamily: SERIF, fontSize: 13, lineHeight: 1.5, color: T.muted, fontStyle: "italic", margin: "0 0 14px" }}>
-          Foods to lean toward this week — gentle leans grounded in UK guidance, never targets to hit.
+          {microNudge.hasData && microNudge.leaning.length > 0
+            // DATA-DRIVEN: name the nutrient(s) leaning light in this week's real logs,
+            // gently — a picture, never a target or a deficiency verdict.
+            ? `Reading your week so far, you've been a little lighter on ${microNudge.leaning.map((l) => l.label.toLowerCase()).join(" and ")} — the foods below would gently round that out. A picture, not a target.`
+            : microNudge.hasData
+              // logged, but nothing leaning low — affirm rather than nag.
+              ? "Your week's looking nicely balanced for your stage. These are simply the foods worth keeping close — gentle leans grounded in UK guidance, never targets to hit."
+              // no logged data yet — gentle generic copy.
+              : "Foods to lean toward this week — gentle leans grounded in UK guidance, never targets to hit. Log a few meals and this will start to read from your own week."}
         </p>
         <div style={{ display: "grid", gap: 12 }}>
-          {nudges.map((m) => (
-            <div key={m.key} style={{ borderLeft: `2px solid ${T.paperDeep}`, paddingLeft: 12 }}>
-              <div style={{ fontFamily: SERIF, fontSize: 15, color: T.ink, fontWeight: 600 }}>{m.label}</div>
-              <div style={{ fontFamily: UI, fontSize: 11, color: T.muted, marginTop: 2 }}>{m.foods}</div>
-              <div style={{ fontFamily: SERIF, fontSize: 12.5, color: T.muted, fontStyle: "italic", marginTop: 1 }}>{m.why}</div>
-            </div>
-          ))}
+          {orderedNudges.map((m) => {
+            const leaning = leaningCardKeys.has(m.key);
+            return (
+              <div key={m.key} style={{ borderLeft: `2px solid ${leaning ? T.sage : T.paperDeep}`, paddingLeft: 12 }}>
+                <div style={{ display: "flex", alignItems: "baseline", gap: 7 }}>
+                  <span style={{ fontFamily: SERIF, fontSize: 15, color: T.ink, fontWeight: 600 }}>{m.label}</span>
+                  {leaning && (
+                    <span style={{ fontFamily: UI, fontSize: 8.5, fontWeight: 700, letterSpacing: 0.6, textTransform: "uppercase", color: T.sage }}>
+                      lighter this week
+                    </span>
+                  )}
+                </div>
+                <div style={{ fontFamily: UI, fontSize: 11, color: T.muted, marginTop: 2 }}>{m.foods}</div>
+                <div style={{ fontFamily: SERIF, fontSize: 12.5, color: T.muted, fontStyle: "italic", marginTop: 1 }}>{m.why}</div>
+              </div>
+            );
+          })}
         </div>
         <Rule mt={14} mb={10} />
         <p style={{ fontFamily: UI, fontSize: 10.5, fontStyle: "italic", color: T.muted, margin: 0, lineHeight: 1.5 }}>
