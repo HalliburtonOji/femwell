@@ -1,6 +1,13 @@
 # FEMWELL — CANONICAL STATUS INDEX (read first · updated 2026-06-14)
 **This file is the single source of truth AND the index to every plan doc. If anything else disagrees, this wins.** (The long ship-log history continues below the index.)
 
+## 🛠️ 4 HUB CORRECTIONS — un-shrunk cards · rich Journal header · full Journal features · NEW Community demo — SHIPPED + SCREENSHOT-PROVEN (2026-06-14) — live `index-xZQ5gbvz.js` · commit `0666c4f`
+- **(1) Scroll done right.** Earlier I used a fixed `height` that SHRANK/capped the cards. Now both the live hub (`HubShell` SurfaceCard) and the demo kit (`hubDemoKit` BigCard) use `minHeight` (stay BIG) + `maxHeight:84vh` + body `overflow-y:auto` — the card keeps its full big size and scrolls ONLY when content genuinely overflows. LIVE-VERIFIED: live Log card is 709px (was capped 528), big again with internal scroll. SCREENSHOT `nutrition-cards-unshrunk_20260614.png`.
+- **(2) Journal demo RICH header** (mirrors Nutrition's richness): mood sparkline + "how the week felt" line, entries/last-entry/phase stat row, Jess prompt dusk card, On-This-Day peek — a real visual summary area, not one line. SCREENSHOT `hubdemo-journal-rich_20260614.png`.
+- **(3) Journal demo FULL feature set:** Write · Echo Wall · Witness · Phase Twin · Insights · On This Day · Sealed Letters · Threads · Cycle Mirror · Burn (10 big cards).
+- **(4) NEW Community hub demo** (the page Halli actually wanted; Nutrition is already live in this style so its demo is reference only). Rich Community header (season/circle · Jess welcome · Question of the Day · invite) + big cards for every surface: QOTD · Lounge · Echo Wall · Lighter Side (games) · Library · Circles · Love · Money & Work · Style · Health Room · Talk It Out. Route **/CommunityHubDemo**, in FoundersOS → Previews. SCREENSHOT `hubdemo-community_20260614.png`.
+- One design language across Journal + Community (+ the live Nutrition page). FemWell brand, no emoji/scoreboards. Build+eslint green. Deploy: `index-D8929u_b.js` → **`index-xZQ5gbvz.js`**.
+
 ## 🔁 DIRECT-ON-CARD across ALL surface cards + bug-hole close (logging NEVER reads 0) — SHIPPED + LIVE-VERIFIED (2026-06-14) — live `index-DzCjfil8.js` · commits `e3081dd` + `e545afb`
 - **Closed the last logging-bug hole:** a food NOT in the CoFID table (e.g. "katsu curry") still read 0 kcal. New `mealEstimate(text, mealType)` = CoFID match else a gentle per-slot DEFAULT (breakfast 350 / lunch 520 / dinner 620 / snack 180; macros only — micros stay 0/honest). Used in `dayNutrition` floor + `reLogRecent`, so a logged meal **never reads 0 kcal**, matched or not.
 - **Direct-on-card pushed into EVERY surface card (sheet only for dense flows):**
