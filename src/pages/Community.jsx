@@ -1270,18 +1270,10 @@ function ClubsDirectory({ onOpen, onBack, user }) {
           </div>
         );
       })}
-      {/* Member-created book clubs — BUILT, flagged OFF behind CLUBS_USER_CREATE_ENABLED
-          (the OSA/ICO legal floor). Renders as "coming" until the flag flips. */}
-      {CLUBS_USER_CREATE_ENABLED
-        ? <StartBookClub user={user} onCreated={onOpen} />
-        : (
-          <section style={{ background: T.paperHi, border: `1px dashed ${T.paperDeep}`, borderRadius: 6, padding: "13px 15px", marginTop: 6 }}>
-            <Eyebrow color={T.muted} mb={6}>Start a book club — coming</Eyebrow>
-            <Hand size={15.5} color={T.muted}>
-              Soon you'll be able to start a book club for any book — even one not on the app — and host the conversation yourself. We're getting the safety right first.
-            </Hand>
-          </section>
-        )}
+      {/* Member-created book clubs are BUILT but gated behind CLUBS_USER_CREATE_ENABLED
+          (the OSA/ICO safety floor for member-hosted spaces). When gated we render NOTHING
+          rather than a "coming" promise — the hosted Book Club above is the real, live read. */}
+      {CLUBS_USER_CREATE_ENABLED ? <StartBookClub user={user} onCreated={onOpen} /> : null}
     </div>
   );
 }

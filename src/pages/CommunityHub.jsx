@@ -24,7 +24,7 @@ import { useNavigate } from "react-router-dom";
 import {
   ChevronLeft, ChevronRight, Send, Waves, MessageCircle, Users, HeartHandshake,
   BookOpen, Dices, Heart, Briefcase, Sparkles, Stethoscope, HelpCircle, Phone,
-  ShieldAlert, Lock,
+  ShieldAlert, Lock, Check,
 } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import {
@@ -203,14 +203,50 @@ function CardPreview({ surface, posts, qotdPreview, presence, season }) {
   }
 }
 
-// QOTD card preview — today's prompt + a gentle nudge (read-only). Real answer happens
-// in the sheet via the proven write path.
+// QOTD card preview — today's prompt + REAL room state: whether you've answered, a
+// k-anon sense of how many have, and one anonymous answer to draw you in. Read-only +
+// guarded; the full answer flow stays in the sheet (proven answerQotd write path).
 function QotdPreview({ qotd }) {
+  const day = qotd?.day || qotdForDay().day;
+  const [answers, setAnswers] = useState(null);   // null = loading
+  const [mine, setMine] = useState(() => { try { return answeredQotd(day); } catch { return false; } });
+  useEffect(() => {
+    let alive = true;
+    setMine(() => { try { return answeredQotd(day); } catch { return false; } });
+    base44.entities.QotdResponse.filter({ prompt_day: day, hidden: false }, "-created_date", 30)
+      .then((rows) => { if (alive) setAnswers(Array.isArray(rows) ? rows.filter(Boolean) : []); })
+      .catch(() => { if (alive) setAnswers([]); });
+    return () => { alive = false; };
+  }, [day]);
+
+  const count = answers?.length || 0;
+  const sample = answers && answers.length ? answers[0] : null;
+  const presence = count >= 3 ? `${count} sisters answered today` : count > 0 ? "a few have answered" : "no one yet — be the first";
+
   return (
     <div style={{ display: "flex", flexDirection: "column", flex: 1 }}>
-      <Eyebrow color={T.gold} mb={8}>Today{"’"}s question</Eyebrow>
+      <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: 8, marginBottom: 8 }}>
+        <Eyebrow color={T.gold}>Today{"’"}s question</Eyebrow>
+        {mine ? (
+          <span style={{ display: "inline-flex", alignItems: "center", gap: 4, fontFamily: UI, fontSize: 9.5, fontWeight: 700, letterSpacing: 0.4, textTransform: "uppercase", color: T.sage }}>
+            <Check size={11} /> You answered
+          </span>
+        ) : null}
+      </div>
       <Script size={26} style={{ marginBottom: 12 }}>{qotd.text}</Script>
-      <Hand size={15} color={T.muted}>A line is plenty. Share yours, then see how the room answered today — no names, no count.</Hand>
+
+      {sample ? (
+        <div style={{ borderLeft: `2px solid ${T.gold}`, paddingLeft: 11, marginBottom: 12 }}>
+          <div style={{ fontFamily: UI, fontSize: 9, fontWeight: 700, letterSpacing: 0.5, textTransform: "uppercase", color: T.muted, marginBottom: 3 }}>One from the room</div>
+          <div style={{ fontFamily: HANDFAM, fontStyle: "italic", fontSize: 15.5, color: T.ink, lineHeight: 1.3 }}>{(sample.body || "").slice(0, 120)}</div>
+        </div>
+      ) : (
+        <Hand size={15} color={T.muted} style={{ marginBottom: 12 }}>A line is plenty. Share yours, then see how the room answered — no names, no scoreboard.</Hand>
+      )}
+
+      <div style={{ marginTop: "auto", paddingTop: 4, fontFamily: UI, fontSize: 11, color: T.muted, fontWeight: 600, letterSpacing: 0.2 }}>
+        {answers === null ? "…" : (mine ? `You're in · ${presence}` : presence)}
+      </div>
     </div>
   );
 }
