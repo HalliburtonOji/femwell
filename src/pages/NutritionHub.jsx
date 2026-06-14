@@ -33,7 +33,7 @@ import {
 } from "@/components/journal/Editorial";
 import { getMealSummary, inferMealTypeFromTime } from "@/utils/nutritionAiAnalysis";
 import { dayNutrition } from "@/utils/foodModel";
-import { cofidFloorNutrition } from "@/utils/cofid";
+import { mealEstimate } from "@/utils/cofid";
 import { deriveTargets } from "@/utils/nutritionTargets";
 import { getCurrentCyclePhase, phaseLabel } from "@/utils/cyclePhase";
 import { withTimeout } from "@/utils/safeEntity";
@@ -333,9 +333,10 @@ export default function NutritionHub() {
     const text = (name || "").trim();
     if (!user || !text) return;
     const todayKey = format(new Date(), "yyyy-MM-dd");
-    // estimate energy + macros from the food name (CoFID) so the meal carries numbers —
-    // the totals move immediately and the value persists, not a zero-kcal row.
-    const est = cofidFloorNutrition(text);
+    // estimate energy + macros from the food name (CoFID match, else a per-slot default)
+    // so the meal ALWAYS carries numbers — the totals move immediately and persist, never
+    // a zero-kcal row even for a food not in the CoFID table.
+    const est = mealEstimate(text, mealType || inferMealTypeFromTime());
     const ai_analysis = est ? {
       summary: { calories: est.kcal, protein_g: est.protein_g, carbs_g: est.carbs_g, fat_g: est.fat_g, fiber_g: est.fiber_g, iron_mg: est.iron_mg, folate_ug: est.folate_ug, calcium_mg: est.calcium_mg },
       estimated: true,
@@ -382,6 +383,21 @@ export default function NutritionHub() {
       loadSummary(user, todayKey);
     }
   }, [user, loadSummary]);
+
+  // tick / untick a shopping item INLINE on the card (direct, no sheet). Optimistic +
+  // guarded; reconciles from the server on success/failure.
+  const toggleShopItem = useCallback(async (item) => {
+    if (!user || !item?.id) return;
+    const next = !item.is_checked;
+    setShopItems((list) => list.map((r) => (r.id === item.id ? { ...r, is_checked: next } : r)));
+    try {
+      await withTimeout(base44.entities.ShoppingList.update(item.id, { is_checked: next }), 6000, "save");
+    } catch (e) {
+      console.error("toggle shop item failed:", e);
+      setShopItems((list) => list.map((r) => (r.id === item.id ? { ...r, is_checked: !next } : r))); // rollback
+      toast.error("Couldn’t update that — try again.");
+    }
+  }, [user]);
 
   // a saved meal plan + its shopping list + saved recipes for the richer cards (real)
   const loadKitchen = useCallback(async (u) => {
@@ -728,6 +744,7 @@ export default function NutritionHub() {
                   onLog={() => setOpenLogger(true)}
                   onReLog={reLogRecent}
                   onWater={addWater}
+                  onToggleShop={toggleShopItem}
                   isToday={isToday}
                 />
               </SurfaceCard>
@@ -809,15 +826,15 @@ function navBtn(disabled) {
 // state, never a mock figure. The bottom sheet stays the "go deeper / edit" layer.
 function CardSummary({
   surface, summary, dayMeals, recents, mealPlan, shopItems, savedRecipes,
-  nutritionProfile, profile, targets, calorieTarget, hydrationTarget, kcalLeft, jess, onOpen, onLog, onReLog, onWater, isToday,
+  nutritionProfile, profile, targets, calorieTarget, hydrationTarget, kcalLeft, jess, onOpen, onLog, onReLog, onWater, onToggleShop, isToday,
 }) {
   switch (surface.id) {
     case "log":      return <LogCard {...{ surface, recents, onLog, onReLog }} />;
-    case "today":    return <TodayCard {...{ summary, dayMeals, recents, calorieTarget, hydrationTarget, kcalLeft, onLog, onWater, isToday }} />;
+    case "today":    return <TodayCard {...{ summary, dayMeals, recents, calorieTarget, hydrationTarget, kcalLeft, onReLog, onWater, isToday }} />;
     case "plan":     return <PlanCard {...{ nutritionProfile, profile, targets, calorieTarget }} />;
-    case "recipes":  return <RecipesCard {...{ savedRecipes }} />;
-    case "mealgen":  return <MealgenCard {...{ mealPlan }} />;
-    case "shopping": return <ShoppingCard {...{ shopItems }} />;
+    case "recipes":  return <RecipesCard {...{ savedRecipes, onReLog }} />;
+    case "mealgen":  return <MealgenCard {...{ mealPlan, onReLog }} />;
+    case "shopping": return <ShoppingCard {...{ shopItems, onToggleShop }} />;
     case "progress": return <ProgressCard {...{ recents, dayMeals, summary }} />;
     case "insights": return <InsightsCard {...{ jess, profile }} />;
     default:         return null;
@@ -898,7 +915,7 @@ function LogCard({ surface, recents, onLog, onReLog }) {
 }
 
 // ── TODAY · the plate + logged meals + recents to re-add (all real) ──────────
-function TodayCard({ summary, dayMeals, recents, calorieTarget, hydrationTarget, kcalLeft, onLog, onWater, isToday }) {
+function TodayCard({ summary, dayMeals, recents, calorieTarget, hydrationTarget, kcalLeft, onReLog, onWater, isToday }) {
   return (
     <div style={{ display: "flex", flexDirection: "column", flex: 1 }}>
       <Script size={26} style={{ marginBottom: 2 }}>Today’s plate</Script>
@@ -948,10 +965,10 @@ function TodayCard({ summary, dayMeals, recents, calorieTarget, hydrationTarget,
       <div style={{ marginTop: "auto" }}>
         {recents.length > 0 ? (
           <>
-            <Eyebrow mb={8}>Recents — one tap to re-add</Eyebrow>
+            <Eyebrow mb={8}>Recents — one tap logs it</Eyebrow>
             <div style={{ display: "flex", flexWrap: "wrap", gap: 7 }}>
               {recents.slice(0, 5).map((r) => (
-                <button key={r.id} onClick={onLog} style={chipBtn}>
+                <button key={r.id} onClick={() => onReLog(r.name)} style={chipBtn}>
                   <Plus size={11} color={T.crimson} />
                   <span style={{ fontFamily: SERIF, fontSize: 12.5, color: T.ink }}>{r.name}</span>
                 </button>
@@ -1016,7 +1033,7 @@ function PlanCard({ nutritionProfile, profile, targets, calorieTarget }) {
 }
 
 // ── RECIPES · saved recipe titles if any, else an honest invitation ──────────
-function RecipesCard({ savedRecipes }) {
+function RecipesCard({ savedRecipes, onReLog }) {
   const recipes = (savedRecipes || []).filter(Boolean);
   const n = recipes.length;
   return (
@@ -1030,20 +1047,30 @@ function RecipesCard({ savedRecipes }) {
 
       {n > 0 ? (
         <div style={{ display: "grid", gap: 9 }}>
-          {recipes.slice(0, 5).map((r) => (
-            <div key={r.id} style={{ borderLeft: `2px solid ${T.sage}`, paddingLeft: 11, display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: 8 }}>
-              <div style={{ fontFamily: SERIF, fontSize: 14.5, color: T.ink, fontWeight: 600, lineHeight: 1.2, minWidth: 0 }}>
-                {r.title || r.name || "Saved recipe"}
-              </div>
-              {r.rating > 0 ? (
-                <div style={{ display: "inline-flex", gap: 1, flexShrink: 0 }}>
-                  {Array.from({ length: r.rating }).map((_, i) => (
-                    <Star key={i} size={11} style={{ color: T.gold, fill: T.gold }} />
-                  ))}
+          {recipes.slice(0, 5).map((r) => {
+            const title = r.title || r.name || "Saved recipe";
+            return (
+              <div key={r.id} style={{ borderLeft: `2px solid ${T.sage}`, paddingLeft: 11, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8 }}>
+                <div style={{ minWidth: 0, flex: 1 }}>
+                  <div style={{ fontFamily: SERIF, fontSize: 14.5, color: T.ink, fontWeight: 600, lineHeight: 1.2 }}>{title}</div>
+                  {r.rating > 0 ? (
+                    <div style={{ display: "inline-flex", gap: 1, marginTop: 2 }}>
+                      {Array.from({ length: r.rating }).map((_, i) => (
+                        <Star key={i} size={10} style={{ color: T.gold, fill: T.gold }} />
+                      ))}
+                    </div>
+                  ) : null}
                 </div>
-              ) : null}
-            </div>
-          ))}
+                {/* direct-on-card: log this recipe as today's meal in one tap (no sheet) */}
+                {onReLog ? (
+                  <button onClick={() => onReLog(title)} aria-label={`Log ${title}`}
+                    style={{ flexShrink: 0, display: "inline-flex", alignItems: "center", gap: 4, background: T.wax, border: `1px solid ${T.paperDeep}`, borderRadius: 999, padding: "5px 10px", cursor: "pointer", fontFamily: UI, fontSize: 9.5, fontWeight: 700, letterSpacing: 0.3, color: T.ink, textTransform: "uppercase" }}>
+                    <Plus size={11} color={T.crimson} /> Log
+                  </button>
+                ) : null}
+              </div>
+            );
+          })}
           {n > 5 ? (
             <div style={{ fontFamily: UI, fontSize: 10.5, color: T.muted, marginTop: 2 }}>
               + {n - 5} more in Recipes
@@ -1062,8 +1089,9 @@ function RecipesCard({ savedRecipes }) {
 // writes ({day, breakfast:[str], lunch:[str], dinner:[str], snack:[str]}), with a
 // fallback to the legacy generator shape (days[].meals[].name) so old rows still show.
 const DOW_SHORT = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
-function MealgenCard({ mealPlan }) {
-  // normalise either shape → [{ label, breakfast, lunch, dinner }]
+function MealgenCard({ mealPlan, onReLog }) {
+  const todayIdx = (new Date().getDay() + 6) % 7; // Mon=0
+  // normalise either shape → [{ label, dayIdx, breakfast, lunch, dinner }]
   const cellName = (v) => (Array.isArray(v) ? (v[0] || "") : (typeof v === "string" ? v : (v?.name || "")));
   let rows = [];
   const planDays = (mealPlan?.plan_days || []).filter(Boolean);
@@ -1072,12 +1100,12 @@ function MealgenCard({ mealPlan }) {
       .filter((d) => typeof d?.day === "number" && (d.breakfast?.length || d.lunch?.length || d.dinner?.length || d.snack?.length))
       .sort((a, b) => a.day - b.day)
       .map((d) => ({
-        label: DOW_SHORT[d.day] || `D${d.day + 1}`,
+        label: DOW_SHORT[d.day] || `D${d.day + 1}`, dayIdx: d.day,
         breakfast: cellName(d.breakfast), lunch: cellName(d.lunch), dinner: cellName(d.dinner),
       }));
   } else if (Array.isArray(mealPlan?.days)) {
     rows = mealPlan.days.filter(Boolean).map((d, i) => ({
-      label: (d.day_label || `D${d.day_number || i + 1}`).slice(0, 3),
+      label: (d.day_label || `D${d.day_number || i + 1}`).slice(0, 3), dayIdx: (d.day_number ? d.day_number - 1 : i),
       breakfast: cellName(d.meals?.breakfast), lunch: cellName(d.meals?.lunch), dinner: cellName(d.meals?.dinner),
     }));
   }
@@ -1101,12 +1129,19 @@ function MealgenCard({ mealPlan }) {
                 {d.label}
               </div>
               <div style={{ paddingTop: 9, paddingBottom: 9, borderTop: `1px solid ${T.paperDeep}` }}>
-                {[["B", d.breakfast], ["L", d.lunch], ["D", d.dinner]].map(([slot, name]) => (
+                {[["B", d.breakfast, "breakfast"], ["L", d.lunch, "lunch"], ["D", d.dinner, "dinner"]].map(([slot, name, slotKey]) => (
                   <div key={slot} style={{ display: "flex", gap: 7, alignItems: "baseline", marginBottom: 3 }}>
-                    <span style={{ fontFamily: UI, fontSize: 9, fontWeight: 700, color: T.muted, width: 12 }}>{slot}</span>
-                    <span style={{ fontFamily: SERIF, fontSize: 12.5, color: name ? T.ink : T.muted, lineHeight: 1.2 }}>
+                    <span style={{ fontFamily: UI, fontSize: 9, fontWeight: 700, color: T.muted, width: 12, flexShrink: 0 }}>{slot}</span>
+                    <span style={{ flex: 1, fontFamily: SERIF, fontSize: 12.5, color: name ? T.ink : T.muted, lineHeight: 1.2, minWidth: 0 }}>
                       {name || "—"}
                     </span>
+                    {/* direct-on-card: log today's planned meal in one tap (no sheet) */}
+                    {name && d.dayIdx === todayIdx && onReLog ? (
+                      <button onClick={() => onReLog(name, slotKey)} aria-label={`Log ${name}`}
+                        style={{ flexShrink: 0, display: "inline-flex", alignItems: "center", gap: 3, background: "transparent", border: "none", cursor: "pointer", fontFamily: UI, fontSize: 9, fontWeight: 700, letterSpacing: 0.3, color: T.crimson, textTransform: "uppercase", padding: 0 }}>
+                        <Plus size={11} /> Log
+                      </button>
+                    ) : null}
                   </div>
                 ))}
               </div>
@@ -1120,46 +1155,43 @@ function MealgenCard({ mealPlan }) {
   );
 }
 
-// ── SHOP · real item counts by aisle if present, else honest empty ───────────
-function ShoppingCard({ shopItems }) {
+// ── SHOP · tick items INLINE (direct, no sheet) — real ShoppingList rows ──────
+function ShoppingCard({ shopItems, onToggleShop }) {
   const items = (shopItems || []).filter(Boolean);
   const open = items.filter((i) => !i.is_checked);
-  const byAisle = {};
-  for (const it of open) {
-    const aisle = it.category || "Other";
-    byAisle[aisle] = (byAisle[aisle] || 0) + 1;
-  }
-  const aisles = Object.entries(byAisle).sort((a, b) => b[1] - a[1]);
+  // show open items first (to get), then a few ticked — tappable to toggle right here
+  const ordered = [...open, ...items.filter((i) => i.is_checked)].slice(0, 9);
   return (
     <div style={{ display: "flex", flexDirection: "column", flex: 1 }}>
       <Script size={26} style={{ marginBottom: 2 }}>The list</Script>
-      <Hand size={14} color={T.muted} style={{ marginBottom: 12 }}>Sorted by aisle, straight from your plan.</Hand>
+      <Hand size={14} color={T.muted} style={{ marginBottom: 12 }}>
+        {items.length > 0 ? `${open.length} to get · tap to tick off as you shop.` : "Sorted by aisle, straight from your plan."}
+      </Hand>
 
       {items.length > 0 ? (
-        <>
-          <div style={{ display: "flex", gap: 18, marginBottom: 14 }}>
-            <div>
-              <div style={{ fontFamily: SERIF, fontSize: 20, color: T.ink, fontWeight: 600 }}>{open.length}</div>
-              <div style={{ fontFamily: UI, fontSize: 9.5, color: T.muted, textTransform: "uppercase", letterSpacing: 0.5 }}>to get</div>
-            </div>
-            <div>
-              <div style={{ fontFamily: SERIF, fontSize: 20, color: T.ink, fontWeight: 600 }}>{items.length - open.length}</div>
-              <div style={{ fontFamily: UI, fontSize: 9.5, color: T.muted, textTransform: "uppercase", letterSpacing: 0.5 }}>ticked</div>
-            </div>
-            <div>
-              <div style={{ fontFamily: SERIF, fontSize: 20, color: T.ink, fontWeight: 600 }}>{aisles.length}</div>
-              <div style={{ fontFamily: UI, fontSize: 9.5, color: T.muted, textTransform: "uppercase", letterSpacing: 0.5 }}>aisles</div>
-            </div>
-          </div>
-          <div style={{ display: "grid", gap: 8 }}>
-            {aisles.slice(0, 6).map(([aisle, n]) => (
-              <div key={aisle} style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", borderTop: `1px solid ${T.paperDeep}`, paddingTop: 7 }}>
-                <span style={{ fontFamily: SERIF, fontSize: 14, color: T.ink }}>{aisle}</span>
-                <span style={{ fontFamily: UI, fontSize: 11, color: T.muted }}>{n} item{n === 1 ? "" : "s"}</span>
-              </div>
-            ))}
-          </div>
-        </>
+        <div style={{ display: "grid", gap: 6 }}>
+          {ordered.map((it) => (
+            <button key={it.id} onClick={() => onToggleShop && onToggleShop(it)} style={{
+              display: "flex", alignItems: "center", gap: 10, width: "100%", textAlign: "left",
+              background: "transparent", border: "none", cursor: "pointer", padding: "5px 0",
+            }}>
+              <span style={{
+                width: 20, height: 20, borderRadius: 6, flexShrink: 0, display: "grid", placeItems: "center",
+                background: it.is_checked ? T.sage : "transparent", border: `1.5px solid ${it.is_checked ? T.sage : T.paperDeep}`,
+              }}>
+                {it.is_checked ? <Check size={13} color={T.paper} /> : null}
+              </span>
+              <span style={{ flex: 1, minWidth: 0, fontFamily: SERIF, fontSize: 14, lineHeight: 1.2,
+                color: it.is_checked ? T.muted : T.ink, textDecoration: it.is_checked ? "line-through" : "none" }}>
+                {it.ingredient_name}
+              </span>
+              {it.category ? <span style={{ fontFamily: UI, fontSize: 9, color: T.muted, textTransform: "uppercase", letterSpacing: 0.4, flexShrink: 0 }}>{it.category}</span> : null}
+            </button>
+          ))}
+          {items.length > 9 ? (
+            <div style={{ fontFamily: UI, fontSize: 10.5, color: T.muted, marginTop: 4 }}>+ {items.length - 9} more in the full list</div>
+          ) : null}
+        </div>
       ) : (
         <Empty>Your list is empty. Generate a meal plan and sync it, or add items in the full list — they’ll gather here sorted by aisle.</Empty>
       )}

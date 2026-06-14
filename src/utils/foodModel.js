@@ -24,7 +24,7 @@
 // stages). No cycle-syncing macros, no microbiome overclaim.
 
 import { readAiAnalysis, getMealSummary } from "@/utils/nutritionAiAnalysis";
-import { cofidFloorMicros, cofidFloorNutrition } from "@/utils/cofid";
+import { cofidFloorMicros, mealEstimate } from "@/utils/cofid";
 
 // ── canonical FoodItem keys (doc) ──────────────────────────────────────────────
 // A FoodItem is the normalized shape every source (a logged meal item, an Open Food
@@ -239,7 +239,10 @@ export function dayNutrition(meals, opts = {}) {
     // names in the meal text. Calories/macros are fine to estimate (every tracker does);
     // we just flag what was estimated so the UI can stay honest where it matters (micros).
     if (floor) {
-      const fn = cofidFloorNutrition(mealTextOf(m));
+      const text = mealTextOf(m);
+      // CoFID match if the food is in the table; else a gentle per-slot DEFAULT so a real
+      // logged meal still moves the ring (macros only — micros stay 0, never faked).
+      const fn = text.trim() ? mealEstimate(text, m?.meal_type) : null;
       if (fn) {
         if (kcal === 0 && fn.kcal > 0) { kcal = fn.kcal; totals.estimated.kcal = true; }
         if (protein === 0 && fn.protein_g > 0) { protein = fn.protein_g; totals.estimated.protein_g = true; }

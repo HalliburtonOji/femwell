@@ -197,4 +197,30 @@ export function cofidFloorNutrition(text) {
   return out;
 }
 
+// ── per-slot DEFAULT macro estimate — the final fallback ─────────────────────
+// When a logged food matches NOTHING in the CoFID table (e.g. "katsu curry"), we still
+// want the energy ring to MOVE — a meal logged should never read 0 kcal. So we attach a
+// gentle, typical per-meal-type estimate. MACROS ONLY — we deliberately leave micros at 0
+// here (we won't fake iron/folate/calcium for an unknown food; the women's layer stays
+// honest). Calories/macros estimated is standard for every tracker.
+const SLOT_DEFAULT_KCAL = { breakfast: 350, lunch: 520, dinner: 620, snack: 180 };
+export function defaultMealMacros(mealType) {
+  const kcal = SLOT_DEFAULT_KCAL[String(mealType || "").toLowerCase()] || 450;
+  return {
+    kcal,
+    protein_g: Math.round((kcal * 0.20) / 4),  // ~20% energy from protein
+    carbs_g: Math.round((kcal * 0.50) / 4),     // ~50% carbs
+    fat_g: Math.round((kcal * 0.30) / 9),        // ~30% fat
+    fiber_g: 0, iron_mg: 0, folate_ug: 0, calcium_mg: 0,
+  };
+}
+
+// mealEstimate(text, mealType) → CoFID match if any, else the per-slot default. Always
+// returns a usable macro estimate for a non-empty meal so logging visibly moves totals.
+export function mealEstimate(text, mealType) {
+  const fromCofid = cofidFloorNutrition(text);
+  if (fromCofid) return { ...fromCofid, source: "cofid" };
+  return { ...defaultMealMacros(mealType), foods: [], source: "default" };
+}
+
 export default cofidLookup;
