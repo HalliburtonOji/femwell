@@ -15,14 +15,16 @@
 import { useState } from "react";
 import { ShieldCheck } from "lucide-react";
 import { PAPER_BG, T, UI, Script, Hand, Eyebrow, Rule, Z } from "../journal/Editorial";
+import { useScrollLock } from "@/utils/useScrollLock";
 import { isAdultConfirmed, confirmAdult } from "./ageAssurance";
 
 export default function AgeGate({ children, surfaceName = "this space", onDecline }) {
   const [ok, setOk] = useState(() => isAdultConfirmed());
+  useScrollLock(!ok);   // lock background scroll while the gate is shown
   if (ok) return children;
 
   return (
-    <div role="dialog" aria-modal="true" aria-label="Adults only — age check" style={{ position: "fixed", inset: 0, zIndex: Z.gate, overflowY: "auto", ...PAPER_BG }}>
+    <div role="dialog" aria-modal="true" aria-label="Adults only — age check" style={{ position: "fixed", inset: 0, zIndex: Z.gate, overflowY: "auto", overscrollBehavior: "contain", WebkitOverflowScrolling: "touch", ...PAPER_BG }}>
       <div style={{ maxWidth: 480, margin: "0 auto", padding: "56px 24px 60px" }}>
         <Eyebrow mb={12}>Before you go in</Eyebrow>
         <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 8 }}>

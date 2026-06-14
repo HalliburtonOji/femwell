@@ -1,5 +1,6 @@
 import { X, Stethoscope, Waves, Lock, BarChart2, Hash, Eye, Users } from "lucide-react";
 import { T, UI, HAND, PRESS, useEscape } from "../journal/Editorial";
+import { useScrollLock } from "@/utils/useScrollLock";
 import { TWIN_ENABLED } from "../journal/twin/twinConfig";
 
 const ACTIONS = [
@@ -51,6 +52,7 @@ const ACTIONS = [
 
 export default function JournalHubSheet({ open, onClose, onSelect, threads = [] }) {
   useEscape(open ? onClose : null);
+  useScrollLock(open);
   if (!open) return null;
   return (
     <div
@@ -71,6 +73,8 @@ export default function JournalHubSheet({ open, onClose, onSelect, threads = [] 
           padding: "20px 16px 36px",
           maxHeight: "82vh",
           overflowY: "auto",
+          overscrollBehavior: "contain",
+          WebkitOverflowScrolling: "touch",
           paddingBottom: "calc(36px + env(safe-area-inset-bottom, 0))",
         }}
       >

@@ -9,6 +9,7 @@ import {
   Heart, Briefcase, Sparkles, Moon, Stethoscope, Eye, HelpCircle,
 } from "lucide-react";
 import { T, UI, HAND, PRESS, useEscape } from "@/components/journal/Editorial";
+import { useScrollLock } from "@/utils/useScrollLock";
 import { TWIN_ENABLED } from "@/components/journal/twin/twinConfig";
 
 // id values are Community view keys, except witness/twin which route to the Journal.
@@ -31,13 +32,14 @@ const AREAS = [
 
 export default function CommunityHubSheet({ open, onClose, onSelect }) {
   useEscape(open ? onClose : null);
+  useScrollLock(open);   // lock background scroll while the switcher is open
   if (!open) return null;
   return (
     <div onClick={onClose} style={{ position: "fixed", inset: 0, zIndex: 90, background: "rgba(51,41,28,0.45)", display: "flex", alignItems: "flex-end" }}>
       <div
         role="dialog" aria-modal="true" aria-label="Community menu"
         onClick={(e) => e.stopPropagation()}
-        style={{ background: T.paperHi, width: "100%", borderRadius: "18px 18px 0 0", padding: "20px 16px 36px", maxHeight: "82vh", overflowY: "auto", paddingBottom: "calc(36px + env(safe-area-inset-bottom, 0))" }}
+        style={{ background: T.paperHi, width: "100%", borderRadius: "18px 18px 0 0", padding: "20px 16px 36px", maxHeight: "82vh", overflowY: "auto", overscrollBehavior: "contain", WebkitOverflowScrolling: "touch", paddingBottom: "calc(36px + env(safe-area-inset-bottom, 0))" }}
       >
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20, paddingBottom: 14, borderBottom: `1px solid ${T.paperDeep}` }}>
           <div>

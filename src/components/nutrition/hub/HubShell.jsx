@@ -10,6 +10,7 @@ import { X } from "lucide-react";
 import {
   T, UI, SERIF, Eyebrow, Script, PAPER_BG, useEscape,
 } from "@/components/journal/Editorial";
+import { useScrollLock } from "@/utils/useScrollLock";
 
 // ── Bottom sheet ─────────────────────────────────────────────────────────────
 // Slides up from the bottom over a dimmed backdrop. Dusk header with a script
@@ -17,6 +18,7 @@ import {
 // component renders inside as children.
 export function HubSheet({ title, eyebrow, onClose, children }) {
   useEscape(onClose);
+  useScrollLock(true);   // lock the background page while the sheet is open (no scroll-bleed)
   return (
     <div
       onClick={onClose}
@@ -67,8 +69,13 @@ export function HubSheet({ title, eyebrow, onClose, children }) {
             </button>
           </div>
         </div>
-        {/* scrolling body — the real surface lives here */}
-        <div style={{ overflowY: "auto", padding: "16px 16px 28px", WebkitOverflowScrolling: "touch" }}>
+        {/* scrolling body — the real surface lives here. flex:1+minHeight:0 makes THIS the
+            scroller (capped by the sheet's maxHeight); overscroll-behavior:contain stops the
+            scroll bleeding to the locked page behind; -webkit-overflow-scrolling for iOS. */}
+        <div style={{
+          flex: 1, minHeight: 0, overflowY: "auto", overscrollBehavior: "contain",
+          WebkitOverflowScrolling: "touch", padding: "16px 16px 28px",
+        }}>
           {children}
         </div>
       </div>

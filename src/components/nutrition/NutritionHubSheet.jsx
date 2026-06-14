@@ -13,6 +13,7 @@ import {
   ShoppingBasket, TrendingUp, Sparkles,
 } from "lucide-react";
 import { T, UI, HAND, PRESS, useEscape } from "../journal/Editorial";
+import { useScrollLock } from "@/utils/useScrollLock";
 
 // Destinations = the hub's SURFACES, each with icon + label + a one-line sub.
 const DESTINATIONS = [
@@ -28,6 +29,7 @@ const DESTINATIONS = [
 
 export default function NutritionHubSheet({ open, onClose, onSelect }) {
   useEscape(open ? onClose : null);
+  useScrollLock(open);
   if (!open) return null;
   return (
     <div
@@ -48,6 +50,8 @@ export default function NutritionHubSheet({ open, onClose, onSelect }) {
           padding: "20px 16px 36px",
           maxHeight: "82vh",
           overflowY: "auto",
+          overscrollBehavior: "contain",
+          WebkitOverflowScrolling: "touch",
           paddingBottom: "calc(36px + env(safe-area-inset-bottom, 0))",
         }}
       >
