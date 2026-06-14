@@ -895,7 +895,13 @@ function Home({ presence, lifeStage, onEnter, user, onCrisis, onShareTo, onOpenH
 
 // ── a room (sticky tabs + feed + composer) ───────────────────────────────────
 // ── Jess's round (M3) — The Lighter Side games-master ────────────────────────
-function GameRoundCard({ user, onCrisis }) {
+// Parametrized: with NO kind it loads the day-rotated nightly round (room "lighter",
+// the dark PLUM headline). With a `kind` it loads that NAMED game's own independent
+// round (real GameRound in the 'lighter:<kind>' namespace) — so The Games Room shows
+// several real, separately-playable games at once, each with real persistence +
+// Jess's aggregate reveal. Same write path (submitGameResponse) either way.
+function GameRoundCard({ user, onCrisis, kind = null, name = null, blurb = null }) {
+  const named = !!kind;
   const [round, setRound] = useState(null);   // null = loading; false = none/error
   const [answered, setAnswered] = useState(false);
   const [draft, setDraft] = useState("");
@@ -906,7 +912,7 @@ function GameRoundCard({ user, onCrisis }) {
     if (tried.current) return; tried.current = true;
     (async () => {
       try {
-        const r = await base44.functions.invoke("openGameRound", { room: "lighter" });
+        const r = await base44.functions.invoke("openGameRound", named ? { kind } : { room: "lighter" });
         const d = r?.data ?? r;
         if (d?.round) { setRound(d.round); setAnswered(gameAnswered(d.round.id)); }
         else setRound(false);
@@ -929,49 +935,93 @@ function GameRoundCard({ user, onCrisis }) {
     finally { setBusy(false); }
   };
 
-  if (round === null || round === false) return null;   // quiet if nothing to show
+  // The nightly headline stays QUIET if there's nothing; a named game card always shows
+  // its name + how-to, with a gentle "setting up" state while its round spins.
+  if (!named && (round === null || round === false)) return null;
 
-  const isClosed = round.status === "closed";
-  const hasOptions = Array.isArray(round.options) && round.options.length >= 2;
+  const isClosed = round && round.status === "closed";
+  const hasOptions = round && Array.isArray(round.options) && round.options.length >= 2;
+  const accent = named ? T.gold : T.gold;
+  const promptColor = named ? T.ink : "#F4EFE3";
+  const revealColor = named ? T.inkSoft : "#EBD9C4";
+  const metaColor = named ? T.muted : "#A9967F";
+  const answeredColor = named ? T.muted : "#CDBBA6";
+
+  // the playable body (options / one-line / answered / reveal) — shared by both variants
+  const body = round === null ? (
+    <div style={{ fontFamily: UI, fontSize: 12, color: metaColor }}>Jess is setting this one up…</div>
+  ) : round === false ? (
+    <div style={{ fontFamily: UI, fontSize: 12.5, color: metaColor, lineHeight: 1.5 }}>Jess is setting this one up — check back in a little while.</div>
+  ) : isClosed ? (
+    <div style={{ fontFamily: HANDFAM, fontSize: named ? 16.5 : 18, lineHeight: 1.5, color: revealColor }}>{round.reveal}</div>
+  ) : answered ? (
+    <div style={{ fontFamily: UI, fontSize: 12.5, color: answeredColor, lineHeight: 1.5 }}>
+      You{"’"}re in. Come back when it closes and Jess will gather what the room said — no winners, just us. <span style={{ opacity: 0.8 }}>({closesInLabel(round.closes_at)}.)</span>
+    </div>
+  ) : hasOptions ? (
+    <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+      {round.options.map((o) => (
+        <button key={o} onClick={() => submit({ choice: o })} disabled={busy} style={{
+          fontFamily: UI, fontSize: 13, fontWeight: 700, cursor: busy ? "default" : "pointer",
+          padding: "10px 16px", borderRadius: 999,
+          border: named ? `1px solid ${T.paperDeep}` : "1px solid rgba(212,175,55,0.5)",
+          background: named ? T.paper : "rgba(212,175,55,0.12)", color: named ? T.ink : "#F4EFE3", opacity: busy ? 0.6 : 1,
+        }}>{o}</button>
+      ))}
+    </div>
+  ) : (
+    <div>
+      <textarea value={draft} onChange={(e) => setDraft(e.target.value)} maxLength={160}
+        placeholder="One line — for fun, no names." rows={2}
+        style={{ width: "100%", boxSizing: "border-box", fontFamily: HANDFAM, fontSize: 17, padding: "10px 12px", borderRadius: 6,
+          border: named ? `1px solid ${T.paperDeep}` : "1px solid rgba(244,239,227,0.25)",
+          background: named ? T.paper : "rgba(244,239,227,0.06)", color: named ? T.ink : "#F4EFE3", resize: "none" }} />
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: 8 }}>
+        <span style={{ fontFamily: UI, fontSize: 10.5, color: metaColor }}>{closesInLabel(round.closes_at)}</span>
+        <button onClick={() => draft.trim() && submit({ text: draft.trim() })} disabled={!draft.trim() || busy} style={{
+          fontFamily: UI, fontSize: 12, fontWeight: 700, cursor: (!draft.trim() || busy) ? "default" : "pointer",
+          padding: "8px 16px", borderRadius: 999, border: "none", background: T.gold, color: PLUM, opacity: (!draft.trim() || busy) ? 0.5 : 1,
+        }}>{busy ? "Adding…" : "Add mine"}</button>
+      </div>
+    </div>
+  );
+
+  if (named) {
+    return (
+      <section style={{ background: T.paperHi, border: `1px solid ${T.paperDeep}`, borderRadius: 6, padding: "15px 16px 14px", marginBottom: 12 }}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, marginBottom: 2 }}>
+          <Script size={22} color={T.ink}>{name}</Script>
+          <span style={{ fontFamily: UI, fontSize: 9, fontWeight: 700, letterSpacing: 0.6, textTransform: "uppercase", color: isClosed ? T.muted : accent }}>
+            {round && round.status ? (isClosed ? "the reveal" : "playing now") : ""}
+          </span>
+        </div>
+        <Hand size={14.5} color={T.muted} style={{ marginBottom: 12 }}>{blurb}</Hand>
+        {round && round.status && !isClosed && (
+          <Script size={20} color={promptColor} style={{ marginBottom: 12 }}>{round.prompt}</Script>
+        )}
+        {body}
+      </section>
+    );
+  }
 
   return (
     <section style={{ background: PLUM, borderRadius: 6, padding: "18px 18px 16px", marginBottom: 18, color: "#F4EFE3" }}>
       <Eyebrow color={T.gold} mb={8}>Jess's round{isClosed ? " · the reveal" : " · tonight"}</Eyebrow>
       <Script size={25} color="#F4EFE3" style={{ marginBottom: 12 }}>{round.prompt}</Script>
-
-      {isClosed ? (
-        <div style={{ fontFamily: HANDFAM, fontSize: 18, lineHeight: 1.5, color: "#EBD9C4" }}>{round.reveal}</div>
-      ) : answered ? (
-        <div style={{ fontFamily: UI, fontSize: 12.5, color: "#CDBBA6", lineHeight: 1.5 }}>
-          You're in. Come back when it closes and Jess will gather what the room said — no winners, just us. <span style={{ opacity: 0.8 }}>({closesInLabel(round.closes_at)}.)</span>
-        </div>
-      ) : hasOptions ? (
-        <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
-          {round.options.map((o) => (
-            <button key={o} onClick={() => submit({ choice: o })} disabled={busy} style={{
-              fontFamily: UI, fontSize: 13, fontWeight: 700, cursor: busy ? "default" : "pointer",
-              padding: "10px 16px", borderRadius: 999, border: "1px solid rgba(212,175,55,0.5)",
-              background: "rgba(212,175,55,0.12)", color: "#F4EFE3", opacity: busy ? 0.6 : 1,
-            }}>{o}</button>
-          ))}
-        </div>
-      ) : (
-        <div>
-          <textarea value={draft} onChange={(e) => setDraft(e.target.value)} maxLength={160}
-            placeholder="One line — for fun, no names." rows={2}
-            style={{ width: "100%", boxSizing: "border-box", fontFamily: HANDFAM, fontSize: 17, padding: "10px 12px", borderRadius: 6, border: "1px solid rgba(244,239,227,0.25)", background: "rgba(244,239,227,0.06)", color: "#F4EFE3", resize: "none" }} />
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: 8 }}>
-            <span style={{ fontFamily: UI, fontSize: 10.5, color: "#A9967F" }}>{closesInLabel(round.closes_at)}</span>
-            <button onClick={() => draft.trim() && submit({ text: draft.trim() })} disabled={!draft.trim() || busy} style={{
-              fontFamily: UI, fontSize: 12, fontWeight: 700, cursor: (!draft.trim() || busy) ? "default" : "pointer",
-              padding: "8px 16px", borderRadius: 999, border: "none", background: T.gold, color: PLUM, opacity: (!draft.trim() || busy) ? 0.5 : 1,
-            }}>{busy ? "Adding…" : "Add mine"}</button>
-          </div>
-        </div>
-      )}
+      {body}
     </section>
   );
 }
+
+// The named games lineup — each a real, separately-playable GameRound (its own format).
+const NAMED_GAMES = [
+  { kind: "this_or_that",    name: "This or That",    blurb: "Two cosy options, one gut pick. Jess gathers where the room landed." },
+  { kind: "one_word",        name: "One Word",        blurb: "Answer in a single word — Jess reveals the shape of the room's mood." },
+  { kind: "caption",         name: "Caption the Feeling", blurb: "A small everyday scene — caption the feeling, never a person." },
+  { kind: "one_line_story",  name: "One-Line Story",  blurb: "Add the next line to a story the room is writing together." },
+  { kind: "kind_confession", name: "Tiny Confession", blurb: "A small harmless habit no one knows. Gentle, never shameful." },
+  { kind: "recommend",       name: "Comfort Pick",    blurb: "Recommend the room one small comfort — a show, a song, a snack." },
+];
 
 // ── Circles (Phase 4) — curated whole-life cohorts inside the Circles door ────
 function CircleCard({ circle, joined, onOpen }) {
@@ -1442,12 +1492,20 @@ function GamesView({ user, onCrisis }) {
   return (
     <div>
       <Script size={32} style={{ marginBottom: 4 }}>The Games Room</Script>
-      <Hand size={17} color={T.muted} style={{ marginBottom: 16 }}>Play, lightly. Jess hosts a round — no winners, no scores, just a little fun together.</Hand>
+      <Hand size={17} color={T.muted} style={{ marginBottom: 16 }}>Play, lightly. Jess hosts every round — no winners, no scores, no leaderboards. Whatever you say, the room only ever sees the warm whole of it.</Hand>
+
+      {/* the headline nightly round (day-rotated format) */}
       <GameRoundCard user={user} onCrisis={onCrisis} />
-      <section style={{ background: T.paperHi, border: `1px dashed ${T.paperDeep}`, borderRadius: 6, padding: "13px 15px", marginTop: 4 }}>
-        <Eyebrow color={T.muted} mb={6}>More games — coming</Eyebrow>
-        <Hand size={15.5} color={T.muted}>Would-you-rather, this-or-that, a daily little prompt. Always kind, always aggregate — never a leaderboard.</Hand>
-      </section>
+
+      {/* the named games — each its own real, separately-playable round */}
+      <Eyebrow color={T.gold} mb={10}>More ways to play</Eyebrow>
+      {NAMED_GAMES.map((g) => (
+        <GameRoundCard key={g.kind} kind={g.kind} name={g.name} blurb={g.blurb} user={user} onCrisis={onCrisis} />
+      ))}
+
+      <div style={{ fontFamily: UI, fontSize: 11, color: T.muted, lineHeight: 1.5, marginTop: 6 }}>
+        Every answer is anonymous and one-per-round. Jess screens for anything unkind, and reveals only the shared mood — never who said what.
+      </div>
     </div>
   );
 }

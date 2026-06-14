@@ -119,11 +119,24 @@ Deno.serve(async (req) => {
 
     let p: any = {};
     try { const j = await req.json(); if (j && typeof j === 'object') p = j; } catch { p = {}; }
-    // Require a valid room. An empty/invalid call (e.g. a registration probe) gets a clean
-    // 400 and triggers NO side effects — no stray round, no LLM call — never a 500.
-    const room = p?.room ? String(p.room) : '';
-    if (!ROOMS.includes(room)) {
-      return Response.json({ error: 'valid room required' }, { status: 400 });
+    // Two modes:
+    //  (a) { kind } → a NAMED game. Each named game runs its OWN independent round in a
+    //      dedicated namespace ('lighter:<kind>') and FORCES that format — so The Games
+    //      Room can show several real, separately-playable games at once (this-or-that,
+    //      one-word, caption, one-line story, kind confession, comfort pick), each with
+    //      real GameResponse persistence + Jess's aggregate reveal. Same lifecycle code.
+    //  (b) { room } → the original day-rotated nightly round (back-compat, e.g. 'lighter').
+    // An empty/invalid call (e.g. a registration probe) gets a clean 400 and NO side effects.
+    const kindParam = p?.kind ? String(p.kind) : '';
+    const forced = kindParam ? KINDS.find((k) => k.kind === kindParam) : null;
+    let room: string;
+    if (forced) {
+      room = 'lighter:' + forced.kind;
+    } else {
+      room = p?.room ? String(p.room) : '';
+      if (!ROOMS.includes(room)) {
+        return Response.json({ error: 'valid room or kind required' }, { status: 400 });
+      }
     }
 
     const sb = base44.asServiceRole;
@@ -147,8 +160,8 @@ Deno.serve(async (req) => {
       return Response.json({ ok: true, round: shape(latest) });      // keep showing the reveal
     }
 
-    // open a fresh round
-    const kindDef = pickKind();
+    // open a fresh round — forced format for a named game, else the day-rotated pick
+    const kindDef = forced || pickKind();
     const { prompt, options } = await genPrompt(sb, kindDef);
     const created = await withTimeout(sb.entities.GameRound.create({
       room, kind: kindDef.kind, prompt, options,
