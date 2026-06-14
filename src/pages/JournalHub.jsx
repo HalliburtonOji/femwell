@@ -37,6 +37,8 @@ import { HubSheet, SurfaceCard } from "@/components/nutrition/hub/HubShell";
 import { JournalDiaryRing } from "@/components/hub/Centerpieces";
 import JumpToButton from "@/components/layout/JumpToButton";
 import { collectThreads, entriesInThread } from "@/components/journal/threads";
+import { formatCountdown } from "@/utils/sealedLetters";
+import { heldCountLocal } from "@/components/journal/witness/witnessAnon";
 import { relativeDate, entryDateObj, cycleDayForDate } from "@/components/journal/journalDates";
 import { TWIN_ENABLED } from "@/components/journal/twin/twinConfig";
 
@@ -534,6 +536,7 @@ export default function JournalHub() {
               >
                 <CardSummary
                   surface={s}
+                  user={user}
                   entries={entries}
                   profile={profile}
                   phase={phase}
@@ -873,8 +876,9 @@ function EchoCard({ phase, onShareEcho }) {
   );
 }
 
-// ── WITNESS · the honest model; direct-on-card = ask for a witness / open inbox ──
+// ── WITNESS · the honest model + your real "held" count; direct-on-card actions ──
 function WitnessCard({ onAskWitness, onOpenWitnessInbox }) {
+  const held = (() => { try { return heldCountLocal(); } catch { return 0; } })();
   return (
     <div style={{ display: "flex", flexDirection: "column", flex: 1 }}>
       <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
@@ -885,9 +889,18 @@ function WitnessCard({ onAskWitness, onOpenWitnessInbox }) {
         Hold space for one sister, or ask one to hold yours. Anonymous, one-to-one, no replies — only presence.
       </Hand>
 
+      {held > 0 ? (
+        <div style={{ display: "flex", alignItems: "center", gap: 8, background: T.paper, border: `1px solid ${T.sage}`, borderRadius: 10, padding: "9px 12px", marginBottom: 12 }}>
+          <Eye size={13} style={{ color: T.sage }} />
+          <span style={{ fontFamily: SERIF, fontSize: 13.5, color: T.ink }}>
+            You{"’"}ve held space for {held} {held === 1 ? "sister" : "sisters"}. Quiet, unseen, and enough.
+          </span>
+        </div>
+      ) : null}
+
       <div style={{ display: "grid", gap: 11, marginBottom: 4 }}>
         <Pattern title="Ask to be witnessed" detail="Send one passage out, anonymously, to a sister in your phase." />
-        <Pattern title="Hold space for someone" detail="Your inbox holds requests waiting for a quiet witness." />
+        <Pattern title="Hold space for someone" detail={held > 0 ? "Open your inbox to hold the next sister waiting." : "Your inbox holds requests waiting for a quiet witness."} />
       </div>
 
       <div style={{ marginTop: "auto", display: "grid", gap: 8 }}>
@@ -925,6 +938,35 @@ function TwinCard({ phase, onOpenTwin }) {
   );
 }
 
+// ── Mood trend — up to 14 most-recent entries that carried a mood, oldest→newest,
+// as soft colour-banded dots (low/steady/light). A glance at the rhythm, never a score.
+function MoodTrend({ entries }) {
+  const moods = (entries || [])
+    .filter((e) => e && e.mood_rating)
+    .map((e) => ({ m: Number(e.mood_rating), d: entryDateObj(e) }))
+    .filter((x) => x.m >= 1 && x.d)
+    .sort((a, b) => (a.d?.getTime() || 0) - (b.d?.getTime() || 0))
+    .slice(-14);
+  if (moods.length < 2) return null;   // need a couple of moods to read a trend
+  const band = (m) => (m <= 2 ? T.crimson : m === 3 ? T.muted : T.sage);
+  const avg = moods.reduce((s, x) => s + x.m, 0) / moods.length;
+  const word = avg <= 2.4 ? "tender lately" : avg >= 3.6 ? "lighter lately" : "fairly steady";
+  return (
+    <div style={{ background: T.paper, border: `1px solid ${T.paperDeep}`, borderRadius: 10, padding: "11px 13px" }}>
+      <div style={{ fontFamily: UI, fontSize: 9.5, fontWeight: 700, letterSpacing: 0.6, textTransform: "uppercase", color: T.muted, marginBottom: 8 }}>
+        Mood across your last {moods.length} pages · {word}
+      </div>
+      <div style={{ display: "flex", alignItems: "flex-end", gap: 5, height: 26 }}>
+        {moods.map((x, i) => (
+          <span key={i} title={`mood ${x.m}/5`} style={{
+            width: 9, height: 4 + x.m * 4, borderRadius: 999, background: band(x.m), display: "inline-block", flexShrink: 0,
+          }} />
+        ))}
+      </div>
+    </div>
+  );
+}
+
 // ── INSIGHTS · gentle real patterns from the entries (counts/threads, never scores)
 function InsightsCard({ entries, threads }) {
   const list = (entries || []).filter(Boolean);
@@ -949,6 +991,7 @@ function InsightsCard({ entries, threads }) {
 
       {total > 0 ? (
         <div style={{ display: "grid", gap: 11 }}>
+          <MoodTrend entries={list} />
           <Pattern title={`${total} ${total === 1 ? "page" : "pages"} written`} detail="Each one is a small act of paying attention to yourself." />
           {topTypes.map(([k, n]) => (
             <Pattern key={k} title={`${TYPE_LABEL[k] || k} · ${n}`} detail="A thread your writing keeps returning to." />
@@ -958,7 +1001,9 @@ function InsightsCard({ entries, threads }) {
           ) : null}
         </div>
       ) : (
-        <Empty>Once you have written a few pages, gentle patterns appear here — the formats you return to, the rhythm of your weeks, the words that recur.</Empty>
+        <Empty>
+          Patterns appear here once you have written a few pages — the formats you return to (gratitude, reflection, grief), a gentle mood trend across your recent entries, and the series your writing keeps coming back to. Write two or three pages and this fills in.
+        </Empty>
       )}
     </div>
   );
@@ -1000,8 +1045,27 @@ function OnThisDayCard({ onThisDay, cycleDay, onReadEntry }) {
   );
 }
 
-// ── SEALED LETTERS · the honest model; direct-on-card = write a sealed letter ──
-function LettersCard({ onOpenSeal }) {
+// ── SEALED LETTERS · real state — count, ready-to-open, next-unseal timeline ──
+function LettersCard({ user, onOpenSeal }) {
+  const [letters, setLetters] = useState(null);   // null = loading
+  useEffect(() => {
+    if (!user?.id) { setLetters([]); return; }
+    let alive = true;
+    base44.entities.SealedLetters.filter({ user_id: user.id }, "-created_at")
+      .then((rows) => { if (alive) setLetters(Array.isArray(rows) ? rows.filter(Boolean) : []); })
+      .catch(() => { if (alive) setLetters([]); });
+    return () => { alive = false; };
+  }, [user?.id]);
+
+  const list = letters || [];
+  const ready = list.filter((l) => l.unsealed_at && !l.unseal_seen_at);     // arrived, not yet read
+  const sealed = list.filter((l) => !l.unsealed_at);                         // still locked
+  // upcoming unseals, soonest first (next 3) — real seal_date countdowns
+  const upcoming = sealed
+    .filter((l) => l.seal_date)
+    .sort((a, b) => String(a.seal_date).localeCompare(String(b.seal_date)))
+    .slice(0, 3);
+
   return (
     <div style={{ display: "flex", flexDirection: "column", flex: 1 }}>
       <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
@@ -1009,14 +1073,49 @@ function LettersCard({ onOpenSeal }) {
         <Script size={26}>Sealed Letters</Script>
       </div>
       <Hand size={14} color={T.ink} style={{ marginBottom: 14 }}>
-        Time-locked notes to a future you. Encrypted on your device — the words are sealed until the moment you choose.
+        Time-locked notes to a future you, encrypted on your device — sealed until the moment you choose.
       </Hand>
-      <div style={{ display: "grid", gap: 11, marginBottom: 4 }}>
-        <Pattern title="Write now, read later" detail="A date, a phase, or a milestone unseals it." />
-        <Pattern title="Only you ever read it" detail="Only the ciphertext leaves your phone." />
+
+      <div style={{ flex: 1 }}>
+        {letters === null ? (
+          <div style={{ fontFamily: UI, fontSize: 11, color: T.muted }}>Counting your letters…</div>
+        ) : list.length === 0 ? (
+          <Empty>None sealed yet. Write a line to a future you — set a date, a phase, or a milestone, and it stays encrypted until then.</Empty>
+        ) : (
+          <>
+            {/* real headline state */}
+            <div style={{ fontFamily: UI, fontSize: 11, color: T.muted, fontWeight: 700, letterSpacing: 0.3, marginBottom: 12 }}>
+              {sealed.length} sealed{ready.length > 0 ? ` · ${ready.length} ready to open` : ""}
+            </div>
+            {ready.length > 0 ? (
+              <div style={{ display: "flex", alignItems: "center", gap: 8, background: T.paper, border: `1px solid ${T.gold}`, borderRadius: 10, padding: "9px 12px", marginBottom: 12 }}>
+                <Lock size={13} style={{ color: T.gold }} />
+                <span style={{ fontFamily: SERIF, fontSize: 13.5, color: T.ink }}>
+                  {ready.length === 1 ? "A letter has arrived — ready to open." : `${ready.length} letters have arrived.`}
+                </span>
+              </div>
+            ) : null}
+            {upcoming.length > 0 ? (
+              <>
+                <Eyebrow mb={8}>Unsealing next</Eyebrow>
+                <div style={{ display: "grid", gap: 7 }}>
+                  {upcoming.map((l) => (
+                    <div key={l.id} style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: 10 }}>
+                      <span style={{ fontFamily: SERIF, fontSize: 13.5, color: T.ink, minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                        {(l.title || "").trim() || "A sealed letter"}
+                      </span>
+                      <span style={{ fontFamily: UI, fontSize: 10.5, color: T.muted, fontWeight: 600, flexShrink: 0 }}>{formatCountdown(l.seal_date)}</span>
+                    </div>
+                  ))}
+                </div>
+              </>
+            ) : null}
+          </>
+        )}
       </div>
+
       {/* direct-on-card: open the real on-device-encrypting composer */}
-      <button onClick={onOpenSeal} style={{ ...primaryChip, marginTop: "auto" }}>
+      <button onClick={onOpenSeal} style={{ ...primaryChip, marginTop: 14 }}>
         <Lock size={14} /> Write a sealed letter
       </button>
     </div>
