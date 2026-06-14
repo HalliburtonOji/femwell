@@ -79,6 +79,24 @@ export const PAPER_BG = {
   backgroundBlendMode: "normal, normal, normal, multiply",
 };
 
+// ── FLAT sheet surface — for OVERLAYS that may nest (a sheet over the paper page,
+// a full-page surface rendered inside a sheet). PAPER_BG carries POSITIONAL radial
+// vignettes sized to each element; when one PAPER_BG element sits inside another the
+// two vignettes don't align and their edges show ("a bigger background and a smaller
+// one fighting"). SHEET_BG drops the vignettes and keeps only the uniform cream wash
+// + the seamlessly-tiling paper grain — so nesting it is invisible (no positioned
+// edge to mismatch). One coherent surface, every depth. */
+export const SHEET_BG = {
+  backgroundColor: T.paper,
+  backgroundImage:
+    `linear-gradient(rgba(238,233,222,0.5), rgba(238,233,222,0.5)),` +
+    `url("${PAPER_TEX}")`,
+  backgroundSize: "auto, 300px 300px",
+  backgroundRepeat: "repeat, repeat",
+  backgroundAttachment: "scroll, scroll",
+  backgroundBlendMode: "normal, multiply",
+};
+
 // ── small typographic helpers ──
 export function Eyebrow({ children, mb = 0, color = T.muted }) {
   return <div style={{ fontFamily: UI, fontSize: 10.5, color, letterSpacing: 1.7, fontWeight: 700, textTransform: "uppercase", marginBottom: mb }}>{children}</div>;

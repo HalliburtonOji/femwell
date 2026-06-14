@@ -8,7 +8,7 @@
 // Bottom sheets carry: backdrop + drag-handle + dusk header + close button + Escape.
 import { X } from "lucide-react";
 import {
-  T, UI, SERIF, Eyebrow, Script, PAPER_BG, useEscape,
+  T, UI, SERIF, Eyebrow, Script, SHEET_BG, useEscape,
 } from "@/components/journal/Editorial";
 import { useScrollLock } from "@/utils/useScrollLock";
 
@@ -34,7 +34,7 @@ export function HubSheet({ title, eyebrow, onClose, children }) {
         aria-modal="true"
         aria-label={title}
         style={{
-          position: "relative", ...PAPER_BG, backgroundColor: T.paper,
+          position: "relative", ...SHEET_BG, backgroundColor: T.paper,
           borderTopLeftRadius: 22, borderTopRightRadius: 22, maxHeight: "90%",
           width: "100%", maxWidth: 640, margin: "0 auto",
           display: "flex", flexDirection: "column",

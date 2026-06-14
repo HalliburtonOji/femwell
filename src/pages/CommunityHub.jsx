@@ -604,7 +604,7 @@ function CommunityHubInner() {
             eyebrow={(SURFACES.find((s) => s.id === openRoom)?.eyebrow) || "in your circle"}
             onClose={() => setOpenRoom(null)}
           >
-            <CommunityInner initialView={openRoom} />
+            <CommunityInner initialView={openRoom} embedded />
           </HubSheet>
         )}
 

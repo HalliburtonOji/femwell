@@ -26,7 +26,7 @@ import { toast } from "sonner";
 import {
   UtensilsCrossed, Target, BookOpen, CalendarDays,
   ShoppingBasket, TrendingUp, Sparkles, ChevronLeft, ChevronRight, Leaf, Plus, Star,
-  Search, Clock, Camera, Mic, ScanLine, Check,
+  Search, Clock, Camera, Mic, ScanLine, Check, X,
 } from "lucide-react";
 import {
   T, UI, SERIF, Eyebrow, Rule, Script, Hand, InkFilter, useEditorialFonts, PAPER_BG,
@@ -383,6 +383,32 @@ export default function NutritionHub() {
       loadSummary(user, todayKey);
     }
   }, [user, loadSummary]);
+
+  // remove a logged meal INLINE from the Today card — optimistic energy/meals drop +
+  // guarded MealLog.delete, then reconcile from the server. Lets you undo a mislog in
+  // one tap, right on the card, with the totals (ring + energy) easing down immediately.
+  const removeMeal = useCallback(async (meal) => {
+    if (!user || !meal?.id) return;
+    const key = dayKey;
+    // optimistic: drop the row + ease the totals down NOW (the ring/energy move on tap)
+    setDayMeals((list) => list.filter((m) => m.id !== meal.id));
+    setDayMealRows((rows) => rows.filter((r) => r.id !== meal.id));
+    setSummary((s) => ({
+      ...s,
+      kcal: Math.max(0, Math.round((s.kcal || 0) - (meal.kcal || 0))),
+      meals: Math.max(0, (s.meals || 0) - 1),
+    }));
+    try {
+      await withTimeout(base44.entities.MealLog.delete(meal.id), 6000, "remove");
+      toast.success("Removed from today");
+      loadSummary(user, key);   // reconcile to the true totals (also re-derives macros)
+      loadRecents(user);
+    } catch (e) {
+      console.error("remove meal failed:", e);
+      toast.error("Couldn’t remove that — try again.");
+      loadSummary(user, key);   // restore the real row + totals on failure
+    }
+  }, [user, dayKey, loadSummary, loadRecents]);
 
   // tick / untick a shopping item INLINE on the card (direct, no sheet). Optimistic +
   // guarded; reconciles from the server on success/failure.
@@ -744,6 +770,7 @@ export default function NutritionHub() {
                   onLog={() => setOpenLogger(true)}
                   onReLog={reLogRecent}
                   onWater={addWater}
+                  onRemove={removeMeal}
                   onToggleShop={toggleShopItem}
                   isToday={isToday}
                 />
@@ -826,11 +853,11 @@ function navBtn(disabled) {
 // state, never a mock figure. The bottom sheet stays the "go deeper / edit" layer.
 function CardSummary({
   surface, summary, dayMeals, recents, mealPlan, shopItems, savedRecipes,
-  nutritionProfile, profile, targets, calorieTarget, hydrationTarget, kcalLeft, jess, onOpen, onLog, onReLog, onWater, onToggleShop, isToday,
+  nutritionProfile, profile, targets, calorieTarget, hydrationTarget, kcalLeft, jess, onOpen, onLog, onReLog, onWater, onRemove, onToggleShop, isToday,
 }) {
   switch (surface.id) {
     case "log":      return <LogCard {...{ surface, recents, onLog, onReLog }} />;
-    case "today":    return <TodayCard {...{ summary, dayMeals, recents, calorieTarget, hydrationTarget, kcalLeft, onReLog, onWater, isToday }} />;
+    case "today":    return <TodayCard {...{ summary, dayMeals, recents, calorieTarget, hydrationTarget, kcalLeft, onReLog, onWater, onRemove, isToday }} />;
     case "plan":     return <PlanCard {...{ nutritionProfile, profile, targets, calorieTarget }} />;
     case "recipes":  return <RecipesCard {...{ savedRecipes, onReLog }} />;
     case "mealgen":  return <MealgenCard {...{ mealPlan, onReLog }} />;
@@ -915,7 +942,7 @@ function LogCard({ surface, recents, onLog, onReLog }) {
 }
 
 // ── TODAY · the plate + logged meals + recents to re-add (all real) ──────────
-function TodayCard({ summary, dayMeals, recents, calorieTarget, hydrationTarget, kcalLeft, onReLog, onWater, isToday }) {
+function TodayCard({ summary, dayMeals, recents, calorieTarget, hydrationTarget, kcalLeft, onReLog, onWater, onRemove, isToday }) {
   return (
     <div style={{ display: "flex", flexDirection: "column", flex: 1 }}>
       <Script size={26} style={{ marginBottom: 2 }}>Today’s plate</Script>
@@ -957,6 +984,20 @@ function TodayCard({ summary, dayMeals, recents, calorieTarget, hydrationTarget,
               <span style={{ fontFamily: UI, fontSize: 9, color: T.muted, fontWeight: 700, width: 52, textTransform: "uppercase", flexShrink: 0 }}>{m.slot}</span>
               <span style={{ flex: 1, fontFamily: SERIF, fontSize: 13.5, color: T.ink, lineHeight: 1.25, minWidth: 0 }}>{m.title}</span>
               {m.kcal ? <span style={{ fontFamily: UI, fontSize: 10, color: T.muted, flexShrink: 0 }}>{m.kcal} kcal</span> : null}
+              {onRemove && isToday ? (
+                <button
+                  onClick={() => onRemove(m)}
+                  aria-label={`Remove ${m.title}`}
+                  title="Remove"
+                  style={{
+                    flexShrink: 0, width: 22, height: 22, borderRadius: 999, border: "none",
+                    background: "transparent", color: T.muted, display: "grid", placeItems: "center",
+                    cursor: "pointer", alignSelf: "center",
+                  }}
+                >
+                  <X size={13} />
+                </button>
+              ) : null}
             </div>
           ))
         )}
