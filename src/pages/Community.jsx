@@ -900,36 +900,36 @@ function Home({ presence, lifeStage, onEnter, user, onCrisis, onShareTo, onOpenH
 // round (real GameRound in the 'lighter:<kind>' namespace) — so The Games Room shows
 // several real, separately-playable games at once, each with real persistence +
 // Jess's aggregate reveal. Same write path (submitGameResponse) either way.
+// a fully-local round from the curated prompts — the game is ALWAYS playable, even if the
+// round backend is slow/unavailable. (Module-level so it can seed useState directly.)
+function makeLocalRound(kind) {
+  const k = kind || "this_or_that";
+  const def = CLIENT_GAME_PROMPTS[k] || CLIENT_GAME_PROMPTS.one_word;
+  return { id: "local_" + k, kind: k, prompt: def.prompt, options: def.options, status: "open", closes_at: null, _local: true };
+}
+
 function GameRoundCard({ user, onCrisis, kind = null, name = null, blurb = null }) {
   const named = !!kind;
-  const [round, setRound] = useState(null);   // null = loading; false = none/error
-  const [answered, setAnswered] = useState(false);
+  // SEED round with a playable local round from the very first render — never null, never a
+  // "setting up" wait, and independent of effect timing (a mount quirk in the embedded sheet
+  // context left round null when seeded via useEffect). The backend round upgrades it later.
+  const [round, setRound] = useState(() => makeLocalRound(named ? kind : "this_or_that"));
+  const [answered, setAnswered] = useState(() => gameAnswered(makeLocalRound(named ? kind : "this_or_that").id));
   const [draft, setDraft] = useState("");
   const [busy, setBusy] = useState(false);
   const tried = useRef(false);
 
-  // a fully-local round from the curated prompts — used when the backend is slow/unavailable
-  // so a game is ALWAYS playable (never stuck on "setting up").
-  const localRound = () => {
-    const k = named ? kind : "this_or_that";
-    const def = CLIENT_GAME_PROMPTS[k] || CLIENT_GAME_PROMPTS.one_word;
-    return { id: "local_" + k, kind: k, prompt: def.prompt, options: def.options, status: "open", closes_at: null, _local: true };
-  };
-
   useEffect(() => {
     if (tried.current) return; tried.current = true;
-    // Show a PLAYABLE local round immediately — never a "setting up" wait, and robust to a
-    // slow/wedged function tier (the original openGameRound got stuck after an LLM-hang
-    // deploy; hence the V2 rename + this local-first approach, which needs no timer).
-    const fb = localRound();
-    setRound(fb); setAnswered(gameAnswered(fb.id));
-    // Then try to UPGRADE to the real cross-device backend round in the background. Only
-    // swap in the real round if the player hasn't already answered the local one.
+    // Try to UPGRADE to the real cross-device backend round; keep the local one on any
+    // failure (the old openGameRound wedged after an LLM-hang deploy → V2 rename + this
+    // resilient local-first design). Only swap if the player hasn't answered locally yet.
+    const localId = makeLocalRound(named ? kind : "this_or_that").id;
     (async () => {
       try {
         const r = await base44.functions.invoke("openGameRoundV2", named ? { kind } : { room: "lighter" });
         const d = r?.data ?? r;
-        if (d?.round && !gameAnswered(fb.id)) { setRound(d.round); setAnswered(gameAnswered(d.round.id)); }
+        if (d?.round && !gameAnswered(localId)) { setRound(d.round); setAnswered(gameAnswered(d.round.id)); }
       } catch (e) { /* keep the local round — the game stays playable */ }
     })();
   }, []);
