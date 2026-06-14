@@ -151,16 +151,22 @@ function greetingForNow(d = new Date()) {
   return "Good evening";
 }
 
-// The user's first name, from full_name → email local-part → a warm fallback.
+// The user's REAL first name, or null when we only have an account handle. We never
+// render a raw username like "ojihalliburton57": a candidate is rejected if it has
+// digits, is an overly-long single token, or just echoes the email local-part. null →
+// the greeting shows with no name ("Good afternoon · Reproductive years").
 function firstNameOf(user) {
   const full = (user?.full_name || "").trim();
-  if (full) return full.split(/\s+/)[0];
-  const email = (user?.email || "").trim();
-  if (email) {
-    const local = email.split("@")[0].replace(/[._-]+/g, " ").trim();
-    if (local) return local.charAt(0).toUpperCase() + local.slice(1).split(/\s+/)[0].slice(1);
-  }
-  return "there";
+  if (!full) return null;
+  const first = full.split(/\s+/)[0];
+  const singleToken = full.split(/\s+/).length === 1;
+  const emailLocal = ((user?.email || "").split("@")[0] || "").toLowerCase().replace(/[._-]+/g, "");
+  const looksHandle =
+    /\d/.test(first) ||                                   // contains digits
+    first.length > 14 ||                                  // implausibly long for a first name
+    (singleToken && first.toLowerCase().replace(/[._-]+/g, "") === emailLocal); // == the email handle
+  if (looksHandle) return null;
+  return first.charAt(0).toUpperCase() + first.slice(1);
 }
 
 // Day-of-cycle (1-based) from the profile, matching NutritionTodayTab's logic.
@@ -506,39 +512,38 @@ export default function NutritionHub() {
       <div style={{ maxWidth: COL, margin: "0 auto", position: "relative" }}>
 
         {/* ── DAILY HUB header — Demo2's full summary, wired to real data ───── */}
-        <header style={{ padding: "22px 18px 4px" }}>
-          {/* top row: greeting eyebrow + (switcher · day stepper) controls */}
-          <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 12, marginBottom: 4 }}>
-            <div style={{ minWidth: 0, flex: 1 }}>
-              {/* 1 · greeting line: GOOD EVENING, NAME · STAGE · PHASE · DAY N */}
-              <Eyebrow mb={4}>
-                {`${greeting}, ${firstName} · ${stageLabel(profile)}`}
-                {cyclePhaseLabel ? ` · ${cyclePhaseLabel}` : ""}
-                {cyclePhaseLabel && cycleDay ? ` · Day ${cycleDay}` : ""}
-              </Eyebrow>
-            </div>
-            <div style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
-              {/* universal "Jump to" switcher trigger (shared chrome — matches Journal/Community/Health) */}
-              <JumpToButton onClick={() => setHubMenuOpen(true)} />
-              <div style={{
-                display: "flex", alignItems: "center", gap: 4,
-                background: T.paperHi, border: `1px solid ${T.paperDeep}`, borderRadius: 14, padding: "5px 6px",
-              }}>
-                <button onClick={() => changeDay(-1)} aria-label="Previous day"
-                  style={{ width: 26, height: 26, borderRadius: 9, border: "none", background: "transparent", color: T.muted, cursor: "pointer", display: "grid", placeItems: "center" }}>
-                  <ChevronLeft size={16} />
-                </button>
-                <div style={{ textAlign: "center", minWidth: 74 }}>
-                  <div style={{ fontFamily: UI, fontSize: 11, fontWeight: 700, color: T.ink }}>{isToday ? "Today" : format(selectedDate, "EEE")}</div>
-                  <div style={{ fontFamily: UI, fontSize: 9.5, color: T.muted }}>{format(selectedDate, "d MMM")}</div>
-                </div>
-                <button onClick={() => changeDay(1)} disabled={isToday} aria-label="Next day"
-                  style={{ width: 26, height: 26, borderRadius: 9, border: "none", background: "transparent", color: T.muted, cursor: isToday ? "default" : "pointer", opacity: isToday ? 0.3 : 1, display: "grid", placeItems: "center" }}>
-                  <ChevronRight size={16} />
-                </button>
+        <header style={{ padding: "20px 18px 4px" }}>
+          {/* controls row — its OWN full-width row so nothing steals the greeting's width:
+              Jump-to pill left, day stepper right, room to breathe. */}
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10, marginBottom: 14 }}>
+            <JumpToButton onClick={() => setHubMenuOpen(true)} />
+            <div style={{
+              display: "flex", alignItems: "center", gap: 4,
+              background: T.paperHi, border: `1px solid ${T.paperDeep}`, borderRadius: 14, padding: "5px 6px",
+            }}>
+              <button onClick={() => changeDay(-1)} aria-label="Previous day"
+                style={{ width: 26, height: 26, borderRadius: 9, border: "none", background: "transparent", color: T.muted, cursor: "pointer", display: "grid", placeItems: "center" }}>
+                <ChevronLeft size={16} />
+              </button>
+              <div style={{ textAlign: "center", minWidth: 74 }}>
+                <div style={{ fontFamily: UI, fontSize: 11, fontWeight: 700, color: T.ink }}>{isToday ? "Today" : format(selectedDate, "EEE")}</div>
+                <div style={{ fontFamily: UI, fontSize: 9.5, color: T.muted }}>{format(selectedDate, "d MMM")}</div>
               </div>
+              <button onClick={() => changeDay(1)} disabled={isToday} aria-label="Next day"
+                style={{ width: 26, height: 26, borderRadius: 9, border: "none", background: "transparent", color: T.muted, cursor: isToday ? "default" : "pointer", opacity: isToday ? 0.3 : 1, display: "grid", placeItems: "center" }}>
+                <ChevronRight size={16} />
+              </button>
             </div>
           </div>
+
+          {/* greeting — its OWN full-width line; reads cleanly, no cramped column.
+              No raw username is ever shown (firstName is null for handle-like names). */}
+          <Eyebrow mb={4}>
+            {firstName ? `${greeting}, ${firstName}` : greeting}
+            {` · ${stageLabel(profile)}`}
+            {cyclePhaseLabel ? ` · ${cyclePhaseLabel}` : ""}
+            {cyclePhaseLabel && cycleDay ? ` · Day ${cycleDay}` : ""}
+          </Eyebrow>
 
           {/* 2 · the Ephesis script heading */}
           <Script size={40} carve>your plate today</Script>
