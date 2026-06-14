@@ -22,6 +22,7 @@ import {
   updateMemoryContent,
   memoryTypeBadge,
 } from "@/services/jessMemoryService";
+import { useScrollLock } from "@/utils/useScrollLock";
 
 // FemWell design tokens — locked to spec.
 const C = {
@@ -56,6 +57,7 @@ const PROACTIVITY_LEVELS = [
 // jessMemoryService.loadTopMemories(). Feature 2 — Jess Memory System.
 
 export default function JessSettingsSheet({ open, onClose, user, profile, onProfileChange }) {
+  useScrollLock(open);   // lock the background page while the settings sheet is open
   const [jessName, setJessName] = useState("");
   const [character, setCharacter] = useState("nurturing");
   const [proEnabled, setProEnabled] = useState(true);

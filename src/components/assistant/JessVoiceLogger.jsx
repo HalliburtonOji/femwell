@@ -18,6 +18,7 @@
 import { useEffect, useMemo, useRef, useState, useCallback } from "react";
 import { X, Mic, Pause, Play, Check, Edit3, RotateCw, Send } from "lucide-react";
 import { base44 } from "@/api/base44Client";
+import { useScrollLock } from "@/utils/useScrollLock";
 
 // FemWell tokens — locked.
 const C = {
@@ -49,6 +50,7 @@ const CATEGORY = {
 
 // ─── Public component ───────────────────────────────────────────────────
 export default function JessVoiceLogger({ open, onClose, user }) {
+  useScrollLock(open);   // lock the background page while the voice logger is open
   const [stage, setStage] = useState("idle"); // idle | listening | processing | confirm | saving | done | error
   const [interimText, setInterimText] = useState("");
   const [finalText, setFinalText] = useState("");
@@ -364,6 +366,7 @@ function TranscriptPanel({ stage, interim, final, errorMsg, extractedItemsCount 
         color: C.cream,
         animation: "vl-bubble-in 320ms ease-out",
         scrollbarWidth: "none",
+        overscrollBehavior: "contain",
         WebkitOverflowScrolling: "touch",
       }}>
         {final && <span>{final}</span>}
@@ -509,6 +512,7 @@ function ConfirmationSheet({ items, onRemove, onSave, onTryAgain }) {
         boxShadow: "0 -20px 60px rgba(0,0,0,0.4)",
         animation: "vl-sheet-up 320ms cubic-bezier(0.16,1,0.3,1)",
         maxHeight: "70vh", overflowY: "auto",
+        overscrollBehavior: "contain", WebkitOverflowScrolling: "touch",
         color: C.espresso,
       }}
     >

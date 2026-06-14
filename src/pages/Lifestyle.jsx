@@ -9,6 +9,7 @@ import ListenTab from "@/components/lifestyle/listen/ListenTab";
 import DailyStoryReader from "@/components/lifestyle/DailyStoryReader";
 import ContentActionBar from "@/components/common/ContentActionBar";
 import HoroscopeTabImpl from "@/components/horoscope/HoroscopeTab";
+import { useScrollLock } from "@/utils/useScrollLock";
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 function stripHtml(str) {
@@ -70,12 +71,10 @@ function ArticleSheet({ item, onClose }) {
     return () => { cancelled = true; };
   }, [item.id]);
 
-  // Body scroll lock while the sheet is open.
-  useEffect(() => {
-    const prev = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-    return () => { document.body.style.overflow = prev; };
-  }, []);
+  // Body scroll lock while the sheet is open (shared, ref-counted hook —
+  // replaces the old ad-hoc document.body.style.overflow lock). This component
+  // only mounts when open, so the lock is always active here.
+  useScrollLock(true);
 
   const handleSave = async () => {
     // Optimistic toggle. Wire through UserProfile.saved_item_ids — the same
@@ -126,7 +125,7 @@ function ArticleSheet({ item, onClose }) {
           </button>
         </div>
         {/* Scrollable content */}
-        <div style={{ flex: 1, overflowY: "auto", padding: "0 20px 48px" }}>
+        <div style={{ flex: 1, overflowY: "auto", overscrollBehavior: "contain", WebkitOverflowScrolling: "touch", padding: "0 20px 48px" }}>
           {/* Hero image */}
           {item.image_url && (
             <div style={{ height: 220, borderRadius: 18, overflow: "hidden", marginBottom: 20 }}>

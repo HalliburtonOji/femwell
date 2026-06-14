@@ -19,6 +19,7 @@ import {
   rememberMine, bumpEchoesToday, echoesToday, atDailyLimit,
 } from "./echoAnon";
 import { DAILY_ECHO_LIMIT, PHASE_COHORT, CRISIS_RESOURCES } from "./echoConfig";
+import { useScrollLock } from "@/utils/useScrollLock";
 
 function relTime(d) {
   const mins = Math.max(0, Math.round((new Date(d).getTime() - Date.now()) / 60000));
@@ -34,6 +35,7 @@ export default function ShareAsEchoSheet({
   user, phase = null, cycleDay = null, lifeStage = null,
   seedText = "", sourceEntryId = null, onClose, onShared,
 }) {
+  useScrollLock(true);   // lock the background page while this full-screen overlay is open
   const [draft, setDraft] = useState(seedText || "");
   const [stage, setStage] = useState("write");   // write | review | crisis | sending | done | blocked
   const [reason, setReason] = useState("");
@@ -109,7 +111,7 @@ export default function ShareAsEchoSheet({
   }, [onClose]);
 
   return (
-    <div style={{ position: "fixed", inset: 0, zIndex: 60, overflowY: "auto", ...PAPER_BG }}>
+    <div style={{ position: "fixed", inset: 0, zIndex: 60, overflowY: "auto", overscrollBehavior: "contain", WebkitOverflowScrolling: "touch", ...PAPER_BG }}>
       <div style={{ maxWidth: 560, margin: "0 auto", padding: "40px 22px 60px", position: "relative" }}>
         <button onClick={onClose} aria-label="Close" style={{
           position: "absolute", top: 26, right: 18, width: 34, height: 34, borderRadius: "50%",

@@ -38,6 +38,7 @@ import {
 } from "@/services/jessAgentService";
 import { useCycleDay } from "@/hooks/useCycleDay";
 import { PHASE_RECS } from "@/data/phaseRecs";
+import { useScrollLock } from "@/utils/useScrollLock";
 
 const C = {
   cream:    "#F4EDDB",
@@ -86,6 +87,7 @@ function resolveDisplayName(user, profile) {
 }
 
 export default function MorningBriefOverlay({ user, profile, onDismiss }) {
+  useScrollLock(true);   // lock the background page while this full-screen overlay is open
   const [screen, setScreen]   = useState(0); // 0,1,2
   const [closing, setClosing] = useState(false);
   const [text, setText]       = useState("");

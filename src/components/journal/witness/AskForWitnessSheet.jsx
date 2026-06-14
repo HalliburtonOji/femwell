@@ -25,6 +25,7 @@ import {
   GATE_HOLDS, CANCEL_HOURS, OPEN_HOURS, EXPIRE_HOURS, SEND_PER_DAY,
   PHASE_COHORT, RESPONSE_LABEL, MAX_ENTRY_CHARS, WITNESS_ZK_ENABLED,
 } from "./witnessConfig";
+import { useScrollLock } from "@/utils/useScrollLock";
 
 // Whether this send should use the zero-knowledge (FWWT2) path. OFF by default
 // (flag in witnessConfig) until the server side is deployed; falls back to FWWT1.
@@ -37,6 +38,7 @@ function minsLeft(iso) {
 export default function AskForWitnessSheet({
   user, phase = null, profile = null, entry = null, onClose, onOpenInbox,
 }) {
+  useScrollLock(true);   // lock the background page while this full-screen overlay is open
   const entryText = (entry?.text || "").trim();
   const cohort = PHASE_COHORT[phase] || PHASE_COHORT.unknown;
   const available = useMemo(() => witnessAvailable() && witnessCryptoAvailable(), []);
@@ -195,7 +197,7 @@ export default function AskForWitnessSheet({
   );
 
   return (
-    <div style={{ position: "fixed", inset: 0, zIndex: 60, overflowY: "auto", ...PAPER_BG }}>
+    <div style={{ position: "fixed", inset: 0, zIndex: 60, overflowY: "auto", overscrollBehavior: "contain", WebkitOverflowScrolling: "touch", ...PAPER_BG }}>
       <div style={{ maxWidth: 560, margin: "0 auto", padding: "40px 22px 60px", position: "relative" }}>
         {close}
 

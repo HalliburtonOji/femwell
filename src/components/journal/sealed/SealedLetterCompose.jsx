@@ -12,6 +12,7 @@ import { PAPER_BG, T, UI, HAND, SERIF, PRESS, Script, Hand, Eyebrow, Rule, Chip 
 import { encryptText, cryptoAvailable } from "@/utils/journalCrypto";
 import { TRIGGER_TYPES, futureChips, phaseTriggerOptions, resolveTrigger } from "./sealedTriggers";
 import { formatLetterDate } from "@/utils/sealedLetters";
+import { useScrollLock } from "@/utils/useScrollLock";
 
 const todayISO = () => new Date().toISOString().split("T")[0];
 
@@ -25,6 +26,7 @@ export default function SealedLetterCompose({
   profile, onClose, onSealed, seedBody = "",
   thread = null, seedTriggerType = null, replyToLabel = "",   // v2: writing back into a thread
 }) {
+  useScrollLock(true);   // lock the background page while this full-screen composer is open
   const [body, setBody] = useState(seedBody || "");
   const [title, setTitle] = useState("");
   const [triggerType, setTriggerType] = useState(seedTriggerType || "future");
@@ -69,7 +71,7 @@ export default function SealedLetterCompose({
   };
 
   return (
-    <div style={{ position: "fixed", inset: 0, zIndex: 92, ...PAPER_BG, overflowY: "auto", padding: "30px 26px 44px" }}>
+    <div style={{ position: "fixed", inset: 0, zIndex: 92, ...PAPER_BG, overflowY: "auto", overscrollBehavior: "contain", WebkitOverflowScrolling: "touch", padding: "30px 26px 44px" }}>
       <div style={{ maxWidth: 620, margin: "0 auto" }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
           <Eyebrow>A sealed letter</Eyebrow>

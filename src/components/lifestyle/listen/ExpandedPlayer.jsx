@@ -46,7 +46,6 @@ export default function ExpandedPlayer() {
     return () => {
       window.removeEventListener('keydown', handleKey);
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [player?.isExpanded]);
 
   const [sleepMenuOpen, setSleepMenuOpen] = useState(false);

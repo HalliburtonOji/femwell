@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { X } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { getSunSign, prettyBirthday } from "@/utils/astrology";
+import { useScrollLock } from "@/utils/useScrollLock";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // BirthDataSheet — bottom-sheet modal that captures birth date, birth time,
@@ -19,6 +20,7 @@ import { getSunSign, prettyBirthday } from "@/utils/astrology";
 //   initial     existing AstroProfile row, optional
 // ─────────────────────────────────────────────────────────────────────────────
 export default function BirthDataSheet({ open, onClose, onSaved, userId, initial }) {
+  useScrollLock(open);   // lock the background page while the sheet is open
   const [date, setDate] = useState(initial?.birth_date || "");
   const [time, setTime] = useState(initial?.birth_time || "");
   const [place, setPlace] = useState(initial?.birth_place || "");
@@ -171,6 +173,8 @@ const sheetStyle = {
   boxShadow: "0 -8px 32px rgba(0,0,0,0.18)",
   maxHeight: "92vh",
   overflowY: "auto",
+  overscrollBehavior: "contain",
+  WebkitOverflowScrolling: "touch",
 };
 const headerRowStyle = {
   display: "flex",
