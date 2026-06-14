@@ -1597,10 +1597,10 @@ function DestChip({ active, label, onClick }) {
   );
 }
 
-function CommunityInner() {
+export function CommunityInner({ initialView = null } = {}) {
   useEditorialFonts();
   const [user, setUser] = useState(null);
-  const [view, setView] = useState("home");      // "home" | room key
+  const [view, setView] = useState(initialView || "home");      // "home" | room key
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [loadErr, setLoadErr] = useState(false);

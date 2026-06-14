@@ -37,6 +37,7 @@ import { CommunityEmbraceRing } from "@/components/hub/Centerpieces";
 import JumpToButton from "@/components/layout/JumpToButton";
 import CommunityHubSheet from "@/components/community/CommunityHubSheet";
 import EchoWall from "@/components/journal/echo/EchoWall";
+import { CommunityInner } from "./Community";
 import {
   communityHash, answeredQotd, markQotd,
 } from "@/components/community/communityAnon";
@@ -60,15 +61,15 @@ const HANDFAM = '"Cormorant Garamond","Fraunces",Georgia,serif';
 //               path exactly as Community.jsx runs it — zero logic duplication)
 const SURFACES = [
   { id: "qotd",    label: "Question",   eyebrow: "Today's one line, and the room's", sheetTitle: "question of the day", Icon: HelpCircle,    open: "qotd" },
-  { id: "lounge",  label: "Lounge",     eyebrow: "Vent, spill it, be heard",         sheetTitle: "the lounge",          Icon: MessageCircle, nav: "?room=lounge" },
+  { id: "lounge",  label: "Lounge",     eyebrow: "Vent, spill it, be heard",         sheetTitle: "the lounge",          Icon: MessageCircle, open: "room" },
   { id: "echo",    label: "Echo Wall",  eyebrow: "Anonymous lines, fading in 48h",   sheetTitle: "echo wall",           Icon: Waves,         open: "echo" },
-  { id: "lighter", label: "Lighter",    eyebrow: "Fun, telly, the stars",            sheetTitle: "the lighter side",    Icon: Dices,         nav: "?room=lighter" },
-  { id: "library", label: "Library",    eyebrow: "Read together, spoiler-safe",      sheetTitle: "the library",         Icon: BookOpen,      nav: "?room=library" },
-  { id: "circles", label: "Circles",    eyebrow: "Cohorts by who you are",           sheetTitle: "circles & clubs",     Icon: Users,         nav: "?room=circles" },
-  { id: "love",    label: "Love",       eyebrow: "Dating, friendship, marriage",     sheetTitle: "love & relationships",Icon: Heart,         nav: "?room=love" },
-  { id: "money",   label: "Money",      eyebrow: "Careers, pay, pensions",           sheetTitle: "money & work",        Icon: Briefcase,     nav: "?room=money" },
-  { id: "style",   label: "Style",      eyebrow: "Fashion as confidence",            sheetTitle: "style",               Icon: Sparkles,      nav: "?room=style" },
-  { id: "health",  label: "Health",     eyebrow: "The clinical room, NHS-grounded",  sheetTitle: "the health room",     Icon: Stethoscope,   nav: "?room=health" },
+  { id: "lighter", label: "Lighter",    eyebrow: "Fun, telly, the stars",            sheetTitle: "the lighter side",    Icon: Dices,         open: "room" },
+  { id: "library", label: "Library",    eyebrow: "Read together, spoiler-safe",      sheetTitle: "the library",         Icon: BookOpen,      open: "room" },
+  { id: "circles", label: "Circles",    eyebrow: "Cohorts by who you are",           sheetTitle: "circles & clubs",     Icon: Users,         open: "room" },
+  { id: "love",    label: "Love",       eyebrow: "Dating, friendship, marriage",     sheetTitle: "love & relationships",Icon: Heart,         open: "room" },
+  { id: "money",   label: "Money",      eyebrow: "Careers, pay, pensions",           sheetTitle: "money & work",        Icon: Briefcase,     open: "room" },
+  { id: "style",   label: "Style",      eyebrow: "Fashion as confidence",            sheetTitle: "style",               Icon: Sparkles,      open: "room" },
+  { id: "health",  label: "Health",     eyebrow: "The clinical room, NHS-grounded",  sheetTitle: "the health room",     Icon: Stethoscope,   open: "room" },
   { id: "talk",    label: "Talk It Out",eyebrow: "Quietly, one to one",              sheetTitle: "talk it out",         Icon: HeartHandshake,nav: "?open=witness", journal: true },
 ];
 
@@ -336,6 +337,7 @@ function CommunityHubInner() {
 
   const [active, setActive] = useState(0);          // slider index
   const [openSheet, setOpenSheet] = useState(null); // surface id rendered in a HubSheet (echo/qotd)
+  const [openRoom, setOpenRoom] = useState(null);   // room key rendered IN-SHEET via CommunityInner (no bounce to classic)
   const [hubMenuOpen, setHubMenuOpen] = useState(false);
   const [crisis, setCrisis] = useState(false);
 
@@ -409,6 +411,7 @@ function CommunityHubInner() {
   // deep-links into the proven /Community route (or the Journal for Talk It Out) so the
   // real writes / anonymity hashing / crisis routing / moderation all stay intact.
   const openSurface = (s) => {
+    if (s.open === "room") { setOpenRoom(s.id); return; }   // the real room, IN the hub (no bounce)
     if (s.open) { setOpenSheet(s.id); return; }
     if (s.journal) { navigate(createPageUrl("Journal" + s.nav)); return; }
     navigate(createPageUrl("CommunityClassic" + (s.nav || "")));
@@ -421,8 +424,8 @@ function CommunityHubInner() {
     if (id === "twin") { navigate(createPageUrl("Journal?open=twin")); return; }
     const meta = SURFACES.find((s) => s.id === id);
     if (meta) { openSurface(meta); return; }
-    // surfaces the hub menu lists that aren't slider cards (clubs/games) → /Community
-    navigate(createPageUrl("CommunityClassic?room=" + id));
+    // surfaces the hub menu lists that aren't slider cards (clubs/games) → render in-sheet too
+    setOpenRoom(id);
   };
 
   const openMeta = openSheet ? SURFACES.find((s) => s.id === openSheet) : null;
@@ -591,6 +594,17 @@ function CommunityHubInner() {
         {openMeta && openMeta.open === "qotd" && (
           <HubSheet title={openMeta.sheetTitle} eyebrow={openMeta.eyebrow} onClose={() => setOpenSheet(null)}>
             <QotdSheet user={user} onCrisis={() => { setOpenSheet(null); setCrisis(true); }} />
+          </HubSheet>
+        )}
+        {/* ── ROOMS render IN the hub (the real room via CommunityInner) — no bounce to
+              the classic feed. All posts/writes/crisis/anonymity run inside CommunityInner. ── */}
+        {openRoom && (
+          <HubSheet
+            title={(SURFACES.find((s) => s.id === openRoom)?.sheetTitle) || "community"}
+            eyebrow={(SURFACES.find((s) => s.id === openRoom)?.eyebrow) || "in your circle"}
+            onClose={() => setOpenRoom(null)}
+          >
+            <CommunityInner initialView={openRoom} />
           </HubSheet>
         )}
 

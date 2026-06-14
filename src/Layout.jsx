@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { Heart } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import FloatingSidebar from "./components/layout/FloatingSidebar";
 import AssistantOverlay from "./components/assistant/AssistantOverlay";
@@ -10,7 +9,7 @@ import ErrorBoundary from "./components/common/ErrorBoundary";
 
 import { MilestoneEventListener } from "./components/programs/MilestoneCelebrationModal";
 import { PodcastPlayerProvider } from "./components/lifestyle/listen/PodcastPlayerProvider";
-import { PAPER_BG, InkFilter } from "./components/journal/Editorial";
+import { PAPER_BG, InkFilter, Heart as BrandHeart } from "./components/journal/Editorial";
 import MiniPlayer from "./components/lifestyle/listen/MiniPlayer";
 import ExpandedPlayer from "./components/lifestyle/listen/ExpandedPlayer";
 
@@ -87,7 +86,7 @@ export default function Layout({ children, currentPageName }) {
           }}
         >
           Made with
-          <Heart aria-hidden="true" className="w-3 h-3" style={{ color: "#E11D48", fill: "#E11D48" }} />
+          <BrandHeart size={24} style={{ margin: "0 2px" }} />
           <span className="sr-only">love</span> in 2026
           <span aria-hidden style={{ margin: "0 6px", color: "#9B8B7A" }}>·</span>
           {/* Sprint 12 batch 1 — small muted legal links on every page footer. */}
