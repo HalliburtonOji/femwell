@@ -562,8 +562,11 @@ export default function UnifiedInsightsTab({ user, profile, nutritionProfile, ta
   // nutrition spine, then which of this stage's reference nutrients are leaning light.
   // A picture, not a target — microNudgeForStage only flags a lean when real data
   // backs it (missing micros = a gap, not a lean), and never returns a number to show.
+  // floor:true → micros the user didn't log are backfilled from the UK CoFID table
+  // (authoritative food-composition values) so the women's layer reads real numbers
+  // even for plainly-typed meals. Anything backfilled is flagged `estimated`.
   const weekNutrition = useMemo(
-    () => rangeNutrition(weekMeals, 7),
+    () => rangeNutrition(weekMeals, 7, { floor: true }),
     [weekMeals]
   );
   // Prefer the DERIVED targets as the soft reference (they fold in stage + body +
@@ -787,6 +790,11 @@ ${localText}`;
               // no logged data yet — gentle generic copy.
               : "Foods to lean toward this week — gentle leans grounded in UK guidance, never targets to hit. Log a few meals and this will start to read from your own week."}
         </p>
+        {(weekNutrition.estimated?.iron_mg || weekNutrition.estimated?.folate_ug || weekNutrition.estimated?.calcium_mg || weekNutrition.estimated?.fiber_g) && (
+          <p style={{ fontFamily: UI, fontSize: 10.5, fontStyle: "italic", color: T.muted, margin: "-6px 0 14px" }}>
+            Some figures are estimated from typical UK food-composition values (CoFID) where you logged a meal without exact micronutrients — a picture, not a precise count.
+          </p>
+        )}
         <div style={{ display: "grid", gap: 12 }}>
           {orderedNudges.map((m) => {
             const leaning = leaningCardKeys.has(m.key);

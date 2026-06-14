@@ -24,6 +24,7 @@
 // stages). No cycle-syncing macros, no microbiome overclaim.
 
 import { readAiAnalysis, getMealSummary } from "@/utils/nutritionAiAnalysis";
+import { cofidFloorMicros } from "@/utils/cofid";
 
 // ── canonical FoodItem keys (doc) ──────────────────────────────────────────────
 // A FoodItem is the normalized shape every source (a logged meal item, an Open Food
@@ -154,26 +155,37 @@ function round1(n) {
 // ── micros for ONE meal (reads ai_analysis like the rest of the app) ─────────────
 // Summary-first, items-fallback. Never invents a number (missing → 0). Returns the
 // raw micro grams/mg/µg plus a `known` flag per nutrient (was any real value present).
-function mealMicros(meal) {
+// When `floor` is true, micros NOT backed by a real logged value are backfilled from
+// the UK CoFID table (src/utils/cofid.js) using the meal's food names — so a plainly
+// logged meal ("lentil & spinach soup") still yields a sensible iron/folate/calcium
+// ESTIMATE for the women's layer. Backfilled values are flagged `estimated` (never
+// counted as `known`), and `fiber_g_est` carries a fibre estimate for the same purpose.
+function mealMicros(meal, floor = false) {
   const a = readAiAnalysis(meal);
-  if (!a) return { iron_mg: 0, folate_ug: 0, calcium_mg: 0, known: {} };
-  const s = a.summary || {};
-  const items = Array.isArray(a.items) ? a.items : [];
+  const s = (a && a.summary) || {};
+  const items = (a && Array.isArray(a.items)) ? a.items : [];
 
   const fromItems = (k) => items.reduce((acc, it) => acc + num(it?.[k]), 0);
   const pick = (k) => (num(s[k]) > 0 ? num(s[k]) : fromItems(k));
   const present = (k) => num(s[k]) > 0 || items.some((it) => num(it?.[k]) > 0);
 
-  return {
-    iron_mg: pick("iron_mg"),
-    folate_ug: pick("folate_ug"),
-    calcium_mg: pick("calcium_mg"),
-    known: {
-      iron_mg: present("iron_mg"),
-      folate_ug: present("folate_ug"),
-      calcium_mg: present("calcium_mg"),
-    },
-  };
+  let iron = pick("iron_mg"), folate = pick("folate_ug"), calcium = pick("calcium_mg");
+  const known = { iron_mg: present("iron_mg"), folate_ug: present("folate_ug"), calcium_mg: present("calcium_mg") };
+  const estimated = { iron_mg: false, folate_ug: false, calcium_mg: false };
+  let fiber_g_est = 0;
+
+  if (floor && (!known.iron_mg || !known.folate_ug || !known.calcium_mg)) {
+    const text = [meal?.raw_text, ...items.map((it) => it?.name)].filter(Boolean).join(" ");
+    const f = cofidFloorMicros(text);
+    if (f) {
+      if (!known.iron_mg && f.iron_mg > 0) { iron = f.iron_mg; estimated.iron_mg = true; }
+      if (!known.folate_ug && f.folate_ug > 0) { folate = f.folate_ug; estimated.folate_ug = true; }
+      if (!known.calcium_mg && f.calcium_mg > 0) { calcium = f.calcium_mg; estimated.calcium_mg = true; }
+      fiber_g_est = f.fiber_g || 0;
+    }
+  }
+
+  return { iron_mg: iron, folate_ug: folate, calcium_mg: calcium, fiber_g_est, known, estimated };
 }
 
 // ── dayNutrition(meals) — THE one source of truth for a day's totals ─────────────
@@ -182,7 +194,8 @@ function mealMicros(meal) {
 // count, and items[] fall back when summary macros are zero). Micros come through
 // mealMicros (summary-first, items-fallback). `known` flags say whether ANY real
 // value backed each nutrient this day (so the UI can stay honest about gaps).
-export function dayNutrition(meals) {
+export function dayNutrition(meals, opts = {}) {
+  const floor = !!opts.floor;   // backfill missing micros + fibre from the UK CoFID table
   const rows = (meals || []).filter(Boolean);
   const totals = {
     kcal: 0, protein_g: 0, carbs_g: 0, fat_g: 0, fiber_g: 0,
@@ -191,6 +204,8 @@ export function dayNutrition(meals) {
       kcal: false, protein_g: false, fiber_g: false,
       iron_mg: false, folate_ug: false, calcium_mg: false,
     },
+    // which nutrients were partly filled from CoFID estimates (never counted as `known`)
+    estimated: { iron_mg: false, folate_ug: false, calcium_mg: false, fiber_g: false },
   };
   if (rows.length === 0) return totals;
 
@@ -210,13 +225,21 @@ export function dayNutrition(meals) {
     if (protein > 0) totals.known.protein_g = true;
     if (fiber > 0) totals.known.fiber_g = true;
 
-    const micros = mealMicros(m);
+    const micros = mealMicros(m, floor);
     totals.iron_mg += micros.iron_mg;
     totals.folate_ug += micros.folate_ug;
     totals.calcium_mg += micros.calcium_mg;
     if (micros.known.iron_mg) totals.known.iron_mg = true;
     if (micros.known.folate_ug) totals.known.folate_ug = true;
     if (micros.known.calcium_mg) totals.known.calcium_mg = true;
+    if (micros.estimated.iron_mg) totals.estimated.iron_mg = true;
+    if (micros.estimated.folate_ug) totals.estimated.folate_ug = true;
+    if (micros.estimated.calcium_mg) totals.estimated.calcium_mg = true;
+    // fibre floor: only add a CoFID fibre estimate for meals that logged no fibre
+    if (floor && fiber === 0 && micros.fiber_g_est > 0) {
+      totals.fiber_g += micros.fiber_g_est;
+      totals.estimated.fiber_g = true;
+    }
   }
 
   // round for display-friendliness while keeping iron at 1dp
@@ -237,7 +260,8 @@ export function dayNutrition(meals) {
 // insights can lean on "this week" honestly). `meals` may be the full history; we
 // filter by day_key here. Returns dayNutrition's totals PLUS { days, loggedDays,
 // perDay:{...means}, microDays:{...} }.
-export function rangeNutrition(meals, days = 7) {
+export function rangeNutrition(meals, days = 7, opts = {}) {
+  const floor = !!opts.floor;
   const rows = (meals || []).filter(Boolean);
   const span = Math.max(1, Number(days) || 7);
   const since = dayKeyNDaysAgo(span - 1);
@@ -247,7 +271,7 @@ export function rangeNutrition(meals, days = 7) {
     return typeof k === "string" && k >= since;
   });
 
-  const totals = dayNutrition(inRange);
+  const totals = dayNutrition(inRange, { floor });
   const loggedDays = new Set(inRange.map((m) => m.day_key).filter(Boolean)).size;
 
   // per-day means over the days she actually logged (no fake /7 division)
