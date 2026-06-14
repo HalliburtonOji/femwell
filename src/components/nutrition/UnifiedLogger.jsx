@@ -28,6 +28,7 @@ import { T, UI, SERIF } from "@/components/journal/Editorial";
 import { withTimeout } from "@/utils/safeEntity";
 import { inferMealTypeFromTime } from "@/utils/nutritionAiAnalysis";
 import { offMicrosFromNutriments } from "@/utils/foodModel";
+import { topFoods, frequentFavourites } from "@/utils/personalisation";
 
 const OFF_TIMEOUT_MS = 6000;
 const MEAL_TYPES = ["breakfast", "lunch", "dinner", "snack"];
@@ -302,23 +303,33 @@ export default function UnifiedLogger({ user, profile, onLogged }) {
     let alive = true;
     (async () => {
       if (!user) { setLoadingChips(false); return; }
+      // pull a wider window (60) so MEMORY can rank by how often + how recently a
+      // food turns up, not just the newest single log. Guarded + .catch → [].
       const [rows, tmpl] = await Promise.all([
-        base44.entities.MealLog.filter({ user_id: user.id }, "-created_date", 20).catch(() => []),
+        base44.entities.MealLog.filter({ user_id: user.id }, "-created_date", 60).catch(() => []),
         base44.entities.MealTemplates.filter({ user_id: user.id }).catch(() => []),
       ]);
       if (!alive) return;
-      const seen = new Set();
-      const distinct = [];
-      for (const m of (rows || []).filter(Boolean)) {
-        const text = (m.raw_text || "").trim();
-        const key = text.toLowerCase();
-        if (!text || seen.has(key)) continue;
-        seen.add(key);
-        distinct.push({ id: m.id, name: text, meal_type: m.meal_type, ai_analysis: m.ai_analysis });
-        if (distinct.length >= 8) break;
+      const mealRows = (rows || []).filter(Boolean);
+
+      // RECENTS, ranked by memory: most-logged (recency-weighted) go-tos lead. Keep the
+      // freshest underlying row per food so one-tap re-log carries meal_type + ai_analysis.
+      const latestByKey = new Map();
+      for (const m of mealRows) {
+        const k = (m.raw_text || "").trim().toLowerCase();
+        if (!k || latestByKey.has(k)) continue; // rows are newest-first → first seen is freshest
+        latestByKey.set(k, m);
       }
+      const ranked = topFoods(mealRows, { limit: 8 });
+      const distinct = ranked.map((f) => {
+        const src = latestByKey.get(f.key) || {};
+        return { id: src.id || f.key, name: f.name, meal_type: src.meal_type, ai_analysis: src.ai_analysis };
+      });
       setRecents(distinct);
-      setFavourites((tmpl || []).filter(Boolean));
+
+      // FAVOURITES: the user's real MealTemplates PLUS learned go-tos (foods logged
+      // often enough across days to feel like favourites), deduped + ranked.
+      setFavourites(frequentFavourites(mealRows, tmpl));
       setLoadingChips(false);
     })();
     return () => { alive = false; };
@@ -677,14 +688,20 @@ export default function UnifiedLogger({ user, profile, onLogged }) {
           <div style={{ marginBottom: 18 }}>
             <Eyebrow>Favourites — one tap to log</Eyebrow>
             <div style={{ display: "flex", flexWrap: "wrap", gap: 7 }}>
-              {favourites.map((f) => (
-                <button key={f.id} disabled={saving}
-                  onClick={() => reLog(f.title, f.default_meal_type, f.ai_analysis)}
-                  style={chip}>
-                  <Plus size={11} color={T.crimson} />
-                  <span style={{ fontFamily: SERIF, fontSize: 12.5, color: T.ink }}>{f.title}</span>
-                </button>
-              ))}
+              {favourites.map((f) => {
+                // two shapes: a real MealTemplate (learned:false → title + default_meal_type
+                // + ai_analysis) or a learned go-to (learned:true → name + key, no macros yet).
+                const label = f.learned ? f.name : f.title;
+                const key = f.learned ? `learned-${f.key}` : f.id;
+                return (
+                  <button key={key} disabled={saving}
+                    onClick={() => reLog(label, f.default_meal_type, f.ai_analysis)}
+                    style={chip}>
+                    <Plus size={11} color={T.crimson} />
+                    <span style={{ fontFamily: SERIF, fontSize: 12.5, color: T.ink }}>{label}</span>
+                  </button>
+                );
+              })}
             </div>
           </div>
         )}

@@ -41,6 +41,7 @@ import {
   T, UI, SERIF, Eyebrow, Script, Hand,
 } from "@/components/journal/Editorial";
 import { withTimeout } from "@/utils/safeEntity";
+import { rankRecipesByPreference } from "@/utils/personalisation";
 
 // ── small option sets ────────────────────────────────────────────────────────
 const WELLNESS_GOALS = [
@@ -624,12 +625,12 @@ export default function UnifiedRecipesTab({ user, profile, nutritionProfile }) {
         .map((r) => {
           let parsed = null;
           try { parsed = JSON.parse(r.recipe_json); } catch { parsed = null; }
-          return parsed ? { id: r.id, rating: r.rating || 0, recipe: parsed } : null;
+          return parsed ? { id: r.id, rating: r.rating || 0, recipe: parsed, created_date: r.created_date } : null;
         })
-        .filter(Boolean)
-        // rating influences ordering: loved recipes float up, then recency (already -created_date)
-        .sort((a, b) => (b.rating || 0) - (a.rating || 0));
-      setSaved(recipes);
+        .filter(Boolean);
+      // MEMORY for recipes: rating leads (loved recipes float up), then recency — so
+      // your favourites surface first across sessions (rows already arrive -created_date).
+      setSaved(rankRecipesByPreference(recipes));
     } catch (e) {
       console.error("loadSaved failed", e);
       // honest: leave whatever we had; never crash
@@ -719,8 +720,8 @@ export default function UnifiedRecipesTab({ user, profile, nutritionProfile }) {
     if (!active?.savedId || active.savedId === "pending") return;
     const prev = active.rating;
     setActive((a) => ({ ...a, rating: stars }));                       // optimistic
-    setSaved((s) => s.map((x) => (x.id === active.savedId ? { ...x, rating: stars } : x))
-      .sort((a, b) => (b.rating || 0) - (a.rating || 0)));
+    // re-rank by memory so a freshly-loved recipe floats up immediately
+    setSaved((s) => rankRecipesByPreference(s.map((x) => (x.id === active.savedId ? { ...x, rating: stars } : x))));
     try {
       await withTimeout(
         base44.entities.MealTemplates.update(active.savedId, { rating: stars }),

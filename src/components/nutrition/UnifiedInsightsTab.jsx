@@ -44,6 +44,7 @@ import { format, subDays, startOfWeek, endOfWeek } from "date-fns";
 import { T, UI, SERIF, Eyebrow, Hand, Rule } from "@/components/journal/Editorial";
 import { getMealSummary } from "@/utils/nutritionAiAnalysis";
 import { rangeNutrition, microNudgeForStage } from "@/utils/foodModel";
+import { learnedPatternLine } from "@/utils/personalisation";
 import { withTimeout } from "@/utils/safeEntity";
 import AiDisclaimer from "@/components/compliance/AiDisclaimer";
 
@@ -502,6 +503,11 @@ export default function UnifiedInsightsTab({ user, profile, nutritionProfile, ta
 
   const nudges = useMemo(() => stageNudges(profile), [profile]);
 
+  // MEMORY: ONE warm "what you reach for" line from the user's own logged habits
+  // (30-day window). Real, or null when too sparse to honestly say — never a verdict,
+  // never a count shown as a score. Shown gently alongside the weekly story.
+  const memoryLine = useMemo(() => learnedPatternLine(mealLogs), [mealLogs]);
+
   // DATA-DRIVEN women's layer: this week's real totals (macros + micros) from the
   // nutrition spine, then which of this stage's reference nutrients are leaning light.
   // A picture, not a target — microNudgeForStage only flags a lean when real data
@@ -654,6 +660,17 @@ ${localText}`;
             <Hand key={i} size={16} color={T.ink}>{p}</Hand>
           ))}
         </div>
+
+        {/* MEMORY: a gentle "what you reach for" line from real logged habits — a warm
+            observation, not a verdict. Hidden entirely when the data is too sparse. */}
+        {memoryLine && (
+          <div style={{ display: "flex", gap: 9, alignItems: "flex-start", marginTop: 12, paddingTop: 12, borderTop: `1px solid ${T.paperDeep}` }}>
+            <Leaf size={15} color={T.sage} style={{ flexShrink: 0, marginTop: 3 }} />
+            <p style={{ fontFamily: SERIF, fontSize: 13.5, fontStyle: "italic", lineHeight: 1.55, color: T.inkSoft, margin: 0 }}>
+              {memoryLine}
+            </p>
+          </div>
+        )}
 
         {/* honesty / compliance line — Jess is never clinical */}
         <AiDisclaimer

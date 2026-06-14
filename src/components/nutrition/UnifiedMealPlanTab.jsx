@@ -31,6 +31,7 @@ import {
 } from "lucide-react";
 import { T, UI, SERIF } from "@/components/journal/Editorial";
 import { withTimeout } from "@/utils/safeEntity";
+import { slotSuggestions } from "@/utils/personalisation";
 
 const SLOTS = ["breakfast", "lunch", "dinner", "snack"];
 const SLOT_LABEL = { breakfast: "Morning", lunch: "Midday", dinner: "Evening", snack: "Snack" };
@@ -98,6 +99,7 @@ export default function UnifiedMealPlanTab({ user, profile, nutritionProfile, ta
   const [loadError, setLoadError] = useState(null);
   const [templates, setTemplates] = useState([]);
   const [recents, setRecents] = useState([]);
+  const [mealRows, setMealRows] = useState([]); // raw MealLog rows — for per-slot memory
 
   const [activeDay, setActiveDay] = useState(0);     // 0..6 (Mon..Sun)
   const [editing, setEditing] = useState(null);      // { day, slot } | null
@@ -124,13 +126,16 @@ export default function UnifiedMealPlanTab({ user, profile, nutritionProfile, ta
       const [plans, tmpl, recentRows] = await Promise.all([
         base44.entities.MealPlans.filter({ user_id: user.id, week_start: weekKey }).catch(() => []),
         base44.entities.MealTemplates.filter({ user_id: user.id }).catch(() => []),
-        base44.entities.MealLog.filter({ user_id: user.id }, "-created_date", 18).catch(() => []),
+        // wider window so per-slot MEMORY (slotSuggestions) has real history to learn from
+        base44.entities.MealLog.filter({ user_id: user.id }, "-created_date", 60).catch(() => []),
       ]);
       setTemplates((tmpl || []).filter(Boolean));
+      const mealLogRows = (recentRows || []).filter(Boolean);
+      setMealRows(mealLogRows); // keep raw rows (meal_type intact) for slotSuggestions
       // distinct recent meal texts (real) for the editor's one-tap chips
       const seen = new Set();
       const distinct = [];
-      for (const m of (recentRows || []).filter(Boolean)) {
+      for (const m of mealLogRows) {
         const text = (m.raw_text || "").trim();
         const k = text.toLowerCase();
         if (!text || seen.has(k)) continue;
@@ -269,6 +274,16 @@ export default function UnifiedMealPlanTab({ user, profile, nutritionProfile, ta
       }), 6000, "save");
     } catch (e) { console.error(e); /* soft — generation can still proceed */ }
 
+    // MEMORY: the user's own frequent meals per slot, from their logged history — a
+    // SOFT hint so the generator leans toward what they actually reach for. Only
+    // included when history supports it; guarded so a thin history just omits it.
+    const usualMeals = {};
+    for (const slot of SLOTS) {
+      const picks = slotSuggestions(mealRows, slot, { limit: 4 });
+      if (picks.length) usualMeals[slot] = picks;
+    }
+    const hasUsual = Object.keys(usualMeals).length > 0;
+
     try {
       const res = await withTimeout(base44.functions.invoke("generateMealPlan", {
         mode: "meal_plan",
@@ -277,6 +292,8 @@ export default function UnifiedMealPlanTab({ user, profile, nutritionProfile, ta
         duration_days: 7,
         included_meal_types: SLOTS,
         cuisine_preference: undefined,
+        // gentle personalisation: foods this user often logs per slot (soft lean only)
+        usual_meals: hasUsual ? usualMeals : undefined,
         // gentle SOFT targets — explicit user value wins, else the derived guide
         calorie_target: nutritionProfile?.calories_target || targets?.energy_kcal,
         protein_target: nutritionProfile?.protein_target_g || targets?.protein_g,
@@ -381,12 +398,21 @@ export default function UnifiedMealPlanTab({ user, profile, nutritionProfile, ta
     return `Across the meals we can read, the week ${leanPhrase} — roughly ${macroPreview.protein}g protein and ${macroPreview.carbs}g carbs over the week.${guideTail} A picture, not a target.`;
   })();
 
-  // ── editor chips (real): templates for this slot + recents + a few staples ───
+  // ── editor chips (real): MEMORY-led — the user's own frequent meals for THIS slot
+  //    (from their logged history) lead, then templates for the slot, then recents. ──
   const editorSuggestions = (slot) => {
+    const learned = slotSuggestions(mealRows, slot, { limit: 6 }); // their go-tos for this slot
     const tmpl = templates.filter((t) => t.default_meal_type === slot).map((t) => t.title).filter(Boolean);
-    const all = [...tmpl, ...recents];
+    const all = [...learned, ...tmpl, ...recents];
     const seen = new Set();
-    return all.filter((s) => { const k = s.toLowerCase(); if (seen.has(k)) return false; seen.add(k); return true; }).slice(0, 8);
+    return all.filter((s) => { const k = (s || "").toLowerCase(); if (!k || seen.has(k)) return false; seen.add(k); return true; }).slice(0, 8);
+  };
+
+  // a gentle "you often have …" hint for the slot being edited — only when memory has
+  // a real top pick for that slot; never shown otherwise. Memory as warm observation.
+  const slotHint = (slot) => {
+    const top = slotSuggestions(mealRows, slot, { limit: 1 })[0];
+    return top ? `You often have ${top} for ${SLOT_LABEL[slot].toLowerCase()}.` : null;
   };
 
   if (loading) {
@@ -544,6 +570,11 @@ export default function UnifiedMealPlanTab({ user, profile, nutritionProfile, ta
                       border: `1.5px solid ${T.paperDeep}`, background: T.paper,
                       fontFamily: SERIF, fontSize: 14, color: T.ink, outline: "none",
                     }} />
+                  {slotHint(slot) && (
+                    <p style={{ fontFamily: SERIF, fontSize: 12, fontStyle: "italic", color: T.muted, margin: 0, lineHeight: 1.4 }}>
+                      {slotHint(slot)}
+                    </p>
+                  )}
                   {editorSuggestions(slot).length > 0 && (
                     <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
                       {editorSuggestions(slot).map((s) => (
