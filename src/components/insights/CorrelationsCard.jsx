@@ -95,7 +95,7 @@ const label = {
   fontWeight: 600,
   textTransform: "uppercase",
   letterSpacing: "0.1em",
-  color: "var(--rose-deep, #E11D74)",
+  color: "var(--rose-deep, #A85A6E)",
   };
 
 export default function CorrelationsCard({ checkins = [] }) {
@@ -105,14 +105,14 @@ export default function CorrelationsCard({ checkins = [] }) {
     return (
       <div
         style={{
-          backgroundColor: "var(--blush-surface, #FCE7F3)",
-          border: "1px dashed var(--rose-deep, #E11D74)33",
+          backgroundColor: "var(--blush-surface, #F5ECF0)",
+          border: "1px dashed var(--rose-deep, #A85A6E)33",
           borderRadius: 16,
           padding: "14px 16px",
         }}
       >
         <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 6 }}>
-          <Sparkles className="w-4 h-4" strokeWidth={1.5} style={{ color: "var(--rose-deep, #E11D74)" }} />
+          <Sparkles className="w-4 h-4" strokeWidth={1.5} style={{ color: "var(--rose-deep, #A85A6E)" }} />
           <p style={label}>Correlations</p>
         </div>
         <p style={{ fontSize: 13, color: "var(--plum)", lineHeight: 1.55 }}>
@@ -135,7 +135,7 @@ export default function CorrelationsCard({ checkins = [] }) {
       aria-label="Correlations detected in your data"
     >
       <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 10 }}>
-        <Sparkles className="w-4 h-4" strokeWidth={1.5} style={{ color: "var(--rose-deep, #E11D74)" }} />
+        <Sparkles className="w-4 h-4" strokeWidth={1.5} style={{ color: "var(--rose-deep, #A85A6E)" }} />
         <p style={label}>Correlations</p>
       </div>
       <ul style={{ margin: 0, padding: 0, listStyle: "none", display: "flex", flexDirection: "column", gap: 10 }}>
@@ -157,7 +157,7 @@ export default function CorrelationsCard({ checkins = [] }) {
                 width: 6,
                 height: 6,
                 borderRadius: 9999,
-                backgroundColor: "var(--rose-deep, #E11D74)",
+                backgroundColor: "var(--rose-deep, #A85A6E)",
                 marginTop: 7,
                 flexShrink: 0,
               }}

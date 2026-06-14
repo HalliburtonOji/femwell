@@ -34,11 +34,12 @@ const sLabel = {
   fontSize: "0.6rem", fontWeight: 600, textTransform: "uppercase",
   letterSpacing: "0.12em", color: "var(--mauve)", };
 
+// Brand cycle-phase palette (matches AccordionPlanner T.menstrual/follicular/ovulatory/luteal)
 const PHASE_ACCENTS = {
-  menstrual: "#C96B9E",
-  follicular: "#9B7FCC",
-  ovulatory: "#E8B84B",
-  luteal: "#4ABFA3",
+  menstrual: "#9A2845",
+  follicular: "#D4745A",
+  ovulatory: "#C8A040",
+  luteal: "#7B5E9A",
 };
 
 function isReminderDue(t) {
@@ -430,7 +431,7 @@ function ContinueCard({ program, userProgram, meta, thumb, locked, progress }) {
             )}
             {userProgram.reminder_time && (
               <span className="inline-flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-full font-semibold"
-                style={{ backgroundColor: reminderDue ? "#FFF8EE" : "var(--ivory-dark)", color: reminderDue ? "#A07830" : "var(--mauve)" }}>
+                style={{ backgroundColor: reminderDue ? "#FBF6E6" : "var(--ivory-dark)", color: reminderDue ? "#8A6D1F" : "var(--mauve)" }}>
                 <Bell className="w-3 h-3" />
                 {reminderDue ? `Day ${userProgram.current_day} is ready` : `Daily at ${userProgram.reminder_time}`}
               </span>
@@ -621,7 +622,7 @@ function ProgramCard({ program, userProgram, locked, thumb, meta, progress }) {
         {/* Progress bar along bottom of image */}
         {userProgram && (
           <div className="absolute bottom-0 left-0 right-0 h-1" style={{ backgroundColor: "rgba(255,255,255,0.2)" }}>
-            <div className="h-full" style={{ width: `${progress}%`, backgroundColor: isCompleted ? "#7A9E8E" : "var(--rose-dust)", transition: "width 0.4s ease" }} />
+            <div className="h-full" style={{ width: `${progress}%`, backgroundColor: isCompleted ? "#8FAF8F" : "var(--rose-dust)", transition: "width 0.4s ease" }} />
           </div>
         )}
       </div>

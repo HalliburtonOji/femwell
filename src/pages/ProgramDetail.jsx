@@ -11,7 +11,7 @@ const TIER_ORDER = { free: 0, plus: 1, pro: 2 };
 const TIER_STYLES = {
   free: { backgroundColor: "var(--sage-subtle)", color: "var(--sage)" },
   plus: { backgroundColor: "var(--rose-dust-subtle)", color: "var(--rose-dust)" },
-  pro:  { backgroundColor: "#F5F0FF", color: "#7C4AC4" },
+  pro:  { backgroundColor: "var(--mauve-subtle)", color: "var(--mauve)" },
 };
 
 function isReminderDue(reminderTime) {
@@ -341,9 +341,9 @@ export default function ProgramDetail() {
         <div className="space-y-6 px-4 py-6 md:px-6">
           <div className="grid gap-3 md:grid-cols-4">
             <MetricCard icon={<Clock className="h-4 w-4" style={{ color: "var(--rose-dust)" }} />} value={totalDays} label="Days" />
-            <MetricCard icon={<Play className="h-4 w-4" style={{ color: "#DC4C4C" }} />} value={totalVideos} label="Videos" />
-            <MetricCard icon={<Headphones className="h-4 w-4" style={{ color: "#7C4AC4" }} />} value={totalSessions} label="Audio sessions" />
-            <MetricCard icon={<BookOpen className="h-4 w-4" style={{ color: "#A07830" }} />} value={totalReadUps} label="Read-ups" />
+            <MetricCard icon={<Play className="h-4 w-4" style={{ color: "var(--rose-dust)" }} />} value={totalVideos} label="Videos" />
+            <MetricCard icon={<Headphones className="h-4 w-4" style={{ color: "var(--mauve)" }} />} value={totalSessions} label="Audio sessions" />
+            <MetricCard icon={<BookOpen className="h-4 w-4" style={{ color: "var(--gold)" }} />} value={totalReadUps} label="Read-ups" />
           </div>
 
           <div className="rounded-[28px] border border-[#D8CFBC] bg-[#F4EFE3] p-4 shadow-sm">
@@ -409,7 +409,7 @@ export default function ProgramDetail() {
                   )}
 
                   {reminderIsDue && userProgram?.reminder_time && (
-                    <div className="inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-xs font-semibold" style={{ backgroundColor: "#FFF8EE", color: "#A07830" }}>
+                    <div className="inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-xs font-semibold" style={{ backgroundColor: "#FBF6E6", color: "#8A6D1F" }}>
                       <Bell className="h-3.5 w-3.5" /> Day {currentDay} is ready
                     </div>
                   )}

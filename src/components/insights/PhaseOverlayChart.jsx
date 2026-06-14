@@ -122,15 +122,15 @@ export default function PhaseOverlayChart({ checkins = [], profile }) {
       role="group"
       aria-label="Mood and energy over last 60 days with cycle phase overlay"
     >
-      <p style={{ fontSize: "0.6rem", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.1em", color: "var(--slate-500, #64748B)", }}>
+      <p style={{ fontSize: "0.6rem", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.1em", color: "var(--slate-500, #8C7B66)", }}>
         Mood & energy · last 60 days
       </p>
-      <p style={{ fontSize: 11, color: "var(--slate-500, #64748B)", marginTop: 3 }}>
+      <p style={{ fontSize: 11, color: "var(--slate-500, #8C7B66)", marginTop: 3 }}>
         Shaded bands show your cycle phase
       </p>
 
       {!hasAnyData ? (
-        <p style={{ fontSize: 13, color: "var(--slate-500, #64748B)", marginTop: 18, textAlign: "center", padding: "20px 8px" }}>
+        <p style={{ fontSize: 13, color: "var(--slate-500, #8C7B66)", marginTop: 18, textAlign: "center", padding: "20px 8px" }}>
           Log mood and energy to see the pattern.
         </p>
       ) : (
@@ -164,7 +164,7 @@ export default function PhaseOverlayChart({ checkins = [], profile }) {
               />
             ))}
             {moodPath && (
-              <path d={moodPath} fill="none" stroke="var(--rose-deep, #E11D74)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+              <path d={moodPath} fill="none" stroke="var(--rose-deep, #A85A6E)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
             )}
             {energyPath && (
               <path d={energyPath} fill="none" stroke="var(--sage, #7A9E8E)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
@@ -172,9 +172,9 @@ export default function PhaseOverlayChart({ checkins = [], profile }) {
           </svg>
 
           {/* Legend */}
-          <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: 12, marginTop: 10, fontSize: 11, color: "var(--slate-500, #64748B)" }}>
+          <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: 12, marginTop: 10, fontSize: 11, color: "var(--slate-500, #8C7B66)" }}>
             <span style={{ display: "inline-flex", alignItems: "center", gap: 4 }}>
-              <span style={{ width: 14, height: 2, backgroundColor: "var(--rose-deep, #E11D74)", borderRadius: 2 }} /> Mood
+              <span style={{ width: 14, height: 2, backgroundColor: "var(--rose-deep, #A85A6E)", borderRadius: 2 }} /> Mood
             </span>
             <span style={{ display: "inline-flex", alignItems: "center", gap: 4 }}>
               <span style={{ width: 14, height: 2, backgroundColor: "var(--sage, #7A9E8E)", borderRadius: 2 }} /> Energy

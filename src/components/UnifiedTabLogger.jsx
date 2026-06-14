@@ -19,7 +19,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import {
   Plus, Minus, X as XIcon, Check,
   Heart, Utensils, Pill, Pen, Activity, Sparkles,
-  Droplets, Coffee, Wine, ChevronDown, ChevronUp,
+  Droplets, Coffee, Wine, ChevronDown, ChevronUp, Flame,
 } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { computeStreaks } from "@/utils/habitStreaks";
@@ -2068,12 +2068,12 @@ function RitualsCard({ showToast }) {
         {/* V3 sprint Task 1b — 🔥 streak badge when streak ≥ 2. */}
         {(streaks[nameOf(r)] || 0) >= 2 && (
           <span style={{
-            display: "inline-flex", alignItems: "center", gap: 2,
-            fontSize: 11, fontWeight: 700, color: "#A8580A",
-            background: "#FFF1E6", padding: "2px 6px", borderRadius: 9999,
-            border: "1px solid #F4B860",
+            display: "inline-flex", alignItems: "center", gap: 3,
+            fontSize: 11, fontWeight: 700, color: "#8A6D1F",
+            background: "#FBF6E6", padding: "2px 6px", borderRadius: 9999,
+            border: "1px solid #E6D49A",
           }} aria-label={`${streaks[nameOf(r)]} day streak`}>
-            <span aria-hidden>🔥</span>{streaks[nameOf(r)]}
+            <Flame className="w-3 h-3" aria-hidden style={{ color: "#D4AF37" }} />{streaks[nameOf(r)]}
           </span>
         )}
         {r.time_of_day && (

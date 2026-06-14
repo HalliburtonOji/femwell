@@ -70,13 +70,14 @@
     --sage-light: #B5CEC5;
     --sage-subtle: #EBF2EF;
 
-    /* Extended tokens (MP#5) — additive, non-breaking */
-    --rose-deep: #E11D74;
-    --blush-surface: #FCE7F3;
-    --lavender-surface: #F5F3FF;
-    --slate-900: #0F172A;
-    --slate-500: #64748B;
-    --amber-streak: #F59E0B;
+    /* Extended tokens (MP#5) — additive, non-breaking. Retuned to brand cream/plum
+       palette (were generic magenta/slate/amber off-brand). */
+    --rose-deep: #A85A6E;        /* deepened muted rose (from --rose-dust #C4849A) */
+    --blush-surface: #F5ECF0;    /* warm blush surface (matches --rose-dust-subtle) */
+    --lavender-surface: #F4EFE3; /* cream inset (was generic lavender) */
+    --slate-900: #0B0805;        /* brand ink (was slate blue-black) */
+    --slate-500: #8C7B66;        /* brand muted label (was slate blue-grey) */
+    --amber-streak: #D4AF37;     /* brand gold (was generic amber) */
     --font-serif-heading: 'Cormorant Garamond', 'Fraunces', Georgia, serif;
 
     /* MP-A Lifestyle tokens (cream / rose family) — aligned to editorial paper */

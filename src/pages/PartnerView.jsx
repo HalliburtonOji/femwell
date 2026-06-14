@@ -1,12 +1,13 @@
 import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
-import { Loader2, Heart } from "lucide-react";
+import { Loader2, Heart, Flame } from "lucide-react";
 
+// Brand cycle-phase palette (matches AccordionPlanner T.menstrual/follicular/ovulatory/luteal)
 const PHASE_COLORS = {
-  menstrual: "#C96B9E",
-  follicular: "#9B7FCC",
-  ovulatory: "#E8B84B",
-  luteal: "#4ABFA3",
+  menstrual: "#9A2845",
+  follicular: "#D4745A",
+  ovulatory: "#C8A040",
+  luteal: "#7B5E9A",
 };
 
 export default function PartnerView() {
@@ -36,7 +37,7 @@ export default function PartnerView() {
 
   if (error) return (
     <div className="min-h-screen flex flex-col items-center justify-center px-6 text-center" style={{ backgroundColor: "var(--ivory)" }}>
-      <span style={{ fontSize: 48 }}>💜</span>
+      <Heart className="w-12 h-12" style={{ color: "#BC2E27" }} fill="#BC2E27" />
       <p style={{ fontSize: 18, fontWeight: 700, color: "var(--plum)", marginTop: 16, marginBottom: 8 }}>Link unavailable</p>
       <p style={{ fontSize: 14, color: "var(--mauve)", lineHeight: 1.6 }}>{error}</p>
     </div>
@@ -97,9 +98,13 @@ export default function PartnerView() {
           <div className="rounded-[24px] p-5 mb-4" style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)", boxShadow: "var(--shadow-sm)" }}>
             <p style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.12em", color: "var(--mauve)", marginBottom: 8 }}>Active program</p>
             <p style={{ fontSize: 16, fontWeight: 700, color: "var(--plum)", marginBottom: 4 }}>{data.active_program.title}</p>
-            <p style={{ fontSize: 13, color: "var(--mauve)", marginBottom: 12 }}>
-              Day {data.active_program.current_day} of {data.active_program.duration_days}
-              {data.active_program.streak > 0 ? ` · 🔥 ${data.active_program.streak}-day streak` : ""}
+            <p style={{ fontSize: 13, color: "var(--mauve)", marginBottom: 12, display: "inline-flex", alignItems: "center", gap: 5, flexWrap: "wrap" }}>
+              <span>Day {data.active_program.current_day} of {data.active_program.duration_days}</span>
+              {data.active_program.streak > 0 && (
+                <span style={{ display: "inline-flex", alignItems: "center", gap: 4 }}>
+                  · <Flame className="w-3.5 h-3.5" style={{ color: "var(--rose-dust)" }} /> {data.active_program.streak}-day streak
+                </span>
+              )}
             </p>
             <div className="w-full rounded-full overflow-hidden" style={{ height: 6, backgroundColor: "var(--ivory-dark)" }}>
               <div className="h-full rounded-full" style={{ width: `${Math.min(100, (data.active_program.current_day / data.active_program.duration_days) * 100)}%`, backgroundColor: "var(--rose-dust)" }} />

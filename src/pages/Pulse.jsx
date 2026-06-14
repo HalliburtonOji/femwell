@@ -652,8 +652,8 @@ export default function Pulse() {
               <ResponsiveContainer width="100%" height={200}>
                 <BarChart data={phaseData} margin={{ top: 5, right: 5, left: -20, bottom: 5 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#f0e4e8" />
-                  <XAxis dataKey="phase" tick={{ fontSize: 11, fill: "#999" }} />
-                  <YAxis tick={{ fontSize: 11, fill: "#999" }} domain={[0, 10]} />
+                  <XAxis dataKey="phase" tick={{ fontSize: 11, fill: "#9B8B7A" }} />
+                  <YAxis tick={{ fontSize: 11, fill: "#9B8B7A" }} domain={[0, 10]} />
                   <Tooltip
                     formatter={(val) => [val, currentLabel]}
                     contentStyle={{ borderRadius: "12px", border: "1px solid #D8CFBC", fontSize: 12 }}
@@ -715,8 +715,8 @@ export default function Pulse() {
             <ResponsiveContainer width="100%" height={180}>
               <LineChart data={timeSeriesData} margin={{ top: 5, right: 5, left: -20, bottom: 5 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#f0e4e8" />
-                <XAxis dataKey="label" tick={{ fontSize: 10, fill: "#999" }} interval="preserveStartEnd" />
-                <YAxis tick={{ fontSize: 11, fill: "#999" }} domain={[0, 10]} />
+                <XAxis dataKey="label" tick={{ fontSize: 10, fill: "#9B8B7A" }} interval="preserveStartEnd" />
+                <YAxis tick={{ fontSize: 11, fill: "#9B8B7A" }} domain={[0, 10]} />
                 <Tooltip
                   formatter={(val) => [val, currentLabel]}
                   contentStyle={{ borderRadius: "12px", border: "1px solid #D8CFBC", fontSize: 12 }}
@@ -796,8 +796,8 @@ export default function Pulse() {
               <ResponsiveContainer width="100%" height={180}>
                 <LineChart data={data} margin={{ top: 5, right: 5, left: -20, bottom: 5 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#f0e4e8" />
-                  <XAxis dataKey="label" tick={{ fontSize: 10, fill: "#999" }} interval="preserveStartEnd" />
-                  <YAxis tick={{ fontSize: 11, fill: "#999" }} domain={[0, 10]} />
+                  <XAxis dataKey="label" tick={{ fontSize: 10, fill: "#9B8B7A" }} interval="preserveStartEnd" />
+                  <YAxis tick={{ fontSize: 11, fill: "#9B8B7A" }} domain={[0, 10]} />
                   <Tooltip contentStyle={{ borderRadius: "12px", border: "1px solid #D8CFBC", fontSize: 12 }} />
                   <Line type="monotone" dataKey="sleep" stroke="#8C7B66" strokeWidth={2} dot={false} name="Sleep" />
                   <Line type="monotone" dataKey="mood" stroke="#2E261B" strokeWidth={2} dot={false} name="Mood" />

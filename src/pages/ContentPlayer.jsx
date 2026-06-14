@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { base44 } from "@/api/base44Client";
-import { ArrowLeft, Play, Lock, BookmarkCheck, Bookmark } from "lucide-react";
+import { ArrowLeft, Play, Lock, BookmarkCheck, Bookmark, Flower2, Sparkles } from "lucide-react";
 
 const PHASE_ACCENTS = {
   menstrual: "var(--rose-dust)",
@@ -50,7 +50,7 @@ function VideoPlayer({ embedUrl }) {
         style={{ backgroundColor: "#111" }} onClick={() => setClicked(true)}>
         {thumbUrl
           ? <img src={thumbUrl} alt="Video thumbnail" className="w-full h-full object-cover" />
-          : <div className="w-full h-full" style={{ backgroundColor: "#1a0a1a" }} />
+          : <div className="w-full h-full" style={{ backgroundColor: "#0B0805" }} />
         }
         <div className="absolute inset-0 flex items-center justify-center"
           style={{ backgroundColor: "rgba(0,0,0,0.25)" }}>
@@ -290,7 +290,7 @@ export default function ContentPlayer() {
                 <p className="text-xs" style={{ color: "var(--mauve)", opacity: 0.7 }}>This only happens once</p>
               </>
             ) : (
-              <span style={{ fontSize: 48 }}>🧘</span>
+              <Flower2 className="w-12 h-12" style={{ color: "var(--rose-dust-light)" }} />
             )}
           </div>
         ) : isWorkout ? (
@@ -304,9 +304,11 @@ export default function ContentPlayer() {
         ) : embedUrl ? (
           <VideoPlayer embedUrl={embedUrl} />
         ) : (
-          <div className="aspect-video rounded-2xl flex items-center justify-center text-5xl"
+          <div className="aspect-video rounded-2xl flex items-center justify-center"
             style={{ backgroundColor: "var(--rose-dust-subtle)" }}>
-            {item.content_type === "MEDITATION" ? "🧘" : "✨"}
+            {item.content_type === "MEDITATION"
+              ? <Flower2 className="w-12 h-12" style={{ color: "var(--rose-dust-light)" }} />
+              : <Sparkles className="w-12 h-12" style={{ color: "var(--rose-dust-light)" }} />}
           </div>
         )}
 
@@ -329,16 +331,16 @@ export default function ContentPlayer() {
           {item.summary && <p className="text-sm leading-relaxed" style={{ color: "var(--mauve)" }}>{item.summary}</p>}
 
           {item.safety_notes && (
-            <div className="rounded-xl p-3" style={{ backgroundColor: "#FFF8EE", border: "1px solid #F5DFA8" }}>
-              <p className="text-xs font-semibold mb-1" style={{ color: "#7A5A20" }}>Safety notes</p>
-              <p className="text-xs" style={{ color: "#7A5A20" }}>{item.safety_notes}</p>
+            <div className="rounded-xl p-3" style={{ backgroundColor: "#FBF6E6", border: "1px solid #E6D49A" }}>
+              <p className="text-xs font-semibold mb-1" style={{ color: "#8A6D1F" }}>Safety notes</p>
+              <p className="text-xs" style={{ color: "#8A6D1F" }}>{item.safety_notes}</p>
             </div>
           )}
 
           {item.modifications && (
-            <div className="rounded-xl p-3" style={{ backgroundColor: "#EEF4FF", border: "1px solid #C7D9F5" }}>
-              <p className="text-xs font-semibold mb-1" style={{ color: "#3D5A8A" }}>Modifications</p>
-              <p className="text-xs" style={{ color: "#3D5A8A" }}>{item.modifications}</p>
+            <div className="rounded-xl p-3" style={{ backgroundColor: "#EDF2ED", border: "1px solid #C7D8C7" }}>
+              <p className="text-xs font-semibold mb-1" style={{ color: "#4A634A" }}>Modifications</p>
+              <p className="text-xs" style={{ color: "#4A634A" }}>{item.modifications}</p>
             </div>
           )}
 

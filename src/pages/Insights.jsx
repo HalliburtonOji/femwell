@@ -89,7 +89,7 @@ function DayDetailModal({ date, checkin, onClose }) {
                 <p style={{ fontSize: 11, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.08em", color: "var(--mauve)", }}>Symptoms</p>
                 <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginTop: 6 }}>
                   {checkin.symptoms.map(s => (
-                    <span key={s} style={{ fontSize: 12, padding: "4px 10px", borderRadius: 9999, backgroundColor: "var(--blush-surface, #FCE7F3)", color: "var(--rose-deep, #E11D74)", }}>
+                    <span key={s} style={{ fontSize: 12, padding: "4px 10px", borderRadius: 9999, backgroundColor: "var(--blush-surface, #F5ECF0)", color: "var(--rose-deep, #A85A6E)", }}>
                       {symptomLabel(s)}
                     </span>
                   ))}
@@ -150,11 +150,11 @@ function EmptyState() {
         style={{
           width: 64, height: 64, margin: "0 auto 14px",
           borderRadius: "50%",
-          backgroundColor: "var(--blush-surface, #FCE7F3)",
+          backgroundColor: "var(--blush-surface, #F5ECF0)",
           display: "flex", alignItems: "center", justifyContent: "center",
         }}
       >
-        <LineChart className="w-7 h-7" strokeWidth={1.5} style={{ color: "var(--rose-deep, #E11D74)" }} />
+        <LineChart className="w-7 h-7" strokeWidth={1.5} style={{ color: "var(--rose-deep, #A85A6E)" }} />
       </div>
       <h3 style={{ fontSize: 17, fontWeight: 700, color: "var(--plum)", marginBottom: 6 }}>
         Your insights live here
@@ -166,7 +166,7 @@ function EmptyState() {
         to={createPageUrl("Today")}
         style={{
           display: "inline-block",
-          backgroundColor: "var(--rose-deep, #E11D74)",
+          backgroundColor: "var(--rose-deep, #A85A6E)",
           color: "white",
           borderRadius: 10,
           padding: "10px 22px",
@@ -297,7 +297,7 @@ export default function Insights() {
                 value={kpis.daysLogged}
                 subtext="last 30 days"
                 sparkline={kpis.sparkDays}
-                sparklineColor="var(--rose-deep, #E11D74)"
+                sparklineColor="var(--rose-deep, #A85A6E)"
                 ariaLabel={`${kpis.daysLogged} days logged in the last 30`}
               />
               <KpiCard

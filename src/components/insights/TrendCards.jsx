@@ -28,7 +28,7 @@ function TrendCard({ label: caption, current, previous, unit = "", direction = "
     up: "#15803D",
     down: "#B91C1C",
     flat: "#B45309",
-    neutral: "var(--slate-500, #64748B)",
+    neutral: "var(--slate-500, #8C7B66)",
   }[kind];
 
   const Icon = kind === "up" ? ArrowUp : kind === "down" ? ArrowDown : Minus;
@@ -57,7 +57,7 @@ function TrendCard({ label: caption, current, previous, unit = "", direction = "
           {hasData ? `${current.toFixed(1)}${unit}` : "—"}
         </p>
         {hasData && (
-          <span style={{ fontSize: 10, color: "var(--slate-500, #64748B)", }}>
+          <span style={{ fontSize: 10, color: "var(--slate-500, #8C7B66)", }}>
             vs {previous.toFixed(1)}{unit}
           </span>
         )}
@@ -66,11 +66,11 @@ function TrendCard({ label: caption, current, previous, unit = "", direction = "
         <span style={{ display: "inline-flex", alignItems: "center", gap: 3, fontSize: 11, color: accent, fontWeight: 600 }}>
           <Icon className="w-3 h-3" strokeWidth={2} />
           {pct != null ? `${pct > 0 ? "+" : ""}${pct.toFixed(0)}%` : verbMap[kind]}
-          <span style={{ color: "var(--slate-500, #64748B)", fontWeight: 400, marginLeft: 2 }}>last 7d</span>
+          <span style={{ color: "var(--slate-500, #8C7B66)", fontWeight: 400, marginLeft: 2 }}>last 7d</span>
         </span>
       )}
       {!hasData && (
-        <p style={{ fontSize: 11, color: "var(--slate-500, #64748B)", }}>Not enough data</p>
+        <p style={{ fontSize: 11, color: "var(--slate-500, #8C7B66)", }}>Not enough data</p>
       )}
     </div>
   );

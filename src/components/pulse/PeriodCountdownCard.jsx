@@ -1,4 +1,5 @@
 import { format, parseISO } from "date-fns";
+import { Droplet } from "lucide-react";
 
 function computeNextPeriod(profile) {
   if (!profile?.last_period_start_date) return null;
@@ -42,8 +43,10 @@ export default function PeriodCountdownCard({ profile }) {
         <p style={{
           fontSize: 20, fontWeight: 700,
           color: "var(--plum)", lineHeight: 1.1,
+          display: "inline-flex", alignItems: "center", gap: 7,
         }}>
-          🌹 Period in {pred.daysUntil} day{pred.daysUntil !== 1 ? "s" : ""}
+          <Droplet className="w-4 h-4" style={{ color: "var(--rose-dust)" }} fill="var(--rose-dust)" />
+          Period in {pred.daysUntil} day{pred.daysUntil !== 1 ? "s" : ""}
         </p>
         <p style={{
           fontSize: 12, color: "var(--mauve)",

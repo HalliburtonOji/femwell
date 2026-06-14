@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
-import { ArrowLeft, Copy, Check, Trash2, Plus, Loader2, Users } from "lucide-react";
+import { ArrowLeft, Copy, Check, Trash2, Plus, Loader2, Users, Heart } from "lucide-react";
 
 const PERMISSIONS = [
   { key: "cycle_phase", label: "Cycle phase", desc: "Current phase & weekly message" },
@@ -192,7 +192,7 @@ export default function PartnerSettings() {
                       {copiedId === access.id ? "Copied!" : "Copy link"}
                     </button>
                     <button onClick={() => deactivate(access.id)} className="flex items-center gap-1.5 px-4 py-2 rounded-full text-xs font-semibold"
-                      style={{ backgroundColor: "#FFF8F8", border: "1px solid #FCDCDC", color: "#D94F4F", }}>
+                      style={{ backgroundColor: "#FBF0EF", border: "1px solid #EBC9C7", color: "#BC2E27", }}>
                       <Trash2 className="w-3 h-3" /> Revoke
                     </button>
                   </div>
@@ -204,7 +204,7 @@ export default function PartnerSettings() {
 
         {accesses.length === 0 && !showForm && (
           <div style={{ textAlign: "center", padding: "40px 20px" }}>
-            <span style={{ fontSize: 40 }}>💜</span>
+            <Heart className="w-10 h-10 mx-auto" style={{ color: "#BC2E27" }} fill="#BC2E27" />
             <p style={{ fontSize: 15, fontWeight: 600, color: "var(--plum)", marginTop: 12, marginBottom: 6 }}>No partner links yet</p>
             <p style={{ fontSize: 13, color: "var(--mauve)", lineHeight: 1.6 }}>Share a read-only view with a partner, family member, or friend who supports you.</p>
           </div>

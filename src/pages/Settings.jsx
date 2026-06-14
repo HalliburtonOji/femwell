@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import {
   User as UserIcon, Bell, Lock, Database, Info,
-  Download, FileText, Trash2, ChevronRight, Heart, Check, X,
+  Download, FileText, ChevronRight, Heart, Check,
 } from "lucide-react";
 import SettingsCard from "../components/settings/SettingsCard";
 import SettingsToggle from "../components/settings/SettingsToggle";
@@ -165,7 +165,7 @@ function AccountSection({ user, profile, onProfileChange }) {
       footer={
         <>
           {saved && (
-            <span style={{ fontSize: 12, color: "#059669", display: "inline-flex", alignItems: "center", gap: 4 }}>
+            <span style={{ fontSize: 12, color: "var(--sage)", display: "inline-flex", alignItems: "center", gap: 4 }}>
               <Check className="w-3.5 h-3.5" /> Saved
             </span>
           )}
@@ -284,7 +284,7 @@ function NotificationsSection({ user, profile, onProfileChange }) {
       footer={
         <>
           {saved && (
-            <span style={{ fontSize: 12, color: "#059669", display: "inline-flex", alignItems: "center", gap: 4 }}>
+            <span style={{ fontSize: 12, color: "var(--sage)", display: "inline-flex", alignItems: "center", gap: 4 }}>
               <Check className="w-3.5 h-3.5" /> Saved
             </span>
           )}
@@ -362,7 +362,7 @@ function PrivacySection({ user, profile, onProfileChange, onDownloadData }) {
         footer={
           <>
             {saved && (
-              <span style={{ fontSize: 12, color: "#059669", display: "inline-flex", alignItems: "center", gap: 4 }}>
+              <span style={{ fontSize: 12, color: "var(--sage)", display: "inline-flex", alignItems: "center", gap: 4 }}>
                 <Check className="w-3.5 h-3.5" /> Saved
               </span>
             )}

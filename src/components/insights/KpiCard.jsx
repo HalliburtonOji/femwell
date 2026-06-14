@@ -5,10 +5,10 @@ const label = {
   fontWeight: 600,
   textTransform: "uppercase",
   letterSpacing: "0.1em",
-  color: "var(--slate-500, #64748B)",
+  color: "var(--slate-500, #8C7B66)",
   };
 
-export function Sparkline({ values = [], color = "var(--rose-deep, #E11D74)" }) {
+export function Sparkline({ values = [], color = "var(--rose-deep, #A85A6E)" }) {
   if (!values.length) return null;
   const w = 80, h = 24, pad = 2;
   const max = Math.max(...values, 1);
@@ -38,7 +38,7 @@ function TrendBadge({ delta, unit = "" }) {
   const rounded = Math.round(delta * 10) / 10;
   if (rounded === 0) {
     return (
-      <span style={{ display: "inline-flex", alignItems: "center", gap: 2, fontSize: 10, color: "var(--slate-500, #64748B)", }}>
+      <span style={{ display: "inline-flex", alignItems: "center", gap: 2, fontSize: 10, color: "var(--slate-500, #8C7B66)", }}>
         <Minus className="w-3 h-3" strokeWidth={1.8} />
         flat
       </span>
@@ -79,7 +79,7 @@ export default function KpiCard({ label: caption, value, subtext, sparkline, spa
             {value ?? "—"}
           </p>
           {subtext && (
-            <p style={{ fontSize: 11, color: "var(--slate-500, #64748B)", marginTop: 3 }}>
+            <p style={{ fontSize: 11, color: "var(--slate-500, #8C7B66)", marginTop: 3 }}>
               {subtext}
             </p>
           )}
