@@ -124,6 +124,12 @@ import NutritionHub from './pages/NutritionHub';
 // nutrition demos, identity preserved). Preview routes only — live pages untouched.
 import JournalRedesign1 from './pages/JournalRedesign1';
 import CommunityRedesign1 from './pages/CommunityRedesign1';
+// Control-Center concept demos (iOS Control-Center reinterpreted in FemWell brand:
+// header summary + a full-cover floating rounded card with a 2-col peek grid + right
+// jump rail). Previewable routes only — mock data; linked from FoundersOS → Previews.
+import JournalControlDemo from './pages/JournalControlDemo';
+import CommunityControlDemo from './pages/CommunityControlDemo';
+import NutritionControlDemo from './pages/NutritionControlDemo';
 // Sprint 10 — Partner Sync hub (user's share-code page). The
 // matching public /partner?code=… read-only view (Partner.jsx) is
 // wired separately in App.jsx OUTSIDE this PAGES map so it can run
@@ -196,6 +202,9 @@ export const PAGES = {
     "NutritionHub": NutritionHub,
     "JournalRedesign1": JournalRedesign1,
     "CommunityRedesign1": CommunityRedesign1,
+    "JournalControlDemo": JournalControlDemo,
+    "CommunityControlDemo": CommunityControlDemo,
+    "NutritionControlDemo": NutritionControlDemo,
     // HealthDashboard intentionally NOT registered — see import comment above.
     // "HealthDashboard": HealthDashboard,
 }

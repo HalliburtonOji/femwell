@@ -1883,6 +1883,19 @@ function PreviewsTab() {
           title="Community — redesign preview"
           note="Demo 6's rooms elevated with a calm hero, a peeking room slider, and bottom sheets — anonymity / 18+ / crisis routing / Jess preserved. Not yet live." />
       </div>
+
+      <SectionLabel>Control-Center concept demos — pick-from (iOS Control Center, FemWell brand)</SectionLabel>
+      <div style={{ display: "flex", flexDirection: "column", gap: 10, marginTop: 8 }}>
+        <PreviewLink slug="NutritionControlDemo" accent={T.crimson}
+          title="Nutrition — Control-Center concept"
+          note="Daily-Hub header + a full-cover floating rounded card holding a 2-col peek grid (Log/Today/Plan/Recipes/Shop/Progress/Insights/For-your-stage) + a right jump rail. Cream/plum, not Apple glass." />
+        <PreviewLink slug="JournalControlDemo" accent={T.blush}
+          title="Journal — Control-Center concept"
+          note="Reflection-state header + floating card: 2-col peek grid (Write/Echo/Witness/Twin/Insights/On-This-Day/Letters/Burn/Threads) + right jump rail." />
+        <PreviewLink slug="CommunityControlDemo" accent={T.sage}
+          title="Community — Control-Center concept"
+          note="Circles/Jess welcome header + floating card: 2-col peek grid (Lounge/Echo/Lighter/Library/Circles/Love/Money/Style/Health/Talk) + right jump rail. Anonymous-first." />
+      </div>
     </div>
   );
 }
