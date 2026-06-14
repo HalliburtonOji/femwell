@@ -912,7 +912,11 @@ function GameRoundCard({ user, onCrisis, kind = null, name = null, blurb = null 
     if (tried.current) return; tried.current = true;
     (async () => {
       try {
-        const r = await base44.functions.invoke("openGameRound", named ? { kind } : { room: "lighter" });
+        // openGameRoundV2: the original openGameRound function got stuck (a prior LLM-hang
+        // deploy wedged it; same-name redeploys wouldn't recover — every call hung/503'd).
+        // Re-registered under a fresh name per the base44 sticky-registration gotcha. The V2
+        // function is fully LLM-free (curated prompts + static reveal) so it can never hang.
+        const r = await base44.functions.invoke("openGameRoundV2", named ? { kind } : { room: "lighter" });
         const d = r?.data ?? r;
         if (d?.round) { setRound(d.round); setAnswered(gameAnswered(d.round.id)); }
         else setRound(false);
