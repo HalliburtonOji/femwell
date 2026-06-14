@@ -166,9 +166,11 @@ Deno.serve(async (req) => {
       if (now < ms(latest.closes_at)) {
         return Response.json({ ok: true, round: shape(latest) });   // live, still open
       }
-      // expired → close it with a reveal. Named games use a STATIC reveal (no LLM on the
-      // request path → never hangs); the day-rotated nightly round keeps Jess's LLM reveal.
-      const reveal = forced ? NAMED_REVEAL : await writeReveal(sb, latest);
+      // expired → close it with a STATIC reveal. NO LLM anywhere on the request path:
+      // an awaited InvokeLLM hangs the whole function (the timeout race rejects but the
+      // socket stays wedged, blocking sibling requests too — the known base44 trap that
+      // made every openGameRound call hang/503). Reliability over LLM-varied copy.
+      const reveal = NAMED_REVEAL;
       const closed = await withTimeout(sb.entities.GameRound.update(latest.id, { status: 'closed', reveal }), 6000, 'update').catch(() => ({ ...latest, status: 'closed', reveal }));
       return Response.json({ ok: true, round: shape({ ...latest, ...closed, status: 'closed', reveal }) });
     }
@@ -178,10 +180,10 @@ Deno.serve(async (req) => {
     }
 
     // open a fresh round — forced format for a named game, else the day-rotated pick.
-    // Named games use a curated static prompt (NO LLM → fast, never hangs); the nightly
-    // round generates a fresh prompt via the LLM (with its own timeout + fallback).
+    // ALWAYS a curated static prompt (NO LLM → one fast entity write, never hangs). The
+    // nightly round still varies day-to-day via pickKind() rotating the format.
     const kindDef = forced || pickKind();
-    const { prompt, options } = forced ? NAMED_PROMPTS[forced.kind] : await genPrompt(sb, kindDef);
+    const { prompt, options } = NAMED_PROMPTS[kindDef.kind];
     const created = await withTimeout(sb.entities.GameRound.create({
       room, kind: kindDef.kind, prompt, options,
       opens_at: new Date(now).toISOString(),
