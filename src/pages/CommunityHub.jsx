@@ -45,6 +45,8 @@ import {
   MASTHEAD, UK_RESOURCES, FOOTER_LINE, PRESENCE_WINDOW_HRS,
   qotdForDay, presenceLine, crisisCheck,
 } from "@/components/community/communityConfig";
+import { CIRCLES, CIRCLE_KEYS, suggestedCircles, isJoined } from "@/components/community/circlesConfig";
+import { SEED_PICK, clubReached } from "@/components/community/bookClubConfig";
 import { createPageUrl } from "@/utils";
 
 const COL = 430;     // phone column (matches NutritionHub)
@@ -191,11 +193,11 @@ function QotdSheet({ user, onCrisis }) {
 // ── per-card rich preview — built ONLY from real data the hub loaded (guarded), with
 // honest empty states. The card's primary button opens the full surface (sheet or the
 // real /Community deep-link). No mock figures, no counts shown as scores.
-function CardPreview({ surface, posts, qotdPreview, presence, season }) {
+function CardPreview({ surface, posts, qotdPreview, presence, season, profile }) {
   switch (surface.id) {
     case "qotd": return <QotdPreview qotd={qotdPreview} />;
     case "echo": return <EchoPreview />;
-    case "circles": return <CirclesPreview />;
+    case "circles": return <CirclesPreview profile={profile} />;
     case "library": return <LibraryPreview />;
     case "lighter": return <LighterPreview />;
     case "talk": return <TalkPreview />;
@@ -293,30 +295,62 @@ function EchoPreview() {
   );
 }
 
-function CirclesPreview() {
+// Circles preview — REAL: the circles suggested for your season/interests + how many
+// you're already in, drawn straight from the curated circle set + device-local joins.
+function CirclesPreview({ profile }) {
+  const suggested = suggestedCircles(profile);                 // from life_stage + interests
+  const joinedKeys = CIRCLE_KEYS.filter((k) => isJoined(k));
+  // lead with suggested-not-yet-joined, then fill from the full set, up to 3
+  const lead = suggested.filter((c) => !isJoined(c.key));
+  const fill = CIRCLES.filter((c) => !lead.some((s) => s.key === c.key) && !isJoined(c.key));
+  const show = [...lead, ...fill].slice(0, 3);
   return (
     <div style={{ display: "flex", flexDirection: "column", flex: 1 }}>
-      <Hand size={15} color={T.muted} style={{ marginBottom: 12 }}>Smaller rooms by what you{"’"}re living and what you love — plus Jess-hosted Clubs for doing a thing together. Lurk freely; join the ones that are yours.</Hand>
-      <div style={{ display: "grid", gap: 9 }}>
-        {[
-          { name: "Circles", line: "Cohorts by who you are — your season, your interests." },
-          { name: "Clubs", line: "Small groups for what you do together. No counts, no pressure." },
-        ].map((c) => (
-          <div key={c.name} style={{ borderLeft: `2px solid ${T.gold}`, paddingLeft: 11 }}>
-            <div style={{ fontFamily: SERIF, fontSize: 15, color: T.ink, fontWeight: 600 }}>{c.name}</div>
+      <Hand size={15} color={T.muted} style={{ marginBottom: 10 }}>Smaller rooms by what you{"’"}re living and what you love. Lurk freely; join the ones that are yours.</Hand>
+      <div style={{ fontFamily: UI, fontSize: 10, fontWeight: 700, letterSpacing: 0.5, textTransform: "uppercase", color: T.gold, marginBottom: 10 }}>
+        {joinedKeys.length > 0 ? `You're in ${joinedKeys.length} · ${CIRCLES.length} circles` : `${CIRCLES.length} circles · ${suggested.length > 0 ? "some picked for your season" : "find yours"}`}
+      </div>
+      <div style={{ display: "grid", gap: 10 }}>
+        {show.map((c) => (
+          <div key={c.key} style={{ borderLeft: `2px solid ${T.gold}`, paddingLeft: 11 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+              <span style={{ fontFamily: SERIF, fontSize: 15, color: T.ink, fontWeight: 600 }}>{c.name}</span>
+              {suggested.some((s) => s.key === c.key) ? (
+                <span style={{ fontFamily: UI, fontSize: 8.5, fontWeight: 700, letterSpacing: 0.4, textTransform: "uppercase", color: T.sage }}>for you</span>
+              ) : null}
+              {c.sensitive ? <Lock size={10} style={{ color: T.muted }} /> : null}
+            </div>
             <div style={{ fontFamily: SERIF, fontSize: 12.5, color: T.muted, fontStyle: "italic", marginTop: 1 }}>{c.line}</div>
           </div>
         ))}
+      </div>
+      <div style={{ marginTop: "auto", paddingTop: 12, fontFamily: UI, fontSize: 11, color: T.muted }}>
+        Open Circles to join, lurk, or start a post — and find the Jess-hosted Clubs.
       </div>
     </div>
   );
 }
 
+// Library preview — REAL: this season's actual Book Club pick + your spoiler-safe progress.
 function LibraryPreview() {
+  const reached = (() => { try { return clubReached(SEED_PICK.pick_key); } catch { return -1; } })();
+  const total = SEED_PICK.checkpoints?.length || 4;
+  const progress = reached < 0 ? "Not started — lurking counts" : reached >= total - 1 ? "You've reached the end" : `Checkpoint ${reached + 1} of ${total}`;
   return (
     <div style={{ display: "flex", flexDirection: "column", flex: 1 }}>
-      <Hand size={15} color={T.muted} style={{ marginBottom: 12 }}>Read together — at our own pace, spoiler-safe. A Jess-hosted book club with checkpoints, and a readers{"’"} corner for whatever you{"’"}re reading.</Hand>
-      <Empty>Open the Library for this season{"’"}s read, the spoiler-safe checkpoints, and the readers{"’"} corners. Lurking counts.</Empty>
+      <Hand size={15} color={T.muted} style={{ marginBottom: 12 }}>Read together — at our own pace, spoiler-safe. A Jess-hosted book club, plus readers{"’"} corners for whatever you{"’"}re reading.</Hand>
+      <div style={{ background: T.paperHi, border: `1px solid ${T.paperDeep}`, borderRadius: 12, padding: "13px 14px" }}>
+        <div style={{ fontFamily: UI, fontSize: 9.5, fontWeight: 700, letterSpacing: 0.6, textTransform: "uppercase", color: T.gold, marginBottom: 5 }}>This season{"’"}s read · Jess hosts</div>
+        <div style={{ fontFamily: HANDFAM, fontStyle: "italic", fontSize: 19, color: T.ink, lineHeight: 1.2 }}>{SEED_PICK.title}</div>
+        <div style={{ fontFamily: SERIF, fontSize: 13, color: T.muted, marginTop: 2 }}>{SEED_PICK.author} · {SEED_PICK.cadence}</div>
+        <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 10 }}>
+          <BookOpen size={13} style={{ color: T.gold }} />
+          <span style={{ fontFamily: UI, fontSize: 11, fontWeight: 700, color: reached >= 0 ? T.ink : T.muted }}>{progress}</span>
+        </div>
+      </div>
+      <div style={{ marginTop: "auto", paddingTop: 12, fontFamily: UI, fontSize: 11, color: T.muted }}>
+        Open the Library for the spoiler-safe checkpoints + readers{"’"} corners.
+      </div>
     </div>
   );
 }
@@ -573,7 +607,7 @@ function CommunityHubInner() {
                 primaryLabel={s.open ? `Open ${s.label}` : "Open the room"}
                 primaryIcon={s.Icon}
               >
-                <CardPreview surface={s} posts={posts} qotdPreview={qotd} presence={presence} season={season} />
+                <CardPreview surface={s} posts={posts} qotdPreview={qotd} presence={presence} season={season} profile={profile} />
               </SurfaceCard>
             ))}
 
