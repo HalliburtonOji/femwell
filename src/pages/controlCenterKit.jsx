@@ -134,9 +134,7 @@ function DotRail({ cards, active, onJump }) {
         const on = active === i;
         const Icon = c.icon;
         return (
-          <button key={c.id} onClick={() => onJump(i)} aria-label={c.title} title={c.title}
-            style={{ ...dotBtn(on), gap: 6 }}>
-            {on && <span style={{ fontFamily: UI, fontSize: 9.5, fontWeight: 700, letterSpacing: 0.4, color: T.paper, whiteSpace: "nowrap" }}>{c.title}</span>}
+          <button key={c.id} onClick={() => onJump(i)} aria-label={c.title} title={c.title} style={dotBtn(on)}>
             <Icon size={13} color={on ? T.paper : c.accent} />
           </button>
         );
@@ -146,7 +144,7 @@ function DotRail({ cards, active, onJump }) {
 }
 const dotBtn = (on) => ({
   display: "inline-flex", alignItems: "center", justifyContent: "center",
-  height: 26, padding: on ? "0 9px" : 0, width: on ? "auto" : 26, borderRadius: 999, cursor: "pointer",
+  height: 26, width: 26, flex: "none", borderRadius: 999, cursor: "pointer",
   background: on ? T.ink : "transparent", border: `1px solid ${on ? T.ink : "transparent"}`,
   transition: "background .18s",
 });
