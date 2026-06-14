@@ -363,7 +363,7 @@ export default function JournalHub() {
       case "threads":
         return threadFilter
           ? <ThreadView thread={threadFilter} entries={threadEntries} onBack={() => setThreadFilter(null)} onTap={(e) => setReadEntry(e)} onWrite={() => { setOpenSheet(null); openInThread(threadFilter); }} />
-          : <ThreadsPicker threads={threads} onPick={(name) => setThreadFilter(name)} onWrite={() => { setOpenSheet(null); openBlank(); }} />;
+          : <ThreadsPicker threads={threads} onPick={(name) => setThreadFilter(name)} onWrite={() => { setOpenSheet(null); openBlank(); }} onNewThread={(name) => { setOpenSheet(null); openInThread(name); }} />;
       default:
         return null;
     }
@@ -1256,24 +1256,58 @@ function Empty({ children }) {
 
 // In-sheet picker shown when Threads is opened with no thread selected — reuses the
 // real ThreadView once a thread is chosen.
-function ThreadsPicker({ threads, onPick, onWrite }) {
+function ThreadsPicker({ threads, onPick, onWrite, onNewThread }) {
   const list = (threads || []).filter(Boolean);
+  const [newName, setNewName] = useState("");
+  const exists = (n) => list.some((t) => (t.name || "").trim().toLowerCase() === n.trim().toLowerCase());
+  const startNew = () => {
+    const n = newName.trim();
+    if (!n) return;
+    if (exists(n)) { onPick(list.find((t) => (t.name || "").trim().toLowerCase() === n.toLowerCase()).name); return; }
+    (onNewThread || onWrite)(n);   // open the composer seeded with this new series name
+  };
+  // The "start a new series" namer — explicit create path (name it here, write the first
+  // page into it). Shown in BOTH the empty and populated states so a new thread is always
+  // one tap away, not hidden inside the general composer.
+  const Namer = (
+    <div style={{ background: T.paperHi, border: `1px solid ${T.paperDeep}`, borderRadius: 12, padding: "13px 14px", marginBottom: 16 }}>
+      <Eyebrow mb={8}>Start a new series</Eyebrow>
+      <div style={{ display: "flex", gap: 8 }}>
+        <input
+          value={newName}
+          onChange={(e) => setNewName(e.target.value)}
+          onKeyDown={(e) => { if (e.key === "Enter") startNew(); }}
+          placeholder="Name it — e.g. sleep, becoming, the hard stuff"
+          style={{ flex: 1, minWidth: 0, background: T.paper, border: `1px solid ${T.paperDeep}`, borderRadius: 8, padding: "10px 12px", fontFamily: SERIF, fontSize: 15, color: T.ink, outline: "none", boxSizing: "border-box" }}
+        />
+        <button onClick={startNew} disabled={!newName.trim()} style={{
+          flexShrink: 0, display: "inline-flex", alignItems: "center", gap: 6, background: newName.trim() ? T.crimson : T.paperDeep,
+          color: T.paper, border: "none", borderRadius: 8, padding: "0 14px", cursor: newName.trim() ? "pointer" : "default",
+          fontFamily: UI, fontSize: 12, fontWeight: 700, letterSpacing: 0.4, textTransform: "uppercase",
+        }}>
+          <Feather size={13} /> Start
+        </button>
+      </div>
+      <div style={{ fontFamily: UI, fontSize: 10.5, color: T.muted, marginTop: 8, lineHeight: 1.4 }}>
+        Names the series and opens a page in it — write your first line and it{"’"}s kept here.
+      </div>
+    </div>
+  );
   if (list.length === 0) {
     return (
-      <div style={{ textAlign: "center", padding: "30px 16px" }}>
+      <div style={{ padding: "10px 4px" }}>
         <Eyebrow mb={8}>Threads</Eyebrow>
-        <Script size={30} style={{ marginBottom: 8 }}>No series yet</Script>
-        <Hand size={18} color={T.inkSoft} style={{ marginBottom: 18 }}>
-          Add a tag when you write and your entries gather into named series here.
+        <Script size={28} style={{ marginBottom: 6 }}>Start your first series</Script>
+        <Hand size={16} color={T.inkSoft} style={{ marginBottom: 16 }}>
+          A thread gathers pages on one idea over time — name one below, or add a tag whenever you write.
         </Hand>
-        <button onClick={onWrite} style={{ ...primaryChip, display: "inline-flex", width: "auto" }}>
-          <Feather size={14} /> Write a page
-        </button>
+        {Namer}
       </div>
     );
   }
   return (
     <div>
+      {Namer}
       <Eyebrow mb={12}>Series you are keeping</Eyebrow>
       <div style={{ display: "grid", gap: 8 }}>
         {list.map((t) => (
