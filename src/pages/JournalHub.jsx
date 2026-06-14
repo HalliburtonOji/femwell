@@ -793,33 +793,61 @@ function WriteCard({ phase, cycleDay, lastEntry, onWrite, onWriteSeeded }) {
 
 // ── ECHO WALL · a few live echoes (real, guarded read); direct-on-card = share a line
 function EchoCard({ phase, onShareEcho }) {
-  const [echoes, setEchoes] = useState([]);
+  const [all, setAll] = useState([]);     // up to 30 live echoes (for presence + filter)
   const [loaded, setLoaded] = useState(false);
+  const [mineOnly, setMineOnly] = useState(false);  // "your phase" filter toggle
   useEffect(() => {
     let alive = true;
     base44.entities.Echo.filter({ hidden: false }, "-created_date", 30)
-      .then((rows) => { if (alive) setEchoes((Array.isArray(rows) ? rows : []).slice(0, 4)); })
-      .catch(() => { if (alive) setEchoes([]); })
+      .then((rows) => { if (alive) setAll(Array.isArray(rows) ? rows.filter(Boolean) : []); })
+      .catch(() => { if (alive) setAll([]); })
       .finally(() => { if (alive) setLoaded(true); });
     return () => { alive = false; };
     // user/profile/phase aren't needed for the read — the feed is everyone's live echoes
   }, []);
+
+  // k-anon presence: distinct voices in the last 24h (author_hash if present, else rows).
+  // Bucketed to a soft "~N" — never an exact identifying count.
+  const cutoff = Date.now() - 24 * 3600e3;
+  const recent = all.filter((e) => new Date(e.created_date || 0).getTime() >= cutoff);
+  const voices = new Set(recent.map((e) => e.author_hash || e.id)).size;
+  const presence = voices >= 3 ? `~${voices} sisters left a line today` : (all.length > 0 ? "a few quiet lines today" : "");
+
+  const phaseCount = phase ? all.filter((e) => e.phase === phase).length : 0;
+  const shown = (mineOnly && phase ? all.filter((e) => e.phase === phase) : all).slice(0, 5);
+
   return (
     <div style={{ display: "flex", flexDirection: "column", flex: 1 }}>
       <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
         <Waves size={16} style={{ color: T.gold }} />
         <Script size={26}>The Echo Wall</Script>
       </div>
-      <Hand size={14} color={T.muted} style={{ marginBottom: 14 }}>
+      <Hand size={14} color={T.muted} style={{ marginBottom: 10 }}>
         Anonymous lines, held — never replied to. Each fades in two days.
       </Hand>
+
+      {/* presence + phase filter — a real glance at the room + a way to find your phase */}
+      {loaded && all.length > 0 ? (
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, marginBottom: 12 }}>
+          {presence ? (
+            <span style={{ fontFamily: UI, fontSize: 10.5, color: T.muted, fontWeight: 600, letterSpacing: 0.2 }}>{presence}</span>
+          ) : <span />}
+          {phase && phaseCount > 0 ? (
+            <button onClick={() => setMineOnly((v) => !v)} style={{
+              fontFamily: UI, fontSize: 10, fontWeight: 700, letterSpacing: 0.4, textTransform: "uppercase", cursor: "pointer",
+              padding: "4px 10px", borderRadius: 999, border: `1px solid ${mineOnly ? T.gold : T.paperDeep}`,
+              background: mineOnly ? T.gold : "transparent", color: mineOnly ? T.paper : T.muted,
+            }}>{mineOnly ? "Showing your phase" : `Your phase · ${phaseCount}`}</button>
+          ) : null}
+        </div>
+      ) : null}
 
       <div style={{ flex: 1 }}>
         {!loaded ? (
           <div style={{ fontFamily: UI, fontSize: 11, color: T.muted }}>Listening for echoes…</div>
-        ) : echoes.length > 0 ? (
+        ) : shown.length > 0 ? (
           <div style={{ display: "grid", gap: 10 }}>
-            {echoes.map((e) => (
+            {shown.map((e) => (
               <div key={e.id} style={{ borderLeft: `2px solid ${T.paperDeep}`, paddingLeft: 11 }}>
                 <div style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 14.5, color: T.ink, lineHeight: 1.4 }}>
                   {"“"}{(e.body || "").slice(0, 140)}{"”"}
@@ -830,8 +858,10 @@ function EchoCard({ phase, onShareEcho }) {
               </div>
             ))}
           </div>
+        ) : mineOnly ? (
+          <Empty>No echoes from your phase in this window yet. Show all, or leave the first line for your phase.</Empty>
         ) : (
-          <Empty>Quiet, for now — no echoes in this window. If something is true for you, you can leave the first.</Empty>
+          <Empty>Quiet, for now — no echoes in this window. Lines are anonymous and fade in 48 hours; if something is true for you, you can leave the first.</Empty>
         )}
       </div>
 
@@ -949,6 +979,9 @@ function OnThisDayCard({ onThisDay, cycleDay, onReadEntry }) {
       <div style={{ flex: 1 }}>
         {list.length > 0 ? (
           <div style={{ display: "grid", gap: 11 }}>
+            <div style={{ fontFamily: UI, fontSize: 10, color: T.gold, fontWeight: 700, letterSpacing: 0.6, textTransform: "uppercase" }}>
+              {list.length} {list.length === 1 ? "time" : "times"} you wrote {cycleDay ? `on Day ${cycleDay}` : "on this day"}
+            </div>
             {list.map((e) => (
               <button key={e.id} onClick={() => onReadEntry(e)} style={{
                 width: "100%", textAlign: "left", background: "transparent", border: "none",
@@ -990,29 +1023,63 @@ function LettersCard({ onOpenSeal }) {
   );
 }
 
+// short relative label from a Date (for thread "last written" stamps)
+function agoShort(d) {
+  if (!d) return "";
+  const days = Math.floor((Date.now() - d.getTime()) / 86400000);
+  if (days <= 0) return "today";
+  if (days === 1) return "yesterday";
+  if (days < 7) return `${days}d ago`;
+  if (days < 30) return `${Math.floor(days / 7)}w ago`;
+  return `${Math.floor(days / 30)}mo ago`;
+}
+
 // ── THREADS · the real named series; tap a thread opens it in the sheet ──
-function ThreadsCard({ threads, onPickThread }) {
+// Threads come pre-sorted by most-recently-written (collectThreads), so the
+// freshest series lead. Each chip shows its entry count AND when it was last
+// written into — so a glance tells you which threads are alive vs resting.
+function ThreadsCard({ threads, onPickThread, onWrite }) {
   const list = (threads || []).filter(Boolean);
+  const freshest = list[0];
   return (
     <div style={{ display: "flex", flexDirection: "column", flex: 1 }}>
       <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
         <Hash size={16} style={{ color: T.gold }} />
         <Script size={26}>Threads</Script>
       </div>
-      <Hand size={14} color={T.muted} style={{ marginBottom: 14 }}>Series you are keeping — tap one to follow it.</Hand>
+      <Hand size={14} color={T.muted} style={{ marginBottom: 14 }}>
+        {list.length > 0
+          ? `${list.length} ${list.length === 1 ? "series" : "series"} you are keeping — tap one to follow it.`
+          : "Series you are keeping — tap one to follow it."}
+      </Hand>
       <div style={{ flex: 1 }}>
         {list.length > 0 ? (
-          <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
-            {list.slice(0, 10).map((t) => (
-              <button key={t.name} onClick={() => onPickThread(t.name)} style={chipBtn}>
-                <Hash size={11} color={T.gold} />
-                <span style={{ fontFamily: SERIF, fontSize: 13, color: T.ink }}>{t.name}</span>
-                <span style={{ fontFamily: UI, fontSize: 10, color: T.muted, fontWeight: 700 }}>{t.count}</span>
-              </button>
-            ))}
-          </div>
+          <>
+            {freshest?.last ? (
+              <div style={{ fontFamily: UI, fontSize: 10, color: T.muted, fontWeight: 700, letterSpacing: 0.3, marginBottom: 10 }}>
+                Most recent · {freshest.name} ({agoShort(freshest.last)})
+              </div>
+            ) : null}
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+              {list.slice(0, 10).map((t) => (
+                <button key={t.name} onClick={() => onPickThread(t.name)} style={{ ...chipBtn, flexDirection: "column", alignItems: "flex-start", gap: 2, paddingTop: 7, paddingBottom: 7 }}>
+                  <span style={{ display: "inline-flex", alignItems: "center", gap: 5 }}>
+                    <Hash size={11} color={T.gold} />
+                    <span style={{ fontFamily: SERIF, fontSize: 13, color: T.ink }}>{t.name}</span>
+                    <span style={{ fontFamily: UI, fontSize: 10, color: T.muted, fontWeight: 700 }}>{t.count}</span>
+                  </span>
+                  {t.last ? (
+                    <span style={{ fontFamily: UI, fontSize: 9, color: T.muted, letterSpacing: 0.3 }}>last {agoShort(t.last)}</span>
+                  ) : null}
+                </button>
+              ))}
+            </div>
+          </>
         ) : (
-          <Empty>No threads yet. Add a tag when you write and your entries gather into named series here — a way to follow one idea over time.</Empty>
+          <Empty>
+            No threads yet. When you write, add a tag (like “work” or “healing”) — every entry with that tag gathers into a named series here, so you can follow one idea across weeks.
+            {onWrite ? <><br /><button onClick={onWrite} style={{ ...primaryChip, marginTop: 12, display: "inline-flex" }}><Feather size={13} /> Start one — write &amp; tag it</button></> : null}
+          </Empty>
         )}
       </div>
     </div>
