@@ -1896,6 +1896,16 @@ function PreviewsTab() {
           title="Community — Control-Center concept"
           note="Circles/Jess welcome header + floating card: 2-col peek grid (Lounge/Echo/Lighter/Library/Circles/Love/Money/Style/Health/Talk) + right jump rail. Anonymous-first." />
       </div>
+
+      <SectionLabel>Hub-style demos — rich header + big sliding cards (the live Nutrition direction, as one design system)</SectionLabel>
+      <div style={{ display: "flex", flexDirection: "column", gap: 10, marginTop: 8 }}>
+        <PreviewLink slug="NutritionHubDemo" accent={T.gold}
+          title="Nutrition — Hub style (header + big sliding cards)"
+          note="Daily-Hub plate summary header (greeting · energy ring · macro bars · Jess) + a horizontal slider of LARGE cards, one feature each (Log/Today/Plan/Recipes/Shop/Progress/Insights)." />
+        <PreviewLink slug="JournalHubDemo" accent={T.blush}
+          title="Journal — Hub style (header + big sliding cards)"
+          note="Streak-free reflection header (phase · Jess prompt · entries this week) + the SAME big-sliding-card language: Write/Echo/Witness/Twin/Insights/On-This-Day. Built to match Nutrition as one system." />
+      </div>
     </div>
   );
 }

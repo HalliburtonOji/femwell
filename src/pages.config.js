@@ -130,6 +130,11 @@ import CommunityRedesign1 from './pages/CommunityRedesign1';
 import JournalControlDemo from './pages/JournalControlDemo';
 import CommunityControlDemo from './pages/CommunityControlDemo';
 import NutritionControlDemo from './pages/NutritionControlDemo';
+// "Rich header + big horizontal sliding cards" design-language demos (the live hub
+// direction) for Journal + Nutrition — one shared kit so they read as one system.
+// Previewable routes only — mock data; linked from FoundersOS → Previews.
+import JournalHubDemo from './pages/JournalHubDemo';
+import NutritionHubDemo from './pages/NutritionHubDemo';
 // Sprint 10 — Partner Sync hub (user's share-code page). The
 // matching public /partner?code=… read-only view (Partner.jsx) is
 // wired separately in App.jsx OUTSIDE this PAGES map so it can run
@@ -205,6 +210,8 @@ export const PAGES = {
     "JournalControlDemo": JournalControlDemo,
     "CommunityControlDemo": CommunityControlDemo,
     "NutritionControlDemo": NutritionControlDemo,
+    "JournalHubDemo": JournalHubDemo,
+    "NutritionHubDemo": NutritionHubDemo,
     // HealthDashboard intentionally NOT registered — see import comment above.
     // "HealthDashboard": HealthDashboard,
 }
