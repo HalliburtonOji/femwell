@@ -1,7 +1,8 @@
 import { useState, useEffect, useMemo, useRef, useCallback, useLayoutEffect } from "react";
 import { createPortal } from "react-dom";
-import { ChevronLeft, ChevronRight, Lock, ArrowLeft, X, Bookmark } from "lucide-react";
+import { ChevronLeft, ChevronRight, Lock, ArrowLeft, Bookmark } from "lucide-react";
 import { base44 } from "@/api/base44Client";
+import { useScrollLock } from "@/utils/useScrollLock";
 
 // v4c — persisted reader preferences (theme, typeface, line, margins).
 // All keys live in one place so other components could read them if needed.
@@ -596,15 +597,14 @@ export default function DailyStoryReader({
     setShowDndTip(false);
     try { localStorage.setItem("fw_reader_dnd_seen", "1"); } catch { /* silent */ }
   }, []);
-  // Lock body scroll while immersive so the page behind doesn't drift.
+  // Lock body scroll while immersive so the page behind doesn't drift (shared,
+  // ref-counted hook — replaces the old ad-hoc document.body.style.overflow lock).
+  useScrollLock(immersive);
   useEffect(() => {
     if (!immersive) return;
-    const prev = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
     const onEsc = (e) => { if (e.key === "Escape") setImmersive(false); };
     window.addEventListener("keydown", onEsc);
     return () => {
-      document.body.style.overflow = prev;
       window.removeEventListener("keydown", onEsc);
     };
   }, [immersive]);
@@ -1309,6 +1309,7 @@ function ReaderStyles({ reducedMotion }) {
       .ds-reader-sheet-content {
         padding: 14px 24px 24px;
         overflow-y: auto;
+        overscroll-behavior: contain;
         -webkit-overflow-scrolling: touch;
       }
       .ds-reader-sheet-section {

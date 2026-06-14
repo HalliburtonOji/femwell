@@ -39,6 +39,7 @@ import {
   buildMemoryContextLine,
   chipLabelForAction,
 } from "@/services/jessActions";
+import { useScrollLock } from "@/utils/useScrollLock";
 
 const C = {
   espresso:    "#3A2C1A",
@@ -105,13 +106,9 @@ export default function JessVoiceMode({ open, onClose, user, profile, phase, cyc
     try { setJessMemory(loadJessMemory(user?.id)); } catch {}
   }, [open, user?.id]);
 
-  // Lock body scroll while overlay is open.
-  useEffect(() => {
-    if (!open) return;
-    const prev = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-    return () => { document.body.style.overflow = prev; };
-  }, [open]);
+  // Lock body scroll while overlay is open (shared, ref-counted hook —
+  // replaces the old ad-hoc document.body.style.overflow lock).
+  useScrollLock(open);
 
   // ── Speak a string using window.speechSynthesis ──
   // Returns a Promise that resolves when speech ends.
@@ -365,6 +362,7 @@ export default function JessVoiceMode({ open, onClose, user, profile, phase, cyc
       <div style={{
         position: "absolute", left: 0, right: 0, bottom: 230, top: 60,
         overflowY: "auto", padding: "12px 18px 20px",
+        overscrollBehavior: "contain",
         WebkitOverflowScrolling: "touch",
         display: "flex", flexDirection: "column", gap: 8,
       }}>

@@ -22,6 +22,7 @@ import {
 } from "./witnessKeys";
 import { RESPONSES, GATE_HOLDS, PHASE_COHORT, CHARTER, WITNESS_ZK_ENABLED } from "./witnessConfig";
 import { useCaptureGuard } from "../../safety/CaptureShield";
+import { useScrollLock } from "@/utils/useScrollLock";
 
 const zkActive = () => WITNESS_ZK_ENABLED && witnessKeysAvailable();
 
@@ -30,6 +31,7 @@ const RESPONSE_ICON = {
 };
 
 export default function WitnessInbox({ user, phase = null, profile = null, onClose }) {
+  useScrollLock(true);   // lock the background page while this full-screen overlay is open
   const available = useMemo(() => witnessAvailable(), []);
   const [stage, setStage] = useState(charterAccepted() ? "loading" : "charter"); // charter|loading|reading|done|idle|removed|error
   const [request, setRequest] = useState(null);
@@ -223,7 +225,7 @@ export default function WitnessInbox({ user, phase = null, profile = null, onClo
   );
 
   return (
-    <div style={{ position: "fixed", inset: 0, zIndex: 60, overflowY: "auto", ...PAPER_BG }}>
+    <div style={{ position: "fixed", inset: 0, zIndex: 60, overflowY: "auto", overscrollBehavior: "contain", WebkitOverflowScrolling: "touch", ...PAPER_BG }}>
       <div style={{ maxWidth: 560, margin: "0 auto", padding: "40px 22px 60px", position: "relative" }}>
         {close}
 

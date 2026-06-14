@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import SupportMetricSlider from "../lifestages/SupportMetricSlider";
+import { useScrollLock } from "@/utils/useScrollLock";
 
 // ── Slider row ────────────────────────────────────────────────────────────────
 function SliderRow({ label, value, onChange, min = 1, max = 5, unit = "/5" }) {
@@ -76,6 +77,10 @@ const inp = { border: "1.5px solid var(--border)", borderRadius: 12, padding: "1
 export default function CheckinModal({ existing, onClose, onSave, userId, dateStr, initialTab }) {
   const init = existing || {};
   const todayDs = dateStr || new Date().toISOString().split("T")[0];
+
+  // Lock the background page while this modal is open (no scroll-bleed). The
+  // modal only mounts when it's shown, so the lock is always active here.
+  useScrollLock(true);
 
   // ── Checkin state ──────────────────────────────────────────────────────────
   const [periodFlow, togglePeriodFlow]           = useSingle(init.period_flow);
@@ -383,7 +388,7 @@ export default function CheckinModal({ existing, onClose, onSave, userId, dateSt
         <div style={{ flex: 1, overflow: "hidden", display: "flex" }}>
 
           {/* Vertical tab rail */}
-          <div className="checkin-rail" style={{ flexShrink: 0, width: 72, overflowY: "auto", padding: "10px 5px", display: "flex", flexDirection: "column", gap: 2, borderRight: "1px solid var(--border-subtle)" }}>
+          <div className="checkin-rail" style={{ flexShrink: 0, width: 72, overflowY: "auto", overscrollBehavior: "contain", WebkitOverflowScrolling: "touch", padding: "10px 5px", display: "flex", flexDirection: "column", gap: 2, borderRight: "1px solid var(--border-subtle)" }}>
             {TABS.map(t => (
               <button key={t.id} type="button" onClick={() => setActiveTab(t.id)}
                 style={{ width: "100%", padding: "9px 3px", borderRadius: 10, border: "none", backgroundColor: activeTab === t.id ? "var(--plum)" : "transparent", color: activeTab === t.id ? "white" : "var(--mauve)", fontSize: 10, fontWeight: 600, textAlign: "center", cursor: "pointer", lineHeight: 1.3, wordBreak: "break-word", transition: "all 0.15s" }}>
@@ -393,7 +398,7 @@ export default function CheckinModal({ existing, onClose, onSave, userId, dateSt
           </div>
 
           {/* Scrollable content */}
-          <div className="checkin-content" style={{ flex: 1, overflowY: "auto", padding: "16px 16px 8px" }}>
+          <div className="checkin-content" style={{ flex: 1, overflowY: "auto", overscrollBehavior: "contain", WebkitOverflowScrolling: "touch", padding: "16px 16px 8px" }}>
 
             {/* CYCLE */}
             {activeTab === "cycle" && (<>

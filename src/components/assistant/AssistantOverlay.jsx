@@ -27,12 +27,16 @@
 import { useEffect } from "react";
 import { X } from "lucide-react";
 import JessDemoPanel from "./JessDemoPanel";
+import { useScrollLock } from "@/utils/useScrollLock";
 
 export default function AssistantOverlay({ open, onClose, initialPrompt: _initialPrompt }) {
   // initialPrompt is intentionally ignored — JessDemoPanel owns its
   // own opener (the phase-aware "Good morning" greeting) and the
   // user types into the chat tab directly. Quick-prompt deep links
   // can be re-added later by threading the value into JessDemoPanel.
+
+  // Lock the background page while the overlay is open (no scroll-bleed).
+  useScrollLock(open);
 
   useEffect(() => {
     if (!open) return;

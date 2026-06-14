@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { X, Play, Pause, SkipBack, SkipForward, ExternalLink, Gauge, Moon } from 'lucide-react';
 import { usePodcastPlayer } from '@/hooks/usePodcastPlayer';
+import { useScrollLock } from '@/utils/useScrollLock';
 
 // Full-screen modal version of the podcast player. Opens when the user
 // taps the MiniPlayer body. Provides scrubber, ±15/30s skips, large play
@@ -26,12 +27,13 @@ export default function ExpandedPlayer() {
   const player = usePodcastPlayer();
   const modalRef = useRef(null);
 
-  // A11y: Escape closes, body scroll-lock while open, focus the close
-  // button on open.
+  // Body scroll-lock while open (shared, ref-counted hook — replaces the old
+  // ad-hoc document.body.style.overflow lock).
+  useScrollLock(!!player?.isExpanded);
+
+  // A11y: Escape closes, focus the close button on open.
   useEffect(() => {
     if (!player?.isExpanded) return;
-    const prev = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
     const handleKey = (e) => {
       if (e.key === 'Escape') {
         e.preventDefault();
@@ -42,7 +44,6 @@ export default function ExpandedPlayer() {
     const closeBtn = modalRef.current?.querySelector('[data-expanded-close]');
     if (closeBtn) closeBtn.focus();
     return () => {
-      document.body.style.overflow = prev;
       window.removeEventListener('keydown', handleKey);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -96,6 +97,8 @@ export default function ExpandedPlayer() {
         flexDirection: 'column',
         padding: '24px 24px 48px',
         overflowY: 'auto',
+        overscrollBehavior: 'contain',
+        WebkitOverflowScrolling: 'touch',
         }}
     >
       {/* Top row: close */}

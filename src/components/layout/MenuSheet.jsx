@@ -2,13 +2,12 @@ import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Sun, Utensils, BookOpen, Book, Sparkles, Activity, HeartPulse,
-  CalendarDays, LayoutGrid, Users, Compass, Search,
+  CalendarDays, LayoutGrid, Users, Search,
   Settings, Stethoscope, UsersRound, LogOut, ChevronRight,
-  BarChart2,
 } from "lucide-react";
 import { base44 } from "@/api/base44Client";
-import { createPageUrl } from "@/utils";
 import { toast } from "sonner";
+import { useScrollLock } from "@/utils/useScrollLock";
 
 // Routes that exist in App.jsx — anything else warns and routes to "/"
 const KNOWN_ROUTES = new Set([
@@ -108,13 +107,10 @@ export default function MenuSheet({ open, onClose, returnFocusRef }) {
   const [dragOffset, setDragOffset] = useState(0);
   const dragStartRef = useRef(null);
 
-  // Lock body scroll while open
-  useEffect(() => {
-    if (!open) return;
-    const prev = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-    return () => { document.body.style.overflow = prev; };
-  }, [open]);
+  // Lock body scroll while open (shared, ref-counted hook — replaces the old
+  // ad-hoc document.body.style.overflow lock so locking is consistent across
+  // overlays and survives nested sheets).
+  useScrollLock(open);
 
   // Focus management + ESC + focus trap
   useEffect(() => {
@@ -241,6 +237,8 @@ export default function MenuSheet({ open, onClose, returnFocusRef }) {
           maxHeight: "min(72vh, calc(100dvh - 48px))",
           padding: "24px 24px 32px",
           overflowY: "auto",
+          overscrollBehavior: "contain",
+          WebkitOverflowScrolling: "touch",
           boxShadow: "0 -10px 30px rgba(43,30,22,0.18)",
           transform: `translateY(${dragOffset}px)`,
           transition: dragOffset === 0 ? "transform 200ms cubic-bezier(.2,.8,.2,1)" : "none",

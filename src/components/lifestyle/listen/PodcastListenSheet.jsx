@@ -4,6 +4,7 @@ import {
   derivePodcastLinks,
   setPreferredPodcastApp,
 } from '@/utils/podcastLinks';
+import { useScrollLock } from '@/utils/useScrollLock';
 
 // Per spec §1.4 — three-button slide-up sheet (centred modal on desktop) for
 // choosing where to open a podcast. Brand-coloured pills; localStorage choice
@@ -93,14 +94,10 @@ export default function PodcastListenSheet({ item, source, onClose }) {
     return () => window.removeEventListener('keydown', handleKey);
   }, [onClose]);
 
-  // Lock body scroll while open.
-  useEffect(() => {
-    const prev = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
-    return () => {
-      document.body.style.overflow = prev;
-    };
-  }, []);
+  // Lock body scroll while open (shared, ref-counted hook — replaces the old
+  // ad-hoc document.body.style.overflow lock). This component only mounts when
+  // the sheet is open, so the lock is always active here.
+  useScrollLock(true);
 
   const handlePick = (appKey) => {
     const primaryUrl = links[appKey];
@@ -157,6 +154,10 @@ export default function PodcastListenSheet({ item, source, onClose }) {
           borderRadius: '20px 20px 0 0',
           padding: '20px 20px 32px',
           boxShadow: '0 -10px 30px rgba(43,30,22,0.18)',
+          maxHeight: '85vh',
+          overflowY: 'auto',
+          overscrollBehavior: 'contain',
+          WebkitOverflowScrolling: 'touch',
         }}
       >
         {/* Drag handle (visual only on mobile bottom-sheet) */}

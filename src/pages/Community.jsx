@@ -56,6 +56,7 @@ import {
   POOL_MOMENTS, REVEAL_K_FLOOR, weekKey, closePromptForWeek, closedThisWeek, markClosedWeek,
 } from "@/components/community/ritualsConfig";
 import { createPageUrl } from "@/utils";
+import { useScrollLock } from "@/utils/useScrollLock";
 
 const PLUM = "#241a26"; // the single permitted dark surface
 const HANDFAM = '"Cormorant Garamond","Fraunces",Georgia,serif';
@@ -111,9 +112,10 @@ const ghostBtn = {
 
 // ── crisis sheet (UK resources) ──────────────────────────────────────────────
 function CrisisSheet({ onClose }) {
+  useScrollLock(true);   // lock the background page while the sheet is open
   return (
     <div onClick={onClose} style={{ position: "fixed", inset: 0, zIndex: 200, background: "rgba(36,26,38,0.5)", display: "flex", alignItems: "flex-end", justifyContent: "center" }}>
-      <div role="dialog" aria-modal="true" aria-label="Support resources" onClick={(e) => e.stopPropagation()} style={{ background: T.paperHi, width: "100%", maxWidth: 480, borderRadius: "16px 16px 0 0", padding: "24px 22px 30px" }}>
+      <div role="dialog" aria-modal="true" aria-label="Support resources" onClick={(e) => e.stopPropagation()} style={{ background: T.paperHi, width: "100%", maxWidth: 480, borderRadius: "16px 16px 0 0", padding: "24px 22px 30px", maxHeight: "88vh", overflowY: "auto", overscrollBehavior: "contain", WebkitOverflowScrolling: "touch" }}>
         <div style={{ background: PLUM, borderRadius: 12, padding: "18px 18px 20px", marginBottom: 16 }}>
           <ShieldAlert size={22} style={{ color: T.blush, marginBottom: 8 }} />
           <Hand size={20} color="#F5E6D3" carve={false}>This reads as heavy — and a room of strangers isn{"’"}t the right shape for it. These people are there now, any time.</Hand>
@@ -1521,6 +1523,7 @@ function RoomView({ roomKey, posts, loading, error, user, onNav, onCrisis, onRel
 // (these two open in the Journal where the on-device scrub / encryption lives). Nothing
 // leaves the app. Crisis-checked on every input.
 function ShareToSheet({ user, onClose }) {
+  useScrollLock(true);   // lock the background page while the sheet is open
   const [text, setText] = useState("");
   const [dest, setDest] = useState(null);   // { type:'circle'|'club', key, name }
   const [busy, setBusy] = useState(false);
@@ -1545,7 +1548,7 @@ function ShareToSheet({ user, onClose }) {
 
   return (
     <div onClick={onClose} style={{ position: "fixed", inset: 0, zIndex: 2000, background: "rgba(36,26,38,0.45)", display: "flex", alignItems: "flex-end", justifyContent: "center" }}>
-      <div onClick={(e) => e.stopPropagation()} role="dialog" aria-label="Share to a space" style={{ width: "100%", maxWidth: 460, background: T.paper, borderRadius: "14px 14px 0 0", padding: "20px 18px 28px", maxHeight: "88vh", overflowY: "auto" }}>
+      <div onClick={(e) => e.stopPropagation()} role="dialog" aria-label="Share to a space" style={{ width: "100%", maxWidth: 460, background: T.paper, borderRadius: "14px 14px 0 0", padding: "20px 18px 28px", maxHeight: "88vh", overflowY: "auto", overscrollBehavior: "contain", WebkitOverflowScrolling: "touch" }}>
         <Eyebrow color={T.gold} mb={8}>Share to…</Eyebrow>
         {done ? (
           <>

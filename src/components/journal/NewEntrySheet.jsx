@@ -4,6 +4,7 @@ import { base44 } from "@/api/base44Client";
 import { PAPER_BG, T, UI, HAND, SERIF, PRESS, Script, Hand, Eyebrow, Rule, Chip } from "./Editorial";
 import ShareAsEchoSheet from "./echo/ShareAsEchoSheet";
 import { liveTranscript, tidyTranscript } from "./voiceTranscribe";
+import { useScrollLock } from "@/utils/useScrollLock";
 
 // Card colours (kept — saved to card_color, used by pinned strip / future surfaces).
 const COLOR_MAP = {
@@ -151,6 +152,8 @@ export default function NewEntrySheet({
   user, phase, cycleDay = null, onClose, onSaved, editEntry = null,
   seedText = "", seedCardType = null, seedThread = "", threads = [],
 }) {
+  // Lock the background page while this full-screen sheet is open (no scroll-bleed).
+  useScrollLock(true);
   // Existing tags -> primary thread (tags[0]) + the rest (extra tags).
   const initTags = editEntry?.tags
     ? (Array.isArray(editEntry.tags) ? editEntry.tags : String(editEntry.tags).split(",").map((s) => s.trim()).filter(Boolean))
@@ -388,7 +391,7 @@ export default function NewEntrySheet({
     || (cardType !== "gratitude" && cardType !== "todo" && !text.trim());
 
   return (
-    <div style={{ position: "fixed", inset: 0, zIndex: 90, ...PAPER_BG, overflowY: "auto", padding: "30px 26px 44px" }}>
+    <div style={{ position: "fixed", inset: 0, zIndex: 90, ...PAPER_BG, overflowY: "auto", overscrollBehavior: "contain", WebkitOverflowScrolling: "touch", padding: "30px 26px 44px" }}>
       <style>{`
         @keyframes fwReleaseAway { 0% { opacity: 1; transform: translateY(0); filter: blur(0); } 100% { opacity: 0; transform: translateY(-14px); filter: blur(3px); } }
         @media (prefers-reduced-motion: reduce) { .fw-burning { animation: none !important; opacity: 0.2 !important; } }

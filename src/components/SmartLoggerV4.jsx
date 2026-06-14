@@ -1,10 +1,11 @@
-import { useState, useCallback, useRef, useEffect, useMemo } from 'react';
+import { useState, useCallback, useRef, useEffect } from 'react';
 import {
   Heart, Droplets, Utensils, Pill, Sparkles, Pen,
   X as XIcon, Check, Plus, Minus,
-  Activity, Coffee, Wine, Bed, Footprints, Sun, Moon, Flame,
+  Coffee, Wine, Flame,
 } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
+import { useScrollLock } from '@/utils/useScrollLock';
 
 // ─── Design tokens ────────────────────────────────────────────────────────────
 const T = {
@@ -1201,30 +1202,9 @@ export default function SmartLoggerV4({
   }, [mode, externalOpen]);
 
   // Lock background page scroll while the sheet is open so iOS momentum +
-  // accidental tab swipes can't move the page underneath. Restores on close
-  // and on unmount.
-  useEffect(() => {
-    if (mode !== 'production') return;
-    const html = document.documentElement;
-    const body = document.body;
-    if (open) {
-      body.style.overflow = 'hidden';
-      body.style.position = 'fixed';
-      body.style.width = '100%';
-      html.style.overflow = 'hidden';
-    } else {
-      body.style.overflow = '';
-      body.style.position = '';
-      body.style.width = '';
-      html.style.overflow = '';
-    }
-    return () => {
-      body.style.overflow = '';
-      body.style.position = '';
-      body.style.width = '';
-      html.style.overflow = '';
-    };
-  }, [open, mode]);
+  // accidental tab swipes can't move the page underneath (shared, ref-counted
+  // hook — replaces the old ad-hoc html+body style lock).
+  useScrollLock(mode === 'production' && open);
 
   const closeSheet = () => {
     setOpen(false);
@@ -1355,7 +1335,8 @@ export default function SmartLoggerV4({
               </div>
               <div style={{
                 padding: '0 20px 20px',
-                flex: 1, overflow: 'hidden',
+                flex: 1, minHeight: 0, overflowY: 'auto',
+                overscrollBehavior: 'contain', WebkitOverflowScrolling: 'touch',
               }}>
                 {renderCard(i)}
               </div>

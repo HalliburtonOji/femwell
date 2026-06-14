@@ -22,6 +22,7 @@ import {
   Droplets, Coffee, Wine, ChevronDown, ChevronUp, Flame,
 } from "lucide-react";
 import { base44 } from "@/api/base44Client";
+import { useScrollLock } from "@/utils/useScrollLock";
 import { computeStreaks } from "@/utils/habitStreaks";
 import { addToPending, genQueueId } from "@/utils/pendingQueue";
 import {
@@ -2297,7 +2298,8 @@ function LogTab({ cards, showToast }) {
                 )}
               </div>
               <div style={{
-                padding: "0 20px 20px", flex: 1, overflow: "auto",
+                padding: "0 20px 20px", flex: 1, minHeight: 0, overflowY: "auto",
+                overscrollBehavior: "contain", WebkitOverflowScrolling: "touch",
               }}>
                 <CardCmp showToast={showToast} />
               </div>
@@ -2316,7 +2318,7 @@ function AddTab({ initialTypeId, onClose }) {
   const [pickedId, setPickedId] = useState(initialTypeId || null);
   const picked = pickedId ? TYPES.find(t => t.id === pickedId) : null;
   return (
-    <div style={{ flex: 1, overflowY: "auto", padding: "10px 16px 16px" }}>
+    <div style={{ flex: 1, overflowY: "auto", overscrollBehavior: "contain", WebkitOverflowScrolling: "touch", padding: "10px 16px 16px" }}>
       {picked ? (
         <>
           <div style={{
@@ -2409,28 +2411,9 @@ export default function UnifiedTabLogger() {
     }
   }, [open, onPlanner, initialAddType]);
 
-  // Scroll lock while sheet is open.
-  useEffect(() => {
-    const html = document.documentElement;
-    const body = document.body;
-    if (open) {
-      body.style.overflow = "hidden";
-      body.style.position = "fixed";
-      body.style.width = "100%";
-      html.style.overflow = "hidden";
-    } else {
-      body.style.overflow = "";
-      body.style.position = "";
-      body.style.width = "";
-      html.style.overflow = "";
-    }
-    return () => {
-      body.style.overflow = "";
-      body.style.position = "";
-      body.style.width = "";
-      html.style.overflow = "";
-    };
-  }, [open]);
+  // Scroll lock while sheet is open (shared, ref-counted hook — replaces the
+  // old ad-hoc html+body style lock).
+  useScrollLock(open);
 
   // Suppress on /Ideas (legacy — no global FAB on the demo gallery).
   // Planner used to be in this guard for the short-lived ContextualFAB
