@@ -14,6 +14,7 @@ Deno.serve(async (req) => {
       wellness_goal,
       ingredients,
       usual_meals,
+      loved_meals,
       duration_days = 7,
       dietary_preferences = [],
       cuisine_preference,
@@ -22,6 +23,16 @@ Deno.serve(async (req) => {
       protein_target,
       surprise_me = false,
     } = await req.json();
+
+    // usual_meals / loved_meals may arrive as a flat array OR a per-slot object
+    // ({breakfast:[...], dinner:[...]}). Flatten either shape safely (the old code
+    // assumed an array and threw on the object, silently failing generation).
+    const flattenMeals = (v) => {
+      if (!v) return [];
+      if (Array.isArray(v)) return v.filter(Boolean);
+      if (typeof v === "object") return Object.values(v).flat().filter(Boolean);
+      return [];
+    };
 
     const goalDescriptions = {
       energy: "boost energy levels with complex carbs, iron, B vitamins, and balanced blood sugar",
@@ -34,7 +45,8 @@ Deno.serve(async (req) => {
 
     const goalContext = goalDescriptions[wellness_goal] || "support general wellness and balanced nutrition";
     const ingredientList = (ingredients || []).join(", ") || "no specific ingredients provided";
-    const usualMealsList = (usual_meals || []).join(", ") || "none";
+    const usualMealsList = flattenMeals(usual_meals).join(", ") || "none";
+    const lovedMealsList = flattenMeals(loved_meals).join(", ") || "none";
     const dietaryStr = dietary_preferences?.length ? dietary_preferences.join(", ") : "no specific dietary restrictions";
     const cuisineStr = cuisine_preference || "any cuisine";
 
@@ -93,12 +105,14 @@ Dietary preferences: ${dietaryStr}
 Cuisine/food preferences: ${cuisineStr}
 Available/preferred ingredients: ${ingredientList}
 User's usual meals: ${usualMealsList}
+Meals the user has LOVED before (rated highly / returns to): ${lovedMealsList}
 Meal types to include each day: ${mealTypesStr}
 ${nutritionNote}
 
 Create a ${duration_days}-day meal plan that:
 - Respects all dietary preferences strictly
 - Incorporates the user's usual meals where appropriate
+- Brings back the user's LOVED meals: include up to TWO of them across the week, placed in a fitting slot, even if that means gently bending the no-repeat rules below (loved meals are the welcome exception — familiarity is a feature, not a failure)
 - Builds on available ingredients to minimise shopping
 - Supports the wellness goal every day
 - Is varied and enjoyable, not repetitive

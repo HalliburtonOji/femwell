@@ -27,11 +27,11 @@ import { base44 } from "@/api/base44Client";
 import { toast } from "sonner";
 import { format, startOfWeek, addDays } from "date-fns";
 import {
-  Lock, Unlock, RefreshCw, Sparkles, Check, X, Pencil, Leaf,
+  Lock, Unlock, RefreshCw, Sparkles, Check, X, Pencil, Leaf, Heart,
 } from "lucide-react";
 import { T, UI, SERIF } from "@/components/journal/Editorial";
 import { withTimeout } from "@/utils/safeEntity";
-import { slotSuggestions } from "@/utils/personalisation";
+import { slotSuggestions, lovedMeals } from "@/utils/personalisation";
 
 const SLOTS = ["breakfast", "lunch", "dinner", "snack"];
 const SLOT_LABEL = { breakfast: "Morning", lunch: "Midday", dinner: "Evening", snack: "Snack" };
@@ -315,11 +315,16 @@ export default function UnifiedMealPlanTab({ user, profile, nutritionProfile, ta
     // SOFT hint so the generator leans toward what they actually reach for. Only
     // included when history supports it; guarded so a thin history just omits it.
     const usualMeals = {};
+    const lovedBySlot = {};
     for (const slot of SLOTS) {
       const picks = slotSuggestions(mealRows, slot, { limit: 4 });
       if (picks.length) usualMeals[slot] = picks;
+      // LOVED meals (rated highly / returned to) — a stronger lean so favourites resurface
+      const loved = lovedMeals(mealRows, { slot, limit: 3 }).map((f) => f.name).filter(Boolean);
+      if (loved.length) lovedBySlot[slot] = loved;
     }
     const hasUsual = Object.keys(usualMeals).length > 0;
+    const hasLoved = Object.keys(lovedBySlot).length > 0;
 
     try {
       const res = await withTimeout(base44.functions.invoke("generateMealPlan", {
@@ -331,6 +336,8 @@ export default function UnifiedMealPlanTab({ user, profile, nutritionProfile, ta
         cuisine_preference: undefined,
         // gentle personalisation: foods this user often logs per slot (soft lean only)
         usual_meals: hasUsual ? usualMeals : undefined,
+        // stronger lean: meals they've LOVED resurface in the plan (the feedback loop)
+        loved_meals: hasLoved ? lovedBySlot : undefined,
         // gentle SOFT targets — explicit user value wins, else the derived guide
         calorie_target: nutritionProfile?.calories_target || targets?.energy_kcal,
         protein_target: nutritionProfile?.protein_target_g || targets?.protein_g,
@@ -437,13 +444,32 @@ export default function UnifiedMealPlanTab({ user, profile, nutritionProfile, ta
 
   // ── editor chips (real): MEMORY-led — the user's own frequent meals for THIS slot
   //    (from their logged history) lead, then templates for the slot, then recents. ──
+  // Editor chips: LOVED meals lead (marked with a heart), then go-tos, templates, recents.
+  // Returns objects { name, loved } so the chip can show the heart on resurfaced favourites.
   const editorSuggestions = (slot) => {
-    const learned = slotSuggestions(mealRows, slot, { limit: 6 }); // their go-tos for this slot
-    const tmpl = templates.filter((t) => t.default_meal_type === slot).map((t) => t.title).filter(Boolean);
-    const all = [...learned, ...tmpl, ...recents];
+    const loved = lovedMeals(mealRows, slot ? { slot, limit: 4 } : { limit: 4 }).map((f) => ({ name: f.name, loved: true }));
+    const learned = slotSuggestions(mealRows, slot, { limit: 6 }).map((name) => ({ name, loved: false }));
+    const tmpl = templates.filter((t) => t.default_meal_type === slot).map((t) => ({ name: t.title, loved: false })).filter((x) => x.name);
+    const recentsObj = recents.map((name) => ({ name, loved: false }));
+    const all = [...loved, ...learned, ...tmpl, ...recentsObj];
     const seen = new Set();
-    return all.filter((s) => { const k = (s || "").toLowerCase(); if (!k || seen.has(k)) return false; seen.add(k); return true; }).slice(0, 8);
+    const out = [];
+    for (const s of all) {
+      const k = (s.name || "").toLowerCase();
+      if (!k || seen.has(k)) continue;
+      seen.add(k);
+      out.push(s);
+      if (out.length >= 8) break;
+    }
+    return out;
   };
+
+  // canonical lowercase names of the user's loved meals — used to badge a planned cell
+  // they've genuinely returned to / rated highly ("you loved this").
+  const lovedNameSet = useMemo(
+    () => new Set(lovedMeals(mealRows, { limit: 24 }).map((f) => (f.name || "").trim().toLowerCase())),
+    [mealRows]
+  );
 
   // a gentle "you often have …" hint for the slot being edited — only when memory has
   // a real top pick for that slot; never shown otherwise. Memory as warm observation.
@@ -615,7 +641,10 @@ export default function UnifiedMealPlanTab({ user, profile, nutritionProfile, ta
                   {editorSuggestions(slot).length > 0 && (
                     <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
                       {editorSuggestions(slot).map((s) => (
-                        <button key={s} onClick={() => setDraft(s)} style={chip(false)}>{s}</button>
+                        <button key={s.name} onClick={() => setDraft(s.name)} style={{ ...chip(false), display: "inline-flex", alignItems: "center", gap: 5 }}>
+                          {s.loved && <Heart size={11} color={T.crimson} fill={T.crimson} />}
+                          {s.name}
+                        </button>
                       ))}
                     </div>
                   )}
@@ -644,6 +673,11 @@ export default function UnifiedMealPlanTab({ user, profile, nutritionProfile, ta
                       {c.macros.calories ? `${Math.round(c.macros.calories)} kcal` : ""}
                       {c.macros.calories && c.macros.protein_g ? " · " : ""}
                       {c.macros.protein_g ? `${Math.round(c.macros.protein_g)}g protein` : ""}
+                    </div>
+                  )}
+                  {lovedNameSet.has((c.name || "").trim().toLowerCase()) && (
+                    <div style={{ display: "inline-flex", alignItems: "center", gap: 4, marginTop: 6, fontFamily: UI, fontSize: 9.5, fontWeight: 700, letterSpacing: 0.3, color: T.crimson }}>
+                      <Heart size={10} color={T.crimson} fill={T.crimson} /> you loved this
                     </div>
                   )}
                 </button>

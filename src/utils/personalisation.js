@@ -185,6 +185,49 @@ export function slotSuggestions(mealLogs, slot, { limit = 6 } = {}) {
   return topFoods(inSlot, { limit }).map((f) => f.name).filter(Boolean);
 }
 
+// ── lovedMeals(mealLogs, { slot, limit }) ────────────────────────────────────────
+// The meals a person genuinely LOVES — so they can resurface in the planner. A loved
+// meal is one they RATED well (avg meal_score ≥ 6.5) OR returned to on 2+ distinct
+// days (a real habit, not a one-off). Ranking blends recency-weighted frequency with
+// the rating: a high score lifts a food, a low score dampens it, an unrated food is
+// neutral. Optional `slot` filters to a meal_type. Returns [{ name, key, count,
+// avgScore, loved }] strongest first. Defensive: no qualifying data → []. The scores
+// are internal ranking signals only — never shown as a number (no scoreboard).
+export function lovedMeals(mealLogs, { slot, limit = 4 } = {}) {
+  const rows = Array.isArray(mealLogs) ? mealLogs.filter(Boolean) : [];
+  if (rows.length === 0) return [];
+  const want = slot ? lc(slot) : null;
+  const ref = todayKey();
+  const byKey = new Map();
+  for (const m of rows) {
+    if (want && lc(m?.meal_type) !== want) continue;
+    const name = mealText(m);
+    const key = foodKey(name);
+    if (!key) continue;
+    const dayKey = mealDayKey(m);
+    const score = Number(m?.meal_score);
+    const cur = byKey.get(key) || { name, key, freq: 0, count: 0, days: new Set(), scoreSum: 0, scoreN: 0, lastDay: dayKey };
+    cur.freq += recencyWeight(dayKey, ref);
+    cur.count += 1;
+    if (dayKey) cur.days.add(dayKey);
+    if (Number.isFinite(score) && score > 0) { cur.scoreSum += score; cur.scoreN += 1; }
+    if (!cur.lastDay || (dayKey && dayKey > cur.lastDay)) { cur.lastDay = dayKey; cur.name = name || cur.name; }
+    byKey.set(key, cur);
+  }
+  return [...byKey.values()]
+    .map((f) => {
+      const avg = f.scoreN ? f.scoreSum / f.scoreN : null;
+      // a high rating lifts, a low one dampens (floored so it never zeroes out), unrated = neutral
+      const ratingFactor = avg == null ? 1 : Math.max(0.4, 1 + 0.18 * (avg - 5));
+      return { name: f.name, key: f.key, count: f.count, days: f.days.size, avg, love: f.freq * ratingFactor };
+    })
+    // honesty floor: genuinely rated-well OR a returned-to habit
+    .filter((f) => (f.avg != null && f.avg >= 6.5) || f.days >= 2)
+    .sort((a, b) => (b.love - a.love) || (b.count - a.count))
+    .slice(0, Math.max(1, Number(limit) || 4))
+    .map((f) => ({ name: f.name, key: f.key, count: f.count, avgScore: f.avg, loved: f.avg != null && f.avg >= 6.5 }));
+}
+
 // ── mealTimePattern(mealLogs, slot) ──────────────────────────────────────────────
 // A gentle observed time for a slot ("you usually log breakfast around 8am") derived
 // from logged_at across that slot's rows. Honesty-safe: needs at least 3 logged times
