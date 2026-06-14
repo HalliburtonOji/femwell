@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { T, SERIF, UI, Script, Hand } from "@/components/journal/Editorial";
 import HubDemo, { Action, Inset, Eyebrow2 } from "./hubDemoKit";
+import { CommunityEmbraceRing } from "@/components/hub/Centerpieces";
 
 const JESS = {
   greeting: "Evening",
@@ -48,33 +49,6 @@ const ROOMS = [
   { id: "talk", title: "Talk It Out", icon: Mic, accent: T.gold, essence: "Voices, not typing. Press to speak.", ambient: "A warm voice room is open",
     samples: ["Evening wind-down room · a few listening", "Press to speak — no video, ever"] },
 ];
-
-// big CIRCULAR centerpiece — a ring of women (the circle) around a blooming flower (the
-// circle's life). Community's visual anchor, the analogue of Nutrition's energy ring.
-function CommunityRing({ size = 176 }) {
-  const cx = size / 2, cy = size / 2, r = size / 2 - 12;
-  const N = 9, dotCol = [T.sage, T.blush, T.gold, T.crimson];
-  const dots = Array.from({ length: N }, (_, i) => {
-    const a = (i / N) * 2 * Math.PI - Math.PI / 2;
-    return { x: cx + r * Math.cos(a), y: cy + r * Math.sin(a), col: dotCol[i % dotCol.length] };
-  });
-  const petals = [0, 60, 120, 180, 240, 300];
-  return (
-    <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} style={{ flex: "none" }}>
-      <circle cx={cx} cy={cy} r={r} fill="none" stroke={T.paperDeep} strokeWidth={4} />
-      {dots.map((d, i) => (
-        <circle key={i} cx={d.x} cy={d.y} r={5.5} fill={d.col} stroke={T.paper} strokeWidth={1.5} />
-      ))}
-      {/* the bloom at the centre */}
-      <g transform={`translate(${cx} ${cy})`}>
-        {petals.map((deg) => (
-          <ellipse key={deg} cx={0} cy={-16} rx={7.5} ry={17} fill={T.blush} stroke={T.sage} strokeWidth={1.2} transform={`rotate(${deg})`} opacity={0.9} />
-        ))}
-        <circle r={7} fill={T.gold} stroke={T.paper} strokeWidth={1.5} />
-      </g>
-    </svg>
-  );
-}
 
 function QotdBody() {
   return (<>
@@ -127,7 +101,7 @@ function Header() {
     {/* CENTREPIECE — the circle-of-women + bloom ring (Community's anchor, like the
         energy ring), with the presence line beneath. Centered, full visual weight. */}
     <div style={{ display: "flex", flexDirection: "column", alignItems: "center", margin: "14px 0 16px" }}>
-      <CommunityRing size={176} />
+      <CommunityEmbraceRing size={176} />
       <div style={{ fontFamily: UI, fontSize: 8.5, letterSpacing: 0.6, color: T.muted, textTransform: "uppercase", marginTop: 8 }}>your circle · tonight</div>
       <div style={{ display: "flex", gap: 8, alignItems: "center", marginTop: 8 }}>
         <Users size={14} color={T.sage} style={{ flex: "none" }} />

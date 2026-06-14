@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import { T, SERIF, UI, Script, Hand } from "@/components/journal/Editorial";
 import HubDemo, { Action, Inset, Tag, Eyebrow2 } from "./hubDemoKit";
+import { JournalDiaryRing } from "@/components/hub/Centerpieces";
 
 const ME = { phase: "Luteal", day: 22, entriesWeek: 4, lastEntry: "2 days ago" };
 const MOOD_WEEK = [5, 6, 4, 7, 6, 8, 7];   // last 7 days, gentle (1–10), for the header sparkline
@@ -36,30 +37,6 @@ const CYCLE_MIRROR = [
   { when: "This time last cycle", line: "Restless, but I walked every morning — it helped." },
   { when: "Two cycles ago", line: "The same heaviness. It passed in three days." },
 ];
-
-// big CIRCULAR centerpiece — a pen writing on a diary page, encircled by a gentle
-// "this week" ring. The Journal's visual anchor, the analogue of Nutrition's energy ring.
-function JournalRing({ size = 176, fraction = 0.5 }) {
-  const cx = size / 2, cy = size / 2, r = size / 2 - 8, c = 2 * Math.PI * r;
-  return (
-    <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} style={{ flex: "none" }}>
-      <circle cx={cx} cy={cy} r={r} fill="none" stroke={T.paperDeep} strokeWidth={6} />
-      <circle cx={cx} cy={cy} r={r} fill="none" stroke={T.gold} strokeWidth={6} strokeLinecap="round"
-        strokeDasharray={c} strokeDashoffset={c - Math.max(0, Math.min(1, fraction)) * c} transform={`rotate(-90 ${cx} ${cy})`} />
-      {/* diary page (slightly tilted) with ruled lines */}
-      <g transform={`rotate(-7 ${cx} ${cy})`}>
-        <rect x={cx - 34} y={cy - 22} width={68} height={50} rx={6} fill={T.paper} stroke={T.muted} strokeWidth={1.6} />
-        <line x1={cx - 22} y1={cy - 8} x2={cx + 22} y2={cy - 8} stroke={T.muted} strokeWidth={1.3} />
-        <line x1={cx - 22} y1={cy + 2} x2={cx + 22} y2={cy + 2} stroke={T.muted} strokeWidth={1.3} />
-        <line x1={cx - 22} y1={cy + 12} x2={cx + 4} y2={cy + 12} stroke={T.muted} strokeWidth={1.3} />
-      </g>
-      {/* the pen, writing — nib resting on the page */}
-      <line x1={cx + 33} y1={cy - 36} x2={cx - 4} y2={cy + 14} stroke={T.ink} strokeWidth={3.4} strokeLinecap="round" />
-      <line x1={cx + 33} y1={cy - 36} x2={cx + 40} y2={cy - 45} stroke={T.crimson} strokeWidth={3.4} strokeLinecap="round" />
-      <path d={`M ${cx - 4} ${cy + 14} l -7 1 l 4 -7 z`} fill={T.ink} />
-    </svg>
-  );
-}
 
 function Spark({ data, w = 230, h = 40, color = T.crimson }) {
   const max = Math.max(...data), min = Math.min(...data);
@@ -208,7 +185,7 @@ function Header() {
     {/* CENTREPIECE — the big pen-on-diary ring (Journal's anchor, like the energy ring),
         with the week's mood beneath it. Centered, full visual weight. */}
     <div style={{ display: "flex", flexDirection: "column", alignItems: "center", margin: "14px 0 16px" }}>
-      <JournalRing size={176} fraction={ME.entriesWeek / 7} />
+      <JournalDiaryRing size={176} fraction={ME.entriesWeek / 7} />
       <div style={{ width: 150, marginTop: 8 }}><Spark data={MOOD_WEEK} h={30} /></div>
       <div style={{ fontFamily: UI, fontSize: 8.5, letterSpacing: 0.6, color: T.muted, textTransform: "uppercase", marginTop: 3 }}>mood · 7 days</div>
       <div style={{ fontFamily: SERIF, fontSize: 18, fontWeight: 600, color: T.ink, marginTop: 10, textAlign: "center" }}>A tender, lifting week</div>

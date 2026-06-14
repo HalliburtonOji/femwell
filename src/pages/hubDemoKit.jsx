@@ -28,7 +28,10 @@ function BigCard({ card, w }) {
       scrollSnapAlign: "center", flex: `0 0 ${w}px`, width: w,
       background: T.paperHi, border: `1px solid ${T.paperDeep}`, borderRadius: 20,
       boxShadow: "0 10px 26px -18px rgba(11,8,5,0.5)",
-      padding: 20, display: "flex", flexDirection: "column", minHeight: 528, maxHeight: "84vh", position: "relative", overflow: "hidden",
+      // MATCH the live Nutrition card's RENDERED size on a phone: its content grows it to
+      // the 84vh cap (~709px @844), so pin the demo card to that same height (scroll on
+      // overflow). Fixed-by-CSS width 365 alone wasn't enough — the height gap made it look small.
+      padding: 20, display: "flex", flexDirection: "column", minHeight: "84vh", maxHeight: "84vh", position: "relative", overflow: "hidden",
     }}>
       <div aria-hidden style={{ position: "absolute", top: 0, left: 0, right: 0, height: 78, borderRadius: "20px 20px 0 0", background: `linear-gradient(${card.accent}12, ${card.accent}00)`, pointerEvents: "none" }} />
       <div style={{ display: "flex", alignItems: "flex-start", gap: 12, marginBottom: 14, flex: "none" }}>
