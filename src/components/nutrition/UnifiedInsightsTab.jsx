@@ -379,7 +379,53 @@ function SavedNoteCard({ insight, onFeedback }) {
 }
 
 // ── main ─────────────────────────────────────────────────────────────────────
-export default function UnifiedInsightsTab({ user, profile, nutritionProfile }) {
+// Map the derived target set (deriveTargets) → the spine's nutrient-key reference
+// shape, so the women's micronutrient layer can lean on the DERIVED guides (which
+// already fold in stage + body + any user override) rather than the flat
+// STAGE_MICRO_TARGETS constants. Only the nutrients the stage layer cares about.
+function refsFromTargets(targets) {
+  if (!targets) return null;
+  const refs = {};
+  if (targets.iron_mg) refs.iron_mg = targets.iron_mg;
+  if (targets.folate_ug) refs.folate_ug = targets.folate_ug;
+  if (targets.calcium_mg) refs.calcium_mg = targets.calcium_mg;
+  if (targets.protein_g) refs.protein_g = targets.protein_g;
+  if (targets.fibre_g) refs.fiber_g = targets.fibre_g; // spine key is fiber_g
+  return Object.keys(refs).length ? refs : null;
+}
+
+// Recompute which of this stage's reference nutrients are leaning light, using the
+// DERIVED refs as the soft reference. Mirrors microNudgeForStage's honesty rule
+// (macros reliable; micros only "count" when real data backed them; lean < ~70% of
+// the soft ref). Used only when `targets` is supplied; otherwise we keep the
+// STAGE_MICRO_TARGETS-based microNudgeForStage result as the fallback.
+const DERIVED_MICRO_KEYS = ["iron_mg", "folate_ug", "calcium_mg"];
+const DERIVED_FOODS = {
+  iron_mg: { label: "Iron" }, folate_ug: { label: "Folate" }, calcium_mg: { label: "Calcium" },
+  protein_g: { label: "Protein" }, fiber_g: { label: "Fibre" },
+};
+function microNudgeFromRefs(refs, nutrition) {
+  const n = nutrition || {};
+  const perDay = n.perDay || {};
+  const microDays = n.microDays || {};
+  const loggedDays = n.loggedDays != null ? n.loggedDays : 0;
+  if (!loggedDays) return { hasData: false, leaning: [] };
+  const leaning = [];
+  for (const key of Object.keys(refs)) {
+    const target = Number(refs[key]);
+    if (!Number.isFinite(target) || target <= 0) continue;
+    const isMicro = DERIVED_MICRO_KEYS.includes(key);
+    // micros only count when some real micro value backed them this week
+    if (isMicro && !(microDays[key] > 0)) continue;
+    const had = Number(perDay[key]) || 0;
+    if (had > 0 && had < target * 0.7) {
+      leaning.push({ key, ...(DERIVED_FOODS[key] || { label: key }) });
+    }
+  }
+  return { hasData: true, leaning };
+}
+
+export default function UnifiedInsightsTab({ user, profile, nutritionProfile, targets }) {
   const [loading, setLoading] = useState(true);
   const [polishing, setPolishing] = useState(false);
   const [mealLogs, setMealLogs] = useState([]);
@@ -464,9 +510,16 @@ export default function UnifiedInsightsTab({ user, profile, nutritionProfile }) 
     () => rangeNutrition(weekMeals, 7),
     [weekMeals]
   );
+  // Prefer the DERIVED targets as the soft reference (they fold in stage + body +
+  // any user override); fall back to the STAGE_MICRO_TARGETS-based nudge when no
+  // derived targets were passed. Still gentle, still a picture — never a number shoved
+  // at the user. We keep the stage-set's foods/why copy via orderedNudges below.
+  const derivedRefs = useMemo(() => refsFromTargets(targets), [targets]);
   const microNudge = useMemo(
-    () => microNudgeForStage(profile, weekNutrition),
-    [profile, weekNutrition]
+    () => (derivedRefs
+      ? microNudgeFromRefs(derivedRefs, weekNutrition)
+      : microNudgeForStage(profile, weekNutrition)),
+    [derivedRefs, profile, weekNutrition]
   );
   // which stage cards to lead with: the leaning ones (by real data) first, then the
   // rest of the stage set; falls back to the full gentle generic set when no data yet.

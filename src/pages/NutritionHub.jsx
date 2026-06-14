@@ -33,6 +33,7 @@ import {
 } from "@/components/journal/Editorial";
 import { getMealSummary, inferMealTypeFromTime } from "@/utils/nutritionAiAnalysis";
 import { dayNutrition } from "@/utils/foodModel";
+import { deriveTargets } from "@/utils/nutritionTargets";
 import { getCurrentCyclePhase, phaseLabel } from "@/utils/cyclePhase";
 import { withTimeout } from "@/utils/safeEntity";
 import { HubSheet, SoftBar, SurfaceCard, Ring } from "@/components/nutrition/hub/HubShell";
@@ -245,6 +246,8 @@ export default function NutritionHub() {
   const [mealPlan, setMealPlan] = useState(null);
   const [shopItems, setShopItems] = useState([]);
   const [savedRecipes, setSavedRecipes] = useState([]);
+  // latest BodyMetrics row (real, guarded) — feeds the DERIVED nutrition targets
+  const [bodyMetrics, setBodyMetrics] = useState(null);
 
   const dayKey = format(selectedDate, "yyyy-MM-dd");
   const isToday = dayKey === format(new Date(), "yyyy-MM-dd");
@@ -377,14 +380,17 @@ export default function NutritionHub() {
       try {
         const u = await base44.auth.me();
         setUser(u);
-        const [profiles, nutProfiles, checkins] = await Promise.all([
+        const [profiles, nutProfiles, checkins, metrics] = await Promise.all([
           base44.entities.UserProfile.filter({ user_id: u.id }).catch(() => []),
           base44.entities.NutritionProfile.filter({ user_id: u.id }).catch(() => []),
           base44.entities.DailyCheckins.filter({ user_id: u.id, date: format(new Date(), "yyyy-MM-dd") }).catch(() => []),
+          // latest BodyMetrics row (real, guarded) — for the derived energy/protein guide
+          base44.entities.BodyMetrics.filter({ user_id: u.id }, "-day_key", 1).catch(() => []),
         ]);
         if (profiles[0]) setProfile(profiles[0]);
         if (nutProfiles[0]) setNutritionProfile(nutProfiles[0]);
         if (checkins[0]) setCheckin(checkins[0]);
+        if ((metrics || []).filter(Boolean)[0]) setBodyMetrics((metrics || []).filter(Boolean)[0]);
         // richer-card data (real, guarded — never blocks the page)
         loadRecents(u);
         loadKitchen(u);
@@ -437,7 +443,11 @@ export default function NutritionHub() {
     trackRef.current?.scrollTo({ left: idx * (CARD_W + GAP), behavior: "smooth" });
   };
 
-  const calorieTarget = nutritionProfile?.calories_target || nutritionProfile?.calorie_target || 2000;
+  // ── DERIVED nutrition targets (real body + stage + goal), replacing the flat /2000.
+  // deriveTargets is pure + defensive: missing body data → a stage-based default band,
+  // and any explicit user-set value always wins. Gentle ranges/guides, never a cap.
+  const targets = deriveTargets({ profile, nutritionProfile, bodyMetrics });
+  const calorieTarget = targets.energy_kcal;
   const hydrationTarget = nutritionProfile?.hydration_target_ml || 2000;
   const kcalLeft = Math.max(0, calorieTarget - summary.kcal);
 
@@ -448,9 +458,10 @@ export default function NutritionHub() {
   const cyclePhaseLabel = phaseLabel(cyclePhase);             // null when no phase
   const cycleDay = dayOfCycleOf(profile);                     // null when no cycle data
   const sums = macroSums(dayMealRows);                        // { protein, fibre, iron } via dayNutrition
-  const proteinTarget = nutritionProfile?.protein_target_g || 80;
-  const fibreTarget = nutritionProfile?.fiber_target_g || nutritionProfile?.fibre_target_g || 30;
-  const ironTarget = nutritionProfile?.iron_target_mg || 14;  // gentle, not a hard cap
+  // gentle macro-row guides now come from the DERIVED target set (stage + body + override)
+  const proteinTarget = targets.protein_g;
+  const fibreTarget = targets.fibre_g;
+  const ironTarget = Math.round(targets.iron_mg);             // gentle, not a hard cap
   const dinner = suggestedDinner(mealPlan, savedRecipes, profile);
 
   // ── the real surface for the open sheet ────────────────────────────────────
@@ -460,10 +471,10 @@ export default function NutritionHub() {
       case "today":    return <NutritionTodayTab user={user} profile={profile} nutritionProfile={nutritionProfile} dayKey={dayKey} checkin={checkin} />;
       case "plan":     return <NutritionPlanTab user={user} nutritionProfile={nutritionProfile} />;
       case "recipes":  return <UnifiedRecipesTab user={user} profile={profile} nutritionProfile={nutritionProfile} />;
-      case "mealgen":  return <UnifiedMealPlanTab user={user} profile={profile} nutritionProfile={nutritionProfile} />;
+      case "mealgen":  return <UnifiedMealPlanTab user={user} profile={profile} nutritionProfile={nutritionProfile} targets={targets} />;
       case "shopping": return <UnifiedShoppingTab user={user} profile={profile} />;
       case "progress": return <UnifiedProgressTab user={user} profile={profile} nutritionProfile={nutritionProfile} onProfileUpdated={loadNutritionProfile} />;
-      case "insights": return <UnifiedInsightsTab user={user} profile={profile} nutritionProfile={nutritionProfile} />;
+      case "insights": return <UnifiedInsightsTab user={user} profile={profile} nutritionProfile={nutritionProfile} targets={targets} />;
       default:         return null;
     }
   };
@@ -548,6 +559,13 @@ export default function NutritionHub() {
                 </div>
               </div>
             </div>
+
+            {/* gentle basis line — only when the energy guide is DERIVED from real body data */}
+            {targets.derived && (
+              <div style={{ fontFamily: UI, fontSize: 9.5, letterSpacing: 0.4, color: T.muted, textAlign: "center", marginTop: 8, maxWidth: 280 }}>
+                {targets.basis} — a guide, never a cap
+              </div>
+            )}
 
             {/* 4 · macro row — protein / fibre / iron, real sums, SoftBar beneath */}
             <div style={{ display: "flex", gap: 18, marginTop: 14, width: "100%", justifyContent: "center" }}>
@@ -652,6 +670,7 @@ export default function NutritionHub() {
                   savedRecipes={savedRecipes}
                   nutritionProfile={nutritionProfile}
                   profile={profile}
+                  targets={targets}
                   calorieTarget={calorieTarget}
                   hydrationTarget={hydrationTarget}
                   kcalLeft={kcalLeft}
@@ -739,12 +758,12 @@ function navBtn(disabled) {
 // state, never a mock figure. The bottom sheet stays the "go deeper / edit" layer.
 function CardSummary({
   surface, summary, dayMeals, recents, mealPlan, shopItems, savedRecipes,
-  nutritionProfile, profile, calorieTarget, hydrationTarget, kcalLeft, jess, onOpen, onLog, onReLog,
+  nutritionProfile, profile, targets, calorieTarget, hydrationTarget, kcalLeft, jess, onOpen, onLog, onReLog,
 }) {
   switch (surface.id) {
     case "log":      return <LogCard {...{ surface, recents, onLog, onReLog }} />;
     case "today":    return <TodayCard {...{ summary, dayMeals, recents, calorieTarget, hydrationTarget, kcalLeft, onLog }} />;
-    case "plan":     return <PlanCard {...{ nutritionProfile, profile, calorieTarget }} />;
+    case "plan":     return <PlanCard {...{ nutritionProfile, profile, targets, calorieTarget }} />;
     case "recipes":  return <RecipesCard {...{ savedRecipes }} />;
     case "mealgen":  return <MealgenCard {...{ mealPlan }} />;
     case "shopping": return <ShoppingCard {...{ shopItems }} />;
@@ -884,29 +903,36 @@ function TodayCard({ summary, dayMeals, recents, calorieTarget, hydrationTarget,
 }
 
 // ── PLAN · the real targets + stage framing (guides, never caps) ─────────────
-function PlanCard({ nutritionProfile, profile, calorieTarget }) {
+function PlanCard({ nutritionProfile, profile, targets, calorieTarget }) {
   const np = nutritionProfile || {};
-  const targets = [
-    np.protein_target_g ? { label: "Protein", guide: `${np.protein_target_g}g`, why: "steadies energy and holds muscle" } : null,
-    np.carbs_target_g   ? { label: "Carbs",   guide: `${np.carbs_target_g}g`,   why: "your gentle daily fuel" } : null,
-    np.fat_target_g     ? { label: "Healthy fats", guide: `${np.fat_target_g}g`, why: "for hormones and absorption" } : null,
+  const d = targets || {};
+  // Prefer explicit user-set rows; otherwise show the gentle DERIVED guides (protein /
+  // fibre / iron) so the card reflects the real stage+body picture, never blank.
+  const planRows = [
+    (np.protein_target_g || d.protein_g) ? { label: "Protein", guide: `${np.protein_target_g || d.protein_g}g`, why: "steadies energy and holds muscle" } : null,
+    np.carbs_target_g ? { label: "Carbs", guide: `${np.carbs_target_g}g`, why: "your gentle daily fuel" } : null,
+    np.fat_target_g ? { label: "Healthy fats", guide: `${np.fat_target_g}g`, why: "for hormones and absorption" } : null,
+    d.fibre_g ? { label: "Fibre", guide: `${d.fibre_g}g`, why: "kind to digestion and energy" } : null,
+    d.iron_mg ? { label: "Iron", guide: `${Math.round(d.iron_mg)}mg`, why: "supports steady energy" } : null,
     np.hydration_target_ml ? { label: "Water", guide: `${np.hydration_target_ml}ml`, why: "small and often beats one big glass" } : null,
-  ].filter(Boolean);
+  ].filter(Boolean).slice(0, 5);
   return (
     <div style={{ display: "flex", flexDirection: "column", flex: 1 }}>
       <Script size={24} style={{ marginBottom: 2 }}>What your body’s asking for</Script>
       <Hand size={14} color={T.muted} style={{ marginBottom: 12 }}>
-        {stageLabel(profile)} — a guide for the week, never a cap.
+        {stageLabel(profile)} — {d.basis || "a guide"} for the week, never a cap.
       </Hand>
 
       <div style={{ display: "flex", alignItems: "baseline", gap: 8, marginBottom: 14 }}>
-        <span style={{ fontFamily: SERIF, fontSize: 30, color: T.ink, fontWeight: 600 }}>{calorieTarget}</span>
+        <span style={{ fontFamily: SERIF, fontSize: 30, color: T.ink, fontWeight: 600 }}>
+          {d.energy_min && d.energy_max ? `${d.energy_min}–${d.energy_max}` : calorieTarget}
+        </span>
         <span style={{ fontFamily: UI, fontSize: 11, color: T.muted, letterSpacing: 0.5 }}>kcal · gentle energy guide</span>
       </div>
 
-      {targets.length > 0 ? (
+      {planRows.length > 0 ? (
         <div style={{ display: "grid", gap: 12 }}>
-          {targets.map((t) => (
+          {planRows.map((t) => (
             <div key={t.label}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
                 <span style={{ fontFamily: SERIF, fontSize: 15, color: T.ink, fontWeight: 600 }}>{t.label}</span>

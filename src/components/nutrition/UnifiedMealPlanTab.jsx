@@ -92,7 +92,7 @@ const sLabel = {
   textTransform: "uppercase", color: T.muted,
 };
 
-export default function UnifiedMealPlanTab({ user, profile, nutritionProfile }) {
+export default function UnifiedMealPlanTab({ user, profile, nutritionProfile, targets }) {
   const [plan, setPlan] = useState(null);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState(null);
@@ -277,8 +277,9 @@ export default function UnifiedMealPlanTab({ user, profile, nutritionProfile }) 
         duration_days: 7,
         included_meal_types: SLOTS,
         cuisine_preference: undefined,
-        calorie_target: nutritionProfile?.calories_target,
-        protein_target: nutritionProfile?.protein_target_g,
+        // gentle SOFT targets — explicit user value wins, else the derived guide
+        calorie_target: nutritionProfile?.calories_target || targets?.energy_kcal,
+        protein_target: nutritionProfile?.protein_target_g || targets?.protein_g,
       }), 20000, "meal plan");
 
       const data = res?.data?.data || res?.data; // function returns { mode, data }
@@ -364,6 +365,8 @@ export default function UnifiedMealPlanTab({ user, profile, nutritionProfile }) 
   }, [cells]);
 
   const lean = stageLean(profile);
+  // a gentle daily protein guide from the DERIVED targets, woven in lightly (never a cap)
+  const proteinGuide = targets?.protein_g ? Math.round(targets.protein_g) : null;
   // Gentle macro-preview sentence — qualitative, never a pass/fail score.
   const macroLine = (() => {
     if (macroPreview.planned === 0) return "Add or generate meals and a gentle picture of the week will gather here.";
@@ -371,10 +374,11 @@ export default function UnifiedMealPlanTab({ user, profile, nutritionProfile }) 
       lean === "iron-rich" ? "leans iron-rich for your stage" :
       lean === "calcium-and-protein" ? "leans toward calcium and steady protein for your stage" :
       "stays protein-steady for your stage";
+    const guideTail = proteinGuide ? ` It leans toward your ~${proteinGuide}g protein guide — a guide, never a cap.` : "";
     if (macroPreview.known === 0) {
-      return `${macroPreview.planned} meals planned — the week ${leanPhrase}. Generate to see its gentle macro shape.`;
+      return `${macroPreview.planned} meals planned — the week ${leanPhrase}.${guideTail} Generate to see its gentle macro shape.`;
     }
-    return `Across the meals we can read, the week ${leanPhrase} — roughly ${macroPreview.protein}g protein and ${macroPreview.carbs}g carbs over the week. A picture, not a target.`;
+    return `Across the meals we can read, the week ${leanPhrase} — roughly ${macroPreview.protein}g protein and ${macroPreview.carbs}g carbs over the week.${guideTail} A picture, not a target.`;
   })();
 
   // ── editor chips (real): templates for this slot + recents + a few staples ───
