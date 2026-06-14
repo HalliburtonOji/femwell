@@ -252,6 +252,7 @@ export default function NutritionHub() {
   const [dayMealRows, setDayMealRows] = useState([]);
   // distinct recent meals across history (real, for the "one tap to re-add" chips)
   const [recents, setRecents] = useState([]);
+  const [weekKcal, setWeekKcal] = useState([]);   // last 7 days' energy (real) for the Progress trend
   // a saved meal plan + shopping list + saved recipes for the richer cards (real)
   const [mealPlan, setMealPlan] = useState(null);
   const [shopItems, setShopItems] = useState([]);
@@ -324,6 +325,23 @@ export default function NutritionHub() {
       if (distinct.length >= 6) break;
     }
     setRecents(distinct);
+  }, []);
+
+  // last 7 days' energy (real, guarded) — feeds the Progress card's weekly trend so it
+  // shows a week of rhythm, not just today. Uses the same energy spine (CoFID floor).
+  const loadWeek = useCallback(async (u) => {
+    if (!u) return;
+    const rows = await base44.entities.MealLog.filter({ user_id: u.id }, "-day_key", 250).catch(() => []);
+    const safe = (rows || []).filter(Boolean);
+    const out = [];
+    for (let i = 6; i >= 0; i--) {
+      const dt = new Date(); dt.setDate(dt.getDate() - i);
+      const key = format(dt, "yyyy-MM-dd");
+      const meals = safe.filter((m) => m.day_key === key);
+      const kcal = meals.length ? Math.round(dayNutrition(meals, { floor: true }).kcal) : 0;
+      out.push({ label: DOW_SHORT[(dt.getDay() + 6) % 7], key, kcal });
+    }
+    setWeekKcal(out);
   }, []);
 
   // re-log a recent meal for real (guarded write + refresh), one tap from the Log card.
@@ -477,6 +495,7 @@ export default function NutritionHub() {
         if ((metrics || []).filter(Boolean)[0]) setBodyMetrics((metrics || []).filter(Boolean)[0]);
         // richer-card data (real, guarded — never blocks the page)
         loadRecents(u);
+        loadWeek(u);
         loadKitchen(u);
         // a new log anywhere → nudge selectedDate so the summary effect re-runs
         try { unsubHydration = base44.entities.HydrationLog.subscribe(() => setSelectedDate((d) => new Date(d))); } catch { /* no-op */ }
@@ -496,8 +515,8 @@ export default function NutritionHub() {
   // refresh the home summary whenever the user or the day changes (subscriptions
   // bump selectedDate, so this also catches a new meal/hydration log)
   useEffect(() => {
-    if (user) loadSummary(user, dayKey);
-  }, [user, dayKey, loadSummary]);
+    if (user) { loadSummary(user, dayKey); loadWeek(user); }
+  }, [user, dayKey, loadSummary, loadWeek]);
 
   const changeDay = (offset) => {
     const d = new Date(selectedDate);
@@ -756,6 +775,7 @@ export default function NutritionHub() {
                   summary={summary}
                   dayMeals={dayMeals}
                   recents={recents}
+                  weekKcal={weekKcal}
                   mealPlan={mealPlan}
                   shopItems={shopItems}
                   savedRecipes={savedRecipes}
@@ -852,7 +872,7 @@ function navBtn(disabled) {
 // built ONLY from real data the hub loaded. Missing data → a calm honest empty
 // state, never a mock figure. The bottom sheet stays the "go deeper / edit" layer.
 function CardSummary({
-  surface, summary, dayMeals, recents, mealPlan, shopItems, savedRecipes,
+  surface, summary, dayMeals, recents, weekKcal, mealPlan, shopItems, savedRecipes,
   nutritionProfile, profile, targets, calorieTarget, hydrationTarget, kcalLeft, jess, onOpen, onLog, onReLog, onWater, onRemove, onToggleShop, isToday,
 }) {
   switch (surface.id) {
@@ -862,7 +882,7 @@ function CardSummary({
     case "recipes":  return <RecipesCard {...{ savedRecipes, onReLog }} />;
     case "mealgen":  return <MealgenCard {...{ mealPlan, onReLog }} />;
     case "shopping": return <ShoppingCard {...{ shopItems, onToggleShop }} />;
-    case "progress": return <ProgressCard {...{ recents, dayMeals, summary }} />;
+    case "progress": return <ProgressCard {...{ recents, dayMeals, summary, weekKcal }} />;
     case "insights": return <InsightsCard {...{ jess, profile }} />;
     default:         return null;
   }
@@ -1155,7 +1175,8 @@ function MealgenCard({ mealPlan, onReLog }) {
     const todayRow = rows.find((r) => r.dayIdx === todayIdx);
     if (todayRow) rows = [todayRow, ...rows.filter((r) => r.dayIdx !== todayIdx)];
   }
-  const lockedCount = (mealPlan?.locked_cells || []).length;
+  const lockedSet = new Set(mealPlan?.locked_cells || []);   // "<dayIdx>_<slot>"
+  const lockedCount = lockedSet.size;
   return (
     <div style={{ display: "flex", flexDirection: "column", flex: 1 }}>
       <Script size={26} style={{ marginBottom: 2 }}>A gentle week</Script>
@@ -1175,10 +1196,13 @@ function MealgenCard({ mealPlan, onReLog }) {
                 {d.label}
               </div>
               <div style={{ paddingTop: 9, paddingBottom: 9, borderTop: `1px solid ${T.paperDeep}` }}>
-                {[["B", d.breakfast, "breakfast"], ["L", d.lunch, "lunch"], ["D", d.dinner, "dinner"]].map(([slot, name, slotKey]) => (
+                {[["B", d.breakfast, "breakfast"], ["L", d.lunch, "lunch"], ["D", d.dinner, "dinner"]].map(([slot, name, slotKey]) => {
+                  const isLocked = name && lockedSet.has(`${d.dayIdx}_${slotKey}`);
+                  return (
                   <div key={slot} style={{ display: "flex", gap: 7, alignItems: "baseline", marginBottom: 3 }}>
                     <span style={{ fontFamily: UI, fontSize: 9, fontWeight: 700, color: T.muted, width: 12, flexShrink: 0 }}>{slot}</span>
-                    <span style={{ flex: 1, fontFamily: SERIF, fontSize: 12.5, color: name ? T.ink : T.muted, lineHeight: 1.2, minWidth: 0 }}>
+                    <span style={{ flex: 1, fontFamily: SERIF, fontSize: 12.5, color: name ? T.ink : T.muted, lineHeight: 1.2, minWidth: 0, display: "inline-flex", alignItems: "center", gap: 4 }}>
+                      {isLocked ? <Lock size={9} color={T.gold} style={{ flexShrink: 0 }} /> : null}
                       {name || "—"}
                     </span>
                     {/* direct-on-card: log today's planned meal in one tap (no sheet) */}
@@ -1189,7 +1213,8 @@ function MealgenCard({ mealPlan, onReLog }) {
                       </button>
                     ) : null}
                   </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
           ))}
@@ -1246,21 +1271,45 @@ function ShoppingCard({ shopItems, onToggleShop }) {
 }
 
 // ── PROGRESS · a gentle real sparkline + soft patterns from logged meals ─────
-function ProgressCard({ recents, dayMeals, summary }) {
+function ProgressCard({ recents, dayMeals, summary, weekKcal }) {
   // a soft real signal: kcal across the meals logged today (patterns, not scores)
   const series = dayMeals.map((m) => m.kcal).filter((n) => n > 0);
   const haveSignal = series.length >= 2;
+  // last-7-days energy (real) — a week of rhythm, not just today
+  const week = (weekKcal || []).filter(Boolean);
+  const daysWithData = week.filter((d) => d.kcal > 0).length;
+  const weekMax = Math.max(1, ...week.map((d) => d.kcal));
+  const todayKey = format(new Date(), "yyyy-MM-dd");
   return (
     <div style={{ display: "flex", flexDirection: "column", flex: 1 }}>
       <Script size={26} style={{ marginBottom: 2 }}>Patterns, not scores</Script>
-      <Hand size={14} color={T.muted} style={{ marginBottom: 12 }}>A soft line across your day — never a grade.</Hand>
+      <Hand size={14} color={T.muted} style={{ marginBottom: 12 }}>A soft line across your week — never a grade.</Hand>
+
+      {/* weekly energy trend — one soft bar per day, today marked */}
+      {daysWithData >= 2 ? (
+        <div style={{ marginBottom: 16 }}>
+          <Eyebrow mb={8}>Energy across your week</Eyebrow>
+          <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", gap: 6, height: 56 }}>
+            {week.map((d) => {
+              const isToday = d.key === todayKey;
+              const h = d.kcal > 0 ? Math.max(6, Math.round((d.kcal / weekMax) * 46)) : 3;
+              return (
+                <div key={d.key} style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 4, flex: 1 }}>
+                  <div style={{ width: "100%", maxWidth: 16, height: h, borderRadius: 5, background: d.kcal > 0 ? (isToday ? T.crimson : T.gold) : T.paperDeep }} title={d.kcal > 0 ? `${d.kcal} kcal` : "—"} />
+                  <span style={{ fontFamily: UI, fontSize: 8.5, fontWeight: 700, letterSpacing: 0.2, color: isToday ? T.ink : T.muted }}>{d.label}</span>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      ) : null}
 
       {haveSignal ? (
         <>
           <Eyebrow mb={8}>Today’s meals, by energy</Eyebrow>
           <Sparkline data={series} />
         </>
-      ) : (
+      ) : daysWithData >= 2 ? null : (
         <div style={{ marginBottom: 12 }}>
           <Empty>Once you’ve logged a few meals, a gentle shape of your days appears here — energy, hydration and rhythm, framed as patterns.</Empty>
         </div>
