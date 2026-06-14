@@ -21,6 +21,7 @@ Deno.serve(async (req) => {
       included_meal_types,
       calorie_target,
       protein_target,
+      weekly_budget,
       surprise_me = false,
     } = await req.json();
 
@@ -53,6 +54,11 @@ Deno.serve(async (req) => {
     let nutritionNote = "";
     if (calorie_target) nutritionNote += ` Target ~${calorie_target} kcal per day.`;
     if (protein_target) nutritionNote += ` Aim for ~${protein_target}g protein per day.`;
+
+    const budgetNum = Number(weekly_budget);
+    const budgetNote = Number.isFinite(budgetNum) && budgetNum > 0
+      ? `\nWeekly grocery budget: around £${Math.round(budgetNum)} total (UK prices). Favour affordable, in-season staples; reuse ingredients across meals to minimise waste and cost; keep premium/specialist items rare. Keep the shopping list realistically within this budget.`
+      : "";
 
     let prompt;
 
@@ -107,7 +113,7 @@ Available/preferred ingredients: ${ingredientList}
 User's usual meals: ${usualMealsList}
 Meals the user has LOVED before (rated highly / returns to): ${lovedMealsList}
 Meal types to include each day: ${mealTypesStr}
-${nutritionNote}
+${nutritionNote}${budgetNote}
 
 Create a ${duration_days}-day meal plan that:
 - Respects all dietary preferences strictly

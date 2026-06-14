@@ -33,6 +33,9 @@
     "height_cm": {
       "type": "number"
     },
+    "budget_weekly": {
+      "type": "number"
+    },
     "calories_target": {
       "type": "number"
     },

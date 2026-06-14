@@ -107,6 +107,8 @@ export default function UnifiedMealPlanTab({ user, profile, nutritionProfile, ta
   const [regenScope, setRegenScope] = useState(null); // null | "week" | `${day}` | `${day}_${slot}`
   const [goal, setGoal] = useState(null);
   const [dietary, setDietary] = useState([]);
+  const [pantryNames, setPantryNames] = useState([]);   // ShoppingList source:"pantry" → "use what's in"
+  const [budget, setBudget] = useState("");             // optional weekly £ budget (persisted to NutritionProfile)
 
   const weekStart = startOfWeek(new Date(), { weekStartsOn: 1 });
   const weekKey = format(weekStart, "yyyy-MM-dd");
@@ -123,13 +125,20 @@ export default function UnifiedMealPlanTab({ user, profile, nutritionProfile, ta
     setLoading(true);
     setLoadError(null);
     try {
-      const [plans, tmpl, recentRows] = await Promise.all([
+      const [plans, tmpl, recentRows, shopRows] = await Promise.all([
         base44.entities.MealPlans.filter({ user_id: user.id, week_start: weekKey }).catch(() => []),
         base44.entities.MealTemplates.filter({ user_id: user.id }).catch(() => []),
         // wider window so per-slot MEMORY (slotSuggestions) has real history to learn from
         base44.entities.MealLog.filter({ user_id: user.id }, "-created_date", 60).catch(() => []),
+        // pantry (ShoppingList source:"pantry") → "build on what's already in" for the generator
+        base44.entities.ShoppingList.filter({ user_id: user.id }).catch(() => []),
       ]);
       setTemplates((tmpl || []).filter(Boolean));
+      // pantry item names — the generator leans on these to minimise shopping
+      setPantryNames(
+        (shopRows || []).filter((r) => r && r.source === "pantry")
+          .map((r) => (r.ingredient_name || "").trim()).filter(Boolean)
+      );
       const mealLogRows = (recentRows || []).filter(Boolean);
       setMealRows(mealLogRows); // keep raw rows (meal_type intact) for slotSuggestions
       // distinct recent meal texts (real) for the editor's one-tap chips
@@ -165,6 +174,12 @@ export default function UnifiedMealPlanTab({ user, profile, nutritionProfile, ta
   }, [user, weekKey]);
 
   useEffect(() => { loadPlan(); }, [loadPlan]);
+  // prefill the weekly budget from the durable NutritionProfile (optional, best-effort)
+  useEffect(() => {
+    if (nutritionProfile?.budget_weekly != null && nutritionProfile.budget_weekly !== "") {
+      setBudget(String(nutritionProfile.budget_weekly));
+    }
+  }, [nutritionProfile]);
 
   // ── derive a flat view of the plan: cells[day_slot] = { name, locked, macros } ──
   const cells = useMemo(() => {
@@ -311,6 +326,19 @@ export default function UnifiedMealPlanTab({ user, profile, nutritionProfile, ta
       }), 6000, "save");
     } catch (e) { console.error(e); /* soft — generation can still proceed */ }
 
+    // persist the weekly budget durably to the NutritionProfile (best-effort) so it
+    // sticks across sessions and the generator keeps respecting it.
+    const budgetNum = parseFloat(budget);
+    if (Number.isFinite(budgetNum) && budgetNum > 0 && budgetNum !== Number(nutritionProfile?.budget_weekly)) {
+      try {
+        if (nutritionProfile?.id) {
+          await withTimeout(base44.entities.NutritionProfile.update(nutritionProfile.id, { budget_weekly: budgetNum }), 6000, "save");
+        } else {
+          await withTimeout(base44.entities.NutritionProfile.create({ user_id: user.id, budget_weekly: budgetNum }), 6000, "save");
+        }
+      } catch (be) { console.error(be); /* budget persistence is best-effort */ }
+    }
+
     // MEMORY: the user's own frequent meals per slot, from their logged history — a
     // SOFT hint so the generator leans toward what they actually reach for. Only
     // included when history supports it; guarded so a thin history just omits it.
@@ -334,6 +362,10 @@ export default function UnifiedMealPlanTab({ user, profile, nutritionProfile, ta
         duration_days: 7,
         included_meal_types: SLOTS,
         cuisine_preference: undefined,
+        // SHOP→PLAN: build on what's already in the pantry (minimise shopping)
+        ingredients: pantryNames.length ? pantryNames : undefined,
+        // SHOP→PLAN: keep the week within a gentle weekly £ budget when set
+        weekly_budget: (parseFloat(budget) > 0) ? parseFloat(budget) : undefined,
         // gentle personalisation: foods this user often logs per slot (soft lean only)
         usual_meals: hasUsual ? usualMeals : undefined,
         // stronger lean: meals they've LOVED resurface in the plan (the feedback loop)
@@ -341,7 +373,9 @@ export default function UnifiedMealPlanTab({ user, profile, nutritionProfile, ta
         // gentle SOFT targets — explicit user value wins, else the derived guide
         calorie_target: nutritionProfile?.calories_target || targets?.energy_kcal,
         protein_target: nutritionProfile?.protein_target_g || targets?.protein_g,
-      }), 20000, "meal plan");
+        // a full 7-day plan with the diversity ruleset legitimately takes ~20–30s on
+        // gpt-4o-mini; 35s gives it headroom so a valid plan isn't discarded mid-flight.
+      }), 35000, "meal plan");
 
       const data = res?.data?.data || res?.data; // function returns { mode, data }
       if (!data || res?.data?.error) {
@@ -524,6 +558,26 @@ export default function UnifiedMealPlanTab({ user, profile, nutritionProfile, ta
                 style={chip(on, T.crimson)}>{d}</button>
             );
           })}
+        </div>
+
+        {/* SHOP → PLAN: build on the pantry + a gentle weekly budget */}
+        <p style={{ ...sLabel, marginTop: 16 }}>From your kitchen &amp; budget</p>
+        {pantryNames.length > 0 ? (
+          <p style={{ fontFamily: SERIF, fontSize: 13, fontStyle: "italic", color: T.muted, marginTop: 8, lineHeight: 1.4 }}>
+            Building on {pantryNames.length} item{pantryNames.length === 1 ? "" : "s"} already in your pantry — the plan leans on what you have, so the shopping list stays short.
+          </p>
+        ) : (
+          <p style={{ fontFamily: SERIF, fontSize: 12.5, fontStyle: "italic", color: T.muted, marginTop: 8, lineHeight: 1.4 }}>
+            Add items to your pantry in Shop and the plan will build on them — less to buy.
+          </p>
+        )}
+        <div style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 10 }}>
+          <span style={{ fontFamily: UI, fontSize: 11, color: T.muted }}>Weekly budget</span>
+          <span style={{ fontFamily: SERIF, fontSize: 15, color: T.ink }}>£</span>
+          <input value={budget} onChange={(e) => setBudget(e.target.value.replace(/[^0-9.]/g, ""))}
+            inputMode="decimal" placeholder="optional"
+            style={{ width: 84, padding: "8px 10px", borderRadius: 10, border: `1.5px solid ${T.paperDeep}`, background: T.paper, fontFamily: SERIF, fontSize: 14, color: T.ink, outline: "none" }} />
+          <span style={{ fontFamily: UI, fontSize: 10.5, color: T.muted }}>/ week</span>
         </div>
       </div>
 
