@@ -1109,6 +1109,11 @@ function MealgenCard({ mealPlan, onReLog }) {
       breakfast: cellName(d.meals?.breakfast), lunch: cellName(d.meals?.lunch), dinner: cellName(d.meals?.dinner),
     }));
   }
+  // surface TODAY's row first (most relevant + where the inline "Log" lives), then the rest
+  if (rows.length) {
+    const todayRow = rows.find((r) => r.dayIdx === todayIdx);
+    if (todayRow) rows = [todayRow, ...rows.filter((r) => r.dayIdx !== todayIdx)];
+  }
   const lockedCount = (mealPlan?.locked_cells || []).length;
   return (
     <div style={{ display: "flex", flexDirection: "column", flex: 1 }}>
@@ -1123,7 +1128,7 @@ function MealgenCard({ mealPlan, onReLog }) {
 
       {rows.length > 0 ? (
         <div style={{ display: "grid", gridTemplateColumns: "30px 1fr", gap: "0 8px" }}>
-          {rows.slice(0, 5).map((d, i) => (
+          {rows.slice(0, 7).map((d, i) => (
             <div key={i} style={{ display: "contents" }}>
               <div style={{ fontFamily: UI, fontSize: 10, fontWeight: 700, color: T.gold, letterSpacing: 0.5, textTransform: "uppercase", paddingTop: 9, borderTop: `1px solid ${T.paperDeep}` }}>
                 {d.label}
