@@ -1,6 +1,16 @@
 # FEMWELL — CANONICAL STATUS INDEX (read first · updated 2026-06-14)
 **This file is the single source of truth AND the index to every plan doc. If anything else disagrees, this wins.** (The long ship-log history continues below the index.)
 
+## 🔁 DIRECT-ON-CARD across ALL surface cards + bug-hole close (logging NEVER reads 0) — SHIPPED + LIVE-VERIFIED (2026-06-14) — live `index-DzCjfil8.js` · commits `e3081dd` + `e545afb`
+- **Closed the last logging-bug hole:** a food NOT in the CoFID table (e.g. "katsu curry") still read 0 kcal. New `mealEstimate(text, mealType)` = CoFID match else a gentle per-slot DEFAULT (breakfast 350 / lunch 520 / dinner 620 / snack 180; macros only — micros stay 0/honest). Used in `dayNutrition` floor + `reLogRecent`, so a logged meal **never reads 0 kcal**, matched or not.
+- **Direct-on-card pushed into EVERY surface card (sheet only for dense flows):**
+  - **Today recents** — tap = logs instantly (was opening the sheet).
+  - **Shop** — items tick **inline on the card** (real `ShoppingList.update`, optimistic + rollback). **LIVE-VERIFIED:** ticked "Spinach" → green check + strikethrough, "to get" 4→3, no sheet. (Seeded 4 example list items so it's demoable live; left in place for Halli.)
+  - **AI Plan** — today's row surfaced FIRST with an inline **Log** on each planned meal (one-tap → today's MealLog).
+  - **Recipes** — each saved recipe has an inline **Log**.
+  - Plan (targets) + Progress stay read-only (no sheet needed); the "Open …" footer remains as the optional depth path.
+- All guarded, optimistic, real data. Build+eslint green. Deploy: `index-1Usdu1Sa.js` → `index-BCxPxJOT.js` → **`index-DzCjfil8.js`**. SCREENSHOT `directcard-shop-tick_20260614.png`.
+
 ## 🐞 LOGGING-MOVES-TOTALS BUG FIX + 👆 DIRECT-ON-CARD ACTIONS + ↕ CARD SCROLL — SHIPPED + LIVE-VERIFIED (2026-06-14) — live `index-1Usdu1Sa.js` · commit `a861d20` (+ demo polish `95d2883`)
 - **(1) REAL BUG FIXED — "I log stuff but nothing updates."** Root cause: the header summed REAL macros only (`getMealSummary().calories`), and recents/text logs carry none → energy/macros stuck at 0. Fix: `cofidFloorNutrition(text)` estimates kcal+macros from the food name; `dayNutrition`'s floor now backfills MACROS too (not just micros); the header energy ring + macro bars + per-meal kcal read via `{floor:true}` so they MOVE on log; `reLogRecent` attaches the estimate at write-time + an optimistic bump. Calories estimated (every tracker does); women's-layer micro note keeps honesty where it matters. **LIVE-VERIFIED @390px:** logged a recent (salmon) → energy **518 → 1013** instantly; tapped +250 ml → hydration **0 → 250**; both **persisted on reload**. Screenshots `logging-bug-before_20260614.png` / `logging-bug-after_20260614.png`.
 - **(2) DIRECT-ON-CARD interaction model (less tap-stress).** Primary action happens inline on the card, sheet reserved for genuinely dense flows (full search/edit/generate): inline **+250/+500 ml water** quick-add on Today (optimistic, no sheet); suggested-dinner **whole-row tap LOGS it** ("tap to log", "see plan" is the small secondary); recents chips already log directly. (Halli's call + my agreement: inline-first is right; overlay is the exception.)
