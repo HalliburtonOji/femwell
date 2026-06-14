@@ -1899,12 +1899,15 @@ function PreviewsTab() {
 
       <SectionLabel>Hub-style demos — rich header + big sliding cards (the live Nutrition direction, as one design system)</SectionLabel>
       <div style={{ display: "flex", flexDirection: "column", gap: 10, marginTop: 8 }}>
-        <PreviewLink slug="NutritionHubDemo" accent={T.gold}
-          title="Nutrition — Hub style (header + big sliding cards)"
-          note="Daily-Hub plate summary header (greeting · energy ring · macro bars · Jess) + a horizontal slider of LARGE cards, one feature each (Log/Today/Plan/Recipes/Shop/Progress/Insights)." />
         <PreviewLink slug="JournalHubDemo" accent={T.blush}
-          title="Journal — Hub style (header + big sliding cards)"
-          note="Streak-free reflection header (phase · Jess prompt · entries this week) + the SAME big-sliding-card language: Write/Echo/Witness/Twin/Insights/On-This-Day. Built to match Nutrition as one system." />
+          title="Journal — Hub style (rich header + ALL features)"
+          note="RICH reflection header (phase · mood sparkline + how-the-week-felt · entries/last-entry/phase stats · Jess prompt card · On-This-Day peek) + big sliding cards for the FULL feature set: Write · Echo Wall · Witness · Phase Twin · Insights · On This Day · Sealed Letters · Threads · Cycle Mirror · Burn." />
+        <PreviewLink slug="CommunityHubDemo" accent={T.sage}
+          title="Community — Hub style (rich header + all rooms)"
+          note="Rich Community header (season/circle · Jess welcome · Question of the Day · invite) + big sliding cards for every surface: QOTD · Lounge · Echo Wall · Lighter Side (games) · Library · Circles · Love · Money & Work · Style · Health Room · Talk It Out." />
+        <PreviewLink slug="NutritionHubDemo" accent={T.gold}
+          title="Nutrition — Hub style (reference; the live page already uses this)"
+          note="Reference only — the live Nutrition page is already this style. Daily-Hub plate header + big sliding cards (Log/Today/Plan/Recipes/Shop/Progress/Insights)." />
       </div>
     </div>
   );

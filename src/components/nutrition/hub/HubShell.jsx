@@ -117,7 +117,9 @@ export function SurfaceCard({ cardW, label, blurb, accent = T.gold, onOpen, prim
       style={{
         scrollSnapAlign: "center", flex: `0 0 ${cardW}px`, width: cardW,
         background: T.paperHi, border: `1px solid ${T.paperDeep}`, borderRadius: 20,
-        padding: 20, display: "flex", flexDirection: "column", height: 528, maxHeight: "74vh",
+        // stay BIG (minHeight), only scroll the body when content genuinely exceeds a tall
+        // safety cap — never a shrunk fixed height.
+        padding: 20, display: "flex", flexDirection: "column", minHeight: 528, maxHeight: "84vh",
         boxShadow: "0 10px 26px -18px rgba(11,8,5,0.5)",
       }}
     >
