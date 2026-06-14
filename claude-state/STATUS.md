@@ -1,6 +1,27 @@
 # FEMWELL — CANONICAL STATUS INDEX (read first · updated 2026-06-14)
 **This file is the single source of truth AND the index to every plan doc. If anything else disagrees, this wins.** (The long ship-log history continues below the index.)
 
+## 🪮 HEADER FIX + 🎴 HUB-STYLE DEMOS (Journal + Nutrition, one design system) — SHIPPED + SCREENSHOT-PROVEN (2026-06-14) — live `index-DwrUKgcm.js` · commits `a2bd43b` + `7c0aa0e`
+- **(1) Squeezed /Nutrition header FIXED.** The greeting shared a row with the Jump-to pill + day stepper → it wrapped into a cramped 4-line column AND rendered the raw handle "ojihalliburton57". Now: controls (Jump-to left, day stepper right) on their OWN full-width row; the greeting on its OWN full-width line. `firstNameOf` rejects handle-like names (digits / >14 chars / equals the email local-part) → returns null → shows just **"Good afternoon · Reproductive years"** (no username, ever). SCREENSHOT `nutrition-header-fixed_20260614.png`.
+- **(3) HUB-STYLE DEMOS — Journal + Nutrition in ONE design language** (Halli's leaning direction: rich summary header + big horizontal sliding cards, the live Nutrition hub style). New shared `src/pages/hubDemoKit.jsx` (rich header slot + horizontal scroll-snap slider of LARGE one-feature cards + a label rail + dots/arrows). `NutritionHubDemo` (Daily-Hub plate header + Log/Today/Plan/Recipes/Shop/Progress/Insights) and `JournalHubDemo` (streak-free reflection header + Write/Echo/Witness/Twin/Insights/On-This-Day) read as one system. Routes **/NutritionHubDemo + /JournalHubDemo**, linked from FoundersOS → Previews. Self-contained mock data, FemWell editorial, no emoji/scoreboards. Demos to pick from — NOT live swaps. SCREENSHOTS `hubdemo-nutrition_20260614.png` + `hubdemo-journal_20260614.png`.
+- Build+eslint green. Includes an automated base44 package bump (`c4b1238`) picked up on rebase. Deploy: `index-DA-esXxg.js` → **`index-DwrUKgcm.js`**.
+
+## 📋 NUTRITION PAGE — WHAT'S LEFT (precise, ~88% complete) — as of 2026-06-14
+Honest remaining-work list for Halli to relay. The nutrition page itself (the rebuild) is ~88%; the *cross-app* ties beyond nutrition are thinner.
+- **Within-page polish (~12%):**
+  1. **Richer photo-to-recipe** — photo logging works (gpt-4o-mini vision → editable draft), but "snap → here's a recipe to cook from it" isn't built.
+  2. **More CoFID foods** — the floor covers ~85 common UK foods; less-common/branded/composite dishes (e.g. "katsu curry", "pad thai") won't match → no micro estimate for those. Expand the table over time.
+  3. **Deeper cycle memory** — cycle-aware nudges are qualitative + current-phase only; no across-cycle learning ("you tend to crave X in your luteal phase") yet.
+  4. **Empty-state polish** — a brand-new user with zero logs sees several honest "nothing yet" cards; could be warmer/more guided.
+- **Cross-APP connectivity beyond nutrition (~20% → still the thinnest seam):**
+  5. **Nutrition ↔ Journal** — Progress correlates food×mood/energy from DailyCheckins (one-directional read). No "log how this meal made you feel" bridge INTO the journal, and the journal doesn't surface nutrition context.
+  6. **Nutrition ↔ Planner/Today** — the hub day-stepper is local; not yet wired to a single app-wide "Today/Planner" so a meal logged in Nutrition shows on the main Today timeline.
+  7. **Nutrition ↔ Doctor-Export** — the GP/doctor-ready export doesn't yet include a nutrition summary (energy/iron/protein trends, the women's-layer leans) for an appointment.
+- **Known rough edges (all currently acceptable / mitigated):**
+  8. **Generation latency** — a 7-day plan takes ~35–45s on gpt-4o-mini; mitigated with slimmed output + a 60s guard + an honest "up to a minute" note, but it's still a slow moment (could move to a faster model or background job).
+  9. **Plan-cell "Log today" / "you loved this"** only render on a populated plan / for genuinely-loved meals (correct, but invisible until there's data).
+  10. **CoFID estimates are generic portions**, not the user's exact plate — labelled as estimates, but precision is inherently limited without exact logging.
+
 ## 🧪 STREAM A SEAM 5 — UK CoFID LAB-GRADE MICRONUTRIENT FLOOR — SHIPPED + SCREENSHOT-PROVEN (2026-06-14) — live `index-DA-esXxg.js` · commit `e0cd33c`
 - **The women's layer is now data-driven even for plainly-typed meals.** New `src/utils/cofid.js` = a curated UK food-composition table (~85 common foods — greens/pulses/meat/fish/dairy/grains/nuts — per-100g iron·folate·calcium·fibre + macros, from McCance & Widdowson / CoFID, Crown copyright, public domain) + a length-priority matcher: `cofidFloorMicros("lentil & spinach soup, wholemeal roll")` → resolves spinach + lentils + bread at typical UK portions (iron 9.6mg, folate 323µg…). Pure, no network — the table IS the local cache.
 - **Wired as a FLOOR into the spine (read-time, retroactive, no writes):** `dayNutrition`/`rangeNutrition` take `{floor:true}`; `mealMicros` backfills micros (+ fibre) NOT backed by a real logged value from CoFID, flagged `estimated` (never counted as `known`). `UnifiedInsightsTab` opts in (`rangeNutrition(week,7,{floor:true})`) + shows an honest **"Some figures are estimated from typical UK food-composition values (CoFID)…"** note when the floor contributed. **The hub header stays real-only (no floor)** so the headline iron count is never overstated.
