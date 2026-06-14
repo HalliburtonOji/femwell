@@ -23,14 +23,14 @@ const CARD_VW = 0.86;   // each big card ~86% of the column → a peek of the ne
 function BigCard({ card, w }) {
   const Icon = card.icon;
   return (
-    <section style={{
+    <section className="hd-card" style={{
       scrollSnapAlign: "center", flex: `0 0 ${w}px`, width: w,
       background: T.paperHi, border: `1px solid ${T.paperDeep}`, borderRadius: 26,
       boxShadow: "0 18px 44px -28px rgba(33,26,18,0.5), inset 0 1px 0 rgba(255,253,247,0.7)",
-      padding: 18, display: "flex", flexDirection: "column", minHeight: 430, position: "relative", overflow: "hidden",
+      padding: 18, display: "flex", flexDirection: "column", height: 470, maxHeight: "72vh", position: "relative", overflow: "hidden",
     }}>
       <div aria-hidden style={{ position: "absolute", top: 0, left: 0, right: 0, height: 78, borderRadius: "26px 26px 0 0", background: `linear-gradient(${card.accent}12, ${card.accent}00)`, pointerEvents: "none" }} />
-      <div style={{ display: "flex", alignItems: "flex-start", gap: 12, marginBottom: 14 }}>
+      <div style={{ display: "flex", alignItems: "flex-start", gap: 12, marginBottom: 14, flex: "none" }}>
         <span style={{
           width: 44, height: 44, borderRadius: 13, flex: "none", display: "inline-flex",
           alignItems: "center", justifyContent: "center",
@@ -47,7 +47,9 @@ function BigCard({ card, w }) {
           )}
         </div>
       </div>
-      <div style={{ flex: 1, minHeight: 0, display: "flex", flexDirection: "column", gap: 10 }}>
+      {/* long content scrolls WITHIN the card (Insights, long lists) instead of clipping */}
+      <div className="hd-card-body" style={{ flex: 1, minHeight: 0, overflowY: "auto", display: "flex", flexDirection: "column", gap: 10, scrollbarWidth: "none" }}>
+        <style>{`.hd-card .hd-card-body::-webkit-scrollbar{display:none}`}</style>
         {card.render()}
       </div>
     </section>
