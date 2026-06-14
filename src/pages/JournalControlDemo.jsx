@@ -1,328 +1,202 @@
-// JournalControlDemo — "Control Center" concept reinterpreted for the JOURNAL page.
+// JournalControlDemo — Control-Center concept, CORRECTED to Halli's spec.
 //
-// Apple's iOS Control Center music/AirPlay card gives us the SHAPE, not the skin:
-//   · a slim summary HEADER at the very top (the page's "now playing" state)
-//   · beneath it, a BIG full-screen-covering rounded CARD that floats over a softly
-//     DIMMED backdrop — the panel
-//   · inside the panel, the page's surfaces live as a 2-COLUMN GRID of large rounded
-//     cards that scroll-snap horizontally, with a PEEK of the next column at the right
-//   · a vertical QUICK-ACTION / jump RAIL pinned on the RIGHT edge of the panel
+// VERTICAL snap slider, ONE feature per FULL-COVER card. A summary header at top,
+// then swipe UP through: Write · Echo Wall · Witness · Phase Twin · Insights ·
+// On This Day — each its own full-screen card holding that one surface richly
+// inline. FemWell editorial (cream/plum, Ephesis/Cormorant, Lucide). No grid, no
+// Apple dark glass, no emoji.
 //
-// We translate Apple's dark translucent glass into FemWell EDITORIAL: cream/plum paper,
-// Ephesis (script) + Cormorant, Lucide/SVG icons, soft shadows + generous rounding.
-// NO Apple dark glass, NO emoji.
-//
-// Self-contained DEMO: useState/useEffect ONLY. No base44, no entities, no network,
-// no props. Mock data inline. Brand-pure: T tokens + Editorial primitives.
-import { useState } from "react";
+// Self-contained DEMO: useState only, mock data inline.
 import {
   PenLine, Megaphone, HeartHandshake, Users, Sparkles, CalendarHeart,
-  Mail, Flame, MessagesSquare, Feather, Eye, ArrowUpRight,
+  Feather, MessageSquareText, Clock, ArrowRight,
 } from "lucide-react";
-import {
-  T, SERIF, UI, Eyebrow, Rule, Script, Hand, InkFilter,
-  useEditorialFonts, PAPER_BG,
-} from "@/components/journal/Editorial";
-
-const COL = 430; // phone column
+import { T, SERIF, UI, Eyebrow, Script, Hand } from "@/components/journal/Editorial";
+import ControlCenter, { Action, Tag, Inset } from "./controlCenterKit";
 
 // ── mock "today" state ───────────────────────────────────────────────────────
-const ME = { phase: "Luteal", day: 22, entriesWeek: 4 };
-const JESS_PROMPT =
-  "The luteal pull turns you inward — let the page hold what you'd rather not say aloud.";
+const ME = { phase: "Luteal", day: 22, entriesWeek: 4, lastEntry: "2 days ago" };
+const JESS_PROMPT = "The luteal pull turns you inward — let the page hold what you'd rather not say aloud.";
 const BLOSSOM = "What's been quietly growing in you this week?";
+const MODES = ["Write", "Guided", "One-line", "Voice", "Burn"];
 
-// ── the grid surfaces (large rounded cards, 2-col, peek) ─────────────────────
-const SURFACES = [
-  {
-    id: "write", title: "Write", script: true, icon: PenLine, accent: T.crimson,
-    essence: "Compose today's entry — unhurried, unjudged.",
-    stat: "Last entry · 2 days ago",
-  },
-  {
-    id: "echo", title: "Echo Wall", icon: Megaphone, accent: T.gold,
-    essence: "Share one line into the quiet of others.",
-    stat: "37 echoes resonating now",
-  },
-  {
-    id: "witness", title: "Witness", icon: HeartHandshake, accent: T.sage,
-    essence: "Hold space for a stranger's single line.",
-    stat: "3 lines waiting to be held",
-  },
-  {
-    id: "twin", title: "Phase Twin", icon: Users, accent: T.gold,
-    essence: "A woman in luteal, day 22 — same tide as you.",
-    stat: "Paired · wrote an hour ago",
-  },
-  {
-    id: "insights", title: "Insights", icon: Sparkles, accent: T.crimson,
-    essence: "Gentle patterns Jess noticed in your pages.",
-    stat: "Tenderness peaks pre-bleed",
-  },
-  {
-    id: "onthisday", title: "On This Day", icon: CalendarHeart, accent: T.sage,
-    essence: "What you wrote a year ago today.",
-    stat: "June 14, 2025 · one entry",
-  },
-  {
-    id: "sealed", title: "Sealed Letters", icon: Mail, accent: T.gold,
-    essence: "Notes to a future you, not yet opened.",
-    stat: "2 sealed · 1 opens in autumn",
-  },
-  {
-    id: "burn", title: "Burn Mode", icon: Flame, accent: T.crimson,
-    essence: "Write it, release it — nothing is kept.",
-    stat: "Ash, never archive",
-  },
-  {
-    id: "threads", title: "Threads", icon: MessagesSquare, accent: T.sage,
-    essence: "Follow a feeling across many entries.",
-    stat: "5 threads woven",
-  },
+const ECHOES = [
+  { line: "Tired in a way sleep doesn't fix. Naming it helps.", held: 12, phase: "Luteal" },
+  { line: "Said no to something today and the sky didn't fall.", held: 21, phase: "Follicular" },
+  { line: "Some days the win is just a glass of water and a deep breath.", held: 9, phase: "Luteal" },
 ];
-
-// ── right jump rail items (quick jumps) ──────────────────────────────────────
-const RAIL = [
-  { id: "write", label: "Write", icon: PenLine },
-  { id: "echo", label: "Echo", icon: Megaphone },
-  { id: "witness", label: "Witness", icon: HeartHandshake },
-  { id: "insights", label: "Insights", icon: Sparkles },
-  { id: "today", label: "Today", icon: CalendarHeart },
+const WITNESS_LINE = { line: "I keep apologising for taking up space. I'm trying to stop.", phase: "Ovulatory", waited: "8 min" };
+const TWIN = { line: "The quiet before my bleed always feels like this — heavy, then clear.", when: "an hour ago" };
+const PATTERNS = [
+  { title: "Tenderness peaks pre-bleed", detail: "Your softest entries cluster in the days before your period." },
+  { title: "Mornings carry the weight", detail: "You write longest before 9am — the page holds the early hours." },
+  { title: "Gratitude follows rest", detail: "Calmer days in your log tend to follow a good night's sleep." },
 ];
+const ONTHISDAY = { date: "June 14, 2025", excerpt: "I didn't think I'd make it through that week — and here I am, a year on, writing in the morning light with the window open." };
 
-// ── one large rounded grid card ──────────────────────────────────────────────
-function GridCard({ surface, active, onJump }) {
-  const Icon = surface.icon;
+// ── per-feature card bodies ─────────────────────────────────────────────────
+function WriteBody() {
   return (
-    <button
-      onClick={() => onJump(surface.id)}
-      style={{
-        scrollSnapAlign: "start", flex: "0 0 auto", width: "100%",
-        textAlign: "left", cursor: "pointer",
-        background: T.paperHi,
-        border: `1px solid ${active ? surface.accent : T.paperDeep}`,
-        borderRadius: 22, padding: "16px 15px 15px",
-        minHeight: 188, display: "flex", flexDirection: "column",
-        boxShadow: active
-          ? `0 14px 30px -20px rgba(11,8,5,0.6), inset 0 0 0 1px ${surface.accent}22`
-          : "0 10px 24px -20px rgba(11,8,5,0.5)",
-        transition: "border-color .2s, box-shadow .2s",
-      }}
-    >
-      {/* icon disc */}
-      <span style={{
-        width: 38, height: 38, borderRadius: 999, display: "inline-flex",
-        alignItems: "center", justifyContent: "center", background: T.wax,
-        border: `1px solid ${T.paperDeep}`, marginBottom: 11,
-      }}>
-        <Icon size={18} color={surface.accent} strokeWidth={1.8} />
-      </span>
-
-      {/* title — script for Write, serif elsewhere */}
-      {surface.script ? (
-        <Script size={28} style={{ marginBottom: 5 }}>{surface.title}</Script>
-      ) : (
-        <div style={{ fontFamily: SERIF, fontSize: 21, fontWeight: 600, color: T.ink, lineHeight: 1.1, marginBottom: 6 }}>
-          {surface.title}
-        </div>
-      )}
-
-      {/* one-line essence */}
-      <div style={{ fontFamily: SERIF, fontSize: 14, fontStyle: "italic", color: T.muted, lineHeight: 1.32, flex: 1 }}>
-        {surface.essence}
+    <>
+      <div style={{ display: "flex", gap: 9, alignItems: "flex-start" }}>
+        <Feather size={15} color={T.crimson} style={{ marginTop: 4, flex: "none" }} />
+        <Hand size={16} color={T.inkSoft}>{JESS_PROMPT}</Hand>
       </div>
+      <Inset style={{ marginTop: 2 }}>
+        <Eyebrow mb={6}>Today's blossom</Eyebrow>
+        <div style={{ fontFamily: SERIF, fontSize: 18, fontStyle: "italic", color: T.ink, lineHeight: 1.3 }}>{BLOSSOM}</div>
+        <div style={{ marginTop: 12, height: 1, background: T.paperDeep }} />
+        <div style={{ marginTop: 10, fontFamily: SERIF, fontSize: 14, color: T.paperDeep, fontStyle: "italic" }}>start writing here…</div>
+      </Inset>
+      <Eyebrow mb={6} mt={4}>How would you like to write?</Eyebrow>
+      <div style={{ display: "flex", flexWrap: "wrap", gap: 7 }}>
+        {MODES.map((m) => (
+          <span key={m} style={{ fontFamily: UI, fontSize: 11, fontWeight: 600, color: T.inkSoft, background: T.paper, border: `1px solid ${T.paperDeep}`, borderRadius: 999, padding: "6px 13px" }}>{m}</span>
+        ))}
+      </div>
+      <div style={{ fontFamily: UI, fontSize: 10.5, color: T.muted, marginTop: 4 }}>Last entry · {ME.lastEntry}</div>
+      <Action accent={T.crimson}><PenLine size={15} /> Compose entry</Action>
+    </>
+  );
+}
 
-      {/* mock stat / preview line */}
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, marginTop: 12, paddingTop: 10, borderTop: `1px solid ${T.paperDeep}` }}>
-        <span style={{ fontFamily: UI, fontSize: 9.5, fontWeight: 700, letterSpacing: 0.5, textTransform: "uppercase", color: surface.accent }}>
-          {surface.stat}
+function EchoBody() {
+  return (
+    <>
+      <Hand size={14} color={T.muted} style={{ paddingLeft: 2 }}>Share one line into the quiet of others — anonymous, gone by morning.</Hand>
+      <div style={{ display: "flex", flexDirection: "column", gap: 9 }}>
+        {ECHOES.map((e, i) => (
+          <Inset key={i}>
+            <div style={{ fontFamily: SERIF, fontSize: 15.5, color: T.ink, fontStyle: "italic", lineHeight: 1.3 }}>“{e.line}”</div>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: 8 }}>
+              <Tag accent={T.gold}>{e.phase}</Tag>
+              <span style={{ display: "inline-flex", alignItems: "center", gap: 6, fontFamily: UI, fontSize: 10.5, color: T.muted }}>
+                <HeartHandshake size={13} color={T.crimson} /> {e.held} held
+              </span>
+            </div>
+          </Inset>
+        ))}
+      </div>
+      <Action accent={T.gold}><Megaphone size={15} /> Share a line</Action>
+    </>
+  );
+}
+
+function WitnessBody() {
+  return (
+    <>
+      <Hand size={14} color={T.muted} style={{ paddingLeft: 2 }}>Hold space for one stranger's single line. No reply — just presence.</Hand>
+      <Inset style={{ background: T.dusk, border: "none", padding: 18, marginTop: 4 }}>
+        <Eyebrow mb={10} color={T.blush}>Someone in {WITNESS_LINE.phase.toLowerCase()} wrote</Eyebrow>
+        <div style={{ fontFamily: SERIF, fontSize: 19, fontStyle: "italic", color: T.paper, lineHeight: 1.35 }}>“{WITNESS_LINE.line}”</div>
+        <div style={{ fontFamily: UI, fontSize: 10, color: T.blush, marginTop: 12, letterSpacing: 0.4 }}>waiting {WITNESS_LINE.waited} to be held</div>
+      </Inset>
+      <div style={{ display: "flex", alignItems: "center", gap: 7, fontFamily: SERIF, fontSize: 13, fontStyle: "italic", color: T.muted, marginTop: 2 }}>
+        <Clock size={13} /> 3 more lines waiting tonight
+      </div>
+      <Action accent={T.sage}><HeartHandshake size={15} /> Hold this</Action>
+    </>
+  );
+}
+
+function TwinBody() {
+  return (
+    <>
+      <Inset style={{ display: "flex", alignItems: "center", gap: 12 }}>
+        <span style={{ width: 44, height: 44, borderRadius: 999, flex: "none", display: "inline-flex", alignItems: "center", justifyContent: "center", background: T.wax, border: `1px solid ${T.paperDeep}` }}>
+          <Users size={20} color={T.gold} />
         </span>
-        <ArrowUpRight size={14} color={T.muted} />
-      </div>
-    </button>
-  );
-}
-
-// ── the right-pinned vertical jump rail ──────────────────────────────────────
-function JumpRail({ active, onJump }) {
-  return (
-    <div style={{
-      flex: "none", width: 52, display: "flex", flexDirection: "column",
-      alignItems: "center", gap: 12, paddingTop: 4,
-    }}>
-      {RAIL.map((r) => {
-        const Icon = r.icon;
-        const on = active === r.id;
-        return (
-          <button
-            key={r.id}
-            onClick={() => onJump(r.id)}
-            aria-label={r.label}
-            title={r.label}
-            style={{
-              display: "inline-flex", flexDirection: "column", alignItems: "center", gap: 4,
-              background: "transparent", border: "none", padding: 0, cursor: "pointer",
-            }}
-          >
-            <span style={{
-              width: 40, height: 40, borderRadius: 999, display: "inline-flex",
-              alignItems: "center", justifyContent: "center",
-              background: on ? T.ink : T.paperHi,
-              border: `1px solid ${on ? T.ink : T.paperDeep}`,
-              boxShadow: on ? "0 8px 18px -12px rgba(11,8,5,0.7)" : "none",
-              transition: "background .2s, border-color .2s",
-            }}>
-              <Icon size={17} color={on ? T.paper : T.inkSoft} strokeWidth={1.8} />
-            </span>
-            <span style={{
-              fontFamily: UI, fontSize: 8, fontWeight: 700, letterSpacing: 0.4,
-              textTransform: "uppercase", color: on ? T.ink : T.muted,
-            }}>
-              {r.label}
-            </span>
-          </button>
-        );
-      })}
-    </div>
-  );
-}
-
-// ── page ─────────────────────────────────────────────────────────────────────
-export default function JournalControlDemo() {
-  useEditorialFonts();
-  const [active, setActive] = useState("write");
-
-  // a rail/grid tap just spotlights the surface (demo — no navigation)
-  const onJump = (id) => setActive(RAIL.some((r) => r.id === id) || SURFACES.some((s) => s.id === id) ? id : active);
-
-  return (
-    <div style={{ ...PAPER_BG, minHeight: "100vh", fontFamily: SERIF, color: T.ink, paddingBottom: 48 }}>
-      <InkFilter />
-
-      {/* mock-data banner (exact spec) */}
-      <div style={{ background: T.ink, color: T.paper, fontFamily: UI, fontSize: 10.5, letterSpacing: 0.4, textAlign: "center", padding: "6px 10px" }}>
-        Journal · Control-Center concept — mock data
-      </div>
-
-      <div style={{ maxWidth: COL, margin: "0 auto", padding: "0 16px" }}>
-
-        {/* ── HEADER · the "now playing" summary — A publication of one ── */}
-        <header style={{ padding: "20px 4px 16px" }}>
-          <Eyebrow mb={6}>A publication of one</Eyebrow>
-          <Script size={42} style={{ marginBottom: 4 }}>The Daily Page</Script>
-
-          {/* phase / day + entries-this-week */}
-          <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap", marginBottom: 12 }}>
-            <span style={{ fontFamily: UI, fontSize: 10.5, fontWeight: 700, letterSpacing: 0.6, textTransform: "uppercase", color: T.crimson }}>
-              {ME.phase} · Day {ME.day}
-            </span>
-            <span style={{ width: 3, height: 3, borderRadius: 999, background: T.paperDeep }} />
-            <span style={{ fontFamily: UI, fontSize: 10.5, fontWeight: 700, letterSpacing: 0.6, textTransform: "uppercase", color: T.muted }}>
-              {ME.entriesWeek} entries this week
-            </span>
-          </div>
-
-          {/* Jess phase-prompt line */}
-          <div style={{ display: "flex", gap: 9 }}>
-            <Feather size={15} color={T.sage} strokeWidth={1.8} style={{ flex: "none", marginTop: 3 }} />
-            <Hand size={16} color={T.inkSoft}>{JESS_PROMPT}</Hand>
-          </div>
-
-          {/* gentle "what's blossoming" prompt */}
-          <Rule mt={14} mb={10} c={T.paperDeep} />
-          <div style={{ fontFamily: SERIF, fontSize: 14, fontStyle: "italic", color: T.muted }}>
-            {BLOSSOM}
-          </div>
-        </header>
-
-        {/* ── THE COVERING CARD over a DIMMED backdrop ──
-            The dim is a scrim layer behind the panel; the panel itself is a big
-            soft-shadowed rounded card that "covers" the page from here down. */}
-        <div style={{ position: "relative", paddingTop: 6 }}>
-          {/* dimmed backdrop scrim — softly darkens the paper behind the floating panel */}
-          <div
-            aria-hidden
-            style={{
-              position: "absolute", left: -16, right: -16, top: -8, bottom: -40,
-              background: "rgba(11,8,5,0.16)",
-              backdropFilter: "blur(1px)", WebkitBackdropFilter: "blur(1px)",
-              borderRadius: 0, pointerEvents: "none",
-            }}
-          />
-
-          {/* the floating panel — full-width covering rounded card */}
-          <section
-            style={{
-              position: "relative",
-              background: T.paper,
-              borderRadius: 28,
-              border: `1px solid ${T.paperDeep}`,
-              boxShadow: "0 26px 60px -28px rgba(11,8,5,0.7), 0 2px 0 rgba(255,253,247,0.5) inset",
-              padding: "18px 14px 20px",
-              minHeight: 560,
-            }}
-          >
-            {/* grab handle — the Control-Center pill */}
-            <div style={{ display: "flex", justifyContent: "center", marginBottom: 14 }}>
-              <span style={{ width: 42, height: 5, borderRadius: 999, background: T.paperDeep }} />
-            </div>
-
-            {/* panel title row */}
-            <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", padding: "0 4px", marginBottom: 4 }}>
-              <Eyebrow color={T.gold}>Your surfaces</Eyebrow>
-              <span style={{ fontFamily: UI, fontSize: 9.5, color: T.muted, letterSpacing: 0.4 }}>
-                swipe across · tap to enter
-              </span>
-            </div>
-            <Rule mb={14} c={T.paperDeep} />
-
-            {/* the body: 2-col scroll-snap GRID + right pinned RAIL */}
-            <div style={{ display: "flex", gap: 12, alignItems: "stretch" }}>
-
-              {/* GRID — horizontal scroll-snap, columns of 2, next column PEEKS */}
-              <div
-                className="jcc-grid"
-                style={{
-                  flex: 1, minWidth: 0,
-                  overflowX: "auto", scrollSnapType: "x mandatory",
-                  WebkitOverflowScrolling: "touch", scrollbarWidth: "none",
-                  paddingBottom: 4,
-                }}
-              >
-                <style>{`.jcc-grid::-webkit-scrollbar{display:none}`}</style>
-                <div
-                  style={{
-                    display: "grid",
-                    gridAutoFlow: "column",
-                    gridTemplateRows: "repeat(2, auto)",
-                    // each column is ~88% of the track so the NEXT column peeks at the right edge
-                    gridAutoColumns: "88%",
-                    gap: 12,
-                  }}
-                >
-                  {SURFACES.map((s) => (
-                    <div key={s.id} style={{ scrollSnapAlign: "start" }}>
-                      <GridCard surface={s} active={active === s.id} onJump={onJump} />
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* RIGHT JUMP RAIL — pinned vertical icon buttons */}
-              <JumpRail active={active} onJump={onJump} />
-            </div>
-
-            {/* gentle footer voice inside the panel */}
-            <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 18, padding: "0 4px" }}>
-              <Eye size={14} color={T.muted} strokeWidth={1.8} />
-              <span style={{ fontFamily: SERIF, fontSize: 13, fontStyle: "italic", color: T.muted }}>
-                Held privately. Nothing leaves this page unless you send it.
-              </span>
-            </div>
-          </section>
+        <div>
+          <div style={{ fontFamily: SERIF, fontSize: 16, fontWeight: 600, color: T.ink }}>A woman in {ME.phase.toLowerCase()}, day {ME.day}</div>
+          <div style={{ fontFamily: UI, fontSize: 10.5, color: T.muted, marginTop: 2 }}>Same tide as you · paired</div>
         </div>
+      </Inset>
+      <Eyebrow mb={4} mt={4}>She wrote {TWIN.when}</Eyebrow>
+      <Inset>
+        <div style={{ fontFamily: SERIF, fontSize: 16, fontStyle: "italic", color: T.ink, lineHeight: 1.35 }}>“{TWIN.line}”</div>
+      </Inset>
+      <Hand size={13.5} color={T.muted} style={{ paddingLeft: 2, marginTop: 2 }}>You move through the month together — never alone in a phase.</Hand>
+      <Action accent={T.gold}><ArrowRight size={15} /> Write back</Action>
+    </>
+  );
+}
 
+function InsightsBody() {
+  return (
+    <>
+      <Hand size={14} color={T.muted} style={{ paddingLeft: 2 }}>Gentle patterns Jess noticed across your pages — never a verdict.</Hand>
+      <div style={{ display: "flex", flexDirection: "column", gap: 11, marginTop: 4 }}>
+        {PATTERNS.map((p, i) => (
+          <div key={i} style={{ display: "flex", gap: 11, alignItems: "flex-start" }}>
+            <Sparkles size={15} color={T.crimson} style={{ marginTop: 3, flex: "none" }} />
+            <div>
+              <div style={{ fontFamily: SERIF, fontSize: 16, fontWeight: 600, color: T.ink, lineHeight: 1.2 }}>{p.title}</div>
+              <div style={{ fontFamily: UI, fontSize: 11.5, color: T.muted, lineHeight: 1.4, marginTop: 2 }}>{p.detail}</div>
+            </div>
+          </div>
+        ))}
       </div>
-    </div>
+    </>
+  );
+}
+
+function OnThisDayBody() {
+  return (
+    <>
+      <Eyebrow mb={6}>{ONTHISDAY.date} · one entry</Eyebrow>
+      <Inset style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "center", padding: 20 }}>
+        <Hand size={20} color={T.ink}>“{ONTHISDAY.excerpt}”</Hand>
+      </Inset>
+      <div style={{ display: "flex", alignItems: "center", gap: 7, fontFamily: SERIF, fontSize: 13, fontStyle: "italic", color: T.muted, marginTop: 2 }}>
+        <CalendarHeart size={13} /> A year ago today — look how far.
+      </div>
+      <Action accent={T.sage}><MessageSquareText size={15} /> Reflect on this</Action>
+    </>
+  );
+}
+
+// ── card set — ONE feature per full-cover card ──────────────────────────────
+const CARDS = [
+  { id: "write", title: "Write", script: true, essence: "Compose today's entry — unhurried, unjudged.", icon: PenLine, accent: T.crimson, render: WriteBody },
+  { id: "echo", title: "Echo Wall", essence: "One line into the quiet of others.", icon: Megaphone, accent: T.gold, render: EchoBody },
+  { id: "witness", title: "Witness", essence: "Hold a stranger's single line.", icon: HeartHandshake, accent: T.sage, render: WitnessBody },
+  { id: "twin", title: "Phase Twin", essence: "Someone in the same tide as you.", icon: Users, accent: T.gold, render: TwinBody },
+  { id: "insights", title: "Insights", essence: "Patterns Jess noticed in your pages.", icon: Sparkles, accent: T.crimson, render: InsightsBody },
+  { id: "onthisday", title: "On This Day", essence: "What you wrote a year ago today.", icon: CalendarHeart, accent: T.sage, render: OnThisDayBody },
+];
+
+function Header() {
+  return (
+    <>
+      <Eyebrow mb={10}>YOUR JOURNAL · {ME.phase.toUpperCase()} · DAY {ME.day}</Eyebrow>
+      <Script size={42} style={{ marginBottom: 14 }}>the page is yours</Script>
+      <div style={{ display: "flex", gap: 9, alignItems: "flex-start", marginBottom: 16 }}>
+        <Feather size={15} color={T.crimson} style={{ marginTop: 5, flex: "none" }} />
+        <Hand size={17} color={T.inkSoft}>{JESS_PROMPT}</Hand>
+      </div>
+      <Inset style={{ marginTop: "auto" }}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+          <span style={{ fontFamily: SERIF, fontSize: 15, color: T.ink }}>{ME.entriesWeek} entries this week</span>
+          <span style={{ fontFamily: UI, fontSize: 10.5, color: T.muted }}>last · {ME.lastEntry}</span>
+        </div>
+      </Inset>
+    </>
+  );
+}
+
+export default function JournalControlDemo() {
+  return (
+    <ControlCenter
+      banner="Journal · Control-Center concept — mock data"
+      header={<Header />}
+      cards={CARDS}
+      footer={
+        <div style={{ textAlign: "center", padding: "6px 20px 0", flex: "none" }}>
+          <div style={{ fontFamily: SERIF, fontSize: 13, fontStyle: "italic", color: T.muted }}>
+            Locked to you. Always.
+          </div>
+        </div>
+      }
+    />
   );
 }
