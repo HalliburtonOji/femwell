@@ -52,6 +52,8 @@ import ContentPlayer from './pages/ContentPlayer';
 import CycleSettings from './pages/CycleSettings';
 import Explore from './pages/Explore';
 import Journal from './pages/Journal';
+import JournalHub from './pages/JournalHub';
+import CommunityHub from './pages/CommunityHub';
 import LifeStageCare from './pages/LifeStageCare';
 import Lifestyle from './pages/Lifestyle';
 // NOTE: the old Nutrition page (./pages/Nutrition) is intentionally NO LONGER
@@ -156,7 +158,8 @@ export const PAGES = {
     "ContentPlayer": ContentPlayer,
     "CycleSettings": CycleSettings,
     "Explore": Explore,
-    "Journal": Journal,
+    "Journal": JournalHub,
+    "JournalClassic": Journal,
     "LifeStageCare": LifeStageCare,
     "Lifestyle": Lifestyle,
     "Nutrition": NutritionHub,
@@ -180,7 +183,8 @@ export const PAGES = {
     "BookReader": BookReader,
     "FictionReader": FictionReader,
     "Track": Track,
-    "Community": Community,
+    "Community": CommunityHub,
+    "CommunityClassic": Community,
     "Planner": Planner,
     "Insights": Insights,
     "OneShotThankYou": OneShotThankYou,
