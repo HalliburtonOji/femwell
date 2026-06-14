@@ -24,7 +24,7 @@
 // stages). No cycle-syncing macros, no microbiome overclaim.
 
 import { readAiAnalysis, getMealSummary } from "@/utils/nutritionAiAnalysis";
-import { cofidFloorMicros } from "@/utils/cofid";
+import { cofidFloorMicros, cofidFloorNutrition } from "@/utils/cofid";
 
 // ── canonical FoodItem keys (doc) ──────────────────────────────────────────────
 // A FoodItem is the normalized shape every source (a logged meal item, an Open Food
@@ -188,6 +188,14 @@ function mealMicros(meal, floor = false) {
   return { iron_mg: iron, folate_ug: folate, calcium_mg: calcium, fiber_g_est, known, estimated };
 }
 
+// The food text of a meal for CoFID matching: the typed/spoken raw_text plus any
+// analysed item names. Defensive → "".
+function mealTextOf(meal) {
+  const a = readAiAnalysis(meal);
+  const items = (a && Array.isArray(a.items)) ? a.items : [];
+  return [meal?.raw_text, ...items.map((it) => it?.name)].filter(Boolean).join(" ");
+}
+
 // ── dayNutrition(meals) — THE one source of truth for a day's totals ─────────────
 // Sums macros AND micros across a day's real MealLog rows. Macros come through
 // getMealSummary (so BOTH the new `summary` and legacy `nutritional_summary` shapes
@@ -195,7 +203,7 @@ function mealMicros(meal, floor = false) {
 // mealMicros (summary-first, items-fallback). `known` flags say whether ANY real
 // value backed each nutrient this day (so the UI can stay honest about gaps).
 export function dayNutrition(meals, opts = {}) {
-  const floor = !!opts.floor;   // backfill missing micros + fibre from the UK CoFID table
+  const floor = !!opts.floor;   // backfill missing MACROS + micros from the UK CoFID table
   const rows = (meals || []).filter(Boolean);
   const totals = {
     kcal: 0, protein_g: 0, carbs_g: 0, fat_g: 0, fiber_g: 0,
@@ -205,41 +213,53 @@ export function dayNutrition(meals, opts = {}) {
       iron_mg: false, folate_ug: false, calcium_mg: false,
     },
     // which nutrients were partly filled from CoFID estimates (never counted as `known`)
-    estimated: { iron_mg: false, folate_ug: false, calcium_mg: false, fiber_g: false },
+    estimated: { kcal: false, protein_g: false, carbs_g: false, fat_g: false, fiber_g: false, iron_mg: false, folate_ug: false, calcium_mg: false },
   };
   if (rows.length === 0) return totals;
 
   for (const m of rows) {
     const s = getMealSummary(m).summary || {};
-    const kcal = num(s.calories);
-    const protein = num(s.protein_g);
-    const carbs = num(s.carbs_g);
-    const fat = num(s.fat_g);
-    const fiber = num(s.fiber_g);
+    let kcal = num(s.calories);
+    let protein = num(s.protein_g);
+    let carbs = num(s.carbs_g);
+    let fat = num(s.fat_g);
+    let fiber = num(s.fiber_g);
+    // real-value flags BEFORE any floor backfill (so `known` always means real data)
+    if (kcal > 0) totals.known.kcal = true;
+    if (protein > 0) totals.known.protein_g = true;
+    if (fiber > 0) totals.known.fiber_g = true;
+
+    const micros = mealMicros(m, false);   // REAL micros only; floor handled below in one place
+    let iron = micros.iron_mg, folate = micros.folate_ug, calcium = micros.calcium_mg;
+    if (micros.known.iron_mg) totals.known.iron_mg = true;
+    if (micros.known.folate_ug) totals.known.folate_ug = true;
+    if (micros.known.calcium_mg) totals.known.calcium_mg = true;
+
+    // ── CoFID FLOOR — backfill any nutrient with NO real logged value, from the food
+    // names in the meal text. Calories/macros are fine to estimate (every tracker does);
+    // we just flag what was estimated so the UI can stay honest where it matters (micros).
+    if (floor) {
+      const fn = cofidFloorNutrition(mealTextOf(m));
+      if (fn) {
+        if (kcal === 0 && fn.kcal > 0) { kcal = fn.kcal; totals.estimated.kcal = true; }
+        if (protein === 0 && fn.protein_g > 0) { protein = fn.protein_g; totals.estimated.protein_g = true; }
+        if (carbs === 0 && fn.carbs_g > 0) { carbs = fn.carbs_g; totals.estimated.carbs_g = true; }
+        if (fat === 0 && fn.fat_g > 0) { fat = fn.fat_g; totals.estimated.fat_g = true; }
+        if (fiber === 0 && fn.fiber_g > 0) { fiber = fn.fiber_g; totals.estimated.fiber_g = true; }
+        if (!micros.known.iron_mg && fn.iron_mg > 0) { iron = fn.iron_mg; totals.estimated.iron_mg = true; }
+        if (!micros.known.folate_ug && fn.folate_ug > 0) { folate = fn.folate_ug; totals.estimated.folate_ug = true; }
+        if (!micros.known.calcium_mg && fn.calcium_mg > 0) { calcium = fn.calcium_mg; totals.estimated.calcium_mg = true; }
+      }
+    }
+
     totals.kcal += kcal;
     totals.protein_g += protein;
     totals.carbs_g += carbs;
     totals.fat_g += fat;
     totals.fiber_g += fiber;
-    if (kcal > 0) totals.known.kcal = true;
-    if (protein > 0) totals.known.protein_g = true;
-    if (fiber > 0) totals.known.fiber_g = true;
-
-    const micros = mealMicros(m, floor);
-    totals.iron_mg += micros.iron_mg;
-    totals.folate_ug += micros.folate_ug;
-    totals.calcium_mg += micros.calcium_mg;
-    if (micros.known.iron_mg) totals.known.iron_mg = true;
-    if (micros.known.folate_ug) totals.known.folate_ug = true;
-    if (micros.known.calcium_mg) totals.known.calcium_mg = true;
-    if (micros.estimated.iron_mg) totals.estimated.iron_mg = true;
-    if (micros.estimated.folate_ug) totals.estimated.folate_ug = true;
-    if (micros.estimated.calcium_mg) totals.estimated.calcium_mg = true;
-    // fibre floor: only add a CoFID fibre estimate for meals that logged no fibre
-    if (floor && fiber === 0 && micros.fiber_g_est > 0) {
-      totals.fiber_g += micros.fiber_g_est;
-      totals.estimated.fiber_g = true;
-    }
+    totals.iron_mg += iron;
+    totals.folate_ug += folate;
+    totals.calcium_mg += calcium;
   }
 
   // round for display-friendliness while keeping iron at 1dp

@@ -33,6 +33,7 @@ import {
 } from "@/components/journal/Editorial";
 import { getMealSummary, inferMealTypeFromTime } from "@/utils/nutritionAiAnalysis";
 import { dayNutrition } from "@/utils/foodModel";
+import { cofidFloorNutrition } from "@/utils/cofid";
 import { deriveTargets } from "@/utils/nutritionTargets";
 import { getCurrentCyclePhase, phaseLabel } from "@/utils/cyclePhase";
 import { withTimeout } from "@/utils/safeEntity";
@@ -182,8 +183,11 @@ function dayOfCycleOf(profile) {
 // Today's macro row (protein / fibre / iron) now reads through the ONE source of
 // truth — dayNutrition(rawDayMeals) from the nutrition spine — so the header compounds
 // the same real numbers logging persists (macros AND micros). Missing → 0, never invented.
+// floor:true so the macro row MOVES when you log — a plainly-logged meal still gets a
+// CoFID estimate (calories/macros are fine to estimate; the women's-layer micro note
+// keeps the honesty where it matters).
 function macroSums(rawDayMeals) {
-  const n = dayNutrition(rawDayMeals);
+  const n = dayNutrition(rawDayMeals, { floor: true });
   return { protein: n.protein_g, fibre: n.fiber_g, iron: n.iron_mg };
 }
 
@@ -280,14 +284,17 @@ export default function NutritionHub() {
       base44.entities.HydrationLog.filter({ user_id: u.id, day_key: key }).catch(() => []),
     ]);
     const safeMeals = (meals || []).filter(Boolean);
-    const kcal = safeMeals.reduce((sum, m) => sum + (getMealSummary(m).summary?.calories || 0), 0);
+    // ENERGY via the spine WITH the CoFID floor, so the ring moves the moment you log —
+    // a recents/text meal with no macros still gets a sensible estimated kcal.
+    const kcal = dayNutrition(safeMeals, { floor: true }).kcal;
     const hydrationMl = (hydration || []).filter(Boolean).reduce((s, l) => s + (l.amount_ml || 0), 0);
     const ordered = [...safeMeals].sort((a, b) => (a.logged_at || "").localeCompare(b.logged_at || ""));
     const lastMeal = [...ordered].reverse().find((m) => m.raw_text)?.raw_text || null;
     setSummary({ kcal: Math.round(kcal), meals: safeMeals.length, hydrationMl, lastMeal });
     // keep the raw rows (with ai_analysis) for the nutrition spine's macro/micro sums
     setDayMealRows(ordered);
-    // the day's logged meals as a calm inline list (slot · title · kcal) — all real
+    // the day's logged meals as a calm inline list (slot · title · kcal) — per-meal kcal
+    // uses the real value, else the CoFID estimate so each line shows a number too.
     setDayMeals(
       ordered
         .filter((m) => m.raw_text)
@@ -295,7 +302,7 @@ export default function NutritionHub() {
           id: m.id,
           slot: m.meal_type || "meal",
           title: m.raw_text,
-          kcal: getMealSummary(m).summary?.calories || 0,
+          kcal: dayNutrition([m], { floor: true }).kcal,
         }))
     );
   }, []);
@@ -326,6 +333,15 @@ export default function NutritionHub() {
     const text = (name || "").trim();
     if (!user || !text) return;
     const todayKey = format(new Date(), "yyyy-MM-dd");
+    // estimate energy + macros from the food name (CoFID) so the meal carries numbers —
+    // the totals move immediately and the value persists, not a zero-kcal row.
+    const est = cofidFloorNutrition(text);
+    const ai_analysis = est ? {
+      summary: { calories: est.kcal, protein_g: est.protein_g, carbs_g: est.carbs_g, fat_g: est.fat_g, fiber_g: est.fiber_g, iron_mg: est.iron_mg, folate_ug: est.folate_ug, calcium_mg: est.calcium_mg },
+      estimated: true,
+    } : undefined;
+    // optimistic: move the header now, reconcile after the write
+    if (est) setSummary((s) => ({ ...s, kcal: Math.round((s.kcal || 0) + est.kcal), meals: (s.meals || 0) + 1 }));
     try {
       await withTimeout(
         base44.entities.MealLog.create({
@@ -335,17 +351,37 @@ export default function NutritionHub() {
           meal_type: mealType || inferMealTypeFromTime(),
           method: "text",
           raw_text: text,
+          ai_analysis,
         }),
         6000, "save"
       );
-      toast.success("Added to today");
+      toast.success(est ? `Added — about ${est.kcal} kcal` : "Added to today");
       loadSummary(user, todayKey);
       loadRecents(user);
     } catch (err) {
       console.error("re-log recent failed:", err);
       toast.error("Couldn’t add that just now — try again.");
+      loadSummary(user, todayKey); // roll back the optimistic bump to the true total
     }
   }, [user, loadSummary, loadRecents]);
+
+  // inline water quick-add — one direct tap on the card logs it (no sheet). Optimistic.
+  const addWater = useCallback(async (ml) => {
+    if (!user || !ml) return;
+    const todayKey = format(new Date(), "yyyy-MM-dd");
+    setSummary((s) => ({ ...s, hydrationMl: (s.hydrationMl || 0) + ml })); // optimistic — moves now
+    try {
+      await withTimeout(base44.entities.HydrationLog.create({
+        user_id: user.id, day_key: todayKey, amount_ml: ml, logged_at: new Date().toISOString(), source: "quick",
+      }), 6000, "save");
+      toast.success(`+${ml} ml water`);
+      loadSummary(user, todayKey);
+    } catch (e) {
+      console.error("add water failed:", e);
+      toast.error("Couldn’t add water — try again.");
+      loadSummary(user, todayKey);
+    }
+  }, [user, loadSummary]);
 
   // a saved meal plan + its shopping list + saved recipes for the richer cards (real)
   const loadKitchen = useCallback(async (u) => {
@@ -611,27 +647,28 @@ export default function NutritionHub() {
             <UtensilsCrossed size={19} /> Log a meal
           </button>
 
-          {/* 7 · suggested · dinner — from plan / saved recipe / gentle stage idea.
-              Now one-tap loggable (plan→log→insights): the "Log it" pill creates a real
-              MealLog for tonight; the body still opens the plan/recipes surface. */}
+          {/* 7 · suggested · dinner — DIRECT-ON-CARD: the primary tap (the whole row) LOGS
+              it for tonight, no sheet. A small "see plan" link is the secondary path. */}
           {dinner ? (
             <div style={{
               display: "flex", alignItems: "center", gap: 12, width: "100%",
               background: T.paperHi, border: `1px solid ${T.paperDeep}`, borderRadius: 14,
               padding: "13px 15px", marginTop: 10,
             }}>
-              <span style={{ width: 38, height: 38, borderRadius: 11, background: T.ink, color: T.paper, display: "grid", placeItems: "center", flexShrink: 0 }}>
-                <UtensilsCrossed size={17} />
-              </span>
-              <button onClick={() => openSurface(mealPlan?.plan_days?.length || mealPlan?.days?.length ? "mealgen" : "recipes")}
-                style={{ flex: 1, minWidth: 0, textAlign: "left", background: "transparent", border: "none", cursor: "pointer", padding: 0 }}>
-                <span style={{ fontFamily: UI, fontSize: 9, letterSpacing: 1, color: T.muted, textTransform: "uppercase", display: "block" }}>Suggested · dinner</span>
-                <span style={{ fontFamily: SERIF, fontSize: 17, color: T.ink, display: "block", lineHeight: 1.15 }}>{dinner.name}</span>
-                <span style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 13, color: T.muted }}>{dinner.why}</span>
-              </button>
               <button onClick={() => reLogRecent(dinner.name, "dinner")} aria-label="Log tonight's dinner"
-                style={{ flexShrink: 0, display: "inline-flex", alignItems: "center", gap: 5, background: T.ink, color: T.paper, border: "none", borderRadius: 999, padding: "8px 13px", fontFamily: UI, fontSize: 10.5, fontWeight: 700, letterSpacing: 0.4, textTransform: "uppercase", cursor: "pointer" }}>
-                <Check size={13} /> Log it
+                style={{ flex: 1, minWidth: 0, display: "flex", alignItems: "center", gap: 12, textAlign: "left", background: "transparent", border: "none", cursor: "pointer", padding: 0 }}>
+                <span style={{ width: 38, height: 38, borderRadius: 11, background: T.ink, color: T.paper, display: "grid", placeItems: "center", flexShrink: 0 }}>
+                  <Check size={18} />
+                </span>
+                <span style={{ flex: 1, minWidth: 0 }}>
+                  <span style={{ fontFamily: UI, fontSize: 9, letterSpacing: 1, color: T.muted, textTransform: "uppercase", display: "block" }}>Suggested · dinner · tap to log</span>
+                  <span style={{ fontFamily: SERIF, fontSize: 17, color: T.ink, display: "block", lineHeight: 1.15 }}>{dinner.name}</span>
+                  <span style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 13, color: T.muted }}>{dinner.why}</span>
+                </span>
+              </button>
+              <button onClick={() => openSurface(mealPlan?.plan_days?.length || mealPlan?.days?.length ? "mealgen" : "recipes")} aria-label="See in plan"
+                style={{ flexShrink: 0, fontFamily: UI, fontSize: 9.5, fontWeight: 700, letterSpacing: 0.4, textTransform: "uppercase", color: T.muted, background: "transparent", border: "none", cursor: "pointer", padding: "4px 2px" }}>
+                see plan
               </button>
             </div>
           ) : null}
@@ -690,6 +727,8 @@ export default function NutritionHub() {
                   onOpen={setOpenSheet}
                   onLog={() => setOpenLogger(true)}
                   onReLog={reLogRecent}
+                  onWater={addWater}
+                  isToday={isToday}
                 />
               </SurfaceCard>
             ))}
@@ -770,11 +809,11 @@ function navBtn(disabled) {
 // state, never a mock figure. The bottom sheet stays the "go deeper / edit" layer.
 function CardSummary({
   surface, summary, dayMeals, recents, mealPlan, shopItems, savedRecipes,
-  nutritionProfile, profile, targets, calorieTarget, hydrationTarget, kcalLeft, jess, onOpen, onLog, onReLog,
+  nutritionProfile, profile, targets, calorieTarget, hydrationTarget, kcalLeft, jess, onOpen, onLog, onReLog, onWater, isToday,
 }) {
   switch (surface.id) {
     case "log":      return <LogCard {...{ surface, recents, onLog, onReLog }} />;
-    case "today":    return <TodayCard {...{ summary, dayMeals, recents, calorieTarget, hydrationTarget, kcalLeft, onLog }} />;
+    case "today":    return <TodayCard {...{ summary, dayMeals, recents, calorieTarget, hydrationTarget, kcalLeft, onLog, onWater, isToday }} />;
     case "plan":     return <PlanCard {...{ nutritionProfile, profile, targets, calorieTarget }} />;
     case "recipes":  return <RecipesCard {...{ savedRecipes }} />;
     case "mealgen":  return <MealgenCard {...{ mealPlan }} />;
@@ -859,7 +898,7 @@ function LogCard({ surface, recents, onLog, onReLog }) {
 }
 
 // ── TODAY · the plate + logged meals + recents to re-add (all real) ──────────
-function TodayCard({ summary, dayMeals, recents, calorieTarget, hydrationTarget, kcalLeft, onLog }) {
+function TodayCard({ summary, dayMeals, recents, calorieTarget, hydrationTarget, kcalLeft, onLog, onWater, isToday }) {
   return (
     <div style={{ display: "flex", flexDirection: "column", flex: 1 }}>
       <Script size={26} style={{ marginBottom: 2 }}>Today’s plate</Script>
@@ -869,10 +908,25 @@ function TodayCard({ summary, dayMeals, recents, calorieTarget, hydrationTarget,
           : `${summary.meals} logged · ${kcalLeft} kcal of gentle room left.`}
       </Hand>
 
-      <div style={{ display: "grid", gap: 11, marginBottom: 14 }}>
+      <div style={{ display: "grid", gap: 11, marginBottom: 10 }}>
         <Glance label="Energy" value={`${summary.kcal} of ${calorieTarget} kcal`} v={summary.kcal} guide={calorieTarget} color={T.gold} />
         <Glance label="Hydration" value={`${summary.hydrationMl} of ${hydrationTarget} ml`} v={summary.hydrationMl} guide={hydrationTarget} color={T.sage} />
       </div>
+
+      {/* inline water quick-add — one direct tap logs it, no sheet (moves the bar now) */}
+      {isToday && onWater && (
+        <div style={{ display: "flex", gap: 8, marginBottom: 14 }}>
+          {[250, 500].map((ml) => (
+            <button key={ml} onClick={() => onWater(ml)} style={{
+              flex: 1, display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 6,
+              background: T.wax, border: `1px solid ${T.paperDeep}`, borderRadius: 12, padding: "9px 10px",
+              fontFamily: UI, fontSize: 11, fontWeight: 700, letterSpacing: 0.3, color: T.ink, cursor: "pointer",
+            }}>
+              <Plus size={13} color={T.sage} /> {ml} ml water
+            </button>
+          ))}
+        </div>
+      )}
 
       <Eyebrow mb={8}>Logged today</Eyebrow>
       <div style={{ display: "grid", gap: 7, marginBottom: 14 }}>

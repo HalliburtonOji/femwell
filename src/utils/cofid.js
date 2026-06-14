@@ -158,4 +158,43 @@ export function cofidFloorMicros(text) {
   return out;
 }
 
+// cofidFloorNutrition(text) → a FULL nutrient estimate (macros + micros) for ALL
+// distinct CoFID foods named in a meal text, each at its typical UK portion. Same
+// matcher as cofidFloorMicros but also sums kcal/protein/carbs/fat. Returns
+// { kcal, protein_g, carbs_g, fat_g, fiber_g, iron_mg, folate_ug, calcium_mg, foods }
+// or null when nothing matches. An ESTIMATE from reference values — flag accordingly.
+export function cofidFloorNutrition(text) {
+  const t = lc(text);
+  if (!t) return null;
+  const seen = new Set();
+  const out = { kcal: 0, protein_g: 0, carbs_g: 0, fat_g: 0, fiber_g: 0, iron_mg: 0, folate_ug: 0, calcium_mg: 0, foods: [] };
+  for (const [term, entry] of TERMS) {
+    if (seen.has(entry.name)) continue;
+    if (t.includes(term)) {
+      seen.add(entry.name);
+      const scale = (entry.portion_g || 100) / 100;
+      const p = entry.per100;
+      out.kcal += (p.kcal || 0) * scale;
+      out.protein_g += (p.protein_g || 0) * scale;
+      out.carbs_g += (p.carbs_g || 0) * scale;
+      out.fat_g += (p.fat_g || 0) * scale;
+      out.fiber_g += (p.fiber_g || 0) * scale;
+      out.iron_mg += (p.iron_mg || 0) * scale;
+      out.folate_ug += (p.folate_ug || 0) * scale;
+      out.calcium_mg += (p.calcium_mg || 0) * scale;
+      out.foods.push(entry.name);
+    }
+  }
+  if (out.foods.length === 0) return null;
+  out.kcal = Math.round(out.kcal);
+  out.protein_g = Math.round(out.protein_g);
+  out.carbs_g = Math.round(out.carbs_g);
+  out.fat_g = Math.round(out.fat_g);
+  out.fiber_g = Math.round(out.fiber_g * 10) / 10;
+  out.iron_mg = Math.round(out.iron_mg * 10) / 10;
+  out.folate_ug = Math.round(out.folate_ug);
+  out.calcium_mg = Math.round(out.calcium_mg);
+  return out;
+}
+
 export default cofidLookup;

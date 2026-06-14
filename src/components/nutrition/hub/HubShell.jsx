@@ -113,14 +113,16 @@ export function Ring({ value, guide, size = 72, label }) {
 export function SurfaceCard({ cardW, label, blurb, accent = T.gold, onOpen, primaryLabel, primaryIcon: Icon, children }) {
   return (
     <section
+      className="hub-surface-card"
       style={{
         scrollSnapAlign: "center", flex: `0 0 ${cardW}px`, width: cardW,
         background: T.paperHi, border: `1px solid ${T.paperDeep}`, borderRadius: 20,
-        padding: 20, display: "flex", flexDirection: "column", minHeight: 528,
+        padding: 20, display: "flex", flexDirection: "column", height: 528, maxHeight: "74vh",
         boxShadow: "0 10px 26px -18px rgba(11,8,5,0.5)",
       }}
     >
-      <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: 8, marginBottom: 4 }}>
+      <style>{`.hub-surface-card .hub-card-body::-webkit-scrollbar{display:none}`}</style>
+      <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: 8, marginBottom: 4, flex: "none" }}>
         <Eyebrow color={accent}>{label}</Eyebrow>
         {blurb ? (
           <span style={{ fontFamily: UI, fontSize: 9.5, letterSpacing: 0.5, color: T.muted, fontWeight: 700, textTransform: "uppercase" }}>
@@ -129,7 +131,8 @@ export function SurfaceCard({ cardW, label, blurb, accent = T.gold, onOpen, prim
         ) : null}
       </div>
       <Rule />
-      <div style={{ flex: 1, display: "flex", flexDirection: "column", marginTop: 12 }}>
+      {/* long content (Insights, long lists) scrolls WITHIN the card instead of clipping */}
+      <div className="hub-card-body" style={{ flex: 1, minHeight: 0, overflowY: "auto", display: "flex", flexDirection: "column", marginTop: 12, scrollbarWidth: "none" }}>
         {children}
       </div>
       <button
