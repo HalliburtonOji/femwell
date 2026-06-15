@@ -45,11 +45,12 @@ Any page with **multiple sections / rooms / tabs / sub-areas** (a "multi-layer" 
 ## WHEN DISPATCH (ORCHESTRATOR) RESETS:
 If you see "This session is being continued from a previous conversation that ran out of context" — you have reset. STOP. Tell the user: "I've just reset and lost workflow memory. I'm reading STATUS.md + ONBOARDING_READ_FIRST.md for the rules and current state. Ready to continue — what's next?" Then wait for instruction before doing anything.
 
-## PUBLISH WORKAROUND
-UI "Publish App" button regularly hangs on "Publishing..." because of a stale base44 preview-mode lint auto-fix loop. Deploy via direct API instead:
+## DEPLOY (one command — no Chrome, no builder)
+The UI "Publish App" button regularly hangs ("Publishing…") on a stale preview-mode lint loop. Don't use it. Deploy with:
 ```
-POST https://app.base44.com/api/apps/69a9891a6ccccc1822bbb4bc/deploy
-Authorization: Bearer <base44_access_token from localStorage>
+node scripts/deploy.mjs
 ```
-Returns 200 in ~5s. Live bundle hash flips ~60-90s later. Verify:
-`curl -s https://femwells.com/ | grep -oE 'index-[A-Za-z0-9_-]+\.js'` (hash changes when the new bundle is live) — then record that hash in STATUS.md per the BATON RULE.
+It reads the platform OAuth token from `~/.base44/auth/auth.json`, auto-refreshes it when expired, POSTs `/api/apps/<id>/deploy` (the same call Publish makes), and polls femwells.com for the bundle flip.
+- **Auth is a PLATFORM OAuth token, NOT the api_key** (api_key 401s on /deploy — it's only the SDK data API). One-time setup: `npm i -g base44 && base44 login` (confirm the device code at app.base44.com/login/device) → writes `~/.base44/auth/auth.json` (HOME, outside repo). Token lasts ~30 days + auto-refreshes; if it ever lapses, re-run `base44 login`.
+- A no-op redeploy keeps the same `index-*.js` hash (deterministic build) — that's success, not failure. Record any new hash in STATUS.md per the BATON RULE.
+- Memory: `base44-deploy-auth-mechanism.md`. (Old manual path still works: `POST app.base44.com/api/apps/<id>/deploy` with `Authorization: Bearer <platform token>`.)
