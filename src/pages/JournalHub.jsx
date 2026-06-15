@@ -473,15 +473,19 @@ export default function JournalHub() {
           )}
 
           {/* Nurture Companion presence — your living garden, grown from real engagement.
-              Tap through to its full view (/Garden). Calm, state-not-score, never dies. */}
+              An inviting, tappable card → its full view (/Garden). State-not-score, never dies. */}
           {user && (
             <button
               onClick={() => navigate(createPageUrl("Garden"))}
               style={{
-                marginTop: 16, width: "100%", display: "block", textAlign: "center", cursor: "pointer",
-                background: T.paperHi, border: `1px solid ${T.paperDeep}`, borderRadius: 18, padding: "16px 14px 18px",
+                marginTop: 16, width: "100%", display: "block", cursor: "pointer",
+                background: T.paperHi, border: `1px solid ${T.paperDeep}`, borderRadius: 18, padding: "13px 14px 16px",
               }}
             >
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 2 }}>
+                <span style={{ fontFamily: UI, fontSize: 10.5, fontWeight: 700, letterSpacing: 1, textTransform: "uppercase", color: T.muted }}>Your garden</span>
+                <span style={{ display: "inline-flex", alignItems: "center", gap: 1, fontFamily: UI, fontSize: 11, fontWeight: 600, color: T.muted }}>Tend<ChevronRight size={13} /></span>
+              </div>
               <NurtureGarden compact onOpen={() => navigate(createPageUrl("Garden"))} />
             </button>
           )}

@@ -561,8 +561,13 @@ export default function Today() {
             />
 
             {/* Nurture Companion — the app's heartbeat, grown from engagement everywhere.
-                A compact presence on the daily home; tap through to its full view (/Garden). */}
-            <a href={createPageUrl("Garden")} style={{ display: "block", textDecoration: "none", background: "var(--surface, #FBF6E6)", border: "1px solid var(--border, #E3DAC9)", borderRadius: 18, padding: "16px 14px 18px" }}>
+                An inviting, tappable presence on the daily home; the whole card opens its
+                full view (/Garden) where she can be tended, named, reshaped and shared. */}
+            <a href={createPageUrl("Garden")} style={{ display: "block", textDecoration: "none", background: "linear-gradient(180deg, var(--surface, #FBF6E6), var(--bg, #F4EDDB))", border: "1px solid var(--border, #E3DAC9)", borderRadius: 18, padding: "13px 14px 15px", boxShadow: "0 1px 0 rgba(255,255,255,0.5) inset" }}>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 2 }}>
+                <span style={{ fontFamily: "Inter, sans-serif", fontSize: 10.5, fontWeight: 700, letterSpacing: 1, textTransform: "uppercase", color: "var(--text-muted, #9B8B7A)" }}>Your garden</span>
+                <span style={{ display: "inline-flex", alignItems: "center", gap: 1, fontFamily: "Inter, sans-serif", fontSize: 11, fontWeight: 600, color: "var(--text-muted, #9B8B7A)" }}>Tend<ChevronRight size={13} /></span>
+              </div>
               <NurtureGarden compact />
             </a>
 
