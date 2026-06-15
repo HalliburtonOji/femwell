@@ -22,10 +22,18 @@ export const D = {
 const SANS = 'ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif';
 const SERIF = '"Cormorant Garamond","Georgia",serif';
 
+// A light, legible reading panel that sits on the dark FoundersOS page so the
+// editorial prose (dark ink) reads clearly. Self-contained docs that don't use
+// DocShell get the same treatment via <DocSurface> in FoundersOS.jsx.
 export function DocShell({ children }) {
   return (
-    <div style={{ background: D.page, padding: "8px 0 60px", fontFamily: SERIF, color: D.ink }}>
-      <div style={{ maxWidth: 760, margin: "0 auto", padding: "0 18px" }}>{children}</div>
+    <div style={{
+      background: D.page, color: D.ink, fontFamily: SERIF,
+      borderRadius: 16, border: "1px solid rgba(0,0,0,0.06)",
+      boxShadow: "0 2px 12px rgba(0,0,0,0.22)",
+      padding: "28px 0 52px", margin: "2px 0 8px",
+    }}>
+      <div style={{ maxWidth: 760, margin: "0 auto", padding: "0 22px" }}>{children}</div>
     </div>
   );
 }

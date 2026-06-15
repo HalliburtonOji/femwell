@@ -82,6 +82,46 @@ const ALLOWED = new Set([
 
 const TABS = ["Lab", "Previews", "Companion Vision", "Companion Vision v2", "Feature Ideas", "Brand Identity", "Nurture Companion", "Pages", "Roadmap", "Health Audit", "Nutrition Master Plan", "Nutrition Plan", "Nutrition Demos", "Community Plan", "Build Plan", "Journal Audit", "Expert Governance", "Library & Groups", "Integration Audit", "Connectivity Map", "Sharing", "Home Redesign", "Whole-Life", "Audio", "Ideas", "Strategy", "Legal", "Decisions", "Journal", "Journal Demos", "Community Demos", "Another You", "UX & Design", "Wholeness", "LGBTQ+", "Health Corner"];
 
+// Themed groups for the two-row nav rail (replaces the flat 36-tab scroll row).
+// Every tab is assigned exactly once; any tab not listed falls into "More" so
+// nothing can silently disappear if TABS changes.
+const TAB_GROUPS = [
+  { name: "Companion",       tabs: ["Companion Vision", "Companion Vision v2", "Nurture Companion"] },
+  { name: "Strategy & Ideas", tabs: ["Lab", "Ideas", "Feature Ideas", "Strategy", "Decisions", "Roadmap"] },
+  { name: "Journal",         tabs: ["Journal", "Journal Audit", "Journal Demos"] },
+  { name: "Community",       tabs: ["Community Plan", "Community Demos", "Library & Groups", "Books & Book Clubs", "Sharing"] },
+  { name: "Nutrition",       tabs: ["Nutrition Master Plan", "Nutrition Plan", "Nutrition Demos"] },
+  { name: "Health",          tabs: ["Health Audit", "Health Corner"] },
+  { name: "Brand & UX",      tabs: ["Brand Identity", "UX & Design", "Home Redesign", "Audio", "Previews", "Another You"] },
+  { name: "Whole-Life",      tabs: ["Whole-Life", "Wholeness", "LGBTQ+"] },
+  { name: "Systems",         tabs: ["Pages", "Build Plan", "Integration Audit", "Connectivity Map", "Expert Governance", "Legal"] },
+];
+// Build the visible group list, appending any unassigned tab to a "More" group.
+function buildGroups() {
+  const assigned = new Set(TAB_GROUPS.flatMap((g) => g.tabs));
+  const groups = TAB_GROUPS.map((g) => ({ name: g.name, tabs: g.tabs.filter((t) => TABS.includes(t)) }))
+    .filter((g) => g.tabs.length);
+  const orphans = TABS.filter((t) => !assigned.has(t));
+  if (orphans.length) groups.push({ name: "More", tabs: orphans });
+  return groups;
+}
+const GROUPS = buildGroups();
+const groupOf = (t) => (GROUPS.find((g) => g.tabs.includes(t)) || GROUPS[0]).name;
+
+// Light reading panel for the self-contained docs (those that don't use DocKit's
+// DocShell) so their dark ink prose reads on the dark FoundersOS page. Matches
+// DocShell's treatment. The wrapped docs supply their own centered inner column.
+function DocSurface({ children }) {
+  return (
+    <div style={{
+      background: "#ECE7DA",
+      borderRadius: 16, border: "1px solid rgba(0,0,0,0.06)",
+      boxShadow: "0 2px 12px rgba(0,0,0,0.22)",
+      padding: "18px 0 40px", margin: "2px 0 8px",
+    }}>{children}</div>
+  );
+}
+
 const IDEAS_KEY  = "femwell_ideas";
 const CHECKS_KEY = "femwell_founder_checks";
 
@@ -495,6 +535,11 @@ function FoundersInner({ user }) {
     return () => { cancelled = true; };
   }, [user?.id, user?.email]);
 
+  // Grouped nav: the active group is derived from the active tab (single source
+  // of truth). Picking a group jumps to its first tab.
+  const activeGroup = groupOf(tab);
+  const groupTabs = (GROUPS.find((g) => g.name === activeGroup) || GROUPS[0]).tabs;
+
   return (
     <FullBleed>
       {/* Fixed top bar */}
@@ -528,35 +573,61 @@ function FoundersInner({ user }) {
         </div>
       </header>
 
-      {/* Sticky tab rail */}
+      {/* Sticky grouped nav — row 1: theme groups · row 2: tabs in the active group */}
       <nav style={{
         position: "sticky", top: 78, zIndex: 29,
         backgroundColor: T.bg,
         borderBottom: `1px solid ${T.border}`,
       }}>
+        {/* Row 1 — group pills */}
         <div style={{
           maxWidth: 1100, margin: "0 auto",
           overflowX: "auto", scrollbarWidth: "none",
         }}>
+          <div style={{ display: "flex", gap: 7, padding: "10px 12px 8px" }}>
+            {GROUPS.map((g) => {
+              const on = g.name === activeGroup;
+              return (
+                <button
+                  key={g.name}
+                  onClick={() => setTab(g.tabs[0])}
+                  style={{
+                    flexShrink: 0,
+                    padding: "6px 13px", borderRadius: 999,
+                    background: on ? T.goldSoft : "transparent",
+                    color: on ? T.gold : T.textMid,
+                    border: `1px solid ${on ? T.gold : T.border}`,
+                    fontSize: 12, fontWeight: on ? 700 : 600,
+                    letterSpacing: 0.2, cursor: "pointer",
+                    whiteSpace: "nowrap", transition: "all 0.15s ease",
+                  }}
+                >{g.name}</button>
+              );
+            })}
+          </div>
+        </div>
+        {/* Row 2 — tabs within the active group */}
+        <div style={{
+          maxWidth: 1100, margin: "0 auto",
+          overflowX: "auto", scrollbarWidth: "none",
+          borderTop: `1px solid ${T.border}`,
+        }}>
           <div style={{ display: "flex", gap: 4, padding: "0 12px" }}>
-            {TABS.map((t) => {
+            {groupTabs.map((t) => {
               const active = tab === t;
               return (
                 <button
                   key={t}
                   onClick={() => setTab(t)}
                   style={{
-                    padding: "14px 16px 12px",
+                    padding: "11px 14px 10px",
                     background: "transparent",
                     border: "none",
                     color: active ? T.gold : T.textMuted,
-                    fontSize: 13.5,
-                    fontWeight: active ? 600 : 500,
-                    letterSpacing: 0.2,
-                    cursor: "pointer",
+                    fontSize: 13, fontWeight: active ? 600 : 500,
+                    letterSpacing: 0.2, cursor: "pointer",
                     borderBottom: `2px solid ${active ? T.gold : "transparent"}`,
-                    marginBottom: -1,
-                    whiteSpace: "nowrap",
+                    marginBottom: -1, whiteSpace: "nowrap",
                     transition: "color 0.15s ease",
                   }}
                 >{t}</button>
@@ -594,10 +665,10 @@ function FoundersInner({ user }) {
         {tab === "Journal"        && <JournalTab />}
         {tab === "Previews"       && <PreviewsTab />}
         {tab === "Nutrition Master Plan" && <NutritionMasterPlanDoc />}
-        {tab === "Brand Identity" && <BrandIdentityDoc />}
-        {tab === "Feature Ideas" && <FeatureIdeasDoc />}
-        {tab === "Companion Vision" && <CompanionVisionDoc />}
-        {tab === "Companion Vision v2" && <CompanionVisionV2Doc />}
+        {tab === "Brand Identity" && <DocSurface><BrandIdentityDoc /></DocSurface>}
+        {tab === "Feature Ideas" && <DocSurface><FeatureIdeasDoc /></DocSurface>}
+        {tab === "Companion Vision" && <DocSurface><CompanionVisionDoc /></DocSurface>}
+        {tab === "Companion Vision v2" && <DocSurface><CompanionVisionV2Doc /></DocSurface>}
         {tab === "Nurture Companion" && <NurtureCompanionDoc />}
         {tab === "Journal Demos"  && <JournalDemosTab />}
         {tab === "Community Demos" && <CommunityDemosTab />}
