@@ -228,56 +228,162 @@ const ghost = {
   fontFamily: UI, fontSize: 12, fontWeight: 700, letterSpacing: 0.4, textTransform: "uppercase",
 };
 
-// ── the bloom — renders BY FORM, in the phase colour with the user's identity accent;
-// opens with growth stage and breathes gently (stilled for resting + reduced-motion). ──
-function Bloom({ form, stageIdx, color, accent, resting, bright, size = 190 }) {
-  const cx = 50, cy = 42;
-  const open = Math.min(1, stageIdx / 4);
-  const petalLen = 9 + open * 16;
-  const petalW = (form.round ? 6 : 4) + open * 5;
-  const n = form.petals || 6;
-  const leafOn = stageIdx >= 1, leaf2On = stageIdx >= 2;
-  const stemTop = stageIdx === 0 ? 58 : cy + 6;
-  const petalOpacity = resting ? 0.4 : (bright ? 1 : 0.85);
+// ── the bloom — genuinely distinct artwork per FORM, drawn in the phase colour with the
+// user's identity accent, opening across five growth stages and breathing gently (stilled
+// for resting + reduced-motion). Hand-drawn SVG; no emoji, no raster. ──
+const STEM = "#73855F", STEM_HI = "#8FAF8F", LEAF = "#86A479", LEAF_DK = "#6E8A63", SOIL = "#8A7A63", PALE = "#F4EFE3";
+
+// a soft upward teardrop petal centred at (x,y), length L, width W, rotated `rot°`
+function petal(x, y, L, W, rot, fill, op, key) {
+  const d = `M${x} ${y} C ${x - W} ${y - L * 0.34}, ${x - W * 0.55} ${y - L}, ${x} ${y - L} C ${x + W * 0.55} ${y - L}, ${x + W} ${y - L * 0.34}, ${x} ${y} Z`;
+  return <path key={key} d={d} fill={fill} opacity={op} transform={`rotate(${rot} ${x} ${y})`} />;
+}
+function lighten(hex, t) {
+  try { const n = parseInt(hex.slice(1), 16); let r = (n >> 16) & 255, g = (n >> 8) & 255, b = n & 255;
+    r = Math.round(r + (255 - r) * t); g = Math.round(g + (255 - g) * t); b = Math.round(b + (255 - b) * t);
+    return `#${((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1)}`; } catch { return hex; }
+}
+
+export function Bloom({ form, stageIdx, color, accent, resting, bright, size = 190 }) {
+  const open = Math.min(1, Math.max(0, stageIdx / 4));   // 0 → 1 across the five stages
+  const seed = stageIdx === 0;
+  const op = resting ? 0.5 : (bright ? 1 : 0.92);
+  const tall = form.key === "foxglove";
+  const headY = seed ? 70 : (tall ? 60 - open * 16 : 74 - open * 38);   // flower head rises as it grows
+  const cx = 50;
+  const light = lighten(color, 0.4), deep = color;
+  const gid = `${form.key}-${color.replace("#", "")}`;          // unique-enough gradient id
+  const breath = { transformOrigin: `${cx}px ${headY}px`, animation: resting ? "none" : "fwBreath 6s ease-in-out infinite" };
+  const stemTopY = seed ? 80 : headY + (tall ? 4 : (form.fern ? 0 : 5));
+  const showStem = !seed && !form.fern;
+  const leaf1 = stageIdx >= 1, leaf2 = stageIdx >= 2;
+
   return (
     <div aria-hidden style={{ width: size, height: size, position: "relative" }}>
-      <style>{`@keyframes fwBreath{0%,100%{transform:scale(1)}50%{transform:scale(1.045)}}@media (prefers-reduced-motion:reduce){.fw-breath{animation:none!important}}`}</style>
+      <style>{`@keyframes fwBreath{0%,100%{transform:scale(1)}50%{transform:scale(1.04)}}@keyframes fwSway{0%,100%{transform:rotate(-1.5deg)}50%{transform:rotate(1.5deg)}}@media (prefers-reduced-motion:reduce){.fw-breath,.fw-sway{animation:none!important}}`}</style>
       <svg viewBox="0 0 100 100" width={size} height={size}>
-        <circle cx={cx} cy={cy} r={open * 26 + 8} fill={color} opacity={bright ? 0.16 : 0.08} />
-        <path d={`M50 86 C 49 74, 51 66, 50 ${stemTop}`} stroke="#7C8F6E" strokeWidth="2.4" fill="none" strokeLinecap="round" />
-        {leafOn && <path d="M50 70 C 40 66, 34 70, 33 76 C 41 78, 48 75, 50 70 Z" fill="#8FAF8F" opacity="0.9" />}
-        {leaf2On && <path d="M50 64 C 60 60, 66 64, 67 70 C 59 72, 52 69, 50 64 Z" fill="#7FA07F" opacity="0.85" />}
-        {stageIdx === 0 ? (
-          <g><ellipse cx={cx} cy="60" rx="7" ry="4.5" fill={color} opacity="0.55" /><path d="M30 64 Q50 60 70 64" stroke="#7C8F6E" strokeWidth="1.4" fill="none" opacity="0.5" /></g>
-        ) : form.fern ? (
-          // fern — a frond of paired leaflets in the phase colour, accent tip
-          <g className={resting ? "" : "fw-breath"} style={{ transformOrigin: `${cx}px ${cy}px`, animation: resting ? "none" : "fwBreath 5.5s ease-in-out infinite" }}>
-            {[0, 1, 2, 3, 4].map((i) => {
-              const y = 56 - i * (4 + open * 2);
-              const w = (10 - i * 1.4) * (0.5 + open);
-              return <g key={i}><ellipse cx={cx - w / 2} cy={y} rx={w / 2} ry="2.4" fill={color} opacity={petalOpacity} transform={`rotate(-28 ${cx} ${y})`} /><ellipse cx={cx + w / 2} cy={y} rx={w / 2} ry="2.4" fill={color} opacity={petalOpacity} transform={`rotate(28 ${cx} ${y})`} /></g>;
-            })}
-            <circle cx={cx} cy={stemTop} r={2.5 + open * 1.5} fill={accent} />
-          </g>
-        ) : form.bell ? (
-          // foxglove — a vertical stalk of bells, phase colour, accent throat
-          <g className={resting ? "" : "fw-breath"} style={{ transformOrigin: `${cx}px ${cy}px`, animation: resting ? "none" : "fwBreath 5.5s ease-in-out infinite" }}>
-            {[0, 1, 2, 3, 4].slice(0, 2 + Math.round(open * 3)).map((i) => {
-              const y = 54 - i * (5 + open * 2);
-              return <ellipse key={i} cx={cx + (i % 2 ? 5 : -5)} cy={y} rx={3 + open * 2} ry={5 + open * 2.5} fill={color} opacity={petalOpacity} />;
-            })}
-            <circle cx={cx} cy={cy} r={2 + open} fill={accent} />
-          </g>
-        ) : (
-          // radiating petals (peony/daisy/poppy/forget-me-not) — count + roundness by form
-          <g className={resting ? "" : "fw-breath"} style={{ transformOrigin: `${cx}px ${cy}px`, animation: resting ? "none" : "fwBreath 5.5s ease-in-out infinite" }}>
-            {Array.from({ length: n }).map((_, i) => {
-              const a = (i * (360 / n)) * Math.PI / 180;
-              const px = cx + Math.cos(a) * (petalLen * 0.6);
-              const py = cy + Math.sin(a) * (petalLen * 0.6);
-              return <ellipse key={i} cx={px} cy={py} rx={petalW} ry={petalLen * (form.round ? 0.55 : 0.7)} fill={color} opacity={petalOpacity} transform={`rotate(${i * (360 / n)} ${px} ${py})`} />;
-            })}
-            <circle cx={cx} cy={cy} r={3.5 + open * 2.5} fill={resting ? "#C9BCA6" : accent} />
+        <defs>
+          <radialGradient id={`glow-${gid}`} cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stopColor={color} stopOpacity={bright ? 0.26 : 0.16} />
+            <stop offset="100%" stopColor={color} stopOpacity="0" />
+          </radialGradient>
+          <linearGradient id={`pet-${gid}`} x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor={light} /><stop offset="100%" stopColor={deep} />
+          </linearGradient>
+        </defs>
+
+        {/* soft halo */}
+        <circle cx={cx} cy={headY} r={20 + open * 22} fill={`url(#glow-${gid})`} />
+        {/* ground + soil mound */}
+        <path d="M22 90 Q50 84 78 90" stroke={SOIL} strokeWidth="1.6" fill="none" opacity="0.5" strokeLinecap="round" />
+        {seed && <g><ellipse cx={cx} cy="87" rx="11" ry="5" fill={SOIL} opacity="0.4" /><path d={`M50 86 q -1 -5 0 -8`} stroke={STEM} strokeWidth="2" fill="none" strokeLinecap="round" /><circle cx={cx} cy="77" r="2.4" fill={STEM_HI} /><ellipse cx="46" cy="80" rx="3" ry="1.6" fill={LEAF} opacity="0.9" transform="rotate(-24 46 80)" /><ellipse cx="54" cy="80" rx="3" ry="1.6" fill={LEAF} opacity="0.9" transform="rotate(24 54 80)" /></g>}
+
+        {/* stem + leaves (radiating + poppy + bells; fern draws its own) */}
+        {showStem && <path d={`M50 88 C 49 ${72} 51 ${stemTopY + 8} 50 ${stemTopY}`} stroke={STEM} strokeWidth="2.4" fill="none" strokeLinecap="round" />}
+        {showStem && leaf1 && <path d={`M50 72 C 39 68 33 71 31 78 C 40 79 48 76 50 71 Z`} fill={LEAF} opacity="0.92" />}
+        {showStem && leaf2 && <path d={`M50 66 C 61 62 67 65 69 72 C 60 73 52 70 50 65 Z`} fill={LEAF_DK} opacity="0.86" />}
+
+        {!seed && (
+          <g className={tall || form.fern ? "fw-sway" : "fw-breath"} style={tall || form.fern ? { transformOrigin: "50px 84px", animation: resting ? "none" : "fwSway 7s ease-in-out infinite" } : breath}>
+            {/* ───────── PEONY — lush layered ruffle ───────── */}
+            {form.key === "peony" && (() => {
+              const R = 7 + open * 9;
+              const ring = (count, len, wid, rad, fill, o) => Array.from({ length: count }).map((_, i) => {
+                const ang = i * (360 / count); const a = ang * Math.PI / 180;
+                const px = cx + Math.cos(a - Math.PI / 2) * rad, py = headY + Math.sin(a - Math.PI / 2) * rad;
+                return petal(px, py, len, wid, ang, fill, o, `${count}-${i}`);
+              });
+              return <g>
+                {ring(9, R + 4, R * 0.62, R * 0.5, `url(#pet-${gid})`, op * 0.95)}
+                {ring(8, R, R * 0.55, R * 0.28, light, op)}
+                {open > 0.4 && ring(6, R * 0.7, R * 0.5, R * 0.12, lighten(color, 0.6), op)}
+                <circle cx={cx} cy={headY} r={2 + open * 2} fill={resting ? "#C9BCA6" : accent} />
+              </g>;
+            })()}
+
+            {/* ───────── DAISY — fine rays + accent disc ───────── */}
+            {form.key === "daisy" && (() => {
+              const n = 14, L = 7 + open * 11, W = 1.6 + open * 1.4;
+              return <g>
+                {Array.from({ length: n }).map((_, i) => { const ang = i * (360 / n);
+                  return petal(cx, headY, L, W, ang, PALE, op, i); })}
+                {Array.from({ length: n }).map((_, i) => { const ang = i * (360 / n);
+                  return petal(cx, headY, L, W, ang, color, op * 0.22, `t${i}`); })}
+                <circle cx={cx} cy={headY} r={3 + open * 3.2} fill={accent} />
+                <circle cx={cx} cy={headY} r={3 + open * 3.2} fill={deep} opacity="0.18" />
+              </g>;
+            })()}
+
+            {/* ───────── FOXGLOVE — spire of speckled bells ───────── */}
+            {form.key === "foxglove" && (() => {
+              const bells = 2 + Math.round(open * 4);
+              return <g>
+                <path d={`M50 86 C 49 70 51 ${headY + 10} 50 ${headY - 2}`} stroke={STEM} strokeWidth="2.4" fill="none" strokeLinecap="round" />
+                {leaf1 && <path d="M50 74 C 40 71 35 74 33 80 C 41 81 48 78 50 73 Z" fill={LEAF} opacity="0.9" />}
+                {Array.from({ length: bells }).map((_, i) => {
+                  const y = (headY - 2) + i * (6 + open * 1.5); const sx = cx + (i % 2 ? 5.5 : -5.5);
+                  const w = 3 + open * 2 + i * 0.5, h = 5 + open * 3;
+                  return <g key={i}>
+                    <path d={`M${sx} ${y - h} C ${sx - w} ${y - h} ${sx - w} ${y} ${sx - w * 0.6} ${y + 1.5} C ${sx} ${y + 3} ${sx + w * 0.6} ${y + 3} ${sx + w * 0.6} ${y + 1.5} C ${sx + w} ${y} ${sx + w} ${y - h} ${sx} ${y - h} Z`} fill={`url(#pet-${gid})`} opacity={op} />
+                    <circle cx={sx - 1} cy={y - h * 0.4} r="0.7" fill={accent} opacity={op} />
+                    <circle cx={sx + 1} cy={y - h * 0.2} r="0.7" fill={accent} opacity={op} />
+                  </g>;
+                })}
+                {open > 0.5 && <circle cx={cx} cy={headY - 4} r="1.6" fill={lighten(color, 0.5)} opacity={op} />}
+              </g>;
+            })()}
+
+            {/* ───────── FERN — arching frond of paired leaflets ───────── */}
+            {form.fern && (() => {
+              const pairs = 3 + Math.round(open * 4);
+              return <g>
+                <path d={`M50 88 C 50 70 ${50 + open * 10} ${50} ${50 + open * 14} ${82 - open * 52}`} stroke={STEM} strokeWidth="2" fill="none" strokeLinecap="round" />
+                {Array.from({ length: pairs }).map((_, i) => {
+                  const t = i / (pairs - 1 || 1);
+                  const ry = 82 - open * 52 * (1 - t) - t * 4;
+                  const rx = 50 + open * 14 * t * t;
+                  const w = (9 - i * 1.0) * (0.45 + open * 0.7); if (w <= 1) return null;
+                  return <g key={i}>
+                    <ellipse cx={rx - 3.4} cy={ry} rx={w / 2} ry="2.1" fill={color} opacity={op * 0.9} transform={`rotate(-34 ${rx - 3.4} ${ry})`} />
+                    <ellipse cx={rx + 3.4} cy={ry} rx={w / 2} ry="2.1" fill={LEAF_DK} opacity={op * 0.9} transform={`rotate(34 ${rx + 3.4} ${ry})`} />
+                  </g>;
+                })}
+                {/* young fiddlehead curl in accent */}
+                {open < 0.5 ? <circle cx={50 + open * 14} cy={82 - open * 52} r={2 + (0.5 - open) * 4} fill="none" stroke={accent} strokeWidth="1.4" opacity={op} />
+                  : <circle cx={50 + open * 14} cy={82 - open * 52} r="1.8" fill={accent} opacity={op} />}
+              </g>;
+            })()}
+
+            {/* ───────── POPPY — four crinkled cups, dark eye ───────── */}
+            {form.key === "poppy" && (() => {
+              const L = 9 + open * 12, W = 7 + open * 6;
+              return <g>
+                {[18, 105, 195, 285].map((ang, i) => petal(cx, headY, L, W, ang, i % 2 ? `url(#pet-${gid})` : deep, op * (i % 2 ? 0.95 : 0.88), i))}
+                {open > 0.45 && <g>
+                  <circle cx={cx} cy={headY} r={2.6 + open * 2} fill="#2A1F16" opacity={resting ? 0.5 : 0.85} />
+                  {Array.from({ length: 8 }).map((_, i) => { const a = i * 45 * Math.PI / 180; const r = 3.4 + open * 2.4;
+                    return <circle key={i} cx={cx + Math.cos(a) * r} cy={headY + Math.sin(a) * r} r="0.8" fill={accent} opacity={op} />; })}
+                </g>}
+              </g>;
+            })()}
+
+            {/* ───────── FORGET-ME-NOT — cluster of tiny five-petal flowers ───────── */}
+            {form.key === "forget" && (() => {
+              const florets = open < 0.4 ? 3 : open < 0.75 ? 5 : 7;
+              const spots = [[0, 0], [-7, 2], [7, 2], [-3.5, -6], [3.5, -6], [-9, -4], [9, -4]];
+              const fr = 1.4 + open * 1.6;
+              return <g>
+                {spots.slice(0, florets).map(([dx, dy], i) => {
+                  const fx = cx + dx * (0.6 + open * 0.5), fy = headY + dy * (0.6 + open * 0.5);
+                  return <g key={i}>
+                    {[0, 72, 144, 216, 288].map((ang) => { const a = ang * Math.PI / 180;
+                      return <circle key={ang} cx={fx + Math.cos(a) * fr * 1.1} cy={fy + Math.sin(a) * fr * 1.1} r={fr} fill={i % 2 ? color : light} opacity={op} />; })}
+                    <circle cx={fx} cy={fy} r={fr * 0.6} fill={accent} opacity={op} />
+                  </g>;
+                })}
+              </g>;
+            })()}
+
           </g>
         )}
       </svg>
