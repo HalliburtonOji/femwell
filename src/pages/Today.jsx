@@ -5,6 +5,7 @@ import { PageLoader } from "../components/common/LoadingSpinner";
 import { createPageUrl } from "@/utils";
 import { isCycleLifeStage, filterProgramsByStage } from "@/utils/plannerAdapter";
 import { computeCycleDay } from "@/hooks/useCycleDay";
+import NurtureGarden from "@/components/nurture/NurtureGarden";
 import {
   AlertCircle, ChevronRight, Utensils, Feather, Brain, Salad, Zap,
   Droplets, UtensilsCrossed, BookOpen, Activity, Lightbulb, TrendingUp, X
@@ -558,6 +559,12 @@ export default function Today() {
             <CompleteProfileBanner
               shouldShow={!!profile && (!profile.last_period_start_date || profile.onboarding_complete !== true)}
             />
+
+            {/* Nurture Companion — the app's heartbeat, grown from engagement everywhere.
+                A compact presence on the daily home; tap through to its full view (/Garden). */}
+            <a href={createPageUrl("Garden")} style={{ display: "block", textDecoration: "none", background: "var(--surface, #FBF6E6)", border: "1px solid var(--border, #E3DAC9)", borderRadius: 18, padding: "16px 14px 18px" }}>
+              <NurtureGarden compact />
+            </a>
 
             {/* Phase banner — gradient circle indicator, no emoji.
                 Phase 2 QA fix #1 — gated on cycle-anchored stage so
