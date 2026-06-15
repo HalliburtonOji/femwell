@@ -58,22 +58,34 @@ export default function NurtureGarden({ compact = false, onOpen = null }) {
     (async () => {
       const me = await base44.auth.me().catch(() => null);
       const id = me?.id || null;
-      const last14 = daysBack(14), last7 = daysBack(7);
-      // ALL-APP signals (guarded, capped). Community is anonymous → device-local acts.
-      const [E, M, W, Cn, Sy, Up, prof] = await Promise.all([
+      const last7 = daysBack(7);
+      // ALL-APP signals (guarded, capped, fail-open to []). The companion is nourished by
+      // genuine engagement everywhere: journal, nutrition, check-ins, cycle, PROGRAMS &
+      // practice, the PLANNER, and the COMMUNITY (per-user QOTD answers, plus anonymous
+      // acts — echoes/reactions/circles — counted device-local since they carry no user_id).
+      const [E, M, W, Cn, Sy, Up, Q, Pl, Pt, Pi, Tc, prof] = await Promise.all([
         id ? base44.entities.JournalEntries.filter({ user_id: id }, "-created_date", 200).catch(() => []) : [],
         id ? base44.entities.MealLog.filter({ user_id: id }, "-day_key", 200).catch(() => []) : [],
         id ? base44.entities.HydrationLog.filter({ user_id: id }, "-day_key", 120).catch(() => []) : [],
         id ? base44.entities.DailyCheckins.filter({ user_id: id }, "-created_date", 120).catch(() => []) : [],
         id ? base44.entities.SymptomLogs.filter({ user_id: id }, "-created_date", 120).catch(() => []) : [],
         id ? base44.entities.UserPrograms.filter({ user_id: id }, "-created_date", 60).catch(() => []) : [],
+        id ? base44.entities.DailyPromptResponse.filter({ user_id: id }, "-created_date", 90).catch(() => []) : [],
+        id ? base44.entities.DailyPlan.filter({ user_id: id }, "-created_date", 60).catch(() => []) : [],
+        id ? base44.entities.PersonalTasks.filter({ user_id: id }, "-created_date", 120).catch(() => []) : [],
+        id ? base44.entities.PlannerItems.filter({ user_id: id }, "-created_date", 120).catch(() => []) : [],
+        id ? base44.entities.UserTaskCompletions.filter({ user_id: id }, "-created_date", 150).catch(() => []) : [],
         base44.entities.UserProfile.filter({}, "-created_date", 1).catch(() => []),
       ]);
       if (!alive) return;
       const arr = (x) => (Array.isArray(x) ? x.filter(Boolean) : []);
-      const all = [...arr(E), ...arr(M), ...arr(W), ...arr(Cn), ...arr(Sy), ...arr(Up)];
-      const comm = communityActs();
-      const lifetime = all.length + comm;
+      const programs = [...arr(Up), ...arr(Tc)];
+      const planner = [...arr(Pl), ...arr(Pt), ...arr(Pi)];
+      const commLocal = communityActs();
+      const commArr = arr(Q);                                  // server-side, cross-device
+      const community = commArr.length + commLocal;
+      const all = [...arr(E), ...arr(M), ...arr(W), ...arr(Cn), ...arr(Sy), ...programs, ...planner, ...commArr];
+      const lifetime = all.length + commLocal;
       const dayOf = (x) => x.day_key || x.date || (x.created_date ? String(x.created_date).slice(0, 10) : (x.created_at ? String(x.created_at).slice(0, 10) : null));
       const days = new Set(); all.forEach((x) => { const d = dayOf(x); if (d) days.add(d); });
       const tended7 = [...days].filter((d) => last7.has(d)).length;
@@ -82,7 +94,7 @@ export default function NurtureGarden({ compact = false, onOpen = null }) {
       const gapDays = lastDay ? differenceInCalendarDays(new Date(), new Date(lastDay)) : null;
       setUid(id);
       setProfile(Array.isArray(prof) ? prof[0] : null);
-      setData({ lifetime, tended7, gapDays, areas: { journal: arr(E).length, nutrition: arr(M).length + arr(W).length, checkins: arr(Cn).length, cycle: arr(Sy).length, programs: arr(Up).length, community: comm } });
+      setData({ lifetime, tended7, gapDays, areas: { journal: arr(E).length, nutrition: arr(M).length + arr(W).length, checkins: arr(Cn).length, cycle: arr(Sy).length, programs: programs.length, planner: planner.length, community } });
     })();
     return () => { alive = false; };
   }, []);
@@ -108,7 +120,7 @@ export default function NurtureGarden({ compact = false, onOpen = null }) {
     : stage.line;
   // which life-area she tends most (shapes the "earned" identity narrative)
   const topArea = Object.entries(data.areas).sort((a, b) => b[1] - a[1])[0];
-  const AREA_WORD = { journal: "writing", nutrition: "nourishing yourself", checkins: "checking in", cycle: "tending your cycle", programs: "your practices", community: "being with the room" };
+  const AREA_WORD = { journal: "writing", nutrition: "nourishing yourself", checkins: "checking in", cycle: "tending your cycle", programs: "your practices", planner: "planning your days", community: "being with the room" };
 
   const doTend = () => { if (!uid) return; tendCompanion(uid); setJustTended(true); setVersion((v) => v + 1); };
   const saveName = () => { if (uid) renameCompanion(uid, draftName); setEditing(false); setVersion((v) => v + 1); };
@@ -182,7 +194,7 @@ export default function NurtureGarden({ compact = false, onOpen = null }) {
             </span>
           </div>
           <div style={{ marginTop: 16, fontFamily: SERIF, fontSize: 13, color: T.muted, fontStyle: "italic", maxWidth: 380, lineHeight: 1.5 }}>
-            {companion.name} grows from everything you already do — a journal line, a logged meal, a check-in, a moment in the community. Rest is part of it.
+            {companion.name} grows from everything you already do — a journal line, a logged meal, a check-in, a day you planned, a practice kept, a moment in the community. Rest is part of it.
           </div>
         </>
       )}
