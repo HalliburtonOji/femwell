@@ -287,7 +287,7 @@ export function Bloom({ form, stageIdx, color, accent, resting, bright, size = 1
           <g className={tall || form.fern ? "fw-sway" : "fw-breath"} style={tall || form.fern ? { transformOrigin: "50px 84px", animation: resting ? "none" : "fwSway 7s ease-in-out infinite" } : breath}>
             {/* ───────── PEONY — lush layered ruffle ───────── */}
             {form.key === "peony" && (() => {
-              const R = 7 + open * 9;
+              const R = 8 + open * 10;
               const ring = (count, len, wid, rad, fill, o) => Array.from({ length: count }).map((_, i) => {
                 const ang = i * (360 / count); const a = ang * Math.PI / 180;
                 const px = cx + Math.cos(a - Math.PI / 2) * rad, py = headY + Math.sin(a - Math.PI / 2) * rad;
@@ -301,35 +301,44 @@ export function Bloom({ form, stageIdx, color, accent, resting, bright, size = 1
               </g>;
             })()}
 
-            {/* ───────── DAISY — fine rays + accent disc ───────── */}
+            {/* ───────── DAISY — fine rays (pale phase tint, so the phase reads) + accent disc ───────── */}
             {form.key === "daisy" && (() => {
-              const n = 14, L = 7 + open * 11, W = 1.6 + open * 1.4;
+              const n = 16, L = 8 + open * 13, W = 1.8 + open * 1.7;
+              const ray = lighten(color, 0.5);                 // pale, but carries the phase hue
               return <g>
                 {Array.from({ length: n }).map((_, i) => { const ang = i * (360 / n);
-                  return petal(cx, headY, L, W, ang, PALE, op, i); })}
-                {Array.from({ length: n }).map((_, i) => { const ang = i * (360 / n);
-                  return petal(cx, headY, L, W, ang, color, op * 0.22, `t${i}`); })}
-                <circle cx={cx} cy={headY} r={3 + open * 3.2} fill={accent} />
-                <circle cx={cx} cy={headY} r={3 + open * 3.2} fill={deep} opacity="0.18" />
+                  return petal(cx, headY, L, W, ang, ray, op, i); })}
+                {Array.from({ length: n }).map((_, i) => { const ang = i * (360 / n) + 360 / (n * 2);
+                  return petal(cx, headY, L * 0.62, W * 0.85, ang, lighten(color, 0.68), op * 0.9, `b${i}`); })}
+                <circle cx={cx} cy={headY} r={3.4 + open * 3.4} fill={accent} />
+                <circle cx={cx} cy={headY} r={1.6 + open * 1.6} fill={deep} opacity="0.5" />
               </g>;
             })()}
 
-            {/* ───────── FOXGLOVE — spire of speckled bells ───────── */}
+            {/* ───────── FOXGLOVE — full spire of speckled tubular bells ───────── */}
             {form.key === "foxglove" && (() => {
-              const bells = 2 + Math.round(open * 4);
+              const bells = 3 + Math.round(open * 4);          // up to 7 — a fuller spike
+              const top = headY - 4;
               return <g>
-                <path d={`M50 86 C 49 70 51 ${headY + 10} 50 ${headY - 2}`} stroke={STEM} strokeWidth="2.4" fill="none" strokeLinecap="round" />
-                {leaf1 && <path d="M50 74 C 40 71 35 74 33 80 C 41 81 48 78 50 73 Z" fill={LEAF} opacity="0.9" />}
+                <path d={`M50 88 C 49 72 51 ${top + 12} 50 ${top - 2}`} stroke={STEM} strokeWidth="2.6" fill="none" strokeLinecap="round" />
+                {leaf1 && <path d="M50 76 C 39 73 33 76 31 83 C 40 84 48 81 50 75 Z" fill={LEAF} opacity="0.92" />}
+                {leaf2 && <path d="M50 70 C 60 67 66 70 68 76 C 59 77 52 74 50 69 Z" fill={LEAF_DK} opacity="0.85" />}
+                {/* bells hang along the stalk, larger and lower, smaller toward the tip */}
                 {Array.from({ length: bells }).map((_, i) => {
-                  const y = (headY - 2) + i * (6 + open * 1.5); const sx = cx + (i % 2 ? 5.5 : -5.5);
-                  const w = 3 + open * 2 + i * 0.5, h = 5 + open * 3;
+                  const y = top + 6 + i * (5 + open * 1.2); const sx = cx + (i % 2 ? 6.5 : -6.5);
+                  const w = 4.5 + open * 2.6 + i * 0.6, h = 6.5 + open * 3.5;
                   return <g key={i}>
-                    <path d={`M${sx} ${y - h} C ${sx - w} ${y - h} ${sx - w} ${y} ${sx - w * 0.6} ${y + 1.5} C ${sx} ${y + 3} ${sx + w * 0.6} ${y + 3} ${sx + w * 0.6} ${y + 1.5} C ${sx + w} ${y} ${sx + w} ${y - h} ${sx} ${y - h} Z`} fill={`url(#pet-${gid})`} opacity={op} />
-                    <circle cx={sx - 1} cy={y - h * 0.4} r="0.7" fill={accent} opacity={op} />
-                    <circle cx={sx + 1} cy={y - h * 0.2} r="0.7" fill={accent} opacity={op} />
+                    <path d={`M${sx} ${y - h} C ${sx - w} ${y - h} ${sx - w} ${y} ${sx - w * 0.6} ${y + 2} C ${sx} ${y + 4} ${sx + w * 0.6} ${y + 4} ${sx + w * 0.6} ${y + 2} C ${sx + w} ${y} ${sx + w} ${y - h} ${sx} ${y - h} Z`} fill={`url(#pet-${gid})`} opacity={op} />
+                    <path d={`M${sx - w * 0.5} ${y - 1} C ${sx} ${y + 1.5} ${sx + w * 0.5} ${y + 1.5} ${sx + w * 0.5} ${y - 1}`} fill={lighten(color, 0.45)} opacity={op * 0.7} />
+                    <circle cx={sx - 1.3} cy={y - h * 0.4} r="0.8" fill={accent} opacity={op} />
+                    <circle cx={sx + 1.1} cy={y - h * 0.25} r="0.8" fill={accent} opacity={op} />
+                    <circle cx={sx} cy={y - h * 0.6} r="0.7" fill={accent} opacity={op * 0.8} />
                   </g>;
                 })}
-                {open > 0.5 && <circle cx={cx} cy={headY - 4} r="1.6" fill={lighten(color, 0.5)} opacity={op} />}
+                {/* unopened buds clustered at the tip */}
+                <ellipse cx={cx - 2} cy={top} rx="2" ry="3" fill={deep} opacity={op * 0.9} />
+                <ellipse cx={cx + 2} cy={top - 2} rx="1.8" ry="2.6" fill={lighten(color, 0.3)} opacity={op * 0.9} />
+                <ellipse cx={cx} cy={top - 4} rx="1.5" ry="2.2" fill={lighten(color, 0.5)} opacity={op * 0.85} />
               </g>;
             })()}
 
@@ -356,7 +365,7 @@ export function Bloom({ form, stageIdx, color, accent, resting, bright, size = 1
 
             {/* ───────── POPPY — four crinkled cups, dark eye ───────── */}
             {form.key === "poppy" && (() => {
-              const L = 9 + open * 12, W = 7 + open * 6;
+              const L = 10 + open * 13, W = 8 + open * 6.5;
               return <g>
                 {[18, 105, 195, 285].map((ang, i) => petal(cx, headY, L, W, ang, i % 2 ? `url(#pet-${gid})` : deep, op * (i % 2 ? 0.95 : 0.88), i))}
                 {open > 0.45 && <g>
