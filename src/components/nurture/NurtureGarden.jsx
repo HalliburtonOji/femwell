@@ -1,4 +1,4 @@
-// NurtureGarden — the Nurture Companion. The app's HEARTBEAT: a living thing UNIQUE to
+// NurtureGarden v2 — the Nurture Companion. The app's HEARTBEAT: a living thing UNIQUE to
 // each user, grown from engagement across the WHOLE app, that she can TEND, CHANGE
 // (rename/reshape) and SHARE (a non-personal card). State, not score. Never dies; a gap is
 // a resting season, met with a warm welcome — no streaks, no decay, no guilt.
