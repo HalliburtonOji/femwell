@@ -85,9 +85,20 @@ async function currentHash() {
 
 async function main() {
   const token = await validToken();
+  const H = { Authorization: `Bearer ${token}` };
 
-  // confirm app is in a deployable state
-  const meta = await fetch(`${API}/api/apps/${APP_ID}`, { headers: { Authorization: `Bearer ${token}` } });
+  // 1. PULL the latest commits from GitHub into Base44's managed source. Base44 does NOT
+  //    auto-pull on push — without this, /deploy just rebuilds the previously-synced code.
+  const sync = await fetch(`${API}/api/apps/${APP_ID}/github/sync`, {
+    method: "POST", headers: { ...H, "Content-Type": "application/json" }, body: "{}",
+  });
+  if (sync.status === 401) die("Token rejected (401). Re-run: base44 login");
+  const sj = await sync.json().catch(() => ({}));
+  if (sync.status !== 200) die(`github/sync failed: ${sync.status} ${JSON.stringify(sj).slice(0, 160)}`);
+  log(`• synced GitHub → ${(sj.latest_commit_hash || "?").slice(0, 7)}${sj.already_up_to_date ? " (already up to date)" : ` (+${sj.commits_pulled} commit${sj.commits_pulled === 1 ? "" : "s"})`}`);
+
+  // 2. confirm app is in a deployable state
+  const meta = await fetch(`${API}/api/apps/${APP_ID}`, { headers: H });
   if (meta.status === 401) die("Token rejected (401). Re-run: base44 login");
   const mj = await meta.json().catch(() => ({}));
   const state = mj.status && (mj.status.state || mj.status.status);
