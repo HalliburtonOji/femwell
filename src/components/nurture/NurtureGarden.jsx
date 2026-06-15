@@ -17,7 +17,7 @@ import {
 } from "@/components/journal/Editorial";
 import { computeCycleDay } from "@/hooks/useCycleDay";
 import {
-  getCompanion, FORM_LIST, renameCompanion, reshapeCompanion, tendCompanion, tendedToday,
+  getCompanion, FORM_LIST, renameCompanion, reshapeCompanion, tendCompanion, tendedToday, loadCompanionState,
 } from "@/components/nurture/companion";
 
 const STAGES = [
@@ -58,6 +58,9 @@ export default function NurtureGarden({ compact = false, onOpen = null }) {
     (async () => {
       const me = await base44.auth.me().catch(() => null);
       const id = me?.id || null;
+      // hydrate her cross-device choices (name/form/tend) from the entity, then re-resolve.
+      // Fire-and-forget + fail-open: the local cache already renders instantly.
+      if (id) loadCompanionState(id).then((changed) => { if (changed && alive) setVersion((v) => v + 1); }).catch(() => {});
       const last7 = daysBack(7);
       // ALL-APP signals (guarded, capped, fail-open to []). The companion is nourished by
       // genuine engagement everywhere: journal, nutrition, check-ins, cycle, PROGRAMS &
@@ -231,7 +234,7 @@ const ghost = {
 // ── the bloom — genuinely distinct artwork per FORM, drawn in the phase colour with the
 // user's identity accent, opening across five growth stages and breathing gently (stilled
 // for resting + reduced-motion). Hand-drawn SVG; no emoji, no raster. ──
-const STEM = "#73855F", STEM_HI = "#8FAF8F", LEAF = "#86A479", LEAF_DK = "#6E8A63", SOIL = "#8A7A63", PALE = "#F4EFE3";
+const STEM = "#73855F", STEM_HI = "#8FAF8F", LEAF = "#86A479", LEAF_DK = "#6E8A63", SOIL = "#8A7A63";
 
 // a soft upward teardrop petal centred at (x,y), length L, width W, rotated `rot°`
 function petal(x, y, L, W, rot, fill, op, key) {

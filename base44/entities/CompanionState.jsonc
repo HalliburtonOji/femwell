@@ -1,0 +1,38 @@
+{
+  // CompanionState — the Nurture Companion's per-user, cross-device state. Holds only her
+  // CHOICES + last tend: the procedural identity (form/accent/personality) is still derived
+  // from the account id, and growth is still derived from real engagement elsewhere — this
+  // entity persists what the user actively set so it follows her across devices.
+  //
+  // Client-writable by its owner (default RLS: owner read/write — like DailyCheckins). No
+  // service role, no functions, no awaited external calls → avoids the function-deploy /
+  // fetch-hang traps. The client always keeps a localStorage fallback, so a wedged write
+  // never breaks the companion.
+  "name": "CompanionState",
+  "type": "object",
+  "properties": {
+    "user_id": {
+      "type": "string",
+      "description": "Owner account id"
+    },
+    "name": {
+      "type": "string",
+      "description": "User-chosen companion name (defaults to 'Little <Form>' when empty)"
+    },
+    "form_key": {
+      "type": "string",
+      "description": "Chosen bloom form: peony | daisy | foxglove | fern | poppy | forget (overrides the seeded form)"
+    },
+    "tended_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO timestamp of the most recent gentle 'tend'"
+    }
+  },
+  "required": [
+    "user_id"
+  ],
+  "indexes": [
+    { "fields": ["user_id"] }
+  ]
+}

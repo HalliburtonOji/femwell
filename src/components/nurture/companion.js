@@ -46,12 +46,66 @@ export function baseCompanion(userId) {
   return { seed: h, form, accent, personality, defaultName };
 }
 
-// ── device-local overrides (her choices) + the tend timestamp ──
+// ── her choices + the tend timestamp — CROSS-DEVICE via the CompanionState entity,
+// with localStorage as a synchronous cache + offline/failure fallback. ──
+//
+// The entity (CompanionState) is the cross-device source of truth; localStorage mirrors it
+// so the UI renders INSTANTLY and keeps working if a write wedges or the user is offline.
+// Every write is OPTIMISTIC (localStorage first, synchronous) then a guarded, fire-and-forget
+// entity upsert — never awaited on the interaction path, so a slow/hung backend never blocks
+// or breaks the companion (see [[base44-fetch-no-timeout-hangs]]). Reads are guarded + fail-open.
+import { base44 } from "@/api/base44Client";
+
 const keyFor = (userId) => "fw_companion_" + hash(userId);
 function read(userId) { try { return JSON.parse(localStorage.getItem(keyFor(userId)) || "{}") || {}; } catch { return {}; } }
 function write(userId, obj) { try { localStorage.setItem(keyFor(userId), JSON.stringify(obj)); } catch { /* ignore */ } }
 
-// the resolved companion = seeded base + her overrides
+// remember the entity row id per user so write-through can update instead of duplicating
+const rowIdCache = {};
+
+// HYDRATE from the entity (call once on mount). Merges server state into the local cache —
+// name/formKey from the server, tendedAt = the later of the two — so choices made on another
+// device appear here. Fail-open: any error just leaves the local cache untouched.
+export async function loadCompanionState(userId) {
+  if (!userId) return false;
+  try {
+    const rows = await base44.entities.CompanionState.filter({ user_id: userId }, "-updated_date", 1).catch(() => []);
+    const row = Array.isArray(rows) && rows[0];
+    if (!row) return false;
+    rowIdCache[userId] = row.id;
+    const ov = read(userId);
+    const localT = ov.tendedAt ? Date.parse(ov.tendedAt) : 0;
+    const remoteT = row.tended_at ? Date.parse(row.tended_at) : 0;
+    const merged = {
+      name: row.name || ov.name || "",
+      formKey: row.form_key || ov.formKey || "",
+      tendedAt: (remoteT >= localT ? row.tended_at : ov.tendedAt) || null,
+    };
+    write(userId, merged);
+    return true;
+  } catch { return false; }
+}
+
+// WRITE-THROUGH upsert — fire-and-forget, guarded. Never awaited by the caller's UI path.
+function persist(userId, patch) {
+  if (!userId) return;
+  const body = {};
+  if ("name" in patch) body.name = patch.name;
+  if ("formKey" in patch) body.form_key = patch.formKey;
+  if ("tendedAt" in patch) body.tended_at = patch.tendedAt;
+  (async () => {
+    try {
+      const id = rowIdCache[userId];
+      if (id) { await base44.entities.CompanionState.update(id, body).catch(() => {}); return; }
+      const rows = await base44.entities.CompanionState.filter({ user_id: userId }, "-updated_date", 1).catch(() => []);
+      const existing = Array.isArray(rows) && rows[0];
+      if (existing) { rowIdCache[userId] = existing.id; await base44.entities.CompanionState.update(existing.id, body).catch(() => {}); }
+      else { const created = await base44.entities.CompanionState.create({ user_id: userId, ...body }).catch(() => null); if (created?.id) rowIdCache[userId] = created.id; }
+    } catch { /* fail-open — localStorage already holds it */ }
+  })();
+}
+
+// the resolved companion = seeded base + her overrides (from the local cache)
 export function getCompanion(userId) {
   const base = baseCompanion(userId);
   const ov = read(userId);
@@ -64,9 +118,9 @@ export function getCompanion(userId) {
     customised: !!(ov.name || ov.formKey),
   };
 }
-export function renameCompanion(userId, name) { const ov = read(userId); ov.name = String(name || "").slice(0, 40); write(userId, ov); }
-export function reshapeCompanion(userId, formKey) { const ov = read(userId); ov.formKey = formKey; write(userId, ov); }
-export function tendCompanion(userId) { const ov = read(userId); ov.tendedAt = new Date().toISOString(); write(userId, ov); return ov.tendedAt; }
+export function renameCompanion(userId, name) { const v = String(name || "").slice(0, 40); const ov = read(userId); ov.name = v; write(userId, ov); persist(userId, { name: v }); }
+export function reshapeCompanion(userId, formKey) { const ov = read(userId); ov.formKey = formKey; write(userId, ov); persist(userId, { formKey }); }
+export function tendCompanion(userId) { const t = new Date().toISOString(); const ov = read(userId); ov.tendedAt = t; write(userId, ov); persist(userId, { tendedAt: t }); return t; }
 export function tendedToday(userId) {
   const t = read(userId).tendedAt;
   if (!t) return false;
