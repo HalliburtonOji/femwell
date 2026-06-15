@@ -231,7 +231,8 @@ export default function EchoWall({ user, profile, phase = null, lifeStage = null
                 {REACTIONS.map((r) => {
                   const Icon = REACTION_ICON[r.id];
                   const reacted = hasReacted(e.id, r.id);
-                  const count = e[r.field] || 0;
+                  // No counts (no scoreboard) — a kind reaction is a soft glow back to the
+                  // author, never a tally. Reacted = gold fill; that's the whole signal.
                   return (
                     <button key={r.id} onClick={() => handleReact(e, r.id, r.field)} disabled={reacted} style={{
                       display: "inline-flex", alignItems: "center", gap: 5, cursor: reacted ? "default" : "pointer",
@@ -240,7 +241,7 @@ export default function EchoWall({ user, profile, phase = null, lifeStage = null
                       color: reacted ? T.ink : T.muted,
                     }}>
                       <Icon size={13} style={{ color: reacted ? T.gold : T.muted }} />
-                      {r.label}{count > 0 ? ` ${count}` : ""}
+                      {r.label}
                     </button>
                   );
                 })}

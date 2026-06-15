@@ -47,8 +47,8 @@ import {
   MASTHEAD, UK_RESOURCES, FOOTER_LINE, PRESENCE_WINDOW_HRS,
   qotdForDay, presenceLine, crisisCheck,
 } from "@/components/community/communityConfig";
-import { CIRCLES, CIRCLE_KEYS, suggestedCircles, isJoined } from "@/components/community/circlesConfig";
-import { SEED_PICK, clubReached } from "@/components/community/bookClubConfig";
+import { CIRCLES, CIRCLE_KEYS, suggestedCircles, isJoined, markJoined } from "@/components/community/circlesConfig";
+import { SEED_PICK, clubReached, setClubReached } from "@/components/community/bookClubConfig";
 import { createPageUrl } from "@/utils";
 
 const COL = 430;     // phone column (matches NutritionHub)
@@ -241,7 +241,14 @@ function QotdPreview({ qotd }) {
 
       {sample ? (
         <div style={{ borderLeft: `2px solid ${T.gold}`, paddingLeft: 11, marginBottom: 12 }}>
-          <div style={{ fontFamily: UI, fontSize: 9, fontWeight: 700, letterSpacing: 0.5, textTransform: "uppercase", color: T.muted, marginBottom: 3 }}>One from the room</div>
+          <div style={{ display: "flex", alignItems: "center", gap: 7, marginBottom: 3 }}>
+            <span style={{ fontFamily: UI, fontSize: 9, fontWeight: 700, letterSpacing: 0.5, textTransform: "uppercase", color: T.muted }}>One from the room</span>
+            {sample.phase || sample.life_stage ? (
+              <span style={{ fontFamily: UI, fontSize: 8.5, fontWeight: 700, letterSpacing: 0.4, textTransform: "uppercase", color: T.gold, border: `1px solid ${T.gold}`, borderRadius: 999, padding: "1px 7px" }}>
+                {String(sample.phase || sample.life_stage).replace(/-/g, " ")}
+              </span>
+            ) : null}
+          </div>
           <div style={{ fontFamily: HANDFAM, fontStyle: "italic", fontSize: 15.5, color: T.ink, lineHeight: 1.3 }}>{(sample.body || "").slice(0, 120)}</div>
         </div>
       ) : (
@@ -258,10 +265,24 @@ function QotdPreview({ qotd }) {
 // A topic-room preview — the latest REAL CommunityPost lines for that room (read-only,
 // guarded). The full feed + composer + reactions + replies open in the real /Community room.
 function RoomPreview({ surface, posts, presence, season }) {
-  const feed = (posts || []).filter((p) => p && p.room === surface.id).slice(0, 3);
+  const roomPosts = (posts || []).filter((p) => p && p.room === surface.id);
+  const feed = roomPosts.slice(0, 3);
+  // theme chips — real domain counts in this room (browse-by-theme at a glance)
+  const domainCounts = {};
+  roomPosts.forEach((p) => { const d = (p.domain || "").trim(); if (d) domainCounts[d] = (domainCounts[d] || 0) + 1; });
+  const themes = Object.entries(domainCounts).sort((a, b) => b[1] - a[1]).slice(0, 4);
   return (
     <div style={{ display: "flex", flexDirection: "column", flex: 1 }}>
       <Hand size={15} color={T.muted} style={{ marginBottom: 12 }}>{surface.eyebrow}.</Hand>
+      {themes.length > 0 ? (
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 12 }}>
+          {themes.map(([d, n]) => (
+            <span key={d} style={{ fontFamily: UI, fontSize: 10, fontWeight: 700, letterSpacing: 0.3, color: T.ink, background: T.wax, border: `1px solid ${T.paperDeep}`, borderRadius: 999, padding: "3px 9px" }}>
+              {d} {n}
+            </span>
+          ))}
+        </div>
+      ) : null}
       {feed.length > 0 ? (
         <div style={{ display: "grid", gap: 11 }}>
           {feed.map((p) => (
@@ -300,12 +321,16 @@ function EchoPreview() {
 // Circles preview — REAL: the circles suggested for your season/interests + how many
 // you're already in, drawn straight from the curated circle set + device-local joins.
 function CirclesPreview({ profile }) {
+  const [tick, setTick] = useState(0);                          // re-render after an inline join
   const suggested = suggestedCircles(profile);                 // from life_stage + interests
   const joinedKeys = CIRCLE_KEYS.filter((k) => isJoined(k));
   // lead with suggested-not-yet-joined, then fill from the full set, up to 3
   const lead = suggested.filter((c) => !isJoined(c.key));
   const fill = CIRCLES.filter((c) => !lead.some((s) => s.key === c.key) && !isJoined(c.key));
   const show = [...lead, ...fill].slice(0, 3);
+  // one-tap join, non-sensitive only (sensitive circles keep their consent gate in the
+  // full Circles view). Device-local — same model isJoined already uses for the UX.
+  const joinNow = (key) => { try { markJoined(key); } catch { /* ignore */ } setTick((t) => t + 1); };
   return (
     <div style={{ display: "flex", flexDirection: "column", flex: 1 }}>
       <Hand size={15} color={T.muted} style={{ marginBottom: 10 }}>Smaller rooms by what you{"’"}re living and what you love. Lurk freely; join the ones that are yours.</Hand>
@@ -321,6 +346,12 @@ function CirclesPreview({ profile }) {
                 <span style={{ fontFamily: UI, fontSize: 8.5, fontWeight: 700, letterSpacing: 0.4, textTransform: "uppercase", color: T.sage }}>for you</span>
               ) : null}
               {c.sensitive ? <Lock size={10} style={{ color: T.muted }} /> : null}
+              {!c.sensitive ? (
+                <button onClick={() => joinNow(c.key)} style={{
+                  marginLeft: "auto", flexShrink: 0, fontFamily: UI, fontSize: 9.5, fontWeight: 700, letterSpacing: 0.4, textTransform: "uppercase",
+                  color: T.paper, background: T.ink, border: "none", borderRadius: 999, padding: "3px 11px", cursor: "pointer",
+                }}>Join</button>
+              ) : null}
             </div>
             <div style={{ fontFamily: SERIF, fontSize: 12.5, color: T.muted, fontStyle: "italic", marginTop: 1 }}>{c.line}</div>
           </div>
@@ -333,11 +364,14 @@ function CirclesPreview({ profile }) {
   );
 }
 
-// Library preview — REAL: this season's actual Book Club pick + your spoiler-safe progress.
+// Library preview — REAL: this season's actual Book Club pick + your spoiler-safe progress,
+// and a one-tap "mark my checkpoint" to advance it (device-local, latecomer/spoiler-safe).
 function LibraryPreview() {
-  const reached = (() => { try { return clubReached(SEED_PICK.pick_key); } catch { return -1; } })();
+  const [reached, setReached] = useState(() => { try { return clubReached(SEED_PICK.pick_key); } catch { return -1; } });
   const total = SEED_PICK.checkpoints?.length || 4;
   const progress = reached < 0 ? "Not started — lurking counts" : reached >= total - 1 ? "You've reached the end" : `Checkpoint ${reached + 1} of ${total}`;
+  const nextLabel = SEED_PICK.checkpoints?.[reached + 1]?.label;
+  const markNext = () => { const n = reached + 1; try { setClubReached(SEED_PICK.pick_key, n); } catch { /* ignore */ } setReached(n); };
   return (
     <div style={{ display: "flex", flexDirection: "column", flex: 1 }}>
       <Hand size={15} color={T.muted} style={{ marginBottom: 12 }}>Read together — at our own pace, spoiler-safe. A Jess-hosted book club, plus readers{"’"} corners for whatever you{"’"}re reading.</Hand>
@@ -349,9 +383,17 @@ function LibraryPreview() {
           <BookOpen size={13} style={{ color: T.gold }} />
           <span style={{ fontFamily: UI, fontSize: 11, fontWeight: 700, color: reached >= 0 ? T.ink : T.muted }}>{progress}</span>
         </div>
+        {reached < total - 1 ? (
+          <button onClick={markNext} style={{
+            marginTop: 11, display: "inline-flex", alignItems: "center", gap: 7, background: T.ink, color: T.paper, border: "none",
+            borderRadius: 10, padding: "9px 13px", cursor: "pointer", fontFamily: UI, fontSize: 11, fontWeight: 700, letterSpacing: 0.4, textTransform: "uppercase",
+          }}>
+            <Check size={13} /> {reached < 0 ? "Start — mark “" : "Reached “"}{(nextLabel || `checkpoint ${reached + 2}`).slice(0, 26)}{"”"}
+          </button>
+        ) : null}
       </div>
       <div style={{ marginTop: "auto", paddingTop: 12, fontFamily: UI, fontSize: 11, color: T.muted }}>
-        Open the Library for the spoiler-safe checkpoints + readers{"’"} corners.
+        Open the Library for the spoiler-safe discussion + readers{"’"} corners.
       </div>
     </div>
   );
@@ -673,7 +715,7 @@ function CommunityHubInner() {
             phase={(() => { try { return profile?.last_period_start_date ? computeCycleDay(profile).phase : null; } catch { return null; } })()}
             lifeStage={lifeStage}
             onClose={() => setShowEcho(false)}
-            onShared={() => { setShowEcho(false); setEchoTick((t) => t + 1); }}
+            onShared={() => setEchoTick((t) => t + 1)}
           />
         )}
         {openMeta && openMeta.open === "qotd" && (

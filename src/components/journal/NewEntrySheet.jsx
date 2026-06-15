@@ -160,6 +160,7 @@ export default function NewEntrySheet({
     : [];
 
   const [mode, setMode] = useState("Write"); // all five modes built (Phase 2)
+  const [justSaved, setJustSaved] = useState(false); // post-save: Jess offers one gentle follow-up
   const [showShareEcho, setShowShareEcho] = useState(false);
   const [cardType, setCardType] = useState(editEntry?.card_type || seedCardType || "free");
   const [topicOpen, setTopicOpen] = useState(() => TOPIC_IDS.has(editEntry?.card_type || seedCardType));  // TASK1: topic tray open if editing a topic entry
@@ -251,7 +252,9 @@ export default function NewEntrySheet({
       else saved = await base44.entities.JournalEntries.create(payload);
       onSaved(saved);
       setSaving(false);
-      onClose();
+      // Jess offers ONE gentle follow-up (opt-in) instead of closing immediately — a kind
+      // nudge to go deeper, never a demand. (Editing an existing entry just closes.)
+      if (editEntry) onClose(); else setJustSaved(true);
     } catch (err) {
       console.error("Save journal entry failed:", err);
       setSaveError("We couldn’t save your entry just now. Your words are still here — try again.");
@@ -389,6 +392,43 @@ export default function NewEntrySheet({
     || (cardType === "gratitude" && !gratitudes.some(Boolean))
     || (cardType === "todo" && todoItems.length === 0)
     || (cardType !== "gratitude" && cardType !== "todo" && !text.trim());
+
+  // ── post-save: Jess offers ONE gentle follow-up (opt-in), never a demand ──
+  if (justSaved) {
+    const FOLLOWUPS = {
+      menstrual: "Is there a quieter truth underneath that you could name in one more line?",
+      follicular: "What would it look like to act on that, even in the smallest way?",
+      ovulatory: "If you said that out loud to someone, who would it be?",
+      luteal: "What is the discerning part of you noticing about it?",
+    };
+    const q = FOLLOWUPS[phase] || "Is there one more line that wants to come — the bit you almost didn't write?";
+    const continueWriting = () => { setJustSaved(false); setText(""); setMood(0); setMode("Write"); };
+    return (
+      <div style={{ position: "fixed", inset: 0, zIndex: 90, ...PAPER_BG, overflowY: "auto", overscrollBehavior: "contain", WebkitOverflowScrolling: "touch", padding: "30px 26px 44px" }}>
+        <div style={{ maxWidth: 560, margin: "12vh auto 0", textAlign: "center" }}>
+          <Eyebrow mb={10}>Held in your Journal</Eyebrow>
+          <Script size={34} style={{ marginBottom: 16 }}>It{"’"}s saved.</Script>
+          <div style={{ background: T.dusk, borderRadius: 14, padding: "18px 18px 16px", marginBottom: 22, textAlign: "left" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
+              <Heart size={14} />
+              <span style={{ fontFamily: UI, fontSize: 9.5, letterSpacing: 1.4, color: T.wax, textTransform: "uppercase", fontWeight: 700 }}>A nudge from Jess</span>
+            </div>
+            <Hand size={19} color={T.paper} carve={false}>{q}</Hand>
+          </div>
+          <div style={{ display: "flex", gap: 10, justifyContent: "center", flexWrap: "wrap" }}>
+            <button onClick={continueWriting} style={{
+              display: "inline-flex", alignItems: "center", gap: 7, background: T.crimson, color: T.paper, border: "none",
+              borderRadius: 12, padding: "12px 20px", cursor: "pointer", fontFamily: UI, fontSize: 12, fontWeight: 700, letterSpacing: 0.5, textTransform: "uppercase",
+            }}><Feather size={14} /> Add another line</button>
+            <button onClick={onClose} style={{
+              background: "transparent", color: T.ink, border: `1px solid ${T.paperDeep}`, borderRadius: 12, padding: "12px 20px",
+              cursor: "pointer", fontFamily: UI, fontSize: 12, fontWeight: 700, letterSpacing: 0.5, textTransform: "uppercase",
+            }}>Done</button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div style={{ position: "fixed", inset: 0, zIndex: 90, ...PAPER_BG, overflowY: "auto", overscrollBehavior: "contain", WebkitOverflowScrolling: "touch", padding: "30px 26px 44px" }}>
