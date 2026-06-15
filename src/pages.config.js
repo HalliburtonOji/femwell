@@ -150,6 +150,7 @@ import PartnerSync from './pages/PartnerSync';
 // (cycle calendar, mood charts) will be ported into the Health Letter as a
 // future "Story" tab.
 // import HealthDashboard from './pages/HealthDashboard';
+import Garden from './pages/Garden';
 import __Layout from './Layout.jsx';
 
 
@@ -158,6 +159,7 @@ export const PAGES = {
     "ContentPlayer": ContentPlayer,
     "CycleSettings": CycleSettings,
     "Explore": Explore,
+    "Garden": Garden,
     "Journal": JournalHub,
     "JournalClassic": Journal,
     "LifeStageCare": LifeStageCare,

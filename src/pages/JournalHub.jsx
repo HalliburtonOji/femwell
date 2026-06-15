@@ -39,6 +39,7 @@ import JumpToButton from "@/components/layout/JumpToButton";
 import { collectThreads, entriesInThread } from "@/components/journal/threads";
 import { formatCountdown } from "@/utils/sealedLetters";
 import { heldCountLocal } from "@/components/journal/witness/witnessAnon";
+import NurtureGarden from "@/components/nurture/NurtureGarden";
 import { relativeDate, entryDateObj, cycleDayForDate } from "@/components/journal/journalDates";
 import { TWIN_ENABLED } from "@/components/journal/twin/twinConfig";
 
@@ -469,6 +470,20 @@ export default function JournalHub() {
                 />
               </JessErrorBoundary>
             </div>
+          )}
+
+          {/* Nurture Companion presence — your living garden, grown from real engagement.
+              Tap through to its full view (/Garden). Calm, state-not-score, never dies. */}
+          {user && (
+            <button
+              onClick={() => navigate(createPageUrl("Garden"))}
+              style={{
+                marginTop: 16, width: "100%", display: "block", textAlign: "center", cursor: "pointer",
+                background: T.paperHi, border: `1px solid ${T.paperDeep}`, borderRadius: 18, padding: "16px 14px 18px",
+              }}
+            >
+              <NurtureGarden compact onOpen={() => navigate(createPageUrl("Garden"))} />
+            </button>
           )}
 
           {/* On-This-Day peek — real past entries, guarded; tap opens the reader */}

@@ -97,6 +97,22 @@ export const SHEET_BG = {
   backgroundBlendMode: "normal, multiply",
 };
 
+// ── CANONICAL cycle-phase colours (brand-identity decision) ──────────────────
+// One source of truth, drawn from the brand palette so phase colour never fights the
+// cream/plum world: menstrual = crimson (the bleed), follicular = sage (rising, fresh),
+// ovulatory = gold (peak), luteal = muted plum (winding down). Earlier the app carried
+// several near-duplicate phase sets (#9A2845 vs #C4849A vs #8B2635…); new work uses THIS.
+export const PHASE_COLORS = {
+  menstrual:  "#BC2E27",   // brand crimson
+  follicular: "#8FAF8F",   // brand sage
+  ovulatory:  "#D4AF37",   // brand gold
+  luteal:     "#8E6E8E",   // muted plum / mauve
+};
+export const PHASE_LABEL = {
+  menstrual: "Menstrual", follicular: "Follicular", ovulatory: "Ovulatory", luteal: "Luteal",
+};
+export const phaseColor = (p) => PHASE_COLORS[p] || T.gold;
+
 // ── small typographic helpers ──
 export function Eyebrow({ children, mb = 0, color = T.muted }) {
   return <div style={{ fontFamily: UI, fontSize: 10.5, color, letterSpacing: 1.7, fontWeight: 700, textTransform: "uppercase", marginBottom: mb }}>{children}</div>;
