@@ -26,7 +26,11 @@
     "tended_at": {
       "type": "string",
       "format": "date-time",
-      "description": "ISO timestamp of the most recent gentle 'tend'"
+      "description": "ISO timestamp of the most recent 'leave a line' ritual"
+    },
+    "tended_note": {
+      "type": "string",
+      "description": "The most recent one-line reflection from the 'leave a line' ritual (naming how you feel)"
     }
   },
   "required": [

@@ -80,6 +80,7 @@ export async function loadCompanionState(userId) {
       name: row.name || ov.name || "",
       formKey: row.form_key || ov.formKey || "",
       tendedAt: (remoteT >= localT ? row.tended_at : ov.tendedAt) || null,
+      tendNote: (remoteT >= localT ? row.tended_note : ov.tendNote) || ov.tendNote || "",
     };
     write(userId, merged);
     return true;
@@ -93,6 +94,7 @@ function persist(userId, patch) {
   if ("name" in patch) body.name = patch.name;
   if ("formKey" in patch) body.form_key = patch.formKey;
   if ("tendedAt" in patch) body.tended_at = patch.tendedAt;
+  if ("tendNote" in patch) body.tended_note = patch.tendNote;
   (async () => {
     try {
       const id = rowIdCache[userId];
@@ -115,12 +117,16 @@ export function getCompanion(userId) {
     form,
     name: (ov.name && ov.name.trim()) || base.defaultName,
     tendedAt: ov.tendedAt || null,
+    tendNote: ov.tendNote || "",
     customised: !!(ov.name || ov.formKey),
   };
 }
 export function renameCompanion(userId, name) { const v = String(name || "").slice(0, 40); const ov = read(userId); ov.name = v; write(userId, ov); persist(userId, { name: v }); }
 export function reshapeCompanion(userId, formKey) { const ov = read(userId); ov.formKey = formKey; write(userId, ov); persist(userId, { formKey }); }
-export function tendCompanion(userId) { const t = new Date().toISOString(); const ov = read(userId); ov.tendedAt = t; write(userId, ov); persist(userId, { tendedAt: t }); return t; }
+// "Leave a line" — a REAL reflective ritual (naming how you feel), saved cross-device.
+// Replaces the old meaningless flag-flip tend: this is a genuine small act of self-care
+// that counts as showing up for yourself today.
+export function tendCompanion(userId, note) { const t = new Date().toISOString(); const n = String(note || "").slice(0, 120); const ov = read(userId); ov.tendedAt = t; ov.tendNote = n; write(userId, ov); persist(userId, { tendedAt: t, tendNote: n }); return t; }
 export function tendedToday(userId) {
   const t = read(userId).tendedAt;
   if (!t) return false;

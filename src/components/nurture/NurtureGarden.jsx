@@ -8,10 +8,10 @@
 // answered, circles joined). Identity (form/colour/personality) is seeded per user.
 // Brand: cream/plum, Ephesis/Cormorant, Lucide/SVG, no emoji.
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useRef } from "react";
 import { base44 } from "@/api/base44Client";
 import { format, differenceInCalendarDays } from "date-fns";
-import { X, Feather, Share2, Check } from "lucide-react";
+import { X, Share2, Sprout, PenLine, Download } from "lucide-react";
 import {
   T, UI, SERIF, Script, Hand, Eyebrow, Heart, PHASE_COLORS, PHASE_LABEL, useEditorialFonts,
 } from "@/components/journal/Editorial";
@@ -50,8 +50,19 @@ export default function NurtureGarden({ compact = false, onOpen = null }) {
   const [version, setVersion] = useState(0);     // bump to re-read companion after a change
   const [editing, setEditing] = useState(false);
   const [sharing, setSharing] = useState(false);
+  const [leaving, setLeaving] = useState(false);     // "leave a line" ritual open
+  const [lineDraft, setLineDraft] = useState("");
   const [draftName, setDraftName] = useState("");
   const [justTended, setJustTended] = useState(false);
+  const shareBloomRef = useRef(null);
+
+  // scroll-lock the page while the share modal is open (full-cover, no bleed-through)
+  useEffect(() => {
+    if (!sharing) return;
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => { document.body.style.overflow = prev; };
+  }, [sharing]);
 
   useEffect(() => {
     let alive = true;
@@ -82,22 +93,31 @@ export default function NurtureGarden({ compact = false, onOpen = null }) {
       ]);
       if (!alive) return;
       const arr = (x) => (Array.isArray(x) ? x.filter(Boolean) : []);
-      const programs = [...arr(Up), ...arr(Tc)];
-      const planner = [...arr(Pl), ...arr(Pt), ...arr(Pi)];
-      const commLocal = communityActs();
-      const commArr = arr(Q);                                  // server-side, cross-device
-      const community = commArr.length + commLocal;
-      const all = [...arr(E), ...arr(M), ...arr(W), ...arr(Cn), ...arr(Sy), ...programs, ...planner, ...commArr];
-      const lifetime = all.length + commLocal;
       const dayOf = (x) => x.day_key || x.date || (x.created_date ? String(x.created_date).slice(0, 10) : (x.created_at ? String(x.created_at).slice(0, 10) : null));
-      const days = new Set(); all.forEach((x) => { const d = dayOf(x); if (d) days.add(d); });
-      const tended7 = [...days].filter((d) => last7.has(d)).length;
-      const allDays = [...days].sort();
-      const lastDay = allDays.length ? allDays[allDays.length - 1] : null;
+      const daySet = (...xs) => { const s = new Set(); xs.forEach((g) => arr(g).forEach((x) => { const d = dayOf(x); if (d) s.add(d); })); return s; };
+      const commLocal = communityActs();
+      // per-area DAY sets — the basis for "what fed it today / this week" (cause→effect made visible)
+      const areaSets = {
+        journal: daySet(E), nutrition: daySet(M, W), checkins: daySet(Cn), cycle: daySet(Sy),
+        programs: daySet(Up, Tc), planner: daySet(Pl, Pt, Pi), community: daySet(Q),
+      };
+      const areas = {
+        journal: arr(E).length, nutrition: arr(M).length + arr(W).length, checkins: arr(Cn).length,
+        cycle: arr(Sy).length, programs: arr(Up).length + arr(Tc).length,
+        planner: arr(Pl).length + arr(Pt).length + arr(Pi).length, community: arr(Q).length + commLocal,
+      };
+      const today = format(new Date(), "yyyy-MM-dd");
+      const todayAreas = Object.keys(areaSets).filter((k) => areaSets[k].has(today));
+      const weekAreas = Object.keys(areaSets).filter((k) => [...areaSets[k]].some((d) => last7.has(d)));
+      const allDays = new Set(); Object.values(areaSets).forEach((s) => s.forEach((d) => allDays.add(d)));
+      const lifetime = Object.values(areas).reduce((a, b) => a + b, 0);
+      const sorted = [...allDays].sort();
+      const lastDay = sorted.length ? sorted[sorted.length - 1] : null;
       const gapDays = lastDay ? differenceInCalendarDays(new Date(), new Date(lastDay)) : null;
+      const tended7 = [...allDays].filter((d) => last7.has(d)).length;
       setUid(id);
       setProfile(Array.isArray(prof) ? prof[0] : null);
-      setData({ lifetime, tended7, gapDays, areas: { journal: arr(E).length, nutrition: arr(M).length + arr(W).length, checkins: arr(Cn).length, cycle: arr(Sy).length, programs: programs.length, planner: planner.length, community } });
+      setData({ lifetime, tended7, gapDays, areas, todayAreas, weekAreas });
     })();
     return () => { alive = false; };
   }, []);
@@ -121,13 +141,60 @@ export default function NurtureGarden({ compact = false, onOpen = null }) {
     : returning ? `Welcome back. ${companion.name} kept your place — waking up with you.`
     : (resting) ? `Resting season. Nothing is lost; ${companion.name} is waiting, soft and alive.`
     : stage.line;
-  // which life-area she tends most (shapes the "earned" identity narrative)
-  const topArea = Object.entries(data.areas).sort((a, b) => b[1] - a[1])[0];
-  const AREA_WORD = { journal: "writing", nutrition: "nourishing yourself", checkins: "checking in", cycle: "tending your cycle", programs: "your practices", planner: "planning your days", community: "being with the room" };
+  // friendly nouns for "what fed your garden" (cause→effect made visible)
+  const FED_NOUN = { journal: "your journal", nutrition: "what you ate & drank", checkins: "your check-in", cycle: "your cycle notes", programs: "a practice kept", planner: "the day you planned", community: "the community", __ritual: "the line you left" };
+  const fedToday = [...(tendedT ? ["__ritual"] : []), ...(data.todayAreas || [])];
+  const fedWeek = [...new Set([...(tendedT ? ["__ritual"] : []), ...(data.weekAreas || [])])];
+  const joinNouns = (keys) => { const w = keys.slice(0, 3).map((k) => FED_NOUN[k]).filter(Boolean); return w.length <= 1 ? (w[0] || "") : `${w.slice(0, -1).join(", ")} and ${w[w.length - 1]}`; };
 
-  const doTend = () => { if (!uid) return; tendCompanion(uid); setJustTended(true); setVersion((v) => v + 1); };
+  const doLeaveLine = () => { if (!uid) return; tendCompanion(uid, lineDraft.trim()); setJustTended(true); setLeaving(false); setLineDraft(""); setVersion((v) => v + 1); };
   const saveName = () => { if (uid) renameCompanion(uid, draftName); setEditing(false); setVersion((v) => v + 1); };
   const pickForm = (k) => { if (uid) reshapeCompanion(uid, k); setVersion((v) => v + 1); };
+  const openShare = () => { setEditing(false); setLeaving(false); setSharing(true); };
+
+  // SHARE as a real downloadable/shareable IMAGE — render a clean, self-contained SVG card
+  // (cream bg + the live bloom markup + non-personal text) → raster to PNG → Web Share or
+  // download. NOTHING personal travels with it: name + bloom + a gentle line only.
+  const exportImage = async () => {
+    try {
+      const bloomSvg = shareBloomRef.current && shareBloomRef.current.querySelector("svg");
+      const bloomMarkup = bloomSvg ? bloomSvg.outerHTML.replace(/^<svg/, '<svg width="360" height="360"') : "";
+      const esc = (s) => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+      const W = 720, H = 940, cxx = W / 2;
+      const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}">`
+        + `<rect width="${W}" height="${H}" fill="${T.cream}"/>`
+        + `<rect x="22" y="22" width="${W - 44}" height="${H - 44}" rx="40" fill="${T.paperHi}" stroke="${T.paperDeep}" stroke-width="2"/>`
+        + `<text x="${cxx}" y="104" text-anchor="middle" font-family="Inter, Helvetica, Arial, sans-serif" font-size="22" font-weight="700" letter-spacing="5" fill="${T.muted}">FEMWELL — MY COMPANION</text>`
+        + `<g transform="translate(${cxx - 180}, 150)">${bloomMarkup}</g>`
+        + `<text x="${cxx}" y="612" text-anchor="middle" font-family="Georgia, 'Cormorant Garamond', serif" font-size="66" fill="${T.ink}">${esc(companion.name)}</text>`
+        + `<text x="${cxx}" y="662" text-anchor="middle" font-family="Inter, Helvetica, Arial, sans-serif" font-size="24" letter-spacing="1" fill="${T.muted}">${esc(stateName)} · ${esc(companion.form.name)}</text>`
+        + `<text x="${cxx}" y="742" text-anchor="middle" font-family="Georgia, serif" font-style="italic" font-size="30" fill="${T.inkSoft}">Grown gently, at my own pace.</text>`
+        + `<text x="${cxx}" y="784" text-anchor="middle" font-family="Georgia, serif" font-style="italic" font-size="30" fill="${T.inkSoft}">No streaks, no scores.</text>`
+        + `<text x="${cxx}" y="${H - 56}" text-anchor="middle" font-family="Inter, Helvetica, Arial, sans-serif" font-size="17" letter-spacing="1" fill="${T.muted}">A keepsake — nothing personal travels with it</text>`
+        + `</svg>`;
+      const url = URL.createObjectURL(new Blob([svg], { type: "image/svg+xml;charset=utf-8" }));
+      const img = new Image();
+      const png = await new Promise((resolve, reject) => {
+        img.onload = () => {
+          const s = 2, c = document.createElement("canvas"); c.width = W * s; c.height = H * s;
+          const ctx = c.getContext("2d"); ctx.scale(s, s); ctx.drawImage(img, 0, 0, W, H);
+          URL.revokeObjectURL(url);
+          c.toBlob((b) => resolve(b), "image/png");
+        };
+        img.onerror = (e) => { URL.revokeObjectURL(url); reject(e); };
+        img.src = url;
+      });
+      if (!png) return;
+      window.__fwSharePNGBytes = png.size;       // diagnostic for verification
+      const file = new File([png], `${companion.name.replace(/\s+/g, "-")}-femwell.png`, { type: "image/png" });
+      if (navigator.canShare && navigator.canShare({ files: [file] })) {
+        try { await navigator.share({ files: [file], title: "My FemWell companion" }); return; } catch { /* fall through to download */ }
+      }
+      const dl = URL.createObjectURL(png);
+      const a = document.createElement("a"); a.href = dl; a.download = file.name; document.body.appendChild(a); a.click();
+      a.remove(); setTimeout(() => URL.revokeObjectURL(dl), 1500);
+    } catch { /* fail-open: the card is still on screen to screenshot */ }
+  };
 
   return (
     <div style={{ display: "flex", flexDirection: "column", alignItems: "center", textAlign: "center", position: "relative" }}>
@@ -141,33 +208,74 @@ export default function NurtureGarden({ compact = false, onOpen = null }) {
       <Script size={compact ? 24 : 32} color={T.ink} style={{ marginTop: compact ? 8 : 14 }}>{stateName}</Script>
       <Hand size={compact ? 15 : 17} color={T.muted} style={{ marginTop: 6, maxWidth: 360, lineHeight: 1.5 }}>{stateLine}</Hand>
 
+      {/* what fed it — the connection made visible (brief on the compact home cards) */}
+      {compact && !resting && fedToday.length > 0 && (
+        <div style={{ fontFamily: UI, fontSize: 11, color: T.muted, marginTop: 8, maxWidth: 320, lineHeight: 1.45 }}>
+          Today, {joinNouns(fedToday)} fed it
+        </div>
+      )}
+
       {!compact && (
         <>
           <div style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 14.5, color: T.muted, marginTop: 12, maxWidth: 360, lineHeight: 1.5 }}>
             “{companion.personality.voice}”
           </div>
-          {topArea && topArea[1] > 0 ? (
-            <div style={{ fontFamily: UI, fontSize: 11, color: T.muted, marginTop: 10 }}>
-              Shaped most by {AREA_WORD[topArea[0]] || "showing up"}{data.tended7 > 0 ? ` · tended ${data.tended7} ${data.tended7 === 1 ? "day" : "days"} this week` : ""}
-            </div>
-          ) : null}
 
-          {/* TEND · CHANGE · SHARE */}
-          <div style={{ display: "flex", gap: 9, flexWrap: "wrap", justifyContent: "center", marginTop: 20 }}>
-            <button onClick={doTend} disabled={tendedT} style={{
-              display: "inline-flex", alignItems: "center", gap: 7, background: tendedT ? T.paperHi : T.crimson, color: tendedT ? T.ink : T.paper,
-              border: tendedT ? `1px solid ${T.paperDeep}` : "none", borderRadius: 12, padding: "11px 18px", cursor: tendedT ? "default" : "pointer",
+          {/* WHAT'S FEEDING YOUR GARDEN — real engagement shown as cause→effect */}
+          <div style={{ marginTop: 18, width: "100%", maxWidth: 400, background: T.paperHi, border: `1px solid ${T.paperDeep}`, borderRadius: 14, padding: "14px 16px", textAlign: "left" }}>
+            <Eyebrow mb={8}>What's feeding your garden</Eyebrow>
+            <div style={{ fontFamily: SERIF, fontSize: 15, color: T.ink, lineHeight: 1.5 }}>
+              {fedToday.length > 0
+                ? <>Today, <strong style={{ fontWeight: 600 }}>{joinNouns(fedToday)}</strong> fed it.</>
+                : <>Nothing today — and that&apos;s allowed. Rest is part of how it grows.</>}
+            </div>
+            {fedWeek.length > 0 && (
+              <div style={{ fontFamily: UI, fontSize: 11.5, color: T.muted, marginTop: 8, lineHeight: 1.5 }}>
+                This week: {joinNouns(fedWeek)} · {data.tended7} {data.tended7 === 1 ? "day" : "days"} you showed up
+              </div>
+            )}
+            <div style={{ fontFamily: UI, fontSize: 10.5, color: T.muted, marginTop: 10, lineHeight: 1.5, opacity: 0.9 }}>
+              It grows from your real self-care across the app — journalling, meals &amp; water, check-ins, your cycle, the community, your plans and practices. The acts are the tending.
+            </div>
+          </div>
+
+          {/* LEAVE A LINE (a real ritual) · MAKE IT YOURS · SHARE */}
+          <div style={{ display: "flex", gap: 9, flexWrap: "wrap", justifyContent: "center", marginTop: 18 }}>
+            <button onClick={() => { setLeaving((v) => !v); setEditing(false); }} style={{
+              display: "inline-flex", alignItems: "center", gap: 7, background: T.crimson, color: T.paper,
+              border: "none", borderRadius: 12, padding: "11px 18px", cursor: "pointer",
               fontFamily: UI, fontSize: 12, fontWeight: 700, letterSpacing: 0.4, textTransform: "uppercase",
             }}>
-              {tendedT ? <><Check size={14} /> Tended today</> : <><Heart size={14} /> Tend {companion.name.split(" ").slice(-1)[0]}</>}
+              <PenLine size={14} /> Leave a line
             </button>
-            <button onClick={() => { setDraftName(companion.name); setEditing((e) => !e); }} style={ghost}>
-              <Feather size={13} /> Make it yours
+            <button onClick={() => { setDraftName(companion.name); setEditing((e) => !e); setLeaving(false); }} style={ghost}>
+              <Sprout size={13} /> Make it yours
             </button>
-            <button onClick={() => setSharing(true)} style={ghost}>
+            <button onClick={openShare} style={ghost}>
               <Share2 size={13} /> Share
             </button>
           </div>
+
+          {/* the ritual — one honest line, saved cross-device; counts as showing up today */}
+          {leaving && (
+            <div style={{ marginTop: 14, width: "100%", maxWidth: 400, background: T.paperHi, border: `1px solid ${T.paperDeep}`, borderRadius: 14, padding: "14px 15px", textAlign: "left" }}>
+              <Eyebrow mb={8}>How are you, really?</Eyebrow>
+              <div style={{ display: "flex", gap: 8 }}>
+                <input value={lineDraft} onChange={(e) => setLineDraft(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter" && lineDraft.trim()) doLeaveLine(); }}
+                  placeholder="One honest line…" maxLength={120} autoFocus
+                  style={{ flex: 1, minWidth: 0, background: T.paper, border: `1px solid ${T.paperDeep}`, borderRadius: 8, padding: "9px 11px", fontFamily: SERIF, fontSize: 15, color: T.ink, outline: "none" }} />
+                <button onClick={doLeaveLine} disabled={!lineDraft.trim()} style={{ flexShrink: 0, background: lineDraft.trim() ? T.ink : T.paperDeep, color: T.paper, border: "none", borderRadius: 8, padding: "0 14px", cursor: lineDraft.trim() ? "pointer" : "default", fontFamily: UI, fontSize: 12, fontWeight: 700, textTransform: "uppercase" }}>Leave</button>
+              </div>
+              <div style={{ fontFamily: UI, fontSize: 10.5, color: T.muted, marginTop: 8, lineHeight: 1.5 }}>A real moment with yourself — saved, and it counts as showing up today. No streaks, no scores.</div>
+            </div>
+          )}
+
+          {/* reflect today's line back */}
+          {tendedT && companion.tendNote && !leaving && (
+            <div style={{ marginTop: 12, fontFamily: SERIF, fontStyle: "italic", fontSize: 14, color: T.inkSoft, maxWidth: 360, lineHeight: 1.5 }}>
+              Today you wrote: “{companion.tendNote}”
+            </div>
+          )}
 
           {/* CHANGE editor — rename + reshape (real, persisted device-local) */}
           {editing && (
@@ -202,21 +310,31 @@ export default function NurtureGarden({ compact = false, onOpen = null }) {
         </>
       )}
 
-      {/* SHARE card — a tasteful, NON-personal artifact (form + name + stage only; never a
-          journal line, mood, or any private data). Opt-in; screenshot-shareable. */}
+      {/* SHARE — a clean, full-cover, scroll-locked modal (opaque scrim → no bleed-through).
+          A NON-personal keepsake: name + bloom + a gentle line only — never a journal line,
+          mood, cycle, email or any private data. "Save image" rasterises it to a real PNG
+          (Web Share where supported, else download). */}
       {sharing && (
-        <div onClick={() => setSharing(false)} style={{ position: "fixed", inset: 0, zIndex: 95, background: "rgba(11,8,5,0.5)", display: "flex", alignItems: "center", justifyContent: "center", padding: 22 }}>
-          <div onClick={(e) => e.stopPropagation()} style={{ width: "100%", maxWidth: 340, background: T.cream, borderRadius: 22, padding: "26px 22px 22px", textAlign: "center", boxShadow: "0 18px 50px rgba(11,8,5,0.4)", position: "relative", border: `1px solid ${T.paperDeep}` }}>
-            <button onClick={() => setSharing(false)} aria-label="Close" style={{ position: "absolute", top: 12, right: 12, width: 30, height: 30, borderRadius: 999, background: T.paperHi, border: `1px solid ${T.paperDeep}`, color: T.ink, display: "grid", placeItems: "center", cursor: "pointer" }}><X size={15} /></button>
-            <Eyebrow color={T.muted} mb={6}>FemWell · my companion</Eyebrow>
-            <Bloom form={companion.form} stageIdx={stageIdx} color={phaseColor} accent={companion.accent} resting={false} bright={false} size={150} />
-            <Script size={32} color={T.ink} style={{ marginTop: 8 }}>{companion.name}</Script>
-            <Hand size={15} color={T.muted} style={{ marginTop: 4 }}>{stateName} · {companion.form.name}</Hand>
-            <div style={{ marginTop: 14, fontFamily: SERIF, fontSize: 13.5, color: T.inkSoft, fontStyle: "italic", lineHeight: 1.5 }}>
-              Grown gently, at my own pace. No streaks, no scores.
+        <div onClick={() => setSharing(false)} role="dialog" aria-modal="true"
+          style={{ position: "fixed", inset: 0, zIndex: 1000, background: "rgba(11,8,5,0.9)", display: "flex", alignItems: "center", justifyContent: "center", padding: 20, overflowY: "auto" }}>
+          <div onClick={(e) => e.stopPropagation()}
+            style={{ width: "100%", maxWidth: 340, background: T.cream, borderRadius: 24, padding: "28px 24px 22px", textAlign: "center", boxShadow: "0 24px 60px rgba(11,8,5,0.5)", position: "relative", border: `1px solid ${T.paperDeep}` }}>
+            <button onClick={() => setSharing(false)} aria-label="Close" style={{ position: "absolute", top: 12, right: 12, width: 32, height: 32, borderRadius: 999, background: T.paperHi, border: `1px solid ${T.paperDeep}`, color: T.ink, display: "grid", placeItems: "center", cursor: "pointer" }}><X size={16} /></button>
+            <Eyebrow color={T.muted} mb={10}>FemWell · my companion</Eyebrow>
+            <div ref={shareBloomRef} style={{ display: "flex", justifyContent: "center" }}>
+              <Bloom form={companion.form} stageIdx={stageIdx} color={phaseColor} accent={companion.accent} resting={false} bright={false} size={160} />
             </div>
-            <div style={{ marginTop: 16, fontFamily: UI, fontSize: 10, color: T.muted, letterSpacing: 0.4 }}>
-              Screenshot to share · nothing personal leaves with it
+            <Script size={34} color={T.ink} style={{ marginTop: 10, lineHeight: 1.1 }}>{companion.name}</Script>
+            <Hand size={15} color={T.muted} style={{ marginTop: 6 }}>{stateName} · {companion.form.name}</Hand>
+            <div style={{ marginTop: 16, fontFamily: SERIF, fontSize: 14, color: T.inkSoft, fontStyle: "italic", lineHeight: 1.55, padding: "0 4px" }}>
+              Grown gently, at my own pace.<br />No streaks, no scores.
+            </div>
+            <button onClick={exportImage}
+              style={{ marginTop: 20, width: "100%", display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 8, background: T.ink, color: T.paper, border: "none", borderRadius: 12, padding: "13px 18px", cursor: "pointer", fontFamily: UI, fontSize: 12.5, fontWeight: 700, letterSpacing: 0.5, textTransform: "uppercase" }}>
+              <Download size={15} /> Save image
+            </button>
+            <div style={{ marginTop: 12, fontFamily: UI, fontSize: 10.5, color: T.muted, letterSpacing: 0.3, lineHeight: 1.5 }}>
+              A keepsake — nothing personal travels with it.
             </div>
           </div>
         </div>
