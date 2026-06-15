@@ -39,7 +39,7 @@ function fadeLabel(echo) {
   return `fades in ${Math.round(h / 24)}d`;
 }
 
-export default function EchoWall({ user, profile, phase = null, lifeStage = null }) {
+export default function EchoWall({ user, profile, phase = null, lifeStage = null, onShare = null }) {
   useEditorialFonts();
   const [raw, setRaw] = useState([]);
   const [myHash, setMyHash] = useState(null);
@@ -160,6 +160,15 @@ export default function EchoWall({ user, profile, phase = null, lifeStage = null
         <Hand size={16} color={T.muted} carve={false} style={{ marginTop: 4 }}>
           Anonymous. Held, never replied to. Each line fades in two days.
         </Hand>
+        {onShare && (
+          <button onClick={onShare} style={{
+            marginTop: 14, display: "inline-flex", alignItems: "center", gap: 8, background: T.crimson, color: "#F4EFE3",
+            border: "none", borderRadius: 12, padding: "11px 18px", cursor: "pointer",
+            fontFamily: UI, fontSize: 12, fontWeight: 700, letterSpacing: 0.5, textTransform: "uppercase",
+          }}>
+            <Waves size={14} /> Leave a line
+          </button>
+        )}
         <Rule mt={16} />
       </header>
 
@@ -191,8 +200,17 @@ export default function EchoWall({ user, profile, phase = null, lifeStage = null
         <div style={{ textAlign: "center", padding: "44px 20px" }}>
           <Script size={32} style={{ marginBottom: 8 }}>Quiet, for now</Script>
           <Hand size={19} color={T.inkSoft}>
-            No echoes in this window yet. If something is true for you, you can leave the first — from your Journal.
+            No echoes in this window yet. If something is true for you, you can leave the first.
           </Hand>
+          {onShare && (
+            <button onClick={onShare} style={{
+              marginTop: 16, display: "inline-flex", alignItems: "center", gap: 8, background: T.crimson, color: "#F4EFE3",
+              border: "none", borderRadius: 12, padding: "11px 18px", cursor: "pointer",
+              fontFamily: UI, fontSize: 12, fontWeight: 700, letterSpacing: 0.5, textTransform: "uppercase",
+            }}>
+              <Waves size={14} /> Leave the first line
+            </button>
+          )}
         </div>
       )}
 

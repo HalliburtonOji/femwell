@@ -255,7 +255,7 @@ export default function ShareAsEchoSheet({
             <Hand size={19} color={T.inkSoft} style={{ marginBottom: 20 }}>
               Your line will sit quietly, then go up for {cohort}. You can pull it back from the wall while it{"’"}s cooling.
             </Hand>
-            <button onClick={onClose} style={cta}>Back to the Journal</button>
+            <button onClick={onClose} style={cta}>Done</button>
           </div>
         )}
 

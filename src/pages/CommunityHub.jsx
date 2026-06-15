@@ -37,6 +37,8 @@ import { CommunityEmbraceRing } from "@/components/hub/Centerpieces";
 import JumpToButton from "@/components/layout/JumpToButton";
 import CommunityHubSheet from "@/components/community/CommunityHubSheet";
 import EchoWall from "@/components/journal/echo/EchoWall";
+import ShareAsEchoSheet from "@/components/journal/echo/ShareAsEchoSheet";
+import { computeCycleDay } from "@/hooks/useCycleDay";
 import { CommunityInner } from "./Community";
 import {
   communityHash, answeredQotd, markQotd,
@@ -407,6 +409,8 @@ function CommunityHubInner() {
 
   const [active, setActive] = useState(0);          // slider index
   const [openSheet, setOpenSheet] = useState(null); // surface id rendered in a HubSheet (echo/qotd)
+  const [showEcho, setShowEcho] = useState(false);  // in-place echo composer (no redirect to Journal)
+  const [echoTick, setEchoTick] = useState(0);      // remount the wall after a post so the new (cooling) echo shows
   const [openRoom, setOpenRoom] = useState(null);   // room key rendered IN-SHEET via CommunityInner (no bounce to classic)
   const [hubMenuOpen, setHubMenuOpen] = useState(false);
   const [crisis, setCrisis] = useState(false);
@@ -658,8 +662,19 @@ function CommunityHubInner() {
         {/* ── the bottom sheet — the FULL real surface (Echo Wall) or the QOTD flow ── */}
         {openMeta && openMeta.open === "echo" && (
           <HubSheet title={openMeta.sheetTitle} eyebrow={openMeta.eyebrow} onClose={() => setOpenSheet(null)}>
-            <EchoWall user={user} profile={profile} lifeStage={lifeStage} />
+            <EchoWall key={echoTick} user={user} profile={profile} lifeStage={lifeStage} onShare={() => setShowEcho(true)} />
           </HubSheet>
+        )}
+        {/* In-place echo composer — post an echo RIGHT HERE on Community (real guarded
+            postEcho write); no redirect to the Journal. Remount the wall on success. */}
+        {showEcho && user && (
+          <ShareAsEchoSheet
+            user={user}
+            phase={(() => { try { return profile?.last_period_start_date ? computeCycleDay(profile).phase : null; } catch { return null; } })()}
+            lifeStage={lifeStage}
+            onClose={() => setShowEcho(false)}
+            onShared={() => { setShowEcho(false); setEchoTick((t) => t + 1); }}
+          />
         )}
         {openMeta && openMeta.open === "qotd" && (
           <HubSheet title={openMeta.sheetTitle} eyebrow={openMeta.eyebrow} onClose={() => setOpenSheet(null)}>
