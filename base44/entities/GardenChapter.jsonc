@@ -1,0 +1,32 @@
+{
+  // GardenChapter — one persisted SNAPSHOT per past chapter of the accumulating garden
+  // (Direction B). A chapter = a calendar month. The CURRENT chapter is the live companion;
+  // when a new month begins, the just-ended chapter is snapshotted here so it PERSISTS and
+  // the garden becomes a wanderable record of the seasons she's moved through. Guilt-free:
+  // a quiet month is still a kept chapter; nothing ever dies.
+  //
+  // Per-user, owner read/write (default RLS — like CompanionState / DailyCheckins). No service
+  // role, no functions, no awaited external calls on any write path → avoids the function-deploy
+  // and fetch-hang traps [[base44-fetch-no-timeout-hangs]]. The client keeps a localStorage
+  // mirror so the garden renders instantly and a wedged write never breaks it.
+  "name": "GardenChapter",
+  "type": "object",
+  "properties": {
+    "user_id":    { "type": "string", "description": "Owner account id" },
+    "chapter_key":{ "type": "string", "description": "Chapter id — the calendar month, YYYY-MM" },
+    "label":      { "type": "string", "description": "Human label, e.g. 'May 2026'" },
+    "life_stage": { "type": "string", "description": "Life stage at archive time (approx — life stage changes slowly)" },
+    "form_key":   { "type": "string", "description": "The plant form for that chapter (peony|daisy|foxglove|fern|poppy|forget)" },
+    "accent":     { "type": "string", "description": "Identity accent colour (hex)" },
+    "stage_key":  { "type": "string", "description": "Growth stage the chapter's plant reached: seed|sprout|budding|blooming|full" },
+    "season":     { "type": "string", "description": "spring|summer|autumn|winter — drives the archived plant's colour" },
+    "top_area":   { "type": "string", "description": "The life-area tended most that chapter (journal|nutrition|checkins|cycle|programs|planner|community)" },
+    "active_days":{ "type": "number", "description": "Number of days she showed up that chapter" },
+    "summary":    { "type": "string", "description": "Warm one-line recap, e.g. 'You showed up 9 days · mostly your journal'" },
+    "archived_at":{ "type": "string", "format": "date-time", "description": "When the snapshot was taken" }
+  },
+  "required": ["user_id", "chapter_key"],
+  "indexes": [
+    { "fields": ["user_id", "chapter_key"] }
+  ]
+}

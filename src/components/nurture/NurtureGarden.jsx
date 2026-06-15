@@ -19,6 +19,10 @@ import { computeCycleDay } from "@/hooks/useCycleDay";
 import {
   getCompanion, FORM_LIST, renameCompanion, reshapeCompanion, tendCompanion, tendedToday, loadCompanionState,
 } from "@/components/nurture/companion";
+import {
+  currentChapterKey, chapterLabel, groupByMonth, seasonOf, seasonColor, AREA_NOUN,
+  localChapters, loadGardenChapters, archiveChapter,
+} from "@/components/nurture/garden";
 
 const STAGES = [
   { key: "seed",     min: 0,   name: "Just planted",   line: "A seed is in the soil. Whatever you tend — a line, a meal, a check-in — it begins to grow." },
@@ -54,6 +58,8 @@ export default function NurtureGarden({ compact = false, onOpen = null }) {
   const [lineDraft, setLineDraft] = useState("");
   const [draftName, setDraftName] = useState("");
   const [justTended, setJustTended] = useState(false);
+  const [chapters, setChapters] = useState([]);          // past chapters — the accumulating garden
+  const [openChapter, setOpenChapter] = useState(null);  // a tapped past chapter (detail sheet)
   const shareBloomRef = useRef(null);
 
   // scroll-lock the page while the share modal is open (full-cover, no bleed-through)
@@ -115,9 +121,43 @@ export default function NurtureGarden({ compact = false, onOpen = null }) {
       const lastDay = sorted.length ? sorted[sorted.length - 1] : null;
       const gapDays = lastDay ? differenceInCalendarDays(new Date(), new Date(lastDay)) : null;
       const tended7 = [...allDays].filter((d) => last7.has(d)).length;
+
+      // ── CHAPTERS — the accumulating garden (Direction B). A chapter = a calendar month:
+      // the current month is the live plant; each PAST month is a kept chapter. Group the
+      // engagement day-sets by month, archive any past month not yet kept (fire-and-forget),
+      // and load the kept chapters cross-device. ──
+      const grouped = groupByMonth(areaSets);
+      const curKey = currentChapterKey();
+      const cur = grouped[curKey] || { activeDays: 0, engagement: 0, topArea: null };
+      const comp = id ? getCompanion(id) : null;
+      const lifeStage = (Array.isArray(prof) ? prof[0] : null)?.life_stage || "";
+      const pastKeys = Object.keys(grouped).filter((k) => k < curKey);
+      if (id && comp) {
+        const kept = new Set(localChapters(id).map((c) => c.chapter_key));
+        for (const k of pastKeys) {
+          if (kept.has(k)) continue;
+          const g = grouped[k];
+          const st = stageFor(g.engagement);
+          const noun = AREA_NOUN[g.topArea] || "small daily care";
+          archiveChapter(id, {
+            chapter_key: k, label: chapterLabel(k), life_stage: lifeStage,
+            form_key: comp.form.key, accent: comp.accent, stage_key: st.key, season: seasonOf(k),
+            top_area: g.topArea || "", active_days: g.activeDays,
+            summary: `You showed up ${g.activeDays} ${g.activeDays === 1 ? "day" : "days"}${g.topArea ? ` · mostly ${noun}` : ""}.`,
+          });
+        }
+        setChapters(localChapters(id).filter((c) => c.chapter_key < curKey));
+        loadGardenChapters(id).then((all) => { if (alive) setChapters(all.filter((c) => c.chapter_key < curKey)); }).catch(() => {});
+      }
+
       setUid(id);
       setProfile(Array.isArray(prof) ? prof[0] : null);
-      setData({ lifetime, tended7, gapDays, areas, todayAreas, weekAreas });
+      setData({
+        lifetime, tended7, gapDays, areas, todayAreas, weekAreas,
+        chapterKey: curKey, chapterLabelText: chapterLabel(curKey),
+        chapterEngagement: cur.engagement, chapterActiveDays: cur.activeDays, chapterTopArea: cur.topArea,
+        isFreshChapter: cur.engagement === 0 && pastKeys.length > 0,
+      });
     })();
     return () => { alive = false; };
   }, []);
@@ -132,7 +172,9 @@ export default function NurtureGarden({ compact = false, onOpen = null }) {
   }
 
   const phaseColor = PHASE_COLORS[phase] || T.sage;
-  const stage = stageFor(data.lifetime);
+  // The plant grows from THIS chapter's engagement (it's this chapter's plant); a new month
+  // begins fresh. Past chapters are kept below in the garden.
+  const stage = stageFor(data.chapterEngagement ?? data.lifetime ?? 0);
   const stageIdx = STAGES.findIndex((s) => s.key === stage.key);
   const resting = (data.gapDays == null) || (data.gapDays >= 5);
   const returning = data.gapDays != null && data.gapDays >= 5 && data.tended7 > 0;
@@ -316,6 +358,38 @@ export default function NurtureGarden({ compact = false, onOpen = null }) {
           <div style={{ marginTop: 16, fontFamily: SERIF, fontSize: 13, color: T.muted, fontStyle: "italic", maxWidth: 380, lineHeight: 1.5 }}>
             {companion.name} grows from everything you already do — a journal line, a logged meal, a check-in, a day you planned, a practice kept, a moment in the community. Rest is part of it.
           </div>
+
+          {/* THE ACCUMULATING GARDEN — each past month is a kept plant; tap one to revisit it */}
+          {chapters.length > 0 && (
+            <div style={{ marginTop: 28, width: "100%", maxWidth: 440, textAlign: "left", borderTop: `1px solid ${T.paperDeep}`, paddingTop: 18 }}>
+              <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: 8 }}>
+                <Eyebrow>Your garden</Eyebrow>
+                <span style={{ fontFamily: UI, fontSize: 10.5, color: T.muted }}>{chapters.length + 1} chapters</span>
+              </div>
+              {data.isFreshChapter && (
+                <div style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 13.5, color: T.inkSoft, margin: "8px 0 2px", lineHeight: 1.5 }}>
+                  A new chapter — {data.chapterLabelText}. Last month&apos;s bloom is kept here; this one begins fresh.
+                </div>
+              )}
+              <div style={{ fontFamily: UI, fontSize: 11, color: T.muted, margin: "6px 0 14px", lineHeight: 1.5 }}>
+                Each month grows its own plant, and it stays — a record of the seasons you&apos;ve moved through. Tap one to revisit it.
+              </div>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 14, justifyContent: "flex-start" }}>
+                {chapters.map((ch) => {
+                  const sIdx = Math.max(0, STAGES.findIndex((s) => s.key === ch.stage_key));
+                  const form = FORM_LIST.find((f) => f.key === ch.form_key) || FORM_LIST[0];
+                  return (
+                    <button key={ch.chapter_key} onClick={() => setOpenChapter(ch)}
+                      style={{ background: "transparent", border: "none", cursor: "pointer", padding: 0, display: "flex", flexDirection: "column", alignItems: "center", width: 96 }}>
+                      <Bloom form={form} stageIdx={sIdx} color={seasonColor(ch.season)} accent={ch.accent} resting={false} bright={false} size={88} />
+                      <span style={{ fontFamily: UI, fontSize: 10.5, fontWeight: 700, color: T.ink, marginTop: 2 }}>{ch.label}</span>
+                      <span style={{ fontFamily: UI, fontSize: 9.5, color: T.muted }}>{ch.active_days} {ch.active_days === 1 ? "day" : "days"}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
         </>
       )}
 
@@ -345,6 +419,27 @@ export default function NurtureGarden({ compact = false, onOpen = null }) {
             <div style={{ marginTop: 12, fontFamily: UI, fontSize: 10.5, color: T.muted, letterSpacing: 0.3, lineHeight: 1.5 }}>
               A keepsake — nothing personal travels with it.
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* A KEPT CHAPTER — tap a past plant to revisit that season (revisit, never relive) */}
+      {openChapter && (
+        <div onClick={() => setOpenChapter(null)} role="dialog" aria-modal="true"
+          style={{ position: "fixed", inset: 0, zIndex: 1000, background: "rgba(11,8,5,0.9)", display: "flex", alignItems: "center", justifyContent: "center", padding: 20, overflowY: "auto" }}>
+          <div onClick={(e) => e.stopPropagation()}
+            style={{ width: "100%", maxWidth: 340, background: T.paperHi, borderRadius: 24, padding: "28px 24px 22px", textAlign: "center", boxShadow: "0 24px 60px rgba(11,8,5,0.5)", position: "relative", border: `1px solid ${T.paperDeep}` }}>
+            <button onClick={() => setOpenChapter(null)} aria-label="Close" style={{ position: "absolute", top: 12, right: 12, width: 32, height: 32, borderRadius: 999, background: T.paperHi, border: `1px solid ${T.paperDeep}`, color: T.ink, display: "grid", placeItems: "center", cursor: "pointer" }}><X size={16} /></button>
+            <Eyebrow color={T.muted} mb={10}>A chapter · {openChapter.season}</Eyebrow>
+            <div style={{ display: "flex", justifyContent: "center" }}>
+              <Bloom form={FORM_LIST.find((f) => f.key === openChapter.form_key) || FORM_LIST[0]} stageIdx={Math.max(0, STAGES.findIndex((s) => s.key === openChapter.stage_key))} color={seasonColor(openChapter.season)} accent={openChapter.accent} resting={false} bright={false} size={150} />
+            </div>
+            <Script size={32} color={T.ink} style={{ marginTop: 10, lineHeight: 1.1 }}>{openChapter.label}</Script>
+            {[openChapter.life_stage, openChapter.season].filter(Boolean).length > 0 && (
+              <Hand size={15} color={T.muted} style={{ marginTop: 6 }}>{[openChapter.life_stage, openChapter.season].filter(Boolean).join(" · ")}</Hand>
+            )}
+            <div style={{ marginTop: 14, fontFamily: SERIF, fontSize: 15, color: T.ink, lineHeight: 1.55 }}>{openChapter.summary}</div>
+            <div style={{ marginTop: 14, fontFamily: UI, fontSize: 10.5, color: T.muted, letterSpacing: 0.3 }}>Kept in your garden. Nothing is lost.</div>
           </div>
         </div>
       )}
