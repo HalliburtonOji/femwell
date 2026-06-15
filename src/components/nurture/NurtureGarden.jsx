@@ -157,8 +157,17 @@ export default function NurtureGarden({ compact = false, onOpen = null }) {
   // download. NOTHING personal travels with it: name + bloom + a gentle line only.
   const exportImage = async () => {
     try {
+      // serialize the live bloom via a clone (valid XML, proper xmlns, no duplicate attrs —
+      // an <img> loads the SVG with a STRICT XML parser, so outerHTML+regex would fail)
       const bloomSvg = shareBloomRef.current && shareBloomRef.current.querySelector("svg");
-      const bloomMarkup = bloomSvg ? bloomSvg.outerHTML.replace(/^<svg/, '<svg width="360" height="360"') : "";
+      let bloomMarkup = "";
+      if (bloomSvg) {
+        const clone = bloomSvg.cloneNode(true);
+        clone.setAttribute("xmlns", "http://www.w3.org/2000/svg");
+        clone.setAttribute("width", "360");
+        clone.setAttribute("height", "360");
+        bloomMarkup = new XMLSerializer().serializeToString(clone);
+      }
       const esc = (s) => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
       const W = 720, H = 940, cxx = W / 2;
       const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}">`
