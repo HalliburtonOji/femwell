@@ -30,6 +30,7 @@ FemWell has a standing team of named subagents, bound by specs at `.claude/agent
 - Design tokens: --femwell-cream #F4EDDB, --femwell-espresso #3A2C1A, --femwell-blush #E8B4B8, --femwell-sage #8FAF8F, --femwell-muted #9B8B7A, gold #D4AF37
 - 11 life stages: teen, reproductive, pre-ttc, ttc, pregnant-t1/t2/t3, postpartum, perimenopause, menopause, post-menopause
 - Test user: ojihalliburton57 / ojihalliburton57@gmail.com
+- **Founders docs (Ideas / Design Lab) access — NOT a URL route.** FoundersOS has no route; `/FoundersOS`, `/Ideas`, `/Founders` all 404/redirect. The founder doc tabs live behind the **floating "IDEAS" pill** (dark button, bottom-right of the app shell). To open/verify a founders tab: load /Today as the test user → wait for hydration → CLICK the floating IDEAS pill → select the tab. Do NOT deep-link a founders route.
 - Market is UK (NHS, GMC/NMC/HCPC, £, UK GDPR). No emoji anywhere (Fraunces + Inter + Lucide/SVG only). One unified bottom nav at all viewports.
 
 ## WHOLE-LIFE WELLNESS — NOT A CLINICAL TRACKER (bake into EVERY build):
