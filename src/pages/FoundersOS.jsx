@@ -51,6 +51,7 @@ import NurtureCompanionDoc from "@/components/founders/NurtureCompanionDoc";
 import FeatureIdeasDoc from "@/components/founders/FeatureIdeasDoc";
 import CompanionVisionDoc from "@/components/founders/CompanionVisionDoc";
 import CompanionVisionV2Doc from "@/components/founders/CompanionVisionV2Doc";
+import BooksBookClubsDoc from "@/components/founders/BooksBookClubsDoc";
 // HealthCornerDemo was the multi-layout preview. The canonical health
 // experience now lives at /Health (src/pages/Health.jsx). The Health Corner
 // tab in /Ideas renders <HealthCornerRedirectCard /> instead.
@@ -80,7 +81,7 @@ const ALLOWED = new Set([
   "ojihalliburton57@gmail.com",
 ]);
 
-const TABS = ["Lab", "Previews", "Companion Vision", "Companion Vision v2", "Feature Ideas", "Brand Identity", "Nurture Companion", "Pages", "Roadmap", "Health Audit", "Nutrition Master Plan", "Nutrition Plan", "Nutrition Demos", "Community Plan", "Build Plan", "Journal Audit", "Expert Governance", "Library & Groups", "Integration Audit", "Connectivity Map", "Sharing", "Home Redesign", "Whole-Life", "Audio", "Ideas", "Strategy", "Legal", "Decisions", "Journal", "Journal Demos", "Community Demos", "Another You", "UX & Design", "Wholeness", "LGBTQ+", "Health Corner"];
+const TABS = ["Lab", "Previews", "Companion Vision", "Companion Vision v2", "Feature Ideas", "Brand Identity", "Nurture Companion", "Pages", "Roadmap", "Health Audit", "Nutrition Master Plan", "Nutrition Plan", "Nutrition Demos", "Community Plan", "Books & Book Clubs", "Build Plan", "Journal Audit", "Expert Governance", "Library & Groups", "Integration Audit", "Connectivity Map", "Sharing", "Home Redesign", "Whole-Life", "Audio", "Ideas", "Strategy", "Legal", "Decisions", "Journal", "Journal Demos", "Community Demos", "Another You", "UX & Design", "Wholeness", "LGBTQ+", "Health Corner"];
 
 // Themed groups for the two-row nav rail (replaces the flat 36-tab scroll row).
 // Every tab is assigned exactly once; any tab not listed falls into "More" so
@@ -648,6 +649,7 @@ function FoundersInner({ user }) {
         {tab === "Health Audit" && <AppHealthAuditDoc />}
         {tab === "Nutrition Plan" && <NutritionPlanDoc />}
         {tab === "Community Plan" && <CommunityPlanDoc />}
+        {tab === "Books & Book Clubs" && <BooksBookClubsDoc />}
         {tab === "Build Plan"     && <BuildPlanDoc />}
         {tab === "Journal Audit"  && <JournalAuditDoc />}
         {tab === "Expert Governance" && <ExpertGovernanceDoc />}
