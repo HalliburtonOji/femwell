@@ -171,7 +171,7 @@ export default function NurtureGarden({ compact = false, onOpen = null }) {
       const esc = (s) => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
       const W = 720, H = 940, cxx = W / 2;
       const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}">`
-        + `<rect width="${W}" height="${H}" fill="${T.cream}"/>`
+        + `<rect width="${W}" height="${H}" fill="${T.paper}"/>`
         + `<rect x="22" y="22" width="${W - 44}" height="${H - 44}" rx="40" fill="${T.paperHi}" stroke="${T.paperDeep}" stroke-width="2"/>`
         + `<text x="${cxx}" y="104" text-anchor="middle" font-family="Inter, Helvetica, Arial, sans-serif" font-size="22" font-weight="700" letter-spacing="5" fill="${T.muted}">FEMWELL — MY COMPANION</text>`
         + `<g transform="translate(${cxx - 180}, 150)">${bloomMarkup}</g>`
@@ -327,7 +327,7 @@ export default function NurtureGarden({ compact = false, onOpen = null }) {
         <div onClick={() => setSharing(false)} role="dialog" aria-modal="true"
           style={{ position: "fixed", inset: 0, zIndex: 1000, background: "rgba(11,8,5,0.9)", display: "flex", alignItems: "center", justifyContent: "center", padding: 20, overflowY: "auto" }}>
           <div onClick={(e) => e.stopPropagation()}
-            style={{ width: "100%", maxWidth: 340, background: T.cream, borderRadius: 24, padding: "28px 24px 22px", textAlign: "center", boxShadow: "0 24px 60px rgba(11,8,5,0.5)", position: "relative", border: `1px solid ${T.paperDeep}` }}>
+            style={{ width: "100%", maxWidth: 340, background: T.paperHi, backgroundColor: T.paperHi, borderRadius: 24, padding: "28px 24px 22px", textAlign: "center", boxShadow: "0 24px 60px rgba(11,8,5,0.5)", position: "relative", border: `1px solid ${T.paperDeep}` }}>
             <button onClick={() => setSharing(false)} aria-label="Close" style={{ position: "absolute", top: 12, right: 12, width: 32, height: 32, borderRadius: 999, background: T.paperHi, border: `1px solid ${T.paperDeep}`, color: T.ink, display: "grid", placeItems: "center", cursor: "pointer" }}><X size={16} /></button>
             <Eyebrow color={T.muted} mb={10}>FemWell · my companion</Eyebrow>
             <div ref={shareBloomRef} style={{ display: "flex", justifyContent: "center" }}>
