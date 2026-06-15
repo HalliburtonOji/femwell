@@ -50,6 +50,7 @@ import BrandIdentityDoc from "@/components/founders/BrandIdentityDoc";
 import NurtureCompanionDoc from "@/components/founders/NurtureCompanionDoc";
 import FeatureIdeasDoc from "@/components/founders/FeatureIdeasDoc";
 import CompanionVisionDoc from "@/components/founders/CompanionVisionDoc";
+import CompanionVisionV2Doc from "@/components/founders/CompanionVisionV2Doc";
 // HealthCornerDemo was the multi-layout preview. The canonical health
 // experience now lives at /Health (src/pages/Health.jsx). The Health Corner
 // tab in /Ideas renders <HealthCornerRedirectCard /> instead.
@@ -79,7 +80,7 @@ const ALLOWED = new Set([
   "ojihalliburton57@gmail.com",
 ]);
 
-const TABS = ["Lab", "Previews", "Companion Vision", "Feature Ideas", "Brand Identity", "Nurture Companion", "Pages", "Roadmap", "Health Audit", "Nutrition Master Plan", "Nutrition Plan", "Nutrition Demos", "Community Plan", "Build Plan", "Journal Audit", "Expert Governance", "Library & Groups", "Integration Audit", "Connectivity Map", "Sharing", "Home Redesign", "Whole-Life", "Audio", "Ideas", "Strategy", "Legal", "Decisions", "Journal", "Journal Demos", "Community Demos", "Another You", "UX & Design", "Wholeness", "LGBTQ+", "Health Corner"];
+const TABS = ["Lab", "Previews", "Companion Vision", "Companion Vision v2", "Feature Ideas", "Brand Identity", "Nurture Companion", "Pages", "Roadmap", "Health Audit", "Nutrition Master Plan", "Nutrition Plan", "Nutrition Demos", "Community Plan", "Build Plan", "Journal Audit", "Expert Governance", "Library & Groups", "Integration Audit", "Connectivity Map", "Sharing", "Home Redesign", "Whole-Life", "Audio", "Ideas", "Strategy", "Legal", "Decisions", "Journal", "Journal Demos", "Community Demos", "Another You", "UX & Design", "Wholeness", "LGBTQ+", "Health Corner"];
 
 const IDEAS_KEY  = "femwell_ideas";
 const CHECKS_KEY = "femwell_founder_checks";
@@ -596,6 +597,7 @@ function FoundersInner({ user }) {
         {tab === "Brand Identity" && <BrandIdentityDoc />}
         {tab === "Feature Ideas" && <FeatureIdeasDoc />}
         {tab === "Companion Vision" && <CompanionVisionDoc />}
+        {tab === "Companion Vision v2" && <CompanionVisionV2Doc />}
         {tab === "Nurture Companion" && <NurtureCompanionDoc />}
         {tab === "Journal Demos"  && <JournalDemosTab />}
         {tab === "Community Demos" && <CommunityDemosTab />}
