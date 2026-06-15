@@ -37,9 +37,11 @@ function hash(str) {
 // the SEEDED (procedural) base companion for a user — stable for that account
 export function baseCompanion(userId) {
   const h = hash(userId);
+  // unsigned shifts (>>>): a signed >> on a hash with the high bit set yields a NEGATIVE
+  // value, and negative % len → a negative index → undefined accent/personality.
   const form = FORMS[h % FORMS.length];
-  const accent = ACCENTS[(h >> 3) % ACCENTS.length];
-  const personality = PERSONALITIES[(h >> 6) % PERSONALITIES.length];
+  const accent = ACCENTS[(h >>> 3) % ACCENTS.length];
+  const personality = PERSONALITIES[(h >>> 6) % PERSONALITIES.length];
   const defaultName = `Little ${form.name}`;
   return { seed: h, form, accent, personality, defaultName };
 }
