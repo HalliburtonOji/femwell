@@ -28,6 +28,7 @@ import { T, UI, SERIF } from "@/components/journal/Editorial";
 import { withTimeout } from "@/utils/safeEntity";
 import { inferMealTypeFromTime } from "@/utils/nutritionAiAnalysis";
 import { offMicrosFromNutriments } from "@/utils/foodModel";
+import { mealEstimate, cofidFloorMicros } from "@/utils/cofid";
 import { topFoods, frequentFavourites } from "@/utils/personalisation";
 
 const OFF_TIMEOUT_MS = 6000;
@@ -638,14 +639,35 @@ export default function UnifiedLogger({ user, profile, onLogged }) {
       const lowConfidence =
         typeof res.photo_confidence === "number" && res.photo_confidence < 0.5;
       const name = (firstItem?.name || "").trim() || "Photographed meal";
-      const micro = (k) => num(summary?.[k]) || num(firstItem?.[k]) || undefined;
+
+      // PHOTO ENRICHMENT (no new key — reuses the CoFID spine): the vision model names the
+      // dish/ingredients well but its macros/micros can be partial or zero for composite UK
+      // dishes (e.g. "katsu curry"). Backfill ONLY the fields the model left empty from the
+      // CoFID food table, keyed on the recognised item/dish names. Honest: micros only fill
+      // where CoFID actually carries them (0 stays 0), and a real model value always wins.
+      const photoText = [
+        firstItem?.name,
+        ...(Array.isArray(res?.items) ? res.items.map((it) => it?.name) : []),
+      ].filter(Boolean).join(", ");
+      const est = photoText ? mealEstimate(photoText, inferMealTypeFromTime()) : null;
+      const floorMicros = photoText ? cofidFloorMicros(photoText) : null;
+      const macro = (k, estKey) => {
+        const real = num(summary?.[k]) || num(firstItem?.[k]);
+        if (real > 0) return Math.round(real);
+        return est && est[estKey] > 0 ? Math.round(est[estKey]) : "";
+      };
+      const micro = (k) => {
+        const real = num(summary?.[k]) || num(firstItem?.[k]);
+        if (real > 0) return real;
+        return floorMicros && floorMicros[k] > 0 ? floorMicros[k] : undefined;
+      };
       setDraft({
         name,
         portion: firstItem?.quantity_text || "",
-        kcal: summary?.calories ? Math.round(summary.calories) : (firstItem?.calories ? Math.round(firstItem.calories) : ""),
-        protein_g: summary?.protein_g ? Math.round(summary.protein_g) : "",
-        carbs_g: summary?.carbs_g ? Math.round(summary.carbs_g) : "",
-        fat_g: summary?.fat_g ? Math.round(summary.fat_g) : "",
+        kcal: macro("calories", "kcal"),
+        protein_g: macro("protein_g", "protein_g"),
+        carbs_g: macro("carbs_g", "carbs_g"),
+        fat_g: macro("fat_g", "fat_g"),
         iron_mg: micro("iron_mg"),
         folate_ug: micro("folate_ug"),
         calcium_mg: micro("calcium_mg"),

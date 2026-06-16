@@ -29,6 +29,7 @@ import {
   T, UI, SERIF, Script, Hand, Eyebrow,
 } from "../components/journal/Editorial";
 import { callJessAgent } from "@/services/jessAgentService";
+import { nutritionDoctorSummary } from "@/utils/nutritionSummary";
 
 // ── timeframe ────────────────────────────────────────────────────────────────
 const TIMEFRAMES = [
@@ -56,6 +57,7 @@ const SECTIONS = [
   { id: "cycle",    label: "Cycle & bleeding", note: "Pattern & dates" },
   { id: "meds",     label: "Medications", note: "Logged & reminders" },
   { id: "exercise", label: "Movement", note: "Frequency & type" },
+  { id: "nutrition", label: "Nutrition", note: "Energy, macros & key micros" },
   { id: "patterns", label: "Patterns", note: "Noticed correlations" },
   { id: "journal",  label: "Journal reflections", note: "OPT-IN — your words", optIn: true },
 ];
@@ -99,7 +101,7 @@ const uid = (() => { let i = 0; return () => `q${++i}`; })();
 
 const PRESETS = {
   diary:   { timeframe: "6w",  focus: ["menopause", "cycle"], sections: ["overview", "symptoms", "mood", "sleep", "cycle", "meds"] },
-  full:    { timeframe: "6w",  focus: [], sections: ["overview", "symptoms", "mood", "sleep", "cycle", "meds", "exercise", "patterns"] },
+  full:    { timeframe: "6w",  focus: [], sections: ["overview", "symptoms", "mood", "sleep", "cycle", "meds", "exercise", "nutrition", "patterns"] },
   journal: { timeframe: "90d", focus: ["mood"], sections: ["overview", "mood", "patterns"] },
 };
 
@@ -118,6 +120,7 @@ export default function DoctorExport() {
   const [medReminders, setMedReminders] = useState([]);
   const [journals, setJournals] = useState([]);
   const [correlations, setCorrelations] = useState([]);
+  const [nutrition, setNutrition] = useState({ hasData: false });
   const [loading, setLoading] = useState(true);
 
   const [step, setStep] = useState("select");
@@ -180,6 +183,26 @@ export default function DoctorExport() {
       }
     })();
   }, []);
+
+  // ── nutrition rollup (fail-open, re-runs when the window changes) ──
+  // Reads the last `nutritionDays` of real MealLog + HydrationLog through the floor-aware
+  // spine. Guarded inside nutritionDoctorSummary; this effect never blocks the page.
+  const nutritionDays = useMemo(() => {
+    if (timeframe === "custom" && customFrom) {
+      const ms = new Date(toStr).getTime() - new Date(customFrom).getTime();
+      return Math.max(7, Math.round(ms / 86400000) + 1);
+    }
+    return windowDays;
+  }, [timeframe, customFrom, toStr, windowDays]);
+
+  useEffect(() => {
+    if (!user?.id) return;
+    let cancelled = false;
+    nutritionDoctorSummary(user.id, profile, nutritionDays)
+      .then((s) => { if (!cancelled) setNutrition(s || { hasData: false }); })
+      .catch(() => { if (!cancelled) setNutrition({ hasData: false }); });
+    return () => { cancelled = true; };
+  }, [user?.id, profile, nutritionDays]);
 
   // Seed prioritised questions from the Health GP hand-off (sessionStorage) once.
   useEffect(() => {
@@ -309,13 +332,13 @@ export default function DoctorExport() {
         conditions: (profile?.condition_flags || []).join(", ") || "None listed",
       },
       symptomsByDomain: byDomain,
-      monthly, exercise, meds: uniqueMeds,
+      monthly, exercise, nutrition, meds: uniqueMeds,
       reminders: medReminders.map((m) => `${m.medication_name || m.name || ""}${m.reminder_time ? ` — ${m.reminder_time}` : ""}`).filter((s) => s.trim()),
       patterns: correlations.slice(0, 5).map((c) => c.explanation_text || `${c.metric_a} relates to ${c.metric_b}`).filter(Boolean),
       reflections: includeReflections ? wJournals.slice(-6).map((j) => ({ date: (j.session_date || "").slice(0, 10), text: (j.text || "").trim() })).filter((r) => r.text) : [],
       counts: { checkins: wCheckins.length, journals: wJournals.length },
     };
-  }, [user, cutoffStr, toStr, timeframe, preset, brief, questions, sections, includeReflections, profile, symptomRollup, symptomSel, monthly, exercise, uniqueMeds, medReminders, correlations, wJournals, wCheckins.length]);
+  }, [user, cutoffStr, toStr, timeframe, preset, brief, questions, sections, includeReflections, profile, symptomRollup, symptomSel, monthly, exercise, nutrition, uniqueMeds, medReminders, correlations, wJournals, wCheckins.length]);
 
   // ── Jess: draft the "what I want to discuss" brief + prioritised questions ──
   const draftWithJess = async () => {
@@ -697,6 +720,26 @@ function ReportPreview({ report }) {
       {report.sections.exercise && (
         <Section h="Movement"><div>~{report.exercise.perWeek} active days/week ({report.exercise.total} days){report.exercise.top.length ? ` · ${report.exercise.top.join(", ")}` : ""}</div></Section>
       )}
+      {report.sections.nutrition && report.nutrition?.hasData && (
+        <Section h="Nutrition">
+          <div>Logged on {report.nutrition.loggedDays} of the last {report.nutrition.days} days</div>
+          <div style={{ display: "flex", justifyContent: "space-between" }}><span style={{ color: T.muted }}>Average energy</span><span>~{report.nutrition.avgEnergy} kcal/day (estimated)</span></div>
+          <div style={{ display: "flex", justifyContent: "space-between" }}><span style={{ color: T.muted }}>Macro balance (per day)</span><span>protein ~{report.nutrition.macroBalance.protein_g}g · carbs ~{report.nutrition.macroBalance.carbs_g}g · fat ~{report.nutrition.macroBalance.fat_g}g · fibre ~{report.nutrition.macroBalance.fiber_g}g</span></div>
+          {report.nutrition.micros.map((m) => (
+            <div key={m.key} style={{ display: "flex", justifyContent: "space-between" }}>
+              <span>{m.label}{m.lean ? " (leaning light)" : ""}</span>
+              <span style={{ color: T.muted }}>~{m.perDay}{m.unit}/day · {m.refLabel}</span>
+            </div>
+          ))}
+          {report.nutrition.hydration.avgMl > 0 && (
+            <div style={{ display: "flex", justifyContent: "space-between" }}><span style={{ color: T.muted }}>Hydration</span><span>~{report.nutrition.hydration.avgMl}ml/day (target {report.nutrition.hydration.targetMl}ml)</span></div>
+          )}
+          {report.nutrition.gaps.length > 0 && (
+            <div style={{ color: T.muted, fontSize: 11.5, marginTop: 4 }}>Notes: {report.nutrition.gaps.join("; ")}.</div>
+          )}
+          <div style={{ color: T.muted, fontSize: 11, marginTop: 4, fontStyle: "italic" }}>{report.nutrition.note}</div>
+        </Section>
+      )}
       {report.sections.patterns && report.patterns.length > 0 && (
         <Section h="Patterns noticed"><ul style={{ margin: 0, paddingLeft: 18 }}>{report.patterns.map((p, i) => <li key={i}>{p}</li>)}</ul></Section>
       )}
@@ -761,6 +804,9 @@ function buildDataDigest(r) {
     `Symptoms: ${sx || "none notable"}.`,
     `Mood/energy: ${mood}.`,
     `Medications: ${r.meds.join(", ") || "none"}.`,
+    (r.sections.nutrition && r.nutrition?.hasData)
+      ? `Nutrition: ~${r.nutrition.avgEnergy} kcal/day over ${r.nutrition.loggedDays} logged days; ${r.nutrition.micros.filter((m) => m.lean).map((m) => `${m.label.toLowerCase()} leaning light`).join(", ") || "key micros within usual range"}.`
+      : "",
     r.patterns.length ? `Patterns: ${r.patterns.join("; ")}.` : "",
   ].filter(Boolean).join("\n");
 }
@@ -779,6 +825,17 @@ function buildReportText(r) {
   if (r.sections.mood && r.monthly.length) { L.push("MOOD & ENERGY (MONTHLY)"); r.monthly.forEach((m) => L.push(`${monthLabel(m.month)}: mood ${m.mood ?? "-"}/5, energy ${m.energy ?? "-"}/5, sleep ${m.sleep ?? "-"}h, stress ${m.stress ?? "-"}/5`)); L.push(""); }
   if (r.sections.meds) { L.push("MEDICATIONS"); L.push(`Logged: ${r.meds.join(", ") || "None in window"}`); if (r.reminders.length) L.push(`Reminders: ${r.reminders.join("; ")}`); L.push(""); }
   if (r.sections.exercise) { L.push("MOVEMENT"); L.push(`~${r.exercise.perWeek} active days/week (${r.exercise.total} total)${r.exercise.top.length ? ` — ${r.exercise.top.join(", ")}` : ""}`); L.push(""); }
+  if (r.sections.nutrition && r.nutrition?.hasData) {
+    L.push("NUTRITION");
+    L.push(`Logged on ${r.nutrition.loggedDays} of the last ${r.nutrition.days} days`);
+    L.push(`Average energy: ~${r.nutrition.avgEnergy} kcal/day (estimated)`);
+    L.push(`Macro balance (per day): protein ~${r.nutrition.macroBalance.protein_g}g, carbs ~${r.nutrition.macroBalance.carbs_g}g, fat ~${r.nutrition.macroBalance.fat_g}g, fibre ~${r.nutrition.macroBalance.fiber_g}g`);
+    r.nutrition.micros.forEach((m) => L.push(`${m.label}${m.lean ? " (leaning light)" : ""}: ~${m.perDay}${m.unit}/day (${m.refLabel})`));
+    if (r.nutrition.hydration.avgMl > 0) L.push(`Hydration: ~${r.nutrition.hydration.avgMl}ml/day (target ${r.nutrition.hydration.targetMl}ml)`);
+    if (r.nutrition.gaps.length) L.push(`Notes: ${r.nutrition.gaps.join("; ")}.`);
+    L.push(r.nutrition.note);
+    L.push("");
+  }
   if (r.sections.patterns && r.patterns.length) { L.push("PATTERNS NOTICED"); r.patterns.forEach((p) => L.push(`- ${p}`)); L.push(""); }
   if (r.includeReflections && r.reflections.length) { L.push("JOURNAL REFLECTIONS (shared by choice)"); r.reflections.forEach((rf) => L.push(`${rf.date}: ${rf.text}`)); L.push(""); }
   L.push("---");
@@ -804,6 +861,16 @@ function buildPdfDocDefinition(r) {
   if (r.sections.mood && r.monthly.length) { body.push(h("Mood & energy (monthly)")); r.monthly.forEach((m) => body.push({ text: `${monthLabel(m.month)} — mood ${m.mood ?? "–"}/5 · energy ${m.energy ?? "–"}/5 · sleep ${m.sleep ?? "–"}h · stress ${m.stress ?? "–"}/5`, fontSize: 10, margin: [0, 1, 0, 1] })); }
   if (r.sections.meds) { body.push(h("Medications")); body.push(kv("Logged", r.meds.join(", ") || "None in window")); if (r.reminders.length) body.push(kv("Reminders", r.reminders.join("; "))); }
   if (r.sections.exercise) { body.push(h("Movement")); body.push({ text: `~${r.exercise.perWeek} active days/week (${r.exercise.total} total)${r.exercise.top.length ? ` — ${r.exercise.top.join(", ")}` : ""}`, fontSize: 10 }); }
+  if (r.sections.nutrition && r.nutrition?.hasData) {
+    body.push(h("Nutrition"));
+    body.push(kv("Window", `Logged on ${r.nutrition.loggedDays} of last ${r.nutrition.days} days`));
+    body.push(kv("Average energy", `~${r.nutrition.avgEnergy} kcal/day (estimated)`));
+    body.push(kv("Macros (per day)", `protein ~${r.nutrition.macroBalance.protein_g}g · carbs ~${r.nutrition.macroBalance.carbs_g}g · fat ~${r.nutrition.macroBalance.fat_g}g · fibre ~${r.nutrition.macroBalance.fiber_g}g`));
+    r.nutrition.micros.forEach((m) => body.push(kv(`${m.label}${m.lean ? " (leaning light)" : ""}`, `~${m.perDay}${m.unit}/day · ${m.refLabel}`)));
+    if (r.nutrition.hydration.avgMl > 0) body.push(kv("Hydration", `~${r.nutrition.hydration.avgMl}ml/day (target ${r.nutrition.hydration.targetMl}ml)`));
+    if (r.nutrition.gaps.length) body.push({ text: `Notes: ${r.nutrition.gaps.join("; ")}.`, fontSize: 9, color: MUTE, margin: [0, 2, 0, 0] });
+    body.push({ text: r.nutrition.note, italics: true, fontSize: 8.5, color: MUTE, margin: [0, 2, 0, 0] });
+  }
   if (r.sections.patterns && r.patterns.length) { body.push(h("Patterns noticed")); body.push({ ul: r.patterns.map((p) => ({ text: p, fontSize: 10, margin: [0, 1, 0, 1] })) }); }
   if (r.includeReflections && r.reflections.length) { body.push(h("Journal reflections (shared by choice)")); r.reflections.forEach((rf) => body.push({ text: `${rf.date} — ${rf.text}`, fontSize: 9.5, color: "#3C342A", margin: [0, 1, 0, 2] })); }
 

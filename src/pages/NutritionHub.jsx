@@ -35,6 +35,7 @@ import { getMealSummary, inferMealTypeFromTime } from "@/utils/nutritionAiAnalys
 import { dayNutrition } from "@/utils/foodModel";
 import { mealEstimate } from "@/utils/cofid";
 import { deriveTargets } from "@/utils/nutritionTargets";
+import { nutritionCycleMemory } from "@/utils/nutritionSummary";
 import { getCurrentCyclePhase, phaseLabel } from "@/utils/cyclePhase";
 import { withTimeout } from "@/utils/safeEntity";
 import { HubSheet, SoftBar, SurfaceCard, Ring } from "@/components/nutrition/hub/HubShell";
@@ -772,6 +773,7 @@ export default function NutritionHub() {
               >
                 <CardSummary
                   surface={s}
+                  user={user}
                   summary={summary}
                   dayMeals={dayMeals}
                   recents={recents}
@@ -872,7 +874,7 @@ function navBtn(disabled) {
 // built ONLY from real data the hub loaded. Missing data → a calm honest empty
 // state, never a mock figure. The bottom sheet stays the "go deeper / edit" layer.
 function CardSummary({
-  surface, summary, dayMeals, recents, weekKcal, mealPlan, shopItems, savedRecipes,
+  surface, user, summary, dayMeals, recents, weekKcal, mealPlan, shopItems, savedRecipes,
   nutritionProfile, profile, targets, calorieTarget, hydrationTarget, kcalLeft, jess, onOpen, onLog, onReLog, onWater, onRemove, onToggleShop, isToday,
 }) {
   switch (surface.id) {
@@ -883,7 +885,7 @@ function CardSummary({
     case "mealgen":  return <MealgenCard {...{ mealPlan, onReLog }} />;
     case "shopping": return <ShoppingCard {...{ shopItems, onToggleShop }} />;
     case "progress": return <ProgressCard {...{ recents, dayMeals, summary, weekKcal }} />;
-    case "insights": return <InsightsCard {...{ jess, profile }} />;
+    case "insights": return <InsightsCard {...{ jess, profile, user }} />;
     default:         return null;
   }
 }
@@ -1350,8 +1352,21 @@ function Sparkline({ data }) {
 }
 
 // ── INSIGHTS · Jess's stage line + stage-aware micronutrient nudges (real) ───
-function InsightsCard({ jess, profile }) {
+function InsightsCard({ jess, profile, user }) {
   const nudges = stageNudges(profile);
+  // CROSS-CYCLE MEMORY (fail-open): a gentle, phase-aware pattern from PAST cycles, computed
+  // from real phase-tagged MealLog rows. No-guilt framing, never a target. Read is guarded
+  // inside nutritionCycleMemory; this never blocks the card or throws.
+  const [memory, setMemory] = useState(null);
+  useEffect(() => {
+    if (!user?.id) return;
+    let cancelled = false;
+    nutritionCycleMemory(user.id, profile)
+      .then((m) => { if (!cancelled) setMemory(m); })
+      .catch(() => { if (!cancelled) setMemory(null); });
+    return () => { cancelled = true; };
+  }, [user?.id, profile]);
+
   return (
     <div style={{ display: "flex", flexDirection: "column", flex: 1 }}>
       <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
@@ -1359,6 +1374,15 @@ function InsightsCard({ jess, profile }) {
         <Eyebrow color={T.sage}>Jess · {stageLabel(profile)}</Eyebrow>
       </div>
       <Hand size={15} color={T.ink} style={{ marginBottom: 14 }}>{jess}</Hand>
+
+      {memory?.hasData && memory.lines.length > 0 && (
+        <div style={{ background: T.wax, border: `1px solid ${T.paperDeep}`, borderRadius: 12, padding: "12px 13px", marginBottom: 14 }}>
+          <Eyebrow color={T.sage} mb={6}>Across your {memory.phase} phases</Eyebrow>
+          {memory.lines.map((line, i) => (
+            <div key={i} style={{ fontFamily: SERIF, fontSize: 13, color: T.ink, lineHeight: 1.45, marginTop: i ? 6 : 0 }}>{line}</div>
+          ))}
+        </div>
+      )}
 
       <Eyebrow mb={8}>Gentle nudges for your stage</Eyebrow>
       <div style={{ display: "grid", gap: 11 }}>

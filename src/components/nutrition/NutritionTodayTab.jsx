@@ -10,6 +10,7 @@ import MacroDashboard from "./MacroDashboard";
 import WeeklyCaloriesChart from "./WeeklyCaloriesChart";
 import { getCyclePhaseOrNull, getCyclePhaseStatus } from "@/utils/cyclePhase";
 import { readAiAnalysis, getMealSummary, inferMealTypeFromTime } from "@/utils/nutritionAiAnalysis";
+import { dayNutrition } from "@/utils/foodModel";
 import { logAppEvent } from "@/utils/appEvents";
 import { runNutritionMigrationsIfNeeded } from "@/utils/nutritionMigrations";
 import { withTimeout } from "@/utils/safeEntity";
@@ -569,15 +570,19 @@ export default function NutritionTodayTab({ user, profile, nutritionProfile, day
   })();
 
   const calorieTarget = nutritionProfile?.calories_target || nutritionProfile?.calorie_target || 2000;
-  const mealsWithCalories = meals.filter(m => (getMealSummary(m).summary?.calories || 0) > 0);
-  const totalCalories = meals.reduce((sum, m) => {
-    const s = getMealSummary(m).summary;
-    const multiplier = PORTION_MULTIPLIERS[m.portion_size] || 1.0;
-    return sum + Math.round((s?.calories || 0) * multiplier);
-  }, 0);
-  const totalProtein = mealsWithCalories.reduce((sum, m) => sum + (getMealSummary(m).summary?.protein_g || 0), 0);
-  const totalCarbs = mealsWithCalories.reduce((sum, m) => sum + (getMealSummary(m).summary?.carbs_g || 0), 0);
-  const totalFat = mealsWithCalories.reduce((sum, m) => sum + (getMealSummary(m).summary?.fat_g || 0), 0);
+  // THE FIX (card-vs-sheet split): read the SAME floor-aware source of truth as the hub
+  // card — dayNutrition(meals, { floor: true }) — so a plainly-logged / re-logged meal
+  // with no ai_analysis still moves energy + macros here, instead of reading 0. Per-meal
+  // portion scaling is applied on top, mirroring the previous behaviour.
+  const portionMul = (m) => PORTION_MULTIPLIERS[m.portion_size] || 1.0;
+  const totalCalories = meals.reduce(
+    (sum, m) => sum + Math.round((dayNutrition([m], { floor: true }).kcal || 0) * portionMul(m)),
+    0
+  );
+  const dayTotals = dayNutrition(meals, { floor: true });
+  const totalProtein = dayTotals.protein_g;
+  const totalCarbs = dayTotals.carbs_g;
+  const totalFat = dayTotals.fat_g;
   const totalDrinkCalories = drinkLogs.reduce((sum, d) => sum + (d.calories || 0), 0);
   const grandTotalCalories = totalCalories + totalDrinkCalories;
   const caloriePct = Math.min(100, Math.round((grandTotalCalories / calorieTarget) * 100));
@@ -830,6 +835,26 @@ export default function NutritionTodayTab({ user, profile, nutritionProfile, day
           )}
         </div>
 
+        {/* Nutrition to Journal bridge — a gentle, no-guilt one-liner that flows into the
+            Journal composer (seeded, deep-linked). Only when something's been logged, so
+            it's contextual. Never about "good/bad" eating — about how it FELT. */}
+        {!loading && meals.length > 0 && (
+          <a
+            href={`${createPageUrl("Journal")}?compose=1&type=reflection&seed=${encodeURIComponent("How did eating feel today?\n\n")}`}
+            className="flex items-center gap-3 rounded-[20px] px-4 py-3.5 transition-all"
+            style={{ backgroundColor: "var(--rose-dust-subtle)", border: "1px solid var(--rose-dust-light)", textDecoration: "none" }}
+          >
+            <div className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0" style={{ backgroundColor: "var(--surface)", color: "var(--rose-dust)" }}>
+              <BookOpen className="w-4 h-4" strokeWidth={1.5} />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-semibold" style={{ color: "var(--plum)" }}>How did eating feel today?</p>
+              <p className="text-xs mt-0.5" style={{ color: "var(--rose-dust)" }}>Take it to your journal — no judgement, just a note to yourself</p>
+            </div>
+            <ChevronRight className="w-4 h-4 flex-shrink-0" style={{ color: "var(--rose-dust)" }} />
+          </a>
+        )}
+
         {/* Drinks logger */}
         <div className="rounded-[24px] p-5" style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)", boxShadow: "var(--shadow-sm)" }}>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: showDrinks ? 14 : 0 }}>
@@ -925,6 +950,11 @@ export default function NutritionTodayTab({ user, profile, nutritionProfile, day
                 {typeMeals.map((meal) => {
                   const analysis    = readAiAnalysis(meal);
                   const { summary: analysisSummary } = getMealSummary(meal);
+                  // Per-meal kcal for the chip: real summary if present, else the floor-aware
+                  // estimate (same spine as the card) so each line shows a number too.
+                  const mealKcal = (analysisSummary?.calories || 0) > 0
+                    ? analysisSummary.calories
+                    : dayNutrition([meal], { floor: true }).kcal;
                   const mealInsight = insights.find((ins) => ins.meal_log_id === meal.id);
                   const overallScore = typeof meal.meal_score === "number" ? meal.meal_score : null;
                   return (
@@ -981,9 +1011,9 @@ export default function NutritionTodayTab({ user, profile, nutritionProfile, day
                           <p className="text-[10px] mt-1.5" style={{ color: "var(--mauve)" }}>
                             {meal.logged_at ? format(new Date(meal.logged_at), "HH:mm") : ""}
                           </p>
-                          {analysisSummary?.calories > 0 && (
+                          {mealKcal > 0 && (
                             <span style={{ backgroundColor: "var(--ivory-dark)", borderRadius: "9999px", padding: "2px 8px", fontSize: "11px", fontWeight: 600, color: "var(--mauve)", marginTop: "4px", display: "inline-block", }}>
-                              ~{analysisSummary.calories} kcal
+                              ~{mealKcal} kcal
                             </span>
                           )}
                         </div>

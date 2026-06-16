@@ -7,7 +7,7 @@ import { isCycleLifeStage, filterProgramsByStage } from "@/utils/plannerAdapter"
 import { computeCycleDay } from "@/hooks/useCycleDay";
 import NurtureGarden from "@/components/nurture/NurtureGarden";
 import {
-  AlertCircle, ChevronRight, Utensils, Feather, Brain, Salad, Zap,
+  AlertCircle, ChevronRight, Feather, Brain, Salad, Zap,
   Droplets, UtensilsCrossed, BookOpen, Activity, Lightbulb, TrendingUp, X
 } from "lucide-react";
 import PanicModeModal from "../components/today/PanicModeModal";
@@ -32,6 +32,7 @@ import TodayFertilityBanner from "../components/conditions/TodayFertilityBanner"
 import DailyPhaseBrief from "../components/today/DailyPhaseBrief";
 import RecommendedForYouSection from "../components/today/RecommendedForYouSection";
 import QuickMealLog from "../components/today/QuickMealLog";
+import NutritionTodayCard from "../components/today/NutritionTodayCard";
 import ActiveProgramCard from "../components/today/ActiveProgramCard";
 import QuickAccessGrid from "../components/today/QuickAccessGrid";
 
@@ -698,17 +699,8 @@ export default function Today() {
 
             <QuickMealLog user={user} profile={profile} getCyclePhase={getCyclePhase} />
 
-            {/* Nutrition shortcut */}
-            <a href={createPageUrl("Nutrition")} className="flex items-center gap-3 rounded-[16px] p-3.5 transition-all block" style={card}>
-              <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0" style={{ backgroundColor: "var(--sage-subtle)", color: "var(--sage)" }}>
-                <Utensils className="w-4 h-4" strokeWidth={1.5} />
-              </div>
-              <div className="flex-1">
-                <p className="font-semibold text-sm" style={{ color: "var(--plum)", }}>Nutrition</p>
-                <p className="text-xs mt-0.5" style={{ color: "var(--mauve)", }}>Log meals · Water · Weekly plan</p>
-              </div>
-              <ChevronRight className="w-4 h-4" style={{ color: "var(--border)" }} />
-            </a>
+            {/* Nutrition shortcut — now reflects today's real, floor-aware nutrition */}
+            <NutritionTodayCard user={user} profile={profile} hydrationTargetMl={hydrationTarget} />
 
             {todayCheckin && !hasSkinLog && (
               <button onClick={() => setShowCheckin(true)} style={{ display: "flex", alignItems: "center", gap: "10px", width: "100%", textAlign: "left", cursor: "pointer", backgroundColor: "var(--rose-dust-subtle)", border: "1px solid var(--rose-dust-light)", borderRadius: "16px", padding: "12px 14px" }}>

@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import { motion } from "framer-motion";
-import { readAiAnalysis, getMealSummary } from "@/utils/nutritionAiAnalysis";
+import { dayNutrition } from "@/utils/foodModel";
 
 const MACROS = [
   { key: "protein", label: "Protein",   color: "#C4849A" },
@@ -38,25 +38,17 @@ function MacroBar({ label, actual, target, color, unit = "g" }) {
 }
 
 export default function MacroDashboard({ meals, hydrationLogs, drinkLogs = [], nutritionProfile }) {
+  // Read the floor-aware spine (same source as the hub card + sheet's summary bar) so a
+  // plainly-logged / re-logged meal with no ai_analysis still moves the ring + macros,
+  // with per-meal portion scaling preserved. Avoids the card-vs-dashboard energy split.
   const totals = useMemo(() => {
-    return meals.reduce((acc, meal) => {
-      const analysis = readAiAnalysis(meal);
-      if (!analysis) return acc;
-      const m = meal.portion_size === "small" ? 0.7 : meal.portion_size === "large" ? 1.4 : 1.0;
-      const s = getMealSummary(meal).summary;
-      if (s?.calories) {
-        acc.calories += Math.round((s.calories || 0) * m);
-        acc.protein  += Math.round((s.protein_g  || 0) * m);
-        acc.carbs    += Math.round((s.carbs_g    || 0) * m);
-        acc.fat      += Math.round((s.fat_g      || 0) * m);
-      } else {
-        (analysis.items || []).forEach((item) => {
-          acc.calories += Math.round((item.calories || item.estimated_calories || 0) * m);
-          acc.protein  += Math.round((item.protein_g || 0) * m);
-          acc.carbs    += Math.round((item.carbs_g   || 0) * m);
-          acc.fat      += Math.round((item.fat_g     || 0) * m);
-        });
-      }
+    return (meals || []).filter(Boolean).reduce((acc, meal) => {
+      const mul = meal.portion_size === "small" ? 0.7 : meal.portion_size === "large" ? 1.4 : 1.0;
+      const n = dayNutrition([meal], { floor: true });
+      acc.calories += Math.round((n.kcal     || 0) * mul);
+      acc.protein  += Math.round((n.protein_g || 0) * mul);
+      acc.carbs    += Math.round((n.carbs_g   || 0) * mul);
+      acc.fat      += Math.round((n.fat_g     || 0) * mul);
       return acc;
     }, { calories: 0, protein: 0, carbs: 0, fat: 0 });
   }, [meals]);

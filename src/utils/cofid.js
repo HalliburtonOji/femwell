@@ -82,7 +82,72 @@ export const COFID = [
   { name: "chia seeds", aliases: ["chia"], portion_g: 15, per100: { kcal: 486, protein_g: 17, carbs_g: 42, fat_g: 31, fiber_g: 34, iron_mg: 7.7, folate_ug: 49, calcium_mg: 631 } },
   { name: "dried apricots", aliases: ["apricots"], portion_g: 40, per100: { kcal: 188, protein_g: 3.4, carbs_g: 43, fat_g: 0.5, fiber_g: 7.3, iron_mg: 3.2, folate_ug: 10, calcium_mg: 73 } },
   { name: "peanut butter", aliases: ["peanut", "peanuts"], portion_g: 20, per100: { kcal: 588, protein_g: 25, carbs_g: 20, fat_g: 50, fiber_g: 6.0, iron_mg: 1.9, folate_ug: 74, calcium_mg: 49 } },
+
+  // ── COMPOSITE & BRANDED UK DISHES ───────────────────────────────────────────
+  // Common composite/branded items that a plain text log ("katsu curry", "meal deal
+  // sandwich", "chicken tikka masala") would otherwise miss — falling through to the
+  // flat per-slot default. Each carries a SENSIBLE whole-dish kcal+macro estimate at a
+  // typical UK serving (portion_g = the served portion; per100 back-calculated from it).
+  // Micros stay HONEST: we only attach iron/folate/calcium where the dish reliably
+  // contains them (e.g. lentil dahl, sardines on toast); otherwise they stay 0 so the
+  // women's layer never reads a faked micronutrient. These are whole-dish entries — the
+  // matcher treats a composite hit as the meal, so we keep them specific (longer terms
+  // win over their component foods via the length-sorted matcher).
+  // Indian / curry-house
+  { name: "chicken tikka masala", aliases: ["tikka masala", "chicken tikka", "butter chicken", "korma", "chicken korma"], portion_g: 350, per100: { kcal: 150, protein_g: 9.7, carbs_g: 6.0, fat_g: 9.7, fiber_g: 1.1, iron_mg: 0.6, folate_ug: 6, calcium_mg: 26 } },
+  { name: "chicken curry", aliases: ["curry and rice", "thai green curry", "thai curry", "jalfrezi", "balti", "madras", "rogan josh"], portion_g: 350, per100: { kcal: 130, protein_g: 8.0, carbs_g: 8.0, fat_g: 7.0, fiber_g: 1.4, iron_mg: 0.8, folate_ug: 8, calcium_mg: 24 } },
+  { name: "lentil dahl", aliases: ["dahl", "dal", "lentil curry", "tarka dal", "chana masala"], portion_g: 300, per100: { kcal: 110, protein_g: 5.6, carbs_g: 14, fat_g: 3.2, fiber_g: 3.4, iron_mg: 2.4, folate_ug: 60, calcium_mg: 30 } },
+  { name: "vegetable curry", aliases: ["veg curry", "saag aloo", "aloo gobi", "paneer", "saag paneer"], portion_g: 320, per100: { kcal: 115, protein_g: 4.0, carbs_g: 10, fat_g: 6.5, fiber_g: 2.6, iron_mg: 1.1, folate_ug: 24, calcium_mg: 90 } },
+  { name: "pilau rice", aliases: ["pilau", "naan", "naan bread", "poppadom", "bhaji", "onion bhaji", "samosa"], portion_g: 180, per100: { kcal: 180, protein_g: 4.0, carbs_g: 30, fat_g: 4.5, fiber_g: 1.2, iron_mg: 0.6, folate_ug: 6, calcium_mg: 30 } },
+  // East Asian
+  { name: "katsu curry", aliases: ["chicken katsu", "katsu"], portion_g: 400, per100: { kcal: 165, protein_g: 7.0, carbs_g: 22, fat_g: 5.5, fiber_g: 1.5, iron_mg: 0.7, folate_ug: 8, calcium_mg: 20 } },
+  { name: "stir fry", aliases: ["stir-fry", "chow mein", "egg fried rice", "fried rice", "pad thai", "ramen", "noodle soup"], portion_g: 380, per100: { kcal: 130, protein_g: 6.5, carbs_g: 17, fat_g: 4.2, fiber_g: 1.8, iron_mg: 0.9, folate_ug: 16, calcium_mg: 28 } },
+  { name: "sushi", aliases: ["sushi roll", "maki", "poke bowl", "katsu wrap"], portion_g: 230, per100: { kcal: 140, protein_g: 6.0, carbs_g: 24, fat_g: 2.0, fiber_g: 1.2, iron_mg: 0.5, folate_ug: 10, calcium_mg: 18 } },
+  // Italian / Mediterranean
+  { name: "spaghetti bolognese", aliases: ["bolognese", "spag bol", "lasagne", "lasagna", "ragu"], portion_g: 400, per100: { kcal: 130, protein_g: 7.0, carbs_g: 15, fat_g: 4.5, fiber_g: 1.8, iron_mg: 1.2, folate_ug: 14, calcium_mg: 40 } },
+  { name: "pizza", aliases: ["margherita", "pepperoni pizza", "garlic bread"], portion_g: 300, per100: { kcal: 250, protein_g: 11, carbs_g: 30, fat_g: 9.5, fiber_g: 2.1, iron_mg: 1.0, folate_ug: 20, calcium_mg: 200 } },
+  { name: "pasta bake", aliases: ["mac and cheese", "macaroni cheese", "carbonara", "pasta pesto", "tomato pasta", "pasta with sauce"], portion_g: 380, per100: { kcal: 165, protein_g: 6.5, carbs_g: 20, fat_g: 6.5, fiber_g: 1.8, iron_mg: 0.8, folate_ug: 16, calcium_mg: 110 } },
+  { name: "risotto", aliases: ["mushroom risotto", "paella"], portion_g: 350, per100: { kcal: 145, protein_g: 4.5, carbs_g: 22, fat_g: 4.5, fiber_g: 1.0, iron_mg: 0.6, folate_ug: 10, calcium_mg: 40 } },
+  // British classics & pub
+  { name: "shepherd's pie", aliases: ["shepherds pie", "cottage pie", "fish pie"], portion_g: 400, per100: { kcal: 120, protein_g: 7.0, carbs_g: 11, fat_g: 5.0, fiber_g: 1.6, iron_mg: 1.1, folate_ug: 12, calcium_mg: 40 } },
+  { name: "roast dinner", aliases: ["roast", "sunday roast", "roast beef dinner", "yorkshire pudding"], portion_g: 450, per100: { kcal: 130, protein_g: 8.5, carbs_g: 12, fat_g: 5.0, fiber_g: 2.0, iron_mg: 1.3, folate_ug: 20, calcium_mg: 35 } },
+  { name: "fish and chips", aliases: ["fish n chips", "fish supper", "battered cod"], portion_g: 400, per100: { kcal: 195, protein_g: 8.5, carbs_g: 20, fat_g: 9.5, fiber_g: 1.6, iron_mg: 0.7, folate_ug: 10, calcium_mg: 40 } },
+  { name: "sausage and mash", aliases: ["bangers and mash", "toad in the hole"], portion_g: 380, per100: { kcal: 165, protein_g: 7.0, carbs_g: 15, fat_g: 9.0, fiber_g: 1.5, iron_mg: 1.0, folate_ug: 10, calcium_mg: 30 } },
+  { name: "full english", aliases: ["full english breakfast", "fry up", "cooked breakfast", "english breakfast"], portion_g: 350, per100: { kcal: 200, protein_g: 11, carbs_g: 11, fat_g: 13, fiber_g: 1.8, iron_mg: 1.6, folate_ug: 16, calcium_mg: 40 } },
+  { name: "pie and chips", aliases: ["meat pie", "steak pie", "chicken pie", "pasty", "cornish pasty", "sausage roll"], portion_g: 320, per100: { kcal: 245, protein_g: 7.5, carbs_g: 24, fat_g: 13, fiber_g: 1.8, iron_mg: 1.0, folate_ug: 10, calcium_mg: 30 } },
+  { name: "jacket potato with beans", aliases: ["jacket potato with cheese", "loaded potato"], portion_g: 320, per100: { kcal: 110, protein_g: 4.5, carbs_g: 18, fat_g: 2.2, fiber_g: 2.6, iron_mg: 1.0, folate_ug: 18, calcium_mg: 60 } },
+  // Sandwiches, meal deals, wraps, burgers, takeaway
+  { name: "meal deal sandwich", aliases: ["meal deal", "sandwich", "blt", "club sandwich", "chicken sandwich", "tuna sandwich", "egg sandwich", "ham sandwich", "cheese sandwich", "sandwich meal deal"], portion_g: 200, per100: { kcal: 230, protein_g: 9.5, carbs_g: 26, fat_g: 9.5, fiber_g: 2.4, iron_mg: 1.2, folate_ug: 20, calcium_mg: 80 } },
+  { name: "wrap", aliases: ["chicken wrap", "falafel wrap", "burrito", "fajita", "quesadilla"], portion_g: 250, per100: { kcal: 200, protein_g: 9.0, carbs_g: 23, fat_g: 8.0, fiber_g: 2.6, iron_mg: 1.3, folate_ug: 24, calcium_mg: 70 } },
+  { name: "burger and chips", aliases: ["burger", "cheeseburger", "beef burger", "chicken burger", "big mac", "quarter pounder", "whopper"], portion_g: 350, per100: { kcal: 230, protein_g: 11, carbs_g: 22, fat_g: 11, fiber_g: 1.8, iron_mg: 1.6, folate_ug: 14, calcium_mg: 90 } },
+  { name: "chips", aliases: ["fries", "french fries", "potato wedges"], portion_g: 150, per100: { kcal: 290, protein_g: 3.8, carbs_g: 36, fat_g: 14, fiber_g: 2.8, iron_mg: 0.7, folate_ug: 14, calcium_mg: 12 } },
+  { name: "kebab", aliases: ["doner kebab", "shish kebab", "chicken kebab", "gyros"], portion_g: 350, per100: { kcal: 200, protein_g: 12, carbs_g: 15, fat_g: 10, fiber_g: 1.8, iron_mg: 1.5, folate_ug: 12, calcium_mg: 50 } },
+  { name: "fried chicken", aliases: ["kfc", "chicken nuggets", "chicken goujons", "popcorn chicken"], portion_g: 250, per100: { kcal: 250, protein_g: 17, carbs_g: 13, fat_g: 15, fiber_g: 0.8, iron_mg: 1.0, folate_ug: 8, calcium_mg: 25 } },
+  // Salads & lighter composite meals (carry sensible micros from greens)
+  { name: "chicken salad", aliases: ["caesar salad", "greek salad", "pasta salad", "couscous salad", "grain bowl", "buddha bowl"], portion_g: 320, per100: { kcal: 95, protein_g: 6.5, carbs_g: 7.0, fat_g: 4.5, fiber_g: 2.2, iron_mg: 1.2, folate_ug: 40, calcium_mg: 60 } },
+  { name: "soup", aliases: ["vegetable soup", "tomato soup", "minestrone", "chicken soup", "broth"], portion_g: 300, per100: { kcal: 55, protein_g: 2.4, carbs_g: 7.0, fat_g: 1.8, fiber_g: 1.6, iron_mg: 0.8, folate_ug: 18, calcium_mg: 30 } },
+  // Sweet / snack composites
+  { name: "cereal bar", aliases: ["flapjack", "protein bar", "granola bar"], portion_g: 45, per100: { kcal: 420, protein_g: 7.0, carbs_g: 60, fat_g: 16, fiber_g: 4.0, iron_mg: 2.0, folate_ug: 20, calcium_mg: 60 } },
+  { name: "crisps", aliases: ["crisp", "tortilla chips", "popcorn"], portion_g: 30, per100: { kcal: 530, protein_g: 6.5, carbs_g: 53, fat_g: 33, fiber_g: 4.5, iron_mg: 1.5, folate_ug: 30, calcium_mg: 25 } },
+  { name: "chocolate", aliases: ["chocolate bar", "milk chocolate", "dark chocolate", "biscuit", "biscuits", "cookie"], portion_g: 45, per100: { kcal: 535, protein_g: 6.5, carbs_g: 57, fat_g: 31, fiber_g: 2.5, iron_mg: 2.3, folate_ug: 10, calcium_mg: 190 } },
+  { name: "cake", aliases: ["slice of cake", "muffin", "brownie", "croissant", "pastry", "doughnut", "donut"], portion_g: 80, per100: { kcal: 380, protein_g: 5.0, carbs_g: 50, fat_g: 18, fiber_g: 1.5, iron_mg: 1.2, folate_ug: 14, calcium_mg: 60 } },
+  { name: "smoothie", aliases: ["fruit smoothie", "protein shake", "milkshake"], portion_g: 300, per100: { kcal: 65, protein_g: 2.5, carbs_g: 12, fat_g: 1.0, fiber_g: 1.4, iron_mg: 0.4, folate_ug: 20, calcium_mg: 60 } },
 ];
+
+// ── composite (whole-dish) entries ──────────────────────────────────────────
+// These COFID names are WHOLE DISHES, not single ingredients. When one matches a meal
+// text it represents the meal on its own, so cofidFloorNutrition must NOT also add its
+// component foods (e.g. "chicken curry with rice" → the curry entry already includes the
+// rice — don't sum white rice on top). The first composite hit wins (longest term first
+// via the length-sorted matcher), and component foods are skipped for that meal.
+const COMPOSITE_NAMES = new Set([
+  "chicken tikka masala", "chicken curry", "lentil dahl", "vegetable curry", "pilau rice",
+  "katsu curry", "stir fry", "sushi", "spaghetti bolognese", "pizza", "pasta bake",
+  "risotto", "shepherd's pie", "roast dinner", "fish and chips", "sausage and mash",
+  "full english", "pie and chips", "jacket potato with beans", "meal deal sandwich",
+  "wrap", "burger and chips", "chips", "kebab", "fried chicken", "chicken salad",
+  "soup", "cereal bar", "crisps", "chocolate", "cake", "smoothie",
+]);
 
 // ── matcher ──────────────────────────────────────────────────────────────────
 const lc = (s) => String(s || "").toLowerCase();
@@ -133,12 +198,39 @@ export function cofidMicros(name) {
 // in a meal text ("lentil & spinach soup, wholemeal roll" → lentils + spinach + bread),
 // each at its typical portion. Returns { iron_mg, folate_ug, calcium_mg, fiber_g,
 // foods:[name] } or null when nothing matches. Estimate only — flag accordingly.
+// Find the matching COMPOSITE (whole-dish) entry for a meal text, or null. A composite
+// only wins when it's the MOST SPECIFIC match — i.e. no NON-composite (single-food) term
+// that also matches is longer. This keeps honest single-food matches from being swallowed
+// by a short generic composite: "lentil soup" keeps the iron-rich lentils entry over the
+// generic "soup" composite, while "katsu curry" / "meal deal sandwich" still win as dishes.
+function matchComposite(t) {
+  let bestComposite = null, bestCompLen = -1;
+  let bestSingleLen = -1;
+  for (const [term, entry] of TERMS) {
+    if (!t.includes(term)) continue;
+    if (COMPOSITE_NAMES.has(entry.name)) {
+      if (term.length > bestCompLen) { bestComposite = entry; bestCompLen = term.length; }
+    } else if (term.length > bestSingleLen) {
+      bestSingleLen = term.length;
+    }
+  }
+  if (bestComposite && bestCompLen >= bestSingleLen) return bestComposite;
+  return null;
+}
+
 export function cofidFloorMicros(text) {
   const t = lc(text);
   if (!t) return null;
+  // Whole-dish composite wins — represent the meal with the dish alone, no component sum.
+  const comp = matchComposite(t);
+  if (comp) {
+    const m = cofidMicros(comp.name);
+    if (m) return { iron_mg: m.iron_mg, folate_ug: m.folate_ug, calcium_mg: m.calcium_mg, fiber_g: m.fiber_g, foods: [comp.name] };
+  }
   const seen = new Set();
   const out = { iron_mg: 0, folate_ug: 0, calcium_mg: 0, fiber_g: 0, foods: [] };
   for (const [term, entry] of TERMS) {
+    if (COMPOSITE_NAMES.has(entry.name)) continue;
     if (seen.has(entry.name)) continue;
     if (t.includes(term)) {
       seen.add(entry.name);
@@ -166,9 +258,28 @@ export function cofidFloorMicros(text) {
 export function cofidFloorNutrition(text) {
   const t = lc(text);
   if (!t) return null;
+  // Whole-dish composite wins — the dish entry represents the meal on its own, so we don't
+  // also add its component foods (avoids e.g. "chicken curry with rice" double-counting).
+  const comp = matchComposite(t);
+  if (comp) {
+    const scale = (comp.portion_g || 100) / 100;
+    const p = comp.per100;
+    return {
+      kcal: Math.round((p.kcal || 0) * scale),
+      protein_g: Math.round((p.protein_g || 0) * scale),
+      carbs_g: Math.round((p.carbs_g || 0) * scale),
+      fat_g: Math.round((p.fat_g || 0) * scale),
+      fiber_g: Math.round((p.fiber_g || 0) * scale * 10) / 10,
+      iron_mg: Math.round((p.iron_mg || 0) * scale * 10) / 10,
+      folate_ug: Math.round((p.folate_ug || 0) * scale),
+      calcium_mg: Math.round((p.calcium_mg || 0) * scale),
+      foods: [comp.name],
+    };
+  }
   const seen = new Set();
   const out = { kcal: 0, protein_g: 0, carbs_g: 0, fat_g: 0, fiber_g: 0, iron_mg: 0, folate_ug: 0, calcium_mg: 0, foods: [] };
   for (const [term, entry] of TERMS) {
+    if (COMPOSITE_NAMES.has(entry.name)) continue;
     if (seen.has(entry.name)) continue;
     if (t.includes(term)) {
       seen.add(entry.name);
