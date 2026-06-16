@@ -128,6 +128,9 @@ import TodayDemo3 from './pages/TodayDemo3';
 import TodayDemo4 from './pages/TodayDemo4';
 import TodayDemo5 from './pages/TodayDemo5';
 import TodayDemo6 from './pages/TodayDemo6';
+// Brand craft sample (Phase-1 brand-identity craft direction — flat vs upgraded bloom,
+// botanical motif, heart in context, live perf). Self-contained preview. Linked from Previews.
+import BrandCraftSample from './pages/BrandCraftSample';
 // NutritionHub = the REAL new Nutrition page (Daily Hub + Hero Card Slider hybrid,
 // wired to real entities, reuses the hardened nutrition components). Lives at
 // /NutritionHub for live-verify; once verified it replaces the "Nutrition" route.
@@ -227,6 +230,7 @@ export const PAGES = {
     "TodayDemo4": TodayDemo4,
     "TodayDemo5": TodayDemo5,
     "TodayDemo6": TodayDemo6,
+    "BrandCraftSample": BrandCraftSample,
     "NutritionHub": NutritionHub,
     "JournalRedesign1": JournalRedesign1,
     "CommunityRedesign1": CommunityRedesign1,

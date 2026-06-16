@@ -1955,6 +1955,11 @@ function PreviewsTab() {
           note="The chosen Demo 1 + 2 hybrid, now the live Nutrition page on real data: a calm Daily Hub, a Hero-Card-Slider spine, and every feature in bottom sheets. This is what's in the app's bottom nav." />
       </div>
 
+      <SectionLabel>Brand identity — craft direction (Phase 1, approve before app-wide roll-out)</SectionLabel>
+      <div style={{ display: "flex", flexDirection: "column", gap: 10, margin: "8px 0 22px" }}>
+        <PreviewLink slug="BrandCraftSample" accent={T.crimson} title="Brand Craft Sample ★ for approval" note="The canonical brand-system craft direction: current flat bloom vs upgraded realistic bloom (3-stop gradient, grounding shadow, breath/sway, reduced-motion-safe), a tasteful botanical line-motif, the carved heart mark in context, and a LIVE on-device perf measurement. Full spec: claude-state/BRAND_IDENTITY.md (mirrored in the Brand Identity tab)." />
+      </div>
+
       <SectionLabel>Today (home) — 6 redesign directions (mock data · see Today Mega-Plan tab)</SectionLabel>
       <div style={{ display: "flex", flexDirection: "column", gap: 10, margin: "8px 0 22px" }}>
         <PreviewLink slug="TodayDemo6" accent="#8E6E8E" title="Today Demo 6 — Your day (SYNTHESISED) ★ candidate" note="The synthesis: companion bloom encircled by the cycle phase ring; Jess's day-paragraph (time-of-day aware); a gentle 'Your Day' checklist (in-app + out-app, ticks nourish the garden, add your own); per-area summary to action sliding pairs; smart cross-app suggestions. Calm by default." />

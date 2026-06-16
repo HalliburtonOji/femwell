@@ -6,19 +6,21 @@
 import React from "react";
 
 // Local palette — brand tokens, verbatim (cream / espresso / one crimson pop).
+// Canonical brand tokens (BRAND_IDENTITY.md §2) — the retired #D4AF37/#F4EDDB/#9B8B7A/#3A2C1A
+// have been removed so this tab no longer models the inconsistency it documents.
 const C = {
-  cream:   "#F4EDDB",
-  paper:   "#ECE7DA",
-  paperHi: "#FBF6E6",
-  ink:     "#3A2C1A",
+  cream:   "#F4EFE3",   // warm cream inset (paperHi)
+  paper:   "#ECE7DA",   // page paper
+  paperHi: "#F8F3E8",   // raised card
+  ink:     "#0B0805",   // primary text
   deepink: "#0B0805",
-  muted:   "#9B8B7A",
+  muted:   "#2E261B",   // muted labels (dark brown, not light grey)
   blush:   "#E8B4B8",
   sage:    "#8FAF8F",
-  gold:    "#D4AF37",
+  gold:    "#A8893F",   // THE gold (unified; was the legacy #D4AF37)
   goldDeep:"#A8893F",
-  crimson: "#BC2E27",
-  rule:    "rgba(58,44,26,0.14)",
+  crimson: "#BC2E27",   // the heart / single pop
+  rule:    "rgba(43,30,22,0.14)",
 };
 const SCRIPT = '"Ephesis","Pinyon Script",cursive';
 const SERIF  = '"Cormorant Garamond","Fraunces",Georgia,serif';
@@ -200,6 +202,56 @@ export default function BrandIdentityDoc() {
             Brand identity, decorative motifs &amp; the heart mark — an exploration. UK market.
           </div>
         </header>
+
+        {/* CANONICAL SYSTEM v1 — the source of truth (mirrors claude-state/BRAND_IDENTITY.md) */}
+        <Card accent={C.crimson}>
+          <Label>Canonical system · v1 · 16 Jun 2026</Label>
+          <P><strong>This is the single source of truth.</strong> The full spec lives in the repo at <Code>claude-state/BRAND_IDENTITY.md</Code> and is read before every UI build. Craft direction is shown in the <strong>Brand Craft Sample</strong> (Founders → Brand &amp; UX → Previews). The exploration below is kept as background.</P>
+        </Card>
+
+        <H3>Type scale — roles, not sizes</H3>
+        <P>Three voices only: <strong>Ephesis</strong> (display/page titles), <strong>Cormorant Garamond</strong> (headings + reading body; italic = Jess's voice), <strong>system sans</strong> (chrome: eyebrows, captions, controls, nav). Every text node maps to a role:</P>
+        <Bullets dot={C.gold} items={[
+          "Display (page title): Ephesis, clamp(40–54px), 400, lh 1.14 — one short title per page (.fw-display).",
+          "Heading 1 (section): Cormorant italic + swash, clamp(23–31px), 600, lh 1.18 (.fw-heading).",
+          "Heading 2: Cormorant italic, 20px, 600. · Title (card): Cormorant, 18px, 600.",
+          "Body lede 17px / body 16px / body-S 15px: Cormorant, 500, lh 1.55.",
+          "Caption/meta: sans 13px, 600. · Eyebrow: sans 11px, 700, 0.14em uppercase. · Control/nav: sans 14/11px, 700.",
+          "Allowed sizes: 11, 13, 14, 15, 16, 17, 18, 20 + the two clamps. No half-pixels, no new sizes.",
+        ]} />
+        <Pull>Audit: headings appeared at 25 distinct sizes, body at 7, captions at 10 (plus 11 fractional half-pixels). 46 sizes in all → collapse to the set above.</Pull>
+
+        <H3>Palette — one of each</H3>
+        <Bullets dot={C.gold} items={[
+          "Cream/paper #ECE7DA (page) · paperHi #F4EFE3 (cards) · paperDeep #D8CFBC (hairlines) · wax #EFE3C9.",
+          "Ink #0B0805 (primary) · inkSoft #1A140D · muted #2E261B (labels — a dark brown, not light grey) · dusk #211A12.",
+          "Gold #A8893F (THE gold) · Crimson #BC2E27 (the heart + the single pop) · Blush #E8B4B8 · Sage #8FAF8F.",
+          "RETIRED — do not use: #D4AF37, #A6862B (golds) · #F4EDDB (cream) · #9B8B7A (muted) · #D45E52 (rose) · #3A2C1A (espresso).",
+          "Phase hues are a SEPARATE semantic set: menstrual #BC2E27 · follicular #8FAF8F · ovulatory #D4AF37 · luteal #8E6E8E.",
+        ]} />
+        <Pull>Audit: 3 parallel colour systems were live at once — 3 golds, 4+ roses, 3+ muted browns. Canonicalise to the above.</Pull>
+
+        <H3>The heart mark</H3>
+        <P style={{ display: "inline" }}><Heart size={18} /> </P>
+        <Bullets dot={C.crimson} items={[
+          "The carved crimson heart (always #BC2E27, tilted −6°, white highlight) — never the plain outline icon as the brand mark.",
+          "Exactly ONE per surface: every primary page header + the footer signature. Size 13–18px inline, ~16px footer.",
+          "Today rolled out to only ~2 primary pages (Journal, Community). Phase 2 puts it on every primary hub.",
+        ]} />
+
+        <H3>Botanical motif &amp; bloom</H3>
+        <Bullets dot={C.sage} items={[
+          "Motif: hairline STROKE-only vines / leaf-veins / tendrils in ink/gold/sage at low opacity (0.06–0.12 bg, ~0.3 divider). One per screen. Never filled, never behind reading text, never a wallpaper tile, no blur filters.",
+          "Bloom: use the canonical <Bloom> (NurtureGarden) — per-form, gradient petals, glow, breath/sway, reduced-motion-safe. The flat demo blooms are deprecated.",
+          "Craft upgrade (sampled): 3-stop petal gradient + specular crown + ONE gradient-ellipse grounding shadow (no blur filter) + GPU-cheap breath/sway. Perf impact negligible.",
+        ]} />
+
+        <H3>Spacing &amp; cards</H3>
+        <Bullets dot={C.gold} items={[
+          "Card: paperHi #F4EFE3, 1px paperDeep border, radius 16–18px, padding 14–17px; accent card adds a 3px left-border.",
+          "Spacing scale (px): 4, 8, 10, 14, 18, 22, 26. Depth via hairline borders + a tiny shadow, not heavy drop-shadows.",
+          "One unified bottom nav at all viewports. Every page sits on PAPER_BG.",
+        ]} />
 
         {/* 1 — Identity */}
         <H2 n="1">Who FemWell is</H2>
