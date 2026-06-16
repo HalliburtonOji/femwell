@@ -18,10 +18,11 @@ import {
 } from "@/components/journal/Editorial";
 import { Bloom } from "@/components/nurture/NurtureGarden";
 import { FORM_LIST } from "@/components/nurture/companion";
+import { useScrollLock } from "@/utils/useScrollLock";
 import {
   PenLine, Salad, Users, Stethoscope, Sparkles, BookOpen, Feather, Headphones, Star, CalendarDays,
   Activity, Sprout, TrendingUp, Leaf, Moon, Footprints, Droplet, Coffee, Check, Plus, ChevronRight,
-  Sun, Sunrise, Sunset,
+  Sun, Sunrise, Sunset, X, Send,
 } from "lucide-react";
 
 const PLUM = "#8E6E8E";                                   // luteal phase hue (semantic set)
@@ -72,16 +73,16 @@ const ICON_DISC = (Icon, accent) => (
     <Icon size={16} strokeWidth={1.7} color={accent} />
   </span>
 );
-function ActionBtn({ Icon, children, href, accent }) {
-  return (
-    <a href={href} style={{ display: "inline-flex", alignItems: "center", gap: 7, background: accent, color: "#fff", borderRadius: 12, padding: "11px 15px", fontFamily: UI, fontSize: 14, fontWeight: 700, textDecoration: "none", marginRight: 8, marginBottom: 8 }}>
-      <Icon size={15} /> {children}
-    </a>
-  );
+function ActionBtn({ Icon, children, href, onClick, accent }) {
+  const style = { display: "inline-flex", alignItems: "center", gap: 7, background: accent, color: "#fff", borderRadius: 12, padding: "11px 15px", fontFamily: UI, fontSize: 14, fontWeight: 700, textDecoration: "none", border: "none", cursor: "pointer", marginRight: 8, marginBottom: 8 };
+  // A "log/write" action opens an in-place pop-up sheet ON Today (onClick); a "read/open" action
+  // navigates (href). Logging never leaves the page.
+  if (onClick) return <button type="button" onClick={onClick} style={style}><Icon size={15} /> {children}</button>;
+  return <a href={href} style={style}><Icon size={15} /> {children}</a>;
 }
 
 // ── a BIG card the user SLIDES between a SUMMARY face and an ACTION face (peek + dots) ───────────
-function BigSlidePair({ s }) {
+function BigSlidePair({ s, onSheet }) {
   const ref = useRef(null);
   const [idx, setIdx] = useState(0);
   const onScroll = () => { const el = ref.current; if (el) setIdx(el.scrollLeft > el.clientWidth * 0.4 ? 1 : 0); };
@@ -118,7 +119,7 @@ function BigSlidePair({ s }) {
         <div style={{ ...faceBase, background: "#fff", border: `1px solid ${T.paperDeep}`, borderLeft: `3px solid ${s.accent}`, boxShadow: `0 8px 22px ${s.accent}1f` }}>
           <Eyebrow mb={8} color={s.accent}>Do it now</Eyebrow>
           <p style={{ fontFamily: SERIF, fontSize: 17, color: T.ink, lineHeight: 1.55, margin: "0 0 12px" }}>{s.action.prompt}</p>
-          <div>{s.action.buttons.map((b, i) => <ActionBtn key={i} Icon={b.Icon} href={b.href} accent={s.accent}>{b.label}</ActionBtn>)}</div>
+          <div>{s.action.buttons.map((b, i) => <ActionBtn key={i} Icon={b.Icon} href={b.href} onClick={b.sheet ? () => onSheet(b.sheet) : undefined} accent={s.accent}>{b.label}</ActionBtn>)}</div>
           <a href={s.slug} style={{ display: "inline-flex", alignItems: "center", gap: 4, marginTop: 4, fontFamily: UI, fontSize: 13, fontWeight: 700, color: T.muted, textDecoration: "none" }}>{s.openLabel} <ChevronRight size={14} /></a>
         </div>
       </div>
@@ -145,7 +146,10 @@ export default function TodayDemo6() {
   }, [done, custom]);
 
   const phaseColor = PHASE_COLORS[MOCK.phase];
-  const tended = useMemo(() => Object.values(done).filter(Boolean).length, [done]);
+  const [sheet, setSheet] = useState(null);          // in-place log/write pop-up on Today (key) or null
+  const [loggedCount, setLoggedCount] = useState(0);  // logs done in-place this session (close the garden loop)
+  const tended = useMemo(() => Object.values(done).filter(Boolean).length + loggedCount, [done, loggedCount]);
+  const feedGarden = () => { setLoggedCount((n) => n + 1); setJustFed(true); setTimeout(() => setJustFed(false), 2200); };
   const toggle = (id) => setDone((prev) => { const next = { ...prev, [id]: !prev[id] }; if (next[id]) { setJustFed(true); setTimeout(() => setJustFed(false), 2200); } return next; });
   const addCustom = () => { const v = draft.trim(); if (!v) return; setCustom((prev) => [...prev, { id: "c" + Date.now(), label: v, kind: "outapp" }]); setDraft(""); };
 
@@ -174,16 +178,16 @@ export default function TodayDemo6() {
   const SURFACES = [
     { key: "journal", eyebrow: "Journal", accent: T.gold, Icon: PenLine, slug: "/Journal", openLabel: "Open journal",
       summary: { title: "Leave her a line", lines: [{ text: "3 entries this cycle — your Phase Twin writes alongside you." }], inset: { eyebrow: "The last thing you wrote · two days ago", quote: "“I keep circling the same worry…”" } },
-      action: { prompt: "A line is plenty. What would feel like enough today?", buttons: [{ Icon: PenLine, label: "Write a line", href: "/Journal" }] } },
+      action: { prompt: "A line is plenty. What would feel like enough today?", buttons: [{ Icon: PenLine, label: "Write a line", sheet: "line" }] } },
     { key: "nutrition", eyebrow: "Nutrition", accent: T.sage, Icon: Salad, slug: "/Nutrition", openLabel: "Open nutrition",
       summary: { title: "2 meals · ~840 kcal", lines: [{ Icon: Leaf, text: "Iron's leaning light — a few seeds would help.", meta: "P 38g" }, { Icon: Droplet, text: "Water", meta: "3 of 6" }] },
-      action: { prompt: "A few seeds or leafy greens would lift today's iron.", buttons: [{ Icon: Salad, label: "Log a meal", href: "/Nutrition" }, { Icon: Droplet, label: "+ water", href: "/Nutrition" }] } },
+      action: { prompt: "A few seeds or leafy greens would lift today's iron.", buttons: [{ Icon: Salad, label: "Log a meal", sheet: "meal" }, { Icon: Droplet, label: "+ water", sheet: "water" }] } },
     { key: "community", eyebrow: "Community", accent: T.crimson, Icon: Users, slug: "/Community", openLabel: "Open community",
       summary: { title: "The meadow beyond your garden", lines: [{ text: "Today's question: “What small thing lifted you today?”", meta: "" }, { text: "A few sisters have answered." }], inset: { eyebrow: "An echo, fading", quote: "“It's held.” — anonymous" } },
-      action: { prompt: "Answer the room, or leave an anonymous line of your own.", buttons: [{ Icon: Users, label: "Answer QOTD", href: "/Community" }, { Icon: Heart, label: "Post an echo", href: "/Community" }] } },
+      action: { prompt: "Answer the room, or leave an anonymous line of your own.", buttons: [{ Icon: Users, label: "Answer QOTD", sheet: "qotd" }, { Icon: Heart, label: "Post an echo", sheet: "echo" }] } },
     { key: "health", eyebrow: "Cycle & Health · your letters", accent: PLUM, Icon: Stethoscope, slug: "/Health", openLabel: "Open Health Corner",
       summary: { title: `${PHASE_LABEL[MOCK.phase]} · day ${MOCK.day} · ${MOCK.season}`, lines: [{ Icon: BookOpen, text: "Your Body letter: boundaries feel natural now." }, { Icon: Heart, text: "Your Care letter has a quiet question waiting." }] },
-      action: { prompt: "Read a letter, or note what your body's saying today.", buttons: [{ Icon: Stethoscope, label: "Log a symptom", href: "/Health" }, { Icon: BookOpen, label: "Read your Body letter", href: "/Health" }] } },
+      action: { prompt: "Read a letter, or note what your body's saying today.", buttons: [{ Icon: Stethoscope, label: "Log a symptom", sheet: "symptom" }, { Icon: BookOpen, label: "Read your Body letter", href: "/Health" }] } },
     { key: "foryou", eyebrow: "Lifestyle · For You", accent: T.gold, Icon: Sparkles, slug: "/Lifestyle", openLabel: "Open Lifestyle",
       summary: { title: "8 picks for you today", lines: [{ text: "Cycle-synced reads, a gentle practice, and a listen — chosen for where you are." }] },
       action: { prompt: "A few things gathered for your afternoon.", buttons: [{ Icon: Sparkles, label: "See your picks", href: "/Lifestyle" }] } },
@@ -204,7 +208,7 @@ export default function TodayDemo6() {
       action: { prompt: "Lighter energy today — keep it kind. You don't need all of it.", buttons: [{ Icon: CalendarDays, label: "Open today's plan", href: "/Planner" }] } },
     { key: "programs", eyebrow: "Programs · practice", accent: T.sage, Icon: Activity, slug: "/ProgramsHub", openLabel: "Open programs",
       summary: { title: "Sleep, gently · day 4 of 7", lines: [{ Icon: Moon, text: "Tonight: a 10-minute body-scan to settle." }, { text: "You're keeping a kind rhythm." }] },
-      action: { prompt: "Tonight's practice is short and soft.", buttons: [{ Icon: Moon, label: "Tonight's practice", href: "/ProgramsHub" }] } },
+      action: { prompt: "Tonight's practice is short and soft.", buttons: [{ Icon: Moon, label: "Tonight's practice", sheet: "practice" }] } },
     { key: "garden", eyebrow: "Companion · your garden", accent: T.sage, Icon: Sprout, slug: "/Garden", openLabel: "Open your garden",
       summary: { title: "Meadowlight · blooming", lines: [{ Icon: Sprout, text: "Tended 5 days this week — and today's line fed her." }, { text: "A rare bloom is forming nearby." }] },
       action: { prompt: "Tend her, reshape her, or just say hello.", buttons: [{ Icon: Sprout, label: "Visit your garden", href: "/Garden" }] } },
@@ -308,7 +312,7 @@ export default function TodayDemo6() {
         <div style={{ marginTop: 24 }}>
           <Eyebrow mb={2} color={T.gold}>Across your day</Eyebrow>
           <p style={{ fontFamily: UI, fontSize: 13, color: T.muted, margin: "2px 0 4px" }}>slide each card → to do it from here · every part of your app, one tap away</p>
-          {SURFACES.map((s) => <BigSlidePair key={s.key} s={s} />)}
+          {SURFACES.map((s) => <BigSlidePair key={s.key} s={s} onSheet={setSheet} />)}
         </div>
 
         {/* (5) CROSS-APP SMART SUGGESTIONS — big sliding row */}
@@ -329,6 +333,92 @@ export default function TodayDemo6() {
         <div style={{ textAlign: "center", margin: "28px 0 8px" }}>
           <Hand size={15} color={T.muted}>Calm by default. Everything's here when you want it, and nothing's owed.</Hand>
         </div>
+      </div>
+
+      {/* In-place log/write pop-up — logging happens ON Today, no navigation away */}
+      {sheet && <ActionSheet sheetKey={sheet} onClose={() => setSheet(null)} onSaved={feedGarden} />}
+    </div>
+  );
+}
+
+// ── In-place action sheet (scroll-locked) — logging happens ON Today ───────────────────────────
+// Each log/write action opens this brand sheet so she does it right here. On save it confirms in
+// place ("Logged — Meadowlight felt that") and nourishes the garden, then closes. A secondary
+// "open the full page" link remains on the card for the full experience.
+const SHEETS = {
+  line:    { eyebrow: "Journal", accent: "#A8893F", title: "Leave a line", kind: "text", placeholder: "A line is plenty…", cta: "Keep it", full: "/Journal", done: "Kept. Meadowlight felt that." },
+  meal:    { eyebrow: "Nutrition", accent: "#8FAF8F", title: "Log a meal", kind: "meal", cta: "Log it", full: "/Nutrition", done: "Logged. Meadowlight felt that." },
+  water:   { eyebrow: "Nutrition", accent: "#8FAF8F", title: "A glass of water", kind: "water", cta: "Add water", full: "/Nutrition", done: "Noted — 4 of 6 today." },
+  qotd:    { eyebrow: "Community", accent: "#BC2E27", title: "Today's question", prompt: "What small thing lifted you today?", kind: "text", placeholder: "Answer the room (anonymous)…", cta: "Post anonymously", full: "/Community", done: "Shared with the room. Thank you." },
+  echo:    { eyebrow: "Community", accent: "#BC2E27", title: "Leave an echo", kind: "text", placeholder: "A line, left anonymously, that fades…", cta: "Release it", full: "/Community", done: "Released. It's held." },
+  symptom: { eyebrow: "Cycle & Health", accent: "#8E6E8E", title: "Note a symptom", kind: "chips", chips: ["Cramps", "Low mood", "Tired", "Headache", "Tender", "Bloated", "Calm"], cta: "Save the note", full: "/Health", done: "Noted, gently. Meadowlight felt that." },
+  practice:{ eyebrow: "Programs", accent: "#8FAF8F", title: "Tonight's practice", prompt: "A 10-minute body-scan to settle.", kind: "begin", cta: "Begin", full: "/ProgramsHub", done: "Begun. Rest is part of it." },
+};
+function ActionSheet({ sheetKey, onClose, onSaved }) {
+  useScrollLock(true);
+  const cfg = SHEETS[sheetKey] || SHEETS.line;
+  const [text, setText] = useState("");
+  const [picked, setPicked] = useState([]);
+  const [glasses, setGlasses] = useState(3);
+  const [saved, setSaved] = useState(false);
+  useEffect(() => { const onKey = (e) => { if (e.key === "Escape") onClose(); }; window.addEventListener("keydown", onKey); return () => window.removeEventListener("keydown", onKey); }, [onClose]);
+  const canSave = saved ? false : (cfg.kind === "text" ? text.trim().length > 0 : cfg.kind === "chips" ? picked.length > 0 : true);
+  const save = () => { if (saved) return; setSaved(true); onSaved && onSaved(); setTimeout(onClose, 1300); };
+  const toggleChip = (c) => setPicked((p) => p.includes(c) ? p.filter((x) => x !== c) : [...p, c]);
+  const inputStyle = { width: "100%", boxSizing: "border-box", background: T.paper, border: `1px solid ${T.paperDeep}`, borderRadius: 11, padding: "12px 13px", resize: "none", fontFamily: SERIF, fontSize: 16, lineHeight: 1.5, color: T.ink, outline: "none" };
+  return (
+    <div role="dialog" aria-modal="true" aria-label={cfg.title}
+      onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
+      style={{ position: "fixed", inset: 0, zIndex: 200, display: "flex", alignItems: "flex-end", justifyContent: "center", background: "rgba(11,8,5,0.42)" }}>
+      <div onClick={(e) => e.stopPropagation()} style={{ background: T.paperHi, width: "100%", maxWidth: 460, borderRadius: "20px 20px 0 0", padding: "18px 18px 26px", maxHeight: "86vh", overflowY: "auto", overscrollBehavior: "contain", boxShadow: "0 -8px 32px rgba(11,8,5,0.22)" }}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
+          <span style={{ fontFamily: UI, fontSize: 11, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: cfg.accent }}>{cfg.eyebrow} · on Today</span>
+          <button type="button" onClick={onClose} aria-label="Close" style={{ background: "transparent", border: "none", cursor: "pointer", color: T.muted, padding: 4, display: "inline-flex" }}><X size={18} /></button>
+        </div>
+        <h2 style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 20, fontWeight: 600, color: T.ink, margin: "0 0 12px", lineHeight: 1.2 }}>{cfg.title}</h2>
+
+        {saved ? (
+          <div style={{ display: "flex", alignItems: "center", gap: 9, padding: "8px 0 4px" }}>
+            <span style={{ width: 30, height: 30, borderRadius: 99, background: T.sage, display: "grid", placeItems: "center", flexShrink: 0 }}><Check size={17} color="#fff" strokeWidth={3} /></span>
+            <span style={{ fontFamily: SERIF, fontSize: 17, color: T.ink, lineHeight: 1.45 }}>{cfg.done}</span>
+          </div>
+        ) : (
+          <>
+            {cfg.prompt && <p style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 17, color: T.inkSoft, margin: "0 0 12px", lineHeight: 1.45 }}>{cfg.prompt}</p>}
+            {cfg.kind === "text" && <textarea value={text} onChange={(e) => setText(e.target.value)} rows={3} maxLength={600} placeholder={cfg.placeholder} style={inputStyle} autoFocus />}
+            {cfg.kind === "meal" && (
+              <>
+                <div style={{ display: "flex", gap: 8, marginBottom: 10, flexWrap: "wrap" }}>
+                  {["Breakfast", "Lunch", "Dinner", "Snack"].map((m) => {
+                    const on = picked.includes(m);
+                    return <button key={m} type="button" onClick={() => setPicked([m])} style={{ fontFamily: UI, fontSize: 13, fontWeight: 700, padding: "7px 13px", borderRadius: 999, cursor: "pointer", border: `1px solid ${on ? cfg.accent : T.paperDeep}`, background: on ? cfg.accent : "transparent", color: on ? "#fff" : T.muted }}>{m}</button>;
+                  })}
+                </div>
+                <textarea value={text} onChange={(e) => setText(e.target.value)} rows={2} maxLength={300} placeholder="What did you have? (e.g. porridge, seeds, berries)" style={inputStyle} />
+              </>
+            )}
+            {cfg.kind === "water" && (
+              <div style={{ display: "flex", alignItems: "center", gap: 14, padding: "4px 0 6px" }}>
+                <button type="button" onClick={() => setGlasses((g) => Math.max(0, g - 1))} style={{ width: 44, height: 44, borderRadius: 12, border: `1px solid ${T.paperDeep}`, background: T.paper, fontFamily: UI, fontSize: 20, fontWeight: 700, color: T.ink, cursor: "pointer" }}>−</button>
+                <span style={{ flex: 1, textAlign: "center", fontFamily: SERIF, fontSize: 18, color: T.ink }}><Droplet size={16} style={{ verticalAlign: "-2px", color: cfg.accent }} /> {glasses + 1} of 6 glasses</span>
+                <button type="button" onClick={() => setGlasses((g) => Math.min(5, g + 1))} style={{ width: 44, height: 44, borderRadius: 12, border: `1px solid ${T.paperDeep}`, background: T.paper, fontFamily: UI, fontSize: 20, fontWeight: 700, color: T.ink, cursor: "pointer" }}>+</button>
+              </div>
+            )}
+            {cfg.kind === "chips" && (
+              <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                {cfg.chips.map((c) => { const on = picked.includes(c); return <button key={c} type="button" onClick={() => toggleChip(c)} style={{ fontFamily: UI, fontSize: 13, fontWeight: 700, padding: "8px 13px", borderRadius: 999, cursor: "pointer", border: `1px solid ${on ? cfg.accent : T.paperDeep}`, background: on ? cfg.accent : "transparent", color: on ? "#fff" : T.muted }}>{c}</button>; })}
+              </div>
+            )}
+            {cfg.kind === "begin" && <p style={{ fontFamily: SERIF, fontSize: 16, color: T.inkSoft, margin: 0, lineHeight: 1.5 }}>Find a comfortable spot. When you're ready, we'll move slowly from your toes to the crown of your head.</p>}
+
+            <div style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 16 }}>
+              <button type="button" onClick={save} disabled={!canSave} style={{ display: "inline-flex", alignItems: "center", gap: 7, background: cfg.accent, color: "#fff", border: "none", borderRadius: 12, padding: "12px 18px", fontFamily: UI, fontSize: 14, fontWeight: 700, cursor: canSave ? "pointer" : "default", opacity: canSave ? 1 : 0.5 }}>
+                <Send size={15} /> {cfg.cta}
+              </button>
+              <a href={cfg.full} style={{ fontFamily: UI, fontSize: 13, fontWeight: 700, color: T.muted, textDecoration: "none", display: "inline-flex", alignItems: "center", gap: 3 }}>or open the full page <ChevronRight size={14} /></a>
+            </div>
+          </>
+        )}
       </div>
     </div>
   );

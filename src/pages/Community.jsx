@@ -1809,6 +1809,9 @@ export function CommunityInner({ initialView = null, embedded = false } = {}) {
         const title = sp.get("title");
         if (title) setClubTitle(decodeURIComponent(title));
       }
+      // /Community?view=bookclub → straight into the Book Club discussion (the club pick's
+      // own thread). Used by the reader's "Discuss this book in the Book Club" link.
+      if (sp.get("view") === "bookclub") setView("bookclub");
     } catch { /* ignore */ }
   }, []);
 

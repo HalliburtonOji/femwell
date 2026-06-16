@@ -18,7 +18,8 @@
 // No emoji anywhere — Fraunces/Inter + Lucide only.
 
 import { useState, useEffect, useRef, useCallback } from "react";
-import { X, Send, BookOpen } from "lucide-react";
+import { Link } from "react-router-dom";
+import { X, Send, BookOpen, Users } from "lucide-react";
 import { crisisCheck } from "@/components/community/communityConfig";
 import { promptFor } from "@/components/community/chapterPrompts";
 import {
@@ -32,7 +33,7 @@ const CREAM_HI = "#FBF7EC";
 const INK = "#3A2C1A";
 const MUTED = "#9B8B7A";
 const RULE = "rgba(58,44,26,0.16)";
-const GOLD = "#D4AF37";
+const GOLD = "#A8893F";   // canonical brand gold (BRAND_IDENTITY §2)
 const SERIF = '"Cormorant Garamond","Fraunces",Georgia,serif';
 const UI = '"Inter",system-ui,sans-serif';
 
@@ -51,6 +52,9 @@ export default function ChapterEndCard({
   userId,
   // club context — when provided, "add to the room" is offered + reflections can be shared.
   inClub = false,
+  // this book's OWN community thread (Book Club for the club pick, else its readers' corner).
+  // Never the generic Community page.
+  communityHref = null,
   onClose,
   onCrisis,
 }) {
@@ -261,6 +265,20 @@ export default function ChapterEndCard({
             </p>
           )}
         </div>
+
+        {/* Discuss — straight to THIS book's own thread (Book Club / readers' corner), never the
+            generic Community page. */}
+        {communityHref && (
+          <div style={{ borderTop: `1px solid ${RULE}`, marginTop: 18, paddingTop: 14 }}>
+            <Link
+              to={communityHref}
+              onClick={close}
+              style={{ display: "inline-flex", alignItems: "center", gap: 7, fontFamily: UI, fontSize: 13, fontWeight: 700, color: INK, textDecoration: "none", padding: "9px 14px", borderRadius: 9, border: `1px solid ${RULE}` }}
+            >
+              <Users size={14} /> {inClub ? "Discuss this in the Book Club" : "Discuss this in the readers' corner"}
+            </Link>
+          </div>
+        )}
       </div>
     </div>
   );

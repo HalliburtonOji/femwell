@@ -466,6 +466,11 @@ export default function DailyStoryReader({
   // callers only ever act on chapters <= the one reached. The reader never
   // awaits it, so a slow handler can't block a page flip.
   onChapterReached,
+  // Two-marks support (BookReader): an external jump request ({ index, nonce })
+  // and a callback fired with the live { currentIndex, bookmarks } so the host
+  // can render the physical bookmark + smart (schedule) marks bar.
+  goToChapter,
+  onMarks,
 }) {
   const [chapters, setChapters] = useState(providedSource?.items || []);
   const [currentIndex, setCurrentIndex] = useState(providedSource?.currentIndex ?? 0);
@@ -701,6 +706,25 @@ export default function DailyStoryReader({
     } catch { /* silent */ }
   }, [posKey, currentIndex, pageInChapter]);
 
+  // Two marks — external jump (from the host's marks bar). Idempotent per nonce.
+  const goNonceRef = useRef(null);
+  useEffect(() => {
+    if (!goToChapter || typeof goToChapter.index !== "number") return;
+    if (goNonceRef.current === goToChapter.nonce) return;
+    goNonceRef.current = goToChapter.nonce;
+    if (!chapters.length) return;
+    setShowLocked(false);
+    setPageInChapter(0);
+    setCurrentIndex(Math.min(Math.max(0, goToChapter.index), chapters.length - 1));
+  }, [goToChapter, chapters.length]);
+
+  // Report the live marks (current chapter + bookmarks) up to the host marks bar.
+  const onMarksRef = useRef(onMarks);
+  onMarksRef.current = onMarks;
+  useEffect(() => {
+    if (typeof onMarksRef.current === "function") onMarksRef.current({ currentIndex, bookmarks });
+  }, [currentIndex, bookmarks]);
+
   const flipForward = useCallback(() => {
     if (showLocked) return;
     // Step inside the current chapter first.
@@ -932,6 +956,19 @@ export default function DailyStoryReader({
               textSize={textSize}
               setSize={setSize}
             />
+            {bookmarksKey && (
+              <button
+                type="button"
+                className="ds-reader-ctrl-btn ds-reader-ctrl-bookmark"
+                onClick={toggleBookmark}
+                aria-label={isCurrentBookmarked ? "Remove bookmark" : "Set your bookmark here"}
+                aria-pressed={isCurrentBookmarked}
+                title={isCurrentBookmarked ? "Remove bookmark" : "Set your bookmark here"}
+                style={isCurrentBookmarked ? { color: "var(--rose-primary, #BC2E27)" } : undefined}
+              >
+                <Bookmark size={16} fill={isCurrentBookmarked ? "currentColor" : "none"} />
+              </button>
+            )}
             <button
               type="button"
               className="ds-reader-ctrl-btn ds-reader-ctrl-fullscreen"
