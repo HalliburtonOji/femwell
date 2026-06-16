@@ -53,6 +53,8 @@ import CompanionVisionDoc from "@/components/founders/CompanionVisionDoc";
 import CompanionVisionV2Doc from "@/components/founders/CompanionVisionV2Doc";
 import BooksBookClubsDoc from "@/components/founders/BooksBookClubsDoc";
 import NativeWidgetDoc from "@/components/founders/NativeWidgetDoc";
+import ArchitectureDoc from "@/components/founders/ArchitectureDoc";
+import TodayMegaPlanDoc from "@/components/founders/TodayMegaPlanDoc";
 // HealthCornerDemo was the multi-layout preview. The canonical health
 // experience now lives at /Health (src/pages/Health.jsx). The Health Corner
 // tab in /Ideas renders <HealthCornerRedirectCard /> instead.
@@ -82,21 +84,21 @@ const ALLOWED = new Set([
   "ojihalliburton57@gmail.com",
 ]);
 
-const TABS = ["Lab", "Previews", "Companion Vision", "Companion Vision v2", "Feature Ideas", "Brand Identity", "Nurture Companion", "Widget & PWA", "Pages", "Roadmap", "Health Audit", "Nutrition Master Plan", "Nutrition Plan", "Nutrition Demos", "Community Plan", "Books & Book Clubs", "Build Plan", "Journal Audit", "Expert Governance", "Library & Groups", "Integration Audit", "Connectivity Map", "Sharing", "Home Redesign", "Whole-Life", "Audio", "Ideas", "Strategy", "Legal", "Decisions", "Journal", "Journal Demos", "Community Demos", "Another You", "UX & Design", "Wholeness", "LGBTQ+", "Health Corner"];
+const TABS = ["Lab", "Today Mega-Plan", "Architecture", "Previews", "Companion Vision", "Companion Vision v2", "Feature Ideas", "Brand Identity", "Nurture Companion", "Widget & PWA", "Pages", "Roadmap", "Health Audit", "Nutrition Master Plan", "Nutrition Plan", "Nutrition Demos", "Community Plan", "Books & Book Clubs", "Build Plan", "Journal Audit", "Expert Governance", "Library & Groups", "Integration Audit", "Connectivity Map", "Sharing", "Home Redesign", "Whole-Life", "Audio", "Ideas", "Strategy", "Legal", "Decisions", "Journal", "Journal Demos", "Community Demos", "Another You", "UX & Design", "Wholeness", "LGBTQ+", "Health Corner"];
 
 // Themed groups for the two-row nav rail (replaces the flat 36-tab scroll row).
 // Every tab is assigned exactly once; any tab not listed falls into "More" so
 // nothing can silently disappear if TABS changes.
 const TAB_GROUPS = [
   { name: "Companion",       tabs: ["Companion Vision", "Companion Vision v2", "Nurture Companion", "Widget & PWA"] },
-  { name: "Strategy & Ideas", tabs: ["Lab", "Ideas", "Feature Ideas", "Strategy", "Decisions", "Roadmap"] },
+  { name: "Strategy & Ideas", tabs: ["Lab", "Today Mega-Plan", "Ideas", "Feature Ideas", "Strategy", "Decisions", "Roadmap"] },
   { name: "Journal",         tabs: ["Journal", "Journal Audit", "Journal Demos"] },
   { name: "Community",       tabs: ["Community Plan", "Community Demos", "Library & Groups", "Books & Book Clubs", "Sharing"] },
   { name: "Nutrition",       tabs: ["Nutrition Master Plan", "Nutrition Plan", "Nutrition Demos"] },
   { name: "Health",          tabs: ["Health Audit", "Health Corner"] },
   { name: "Brand & UX",      tabs: ["Brand Identity", "UX & Design", "Home Redesign", "Audio", "Previews", "Another You"] },
   { name: "Whole-Life",      tabs: ["Whole-Life", "Wholeness", "LGBTQ+"] },
-  { name: "Systems",         tabs: ["Pages", "Build Plan", "Integration Audit", "Connectivity Map", "Expert Governance", "Legal"] },
+  { name: "Systems",         tabs: ["Pages", "Build Plan", "Integration Audit", "Connectivity Map", "Architecture", "Expert Governance", "Legal"] },
 ];
 // Build the visible group list, appending any unassigned tab to a "More" group.
 function buildGroups() {
@@ -674,6 +676,8 @@ function FoundersInner({ user }) {
         {tab === "Companion Vision v2" && <DocSurface><CompanionVisionV2Doc /></DocSurface>}
         {tab === "Nurture Companion" && <NurtureCompanionDoc />}
         {tab === "Widget & PWA" && <NativeWidgetDoc />}
+        {tab === "Architecture" && <ArchitectureDoc />}
+        {tab === "Today Mega-Plan" && <TodayMegaPlanDoc />}
         {tab === "Journal Demos"  && <JournalDemosTab />}
         {tab === "Community Demos" && <CommunityDemosTab />}
         {tab === "Nutrition Demos" && <NutritionDemosTab />}
@@ -1949,6 +1953,15 @@ function PreviewsTab() {
         <PreviewLink live slug="Nutrition" accent={T.sage}
           title="Nutrition — the real page (Hub + Slider)"
           note="The chosen Demo 1 + 2 hybrid, now the live Nutrition page on real data: a calm Daily Hub, a Hero-Card-Slider spine, and every feature in bottom sheets. This is what's in the app's bottom nav." />
+      </div>
+
+      <SectionLabel>Today (home) — 5 redesign directions (mock data · see Today Mega-Plan tab)</SectionLabel>
+      <div style={{ display: "flex", flexDirection: "column", gap: 10, margin: "8px 0 22px" }}>
+        <PreviewLink slug="TodayDemo1" accent={T.crimson} title="Today Demo 1 — Calm single-focus hub"  note="One main thing: greeting + phase line, a single focus card, garden footer, everything else behind a 'more' disclosure." />
+        <PreviewLink slug="TodayDemo2" accent={T.gold}    title="Today Demo 2 — Cycle-led day"          note="A phase ring hero; focus chosen by phase; a switcher shows menopause/pregnancy reskinning the same spine." />
+        <PreviewLink slug="TodayDemo3" accent={T.blush}   title="Today Demo 3 — Companion / garden-led"  note="Your garden greets you in her voice; the day's focus is gentle 'tending'; resting season celebrated (never dies)." />
+        <PreviewLink slug="TodayDemo4" accent={T.sage}    title="Today Demo 4 — Card-slider / deck"      note="A short swipeable deck reusing the Hero-Card-Slider language; top card is the focus, next peeks." />
+        <PreviewLink slug="TodayDemo5" accent={T.crimson} title="Today Demo 5 — Editorial 'your day'"    note="A dated dispatch in Jess's voice; greeting + phase + one suggestion woven into prose with inline doorways." />
       </div>
 
       <SectionLabel>Nutrition — 5 UX demo directions (mock data)</SectionLabel>

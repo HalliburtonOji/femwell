@@ -118,6 +118,13 @@ import NutritionDemo2 from './pages/NutritionDemo2';
 import NutritionDemo3 from './pages/NutritionDemo3';
 import NutritionDemo4 from './pages/NutritionDemo4';
 import NutritionDemo5 from './pages/NutritionDemo5';
+// 5 Today-redesign preview demos (/TodayDemo1..5). Linked from FoundersOS → Previews.
+// Self-contained, mock data only, NO entity queries. The live Today is untouched.
+import TodayDemo1 from './pages/TodayDemo1';
+import TodayDemo2 from './pages/TodayDemo2';
+import TodayDemo3 from './pages/TodayDemo3';
+import TodayDemo4 from './pages/TodayDemo4';
+import TodayDemo5 from './pages/TodayDemo5';
 // NutritionHub = the REAL new Nutrition page (Daily Hub + Hero Card Slider hybrid,
 // wired to real entities, reuses the hardened nutrition components). Lives at
 // /NutritionHub for live-verify; once verified it replaces the "Nutrition" route.
@@ -211,6 +218,11 @@ export const PAGES = {
     "NutritionDemo3": NutritionDemo3,
     "NutritionDemo4": NutritionDemo4,
     "NutritionDemo5": NutritionDemo5,
+    "TodayDemo1": TodayDemo1,
+    "TodayDemo2": TodayDemo2,
+    "TodayDemo3": TodayDemo3,
+    "TodayDemo4": TodayDemo4,
+    "TodayDemo5": TodayDemo5,
     "NutritionHub": NutritionHub,
     "JournalRedesign1": JournalRedesign1,
     "CommunityRedesign1": CommunityRedesign1,
