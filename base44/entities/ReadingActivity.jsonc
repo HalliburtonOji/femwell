@@ -6,14 +6,17 @@
   // + scrubbed client-side before write; `progress` rows carry an empty body.
   //
   // Private SOLO reflections do NOT come here — they stay device-local. Only predictions /
-  // progress / club-shared (anonymous) rows are written, and writes are OPTIMISTIC +
-  // FIRE-AND-FORGET from the client (never awaited on an interaction path); reads fail open.
+  // progress / club-shared (anonymous) rows are written, OPTIMISTIC + FIRE-AND-FORGET, never
+  // awaited on an interaction path; reads fail open.
   //
-  // RLS: reads are PUBLIC (read intentionally OMITTED → public-readable default, so anyone
-  // signed-in can compute the warm aggregates), and create is left at the Base44 default so ANY
-  // signed-in user may create a row directly from the client (no service function in the loop).
-  // update / delete are locked to admin so a client can only ever append, never edit/remove
-  // another reader's row. Matches the anonymous, lurkable shape of Echo / QotdResponse for reads.
+  // RLS (Phase-2 HARDENED): read + create + update + delete are ALL locked to role:admin. A
+  // normal client can NO LONGER read or write rows directly — all writes go through the
+  // asServiceRole `postReadingActivity` function and all reads through the asServiceRole
+  // `readingAggregate` function (which returns only the warm, k-floored aggregate — never raw
+  // rows). asServiceRole acts as role:admin [[base44-service-role-rls-admin]], so the functions
+  // pass while clients are denied. This hardens anonymity: rows are written under the SERVICE
+  // identity (the platform created_by is the service, never the user's email), and no client can
+  // ever pull raw rows to de-anonymise an author_hash.
   "name": "ReadingActivity",
   "type": "object",
   "properties": {
@@ -44,6 +47,8 @@
     { "fields": ["author_hash"] }
   ],
   "rls": {
+    "read":   { "user_condition": { "role": "admin" } },
+    "create": { "user_condition": { "role": "admin" } },
     "update": { "user_condition": { "role": "admin" } },
     "delete": { "user_condition": { "role": "admin" } }
   }

@@ -72,7 +72,9 @@ export function recordProgress(bookId, chapterIndex, userId) {
     try {
       const wh = await communityHash(userId);
       if (!wh) return;
-      await base44.entities.ReadingActivity.create({
+      // hardened: write via the asServiceRole postReadingActivity function (entity RLS-locked
+      // to admin) so the row carries no user identity. Fire-and-forget, fail-open.
+      await base44.functions.invoke("postReadingActivity", {
         author_hash: wh, book_id: String(bookId), chapter_index: chapterIndex,
         kind: "progress", body: "",
       }).catch(() => null);
@@ -90,7 +92,7 @@ export function recordPrediction(bookId, chapterIndex, body, userId) {
     try {
       const wh = await communityHash(userId);
       if (!wh) return;
-      await base44.entities.ReadingActivity.create({
+      await base44.functions.invoke("postReadingActivity", {
         author_hash: wh, book_id: String(bookId), chapter_index: chapterIndex,
         kind: "prediction", body: String(body || "").slice(0, 600),
       }).catch(() => null);
@@ -106,7 +108,7 @@ export function recordClubReflection(bookId, chapterIndex, body, userId) {
     try {
       const wh = await communityHash(userId);
       if (!wh) return;
-      await base44.entities.ReadingActivity.create({
+      await base44.functions.invoke("postReadingActivity", {
         author_hash: wh, book_id: String(bookId), chapter_index: chapterIndex,
         kind: "club_reflection", body: String(body || "").slice(0, 600),
       }).catch(() => null);
@@ -119,17 +121,14 @@ export function recordClubReflection(bookId, chapterIndex, body, userId) {
 // k-floored count, or null when below the floor (caller shows a warm line, never a number).
 export async function cohortReachedCount(bookId, chapterIndex) {
   try {
-    const rows = await base44.entities.ReadingActivity
-      .filter({ book_id: String(bookId), kind: "progress", hidden: false }, "-created_date", 1000)
-      .catch(() => []);
-    const hashes = new Set();
-    for (const r of (Array.isArray(rows) ? rows : [])) {
-      if (r && typeof r.chapter_index === "number" && r.chapter_index >= chapterIndex && r.author_hash) {
-        hashes.add(r.author_hash);
-      }
-    }
-    const n = hashes.size;
-    return n >= REVEAL_K_FLOOR ? n : null;
+    // hardened: the aggregate is computed server-side by readingAggregate (asServiceRole) and
+    // returned already k-floored — the client never reads raw rows, so it can't de-anonymise.
+    const res = await base44.functions
+      .invoke("readingAggregate", { book_id: String(bookId), chapter_index: chapterIndex, mode: "cohort" })
+      .catch(() => null);
+    const data = res?.data ?? res ?? {};
+    const n = data?.count;
+    return typeof n === "number" ? n : null;
   } catch { return null; }
 }
 
@@ -138,17 +137,12 @@ export async function cohortReachedCount(bookId, chapterIndex) {
 // author_hash (one guess per reader counts once). Returns [] below the floor.
 export async function predictionAggregate(bookId, chapterIndex) {
   try {
-    const rows = await base44.entities.ReadingActivity
-      .filter({ book_id: String(bookId), chapter_index: chapterIndex, kind: "prediction", hidden: false }, "-created_date", 400)
-      .catch(() => []);
-    const seen = new Set();
-    const lines = [];
-    for (const r of (Array.isArray(rows) ? rows : [])) {
-      if (!r || !r.body || !r.author_hash) continue;
-      if (seen.has(r.author_hash)) continue;
-      seen.add(r.author_hash);
-      lines.push(String(r.body));
-    }
-    return lines.length >= REVEAL_K_FLOOR ? lines : [];
+    // hardened: readingAggregate (asServiceRole) returns only the warm, k-floored guess LINES —
+    // never raw rows or metadata — so the client cannot de-anonymise who guessed what.
+    const res = await base44.functions
+      .invoke("readingAggregate", { book_id: String(bookId), chapter_index: chapterIndex, mode: "prediction" })
+      .catch(() => null);
+    const data = res?.data ?? res ?? {};
+    return Array.isArray(data?.lines) ? data.lines : [];
   } catch { return []; }
 }
