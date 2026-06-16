@@ -1955,8 +1955,9 @@ function PreviewsTab() {
           note="The chosen Demo 1 + 2 hybrid, now the live Nutrition page on real data: a calm Daily Hub, a Hero-Card-Slider spine, and every feature in bottom sheets. This is what's in the app's bottom nav." />
       </div>
 
-      <SectionLabel>Today (home) — 5 redesign directions (mock data · see Today Mega-Plan tab)</SectionLabel>
+      <SectionLabel>Today (home) — 6 redesign directions (mock data · see Today Mega-Plan tab)</SectionLabel>
       <div style={{ display: "flex", flexDirection: "column", gap: 10, margin: "8px 0 22px" }}>
+        <PreviewLink slug="TodayDemo6" accent="#8E6E8E" title="Today Demo 6 — Your day (SYNTHESISED) ★ candidate" note="The synthesis: companion bloom encircled by the cycle phase ring; Jess's day-paragraph (time-of-day aware); a gentle 'Your Day' checklist (in-app + out-app, ticks nourish the garden, add your own); per-area summary to action sliding pairs; smart cross-app suggestions. Calm by default." />
         <PreviewLink slug="TodayDemo1" accent={T.crimson} title="Today Demo 1 — Calm single-focus hub"  note="One main thing: greeting + phase line, a single focus card, garden footer, everything else behind a 'more' disclosure." />
         <PreviewLink slug="TodayDemo2" accent={T.gold}    title="Today Demo 2 — Cycle-led day"          note="A phase ring hero; focus chosen by phase; a switcher shows menopause/pregnancy reskinning the same spine." />
         <PreviewLink slug="TodayDemo3" accent={T.blush}   title="Today Demo 3 — Companion / garden-led"  note="Your garden greets you in her voice; the day's focus is gentle 'tending'; resting season celebrated (never dies)." />
