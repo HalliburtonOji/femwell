@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo, useCallback, useRef } from "react";
-import { ArrowLeft, ExternalLink, Users, Bookmark, CalendarDays } from "lucide-react";
+import { ArrowLeft, ExternalLink, Users, Bookmark, CalendarDays, RefreshCw } from "lucide-react";
 import { useNavigate, Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import { dailyReadClubKey } from "@/components/community/clubsConfig";
@@ -111,13 +111,31 @@ function daysSince(iso) {
 
 const CATCHUP_RAPID_MS = 25000;   // two chapter-reaches closer than this = a catch-up binge
 
+// fetchGutenbergBook cold-starts slowly and can 502/timeout on the first hit. Retry transient
+// failures a couple of times with a short backoff so a cold start self-heals.
+const FETCH_BACKOFF_MS = [700, 1400, 2200];   // → 4 attempts total
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+function errStatus(err) {
+  const m = String(err?.message || "");
+  return Number(err?.response?.status ?? err?.status ?? (m.match(/status code (\d{3})/) || [])[1] ?? 0);
+}
+// Worth a retry: 5xx, 429, network/timeout, or an opaque error (cold start). A genuine 4xx
+// (other than 429) is a real client error — don't hammer it.
+function isTransient(err) {
+  const s = errStatus(err);
+  if (s >= 400 && s < 500 && s !== 429) return false;
+  return true;
+}
+
 export default function BookReader() {
   const navigate = useNavigate();
   const [book, setBook] = useState(null);
   const [chapters, setChapters] = useState([]);
   const [chaptersReal, setChaptersReal] = useState(false);   // true only when real chapter headings were found
   const [loading, setLoading] = useState(true);
+  const [loadingMsg, setLoadingMsg] = useState("Loading the book…");
   const [error, setError] = useState("");
+  const [retryTick, setRetryTick] = useState(0);   // bump → re-run the fetch (manual retry)
   const [me, setMe] = useState(null);
   // Phase-1 Books — the chapter-end card (projective prompt + guess + cohort) and a crisis sheet.
   const [cardChapter, setCardChapter] = useState(null);   // 0-based index, or null = closed
@@ -231,45 +249,45 @@ export default function BookReader() {
       return;
     }
     let cancelled = false;
+    setLoading(true);
+    setError("");
+    setLoadingMsg("Loading the book…");
     (async () => {
-      try {
-        const res = await base44.functions.invoke("fetchGutenbergBook", {
-          gutenberg_id: gutenbergId,
-        });
-        if (cancelled) return;
-        const data = res?.data || res || {};
-        if (data.error) {
-          setError(data.error);
+      const attempts = FETCH_BACKOFF_MS.length + 1;   // 4
+      for (let attempt = 0; attempt < attempts; attempt++) {
+        try {
+          const res = await base44.functions.invoke("fetchGutenbergBook", { gutenberg_id: gutenbergId });
+          if (cancelled) return;
+          const data = res?.data || res || {};
+          if (data.error) { setError(data.error); setLoading(false); return; }   // structured error — real, no retry
+          const { chapters: ch, real } = splitChapters(data.text || "");
+          const sourceUrl = data.source_url || `https://www.gutenberg.org/ebooks/${gutenbergId}`;
+          const attribution = `From Project Gutenberg · ${sourceUrl}`;
+          const withAttr = ch.map((c) => ({ ...c, attribution, series_title: data.title || "Public-domain book", cliffhanger: "" }));
+          setBook({ title: data.title || "", author: data.author || "", source_url: sourceUrl });
+          setChapters(withAttr);
+          setChaptersReal(real);
           setLoading(false);
-          return;
+          return;   // success
+        } catch (err) {
+          if (cancelled) return;
+          const lastTry = attempt === attempts - 1;
+          if (lastTry || !isTransient(err)) {
+            setError(err?.message || "Failed to load the book.");
+            setLoading(false);
+            return;
+          }
+          // transient (cold-start 502 / timeout / network) — calm escalating note, then back off + retry
+          setLoadingMsg(attempt === 0
+            ? "The library's waking up — fetching the book…"
+            : "Still fetching — almost there…");
+          await sleep(FETCH_BACKOFF_MS[attempt]);
+          if (cancelled) return;
         }
-        const { chapters: ch, real } = splitChapters(data.text || "");
-        const sourceUrl = data.source_url || `https://www.gutenberg.org/ebooks/${gutenbergId}`;
-        const attribution = `From Project Gutenberg · ${sourceUrl}`;
-        const withAttr = ch.map((c) => ({
-          ...c,
-          attribution,
-          series_title: data.title || "Public-domain book",
-          cliffhanger: "",
-        }));
-        setBook({
-          title: data.title || "",
-          author: data.author || "",
-          source_url: sourceUrl,
-        });
-        setChapters(withAttr);
-        setChaptersReal(real);
-        setLoading(false);
-      } catch (err) {
-        if (cancelled) return;
-        setError(err?.message || "Failed to load the book.");
-        setLoading(false);
       }
     })();
-    return () => {
-      cancelled = true;
-    };
-  }, [gutenbergId]);
+    return () => { cancelled = true; };
+  }, [gutenbergId, retryTick]);
 
   const onMarks = useCallback(({ currentIndex, bookmarks }) => {
     if (typeof currentIndex === "number") setLiveCurrent(currentIndex);
@@ -284,7 +302,7 @@ export default function BookReader() {
     return (
       <Frame onBack={() => navigate(-1)}>
         <div style={emptyStyle}>
-          <p style={{ marginBottom: 10 }}>Loading the book…</p>
+          <p style={{ marginBottom: 10 }}>{loadingMsg}</p>
         </div>
       </Frame>
     );
@@ -293,8 +311,15 @@ export default function BookReader() {
     return (
       <Frame onBack={() => navigate(-1)}>
         <div style={emptyStyle}>
-          <p style={{ fontWeight: 600, marginBottom: 10 }}>We couldn't open this book.</p>
-          <p>{error}</p>
+          <p style={{ fontWeight: 600, marginBottom: 10 }}>We couldn't open this book just now.</p>
+          <p style={{ marginBottom: 16 }}>Sometimes the library's slow to wake. Give it another moment.</p>
+          <button
+            type="button"
+            onClick={() => { setError(""); setLoading(true); setLoadingMsg("Loading the book…"); setRetryTick((t) => t + 1); }}
+            style={{ display: "inline-flex", alignItems: "center", gap: 7, background: "var(--plum, #0B0805)", color: "var(--surface, #F4EFE3)", border: "none", borderRadius: 12, padding: "11px 18px", fontFamily: 'ui-sans-serif,system-ui,sans-serif', fontSize: 14, fontWeight: 700, cursor: "pointer" }}
+          >
+            <RefreshCw className="w-4 h-4" /> Tap to try again
+          </button>
         </div>
       </Frame>
     );
