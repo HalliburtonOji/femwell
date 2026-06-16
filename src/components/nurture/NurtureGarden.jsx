@@ -24,6 +24,12 @@ import {
   localChapters, loadGardenChapters, archiveChapter,
 } from "@/components/nurture/garden";
 import { readingDaySet } from "@/components/community/readingActivity";
+import {
+  MILESTONES, milestoneDef, localMilestones, loadMilestones, detectMilestones,
+} from "@/components/nurture/milestones";
+import {
+  isShared, isNameShared, optIntoSharedGarden, optOutOfSharedGarden, loadSharedGarden,
+} from "@/components/nurture/companionShare";
 
 const STAGES = [
   { key: "seed",     min: 0,   name: "Just planted",   line: "A seed is in the soil. Whatever you tend — a line, a meal, a check-in — it begins to grow." },
@@ -61,6 +67,12 @@ export default function NurtureGarden({ compact = false, onOpen = null }) {
   const [justTended, setJustTended] = useState(false);
   const [chapters, setChapters] = useState([]);          // past chapters — the accumulating garden
   const [openChapter, setOpenChapter] = useState(null);  // a tapped past chapter (detail sheet)
+  const [milestoneKeys, setMilestoneKeys] = useState([]);// RARE blooms grown (collection, not score)
+  const [newRare, setNewRare] = useState([]);            // rare blooms grown THIS load (gentle note)
+  const [openRare, setOpenRare] = useState(null);        // a tapped rare bloom (detail sheet)
+  const [shared, setShared] = useState(false);           // opt-in: my companion in the shared garden
+  const [meadow, setMeadow] = useState(null);            // OTHER companions (null = not loaded yet)
+  const [meadowOpen, setMeadowOpen] = useState(false);   // the Garden of Gardens section expanded
   const shareBloomRef = useRef(null);
 
   // scroll-lock the page while the share modal is open (full-cover, no bleed-through)
@@ -84,7 +96,11 @@ export default function NurtureGarden({ compact = false, onOpen = null }) {
       // genuine engagement everywhere: journal, nutrition, check-ins, cycle, PROGRAMS &
       // practice, the PLANNER, and the COMMUNITY (per-user QOTD answers, plus anonymous
       // acts — echoes/reactions/circles — counted device-local since they carry no user_id).
-      const [E, M, W, Cn, Sy, Up, Q, Pl, Pt, Pi, Tc, prof] = await Promise.all([
+      // load the milestone cache instantly (renders before any network), then hydrate it
+      if (id) { setMilestoneKeys(localMilestones(id)); loadMilestones(id).then((changed) => { if (changed && alive) setMilestoneKeys(localMilestones(id)); }).catch(() => {}); }
+      // restore the shared-garden opt-in flag (device-local, synchronous)
+      setShared(isShared());
+      const [E, M, W, Cn, Sy, Up, Q, Pl, Pt, Pi, Tc, prof, Sl, Ce] = await Promise.all([
         id ? base44.entities.JournalEntries.filter({ user_id: id }, "-created_date", 200).catch(() => []) : [],
         id ? base44.entities.MealLog.filter({ user_id: id }, "-day_key", 200).catch(() => []) : [],
         id ? base44.entities.HydrationLog.filter({ user_id: id }, "-day_key", 120).catch(() => []) : [],
@@ -97,6 +113,10 @@ export default function NurtureGarden({ compact = false, onOpen = null }) {
         id ? base44.entities.PlannerItems.filter({ user_id: id }, "-created_date", 120).catch(() => []) : [],
         id ? base44.entities.UserTaskCompletions.filter({ user_id: id }, "-created_date", 150).catch(() => []) : [],
         base44.entities.UserProfile.filter({}, "-created_date", 1).catch(() => []),
+        // Phase 3 — two cheap extra reads ONLY for rare-bloom detection (guarded, fail-open):
+        // opened sealed letters + period-starts (a full cycle observed). Both light.
+        id ? base44.entities.SealedLetters.filter({ user_id: id }, "-created_date", 60).catch(() => []) : [],
+        id ? base44.entities.CycleEvents.filter({ user_id: id }, "-created_date", 40).catch(() => []) : [],
       ]);
       if (!alive) return;
       const arr = (x) => (Array.isArray(x) ? x.filter(Boolean) : []);
@@ -158,6 +178,26 @@ export default function NurtureGarden({ compact = false, onOpen = null }) {
         loadGardenChapters(id).then((all) => { if (alive) setChapters(all.filter((c) => c.chapter_key < curKey)); }).catch(() => {});
       }
 
+      // ── RARE / MILESTONE BLOOMS — earned THROUGH LIVING (collection, not score). Detect from
+      // the real data we already loaded + the two cheap extra reads. Account age comes from the
+      // signed-in user's created_date. detectMilestones only ADDS newly-earned keys (never
+      // removes), persists them (local-first + guarded fire-and-forget), and reports what's new. ──
+      if (id) {
+        const lettersOpened = arr(Sl).filter((l) => l && (l.unseal_seen_at || l.unsealed_at)).length;
+        const cycleStarts = arr(Ce).filter((c) => c && String(c.type || "").toLowerCase().replace(/[^a-z]/g, "") === "periodstart").length;
+        const accountAgeDays = me?.created_date ? Math.max(0, differenceInCalendarDays(new Date(), new Date(me.created_date))) : 0;
+        const { keys, newlyEarned } = detectMilestones(id, {
+          journalCount: arr(E).length,
+          communityActs: arr(Q).length + commLocal,
+          readingDayCount: readingSet.size,
+          activeDayCount: allDays.size,
+          accountAgeDays,
+          lettersOpened,
+          cycleStarts,
+        });
+        if (alive) { setMilestoneKeys(keys); if (newlyEarned.length) setNewRare(newlyEarned); }
+      }
+
       setUid(id);
       setProfile(Array.isArray(prof) ? prof[0] : null);
       setData({
@@ -201,6 +241,24 @@ export default function NurtureGarden({ compact = false, onOpen = null }) {
   const fedToday = [...(tendedT ? ["__ritual"] : []), ...(data.todayAreas || [])];
   const fedWeek = [...new Set([...(tendedT ? ["__ritual"] : []), ...(data.weekAreas || [])])];
   const joinNouns = (keys) => { const w = keys.slice(0, 3).map((k) => FED_NOUN[k]).filter(Boolean); return w.length <= 1 ? (w[0] || "") : `${w.slice(0, -1).join(", ")} and ${w[w.length - 1]}`; };
+
+  // ── COMMUNITY "Garden of Gardens" — opt-in, non-personal, presence not score ──
+  // The snapshot is the ONLY thing that travels: form / stage / season / accent (+ name iff
+  // she opts in to that). Never email / cycle / journal / mood / real name / user_id. The
+  // toggle is optimistic — the entity write is fire-and-forget inside opt-in/out. Loading the
+  // meadow is a guarded, fail-open read; never blocks the toggle.
+  const loadMeadow = () => { loadSharedGarden(uid).then((rows) => { if (rows) setMeadow(rows); }).catch(() => setMeadow([])); };
+  const buildSnapshot = (includeName) => ({
+    form_key: currentForm.key, stage_key: stage.key, accent: companion.accent,
+    season: seasonOf(data.chapterKey), display_name: includeName ? companion.name : "",
+  });
+  const toggleShare = (on, withName) => {
+    setShared(on);
+    if (on) optIntoSharedGarden(uid, buildSnapshot(withName), withName);
+    else optOutOfSharedGarden(uid);
+    setMeadow(null); loadMeadow();   // refresh presence after the change (fail-open)
+  };
+  const openMeadow = () => { setMeadowOpen(true); if (meadow === null) loadMeadow(); };
 
   const doLeaveLine = () => { if (!uid) return; tendCompanion(uid, lineDraft.trim()); setJustTended(true); setLeaving(false); setLineDraft(""); setVersion((v) => v + 1); };
   const saveName = () => { if (uid) renameCompanion(uid, draftName); setEditing(false); setVersion((v) => v + 1); };
@@ -276,6 +334,14 @@ export default function NurtureGarden({ compact = false, onOpen = null }) {
       {compact && !resting && fedToday.length > 0 && (
         <div style={{ fontFamily: UI, fontSize: 11, color: T.muted, marginTop: 8, maxWidth: 320, lineHeight: 1.45 }}>
           Today, {joinNouns(fedToday)} fed it
+        </div>
+      )}
+
+      {/* TODAY'S BLOOM, AT A GLANCE — the first thing on /Garden (the in-app equivalent of a
+          home-screen glance; a true OS widget needs native work — see summary). One calm line. */}
+      {!compact && (
+        <div style={{ fontFamily: UI, fontSize: 11, fontWeight: 700, letterSpacing: 0.3, color: T.muted, marginTop: 10, border: `1px solid ${T.paperDeep}`, borderRadius: 999, padding: "5px 13px", maxWidth: 360, lineHeight: 1.45 }}>
+          {fedToday.length > 0 ? <>Today · {joinNouns(fedToday)} fed it</> : <>Today · resting is part of it</>}
         </div>
       )}
 
@@ -406,6 +472,105 @@ export default function NurtureGarden({ compact = false, onOpen = null }) {
               </div>
             </div>
           )}
+
+          {/* RARE BLOOMS YOU'VE GROWN — collection, NOT score. Only ever shows what HAS grown
+              (no locked/greyed missing milestones), plus a gentle "more may bloom as you go".
+              Each is earned through living; tap one for its warm "look what grew" note. */}
+          {milestoneKeys.length > 0 && (
+            <div style={{ marginTop: 28, width: "100%", maxWidth: 440, textAlign: "left", borderTop: `1px solid ${T.paperDeep}`, paddingTop: 18 }}>
+              <Eyebrow>Rare blooms you&apos;ve grown</Eyebrow>
+              {newRare.length > 0 && (
+                <div style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 13.5, color: T.crimson, margin: "8px 0 2px", lineHeight: 1.5 }}>
+                  Something new grew{newRare.length > 1 ? "" : ` — ${milestoneDef(newRare[0])?.title || ""}`}. Look what living made.
+                </div>
+              )}
+              <div style={{ fontFamily: UI, fontSize: 11, color: T.muted, margin: "6px 0 14px", lineHeight: 1.5 }}>
+                A few rare blooms have grown through your living — not earned by hitting a target, just by being here. Tap one to read what grew.
+              </div>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 14, justifyContent: "flex-start" }}>
+                {MILESTONES.filter((m) => milestoneKeys.includes(m.key)).map((m) => {
+                  const form = FORM_LIST.find((f) => f.key === m.form) || FORM_LIST[0];
+                  return (
+                    <button key={m.key} onClick={() => setOpenRare(m)}
+                      style={{ background: "transparent", border: "none", cursor: "pointer", padding: 0, display: "flex", flexDirection: "column", alignItems: "center", width: 96 }}>
+                      <Bloom form={form} stageIdx={4} color={T.gold} accent={companion.accent} resting={false} bright={false} rare={m.rare} size={88} />
+                      <span style={{ fontFamily: UI, fontSize: 10.5, fontWeight: 700, color: T.ink, marginTop: 2, textAlign: "center", lineHeight: 1.3 }}>{m.title}</span>
+                    </button>
+                  );
+                })}
+              </div>
+              <div style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 12.5, color: T.muted, marginTop: 12, lineHeight: 1.5 }}>
+                More may bloom as you go — no need to chase them.
+              </div>
+            </div>
+          )}
+
+          {/* GARDEN OF GARDENS — a calm, anonymous meadow of OTHERS growing alongside. OPT-IN,
+              off by default, strictly non-personal (form / stage / season / accent, name only if
+              she chooses). No counts-as-score, no likes, no ranking — presence, not leaderboard. */}
+          <div style={{ marginTop: 28, width: "100%", maxWidth: 440, textAlign: "left", borderTop: `1px solid ${T.paperDeep}`, paddingTop: 18 }}>
+            <Eyebrow>A garden of gardens</Eyebrow>
+            <div style={{ fontFamily: UI, fontSize: 11, color: T.muted, margin: "6px 0 12px", lineHeight: 1.5 }}>
+              Others are growing alongside you. You can wander a calm, anonymous meadow of their companions — no names ranked, no counts, just presence. Yours is never shared unless you choose to.
+            </div>
+
+            {/* the opt-in toggle — explicit, off by default */}
+            <div style={{ background: T.paperHi, border: `1px solid ${T.paperDeep}`, borderRadius: 14, padding: "13px 15px" }}>
+              <label style={{ display: "flex", alignItems: "flex-start", gap: 10, cursor: "pointer" }}>
+                <input type="checkbox" checked={shared} onChange={(e) => toggleShare(e.target.checked, isNameShared())}
+                  style={{ marginTop: 3, width: 16, height: 16, accentColor: T.crimson, cursor: "pointer", flexShrink: 0 }} />
+                <span style={{ fontFamily: SERIF, fontSize: 14.5, color: T.ink, lineHeight: 1.45 }}>
+                  Add my companion to the shared garden
+                  <span style={{ display: "block", fontFamily: UI, fontSize: 10.5, color: T.muted, marginTop: 3, lineHeight: 1.5 }}>
+                    Only the bloom — its shape, season and colour — travels. Never your name, journal, cycle or anything personal.
+                  </span>
+                </span>
+              </label>
+              {shared && (
+                <label style={{ display: "flex", alignItems: "center", gap: 9, cursor: "pointer", marginTop: 11, paddingTop: 11, borderTop: `1px solid ${T.paperDeep}` }}>
+                  <input type="checkbox" checked={isNameShared()} onChange={(e) => toggleShare(true, e.target.checked)}
+                    style={{ width: 15, height: 15, accentColor: T.crimson, cursor: "pointer", flexShrink: 0 }} />
+                  <span style={{ fontFamily: UI, fontSize: 11.5, color: T.muted, lineHeight: 1.4 }}>
+                    Include the name “{companion.name}” (optional)
+                  </span>
+                </label>
+              )}
+            </div>
+
+            {!meadowOpen ? (
+              <button onClick={openMeadow} style={{ ...ghost, marginTop: 14, width: "100%", justifyContent: "center" }}>
+                <Sprout size={13} /> Wander the meadow
+              </button>
+            ) : (
+              <div style={{ marginTop: 16 }}>
+                {meadow === null ? (
+                  <div style={{ fontFamily: UI, fontSize: 11, color: T.muted, textAlign: "center", padding: "12px 0" }}>Gathering the meadow…</div>
+                ) : meadow.length === 0 ? (
+                  <div style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 13.5, color: T.inkSoft, lineHeight: 1.5 }}>
+                    The meadow is quiet for now. As others choose to share, blooms will appear here — you&apos;ll be in good company.
+                  </div>
+                ) : (
+                  <>
+                    <div style={{ display: "flex", flexWrap: "wrap", gap: 10, justifyContent: "center" }}>
+                      {meadow.map((m) => {
+                        const form = FORM_LIST.find((f) => f.key === m.form_key) || FORM_LIST[0];
+                        const sIdx = Math.max(0, STAGES.findIndex((s) => s.key === m.stage_key));
+                        return (
+                          <div key={m.author_hash} style={{ display: "flex", flexDirection: "column", alignItems: "center", width: 78 }}>
+                            <Bloom form={form} stageIdx={sIdx >= 0 ? sIdx : 3} color={seasonColor(m.season)} accent={m.accent} resting={false} bright={false} size={70} />
+                            {m.display_name ? <span style={{ fontFamily: UI, fontSize: 9.5, color: T.muted, marginTop: 1, textAlign: "center", lineHeight: 1.2 }}>{m.display_name}</span> : null}
+                          </div>
+                        );
+                      })}
+                    </div>
+                    <div style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 12.5, color: T.muted, marginTop: 12, textAlign: "center", lineHeight: 1.5 }}>
+                      Others, growing alongside you.
+                    </div>
+                  </>
+                )}
+              </div>
+            )}
+          </div>
         </>
       )}
 
@@ -459,6 +624,24 @@ export default function NurtureGarden({ compact = false, onOpen = null }) {
           </div>
         </div>
       )}
+
+      {/* A RARE BLOOM — tap one to read its warm "look what grew" note (collection, never score) */}
+      {openRare && (
+        <div onClick={() => setOpenRare(null)} role="dialog" aria-modal="true"
+          style={{ position: "fixed", inset: 0, zIndex: 1000, background: "rgba(11,8,5,0.9)", display: "flex", alignItems: "center", justifyContent: "center", padding: 20, overflowY: "auto" }}>
+          <div onClick={(e) => e.stopPropagation()}
+            style={{ width: "100%", maxWidth: 340, background: T.paperHi, borderRadius: 24, padding: "28px 24px 22px", textAlign: "center", boxShadow: "0 24px 60px rgba(11,8,5,0.5)", position: "relative", border: `1px solid ${T.paperDeep}` }}>
+            <button onClick={() => setOpenRare(null)} aria-label="Close" style={{ position: "absolute", top: 12, right: 12, width: 32, height: 32, borderRadius: 999, background: T.paperHi, border: `1px solid ${T.paperDeep}`, color: T.ink, display: "grid", placeItems: "center", cursor: "pointer" }}><X size={16} /></button>
+            <Eyebrow color={T.muted} mb={10}>A rare bloom</Eyebrow>
+            <div style={{ display: "flex", justifyContent: "center" }}>
+              <Bloom form={FORM_LIST.find((f) => f.key === openRare.form) || FORM_LIST[0]} stageIdx={4} color={T.gold} accent={companion.accent} resting={false} bright={false} rare={openRare.rare} size={150} />
+            </div>
+            <Script size={32} color={T.ink} style={{ marginTop: 10, lineHeight: 1.1 }}>{openRare.title}</Script>
+            <div style={{ marginTop: 14, fontFamily: SERIF, fontSize: 15, color: T.ink, lineHeight: 1.55 }}>{openRare.line}</div>
+            <div style={{ marginTop: 14, fontFamily: UI, fontSize: 10.5, color: T.muted, letterSpacing: 0.3 }}>Grown through living — not a score. Kept in your garden.</div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -485,7 +668,7 @@ function lighten(hex, t) {
     return `#${((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1)}`; } catch { return hex; }
 }
 
-export function Bloom({ form, stageIdx, color, accent, resting, bright, size = 190 }) {
+export function Bloom({ form, stageIdx, color, accent, resting, bright, size = 190, rare = null }) {
   const open = Math.min(1, Math.max(0, stageIdx / 4));   // 0 → 1 across the five stages
   const seed = stageIdx === 0;
   const op = resting ? 0.5 : (bright ? 1 : 0.92);
@@ -493,6 +676,8 @@ export function Bloom({ form, stageIdx, color, accent, resting, bright, size = 1
   const headY = seed ? 70 : (tall ? 60 - open * 16 : 74 - open * 38);   // flower head rises as it grows
   const cx = 50;
   const light = lighten(color, 0.4), deep = color;
+  // RARE / MILESTONE treatment — a tasteful gold halo (collection, not a badge). No emoji.
+  const GOLD = "#A8893F";
   const gid = `${form.key}-${color.replace("#", "")}`;          // unique-enough gradient id
   const breath = { transformOrigin: `${cx}px ${headY}px`, animation: resting ? "none" : "fwBreath 6s ease-in-out infinite" };
   const stemTopY = seed ? 80 : headY + (tall ? 4 : (form.fern ? 0 : 5));
@@ -515,6 +700,22 @@ export function Bloom({ form, stageIdx, color, accent, resting, bright, size = 1
 
         {/* soft halo */}
         <circle cx={cx} cy={headY} r={20 + open * 22} fill={`url(#glow-${gid})`} />
+        {/* RARE — a gold halo ring + a quiet scatter of radiating points (gilded / haloed /
+            inked variants differ only in weight). Tasteful, brand gold, no emoji, no "badge". */}
+        {rare && (() => {
+          const rr = 30 + open * 8;
+          const ringW = rare === "gilded" ? 1.8 : rare === "inked" ? 1.0 : 1.4;
+          const dash = rare === "haloed" ? "1.4 4.2" : (rare === "inked" ? "0.6 3" : "none");
+          return (
+            <g opacity={resting ? 0.4 : 0.85}>
+              <circle cx={cx} cy={headY} r={rr} fill="none" stroke={GOLD} strokeWidth={ringW} strokeDasharray={dash} opacity="0.7" />
+              {Array.from({ length: 12 }).map((_, i) => {
+                const a = (i * 30) * Math.PI / 180; const ro = rr + 3.4;
+                return <circle key={i} cx={cx + Math.cos(a) * ro} cy={headY + Math.sin(a) * ro} r={i % 3 === 0 ? 1 : 0.6} fill={GOLD} opacity={0.8} />;
+              })}
+            </g>
+          );
+        })()}
         {/* ground + soil mound */}
         <path d="M22 90 Q50 84 78 90" stroke={SOIL} strokeWidth="1.6" fill="none" opacity="0.5" strokeLinecap="round" />
         {seed && <g><ellipse cx={cx} cy="87" rx="11" ry="5" fill={SOIL} opacity="0.4" /><path d={`M50 86 q -1 -5 0 -8`} stroke={STEM} strokeWidth="2" fill="none" strokeLinecap="round" /><circle cx={cx} cy="77" r="2.4" fill={STEM_HI} /><ellipse cx="46" cy="80" rx="3" ry="1.6" fill={LEAF} opacity="0.9" transform="rotate(-24 46 80)" /><ellipse cx="54" cy="80" rx="3" ry="1.6" fill={LEAF} opacity="0.9" transform="rotate(24 54 80)" /></g>}

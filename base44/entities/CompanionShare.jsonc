@@ -1,0 +1,41 @@
+{
+  // CompanionShare — the COMMUNITY "Garden of Gardens" (Phase 3). One NON-personal snapshot
+  // of a user's Nurture Companion, shared into a calm anonymous meadow of presence. STRICTLY
+  // OPT-IN (off by default) and STRICTLY non-personal: only a device-derived author_hash plus
+  // a harmless visual snapshot (form, life-stage, season colour, accent, an OPTIONAL chosen
+  // name) is ever stored. NEVER a user_id, email, cycle, journal, mood or real name — by
+  // design, anonymity-first like Echo / ReadingActivity.
+  //
+  // The author_hash is the dedupe key: opting in UPDATES the one row for that device, opting
+  // out sets opted_in:false (a client can always retract its OWN presence). Writes are
+  // OPTIMISTIC (local opt-in flag first) + FIRE-AND-FORGET from the client (never awaited on
+  // an interaction path); reads fail open (.catch(() => [])).
+  //
+  // RLS: reads are PUBLIC (read intentionally OMITTED -> public-readable default, so anyone
+  // signed-in can wander the meadow). create AND update are left at the Base44 default so a
+  // signed-in client can directly add its own anonymous snapshot and later flip opted_in /
+  // clear its name (no service function in the loop — there is no user_id to do owner-RLS on,
+  // and the only writable data is a non-personal visual snapshot). delete is locked to admin
+  // so the meadow can only ever be appended to / hidden, never wiped by a client.
+  "name": "CompanionShare",
+  "type": "object",
+  "properties": {
+    "author_hash": { "type": "string", "description": "Device-derived anonymous author token (reuses communityHash) — never a raw user id or email. The dedupe key: one share row per device." },
+    "form_key": { "type": "string", "description": "Bloom form: peony | daisy | foxglove | fern | poppy | forget." },
+    "stage_key": { "type": "string", "description": "Growth stage reached: seed | sprout | budding | blooming | full." },
+    "accent": { "type": "string", "description": "Identity accent colour (hex). Non-personal." },
+    "season": { "type": "string", "description": "spring | summer | autumn | winter — drives the meadow bloom's colour." },
+    "display_name": { "type": "string", "default": "", "description": "OPTIONAL chosen companion name, only present if she explicitly opted to include it. Empty otherwise. Never a real/legal name." },
+    "opted_in": { "type": "boolean", "default": true, "description": "When false, the snapshot is retracted and excluded from the meadow (opt-out)." }
+  },
+  "required": [
+    "author_hash"
+  ],
+  "indexes": [ { "fields": ["created_date"] },
+    { "fields": ["author_hash"] },
+    { "fields": ["opted_in"] }
+  ],
+  "rls": {
+    "delete": { "user_condition": { "role": "admin" } }
+  }
+}

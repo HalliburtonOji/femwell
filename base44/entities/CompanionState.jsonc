@@ -31,6 +31,11 @@
     "tended_note": {
       "type": "string",
       "description": "The most recent one-line reflection from the 'leave a line' ritual (naming how you feel)"
+    },
+    "milestones": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Phase 3 — keys of the RARE / MILESTONE BLOOMS she has grown through living (e.g. first_letter_opened, journal_100, year_on_femwell). Collection, not score: only ever appended, never removed. Mirrored device-local so a wedged write never breaks the garden."
     }
   },
   "required": [

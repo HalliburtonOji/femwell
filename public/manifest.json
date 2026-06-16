@@ -1,0 +1,28 @@
+{
+  "name": "FemWell",
+  "short_name": "FemWell",
+  "description": "A calm companion for your whole cycle of life — journal, cycle, nutrition and a living garden that grows from your real self-care.",
+  "start_url": "/Today",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#ECE7DA",
+  "theme_color": "#3A2C1A",
+  "icons": [
+    { "src": "https://base44.com/logo_v2.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }
+  ],
+  "shortcuts": [
+    {
+      "name": "Your garden",
+      "short_name": "Garden",
+      "description": "Your living companion and the seasons you've grown.",
+      "url": "/Garden"
+    },
+    {
+      "name": "Today",
+      "short_name": "Today",
+      "description": "Your day at a glance.",
+      "url": "/Today"
+    }
+  ]
+}
