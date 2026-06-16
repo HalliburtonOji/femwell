@@ -127,6 +127,17 @@ function isTransient(err) {
   return true;
 }
 
+// A context-aware reflection prompt for the reader's anytime Reflect icon. Prefers the authored
+// chapter prompt (already contextual); otherwise builds a line from where she actually is.
+function smartReflectPrompt(bookId, chapterIndex, heading, title) {
+  const authored = promptFor(bookId, chapterIndex);
+  if (authored) return authored.prompt;
+  const ch = (chapterIndex || 0) + 1;
+  const isGeneric = !heading || /^chapter\b/i.test(heading) || /^page\b/i.test(heading);
+  const where = isGeneric ? `Chapter ${ch}` : `“${heading}”`;
+  return `You're in ${where}${title ? ` of ${title}` : ""}. What's staying with you from these pages — a line, a feeling, a face you recognise?`;
+}
+
 export default function BookReader() {
   const navigate = useNavigate();
   const [book, setBook] = useState(null);
@@ -149,6 +160,7 @@ export default function BookReader() {
   const [liveBookmarks, setLiveBookmarks] = useState([]);
   const [jump, setJump] = useState(null);   // { index, nonce } → reader jumps
   const jumpNonceRef = useRef(0);
+  const [reflectNow, setReflectNow] = useState(null);   // anytime reflect: { chapterIndex, prompt } | null
 
   const gutenbergId = useMemo(() => {
     const p = new URLSearchParams(window.location.search).get("gutenberg_id");
@@ -293,6 +305,11 @@ export default function BookReader() {
     if (typeof currentIndex === "number") setLiveCurrent(currentIndex);
     if (Array.isArray(bookmarks)) setLiveBookmarks(bookmarks);
   }, []);
+  // Reflect icon → open a context-aware reflection for wherever she currently is.
+  const onReflectNow = useCallback(() => {
+    const idx = liveCurrent || 0;
+    setReflectNow({ chapterIndex: idx, prompt: smartReflectPrompt(bookId, idx, chapters[idx]?.heading, book?.title) });
+  }, [liveCurrent, chapters, book?.title, bookId]);
   const jumpTo = useCallback((index) => {
     jumpNonceRef.current += 1;
     setJump({ index, nonce: jumpNonceRef.current });
@@ -368,6 +385,7 @@ export default function BookReader() {
         onChapterReached={onChapterReached}
         goToChapter={jump}
         onMarks={onMarks}
+        onReflect={onReflectNow}
       />
 
       {/* Catch-up note — reflections are held until she's current (no wall of prompts). */}
@@ -394,6 +412,19 @@ export default function BookReader() {
           communityHref={communityHref}
           onClose={() => setCardChapter(null)}
           onCrisis={() => { setCardChapter(null); setCrisisOpen(true); }}
+        />
+      )}
+      {reflectNow !== null && bookId != null && (
+        <ChapterEndCard
+          bookId={bookId}
+          chapterIndex={reflectNow.chapterIndex}
+          userId={me?.id}
+          inClub={inClub}
+          communityHref={communityHref}
+          overridePrompt={reflectNow.prompt}
+          anytime
+          onClose={() => setReflectNow(null)}
+          onCrisis={() => { setReflectNow(null); setCrisisOpen(true); }}
         />
       )}
       {crisisOpen && <CrisisSheetLite onClose={() => setCrisisOpen(false)} />}

@@ -55,10 +55,15 @@ export default function ChapterEndCard({
   // this book's OWN community thread (Book Club for the club pick, else its readers' corner).
   // Never the generic Community page.
   communityHref = null,
+  // anytime-reflect (the reader's Reflect icon): a smart, context-aware prompt for wherever she
+  // is — used instead of the authored chapter-end prompt. `anytime` reframes the card as a quiet
+  // mid-read reflection (no "guess the next chapter" / cohort, no "after chapter N" framing).
+  overridePrompt = null,
+  anytime = false,
   onClose,
   onCrisis,
 }) {
-  const prompt = promptFor(bookId, chapterIndex);
+  const prompt = overridePrompt ? { prompt: overridePrompt } : promptFor(bookId, chapterIndex);
   const [reflection, setReflection] = useState(() => readSolo(bookId, chapterIndex));
   const [savedNote, setSavedNote] = useState("");
   const [guess, setGuess] = useState("");
@@ -173,7 +178,7 @@ export default function ChapterEndCard({
       >
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
           <span style={{ display: "inline-flex", alignItems: "center", gap: 7, fontFamily: UI, fontSize: 10.5, fontWeight: 700, letterSpacing: 0.7, textTransform: "uppercase", color: GOLD }}>
-            <BookOpen size={13} /> After chapter {chapterHuman} · Jess
+            <BookOpen size={13} /> {anytime ? "A moment to reflect · Jess" : `After chapter ${chapterHuman} · Jess`}
           </span>
           <button type="button" onClick={close} aria-label="Close" style={{ background: "transparent", border: "none", cursor: "pointer", color: MUTED, padding: 4, display: "inline-flex" }}>
             <X size={18} />
@@ -204,7 +209,9 @@ export default function ChapterEndCard({
           {savedNote && <span style={{ fontFamily: UI, fontSize: 12, color: MUTED }}>{savedNote}</span>}
         </div>
 
-        {/* 2 — guess the next chapter (projective prediction -> warm aggregate) */}
+        {/* 2 — guess the next chapter (projective prediction -> warm aggregate). Chapter-end only —
+            an anytime mid-read reflection doesn't ask you to guess ahead. */}
+        {!anytime && (<>
         <div style={{ borderTop: `1px solid ${RULE}`, marginTop: 18, paddingTop: 16 }}>
           <p style={{ fontFamily: UI, fontSize: 10.5, fontWeight: 700, letterSpacing: 0.6, textTransform: "uppercase", color: MUTED, margin: "0 0 8px" }}>
             {hasReveal ? "What the room imagined" : "Guess what comes next"}
@@ -265,6 +272,8 @@ export default function ChapterEndCard({
             </p>
           )}
         </div>
+
+        </>)}
 
         {/* Discuss — straight to THIS book's own thread (Book Club / readers' corner), never the
             generic Community page. */}

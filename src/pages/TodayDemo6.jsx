@@ -22,7 +22,7 @@ import { useScrollLock } from "@/utils/useScrollLock";
 import {
   PenLine, Salad, Users, Stethoscope, Sparkles, BookOpen, Feather, Headphones, Star, CalendarDays,
   Activity, Sprout, TrendingUp, Leaf, Moon, Footprints, Droplet, Coffee, Check, Plus, ChevronRight,
-  Sun, Sunrise, Sunset, X, Send,
+  Sun, Sunrise, Sunset, X, Send, Minus, Search, Mic, Camera, ScanLine, Clock, CalendarHeart,
 } from "lucide-react";
 
 const PLUM = "#8E6E8E";                                   // luteal phase hue (semantic set)
@@ -147,6 +147,7 @@ export default function TodayDemo6() {
 
   const phaseColor = PHASE_COLORS[MOCK.phase];
   const [sheet, setSheet] = useState(null);          // in-place log/write pop-up on Today (key) or null
+  const [calOpen, setCalOpen] = useState(false);      // cycle calendar overlay
   const [loggedCount, setLoggedCount] = useState(0);  // logs done in-place this session (close the garden loop)
   const tended = useMemo(() => Object.values(done).filter(Boolean).length + loggedCount, [done, loggedCount]);
   const feedGarden = () => { setLoggedCount((n) => n + 1); setJustFed(true); setTimeout(() => setJustFed(false), 2200); };
@@ -185,9 +186,6 @@ export default function TodayDemo6() {
     { key: "community", eyebrow: "Community", accent: T.crimson, Icon: Users, slug: "/Community", openLabel: "Open community",
       summary: { title: "The meadow beyond your garden", lines: [{ text: "Today's question: “What small thing lifted you today?”", meta: "" }, { text: "A few sisters have answered." }], inset: { eyebrow: "An echo, fading", quote: "“It's held.” — anonymous" } },
       action: { prompt: "Answer the room, or leave an anonymous line of your own.", buttons: [{ Icon: Users, label: "Answer QOTD", sheet: "qotd" }, { Icon: Heart, label: "Post an echo", sheet: "echo" }] } },
-    { key: "health", eyebrow: "Cycle & Health · your letters", accent: PLUM, Icon: Stethoscope, slug: "/Health", openLabel: "Open Health Corner",
-      summary: { title: `${PHASE_LABEL[MOCK.phase]} · day ${MOCK.day} · ${MOCK.season}`, lines: [{ Icon: BookOpen, text: "Your Body letter: boundaries feel natural now." }, { Icon: Heart, text: "Your Care letter has a quiet question waiting." }] },
-      action: { prompt: "Read a letter, or note what your body's saying today.", buttons: [{ Icon: Stethoscope, label: "Log a symptom", sheet: "symptom" }, { Icon: BookOpen, label: "Read your Body letter", href: "/Health" }] } },
     { key: "foryou", eyebrow: "Lifestyle · For You", accent: T.gold, Icon: Sparkles, slug: "/Lifestyle", openLabel: "Open Lifestyle",
       summary: { title: "8 picks for you today", lines: [{ text: "Cycle-synced reads, a gentle practice, and a listen — chosen for where you are." }] },
       action: { prompt: "A few things gathered for your afternoon.", buttons: [{ Icon: Sparkles, label: "See your picks", href: "/Lifestyle" }] } },
@@ -244,10 +242,14 @@ export default function TodayDemo6() {
       </div>
 
       <div style={{ maxWidth: 430, margin: "0 auto", padding: "16px 16px 0", position: "relative", zIndex: 1 }}>
-        {/* date + time-of-day */}
-        <div style={{ display: "flex", alignItems: "center", gap: 8, justifyContent: "center", marginTop: 6 }}>
+        {/* date + time-of-day + cycle calendar icon (top) */}
+        <div style={{ display: "flex", alignItems: "center", gap: 8, justifyContent: "center", marginTop: 6, position: "relative" }}>
           <TodIcon size={14} color={T.muted} />
           <span style={{ fontFamily: UI, fontSize: 11, fontWeight: 700, letterSpacing: "0.16em", textTransform: "uppercase", color: T.muted }}>{TODS[tod].label} · Tuesday 16 June</span>
+          <button onClick={() => setCalOpen(true)} aria-label="Open your cycle calendar" title="Cycle calendar"
+            style={{ position: "absolute", right: 0, top: -2, width: 38, height: 38, borderRadius: 12, border: `1px solid ${T.paperDeep}`, background: T.paperHi, display: "grid", placeItems: "center", cursor: "pointer" }}>
+            <CalendarHeart size={19} color={phaseColor} strokeWidth={1.8} />
+          </button>
         </div>
 
         {/* (1) HERO — canonical STEM bloom inside the cycle phase ring */}
@@ -308,11 +310,27 @@ export default function TodayDemo6() {
           </div>
         </div>
 
-        {/* (4) PER-SURFACE BIG sliding cards — EVERY surface */}
+        {/* (3b) CYCLE & SYMPTOMS — elevated near the top (logging matters most) */}
+        <div style={{ marginTop: 16, background: "#fff", border: `1px solid ${T.paperDeep}`, borderLeft: `3px solid ${PLUM}`, borderRadius: 18, padding: "16px 17px", boxShadow: "0 8px 22px rgba(58,48,32,0.07)" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 9, marginBottom: 10 }}>
+            {ICON_DISC(Stethoscope, PLUM)}
+            <Eyebrow color={PLUM}>Cycle &amp; symptoms</Eyebrow>
+            <button onClick={() => setCalOpen(true)} style={{ marginLeft: "auto", display: "inline-flex", alignItems: "center", gap: 5, background: "transparent", border: "none", cursor: "pointer", fontFamily: UI, fontSize: 13, fontWeight: 700, color: PLUM }}><CalendarHeart size={15} /> Calendar</button>
+          </div>
+          <h3 style={{ fontFamily: SERIF, fontSize: 18, fontWeight: 600, color: T.ink, margin: "0 0 6px", lineHeight: 1.3 }}>{PHASE_LABEL[MOCK.phase]} · day {MOCK.day} · {MOCK.season}</h3>
+          <p style={{ fontFamily: SERIF, fontSize: 16, color: T.inkSoft, lineHeight: 1.5, margin: "0 0 12px" }}>Boundaries feel natural now. Note anything your body's saying — it keeps your patterns honest.</p>
+          <div>
+            <ActionBtn Icon={Stethoscope} onClick={() => setSheet("symptom")} accent={PLUM}>Log a symptom</ActionBtn>
+            <ActionBtn Icon={CalendarHeart} onClick={() => setCalOpen(true)} accent={PLUM}>Cycle calendar</ActionBtn>
+          </div>
+          <a href="/Health" style={{ display: "inline-flex", alignItems: "center", gap: 4, marginTop: 4, fontFamily: UI, fontSize: 13, fontWeight: 700, color: T.muted, textDecoration: "none" }}>Open your Health letters <ChevronRight size={14} /></a>
+        </div>
+
+        {/* (4) PER-SURFACE cards — a STACK SPREAD deck (every surface) */}
         <div style={{ marginTop: 24 }}>
           <Eyebrow mb={2} color={T.gold}>Across your day</Eyebrow>
-          <p style={{ fontFamily: UI, fontSize: 13, color: T.muted, margin: "2px 0 4px" }}>slide each card → to do it from here · every part of your app, one tap away</p>
-          {SURFACES.map((s) => <BigSlidePair key={s.key} s={s} onSheet={setSheet} />)}
+          <p style={{ fontFamily: UI, fontSize: 13, color: T.muted, margin: "2px 0 12px" }}>a little deck — tap a card to bring it forward and do it from here</p>
+          <StackSpread surfaces={SURFACES} onSheet={setSheet} />
         </div>
 
         {/* (5) CROSS-APP SMART SUGGESTIONS — big sliding row */}
@@ -337,6 +355,8 @@ export default function TodayDemo6() {
 
       {/* In-place log/write pop-up — logging happens ON Today, no navigation away */}
       {sheet && <ActionSheet sheetKey={sheet} onClose={() => setSheet(null)} onSaved={feedGarden} />}
+      {/* The beautiful, impressionistic cycle calendar (from the top icon) */}
+      {calOpen && <CycleCalendar onClose={() => setCalOpen(false)} />}
     </div>
   );
 }
@@ -360,9 +380,11 @@ function ActionSheet({ sheetKey, onClose, onSaved }) {
   const [text, setText] = useState("");
   const [picked, setPicked] = useState([]);
   const [glasses, setGlasses] = useState(3);
+  const [mealType, setMealType] = useState("Breakfast");
+  const [method, setMethod] = useState("recents");   // search | recents | snap | say | scan
   const [saved, setSaved] = useState(false);
   useEffect(() => { const onKey = (e) => { if (e.key === "Escape") onClose(); }; window.addEventListener("keydown", onKey); return () => window.removeEventListener("keydown", onKey); }, [onClose]);
-  const canSave = saved ? false : (cfg.kind === "text" ? text.trim().length > 0 : cfg.kind === "chips" ? picked.length > 0 : true);
+  const canSave = saved ? false : (cfg.kind === "text" ? text.trim().length > 0 : cfg.kind === "chips" ? picked.length > 0 : cfg.kind === "meal" ? picked.length > 0 : true);
   const save = () => { if (saved) return; setSaved(true); onSaved && onSaved(); setTimeout(onClose, 1300); };
   const toggleChip = (c) => setPicked((p) => p.includes(c) ? p.filter((x) => x !== c) : [...p, c]);
   const inputStyle = { width: "100%", boxSizing: "border-box", background: T.paper, border: `1px solid ${T.paperDeep}`, borderRadius: 11, padding: "12px 13px", resize: "none", fontFamily: SERIF, fontSize: 16, lineHeight: 1.5, color: T.ink, outline: "none" };
@@ -386,24 +408,79 @@ function ActionSheet({ sheetKey, onClose, onSaved }) {
           <>
             {cfg.prompt && <p style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 17, color: T.inkSoft, margin: "0 0 12px", lineHeight: 1.45 }}>{cfg.prompt}</p>}
             {cfg.kind === "text" && <textarea value={text} onChange={(e) => setText(e.target.value)} rows={3} maxLength={600} placeholder={cfg.placeholder} style={inputStyle} autoFocus />}
-            {cfg.kind === "meal" && (
-              <>
-                <div style={{ display: "flex", gap: 8, marginBottom: 10, flexWrap: "wrap" }}>
-                  {["Breakfast", "Lunch", "Dinner", "Snack"].map((m) => {
-                    const on = picked.includes(m);
-                    return <button key={m} type="button" onClick={() => setPicked([m])} style={{ fontFamily: UI, fontSize: 13, fontWeight: 700, padding: "7px 13px", borderRadius: 999, cursor: "pointer", border: `1px solid ${on ? cfg.accent : T.paperDeep}`, background: on ? cfg.accent : "transparent", color: on ? "#fff" : T.muted }}>{m}</button>;
-                  })}
+            {cfg.kind === "meal" && (() => {
+              const METHODS = [
+                { key: "search", Icon: Search, label: "Search" },
+                { key: "recents", Icon: Clock, label: "Recents" },
+                { key: "snap", Icon: Camera, label: "Snap" },
+                { key: "say", Icon: Mic, label: "Say" },
+                { key: "scan", Icon: ScanLine, label: "Scan" },
+              ];
+              const RECENTS = [
+                { name: "Porridge with seeds & berries", meta: "240 kcal · iron-rich", tag: "frequent" },
+                { name: "Greek yogurt & honey", meta: "180 kcal · protein 15g" },
+                { name: "Spinach & lentil salad", meta: "320 kcal · iron-rich" },
+                { name: "Katsu curry (meal deal)", meta: "640 kcal" },
+                { name: "Banana", meta: "90 kcal" },
+              ];
+              const toggleFood = (n) => setPicked((p) => p.includes(n) ? p.filter((x) => x !== n) : [...p, n]);
+              return (
+                <>
+                  {/* meal type */}
+                  <div style={{ display: "flex", gap: 8, marginBottom: 12, flexWrap: "wrap" }}>
+                    {["Breakfast", "Lunch", "Dinner", "Snack"].map((m) => {
+                      const on = mealType === m;
+                      return <button key={m} type="button" onClick={() => setMealType(m)} style={{ fontFamily: UI, fontSize: 13, fontWeight: 700, padding: "7px 13px", borderRadius: 999, cursor: "pointer", border: `1px solid ${on ? cfg.accent : T.paperDeep}`, background: on ? cfg.accent : "transparent", color: on ? "#fff" : T.muted }}>{m}</button>;
+                    })}
+                  </div>
+                  {/* log methods — like the real nutrition logger */}
+                  <div style={{ display: "flex", gap: 7, marginBottom: 12 }}>
+                    {METHODS.map((mt) => {
+                      const on = method === mt.key;
+                      return (
+                        <button key={mt.key} type="button" onClick={() => setMethod(mt.key)} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: 4, padding: "9px 2px", borderRadius: 12, cursor: "pointer", border: `1px solid ${on ? cfg.accent : T.paperDeep}`, background: on ? `${cfg.accent}14` : "transparent" }}>
+                          <mt.Icon size={18} color={on ? cfg.accent : T.muted} strokeWidth={1.8} />
+                          <span style={{ fontFamily: UI, fontSize: 10.5, fontWeight: 700, color: on ? cfg.accent : T.muted }}>{mt.label}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                  {/* search field */}
+                  <div style={{ display: "flex", alignItems: "center", gap: 9, background: T.paper, border: `1px solid ${T.paperDeep}`, borderRadius: 11, padding: "11px 13px", marginBottom: 12 }}>
+                    <Search size={16} color={T.muted} />
+                    <input value={text} onChange={(e) => setText(e.target.value)} placeholder={method === "scan" ? "Point at a barcode…" : method === "say" ? "“I had porridge and a banana…”" : "Search foods (CoFID + branded)…"} style={{ flex: 1, minWidth: 0, border: "none", background: "transparent", fontFamily: SERIF, fontSize: 16, color: T.ink, outline: "none" }} />
+                  </div>
+                  {/* recents / quick-add */}
+                  <div style={{ fontFamily: UI, fontSize: 11, fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", color: T.muted, margin: "0 0 8px" }}>Recent &amp; quick-add</div>
+                  <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                    {RECENTS.map((f) => {
+                      const on = picked.includes(f.name);
+                      return (
+                        <button key={f.name} type="button" onClick={() => toggleFood(f.name)} style={{ display: "flex", alignItems: "center", gap: 11, textAlign: "left", background: on ? `${cfg.accent}12` : T.paper, border: `1px solid ${on ? cfg.accent : T.paperDeep}`, borderRadius: 12, padding: "11px 13px", cursor: "pointer" }}>
+                          <span style={{ flex: 1 }}>
+                            <span style={{ display: "block", fontFamily: SERIF, fontSize: 16, color: T.ink, lineHeight: 1.3 }}>{f.name}</span>
+                            <span style={{ display: "block", fontFamily: UI, fontSize: 12, color: T.muted, marginTop: 1 }}>{f.meta}{f.tag ? ` · ${f.tag}` : ""}</span>
+                          </span>
+                          <span style={{ width: 28, height: 28, borderRadius: 99, flexShrink: 0, display: "grid", placeItems: "center", background: on ? cfg.accent : "transparent", border: `1.5px solid ${on ? cfg.accent : T.paperDeep}`, color: "#fff" }}>{on ? <Check size={15} strokeWidth={3} /> : <Plus size={15} color={T.muted} />}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </>
+              );
+            })()}
+            {cfg.kind === "water" && (() => {
+              const stepBtn = { width: 52, height: 52, borderRadius: 14, border: `1.5px solid ${cfg.accent}`, background: "transparent", color: cfg.accent, display: "grid", placeItems: "center", cursor: "pointer", flexShrink: 0 };
+              return (
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, padding: "4px 0 8px" }}>
+                  <button type="button" onClick={() => setGlasses((g) => Math.max(0, g - 1))} aria-label="One fewer glass" style={stepBtn}><Minus size={22} strokeWidth={2.5} /></button>
+                  <span style={{ flex: 1, textAlign: "center", fontFamily: SERIF, fontSize: 19, fontWeight: 600, color: T.ink }}>
+                    <Droplet size={17} style={{ verticalAlign: "-3px", color: cfg.accent }} /> {glasses + 1} of 6 glasses
+                  </span>
+                  <button type="button" onClick={() => setGlasses((g) => Math.min(7, g + 1))} aria-label="One more glass" style={stepBtn}><Plus size={22} strokeWidth={2.5} /></button>
                 </div>
-                <textarea value={text} onChange={(e) => setText(e.target.value)} rows={2} maxLength={300} placeholder="What did you have? (e.g. porridge, seeds, berries)" style={inputStyle} />
-              </>
-            )}
-            {cfg.kind === "water" && (
-              <div style={{ display: "flex", alignItems: "center", gap: 14, padding: "4px 0 6px" }}>
-                <button type="button" onClick={() => setGlasses((g) => Math.max(0, g - 1))} style={{ width: 44, height: 44, borderRadius: 12, border: `1px solid ${T.paperDeep}`, background: T.paper, fontFamily: UI, fontSize: 20, fontWeight: 700, color: T.ink, cursor: "pointer" }}>−</button>
-                <span style={{ flex: 1, textAlign: "center", fontFamily: SERIF, fontSize: 18, color: T.ink }}><Droplet size={16} style={{ verticalAlign: "-2px", color: cfg.accent }} /> {glasses + 1} of 6 glasses</span>
-                <button type="button" onClick={() => setGlasses((g) => Math.min(5, g + 1))} style={{ width: 44, height: 44, borderRadius: 12, border: `1px solid ${T.paperDeep}`, background: T.paper, fontFamily: UI, fontSize: 20, fontWeight: 700, color: T.ink, cursor: "pointer" }}>+</button>
-              </div>
-            )}
+              );
+            })()}
             {cfg.kind === "chips" && (
               <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
                 {cfg.chips.map((c) => { const on = picked.includes(c); return <button key={c} type="button" onClick={() => toggleChip(c)} style={{ fontFamily: UI, fontSize: 13, fontWeight: 700, padding: "8px 13px", borderRadius: 999, cursor: "pointer", border: `1px solid ${on ? cfg.accent : T.paperDeep}`, background: on ? cfg.accent : "transparent", color: on ? "#fff" : T.muted }}>{c}</button>; })}
@@ -419,6 +496,130 @@ function ActionSheet({ sheetKey, onClose, onSaved }) {
             </div>
           </>
         )}
+      </div>
+    </div>
+  );
+}
+
+// ── (8) Stack-spread deck — section cards layered in a cascade; tap brings one to front ────────
+function StackSpread({ surfaces, onSheet }) {
+  const [front, setFront] = useState(0);
+  return (
+    <div style={{ position: "relative" }}>
+      {surfaces.map((s, i) => {
+        const open = i === front;
+        const It = s.Icon;
+        // collapsed cards cascade ~20% beneath the one before; the front card and the card right
+        // after it get a positive gap so the open card never sits under its neighbour.
+        const mt = i === 0 ? 0 : (open || i === front + 1 ? 14 : -34);
+        return (
+          <div key={s.key} onClick={() => { if (!open) setFront(i); }}
+            style={{
+              position: "relative", marginTop: mt, zIndex: open ? 100 : i + 1,
+              background: open ? "#fff" : T.paperHi, border: `1px solid ${T.paperDeep}`, borderLeft: `3px solid ${s.accent}`,
+              borderRadius: 18, boxShadow: open ? "0 16px 34px rgba(58,48,32,0.16)" : "0 5px 14px rgba(58,48,32,0.09)",
+              padding: open ? "16px 17px" : "13px 16px 24px", cursor: open ? "default" : "pointer",
+              transition: "margin .28s ease, box-shadow .28s ease",
+            }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+              {ICON_DISC(It, s.accent)}
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <Eyebrow color={s.accent}>{s.eyebrow}</Eyebrow>
+                {!open && <div style={{ fontFamily: SERIF, fontSize: 15, color: T.inkSoft, lineHeight: 1.3, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{s.summary.title}</div>}
+              </div>
+              <ChevronRight size={16} color={T.muted} style={{ transform: open ? "rotate(90deg)" : "none", transition: "transform .2s", flexShrink: 0 }} />
+            </div>
+            {open && (
+              <div style={{ marginTop: 12 }}>
+                <h3 style={{ fontFamily: SERIF, fontSize: 18, fontWeight: 600, color: T.ink, margin: "0 0 10px", lineHeight: 1.3 }}>{s.summary.title}</h3>
+                {s.summary.lines.map((ln, j) => (
+                  <div key={j} style={{ display: "flex", alignItems: "center", gap: 9, margin: "8px 0" }}>
+                    {ln.Icon && <ln.Icon size={15} color={s.accent} strokeWidth={1.7} style={{ flexShrink: 0 }} />}
+                    <span style={{ flex: 1, fontFamily: SERIF, fontSize: 16, color: T.inkSoft, lineHeight: 1.5 }}>{ln.text}</span>
+                    {ln.meta && <span style={{ fontFamily: UI, fontSize: 13, fontWeight: 600, color: T.muted, flexShrink: 0 }}>{ln.meta}</span>}
+                  </div>
+                ))}
+                {s.summary.inset && (
+                  <div style={{ marginTop: 11, background: T.paper, border: `1px solid ${T.paperDeep}`, borderRadius: 12, padding: "10px 13px" }}>
+                    <Eyebrow mb={3}>{s.summary.inset.eyebrow}</Eyebrow>
+                    <p style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 15, color: T.inkSoft, margin: 0, lineHeight: 1.5 }}>{s.summary.inset.quote}</p>
+                  </div>
+                )}
+                <p style={{ fontFamily: SERIF, fontSize: 16, color: T.ink, lineHeight: 1.55, margin: "12px 0 10px" }}>{s.action.prompt}</p>
+                <div>{s.action.buttons.map((b, k) => <ActionBtn key={k} Icon={b.Icon} href={b.href} onClick={b.sheet ? () => onSheet(b.sheet) : undefined} accent={s.accent}>{b.label}</ActionBtn>)}</div>
+                <a href={s.slug} style={{ display: "inline-flex", alignItems: "center", gap: 4, marginTop: 2, fontFamily: UI, fontSize: 13, fontWeight: 700, color: T.muted, textDecoration: "none" }}>{s.openLabel} <ChevronRight size={14} /></a>
+              </div>
+            )}
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+// ── (7) Impressionistic cycle calendar — phase-tinted, past/predicted period, today, soft ──────
+function CycleCalendar({ onClose }) {
+  useScrollLock(true);
+  useEffect(() => { const k = (e) => { if (e.key === "Escape") onClose(); }; window.addEventListener("keydown", k); return () => window.removeEventListener("keydown", k); }, [onClose]);
+  const YEAR = 2026, MONTH = 5; // June
+  const startDow = new Date(YEAR, MONTH, 1).getDay();
+  const daysInMonth = new Date(YEAR, MONTH + 1, 0).getDate();
+  const lastPeriod = new Date(YEAR, 4, 26);   // 26 May → 16 Jun is cycle day 22
+  const CYCLE = 28, TODAY = 16;
+  const phaseOf = (cd) => cd <= 5 ? "menstrual" : cd <= 13 ? "follicular" : cd <= 16 ? "ovulatory" : "luteal";
+  const cells = [];
+  for (let i = 0; i < startDow; i++) cells.push(null);
+  for (let d = 1; d <= daysInMonth; d++) {
+    const elapsed = Math.round((new Date(YEAR, MONTH, d) - lastPeriod) / 86400000);
+    const cd = ((elapsed % CYCLE) + CYCLE) % CYCLE + 1;
+    cells.push({ d, phase: phaseOf(cd), isPeriod: cd <= 5, isToday: d === TODAY, future: d > TODAY });
+  }
+  const DOW = ["S", "M", "T", "W", "T", "F", "S"];
+  const legend = [{ k: "menstrual", label: "Period" }, { k: "follicular", label: "Follicular" }, { k: "ovulatory", label: "Ovulatory" }, { k: "luteal", label: "Luteal" }];
+  return (
+    <div role="dialog" aria-modal="true" aria-label="Your cycle calendar"
+      onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
+      style={{ position: "fixed", inset: 0, zIndex: 210, display: "flex", alignItems: "flex-end", justifyContent: "center", background: "rgba(11,8,5,0.45)" }}>
+      <div onClick={(e) => e.stopPropagation()} style={{ ...PAPER_BG, width: "100%", maxWidth: 460, borderRadius: "22px 22px 0 0", padding: "18px 18px 28px", maxHeight: "92vh", overflowY: "auto", boxShadow: "0 -8px 32px rgba(11,8,5,0.24)" }}>
+        <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between" }}>
+          <div>
+            <Script size={36} color={T.ink}>June</Script>
+            <div style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 15, color: T.muted, marginTop: -2 }}>Luteal · day 22 · your inner autumn</div>
+          </div>
+          <button onClick={onClose} aria-label="Close" style={{ background: "transparent", border: "none", cursor: "pointer", color: T.muted, padding: 4 }}><X size={20} /></button>
+        </div>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(7,1fr)", gap: 6, marginTop: 16 }}>
+          {DOW.map((d, i) => <div key={`h${i}`} style={{ textAlign: "center", fontFamily: UI, fontSize: 11, fontWeight: 700, color: T.muted, paddingBottom: 2 }}>{d}</div>)}
+          {cells.map((c, i) => {
+            if (!c) return <div key={i} />;
+            const col = PHASE_COLORS[c.phase];
+            const periodPast = c.isPeriod && !c.future;
+            const periodPredicted = c.isPeriod && c.future;
+            return (
+              <div key={i} style={{
+                aspectRatio: "1 / 1", borderRadius: 14, display: "grid", placeItems: "center",
+                background: periodPast ? col : `${col}2b`,
+                border: c.isToday ? `2px solid ${T.ink}` : periodPredicted ? `1.5px dashed ${col}` : "1px solid transparent",
+                boxShadow: periodPast ? `0 4px 12px ${col}55` : "none",
+              }}>
+                <span style={{ fontFamily: SERIF, fontSize: 15, fontWeight: c.isToday ? 700 : 500, color: periodPast ? "#fff" : T.ink }}>{c.d}</span>
+              </div>
+            );
+          })}
+        </div>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 12, marginTop: 16, justifyContent: "center" }}>
+          {legend.map((l) => (
+            <span key={l.k} style={{ display: "inline-flex", alignItems: "center", gap: 6, fontFamily: UI, fontSize: 12, color: T.muted }}>
+              <span style={{ width: 12, height: 12, borderRadius: 4, background: PHASE_COLORS[l.k], opacity: l.k === "menstrual" ? 1 : 0.45 }} /> {l.label}
+            </span>
+          ))}
+          <span style={{ display: "inline-flex", alignItems: "center", gap: 6, fontFamily: UI, fontSize: 12, color: T.muted }}>
+            <span style={{ width: 12, height: 12, borderRadius: 4, border: `1.5px dashed ${PHASE_COLORS.menstrual}` }} /> Predicted
+          </span>
+        </div>
+        <div style={{ textAlign: "center", marginTop: 16 }}>
+          <Hand size={15} color={T.muted}>Your next period is likely around the 23rd — gently predicted, never fixed.</Hand>
+        </div>
       </div>
     </div>
   );

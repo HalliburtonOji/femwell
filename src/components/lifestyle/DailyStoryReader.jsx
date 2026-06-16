@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo, useRef, useCallback, useLayoutEffect } from "react";
 import { createPortal } from "react-dom";
-import { ChevronLeft, ChevronRight, Lock, ArrowLeft, Bookmark } from "lucide-react";
+import { ChevronLeft, ChevronRight, Lock, ArrowLeft, Bookmark, Feather } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { useScrollLock } from "@/utils/useScrollLock";
 
@@ -471,6 +471,9 @@ export default function DailyStoryReader({
   // can render the physical bookmark + smart (schedule) marks bar.
   goToChapter,
   onMarks,
+  // Anytime-reflect: when provided, a Reflect icon appears in the controls. Tapping it asks the
+  // host to open a context-aware reflection for wherever she is (not only at chapter end).
+  onReflect,
 }) {
   const [chapters, setChapters] = useState(providedSource?.items || []);
   const [currentIndex, setCurrentIndex] = useState(providedSource?.currentIndex ?? 0);
@@ -652,7 +655,12 @@ export default function DailyStoryReader({
 
   const latestRevealed = chapters.length - 1;
   const currentChapterRef = chapters[currentIndex];
-  const currentChapterPages = chapterPageCounts[currentChapterRef?.id] || 1;
+  // measuredPages is undefined until ChapterPage reports this chapter's real page count.
+  // Until then we must NOT advance to the next chapter (else a fast flip skips a whole,
+  // unmeasured chapter — the "Chapter 4 for 30 pages then 5 then 6" jump). Default 1 only
+  // for within-chapter math; the advance path guards on measuredPages being known.
+  const measuredPages = currentChapterRef ? chapterPageCounts[currentChapterRef.id] : undefined;
+  const currentChapterPages = measuredPages || 1;
   // Reset to page 0 whenever we move to a different chapter — unless we're
   // currently restoring a saved position (which sets pageInChapter directly
   // and shouldn't be stomped). v4d uses pendingPageRef for that.
@@ -727,6 +735,7 @@ export default function DailyStoryReader({
 
   const flipForward = useCallback(() => {
     if (showLocked) return;
+    if (flipState.phase === "flipping") return;   // one flip at a time — rapid taps can't queue skips
     // Step inside the current chapter first.
     if (pageInChapter < currentChapterPages - 1) {
       if (reducedMotion) {
@@ -740,6 +749,10 @@ export default function DailyStoryReader({
       }
       return;
     }
+    // Don't leave this chapter until its REAL page count is known — otherwise a fast flip on a
+    // freshly-entered (unmeasured, defaults-to-1) chapter skips the whole chapter, making the
+    // chapter label jump erratically. Wait one frame for ChapterPage to report the count.
+    if (measuredPages === undefined) return;
     // At end of chapter — go to next chapter (or lock).
     if (currentIndex >= latestRevealed) {
       if (noLock) return; // books: no lock screen, stay on last page
@@ -763,9 +776,10 @@ export default function DailyStoryReader({
         setFlipState({ phase: "idle", dir: 0 });
       }, 600);
     }
-  }, [pageInChapter, currentChapterPages, currentIndex, latestRevealed, reducedMotion, showLocked, noLock]);
+  }, [pageInChapter, currentChapterPages, measuredPages, currentIndex, latestRevealed, reducedMotion, showLocked, noLock, flipState.phase]);
 
   const flipBackward = useCallback(() => {
+    if (flipState.phase === "flipping") return;   // one flip at a time
     if (showLocked) {
       if (reducedMotion) {
         setShowLocked(false);
@@ -807,7 +821,7 @@ export default function DailyStoryReader({
         setFlipState({ phase: "idle", dir: 0 });
       }, 600);
     }
-  }, [pageInChapter, currentIndex, reducedMotion, showLocked, chapters, chapterPageCounts]);
+  }, [pageInChapter, currentIndex, reducedMotion, showLocked, chapters, chapterPageCounts, flipState.phase]);
 
   // Keyboard nav
   useEffect(() => {
@@ -831,7 +845,10 @@ export default function DailyStoryReader({
     if (!end) return;
     const dx = end.clientX - start.x;
     const dy = end.clientY - start.y;
-    if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy)) {
+    // Calmer, less twitchy: require a deliberate, clearly-horizontal swipe (was 50px / 1:1).
+    // A bigger threshold + a 1.6:1 horizontal-dominance ratio stops small/diagonal drags from
+    // flipping pages. The flip-in-progress guard already coalesces rapid repeats.
+    if (Math.abs(dx) > 80 && Math.abs(dx) > Math.abs(dy) * 1.6) {
       if (dx < 0) flipForward(); else flipBackward();
     }
     touchStartRef.current = null;
@@ -925,6 +942,17 @@ export default function DailyStoryReader({
               <ArrowLeft size={18} />
             </button>
             <div className="ds-reader-imm-right">
+              {onReflect && (
+                <button
+                  type="button"
+                  className="ds-reader-imm-btn ds-reader-reflect-btn"
+                  onClick={() => onReflect()}
+                  aria-label="Reflect on where you are"
+                  title="Reflect"
+                >
+                  <Feather size={19} />
+                </button>
+              )}
               <button
                 type="button"
                 className="ds-reader-imm-btn ds-reader-aa-btn"
@@ -956,6 +984,17 @@ export default function DailyStoryReader({
               textSize={textSize}
               setSize={setSize}
             />
+            {onReflect && (
+              <button
+                type="button"
+                className="ds-reader-ctrl-btn ds-reader-ctrl-reflect"
+                onClick={() => onReflect()}
+                aria-label="Reflect on where you are"
+                title="Reflect"
+              >
+                <Feather size={16} />
+              </button>
+            )}
             {bookmarksKey && (
               <button
                 type="button"
