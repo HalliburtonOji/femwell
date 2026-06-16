@@ -12,7 +12,7 @@
 // (3) one-time first-open "bloom grows" ceremony; (4) the deck remembers the last-opened card;
 // (5) the calendar peeks a day on tap + swipes month-to-month. Calm by default.
 
-import { useState, useEffect, useMemo, useRef } from "react";
+import { useState, useEffect, useMemo, useRef, useLayoutEffect } from "react";
 import {
   T, SERIF, UI, SCRIPT, PAPER_BG, Heart, Eyebrow, Script, Hand, InkFilter, useEditorialFonts,
   PHASE_COLORS, PHASE_LABEL,
@@ -645,59 +645,83 @@ function ActionSheet({ sheetKey, uid, cycle, onClose, onSaved }) {
 }
 
 // ── (8) Stack-spread deck — remembers the last-opened card ──────────────────────────────────────
+// HORIZONTAL side-sliding deck: the front card sits on top; the next cards are tucked UNDER it,
+// peeking from the right; the previous card tucks behind to the left. Swipe sideways (or tap a
+// peek / dot) to bring the next card to front — a horizontal overlapping carousel, not a list.
 function StackSpread({ surfaces, onSheet }) {
   const [front, setFront] = useState(() => { try { const v = Number(localStorage.getItem(DECK_KEY)); return Number.isFinite(v) && v >= 0 && v < surfaces.length ? v : 0; } catch { return 0; } });
-  const open = (i) => { setFront(i); try { localStorage.setItem(DECK_KEY, String(i)); } catch { /* ignore */ } };
+  const frontRef = useRef(null);
+  const touch = useRef(null);
+  const [h, setH] = useState(430);
+  useLayoutEffect(() => { if (frontRef.current) setH(frontRef.current.offsetHeight); }, [front, surfaces]);
+  const go = (i) => { const c = Math.max(0, Math.min(surfaces.length - 1, i)); setFront(c); try { localStorage.setItem(DECK_KEY, String(c)); } catch { /* ignore */ } };
+  const onTouchStart = (e) => { touch.current = e.touches?.[0]?.clientX ?? null; };
+  const onTouchEnd = (e) => { const s = touch.current, x = e.changedTouches?.[0]?.clientX; if (s != null && x != null) { const dx = x - s; if (Math.abs(dx) > 42) go(front + (dx < 0 ? 1 : -1)); } touch.current = null; };
+
   return (
-    <div style={{ position: "relative" }}>
-      {surfaces.map((s, i) => {
-        const isOpen = i === front;
-        const It = s.Icon;
-        const mt = i === 0 ? 0 : (isOpen || i === front + 1 ? 14 : -34);
-        return (
-          <div key={s.key} onClick={() => { if (!isOpen) open(i); }}
-            style={{
-              position: "relative", marginTop: mt, zIndex: isOpen ? 100 : i + 1,
-              transform: isOpen ? "scale(1)" : "scale(0.972)", transformOrigin: "center top",
-              background: isOpen ? "#fff" : T.paperHi, border: `1px solid ${T.paperDeep}`, borderLeft: `3px solid ${s.accent}`,
-              borderRadius: 18, boxShadow: isOpen ? "0 18px 38px rgba(58,48,32,0.18)" : "0 4px 12px rgba(58,48,32,0.08)",
-              padding: isOpen ? "16px 17px" : "13px 16px 24px", cursor: isOpen ? "default" : "pointer",
-              transition: "margin .34s cubic-bezier(.32,.72,.24,1), transform .34s cubic-bezier(.32,.72,.24,1), box-shadow .34s ease",
-            }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-              {ICON_DISC(It, s.accent)}
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <Eyebrow color={s.accent}>{s.eyebrow}</Eyebrow>
-                {!isOpen && <div style={{ fontFamily: SERIF, fontSize: 15, color: T.inkSoft, lineHeight: 1.3, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{s.summary.title}</div>}
+    <div style={{ position: "relative", overflow: "hidden", margin: "0 -4px", padding: "2px 4px" }}>
+      <div onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}
+        style={{ position: "relative", height: h, transition: "height .34s cubic-bezier(.32,.72,.24,1)" }}>
+        {surfaces.map((s, i) => {
+          const off = i - front, isFront = off === 0, It = s.Icon;
+          // place each card by its offset from the front: the front card is left-of-centre; the
+          // NEXT cards tuck UNDER it to the right, each peeking ~20% (a horizontal cascade); the
+          // previous card slides behind to the left. tx is a % of the card's own width.
+          let tx = 0, scale = 1, z = 50, op = 1;
+          if (off > 0) { tx = 64 + (off - 1) * 9; scale = 0.95 - (off - 1) * 0.05; z = 50 - off; op = off <= 2 ? 1 : 0; }
+          else if (off < 0) { tx = -64 + (off + 1) * 10; scale = 0.95; z = 50 + off; op = off >= -1 ? 0.55 : 0; }
+          return (
+            <div key={s.key} ref={isFront ? frontRef : null} onClick={() => { if (!isFront) go(i); }}
+              style={{
+                position: "absolute", top: 0, left: "2%", width: "80%", boxSizing: "border-box",
+                ...(isFront ? {} : { height: h, overflow: "hidden" }),
+                transform: `translateX(${tx}%) scale(${scale})`, transformOrigin: "center top",
+                zIndex: z, opacity: op, pointerEvents: op === 0 ? "none" : "auto",
+                background: isFront ? "#fff" : T.paperHi, border: `1px solid ${T.paperDeep}`, borderLeft: `3px solid ${s.accent}`,
+                borderRadius: 18, boxShadow: isFront ? "0 16px 36px rgba(58,48,32,0.17)" : "0 8px 18px rgba(58,48,32,0.12)",
+                padding: "16px 17px", cursor: isFront ? "default" : "pointer",
+                transition: "transform .36s cubic-bezier(.32,.72,.24,1), opacity .3s ease, box-shadow .3s ease",
+              }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                {ICON_DISC(It, s.accent)}
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <Eyebrow color={s.accent}>{s.eyebrow}</Eyebrow>
+                  {!isFront && <div style={{ fontFamily: SERIF, fontSize: 15, color: T.inkSoft, lineHeight: 1.3, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{s.summary.title}</div>}
+                </div>
               </div>
-              <span aria-hidden style={{ width: 24, height: 24, borderRadius: 99, display: "grid", placeItems: "center", background: isOpen ? `${s.accent}1a` : "transparent", flexShrink: 0 }}>
-                <ChevronRight size={16} color={isOpen ? s.accent : T.muted} style={{ transform: isOpen ? "rotate(-90deg)" : "rotate(90deg)", transition: "transform .3s cubic-bezier(.32,.72,.24,1)" }} />
-              </span>
+              {isFront && (
+                <div className="fw-fade" style={{ marginTop: 12, animation: "fwFadeUp .3s ease both" }}>
+                  <h3 style={{ fontFamily: SERIF, fontSize: 18, fontWeight: 600, color: T.ink, margin: "0 0 10px", lineHeight: 1.3 }}>{s.summary.title}</h3>
+                  {s.summary.lines.map((ln, j) => (
+                    <div key={j} style={{ display: "flex", alignItems: "center", gap: 9, margin: "8px 0" }}>
+                      {ln.Icon && <ln.Icon size={15} color={s.accent} strokeWidth={1.7} style={{ flexShrink: 0 }} />}
+                      <span style={{ flex: 1, fontFamily: SERIF, fontSize: 16, color: T.inkSoft, lineHeight: 1.5 }}>{ln.text}</span>
+                      {ln.meta && <span style={{ fontFamily: UI, fontSize: 13, fontWeight: 600, color: T.muted, flexShrink: 0 }}>{ln.meta}</span>}
+                    </div>
+                  ))}
+                  {s.summary.inset && (
+                    <div style={{ marginTop: 11, background: T.paper, border: `1px solid ${T.paperDeep}`, borderRadius: 12, padding: "10px 13px" }}>
+                      <Eyebrow mb={3}>{s.summary.inset.eyebrow}</Eyebrow>
+                      <p style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 15, color: T.inkSoft, margin: 0, lineHeight: 1.5 }}>{s.summary.inset.quote}</p>
+                    </div>
+                  )}
+                  <p style={{ fontFamily: SERIF, fontSize: 16, color: T.ink, lineHeight: 1.55, margin: "12px 0 10px" }}>{s.action.prompt}</p>
+                  <div>{s.action.buttons.map((b, k) => <ActionBtn key={k} Icon={b.Icon} href={b.href} onClick={b.sheet ? () => onSheet(b.sheet) : undefined} accent={s.accent}>{b.label}</ActionBtn>)}</div>
+                  <a href={s.slug} style={{ display: "inline-flex", alignItems: "center", gap: 4, marginTop: 2, fontFamily: UI, fontSize: 13, fontWeight: 700, color: T.muted, textDecoration: "none" }}>{s.openLabel} <ChevronRight size={14} /></a>
+                </div>
+              )}
             </div>
-            {isOpen && (
-              <div className="fw-fade" style={{ marginTop: 12, animation: "fwFadeUp .3s ease both" }}>
-                <h3 style={{ fontFamily: SERIF, fontSize: 18, fontWeight: 600, color: T.ink, margin: "0 0 10px", lineHeight: 1.3 }}>{s.summary.title}</h3>
-                {s.summary.lines.map((ln, j) => (
-                  <div key={j} style={{ display: "flex", alignItems: "center", gap: 9, margin: "8px 0" }}>
-                    {ln.Icon && <ln.Icon size={15} color={s.accent} strokeWidth={1.7} style={{ flexShrink: 0 }} />}
-                    <span style={{ flex: 1, fontFamily: SERIF, fontSize: 16, color: T.inkSoft, lineHeight: 1.5 }}>{ln.text}</span>
-                    {ln.meta && <span style={{ fontFamily: UI, fontSize: 13, fontWeight: 600, color: T.muted, flexShrink: 0 }}>{ln.meta}</span>}
-                  </div>
-                ))}
-                {s.summary.inset && (
-                  <div style={{ marginTop: 11, background: T.paper, border: `1px solid ${T.paperDeep}`, borderRadius: 12, padding: "10px 13px" }}>
-                    <Eyebrow mb={3}>{s.summary.inset.eyebrow}</Eyebrow>
-                    <p style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 15, color: T.inkSoft, margin: 0, lineHeight: 1.5 }}>{s.summary.inset.quote}</p>
-                  </div>
-                )}
-                <p style={{ fontFamily: SERIF, fontSize: 16, color: T.ink, lineHeight: 1.55, margin: "12px 0 10px" }}>{s.action.prompt}</p>
-                <div>{s.action.buttons.map((b, k) => <ActionBtn key={k} Icon={b.Icon} href={b.href} onClick={b.sheet ? () => onSheet(b.sheet) : undefined} accent={s.accent}>{b.label}</ActionBtn>)}</div>
-                <a href={s.slug} style={{ display: "inline-flex", alignItems: "center", gap: 4, marginTop: 2, fontFamily: UI, fontSize: 13, fontWeight: 700, color: T.muted, textDecoration: "none" }}>{s.openLabel} <ChevronRight size={14} /></a>
-              </div>
-            )}
-          </div>
-        );
-      })}
+          );
+        })}
+      </div>
+      {/* dots + swipe hint */}
+      <div style={{ display: "flex", gap: 5, justifyContent: "center", marginTop: 14, flexWrap: "wrap" }}>
+        {surfaces.map((s, i) => (
+          <button key={s.key} onClick={() => go(i)} aria-label={s.eyebrow}
+            style={{ width: i === front ? 18 : 6, height: 6, borderRadius: 99, border: "none", padding: 0, cursor: "pointer", background: i === front ? surfaces[front].accent : T.paperDeep, transition: "all .3s ease" }} />
+        ))}
+      </div>
+      <p style={{ textAlign: "center", fontFamily: UI, fontSize: 13, color: T.muted, margin: "8px 0 0" }}>swipe sideways through your day</p>
     </div>
   );
 }
