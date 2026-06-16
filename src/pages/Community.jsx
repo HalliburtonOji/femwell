@@ -184,7 +184,7 @@ function PostCard({ post, user, onCrisis, onChanged }) {
       const wh = await communityHash(user?.id);
       // client-side timeout so a stalled call can't hang the tap silently
       const r = await Promise.race([
-        base44.functions.invoke("reactCommunity", { user_id: user?.id, author_hash: wh, target_type: "post", target_id: post.id, kind }),
+        base44.functions.invoke("createCommunityPost", { action: "react", user_id: user?.id, author_hash: wh, target_type: "post", target_id: post.id, kind }),
         new Promise((_, rej) => setTimeout(() => rej(new Error("timeout")), 8000)),
       ]);
       if (!(r?.data ?? r)?.ok) throw new Error("react rejected");
@@ -200,7 +200,7 @@ function PostCard({ post, user, onCrisis, onChanged }) {
     markReported(post.id);
     try {
       const wh = await communityHash(user?.id);
-      await base44.functions.invoke("reportCommunity", { user_id: user?.id, author_hash: wh, target_type: "post", target_id: post.id });
+      await base44.functions.invoke("createCommunityPost", { action: "report", user_id: user?.id, author_hash: wh, target_type: "post", target_id: post.id });
       onChanged?.();
     } catch (e) { console.error("report failed:", e); }
   };
@@ -213,7 +213,7 @@ function PostCard({ post, user, onCrisis, onChanged }) {
     setCommentErr(false);
     try {
       const wh = await communityHash(user?.id);
-      const r = await base44.functions.invoke("addComment", { user_id: user?.id, author_hash: wh, post_id: post.id, body: text });
+      const r = await base44.functions.invoke("createCommunityPost", { action: "comment", user_id: user?.id, author_hash: wh, post_id: post.id, body: text });
       const d = r?.data ?? r;
       if (d?.intercept) { onCrisis(); return; }
       // A failed comment must NOT hang the box — surface an error and unblock.
