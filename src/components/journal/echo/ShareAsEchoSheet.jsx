@@ -74,6 +74,7 @@ export default function ShareAsEchoSheet({
       // Write through the postEcho function — it creates the row under the service
       // identity so created_by never carries the author's user id (true anonymity).
       const res = await base44.functions.invoke("postEcho", {
+        action: "post",
         user_id: user?.id,
         body: scrub.line,
         author_hash: ah,

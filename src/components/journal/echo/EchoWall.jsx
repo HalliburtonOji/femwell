@@ -64,7 +64,7 @@ export default function EchoWall({ user, profile, phase = null, lifeStage = null
       if (ah) {
         const mineExpired = list.filter((e) => e.author_hash === ah && isExpired(e));
         await Promise.all(mineExpired.map((e) =>
-          base44.functions.invoke("retractEcho", { user_id: user?.id, echo_id: e.id, author_hash: ah })
+          base44.functions.invoke("postEcho", { action: "retract", user_id: user?.id, echo_id: e.id, author_hash: ah })
             .then(() => forgetMine(e.id)).catch(() => {})
         ));
       }
@@ -99,7 +99,7 @@ export default function EchoWall({ user, profile, phase = null, lifeStage = null
     setRaw((prev) => prev.map((e) => (e.id === echo.id ? { ...e, [field]: next } : e)));
     // Through reactEcho (service-role) now that the Echo write policy is locked.
     try {
-      const r = await base44.functions.invoke("reactEcho", { user_id: user?.id, echo_id: echo.id, field });
+      const r = await base44.functions.invoke("postEcho", { action: "react", user_id: user?.id, echo_id: echo.id, field });
       if (!(r?.data ?? r)?.ok) throw new Error("react rejected");
     } catch (err) { console.error("React failed:", err); setRaw(snapshot); }
   };
@@ -112,7 +112,7 @@ export default function EchoWall({ user, profile, phase = null, lifeStage = null
     const hide = count >= REPORT_AUTOHIDE_THRESHOLD;
     setRaw((prev) => (hide ? prev.filter((e) => e.id !== echo.id) : prev.map((e) => (e.id === echo.id ? { ...e, report_count: count } : e))));
     try {
-      const r = await base44.functions.invoke("reportEcho", { user_id: user?.id, echo_id: echo.id });
+      const r = await base44.functions.invoke("postEcho", { action: "report", user_id: user?.id, echo_id: echo.id });
       if (!(r?.data ?? r)?.ok) throw new Error("report rejected");
     } catch (err) { console.error("Report failed:", err); setRaw(snapshot); }
   };
@@ -123,8 +123,8 @@ export default function EchoWall({ user, profile, phase = null, lifeStage = null
     // Echoes are service-owned (see postEcho), so deletion goes through retractEcho,
     // which verifies our author_hash against the row before removing it.
     try {
-      await base44.functions.invoke("retractEcho", {
-        user_id: user?.id, echo_id: echo.id, author_hash: myHash || echo.author_hash,
+      await base44.functions.invoke("postEcho", {
+        action: "retract", user_id: user?.id, echo_id: echo.id, author_hash: myHash || echo.author_hash,
       });
       forgetMine(echo.id);
     } catch (err) { console.error("Retract failed:", err); setRaw(snapshot); }
