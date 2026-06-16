@@ -74,8 +74,8 @@ export function recordProgress(bookId, chapterIndex, userId) {
       if (!wh) return;
       // hardened: write via the asServiceRole postReadingActivity function (entity RLS-locked
       // to admin) so the row carries no user identity. Fire-and-forget, fail-open.
-      await base44.functions.invoke("postReadingActivity", {
-        author_hash: wh, book_id: String(bookId), chapter_index: chapterIndex,
+      await base44.functions.invoke("readingActivityFn", {
+        op: "write", author_hash: wh, book_id: String(bookId), chapter_index: chapterIndex,
         kind: "progress", body: "",
       }).catch(() => null);
     } catch { /* fail-open — the local read-key already nourishes the garden */ }
@@ -92,8 +92,8 @@ export function recordPrediction(bookId, chapterIndex, body, userId) {
     try {
       const wh = await communityHash(userId);
       if (!wh) return;
-      await base44.functions.invoke("postReadingActivity", {
-        author_hash: wh, book_id: String(bookId), chapter_index: chapterIndex,
+      await base44.functions.invoke("readingActivityFn", {
+        op: "write", author_hash: wh, book_id: String(bookId), chapter_index: chapterIndex,
         kind: "prediction", body: String(body || "").slice(0, 600),
       }).catch(() => null);
     } catch { /* fail-open */ }
@@ -108,8 +108,8 @@ export function recordClubReflection(bookId, chapterIndex, body, userId) {
     try {
       const wh = await communityHash(userId);
       if (!wh) return;
-      await base44.functions.invoke("postReadingActivity", {
-        author_hash: wh, book_id: String(bookId), chapter_index: chapterIndex,
+      await base44.functions.invoke("readingActivityFn", {
+        op: "write", author_hash: wh, book_id: String(bookId), chapter_index: chapterIndex,
         kind: "club_reflection", body: String(body || "").slice(0, 600),
       }).catch(() => null);
     } catch { /* fail-open */ }
@@ -124,7 +124,7 @@ export async function cohortReachedCount(bookId, chapterIndex) {
     // hardened: the aggregate is computed server-side by readingAggregate (asServiceRole) and
     // returned already k-floored — the client never reads raw rows, so it can't de-anonymise.
     const res = await base44.functions
-      .invoke("readingAggregate", { book_id: String(bookId), chapter_index: chapterIndex, mode: "cohort" })
+      .invoke("readingActivityFn", { op: "cohort", book_id: String(bookId), chapter_index: chapterIndex })
       .catch(() => null);
     const data = res?.data ?? res ?? {};
     const n = data?.count;
@@ -140,7 +140,7 @@ export async function predictionAggregate(bookId, chapterIndex) {
     // hardened: readingAggregate (asServiceRole) returns only the warm, k-floored guess LINES —
     // never raw rows or metadata — so the client cannot de-anonymise who guessed what.
     const res = await base44.functions
-      .invoke("readingAggregate", { book_id: String(bookId), chapter_index: chapterIndex, mode: "prediction" })
+      .invoke("readingActivityFn", { op: "prediction", book_id: String(bookId), chapter_index: chapterIndex })
       .catch(() => null);
     const data = res?.data ?? res ?? {};
     return Array.isArray(data?.lines) ? data.lines : [];
