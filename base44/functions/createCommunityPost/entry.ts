@@ -42,6 +42,12 @@ const MAX_POST_LEN = 800;
 const MAX_COMMENT_LEN = 400;
 const DAILY_CAP = 12;
 const AUTOHIDE_THRESHOLD = 2;
+// Books & Book Clubs — anonymous reading-activity hardening folded in as dispatcher actions
+// (the 50-fn cap blocks NEW function names, but UPDATING this dispatcher is fine). The
+// ReadingActivity entity is RLS-locked to admin; all writes/reads go through these
+// asServiceRole actions so clients can't touch rows directly + the row carries no user id.
+const READING_KINDS = ['prediction', 'progress', 'club_reflection'];
+const READING_K_FLOOR = 3;
 function startOfTodayISO(): string {
   const n = new Date();
   return new Date(Date.UTC(n.getUTCFullYear(), n.getUTCMonth(), n.getUTCDate())).toISOString();
@@ -64,6 +70,44 @@ Deno.serve(async (req) => {
   const action = String(p.action || 'post');
   const { user_id, author_hash } = p;
   if (user_id && me.role !== 'admin' && me.id !== user_id) return Response.json({ error: 'Forbidden' }, { status: 403 });
+
+  // ── reading activity (Books & Book Clubs) — handled before the author_hash guard since the
+  // aggregate reads don't need it. asServiceRole; only author_hash + book/chapter ever stored. ──
+  if (action === 'readingActivity.record' || action === 'readingActivity.cohort' || action === 'readingActivity.prediction') {
+    const sbr = base44.asServiceRole;
+    const book_id = String(p.book_id || '').trim().slice(0, 128);
+    const chapter_index = Number(p.chapter_index);
+    if (!book_id || !Number.isFinite(chapter_index)) return Response.json({ error: 'book_id + chapter_index required' }, { status: 400 });
+
+    if (action === 'readingActivity.record') {
+      const kind = String(p.kind || '').trim();
+      if (!author_hash || !READING_KINDS.includes(kind)) return Response.json({ error: 'author_hash + valid kind required' }, { status: 400 });
+      const rbody = kind === 'progress' ? '' : String(p.body || '').slice(0, 600);
+      const created = await withTimeout(sbr.entities.ReadingActivity.create({ author_hash: String(author_hash), book_id, chapter_index, kind, body: rbody, hidden: false }), 6000, 'ra-create')
+        .catch((e: any) => { console.error('readingActivity.record failed:', e?.message || e); return null; });
+      if (!created) return Response.json({ error: 'Write failed' }, { status: 500 });
+      return Response.json({ ok: true });
+    }
+    if (action === 'readingActivity.cohort') {
+      const rows = await withTimeout(sbr.entities.ReadingActivity.filter({ book_id, kind: 'progress', hidden: false }, '-created_date', 1000), 4000, 'ra-cohort').catch(() => []);
+      const hashes = new Set<string>();
+      for (const r of (Array.isArray(rows) ? rows : [])) {
+        if (r && typeof r.chapter_index === 'number' && r.chapter_index >= chapter_index && r.author_hash) hashes.add(String(r.author_hash));
+      }
+      const n = hashes.size;
+      return Response.json({ ok: true, count: n >= READING_K_FLOOR ? n : null });
+    }
+    // readingActivity.prediction
+    const rows = await withTimeout(sbr.entities.ReadingActivity.filter({ book_id, chapter_index, kind: 'prediction', hidden: false }, '-created_date', 400), 4000, 'ra-pred').catch(() => []);
+    const seen = new Set<string>(); const lines: string[] = [];
+    for (const r of (Array.isArray(rows) ? rows : [])) {
+      if (!r || !r.body || !r.author_hash) continue;
+      if (seen.has(String(r.author_hash))) continue;
+      seen.add(String(r.author_hash)); lines.push(String(r.body).slice(0, 600));
+    }
+    return Response.json({ ok: true, lines: lines.length >= READING_K_FLOOR ? lines : [] });
+  }
+
   if (!author_hash) return Response.json({ error: 'author_hash required' }, { status: 400 });
   const sb = base44.asServiceRole;
 
