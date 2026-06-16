@@ -119,6 +119,7 @@ export function getCompanion(userId) {
     tendedAt: ov.tendedAt || null,
     tendNote: ov.tendNote || "",
     customised: !!(ov.name || ov.formKey),
+    formChosen: !!ov.formKey,   // she explicitly reshaped → honour it over the chapter's branched form
   };
 }
 export function renameCompanion(userId, name) { const v = String(name || "").slice(0, 40); const ov = read(userId); ov.name = v; write(userId, ov); persist(userId, { name: v }); }

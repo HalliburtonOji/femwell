@@ -38,8 +38,28 @@ export const seasonColor = (name) => (SEASONS[name] || SEASONS.spring).color;
 export const AREA_NOUN = {
   journal: "your journal", nutrition: "what you ate & drank", checkins: "your check-ins",
   cycle: "your cycle notes", programs: "a practice kept", planner: "the days you planned",
-  community: "the community",
+  community: "the community", reading: "time with a book",
 };
+
+// ── BRANCHING (Phase 2): the chapter's plant FORM is shaped by the life-area she tended most
+// that chapter, so two women's gardens differ and her own changes chapter to chapter. A
+// rest-heavy / quiet chapter becomes a calm evergreen (fern) — rest is growth, not absence. ──
+const FORM_FOR_AREA = {
+  journal: "foxglove",   // an ink-and-script spire — the writing season
+  nutrition: "poppy",    // a seed-headed, fruiting bloom — the nourishing season
+  checkins: "peony",     // round + full — the tending-your-body season
+  cycle: "peony",
+  community: "forget",   // forget-me-not — grows in a little cluster (you weren't alone)
+  programs: "daisy",     // structured, steady rays — the practice season
+  planner: "daisy",
+  reading: "forget",     // a book read in company — clustered, shared
+};
+const REST_THRESHOLD = 4; // a chapter with <= this many active days reads as a resting season
+// returns a form KEY for a chapter given its dominant area + how active it was
+export function formKeyForChapter(topArea, activeDays) {
+  if ((activeDays || 0) <= REST_THRESHOLD || !topArea) return "fern"; // rest is growth — a calm evergreen
+  return FORM_FOR_AREA[topArea] || "peony";
+}
 
 // ── group engagement day-sets into months ──────────────────────────────
 // areaSets = { area: Set<"YYYY-MM-DD"> }. Returns { "YYYY-MM": {activeDays, areaDays:{area:int},

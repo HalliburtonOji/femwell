@@ -20,7 +20,7 @@ import {
   getCompanion, FORM_LIST, renameCompanion, reshapeCompanion, tendCompanion, tendedToday, loadCompanionState,
 } from "@/components/nurture/companion";
 import {
-  currentChapterKey, chapterLabel, groupByMonth, seasonOf, seasonColor, AREA_NOUN,
+  currentChapterKey, chapterLabel, groupByMonth, seasonOf, seasonColor, AREA_NOUN, formKeyForChapter,
   localChapters, loadGardenChapters, archiveChapter,
 } from "@/components/nurture/garden";
 
@@ -141,7 +141,7 @@ export default function NurtureGarden({ compact = false, onOpen = null }) {
           const noun = AREA_NOUN[g.topArea] || "small daily care";
           archiveChapter(id, {
             chapter_key: k, label: chapterLabel(k), life_stage: lifeStage,
-            form_key: comp.form.key, accent: comp.accent, stage_key: st.key, season: seasonOf(k),
+            form_key: formKeyForChapter(g.topArea, g.activeDays), accent: comp.accent, stage_key: st.key, season: seasonOf(k),
             top_area: g.topArea || "", active_days: g.activeDays,
             summary: `You showed up ${g.activeDays} ${g.activeDays === 1 ? "day" : "days"}${g.topArea ? ` · mostly ${noun}` : ""}.`,
           });
@@ -176,6 +176,11 @@ export default function NurtureGarden({ compact = false, onOpen = null }) {
   // begins fresh. Past chapters are kept below in the garden.
   const stage = stageFor(data.chapterEngagement ?? data.lifetime ?? 0);
   const stageIdx = STAGES.findIndex((s) => s.key === stage.key);
+  // Phase 2: the current chapter's plant form branches from the life-area she tended most this
+  // chapter — unless she explicitly reshaped it, in which case her choice wins.
+  const currentForm = companion.formChosen
+    ? companion.form
+    : (FORM_LIST.find((f) => f.key === formKeyForChapter(data.chapterTopArea, data.chapterActiveDays)) || companion.form);
   const resting = (data.gapDays == null) || (data.gapDays >= 5);
   const returning = data.gapDays != null && data.gapDays >= 5 && data.tended7 > 0;
   const stateName = data.gapDays == null ? "Just planted" : (resting && !returning) ? "Resting" : stage.name;
@@ -218,7 +223,7 @@ export default function NurtureGarden({ compact = false, onOpen = null }) {
         + `<text x="${cxx}" y="104" text-anchor="middle" font-family="Inter, Helvetica, Arial, sans-serif" font-size="22" font-weight="700" letter-spacing="5" fill="${T.muted}">FEMWELL — MY COMPANION</text>`
         + `<g transform="translate(${cxx - 180}, 150)">${bloomMarkup}</g>`
         + `<text x="${cxx}" y="612" text-anchor="middle" font-family="Georgia, 'Cormorant Garamond', serif" font-size="66" fill="${T.ink}">${esc(companion.name)}</text>`
-        + `<text x="${cxx}" y="662" text-anchor="middle" font-family="Inter, Helvetica, Arial, sans-serif" font-size="24" letter-spacing="1" fill="${T.muted}">${esc(stateName)} · ${esc(companion.form.name)}</text>`
+        + `<text x="${cxx}" y="662" text-anchor="middle" font-family="Inter, Helvetica, Arial, sans-serif" font-size="24" letter-spacing="1" fill="${T.muted}">${esc(stateName)} · ${esc(currentForm.name)}</text>`
         + `<text x="${cxx}" y="742" text-anchor="middle" font-family="Georgia, serif" font-style="italic" font-size="30" fill="${T.inkSoft}">Grown gently, at my own pace.</text>`
         + `<text x="${cxx}" y="784" text-anchor="middle" font-family="Georgia, serif" font-style="italic" font-size="30" fill="${T.inkSoft}">No streaks, no scores.</text>`
         + `<text x="${cxx}" y="${H - 56}" text-anchor="middle" font-family="Inter, Helvetica, Arial, sans-serif" font-size="17" letter-spacing="1" fill="${T.muted}">A keepsake — nothing personal travels with it</text>`
@@ -254,7 +259,7 @@ export default function NurtureGarden({ compact = false, onOpen = null }) {
         <Eyebrow color={T.muted}>{phase ? `${companion.name} · ${PHASE_LABEL[phase]} phase` : companion.name}</Eyebrow>
       </div>
 
-      <Bloom form={companion.form} stageIdx={stageIdx} color={phaseColor} accent={companion.accent} resting={resting && !returning} bright={justTended} size={compact ? 118 : 190} />
+      <Bloom form={currentForm} stageIdx={stageIdx} color={phaseColor} accent={companion.accent} resting={resting && !returning} bright={justTended} size={compact ? 118 : 190} />
 
       <Script size={compact ? 24 : 32} color={T.ink} style={{ marginTop: compact ? 8 : 14 }}>{stateName}</Script>
       <Hand size={compact ? 15 : 17} color={T.muted} style={{ marginTop: 6, maxWidth: 360, lineHeight: 1.5 }}>{stateLine}</Hand>
@@ -377,7 +382,10 @@ export default function NurtureGarden({ compact = false, onOpen = null }) {
               <div style={{ display: "flex", flexWrap: "wrap", gap: 14, justifyContent: "flex-start" }}>
                 {chapters.map((ch) => {
                   const sIdx = Math.max(0, STAGES.findIndex((s) => s.key === ch.stage_key));
-                  const form = FORM_LIST.find((f) => f.key === ch.form_key) || FORM_LIST[0];
+                  // the chapter's form is branched from the life-area she tended most (deterministic,
+                  // so it equals the form it was "born" with); stored form_key is a fallback.
+                  const fk = formKeyForChapter(ch.top_area, ch.active_days) || ch.form_key;
+                  const form = FORM_LIST.find((f) => f.key === fk) || FORM_LIST[0];
                   return (
                     <button key={ch.chapter_key} onClick={() => setOpenChapter(ch)}
                       style={{ background: "transparent", border: "none", cursor: "pointer", padding: 0, display: "flex", flexDirection: "column", alignItems: "center", width: 96 }}>
@@ -405,10 +413,10 @@ export default function NurtureGarden({ compact = false, onOpen = null }) {
             <button onClick={() => setSharing(false)} aria-label="Close" style={{ position: "absolute", top: 12, right: 12, width: 32, height: 32, borderRadius: 999, background: T.paperHi, border: `1px solid ${T.paperDeep}`, color: T.ink, display: "grid", placeItems: "center", cursor: "pointer" }}><X size={16} /></button>
             <Eyebrow color={T.muted} mb={10}>FemWell · my companion</Eyebrow>
             <div ref={shareBloomRef} style={{ display: "flex", justifyContent: "center" }}>
-              <Bloom form={companion.form} stageIdx={stageIdx} color={phaseColor} accent={companion.accent} resting={false} bright={false} size={160} />
+              <Bloom form={currentForm} stageIdx={stageIdx} color={phaseColor} accent={companion.accent} resting={false} bright={false} size={160} />
             </div>
             <Script size={34} color={T.ink} style={{ marginTop: 10, lineHeight: 1.1 }}>{companion.name}</Script>
-            <Hand size={15} color={T.muted} style={{ marginTop: 6 }}>{stateName} · {companion.form.name}</Hand>
+            <Hand size={15} color={T.muted} style={{ marginTop: 6 }}>{stateName} · {currentForm.name}</Hand>
             <div style={{ marginTop: 16, fontFamily: SERIF, fontSize: 14, color: T.inkSoft, fontStyle: "italic", lineHeight: 1.55, padding: "0 4px" }}>
               Grown gently, at my own pace.<br />No streaks, no scores.
             </div>
@@ -432,7 +440,7 @@ export default function NurtureGarden({ compact = false, onOpen = null }) {
             <button onClick={() => setOpenChapter(null)} aria-label="Close" style={{ position: "absolute", top: 12, right: 12, width: 32, height: 32, borderRadius: 999, background: T.paperHi, border: `1px solid ${T.paperDeep}`, color: T.ink, display: "grid", placeItems: "center", cursor: "pointer" }}><X size={16} /></button>
             <Eyebrow color={T.muted} mb={10}>A chapter · {openChapter.season}</Eyebrow>
             <div style={{ display: "flex", justifyContent: "center" }}>
-              <Bloom form={FORM_LIST.find((f) => f.key === openChapter.form_key) || FORM_LIST[0]} stageIdx={Math.max(0, STAGES.findIndex((s) => s.key === openChapter.stage_key))} color={seasonColor(openChapter.season)} accent={openChapter.accent} resting={false} bright={false} size={150} />
+              <Bloom form={FORM_LIST.find((f) => f.key === (formKeyForChapter(openChapter.top_area, openChapter.active_days) || openChapter.form_key)) || FORM_LIST[0]} stageIdx={Math.max(0, STAGES.findIndex((s) => s.key === openChapter.stage_key))} color={seasonColor(openChapter.season)} accent={openChapter.accent} resting={false} bright={false} size={150} />
             </div>
             <Script size={32} color={T.ink} style={{ marginTop: 10, lineHeight: 1.1 }}>{openChapter.label}</Script>
             {[openChapter.life_stage, openChapter.season].filter(Boolean).length > 0 && (
