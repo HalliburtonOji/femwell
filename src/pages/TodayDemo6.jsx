@@ -38,15 +38,36 @@ const PHASE_SEGMENTS = [
 function pt(cx, cy, r, deg) { const a = (deg - 90) * Math.PI / 180; return [cx + r * Math.cos(a), cy + r * Math.sin(a)]; }
 function arcPath(cx, cy, r, s, e) { const [x1, y1] = pt(cx, cy, r, s), [x2, y2] = pt(cx, cy, r, e); return `M ${x1} ${y1} A ${r} ${r} 0 ${e - s > 180 ? 1 : 0} 1 ${x2} ${y2}`; }
 function PhaseRing({ phase, day, cycleLen, size = 300, children }) {
-  const c = size / 2, r = size / 2 - 18;
+  const c = size / 2, r = size / 2 - 20;
   const segs = PHASE_SEGMENTS.map((s) => ({ ...s, start: ((s.from - 1) / cycleLen) * 360, end: (s.to / cycleLen) * 360, color: PHASE_COLORS[s.key], active: s.key === phase }));
-  const [mx, my] = pt(c, c, r, ((day - 0.5) / cycleLen) * 360);
+  const markerDeg = ((day - 0.5) / cycleLen) * 360;
+  const [mx, my] = pt(c, c, r, markerDeg);
+  const pc = PHASE_COLORS[phase];
+  const gid = "fwRing";
   return (
     <div style={{ position: "relative", width: size, height: size }}>
+      <style>{`@keyframes fwMarker{0%,100%{opacity:.18;transform:scale(1)}50%{opacity:.3;transform:scale(1.12)}}@media (prefers-reduced-motion:reduce){.fw-marker-halo{animation:none!important}}`}</style>
       <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} style={{ position: "absolute", inset: 0 }} aria-hidden>
-        <circle cx={c} cy={c} r={r} fill="none" stroke={T.paperDeep} strokeWidth="3" opacity="0.5" />
-        {segs.map((s) => <path key={s.key} d={arcPath(c, c, r, s.start + 1.5, s.end - 1.5)} fill="none" stroke={s.color} strokeWidth={s.active ? 9 : 5} strokeLinecap="round" opacity={s.active ? 1 : 0.5} />)}
-        <circle cx={mx} cy={my} r="8" fill={PHASE_COLORS[phase]} stroke={T.paperHi} strokeWidth="3" />
+        <defs>
+          <radialGradient id={`${gid}-wash`} cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stopColor={pc} stopOpacity="0.15" />
+            <stop offset="60%" stopColor={pc} stopOpacity="0.05" />
+            <stop offset="100%" stopColor={pc} stopOpacity="0" />
+          </radialGradient>
+        </defs>
+        {/* soft phase wash behind the bloom — depth + a centrepiece glow */}
+        <circle cx={c} cy={c} r={r - 4} fill={`url(#${gid}-wash)`} />
+        {/* faint full track the arcs sit on */}
+        <circle cx={c} cy={c} r={r} fill="none" stroke={T.paperDeep} strokeWidth="2" opacity="0.4" />
+        {/* the four phase arcs — the active one thicker + fully present, the rest quiet */}
+        {segs.map((s) => (
+          <path key={s.key} d={arcPath(c, c, r, s.start + 2, s.end - 2)} fill="none" stroke={s.color}
+            strokeWidth={s.active ? 8 : 4.5} strokeLinecap="round" opacity={s.active ? 1 : 0.4} />
+        ))}
+        {/* day marker — a soft phase halo (gentle breath) + a crisp dot with a white collar */}
+        <circle className="fw-marker-halo" cx={mx} cy={my} r="12" fill={pc} style={{ transformOrigin: `${mx}px ${my}px`, animation: "fwMarker 5.5s ease-in-out infinite" }} />
+        <circle cx={mx} cy={my} r="7" fill={pc} stroke="#FFFDF7" strokeWidth="2.5" />
+        <circle cx={mx} cy={my} r="2.4" fill="#FFFDF7" opacity="0.92" />
       </svg>
       <div style={{ position: "absolute", inset: 0, display: "grid", placeItems: "center" }}>{children}</div>
     </div>
@@ -79,52 +100,6 @@ function ActionBtn({ Icon, children, href, onClick, accent }) {
   // navigates (href). Logging never leaves the page.
   if (onClick) return <button type="button" onClick={onClick} style={style}><Icon size={15} /> {children}</button>;
   return <a href={href} style={style}><Icon size={15} /> {children}</a>;
-}
-
-// ── a BIG card the user SLIDES between a SUMMARY face and an ACTION face (peek + dots) ───────────
-function BigSlidePair({ s, onSheet }) {
-  const ref = useRef(null);
-  const [idx, setIdx] = useState(0);
-  const onScroll = () => { const el = ref.current; if (el) setIdx(el.scrollLeft > el.clientWidth * 0.4 ? 1 : 0); };
-  const faceBase = { flex: "0 0 93%", scrollSnapAlign: "start", borderRadius: 18, padding: "16px 17px", minHeight: 150, boxSizing: "border-box" };
-  return (
-    <section style={{ margin: "14px 0" }}>
-      <div style={{ display: "flex", alignItems: "center", gap: 9, padding: "0 2px 8px" }}>
-        {ICON_DISC(s.Icon, s.accent)}
-        <Eyebrow color={s.accent}>{s.eyebrow}</Eyebrow>
-        <span style={{ marginLeft: "auto", display: "flex", gap: 5 }}>
-          {[0, 1].map((i) => <span key={i} style={{ width: i === idx ? 16 : 6, height: 6, borderRadius: 99, background: i === idx ? s.accent : T.paperDeep, transition: "all .2s" }} />)}
-        </span>
-      </div>
-      <div ref={ref} onScroll={onScroll} style={{ display: "flex", gap: 12, overflowX: "auto", scrollSnapType: "x mandatory", scrollbarWidth: "none", padding: "0 2px 2px" }}>
-        {/* SUMMARY face */}
-        <div style={{ ...faceBase, background: T.paperHi, border: `1px solid ${T.paperDeep}`, boxShadow: "0 8px 22px rgba(58,48,32,0.07)" }}>
-          <Eyebrow mb={6}>Today</Eyebrow>
-          <h3 style={{ fontFamily: SERIF, fontSize: 18, fontWeight: 600, color: T.ink, margin: "0 0 10px", lineHeight: 1.3 }}>{s.summary.title}</h3>
-          {s.summary.lines.map((ln, i) => (
-            <div key={i} style={{ display: "flex", alignItems: "center", gap: 9, margin: "8px 0" }}>
-              {ln.Icon && <ln.Icon size={15} color={s.accent} strokeWidth={1.7} style={{ flexShrink: 0 }} />}
-              <span style={{ flex: 1, fontFamily: SERIF, fontSize: 16, color: T.inkSoft, lineHeight: 1.5 }}>{ln.text}</span>
-              {ln.meta && <span style={{ fontFamily: UI, fontSize: 13, fontWeight: 600, color: T.muted, flexShrink: 0 }}>{ln.meta}</span>}
-            </div>
-          ))}
-          {s.summary.inset && (
-            <div style={{ marginTop: 11, background: T.paper, border: `1px solid ${T.paperDeep}`, borderRadius: 12, padding: "10px 13px" }}>
-              <Eyebrow mb={3}>{s.summary.inset.eyebrow}</Eyebrow>
-              <p style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 15, color: T.inkSoft, margin: 0, lineHeight: 1.5 }}>{s.summary.inset.quote}</p>
-            </div>
-          )}
-        </div>
-        {/* ACTION face */}
-        <div style={{ ...faceBase, background: "#fff", border: `1px solid ${T.paperDeep}`, borderLeft: `3px solid ${s.accent}`, boxShadow: `0 8px 22px ${s.accent}1f` }}>
-          <Eyebrow mb={8} color={s.accent}>Do it now</Eyebrow>
-          <p style={{ fontFamily: SERIF, fontSize: 17, color: T.ink, lineHeight: 1.55, margin: "0 0 12px" }}>{s.action.prompt}</p>
-          <div>{s.action.buttons.map((b, i) => <ActionBtn key={i} Icon={b.Icon} href={b.href} onClick={b.sheet ? () => onSheet(b.sheet) : undefined} accent={s.accent}>{b.label}</ActionBtn>)}</div>
-          <a href={s.slug} style={{ display: "inline-flex", alignItems: "center", gap: 4, marginTop: 4, fontFamily: UI, fontSize: 13, fontWeight: 700, color: T.muted, textDecoration: "none" }}>{s.openLabel} <ChevronRight size={14} /></a>
-        </div>
-      </div>
-    </section>
-  );
 }
 
 export default function TodayDemo6() {
@@ -228,6 +203,8 @@ export default function TodayDemo6() {
   return (
     <div style={{ ...PAPER_BG, minHeight: "100vh", color: T.ink, paddingBottom: 96, position: "relative", overflow: "hidden" }}>
       <InkFilter />
+      {/* gentle, reduced-motion-safe entrance motion shared by the pop-up sheets + calendar */}
+      <style>{`@keyframes fwSheetIn{from{transform:translateY(100%)}to{transform:translateY(0)}}@keyframes fwScrimIn{from{opacity:0}to{opacity:1}}@media (prefers-reduced-motion:reduce){.fw-sheet-anim,.fw-scrim-anim{animation:none!important}}`}</style>
       {/* one tasteful botanical motif, low opacity (BRAND_IDENTITY §4) */}
       <div style={{ position: "absolute", top: 40, right: -12, pointerEvents: "none", zIndex: 0 }}><VineMotif color={T.sage} opacity={0.12} w={150} /></div>
 
@@ -389,10 +366,10 @@ function ActionSheet({ sheetKey, onClose, onSaved }) {
   const toggleChip = (c) => setPicked((p) => p.includes(c) ? p.filter((x) => x !== c) : [...p, c]);
   const inputStyle = { width: "100%", boxSizing: "border-box", background: T.paper, border: `1px solid ${T.paperDeep}`, borderRadius: 11, padding: "12px 13px", resize: "none", fontFamily: SERIF, fontSize: 16, lineHeight: 1.5, color: T.ink, outline: "none" };
   return (
-    <div role="dialog" aria-modal="true" aria-label={cfg.title}
+    <div role="dialog" aria-modal="true" aria-label={cfg.title} className="fw-scrim-anim"
       onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
-      style={{ position: "fixed", inset: 0, zIndex: 200, display: "flex", alignItems: "flex-end", justifyContent: "center", background: "rgba(11,8,5,0.42)" }}>
-      <div onClick={(e) => e.stopPropagation()} style={{ background: T.paperHi, width: "100%", maxWidth: 460, borderRadius: "20px 20px 0 0", padding: "18px 18px 26px", maxHeight: "86vh", overflowY: "auto", overscrollBehavior: "contain", boxShadow: "0 -8px 32px rgba(11,8,5,0.22)" }}>
+      style={{ position: "fixed", inset: 0, zIndex: 200, display: "flex", alignItems: "flex-end", justifyContent: "center", background: "rgba(11,8,5,0.42)", animation: "fwScrimIn .22s ease both" }}>
+      <div onClick={(e) => e.stopPropagation()} className="fw-sheet-anim" style={{ background: T.paperHi, width: "100%", maxWidth: 460, borderRadius: "20px 20px 0 0", padding: "18px 18px 26px", maxHeight: "86vh", overflowY: "auto", overscrollBehavior: "contain", boxShadow: "0 -8px 32px rgba(11,8,5,0.22)", animation: "fwSheetIn .3s cubic-bezier(.32,.72,.24,1) both" }}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
           <span style={{ fontFamily: UI, fontSize: 11, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: cfg.accent }}>{cfg.eyebrow} · on Today</span>
           <button type="button" onClick={onClose} aria-label="Close" style={{ background: "transparent", border: "none", cursor: "pointer", color: T.muted, padding: 4, display: "inline-flex" }}><X size={18} /></button>
@@ -440,7 +417,7 @@ function ActionSheet({ sheetKey, onClose, onSaved }) {
                       return (
                         <button key={mt.key} type="button" onClick={() => setMethod(mt.key)} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: 4, padding: "9px 2px", borderRadius: 12, cursor: "pointer", border: `1px solid ${on ? cfg.accent : T.paperDeep}`, background: on ? `${cfg.accent}14` : "transparent" }}>
                           <mt.Icon size={18} color={on ? cfg.accent : T.muted} strokeWidth={1.8} />
-                          <span style={{ fontFamily: UI, fontSize: 10.5, fontWeight: 700, color: on ? cfg.accent : T.muted }}>{mt.label}</span>
+                          <span style={{ fontFamily: UI, fontSize: 11, fontWeight: 700, color: on ? cfg.accent : T.muted }}>{mt.label}</span>
                         </button>
                       );
                     })}
@@ -459,7 +436,7 @@ function ActionSheet({ sheetKey, onClose, onSaved }) {
                         <button key={f.name} type="button" onClick={() => toggleFood(f.name)} style={{ display: "flex", alignItems: "center", gap: 11, textAlign: "left", background: on ? `${cfg.accent}12` : T.paper, border: `1px solid ${on ? cfg.accent : T.paperDeep}`, borderRadius: 12, padding: "11px 13px", cursor: "pointer" }}>
                           <span style={{ flex: 1 }}>
                             <span style={{ display: "block", fontFamily: SERIF, fontSize: 16, color: T.ink, lineHeight: 1.3 }}>{f.name}</span>
-                            <span style={{ display: "block", fontFamily: UI, fontSize: 12, color: T.muted, marginTop: 1 }}>{f.meta}{f.tag ? ` · ${f.tag}` : ""}</span>
+                            <span style={{ display: "block", fontFamily: UI, fontSize: 13, color: T.muted, marginTop: 2 }}>{f.meta}{f.tag ? ` · ${f.tag}` : ""}</span>
                           </span>
                           <span style={{ width: 28, height: 28, borderRadius: 99, flexShrink: 0, display: "grid", placeItems: "center", background: on ? cfg.accent : "transparent", border: `1.5px solid ${on ? cfg.accent : T.paperDeep}`, color: "#fff" }}>{on ? <Check size={15} strokeWidth={3} /> : <Plus size={15} color={T.muted} />}</span>
                         </button>
@@ -474,7 +451,7 @@ function ActionSheet({ sheetKey, onClose, onSaved }) {
               return (
                 <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, padding: "4px 0 8px" }}>
                   <button type="button" onClick={() => setGlasses((g) => Math.max(0, g - 1))} aria-label="One fewer glass" style={stepBtn}><Minus size={22} strokeWidth={2.5} /></button>
-                  <span style={{ flex: 1, textAlign: "center", fontFamily: SERIF, fontSize: 19, fontWeight: 600, color: T.ink }}>
+                  <span style={{ flex: 1, textAlign: "center", fontFamily: SERIF, fontSize: 18, fontWeight: 600, color: T.ink }}>
                     <Droplet size={17} style={{ verticalAlign: "-3px", color: cfg.accent }} /> {glasses + 1} of 6 glasses
                   </span>
                   <button type="button" onClick={() => setGlasses((g) => Math.min(7, g + 1))} aria-label="One more glass" style={stepBtn}><Plus size={22} strokeWidth={2.5} /></button>
@@ -516,10 +493,11 @@ function StackSpread({ surfaces, onSheet }) {
           <div key={s.key} onClick={() => { if (!open) setFront(i); }}
             style={{
               position: "relative", marginTop: mt, zIndex: open ? 100 : i + 1,
+              transform: open ? "scale(1)" : "scale(0.972)", transformOrigin: "center top",
               background: open ? "#fff" : T.paperHi, border: `1px solid ${T.paperDeep}`, borderLeft: `3px solid ${s.accent}`,
-              borderRadius: 18, boxShadow: open ? "0 16px 34px rgba(58,48,32,0.16)" : "0 5px 14px rgba(58,48,32,0.09)",
+              borderRadius: 18, boxShadow: open ? "0 18px 38px rgba(58,48,32,0.18)" : "0 4px 12px rgba(58,48,32,0.08)",
               padding: open ? "16px 17px" : "13px 16px 24px", cursor: open ? "default" : "pointer",
-              transition: "margin .28s ease, box-shadow .28s ease",
+              transition: "margin .34s cubic-bezier(.32,.72,.24,1), transform .34s cubic-bezier(.32,.72,.24,1), box-shadow .34s ease",
             }}>
             <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
               {ICON_DISC(It, s.accent)}
@@ -527,7 +505,9 @@ function StackSpread({ surfaces, onSheet }) {
                 <Eyebrow color={s.accent}>{s.eyebrow}</Eyebrow>
                 {!open && <div style={{ fontFamily: SERIF, fontSize: 15, color: T.inkSoft, lineHeight: 1.3, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{s.summary.title}</div>}
               </div>
-              <ChevronRight size={16} color={T.muted} style={{ transform: open ? "rotate(90deg)" : "none", transition: "transform .2s", flexShrink: 0 }} />
+              <span aria-hidden style={{ width: 24, height: 24, borderRadius: 99, display: "grid", placeItems: "center", background: open ? `${s.accent}1a` : "transparent", flexShrink: 0 }}>
+                <ChevronRight size={16} color={open ? s.accent : T.muted} style={{ transform: open ? "rotate(-90deg)" : "rotate(90deg)", transition: "transform .3s cubic-bezier(.32,.72,.24,1)" }} />
+              </span>
             </div>
             {open && (
               <div style={{ marginTop: 12 }}>
@@ -577,10 +557,10 @@ function CycleCalendar({ onClose }) {
   const DOW = ["S", "M", "T", "W", "T", "F", "S"];
   const legend = [{ k: "menstrual", label: "Period" }, { k: "follicular", label: "Follicular" }, { k: "ovulatory", label: "Ovulatory" }, { k: "luteal", label: "Luteal" }];
   return (
-    <div role="dialog" aria-modal="true" aria-label="Your cycle calendar"
+    <div role="dialog" aria-modal="true" aria-label="Your cycle calendar" className="fw-scrim-anim"
       onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
-      style={{ position: "fixed", inset: 0, zIndex: 210, display: "flex", alignItems: "flex-end", justifyContent: "center", background: "rgba(11,8,5,0.45)" }}>
-      <div onClick={(e) => e.stopPropagation()} style={{ ...PAPER_BG, width: "100%", maxWidth: 460, borderRadius: "22px 22px 0 0", padding: "18px 18px 28px", maxHeight: "92vh", overflowY: "auto", boxShadow: "0 -8px 32px rgba(11,8,5,0.24)" }}>
+      style={{ position: "fixed", inset: 0, zIndex: 210, display: "flex", alignItems: "flex-end", justifyContent: "center", background: "rgba(11,8,5,0.45)", animation: "fwScrimIn .22s ease both" }}>
+      <div onClick={(e) => e.stopPropagation()} className="fw-sheet-anim" style={{ ...PAPER_BG, width: "100%", maxWidth: 460, borderRadius: "22px 22px 0 0", padding: "18px 18px 28px", maxHeight: "92vh", overflowY: "auto", boxShadow: "0 -8px 32px rgba(11,8,5,0.24)", animation: "fwSheetIn .32s cubic-bezier(.32,.72,.24,1) both" }}>
         <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between" }}>
           <div>
             <Script size={36} color={T.ink}>June</Script>
@@ -595,30 +575,40 @@ function CycleCalendar({ onClose }) {
             const col = PHASE_COLORS[c.phase];
             const periodPast = c.isPeriod && !c.future;
             const periodPredicted = c.isPeriod && c.future;
+            // watercolor wash — a soft radial tint per phase; period days bloom a little deeper.
+            const bg = periodPast
+              ? `radial-gradient(circle at 50% 38%, ${col}, ${col}cc)`
+              : periodPredicted
+                ? `radial-gradient(circle at 50% 40%, ${col}33, ${col}10)`
+                : `radial-gradient(circle at 50% 42%, ${col}3a, ${col}12)`;
             return (
               <div key={i} style={{
-                aspectRatio: "1 / 1", borderRadius: 14, display: "grid", placeItems: "center",
-                background: periodPast ? col : `${col}2b`,
-                border: c.isToday ? `2px solid ${T.ink}` : periodPredicted ? `1.5px dashed ${col}` : "1px solid transparent",
-                boxShadow: periodPast ? `0 4px 12px ${col}55` : "none",
+                aspectRatio: "1 / 1", borderRadius: 14, display: "grid", placeItems: "center", position: "relative",
+                background: bg,
+                border: c.isToday ? `2px solid ${T.ink}` : periodPredicted ? `1.5px dashed ${col}99` : "1px solid transparent",
+                boxShadow: periodPast ? `0 5px 14px ${col}66` : "none",
               }}>
                 <span style={{ fontFamily: SERIF, fontSize: 15, fontWeight: c.isToday ? 700 : 500, color: periodPast ? "#fff" : T.ink }}>{c.d}</span>
+                {c.isToday && <span style={{ position: "absolute", bottom: 5, width: 4, height: 4, borderRadius: 99, background: T.ink }} />}
               </div>
             );
           })}
         </div>
-        <div style={{ display: "flex", flexWrap: "wrap", gap: 12, marginTop: 16, justifyContent: "center" }}>
-          {legend.map((l) => (
-            <span key={l.k} style={{ display: "inline-flex", alignItems: "center", gap: 6, fontFamily: UI, fontSize: 12, color: T.muted }}>
-              <span style={{ width: 12, height: 12, borderRadius: 4, background: PHASE_COLORS[l.k], opacity: l.k === "menstrual" ? 1 : 0.45 }} /> {l.label}
-            </span>
-          ))}
-          <span style={{ display: "inline-flex", alignItems: "center", gap: 6, fontFamily: UI, fontSize: 12, color: T.muted }}>
-            <span style={{ width: 12, height: 12, borderRadius: 4, border: `1.5px dashed ${PHASE_COLORS.menstrual}` }} /> Predicted
+        <div style={{ display: "flex", flexWrap: "wrap", gap: "8px 13px", marginTop: 18, justifyContent: "center" }}>
+          {legend.map((l) => {
+            const here = l.k === MOCK.phase;
+            return (
+              <span key={l.k} style={{ display: "inline-flex", alignItems: "center", gap: 6, fontFamily: UI, fontSize: 13, fontWeight: here ? 700 : 500, color: here ? T.ink : T.muted }}>
+                <span style={{ width: 12, height: 12, borderRadius: 4, background: PHASE_COLORS[l.k], opacity: here ? 1 : 0.5, boxShadow: here ? `0 0 0 2px ${PHASE_COLORS[l.k]}33` : "none" }} /> {l.label}{here ? " · you" : ""}
+              </span>
+            );
+          })}
+          <span style={{ display: "inline-flex", alignItems: "center", gap: 6, fontFamily: UI, fontSize: 13, fontWeight: 500, color: T.muted }}>
+            <span style={{ width: 12, height: 12, borderRadius: 4, border: `1.5px dashed ${PHASE_COLORS.menstrual}99` }} /> Predicted
           </span>
         </div>
-        <div style={{ textAlign: "center", marginTop: 16 }}>
-          <Hand size={15} color={T.muted}>Your next period is likely around the 23rd — gently predicted, never fixed.</Hand>
+        <div style={{ textAlign: "center", marginTop: 18 }}>
+          <Hand size={16} color={T.inkSoft}>Your next chapter likely opens around the 23rd — softly predicted, never a deadline.</Hand>
         </div>
       </div>
     </div>
