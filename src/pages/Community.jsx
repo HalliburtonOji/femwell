@@ -52,6 +52,7 @@ import {
 } from "@/components/community/clubsConfig";
 import { WISDOM_TOPICS, WISDOM_SEED, featuredWisdom } from "@/components/community/wisdomLibrary";
 import { SEED_PICK, clubReached, setClubReached } from "@/components/community/bookClubConfig";
+import { cohortReachedCount } from "@/components/community/readingActivity";
 import {
   POOL_MOMENTS, REVEAL_K_FLOOR, weekKey, closePromptForWeek, closedThisWeek, markClosedWeek,
 } from "@/components/community/ritualsConfig";
@@ -1058,6 +1059,79 @@ const NAMED_GAMES = [
 ];
 
 // ── Circles (Phase 4) — curated whole-life cohorts inside the Circles door ────
+// ── Books circle · seasonal shared read (Books & Book Clubs, Phase 2) ─────────
+// The `books` Circle hosts a seasonal "we're reading X together" beat — the SAME curated pick as
+// the Jess-hosted Book Club (SEED_PICK / an active BookClubPick), surfaced inside the circle. This
+// is NOT a member-hosting surface: it's a read-only signpost into the existing Book Club read +
+// its readers' corner, plus a count-free "where the room tends to be" line and the k-floored cohort
+// milestone. Anonymity-aware (cohort via the anonymous ReadingActivity helper, fail-open).
+function BooksCircleSharedRead() {
+  const navigate = useNavigate();
+  const [pick, setPick] = useState(SEED_PICK);   // seed immediately; upgrade to a live pick if set
+  const [cohort, setCohort] = useState(undefined);   // undefined = loading; number = k-floored; null = below floor
+  const [reached, setReached] = useState(() => clubReached(SEED_PICK.pick_key));
+
+  useEffect(() => {
+    let alive = true;
+    // Prefer a live BookClubPick (active) over the seed, mirroring BookClubView. Fail-open to seed.
+    base44.entities.BookClubPick.filter({ active: true }, "-created_date", 1).catch(() => []).then((picks) => {
+      if (!alive) return;
+      const p0 = Array.isArray(picks) && picks.length ? picks[0] : null;
+      if (p0) { setPick(p0); setReached(clubReached(p0.pick_key)); }
+    });
+    return () => { alive = false; };
+  }, []);
+
+  // "Where the room tends to be" — k-floored cohort at the reader's own self-attested checkpoint,
+  // so it's spoiler-safe (never reveals progress beyond where you are) AND count-free below the
+  // floor. Anonymous: reuses cohortReachedCount (author_hash only). Never awaited on a tap.
+  useEffect(() => {
+    let alive = true;
+    const gid = pick?.gutenberg_id;
+    if (gid == null) { setCohort(null); return; }
+    const at = Math.max(0, reached);   // checkpoint index doubles as a chapter-ish floor
+    cohortReachedCount(String(gid), at).then((n) => { if (alive) setCohort(typeof n === "number" ? n : null); }).catch(() => { if (alive) setCohort(null); });
+    return () => { alive = false; };
+  }, [pick?.gutenberg_id, reached]);
+
+  const gid = pick?.gutenberg_id;
+  const cornerHref = gid != null ? createPageUrl(`Community?club=${dailyReadClubKey(gid)}&title=${encodeURIComponent(pick?.title || "")}`) : null;
+
+  return (
+    <section style={{ background: T.paperHi, border: `1px solid ${T.gold}`, borderRadius: 6, padding: "16px 16px 14px", marginBottom: 20 }}>
+      <Eyebrow color={T.gold} mb={6}>This season, together</Eyebrow>
+      <div style={{ fontFamily: HANDFAM, fontStyle: "italic", fontWeight: 700, fontSize: 19, color: T.ink, marginBottom: 2 }}>
+        The Books circle is reading {pick?.title}.
+      </div>
+      <div style={{ fontFamily: UI, fontSize: 12, color: T.muted, marginBottom: 10 }}>
+        {pick?.author}{pick?.cadence ? ` · ${pick.cadence}` : ""}
+      </div>
+
+      {/* count-free / k-floored "where the room tends to be" — never a race, never a number below floor */}
+      <Hand size={15.5} color={T.inkSoft} style={{ marginBottom: 12 }}>
+        {cohort === undefined
+          ? "Finding where the room is…"
+          : typeof cohort === "number"
+            ? `${cohort} of us have reached around where you are. No rush — the thread waits.`
+            : "A quiet few are reading along right now. No rush — the thread waits, and there's no catching up to do."}
+      </Hand>
+
+      <div style={{ display: "flex", gap: 9, flexWrap: "wrap" }}>
+        {gid != null && (
+          <button onClick={() => navigate(createPageUrl(`BookReader?gutenberg_id=${gid}`))} style={{ ...primaryBtn, padding: "9px 15px" }}>
+            <MessageCircle size={14} /> Read it in the Library
+          </button>
+        )}
+        {cornerHref && (
+          <button onClick={() => navigate(cornerHref)} style={{ ...ghostBtn, padding: "9px 14px" }}>
+            <Users size={13} /> The readers{"’"} corner
+          </button>
+        )}
+      </div>
+    </section>
+  );
+}
+
 function CircleCard({ circle, joined, onOpen }) {
   return (
     <button onClick={() => onOpen(circle.key)} style={{
@@ -1169,6 +1243,10 @@ function CircleView({ circleKey, user, onCrisis, onBack }) {
       <button onClick={onBack} style={{ ...ghostBtn, marginBottom: 14, padding: "7px 11px" }}><ChevronLeft size={14} /> Circles</button>
       <Script size={30} style={{ marginBottom: 4 }}>{circle.name}</Script>
       <Hand size={17} color={T.muted} style={{ marginBottom: 14 }}>{circle.line}</Hand>
+
+      {/* Books circle hosts the seasonal shared read (Phase 2) — a signpost into the Jess-hosted
+          Book Club + readers' corner, not a member-hosting surface. Lurkable; no join required. */}
+      {circleKey === "books" && <BooksCircleSharedRead />}
 
       {needConsent ? (
         <section style={{ background: T.paperHi, border: `1px solid ${T.gold}`, borderRadius: 6, padding: "15px 16px", marginBottom: 16 }}>

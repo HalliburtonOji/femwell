@@ -7,9 +7,11 @@ import { SEED_PICK } from "@/components/community/bookClubConfig";
 import { base44 } from "@/api/base44Client";
 import DailyStoryReader from "@/components/lifestyle/DailyStoryReader";
 import ChapterEndCard from "@/components/community/ChapterEndCard";
+import ChapterHeadsUp from "@/components/community/ChapterHeadsUp";
 import CrisisSheetLite from "@/components/community/CrisisSheetLite";
 import { recordProgress } from "@/components/community/readingActivity";
 import { promptFor } from "@/components/community/chapterPrompts";
+import { warningFor, hasSeenWarning } from "@/components/community/chapterWarnings";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // BookReader — renders a Project Gutenberg book in the FemWell Kindle UI.
@@ -86,6 +88,8 @@ export default function BookReader() {
   // Phase-1 Books — the chapter-end card (projective prompt + guess + cohort) and a crisis sheet.
   const [cardChapter, setCardChapter] = useState(null);   // 0-based index, or null = closed
   const [crisisOpen, setCrisisOpen] = useState(false);
+  // Phase-2 Books — a calm, non-blocking content heads-up shown BEFORE a heavy chapter.
+  const [headsUpChapter, setHeadsUpChapter] = useState(null);   // 0-based index, or null = none
 
   const gutenbergId = useMemo(() => {
     const p = new URLSearchParams(window.location.search).get("gutenberg_id");
@@ -109,6 +113,7 @@ export default function BookReader() {
   // from the second boundary onward. Also one card per chapter per session (no nag on back-flips).
   const firstReachRef = useRef(true);
   const shownCardRef = useRef(new Set());
+  const shownHeadsUpRef = useRef(new Set());   // one content heads-up per chapter per session
 
   // Chapter-boundary hook from the reader. Date-stamp the read locally (nourishes the garden)
   // + emit an anonymous progress row (fire-and-forget, inside recordProgress), then open the
@@ -116,6 +121,18 @@ export default function BookReader() {
   const onChapterReached = useCallback((chapterIndex) => {
     if (bookId == null || typeof chapterIndex !== "number") return;
     recordProgress(bookId, chapterIndex, me?.id);   // always: garden + cohort signal
+
+    // Phase-2 content heads-up: shown the moment a WARNED chapter is REACHED (before its heavy
+    // content), even on the open-the-book mount — it's about the chapter you're entering, not the
+    // one you finished. Non-blocking; once per chapter per session and once-per-device (dismiss is
+    // remembered in chapterWarnings). Never interferes with the chapter-end card (below).
+    if (warningFor(bookId, chapterIndex)
+        && !shownHeadsUpRef.current.has(chapterIndex)
+        && !hasSeenWarning(bookId, chapterIndex)) {
+      shownHeadsUpRef.current.add(chapterIndex);
+      setHeadsUpChapter(chapterIndex);
+    }
+
     if (firstReachRef.current) { firstReachRef.current = false; return; } // skip the open-the-book mount
     if (shownCardRef.current.has(chapterIndex)) return;                   // once per chapter per session
     if (!promptFor(bookId, chapterIndex)) return;                        // only where a prompt exists
@@ -223,6 +240,14 @@ export default function BookReader() {
         bookId={bookId}
         onChapterReached={onChapterReached}
       />
+      {headsUpChapter !== null && bookId != null && (
+        <ChapterHeadsUp
+          bookId={bookId}
+          chapterIndex={headsUpChapter}
+          onContinue={() => setHeadsUpChapter(null)}
+          onDefer={() => setHeadsUpChapter(null)}
+        />
+      )}
       {cardChapter !== null && bookId != null && (
         <ChapterEndCard
           bookId={bookId}

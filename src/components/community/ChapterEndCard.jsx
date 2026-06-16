@@ -65,14 +65,17 @@ export default function ChapterEndCard({
 
   // Reads fail open. Cohort milestone + prediction reveal both gate on the k-floor inside the
   // helpers, so a small/empty room simply shows a warm line instead of a number.
+  //
+  // Phase 2 — the REVEAL is independent of whether YOU guessed. The card only ever renders for a
+  // chapter you've already passed (spoiler-safe by construction), so once REVEAL_K_FLOOR distinct
+  // readers have guessed here, "what the room imagined" is shown to everyone who reached this far —
+  // guessers and lurkers alike. We always fetch it; predictionAggregate returns [] below the floor.
   useEffect(() => {
     let alive = true;
     cohortReachedCount(bookId, chapterIndex).then((n) => { if (alive) setCohort(n); }).catch(() => {});
-    if (guessed) {
-      predictionAggregate(bookId, chapterIndex).then((l) => { if (alive) setReveal(l); }).catch(() => {});
-    }
+    predictionAggregate(bookId, chapterIndex).then((l) => { if (alive) setReveal(l); }).catch(() => {});
     return () => { alive = false; };
-  }, [bookId, chapterIndex, guessed]);
+  }, [bookId, chapterIndex]);
 
   const close = useCallback(() => {
     if (closedRef.current) return;
@@ -114,9 +117,14 @@ export default function ChapterEndCard({
     recordPrediction(bookId, chapterIndex, text, userId);   // optimistic + fire-and-forget
     setGuessed(true);
     setGuess("");
-    // optimistically attempt the reveal (will show the warm line if still below floor).
+    // optimistically re-fetch the reveal (shows the warm line if still below floor, the aggregate
+    // once the k-floor is met — never whose guess was "right", never a rank).
     predictionAggregate(bookId, chapterIndex).then((l) => setReveal(l)).catch(() => {});
   };
+
+  // The warm aggregate reveal (k-floored inside predictionAggregate). Shown to anyone who reached
+  // this chapter once enough readers have guessed — Jess-voiced, no winners, no names, no ranking.
+  const hasReveal = Array.isArray(reveal) && reveal.length > 0;
 
   // Nothing authored for this chapter -> render nothing (frictionless, never a "missing" state).
   if (!prompt) return null;
@@ -195,9 +203,12 @@ export default function ChapterEndCard({
         {/* 2 — guess the next chapter (projective prediction -> warm aggregate) */}
         <div style={{ borderTop: `1px solid ${RULE}`, marginTop: 18, paddingTop: 16 }}>
           <p style={{ fontFamily: UI, fontSize: 10.5, fontWeight: 700, letterSpacing: 0.6, textTransform: "uppercase", color: MUTED, margin: "0 0 8px" }}>
-            Guess what comes next
+            {hasReveal ? "What the room imagined" : "Guess what comes next"}
           </p>
-          {!guessed ? (
+
+          {/* The input — offered whenever YOU haven't guessed yet, even if the reveal is already up
+              (you can still add your hunch to the warm whole). */}
+          {!guessed && (
             <>
               <textarea
                 value={guess}
@@ -213,20 +224,29 @@ export default function ChapterEndCard({
                 </button>
               </div>
             </>
-          ) : reveal === null ? (
-            <p style={{ fontFamily: UI, fontSize: 13, color: MUTED, margin: 0 }}>Gathering what the room imagined…</p>
-          ) : reveal.length === 0 ? (
-            <p style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 16.5, lineHeight: 1.5, color: INK, margin: 0 }}>
-              Your hunch is in. When a few more readers reach here, Jess will gather what everyone imagined — no winners, just us.
-            </p>
-          ) : (
-            <div>
-              <p style={{ fontFamily: UI, fontSize: 12, color: MUTED, margin: "0 0 8px" }}>What the room imagined — no winners, just us.</p>
+          )}
+
+          {/* The reveal — shown to anyone who reached this chapter once the k-floor is met. Never
+              ranked, never "who was right" — Jess gathers the warm whole of it. */}
+          {hasReveal ? (
+            <div style={{ marginTop: guessed ? 0 : 14 }}>
+              <p style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 16, lineHeight: 1.5, color: INK, margin: "0 0 10px" }}>
+                {guessed ? "Your hunch is in. " : "You’re reading this with others. "}
+                Here{"’"}s what the room imagined would come next — no winners, just us.
+              </p>
               {reveal.slice(0, 12).map((l, i) => (
                 <p key={i} style={{ fontFamily: SERIF, fontSize: 16.5, lineHeight: 1.5, color: INK, margin: "0 0 7px", paddingLeft: 12, borderLeft: `2px solid ${RULE}` }}>{l}</p>
               ))}
             </div>
-          )}
+          ) : guessed ? (
+            reveal === null ? (
+              <p style={{ fontFamily: UI, fontSize: 13, color: MUTED, margin: 0 }}>Gathering what the room imagined…</p>
+            ) : (
+              <p style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 16.5, lineHeight: 1.5, color: INK, margin: 0 }}>
+                Your hunch is in. When a few more readers reach here, Jess will gather what everyone imagined — no winners, just us.
+              </p>
+            )
+          ) : null}
         </div>
 
         {/* 3 — shared-read cohort milestone (k-floored; warm, never a race) */}
