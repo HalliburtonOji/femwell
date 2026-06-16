@@ -9,7 +9,8 @@
   "background_color": "#ECE7DA",
   "theme_color": "#3A2C1A",
   "icons": [
-    { "src": "https://base44.com/logo_v2.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }
+    { "src": "/femwell-icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" },
+    { "src": "/femwell-icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "maskable" }
   ],
   "shortcuts": [
     {
