@@ -1230,7 +1230,7 @@ function CircleView({ circleKey, user, onCrisis, onBack }) {
     setBusy(true);
     try {
       const wh = await communityHash(user?.id);
-      await base44.functions.invoke("leaveCircle", { user_id: user?.id, author_hash: wh, circle_key: circleKey });
+      await base44.functions.invoke("joinCircle", { action: "leave", user_id: user?.id, author_hash: wh, circle_key: circleKey });
       clearJoined(circleKey); setJoined(false);
     } catch (e) { console.error("leave failed:", e); }
     finally { setBusy(false); }
