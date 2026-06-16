@@ -1,0 +1,50 @@
+{
+  // Books & Book Clubs (Phase 1) — one anonymous reading act, used for community aggregates
+  // ONLY: "guess the next chapter" projective predictions and shared-read cohort milestones
+  // ("N of you have reached chapter 5"). Only a device-derived author_hash is stored — NEVER a
+  // user_id or email, by design (anonymity-first, like Echo). Free-text `body` is crisis-checked
+  // + scrubbed client-side before write; `progress` rows carry an empty body.
+  //
+  // Private SOLO reflections do NOT come here — they stay device-local. Only predictions /
+  // progress / club-shared (anonymous) rows are written, and writes are OPTIMISTIC +
+  // FIRE-AND-FORGET from the client (never awaited on an interaction path); reads fail open.
+  //
+  // RLS: reads are PUBLIC (read intentionally OMITTED → public-readable default, so anyone
+  // signed-in can compute the warm aggregates), and create is left at the Base44 default so ANY
+  // signed-in user may create a row directly from the client (no service function in the loop).
+  // update / delete are locked to admin so a client can only ever append, never edit/remove
+  // another reader's row. Matches the anonymous, lurkable shape of Echo / QotdResponse for reads.
+  "name": "ReadingActivity",
+  "type": "object",
+  "properties": {
+    "author_hash": { "type": "string", "description": "Device-derived anonymous author token — never a raw user id or email." },
+    "book_id": { "type": "string", "description": "Per-book key (the Gutenberg id as a string for Library / Book Club reads)." },
+    "chapter_index": { "type": "number", "description": "0-based chapter index this act refers to (chapter 1 in the UI = 0)." },
+    "kind": {
+      "type": "string",
+      "enum": [
+        "prediction",
+        "progress",
+        "club_reflection"
+      ],
+      "default": "progress",
+      "description": "prediction = guess-the-next-chapter; progress = reached-this-chapter (empty body); club_reflection = a reflection shared to the room."
+    },
+    "body": { "type": "string", "description": "Free text (crisis-checked + scrubbed); empty for progress rows." },
+    "hidden": { "type": "boolean", "default": false, "description": "When true, suppressed from aggregates (moderation)." }
+  },
+  "required": [
+    "author_hash",
+    "book_id",
+    "chapter_index",
+    "kind"
+  ],
+  "indexes": [ { "fields": ["created_date"] },
+    { "fields": ["book_id"] },
+    { "fields": ["author_hash"] }
+  ],
+  "rls": {
+    "update": { "user_condition": { "role": "admin" } },
+    "delete": { "user_condition": { "role": "admin" } }
+  }
+}

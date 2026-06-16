@@ -1,10 +1,15 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import { ArrowLeft, ExternalLink, Users } from "lucide-react";
 import { useNavigate, Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import { dailyReadClubKey } from "@/components/community/clubsConfig";
+import { SEED_PICK } from "@/components/community/bookClubConfig";
 import { base44 } from "@/api/base44Client";
 import DailyStoryReader from "@/components/lifestyle/DailyStoryReader";
+import ChapterEndCard from "@/components/community/ChapterEndCard";
+import CrisisSheetLite from "@/components/community/CrisisSheetLite";
+import { recordProgress } from "@/components/community/readingActivity";
+import { promptFor } from "@/components/community/chapterPrompts";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // BookReader — renders a Project Gutenberg book in the FemWell Kindle UI.
@@ -77,12 +82,46 @@ export default function BookReader() {
   const [chapters, setChapters] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [me, setMe] = useState(null);
+  // Phase-1 Books — the chapter-end card (projective prompt + guess + cohort) and a crisis sheet.
+  const [cardChapter, setCardChapter] = useState(null);   // 0-based index, or null = closed
+  const [crisisOpen, setCrisisOpen] = useState(false);
 
   const gutenbergId = useMemo(() => {
     const p = new URLSearchParams(window.location.search).get("gutenberg_id");
     const n = Number(p);
     return Number.isFinite(n) && n > 0 ? n : null;
   }, []);
+
+  // bookId for reading-activity + prompts is the Gutenberg id as a string (matches BookReader's
+  // existing per-book persistence). A read is "in the club" when it's the active Book Club pick.
+  const bookId = gutenbergId != null ? String(gutenbergId) : null;
+  const inClub = bookId != null && String(SEED_PICK.gutenberg_id) === bookId;
+
+  useEffect(() => {
+    let cancelled = false;
+    base44.auth.me().then((u) => { if (!cancelled) setMe(u || null); }).catch(() => {});
+    return () => { cancelled = true; };
+  }, []);
+
+  // The reader fires onChapterReached on its FIRST mount too (chapter 0). We don't want a modal
+  // the instant a book opens, so the first reached chapter only records progress; the card opens
+  // from the second boundary onward. Also one card per chapter per session (no nag on back-flips).
+  const firstReachRef = useRef(true);
+  const shownCardRef = useRef(new Set());
+
+  // Chapter-boundary hook from the reader. Date-stamp the read locally (nourishes the garden)
+  // + emit an anonymous progress row (fire-and-forget, inside recordProgress), then open the
+  // calm chapter-end card. Never awaits — a slow backend can't block the page flip.
+  const onChapterReached = useCallback((chapterIndex) => {
+    if (bookId == null || typeof chapterIndex !== "number") return;
+    recordProgress(bookId, chapterIndex, me?.id);   // always: garden + cohort signal
+    if (firstReachRef.current) { firstReachRef.current = false; return; } // skip the open-the-book mount
+    if (shownCardRef.current.has(chapterIndex)) return;                   // once per chapter per session
+    if (!promptFor(bookId, chapterIndex)) return;                        // only where a prompt exists
+    shownCardRef.current.add(chapterIndex);
+    setCardChapter(chapterIndex);
+  }, [bookId, me?.id]);
 
   useEffect(() => {
     if (!gutenbergId) {
@@ -181,7 +220,20 @@ export default function BookReader() {
         }}
         seriesKey="gutenberg_book"
         totalCount={chapters.length}
+        bookId={bookId}
+        onChapterReached={onChapterReached}
       />
+      {cardChapter !== null && bookId != null && (
+        <ChapterEndCard
+          bookId={bookId}
+          chapterIndex={cardChapter}
+          userId={me?.id}
+          inClub={inClub}
+          onClose={() => setCardChapter(null)}
+          onCrisis={() => { setCardChapter(null); setCrisisOpen(true); }}
+        />
+      )}
+      {crisisOpen && <CrisisSheetLite onClose={() => setCrisisOpen(false)} />}
     </Frame>
   );
 }

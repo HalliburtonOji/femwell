@@ -23,6 +23,7 @@ import {
   currentChapterKey, chapterLabel, groupByMonth, seasonOf, seasonColor, AREA_NOUN, formKeyForChapter,
   localChapters, loadGardenChapters, archiveChapter,
 } from "@/components/nurture/garden";
+import { readingDaySet } from "@/components/community/readingActivity";
 
 const STAGES = [
   { key: "seed",     min: 0,   name: "Just planted",   line: "A seed is in the soil. Whatever you tend — a line, a meal, a check-in — it begins to grow." },
@@ -102,15 +103,22 @@ export default function NurtureGarden({ compact = false, onOpen = null }) {
       const dayOf = (x) => x.day_key || x.date || (x.created_date ? String(x.created_date).slice(0, 10) : (x.created_at ? String(x.created_at).slice(0, 10) : null));
       const daySet = (...xs) => { const s = new Set(); xs.forEach((g) => arr(g).forEach((x) => { const d = dayOf(x); if (d) s.add(d); })); return s; };
       const commLocal = communityActs();
+      // reading is anonymity-safe + device-local: date-stamped `fw_read_*` keys (no user_id),
+      // so it's read straight from localStorage like the community acts — a day she spent with a
+      // book feeds the chapter exactly like journal/nutrition/etc. (AREA_NOUN.reading exists;
+      // formKeyForChapter already maps reading -> a clustered "forget-me-not" form).
+      const readingSet = readingDaySet();
       // per-area DAY sets — the basis for "what fed it today / this week" (cause→effect made visible)
       const areaSets = {
         journal: daySet(E), nutrition: daySet(M, W), checkins: daySet(Cn), cycle: daySet(Sy),
         programs: daySet(Up, Tc), planner: daySet(Pl, Pt, Pi), community: daySet(Q),
+        reading: readingSet,
       };
       const areas = {
         journal: arr(E).length, nutrition: arr(M).length + arr(W).length, checkins: arr(Cn).length,
         cycle: arr(Sy).length, programs: arr(Up).length + arr(Tc).length,
         planner: arr(Pl).length + arr(Pt).length + arr(Pi).length, community: arr(Q).length + commLocal,
+        reading: readingSet.size,
       };
       const today = format(new Date(), "yyyy-MM-dd");
       const todayAreas = Object.keys(areaSets).filter((k) => areaSets[k].has(today));
@@ -189,7 +197,7 @@ export default function NurtureGarden({ compact = false, onOpen = null }) {
     : (resting) ? `Resting season. Nothing is lost; ${companion.name} is waiting, soft and alive.`
     : stage.line;
   // friendly nouns for "what fed your garden" (cause→effect made visible)
-  const FED_NOUN = { journal: "your journal", nutrition: "what you ate & drank", checkins: "your check-in", cycle: "your cycle notes", programs: "a practice kept", planner: "the day you planned", community: "the community", __ritual: "the line you left" };
+  const FED_NOUN = { journal: "your journal", nutrition: "what you ate & drank", checkins: "your check-in", cycle: "your cycle notes", programs: "a practice kept", planner: "the day you planned", community: "the community", reading: "time with a book", __ritual: "the line you left" };
   const fedToday = [...(tendedT ? ["__ritual"] : []), ...(data.todayAreas || [])];
   const fedWeek = [...new Set([...(tendedT ? ["__ritual"] : []), ...(data.weekAreas || [])])];
   const joinNouns = (keys) => { const w = keys.slice(0, 3).map((k) => FED_NOUN[k]).filter(Boolean); return w.length <= 1 ? (w[0] || "") : `${w.slice(0, -1).join(", ")} and ${w[w.length - 1]}`; };

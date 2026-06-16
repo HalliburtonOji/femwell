@@ -461,6 +461,11 @@ export default function DailyStoryReader({
   // fw_reader_bookmarks_{bookId}. Falls back to no-persistence (Daily
   // Story tab, where each chapter is its own day).
   bookId,
+  // Phase-1 Books — fired (with the 0-based chapter index) whenever a chapter
+  // is REACHED, including the first chapter on mount. Spoiler-safe by contract:
+  // callers only ever act on chapters <= the one reached. The reader never
+  // awaits it, so a slow handler can't block a page flip.
+  onChapterReached,
 }) {
   const [chapters, setChapters] = useState(providedSource?.items || []);
   const [currentIndex, setCurrentIndex] = useState(providedSource?.currentIndex ?? 0);
@@ -655,6 +660,18 @@ export default function DailyStoryReader({
       setPageInChapter(0);
     }
   }, [currentIndex]);
+
+  // Phase-1 Books — fire the chapter-boundary hook whenever the reader REACHES a
+  // chapter (initial mount included). Fire-and-forget + guarded so a throwing or
+  // slow handler can never wedge the reader. Only fires for real chapters.
+  const onChapterReachedRef = useRef(onChapterReached);
+  onChapterReachedRef.current = onChapterReached;
+  useEffect(() => {
+    const cb = onChapterReachedRef.current;
+    if (typeof cb !== "function") return;
+    if (!chapters.length || currentIndex < 0 || currentIndex >= chapters.length) return;
+    try { cb(currentIndex); } catch { /* never let a handler break the reader */ }
+  }, [currentIndex, chapters.length]);
 
   // v4d — restore reading position once, on first mount with chapters loaded.
   const positionRestoredRef = useRef(false);
