@@ -1,6 +1,14 @@
 # FEMWELL — CANONICAL STATUS INDEX (read first · updated 2026-06-16)
 **This file is the single source of truth AND the index to every plan doc. If anything else disagrees, this wins.** (The long ship-log history continues below the index.)
 
+## ✨ TODAY DEMO 6 — POLISH PASS ("this is the one" quality) — SHIPPED + LIVE-VERIFIED (2026-06-16) — live `index-Dd64lvYG.js` · commit `19d52cc`
+- Self-directed refinement pass on /TodayDemo6 (conformed to BRAND_IDENTITY throughout). LIVE-verified at 390px, 0 console errors, rich (docHeight 3513), no regressions.
+- **HERO centrepiece:** phase-tinted radial wash behind the bloom + a faint full track + elegant arcs (active thicker/brighter, others quiet) + a **haloed day-marker** with a gentle breath (reduced-motion-safe). The canonical stem-bloom (gradient + sway) sits in it.
+- **CYCLE CALENDAR elevated:** watercolor radial phase tints (period days bloom deeper), softer dashed predicted days, today ink-ringed + a small dot, the current phase **highlighted in the legend** ("Luteal · you"), warmer prediction line ("your next chapter likely opens around the 23rd — softly predicted, never a deadline").
+- **STACK DECK refined:** spring easing + a slight scale-down on stacked cards for real depth, a clearer **expand/collapse chevron** in an accent disc. Bring-to-front verified.
+- **Sheets:** gentle slide-up + scrim fade entrance (reduced-motion-safe).
+- **Type/colour cohesion:** brought stray sizes onto the role scale (10.5→11, 12→13, 19→18); tokens only; one carved heart in the hero header; one low-opacity botanical vine. Removed the now-unused BigSlidePair. Screenshots → `femwell-handoff/{polish-hero, polish-calendar, polish-deck}.png`. Live Today untouched.
+
 ## 📖🏠 READER CHAPTER-MAP + REFLECT + CALM SCROLL · TODAY WATER/MEAL/CYCLE/CALENDAR/STACK — SHIPPED + LIVE-VERIFIED (2026-06-16) — live `index-Bw-a-Veo.js` · commit `451c918`
 - **8 Halli-flagged fixes; read BRAND_IDENTITY gate; all live-verified at 390px.**
 - **(1) CHAPTER ≠ PAGE — ROOT-CAUSED + FIXED.** The earlier "fix" only collapsed the TOC; the erratic labels (Ch4 ×30 pages → 5 → 6) were a READER race: `flipForward` had no in-progress guard (rapid taps queued multiple advances during the 600ms anim) AND it advanced off a freshly-entered chapter whose page-count was still unmeasured (defaults to 1 → skip). Fix: flip debounce (`flipState.phase==="flipping"` → ignore) + **never advance off a chapter until `measuredPages` is known**. Diagnosed by fetching the real PG #514 text via Bash (47 chapters, "CHAPTER ONE…" + a doubled TOC) + reproducing the 1-page-skip live. **LIVE:** label increments only at true boundaries, spans many pages, matches content (ch12 = "Camp Laurence"); rapid-flip no longer skips; spot-checked Pride & Prejudice (61 ch, ch1=37pp, ch2=34pp, zero 1-page skips).
