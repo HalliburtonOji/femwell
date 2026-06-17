@@ -30,6 +30,9 @@ import {
   PAPER_BG, InkFilter, EditorialFooter, useEditorialFonts,
   T, UI, SCRIPT, HAND, PRESS, Script, Hand, Eyebrow, Rule, Heart,
 } from "../components/journal/Editorial";
+// Shared brand flora — the lush layer (page vine texture, corner frames, meaning-blooms),
+// the same components the Today page uses, so the Journal matches the brand bar (BRAND_IDENTITY §4/§5).
+import { CardFrame, VineMotifV2, FlowerGlyph, floraKeyframes, cwOf } from "@/components/brand/flora";
 
 // ── Filter taxonomy — mirrors the compose sheet (FORMAT vs TOPIC), so the ledger
 //    filter is ONE coherent system, not a redundant third one. ──────────────────
@@ -208,11 +211,18 @@ function WitnessNote({ type }) {
   if (!WITNESS[type]) return null;
   return (
     <div style={{
-      marginBottom: 16, padding: "14px 18px",
-      background: T.paperHi, border: `1px solid ${T.paperDeep}`, borderRadius: 3,
+      position: "relative", overflow: "hidden",
+      marginBottom: 16, padding: "16px 18px",
+      background: `linear-gradient(165deg, ${T.paperHi} 0%, ${T.gold}14 100%)`,
+      border: `1px solid ${T.paperDeep}`, borderLeft: `4px solid ${T.gold}`, borderRadius: 16,
+      boxShadow: "0 4px 20px rgba(58,44,26,0.10)",
     }}>
-      <Eyebrow mb={6}>A note from Jess</Eyebrow>
-      <Hand size={17} color={T.inkSoft} carve={false}>{WITNESS[type]}</Hand>
+      <CardFrame variant="sprig" color={T.gold} size={46} opacity={0.6} />
+      <div aria-hidden style={{ position: "absolute", right: -14, bottom: -16, opacity: 0.1, pointerEvents: "none" }}><FlowerGlyph variant="camellia" size={104} color={T.gold} idx={`wn-${type}`} /></div>
+      <div style={{ position: "relative" }}>
+        <Eyebrow mb={6} color={T.gold}>A note from Jess</Eyebrow>
+        <Hand size={17} color={T.inkSoft} carve={false}>{WITNESS[type]}</Hand>
+      </div>
     </div>
   );
 }
@@ -391,6 +401,15 @@ export default function Journal() {
   return (
     <div className="min-h-screen pb-28" style={{ position: "relative", ...PAPER_BG }}>
       <InkFilter />
+      {/* botanical page texture — one low-opacity vine per fold, clipped so it never causes
+          horizontal scroll, behind content, never over text (BRAND_IDENTITY §4/§6.2). A clipped
+          absolute layer (NOT overflow:hidden on the root, which would break the sticky header). */}
+      <div aria-hidden style={{ position: "absolute", inset: 0, overflow: "hidden", pointerEvents: "none", zIndex: 0 }}>
+        <style>{floraKeyframes}</style>
+        <div style={{ position: "absolute", top: 130, right: -26 }}><VineMotifV2 color={T.gold} color2={T.sage} opacity={0.1} w={150} /></div>
+        <div style={{ position: "absolute", top: 660, left: -28 }}><VineMotifV2 color={T.sage} color2={T.gold} opacity={0.08} w={140} flip /></div>
+        <div style={{ position: "absolute", top: 1240, right: -24 }}><VineMotifV2 color={T.gold} color2={T.sage} opacity={0.08} w={140} /></div>
+      </div>
       {deleteErr && (
         <div role="alert" style={{
           position: "fixed", left: "50%", bottom: 90, transform: "translateX(-50%)", zIndex: 4000,
@@ -522,18 +541,20 @@ export default function Journal() {
       )}
 
       {/* ── Main content ── */}
-      <div className="max-w-2xl mx-auto px-4 pt-6">
+      <div className="max-w-2xl mx-auto px-4 pt-6" style={{ position: "relative", zIndex: 1 }}>
 
         {/* Masthead — editorial byline below the header */}
         <div style={{ marginBottom: 24 }}>
           <Eyebrow mb={8}>A publication of one</Eyebrow>
           <div style={{ display: "flex", alignItems: "baseline", gap: 12, flexWrap: "wrap" }}>
+            <FlowerGlyph variant="camellia" size={26} color={cwOf("gold").petal} color2={cwOf("gold").tip} idx="jm-l" />
             <Script size={54} style={{ width: "auto" }}>
               {phase ? phase.charAt(0).toUpperCase() + phase.slice(1) : "Journal"}
             </Script>
             {season && (
               <Hand size={26} color={T.inkSoft} style={{ width: "auto" }}>{season.name}</Hand>
             )}
+            <FlowerGlyph variant="rose" size={24} color={cwOf("blush").petal} color2={cwOf("blush").tip} idx="jm-r" />
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 8 }}>
             <Rule w={24} c={T.gold} />
@@ -615,8 +636,12 @@ export default function Journal() {
 
                 {/* Empty state */}
                 {entries.length === 0 && (
-                  <div style={{ textAlign: "center", paddingTop: 30, paddingBottom: 30 }}>
-                    <Eyebrow mb={10}>Your first page</Eyebrow>
+                  <div style={{ position: "relative", overflow: "hidden", textAlign: "center", padding: "30px 20px", marginBottom: 8, background: `linear-gradient(165deg, ${T.paperHi} 0%, ${T.gold}12 100%)`, border: `1px solid ${T.paperDeep}`, borderRadius: 18, boxShadow: "0 4px 20px rgba(58,44,26,0.10)" }}>
+                    <CardFrame variant="carved" color={T.gold} size={50} opacity={0.6} />
+                    <div aria-hidden style={{ position: "absolute", right: -16, bottom: -18, opacity: 0.1, pointerEvents: "none" }}><FlowerGlyph variant="rose" size={120} color={T.gold} idx="je-wm" /></div>
+                    <div style={{ position: "relative" }}>
+                    <div style={{ display: "flex", justifyContent: "center", marginBottom: 8 }}><FlowerGlyph variant="camellia" size={34} color={cwOf("gold").petal} color2={cwOf("gold").tip} idx="je" /></div>
+                    <Eyebrow mb={10} color={T.gold}>Your first page</Eyebrow>
                     <Script size={34} style={{ marginBottom: 10 }}>A publication of one</Script>
                     <Hand size={19} color={T.inkSoft} style={{ marginBottom: 22 }}>
                       Nothing here yet. Begin with a line — it is locked to you, always.
@@ -630,6 +655,7 @@ export default function Journal() {
                           color: T.ink, textShadow: PRESS,
                         }}>{label}</button>
                       ))}
+                    </div>
                     </div>
                   </div>
                 )}
@@ -650,15 +676,18 @@ export default function Journal() {
 
                 {/* Sealed letters (shown inline when hub-opened, otherwise hidden here) */}
                 {showSealedLetters && (
-                  <div ref={sealedRef} style={{ marginTop: 16 }}>
-                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
-                      <Eyebrow>Sealed Letters</Eyebrow>
-                      <button onClick={() => setShowSealedLetters(false)} style={{
-                        background: "transparent", border: "none", cursor: "pointer",
-                        color: T.muted, padding: 0, display: "inline-flex",
-                      }}><X size={18} /></button>
+                  <div ref={sealedRef} style={{ position: "relative", overflow: "hidden", marginTop: 16, padding: "16px 16px", background: `linear-gradient(165deg, ${T.paperHi} 0%, ${T.gold}10 100%)`, border: `1px solid ${T.paperDeep}`, borderLeft: `4px solid ${T.gold}`, borderRadius: 18, boxShadow: "0 4px 20px rgba(58,44,26,0.10)" }}>
+                    <CardFrame variant="sprig" color={T.gold} size={46} opacity={0.58} />
+                    <div style={{ position: "relative" }}>
+                      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
+                        <Eyebrow color={T.gold}>Sealed Letters</Eyebrow>
+                        <button onClick={() => setShowSealedLetters(false)} style={{
+                          background: "transparent", border: "none", cursor: "pointer",
+                          color: T.muted, padding: 0, display: "inline-flex",
+                        }}><X size={18} /></button>
+                      </div>
+                      <SealedLettersSection user={user} profile={profile} />
                     </div>
-                    <SealedLettersSection user={user} profile={profile} />
                   </div>
                 )}
               </>

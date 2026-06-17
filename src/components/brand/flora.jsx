@@ -338,6 +338,20 @@ export function CardCorner({ variant = "sprig", color = T.gold, size = 52, opaci
   return <div style={{ position: "absolute", pointerEvents: "none", zIndex: 0, ...pos }}><CornerSprig variant={variant} color={color} corner={corner} size={size} opacity={opacity} /></div>;
 }
 
+// ── CardFrame — the canonical "framed card" treatment (the Today bar): the §4.2 corner element in
+// ALL FOUR corners, visible per the lush tone dial. Overlay it INSIDE a position:relative;
+// overflow:hidden card (it doesn't impose a background, unlike BrandFrame). Set card content
+// position:relative so it paints above the corners. Shared so every page frames cards identically.
+export function CardFrame({ variant = "sprig", color = T.gold, opacity = 0.62, size = 50 }) {
+  return <>{["tl", "tr", "br", "bl"].map((c) => <CardCorner key={c} variant={variant} color={color} corner={c} size={size} opacity={opacity} />)}</>;
+}
+
+// ── clampLines — safe-text style: wrap + N-line clamp so nothing bleeds off a card/page (the Today
+// overflow fix). Spread into a text node's style: {...clampLines(2)}. ───────────────────────────────
+export function clampLines(n = 2) {
+  return { minWidth: 0, overflow: "hidden", overflowWrap: "anywhere", wordBreak: "break-word", display: "-webkit-box", WebkitLineClamp: n, WebkitBoxOrient: "vertical" };
+}
+
 // ── FLOWER GLYPH — 18 species, colourway-parameterised (BRAND_IDENTITY §5.2) ──────────────────────
 export function FlowerGlyph({ variant = "camellia", size = 52, color = T.crimson, color2 = null, accent = "#2E261B", idx = 0 }) {
   const gid = `fg-${variant}-${idx}`;
