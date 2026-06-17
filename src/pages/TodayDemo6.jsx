@@ -22,7 +22,7 @@ import { computeCycleDay, phaseForDay } from "@/hooks/useCycleDay";
 import { nutritionToday } from "@/utils/nutritionSummary";
 import { communityHash } from "@/components/community/communityAnon";
 import { Bloom } from "@/components/nurture/NurtureGarden";
-import { RichBloomV2, SwayBloom, fingerprintColourway, floraKeyframes } from "@/components/brand/flora";
+import { RichBloomV2, SwayBloom, fingerprintColourway, floraKeyframes, CardCorner, VineMotifV2, LeafDivider, SprigDivider, FleuronDivider } from "@/components/brand/flora";
 import { FORM_LIST, getCompanion, tendCompanion, tendedToday, loadCompanionState } from "@/components/nurture/companion";
 import { useScrollLock } from "@/utils/useScrollLock";
 // Reuse the PRODUCTION Planner row slider verbatim — same card size, 3D depth
@@ -338,8 +338,10 @@ export default function TodayDemo6() {
     <div className="fwc-anim" style={{ ...PAPER_BG, minHeight: "100vh", color: T.ink, paddingBottom: 96, position: "relative", overflow: "hidden" }}>
       <InkFilter />
       <style>{`@keyframes fwSheetIn{from{transform:translateY(100%)}to{transform:translateY(0)}}@keyframes fwScrimIn{from{opacity:0}to{opacity:1}}@keyframes fwFadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}.fw-hrow{scrollbar-width:none}.fw-hrow::-webkit-scrollbar{display:none}@media (prefers-reduced-motion:reduce){.fw-sheet-anim,.fw-scrim-anim,.fw-fade{animation:none!important}}${floraKeyframes}`}</style>
-      {/* one tasteful botanical motif per fold (BRAND_IDENTITY §4/§6.2) */}
-      <div style={{ position: "absolute", top: 40, right: -12, pointerEvents: "none", zIndex: 0 }}><VineMotif color={T.sage} opacity={0.12} w={150} /></div>
+      {/* botanical brand texture — one low-opacity vine per fold, at the page edge, never behind text (BRAND_IDENTITY §4/§6.2) */}
+      <div style={{ position: "absolute", top: 28, right: -22, pointerEvents: "none", zIndex: 0 }}><VineMotifV2 color={T.sage} color2={T.gold} opacity={0.1} w={162} /></div>
+      <div style={{ position: "absolute", top: 760, left: -26, pointerEvents: "none", zIndex: 0 }}><VineMotifV2 color={T.gold} color2={T.sage} opacity={0.08} w={150} flip /></div>
+      <div style={{ position: "absolute", top: 1520, right: -24, pointerEvents: "none", zIndex: 0 }}><VineMotifV2 color={T.sage} color2={T.gold} opacity={0.08} w={150} /></div>
 
       <div style={{ maxWidth: 430, margin: "0 auto", padding: "16px 16px 0", position: "relative", zIndex: 1 }}>
         {/* date + time-of-day + cycle calendar icon */}
@@ -381,8 +383,9 @@ export default function TodayDemo6() {
         </div>
 
         {/* (2) DAY PARAGRAPH — synthesised from real signals + refresh */}
-        <div style={{ marginTop: 18, background: T.paperHi, border: `1px solid ${T.paperDeep}`, borderRadius: 18, padding: "17px 18px", boxShadow: "0 8px 22px rgba(58,48,32,0.07)" }}>
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
+        <div style={{ position: "relative", overflow: "hidden", marginTop: 18, background: T.paperHi, border: `1px solid ${T.paperDeep}`, borderLeft: `3px solid ${T.gold}`, borderRadius: 18, padding: "18px 19px", boxShadow: "0 4px 20px rgba(58,44,26,0.12), 0 1px 4px rgba(58,44,26,0.08)" }}>
+          <CardCorner variant="carved" color={T.gold} corner="tr" size={46} opacity={0.38} />
+          <div style={{ position: "relative", display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
             <Eyebrow color={T.gold} mb={0}>{showFirst ? "Your day begins" : tod === "evening" ? "How today went" : "Your day, in a few words"}</Eyebrow>
             <button onClick={() => setParaSeed((s) => s + 1)} aria-label="Refresh the day's words" title="A different turn of phrase" style={{ background: "transparent", border: "none", cursor: "pointer", color: T.muted, padding: 2, display: "inline-flex" }}><RefreshCw size={15} /></button>
           </div>
@@ -391,8 +394,9 @@ export default function TodayDemo6() {
         </div>
 
         {/* (3) YOUR DAY — gentle checklist; ticking nourishes the garden */}
-        <div style={{ marginTop: 16, background: "#fff", border: `1px solid ${T.paperDeep}`, borderRadius: 18, padding: "17px 17px 15px", boxShadow: "0 8px 22px rgba(58,48,32,0.07)" }}>
-          <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between" }}>
+        <div style={{ position: "relative", overflow: "hidden", marginTop: 16, background: "#fff", border: `1px solid ${T.paperDeep}`, borderLeft: `3px solid ${T.sage}`, borderRadius: 18, padding: "17px 17px 15px", boxShadow: "0 4px 20px rgba(58,44,26,0.12), 0 1px 4px rgba(58,44,26,0.08)" }}>
+          <CardCorner variant="sprig" color={T.sage} corner="tr" size={48} opacity={0.4} />
+          <div style={{ position: "relative", display: "flex", alignItems: "baseline", justifyContent: "space-between" }}>
             <Eyebrow mb={2} color={T.gold}>Your day</Eyebrow>
             <span style={{ fontFamily: UI, fontSize: 13, color: T.muted }}>invitations, never a score</span>
           </div>
@@ -418,9 +422,12 @@ export default function TodayDemo6() {
           </div>
         </div>
 
+        <LeafDivider color={T.gold} my={18} />
+
         {/* (3b) CYCLE & SYMPTOMS — elevated near the top */}
-        <div style={{ marginTop: 16, background: "#fff", border: `1px solid ${T.paperDeep}`, borderLeft: `3px solid ${phaseColor}`, borderRadius: 18, padding: "16px 17px", boxShadow: "0 8px 22px rgba(58,48,32,0.07)" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 9, marginBottom: 10 }}>
+        <div style={{ position: "relative", overflow: "hidden", background: "#fff", border: `1px solid ${T.paperDeep}`, borderLeft: `3px solid ${phaseColor}`, borderRadius: 18, padding: "16px 17px", boxShadow: "0 4px 20px rgba(58,44,26,0.12), 0 1px 4px rgba(58,44,26,0.08)" }}>
+          <CardCorner variant="sprig" color={phaseColor} corner="tr" size={48} opacity={0.4} />
+          <div style={{ position: "relative", display: "flex", alignItems: "center", gap: 9, marginBottom: 10 }}>
             {ICON_DISC(Stethoscope, phaseColor)}
             <Eyebrow color={phaseColor}>Cycle &amp; symptoms</Eyebrow>
             <button onClick={() => setCalOpen(true)} style={{ marginLeft: "auto", display: "inline-flex", alignItems: "center", gap: 5, background: "transparent", border: "none", cursor: "pointer", fontFamily: UI, fontSize: 13, fontWeight: 700, color: phaseColor }}><CalendarHeart size={15} /> Calendar</button>
@@ -437,7 +444,8 @@ export default function TodayDemo6() {
         {/* (4) PER-SURFACE cards — each section is a CardStack row (the production
             Planner slider, reused verbatim): summary ⇄ action slides with the
             planner's card size, 3D depth, smooth motion, peek + ‹ • • › nav. */}
-        <div style={{ marginTop: 24 }}>
+        <SprigDivider color={T.gold} my={20} />
+        <div>
           <Eyebrow mb={2} color={T.gold}>Across your day</Eyebrow>
           <p style={{ fontFamily: UI, fontSize: 13, color: T.muted, margin: "2px 0 14px" }}>each part of your app, its own row · swipe a row sideways to do it</p>
           {(() => {
@@ -458,8 +466,10 @@ export default function TodayDemo6() {
           })()}
         </div>
 
+        <FleuronDivider color={T.gold} my={20} />
+
         {/* (5) CROSS-APP SMART SUGGESTIONS */}
-        <div style={{ marginTop: 22 }}>
+        <div>
           <Eyebrow mb={2} color={T.gold}>A few things I noticed</Eyebrow>
           <p style={{ fontFamily: UI, fontSize: 13, color: T.muted, margin: "2px 0 10px" }}>gentle, tuned to your {PHASE_LABEL[phase] ? PHASE_LABEL[phase].toLowerCase() : ""} phase · slide to see more</p>
           <div style={{ display: "flex", gap: 12, overflowX: "auto", scrollSnapType: "x mandatory", scrollbarWidth: "none", paddingBottom: 6 }}>
@@ -679,7 +689,7 @@ const SLIDE_CARD = {
   border: "1px solid rgba(212,193,180,0.5)",
   boxShadow: "0 4px 20px rgba(58,44,26,0.12), 0 1px 4px rgba(58,44,26,0.08)",
   minHeight: 312, height: "100%", padding: "20px 21px",
-  display: "flex", flexDirection: "column", overflow: "hidden",
+  display: "flex", flexDirection: "column", overflow: "hidden", position: "relative",
 };
 const OPEN_LINK = { display: "inline-flex", alignItems: "center", gap: 4, marginTop: "auto", paddingTop: 10, fontFamily: UI, fontSize: 13, fontWeight: 700, color: T.muted, textDecoration: "none" };
 
@@ -688,7 +698,9 @@ function SummarySlide({ s, eyebrow = "Today" }) {
   const quote = s.summary.inset ? (s.summary.inset.quote || "").slice(0, 80) : "";
   return (
     <article style={{ ...SLIDE_CARD, borderLeft: `4px solid ${s.accent}` }}>
-      <div style={{ display: "flex", alignItems: "center", gap: 9, marginBottom: 11 }}>
+      {/* delicate corner sprig — one per card, low-opacity (BRAND_IDENTITY §4.2) */}
+      <CardCorner variant="sprig" color={s.accent} corner="tr" size={50} opacity={0.4} />
+      <div style={{ display: "flex", alignItems: "center", gap: 9, marginBottom: 11, position: "relative" }}>
         {ICON_DISC(s.Icon, s.accent)}
         <Eyebrow color={s.accent}>{eyebrow}</Eyebrow>
       </div>
