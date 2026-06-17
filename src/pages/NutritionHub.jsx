@@ -29,8 +29,9 @@ import {
   Search, Clock, Camera, Mic, ScanLine, Check, X,
 } from "lucide-react";
 import {
-  T, UI, SERIF, Eyebrow, Rule, Script, Hand, InkFilter, useEditorialFonts, PAPER_BG,
+  T, UI, SERIF, Eyebrow, Rule, Script, Hand, Heart, InkFilter, useEditorialFonts, PAPER_BG,
 } from "@/components/journal/Editorial";
+import { VineMotifV2, FlowerGlyph, floraKeyframes, cwOf } from "@/components/brand/flora";
 import { getMealSummary, inferMealTypeFromTime } from "@/utils/nutritionAiAnalysis";
 import { dayNutrition } from "@/utils/foodModel";
 import { mealEstimate } from "@/utils/cofid";
@@ -605,9 +606,16 @@ export default function NutritionHub() {
   }
 
   return (
-    <div style={{ ...PAPER_BG, minHeight: "100vh", fontFamily: SERIF, color: T.ink, paddingBottom: 120 }}>
+    <div style={{ ...PAPER_BG, minHeight: "100vh", fontFamily: SERIF, color: T.ink, paddingBottom: 120, position: "relative" }}>
       <InkFilter />
-      <div style={{ maxWidth: COL, margin: "0 auto", position: "relative" }}>
+      {/* botanical page texture — one low-opacity vine per fold (Nutrition char = sage/herbs), clipped */}
+      <div aria-hidden style={{ position: "absolute", inset: 0, overflow: "hidden", pointerEvents: "none", zIndex: 0 }}>
+        <style>{floraKeyframes}</style>
+        <div style={{ position: "absolute", top: 150, right: -26 }}><VineMotifV2 color={T.sage} color2={T.gold} opacity={0.1} w={150} /></div>
+        <div style={{ position: "absolute", top: 720, left: -28 }}><VineMotifV2 color={T.gold} color2={T.sage} opacity={0.08} w={140} flip /></div>
+        <div style={{ position: "absolute", top: 1320, right: -24 }}><VineMotifV2 color={T.sage} color2={T.gold} opacity={0.08} w={140} /></div>
+      </div>
+      <div style={{ maxWidth: COL, margin: "0 auto", position: "relative", zIndex: 1 }}>
 
         {/* ── DAILY HUB header — Demo2's full summary, wired to real data ───── */}
         <header style={{ padding: "20px 18px 4px" }}>
@@ -643,8 +651,12 @@ export default function NutritionHub() {
             {cyclePhaseLabel && cycleDay ? ` · Day ${cycleDay}` : ""}
           </Eyebrow>
 
-          {/* 2 · the Ephesis script heading */}
-          <Script size={40} carve>your plate today</Script>
+          {/* 2 · the Ephesis script heading — carved heart (§3) + flanking meaning-bloom (lush) */}
+          <div style={{ display: "flex", alignItems: "center", gap: 9, flexWrap: "wrap" }}>
+            <Heart size={15} />
+            <Script size={40} carve>your plate today</Script>
+            <FlowerGlyph variant="sunflower" size={24} color={cwOf("sage").petal} color2={cwOf("sage").tip} idx="nh-hdr" />
+          </div>
 
           {/* 3 · big energy ring — real summary.kcal of calorieTarget, room for more */}
           <div style={{ display: "flex", flexDirection: "column", alignItems: "center", marginTop: 12 }}>
