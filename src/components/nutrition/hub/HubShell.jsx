@@ -10,6 +10,7 @@ import { X } from "lucide-react";
 import {
   T, UI, SERIF, Eyebrow, Script, SHEET_BG, useEscape,
 } from "@/components/journal/Editorial";
+import { CardFrame } from "@/components/brand/flora";
 import { useScrollLock } from "@/utils/useScrollLock";
 
 // ── Bottom sheet ─────────────────────────────────────────────────────────────
@@ -123,14 +124,20 @@ export function SurfaceCard({ cardW, label, blurb, accent = T.gold, onOpen, prim
       className="hub-surface-card"
       style={{
         scrollSnapAlign: "center", flex: `0 0 ${cardW}px`, width: cardW,
-        background: T.paperHi, border: `1px solid ${T.paperDeep}`, borderRadius: 20,
+        // lush per the brand tone dial: a colourway tint by the card's accent + an accent rim +
+        // a visible 4-corner sprig frame (BRAND_IDENTITY §4.2/§6.1) — shared by every hub.
+        position: "relative", overflow: "hidden",
+        background: `linear-gradient(165deg, ${T.paperHi} 0%, ${accent}14 100%)`,
+        border: `1px solid ${T.paperDeep}`, borderLeft: `4px solid ${accent}`, borderRadius: 20,
         // stay BIG (minHeight), only scroll the body when content genuinely exceeds a tall
         // safety cap — never a shrunk fixed height.
         padding: 20, display: "flex", flexDirection: "column", minHeight: 528, maxHeight: "84vh",
-        boxShadow: "0 10px 26px -18px rgba(11,8,5,0.5)",
+        boxShadow: "0 4px 20px rgba(58,44,26,0.12), 0 1px 4px rgba(58,44,26,0.08)",
       }}
     >
       <style>{`.hub-surface-card .hub-card-body::-webkit-scrollbar{display:none}`}</style>
+      <CardFrame variant="sprig" color={accent} size={46} opacity={0.6} />
+      <div style={{ position: "relative", zIndex: 1, display: "flex", flexDirection: "column", flex: 1, minHeight: 0 }}>
       <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: 8, marginBottom: 4, flex: "none" }}>
         <Eyebrow color={accent}>{label}</Eyebrow>
         {blurb ? (
@@ -155,6 +162,7 @@ export function SurfaceCard({ cardW, label, blurb, accent = T.gold, onOpen, prim
         {Icon ? <Icon size={15} /> : null}
         {primaryLabel}
       </button>
+      </div>
     </section>
   );
 }

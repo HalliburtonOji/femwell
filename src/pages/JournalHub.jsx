@@ -35,6 +35,7 @@ import {
 } from "@/components/journal/Editorial";
 import { HubSheet, SurfaceCard } from "@/components/nutrition/hub/HubShell";
 import { JournalDiaryRing } from "@/components/hub/Centerpieces";
+import { VineMotifV2, FlowerGlyph, floraKeyframes, cwOf } from "@/components/brand/flora";
 import JumpToButton from "@/components/layout/JumpToButton";
 import { collectThreads, entriesInThread } from "@/components/journal/threads";
 import { formatCountdown } from "@/utils/sealedLetters";
@@ -387,8 +388,16 @@ export default function JournalHub() {
   const phaseWord = phase ? phase.charAt(0).toUpperCase() + phase.slice(1) : null;
 
   return (
-    <div style={{ ...PAPER_BG, minHeight: "100vh", fontFamily: SERIF, color: T.ink, paddingBottom: 120 }}>
+    <div style={{ ...PAPER_BG, minHeight: "100vh", fontFamily: SERIF, color: T.ink, paddingBottom: 120, position: "relative" }}>
       <InkFilter />
+      {/* botanical page texture — one low-opacity vine per fold, clipped (no horizontal scroll),
+          behind content, never over text (BRAND_IDENTITY §4/§6.2). */}
+      <div aria-hidden style={{ position: "absolute", inset: 0, overflow: "hidden", pointerEvents: "none", zIndex: 0 }}>
+        <style>{floraKeyframes}</style>
+        <div style={{ position: "absolute", top: 150, right: -26 }}><VineMotifV2 color={T.gold} color2={T.sage} opacity={0.1} w={150} /></div>
+        <div style={{ position: "absolute", top: 720, left: -28 }}><VineMotifV2 color={T.sage} color2={T.gold} opacity={0.08} w={140} flip /></div>
+        <div style={{ position: "absolute", top: 1320, right: -24 }}><VineMotifV2 color={T.gold} color2={T.sage} opacity={0.08} w={140} /></div>
+      </div>
 
       {deleteErr && (
         <div role="alert" style={{
@@ -398,7 +407,7 @@ export default function JournalHub() {
         }}>Couldn{"’"}t delete that just now — the entry is still here. Try again.</div>
       )}
 
-      <div style={{ maxWidth: COL, margin: "0 auto", position: "relative" }}>
+      <div style={{ maxWidth: COL, margin: "0 auto", position: "relative", zIndex: 1 }}>
 
         {/* ── DAILY HUB header — rich summary, wired to real data ───────────── */}
         <header style={{ padding: "20px 18px 4px" }}>
@@ -420,7 +429,12 @@ export default function JournalHub() {
             {` · ${format(new Date(), "d MMMM").toUpperCase()}`}
           </Eyebrow>
 
-          <Script size={40} carve>your journal today</Script>
+          {/* carved heart in the header (§3) + flanking meaning-blooms (lush, §4/§5.1) */}
+          <div style={{ display: "flex", alignItems: "center", gap: 9, flexWrap: "wrap" }}>
+            <Heart size={15} />
+            <Script size={40} carve>your journal today</Script>
+            <FlowerGlyph variant="camellia" size={24} color={cwOf("gold").petal} color2={cwOf("gold").tip} idx="jh-hdr" />
+          </div>
 
           {/* the JournalDiaryRing centerpiece — wired to entries-this-week (gentle glance) */}
           <div style={{ display: "flex", flexDirection: "column", alignItems: "center", marginTop: 12 }}>
