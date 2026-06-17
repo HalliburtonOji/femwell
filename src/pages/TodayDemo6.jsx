@@ -654,22 +654,23 @@ function HorizontalRow({ s, onSheet }) {
   const touch = useRef(null);
   const onTouchStart = (e) => { touch.current = e.touches?.[0]?.clientX ?? null; };
   const onTouchEnd = (e) => { const a = touch.current, b = e.changedTouches?.[0]?.clientX; if (a != null && b != null) { const dx = b - a; if (Math.abs(dx) > 40) setFace(dx < 0 ? 1 : 0); } touch.current = null; };
-  // offset: 0 front · +1 tucked under to the RIGHT (peek ~20%) · -1 tucked behind to the LEFT.
-  const cardStyle = (offset) => {
-    const front = offset === 0;
-    const tx = front ? 0 : (offset > 0 ? 62 : -62);   // % of the card's own width → ~20% side peek
+  // LIGHT stagger: the two cards sit side by side, each ~54% of the row wide, the action offset
+  // RIGHT by 80% of a card width — so only ~20% of it sits under the summary and ~80% stays VISIBLE
+  // (a gentle fan, not a heavy overlap). Tap/swipe just brings one card forward (z + a hair of scale).
+  const cardStyle = (which) => {
+    const isSummary = which === "summary";
+    const active = isSummary ? (face === 0) : (face === 1);
+    const tx = isSummary ? 0 : 80;   // % of the card's own width: 80% offset → 20% under the summary
     return {
-      position: "absolute", top: 0, left: "3%", width: "78%", height: ROW_H, boxSizing: "border-box",
-      background: T.paperHi, border: `1px solid ${T.paperDeep}`, borderRadius: 18, padding: "15px 17px", overflow: "hidden",
-      transform: `translateX(${tx}%) scale(${front ? 1 : 0.98})`, transformOrigin: offset > 0 ? "left center" : "right center",
-      zIndex: front ? 2 : 1, cursor: "pointer",
-      boxShadow: front ? "0 10px 24px rgba(58,48,32,0.12)" : "0 3px 10px rgba(58,48,32,0.08)",
-      transition: "transform .36s cubic-bezier(.32,.72,.24,1), box-shadow .3s ease",
+      position: "absolute", top: 0, left: "2%", width: "54%", height: ROW_H, boxSizing: "border-box",
+      background: T.paperHi, border: `1px solid ${T.paperDeep}`, borderRadius: 18, padding: "14px 15px", overflow: "hidden",
+      transform: `translateX(${tx}%) scale(${active ? 1 : 0.985})`, transformOrigin: isSummary ? "left center" : "right center",
+      zIndex: active ? 2 : 1, cursor: "pointer",
+      boxShadow: active ? "0 11px 26px rgba(58,48,32,0.14)" : "0 4px 12px rgba(58,48,32,0.09)",
+      transition: "transform .3s ease, box-shadow .3s ease",
     };
   };
   const quote = s.summary.inset ? (s.summary.inset.quote || "").slice(0, 64) : "";
-  const summaryOffset = face === 0 ? 0 : -1;
-  const actionOffset = face === 1 ? 0 : 1;
   return (
     <section style={{ margin: "0 0 18px" }}>
       <div style={{ display: "flex", alignItems: "center", gap: 9, padding: "0 2px 8px" }}>
@@ -681,7 +682,7 @@ function HorizontalRow({ s, onSheet }) {
       </div>
       <div onTouchStart={onTouchStart} onTouchEnd={onTouchEnd} style={{ position: "relative", height: ROW_H, overflow: "hidden", margin: "0 -2px", padding: "0 2px" }}>
         {/* SUMMARY card */}
-        <div style={cardStyle(summaryOffset)} onClick={() => setFace(0)}>
+        <div style={cardStyle("summary")} onClick={() => setFace(0)}>
           <Eyebrow mb={6}>Today</Eyebrow>
           <h3 style={{ fontFamily: SERIF, fontSize: 18, fontWeight: 600, color: T.ink, margin: "0 0 8px", lineHeight: 1.3 }}>{s.summary.title}</h3>
           {s.summary.lines.slice(0, 2).map((ln, j) => (
@@ -697,8 +698,8 @@ function HorizontalRow({ s, onSheet }) {
             </div>
           )}
         </div>
-        {/* ACTION card — sits to the right, peeking ~20%; swipe/tap brings it forward */}
-        <div style={cardStyle(actionOffset)} onClick={() => setFace(1)}>
+        {/* ACTION card — staggered to the RIGHT, ~80% visible, only ~20% under the summary */}
+        <div style={cardStyle("action")} onClick={() => setFace(1)}>
           <Eyebrow mb={6} color={s.accent}>Do it now</Eyebrow>
           <p style={{ fontFamily: SERIF, fontSize: 16, color: T.ink, lineHeight: 1.5, margin: "0 0 10px" }}>{s.action.prompt}</p>
           <div>{s.action.buttons.map((b, k) => <ActionBtn key={k} Icon={b.Icon} href={b.href} onClick={b.sheet ? () => onSheet(b.sheet) : undefined} accent={s.accent}>{b.label}</ActionBtn>)}</div>
