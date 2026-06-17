@@ -28,12 +28,13 @@ import {
 } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import {
-  T, UI, SERIF, Eyebrow, Rule, Script, Hand, InkFilter, EditorialFooter,
+  T, UI, SERIF, Eyebrow, Rule, Script, Hand, Heart as BrandHeart, InkFilter, EditorialFooter,
   useEditorialFonts, PAPER_BG, useEscape,
 } from "@/components/journal/Editorial";
 import AgeGate from "@/components/safety/AgeGate";
 import { HubSheet, SurfaceCard } from "@/components/nutrition/hub/HubShell";
 import { CommunityEmbraceRing } from "@/components/hub/Centerpieces";
+import { VineMotifV2, FlowerGlyph, floraKeyframes, cwOf } from "@/components/brand/flora";
 import JumpToButton from "@/components/layout/JumpToButton";
 import CommunityHubSheet from "@/components/community/CommunityHubSheet";
 import EchoWall from "@/components/journal/echo/EchoWall";
@@ -557,9 +558,16 @@ function CommunityHubInner() {
   }
 
   return (
-    <div style={{ ...PAPER_BG, minHeight: "100vh", fontFamily: SERIF, color: T.ink, paddingBottom: 120 }}>
+    <div style={{ ...PAPER_BG, minHeight: "100vh", fontFamily: SERIF, color: T.ink, paddingBottom: 120, position: "relative" }}>
       <InkFilter />
-      <div style={{ maxWidth: COL, margin: "0 auto", position: "relative" }}>
+      {/* botanical page texture — one low-opacity vine per fold (Community char = sage/meadow), clipped */}
+      <div aria-hidden style={{ position: "absolute", inset: 0, overflow: "hidden", pointerEvents: "none", zIndex: 0 }}>
+        <style>{floraKeyframes}</style>
+        <div style={{ position: "absolute", top: 150, right: -26 }}><VineMotifV2 color={T.sage} color2={T.gold} opacity={0.1} w={150} /></div>
+        <div style={{ position: "absolute", top: 720, left: -28 }}><VineMotifV2 color={T.gold} color2={T.sage} opacity={0.08} w={140} flip /></div>
+        <div style={{ position: "absolute", top: 1320, right: -24 }}><VineMotifV2 color={T.sage} color2={T.gold} opacity={0.08} w={140} /></div>
+      </div>
+      <div style={{ maxWidth: COL, margin: "0 auto", position: "relative", zIndex: 1 }}>
 
         {/* ── HUB header — rich Community summary + the embrace centerpiece ──── */}
         <header style={{ padding: "20px 18px 4px" }}>
@@ -568,7 +576,12 @@ function CommunityHubInner() {
           </div>
 
           <Eyebrow mb={4}>{MASTHEAD.eyebrow}</Eyebrow>
-          <Script size={40} carve>{MASTHEAD.title}</Script>
+          {/* carved heart in the header (§3) + flanking meaning-blooms (lush, Community = sage) */}
+          <div style={{ display: "flex", alignItems: "center", gap: 9, flexWrap: "wrap" }}>
+            <BrandHeart size={15} />
+            <Script size={40} carve>{MASTHEAD.title}</Script>
+            <FlowerGlyph variant="cornflower" size={24} color={cwOf("sage").petal} color2={cwOf("sage").tip} idx="ch-hdr" />
+          </div>
 
           {/* the circular centerpiece — two women embracing (analogue of the energy ring) */}
           <div style={{ display: "flex", justifyContent: "center", margin: "14px 0 4px" }}>
