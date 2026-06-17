@@ -59,17 +59,111 @@ function petalPath(len, wid) {
     Q 0 ${-L * 0.86} ${w * 0.34} ${-L * 0.95}
     C ${w * 0.92} ${-L * 0.80} ${w} ${-L * 0.30} 0 0 Z`;
 }
-export function RichBloomV2({ color = T.blush, color2 = null, accent = "#CBA24E", size = 150, animate = true, soft = true, idx = 0 }) {
+// per-FORM ring grammar — keeps the lush layered-ring craft, varies the silhouette to the
+// companion's real form_key (BRAND_IDENTITY §5.2). [count, len, wid, rotation, gradCode, opacity].
+// peony is the canonical default → identical to the original bloom, so other consumers are unaffected.
+const FORM_RINGS = {
+  peony:  [[11, 30, 8.5, 0, "O", 0.97], [10, 23, 7, 18, "M", 0.98], [7, 15, 5.4, 9, "I", 0.99]],
+  poppy:  [[5, 34, 13, 0, "O", 0.96], [5, 21, 9.5, 36, "M", 0.98]],            // few big cupped petals, dark eye
+  daisy:  [[17, 35, 3.5, 0, "O", 0.97], [17, 29, 3.0, 10.6, "M", 0.98]],       // many narrow rays, bright disc
+  forget: [[5, 24, 11.5, 0, "O", 0.96], [5, 15, 7.5, 36, "M", 0.98]],          // 5 rounded petals, yellow eye
+};
+// which forms render a dedicated head (not petal rings)
+const FORM_BELL = "foxglove", FORM_FERN = "fern";
+
+export function RichBloomV2({ color = T.blush, color2 = null, accent = "#CBA24E", size = 150, animate = true, soft = true, idx = 0, form = "peony" }) {
   const cx = PETAL_BLOOM_CX, cy = PETAL_BLOOM_CY;
   const lightest = color2 || lighten(color, 0.52), light = lighten(color, 0.34), mid = lighten(color, 0.14), deep = color, deeper = darken(color, 0.13);
   const gid = `v2${idx}`;
   const delay = `${(idx % 5) * 0.7}s`;
+  const formKey = (typeof form === "string" ? form : form?.key) || "peony";
+  const gradFor = (code) => code === "O" ? `pO-${gid}` : code === "M" ? `pM-${gid}` : `pI-${gid}`;
+  const edgeFor = (code) => code === "O" ? deeper : code === "M" ? deep : mid;
   const ring = (count, len, wid, gradId, op, rot, edge) => Array.from({ length: count }).map((_, i) => {
     const ang = rot + i * (360 / count);
     return <path key={`${gradId}-${i}`} d={petalPath(len, wid)} fill={`url(#${gradId})`} opacity={op}
       stroke={edge} strokeWidth={edge ? 0.4 : undefined} strokeOpacity={edge ? 0.16 : undefined}
       transform={`translate(${cx} ${cy}) rotate(${ang})`} />;
   });
+
+  // ── per-form HEAD renderers (all inside the breathing/swaying group) ──
+  const petalHead = () => {
+    const rings = FORM_RINGS[formKey] || FORM_RINGS.peony;
+    const isPoppy = formKey === "poppy", isDaisy = formKey === "daisy", isForget = formKey === "forget";
+    return (
+      <>
+        {rings.map(([count, len, wid, rot, code, op]) => (
+          <React.Fragment key={`${code}-${rot}`}>{ring(count, len, wid, gradFor(code), op, rot, edgeFor(code))}</React.Fragment>
+        ))}
+        {isPoppy ? (
+          <>
+            <circle cx={cx} cy={cy} r="7.4" fill={darken(color, 0.46)} />
+            {Array.from({ length: 11 }).map((_, i) => { const a = i * (360 / 11) * Math.PI / 180; const rr = 5.6; return <circle key={`stm${i}`} cx={cx + Math.cos(a) * rr} cy={cy + Math.sin(a) * rr} r="0.9" fill={darken(color, 0.62)} opacity="0.9" />; })}
+            <circle cx={cx} cy={cy} r="2.4" fill={darken(color, 0.3)} />
+          </>
+        ) : isForget ? (
+          <>
+            <circle cx={cx} cy={cy} r="3.9" fill="#F2D979" />
+            <circle cx={cx} cy={cy} r="2.0" fill={lighten("#F2D979", 0.2)} />
+            <circle cx={cx} cy={cy} r="0.9" fill="#FFFDF7" opacity="0.8" />
+          </>
+        ) : (
+          <>
+            <circle cx={cx} cy={cy} r={isDaisy ? 8.6 : 6.6} fill={`url(#ct-${gid})`} />
+            {Array.from({ length: isDaisy ? 12 : 9 }).map((_, i) => { const a = i * (360 / (isDaisy ? 12 : 9)) * Math.PI / 180; const rr = isDaisy ? 6.2 : 4.6; return <circle key={`stm${i}`} cx={cx + Math.cos(a) * rr} cy={cy + Math.sin(a) * rr} r={isDaisy ? 1.2 : 1.05} fill={darken(accent, 0.12)} opacity="0.85" />; })}
+            <circle cx={cx} cy={cy} r={isDaisy ? 3 : 2.2} fill={lighten(accent, 0.28)} />
+          </>
+        )}
+        {/* dewy speculars — kept for petal forms */}
+        <g style={animate ? { animation: `fwcShimmer 5s ease-in-out infinite`, animationDelay: delay } : undefined}>
+          <ellipse cx={cx - 7} cy={cy - 11} rx="6.5" ry="3.4" fill="#FFFDF7" opacity="0.30" transform={`rotate(-24 ${cx - 7} ${cy - 11})`} />
+          <circle cx={cx - 9} cy={cy - 6} r="1.5" fill="#FFFFFF" opacity="0.65" />
+          <circle cx={cx + 6} cy={cy - 9} r="1.0" fill="#FFFFFF" opacity="0.45" />
+        </g>
+      </>
+    );
+  };
+  const bellHead = () => {
+    const bells = [
+      { x: 50, y: 56, s: 1.18 }, { x: 42, y: 49, s: 1.02 }, { x: 57, y: 47, s: 0.96 },
+      { x: 45, y: 39, s: 0.84 }, { x: 54, y: 33, s: 0.72 }, { x: 50, y: 26, s: 0.6 },
+    ];
+    return (
+      <g>
+        <path d="M50 62 C 49 46 51 30 50 18" stroke={`url(#st-${gid})`} strokeWidth="2.2" fill="none" strokeLinecap="round" />
+        {bells.map((b, i) => (
+          <g key={i} transform={`translate(${b.x} ${b.y}) scale(${b.s})`}>
+            <path d="M0 -7 C -5.2 -6 -6 0 -5 5.4 C -4 8.4 4 8.4 5 5.4 C 6 0 5.2 -6 0 -7 Z" fill={`url(#pM-${gid})`} stroke={deep} strokeWidth="0.3" strokeOpacity="0.22" />
+            <ellipse cx="0" cy="5.6" rx="4.6" ry="1.9" fill={deeper} opacity="0.45" />
+            <circle cx="-1.5" cy="3.2" r="0.5" fill={lightest} opacity="0.85" /><circle cx="1.5" cy="4.2" r="0.5" fill={lightest} opacity="0.75" />
+            <ellipse cx="-2" cy="-3" rx="1.7" ry="1.05" fill="#FFFDF7" opacity="0.32" transform="rotate(-20 -2 -3)" />
+          </g>
+        ))}
+      </g>
+    );
+  };
+  const fernHead = () => {
+    const frond = (rot, len, key) => {
+      const pairs = 7;
+      return (
+        <g key={key} transform={`translate(${cx} 60) rotate(${rot})`}>
+          <path d={`M0 0 Q 3 ${-len / 2} 1 ${-len}`} stroke={`url(#lf-${gid})`} strokeWidth="1.5" fill="none" strokeLinecap="round" />
+          {Array.from({ length: pairs }).map((_, i) => {
+            const t = (i + 0.5) / pairs, yy = -len * t, ll = 5.6 * (1 - t * 0.66);
+            return (
+              <g key={i}>
+                <ellipse cx={-ll * 0.7} cy={yy} rx={ll} ry={ll * 0.34} fill={`url(#lf-${gid})`} opacity="0.92" transform={`rotate(-32 ${-ll * 0.7} ${yy})`} />
+                <ellipse cx={ll * 0.7} cy={yy} rx={ll} ry={ll * 0.34} fill={`url(#lf-${gid})`} opacity="0.92" transform={`rotate(32 ${ll * 0.7} ${yy})`} />
+              </g>
+            );
+          })}
+        </g>
+      );
+    };
+    return <g>{frond(-20, 42, "fl")}{frond(0, 50, "fc")}{frond(20, 42, "fr")}</g>;
+  };
+  const head = formKey === FORM_BELL ? bellHead() : formKey === FORM_FERN ? fernHead() : petalHead();
+
   return (
     <div style={{ position: "relative", display: "inline-block", width: size, height: Math.round(size * 1.05), lineHeight: 0 }}>
       {soft && (
@@ -98,17 +192,7 @@ export function RichBloomV2({ color = T.blush, color2 = null, accent = "#CBA24E"
           <path d="M51 71 C 59 72 67 75 73 79" stroke="#5F7E5F" strokeWidth="0.7" fill="none" strokeLinecap="round" opacity="0.65" />
         </g>
         <g style={animate ? { transformBox: "fill-box", transformOrigin: "center", willChange: "transform", animation: `fwcBreath 6s ease-in-out infinite`, animationDelay: delay } : undefined}>
-          {ring(11, 30, 8.5, `pO-${gid}`, 0.97, 0, deeper)}
-          {ring(10, 23, 7, `pM-${gid}`, 0.98, 18, deep)}
-          {ring(7, 15, 5.4, `pI-${gid}`, 0.99, 9, mid)}
-          <circle cx={cx} cy={cy} r="6.6" fill={`url(#ct-${gid})`} />
-          {Array.from({ length: 9 }).map((_, i) => { const a = i * 40 * Math.PI / 180; const rr = 4.6; return <circle key={`stm${i}`} cx={cx + Math.cos(a) * rr} cy={cy + Math.sin(a) * rr} r="1.05" fill={darken(accent, 0.12)} opacity="0.85" />; })}
-          <circle cx={cx} cy={cy} r="2.2" fill={lighten(accent, 0.28)} />
-          <g style={animate ? { animation: `fwcShimmer 5s ease-in-out infinite`, animationDelay: delay } : undefined}>
-            <ellipse cx={cx - 7} cy={cy - 11} rx="6.5" ry="3.4" fill="#FFFDF7" opacity="0.30" transform={`rotate(-24 ${cx - 7} ${cy - 11})`} />
-            <circle cx={cx - 9} cy={cy - 6} r="1.5" fill="#FFFFFF" opacity="0.65" />
-            <circle cx={cx + 6} cy={cy - 9} r="1.0" fill="#FFFFFF" opacity="0.45" />
-          </g>
+          {head}
         </g>
       </svg>
     </div>

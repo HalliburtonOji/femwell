@@ -232,6 +232,28 @@ export default function TodayDemo6() {
       withTimeout(base44.entities.Echo.filter({}, "-created_date", 8)).then((rows) => {
         const e = (rows || []).filter((r) => r && r.body)[0]; if (alive && e) setContent((c) => ({ ...c, echo: e }));
       }).catch(() => {});
+      // ── PLANNER — today's real plan (DailyPlan narrative + PlannerItems list) ──
+      withTimeout(base44.entities.DailyPlan.filter({ user_id: id, day_key: todayISO }, null, 1)).then((rows) => {
+        const p = (rows || []).filter(Boolean)[0]; if (alive && p) setContent((c) => ({ ...c, plan: p }));
+      }).catch(() => {});
+      withTimeout(base44.entities.PlannerItems.filter({ user_id: id, date: todayISO }, "-created_date", 12)).then((rows) => {
+        const arr = (rows || []).filter((r) => r && r.title); if (alive && arr.length) setContent((c) => ({ ...c, planItems: arr }));
+      }).catch(() => {});
+      // ── PULSE — real weekly narrative + recent pattern cards ──
+      withTimeout(base44.entities.WeeklyInsights.filter({ user_id: id }, "-week_start", 1)).then((rows) => {
+        const w = (rows || []).filter(Boolean)[0]; if (alive && w) setContent((c) => ({ ...c, weekly: w }));
+      }).catch(() => {});
+      withTimeout(base44.entities.InsightCards.filter({ user_id: id }, "-insight_date", 6)).then((rows) => {
+        const arr = (rows || []).filter((r) => r && (r.insight_text || r.content || r.title)); if (alive && arr.length) setContent((c) => ({ ...c, insights: arr }));
+      }).catch(() => {});
+      // ── HOROSCOPE — today's real reading (graceful empty if none for this user) ──
+      withTimeout(base44.entities.HoroscopeReading.filter({ user_id: id, reading_date: todayISO }, "-created_date", 1)).then((rows) => {
+        const h = (rows || []).filter(Boolean)[0]; if (alive && h) setContent((c) => ({ ...c, horoscope: h }));
+      }).catch(() => {});
+      // ── LISTEN — a real published podcast episode (the Lifestyle Listen source: LifestyleItems media_type PODCAST) ──
+      withTimeout(base44.entities.LifestyleItems.filter({ media_type: "PODCAST", status: "PUBLISHED" }, "-published_at", 6)).then((rows) => {
+        const a = (rows || []).filter((r) => r && r.title && (r.audio_url || r.episode_url || r.content_url))[0]; if (alive && a) setContent((c) => ({ ...c, listen: a }));
+      }).catch(() => {});
       if (alive) setDataReady(true);
     })();
     return () => { alive = false; };
@@ -329,6 +351,44 @@ export default function TodayDemo6() {
   const bookHref = content.book?.gutenberg_id ? `/BookReader?gutenberg_id=${content.book.gutenberg_id}` : "/BookReader?gutenberg_id=514";
   const foryouTitle = content.foryou?.[0]?.title || null;
 
+  // ── PLANNER (real DailyPlan / PlannerItems → summary; graceful empty) ──
+  const planItems = content.planItems || [];
+  const planFocus = content.plan?.focus_for_today || null;
+  const planNudge = content.plan?.session_recommendation || content.plan?.lifestyle_suggestion || content.plan?.nutrition_nudge || null;
+  const plannerSummary = (planItems.length || planFocus || planNudge)
+    ? { title: planFocus || `${planItems.length} ${planItems.length === 1 ? "thing" : "things"} planned today`,
+        lines: planItems.length
+          ? planItems.slice(0, 2).map((it) => ({ Icon: it.is_completed ? Check : CalendarDays, text: it.title, meta: it.time || undefined }))
+          : [{ Icon: Leaf, text: planNudge }] }
+    : { title: "Your day, open and unplanned", lines: [{ Icon: CalendarDays, text: "Nothing scheduled yet — add a plan when you want shape, or let today stay soft." }] };
+  const plannerHasData = !!(planItems.length || planFocus || planNudge);
+
+  // ── PULSE (real WeeklyInsights / InsightCards → summary; graceful empty) ──
+  const weekly = content.weekly;
+  const insightCards = content.insights || [];
+  const clip = (s, n) => (s && s.length > n ? s.slice(0, n).trim() + "…" : s);
+  const pulseLine = weekly?.structured_summary?.your_pattern || weekly?.insight_text || insightCards[0]?.insight_text || insightCards[0]?.content || null;
+  const pulseSummary = (weekly || insightCards.length)
+    ? { title: weekly ? "Your week, gently read" : "A pattern, surfacing",
+        lines: [{ Icon: TrendingUp, text: clip(pulseLine, 90) || "Your energy, mood and cycle — patterns, never scores." }],
+        inset: (weekly?.top_symptoms?.length) ? { eyebrow: "This week's signals", quote: weekly.top_symptoms.slice(0, 3).join(" · ") } : null }
+    : { title: "Patterns build with time", lines: [{ Icon: TrendingUp, text: "Log a few days and your weekly patterns begin to surface here — never scores, just shape." }] };
+
+  // ── HOROSCOPE (real HoroscopeReading → summary; graceful empty) ──
+  const horo = content.horoscope;
+  const horoSummary = horo
+    ? { title: clip(horo.headline, 44) || "Your sky today",
+        lines: [{ Icon: Moon, text: clip(horo.narrative || horo.cycle_moon_headline, 92) || "Read against the moon." }],
+        inset: horo.moon_phase ? { eyebrow: "Tonight's moon", quote: horo.moon_phase } : null }
+    : { title: "Your sky, when you're ready", lines: [{ Icon: Star, text: "Add your birth details in Lifestyle and a daily reading will appear here." }] };
+
+  // ── LISTEN (real published podcast → summary; honest placeholder if the catalogue is empty) ──
+  const listen = content.listen;
+  const listenHref = listen ? (listen.episode_url || listen.content_url || "/Lifestyle?tab=listen") : "/Lifestyle?tab=listen";
+  const listenSummary = listen
+    ? { title: clip(listen.title, 46), lines: [{ Icon: Headphones, text: listen.source_name ? `${listen.source_name}` : "A podcast for where you are." }] }
+    : { title: "Audio, gathering", lines: [{ Icon: Headphones, text: "We're collecting podcasts and gentle audio — real episodes will play here soon." }] };
+
   const SURFACES = [
     { key: "journal", eyebrow: "Journal", accent: T.gold, Icon: PenLine, slug: "/Journal", openLabel: "Open journal",
       summary: jrnSummary,
@@ -348,15 +408,15 @@ export default function TodayDemo6() {
     { key: "story", eyebrow: "Lifestyle · Daily Story", accent: T.crimson, Icon: Feather, slug: "/Lifestyle?tab=daily_story", openLabel: "Open Daily Story",
       summary: { title: `${storyTitle}${storyDay}`, lines: [{ text: storyLine }], inset: content.story?.segment_text ? { eyebrow: "Today's instalment", quote: `“${content.story.segment_text.slice(0, 70).trim()}…”` } : { eyebrow: "Where you left off", quote: "“…and she didn't look back, not yet.”" } },
       action: { prompt: "Pick the thread back up where you left it.", buttons: [{ Icon: Feather, label: "Read today's chapter", href: "/Lifestyle?tab=daily_story" }] } },
-    { key: "listen", eyebrow: "Lifestyle · Listen", accent: T.gold, Icon: Headphones, slug: "/Lifestyle?tab=listen", openLabel: "Open Listen",
-      summary: { title: "Audio · Winding down", lines: [{ Icon: Headphones, text: "An 8-minute settle for the afternoon." }] },
-      action: { prompt: "Something gentle in your ears while you slow down.", buttons: [{ Icon: Headphones, label: "Play audio", href: "/Lifestyle?tab=listen" }] } },
+    { key: "listen", eyebrow: "Lifestyle · Listen", accent: T.gold, Icon: Headphones, slug: listenHref, openLabel: "Open Listen",
+      summary: listenSummary,
+      action: { prompt: listen ? "Something gentle in your ears while you slow down." : "Audio's on the way — for now, browse what's gathering in Listen.", buttons: [{ Icon: Headphones, label: listen ? "Play episode" : "Open Listen", href: listenHref }] } },
     { key: "horoscope", eyebrow: "Lifestyle · Horoscope", accent: "#8E6E8E", Icon: Star, slug: "/Lifestyle?tab=horoscope", openLabel: "Open Horoscope",
-      summary: { title: "Your sky today", lines: [{ Icon: Moon, text: `Your ${PHASE_LABEL[phase] ? PHASE_LABEL[phase].toLowerCase() : ""} week, read against the moon.` }] },
-      action: { prompt: "Read your sky, or ask it a question.", buttons: [{ Icon: Star, label: "Today's reading", href: "/Lifestyle?tab=horoscope" }] } },
+      summary: horoSummary,
+      action: { prompt: horo ? "Read your sky, or ask it a question." : "Set up your birth chart and your daily sky appears here.", buttons: [{ Icon: Star, label: horo ? "Today's reading" : "Set up your sky", href: "/Lifestyle?tab=horoscope" }] } },
     { key: "planner", eyebrow: "Planner · today's schedule", accent: T.gold, Icon: CalendarDays, slug: "/Planner", openLabel: "Open your plan",
-      summary: { title: "The day, held lightly", lines: [{ Icon: Footprints, text: "A gentle walk", meta: "today" }, { Icon: Leaf, text: "Supplements — iron + vitamin D" }] },
-      action: { prompt: "Lighter energy today — keep it kind. You don't need all of it.", buttons: [{ Icon: CalendarDays, label: "Open today's plan", href: "/Planner" }] } },
+      summary: plannerSummary,
+      action: { prompt: plannerHasData ? (content.plan?.focus_for_today ? `Today's focus: ${content.plan.focus_for_today}` : "Keep it kind — you don't need all of it.") : "Nothing planned yet — add today's first thing, or let it stay open.", buttons: [{ Icon: CalendarDays, label: plannerHasData ? "Open today's plan" : "Plan your day", href: "/Planner" }] } },
     { key: "programs", eyebrow: "Programs · practice", accent: T.sage, Icon: Activity, slug: "/ProgramsHub", openLabel: "Open programs",
       summary: { title: "A kind rhythm", lines: [{ Icon: Moon, text: "Tonight: a 10-minute body-scan to settle." }] },
       action: { prompt: "Tonight's practice is short and soft.", buttons: [{ Icon: Moon, label: "Tonight's practice", sheet: "practice" }] } },
@@ -364,17 +424,40 @@ export default function TodayDemo6() {
       summary: { title: `${cName} · blooming`, lines: [{ Icon: Sprout, text: tended > 0 ? `Tended ${tended} ${tended === 1 ? "thing" : "things"} today — she felt each one.` : "She grows from everything you already do." }] },
       action: { prompt: "Tend her, reshape her, or just say hello.", buttons: [{ Icon: Sprout, label: "Visit your garden", href: "/Garden" }] } },
     { key: "pulse", eyebrow: "Pulse · patterns", accent: "#8E6E8E", Icon: TrendingUp, slug: "/Pulse", openLabel: "Open Pulse",
-      summary: { title: "This week, gently read", lines: [{ Icon: TrendingUp, text: "Your energy, mood and cycle — patterns, never scores." }] },
-      action: { prompt: "See the shape of your week — no scores, just patterns.", buttons: [{ Icon: TrendingUp, label: "See your patterns", href: "/Pulse" }] } },
+      summary: pulseSummary,
+      action: { prompt: pulseLine ? "See the full shape of your week — no scores, just patterns." : "See the shape of your week — no scores, just patterns.", buttons: [{ Icon: TrendingUp, label: "See your patterns", href: "/Pulse" }] } },
   ];
 
-  const SUGGESTIONS = [
-    { Icon: Leaf, accent: T.sage, text: nut?.hasData ? "A few seeds or greens would lift today's iron — here's a 10-minute recipe." : "A warm, iron-friendly breakfast — here's a 10-minute recipe.", href: "/Nutrition" },
-    { Icon: PenLine, accent: T.gold, text: (journal?.lastDays ?? 9) >= 2 ? "It's been a little while since you wrote — a gentle prompt is waiting." : "A quiet prompt is waiting whenever you want it.", href: "/Journal" },
-    { Icon: BookOpen, accent: T.crimson, text: "The Books circle reached chapter 5 of Little Women — read along.", href: "/BookReader?gutenberg_id=514" },
-    { Icon: Star, accent: "#8E6E8E", text: `Your ${PHASE_LABEL[phase] ? PHASE_LABEL[phase].toLowerCase() : ""} week, read against the moon — have a look.`, href: "/Lifestyle?tab=horoscope" },
-    { Icon: Activity, accent: T.sage, text: phase === "ovulatory" || phase === "follicular" ? "Energy's up — a fuller movement suits today." : "A calmer movement suits today — a fuller one next week.", href: "/ProgramsHub" },
-  ];
+  // SMART SUGGESTIONS — driven from REAL signals (nutrition gap · journal recency · today's
+  // symptom · real book pick · real weekly pattern · real echo · real horoscope · cycle phase).
+  // Each card only appears when its signal is real; phase-movement is the always-on fallback.
+  const SUGGESTIONS = (() => {
+    const out = [];
+    // nutrition — real (nothing logged / hydration gap / iron nudge)
+    if (!nut?.hasData) out.push({ Icon: Coffee, accent: T.sage, text: "Nothing logged yet — a warm, iron-friendly breakfast is a kind start.", href: "/Nutrition" });
+    else if ((nut.hydrationMl || 0) < 1000) out.push({ Icon: Droplet, accent: T.sage, text: `${Math.round((nut.hydrationMl || 0) / 250)} of 6 glasses so far — a little more water would round out today.`, href: "/Nutrition" });
+    else out.push({ Icon: Leaf, accent: T.sage, text: "A few seeds or greens would lift today's iron — a 10-minute recipe is waiting.", href: "/Nutrition" });
+    // journal recency — real
+    const jd = journal?.lastDays;
+    if (jd == null || jd >= 2) out.push({ Icon: PenLine, accent: T.gold, text: jd != null ? `It's been ${jd === 1 ? "a day" : `${jd} days`} since you wrote — a gentle prompt is waiting.` : "A quiet prompt is waiting whenever you want it.", href: "/Journal" });
+    // today's symptom — real
+    const recentSym = (symptoms || [])[0];
+    if (recentSym && recentSym.date === todayKey()) {
+      const sname = String(recentSym.symptom_name || recentSym.symptom_type || "").toLowerCase();
+      if (sname) out.push({ Icon: Stethoscope, accent: "#8E6E8E", text: `You noted ${sname} today — your Health letters have gentle, phase-aware steps for it.`, href: "/Health" });
+    }
+    // reading — real book pick
+    if (content.book?.title) out.push({ Icon: BookOpen, accent: T.crimson, text: `The Books circle is reading ${content.book.title} — read along.`, href: bookHref });
+    // weekly pattern — real
+    if (pulseLine) out.push({ Icon: TrendingUp, accent: "#8E6E8E", text: clip(pulseLine, 92), href: "/Pulse" });
+    // community echo — real
+    if (content.echo?.body) out.push({ Icon: Heart, accent: T.crimson, text: "Someone left an echo today — the room's quietly with you.", href: "/Community" });
+    // horoscope — real headline if present
+    if (horo?.headline) out.push({ Icon: Star, accent: "#8E6E8E", text: clip(horo.headline, 92), href: "/Lifestyle?tab=horoscope" });
+    // movement — phase-aware (real phase); always-on fallback so the rail is never empty
+    out.push({ Icon: Activity, accent: T.sage, text: phase === "ovulatory" || phase === "follicular" ? "Energy's up — a fuller movement suits today." : "A calmer movement suits today — a fuller one next week.", href: "/ProgramsHub" });
+    return out;
+  })();
 
   const TodIcon = TODS[tod].Icon;
   const showFirst = first;   // empty/first-day state (set by the first-open ceremony, not a dev toggle)
@@ -412,7 +495,7 @@ export default function TodayDemo6() {
               <PhaseRing phase={phase} day={hasCycle && !showFirst ? cycle.cycleDay : 1} cycleLen={cycle.cycleLen} showMarker={hasCycle && !showFirst} size={300}>
                 {/* the real crafted bloom (RichBloomV2), per-user unique via the fingerprint colourway */}
                 <SwayBloom animate idx={2}>
-                  <RichBloomV2 color={heroCw.petal} color2={heroCw.tip} accent={T.gold} size={198} animate soft idx="today-hero" />
+                  <RichBloomV2 form={cForm?.key || "peony"} color={heroCw.petal} color2={heroCw.tip} accent={T.gold} size={198} animate soft idx="today-hero" />
                 </SwayBloom>
               </PhaseRing>
             </div>
