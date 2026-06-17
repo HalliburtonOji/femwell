@@ -103,22 +103,37 @@ The brand mark is the **carved crimson heart** — `Heart` in `Editorial.jsx` (a
 
 ---
 
-## 4. BOTANICAL MOTIF (vines · leaf line-art · plant-veins)
-A small, disciplined library of **hairline botanical line-art** — stroke-only `<path>`/`<svg>`, **never filled shapes**.
+## 4. THE BOTANICAL BRAND-IMAGE SYSTEM (leaves · vines · corners · dividers · flourishes) · EXPANDED v2 (2026-06-17)
+A small, disciplined library of **hairline botanical line-art** — stroke-only `<path>`/`<svg>`, **never filled shapes** (except a faint ≤0.10 tint inside a leaf outline). It is **one hand**: same line quality, same restraint, across every element. **Reference implementation:** `LeafGlyph` / `CornerSprig` / `BrandFrame` / `SprigDivider` / `FleuronDivider` / `HeaderFlourish` / `VineMotifV2` / `LeafDivider` in `pages/BrandCraftSample.jsx` (live `/BrandCraftSample`).
 
-**Reference for the elevated bar:** `VineMotifV2` / `LeafDivider` in `pages/BrandCraftSample.jsx`.
+> **Design principles (researched):** Art Nouveau treated organic growth as *structural logic* and a line as *a force* — motifs **grow** from a corner/stem along an **asymmetric, accelerating S-curve (the "whiplash" line)**, never a stiff symmetric arc. Vary **real species** rather than repeating one shape (William Morris's twisting vines). The fleuron (oldest typographic ornament) divides text with a small inline mark, not a heavy rule. And, per Aesop's restraint: **maximum effect from minimal means** — one motif per viewport, hairline, low-opacity, "frame not fill". Restraint is what keeps it from reading theme-park literal.
 
-**Do:**
-- One motif per viewport: a trailing **vine** in a page corner, a **leaf divider** (a hairline rule broken by one veined leaf-eye) between sections, or a small **tendril** at a card corner.
-- **Elevated linework:** the vine's **main stem is a tapered filled sliver** (thick→thin) with a **faint gradient stroke/fill** (e.g. `sage→gold`, fading to transparent at the tail). **Leaves are veined** — a leaf outline + a midrib + 2–3 fine side-veins (`stroke-width 0.5–0.8`). Add a small **tendril curl** + a tiny **bud dot**. Finer base stroke-width `0.9–1.2`, `stroke-linecap:round`, organic/asymmetric curves.
-- Stroke in `ink` / `gold` / `sage` at **low opacity**: backgrounds `0.06–0.12`, a section-divider leaf up to `~0.3`. Sit it over `PAPER_BG`, not fighting it.
+### 4.1 Leaf library (varied species + venation)
+Six base forms, each with its **own venation** in a **vein-gradient stroke** (darker at the base → fading to the tip), `stroke-width` 0.6–0.85 for veins, 1.0–1.1 for the outline, `linecap:round`:
+- **Ovate** (pinnate) · **Willow/lanceolate** (narrow, shallow pinnate) · **Serrate** (toothed edge) · **Cordate** (heart base, **palmate** fan) · **Fern frond** (a rachis + paired leaflets, no outline) · **Sprig** (short stem + 2 mini-leaves + a bud dot).
+- Never repeat a single leaf shape across a composition — pick from the set so it reads hand-drawn, not stamped.
 
-**Don't:**
-- No emoji, no clip-art, no filled/3D leaves, no repeating wallpaper tile behind body text, no more than one motif per screen, no motif at an opacity that competes with reading text.
+### 4.2 Corner-treatment system
+Corners "grow" inward from the corner; draw for top-left, **rotate** 90/180/270 for the others.
+- **Sprig** — a whiplash stem out of the corner with 2–3 varied leaves + a bud (the warm default).
+- **Carved** — an **engraved double right-angle rule** with a small leaf in the elbow; the carved look = a light bevel stroke (`#FFFDF7`, offset ~0.7px) **under** the ink/gold rule — **no blur**.
+- **Tendril** — a coiling whiplash curl (most decorative; use sparingly).
+- **Frame** (`BrandFrame`) — the same corner element in all four corners of a **feature** card/hero. **Not** on every card.
 
-**Perf:** pure SVG strokes + one small gradient fill are cheap. **Never** apply blur/`feGaussianBlur` filters to motifs, and don't animate them.
+### 4.3 Dividers & flourishes
+- **Leaf rule** (`LeafDivider`) — a hairline rule broken by one **veined** leaf-eye (everyday section break).
+- **Sprig divider** — a centred horizontal stem with alternating small leaves, fading at both ends (gradient).
+- **Fleuron divider** — two short rules + a small **quatrefoil/leaf fleuron** + a gold dot (chapter-grade break).
+- **Header flourish** (`HeaderFlourish`) — two **mirrored** mini-sprigs flanking a page title or the heart mark.
 
-> **AUDIT:** botanicals are documented but barely implemented (Health.jsx has a few geometric gold flourishes). `PAPER_BG` is a vignette+grain texture, **not** a botanical. This spec defines the motif so Phase 2 can roll it consistently.
+### 4.4 Usage & restraint (hard rules)
+- **One motif per viewport** (a corner OR a divider OR a header flourish — not all at once on the same fold). A `BrandFrame` counts as the one motif for that surface.
+- Stroke in `ink` / `gold #A8893F` / `sage #8FAF8F` (and `plum #8E6E8E` for a cool accent) at **low opacity**: backgrounds `0.06–0.12`, a section divider up to `~0.3`, a corner/frame `~0.5–0.8`. Sit it over `PAPER_BG`; **never behind reading text**.
+- **Don't:** no emoji, no clip-art, no filled/3D leaves, no repeating wallpaper tile, no motif competing with text, no more than one per fold.
+
+**Perf (hard):** pure SVG strokes + at most one small gradient = cheap. **Never** apply `feGaussianBlur`/blur to any motif. **Motifs are static in-app** (the gentle leaf sway is a `/BrandCraftSample` showcase nicety only; if ever used in-app it's a few nodes, CSS-transform only, `prefers-reduced-motion`-gated).
+
+> **AUDIT:** botanicals were documented but barely implemented. This expanded system (leaf library + corners + dividers + flourishes) is the canonical brand image; Phase 2 / the Today build roll it consistently from here.
 
 ---
 

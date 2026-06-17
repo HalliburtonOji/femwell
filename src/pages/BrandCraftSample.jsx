@@ -248,6 +248,165 @@ function CraftedHeart({ size = 24, idx = 0 }) {
   );
 }
 
+// ── BOTANICAL LEAF LIBRARY — varied species, finer & varied venation, vein gradient ─────────────
+// Drawn in a 40×56 box, base at (20,53), tip up. Research: Art Nouveau took organic growth as
+// structural logic (a line "is a force") and varied real plant forms — not one repeated shape.
+const LEAF_DEFS = {
+  ovate: { label: "Ovate", outline: "M20 53 C 7 45 5 24 20 4 C 35 24 33 45 20 53 Z", veins: ["M20 52 C 19.5 36 20 18 20 6", "M20 44 C 15 42 12 39 10.5 34", "M20 35 C 14.5 33 11.5 30 10 25", "M20 27 C 15.5 25.5 13.5 23 12.5 19", "M20 44 C 25 42 28 39 29.5 34", "M20 35 C 25.5 33 28.5 30 30 25", "M20 27 C 24.5 25.5 26.5 23 27.5 19"], fill: true },
+  willow: { label: "Willow", outline: "M20 53 C 14 44 13 22 20 4 C 27 22 26 44 20 53 Z", veins: ["M20 52 C 19.7 34 20 16 20 6", "M20 46 C 17 45 15.5 43 14.5 40", "M20 38 C 17 37 15.5 35 14.7 32", "M20 30 C 17.5 29 16.2 27 15.4 24", "M20 46 C 23 45 24.5 43 25.5 40", "M20 38 C 23 37 24.5 35 25.3 32", "M20 30 C 22.5 29 23.8 27 24.6 24"], fill: true },
+  serrate: { label: "Serrate", outline: "M20 53 L 12 45 L 15 42 L 9 36 L 13 33 L 8 26 L 12 23 L 9 16 L 14 13 L 16 8 L 20 4 L 24 8 L 26 13 L 31 16 L 28 23 L 32 26 L 27 33 L 31 36 L 25 42 L 28 45 Z", veins: ["M20 51 C 19.6 36 20 18 20 6", "M20 44 C 16 43 13 41 11 38", "M20 35 C 16 34 13.5 32 11 29", "M20 27 C 16.5 26 14.5 24.5 12.5 22", "M20 44 C 24 43 27 41 29 38", "M20 35 C 24 34 26.5 32 29 29", "M20 27 C 23.5 26 25.5 24.5 27.5 22"], fill: true },
+  cordate: { label: "Cordate", outline: "M20 50 C 16 49 11 48 8 43 C 3 35 5 17 16 7 C 18 5 20 6 20 10 C 20 6 22 5 24 7 C 35 17 37 35 32 43 C 29 48 24 49 20 50 Z", veins: ["M20 48 C 18 36 19 22 20 9", "M20 48 C 16 42 12 33 9.5 23", "M20 48 C 24 42 28 33 30.5 23", "M20 47 C 14.5 41 11.5 32 10.5 25", "M20 47 C 25.5 41 28.5 32 29.5 25"], fill: true },
+  frond: { label: "Fern frond", outline: "", veins: ["M20 53 C 19 38 20 18 20 5", "M20 47 C 15 47 11 45 8 41", "M20 41 C 15.5 41 12 39.5 9.5 36", "M20 35 C 16 35 13 33.5 11 31", "M20 29 C 16.5 29 14 28 12.5 26", "M20 23 C 17 23 15.2 22.2 14 20.5", "M20 47 C 25 47 29 45 32 41", "M20 41 C 24.5 41 28 39.5 30.5 36", "M20 35 C 24 35 27 33.5 29 31", "M20 29 C 23.5 29 26 28 27.5 26", "M20 23 C 23 23 24.8 22.2 26 20.5"] },
+  sprig: { label: "Sprig", outline: "M20 53 C 19 42 21 33 20 25", veins: ["M16 39 C 11 39 8 36.5 7 32 C 12 32 15.5 35 16 39 Z", "M24 44 C 29 44 32 41.5 33 37 C 28 37 24.5 40 24 44 Z", "M20 26 C 19.6 22 20 18 20 14"], dots: [{ cx: 20, cy: 13, r: 2.6 }, { cx: 16.2, cy: 16, r: 1.2 }, { cx: 23.8, cy: 16, r: 1.2 }] },
+};
+function LeafGlyph({ variant = "ovate", size = 46, color = T.sage, opacity = 0.92, animate = false, idx = 0 }) {
+  const v = LEAF_DEFS[variant] || LEAF_DEFS.ovate;
+  const gid = `lg-${variant}-${idx}`;
+  return (
+    <svg viewBox="0 0 40 56" width={size} height={Math.round(size * 1.4)} aria-hidden
+      style={animate ? { transformBox: "fill-box", transformOrigin: "bottom center", willChange: "transform", animation: "fwcLeaf 9s ease-in-out infinite", animationDelay: `${(idx % 5) * 0.8}s` } : undefined}>
+      <defs>
+        <linearGradient id={`vg-${gid}`} x1="0" y1="1" x2="0" y2="0">
+          <stop offset="0%" stopColor={darken(color, 0.06)} stopOpacity={opacity} />
+          <stop offset="100%" stopColor={lighten(color, 0.24)} stopOpacity={opacity * 0.55} />
+        </linearGradient>
+      </defs>
+      {v.fill && v.outline && <path d={v.outline} fill={`url(#vg-${gid})`} opacity="0.1" />}
+      {v.outline && <path d={v.outline} fill="none" stroke={`url(#vg-${gid})`} strokeWidth="1.1" strokeLinecap="round" strokeLinejoin="round" />}
+      {v.veins.map((d, i) => <path key={i} d={d} fill="none" stroke={`url(#vg-${gid})`} strokeWidth={v.outline ? 0.6 : 0.85} strokeLinecap="round" opacity="0.85" />)}
+      {(v.dots || []).map((c, i) => <circle key={`d${i}`} cx={c.cx} cy={c.cy} r={c.r} fill={color} opacity={opacity * 0.85} />)}
+    </svg>
+  );
+}
+
+// ── CORNER-TREATMENT SYSTEM — sprig / carved ornament / tendril (drawn for a corner; rotate) ──────
+// Research: ornamental corners "grow" from the corner; Art Nouveau whiplash = an asymmetric,
+// accelerating S-curve. Carved = an engraved double-rule with a light bevel (no blur).
+function CornerSprig({ variant = "sprig", color = T.gold, size = 74, opacity = 0.7, corner = "tl", idx = 0 }) {
+  const rot = { tl: 0, tr: 90, br: 180, bl: 270 }[corner] || 0;
+  const gid = `cs-${variant}-${corner}-${idx}`;
+  const stroke = { fill: "none", stroke: color, strokeLinecap: "round", strokeLinejoin: "round", opacity };
+  let body;
+  if (variant === "sprig") {
+    body = (
+      <g {...stroke} strokeWidth="1.1">
+        {/* whiplash stem out of the corner */}
+        <path d="M6 6 C 22 10 34 22 40 42 C 43 52 49 58 60 60" />
+        {/* leaves along it (varied) + a bud */}
+        <path d="M20 9 C 26 6 33 8 36 15 C 29 17 22 14 20 9 Z" />
+        <path d="M20 9 C 27 11 32 13 36 15" strokeWidth="0.6" />
+        <path d="M37 30 C 34 24 36 17 43 13 C 45 20 43 27 37 30 Z" />
+        <path d="M37 30 C 38 24 40 19 43 14" strokeWidth="0.6" />
+        <path d="M41 47 C 47 44 54 46 57 53 C 50 55 43 52 41 47 Z" />
+        <circle cx="60" cy="60" r="2.4" fill={color} stroke="none" />
+        <circle cx="6" cy="6" r="1.6" fill={color} stroke="none" />
+      </g>
+    );
+  } else if (variant === "tendril") {
+    body = (
+      <g {...stroke} strokeWidth="1.05">
+        <path d="M5 5 C 24 9 40 24 48 46" />
+        {/* coiling whiplash curl */}
+        <path d="M48 46 C 52 56 62 58 66 50 C 69 44 64 38 58 40 C 53 41.5 53 48 58 48" />
+        <path d="M22 8 C 28 6 33 9 34 15" strokeWidth="0.8" />
+        <path d="M40 26 C 46 24 51 27 51 33" strokeWidth="0.8" />
+        <circle cx="5" cy="5" r="1.5" fill={color} stroke="none" />
+      </g>
+    );
+  } else { // carved — engraved double-rule with a light bevel + a small leaf at the elbow
+    body = (
+      <g>
+        {/* light bevel pass (offset), then the ink rule — reads carved without a blur */}
+        <g fill="none" stroke="#FFFDF7" strokeWidth="1.1" strokeLinecap="round" opacity={Math.min(0.5, opacity)} transform="translate(0.7 0.7)">
+          <path d="M8 64 L 8 8 L 64 8" /><path d="M14 64 L 14 14 L 64 14" />
+        </g>
+        <g fill="none" stroke={color} strokeWidth="1.1" strokeLinecap="round" opacity={opacity}>
+          <path d="M8 64 L 8 8 L 64 8" /><path d="M14 64 L 14 14 L 64 14" />
+          {/* small leaf nestled in the elbow */}
+          <path d="M14 14 C 24 16 30 22 31 32 C 22 31 16 24 14 14 Z" />
+          <path d="M14 14 C 21 19 27 25 31 32" strokeWidth="0.55" />
+          <circle cx="8" cy="8" r="1.7" fill={color} stroke="none" />
+        </g>
+      </g>
+    );
+  }
+  return (
+    <svg viewBox="0 0 80 80" width={size} height={size} aria-hidden style={{ transform: `rotate(${rot}deg)`, display: "block" }} id={gid}>{body}</svg>
+  );
+}
+
+// a card framed with four delicate corner sprigs (the "frame" option)
+function BrandFrame({ children, color = T.gold, variant = "sprig", opacity = 0.6, size = 60 }) {
+  return (
+    <div style={{ position: "relative", background: T.paperHi, border: `1px solid ${T.paperDeep}`, borderRadius: 18, padding: "22px 20px", overflow: "hidden" }}>
+      {["tl", "tr", "br", "bl"].map((c) => (
+        <div key={c} style={{ position: "absolute", pointerEvents: "none", ...(c.includes("t") ? { top: 4 } : { bottom: 4 }), ...(c.includes("l") ? { left: 4 } : { right: 4 }) }}>
+          <CornerSprig variant={variant} color={color} corner={c} size={size} opacity={opacity} idx={c} />
+        </div>
+      ))}
+      <div style={{ position: "relative" }}>{children}</div>
+    </div>
+  );
+}
+
+// ── DIVIDERS & FLOURISHES — fleuron history: an inline ornament that divides without a heavy rule ─
+function SprigDivider({ color = T.gold, w = 240 }) {
+  return (
+    <div style={{ display: "flex", justifyContent: "center", margin: "24px 0 18px" }}>
+      <svg width={w} height="26" viewBox="0 0 240 26" aria-hidden fill="none" stroke={color} strokeLinecap="round">
+        <defs>
+          <linearGradient id="sprigfade" x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0%" stopColor={color} stopOpacity="0" /><stop offset="22%" stopColor={color} stopOpacity="0.55" /><stop offset="50%" stopColor={color} stopOpacity="0.7" /><stop offset="78%" stopColor={color} stopOpacity="0.55" /><stop offset="100%" stopColor={color} stopOpacity="0" />
+          </linearGradient>
+        </defs>
+        <path d="M8 13 H 232" stroke="url(#sprigfade)" strokeWidth="1" />
+        {/* leaves alternating along the centre, fading via the rule's gradient feel */}
+        <g stroke={color} strokeWidth="0.9" opacity="0.7">
+          <path d="M120 13 C 116 7 116 2 120 -1" transform="translate(0 2)" />
+          <path d="M120 13 C 113 12 108 9 105 4 C 111 4 117 8 120 13 Z" />
+          <path d="M120 13 C 127 12 132 9 135 4 C 129 4 123 8 120 13 Z" />
+          <path d="M101 13 C 96 13 92 11 90 7 C 95 7 99 9 101 13 Z" opacity="0.6" />
+          <path d="M139 13 C 144 13 148 11 150 7 C 145 7 141 9 139 13 Z" opacity="0.6" />
+          <circle cx="120" cy="3" r="1.6" fill={color} stroke="none" />
+        </g>
+      </svg>
+    </div>
+  );
+}
+function FleuronDivider({ color = T.gold, w = 200 }) {
+  return (
+    <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 10, margin: "24px 0 18px" }}>
+      <span style={{ width: w * 0.34, height: 1, background: color, opacity: 0.4 }} />
+      <svg width="22" height="22" viewBox="0 0 22 22" aria-hidden fill="none" stroke={color} strokeWidth="1" strokeLinecap="round" opacity="0.8">
+        {/* a small four-petal fleuron / quatrefoil leaf ornament */}
+        <path d="M11 11 C 11 5 14 2 18 3 C 17 7 14 10 11 11 Z" />
+        <path d="M11 11 C 17 11 20 14 19 18 C 15 17 12 14 11 11 Z" />
+        <path d="M11 11 C 11 17 8 20 4 19 C 5 15 8 12 11 11 Z" />
+        <path d="M11 11 C 5 11 2 8 3 4 C 7 5 10 8 11 11 Z" />
+        <circle cx="11" cy="11" r="1.3" fill={color} stroke="none" />
+      </svg>
+      <span style={{ width: w * 0.34, height: 1, background: color, opacity: 0.4 }} />
+    </div>
+  );
+}
+// two mirrored sprigs flanking a header
+function HeaderFlourish({ children, color = T.gold }) {
+  const sprig = (flip) => (
+    <svg width="56" height="20" viewBox="0 0 56 20" aria-hidden fill="none" stroke={color} strokeWidth="1" strokeLinecap="round" opacity="0.62" style={{ transform: flip ? "scaleX(-1)" : "none" }}>
+      <path d="M54 10 C 38 9 26 11 8 10" />
+      <path d="M30 10 C 26 5 26 3 28 -0.5" strokeWidth="0.8" transform="translate(0 1.5)" />
+      <path d="M22 10 C 18 6 16 5 12 4 C 14 8 18 10 22 10 Z" />
+      <path d="M34 10 C 38 6 40 5 44 4 C 42 8 38 10 34 10 Z" />
+      <circle cx="8" cy="10" r="1.5" fill={color} stroke="none" />
+    </svg>
+  );
+  return (
+    <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 12 }}>
+      {sprig(false)}{children}{sprig(true)}
+    </div>
+  );
+}
+
 // phase-ish palette for the perf grid (calm set; ovulatory #D4AF37 is the phase hue, fine here)
 const GRID_BLOOMS = [
   { color: T.blush, accent: "#CBA24E" }, { color: T.sage, accent: "#CBA24E" },
@@ -292,6 +451,7 @@ export default function BrandCraftSample() {
         @keyframes fwcBreath{0%,100%{transform:scale(1)}50%{transform:scale(1.035)}}
         @keyframes fwcSway{0%,100%{transform:rotate(-1.5deg)}50%{transform:rotate(1.5deg) translateY(-1px)}}
         @keyframes fwcShimmer{0%,100%{opacity:.45}50%{opacity:.85}}
+        @keyframes fwcLeaf{0%,100%{transform:rotate(-2deg)}50%{transform:rotate(2deg)}}
         @keyframes fwcSettle{0%{transform:translateY(6px) scale(.97);opacity:0}100%{transform:translateY(0) scale(1);opacity:1}}
         .fwc-settle{animation:fwcSettle .8s cubic-bezier(.16,1,.3,1) both}
         @media (prefers-reduced-motion:reduce){.fwc-anim *{animation:none!important}.fwc-settle{animation:none!important}}
@@ -299,7 +459,7 @@ export default function BrandCraftSample() {
 
       {/* dev ribbon */}
       <div style={{ position: "sticky", top: 0, zIndex: 30, background: T.ink, color: T.paper, padding: "8px 12px", fontFamily: UI, fontSize: 11, fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase" }}>
-        Brand craft sample — elevated pass (preview only)
+        Brand image showcase — botanical system (preview only)
       </div>
 
       {/* one tasteful motif per corner (low opacity, stroke-only, never behind reading text) */}
@@ -311,10 +471,10 @@ export default function BrandCraftSample() {
         <div style={{ textAlign: "center", marginTop: 6 }}>
           <div style={{ display: "inline-flex", alignItems: "center", gap: 9 }}>
             <CraftedHeart size={16} idx="t1" />
-            <Script size={42} color={T.ink}>The craft, elevated</Script>
+            <Script size={42} color={T.ink}>The brand image</Script>
             <CraftedHeart size={16} idx="t2" />
           </div>
-          <Hand size={16} color={T.muted} style={{ display: "block", marginTop: 4 }}>good → amazing — same calm.</Hand>
+          <Hand size={16} color={T.muted} style={{ display: "block", marginTop: 4 }}>the whole botanical language — bloom, leaves, corners, flourishes.</Hand>
         </div>
 
         {/* (A) THE SHOWPIECE — the elevated bloom, large, breathing + swaying */}
@@ -346,7 +506,64 @@ export default function BrandCraftSample() {
 
         <LeafDivider />
 
-        {/* (B) BOTANICAL MOTIF */}
+        {/* (B) THE LEAF LIBRARY — varied species + venation */}
+        <Eyebrow mb={10} color={T.gold}>The leaf library — varied species, finer veins</Eyebrow>
+        <div style={{ background: T.paperHi, border: `1px solid ${T.paperDeep}`, borderRadius: 18, padding: "16px 8px 12px" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", gap: 2 }}>
+            {[["ovate", T.sage], ["willow", "#7E9A7E"], ["serrate", T.gold], ["cordate", "#8E6E8E"], ["frond", T.sage], ["sprig", T.gold]].map(([k, c], i) => (
+              <div key={k} style={{ flex: 1, minWidth: 0, textAlign: "center" }}>
+                <LeafGlyph variant={k} size={42} color={c} animate={motion} idx={i} />
+                <div style={{ fontFamily: UI, fontSize: 11, fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase", color: T.muted, marginTop: 2 }}>{LEAF_DEFS[k].label}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+        <div style={{ fontFamily: SERIF, fontSize: 16, color: T.ink, lineHeight: 1.55, margin: "12px 2px 0" }}>
+          Six forms — ovate, willow, serrate, cordate, a fern frond and a sprig — each with its own venation (pinnate, palmate or parallel) in a fine vein-gradient stroke, darker at the base and fading to the tip. One shape is never just repeated; the set gives the brand range while staying one hand. (A gentle sway here shows life — in-app the motifs sit still.)
+        </div>
+
+        <SprigDivider />
+
+        {/* (C) CORNER TREATMENTS */}
+        <Eyebrow mb={10} color={T.gold}>Corner treatments — a framing system</Eyebrow>
+        <div style={{ display: "flex", gap: 10 }}>
+          {[["sprig", "Sprig", T.sage], ["carved", "Carved", T.gold], ["tendril", "Tendril", "#8E6E8E"]].map(([v, lbl, c]) => (
+            <div key={v} style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ position: "relative", height: 104, background: T.paperHi, border: `1px solid ${T.paperDeep}`, borderRadius: 16, overflow: "hidden" }}>
+                <div style={{ position: "absolute", top: 2, left: 2 }}><CornerSprig variant={v} color={c} corner="tl" size={68} opacity={0.8} idx={v} /></div>
+                <div style={{ position: "absolute", bottom: 2, right: 2 }}><CornerSprig variant={v} color={c} corner="br" size={68} opacity={0.45} idx={`${v}b`} /></div>
+              </div>
+              <div style={{ fontFamily: UI, fontSize: 11, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: T.muted, marginTop: 6, textAlign: "center" }}>{lbl}</div>
+            </div>
+          ))}
+        </div>
+        <div style={{ marginTop: 12 }}>
+          <BrandFrame color={T.gold} variant="sprig" opacity={0.55} size={58}>
+            <div style={{ textAlign: "center" }}>
+              <HeaderFlourish color={T.gold}><span style={{ fontFamily: SCRIPT, fontSize: 28, color: T.ink, padding: "0 8px" }}>A framed page</span></HeaderFlourish>
+              <div style={{ fontFamily: SERIF, fontSize: 16, color: T.inkSoft, lineHeight: 1.55, marginTop: 8 }}>Four corner sprigs turn a feature card or page into a quiet frame — delicate, low-opacity, growing inward from each corner. Used on a hero, never on every card.</div>
+            </div>
+          </BrandFrame>
+        </div>
+
+        <FleuronDivider />
+
+        {/* (D) DIVIDERS & FLOURISHES */}
+        <Eyebrow mb={10} color={T.gold}>Dividers &amp; flourishes</Eyebrow>
+        <div style={{ background: T.paperHi, border: `1px solid ${T.paperDeep}`, borderRadius: 18, padding: "6px 16px 12px" }}>
+          {[["Leaf rule", <LeafDivider key="d1" />], ["Sprig", <SprigDivider key="d2" w={220} />], ["Fleuron", <FleuronDivider key="d3" />]].map(([lbl, el]) => (
+            <div key={lbl}>
+              <div style={{ fontFamily: UI, fontSize: 11, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: T.muted, marginTop: 8 }}>{lbl}</div>
+              {el}
+            </div>
+          ))}
+          <div style={{ fontFamily: UI, fontSize: 11, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: T.muted, marginTop: 8 }}>Header flourish</div>
+          <div style={{ padding: "8px 0 4px" }}><HeaderFlourish color={T.gold}><span style={{ fontFamily: SCRIPT, fontSize: 26, color: T.ink, padding: "0 8px" }}>Today</span></HeaderFlourish></div>
+        </div>
+
+        <LeafDivider />
+
+        {/* (E) BOTANICAL MOTIF */}
         <Eyebrow mb={10} color={T.gold}>Botanical motif — finer, gracefully veined</Eyebrow>
         <div style={{ position: "relative", background: T.paperHi, border: `1px solid ${T.paperDeep}`, borderRadius: 18, padding: "18px 16px", overflow: "hidden", minHeight: 132 }}>
           <div style={{ position: "absolute", top: -10, right: -10, pointerEvents: "none" }}><VineMotifV2 color={T.sage} color2={T.gold} opacity={0.34} w={128} idx={3} /></div>
