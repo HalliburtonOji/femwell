@@ -435,8 +435,8 @@ export default function TodayDemo6() {
         {/* (4) PER-SURFACE cards — a STACK SPREAD deck (remembers the last-opened card) */}
         <div style={{ marginTop: 24 }}>
           <Eyebrow mb={2} color={T.gold}>Across your day</Eyebrow>
-          <p style={{ fontFamily: UI, fontSize: 13, color: T.muted, margin: "2px 0 14px" }}>each part of your app, its own row · tap the card tucked underneath to do it</p>
-          {SURFACES.map((s) => <TuckPair key={s.key} s={s} onSheet={setSheet} />)}
+          <p style={{ fontFamily: UI, fontSize: 13, color: T.muted, margin: "2px 0 14px" }}>each part of your app, its own row · swipe a row sideways to do it</p>
+          {SURFACES.map((s) => <HorizontalRow key={s.key} s={s} onSheet={setSheet} />)}
         </div>
 
         {/* (5) CROSS-APP SMART SUGGESTIONS */}
@@ -644,37 +644,44 @@ function ActionSheet({ sheetKey, uid, cycle, onClose, onSaved }) {
   );
 }
 
-// ── (8) Section row — its own row in a vertical list; ALL rows the same size + colour. Within a
-// row the ACTION card sits ~20% TUCKED UNDER the SUMMARY card (a clean 20% peek beneath); tap the
-// tucked card (or the header toggle) and it slides up to reveal. Vertical list, not a carousel. ──
-const ROW_H = 178, ROW_PEEK = 36;   // uniform card height + ~20% under-tuck
-function TuckPair({ s, onSheet }) {
-  const [face, setFace] = useState(0);   // 0 = summary on top, 1 = action on top
-  const summaryFront = face === 0;
-  // every card identical: same height, same cream colour, same border — only the content differs.
-  const cardStyle = (isFront) => ({
-    position: "absolute", left: 0, right: 0, top: 0, height: ROW_H, boxSizing: "border-box",
-    background: T.paperHi, border: `1px solid ${T.paperDeep}`, borderRadius: 18,
-    padding: "15px 17px", overflow: "hidden", cursor: "pointer",
-    transform: `translateY(${isFront ? 0 : ROW_PEEK}px) scale(${isFront ? 1 : 0.985})`, transformOrigin: "center top",
-    zIndex: isFront ? 2 : 1,
-    boxShadow: isFront ? "0 10px 24px rgba(58,48,32,0.12)" : "0 3px 10px rgba(58,48,32,0.08)",
-    transition: "transform .34s cubic-bezier(.32,.72,.24,1), box-shadow .34s ease",
-  });
+// ── (8) Section ROW — its own row in the vertical list. WITHIN the row the summary + action cards
+// are laid out HORIZONTALLY: the next card overlaps the current by ~20% (peeking in from the RIGHT,
+// tucked under the current card's right edge). Swipe sideways (or tap a peek / dot) to move between
+// them. Every card identical: same size + same cream colour. Rows are independent. ───────────────
+const ROW_H = 178;
+function HorizontalRow({ s, onSheet }) {
+  const [face, setFace] = useState(0);   // 0 = summary front, 1 = action front
+  const touch = useRef(null);
+  const onTouchStart = (e) => { touch.current = e.touches?.[0]?.clientX ?? null; };
+  const onTouchEnd = (e) => { const a = touch.current, b = e.changedTouches?.[0]?.clientX; if (a != null && b != null) { const dx = b - a; if (Math.abs(dx) > 40) setFace(dx < 0 ? 1 : 0); } touch.current = null; };
+  // offset: 0 front · +1 tucked under to the RIGHT (peek ~20%) · -1 tucked behind to the LEFT.
+  const cardStyle = (offset) => {
+    const front = offset === 0;
+    const tx = front ? 0 : (offset > 0 ? 62 : -62);   // % of the card's own width → ~20% side peek
+    return {
+      position: "absolute", top: 0, left: "3%", width: "78%", height: ROW_H, boxSizing: "border-box",
+      background: T.paperHi, border: `1px solid ${T.paperDeep}`, borderRadius: 18, padding: "15px 17px", overflow: "hidden",
+      transform: `translateX(${tx}%) scale(${front ? 1 : 0.98})`, transformOrigin: offset > 0 ? "left center" : "right center",
+      zIndex: front ? 2 : 1, cursor: "pointer",
+      boxShadow: front ? "0 10px 24px rgba(58,48,32,0.12)" : "0 3px 10px rgba(58,48,32,0.08)",
+      transition: "transform .36s cubic-bezier(.32,.72,.24,1), box-shadow .3s ease",
+    };
+  };
   const quote = s.summary.inset ? (s.summary.inset.quote || "").slice(0, 64) : "";
+  const summaryOffset = face === 0 ? 0 : -1;
+  const actionOffset = face === 1 ? 0 : 1;
   return (
-    <section style={{ margin: "0 0 20px" }}>
+    <section style={{ margin: "0 0 18px" }}>
       <div style={{ display: "flex", alignItems: "center", gap: 9, padding: "0 2px 8px" }}>
         {ICON_DISC(s.Icon, s.accent)}
         <Eyebrow color={s.accent}>{s.eyebrow}</Eyebrow>
-        <button onClick={() => setFace(summaryFront ? 1 : 0)} aria-label={summaryFront ? "Show the action" : "Show today"}
-          style={{ marginLeft: "auto", display: "inline-flex", alignItems: "center", gap: 4, background: "transparent", border: "none", cursor: "pointer", fontFamily: UI, fontSize: 12, fontWeight: 700, color: T.muted }}>
-          {summaryFront ? "Do it" : "Today"} <ChevronRight size={13} style={{ transform: summaryFront ? "none" : "rotate(180deg)" }} />
-        </button>
+        <span style={{ marginLeft: "auto", display: "flex", gap: 5 }}>
+          {[0, 1].map((i) => <span key={i} style={{ width: i === face ? 16 : 6, height: 6, borderRadius: 99, background: i === face ? s.accent : T.paperDeep, transition: "all .3s ease" }} />)}
+        </span>
       </div>
-      <div style={{ position: "relative", height: ROW_H + ROW_PEEK }}>
+      <div onTouchStart={onTouchStart} onTouchEnd={onTouchEnd} style={{ position: "relative", height: ROW_H, overflow: "hidden", margin: "0 -2px", padding: "0 2px" }}>
         {/* SUMMARY card */}
-        <div style={cardStyle(summaryFront)} onClick={() => setFace(0)}>
+        <div style={cardStyle(summaryOffset)} onClick={() => setFace(0)}>
           <Eyebrow mb={6}>Today</Eyebrow>
           <h3 style={{ fontFamily: SERIF, fontSize: 18, fontWeight: 600, color: T.ink, margin: "0 0 8px", lineHeight: 1.3 }}>{s.summary.title}</h3>
           {s.summary.lines.slice(0, 2).map((ln, j) => (
@@ -690,8 +697,8 @@ function TuckPair({ s, onSheet }) {
             </div>
           )}
         </div>
-        {/* ACTION card — tucked ~20% under the summary, slides up on tap */}
-        <div style={cardStyle(!summaryFront)} onClick={() => setFace(1)}>
+        {/* ACTION card — sits to the right, peeking ~20%; swipe/tap brings it forward */}
+        <div style={cardStyle(actionOffset)} onClick={() => setFace(1)}>
           <Eyebrow mb={6} color={s.accent}>Do it now</Eyebrow>
           <p style={{ fontFamily: SERIF, fontSize: 16, color: T.ink, lineHeight: 1.5, margin: "0 0 10px" }}>{s.action.prompt}</p>
           <div>{s.action.buttons.map((b, k) => <ActionBtn key={k} Icon={b.Icon} href={b.href} onClick={b.sheet ? () => onSheet(b.sheet) : undefined} accent={s.accent}>{b.label}</ActionBtn>)}</div>
