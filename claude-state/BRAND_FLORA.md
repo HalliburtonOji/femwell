@@ -84,7 +84,69 @@ The accumulating garden **chapters** grow, over seasons, toward a **flowering tr
 
 ---
 
-## 5. SOURCES
+## 6. THE VARIETY LIBRARY (a world, not a logo)
+A large, still-meaningful set so the world feels deep. Every element keeps a documented meaning consistent with the backbone.
+
+### 6.1 Flowers (extended — beyond the §2 core)
+**Violet** modesty/humility · **Primrose** young love, cheer ("I can't live without you") · **Camellia** excellence, steadfast devotion · **Anemone** anticipation & fragility (also "forsaken") · **Ranunculus** radiant charm · **Zinnia** thoughts of absent friends (enduring friendship) · **Marigold** joy, warmth, creativity (and, in Día de Muertos, guidance/return) · **Freesia** trust, friendship, thoughtfulness · **Bluebell** humility, constancy · **Cornflower** hope, delicacy ("heaven") · **Heather** quiet resilience & wishes (purple = admiration/solitude, pink = luck, white = protection). *(Joins the §2 core: poppy, snowdrop, sunflower, dahlia, lotus, peony, forget-me-not, daffodil, iris, chrysanthemum, jasmine, honeysuckle, rose, lily, hellebore, lavender, calendula, almond/cherry/magnolia blossom.)*
+
+### 6.2 Plant varieties (texture + ground + the long-lived)
+**Fern** quiet resilience, renewal, shelter (the Māori koru — unfurling new life) · **Moss** patience, humility, quiet perseverance, longevity · **Ivy** loyalty, friendship, eternal connection (clings & climbs) · **Bamboo** strength *with* flexibility; humility/inner peace (hollow core) · **Succulent** thriving — not merely enduring — in hard conditions · **Grass** renewal, springing back, togetherness · **Clematis** "traveller's joy" — journeying · plus the **herbs** as the women's-health lineage: **rosemary** (remembrance), **sage** (wisdom/clarity), **thyme** (courage), **lavender** (calm), **yarrow / lady's-mantle / mugwort** (the cycle herbs, §1.2).
+
+### 6.3 Flower bugs & animals (creatures — EARNED, never ambient)
+**Butterfly** transformation, return, the soul (*psyche*) · **Bee** community, the sacred feminine, pollination = connection · **Dragonfly** light & joy, change, "seeing through"; in Japan a protector · **Moth** transformation through darkness; the soul's seeking toward light (night/rest) · **Ladybird** luck, protection, grace, healing · **Hummingbird** healing & well-being, lightness/joy · **Firefly** inner light, hope, patience — "slowing down to find clarity" · **Snail** patience, endurance, trusting divine timing through slow steady progress · **Grasshopper/Cricket** luck, abundance, good cheer. Each visits a fitting moment, one at a time, then drifts off.
+
+---
+
+## 7. THE FLORA FINGERPRINT (per-user uniqueness — no two gardens alike)
+A woman's garden is a **portrait, not a slot machine**. Like a heraldic **blazon** — a small grammar of stable elements combined into a unique, reconstructable identity — each user's flora is **deterministically seeded** from who she is and what she tends, then **grows as she does**. Same seed → same garden on every device (seed from `userId`), so it's recognisably *hers*, never random noise.
+
+**The seed is composed from (meaning, not chance):**
+1. **Profile basics** (name + sign-up season) → a **base palette** + one **signature flower**.
+2. **Life-stage** (§2.2) → the **governing bloom or flowering tree** (teen daisy … menopause magnolia).
+3. **Current cycle phase** (§2.1) → the **active phase-flower**, which rotates with her body.
+4. **The life-areas she actually tends** (journal / nutrition / community / cycle / rest …) → **which plants & companion species populate her garden** (a journaller grows rosemary & willow; a community-tender grows clover & a bee).
+5. **Earned through engagement** → **rare elements unlock over time**.
+
+**Rarity tiers (earned, never bought or random):**
+- **Common** — her base garden (palette + signature flower + stage bloom).
+- **Uncommon** — a second species after consistent tending of an area.
+- **Rare** — a **rare bloom** or a **creature visit** on a real milestone/return.
+- **Heirloom** — the **flowering tree**, then the **orchard** (garden-of-gardens), after long arcs (seasons/years).
+
+**How it evolves:** the fingerprint is **stable** (she recognises her garden each return) yet **alive** — new species as she explores new areas, the bloom shifting with her phase, creatures arriving when she comes back, the tree maturing as years pass. Because every pick is governed by a rule tied to *her*, the uniqueness reads as a likeness — a garden that could only be hers.
+
+---
+
+## 8. PAGE CHARACTER (one identity, different per page)
+Each surface gets a **flora signature** — a palette lean + a signature species + a signature creature — all drawn from the **one dictionary**, so the app feels different page to page yet unmistakably FemWell. Page character changes the **accent + signature only**, never the bones (type scale, tokens, layout).
+- **Journal** → gold + **willow / rosemary** + a **moth** — reflection, memory, night-thoughts.
+- **Community** → sage + **meadow flowers / clover** + a **bee** — together, pollination, "we help each other bloom".
+- **Nutrition** → warm blush-green + **herbs & grasses** + a **ladybird** — the kitchen-garden, nourishment, luck.
+- **Cycle / Health** → the **phase hue** + the **phase-flower** + a **dragonfly/moth** — the body's season, insight.
+- **Garden / Companion** → the **full palette** — the home of the whole system.
+- **Pulse** → plum + a **dragonfly** — patterns, seeing-through.
+- **Lifestyle** → editorial, varied — the most expressive surface.
+
+---
+
+## 9. WHAT MAKES VARIETY FEEL PERSONAL, NOT ARBITRARY (the design principle)
+Procedural systems feel *personal* when **rules + seeds + meaningful constraints** replace pure randomness. The "paradox of procedural" design: the less generic personality a system imposes, the more personal the user's own time becomes — **but only with underlying structure to guide it**. References:
+- **Animal Crossing** — a few **personality types** + constraints create the *illusion* of rich variety while every villager keeps a coherent, legible character. Variety with a backbone.
+- **Sky: Children of the Light** — spirits/areas are grounded in the **emotional complexity of life-periods**, so seemingly procedural elements feel *authored*, not generated.
+- **Heraldry / the blazon** — a **combinatorial grammar** of stable elements yields unique-yet-reconstructable identities; the description never changes even as the rendering varies. (FemWell's fingerprint = a botanical blazon.)
+- **Generative botanical art** — rules + a seed produce endless distinct outputs that still share **one hand**.
+→ FemWell's flora fingerprint is exactly this: a **blazon-like grammar seeded by the woman's real life, constrained by documented meaning, and earned over time** — so variety reads as a portrait.
+
+> **Restraint still holds (§4):** a big library does NOT mean a busy screen. One bloom centre-stage, one motif per fold, a creature only on a real moment. The *world* is large; any single *view* stays calm.
+
+---
+
+## 10. SOURCES
+- Variety pass — extended floriography: [Bloom & Wild](https://www.bloomandwild.com/the-blog/floriography-language-of-flowers-meaning) · [Petal Republic — heather](https://www.petalrepublic.com/heather-flower-meaning/) · [FloristEmpire — cornflower](https://floristempire.com/guides/cornflower-flower-meaning/) · [Thursd — clematis](https://thursd.com/articles/clematis-flower-meaning)
+- Variety pass — plant symbolism: [Schisandra & Bergamot — 13 plants](https://schisandraandbergamot.com/plants-that-carry-symbolism-across-many-cultures/) · [Symbol Sage — succulents](https://symbolsage.com/succulents-meaning-and-symbolism/) · [Spirit Animals & Symbolism — moss](https://spiritanimalsandsymbolism.com/moss-spiritual-meaning-symbolism-and-totem/)
+- Variety pass — creatures: [UniGuide — ladybug](https://www.uniguide.com/ladybug-meaning-symbolism-spirit-animal) · [Insightful Spiritual — firefly](https://insightfulspiritual.com/firefly-spiritual-meaning-symbolism-and-totem/) · [Similifye — snail](https://similifye.com/snail-symbolism/) · [Mosquito Squad — insect symbolism](https://www.mosquitosquad.com/blog/miscellaneous/the-symbolic-meaning-of-different-insects/)
+- Variety pass — procedural-yet-personal: [Slate — paradox of procedural games](https://slate.com/technology/2016/10/the-paradox-of-procedurally-generated-video-games.html) · [Nookipedia — Animal Crossing villagers](https://nookipedia.com/wiki/Villager) · [Game Developer — Sky: Children of the Light](https://www.gamedeveloper.com/design/crafting-the-mobile-friendly-atmospheric-storytelling-of-i-sky-children-of-the-light-i-) · [Wikipedia — Blazon](https://en.wikipedia.org/wiki/Blazon) · [Britannica — heraldry grammar](https://www.britannica.com/topic/heraldry/The-elements-and-grammar-of-heraldic-design)
 - Floriography: [Petal Republic](https://www.petalrepublic.com/floriography-guide/) · [Nature Hills — Victorian language of flowers](https://naturehills.com/blogs/garden-blog/the-victorian-language-of-flowers) · [Birds & Blooms](https://www.birdsandblooms.com/gardening/gardening-basics/victorian-flower-language/)
 - Women's/cycle/fertility flora: [Bourke's Florist — fertility flowers](https://www.bourkesflorist.com.au/blog/fertility-and-florals-blooms-believed-to-symbolize-fertility) · [Symbol Sage — fertility symbols](https://symbolsage.com/symbols-of-fertility/) · [this.place — women's herbs](https://this.place/en/blogs/periode/frauenkrauter-wohltuende-begleiter-fur-alle-tage) · [Scroll.in — menstruation's floral metaphors](https://scroll.in/article/1088369/blossoming-bodies-subverting-the-floral-metaphors-for-menstruation)
 - Flowering trees: [Cornell Botanic Gardens — flowering trees](https://cornellbotanicgardens.org/flowering-trees-expressing-love-loyalty-and-kindness-across-centuries-and-cultures/) · [A-Z Animals — cherry blossom](https://a-z-animals.com/blog/cherry-blossom-meaning-symbolism-and-significance/) · [Pansy Maiden — almond](https://www.pansymaiden.com/flowers/meaning/almond/) · [Thursd — magnolia](https://thursd.com/articles/meaning-of-magnolia-flower) · [Verdera — hawthorn](https://verderamade.com/2021/04/28/witchy-symbolism-of-the-hawthorne-flower/)

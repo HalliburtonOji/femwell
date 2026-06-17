@@ -458,6 +458,39 @@ function FlowerGlyph({ variant = "poppy", size = 52, color = T.crimson, accent =
       {pet(1, 1, `url(#fgr-${gid})`, 0.96)}
       <circle cx={cx} cy={cy - 5} r="1.6" fill={lighten(accent, 0.2)} />
     </g>);
+  } else if (variant === "violet") {
+    body = (<g>
+      {[[-7, -5], [7, -5], [-8, 3], [8, 3]].map(([dx, dy], i) => <ellipse key={i} cx={cx + dx} cy={cy + dy} rx="5.2" ry="6" fill={`url(#fgr-${gid})`} opacity="0.95" />)}
+      <ellipse cx={cx} cy={cy + 8} rx="6.5" ry="7" fill={`url(#fgr-${gid})`} opacity="0.96" />
+      <circle cx={cx} cy={cy} r="2.6" fill={lighten("#D4AF37", 0.1)} />
+    </g>);
+  } else if (variant === "cornflower") {
+    body = (<g>
+      {Array.from({ length: 12 }).map((_, i) => <path key={i} d="M0 0 L -1.7 -10 L 0 -13 L 1.7 -10 Z" fill={`url(#fgr-${gid})`} opacity="0.92" transform={`translate(${cx} ${cy}) rotate(${i * 30})`} />)}
+      {Array.from({ length: 6 }).map((_, i) => <path key={`b${i}`} d="M0 0 L -1.3 -6 L 0 -8 L 1.3 -6 Z" fill={darken(color, 0.12)} opacity="0.9" transform={`translate(${cx} ${cy}) rotate(${i * 60 + 30})`} />)}
+      <circle cx={cx} cy={cy} r="2.6" fill={darken(color, 0.3)} />
+    </g>);
+  } else if (variant === "camellia") {
+    body = (<g>
+      {[0, 1].map((ring) => Array.from({ length: 6 }).map((_, i) => <ellipse key={`${ring}-${i}`} cx={cx} cy={cy - (ring ? 5 : 8)} rx={ring ? 4.2 : 5.4} ry={ring ? 5 : 7} fill={`url(#fgr-${gid})`} opacity={ring ? 0.98 : 0.9} transform={`rotate(${i * 60 + ring * 30} ${cx} ${cy})`} />))}
+      <circle cx={cx} cy={cy} r="3" fill={lighten("#D4AF37", 0.08)} />
+    </g>);
+  } else if (variant === "lavender") {
+    body = (<g>
+      <path d="M20 38 C 20 30 20 22 20 12" fill="none" stroke="#7E9A7E" strokeWidth="1.3" strokeLinecap="round" />
+      <path d="M20 30 C 14 30 12 27 12 23 M20 26 C 26 26 28 23 28 19" stroke="#8FAF8F" strokeWidth="1" fill="none" strokeLinecap="round" opacity="0.8" />
+      {Array.from({ length: 8 }).map((_, i) => <ellipse key={i} cx={20 + (i % 2 ? 2.6 : -2.6)} cy={6 + i * 1.7} rx="2.4" ry="3" fill={`url(#fgr-${gid})`} opacity="0.95" />)}
+    </g>);
+  } else if (variant === "primrose") {
+    body = (<g>
+      {Array.from({ length: 5 }).map((_, i) => { const a = (i * 72 - 90) * Math.PI / 180; return <ellipse key={i} cx={cx + Math.cos(a) * 8} cy={cy + Math.sin(a) * 8} rx="5" ry="6" fill={`url(#fgr-${gid})`} opacity="0.95" transform={`rotate(${i * 72} ${cx + Math.cos(a) * 8} ${cy + Math.sin(a) * 8})`} />; })}
+      <circle cx={cx} cy={cy} r="3.4" fill="#D8C24E" /><circle cx={cx} cy={cy} r="1.4" fill={lighten("#D4AF37", 0.2)} />
+    </g>);
+  } else if (variant === "heather") {
+    body = (<g>
+      <path d="M20 38 C 19 30 21 22 20 14 M20 24 C 14 22 11 19 11 14 M20 22 C 26 20 29 17 29 12" stroke="#8FAF8F" strokeWidth="1" fill="none" strokeLinecap="round" opacity="0.8" />
+      {[[20, 11], [20, 7], [11, 13], [9, 9], [29, 11], [31, 8], [20, 15]].map(([x, y], i) => <circle key={i} cx={x} cy={y} r="2.1" fill={`url(#fgr-${gid})`} opacity="0.92" />)}
+    </g>);
   } else { // forgetmenot — 5 small round petals + a warm eye (plum, on-brand)
     body = (<g>
       {Array.from({ length: 5 }).map((_, i) => { const a = i * 72 * Math.PI / 180; return <circle key={i} cx={cx + Math.cos(a - Math.PI / 2) * 7} cy={cy + Math.sin(a - Math.PI / 2) * 7} r="4.4" fill={`url(#fgr-${gid})`} opacity="0.95" />; })}
@@ -510,6 +543,95 @@ function BlossomTree({ size = 120, color = T.muted, blossom = T.blush, idx = 0 }
       {/* a few fallen petals at the base */}
       <g>{[[34, 90], [50, 92], [58, 88]].map(([x, y], i) => <circle key={i} cx={x} cy={y} r="1.4" fill={blossom} opacity="0.5" />)}</g>
     </svg>
+  );
+}
+
+// ── PLANT VARIETIES — moss/succulent/grass/ivy/bamboo (fern lives in LeafGlyph). Hairline + a leaf
+//    fill; each carries meaning (resilience, endurance, climbing-connection, flexible-strength). ──
+function PlantGlyph({ variant = "succulent", size = 48, color = T.sage, idx = 0 }) {
+  const gid = `pg-${variant}-${idx}`;
+  const g = (
+    <radialGradient id={`pgr-${gid}`} cx="50%" cy="40%" r="65%"><stop offset="0%" stopColor={lighten(color, 0.22)} /><stop offset="100%" stopColor={color} /></radialGradient>
+  );
+  let body;
+  if (variant === "succulent") {
+    body = (<g>{Array.from({ length: 8 }).map((_, i) => <path key={i} d="M0 0 C -3 -6 -2.4 -13 0 -16 C 2.4 -13 3 -6 0 0 Z" fill={`url(#pgr-${gid})`} opacity="0.92" transform={`translate(22 26) rotate(${i * 45})`} />)}<circle cx="22" cy="26" r="2.4" fill={lighten(color, 0.3)} /></g>);
+  } else if (variant === "grass") {
+    body = (<g fill="none" stroke={`url(#pgr-${gid})`} strokeWidth="1.4" strokeLinecap="round">{[[-9, -2], [-5, 4], [0, -4], [5, 2], [9, -1], [3, 6], [-3, 5]].map(([dx, tilt], i) => <path key={i} d={`M${22 + dx} 42 C ${22 + dx + tilt} 30 ${22 + dx + tilt} 22 ${22 + dx + tilt * 1.5} ${12 + (i % 3) * 3}`} />)}</g>);
+  } else if (variant === "ivy") {
+    body = (<g><path d="M22 44 C 16 36 26 28 20 20 C 16 14 24 8 22 3" fill="none" stroke={color} strokeWidth="1.2" strokeLinecap="round" opacity="0.8" />{[[15, 35], [27, 27], [16, 20], [26, 12], [20, 5]].map(([x, y], i) => <path key={i} d={`M${x} ${y} c -4 -1 -6 -4 -5 -7 c 4 1 6 4 5 7 c 1 -4 4 -6 7 -5 c -1 4 -4 6 -7 5 Z`} fill={`url(#pgr-${gid})`} opacity="0.85" transform={`scale(0.7) translate(${x * 0.43} ${y * 0.43})`} />)}</g>);
+  } else if (variant === "bamboo") {
+    body = (<g><g fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" opacity="0.85"><path d="M17 44 L 17 6 M27 44 L 27 10" /></g><g stroke={darken(color, 0.15)} strokeWidth="1"><path d="M14 32 L 20 32 M14 20 L 20 20 M24 30 L 30 30 M24 18 L 30 18" /></g><path d="M27 12 C 33 9 37 11 38 16 C 32 17 28 15 27 12 Z M17 9 C 11 6 7 8 6 13 C 12 14 16 12 17 9 Z" fill={`url(#pgr-${gid})`} opacity="0.85" /></g>);
+  } else { // moss — a low mound of tiny tufts
+    body = (<g><ellipse cx="22" cy="40" rx="16" ry="6" fill={`url(#pgr-${gid})`} opacity="0.45" />{Array.from({ length: 16 }).map((_, i) => { const x = 8 + i * 1.9, y = 40 - Math.sin(i * 0.9) * 3; return <path key={i} d={`M${x} ${y} L ${x} ${y - 4 - (i % 3)}`} stroke={color} strokeWidth="1" strokeLinecap="round" opacity="0.7" />; })}{[[14, 35], [22, 33], [30, 36]].map(([x, y], i) => <circle key={`d${i}`} cx={x} cy={y} r="1.4" fill={lighten(color, 0.18)} opacity="0.8" />)}</g>);
+  }
+  return <svg viewBox="0 0 44 46" width={size} height={Math.round(size * 1.05)} aria-hidden><defs>{g}</defs>{body}</svg>;
+}
+
+// ── CREATURES — flower bugs & animals. Pollinators stay EARNED (event-driven); shown here labelled.
+function Creature({ variant = "bee", size = 44, color = "#8E6E8E", animate = false, idx = 0 }) {
+  if (variant === "butterfly") return <Butterfly size={size} color={color} animate={animate} idx={idx} />;
+  if (variant === "moth") return <Butterfly size={size} color="#8A7458" color2="#6B5840" animate={animate} idx={idx} />;
+  const drift = animate ? { transformBox: "fill-box", transformOrigin: "center", willChange: "transform", animation: "fwcDrift 7s ease-in-out infinite", animationDelay: `${(idx % 4) * 0.8}s` } : undefined;
+  if (variant === "bee") {
+    return (
+      <svg viewBox="0 0 44 30" width={size} height={Math.round(size * 0.68)} aria-hidden style={drift}>
+        <ellipse cx="15" cy="9" rx="9" ry="5" fill="#FFFDF7" opacity="0.55" transform="rotate(-18 15 9)" /><ellipse cx="24" cy="8" rx="8" ry="4.5" fill="#FFFDF7" opacity="0.5" transform="rotate(-30 24 8)" />
+        <ellipse cx="22" cy="17" rx="10" ry="6.2" fill="#D4AF37" /><g stroke="#2E261B" strokeWidth="1.6"><path d="M19 12 L 18 22 M24 11.5 L 23 22.6 M29 13 L 28.5 21" /></g>
+        <ellipse cx="33" cy="15" rx="3.4" ry="3.2" fill="#2E261B" /><path d="M33 13 C 35 9 37 8 39 7 M35 13 C 37 10 39 9 41 9" stroke="#2E261B" strokeWidth="0.7" fill="none" strokeLinecap="round" />
+        <path d="M12 18 L 8 20" stroke="#2E261B" strokeWidth="1" strokeLinecap="round" />
+      </svg>
+    );
+  }
+  if (variant === "dragonfly") {
+    return (
+      <svg viewBox="0 0 44 40" width={size} height={Math.round(size * 0.9)} aria-hidden style={drift}>
+        <defs><linearGradient id={`dw-${idx}`} x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stopColor={lighten(color, 0.3)} stopOpacity="0.7" /><stop offset="100%" stopColor={color} stopOpacity="0.35" /></linearGradient></defs>
+        {[[-1, 8, -28], [1, 8, 28], [-1, 20, -16], [1, 20, 16]].map(([sx, y, rot], i) => <ellipse key={i} cx={22 + sx * 11} cy={y} rx="11" ry="3.2" fill={`url(#dw-${idx})`} transform={`rotate(${rot} 22 ${y})`} />)}
+        <circle cx="22" cy="6" r="3.2" fill={darken(color, 0.1)} /><path d="M22 9 C 21 18 21.5 28 22 37 C 22.5 28 23 18 22 9 Z" fill={color} />
+      </svg>
+    );
+  }
+  if (variant === "ladybird") {
+    return (
+      <svg viewBox="0 0 36 32" width={size} height={Math.round(size * 0.88)} aria-hidden>
+        <ellipse cx="18" cy="19" rx="12" ry="11" fill={T.crimson} /><path d="M18 9 C 21 12 21 26 18 30 C 15 26 15 12 18 9 Z" fill={darken(T.crimson, 0.3)} opacity="0.5" />
+        <path d="M18 8 L 18 30" stroke="#2E261B" strokeWidth="1" /><path d="M9 11 C 12 7 24 7 27 11 C 24 9 12 9 9 11 Z" fill="#2E261B" />
+        {[[12, 15], [24, 15], [11, 23], [25, 23], [18, 25]].map(([x, y], i) => <circle key={i} cx={x} cy={y} r="1.8" fill="#2E261B" />)}
+      </svg>
+    );
+  }
+  // hummingbird
+  return (
+    <svg viewBox="0 0 44 32" width={size} height={Math.round(size * 0.73)} aria-hidden style={drift}>
+      <defs><linearGradient id={`hb-${idx}`} x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stopColor={lighten(color, 0.26)} /><stop offset="100%" stopColor={darken(color, 0.08)} /></linearGradient></defs>
+      <path d="M18 18 C 22 8 30 12 38 14 C 30 18 24 20 18 18 Z" fill="#FFFDF7" opacity="0.5" />
+      <ellipse cx="16" cy="18" rx="9" ry="6" fill={`url(#hb-${idx})`} /><path d="M8 16 C 14 14 22 14 28 19 C 22 21 13 22 8 16 Z" fill={color} opacity="0.55" />
+      <path d="M24 16 L 41 12" stroke="#2E261B" strokeWidth="1.2" strokeLinecap="round" /><circle cx="22" cy="15.5" r="1.1" fill="#2E261B" />
+    </svg>
+  );
+}
+
+// ── per-user FLORA FINGERPRINT (deterministic, seeded — no two gardens alike) ────────────────────
+function hashSeed(s) { let h = 2166136261; for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); } return h >>> 0; }
+function seededRng(seed) { let x = (seed || 1) >>> 0; return () => { x = (Math.imul(x, 1103515245) + 12345) & 0x7fffffff; return x / 0x7fffffff; }; }
+const FLORA_POOL = [["poppy", T.crimson], ["snowdrop", "#9DB89D"], ["sunflower", "#D4AF37"], ["dahlia", "#8E6E8E"], ["violet", "#8E6E8E"], ["cornflower", "#8E6E8E"], ["camellia", T.blush], ["primrose", "#D8C24E"], ["lotus", T.blush], ["lavender", "#8E6E8E"]];
+const PLANT_POOL = ["fern", "succulent", "grass", "ivy", "bamboo", "moss"];
+const CREATURE_POOL = ["butterfly", "bee", "dragonfly", "ladybird", "hummingbird"];
+function MiniGarden({ seed = "user", size = 156, animate = false }) {
+  const r = seededRng(hashSeed(seed));
+  const pick = (arr) => arr[Math.floor(r() * arr.length)];
+  const pl = pick(PLANT_POOL); const f1 = pick(FLORA_POOL); const f2 = pick(FLORA_POOL);
+  const hasCreature = r() > 0.45; const cr = pick(CREATURE_POOL);
+  const Plant = pl === "fern" ? <LeafGlyph variant="frond" size={40} color={T.sage} idx={`${seed}p`} /> : <PlantGlyph variant={pl} size={44} color={T.sage} idx={`${seed}p`} />;
+  return (
+    <div style={{ position: "relative", height: size, background: T.paperHi, border: `1px solid ${T.paperDeep}`, borderRadius: 16, overflow: "hidden" }}>
+      <div style={{ position: "absolute", left: 0, right: 0, bottom: 18, height: 1, background: T.paperDeep, opacity: 0.7 }} />
+      <div style={{ position: "absolute", bottom: 12, left: "8%" }}>{Plant}</div>
+      <div style={{ position: "absolute", bottom: 14, left: "38%" }}><FlowerGlyph variant={f1[0]} size={46} color={f1[1]} accent={f1[0] === "sunflower" ? "#6B5840" : "#2E261B"} idx={`${seed}1`} /></div>
+      <div style={{ position: "absolute", bottom: 12, left: "64%" }}><FlowerGlyph variant={f2[0]} size={40} color={f2[1]} accent={f2[0] === "sunflower" ? "#6B5840" : "#2E261B"} idx={`${seed}2`} /></div>
+      {hasCreature && <div style={{ position: "absolute", top: 10, right: 12 }}><Creature variant={cr} size={38} color={cr === "ladybird" ? T.crimson : "#8E6E8E"} animate={animate} idx={`${seed}c`} /></div>}
+    </div>
   );
 }
 
@@ -658,6 +780,72 @@ export default function BrandCraftSample() {
           </div>
           <div style={{ fontFamily: SERIF, fontSize: 15, color: T.inkSoft, lineHeight: 1.5, marginTop: 8, textAlign: "center" }}>
             Forget-me-not (memory) + rosemary (remembrance) — a pairing the app can offer around grief or loss. Combinations make a sentence the way a bouquet does.
+          </div>
+        </div>
+
+        <FleuronDivider />
+
+        {/* (A3) VARIETY & UNIQUENESS — a world, not a logo */}
+        <Eyebrow mb={4} color={T.gold}>Variety &amp; uniqueness — a world, not a logo</Eyebrow>
+        <div style={{ fontFamily: SERIF, fontSize: 16, color: T.inkSoft, lineHeight: 1.55, margin: "2px 2px 12px" }}>
+          A large, still-meaningful library — many flowers, plants and creatures — combined per user so no two gardens look alike, and per page so the app feels different surface to surface. Variety is <em>seeded and earned</em>, never random noise (full model in <span style={{ fontFamily: UI, fontSize: 13 }}>BRAND_FLORA.md §6–8</span>).
+        </div>
+        {/* the library: flowers · plants · creatures */}
+        <div style={{ background: T.paperHi, border: `1px solid ${T.paperDeep}`, borderRadius: 18, padding: "12px 8px" }}>
+          <div style={{ fontFamily: UI, fontSize: 11, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: T.muted, margin: "2px 6px 4px" }}>Flowers</div>
+          <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "space-between", gap: 4 }}>
+            {[["poppy", T.crimson], ["snowdrop", "#9DB89D"], ["sunflower", "#D4AF37"], ["dahlia", "#8E6E8E"], ["violet", "#8E6E8E"], ["cornflower", "#8E6E8E"], ["camellia", T.blush], ["primrose", "#D8C24E"], ["lavender", "#8E6E8E"], ["lotus", T.blush]].map(([v, c], i) => <FlowerGlyph key={v} variant={v} size={36} color={c} accent={v === "sunflower" ? "#6B5840" : "#2E261B"} idx={`lib${i}`} />)}
+          </div>
+          <div style={{ fontFamily: UI, fontSize: 11, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: T.muted, margin: "12px 6px 4px" }}>Plants</div>
+          <div style={{ display: "flex", justifyContent: "space-between", gap: 4, alignItems: "flex-end" }}>
+            <LeafGlyph variant="frond" size={34} color={T.sage} idx="libfern" />
+            {["succulent", "grass", "ivy", "bamboo", "moss"].map((v, i) => <PlantGlyph key={v} variant={v} size={42} color={T.sage} idx={`lib${i}`} />)}
+          </div>
+          <div style={{ fontFamily: UI, fontSize: 11, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: T.muted, margin: "12px 6px 4px" }}>Creatures <span style={{ fontWeight: 500, textTransform: "none", letterSpacing: 0, fontStyle: "italic", fontFamily: SERIF, fontSize: 13 }}>— earned, never ambient</span></div>
+          <div style={{ display: "flex", justifyContent: "space-around", alignItems: "center", gap: 4 }}>
+            {["butterfly", "bee", "dragonfly", "moth", "ladybird", "hummingbird"].map((v, i) => <Creature key={v} variant={v} size={40} color={v === "ladybird" ? T.crimson : "#8E6E8E"} animate={false} idx={`lib${i}`} />)}
+          </div>
+        </div>
+
+        {/* a couple more meaningful combinations */}
+        <div style={{ display: "flex", gap: 10, marginTop: 12 }}>
+          {[["lavender", "#8E6E8E", "primrose", "#D8C24E", "rest"], ["lotus", T.blush, "cornflower", "#8E6E8E", "fertile hope"]].map(([a, ac, b, bc, mng], i) => (
+            <div key={i} style={{ flex: 1, minWidth: 0, background: T.paperHi, border: `1px solid ${T.paperDeep}`, borderLeft: `3px solid ${T.gold}`, borderRadius: 16, padding: "10px 12px", textAlign: "center" }}>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 4 }}>
+                <FlowerGlyph variant={a} size={34} color={ac} idx={`cm${i}a`} /><span style={{ fontFamily: SERIF, fontSize: 16, color: T.muted }}>+</span><FlowerGlyph variant={b} size={34} color={bc} idx={`cm${i}b`} />
+              </div>
+              <div style={{ fontFamily: SCRIPT, fontSize: 22, color: T.ink, marginTop: 2 }}>{mng}</div>
+            </div>
+          ))}
+        </div>
+
+        {/* two users → two gardens */}
+        <div style={{ fontFamily: UI, fontSize: 11, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: T.muted, margin: "16px 2px 6px" }}>Two users → two gardens</div>
+        <div style={{ display: "flex", gap: 10 }}>
+          {[["Maya", "TTC · luteal · journals"], ["Priya", "perimenopause · rests often"]].map(([nm, desc]) => (
+            <div key={nm} style={{ flex: 1, minWidth: 0 }}>
+              <MiniGarden seed={`femwell-${nm}`} animate={motion} />
+              <div style={{ fontFamily: SERIF, fontSize: 15, color: T.ink, marginTop: 6, textAlign: "center" }}><span style={{ fontStyle: "italic" }}>{nm}</span></div>
+              <div style={{ fontFamily: UI, fontSize: 12, color: T.muted, textAlign: "center" }}>{desc}</div>
+            </div>
+          ))}
+        </div>
+        <div style={{ fontFamily: SERIF, fontSize: 15, color: T.inkSoft, lineHeight: 1.5, margin: "8px 2px 0", textAlign: "center" }}>Same identity, two distinct gardens — seeded from who she is and what she tends.</div>
+
+        {/* page character — each surface its own flora signature */}
+        <div style={{ fontFamily: UI, fontSize: 11, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: T.muted, margin: "16px 2px 6px" }}>Page character — one identity, different per page</div>
+        <div style={{ display: "flex", gap: 10 }}>
+          <div style={{ flex: 1, minWidth: 0, position: "relative", background: "linear-gradient(180deg,#F6EFDD,#F2EAD6)", border: `1px solid ${T.paperDeep}`, borderLeft: `3px solid ${T.gold}`, borderRadius: 16, padding: "12px", overflow: "hidden", minHeight: 110 }}>
+            <div style={{ position: "absolute", top: 8, right: 8 }}><LeafGlyph variant="willow" size={30} color={T.gold} idx="pcj" /></div>
+            <div style={{ fontFamily: SCRIPT, fontSize: 28, color: T.ink }}>Journal</div>
+            <div style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 14, color: T.inkSoft, marginTop: 2 }}>gold &amp; willow — reflection, memory</div>
+            <div style={{ position: "absolute", bottom: 8, right: 10 }}><Creature variant="moth" size={34} animate={false} idx="pcj" /></div>
+          </div>
+          <div style={{ flex: 1, minWidth: 0, position: "relative", background: "linear-gradient(180deg,#EEF3E9,#E8F0E2)", border: `1px solid ${T.paperDeep}`, borderLeft: `3px solid ${T.sage}`, borderRadius: 16, padding: "12px", overflow: "hidden", minHeight: 110 }}>
+            <div style={{ position: "absolute", top: 6, right: 6 }}><FlowerGlyph variant="cornflower" size={34} color={T.sage} idx="pcc" /></div>
+            <div style={{ fontFamily: SCRIPT, fontSize: 28, color: T.ink }}>Community</div>
+            <div style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 14, color: T.inkSoft, marginTop: 2 }}>sage &amp; meadow — together, pollination</div>
+            <div style={{ position: "absolute", bottom: 8, right: 10 }}><Creature variant="bee" size={36} animate={false} idx="pcc" /></div>
           </div>
         </div>
 

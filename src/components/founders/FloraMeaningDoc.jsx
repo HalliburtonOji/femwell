@@ -116,6 +116,33 @@ export default function FloraMeaningDoc() {
       </ul>
       <Pull>A sunflower always means peak. A forget-me-not always means memory. A butterfly always means: you changed, and you came back.</Pull>
 
+      <H2 n="X">The variety library — a world, not a logo</H2>
+      <P>A large, still-meaningful set so the world feels deep (full list + meanings in BRAND_FLORA §6):</P>
+      <ul style={{ listStyle: "none", padding: 0, margin: "10px 0" }}>
+        <Row dot={C.blush} term="Flowers (extended)" meaning="violet (modesty) · primrose (young love) · camellia (steadfast devotion) · anemone (anticipation) · zinnia (enduring friendship) · marigold (joy, guidance) · freesia (trust) · bluebell (constancy) · cornflower (hope) · heather (quiet resilience)" />
+        <Row dot={C.sage} term="Plants" meaning="fern (renewal) · moss (patience) · ivy (loyal connection) · bamboo (strength + flexibility) · succulent (thriving in hardship) · grass (springs back) · clematis (traveller's joy) · the cycle herbs (rosemary, sage, lavender, yarrow, lady's-mantle, mugwort)" />
+        <Row dot={C.plum} term="Creatures (earned)" meaning="butterfly (return) · bee (community) · dragonfly (insight) · moth (the dark) · ladybird (luck/healing) · hummingbird (well-being) · firefly (inner light, hope) · snail (patience) · cricket (good cheer)" />
+      </ul>
+
+      <H2 n="XI">The flora fingerprint — no two gardens alike</H2>
+      <P>A woman's garden is a <em>portrait, not a slot machine</em>. Like a heraldic blazon, it's a small grammar of stable elements combined into a unique, reconstructable identity — <strong>deterministically seeded</strong> from who she is and what she tends (same seed → same garden on every device), then it grows as she does.</P>
+      <ul style={{ listStyle: "none", padding: 0, margin: "10px 0" }}>
+        <Row dot={C.gold} term="Seed" meaning="profile + sign-up season (base palette + signature flower) · life-stage (governing bloom/tree) · cycle phase (active flower) · the life-areas she tends (which plants & companions grow) · what she's earned" />
+        <Row dot={C.crimson} term="Rarity (earned, never bought)" meaning="common (base garden) → uncommon (a second species) → rare (a rare bloom / a creature visit on a milestone) → heirloom (the flowering tree, then the orchard)" />
+        <Row dot={C.sage} term="Evolves" meaning="stable enough to recognise as hers, alive enough to keep growing — new species as she explores, the bloom shifting with her phase, the tree maturing over years" />
+      </ul>
+      <P>Because every pick is governed by a rule tied to <em>her</em>, the uniqueness reads as a likeness — a garden that could only be hers. (Why it feels personal not arbitrary: rules + seeds + meaningful constraints, the way Animal Crossing, Sky and heraldry do it — BRAND_FLORA §9.)</P>
+
+      <H2 n="XII">Page character — one identity, different per page</H2>
+      <P>Each surface gets a flora <em>signature</em> (a palette lean + a signature species + a creature) drawn from the one dictionary — so the app feels different page to page yet unmistakably FemWell. Character changes the accent + signature only, never the bones (type, tokens, layout).</P>
+      <ul style={{ listStyle: "none", padding: 0, margin: "10px 0" }}>
+        <Row dot={C.gold} term="Journal" meaning="gold + willow/rosemary + a moth — reflection, memory, night-thoughts" />
+        <Row dot={C.sage} term="Community" meaning="sage + meadow flowers/clover + a bee — together, pollination" />
+        <Row dot={C.blush} term="Nutrition" meaning="warm blush-green + herbs & grasses + a ladybird — the kitchen-garden" />
+        <Row dot={C.crimson} term="Cycle / Health" meaning="the phase hue + phase-flower + a dragonfly/moth — the body's season" />
+        <Row dot={C.plum} term="Pulse" meaning="plum + a dragonfly — patterns, seeing-through" />
+      </ul>
+
       <div style={{ fontFamily: SANS, fontSize: 13, color: C.muted, margin: "26px 0 8px", lineHeight: 1.6 }}>
         Restraint holds: flowers are chosen for meaning and shown sparingly — one bloom centre-stage, one motif per fold, a butterfly only on a real moment. Craft samples live at <span style={{ fontWeight: 700 }}>/BrandCraftSample</span>; full research + sources in <span style={{ fontWeight: 700 }}>claude-state/BRAND_FLORA.md</span>.
       </div>
