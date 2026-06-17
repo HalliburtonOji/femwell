@@ -65,6 +65,9 @@ import Profile from './pages/Profile';
 import ProgramDay from './pages/ProgramDay';
 import ProgramDetail from './pages/ProgramDetail';
 import ProgramsHub from './pages/ProgramsHub';
+// LOCK+SWAP (2026-06-17): the "Today" route now renders TodayDemo6 (the chosen
+// synthesised Today — real data + full brand image). The old ./pages/Today below
+// is the intentional UNROUTED FALLBACK — to revert, map "Today" back to it.
 import Today from './pages/Today';
 
 import Trends from './pages/Trends';
@@ -183,7 +186,7 @@ export const PAGES = {
     "ProgramDay": ProgramDay,
     "ProgramDetail": ProgramDetail,
     "ProgramsHub": ProgramsHub,
-    "Today": Today,
+    "Today": TodayDemo6,   // lock+swap — was `Today` (kept imported above as the one-line-revert fallback)
     "Trends": Trends,
     "Upgrade": Upgrade,
     "VideoManager": VideoManager,

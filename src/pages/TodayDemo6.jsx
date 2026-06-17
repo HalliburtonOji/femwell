@@ -22,6 +22,7 @@ import { computeCycleDay, phaseForDay } from "@/hooks/useCycleDay";
 import { nutritionToday } from "@/utils/nutritionSummary";
 import { communityHash } from "@/components/community/communityAnon";
 import { Bloom } from "@/components/nurture/NurtureGarden";
+import { RichBloomV2, SwayBloom, fingerprintColourway, floraKeyframes } from "@/components/brand/flora";
 import { FORM_LIST, getCompanion, tendCompanion, tendedToday, loadCompanionState } from "@/components/nurture/companion";
 import { useScrollLock } from "@/utils/useScrollLock";
 // Reuse the PRODUCTION Planner row slider verbatim — same card size, 3D depth
@@ -329,24 +330,16 @@ export default function TodayDemo6() {
   ];
 
   const TodIcon = TODS[tod].Icon;
-  const showFirst = first;   // dev empty-state preview
+  const showFirst = first;   // empty/first-day state (set by the first-open ceremony, not a dev toggle)
+  // Per-user flora fingerprint: a stable signature colourway for the companion bloom (BRAND_IDENTITY §5.2).
+  const heroCw = fingerprintColourway(uid);
 
   return (
-    <div style={{ ...PAPER_BG, minHeight: "100vh", color: T.ink, paddingBottom: 96, position: "relative", overflow: "hidden" }}>
+    <div className="fwc-anim" style={{ ...PAPER_BG, minHeight: "100vh", color: T.ink, paddingBottom: 96, position: "relative", overflow: "hidden" }}>
       <InkFilter />
-      <style>{`@keyframes fwSheetIn{from{transform:translateY(100%)}to{transform:translateY(0)}}@keyframes fwScrimIn{from{opacity:0}to{opacity:1}}@keyframes fwFadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}.fw-hrow{scrollbar-width:none}.fw-hrow::-webkit-scrollbar{display:none}@media (prefers-reduced-motion:reduce){.fw-sheet-anim,.fw-scrim-anim,.fw-fade{animation:none!important}}`}</style>
+      <style>{`@keyframes fwSheetIn{from{transform:translateY(100%)}to{transform:translateY(0)}}@keyframes fwScrimIn{from{opacity:0}to{opacity:1}}@keyframes fwFadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}.fw-hrow{scrollbar-width:none}.fw-hrow::-webkit-scrollbar{display:none}@media (prefers-reduced-motion:reduce){.fw-sheet-anim,.fw-scrim-anim,.fw-fade{animation:none!important}}${floraKeyframes}`}</style>
+      {/* one tasteful botanical motif per fold (BRAND_IDENTITY §4/§6.2) */}
       <div style={{ position: "absolute", top: 40, right: -12, pointerEvents: "none", zIndex: 0 }}><VineMotif color={T.sage} opacity={0.12} w={150} /></div>
-
-      {/* dev ribbon + preview toggles */}
-      <div style={{ position: "sticky", top: 0, zIndex: 30, background: T.ink, color: T.paper, padding: "7px 12px", display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap", fontFamily: UI, fontSize: 11 }}>
-        <span style={{ fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase" }}>Demo · Today 6 — your day (live data)</span>
-        <span style={{ marginLeft: "auto", opacity: 0.7 }}>preview:</span>
-        {["morning", "afternoon", "evening"].map((t) => (
-          <button key={t} onClick={() => { setTod(t); setFirst(false); }} style={{ background: tod === t && !first ? T.paper : "transparent", color: tod === t && !first ? T.ink : T.paper, border: `1px solid ${T.paper}`, borderRadius: 99, padding: "2px 9px", fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: UI }}>{t}</button>
-        ))}
-        <button onClick={() => setFirst((v) => !v)} style={{ background: first ? T.paper : "transparent", color: first ? T.ink : T.paper, border: `1px solid ${T.paper}`, borderRadius: 99, padding: "2px 9px", fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: UI }}>first day</button>
-        <button onClick={() => { try { localStorage.removeItem(SEEN_KEY); } catch { /* ignore */ } setGrowStage(0); setCeremony(true); }} style={{ background: "transparent", color: T.paper, border: `1px solid ${T.paper}`, borderRadius: 99, padding: "2px 9px", fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: UI }}>replay intro</button>
-      </div>
 
       <div style={{ maxWidth: 430, margin: "0 auto", padding: "16px 16px 0", position: "relative", zIndex: 1 }}>
         {/* date + time-of-day + cycle calendar icon */}
@@ -362,7 +355,10 @@ export default function TodayDemo6() {
         {/* (1) HERO — real companion bloom inside the real cycle ring */}
         <div style={{ display: "flex", flexDirection: "column", alignItems: "center", marginTop: 6 }}>
           <PhaseRing phase={phase} day={hasCycle && !showFirst ? cycle.cycleDay : 1} cycleLen={cycle.cycleLen} showMarker={hasCycle && !showFirst} size={296}>
-            <Bloom form={cForm} stageIdx={showFirst ? 1 : 4} color={cAccent} accent={T.gold} bright size={184} />
+            {/* the real crafted bloom (RichBloomV2), per-user unique via the fingerprint colourway */}
+            <SwayBloom animate idx={2}>
+              <RichBloomV2 color={heroCw.petal} color2={heroCw.tip} accent={T.gold} size={188} animate soft idx="today-hero" />
+            </SwayBloom>
           </PhaseRing>
           <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: -6 }}>
             <Heart size={15} />
