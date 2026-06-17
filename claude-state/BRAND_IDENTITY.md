@@ -26,6 +26,15 @@ Before you add or change anything visual, confirm:
 6. **Surfaces/components** — snap to the spacing scale; cards, backgrounds/scrims, buttons, chips/inputs/sheets/toggles, nav, icons & links all follow §6. Buttons accent-driven (not legacy `.fw-btn`); icons Lucide/SVG only; one motif per fold.
 7. **Always**: cream/plum world, Ephesis + Cormorant + system-sans only, Lucide/SVG icons, **no emoji**, UK English, no scoreboards, no-guilt.
 
+> **TONE DIAL — elegant AND lush, never sparse (READ THIS so "restraint" doesn't produce plain/boring results).**
+> FemWell's aesthetic is **rich, lush, beautiful** — a flourishing garden, not a minimalist white app. "Restraint" here means *cohesion and craft* (one type system, one palette, organic line quality), **NOT sparseness or monochrome**. Bias toward generous beauty:
+> - **Colour, not flat cream.** Use the phase hues + the 9 colourways (§2.4/§2.5) as **visible** card tints, section washes, coloured eyebrows/accents, a coloured glow behind the hero. Monochrome cream-everywhere reads as boring — add warmth and colour.
+> - **Botanicals present, not faint.** Vines/leaves/blooms should be **seen and crafted** — coloured, detailed, at meaningful size/opacity (a flowering hero, trailing leafy vines, a resting butterfly, a meaning-bloom per card), not 0.06 hairlines. "One motif per fold" still holds for *cohesion*, but make that motif beautiful and present.
+> - **A designed hero.** The bloom-in-cycle-ring is the centrepiece — big, lush, framed (glow, butterfly, florals).
+> - **Rich cards.** Layered depth, a colourway tint, a faint botanical watermark, a coloured accent header + a meaning-bloom — crafted, not flat text boxes.
+> - **Generous display type.** Use the Ephesis script (`.fw-display`/`Script`) warmly for greetings and section headers.
+> Rule of thumb: if a screen reads as plain/monochrome/sparse, it is **off-brand** — push it richer.
+
 ---
 
 ## 1. TYPOGRAPHY — the type scale (roles, not sizes)

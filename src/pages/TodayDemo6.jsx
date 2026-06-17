@@ -22,7 +22,10 @@ import { computeCycleDay, phaseForDay } from "@/hooks/useCycleDay";
 import { nutritionToday } from "@/utils/nutritionSummary";
 import { communityHash } from "@/components/community/communityAnon";
 import { Bloom } from "@/components/nurture/NurtureGarden";
-import { RichBloomV2, SwayBloom, fingerprintColourway, floraKeyframes, CardCorner, VineMotifV2, LeafDivider, SprigDivider, FleuronDivider } from "@/components/brand/flora";
+import { RichBloomV2, SwayBloom, fingerprintColourway, floraKeyframes, CardCorner, VineMotifV2, LeafDivider, SprigDivider, FleuronDivider, FlowerGlyph, Butterfly, COLORWAYS, cwOf } from "@/components/brand/flora";
+
+// each surface → a meaning-flower + colourway (lush per-section identity, BRAND_IDENTITY §5.1)
+const SURFACE_FLOWER = { journal: "camellia", nutrition: "sunflower", community: "cornflower", planner: "iris", programs: "lavender", garden: "rose", pulse: "dahlia", foryou: "primrose", book: "bluebell", story: "poppy", listen: "bluebell", horoscope: "violet" };
 import { FORM_LIST, getCompanion, tendCompanion, tendedToday, loadCompanionState } from "@/components/nurture/companion";
 import { useScrollLock } from "@/utils/useScrollLock";
 // Reuse the PRODUCTION Planner row slider verbatim — same card size, 3D depth
@@ -356,15 +359,24 @@ export default function TodayDemo6() {
 
         {/* (1) HERO — real companion bloom inside the real cycle ring */}
         <div style={{ display: "flex", flexDirection: "column", alignItems: "center", marginTop: 6 }}>
-          <PhaseRing phase={phase} day={hasCycle && !showFirst ? cycle.cycleDay : 1} cycleLen={cycle.cycleLen} showMarker={hasCycle && !showFirst} size={296}>
-            {/* the real crafted bloom (RichBloomV2), per-user unique via the fingerprint colourway */}
-            <SwayBloom animate idx={2}>
-              <RichBloomV2 color={heroCw.petal} color2={heroCw.tip} accent={T.gold} size={188} animate soft idx="today-hero" />
-            </SwayBloom>
-          </PhaseRing>
-          <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: -6 }}>
-            <Heart size={15} />
-            <Script size={40} color={T.ink}>{greeting}{name ? `, ${name}` : ""}</Script>
+          {/* lush masthead: coloured glow + the crafted bloom-in-ring + a resting butterfly */}
+          <div style={{ position: "relative", display: "flex", justifyContent: "center", width: "100%" }}>
+            <div aria-hidden style={{ position: "absolute", top: "48%", left: "50%", width: 340, height: 340, transform: "translate(-50%,-50%)", borderRadius: "50%", background: `radial-gradient(circle, ${heroCw.petal}40 0%, ${phaseColor}24 42%, transparent 70%)`, animation: "fwcGlow 7s ease-in-out infinite", pointerEvents: "none", zIndex: 0 }} />
+            <div style={{ position: "absolute", top: 10, right: 34, zIndex: 2, pointerEvents: "none" }}><Butterfly size={44} color={heroCw.petal} color2={heroCw.tip} pattern="eyes" animate idx="hero-bf" /></div>
+            <div style={{ position: "relative", zIndex: 1 }}>
+              <PhaseRing phase={phase} day={hasCycle && !showFirst ? cycle.cycleDay : 1} cycleLen={cycle.cycleLen} showMarker={hasCycle && !showFirst} size={300}>
+                {/* the real crafted bloom (RichBloomV2), per-user unique via the fingerprint colourway */}
+                <SwayBloom animate idx={2}>
+                  <RichBloomV2 color={heroCw.petal} color2={heroCw.tip} accent={T.gold} size={198} animate soft idx="today-hero" />
+                </SwayBloom>
+              </PhaseRing>
+            </div>
+          </div>
+          <div style={{ display: "flex", alignItems: "center", gap: 9, marginTop: -4 }}>
+            <FlowerGlyph variant="camellia" size={26} color={cwOf("blush").petal} color2={cwOf("blush").tip} idx="hf-l" />
+            <Heart size={17} />
+            <Script size={44} color={T.ink}>{greeting}{name ? `, ${name}` : ""}</Script>
+            <FlowerGlyph variant="rose" size={26} color={cwOf("plum").petal} color2={cwOf("plum").tip} idx="hf-r" />
           </div>
           {hasCycle && !showFirst ? (
             <div style={{ display: "inline-flex", alignItems: "center", gap: 8, marginTop: 6 }}>
@@ -383,8 +395,9 @@ export default function TodayDemo6() {
         </div>
 
         {/* (2) DAY PARAGRAPH — synthesised from real signals + refresh */}
-        <div style={{ position: "relative", overflow: "hidden", marginTop: 18, background: T.paperHi, border: `1px solid ${T.paperDeep}`, borderLeft: `3px solid ${T.gold}`, borderRadius: 18, padding: "18px 19px", boxShadow: "0 4px 20px rgba(58,44,26,0.12), 0 1px 4px rgba(58,44,26,0.08)" }}>
-          <CardCorner variant="carved" color={T.gold} corner="tr" size={46} opacity={0.38} />
+        <div style={{ position: "relative", overflow: "hidden", marginTop: 18, background: "linear-gradient(160deg, #FBF4E1 0%, #F4E7C4 100%)", border: `1px solid ${T.paperDeep}`, borderLeft: `4px solid ${T.gold}`, borderRadius: 18, padding: "18px 19px", boxShadow: "0 8px 28px rgba(58,44,26,0.14), 0 2px 6px rgba(58,44,26,0.08)" }}>
+          <div aria-hidden style={{ position: "absolute", right: -14, bottom: -18, opacity: 0.12, pointerEvents: "none" }}><FlowerGlyph variant="sunflower" size={120} color={T.gold} idx="wm-day" /></div>
+          <CardCorner variant="carved" color={T.gold} corner="tr" size={50} opacity={0.6} />
           <div style={{ position: "relative", display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
             <Eyebrow color={T.gold} mb={0}>{showFirst ? "Your day begins" : tod === "evening" ? "How today went" : "Your day, in a few words"}</Eyebrow>
             <button onClick={() => setParaSeed((s) => s + 1)} aria-label="Refresh the day's words" title="A different turn of phrase" style={{ background: "transparent", border: "none", cursor: "pointer", color: T.muted, padding: 2, display: "inline-flex" }}><RefreshCw size={15} /></button>
@@ -394,8 +407,9 @@ export default function TodayDemo6() {
         </div>
 
         {/* (3) YOUR DAY — gentle checklist; ticking nourishes the garden */}
-        <div style={{ position: "relative", overflow: "hidden", marginTop: 16, background: "#fff", border: `1px solid ${T.paperDeep}`, borderLeft: `3px solid ${T.sage}`, borderRadius: 18, padding: "17px 17px 15px", boxShadow: "0 4px 20px rgba(58,44,26,0.12), 0 1px 4px rgba(58,44,26,0.08)" }}>
-          <CardCorner variant="sprig" color={T.sage} corner="tr" size={48} opacity={0.4} />
+        <div style={{ position: "relative", overflow: "hidden", marginTop: 16, background: "linear-gradient(160deg, #F3F7EC 0%, #E7F0DE 100%)", border: `1px solid ${T.paperDeep}`, borderLeft: `4px solid ${T.sage}`, borderRadius: 18, padding: "17px 17px 15px", boxShadow: "0 8px 28px rgba(58,44,26,0.14), 0 2px 6px rgba(58,44,26,0.08)" }}>
+          <div aria-hidden style={{ position: "absolute", right: -16, bottom: -20, opacity: 0.1, pointerEvents: "none", zIndex: 0 }}><FlowerGlyph variant="rose" size={120} color={T.sage} idx="wm-day3" /></div>
+          <CardCorner variant="sprig" color={T.sage} corner="tr" size={52} opacity={0.6} />
           <div style={{ position: "relative", display: "flex", alignItems: "baseline", justifyContent: "space-between" }}>
             <Eyebrow mb={2} color={T.gold}>Your day</Eyebrow>
             <span style={{ fontFamily: UI, fontSize: 13, color: T.muted }}>invitations, never a score</span>
@@ -425,8 +439,9 @@ export default function TodayDemo6() {
         <LeafDivider color={T.gold} my={18} />
 
         {/* (3b) CYCLE & SYMPTOMS — elevated near the top */}
-        <div style={{ position: "relative", overflow: "hidden", background: "#fff", border: `1px solid ${T.paperDeep}`, borderLeft: `3px solid ${phaseColor}`, borderRadius: 18, padding: "16px 17px", boxShadow: "0 4px 20px rgba(58,44,26,0.12), 0 1px 4px rgba(58,44,26,0.08)" }}>
-          <CardCorner variant="sprig" color={phaseColor} corner="tr" size={48} opacity={0.4} />
+        <div style={{ position: "relative", overflow: "hidden", background: `linear-gradient(160deg, #FFFDF9 0%, ${phaseColor}22 100%)`, border: `1px solid ${T.paperDeep}`, borderLeft: `4px solid ${phaseColor}`, borderRadius: 18, padding: "16px 17px", boxShadow: "0 8px 28px rgba(58,44,26,0.14), 0 2px 6px rgba(58,44,26,0.08)" }}>
+          <div aria-hidden style={{ position: "absolute", right: -16, bottom: -20, opacity: 0.12, pointerEvents: "none", zIndex: 0 }}><FlowerGlyph variant="poppy" size={118} color={phaseColor} idx="wm-cyc" /></div>
+          <CardCorner variant="sprig" color={phaseColor} corner="tr" size={52} opacity={0.6} />
           <div style={{ position: "relative", display: "flex", alignItems: "center", gap: 9, marginBottom: 10 }}>
             {ICON_DISC(Stethoscope, phaseColor)}
             <Eyebrow color={phaseColor}>Cycle &amp; symptoms</Eyebrow>
@@ -446,7 +461,7 @@ export default function TodayDemo6() {
             planner's card size, 3D depth, smooth motion, peek + ‹ • • › nav. */}
         <SprigDivider color={T.gold} my={20} />
         <div>
-          <Eyebrow mb={2} color={T.gold}>Across your day</Eyebrow>
+          <Script size={32} color={T.ink} style={{ display: "block", lineHeight: 1.1 }}>Across your day</Script>
           <p style={{ fontFamily: UI, fontSize: 13, color: T.muted, margin: "2px 0 14px" }}>each part of your app, its own row · swipe a row sideways to do it</p>
           {(() => {
             // Lifestyle's sub-areas collapse into ONE "Lifestyle" row (swipe
@@ -470,7 +485,7 @@ export default function TodayDemo6() {
 
         {/* (5) CROSS-APP SMART SUGGESTIONS */}
         <div>
-          <Eyebrow mb={2} color={T.gold}>A few things I noticed</Eyebrow>
+          <Script size={30} color={T.ink} style={{ display: "block", lineHeight: 1.1 }}>A few things I noticed</Script>
           <p style={{ fontFamily: UI, fontSize: 13, color: T.muted, margin: "2px 0 10px" }}>gentle, tuned to your {PHASE_LABEL[phase] ? PHASE_LABEL[phase].toLowerCase() : ""} phase · slide to see more</p>
           <div style={{ display: "flex", gap: 12, overflowX: "auto", scrollSnapType: "x mandatory", scrollbarWidth: "none", paddingBottom: 6 }}>
             {SUGGESTIONS.map((g, i) => { const Gi = g.Icon; return (
@@ -697,12 +712,13 @@ const OPEN_LINK = { display: "inline-flex", alignItems: "center", gap: 4, margin
 function SummarySlide({ s, eyebrow = "Today" }) {
   const quote = s.summary.inset ? (s.summary.inset.quote || "").slice(0, 80) : "";
   return (
-    <article style={{ ...SLIDE_CARD, borderLeft: `4px solid ${s.accent}` }}>
-      {/* delicate corner sprig — one per card, low-opacity (BRAND_IDENTITY §4.2) */}
-      <CardCorner variant="sprig" color={s.accent} corner="tr" size={50} opacity={0.4} />
+    <article style={{ ...SLIDE_CARD, background: `linear-gradient(165deg, ${T.paperHi} 0%, ${s.accent}14 100%)`, borderLeft: `4px solid ${s.accent}` }}>
+      {/* corner sprig + a per-section meaning-bloom in its colourway (BRAND_IDENTITY §4.2/§5.1) */}
+      <CardCorner variant="sprig" color={s.accent} corner="tr" size={54} opacity={0.55} />
       <div style={{ display: "flex", alignItems: "center", gap: 9, marginBottom: 11, position: "relative" }}>
         {ICON_DISC(s.Icon, s.accent)}
         <Eyebrow color={s.accent}>{eyebrow}</Eyebrow>
+        <span style={{ marginLeft: "auto" }}><FlowerGlyph variant={SURFACE_FLOWER[s.key] || "camellia"} size={32} color={s.accent} idx={`mb-${s.key}`} /></span>
       </div>
       <h3 style={{ fontFamily: SERIF, fontSize: 20, fontWeight: 600, color: T.ink, margin: "0 0 10px", lineHeight: 1.3 }}>{s.summary.title}</h3>
       {s.summary.lines.slice(0, 2).map((ln, j) => (
@@ -724,9 +740,10 @@ function SummarySlide({ s, eyebrow = "Today" }) {
 // Action face — prompt + the do-it-now buttons + open-full-page link.
 function ActionSlide({ s, onSheet }) {
   return (
-    <article style={{ ...SLIDE_CARD, borderLeft: `4px solid ${s.accent}` }}>
+    <article style={{ ...SLIDE_CARD, background: `linear-gradient(165deg, ${T.paperHi} 0%, ${s.accent}14 100%)`, borderLeft: `4px solid ${s.accent}` }}>
+      <CardCorner variant="sprig" color={s.accent} corner="tr" size={50} opacity={0.5} />
       <Eyebrow mb={11} color={s.accent}>Do it now</Eyebrow>
-      <p style={{ fontFamily: SERIF, fontSize: 16, color: T.ink, lineHeight: 1.5, margin: "0 0 12px" }}>{s.action.prompt}</p>
+      <p style={{ fontFamily: SERIF, fontSize: 16, color: T.ink, lineHeight: 1.5, margin: "0 0 12px", position: "relative" }}>{s.action.prompt}</p>
       <div style={{ marginBottom: 2 }}>{s.action.buttons.map((b, k) => <ActionBtn key={k} Icon={b.Icon} href={b.href} onClick={b.sheet ? () => onSheet(b.sheet) : undefined} accent={s.accent}>{b.label}</ActionBtn>)}</div>
       <a href={s.slug} style={OPEN_LINK}>{s.openLabel} <ChevronRight size={14} /></a>
     </article>
@@ -753,10 +770,12 @@ function LifestyleSlide({ s, onSheet }) {
   const sub = s.eyebrow.replace(/^Lifestyle ·\s*/, "");
   const quote = s.summary.inset ? (s.summary.inset.quote || "").slice(0, 80) : "";
   return (
-    <article style={{ ...SLIDE_CARD, borderLeft: `4px solid ${s.accent}` }}>
-      <div style={{ display: "flex", alignItems: "center", gap: 9, marginBottom: 11 }}>
+    <article style={{ ...SLIDE_CARD, background: `linear-gradient(165deg, ${T.paperHi} 0%, ${s.accent}14 100%)`, borderLeft: `4px solid ${s.accent}` }}>
+      <CardCorner variant="sprig" color={s.accent} corner="tr" size={54} opacity={0.55} />
+      <div style={{ display: "flex", alignItems: "center", gap: 9, marginBottom: 11, position: "relative" }}>
         {ICON_DISC(s.Icon, s.accent)}
         <Eyebrow color={s.accent}>{sub}</Eyebrow>
+        <span style={{ marginLeft: "auto" }}><FlowerGlyph variant={SURFACE_FLOWER[s.key] || "camellia"} size={32} color={s.accent} idx={`mbl-${s.key}`} /></span>
       </div>
       <h3 style={{ fontFamily: SERIF, fontSize: 20, fontWeight: 600, color: T.ink, margin: "0 0 10px", lineHeight: 1.3 }}>{s.summary.title}</h3>
       {s.summary.lines.slice(0, 2).map((ln, j) => (

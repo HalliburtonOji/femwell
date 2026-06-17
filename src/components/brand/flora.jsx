@@ -48,7 +48,7 @@ export function seededRng(seed) { let x = (seed || 1) >>> 0; return () => { x = 
 export function fingerprintColourway(userId) { return COLORWAYS[hashSeed(userId || "femwell") % COLORWAYS.length]; }
 
 // ── keyframes (inject once per page that renders a RichBloomV2) ───────────────
-export const floraKeyframes = `@keyframes fwcBreath{0%,100%{transform:scale(1)}50%{transform:scale(1.035)}}@keyframes fwcSway{0%,100%{transform:rotate(-1.5deg)}50%{transform:rotate(1.5deg) translateY(-1px)}}@keyframes fwcShimmer{0%,100%{opacity:.45}50%{opacity:.85}}@media (prefers-reduced-motion:reduce){.fwc-anim *{animation:none!important}}`;
+export const floraKeyframes = `@keyframes fwcBreath{0%,100%{transform:scale(1)}50%{transform:scale(1.035)}}@keyframes fwcSway{0%,100%{transform:rotate(-1.5deg)}50%{transform:rotate(1.5deg) translateY(-1px)}}@keyframes fwcShimmer{0%,100%{opacity:.45}50%{opacity:.85}}@keyframes fwcDrift{0%,100%{transform:translate(0,0) rotate(-3deg)}50%{transform:translate(4px,-5px) rotate(3deg)}}@keyframes fwcFlutter{0%,100%{transform:scaleX(1)}50%{transform:scaleX(0.86)}}@keyframes fwcGlow{0%,100%{opacity:.5;transform:scale(1)}50%{opacity:.72;transform:scale(1.04)}}@media (prefers-reduced-motion:reduce){.fwc-anim *{animation:none!important}}`;
 
 // ── RichBloomV2 — the canonical crafted bloom (BRAND_IDENTITY §5) ─────────────
 const PETAL_BLOOM_CX = 50, PETAL_BLOOM_CY = 50;
@@ -252,6 +252,69 @@ export function CornerSprig({ variant = "sprig", color = T.gold, size = 74, opac
 export function CardCorner({ variant = "sprig", color = T.gold, size = 52, opacity = 0.5, corner = "tr" }) {
   const pos = { ...(corner.includes("t") ? { top: 0 } : { bottom: 0 }), ...(corner.includes("l") ? { left: 0 } : { right: 0 }) };
   return <div style={{ position: "absolute", pointerEvents: "none", zIndex: 0, ...pos }}><CornerSprig variant={variant} color={color} corner={corner} size={size} opacity={opacity} /></div>;
+}
+
+// ── FLOWER GLYPH — 18 species, colourway-parameterised (BRAND_IDENTITY §5.2) ──────────────────────
+export function FlowerGlyph({ variant = "camellia", size = 52, color = T.crimson, color2 = null, accent = "#2E261B", idx = 0 }) {
+  const gid = `fg-${variant}-${idx}`;
+  const cx = 20, cy = 20;
+  const grad = (
+    <radialGradient id={`fgr-${gid}`} cx="50%" cy="40%" r="64%">
+      <stop offset="0%" stopColor={color2 || lighten(color, 0.34)} /><stop offset="58%" stopColor={color} /><stop offset="100%" stopColor={darken(color, 0.08)} />
+    </radialGradient>
+  );
+  let body;
+  if (variant === "poppy") {
+    body = (<g>{[18, 100, 182, 264].map((a, i) => <ellipse key={i} cx={cx} cy={cy - 9} rx="8.2" ry="10" fill={`url(#fgr-${gid})`} opacity="0.95" transform={`rotate(${a} ${cx} ${cy})`} />)}<circle cx={cx} cy={cy} r="4.2" fill={darken(color, 0.34)} />{Array.from({ length: 8 }).map((_, i) => { const a = i * 45 * Math.PI / 180; return <circle key={i} cx={cx + Math.cos(a) * 3} cy={cy + Math.sin(a) * 3} r="0.7" fill={lighten(color, 0.2)} />; })}</g>);
+  } else if (variant === "sunflower") {
+    body = (<g>{Array.from({ length: 18 }).map((_, i) => <ellipse key={i} cx={cx} cy={cy - 11} rx="2.4" ry="7" fill={`url(#fgr-${gid})`} opacity="0.95" transform={`rotate(${i * 20} ${cx} ${cy})`} />)}<circle cx={cx} cy={cy} r="6.4" fill={accent} /><circle cx={cx} cy={cy} r="6.4" fill="none" stroke={darken(color, 0.2)} strokeWidth="0.5" opacity="0.5" />{Array.from({ length: 10 }).map((_, i) => { const a = i * 36 * Math.PI / 180; return <circle key={i} cx={cx + Math.cos(a) * 3.6} cy={cy + Math.sin(a) * 3.6} r="0.8" fill={lighten(accent, 0.18)} />; })}</g>);
+  } else if (variant === "dahlia") {
+    const petal = "M0 0 C -2.6 -4 -2.4 -9 0 -13 C 2.4 -9 2.6 -4 0 0 Z";
+    body = (<g>{Array.from({ length: 12 }).map((_, i) => <path key={`o${i}`} d={petal} fill={color} opacity="0.9" transform={`translate(${cx} ${cy}) rotate(${i * 30}) translate(0 -3)`} />)}{Array.from({ length: 9 }).map((_, i) => <path key={`m${i}`} d={petal} fill={`url(#fgr-${gid})`} opacity="0.95" transform={`translate(${cx} ${cy}) rotate(${i * 40 + 18}) scale(0.7) translate(0 -3)`} />)}<circle cx={cx} cy={cy} r="2.6" fill={darken(color, 0.28)} /></g>);
+  } else if (variant === "lotus") {
+    const pet = (s, dy, fill, o) => <path d="M0 0 C -5 -6 -5 -16 0 -22 C 5 -16 5 -6 0 0 Z" fill={fill} opacity={o} transform={`translate(${cx} ${cy + dy}) scale(${s})`} />;
+    body = (<g><path d="M20 20 C 6 16 2 20 2 20 C 6 26 14 24 20 20 Z" fill={color} opacity="0.55" /><path d="M20 20 C 34 16 38 20 38 20 C 34 26 26 24 20 20 Z" fill={color} opacity="0.55" />{[-32, 32].map((a, i) => <path key={i} d="M0 0 C -4 -6 -4 -15 0 -20 C 4 -15 4 -6 0 0 Z" fill={color} opacity="0.7" transform={`translate(${cx} ${cy + 1}) rotate(${a})`} />)}{pet(1, 1, `url(#fgr-${gid})`, 0.96)}<circle cx={cx} cy={cy - 5} r="1.6" fill={lighten(accent, 0.2)} /></g>);
+  } else if (variant === "cornflower") {
+    body = (<g>{Array.from({ length: 12 }).map((_, i) => <path key={i} d="M0 0 L -1.7 -10 L 0 -13 L 1.7 -10 Z" fill={`url(#fgr-${gid})`} opacity="0.92" transform={`translate(${cx} ${cy}) rotate(${i * 30})`} />)}{Array.from({ length: 6 }).map((_, i) => <path key={`b${i}`} d="M0 0 L -1.3 -6 L 0 -8 L 1.3 -6 Z" fill={darken(color, 0.12)} opacity="0.9" transform={`translate(${cx} ${cy}) rotate(${i * 60 + 30})`} />)}<circle cx={cx} cy={cy} r="2.6" fill={darken(color, 0.3)} /></g>);
+  } else if (variant === "lavender") {
+    body = (<g><path d="M20 38 C 20 30 20 22 20 12" fill="none" stroke="#7E9A7E" strokeWidth="1.3" strokeLinecap="round" /><path d="M20 30 C 14 30 12 27 12 23 M20 26 C 26 26 28 23 28 19" stroke="#8FAF8F" strokeWidth="1" fill="none" strokeLinecap="round" opacity="0.8" />{Array.from({ length: 8 }).map((_, i) => <ellipse key={i} cx={20 + (i % 2 ? 2.6 : -2.6)} cy={6 + i * 1.7} rx="2.4" ry="3" fill={`url(#fgr-${gid})`} opacity="0.95" />)}</g>);
+  } else if (variant === "rose") {
+    body = (<g>{[0, 1].map((ring) => Array.from({ length: 5 }).map((_, i) => <path key={`${ring}-${i}`} d="M0 0 C -5 -3 -5 -9 0 -11 C 5 -9 5 -3 0 0 Z" fill={`url(#fgr-${gid})`} opacity={ring ? 0.98 : 0.88} transform={`translate(${cx} ${cy}) rotate(${i * 72 + ring * 36}) scale(${ring ? 0.62 : 1}) translate(0 -3)`} />))}<path d="M20 20 C 17 19 16 16 18 14 C 20 13 22 15 21 17 C 20.4 18 19 18 19 17" fill="none" stroke={darken(color, 0.2)} strokeWidth="0.8" opacity="0.6" /></g>);
+  } else if (variant === "iris") {
+    body = (<g>{[-18, 0, 18].map((a, i) => <ellipse key={`u${i}`} cx={cx} cy={cy - 9} rx="3.6" ry="7" fill={`url(#fgr-${gid})`} opacity="0.9" transform={`rotate(${a} ${cx} ${cy})`} />)}{[150, 180, 210].map((a, i) => <path key={`f${i}`} d="M0 0 C -3.4 4 -3 10 0 13 C 3 10 3.4 4 0 0 Z" fill={`url(#fgr-${gid})`} opacity="0.96" transform={`translate(${cx} ${cy}) rotate(${a - 180})`} />)}<path d="M20 20 C 19 24 19 28 20 31" stroke={lighten("#D4AF37", 0.1)} strokeWidth="1.4" fill="none" opacity="0.8" strokeLinecap="round" /></g>);
+  } else if (variant === "primrose") {
+    body = (<g>{Array.from({ length: 5 }).map((_, i) => { const a = (i * 72 - 90) * Math.PI / 180; return <ellipse key={i} cx={cx + Math.cos(a) * 8} cy={cy + Math.sin(a) * 8} rx="5" ry="6" fill={`url(#fgr-${gid})`} opacity="0.95" transform={`rotate(${i * 72} ${cx + Math.cos(a) * 8} ${cy + Math.sin(a) * 8})`} />; })}<circle cx={cx} cy={cy} r="3.4" fill="#D8C24E" /><circle cx={cx} cy={cy} r="1.4" fill={lighten("#D4AF37", 0.2)} /></g>);
+  } else if (variant === "bluebell") {
+    body = (<g><path d="M20 4 C 19 12 20 18 20 22" stroke="#7E9A7E" strokeWidth="1.1" fill="none" strokeLinecap="round" />{[[13, 16, -22], [20, 22, 4], [27, 17, 24]].map(([x, y, r], i) => <g key={i} transform={`rotate(${r} ${x} ${y})`}><path d={`M${x} ${y - 7} C ${x - 4} ${y - 6} ${x - 4} ${y} ${x - 3} ${y + 3} C ${x - 1.5} ${y + 5} ${x + 1.5} ${y + 5} ${x + 3} ${y + 3} C ${x + 4} ${y} ${x + 4} ${y - 6} ${x} ${y - 7} Z`} fill={`url(#fgr-${gid})`} opacity="0.95" /></g>)}</g>);
+  } else if (variant === "violet") {
+    body = (<g>{[[-7, -5], [7, -5], [-8, 3], [8, 3]].map(([dx, dy], i) => <ellipse key={i} cx={cx + dx} cy={cy + dy} rx="5.2" ry="6" fill={`url(#fgr-${gid})`} opacity="0.95" />)}<ellipse cx={cx} cy={cy + 8} rx="6.5" ry="7" fill={`url(#fgr-${gid})`} opacity="0.96" /><circle cx={cx} cy={cy} r="2.6" fill={lighten("#D4AF37", 0.1)} /></g>);
+  } else { // camellia (default) — concentric rounded petals
+    body = (<g>{[0, 1].map((ring) => Array.from({ length: 6 }).map((_, i) => <ellipse key={`${ring}-${i}`} cx={cx} cy={cy - (ring ? 5 : 8)} rx={ring ? 4.2 : 5.4} ry={ring ? 5 : 7} fill={`url(#fgr-${gid})`} opacity={ring ? 0.98 : 0.9} transform={`rotate(${i * 60 + ring * 30} ${cx} ${cy})`} />))}<circle cx={cx} cy={cy} r="3" fill={lighten("#D4AF37", 0.08)} /></g>);
+  }
+  return <svg viewBox="0 0 40 40" width={size} height={size} aria-hidden><defs>{grad}</defs>{body}</svg>;
+}
+
+// ── BUTTERFLY — transformation + return. Gentle drift + faint flutter (isolated, reduced-motion-safe).
+export function Butterfly({ size = 46, color = "#8E6E8E", color2 = T.gold, pattern = "spots", animate = true, idx = 0 }) {
+  const gid = `bf-${idx}`;
+  let marks;
+  if (pattern === "bands") marks = <g fill="none" stroke={color2} strokeWidth="2.2" strokeLinecap="round" opacity="0.8"><path d="M7 11 C 12 13 17 14 22 15" /><path d="M11 31 C 15 30 19 28 22 26" /></g>;
+  else if (pattern === "eyes") marks = <g><circle cx="10" cy="13" r="2.6" fill={color2} opacity="0.9" /><circle cx="10" cy="13" r="1.1" fill={darken(color, 0.3)} /><circle cx="14" cy="30" r="2" fill={color2} opacity="0.8" /><circle cx="14" cy="30" r="0.9" fill={darken(color, 0.3)} /></g>;
+  else marks = <g><circle cx="9" cy="13" r="1.6" fill="#FFFDF7" opacity="0.6" /><circle cx="13" cy="11" r="1" fill={color2} opacity="0.7" /><circle cx="15" cy="30" r="1.2" fill={color2} opacity="0.7" /></g>;
+  const wingL = (<g><path d="M24 15 C 17 6 5 5 3 13 C 2 19 11 22 24 20 Z" fill={`url(#bw-${gid})`} /><path d="M24 21 C 15 22 8 28 12 34 C 16 38 23 31 24 24 Z" fill={`url(#bw2-${gid})`} />{marks}</g>);
+  return (
+    <svg viewBox="0 0 48 42" width={size} height={Math.round(size * 0.88)} aria-hidden
+      style={animate ? { transformBox: "fill-box", transformOrigin: "center", willChange: "transform", animation: "fwcDrift 7s ease-in-out infinite", animationDelay: `${(idx % 4) * 0.9}s` } : undefined}>
+      <defs>
+        <linearGradient id={`bw-${gid}`} x1="1" y1="0" x2="0" y2="1"><stop offset="0%" stopColor={lighten(color, 0.28)} /><stop offset="100%" stopColor={color} /></linearGradient>
+        <linearGradient id={`bw2-${gid}`} x1="1" y1="0" x2="0" y2="1"><stop offset="0%" stopColor={color} /><stop offset="100%" stopColor={darken(color, 0.12)} /></linearGradient>
+      </defs>
+      <g style={animate ? { transformBox: "fill-box", transformOrigin: "right center", animation: "fwcFlutter 0.9s ease-in-out infinite" } : undefined}>{wingL}</g>
+      <g style={animate ? { transformBox: "fill-box", transformOrigin: "left center", animation: "fwcFlutter 0.9s ease-in-out infinite" } : undefined} transform="translate(48 0) scale(-1 1)">{wingL}</g>
+      <path d="M24 11 C 22.8 19 22.8 28 24 34 C 25.2 28 25.2 19 24 11 Z" fill="#2E261B" /><circle cx="24" cy="11" r="1.6" fill="#2E261B" />
+      <path d="M24 10 C 22 6 20 4 18 3" stroke="#2E261B" strokeWidth="0.7" fill="none" strokeLinecap="round" /><path d="M24 10 C 26 6 28 4 30 3" stroke="#2E261B" strokeWidth="0.7" fill="none" strokeLinecap="round" />
+    </svg>
+  );
 }
 
 // a feature card framed with four delicate corner sprigs
