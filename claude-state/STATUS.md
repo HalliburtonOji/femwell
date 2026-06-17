@@ -1,6 +1,17 @@
 # FEMWELL — CANONICAL STATUS INDEX (read first · updated 2026-06-16)
 **This file is the single source of truth AND the index to every plan doc. If anything else disagrees, this wins.** (The long ship-log history continues below the index.)
 
+## ✅ TODAY — WIRING PASS (over-promises fixed + content surfaces → real data) — SHIPPED + LIVE-VERIFIED (2026-06-17) — live `index-Drt65F-W.js` · commit `6070b11`
+- Worked the audit's ✗/◐ list. Guards on every awaited read (`withTimeout`+`.catch`, fail-open → curated fallback). NO new functions (reused HabitLogs/entity writes + qotdForDay + existing dispatchers). Spine untouched.
+- **#1 Your Day checklist (over-promise FIXED):** ticking now **writes a real `HabitLog`** (per-user, cross-device) AND calls **`tendCompanion`** (real CompanionState nourish) — the "fed your garden" is real. **LIVE: tick → `POST /entities/HabitLogs 200`.**
+- **#2 Hero companion (over-promise FIXED):** RichBloomV2 now uses the **real companion colour** (`cAccent` from CompanionState); fingerprint is only the pre-resolve fallback. (Honest nuance: silhouette is the one crafted RichBloomV2 shape — per-FORM crafted blooms remain a future ◐; colour now reflects the real companion.)
+- **#5 Programs "Begin" (FIXED):** now **writes a `HabitLog` completion** (doWrite `practice` branch). **LIVE: Begin → `POST /entities/HabitLogs 200`.**
+- **Community summary → real:** today's **QOTD prompt via `qotdForDay()`** (deterministic rotation — LIVE shows "What did you say no to this week…"), + a **real recent `Echo`** (guarded). QOTD sheet write now uses the real prompt key.
+- **Lifestyle → real reads (guarded, fallback):** **Daily Story** (`DailyStory`), **For You** (`LifestyleItems`), **Book of the Day** (`BookClubPick` active → real title/author/`gutenberg_id`, link follows the real pick). Old hardcoded "Little Women chapter" gone.
+- **Meal write LIVE-FIRED (was code-only):** picked a recents food → **`POST /entities/MealLog 200`**.
+- **LIVE-VERIFIED at 390px (bundle `index-Drt65F-W.js`): 0 console errors**; spine intact (journal/water/symptom unchanged + still wired). Screenshot `femwell-handoff/today-wired-hero.png`.
+- **STILL ◐/✗ (CHECKPOINT — next session):** (a) **Planner** summary still curated (wire `DailyPlan`/`PlannerItems`); (b) **Pulse** summary still curated (wire `WeeklyInsights`/`InsightCards`); (c) **Listen** (no clear audio entity — FLAG) + **Horoscope** (wire `HoroscopeReading`, likely empty for test user → graceful); (d) **Smart Suggestions** still mostly curated (drive more from cycle/symptoms/reading signals); (e) **qotd/echo writes** code-verified (doWrite→answerQotd/postEcho with real key) but NOT live-fired (avoided posting to live community — fire with a throwaway to confirm `Echo`/`QotdResponse` persist). Hero per-FORM crafted bloom is the remaining companion nuance.
+
 ## ✅ TODAY — BOLD LUSH PASS (colour · visible botanicals · designed hero · rich cards) — SHIPPED + LIVE-VERIFIED (2026-06-17) — live `index-h5rsHMNW.js` · commit `8ce854a`
 - Halli: subtle/low-opacity reads as BORING; the project pattern is rich-wins. Went bold (not incremental). Reframed the spec so "restraint" stops producing plain results.
 - **Hero masthead:** coloured **radial glow** behind the ring (fingerprint colourway + phase hue, `fwcGlow` animated), **bigger bloom** (RichBloomV2 198 in a 300 ring), a **butterfly** resting on the ring, **blooms flanking** the Ephesis greeting (one carved Heart kept per §3).
