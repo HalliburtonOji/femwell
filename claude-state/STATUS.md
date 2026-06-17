@@ -1,7 +1,12 @@
 # FEMWELL — CANONICAL STATUS INDEX (read first · updated 2026-06-16)
 **This file is the single source of truth AND the index to every plan doc. If anything else disagrees, this wins.** (The long ship-log history continues below the index.)
 
-## ✅ TODAY DEMO 6 — within-row overlap LIGHTENED to ~20% (≈80% of each next card visible) — SHIPPED + LIVE-VERIFIED (2026-06-17) — live `index-DelyfzrI.js` · commit `2fe613f` · PREVIEW ONLY
+## ✅ TODAY DEMO 6 — FULL-SIZE row cards restored + ~20% peek via OFFSET only — SHIPPED + LIVE-VERIFIED (2026-06-17) — live `index-CMf1poGy.js` · commit `bfbb7e4` · PREVIEW ONLY
+- Reverted the wrong card-size shrink (54%). Cards are back to the BIG full-size of the earlier horizontal-rows version (**80% of the row, ~277px**, measured live). The ~20% tuck is now achieved purely by horizontal OFFSET: the front card fills the row, the next card is pushed ~80% of a card-width to the side so only a **~20% sliver peeks from the right** (rest off into the swipe track / clipped); swipe/tap brings the next FULL-SIZE card forward (summary tucks left). Card dimensions never change between states. Uniform size + cream colour; vertical list of independent rows; horizontal within-row slide — kept.
+- Geometric note: a true 100%-row-width card can't show a side peek (no room); 80% is the largest size that still leaves the ~20% peek strip, and it matches the earlier big-rows look.
+- **LIVE-VERIFIED at 390px:** front card = 80% of row (big, unchanged) with only ~20% of the next peeking from the right; advancing keeps the next card at the SAME 80% size (no resize); rows independent. Screenshot `femwell-handoff/bigcards-peek.png`.
+
+## (superseded) TODAY DEMO 6 — within-row overlap lightened to ~80%-visible (cards wrongly shrunk to 54%) — `index-DelyfzrI.js` · commit `2fe613f`
 - Axis was already right (vertical rows + horizontal within-row); the OVERLAP was too heavy (only ~20% of the next card showed). Inverted it: within each row the action card is staggered RIGHT by ~80% of its width, so **only ~20% sits under the summary and ~80% stays visible** — a gentle side-by-side fan. Narrowed cards to ~54% of the row so both fit with the light overlap; uniform size + cream colour kept; swipe/tap still brings a card forward. Only the overlap geometry changed.
 - **LIVE-VERIFIED at 390px:** each row shows summary + action both ~80% visible with ~20% of the action under the summary's right edge; rows independent; uniform; 0 console errors. Screenshot `femwell-handoff/light-stagger.png`.
 
