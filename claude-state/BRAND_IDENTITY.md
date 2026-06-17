@@ -106,32 +106,38 @@ The brand mark is the **carved crimson heart** — `Heart` in `Editorial.jsx` (a
 ## 4. BOTANICAL MOTIF (vines · leaf line-art · plant-veins)
 A small, disciplined library of **hairline botanical line-art** — stroke-only `<path>`/`<svg>`, **never filled shapes**.
 
+**Reference for the elevated bar:** `VineMotifV2` / `LeafDivider` in `pages/BrandCraftSample.jsx`.
+
 **Do:**
-- One motif per viewport: a trailing **vine** in a page corner, a **leaf divider** (a hairline rule broken by one leaf-eye) between sections, or a small **tendril** at a card corner.
-- Stroke in `ink` / `gold` / `sage` at **low opacity**: backgrounds `0.06–0.12`, a section-divider leaf up to `~0.3`.
-- Stroke-width `1–1.5`, `stroke-linecap:round`, organic/asymmetric curves. Sit it over `PAPER_BG`, not fighting it.
+- One motif per viewport: a trailing **vine** in a page corner, a **leaf divider** (a hairline rule broken by one veined leaf-eye) between sections, or a small **tendril** at a card corner.
+- **Elevated linework:** the vine's **main stem is a tapered filled sliver** (thick→thin) with a **faint gradient stroke/fill** (e.g. `sage→gold`, fading to transparent at the tail). **Leaves are veined** — a leaf outline + a midrib + 2–3 fine side-veins (`stroke-width 0.5–0.8`). Add a small **tendril curl** + a tiny **bud dot**. Finer base stroke-width `0.9–1.2`, `stroke-linecap:round`, organic/asymmetric curves.
+- Stroke in `ink` / `gold` / `sage` at **low opacity**: backgrounds `0.06–0.12`, a section-divider leaf up to `~0.3`. Sit it over `PAPER_BG`, not fighting it.
 
 **Don't:**
 - No emoji, no clip-art, no filled/3D leaves, no repeating wallpaper tile behind body text, no more than one motif per screen, no motif at an opacity that competes with reading text.
 
-**Perf:** pure SVG strokes are cheap. **Never** apply blur/`feGaussianBlur` filters to motifs, and don't animate them.
+**Perf:** pure SVG strokes + one small gradient fill are cheap. **Never** apply blur/`feGaussianBlur` filters to motifs, and don't animate them.
 
 > **AUDIT:** botanicals are documented but barely implemented (Health.jsx has a few geometric gold flourishes). `PAPER_BG` is a vignette+grain texture, **not** a botanical. This spec defines the motif so Phase 2 can roll it consistently.
 
 ---
 
-## 5. BLOOM / ILLUSTRATION CRAFT STANDARD
-**Canonical implementation:** `<Bloom>` in `components/nurture/NurtureGarden.jsx` (per-form: peony / daisy / foxglove / fern; `linearGradient` petals light→deep; `radialGradient` glow; `fwBreath 6s` / `fwSway 7s`; gold rare-halos; **`prefers-reduced-motion` honoured**). **All surfaces use this component** — the flat ellipse re-implementations in the `TodayDemo*` pages are **deprecated** (Phase-2 replaces them).
+## 5. BLOOM / ILLUSTRATION CRAFT STANDARD  ·  ELEVATED v2 (2026-06-17)
+**Canonical implementation:** `<Bloom>` in `components/nurture/NurtureGarden.jsx`. **Reference for the elevated bar:** `RichBloomV2` in `pages/BrandCraftSample.jsx` (live at `/BrandCraftSample`). **All surfaces use the canonical component** — the flat ellipse re-implementations in the `TodayDemo*` pages are **deprecated**; the canonical `<Bloom>` is upgraded to v2 in the Today/Phase-2 build so the whole app inherits it.
 
-**Craft direction (the "more realistic" upgrade — approved via the sample):**
-- **Depth/shadow:** add a soft **grounding drop-shadow** — ONE low-opacity blurred ellipse (or a radial-gradient ellipse) beneath the bloom. *Not* a per-petal blur filter.
-- **Shading:** richer **2→3-stop petal gradient** (light tip → mid → deep base) + a subtle specular highlight near the petal crown for dimensional, non-flat petals.
-- **Motion:** breath (scale 1→1.04) + sway (rotate ±1.5°) via **CSS transforms only** (GPU-cheap). One shared `<style>` keyframe block. Always `@media (prefers-reduced-motion:reduce){animation:none}`.
+**Craft standard (the elevated "wow" bar — petals must look lifelike, not flat ovals):**
+- **Petal geometry:** real **notched petal `<path>`s** (a cupped, heart-tipped silhouette) — **never rotated ellipses**. Build the head from **three layered rings**: a large **deep outer ruff** → a **mid** layer (offset between the outer petals) → a small **lit, curled inner crown**. Layering + offset rings = real depth.
+- **Shading:** each ring has its **own multi-stop (3-stop) gradient** running tip→base, and the rings step in tone (outer base in shadow `darken(~0.13)`, inner crown the lightest `lighten(~0.5)`). A faint low-opacity petal edge-stroke (`~0.4w`, `~0.16 opacity`) separates petals without harshness.
+- **Centre:** a warm radial centre (gold family) with a ring of small **stamen dots** + a tiny lit centre highlight.
+- **Light:** **dewy speculars** — a soft top-left sheen ellipse + 1–2 tiny white dew dots near the crown (consistent top-left light source). They **shimmer faintly** (opacity 0.45↔0.85).
+- **Stem/leaves:** a **refined tapered stem** (a filled sliver with a green gradient, gentle S-curve — not a flat 2.4px stroke) + **veined leaves** (leaf fill + a midrib stroke + 2–3 fine side-veins).
+- **Depth/shadow:** ONE soft **grounding shadow** beneath the bloom — a single `feGaussianBlur` ellipse (`stdDeviation ~1.9`). **This is the ONE permitted blur node** (per bloom, static).
+- **Motion:** **breath** (scale 1→1.035 on the head group, `transform-box:fill-box; transform-origin:center`) + **multi-axis sway** (wrapper div, `rotate ±1.5°` + a slight `translateY` nod, `transform-origin:bottom center`) + the **dew shimmer** + a one-shot **settle** on arrival (`translateY+scale` fade-in). **Stagger** `animation-delay` by index so multiple blooms desync. CSS transforms/opacity only. One shared `<style>` keyframe block. Always `@media (prefers-reduced-motion:reduce){animation:none}`.
 
-**Perf rules (hard):**
-- **No `feGaussianBlur` / SVG blur filters across many nodes** — they're the expensive trap. Depth = ONE shadow ellipse + gradients, full stop.
-- Cap animated nodes (animate the bloom group, not each petal). One keyframe block per page, not per bloom.
-- A bloom is GPU-cheap: transforms + gradients composite on the GPU; measured impact on this app is **negligible** (see the sample's perf note).
+**Perf rules (hard) — MEASURED:**
+- The ONLY blur is the single grounding-shadow node **per bloom** (static, rasterised once). **Never** `feGaussianBlur` across petals or any animated node.
+- Animate the bloom GROUP, not each petal. One keyframe block per page, not per bloom. Opacity-shimmer only on the tiny dew group.
+- **Measured `/BrandCraftSample` at 390px: ~60fps with 8 elevated blooms animating** (plus the hero + comparison/scale samples on screen). GPU-composited; impact negligible.
 
 ---
 
