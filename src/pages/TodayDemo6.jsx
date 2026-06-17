@@ -255,6 +255,15 @@ export default function TodayDemo6() {
       withTimeout(base44.entities.LifestyleItems.filter({ media_type: "PODCAST", status: "PUBLISHED" }, "-published_at", 6)).then((rows) => {
         const a = (rows || []).filter((r) => r && r.title && (r.audio_url || r.episode_url || r.content_url))[0]; if (alive && a) setContent((c) => ({ ...c, listen: a }));
       }).catch(() => {});
+      // ── PROGRAMS — the user's active programme (real); title/day/length resolved from Programs by program_key ──
+      withTimeout(base44.entities.UserPrograms.filter({ user_id: id }, "-last_activity_date", 8)).then(async (rows) => {
+        const arr = (rows || []).filter(Boolean);
+        const up = arr.find((r) => r.status && r.status !== "completed") || arr[0];
+        if (!alive || !up) return;
+        let prog = null;
+        if (up.program_key) { const pr = await withTimeout(base44.entities.Programs.filter({ program_key: up.program_key }, null, 1)).catch(() => null); prog = (pr || []).filter(Boolean)[0] || null; }
+        if (alive) setContent((c) => ({ ...c, program: { up, prog } }));
+      }).catch(() => {});
       if (alive) setDataReady(true);
     })();
     return () => { alive = false; };
@@ -350,7 +359,6 @@ export default function TodayDemo6() {
   const bookTitle = content.book?.title || "Little Women";
   const bookByline = content.book?.author ? content.book.author : "read along with the Books circle";
   const bookHref = content.book?.gutenberg_id ? `/BookReader?gutenberg_id=${content.book.gutenberg_id}` : "/BookReader?gutenberg_id=514";
-  const foryouTitle = content.foryou?.[0]?.title || null;
 
   // ── PLANNER (real DailyPlan / PlannerItems → summary; graceful empty) ──
   const planItems = content.planItems || [];
@@ -390,6 +398,34 @@ export default function TodayDemo6() {
     ? { title: clip(listen.title, 46), lines: [{ Icon: Headphones, text: listen.source_name ? `${listen.source_name}` : "A podcast for where you are." }] }
     : { title: "Audio, gathering", lines: [{ Icon: Headphones, text: "We're collecting podcasts and gentle audio — real episodes will play here soon." }] };
 
+  // ── FOR YOU (real LifestyleItems picks → fuller summary; warm empty) ──
+  const phaseWord = PHASE_LABEL[phase] ? PHASE_LABEL[phase].toLowerCase() : "";
+  const foryouItems = content.foryou || [];
+  const foryouSummary = foryouItems.length
+    ? { title: `${foryouItems.length} ${foryouItems.length === 1 ? "pick" : "picks"} for you`,
+        lines: [
+          { Icon: Sparkles, text: clip(foryouItems[0].title, 58) },
+          foryouItems[1] ? { Icon: BookOpen, text: clip(foryouItems[1].title, 58) } : { Icon: Leaf, text: `tuned to your ${phaseWord} phase` },
+        ] }
+    : { title: "Picks for where you are", lines: [
+        { Icon: Sparkles, text: `Reads, a listen and a practice${phaseWord ? `, tuned to your ${phaseWord} phase` : ""}.` },
+        { Icon: ChevronRight, text: "Open Lifestyle to see today's picks." },
+      ] };
+
+  // ── PROGRAMS (real active UserPrograms + Programs title → fuller summary; warm empty) ──
+  const prog = content.program;
+  const programsSummary = prog
+    ? { title: clip(prog.prog?.title || "Your programme", 40),
+        lines: [
+          { Icon: Activity, text: prog.prog?.duration_days ? `Day ${prog.up?.current_day || 1} of ${prog.prog.duration_days}` : `Day ${prog.up?.current_day || 1}`, meta: prog.up?.streak_count ? `${prog.up.streak_count}-day streak` : undefined },
+          { Icon: Moon, text: clip(prog.prog?.daily_activities_summary || prog.prog?.summary || "Tonight: a 10-minute body-scan to settle.", 88) },
+        ] }
+    : { title: "A kind rhythm", lines: [
+        { Icon: Activity, text: "No programme yet — start a short, gentle one that fits your phase." },
+        { Icon: Moon, text: "Or do tonight's 10-minute body-scan to settle." },
+      ] };
+  const progHasData = !!prog;
+
   const SURFACES = [
     { key: "journal", eyebrow: "Journal", accent: T.gold, Icon: PenLine, slug: "/Journal", openLabel: "Open journal",
       summary: jrnSummary,
@@ -401,8 +437,8 @@ export default function TodayDemo6() {
       summary: { title: "The meadow beyond your garden", lines: [{ text: `Today's question: “${qotd.text}”` }, { text: "Anonymous, 18+, a room everyone's in." }], inset: { eyebrow: "An echo, fading", quote: echoQuote } },
       action: { prompt: "Answer the room, or leave an anonymous line of your own.", buttons: [{ Icon: Users, label: "Answer QOTD", sheet: "qotd" }, { Icon: Heart, label: "Post an echo", sheet: "echo" }] } },
     { key: "foryou", eyebrow: "Lifestyle · For You", accent: T.gold, Icon: Sparkles, slug: "/Lifestyle", openLabel: "Open Lifestyle",
-      summary: { title: "Picks for where you are", lines: foryouTitle ? [{ text: `Latest: ${foryouTitle}` }, { text: `tuned to your ${PHASE_LABEL[phase] ? PHASE_LABEL[phase].toLowerCase() : ""} phase` }] : [{ text: `Reads, a listen and a practice — tuned to your ${PHASE_LABEL[phase] ? PHASE_LABEL[phase].toLowerCase() : ""} phase.` }] },
-      action: { prompt: "A few things gathered for your afternoon.", buttons: [{ Icon: Sparkles, label: "See your picks", href: "/Lifestyle" }] } },
+      summary: foryouSummary,
+      action: { prompt: foryouItems.length ? `A few things gathered for you${phaseWord ? `, tuned to your ${phaseWord} phase` : ""}.` : "Open Lifestyle and I'll gather reads, a listen and a practice for you.", buttons: [{ Icon: Sparkles, label: "See your picks", href: "/Lifestyle" }] } },
     { key: "book", eyebrow: "Lifestyle · Book of the Day", accent: T.muted, Icon: BookOpen, slug: bookHref, openLabel: "Open the library",
       summary: { title: `Today's book — ${bookTitle}`, lines: [{ text: "A quiet chapter to read by her side." }, { Icon: Users, text: bookByline }] },
       action: { prompt: "A quiet chapter, the Books circle reading along.", buttons: [{ Icon: BookOpen, label: "Read the chapter", href: bookHref }] } },
@@ -419,8 +455,8 @@ export default function TodayDemo6() {
       summary: plannerSummary,
       action: { prompt: plannerHasData ? (content.plan?.focus_for_today ? `Today's focus: ${content.plan.focus_for_today}` : "Keep it kind — you don't need all of it.") : "Nothing planned yet — add today's first thing, or let it stay open.", buttons: [{ Icon: CalendarDays, label: plannerHasData ? "Open today's plan" : "Plan your day", href: "/Planner" }] } },
     { key: "programs", eyebrow: "Programs · practice", accent: T.sage, Icon: Activity, slug: "/ProgramsHub", openLabel: "Open programs",
-      summary: { title: "A kind rhythm", lines: [{ Icon: Moon, text: "Tonight: a 10-minute body-scan to settle." }] },
-      action: { prompt: "Tonight's practice is short and soft.", buttons: [{ Icon: Moon, label: "Tonight's practice", sheet: "practice" }] } },
+      summary: programsSummary,
+      action: { prompt: progHasData ? `Continue ${clip(prog.prog?.title || "your programme", 30)}, or do tonight's short practice.` : "Tonight's practice is short and soft — or find a programme that fits.", buttons: [{ Icon: Moon, label: "Tonight's practice", sheet: "practice" }, { Icon: Activity, label: progHasData ? "Continue programme" : "Browse programmes", href: "/ProgramsHub" }] } },
     { key: "garden", eyebrow: "Companion · your garden", accent: T.sage, Icon: Sprout, slug: "/Garden", openLabel: "Open your garden",
       bloom: { form: cForm?.key || "peony", color: cAccent },
       summary: { title: cName, lines: [
