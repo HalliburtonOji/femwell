@@ -1,6 +1,28 @@
 # FEMWELL — CANONICAL STATUS INDEX (read first · updated 2026-06-17)
 **This file is the single source of truth AND the index to every plan doc. If anything else disagrees, this wins.** (The long ship-log history continues below the index.)
 
+## 🎨 BRAND PHASE 2 — APP-WIDE LUSH ROLLOUT (IN PROGRESS · sequential, test-agent-gated per page) — started 2026-06-18
+**Goal:** roll the Today lush bar (page vines · carved heart in header · 4-corner card frames · colourway tints · v2 bloom · contained text · no empty cards) across every page, ONE PAGE AT A TIME, each verified by an adversarial QA subagent at 390px before the next. Keep all wiring/spine; old fallbacks intact.
+
+### >>> ROUTING TABLE — EDIT THE ROUTED COMPONENT, NOT THE SAME-NAMED FILE (learned the hard way) <<<
+`pages.config.js` maps routes to components. The live pages are the **Hub** variants; the same-named files are UNROUTED fallbacks. Confirm here before editing:
+- `/Journal` → **`src/pages/JournalHub.jsx`** (NOT Journal.jsx = `/JournalClassic`, unrouted fallback)
+- `/Community` → **`src/pages/CommunityHub.jsx`** (NOT Community.jsx = `/CommunityClassic`)
+- `/Nutrition` → **`src/pages/NutritionHub.jsx`** (NOT Nutrition.jsx)
+- `/Lifestyle` → `Lifestyle.jsx` · `/Planner` → `Planner.jsx` · `/Profile` → `Profile.jsx` · `/ProgramsHub` → `ProgramsHub.jsx` · `/Garden` → `Garden.jsx` · `/Today` → `TodayDemo6.jsx`
+- `/Health`, `/DoctorExport`, Jess: route keys NOT found in the quick grep — re-check `pages.config.js` before editing. (Jess is a FAB/overlay, not a page route.)
+- **SHARED CARD:** all three hubs render `SurfaceCard` from `src/components/nutrition/hub/HubShell.jsx` — branding it once frames Journal+Nutrition+Community cards together (done).
+
+### Shared helpers (promoted to `src/components/brand/flora.jsx`)
+`CardFrame({variant,color,opacity,size})` = the 4-corner sprig/carved frame (overlay inside a `position:relative;overflow:hidden` card; set content `position:relative` so it paints above corners). `clampLines(n)` = wrap+N-line-clamp safe-text. Reuse these on every page.
+
+### PER-PAGE PROGRESS
+- ✅ **Journal (`/Journal` = JournalHub)** — DONE + QA-PASS. live `index-CkKT8VHx.js` · commit `8b57d70`. Added page vine texture, masthead carved Heart + flanking meaning-blooms; shared `SurfaceCard` now tinted + accent-rim + 4-corner frame (also frames Nutrition/Community hub cards). Adversarial QA agent at 390px: 0 console errors, no overflow, vines + heart + framed/tinted cards present, composer opens (no regression), real numbers render. (Also lush-ified the unrouted `JournalClassic` in commit `d3e1117` — harmless.) Screenshots `femwell-handoff/brandp2-journal-*.png`. **Note:** the "labels use ui-sans-serif not Inter" QA nit is per-spec (§1.0 chrome sans = system stack; Inter remaps to Cormorant) — NOT a defect.
+- ◻️ **Community (`/Community` = CommunityHub)** — NEXT. Cards already framed via shared SurfaceCard; still needs page vines + masthead heart/blooms + a pass on any non-SurfaceCard cards.
+- ◻️ Nutrition (NutritionHub) — cards already framed via SurfaceCard; needs page vines + masthead heart/blooms.
+- ◻️ Lifestyle (+ Listen/For-You/Story/Horoscope subdivisions) · ◻️ Health · ◻️ Planner · ◻️ Profile · ◻️ DoctorExport · ◻️ ProgramsHub · ◻️ Jess (overlay) · ◻️ Garden.
+### THEN (after Brand P2): small flags (purgeTestPosts of QA Lounge rows; clear test-user nutrition rows; apple-touch PNG set) → Books Phase 2 + P1 quick-wins → deeper nutrition personalisation + more CoFID composites. GATED/skip: function consolidation, vision-key photo macros, OSA member-clubs/public-scale, medical-claims, native OS widget.
+
 ## ✅ TODAY — BOTTOM-OF-PAGE FRAMES (smart-suggestions rail + closing card) — SHIPPED + LIVE-VERIFIED (2026-06-17) — live `index-C5F4afvP.js` · commit `05cba6e`
 - Halli: the bottom cards were skipped (still plain/un-framed). The earlier passes framed the slider cards (SummarySlide/ActionSlide/LifestyleSlide → Frame4, covers ALL rows incl. the lower Planner/Programs/Companion/Pulse) but the lower NON-slider elements were missed:
 - **SMART SUGGESTIONS rail** (the "A few things I noticed" cards) — were flat cream `<a>` cards, no frame, text uncontained. Now: visible **4-corner Frame4 sprig** + colourway **gradient tint** + **overflow:hidden** + 3-line clamp; content already real-signal-driven. **LIVE: all 5 cards have 4 corner frames + tint + contained text.**
