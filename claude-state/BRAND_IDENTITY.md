@@ -1,9 +1,18 @@
-# FEMWELL — CANONICAL BRAND IDENTITY (v1 · 2026-06-16)
+# FEMWELL — CANONICAL BRAND IDENTITY · COMPLETE MASTER (v2 · 2026-06-17)
 
-> **READ THIS BEFORE ANY UI / VISUAL WORK OR VISUAL SCAN. Conform to it. This is the single source of
-> truth for typography, colour, the heart mark, botanical motifs, bloom craft, and spacing.**
-> If code disagrees with this file, this file wins — and the code is a Phase-2 fix target.
-> Mirrored in-app at **Founders → Brand & UX → Brand Identity**. Authoring rules live in CLAUDE.md.
+> **READ THIS BEFORE ANY UI / VISUAL WORK OR VISUAL SCAN. Conform to it.**
+> **This file is the single COMPLETE source of truth** — typography (fonts + scale), colour (tokens +
+> colourways), the heart mark, the botanical brand-image system, the flora backbone/meaning, variety &
+> per-user uniqueness, spacing, and the component map. It is **self-sufficient for building**.
+> If code disagrees with this file, this file wins — and the code is a fix target.
+> Mirrored in-app at **Founders → Brand & UX → Brand Identity** and **→ Flora & Meaning**. Authoring/gate rules live in CLAUDE.md.
+
+**APPENDICES (deep + cited; this master is self-sufficient without them):**
+- `claude-state/BRAND_FLORA.md` — the full flora map, floriography/colour research, fingerprint math, sources.
+- `claude-state/BRAND_IMAGE_RESEARCH.md` — the botanical-system research (Aesop/Art Nouveau/Morris/fleuron).
+
+**MASTER INDEX:**
+0. Pre-build checklist · 1. Typography (fonts + `.fw-*` cascade + role scale) · 2. Colour (tokens + retired + phase hues + **2.5 colourways**) · 3. The heart mark · 4. Botanical brand-image system (leaves/corners/dividers/flourishes) · 5. Bloom craft (RichBloomV2) · 5.1 Flora backbone & meaning · 5.2 Variety + flora fingerprint · 5.3 Page character · 6. Spacing & cards · 7. How it's applied · **8. Component map** · 9. Appendices & in-app mirrors.
 
 ---
 
@@ -27,6 +36,20 @@ Before you add or change anything visual, confirm:
 - **UI** = `ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif` — chrome only (eyebrows, captions, controls, nav, dates).
 
 **Never** introduce a 4th family. **Never** set `fontFamily:'Inter'`/`'Fraunces'` expecting a sans — they remap to Cormorant.
+
+### 1.0 Font loading & the remap (the actual mechanism — `src/index.css`)
+Fonts are declared as **explicit `@font-face`** (real gstatic **woff2**, `font-display:swap`) — NOT an `@import` chain (avoids the blocking fetch).
+- **`Cormorant Garamond`** — `normal` + `italic`, weight `400 700`, **`size-adjust:140%`** (Cormorant's small x-height would otherwise read tiny). The reading + heading face.
+- **`Ephesis`** — `normal` `400`. The display script.
+- **THE REMAP:** `Inter` AND `Fraunces` are re-declared via `@font-face` to **render Cormorant Garamond** (size-adjusted 140%). So any component that sets `fontFamily:'Inter'`/`'Fraunces'` gets **Cormorant**, not a sans. This is why chrome/sans MUST use the real system stack (below), and why you must never expect a sans from `'Inter'`.
+- **Chrome sans** = the **real** system stack `ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif` (NOT `'Inter'`).
+- `--font-serif-heading: 'Cormorant Garamond','Fraunces',Georgia,serif`.
+
+**The 3-tier `.fw-*` cascade (use the class; don't hand-roll the look):**
+- **`.fw-display`** (TIER 1) — `font-family:'Ephesis','Pinyon Script',cursive` + `#inkCarve`. **SHORT page titles ONLY** (never all-caps/long — script tangles).
+- **`.fw-heading`** (TIER 2) — `'Cormorant Garamond','Fraunces',Georgia,serif`, **italic + swash caps**. Section/secondary headings; the safe default when unsure.
+- **Body/reading** (TIER 3) — Cormorant Garamond (the app default below the headings). Voiced/quote lines → Cormorant **italic**.
+- `.fw-script` (legacy opt-in) — Ephesis with letterpress depth. `.fw-btn-primary/secondary/accent` — chrome buttons in the real system sans.
 
 ### The role table — USE THESE EXACT VALUES
 | Role | Token / class | Font | Size | Weight | Line-height | Use |
@@ -87,6 +110,21 @@ Before you add or change anything visual, confirm:
 Cycle phase hues are intentionally their own palette (used in rings, phase tints):
 `menstrual #BC2E27` · `follicular #8FAF8F` · `ovulatory #D4AF37` · `luteal #8E6E8E (plum)`.
 These read as the cycle's seasons. **Brand chrome gold stays `#A8893F`; the ovulatory phase hue stays `#D4AF37`** — they coexist by context (a phase ring vs a UI accent), never interchanged.
+
+### 2.5 Colourways (the flora variety palette — colour carries meaning)
+The flora glyphs (§5) are parameterised by a **colourway** = `{petal, tip (lit), accent}`. In floriography **colour changes meaning**, so these are meaningful, not decorative (a white poppy ≠ a crimson poppy). The **9 canonical colourways** (`COLORWAYS` in `pages/BrandCraftSample.jsx`):
+| Colourway | petal / tip / accent | Meaning (colour-floriography) |
+|---|---|---|
+| **Crimson** | `#BC2E27` / `#D9554E` / `#2E261B` | love · passion · remembrance |
+| **Blush** | `#E8B4B8` / `#F4D9DC` / `#A8893F` | grace · gratitude · tenderness |
+| **Gold** | `#D4AF37` / `#E8CE78` / `#6B5840` | joy · friendship · radiance |
+| **Sage** | `#8FAF8F` / `#B6CDB6` / `#2E261B` | renewal · hope |
+| **Plum** | `#8E6E8E` / `#B196B1` / `#D4AF37` | dignity · wisdom · admiration |
+| **Lavender** | `#B6A6C9` / `#D4C9E2` / `#8E6E8E` | devotion · serenity |
+| **Cream** | `#E4DAC1` / `#F2EAD6` / `#A8893F` | purity · reverence · a fresh start |
+| **Coral** | `#E08A6A` / `#F0B79E` / `#8E3B2C` | warmth · enthusiasm |
+| **Sky** | `#9FB6C9` / `#C3D2DE` / `#5F7E8E` | trust · loyalty · constancy |
+The same colourways drive the **creatures** (white butterfly = the divine/ancestor · blue = tranquillity · gold = confidence/joy · monarch-orange = warmth). These are flower/creature palettes — **chrome still uses §2.1–2.2 tokens only**.
 
 ---
 
@@ -154,17 +192,35 @@ Corners "grow" inward from the corner; draw for top-left, **rotate** 90/180/270 
 - Animate the bloom GROUP, not each petal. One keyframe block per page, not per bloom. Opacity-shimmer only on the tiny dew group.
 - **Measured `/BrandCraftSample` at 390px: ~60fps with 8 elevated blooms animating** (plus the hero + comparison/scale samples on screen). GPU-composited; impact negligible.
 
-### 5.1 FLORA & MEANING — the symbol layer (flowers as the backbone)
-The bloom is the centrepiece of a larger **meaning system**: flowers are chosen for documented meaning (floriography + folk-herbalism + myth), and mean the **same thing everywhere**. Full map + cited research: **`claude-state/BRAND_FLORA.md`** (mirrored in-app at Founders → Brand & UX → **Flora & Meaning**). Reference craft: `RichBloomV2` · `FlowerGlyph` · `Butterfly` · `BlossomTree` in `pages/BrandCraftSample.jsx`.
-- **Three timescales:** the **bloom** = the day/cycle · the **butterfly** = a moment of change/return (earned marker) · the **tree/orchard** = the long arc (life-stages, years, community).
-- **Phase flowers (with the §2.4 phase hues):** menstrual → **Poppy** (rest) · follicular → **Snowdrop** (hope) · ovulatory → **Sunflower** (radiance) · luteal → **Dahlia** (inner strength). The cycle ring + day-bloom take the phase's flower + hue.
-- **Life-stages, journal states, companion species, and meaningful combinations** all map to specific flowers (see BRAND_FLORA §2). Existing garden species gain meaning retroactively (peony = flourishing · foxglove = the heart-flower · fern = resilience · daisy = beginnings).
-- **Pollinators are EARNED, never ambient:** a **butterfly** (transformation + return — Greek *psyche* = soul/butterfly) visits on a true moment (return after rest, chapter complete, life-stage crossing), then drifts off; **moth** = the menstrual/night/rest dark; **dragonfly** = insight (Pulse); **bee** = community. One at a time.
-- **Craft/perf for the new elements:** `Butterfly` = SVG strokes+gradients, a gentle **drift** (group transform) + faint **flutter** (wing scaleX), isolated, `prefers-reduced-motion`-gated; `FlowerGlyph`/`BlossomTree`/`PlantGlyph`/`Creature` are static line-art. **No blur** anywhere except the bloom's one isolated shadow.
-- **VARIETY & UNIQUENESS (BRAND_FLORA §6–9):** a large library — **12+ flowers** (`FlowerGlyph`: poppy/snowdrop/sunflower/dahlia/lotus/forget-me-not/violet/cornflower/camellia/lavender/primrose/heather), **plant varieties** (`PlantGlyph` + `LeafGlyph` frond: fern/succulent/grass/ivy/bamboo/moss + the cycle herbs), and a **creature set** (`Creature`: butterfly/bee/dragonfly/moth/ladybird/hummingbird + firefly/snail). Each carries documented meaning.
-- **Flora fingerprint (per-user uniqueness):** a garden is a **portrait, not random** — a heraldry-blazon-like grammar, **deterministically seeded** (hash of `userId` + life-stage + cycle phase + the life-areas she tends + what she's earned) so it's the SAME on every device yet unique to her; rarity tiers (common → uncommon → rare bloom/creature → heirloom tree/orchard) are **earned, never bought/random**. Ref `MiniGarden` on `/BrandCraftSample`.
-- **COLOURWAY MULTIPLIER (the big variety lever):** every glyph is **parameterised by a colourway** (petal + lit tip + accent) — `FlowerGlyph`/`Butterfly`/`Creature` take `color`/`color2`/`accent` (+ butterfly `pattern`), so one drawn shape yields many on-brand variants without hand-drawing. **9 canonical colourways**, each a documented colour-meaning (crimson=love/remembrance · blush=grace · gold=joy · sage=renewal · plum=dignity · lavender=serenity · cream=purity · coral=warmth · sky=trust). **Counts: 18 flower types × 9 = 162 flower variants; butterflies 5 wing-patterns × 9 = 45; full creature set 100+; garden permutation space ≈ a billion+** (BRAND_FLORA §6.4/§7.1). Colour is meaningful (a white poppy ≠ a crimson poppy), never just decorative.
-- **Page character:** each surface gets a **flora signature** (palette lean + signature species + creature) from the one dictionary — Journal=gold+willow+moth · Community=sage+meadow+bee · Nutrition=blush-green+herbs+ladybird · Cycle/Health=phase-hue+phase-flower+dragonfly · Pulse=plum+dragonfly. Character changes **accent + signature only, never the bones** (type/tokens/layout). So the app feels different page-to-page yet one identity. **Restraint unchanged:** big library, calm view — one bloom centre-stage, one motif per fold, a creature only on a real moment.
+### 5.1 FLORA BACKBONE & MEANING (flowers as the spine of the brand)
+The bloom is the centrepiece of a **meaning system**: flowers are chosen for documented meaning (floriography + folk-herbalism + myth) and mean the **same thing everywhere** (garden, cycle, journal, chapters), so the app reads as one language. Deep map + sources: **`BRAND_FLORA.md`** (in-app: Founders → Brand & UX → **Flora & Meaning**). Reference craft: `RichBloomV2` · `FlowerGlyph` · `Butterfly` · `BlossomTree` · `PlantGlyph` · `Creature` · `MiniGarden` in `pages/BrandCraftSample.jsx`.
+
+**Three timescales:** **bloom** = the day/cycle · **butterfly** = a moment of change/return (earned marker; Greek *psyche* = soul/butterfly) · **tree/orchard** = the long arc (life-stages, years, community).
+
+**Cycle phases → flower + hue (§2.4):** menstrual → **Poppy** (rest/consolation, crimson) · follicular → **Snowdrop** (hope, sage) · ovulatory → **Sunflower** (radiance, gold `#D4AF37`) · luteal → **Dahlia** (inner strength, plum). The ring + day-bloom take the phase's flower + hue.
+
+**Life-stages → bloom / flowering tree:** teen → Daisy · cycling → the 4 phase-flowers rotate · TTC → Lotus + Pomegranate (fertility/potential) · pregnancy → Almond-blossom arc (bud→blossom→fruit) · postpartum → Calendula + Daisy (healing) · perimenopause → Hellebore (winter rose) + Lavender · menopause → Magnolia (a second flowering) · post-menopause → the Magnolia/olive canopy (elder arc).
+
+**Companion species (meaning, retroactively):** peony = flourishing · foxglove = the heart-flower (folklore protection + literally heart-medicine) · fern = resilience · daisy = beginnings · + add forget-me-not (memory), lotus (rebirth), snowdrop (hope), sunflower (radiance).
+
+**Emotional/journal flowers:** grief → forget-me-not + rosemary + white lily · rest → lavender + poppy · joy → sunflower + daisy · courage → borage + yarrow + iris · love → honeysuckle + rose · hope → snowdrop + daffodil.
+
+**Combinations (a pairing makes a sentence):** forget-me-not + rosemary = remembrance · lavender + chamomile + poppy = rest · snowdrop + crocus + daffodil = a fresh start · lotus + pomegranate = fertile potential · sunflower + daisy = cheer/friendship · marigold + borage (companion planting) = "we help each other bloom".
+
+**Pollinators are EARNED, never ambient** — one at a time, then they drift off: **butterfly** = transformation/return (visits on a comeback, chapter, or life-stage crossing) · **moth** = the menstrual/night/rest dark · **dragonfly** = insight (Pulse) · **bee** = community (garden-of-gardens) · firefly = inner light/hope · snail = patience.
+
+**Colour-changes-meaning rule:** because the glyphs are colourway-parameterised (§2.5), a white poppy (purity/rest) ≠ a crimson poppy (remembrance) — colour is part of the meaning, not decoration.
+
+### 5.2 VARIETY + THE FLORA FINGERPRINT (per-user uniqueness)
+**The library (counts):** **18 flower types** (`FlowerGlyph`: poppy/snowdrop/sunflower/dahlia/lotus/forget-me-not/violet/cornflower/camellia/lavender/primrose/heather/tulip/rose/iris/daffodil/bluebell/carnation) · **6 plants** (`PlantGlyph` + `LeafGlyph` frond: fern/succulent/grass/ivy/bamboo/moss + the cycle herbs) · **8 creatures** (`Creature`: butterfly/bee/dragonfly/moth/ladybird/hummingbird/snail/firefly).
+**The colourway multiplier:** every glyph is **parameterised** by a §2.5 colourway (`color`/`color2`/`accent`) + butterfly **`pattern`** (spots/bands/tips/eyes/plain). → **18 × 9 = 162 flower variants**; butterflies **5 × 9 = 45**; full creature set **100+**. One drawn shape → many variants, no hand-drawing.
+**The flora fingerprint** (`MiniGarden` reference, future-wired from `userId`): a garden is a **portrait, not random** — a heraldry-blazon-like grammar, **deterministically seeded** by a hash of **profile + sign-up season** (base palette + signature flower) × **life-stage** (governing bloom/tree) × **cycle phase** (active flower) × **the life-areas she tends** (which plants/companions grow) × **what she's earned**. Same seed → **same garden on every device**, recognisably hers. **Rarity tiers earned, never bought/random:** common → uncommon (a 2nd species) → rare (a rare bloom / creature visit on a milestone) → heirloom (the flowering tree → orchard).
+**Permutation space ≈ 1.4 billion:** ~26,000 two-flower pairings (162²) × 6 plants × ~100 creature variants (incl. none) × 9 base palettes (BRAND_FLORA §7.1) — so no two gardens repeat.
+
+### 5.3 PAGE CHARACTER (one identity, different per page)
+Each surface gets a **flora signature** (palette lean + signature species + creature) drawn from the one dictionary: Journal = gold + willow/rosemary + moth · Community = sage + meadow/clover + bee · Nutrition = blush-green + herbs/grasses + ladybird · Cycle/Health = phase-hue + phase-flower + dragonfly/moth · Pulse = plum + dragonfly · Garden = the full palette. Character changes the **accent + signature only — never the bones** (type/tokens/layout). Different page-to-page, unmistakably one brand.
+
+**Craft/perf for these elements:** `Butterfly` = SVG strokes+gradients with a gentle **drift** + faint wing **flutter** (isolated group transforms, reduced-motion-gated); `FlowerGlyph`/`PlantGlyph`/`BlossomTree`/`Creature` are **static** line-art. **No blur anywhere except the bloom's one isolated shadow.** Big library, calm view: one bloom centre-stage, one motif per fold, a creature only on a real moment.
 
 ---
 
@@ -182,3 +238,31 @@ The bloom is the centrepiece of a larger **meaning system**: flowers are chosen 
 - **Phase 1 (this doc):** define + sample. ✅
 - **Phase 2 (on approval):** unify inline type to the role table app-wide; canonicalise colours (retire §2.3); roll the heart to every primary header; add botanical motifs per §4; replace flat demo blooms with the upgraded canonical `<Bloom>`.
 - New work conforms from now on (CLAUDE.md gate). When you touch a file for any reason, opportunistically snap its type/colour to this spec.
+
+---
+
+## 8. COMPONENT MAP (what to reuse — where each piece lives)
+The brand system is already in code as reusable parts. A future build (the real Today, Phase-2 rollout) **reuses these — do not re-derive**:
+| Piece | Where | Notes |
+|---|---|---|
+| **Fonts + `.fw-*` cascade** | `src/index.css` | `@font-face` (Cormorant/Ephesis woff2) + the Inter/Fraunces→Cormorant remap; `.fw-display` (Ephesis), `.fw-heading` (Cormorant italic). |
+| **Tokens `T` + `PAPER_BG` + helpers** | `src/components/journal/Editorial.jsx` | exports `T` (colour tokens), `SERIF`/`UI`/`SCRIPT`, `PAPER_BG`, `Heart` (carved crimson mark), `Eyebrow`, `Script`, `Hand`, `PHASE_COLORS`, `PHASE_LABEL`, `useEditorialFonts`. |
+| **Carved heart mark** | `Heart` in `Editorial.jsx` | the brand mark (§3). (Refined `CraftedHeart` reference sample lives in `BrandCraftSample.jsx`.) |
+| **Canonical bloom** | `<Bloom>` in `components/nurture/NurtureGarden.jsx` | upgrade to the **RichBloomV2** spec (§5) in the build. |
+| **Elevated bloom reference** | `RichBloomV2` in `pages/BrandCraftSample.jsx` | the §5 "wow" bar: notched petals, 3 rings, dewy speculars, isolated blur shadow, breath/sway/shimmer/settle. |
+| **Botanical glyphs** | `pages/BrandCraftSample.jsx` | `LeafGlyph` (leaf library §4.1), `CornerSprig` + `BrandFrame` (corners §4.2), `LeafDivider`/`SprigDivider`/`FleuronDivider`/`HeaderFlourish` (dividers §4.3), `VineMotifV2`. |
+| **Flower / plant / creature glyphs** | `pages/BrandCraftSample.jsx` | `FlowerGlyph` (18 types), `PlantGlyph` (5 + fern via LeafGlyph), `Creature` (8; `Butterfly` with `pattern`). All take a colourway. |
+| **Colourway grammar** | `COLORWAYS` + `cwOf()` in `pages/BrandCraftSample.jsx` | the 9 palettes (§2.5); pass `{petal→color, tip→color2, accent}`. |
+| **Fingerprint seed** | `hashSeed()` + `seededRng()` + `MiniGarden` in `pages/BrandCraftSample.jsx` | deterministic per-user selection (§5.2); future-wire the seed from `userId` + stage + phase + tended-areas + earned. |
+| **In-app brand docs** | `components/founders/BrandIdentityDoc.jsx` + `FloraMeaningDoc.jsx` | the Founders mirrors of this file + BRAND_FLORA. |
+
+> **NOTE (current state):** the glyph library + colourway grammar + fingerprint currently live in `pages/BrandCraftSample.jsx` (the craft sample). On lock, **promote** them to shared modules (e.g. `components/brand/flora/*`) so Today/Garden/etc. import them. Until then, `BrandCraftSample.jsx` is the source of truth for the implementations.
+
+---
+
+## 9. APPENDICES & IN-APP MIRRORS
+- **`claude-state/BRAND_FLORA.md`** — deep flora map, floriography + colour-symbolism research, the fingerprint permutation math (§7.1), full sources. (In-app: Founders → Brand & UX → **Flora & Meaning** = `FloraMeaningDoc.jsx`.)
+- **`claude-state/BRAND_IMAGE_RESEARCH.md`** — the botanical-system research brief (Aesop restraint, Art Nouveau whiplash line, William Morris, the fleuron, women's-wellness palette), with sources.
+- **In-app mirror of THIS file:** Founders → Brand & UX → **Brand Identity** = `components/founders/BrandIdentityDoc.jsx`.
+- **Live craft showcase:** `/BrandCraftSample` (preview route) — every component above, rendered.
+- This master is **self-sufficient for building** without opening the appendices; the appendices add the cited "why" and the exhaustive lists.
