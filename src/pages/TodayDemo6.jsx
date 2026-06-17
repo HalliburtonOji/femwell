@@ -328,7 +328,7 @@ export default function TodayDemo6() {
   return (
     <div style={{ ...PAPER_BG, minHeight: "100vh", color: T.ink, paddingBottom: 96, position: "relative", overflow: "hidden" }}>
       <InkFilter />
-      <style>{`@keyframes fwSheetIn{from{transform:translateY(100%)}to{transform:translateY(0)}}@keyframes fwScrimIn{from{opacity:0}to{opacity:1}}@keyframes fwFadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}@media (prefers-reduced-motion:reduce){.fw-sheet-anim,.fw-scrim-anim,.fw-fade{animation:none!important}}`}</style>
+      <style>{`@keyframes fwSheetIn{from{transform:translateY(100%)}to{transform:translateY(0)}}@keyframes fwScrimIn{from{opacity:0}to{opacity:1}}@keyframes fwFadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}.fw-hrow{scrollbar-width:none}.fw-hrow::-webkit-scrollbar{display:none}@media (prefers-reduced-motion:reduce){.fw-sheet-anim,.fw-scrim-anim,.fw-fade{animation:none!important}}`}</style>
       <div style={{ position: "absolute", top: 40, right: -12, pointerEvents: "none", zIndex: 0 }}><VineMotif color={T.sage} opacity={0.12} w={150} /></div>
 
       {/* dev ribbon + preview toggles */}
@@ -644,48 +644,30 @@ function ActionSheet({ sheetKey, uid, cycle, onClose, onSaved }) {
   );
 }
 
-// ── (8) Section ROW — its own row in the vertical list. WITHIN the row the summary + action cards
-// are laid out HORIZONTALLY: the next card overlaps the current by ~20% (peeking in from the RIGHT,
-// tucked under the current card's right edge). Swipe sideways (or tap a peek / dot) to move between
-// them. Every card identical: same size + same cream colour. Rows are independent. ───────────────
+// ── (8) Section ROW — its own row in the vertical list. WITHIN the row the cards live in a HORIZONTAL
+// SWIPE TRACK: card 1 (summary) fills the row; card 2 (action) starts 80% across card 1 — so only its
+// LEFT 20% sits under card 1 and the remaining ~80% FLOWS to the right into the swipe track. Swipe
+// sideways to bring card 2 in. Cards are uniform full size + cream; rows independent. (Overlap is set
+// purely by a negative margin = 20% of a card width; card dimensions never change.) ───────────────
 const ROW_H = 178;
 function HorizontalRow({ s, onSheet }) {
-  const [face, setFace] = useState(0);   // 0 = summary front, 1 = action front
-  const touch = useRef(null);
-  const onTouchStart = (e) => { touch.current = e.touches?.[0]?.clientX ?? null; };
-  const onTouchEnd = (e) => { const a = touch.current, b = e.changedTouches?.[0]?.clientX; if (a != null && b != null) { const dx = b - a; if (Math.abs(dx) > 40) setFace(dx < 0 ? 1 : 0); } touch.current = null; };
-  // FULL-SIZE cards (unchanged width). The front card fills the row; the next card is positioned by
-  // OFFSET ONLY so just a ~20% sliver of its left edge peeks from the right (the rest runs off into
-  // the horizontal swipe track). Swipe/tap brings the next full-size card forward. Sizes never change.
-  const cardStyle = (which) => {
-    const isSummary = which === "summary";
-    const active = isSummary ? (face === 0) : (face === 1);
-    // offset is a % of the card's own width: a front card sits at 0; the other card is pushed ~80%
-    // of a card-width to its side, so only ~20% of it overlaps/peeks (rest off-screen). Card SIZE
-    // is identical (full width) — only the horizontal offset differs.
-    const tx = active ? 0 : (isSummary ? -80 : 80);
-    return {
-      position: "absolute", top: 0, left: "0%", width: "80%", height: ROW_H, boxSizing: "border-box",
-      background: T.paperHi, border: `1px solid ${T.paperDeep}`, borderRadius: 18, padding: "15px 17px", overflow: "hidden",
-      transform: `translateX(${tx}%)`, transformOrigin: isSummary ? "left center" : "right center",
-      zIndex: active ? 2 : 1, cursor: "pointer",
-      boxShadow: active ? "0 11px 26px rgba(58,48,32,0.14)" : "0 5px 14px rgba(58,48,32,0.10)",
-      transition: "transform .34s cubic-bezier(.32,.72,.24,1), box-shadow .3s ease",
-    };
-  };
   const quote = s.summary.inset ? (s.summary.inset.quote || "").slice(0, 64) : "";
+  // every card identical: 80% of the row wide, same cream colour, same height.
+  const cardBase = {
+    flex: "0 0 80%", boxSizing: "border-box", position: "relative", height: ROW_H,
+    background: T.paperHi, border: `1px solid ${T.paperDeep}`, borderRadius: 18, padding: "15px 17px", overflow: "hidden",
+    scrollSnapAlign: "start",
+  };
   return (
     <section style={{ margin: "0 0 18px" }}>
       <div style={{ display: "flex", alignItems: "center", gap: 9, padding: "0 2px 8px" }}>
         {ICON_DISC(s.Icon, s.accent)}
         <Eyebrow color={s.accent}>{s.eyebrow}</Eyebrow>
-        <span style={{ marginLeft: "auto", display: "flex", gap: 5 }}>
-          {[0, 1].map((i) => <span key={i} style={{ width: i === face ? 16 : 6, height: 6, borderRadius: 99, background: i === face ? s.accent : T.paperDeep, transition: "all .3s ease" }} />)}
-        </span>
+        <span style={{ marginLeft: "auto", display: "inline-flex", alignItems: "center", gap: 3, fontFamily: UI, fontSize: 12, fontWeight: 700, color: T.muted }}>swipe <ChevronRight size={13} /></span>
       </div>
-      <div onTouchStart={onTouchStart} onTouchEnd={onTouchEnd} style={{ position: "relative", height: ROW_H, overflow: "hidden", margin: "0 -2px", padding: "0 2px" }}>
-        {/* SUMMARY card */}
-        <div style={cardStyle("summary")} onClick={() => setFace(0)}>
+      <div className="fw-hrow" style={{ display: "flex", overflowX: "auto", scrollSnapType: "x proximity", WebkitOverflowScrolling: "touch", paddingBottom: 4 }}>
+        {/* CARD 1 — summary (on top across the 20% overlap) */}
+        <div style={{ ...cardBase, zIndex: 2, boxShadow: "0 9px 22px rgba(58,48,32,0.13)" }}>
           <Eyebrow mb={6}>Today</Eyebrow>
           <h3 style={{ fontFamily: SERIF, fontSize: 18, fontWeight: 600, color: T.ink, margin: "0 0 8px", lineHeight: 1.3 }}>{s.summary.title}</h3>
           {s.summary.lines.slice(0, 2).map((ln, j) => (
@@ -701,8 +683,9 @@ function HorizontalRow({ s, onSheet }) {
             </div>
           )}
         </div>
-        {/* ACTION card — staggered to the RIGHT, ~80% visible, only ~20% under the summary */}
-        <div style={cardStyle("action")} onClick={() => setFace(1)}>
+        {/* CARD 2 — action: marginLeft -16% of the row = 20% of a card, so it starts 80% across card 1
+            (only its left 20% under card 1) and the rest flows right into the track */}
+        <div style={{ ...cardBase, zIndex: 1, marginLeft: "-16%", boxShadow: "0 9px 22px rgba(58,48,32,0.11)" }}>
           <Eyebrow mb={6} color={s.accent}>Do it now</Eyebrow>
           <p style={{ fontFamily: SERIF, fontSize: 16, color: T.ink, lineHeight: 1.5, margin: "0 0 10px" }}>{s.action.prompt}</p>
           <div>{s.action.buttons.map((b, k) => <ActionBtn key={k} Icon={b.Icon} href={b.href} onClick={b.sheet ? () => onSheet(b.sheet) : undefined} accent={s.accent}>{b.label}</ActionBtn>)}</div>
