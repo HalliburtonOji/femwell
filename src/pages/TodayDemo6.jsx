@@ -658,17 +658,23 @@ export default function TodayDemo6() {
           <p style={{ fontFamily: UI, fontSize: 13, color: T.muted, margin: "2px 0 10px" }}>gentle, tuned to your {PHASE_LABEL[phase] ? PHASE_LABEL[phase].toLowerCase() : ""} phase · slide to see more</p>
           <div style={{ display: "flex", gap: 12, overflowX: "auto", scrollSnapType: "x mandatory", scrollbarWidth: "none", paddingBottom: 6 }}>
             {SUGGESTIONS.map((g, i) => { const Gi = g.Icon; return (
-              <a key={i} href={g.href} style={{ flex: "0 0 80%", scrollSnapAlign: "start", textDecoration: "none", background: T.paperHi, border: `1px solid ${T.paperDeep}`, borderLeft: `3px solid ${g.accent}`, borderRadius: 16, padding: "16px 16px", minHeight: 132, boxShadow: "0 8px 22px rgba(58,48,32,0.07)", boxSizing: "border-box", display: "flex", flexDirection: "column" }}>
-                <span style={{ display: "inline-flex", alignItems: "center", gap: 8 }}>{ICON_DISC(Gi, g.accent)}<span style={{ fontFamily: UI, fontSize: 11, fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", color: g.accent }}>For you</span></span>
-                <span style={{ fontFamily: SERIF, fontSize: 17, color: T.ink, lineHeight: 1.5, margin: "11px 0 auto" }}>{g.text}</span>
-                <span style={{ fontFamily: UI, fontSize: 13, fontWeight: 700, color: g.accent, display: "inline-flex", alignItems: "center", gap: 3, marginTop: 10 }}>have a look <ChevronRight size={14} /></span>
+              <a key={i} href={g.href} style={{ position: "relative", overflow: "hidden", flex: "0 0 80%", scrollSnapAlign: "start", textDecoration: "none", background: `linear-gradient(165deg, ${T.paperHi} 0%, ${g.accent}14 100%)`, border: `1px solid ${T.paperDeep}`, borderLeft: `3px solid ${g.accent}`, borderRadius: 16, padding: "16px 16px", minHeight: 132, boxShadow: "0 8px 22px rgba(58,48,32,0.07)", boxSizing: "border-box", display: "flex", flexDirection: "column" }}>
+                <Frame4 variant="sprig" color={g.accent} size={42} opacity={0.55} />
+                <span style={{ position: "relative", display: "inline-flex", alignItems: "center", gap: 8 }}>{ICON_DISC(Gi, g.accent)}<span style={{ fontFamily: UI, fontSize: 11, fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", color: g.accent }}>For you</span></span>
+                <span style={{ position: "relative", fontFamily: SERIF, fontSize: 17, color: T.ink, lineHeight: 1.5, margin: "11px 0 auto", ...CLAMP3 }}>{g.text}</span>
+                <span style={{ position: "relative", fontFamily: UI, fontSize: 13, fontWeight: 700, color: g.accent, display: "inline-flex", alignItems: "center", gap: 3, marginTop: 10 }}>have a look <ChevronRight size={14} /></span>
               </a>
             ); })}
           </div>
         </div>
 
-        <div style={{ textAlign: "center", margin: "28px 0 8px" }}>
-          <Hand size={15} color={T.muted}>Calm by default. Everything's here when you want it, and nothing's owed.</Hand>
+        {/* closing sign-off — framed + a meaning-bloom (no 2nd heart; §3 keeps one heart, in the hero) */}
+        <div style={{ position: "relative", overflow: "hidden", marginTop: 24, background: `linear-gradient(165deg, ${T.paperHi} 0%, ${T.gold}10 100%)`, border: `1px solid ${T.paperDeep}`, borderRadius: 18, padding: "20px 20px 18px", textAlign: "center", boxShadow: "0 4px 20px rgba(58,44,26,0.10)" }}>
+          <Frame4 variant="carved" color={T.gold} size={50} opacity={0.6} />
+          <div style={{ position: "relative" }}>
+            <div style={{ display: "flex", justifyContent: "center", marginBottom: 6 }}><FlowerGlyph variant="camellia" size={30} color={cwOf("gold").petal} color2={cwOf("gold").tip} idx="close" /></div>
+            <Hand size={16} color={T.inkSoft} style={{ display: "block", lineHeight: 1.5, maxWidth: 320, margin: "0 auto" }}>Calm by default. Everything's here when you want it, and nothing's owed.</Hand>
+          </div>
         </div>
       </div>
 
