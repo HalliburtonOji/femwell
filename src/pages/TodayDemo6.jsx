@@ -21,6 +21,7 @@ import { base44 } from "@/api/base44Client";
 import { computeCycleDay, phaseForDay } from "@/hooks/useCycleDay";
 import { nutritionToday } from "@/utils/nutritionSummary";
 import { communityHash } from "@/components/community/communityAnon";
+import { computeCooling } from "@/components/journal/echo/echoSafety";
 import { Bloom } from "@/components/nurture/NurtureGarden";
 import { RichBloomV2, SwayBloom, fingerprintColourway, floraKeyframes, CardCorner, VineMotifV2, LeafDivider, SprigDivider, FleuronDivider, FlowerGlyph, Butterfly, COLORWAYS, cwOf, lighten } from "@/components/brand/flora";
 import { qotdForDay } from "@/components/community/communityConfig";
@@ -698,7 +699,12 @@ function doWrite(kind, { uid, cycle, text, picked, mealType }) {
         if (text.trim()) await base44.entities.JournalEntries.create({ user_id: uid, session_date: day, text: text.trim(), tags: ["note"], prompt: "From Today", card_type: "free", card_color: "cream" }).catch(() => {});
       } else if (kind === "echo") {
         const wh = await communityHash(uid).catch(() => null);
-        if (wh && text.trim()) await base44.functions.invoke("postEcho", { action: "post", user_id: uid, author_hash: wh, body: text.trim().slice(0, 800), phase: cycle?.phase, cycle_day: cycle?.cycleDay }).catch(() => {});
+        if (wh && text.trim()) {
+          // postEcho REQUIRES live_at + expires_at (the cooling pause + 48h fade) — compute them the
+          // same way the canonical ShareAsEchoSheet does, or the function 400s and the post is lost.
+          const c = computeCooling({ phase: cycle?.phase, cycleDay: cycle?.cycleDay });
+          await base44.functions.invoke("postEcho", { action: "post", user_id: uid, author_hash: wh, body: text.trim().slice(0, 800), phase: cycle?.phase || "unknown", cycle_day: typeof cycle?.cycleDay === "number" ? cycle.cycleDay : undefined, live_at: c.liveAt.toISOString(), expires_at: c.expiresAt.toISOString(), visibility: "all" }).catch(() => {});
+        }
       } else if (kind === "qotd") {
         const wh = await communityHash(uid).catch(() => null);
         const q = qotdForDay(day);
