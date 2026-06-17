@@ -47,6 +47,7 @@ import AppHealthAuditDoc from "@/components/founders/AppHealthAuditDoc";
 import NutritionPlanDoc from "@/components/founders/NutritionPlanDoc";
 import NutritionMasterPlanDoc from "@/components/founders/NutritionMasterPlanDoc";
 import BrandIdentityDoc from "@/components/founders/BrandIdentityDoc";
+import FloraMeaningDoc from "@/components/founders/FloraMeaningDoc";
 import NurtureCompanionDoc from "@/components/founders/NurtureCompanionDoc";
 import FeatureIdeasDoc from "@/components/founders/FeatureIdeasDoc";
 import CompanionVisionDoc from "@/components/founders/CompanionVisionDoc";
@@ -84,7 +85,7 @@ const ALLOWED = new Set([
   "ojihalliburton57@gmail.com",
 ]);
 
-const TABS = ["Lab", "Today Mega-Plan", "Architecture", "Previews", "Companion Vision", "Companion Vision v2", "Feature Ideas", "Brand Identity", "Nurture Companion", "Widget & PWA", "Pages", "Roadmap", "Health Audit", "Nutrition Master Plan", "Nutrition Plan", "Nutrition Demos", "Community Plan", "Books & Book Clubs", "Build Plan", "Journal Audit", "Expert Governance", "Library & Groups", "Integration Audit", "Connectivity Map", "Sharing", "Home Redesign", "Whole-Life", "Audio", "Ideas", "Strategy", "Legal", "Decisions", "Journal", "Journal Demos", "Community Demos", "Another You", "UX & Design", "Wholeness", "LGBTQ+", "Health Corner"];
+const TABS = ["Lab", "Today Mega-Plan", "Architecture", "Previews", "Companion Vision", "Companion Vision v2", "Feature Ideas", "Brand Identity", "Flora & Meaning", "Nurture Companion", "Widget & PWA", "Pages", "Roadmap", "Health Audit", "Nutrition Master Plan", "Nutrition Plan", "Nutrition Demos", "Community Plan", "Books & Book Clubs", "Build Plan", "Journal Audit", "Expert Governance", "Library & Groups", "Integration Audit", "Connectivity Map", "Sharing", "Home Redesign", "Whole-Life", "Audio", "Ideas", "Strategy", "Legal", "Decisions", "Journal", "Journal Demos", "Community Demos", "Another You", "UX & Design", "Wholeness", "LGBTQ+", "Health Corner"];
 
 // Themed groups for the two-row nav rail (replaces the flat 36-tab scroll row).
 // Every tab is assigned exactly once; any tab not listed falls into "More" so
@@ -96,7 +97,7 @@ const TAB_GROUPS = [
   { name: "Community",       tabs: ["Community Plan", "Community Demos", "Library & Groups", "Books & Book Clubs", "Sharing"] },
   { name: "Nutrition",       tabs: ["Nutrition Master Plan", "Nutrition Plan", "Nutrition Demos"] },
   { name: "Health",          tabs: ["Health Audit", "Health Corner"] },
-  { name: "Brand & UX",      tabs: ["Brand Identity", "UX & Design", "Home Redesign", "Audio", "Previews", "Another You"] },
+  { name: "Brand & UX",      tabs: ["Brand Identity", "Flora & Meaning", "UX & Design", "Home Redesign", "Audio", "Previews", "Another You"] },
   { name: "Whole-Life",      tabs: ["Whole-Life", "Wholeness", "LGBTQ+"] },
   { name: "Systems",         tabs: ["Pages", "Build Plan", "Integration Audit", "Connectivity Map", "Architecture", "Expert Governance", "Legal"] },
 ];
@@ -671,6 +672,7 @@ function FoundersInner({ user }) {
         {tab === "Previews"       && <PreviewsTab />}
         {tab === "Nutrition Master Plan" && <NutritionMasterPlanDoc />}
         {tab === "Brand Identity" && <DocSurface><BrandIdentityDoc /></DocSurface>}
+        {tab === "Flora & Meaning" && <DocSurface><FloraMeaningDoc /></DocSurface>}
         {tab === "Feature Ideas" && <DocSurface><FeatureIdeasDoc /></DocSurface>}
         {tab === "Companion Vision" && <DocSurface><CompanionVisionDoc /></DocSurface>}
         {tab === "Companion Vision v2" && <DocSurface><CompanionVisionV2Doc /></DocSurface>}

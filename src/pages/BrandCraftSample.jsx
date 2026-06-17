@@ -407,6 +407,112 @@ function HeaderFlourish({ children, color = T.gold }) {
   );
 }
 
+// ── FLOWER TYPES — distinct silhouettes tied to the flora map (poppy/snowdrop/sunflower/dahlia/
+//    lotus/forget-me-not). Lightweight stroke+gradient glyphs; meaning lives in the choice. ───────
+function FlowerGlyph({ variant = "poppy", size = 52, color = T.crimson, accent = "#2E261B", idx = 0 }) {
+  const gid = `fg-${variant}-${idx}`;
+  const cx = 20, cy = 20;
+  const grad = (
+    <radialGradient id={`fgr-${gid}`} cx="50%" cy="42%" r="62%">
+      <stop offset="0%" stopColor={lighten(color, 0.32)} /><stop offset="100%" stopColor={color} />
+    </radialGradient>
+  );
+  let body;
+  if (variant === "poppy") {
+    body = (<g>
+      {[18, 100, 182, 264].map((a, i) => <ellipse key={i} cx={cx} cy={cy - 9} rx="8.2" ry="10" fill={`url(#fgr-${gid})`} opacity="0.95" transform={`rotate(${a} ${cx} ${cy})`} />)}
+      <circle cx={cx} cy={cy} r="4.2" fill={darken(color, 0.34)} />
+      {Array.from({ length: 8 }).map((_, i) => { const a = i * 45 * Math.PI / 180; return <circle key={i} cx={cx + Math.cos(a) * 3} cy={cy + Math.sin(a) * 3} r="0.7" fill={lighten(color, 0.2)} />; })}
+    </g>);
+  } else if (variant === "snowdrop") {
+    body = (<g>
+      <path d="M20 3 C 18.5 11 20 17 20 22" fill="none" stroke="#7E9A7E" strokeWidth="1.2" strokeLinecap="round" />
+      <path d="M20 13 C 14 12 11 15 11 20 C 16 20 19 17 20 13 Z" fill="#8FAF8F" opacity="0.85" />
+      <g fill={`url(#fgr-${gid})`} opacity="0.96">
+        <path d="M20 23 C 15.5 24 14 30 17 35 C 19.5 33 20 28 20 23 Z" />
+        <path d="M20 23 C 24.5 24 26 30 23 35 C 20.5 33 20 28 20 23 Z" />
+        <path d="M20 24 C 18 26 18 32 20 36 C 22 32 22 26 20 24 Z" fill={lighten(color, 0.12)} />
+      </g>
+      <path d="M17 33 L 20 35 L 23 33" fill="none" stroke="#8FAF8F" strokeWidth="0.6" opacity="0.7" />
+    </g>);
+  } else if (variant === "sunflower") {
+    body = (<g>
+      {Array.from({ length: 18 }).map((_, i) => { const a = i * 20; return <ellipse key={i} cx={cx} cy={cy - 11} rx="2.4" ry="7" fill={`url(#fgr-${gid})`} opacity="0.95" transform={`rotate(${a} ${cx} ${cy})`} />; })}
+      <circle cx={cx} cy={cy} r="6.4" fill={darken(accent, 0)} />
+      <circle cx={cx} cy={cy} r="6.4" fill="none" stroke={darken(color, 0.2)} strokeWidth="0.5" opacity="0.5" />
+      {Array.from({ length: 10 }).map((_, i) => { const a = i * 36 * Math.PI / 180; return <circle key={i} cx={cx + Math.cos(a) * 3.6} cy={cy + Math.sin(a) * 3.6} r="0.8" fill={lighten(accent, 0.18)} />; })}
+    </g>);
+  } else if (variant === "dahlia") {
+    const petal = "M0 0 C -2.6 -4 -2.4 -9 0 -13 C 2.4 -9 2.6 -4 0 0 Z";
+    body = (<g>
+      {Array.from({ length: 12 }).map((_, i) => <path key={`o${i}`} d={petal} fill={color} opacity="0.9" transform={`translate(${cx} ${cy}) rotate(${i * 30}) translate(0 -3)`} />)}
+      {Array.from({ length: 9 }).map((_, i) => <path key={`m${i}`} d={petal} fill={`url(#fgr-${gid})`} opacity="0.95" transform={`translate(${cx} ${cy}) rotate(${i * 40 + 18}) scale(0.7) translate(0 -3)`} />)}
+      <circle cx={cx} cy={cy} r="2.6" fill={darken(color, 0.28)} />
+    </g>);
+  } else if (variant === "lotus") {
+    const pet = (s, dy, fill, o) => <path d="M0 0 C -5 -6 -5 -16 0 -22 C 5 -16 5 -6 0 0 Z" fill={fill} opacity={o} transform={`translate(${cx} ${cy + dy}) scale(${s})`} />;
+    body = (<g>
+      <path d="M20 20 C 6 16 2 20 2 20 C 6 26 14 24 20 20 Z" fill={color} opacity="0.55" />
+      <path d="M20 20 C 34 16 38 20 38 20 C 34 26 26 24 20 20 Z" fill={color} opacity="0.55" />
+      {[-32, 32].map((a, i) => <path key={i} d="M0 0 C -4 -6 -4 -15 0 -20 C 4 -15 4 -6 0 0 Z" fill={color} opacity="0.7" transform={`translate(${cx} ${cy + 1}) rotate(${a})`} />)}
+      {pet(1, 1, `url(#fgr-${gid})`, 0.96)}
+      <circle cx={cx} cy={cy - 5} r="1.6" fill={lighten(accent, 0.2)} />
+    </g>);
+  } else { // forgetmenot — 5 small round petals + a warm eye (plum, on-brand)
+    body = (<g>
+      {Array.from({ length: 5 }).map((_, i) => { const a = i * 72 * Math.PI / 180; return <circle key={i} cx={cx + Math.cos(a - Math.PI / 2) * 7} cy={cy + Math.sin(a - Math.PI / 2) * 7} r="4.4" fill={`url(#fgr-${gid})`} opacity="0.95" />; })}
+      <circle cx={cx} cy={cy} r="3" fill={T.gold} /><circle cx={cx} cy={cy} r="1.3" fill={lighten(T.gold, 0.25)} />
+    </g>);
+  }
+  return <svg viewBox="0 0 40 40" width={size} height={size} aria-hidden><defs>{grad}</defs>{body}</svg>;
+}
+
+// ── BUTTERFLY — transformation + return. Static by default; gentle drift + faint flutter, isolated.
+function Butterfly({ size = 46, color = "#8E6E8E", color2 = T.gold, animate = true, idx = 0 }) {
+  const gid = `bf-${idx}`;
+  const wingL = (<g>
+    <path d="M24 15 C 17 6 5 5 3 13 C 2 19 11 22 24 20 Z" fill={`url(#bw-${gid})`} />
+    <path d="M24 21 C 15 22 8 28 12 34 C 16 38 23 31 24 24 Z" fill={`url(#bw2-${gid})`} />
+    <path d="M24 16 C 18 12 11 11 6 14" stroke={darken(color, 0.1)} strokeWidth="0.5" fill="none" opacity="0.5" />
+    <circle cx="9" cy="13" r="1.5" fill="#FFFDF7" opacity="0.6" /><circle cx="15" cy="30" r="1.1" fill={color2} opacity="0.7" />
+  </g>);
+  return (
+    <svg viewBox="0 0 48 42" width={size} height={Math.round(size * 0.88)} aria-hidden
+      style={animate ? { transformBox: "fill-box", transformOrigin: "center", willChange: "transform", animation: "fwcDrift 7s ease-in-out infinite", animationDelay: `${(idx % 4) * 0.9}s` } : undefined}>
+      <defs>
+        <linearGradient id={`bw-${gid}`} x1="1" y1="0" x2="0" y2="1"><stop offset="0%" stopColor={lighten(color, 0.28)} /><stop offset="100%" stopColor={color} /></linearGradient>
+        <linearGradient id={`bw2-${gid}`} x1="1" y1="0" x2="0" y2="1"><stop offset="0%" stopColor={color} /><stop offset="100%" stopColor={darken(color, 0.12)} /></linearGradient>
+      </defs>
+      {/* left + right wing groups flutter gently (scaleX about the body) */}
+      <g style={animate ? { transformBox: "fill-box", transformOrigin: "right center", animation: "fwcFlutter 0.9s ease-in-out infinite" } : undefined}>{wingL}</g>
+      <g style={animate ? { transformBox: "fill-box", transformOrigin: "left center", animation: "fwcFlutter 0.9s ease-in-out infinite" } : undefined} transform="translate(48 0) scale(-1 1)">{wingL}</g>
+      {/* body + antennae */}
+      <path d="M24 11 C 22.8 19 22.8 28 24 34 C 25.2 28 25.2 19 24 11 Z" fill="#2E261B" />
+      <circle cx="24" cy="11" r="1.6" fill="#2E261B" />
+      <path d="M24 10 C 22 6 20 4 18 3" stroke="#2E261B" strokeWidth="0.7" fill="none" strokeLinecap="round" />
+      <path d="M24 10 C 26 6 28 4 30 3" stroke="#2E261B" strokeWidth="0.7" fill="none" strokeLinecap="round" />
+      <circle cx="18" cy="3" r="0.9" fill="#2E261B" /><circle cx="30" cy="3" r="0.9" fill="#2E261B" />
+    </svg>
+  );
+}
+
+// ── BLOSSOM TREE — the long arc (garden → tree → orchard). Hairline trunk + whiplash limbs + blossoms.
+function BlossomTree({ size = 120, color = T.muted, blossom = T.blush, idx = 0 }) {
+  const dots = [[30, 22], [42, 14], [54, 24], [22, 34], [62, 36], [38, 28], [50, 38], [28, 46], [58, 50], [44, 44], [34, 16], [48, 20], [66, 28], [20, 44], [70, 44]];
+  return (
+    <svg viewBox="0 0 90 100" width={size} height={Math.round(size * 1.1)} aria-hidden>
+      <g fill="none" stroke={color} strokeLinecap="round" opacity="0.6">
+        <path d="M45 96 C 44 80 45 70 45 60" strokeWidth="2.4" />
+        <path d="M45 66 C 38 58 32 50 30 40 M45 70 C 52 60 60 52 62 42 M45 60 C 43 50 42 40 44 30 M45 64 C 36 56 28 50 22 46 M45 62 C 55 54 64 48 68 44" strokeWidth="1.4" />
+        <path d="M30 40 C 27 36 26 32 27 28 M62 42 C 65 38 66 34 65 30 M44 30 C 43 26 44 22 47 19" strokeWidth="1" />
+      </g>
+      <g>{dots.map(([x, y], i) => <circle key={i} cx={x} cy={y} r={i % 3 === 0 ? 2.6 : 1.9} fill={blossom} opacity={0.8 - (i % 4) * 0.1} />)}</g>
+      {/* a few fallen petals at the base */}
+      <g>{[[34, 90], [50, 92], [58, 88]].map(([x, y], i) => <circle key={i} cx={x} cy={y} r="1.4" fill={blossom} opacity="0.5" />)}</g>
+    </svg>
+  );
+}
+
 // phase-ish palette for the perf grid (calm set; ovulatory #D4AF37 is the phase hue, fine here)
 const GRID_BLOOMS = [
   { color: T.blush, accent: "#CBA24E" }, { color: T.sage, accent: "#CBA24E" },
@@ -452,6 +558,8 @@ export default function BrandCraftSample() {
         @keyframes fwcSway{0%,100%{transform:rotate(-1.5deg)}50%{transform:rotate(1.5deg) translateY(-1px)}}
         @keyframes fwcShimmer{0%,100%{opacity:.45}50%{opacity:.85}}
         @keyframes fwcLeaf{0%,100%{transform:rotate(-2deg)}50%{transform:rotate(2deg)}}
+        @keyframes fwcDrift{0%,100%{transform:translate(0,0) rotate(-3deg)}50%{transform:translate(4px,-5px) rotate(3deg)}}
+        @keyframes fwcFlutter{0%,100%{transform:scaleX(1)}50%{transform:scaleX(0.86)}}
         @keyframes fwcSettle{0%{transform:translateY(6px) scale(.97);opacity:0}100%{transform:translateY(0) scale(1);opacity:1}}
         .fwc-settle{animation:fwcSettle .8s cubic-bezier(.16,1,.3,1) both}
         @media (prefers-reduced-motion:reduce){.fwc-anim *{animation:none!important}.fwc-settle{animation:none!important}}
@@ -503,6 +611,55 @@ export default function BrandCraftSample() {
           </button>
         </div>
         {reduced && <div style={{ textAlign: "center", fontFamily: UI, fontSize: 13, color: T.muted, marginTop: 6 }}>Your device requests reduced motion — animation is off automatically.</div>}
+
+        <FleuronDivider />
+
+        {/* (A2) FLOWERS AS MEANING — the floral backbone */}
+        <Eyebrow mb={4} color={T.gold}>Flowers as meaning — the floral backbone</Eyebrow>
+        <div style={{ fontFamily: SERIF, fontSize: 16, color: T.inkSoft, lineHeight: 1.55, margin: "2px 2px 12px" }}>
+          Each bloom is chosen for what it <em>means</em> — so a sunflower always says <em>peak</em>, a forget-me-not always says <em>memory</em>, a butterfly always says <em>you changed and came back</em>. The bloom marks the day, the butterfly a moment, the tree the years. Full map: <span style={{ fontFamily: UI, fontSize: 13 }}>claude-state/BRAND_FLORA.md</span>.
+        </div>
+        {/* the four cycle-phase flowers */}
+        <div style={{ background: T.paperHi, border: `1px solid ${T.paperDeep}`, borderRadius: 18, padding: "14px 8px 12px" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", gap: 2 }}>
+            {[["poppy", "Menstrual", "rest", T.crimson, "#2E261B"], ["snowdrop", "Follicular", "hope", "#9DB89D", "#2E261B"], ["sunflower", "Ovulatory", "radiance", "#D4AF37", "#6B5840"], ["dahlia", "Luteal", "strength", "#8E6E8E", "#2E261B"]].map(([v, ph, mng, c, ac], i) => (
+              <div key={v} style={{ flex: 1, minWidth: 0, textAlign: "center" }}>
+                <FlowerGlyph variant={v} size={52} color={c} accent={ac} idx={i} />
+                <div style={{ fontFamily: UI, fontSize: 11, fontWeight: 700, letterSpacing: "0.04em", textTransform: "uppercase", color: T.muted, marginTop: 2 }}>{ph}</div>
+                <div style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 13, color: T.inkSoft }}>{mng}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+        {/* butterfly moment + flowering-tree arc, side by side */}
+        <div style={{ display: "flex", gap: 10, marginTop: 12 }}>
+          <div style={{ flex: 1, minWidth: 0, position: "relative", background: T.paperHi, border: `1px solid ${T.paperDeep}`, borderLeft: `3px solid ${"#8E6E8E"}`, borderRadius: 16, padding: "12px 12px 14px", textAlign: "center", overflow: "hidden" }}>
+            <div style={{ position: "relative", height: 104 }}>
+              <div style={{ position: "absolute", left: "50%", bottom: 0, transform: "translateX(-50%)" }}><RichBloomV2 size={96} animate={motion} soft idx="flora-bloom" /></div>
+              <div style={{ position: "absolute", top: 0, right: 6 }}><Butterfly size={44} color="#8E6E8E" animate={motion} idx={1} /></div>
+            </div>
+            <div style={{ fontFamily: UI, fontSize: 11, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: T.muted, marginTop: 4 }}>Butterfly</div>
+            <div style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 14, color: T.inkSoft, lineHeight: 1.4 }}>visits when you return</div>
+          </div>
+          <div style={{ flex: 1, minWidth: 0, background: T.paperHi, border: `1px solid ${T.paperDeep}`, borderLeft: `3px solid ${T.sage}`, borderRadius: 16, padding: "12px 12px 14px", textAlign: "center" }}>
+            <div style={{ height: 104, display: "grid", placeItems: "center" }}><BlossomTree size={96} /></div>
+            <div style={{ fontFamily: UI, fontSize: 11, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: T.muted, marginTop: 4 }}>Flowering tree</div>
+            <div style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 14, color: T.inkSoft, lineHeight: 1.4 }}>the long arc — garden to orchard</div>
+          </div>
+        </div>
+        {/* a meaningful combination */}
+        <div style={{ marginTop: 12, background: T.paperHi, border: `1px solid ${T.paperDeep}`, borderLeft: `3px solid ${T.gold}`, borderRadius: 16, padding: "12px 14px" }}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
+            <FlowerGlyph variant="forgetmenot" size={42} color="#8E6E8E" idx={9} />
+            <span style={{ fontFamily: SERIF, fontSize: 18, color: T.muted }}>+</span>
+            <LeafGlyph variant="sprig" size={34} color={T.sage} idx={9} />
+            <span style={{ fontFamily: SERIF, fontSize: 18, color: T.muted }}>=</span>
+            <span style={{ fontFamily: SCRIPT, fontSize: 26, color: T.ink }}>remembrance</span>
+          </div>
+          <div style={{ fontFamily: SERIF, fontSize: 15, color: T.inkSoft, lineHeight: 1.5, marginTop: 8, textAlign: "center" }}>
+            Forget-me-not (memory) + rosemary (remembrance) — a pairing the app can offer around grief or loss. Combinations make a sentence the way a bouquet does.
+          </div>
+        </div>
 
         <LeafDivider />
 

@@ -154,6 +154,14 @@ Corners "grow" inward from the corner; draw for top-left, **rotate** 90/180/270 
 - Animate the bloom GROUP, not each petal. One keyframe block per page, not per bloom. Opacity-shimmer only on the tiny dew group.
 - **Measured `/BrandCraftSample` at 390px: ~60fps with 8 elevated blooms animating** (plus the hero + comparison/scale samples on screen). GPU-composited; impact negligible.
 
+### 5.1 FLORA & MEANING — the symbol layer (flowers as the backbone)
+The bloom is the centrepiece of a larger **meaning system**: flowers are chosen for documented meaning (floriography + folk-herbalism + myth), and mean the **same thing everywhere**. Full map + cited research: **`claude-state/BRAND_FLORA.md`** (mirrored in-app at Founders → Brand & UX → **Flora & Meaning**). Reference craft: `RichBloomV2` · `FlowerGlyph` · `Butterfly` · `BlossomTree` in `pages/BrandCraftSample.jsx`.
+- **Three timescales:** the **bloom** = the day/cycle · the **butterfly** = a moment of change/return (earned marker) · the **tree/orchard** = the long arc (life-stages, years, community).
+- **Phase flowers (with the §2.4 phase hues):** menstrual → **Poppy** (rest) · follicular → **Snowdrop** (hope) · ovulatory → **Sunflower** (radiance) · luteal → **Dahlia** (inner strength). The cycle ring + day-bloom take the phase's flower + hue.
+- **Life-stages, journal states, companion species, and meaningful combinations** all map to specific flowers (see BRAND_FLORA §2). Existing garden species gain meaning retroactively (peony = flourishing · foxglove = the heart-flower · fern = resilience · daisy = beginnings).
+- **Pollinators are EARNED, never ambient:** a **butterfly** (transformation + return — Greek *psyche* = soul/butterfly) visits on a true moment (return after rest, chapter complete, life-stage crossing), then drifts off; **moth** = the menstrual/night/rest dark; **dragonfly** = insight (Pulse); **bee** = community. One at a time.
+- **Craft/perf for the new elements:** `Butterfly` = SVG strokes+gradients, a gentle **drift** (group transform) + faint **flutter** (wing scaleX), isolated, `prefers-reduced-motion`-gated; `FlowerGlyph`/`BlossomTree` are static line-art. **No blur** anywhere except the bloom's one isolated shadow.
+
 ---
 
 ## 6. SPACING & CARD STANDARDS
