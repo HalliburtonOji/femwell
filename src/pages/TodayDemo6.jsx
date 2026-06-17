@@ -444,7 +444,22 @@ export default function TodayDemo6() {
         <div style={{ marginTop: 24 }}>
           <Eyebrow mb={2} color={T.gold}>Across your day</Eyebrow>
           <p style={{ fontFamily: UI, fontSize: 13, color: T.muted, margin: "2px 0 14px" }}>each part of your app, its own row · swipe a row sideways to do it</p>
-          {SURFACES.map((s) => <HorizontalRow key={s.key} s={s} onSheet={setSheet} />)}
+          {(() => {
+            // Lifestyle's sub-areas collapse into ONE "Lifestyle" row (swipe
+            // through For You · Book of the Day · Daily Story · Listen ·
+            // Horoscope). Every other surface is its own full-width pager row.
+            const LIFE = ["foryou", "book", "story", "listen", "horoscope"];
+            const lifeItems = SURFACES.filter((s) => LIFE.includes(s.key));
+            const out = [];
+            SURFACES.forEach((s) => {
+              if (LIFE.includes(s.key)) {
+                if (s.key === LIFE[0]) out.push(<LifestyleRow key="lifestyle" items={lifeItems} onSheet={setSheet} />);
+              } else {
+                out.push(<HorizontalRow key={s.key} s={s} onSheet={setSheet} />);
+              }
+            });
+            return out;
+          })()}
         </div>
 
         {/* (5) CROSS-APP SMART SUGGESTIONS */}
@@ -657,56 +672,112 @@ function ActionSheet({ sheetKey, uid, cycle, onClose, onSaved }) {
 // LEFT 20% sits under card 1 and the remaining ~80% FLOWS to the right into the swipe track. Swipe
 // sideways to bring card 2 in. Cards are uniform full size + cream; rows independent. (Overlap is set
 // purely by a negative margin = 20% of a card width; card dimensions never change.) ───────────────
-// Card surface mirrors the planner's `yourDayCard` exactly — cream paper,
-// 20-radius, own layered shadow, 4px accent left-rim, height:100% so both the
-// summary + action slide stretch to the same height inside the CardStack slot
-// (the slot itself supplies the size, the scale(0.96→1) 3D depth, the peek and
-// the smooth 320ms motion — identical to /Planner).
+// Full-WIDTH page-covering card (the TodayDemo1 reference): cream paper,
+// 20-radius, own layered shadow, 4px accent left-rim. ~50% taller than the
+// peek version (208 → 312) so each card is substantial. `height:100%` makes
+// every slide in a row match the tallest. The CardStack `pager` variant
+// supplies the full-width sizing (no side-peek), the scale(0.96→1) 3D depth,
+// the smooth 320ms motion and the ‹ • • › dots/arrows nav.
 const SLIDE_CARD = {
   background: T.paperHi, borderRadius: 20, boxSizing: "border-box",
   border: "1px solid rgba(212,193,180,0.5)",
   boxShadow: "0 4px 20px rgba(58,44,26,0.12), 0 1px 4px rgba(58,44,26,0.08)",
-  minHeight: 208, height: "100%", padding: "15px 17px",
+  minHeight: 312, height: "100%", padding: "20px 21px",
   display: "flex", flexDirection: "column", overflow: "hidden",
 };
-function HorizontalRow({ s, onSheet }) {
-  const quote = s.summary.inset ? (s.summary.inset.quote || "").slice(0, 64) : "";
-  // Reuse CardStack verbatim. label → the planner kicker; CardStack renders the
-  // matching ‹ • • › nav, the dominant-card sizing, the 3D-depth scale/shadow,
-  // the ~15% peek and the smooth scroll. Each child is one slide.
-  // Bleed past the column's 16px gutter so CardStack's own 16/24px internal
-  // padding realigns the kicker + active card to the gutter and the next card
-  // peeks against the column edge — full-bleed, exactly like /Planner.
+const OPEN_LINK = { display: "inline-flex", alignItems: "center", gap: 4, marginTop: "auto", paddingTop: 10, fontFamily: UI, fontSize: 13, fontWeight: 700, color: T.muted, textDecoration: "none" };
+
+// Summary face — title + up to 2 signal lines + an optional quote inset.
+function SummarySlide({ s, eyebrow = "Today" }) {
+  const quote = s.summary.inset ? (s.summary.inset.quote || "").slice(0, 80) : "";
   return (
-    <div style={{ margin: "0 -16px 4px" }}>
-      <CardStack label={s.eyebrow}>
-        {/* SLIDE 1 — summary */}
-        <article style={{ ...SLIDE_CARD, borderLeft: `4px solid ${s.accent}` }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 9, marginBottom: 9 }}>
-            {ICON_DISC(s.Icon, s.accent)}
-            <Eyebrow color={s.accent}>Today</Eyebrow>
-          </div>
-          <h3 style={{ fontFamily: SERIF, fontSize: 18, fontWeight: 600, color: T.ink, margin: "0 0 8px", lineHeight: 1.3 }}>{s.summary.title}</h3>
-          {s.summary.lines.slice(0, 2).map((ln, j) => (
-            <div key={j} style={{ display: "flex", alignItems: "center", gap: 9, margin: "6px 0" }}>
-              {ln.Icon && <ln.Icon size={15} color={s.accent} strokeWidth={1.7} style={{ flexShrink: 0 }} />}
-              <span style={{ flex: 1, fontFamily: SERIF, fontSize: 16, color: T.inkSoft, lineHeight: 1.45, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{ln.text}</span>
-              {ln.meta && <span style={{ fontFamily: UI, fontSize: 13, fontWeight: 600, color: T.muted, flexShrink: 0 }}>{ln.meta}</span>}
-            </div>
-          ))}
-          {quote && (
-            <div style={{ marginTop: 8, background: T.paper, border: `1px solid ${T.paperDeep}`, borderRadius: 11, padding: "8px 11px" }}>
-              <p style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 15, color: T.inkSoft, margin: 0, lineHeight: 1.4, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>“{quote}”</p>
-            </div>
-          )}
-        </article>
-        {/* SLIDE 2 — action */}
-        <article style={{ ...SLIDE_CARD, borderLeft: `4px solid ${s.accent}` }}>
-          <Eyebrow mb={9} color={s.accent}>Do it now</Eyebrow>
-          <p style={{ fontFamily: SERIF, fontSize: 16, color: T.ink, lineHeight: 1.5, margin: "0 0 10px" }}>{s.action.prompt}</p>
-          <div style={{ marginBottom: 2 }}>{s.action.buttons.map((b, k) => <ActionBtn key={k} Icon={b.Icon} href={b.href} onClick={b.sheet ? () => onSheet(b.sheet) : undefined} accent={s.accent}>{b.label}</ActionBtn>)}</div>
-          <a href={s.slug} style={{ display: "inline-flex", alignItems: "center", gap: 4, marginTop: "auto", fontFamily: UI, fontSize: 13, fontWeight: 700, color: T.muted, textDecoration: "none" }}>{s.openLabel} <ChevronRight size={14} /></a>
-        </article>
+    <article style={{ ...SLIDE_CARD, borderLeft: `4px solid ${s.accent}` }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 9, marginBottom: 11 }}>
+        {ICON_DISC(s.Icon, s.accent)}
+        <Eyebrow color={s.accent}>{eyebrow}</Eyebrow>
+      </div>
+      <h3 style={{ fontFamily: SERIF, fontSize: 20, fontWeight: 600, color: T.ink, margin: "0 0 10px", lineHeight: 1.3 }}>{s.summary.title}</h3>
+      {s.summary.lines.slice(0, 2).map((ln, j) => (
+        <div key={j} style={{ display: "flex", alignItems: "center", gap: 9, margin: "7px 0" }}>
+          {ln.Icon && <ln.Icon size={16} color={s.accent} strokeWidth={1.7} style={{ flexShrink: 0 }} />}
+          <span style={{ flex: 1, fontFamily: SERIF, fontSize: 16, color: T.inkSoft, lineHeight: 1.45, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{ln.text}</span>
+          {ln.meta && <span style={{ fontFamily: UI, fontSize: 13, fontWeight: 600, color: T.muted, flexShrink: 0 }}>{ln.meta}</span>}
+        </div>
+      ))}
+      {quote && (
+        <div style={{ marginTop: 10, background: T.paper, border: `1px solid ${T.paperDeep}`, borderRadius: 11, padding: "10px 13px" }}>
+          <p style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 15, color: T.inkSoft, margin: 0, lineHeight: 1.4, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>“{quote}”</p>
+        </div>
+      )}
+    </article>
+  );
+}
+
+// Action face — prompt + the do-it-now buttons + open-full-page link.
+function ActionSlide({ s, onSheet }) {
+  return (
+    <article style={{ ...SLIDE_CARD, borderLeft: `4px solid ${s.accent}` }}>
+      <Eyebrow mb={11} color={s.accent}>Do it now</Eyebrow>
+      <p style={{ fontFamily: SERIF, fontSize: 16, color: T.ink, lineHeight: 1.5, margin: "0 0 12px" }}>{s.action.prompt}</p>
+      <div style={{ marginBottom: 2 }}>{s.action.buttons.map((b, k) => <ActionBtn key={k} Icon={b.Icon} href={b.href} onClick={b.sheet ? () => onSheet(b.sheet) : undefined} accent={s.accent}>{b.label}</ActionBtn>)}</div>
+      <a href={s.slug} style={OPEN_LINK}>{s.openLabel} <ChevronRight size={14} /></a>
+    </article>
+  );
+}
+
+// A standard section row — a full-width pager of summary ⇄ action (and any
+// further faces the section adds). No bleed: the page column's own 16px gutter
+// is the card's edge, so the card covers the page width.
+function HorizontalRow({ s, onSheet }) {
+  return (
+    <div style={{ margin: "0 0 6px" }}>
+      <CardStack pager label={s.eyebrow}>
+        <SummarySlide s={s} />
+        <ActionSlide s={s} onSheet={onSheet} />
+      </CardStack>
+    </div>
+  );
+}
+
+// One Lifestyle sub-item, summary + action combined onto a single full-width
+// card (so the Lifestyle row swipes through one card per sub-area, not two).
+function LifestyleSlide({ s, onSheet }) {
+  const sub = s.eyebrow.replace(/^Lifestyle ·\s*/, "");
+  const quote = s.summary.inset ? (s.summary.inset.quote || "").slice(0, 80) : "";
+  return (
+    <article style={{ ...SLIDE_CARD, borderLeft: `4px solid ${s.accent}` }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 9, marginBottom: 11 }}>
+        {ICON_DISC(s.Icon, s.accent)}
+        <Eyebrow color={s.accent}>{sub}</Eyebrow>
+      </div>
+      <h3 style={{ fontFamily: SERIF, fontSize: 20, fontWeight: 600, color: T.ink, margin: "0 0 10px", lineHeight: 1.3 }}>{s.summary.title}</h3>
+      {s.summary.lines.slice(0, 2).map((ln, j) => (
+        <div key={j} style={{ display: "flex", alignItems: "center", gap: 9, margin: "7px 0" }}>
+          {ln.Icon && <ln.Icon size={16} color={s.accent} strokeWidth={1.7} style={{ flexShrink: 0 }} />}
+          <span style={{ flex: 1, fontFamily: SERIF, fontSize: 16, color: T.inkSoft, lineHeight: 1.45, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{ln.text}</span>
+        </div>
+      ))}
+      {quote && (
+        <div style={{ marginTop: 10, background: T.paper, border: `1px solid ${T.paperDeep}`, borderRadius: 11, padding: "10px 13px" }}>
+          <p style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 15, color: T.inkSoft, margin: 0, lineHeight: 1.4, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>“{quote}”</p>
+        </div>
+      )}
+      <div style={{ marginTop: "auto", paddingTop: 12 }}>
+        <div style={{ marginBottom: 2 }}>{s.action.buttons.map((b, k) => <ActionBtn key={k} Icon={b.Icon} href={b.href} onClick={b.sheet ? () => onSheet(b.sheet) : undefined} accent={s.accent}>{b.label}</ActionBtn>)}</div>
+        <a href={s.slug} style={{ ...OPEN_LINK, marginTop: 0 }}>{s.openLabel} <ChevronRight size={14} /></a>
+      </div>
+    </article>
+  );
+}
+
+// The unified Lifestyle row — one row, one full-width card per sub-area
+// (For You · Book of the Day · Daily Story · Listen · Horoscope). Dots reflect
+// the real sub-item count.
+function LifestyleRow({ items, onSheet }) {
+  return (
+    <div style={{ margin: "0 0 6px" }}>
+      <CardStack pager label="Lifestyle">
+        {items.map((s) => <LifestyleSlide key={s.key} s={s} onSheet={onSheet} />)}
       </CardStack>
     </div>
   );

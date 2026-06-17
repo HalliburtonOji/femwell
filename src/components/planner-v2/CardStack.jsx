@@ -21,11 +21,19 @@ const C = {
   dotIdle:  "#D4C9B4",
 };
 
-export default function CardStack({ label, showHeader = true, children }) {
+// `pager` (opt-in, default off so /Planner is byte-for-byte unchanged): a
+// full-width paged variant — each card fills the track (no side-peek of the
+// next card at rest), header aligns to the content edge. Same 3D depth,
+// 320ms motion and ‹ • • › dots/arrows nav. Used by TodayDemo6's section rows.
+export default function CardStack({ label, showHeader = true, pager = false, children }) {
   const childArray = Children.toArray(children).filter(Boolean);
   const count = childArray.length;
   const trackRef = useRef(null);
   const [idx, setIdx] = useState(0);
+
+  const trackStyle = pager ? { ...rowTrack, padding: "8px 0" } : rowTrack;
+  const headStyle  = pager ? { ...rowHead, padding: "0 2px" } : rowHead;
+  const slotFlex   = pager ? "0 0 100%" : "0 0 calc(100% - 40px)";
 
   // Scroll the track so the target slot is centred at the scroll start.
   function jumpTo(target) {
@@ -57,7 +65,7 @@ export default function CardStack({ label, showHeader = true, children }) {
   return (
     <section style={rowShell} aria-label={label || "row"}>
       {showHeader && (label || count > 1) && (
-        <div style={rowHead}>
+        <div style={headStyle}>
           <span style={kicker}>{label ? label.toUpperCase() : ""}</span>
           {count > 1 && (
             <div style={rowNav}>
@@ -97,9 +105,9 @@ export default function CardStack({ label, showHeader = true, children }) {
       {/* Native horizontal scroll track. Right-padding lets the next card
           peek in from the edge; scroll-snap-type:x mandatory locks it
           to one card per swipe. */}
-      <div ref={trackRef} onScroll={onScroll} style={rowTrack}>
+      <div ref={trackRef} onScroll={onScroll} style={trackStyle}>
         {childArray.map((child, i) => (
-          <div key={i} style={i === idx ? { ...rowSlot, ...rowSlotActive } : rowSlot}>
+          <div key={i} style={{ ...rowSlot, flex: slotFlex, ...(i === idx ? rowSlotActive : null) }}>
             {child}
           </div>
         ))}
