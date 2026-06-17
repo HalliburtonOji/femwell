@@ -102,7 +102,16 @@ function RichBloomV2({ color = T.blush, accent = "#CBA24E", size = 150, animate 
       transform={`translate(${cx} ${cy}) rotate(${ang})`} />;
   });
   return (
-    <svg viewBox="0 0 100 105" width={size} height={size * 1.05} aria-hidden style={{ overflow: "visible" }}>
+    <div style={{ position: "relative", display: "inline-block", width: size, height: Math.round(size * 1.05), lineHeight: 0 }}>
+      {/* shadow in its OWN static svg — isolated so the breathing head never
+          re-rasterises the blur filter per frame (the one perf trap, avoided) */}
+      {soft && (
+        <svg viewBox="0 0 100 105" width={size} height={Math.round(size * 1.05)} aria-hidden style={{ position: "absolute", inset: 0 }}>
+          <defs><filter id={`bl-${gid}`} x="-60%" y="-60%" width="220%" height="220%"><feGaussianBlur stdDeviation="1.9" /></filter></defs>
+          <ellipse cx={cx} cy={97} rx={20} ry={4.6} fill="#2E261B" opacity="0.22" filter={`url(#bl-${gid})`} />
+        </svg>
+      )}
+      <svg viewBox="0 0 100 105" width={size} height={Math.round(size * 1.05)} aria-hidden style={{ position: "relative", overflow: "visible" }}>
       <defs>
         {/* petal gradients — outer reads deepest/in-shadow at the base, inner the lightest crown */}
         <linearGradient id={`pO-${gid}`} x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor={mid} /><stop offset="52%" stopColor={deep} /><stop offset="100%" stopColor={deeper} /></linearGradient>
@@ -114,12 +123,9 @@ function RichBloomV2({ color = T.blush, accent = "#CBA24E", size = 150, animate 
         {/* tapered stem + leaf gradients */}
         <linearGradient id={`st-${gid}`} x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#8FAF8F" /><stop offset="100%" stopColor="#5F7E5F" /></linearGradient>
         <linearGradient id={`lf-${gid}`} x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stopColor="#9DBE9D" /><stop offset="100%" stopColor="#6E8E6E" /></linearGradient>
-        {/* the ONE allowed soft blur — only the grounding shadow node */}
-        {soft && <filter id={`bl-${gid}`} x="-60%" y="-60%" width="220%" height="220%"><feGaussianBlur stdDeviation="1.9" /></filter>}
       </defs>
 
-      {/* grounding shadow — one soft-blurred ellipse (perf: a single static blur node) */}
-      <ellipse cx={cx} cy={97} rx={20} ry={4.6} fill="#2E261B" opacity="0.22" filter={soft ? `url(#bl-${gid})` : undefined} />
+      {/* warm radial glow (shadow is in the isolated svg above) */}
       <circle cx={cx} cy={cy} r="36" fill={`url(#gl-${gid})`} />
 
       {/* refined tapered stem (filled sliver, gentle S) + two veined leaves */}
@@ -133,7 +139,7 @@ function RichBloomV2({ color = T.blush, accent = "#CBA24E", size = 150, animate 
       </g>
 
       {/* flower head — the only transformed group (breath); sway is on the wrapper div */}
-      <g style={animate ? { transformBox: "fill-box", transformOrigin: "center", animation: `fwcBreath 6s ease-in-out infinite`, animationDelay: delay } : undefined}>
+      <g style={animate ? { transformBox: "fill-box", transformOrigin: "center", willChange: "transform", animation: `fwcBreath 6s ease-in-out infinite`, animationDelay: delay } : undefined}>
         {/* outer ruff (deep, in shadow) → mid → inner curled crown (lightest) */}
         {ring(11, 30, 8.5, `pO-${gid}`, 0.97, 0, deeper)}
         {ring(10, 23, 7, `pM-${gid}`, 0.98, 18, deep)}
@@ -149,7 +155,8 @@ function RichBloomV2({ color = T.blush, accent = "#CBA24E", size = 150, animate 
           <circle cx={cx + 6} cy={cy - 9} r="1.0" fill="#FFFFFF" opacity="0.45" />
         </g>
       </g>
-    </svg>
+      </svg>
+    </div>
   );
 }
 
