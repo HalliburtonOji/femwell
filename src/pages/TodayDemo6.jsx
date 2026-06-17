@@ -12,9 +12,9 @@
 // (3) one-time first-open "bloom grows" ceremony; (4) the deck remembers the last-opened card;
 // (5) the calendar peeks a day on tap + swipes month-to-month. Calm by default.
 
-import { useState, useEffect, useMemo, useRef, useLayoutEffect } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import {
-  T, SERIF, UI, SCRIPT, PAPER_BG, Heart, Eyebrow, Script, Hand, InkFilter, useEditorialFonts,
+  T, SERIF, UI, PAPER_BG, Heart, Eyebrow, Script, Hand, InkFilter, useEditorialFonts,
   PHASE_COLORS, PHASE_LABEL,
 } from "@/components/journal/Editorial";
 import { base44 } from "@/api/base44Client";
@@ -23,7 +23,7 @@ import { nutritionToday } from "@/utils/nutritionSummary";
 import { communityHash } from "@/components/community/communityAnon";
 import { computeCooling } from "@/components/journal/echo/echoSafety";
 import { Bloom } from "@/components/nurture/NurtureGarden";
-import { RichBloomV2, SwayBloom, fingerprintColourway, floraKeyframes, CardCorner, VineMotifV2, LeafDivider, SprigDivider, FleuronDivider, FlowerGlyph, Butterfly, COLORWAYS, cwOf, lighten } from "@/components/brand/flora";
+import { RichBloomV2, SwayBloom, fingerprintColourway, floraKeyframes, CardCorner, VineMotifV2, LeafDivider, SprigDivider, FleuronDivider, FlowerGlyph, Butterfly, cwOf, lighten } from "@/components/brand/flora";
 import { qotdForDay } from "@/components/community/communityConfig";
 
 // each surface → a meaning-flower + colourway (lush per-section identity, BRAND_IDENTITY §5.1)
@@ -422,8 +422,12 @@ export default function TodayDemo6() {
       summary: { title: "A kind rhythm", lines: [{ Icon: Moon, text: "Tonight: a 10-minute body-scan to settle." }] },
       action: { prompt: "Tonight's practice is short and soft.", buttons: [{ Icon: Moon, label: "Tonight's practice", sheet: "practice" }] } },
     { key: "garden", eyebrow: "Companion · your garden", accent: T.sage, Icon: Sprout, slug: "/Garden", openLabel: "Open your garden",
-      summary: { title: `${cName} · blooming`, lines: [{ Icon: Sprout, text: tended > 0 ? `Tended ${tended} ${tended === 1 ? "thing" : "things"} today — she felt each one.` : "She grows from everything you already do." }] },
-      action: { prompt: "Tend her, reshape her, or just say hello.", buttons: [{ Icon: Sprout, label: "Visit your garden", href: "/Garden" }] } },
+      bloom: { form: cForm?.key || "peony", color: cAccent },
+      summary: { title: cName, lines: [
+        { Icon: Sprout, text: tendedToday(uid) ? "Blooming — you tended her today." : "Blooming — she grows from everything you already do." },
+        { Icon: Leaf, text: tended > 0 ? "Tended so far today" : "Nothing tended yet — a small thing counts", meta: tended > 0 ? `${tended}` : undefined },
+      ] },
+      action: { prompt: "Tend her with a line, or step into your garden.", buttons: [{ Icon: Feather, label: "Tend her", sheet: "line" }, { Icon: Sprout, label: "Open Garden", href: "/Garden" }] } },
     { key: "pulse", eyebrow: "Pulse · patterns", accent: "#8E6E8E", Icon: TrendingUp, slug: "/Pulse", openLabel: "Open Pulse",
       summary: pulseSummary,
       action: { prompt: pulseLine ? "See the full shape of your week — no scores, just patterns." : "See the shape of your week — no scores, just patterns.", buttons: [{ Icon: TrendingUp, label: "See your patterns", href: "/Pulse" }] } },
@@ -526,7 +530,7 @@ export default function TodayDemo6() {
         {/* (2) DAY PARAGRAPH — synthesised from real signals + refresh */}
         <div style={{ position: "relative", overflow: "hidden", marginTop: 18, background: "linear-gradient(160deg, #FBF4E1 0%, #F4E7C4 100%)", border: `1px solid ${T.paperDeep}`, borderLeft: `4px solid ${T.gold}`, borderRadius: 18, padding: "18px 19px", boxShadow: "0 8px 28px rgba(58,44,26,0.14), 0 2px 6px rgba(58,44,26,0.08)" }}>
           <div aria-hidden style={{ position: "absolute", right: -14, bottom: -18, opacity: 0.12, pointerEvents: "none" }}><FlowerGlyph variant="sunflower" size={120} color={T.gold} idx="wm-day" /></div>
-          <CardCorner variant="carved" color={T.gold} corner="tr" size={50} opacity={0.6} />
+          <Frame4 variant="carved" color={T.gold} size={54} opacity={0.66} />
           <div style={{ position: "relative", display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
             <Eyebrow color={T.gold} mb={0}>{showFirst ? "Your day begins" : tod === "evening" ? "How today went" : "Your day, in a few words"}</Eyebrow>
             <button onClick={() => setParaSeed((s) => s + 1)} aria-label="Refresh the day's words" title="A different turn of phrase" style={{ background: "transparent", border: "none", cursor: "pointer", color: T.muted, padding: 2, display: "inline-flex" }}><RefreshCw size={15} /></button>
@@ -538,7 +542,7 @@ export default function TodayDemo6() {
         {/* (3) YOUR DAY — gentle checklist; ticking nourishes the garden */}
         <div style={{ position: "relative", overflow: "hidden", marginTop: 16, background: "linear-gradient(160deg, #F3F7EC 0%, #E7F0DE 100%)", border: `1px solid ${T.paperDeep}`, borderLeft: `4px solid ${T.sage}`, borderRadius: 18, padding: "17px 17px 15px", boxShadow: "0 8px 28px rgba(58,44,26,0.14), 0 2px 6px rgba(58,44,26,0.08)" }}>
           <div aria-hidden style={{ position: "absolute", right: -16, bottom: -20, opacity: 0.1, pointerEvents: "none", zIndex: 0 }}><FlowerGlyph variant="rose" size={120} color={T.sage} idx="wm-day3" /></div>
-          <CardCorner variant="sprig" color={T.sage} corner="tr" size={52} opacity={0.6} />
+          <Frame4 variant="sprig" color={T.sage} size={52} opacity={0.64} />
           <div style={{ position: "relative", display: "flex", alignItems: "baseline", justifyContent: "space-between" }}>
             <Eyebrow mb={2} color={T.gold}>Your day</Eyebrow>
             <span style={{ fontFamily: UI, fontSize: 13, color: T.muted }}>invitations, never a score</span>
@@ -570,7 +574,7 @@ export default function TodayDemo6() {
         {/* (3b) CYCLE & SYMPTOMS — elevated near the top */}
         <div style={{ position: "relative", overflow: "hidden", background: `linear-gradient(160deg, #FFFDF9 0%, ${phaseColor}22 100%)`, border: `1px solid ${T.paperDeep}`, borderLeft: `4px solid ${phaseColor}`, borderRadius: 18, padding: "16px 17px", boxShadow: "0 8px 28px rgba(58,44,26,0.14), 0 2px 6px rgba(58,44,26,0.08)" }}>
           <div aria-hidden style={{ position: "absolute", right: -16, bottom: -20, opacity: 0.12, pointerEvents: "none", zIndex: 0 }}><FlowerGlyph variant="poppy" size={118} color={phaseColor} idx="wm-cyc" /></div>
-          <CardCorner variant="sprig" color={phaseColor} corner="tr" size={52} opacity={0.6} />
+          <Frame4 variant="sprig" color={phaseColor} size={52} opacity={0.64} />
           <div style={{ position: "relative", display: "flex", alignItems: "center", gap: 9, marginBottom: 10 }}>
             {ICON_DISC(Stethoscope, phaseColor)}
             <Eyebrow color={phaseColor}>Cycle &amp; symptoms</Eyebrow>
@@ -846,29 +850,48 @@ const SLIDE_CARD = {
 };
 const OPEN_LINK = { display: "inline-flex", alignItems: "center", gap: 4, marginTop: "auto", paddingTop: 10, fontFamily: UI, fontSize: 13, fontWeight: 700, color: T.muted, textDecoration: "none" };
 
+// Safe-text styles — wrap + clamp so NOTHING ever bleeds off a card/page at 390px.
+// (The old single-line `white-space:nowrap` + a flex child with no min-width was the bleed bug:
+// the nowrap span couldn't shrink, so it overran the card and got hard-cut at the edge.)
+const CLAMP2 = { minWidth: 0, overflow: "hidden", overflowWrap: "anywhere", wordBreak: "break-word", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" };
+const CLAMP3 = { ...CLAMP2, WebkitLineClamp: 3 };
+
+// The framed look (Halli: cards must read crafted like the BrandCraftSample, not plain) — the
+// §4.2 corner element in ALL FOUR corners, made visible per the lush tone dial. Spec §4.4 reserves
+// the 4-corner frame for feature cards/hero; Halli relaxed that to put the framed look on the cards.
+function Frame4({ variant = "sprig", color, opacity = 0.62, size = 50 }) {
+  return <>{["tl", "tr", "br", "bl"].map((c) => <CardCorner key={c} variant={variant} color={color} corner={c} size={size} opacity={opacity} />)}</>;
+}
+
 // Summary face — title + up to 2 signal lines + an optional quote inset.
 function SummarySlide({ s, eyebrow = "Today" }) {
-  const quote = s.summary.inset ? (s.summary.inset.quote || "").slice(0, 80) : "";
+  const quote = s.summary.inset ? (s.summary.inset.quote || "").slice(0, 96) : "";
   return (
     <article style={{ ...SLIDE_CARD, background: `linear-gradient(165deg, ${T.paperHi} 0%, ${s.accent}14 100%)`, borderLeft: `4px solid ${s.accent}` }}>
-      {/* corner sprig + a per-section meaning-bloom in its colourway (BRAND_IDENTITY §4.2/§5.1) */}
-      <CardCorner variant="sprig" color={s.accent} corner="tr" size={54} opacity={0.55} />
+      {/* visible 4-corner frame + a per-section meaning-bloom in its colourway (BRAND_IDENTITY §4.2/§5.1) */}
+      <Frame4 variant="sprig" color={s.accent} size={46} opacity={0.6} />
       <div style={{ display: "flex", alignItems: "center", gap: 9, marginBottom: 11, position: "relative" }}>
         {ICON_DISC(s.Icon, s.accent)}
         <Eyebrow color={s.accent}>{eyebrow}</Eyebrow>
         <span style={{ marginLeft: "auto" }}><FlowerGlyph variant={SURFACE_FLOWER[s.key] || "camellia"} size={32} color={s.accent} idx={`mb-${s.key}`} /></span>
       </div>
-      <h3 style={{ fontFamily: SERIF, fontSize: 20, fontWeight: 600, color: T.ink, margin: "0 0 10px", lineHeight: 1.3 }}>{s.summary.title}</h3>
+      {/* a card can carry its own visual — e.g. the companion's real bloom on the garden card */}
+      {s.bloom && (
+        <div style={{ display: "flex", justifyContent: "center", margin: "0 0 6px", position: "relative" }}>
+          <RichBloomV2 form={s.bloom.form} color={s.bloom.color} color2={lighten(s.bloom.color, 0.34)} accent={T.gold} size={96} animate soft idx={`sb-${s.key}`} />
+        </div>
+      )}
+      <h3 style={{ fontFamily: SERIF, fontSize: 20, fontWeight: 600, color: T.ink, margin: "0 0 10px", lineHeight: 1.3, position: "relative", ...CLAMP2 }}>{s.summary.title}</h3>
       {s.summary.lines.slice(0, 2).map((ln, j) => (
-        <div key={j} style={{ display: "flex", alignItems: "center", gap: 9, margin: "7px 0" }}>
+        <div key={j} style={{ display: "flex", alignItems: "center", gap: 9, margin: "7px 0", position: "relative" }}>
           {ln.Icon && <ln.Icon size={16} color={s.accent} strokeWidth={1.7} style={{ flexShrink: 0 }} />}
-          <span style={{ flex: 1, fontFamily: SERIF, fontSize: 16, color: T.inkSoft, lineHeight: 1.45, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{ln.text}</span>
+          <span style={{ flex: 1, fontFamily: SERIF, fontSize: 16, color: T.inkSoft, lineHeight: 1.45, ...CLAMP2 }}>{ln.text}</span>
           {ln.meta && <span style={{ fontFamily: UI, fontSize: 13, fontWeight: 600, color: T.muted, flexShrink: 0 }}>{ln.meta}</span>}
         </div>
       ))}
       {quote && (
-        <div style={{ marginTop: 10, background: T.paper, border: `1px solid ${T.paperDeep}`, borderRadius: 11, padding: "10px 13px" }}>
-          <p style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 15, color: T.inkSoft, margin: 0, lineHeight: 1.4, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>“{quote}”</p>
+        <div style={{ marginTop: 10, background: T.paper, border: `1px solid ${T.paperDeep}`, borderRadius: 11, padding: "10px 13px", position: "relative" }}>
+          <p style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 15, color: T.inkSoft, margin: 0, lineHeight: 1.4, ...CLAMP2 }}>“{quote}”</p>
         </div>
       )}
     </article>
@@ -879,10 +902,10 @@ function SummarySlide({ s, eyebrow = "Today" }) {
 function ActionSlide({ s, onSheet }) {
   return (
     <article style={{ ...SLIDE_CARD, background: `linear-gradient(165deg, ${T.paperHi} 0%, ${s.accent}14 100%)`, borderLeft: `4px solid ${s.accent}` }}>
-      <CardCorner variant="sprig" color={s.accent} corner="tr" size={50} opacity={0.5} />
+      <Frame4 variant="sprig" color={s.accent} size={46} opacity={0.58} />
       <Eyebrow mb={11} color={s.accent}>Do it now</Eyebrow>
-      <p style={{ fontFamily: SERIF, fontSize: 16, color: T.ink, lineHeight: 1.5, margin: "0 0 12px", position: "relative" }}>{s.action.prompt}</p>
-      <div style={{ marginBottom: 2 }}>{s.action.buttons.map((b, k) => <ActionBtn key={k} Icon={b.Icon} href={b.href} onClick={b.sheet ? () => onSheet(b.sheet) : undefined} accent={s.accent}>{b.label}</ActionBtn>)}</div>
+      <p style={{ fontFamily: SERIF, fontSize: 16, color: T.ink, lineHeight: 1.5, margin: "0 0 12px", position: "relative", ...CLAMP3 }}>{s.action.prompt}</p>
+      <div style={{ marginBottom: 2, position: "relative" }}>{s.action.buttons.map((b, k) => <ActionBtn key={k} Icon={b.Icon} href={b.href} onClick={b.sheet ? () => onSheet(b.sheet) : undefined} accent={s.accent}>{b.label}</ActionBtn>)}</div>
       <a href={s.slug} style={OPEN_LINK}>{s.openLabel} <ChevronRight size={14} /></a>
     </article>
   );
@@ -906,25 +929,25 @@ function HorizontalRow({ s, onSheet }) {
 // card (so the Lifestyle row swipes through one card per sub-area, not two).
 function LifestyleSlide({ s, onSheet }) {
   const sub = s.eyebrow.replace(/^Lifestyle ·\s*/, "");
-  const quote = s.summary.inset ? (s.summary.inset.quote || "").slice(0, 80) : "";
+  const quote = s.summary.inset ? (s.summary.inset.quote || "").slice(0, 96) : "";
   return (
     <article style={{ ...SLIDE_CARD, background: `linear-gradient(165deg, ${T.paperHi} 0%, ${s.accent}14 100%)`, borderLeft: `4px solid ${s.accent}` }}>
-      <CardCorner variant="sprig" color={s.accent} corner="tr" size={54} opacity={0.55} />
+      <Frame4 variant="sprig" color={s.accent} size={46} opacity={0.6} />
       <div style={{ display: "flex", alignItems: "center", gap: 9, marginBottom: 11, position: "relative" }}>
         {ICON_DISC(s.Icon, s.accent)}
         <Eyebrow color={s.accent}>{sub}</Eyebrow>
         <span style={{ marginLeft: "auto" }}><FlowerGlyph variant={SURFACE_FLOWER[s.key] || "camellia"} size={32} color={s.accent} idx={`mbl-${s.key}`} /></span>
       </div>
-      <h3 style={{ fontFamily: SERIF, fontSize: 20, fontWeight: 600, color: T.ink, margin: "0 0 10px", lineHeight: 1.3 }}>{s.summary.title}</h3>
+      <h3 style={{ fontFamily: SERIF, fontSize: 20, fontWeight: 600, color: T.ink, margin: "0 0 10px", lineHeight: 1.3, position: "relative", ...CLAMP2 }}>{s.summary.title}</h3>
       {s.summary.lines.slice(0, 2).map((ln, j) => (
-        <div key={j} style={{ display: "flex", alignItems: "center", gap: 9, margin: "7px 0" }}>
+        <div key={j} style={{ display: "flex", alignItems: "center", gap: 9, margin: "7px 0", position: "relative" }}>
           {ln.Icon && <ln.Icon size={16} color={s.accent} strokeWidth={1.7} style={{ flexShrink: 0 }} />}
-          <span style={{ flex: 1, fontFamily: SERIF, fontSize: 16, color: T.inkSoft, lineHeight: 1.45, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{ln.text}</span>
+          <span style={{ flex: 1, fontFamily: SERIF, fontSize: 16, color: T.inkSoft, lineHeight: 1.45, ...CLAMP2 }}>{ln.text}</span>
         </div>
       ))}
       {quote && (
-        <div style={{ marginTop: 10, background: T.paper, border: `1px solid ${T.paperDeep}`, borderRadius: 11, padding: "10px 13px" }}>
-          <p style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 15, color: T.inkSoft, margin: 0, lineHeight: 1.4, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>“{quote}”</p>
+        <div style={{ marginTop: 10, background: T.paper, border: `1px solid ${T.paperDeep}`, borderRadius: 11, padding: "10px 13px", position: "relative" }}>
+          <p style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 15, color: T.inkSoft, margin: 0, lineHeight: 1.4, ...CLAMP2 }}>“{quote}”</p>
         </div>
       )}
       <div style={{ marginTop: "auto", paddingTop: 12 }}>
