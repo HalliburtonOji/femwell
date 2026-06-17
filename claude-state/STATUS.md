@@ -1,6 +1,12 @@
 # FEMWELL — CANONICAL STATUS INDEX (read first · updated 2026-06-17)
 **This file is the single source of truth AND the index to every plan doc. If anything else disagrees, this wins.** (The long ship-log history continues below the index.)
 
+## ✅ TODAY — BOTTOM-OF-PAGE FRAMES (smart-suggestions rail + closing card) — SHIPPED + LIVE-VERIFIED (2026-06-17) — live `index-C5F4afvP.js` · commit `05cba6e`
+- Halli: the bottom cards were skipped (still plain/un-framed). The earlier passes framed the slider cards (SummarySlide/ActionSlide/LifestyleSlide → Frame4, covers ALL rows incl. the lower Planner/Programs/Companion/Pulse) but the lower NON-slider elements were missed:
+- **SMART SUGGESTIONS rail** (the "A few things I noticed" cards) — were flat cream `<a>` cards, no frame, text uncontained. Now: visible **4-corner Frame4 sprig** + colourway **gradient tint** + **overflow:hidden** + 3-line clamp; content already real-signal-driven. **LIVE: all 5 cards have 4 corner frames + tint + contained text.**
+- **Closing sign-off** — the bare "Calm by default…" line is now a **framed lush card** (carved Frame4 + a gold camellia meaning-bloom). No 2nd heart (§3 keeps the single heart in the hero).
+- **VERIFY (scrolled to literal bottom, 390px, `index-C5F4afvP.js`):** every card top→bottom is framed + filled + contained; suggestion cards `overflow:hidden` + tinted + 4 corner svgs each; closing card framed; **0 console errors; no horizontal overflow**; top half + wiring/spine unchanged; old `./pages/Today` fallback intact. Screenshots → `femwell-handoff/{today-bottom-suggestions, today-bottom-closing}.png`. Deploy `BXs7xnK_ → C5F4afvP`.
+
 ## ✅ TODAY — NO-EMPTY-CARD SWEEP (every card has content/summary/action) — SHIPPED + LIVE-VERIFIED (2026-06-17) — live `index-BXs7xnK_.js` · commit `40dfd4b`
 - Halli: EVERY sparse/empty card must DO something. Swept the whole page (both slider faces + standalone cards). No wiring/spine change; frames + contained text kept; old `./pages/Today` fallback intact; **0 console errors, no horizontal overflow at 390px**. LIVE per-card audit (every `<article>`): every summary face has real content, every action face has ≥2 buttons.
 - **PROGRAMS — wired REAL** (was a curated single line): reads the user's active `UserPrograms` + resolves `Programs` by `program_key`. **LIVE: "Perimenopause Foundations — 14 Days · Day 1 of 14 · Tonight: a 10-minute body-scan"** + (action) Tonight's practice + Continue programme. Empty → warm "start a programme" + Browse.
