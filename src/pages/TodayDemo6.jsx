@@ -22,7 +22,8 @@ import { computeCycleDay, phaseForDay } from "@/hooks/useCycleDay";
 import { nutritionToday } from "@/utils/nutritionSummary";
 import { communityHash } from "@/components/community/communityAnon";
 import { Bloom } from "@/components/nurture/NurtureGarden";
-import { RichBloomV2, SwayBloom, fingerprintColourway, floraKeyframes, CardCorner, VineMotifV2, LeafDivider, SprigDivider, FleuronDivider, FlowerGlyph, Butterfly, COLORWAYS, cwOf } from "@/components/brand/flora";
+import { RichBloomV2, SwayBloom, fingerprintColourway, floraKeyframes, CardCorner, VineMotifV2, LeafDivider, SprigDivider, FleuronDivider, FlowerGlyph, Butterfly, COLORWAYS, cwOf, lighten } from "@/components/brand/flora";
+import { qotdForDay } from "@/components/community/communityConfig";
 
 // each surface → a meaning-flower + colourway (lush per-section identity, BRAND_IDENTITY §5.1)
 const SURFACE_FLOWER = { journal: "camellia", nutrition: "sunflower", community: "cornflower", planner: "iris", programs: "lavender", garden: "rose", pulse: "dahlia", foryou: "primrose", book: "bluebell", story: "poppy", listen: "bluebell", horoscope: "violet" };
@@ -173,6 +174,7 @@ export default function TodayDemo6() {
   const [journal, setJournal] = useState(null);       // { count, lastDays, lastText }
   const [symptoms, setSymptoms] = useState([]);        // recent rows
   const [companion, setCompanion] = useState(null);
+  const [content, setContent] = useState({});   // real content surfaces (story / foryou / book / echo) — guarded, fail-open
   const [dataReady, setDataReady] = useState(false);
   // (3) first-open ceremony — fires once, persisted
   const [ceremony, setCeremony] = useState(false);
@@ -212,6 +214,23 @@ export default function TodayDemo6() {
       // recent symptoms (for the calendar peek)
       withTimeout(base44.entities.SymptomLogs.filter({ user_id: id }, "-date", 40)).then((rows) => {
         if (alive) setSymptoms((rows || []).filter(Boolean));
+      }).catch(() => {});
+      // ── REAL content surfaces (global/user content; each guarded + fail-open → graceful curated fallback) ──
+      const todayISO = todayKey();
+      withTimeout(base44.entities.DailyStory.filter({ is_active: true }, "-published_date", 20)).then((rows) => {
+        if (!alive) return; const arr = (rows || []).filter(Boolean);
+        const s = arr.find((r) => !r.published_date || String(r.published_date).slice(0, 10) <= todayISO) || arr[0];
+        if (s) setContent((c) => ({ ...c, story: s }));
+      }).catch(() => {});
+      withTimeout(base44.entities.LifestyleItems.filter({}, "-published_at", 12)).then((rows) => {
+        const arr = (rows || []).filter((r) => r && r.title);
+        if (alive && arr.length) setContent((c) => ({ ...c, foryou: arr }));
+      }).catch(() => {});
+      withTimeout(base44.entities.BookClubPick.filter({ active: true }, "-created_date", 1)).then((rows) => {
+        const b = (rows || []).filter(Boolean)[0]; if (alive && b) setContent((c) => ({ ...c, book: b }));
+      }).catch(() => {});
+      withTimeout(base44.entities.Echo.filter({}, "-created_date", 8)).then((rows) => {
+        const e = (rows || []).filter((r) => r && r.body)[0]; if (alive && e) setContent((c) => ({ ...c, echo: e }));
       }).catch(() => {});
       if (alive) setDataReady(true);
     })();
@@ -256,7 +275,21 @@ export default function TodayDemo6() {
     setLoggedCount((n) => n + 1); setJustFed(true); setTimeout(() => setJustFed(false), 2200);
     try { if (uid) tendCompanion(uid, "Tended from Today"); } catch { /* ignore */ }
   };
-  const toggle = (id) => setDone((prev) => { const next = { ...prev, [id]: !prev[id] }; if (next[id]) { setJustFed(true); setTimeout(() => setJustFed(false), 2200); } return next; });
+  const toggle = (id) => setDone((prev) => {
+    const turningOn = !prev[id];
+    const next = { ...prev, [id]: turningOn };
+    if (turningOn) {
+      setJustFed(true); setTimeout(() => setJustFed(false), 2200);
+      const label = (allItems.find((x) => x.id === id)?.label) || "A kind thing";
+      // REAL: nourish the companion (CompanionState, cross-device) + persist the tick to HabitLogs.
+      try { if (uid) tendCompanion(uid, `Today: ${label}`); } catch { /* ignore */ }
+      if (uid) {
+        const day = todayKey(); const nowISO = new Date().toISOString();
+        base44.entities.HabitLogs.create({ user_id: uid, habit_type: label, habit_name: label, habit_category: "today", date: day, day_key: day, completed: true, is_completed: true, source: "today", created_at: nowISO, updated_at: nowISO }).catch(() => { /* fail-open: localStorage mirror still holds it */ });
+      }
+    }
+    return next;
+  });
   const addCustom = () => { const v = draft.trim(); if (!v) return; setCustom((prev) => [...prev, { id: "c" + Date.now(), label: v, kind: "outapp" }]); setDraft(""); };
 
   const ITEMS = [
@@ -285,6 +318,17 @@ export default function TodayDemo6() {
     ? { title: `${journal.count} ${journal.count === 1 ? "entry" : "entries"} so far`, lines: [{ text: journal.lastDays === 0 ? "You wrote today." : `Last line ${journal.lastDays === 1 ? "yesterday" : `${journal.lastDays} days ago`}.` }], inset: journal.lastText ? { eyebrow: "Your last line", quote: `“${journal.lastText.slice(0, 90)}${journal.lastText.length > 90 ? "…" : ""}”` } : null }
     : { title: "A fresh page", lines: [{ text: "Your journal's quiet today — a sentence is plenty whenever you want it." }] };
 
+  // ── real content for the surfaces (deterministic QOTD + guarded entity reads; curated fallbacks) ──
+  const qotd = qotdForDay(todayKey());
+  const echoQuote = content.echo?.body ? `“${content.echo.body.slice(0, 80)}${content.echo.body.length > 80 ? "…" : ""}”` : "“It's held.” — anonymous";
+  const storyTitle = content.story ? (content.story.series_title || "Today's chapter") : "Today's instalment";
+  const storyDay = content.story?.day_number ? ` · day ${content.story.day_number}` : "";
+  const storyLine = content.story?.segment_text ? `${content.story.segment_text.slice(0, 62).trim()}…` : "A short instalment, released daily.";
+  const bookTitle = content.book?.title || "Little Women";
+  const bookByline = content.book?.author ? content.book.author : "read along with the Books circle";
+  const bookHref = content.book?.gutenberg_id ? `/BookReader?gutenberg_id=${content.book.gutenberg_id}` : "/BookReader?gutenberg_id=514";
+  const foryouTitle = content.foryou?.[0]?.title || null;
+
   const SURFACES = [
     { key: "journal", eyebrow: "Journal", accent: T.gold, Icon: PenLine, slug: "/Journal", openLabel: "Open journal",
       summary: jrnSummary,
@@ -293,16 +337,16 @@ export default function TodayDemo6() {
       summary: nutSummary,
       action: { prompt: nut?.hasData ? "Anything since? A few seeds lift iron in the luteal stretch." : "What did today start with?", buttons: [{ Icon: Salad, label: "Log a meal", sheet: "meal" }, { Icon: Droplet, label: "+ water", sheet: "water" }] } },
     { key: "community", eyebrow: "Community", accent: T.crimson, Icon: Users, slug: "/Community", openLabel: "Open community",
-      summary: { title: "The meadow beyond your garden", lines: [{ text: "Today's question: “What small thing lifted you today?”" }, { text: "Anonymous, 18+, a room everyone's in." }], inset: { eyebrow: "An echo, fading", quote: "“It's held.” — anonymous" } },
+      summary: { title: "The meadow beyond your garden", lines: [{ text: `Today's question: “${qotd.text}”` }, { text: "Anonymous, 18+, a room everyone's in." }], inset: { eyebrow: "An echo, fading", quote: echoQuote } },
       action: { prompt: "Answer the room, or leave an anonymous line of your own.", buttons: [{ Icon: Users, label: "Answer QOTD", sheet: "qotd" }, { Icon: Heart, label: "Post an echo", sheet: "echo" }] } },
     { key: "foryou", eyebrow: "Lifestyle · For You", accent: T.gold, Icon: Sparkles, slug: "/Lifestyle", openLabel: "Open Lifestyle",
-      summary: { title: "Picks for where you are", lines: [{ text: `Reads, a listen and a practice — tuned to your ${PHASE_LABEL[phase] ? PHASE_LABEL[phase].toLowerCase() : ""} phase.` }] },
+      summary: { title: "Picks for where you are", lines: foryouTitle ? [{ text: `Latest: ${foryouTitle}` }, { text: `tuned to your ${PHASE_LABEL[phase] ? PHASE_LABEL[phase].toLowerCase() : ""} phase` }] : [{ text: `Reads, a listen and a practice — tuned to your ${PHASE_LABEL[phase] ? PHASE_LABEL[phase].toLowerCase() : ""} phase.` }] },
       action: { prompt: "A few things gathered for your afternoon.", buttons: [{ Icon: Sparkles, label: "See your picks", href: "/Lifestyle" }] } },
-    { key: "book", eyebrow: "Lifestyle · Book of the Day", accent: T.muted, Icon: BookOpen, slug: "/BookReader?gutenberg_id=514", openLabel: "Open the library",
-      summary: { title: "Today's chapter — Little Women", lines: [{ text: "A quiet chapter, about 9 minutes." }, { Icon: Users, text: "The Books circle is reading along — no rush." }] },
-      action: { prompt: "A quiet chapter to read by her side.", buttons: [{ Icon: BookOpen, label: "Read the chapter", href: "/BookReader?gutenberg_id=514" }] } },
+    { key: "book", eyebrow: "Lifestyle · Book of the Day", accent: T.muted, Icon: BookOpen, slug: bookHref, openLabel: "Open the library",
+      summary: { title: `Today's book — ${bookTitle}`, lines: [{ text: "A quiet chapter to read by her side." }, { Icon: Users, text: bookByline }] },
+      action: { prompt: "A quiet chapter, the Books circle reading along.", buttons: [{ Icon: BookOpen, label: "Read the chapter", href: bookHref }] } },
     { key: "story", eyebrow: "Lifestyle · Daily Story", accent: T.crimson, Icon: Feather, slug: "/Lifestyle?tab=daily_story", openLabel: "Open Daily Story",
-      summary: { title: "Today's instalment", lines: [{ text: "A 3-minute read, released daily." }], inset: { eyebrow: "Where you left off", quote: "“…and she didn't look back, not yet.”" } },
+      summary: { title: `${storyTitle}${storyDay}`, lines: [{ text: storyLine }], inset: content.story?.segment_text ? { eyebrow: "Today's instalment", quote: `“${content.story.segment_text.slice(0, 70).trim()}…”` } : { eyebrow: "Where you left off", quote: "“…and she didn't look back, not yet.”" } },
       action: { prompt: "Pick the thread back up where you left it.", buttons: [{ Icon: Feather, label: "Read today's chapter", href: "/Lifestyle?tab=daily_story" }] } },
     { key: "listen", eyebrow: "Lifestyle · Listen", accent: T.gold, Icon: Headphones, slug: "/Lifestyle?tab=listen", openLabel: "Open Listen",
       summary: { title: "Audio · Winding down", lines: [{ Icon: Headphones, text: "An 8-minute settle for the afternoon." }] },
@@ -334,8 +378,9 @@ export default function TodayDemo6() {
 
   const TodIcon = TODS[tod].Icon;
   const showFirst = first;   // empty/first-day state (set by the first-open ceremony, not a dev toggle)
-  // Per-user flora fingerprint: a stable signature colourway for the companion bloom (BRAND_IDENTITY §5.2).
-  const heroCw = fingerprintColourway(uid);
+  // Hero bloom reflects the user's REAL companion (its stored colour from CompanionState); the
+  // fingerprint colourway is only the fallback before the companion resolves (BRAND_IDENTITY §5.1/§5.2).
+  const heroCw = useMemo(() => (cAccent ? { petal: cAccent, tip: lighten(cAccent, 0.34) } : fingerprintColourway(uid)), [cAccent, uid]);
 
   return (
     <div className="fwc-anim" style={{ ...PAPER_BG, minHeight: "100vh", color: T.ink, paddingBottom: 96, position: "relative", overflow: "hidden" }}>
@@ -573,7 +618,11 @@ function doWrite(kind, { uid, cycle, text, picked, mealType }) {
         if (wh && text.trim()) await base44.functions.invoke("postEcho", { action: "post", user_id: uid, author_hash: wh, body: text.trim().slice(0, 800), phase: cycle?.phase, cycle_day: cycle?.cycleDay }).catch(() => {});
       } else if (kind === "qotd") {
         const wh = await communityHash(uid).catch(() => null);
-        if (wh && text.trim()) await base44.functions.invoke("answerQotd", { user_id: uid, author_hash: wh, prompt_day: day, prompt_key: "q1", body: text.trim().slice(0, 800) }).catch(() => {});
+        const q = qotdForDay(day);
+        if (wh && text.trim()) await base44.functions.invoke("answerQotd", { user_id: uid, author_hash: wh, prompt_day: day, prompt_key: q.key, body: text.trim().slice(0, 800) }).catch(() => {});
+      } else if (kind === "practice") {
+        const nowISO = new Date().toISOString();
+        await base44.entities.HabitLogs.create({ user_id: uid, habit_type: "Tonight's practice", habit_name: "Body-scan · 10m", habit_category: "practice", date: day, day_key: day, completed: true, is_completed: true, source: "today", created_at: nowISO, updated_at: nowISO }).catch(() => {});
       }
     } catch { /* fail-open */ }
   })();
