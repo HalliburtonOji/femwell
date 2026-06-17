@@ -24,6 +24,12 @@ import { communityHash } from "@/components/community/communityAnon";
 import { Bloom } from "@/components/nurture/NurtureGarden";
 import { FORM_LIST, getCompanion, tendCompanion, tendedToday, loadCompanionState } from "@/components/nurture/companion";
 import { useScrollLock } from "@/utils/useScrollLock";
+// Reuse the PRODUCTION Planner row slider verbatim — same card size, 3D depth
+// (active scale(1) + gold-rim shadow vs idle scale(0.96)+dim), smooth
+// 320ms cubic-bezier motion, ~15% next-card peek, and ‹ • • › nav. This is
+// the reference Halli asked us to mirror exactly; importing it directly means
+// the Today slides ARE the planner slides, not a re-derivation.
+import CardStack from "@/components/planner-v2/CardStack";
 import {
   PenLine, Salad, Users, Stethoscope, Sparkles, BookOpen, Feather, Headphones, Star, CalendarDays,
   Activity, Sprout, TrendingUp, Leaf, Moon, Footprints, Droplet, Coffee, Check, Plus, ChevronRight,
@@ -432,7 +438,9 @@ export default function TodayDemo6() {
           <a href="/Health" style={{ display: "inline-flex", alignItems: "center", gap: 4, marginTop: 4, fontFamily: UI, fontSize: 13, fontWeight: 700, color: T.muted, textDecoration: "none" }}>Open your Health letters <ChevronRight size={14} /></a>
         </div>
 
-        {/* (4) PER-SURFACE cards — a STACK SPREAD deck (remembers the last-opened card) */}
+        {/* (4) PER-SURFACE cards — each section is a CardStack row (the production
+            Planner slider, reused verbatim): summary ⇄ action slides with the
+            planner's card size, 3D depth, smooth motion, peek + ‹ • • › nav. */}
         <div style={{ marginTop: 24 }}>
           <Eyebrow mb={2} color={T.gold}>Across your day</Eyebrow>
           <p style={{ fontFamily: UI, fontSize: 13, color: T.muted, margin: "2px 0 14px" }}>each part of your app, its own row · swipe a row sideways to do it</p>
@@ -649,26 +657,35 @@ function ActionSheet({ sheetKey, uid, cycle, onClose, onSaved }) {
 // LEFT 20% sits under card 1 and the remaining ~80% FLOWS to the right into the swipe track. Swipe
 // sideways to bring card 2 in. Cards are uniform full size + cream; rows independent. (Overlap is set
 // purely by a negative margin = 20% of a card width; card dimensions never change.) ───────────────
-const ROW_H = 178;
+// Card surface mirrors the planner's `yourDayCard` exactly — cream paper,
+// 20-radius, own layered shadow, 4px accent left-rim, height:100% so both the
+// summary + action slide stretch to the same height inside the CardStack slot
+// (the slot itself supplies the size, the scale(0.96→1) 3D depth, the peek and
+// the smooth 320ms motion — identical to /Planner).
+const SLIDE_CARD = {
+  background: T.paperHi, borderRadius: 20, boxSizing: "border-box",
+  border: "1px solid rgba(212,193,180,0.5)",
+  boxShadow: "0 4px 20px rgba(58,44,26,0.12), 0 1px 4px rgba(58,44,26,0.08)",
+  minHeight: 208, height: "100%", padding: "15px 17px",
+  display: "flex", flexDirection: "column", overflow: "hidden",
+};
 function HorizontalRow({ s, onSheet }) {
   const quote = s.summary.inset ? (s.summary.inset.quote || "").slice(0, 64) : "";
-  // every card identical: 80% of the row wide, same cream colour, same height.
-  const cardBase = {
-    flex: "0 0 80%", boxSizing: "border-box", position: "relative", height: ROW_H,
-    background: T.paperHi, border: `1px solid ${T.paperDeep}`, borderRadius: 18, padding: "15px 17px", overflow: "hidden",
-    scrollSnapAlign: "start",
-  };
+  // Reuse CardStack verbatim. label → the planner kicker; CardStack renders the
+  // matching ‹ • • › nav, the dominant-card sizing, the 3D-depth scale/shadow,
+  // the ~15% peek and the smooth scroll. Each child is one slide.
+  // Bleed past the column's 16px gutter so CardStack's own 16/24px internal
+  // padding realigns the kicker + active card to the gutter and the next card
+  // peeks against the column edge — full-bleed, exactly like /Planner.
   return (
-    <section style={{ margin: "0 0 18px" }}>
-      <div style={{ display: "flex", alignItems: "center", gap: 9, padding: "0 2px 8px" }}>
-        {ICON_DISC(s.Icon, s.accent)}
-        <Eyebrow color={s.accent}>{s.eyebrow}</Eyebrow>
-        <span style={{ marginLeft: "auto", display: "inline-flex", alignItems: "center", gap: 3, fontFamily: UI, fontSize: 12, fontWeight: 700, color: T.muted }}>swipe <ChevronRight size={13} /></span>
-      </div>
-      <div className="fw-hrow" style={{ display: "flex", overflowX: "auto", scrollSnapType: "x proximity", WebkitOverflowScrolling: "touch", paddingBottom: 4 }}>
-        {/* CARD 1 — summary (on top across the 20% overlap) */}
-        <div style={{ ...cardBase, zIndex: 2, boxShadow: "0 9px 22px rgba(58,48,32,0.13)" }}>
-          <Eyebrow mb={6}>Today</Eyebrow>
+    <div style={{ margin: "0 -16px 4px" }}>
+      <CardStack label={s.eyebrow}>
+        {/* SLIDE 1 — summary */}
+        <article style={{ ...SLIDE_CARD, borderLeft: `4px solid ${s.accent}` }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 9, marginBottom: 9 }}>
+            {ICON_DISC(s.Icon, s.accent)}
+            <Eyebrow color={s.accent}>Today</Eyebrow>
+          </div>
           <h3 style={{ fontFamily: SERIF, fontSize: 18, fontWeight: 600, color: T.ink, margin: "0 0 8px", lineHeight: 1.3 }}>{s.summary.title}</h3>
           {s.summary.lines.slice(0, 2).map((ln, j) => (
             <div key={j} style={{ display: "flex", alignItems: "center", gap: 9, margin: "6px 0" }}>
@@ -682,17 +699,16 @@ function HorizontalRow({ s, onSheet }) {
               <p style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 15, color: T.inkSoft, margin: 0, lineHeight: 1.4, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>“{quote}”</p>
             </div>
           )}
-        </div>
-        {/* CARD 2 — action: marginLeft -16% of the row = 20% of a card, so it starts 80% across card 1
-            (only its left 20% under card 1) and the rest flows right into the track */}
-        <div style={{ ...cardBase, zIndex: 1, marginLeft: "-16%", boxShadow: "0 9px 22px rgba(58,48,32,0.11)" }}>
-          <Eyebrow mb={6} color={s.accent}>Do it now</Eyebrow>
+        </article>
+        {/* SLIDE 2 — action */}
+        <article style={{ ...SLIDE_CARD, borderLeft: `4px solid ${s.accent}` }}>
+          <Eyebrow mb={9} color={s.accent}>Do it now</Eyebrow>
           <p style={{ fontFamily: SERIF, fontSize: 16, color: T.ink, lineHeight: 1.5, margin: "0 0 10px" }}>{s.action.prompt}</p>
-          <div>{s.action.buttons.map((b, k) => <ActionBtn key={k} Icon={b.Icon} href={b.href} onClick={b.sheet ? () => onSheet(b.sheet) : undefined} accent={s.accent}>{b.label}</ActionBtn>)}</div>
-          <a href={s.slug} style={{ display: "inline-flex", alignItems: "center", gap: 4, marginTop: 2, fontFamily: UI, fontSize: 13, fontWeight: 700, color: T.muted, textDecoration: "none" }}>{s.openLabel} <ChevronRight size={14} /></a>
-        </div>
-      </div>
-    </section>
+          <div style={{ marginBottom: 2 }}>{s.action.buttons.map((b, k) => <ActionBtn key={k} Icon={b.Icon} href={b.href} onClick={b.sheet ? () => onSheet(b.sheet) : undefined} accent={s.accent}>{b.label}</ActionBtn>)}</div>
+          <a href={s.slug} style={{ display: "inline-flex", alignItems: "center", gap: 4, marginTop: "auto", fontFamily: UI, fontSize: 13, fontWeight: 700, color: T.muted, textDecoration: "none" }}>{s.openLabel} <ChevronRight size={14} /></a>
+        </article>
+      </CardStack>
+    </div>
   );
 }
 
