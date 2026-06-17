@@ -654,20 +654,23 @@ function HorizontalRow({ s, onSheet }) {
   const touch = useRef(null);
   const onTouchStart = (e) => { touch.current = e.touches?.[0]?.clientX ?? null; };
   const onTouchEnd = (e) => { const a = touch.current, b = e.changedTouches?.[0]?.clientX; if (a != null && b != null) { const dx = b - a; if (Math.abs(dx) > 40) setFace(dx < 0 ? 1 : 0); } touch.current = null; };
-  // LIGHT stagger: the two cards sit side by side, each ~54% of the row wide, the action offset
-  // RIGHT by 80% of a card width — so only ~20% of it sits under the summary and ~80% stays VISIBLE
-  // (a gentle fan, not a heavy overlap). Tap/swipe just brings one card forward (z + a hair of scale).
+  // FULL-SIZE cards (unchanged width). The front card fills the row; the next card is positioned by
+  // OFFSET ONLY so just a ~20% sliver of its left edge peeks from the right (the rest runs off into
+  // the horizontal swipe track). Swipe/tap brings the next full-size card forward. Sizes never change.
   const cardStyle = (which) => {
     const isSummary = which === "summary";
     const active = isSummary ? (face === 0) : (face === 1);
-    const tx = isSummary ? 0 : 80;   // % of the card's own width: 80% offset → 20% under the summary
+    // offset is a % of the card's own width: a front card sits at 0; the other card is pushed ~80%
+    // of a card-width to its side, so only ~20% of it overlaps/peeks (rest off-screen). Card SIZE
+    // is identical (full width) — only the horizontal offset differs.
+    const tx = active ? 0 : (isSummary ? -80 : 80);
     return {
-      position: "absolute", top: 0, left: "2%", width: "54%", height: ROW_H, boxSizing: "border-box",
-      background: T.paperHi, border: `1px solid ${T.paperDeep}`, borderRadius: 18, padding: "14px 15px", overflow: "hidden",
-      transform: `translateX(${tx}%) scale(${active ? 1 : 0.985})`, transformOrigin: isSummary ? "left center" : "right center",
+      position: "absolute", top: 0, left: "0%", width: "80%", height: ROW_H, boxSizing: "border-box",
+      background: T.paperHi, border: `1px solid ${T.paperDeep}`, borderRadius: 18, padding: "15px 17px", overflow: "hidden",
+      transform: `translateX(${tx}%)`, transformOrigin: isSummary ? "left center" : "right center",
       zIndex: active ? 2 : 1, cursor: "pointer",
-      boxShadow: active ? "0 11px 26px rgba(58,48,32,0.14)" : "0 4px 12px rgba(58,48,32,0.09)",
-      transition: "transform .3s ease, box-shadow .3s ease",
+      boxShadow: active ? "0 11px 26px rgba(58,48,32,0.14)" : "0 5px 14px rgba(58,48,32,0.10)",
+      transition: "transform .34s cubic-bezier(.32,.72,.24,1), box-shadow .3s ease",
     };
   };
   const quote = s.summary.inset ? (s.summary.inset.quote || "").slice(0, 64) : "";
