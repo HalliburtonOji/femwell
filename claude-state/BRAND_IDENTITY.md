@@ -12,7 +12,7 @@
 - `claude-state/BRAND_IMAGE_RESEARCH.md` — the botanical-system research (Aesop/Art Nouveau/Morris/fleuron).
 
 **MASTER INDEX:**
-0. Pre-build checklist · 1. Typography (fonts + `.fw-*` cascade + role scale) · 2. Colour (tokens + retired + phase hues + **2.5 colourways**) · 3. The heart mark · 4. Botanical brand-image system (leaves/corners/dividers/flourishes) · 5. Bloom craft (RichBloomV2) · 5.1 Flora backbone & meaning · 5.2 Variety + flora fingerprint · 5.3 Page character · 6. Spacing & cards · 7. How it's applied · **8. Component map** · 9. Appendices & in-app mirrors.
+0. Pre-build checklist · 1. Typography (fonts + `.fw-*` cascade + role scale) · 2. Colour (tokens + retired + phase hues + **2.5 colourways**) · 3. The heart mark · 4. Botanical brand-image system (leaves/corners/dividers/flourishes) · 5. Bloom craft (RichBloomV2) · 5.1 Flora backbone & meaning · 5.2 Variety + flora fingerprint · 5.3 Page character · **6. Surfaces & components** (6.1 cards · 6.2 backgrounds/scrims · 6.3 buttons · 6.4 chips/inputs/sheets/toggles · 6.5 nav · 6.6 icons/links) · 7. How it's applied · **8. Component map** · 9. Appendices & in-app mirrors.
 
 ---
 
@@ -23,7 +23,7 @@ Before you add or change anything visual, confirm:
 3. **Heart** — if this is a primary page header or a brand signature, it carries **exactly one** carved-crimson heart (§3). Don't scatter it; don't recolour it; don't substitute the Lucide outline heart as the brand mark.
 4. **Motif** — at most **one** botanical line-motif per viewport, stroke-only, low opacity, never behind readable text (§4).
 5. **Bloom** — use the canonical `<Bloom>` (NurtureGarden), never a flat reimplementation (§5). Animation is breath/sway only, GPU-cheap, `prefers-reduced-motion`-gated.
-6. **Spacing/cards** — snap to the spacing scale and the card standard (§6).
+6. **Surfaces/components** — snap to the spacing scale; cards, backgrounds/scrims, buttons, chips/inputs/sheets/toggles, nav, icons & links all follow §6. Buttons accent-driven (not legacy `.fw-btn`); icons Lucide/SVG only; one motif per fold.
 7. **Always**: cream/plum world, Ephesis + Cormorant + system-sans only, Lucide/SVG icons, **no emoji**, UK English, no scoreboards, no-guilt.
 
 ---
@@ -224,13 +224,45 @@ Each surface gets a **flora signature** (palette lean + signature species + crea
 
 ---
 
-## 6. SPACING & CARD STANDARDS
-- **Card:** `background paperHi #F4EFE3`, `1px solid paperDeep #D8CFBC`, `border-radius 16–18px`, `padding 14–17px`. Feature card: radius `18–20`, a touch more padding.
-- **Accent card:** add a `3px` left-border in the section accent (`gold`/`sage`/`crimson`/`blush`).
-- **Spacing scale (px):** `4, 8, 10, 14, 18, 22, 26` — snap margins/gaps to these.
-- **Depth:** cream-on-cream — lean on hairline borders + a *tiny* shadow, not heavy drop-shadows. Use the editorial `PRESS` tokens for debossed chrome.
-- **Nav:** ONE unified bottom nav at all viewports.
-- **Surface:** every page sits on `PAPER_BG` (the paper-grain + vignette).
+## 6. SPACING, SURFACES & COMPONENTS (every element's brand look)
+**Spacing scale (px):** `4, 8, 10, 14, 18, 22, 26` — snap margins/gaps to these. **Depth philosophy:** cream-on-cream — lean on hairline borders + a *tiny* shadow, never heavy drop-shadows.
+
+### 6.1 Cards (the canonical surface — Today/hub cards)
+- **Standard card:** `background paperHi #F4EFE3` · `1px solid paperDeep #D8CFBC` · `border-radius 16–18px` · `padding 14–17px`.
+- **Feature / slide card:** radius `18–20px`, `padding 16–21px`, the **layered editorial shadow** `0 4px 20px rgba(58,44,26,0.12), 0 1px 4px rgba(58,44,26,0.08)` (the `SLIDE_CARD` look). Reserve for hero/slider/feature cards; everyday cards stay flatter.
+- **Accent rim:** a `3–4px` **left border** in the surface accent (`gold`/`sage`/`crimson`/`plum`/`blush`) — the signal a card "belongs" to a section.
+- **Card header:** `ICON_DISC` (a 32px wax `#EFE3C9` rounded-9 disc, `1px solid paperDeep`, an accent-coloured Lucide icon) + an **Eyebrow** (UI 11/700, uppercase, `letter-spacing 0.14em`, accent) on the same row; then the **Title** (SERIF 18/600). Optional "Today" sub-eyebrow inside.
+- **Tonight/dusk** variant only: the one warm near-black surface (`dusk #211A12`, cream text).
+
+### 6.2 Backgrounds, surfaces & scrims
+- **Page:** every page sits on **`PAPER_BG`** (`Editorial.jsx`) — `paper #ECE7DA` + a soft top-left light, a gentle edge vignette, a cream wash for legibility, over a real paper-grain woff2 image. Never a flat fill, never a gradient-of-the-week.
+- **Raised surfaces:** cards/insets step up to `paperHi #F4EFE3`; hairlines/dividers/deckle use `paperDeep #D8CFBC`.
+- **Botanical-motif background:** at most **one** motif per fold (§4) — a corner vine/sprig at **opacity 0.06–0.12**, a section divider up to `~0.3`. **Never behind reading text**, never a repeating wallpaper, never blurred.
+- **Section background:** group content into `paperHi` cards on the `paper` page; don't tint section backgrounds with arbitrary colour — differentiate by the accent rim + the flora signature (§5.3), not a coloured panel.
+- **Bottom-sheet scrim:** a dim overlay `rgba(11,8,5,0.40–0.45)` (warm near-black), fade-in `~0.22s`; reduced-motion-safe.
+
+### 6.3 Buttons
+- **Primary (solid CTA):** solid fill in the surface **accent** (the warm rose/`crimson #BC2E27` for the main action, or the section accent), **white text**, UI **14/700**, `letter-spacing 0.01–0.04em`, a soft shadow. **Inline action button** (`ActionBtn`): `border-radius 12`, `padding 11×15`, an inline Lucide icon + label. **Pill CTA**: `border-radius 999` for standalone primary actions.
+- **Secondary:** `transparent` background, **`1.5px` border** in the accent (or `paperDeep`), accent/`ink` text, same size/radius as primary.
+- **Tertiary / open-link button:** text + a trailing `ChevronRight` (14px), UI **13/700**, `muted` colour (see §6.6 links).
+- **Disabled:** reduce opacity to ~0.5, `cursor:default`; never grey it into a different palette.
+- *(Legacy `.fw-btn-primary/secondary/accent` in `index.css` are plum/rose-dust pills on the old CSS-var palette — superseded by the accent-driven editorial buttons above; don't introduce new uses.)*
+
+### 6.4 Chips/pills · inputs · sheets · toggles
+- **Chips / pills (filter, phase, select):** `border-radius 9999` (or `10`), UI **13/600–700**, `padding 6–8×12–14`. **Selected** = accent fill + white text (or accent-tint `${accent}1F` bg + accent text + accent border); **idle** = `paper`/transparent bg + `paperDeep`/accent hairline border. A phase chip carries its phase hue.
+- **Inputs / textareas:** `background paper #ECE7DA` (or warm `#FBF6E6`), `1px solid paperDeep`, `border-radius 10–12`, `padding 11×13`, **reading text in SERIF 16**, `outline:none`; **focus** = accent border. Placeholder in `muted`.
+- **Bottom-sheets:** `background paperHi`, **top-rounded only** `border-radius 20–22px 20–22px 0 0`, `padding 18px`, `box-shadow 0 -8px 32px rgba(11,8,5,0.22)`, **slide-up** `~0.3s cubic-bezier(.32,.72,.24,1)` over the §6.2 scrim; `max-height ~86vh`, internal scroll; reduced-motion-safe; Escape/tap-scrim to close; scroll-locked behind.
+- **Toggles / checkboxes:** native checkbox with `accentColor` = the section accent; a completed row strikes through + drops to ~0.5 opacity (the checkable Your-Day rows). No custom toggle skins that drift off-palette.
+
+### 6.5 Navigation
+- **Bottom nav:** **ONE unified bottom nav at all viewports** — UI 11/700 labels, Lucide icons, the active item in the accent/plum; the centre Jess FAB is the warm rose/crimson disc.
+- **Slider nav (dots + arrows — `CardStack`):** pagination **dots** `6px` circles — active = **gold `#A8893F`** (the planner uses the `#D4AF37` phase-gold), scaled `1.25`; idle = `#D4C9B4`. **Arrows** = `22px` transparent round buttons with a `muted` `ChevronLeft/Right` (14px). Motion = **smooth scroll** + `320ms cubic-bezier(.16,1,.3,1)`.
+- **Month/week arrows (calendar):** transparent buttons, `muted` chevrons (18px), swipe support.
+
+### 6.6 Icons & links
+- **Icons:** **Lucide / inline SVG ONLY — never emoji.** Stroke-weight `~1.6–2`, inline sizes `14–18px`, coloured `ink`/`muted` for chrome or the accent for emphasis. The **`ICON_DISC`** (32px wax disc) frames a section's icon (§6.1).
+- **Links / "open the full page":** inline-flex, UI **13/700**, `muted`, with a trailing `ChevronRight` (14px) — e.g. "Open your Health letters ›". Reading-body inline links stay in `ink` with a subtle weight bump, not a blue underline.
+- **The carved heart** (§3) is a brand mark, not an icon — never substitute the Lucide outline heart for it in a header.
 
 ---
 
