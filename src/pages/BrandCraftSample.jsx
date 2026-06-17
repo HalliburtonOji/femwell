@@ -28,6 +28,23 @@ function darken(hex, amt) {
   return `#${((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1)}`;
 }
 
+// ── COLOURWAYS — the big multiplier. Each glyph takes a colourway (petal/tip/accent) so one drawn
+//    shape renders in many on-brand variants. Colour carries MEANING (floriography colour-language):
+//    red=love/remembrance · pink=grace · gold=joy/radiance · purple=dignity/wisdom · white=purity/
+//    fresh-start · blue=trust/constancy · orange=warmth · green=renewal · lavender=serenity. ───────
+const COLORWAYS = [
+  { key: "crimson", label: "Crimson", meaning: "love · remembrance", petal: "#BC2E27", tip: "#D9554E", accent: "#2E261B" },
+  { key: "blush", label: "Blush", meaning: "grace · tenderness", petal: "#E8B4B8", tip: "#F4D9DC", accent: "#A8893F" },
+  { key: "gold", label: "Gold", meaning: "joy · radiance", petal: "#D4AF37", tip: "#E8CE78", accent: "#6B5840" },
+  { key: "sage", label: "Sage", meaning: "renewal · hope", petal: "#8FAF8F", tip: "#B6CDB6", accent: "#2E261B" },
+  { key: "plum", label: "Plum", meaning: "dignity · wisdom", petal: "#8E6E8E", tip: "#B196B1", accent: "#D4AF37" },
+  { key: "lavender", label: "Lavender", meaning: "devotion · serenity", petal: "#B6A6C9", tip: "#D4C9E2", accent: "#8E6E8E" },
+  { key: "cream", label: "Cream", meaning: "purity · a fresh start", petal: "#E4DAC1", tip: "#F2EAD6", accent: "#A8893F" },
+  { key: "coral", label: "Coral", meaning: "warmth · enthusiasm", petal: "#E08A6A", tip: "#F0B79E", accent: "#8E3B2C" },
+  { key: "sky", label: "Sky", meaning: "trust · constancy", petal: "#9FB6C9", tip: "#C3D2DE", accent: "#5F7E8E" },
+];
+const cwOf = (key) => COLORWAYS.find((c) => c.key === key) || COLORWAYS[0];
+
 // ── (A0) FLAT bloom — solid-fill ellipse petals, no depth/motion (the generic baseline) ───────────
 function FlatBloom({ color = T.blush, accent = "#8E6E8E", size = 140 }) {
   const cx = 50, cy = 46;
@@ -409,12 +426,13 @@ function HeaderFlourish({ children, color = T.gold }) {
 
 // ── FLOWER TYPES — distinct silhouettes tied to the flora map (poppy/snowdrop/sunflower/dahlia/
 //    lotus/forget-me-not). Lightweight stroke+gradient glyphs; meaning lives in the choice. ───────
-function FlowerGlyph({ variant = "poppy", size = 52, color = T.crimson, accent = "#2E261B", idx = 0 }) {
+function FlowerGlyph({ variant = "poppy", size = 52, color = T.crimson, color2 = null, accent = "#2E261B", idx = 0 }) {
   const gid = `fg-${variant}-${idx}`;
   const cx = 20, cy = 20;
+  // 3-stop so a colourway can be two-tone (lit tip → petal → base/second hue).
   const grad = (
-    <radialGradient id={`fgr-${gid}`} cx="50%" cy="42%" r="62%">
-      <stop offset="0%" stopColor={lighten(color, 0.32)} /><stop offset="100%" stopColor={color} />
+    <radialGradient id={`fgr-${gid}`} cx="50%" cy="40%" r="64%">
+      <stop offset="0%" stopColor={color2 || lighten(color, 0.34)} /><stop offset="58%" stopColor={color} /><stop offset="100%" stopColor={darken(color, 0.08)} />
     </radialGradient>
   );
   let body;
@@ -491,7 +509,39 @@ function FlowerGlyph({ variant = "poppy", size = 52, color = T.crimson, accent =
       <path d="M20 38 C 19 30 21 22 20 14 M20 24 C 14 22 11 19 11 14 M20 22 C 26 20 29 17 29 12" stroke="#8FAF8F" strokeWidth="1" fill="none" strokeLinecap="round" opacity="0.8" />
       {[[20, 11], [20, 7], [11, 13], [9, 9], [29, 11], [31, 8], [20, 15]].map(([x, y], i) => <circle key={i} cx={x} cy={y} r="2.1" fill={`url(#fgr-${gid})`} opacity="0.92" />)}
     </g>);
-  } else { // forgetmenot — 5 small round petals + a warm eye (plum, on-brand)
+  } else if (variant === "tulip") {
+    body = (<g>
+      <path d="M11 22 C 10 12 13 7 14 6 C 15 11 16 13 20 13 C 24 13 25 11 26 6 C 27 7 30 12 29 22 C 25 26 15 26 11 22 Z" fill={`url(#fgr-${gid})`} opacity="0.96" />
+      <path d="M20 13 C 18.5 17 18.5 21 20 25 M14 8 C 13.5 14 15 20 18 24 M26 8 C 26.5 14 25 20 22 24" stroke={darken(color, 0.16)} strokeWidth="0.6" fill="none" opacity="0.55" strokeLinecap="round" />
+    </g>);
+  } else if (variant === "rose") {
+    body = (<g>
+      {[0, 1].map((ring) => Array.from({ length: 5 }).map((_, i) => <path key={`${ring}-${i}`} d="M0 0 C -5 -3 -5 -9 0 -11 C 5 -9 5 -3 0 0 Z" fill={`url(#fgr-${gid})`} opacity={ring ? 0.98 : 0.88} transform={`translate(${cx} ${cy}) rotate(${i * 72 + ring * 36}) scale(${ring ? 0.62 : 1}) translate(0 -3)`} />))}
+      <path d="M20 20 C 17 19 16 16 18 14 C 20 13 22 15 21 17 C 20.4 18 19 18 19 17" fill="none" stroke={darken(color, 0.2)} strokeWidth="0.8" opacity="0.6" />
+    </g>);
+  } else if (variant === "iris") {
+    body = (<g>
+      {[-18, 0, 18].map((a, i) => <ellipse key={`u${i}`} cx={cx} cy={cy - 9} rx="3.6" ry="7" fill={`url(#fgr-${gid})`} opacity="0.9" transform={`rotate(${a} ${cx} ${cy})`} />)}
+      {[150, 180, 210].map((a, i) => <path key={`f${i}`} d="M0 0 C -3.4 4 -3 10 0 13 C 3 10 3.4 4 0 0 Z" fill={`url(#fgr-${gid})`} opacity="0.96" transform={`translate(${cx} ${cy}) rotate(${a - 180})`} />)}
+      <path d="M20 20 C 19 24 19 28 20 31" stroke={lighten("#D4AF37", 0.1)} strokeWidth="1.4" fill="none" opacity="0.8" strokeLinecap="round" />
+    </g>);
+  } else if (variant === "daffodil") {
+    body = (<g>
+      {Array.from({ length: 6 }).map((_, i) => <ellipse key={i} cx={cx} cy={cy - 9} rx="3.4" ry="6.5" fill={`url(#fgr-${gid})`} opacity="0.92" transform={`rotate(${i * 60} ${cx} ${cy})`} />)}
+      <circle cx={cx} cy={cy} r="5" fill={darken(accent === "#2E261B" ? "#D4AF37" : accent, 0)} opacity="0.9" />
+      <circle cx={cx} cy={cy} r="5" fill="none" stroke={darken("#D4AF37", 0.2)} strokeWidth="0.8" opacity="0.7" /><circle cx={cx} cy={cy} r="2.4" fill={lighten("#D4AF37", 0.2)} />
+    </g>);
+  } else if (variant === "bluebell") {
+    body = (<g>
+      <path d="M20 4 C 19 12 20 18 20 22" stroke="#7E9A7E" strokeWidth="1.1" fill="none" strokeLinecap="round" />
+      {[[13, 16, -22], [20, 22, 4], [27, 17, 24]].map(([x, y, r], i) => <g key={i} transform={`rotate(${r} ${x} ${y})`}><path d={`M${x} ${y - 7} C ${x - 4} ${y - 6} ${x - 4} ${y} ${x - 3} ${y + 3} C ${x - 1.5} ${y + 5} ${x + 1.5} ${y + 5} ${x + 3} ${y + 3} C ${x + 4} ${y} ${x + 4} ${y - 6} ${x} ${y - 7} Z`} fill={`url(#fgr-${gid})`} opacity="0.95" /><path d={`M${x - 3} ${y + 3} C ${x - 1.5} ${y + 6} ${x + 1.5} ${y + 6} ${x + 3} ${y + 3}`} stroke={darken(color, 0.15)} strokeWidth="0.6" fill="none" opacity="0.6" /></g>)}
+    </g>);
+  } else if (variant === "carnation") {
+    body = (<g>
+      {[0, 1, 2].map((ring) => Array.from({ length: 10 }).map((_, i) => <path key={`${ring}-${i}`} d="M0 0 L -1.4 -7 L -0.5 -9 L 0 -7.5 L 0.5 -9 L 1.4 -7 Z" fill={`url(#fgr-${gid})`} opacity={0.7 + ring * 0.1} transform={`translate(${cx} ${cy}) rotate(${i * 36 + ring * 12}) scale(${1 - ring * 0.22}) translate(0 -2)`} />))}
+      <circle cx={cx} cy={cy} r="2" fill={darken(color, 0.2)} />
+    </g>);
+  } else { // forgetmenot — 5 small round petals + a warm eye
     body = (<g>
       {Array.from({ length: 5 }).map((_, i) => { const a = i * 72 * Math.PI / 180; return <circle key={i} cx={cx + Math.cos(a - Math.PI / 2) * 7} cy={cy + Math.sin(a - Math.PI / 2) * 7} r="4.4" fill={`url(#fgr-${gid})`} opacity="0.95" />; })}
       <circle cx={cx} cy={cy} r="3" fill={T.gold} /><circle cx={cx} cy={cy} r="1.3" fill={lighten(T.gold, 0.25)} />
@@ -501,13 +551,19 @@ function FlowerGlyph({ variant = "poppy", size = 52, color = T.crimson, accent =
 }
 
 // ── BUTTERFLY — transformation + return. Static by default; gentle drift + faint flutter, isolated.
-function Butterfly({ size = 46, color = "#8E6E8E", color2 = T.gold, animate = true, idx = 0 }) {
+function Butterfly({ size = 46, color = "#8E6E8E", color2 = T.gold, pattern = "spots", animate = true, idx = 0 }) {
   const gid = `bf-${idx}`;
+  // wing markings vary by pattern → many distinct butterflies from one shape
+  let marks;
+  if (pattern === "plain") marks = <path d="M24 16 C 18 12 11 11 6 14" stroke={darken(color, 0.12)} strokeWidth="0.5" fill="none" opacity="0.45" />;
+  else if (pattern === "bands") marks = <g fill="none" stroke={color2} strokeWidth="2.2" strokeLinecap="round" opacity="0.8"><path d="M7 11 C 12 13 17 14 22 15" /><path d="M11 31 C 15 30 19 28 22 26" /></g>;
+  else if (pattern === "tips") marks = <g><path d="M3 13 C 2 8 6 5 11 5 C 8 9 6 12 7 16 C 5 16 4 15 3 13 Z" fill={darken(color, 0.22)} opacity="0.85" /><path d="M12 34 C 9 31 9 27 11 24 C 11 28 13 31 16 33 C 15 34 13 34.5 12 34 Z" fill={darken(color, 0.22)} opacity="0.8" /></g>;
+  else if (pattern === "eyes") marks = <g><circle cx="10" cy="13" r="2.6" fill={color2} opacity="0.9" /><circle cx="10" cy="13" r="1.1" fill={darken(color, 0.3)} /><circle cx="14" cy="30" r="2" fill={color2} opacity="0.8" /><circle cx="14" cy="30" r="0.9" fill={darken(color, 0.3)} /></g>;
+  else marks = <g><circle cx="9" cy="13" r="1.6" fill="#FFFDF7" opacity="0.6" /><circle cx="13" cy="11" r="1" fill={color2} opacity="0.7" /><circle cx="15" cy="30" r="1.2" fill={color2} opacity="0.7" /><circle cx="11" cy="28" r="0.8" fill="#FFFDF7" opacity="0.5" /></g>;
   const wingL = (<g>
     <path d="M24 15 C 17 6 5 5 3 13 C 2 19 11 22 24 20 Z" fill={`url(#bw-${gid})`} />
     <path d="M24 21 C 15 22 8 28 12 34 C 16 38 23 31 24 24 Z" fill={`url(#bw2-${gid})`} />
-    <path d="M24 16 C 18 12 11 11 6 14" stroke={darken(color, 0.1)} strokeWidth="0.5" fill="none" opacity="0.5" />
-    <circle cx="9" cy="13" r="1.5" fill="#FFFDF7" opacity="0.6" /><circle cx="15" cy="30" r="1.1" fill={color2} opacity="0.7" />
+    {marks}
   </g>);
   return (
     <svg viewBox="0 0 48 42" width={size} height={Math.round(size * 0.88)} aria-hidden
@@ -569,15 +625,15 @@ function PlantGlyph({ variant = "succulent", size = 48, color = T.sage, idx = 0 
 }
 
 // ── CREATURES — flower bugs & animals. Pollinators stay EARNED (event-driven); shown here labelled.
-function Creature({ variant = "bee", size = 44, color = "#8E6E8E", animate = false, idx = 0 }) {
-  if (variant === "butterfly") return <Butterfly size={size} color={color} animate={animate} idx={idx} />;
-  if (variant === "moth") return <Butterfly size={size} color="#8A7458" color2="#6B5840" animate={animate} idx={idx} />;
+function Creature({ variant = "bee", size = 44, color = "#8E6E8E", color2 = T.gold, pattern = "spots", animate = false, idx = 0 }) {
+  if (variant === "butterfly") return <Butterfly size={size} color={color} color2={color2} pattern={pattern} animate={animate} idx={idx} />;
+  if (variant === "moth") return <Butterfly size={size} color={color === "#8E6E8E" ? "#8A7458" : color} color2={color2} pattern={pattern === "spots" ? "bands" : pattern} animate={animate} idx={idx} />;
   const drift = animate ? { transformBox: "fill-box", transformOrigin: "center", willChange: "transform", animation: "fwcDrift 7s ease-in-out infinite", animationDelay: `${(idx % 4) * 0.8}s` } : undefined;
   if (variant === "bee") {
     return (
       <svg viewBox="0 0 44 30" width={size} height={Math.round(size * 0.68)} aria-hidden style={drift}>
         <ellipse cx="15" cy="9" rx="9" ry="5" fill="#FFFDF7" opacity="0.55" transform="rotate(-18 15 9)" /><ellipse cx="24" cy="8" rx="8" ry="4.5" fill="#FFFDF7" opacity="0.5" transform="rotate(-30 24 8)" />
-        <ellipse cx="22" cy="17" rx="10" ry="6.2" fill="#D4AF37" /><g stroke="#2E261B" strokeWidth="1.6"><path d="M19 12 L 18 22 M24 11.5 L 23 22.6 M29 13 L 28.5 21" /></g>
+        <ellipse cx="22" cy="17" rx="10" ry="6.2" fill={color === "#8E6E8E" ? "#D4AF37" : color} /><g stroke="#2E261B" strokeWidth="1.6"><path d="M19 12 L 18 22 M24 11.5 L 23 22.6 M29 13 L 28.5 21" /></g>
         <ellipse cx="33" cy="15" rx="3.4" ry="3.2" fill="#2E261B" /><path d="M33 13 C 35 9 37 8 39 7 M35 13 C 37 10 39 9 41 9" stroke="#2E261B" strokeWidth="0.7" fill="none" strokeLinecap="round" />
         <path d="M12 18 L 8 20" stroke="#2E261B" strokeWidth="1" strokeLinecap="round" />
       </svg>
@@ -593,11 +649,32 @@ function Creature({ variant = "bee", size = 44, color = "#8E6E8E", animate = fal
     );
   }
   if (variant === "ladybird") {
+    const shell = color === "#8E6E8E" ? T.crimson : color;
     return (
       <svg viewBox="0 0 36 32" width={size} height={Math.round(size * 0.88)} aria-hidden>
-        <ellipse cx="18" cy="19" rx="12" ry="11" fill={T.crimson} /><path d="M18 9 C 21 12 21 26 18 30 C 15 26 15 12 18 9 Z" fill={darken(T.crimson, 0.3)} opacity="0.5" />
+        <ellipse cx="18" cy="19" rx="12" ry="11" fill={shell} /><path d="M18 9 C 21 12 21 26 18 30 C 15 26 15 12 18 9 Z" fill={darken(shell, 0.3)} opacity="0.5" />
         <path d="M18 8 L 18 30" stroke="#2E261B" strokeWidth="1" /><path d="M9 11 C 12 7 24 7 27 11 C 24 9 12 9 9 11 Z" fill="#2E261B" />
         {[[12, 15], [24, 15], [11, 23], [25, 23], [18, 25]].map(([x, y], i) => <circle key={i} cx={x} cy={y} r="1.8" fill="#2E261B" />)}
+      </svg>
+    );
+  }
+  if (variant === "snail") {
+    return (
+      <svg viewBox="0 0 44 30" width={size} height={Math.round(size * 0.68)} aria-hidden>
+        <defs><linearGradient id={`sn-${idx}`} x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stopColor={lighten(color, 0.24)} /><stop offset="100%" stopColor={color} /></linearGradient></defs>
+        <path d="M6 24 C 6 18 12 16 20 16 L 30 16 C 34 16 36 19 36 22 C 36 25 33 26 30 26 L 8 26 C 6.8 26 6 25 6 24 Z" fill={lighten(color, 0.34)} opacity="0.9" />
+        <path d="M30 6 C 38 6 40 14 36 19 C 33 23 26 22 25 16 C 24 11 27 9 30 11 C 32 12.5 31 16 28 15" fill="none" stroke={`url(#sn-${idx})`} strokeWidth="3" strokeLinecap="round" />
+        <path d="M8 24 C 4 22 3 17 4 13 M11 23 C 8 21 7 17 8 14" stroke="#2E261B" strokeWidth="0.8" fill="none" strokeLinecap="round" opacity="0.7" /><circle cx="4" cy="12.5" r="1" fill="#2E261B" /><circle cx="8" cy="13.5" r="1" fill="#2E261B" />
+      </svg>
+    );
+  }
+  if (variant === "firefly") {
+    return (
+      <svg viewBox="0 0 32 28" width={size} height={Math.round(size * 0.88)} aria-hidden>
+        <defs><radialGradient id={`ff-${idx}`} cx="50%" cy="50%" r="50%"><stop offset="0%" stopColor="#F6E27A" stopOpacity="0.95" /><stop offset="60%" stopColor="#D4AF37" stopOpacity="0.5" /><stop offset="100%" stopColor="#D4AF37" stopOpacity="0" /></radialGradient></defs>
+        <circle cx="12" cy="14" r="10" fill={`url(#ff-${idx})`} />
+        <ellipse cx="12" cy="14" rx="4.5" ry="3" fill={darken(color, 0.1)} /><circle cx="16" cy="13" r="2.4" fill="#2E261B" />
+        <ellipse cx="11" cy="18" rx="3" ry="2.4" fill="#F6E27A" /><path d="M14 11 C 16 8 18 7 20 6 M15 13 C 18 11 20 10 22 9" stroke="#2E261B" strokeWidth="0.6" fill="none" strokeLinecap="round" opacity="0.7" />
       </svg>
     );
   }
@@ -615,22 +692,25 @@ function Creature({ variant = "bee", size = 44, color = "#8E6E8E", animate = fal
 // ── per-user FLORA FINGERPRINT (deterministic, seeded — no two gardens alike) ────────────────────
 function hashSeed(s) { let h = 2166136261; for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); } return h >>> 0; }
 function seededRng(seed) { let x = (seed || 1) >>> 0; return () => { x = (Math.imul(x, 1103515245) + 12345) & 0x7fffffff; return x / 0x7fffffff; }; }
-const FLORA_POOL = [["poppy", T.crimson], ["snowdrop", "#9DB89D"], ["sunflower", "#D4AF37"], ["dahlia", "#8E6E8E"], ["violet", "#8E6E8E"], ["cornflower", "#8E6E8E"], ["camellia", T.blush], ["primrose", "#D8C24E"], ["lotus", T.blush], ["lavender", "#8E6E8E"]];
+const FLORA_TYPES = ["poppy", "snowdrop", "sunflower", "dahlia", "lotus", "forgetmenot", "violet", "cornflower", "camellia", "lavender", "primrose", "heather", "tulip", "rose", "iris", "daffodil", "bluebell", "carnation"];
 const PLANT_POOL = ["fern", "succulent", "grass", "ivy", "bamboo", "moss"];
-const CREATURE_POOL = ["butterfly", "bee", "dragonfly", "ladybird", "hummingbird"];
+const CREATURE_POOL = ["butterfly", "bee", "dragonfly", "moth", "ladybird", "hummingbird", "snail", "firefly"];
+const WING_PATTERNS = ["spots", "bands", "tips", "eyes", "plain"];
 function MiniGarden({ seed = "user", size = 156, animate = false }) {
   const r = seededRng(hashSeed(seed));
   const pick = (arr) => arr[Math.floor(r() * arr.length)];
-  const pl = pick(PLANT_POOL); const f1 = pick(FLORA_POOL); const f2 = pick(FLORA_POOL);
-  const hasCreature = r() > 0.45; const cr = pick(CREATURE_POOL);
+  const pl = pick(PLANT_POOL);
+  const f1 = pick(FLORA_TYPES), c1 = pick(COLORWAYS);
+  const f2 = pick(FLORA_TYPES), c2 = pick(COLORWAYS);
+  const hasCreature = r() > 0.4; const cr = pick(CREATURE_POOL), cc = pick(COLORWAYS), pat = pick(WING_PATTERNS);
   const Plant = pl === "fern" ? <LeafGlyph variant="frond" size={40} color={T.sage} idx={`${seed}p`} /> : <PlantGlyph variant={pl} size={44} color={T.sage} idx={`${seed}p`} />;
   return (
     <div style={{ position: "relative", height: size, background: T.paperHi, border: `1px solid ${T.paperDeep}`, borderRadius: 16, overflow: "hidden" }}>
       <div style={{ position: "absolute", left: 0, right: 0, bottom: 18, height: 1, background: T.paperDeep, opacity: 0.7 }} />
       <div style={{ position: "absolute", bottom: 12, left: "8%" }}>{Plant}</div>
-      <div style={{ position: "absolute", bottom: 14, left: "38%" }}><FlowerGlyph variant={f1[0]} size={46} color={f1[1]} accent={f1[0] === "sunflower" ? "#6B5840" : "#2E261B"} idx={`${seed}1`} /></div>
-      <div style={{ position: "absolute", bottom: 12, left: "64%" }}><FlowerGlyph variant={f2[0]} size={40} color={f2[1]} accent={f2[0] === "sunflower" ? "#6B5840" : "#2E261B"} idx={`${seed}2`} /></div>
-      {hasCreature && <div style={{ position: "absolute", top: 10, right: 12 }}><Creature variant={cr} size={38} color={cr === "ladybird" ? T.crimson : "#8E6E8E"} animate={animate} idx={`${seed}c`} /></div>}
+      <div style={{ position: "absolute", bottom: 14, left: "38%" }}><FlowerGlyph variant={f1} size={46} color={c1.petal} color2={c1.tip} accent={c1.accent} idx={`${seed}1`} /></div>
+      <div style={{ position: "absolute", bottom: 12, left: "64%" }}><FlowerGlyph variant={f2} size={40} color={c2.petal} color2={c2.tip} accent={c2.accent} idx={`${seed}2`} /></div>
+      {hasCreature && <div style={{ position: "absolute", top: 10, right: 12 }}><Creature variant={cr} size={38} color={cc.petal} color2={cc.tip} pattern={pat} animate={animate} idx={`${seed}c`} /></div>}
     </div>
   );
 }
@@ -792,18 +872,40 @@ export default function BrandCraftSample() {
         </div>
         {/* the library: flowers · plants · creatures */}
         <div style={{ background: T.paperHi, border: `1px solid ${T.paperDeep}`, borderRadius: 18, padding: "12px 8px" }}>
-          <div style={{ fontFamily: UI, fontSize: 11, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: T.muted, margin: "2px 6px 4px" }}>Flowers</div>
+          <div style={{ fontFamily: UI, fontSize: 11, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: T.muted, margin: "2px 6px 4px" }}>Flowers <span style={{ fontWeight: 500, textTransform: "none", letterSpacing: 0, fontStyle: "italic", fontFamily: SERIF, fontSize: 13 }}>— 18 types</span></div>
           <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "space-between", gap: 4 }}>
-            {[["poppy", T.crimson], ["snowdrop", "#9DB89D"], ["sunflower", "#D4AF37"], ["dahlia", "#8E6E8E"], ["violet", "#8E6E8E"], ["cornflower", "#8E6E8E"], ["camellia", T.blush], ["primrose", "#D8C24E"], ["lavender", "#8E6E8E"], ["lotus", T.blush]].map(([v, c], i) => <FlowerGlyph key={v} variant={v} size={36} color={c} accent={v === "sunflower" ? "#6B5840" : "#2E261B"} idx={`lib${i}`} />)}
+            {["poppy", "snowdrop", "sunflower", "dahlia", "lotus", "forgetmenot", "violet", "cornflower", "camellia", "lavender", "primrose", "heather", "tulip", "rose", "iris", "daffodil", "bluebell", "carnation"].map((v, i) => { const cw = COLORWAYS[i % COLORWAYS.length]; return <FlowerGlyph key={v} variant={v} size={33} color={cw.petal} color2={cw.tip} accent={cw.accent} idx={`lib${i}`} />; })}
           </div>
           <div style={{ fontFamily: UI, fontSize: 11, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: T.muted, margin: "12px 6px 4px" }}>Plants</div>
           <div style={{ display: "flex", justifyContent: "space-between", gap: 4, alignItems: "flex-end" }}>
             <LeafGlyph variant="frond" size={34} color={T.sage} idx="libfern" />
             {["succulent", "grass", "ivy", "bamboo", "moss"].map((v, i) => <PlantGlyph key={v} variant={v} size={42} color={T.sage} idx={`lib${i}`} />)}
           </div>
-          <div style={{ fontFamily: UI, fontSize: 11, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: T.muted, margin: "12px 6px 4px" }}>Creatures <span style={{ fontWeight: 500, textTransform: "none", letterSpacing: 0, fontStyle: "italic", fontFamily: SERIF, fontSize: 13 }}>— earned, never ambient</span></div>
-          <div style={{ display: "flex", justifyContent: "space-around", alignItems: "center", gap: 4 }}>
-            {["butterfly", "bee", "dragonfly", "moth", "ladybird", "hummingbird"].map((v, i) => <Creature key={v} variant={v} size={40} color={v === "ladybird" ? T.crimson : "#8E6E8E"} animate={false} idx={`lib${i}`} />)}
+          <div style={{ fontFamily: UI, fontSize: 11, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: T.muted, margin: "12px 6px 4px" }}>Creatures <span style={{ fontWeight: 500, textTransform: "none", letterSpacing: 0, fontStyle: "italic", fontFamily: SERIF, fontSize: 13 }}>— 8 types, earned never ambient</span></div>
+          <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "space-around", alignItems: "center", gap: 4 }}>
+            {[["butterfly", "plum"], ["bee", "gold"], ["dragonfly", "sky"], ["moth", "cream"], ["ladybird", "crimson"], ["hummingbird", "sage"], ["snail", "coral"], ["firefly", "gold"]].map(([v, ck], i) => { const cw = cwOf(ck); return <Creature key={v} variant={v} size={40} color={cw.petal} color2={cw.tip} pattern={WING_PATTERNS[i % WING_PATTERNS.length]} animate={false} idx={`lib${i}`} />; })}
+          </div>
+        </div>
+
+        {/* SWATCH GRID 1 — one flower across every colourway (colour = meaning) */}
+        <div style={{ fontFamily: UI, fontSize: 11, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: T.muted, margin: "14px 2px 6px" }}>One flower → 9 colourways <span style={{ fontWeight: 500, textTransform: "none", letterSpacing: 0, fontStyle: "italic", fontFamily: SERIF, fontSize: 13 }}>— colour carries meaning</span></div>
+        <div style={{ background: T.paperHi, border: `1px solid ${T.paperDeep}`, borderRadius: 18, padding: "12px 8px" }}>
+          <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "space-between", rowGap: 8 }}>
+            {COLORWAYS.map((cw, i) => (
+              <div key={cw.key} style={{ width: "31%", textAlign: "center" }}>
+                <FlowerGlyph variant="camellia" size={44} color={cw.petal} color2={cw.tip} accent={cw.accent} idx={`sw${i}`} />
+                <div style={{ fontFamily: UI, fontSize: 10.5, fontWeight: 700, letterSpacing: "0.04em", color: T.muted }}>{cw.label}</div>
+                <div style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 12, color: T.inkSoft, lineHeight: 1.3 }}>{cw.meaning}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* SWATCH GRID 2 — one butterfly across wing-patterns × colourways */}
+        <div style={{ fontFamily: UI, fontSize: 11, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: T.muted, margin: "14px 2px 6px" }}>One butterfly → many wing-patterns</div>
+        <div style={{ background: T.paperHi, border: `1px solid ${T.paperDeep}`, borderRadius: 18, padding: "10px 6px" }}>
+          <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "space-around", alignItems: "center", rowGap: 6 }}>
+            {[["plum", "spots"], ["gold", "bands"], ["crimson", "tips"], ["sky", "eyes"], ["blush", "plain"], ["sage", "spots"], ["coral", "bands"], ["lavender", "eyes"], ["cream", "tips"], ["plum", "eyes"]].map(([ck, pat], i) => { const cw = cwOf(ck); return <Butterfly key={i} size={40} color={cw.petal} color2={cw.tip} pattern={pat} animate={false} idx={`bw${i}`} />; })}
           </div>
         </div>
 
@@ -819,18 +921,18 @@ export default function BrandCraftSample() {
           ))}
         </div>
 
-        {/* two users → two gardens */}
-        <div style={{ fontFamily: UI, fontSize: 11, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: T.muted, margin: "16px 2px 6px" }}>Two users → two gardens</div>
-        <div style={{ display: "flex", gap: 10 }}>
-          {[["Maya", "TTC · luteal · journals"], ["Priya", "perimenopause · rests often"]].map(([nm, desc]) => (
-            <div key={nm} style={{ flex: 1, minWidth: 0 }}>
-              <MiniGarden seed={`femwell-${nm}`} animate={motion} />
-              <div style={{ fontFamily: SERIF, fontSize: 15, color: T.ink, marginTop: 6, textAlign: "center" }}><span style={{ fontStyle: "italic" }}>{nm}</span></div>
-              <div style={{ fontFamily: UI, fontSize: 12, color: T.muted, textAlign: "center" }}>{desc}</div>
+        {/* six users → six gardens (the permutation space, made visible) */}
+        <div style={{ fontFamily: UI, fontSize: 11, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: T.muted, margin: "16px 2px 6px" }}>Six users → six gardens <span style={{ fontWeight: 500, textTransform: "none", letterSpacing: 0, fontStyle: "italic", fontFamily: SERIF, fontSize: 13 }}>— species × colourway × creature</span></div>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 10 }}>
+          {[["Maya", "TTC · luteal"], ["Priya", "peri · rests often"], ["Noor", "teen · follicular"], ["Ada", "pregnant · journals"], ["Lena", "menopause · community"], ["Sol", "postpartum · ovulatory"]].map(([nm, desc]) => (
+            <div key={nm} style={{ width: "calc(50% - 5px)", minWidth: 0 }}>
+              <MiniGarden seed={`femwell-${nm}-garden`} size={132} animate={motion} />
+              <div style={{ fontFamily: SERIF, fontSize: 15, color: T.ink, marginTop: 4, textAlign: "center" }}><span style={{ fontStyle: "italic" }}>{nm}</span></div>
+              <div style={{ fontFamily: UI, fontSize: 11.5, color: T.muted, textAlign: "center" }}>{desc}</div>
             </div>
           ))}
         </div>
-        <div style={{ fontFamily: SERIF, fontSize: 15, color: T.inkSoft, lineHeight: 1.5, margin: "8px 2px 0", textAlign: "center" }}>Same identity, two distinct gardens — seeded from who she is and what she tends.</div>
+        <div style={{ fontFamily: SERIF, fontSize: 15, color: T.inkSoft, lineHeight: 1.5, margin: "8px 2px 0", textAlign: "center" }}>One identity, six distinct gardens — and the real space runs to <em>billions</em> of combinations, each seeded from who she is and what she tends.</div>
 
         {/* page character — each surface its own flora signature */}
         <div style={{ fontFamily: UI, fontSize: 11, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: T.muted, margin: "16px 2px 6px" }}>Page character — one identity, different per page</div>

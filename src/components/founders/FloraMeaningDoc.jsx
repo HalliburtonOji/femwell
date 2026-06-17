@@ -122,7 +122,9 @@ export default function FloraMeaningDoc() {
         <Row dot={C.blush} term="Flowers (extended)" meaning="violet (modesty) · primrose (young love) · camellia (steadfast devotion) · anemone (anticipation) · zinnia (enduring friendship) · marigold (joy, guidance) · freesia (trust) · bluebell (constancy) · cornflower (hope) · heather (quiet resilience)" />
         <Row dot={C.sage} term="Plants" meaning="fern (renewal) · moss (patience) · ivy (loyal connection) · bamboo (strength + flexibility) · succulent (thriving in hardship) · grass (springs back) · clematis (traveller's joy) · the cycle herbs (rosemary, sage, lavender, yarrow, lady's-mantle, mugwort)" />
         <Row dot={C.plum} term="Creatures (earned)" meaning="butterfly (return) · bee (community) · dragonfly (insight) · moth (the dark) · ladybird (luck/healing) · hummingbird (well-being) · firefly (inner light, hope) · snail (patience) · cricket (good cheer)" />
+        <Row dot={C.gold} term="Colour language (the multiplier)" meaning="each flower & creature renders in 9 on-brand colourways, and in floriography colour changes meaning — crimson=love/remembrance · blush=grace · gold=joy · sage=renewal · plum=dignity · lavender=serenity · cream=purity · coral=warmth · sky=trust. A white poppy ≠ a crimson poppy." />
       </ul>
+      <P><strong>The numbers:</strong> 18 flower types × 9 colourways = <strong>162 flower variants</strong>; butterflies = 5 wing-patterns × 9 colourways = 45, with the wider creature set <strong>100+ variants</strong>.</P>
 
       <H2 n="XI">The flora fingerprint — no two gardens alike</H2>
       <P>A woman's garden is a <em>portrait, not a slot machine</em>. Like a heraldic blazon, it's a small grammar of stable elements combined into a unique, reconstructable identity — <strong>deterministically seeded</strong> from who she is and what she tends (same seed → same garden on every device), then it grows as she does.</P>
@@ -130,6 +132,7 @@ export default function FloraMeaningDoc() {
         <Row dot={C.gold} term="Seed" meaning="profile + sign-up season (base palette + signature flower) · life-stage (governing bloom/tree) · cycle phase (active flower) · the life-areas she tends (which plants & companions grow) · what she's earned" />
         <Row dot={C.crimson} term="Rarity (earned, never bought)" meaning="common (base garden) → uncommon (a second species) → rare (a rare bloom / a creature visit on a milestone) → heirloom (the flowering tree, then the orchard)" />
         <Row dot={C.sage} term="Evolves" meaning="stable enough to recognise as hers, alive enough to keep growing — new species as she explores, the bloom shifting with her phase, the tree maturing over years" />
+        <Row dot={C.plum} term="Permutation space" meaning="species × colourway × creature × creature-colourway × wing-pattern × plant × combination × accent ≈ a billion+ distinct gardens — seeded (not random), so she never meets her twin" />
       </ul>
       <P>Because every pick is governed by a rule tied to <em>her</em>, the uniqueness reads as a likeness — a garden that could only be hers. (Why it feels personal not arbitrary: rules + seeds + meaningful constraints, the way Animal Crossing, Sky and heraldry do it — BRAND_FLORA §9.)</P>
 

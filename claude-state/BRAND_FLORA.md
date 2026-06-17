@@ -98,6 +98,23 @@ A large, still-meaningful set so the world feels deep. Every element keeps a doc
 
 ---
 
+### 6.4 Colour language — the big multiplier (colour = meaning)
+In floriography, **colour changes the meaning** of the same flower — so colourways are meaningful, not decorative. Each glyph is **parameterised** by a colourway (petal + lit tip + accent) so one drawn shape renders in many on-brand variants cheaply (no hand-drawing hundreds). The **9 canonical colourways** and their documented meanings:
+| Colourway | Meaning (colour-floriography) |
+|---|---|
+| **Crimson** | love · passion · remembrance (red rose/carnation) |
+| **Blush** | grace · gratitude · tenderness (pink rose/lily) |
+| **Gold** | joy · friendship · radiance (yellow) |
+| **Sage** | renewal · hope (green) |
+| **Plum** | dignity · wisdom · admiration (purple iris/orchid) |
+| **Lavender** | devotion · serenity |
+| **Cream** | purity · reverence · a fresh start (white) |
+| **Coral** | warmth · enthusiasm (orange) |
+| **Sky** | trust · loyalty · constancy (blue) |
+So a **white poppy** (purity/rest) ≠ a **crimson poppy** (remembrance); a **gold rose** (friendship) ≠ a **blush rose** (grace). The same colourways drive the **creatures** (a white butterfly = the divine/ancestor; a blue = tranquillity; gold = confidence/joy; monarch-orange = warmth/energy). **18 flower types × 9 colourways = 162 flower variants**; the creature set (butterfly ×5 wing-patterns ×9 colourways = 45, + bee/dragonfly/moth/ladybird/hummingbird/snail/firefly in colourways ≈ **100+ creature variants**).
+
+---
+
 ## 7. THE FLORA FINGERPRINT (per-user uniqueness — no two gardens alike)
 A woman's garden is a **portrait, not a slot machine**. Like a heraldic **blazon** — a small grammar of stable elements combined into a unique, reconstructable identity — each user's flora is **deterministically seeded** from who she is and what she tends, then **grows as she does**. Same seed → same garden on every device (seed from `userId`), so it's recognisably *hers*, never random noise.
 
@@ -115,6 +132,17 @@ A woman's garden is a **portrait, not a slot machine**. Like a heraldic **blazon
 - **Heirloom** — the **flowering tree**, then the **orchard** (garden-of-gardens), after long arcs (seasons/years).
 
 **How it evolves:** the fingerprint is **stable** (she recognises her garden each return) yet **alive** — new species as she explores new areas, the bloom shifting with her phase, creatures arriving when she comes back, the tree maturing as years pass. Because every pick is governed by a rule tied to *her*, the uniqueness reads as a likeness — a garden that could only be hers.
+
+---
+
+### 7.1 The permutation space (why no two gardens repeat)
+Uniqueness now draws from **species × colourway × creature × creature-colourway × wing-pattern × plant × combination × base-accent** — a combinatorial space large enough that collisions are effectively impossible:
+- **Flowers:** 18 types × 9 colourways = **162** variants. A garden shows ≥2 flowers → 162 × 162 ≈ **26,000** two-flower pairings (order-sensitive).
+- **Plants:** **6** (fern/succulent/grass/ivy/bamboo/moss).
+- **Creatures:** butterfly (5 wing-patterns × 9 colourways = 45) + 7 more species × ~9 colourways ≈ **100+** variants, plus "no creature yet" (earned).
+- **Base palette / page accent:** 9.
+- **Rough lower bound:** 26,000 (flowers) × 6 (plant) × ~100 (creature, incl. none) × 9 (palette) ≈ **1.4 billion** distinct gardens — before rare blooms, the maturing tree, and combinations widen it further.
+This is **seeded, not random**: a hash of `userId` (+ stage + phase + tended-areas + earned) selects from the space deterministically, so the garden is the **same on every device** and recognisably *hers* — the size just guarantees she won't meet her twin.
 
 ---
 
@@ -143,6 +171,7 @@ Procedural systems feel *personal* when **rules + seeds + meaningful constraints
 ---
 
 ## 10. SOURCES
+- Colour pass — flower-colour symbolism: [Flower Shopping — colour symbolism](https://www.flowershopping.com/blog/flower-color-symbolism.html) · [Color Meanings — flower colours](https://www.color-meanings.com/flower-color-meanings-and-symbolism/) · [Teleflora — flower colour meaning](https://www.teleflora.com/floral-facts/flower-color-meaning) · butterfly colour: [Color Meanings — butterfly colours](https://www.color-meanings.com/butterfly-color-meanings-and-symbolism/) · [Gardens with Wings — butterfly colour](https://www.gardenswithwings.com/symbolism/meaning-of-butterfly-colors)
 - Variety pass — extended floriography: [Bloom & Wild](https://www.bloomandwild.com/the-blog/floriography-language-of-flowers-meaning) · [Petal Republic — heather](https://www.petalrepublic.com/heather-flower-meaning/) · [FloristEmpire — cornflower](https://floristempire.com/guides/cornflower-flower-meaning/) · [Thursd — clematis](https://thursd.com/articles/clematis-flower-meaning)
 - Variety pass — plant symbolism: [Schisandra & Bergamot — 13 plants](https://schisandraandbergamot.com/plants-that-carry-symbolism-across-many-cultures/) · [Symbol Sage — succulents](https://symbolsage.com/succulents-meaning-and-symbolism/) · [Spirit Animals & Symbolism — moss](https://spiritanimalsandsymbolism.com/moss-spiritual-meaning-symbolism-and-totem/)
 - Variety pass — creatures: [UniGuide — ladybug](https://www.uniguide.com/ladybug-meaning-symbolism-spirit-animal) · [Insightful Spiritual — firefly](https://insightfulspiritual.com/firefly-spiritual-meaning-symbolism-and-totem/) · [Similifye — snail](https://similifye.com/snail-symbolism/) · [Mosquito Squad — insect symbolism](https://www.mosquitosquad.com/blog/miscellaneous/the-symbolic-meaning-of-different-insects/)
