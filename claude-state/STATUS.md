@@ -1,6 +1,16 @@
 # FEMWELL — CANONICAL STATUS INDEX (read first · updated 2026-06-16)
 **This file is the single source of truth AND the index to every plan doc. If anything else disagrees, this wins.** (The long ship-log history continues below the index.)
 
+## ✅ TODAY — BOLD LUSH PASS (colour · visible botanicals · designed hero · rich cards) — SHIPPED + LIVE-VERIFIED (2026-06-17) — live `index-h5rsHMNW.js` · commit `8ce854a`
+- Halli: subtle/low-opacity reads as BORING; the project pattern is rich-wins. Went bold (not incremental). Reframed the spec so "restraint" stops producing plain results.
+- **Hero masthead:** coloured **radial glow** behind the ring (fingerprint colourway + phase hue, `fwcGlow` animated), **bigger bloom** (RichBloomV2 198 in a 300 ring), a **butterfly** resting on the ring, **blooms flanking** the Ephesis greeting (one carved Heart kept per §3).
+- **Colour on cards:** warm **gold / sage / phase-hue gradient tints** + a faint **botanical watermark** (FlowerGlyph) + stronger layered shadow + 4px accent rim on the day-paragraph / Your-Day / Cycle cards.
+- **Section slide cards:** accent-tinted gradient + a **per-section meaning-bloom** (`FlowerGlyph` in the section colourway, via `SURFACE_FLOWER` map) in the header + a bigger corner sprig.
+- **Typography:** Ephesis `Script` for the "Across your day" + suggestions section headers (warm/editorial).
+- **Shared module:** promoted `FlowerGlyph` + `Butterfly` into `components/brand/flora.jsx`; added `fwcDrift`/`fwcFlutter`/`fwcGlow` keyframes.
+- **SPEC:** BRAND_IDENTITY.md added a **TONE DIAL** callout (§0) — "elegant AND lush, never sparse/monochrome; colour from the colourways, generous botanical presence; if a screen reads plain it's off-brand." Synced to OneDrive.
+- **LIVE-VERIFIED at 390px (bundle `index-h5rsHMNW.js`):** hero glow + butterfly + flanking blooms + bigger bloom render; cards are colour-tinted with meaning-blooms + corners; **0 console errors**; **write still works** (symptom → `POST /entities/SymptomLogs 200`) — no regression; old-Today fallback intact. Screenshots → `femwell-handoff/{today-lush-hero, today-lush-sections}.png`.
+
 ## ✅ TODAY — BRAND CRAFT APPLIED (corners · motifs · dividers · richer cards) — SHIPPED + LIVE-VERIFIED (2026-06-17) — live `index-D6_-P9ZY.js` · commit `2684f04`
 - Live /Today read PLAIN (flat cards, no ornaments) — the §4 corners/dividers/motifs + §6 card spec were defined but never APPLIED. Now applied with restraint (one motif per fold).
 - **Promoted to shared `src/components/brand/flora.jsx`:** `CornerSprig`, `CardCorner`, `BrandFrame`, `VineMotifV2`, `LeafDivider`, `SprigDivider`, `FleuronDivider` (+ exports). Today imports them.
