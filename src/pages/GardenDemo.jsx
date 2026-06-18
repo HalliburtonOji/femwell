@@ -1,70 +1,55 @@
-// GardenDemo — "Everything you tend, grows" — a redesign DEMO of the Garden page. Adapts the
-// TODAY / JOURNAL / COMMUNITY bar to the Garden's purpose: your companion + the life you tend, shown as
-// a living garden. PREVIEW route only (/GardenDemo, via IDEAS → Previews). LIVE /Garden UNTOUCHED.
-// Conforms to BRAND_IDENTITY.md (Garden flora character = the FULL palette; the companion's REAL bloom
-// is the centrepiece, §5/§5.2).
+// GardenDemo — a redesign DEMO of the Garden page. PREVIEW route only (/GardenDemo). LIVE /Garden
+// UNTOUCHED. Conforms to BRAND_IDENTITY.md (Garden = the FULL palette; the companion's REAL bloom leads).
 //
-// THE SHAPE: 1) HERO — the companion's REAL RichBloomV2 (her form + accent) in a soft full-palette ring
-// + a resting butterfly (earned/return) + carved heart + Ephesis title (her name). 2) SUMMARY — "Your
-// garden today": tended-state + what's been feeding it (real recent activity), with quick rows.
-// 3) PER-SECTION CardStack — companion (inline tend) · leave a line (inline reflective write) · what's
-// growing (real activity) · name & shape her (inline rename) · milestones · plant something · share —
-// inline acts where it's a ritual, SPECIFIC deep-links otherwise. 4) Central Jump-to.
+// DISTINCT FORM (an IMMERSIVE ILLUSTRATED SCENE — not a slider/grid/list): a full-bleed garden scene
+// (sky + ground, the companion's real bloom centre-stage, life-area plants along the ground, a drifting
+// butterfly), then stacked editorial PANELS for the rituals (tend · leave a line · name her) and slim
+// rows for what's growing / plant / share. Brand held constant.
 
 import { useState, useEffect, useMemo, useRef } from "react";
 import {
   T, SERIF, UI, PAPER_BG, Heart, Eyebrow, Script, Hand, InkFilter, useEditorialFonts,
 } from "@/components/journal/Editorial";
 import { base44 } from "@/api/base44Client";
-import {
-  RichBloomV2, floraKeyframes, CardCorner, VineMotifV2, FlowerGlyph, Butterfly, lighten,
-} from "@/components/brand/flora";
+import { floraKeyframes, RichBloomV2, FlowerGlyph, Butterfly, VineMotifV2, LeafDivider, lighten } from "@/components/brand/flora";
 import { FORM_LIST, getCompanion, tendCompanion, tendedToday, loadCompanionState, renameCompanion } from "@/components/nurture/companion";
-import {
-  Sprout, Feather, Leaf, PenLine, Sparkles, Users, Activity, Award, Check, ChevronRight, ChevronLeft,
-  Grid2x2, X, Send, Wand2,
-} from "lucide-react";
+import { Loader, JumpPill, JumpSheet, DoneRow, btnStyle, DEMO_CSS, CLAMP, todayKey, withTimeout } from "@/components/demos/demoKit";
+import { Feather, PenLine, Wand2, Activity, Users, Sprout, Leaf, Send, ChevronRight } from "lucide-react";
 
-const COL = 430;
-const CARD_W = 365;
-const GAP = 14;
+const COL = 460;
 const PEONY = FORM_LIST.find((f) => f.key === "peony") || { key: "peony" };
-
-const withTimeout = (p, ms = 7000) => Promise.race([
-  Promise.resolve(p).catch(() => null),
-  new Promise((res) => setTimeout(() => res(null), ms)),
-]);
-function todayKey() { try { return new Date().toISOString().slice(0, 10); } catch { return ""; } }
-const CLAMP = (n) => ({ minWidth: 0, overflow: "hidden", overflowWrap: "anywhere", wordBreak: "break-word", display: "-webkit-box", WebkitLineClamp: n, WebkitBoxOrient: "vertical" });
 const countSince = (rows, days, field) => { const cut = Date.now() - days * 86400000; return (rows || []).filter((r) => { const d = r?.[field] || r?.date || r?.created_date || r?.day_key; const t = d ? new Date(d).getTime() : 0; return t && t >= cut; }).length; };
 
-const ICON_DISC = (Icon, accent) => (
-  <span style={{ width: 32, height: 32, borderRadius: 9, background: T.wax, border: `1px solid ${T.paperDeep}`, display: "grid", placeItems: "center", flexShrink: 0 }}>
-    <Icon size={16} strokeWidth={1.7} color={accent} />
-  </span>
-);
-function Frame4({ variant = "sprig", color, opacity = 0.6, size = 46 }) {
-  return <>{["tl", "tr", "br", "bl"].map((c) => <CardCorner key={c} variant={variant} color={color} corner={c} size={size} opacity={opacity} />)}</>;
-}
+// life-area "plants" growing along the ground — the whole-life spread, each its own colourway.
+const GROUND = [
+  { v: "rose", c: "#E8B4B8", c2: "#F4D9DC", x: "12%", s: 44 },
+  { v: "sunflower", c: "#D4AF37", c2: "#E8CE78", x: "30%", s: 40 },
+  { v: "iris", c: "#8E6E8E", c2: "#B196B1", x: "70%", s: 42 },
+  { v: "lavender", c: "#B6A6C9", c2: "#D4C9E2", x: "86%", s: 38 },
+];
 
-// ════════════════════════════════════════════════════════════════════════════════════════════════
+const SECTIONS = [
+  { key: "scene", label: "Your garden", Icon: Sprout, accent: "#8FAF8F" },
+  { key: "tend", label: "Tend & reflect", Icon: Feather, accent: "#E8B4B8" },
+  { key: "growing", label: "What's growing", Icon: Activity, accent: "#A8893F" },
+  { key: "share", label: "Plant & share", Icon: Users, accent: "#BC2E27" },
+];
+
 export default function GardenDemo() {
   useEditorialFonts();
   const [uid, setUid] = useState(null);
   const [companion, setCompanion] = useState(null);
-  const [act, setAct] = useState({});         // recent activity counts
+  const [cName, setCName] = useState(null);
+  const [act, setAct] = useState({});
   const [loading, setLoading] = useState(true);
   const [jumpOpen, setJumpOpen] = useState(false);
   const [justTended, setJustTended] = useState(false);
-  const [cName, setCName] = useState(null);
+  const refs = { scene: useRef(null), tend: useRef(null), growing: useRef(null), share: useRef(null) };
 
   useEffect(() => {
     let alive = true;
     (async () => {
-      const me = await withTimeout(base44.auth.me());
-      const id = me?.id || null;
-      if (!alive) return;
-      setUid(id);
+      const me = await withTimeout(base44.auth.me()); const id = me?.id || null; if (!alive) return; setUid(id);
       if (id) { await loadCompanionState(id).catch(() => {}); try { const c = getCompanion(id); setCompanion(c); setCName(c?.name || null); } catch { /* ignore */ } }
       setLoading(false);
       if (id) {
@@ -79,190 +64,89 @@ export default function GardenDemo() {
   const cForm = useMemo(() => FORM_LIST.find((f) => f.key === (companion?.form?.key || companion?.form)) || PEONY, [companion]);
   const cAccent = companion?.accent || T.blush;
   const name = cName || companion?.name || "your companion";
+  const displayName = name === "your companion" ? "Your garden" : name;
   const tended = tendedToday(uid);
-  const fedCount = (act.journal || 0) + (act.checkins || 0) + (act.meals || 0);
+  const fed = (act.journal || 0) + (act.checkins || 0) + (act.meals || 0);
 
-  const tend = (note) => {
-    setJustTended(true); setTimeout(() => setJustTended(false), 2200);
-    try { if (uid) tendCompanion(uid, note || "Tended from the garden"); } catch { /* ignore */ }
-  };
+  const tend = (note) => { setJustTended(true); setTimeout(() => setJustTended(false), 2200); try { if (uid) tendCompanion(uid, note || "Tended from the garden"); } catch { /* ignore */ } };
+  const jumpTo = (k) => { setJumpOpen(false); refs[k]?.current?.scrollIntoView({ behavior: "smooth", block: "start" }); };
 
-  const summaryLine = `${name} is ${tended ? "blooming — you've already tended her today" : "waiting, gently"}. ${fedCount > 0 ? `This week your garden's been fed by ${[act.journal && `${act.journal} journal note${act.journal === 1 ? "" : "s"}`, act.checkins && `${act.checkins} check-in${act.checkins === 1 ? "" : "s"}`, act.meals && `${act.meals} logged meal${act.meals === 1 ? "" : "s"}`].filter(Boolean).join(", ")}.` : "She grows from everything you already do — a note, a meal logged, a check-in. Nothing extra required."}`;
-
-  const CARDS = [
-    {
-      key: "companion", section: "Companion", accent: cAccent, Icon: Sprout, flower: "rose", bloom: true,
-      tag: "Your companion", hook: name,
-      line: tended ? "You tended her today — she's a little more open for it." : "A small act of showing up for yourself. Leave her a line and watch her open.",
-      action: { type: "tend", Icon: Feather, label: "Tend her", doneLabel: `${name} felt that.` },
-      open: { href: "/Garden", label: "Open your full garden" },
-    },
-    {
-      key: "line", section: "Leave a line", accent: T.gold, Icon: PenLine, flower: "camellia",
-      tag: "A reflective line", hook: "How are you, really?",
-      line: "Not a journal entry to keep forever — just a line, named honestly. It counts as tending, and it feeds the garden.",
-      action: { type: "line", Icon: PenLine, label: "Leave it", placeholder: "Today I feel…", doneLabel: "Kept, and felt. She grew a little." },
-      open: { href: "/Journal", label: "Open your journal" },
-    },
-    {
-      key: "growing", section: "What's growing", accent: T.sage, Icon: Activity, flower: "primrose",
-      tag: "What's feeding it",
-      hook: fedCount > 0 ? `${fedCount} small acts this week` : "Every small thing counts",
-      line: "Your garden isn't a chore on top of life — it's a portrait of the life you're already living. Each log, note and check-in plants something.",
-      action: { type: "deeplink", Icon: Sparkles, label: "See what fed it", href: "/Garden" },
-      open: { href: "/Today", label: "Back to Today" },
-    },
-    {
-      key: "name", section: "Name her", accent: T.blush, Icon: Wand2, flower: "violet",
-      tag: "Name & shape her", hook: `Make her yours`,
-      line: `She's ${name === "your companion" ? "unnamed for now" : `called ${name}`} — give her a name that means something to you. No two companions are alike.`,
-      action: { type: "rename", Icon: Wand2, label: "Save her name", placeholder: "A name for her…", doneLabel: "named. She suits it." },
-      open: { href: "/Garden", label: "Shape her in the garden" },
-    },
-    {
-      key: "milestones", section: "Milestones", accent: "#8E6E8E", Icon: Award, flower: "iris",
-      tag: "What you've earned", hook: "Earned, never bought",
-      line: "Rare blooms, a visiting butterfly, a flowering tree — they arrive on the days that matter, never from a shop. They mark how far you've come.",
-      action: { type: "deeplink", Icon: Award, label: "See your milestones", href: "/Garden" },
-      open: { href: "/Garden", label: "Open your garden" },
-    },
-    {
-      key: "plant", section: "Plant", accent: T.sage, Icon: Leaf, flower: "lavender",
-      tag: "Plant something new", hook: "Grow a new corner",
-      line: "Start a short programme — sleep, movement, confidence — and watch a new plant take root alongside the rest.",
-      action: { type: "deeplink", Icon: Activity, label: "Find a programme", href: "/ProgramsHub" },
-      open: { href: "/ProgramsHub", label: "Programmes" },
-    },
-    {
-      key: "share", section: "Share", accent: T.crimson, Icon: Users, flower: "cornflower",
-      tag: "A garden of gardens", hook: "You're not tending alone",
-      line: "Step into the community — a meadow of other women's gardens, anonymous and warm. Leave an echo, answer the room.",
-      action: { type: "deeplink", Icon: Users, label: "Visit the community", href: "/Community" },
-      open: { href: "/Community", label: "Community" },
-    },
-  ];
-
-  const trackRef = useRef(null);
-  const sliderTopRef = useRef(null);
-  const [idx, setIdx] = useState(0);
-  const lastI = CARDS.length - 1;
-  useEffect(() => {
-    const el = trackRef.current; if (!el) return; let t;
-    const onScroll = () => { clearTimeout(t); t = setTimeout(() => { const i = Math.round(el.scrollLeft / (CARD_W + GAP)); setIdx(Math.max(0, Math.min(lastI, i))); }, 80); };
-    el.addEventListener("scroll", onScroll, { passive: true });
-    return () => { el.removeEventListener("scroll", onScroll); clearTimeout(t); };
-  }, [lastI, loading]);
-  const goTo = (i) => { const j = Math.max(0, Math.min(lastI, i)); setIdx(j); trackRef.current?.scrollTo({ left: j * (CARD_W + GAP), behavior: "smooth" }); };
-  const jumpTo = (i) => { setJumpOpen(false); sliderTopRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }); setTimeout(() => goTo(i), 280); };
-
-  if (loading) {
-    return (
-      <div style={{ ...PAPER_BG, minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center" }}>
-        <InkFilter />
-        <div className="w-8 h-8 rounded-full border-2 border-t-transparent animate-spin" style={{ borderColor: T.paperDeep, borderTopColor: T.gold }} />
-      </div>
-    );
-  }
+  if (loading) return <Loader />;
 
   return (
-    <div className="fwc-anim" style={{ ...PAPER_BG, minHeight: "100vh", color: T.ink, paddingBottom: 120, position: "relative", overflowX: "clip" }}>
+    <div className="fwc-anim" style={{ ...PAPER_BG, minHeight: "100vh", color: T.ink, paddingBottom: 130, position: "relative", overflowX: "clip" }}>
       <InkFilter />
-      <style>{`@keyframes fwSheetIn{from{transform:translateY(100%)}to{transform:translateY(0)}}@keyframes fwScrimIn{from{opacity:0}to{opacity:1}}@keyframes fwFadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}.gd-track{scrollbar-width:none}.gd-track::-webkit-scrollbar{display:none}@media (prefers-reduced-motion:reduce){.fw-sheet-anim,.fw-scrim-anim,.fw-fade{animation:none!important}}${floraKeyframes}`}</style>
+      <style>{DEMO_CSS}{floraKeyframes}</style>
+      <JumpPill onClick={() => setJumpOpen(true)} />
 
-      <div aria-hidden style={{ position: "absolute", inset: 0, overflow: "hidden", pointerEvents: "none", zIndex: 0 }}>
-        <div style={{ position: "absolute", top: 150, right: -26 }}><VineMotifV2 color={cAccent} color2={T.sage} opacity={0.1} w={150} /></div>
-        <div style={{ position: "absolute", top: 760, left: -28 }}><VineMotifV2 color={T.sage} color2={T.gold} opacity={0.08} w={140} flip /></div>
-        <div style={{ position: "absolute", top: 1360, right: -24 }}><VineMotifV2 color={T.gold} color2={cAccent} opacity={0.08} w={130} /></div>
-      </div>
+      <div style={{ maxWidth: COL, margin: "0 auto", position: "relative", zIndex: 1, padding: "0 14px" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "22px 4px 10px" }}>
+          <Heart size={16} /><Eyebrow color={T.muted}>Everything you tend, grows</Eyebrow>
+        </div>
 
-      <button onClick={() => setJumpOpen(true)} aria-label="Jump to a section" style={{
-        position: "fixed", top: "calc(10px + env(safe-area-inset-top))", left: 12, zIndex: 45,
-        display: "inline-flex", alignItems: "center", gap: 7, background: "rgba(244,239,227,0.92)", backdropFilter: "blur(6px)",
-        border: `1px solid ${T.paperDeep}`, borderRadius: 999, padding: "8px 13px", cursor: "pointer",
-        fontFamily: UI, fontSize: 12, fontWeight: 700, letterSpacing: 0.4, textTransform: "uppercase", color: T.muted,
-        boxShadow: "0 2px 10px rgba(58,44,26,0.12)",
-      }}><Grid2x2 size={14} /> Jump to</button>
-
-      <div style={{ maxWidth: COL, margin: "0 auto", position: "relative", zIndex: 1 }}>
-        {/* HERO — the companion's real bloom */}
-        <header style={{ padding: "26px 18px 6px", textAlign: "center" }}>
-          <div style={{ display: "inline-flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
-            <Sprout size={13} color={T.muted} />
-            <span style={{ fontFamily: UI, fontSize: 12, fontWeight: 700, letterSpacing: "0.16em", textTransform: "uppercase", color: T.muted }}>Your garden</span>
+        {/* THE SCENE */}
+        <div ref={refs.scene} style={{ position: "relative", height: 320, borderRadius: 24, overflow: "hidden", border: `1px solid ${T.paperDeep}`, boxShadow: "0 8px 30px rgba(58,44,26,0.16)", background: "linear-gradient(180deg, #F6F1E4 0%, #EFEBDA 52%, #E3E8D6 100%)", scrollMarginTop: 70 }}>
+          {/* faint corner vines */}
+          <div style={{ position: "absolute", top: -6, left: -10, opacity: 0.5 }}><VineMotifV2 color={T.sage} color2={T.gold} opacity={0.5} w={110} /></div>
+          <div style={{ position: "absolute", top: -6, right: -10, opacity: 0.5 }}><VineMotifV2 color={T.gold} color2={T.sage} opacity={0.5} w={110} flip /></div>
+          {/* soft ground */}
+          <div aria-hidden style={{ position: "absolute", left: -20, right: -20, bottom: -40, height: 150, background: "radial-gradient(ellipse at 50% 100%, rgba(143,175,143,0.45), rgba(143,175,143,0) 70%)" }} />
+          <div aria-hidden style={{ position: "absolute", left: 0, right: 0, bottom: 44, height: 1, background: T.paperDeep, opacity: 0.5 }} />
+          {/* butterfly */}
+          <div style={{ position: "absolute", top: 30, right: 54 }}><Butterfly size={46} color={cAccent} color2={T.gold} pattern="spots" idx="gd-bf" /></div>
+          {/* the companion bloom, centre stage */}
+          <div style={{ position: "absolute", left: "50%", bottom: 30, transform: "translateX(-50%)" }}>
+            <RichBloomV2 form={cForm?.key || "peony"} color={cAccent} color2={lighten(cAccent, 0.34)} accent={T.gold} size={172} animate soft idx="gd-hero" />
           </div>
-          <div style={{ position: "relative", display: "flex", justifyContent: "center", margin: "2px 0 2px" }}>
-            <div style={{ position: "relative", width: 210, height: 210, display: "grid", placeItems: "center" }}>
-              <svg viewBox="0 0 210 210" width={210} height={210} aria-hidden style={{ position: "absolute", inset: 0 }}>
-                <circle cx="105" cy="105" r="92" fill="none" stroke={cAccent} strokeWidth="2.5" strokeDasharray="2 9" opacity="0.45" />
-                <circle cx="105" cy="105" r="80" fill="none" stroke={T.gold} strokeWidth="1.2" opacity="0.3" />
-              </svg>
-              <RichBloomV2 form={cForm?.key || "peony"} color={cAccent} color2={lighten(cAccent, 0.34)} accent={T.gold} size={150} animate soft idx="gd-hero" />
+          {/* life-area plants along the ground */}
+          {GROUND.map((g) => (
+            <div key={g.v} style={{ position: "absolute", bottom: 30, left: g.x, transform: "translateX(-50%)" }}>
+              <FlowerGlyph variant={g.v} size={g.s} color={g.c} color2={g.c2} idx={`gd-grd-${g.v}`} />
             </div>
-            <div style={{ position: "absolute", top: 6, right: 24 }}><Butterfly size={44} color={cAccent} color2={T.gold} pattern="spots" idx="gd-bf" /></div>
-          </div>
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 9, marginTop: 2 }}>
-            <Heart size={17} />
-            <Script size={46} color={T.ink}>{name === "your companion" ? "Your garden" : name}</Script>
-          </div>
-          <div style={{ display: "inline-flex", alignItems: "center", gap: 8, marginTop: 8 }}>
-            <span style={{ fontFamily: UI, fontSize: 12, fontWeight: 700, letterSpacing: "0.08em", color: T.paper, background: tended ? T.sage : cAccent, borderRadius: 999, padding: "3px 11px", textTransform: "uppercase" }}>{tended ? "Tended today" : "Waiting for you"}</span>
-          </div>
-          <Hand size={16} color={T.muted} style={{ display: "block", marginTop: 11, lineHeight: 1.5 }}>
-            Everything you tend, grows. This garden is a portrait of the life you're already living — no extra to-do list.
-          </Hand>
-        </header>
-
-        {/* SUMMARY */}
-        <div style={{ padding: "10px 18px 4px" }}>
-          <div style={{ position: "relative", overflow: "hidden", background: `linear-gradient(165deg, ${T.paperHi} 0%, ${cAccent}14 100%)`, border: `1px solid ${T.paperDeep}`, borderLeft: `4px solid ${cAccent}`, borderRadius: 18, padding: "16px 17px", boxShadow: "0 4px 20px rgba(58,44,26,0.12), 0 1px 4px rgba(58,44,26,0.08)" }}>
-            <Frame4 variant="sprig" color={cAccent} size={42} opacity={0.5} />
-            <div style={{ position: "relative", zIndex: 1 }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 9, marginBottom: 8 }}>
-                {ICON_DISC(Sparkles, cAccent)}
-                <Eyebrow color={cAccent}>Your garden today</Eyebrow>
-                <span style={{ marginLeft: "auto" }}><FlowerGlyph variant="rose" size={30} color={cAccent} idx="gdsum-mb" /></span>
-              </div>
-              <p style={{ fontFamily: SERIF, fontSize: 16, color: T.inkSoft, lineHeight: 1.55, margin: "0 0 12px", ...CLAMP(5) }}>{summaryLine}</p>
-              <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
-                <SummaryChip Icon={Feather} label="Tend her" onClick={() => jumpTo(0)} accent={cAccent} />
-                <SummaryChip Icon={PenLine} label="Leave a line" onClick={() => jumpTo(1)} accent={T.gold} />
-                <SummaryChip Icon={Users} label="Share" onClick={() => jumpTo(6)} accent={T.crimson} />
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* segmented rail */}
-        <div ref={sliderTopRef} className="gd-track" style={{ display: "flex", gap: 7, overflowX: "auto", padding: "16px 18px 12px", WebkitOverflowScrolling: "touch" }}>
-          {CARDS.map((c, i) => (
-            <button key={c.key} onClick={() => goTo(i)} style={{
-              flex: "none", background: i === idx ? c.accent : "transparent", color: i === idx ? T.paper : T.muted,
-              border: `1px solid ${i === idx ? c.accent : T.paperDeep}`, borderRadius: 999, padding: "6px 13px",
-              fontFamily: UI, fontSize: 12, fontWeight: 700, letterSpacing: 0.4, textTransform: "uppercase", cursor: "pointer", display: "inline-flex", alignItems: "center", gap: 6,
-            }}><c.Icon size={13} /> {c.section}</button>
           ))}
-        </div>
-
-        {/* slider */}
-        <div ref={trackRef} className="gd-track" style={{ display: "flex", gap: GAP, overflowX: "auto", scrollSnapType: "x mandatory", padding: "0 18px 4px", WebkitOverflowScrolling: "touch" }}>
-          {CARDS.map((c) => (
-            <GardenCard key={c.key} card={c} uid={uid} cForm={cForm} cAccent={cAccent} onTend={tend} onRenamed={setCName} />
-          ))}
-          <div style={{ flex: `0 0 ${Math.max(0, COL - CARD_W - 36)}px` }} aria-hidden />
-        </div>
-
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 14, padding: "14px 18px 0" }}>
-          <button onClick={() => goTo(idx - 1)} disabled={idx === 0} aria-label="Previous" style={navBtn(idx === 0)}><ChevronLeft size={18} /></button>
-          <div style={{ display: "flex", gap: 7 }}>
-            {CARDS.map((c, i) => (
-              <button key={c.key} onClick={() => goTo(i)} aria-label={c.section} style={{
-                width: i === idx ? 18 : 7, height: 7, borderRadius: 999, border: "none", padding: 0,
-                background: i === idx ? c.accent : T.paperDeep, cursor: "pointer", transition: "width .2s",
-              }} />
-            ))}
+          {/* name plate */}
+          <div style={{ position: "absolute", left: 16, bottom: 12, display: "flex", alignItems: "center", gap: 8 }}>
+            <Heart size={16} />
+            <Script size={34} color={T.ink}>{displayName}</Script>
           </div>
-          <button onClick={() => goTo(idx + 1)} disabled={idx === lastI} aria-label="Next" style={navBtn(idx === lastI)}><ChevronRight size={18} /></button>
+          <span style={{ position: "absolute", right: 14, bottom: 16, fontFamily: UI, fontSize: 12, fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase", color: "#fff", background: tended ? T.sage : cAccent, borderRadius: 999, padding: "4px 11px" }}>{tended ? "Tended today" : "Waiting for you"}</span>
         </div>
+        <Hand size={16} color={T.muted} style={{ display: "block", margin: "12px 4px 6px", lineHeight: 1.5 }}>
+          A portrait of the life you're already living — your companion at the centre, and a plant for each corner of it you tend. No extra to-do list.
+        </Hand>
+
+        {/* TEND & REFLECT — stacked panels */}
+        <SectionHead refEl={refs.tend} eyebrow="A small ritual" title="Tend & reflect" accent={cAccent} flower="rose" />
+        <Panel accent={cAccent} title={`Tend ${name === "your companion" ? "her" : name}`} Icon={Feather}>
+          <p style={{ fontFamily: SERIF, fontSize: 16, color: T.inkSoft, lineHeight: 1.5, margin: "0 0 12px" }}>{tended ? "You've tended her today — she's a little more open for it." : "A small act of showing up for yourself. One tap."}</p>
+          <TendAction accent={cAccent} onTend={tend} />
+        </Panel>
+        <Panel accent={T.gold} title="Leave a line" Icon={PenLine}>
+          <p style={{ fontFamily: SERIF, fontSize: 16, color: T.inkSoft, lineHeight: 1.5, margin: "0 0 12px" }}>Not a journal entry to keep forever — just a line, named honestly. It counts as tending.</p>
+          <LineAction accent={T.gold} uid={uid} onTend={tend} />
+        </Panel>
+        <Panel accent={T.blush} title="Name & shape her" Icon={Wand2}>
+          <p style={{ fontFamily: SERIF, fontSize: 16, color: T.inkSoft, lineHeight: 1.5, margin: "0 0 12px" }}>{name === "your companion" ? "She's unnamed for now — give her a name that means something." : `She's called ${name}. Rename her any time.`}</p>
+          <RenameAction accent={T.blush} uid={uid} onRenamed={setCName} />
+        </Panel>
+
+        {/* WHAT'S GROWING */}
+        <SectionHead refEl={refs.growing} eyebrow="What's feeding it" title="What's growing" accent={T.gold} flower="sunflower" />
+        <div style={{ position: "relative", overflow: "hidden", background: `linear-gradient(165deg, ${T.paperHi} 0%, ${T.sage}12 100%)`, border: `1px solid ${T.paperDeep}`, borderLeft: `4px solid ${T.sage}`, borderRadius: 16, padding: "15px 16px" }}>
+          <p style={{ fontFamily: SERIF, fontSize: 16, color: T.inkSoft, lineHeight: 1.55, margin: 0 }}>
+            {fed > 0 ? `This week your garden's been fed by ${[act.journal && `${act.journal} journal note${act.journal === 1 ? "" : "s"}`, act.checkins && `${act.checkins} check-in${act.checkins === 1 ? "" : "s"}`, act.meals && `${act.meals} logged meal${act.meals === 1 ? "" : "s"}`].filter(Boolean).join(", ")}. Each one planted something.` : "She grows from everything you already do — a note, a meal logged, a check-in. Nothing extra required."}
+          </p>
+          <a href="/Garden" style={{ display: "inline-flex", alignItems: "center", gap: 5, marginTop: 10, fontFamily: UI, fontSize: 13, fontWeight: 700, color: T.sage, textDecoration: "none" }}>See your full garden <ChevronRight size={14} /></a>
+        </div>
+
+        {/* PLANT & SHARE — slim rows */}
+        <SectionHead refEl={refs.share} eyebrow="Grow it further" title="Plant & share" accent={T.crimson} flower="cornflower" />
+        <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+          <LinkRow href="/ProgramsHub" accent={T.sage} Icon={Leaf} label="Plant something new" sub="Start a short programme — a new corner takes root" />
+          <LinkRow href="/Community" accent={T.crimson} Icon={Users} label="A garden of gardens" sub="Step into the community — anonymous and warm" />
+          <LinkRow href="/Garden" accent="#8E6E8E" Icon={Sprout} label="Your milestones" sub="Rare blooms and visitors you've earned" />
+        </div>
+        <LeafDivider color={T.gold} my={26} />
       </div>
 
       {justTended && (
@@ -271,142 +155,74 @@ export default function GardenDemo() {
         </div>
       )}
 
-      {jumpOpen && (
-        <div role="dialog" aria-modal="true" aria-label="Jump to a section" className="fw-scrim-anim" onClick={(e) => { if (e.target === e.currentTarget) setJumpOpen(false); }}
-          style={{ position: "fixed", inset: 0, zIndex: 200, display: "flex", alignItems: "flex-end", justifyContent: "center", background: "rgba(11,8,5,0.42)", animation: "fwScrimIn .22s ease both" }}>
-          <div onClick={(e) => e.stopPropagation()} className="fw-sheet-anim" style={{ background: T.paperHi, width: "100%", maxWidth: 460, borderRadius: "20px 20px 0 0", padding: "18px 18px calc(96px + env(safe-area-inset-bottom))", maxHeight: "80vh", overflowY: "auto", boxShadow: "0 -8px 32px rgba(11,8,5,0.22)", animation: "fwSheetIn .3s cubic-bezier(.32,.72,.24,1) both" }}>
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
-              <span style={{ fontFamily: UI, fontSize: 12, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: T.muted }}>Jump to</span>
-              <button onClick={() => setJumpOpen(false)} aria-label="Close" style={{ background: "transparent", border: "none", cursor: "pointer", color: T.muted, padding: 4, display: "inline-flex" }}><X size={18} /></button>
-            </div>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 9 }}>
-              {CARDS.map((c, i) => (
-                <button key={c.key} onClick={() => jumpTo(i)} style={{ display: "flex", alignItems: "center", gap: 10, textAlign: "left", background: T.paper, border: `1px solid ${T.paperDeep}`, borderLeft: `3px solid ${c.accent}`, borderRadius: 13, padding: "11px 12px", cursor: "pointer" }}>
-                  {ICON_DISC(c.Icon, c.accent)}
-                  <span style={{ minWidth: 0 }}>
-                    <span style={{ display: "block", fontFamily: SERIF, fontSize: 16, fontWeight: 600, color: T.ink, ...CLAMP(1) }}>{c.section}</span>
-                    <span style={{ display: "block", fontFamily: UI, fontSize: 13, color: T.muted, ...CLAMP(1) }}>{c.tag}</span>
-                  </span>
-                </button>
-              ))}
-            </div>
-          </div>
-        </div>
-      )}
+      {jumpOpen && <JumpSheet sections={SECTIONS} onClose={() => setJumpOpen(false)} onPick={(k) => jumpTo(k)} />}
     </div>
   );
 }
 
-function SummaryChip({ Icon, label, onClick, accent }) {
+function SectionHead({ refEl, eyebrow, title, accent, flower }) {
   return (
-    <button onClick={onClick} style={{ display: "inline-flex", alignItems: "center", gap: 7, background: T.paper, border: `1px solid ${T.paperDeep}`, borderLeft: `3px solid ${accent}`, borderRadius: 999, padding: "7px 13px", fontFamily: UI, fontSize: 13, fontWeight: 700, color: T.inkSoft, cursor: "pointer" }}>
-      <Icon size={14} color={accent} /> {label}
-    </button>
-  );
-}
-
-function GardenCard({ card, uid, cForm, cAccent, onTend, onRenamed }) {
-  const a = card.accent;
-  return (
-    <section style={{
-      scrollSnapAlign: "center", flex: `0 0 ${CARD_W}px`, width: CARD_W, position: "relative", overflow: "hidden",
-      background: `linear-gradient(165deg, ${T.paperHi} 0%, ${a}14 100%)`,
-      border: `1px solid ${T.paperDeep}`, borderLeft: `4px solid ${a}`, borderRadius: 20,
-      padding: 20, display: "flex", flexDirection: "column", minHeight: 430,
-      boxShadow: "0 4px 20px rgba(58,44,26,0.12), 0 1px 4px rgba(58,44,26,0.08)",
-    }}>
-      <Frame4 variant="sprig" color={a} size={46} opacity={0.6} />
-      <div style={{ position: "relative", zIndex: 1, display: "flex", flexDirection: "column", flex: 1, minHeight: 0 }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 9, marginBottom: 12 }}>
-          {ICON_DISC(card.Icon, a)}
-          <Eyebrow color={a}>{card.tag}</Eyebrow>
-          <span style={{ marginLeft: "auto" }}><FlowerGlyph variant={card.flower || "rose"} size={30} color={a} idx={`mb-${card.key}`} /></span>
-        </div>
-        {card.bloom && (
-          <div style={{ display: "flex", justifyContent: "center", margin: "0 0 6px" }}>
-            <RichBloomV2 form={cForm?.key || "peony"} color={cAccent} color2={lighten(cAccent, 0.34)} accent={T.gold} size={108} animate soft idx="gd-card-bloom" />
-          </div>
-        )}
-        <h3 style={{ fontFamily: SERIF, fontSize: 20, fontWeight: 600, color: T.ink, margin: "0 0 8px", lineHeight: 1.3, ...CLAMP(3) }}>{card.hook}</h3>
-        <p style={{ fontFamily: SERIF, fontSize: 16, color: T.inkSoft, lineHeight: 1.5, margin: "0 0 12px", ...CLAMP(5) }}>{card.line}</p>
-        <div style={{ marginTop: "auto", paddingTop: 6 }}>
-          <InlineAction action={card.action} accent={a} uid={uid} onTend={onTend} onRenamed={onRenamed} />
-          <a href={card.open.href} style={{ display: "inline-flex", alignItems: "center", gap: 4, marginTop: 12, fontFamily: UI, fontSize: 13, fontWeight: 700, color: T.muted, textDecoration: "none" }}>
-            {card.open.label} <ChevronRight size={14} />
-          </a>
-        </div>
+    <div ref={refEl} style={{ display: "flex", alignItems: "center", gap: 10, margin: "26px 0 12px", scrollMarginTop: 70 }}>
+      <FlowerGlyph variant={flower || "rose"} size={30} color={accent} idx={`sh-${title}`} />
+      <div style={{ minWidth: 0 }}>
+        <Eyebrow color={accent}>{eyebrow}</Eyebrow>
+        <span style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 22, fontWeight: 600, color: T.ink, lineHeight: 1.2, display: "block" }}>{title}</span>
       </div>
-    </section>
+      <span style={{ flex: 1, height: 1, background: T.paperDeep, opacity: 0.7, marginLeft: 6 }} />
+    </div>
+  );
+}
+function Panel({ accent, title, Icon, children }) {
+  return (
+    <div style={{ position: "relative", overflow: "hidden", background: `linear-gradient(165deg, ${T.paperHi} 0%, ${accent}10 100%)`, border: `1px solid ${T.paperDeep}`, borderLeft: `4px solid ${accent}`, borderRadius: 16, padding: "15px 16px", marginBottom: 12, boxShadow: "0 2px 12px rgba(58,44,26,0.08)" }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 9, marginBottom: 10 }}>
+        <span style={{ width: 30, height: 30, borderRadius: 9, background: T.wax, border: `1px solid ${T.paperDeep}`, display: "grid", placeItems: "center" }}><Icon size={15} color={accent} /></span>
+        <span style={{ fontFamily: SERIF, fontSize: 18, fontWeight: 600, color: T.ink }}>{title}</span>
+      </div>
+      {children}
+    </div>
+  );
+}
+function LinkRow({ href, accent, Icon, label, sub }) {
+  return (
+    <a href={href} style={{ display: "flex", alignItems: "center", gap: 12, background: T.paperHi, border: `1px solid ${T.paperDeep}`, borderLeft: `4px solid ${accent}`, borderRadius: 14, padding: "13px 15px", textDecoration: "none" }}>
+      <span style={{ width: 34, height: 34, borderRadius: 10, background: T.wax, border: `1px solid ${T.paperDeep}`, display: "grid", placeItems: "center", flexShrink: 0 }}><Icon size={17} color={accent} /></span>
+      <span style={{ minWidth: 0, flex: 1 }}>
+        <span style={{ display: "block", fontFamily: SERIF, fontSize: 17, fontWeight: 600, color: T.ink, ...CLAMP(1) }}>{label}</span>
+        <span style={{ display: "block", fontFamily: UI, fontSize: 13, color: T.muted, ...CLAMP(1) }}>{sub}</span>
+      </span>
+      <ChevronRight size={16} color={T.muted} style={{ flexShrink: 0 }} />
+    </a>
   );
 }
 
-function btnStyle(accent, disabled) {
-  return { display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 8, width: "100%", boxSizing: "border-box", background: accent, color: "#fff", border: "none", borderRadius: 12, padding: "13px 16px", fontFamily: UI, fontSize: 14, fontWeight: 700, cursor: disabled ? "default" : "pointer", opacity: disabled ? 0.55 : 1, textDecoration: "none" };
-}
-function InlineAction({ action, accent, uid, onTend, onRenamed }) {
-  const { type } = action || {};
-  if (type === "deeplink") { const A = action.Icon || ChevronRight; return <a href={action.href} style={btnStyle(accent)}><A size={15} /> {action.label}</a>; }
-  if (type === "tend") return <TendAction action={action} accent={accent} onTend={onTend} />;
-  if (type === "line") return <LineAction action={action} accent={accent} uid={uid} onTend={onTend} />;
-  if (type === "rename") return <RenameAction action={action} accent={accent} uid={uid} onRenamed={onRenamed} />;
-  return null;
-}
-
-function TendAction({ action, accent, onTend }) {
+function TendAction({ accent, onTend }) {
   const [done, setDone] = useState(false);
   const fire = () => { if (done) return; setDone(true); onTend && onTend("Tended from the garden"); };
-  if (done) return <DoneRow accent={accent} label={action.doneLabel || "Tended."} />;
-  return <button onClick={fire} style={btnStyle(accent)}><Feather size={15} /> {action.label}</button>;
+  if (done) return <DoneRow accent={accent} label="Tended. She's a little more open." />;
+  return <button onClick={fire} style={btnStyle(accent)}><Feather size={15} /> Tend her</button>;
 }
-
-function LineAction({ action, accent, uid, onTend }) {
-  const [text, setText] = useState("");
-  const [done, setDone] = useState(false);
+function LineAction({ accent, uid, onTend }) {
+  const [text, setText] = useState(""); const [done, setDone] = useState(false);
   const can = text.trim().length > 0 && !done;
-  const post = () => {
-    if (!can) return; setDone(true);
-    onTend && onTend("Left a line in the garden");
-    if (uid) base44.entities.JournalEntries.create({ user_id: uid, session_date: todayKey(), text: text.trim(), tags: ["tend"], prompt: "A line, from the garden", card_type: "free", card_color: "cream" }).catch(() => {});
-  };
-  if (done) return <DoneRow accent={accent} label={action.doneLabel || "Kept."} />;
+  const post = () => { if (!can) return; setDone(true); onTend && onTend("Left a line in the garden"); if (uid) base44.entities.JournalEntries.create({ user_id: uid, session_date: todayKey(), text: text.trim(), tags: ["tend"], prompt: "A line, from the garden", card_type: "free", card_color: "cream" }).catch(() => {}); };
+  if (done) return <DoneRow accent={accent} label="Kept, and felt. She grew a little." />;
   return (
     <div>
-      <textarea value={text} onChange={(e) => setText(e.target.value)} rows={3} maxLength={400} placeholder={action.placeholder}
-        style={{ width: "100%", boxSizing: "border-box", background: T.paper, border: `1px solid ${T.paperDeep}`, borderRadius: 11, padding: "11px 13px", resize: "none", fontFamily: SERIF, fontSize: 16, lineHeight: 1.5, color: T.ink, outline: "none", marginBottom: 10 }} />
-      <button onClick={post} disabled={!can} style={btnStyle(accent, !can)}><Send size={15} /> {action.label}</button>
+      <textarea value={text} onChange={(e) => setText(e.target.value)} rows={2} maxLength={400} placeholder="Today I feel…" style={{ width: "100%", boxSizing: "border-box", background: T.paper, border: `1px solid ${T.paperDeep}`, borderRadius: 11, padding: "11px 13px", resize: "none", fontFamily: SERIF, fontSize: 16, lineHeight: 1.5, color: T.ink, outline: "none", marginBottom: 10 }} />
+      <button onClick={post} disabled={!can} style={btnStyle(accent, !can)}><Send size={15} /> Leave it</button>
     </div>
   );
 }
-
-function RenameAction({ action, accent, uid, onRenamed }) {
-  const [text, setText] = useState("");
-  const [done, setDone] = useState(false);
+function RenameAction({ accent, uid, onRenamed }) {
+  const [text, setText] = useState(""); const [done, setDone] = useState(false);
   const can = text.trim().length > 0 && !done;
-  const save = () => {
-    if (!can) return; setDone(true);
-    const v = text.trim().slice(0, 40);
-    try { if (uid) renameCompanion(uid, v); } catch { /* ignore */ }
-    onRenamed && onRenamed(v);
-  };
-  if (done) return <DoneRow accent={accent} label={`${text.trim().slice(0, 40)} ${action.doneLabel}`} />;
+  const save = () => { if (!can) return; setDone(true); const v = text.trim().slice(0, 40); try { if (uid) renameCompanion(uid, v); } catch { /* ignore */ } onRenamed && onRenamed(v); };
+  if (done) return <DoneRow accent={accent} label={`${text.trim().slice(0, 40)} — she suits it.`} />;
   return (
     <div>
-      <input value={text} onChange={(e) => setText(e.target.value)} maxLength={40} placeholder={action.placeholder}
-        style={{ width: "100%", boxSizing: "border-box", background: T.paper, border: `1px solid ${T.paperDeep}`, borderRadius: 11, padding: "11px 13px", fontFamily: SERIF, fontSize: 16, color: T.ink, outline: "none", marginBottom: 10 }} />
-      <button onClick={save} disabled={!can} style={btnStyle(accent, !can)}><Wand2 size={15} /> {action.label}</button>
+      <input value={text} onChange={(e) => setText(e.target.value)} maxLength={40} placeholder="A name for her…" style={{ width: "100%", boxSizing: "border-box", background: T.paper, border: `1px solid ${T.paperDeep}`, borderRadius: 11, padding: "11px 13px", fontFamily: SERIF, fontSize: 16, color: T.ink, outline: "none", marginBottom: 10 }} />
+      <button onClick={save} disabled={!can} style={btnStyle(accent, !can)}><Wand2 size={15} /> Save her name</button>
     </div>
   );
-}
-
-function DoneRow({ accent, label }) {
-  return (
-    <div className="fw-fade" style={{ display: "flex", alignItems: "center", gap: 10, background: T.paper, border: `1px solid ${T.paperDeep}`, borderLeft: `3px solid ${accent}`, borderRadius: 12, padding: "12px 13px", animation: "fwFadeUp .3s ease both" }}>
-      <span style={{ width: 30, height: 30, borderRadius: 99, background: accent, display: "grid", placeItems: "center", flexShrink: 0 }}><Check size={17} color="#fff" strokeWidth={3} /></span>
-      <span style={{ fontFamily: SERIF, fontSize: 16, color: T.ink, lineHeight: 1.4 }}>{label}</span>
-    </div>
-  );
-}
-
-function navBtn(disabled) {
-  return { width: 34, height: 34, borderRadius: 999, border: `1px solid ${T.paperDeep}`, background: disabled ? "transparent" : T.paperHi, color: disabled ? T.paperDeep : T.muted, display: "grid", placeItems: "center", cursor: disabled ? "default" : "pointer", opacity: disabled ? 0.5 : 1 };
 }
