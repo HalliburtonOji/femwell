@@ -275,6 +275,7 @@ export default function TodayDemo6() {
   const [paraSeed, setParaSeed] = useState(0);        // (2) refresh the day-paragraph
   const [rollSeed, setRollSeed] = useState(0);        // re-roll the per-section suggestion rotation
   const [jumpOpen, setJumpOpen] = useState(false);    // central jump-to switcher
+  const [pinned, setPinned] = useState(false);        // sticky Jump-to bar (appears on scroll-down)
   const [sActive, setSActive] = useState(0);          // per-section slider index
   const sTrackRef = useRef(null);
 
@@ -377,6 +378,18 @@ export default function TodayDemo6() {
       if (alive) setDataReady(true);
     })();
     return () => { alive = false; };
+  }, []);
+
+  // sticky Jump-to: pin a slim bar once the masthead has scrolled away (rAF-throttled, passive).
+  useEffect(() => {
+    let raf = 0;
+    const onScroll = () => {
+      if (raf) return;
+      raf = requestAnimationFrame(() => { raf = 0; setPinned(window.scrollY > 210); });
+    };
+    window.addEventListener("scroll", onScroll, { passive: true });
+    onScroll();
+    return () => { window.removeEventListener("scroll", onScroll); if (raf) cancelAnimationFrame(raf); };
   }, []);
 
   // first-open ceremony animation: grow the bloom 0→4, then mark seen + dismiss.
@@ -616,6 +629,26 @@ export default function TodayDemo6() {
     <div className="fwc-anim" style={{ ...PAPER_BG, minHeight: "100vh", color: T.ink, paddingBottom: 96, position: "relative", overflow: "hidden" }}>
       <InkFilter />
       <style>{`@keyframes fwSheetIn{from{transform:translateY(100%)}to{transform:translateY(0)}}@keyframes fwScrimIn{from{opacity:0}to{opacity:1}}@keyframes fwFadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}.fw-hrow{scrollbar-width:none}.fw-hrow::-webkit-scrollbar{display:none}@media (prefers-reduced-motion:reduce){.fw-sheet-anim,.fw-scrim-anim,.fw-fade{animation:none!important}}${floraKeyframes}`}</style>
+
+      {/* STICKY JUMP-TO — slides down once the masthead has scrolled away, then follows the scroll so
+          the switcher stays reachable. Slim cream chrome bar (translucent + blur), hairline + soft
+          shadow; never overlaps the greeting (that lives in the scrolled-away masthead) and reads as
+          chrome rather than a blob over the cards. Below the sheets (z 200+), above page content. */}
+      <div aria-hidden={!pinned} style={{
+        position: "fixed", top: 0, left: 0, right: 0, zIndex: 30,
+        transform: pinned ? "translateY(0)" : "translateY(-100%)", opacity: pinned ? 1 : 0,
+        transition: reduceMotion() ? "none" : "transform .28s cubic-bezier(.32,.72,.24,1), opacity .2s ease",
+        pointerEvents: pinned ? "auto" : "none",
+      }}>
+        <div style={{ background: "rgba(244,239,227,0.9)", backdropFilter: "blur(7px)", WebkitBackdropFilter: "blur(7px)", borderBottom: `1px solid ${T.paperDeep}`, boxShadow: pinned ? "0 2px 12px rgba(58,44,26,0.07)" : "none" }}>
+          <div style={{ maxWidth: 430, margin: "0 auto", padding: "9px 16px", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10 }}>
+            <span style={{ fontFamily: UI, fontSize: 12, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: T.muted, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", minWidth: 0 }}>
+              Today{hasCycle ? ` · ${PHASE_LABEL[phase]}` : ""}
+            </span>
+            <JumpToButton onClick={() => setJumpOpen(true)} />
+          </div>
+        </div>
+      </div>
       {/* botanical brand texture — one low-opacity vine per fold, at the page edge, never behind text (BRAND_IDENTITY §4/§6.2) */}
       <div style={{ position: "absolute", top: 28, right: -22, pointerEvents: "none", zIndex: 0 }}><VineMotifV2 color={T.sage} color2={T.gold} opacity={0.1} w={162} /></div>
       <div style={{ position: "absolute", top: 760, left: -26, pointerEvents: "none", zIndex: 0 }}><VineMotifV2 color={T.gold} color2={T.sage} opacity={0.08} w={150} flip /></div>
