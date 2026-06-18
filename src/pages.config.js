@@ -143,6 +143,7 @@ import HealthDemo from './pages/HealthDemo';
 import ProfileDemo from './pages/ProfileDemo';
 import DoctorExportDemo from './pages/DoctorExportDemo';
 import ProgramsDemo from './pages/ProgramsDemo';
+import GardenDemo from './pages/GardenDemo';
 // NutritionHub = the REAL new Nutrition page (Daily Hub + Hero Card Slider hybrid,
 // wired to real entities, reuses the hardened nutrition components). Lives at
 // /NutritionHub for live-verify; once verified it replaces the "Nutrition" route.
@@ -248,6 +249,7 @@ export const PAGES = {
     "ProfileDemo": ProfileDemo,
     "DoctorExportDemo": DoctorExportDemo,
     "ProgramsDemo": ProgramsDemo,
+    "GardenDemo": GardenDemo,
     "NutritionHub": NutritionHub,
     "JournalRedesign1": JournalRedesign1,
     "CommunityRedesign1": CommunityRedesign1,
