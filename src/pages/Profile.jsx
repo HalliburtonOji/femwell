@@ -300,7 +300,7 @@ export default function Profile() {
   );
 
   return (
-    <div className="min-h-screen pb-28" style={{ backgroundColor: "var(--ivory)", position: "relative", isolation: "isolate", overflowX: "clip" }}>
+    <div className="min-h-screen pb-28" style={{ backgroundColor: "var(--ivory)", position: "relative", overflowX: "clip" }}>
       {/* Brand-P2 botanical page texture — blush/gold vines (§5.3 Profile char), one per */}
       {/* fold, hairline + low-opacity, clipped + held behind content (zIndex -1).        */}
       <div aria-hidden="true" style={{ position: "absolute", inset: 0, overflow: "hidden", pointerEvents: "none", zIndex: -1 }}>

@@ -48,7 +48,7 @@ export default function Garden() {
     return <BloomPreview />;
   }
   return (
-    <div style={{ ...PAPER_BG, minHeight: "100vh", fontFamily: SERIF, color: T.ink, paddingBottom: 120, position: "relative", isolation: "isolate", overflowX: "clip" }}>
+    <div style={{ ...PAPER_BG, minHeight: "100vh", fontFamily: SERIF, color: T.ink, paddingBottom: 120, position: "relative", overflowX: "clip" }}>
       <InkFilter />
       {/* Brand-P2 full-palette page vines — one per fold, hairline + low-opacity, clipped */}
       {/* + held behind content (zIndex -1). The Garden's own Bloom stays the centrepiece. */}
