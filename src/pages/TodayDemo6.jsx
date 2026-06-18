@@ -622,15 +622,19 @@ export default function TodayDemo6() {
       <div style={{ position: "absolute", top: 1520, right: -24, pointerEvents: "none", zIndex: 0 }}><VineMotifV2 color={T.sage} color2={T.gold} opacity={0.08} w={150} /></div>
 
       <div style={{ maxWidth: 430, margin: "0 auto", padding: "16px 16px 0", position: "relative", zIndex: 1 }}>
-        {/* date + time-of-day + jump-to (left) + cycle calendar icon (right) */}
-        <div style={{ display: "flex", alignItems: "center", gap: 8, justifyContent: "center", marginTop: 6, position: "relative" }}>
-          <div style={{ position: "absolute", left: 0, top: -3 }}><JumpToButton onClick={() => setJumpOpen(true)} /></div>
-          <TodIcon size={14} color={T.muted} />
-          <span style={{ fontFamily: UI, fontSize: 12, fontWeight: 700, letterSpacing: "0.16em", textTransform: "uppercase", color: T.muted }}>{TODS[tod].label} · {longDate()}</span>
+        {/* date row — calendar icon (LEFT) · greeting+date (CENTER) · Jump-to (RIGHT).
+            A 3-column flex (not absolute overlays) so neither control ever covers the greeting
+            (Halli: swap Jump-to ↔ calendar, fix the overlap). The centre wraps before it truncates. */}
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, marginTop: 6 }}>
           <button onClick={() => setCalOpen(true)} aria-label="Open your cycle calendar" title="Cycle calendar"
-            style={{ position: "absolute", right: 0, top: -2, width: 38, height: 38, borderRadius: 12, border: `1px solid ${T.paperDeep}`, background: T.paperHi, display: "grid", placeItems: "center", cursor: "pointer" }}>
+            style={{ flexShrink: 0, width: 38, height: 38, borderRadius: 12, border: `1px solid ${T.paperDeep}`, background: T.paperHi, display: "grid", placeItems: "center", cursor: "pointer" }}>
             <CalendarHeart size={19} color={phaseColor} strokeWidth={1.8} />
           </button>
+          <div style={{ flex: 1, minWidth: 0, display: "flex", alignItems: "center", justifyContent: "center", gap: 7 }}>
+            <TodIcon size={14} color={T.muted} style={{ flexShrink: 0 }} />
+            <span style={{ fontFamily: UI, fontSize: 12, fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", color: T.muted, textAlign: "center", lineHeight: 1.3 }}>{TODS[tod].label} · {longDate()}</span>
+          </div>
+          <div style={{ flexShrink: 0 }}><JumpToButton onClick={() => setJumpOpen(true)} /></div>
         </div>
 
         {/* (1) HERO — real companion bloom inside the real cycle ring */}
