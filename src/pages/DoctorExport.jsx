@@ -26,8 +26,10 @@ import {
 } from "lucide-react";
 import {
   PAPER_BG, InkFilter, EditorialFooter, useEditorialFonts,
-  T, UI, SERIF, Script, Hand, Eyebrow,
+  T, UI, SERIF, Script, Hand, Eyebrow, Heart as BrandHeart,
 } from "../components/journal/Editorial";
+// Brand-P2 lush layer (BRAND_IDENTITY §3 heart · §4 botanicals · sage/gold = calm health).
+import { VineMotifV2, FlowerGlyph, CardFrame, floraKeyframes, cwOf } from "@/components/brand/flora";
 import { callJessAgent } from "@/services/jessAgentService";
 import { nutritionDoctorSummary } from "@/utils/nutritionSummary";
 
@@ -432,8 +434,16 @@ export default function DoctorExport() {
   const stepIdx = STEPS.findIndex(([s]) => s === step);
 
   return (
-    <div style={{ ...PAPER_BG, minHeight: "100vh", paddingBottom: 80, fontFamily: SERIF, color: T.ink }}>
+    <div style={{ ...PAPER_BG, minHeight: "100vh", paddingBottom: 80, fontFamily: SERIF, color: T.ink, position: "relative", isolation: "isolate", overflowX: "clip" }}>
       <InkFilter />
+      {/* Brand-P2 botanical page texture — sage/gold vines (calm health), one per fold, */}
+      {/* hairline + low-opacity, clipped + held behind content (zIndex -1).            */}
+      <div aria-hidden="true" style={{ position: "absolute", inset: 0, overflow: "hidden", pointerEvents: "none", zIndex: -1 }}>
+        <style>{floraKeyframes}</style>
+        <div style={{ position: "absolute", top: 200, right: -26 }}><VineMotifV2 color={T.sage} color2={T.gold} opacity={0.1} w={144} /></div>
+        <div style={{ position: "absolute", top: 820, left: -28 }}><VineMotifV2 color={T.gold} color2={T.sage} opacity={0.08} w={136} flip /></div>
+        <div style={{ position: "absolute", top: 1440, right: -24 }}><VineMotifV2 color={T.sage} color2={T.gold} opacity={0.08} w={136} /></div>
+      </div>
       <div style={{ maxWidth: 640, margin: "0 auto", padding: "0 18px" }}>
 
         {/* header */}
@@ -441,7 +451,13 @@ export default function DoctorExport() {
           <button onClick={() => window.history.back()} style={iconBtn} aria-label="Back"><ArrowLeft size={16} /></button>
           <div style={{ marginTop: 14 }}>
             <Eyebrow mb={9}>For your GP · A publication of one</Eyebrow>
-            <Script size={52}>Your doctor's export</Script>
+            {/* Brand-P2: the single carved crimson heart (§3) + a flanking sage
+                meaning-bloom (snowdrop = hope) beside the script title. */}
+            <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
+              <BrandHeart size={15} />
+              <Script size={52}>Your doctor's export</Script>
+              <FlowerGlyph variant="snowdrop" size={22} color={cwOf("sage").petal} color2={cwOf("sage").tip} accent={cwOf("sage").accent} idx="de-hdr" />
+            </div>
             <Hand size={20} color={T.inkSoft} carve={false} style={{ marginTop: 8 }}>
               Build a calm, GP-ready summary from what you've tracked — assembled on your device.
             </Hand>
@@ -774,13 +790,24 @@ function PrintReport({ report }) {
 
 // ═══════════════════════════ shared UI atoms ═══════════════════════════
 function Card({ title, note, children }) {
+  // Brand-P2 rich-card (§6.1/§4.2) — sage colourway tint + gold left rim + a 4-corner
+  // sprig frame over the layered editorial shadow (lush, not flat); content lifted z:1.
   return (
-    <section style={{ background: T.paperHi, border: `1px solid ${T.paperDeep}`, borderRadius: 16, padding: "16px 17px", marginBottom: 14 }}>
+    <section style={{
+      position: "relative", overflow: "hidden",
+      background: `linear-gradient(165deg, ${T.paperHi} 0%, ${T.sage}14 100%)`,
+      border: `1px solid ${T.paperDeep}`, borderLeft: `4px solid ${T.gold}`,
+      borderRadius: 16, padding: "16px 17px", marginBottom: 14,
+      boxShadow: "0 4px 20px rgba(58,44,26,0.10), 0 1px 4px rgba(58,44,26,0.07)",
+    }}>
+      <CardFrame variant="sprig" color={T.sage} size={46} opacity={0.5} />
+      <div style={{ position: "relative", zIndex: 1 }}>
       <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: 10, marginBottom: 12 }}>
         <div style={{ fontFamily: UI, fontSize: 10.5, fontWeight: 800, letterSpacing: 1.4, textTransform: "uppercase", color: T.ink }}>{title}</div>
         {note && <div style={{ fontFamily: UI, fontSize: 10.5, color: T.muted, textAlign: "right" }}>{note}</div>}
       </div>
       {children}
+      </div>
     </section>
   );
 }
