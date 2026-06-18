@@ -352,7 +352,7 @@ export default function NurtureGarden({ compact = false, onOpen = null }) {
           </div>
 
           {/* WHAT'S FEEDING YOUR GARDEN — real engagement shown as cause→effect */}
-          <div style={{ marginTop: 18, width: "100%", maxWidth: 400, background: T.paperHi, border: `1px solid ${T.paperDeep}`, borderRadius: 14, padding: "14px 16px", textAlign: "left" }}>
+          <div style={{ marginTop: 18, width: "100%", maxWidth: 400, background: T.paperHi, border: `1px solid ${T.paperDeep}`, borderLeft: `4px solid ${T.gold}`, borderRadius: 14, padding: "14px 16px", textAlign: "left" }}>
             <Eyebrow mb={8}>What's feeding your garden</Eyebrow>
             <div style={{ fontFamily: SERIF, fontSize: 15, color: T.ink, lineHeight: 1.5 }}>
               {fedToday.length > 0
@@ -388,7 +388,7 @@ export default function NurtureGarden({ compact = false, onOpen = null }) {
 
           {/* the ritual — one honest line, saved cross-device; counts as showing up today */}
           {leaving && (
-            <div style={{ marginTop: 14, width: "100%", maxWidth: 400, background: T.paperHi, border: `1px solid ${T.paperDeep}`, borderRadius: 14, padding: "14px 15px", textAlign: "left" }}>
+            <div style={{ marginTop: 14, width: "100%", maxWidth: 400, background: T.paperHi, border: `1px solid ${T.paperDeep}`, borderLeft: `4px solid ${T.gold}`, borderRadius: 14, padding: "14px 15px", textAlign: "left" }}>
               <Eyebrow mb={8}>How are you, really?</Eyebrow>
               <div style={{ display: "flex", gap: 8 }}>
                 <input value={lineDraft} onChange={(e) => setLineDraft(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter" && lineDraft.trim()) doLeaveLine(); }}
@@ -409,7 +409,7 @@ export default function NurtureGarden({ compact = false, onOpen = null }) {
 
           {/* CHANGE editor — rename + reshape (real, persisted device-local) */}
           {editing && (
-            <div style={{ marginTop: 16, width: "100%", maxWidth: 380, background: T.paperHi, border: `1px solid ${T.paperDeep}`, borderRadius: 14, padding: "14px 15px" }}>
+            <div style={{ marginTop: 16, width: "100%", maxWidth: 380, background: T.paperHi, border: `1px solid ${T.paperDeep}`, borderLeft: `4px solid ${T.gold}`, borderRadius: 14, padding: "14px 15px" }}>
               <Eyebrow mb={8}>Name</Eyebrow>
               <div style={{ display: "flex", gap: 8, marginBottom: 14 }}>
                 <input value={draftName} onChange={(e) => setDraftName(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter") saveName(); }}
@@ -515,7 +515,7 @@ export default function NurtureGarden({ compact = false, onOpen = null }) {
             </div>
 
             {/* the opt-in toggle — explicit, off by default */}
-            <div style={{ background: T.paperHi, border: `1px solid ${T.paperDeep}`, borderRadius: 14, padding: "13px 15px" }}>
+            <div style={{ background: T.paperHi, border: `1px solid ${T.paperDeep}`, borderLeft: `4px solid ${T.gold}`, borderRadius: 14, padding: "13px 15px" }}>
               <label style={{ display: "flex", alignItems: "flex-start", gap: 10, cursor: "pointer" }}>
                 <input type="checkbox" checked={shared} onChange={(e) => toggleShare(e.target.checked, isNameShared())}
                   style={{ marginTop: 3, width: 16, height: 16, accentColor: T.crimson, cursor: "pointer", flexShrink: 0 }} />

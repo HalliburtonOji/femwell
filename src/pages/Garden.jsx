@@ -3,6 +3,9 @@
 import { PAPER_BG, T, SERIF, UI, Eyebrow, InkFilter, EditorialFooter, useEditorialFonts, PHASE_COLORS } from "@/components/journal/Editorial";
 import NurtureGarden, { Bloom } from "@/components/nurture/NurtureGarden";
 import { FORM_LIST } from "@/components/nurture/companion";
+// Brand-P2: full-palette page vines (§5.3 Garden = the full palette). The Garden already
+// carries the carved Heart + the elevated Bloom centrepiece — this only adds the edge texture.
+import { VineMotifV2, floraKeyframes } from "@/components/brand/flora";
 
 // Dev-only art preview (every form × every growth stage × the four cycle phases).
 // Open /Garden?preview=blooms to inspect the artwork. Not linked in the UI.
@@ -45,9 +48,17 @@ export default function Garden() {
     return <BloomPreview />;
   }
   return (
-    <div style={{ ...PAPER_BG, minHeight: "100vh", fontFamily: SERIF, color: T.ink, paddingBottom: 120 }}>
+    <div style={{ ...PAPER_BG, minHeight: "100vh", fontFamily: SERIF, color: T.ink, paddingBottom: 120, position: "relative", isolation: "isolate", overflowX: "clip" }}>
       <InkFilter />
-      <div style={{ maxWidth: 460, margin: "0 auto", padding: "34px 20px 50px" }}>
+      {/* Brand-P2 full-palette page vines — one per fold, hairline + low-opacity, clipped */}
+      {/* + held behind content (zIndex -1). The Garden's own Bloom stays the centrepiece. */}
+      <div aria-hidden="true" style={{ position: "absolute", inset: 0, overflow: "hidden", pointerEvents: "none", zIndex: -1 }}>
+        <style>{floraKeyframes}</style>
+        <div style={{ position: "absolute", top: 240, right: -26 }}><VineMotifV2 color={T.gold} color2={T.sage} opacity={0.1} w={146} /></div>
+        <div style={{ position: "absolute", top: 900, left: -28 }}><VineMotifV2 color={T.blush} color2={T.gold} opacity={0.09} w={138} flip /></div>
+        <div style={{ position: "absolute", top: 1560, right: -24 }}><VineMotifV2 color="#8E6E8E" color2={T.sage} opacity={0.08} w={138} /></div>
+      </div>
+      <div style={{ maxWidth: 460, margin: "0 auto", padding: "34px 20px 50px", position: "relative" }}>
         <NurtureGarden compact={false} />
         <div style={{ marginTop: 40 }}>
           <EditorialFooter />
