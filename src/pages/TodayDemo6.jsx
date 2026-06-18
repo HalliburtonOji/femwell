@@ -26,26 +26,25 @@ import { Bloom } from "@/components/nurture/NurtureGarden";
 import { RichBloomV2, SwayBloom, fingerprintColourway, floraKeyframes, CardCorner, VineMotifV2, LeafDivider, SprigDivider, FleuronDivider, FlowerGlyph, Butterfly, cwOf, lighten } from "@/components/brand/flora";
 import { qotdForDay } from "@/components/community/communityConfig";
 
-// each surface → a meaning-flower + colourway (lush per-section identity, BRAND_IDENTITY §5.1)
-const SURFACE_FLOWER = { journal: "camellia", nutrition: "sunflower", community: "cornflower", planner: "iris", programs: "lavender", garden: "rose", pulse: "dahlia", foryou: "primrose", book: "bluebell", story: "poppy", listen: "bluebell", horoscope: "violet" };
 import { FORM_LIST, getCompanion, tendCompanion, tendedToday, loadCompanionState } from "@/components/nurture/companion";
 import { useScrollLock } from "@/utils/useScrollLock";
-// Reuse the PRODUCTION Planner row slider verbatim — same card size, 3D depth
-// (active scale(1) + gold-rim shadow vs idle scale(0.96)+dim), smooth
-// 320ms cubic-bezier motion, ~15% next-card peek, and ‹ • • › nav. This is
-// the reference Halli asked us to mirror exactly; importing it directly means
-// the Today slides ARE the planner slides, not a re-derivation.
-import CardStack from "@/components/planner-v2/CardStack";
+// The per-section spine is the APPROVED "Option 2" single smart slider: ONE card per app
+// section, the Journal slider's card size (CARD_W 365 · GAP 14, lifted verbatim), a segmented
+// section rail (which doubles as the slider's jump-to), ‹ • • › nav, and an INLINE action on
+// every card. Each card carries a REAL, glanceable synthesis of the user's own data (Health =
+// a digestible read on recent symptoms × phase, Nutrition = today's intake snapshot, etc.) —
+// not a generic prompt. The rest of Today (hero, day-paragraph, Your-Day, cycle, suggestions,
+// closing) is unchanged.
+import JumpToButton from "@/components/layout/JumpToButton";
 import {
   PenLine, Salad, Users, Stethoscope, Sparkles, BookOpen, Feather, Headphones, Star, CalendarDays,
   Activity, Sprout, TrendingUp, Leaf, Moon, Footprints, Droplet, Coffee, Check, Plus, ChevronRight,
   ChevronLeft, Sun, Sunrise, Sunset, X, Send, Minus, Search, Mic, Camera, ScanLine, Clock,
-  CalendarHeart, RefreshCw,
+  CalendarHeart, RefreshCw, Play, Pause, Grid2x2,
 } from "lucide-react";
 
 const PEONY = FORM_LIST.find((f) => f.key === "peony") || { key: "peony", fern: false };
 const CHECKS_KEY = "fw_demo6_checks_v2";
-const DECK_KEY = "fw_demo6_deck_front";
 const SEEN_KEY = "fw_demo6_intro_seen_v1";
 const SEASON = { menstrual: "Inner Winter", follicular: "Inner Spring", ovulatory: "Inner Summer", luteal: "Inner Autumn" };
 const PHASE_SEGMENTS = [
@@ -100,20 +99,6 @@ function PhaseRing({ phase, day, cycleLen, showMarker = true, size = 296, childr
   );
 }
 
-function VineMotif({ color = T.sage, opacity = 0.12, w = 150, flip = false }) {
-  return (
-    <svg width={w} height={w} viewBox="0 0 120 120" aria-hidden style={{ transform: flip ? "scaleX(-1)" : "none" }}>
-      <g fill="none" stroke={color} strokeWidth="1.3" strokeLinecap="round" opacity={opacity}>
-        <path d="M8 112 C 30 96 36 70 30 48 C 26 32 34 18 52 10" />
-        <path d="M30 70 C 18 66 12 56 14 46 C 24 50 30 58 30 70 Z" />
-        <path d="M31 52 C 44 50 52 42 53 31 C 42 33 33 41 31 52 Z" />
-        <path d="M27 92 C 16 90 10 82 11 73 C 21 76 27 83 27 92 Z" />
-        <circle cx="52" cy="10" r="2.2" />
-      </g>
-    </svg>
-  );
-}
-
 const ICON_DISC = (Icon, accent) => (
   <span style={{ width: 32, height: 32, borderRadius: 9, background: T.wax, border: `1px solid ${T.paperDeep}`, display: "grid", placeItems: "center", flexShrink: 0 }}>
     <Icon size={16} strokeWidth={1.7} color={accent} />
@@ -155,10 +140,131 @@ function buildDayParagraph({ name, tod, phase, day, season, nut, journalCount, l
   return `${open}${cyc}${food}${jrn}${nudge}`;
 }
 
+// ── the per-section slider geometry — lifted verbatim from JournalHub (do not re-derive) ───────────
+const CARD_W = 365;  // ~85vw — the next card still peeks at the right edge
+const GAP = 14;
+const COL = 430;
+const clip = (s, n) => (s && s.length > n ? s.slice(0, n).trim() + "…" : s || "");
+function dayNumber() { try { return Math.floor(new Date(todayKey() + "T00:00:00").getTime() / 86400000); } catch { return 0; } }
+
+const PHASE_PROMPT = {
+  menstrual: "What would feel like rest today?",
+  follicular: "What's one small thing you'd like to begin?",
+  ovulatory: "Who do you want to reach out to today?",
+  luteal: "What boundary would protect your evening?",
+};
+const PHASE_READ = {
+  menstrual: "Your body's doing real work this week — warmth, iron and a slow pace are on your side.",
+  follicular: "Energy usually climbs now — a good week to begin something or move a little more.",
+  ovulatory: "You're near your most outward — mood and drive often peak around here.",
+  luteal: "The wind-down phase — mood and energy can dip; earlier nights and magnesium help.",
+};
+const SYM_EASE = {
+  cramps: "warmth and gentle movement ease it", "low mood": "daylight, omega-3 and a kind pace help",
+  tired: "iron-rich food and an earlier night help", headache: "water and magnesium often help",
+  tender: "it usually softens as your phase turns", bloated: "less salt, more water settles it",
+  calm: "hold onto it — note what helped today",
+};
+
+// ── a little moon, drawn to the date's real illumination (the Lifestyle "your moon" suggestion) ─────
+function moonInfo(dayNum) {
+  const frac = (((dayNum - 10962) % 29.53059) + 29.53059) % 29.53059 / 29.53059; // 0=new … 0.5=full
+  const names = [
+    [0.03, "New moon", "a quiet day to set a small intention"], [0.22, "Waxing crescent", "a day for beginning something gently"],
+    [0.28, "First quarter", "a day to push a little, then rest"], [0.47, "Waxing gibbous", "a day to finish things, softly"],
+    [0.53, "Full moon", "a day to feel it all — and let some go"], [0.72, "Waning gibbous", "a day to share what you've gathered"],
+    [0.78, "Last quarter", "a day to release, not to start"], [0.97, "Waning crescent", "a day to rest and tend the roots"],
+    [1.01, "New moon", "a quiet day to set a small intention"],
+  ];
+  const m = names.find(([t]) => frac <= t) || names[names.length - 1];
+  return { frac, name: m[1], line: m[2] };
+}
+function MoonGlyph({ frac = 0.5, size = 92 }) {
+  const r = size / 2; const lit = "#F0E6C8", shadow = "#2A2A38";
+  const offset = (frac < 0.5 ? 1 : -1) * (1 - Math.abs(frac - 0.5) / 0.5) * r * 1.05;
+  return (
+    <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} aria-hidden>
+      <defs>
+        <radialGradient id="t6moonlit" cx="38%" cy="34%" r="72%"><stop offset="0%" stopColor="#FFF8E6" /><stop offset="100%" stopColor={lit} /></radialGradient>
+        <clipPath id="t6moonclip"><circle cx={r} cy={r} r={r - 2} /></clipPath>
+      </defs>
+      <circle cx={r} cy={r} r={r - 2} fill="url(#t6moonlit)" />
+      <g clipPath="url(#t6moonclip)"><circle cx={r + offset} cy={r} r={r - 2} fill={shadow} opacity={0.92} /></g>
+      <circle cx={r} cy={r} r={r - 2} fill="none" stroke="#A8893F" strokeOpacity="0.45" strokeWidth="1.4" />
+      <circle cx={r * 0.72} cy={r * 0.78} r={r * 0.1} fill="#E2D4A8" opacity="0.5" />
+      <circle cx={r * 0.95} cy={r * 0.5} r={r * 0.06} fill="#E2D4A8" opacity="0.45" />
+    </svg>
+  );
+}
+
+// ── REAL per-section synthesis — a digestible read on the user's OWN data (the "do more" note) ──────
+// Health: a 1–2 line read of recent symptoms × phase + "something to know today".
+function buildHealthInsight({ phase, cycleDay, season, symptoms, hasCycle }) {
+  const tk = todayKey();
+  const recent = (symptoms || []).filter((s) => {
+    const d = s.date || (s.created_date ? String(s.created_date).slice(0, 10) : null);
+    if (!d) return false; const days = Math.round((new Date(tk) - new Date(d)) / 86400000); return days >= 0 && days <= 6;
+  });
+  const tally = {};
+  recent.forEach((s) => { const n = String(s.symptom_name || s.symptom_type || "").toLowerCase(); if (n) tally[n] = (tally[n] || 0) + 1; });
+  const top = Object.entries(tally).sort((a, b) => b[1] - a[1])[0];
+  const phaseLine = hasCycle ? (PHASE_READ[phase] || "Your patterns build a picture over time.") : "Add your last period and I'll read your day against your phases.";
+  if (top) {
+    const [nm, count] = top;
+    const ease = SYM_EASE[nm] || "your Health letter has gentle, phase-aware steps for it";
+    return {
+      hook: count > 1 ? `You've noted ${nm} ${count}× this week` : `You noted ${nm} this week`,
+      line: hasCycle ? `Common in your ${PHASE_LABEL[phase] ? PHASE_LABEL[phase].toLowerCase() : "current"} phase — ${ease}.` : `${ease.charAt(0).toUpperCase() + ease.slice(1)}.`,
+      inset: { eyebrow: "Something to know today", quote: phaseLine },
+    };
+  }
+  return {
+    hook: hasCycle ? `${PHASE_LABEL[phase]} · day ${cycleDay} · ${season}` : "Your body, when you're ready",
+    line: phaseLine,
+    inset: hasCycle ? { eyebrow: "Something to know today", quote: "Note anything you feel — it keeps your patterns honest, and your read sharper." } : null,
+  };
+}
+function buildNutritionInsight(nut, phase) {
+  if (!nut?.hasData) return { hook: "Nothing logged yet today", line: "A warm, iron-friendly breakfast is a kind start — porridge with seeds and berries lands well.", inset: null };
+  const glasses = Math.round((nut.hydrationMl || 0) / 250);
+  const m = nut.keyMacro;
+  const head = `${nut.mealCount} ${nut.mealCount === 1 ? "meal" : "meals"} · ~${nut.kcal} kcal${m && m.value ? ` · ${m.label.toLowerCase()} ${m.value}${m.unit}` : ""}`;
+  let nudge;
+  if (glasses < 4) nudge = `Water's at ${glasses} of 6 — a glass now would round out today.`;
+  else if (phase === "menstrual") nudge = "Worth topping up iron this week — lentils, spinach or a little red meat.";
+  else if (phase === "luteal") nudge = "Magnesium (seeds, dark chocolate) can ease the luteal wind-down.";
+  else if (m && m.label === "Protein" && m.value < 40) nudge = "A protein-rich snack would keep your energy steady into the afternoon.";
+  else nudge = "A handful of greens or seeds would round today out nicely.";
+  return { hook: head, line: nudge, inset: null };
+}
+function buildJournalInsight(journal, phase) {
+  const prompt = PHASE_PROMPT[phase] || "What would feel like enough today?";
+  if (!journal || journal.count === 0) return { hook: "A fresh page", line: `Your journal's quiet — a first line is plenty. Try: “${prompt}”`, inset: null };
+  const jd = journal.lastDays;
+  const recency = jd === 0 ? "You wrote today — thank you." : jd === 1 ? "Last line yesterday." : `It's been ${jd} days since you wrote.`;
+  return { hook: `${journal.count} ${journal.count === 1 ? "entry" : "entries"} so far`, line: `${recency} A prompt for today: “${prompt}”`, inset: journal.lastText ? { eyebrow: "Your last line", quote: clip(journal.lastText, 80) } : null };
+}
+function buildScheduleInsight(planItems, planFocus) {
+  const next = (planItems || []).find((it) => !it.is_completed) || (planItems || [])[0];
+  if (!next && !planFocus) return { hook: "Your day, open and unplanned", line: "Nothing scheduled yet — add today's first thing, or let it stay soft.", inset: null, next: null };
+  if (next) return { hook: `Next: ${clip(next.title, 40)}`, line: (next.time ? `${next.time} · ` : "") + (planFocus ? `Today's focus: ${clip(planFocus, 46)}` : "Keep it kind — you don't need all of it."), inset: null, next };
+  return { hook: clip(planFocus, 46), line: "Today's focus — keep it kind.", inset: null, next: null };
+}
+function buildPulseInsight(weekly, insights) {
+  const line = weekly?.structured_summary?.your_pattern || weekly?.insight_text || insights?.[0]?.insight_text || insights?.[0]?.content || null;
+  if (!line) return { hook: "Patterns build with time", line: "Log a few days and your weekly shape surfaces here — never scores, just patterns.", inset: null };
+  return { hook: "Your week, gently read", line: clip(line, 96), inset: weekly?.top_symptoms?.length ? { eyebrow: "This week's signals", quote: weekly.top_symptoms.slice(0, 3).join(" · ") } : null };
+}
+function buildProgramsInsight(prog) {
+  if (!prog) return { hook: "A kind rhythm", line: "No programme yet — start a short, gentle one that fits your phase, or do tonight's 10-minute body-scan.", inset: null };
+  const title = prog.prog?.title || "Your programme"; const day = prog.up?.current_day || 1; const len = prog.prog?.duration_days;
+  return { hook: clip(title, 38), line: (len ? `Day ${day} of ${len} · ` : `Day ${day} · `) + clip(prog.prog?.daily_activities_summary || prog.prog?.summary || "Tonight: a 10-minute body-scan to settle.", 64), inset: null };
+}
+
 export default function TodayDemo6() {
   useEditorialFonts();
-  const [tod, setTod] = useState(() => { try { const h = new Date().getHours(); return h < 11 ? "morning" : h < 17 ? "afternoon" : "evening"; } catch { return "afternoon"; } });
-  const [first, setFirst] = useState(false);          // dev toggle: preview the empty/first-day state
+  const [tod] = useState(() => { try { const h = new Date().getHours(); return h < 11 ? "morning" : h < 17 ? "afternoon" : "evening"; } catch { return "afternoon"; } });
+  const [first] = useState(false);                    // the empty/first-day state (set by the first-open ceremony)
   const [done, setDone] = useState({});
   const [custom, setCustom] = useState([]);
   const [draft, setDraft] = useState("");
@@ -167,6 +273,10 @@ export default function TodayDemo6() {
   const [calOpen, setCalOpen] = useState(false);
   const [loggedCount, setLoggedCount] = useState(0);
   const [paraSeed, setParaSeed] = useState(0);        // (2) refresh the day-paragraph
+  const [rollSeed, setRollSeed] = useState(0);        // re-roll the per-section suggestion rotation
+  const [jumpOpen, setJumpOpen] = useState(false);    // central jump-to switcher
+  const [sActive, setSActive] = useState(0);          // per-section slider index
+  const sTrackRef = useRef(null);
 
   // ── real data ────────────────────────────────────────────────────────────────────────────────
   const [uid, setUid] = useState(null);
@@ -176,7 +286,7 @@ export default function TodayDemo6() {
   const [symptoms, setSymptoms] = useState([]);        // recent rows
   const [companion, setCompanion] = useState(null);
   const [content, setContent] = useState({});   // real content surfaces (story / foryou / book / echo) — guarded, fail-open
-  const [dataReady, setDataReady] = useState(false);
+  const [, setDataReady] = useState(false);
   // (3) first-open ceremony — fires once, persisted
   const [ceremony, setCeremony] = useState(false);
   const [growStage, setGrowStage] = useState(0);
@@ -267,7 +377,6 @@ export default function TodayDemo6() {
       if (alive) setDataReady(true);
     })();
     return () => { alive = false; };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // first-open ceremony animation: grow the bloom 0→4, then mark seen + dismiss.
@@ -342,132 +451,129 @@ export default function TodayDemo6() {
     journalCount: journal?.count || 0, lastJournalDays: journal?.lastDays ?? null, first,
   }, paraSeed);
 
-  // ── section surfaces — summaries from REAL data where present, calm fallbacks otherwise ─────────
-  const nutSummary = nut?.hasData
-    ? { title: `${nut.mealCount} ${nut.mealCount === 1 ? "meal" : "meals"} · ~${nut.kcal} kcal`, lines: [{ Icon: Leaf, text: `${nut.keyMacro.label} so far`, meta: `${nut.keyMacro.value}${nut.keyMacro.unit}` }, { Icon: Droplet, text: "Water", meta: `${Math.round((nut.hydrationMl || 0) / 250)} of 6` }] }
-    : { title: "Nothing logged yet today", lines: [{ Icon: Leaf, text: "A warm, iron-friendly breakfast would be a kind start." }] };
-  const jrnSummary = journal && journal.count > 0
-    ? { title: `${journal.count} ${journal.count === 1 ? "entry" : "entries"} so far`, lines: [{ text: journal.lastDays === 0 ? "You wrote today." : `Last line ${journal.lastDays === 1 ? "yesterday" : `${journal.lastDays} days ago`}.` }], inset: journal.lastText ? { eyebrow: "Your last line", quote: `“${journal.lastText.slice(0, 90)}${journal.lastText.length > 90 ? "…" : ""}”` } : null }
-    : { title: "A fresh page", lines: [{ text: "Your journal's quiet today — a sentence is plenty whenever you want it." }] };
-
-  // ── real content for the surfaces (deterministic QOTD + guarded entity reads; curated fallbacks) ──
+  // ── real content derivations the per-section cards + the smart-suggestions rail read ──────────────
+  //    (deterministic QOTD + guarded entity reads; the synthesis is done in the build*Insight helpers).
   const qotd = qotdForDay(todayKey());
-  const echoQuote = content.echo?.body ? `“${content.echo.body.slice(0, 80)}${content.echo.body.length > 80 ? "…" : ""}”` : "“It's held.” — anonymous";
   const storyTitle = content.story ? (content.story.series_title || "Today's chapter") : "Today's instalment";
-  const storyDay = content.story?.day_number ? ` · day ${content.story.day_number}` : "";
-  const storyLine = content.story?.segment_text ? `${content.story.segment_text.slice(0, 62).trim()}…` : "A short instalment, released daily.";
-  const bookTitle = content.book?.title || "Little Women";
-  const bookByline = content.book?.author ? content.book.author : "read along with the Books circle";
   const bookHref = content.book?.gutenberg_id ? `/BookReader?gutenberg_id=${content.book.gutenberg_id}` : "/BookReader?gutenberg_id=514";
-
-  // ── PLANNER (real DailyPlan / PlannerItems → summary; graceful empty) ──
   const planItems = content.planItems || [];
   const planFocus = content.plan?.focus_for_today || null;
-  const planNudge = content.plan?.session_recommendation || content.plan?.lifestyle_suggestion || content.plan?.nutrition_nudge || null;
-  const plannerSummary = (planItems.length || planFocus || planNudge)
-    ? { title: planFocus || `${planItems.length} ${planItems.length === 1 ? "thing" : "things"} planned today`,
-        lines: planItems.length
-          ? planItems.slice(0, 2).map((it) => ({ Icon: it.is_completed ? Check : CalendarDays, text: it.title, meta: it.time || undefined }))
-          : [{ Icon: Leaf, text: planNudge }] }
-    : { title: "Your day, open and unplanned", lines: [{ Icon: CalendarDays, text: "Nothing scheduled yet — add a plan when you want shape, or let today stay soft." }] };
-  const plannerHasData = !!(planItems.length || planFocus || planNudge);
-
-  // ── PULSE (real WeeklyInsights / InsightCards → summary; graceful empty) ──
   const weekly = content.weekly;
   const insightCards = content.insights || [];
-  const clip = (s, n) => (s && s.length > n ? s.slice(0, n).trim() + "…" : s);
   const pulseLine = weekly?.structured_summary?.your_pattern || weekly?.insight_text || insightCards[0]?.insight_text || insightCards[0]?.content || null;
-  const pulseSummary = (weekly || insightCards.length)
-    ? { title: weekly ? "Your week, gently read" : "A pattern, surfacing",
-        lines: [{ Icon: TrendingUp, text: clip(pulseLine, 90) || "Your energy, mood and cycle — patterns, never scores." }],
-        inset: (weekly?.top_symptoms?.length) ? { eyebrow: "This week's signals", quote: weekly.top_symptoms.slice(0, 3).join(" · ") } : null }
-    : { title: "Patterns build with time", lines: [{ Icon: TrendingUp, text: "Log a few days and your weekly patterns begin to surface here — never scores, just shape." }] };
-
-  // ── HOROSCOPE (real HoroscopeReading → summary; graceful empty) ──
   const horo = content.horoscope;
-  const horoSummary = horo
-    ? { title: clip(horo.headline, 44) || "Your sky today",
-        lines: [{ Icon: Moon, text: clip(horo.narrative || horo.cycle_moon_headline, 92) || "Read against the moon." }],
-        inset: horo.moon_phase ? { eyebrow: "Tonight's moon", quote: horo.moon_phase } : null }
-    : { title: "Your sky, when you're ready", lines: [{ Icon: Star, text: "Add your birth details in Lifestyle and a daily reading will appear here." }] };
-
-  // ── LISTEN (real published podcast → summary; honest placeholder if the catalogue is empty) ──
   const listen = content.listen;
   const listenHref = listen ? (listen.episode_url || listen.content_url || "/Lifestyle?tab=listen") : "/Lifestyle?tab=listen";
-  const listenSummary = listen
-    ? { title: clip(listen.title, 46), lines: [{ Icon: Headphones, text: listen.source_name ? `${listen.source_name}` : "A podcast for where you are." }] }
-    : { title: "Audio, gathering", lines: [{ Icon: Headphones, text: "We're collecting podcasts and gentle audio — real episodes will play here soon." }] };
-
-  // ── FOR YOU (real LifestyleItems picks → fuller summary; warm empty) ──
   const phaseWord = PHASE_LABEL[phase] ? PHASE_LABEL[phase].toLowerCase() : "";
   const foryouItems = content.foryou || [];
-  const foryouSummary = foryouItems.length
-    ? { title: `${foryouItems.length} ${foryouItems.length === 1 ? "pick" : "picks"} for you`,
-        lines: [
-          { Icon: Sparkles, text: clip(foryouItems[0].title, 58) },
-          foryouItems[1] ? { Icon: BookOpen, text: clip(foryouItems[1].title, 58) } : { Icon: Leaf, text: `tuned to your ${phaseWord} phase` },
-        ] }
-    : { title: "Picks for where you are", lines: [
-        { Icon: Sparkles, text: `Reads, a listen and a practice${phaseWord ? `, tuned to your ${phaseWord} phase` : ""}.` },
-        { Icon: ChevronRight, text: "Open Lifestyle to see today's picks." },
-      ] };
-
-  // ── PROGRAMS (real active UserPrograms + Programs title → fuller summary; warm empty) ──
   const prog = content.program;
-  const programsSummary = prog
-    ? { title: clip(prog.prog?.title || "Your programme", 40),
-        lines: [
-          { Icon: Activity, text: prog.prog?.duration_days ? `Day ${prog.up?.current_day || 1} of ${prog.prog.duration_days}` : `Day ${prog.up?.current_day || 1}`, meta: prog.up?.streak_count ? `${prog.up.streak_count}-day streak` : undefined },
-          { Icon: Moon, text: clip(prog.prog?.daily_activities_summary || prog.prog?.summary || "Tonight: a 10-minute body-scan to settle.", 88) },
-        ] }
-    : { title: "A kind rhythm", lines: [
-        { Icon: Activity, text: "No programme yet — start a short, gentle one that fits your phase." },
-        { Icon: Moon, text: "Or do tonight's 10-minute body-scan to settle." },
-      ] };
-  const progHasData = !!prog;
 
-  const SURFACES = [
-    { key: "journal", eyebrow: "Journal", accent: T.gold, Icon: PenLine, slug: "/Journal", openLabel: "Open journal",
-      summary: jrnSummary,
-      action: { prompt: "A line is plenty. What would feel like enough today?", buttons: [{ Icon: PenLine, label: "Write a line", sheet: "line" }] } },
-    { key: "nutrition", eyebrow: "Nutrition", accent: T.sage, Icon: Salad, slug: "/Nutrition", openLabel: "Open nutrition",
-      summary: nutSummary,
-      action: { prompt: nut?.hasData ? "Anything since? A few seeds lift iron in the luteal stretch." : "What did today start with?", buttons: [{ Icon: Salad, label: "Log a meal", sheet: "meal" }, { Icon: Droplet, label: "+ water", sheet: "water" }] } },
-    { key: "community", eyebrow: "Community", accent: T.crimson, Icon: Users, slug: "/Community", openLabel: "Open community",
-      summary: { title: "The meadow beyond your garden", lines: [{ text: `Today's question: “${qotd.text}”` }, { text: "Anonymous, 18+, a room everyone's in." }], inset: { eyebrow: "An echo, fading", quote: echoQuote } },
-      action: { prompt: "Answer the room, or leave an anonymous line of your own.", buttons: [{ Icon: Users, label: "Answer QOTD", sheet: "qotd" }, { Icon: Heart, label: "Post an echo", sheet: "echo" }] } },
-    { key: "foryou", eyebrow: "Lifestyle · For You", accent: T.gold, Icon: Sparkles, slug: "/Lifestyle", openLabel: "Open Lifestyle",
-      summary: foryouSummary,
-      action: { prompt: foryouItems.length ? `A few things gathered for you${phaseWord ? `, tuned to your ${phaseWord} phase` : ""}.` : "Open Lifestyle and I'll gather reads, a listen and a practice for you.", buttons: [{ Icon: Sparkles, label: "See your picks", href: "/Lifestyle" }] } },
-    { key: "book", eyebrow: "Lifestyle · Book of the Day", accent: T.muted, Icon: BookOpen, slug: bookHref, openLabel: "Open the library",
-      summary: { title: `Today's book — ${bookTitle}`, lines: [{ text: "A quiet chapter to read by her side." }, { Icon: Users, text: bookByline }] },
-      action: { prompt: "A quiet chapter, the Books circle reading along.", buttons: [{ Icon: BookOpen, label: "Read the chapter", href: bookHref }] } },
-    { key: "story", eyebrow: "Lifestyle · Daily Story", accent: T.crimson, Icon: Feather, slug: "/Lifestyle?tab=daily_story", openLabel: "Open Daily Story",
-      summary: { title: `${storyTitle}${storyDay}`, lines: [{ text: storyLine }], inset: content.story?.segment_text ? { eyebrow: "Today's instalment", quote: `“${content.story.segment_text.slice(0, 70).trim()}…”` } : { eyebrow: "Where you left off", quote: "“…and she didn't look back, not yet.”" } },
-      action: { prompt: "Pick the thread back up where you left it.", buttons: [{ Icon: Feather, label: "Read today's chapter", href: "/Lifestyle?tab=daily_story" }] } },
-    { key: "listen", eyebrow: "Lifestyle · Listen", accent: T.gold, Icon: Headphones, slug: listenHref, openLabel: "Open Listen",
-      summary: listenSummary,
-      action: { prompt: listen ? "Something gentle in your ears while you slow down." : "Audio's on the way — for now, browse what's gathering in Listen.", buttons: [{ Icon: Headphones, label: listen ? "Play episode" : "Open Listen", href: listenHref }] } },
-    { key: "horoscope", eyebrow: "Lifestyle · Horoscope", accent: "#8E6E8E", Icon: Star, slug: "/Lifestyle?tab=horoscope", openLabel: "Open Horoscope",
-      summary: horoSummary,
-      action: { prompt: horo ? "Read your sky, or ask it a question." : "Set up your birth chart and your daily sky appears here.", buttons: [{ Icon: Star, label: horo ? "Today's reading" : "Set up your sky", href: "/Lifestyle?tab=horoscope" }] } },
-    { key: "planner", eyebrow: "Planner · today's schedule", accent: T.gold, Icon: CalendarDays, slug: "/Planner", openLabel: "Open your plan",
-      summary: plannerSummary,
-      action: { prompt: plannerHasData ? (content.plan?.focus_for_today ? `Today's focus: ${content.plan.focus_for_today}` : "Keep it kind — you don't need all of it.") : "Nothing planned yet — add today's first thing, or let it stay open.", buttons: [{ Icon: CalendarDays, label: plannerHasData ? "Open today's plan" : "Plan your day", href: "/Planner" }] } },
-    { key: "programs", eyebrow: "Programs · practice", accent: T.sage, Icon: Activity, slug: "/ProgramsHub", openLabel: "Open programs",
-      summary: programsSummary,
-      action: { prompt: progHasData ? `Continue ${clip(prog.prog?.title || "your programme", 30)}, or do tonight's short practice.` : "Tonight's practice is short and soft — or find a programme that fits.", buttons: [{ Icon: Moon, label: "Tonight's practice", sheet: "practice" }, { Icon: Activity, label: progHasData ? "Continue programme" : "Browse programmes", href: "/ProgramsHub" }] } },
-    { key: "garden", eyebrow: "Companion · your garden", accent: T.sage, Icon: Sprout, slug: "/Garden", openLabel: "Open your garden",
-      bloom: { form: cForm?.key || "peony", color: cAccent },
-      summary: { title: cName, lines: [
-        { Icon: Sprout, text: tendedToday(uid) ? "Blooming — you tended her today." : "Blooming — she grows from everything you already do." },
-        { Icon: Leaf, text: tended > 0 ? "Tended so far today" : "Nothing tended yet — a small thing counts", meta: tended > 0 ? `${tended}` : undefined },
-      ] },
-      action: { prompt: "Tend her with a line, or step into your garden.", buttons: [{ Icon: Feather, label: "Tend her", sheet: "line" }, { Icon: Sprout, label: "Open Garden", href: "/Garden" }] } },
-    { key: "pulse", eyebrow: "Pulse · patterns", accent: "#8E6E8E", Icon: TrendingUp, slug: "/Pulse", openLabel: "Open Pulse",
-      summary: pulseSummary,
-      action: { prompt: pulseLine ? "See the full shape of your week — no scores, just patterns." : "See the shape of your week — no scores, just patterns.", buttons: [{ Icon: TrendingUp, label: "See your patterns", href: "/Pulse" }] } },
+  // ── THE PER-SECTION SMART CARDS — one card per app section, each a REAL glanceable synthesis of
+  //    the user's own data + an inline action. The day-seed (+ a manual re-roll) rotates the modes
+  //    that have real signal, so the card changes day to day but is never hollow. ──────────────────
+  const daySeed = dayNumber() + rollSeed;
+  const moon = moonInfo(daySeed);
+  const pickMode = (modes, offset) => { const list = modes.filter(Boolean); if (!list.length) return null; return list[(((daySeed + offset) % list.length) + list.length) % list.length]; };
+  const audioUrl = listen ? (listen.audio_url || listen.audio_file_url || listen.episode_url || listen.media_url || listen.content_url || null) : null;
+  const foryouItem = foryouItems[0];
+  const foryouHref = foryouItem?.id ? `/LifestyleDetail?id=${foryouItem.id}` : "/Lifestyle";
+
+  const health = buildHealthInsight({ phase, cycleDay: cycle.cycleDay, season, symptoms, hasCycle });
+  const nutI = buildNutritionInsight(nut, phase);
+  const jrnI = buildJournalInsight(journal, phase);
+  const schedI = buildScheduleInsight(planItems, planFocus);
+  const pulseI = buildPulseInsight(weekly, insightCards);
+  const progI = buildProgramsInsight(prog);
+  const hydGlasses = Math.round((nut?.hydrationMl || 0) / 250);
+
+  const CARDS = [
+    // HEALTH — a digestible read on the user's own recent symptoms × phase ("something to know today")
+    (() => {
+      const accent = phaseColor;
+      const modes = [
+        { ...health, flower: "dahlia", action: { type: "chips", Icon: Stethoscope, label: "Note how you feel", chips: ["Cramps", "Low mood", "Tired", "Headache", "Tender", "Bloated", "Calm"], doneLabel: "Noted, gently." } },
+        { hook: hasCycle ? `Your ${phaseWord} letter` : "Your Health letters", line: PHASE_READ[phase] || "Gentle, phase-aware steps, written for you.", inset: health.inset, flower: "dahlia", action: { type: "deeplink", Icon: BookOpen, label: "Read your letter", href: "/Health" } },
+      ];
+      const m = pickMode(modes, 4) || modes[0];
+      return { key: "health", section: "Health", accent, Icon: Stethoscope, tag: "Cycle & symptoms", open: { href: "/Health", label: "Open Health" }, ...m };
+    })(),
+    // NUTRITION — today's intake snapshot + a targeted nudge
+    (() => {
+      const accent = T.sage;
+      const action = (nut?.hasData && hydGlasses < 6) ? { type: "water", Icon: Droplet, label: "+ a glass", startGlasses: hydGlasses }
+        : { type: "sheet", sheet: "meal", Icon: nut?.hasData ? Salad : Coffee, label: nut?.hasData ? "Log a meal" : "Log breakfast" };
+      return { key: "nutrition", section: "Nutrition", accent, Icon: Salad, tag: "Nutrition", flower: "sunflower", open: { href: "/Nutrition", label: "Open Nutrition" }, ...nutI, action };
+    })(),
+    // SCHEDULE — the actual next thing on today's plan, with an inline check-off
+    (() => {
+      const accent = "#8E6E8E";
+      const action = schedI.next ? { type: "check", Icon: Check, label: "Mark it done", note: `Planner: ${clip(schedI.next.title, 36)}`, doneLabel: "Done — nicely paced." }
+        : { type: "deeplink", Icon: CalendarDays, label: "Plan your day", href: "/Planner" };
+      return { key: "planner", section: "Schedule", accent, Icon: CalendarDays, tag: "Today's schedule", flower: "iris", open: { href: "/Planner", label: "Open Planner" }, ...schedI, action };
+    })(),
+    // COMMUNITY — the specific live question (or a real echo) + inline answer
+    (() => {
+      const accent = T.crimson;
+      const modes = [
+        { hook: clip(qotd.text, 70), line: "Answer the room — anonymous, 18+, everyone's in it.", inset: content.echo?.body ? { eyebrow: "An echo, fading", quote: clip(content.echo.body, 80) } : null, flower: "cornflower", action: { type: "compose", kind: "qotd", Icon: Users, label: "Post anonymously", placeholder: "Answer the room…", doneLabel: "Shared with the room. Thank you." } },
+        { hook: "Leave an echo", line: "A line, left anonymously, that quietly fades. Someone always needs to read it.", inset: content.echo?.body ? { eyebrow: "An echo, fading", quote: clip(content.echo.body, 80) } : null, flower: "cornflower", action: { type: "compose", kind: "echo", Icon: Heart, label: "Release it", placeholder: "A line, left anonymously…", doneLabel: "Released. It's held." } },
+      ];
+      const m = pickMode(modes, 3) || modes[0];
+      return { key: "community", section: "Community", accent, Icon: Users, tag: "Today's question", open: { href: "/Community", label: "Open Community" }, ...m };
+    })(),
+    // JOURNAL — a prompt tied to their recent entries / recency
+    (() => {
+      const accent = T.gold;
+      return { key: "journal", section: "Journal", accent, Icon: PenLine, tag: "Journal", flower: "camellia", open: { href: "/Journal", label: "Open Journal" }, ...jrnI,
+        action: { type: "compose", kind: "line", Icon: PenLine, label: "Keep it", placeholder: "A line is plenty…", doneLabel: "Kept. Your companion felt that." } };
+    })(),
+    // LIFESTYLE — moon · podcast (inline play) · book (deep-link to reader) · daily story · for-you
+    (() => {
+      const accent = T.gold;
+      const modes = [
+        { tag: "Your moon", hook: `Tonight: ${moon.name.toLowerCase()}`, line: `${moon.line}. Your sky, read against where you are.`, visual: <MoonGlyph frac={moon.frac} size={92} />, flower: "violet", action: { type: "deeplink", Icon: Star, label: horo ? "Today's reading" : "Read your sky", href: "/Lifestyle?tab=horoscope" } },
+        listen && { tag: "Listen", hook: clip(listen.title, 52), line: listen.source_name ? `${listen.source_name} · play it right here` : "A new episode — play it right here, no leaving the page.", flower: "bluebell", action: { type: "audio", url: audioUrl, title: listen.title, href: listenHref, Icon: Headphones } },
+        content.book && { tag: "Book of the day", hook: clip(content.book.title, 46), line: content.book.author ? `${content.book.author} — opens straight in the reader, full screen.` : "Opens straight in the reader, full screen.", flower: "rose", action: { type: "deeplink", Icon: BookOpen, label: "Open in the reader", href: bookHref } },
+        content.story && { tag: "Daily story", hook: clip(storyTitle, 44), line: content.story.segment_text ? clip(content.story.segment_text, 80) : "A short instalment, released daily.", flower: "poppy", action: { type: "deeplink", Icon: Feather, label: "Read today's chapter", href: "/Lifestyle?tab=daily_story" } },
+        foryouItem && { tag: "For you", hook: clip(foryouItem.title, 50), line: `Gathered for you${phaseWord ? `, tuned to your ${phaseWord} phase` : ""}.`, flower: "primrose", action: { type: "deeplink", Icon: Sparkles, label: "Open this", href: foryouHref } },
+      ];
+      const m = pickMode(modes, 0) || modes[0];
+      return { key: "lifestyle", section: "Lifestyle", accent, Icon: Sparkles, open: { href: "/Lifestyle", label: "Open Lifestyle" }, ...m };
+    })(),
+    // PROGRAMS — real active programme / tonight's practice, inline begin
+    (() => {
+      const accent = T.sage;
+      const action = prog ? { type: "deeplink", Icon: Activity, label: "Continue programme", href: "/ProgramsHub" }
+        : { type: "check", Icon: Moon, label: "Begin tonight's practice", note: "Tonight's practice · body-scan", doneLabel: "Begun. Rest is part of it." };
+      return { key: "programs", section: "Programs", accent, Icon: Activity, tag: "Programs", flower: "lavender", open: { href: "/ProgramsHub", label: "Open Programs" }, ...progI, action };
+    })(),
+    // PULSE — the real weekly pattern
+    (() => {
+      const accent = "#8E6E8E";
+      return { key: "pulse", section: "Pulse", accent, Icon: TrendingUp, tag: "This week", flower: "dahlia", open: { href: "/Pulse", label: "Open Pulse" }, ...pulseI,
+        action: { type: "deeplink", Icon: TrendingUp, label: pulseLine ? "See the full shape" : "See your patterns", href: "/Pulse" } };
+    })(),
+    // GARDEN / COMPANION — her real bloom + inline tend
+    (() => {
+      const accent = T.sage;
+      return { key: "garden", section: "Companion", accent, Icon: Sprout, tag: "Your garden", flower: "rose", open: { href: "/Garden", label: "Open your garden" },
+        hook: cName, line: tendedToday(uid) ? `Blooming — you've tended her today${tended > 0 ? ` (${tended})` : ""}.` : "Blooming — she grows from everything you already do.",
+        bloom: { form: cForm?.key || "peony", color: cAccent },
+        action: { type: "check", Icon: Feather, label: "Tend her", note: "Tended from Today", doneLabel: `${cName} felt that — a little more open.` } };
+    })(),
   ];
+  const sLast = CARDS.length - 1;
+  const sGoTo = (i) => { const idx = Math.max(0, Math.min(sLast, i)); setSActive(idx); sTrackRef.current?.scrollTo({ left: idx * (CARD_W + GAP), behavior: "smooth" }); };
+
+  // central jump-to destinations (the canonical switcher) — page areas + the section slider.
+  const JUMP_AREAS = [
+    { id: "t-day", Icon: Feather, label: "Your day", sub: "in a few words" },
+    { id: "t-yourday", Icon: Check, label: "Your day", sub: "gentle checklist" },
+    { id: "t-cycle", Icon: Stethoscope, label: "Cycle", sub: "& symptoms" },
+    { id: "t-sections", Icon: Grid2x2, label: "Across your day", sub: "every section" },
+    { id: "t-noticed", Icon: Sparkles, label: "A few things", sub: "I noticed" },
+  ];
+  const jumpTo = (id) => { setJumpOpen(false); try { document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" }); } catch { /* ignore */ } };
 
   // SMART SUGGESTIONS — driven from REAL signals (nutrition gap · journal recency · today's
   // symptom · real book pick · real weekly pattern · real echo · real horoscope · cycle phase).
@@ -516,10 +622,11 @@ export default function TodayDemo6() {
       <div style={{ position: "absolute", top: 1520, right: -24, pointerEvents: "none", zIndex: 0 }}><VineMotifV2 color={T.sage} color2={T.gold} opacity={0.08} w={150} /></div>
 
       <div style={{ maxWidth: 430, margin: "0 auto", padding: "16px 16px 0", position: "relative", zIndex: 1 }}>
-        {/* date + time-of-day + cycle calendar icon */}
+        {/* date + time-of-day + jump-to (left) + cycle calendar icon (right) */}
         <div style={{ display: "flex", alignItems: "center", gap: 8, justifyContent: "center", marginTop: 6, position: "relative" }}>
+          <div style={{ position: "absolute", left: 0, top: -3 }}><JumpToButton onClick={() => setJumpOpen(true)} /></div>
           <TodIcon size={14} color={T.muted} />
-          <span style={{ fontFamily: UI, fontSize: 11, fontWeight: 700, letterSpacing: "0.16em", textTransform: "uppercase", color: T.muted }}>{TODS[tod].label} · {longDate()}</span>
+          <span style={{ fontFamily: UI, fontSize: 12, fontWeight: 700, letterSpacing: "0.16em", textTransform: "uppercase", color: T.muted }}>{TODS[tod].label} · {longDate()}</span>
           <button onClick={() => setCalOpen(true)} aria-label="Open your cycle calendar" title="Cycle calendar"
             style={{ position: "absolute", right: 0, top: -2, width: 38, height: 38, borderRadius: 12, border: `1px solid ${T.paperDeep}`, background: T.paperHi, display: "grid", placeItems: "center", cursor: "pointer" }}>
             <CalendarHeart size={19} color={phaseColor} strokeWidth={1.8} />
@@ -549,7 +656,7 @@ export default function TodayDemo6() {
           </div>
           {hasCycle && !showFirst ? (
             <div style={{ display: "inline-flex", alignItems: "center", gap: 8, marginTop: 6 }}>
-              <span style={{ fontFamily: UI, fontSize: 11, fontWeight: 700, letterSpacing: "0.08em", color: T.paper, background: phaseColor, borderRadius: 999, padding: "3px 11px", textTransform: "uppercase" }}>Day {cycle.cycleDay} · {PHASE_LABEL[phase]}</span>
+              <span style={{ fontFamily: UI, fontSize: 12, fontWeight: 700, letterSpacing: "0.08em", color: T.paper, background: phaseColor, borderRadius: 999, padding: "3px 11px", textTransform: "uppercase" }}>Day {cycle.cycleDay} · {PHASE_LABEL[phase]}</span>
               <span style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 15, color: T.inkSoft }}>{season}</span>
             </div>
           ) : (
@@ -564,7 +671,7 @@ export default function TodayDemo6() {
         </div>
 
         {/* (2) DAY PARAGRAPH — synthesised from real signals + refresh */}
-        <div style={{ position: "relative", overflow: "hidden", marginTop: 18, background: "linear-gradient(160deg, #FBF4E1 0%, #F4E7C4 100%)", border: `1px solid ${T.paperDeep}`, borderLeft: `4px solid ${T.gold}`, borderRadius: 18, padding: "18px 19px", boxShadow: "0 8px 28px rgba(58,44,26,0.14), 0 2px 6px rgba(58,44,26,0.08)" }}>
+        <div id="t-day" style={{ position: "relative", overflow: "hidden", marginTop: 18, background: "linear-gradient(160deg, #FBF4E1 0%, #F4E7C4 100%)", border: `1px solid ${T.paperDeep}`, borderLeft: `4px solid ${T.gold}`, borderRadius: 18, padding: "18px 19px", boxShadow: "0 8px 28px rgba(58,44,26,0.14), 0 2px 6px rgba(58,44,26,0.08)" }}>
           <div aria-hidden style={{ position: "absolute", right: -14, bottom: -18, opacity: 0.12, pointerEvents: "none" }}><FlowerGlyph variant="sunflower" size={120} color={T.gold} idx="wm-day" /></div>
           <Frame4 variant="carved" color={T.gold} size={54} opacity={0.66} />
           <div style={{ position: "relative", display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
@@ -576,7 +683,7 @@ export default function TodayDemo6() {
         </div>
 
         {/* (3) YOUR DAY — gentle checklist; ticking nourishes the garden */}
-        <div style={{ position: "relative", overflow: "hidden", marginTop: 16, background: "linear-gradient(160deg, #F3F7EC 0%, #E7F0DE 100%)", border: `1px solid ${T.paperDeep}`, borderLeft: `4px solid ${T.sage}`, borderRadius: 18, padding: "17px 17px 15px", boxShadow: "0 8px 28px rgba(58,44,26,0.14), 0 2px 6px rgba(58,44,26,0.08)" }}>
+        <div id="t-yourday" style={{ position: "relative", overflow: "hidden", marginTop: 16, background: "linear-gradient(160deg, #F3F7EC 0%, #E7F0DE 100%)", border: `1px solid ${T.paperDeep}`, borderLeft: `4px solid ${T.sage}`, borderRadius: 18, padding: "17px 17px 15px", boxShadow: "0 8px 28px rgba(58,44,26,0.14), 0 2px 6px rgba(58,44,26,0.08)" }}>
           <div aria-hidden style={{ position: "absolute", right: -16, bottom: -20, opacity: 0.1, pointerEvents: "none", zIndex: 0 }}><FlowerGlyph variant="rose" size={120} color={T.sage} idx="wm-day3" /></div>
           <Frame4 variant="sprig" color={T.sage} size={52} opacity={0.64} />
           <div style={{ position: "relative", display: "flex", alignItems: "baseline", justifyContent: "space-between" }}>
@@ -595,7 +702,7 @@ export default function TodayDemo6() {
                 {it.kind === "inapp" && it.href
                   ? <a href={it.href} style={{ flex: 1, fontFamily: SERIF, fontSize: 16, color: isDone ? T.muted : T.ink, textDecoration: isDone ? "line-through" : "none", lineHeight: 1.4 }}>{it.label}</a>
                   : <span style={{ flex: 1, fontFamily: SERIF, fontSize: 16, color: isDone ? T.muted : T.ink, textDecoration: isDone ? "line-through" : "none", lineHeight: 1.4 }}>{it.label}</span>}
-                {it.kind === "inapp" && <span style={{ fontFamily: UI, fontSize: 11, fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase", color: T.gold, border: `1px solid ${T.gold}66`, borderRadius: 99, padding: "2px 7px", flexShrink: 0 }}>in app</span>}
+                {it.kind === "inapp" && <span style={{ fontFamily: UI, fontSize: 12, fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase", color: T.gold, border: `1px solid ${T.gold}66`, borderRadius: 99, padding: "2px 7px", flexShrink: 0 }}>in app</span>}
               </div>
             );
           })}
@@ -608,7 +715,7 @@ export default function TodayDemo6() {
         <LeafDivider color={T.gold} my={18} />
 
         {/* (3b) CYCLE & SYMPTOMS — elevated near the top */}
-        <div style={{ position: "relative", overflow: "hidden", background: `linear-gradient(160deg, #FFFDF9 0%, ${phaseColor}22 100%)`, border: `1px solid ${T.paperDeep}`, borderLeft: `4px solid ${phaseColor}`, borderRadius: 18, padding: "16px 17px", boxShadow: "0 8px 28px rgba(58,44,26,0.14), 0 2px 6px rgba(58,44,26,0.08)" }}>
+        <div id="t-cycle" style={{ position: "relative", overflow: "hidden", background: `linear-gradient(160deg, #FFFDF9 0%, ${phaseColor}22 100%)`, border: `1px solid ${T.paperDeep}`, borderLeft: `4px solid ${phaseColor}`, borderRadius: 18, padding: "16px 17px", boxShadow: "0 8px 28px rgba(58,44,26,0.14), 0 2px 6px rgba(58,44,26,0.08)" }}>
           <div aria-hidden style={{ position: "absolute", right: -16, bottom: -20, opacity: 0.12, pointerEvents: "none", zIndex: 0 }}><FlowerGlyph variant="poppy" size={118} color={phaseColor} idx="wm-cyc" /></div>
           <Frame4 variant="sprig" color={phaseColor} size={52} opacity={0.64} />
           <div style={{ position: "relative", display: "flex", alignItems: "center", gap: 9, marginBottom: 10 }}>
@@ -625,42 +732,62 @@ export default function TodayDemo6() {
           <a href="/Health" style={{ display: "inline-flex", alignItems: "center", gap: 4, marginTop: 4, fontFamily: UI, fontSize: 13, fontWeight: 700, color: T.muted, textDecoration: "none" }}>Open your Health letters <ChevronRight size={14} /></a>
         </div>
 
-        {/* (4) PER-SURFACE cards — each section is a CardStack row (the production
-            Planner slider, reused verbatim): summary ⇄ action slides with the
-            planner's card size, 3D depth, smooth motion, peek + ‹ • • › nav. */}
+        {/* (4) PER-SECTION SMART SLIDER — the approved Option-2 spine: ONE card per app section,
+            the Journal slider's card size, a segmented section rail (its own jump-to) + ‹ • • › nav.
+            Each card is a REAL synthesis of the user's own data + an inline action. */}
         <SprigDivider color={T.gold} my={20} />
-        <div>
-          <Script size={32} color={T.ink} style={{ display: "block", lineHeight: 1.1 }}>Across your day</Script>
-          <p style={{ fontFamily: UI, fontSize: 13, color: T.muted, margin: "2px 0 14px" }}>each part of your app, its own row · swipe a row sideways to do it</p>
-          {(() => {
-            // Lifestyle's sub-areas collapse into ONE "Lifestyle" row (swipe
-            // through For You · Book of the Day · Daily Story · Listen ·
-            // Horoscope). Every other surface is its own full-width pager row.
-            const LIFE = ["foryou", "book", "story", "listen", "horoscope"];
-            const lifeItems = SURFACES.filter((s) => LIFE.includes(s.key));
-            const out = [];
-            SURFACES.forEach((s) => {
-              if (LIFE.includes(s.key)) {
-                if (s.key === LIFE[0]) out.push(<LifestyleRow key="lifestyle" items={lifeItems} onSheet={setSheet} />);
-              } else {
-                out.push(<HorizontalRow key={s.key} s={s} onSheet={setSheet} />);
-              }
-            });
-            return out;
-          })()}
+        <div id="t-sections">
+          <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", gap: 10 }}>
+            <Script size={32} color={T.ink} style={{ display: "block", lineHeight: 1.1 }}>Across your day</Script>
+            <button onClick={() => { setRollSeed((s) => s + 1); sGoTo(0); }} aria-label="Show different suggestions" title="A different turn"
+              style={{ background: "transparent", border: "none", cursor: "pointer", color: T.muted, padding: 4, display: "inline-flex", flexShrink: 0 }}><RefreshCw size={16} /></button>
+          </div>
+          <p style={{ fontFamily: UI, fontSize: 13, color: T.muted, margin: "2px 0 12px" }}>each part of your app, one smart card · swipe sideways · every card has something to do</p>
+
+          {/* segmented section rail — doubles as the slider's jump-to */}
+          <div className="fw-hrow" style={{ display: "flex", gap: 7, overflowX: "auto", padding: "0 0 12px", WebkitOverflowScrolling: "touch" }}>
+            {CARDS.map((c, i) => (
+              <button key={c.key} onClick={() => sGoTo(i)} style={{
+                flex: "none", background: i === sActive ? c.accent : "transparent", color: i === sActive ? T.paper : T.muted,
+                border: `1px solid ${i === sActive ? c.accent : T.paperDeep}`, borderRadius: 999, padding: "6px 13px",
+                fontFamily: UI, fontSize: 12, fontWeight: 700, letterSpacing: 0.4, textTransform: "uppercase", cursor: "pointer", display: "inline-flex", alignItems: "center", gap: 6,
+              }}><c.Icon size={13} /> {c.section}</button>
+            ))}
+          </div>
+
+          {/* the single horizontal slider (Journal geometry: CARD_W 365 · GAP 14 · peek) */}
+          <div ref={sTrackRef} className="fw-hrow"
+            onScroll={(e) => { const i = Math.round(e.currentTarget.scrollLeft / (CARD_W + GAP)); setSActive(Math.max(0, Math.min(sLast, i))); }}
+            style={{ display: "flex", gap: GAP, overflowX: "auto", scrollSnapType: "x mandatory", padding: "0 0 4px", WebkitOverflowScrolling: "touch", margin: "0 -2px" }}>
+            {CARDS.map((c) => (
+              <TodayCard key={c.key} card={c} uid={uid} cycle={cycle} onSheet={setSheet} onTend={feedGarden} />
+            ))}
+            <div style={{ flex: `0 0 ${Math.max(0, COL - CARD_W - 36)}px` }} aria-hidden />
+          </div>
+
+          {/* prev / dots / next */}
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 14, padding: "12px 0 0" }}>
+            <button onClick={() => sGoTo(sActive - 1)} disabled={sActive === 0} aria-label="Previous section" style={sNavBtn(sActive === 0)}><ChevronLeft size={18} /></button>
+            <div style={{ display: "flex", gap: 7 }}>
+              {CARDS.map((c, i) => (
+                <button key={c.key} onClick={() => sGoTo(i)} aria-label={c.section} style={{ width: i === sActive ? 18 : 7, height: 7, borderRadius: 999, border: "none", padding: 0, background: i === sActive ? c.accent : T.paperDeep, cursor: "pointer", transition: "width .2s" }} />
+              ))}
+            </div>
+            <button onClick={() => sGoTo(sActive + 1)} disabled={sActive === sLast} aria-label="Next section" style={sNavBtn(sActive === sLast)}><ChevronRight size={18} /></button>
+          </div>
         </div>
 
         <FleuronDivider color={T.gold} my={20} />
 
         {/* (5) CROSS-APP SMART SUGGESTIONS */}
-        <div>
+        <div id="t-noticed">
           <Script size={30} color={T.ink} style={{ display: "block", lineHeight: 1.1 }}>A few things I noticed</Script>
           <p style={{ fontFamily: UI, fontSize: 13, color: T.muted, margin: "2px 0 10px" }}>gentle, tuned to your {PHASE_LABEL[phase] ? PHASE_LABEL[phase].toLowerCase() : ""} phase · slide to see more</p>
           <div style={{ display: "flex", gap: 12, overflowX: "auto", scrollSnapType: "x mandatory", scrollbarWidth: "none", paddingBottom: 6 }}>
             {SUGGESTIONS.map((g, i) => { const Gi = g.Icon; return (
               <a key={i} href={g.href} style={{ position: "relative", overflow: "hidden", flex: "0 0 80%", scrollSnapAlign: "start", textDecoration: "none", background: `linear-gradient(165deg, ${T.paperHi} 0%, ${g.accent}14 100%)`, border: `1px solid ${T.paperDeep}`, borderLeft: `3px solid ${g.accent}`, borderRadius: 16, padding: "16px 16px", minHeight: 132, boxShadow: "0 8px 22px rgba(58,48,32,0.07)", boxSizing: "border-box", display: "flex", flexDirection: "column" }}>
                 <Frame4 variant="sprig" color={g.accent} size={42} opacity={0.55} />
-                <span style={{ position: "relative", display: "inline-flex", alignItems: "center", gap: 8 }}>{ICON_DISC(Gi, g.accent)}<span style={{ fontFamily: UI, fontSize: 11, fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", color: g.accent }}>For you</span></span>
+                <span style={{ position: "relative", display: "inline-flex", alignItems: "center", gap: 8 }}>{ICON_DISC(Gi, g.accent)}<span style={{ fontFamily: UI, fontSize: 12, fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", color: g.accent }}>For you</span></span>
                 <span style={{ position: "relative", fontFamily: SERIF, fontSize: 17, color: T.ink, lineHeight: 1.5, margin: "11px 0 auto", ...CLAMP3 }}>{g.text}</span>
                 <span style={{ position: "relative", fontFamily: UI, fontSize: 13, fontWeight: 700, color: g.accent, display: "inline-flex", alignItems: "center", gap: 3, marginTop: 10 }}>have a look <ChevronRight size={14} /></span>
               </a>
@@ -679,6 +806,7 @@ export default function TodayDemo6() {
       </div>
 
       {sheet && <ActionSheet sheetKey={sheet} uid={uid} cycle={cycle} onClose={() => setSheet(null)} onSaved={feedGarden} />}
+      {jumpOpen && <JumpSheet areas={JUMP_AREAS} onPick={jumpTo} onClose={() => setJumpOpen(false)} />}
       {calOpen && <CycleCalendar profile={profile} cycle={cycle} hasCycle={hasCycle} symptoms={symptoms} onClose={() => setCalOpen(false)} />}
       {ceremony && <FirstOpenCeremony cForm={cForm} cAccent={cAccent} cName={cName} growStage={growStage} onSkip={() => setCeremony(false)} />}
     </div>
@@ -788,7 +916,7 @@ function ActionSheet({ sheetKey, uid, cycle, onClose, onSaved }) {
       style={{ position: "fixed", inset: 0, zIndex: 200, display: "flex", alignItems: "flex-end", justifyContent: "center", background: "rgba(11,8,5,0.42)", animation: "fwScrimIn .22s ease both" }}>
       <div onClick={(e) => e.stopPropagation()} className="fw-sheet-anim" style={{ background: T.paperHi, width: "100%", maxWidth: 460, borderRadius: "20px 20px 0 0", padding: "18px 18px 26px", maxHeight: "86vh", overflowY: "auto", overscrollBehavior: "contain", boxShadow: "0 -8px 32px rgba(11,8,5,0.22)", animation: "fwSheetIn .3s cubic-bezier(.32,.72,.24,1) both" }}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
-          <span style={{ fontFamily: UI, fontSize: 11, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: cfg.accent }}>{cfg.eyebrow} · on Today</span>
+          <span style={{ fontFamily: UI, fontSize: 12, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: cfg.accent }}>{cfg.eyebrow} · on Today</span>
           <button type="button" onClick={onClose} aria-label="Close" style={{ background: "transparent", border: "none", cursor: "pointer", color: T.muted, padding: 4, display: "inline-flex" }}><X size={18} /></button>
         </div>
         <h2 style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 20, fontWeight: 600, color: T.ink, margin: "0 0 12px", lineHeight: 1.2 }}>{cfg.title}</h2>
@@ -823,14 +951,14 @@ function ActionSheet({ sheetKey, uid, cycle, onClose, onSaved }) {
                   <div style={{ display: "flex", gap: 7, marginBottom: 12 }}>
                     {METHODS.map((mt) => { const on = method === mt.key; return (
                       <button key={mt.key} type="button" onClick={() => setMethod(mt.key)} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: 4, padding: "9px 2px", borderRadius: 12, cursor: "pointer", border: `1px solid ${on ? cfg.accent : T.paperDeep}`, background: on ? `${cfg.accent}14` : "transparent" }}>
-                        <mt.Icon size={18} color={on ? cfg.accent : T.muted} strokeWidth={1.8} /><span style={{ fontFamily: UI, fontSize: 11, fontWeight: 700, color: on ? cfg.accent : T.muted }}>{mt.label}</span>
+                        <mt.Icon size={18} color={on ? cfg.accent : T.muted} strokeWidth={1.8} /><span style={{ fontFamily: UI, fontSize: 12, fontWeight: 700, color: on ? cfg.accent : T.muted }}>{mt.label}</span>
                       </button>); })}
                   </div>
                   <div style={{ display: "flex", alignItems: "center", gap: 9, background: T.paper, border: `1px solid ${T.paperDeep}`, borderRadius: 11, padding: "11px 13px", marginBottom: 12 }}>
                     <Search size={16} color={T.muted} />
                     <input value={text} onChange={(e) => setText(e.target.value)} placeholder={method === "scan" ? "Point at a barcode…" : method === "say" ? "“I had porridge and a banana…”" : "Search foods (CoFID + branded)…"} style={{ flex: 1, minWidth: 0, border: "none", background: "transparent", fontFamily: SERIF, fontSize: 16, color: T.ink, outline: "none" }} />
                   </div>
-                  <div style={{ fontFamily: UI, fontSize: 11, fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", color: T.muted, margin: "0 0 8px" }}>Recent &amp; quick-add</div>
+                  <div style={{ fontFamily: UI, fontSize: 12, fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", color: T.muted, margin: "0 0 8px" }}>Recent &amp; quick-add</div>
                   <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
                     {RECENTS.map((f) => { const on = picked.includes(f.name); return (
                       <button key={f.name} type="button" onClick={() => toggleFood(f.name)} style={{ display: "flex", alignItems: "center", gap: 11, textAlign: "left", background: on ? `${cfg.accent}12` : T.paper, border: `1px solid ${on ? cfg.accent : T.paperDeep}`, borderRadius: 12, padding: "11px 13px", cursor: "pointer" }}>
@@ -872,143 +1000,184 @@ function ActionSheet({ sheetKey, uid, cycle, onClose, onSaved }) {
   );
 }
 
-// ── (8) Section ROW — its own row in the vertical list. WITHIN the row the cards live in a HORIZONTAL
-// SWIPE TRACK: card 1 (summary) fills the row; card 2 (action) starts 80% across card 1 — so only its
-// LEFT 20% sits under card 1 and the remaining ~80% FLOWS to the right into the swipe track. Swipe
-// sideways to bring card 2 in. Cards are uniform full size + cream; rows independent. (Overlap is set
-// purely by a negative margin = 20% of a card width; card dimensions never change.) ───────────────
-// Full-WIDTH page-covering card (the TodayDemo1 reference): cream paper,
-// 20-radius, own layered shadow, 4px accent left-rim. ~50% taller than the
-// peek version (208 → 312) so each card is substantial. `height:100%` makes
-// every slide in a row match the tallest. The CardStack `pager` variant
-// supplies the full-width sizing (no side-peek), the scale(0.96→1) 3D depth,
-// the smooth 320ms motion and the ‹ • • › dots/arrows nav.
-const SLIDE_CARD = {
-  background: T.paperHi, borderRadius: 20, boxSizing: "border-box",
-  border: "1px solid rgba(212,193,180,0.5)",
-  boxShadow: "0 4px 20px rgba(58,44,26,0.12), 0 1px 4px rgba(58,44,26,0.08)",
-  minHeight: 312, height: "100%", padding: "20px 21px",
-  display: "flex", flexDirection: "column", overflow: "hidden", position: "relative",
-};
-const OPEN_LINK = { display: "inline-flex", alignItems: "center", gap: 4, marginTop: "auto", paddingTop: 10, fontFamily: UI, fontSize: 13, fontWeight: 700, color: T.muted, textDecoration: "none" };
-
 // Safe-text styles — wrap + clamp so NOTHING ever bleeds off a card/page at 390px.
-// (The old single-line `white-space:nowrap` + a flex child with no min-width was the bleed bug:
-// the nowrap span couldn't shrink, so it overran the card and got hard-cut at the edge.)
 const CLAMP2 = { minWidth: 0, overflow: "hidden", overflowWrap: "anywhere", wordBreak: "break-word", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" };
 const CLAMP3 = { ...CLAMP2, WebkitLineClamp: 3 };
+const CLAMP4 = { ...CLAMP2, WebkitLineClamp: 4 };
 
-// The framed look (Halli: cards must read crafted like the BrandCraftSample, not plain) — the
-// §4.2 corner element in ALL FOUR corners, made visible per the lush tone dial. Spec §4.4 reserves
-// the 4-corner frame for feature cards/hero; Halli relaxed that to put the framed look on the cards.
+// The framed look — the §4.2 corner element in ALL FOUR corners (Halli relaxed §4.4 onto cards).
 function Frame4({ variant = "sprig", color, opacity = 0.62, size = 50 }) {
   return <>{["tl", "tr", "br", "bl"].map((c) => <CardCorner key={c} variant={variant} color={color} corner={c} size={size} opacity={opacity} />)}</>;
 }
+function sNavBtn(disabled) {
+  return { width: 34, height: 34, borderRadius: 999, border: `1px solid ${T.paperDeep}`, background: disabled ? "transparent" : T.paperHi, color: disabled ? T.paperDeep : T.muted, display: "grid", placeItems: "center", cursor: disabled ? "default" : "pointer", opacity: disabled ? 0.5 : 1 };
+}
 
-// Summary face — title + up to 2 signal lines + an optional quote inset.
-function SummarySlide({ s, eyebrow = "Today" }) {
-  const quote = s.summary.inset ? (s.summary.inset.quote || "").slice(0, 96) : "";
+// ── (8) THE PER-SECTION CARD — the approved Option-2 card (Journal slider size, CARD_W 365) carrying
+//    a REAL synthesis of the user's own data + an INLINE action. ─────────────────────────────────────
+function TodayCard({ card, uid, cycle, onSheet, onTend }) {
+  const a = card.accent;
   return (
-    <article style={{ ...SLIDE_CARD, background: `linear-gradient(165deg, ${T.paperHi} 0%, ${s.accent}14 100%)`, borderLeft: `4px solid ${s.accent}` }}>
-      {/* visible 4-corner frame + a per-section meaning-bloom in its colourway (BRAND_IDENTITY §4.2/§5.1) */}
-      <Frame4 variant="sprig" color={s.accent} size={46} opacity={0.6} />
-      <div style={{ display: "flex", alignItems: "center", gap: 9, marginBottom: 11, position: "relative" }}>
-        {ICON_DISC(s.Icon, s.accent)}
-        <Eyebrow color={s.accent}>{eyebrow}</Eyebrow>
-        <span style={{ marginLeft: "auto" }}><FlowerGlyph variant={SURFACE_FLOWER[s.key] || "camellia"} size={32} color={s.accent} idx={`mb-${s.key}`} /></span>
+    <section style={{
+      scrollSnapAlign: "center", flex: `0 0 ${CARD_W}px`, width: CARD_W,
+      position: "relative", overflow: "hidden",
+      background: `linear-gradient(165deg, ${T.paperHi} 0%, ${a}14 100%)`,
+      border: `1px solid ${T.paperDeep}`, borderLeft: `4px solid ${a}`, borderRadius: 20,
+      padding: 20, display: "flex", flexDirection: "column", minHeight: 470,
+      boxShadow: "0 4px 20px rgba(58,44,26,0.12), 0 1px 4px rgba(58,44,26,0.08)",
+    }}>
+      <Frame4 variant="sprig" color={a} size={46} opacity={0.6} />
+      <div style={{ position: "relative", zIndex: 1, display: "flex", flexDirection: "column", flex: 1, minHeight: 0 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 9, marginBottom: 12 }}>
+          {ICON_DISC(card.Icon, a)}
+          <Eyebrow color={a}>{card.tag || card.section}</Eyebrow>
+          <span style={{ marginLeft: "auto" }}><FlowerGlyph variant={card.flower || "camellia"} size={30} color={a} idx={`mb-${card.key}`} /></span>
+        </div>
+        {card.visual && <div style={{ display: "flex", justifyContent: "center", margin: "2px 0 10px" }}>{card.visual}</div>}
+        {card.bloom && (
+          <div style={{ display: "flex", justifyContent: "center", margin: "0 0 6px" }}>
+            <RichBloomV2 form={card.bloom.form} color={card.bloom.color} color2={lighten(card.bloom.color, 0.34)} accent={T.gold} size={104} animate soft idx={`sb-${card.key}`} />
+          </div>
+        )}
+        <h3 style={{ fontFamily: SERIF, fontSize: 20, fontWeight: 600, color: T.ink, margin: "0 0 8px", lineHeight: 1.3, ...CLAMP3 }}>{card.hook}</h3>
+        <p style={{ fontFamily: SERIF, fontSize: 16, color: T.inkSoft, lineHeight: 1.5, margin: "0 0 12px", ...CLAMP4 }}>{card.line}</p>
+        {card.inset && (
+          <div style={{ marginBottom: 12, background: T.paper, border: `1px solid ${T.paperDeep}`, borderRadius: 11, padding: "9px 12px" }}>
+            <div style={{ fontFamily: UI, fontSize: 12, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: a, marginBottom: 3 }}>{card.inset.eyebrow}</div>
+            <p style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 15, color: T.inkSoft, margin: 0, lineHeight: 1.4, ...CLAMP2 }}>“{card.inset.quote}”</p>
+          </div>
+        )}
+        <div style={{ marginTop: "auto", paddingTop: 6 }}>
+          <InlineAction action={card.action} accent={a} uid={uid} cycle={cycle} onSheet={onSheet} onTend={onTend} />
+          <a href={card.open.href} style={{ display: "inline-flex", alignItems: "center", gap: 4, marginTop: 12, fontFamily: UI, fontSize: 13, fontWeight: 700, color: T.muted, textDecoration: "none" }}>
+            {card.open.label} <ChevronRight size={14} />
+          </a>
+        </div>
       </div>
-      {/* a card can carry its own visual — e.g. the companion's real bloom on the garden card */}
-      {s.bloom && (
-        <div style={{ display: "flex", justifyContent: "center", margin: "0 0 6px", position: "relative" }}>
-          <RichBloomV2 form={s.bloom.form} color={s.bloom.color} color2={lighten(s.bloom.color, 0.34)} accent={T.gold} size={96} animate soft idx={`sb-${s.key}`} />
-        </div>
-      )}
-      <h3 style={{ fontFamily: SERIF, fontSize: 20, fontWeight: 600, color: T.ink, margin: "0 0 10px", lineHeight: 1.3, position: "relative", ...CLAMP2 }}>{s.summary.title}</h3>
-      {s.summary.lines.slice(0, 2).map((ln, j) => (
-        <div key={j} style={{ display: "flex", alignItems: "center", gap: 9, margin: "7px 0", position: "relative" }}>
-          {ln.Icon && <ln.Icon size={16} color={s.accent} strokeWidth={1.7} style={{ flexShrink: 0 }} />}
-          <span style={{ flex: 1, fontFamily: SERIF, fontSize: 16, color: T.inkSoft, lineHeight: 1.45, ...CLAMP2 }}>{ln.text}</span>
-          {ln.meta && <span style={{ fontFamily: UI, fontSize: 13, fontWeight: 600, color: T.muted, flexShrink: 0 }}>{ln.meta}</span>}
-        </div>
-      ))}
-      {quote && (
-        <div style={{ marginTop: 10, background: T.paper, border: `1px solid ${T.paperDeep}`, borderRadius: 11, padding: "10px 13px", position: "relative" }}>
-          <p style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 15, color: T.inkSoft, margin: 0, lineHeight: 1.4, ...CLAMP2 }}>“{quote}”</p>
-        </div>
-      )}
-    </article>
+    </section>
   );
 }
 
-// Action face — prompt + the do-it-now buttons + open-full-page link.
-function ActionSlide({ s, onSheet }) {
+// ── inline actions — the card DOES the thing right here ─────────────────────────────────────────────
+function inlineBtn(accent, disabled) {
+  return { display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 8, width: "100%", boxSizing: "border-box", background: accent, color: "#fff", border: "none", borderRadius: 12, padding: "13px 16px", fontFamily: UI, fontSize: 14, fontWeight: 700, cursor: disabled ? "default" : "pointer", opacity: disabled ? 0.55 : 1, textDecoration: "none" };
+}
+function InlineAction({ action, accent, uid, cycle, onSheet, onTend }) {
+  const { type } = action || {};
+  if (type === "deeplink") { const A = action.Icon || ChevronRight; return <a href={action.href} style={inlineBtn(accent)}><A size={15} /> {action.label}</a>; }
+  if (type === "sheet") { const A = action.Icon || Plus; return <button onClick={() => onSheet(action.sheet)} style={inlineBtn(accent)}><A size={15} /> {action.label}</button>; }
+  if (type === "audio") return <AudioAction action={action} accent={accent} />;
+  if (type === "water") return <WaterAction action={action} accent={accent} uid={uid} />;
+  if (type === "check") return <CheckAction action={action} accent={accent} uid={uid} onTend={onTend} />;
+  if (type === "compose") return <ComposeAction action={action} accent={accent} uid={uid} cycle={cycle} onTend={onTend} />;
+  if (type === "chips") return <ChipsAction action={action} accent={accent} uid={uid} onTend={onTend} />;
+  return null;
+}
+function AudioAction({ action, accent }) {
+  const ref = useRef(null); const [playing, setPlaying] = useState(false); const [err, setErr] = useState(false);
+  const toggle = () => { const el = ref.current; if (!el) return; if (el.paused) { el.play().then(() => setPlaying(true)).catch(() => setErr(true)); } else { el.pause(); setPlaying(false); } };
+  if (err || !action.url) return (
+    <div>
+      <a href={action.href} style={inlineBtn(accent)}><Headphones size={15} /> Open in Listen</a>
+      {err && <p style={{ fontFamily: UI, fontSize: 12, color: T.muted, margin: "7px 0 0" }}>This clip won{"'"}t stream here — it{"'"}s waiting in Listen.</p>}
+    </div>
+  );
   return (
-    <article style={{ ...SLIDE_CARD, background: `linear-gradient(165deg, ${T.paperHi} 0%, ${s.accent}14 100%)`, borderLeft: `4px solid ${s.accent}` }}>
-      <Frame4 variant="sprig" color={s.accent} size={46} opacity={0.58} />
-      <Eyebrow mb={11} color={s.accent}>Do it now</Eyebrow>
-      <p style={{ fontFamily: SERIF, fontSize: 16, color: T.ink, lineHeight: 1.5, margin: "0 0 12px", position: "relative", ...CLAMP3 }}>{s.action.prompt}</p>
-      <div style={{ marginBottom: 2, position: "relative" }}>{s.action.buttons.map((b, k) => <ActionBtn key={k} Icon={b.Icon} href={b.href} onClick={b.sheet ? () => onSheet(b.sheet) : undefined} accent={s.accent}>{b.label}</ActionBtn>)}</div>
-      <a href={s.slug} style={OPEN_LINK}>{s.openLabel} <ChevronRight size={14} /></a>
-    </article>
+    <div style={{ display: "flex", alignItems: "center", gap: 12, background: T.paper, border: `1px solid ${T.paperDeep}`, borderLeft: `3px solid ${accent}`, borderRadius: 12, padding: "11px 13px" }}>
+      <button onClick={toggle} aria-label={playing ? "Pause" : "Play"} style={{ flexShrink: 0, width: 46, height: 46, borderRadius: 999, background: accent, color: "#fff", border: "none", display: "grid", placeItems: "center", cursor: "pointer" }}>
+        {playing ? <Pause size={20} /> : <Play size={20} style={{ marginLeft: 2 }} />}
+      </button>
+      <div style={{ minWidth: 0, flex: 1 }}>
+        <div style={{ fontFamily: UI, fontSize: 13, fontWeight: 700, color: accent, letterSpacing: "0.04em" }}>{playing ? "Playing — right here" : "Play inline"}</div>
+        <div style={{ fontFamily: SERIF, fontSize: 15, color: T.inkSoft, ...CLAMP2 }}>{clip(action.title, 40)}</div>
+      </div>
+      <audio ref={ref} src={action.url} preload="none" onEnded={() => setPlaying(false)} onError={() => setErr(true)} />
+    </div>
   );
 }
-
-// A standard section row — a full-width pager of summary ⇄ action (and any
-// further faces the section adds). No bleed: the page column's own 16px gutter
-// is the card's edge, so the card covers the page width.
-function HorizontalRow({ s, onSheet }) {
+function WaterAction({ action, accent, uid }) {
+  const [glasses, setGlasses] = useState(action.startGlasses || 0);
+  const add = () => { setGlasses((g) => Math.min(8, g + 1)); if (uid) base44.entities.HydrationLog.create({ user_id: uid, day_key: todayKey(), amount_ml: 250, source: "today" }).catch(() => {}); };
   return (
-    <div style={{ margin: "0 0 6px" }}>
-      <CardStack pager label={s.eyebrow}>
-        <SummarySlide s={s} />
-        <ActionSlide s={s} onSheet={onSheet} />
-      </CardStack>
+    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, background: T.paper, border: `1px solid ${T.paperDeep}`, borderLeft: `3px solid ${accent}`, borderRadius: 12, padding: "10px 13px" }}>
+      <button onClick={() => setGlasses((g) => Math.max(0, g - 1))} aria-label="One fewer" style={{ width: 44, height: 44, borderRadius: 12, border: `1.5px solid ${accent}`, background: "transparent", color: accent, display: "grid", placeItems: "center", cursor: "pointer", flexShrink: 0 }}><Minus size={20} strokeWidth={2.5} /></button>
+      <span style={{ flex: 1, textAlign: "center", fontFamily: SERIF, fontSize: 17, fontWeight: 600, color: T.ink }}><Droplet size={16} style={{ verticalAlign: "-3px", color: accent }} /> {glasses} of 6 glasses</span>
+      <button onClick={add} aria-label="Add a glass" style={{ width: 44, height: 44, borderRadius: 12, border: "none", background: accent, color: "#fff", display: "grid", placeItems: "center", cursor: "pointer", flexShrink: 0 }}><Plus size={20} strokeWidth={2.5} /></button>
+    </div>
+  );
+}
+function CheckAction({ action, accent, uid, onTend }) {
+  const [done, setDone] = useState(false); const A = action.Icon || Check;
+  const fire = () => {
+    if (done) return; setDone(true); onTend && onTend(action.note);
+    if (uid) { const nowISO = new Date().toISOString(); const day = todayKey(); base44.entities.HabitLogs.create({ user_id: uid, habit_type: action.note || "Today", habit_name: action.note || "Today", habit_category: "today", date: day, day_key: day, completed: true, is_completed: true, source: "today", created_at: nowISO, updated_at: nowISO }).catch(() => {}); }
+  };
+  if (done) return <DoneRow accent={accent} label={action.doneLabel || "Done."} />;
+  return <button onClick={fire} style={inlineBtn(accent)}><A size={15} /> {action.label}</button>;
+}
+function ComposeAction({ action, accent, uid, cycle, onTend }) {
+  const [text, setText] = useState(""); const [done, setDone] = useState(false); const A = action.Icon || Send;
+  const can = text.trim().length > 0 && !done;
+  const post = () => { if (!can) return; setDone(true); doWrite(action.kind, { uid, cycle, text }); if (action.kind === "line") onTend && onTend("Left a line from Today"); };
+  if (done) return <DoneRow accent={accent} label={action.doneLabel || "Shared. Thank you."} />;
+  return (
+    <div>
+      <textarea value={text} onChange={(e) => setText(e.target.value)} rows={3} maxLength={600} placeholder={action.placeholder}
+        style={{ width: "100%", boxSizing: "border-box", background: T.paper, border: `1px solid ${T.paperDeep}`, borderRadius: 11, padding: "11px 13px", resize: "none", fontFamily: SERIF, fontSize: 16, lineHeight: 1.5, color: T.ink, outline: "none", marginBottom: 10 }} />
+      <button onClick={post} disabled={!can} style={inlineBtn(accent, !can)}><A size={15} /> {action.label}</button>
+    </div>
+  );
+}
+function ChipsAction({ action, accent, uid, onTend }) {
+  const [picked, setPicked] = useState([]); const [done, setDone] = useState(false);
+  const toggle = (c) => setPicked((p) => p.includes(c) ? p.filter((x) => x !== c) : [...p, c]);
+  const save = () => { if (!picked.length || done) return; setDone(true); doWrite("symptom", { uid, picked }); onTend && onTend("Noted a symptom from Today"); };
+  if (done) return <DoneRow accent={accent} label={action.doneLabel || "Noted, gently."} />;
+  return (
+    <div>
+      <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 11 }}>
+        {action.chips.map((c) => { const on = picked.includes(c); return (
+          <button key={c} onClick={() => toggle(c)} style={{ fontFamily: UI, fontSize: 13, fontWeight: 700, padding: "8px 13px", borderRadius: 999, cursor: "pointer", border: `1px solid ${on ? accent : T.paperDeep}`, background: on ? accent : "transparent", color: on ? "#fff" : T.muted }}>{c}</button>
+        ); })}
+      </div>
+      <button onClick={save} disabled={!picked.length} style={inlineBtn(accent, !picked.length)}><Stethoscope size={15} /> {action.label}</button>
+    </div>
+  );
+}
+function DoneRow({ accent, label }) {
+  return (
+    <div className="fw-fade" style={{ display: "flex", alignItems: "center", gap: 10, background: T.paper, border: `1px solid ${T.paperDeep}`, borderLeft: `3px solid ${accent}`, borderRadius: 12, padding: "12px 13px", animation: "fwFadeUp .3s ease both" }}>
+      <span style={{ width: 30, height: 30, borderRadius: 99, background: accent, display: "grid", placeItems: "center", flexShrink: 0 }}><Check size={17} color="#fff" strokeWidth={3} /></span>
+      <span style={{ fontFamily: SERIF, fontSize: 16, color: T.ink, lineHeight: 1.4 }}>{label}</span>
     </div>
   );
 }
 
-// One Lifestyle sub-item, summary + action combined onto a single full-width
-// card (so the Lifestyle row swipes through one card per sub-area, not two).
-function LifestyleSlide({ s, onSheet }) {
-  const sub = s.eyebrow.replace(/^Lifestyle ·\s*/, "");
-  const quote = s.summary.inset ? (s.summary.inset.quote || "").slice(0, 96) : "";
+// ── the central JUMP-TO switcher — the canonical bottom-sheet pattern (JournalHubSheet) for Today ────
+function JumpSheet({ areas, onPick, onClose }) {
+  useScrollLock(true);
+  useEffect(() => { const k = (e) => { if (e.key === "Escape") onClose(); }; window.addEventListener("keydown", k); return () => window.removeEventListener("keydown", k); }, [onClose]);
   return (
-    <article style={{ ...SLIDE_CARD, background: `linear-gradient(165deg, ${T.paperHi} 0%, ${s.accent}14 100%)`, borderLeft: `4px solid ${s.accent}` }}>
-      <Frame4 variant="sprig" color={s.accent} size={46} opacity={0.6} />
-      <div style={{ display: "flex", alignItems: "center", gap: 9, marginBottom: 11, position: "relative" }}>
-        {ICON_DISC(s.Icon, s.accent)}
-        <Eyebrow color={s.accent}>{sub}</Eyebrow>
-        <span style={{ marginLeft: "auto" }}><FlowerGlyph variant={SURFACE_FLOWER[s.key] || "camellia"} size={32} color={s.accent} idx={`mbl-${s.key}`} /></span>
-      </div>
-      <h3 style={{ fontFamily: SERIF, fontSize: 20, fontWeight: 600, color: T.ink, margin: "0 0 10px", lineHeight: 1.3, position: "relative", ...CLAMP2 }}>{s.summary.title}</h3>
-      {s.summary.lines.slice(0, 2).map((ln, j) => (
-        <div key={j} style={{ display: "flex", alignItems: "center", gap: 9, margin: "7px 0", position: "relative" }}>
-          {ln.Icon && <ln.Icon size={16} color={s.accent} strokeWidth={1.7} style={{ flexShrink: 0 }} />}
-          <span style={{ flex: 1, fontFamily: SERIF, fontSize: 16, color: T.inkSoft, lineHeight: 1.45, ...CLAMP2 }}>{ln.text}</span>
+    <div role="dialog" aria-modal="true" aria-label="Jump to" className="fw-scrim-anim" onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
+      style={{ position: "fixed", inset: 0, zIndex: 220, display: "flex", alignItems: "flex-end", justifyContent: "center", background: "rgba(11,8,5,0.42)", animation: "fwScrimIn .22s ease both" }}>
+      <div onClick={(e) => e.stopPropagation()} className="fw-sheet-anim" style={{ background: T.paperHi, width: "100%", maxWidth: 460, borderRadius: "20px 20px 0 0", padding: "16px 16px 26px", maxHeight: "80vh", overflowY: "auto", boxShadow: "0 -8px 32px rgba(11,8,5,0.22)", animation: "fwSheetIn .3s cubic-bezier(.32,.72,.24,1) both" }}>
+        <div style={{ width: 40, height: 4, borderRadius: 999, background: T.paperDeep, margin: "0 auto 12px" }} />
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
+          <Script size={30} color={T.ink}>Jump to</Script>
+          <button onClick={onClose} aria-label="Close" style={{ background: "transparent", border: "none", cursor: "pointer", color: T.muted, padding: 4, display: "inline-flex" }}><X size={18} /></button>
         </div>
-      ))}
-      {quote && (
-        <div style={{ marginTop: 10, background: T.paper, border: `1px solid ${T.paperDeep}`, borderRadius: 11, padding: "10px 13px", position: "relative" }}>
-          <p style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 15, color: T.inkSoft, margin: 0, lineHeight: 1.4, ...CLAMP2 }}>“{quote}”</p>
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+          {areas.map((ar) => (
+            <button key={ar.id} onClick={() => onPick(ar.id)} style={{ display: "flex", alignItems: "center", gap: 11, textAlign: "left", background: T.paper, border: `1px solid ${T.paperDeep}`, borderRadius: 14, padding: "12px 13px", cursor: "pointer" }}>
+              {ICON_DISC(ar.Icon, T.gold)}
+              <span style={{ minWidth: 0 }}>
+                <span style={{ display: "block", fontFamily: SERIF, fontSize: 16, fontWeight: 600, color: T.ink, lineHeight: 1.2 }}>{ar.label}</span>
+                <span style={{ display: "block", fontFamily: UI, fontSize: 12, color: T.muted, marginTop: 1 }}>{ar.sub}</span>
+              </span>
+            </button>
+          ))}
         </div>
-      )}
-      <div style={{ marginTop: "auto", paddingTop: 12 }}>
-        <div style={{ marginBottom: 2 }}>{s.action.buttons.map((b, k) => <ActionBtn key={k} Icon={b.Icon} href={b.href} onClick={b.sheet ? () => onSheet(b.sheet) : undefined} accent={s.accent}>{b.label}</ActionBtn>)}</div>
-        <a href={s.slug} style={{ ...OPEN_LINK, marginTop: 0 }}>{s.openLabel} <ChevronRight size={14} /></a>
       </div>
-    </article>
-  );
-}
-
-// The unified Lifestyle row — one row, one full-width card per sub-area
-// (For You · Book of the Day · Daily Story · Listen · Horoscope). Dots reflect
-// the real sub-item count.
-function LifestyleRow({ items, onSheet }) {
-  return (
-    <div style={{ margin: "0 0 6px" }}>
-      <CardStack pager label="Lifestyle">
-        {items.map((s) => <LifestyleSlide key={s.key} s={s} onSheet={onSheet} />)}
-      </CardStack>
     </div>
   );
 }
@@ -1085,7 +1254,7 @@ function CycleCalendar({ profile, cycle, hasCycle, symptoms, onClose }) {
           <button onClick={onClose} aria-label="Close" style={{ background: "transparent", border: "none", cursor: "pointer", color: T.muted, padding: 4 }}><X size={20} /></button>
         </div>
         <div onTouchStart={onTouchStart} onTouchEnd={onTouchEnd} style={{ display: "grid", gridTemplateColumns: "repeat(7,1fr)", gap: 6, marginTop: 16 }}>
-          {DOW.map((d, i) => <div key={`h${i}`} style={{ textAlign: "center", fontFamily: UI, fontSize: 11, fontWeight: 700, color: T.muted, paddingBottom: 2 }}>{d}</div>)}
+          {DOW.map((d, i) => <div key={`h${i}`} style={{ textAlign: "center", fontFamily: UI, fontSize: 12, fontWeight: 700, color: T.muted, paddingBottom: 2 }}>{d}</div>)}
           {cells.map((c, i) => {
             if (!c) return <div key={i} />;
             const col = PHASE_COLORS[c.phase];
@@ -1109,7 +1278,7 @@ function CycleCalendar({ profile, cycle, hasCycle, symptoms, onClose }) {
         {peek && (
           <div className="fw-fade" style={{ marginTop: 14, background: T.paperHi, border: `1px solid ${T.paperDeep}`, borderLeft: `3px solid ${PHASE_COLORS[peek.phase] || T.gold}`, borderRadius: 14, padding: "12px 14px", animation: "fwFadeUp .25s ease both" }}>
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-              <span style={{ fontFamily: UI, fontSize: 11, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: PHASE_COLORS[peek.phase] || T.gold }}>{peek.label}{peek.phase ? ` · ${PHASE_LABEL[peek.phase]}` : ""}</span>
+              <span style={{ fontFamily: UI, fontSize: 12, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: PHASE_COLORS[peek.phase] || T.gold }}>{peek.label}{peek.phase ? ` · ${PHASE_LABEL[peek.phase]}` : ""}</span>
               <button onClick={() => setPeek(null)} aria-label="Close day" style={{ background: "transparent", border: "none", cursor: "pointer", color: T.muted, padding: 2 }}><X size={15} /></button>
             </div>
             {peek.lines.map((l, i) => <p key={i} style={{ fontFamily: SERIF, fontSize: 15, color: T.inkSoft, margin: "5px 0 0", lineHeight: 1.4 }}>{l}</p>)}
