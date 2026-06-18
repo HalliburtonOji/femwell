@@ -115,7 +115,8 @@ export const phaseColor = (p) => PHASE_COLORS[p] || T.gold;
 
 // ── small typographic helpers ──
 export function Eyebrow({ children, mb = 0, color = T.muted }) {
-  return <div style={{ fontFamily: UI, fontSize: 10.5, color, letterSpacing: 1.7, fontWeight: 700, textTransform: "uppercase", marginBottom: mb }}>{children}</div>;
+  // Brand-P2 type-fix: 10.5 → 12 (chrome floor; the UI sans gets no size-adjust so it read tiny on-device).
+  return <div style={{ fontFamily: UI, fontSize: 12, color, letterSpacing: 1.5, fontWeight: 700, textTransform: "uppercase", marginBottom: mb }}>{children}</div>;
 }
 export function Rule({ w = "100%", c = T.paperDeep, mt = 0, mb = 0 }) {
   return <div style={{ width: w, height: 1, background: c, marginTop: mt, marginBottom: mb }} />;
@@ -124,8 +125,8 @@ export function Chip({ active, onClick, children }) {
   return (
     <button onClick={onClick} disabled={!onClick} style={{
       background: active ? T.ink : "transparent", color: active ? T.paper : T.muted,
-      border: `1px solid ${active ? T.ink : T.paperDeep}`, borderRadius: 999, padding: "4px 11px",
-      fontFamily: UI, fontSize: 10.5, fontWeight: 700, letterSpacing: 0.6, textTransform: "uppercase",
+      border: `1px solid ${active ? T.ink : T.paperDeep}`, borderRadius: 999, padding: "5px 12px",
+      fontFamily: UI, fontSize: 12, fontWeight: 700, letterSpacing: 0.6, textTransform: "uppercase",
       cursor: onClick ? "pointer" : "default", lineHeight: 1.4,
     }}>{children}</button>
   );

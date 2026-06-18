@@ -60,22 +60,24 @@ Fonts are declared as **explicit `@font-face`** (real gstatic **woff2**, `font-d
 - **Body/reading** (TIER 3) — Cormorant Garamond (the app default below the headings). Voiced/quote lines → Cormorant **italic**.
 - `.fw-script` (legacy opt-in) — Ephesis with letterpress depth. `.fw-btn-primary/secondary/accent` — chrome buttons in the real system sans.
 
-### The role table — USE THESE EXACT VALUES
+### The role table — USE THESE EXACT VALUES  ·  **v2 on-device bump (2026-06-18)**
+> **On-device calibration (READ — this changed the scale).** A 390px-wide *desktop* browser window renders CSS px at roughly desktop physical size; a real phone shows the same 390 CSS px across a ~62mm screen, so every glyph is physically **~40% smaller in the hand**. Pages that "looked fine" at a 390px desktop window were too small on Halli's phone. Two fixes are now baked in: (a) the **serif faces carry `size-adjust:150%`** in `index.css` (was 140%) so all SERIF reading content renders larger on-device with **no declared-px change**; (b) the **UI/sans chrome floor is lifted to 12px** (sans gets no size-adjust, so it was the tiniest). **Nothing readable sits below 12px; real reading content is ≥13px (prefer 16+).**
 | Role | Token / class | Font | Size | Weight | Line-height | Use |
 |---|---|---|---|---|---|---|
-| **Display** (page title) | `.fw-display` | SCRIPT (Ephesis) + `#inkCarve` | `clamp(40px,8.5vw,54px)` | 400 | 1.14 | ONE short title per page. Never all-caps, never long. |
-| **Heading 1** (section) | `.fw-heading` | SERIF *italic* + swash | `clamp(23px,4.6vw,31px)` | 600 | 1.18 | Section headers. The carved-italic look. |
+| **Display** (page title) | `.fw-display` | SCRIPT (Ephesis) + `#inkCarve` | `clamp(44px,9.5vw,56px)` | 400 | 1.14 | ONE short title per page. Never all-caps, never long. |
+| **Heading 1** (section) | `.fw-heading` | SERIF *italic* + swash | `clamp(27px,6.4vw,34px)` | 600 | 1.18 | Section headers. The carved-italic look. |
 | **Heading 2** (sub) | — | SERIF *italic* | `20px` | 600 | 1.20 | Sub-sections, sheet titles. |
-| **Title** (card/list) | — | SERIF | `18px` | 600 | 1.30 | Card titles, list headers. |
+| **Title** (card/list) | — | SERIF | `18px` | 600 | 1.30 | Card titles, list headers. (renders larger via size-adjust:150%.) |
 | **Body L** (lede) | — | SERIF | `17px` | 500 | 1.55 | Opening paragraph, Jess voice lede. |
 | **Body** (default) | — | SERIF | `16px` | 500 | 1.55 | Default reading text. |
 | **Body S** | — | SERIF | `15px` | 500 | 1.50 | Dense secondary copy, card body. |
-| **Caption / meta** | — | UI | `13px` | 600 | 1.40 | Dates, counts, helper text. |
-| **Eyebrow / overline** | — | UI | `11px` | 700 | 1.30 | Uppercase, `letter-spacing:0.14em`. Section kicker. |
+| **Caption / meta** | — | UI | `13–14px` | 600 | 1.40 | Dates, counts, helper text. Real-content captions → **14**; bare meta may stay 13. |
+| **Eyebrow / overline** | — | UI | `12px` | 700 | 1.30 | Uppercase, `letter-spacing:0.14em`. Section kicker. (was 11 — lifted to the 12px chrome floor.) |
 | **Control** (button/tab) | — | UI | `14px` | 700 | 1 | Buttons, tabs, chips. |
-| **Nav label** | — | UI | `11px` | 700 | 1 | Bottom-nav labels. |
+| **Nav label** | — | UI | `12px` | 700 | 1 | Bottom-nav labels. (was 11 — lifted to floor.) |
 
-**Allowed size set (px): 11, 13, 14, 15, 16, 17, 18, 20** + the two clamps (heading `clamp(23,4.6vw,31)`, display `clamp(40,8.5vw,54)`). **That's it.** No 12.5, 15.5, 8.5, 19, 21, 22, 24, 26, 28… (the audit found **46 distinct sizes** — collapse to these).
+**Allowed size set (px): 12, 13, 14, 15, 16, 17, 18, 20** + the two clamps (heading `clamp(27,6.4vw,34)`, display `clamp(44,9.5vw,56)`). **That's it.** **11px and below are RETIRED** (were too small on-device). No 9, 9.5, 10, 10.5, 11, 12.5, 15.5, 19, 21, 22, 24… (the audit found **46 distinct sizes**; the on-device review found many 9–11px content labels — collapse to this set, floor 12).
+> **QA must be device-accurate:** verify at a real mobile descriptor (Playwright iPhone preset — viewport + `deviceScaleFactor` + `isMobile`), and/or **measure `getComputedStyle().fontSize` in px and enforce the floors** (chrome ≥12, content ≥13) — do NOT judge legibility from a 390px desktop window alone (it reads ~40% larger than the phone).
 **Weights: 400** (Ephesis only) · **500** (reading body) · **600** (headings, titles, captions) · **700** (eyebrows, controls, nav). No 300/800.
 **Line-heights: 1.14 / 1.18 / 1.20 / 1.30 / 1.40 / 1.50 / 1.55** — pick from the table, don't invent.
 

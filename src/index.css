@@ -7,9 +7,9 @@
    load the SAME fonts the journal uses, on every page + mobile, so .fw-display
    (Ephesis) and .fw-heading (Cormorant italic) render the real glyphs.
    Cormorant Garamond stays un-adjusted = the journal's exact reading face. */
-@font-face { font-family: 'Cormorant Garamond'; font-style: normal; font-weight: 400 700; font-display: swap; size-adjust: 140%;
+@font-face { font-family: 'Cormorant Garamond'; font-style: normal; font-weight: 400 700; font-display: swap; size-adjust: 150%;
   src: url(https://fonts.gstatic.com/s/cormorantgaramond/v21/co3bmX5slCNuHLi8bLeY9MK7whWMhyjYpHtKky2F7i6C.woff2) format('woff2'); }
-@font-face { font-family: 'Cormorant Garamond'; font-style: italic; font-weight: 400 700; font-display: swap; size-adjust: 140%;
+@font-face { font-family: 'Cormorant Garamond'; font-style: italic; font-weight: 400 700; font-display: swap; size-adjust: 150%;
   src: url(https://fonts.gstatic.com/s/cormorantgaramond/v21/co3ZmX5slCNuHLi8bLeY9MK7whWMhyjYrEtImSqn7B6D.woff2) format('woff2'); }
 @font-face { font-family: 'Ephesis'; font-style: normal; font-weight: 400; font-display: swap;
   src: url(https://fonts.gstatic.com/s/ephesis/v11/uU9PCBUS8IerL2VG3xTR396EilM.woff2) format('woff2'); }
@@ -24,13 +24,13 @@
    This does NOT touch the journal: it uses 'Cormorant Garamond' directly (above,
    un-adjusted). Chrome is exempted to a system sans below; page titles (h1) are
    lifted to the Ephesis script. */
-@font-face { font-family: 'Inter'; font-style: normal; font-weight: 100 900; font-display: swap; size-adjust: 140%;
+@font-face { font-family: 'Inter'; font-style: normal; font-weight: 100 900; font-display: swap; size-adjust: 150%;
   src: url(https://fonts.gstatic.com/s/cormorantgaramond/v21/co3bmX5slCNuHLi8bLeY9MK7whWMhyjYpHtKky2F7i6C.woff2) format('woff2'); }
-@font-face { font-family: 'Inter'; font-style: italic; font-weight: 100 900; font-display: swap; size-adjust: 140%;
+@font-face { font-family: 'Inter'; font-style: italic; font-weight: 100 900; font-display: swap; size-adjust: 150%;
   src: url(https://fonts.gstatic.com/s/cormorantgaramond/v21/co3ZmX5slCNuHLi8bLeY9MK7whWMhyjYrEtImSqn7B6D.woff2) format('woff2'); }
-@font-face { font-family: 'Fraunces'; font-style: normal; font-weight: 100 900; font-display: swap; size-adjust: 140%;
+@font-face { font-family: 'Fraunces'; font-style: normal; font-weight: 100 900; font-display: swap; size-adjust: 150%;
   src: url(https://fonts.gstatic.com/s/cormorantgaramond/v21/co3bmX5slCNuHLi8bLeY9MK7whWMhyjYpHtKky2F7i6C.woff2) format('woff2'); }
-@font-face { font-family: 'Fraunces'; font-style: italic; font-weight: 100 900; font-display: swap; size-adjust: 140%;
+@font-face { font-family: 'Fraunces'; font-style: italic; font-weight: 100 900; font-display: swap; size-adjust: 150%;
   src: url(https://fonts.gstatic.com/s/cormorantgaramond/v21/co3ZmX5slCNuHLi8bLeY9MK7whWMhyjYrEtImSqn7B6D.woff2) format('woff2'); }
 
 @tailwind base;
@@ -305,7 +305,7 @@
   line-height: 1.14;
   letter-spacing: 0;
   color: var(--plum);
-  font-size: clamp(40px, 8.5vw, 54px);
+  font-size: clamp(44px, 9.5vw, 56px);
   filter: url(#inkCarve);
 }
 
@@ -319,7 +319,7 @@
   color: var(--plum);
   line-height: 1.18;
   letter-spacing: 0;
-  font-size: clamp(23px, 4.6vw, 31px);
+  font-size: clamp(27px, 6.4vw, 34px);
   text-shadow: 0 1px 0 rgba(255,254,250,0.85), 0 -1px 0.5px rgba(20,14,8,0.42), 0 1px 2px rgba(40,30,18,0.15);
 }
 

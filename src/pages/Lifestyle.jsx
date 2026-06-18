@@ -10,6 +10,8 @@ import ListenTab from "@/components/lifestyle/listen/ListenTab";
 import DailyStoryReader from "@/components/lifestyle/DailyStoryReader";
 import ContentActionBar from "@/components/common/ContentActionBar";
 import HoroscopeTabImpl from "@/components/horoscope/HoroscopeTab";
+import JumpToButton from "@/components/layout/JumpToButton";
+import LifestyleHubSheet from "@/components/lifestyle/LifestyleHubSheet";
 import { useScrollLock } from "@/utils/useScrollLock";
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
@@ -648,6 +650,9 @@ export default function Lifestyle() {
     } catch { /* silent — URL sync is non-critical */ }
   };
 
+  // Brand-P2: central "Jump to" switcher (app-wide rule for multi-layer pages).
+  const [hubOpen, setHubOpen] = useState(false);
+
   // Honour browser back/forward between tabs (with legacy redirect).
   useEffect(() => {
     const onPop = () => {
@@ -711,33 +716,36 @@ export default function Lifestyle() {
         <div style={{ position: "absolute", top: 1420, right: -24 }}><VineMotifV2 color={T.gold} color2={T.blush} opacity={0.08} w={140} /></div>
       </div>
 
-      {/* Sticky header — editorial dusk bar (matches NutritionHub's T.dusk
-          header). Eyebrow + Ephesis script title; gold active pill on dusk. */}
-      <div className="sticky top-0 z-30" style={{ background: T.dusk }}>
-        {/* Row 1 — dusk masthead */}
+      {/* Sticky header — PAPER masthead (Brand-P2 fix: was an off-brand dark T.dusk
+          slab; the brand bg is cream/paper, so the masthead now sits on paperHi with
+          a hairline paperDeep rule, ink title, gold accents). */}
+      <div className="sticky top-0 z-30" style={{ background: T.paperHi, borderBottom: `1px solid ${T.paperDeep}` }}>
+        {/* Row 1 — paper masthead */}
         <div style={{ padding: "10px 16px", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
           <div>
-            <Eyebrow color="rgba(244,237,219,0.55)" mb={1}>Discover</Eyebrow>
+            <Eyebrow color={T.muted} mb={1}>Discover</Eyebrow>
             {/* carved heart in the header (§3) + a flanking meaning-bloom (Lifestyle char = gold / radiance) */}
             <div style={{ display: "flex", alignItems: "center", gap: 9 }}>
               <BrandHeart size={15} />
-              <div style={{ fontFamily: SCRIPT, fontWeight: 400, fontSize: 30, lineHeight: 1.05, color: T.paper }}>Lifestyle</div>
+              <div style={{ fontFamily: SCRIPT, fontWeight: 400, fontSize: 36, lineHeight: 1.05, color: T.ink }}>Lifestyle</div>
               <FlowerGlyph variant="iris" size={24} color={cwOf("gold").petal} color2={cwOf("gold").tip} idx="lf-hdr" />
             </div>
           </div>
+          {/* Brand-P2: central "Jump to" switcher (app-wide multi-layer-page rule). */}
+          <JumpToButton onClick={() => setHubOpen(true)} />
         </div>
-        {/* Row 2 — tab pills */}
-        <div style={{ background: "rgba(11,8,5,0.28)", padding: "0 16px 10px" }}>
+        {/* Row 2 — tab pills (on paper) */}
+        <div style={{ padding: "0 16px 10px" }}>
           <div className="lf-scroll" style={{ display: "flex", gap: 6, overflowX: "auto", paddingBottom: 2 }}>
             {TABS.map(t => (
               <button key={t.id} onClick={() => setTab(t.id)}
                 aria-label={`Switch to ${t.label} tab`}
                 aria-pressed={tab === t.id}
-                style={{ flexShrink: 0, padding: "7px 16px", borderRadius: 9999, fontSize: 12, fontWeight: 600, cursor: "pointer", transition: "all 0.15s", whiteSpace: "nowrap", minHeight: 32,
+                style={{ flexShrink: 0, padding: "8px 16px", borderRadius: 9999, fontSize: 13, fontWeight: 700, cursor: "pointer", transition: "all 0.15s", whiteSpace: "nowrap", minHeight: 34,
                   fontFamily: UI,
-                  border: tab === t.id ? "none" : "1px solid rgba(244,237,219,0.25)",
+                  border: tab === t.id ? "none" : `1px solid ${T.paperDeep}`,
                   backgroundColor: tab === t.id ? T.gold : "transparent",
-                  color: tab === t.id ? T.ink : "rgba(244,237,219,0.78)" }}>
+                  color: tab === t.id ? T.ink : T.muted }}>
                 {t.label}
               </button>
             ))}
@@ -791,6 +799,9 @@ export default function Lifestyle() {
           {tab === "daily_story" && <DailyStoryTab />}
         </div>
       )}
+
+      {/* Brand-P2: central "Jump to" switcher sheet (app-wide multi-layer-page rule). */}
+      <LifestyleHubSheet open={hubOpen} onClose={() => setHubOpen(false)} onSelect={(id) => setTab(id)} />
     </div>
   );
 }

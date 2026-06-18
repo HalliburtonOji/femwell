@@ -141,7 +141,7 @@ export function SurfaceCard({ cardW, label, blurb, accent = T.gold, onOpen, prim
       <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: 8, marginBottom: 4, flex: "none" }}>
         <Eyebrow color={accent}>{label}</Eyebrow>
         {blurb ? (
-          <span style={{ fontFamily: UI, fontSize: 9.5, letterSpacing: 0.5, color: T.muted, fontWeight: 700, textTransform: "uppercase" }}>
+          <span style={{ fontFamily: UI, fontSize: 12, letterSpacing: 0.5, color: T.muted, fontWeight: 700, textTransform: "uppercase" }}>
             {blurb}
           </span>
         ) : null}
