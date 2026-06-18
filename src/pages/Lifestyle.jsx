@@ -736,7 +736,7 @@ export default function Lifestyle() {
   const isForYou = tab === "for_you";
 
   return (
-    <div className="min-h-screen pb-28" style={{ backgroundColor: "var(--ivory)", position: "relative" }}>
+    <div className="min-h-screen pb-28" style={{ backgroundColor: "var(--ivory)", position: "relative", overflowX: "clip" }}>
       <style>{`.lf-scroll::-webkit-scrollbar{display:none}.lf-scroll{-ms-overflow-style:none;scrollbar-width:none}@keyframes lf-spin{to{transform:rotate(360deg)}}.space-y-3>*+*{margin-top:12px}.space-y-4>*+*{margin-top:16px}.space-y-2>*+*{margin-top:8px}`}</style>
 
       {/* botanical page texture — one low-opacity vine per fold (Lifestyle char = gold/blush), clipped, behind content */}
