@@ -623,7 +623,13 @@ export default function TodayDemo6() {
   // That restore is an unmount-DESTROY which React runs BEFORE this parent's effect-CREATE, so doing
   // the scroll in the effect is deterministically AFTER the restore — it can't be clobbered (a
   // timing-based setTimeout raced it and lost).
-  const onJump = (it) => { pendingJump.current = it; setJumpOpen(false); };
+  const onJump = (it) => {
+    // Set the active chip HERE, in the click handler — setState from an onClick reliably re-renders the
+    // rail (the same path the rail chips/arrows use); driving it from the deferred effect did not stick.
+    if (it.kind === "section") { programScroll.current = true; setSActive(it.index); }
+    pendingJump.current = it;
+    setJumpOpen(false);
+  };
 
   // SMART SUGGESTIONS — driven from REAL signals (nutrition gap · journal recency · today's
   // symptom · real book pick · real weekly pattern · real echo · real horoscope · cycle phase).
