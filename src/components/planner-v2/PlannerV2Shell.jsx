@@ -898,13 +898,16 @@ export default function PlannerV2Shell({
   return (
     <div style={shell}>
       {/* Brand-P2 botanical page texture — plum/gold vines (§5.3 Planner char), one */}
-      {/* per fold, hairline + low-opacity, clipped + held behind content (zIndex -1). */}
-      <div aria-hidden="true" style={{ position: "absolute", inset: 0, overflow: "hidden", pointerEvents: "none", zIndex: -1 }}>
+      {/* per fold, hairline + low-opacity, clipped + held behind content (zIndex 0). */}
+      <div aria-hidden="true" style={{ position: "absolute", inset: 0, overflow: "hidden", pointerEvents: "none", zIndex: 0 }}>
         <style>{floraKeyframes}</style>
         <div style={{ position: "absolute", top: 200, right: -26 }}><VineMotifV2 color="#8E6E8E" color2={C.gold} opacity={0.1} w={146} /></div>
         <div style={{ position: "absolute", top: 860, left: -28 }}><VineMotifV2 color={C.gold} color2="#8E6E8E" opacity={0.08} w={138} flip /></div>
         <div style={{ position: "absolute", top: 1520, right: -24 }}><VineMotifV2 color="#8E6E8E" color2={C.gold} opacity={0.08} w={138} /></div>
       </div>
+      {/* content wrapper — lifted above the vine layer (zIndex:1). Sheets render AFTER this
+          wrapper as root children so they stack above the bottom nav (not trapped). */}
+      <div style={{ position: "relative", zIndex: 1 }}>
       {shouldShowDev() && (
         <DevPill
           devStage={devStage}
@@ -957,6 +960,7 @@ export default function PlannerV2Shell({
           writes the order + hidden array; orderedRowKeys resolves the
           final sequence. Hidden rows collapse fully (no spacer). */}
       {orderedRowKeys.map((k) => NODES_BY_KEY[k])}
+      </div>{/* /content wrapper — sheets below render above the nav */}
 
       {/* ContextualFAB removed 2026-05-23 — global UnifiedTabLogger FAB
           is the single source of truth for logging app-wide. */}
@@ -5569,10 +5573,10 @@ function DemoFooter() {
 const shell = {
   background: C.cream, minHeight: "100vh", paddingBottom: 120,
   position: "relative",
-  // Brand-P2: establish a stacking context so the page-texture vine layer
-  // (zIndex:-1, below) paints above the cream background but behind all content
-  // — no per-child zIndex lift needed.
-  isolation: "isolate",
+  // Brand-P2: vine layer sits at zIndex:0 with the page content lifted to zIndex:1.
+  // (We do NOT use `isolation:isolate` here — it created a stacking context that trapped
+  // fixed bottom-sheets BELOW the bottom nav. Sheets render as root children above the
+  // content wrapper so their z-index resolves in the page/html context, above the nav.)
   overflowX: "clip",
 };
 const headerStyle = { padding: "20px 16px 8px", background: C.cream };
@@ -6287,7 +6291,9 @@ const modalCard = {
   width: "100%", maxWidth: 520,
   background: C.cream,
   borderRadius: "22px 22px 0 0",
-  padding: "16px 18px 22px",
+  // Brand-P2: clear the fixed bottom nav (~72px) + safe-area so the sheet's bottom
+  // actions are never hidden behind / clipped by the nav bar.
+  padding: "16px 18px calc(90px + env(safe-area-inset-bottom, 0px))",
   boxShadow: "0 -8px 32px rgba(58,44,26,0.18)",
 };
 const modalHead = {
