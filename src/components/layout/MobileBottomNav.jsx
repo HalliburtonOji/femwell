@@ -14,7 +14,7 @@ const SLOTS = [
 ];
 
 const labelStyle = (active) => ({
-  fontSize: 11,
+  fontSize: 12,
   fontWeight: active ? 600 : 500,
   color: active ? "var(--plum-deep)" : "var(--plum-mute)",
   marginTop: 2,

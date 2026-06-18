@@ -76,7 +76,7 @@ export default function Layout({ children, currentPageName }) {
           style={{
             textAlign: "center",
             padding: "16px",
-            fontSize: 11,
+            fontSize: 12,
             color: "var(--mauve)",
             display: "inline-flex",
             alignItems: "center",
@@ -90,9 +90,9 @@ export default function Layout({ children, currentPageName }) {
           <span className="sr-only">love</span> in 2026
           <span aria-hidden style={{ margin: "0 6px", color: "#9B8B7A" }}>·</span>
           {/* Sprint 12 batch 1 — small muted legal links on every page footer. */}
-          <a href="/Privacy" style={{ color: "#9B8B7A", textDecoration: "none", fontSize: 11 }}>Privacy</a>
+          <a href="/Privacy" style={{ color: "#9B8B7A", textDecoration: "none", fontSize: 12 }}>Privacy</a>
           <span aria-hidden style={{ margin: "0 4px", color: "#9B8B7A" }}>·</span>
-          <a href="/Terms" style={{ color: "#9B8B7A", textDecoration: "none", fontSize: 11 }}>Terms</a>
+          <a href="/Terms" style={{ color: "#9B8B7A", textDecoration: "none", fontSize: 12 }}>Terms</a>
         </footer>
       )}
       {showNav && currentPageName !== "Ideas" && (
@@ -108,7 +108,7 @@ export default function Layout({ children, currentPageName }) {
             background: "#3A2C1A",
             color: "#F4EDDB",
             borderRadius: 9999,
-            fontSize: 11,
+            fontSize: 12,
             fontWeight: 700,
             letterSpacing: "0.18em",
             textTransform: "uppercase",
