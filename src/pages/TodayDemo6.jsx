@@ -279,6 +279,7 @@ export default function TodayDemo6() {
   const pinSentinel = useRef(null);                   // IntersectionObserver sentinel for the sticky bar
   const [sActive, setSActive] = useState(0);          // per-section slider index
   const sTrackRef = useRef(null);
+  const pendingJump = useRef(null);                   // jump target, run AFTER the sheet closes (below)
 
   // ── real data ────────────────────────────────────────────────────────────────────────────────
   const [uid, setUid] = useState(null);
@@ -393,6 +394,23 @@ export default function TodayDemo6() {
     io.observe(el);
     return () => io.disconnect();
   }, []);
+
+  // run a pending Jump-to AFTER the sheet has closed + its scroll-lock released (see onJump). The
+  // unmounting sheet's lock-restore (scrollTo(0, savedY)) runs as an unmount-destroy before this
+  // effect, so navigating here lands cleanly. rAF lets the restored scroll paint first.
+  useEffect(() => {
+    if (jumpOpen) return;
+    const it = pendingJump.current;
+    if (!it) return;
+    pendingJump.current = null;
+    requestAnimationFrame(() => {
+      if (it.kind === "top") { try { window.scrollTo({ top: 0, behavior: "smooth" }); } catch { window.scrollTo(0, 0); } return; }
+      if (it.kind === "area") { try { document.getElementById(it.id)?.scrollIntoView({ behavior: "smooth", block: "start" }); } catch { /* ignore */ } return; }
+      try { document.getElementById("t-sections")?.scrollIntoView({ behavior: "smooth", block: "start" }); } catch { /* ignore */ }
+      setSActive(it.index);
+      sTrackRef.current?.scrollTo({ left: it.index * (CARD_W + GAP), behavior: "smooth" });   // drive the slider to that card
+    });
+  }, [jumpOpen]);
 
   // first-open ceremony animation: grow the bloom 0→4, then mark seen + dismiss.
   useEffect(() => {
@@ -591,20 +609,13 @@ export default function TodayDemo6() {
     { kind: "area", id: "t-noticed", Icon: Sparkles, label: "Noticed", sub: "a few things", accent: T.crimson },
   ];
   // jump = land on the real target: top → page top; area → its anchor; section → scroll to the slider
-  // AND drive the slider to that card (so the section is actually shown, not just scrolled near).
-  // CRITICAL: the JumpSheet's scroll-lock (useScrollLock) keeps body{position:fixed} while open and
-  // restores window scroll (scrollTo(0, savedY)) on close — which fires AFTER this handler and would
-  // clobber any scroll we do now (and a scroll while body is fixed is a no-op anyway). So close the
-  // sheet first, then run the navigation on the next tick, once the lock has released.
-  const onJump = (it) => {
-    setJumpOpen(false);
-    setTimeout(() => {
-      if (it.kind === "top") { try { window.scrollTo({ top: 0, behavior: "smooth" }); } catch { window.scrollTo(0, 0); } return; }
-      if (it.kind === "area") { try { document.getElementById(it.id)?.scrollIntoView({ behavior: "smooth", block: "start" }); } catch { /* ignore */ } return; }
-      try { document.getElementById("t-sections")?.scrollIntoView({ behavior: "smooth", block: "start" }); } catch { /* ignore */ }
-      sGoTo(it.index);   // drive the slider to that card (sets the active rail chip + dot)
-    }, 150);
-  };
+  // AND drive the slider to that card. We DON'T navigate here — we stash the target and close the
+  // sheet; the effect below runs the navigation. Why: the JumpSheet's scroll-lock (useScrollLock)
+  // keeps body{position:fixed} while open and restores window scroll (scrollTo(0, savedY)) on close.
+  // That restore is an unmount-DESTROY which React runs BEFORE this parent's effect-CREATE, so doing
+  // the scroll in the effect is deterministically AFTER the restore — it can't be clobbered (a
+  // timing-based setTimeout raced it and lost).
+  const onJump = (it) => { pendingJump.current = it; setJumpOpen(false); };
 
   // SMART SUGGESTIONS — driven from REAL signals (nutrition gap · journal recency · today's
   // symptom · real book pick · real weekly pattern · real echo · real horoscope · cycle phase).
