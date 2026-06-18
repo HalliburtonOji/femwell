@@ -619,10 +619,9 @@ export default function NutritionHub() {
 
         {/* ── DAILY HUB header — Demo2's full summary, wired to real data ───── */}
         <header style={{ padding: "20px 18px 4px" }}>
-          {/* controls row — its OWN full-width row so nothing steals the greeting's width:
-              Jump-to pill left, day stepper right, room to breathe. */}
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10, marginBottom: 14 }}>
-            <JumpToButton onClick={() => setHubMenuOpen(true)} />
+          {/* controls row — pinned Jump-to floats top-left (follows scroll); day stepper right. */}
+          <JumpToButton pinned onClick={() => setHubMenuOpen(true)} />
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "flex-end", gap: 10, marginBottom: 14, minHeight: 34 }}>
             <div style={{
               display: "flex", alignItems: "center", gap: 4,
               background: T.paperHi, border: `1px solid ${T.paperDeep}`, borderRadius: 14, padding: "5px 6px",

@@ -724,10 +724,11 @@ export default function Lifestyle() {
           Jump-to control pinned left, a centered icon+label, and a square control pinned right
           (Today's calendar square → here the Filter panel), flowing straight into the centered
           masthead + the tab pill row. Reads as a sibling of the Today/Journal headers. */}
+      {/* Pinned "Jump to" — follows the scroll (fixed, top-left), always reachable. */}
+      <JumpToButton pinned onClick={() => setHubOpen(true)} />
       <header style={{ maxWidth: 600, margin: "0 auto", padding: "16px 16px 0", position: "relative", zIndex: 1 }}>
-        {/* top strip — jump-to (left) · centered label · square Filter control (right) */}
-        <div style={{ display: "flex", alignItems: "center", gap: 8, justifyContent: "center", marginTop: 6, position: "relative" }}>
-          <div style={{ position: "absolute", left: 0, top: -3 }}><JumpToButton onClick={() => setHubOpen(true)} /></div>
+        {/* top strip — (pinned jump-to floats top-left) · centered label · square Filter control (right) */}
+        <div style={{ display: "flex", alignItems: "center", gap: 8, justifyContent: "center", marginTop: 6, position: "relative", minHeight: 34 }}>
           <Sparkles size={14} color={T.muted} />
           <span style={{ fontFamily: UI, fontSize: 12, fontWeight: 700, letterSpacing: "0.16em", textTransform: "uppercase", color: T.muted }}>Discover</span>
           {tab !== "daily_story" && tab !== "horoscope" && (

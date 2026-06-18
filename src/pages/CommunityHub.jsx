@@ -570,10 +570,10 @@ function CommunityHubInner() {
       <div style={{ maxWidth: COL, margin: "0 auto", position: "relative", zIndex: 1 }}>
 
         {/* ── HUB header — rich Community summary + the embrace centerpiece ──── */}
+        <JumpToButton pinned onClick={() => setHubMenuOpen(true)} />
         <header style={{ padding: "20px 18px 4px" }}>
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "flex-end", marginBottom: 14 }}>
-            <JumpToButton onClick={() => setHubMenuOpen(true)} />
-          </div>
+          {/* spacer reserving the pinned Jump-to's zone (it floats top-left, follows scroll) */}
+          <div style={{ minHeight: 34, marginBottom: 14 }} />
 
           <Eyebrow mb={4}>{MASTHEAD.eyebrow}</Eyebrow>
           {/* carved heart in the header (§3) + flanking meaning-blooms (lush, Community = sage) */}

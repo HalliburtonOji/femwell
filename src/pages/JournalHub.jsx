@@ -410,10 +410,10 @@ export default function JournalHub() {
       <div style={{ maxWidth: COL, margin: "0 auto", position: "relative", zIndex: 1 }}>
 
         {/* ── DAILY HUB header — rich summary, wired to real data ───────────── */}
+        <JumpToButton pinned onClick={() => setHubMenuOpen(true)} />
         <header style={{ padding: "20px 18px 4px" }}>
-          {/* controls row — Jump-to pill left, the season strip right */}
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10, marginBottom: 14 }}>
-            <JumpToButton onClick={() => setHubMenuOpen(true)} />
+          {/* controls row — pinned Jump-to floats top-left (follows scroll); season strip right */}
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "flex-end", gap: 10, marginBottom: 14, minHeight: 34 }}>
             {season ? (
               <span style={{ fontFamily: UI, fontSize: 12, color: T.muted, letterSpacing: 0.5, fontWeight: 600, textAlign: "right", maxWidth: 230 }}>
                 {season.name} · {season.line}
