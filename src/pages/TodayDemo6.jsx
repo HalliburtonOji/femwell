@@ -592,12 +592,18 @@ export default function TodayDemo6() {
   ];
   // jump = land on the real target: top → page top; area → its anchor; section → scroll to the slider
   // AND drive the slider to that card (so the section is actually shown, not just scrolled near).
+  // CRITICAL: the JumpSheet's scroll-lock (useScrollLock) keeps body{position:fixed} while open and
+  // restores window scroll (scrollTo(0, savedY)) on close — which fires AFTER this handler and would
+  // clobber any scroll we do now (and a scroll while body is fixed is a no-op anyway). So close the
+  // sheet first, then run the navigation on the next tick, once the lock has released.
   const onJump = (it) => {
     setJumpOpen(false);
-    if (it.kind === "top") { try { window.scrollTo({ top: 0, behavior: "smooth" }); } catch { window.scrollTo(0, 0); } return; }
-    if (it.kind === "area") { try { document.getElementById(it.id)?.scrollIntoView({ behavior: "smooth", block: "start" }); } catch { /* ignore */ } return; }
-    try { document.getElementById("t-sections")?.scrollIntoView({ behavior: "smooth", block: "start" }); } catch { /* ignore */ }
-    setTimeout(() => sGoTo(it.index), 360);   // let the vertical scroll land, then animate the slider to the card
+    setTimeout(() => {
+      if (it.kind === "top") { try { window.scrollTo({ top: 0, behavior: "smooth" }); } catch { window.scrollTo(0, 0); } return; }
+      if (it.kind === "area") { try { document.getElementById(it.id)?.scrollIntoView({ behavior: "smooth", block: "start" }); } catch { /* ignore */ } return; }
+      try { document.getElementById("t-sections")?.scrollIntoView({ behavior: "smooth", block: "start" }); } catch { /* ignore */ }
+      sGoTo(it.index);   // drive the slider to that card (sets the active rail chip + dot)
+    }, 150);
   };
 
   // SMART SUGGESTIONS — driven from REAL signals (nutrition gap · journal recency · today's
@@ -735,7 +741,7 @@ export default function TodayDemo6() {
         </div>
 
         {/* (3) YOUR DAY — gentle checklist; ticking nourishes the garden */}
-        <div id="t-yourday" style={{ position: "relative", overflow: "hidden", marginTop: 16, background: "linear-gradient(160deg, #F3F7EC 0%, #E7F0DE 100%)", border: `1px solid ${T.paperDeep}`, borderLeft: `4px solid ${T.sage}`, borderRadius: 18, padding: "17px 17px 15px", boxShadow: "0 8px 28px rgba(58,44,26,0.14), 0 2px 6px rgba(58,44,26,0.08)" }}>
+        <div id="t-yourday" style={{ scrollMarginTop: 60, position: "relative", overflow: "hidden", marginTop: 16, background: "linear-gradient(160deg, #F3F7EC 0%, #E7F0DE 100%)", border: `1px solid ${T.paperDeep}`, borderLeft: `4px solid ${T.sage}`, borderRadius: 18, padding: "17px 17px 15px", boxShadow: "0 8px 28px rgba(58,44,26,0.14), 0 2px 6px rgba(58,44,26,0.08)" }}>
           <div aria-hidden style={{ position: "absolute", right: -16, bottom: -20, opacity: 0.1, pointerEvents: "none", zIndex: 0 }}><FlowerGlyph variant="rose" size={120} color={T.sage} idx="wm-day3" /></div>
           <Frame4 variant="sprig" color={T.sage} size={52} opacity={0.64} />
           <div style={{ position: "relative", display: "flex", alignItems: "baseline", justifyContent: "space-between" }}>
@@ -788,7 +794,7 @@ export default function TodayDemo6() {
             the Journal slider's card size, a segmented section rail (its own jump-to) + ‹ • • › nav.
             Each card is a REAL synthesis of the user's own data + an inline action. */}
         <SprigDivider color={T.gold} my={20} />
-        <div id="t-sections">
+        <div id="t-sections" style={{ scrollMarginTop: 60 }}>
           <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", gap: 10 }}>
             <Script size={32} color={T.ink} style={{ display: "block", lineHeight: 1.1 }}>Across your day</Script>
             <button onClick={() => { setRollSeed((s) => s + 1); sGoTo(0); }} aria-label="Show different suggestions" title="A different turn"
@@ -832,7 +838,7 @@ export default function TodayDemo6() {
         <FleuronDivider color={T.gold} my={20} />
 
         {/* (5) CROSS-APP SMART SUGGESTIONS */}
-        <div id="t-noticed">
+        <div id="t-noticed" style={{ scrollMarginTop: 60 }}>
           <Script size={30} color={T.ink} style={{ display: "block", lineHeight: 1.1 }}>A few things I noticed</Script>
           <p style={{ fontFamily: UI, fontSize: 13, color: T.muted, margin: "2px 0 10px" }}>gentle, tuned to your {PHASE_LABEL[phase] ? PHASE_LABEL[phase].toLowerCase() : ""} phase · slide to see more</p>
           <div style={{ display: "flex", gap: 12, overflowX: "auto", scrollSnapType: "x mandatory", scrollbarWidth: "none", paddingBottom: 6 }}>
