@@ -1,8 +1,9 @@
 import { useState, useEffect, useRef } from "react";
 import { base44 } from "@/api/base44Client";
-import { ExternalLink, X, Bookmark, SlidersHorizontal, Check, Sparkles } from "lucide-react";
-import { T, UI, SCRIPT, Heart as BrandHeart } from "@/components/journal/Editorial";
-import { VineMotifV2, FlowerGlyph, floraKeyframes, cwOf } from "@/components/brand/flora";
+import { ExternalLink, X, Bookmark, SlidersHorizontal, Check, Sparkles, BookOpen, Headphones, Feather, Moon, ArrowRight } from "lucide-react";
+import { T, UI, SERIF, SCRIPT, Heart as BrandHeart } from "@/components/journal/Editorial";
+import { VineMotifV2, FlowerGlyph, RichBloomV2, SwayBloom, Butterfly, floraKeyframes, cwOf } from "@/components/brand/flora";
+import CardStack from "@/components/planner-v2/CardStack";
 import { CONTENT_CATEGORIES, categoryLabel } from "@/utils/contentCategory";
 import ForYouTab from "@/components/lifestyle/foryou/ForYouTab";
 import BrowseTab from "@/components/lifestyle/browse/BrowseTab";
@@ -655,6 +656,33 @@ export default function Lifestyle() {
   // Brand-P2: Today-style header — the filter panel opens from the top-right square
   // control (mirrors Today's calendar square), keeping the masthead clean.
   const [showFilters, setShowFilters] = useState(false);
+  // Brand-P2: real signals for the hero/summary/section cards (graceful, never hollow).
+  const [landing, setLanding] = useState(null);
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const [items, story, horo] = await Promise.all([
+          base44.entities.LifestyleItems.filter({ status: "PUBLISHED" }, "-created_date", 40).catch(() => []),
+          base44.entities.DailyStory.filter({}, "-created_date", 1).catch(() => []),
+          base44.entities.HoroscopeReading.filter({}, "-reading_date", 1).catch(() => []),
+        ]);
+        if (cancelled) return;
+        const arr = Array.isArray(items) ? items : [];
+        const typeOf = (i) => String(i?.media_type || i?.content_type || "").toUpperCase();
+        const read = arr.find((i) => /ARTICLE|READ|ESSAY/.test(typeOf(i)) && i?.title) || arr.find((i) => i?.title && !/PODCAST|AUDIO|VIDEO/.test(typeOf(i)));
+        const listen = arr.find((i) => /PODCAST|AUDIO|VIDEO/.test(typeOf(i)) && i?.title);
+        setLanding({
+          read: read || null,
+          listen: listen || null,
+          foryou: arr.find((i) => i?.title) || null,
+          story: (Array.isArray(story) ? story[0] : null) || null,
+          horoscope: (Array.isArray(horo) ? horo[0] : null) || null,
+        });
+      } catch { if (!cancelled) setLanding({}); }
+    })();
+    return () => { cancelled = true; };
+  }, []);
 
   // Honour browser back/forward between tabs (with legacy redirect).
   useEffect(() => {
@@ -739,12 +767,11 @@ export default function Lifestyle() {
           )}
         </div>
 
-        {/* masthead — centered: carved heart (§3) + Ephesis script title + flanking meaning-bloom */}
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 9, flexWrap: "wrap", marginTop: 12 }}>
-          <BrandHeart size={15} />
-          <div style={{ fontFamily: SCRIPT, fontWeight: 400, fontSize: 44, lineHeight: 1.05, color: T.ink }}>Lifestyle</div>
-          <FlowerGlyph variant="iris" size={24} color={cwOf("gold").petal} color2={cwOf("gold").tip} idx="lf-hdr" />
-        </div>
+        {/* HERO — illustrated top section (echoes Today's hero, in Lifestyle's own style):
+            a large daisy bloom (radiance/joy — NOT the cycle/companion bloom) in a purely
+            DECORATIVE botanical ring (no cycle phase), soft glow + a resting butterfly, then the
+            carved heart + Ephesis script title + a short supportive line. */}
+        <LifestyleHero />
 
         {/* tabs — a clean scrollable pill row flowing under the masthead (no boxed band) */}
         <div className="lf-scroll" style={{ display: "flex", gap: 6, overflowX: "auto", paddingBottom: 2, marginTop: 16 }}>
@@ -796,9 +823,13 @@ export default function Lifestyle() {
           - Browse / Listen / Daily Story: tight 576px column (mobile-frame
             magazine feel — unchanged). */}
       {isForYou ? (
-        <div className="mx-auto pt-5" style={{ maxWidth: 1200, position: "relative", zIndex: 1 }}>
-          <ForYouTab categoryFilter={categoryFilter} />
-        </div>
+        <>
+          {/* Today-style landing: summary recommendations + a per-section card slider */}
+          <LifestyleLanding landing={landing} onJump={setTab} />
+          <div className="mx-auto pt-5" style={{ maxWidth: 1200, position: "relative", zIndex: 1 }}>
+            <ForYouTab categoryFilter={categoryFilter} />
+          </div>
+        </>
       ) : tab === "horoscope" ? (
         <div className="mx-auto pt-5" style={{ maxWidth: 820, position: "relative", zIndex: 1 }}>
           <HoroscopeTab />
@@ -813,6 +844,115 @@ export default function Lifestyle() {
 
       {/* Brand-P2: central "Jump to" switcher sheet (app-wide multi-layer-page rule). */}
       <LifestyleHubSheet open={hubOpen} onClose={() => setHubOpen(false)} onSelect={(id) => setTab(id)} />
+    </div>
+  );
+}
+
+// ── HERO — illustrated top section (Today's hero CONCEPT, Lifestyle's own style) ──────────────
+// A large daisy bloom (radiance/joy — NOT the cycle/companion bloom) inside a purely DECORATIVE
+// botanical ring (no cycle-phase encoding), soft glow + a resting butterfly, then the carved
+// heart + Ephesis script title + a short supportive line. Lifestyle page-character = gold.
+function LifestyleHero() {
+  const cw = cwOf("gold");
+  return (
+    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", marginTop: 8 }}>
+      <div style={{ position: "relative", display: "flex", justifyContent: "center", width: "100%" }}>
+        {/* soft coloured glow */}
+        <div aria-hidden style={{ position: "absolute", top: "48%", left: "50%", width: 296, height: 296, transform: "translate(-50%,-50%)", borderRadius: "50%", background: `radial-gradient(circle, ${cw.petal}38 0%, ${T.sage}1F 44%, transparent 70%)`, animation: "fwcGlow 7s ease-in-out infinite", pointerEvents: "none", zIndex: 0 }} />
+        {/* resting butterfly */}
+        <div style={{ position: "absolute", top: 6, right: 42, zIndex: 2, pointerEvents: "none" }}><Butterfly size={40} color={cw.petal} color2={cw.tip} pattern="bands" animate idx="lf-bf" /></div>
+        {/* DECORATIVE ring (dashed gold + thin sage — no phase markers) + the bloom */}
+        <div style={{ position: "relative", zIndex: 1, width: 244, height: 244, display: "grid", placeItems: "center" }}>
+          <svg width="244" height="244" viewBox="0 0 244 244" aria-hidden style={{ position: "absolute", inset: 0 }}>
+            <circle cx="122" cy="122" r="114" fill="none" stroke={T.gold} strokeWidth="1.5" opacity="0.5" strokeDasharray="2 9" strokeLinecap="round" />
+            <circle cx="122" cy="122" r="102" fill="none" stroke={T.sage} strokeWidth="1" opacity="0.4" />
+          </svg>
+          <SwayBloom animate idx={3}>
+            <RichBloomV2 form="daisy" color={cw.petal} color2={cw.tip} accent={T.gold} size={170} animate soft idx="lf-hero" />
+          </SwayBloom>
+        </div>
+      </div>
+      <div style={{ display: "flex", alignItems: "center", gap: 9, marginTop: -2, flexWrap: "wrap", justifyContent: "center" }}>
+        <FlowerGlyph variant="iris" size={22} color={cwOf("plum").petal} color2={cwOf("plum").tip} idx="lf-hf-l" />
+        <BrandHeart size={16} />
+        <div style={{ fontFamily: SCRIPT, fontWeight: 400, fontSize: 44, lineHeight: 1.05, color: T.ink }}>Lifestyle</div>
+        <FlowerGlyph variant="sunflower" size={22} color={cwOf("gold").petal} color2={cwOf("gold").tip} idx="lf-hf-r" />
+      </div>
+      <div style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 16, color: T.muted, marginTop: 9, textAlign: "center", maxWidth: 330, lineHeight: 1.5 }}>
+        A few good things to read, hear and feel today — whenever you have a moment.
+      </div>
+    </div>
+  );
+}
+
+// ── LANDING — a "what to dip into today" summary card + a per-section CardStack slider ────────
+// Reuses the shared CardStack (Journal/Planner geometry). Each section card carries a hook + a
+// real recommendation (graceful curated fallback — never hollow) + an action into that section.
+function LifestyleLanding({ landing, onJump }) {
+  const L = landing || {};
+  const recs = [];
+  if (L.read?.title) recs.push({ icon: BookOpen, label: "Read", text: L.read.title, tab: "read" });
+  if (L.listen?.title) recs.push({ icon: Headphones, label: "Listen", text: L.listen.title, tab: "listen" });
+  if (L.story?.title) recs.push({ icon: Feather, label: "Daily story", text: L.story.title, tab: "daily_story" });
+  if (recs.length < 2) {
+    if (!recs.find((r) => r.tab === "read")) recs.push({ icon: BookOpen, label: "Read", text: "A fresh essay to sink into.", tab: "read" });
+    if (!recs.find((r) => r.tab === "listen")) recs.push({ icon: Headphones, label: "Listen", text: "A calm listen for the in-between moments.", tab: "listen" });
+  }
+  const top2 = recs.slice(0, 3);
+
+  const SECTIONS = [
+    { key: "for_you", section: "For You", Icon: Sparkles, accent: T.gold, flower: "sunflower",
+      hook: "Picked for your day", line: L.foryou?.title ? `Today: ${L.foryou.title}` : "A small, curated handful — tuned to where you are.", cta: "See your picks", tab: "for_you" },
+    { key: "read", section: "Read", Icon: BookOpen, accent: "#8E6E8E", flower: "iris",
+      hook: "A read for today", line: L.read?.title || "Essays and long reads, gathered for you.", cta: "Open Read", tab: "read" },
+    { key: "listen", section: "Listen", Icon: Headphones, accent: T.sage, flower: "bluebell",
+      hook: "Something to listen to", line: L.listen?.title || "A podcast or two, for the in-between moments.", cta: "Open Listen", tab: "listen" },
+    { key: "daily_story", section: "Daily Story", Icon: Feather, accent: T.crimson, flower: "poppy",
+      hook: "Today's chapter", line: L.story?.title ? `“${L.story.title}”` : "Pick today's chapter back up where you left it.", cta: "Read today's chapter", tab: "daily_story" },
+    { key: "horoscope", section: "Horoscope", Icon: Moon, accent: "#5F7E8E", flower: "violet",
+      hook: "Your sky today", line: L.horoscope?.headline || (typeof L.horoscope?.narrative === "string" ? L.horoscope.narrative.slice(0, 90) : "Read your sky, or set up your chart."), cta: "Open Horoscope", tab: "horoscope" },
+  ];
+
+  return (
+    <div style={{ position: "relative", zIndex: 1 }}>
+      {/* SUMMARY CARD — recommendations / "what to do" today */}
+      <div style={{ maxWidth: 600, margin: "18px auto 0", padding: "0 16px" }}>
+        <div style={{ position: "relative", overflow: "hidden", background: "linear-gradient(160deg, #FBF4E1 0%, #F4E7C4 100%)", border: `1px solid ${T.paperDeep}`, borderLeft: `4px solid ${T.gold}`, borderRadius: 18, padding: "16px 18px", boxShadow: "0 8px 28px rgba(58,44,26,0.14), 0 2px 6px rgba(58,44,26,0.08)" }}>
+          <div style={{ fontFamily: UI, fontSize: 12, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: T.gold, marginBottom: 6 }}>A few good things today</div>
+          {top2.map((r, i) => (
+            <button key={i} onClick={() => onJump(r.tab)} style={{ display: "flex", alignItems: "flex-start", gap: 10, width: "100%", textAlign: "left", background: "transparent", border: "none", cursor: "pointer", padding: "7px 0" }}>
+              <r.icon size={16} style={{ color: T.gold, marginTop: 3, flexShrink: 0 }} />
+              <span style={{ flex: 1, minWidth: 0 }}>
+                <span style={{ fontFamily: UI, fontSize: 12, fontWeight: 700, color: T.muted, textTransform: "uppercase", letterSpacing: "0.06em", display: "block" }}>{r.label}</span>
+                <span style={{ fontFamily: SERIF, fontSize: 16, color: T.ink, lineHeight: 1.4, display: "block" }}>{r.text}</span>
+              </span>
+              <ArrowRight size={15} style={{ color: T.muted, flexShrink: 0, marginTop: 4 }} />
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* SECTION CARDS — shared CardStack slider; one engaging card per Lifestyle section */}
+      <div style={{ maxWidth: 600, margin: "14px auto 0", padding: "0 4px" }}>
+        <CardStack label="Explore">
+          {SECTIONS.map((s) => (
+            <article key={s.key} style={{ position: "relative", overflow: "hidden", background: `linear-gradient(165deg, ${T.paperHi} 0%, ${s.accent}14 100%)`, border: `1px solid ${T.paperDeep}`, borderLeft: `4px solid ${s.accent}`, borderRadius: 20, padding: 20, display: "flex", flexDirection: "column", minHeight: 250, boxShadow: "0 4px 20px rgba(58,44,26,0.12), 0 1px 4px rgba(58,44,26,0.08)" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 9, marginBottom: 12 }}>
+                <span style={{ width: 32, height: 32, borderRadius: 9, background: T.wax, border: `1px solid ${T.paperDeep}`, display: "grid", placeItems: "center", flexShrink: 0 }}><s.Icon size={16} style={{ color: s.accent }} /></span>
+                <span style={{ fontFamily: UI, fontSize: 12, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: s.accent }}>{s.section}</span>
+                <span style={{ marginLeft: "auto" }}><FlowerGlyph variant={s.flower} size={28} color={s.accent} idx={`lf-mb-${s.key}`} /></span>
+              </div>
+              <h3 style={{ fontFamily: SERIF, fontSize: 20, fontWeight: 600, color: T.ink, margin: "0 0 8px", lineHeight: 1.3 }}>{s.hook}</h3>
+              <p style={{ fontFamily: SERIF, fontSize: 16, color: T.inkSoft, lineHeight: 1.5, margin: "0 0 12px" }}>{s.line}</p>
+              <div style={{ marginTop: "auto" }}>
+                <button onClick={() => onJump(s.tab)} style={{ display: "inline-flex", alignItems: "center", gap: 7, background: s.accent, color: T.paper, border: "none", borderRadius: 12, padding: "11px 16px", fontFamily: UI, fontSize: 13, fontWeight: 700, cursor: "pointer" }}>
+                  {s.cta} <ArrowRight size={15} />
+                </button>
+              </div>
+            </article>
+          ))}
+        </CardStack>
+      </div>
     </div>
   );
 }
