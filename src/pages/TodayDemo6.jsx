@@ -40,7 +40,7 @@ import {
   PenLine, Salad, Users, Stethoscope, Sparkles, BookOpen, Feather, Headphones, Star, CalendarDays,
   Activity, Sprout, TrendingUp, Leaf, Moon, Footprints, Droplet, Coffee, Check, Plus, ChevronRight,
   ChevronLeft, Sun, Sunrise, Sunset, X, Send, Minus, Search, Mic, Camera, ScanLine, Clock,
-  CalendarHeart, RefreshCw, Play, Pause, Grid2x2,
+  CalendarHeart, RefreshCw, Play, Pause,
 } from "lucide-react";
 
 const PEONY = FORM_LIST.find((f) => f.key === "peony") || { key: "peony", fern: false };
@@ -580,15 +580,25 @@ export default function TodayDemo6() {
   const sLast = CARDS.length - 1;
   const sGoTo = (i) => { const idx = Math.max(0, Math.min(sLast, i)); setSActive(idx); sTrackRef.current?.scrollTo({ left: idx * (CARD_W + GAP), behavior: "smooth" }); };
 
-  // central jump-to destinations (the canonical switcher) — page areas + the section slider.
-  const JUMP_AREAS = [
-    { id: "t-day", Icon: Feather, label: "Your day", sub: "in a few words" },
-    { id: "t-yourday", Icon: Check, label: "Your day", sub: "gentle checklist" },
-    { id: "t-cycle", Icon: Stethoscope, label: "Cycle", sub: "& symptoms" },
-    { id: "t-sections", Icon: Grid2x2, label: "Across your day", sub: "every section" },
-    { id: "t-noticed", Icon: Sparkles, label: "A few things", sub: "I noticed" },
+  // central jump-to destinations — the SAME app sections as the per-section slider (each entry
+  // activates its real card in the slider), bookended by the two page areas. Built from CARDS so it
+  // can never drift out of sync. Each section sub is a short, real descriptor.
+  const JUMP_SUB = { health: "cycle & symptoms", nutrition: "today's intake", planner: "today's plan", community: "the room", journal: "leave a line", lifestyle: "reads & listens", programs: "tonight's practice", pulse: "your patterns", garden: "your companion" };
+  const JUMP_ITEMS = [
+    { kind: "top", Icon: Sun, label: "Top", sub: "your day at a glance", accent: T.gold },
+    { kind: "area", id: "t-yourday", Icon: Check, label: "Your day", sub: "today's checklist", accent: T.sage },
+    ...CARDS.map((c, i) => ({ kind: "section", index: i, Icon: c.Icon, label: c.section, sub: JUMP_SUB[c.key] || "open this section", accent: c.accent })),
+    { kind: "area", id: "t-noticed", Icon: Sparkles, label: "Noticed", sub: "a few things", accent: T.crimson },
   ];
-  const jumpTo = (id) => { setJumpOpen(false); try { document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" }); } catch { /* ignore */ } };
+  // jump = land on the real target: top → page top; area → its anchor; section → scroll to the slider
+  // AND drive the slider to that card (so the section is actually shown, not just scrolled near).
+  const onJump = (it) => {
+    setJumpOpen(false);
+    if (it.kind === "top") { try { window.scrollTo({ top: 0, behavior: "smooth" }); } catch { window.scrollTo(0, 0); } return; }
+    if (it.kind === "area") { try { document.getElementById(it.id)?.scrollIntoView({ behavior: "smooth", block: "start" }); } catch { /* ignore */ } return; }
+    try { document.getElementById("t-sections")?.scrollIntoView({ behavior: "smooth", block: "start" }); } catch { /* ignore */ }
+    setTimeout(() => sGoTo(it.index), 360);   // let the vertical scroll land, then animate the slider to the card
+  };
 
   // SMART SUGGESTIONS — driven from REAL signals (nutrition gap · journal recency · today's
   // symptom · real book pick · real weekly pattern · real echo · real horoscope · cycle phase).
@@ -848,7 +858,7 @@ export default function TodayDemo6() {
       </div>
 
       {sheet && <ActionSheet sheetKey={sheet} uid={uid} cycle={cycle} onClose={() => setSheet(null)} onSaved={feedGarden} />}
-      {jumpOpen && <JumpSheet areas={JUMP_AREAS} onPick={jumpTo} onClose={() => setJumpOpen(false)} />}
+      {jumpOpen && <JumpSheet items={JUMP_ITEMS} onPick={onJump} onClose={() => setJumpOpen(false)} />}
       {calOpen && <CycleCalendar profile={profile} cycle={cycle} hasCycle={hasCycle} symptoms={symptoms} onClose={() => setCalOpen(false)} />}
       {ceremony && <FirstOpenCeremony cForm={cForm} cAccent={cAccent} cName={cName} growStage={growStage} onSkip={() => setCeremony(false)} />}
     </div>
@@ -1195,8 +1205,9 @@ function DoneRow({ accent, label }) {
   );
 }
 
-// ── the central JUMP-TO switcher — the canonical bottom-sheet pattern (JournalHubSheet) for Today ────
-function JumpSheet({ areas, onPick, onClose }) {
+// ── the central JUMP-TO switcher — the canonical bottom-sheet (JournalHubSheet pattern). Lists the
+//    SAME app sections as the per-section slider (each lands on its real card) + the two page areas. ──
+function JumpSheet({ items, onPick, onClose }) {
   useScrollLock(true);
   useEffect(() => { const k = (e) => { if (e.key === "Escape") onClose(); }; window.addEventListener("keydown", k); return () => window.removeEventListener("keydown", k); }, [onClose]);
   return (
@@ -1209,12 +1220,13 @@ function JumpSheet({ areas, onPick, onClose }) {
           <button onClick={onClose} aria-label="Close" style={{ background: "transparent", border: "none", cursor: "pointer", color: T.muted, padding: 4, display: "inline-flex" }}><X size={18} /></button>
         </div>
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
-          {areas.map((ar) => (
-            <button key={ar.id} onClick={() => onPick(ar.id)} style={{ display: "flex", alignItems: "center", gap: 11, textAlign: "left", background: T.paper, border: `1px solid ${T.paperDeep}`, borderRadius: 14, padding: "12px 13px", cursor: "pointer" }}>
-              {ICON_DISC(ar.Icon, T.gold)}
+          {items.map((it, i) => (
+            <button key={it.kind === "section" ? `s-${it.index}` : (it.id || `k-${i}`)} onClick={() => onPick(it)}
+              style={{ display: "flex", alignItems: "center", gap: 11, textAlign: "left", background: T.paper, border: `1px solid ${T.paperDeep}`, borderRadius: 14, padding: "12px 13px", cursor: "pointer" }}>
+              {ICON_DISC(it.Icon, it.accent || T.gold)}
               <span style={{ minWidth: 0 }}>
-                <span style={{ display: "block", fontFamily: SERIF, fontSize: 16, fontWeight: 600, color: T.ink, lineHeight: 1.2 }}>{ar.label}</span>
-                <span style={{ display: "block", fontFamily: UI, fontSize: 12, color: T.muted, marginTop: 1 }}>{ar.sub}</span>
+                <span style={{ display: "block", fontFamily: SERIF, fontSize: 16, fontWeight: 600, color: T.ink, lineHeight: 1.2, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{it.label}</span>
+                <span style={{ display: "block", fontFamily: UI, fontSize: 12, color: T.muted, marginTop: 1, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{it.sub}</span>
               </span>
             </button>
           ))}
