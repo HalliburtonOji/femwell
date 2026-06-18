@@ -141,6 +141,7 @@ import BrandCraftSample from './pages/BrandCraftSample';
 // per-section CardStack + central Jump-to + inline actions + specific deep-links). Live pages untouched.
 import HealthDemo from './pages/HealthDemo';
 import ProfileDemo from './pages/ProfileDemo';
+import DoctorExportDemo from './pages/DoctorExportDemo';
 // NutritionHub = the REAL new Nutrition page (Daily Hub + Hero Card Slider hybrid,
 // wired to real entities, reuses the hardened nutrition components). Lives at
 // /NutritionHub for live-verify; once verified it replaces the "Nutrition" route.
@@ -244,6 +245,7 @@ export const PAGES = {
     "BrandCraftSample": BrandCraftSample,
     "HealthDemo": HealthDemo,
     "ProfileDemo": ProfileDemo,
+    "DoctorExportDemo": DoctorExportDemo,
     "NutritionHub": NutritionHub,
     "JournalRedesign1": JournalRedesign1,
     "CommunityRedesign1": CommunityRedesign1,
