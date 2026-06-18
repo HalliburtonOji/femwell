@@ -3,6 +3,9 @@ import { base44 } from "@/api/base44Client";
 import { createPageUrl } from "@/utils";
 import { ArrowRight, Bell, BookOpen, Check, Clock, Flame, Headphones, Lock, Play, Search, ChevronRight } from "lucide-react";
 import ProgramProgressBar from "../components/programs/ProgramProgressBar";
+// Brand-P2 lush layer (BRAND_IDENTITY §3 heart · §4 botanicals · gold/sage = growth/journeys).
+import { T, Heart as BrandHeart } from "@/components/journal/Editorial";
+import { VineMotifV2, FlowerGlyph, floraKeyframes, cwOf } from "@/components/brand/flora";
 
 const NEEDS = [
   { id: null,          label: "All"         },
@@ -25,10 +28,12 @@ const COLLECTIONS = [
 const TIER_ORDER = { free: 0, plus: 1, pro: 2 };
 
 // Shared FemWell styles
+// Brand-P2 rich-card (§6.1) — gold colourway tint + gold left rim + layered shadow.
 const card = {
-  backgroundColor: "var(--surface)",
+  background: "linear-gradient(165deg, var(--surface) 0%, rgba(168,137,63,0.06) 100%)",
   border: "1px solid var(--border)",
-  boxShadow: "var(--shadow-sm)",
+  borderLeft: "4px solid #A8893F",
+  boxShadow: "0 4px 20px rgba(58,44,26,0.10), 0 1px 4px rgba(58,44,26,0.07)",
 };
 const sLabel = {
   fontSize: "0.6rem", fontWeight: 600, textTransform: "uppercase",
@@ -196,15 +201,30 @@ export default function ProgramsHub() {
   );
 
   return (
-    <div className="min-h-screen pb-28" style={{ backgroundColor: "var(--ivory)" }}>
+    <div className="min-h-screen pb-28" style={{ backgroundColor: "var(--ivory)", position: "relative", isolation: "isolate", overflowX: "clip" }}>
+
+      {/* Brand-P2 botanical page texture — gold/sage vines (growth/journeys), one per */}
+      {/* fold, hairline + low-opacity, clipped + held behind content (zIndex -1).      */}
+      <div aria-hidden="true" style={{ position: "absolute", inset: 0, overflow: "hidden", pointerEvents: "none", zIndex: -1 }}>
+        <style>{floraKeyframes}</style>
+        <div style={{ position: "absolute", top: 320, right: -26 }}><VineMotifV2 color={T.gold} color2={T.sage} opacity={0.1} w={146} /></div>
+        <div style={{ position: "absolute", top: 980, left: -28 }}><VineMotifV2 color={T.sage} color2={T.gold} opacity={0.08} w={138} flip /></div>
+        <div style={{ position: "absolute", top: 1640, right: -24 }}><VineMotifV2 color={T.gold} color2={T.sage} opacity={0.08} w={138} /></div>
+      </div>
 
       {/* ── Header ──────────────────────────────────────────────────────────── */}
-      <div style={{ backgroundColor: "var(--surface)", borderBottom: "1px solid var(--border)" }}>
+      <div style={{ backgroundColor: "var(--surface)", borderBottom: "1px solid var(--border)", position: "relative" }}>
         <div className="mx-auto max-w-6xl px-4 pb-6 pt-10 md:px-6">
           <p style={sLabel} className="mb-1.5">Guided journeys</p>
-          <h1 className="fw-display leading-tight">
-            Programs
-          </h1>
+          {/* Brand-P2: the single carved crimson heart (§3) + a flanking gold
+              sunflower meaning-bloom (radiance/achievement) beside the script title. */}
+          <div style={{ display: "flex", alignItems: "center", gap: 9 }}>
+            <BrandHeart size={15} />
+            <h1 className="fw-display leading-tight" style={{ margin: 0 }}>
+              Programs
+            </h1>
+            <FlowerGlyph variant="sunflower" size={22} color={cwOf("gold").petal} color2={cwOf("gold").tip} accent={cwOf("gold").accent} idx="ph-hdr" />
+          </div>
           <p className="mt-1.5 text-sm md:text-base" style={{ color: "var(--mauve)", }}>
             Multi-day structured journeys. Follow at your own pace, one day at a time.
           </p>
