@@ -395,24 +395,26 @@ export default function TodayDemo6() {
     return () => io.disconnect();
   }, []);
 
-  // run a pending Jump-to AFTER the sheet has closed + its scroll-lock released (see onJump). The
-  // unmounting sheet's lock-restore (scrollTo(0, savedY)) runs as an unmount-destroy before this
-  // effect, so navigating here lands cleanly. rAF lets the restored scroll paint first.
+  // run a pending Jump-to AFTER the sheet has closed (see onJump). The sheet's scroll-lock restore
+  // (window.scrollTo(0, savedY)) fires ONCE at an unpredictable point after unmount and would clobber
+  // a single deferred scroll (proven: a one-shot scroll lost the race). So RE-ASSERT the target across
+  // several frames with INSTANT scrolls — whichever application runs last wins, beating the one restore.
   useEffect(() => {
     if (jumpOpen) return;
     const it = pendingJump.current;
     if (!it) return;
     pendingJump.current = null;
-    requestAnimationFrame(() => {
-      if (it.kind === "top") { try { window.scrollTo({ top: 0, behavior: "smooth" }); } catch { window.scrollTo(0, 0); } return; }
-      if (it.kind === "area") { try { document.getElementById(it.id)?.scrollIntoView({ behavior: "smooth", block: "start" }); } catch { /* ignore */ } return; }
-      try { document.getElementById("t-sections")?.scrollIntoView({ behavior: "smooth", block: "start" }); } catch { /* ignore */ }
-      // drive the slider to that card — set scrollLeft DIRECTLY (instant + reliable; smooth scrollTo
-      // can be dropped on a snap container) which also fires onScroll → the active chip/dot follow.
-      setSActive(it.index);
+    const apply = () => {
+      if (it.kind === "top") { try { window.scrollTo({ top: 0, behavior: "auto" }); } catch { window.scrollTo(0, 0); } return; }
+      if (it.kind === "area") { try { document.getElementById(it.id)?.scrollIntoView({ behavior: "auto", block: "start" }); } catch { /* ignore */ } return; }
+      try { document.getElementById("t-sections")?.scrollIntoView({ behavior: "auto", block: "start" }); } catch { /* ignore */ }
+      setSActive(it.index);                                   // active rail chip + dot
       const tr = sTrackRef.current;
-      if (tr) { const left = it.index * (CARD_W + GAP); try { tr.scrollTo({ left, behavior: "auto" }); } catch { /* ignore */ } tr.scrollLeft = left; }
-    });
+      if (tr) tr.scrollLeft = it.index * (CARD_W + GAP);      // drive the slider to that card
+    };
+    apply();
+    const timers = [50, 130, 250, 420].map((ms) => setTimeout(apply, ms));
+    return () => timers.forEach(clearTimeout);
   }, [jumpOpen]);
 
   // first-open ceremony animation: grow the bloom 0→4, then mark seen + dismiss.
@@ -828,7 +830,7 @@ export default function TodayDemo6() {
           </div>
 
           {/* the single horizontal slider (Journal geometry: CARD_W 365 · GAP 14 · peek) */}
-          <div ref={sTrackRef} className="fw-hrow"
+          <div ref={sTrackRef} id="t-section-track" className="fw-hrow"
             onScroll={(e) => { const i = Math.round(e.currentTarget.scrollLeft / (CARD_W + GAP)); setSActive(Math.max(0, Math.min(sLast, i))); }}
             style={{ display: "flex", gap: GAP, overflowX: "auto", scrollSnapType: "x mandatory", padding: "0 0 4px", WebkitOverflowScrolling: "touch", margin: "0 -2px" }}>
             {CARDS.map((c) => (
