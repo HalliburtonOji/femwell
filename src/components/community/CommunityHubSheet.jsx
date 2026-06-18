@@ -39,7 +39,7 @@ export default function CommunityHubSheet({ open, onClose, onSelect }) {
       <div
         role="dialog" aria-modal="true" aria-label="Community menu"
         onClick={(e) => e.stopPropagation()}
-        style={{ background: T.paperHi, width: "100%", borderRadius: "18px 18px 0 0", padding: "20px 16px 36px", maxHeight: "82vh", overflowY: "auto", overscrollBehavior: "contain", WebkitOverflowScrolling: "touch", paddingBottom: "calc(36px + env(safe-area-inset-bottom, 0))" }}
+        style={{ background: T.paperHi, width: "100%", borderRadius: "18px 18px 0 0", padding: "20px 16px 36px", maxHeight: "82vh", overflowY: "auto", overscrollBehavior: "contain", WebkitOverflowScrolling: "touch", paddingBottom: "calc(96px + env(safe-area-inset-bottom, 0))" }}
       >
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20, paddingBottom: 14, borderBottom: `1px solid ${T.paperDeep}` }}>
           <div>

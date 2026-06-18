@@ -75,7 +75,10 @@ export function HubSheet({ title, eyebrow, onClose, children }) {
             scroll bleeding to the locked page behind; -webkit-overflow-scrolling for iOS. */}
         <div style={{
           flex: 1, minHeight: 0, overflowY: "auto", overscrollBehavior: "contain",
-          WebkitOverflowScrolling: "touch", padding: "16px 16px 28px",
+          WebkitOverflowScrolling: "touch",
+          // Brand-P2: clear the fixed bottom nav (~72px) + safe-area so the last action
+          // in a surface sheet is never hidden behind / clipped by the nav bar.
+          padding: "16px 16px calc(96px + env(safe-area-inset-bottom, 0px))",
         }}>
           {children}
         </div>

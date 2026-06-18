@@ -34,7 +34,7 @@ const PHASE_SUGGESTIONS = {
     { text: "Your skin is most resilient now. Introduce actives safely.", action: "Skin & Hair guide", route: "/SkinHair", color: "#7A9E8E", bg: "#EBF2EF" },
   ],
   ovulatory: [
-    { text: "Peak oestrogen — you may feel more social and confident. Lean in.", action: "Read: Ovulation & confidence", route: "/Lifestyle?tab=femwell", color: "#B89E6A", bg: "#F5F0E6" },
+    { text: "Peak oestrogen — you may feel more social and confident. Lean in.", action: "Read: Ovulation & confidence", route: "/Lifestyle?tab=read&filter=articles", color: "#B89E6A", bg: "#F5F0E6" },
     { text: "Testosterone spike may cause oiliness. Adjust your skincare now.", action: "Skin tracker", route: "/SkinHair", color: "#B89E6A", bg: "#F5F0E6" },
   ],
   luteal: [

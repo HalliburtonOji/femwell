@@ -57,12 +57,12 @@ const SELF_CARE_BY_PHASE = {
   follicular: {
     sessions: [{ title: "Energising HIIT", type: "WORKOUT", route: "/Explore?type=WORKOUT" }, { title: "Breathwork Focus", type: "BREATHWORK", route: "/Explore?type=BREATHWORK" }],
     nutrition: ["Fermented foods for oestrogen metabolism", "Cruciferous vegetables: broccoli, cabbage", "High-protein breakfasts"],
-    content: [{ label: "This week's books", route: "/Lifestyle?tab=books" }],
+    content: [{ label: "This week's books", route: "/Lifestyle?tab=read&filter=books" }],
   },
   ovulatory: {
     sessions: [{ title: "Peak Performance Workout", type: "WORKOUT", route: "/Explore?type=WORKOUT" }, { title: "5-Minute Grounding", type: "BREATHWORK", route: "/Explore?type=BREATHWORK" }],
     nutrition: ["Antioxidant-rich: berries, colourful veg", "Zinc-rich foods: pumpkin seeds, chickpeas", "Stay well-hydrated"],
-    content: [{ label: "Explore trending reads", route: "/Lifestyle?tab=trends" }],
+    content: [{ label: "Explore trending reads", route: "/Lifestyle?tab=read" }],
   },
   luteal: {
     sessions: [{ title: "Restorative Yoga", type: "WORKOUT", route: "/Explore?type=WORKOUT" }, { title: "Evening Wind-Down", type: "MEDITATION", route: "/Explore?type=MEDITATION" }],

@@ -131,6 +131,9 @@ import TodayDemo3 from './pages/TodayDemo3';
 import TodayDemo4 from './pages/TodayDemo4';
 import TodayDemo5 from './pages/TodayDemo5';
 import TodayDemo6 from './pages/TodayDemo6';
+// Today — Option 2 (single horizontal slider; one smart card per app section; daily-rotating
+// suggestions + inline actions). PREVIEW route only, reached via FoundersOS → Previews.
+import TodayOption2 from './pages/TodayOption2';
 // Brand craft sample (Phase-1 brand-identity craft direction — flat vs upgraded bloom,
 // botanical motif, heart in context, live perf). Self-contained preview. Linked from Previews.
 import BrandCraftSample from './pages/BrandCraftSample';
@@ -233,6 +236,7 @@ export const PAGES = {
     "TodayDemo4": TodayDemo4,
     "TodayDemo5": TodayDemo5,
     "TodayDemo6": TodayDemo6,
+    "TodayOption2": TodayOption2,
     "BrandCraftSample": BrandCraftSample,
     "NutritionHub": NutritionHub,
     "JournalRedesign1": JournalRedesign1,

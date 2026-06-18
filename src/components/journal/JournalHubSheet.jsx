@@ -75,7 +75,7 @@ export default function JournalHubSheet({ open, onClose, onSelect, threads = [] 
           overflowY: "auto",
           overscrollBehavior: "contain",
           WebkitOverflowScrolling: "touch",
-          paddingBottom: "calc(36px + env(safe-area-inset-bottom, 0))",
+          paddingBottom: "calc(96px + env(safe-area-inset-bottom, 0))",
         }}
       >
         {/* Header */}

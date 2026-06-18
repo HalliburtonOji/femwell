@@ -502,7 +502,7 @@ export default function Pulse() {
             <p style={{ fontSize: "14px", color: "var(--plum)", lineHeight: 1.6, marginBottom: "14px" }}>{currentWeeklyItem.ai_suggestion}</p>
             <div className="flex flex-wrap gap-2">
               {[
-                { label: "Find a book",      href: createPageUrl("Lifestyle") + "?tab=books" },
+                { label: "Find a book",      href: createPageUrl("Lifestyle") + "?tab=read&filter=books" },
                 { label: "Browse lifestyle", href: createPageUrl("Lifestyle") },
                 { label: "Log today",        href: createPageUrl("Today") },
               ].map(chip => (
