@@ -632,8 +632,8 @@ export default function NutritionHub() {
                 <ChevronLeft size={16} />
               </button>
               <div style={{ textAlign: "center", minWidth: 74 }}>
-                <div style={{ fontFamily: UI, fontSize: 11, fontWeight: 700, color: T.ink }}>{isToday ? "Today" : format(selectedDate, "EEE")}</div>
-                <div style={{ fontFamily: UI, fontSize: 9.5, color: T.muted }}>{format(selectedDate, "d MMM")}</div>
+                <div style={{ fontFamily: UI, fontSize: 12, fontWeight: 700, color: T.ink }}>{isToday ? "Today" : format(selectedDate, "EEE")}</div>
+                <div style={{ fontFamily: UI, fontSize: 12, color: T.muted }}>{format(selectedDate, "d MMM")}</div>
               </div>
               <button onClick={() => changeDay(1)} disabled={isToday} aria-label="Next day"
                 style={{ width: 26, height: 26, borderRadius: 9, border: "none", background: "transparent", color: T.muted, cursor: isToday ? "default" : "pointer", opacity: isToday ? 0.3 : 1, display: "grid", placeItems: "center" }}>
@@ -665,7 +665,7 @@ export default function NutritionHub() {
               <div style={{ position: "absolute", inset: 0, display: "grid", placeItems: "center", textAlign: "center" }}>
                 <div>
                   <Script size={44} carve>today</Script>
-                  <div style={{ fontFamily: UI, fontSize: 10, letterSpacing: 0.8, color: T.muted, marginTop: -4 }}>
+                  <div style={{ fontFamily: UI, fontSize: 12, letterSpacing: 0.8, color: T.muted, marginTop: -4 }}>
                     {summary.kcal} of {calorieTarget} kcal
                   </div>
                   <div style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 13, color: T.gold, marginTop: 1 }}>
@@ -677,7 +677,7 @@ export default function NutritionHub() {
 
             {/* gentle basis line — only when the energy guide is DERIVED from real body data */}
             {targets.derived && (
-              <div style={{ fontFamily: UI, fontSize: 9.5, letterSpacing: 0.4, color: T.muted, textAlign: "center", marginTop: 8, maxWidth: 280 }}>
+              <div style={{ fontFamily: UI, fontSize: 12, letterSpacing: 0.4, color: T.muted, textAlign: "center", marginTop: 8, maxWidth: 280 }}>
                 {targets.basis} — a guide, never a cap
               </div>
             )}
@@ -691,9 +691,9 @@ export default function NutritionHub() {
               ].map((m) => (
                 <div key={m.label} style={{ textAlign: "center", minWidth: 78 }}>
                   <div style={{ fontFamily: SERIF, fontSize: 18, color: T.ink, lineHeight: 1 }}>
-                    {m.had}<span style={{ fontSize: 11, color: T.muted }}>/{m.guide}{m.unit}</span>
+                    {m.had}<span style={{ fontSize: 12, color: T.muted }}>/{m.guide}{m.unit}</span>
                   </div>
-                  <div style={{ fontFamily: UI, fontSize: 9, letterSpacing: 0.8, color: T.muted, textTransform: "uppercase", margin: "3px 0 5px" }}>{m.label}</div>
+                  <div style={{ fontFamily: UI, fontSize: 12, letterSpacing: 0.8, color: T.muted, textTransform: "uppercase", margin: "3px 0 5px" }}>{m.label}</div>
                   <SoftBar value={m.had} guide={m.guide} color={T.sage} />
                 </div>
               ))}
@@ -706,7 +706,7 @@ export default function NutritionHub() {
               <span style={{ width: 24, height: 24, borderRadius: 999, background: T.sage, display: "grid", placeItems: "center" }}>
                 <Leaf size={13} color={T.dusk} />
               </span>
-              <span style={{ fontFamily: UI, fontSize: 9.5, letterSpacing: 1.4, color: T.wax, textTransform: "uppercase", fontWeight: 700 }}>Jess</span>
+              <span style={{ fontFamily: UI, fontSize: 12, letterSpacing: 1.4, color: T.wax, textTransform: "uppercase", fontWeight: 700 }}>Jess</span>
             </div>
             <Hand size={18} color={T.paper}>{jessLine(profile)}</Hand>
           </div>
@@ -735,13 +735,13 @@ export default function NutritionHub() {
                   <Check size={18} />
                 </span>
                 <span style={{ flex: 1, minWidth: 0 }}>
-                  <span style={{ fontFamily: UI, fontSize: 9, letterSpacing: 1, color: T.muted, textTransform: "uppercase", display: "block" }}>Suggested · dinner · tap to log</span>
+                  <span style={{ fontFamily: UI, fontSize: 12, letterSpacing: 1, color: T.muted, textTransform: "uppercase", display: "block" }}>Suggested · dinner · tap to log</span>
                   <span style={{ fontFamily: SERIF, fontSize: 17, color: T.ink, display: "block", lineHeight: 1.15 }}>{dinner.name}</span>
                   <span style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 13, color: T.muted }}>{dinner.why}</span>
                 </span>
               </button>
               <button onClick={() => openSurface(mealPlan?.plan_days?.length || mealPlan?.days?.length ? "mealgen" : "recipes")} aria-label="See in plan"
-                style={{ flexShrink: 0, fontFamily: UI, fontSize: 9.5, fontWeight: 700, letterSpacing: 0.4, textTransform: "uppercase", color: T.muted, background: "transparent", border: "none", cursor: "pointer", padding: "4px 2px" }}>
+                style={{ flexShrink: 0, fontFamily: UI, fontSize: 12, fontWeight: 700, letterSpacing: 0.4, textTransform: "uppercase", color: T.muted, background: "transparent", border: "none", cursor: "pointer", padding: "4px 2px" }}>
                 see plan
               </button>
             </div>
@@ -760,7 +760,7 @@ export default function NutritionHub() {
               <button key={s.id} onClick={() => goTo(i)} style={{
                 flex: "none", background: i === active ? T.ink : "transparent", color: i === active ? T.paper : T.muted,
                 border: `1px solid ${i === active ? T.ink : T.paperDeep}`, borderRadius: 999, padding: "5px 12px",
-                fontFamily: UI, fontSize: 10.5, fontWeight: 700, letterSpacing: 0.5, textTransform: "uppercase", cursor: "pointer",
+                fontFamily: UI, fontSize: 12, fontWeight: 700, letterSpacing: 0.5, textTransform: "uppercase", cursor: "pointer",
               }}>{s.label}</button>
             ))}
           </div>
@@ -840,7 +840,7 @@ export default function NutritionHub() {
           <div style={{ fontFamily: SERIF, fontSize: 13, color: T.muted, fontStyle: "italic" }}>
             Nourishment is a relationship, not a target.
           </div>
-          <div style={{ fontFamily: UI, fontSize: 10, color: T.muted, marginTop: 8, letterSpacing: 0.3 }}>
+          <div style={{ fontFamily: UI, fontSize: 12, color: T.muted, marginTop: 8, letterSpacing: 0.3 }}>
             Gentle guidance for your stage — not medical advice.
           </div>
         </footer>
@@ -932,7 +932,7 @@ function LogCard({ surface, recents, onLog, onReLog }) {
               border: `1px solid ${T.paperDeep}`, borderRadius: 12, cursor: "pointer",
             }}>
               <Icon size={16} />
-              <span style={{ fontFamily: UI, fontSize: 9.5, fontWeight: 700, letterSpacing: 0.3, textAlign: "center" }}>{mth.label}</span>
+              <span style={{ fontFamily: UI, fontSize: 12, fontWeight: 700, letterSpacing: 0.3, textAlign: "center" }}>{mth.label}</span>
             </button>
           );
         })}
@@ -951,7 +951,7 @@ function LogCard({ surface, recents, onLog, onReLog }) {
                 }}>
                   <Plus size={12} color={T.crimson} />
                   <span style={{ fontFamily: SERIF, fontSize: 13, color: T.ink }}>{r.name}</span>
-                  {r.kcal ? <span style={{ fontFamily: UI, fontSize: 9.5, color: T.muted }}>{r.kcal} kcal</span> : null}
+                  {r.kcal ? <span style={{ fontFamily: UI, fontSize: 12, color: T.muted }}>{r.kcal} kcal</span> : null}
                 </button>
               ))}
             </div>
@@ -998,7 +998,7 @@ function TodayCard({ summary, dayMeals, recents, calorieTarget, hydrationTarget,
             <button key={ml} onClick={() => onWater(ml)} style={{
               flex: 1, display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 6,
               background: T.wax, border: `1px solid ${T.paperDeep}`, borderRadius: 12, padding: "9px 10px",
-              fontFamily: UI, fontSize: 11, fontWeight: 700, letterSpacing: 0.3, color: T.ink, cursor: "pointer",
+              fontFamily: UI, fontSize: 12, fontWeight: 700, letterSpacing: 0.3, color: T.ink, cursor: "pointer",
             }}>
               <Plus size={13} color={T.sage} /> {ml} ml water
             </button>
@@ -1015,9 +1015,9 @@ function TodayCard({ summary, dayMeals, recents, calorieTarget, hydrationTarget,
         ) : (
           dayMeals.slice(0, 4).map((m) => (
             <div key={m.id} style={{ display: "flex", gap: 10, alignItems: "baseline" }}>
-              <span style={{ fontFamily: UI, fontSize: 9, color: T.muted, fontWeight: 700, width: 52, textTransform: "uppercase", flexShrink: 0 }}>{m.slot}</span>
+              <span style={{ fontFamily: UI, fontSize: 12, color: T.muted, fontWeight: 700, width: 52, textTransform: "uppercase", flexShrink: 0 }}>{m.slot}</span>
               <span style={{ flex: 1, fontFamily: SERIF, fontSize: 13.5, color: T.ink, lineHeight: 1.25, minWidth: 0 }}>{m.title}</span>
-              {m.kcal ? <span style={{ fontFamily: UI, fontSize: 10, color: T.muted, flexShrink: 0 }}>{m.kcal} kcal</span> : null}
+              {m.kcal ? <span style={{ fontFamily: UI, fontSize: 12, color: T.muted, flexShrink: 0 }}>{m.kcal} kcal</span> : null}
               {onRemove && isToday ? (
                 <button
                   onClick={() => onRemove(m)}
@@ -1051,7 +1051,7 @@ function TodayCard({ summary, dayMeals, recents, calorieTarget, hydrationTarget,
             </div>
           </>
         ) : (
-          <div style={{ fontFamily: UI, fontSize: 11, color: T.muted }}>
+          <div style={{ fontFamily: UI, fontSize: 12, color: T.muted }}>
             Log a meal and your recents will appear here for one-tap re-adding.
           </div>
         )}
@@ -1085,7 +1085,7 @@ function PlanCard({ nutritionProfile, profile, targets, calorieTarget }) {
         <span style={{ fontFamily: SERIF, fontSize: 30, color: T.ink, fontWeight: 600 }}>
           {d.energy_min && d.energy_max ? `${d.energy_min}–${d.energy_max}` : calorieTarget}
         </span>
-        <span style={{ fontFamily: UI, fontSize: 11, color: T.muted, letterSpacing: 0.5 }}>kcal · gentle energy guide</span>
+        <span style={{ fontFamily: UI, fontSize: 12, color: T.muted, letterSpacing: 0.5 }}>kcal · gentle energy guide</span>
       </div>
 
       {planRows.length > 0 ? (
@@ -1094,7 +1094,7 @@ function PlanCard({ nutritionProfile, profile, targets, calorieTarget }) {
             <div key={t.label}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
                 <span style={{ fontFamily: SERIF, fontSize: 15, color: T.ink, fontWeight: 600 }}>{t.label}</span>
-                <span style={{ fontFamily: UI, fontSize: 11, color: T.gold, fontWeight: 700 }}>{t.guide}</span>
+                <span style={{ fontFamily: UI, fontSize: 12, color: T.gold, fontWeight: 700 }}>{t.guide}</span>
               </div>
               <div style={{ fontFamily: SERIF, fontSize: 12.5, color: T.muted, fontStyle: "italic", marginTop: 2 }}>{t.why}</div>
             </div>
@@ -1139,7 +1139,7 @@ function RecipesCard({ savedRecipes, onReLog }) {
                 {/* direct-on-card: log this recipe as today's meal in one tap (no sheet) */}
                 {onReLog ? (
                   <button onClick={() => onReLog(title)} aria-label={`Log ${title}`}
-                    style={{ flexShrink: 0, display: "inline-flex", alignItems: "center", gap: 4, background: T.wax, border: `1px solid ${T.paperDeep}`, borderRadius: 999, padding: "5px 10px", cursor: "pointer", fontFamily: UI, fontSize: 9.5, fontWeight: 700, letterSpacing: 0.3, color: T.ink, textTransform: "uppercase" }}>
+                    style={{ flexShrink: 0, display: "inline-flex", alignItems: "center", gap: 4, background: T.wax, border: `1px solid ${T.paperDeep}`, borderRadius: 999, padding: "5px 10px", cursor: "pointer", fontFamily: UI, fontSize: 12, fontWeight: 700, letterSpacing: 0.3, color: T.ink, textTransform: "uppercase" }}>
                     <Plus size={11} color={T.crimson} /> Log
                   </button>
                 ) : null}
@@ -1147,7 +1147,7 @@ function RecipesCard({ savedRecipes, onReLog }) {
             );
           })}
           {n > 5 ? (
-            <div style={{ fontFamily: UI, fontSize: 10.5, color: T.muted, marginTop: 2 }}>
+            <div style={{ fontFamily: UI, fontSize: 12, color: T.muted, marginTop: 2 }}>
               + {n - 5} more in Recipes
             </div>
           ) : null}
@@ -1206,7 +1206,7 @@ function MealgenCard({ mealPlan, onReLog }) {
         <div style={{ display: "grid", gridTemplateColumns: "30px 1fr", gap: "0 8px" }}>
           {rows.slice(0, 7).map((d, i) => (
             <div key={i} style={{ display: "contents" }}>
-              <div style={{ fontFamily: UI, fontSize: 10, fontWeight: 700, color: T.gold, letterSpacing: 0.5, textTransform: "uppercase", paddingTop: 9, borderTop: `1px solid ${T.paperDeep}` }}>
+              <div style={{ fontFamily: UI, fontSize: 12, fontWeight: 700, color: T.gold, letterSpacing: 0.5, textTransform: "uppercase", paddingTop: 9, borderTop: `1px solid ${T.paperDeep}` }}>
                 {d.label}
               </div>
               <div style={{ paddingTop: 9, paddingBottom: 9, borderTop: `1px solid ${T.paperDeep}` }}>
@@ -1214,7 +1214,7 @@ function MealgenCard({ mealPlan, onReLog }) {
                   const isLocked = name && lockedSet.has(`${d.dayIdx}_${slotKey}`);
                   return (
                   <div key={slot} style={{ display: "flex", gap: 7, alignItems: "baseline", marginBottom: 3 }}>
-                    <span style={{ fontFamily: UI, fontSize: 9, fontWeight: 700, color: T.muted, width: 12, flexShrink: 0 }}>{slot}</span>
+                    <span style={{ fontFamily: UI, fontSize: 12, fontWeight: 700, color: T.muted, width: 12, flexShrink: 0 }}>{slot}</span>
                     <span style={{ flex: 1, fontFamily: SERIF, fontSize: 12.5, color: name ? T.ink : T.muted, lineHeight: 1.2, minWidth: 0, display: "inline-flex", alignItems: "center", gap: 4 }}>
                       {isLocked ? <Lock size={9} color={T.gold} style={{ flexShrink: 0 }} /> : null}
                       {name || "—"}
@@ -1222,7 +1222,7 @@ function MealgenCard({ mealPlan, onReLog }) {
                     {/* direct-on-card: log today's planned meal in one tap (no sheet) */}
                     {name && d.dayIdx === todayIdx && onReLog ? (
                       <button onClick={() => onReLog(name, slotKey)} aria-label={`Log ${name}`}
-                        style={{ flexShrink: 0, display: "inline-flex", alignItems: "center", gap: 3, background: "transparent", border: "none", cursor: "pointer", fontFamily: UI, fontSize: 9, fontWeight: 700, letterSpacing: 0.3, color: T.crimson, textTransform: "uppercase", padding: 0 }}>
+                        style={{ flexShrink: 0, display: "inline-flex", alignItems: "center", gap: 3, background: "transparent", border: "none", cursor: "pointer", fontFamily: UI, fontSize: 12, fontWeight: 700, letterSpacing: 0.3, color: T.crimson, textTransform: "uppercase", padding: 0 }}>
                         <Plus size={11} /> Log
                       </button>
                     ) : null}
@@ -1270,11 +1270,11 @@ function ShoppingCard({ shopItems, onToggleShop }) {
                 color: it.is_checked ? T.muted : T.ink, textDecoration: it.is_checked ? "line-through" : "none" }}>
                 {it.ingredient_name}
               </span>
-              {it.category ? <span style={{ fontFamily: UI, fontSize: 9, color: T.muted, textTransform: "uppercase", letterSpacing: 0.4, flexShrink: 0 }}>{it.category}</span> : null}
+              {it.category ? <span style={{ fontFamily: UI, fontSize: 12, color: T.muted, textTransform: "uppercase", letterSpacing: 0.4, flexShrink: 0 }}>{it.category}</span> : null}
             </button>
           ))}
           {items.length > 9 ? (
-            <div style={{ fontFamily: UI, fontSize: 10.5, color: T.muted, marginTop: 4 }}>+ {items.length - 9} more in the full list</div>
+            <div style={{ fontFamily: UI, fontSize: 12, color: T.muted, marginTop: 4 }}>+ {items.length - 9} more in the full list</div>
           ) : null}
         </div>
       ) : (
@@ -1401,7 +1401,7 @@ function InsightsCard({ jess, profile, user }) {
         {nudges.map((m) => (
           <div key={m.key} style={{ borderLeft: `2px solid ${T.paperDeep}`, paddingLeft: 11 }}>
             <div style={{ fontFamily: SERIF, fontSize: 14.5, color: T.ink, fontWeight: 600 }}>{m.label}</div>
-            <div style={{ fontFamily: UI, fontSize: 10.5, color: T.muted, marginTop: 2 }}>{m.foods}</div>
+            <div style={{ fontFamily: UI, fontSize: 12, color: T.muted, marginTop: 2 }}>{m.foods}</div>
             <div style={{ fontFamily: SERIF, fontSize: 12.5, color: T.muted, fontStyle: "italic", marginTop: 1 }}>{m.why}</div>
           </div>
         ))}
@@ -1414,8 +1414,8 @@ function InsightsCard({ jess, profile, user }) {
 function Glance({ label, value, v, guide, color }) {
   return (
     <div>
-      <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 5, fontFamily: UI, fontSize: 11, color: T.muted }}>
-        <span style={{ fontWeight: 700, letterSpacing: 0.4, textTransform: "uppercase", fontSize: 9.5 }}>{label}</span>
+      <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 5, fontFamily: UI, fontSize: 12, color: T.muted }}>
+        <span style={{ fontWeight: 700, letterSpacing: 0.4, textTransform: "uppercase", fontSize: 12 }}>{label}</span>
         <span>{value}</span>
       </div>
       <SoftBar value={v} guide={guide} color={color} />

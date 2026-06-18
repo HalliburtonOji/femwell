@@ -77,7 +77,7 @@ const JOY_LINES = [
 
 // ── shared styles ─────────────────────────────────────────────────────────────
 const sLabel = {
-  fontFamily: UI, fontSize: 9.5, fontWeight: 700, letterSpacing: 1.4,
+  fontFamily: UI, fontSize: 12, fontWeight: 700, letterSpacing: 1.4,
   textTransform: "uppercase", color: T.muted,
 };
 const cardShell = {
@@ -232,7 +232,7 @@ function StepTimer() {
           <button key={p} onClick={() => { setSeconds(p); setRunning(false); }}
             style={{
               padding: "5px 11px", borderRadius: 999, background: T.paper, border: `1px solid ${T.paperDeep}`,
-              fontFamily: UI, fontSize: 11, fontWeight: 700, color: T.ink, cursor: "pointer",
+              fontFamily: UI, fontSize: 12, fontWeight: 700, color: T.ink, cursor: "pointer",
             }}>
             +{p / 60}m
           </button>
@@ -243,7 +243,7 @@ function StepTimer() {
           style={{
             flex: 1, display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 6,
             padding: "9px 0", borderRadius: 10, background: T.ink, color: T.paper, border: "none",
-            fontFamily: UI, fontSize: 11, fontWeight: 700, letterSpacing: 0.5, textTransform: "uppercase",
+            fontFamily: UI, fontSize: 12, fontWeight: 700, letterSpacing: 0.5, textTransform: "uppercase",
             cursor: seconds === 0 ? "default" : "pointer", opacity: seconds === 0 ? 0.4 : 1,
           }}>
           {running ? <><Pause size={13} /> Pause</> : <><Play size={13} /> Start</>}
@@ -283,7 +283,7 @@ function GuidedCook({ recipe, onExit }) {
       {/* header */}
       <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 16 }}>
         <button onClick={onExit} aria-label="Exit guided cook"
-          style={{ background: "none", border: "none", color: T.muted, cursor: "pointer", display: "inline-flex", alignItems: "center", gap: 4, padding: 0, fontFamily: UI, fontSize: 11, fontWeight: 700, letterSpacing: 0.5, textTransform: "uppercase" }}>
+          style={{ background: "none", border: "none", color: T.muted, cursor: "pointer", display: "inline-flex", alignItems: "center", gap: 4, padding: 0, fontFamily: UI, fontSize: 12, fontWeight: 700, letterSpacing: 0.5, textTransform: "uppercase" }}>
           <ArrowLeft size={14} /> Recipe
         </button>
         <span style={{ marginLeft: "auto", ...sLabel }}>Step {i + 1} of {total}</span>
@@ -378,7 +378,7 @@ function RecipeObject({
         <button onClick={onBack} style={{
           background: "none", border: "none", color: T.muted, cursor: "pointer",
           display: "inline-flex", alignItems: "center", gap: 5, padding: 0, marginBottom: 12,
-          fontFamily: UI, fontSize: 11, fontWeight: 700, letterSpacing: 0.5, textTransform: "uppercase",
+          fontFamily: UI, fontSize: 12, fontWeight: 700, letterSpacing: 0.5, textTransform: "uppercase",
         }}>
           <ArrowLeft size={14} /> New search
         </button>
@@ -624,7 +624,7 @@ function Chip({ icon: Icon, text }) {
     <span style={{
       display: "inline-flex", alignItems: "center", gap: 6, padding: "6px 11px",
       borderRadius: 999, background: T.paper, border: `1px solid ${T.paperDeep}`,
-      fontFamily: UI, fontSize: 11, fontWeight: 700, color: T.ink, letterSpacing: 0.3,
+      fontFamily: UI, fontSize: 12, fontWeight: 700, color: T.ink, letterSpacing: 0.3,
     }}>
       <Icon size={13} color={T.muted} /> {text}
     </span>
@@ -639,7 +639,7 @@ const planChip = (on) => ({
   padding: "6px 12px", borderRadius: 999, cursor: "pointer",
   background: on ? T.ink : T.paper, color: on ? T.paper : T.ink,
   border: `1px solid ${on ? T.ink : T.paperDeep}`,
-  fontFamily: UI, fontSize: 11, fontWeight: 700, letterSpacing: 0.3,
+  fontFamily: UI, fontSize: 12, fontWeight: 700, letterSpacing: 0.3,
 });
 const ghostBtn = {
   marginTop: 14, background: T.paper, border: `1px solid ${T.paperDeep}`, borderRadius: 10,
@@ -894,11 +894,11 @@ export default function UnifiedRecipesTab({ user, profile, nutritionProfile }) {
                     </span>
                     {entry.rating > 0 && <Stars value={entry.rating} size={13} />}
                   </div>
-                  <div style={{ display: "flex", gap: 12, marginTop: 7, fontFamily: UI, fontSize: 11, color: T.muted }}>
+                  <div style={{ display: "flex", gap: 12, marginTop: 7, fontFamily: UI, fontSize: 12, color: T.muted }}>
                     {r.cuisine_type && <span style={{ display: "inline-flex", alignItems: "center", gap: 4 }}><BookOpen size={12} /> {r.cuisine_type}</span>}
                     {mins > 0 && <span style={{ display: "inline-flex", alignItems: "center", gap: 4 }}><Clock size={12} /> {mins} min</span>}
                     {r.servings && <span style={{ display: "inline-flex", alignItems: "center", gap: 4 }}><Users size={12} /> {r.servings}</span>}
-                    <span style={{ marginLeft: "auto", display: "inline-flex", alignItems: "center", gap: 4, color: T.ink, fontWeight: 700, letterSpacing: 0.4, textTransform: "uppercase", fontSize: 10 }}>
+                    <span style={{ marginLeft: "auto", display: "inline-flex", alignItems: "center", gap: 4, color: T.ink, fontWeight: 700, letterSpacing: 0.4, textTransform: "uppercase", fontSize: 12 }}>
                       <ChefHat size={12} /> Cook
                     </span>
                   </div>
@@ -935,7 +935,7 @@ export default function UnifiedRecipesTab({ user, profile, nutritionProfile }) {
           <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginTop: 8 }}>
             {QUICK_INGREDIENTS.filter((q) => !ingredients.includes(q)).slice(0, 8).map((q) => (
               <button key={q} onClick={() => setIngredients([...ingredients, q])}
-                style={{ fontFamily: UI, fontSize: 11, padding: "4px 9px", borderRadius: 999, background: T.paper, border: `1px solid ${T.paperDeep}`, color: T.muted, cursor: "pointer" }}>
+                style={{ fontFamily: UI, fontSize: 12, padding: "4px 9px", borderRadius: 999, background: T.paper, border: `1px solid ${T.paperDeep}`, color: T.muted, cursor: "pointer" }}>
                 + {q}
               </button>
             ))}
@@ -999,7 +999,7 @@ function Pill({ active, onClick, children, accent = T.ink }) {
       padding: "6px 12px", borderRadius: 999,
       background: active ? accent : T.paper, color: active ? T.paper : T.muted,
       border: `1px solid ${active ? accent : T.paperDeep}`,
-      fontFamily: UI, fontSize: 11.5, fontWeight: 700, letterSpacing: 0.3, cursor: "pointer",
+      fontFamily: UI, fontSize: 12, fontWeight: 700, letterSpacing: 0.3, cursor: "pointer",
     }}>
       {children}
     </button>

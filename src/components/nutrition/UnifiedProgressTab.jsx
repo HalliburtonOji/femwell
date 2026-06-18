@@ -763,8 +763,8 @@ export default function UnifiedProgressTab({ user, profile, nutritionProfile, on
             ].map(({ label, value, unit }) => (
               <div key={label} className="text-center rounded-xl" style={{ backgroundColor: "var(--ivory)", padding: "10px 4px" }}>
                 <p className="font-bold" style={{ color: "var(--plum)", fontSize: 13 }}>{value}</p>
-                <p style={{ fontSize: 9, color: "var(--mauve)", marginTop: 1, textTransform: "uppercase", letterSpacing: "0.06em" }}>{label}</p>
-                <p style={{ fontSize: 9, color: "var(--mauve)", opacity: 0.7 }}>{unit}</p>
+                <p style={{ fontSize: 12, color: "var(--mauve)", marginTop: 1, textTransform: "uppercase", letterSpacing: "0.06em" }}>{label}</p>
+                <p style={{ fontSize: 12, color: "var(--mauve)", opacity: 0.7 }}>{unit}</p>
               </div>
             ))}
           </div>

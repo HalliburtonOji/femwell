@@ -376,7 +376,7 @@ function SavedNoteCard({ insight, onFeedback }) {
               {insight.headline}
             </div>
           )}
-          <div style={{ fontFamily: UI, fontSize: 11, color: T.muted, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+          <div style={{ fontFamily: UI, fontSize: 12, color: T.muted, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
             {insight.meal_description}
           </div>
         </div>
@@ -396,29 +396,29 @@ function SavedNoteCard({ insight, onFeedback }) {
             </p>
           )}
           {insight.smart_swap && (
-            <p style={{ fontFamily: UI, fontSize: 11.5, lineHeight: 1.5, color: T.muted, margin: 0 }}>
+            <p style={{ fontFamily: UI, fontSize: 12, lineHeight: 1.5, color: T.muted, margin: 0 }}>
               <span style={{ fontWeight: 700, color: T.inkSoft }}>A gentle swap to try · </span>
               {insight.smart_swap}
             </p>
           )}
           {insight.user_feedback === "none" || !insight.user_feedback ? (
             <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 2 }}>
-              <span style={{ fontFamily: UI, fontSize: 10.5, color: T.muted }}>Did this land?</span>
+              <span style={{ fontFamily: UI, fontSize: 12, color: T.muted }}>Did this land?</span>
               <button
                 onClick={() => onFeedback(insight, "positive")}
-                style={{ fontFamily: UI, fontSize: 11, fontWeight: 700, padding: "3px 11px", borderRadius: 999, border: `1px solid ${T.sage}`, background: "transparent", color: T.sage, cursor: "pointer" }}
+                style={{ fontFamily: UI, fontSize: 12, fontWeight: 700, padding: "3px 11px", borderRadius: 999, border: `1px solid ${T.sage}`, background: "transparent", color: T.sage, cursor: "pointer" }}
               >
                 Yes
               </button>
               <button
                 onClick={() => onFeedback(insight, "negative")}
-                style={{ fontFamily: UI, fontSize: 11, fontWeight: 700, padding: "3px 11px", borderRadius: 999, border: `1px solid ${T.paperDeep}`, background: "transparent", color: T.muted, cursor: "pointer" }}
+                style={{ fontFamily: UI, fontSize: 12, fontWeight: 700, padding: "3px 11px", borderRadius: 999, border: `1px solid ${T.paperDeep}`, background: "transparent", color: T.muted, cursor: "pointer" }}
               >
                 Not really
               </button>
             </div>
           ) : (
-            <span style={{ fontFamily: UI, fontSize: 10.5, color: T.muted }}>
+            <span style={{ fontFamily: UI, fontSize: 12, color: T.muted }}>
               {insight.user_feedback === "positive" ? "Glad it helped." : "Noted — thank you."}
             </span>
           )}
@@ -698,7 +698,7 @@ ${localText}`;
             style={{
               display: "inline-flex", alignItems: "center", gap: 6, background: "transparent",
               border: "none", cursor: polishing ? "default" : "pointer", color: T.gold,
-              fontFamily: UI, fontSize: 11, fontWeight: 700, opacity: polishing ? 0.6 : 1,
+              fontFamily: UI, fontSize: 12, fontWeight: 700, opacity: polishing ? 0.6 : 1,
             }}
           >
             {polishing
@@ -746,7 +746,7 @@ ${localText}`;
                 <p style={{ fontFamily: SERIF, fontSize: 13.5, lineHeight: 1.55, color: T.inkSoft, margin: 0 }}>{p}</p>
               </div>
             ))}
-            <p style={{ fontFamily: UI, fontSize: 10.5, fontStyle: "italic", color: T.muted, margin: "2px 0 0" }}>
+            <p style={{ fontFamily: UI, fontSize: 12, fontStyle: "italic", color: T.muted, margin: "2px 0 0" }}>
               These are patterns in your own logs — a prompt for curiosity, never a diagnosis.
             </p>
           </div>
@@ -767,7 +767,7 @@ ${localText}`;
           <p style={{ fontFamily: SERIF, fontSize: 14, lineHeight: 1.55, color: T.inkSoft, margin: 0 }}>
             {cycleNudge.line}
           </p>
-          <p style={{ fontFamily: UI, fontSize: 10.5, fontStyle: "italic", color: T.muted, margin: "10px 0 0" }}>
+          <p style={{ fontFamily: UI, fontSize: 12, fontStyle: "italic", color: T.muted, margin: "10px 0 0" }}>
             A qualitative lean for the phase you're in — never a macro target, never medical advice.
           </p>
         </section>
@@ -791,7 +791,7 @@ ${localText}`;
               : "Foods to lean toward this week — gentle leans grounded in UK guidance, never targets to hit. Log a few meals and this will start to read from your own week."}
         </p>
         {(weekNutrition.estimated?.iron_mg || weekNutrition.estimated?.folate_ug || weekNutrition.estimated?.calcium_mg || weekNutrition.estimated?.fiber_g) && (
-          <p style={{ fontFamily: UI, fontSize: 10.5, fontStyle: "italic", color: T.muted, margin: "-6px 0 14px" }}>
+          <p style={{ fontFamily: UI, fontSize: 12, fontStyle: "italic", color: T.muted, margin: "-6px 0 14px" }}>
             Some figures are estimated from typical UK food-composition values (CoFID) where you logged a meal without exact micronutrients — a picture, not a precise count.
           </p>
         )}
@@ -808,14 +808,14 @@ ${localText}`;
                     </span>
                   )}
                 </div>
-                <div style={{ fontFamily: UI, fontSize: 11, color: T.muted, marginTop: 2 }}>{m.foods}</div>
+                <div style={{ fontFamily: UI, fontSize: 12, color: T.muted, marginTop: 2 }}>{m.foods}</div>
                 <div style={{ fontFamily: SERIF, fontSize: 12.5, color: T.muted, fontStyle: "italic", marginTop: 1 }}>{m.why}</div>
               </div>
             );
           })}
         </div>
         <Rule mt={14} mb={10} />
-        <p style={{ fontFamily: UI, fontSize: 10.5, fontStyle: "italic", color: T.muted, margin: 0, lineHeight: 1.5 }}>
+        <p style={{ fontFamily: UI, fontSize: 12, fontStyle: "italic", color: T.muted, margin: 0, lineHeight: 1.5 }}>
           Gentle guidance, not medical advice. If you're pregnant, planning pregnancy, or managing a health condition, your midwife, GP or pharmacist can advise on supplements such as folic acid or vitamin D.
         </p>
       </section>

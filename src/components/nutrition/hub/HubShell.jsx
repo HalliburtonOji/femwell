@@ -51,7 +51,7 @@ export function HubSheet({ title, eyebrow, onClose, children }) {
           <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", gap: 12 }}>
             <div style={{ minWidth: 0 }}>
               {eyebrow ? (
-                <div style={{ fontFamily: UI, fontSize: 9.5, letterSpacing: 1.6, color: T.wax, textTransform: "uppercase", fontWeight: 700, marginBottom: 2 }}>
+                <div style={{ fontFamily: UI, fontSize: 12, letterSpacing: 1.6, color: T.wax, textTransform: "uppercase", fontWeight: 700, marginBottom: 2 }}>
                   {eyebrow}
                 </div>
               ) : null}

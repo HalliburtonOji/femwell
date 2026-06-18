@@ -141,7 +141,7 @@ function mergeItems(rows) {
 }
 
 const sLabel = {
-  fontFamily: UI, fontSize: 9.5, fontWeight: 700, letterSpacing: 1.4,
+  fontFamily: UI, fontSize: 12, fontWeight: 700, letterSpacing: 1.4,
   textTransform: "uppercase", color: T.muted,
 };
 const card = { background: T.paperHi, border: `1px solid ${T.paperDeep}`, borderRadius: 18 };
@@ -531,14 +531,14 @@ export default function UnifiedShoppingTab({ user, profile }) {
               display: "inline-flex", alignItems: "center", gap: 6,
               background: T.ink, color: T.paper, border: "none", borderRadius: 12,
               padding: "10px 13px", cursor: "pointer", opacity: building ? 0.7 : 1,
-              fontFamily: UI, fontSize: 11, fontWeight: 700, letterSpacing: 0.4,
+              fontFamily: UI, fontSize: 12, fontWeight: 700, letterSpacing: 0.4,
             }}>
             {building
               ? <><Loader2 size={14} className="animate-spin" /> Building…</>
               : <><Sparkles size={14} /> Build from plan</>}
           </button>
         </div>
-        <p style={{ fontFamily: UI, fontSize: 10.5, color: T.muted, marginTop: 8, lineHeight: 1.4 }}>
+        <p style={{ fontFamily: UI, fontSize: 12, color: T.muted, marginTop: 8, lineHeight: 1.4 }}>
           Reads this week's plan, merges repeats, and sorts by aisle. Your manual items
           and pantry stay put.
         </p>
@@ -560,7 +560,7 @@ export default function UnifiedShoppingTab({ user, profile }) {
         </div>
 
         {error && (
-          <p style={{ fontFamily: UI, fontSize: 11.5, color: T.crimson, background: "rgba(188,46,39,0.08)", borderRadius: 10, padding: "8px 10px", marginTop: 12, textAlign: "center" }}>
+          <p style={{ fontFamily: UI, fontSize: 12, color: T.crimson, background: "rgba(188,46,39,0.08)", borderRadius: 10, padding: "8px 10px", marginTop: 12, textAlign: "center" }}>
             {error}
           </p>
         )}
@@ -576,12 +576,12 @@ export default function UnifiedShoppingTab({ user, profile }) {
           <p style={{ fontFamily: SERIF, fontSize: 22, fontWeight: 600, color: T.ink }}>
             about £{budget.toFixed(2)}
           </p>
-          <p style={{ fontFamily: UI, fontSize: 10.5, color: T.muted, marginTop: 4, lineHeight: 1.4 }}>
+          <p style={{ fontFamily: UI, fontSize: 12, color: T.muted, marginTop: 4, lineHeight: 1.4 }}>
             A friendly estimate for the {toBuy.length} item{toBuy.length === 1 ? "" : "s"} left to buy —
             owned and ticked items are already off the bill.
           </p>
           {swapsAvailable > 0 && (
-            <p style={{ fontFamily: UI, fontSize: 10.5, color: T.gold, marginTop: 8 }}>
+            <p style={{ fontFamily: UI, fontSize: 12, color: T.gold, marginTop: 8 }}>
               {swapsAvailable} cheaper swap{swapsAvailable === 1 ? "" : "s"} below could trim it further.
             </p>
           )}
@@ -595,7 +595,7 @@ export default function UnifiedShoppingTab({ user, profile }) {
             <ShoppingCart size={22} color={T.muted} />
           </div>
           <p style={{ fontFamily: SERIF, fontSize: 15, color: T.ink, marginBottom: 4 }}>Your list is empty</p>
-          <p style={{ fontFamily: UI, fontSize: 11.5, color: T.muted, marginBottom: 18, lineHeight: 1.5 }}>
+          <p style={{ fontFamily: UI, fontSize: 12, color: T.muted, marginBottom: 18, lineHeight: 1.5 }}>
             Build it from this week's plan, or add a few items by hand.
           </p>
           <button onClick={() => setAdding(true)} style={primaryBtn}>
@@ -614,8 +614,8 @@ export default function UnifiedShoppingTab({ user, profile }) {
               <div style={{ width: 24, height: 24, borderRadius: 8, display: "grid", placeItems: "center", background: T.wax }}>
                 <Icon size={13} color={T.gold} />
               </div>
-              <p style={{ fontFamily: UI, fontSize: 11.5, fontWeight: 700, color: T.ink, letterSpacing: 0.3 }}>{aisle}</p>
-              <span style={{ marginLeft: "auto", fontFamily: UI, fontSize: 10, color: T.muted }}>{live} to buy</span>
+              <p style={{ fontFamily: UI, fontSize: 12, fontWeight: 700, color: T.ink, letterSpacing: 0.3 }}>{aisle}</p>
+              <span style={{ marginLeft: "auto", fontFamily: UI, fontSize: 12, color: T.muted }}>{live} to buy</span>
             </div>
             <div>
               {items.map((item, idx) => {
@@ -645,10 +645,10 @@ export default function UnifiedShoppingTab({ user, profile }) {
                         {item.ingredient_name}
                       </p>
                       {item.quantity_text && (
-                        <p style={{ fontFamily: UI, fontSize: 10, color: T.muted, marginTop: 2 }}>{item.quantity_text}</p>
+                        <p style={{ fontFamily: UI, fontSize: 12, color: T.muted, marginTop: 2 }}>{item.quantity_text}</p>
                       )}
                       {swap && (
-                        <p style={{ fontFamily: UI, fontSize: 10, color: T.gold, marginTop: 3, lineHeight: 1.35 }}>{swap}</p>
+                        <p style={{ fontFamily: UI, fontSize: 12, color: T.gold, marginTop: 3, lineHeight: 1.35 }}>{swap}</p>
                       )}
                     </div>
                     {isOwned && (
@@ -715,14 +715,14 @@ export default function UnifiedShoppingTab({ user, profile }) {
           style={{ display: "flex", alignItems: "center", gap: 8, background: "transparent", border: "none", cursor: "pointer", width: "100%" }}>
           <Home size={14} color={T.muted} />
           <p style={sLabel}>Pantry — already have it</p>
-          <span style={{ marginLeft: "auto", fontFamily: UI, fontSize: 10, color: T.muted }}>
+          <span style={{ marginLeft: "auto", fontFamily: UI, fontSize: 12, color: T.muted }}>
             {pantryRows.length ? `${pantryRows.length} item${pantryRows.length === 1 ? "" : "s"}` : "add"}
           </span>
         </button>
 
         {pantryOpen && (
           <div style={{ marginTop: 12, display: "flex", flexDirection: "column", gap: 10 }}>
-            <p style={{ fontFamily: UI, fontSize: 10.5, color: T.muted, lineHeight: 1.4 }}>
+            <p style={{ fontFamily: UI, fontSize: 12, color: T.muted, lineHeight: 1.4 }}>
               Anything here is dimmed on your list and left off the basket — so you don't buy it twice.
             </p>
             <div style={{ display: "flex", gap: 8 }}>
@@ -741,7 +741,7 @@ export default function UnifiedShoppingTab({ user, profile }) {
                   <span key={p.id} style={{
                     display: "inline-flex", alignItems: "center", gap: 6, padding: "5px 10px",
                     borderRadius: 999, background: T.wax, border: `1px solid ${T.paperDeep}`,
-                    fontFamily: UI, fontSize: 11, color: T.inkSoft,
+                    fontFamily: UI, fontSize: 12, color: T.inkSoft,
                   }}>
                     {p.ingredient_name}
                     <button onClick={() => removePantry(p)} aria-label={`Remove ${p.ingredient_name}`}
@@ -756,7 +756,7 @@ export default function UnifiedShoppingTab({ user, profile }) {
         )}
       </div>
 
-      <p style={{ fontFamily: SERIF, fontSize: 11.5, fontStyle: "italic", color: T.muted, textAlign: "center", marginTop: 2 }}>
+      <p style={{ fontFamily: SERIF, fontSize: 12, fontStyle: "italic", color: T.muted, textAlign: "center", marginTop: 2 }}>
         One list — built from your plan, sorted by aisle, kind to your budget.
       </p>
     </div>
@@ -772,7 +772,7 @@ const tag = (color) => ({
 
 const chip = (on) => ({
   padding: "5px 10px", borderRadius: 999, cursor: "pointer",
-  fontFamily: UI, fontSize: 11, fontWeight: 700,
+  fontFamily: UI, fontSize: 12, fontWeight: 700,
   background: on ? T.ink : "transparent",
   color: on ? T.paper : T.muted,
   border: `1px solid ${on ? T.ink : T.paperDeep}`,
@@ -794,5 +794,5 @@ const ghostBtn = {
   flex: 1, display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 6,
   background: "transparent", border: `1px solid ${T.paperDeep}`, borderRadius: 11,
   padding: "9px 12px", cursor: "pointer",
-  fontFamily: UI, fontSize: 11, fontWeight: 700, letterSpacing: 0.3, color: T.ink,
+  fontFamily: UI, fontSize: 12, fontWeight: 700, letterSpacing: 0.3, color: T.ink,
 };

@@ -146,7 +146,7 @@ const sheetCard = {
 
 function Eyebrow({ children, color = T.muted }) {
   return (
-    <div style={{ fontFamily: UI, fontSize: 9.5, fontWeight: 700, letterSpacing: 1.4, textTransform: "uppercase", color, marginBottom: 8 }}>
+    <div style={{ fontFamily: UI, fontSize: 12, fontWeight: 700, letterSpacing: 1.4, textTransform: "uppercase", color, marginBottom: 8 }}>
       {children}
     </div>
   );
@@ -164,7 +164,7 @@ function MethodButton({ Icon, label, note, onClick, disabled }) {
       }}
     >
       <Icon size={20} color={T.crimson} />
-      <span style={{ fontFamily: UI, fontSize: 11, fontWeight: 700, color: T.ink, letterSpacing: 0.3 }}>{label}</span>
+      <span style={{ fontFamily: UI, fontSize: 12, fontWeight: 700, color: T.ink, letterSpacing: 0.3 }}>{label}</span>
       {note ? <span style={{ fontFamily: UI, fontSize: 8.5, color: T.muted, textAlign: "center", lineHeight: 1.2 }}>{note}</span> : null}
     </button>
   );
@@ -186,7 +186,7 @@ function BackBar({ onBack, title }) {
 function EditableDraft({ draft, onChange, onConfirm, saving, mealType, onMealType }) {
   const field = (label, key, suffix) => (
     <div style={{ flex: 1 }}>
-      <div style={{ fontFamily: UI, fontSize: 9, color: T.muted, textTransform: "uppercase", letterSpacing: 0.6, marginBottom: 4 }}>{label}</div>
+      <div style={{ fontFamily: UI, fontSize: 12, color: T.muted, textTransform: "uppercase", letterSpacing: 0.6, marginBottom: 4 }}>{label}</div>
       <div style={{ display: "flex", alignItems: "baseline", gap: 3 }}>
         <input
           type="number" inputMode="numeric" min="0"
@@ -194,7 +194,7 @@ function EditableDraft({ draft, onChange, onConfirm, saving, mealType, onMealTyp
           onChange={(e) => onChange({ ...draft, [key]: e.target.value === "" ? "" : Math.max(0, Number(e.target.value)) })}
           style={{ width: "100%", padding: "8px 10px", borderRadius: 10, border: `1px solid ${T.paperDeep}`, background: T.paper, color: T.ink, fontSize: 14, fontFamily: UI, outline: "none", boxSizing: "border-box" }}
         />
-        {suffix ? <span style={{ fontFamily: UI, fontSize: 10, color: T.muted }}>{suffix}</span> : null}
+        {suffix ? <span style={{ fontFamily: UI, fontSize: 12, color: T.muted }}>{suffix}</span> : null}
       </div>
     </div>
   );
@@ -203,7 +203,7 @@ function EditableDraft({ draft, onChange, onConfirm, saving, mealType, onMealTyp
     <div style={{ ...sheetCard, padding: 16 }}>
       <Eyebrow color={T.crimson}>Editable draft — confirm to log</Eyebrow>
 
-      <div style={{ fontFamily: UI, fontSize: 9, color: T.muted, textTransform: "uppercase", letterSpacing: 0.6, marginBottom: 4 }}>What it is</div>
+      <div style={{ fontFamily: UI, fontSize: 12, color: T.muted, textTransform: "uppercase", letterSpacing: 0.6, marginBottom: 4 }}>What it is</div>
       <input
         value={draft.name}
         onChange={(e) => onChange({ ...draft, name: e.target.value })}
@@ -211,7 +211,7 @@ function EditableDraft({ draft, onChange, onConfirm, saving, mealType, onMealTyp
         style={{ width: "100%", padding: "10px 12px", borderRadius: 10, border: `1px solid ${T.paperDeep}`, background: T.paper, color: T.ink, fontSize: 15, fontFamily: SERIF, outline: "none", boxSizing: "border-box", marginBottom: 12 }}
       />
 
-      <div style={{ fontFamily: UI, fontSize: 9, color: T.muted, textTransform: "uppercase", letterSpacing: 0.6, marginBottom: 4 }}>Portion</div>
+      <div style={{ fontFamily: UI, fontSize: 12, color: T.muted, textTransform: "uppercase", letterSpacing: 0.6, marginBottom: 4 }}>Portion</div>
       <input
         value={draft.portion ?? ""}
         onChange={(e) => onChange({ ...draft, portion: e.target.value })}
@@ -228,13 +228,13 @@ function EditableDraft({ draft, onChange, onConfirm, saving, mealType, onMealTyp
         {field("Fat", "fat_g", "g")}
       </div>
 
-      <div style={{ fontFamily: UI, fontSize: 9, color: T.muted, textTransform: "uppercase", letterSpacing: 0.6, marginBottom: 6 }}>When</div>
+      <div style={{ fontFamily: UI, fontSize: 12, color: T.muted, textTransform: "uppercase", letterSpacing: 0.6, marginBottom: 6 }}>When</div>
       <div style={{ display: "flex", gap: 6, marginBottom: 16, flexWrap: "wrap" }}>
         {MEAL_TYPES.map((t) => {
           const on = mealType === t;
           return (
             <button key={t} onClick={() => onMealType(t)}
-              style={{ flex: 1, minWidth: 64, padding: "8px 0", borderRadius: 999, fontFamily: UI, fontSize: 11, fontWeight: 700, cursor: "pointer",
+              style={{ flex: 1, minWidth: 64, padding: "8px 0", borderRadius: 999, fontFamily: UI, fontSize: 12, fontWeight: 700, cursor: "pointer",
                 border: `1px solid ${on ? T.ink : T.paperDeep}`, background: on ? T.ink : T.paperHi, color: on ? T.paper : T.muted }}>
               {MEAL_LABELS[t]}
             </button>
@@ -243,7 +243,7 @@ function EditableDraft({ draft, onChange, onConfirm, saving, mealType, onMealTyp
       </div>
 
       {draft.source === "openfoodfacts" && (
-        <div style={{ fontFamily: UI, fontSize: 9.5, color: T.muted, marginBottom: 12 }}>
+        <div style={{ fontFamily: UI, fontSize: 12, color: T.muted, marginBottom: 12 }}>
           Food data &copy; Open Food Facts (ODbL)
         </div>
       )}
@@ -732,7 +732,7 @@ export default function UnifiedLogger({ user, profile, onLogged }) {
         <div id="ul-recents">
           <Eyebrow>Recents — one tap to re-add</Eyebrow>
           {loadingChips ? (
-            <div style={{ fontFamily: UI, fontSize: 11, color: T.muted }}>Loading your recents…</div>
+            <div style={{ fontFamily: UI, fontSize: 12, color: T.muted }}>Loading your recents…</div>
           ) : recents.length === 0 ? (
             <div style={{ fontFamily: SERIF, fontSize: 13, color: T.muted, fontStyle: "italic" }}>
               Nothing logged yet — your go-to meals will gather here for one-tap re-adding.
@@ -799,7 +799,7 @@ export default function UnifiedLogger({ user, profile, onLogged }) {
                 style={{ display: "flex", alignItems: "center", gap: 12, ...sheetCard, padding: "12px 14px", cursor: "pointer", textAlign: "left" }}>
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ fontFamily: SERIF, fontSize: 14, fontWeight: 600, color: T.ink, lineHeight: 1.2 }}>{r.name}</div>
-                  <div style={{ fontFamily: UI, fontSize: 11, color: T.muted, marginTop: 2 }}>
+                  <div style={{ fontFamily: UI, fontSize: 12, color: T.muted, marginTop: 2 }}>
                     per 100g · {r.kcal} kcal · {r.protein_g}g protein
                   </div>
                 </div>
@@ -807,7 +807,7 @@ export default function UnifiedLogger({ user, profile, onLogged }) {
               </button>
             ))}
             {results.length > 0 && (
-              <div style={{ fontFamily: UI, fontSize: 9.5, color: T.muted, marginTop: 4 }}>
+              <div style={{ fontFamily: UI, fontSize: 12, color: T.muted, marginTop: 4 }}>
                 Food data &copy; Open Food Facts (ODbL)
               </div>
             )}
@@ -882,7 +882,7 @@ export default function UnifiedLogger({ user, profile, onLogged }) {
             Look up
           </button>
         </div>
-        <div style={{ fontFamily: UI, fontSize: 9.5, color: T.muted, marginTop: 12 }}>
+        <div style={{ fontFamily: UI, fontSize: 12, color: T.muted, marginTop: 12 }}>
           Food data &copy; Open Food Facts (ODbL)
         </div>
       </div>
@@ -913,8 +913,8 @@ export default function UnifiedLogger({ user, profile, onLogged }) {
             {listening ? "Listening…" : parsing ? "Working…" : "Start"}
           </button>
         </div>
-        <div style={{ fontFamily: UI, fontSize: 11, color: T.muted, textAlign: "center" }}>
-          Prefer to type? <button onClick={() => setView("type")} style={{ background: "none", border: "none", color: T.crimson, fontFamily: UI, fontSize: 11, fontWeight: 700, cursor: "pointer", padding: 0 }}>Type it instead</button>
+        <div style={{ fontFamily: UI, fontSize: 12, color: T.muted, textAlign: "center" }}>
+          Prefer to type? <button onClick={() => setView("type")} style={{ background: "none", border: "none", color: T.crimson, fontFamily: UI, fontSize: 12, fontWeight: 700, cursor: "pointer", padding: 0 }}>Type it instead</button>
         </div>
       </div>
     );

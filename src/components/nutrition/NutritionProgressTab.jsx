@@ -244,7 +244,7 @@ export default function NutritionProgressTab({ user, nutritionProfile, onProfile
                   onFocus={e => e.target.style.borderColor = "var(--rose-dust-light)"}
                   onBlur={e => e.target.style.borderColor = "var(--border)"}
                 />
-                <span style={{ fontSize: 11, color: "var(--mauve)", width: 28, flexShrink: 0 }}>{unit}</span>
+                <span style={{ fontSize: 12, color: "var(--mauve)", width: 28, flexShrink: 0 }}>{unit}</span>
               </div>
             ))}
             <button
@@ -266,8 +266,8 @@ export default function NutritionProgressTab({ user, nutritionProfile, onProfile
             ].map(({ label, value, unit }) => (
               <div key={label} style={{ textAlign: "center", backgroundColor: "var(--ivory)", borderRadius: 12, padding: "10px 4px" }}>
                 <p style={{ fontSize: 13, fontWeight: 700, color: "var(--plum)", }}>{value}</p>
-                <p style={{ fontSize: 9, color: "var(--mauve)", marginTop: 1, textTransform: "uppercase", letterSpacing: "0.06em" }}>{label}</p>
-                <p style={{ fontSize: 9, color: "var(--mauve)", opacity: 0.7 }}>{unit}</p>
+                <p style={{ fontSize: 12, color: "var(--mauve)", marginTop: 1, textTransform: "uppercase", letterSpacing: "0.06em" }}>{label}</p>
+                <p style={{ fontSize: 12, color: "var(--mauve)", opacity: 0.7 }}>{unit}</p>
               </div>
             ))}
           </div>
@@ -304,8 +304,8 @@ export default function NutritionProgressTab({ user, nutritionProfile, onProfile
           <ResponsiveContainer width="100%" height={160}>
             <LineChart data={weightData}>
               <CartesianGrid strokeDasharray="3 3" stroke="var(--border-subtle)" />
-              <XAxis dataKey="date" tick={{ fontSize: 10, fill: "var(--mauve)" }} axisLine={false} tickLine={false} />
-              <YAxis domain={["auto", "auto"]} tick={{ fontSize: 10, fill: "var(--mauve)" }} axisLine={false} tickLine={false} />
+              <XAxis dataKey="date" tick={{ fontSize: 12, fill: "var(--mauve)" }} axisLine={false} tickLine={false} />
+              <YAxis domain={["auto", "auto"]} tick={{ fontSize: 12, fill: "var(--mauve)" }} axisLine={false} tickLine={false} />
               <Tooltip contentStyle={{ borderRadius: 12, border: "1px solid var(--border)", fontSize: 12 }} />
               <Line type="monotone" dataKey="weight" stroke="var(--rose-dust)" strokeWidth={2} dot={{ r: 3, fill: "var(--rose-dust)" }} />
             </LineChart>
@@ -320,8 +320,8 @@ export default function NutritionProgressTab({ user, nutritionProfile, onProfile
           <ResponsiveContainer width="100%" height={160}>
             <LineChart data={waistData}>
               <CartesianGrid strokeDasharray="3 3" stroke="var(--border-subtle)" />
-              <XAxis dataKey="date" tick={{ fontSize: 10, fill: "var(--mauve)" }} axisLine={false} tickLine={false} />
-              <YAxis domain={["auto", "auto"]} tick={{ fontSize: 10, fill: "var(--mauve)" }} axisLine={false} tickLine={false} />
+              <XAxis dataKey="date" tick={{ fontSize: 12, fill: "var(--mauve)" }} axisLine={false} tickLine={false} />
+              <YAxis domain={["auto", "auto"]} tick={{ fontSize: 12, fill: "var(--mauve)" }} axisLine={false} tickLine={false} />
               <Tooltip contentStyle={{ borderRadius: 12, border: "1px solid var(--border)", fontSize: 12 }} />
               <Line type="monotone" dataKey="waist" stroke="var(--rose-dust)" strokeWidth={2} dot={{ r: 3 }} name="Waist (cm)" />
               <Line type="monotone" dataKey="hips"  stroke="var(--sage)"      strokeWidth={2} dot={{ r: 3 }} name="Hips (cm)"  />

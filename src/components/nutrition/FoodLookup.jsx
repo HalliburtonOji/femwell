@@ -114,7 +114,7 @@ export default function FoodLookup({ onSelect, onClose }) {
         {/* Header */}
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0 20px 14px" }}>
           <div>
-            <p style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.12em", color: "var(--mauve)", }}>Food Library</p>
+            <p style={{ fontSize: 12, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.12em", color: "var(--mauve)", }}>Food Library</p>
             <h3 style={{ fontSize: 20, fontWeight: 700, color: "var(--plum)", marginTop: 2 }}>Pick a food</h3>
           </div>
           <button onClick={onClose} style={{ width: 32, height: 32, borderRadius: 9999, backgroundColor: "var(--ivory-dark)", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>
@@ -181,11 +181,11 @@ export default function FoodLookup({ onSelect, onClose }) {
                     <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 16 }}>
                       <div>
                         <h4 style={{ fontSize: 17, fontWeight: 700, color: "var(--plum)", lineHeight: 1.3, maxWidth: 220 }}>{currentFood.name}</h4>
-                        <p style={{ fontSize: 11, color: "var(--mauve)", marginTop: 3 }}>{currentFood.portion}</p>
+                        <p style={{ fontSize: 12, color: "var(--mauve)", marginTop: 3 }}>{currentFood.portion}</p>
                       </div>
                       <div style={{ textAlign: "center", backgroundColor: "var(--rose-dust-subtle)", borderRadius: 14, padding: "10px 14px" }}>
                         <p style={{ fontSize: 22, fontWeight: 700, color: "var(--plum)", lineHeight: 1 }}>{macros.cal}</p>
-                        <p style={{ fontSize: 10, color: "var(--mauve)", }}>kcal</p>
+                        <p style={{ fontSize: 12, color: "var(--mauve)", }}>kcal</p>
                       </div>
                     </div>
 
@@ -198,7 +198,7 @@ export default function FoodLookup({ onSelect, onClose }) {
                       ].map(m => (
                         <div key={m.label} style={{ flex: 1, backgroundColor: m.color, borderRadius: 10, padding: "7px 6px", textAlign: "center" }}>
                           <p style={{ fontSize: 13, fontWeight: 700, color: m.accent, lineHeight: 1 }}>{m.value}</p>
-                          <p style={{ fontSize: 9, color: m.accent, opacity: 0.75, textTransform: "uppercase", letterSpacing: "0.08em", marginTop: 2 }}>{m.label}</p>
+                          <p style={{ fontSize: 12, color: m.accent, opacity: 0.75, textTransform: "uppercase", letterSpacing: "0.08em", marginTop: 2 }}>{m.label}</p>
                         </div>
                       ))}
                     </div>
@@ -239,7 +239,7 @@ export default function FoodLookup({ onSelect, onClose }) {
                     >
                       <div style={{ flex: 1, minWidth: 0 }}>
                         <p style={{ fontSize: 13, fontWeight: 600, color: "var(--plum)", marginBottom: 1 }}>{food.name}</p>
-                        <p style={{ fontSize: 11, color: "var(--mauve)", }}>{food.portion} · {m.cal} kcal · {m.protein}g protein</p>
+                        <p style={{ fontSize: 12, color: "var(--mauve)", }}>{food.portion} · {m.cal} kcal · {m.protein}g protein</p>
                       </div>
                       <Plus style={{ width: 14, height: 14, color: "var(--rose-dust)", flexShrink: 0 }} />
                     </button>

@@ -74,7 +74,7 @@ export default function WeeklyCaloriesChart({ allMealLogs, profile }) {
         <div style={{ backgroundColor: "var(--rose-dust-subtle)", border: "1px solid var(--rose-dust-light)", borderRadius: 14, padding: "10px 14px", marginBottom: 16, display: "flex", alignItems: "flex-start", gap: 8 }}>
           <Lightbulb style={{ width: 14, height: 14, flexShrink: 0, color: "var(--rose-dust)", marginTop: 1 }} />
           <div>
-            <span style={{ fontSize: 10, fontWeight: 700, color: "var(--rose-dust)", textTransform: "uppercase", letterSpacing: "0.1em", }}>
+            <span style={{ fontSize: 12, fontWeight: 700, color: "var(--rose-dust)", textTransform: "uppercase", letterSpacing: "0.1em", }}>
               {currentPhase ? `${currentPhase.charAt(0).toUpperCase() + currentPhase.slice(1)} phase` : ""} · {phaseTip.highlight}
             </span>
             <p style={{ fontSize: 12, color: "var(--plum)", lineHeight: 1.5, margin: "3px 0 0" }}>{phaseTip.note}</p>
@@ -88,8 +88,8 @@ export default function WeeklyCaloriesChart({ allMealLogs, profile }) {
 
       <ResponsiveContainer width="100%" height={140}>
         <BarChart data={chartData} barSize={28} margin={{ top: 4, right: 0, left: -28, bottom: 0 }}>
-          <XAxis dataKey="label" tick={{ fontSize: 10, fill: "var(--mauve)", }} axisLine={false} tickLine={false} />
-          <YAxis tick={{ fontSize: 10, fill: "var(--mauve)", }} axisLine={false} tickLine={false} />
+          <XAxis dataKey="label" tick={{ fontSize: 12, fill: "var(--mauve)", }} axisLine={false} tickLine={false} />
+          <YAxis tick={{ fontSize: 12, fill: "var(--mauve)", }} axisLine={false} tickLine={false} />
           <Tooltip
             contentStyle={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)", borderRadius: 12, fontSize: 12, color: "var(--plum)" }}
             cursor={{ fill: "var(--ivory-dark)" }}
@@ -108,7 +108,7 @@ export default function WeeklyCaloriesChart({ allMealLogs, profile }) {
         {Object.entries(PHASE_COLORS).map(([phase, color]) => (
           <div key={phase} style={{ display: "flex", alignItems: "center", gap: 4 }}>
             <div style={{ width: 8, height: 8, borderRadius: 2, backgroundColor: color, flexShrink: 0 }} />
-            <span style={{ fontSize: 10, color: "var(--mauve)", textTransform: "capitalize" }}>{phase}</span>
+            <span style={{ fontSize: 12, color: "var(--mauve)", textTransform: "capitalize" }}>{phase}</span>
           </div>
         ))}
       </div>

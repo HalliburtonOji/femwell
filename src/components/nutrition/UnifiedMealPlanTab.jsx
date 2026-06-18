@@ -89,7 +89,7 @@ const card = {
 };
 
 const sLabel = {
-  fontFamily: UI, fontSize: 9.5, fontWeight: 700, letterSpacing: 1.4,
+  fontFamily: UI, fontSize: 12, fontWeight: 700, letterSpacing: 1.4,
   textTransform: "uppercase", color: T.muted,
 };
 
@@ -573,12 +573,12 @@ export default function UnifiedMealPlanTab({ user, profile, nutritionProfile, ta
           </p>
         )}
         <div style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 10 }}>
-          <span style={{ fontFamily: UI, fontSize: 11, color: T.muted }}>Weekly budget</span>
+          <span style={{ fontFamily: UI, fontSize: 12, color: T.muted }}>Weekly budget</span>
           <span style={{ fontFamily: SERIF, fontSize: 15, color: T.ink }}>£</span>
           <input value={budget} onChange={(e) => setBudget(e.target.value.replace(/[^0-9.]/g, ""))}
             inputMode="decimal" placeholder="optional"
             style={{ width: 84, padding: "8px 10px", borderRadius: 10, border: `1.5px solid ${T.paperDeep}`, background: T.paper, fontFamily: SERIF, fontSize: 14, color: T.ink, outline: "none" }} />
-          <span style={{ fontFamily: UI, fontSize: 10.5, color: T.muted }}>/ week</span>
+          <span style={{ fontFamily: UI, fontSize: 12, color: T.muted }}>/ week</span>
         </div>
       </div>
 
@@ -594,7 +594,7 @@ export default function UnifiedMealPlanTab({ user, profile, nutritionProfile, ta
             {[["Protein", macroPreview.protein], ["Carbs", macroPreview.carbs], ["Fats", macroPreview.fat]].map(([l, v]) => (
               <div key={l}>
                 <div style={{ fontFamily: SERIF, fontSize: 18, fontWeight: 600, color: T.ink }}>{v}g</div>
-                <div style={{ fontFamily: UI, fontSize: 9, color: T.muted, textTransform: "uppercase", letterSpacing: 0.5 }}>{l} · week</div>
+                <div style={{ fontFamily: UI, fontSize: 12, color: T.muted, textTransform: "uppercase", letterSpacing: 0.5 }}>{l} · week</div>
               </div>
             ))}
           </div>
@@ -612,7 +612,7 @@ export default function UnifiedMealPlanTab({ user, profile, nutritionProfile, ta
           ? <><RefreshCw size={15} className="animate-spin" /> Refreshing the week…</>
           : <><Sparkles size={15} /> Generate / Regenerate week</>}
       </button>
-      <p style={{ fontFamily: UI, fontSize: 10.5, color: T.muted, textAlign: "center", marginTop: -6 }}>
+      <p style={{ fontFamily: UI, fontSize: 12, color: T.muted, textAlign: "center", marginTop: -6 }}>
         {busyWeek
           ? "Building your week — this can take up to a minute."
           : "Locked meals are always kept — only open cells are refreshed."}
@@ -632,7 +632,7 @@ export default function UnifiedMealPlanTab({ user, profile, nutritionProfile, ta
                 color: on ? T.paper : T.muted,
                 border: `1px solid ${isToday && !on ? T.gold : on ? T.ink : T.paperDeep}`,
               }}>
-              <span style={{ fontFamily: UI, fontSize: 10, fontWeight: 700, letterSpacing: 0.5 }}>{DAY_NAMES[i]}</span>
+              <span style={{ fontFamily: UI, fontSize: 12, fontWeight: 700, letterSpacing: 0.5 }}>{DAY_NAMES[i]}</span>
               <span style={{ fontFamily: SERIF, fontSize: 16, fontWeight: 700, marginTop: 1, color: on ? T.paper : T.ink }}>
                 {format(day, "d")}
               </span>
@@ -726,14 +726,14 @@ export default function UnifiedMealPlanTab({ user, profile, nutritionProfile, ta
                     <Pencil size={13} color={T.muted} style={{ flexShrink: 0, marginTop: 3 }} />
                   </div>
                   {c.macros && (
-                    <div style={{ fontFamily: UI, fontSize: 10, color: T.muted, marginTop: 5 }}>
+                    <div style={{ fontFamily: UI, fontSize: 12, color: T.muted, marginTop: 5 }}>
                       {c.macros.calories ? `${Math.round(c.macros.calories)} kcal` : ""}
                       {c.macros.calories && c.macros.protein_g ? " · " : ""}
                       {c.macros.protein_g ? `${Math.round(c.macros.protein_g)}g protein` : ""}
                     </div>
                   )}
                   {lovedNameSet.has((c.name || "").trim().toLowerCase()) && (
-                    <div style={{ display: "inline-flex", alignItems: "center", gap: 4, marginTop: 6, fontFamily: UI, fontSize: 9.5, fontWeight: 700, letterSpacing: 0.3, color: T.crimson }}>
+                    <div style={{ display: "inline-flex", alignItems: "center", gap: 4, marginTop: 6, fontFamily: UI, fontSize: 12, fontWeight: 700, letterSpacing: 0.3, color: T.crimson }}>
                       <Heart size={10} color={T.crimson} fill={T.crimson} /> you loved this
                     </div>
                   )}
@@ -751,11 +751,11 @@ export default function UnifiedMealPlanTab({ user, profile, nutritionProfile, ta
               {c.name && !isEditing && (
                 <div style={{ display: "flex", alignItems: "center", gap: 12, marginTop: 8 }}>
                   <button onClick={() => logCell(activeDay, slot)} disabled={loggingKey === cellKey(activeDay, slot)}
-                    style={{ display: "inline-flex", alignItems: "center", gap: 5, background: "transparent", border: "none", cursor: "pointer", fontFamily: UI, fontSize: 10.5, fontWeight: 700, letterSpacing: 0.3, color: T.crimson, padding: 0, opacity: loggingKey === cellKey(activeDay, slot) ? 0.5 : 1 }}>
+                    style={{ display: "inline-flex", alignItems: "center", gap: 5, background: "transparent", border: "none", cursor: "pointer", fontFamily: UI, fontSize: 12, fontWeight: 700, letterSpacing: 0.3, color: T.crimson, padding: 0, opacity: loggingKey === cellKey(activeDay, slot) ? 0.5 : 1 }}>
                     <Check size={12} /> {loggingKey === cellKey(activeDay, slot) ? "Logging…" : "Log today"}
                   </button>
                   <button onClick={() => clearCell(activeDay, slot)} disabled={!!regenScope}
-                    style={{ background: "transparent", border: "none", cursor: "pointer", fontFamily: UI, fontSize: 10, color: T.muted }}>
+                    style={{ background: "transparent", border: "none", cursor: "pointer", fontFamily: UI, fontSize: 12, color: T.muted }}>
                     Clear
                   </button>
                 </div>
@@ -765,7 +765,7 @@ export default function UnifiedMealPlanTab({ user, profile, nutritionProfile, ta
         })}
       </div>
 
-      <p style={{ fontFamily: SERIF, fontSize: 11.5, fontStyle: "italic", color: T.muted, textAlign: "center", marginTop: 4 }}>
+      <p style={{ fontFamily: SERIF, fontSize: 12, fontStyle: "italic", color: T.muted, textAlign: "center", marginTop: 4 }}>
         One plan — tap to edit, lock to keep, regenerate the rest. A guide, never a cap.
       </p>
     </div>
@@ -805,7 +805,7 @@ function perSlotShare(dayMacro) {
 
 const chip = (on, onColor = T.ink) => ({
   padding: "6px 11px", borderRadius: 999, cursor: "pointer",
-  fontFamily: UI, fontSize: 11, fontWeight: 700,
+  fontFamily: UI, fontSize: 12, fontWeight: 700,
   background: on ? onColor : "transparent",
   color: on ? T.paper : T.muted,
   border: `1px solid ${on ? onColor : T.paperDeep}`,
@@ -822,7 +822,7 @@ const ghostBtn = {
   display: "inline-flex", alignItems: "center", gap: 6,
   background: "transparent", border: `1px solid ${T.paperDeep}`, borderRadius: 10,
   padding: "8px 12px", cursor: "pointer",
-  fontFamily: UI, fontSize: 11, fontWeight: 700, letterSpacing: 0.4, color: T.ink,
+  fontFamily: UI, fontSize: 12, fontWeight: 700, letterSpacing: 0.4, color: T.ink,
 };
 
 const iconBtn = {

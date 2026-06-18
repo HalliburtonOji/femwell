@@ -94,7 +94,7 @@ function RecipeCard({ recipe, onSaveAsTemplate }) {
             <p style={{ fontWeight: 800, fontSize: 15, color: "white", margin: 0 }}>{recipe.recipe_name}</p>
             {recipe.tagline && <p style={{ color: "rgba(255,255,255,0.75)", fontSize: 12, marginTop: 2 }}>{recipe.tagline}</p>}
           </div>
-          <span style={{ ...(DIFFICULTY_STYLES[recipe.difficulty] || { backgroundColor: "rgba(255,255,255,0.2)", color: "white" }), fontSize: 10, padding: "3px 8px", borderRadius: 9999, fontWeight: 600, flexShrink: 0 }}>
+          <span style={{ ...(DIFFICULTY_STYLES[recipe.difficulty] || { backgroundColor: "rgba(255,255,255,0.2)", color: "white" }), fontSize: 12, padding: "3px 8px", borderRadius: 9999, fontWeight: 600, flexShrink: 0 }}>
             {recipe.difficulty}
           </span>
         </div>
@@ -119,7 +119,7 @@ function RecipeCard({ recipe, onSaveAsTemplate }) {
             ].map((n) => (
               <div key={n.label} style={{ backgroundColor: n.bg, borderRadius: 12, padding: "8px 4px", textAlign: "center" }}>
                 <p style={{ fontWeight: 700, fontSize: 12, color: n.fg, margin: 0 }}>{n.val}</p>
-                <p style={{ fontSize: 9, color: n.fg, opacity: 0.7, margin: 0 }}>{n.label}</p>
+                <p style={{ fontSize: 12, color: n.fg, opacity: 0.7, margin: 0 }}>{n.label}</p>
               </div>
             ))}
           </div>
@@ -174,7 +174,7 @@ function RecipeCard({ recipe, onSaveAsTemplate }) {
                   <div className="space-y-2">
                     {recipe.instructions.map((step, i) => (
                       <div key={i} style={{ display: "flex", gap: 10, fontSize: 12, color: "var(--mauve)" }}>
-                        <span style={{ width: 20, height: 20, borderRadius: 9999, backgroundColor: "var(--rose-dust-subtle)", color: "var(--rose-dust)", fontWeight: 700, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, fontSize: 10 }}>{i + 1}</span>
+                        <span style={{ width: 20, height: 20, borderRadius: 9999, backgroundColor: "var(--rose-dust-subtle)", color: "var(--rose-dust)", fontWeight: 700, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, fontSize: 12 }}>{i + 1}</span>
                         <p style={{ lineHeight: 1.5, paddingTop: 2, margin: 0 }}>{step}</p>
                       </div>
                     ))}
@@ -201,7 +201,7 @@ function RecipeCard({ recipe, onSaveAsTemplate }) {
                 <div key={i} style={{ display: "flex", gap: 8, backgroundColor: "var(--sage-subtle)", borderRadius: 12, padding: 10 }}>
                   <div>
                     <p style={{ fontSize: 12, fontWeight: 600, color: "var(--sage)", margin: 0 }}>{s.name}</p>
-                    <p style={{ fontSize: 11, color: "var(--mauve)", margin: 0 }}>{s.reason}</p>
+                    <p style={{ fontSize: 12, color: "var(--mauve)", margin: 0 }}>{s.reason}</p>
                   </div>
                 </div>
               ))}
@@ -279,8 +279,8 @@ function MealPlanCard({ mealPlan, onSaveToPlan }) {
             {Object.entries(mealPlan.days[expandedDay].meals || {}).map(([type, meal]) => (
               <div key={type} style={{ backgroundColor: "var(--ivory)", borderRadius: 12, padding: 12 }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
-                  <p style={{ fontSize: 11, fontWeight: 700, color: "var(--mauve)", textTransform: "capitalize", margin: 0 }}>{MEAL_LABELS_PLAN[type] || type}</p>
-                  {meal.prep_minutes > 0 && <span style={{ marginLeft: "auto", fontSize: 10, color: "var(--mauve)" }}>{meal.prep_minutes}m</span>}
+                  <p style={{ fontSize: 12, fontWeight: 700, color: "var(--mauve)", textTransform: "capitalize", margin: 0 }}>{MEAL_LABELS_PLAN[type] || type}</p>
+                  {meal.prep_minutes > 0 && <span style={{ marginLeft: "auto", fontSize: 12, color: "var(--mauve)" }}>{meal.prep_minutes}m</span>}
                 </div>
                 <p style={{ fontSize: 13, fontWeight: 600, color: "var(--plum)", margin: 0 }}>{meal.name}</p>
                 {meal.description && <p style={{ fontSize: 12, color: "var(--mauve)", marginTop: 2 }}>{meal.description}</p>}
@@ -303,7 +303,7 @@ function MealPlanCard({ mealPlan, onSaveToPlan }) {
                 <div key={i} style={{ display: "flex", gap: 8, backgroundColor: "var(--sage-subtle)", borderRadius: 12, padding: 10 }}>
                   <div>
                     <p style={{ fontSize: 12, fontWeight: 600, color: "var(--sage)", margin: 0 }}>{s.name}</p>
-                    <p style={{ fontSize: 11, color: "var(--mauve)", margin: 0 }}>{s.reason} {s.applies_to !== "all" ? `(best for ${s.applies_to})` : ""}</p>
+                    <p style={{ fontSize: 12, color: "var(--mauve)", margin: 0 }}>{s.reason} {s.applies_to !== "all" ? `(best for ${s.applies_to})` : ""}</p>
                   </div>
                 </div>
               ))}
@@ -481,12 +481,12 @@ export default function AIRecipeGenerator({ user, planGoal, plan, setPlan, onSav
               {/* Ingredients */}
               <div>
                 <p style={{ fontSize: 12, fontWeight: 700, color: "var(--mauve)", marginBottom: 4 }}>Ingredients I have</p>
-                <p style={{ fontSize: 10, color: "var(--mauve)", opacity: 0.7, marginBottom: 8 }}>Type and press Enter, or tap a suggestion</p>
+                <p style={{ fontSize: 12, color: "var(--mauve)", opacity: 0.7, marginBottom: 8 }}>Type and press Enter, or tap a suggestion</p>
                 <TagInput tags={ingredients} setTags={setIngredients} placeholder="e.g. chicken, spinach..." />
                 <div className="flex flex-wrap gap-1 mt-2">
                   {QUICK_INGREDIENTS.filter(q => !ingredients.includes(q)).slice(0, 8).map((q) => (
                     <button key={q} onClick={() => setIngredients([...ingredients, q])}
-                      style={{ fontSize: 10, padding: "4px 8px", borderRadius: 9999, backgroundColor: "var(--ivory)", color: "var(--mauve)", border: "1px solid var(--border)", cursor: "pointer" }}>
+                      style={{ fontSize: 12, padding: "4px 8px", borderRadius: 9999, backgroundColor: "var(--ivory)", color: "var(--mauve)", border: "1px solid var(--border)", cursor: "pointer" }}>
                       + {q}
                     </button>
                   ))}
@@ -496,7 +496,7 @@ export default function AIRecipeGenerator({ user, planGoal, plan, setPlan, onSav
               {/* Usual meals */}
               <div>
                 <p style={{ fontSize: 12, fontWeight: 700, color: "var(--mauve)", marginBottom: 4 }}>Meals I usually eat</p>
-                <p style={{ fontSize: 10, color: "var(--mauve)", opacity: 0.7, marginBottom: 8 }}>The AI will incorporate these into your plan</p>
+                <p style={{ fontSize: 12, color: "var(--mauve)", opacity: 0.7, marginBottom: 8 }}>The AI will incorporate these into your plan</p>
                 <TagInput tags={usualMeals} setTags={setUsualMeals} placeholder="e.g. jollof rice, pasta, stir fry..." />
               </div>
 

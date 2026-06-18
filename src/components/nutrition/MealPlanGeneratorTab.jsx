@@ -132,7 +132,7 @@ function MealPlanCard({ mealPlan, onSaveToPlan, saving }) {
                 {meal.description && <p className="text-xs mt-0.5" style={{ color: "var(--mauve)" }}>{meal.description}</p>}
                 {meal.cook_steps?.length > 0 && (
                   <div style={{ marginTop: 10, marginBottom: 8 }}>
-                    <p style={{ fontSize: 11, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.1em",
+                    <p style={{ fontSize: 12, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.1em",
                       color: "var(--mauve)", marginBottom: 6 }}>
                       How to make it
                     </p>
@@ -149,7 +149,7 @@ function MealPlanCard({ mealPlan, onSaveToPlan, saving }) {
                 <a
                   href={`https://www.youtube.com/results?search_query=${encodeURIComponent((meal.name || '') + ' recipe how to make')}`}
                   target="_blank" rel="noopener noreferrer"
-                  style={{ fontSize: 11, fontWeight: 500, color: "var(--rose-dust)", textDecoration: "none", display: "inline-block", marginTop: 4 }}
+                  style={{ fontSize: 12, fontWeight: 500, color: "var(--rose-dust)", textDecoration: "none", display: "inline-block", marginTop: 4 }}
                 >
                   Watch how to make it
                 </a>

@@ -63,7 +63,7 @@ export default function NutritionHubSheet({ open, onClose, onSelect }) {
         }}>
           <div>
             <div style={{
-              fontFamily: UI, fontSize: 11, fontWeight: 700, letterSpacing: 1.5,
+              fontFamily: UI, fontSize: 12, fontWeight: 700, letterSpacing: 1.5,
               textTransform: "uppercase", color: T.muted, marginBottom: 2,
             }}>Your Nutrition</div>
             <div style={{
@@ -105,7 +105,7 @@ export default function NutritionHubSheet({ open, onClose, onSelect }) {
                   color: T.ink, textShadow: PRESS, marginBottom: 2, lineHeight: 1.2,
                 }}>{a.label}</div>
                 <div style={{
-                  fontFamily: UI, fontSize: 11, color: T.muted,
+                  fontFamily: UI, fontSize: 12, color: T.muted,
                   lineHeight: 1.4,
                 }}>{a.sub}</div>
               </button>
