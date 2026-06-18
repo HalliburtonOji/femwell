@@ -53,7 +53,7 @@ function BookCoverArt({ title, kindLabel }) {
         </p>
         {kindLabel && (
           <p style={{
-            fontSize: 10,
+            fontSize: 12,
             fontWeight: 700,
             letterSpacing: '0.12em',
             textTransform: 'uppercase',
@@ -141,7 +141,7 @@ function FemwellBookCard({ book, isSaved, onHeartClick, onOpen }) {
             borderRadius: 9999,
             background: 'var(--rose-primary)',
             color: 'var(--cream)',
-            fontSize: 10,
+            fontSize: 12,
             fontWeight: 700,
             letterSpacing: '0.08em',
             textTransform: 'uppercase',
@@ -201,7 +201,7 @@ function FemwellBookCard({ book, isSaved, onHeartClick, onOpen }) {
               <span
                 key={tag}
                 style={{
-                  fontSize: 10,
+                  fontSize: 12,
                   fontWeight: 600,
                   letterSpacing: '0.04em',
                   color: 'var(--plum-mute)',
@@ -215,7 +215,7 @@ function FemwellBookCard({ book, isSaved, onHeartClick, onOpen }) {
             ))}
             {book.chapterCount > 1 && (
               <span style={{
-                fontSize: 10,
+                fontSize: 12,
                 fontWeight: 600,
                 letterSpacing: '0.04em',
                 color: 'var(--plum-mute)',

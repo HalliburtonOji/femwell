@@ -57,7 +57,7 @@ function OwnWordsShare({ entry }) {
         </button>
       ) : (
         <div>
-          <div style={{ fontFamily: UI, fontSize: 11.5, color: T.muted, lineHeight: 1.5, marginBottom: 10 }}>
+          <div style={{ fontFamily: UI, fontSize: 12, color: T.muted, lineHeight: 1.5, marginBottom: 10 }}>
             This makes a card of <b>your own words only</b> — nothing else from your journal, and never anyone else's. Only you can do this, and only when you choose to.
           </div>
           <ShareButton label="Make a card of these words" artifact={{
@@ -100,16 +100,16 @@ export default function EntryReader({ entry, profile, phase, onClose, onEdit, on
         <Body entry={entry} />
 
         {entry.mood_rating ? (
-          <div style={{ fontFamily: UI, fontSize: 11.5, color: T.muted, letterSpacing: 0.4, fontWeight: 600, marginBottom: 6 }}>
+          <div style={{ fontFamily: UI, fontSize: 12, color: T.muted, letterSpacing: 0.4, fontWeight: 600, marginBottom: 6 }}>
             Mood · {MOOD_WORD[entry.mood_rating] || entry.mood_rating}
           </div>
         ) : null}
-        <div style={{ fontFamily: UI, fontSize: 11.5, color: T.muted, letterSpacing: 0.5, fontWeight: 600 }}>{relativeDate(entry)}</div>
+        <div style={{ fontFamily: UI, fontSize: 12, color: T.muted, letterSpacing: 0.5, fontWeight: 600 }}>{relativeDate(entry)}</div>
 
         {tags.length > 0 && (
           <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginTop: 14 }}>
             {tags.map((t) => (
-              <span key={t} style={{ fontFamily: UI, fontSize: 10.5, fontWeight: 700, letterSpacing: 0.6, textTransform: "uppercase", color: T.muted, border: `1px solid ${T.paperDeep}`, borderRadius: 999, padding: "3px 10px" }}>{t}</span>
+              <span key={t} style={{ fontFamily: UI, fontSize: 12, fontWeight: 700, letterSpacing: 0.6, textTransform: "uppercase", color: T.muted, border: `1px solid ${T.paperDeep}`, borderRadius: 999, padding: "3px 10px" }}>{t}</span>
             ))}
           </div>
         )}

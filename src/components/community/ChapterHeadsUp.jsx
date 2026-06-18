@@ -68,7 +68,7 @@ export default function ChapterHeadsUp({ bookId, chapterIndex, onContinue, onDef
           boxShadow: "0 -8px 32px rgba(36,26,38,0.22)",
         }}
       >
-        <span style={{ display: "inline-flex", alignItems: "center", gap: 7, fontFamily: UI, fontSize: 10.5, fontWeight: 700, letterSpacing: 0.7, textTransform: "uppercase", color: GOLD, marginBottom: 12 }}>
+        <span style={{ display: "inline-flex", alignItems: "center", gap: 7, fontFamily: UI, fontSize: 12, fontWeight: 700, letterSpacing: 0.7, textTransform: "uppercase", color: GOLD, marginBottom: 12 }}>
           <Leaf size={13} /> A gentle heads-up
         </span>
         <p style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 20, lineHeight: 1.45, color: INK, margin: "0 0 6px" }}>

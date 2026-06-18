@@ -150,7 +150,7 @@ export default function ExpandedPlayer() {
       <div style={{ textAlign: 'center', marginBottom: 20, padding: '0 8px' }}>
         <p
           style={{
-            fontSize: 11,
+            fontSize: 12,
             fontWeight: 600,
             textTransform: 'uppercase',
             letterSpacing: '0.6px',
@@ -207,7 +207,7 @@ export default function ExpandedPlayer() {
         </div>
         <div
           aria-hidden="true"
-          style={{ marginTop: 2, fontSize: 11, color: 'var(--plum-mute, #8a7768)', textAlign: 'center', opacity: 0.6 }}
+          style={{ marginTop: 2, fontSize: 12, color: 'var(--plum-mute, #8a7768)', textAlign: 'center', opacity: 0.6 }}
         >
           {Math.round(pct)}%
         </div>
@@ -398,7 +398,7 @@ const ctrlLabel = {
   position: 'absolute',
   top: -6,
   right: -2,
-  fontSize: 9,
+  fontSize: 12,
   fontWeight: 700,
   background: 'var(--cream-2, #ede2d4)',
   color: 'var(--plum-deep, #2b1e16)',

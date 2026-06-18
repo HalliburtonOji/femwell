@@ -179,7 +179,7 @@ export default function JessJournalPrompt({ user, profile, phase, lastEntry, onU
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
           <Sparkles size={14} style={{ color: "#6B8F6B" }} aria-hidden />
           <p style={{
-            margin: 0, fontSize: 10, fontWeight: 700,
+            margin: 0, fontSize: 12, fontWeight: 700,
             letterSpacing: "0.16em", textTransform: "uppercase",
             color: "#6B8F6B", }}>Jess · Today's prompt</p>
         </div>
@@ -232,7 +232,7 @@ export default function JessJournalPrompt({ user, profile, phase, lastEntry, onU
           Use this prompt
         </button>
         <p style={{
-          margin: 0, fontSize: 10, color: "#9B8B7A", fontStyle: "italic",
+          margin: 0, fontSize: 12, color: "#9B8B7A", fontStyle: "italic",
           }}>Not medical advice.</p>
       </div>
       <style>{`

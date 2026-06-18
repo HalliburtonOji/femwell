@@ -57,7 +57,7 @@ function PodcastCard({ item, saved, hasPhaseTag, onOpen, onSave, onUntag }) {
         ) : null}
         <div style={{
           position: 'absolute', top: 8, left: 8,
-          fontSize: 9, fontWeight: 600, textTransform: 'uppercase',
+          fontSize: 12, fontWeight: 600, textTransform: 'uppercase',
           color: 'var(--cream, #f7f0e6)', background: 'rgba(0,0,0,0.45)',
           padding: '3px 6px', borderRadius: 4,
           letterSpacing: '0.4px',
@@ -81,7 +81,7 @@ function PodcastCard({ item, saved, hasPhaseTag, onOpen, onSave, onUntag }) {
         {durLabel && (
           <div style={{
             position: 'absolute', bottom: 6, right: 6,
-            fontSize: 10, fontWeight: 600,
+            fontSize: 12, fontWeight: 600,
             color: 'var(--cream, #f7f0e6)', background: 'rgba(0,0,0,0.55)',
             padding: '3px 7px', borderRadius: 9999,
             }}>
@@ -102,7 +102,7 @@ function PodcastCard({ item, saved, hasPhaseTag, onOpen, onSave, onUntag }) {
           {item.title || ''}
         </p>
         <p style={{
-          fontSize: 10.5, color: 'var(--plum-mute, #8a7768)',
+          fontSize: 12, color: 'var(--plum-mute, #8a7768)',
           margin: 0,
           whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
         }}>
@@ -172,7 +172,7 @@ function PodcastSheet({ item, onClose }) {
           )}
           <div style={{ minWidth: 0, flex: 1 }}>
             <p style={{
-              fontSize: 11, fontWeight: 600, textTransform: 'uppercase',
+              fontSize: 12, fontWeight: 600, textTransform: 'uppercase',
               letterSpacing: '0.6px', color: 'var(--plum-mute, #8a7768)', margin: 0,
             }}>
               {item.source_name || 'Podcast'}
@@ -252,7 +252,7 @@ export default function PodcastRail({ items, savedSet, savedPhases, onSave, onUn
       <p style={{
         padding: '0 16px',
         marginBottom: 10,
-        fontSize: 11,
+        fontSize: 12,
         fontWeight: 600,
         textTransform: 'uppercase',
         letterSpacing: '0.6px',

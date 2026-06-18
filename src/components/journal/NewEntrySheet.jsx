@@ -411,7 +411,7 @@ export default function NewEntrySheet({
           <div style={{ background: T.dusk, borderRadius: 14, padding: "18px 18px 16px", marginBottom: 22, textAlign: "left" }}>
             <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
               <Heart size={14} />
-              <span style={{ fontFamily: UI, fontSize: 9.5, letterSpacing: 1.4, color: T.wax, textTransform: "uppercase", fontWeight: 700 }}>A nudge from Jess</span>
+              <span style={{ fontFamily: UI, fontSize: 12, letterSpacing: 1.4, color: T.wax, textTransform: "uppercase", fontWeight: 700 }}>A nudge from Jess</span>
             </div>
             <Hand size={19} color={T.paper} carve={false}>{q}</Hand>
           </div>
@@ -446,7 +446,7 @@ export default function NewEntrySheet({
         <Script size={46} style={{ marginBottom: 14 }}>{titleText}</Script>
 
         {/* HOW you capture — one bounded segmented control (was a loose tab row) */}
-        <div style={{ fontFamily: UI, fontSize: 9.5, letterSpacing: 1.4, fontWeight: 700, textTransform: "uppercase", color: T.muted, marginBottom: 7 }}>How you write</div>
+        <div style={{ fontFamily: UI, fontSize: 12, letterSpacing: 1.4, fontWeight: 700, textTransform: "uppercase", color: T.muted, marginBottom: 7 }}>How you write</div>
         <style>{`.fw-modeseg::-webkit-scrollbar{display:none}`}</style>
         <div className="fw-modeseg" style={{
           display: "flex", gap: 3, marginBottom: 20, padding: 3, borderRadius: 999,
@@ -488,7 +488,7 @@ export default function NewEntrySheet({
                   transition: "all 0.2s",
                 }} />
               ))}
-              <span style={{ marginLeft: 4, fontFamily: UI, fontSize: 10.5, fontWeight: 700, letterSpacing: 1, textTransform: "uppercase", color: T.muted }}>
+              <span style={{ marginLeft: 4, fontFamily: UI, fontSize: 12, fontWeight: 700, letterSpacing: 1, textTransform: "uppercase", color: T.muted }}>
                 Step {guidedStep + 1} of {guidedSteps.length}
               </span>
             </div>
@@ -528,7 +528,7 @@ export default function NewEntrySheet({
                 }}>Review &amp; save <ArrowRight size={14} /></button>
               )}
             </div>
-            <div style={{ display: "inline-flex", alignItems: "center", gap: 6, marginTop: 22, fontFamily: UI, fontSize: 10.5, color: T.muted, letterSpacing: 0.6, fontWeight: 600 }}>
+            <div style={{ display: "inline-flex", alignItems: "center", gap: 6, marginTop: 22, fontFamily: UI, fontSize: 12, color: T.muted, letterSpacing: 0.6, fontWeight: 600 }}>
               <Lock size={11} /> Your answers stay on this device. Jess reads them only if you hand them to her.
             </div>
           </div>
@@ -557,7 +557,7 @@ export default function NewEntrySheet({
             {saveError && (
               <div role="alert" style={{ marginTop: 12, fontFamily: UI, fontSize: 12.5, color: T.crimson, lineHeight: 1.5 }}>{saveError}</div>
             )}
-            <div style={{ display: "inline-flex", alignItems: "center", gap: 6, marginTop: 18, marginLeft: 14, fontFamily: UI, fontSize: 10.5, color: T.muted, letterSpacing: 0.6, fontWeight: 600 }}>
+            <div style={{ display: "inline-flex", alignItems: "center", gap: 6, marginTop: 18, marginLeft: 14, fontFamily: UI, fontSize: 12, color: T.muted, letterSpacing: 0.6, fontWeight: 600 }}>
               <Lock size={11} /> Locked to you, always.
             </div>
           </div>
@@ -590,7 +590,7 @@ export default function NewEntrySheet({
                 {voiceError && (
                   <div style={{ fontFamily: UI, fontSize: 12.5, color: T.crimson, marginBottom: 10 }}>{voiceError}</div>
                 )}
-                <div style={{ fontFamily: UI, fontSize: 11.5, color: T.muted, marginBottom: 10, lineHeight: 1.5 }}>
+                <div style={{ fontFamily: UI, fontSize: 12, color: T.muted, marginBottom: 10, lineHeight: 1.5 }}>
                   Say {"“"}full stop{"”"}, {"“"}comma{"”"} or {"“"}new line{"”"} for punctuation — it tidies as you go. Edit anything before you keep it.
                 </div>
                 <textarea
@@ -607,7 +607,7 @@ export default function NewEntrySheet({
                   cursor: voiceText.trim() ? "pointer" : "default", fontFamily: HAND, fontWeight: 600, fontSize: 19,
                   color: T.ink, textShadow: PRESS, borderRadius: 3, opacity: voiceText.trim() ? 1 : 0.5,
                 }}>Keep these words</button>
-                <div style={{ display: "inline-flex", alignItems: "center", gap: 6, marginTop: 18, marginLeft: 14, fontFamily: UI, fontSize: 10.5, color: T.muted, letterSpacing: 0.6, fontWeight: 600 }}>
+                <div style={{ display: "inline-flex", alignItems: "center", gap: 6, marginTop: 18, marginLeft: 14, fontFamily: UI, fontSize: 12, color: T.muted, letterSpacing: 0.6, fontWeight: 600 }}>
                   <Lock size={11} /> Transcribed on this device. Nothing is saved until you keep it.
                 </div>
               </>
@@ -639,7 +639,7 @@ export default function NewEntrySheet({
               cursor: burning ? "default" : "pointer", fontFamily: HAND, fontWeight: 600, fontSize: 19,
               color: T.inkSoft, textShadow: PRESS, borderRadius: 3, opacity: burning ? 0.5 : 1,
             }}><Moon size={15} /> {burning ? "Letting go…" : "Release it"}</button>
-            <div style={{ display: "inline-flex", alignItems: "center", gap: 6, marginTop: 18, marginLeft: 14, fontFamily: UI, fontSize: 10.5, color: T.muted, letterSpacing: 0.6, fontWeight: 600 }}>
+            <div style={{ display: "inline-flex", alignItems: "center", gap: 6, marginTop: 18, marginLeft: 14, fontFamily: UI, fontSize: 12, color: T.muted, letterSpacing: 0.6, fontWeight: 600 }}>
               <Lock size={11} /> Never written down. It leaves no trace in your journal, insights, or exports.
             </div>
           </div>
@@ -650,7 +650,7 @@ export default function NewEntrySheet({
           <>
             {/* WHAT it's about — Tier 1: FORMAT chips (always visible) ───────────── */}
             <div style={{ marginBottom: 18 }}>
-              <div style={{ fontFamily: UI, fontSize: 9.5, letterSpacing: 1.4, fontWeight: 700, textTransform: "uppercase", color: T.muted, marginBottom: 8 }}>What kind</div>
+              <div style={{ fontFamily: UI, fontSize: 12, letterSpacing: 1.4, fontWeight: 700, textTransform: "uppercase", color: T.muted, marginBottom: 8 }}>What kind</div>
               <div style={{ display: "flex", flexWrap: "wrap", gap: 7 }}>
                 {FORMATS.map((f) => (
                   <Chip key={f.id} active={f.id === formatActiveId} onClick={() => pickFormat(f.id)}>{f.label}</Chip>
@@ -826,7 +826,7 @@ export default function NewEntrySheet({
             {saveError && (
               <div role="alert" style={{ marginTop: 12, fontFamily: UI, fontSize: 12.5, color: T.crimson, lineHeight: 1.5 }}>{saveError}</div>
             )}
-            <div style={{ display: "inline-flex", alignItems: "center", gap: 6, marginTop: 18, fontFamily: UI, fontSize: 10.5, color: T.muted, letterSpacing: 0.6, fontWeight: 600 }}>
+            <div style={{ display: "inline-flex", alignItems: "center", gap: 6, marginTop: 18, fontFamily: UI, fontSize: 12, color: T.muted, letterSpacing: 0.6, fontWeight: 600 }}>
               <Lock size={11} /> Encrypted on this device. Jess reads it only if you hand it to her.
             </div>
 

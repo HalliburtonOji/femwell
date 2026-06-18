@@ -43,7 +43,7 @@ export default function CommunityHubSheet({ open, onClose, onSelect }) {
       >
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20, paddingBottom: 14, borderBottom: `1px solid ${T.paperDeep}` }}>
           <div>
-            <div style={{ fontFamily: UI, fontSize: 11, fontWeight: 700, letterSpacing: 1.5, textTransform: "uppercase", color: T.muted, marginBottom: 2 }}>Your Community</div>
+            <div style={{ fontFamily: UI, fontSize: 12, fontWeight: 700, letterSpacing: 1.5, textTransform: "uppercase", color: T.muted, marginBottom: 2 }}>Your Community</div>
             <div style={{ fontFamily: HAND, fontSize: 22, fontWeight: 700, color: T.ink, textShadow: PRESS }}>Jump to</div>
           </div>
           <button onClick={onClose} aria-label="Close" style={{ background: "transparent", border: "none", cursor: "pointer", color: T.muted, padding: 4, display: "inline-flex" }}>
@@ -58,7 +58,7 @@ export default function CommunityHubSheet({ open, onClose, onSelect }) {
               <button key={a.id} onClick={() => { onSelect(a.id); onClose(); }} style={{ background: T.paperHi, border: `1px solid ${T.paperDeep}`, borderRadius: 12, padding: "16px 14px", textAlign: "left", cursor: "pointer", transition: "background 0.15s" }}>
                 <div style={{ marginBottom: 8 }}><Ic size={20} style={{ color: T.gold }} /></div>
                 <div style={{ fontFamily: HAND, fontWeight: 700, fontSize: 17, color: T.ink, textShadow: PRESS, marginBottom: 2, lineHeight: 1.2 }}>{a.label}</div>
-                <div style={{ fontFamily: UI, fontSize: 11, color: T.muted, lineHeight: 1.4 }}>{a.sub}</div>
+                <div style={{ fontFamily: UI, fontSize: 12, color: T.muted, lineHeight: 1.4 }}>{a.sub}</div>
               </button>
             );
           })}

@@ -86,7 +86,7 @@ export default function JournalHubSheet({ open, onClose, onSelect, threads = [] 
         }}>
           <div>
             <div style={{
-              fontFamily: UI, fontSize: 11, fontWeight: 700, letterSpacing: 1.5,
+              fontFamily: UI, fontSize: 12, fontWeight: 700, letterSpacing: 1.5,
               textTransform: "uppercase", color: T.muted, marginBottom: 2,
             }}>Your Journal</div>
             <div style={{
@@ -128,7 +128,7 @@ export default function JournalHubSheet({ open, onClose, onSelect, threads = [] 
                   color: T.ink, textShadow: PRESS, marginBottom: 2, lineHeight: 1.2,
                 }}>{a.label}</div>
                 <div style={{
-                  fontFamily: UI, fontSize: 11, color: T.muted,
+                  fontFamily: UI, fontSize: 12, color: T.muted,
                   lineHeight: 1.4,
                 }}>{a.sub}</div>
               </button>
@@ -140,7 +140,7 @@ export default function JournalHubSheet({ open, onClose, onSelect, threads = [] 
         {threads.length > 0 && (
           <div>
             <div style={{
-              fontFamily: UI, fontSize: 10, fontWeight: 700, letterSpacing: 1.5,
+              fontFamily: UI, fontSize: 12, fontWeight: 700, letterSpacing: 1.5,
               textTransform: "uppercase", color: T.muted, marginBottom: 10,
             }}>Threads</div>
             <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>

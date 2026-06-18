@@ -88,7 +88,7 @@ export default function UnpackWithJess({ entry, profile, phase }) {
         <Sparkles size={14} style={{ color: T.gold }} aria-hidden />
         <Eyebrow color={T.gold}>Unpack with Jess</Eyebrow>
       </div>
-      <div style={{ display: "inline-flex", alignItems: "center", gap: 6, fontFamily: UI, fontSize: 10.5, color: T.muted, fontStyle: "italic", marginBottom: 12 }}>
+      <div style={{ display: "inline-flex", alignItems: "center", gap: 6, fontFamily: UI, fontSize: 12, color: T.muted, fontStyle: "italic", marginBottom: 12 }}>
         <Lock size={11} /> Talk it through — still locked to you, nothing here is saved.
       </div>
 
@@ -126,7 +126,7 @@ export default function UnpackWithJess({ entry, profile, phase }) {
         </button>
       </div>
       <Rule w={36} c={T.paperDeep} mt={16} />
-      <div style={{ fontFamily: UI, fontSize: 10, color: T.muted, fontStyle: "italic", textAlign: "center", marginTop: 8 }}>
+      <div style={{ fontFamily: UI, fontSize: 12, color: T.muted, fontStyle: "italic", textAlign: "center", marginTop: 8 }}>
         Jess observes — she is not a clinician. Not medical advice.
       </div>
     </section>

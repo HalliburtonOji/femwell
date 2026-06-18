@@ -119,9 +119,9 @@ export default function CycleSymptomDashboard({ user, profile }) {
         {selectedSymptom && (
           <ResponsiveContainer width="100%" height={180}>
             <BarChart data={chartData} barSize={32}>
-              <XAxis dataKey="label" tick={{ fontSize: 10, fill: "var(--mauve)" }} tickLine={false} axisLine={false} />
+              <XAxis dataKey="label" tick={{ fontSize: 12, fill: "var(--mauve)" }} tickLine={false} axisLine={false} />
               <YAxis hide />
-              <Tooltip formatter={(v) => [`Severity score: ${v}`, selectedSymptom]} contentStyle={{ borderRadius: 12, border: "none", fontSize: 11 }} />
+              <Tooltip formatter={(v) => [`Severity score: ${v}`, selectedSymptom]} contentStyle={{ borderRadius: 12, border: "none", fontSize: 12 }} />
               <Bar dataKey={selectedSymptom} radius={[6, 6, 0, 0]}>
                 {chartData.map((entry) => <Cell key={entry.phase} fill={PHASE_COLORS[entry.phase]} />)}
               </Bar>

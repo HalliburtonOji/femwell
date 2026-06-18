@@ -81,7 +81,7 @@ export default function FourLivesChooser({ entry, onClose, onEcho, onSeal, onWit
                 <span style={{ display: "flex", alignItems: "center", gap: 8 }}>
                   <span style={{ fontFamily: HAND, fontStyle: "italic", fontWeight: 700, fontSize: 19, color: T.ink, lineHeight: 1.2 }}>{label}</span>
                   {isDefault && (
-                    <span style={{ fontFamily: UI, fontSize: 10.5, fontWeight: 800, letterSpacing: 0.8, textTransform: "uppercase", color: T.gold, border: `1px solid ${T.gold}`, borderRadius: 999, padding: "1px 7px" }}>Default</span>
+                    <span style={{ fontFamily: UI, fontSize: 12, fontWeight: 800, letterSpacing: 0.8, textTransform: "uppercase", color: T.gold, border: `1px solid ${T.gold}`, borderRadius: 999, padding: "1px 7px" }}>Default</span>
                   )}
                 </span>
                 <span style={{ display: "block", fontFamily: UI, fontSize: 12.5, color: T.muted, lineHeight: 1.45, marginTop: 3 }}>{sub}</span>
@@ -90,7 +90,7 @@ export default function FourLivesChooser({ entry, onClose, onEcho, onSeal, onWit
           ))}
         </div>
         {!hasText && (
-          <p style={{ fontFamily: UI, fontSize: 11.5, color: T.muted, lineHeight: 1.5, marginTop: 14, marginBottom: 0 }}>
+          <p style={{ fontFamily: UI, fontSize: 12, color: T.muted, lineHeight: 1.5, marginTop: 14, marginBottom: 0 }}>
             Write a few words first to share, seal, or pass this to a witness.
           </p>
         )}

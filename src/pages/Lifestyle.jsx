@@ -44,7 +44,7 @@ function Spinner() {
 // ── Category pill ─────────────────────────────────────────────────────────────
 function Pill({ label, color = PRIMARY, bg = PRIMARY_LIGHT }) {
   return (
-    <span style={{ fontSize: 10, fontWeight: 600, color, backgroundColor: bg, borderRadius: 9999, padding: "2px 9px", display: "inline-block", flexShrink: 0 }}>
+    <span style={{ fontSize: 12, fontWeight: 600, color, backgroundColor: bg, borderRadius: 9999, padding: "2px 9px", display: "inline-block", flexShrink: 0 }}>
       {label}
     </span>
   );
@@ -161,7 +161,7 @@ function ArticleSheet({ item, onClose }) {
           {/* Takeaways */}
           {takeaways.length > 0 && (
             <div style={{ backgroundColor: PRIMARY_LIGHT, borderRadius: 16, padding: "14px 16px", marginBottom: 20 }}>
-              <p style={{ fontSize: 10, fontWeight: 700, color: PRIMARY, textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 10 }}>Key takeaways</p>
+              <p style={{ fontSize: 12, fontWeight: 700, color: PRIMARY, textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 10 }}>Key takeaways</p>
               <ul style={{ margin: 0, paddingLeft: 18 }}>
                 {takeaways.map((t, i) => (
                   <li key={i} style={{ fontSize: 13, color: "var(--plum)", lineHeight: 1.65, marginBottom: 6 }}>{t}</li>
@@ -262,8 +262,8 @@ function ContentCard({ item, compact = false }) {
             {item.category && <Pill label={item.category} />}
             <p style={{ fontSize: 14, fontWeight: 700, color: "var(--plum)", lineHeight: 1.35, margin: "6px 0 4px", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>{item.title}</p>
             <div style={{ display: "flex", alignItems: "center", gap: 5, flexWrap: "wrap", marginTop: 4 }}>
-              <span style={{ fontSize: 11, color: "var(--mauve)", }}>{sourceName}</span>
-              {item.published_at && <span style={{ fontSize: 11, color: "var(--mauve)", opacity: 0.6 }}>· {fmtDate(item.published_at)}</span>}
+              <span style={{ fontSize: 12, color: "var(--mauve)", }}>{sourceName}</span>
+              {item.published_at && <span style={{ fontSize: 12, color: "var(--mauve)", opacity: 0.6 }}>· {fmtDate(item.published_at)}</span>}
               {hasExternalLink && <ExternalLink style={{ width: 10, height: 10, color: "var(--mauve)", opacity: 0.5, flexShrink: 0 }} />}
             </div>
           </div>
@@ -282,13 +282,13 @@ function ContentCard({ item, compact = false }) {
             {item.summary && <p style={{ fontSize: 13, color: "var(--mauve)", lineHeight: 1.55, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden", margin: 0 }}>{stripHtml(item.summary)}</p>}
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: 10 }}>
               <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
-                <span style={{ fontSize: 11, color: "var(--mauve)", }}>{sourceName}</span>
+                <span style={{ fontSize: 12, color: "var(--mauve)", }}>{sourceName}</span>
                 {hasExternalLink && <ExternalLink style={{ width: 10, height: 10, color: "var(--mauve)", opacity: 0.5 }} />}
               </div>
               {hasExternalLink && (
                 <a href={item.content_url} target="_blank" rel="noopener noreferrer"
                   onClick={e => e.stopPropagation()}
-                  style={{ fontSize: 11, fontWeight: 600, color: PRIMARY, textDecoration: "none", display: "flex", alignItems: "center", gap: 3 }}>
+                  style={{ fontSize: 12, fontWeight: 600, color: PRIMARY, textDecoration: "none", display: "flex", alignItems: "center", gap: 3 }}>
                   Read more <ExternalLink style={{ width: 10, height: 10 }} />
                 </a>
               )}

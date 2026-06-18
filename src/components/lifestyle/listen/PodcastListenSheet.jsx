@@ -206,7 +206,7 @@ export default function PodcastListenSheet({ item, source, onClose }) {
         <div style={{ marginBottom: 16, paddingRight: 32 }}>
           <p
             style={{
-              fontSize: 11,
+              fontSize: 12,
               fontWeight: 600,
               textTransform: 'uppercase',
               letterSpacing: '0.6px',
@@ -302,7 +302,7 @@ export default function PodcastListenSheet({ item, source, onClose }) {
         {links.pocketCastsWeb && (
           <p
             style={{
-              fontSize: 11,
+              fontSize: 12,
               color: 'var(--plum-mute, #8a7768)',
               textAlign: 'center',
               margin: '14px 0 0',

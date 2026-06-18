@@ -224,7 +224,7 @@ export function EditorialFooter() {
   return (
     <footer style={{ textAlign: "center", paddingTop: 8 }}>
       <Rule w={40} c={T.paperDeep} mb={14} />
-      <div style={{ display: "inline-flex", alignItems: "center", gap: 7, fontFamily: UI, fontSize: 11, color: T.muted, letterSpacing: 0.8, fontWeight: 600 }}>
+      <div style={{ display: "inline-flex", alignItems: "center", gap: 7, fontFamily: UI, fontSize: 12, color: T.muted, letterSpacing: 0.8, fontWeight: 600 }}>
         <Lock size={12} /> Locked to you. Always.
       </div>
     </footer>

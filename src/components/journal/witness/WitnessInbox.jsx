@@ -218,7 +218,7 @@ export default function WitnessInbox({ user, phase = null, profile = null, onClo
   const gateChip = (
     <div style={{ display: "inline-flex", alignItems: "center", gap: 6, marginTop: 12, padding: "4px 10px", borderRadius: 999, border: `1px solid ${T.paperDeep}`, background: T.paperHi }}>
       <HeartHandshake size={13} style={{ color: T.gold }} />
-      <span style={{ fontFamily: UI, fontSize: 11.5, color: T.muted, fontWeight: 600 }}>
+      <span style={{ fontFamily: UI, fontSize: 12, color: T.muted, fontWeight: 600 }}>
         {Math.min(held, GATE_HOLDS)}/{GATE_HOLDS} held{held >= GATE_HOLDS ? " · you can send your own" : ""}
       </span>
     </div>
@@ -260,7 +260,7 @@ export default function WitnessInbox({ user, phase = null, profile = null, onClo
             {head("Held under lock")}
             <div style={{ display: "inline-flex", alignItems: "center", gap: 6, marginTop: 12, marginBottom: 14 }}>
               <Lock size={14} style={{ color: T.gold }} />
-              <span style={{ fontFamily: UI, fontSize: 11.5, color: T.muted, fontWeight: 600 }}>End-to-end encrypted</span>
+              <span style={{ fontFamily: UI, fontSize: 12, color: T.muted, fontWeight: 600 }}>End-to-end encrypted</span>
             </div>
             <Hand size={21} color={T.inkSoft} style={{ marginBottom: 22 }}>
               She wrote this for one pair of hands only. Her key is on its way to yours — no one in between can read it, not even us. This opens the moment it arrives.
@@ -274,7 +274,7 @@ export default function WitnessInbox({ user, phase = null, profile = null, onClo
             {head("Still sealed")}
             <div style={{ display: "inline-flex", alignItems: "center", gap: 6, marginTop: 12, marginBottom: 14 }}>
               <Lock size={14} style={{ color: T.gold }} />
-              <span style={{ fontFamily: UI, fontSize: 11.5, color: T.muted, fontWeight: 600 }}>End-to-end encrypted</span>
+              <span style={{ fontFamily: UI, fontSize: 12, color: T.muted, fontWeight: 600 }}>End-to-end encrypted</span>
             </div>
             <Hand size={21} color={T.inkSoft} style={{ marginBottom: 22 }}>
               Her key hasn{"’"}t reached your device yet — with maximum-privacy entries, only her device can hand it over, and she hasn{"’"}t been back since. Nothing is lost: it can still open if she returns, and it goes back to her if it isn{"’"}t opened in time. You don{"’"}t need to keep waiting.
@@ -305,7 +305,7 @@ export default function WitnessInbox({ user, phase = null, profile = null, onClo
             </Hand>
             <div style={{ display: "inline-flex", alignItems: "center", gap: 6, marginBottom: 14 }}>
               <ShieldOff size={13} style={{ color: T.muted }} />
-              <span style={{ fontFamily: UI, fontSize: 11, color: T.muted }}>Held in confidence — please don{"’"}t screenshot or copy.</span>
+              <span style={{ fontFamily: UI, fontSize: 12, color: T.muted }}>Held in confidence — please don{"’"}t screenshot or copy.</span>
             </div>
             <div style={{ background: T.paperHi, border: `1px solid ${T.paperDeep}`, borderRadius: 14, padding: "20px 20px 22px", marginBottom: 20, userSelect: "none", WebkitUserSelect: "none", WebkitTouchCallout: "none", filter: obscured ? "blur(18px)" : "none", transition: "filter 80ms" }}>
               <Hand size={22} color={T.ink}>{entryText ? `“${entryText}”` : "This entry couldn’t be opened on this device."}</Hand>

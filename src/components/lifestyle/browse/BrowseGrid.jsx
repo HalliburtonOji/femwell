@@ -197,7 +197,7 @@ export default function BrowseGrid({
                     position: 'absolute', top: 10, left: 10,
                     padding: '4px 10px', borderRadius: 9999,
                     background: 'rgba(0,0,0,0.35)', color: 'var(--cream)',
-                    fontSize: 11, fontWeight: 600,
+                    fontSize: 12, fontWeight: 600,
                     textTransform: 'uppercase', letterSpacing: '0.06em',
                   }}>
                     {item.category}

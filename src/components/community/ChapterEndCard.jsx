@@ -177,7 +177,7 @@ export default function ChapterEndCard({
         }}
       >
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
-          <span style={{ display: "inline-flex", alignItems: "center", gap: 7, fontFamily: UI, fontSize: 10.5, fontWeight: 700, letterSpacing: 0.7, textTransform: "uppercase", color: GOLD }}>
+          <span style={{ display: "inline-flex", alignItems: "center", gap: 7, fontFamily: UI, fontSize: 12, fontWeight: 700, letterSpacing: 0.7, textTransform: "uppercase", color: GOLD }}>
             <BookOpen size={13} /> {anytime ? "A moment to reflect · Jess" : `After chapter ${chapterHuman} · Jess`}
           </span>
           <button type="button" onClick={close} aria-label="Close" style={{ background: "transparent", border: "none", cursor: "pointer", color: MUTED, padding: 4, display: "inline-flex" }}>
@@ -213,7 +213,7 @@ export default function ChapterEndCard({
             an anytime mid-read reflection doesn't ask you to guess ahead. */}
         {!anytime && (<>
         <div style={{ borderTop: `1px solid ${RULE}`, marginTop: 18, paddingTop: 16 }}>
-          <p style={{ fontFamily: UI, fontSize: 10.5, fontWeight: 700, letterSpacing: 0.6, textTransform: "uppercase", color: MUTED, margin: "0 0 8px" }}>
+          <p style={{ fontFamily: UI, fontSize: 12, fontWeight: 700, letterSpacing: 0.6, textTransform: "uppercase", color: MUTED, margin: "0 0 8px" }}>
             {hasReveal ? "What the room imagined" : "Guess what comes next"}
           </p>
 

@@ -220,7 +220,7 @@ export default function CycleMirror({ entries, profile, phase, todayCycleDay, on
               fontFamily: HAND, fontWeight: 600, fontSize: 19, color: T.ink, textShadow: PRESS, borderBottom: `1px solid ${T.gold}`,
             }}>Reply to who you were <ArrowRight size={13} /></button>
             {lens.list.length > 1 && (
-              <span style={{ fontFamily: UI, fontSize: 11, color: T.muted, letterSpacing: 0.4, fontWeight: 600 }}>
+              <span style={{ fontFamily: UI, fontSize: 12, color: T.muted, letterSpacing: 0.4, fontWeight: 600 }}>
                 {lens.list.length - 1} more like this
               </span>
             )}

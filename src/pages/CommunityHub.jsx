@@ -233,7 +233,7 @@ function QotdPreview({ qotd }) {
       <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: 8, marginBottom: 8 }}>
         <Eyebrow color={T.gold}>Today{"’"}s question</Eyebrow>
         {mine ? (
-          <span style={{ display: "inline-flex", alignItems: "center", gap: 4, fontFamily: UI, fontSize: 9.5, fontWeight: 700, letterSpacing: 0.4, textTransform: "uppercase", color: T.sage }}>
+          <span style={{ display: "inline-flex", alignItems: "center", gap: 4, fontFamily: UI, fontSize: 12, fontWeight: 700, letterSpacing: 0.4, textTransform: "uppercase", color: T.sage }}>
             <Check size={11} /> You answered
           </span>
         ) : null}
@@ -243,7 +243,7 @@ function QotdPreview({ qotd }) {
       {sample ? (
         <div style={{ borderLeft: `2px solid ${T.gold}`, paddingLeft: 11, marginBottom: 12 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 7, marginBottom: 3 }}>
-            <span style={{ fontFamily: UI, fontSize: 9, fontWeight: 700, letterSpacing: 0.5, textTransform: "uppercase", color: T.muted }}>One from the room</span>
+            <span style={{ fontFamily: UI, fontSize: 12, fontWeight: 700, letterSpacing: 0.5, textTransform: "uppercase", color: T.muted }}>One from the room</span>
             {sample.phase || sample.life_stage ? (
               <span style={{ fontFamily: UI, fontSize: 8.5, fontWeight: 700, letterSpacing: 0.4, textTransform: "uppercase", color: T.gold, border: `1px solid ${T.gold}`, borderRadius: 999, padding: "1px 7px" }}>
                 {String(sample.phase || sample.life_stage).replace(/-/g, " ")}
@@ -256,7 +256,7 @@ function QotdPreview({ qotd }) {
         <Hand size={15} color={T.muted} style={{ marginBottom: 12 }}>A line is plenty. Share yours, then see how the room answered — no names, no scoreboard.</Hand>
       )}
 
-      <div style={{ marginTop: "auto", paddingTop: 4, fontFamily: UI, fontSize: 11, color: T.muted, fontWeight: 600, letterSpacing: 0.2 }}>
+      <div style={{ marginTop: "auto", paddingTop: 4, fontFamily: UI, fontSize: 12, color: T.muted, fontWeight: 600, letterSpacing: 0.2 }}>
         {answers === null ? "…" : (mine ? `You're in · ${presence}` : presence)}
       </div>
     </div>
@@ -278,7 +278,7 @@ function RoomPreview({ surface, posts, presence, season }) {
       {themes.length > 0 ? (
         <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 12 }}>
           {themes.map(([d, n]) => (
-            <span key={d} style={{ fontFamily: UI, fontSize: 10, fontWeight: 700, letterSpacing: 0.3, color: T.ink, background: T.wax, border: `1px solid ${T.paperDeep}`, borderRadius: 999, padding: "3px 9px" }}>
+            <span key={d} style={{ fontFamily: UI, fontSize: 12, fontWeight: 700, letterSpacing: 0.3, color: T.ink, background: T.wax, border: `1px solid ${T.paperDeep}`, borderRadius: 999, padding: "3px 9px" }}>
               {d} {n}
             </span>
           ))}
@@ -288,7 +288,7 @@ function RoomPreview({ surface, posts, presence, season }) {
         <div style={{ display: "grid", gap: 11 }}>
           {feed.map((p) => (
             <div key={p.id} style={{ borderLeft: `2px solid ${T.gold}`, paddingLeft: 11 }}>
-              {p.domain ? <div style={{ fontFamily: UI, fontSize: 9.5, letterSpacing: 0.5, color: T.muted, textTransform: "uppercase", marginBottom: 3 }}>{p.domain}</div> : null}
+              {p.domain ? <div style={{ fontFamily: UI, fontSize: 12, letterSpacing: 0.5, color: T.muted, textTransform: "uppercase", marginBottom: 3 }}>{p.domain}</div> : null}
               <div style={{ fontFamily: HANDFAM, fontStyle: "italic", fontSize: 15.5, color: T.ink, lineHeight: 1.3 }}>{p.body}</div>
             </div>
           ))}
@@ -296,7 +296,7 @@ function RoomPreview({ surface, posts, presence, season }) {
       ) : (
         <Empty>Quiet in here right now. Open the room to leave the first word — someone always comes by.</Empty>
       )}
-      <div style={{ marginTop: "auto", paddingTop: 14, fontFamily: UI, fontSize: 11, color: T.muted, lineHeight: 1.5 }}>
+      <div style={{ marginTop: "auto", paddingTop: 14, fontFamily: UI, fontSize: 12, color: T.muted, lineHeight: 1.5 }}>
         {presence}{season ? ` · ${season}` : ""}
       </div>
     </div>
@@ -335,7 +335,7 @@ function CirclesPreview({ profile }) {
   return (
     <div style={{ display: "flex", flexDirection: "column", flex: 1 }}>
       <Hand size={15} color={T.muted} style={{ marginBottom: 10 }}>Smaller rooms by what you{"’"}re living and what you love. Lurk freely; join the ones that are yours.</Hand>
-      <div style={{ fontFamily: UI, fontSize: 10, fontWeight: 700, letterSpacing: 0.5, textTransform: "uppercase", color: T.gold, marginBottom: 10 }}>
+      <div style={{ fontFamily: UI, fontSize: 12, fontWeight: 700, letterSpacing: 0.5, textTransform: "uppercase", color: T.gold, marginBottom: 10 }}>
         {joinedKeys.length > 0 ? `You're in ${joinedKeys.length} · ${CIRCLES.length} circles` : `${CIRCLES.length} circles · ${suggested.length > 0 ? "some picked for your season" : "find yours"}`}
       </div>
       <div style={{ display: "grid", gap: 10 }}>
@@ -349,7 +349,7 @@ function CirclesPreview({ profile }) {
               {c.sensitive ? <Lock size={10} style={{ color: T.muted }} /> : null}
               {!c.sensitive ? (
                 <button onClick={() => joinNow(c.key)} style={{
-                  marginLeft: "auto", flexShrink: 0, fontFamily: UI, fontSize: 9.5, fontWeight: 700, letterSpacing: 0.4, textTransform: "uppercase",
+                  marginLeft: "auto", flexShrink: 0, fontFamily: UI, fontSize: 12, fontWeight: 700, letterSpacing: 0.4, textTransform: "uppercase",
                   color: T.paper, background: T.ink, border: "none", borderRadius: 999, padding: "3px 11px", cursor: "pointer",
                 }}>Join</button>
               ) : null}
@@ -358,7 +358,7 @@ function CirclesPreview({ profile }) {
           </div>
         ))}
       </div>
-      <div style={{ marginTop: "auto", paddingTop: 12, fontFamily: UI, fontSize: 11, color: T.muted }}>
+      <div style={{ marginTop: "auto", paddingTop: 12, fontFamily: UI, fontSize: 12, color: T.muted }}>
         Open Circles to join, lurk, or start a post — and find the Jess-hosted Clubs.
       </div>
     </div>
@@ -377,23 +377,23 @@ function LibraryPreview() {
     <div style={{ display: "flex", flexDirection: "column", flex: 1 }}>
       <Hand size={15} color={T.muted} style={{ marginBottom: 12 }}>Read together — at our own pace, spoiler-safe. A Jess-hosted book club, plus readers{"’"} corners for whatever you{"’"}re reading.</Hand>
       <div style={{ background: T.paperHi, border: `1px solid ${T.paperDeep}`, borderRadius: 12, padding: "13px 14px" }}>
-        <div style={{ fontFamily: UI, fontSize: 9.5, fontWeight: 700, letterSpacing: 0.6, textTransform: "uppercase", color: T.gold, marginBottom: 5 }}>This season{"’"}s read · Jess hosts</div>
+        <div style={{ fontFamily: UI, fontSize: 12, fontWeight: 700, letterSpacing: 0.6, textTransform: "uppercase", color: T.gold, marginBottom: 5 }}>This season{"’"}s read · Jess hosts</div>
         <div style={{ fontFamily: HANDFAM, fontStyle: "italic", fontSize: 19, color: T.ink, lineHeight: 1.2 }}>{SEED_PICK.title}</div>
         <div style={{ fontFamily: SERIF, fontSize: 13, color: T.muted, marginTop: 2 }}>{SEED_PICK.author} · {SEED_PICK.cadence}</div>
         <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 10 }}>
           <BookOpen size={13} style={{ color: T.gold }} />
-          <span style={{ fontFamily: UI, fontSize: 11, fontWeight: 700, color: reached >= 0 ? T.ink : T.muted }}>{progress}</span>
+          <span style={{ fontFamily: UI, fontSize: 12, fontWeight: 700, color: reached >= 0 ? T.ink : T.muted }}>{progress}</span>
         </div>
         {reached < total - 1 ? (
           <button onClick={markNext} style={{
             marginTop: 11, display: "inline-flex", alignItems: "center", gap: 7, background: T.ink, color: T.paper, border: "none",
-            borderRadius: 10, padding: "9px 13px", cursor: "pointer", fontFamily: UI, fontSize: 11, fontWeight: 700, letterSpacing: 0.4, textTransform: "uppercase",
+            borderRadius: 10, padding: "9px 13px", cursor: "pointer", fontFamily: UI, fontSize: 12, fontWeight: 700, letterSpacing: 0.4, textTransform: "uppercase",
           }}>
             <Check size={13} /> {reached < 0 ? "Start — mark “" : "Reached “"}{(nextLabel || `checkpoint ${reached + 2}`).slice(0, 26)}{"”"}
           </button>
         ) : null}
       </div>
-      <div style={{ marginTop: "auto", paddingTop: 12, fontFamily: UI, fontSize: 11, color: T.muted }}>
+      <div style={{ marginTop: "auto", paddingTop: 12, fontFamily: UI, fontSize: 12, color: T.muted }}>
         Open the Library for the spoiler-safe discussion + readers{"’"} corners.
       </div>
     </div>
@@ -602,13 +602,13 @@ function CommunityHubInner() {
               <span style={{ width: 24, height: 24, borderRadius: 999, background: T.sage, display: "grid", placeItems: "center" }}>
                 <HeartHandshake size={13} color={T.dusk} />
               </span>
-              <span style={{ fontFamily: UI, fontSize: 9.5, letterSpacing: 1.4, color: T.wax, textTransform: "uppercase", fontWeight: 700 }}>Jess · here with you</span>
+              <span style={{ fontFamily: UI, fontSize: 12, letterSpacing: 1.4, color: T.wax, textTransform: "uppercase", fontWeight: 700 }}>Jess · here with you</span>
             </div>
             <Hand size={17} color={T.paper} style={{ marginBottom: 12 }}>
               Come in for the whole of you — the love, the laugh, the money question, the late-night vent. No names, no count.
             </Hand>
             <div style={{ borderTop: "1px solid rgba(244,239,227,0.18)", paddingTop: 12 }}>
-              <div style={{ fontFamily: UI, fontSize: 9.5, letterSpacing: 1.2, color: T.wax, textTransform: "uppercase", fontWeight: 700, marginBottom: 5 }}>Question of the day</div>
+              <div style={{ fontFamily: UI, fontSize: 12, letterSpacing: 1.2, color: T.wax, textTransform: "uppercase", fontWeight: 700, marginBottom: 5 }}>Question of the day</div>
               <div style={{ fontFamily: HANDFAM, fontStyle: "italic", fontSize: 19, lineHeight: 1.35, color: T.paper, marginBottom: 12 }}>{qotd.text}</div>
               <button onClick={() => setOpenSheet("qotd")} style={{
                 display: "inline-flex", alignItems: "center", gap: 8, background: T.gold, color: PLUM, border: "none",
@@ -624,8 +624,8 @@ function CommunityHubInner() {
           <div style={{ display: "flex", alignItems: "flex-start", gap: 9, marginTop: 14, background: T.paperHi, border: `1px solid ${T.paperDeep}`, borderRadius: 12, padding: "12px 14px" }}>
             <Lock size={14} style={{ color: T.gold, marginTop: 2, flexShrink: 0 }} />
             <div>
-              <div style={{ fontFamily: UI, fontSize: 11.5, color: T.inkSoft, lineHeight: 1.5, fontWeight: 600 }}>Anonymous, 18+ — no handles, no DMs, no likes or leaderboards.</div>
-              <button onClick={() => setCrisis(true)} style={{ background: "transparent", border: "none", padding: "4px 0 0", cursor: "pointer", display: "inline-flex", alignItems: "center", gap: 6, fontFamily: UI, fontSize: 11.5, fontWeight: 700, color: T.crimson }}>
+              <div style={{ fontFamily: UI, fontSize: 12, color: T.inkSoft, lineHeight: 1.5, fontWeight: 600 }}>Anonymous, 18+ — no handles, no DMs, no likes or leaderboards.</div>
+              <button onClick={() => setCrisis(true)} style={{ background: "transparent", border: "none", padding: "4px 0 0", cursor: "pointer", display: "inline-flex", alignItems: "center", gap: 6, fontFamily: UI, fontSize: 12, fontWeight: 700, color: T.crimson }}>
                 <Phone size={12} /> In crisis? Tap for support, any time.
               </button>
             </div>
@@ -644,7 +644,7 @@ function CommunityHubInner() {
               <button key={s.id} onClick={() => goTo(i)} style={{
                 flex: "none", background: i === active ? T.ink : "transparent", color: i === active ? T.paper : T.muted,
                 border: `1px solid ${i === active ? T.ink : T.paperDeep}`, borderRadius: 999, padding: "5px 12px",
-                fontFamily: UI, fontSize: 10.5, fontWeight: 700, letterSpacing: 0.5, textTransform: "uppercase", cursor: "pointer",
+                fontFamily: UI, fontSize: 12, fontWeight: 700, letterSpacing: 0.5, textTransform: "uppercase", cursor: "pointer",
               }}>{s.label}</button>
             ))}
           </div>
@@ -707,7 +707,7 @@ function CommunityHubInner() {
         {/* footer voice — the anonymity/no-leaderboard charter line */}
         <footer style={{ textAlign: "center", padding: "26px 24px 0" }}>
           <Rule w={40} c={T.paperDeep} mb={12} />
-          <div style={{ fontFamily: UI, fontSize: 11.5, color: T.muted, lineHeight: 1.5 }}>{FOOTER_LINE}</div>
+          <div style={{ fontFamily: UI, fontSize: 12, color: T.muted, lineHeight: 1.5 }}>{FOOTER_LINE}</div>
           <EditorialFooter />
         </footer>
 

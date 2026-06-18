@@ -144,7 +144,7 @@ export default function PromptCarousel({ user, profile, phase, cycleDay, lastEnt
         >
           Another prompt
         </button>
-        <span style={{ fontFamily: UI, fontSize: 10, color: cSoft, letterSpacing: 0.4, fontWeight: 600, fontStyle: "italic", marginLeft: "auto" }}>
+        <span style={{ fontFamily: UI, fontSize: 12, color: cSoft, letterSpacing: 0.4, fontWeight: 600, fontStyle: "italic", marginLeft: "auto" }}>
           {onLead ? "Jess · today" : "Phase prompt"} · not medical advice
         </span>
       </div>

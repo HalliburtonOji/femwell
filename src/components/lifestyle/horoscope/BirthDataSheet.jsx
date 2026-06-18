@@ -184,7 +184,7 @@ const headerRowStyle = {
 };
 const eyebrowStyle = {
   fontWeight: 700,
-  fontSize: 11,
+  fontSize: 12,
   letterSpacing: "0.14em",
   textTransform: "uppercase",
   color: "var(--rose-primary, #D45E52)",

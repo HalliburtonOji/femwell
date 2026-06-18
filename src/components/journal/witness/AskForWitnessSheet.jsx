@@ -254,7 +254,7 @@ export default function AskForWitnessSheet({
                     <Lock size={13} style={{ color: T.gold }} />
                     <span style={{ fontFamily: UI, fontSize: 13, fontWeight: 700, color: T.ink }}>Maximum privacy (end-to-end)</span>
                   </span>
-                  <span style={{ display: "block", fontFamily: UI, fontSize: 11.5, color: T.muted, lineHeight: 1.45, marginTop: 3 }}>
+                  <span style={{ display: "block", fontFamily: UI, fontSize: 12, color: T.muted, lineHeight: 1.45, marginTop: 3 }}>
                     Only she can ever read it — not even us. She opens it once your device hands her the key, so it may reach her a little slower.
                   </span>
                 </span>

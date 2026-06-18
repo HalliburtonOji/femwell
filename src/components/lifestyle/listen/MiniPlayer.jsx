@@ -103,7 +103,7 @@ export default function MiniPlayer() {
         </div>
         <div
           style={{
-            fontSize: 11,
+            fontSize: 12,
             color: 'var(--cream-2, #ede2d4)',
             opacity: 0.7,
             lineHeight: 1.25,
@@ -136,7 +136,7 @@ export default function MiniPlayer() {
             color: 'var(--cream, #f7f0e6)',
             border: 'none',
             textDecoration: 'none',
-            fontSize: 11, fontWeight: 700, letterSpacing: '0.08em',
+            fontSize: 12, fontWeight: 700, letterSpacing: '0.08em',
             textTransform: 'uppercase',
             flexShrink: 0,
           }}

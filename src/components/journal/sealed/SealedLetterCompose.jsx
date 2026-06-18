@@ -172,7 +172,7 @@ export default function SealedLetterCompose({
         )}
 
         {sealDate && (
-          <div style={{ fontFamily: UI, fontSize: 11.5, color: T.muted, fontWeight: 600, letterSpacing: 0.4, marginBottom: 18 }}>
+          <div style={{ fontFamily: UI, fontSize: 12, color: T.muted, fontWeight: 600, letterSpacing: 0.4, marginBottom: 18 }}>
             {resolved?.trigger?.label} · {formatLetterDate(sealDate)}
           </div>
         )}
@@ -189,7 +189,7 @@ export default function SealedLetterCompose({
           }}>{sealing ? "Sealing…" : "Seal it"}</button>
         </div>
 
-        <div style={{ display: "inline-flex", alignItems: "center", gap: 6, marginTop: 18, fontFamily: UI, fontSize: 10.5, color: T.muted, letterSpacing: 0.5, fontWeight: 600 }}>
+        <div style={{ display: "inline-flex", alignItems: "center", gap: 6, marginTop: 18, fontFamily: UI, fontSize: 12, color: T.muted, letterSpacing: 0.5, fontWeight: 600 }}>
           <Lock size={11} /> Encrypted on this device with a key only this device holds. The server stores only the cipher.
         </div>
       </div>

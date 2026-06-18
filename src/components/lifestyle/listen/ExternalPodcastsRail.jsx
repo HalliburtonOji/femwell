@@ -251,7 +251,7 @@ function ExternalPodcastCard({ ep, os }) {
           display: 'inline-flex', alignItems: 'center', gap: 4,
           padding: '3px 9px', borderRadius: 9999,
           background: 'rgba(20,16,32,0.78)', color: 'var(--cream, #F4EDDB)',
-          fontSize: 9.5, fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase',
+          fontSize: 12, fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase',
         }}>
           <ExternalLink size={10} />
           Listen externally
@@ -261,7 +261,7 @@ function ExternalPodcastCard({ ep, os }) {
           bottom: 8, left: 8,
           padding: '3px 9px', borderRadius: 9999,
           background: 'rgba(20,16,32,0.55)', color: 'var(--cream, #F4EDDB)',
-          fontSize: 9.5, fontWeight: 700, letterSpacing: '0.10em', textTransform: 'uppercase',
+          fontSize: 12, fontWeight: 700, letterSpacing: '0.10em', textTransform: 'uppercase',
         }}>
           PODCAST · {ep.duration}
         </div>
@@ -270,7 +270,7 @@ function ExternalPodcastCard({ ep, os }) {
       {/* Body */}
       <div style={{ padding: '14px 16px 16px', display: 'flex', flexDirection: 'column', gap: 6 }}>
         <p style={{
-          fontSize: 10, fontWeight: 700, letterSpacing: '0.18em', textTransform: 'uppercase',
+          fontSize: 12, fontWeight: 700, letterSpacing: '0.18em', textTransform: 'uppercase',
           color: 'var(--plum-mute, #8a7768)', margin: 0,
         }}>{ep.show}</p>
         <h3 style={{
@@ -312,7 +312,7 @@ export default function ExternalPodcastsRail() {
     <section style={{ marginTop: 24, marginBottom: 24 }} aria-label="External podcasts">
       <div style={{ padding: '0 16px', marginBottom: 12 }}>
         <p style={{
-          fontSize: 10, fontWeight: 700, letterSpacing: '0.18em', textTransform: 'uppercase',
+          fontSize: 12, fontWeight: 700, letterSpacing: '0.18em', textTransform: 'uppercase',
           color: 'var(--plum-mute, #8a7768)', margin: 0,
         }}>EXTERNAL PODCASTS · LISTEN IN YOUR APP</p>
         <p style={{

@@ -71,7 +71,7 @@ export default function BreakSealReader({ letter, onClose, onSeen, onWriteBack }
             <Hand size={20} color={T.inkSoft} style={{ marginBottom: 4 }}>
               {stage === "opening" ? "Breaking the seal…" : "The date arrived. This was sealed until now."}
             </Hand>
-            <div style={{ fontFamily: UI, fontSize: 11, color: T.muted, fontWeight: 600, letterSpacing: 0.4, marginBottom: 22 }}>
+            <div style={{ fontFamily: UI, fontSize: 12, color: T.muted, fontWeight: 600, letterSpacing: 0.4, marginBottom: 22 }}>
               Sealed {formatLetterDate(letter.created_at || letter.created_date)}
             </div>
             {stage === "sealed" && (
@@ -89,10 +89,10 @@ export default function BreakSealReader({ letter, onClose, onSeen, onWriteBack }
             <p style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 22, color: T.ink, lineHeight: 1.64, whiteSpace: "pre-wrap", margin: "0 0 18px" }}>
               {text || "(she left you no words)"}
             </p>
-            <div style={{ fontFamily: UI, fontSize: 11, color: T.muted, fontWeight: 600, letterSpacing: 0.4 }}>
+            <div style={{ fontFamily: UI, fontSize: 12, color: T.muted, fontWeight: 600, letterSpacing: 0.4 }}>
               Sealed {formatLetterDate(letter.created_at || letter.created_date)} · Opened {formatLetterDate(letter.unsealed_at || new Date().toISOString())}
             </div>
-            <div style={{ display: "inline-flex", alignItems: "center", gap: 6, marginTop: 14, fontFamily: UI, fontSize: 10.5, color: T.muted, letterSpacing: 0.5, fontWeight: 600 }}>
+            <div style={{ display: "inline-flex", alignItems: "center", gap: 6, marginTop: 14, fontFamily: UI, fontSize: 12, color: T.muted, letterSpacing: 0.5, fontWeight: 600 }}>
               <Lock size={11} /> Decrypted on this device. The server only ever held the cipher.
             </div>
 

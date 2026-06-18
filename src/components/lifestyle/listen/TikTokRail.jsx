@@ -21,7 +21,7 @@ export default function TikTokRail({ items, savedSet, savedPhases, onSave, onUnt
       <p style={{
         padding: '0 16px',
         marginBottom: 10,
-        fontSize: 11,
+        fontSize: 12,
         fontWeight: 600,
         textTransform: 'uppercase',
         letterSpacing: '0.6px',
@@ -114,7 +114,7 @@ function TikTokCard({ item, saved, hasPhaseTag, onOpen, onSave, onUntag }) {
       {/* Top-left: TIKTOK pill */}
       <div style={{
         position: 'absolute', top: 10, left: 10,
-        fontSize: 9, fontWeight: 600, textTransform: 'uppercase',
+        fontSize: 12, fontWeight: 600, textTransform: 'uppercase',
         color: 'var(--cream)', background: 'rgba(0,0,0,0.45)',
         padding: '3px 6px', borderRadius: 4,
         pointerEvents: 'none',

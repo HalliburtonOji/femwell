@@ -182,7 +182,7 @@ export default function EchoWall({ user, profile, phase = null, lifeStage = null
               <div style={{ flex: 1 }}>
                 <Hand size={20} color={T.ink} carve={false}>{"“"}{e.body}{"”"}</Hand>
                 <div style={{ marginTop: 8, display: "flex", alignItems: "center", gap: 14 }}>
-                  <span style={{ fontFamily: UI, fontSize: 11.5, color: T.muted }}>
+                  <span style={{ fontFamily: UI, fontSize: 12, color: T.muted }}>
                     goes up {new Date(e.live_at).toLocaleString("en-GB", { hour: "2-digit", minute: "2-digit", day: "numeric", month: "short" })}
                   </span>
                   <button onClick={() => handleRetract(e)} style={pullBack}>
@@ -222,11 +222,11 @@ export default function EchoWall({ user, profile, phase = null, lifeStage = null
             <Hand size={23} color={T.ink} style={{ lineHeight: 1.42 }}>{"“"}{e.body}{"”"}</Hand>
             <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 10, flexWrap: "wrap" }}>
               {sister && (
-                <span style={{ fontFamily: UI, fontSize: 10.5, fontWeight: 700, letterSpacing: 0.6, textTransform: "uppercase", color: T.gold, border: `1px solid ${T.gold}`, borderRadius: 999, padding: "2px 8px" }}>
+                <span style={{ fontFamily: UI, fontSize: 12, fontWeight: 700, letterSpacing: 0.6, textTransform: "uppercase", color: T.gold, border: `1px solid ${T.gold}`, borderRadius: 999, padding: "2px 8px" }}>
                   your phase
                 </span>
               )}
-              <span style={{ fontFamily: UI, fontSize: 11, color: T.muted, letterSpacing: 0.3 }}>{fadeLabel(e)}</span>
+              <span style={{ fontFamily: UI, fontSize: 12, color: T.muted, letterSpacing: 0.3 }}>{fadeLabel(e)}</span>
               <div style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: 6 }}>
                 {REACTIONS.map((r) => {
                   const Icon = REACTION_ICON[r.id];
@@ -256,7 +256,7 @@ export default function EchoWall({ user, profile, phase = null, lifeStage = null
         );
       })}
 
-      <p style={{ fontFamily: UI, fontSize: 11, color: T.muted, textAlign: "center", marginTop: 26, lineHeight: 1.6 }}>
+      <p style={{ fontFamily: UI, fontSize: 12, color: T.muted, textAlign: "center", marginTop: 26, lineHeight: 1.6 }}>
         No handles, no threads, no replies. If a line worries you, the flag hides it from everyone.
       </p>
     </div>
@@ -270,5 +270,5 @@ const card = {
 const pullBack = {
   display: "inline-flex", alignItems: "center", gap: 5, background: "transparent",
   border: `1px solid ${T.paperDeep}`, borderRadius: 999, padding: "4px 10px", cursor: "pointer",
-  fontFamily: UI, fontSize: 11.5, fontWeight: 600, color: T.inkSoft,
+  fontFamily: UI, fontSize: 12, fontWeight: 600, color: T.inkSoft,
 };

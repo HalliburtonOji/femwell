@@ -71,21 +71,21 @@ function StickerFace({ entry, thread, count, onThread }) {
       }} />
       <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 7 }}>
         <span style={{
-          fontFamily: UI, fontSize: 10, fontWeight: 800, letterSpacing: 1.1, textTransform: "uppercase",
+          fontFamily: UI, fontSize: 12, fontWeight: 800, letterSpacing: 1.1, textTransform: "uppercase",
           color: colour, background: `${colour}1A`, borderRadius: 999, padding: "3px 9px",
         }}>{labelOf(entry)}</span>
         {entry.is_pinned && <Pin size={11} style={{ color: T.gold }} />}
         {isStack && (
-          <span style={{ display: "inline-flex", alignItems: "center", gap: 4, fontFamily: UI, fontSize: 10, fontWeight: 700, letterSpacing: 0.5, color: T.muted }}>
+          <span style={{ display: "inline-flex", alignItems: "center", gap: 4, fontFamily: UI, fontSize: 12, fontWeight: 700, letterSpacing: 0.5, color: T.muted }}>
             <Layers size={11} style={{ color: colour }} /> {count} pages
           </span>
         )}
-        <span style={{ fontFamily: UI, fontSize: 10.5, color: T.muted, letterSpacing: 0.4, fontWeight: 600, marginLeft: "auto" }}>{relativeDate(entry)}</span>
+        <span style={{ fontFamily: UI, fontSize: 12, color: T.muted, letterSpacing: 0.4, fontWeight: 600, marginLeft: "auto" }}>{relativeDate(entry)}</span>
       </div>
       <p style={{ fontFamily: SERIF, fontSize: 18.5, color: T.ink, lineHeight: 1.5, margin: 0 }}>{body}</p>
       {tag && (
         isStack || !onThread ? (
-          <div style={{ display: "inline-flex", alignItems: "center", gap: 5, marginTop: 10, fontFamily: UI, fontSize: 10, fontWeight: 700, letterSpacing: 0.8, textTransform: "uppercase", color: T.muted }}>
+          <div style={{ display: "inline-flex", alignItems: "center", gap: 5, marginTop: 10, fontFamily: UI, fontSize: 12, fontWeight: 700, letterSpacing: 0.8, textTransform: "uppercase", color: T.muted }}>
             <Hash size={10} style={{ color: T.gold }} /> {tag}
           </div>
         ) : (
@@ -95,7 +95,7 @@ function StickerFace({ entry, thread, count, onThread }) {
             style={{
               display: "inline-flex", alignItems: "center", gap: 5, marginTop: 10,
               background: "transparent", border: "none", cursor: "pointer", padding: 0,
-              fontFamily: UI, fontSize: 10, fontWeight: 700, letterSpacing: 0.8,
+              fontFamily: UI, fontSize: 12, fontWeight: 700, letterSpacing: 0.8,
               textTransform: "uppercase", color: T.muted, borderBottom: `1px solid ${T.paperDeep}`, paddingBottom: 1,
             }}>
             <Hash size={10} style={{ color: T.gold }} /> {tag}
@@ -158,7 +158,7 @@ export default function JournalLedger({ entries, onTap, onThread }) {
 
   return (
     <section style={{ marginBottom: 46 }}>
-      <div style={{ fontFamily: UI, fontSize: 10.5, color: T.muted, letterSpacing: 1.7, fontWeight: 700, textTransform: "uppercase", marginBottom: 16 }}>
+      <div style={{ fontFamily: UI, fontSize: 12, color: T.muted, letterSpacing: 1.7, fontWeight: 700, textTransform: "uppercase", marginBottom: 16 }}>
         The ledger · Recent entries
       </div>
       {rows.map((r) => (

@@ -42,7 +42,7 @@ export default function InsightTeaser({ entries, onOpen }) {
         <BarChart3 size={18} style={{ color: T.gold }} />
       </span>
       <span style={{ flex: 1, minWidth: 0 }}>
-        <span style={{ display: "block", fontFamily: UI, fontSize: 10, fontWeight: 800, letterSpacing: 1.6, textTransform: "uppercase", color: T.gold, marginBottom: 3 }}>Insights</span>
+        <span style={{ display: "block", fontFamily: UI, fontSize: 12, fontWeight: 800, letterSpacing: 1.6, textTransform: "uppercase", color: T.gold, marginBottom: 3 }}>Insights</span>
         <Hand size={20} color={T.inkSoft} carve={false} style={{ lineHeight: 1.3 }}>{line}</Hand>
       </span>
       <ChevronRight size={18} style={{ color: T.muted, flexShrink: 0 }} />

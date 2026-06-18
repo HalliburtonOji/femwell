@@ -140,7 +140,7 @@ export default function PodcastCard({ item, saved, hasPhaseTag, onSave, onUntag 
         {/* Top-left meta pill */}
         <div style={{
           position: 'absolute', top: 10, left: 10,
-          fontSize: 11, fontWeight: 600, textTransform: 'uppercase',
+          fontSize: 12, fontWeight: 600, textTransform: 'uppercase',
           letterSpacing: '0.6px',
           color: 'var(--cream)', background: 'rgba(0,0,0,0.35)',
           padding: '4px 10px', borderRadius: 9999,

@@ -156,7 +156,7 @@ export default function ShareAsEchoSheet({
                 />
                 <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 14 }}>
                   <Lock size={13} style={{ color: T.muted }} />
-                  <span style={{ fontFamily: UI, fontSize: 11.5, color: T.muted, letterSpacing: 0.2 }}>
+                  <span style={{ fontFamily: UI, fontSize: 12, color: T.muted, letterSpacing: 0.2 }}>
                     Scrubbed on your device before anything leaves it.
                   </span>
                 </div>
@@ -191,7 +191,7 @@ export default function ShareAsEchoSheet({
                   <Eyebrow>Before it goes up</Eyebrow>
                 </div>
                 <Hand size={18} color={T.inkSoft}>{cooling.note}</Hand>
-                <p style={{ fontFamily: UI, fontSize: 11.5, color: T.muted, marginTop: 8 }}>
+                <p style={{ fontFamily: UI, fontSize: 12, color: T.muted, marginTop: 8 }}>
                   It would go live {relTime(cooling.liveAt)} and fade two days after.
                 </p>
               </div>

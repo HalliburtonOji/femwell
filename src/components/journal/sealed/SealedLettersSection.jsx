@@ -23,7 +23,7 @@ function triggerLabel(letter) {
 function ThreadBadge({ n }) {
   if (!n || n < 2) return null;
   return (
-    <span style={{ display: "inline-flex", alignItems: "center", gap: 4, fontFamily: UI, fontSize: 9.5, fontWeight: 700, letterSpacing: 0.4, color: T.gold, marginTop: 3 }}>
+    <span style={{ display: "inline-flex", alignItems: "center", gap: 4, fontFamily: UI, fontSize: 12, fontWeight: 700, letterSpacing: 0.4, color: T.gold, marginTop: 3 }}>
       <GitBranch size={10} /> A thread of {n}
     </span>
   );
@@ -38,11 +38,11 @@ function SealedRow({ letter, threadN }) {
           {letter.title?.trim() || "A sealed letter"}
         </div>
         {triggerLabel(letter) && (
-          <div style={{ fontFamily: UI, fontSize: 10.5, color: T.muted, fontWeight: 600, letterSpacing: 0.3, marginTop: 2 }}>{triggerLabel(letter)}</div>
+          <div style={{ fontFamily: UI, fontSize: 12, color: T.muted, fontWeight: 600, letterSpacing: 0.3, marginTop: 2 }}>{triggerLabel(letter)}</div>
         )}
         <ThreadBadge n={threadN} />
       </div>
-      <span style={{ fontFamily: UI, fontSize: 11.5, fontWeight: 700, color: T.muted, flexShrink: 0, letterSpacing: 0.3 }}>
+      <span style={{ fontFamily: UI, fontSize: 12, fontWeight: 700, color: T.muted, flexShrink: 0, letterSpacing: 0.3 }}>
         {formatCountdown(letter.seal_date)}
       </span>
     </div>
@@ -56,7 +56,7 @@ function AnniversaryCard({ letter, onOpen }) {
       background: T.paperHi, border: `1px solid ${T.gold}`, borderRadius: 4, padding: "18px 20px",
       display: "block",
     }}>
-      <div style={{ fontFamily: UI, fontSize: 10, fontWeight: 800, letterSpacing: 1.4, textTransform: "uppercase", color: T.gold, marginBottom: 6 }}>An anniversary has come round</div>
+      <div style={{ fontFamily: UI, fontSize: 12, fontWeight: 800, letterSpacing: 1.4, textTransform: "uppercase", color: T.gold, marginBottom: 6 }}>An anniversary has come round</div>
       <Script size={26} style={{ marginBottom: 6 }}>{letter.title?.trim() || "A year ago, you sealed this for today"}</Script>
       <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
         <MailOpen size={15} style={{ color: T.gold }} />
@@ -80,7 +80,7 @@ function ReadyRow({ letter, onOpen, threadN }) {
         <div style={{ fontFamily: UI, fontSize: 13, fontWeight: 800, color: T.ink, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
           {letter.title?.trim() || "A letter is ready to open"}
         </div>
-        <div style={{ fontFamily: UI, fontSize: 10.5, color: T.muted, fontWeight: 600, letterSpacing: 0.3, marginTop: 2 }}>The date arrived — break the seal</div>
+        <div style={{ fontFamily: UI, fontSize: 12, color: T.muted, fontWeight: 600, letterSpacing: 0.3, marginTop: 2 }}>The date arrived — break the seal</div>
         <ThreadBadge n={threadN} />
       </div>
       {!letter.unseal_seen_at && <span style={{ width: 7, height: 7, borderRadius: 999, background: T.crimson, flexShrink: 0 }} />}
@@ -186,13 +186,13 @@ export default function SealedLettersSection({ user, profile }) {
         <div>
           {ready.length > 0 && (
             <div style={{ marginBottom: sealed.length ? 18 : 8 }}>
-              <div style={{ fontFamily: UI, fontSize: 10, fontWeight: 800, letterSpacing: 1.4, textTransform: "uppercase", color: T.gold, marginBottom: 2 }}>Ready to open</div>
+              <div style={{ fontFamily: UI, fontSize: 12, fontWeight: 800, letterSpacing: 1.4, textTransform: "uppercase", color: T.gold, marginBottom: 2 }}>Ready to open</div>
               {ready.map((l) => <ReadyRow key={l.id} letter={l} onOpen={setOpenLetter} threadN={sizes[threadKeyOf(l)] || 0} />)}
             </div>
           )}
           {sealed.length > 0 && (
             <div>
-              <div style={{ fontFamily: UI, fontSize: 10, fontWeight: 800, letterSpacing: 1.4, textTransform: "uppercase", color: T.muted, marginBottom: 2 }}>Still held</div>
+              <div style={{ fontFamily: UI, fontSize: 12, fontWeight: 800, letterSpacing: 1.4, textTransform: "uppercase", color: T.muted, marginBottom: 2 }}>Still held</div>
               {sealed.map((l) => <SealedRow key={l.id} letter={l} threadN={sizes[threadKeyOf(l)] || 0} />)}
             </div>
           )}

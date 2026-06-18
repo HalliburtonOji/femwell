@@ -415,7 +415,7 @@ export default function JournalHub() {
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10, marginBottom: 14 }}>
             <JumpToButton onClick={() => setHubMenuOpen(true)} />
             {season ? (
-              <span style={{ fontFamily: UI, fontSize: 10.5, color: T.muted, letterSpacing: 0.5, fontWeight: 600, textAlign: "right", maxWidth: 230 }}>
+              <span style={{ fontFamily: UI, fontSize: 12, color: T.muted, letterSpacing: 0.5, fontWeight: 600, textAlign: "right", maxWidth: 230 }}>
                 {season.name} · {season.line}
               </span>
             ) : null}
@@ -448,7 +448,7 @@ export default function JournalHub() {
                   : `${weekCount} ${weekCount === 1 ? "entry" : "entries"} this week`}
               </div>
               {cycleCount.count > 0 ? (
-                <div style={{ fontFamily: UI, fontSize: 10, letterSpacing: 0.6, color: T.muted, marginTop: 3 }}>
+                <div style={{ fontFamily: UI, fontSize: 12, letterSpacing: 0.6, color: T.muted, marginTop: 3 }}>
                   {cycleCount.count} {cycleCount.label} — you{"’"}re building a pattern.
                 </div>
               ) : null}
@@ -463,7 +463,7 @@ export default function JournalHub() {
             }}>
               {lastEntry.is_pinned ? <Pin size={15} style={{ color: T.gold, flexShrink: 0 }} /> : <Feather size={15} style={{ color: T.muted, flexShrink: 0 }} />}
               <span style={{ flex: 1, minWidth: 0 }}>
-                <span style={{ fontFamily: UI, fontSize: 9, letterSpacing: 1, color: T.muted, textTransform: "uppercase", display: "block" }}>
+                <span style={{ fontFamily: UI, fontSize: 12, letterSpacing: 1, color: T.muted, textTransform: "uppercase", display: "block" }}>
                   Last entry · {relativeDate(lastEntry)}
                 </span>
                 <span style={{ fontFamily: SERIF, fontSize: 15, color: T.ink, display: "block", lineHeight: 1.25, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
@@ -497,8 +497,8 @@ export default function JournalHub() {
               }}
             >
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 2 }}>
-                <span style={{ fontFamily: UI, fontSize: 10.5, fontWeight: 700, letterSpacing: 1, textTransform: "uppercase", color: T.muted }}>Your garden</span>
-                <span style={{ display: "inline-flex", alignItems: "center", gap: 1, fontFamily: UI, fontSize: 11, fontWeight: 600, color: T.muted }}>Tend<ChevronRight size={13} /></span>
+                <span style={{ fontFamily: UI, fontSize: 12, fontWeight: 700, letterSpacing: 1, textTransform: "uppercase", color: T.muted }}>Your garden</span>
+                <span style={{ display: "inline-flex", alignItems: "center", gap: 1, fontFamily: UI, fontSize: 12, fontWeight: 600, color: T.muted }}>Tend<ChevronRight size={13} /></span>
               </div>
               <NurtureGarden compact onOpen={() => navigate(createPageUrl("Garden"))} />
             </button>
@@ -514,7 +514,7 @@ export default function JournalHub() {
                     width: "100%", textAlign: "left", display: "flex", gap: 10, alignItems: "baseline",
                     background: "transparent", border: "none", borderLeft: `2px solid ${T.gold}`, paddingLeft: 11, cursor: "pointer",
                   }}>
-                    <span style={{ fontFamily: UI, fontSize: 9, color: T.muted, fontWeight: 700, textTransform: "uppercase", flexShrink: 0 }}>{relativeDate(e)}</span>
+                    <span style={{ fontFamily: UI, fontSize: 12, color: T.muted, fontWeight: 700, textTransform: "uppercase", flexShrink: 0 }}>{relativeDate(e)}</span>
                     <span style={{ flex: 1, minWidth: 0, fontFamily: SERIF, fontSize: 13.5, color: T.ink, lineHeight: 1.25, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{entryPreview(e)}</span>
                   </button>
                 ))}
@@ -545,7 +545,7 @@ export default function JournalHub() {
               <button key={s.id} onClick={() => goTo(i)} style={{
                 flex: "none", background: i === active ? T.ink : "transparent", color: i === active ? T.paper : T.muted,
                 border: `1px solid ${i === active ? T.ink : T.paperDeep}`, borderRadius: 999, padding: "5px 12px",
-                fontFamily: UI, fontSize: 10.5, fontWeight: 700, letterSpacing: 0.5, textTransform: "uppercase", cursor: "pointer",
+                fontFamily: UI, fontSize: 12, fontWeight: 700, letterSpacing: 0.5, textTransform: "uppercase", cursor: "pointer",
               }}>{s.label}</button>
             ))}
           </div>
@@ -618,7 +618,7 @@ export default function JournalHub() {
           <div style={{ fontFamily: SERIF, fontSize: 13, color: T.muted, fontStyle: "italic" }}>
             A publication of one — locked to you, always.
           </div>
-          <div style={{ fontFamily: UI, fontSize: 10, color: T.muted, marginTop: 8, letterSpacing: 0.3 }}>
+          <div style={{ fontFamily: UI, fontSize: 12, color: T.muted, marginTop: 8, letterSpacing: 0.3 }}>
             Gentle space for your stage — not medical advice.
           </div>
         </footer>
@@ -866,11 +866,11 @@ function EchoCard({ phase, onShareEcho }) {
       {loaded && all.length > 0 ? (
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, marginBottom: 12 }}>
           {presence ? (
-            <span style={{ fontFamily: UI, fontSize: 10.5, color: T.muted, fontWeight: 600, letterSpacing: 0.2 }}>{presence}</span>
+            <span style={{ fontFamily: UI, fontSize: 12, color: T.muted, fontWeight: 600, letterSpacing: 0.2 }}>{presence}</span>
           ) : <span />}
           {phase && phaseCount > 0 ? (
             <button onClick={() => setMineOnly((v) => !v)} style={{
-              fontFamily: UI, fontSize: 10, fontWeight: 700, letterSpacing: 0.4, textTransform: "uppercase", cursor: "pointer",
+              fontFamily: UI, fontSize: 12, fontWeight: 700, letterSpacing: 0.4, textTransform: "uppercase", cursor: "pointer",
               padding: "4px 10px", borderRadius: 999, border: `1px solid ${mineOnly ? T.gold : T.paperDeep}`,
               background: mineOnly ? T.gold : "transparent", color: mineOnly ? T.paper : T.muted,
             }}>{mineOnly ? "Showing your phase" : `Your phase · ${phaseCount}`}</button>
@@ -880,7 +880,7 @@ function EchoCard({ phase, onShareEcho }) {
 
       <div style={{ flex: 1 }}>
         {!loaded ? (
-          <div style={{ fontFamily: UI, fontSize: 11, color: T.muted }}>Listening for echoes…</div>
+          <div style={{ fontFamily: UI, fontSize: 12, color: T.muted }}>Listening for echoes…</div>
         ) : shown.length > 0 ? (
           <div style={{ display: "grid", gap: 10 }}>
             {shown.map((e) => (
@@ -889,7 +889,7 @@ function EchoCard({ phase, onShareEcho }) {
                   {"“"}{(e.body || "").slice(0, 140)}{"”"}
                 </div>
                 {phase && e.phase === phase ? (
-                  <div style={{ fontFamily: UI, fontSize: 9, fontWeight: 700, letterSpacing: 0.6, textTransform: "uppercase", color: T.gold, marginTop: 3 }}>your phase</div>
+                  <div style={{ fontFamily: UI, fontSize: 12, fontWeight: 700, letterSpacing: 0.6, textTransform: "uppercase", color: T.gold, marginTop: 3 }}>your phase</div>
                 ) : null}
               </div>
             ))}
@@ -986,7 +986,7 @@ function MoodTrend({ entries }) {
   const word = avg <= 2.4 ? "tender lately" : avg >= 3.6 ? "lighter lately" : "fairly steady";
   return (
     <div style={{ background: T.paper, border: `1px solid ${T.paperDeep}`, borderRadius: 10, padding: "11px 13px" }}>
-      <div style={{ fontFamily: UI, fontSize: 9.5, fontWeight: 700, letterSpacing: 0.6, textTransform: "uppercase", color: T.muted, marginBottom: 8 }}>
+      <div style={{ fontFamily: UI, fontSize: 12, fontWeight: 700, letterSpacing: 0.6, textTransform: "uppercase", color: T.muted, marginBottom: 8 }}>
         Mood across your last {moods.length} pages · {word}
       </div>
       <div style={{ display: "flex", alignItems: "flex-end", gap: 5, height: 26 }}>
@@ -1057,7 +1057,7 @@ function OnThisDayCard({ onThisDay, cycleDay, onReadEntry }) {
       <div style={{ flex: 1 }}>
         {list.length > 0 ? (
           <div style={{ display: "grid", gap: 11 }}>
-            <div style={{ fontFamily: UI, fontSize: 10, color: T.gold, fontWeight: 700, letterSpacing: 0.6, textTransform: "uppercase" }}>
+            <div style={{ fontFamily: UI, fontSize: 12, color: T.gold, fontWeight: 700, letterSpacing: 0.6, textTransform: "uppercase" }}>
               {list.length} {list.length === 1 ? "time" : "times"} you wrote {cycleDay ? `on Day ${cycleDay}` : "on this day"}
             </div>
             {list.map((e) => (
@@ -1065,7 +1065,7 @@ function OnThisDayCard({ onThisDay, cycleDay, onReadEntry }) {
                 width: "100%", textAlign: "left", background: "transparent", border: "none",
                 borderLeft: `2px solid ${T.gold}`, paddingLeft: 11, cursor: "pointer",
               }}>
-                <div style={{ fontFamily: UI, fontSize: 9, color: T.muted, fontWeight: 700, textTransform: "uppercase", marginBottom: 2 }}>{relativeDate(e)}</div>
+                <div style={{ fontFamily: UI, fontSize: 12, color: T.muted, fontWeight: 700, textTransform: "uppercase", marginBottom: 2 }}>{relativeDate(e)}</div>
                 <div style={{ fontFamily: SERIF, fontSize: 14, color: T.ink, lineHeight: 1.4 }}>{entryPreview(e)}</div>
               </button>
             ))}
@@ -1111,13 +1111,13 @@ function LettersCard({ user, onOpenSeal }) {
 
       <div style={{ flex: 1 }}>
         {letters === null ? (
-          <div style={{ fontFamily: UI, fontSize: 11, color: T.muted }}>Counting your letters…</div>
+          <div style={{ fontFamily: UI, fontSize: 12, color: T.muted }}>Counting your letters…</div>
         ) : list.length === 0 ? (
           <Empty>None sealed yet. Write a line to a future you — set a date, a phase, or a milestone, and it stays encrypted until then.</Empty>
         ) : (
           <>
             {/* real headline state */}
-            <div style={{ fontFamily: UI, fontSize: 11, color: T.muted, fontWeight: 700, letterSpacing: 0.3, marginBottom: 12 }}>
+            <div style={{ fontFamily: UI, fontSize: 12, color: T.muted, fontWeight: 700, letterSpacing: 0.3, marginBottom: 12 }}>
               {sealed.length} sealed{ready.length > 0 ? ` · ${ready.length} ready to open` : ""}
             </div>
             {ready.length > 0 ? (
@@ -1137,7 +1137,7 @@ function LettersCard({ user, onOpenSeal }) {
                       <span style={{ fontFamily: SERIF, fontSize: 13.5, color: T.ink, minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                         {(l.title || "").trim() || "A sealed letter"}
                       </span>
-                      <span style={{ fontFamily: UI, fontSize: 10.5, color: T.muted, fontWeight: 600, flexShrink: 0 }}>{formatCountdown(l.seal_date)}</span>
+                      <span style={{ fontFamily: UI, fontSize: 12, color: T.muted, fontWeight: 600, flexShrink: 0 }}>{formatCountdown(l.seal_date)}</span>
                     </div>
                   ))}
                 </div>
@@ -1188,7 +1188,7 @@ function ThreadsCard({ threads, onPickThread, onWrite }) {
         {list.length > 0 ? (
           <>
             {freshest?.last ? (
-              <div style={{ fontFamily: UI, fontSize: 10, color: T.muted, fontWeight: 700, letterSpacing: 0.3, marginBottom: 10 }}>
+              <div style={{ fontFamily: UI, fontSize: 12, color: T.muted, fontWeight: 700, letterSpacing: 0.3, marginBottom: 10 }}>
                 Most recent · {freshest.name} ({agoShort(freshest.last)})
               </div>
             ) : null}
@@ -1198,10 +1198,10 @@ function ThreadsCard({ threads, onPickThread, onWrite }) {
                   <span style={{ display: "inline-flex", alignItems: "center", gap: 5 }}>
                     <Hash size={11} color={T.gold} />
                     <span style={{ fontFamily: SERIF, fontSize: 13, color: T.ink }}>{t.name}</span>
-                    <span style={{ fontFamily: UI, fontSize: 10, color: T.muted, fontWeight: 700 }}>{t.count}</span>
+                    <span style={{ fontFamily: UI, fontSize: 12, color: T.muted, fontWeight: 700 }}>{t.count}</span>
                   </span>
                   {t.last ? (
-                    <span style={{ fontFamily: UI, fontSize: 9, color: T.muted, letterSpacing: 0.3 }}>last {agoShort(t.last)}</span>
+                    <span style={{ fontFamily: UI, fontSize: 12, color: T.muted, letterSpacing: 0.3 }}>last {agoShort(t.last)}</span>
                   ) : null}
                 </button>
               ))}
@@ -1321,7 +1321,7 @@ function ThreadsPicker({ threads, onPick, onWrite, onNewThread }) {
           <Feather size={13} /> Start
         </button>
       </div>
-      <div style={{ fontFamily: UI, fontSize: 10.5, color: T.muted, marginTop: 8, lineHeight: 1.4 }}>
+      <div style={{ fontFamily: UI, fontSize: 12, color: T.muted, marginTop: 8, lineHeight: 1.4 }}>
         Names the series and opens a page in it — write your first line and it{"’"}s kept here.
       </div>
     </div>
@@ -1350,7 +1350,7 @@ function ThreadsPicker({ threads, onPick, onWrite, onNewThread }) {
           }}>
             <Hash size={15} style={{ color: T.gold, flexShrink: 0 }} />
             <span style={{ flex: 1, fontFamily: SERIF, fontSize: 16, color: T.ink }}>{t.name}</span>
-            <span style={{ fontFamily: UI, fontSize: 11, color: T.muted, fontWeight: 700 }}>{t.count}</span>
+            <span style={{ fontFamily: UI, fontSize: 12, color: T.muted, fontWeight: 700 }}>{t.count}</span>
             <ChevronRight size={15} style={{ color: T.muted, flexShrink: 0 }} />
           </button>
         ))}
