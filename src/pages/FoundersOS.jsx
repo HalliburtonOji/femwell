@@ -56,28 +56,40 @@ import BooksBookClubsDoc from "@/components/founders/BooksBookClubsDoc";
 import NativeWidgetDoc from "@/components/founders/NativeWidgetDoc";
 import ArchitectureDoc from "@/components/founders/ArchitectureDoc";
 import TodayMegaPlanDoc from "@/components/founders/TodayMegaPlanDoc";
+import BottomNavPlanDoc from "@/components/founders/BottomNavPlanDoc";
 // HealthCornerDemo was the multi-layout preview. The canonical health
 // experience now lives at /Health (src/pages/Health.jsx). The Health Corner
 // tab in /Ideas renders <HealthCornerRedirectCard /> instead.
 // import HealthCornerDemo from "./HealthCornerDemo";
 
-// ─── Tokens ────────────────────────────────────────────────────────────
+// ─── Tokens (BRAND CREAM — 2026-06-18 rebuild) ──────────────────────────
+// FoundersOS was dark espresso on the RETIRED palette (#D4AF37/#F4EDDB/#9B8B7A).
+// Flipped to the canonical brand cream system (BRAND_IDENTITY.md §2): one gold
+// #A8893F, one crimson #BC2E27, cream #ECE7DA, ink #0B0805. Sage/blush are
+// deepened so they stay legible as TEXT on cream (the brand's light sage/blush
+// are background-only hues). Every tab reads from this one object, so the whole
+// OS flips to brand in a single edit. `crimson`/`espresso`/`muted` were
+// referenced but never defined before (silent undefined → invisible accent
+// buttons) — now defined, killing that latent bug.
 const T = {
-  bg:         "#1C1410",   // page background (very dark espresso)
-  surface:    "#2A1F17",   // surface cards
-  surfaceHi:  "#332519",   // elevated cards / table header / modals
-  border:     "#3D2D1F",   // subtle hairline
-  textHi:     "#F4EDDB",   // primary text (cream)
-  textMid:    "#C4B69E",   // mid-tone text
-  textMuted:  "#9B8B7A",   // secondary text
-  gold:       "#D4AF37",   // primary accent
-  goldSoft:   "rgba(212,175,55,0.16)",
-  blush:      "#E8B4B8",
-  blushSoft:  "rgba(232,180,184,0.18)",
-  sage:       "#8FAF8F",
-  sageSoft:   "rgba(143,175,143,0.18)",
-  red:        "#E85D5D",
-  redSoft:    "rgba(232,93,93,0.18)",
+  bg:         "#ECE7DA",   // paper / cream — page background
+  surface:    "#F4EFE3",   // paperHi — cards
+  surfaceHi:  "#FBF8F0",   // elevated cards / table header / modals
+  border:     "#D8CFBC",   // paperDeep — hairline
+  textHi:     "#0B0805",   // ink — primary text
+  textMid:    "#3A3025",   // muted ink — body text
+  textMuted:  "#7A6A4E",   // secondary text (readable on cream)
+  gold:       "#A8893F",   // brand gold (single)
+  goldSoft:   "rgba(168,137,63,0.14)",
+  blush:      "#B5616C",   // readable rose on cream (brand blush #E8B4B8 = bg-only)
+  blushSoft:  "rgba(181,97,108,0.12)",
+  sage:       "#5F7A5F",   // readable sage on cream (brand sage #8FAF8F = bg-only)
+  sageSoft:   "rgba(95,122,95,0.14)",
+  red:        "#BC2E27",   // brand crimson (alerts)
+  redSoft:    "rgba(188,46,39,0.10)",
+  crimson:    "#BC2E27",   // brand heart / crimson accent
+  espresso:   "#2E261B",   // dark accent (demo rims)
+  muted:      "#7A6A4E",   // alias of textMuted (legacy refs)
 };
 
 const ALLOWED = new Set([
@@ -85,33 +97,204 @@ const ALLOWED = new Set([
   "ojihalliburton57@gmail.com",
 ]);
 
-const TABS = ["Lab", "Today Mega-Plan", "Architecture", "Previews", "Companion Vision", "Companion Vision v2", "Feature Ideas", "Brand Identity", "Flora & Meaning", "Nurture Companion", "Widget & PWA", "Pages", "Roadmap", "Health Audit", "Nutrition Master Plan", "Nutrition Plan", "Nutrition Demos", "Community Plan", "Books & Book Clubs", "Build Plan", "Journal Audit", "Expert Governance", "Library & Groups", "Integration Audit", "Connectivity Map", "Sharing", "Home Redesign", "Whole-Life", "Audio", "Ideas", "Strategy", "Legal", "Decisions", "Journal", "Journal Demos", "Community Demos", "Another You", "UX & Design", "Wholeness", "LGBTQ+", "Health Corner"];
+const HOME = "__home__";
 
-// Themed groups for the two-row nav rail (replaces the flat 36-tab scroll row).
-// Every tab is assigned exactly once; any tab not listed falls into "More" so
-// nothing can silently disappear if TABS changes.
-const TAB_GROUPS = [
-  { name: "Companion",       tabs: ["Companion Vision", "Companion Vision v2", "Nurture Companion", "Widget & PWA"] },
-  { name: "Strategy & Ideas", tabs: ["Lab", "Today Mega-Plan", "Ideas", "Feature Ideas", "Strategy", "Decisions", "Roadmap"] },
-  { name: "Journal",         tabs: ["Journal", "Journal Audit", "Journal Demos"] },
-  { name: "Community",       tabs: ["Community Plan", "Community Demos", "Library & Groups", "Books & Book Clubs", "Sharing"] },
-  { name: "Nutrition",       tabs: ["Nutrition Master Plan", "Nutrition Plan", "Nutrition Demos"] },
-  { name: "Health",          tabs: ["Health Audit", "Health Corner"] },
-  { name: "Brand & UX",      tabs: ["Brand Identity", "Flora & Meaning", "UX & Design", "Home Redesign", "Audio", "Previews", "Another You"] },
-  { name: "Whole-Life",      tabs: ["Whole-Life", "Wholeness", "LGBTQ+"] },
-  { name: "Systems",         tabs: ["Pages", "Build Plan", "Integration Audit", "Connectivity Map", "Architecture", "Expert Governance", "Legal"] },
+// ─── CATALOG (single source of truth for the whole OS) ───────────────────
+// Every reachable thing — previews, demos, specs, plans, tools — is ONE entry.
+// The home screen renders + searches this; nothing else drives navigation.
+//   kind "route" → opens a real app route (href) in place (an <a>).
+//   kind "doc"   → renders an in-page tab component; `key` MUST match the
+//                  switch in FoundersInner exactly.
+// status: live | new | candidate | approval | updated | archive | null.
+// group order here = section order on the home screen.
+const CAT = {
+  PREVIEW: "Previews & Demos",
+  SPECS:   "Specs & Plans",
+  BRAND:   "Brand & UX",
+  VISION:  "Vision & Concepts",
+  BUILD:   "Build Status",
+  ARCHIVE: "Archive",
+};
+const GROUP_ORDER = [CAT.PREVIEW, CAT.SPECS, CAT.BRAND, CAT.VISION, CAT.BUILD, CAT.ARCHIVE];
+const GROUP_BLURB = {
+  [CAT.PREVIEW]: "Tap through to every live page, redesign preview and UX demo — no typing URLs.",
+  [CAT.SPECS]:   "The plans and audits — what we're building and why.",
+  [CAT.BRAND]:   "The brand system, craft direction and cross-app UX patterns.",
+  [CAT.VISION]:  "Bigger-picture concepts awaiting a build decision.",
+  [CAT.BUILD]:   "The living build map — features, sprints, data flow, decisions, legal.",
+  [CAT.ARCHIVE]: "Superseded or redirected — kept for history.",
+};
+
+const CATALOG = [
+  // ── Previews & Demos — Live in the app ────────────────────────────────
+  { kind: "route", href: "/Nutrition",  group: CAT.PREVIEW, sub: "Live in the app", status: "live", accent: "sage",
+    title: "Nutrition — the real, live page", desc: "The chosen Daily-Hub + Hero-Card-Slider hybrid on real data — what's in the app's bottom nav." },
+  { kind: "route", href: "/TodayDemo6", group: CAT.PREVIEW, sub: "Live in the app", status: "live", accent: "espresso",
+    title: "Today (Demo 6) — the live /Today", desc: "Synthesised day: companion bloom in the cycle ring, Jess's day-paragraph, a gentle checklist, per-area sliders. The current live Today." },
+  // ── Today (home) directions ───────────────────────────────────────────
+  { kind: "route", href: "/TodayOption2", group: CAT.PREVIEW, sub: "Today (home) directions", status: "new", accent: "gold",
+    title: "Today — Option 2 (single smart slider)", desc: "One sliding row, one card per app section, daily-changing suggestions + inline actions (play a podcast, log water, answer the room). Compare with the live Today." },
+  { kind: "route", href: "/TodayDemo1", group: CAT.PREVIEW, sub: "Today (home) directions", accent: "crimson",
+    title: "Today Demo 1 — Calm single-focus hub", desc: "One main thing: greeting + phase line, a single focus card, garden footer, everything else behind a 'more' disclosure." },
+  { kind: "route", href: "/TodayDemo2", group: CAT.PREVIEW, sub: "Today (home) directions", accent: "gold",
+    title: "Today Demo 2 — Cycle-led day", desc: "A phase-ring hero; focus chosen by phase; a switcher shows menopause/pregnancy reskinning the same spine." },
+  { kind: "route", href: "/TodayDemo3", group: CAT.PREVIEW, sub: "Today (home) directions", accent: "blush",
+    title: "Today Demo 3 — Companion / garden-led", desc: "Your garden greets you in her voice; the day's focus is gentle 'tending'; resting season is celebrated, never dies." },
+  { kind: "route", href: "/TodayDemo4", group: CAT.PREVIEW, sub: "Today (home) directions", accent: "sage",
+    title: "Today Demo 4 — Card-slider / deck", desc: "A short swipeable deck reusing the Hero-Card-Slider language; top card is the focus, next peeks." },
+  { kind: "route", href: "/TodayDemo5", group: CAT.PREVIEW, sub: "Today (home) directions", accent: "crimson",
+    title: "Today Demo 5 — Editorial 'your day'", desc: "A dated dispatch in Jess's voice; greeting + phase + one suggestion woven into prose with inline doorways." },
+  // ── Journal previews ──────────────────────────────────────────────────
+  { kind: "route", href: "/JournalRedesign1", group: CAT.PREVIEW, sub: "Journal", status: "approval", accent: "blush",
+    title: "Journal — redesign preview", desc: "The demos' richer component language (hero cards, sheets, calmer density) on Journal — carved masthead + identity preserved. Not yet live." },
+  { kind: "route", href: "/JournalHubDemo", group: CAT.PREVIEW, sub: "Journal", accent: "blush",
+    title: "Journal — Hub style (rich header + all features)", desc: "Rich reflection header + big sliding cards for the full set: Write · Echo Wall · Witness · Phase Twin · Insights · On This Day · Sealed Letters · Threads · Cycle Mirror · Burn." },
+  { kind: "route", href: "/JournalControlDemo", group: CAT.PREVIEW, sub: "Journal", accent: "blush",
+    title: "Journal — Control-Center concept", desc: "Reflection-state header + a floating card: 2-col peek grid (Write/Echo/Witness/Twin/Insights/On-This-Day/Letters/Burn/Threads) + a right jump rail." },
+  // (Journal theme demos appended programmatically below from JOURNAL_DEMOS)
+  // ── Community previews ────────────────────────────────────────────────
+  { kind: "route", href: "/CommunityDemo6", group: CAT.PREVIEW, sub: "Community", status: "candidate", accent: "crimson",
+    title: "Community — Demo 6 (production candidate)", desc: "★ The chosen direction: Rooms + Tabs hybrid, OPEN comments (poster can switch off), backend auto-moderation, Jess as host + active inline support. Crisis-safe, no counts." },
+  { kind: "route", href: "/CommunityRedesign1", group: CAT.PREVIEW, sub: "Community", status: "approval", accent: "gold",
+    title: "Community — redesign preview", desc: "Demo 6's rooms elevated with a calm hero, a peeking room slider and bottom sheets — anonymity / 18+ / crisis routing / Jess preserved. Not yet live." },
+  { kind: "route", href: "/CommunityHubDemo", group: CAT.PREVIEW, sub: "Community", accent: "sage",
+    title: "Community — Hub style (rich header + all rooms)", desc: "Rich header (season/circle · Jess welcome · QOTD · invite) + big sliding cards for every surface: Lounge · Echo · Lighter Side · Library · Circles · Love · Money · Style · Health · Talk." },
+  { kind: "route", href: "/CommunityControlDemo", group: CAT.PREVIEW, sub: "Community", accent: "sage",
+    title: "Community — Control-Center concept", desc: "Welcome header + floating card: 2-col peek grid (Lounge/Echo/Lighter/Library/Circles/Love/Money/Style/Health/Talk) + right jump rail. Anonymous-first." },
+  // (Community UX demos 1–5 appended programmatically below from COMMUNITY_DEMOS)
+  // ── Nutrition concept demos ───────────────────────────────────────────
+  { kind: "route", href: "/NutritionControlDemo", group: CAT.PREVIEW, sub: "Nutrition", accent: "crimson",
+    title: "Nutrition — Control-Center concept", desc: "Daily-Hub header + a full-cover floating card holding a 2-col peek grid (Log/Today/Plan/Recipes/Shop/Progress/Insights/For-your-stage) + a right jump rail." },
+  { kind: "route", href: "/NutritionHubDemo", group: CAT.PREVIEW, sub: "Nutrition", accent: "gold",
+    title: "Nutrition — Hub style (reference)", desc: "Reference only — the live Nutrition page already uses this. Daily-Hub plate header + big sliding cards (Log/Today/Plan/Recipes/Shop/Progress/Insights)." },
+  // (Nutrition UX demos 1–5 appended programmatically below from NUTRITION_DEMOS)
+  // ── Brand ─────────────────────────────────────────────────────────────
+  { kind: "route", href: "/BrandCraftSample", group: CAT.PREVIEW, sub: "Brand", status: "approval", accent: "crimson",
+    title: "Brand Craft Sample ★ for approval", desc: "The canonical brand-system craft direction: flat vs upgraded realistic bloom, a botanical line-motif, the carved heart in context, and a live on-device perf measurement." },
+
+  // ── Specs & Plans (in-page docs) ──────────────────────────────────────
+  { kind: "doc", key: "Bottom-Nav Plan", group: CAT.SPECS, status: "new", accent: "gold",
+    title: "Bottom-Nav Plan", desc: "Floating cream capsule + shrink-on-scroll, reject horizontal-scroll nav. Research, honest drawbacks and a phased plan. Awaiting your approval." },
+  { kind: "doc", key: "Today Mega-Plan", group: CAT.SPECS, accent: "gold",
+    title: "Today — Mega-Plan", desc: "The full plan for the Today home surface." },
+  { kind: "doc", key: "Journal", group: CAT.SPECS, accent: "gold",
+    title: "Journal — Master Plan", desc: "Every Journal feature researched, surfaced and structured. The most complete spec in the app." },
+  { kind: "doc", key: "Journal Audit", group: CAT.SPECS, accent: "gold",
+    title: "Journal — Audit", desc: "State-of-the-Journal audit against the master plan." },
+  { kind: "doc", key: "Nutrition Master Plan", group: CAT.SPECS, accent: "sage",
+    title: "Nutrition — Master Plan", desc: "The complete nutrition vision and build plan." },
+  { kind: "doc", key: "Nutrition Plan", group: CAT.SPECS, accent: "sage",
+    title: "Nutrition — Plan", desc: "The working nutrition build plan." },
+  { kind: "doc", key: "Community Plan", group: CAT.SPECS, accent: "sage",
+    title: "Community — Plan", desc: "The community build spec." },
+  { kind: "doc", key: "Books & Book Clubs", group: CAT.SPECS, accent: "gold",
+    title: "Books & Book Clubs", desc: "Reading + book-club plan across Lifestyle and Community." },
+  { kind: "doc", key: "Build Plan", group: CAT.SPECS, accent: "gold",
+    title: "Build Plan", desc: "Cross-app build sequencing." },
+  { kind: "doc", key: "Expert Governance", group: CAT.SPECS, accent: "crimson",
+    title: "Expert Governance", desc: "Clinical credibility, expert review and medical-claims governance." },
+  { kind: "doc", key: "Library & Groups", group: CAT.SPECS, accent: "sage",
+    title: "Library, Groups & Games", desc: "Community library, circles and the non-clinical games plan." },
+  { kind: "doc", key: "Integration Audit", group: CAT.SPECS, accent: "gold",
+    title: "Integration Audit", desc: "How the surfaces are (and aren't) wired together." },
+  { kind: "doc", key: "Connectivity Map", group: CAT.SPECS, accent: "gold",
+    title: "Connectivity Map", desc: "The cross-page data + signal flow map." },
+  { kind: "doc", key: "Sharing", group: CAT.SPECS, accent: "blush",
+    title: "Sharing Proposal", desc: "What can be shared, with whom, and how privacy is held." },
+  { kind: "doc", key: "Home Redesign", group: CAT.SPECS, accent: "gold",
+    title: "Home Redesign", desc: "The home/Today redesign proposal." },
+  { kind: "doc", key: "Whole-Life", group: CAT.SPECS, accent: "sage",
+    title: "Whole-Life Rebalance", desc: "Spanning life domains, not just health — the rebalance plan." },
+  { kind: "doc", key: "Audio", group: CAT.SPECS, accent: "blush",
+    title: "Audio Plan", desc: "Listen / podcasts / voice plan across Lifestyle." },
+  { kind: "doc", key: "Architecture", group: CAT.SPECS, accent: "espresso",
+    title: "Architecture", desc: "The app's technical architecture overview." },
+  { kind: "doc", key: "Health Audit", group: CAT.SPECS, accent: "crimson",
+    title: "App Health Audit", desc: "Health-surface audit and findings." },
+
+  // ── Brand & UX ────────────────────────────────────────────────────────
+  { kind: "doc", key: "Brand Identity", group: CAT.BRAND, status: "updated", accent: "crimson",
+    title: "Brand Identity", desc: "The complete canonical brand master: typography, colour tokens, the carved heart, the botanical system, spacing/cards." },
+  { kind: "doc", key: "Flora & Meaning", group: CAT.BRAND, accent: "sage",
+    title: "Flora & Meaning", desc: "The flora backbone, per-user fingerprint and the meaning behind each bloom." },
+  { kind: "doc", key: "UX & Design", group: CAT.BRAND, accent: "gold",
+    title: "UX & Design — patterns from everywhere", desc: "25 cross-category UX patterns (Oura, Spotify, Notion, Monzo, Wordle…) translated for FemWell." },
+  { kind: "doc", key: "Nurture Companion", group: CAT.BRAND, accent: "blush",
+    title: "Nurture Companion", desc: "The companion/garden design doc." },
+  { kind: "doc", key: "Companion Vision", group: CAT.BRAND, accent: "blush",
+    title: "Companion Vision", desc: "The original companion vision." },
+  { kind: "doc", key: "Companion Vision v2", group: CAT.BRAND, accent: "blush",
+    title: "Companion Vision v2", desc: "The evolved companion vision." },
+  { kind: "doc", key: "Widget & PWA", group: CAT.BRAND, accent: "gold",
+    title: "Widget & PWA", desc: "Native widget + progressive-web-app plan." },
+
+  // ── Vision & Concepts ─────────────────────────────────────────────────
+  { kind: "doc", key: "Another You", group: CAT.VISION, accent: "espresso",
+    title: "Another You", desc: "The shadow/mirror/oracle page concept — the most ambitious page in the app. Research complete, awaiting build approval." },
+  { kind: "doc", key: "Wholeness", group: CAT.VISION, accent: "sage",
+    title: "Wholeness", desc: "From cycle app to women's app — the 10 life dimensions FemWell should hold." },
+  { kind: "doc", key: "LGBTQ+", group: CAT.VISION, accent: "blush",
+    title: "LGBTQ+ inclusion plan", desc: "Full inclusion plan — research, quick wins, structural changes, what not to do." },
+  { kind: "doc", key: "Feature Ideas", group: CAT.VISION, accent: "gold",
+    title: "Feature Ideas", desc: "The running feature-ideas doc." },
+
+  // ── Build Status (tools) ──────────────────────────────────────────────
+  { kind: "doc", key: "Lab", group: CAT.BUILD, accent: "sage",
+    title: "Lab — feature status", desc: "Every feature, shipped vs next vs planned, with commit hashes." },
+  { kind: "doc", key: "Roadmap", group: CAT.BUILD, accent: "gold",
+    title: "Roadmap", desc: "The sprint timeline, complete → current → planned → launch." },
+  { kind: "doc", key: "Pages", group: CAT.BUILD, accent: "gold",
+    title: "Pages — data-flow map", desc: "Every surface, what it reads and writes, + the critical cross-page data rules." },
+  { kind: "doc", key: "Decisions", group: CAT.BUILD, accent: "gold",
+    title: "Decisions", desc: "The locked architecture decision log." },
+  { kind: "doc", key: "Strategy", group: CAT.BUILD, accent: "crimson",
+    title: "Strategy", desc: "Market signals, the competitor strip and the investor narratives." },
+  { kind: "doc", key: "Legal", group: CAT.BUILD, accent: "crimson",
+    title: "Legal — pre-launch gates", desc: "The 15-item launch checklist with your-action flags (persists)." },
+  { kind: "doc", key: "Ideas", group: CAT.BUILD, accent: "gold",
+    title: "Ideas backlog", desc: "The priority backlog — add your own (persists to your profile)." },
+
+  // ── Archive ───────────────────────────────────────────────────────────
+  { kind: "doc", key: "Health Corner", group: CAT.ARCHIVE, status: "archive", accent: "espresso",
+    title: "Health Corner (redirects to /Health)", desc: "Superseded — the Letter-format Health hub now lives at its own /Health page." },
 ];
-// Build the visible group list, appending any unassigned tab to a "More" group.
-function buildGroups() {
-  const assigned = new Set(TAB_GROUPS.flatMap((g) => g.tabs));
-  const groups = TAB_GROUPS.map((g) => ({ name: g.name, tabs: g.tabs.filter((t) => TABS.includes(t)) }))
-    .filter((g) => g.tabs.length);
-  const orphans = TABS.filter((t) => !assigned.has(t));
-  if (orphans.length) groups.push({ name: "More", tabs: orphans });
-  return groups;
+
+// The data-driven demo families live in the catalog too (so they're searchable)
+// without re-typing each one. Built LAZILY in a function — the *_DEMOS arrays are
+// declared lower in this file, so referencing them at module top-level would hit
+// the temporal dead zone. demoCatalogEntries() is only called at render time.
+function demoCatalogEntries() {
+  return [
+    ...JOURNAL_DEMOS.map((d) => ({
+      kind: "route", href: `/${d.slug}`, group: CAT.PREVIEW, sub: "Journal", accent: "blush",
+      title: `Journal theme demo ${d.n} — ${d.title}`, desc: `${d.subtitle}. ${d.body}`,
+    })),
+    ...COMMUNITY_DEMOS.filter((d) => d.slug !== "CommunityDemo6").map((d) => ({
+      kind: "route", href: `/${d.slug}`, group: CAT.PREVIEW, sub: "Community", accent: "sage",
+      title: `Community UX demo ${d.n} — ${String(d.title).replace(/^UX \d+ — /, "")}`, desc: `${d.subtitle}. ${d.body}`,
+    })),
+    ...NUTRITION_DEMOS.map((d) => ({
+      kind: "route", href: `/${d.slug}`, group: CAT.PREVIEW, sub: "Nutrition", accent: "gold",
+      title: `Nutrition UX demo ${d.n} — ${d.title}`, desc: `${d.subtitle}. ${d.body}`,
+    })),
+  ];
 }
-const GROUPS = buildGroups();
-const groupOf = (t) => (GROUPS.find((g) => g.tabs.includes(t)) || GROUPS[0]).name;
+
+// Sub-section order within Previews & Demos.
+const PREVIEW_SUB_ORDER = ["Live in the app", "Today (home) directions", "Nutrition", "Journal", "Community", "Brand"];
+
+const accentColor = (a) => ({ gold: T.gold, sage: T.sage, blush: T.blush, crimson: T.crimson, espresso: T.espresso }[a] || T.gold);
+const STATUS_CHIP = {
+  live:      { label: "Live",       bg: T.sage,    fg: "#fff" },
+  new:       { label: "New",        bg: T.gold,    fg: "#fff" },
+  candidate: { label: "Candidate",  bg: T.crimson, fg: "#fff" },
+  approval:  { label: "For approval", bg: "transparent", fg: T.gold, border: T.gold },
+  updated:   { label: "Updated",    bg: T.goldSoft, fg: T.gold, border: T.gold },
+  archive:   { label: "Archived",   bg: "transparent", fg: T.textMuted, border: T.border },
+};
+const lc = (s) => String(s || "").toLowerCase();
+const matchesQuery = (e, q) =>
+  !q || [e.title, e.desc, e.group, e.sub, e.href].some((f) => lc(f).includes(q));
 
 // Light reading panel for the self-contained docs (those that don't use DocKit's
 // DocShell) so their dark ink prose reads on the dark FoundersOS page. Matches
@@ -483,211 +666,263 @@ function NotAuthorised() {
   );
 }
 
+// Carved crimson heart brand mark (§3) — single colour pop in the masthead.
+function HeartMark({ size = 22 }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" aria-hidden="true" style={{ display: "block", flexShrink: 0 }}>
+      <path d="M12 21s-7.5-4.6-10-9.2C.6 9 1.6 5.5 4.8 5.1 7 4.8 8.7 6 12 9.2 15.3 6 17 4.8 19.2 5.1c3.2.4 4.2 3.9 2.8 6.7C19.5 16.4 12 21 12 21z" fill={T.crimson} />
+    </svg>
+  );
+}
+
+function StatusChip({ status }) {
+  const s = STATUS_CHIP[status];
+  if (!s) return null;
+  return (
+    <span style={{
+      fontSize: 9.5, fontWeight: 700, letterSpacing: 0.6, textTransform: "uppercase",
+      color: s.fg, background: s.bg,
+      border: s.border ? `1px solid ${s.border}` : "1px solid transparent",
+      borderRadius: 999, padding: "2px 8px", whiteSpace: "nowrap", flexShrink: 0,
+    }}>{s.label}</span>
+  );
+}
+
+const CLAMP2 = { display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" };
+const SERIF_STACK = '"Cormorant Garamond", Georgia, serif';
+
+// One catalog row — a route (real <a>) or an in-page doc (button → setTab).
+function EntryCard({ e, onOpen }) {
+  const accent = accentColor(e.accent);
+  const inner = (
+    <>
+      <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4, flexWrap: "wrap" }}>
+        <span style={{ fontSize: 16, fontWeight: 700, color: T.textHi, lineHeight: 1.25, fontFamily: SERIF_STACK }}>{e.title}</span>
+        <StatusChip status={e.status} />
+      </div>
+      <div style={{ fontSize: 13, color: T.textMid, lineHeight: 1.5, ...CLAMP2 }}>{e.desc}</div>
+      <div style={{ marginTop: 9, fontSize: 12.5, fontWeight: 700, color: accent }}>
+        {e.kind === "route" ? "Open →" : "Read →"}
+      </div>
+    </>
+  );
+  const cardStyle = {
+    display: "block", textAlign: "left", width: "100%", boxSizing: "border-box",
+    background: T.surface, border: `1px solid ${T.border}`, borderLeft: `4px solid ${accent}`,
+    borderRadius: 12, padding: "13px 15px", cursor: "pointer",
+    textDecoration: "none", color: "inherit", font: "inherit", fontFamily: "inherit",
+  };
+  if (e.kind === "route") return <a href={e.href} style={cardStyle}>{inner}</a>;
+  return <button type="button" onClick={() => onOpen(e)} style={cardStyle}>{inner}</button>;
+}
+
+const slugify = (s) => "grp-" + String(s).toLowerCase().replace(/[^a-z0-9]+/g, "-");
+
+function CardGrid({ items, onOpen }) {
+  return (
+    <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(255px, 1fr))", gap: 10 }}>
+      {items.map((e) => <EntryCard key={(e.href || e.key) + e.title} e={e} onOpen={onOpen} />)}
+    </div>
+  );
+}
+
 function FoundersInner({ user }) {
-  const [tab, setTab] = useState("Lab");
+  const [tab, setTab] = useState(HOME);
+  const [q, setQ] = useState("");
 
-  // ── Shared Health Corner data fetch (Sprint 13). ──────────────────
-  // All three "HC: …" tabs read from the same set of entities. We
-  // fetch once at this level and pass the buckets down as props so
-  // each tab renders instantly when switched.
-  // FemWell convention: `user_id` AND `created_by` (email) both occur
-  // in the wild depending on which writer created the row. We merge.
-  const [hc, setHc] = useState({
-    profile: null,
-    checkins: [], symptoms: [], meals: [], meds: [], supps: [], habits: [], skinLogs: [],
-    loading: true,
-  });
-  useEffect(() => {
-    if (!user?.id) return;
-    let cancelled = false;
-    (async () => {
-      try {
-        const both = async (entName) => {
-          const ent = base44.entities?.[entName];
-          if (!ent?.filter) return [];
-          const [a, b] = await Promise.all([
-            ent.filter({ user_id: user.id }).catch(() => []),
-            user.email ? ent.filter({ created_by: user.email }).catch(() => []) : Promise.resolve([]),
-          ]);
-          const seen = new Set(); const out = [];
-          for (const r of [...(a || []), ...(b || [])]) {
-            if (!r || seen.has(r.id)) continue;
-            seen.add(r.id); out.push(r);
-          }
-          return out;
-        };
-        const [profiles, chk, sym, meal, med, supp, hab, skin] = await Promise.all([
-          base44.entities.UserProfile.filter({ user_id: user.id }, null, 1).catch(() => []),
-          both("DailyCheckins"),
-          both("SymptomLogs"),
-          both("MealLog"),
-          both("MedicationLogs"),
-          both("SupplementLog"),
-          both("HabitLogs"),
-          base44.entities?.SkinHairLogs ? both("SkinHairLogs") : Promise.resolve([]),
-        ]);
-        if (cancelled) return;
-        setHc({
-          profile: profiles?.[0] || null,
-          checkins: chk, symptoms: sym, meals: meal,
-          meds: med, supps: supp, habits: hab, skinLogs: skin,
-          loading: false,
-        });
-      } catch {
-        if (!cancelled) setHc((s) => ({ ...s, loading: false }));
-      }
-    })();
-    return () => { cancelled = true; };
-  }, [user?.id, user?.email]);
+  const catalog = useMemo(() => [...CATALOG, ...demoCatalogEntries()], []);
+  const query = lc(q).trim();
+  const results = useMemo(() => catalog.filter((e) => matchesQuery(e, query)), [catalog, query]);
 
-  // Grouped nav: the active group is derived from the active tab (single source
-  // of truth). Picking a group jumps to its first tab.
-  const activeGroup = groupOf(tab);
-  const groupTabs = (GROUPS.find((g) => g.name === activeGroup) || GROUPS[0]).tabs;
+  const onOpen = useCallback((e) => { setTab(e.key); window.scrollTo?.(0, 0); }, []);
+  const goHome = useCallback(() => { setTab(HOME); window.scrollTo?.(0, 0); }, []);
+  const jumpTo = useCallback((name) => {
+    setQ("");
+    requestAnimationFrame(() => document.getElementById(slugify(name))?.scrollIntoView({ behavior: "smooth", block: "start" }));
+  }, []);
+
+  const activeEntry = catalog.find((e) => e.kind === "doc" && e.key === tab);
+
+  // Groups present (in fixed order), each with its matching entries.
+  const groups = GROUP_ORDER
+    .map((name) => ({ name, items: results.filter((e) => e.group === name) }))
+    .filter((g) => g.items.length);
+
+  // The in-page doc/tool render — kept verbatim from the prior shell, plus the
+  // new Bottom-Nav Plan. `tab` keys match the catalog `key`s exactly.
+  const detail = (
+    <>
+      {tab === "Lab"       && <LabTab />}
+      {tab === "Pages"     && <PagesTab />}
+      {tab === "Roadmap"   && <RoadmapTab />}
+      {tab === "Health Audit" && <AppHealthAuditDoc />}
+      {tab === "Nutrition Plan" && <NutritionPlanDoc />}
+      {tab === "Community Plan" && <CommunityPlanDoc />}
+      {tab === "Books & Book Clubs" && <BooksBookClubsDoc />}
+      {tab === "Build Plan"     && <BuildPlanDoc />}
+      {tab === "Journal Audit"  && <JournalAuditDoc />}
+      {tab === "Expert Governance" && <ExpertGovernanceDoc />}
+      {tab === "Library & Groups" && <GroupsLibraryGamesDoc />}
+      {tab === "Integration Audit" && <IntegrationAuditDoc />}
+      {tab === "Connectivity Map" && <ConnectivityMapDoc />}
+      {tab === "Sharing" && <SharingProposalDoc />}
+      {tab === "Home Redesign" && <HomeRedesignDoc />}
+      {tab === "Whole-Life"     && <WholeLifeDoc />}
+      {tab === "Audio"          && <AudioPlanDoc />}
+      {tab === "Bottom-Nav Plan" && <DocSurface><BottomNavPlanDoc /></DocSurface>}
+      {tab === "Ideas"     && <IdeasTab user={user} />}
+      {tab === "Strategy"  && <StrategyTab />}
+      {tab === "Legal"     && <LegalTab />}
+      {tab === "Decisions" && <DecisionsTab />}
+      {tab === "Journal"        && <JournalTab />}
+      {tab === "Previews"       && <PreviewsTab />}
+      {tab === "Nutrition Master Plan" && <NutritionMasterPlanDoc />}
+      {tab === "Brand Identity" && <DocSurface><BrandIdentityDoc /></DocSurface>}
+      {tab === "Flora & Meaning" && <DocSurface><FloraMeaningDoc /></DocSurface>}
+      {tab === "Feature Ideas" && <DocSurface><FeatureIdeasDoc /></DocSurface>}
+      {tab === "Companion Vision" && <DocSurface><CompanionVisionDoc /></DocSurface>}
+      {tab === "Companion Vision v2" && <DocSurface><CompanionVisionV2Doc /></DocSurface>}
+      {tab === "Nurture Companion" && <NurtureCompanionDoc />}
+      {tab === "Widget & PWA" && <NativeWidgetDoc />}
+      {tab === "Architecture" && <ArchitectureDoc />}
+      {tab === "Today Mega-Plan" && <TodayMegaPlanDoc />}
+      {tab === "Journal Demos"  && <JournalDemosTab />}
+      {tab === "Community Demos" && <CommunityDemosTab />}
+      {tab === "Nutrition Demos" && <NutritionDemosTab />}
+      {tab === "Another You"    && <AnotherYouTab />}
+      {tab === "UX & Design" && <UxDesignTab />}
+      {tab === "Wholeness"   && <WholenessTab />}
+      {tab === "LGBTQ+"      && <LgbtqTab />}
+      {tab === "Health Corner" && <HealthCornerRedirectCard />}
+    </>
+  );
 
   return (
     <FullBleed>
-      {/* Fixed top bar */}
+      {/* Masthead — brand cream, carved heart, search + Jump-to (the central switcher). */}
       <header style={{
         position: "sticky", top: 0, zIndex: 30,
         backgroundColor: T.bg,
         borderBottom: `1px solid ${T.border}`,
-        padding: "18px 20px 14px",
+        padding: "16px 16px 12px",
+        boxShadow: "0 2px 12px rgba(11,8,5,0.04)",
       }}>
         <div style={{ maxWidth: 1100, margin: "0 auto" }}>
-          <div style={{
-            display: "flex", alignItems: "baseline", justifyContent: "space-between",
-            gap: 16, flexWrap: "wrap",
-          }}>
-            <div>
-              <div style={{
-                fontSize: 24, fontWeight: 600, color: T.gold,
-                letterSpacing: -0.2, lineHeight: 1.1,
-              }}>FemWell Founder OS</div>
-              <div style={{ color: T.textMuted, fontSize: 12.5, marginTop: 4 }}>
-                Your living app mind map · updated every session
+          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            <HeartMark size={22} />
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ fontFamily: SERIF_STACK, fontSize: 23, fontWeight: 700, color: T.textHi, lineHeight: 1.05, letterSpacing: 0.2 }}>
+                Founder OS
+              </div>
+              <div style={{ color: T.textMuted, fontSize: 12, marginTop: 2, ...CLAMP2, WebkitLineClamp: 1 }}>
+                Everything in one place — search or jump to a section
               </div>
             </div>
-            <div style={{
-              fontSize: 11, color: T.textMuted, letterSpacing: 0.5,
-              textTransform: "uppercase", fontWeight: 600,
-            }}>
-              Signed in as <span style={{ color: T.gold }}>{user?.email}</span>
-            </div>
+            {tab !== HOME && (
+              <button type="button" onClick={goHome} style={{
+                flexShrink: 0, background: T.surface, border: `1px solid ${T.border}`,
+                color: T.textMid, borderRadius: 999, padding: "7px 13px",
+                fontSize: 12.5, fontWeight: 700, cursor: "pointer",
+              }}>← All sections</button>
+            )}
           </div>
+
+          {tab === HOME && (
+            <>
+              {/* Search */}
+              <div style={{ position: "relative", marginTop: 12 }}>
+                <input
+                  value={q}
+                  onChange={(e) => setQ(e.target.value)}
+                  placeholder="Search previews, specs, demos, plans…"
+                  aria-label="Search Founder OS"
+                  style={{
+                    width: "100%", boxSizing: "border-box",
+                    padding: "11px 38px 11px 14px",
+                    background: T.surfaceHi, border: `1px solid ${T.border}`,
+                    borderRadius: 12, color: T.textHi, fontSize: 15, outline: "none",
+                    fontFamily: "inherit",
+                  }}
+                />
+                {q && (
+                  <button type="button" onClick={() => setQ("")} aria-label="Clear search" style={{
+                    position: "absolute", right: 8, top: "50%", transform: "translateY(-50%)",
+                    width: 24, height: 24, borderRadius: 999, border: "none",
+                    background: T.border, color: T.textHi, cursor: "pointer",
+                    fontSize: 14, lineHeight: 1, fontWeight: 700,
+                  }}>×</button>
+                )}
+              </div>
+
+              {/* Jump-to switcher (the multi-layer-page UX rule) */}
+              {!query && (
+                <div style={{ display: "flex", gap: 7, marginTop: 10, overflowX: "auto", scrollbarWidth: "none", paddingBottom: 2 }}>
+                  {GROUP_ORDER.map((name) => (
+                    <button key={name} type="button" onClick={() => jumpTo(name)} style={{
+                      flexShrink: 0, padding: "6px 12px", borderRadius: 999,
+                      background: "transparent", color: T.textMid,
+                      border: `1px solid ${T.border}`, fontSize: 12, fontWeight: 600,
+                      cursor: "pointer", whiteSpace: "nowrap",
+                    }}>{name}</button>
+                  ))}
+                </div>
+              )}
+            </>
+          )}
         </div>
       </header>
 
-      {/* Sticky grouped nav — row 1: theme groups · row 2: tabs in the active group */}
-      <nav style={{
-        position: "sticky", top: 78, zIndex: 29,
-        backgroundColor: T.bg,
-        borderBottom: `1px solid ${T.border}`,
-      }}>
-        {/* Row 1 — group pills */}
-        <div style={{
-          maxWidth: 1100, margin: "0 auto",
-          overflowX: "auto", scrollbarWidth: "none",
-        }}>
-          <div style={{ display: "flex", gap: 7, padding: "10px 12px 8px" }}>
-            {GROUPS.map((g) => {
-              const on = g.name === activeGroup;
-              return (
-                <button
-                  key={g.name}
-                  onClick={() => setTab(g.tabs[0])}
-                  style={{
-                    flexShrink: 0,
-                    padding: "6px 13px", borderRadius: 999,
-                    background: on ? T.goldSoft : "transparent",
-                    color: on ? T.gold : T.textMid,
-                    border: `1px solid ${on ? T.gold : T.border}`,
-                    fontSize: 12, fontWeight: on ? 700 : 600,
-                    letterSpacing: 0.2, cursor: "pointer",
-                    whiteSpace: "nowrap", transition: "all 0.15s ease",
-                  }}
-                >{g.name}</button>
-              );
-            })}
+      <main style={{ maxWidth: 1100, margin: "0 auto", padding: "16px 16px 96px" }}>
+        {tab === HOME ? (
+          <div>
+            {query && (
+              <div style={{ fontSize: 12.5, color: T.textMuted, margin: "2px 0 12px", letterSpacing: 0.3 }}>
+                {results.length} {results.length === 1 ? "result" : "results"} for “{q.trim()}”
+              </div>
+            )}
+            {groups.length === 0 && (
+              <div style={{ padding: "32px 8px", textAlign: "center", color: T.textMuted, fontSize: 14 }}>
+                Nothing matches “{q.trim()}”. Try a page name (Today, Journal, Nutrition…) or a kind (demo, plan, brand).
+              </div>
+            )}
+            {groups.map((g) => (
+              <section key={g.name} id={slugify(g.name)} style={{ marginBottom: 26, scrollMarginTop: 132 }}>
+                <div style={{ marginBottom: 4 }}>
+                  <SectionLabel>{g.name} · {g.items.length}</SectionLabel>
+                </div>
+                {!query && GROUP_BLURB[g.name] && (
+                  <div style={{ fontSize: 12.5, color: T.textMuted, lineHeight: 1.5, margin: "-4px 0 12px" }}>{GROUP_BLURB[g.name]}</div>
+                )}
+                {/* Previews sub-group by area; everything else is a flat grid. */}
+                {g.name === CAT.PREVIEW && !query ? (
+                  PREVIEW_SUB_ORDER
+                    .map((sub) => ({ sub, items: g.items.filter((e) => e.sub === sub) }))
+                    .filter((s) => s.items.length)
+                    .map((s) => (
+                      <div key={s.sub} style={{ marginBottom: 16 }}>
+                        <div style={{ fontSize: 11.5, fontWeight: 700, letterSpacing: 0.8, textTransform: "uppercase", color: T.gold, margin: "0 0 8px" }}>{s.sub}</div>
+                        <CardGrid items={s.items} onOpen={onOpen} />
+                      </div>
+                    ))
+                ) : (
+                  <CardGrid items={g.items} onOpen={onOpen} />
+                )}
+              </section>
+            ))}
           </div>
-        </div>
-        {/* Row 2 — tabs within the active group */}
-        <div style={{
-          maxWidth: 1100, margin: "0 auto",
-          overflowX: "auto", scrollbarWidth: "none",
-          borderTop: `1px solid ${T.border}`,
-        }}>
-          <div style={{ display: "flex", gap: 4, padding: "0 12px" }}>
-            {groupTabs.map((t) => {
-              const active = tab === t;
-              return (
-                <button
-                  key={t}
-                  onClick={() => setTab(t)}
-                  style={{
-                    padding: "11px 14px 10px",
-                    background: "transparent",
-                    border: "none",
-                    color: active ? T.gold : T.textMuted,
-                    fontSize: 13, fontWeight: active ? 600 : 500,
-                    letterSpacing: 0.2, cursor: "pointer",
-                    borderBottom: `2px solid ${active ? T.gold : "transparent"}`,
-                    marginBottom: -1, whiteSpace: "nowrap",
-                    transition: "color 0.15s ease",
-                  }}
-                >{t}</button>
-              );
-            })}
+        ) : (
+          <div>
+            {/* Detail back-bar / breadcrumb */}
+            <button type="button" onClick={goHome} style={{
+              display: "inline-flex", alignItems: "center", gap: 7, marginBottom: 14,
+              background: "transparent", border: "none", color: T.gold,
+              fontSize: 13, fontWeight: 700, cursor: "pointer", padding: 0,
+            }}>
+              ← {activeEntry ? `${activeEntry.group} · all sections` : "All sections"}
+            </button>
+            {detail}
           </div>
-        </div>
-      </nav>
-
-      {/* Tab content */}
-      <main style={{
-        maxWidth: 1100, margin: "0 auto",
-        padding: "20px 16px 80px",
-      }}>
-        {tab === "Lab"       && <LabTab />}
-        {tab === "Pages"     && <PagesTab />}
-        {tab === "Roadmap"   && <RoadmapTab />}
-        {tab === "Health Audit" && <AppHealthAuditDoc />}
-        {tab === "Nutrition Plan" && <NutritionPlanDoc />}
-        {tab === "Community Plan" && <CommunityPlanDoc />}
-        {tab === "Books & Book Clubs" && <BooksBookClubsDoc />}
-        {tab === "Build Plan"     && <BuildPlanDoc />}
-        {tab === "Journal Audit"  && <JournalAuditDoc />}
-        {tab === "Expert Governance" && <ExpertGovernanceDoc />}
-        {tab === "Library & Groups" && <GroupsLibraryGamesDoc />}
-        {tab === "Integration Audit" && <IntegrationAuditDoc />}
-        {tab === "Connectivity Map" && <ConnectivityMapDoc />}
-        {tab === "Sharing" && <SharingProposalDoc />}
-        {tab === "Home Redesign" && <HomeRedesignDoc />}
-        {tab === "Whole-Life"     && <WholeLifeDoc />}
-        {tab === "Audio"          && <AudioPlanDoc />}
-        {tab === "Ideas"     && <IdeasTab user={user} />}
-        {tab === "Strategy"  && <StrategyTab />}
-        {tab === "Legal"     && <LegalTab />}
-        {tab === "Decisions" && <DecisionsTab />}
-        {tab === "Journal"        && <JournalTab />}
-        {tab === "Previews"       && <PreviewsTab />}
-        {tab === "Nutrition Master Plan" && <NutritionMasterPlanDoc />}
-        {tab === "Brand Identity" && <DocSurface><BrandIdentityDoc /></DocSurface>}
-        {tab === "Flora & Meaning" && <DocSurface><FloraMeaningDoc /></DocSurface>}
-        {tab === "Feature Ideas" && <DocSurface><FeatureIdeasDoc /></DocSurface>}
-        {tab === "Companion Vision" && <DocSurface><CompanionVisionDoc /></DocSurface>}
-        {tab === "Companion Vision v2" && <DocSurface><CompanionVisionV2Doc /></DocSurface>}
-        {tab === "Nurture Companion" && <NurtureCompanionDoc />}
-        {tab === "Widget & PWA" && <NativeWidgetDoc />}
-        {tab === "Architecture" && <ArchitectureDoc />}
-        {tab === "Today Mega-Plan" && <TodayMegaPlanDoc />}
-        {tab === "Journal Demos"  && <JournalDemosTab />}
-        {tab === "Community Demos" && <CommunityDemosTab />}
-        {tab === "Nutrition Demos" && <NutritionDemosTab />}
-        {tab === "Another You"    && <AnotherYouTab />}
-        {tab === "UX & Design" && <UxDesignTab />}
-        {tab === "Wholeness"   && <WholenessTab />}
-        {tab === "LGBTQ+"      && <LgbtqTab />}
-        {tab === "Health Corner" && <HealthCornerRedirectCard />}
+        )}
       </main>
     </FullBleed>
   );
