@@ -280,6 +280,7 @@ export default function TodayDemo6() {
   const [sActive, setSActive] = useState(0);          // per-section slider index
   const sTrackRef = useRef(null);
   const pendingJump = useRef(null);                   // jump target, run AFTER the sheet closes (below)
+  const programScroll = useRef(false);                // suppress onScroll's chip-sync during a programmatic jump
 
   // ── real data ────────────────────────────────────────────────────────────────────────────────
   const [uid, setUid] = useState(null);
@@ -404,6 +405,7 @@ export default function TodayDemo6() {
     const it = pendingJump.current;
     if (!it) return;
     pendingJump.current = null;
+    if (it.kind === "section") programScroll.current = true;  // hold the chip we set; the track's onScroll won't override it
     const apply = () => {
       if (it.kind === "top") { try { window.scrollTo({ top: 0, behavior: "auto" }); } catch { window.scrollTo(0, 0); } return; }
       if (it.kind === "area") { try { document.getElementById(it.id)?.scrollIntoView({ behavior: "auto", block: "start" }); } catch { /* ignore */ } return; }
@@ -414,7 +416,8 @@ export default function TodayDemo6() {
     };
     apply();
     const timers = [50, 130, 250, 420].map((ms) => setTimeout(apply, ms));
-    return () => timers.forEach(clearTimeout);
+    const release = setTimeout(() => { programScroll.current = false; }, 620);   // re-enable onScroll once the scroll has settled
+    return () => { timers.forEach(clearTimeout); clearTimeout(release); programScroll.current = false; };
   }, [jumpOpen]);
 
   // first-open ceremony animation: grow the bloom 0→4, then mark seen + dismiss.
@@ -831,7 +834,7 @@ export default function TodayDemo6() {
 
           {/* the single horizontal slider (Journal geometry: CARD_W 365 · GAP 14 · peek) */}
           <div ref={sTrackRef} id="t-section-track" className="fw-hrow"
-            onScroll={(e) => { const i = Math.round(e.currentTarget.scrollLeft / (CARD_W + GAP)); setSActive(Math.max(0, Math.min(sLast, i))); }}
+            onScroll={(e) => { if (programScroll.current) return; const i = Math.round(e.currentTarget.scrollLeft / (CARD_W + GAP)); setSActive(Math.max(0, Math.min(sLast, i))); }}
             style={{ display: "flex", gap: GAP, overflowX: "auto", scrollSnapType: "x mandatory", padding: "0 0 4px", WebkitOverflowScrolling: "touch", margin: "0 -2px" }}>
             {CARDS.map((c) => (
               <TodayCard key={c.key} card={c} uid={uid} cycle={cycle} onSheet={setSheet} onTend={feedGarden} />
