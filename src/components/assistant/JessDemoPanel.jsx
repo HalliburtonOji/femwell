@@ -25,6 +25,8 @@ import {
   Apple, Activity, Moon, Heart, Users, ThumbsUp, ThumbsDown, Star,
 } from "lucide-react";
 import ReactMarkdown from "react-markdown";
+// Brand-P2: the carved crimson heart brand mark (§3) for the Jess header.
+import { Heart as BrandHeart } from "@/components/journal/Editorial";
 import JessSettingsSheet from "./JessSettingsSheet";
 import JessVoiceLogger from "./JessVoiceLogger";
 // Sprint 5 — Voice Companion replaces the Voice Logger sheet for the
@@ -2266,11 +2268,13 @@ function JessDemoPanelInner() {
           </div>
         </div>
         <div style={{ flex: 1, minWidth: 0 }}>
+          {/* Brand-P2: the single carved crimson heart (§3) beside Jess's name. */}
           <h1 style={{
             margin: 0,
             fontSize: 22, fontWeight: 600,
             color: C.espresso, letterSpacing: "-0.01em",
-          }}>{assistantName}</h1>
+            display: "inline-flex", alignItems: "center", gap: 8,
+          }}>{assistantName} <BrandHeart size={13} /></h1>
           <div style={{
             display: "inline-flex", alignItems: "center", gap: 6,
             marginTop: 2, fontSize: 12,
