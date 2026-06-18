@@ -11,6 +11,9 @@ import ProfileNavLinks from "../components/profile/ProfileNavLinks";
 import ProfileDataModals from "../components/profile/ProfileDataModals";
 import FirstLaunchStagePicker from "../components/planner/FirstLaunchStagePicker";
 import { writeDevStageOverride } from "../components/planner/DevStageSwitcher";
+// Brand-P2 lush layer (BRAND_IDENTITY §3 heart · §4 botanicals · §5.3 — Profile char = blush/gold).
+import { T, Heart as BrandHeart } from "@/components/journal/Editorial";
+import { VineMotifV2, FlowerGlyph, CardFrame, floraKeyframes, cwOf } from "@/components/brand/flora";
 
 // Friendly labels for the 12 supported life_stage enum values — used by the
 // prominent "Your Femwell stage" card below to read the current stage.
@@ -254,11 +257,13 @@ export default function Profile() {
     : null;
 
   // ── Shared styles ──
+  // Brand-P2 rich-card treatment (§6.1) — gold colourway tint + gold left rim + layered shadow.
   const card = {
-    backgroundColor: "var(--surface)",
+    background: "linear-gradient(165deg, var(--surface) 0%, rgba(168,137,63,0.06) 100%)",
     border: "1px solid var(--border)",
+    borderLeft: "4px solid #A8893F",
     borderRadius: "20px",
-    boxShadow: "var(--shadow-sm)",
+    boxShadow: "0 4px 20px rgba(58,44,26,0.10), 0 1px 4px rgba(58,44,26,0.07)",
   };
   const sLabel = {
     fontSize: "0.6rem", fontWeight: 600, textTransform: "uppercase",
@@ -295,7 +300,15 @@ export default function Profile() {
   );
 
   return (
-    <div className="min-h-screen pb-28" style={{ backgroundColor: "var(--ivory)" }}>
+    <div className="min-h-screen pb-28" style={{ backgroundColor: "var(--ivory)", position: "relative", isolation: "isolate", overflowX: "clip" }}>
+      {/* Brand-P2 botanical page texture — blush/gold vines (§5.3 Profile char), one per */}
+      {/* fold, hairline + low-opacity, clipped + held behind content (zIndex -1).        */}
+      <div aria-hidden="true" style={{ position: "absolute", inset: 0, overflow: "hidden", pointerEvents: "none", zIndex: -1 }}>
+        <style>{floraKeyframes}</style>
+        <div style={{ position: "absolute", top: 180, right: -26 }}><VineMotifV2 color={T.blush} color2={T.gold} opacity={0.12} w={146} /></div>
+        <div style={{ position: "absolute", top: 760, left: -28 }}><VineMotifV2 color={T.gold} color2={T.blush} opacity={0.09} w={138} flip /></div>
+        <div style={{ position: "absolute", top: 1340, right: -24 }}><VineMotifV2 color={T.blush} color2={T.gold} opacity={0.09} w={138} /></div>
+      </div>
       {/* Save confirmation / error toast — profile edits are no longer silent */}
       {saveToast && (
         <div role="status" style={{
@@ -313,16 +326,27 @@ export default function Profile() {
         {/* Header */}
         <div style={{ paddingTop: "40px", paddingBottom: "20px" }}>
           <p style={sLabel}>Your account</p>
-          <h1 className="fw-display" style={{ marginTop: "4px" }}>Profile</h1>
+          {/* Brand-P2: the single carved crimson heart (§3) + a flanking blush
+              meaning-bloom (§5.3 Profile char = blush/gold) beside the script title. */}
+          <div style={{ display: "flex", alignItems: "center", gap: 9, marginTop: "4px" }}>
+            <BrandHeart size={15} />
+            <h1 className="fw-display" style={{ margin: 0 }}>Profile</h1>
+            <FlowerGlyph variant="camellia" size={22} color={cwOf("blush").petal} color2={cwOf("blush").tip} accent={cwOf("blush").accent} idx="pf-hdr" />
+          </div>
         </div>
 
         {/* Hero card */}
         <div style={{
-          background: "var(--surface)",
+          background: "linear-gradient(165deg, var(--surface) 0%, rgba(232,180,184,0.10) 100%)",
           border: "1px solid var(--border)",
+          borderLeft: "4px solid #A8893F",
           borderRadius: 24, padding: 24, marginBottom: 16,
-          boxShadow: "var(--shadow-md)",
+          boxShadow: "0 4px 20px rgba(58,44,26,0.12), 0 1px 4px rgba(58,44,26,0.08)",
+          position: "relative", overflow: "hidden",
         }}>
+          {/* Brand-P2: blush 4-corner sprig frame (§4.2) on the prominent profile hero. */}
+          <CardFrame variant="sprig" color={T.blush} size={50} opacity={0.6} />
+          <div style={{ position: "relative", zIndex: 1 }}>
           {/* Top row */}
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 12 }}>
             <label style={{ cursor: uploadingPhoto ? "wait" : "pointer", position: "relative", display: "inline-block" }}>
@@ -386,6 +410,7 @@ export default function Profile() {
               ))}
             </div>
           )}
+          </div>
         </div>
 
         {/* Stat strip */}
