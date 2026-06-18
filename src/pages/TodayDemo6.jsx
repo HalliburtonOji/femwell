@@ -276,6 +276,7 @@ export default function TodayDemo6() {
   const [rollSeed, setRollSeed] = useState(0);        // re-roll the per-section suggestion rotation
   const [jumpOpen, setJumpOpen] = useState(false);    // central jump-to switcher
   const [pinned, setPinned] = useState(false);        // sticky Jump-to bar (appears on scroll-down)
+  const pinSentinel = useRef(null);                   // IntersectionObserver sentinel for the sticky bar
   const [sActive, setSActive] = useState(0);          // per-section slider index
   const sTrackRef = useRef(null);
 
@@ -380,16 +381,17 @@ export default function TodayDemo6() {
     return () => { alive = false; };
   }, []);
 
-  // sticky Jump-to: pin a slim bar once the masthead has scrolled away (rAF-throttled, passive).
+  // sticky Jump-to: pin a slim bar once the masthead has scrolled past. An IntersectionObserver on a
+  // sentinel (placed ~200px down) is robust to window-vs-container scrolling and needs no scrollY math
+  // — the bar pins whenever the sentinel leaves the top of the viewport.
   useEffect(() => {
-    let raf = 0;
-    const onScroll = () => {
-      if (raf) return;
-      raf = requestAnimationFrame(() => { raf = 0; setPinned(window.scrollY > 210); });
-    };
-    window.addEventListener("scroll", onScroll, { passive: true });
-    onScroll();
-    return () => { window.removeEventListener("scroll", onScroll); if (raf) cancelAnimationFrame(raf); };
+    const el = pinSentinel.current; if (!el || typeof IntersectionObserver === "undefined") return;
+    const io = new IntersectionObserver(
+      ([entry]) => { setPinned(!entry.isIntersecting && entry.boundingClientRect.top < 0); },
+      { threshold: 0 },
+    );
+    io.observe(el);
+    return () => io.disconnect();
   }, []);
 
   // first-open ceremony animation: grow the bloom 0→4, then mark seen + dismiss.
@@ -649,6 +651,9 @@ export default function TodayDemo6() {
           </div>
         </div>
       </div>
+      {/* sticky-bar trigger: when this sentinel (≈200px down) leaves the top of the viewport, the bar pins */}
+      <div ref={pinSentinel} aria-hidden style={{ position: "absolute", top: 200, left: 0, width: 1, height: 1, pointerEvents: "none" }} />
+
       {/* botanical brand texture — one low-opacity vine per fold, at the page edge, never behind text (BRAND_IDENTITY §4/§6.2) */}
       <div style={{ position: "absolute", top: 28, right: -22, pointerEvents: "none", zIndex: 0 }}><VineMotifV2 color={T.sage} color2={T.gold} opacity={0.1} w={162} /></div>
       <div style={{ position: "absolute", top: 760, left: -26, pointerEvents: "none", zIndex: 0 }}><VineMotifV2 color={T.gold} color2={T.sage} opacity={0.08} w={150} flip /></div>
