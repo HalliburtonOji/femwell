@@ -48,6 +48,9 @@ import StageRow from "@/components/planner-v2/StageRows";
 import ConditionRow from "@/components/planner-v2/ConditionRows";
 import CardStack from "@/components/planner-v2/CardStack";
 import PlannerTour from "@/components/planner-v2/PlannerTour";
+// Brand-P2 lush layer (BRAND_IDENTITY §3 heart · §4 botanicals · §5.3 — Planner char = plum/gold).
+import { Heart as BrandHeart } from "@/components/journal/Editorial";
+import { VineMotifV2, FlowerGlyph, floraKeyframes, cwOf } from "@/components/brand/flora";
 import AiDisclaimer from "@/components/compliance/AiDisclaimer";
 import { computeStreaks } from "@/utils/habitStreaks";
 // P1-5 — shared cycle-day derivation. `derivePlannerPhase` is now an
@@ -894,6 +897,14 @@ export default function PlannerV2Shell({
 
   return (
     <div style={shell}>
+      {/* Brand-P2 botanical page texture — plum/gold vines (§5.3 Planner char), one */}
+      {/* per fold, hairline + low-opacity, clipped + held behind content (zIndex -1). */}
+      <div aria-hidden="true" style={{ position: "absolute", inset: 0, overflow: "hidden", pointerEvents: "none", zIndex: -1 }}>
+        <style>{floraKeyframes}</style>
+        <div style={{ position: "absolute", top: 200, right: -26 }}><VineMotifV2 color="#8E6E8E" color2={C.gold} opacity={0.1} w={146} /></div>
+        <div style={{ position: "absolute", top: 860, left: -28 }}><VineMotifV2 color={C.gold} color2="#8E6E8E" opacity={0.08} w={138} flip /></div>
+        <div style={{ position: "absolute", top: 1520, right: -24 }}><VineMotifV2 color="#8E6E8E" color2={C.gold} opacity={0.08} w={138} /></div>
+      </div>
       {shouldShowDev() && (
         <DevPill
           devStage={devStage}
@@ -1041,7 +1052,11 @@ function Header({ greeting, onOpenPlan, onOpenSettings, onOpenVoice, lifeStage }
   return (
     <div style={headerStyle}>
       <div style={greetingRow}>
+        {/* Brand-P2: the single carved crimson heart (§3) + a flanking plum
+            meaning-bloom (§5.3 Planner char = plum/gold) beside the script greeting. */}
+        <BrandHeart size={15} />
         <h1 className="fw-display">{greeting}, {profile.name}</h1>
+        <FlowerGlyph variant="iris" size={20} color={cwOf("plum").petal} color2={cwOf("plum").tip} accent={cwOf("plum").accent} idx="plv2-hdr" />
         <Sun size={18} style={{ color: C.gold, flexShrink: 0 }} />
         {/* V3 sprint Task 4 — navigate to /Search from the Planner header. */}
         <a
@@ -5554,6 +5569,11 @@ function DemoFooter() {
 const shell = {
   background: C.cream, minHeight: "100vh", paddingBottom: 120,
   position: "relative",
+  // Brand-P2: establish a stacking context so the page-texture vine layer
+  // (zIndex:-1, below) paints above the cream background but behind all content
+  // — no per-child zIndex lift needed.
+  isolation: "isolate",
+  overflowX: "clip",
 };
 const headerStyle = { padding: "20px 16px 8px", background: C.cream };
 const greetingRow = { display: "flex", alignItems: "center", gap: 8 };
@@ -5645,9 +5665,12 @@ const rowSlotActive = {
 // + subtle 0.5 alpha border + a deeper shadow stack so cards feel solid
 // against the cream backdrop instead of paper-thin.
 const cardStyle = {
-  background: C.paperHi,
+  // Brand-P2 rich-card treatment (§6.1) — gold colourway tint + gold left rim
+  // over the existing layered editorial shadow (lush, not flat cream).
+  background: "linear-gradient(165deg, var(--surface) 0%, rgba(168,137,63,0.06) 100%)",
   borderRadius: 20, padding: 16,
   border: "1px solid rgba(212,193,180,0.5)",
+  borderLeft: "4px solid var(--gold)",
   boxShadow: "0 4px 20px rgba(58,44,26,0.12), 0 1px 4px rgba(58,44,26,0.08)",
   display: "flex", flexDirection: "column", gap: 8,
   boxSizing: "border-box",
