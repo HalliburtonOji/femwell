@@ -1,7 +1,8 @@
 import { useState, useEffect, useRef } from "react";
 import { base44 } from "@/api/base44Client";
 import { ExternalLink, X, Bookmark, SlidersHorizontal, Check } from "lucide-react";
-import { T, UI, SCRIPT, Eyebrow } from "@/components/journal/Editorial";
+import { T, UI, SCRIPT, Eyebrow, Heart as BrandHeart } from "@/components/journal/Editorial";
+import { VineMotifV2, FlowerGlyph, floraKeyframes, cwOf } from "@/components/brand/flora";
 import { CONTENT_CATEGORIES, categoryLabel } from "@/utils/contentCategory";
 import ForYouTab from "@/components/lifestyle/foryou/ForYouTab";
 import BrowseTab from "@/components/lifestyle/browse/BrowseTab";
@@ -699,8 +700,16 @@ export default function Lifestyle() {
   const isForYou = tab === "for_you";
 
   return (
-    <div className="min-h-screen pb-28" style={{ backgroundColor: "var(--ivory)" }}>
+    <div className="min-h-screen pb-28" style={{ backgroundColor: "var(--ivory)", position: "relative" }}>
       <style>{`.lf-scroll::-webkit-scrollbar{display:none}.lf-scroll{-ms-overflow-style:none;scrollbar-width:none}@keyframes lf-spin{to{transform:rotate(360deg)}}.space-y-3>*+*{margin-top:12px}.space-y-4>*+*{margin-top:16px}.space-y-2>*+*{margin-top:8px}`}</style>
+
+      {/* botanical page texture — one low-opacity vine per fold (Lifestyle char = gold/blush), clipped, behind content */}
+      <div aria-hidden style={{ position: "absolute", inset: 0, overflow: "hidden", pointerEvents: "none", zIndex: 0 }}>
+        <style>{floraKeyframes}</style>
+        <div style={{ position: "absolute", top: 240, right: -26 }}><VineMotifV2 color={T.gold} color2={T.blush} opacity={0.1} w={150} /></div>
+        <div style={{ position: "absolute", top: 820, left: -28 }}><VineMotifV2 color={T.blush} color2={T.gold} opacity={0.08} w={140} flip /></div>
+        <div style={{ position: "absolute", top: 1420, right: -24 }}><VineMotifV2 color={T.gold} color2={T.blush} opacity={0.08} w={140} /></div>
+      </div>
 
       {/* Sticky header — editorial dusk bar (matches NutritionHub's T.dusk
           header). Eyebrow + Ephesis script title; gold active pill on dusk. */}
@@ -709,7 +718,12 @@ export default function Lifestyle() {
         <div style={{ padding: "10px 16px", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
           <div>
             <Eyebrow color="rgba(244,237,219,0.55)" mb={1}>Discover</Eyebrow>
-            <div style={{ fontFamily: SCRIPT, fontWeight: 400, fontSize: 30, lineHeight: 1.05, color: T.paper }}>Lifestyle</div>
+            {/* carved heart in the header (§3) + a flanking meaning-bloom (Lifestyle char = gold / radiance) */}
+            <div style={{ display: "flex", alignItems: "center", gap: 9 }}>
+              <BrandHeart size={15} />
+              <div style={{ fontFamily: SCRIPT, fontWeight: 400, fontSize: 30, lineHeight: 1.05, color: T.paper }}>Lifestyle</div>
+              <FlowerGlyph variant="iris" size={24} color={cwOf("gold").petal} color2={cwOf("gold").tip} idx="lf-hdr" />
+            </div>
           </div>
         </div>
         {/* Row 2 — tab pills */}
@@ -763,15 +777,15 @@ export default function Lifestyle() {
           - Browse / Listen / Daily Story: tight 576px column (mobile-frame
             magazine feel — unchanged). */}
       {isForYou ? (
-        <div className="mx-auto pt-5" style={{ maxWidth: 1200 }}>
+        <div className="mx-auto pt-5" style={{ maxWidth: 1200, position: "relative", zIndex: 1 }}>
           <ForYouTab categoryFilter={categoryFilter} />
         </div>
       ) : tab === "horoscope" ? (
-        <div className="mx-auto pt-5" style={{ maxWidth: 820 }}>
+        <div className="mx-auto pt-5" style={{ maxWidth: 820, position: "relative", zIndex: 1 }}>
           <HoroscopeTab />
         </div>
       ) : (
-        <div className="max-w-xl mx-auto px-4 pt-5">
+        <div className="max-w-xl mx-auto px-4 pt-5" style={{ position: "relative", zIndex: 1 }}>
           {tab === "read"        && <BrowseTab categoryFilter={categoryFilter} activeChip={activeChip} />}
           {tab === "listen"      && <ListenTab categoryFilter={categoryFilter} activeChip={activeChip} />}
           {tab === "daily_story" && <DailyStoryTab />}

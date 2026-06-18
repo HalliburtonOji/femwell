@@ -1,6 +1,8 @@
 import { useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { getCategoryGradient, attachFallbackOverlay } from '@/utils/imageFallback';
+import { T } from '@/components/journal/Editorial';
+import { CardFrame } from '@/components/brand/flora';
 
 const FALLBACK_GRADIENT = 'linear-gradient(135deg, var(--rose-soft-bg) 0%, var(--cream-2) 100%)';
 
@@ -97,11 +99,16 @@ export default function PhaseInboxRail({ items, currentPhase }) {
                 position: 'relative',
                 borderRadius: 14,
                 overflow: 'hidden',
-                background: 'var(--cream)',
-                boxShadow: 'var(--shadow-card)',
+                // lush botanical card frame (BRAND_IDENTITY §4.2/§6.1) — gold-led.
+                background: `linear-gradient(165deg, ${T.paperHi} 0%, ${T.gold}14 100%)`,
+                border: `1px solid ${T.paperDeep}`,
+                borderLeft: `4px solid ${T.gold}`,
+                boxShadow: '0 4px 20px rgba(58,44,26,0.12), 0 1px 4px rgba(58,44,26,0.08)',
                 cursor: 'pointer',
               }}
             >
+              <CardFrame variant="sprig" color={T.gold} size={40} opacity={0.55} />
+              <div style={{ position: 'relative', zIndex: 1 }}>
               <div style={{
                 height: 110,
                 width: '100%',
@@ -132,6 +139,7 @@ export default function PhaseInboxRail({ items, currentPhase }) {
                 }}>
                   {item.title}
                 </p>
+              </div>
               </div>
             </div>
           ))}

@@ -2,6 +2,8 @@ import { useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import SaveHeartButton from "./SaveHeartButton";
 import { getCategoryGradient, attachFallbackOverlay } from "@/utils/imageFallback";
+import { T } from "@/components/journal/Editorial";
+import { CardFrame } from "@/components/brand/flora";
 
 const FALLBACK_GRADIENT = "linear-gradient(135deg, var(--rose-soft-bg) 0%, var(--cream-2) 100%)";
 
@@ -35,6 +37,9 @@ export default function EditorialHero({ item, savedSet, savedPhases, onSave, onU
         cursor: "pointer",
         animation: "fy-fade 240ms ease-out",
         background: bg,
+        // lush botanical hero frame (BRAND_IDENTITY §4.2/§6.1) — a gold accent rim,
+        // with the corner sprigs overlaid above the scrim below.
+        borderLeft: `4px solid ${T.gold}`,
         // Layered 3D shadow — sits a touch deeper than bento cards
         boxShadow:
           "0 2px 4px rgba(43,30,22,0.05), 0 8px 22px rgba(43,30,22,0.10), 0 24px 56px rgba(43,30,22,0.08)",
@@ -66,6 +71,9 @@ export default function EditorialHero({ item, savedSet, savedPhases, onSave, onU
           background: "linear-gradient(to top, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0) 50%)",
         }}
       />
+
+      {/* Botanical corner sprigs — gold, overlaid above the photo + scrim */}
+      <CardFrame variant="sprig" color={T.gold} size={48} opacity={0.55} />
 
       {/* Top-left: category meta pill */}
       {item.category && (

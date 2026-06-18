@@ -3,6 +3,8 @@ import { createPageUrl } from "@/utils";
 import SaveHeartButton from "./SaveHeartButton";
 import PhasePill from "./PhasePill";
 import { getCategoryGradient, attachFallbackOverlay } from "@/utils/imageFallback";
+import { T } from "@/components/journal/Editorial";
+import { CardFrame } from "@/components/brand/flora";
 
 const FALLBACK_GRADIENT = "linear-gradient(135deg, var(--rose-soft-bg) 0%, var(--cream-2) 100%)";
 
@@ -35,7 +37,11 @@ function BentoCard({ item, idx, currentPhase, savedSet, savedPhases, onSave, onU
       style={{
         ...cardSpan(item),
         position: "relative",
-        background: "var(--cream)",
+        // lush botanical card frame (BRAND_IDENTITY §4.2/§6.1) — gold-led colourway
+        // tint + accent rim + a 4-corner sprig, mirroring the shared SurfaceCard.
+        background: `linear-gradient(165deg, ${T.paperHi} 0%, ${T.gold}14 100%)`,
+        border: `1px solid ${T.paperDeep}`,
+        borderLeft: `4px solid ${T.gold}`,
         borderRadius: 14,
         overflow: "hidden",
         cursor: "pointer",
@@ -46,6 +52,8 @@ function BentoCard({ item, idx, currentPhase, savedSet, savedPhases, onSave, onU
         animationDelay: `${Math.min(idx, 12) * 50}ms`,
       }}
     >
+      <CardFrame variant="sprig" color={T.gold} size={44} opacity={0.55} />
+      <div style={{ position: "relative", zIndex: 1 }}>
       <div
         style={{
           width: "100%",
@@ -159,6 +167,7 @@ function BentoCard({ item, idx, currentPhase, savedSet, savedPhases, onSave, onU
             {item.author_name || item.source_name}
           </span>
         )}
+      </div>
       </div>
     </div>
   );

@@ -4,6 +4,8 @@ import { createPageUrl } from '@/utils';
 import PodcastCard from './PodcastCard';
 import SaveHeartButton from '@/components/lifestyle/foryou/SaveHeartButton';
 import { getCategoryGradient, attachFallbackOverlay } from '@/utils/imageFallback';
+import { T } from '@/components/journal/Editorial';
+import { CardFrame } from '@/components/brand/flora';
 
 // Shared play indicator — used by inline video card
 function PlayIndicator() {
@@ -71,13 +73,19 @@ function VideoCard({ item, saved, hasPhaseTag, onSave, onUntag }) {
       aria-label={`Video: ${item.title || ''}`}
       style={{
         borderRadius: 14,
-        boxShadow: 'var(--shadow-card)',
-        background: 'var(--cream)',
+        // lush botanical card frame (BRAND_IDENTITY §4.2/§6.1) — gold-led.
+        background: `linear-gradient(165deg, ${T.paperHi} 0%, ${T.gold}14 100%)`,
+        border: `1px solid ${T.paperDeep}`,
+        borderLeft: `4px solid ${T.gold}`,
+        boxShadow: '0 4px 20px rgba(58,44,26,0.12), 0 1px 4px rgba(58,44,26,0.08)',
         overflow: 'hidden',
         cursor: 'pointer',
+        position: 'relative',
       }}
       onClick={handleClick}
     >
+      <CardFrame variant="sprig" color={T.gold} size={44} opacity={0.55} />
+      <div style={{ position: 'relative', zIndex: 1 }}>
       {/* 4:3 image area */}
       <div style={{ position: 'relative', aspectRatio: '4/3', overflow: 'hidden', background: getCategoryGradient(item.category) }}>
         {item.image_url ? (
@@ -155,6 +163,7 @@ function VideoCard({ item, saved, hasPhaseTag, onSave, onUntag }) {
         }}>
           {[item.channel_name, formatRelativeDate(item.published_at)].filter(Boolean).join(' · ')}
         </p>
+      </div>
       </div>
     </div>
   );
