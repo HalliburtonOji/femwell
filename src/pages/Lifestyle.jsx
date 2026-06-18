@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { base44 } from "@/api/base44Client";
-import { ExternalLink, X, Bookmark, SlidersHorizontal, Check } from "lucide-react";
-import { T, UI, SCRIPT, Eyebrow, Heart as BrandHeart } from "@/components/journal/Editorial";
+import { ExternalLink, X, Bookmark, SlidersHorizontal, Check, Sparkles } from "lucide-react";
+import { T, UI, SCRIPT, Heart as BrandHeart } from "@/components/journal/Editorial";
 import { VineMotifV2, FlowerGlyph, floraKeyframes, cwOf } from "@/components/brand/flora";
 import { CONTENT_CATEGORIES, categoryLabel } from "@/utils/contentCategory";
 import ForYouTab from "@/components/lifestyle/foryou/ForYouTab";
@@ -652,6 +652,9 @@ export default function Lifestyle() {
 
   // Brand-P2: central "Jump to" switcher (app-wide rule for multi-layer pages).
   const [hubOpen, setHubOpen] = useState(false);
+  // Brand-P2: Today-style header — the filter panel opens from the top-right square
+  // control (mirrors Today's calendar square), keeping the masthead clean.
+  const [showFilters, setShowFilters] = useState(false);
 
   // Honour browser back/forward between tabs (with legacy redirect).
   useEffect(() => {
@@ -716,21 +719,32 @@ export default function Lifestyle() {
         <div style={{ position: "absolute", top: 1420, right: -24 }}><VineMotifV2 color={T.gold} color2={T.blush} opacity={0.08} w={140} /></div>
       </div>
 
-      {/* Header — Journal/Today pattern (Brand-P2 fix): a CLEAN masthead on the page paper,
-          NO boxed/sticky band and no bottom-rule walling it off; it flows straight into the
-          tab pill row. The "Jump to" switcher handles re-navigation after scroll (Journal model). */}
-      <header style={{ padding: "20px 16px 4px", position: "relative", zIndex: 1 }}>
-        {/* controls row — Jump-to switcher (matches JournalHub's header) */}
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "flex-end", marginBottom: 10 }}>
-          <JumpToButton onClick={() => setHubOpen(true)} />
+      {/* Header — TODAY-page template, adapted "lifestyle style" (Brand-P2): a clean masthead
+          on the page paper (NO boxed/sticky band, no bottom-rule) — a centered top strip with the
+          Jump-to control pinned left, a centered icon+label, and a square control pinned right
+          (Today's calendar square → here the Filter panel), flowing straight into the centered
+          masthead + the tab pill row. Reads as a sibling of the Today/Journal headers. */}
+      <header style={{ maxWidth: 600, margin: "0 auto", padding: "16px 16px 0", position: "relative", zIndex: 1 }}>
+        {/* top strip — jump-to (left) · centered label · square Filter control (right) */}
+        <div style={{ display: "flex", alignItems: "center", gap: 8, justifyContent: "center", marginTop: 6, position: "relative" }}>
+          <div style={{ position: "absolute", left: 0, top: -3 }}><JumpToButton onClick={() => setHubOpen(true)} /></div>
+          <Sparkles size={14} color={T.muted} />
+          <span style={{ fontFamily: UI, fontSize: 12, fontWeight: 700, letterSpacing: "0.16em", textTransform: "uppercase", color: T.muted }}>Discover</span>
+          {tab !== "daily_story" && tab !== "horoscope" && (
+            <button onClick={() => setShowFilters(v => !v)} aria-label="Filters" aria-pressed={showFilters} title="Filters"
+              style={{ position: "absolute", right: 0, top: -2, width: 38, height: 38, borderRadius: 12, border: `1px solid ${T.paperDeep}`, background: showFilters ? T.gold : T.paperHi, display: "grid", placeItems: "center", cursor: "pointer" }}>
+              <SlidersHorizontal size={18} color={showFilters ? T.ink : T.muted} strokeWidth={1.8} />
+            </button>
+          )}
         </div>
-        <Eyebrow color={T.muted} mb={4}>Discover</Eyebrow>
-        {/* carved heart (§3) + Ephesis script title + flanking meaning-bloom (Lifestyle char = gold / radiance) */}
-        <div style={{ display: "flex", alignItems: "center", gap: 9, flexWrap: "wrap" }}>
+
+        {/* masthead — centered: carved heart (§3) + Ephesis script title + flanking meaning-bloom */}
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 9, flexWrap: "wrap", marginTop: 12 }}>
           <BrandHeart size={15} />
-          <div style={{ fontFamily: SCRIPT, fontWeight: 400, fontSize: 40, lineHeight: 1.05, color: T.ink }}>Lifestyle</div>
+          <div style={{ fontFamily: SCRIPT, fontWeight: 400, fontSize: 44, lineHeight: 1.05, color: T.ink }}>Lifestyle</div>
           <FlowerGlyph variant="iris" size={24} color={cwOf("gold").petal} color2={cwOf("gold").tip} idx="lf-hdr" />
         </div>
+
         {/* tabs — a clean scrollable pill row flowing under the masthead (no boxed band) */}
         <div className="lf-scroll" style={{ display: "flex", gap: 6, overflowX: "auto", paddingBottom: 2, marginTop: 16 }}>
           {TABS.map(t => (
@@ -746,9 +760,10 @@ export default function Lifestyle() {
             </button>
           ))}
         </div>
-        {/* Filter row — flows under the tabs, no band */}
-        {(tab === "read" || tab === "listen") ? (
-          <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 10 }}>
+
+        {/* Filter panel — opens from the top-right square (Today's calendar-square pattern). */}
+        {showFilters && (tab === "read" || tab === "listen") ? (
+          <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 10, flexWrap: "wrap" }}>
             <InlineChipRow
               tab={tab}
               activeChip={activeChip}
@@ -761,7 +776,7 @@ export default function Lifestyle() {
               inline
             />
           </div>
-        ) : tab !== "daily_story" && tab !== "horoscope" ? (
+        ) : showFilters && tab !== "daily_story" && tab !== "horoscope" ? (
           <div style={{ marginTop: 10 }}>
             <CategoryFilterDropdown
               selected={categoryFilter}
