@@ -716,66 +716,61 @@ export default function Lifestyle() {
         <div style={{ position: "absolute", top: 1420, right: -24 }}><VineMotifV2 color={T.gold} color2={T.blush} opacity={0.08} w={140} /></div>
       </div>
 
-      {/* Sticky header — PAPER masthead (Brand-P2 fix: was an off-brand dark T.dusk
-          slab; the brand bg is cream/paper, so the masthead now sits on paperHi with
-          a hairline paperDeep rule, ink title, gold accents). */}
-      <div className="sticky top-0 z-30" style={{ background: T.paperHi, borderBottom: `1px solid ${T.paperDeep}` }}>
-        {/* Row 1 — paper masthead */}
-        <div style={{ padding: "10px 16px", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
-          <div>
-            <Eyebrow color={T.muted} mb={1}>Discover</Eyebrow>
-            {/* carved heart in the header (§3) + a flanking meaning-bloom (Lifestyle char = gold / radiance) */}
-            <div style={{ display: "flex", alignItems: "center", gap: 9 }}>
-              <BrandHeart size={15} />
-              <div style={{ fontFamily: SCRIPT, fontWeight: 400, fontSize: 36, lineHeight: 1.05, color: T.ink }}>Lifestyle</div>
-              <FlowerGlyph variant="iris" size={24} color={cwOf("gold").petal} color2={cwOf("gold").tip} idx="lf-hdr" />
-            </div>
-          </div>
-          {/* Brand-P2: central "Jump to" switcher (app-wide multi-layer-page rule). */}
+      {/* Header — Journal/Today pattern (Brand-P2 fix): a CLEAN masthead on the page paper,
+          NO boxed/sticky band and no bottom-rule walling it off; it flows straight into the
+          tab pill row. The "Jump to" switcher handles re-navigation after scroll (Journal model). */}
+      <header style={{ padding: "20px 16px 4px", position: "relative", zIndex: 1 }}>
+        {/* controls row — Jump-to switcher (matches JournalHub's header) */}
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "flex-end", marginBottom: 10 }}>
           <JumpToButton onClick={() => setHubOpen(true)} />
         </div>
-        {/* Row 2 — tab pills (on paper) */}
-        <div style={{ padding: "0 16px 10px" }}>
-          <div className="lf-scroll" style={{ display: "flex", gap: 6, overflowX: "auto", paddingBottom: 2 }}>
-            {TABS.map(t => (
-              <button key={t.id} onClick={() => setTab(t.id)}
-                aria-label={`Switch to ${t.label} tab`}
-                aria-pressed={tab === t.id}
-                style={{ flexShrink: 0, padding: "8px 16px", borderRadius: 9999, fontSize: 13, fontWeight: 700, cursor: "pointer", transition: "all 0.15s", whiteSpace: "nowrap", minHeight: 34,
-                  fontFamily: UI,
-                  border: tab === t.id ? "none" : `1px solid ${T.paperDeep}`,
-                  backgroundColor: tab === t.id ? T.gold : "transparent",
-                  color: tab === t.id ? T.ink : T.muted }}>
-                {t.label}
-              </button>
-            ))}
-          </div>
-          {/* Filter row */}
-          {(tab === "read" || tab === "listen") ? (
-            <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 8 }}>
-              <InlineChipRow
-                tab={tab}
-                activeChip={activeChip}
-                onChange={setActiveChip}
-              />
-              <CategoryFilterDropdown
-                selected={categoryFilter}
-                onChange={setCategoryFilter}
-                followedCategories={followedCategories}
-                inline
-              />
-            </div>
-          ) : tab !== "daily_story" && tab !== "horoscope" ? (
-            <div style={{ marginTop: 8 }}>
-              <CategoryFilterDropdown
-                selected={categoryFilter}
-                onChange={setCategoryFilter}
-                followedCategories={followedCategories}
-              />
-            </div>
-          ) : null}
+        <Eyebrow color={T.muted} mb={4}>Discover</Eyebrow>
+        {/* carved heart (§3) + Ephesis script title + flanking meaning-bloom (Lifestyle char = gold / radiance) */}
+        <div style={{ display: "flex", alignItems: "center", gap: 9, flexWrap: "wrap" }}>
+          <BrandHeart size={15} />
+          <div style={{ fontFamily: SCRIPT, fontWeight: 400, fontSize: 40, lineHeight: 1.05, color: T.ink }}>Lifestyle</div>
+          <FlowerGlyph variant="iris" size={24} color={cwOf("gold").petal} color2={cwOf("gold").tip} idx="lf-hdr" />
         </div>
-      </div>
+        {/* tabs — a clean scrollable pill row flowing under the masthead (no boxed band) */}
+        <div className="lf-scroll" style={{ display: "flex", gap: 6, overflowX: "auto", paddingBottom: 2, marginTop: 16 }}>
+          {TABS.map(t => (
+            <button key={t.id} onClick={() => setTab(t.id)}
+              aria-label={`Switch to ${t.label} tab`}
+              aria-pressed={tab === t.id}
+              style={{ flexShrink: 0, padding: "8px 16px", borderRadius: 9999, fontSize: 13, fontWeight: 700, cursor: "pointer", transition: "all 0.15s", whiteSpace: "nowrap", minHeight: 34,
+                fontFamily: UI,
+                border: tab === t.id ? "none" : `1px solid ${T.paperDeep}`,
+                backgroundColor: tab === t.id ? T.gold : "transparent",
+                color: tab === t.id ? T.ink : T.muted }}>
+              {t.label}
+            </button>
+          ))}
+        </div>
+        {/* Filter row — flows under the tabs, no band */}
+        {(tab === "read" || tab === "listen") ? (
+          <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 10 }}>
+            <InlineChipRow
+              tab={tab}
+              activeChip={activeChip}
+              onChange={setActiveChip}
+            />
+            <CategoryFilterDropdown
+              selected={categoryFilter}
+              onChange={setCategoryFilter}
+              followedCategories={followedCategories}
+              inline
+            />
+          </div>
+        ) : tab !== "daily_story" && tab !== "horoscope" ? (
+          <div style={{ marginTop: 10 }}>
+            <CategoryFilterDropdown
+              selected={categoryFilter}
+              onChange={setCategoryFilter}
+              followedCategories={followedCategories}
+            />
+          </div>
+        ) : null}
+      </header>
 
       {/* Content — different widths per tab.
           - For-You bento: wide (1200px) so the grid breathes.

@@ -2,6 +2,8 @@ import { useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import SaveHeartButton from '@/components/lifestyle/foryou/SaveHeartButton';
 import { getBookCover } from '@/utils/bookCover';
+// Brand-P2 font fix: card is a <button>; pin §1 SERIF on title/summary (else system sans).
+import { SERIF } from '@/components/journal/Editorial';
 
 const FALLBACK_GRADIENT = 'linear-gradient(135deg, var(--rose-soft-bg) 0%, var(--gold) 100%)';
 
@@ -168,7 +170,8 @@ function FemwellBookCard({ book, isSaved, onHeartClick, onOpen }) {
 
       <div style={{ padding: 16 }}>
         <p style={{
-          fontSize: 17, fontWeight: 500,
+          fontFamily: SERIF,
+          fontSize: 18, fontWeight: 600,
           color: 'var(--plum-deep)',
           margin: 0, lineHeight: 1.3,
           ...clampStyle(2),
@@ -179,7 +182,8 @@ function FemwellBookCard({ book, isSaved, onHeartClick, onOpen }) {
             chapter prose here — that's what the reader is for. */}
         {book.summary && (
           <p style={{
-            fontSize: 13, fontWeight: 400,
+            fontFamily: SERIF,
+            fontSize: 14, fontWeight: 500,
             color: 'var(--plum-mute)',
             marginTop: 8, marginBottom: 0,
             lineHeight: 1.5,
@@ -283,7 +287,8 @@ function GutenbergBookCard({ book, isSaved, onHeartClick, onOpen }) {
 
       <div style={{ padding: 16 }}>
         <p style={{
-          fontSize: 17, fontWeight: 500,
+          fontFamily: SERIF,
+          fontSize: 18, fontWeight: 600,
           color: 'var(--plum-deep)',
           margin: 0, lineHeight: 1.3,
           ...clampStyle(2),

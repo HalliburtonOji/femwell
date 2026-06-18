@@ -3,6 +3,9 @@ import { formatDistanceToNow } from 'date-fns';
 import { createPageUrl } from '@/utils';
 import SaveHeartButton from '@/components/lifestyle/foryou/SaveHeartButton';
 import PhasePill from '@/components/lifestyle/foryou/PhasePill';
+// Brand-P2 font fix: card is a <button>, so the global `button{font-family:ui-sans-serif}`
+// rule forces system sans onto the title/summary (which must be Cormorant serif). Set §1 roles.
+import { SERIF, UI } from '@/components/journal/Editorial';
 import { getCategoryGradient, attachFallbackOverlay } from '@/utils/imageFallback';
 import { T } from '@/components/journal/Editorial';
 import { CardFrame } from '@/components/brand/flora';
@@ -197,7 +200,7 @@ export default function BrowseGrid({
                     position: 'absolute', top: 10, left: 10,
                     padding: '4px 10px', borderRadius: 9999,
                     background: 'rgba(0,0,0,0.35)', color: 'var(--cream)',
-                    fontSize: 12, fontWeight: 600,
+                    fontFamily: UI, fontSize: 12, fontWeight: 700,
                     textTransform: 'uppercase', letterSpacing: '0.06em',
                   }}>
                     {item.category}
@@ -225,8 +228,9 @@ export default function BrowseGrid({
               {/* Body */}
               <div style={{ padding: 16 }}>
                 <p style={{
+                  fontFamily: SERIF,
                   fontSize: 20,
-                  fontWeight: 400,
+                  fontWeight: 600,
                   color: 'var(--plum-deep)',
                   margin: 0,
                   lineHeight: 1.3,
@@ -239,8 +243,9 @@ export default function BrowseGrid({
                 </p>
                 {item.summary && (
                   <p style={{
-                    fontSize: 13,
-                    fontWeight: 400,
+                    fontFamily: SERIF,
+                    fontSize: 14,
+                    fontWeight: 500,
                     color: 'var(--plum-accent)',
                     marginTop: 6,
                     marginBottom: 0,
@@ -255,8 +260,9 @@ export default function BrowseGrid({
                 )}
                 {byline && (
                   <p style={{
+                    fontFamily: UI,
                     fontSize: 12,
-                    fontWeight: 500,
+                    fontWeight: 600,
                     color: 'var(--plum-mute)',
                     marginTop: 8,
                     marginBottom: 0,

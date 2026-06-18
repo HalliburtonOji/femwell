@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import PodcastCard from './PodcastCard';
 import SaveHeartButton from '@/components/lifestyle/foryou/SaveHeartButton';
+// Brand-P2 font fix: card is a <button>; pin §1 roles so text never inherits system sans.
+import { SERIF, UI } from '@/components/journal/Editorial';
 import { getCategoryGradient, attachFallbackOverlay } from '@/utils/imageFallback';
 import { T } from '@/components/journal/Editorial';
 import { CardFrame } from '@/components/brand/flora';
@@ -114,7 +116,7 @@ function VideoCard({ item, saved, hasPhaseTag, onSave, onUntag }) {
         {/* Top-left meta pill */}
         <div style={{
           position: 'absolute', top: 10, left: 10,
-          fontSize: 12, fontWeight: 600, textTransform: 'uppercase',
+          fontFamily: UI, fontSize: 12, fontWeight: 700, textTransform: 'uppercase',
           letterSpacing: '0.6px',
           color: 'var(--cream)', background: 'rgba(0,0,0,0.35)',
           padding: '4px 10px', borderRadius: 9999,
@@ -145,7 +147,8 @@ function VideoCard({ item, saved, hasPhaseTag, onSave, onUntag }) {
       {/* Body */}
       <div style={{ padding: 16 }}>
         <h3 style={{
-          fontSize: 20, fontWeight: 400,
+          fontFamily: SERIF,
+          fontSize: 20, fontWeight: 600,
           color: 'var(--plum-deep)',
           lineHeight: 1.3,
           margin: '0 0 6px',
@@ -157,7 +160,7 @@ function VideoCard({ item, saved, hasPhaseTag, onSave, onUntag }) {
           {item.title}
         </h3>
         <p style={{
-          fontSize: 12, fontWeight: 500,
+          fontFamily: UI, fontSize: 12, fontWeight: 600,
           color: 'var(--plum-mute)',
           margin: 0,
         }}>
