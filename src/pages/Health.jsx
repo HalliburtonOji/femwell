@@ -21,6 +21,9 @@ import { Circle, CircleDot, RefreshCw, Flower2, Leaf, PlusCircle, Sparkles, Chec
 import { base44 } from "@/api/base44Client";
 import { useCycleDay } from "@/hooks/useCycleDay";
 import JumpToButton from "@/components/layout/JumpToButton";
+// Brand-P2 lush layer (BRAND_IDENTITY §3 heart · §4 botanicals · §5.3 Cycle/Health = phase-hue).
+import { T, Heart as BrandHeart } from "@/components/journal/Editorial";
+import { VineMotifV2, FlowerGlyph, CardFrame, floraKeyframes, cwOf } from "@/components/brand/flora";
 
 // ════════════════════════════════════════════════════════════════════════════
 // TABS
@@ -60,6 +63,12 @@ const PHASE_LABEL = {
   luteal: "Luteal",
   menstrual: "Menstrual",
 };
+// Brand-P2 phase flora (BRAND_IDENTITY §5.1/§5.3 — Cycle/Health = phase-hue + phase-flower).
+// Hues are the semantic phase set (§2.4), kept SEPARATE from chrome accents. Used for the
+// masthead meaning-bloom, the phase-hue page vines, and the phase-hue card frames.
+const PHASE_HUE = { menstrual: "#BC2E27", follicular: "#8FAF8F", ovulatory: "#D4AF37", luteal: "#8E6E8E" };
+const PHASE_FLOWER = { menstrual: "poppy", follicular: "snowdrop", ovulatory: "sunflower", luteal: "dahlia" };
+const PHASE_CW = { menstrual: "crimson", follicular: "sage", ovulatory: "gold", luteal: "plum" };
 
 // ════════════════════════════════════════════════════════════════════════════
 // BOTANICAL MOTIFS — one per tab
@@ -775,12 +784,17 @@ const JessObservationCard = memo(function JessObservationCard({ letterId, profil
   if (!observations || !observations.length) return null;
   // Trim to 3 max — Jess's brief should feel curated, not a list.
   const top = observations.slice(0, 3);
+  // Brand-P2: phase-hue corner frame (§4.2) — lush layer over the letter's Jess card.
+  const frameHue = PHASE_HUE[phase] || "#A8893F";
   return (
     <div style={{
       background: "rgba(58,44,26,0.04)",
       border: "1px solid rgba(58,44,26,0.1)",
       borderRadius: 8, padding: "16px 18px", marginBottom: 24,
+      position: "relative", overflow: "hidden",
     }}>
+      <CardFrame variant="sprig" color={frameHue} size={42} opacity={0.5} />
+      <div style={{ position: "relative", zIndex: 1 }}>
       {/* Header — gold circle chip + "Jess noticed" + subtitle */}
       <div style={{
         display: "flex", alignItems: "center", gap: 10,
@@ -818,6 +832,7 @@ const JessObservationCard = memo(function JessObservationCard({ letterId, profil
           }}>{o}</p>
         </div>
       ))}
+      </div>
     </div>
   );
 });
@@ -930,6 +945,10 @@ export default function Health() {
   const cycle = useCycleDay(profile);
   const phase = cycle?.phase || "follicular";
   const stage = profile?.life_stage || "reproductive";
+  // Brand-P2 phase flora for this letter (vines + masthead bloom).
+  const phaseHue = PHASE_HUE[phase] || T.gold;
+  const phaseCw = cwOf(PHASE_CW[phase] || "sage");
+  const phaseFlower = PHASE_FLOWER[phase] || "snowdrop";
 
   // ─── Letter navigation helpers — instant, no animation.
   // We had a slide-out animation here but it left the paper at opacity 0
@@ -1202,7 +1221,7 @@ export default function Health() {
       className="health-page"
       style={{
         background: "transparent", minHeight: "100vh", paddingBottom: 80,
-        touchAction: "manipulation",
+        touchAction: "manipulation", position: "relative",
       }}
     >
       {/* Page-wide perf CSS — kill the 300ms tap delay + tap highlight,  */}
@@ -1228,6 +1247,18 @@ export default function Health() {
           body { background: #fff !important; }
         }
       `}</style>
+
+      {/* ─── Brand-P2 botanical page texture ─── */}
+      {/* Phase-hue vines (§5.3 Cycle/Health = phase-hue), one per fold, hairline + */}
+      {/* low-opacity, clipped to the page and held BEHIND all content (zIndex 0).   */}
+      {/* The letter paper covers the centre; these warm the gutters/top/bottom so   */}
+      {/* the page reads lush around the restrained letter without competing with it. */}
+      <div aria-hidden="true" style={{ position: "absolute", inset: 0, overflow: "hidden", pointerEvents: "none", zIndex: 0 }}>
+        <style>{floraKeyframes}</style>
+        <div style={{ position: "absolute", top: 180, right: -28 }}><VineMotifV2 color={phaseHue} color2={T.gold} opacity={0.1} w={144} /></div>
+        <div style={{ position: "absolute", top: 900, left: -30 }}><VineMotifV2 color={T.gold} color2={phaseHue} opacity={0.08} w={136} flip /></div>
+        <div style={{ position: "absolute", top: 1640, right: -24 }}><VineMotifV2 color={phaseHue} color2={T.gold} opacity={0.08} w={136} /></div>
+      </div>
 
       {/* ─── Sticky letter-nav (espresso header + cream letter strip) ───  */}
       {/* This is the ONLY navigation chrome at the top of /Health.        */}
@@ -1332,12 +1363,12 @@ export default function Health() {
       </div>
 
       {/* ─── Letter history strip (Feature 5) ─── */}
-      <div className="hc-no-print">
+      <div className="hc-no-print" style={{ position: "relative", zIndex: 1 }}>
         <LetterHistoryStrip currentPhase={phaseLbl} />
       </div>
 
       {/* ─── Letter paper card with side-arrow slider nav ─── */}
-      <div style={{ padding: "24px 8px 24px", position: "relative", maxWidth: 780, margin: "0 auto" }}>
+      <div style={{ padding: "24px 8px 24px", position: "relative", zIndex: 1, maxWidth: 780, margin: "0 auto" }}>
         {/* Left arrow */}
         {letterIndex > 0 && (
           <button className="hc-no-print" onClick={goPrev} aria-label="Previous letter" style={{
@@ -1419,7 +1450,12 @@ export default function Health() {
                 FemWell Health Letter
               </div>
               {/* Static script page-title (Halli's bar: every page opens with the carved script). */}
-              <h1 className="fw-display" style={{ marginTop: 2 }}>Health</h1>
+              {/* Brand-P2: the single carved crimson heart (§3) + a flanking phase meaning-bloom (§5.3). */}
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 9, marginTop: 2 }}>
+                <BrandHeart size={15} />
+                <h1 className="fw-display" style={{ margin: 0 }}>Health</h1>
+                <FlowerGlyph variant={phaseFlower} size={22} color={phaseCw.petal} color2={phaseCw.tip} accent={phaseCw.accent} idx="hc-hdr" />
+              </div>
               <div className="fw-heading" style={{ marginTop: 2 }}>
                 {tab.label}
               </div>
@@ -1459,8 +1495,11 @@ export default function Health() {
           <div style={{
             border: "1.5px solid rgba(212,175,55,0.4)", borderRadius: 8,
             padding: "20px 24px", marginBottom: 32,
-            background: "rgba(212,175,55,0.05)", position: "relative",
+            background: "rgba(212,175,55,0.05)", position: "relative", overflow: "hidden",
           }}>
+            {/* Brand-P2: phase-hue corner frame (§4.2) on the "In this letter" card. */}
+            <CardFrame variant="sprig" color={phaseHue} size={44} opacity={0.45} />
+            <div style={{ position: "relative", zIndex: 1 }}>
             <div style={{
               display: "flex", justifyContent: "space-between", alignItems: "center",
               marginBottom: 16, paddingBottom: 12,
@@ -1506,6 +1545,7 @@ export default function Health() {
                 {expanded[s.id] && <Check size={12} strokeWidth={2.5} style={{ color: "#8FAF8F", flexShrink: 0 }} aria-hidden="true" />}
               </a>
             ))}
+            </div>
           </div>
 
           {/* ── Sections ── */}

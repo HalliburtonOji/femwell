@@ -29,3 +29,8 @@ dist-ssr
 
 # Claude — never commit test account credentials to the public repo
 .claude/memory/test_credentials.md
+
+# QA / Playwright artifacts (screenshots go to femwell-handoff)
+.playwright-mcp/
+qa-path-check-*.png
+build.log
