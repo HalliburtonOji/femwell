@@ -34,3 +34,4 @@ dist-ssr
 .playwright-mcp/
 qa-path-check-*.png
 build.log
+brandp2-*.png
