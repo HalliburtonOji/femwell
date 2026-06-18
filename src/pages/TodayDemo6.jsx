@@ -407,8 +407,11 @@ export default function TodayDemo6() {
       if (it.kind === "top") { try { window.scrollTo({ top: 0, behavior: "smooth" }); } catch { window.scrollTo(0, 0); } return; }
       if (it.kind === "area") { try { document.getElementById(it.id)?.scrollIntoView({ behavior: "smooth", block: "start" }); } catch { /* ignore */ } return; }
       try { document.getElementById("t-sections")?.scrollIntoView({ behavior: "smooth", block: "start" }); } catch { /* ignore */ }
+      // drive the slider to that card — set scrollLeft DIRECTLY (instant + reliable; smooth scrollTo
+      // can be dropped on a snap container) which also fires onScroll → the active chip/dot follow.
       setSActive(it.index);
-      sTrackRef.current?.scrollTo({ left: it.index * (CARD_W + GAP), behavior: "smooth" });   // drive the slider to that card
+      const tr = sTrackRef.current;
+      if (tr) { const left = it.index * (CARD_W + GAP); try { tr.scrollTo({ left, behavior: "auto" }); } catch { /* ignore */ } tr.scrollLeft = left; }
     });
   }, [jumpOpen]);
 
