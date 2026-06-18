@@ -18,7 +18,7 @@ import {
   PHASE_COLORS, PHASE_LABEL,
 } from "@/components/journal/Editorial";
 import { base44 } from "@/api/base44Client";
-import { computeCycleDay, phaseForDay } from "@/hooks/useCycleDay";
+import { computeCycleDay } from "@/hooks/useCycleDay";
 import { nutritionToday } from "@/utils/nutritionSummary";
 import { communityHash } from "@/components/community/communityAnon";
 import { computeCooling } from "@/components/journal/echo/echoSafety";
@@ -36,6 +36,10 @@ import { useScrollLock } from "@/utils/useScrollLock";
 // not a generic prompt. The rest of Today (hero, day-paragraph, Your-Day, cycle, suggestions,
 // closing) is unchanged.
 import JumpToButton from "@/components/layout/JumpToButton";
+// Unified calendar: REUSE the Planner page's cycle calendar (MonthRibbon) + its hour-by-hour day view
+// + day-actions (extracted to a shared module). One calendar across Today + Planner, not two designs.
+import MonthRibbon from "@/components/planner/cycle/MonthRibbon";
+import { PlannerDayView, DayActionsSheet } from "@/components/planner/schedule/PlannerDayView";
 import {
   PenLine, Salad, Users, Stethoscope, Sparkles, BookOpen, Feather, Headphones, Star, CalendarDays,
   Activity, Sprout, TrendingUp, Leaf, Moon, Footprints, Droplet, Coffee, Check, Plus, ChevronRight,
@@ -51,7 +55,6 @@ const PHASE_SEGMENTS = [
   { key: "menstrual", from: 1, to: 5 }, { key: "follicular", from: 6, to: 13 },
   { key: "ovulatory", from: 14, to: 16 }, { key: "luteal", from: 17, to: 28 },
 ];
-const MONTHS = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
 
 // guard every awaited read so a slow/wedged backend can never wedge the page (hang trap).
 const withTimeout = (p, ms = 7000) => Promise.race([
@@ -59,7 +62,6 @@ const withTimeout = (p, ms = 7000) => Promise.race([
   new Promise((res) => setTimeout(() => res(null), ms)),
 ]);
 function todayKey() { try { return new Date().toISOString().slice(0, 10); } catch { return ""; } }
-function dateKey(d) { try { const y = d.getFullYear(), m = String(d.getMonth() + 1).padStart(2, "0"), da = String(d.getDate()).padStart(2, "0"); return `${y}-${m}-${da}`; } catch { return ""; } }
 function reduceMotion() { try { return window.matchMedia("(prefers-reduced-motion: reduce)").matches; } catch { return false; } }
 
 // ── cycle phase ring (encircles the bloom) — the centrepiece ───────────────────────────────────
@@ -890,7 +892,7 @@ export default function TodayDemo6() {
 
       {sheet && <ActionSheet sheetKey={sheet} uid={uid} cycle={cycle} onClose={() => setSheet(null)} onSaved={feedGarden} />}
       {jumpOpen && <JumpSheet items={JUMP_ITEMS} onPick={onJump} onClose={() => setJumpOpen(false)} />}
-      {calOpen && <CycleCalendar profile={profile} cycle={cycle} hasCycle={hasCycle} symptoms={symptoms} onClose={() => setCalOpen(false)} />}
+      {calOpen && <TodayCalendarSheet profile={profile} cycle={cycle} hasCycle={hasCycle} uid={uid} onClose={() => setCalOpen(false)} />}
       {ceremony && <FirstOpenCeremony cForm={cForm} cAccent={cAccent} cName={cName} growStage={growStage} onSkip={() => setCeremony(false)} />}
     </div>
   );
@@ -1267,122 +1269,45 @@ function JumpSheet({ items, onPick, onClose }) {
   );
 }
 
-// ── (7) Impressionistic cycle calendar — real cycle, month swipe, day-peek ─────────────────────────
-function CycleCalendar({ profile, cycle, hasCycle, symptoms, onClose }) {
+// ── (7) UNIFIED CALENDAR — REUSES the Planner page's cycle calendar (MonthRibbon) in a bottom sheet;
+// tapping a day opens the shared Day-Actions sheet; "Plan this day" opens the shared hour-by-hour
+// Planner day view. One calendar + day view across Today and Planner (not two designs).
+function TodayCalendarSheet({ profile, cycle, hasCycle, uid, onClose }) {
   useScrollLock(true);
-  const [offset, setOffset] = useState(0);       // months from current
-  const [peek, setPeek] = useState(null);        // tapped day detail
-  const touch = useRef(null);
+  const [dayActions, setDayActions] = useState(null);   // dateISO → the day-actions sheet
+  const [planDay, setPlanDay] = useState(null);          // dateISO → the hour-by-hour day view
   useEffect(() => { const k = (e) => { if (e.key === "Escape") onClose(); }; window.addEventListener("keydown", k); return () => window.removeEventListener("keydown", k); }, [onClose]);
-
-  const today = useMemo(() => { const d = new Date(); d.setHours(0, 0, 0, 0); return d; }, []);
-  // reference last-period start: real if present, else derived from today's cycle day (consistent).
-  const lastPeriod = useMemo(() => {
-    if (profile?.last_period_start_date) { const d = new Date(profile.last_period_start_date); d.setHours(0, 0, 0, 0); return d; }
-    const d = new Date(today); d.setDate(d.getDate() - ((cycle.cycleDay || 1) - 1)); return d;
-  }, [profile, cycle, today]);
-  const cycleLen = cycle.cycleLen || 28, periodLen = cycle.periodLen || 5;
-
-  // symptom map: yyyy-mm-dd → [names]
-  const symMap = useMemo(() => {
-    const m = {};
-    (symptoms || []).forEach((s) => { const d = s.date || (s.created_date ? String(s.created_date).slice(0, 10) : null); if (d) { (m[d] = m[d] || []).push(s.symptom_name || s.symptom_type || "a symptom"); } });
-    return m;
-  }, [symptoms]);
-
-  const view = useMemo(() => { const d = new Date(today.getFullYear(), today.getMonth() + offset, 1); return d; }, [today, offset]);
-  const YEAR = view.getFullYear(), MONTH = view.getMonth();
-  const startDow = new Date(YEAR, MONTH, 1).getDay();
-  const daysInMonth = new Date(YEAR, MONTH + 1, 0).getDate();
-  const phaseOf = (cd) => phaseForDay(cd, periodLen, cycleLen);
-
-  const cells = [];
-  for (let i = 0; i < startDow; i++) cells.push(null);
-  for (let d = 1; d <= daysInMonth; d++) {
-    const date = new Date(YEAR, MONTH, d); date.setHours(0, 0, 0, 0);
-    const elapsed = Math.round((date - lastPeriod) / 86400000);
-    const cd = ((elapsed % cycleLen) + cycleLen) % cycleLen + 1;
-    const key = dateKey(date);
-    cells.push({ d, date, cd, phase: phaseOf(cd), isPeriod: cd <= periodLen, isToday: date.getTime() === today.getTime(), future: date > today, key, syms: symMap[key] || [] });
-  }
-  const DOW = ["S", "M", "T", "W", "T", "F", "S"];
-  const legend = [{ k: "menstrual", label: "Period" }, { k: "follicular", label: "Follicular" }, { k: "ovulatory", label: "Ovulatory" }, { k: "luteal", label: "Luteal" }];
-
-  const onTouchStart = (e) => { if (e.touches?.[0]) touch.current = e.touches[0].clientX; };
-  const onTouchEnd = (e) => { const s = touch.current; const x = e.changedTouches?.[0]?.clientX; if (s == null || x == null) return; const dx = x - s; if (Math.abs(dx) > 60) { setOffset((o) => o + (dx < 0 ? 1 : -1)); setPeek(null); } touch.current = null; };
-
-  const peekDetail = (c) => {
-    if (!c) return; const lines = [];
-    if (c.isToday) lines.push("Today.");
-    // period claims only when we actually have the user's cycle dates (else it's a guess).
-    if (hasCycle && c.isPeriod && !c.future) lines.push("Period day.");
-    if (hasCycle && c.isPeriod && c.future) lines.push("Period likely around here.");
-    if (c.syms.length) lines.push(`You noted: ${c.syms.slice(0, 3).join(", ")}.`);
-    if (!lines.length) lines.push("Nothing noted — a quiet day.");
-    setPeek({ label: c.date.toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long" }), phase: hasCycle ? c.phase : null, lines });
-  };
-
+  const ribbonProfile = hasCycle ? {
+    last_period_start_date: profile.last_period_start_date,
+    cycle_avg_length: profile.cycle_avg_length || cycle.cycleLen || 28,
+    period_length: profile.period_length || cycle.periodLen || 5,
+  } : null;
   return (
-    <div role="dialog" aria-modal="true" aria-label="Your cycle calendar" className="fw-scrim-anim"
+    <div role="dialog" aria-modal="true" aria-label="Your calendar" className="fw-scrim-anim"
       onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
       style={{ position: "fixed", inset: 0, zIndex: 210, display: "flex", alignItems: "flex-end", justifyContent: "center", background: "rgba(11,8,5,0.45)", animation: "fwScrimIn .22s ease both" }}>
-      <div onClick={(e) => e.stopPropagation()} className="fw-sheet-anim" style={{ ...PAPER_BG, width: "100%", maxWidth: 460, borderRadius: "22px 22px 0 0", padding: "18px 18px 28px", maxHeight: "92vh", overflowY: "auto", boxShadow: "0 -8px 32px rgba(11,8,5,0.24)", animation: "fwSheetIn .32s cubic-bezier(.32,.72,.24,1) both" }}>
-        <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between" }}>
-          <div>
-            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-              <button onClick={() => { setOffset((o) => o - 1); setPeek(null); }} aria-label="Previous month" style={{ background: "transparent", border: "none", cursor: "pointer", color: T.muted, padding: 2 }}><ChevronLeft size={18} /></button>
-              <Script size={34} color={T.ink}>{MONTHS[MONTH]}</Script>
-              <button onClick={() => { setOffset((o) => o + 1); setPeek(null); }} aria-label="Next month" style={{ background: "transparent", border: "none", cursor: "pointer", color: T.muted, padding: 2 }}><ChevronRight size={18} /></button>
-            </div>
-            <div style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 15, color: T.muted, marginTop: -2 }}>{offset === 0 && hasCycle ? `${PHASE_LABEL[cycle.phase]} · day ${cycle.cycleDay} · ${SEASON[cycle.phase] || ""}` : `${YEAR}`}</div>
+      <div onClick={(e) => e.stopPropagation()} className="fw-sheet-anim"
+        style={{ ...PAPER_BG, width: "100%", maxWidth: 460, borderRadius: "22px 22px 0 0", padding: "18px 16px 28px", maxHeight: "92vh", overflowY: "auto", boxShadow: "0 -8px 32px rgba(11,8,5,0.24)", animation: "fwSheetIn .32s cubic-bezier(.32,.72,.24,1) both" }}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
+          <div style={{ display: "inline-flex", alignItems: "center", gap: 8 }}>
+            <Heart size={15} />
+            <Script size={32} color={T.ink}>Your calendar</Script>
           </div>
           <button onClick={onClose} aria-label="Close" style={{ background: "transparent", border: "none", cursor: "pointer", color: T.muted, padding: 4 }}><X size={20} /></button>
         </div>
-        <div onTouchStart={onTouchStart} onTouchEnd={onTouchEnd} style={{ display: "grid", gridTemplateColumns: "repeat(7,1fr)", gap: 6, marginTop: 16 }}>
-          {DOW.map((d, i) => <div key={`h${i}`} style={{ textAlign: "center", fontFamily: UI, fontSize: 12, fontWeight: 700, color: T.muted, paddingBottom: 2 }}>{d}</div>)}
-          {cells.map((c, i) => {
-            if (!c) return <div key={i} />;
-            const col = PHASE_COLORS[c.phase];
-            const periodPast = hasCycle && c.isPeriod && !c.future, periodPredicted = hasCycle && c.isPeriod && c.future;
-            const bg = periodPast ? `radial-gradient(circle at 50% 38%, ${col}, ${col}cc)` : periodPredicted ? `radial-gradient(circle at 50% 40%, ${col}33, ${col}10)` : `radial-gradient(circle at 50% 42%, ${col}3a, ${col}12)`;
-            return (
-              <button key={i} type="button" onClick={() => peekDetail(c)} style={{
-                aspectRatio: "1 / 1", borderRadius: 14, display: "grid", placeItems: "center", position: "relative", cursor: "pointer", padding: 0,
-                background: bg, border: c.isToday ? `2px solid ${T.ink}` : periodPredicted ? `1.5px dashed ${col}99` : "1px solid transparent",
-                boxShadow: periodPast ? `0 5px 14px ${col}66` : "none",
-              }}>
-                <span style={{ fontFamily: SERIF, fontSize: 15, fontWeight: c.isToday ? 700 : 500, color: periodPast ? "#fff" : T.ink }}>{c.d}</span>
-                {c.syms.length > 0 && <span style={{ position: "absolute", top: 5, right: 5, width: 5, height: 5, borderRadius: 99, background: T.gold }} />}
-                {c.isToday && <span style={{ position: "absolute", bottom: 5, width: 4, height: 4, borderRadius: 99, background: T.ink }} />}
-              </button>
-            );
-          })}
-        </div>
-
-        {/* day-peek popover */}
-        {peek && (
-          <div className="fw-fade" style={{ marginTop: 14, background: T.paperHi, border: `1px solid ${T.paperDeep}`, borderLeft: `3px solid ${PHASE_COLORS[peek.phase] || T.gold}`, borderRadius: 14, padding: "12px 14px", animation: "fwFadeUp .25s ease both" }}>
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-              <span style={{ fontFamily: UI, fontSize: 12, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: PHASE_COLORS[peek.phase] || T.gold }}>{peek.label}{peek.phase ? ` · ${PHASE_LABEL[peek.phase]}` : ""}</span>
-              <button onClick={() => setPeek(null)} aria-label="Close day" style={{ background: "transparent", border: "none", cursor: "pointer", color: T.muted, padding: 2 }}><X size={15} /></button>
-            </div>
-            {peek.lines.map((l, i) => <p key={i} style={{ fontFamily: SERIF, fontSize: 15, color: T.inkSoft, margin: "5px 0 0", lineHeight: 1.4 }}>{l}</p>)}
+        {ribbonProfile ? (
+          <MonthRibbon profile={ribbonProfile} habitLogs={[]} onNavigateToToday={(iso) => setDayActions(iso)} />
+        ) : (
+          <div style={{ textAlign: "center", padding: "26px 12px" }}>
+            <Hand size={16} color={T.inkSoft} style={{ display: "block", lineHeight: 1.5 }}>Add your last period in Health and your cycle calendar blooms here — then tap any day to plan it.</Hand>
+            <a href="/Health" style={{ display: "inline-block", marginTop: 12, fontFamily: UI, fontSize: 13, fontWeight: 700, color: T.muted, textDecoration: "none", border: `1px solid ${T.paperDeep}`, borderRadius: 999, padding: "7px 15px" }}>Open Health</a>
           </div>
         )}
-
-        <div style={{ display: "flex", flexWrap: "wrap", gap: "8px 13px", marginTop: 18, justifyContent: "center" }}>
-          {legend.map((l) => { const here = hasCycle && l.k === cycle.phase && offset === 0; return (
-            <span key={l.k} style={{ display: "inline-flex", alignItems: "center", gap: 6, fontFamily: UI, fontSize: 13, fontWeight: here ? 700 : 500, color: here ? T.ink : T.muted }}>
-              <span style={{ width: 12, height: 12, borderRadius: 4, background: PHASE_COLORS[l.k], opacity: here ? 1 : 0.5, boxShadow: here ? `0 0 0 2px ${PHASE_COLORS[l.k]}33` : "none" }} /> {l.label}{here ? " · you" : ""}
-            </span>); })}
-          <span style={{ display: "inline-flex", alignItems: "center", gap: 6, fontFamily: UI, fontSize: 13, fontWeight: 500, color: T.muted }}>
-            <span style={{ width: 12, height: 12, borderRadius: 4, border: `1.5px dashed ${PHASE_COLORS.menstrual}99` }} /> Predicted
-          </span>
-        </div>
-        <div style={{ textAlign: "center", marginTop: 18 }}>
-          <Hand size={16} color={T.inkSoft}>{hasCycle ? "Tap a day to peek · swipe to wander the months. Softly predicted, never a deadline." : "Add your last period in Health and your phases will bloom here."}</Hand>
-        </div>
+        <p style={{ fontFamily: UI, fontSize: 12, color: T.muted, textAlign: "center", margin: "12px 8px 0", lineHeight: 1.5 }}>Tap any day to plan it or log for it — the same calendar + day view as your Planner.</p>
       </div>
+
+      {dayActions && <DayActionsSheet dateISO={dayActions} cycle={cycle} onPlanDay={() => { setPlanDay(dayActions); setDayActions(null); }} onClose={() => setDayActions(null)} />}
+      {planDay && <PlannerDayView dateISO={planDay} userId={uid} onClose={() => setPlanDay(null)} />}
     </div>
   );
 }
