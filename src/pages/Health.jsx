@@ -1222,6 +1222,11 @@ export default function Health() {
       style={{
         background: "transparent", minHeight: "100vh", paddingBottom: 80,
         touchAction: "manipulation", position: "relative",
+        // `overflow-x: clip` trims the few px of horizontal AABB bleed from the letter's
+        // rotate(-0.3deg) tilt (and keeps the page-texture vines tidy). Unlike `hidden`,
+        // `clip` does NOT create a scroll container, so the sticky letter-nav + vertical
+        // scroll are unaffected (overflow-y stays visible).
+        overflowX: "clip",
       }}
     >
       {/* Page-wide perf CSS — kill the 300ms tap delay + tap highlight,  */}
