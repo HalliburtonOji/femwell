@@ -51,6 +51,17 @@
        `min-height: var(--femwell-touch-min)`. */
     --femwell-touch-min: 44px;
 
+    /* ── Bottom-nav contract (single source of truth) ───────────────────
+       The floating capsule nav (MobileBottomNav) owns this token. It is the
+       full vertical footprint the nav reserves from the bottom edge: capsule
+       height + its float gap + the iOS home-bar safe-area. Pages, sheets and
+       popups reserve `var(--fw-nav-h)` as bottom clearance so nothing is ever
+       painted underneath the nav. The capsule's real footprint (~76px + safe
+       area) is smaller than this, so the value keeps ~20px breathing room AND
+       stays ≥ the legacy `calc(96px + safe-area)` the shipped popup-behind-nav
+       fixes rely on — migrating those hardcodes to this var is a no-op. */
+    --fw-nav-h: calc(96px + env(safe-area-inset-bottom, 0px));
+
     /* FemWell Premium Palette — remapped to the EDITORIAL paper/ink system so
        the whole app shares the journal's look through this token layer.
        (Accent rose/sage/gold kept for contrast; only the neutrals shift.) */
