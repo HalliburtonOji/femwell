@@ -2042,9 +2042,17 @@ function JessDemoPanelInner({ initialPrompt = null } = {}) {
   // the /Assistant page deep-link…) the caller passes the reading context
   // as `initialPrompt`. We auto-send it once as the user's first turn so
   // Jess answers it right here in context — no empty panel, no bounce to a
-  // dead page. Guarded by a ref (fires exactly once per mount) and gated on
-  // auth (ensureConversation needs the user id). We flip followUpFired first
-  // so the scripted 1.4s opener can't overwrite the seeded exchange.
+  // dead page.
+  //
+  // sendUserText is read through a ref so the seed effect's deps stay
+  // STABLE (initialPrompt + user.id only). If we listed sendUserText in the
+  // deps, profile/context hydrating would change its identity, re-run the
+  // effect, and its cleanup would cancel the pending timer before it fired
+  // (the ref guard then blocks a re-schedule) — so the seed silently never
+  // sent. The ref also means the deferred call uses the FRESHEST
+  // sendUserText, so the turn carries fully-hydrated context.
+  const sendUserTextRef = useRef(sendUserText);
+  sendUserTextRef.current = sendUserText;
   const initialPromptFiredRef = useRef(false);
   useEffect(() => {
     if (initialPromptFiredRef.current) return;
@@ -2054,10 +2062,11 @@ function JessDemoPanelInner({ initialPrompt = null } = {}) {
     setFollowUpFired(true);
     setTab("chat");
     // Defer one beat so profile/context have a chance to hydrate before the
-    // turn fires (sendUserText reads the freshest context block).
-    const t = window.setTimeout(() => { sendUserText(seed); }, 500);
+    // turn fires. Deps are stable, so this effect runs once and the cleanup
+    // only fires on unmount (never cancelling the timer mid-load).
+    const t = window.setTimeout(() => { sendUserTextRef.current(seed); }, 600);
     return () => window.clearTimeout(t);
-  }, [initialPrompt, user?.id, sendUserText]);
+  }, [initialPrompt, user?.id]);
 
   // Feature 4 — Astra handoff. After 3+ user turns Jess offers a one-tap
   // jump to /Lifestyle?tab=horoscope&from=jess. We seed sessionStorage
