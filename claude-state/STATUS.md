@@ -1,6 +1,14 @@
 # FEMWELL — CANONICAL STATUS INDEX (read first · updated 2026-06-19)
 **This file is the single source of truth AND the index to every plan doc. If anything else disagrees, this wins.** (The long ship-log history continues below the index.)
 
+## 📋 PER-PAGE BRAND AUDIT + FIX PLAN — DELIVERED for approval (2026-06-19) · `femwell-handoff/PAGE-BRAND-AUDIT.html`
+Comprehensive audit of EVERY page vs BRAND_IDENTITY v3 (objective source scan: retired-token/sub-12/PAPER_BG/flora/Card.jsx/isolation + live 390px walks). **AUDIT + PLAN ONLY — nothing to gen-pop until Halli approves, then execute page-by-page DEMO-FIRST.** Did NOT touch flora.jsx / BRAND_IDENTITY.md (owned by brand-identity session).
+- **Ranked headline:** 🔴 **Planner = worst** (`PlannerV2Shell`, 6,656 LOC · 113 retired dusk + 6 gold + 2 cream · **84 sub-12 fonts** · no PAPER_BG · no Card.jsx · isolation trap) → Priority #1. 🟠 **Jess** (`JessDemoPanel`, 4,227 LOC · legacy palette · no PAPER_BG/flora · 30 sub-12) → Priority #2 visual rebuild. Then 🟠 Garden (`NurtureGarden`: no PAPER, no shared flora, 21 sub-12), Doctor Export (30 sub-12 + isolation), Profile (no PAPER, 11 sub-12), Pulse (no PAPER, no flora, 7 sub-12). 🟡 Programs/Onboarding/Events/Track/Explore/Settings-trio. 🟢 Community/Nutrition/Journal (have PAPER+flora; need Card.jsx + font floor) + Deals/Saved. ✅ Lifestyle + Health already on-brand. Today (`TodayDemo6`) mostly OK (10 dusk tokens) — owned by Today session, coordinate.
+- **App totals:** ~290 retired-token uses, ~240 sub-12 declarations, 11 pages lack PAPER_BG, 9 don't use Card.jsx.
+- **Ritual Builder rec:** it's buried in the Planner shell; rituals (rest/water/move/pause) are already context-aware (`RitualsForContext`). Plan: surface a `LogActionCard` ritual on **Today**, then make a shared cross-page `RitualCard` (Journal/Nutrition/Pulse/Community/Garden contextual) tied to the garden/streaks; builder stays in Planner but promoted.
+- **v4 flag:** Planner/Jess/Garden/Pulse/Onboarding will also need the in-progress v4 layer (living-ecosystem flora + soulful voice + rotating omens) once that session lands.
+- **NEXT:** await Halli's approval/re-prioritisation, then start with Planner demo-first.
+
 ## 🌿✨ BRAND v4 — "THE LIVING ECOSYSTEM" (depth layer: omens + lifecycle + soulful voice) · SPEC READY, awaiting Halli's steers (2026-06-19)
 **Halli: v3 was still "surface" — the brand is a LIVING ECOSYSTEM tying feeling+meaning to everything, not pretty flowers.** Done as a deep brainstorm+spec (commit `38a8e1d`). NOT built yet (collaborative — Halli reacts to the doc, then I build).
 - **Deliverable (phone-readable, styled, renders its OWN live flora + a working tappable omen header):** **`C:\Users\Halli\femwell-handoff\LIVING-ECOSYSTEM-BRAINSTORM.html`**. Research: `workspace/OMEN_VOICE_RESEARCH_2026-06-19.md`.
