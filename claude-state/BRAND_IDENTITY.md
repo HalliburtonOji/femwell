@@ -23,8 +23,10 @@ Before you add or change anything visual, confirm:
 3. **Heart** — if this is a primary page header or a brand signature, it carries **exactly one** carved-crimson heart (§3). Don't scatter it; don't recolour it; don't substitute the Lucide outline heart as the brand mark.
 4. **Motif** — at most **one** botanical line-motif per viewport, stroke-only, low opacity, never behind readable text (§4).
 5. **Bloom** — use the canonical `<Bloom>` (NurtureGarden), never a flat reimplementation (§5). Animation is breath/sway only, GPU-cheap, `prefers-reduced-motion`-gated.
-6. **Surfaces/components** — snap to the spacing scale; cards, backgrounds/scrims, buttons, chips/inputs/sheets/toggles, nav, icons & links all follow §6. Buttons accent-driven (not legacy `.fw-btn`); icons Lucide/SVG only; one motif per fold.
-7. **Always**: cream/plum world, Ephesis + Cormorant + system-sans only, Lucide/SVG icons, **no emoji**, UK English, no scoreboards, no-guilt.
+6. **Surfaces/components** — snap to the spacing scale; cards, backgrounds/scrims, buttons, chips/inputs/sheets/toggles, nav, icons & links all follow §6. Buttons accent-driven (not legacy `.fw-btn`); icons Lucide/SVG only; one motif per fold. **Page background = `PAPER_BG` (not a flat `backgroundColor`).**
+7. **CARDS (§6.7) — import from `src/components/brand/Card.jsx`; NEVER hand-roll a `<div>` card.** Pick the typed variant for the content (Article/Story/Video/Audio/Book/DailyStory/Horoscope/Summary/Recommendation/LogAction). Every card carries a hook + line (or a real snippet / inline player) AND an inline action; **no empty/dumb containers, no blank fallbacks.** Inline media plays IN the card; every open/CTA **deep-links the exact item full-screen, never a parent list**.
+8. **PAGE STRUCTURE (§6.8) — the signature top.** A primary page opens with `FwFloraHero` (flora hero) → ONE `SummaryCard` → page-specific content (all rich cards). Use `src/components/brand/PageTop.jsx`.
+9. **Always**: cream/plum world, Ephesis + Cormorant + system-sans only, Lucide/SVG icons, **no emoji**, UK English, no scoreboards, no-guilt.
 
 > **TONE DIAL — elegant AND lush, never sparse (READ THIS so "restraint" doesn't produce plain/boring results).**
 > FemWell's aesthetic is **rich, lush, beautiful** — a flourishing garden, not a minimalist white app. "Restraint" here means *cohesion and craft* (one type system, one palette, organic line quality), **NOT sparseness or monochrome**. Bias toward generous beauty:
@@ -277,6 +279,61 @@ Each surface gets a **flora signature** (palette lean + signature species + crea
 
 ---
 
+## 6.7 THE CARD SYSTEM — a FIRST-CLASS brand pillar (taxonomy · anatomy · sizing) · v1 2026-06-19
+> **Cards ARE the brand language, not decoration.** A card is **never an empty/dumb container.** Every card carries something at a glance AND an inline action. **Build from the shared family `src/components/brand/Card.jsx` — never hand-roll a `<div>` card.** The shell is the Today "across your day" per-section card, standardised.
+
+### 6.7.1 The ONE card family + reference dimensions
+- **Reference = the Today "across your day" per-section card** (`TodayOption2` `TodayCard`). The shared primitive **`FwCard`** reproduces it verbatim and is the ONLY card shell: `width 365` (`FW_CARD_W`, ~85vw so the next card peeks) · `minHeight 488` (`FW_CARD_MINH`) · `background linear-gradient(165deg, paperHi 0%, ${accent}14 100%)` · `1px paperDeep` border + **`4px` accent left-rim** · **4-corner sprig frame** (`CardCorner`×4, size 46 / opacity 0.6) · `borderRadius 20` · `padding 20` · the layered editorial shadow (`0 4px 20px / 0 1px 4px rgba(58,44,26,…)`). One brand-lush family — same size, framing, flora, type, content length everywhere.
+- **Rows of cards** use `FwCardRow` (the Today scroll-snap track: `gap 14`, `scroll-snap x mandatory`, peek), labelled by section/type.
+
+### 6.7.2 ANATOMY (what every card carries — never empty)
+1. **Header** — `ICON_DISC` (32px wax disc, accent Lucide icon) + an **Eyebrow** (UI 12/700 uppercase, accent) = the type/section + a **meaning-bloom** (`FlowerGlyph` size 30, accent, §5.1) on the right.
+2. **Media / visual** (optional) — an inline player or cover image ABOVE the hook (see 6.7.4).
+3. **Hook** — `h3` SERIF **20/600**, ink, 3-line clamp. The one-glance line that earns the card.
+4. **Line** — `p` SERIF **16/500**, inkSoft, 4-line clamp. The supporting detail/summary/snippet.
+5. **Inset** (optional) — a quote/snippet panel (paper inset, UI eyebrow + Cormorant italic).
+6. **Action area** (pinned bottom, `margin-top:auto`) — the **inline action** (6.7.4) + the **open-full-screen deep-link** (`muted` UI 13/700 + ChevronRight).
+> **No hollow cards:** if there's no data, show a warm, specific empty/fallback state with an action — never a blank box. Recommendation/summary cards always render at least a curated fallback line.
+
+### 6.7.3 TAXONOMY (typed variants — all in `brand/Card.jsx`)
+| Variant | Carries at a glance | Inline action | Deep-link |
+|---|---|---|---|
+| **`ArticleCard`** | title + summary | — | `Read this` → the article full-screen |
+| **`StoryCard`** | title + summary | — | `Read this` → the story full-screen |
+| **`VideoCard`** | inline cover + title | **plays the video IN the card** (`InlineVideo`) | `Open full-screen` → the item |
+| **`AudioCard`** (podcast) | title + channel | **plays the audio IN the card** (`InlineAudio` play/pause) | `Open episode` → the episode |
+| **`BookCard`** | a **paragraph hook** + author | — | `Open this book` → **`/BookReader` / `/FictionReader` on THAT book** (never the Read list) |
+| **`DailyStoryCard`** | today's chapter title + opening line + excerpt inset | — | `Read today's chapter` → the reader |
+| **`HoroscopeCard`** | a **REAL snippet** ("The moon is …" + the reading line), not just a label | — | `Read your reading` / `Set up your sky` |
+| **`SummaryCard`** | the page's signal-driven "what to do today" rows | each row taps to its target | rows deep-link the specific item |
+| **`RecommendationCard`** | a single "for you" pick + WHY | — | `Open this` → the item |
+| **`LogActionCard`** | a prompt | **log / check / answer in place** (parent-supplied) | — |
+
+### 6.7.4 INLINE ACTIONS (the card DOES something, here)
+- **Play media in-card:** `InlineVideo` (native `<video controls>` on `video_url`) and `InlineAudio` (play/pause over `<audio>` on `audio_url`) render IN the card. No navigation to play.
+- **Act in place:** log / check / tick / answer handled by the parent via `LogActionCard` children (writes ride existing dispatcher actions — **never a new function**, 50-fn cap).
+- **Deep-link the EXACT item, full-screen:** the open-link/CTA always targets the specific item route (`/LifestyleDetail?id=`, `/BookReader?gutenberg_id=`, `/FictionReader?id=`, the specific programme/journal-series), **never a parent list/tab** the user must then sift.
+
+### 6.7.5 SMART PER-SECTION RECOMMENDATION (signal-driven, varies, never hollow)
+- Each section's card chooses its item from **real signals** (recency, cycle phase, engagement, what she's saved/skipped, time of day) and **changes over time** — not a static pick.
+- **Graceful fallback chain:** real personalised pick → recent/trending in that type → a warm curated line + an action. The card is **never** blank and never a dead "coming soon."
+
+---
+
+## 6.8 CANONICAL PAGE STRUCTURE — the brand SIGNATURE on every page · v1 2026-06-19
+> Halli's brand language: **every primary page opens with the SAME signature top, then varies below.** Build it from `src/components/brand/PageTop.jsx` (`FwFloraHero`) + `brand/Card.jsx` (`SummaryCard`).
+
+**The signature (top of every page):**
+1. **FLORA HERO** (`FwFloraHero`) — a large brand **flower** (`RichBloomV2`, the page's §5.3 character colourway / the user's flora fingerprint) inside a **purely DECORATIVE botanical ring** (dashed gold + thin sage — **NOT** the cycle ring; only Today's hero encodes cycle phase), a soft glow, an optional resting butterfly, the single carved **Heart** (§3), an **Ephesis script page title**, and a short warm line. Flanking **meaning-blooms** optional.
+2. **ONE SUMMARY CARD** (`SummaryCard`) — directly under the hero: a signal-driven "what's here / what to do today" glance (6.7.5), never hollow.
+3. **PAGE-SPECIFIC CONTENT BELOW** — rich cards / per-type `FwCardRow`s / the page's own surfaces. **Pages differ here; they all share the signature top and all use the §6.7 cards.**
+
+**The FLORA STORY (app↔user) — why the hero flower matters (`BRAND_FLORA.md`).** The hero bloom is not ornament: flowers carry documented meaning (floriography + cycle/folk-herbalism) and mean the **same thing everywhere** (garden, cycle, journal, chapters). The page-character flower (§5.3) + the per-user **flora fingerprint** (§5.2) make each page feel like *hers* and tie the whole app into one living garden — the hero is the daily face of that garden. Keep the cycle ring exclusive to Today; elsewhere the ring is decorative so the signature reads as "your garden," not "your cycle."
+
+**Consistency rule:** the hero + summary-card top is **fixed brand chrome** — same structure, type, flora discipline on Journal, Community, Nutrition, Lifestyle, Health, Planner, Profile, Programs, Garden. Only the flower/colourway (character) and the content below change.
+
+---
+
 ## 7. HOW THIS GETS APPLIED
 - **Phase 1 (this doc):** define + sample. ✅
 - **Phase 2 (on approval):** unify inline type to the role table app-wide; canonicalise colours (retire §2.3); roll the heart to every primary header; add botanical motifs per §4; replace flat demo blooms with the upgraded canonical `<Bloom>`.
@@ -297,6 +354,8 @@ The brand system is already in code as reusable parts. A future build (the real 
 | **Flower / plant / creature glyphs** | `pages/BrandCraftSample.jsx` | `FlowerGlyph` (18 types), `PlantGlyph` (5 + fern via LeafGlyph), `Creature` (8; `Butterfly` with `pattern`). All take a colourway. |
 | **Colourway grammar** | `COLORWAYS` + `cwOf()` in `pages/BrandCraftSample.jsx` | the 9 palettes (§2.5); pass `{petal→color, tip→color2, accent}`. |
 | **Fingerprint seed** | `hashSeed()` + `seededRng()` + `MiniGarden` in `pages/BrandCraftSample.jsx` | deterministic per-user selection (§5.2); future-wire the seed from `userId` + stage + phase + tended-areas + earned. |
+| **THE CARD FAMILY (§6.7)** | `src/components/brand/Card.jsx` | `FwCard` primitive (the Today card, verbatim) + typed variants `ArticleCard`/`StoryCard`/`VideoCard`/`AudioCard`/`BookCard`/`DailyStoryCard`/`HoroscopeCard`/`SummaryCard`/`RecommendationCard`/`LogActionCard` + `InlineVideo`/`InlineAudio` players + `FwCardRow` (scroll-snap row) + `FwCardCTA` + `fwTypeOf()`. **Import these — never hand-roll a card.** |
+| **SIGNATURE PAGE TOP (§6.8)** | `src/components/brand/PageTop.jsx` | `FwFloraHero` — the flora-hero (decorative ring + bloom + heart + Ephesis title + line). Pair with `SummaryCard` for the canonical top. |
 | **In-app brand docs** | `components/founders/BrandIdentityDoc.jsx` + `FloraMeaningDoc.jsx` | the Founders mirrors of this file + BRAND_FLORA. |
 
 > **NOTE (current state):** the glyph library + colourway grammar + fingerprint currently live in `pages/BrandCraftSample.jsx` (the craft sample). On lock, **promote** them to shared modules (e.g. `components/brand/flora/*`) so Today/Garden/etc. import them. Until then, `BrandCraftSample.jsx` is the source of truth for the implementations.
