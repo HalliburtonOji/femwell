@@ -153,6 +153,14 @@ import EventsDemo from './pages/EventsDemo';
 // Card-system demos (BRAND_IDENTITY §6.7/§6.8 applied per page — preview-only, for
 // approval before any live rebuild). Standalone routes; live pages untouched.
 import LifestyleCardsDemo from './pages/LifestyleCardsDemo';
+import CommunityCardsDemo from './pages/CommunityCardsDemo';
+import NutritionCardsDemo from './pages/NutritionCardsDemo';
+import JournalCardsDemo from './pages/JournalCardsDemo';
+import ProfileCardsDemo from './pages/ProfileCardsDemo';
+import ProgramsCardsDemo from './pages/ProgramsCardsDemo';
+import GardenCardsDemo from './pages/GardenCardsDemo';
+import PulseCardsDemo from './pages/PulseCardsDemo';
+import PlannerCardsDemo from './pages/PlannerCardsDemo';
 // NutritionHub = the REAL new Nutrition page (Daily Hub + Hero Card Slider hybrid,
 // wired to real entities, reuses the hardened nutrition components). Lives at
 // /NutritionHub for live-verify; once verified it replaces the "Nutrition" route.
@@ -266,6 +274,14 @@ export const PAGES = {
     "DealsDemo": DealsDemo,
     "EventsDemo": EventsDemo,
     "LifestyleCardsDemo": LifestyleCardsDemo,
+    "CommunityCardsDemo": CommunityCardsDemo,
+    "NutritionCardsDemo": NutritionCardsDemo,
+    "JournalCardsDemo": JournalCardsDemo,
+    "ProfileCardsDemo": ProfileCardsDemo,
+    "ProgramsCardsDemo": ProgramsCardsDemo,
+    "GardenCardsDemo": GardenCardsDemo,
+    "PulseCardsDemo": PulseCardsDemo,
+    "PlannerCardsDemo": PlannerCardsDemo,
     "NutritionHub": NutritionHub,
     "JournalRedesign1": JournalRedesign1,
     "CommunityRedesign1": CommunityRedesign1,

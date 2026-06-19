@@ -190,6 +190,22 @@ const CATALOG = [
   // experience (inline players, daily-story-first, real horoscope) is visible.
   { kind: "route", href: "/LifestyleCardsDemo", group: CAT.PREVIEW, sub: "Card-system demos ★ approve", status: "approval", accent: "gold",
     title: "Lifestyle — card-system demo ★ for approval", desc: "The approved card system on Lifestyle: flora-hero + summary card, per-type sliding rows (Articles/Books/Watch/Listen/Stories/Your sky), inline video + audio that play in-card, book cards that open THAT book, Daily Story first, a real horoscope snippet. Approve this and it gets applied live." },
+  { kind: "route", href: "/CommunityCardsDemo", group: CAT.PREVIEW, sub: "Card-system demos ★ approve", status: "approval", accent: "crimson",
+    title: "Community — card-system demo ★ for approval", desc: "Whole-life rooms (Dating · Career & Money · Friendship · Just Venting), trending-thread cards that open the exact thread, an anonymous 'share something' card, and member-story cards — all in the card family." },
+  { kind: "route", href: "/NutritionCardsDemo", group: CAT.PREVIEW, sub: "Card-system demos ★ approve", status: "approval", accent: "sage",
+    title: "Nutrition — card-system demo ★ for approval", desc: "Joyful, whole-life food: recipe cards (cook this → the recipe), quick & joyful treats, an inline hydration log-card, a phase-aware row, and a 'pudding counts' card. Not a clinical macro tracker." },
+  { kind: "route", href: "/JournalCardsDemo", group: CAT.PREVIEW, sub: "Card-system demos ★ approve", status: "approval", accent: "blush",
+    title: "Journal — card-system demo ★ for approval", desc: "A quick-write card, life-spanning prompt cards (gratitude · love · career · vent), recent-entry cards, and collection cards — every one opening the exact prompt/entry/collection." },
+  { kind: "route", href: "/ProfileCardsDemo", group: CAT.PREVIEW, sub: "Card-system demos ★ approve", status: "approval", accent: "blush",
+    title: "Profile — card-system demo ★ for approval", desc: "Identity-first, not a settings list: a 'this is you today' summary, an inline intentions card, and 'your spaces' tiles (garden · people · saved · privacy) as rich cards." },
+  { kind: "route", href: "/ProgramsCardsDemo", group: CAT.PREVIEW, sub: "Card-system demos ★ approve", status: "approval", accent: "gold",
+    title: "Programs — card-system demo ★ for approval", desc: "Guided arcs across body, mindset, rest and money: a Continue card → the exact session, plus per-category rows where every card opens THAT programme." },
+  { kind: "route", href: "/GardenCardsDemo", group: CAT.PREVIEW, sub: "Card-system demos ★ approve", status: "approval", accent: "sage",
+    title: "Garden — card-system demo ★ for approval", desc: "Companion-led: an inline 'tend the garden' card, a 'leave a line' card, what's-growing cards, milestones, and a private share — the rituals as the card family." },
+  { kind: "route", href: "/PulseCardsDemo", group: CAT.PREVIEW, sub: "Card-system demos ★ approve", status: "approval", accent: "plum",
+    title: "Pulse — card-system demo ★ for approval", desc: "Your week read back gently: insight cards (mood · energy · rest), patterns-worth-knowing cards, and a phase card — life-spanning, not a clinical chart wall." },
+  { kind: "route", href: "/PlannerCardsDemo", group: CAT.PREVIEW, sub: "Card-system demos ★ approve", status: "approval", accent: "sage",
+    title: "Planner (content) — card-system demo ★ for approval", desc: "The CONTENT side of Planner as cards: add-an-intention, today's gentle intentions, your rituals, and soft reminders. NOT the calendar/day-view (those stay as-is)." },
 
   // ── Brand ─────────────────────────────────────────────────────────────
   { kind: "route", href: "/BrandCraftSample", group: CAT.PREVIEW, sub: "Brand", status: "approval", accent: "crimson",
