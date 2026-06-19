@@ -208,6 +208,8 @@ const CATALOG = [
     title: "Planner (content) — card-system demo ★ for approval", desc: "The CONTENT side of Planner as cards: add-an-intention, today's gentle intentions, your rituals, and soft reminders. NOT the calendar/day-view (those stay as-is)." },
 
   // ── Brand ─────────────────────────────────────────────────────────────
+  { kind: "route", href: "/FloraLabDemo", group: CAT.PREVIEW, sub: "Brand", status: "new", accent: "sage",
+    title: "Flora Lab — elevated bloom library", desc: "The elevated flora system in one place: 20 realistic RichBloomV2 forms, the 9 colourways, 24 meaning-bloom glyph species, and every pollinator (butterfly · bee · dragonfly · moth · ladybird). The realism + variety lift, catalogued." },
   { kind: "route", href: "/BrandCraftSample", group: CAT.PREVIEW, sub: "Brand", status: "approval", accent: "crimson",
     title: "Brand Craft Sample ★ for approval", desc: "The canonical brand-system craft direction: flat vs upgraded realistic bloom, a botanical line-motif, the carved heart in context, and a live on-device perf measurement." },
 
