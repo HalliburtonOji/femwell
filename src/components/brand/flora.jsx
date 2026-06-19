@@ -293,22 +293,24 @@ export function RichBloomV2({ color = T.blush, color2 = null, accent = "#CBA24E"
   });
   // ROSE — the hero. Open cupped outer petals → a spiralled, furled heart.
   const roseHead = () => {
-    const furl = [];
-    for (let i = 0; i < 6; i++) {
-      const ang = i * 60 + i * 12, s = 0.66 - i * 0.045;
-      furl.push(<path key={`fr${i}`} d={petalCup(15, 7.5)} fill={`url(#pM-${gid})`} stroke={deeper} strokeWidth="0.4" strokeOpacity="0.22" opacity="0.99" transform={`translate(${cx} ${cy}) rotate(${ang}) scale(${s})`} />);
+    // the SPIRAL FURLED HEART — overlapping crescent petals coiling inward (the rose signature)
+    const coil = [];
+    const N = 11;
+    for (let i = 0; i < N; i++) {
+      const ang = i * 47, sc = 1.12 - i * 0.072;
+      coil.push(<path key={`c${i}`} d="M0 0 C -7.5 -1.5 -9 -9.5 -3 -13 C 1.4 -15.6 8 -11.6 7 -5.6 C 6.2 -2 1.6 -2.2 1.8 -6"
+        transform={`translate(${cx} ${cy}) rotate(${ang}) scale(${sc})`}
+        fill={i % 2 ? `url(#pM-${gid})` : `url(#pI-${gid})`} stroke={deeper} strokeWidth="0.4" strokeOpacity="0.24" opacity="0.99" />);
     }
     return (
       <g>
-        {cupRing(7, 31, 11.5, `pO-${gid}`, 0.96, 0, deeper)}
-        {cupRing(7, 24, 11, `pM-${gid}`, 0.97, 26, deep)}
-        {cupRing(6, 17, 9.5, `pM-${gid}`, 0.98, 12, deep)}
-        <circle cx={cx} cy={cy} r="10.5" fill={`url(#occ-${gid})`} />
-        {furl}
-        {/* furled centre swirl */}
-        <path d={`M${cx - 4} ${cy + 1.5} C ${cx - 5} ${cy - 5} ${cx + 1} ${cy - 6} ${cx + 4} ${cy - 2.5} C ${cx + 6} ${cy} ${cx + 3} ${cy + 4} ${cx} ${cy + 3}`} fill={`url(#pI-${gid})`} stroke={deeper} strokeWidth="0.4" strokeOpacity="0.28" />
-        <path d={`M${cx - 2.2} ${cy + 0.5} C ${cx - 2.8} ${cy - 3} ${cx + 1} ${cy - 3.4} ${cx + 2.4} ${cy - 1.4}`} fill="none" stroke={deeper} strokeWidth="0.5" strokeOpacity="0.45" strokeLinecap="round" />
-        <ellipse cx={cx - 6.5} cy={cy - 7.5} rx="3.2" ry="1.9" fill="#FFFDF7" opacity="0.24" transform={`rotate(-28 ${cx - 6.5} ${cy - 7.5})`} />
+        {cupRing(8, 32, 12, `pO-${gid}`, 0.96, 0, deeper)}
+        {cupRing(7, 25, 11.5, `pM-${gid}`, 0.97, 24, deep)}
+        {cupRing(6, 18, 10, `pM-${gid}`, 0.98, 12, deep)}
+        <circle cx={cx} cy={cy} r="13" fill={`url(#occ-${gid})`} />
+        {coil}
+        <circle cx={cx} cy={cy} r="1.6" fill={deeper} opacity="0.6" />
+        <ellipse cx={cx - 7} cy={cy - 8} rx="3.4" ry="2" fill="#FFFDF7" opacity="0.22" transform={`rotate(-28 ${cx - 7} ${cy - 8})`} />
       </g>
     );
   };
