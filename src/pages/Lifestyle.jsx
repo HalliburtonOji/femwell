@@ -2,10 +2,11 @@ import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import { base44 } from "@/api/base44Client";
-import { ExternalLink, X, Bookmark, SlidersHorizontal, Check, Sparkles, BookOpen, Headphones, Feather, Moon, ArrowRight, ChevronRight, Play, Book } from "lucide-react";
-import { T, UI, SERIF, SCRIPT, Eyebrow, PAPER_BG, Heart as BrandHeart } from "@/components/journal/Editorial";
-import { VineMotifV2, FlowerGlyph, CardCorner, RichBloomV2, SwayBloom, Butterfly, floraKeyframes, cwOf } from "@/components/brand/flora";
-import CardStack from "@/components/planner-v2/CardStack";
+import { ExternalLink, X, Bookmark, SlidersHorizontal, Check, Sparkles, BookOpen, Headphones, Feather, Moon, Play, Book } from "lucide-react";
+import { T, UI, PAPER_BG } from "@/components/journal/Editorial";
+import { VineMotifV2, floraKeyframes } from "@/components/brand/flora";
+import { FwFloraHero } from "@/components/brand/PageTop";
+import { FwCardRow, SummaryCard, ArticleCard, StoryCard, VideoCard, AudioCard, BookCard, DailyStoryCard, HoroscopeCard } from "@/components/brand/Card";
 import { CONTENT_CATEGORIES, categoryLabel } from "@/utils/contentCategory";
 import BrowseTab from "@/components/lifestyle/browse/BrowseTab";
 import ListenTab from "@/components/lifestyle/listen/ListenTab";
@@ -665,10 +666,25 @@ export default function Lifestyle() {
     let cancelled = false;
     (async () => {
       try {
-        const [items, story, horo] = await Promise.all([
+        const [items, story, horo, gutenberg] = await Promise.all([
           base44.entities.LifestyleItems.filter({ status: "PUBLISHED" }, "-engagement_score", 60).catch(() => []),
           base44.entities.DailyStory.filter({}, "-created_date", 1).catch(() => []),
           base44.entities.HoroscopeReading.filter({}, "-reading_date", 1).catch(() => []),
+          // Public-domain books (gutendex) so the Books row has MORE than the FemWell fiction —
+          // each opens in /BookReader on THAT book. Guarded + timeboxed; empty on failure.
+          (async () => {
+            try {
+              const r = await fetch("https://gutendex.com/books?topic=women&languages=en&page_size=12", { signal: AbortSignal.timeout(8000) });
+              if (!r.ok) return [];
+              const d = await r.json();
+              return (Array.isArray(d?.results) ? d.results : []).map((b) => ({
+                id: `gut-${b.id}`, _gutenbergId: b.id, _book: "gutenberg",
+                title: b.title || "", author_name: (b.authors?.[0]?.name) || "Public domain",
+                summary: `A free, public-domain read${b.authors?.[0]?.name ? ` by ${b.authors[0].name}` : ""}.`,
+                image_url: `https://www.gutenberg.org/cache/epub/${b.id}/pg${b.id}.cover.medium.jpg`,
+              }));
+            } catch { return []; }
+          })(),
         ]);
         if (cancelled) return;
         const arr = (Array.isArray(items) ? items : []).filter((i) => i && i.title);
@@ -677,6 +693,7 @@ export default function Lifestyle() {
         const listen = arr.find((i) => /PODCAST|AUDIO|VIDEO/.test(typeOf(i)));
         setLanding({
           all: arr,                       // full set, grouped into per-type rows below
+          gutenberg: Array.isArray(gutenberg) ? gutenberg : [],
           read: read || null,
           listen: listen || null,
           foryou: arr[0] || null,
@@ -771,11 +788,9 @@ export default function Lifestyle() {
           )}
         </div>
 
-        {/* HERO — illustrated top section (echoes Today's hero, in Lifestyle's own style):
-            a large daisy bloom (radiance/joy — NOT the cycle/companion bloom) in a purely
-            DECORATIVE botanical ring (no cycle phase), soft glow + a resting butterfly, then the
-            carved heart + Ephesis script title + a short supportive line. */}
-        <LifestyleHero />
+        {/* HERO — the canonical signature flora hero (BRAND_IDENTITY §6.8 · brand/PageTop). */}
+        <FwFloraHero title="Lifestyle" bloom="daisy" colorway="gold" flankL="iris" flankR="sunflower"
+          line="A few good things to read, hear and feel today — whenever you have a moment." />
 
         {/* tabs — a clean scrollable pill row flowing under the masthead (no boxed band) */}
         <div className="lf-scroll" style={{ display: "flex", gap: 6, overflowX: "auto", paddingBottom: 2, marginTop: 16 }}>
@@ -827,14 +842,7 @@ export default function Lifestyle() {
           - Browse / Listen / Daily Story: tight 576px column (mobile-frame
             magazine feel — unchanged). */}
       {isForYou ? (
-        <>
-          {/* Today-style landing: summary recommendations + a per-section card slider */}
-          <LifestyleLanding landing={landing} onJump={setTab} navigate={navigate} />
-          {/* Content restructured into per-TYPE horizontal sliding rows (replaces the old
-              mixed "More to explore" feed): Articles · Stories · Videos · Podcasts · Books · Guides,
-              each a CardStack whose cards deep-link straight to the item full-screen. */}
-          <LifestyleTypeRows items={landing?.all} navigate={navigate} />
-        </>
+        <LifestyleForYou landing={landing} navigate={navigate} onJump={setTab} />
       ) : tab === "horoscope" ? (
         <div className="mx-auto pt-5" style={{ maxWidth: 820, position: "relative", zIndex: 1 }}>
           <HoroscopeTab />
@@ -854,237 +862,73 @@ export default function Lifestyle() {
   );
 }
 
-// ── HERO — illustrated top section (Today's hero CONCEPT, Lifestyle's own style) ──────────────
-// A large daisy bloom (radiance/joy — NOT the cycle/companion bloom) inside a purely DECORATIVE
-// botanical ring (no cycle-phase encoding), soft glow + a resting butterfly, then the carved
-// heart + Ephesis script title + a short supportive line. Lifestyle page-character = gold.
-function LifestyleHero() {
-  const cw = cwOf("gold");
-  return (
-    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", marginTop: 8 }}>
-      <div style={{ position: "relative", display: "flex", justifyContent: "center", width: "100%" }}>
-        {/* soft coloured glow */}
-        <div aria-hidden style={{ position: "absolute", top: "48%", left: "50%", width: 296, height: 296, transform: "translate(-50%,-50%)", borderRadius: "50%", background: `radial-gradient(circle, ${cw.petal}38 0%, ${T.sage}1F 44%, transparent 70%)`, animation: "fwcGlow 7s ease-in-out infinite", pointerEvents: "none", zIndex: 0 }} />
-        {/* resting butterfly */}
-        <div style={{ position: "absolute", top: 6, right: 42, zIndex: 2, pointerEvents: "none" }}><Butterfly size={40} color={cw.petal} color2={cw.tip} pattern="bands" animate idx="lf-bf" /></div>
-        {/* DECORATIVE ring (dashed gold + thin sage — no phase markers) + the bloom */}
-        <div style={{ position: "relative", zIndex: 1, width: 244, height: 244, display: "grid", placeItems: "center" }}>
-          <svg width="244" height="244" viewBox="0 0 244 244" aria-hidden style={{ position: "absolute", inset: 0 }}>
-            <circle cx="122" cy="122" r="114" fill="none" stroke={T.gold} strokeWidth="1.5" opacity="0.5" strokeDasharray="2 9" strokeLinecap="round" />
-            <circle cx="122" cy="122" r="102" fill="none" stroke={T.sage} strokeWidth="1" opacity="0.4" />
-          </svg>
-          <SwayBloom animate idx={3}>
-            <RichBloomV2 form="daisy" color={cw.petal} color2={cw.tip} accent={T.gold} size={170} animate soft idx="lf-hero" />
-          </SwayBloom>
-        </div>
-      </div>
-      <div style={{ display: "flex", alignItems: "center", gap: 9, marginTop: -2, flexWrap: "wrap", justifyContent: "center" }}>
-        <FlowerGlyph variant="iris" size={22} color={cwOf("plum").petal} color2={cwOf("plum").tip} idx="lf-hf-l" />
-        <BrandHeart size={16} />
-        <div style={{ fontFamily: SCRIPT, fontWeight: 400, fontSize: 44, lineHeight: 1.05, color: T.ink }}>Lifestyle</div>
-        <FlowerGlyph variant="sunflower" size={22} color={cwOf("gold").petal} color2={cwOf("gold").tip} idx="lf-hf-r" />
-      </div>
-      <div style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 16, color: T.muted, marginTop: 9, textAlign: "center", maxWidth: 330, lineHeight: 1.5 }}>
-        A few good things to read, hear and feel today — whenever you have a moment.
-      </div>
-    </div>
-  );
-}
-
-// ── LANDING — a "what to dip into today" summary card + a per-section CardStack slider ────────
-// Reuses the shared CardStack (Journal/Planner geometry). Each section card carries a hook + a
-// real recommendation (graceful curated fallback — never hollow) + an action into that section.
-function LifestyleLanding({ landing, onJump, navigate }) {
-  const L = landing || {};
-  // Deep-link a specific item full-screen when we have one; else fall back to the section.
-  const openRec = (item, tab) => {
-    if (item?.id) { navigate(createPageUrl(`LifestyleDetail?id=${item.id}`)); return; }
-    onJump(tab);
-  };
-  const recs = [];
-  if (L.read?.title) recs.push({ icon: BookOpen, label: "Read", text: L.read.title, tab: "read", item: L.read });
-  if (L.listen?.title) recs.push({ icon: Headphones, label: "Listen", text: L.listen.title, tab: "listen", item: L.listen });
-  if (L.story?.title) recs.push({ icon: Feather, label: "Daily story", text: L.story.title, tab: "daily_story", item: null });
-  if (recs.length < 2) {
-    if (!recs.find((r) => r.tab === "read")) recs.push({ icon: BookOpen, label: "Read", text: "A fresh essay to sink into.", tab: "read", item: null });
-    if (!recs.find((r) => r.tab === "listen")) recs.push({ icon: Headphones, label: "Listen", text: "A calm listen for the in-between moments.", tab: "listen", item: null });
-  }
-  const top2 = recs.slice(0, 3);
-
-  const SECTIONS = [
-    { key: "for_you", section: "For You", Icon: Sparkles, accent: T.gold, flower: "sunflower",
-      hook: "Picked for your day", line: L.foryou?.title ? `Today: ${L.foryou.title}` : "A small, curated handful — tuned to where you are.", cta: "See your picks", tab: "for_you" },
-    { key: "read", section: "Read", Icon: BookOpen, accent: "#8E6E8E", flower: "iris",
-      hook: "A read for today", line: L.read?.title || "Essays and long reads, gathered for you.", cta: L.read?.id ? "Read this" : "Open Read", tab: "read", item: L.read },
-    { key: "listen", section: "Listen", Icon: Headphones, accent: T.sage, flower: "bluebell",
-      hook: "Something to listen to", line: L.listen?.title || "A podcast or two, for the in-between moments.", cta: L.listen?.id ? "Listen now" : "Open Listen", tab: "listen", item: L.listen },
-    { key: "daily_story", section: "Daily Story", Icon: Feather, accent: T.crimson, flower: "poppy",
-      hook: "Today's chapter", line: L.story?.title ? `“${L.story.title}”` : "Pick today's chapter back up where you left it.", cta: "Read today's chapter", tab: "daily_story" },
-    { key: "horoscope", section: "Horoscope", Icon: Moon, accent: "#5F7E8E", flower: "violet",
-      hook: "Your sky today", line: L.horoscope?.headline || (typeof L.horoscope?.narrative === "string" ? L.horoscope.narrative.slice(0, 90) : "Read your sky, or set up your chart."), cta: "Open Horoscope", tab: "horoscope" },
-  ];
-
-  return (
-    <div style={{ position: "relative", zIndex: 1 }}>
-      {/* SUMMARY CARD — recommendations / "what to do" today */}
-      <div style={{ maxWidth: 600, margin: "18px auto 0", padding: "0 16px" }}>
-        <div style={{ position: "relative", overflow: "hidden", background: "linear-gradient(160deg, #FBF4E1 0%, #F4E7C4 100%)", border: `1px solid ${T.paperDeep}`, borderLeft: `4px solid ${T.gold}`, borderRadius: 18, padding: "16px 18px", boxShadow: "0 8px 28px rgba(58,44,26,0.14), 0 2px 6px rgba(58,44,26,0.08)" }}>
-          <div style={{ fontFamily: UI, fontSize: 12, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: T.gold, marginBottom: 6 }}>A few good things today</div>
-          {top2.map((r, i) => (
-            <button key={i} onClick={() => openRec(r.item, r.tab)} style={{ display: "flex", alignItems: "flex-start", gap: 10, width: "100%", textAlign: "left", background: "transparent", border: "none", cursor: "pointer", padding: "7px 0" }}>
-              <r.icon size={16} style={{ color: T.gold, marginTop: 3, flexShrink: 0 }} />
-              <span style={{ flex: 1, minWidth: 0 }}>
-                <span style={{ fontFamily: UI, fontSize: 12, fontWeight: 700, color: T.muted, textTransform: "uppercase", letterSpacing: "0.06em", display: "block" }}>{r.label}</span>
-                <span style={{ fontFamily: SERIF, fontSize: 16, color: T.ink, lineHeight: 1.4, display: "block" }}>{r.text}</span>
-              </span>
-              <ArrowRight size={15} style={{ color: T.muted, flexShrink: 0, marginTop: 4 }} />
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* SECTION CARDS — shared CardStack slider; one engaging card per Lifestyle section */}
-      <div style={{ maxWidth: 600, margin: "14px auto 0", padding: "0 4px" }}>
-        <CardStack label="Explore">
-          {SECTIONS.map((s) => (
-            <article key={s.key} style={{ position: "relative", overflow: "hidden", background: `linear-gradient(165deg, ${T.paperHi} 0%, ${s.accent}14 100%)`, border: `1px solid ${T.paperDeep}`, borderLeft: `4px solid ${s.accent}`, borderRadius: 20, padding: 20, display: "flex", flexDirection: "column", minHeight: 250, boxShadow: "0 4px 20px rgba(58,44,26,0.12), 0 1px 4px rgba(58,44,26,0.08)" }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 9, marginBottom: 12 }}>
-                <span style={{ width: 32, height: 32, borderRadius: 9, background: T.wax, border: `1px solid ${T.paperDeep}`, display: "grid", placeItems: "center", flexShrink: 0 }}><s.Icon size={16} style={{ color: s.accent }} /></span>
-                <span style={{ fontFamily: UI, fontSize: 12, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: s.accent }}>{s.section}</span>
-                <span style={{ marginLeft: "auto" }}><FlowerGlyph variant={s.flower} size={28} color={s.accent} idx={`lf-mb-${s.key}`} /></span>
-              </div>
-              <h3 style={{ fontFamily: SERIF, fontSize: 20, fontWeight: 600, color: T.ink, margin: "0 0 8px", lineHeight: 1.3 }}>{s.hook}</h3>
-              <p style={{ fontFamily: SERIF, fontSize: 16, color: T.inkSoft, lineHeight: 1.5, margin: "0 0 12px" }}>{s.line}</p>
-              <div style={{ marginTop: "auto" }}>
-                <button onClick={() => openRec(s.item, s.tab)} style={{ display: "inline-flex", alignItems: "center", gap: 7, background: s.accent, color: T.paper, border: "none", borderRadius: 12, padding: "11px 16px", fontFamily: UI, fontSize: 13, fontWeight: 700, cursor: "pointer" }}>
-                  {s.cta} <ArrowRight size={15} />
-                </button>
-              </div>
-            </article>
-          ))}
-        </CardStack>
-      </div>
-    </div>
-  );
-}
-// ── PER-TYPE SLIDING ROWS — Lifestyle content restructured by content TYPE ───────────────────
-// Replaces the old mixed "More to explore" feed. Each content type gets its own labelled horizontal
-// scroll-snap row. The CARD is the TODAY page's per-section card VERBATIM (TodayOption2 TodayCard):
-// same CARD_W (365), minHeight (488), gradient + 4px accent rim + 4-corner sprig frame, ICON_DISC,
-// Eyebrow, meaning-bloom, SERIF hook (CLAMP 3) + SERIF line (CLAMP 4), full-width accent CTA.
-// Every card DEEP-LINKS straight to the item full-screen (LifestyleDetail for reads/video/audio;
-// FictionReader for FemWell books).
-const LF_CARD_W = 365;   // verbatim from TodayOption2
-const LF_GAP = 14;
-const LF_CLAMP = (n) => ({ minWidth: 0, overflow: "hidden", overflowWrap: "anywhere", wordBreak: "break-word", display: "-webkit-box", WebkitLineClamp: n, WebkitBoxOrient: "vertical" });
-const LF_ICON_DISC = (Icon, accent) => (
-  <span style={{ width: 32, height: 32, borderRadius: 9, background: T.wax, border: `1px solid ${T.paperDeep}`, display: "grid", placeItems: "center", flexShrink: 0 }}>
-    <Icon size={16} strokeWidth={1.7} color={accent} />
-  </span>
-);
-function LfFrame4({ color, opacity = 0.6, size = 46 }) {
-  return <>{["tl", "tr", "br", "bl"].map((c) => <CardCorner key={c} variant="sprig" color={color} corner={c} size={size} opacity={opacity} />)}</>;
-}
+// ── FOR-YOU LANDING — the canonical signature content (BRAND_IDENTITY §6.7/§6.8) ──────────────
+// ONE summary card → per-TYPE sliding rows of the §6.7 brand cards (brand/Card.jsx). Every card
+// deep-links the EXACT item full-screen; video/audio play IN the card. The Books row leads with
+// today's Daily Story, then FemWell fiction + public-domain books (more than two).
 function lfTypeOf(i) {
   const m = String(i?.media_type || "").toUpperCase();
   const c = String(i?.content_type || "").toUpperCase();
-  if (/PODCAST|AUDIO/.test(m)) return "podcasts";
-  if (/VIDEO|CLIP|TIKTOK|INSTAGRAM|REEL/.test(m)) return "videos";
-  if (c === "FICTION") return "books";
-  if (c === "STORY") return "stories";
-  if (c === "GUIDE") return "guides";
-  return "articles"; // ARTICLE + default
+  if (/PODCAST|AUDIO/.test(m)) return "audio";
+  if (/VIDEO|CLIP|TIKTOK|INSTAGRAM|REEL/.test(m)) return "video";
+  if (c === "FICTION") return "book";
+  if (c === "STORY") return "story";
+  if (c === "GUIDE") return "guide";
+  return "article";
 }
-const LF_ROWS = [
-  { key: "articles", label: "Articles", accent: "#8E6E8E", Icon: BookOpen,   flower: "iris",      cta: "Read this" },
-  { key: "stories",  label: "Stories",  accent: T.crimson, Icon: Feather,    flower: "poppy",     cta: "Read this" },
-  { key: "videos",   label: "Watch",    accent: T.gold,    Icon: Play,       flower: "sunflower", cta: "Watch now" },
-  { key: "podcasts", label: "Listen",   accent: T.sage,    Icon: Headphones, flower: "bluebell",  cta: "Listen now" },
-  { key: "books",    label: "Books",    accent: "#5F7E8E", Icon: Book,       flower: "camellia",  cta: "Open this book" },
-  { key: "guides",   label: "Guides",   accent: "#A8893F", Icon: Sparkles,   flower: "primrose",  cta: "Read this" },
-];
+function LifestyleForYou({ landing, navigate, onJump }) {
+  const L = landing || {};
+  const arr = Array.isArray(L.all) ? L.all : [];
+  const by = {};
+  arr.forEach((i) => { const t = lfTypeOf(i); (by[t] = by[t] || []).push(i); });
 
-function lfHrefFor(item, type) {
-  // Deep-link straight to the SPECIFIC item, full-screen.
-  if (type === "books") return createPageUrl(`FictionReader?id=${item.id}`);
-  return createPageUrl(`LifestyleDetail?id=${item.id}`);
-}
+  const detail = (id) => navigate(createPageUrl(`LifestyleDetail?id=${id}`));
+  const openItem = (it) => detail(it.id);
+  const openBook = (it) => {
+    if (it._book === "gutenberg") navigate(createPageUrl(`BookReader?gutenberg_id=${it._gutenbergId}`));
+    else navigate(createPageUrl(`FictionReader?id=${it.id}`));
+  };
 
-// One card — the TODAY per-section card, verbatim treatment.
-function LifestyleRowCard({ item, row, navigate }) {
-  const a = row.accent;
-  const go = () => navigate(lfHrefFor(item, row.key));
-  const line = item.summary || item.lede || item.source_name || item.author_name || "";
+  // SUMMARY recs — signal-driven, graceful fallback, deep-linking the specific item.
+  const recs = [];
+  if (L.read?.id) recs.push({ Icon: BookOpen, label: "Read", text: L.read.title, onClick: () => detail(L.read.id) });
+  if (L.listen?.id) recs.push({ Icon: Headphones, label: "Listen", text: L.listen.title, onClick: () => detail(L.listen.id) });
+  if (L.story?.title) recs.push({ Icon: Feather, label: "Daily story", text: L.story.title, onClick: () => onJump("daily_story") });
+  if (recs.length < 2) {
+    if (!recs.find((r) => r.label === "Read")) recs.push({ Icon: BookOpen, label: "Read", text: "A fresh essay to sink into.", onClick: () => onJump("read") });
+    if (!recs.find((r) => r.label === "Listen")) recs.push({ Icon: Headphones, label: "Listen", text: "A calm listen for later.", onClick: () => onJump("listen") });
+  }
+
+  const fiction = by.book || [];
+  const gutenberg = Array.isArray(L.gutenberg) ? L.gutenberg : [];
+  const booksRow = [...(L.story ? [{ __kind: "daily" }] : []), ...fiction, ...gutenberg].slice(0, 14);
+
   return (
-    <section onClick={go} style={{
-      scrollSnapAlign: "center", flex: `0 0 ${LF_CARD_W}px`, width: LF_CARD_W,
-      position: "relative", overflow: "hidden", cursor: "pointer",
-      background: `linear-gradient(165deg, ${T.paperHi} 0%, ${a}14 100%)`,
-      border: `1px solid ${T.paperDeep}`, borderLeft: `4px solid ${a}`, borderRadius: 20,
-      padding: 20, display: "flex", flexDirection: "column", minHeight: 488,
-      boxShadow: "0 4px 20px rgba(58,44,26,0.12), 0 1px 4px rgba(58,44,26,0.08)",
-    }}>
-      <LfFrame4 color={a} size={46} opacity={0.6} />
-      <div style={{ position: "relative", zIndex: 1, display: "flex", flexDirection: "column", flex: 1, minHeight: 0 }}>
-        {/* header — icon disc · type eyebrow · meaning-bloom */}
-        <div style={{ display: "flex", alignItems: "center", gap: 9, marginBottom: 12 }}>
-          {LF_ICON_DISC(row.Icon, a)}
-          <Eyebrow color={a}>{row.label}</Eyebrow>
-          <span style={{ marginLeft: "auto" }}><FlowerGlyph variant={row.flower} size={30} color={a} idx={`lf-mb-${item.id}`} /></span>
-        </div>
-        {/* optional cover image */}
-        {item.image_url ? (
-          <div style={{ height: 150, borderRadius: 12, overflow: "hidden", marginBottom: 12, background: `linear-gradient(135deg, ${a}33, ${a}14)` }}>
-            <img src={item.image_url} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} onError={(e) => { e.target.parentElement.style.display = "none"; }} />
-          </div>
-        ) : null}
-        {/* hook + line — SERIF, same sizes/clamps as Today */}
-        <h3 style={{ fontFamily: SERIF, fontSize: 20, fontWeight: 600, color: T.ink, margin: "0 0 8px", lineHeight: 1.3, ...LF_CLAMP(3) }}>{item.title}</h3>
-        {line ? <p style={{ fontFamily: SERIF, fontSize: 16, color: T.inkSoft, lineHeight: 1.5, margin: "0 0 12px", ...LF_CLAMP(4) }}>{line}</p> : null}
-        {/* INLINE ACTION — full-width accent CTA (Today btnStyle) + open link, deep-linking the item */}
-        <div style={{ marginTop: "auto", paddingTop: 6 }}>
-          <button onClick={(e) => { e.stopPropagation(); go(); }} style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 8, width: "100%", boxSizing: "border-box", background: a, color: "#fff", border: "none", borderRadius: 12, padding: "13px 16px", fontFamily: UI, fontSize: 14, fontWeight: 700, cursor: "pointer" }}>
-            {row.cta}
-          </button>
-          <a href={lfHrefFor(item, row.key)} onClick={(e) => e.stopPropagation()} style={{ display: "inline-flex", alignItems: "center", gap: 4, marginTop: 12, fontFamily: UI, fontSize: 13, fontWeight: 700, color: T.muted, textDecoration: "none" }}>
-            Open full-screen <ChevronRight size={14} />
-          </a>
-        </div>
+    <div style={{ position: "relative", zIndex: 1 }}>
+      <div style={{ maxWidth: 600, margin: "18px auto 0", padding: "0 16px" }}>
+        <SummaryCard rows={recs.slice(0, 3)} />
       </div>
-    </section>
-  );
-}
 
-function LifestyleTypeRows({ items, navigate }) {
-  const arr = Array.isArray(items) ? items : [];
-  if (!arr.length) return null;
-  const buckets = {};
-  arr.forEach((i) => { const t = lfTypeOf(i); (buckets[t] = buckets[t] || []).push(i); });
-  const rows = LF_ROWS.filter((r) => (buckets[r.key] || []).length > 0);
-  if (!rows.length) return null;
+      <FwCardRow label="Articles" Icon={BookOpen} accent="#8E6E8E" items={(by.article || []).slice(0, 10)}
+        render={(it) => <ArticleCard key={it.id} item={it} onOpen={() => openItem(it)} />} />
 
-  return (
-    <div style={{ position: "relative", zIndex: 1, marginTop: 6 }}>
-      <style>{`.lf-row-track{scrollbar-width:none}.lf-row-track::-webkit-scrollbar{display:none}`}</style>
-      {rows.map((r) => {
-        const list = (buckets[r.key] || []).slice(0, 10);
-        return (
-          <div key={r.key} style={{ marginTop: 22 }}>
-            {/* row label */}
-            <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "0 18px 8px" }}>
-              <r.Icon size={15} color={r.accent} strokeWidth={1.8} />
-              <span style={{ fontFamily: UI, fontSize: 13, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: r.accent }}>{r.label}</span>
-            </div>
-            {/* the slider — Today's track geometry (CARD_W 365 · GAP 14 · scroll-snap · peek) */}
-            <div className="lf-row-track" style={{ display: "flex", gap: LF_GAP, overflowX: "auto", scrollSnapType: "x mandatory", padding: "0 18px 4px", WebkitOverflowScrolling: "touch" }}>
-              {list.map((item) => (
-                <LifestyleRowCard key={item.id} item={item} row={r} navigate={navigate} />
-              ))}
-              <div style={{ flex: `0 0 4px` }} aria-hidden />
-            </div>
-          </div>
-        );
-      })}
+      <FwCardRow label="Books" Icon={Book} accent="#5F7E8E" items={booksRow}
+        render={(it) => it.__kind === "daily"
+          ? <DailyStoryCard key="daily" item={L.story || {}} onOpen={() => onJump("daily_story")} />
+          : <BookCard key={it.id} item={it} onOpen={() => openBook(it)} />} />
+
+      <FwCardRow label="Watch" Icon={Play} accent={T.gold} items={(by.video || []).slice(0, 10)}
+        render={(it) => <VideoCard key={it.id} item={it} onOpen={() => openItem(it)} />} />
+
+      <FwCardRow label="Listen" Icon={Headphones} accent={T.sage} items={(by.audio || []).slice(0, 10)}
+        render={(it) => <AudioCard key={it.id} item={it} onOpen={() => openItem(it)} />} />
+
+      <FwCardRow label="Stories" Icon={Feather} accent={T.crimson} items={(by.story || []).slice(0, 10)}
+        render={(it) => <StoryCard key={it.id} item={it} onOpen={() => openItem(it)} />} />
+
+      {/* Horoscope — a REAL snippet, as its own row */}
+      <FwCardRow label="Your sky" Icon={Moon} accent="#5F7E8E" items={[{ __kind: "horo" }]}
+        render={() => <HoroscopeCard key="horo" reading={L.horoscope} onOpen={() => onJump("horoscope")} />} />
     </div>
   );
 }
