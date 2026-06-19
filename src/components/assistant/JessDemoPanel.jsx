@@ -929,6 +929,11 @@ function JessDemoPanelInner({ initialPrompt = null } = {}) {
   // extension in jessAgentService.js.
   useEffect(() => {
     if (followUpFired) return;
+    // When opened from an Ask-Jess surface with a seeded prompt, the seed
+    // effect drives the first turn — never schedule the scripted opener, so
+    // it can't race the seeded exchange (a delayed setMessages([opener])
+    // would otherwise wipe the auto-sent question + answer).
+    if (initialPrompt) return;
     if (!profile && recentCheckins.length === 0) return; // wait for first data tick
     const t = setTimeout(() => {
       setFollowUpFired(true);
@@ -969,7 +974,7 @@ function JessDemoPanelInner({ initialPrompt = null } = {}) {
       ]);
     }, 1400);
     return () => clearTimeout(t);
-  }, [profile?.id, profile?.life_stage, recentCheckins.length, dayInCycle, firstName, phase, followUpFired]);
+  }, [profile?.id, profile?.life_stage, recentCheckins.length, dayInCycle, firstName, phase, followUpFired, initialPrompt]);
 
   // Memoised proactive chips — drive Chat tab + tab-level shortcuts.
   // P0 hardening — guard against any throw inside the helper; render
