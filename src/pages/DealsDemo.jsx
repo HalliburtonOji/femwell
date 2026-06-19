@@ -110,7 +110,7 @@ function Voucher({ deal, accent, flower, featured, idx }) {
               <span style={{ fontFamily: UI, fontSize: 12, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: accent, ...CLAMP(1) }}>{deal.brand || "Partner"}</span>
               {deal.is_verified && <BadgeCheck size={14} color={T.sage} />}
             </div>
-            {featured && <span style={{ fontFamily: UI, fontSize: 11, color: T.muted }}>Featured perk</span>}
+            {featured && <span style={{ fontFamily: UI, fontSize: 12, color: T.muted }}>Featured perk</span>}
           </div>
           {deal.discount_text && <span style={{ fontFamily: UI, fontSize: 13, fontWeight: 700, color: "#fff", background: T.crimson, borderRadius: 999, padding: "4px 11px", flexShrink: 0 }}>{clip(deal.discount_text, 16)}</span>}
         </div>
