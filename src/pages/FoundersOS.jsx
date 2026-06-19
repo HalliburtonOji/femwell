@@ -168,6 +168,21 @@ const CATALOG = [
   { kind: "route", href: "/NutritionHubDemo", group: CAT.PREVIEW, sub: "Nutrition", accent: "gold",
     title: "Nutrition — Hub style (reference)", desc: "Reference only — the live Nutrition page already uses this. Daily-Hub plate header + big sliding cards (Log/Today/Plan/Recipes/Shop/Progress/Insights)." },
   // (Nutrition UX demos 1–5 appended programmatically below from NUTRITION_DEMOS)
+  // ── Page-redesign demos (full-page redesign directions) ───────────────
+  // New full-page demos slot in HERE — add a route entry with
+  // sub: "Page-redesign demos" and it appears under that heading automatically.
+  // (More coming from a parallel session: Pulse, Planner, others.)
+  { kind: "route", href: "/HealthDemo", group: CAT.PREVIEW, sub: "Page-redesign demos", status: "new", accent: "crimson",
+    title: "Health — redesign demo", desc: "Vertical editorial 'letters' layout — the Health hub read as a sequence of warm letters rather than a dashboard." },
+  { kind: "route", href: "/ProfileDemo", group: CAT.PREVIEW, sub: "Page-redesign demos", status: "new", accent: "blush",
+    title: "Profile — redesign demo", desc: "Identity card + flora fingerprint + a bento grid — Profile as a personal, expressive home, not a settings list." },
+  { kind: "route", href: "/DoctorExportDemo", group: CAT.PREVIEW, sub: "Page-redesign demos", status: "new", accent: "sage",
+    title: "Doctor Export — redesign demo", desc: "A live document builder — watch the GP export assemble itself as you choose what to include." },
+  { kind: "route", href: "/ProgramsDemo", group: CAT.PREVIEW, sub: "Page-redesign demos", status: "new", accent: "gold",
+    title: "Programs — redesign demo", desc: "A streaming-style gallery — programmes browsed like a streaming service, rich cover cards and rails." },
+  { kind: "route", href: "/GardenDemo", group: CAT.PREVIEW, sub: "Page-redesign demos", status: "new", accent: "sage",
+    title: "Garden — redesign demo", desc: "An immersive garden scene — the companion garden as a living, full-bleed place rather than a card." },
+
   // ── Brand ─────────────────────────────────────────────────────────────
   { kind: "route", href: "/BrandCraftSample", group: CAT.PREVIEW, sub: "Brand", status: "approval", accent: "crimson",
     title: "Brand Craft Sample ★ for approval", desc: "The canonical brand-system craft direction: flat vs upgraded realistic bloom, a botanical line-motif, the carved heart in context, and a live on-device perf measurement." },
@@ -281,7 +296,7 @@ function demoCatalogEntries() {
 }
 
 // Sub-section order within Previews & Demos.
-const PREVIEW_SUB_ORDER = ["Live in the app", "Today (home) directions", "Nutrition", "Journal", "Community", "Brand"];
+const PREVIEW_SUB_ORDER = ["Live in the app", "Today (home) directions", "Page-redesign demos", "Nutrition", "Journal", "Community", "Brand"];
 
 const accentColor = (a) => ({ gold: T.gold, sage: T.sage, blush: T.blush, crimson: T.crimson, espresso: T.espresso }[a] || T.gold);
 const STATUS_CHIP = {
