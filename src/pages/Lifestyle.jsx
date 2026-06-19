@@ -829,7 +829,7 @@ export default function Lifestyle() {
       {isForYou ? (
         <>
           {/* Today-style landing: summary recommendations + a per-section card slider */}
-          <LifestyleLanding landing={landing} onJump={setTab} />
+          <LifestyleLanding landing={landing} onJump={setTab} navigate={navigate} />
           {/* Content restructured into per-TYPE horizontal sliding rows (replaces the old
               mixed "More to explore" feed): Articles · Stories · Videos · Podcasts · Books · Guides,
               each a CardStack whose cards deep-link straight to the item full-screen. */}
@@ -894,15 +894,20 @@ function LifestyleHero() {
 // ── LANDING — a "what to dip into today" summary card + a per-section CardStack slider ────────
 // Reuses the shared CardStack (Journal/Planner geometry). Each section card carries a hook + a
 // real recommendation (graceful curated fallback — never hollow) + an action into that section.
-function LifestyleLanding({ landing, onJump }) {
+function LifestyleLanding({ landing, onJump, navigate }) {
   const L = landing || {};
+  // Deep-link a specific item full-screen when we have one; else fall back to the section.
+  const openRec = (item, tab) => {
+    if (item?.id) { navigate(createPageUrl(`LifestyleDetail?id=${item.id}`)); return; }
+    onJump(tab);
+  };
   const recs = [];
-  if (L.read?.title) recs.push({ icon: BookOpen, label: "Read", text: L.read.title, tab: "read" });
-  if (L.listen?.title) recs.push({ icon: Headphones, label: "Listen", text: L.listen.title, tab: "listen" });
-  if (L.story?.title) recs.push({ icon: Feather, label: "Daily story", text: L.story.title, tab: "daily_story" });
+  if (L.read?.title) recs.push({ icon: BookOpen, label: "Read", text: L.read.title, tab: "read", item: L.read });
+  if (L.listen?.title) recs.push({ icon: Headphones, label: "Listen", text: L.listen.title, tab: "listen", item: L.listen });
+  if (L.story?.title) recs.push({ icon: Feather, label: "Daily story", text: L.story.title, tab: "daily_story", item: null });
   if (recs.length < 2) {
-    if (!recs.find((r) => r.tab === "read")) recs.push({ icon: BookOpen, label: "Read", text: "A fresh essay to sink into.", tab: "read" });
-    if (!recs.find((r) => r.tab === "listen")) recs.push({ icon: Headphones, label: "Listen", text: "A calm listen for the in-between moments.", tab: "listen" });
+    if (!recs.find((r) => r.tab === "read")) recs.push({ icon: BookOpen, label: "Read", text: "A fresh essay to sink into.", tab: "read", item: null });
+    if (!recs.find((r) => r.tab === "listen")) recs.push({ icon: Headphones, label: "Listen", text: "A calm listen for the in-between moments.", tab: "listen", item: null });
   }
   const top2 = recs.slice(0, 3);
 
@@ -910,9 +915,9 @@ function LifestyleLanding({ landing, onJump }) {
     { key: "for_you", section: "For You", Icon: Sparkles, accent: T.gold, flower: "sunflower",
       hook: "Picked for your day", line: L.foryou?.title ? `Today: ${L.foryou.title}` : "A small, curated handful — tuned to where you are.", cta: "See your picks", tab: "for_you" },
     { key: "read", section: "Read", Icon: BookOpen, accent: "#8E6E8E", flower: "iris",
-      hook: "A read for today", line: L.read?.title || "Essays and long reads, gathered for you.", cta: "Open Read", tab: "read" },
+      hook: "A read for today", line: L.read?.title || "Essays and long reads, gathered for you.", cta: L.read?.id ? "Read this" : "Open Read", tab: "read", item: L.read },
     { key: "listen", section: "Listen", Icon: Headphones, accent: T.sage, flower: "bluebell",
-      hook: "Something to listen to", line: L.listen?.title || "A podcast or two, for the in-between moments.", cta: "Open Listen", tab: "listen" },
+      hook: "Something to listen to", line: L.listen?.title || "A podcast or two, for the in-between moments.", cta: L.listen?.id ? "Listen now" : "Open Listen", tab: "listen", item: L.listen },
     { key: "daily_story", section: "Daily Story", Icon: Feather, accent: T.crimson, flower: "poppy",
       hook: "Today's chapter", line: L.story?.title ? `“${L.story.title}”` : "Pick today's chapter back up where you left it.", cta: "Read today's chapter", tab: "daily_story" },
     { key: "horoscope", section: "Horoscope", Icon: Moon, accent: "#5F7E8E", flower: "violet",
@@ -926,7 +931,7 @@ function LifestyleLanding({ landing, onJump }) {
         <div style={{ position: "relative", overflow: "hidden", background: "linear-gradient(160deg, #FBF4E1 0%, #F4E7C4 100%)", border: `1px solid ${T.paperDeep}`, borderLeft: `4px solid ${T.gold}`, borderRadius: 18, padding: "16px 18px", boxShadow: "0 8px 28px rgba(58,44,26,0.14), 0 2px 6px rgba(58,44,26,0.08)" }}>
           <div style={{ fontFamily: UI, fontSize: 12, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: T.gold, marginBottom: 6 }}>A few good things today</div>
           {top2.map((r, i) => (
-            <button key={i} onClick={() => onJump(r.tab)} style={{ display: "flex", alignItems: "flex-start", gap: 10, width: "100%", textAlign: "left", background: "transparent", border: "none", cursor: "pointer", padding: "7px 0" }}>
+            <button key={i} onClick={() => openRec(r.item, r.tab)} style={{ display: "flex", alignItems: "flex-start", gap: 10, width: "100%", textAlign: "left", background: "transparent", border: "none", cursor: "pointer", padding: "7px 0" }}>
               <r.icon size={16} style={{ color: T.gold, marginTop: 3, flexShrink: 0 }} />
               <span style={{ flex: 1, minWidth: 0 }}>
                 <span style={{ fontFamily: UI, fontSize: 12, fontWeight: 700, color: T.muted, textTransform: "uppercase", letterSpacing: "0.06em", display: "block" }}>{r.label}</span>
@@ -951,7 +956,7 @@ function LifestyleLanding({ landing, onJump }) {
               <h3 style={{ fontFamily: SERIF, fontSize: 20, fontWeight: 600, color: T.ink, margin: "0 0 8px", lineHeight: 1.3 }}>{s.hook}</h3>
               <p style={{ fontFamily: SERIF, fontSize: 16, color: T.inkSoft, lineHeight: 1.5, margin: "0 0 12px" }}>{s.line}</p>
               <div style={{ marginTop: "auto" }}>
-                <button onClick={() => onJump(s.tab)} style={{ display: "inline-flex", alignItems: "center", gap: 7, background: s.accent, color: T.paper, border: "none", borderRadius: 12, padding: "11px 16px", fontFamily: UI, fontSize: 13, fontWeight: 700, cursor: "pointer" }}>
+                <button onClick={() => openRec(s.item, s.tab)} style={{ display: "inline-flex", alignItems: "center", gap: 7, background: s.accent, color: T.paper, border: "none", borderRadius: 12, padding: "11px 16px", fontFamily: UI, fontSize: 13, fontWeight: 700, cursor: "pointer" }}>
                   {s.cta} <ArrowRight size={15} />
                 </button>
               </div>
