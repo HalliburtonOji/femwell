@@ -70,6 +70,15 @@ function petalPoint(len, wid) {
 }
 const petalPath = petalRound; // back-compat alias
 const GOLD_ANGLE = 137.50776; // for sunflower seed spiral (phyllotaxis)
+// ── species-specific petal silhouettes (so each flower READS as itself, not a generic ring) ──
+// cupped petal with a folded centre crease (rose / peony / camellia)
+function petalCup(len, wid) { const w = wid, L = len; return `M0 0 C ${-w} ${-L * 0.30} ${-w * 0.95} ${-L * 0.82} ${-w * 0.34} ${-L * 0.99} C ${-w * 0.10} ${-L * 1.02} ${w * 0.10} ${-L * 1.02} ${w * 0.34} ${-L * 0.99} C ${w * 0.95} ${-L * 0.82} ${w} ${-L * 0.30} 0 0 Z`; }
+// broad rounded petal that bulges past its waist (hibiscus / magnolia / anemone)
+function petalBroad(len, wid) { const w = wid, L = len; return `M0 0 C ${-w * 1.04} ${-L * 0.22} ${-w * 1.02} ${-L * 0.66} ${-w * 0.5} ${-L * 0.92} C ${-w * 0.2} ${-L * 1.04} ${w * 0.2} ${-L * 1.04} ${w * 0.5} ${-L * 0.92} C ${w * 1.02} ${-L * 0.66} ${w * 1.04} ${-L * 0.22} 0 0 Z`; }
+// narrow lance tepal, pointed (lily / iris falls)
+function petalLance(len, wid) { const w = wid, L = len; return `M0 0 C ${-w} ${-L * 0.34} ${-w * 0.5} ${-L * 0.84} 0 ${-L} C ${w * 0.5} ${-L * 0.84} ${w} ${-L * 0.34} 0 0 Z`; }
+// a furled comma — the curled inner petal of a rose's heart
+function petalFurl(s) { return `M0 0 C ${-7 * s} ${-2 * s} ${-8 * s} ${-10 * s} ${-2 * s} ${-13 * s} C ${2 * s} ${-15 * s} ${7 * s} ${-12 * s} ${6 * s} ${-7 * s} C ${5.4 * s} ${-3.5 * s} ${1.5 * s} ${-3 * s} ${1.5 * s} ${-6 * s}`; }
 
 // per-FORM ring grammar — [count, len, wid, rotation, gradCode, opacity, pointed?].
 const FORM_RINGS = {
@@ -97,9 +106,18 @@ const CENTER_KIND = {
   hellebore: "stamen",
 };
 // large-rounded forms get a per-petal midrib vein (reads on few big petals; clutter on many)
-const VEINED = new Set(["poppy", "forget", "anemone", "cosmos", "hellebore", "magnolia"]);
-// dedicated (non-ring) heads
-const FORM_BELL = "foxglove", FORM_FERN = "fern", FORM_SUN = "sunflower", FORM_SNOWDROP = "snowdrop", FORM_TULIP = "tulip";
+const VEINED = new Set(["poppy", "forget", "anemone", "cosmos", "hellebore"]);
+// per-species PETAL SILHOUETTE — so each ring-built flower reads as itself (not one generic shape)
+const PETAL_FN = { round: petalRound, point: petalPoint, cup: petalCup, broad: petalBroad, lance: petalLance };
+const SHAPE = {
+  peony: "cup", camellia: "cup", ranunculus: "cup", marigold: "cup",
+  anemone: "broad", cosmos: "broad", hellebore: "broad", poppy: "broad",
+  dahlia: "point", chrysanthemum: "point", daisy: "point", cornflower: "point",
+};
+const CUPPED = new Set(["peony", "camellia", "ranunculus", "marigold"]);
+// dedicated (non-ring) heads — bespoke geometry so the flower is unmistakable
+const FORM_BELL = "foxglove", FORM_FERN = "fern", FORM_SUN = "sunflower", FORM_SNOWDROP = "snowdrop", FORM_TULIP = "tulip",
+  FORM_ROSE = "rose", FORM_HIBISCUS = "hibiscus", FORM_LILY = "lily", FORM_MAGNOLIA = "magnolia";
 
 export function RichBloomV2({ color = T.blush, color2 = null, accent = "#CBA24E", size = 150, animate = true, soft = true, idx = 0, form = "peony" }) {
   const cx = PETAL_BLOOM_CX, cy = PETAL_BLOOM_CY;
@@ -110,12 +128,17 @@ export function RichBloomV2({ color = T.blush, color2 = null, accent = "#CBA24E"
   const formKey = (typeof form === "string" ? form : form?.key) || "peony";
   const gradFor = (code) => code === "O" ? `pO-${gid}` : code === "M" ? `pM-${gid}` : `pI-${gid}`;
   const edgeFor = (code) => code === "O" ? deeper : code === "M" ? deep : mid;
-  const ring = (count, len, wid, gradId, op, rot, edge, pointed, vein) => Array.from({ length: count }).map((_, i) => {
+  const ring = (count, len, wid, gradId, op, rot, edge, shape = "round", vein) => Array.from({ length: count }).map((_, i) => {
     const ang = rot + i * (360 / count);
-    const d = pointed ? petalPoint(len, wid) : petalRound(len, wid);
+    const d = (PETAL_FN[shape] || petalRound)(len, wid);
+    const cup = shape === "cup";
     return (
       <g key={`${gradId}-${i}`} transform={`translate(${cx} ${cy}) rotate(${ang})`}>
         <path d={d} fill={`url(#${gradId})`} opacity={op} stroke={edge} strokeWidth={edge ? 0.4 : undefined} strokeOpacity={edge ? 0.16 : undefined} />
+        {cup && <>
+          <path d={`M0 ${-len * 0.18} Q ${wid * 0.16} ${-len * 0.55} 0 ${-len * 0.9}`} stroke={sheen} strokeWidth="0.5" strokeOpacity="0.32" fill="none" strokeLinecap="round" />
+          <path d={`M ${-wid * 0.44} ${-len * 0.24} Q ${-wid * 0.28} ${-len * 0.6} ${-wid * 0.12} ${-len * 0.86}`} stroke={deeper} strokeWidth="0.4" strokeOpacity="0.18" fill="none" strokeLinecap="round" />
+        </>}
         {vein && <path d={`M0 -1 Q ${wid * 0.05} ${-len * 0.5} 0 ${-len * 0.82}`} stroke={sheen} strokeWidth="0.55" strokeOpacity="0.4" fill="none" strokeLinecap="round" />}
       </g>
     );
@@ -158,23 +181,27 @@ export function RichBloomV2({ color = T.blush, color2 = null, accent = "#CBA24E"
   );
   const centerFor = (kind, big) => kind === "dark" ? centerDark() : kind === "gold" ? centerGold(big) : kind === "stamen" ? centerStamen() : centerTuft();
 
+  // shared dewy speculars
+  const speculars = () => (
+    <g style={animate ? { animation: `fwcShimmer 5s ease-in-out infinite`, animationDelay: delay } : undefined}>
+      <ellipse cx={cx - 7} cy={cy - 11} rx="6.5" ry="3.4" fill="#FFFDF7" opacity="0.24" transform={`rotate(-24 ${cx - 7} ${cy - 11})`} />
+      <circle cx={cx - 9} cy={cy - 6} r="1.4" fill="#FFFFFF" opacity="0.55" />
+      <circle cx={cx + 6} cy={cy - 9} r="1.0" fill="#FFFFFF" opacity="0.4" />
+    </g>
+  );
   // ── per-form HEAD renderers (all inside the breathing/swaying group) ──
   const petalHead = () => {
     const rings = FORM_RINGS[formKey] || FORM_RINGS.peony;
     const kind = CENTER_KIND[formKey] || "tuft";
     const vein = VEINED.has(formKey);
+    const shape = SHAPE[formKey] || "round";
     return (
       <>
-        {rings.map(([count, len, wid, rot, code, op, pointed]) => (
-          <React.Fragment key={`${code}-${rot}`}>{ring(count, len, wid, gradFor(code), op, rot, edgeFor(code), pointed, vein)}</React.Fragment>
+        {rings.map(([count, len, wid, rot, code, op]) => (
+          <React.Fragment key={`${code}-${rot}`}>{ring(count, len, wid, gradFor(code), op, rot, edgeFor(code), shape, vein)}</React.Fragment>
         ))}
         {centerFor(kind, formKey === "daisy" || formKey === "cosmos")}
-        {/* dewy speculars */}
-        <g style={animate ? { animation: `fwcShimmer 5s ease-in-out infinite`, animationDelay: delay } : undefined}>
-          <ellipse cx={cx - 7} cy={cy - 11} rx="6.5" ry="3.4" fill="#FFFDF7" opacity="0.26" transform={`rotate(-24 ${cx - 7} ${cy - 11})`} />
-          <circle cx={cx - 9} cy={cy - 6} r="1.4" fill="#FFFFFF" opacity="0.6" />
-          <circle cx={cx + 6} cy={cy - 9} r="1.0" fill="#FFFFFF" opacity="0.42" />
-        </g>
+        {speculars()}
       </>
     );
   };
@@ -253,9 +280,88 @@ export function RichBloomV2({ color = T.blush, color2 = null, accent = "#CBA24E"
     };
     return <g>{frond(-20, 42, "fl")}{frond(0, 50, "fc")}{frond(20, 42, "fr")}</g>;
   };
+  // a cupped-petal ring with fold creases — the rose family building block
+  const cupRing = (count, len, wid, gradId, op, rot, edge) => Array.from({ length: count }).map((_, i) => {
+    const ang = rot + i * (360 / count);
+    return (
+      <g key={`${gradId}-${i}`} transform={`translate(${cx} ${cy}) rotate(${ang})`}>
+        <path d={petalCup(len, wid)} fill={`url(#${gradId})`} opacity={op} stroke={edge} strokeWidth="0.4" strokeOpacity="0.18" />
+        <path d={`M0 ${-len * 0.18} Q ${wid * 0.16} ${-len * 0.55} 0 ${-len * 0.9}`} stroke={sheen} strokeWidth="0.5" strokeOpacity="0.32" fill="none" strokeLinecap="round" />
+        <path d={`M ${-wid * 0.44} ${-len * 0.24} Q ${-wid * 0.28} ${-len * 0.6} ${-wid * 0.12} ${-len * 0.86}`} stroke={deeper} strokeWidth="0.4" strokeOpacity="0.18" fill="none" strokeLinecap="round" />
+      </g>
+    );
+  });
+  // ROSE — the hero. Open cupped outer petals → a spiralled, furled heart.
+  const roseHead = () => {
+    const furl = [];
+    for (let i = 0; i < 6; i++) {
+      const ang = i * 60 + i * 12, s = 0.66 - i * 0.045;
+      furl.push(<path key={`fr${i}`} d={petalCup(15, 7.5)} fill={`url(#pM-${gid})`} stroke={deeper} strokeWidth="0.4" strokeOpacity="0.22" opacity="0.99" transform={`translate(${cx} ${cy}) rotate(${ang}) scale(${s})`} />);
+    }
+    return (
+      <g>
+        {cupRing(7, 31, 11.5, `pO-${gid}`, 0.96, 0, deeper)}
+        {cupRing(7, 24, 11, `pM-${gid}`, 0.97, 26, deep)}
+        {cupRing(6, 17, 9.5, `pM-${gid}`, 0.98, 12, deep)}
+        <circle cx={cx} cy={cy} r="10.5" fill={`url(#occ-${gid})`} />
+        {furl}
+        {/* furled centre swirl */}
+        <path d={`M${cx - 4} ${cy + 1.5} C ${cx - 5} ${cy - 5} ${cx + 1} ${cy - 6} ${cx + 4} ${cy - 2.5} C ${cx + 6} ${cy} ${cx + 3} ${cy + 4} ${cx} ${cy + 3}`} fill={`url(#pI-${gid})`} stroke={deeper} strokeWidth="0.4" strokeOpacity="0.28" />
+        <path d={`M${cx - 2.2} ${cy + 0.5} C ${cx - 2.8} ${cy - 3} ${cx + 1} ${cy - 3.4} ${cx + 2.4} ${cy - 1.4}`} fill="none" stroke={deeper} strokeWidth="0.5" strokeOpacity="0.45" strokeLinecap="round" />
+        <ellipse cx={cx - 6.5} cy={cy - 7.5} rx="3.2" ry="1.9" fill="#FFFDF7" opacity="0.24" transform={`rotate(-28 ${cx - 6.5} ${cy - 7.5})`} />
+      </g>
+    );
+  };
+  // HIBISCUS — 5 broad veined petals, a deep throat, and the signature staminal column.
+  const hibiscusHead = () => (
+    <g>
+      {Array.from({ length: 5 }).map((_, i) => (
+        <g key={i} transform={`translate(${cx} ${cy}) rotate(${i * 72})`}>
+          <path d={petalBroad(35, 15)} fill={`url(#pO-${gid})`} stroke={deeper} strokeWidth="0.4" strokeOpacity="0.16" />
+          {[-1, 0, 1].map((k) => <path key={k} d={`M0 -3 Q ${k * 3.4} ${-18} ${k * 2.2} ${-31}`} stroke={darken(color, 0.22)} strokeWidth="0.4" strokeOpacity="0.3" fill="none" strokeLinecap="round" />)}
+        </g>
+      ))}
+      <circle cx={cx} cy={cy} r="9.5" fill={darken(color, 0.42)} />
+      <circle cx={cx} cy={cy} r="11" fill={`url(#occ-${gid})`} />
+      {/* staminal column up-right */}
+      <path d={`M${cx} ${cy} Q ${cx + 7} ${cy - 13} ${cx + 9.5} ${cy - 24}`} stroke={darken(color, 0.16)} strokeWidth="1.7" fill="none" strokeLinecap="round" />
+      {Array.from({ length: 9 }).map((_, i) => { const t = i / 9; const px = cx + 7 * t + (i % 2 ? 1.8 : -1.8); const py = cy - 16 * t - 5; return <circle key={i} cx={px} cy={py} r="1.15" fill="#E9CF7A" stroke="#B98F2E" strokeWidth="0.2" />; })}
+      {Array.from({ length: 5 }).map((_, i) => { const a = i * 72 * Math.PI / 180; return <circle key={`sg${i}`} cx={cx + 9.5 + Math.cos(a) * 2.2} cy={cy - 24 + Math.sin(a) * 2.2} r="1.3" fill={darken(color, 0.05)} />; })}
+      {speculars()}
+    </g>
+  );
+  // LILY — 6 recurved lance tepals + 6 prominent stamens with anthers + pistil.
+  const ANTHER = "#9A6B2E";
+  const lilyHead = () => (
+    <g>
+      {Array.from({ length: 6 }).map((_, i) => (
+        <g key={i} transform={`translate(${cx} ${cy}) rotate(${i * 60})`}>
+          <path d={petalLance(37, 8)} fill={`url(#${i % 2 ? "pM" : "pO"}-${gid})`} stroke={deeper} strokeWidth="0.4" strokeOpacity="0.16" />
+          <path d="M0 -3 L 0 -34" stroke={darken(color, 0.18)} strokeWidth="0.4" strokeOpacity="0.26" />
+          <circle cx="0" cy="-11" r="0.8" fill={darken(color, 0.3)} opacity="0.45" />
+          <circle cx="-1.4" cy="-15" r="0.6" fill={darken(color, 0.3)} opacity="0.4" />
+        </g>
+      ))}
+      {Array.from({ length: 6 }).map((_, i) => { const a = (i * 60 + 30) * Math.PI / 180; const ex = cx + Math.cos(a) * 17, ey = cy + Math.sin(a) * 17; return (<g key={`st${i}`}><line x1={cx} y1={cy} x2={ex} y2={ey} stroke={lighten(ANTHER, 0.18)} strokeWidth="0.9" strokeLinecap="round" /><ellipse cx={ex} cy={ey} rx="2.6" ry="1.3" fill={ANTHER} transform={`rotate(${i * 60 + 30} ${ex} ${ey})`} /></g>); })}
+      <ellipse cx={cx} cy={cy - 1} rx="2" ry="3" fill={`url(#ct-${gid})`} />
+      {speculars()}
+    </g>
+  );
+  // MAGNOLIA — 9 broad open tepals + a central carpel cone.
+  const magnoliaHead = () => (
+    <g>
+      {Array.from({ length: 9 }).map((_, i) => <path key={i} d={petalBroad(36, 8.5)} fill={`url(#${i % 2 ? "pO" : "pM"}-${gid})`} opacity="0.96" stroke={deeper} strokeWidth="0.4" strokeOpacity="0.14" transform={`translate(${cx} ${cy}) rotate(${i * 40})`} />)}
+      <ellipse cx={cx} cy={cy} rx="4.2" ry="6.4" fill={`url(#ct-${gid})`} />
+      {Array.from({ length: 11 }).map((_, i) => { const a = i * 33 * Math.PI / 180; return <circle key={i} cx={cx + Math.cos(a) * 3} cy={cy + Math.sin(a) * 4.4} r="0.7" fill={darken(accent, 0.12)} opacity="0.7" />; })}
+      <ellipse cx={cx - 1} cy={cy - 2} rx="1.5" ry="2.6" fill="#FFFDF7" opacity="0.34" />
+      {speculars()}
+    </g>
+  );
   const head = formKey === FORM_BELL ? bellHead() : formKey === FORM_FERN ? fernHead()
     : formKey === FORM_SUN ? sunHead() : formKey === FORM_SNOWDROP ? snowdropHead()
-    : formKey === FORM_TULIP ? tulipHead() : petalHead();
+    : formKey === FORM_TULIP ? tulipHead() : formKey === FORM_ROSE ? roseHead()
+    : formKey === FORM_HIBISCUS ? hibiscusHead() : formKey === FORM_LILY ? lilyHead()
+    : formKey === FORM_MAGNOLIA ? magnoliaHead() : petalHead();
 
   return (
     <div style={{ position: "relative", display: "inline-block", width: size, height: Math.round(size * 1.05), lineHeight: 0 }}>
@@ -306,6 +412,53 @@ export function SwayBloom({ children, animate = true, idx = 0 }) {
   return (
     <div style={animate ? { display: "inline-block", transformOrigin: "bottom center", animation: "fwcSway 8s ease-in-out infinite", animationDelay: `${(idx % 5) * 0.9}s` } : { display: "inline-block" }}>
       {children}
+    </div>
+  );
+}
+
+// ── BOUQUET — a COMBINATION arrangement: 2–4 DIFFERENT blooms clustered with
+// overlapping stems + leaves, so a surface shows a posy, not one lone flower.
+export function Bouquet({ items, size = 220, animate = true, idx = "bq" }) {
+  const list = (items && items.length) ? items : [
+    { form: "rose", colorway: "crimson", scale: 1.0, dx: 0, dy: 0, rot: 0 },
+    { form: "sunflower", colorway: "gold", scale: 0.72, dx: -0.30, dy: 0.16, rot: -16 },
+    { form: "hibiscus", colorway: "coral", scale: 0.66, dx: 0.31, dy: 0.20, rot: 16 },
+    { form: "forget", colorway: "sky", scale: 0.42, dx: 0.10, dy: -0.20, rot: 8 },
+  ];
+  const W = size, H = Math.round(size * 1.14);
+  return (
+    <div style={{ position: "relative", width: W, height: H, lineHeight: 0 }}>
+      <style>{floraKeyframes}</style>
+      {list.map((it, i) => {
+        const c = cwOf(it.colorway);
+        const bs = Math.round(W * 0.6 * (it.scale ?? 1));
+        return (
+          <div key={i} style={{ position: "absolute", left: `calc(50% + ${(it.dx || 0) * W}px)`, top: `calc(46% + ${(it.dy || 0) * H}px)`, transform: `translate(-50%,-50%) rotate(${it.rot || 0}deg)`, zIndex: (it.scale ?? 1) >= 1 ? 3 : 2 }}>
+            <SwayBloom animate={animate} idx={i}><RichBloomV2 form={it.form} color={c.petal} color2={c.tip} accent={c.accent} size={bs} animate={animate} soft={i === 0} idx={`${idx}-${i}`} /></SwayBloom>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+// ── BLOOM + CREATURE — a living moment: a creature resting physically ON the
+// plant (a butterfly on a petal, a ladybird on a leaf, a bee on the flower).
+const CREATURE_AT = {
+  petal: { top: "15%", left: "60%", size: 34 },
+  leaf: { top: "79%", left: "25%", size: 24 },
+  flower: { top: "40%", left: "47%", size: 30 },
+};
+export function BloomWithCreature({ form = "rose", colorway = "crimson", size = 150, creature = "butterfly", at = "petal", animate = true, idx = "bwc" }) {
+  const c = cwOf(colorway);
+  const p = CREATURE_AT[at] || CREATURE_AT.petal;
+  const col = creature === "bee" ? T.gold : creature === "ladybird" ? T.crimson : c.accent;
+  return (
+    <div style={{ position: "relative", width: size, height: Math.round(size * 1.05), display: "inline-block", lineHeight: 0 }}>
+      <RichBloomV2 form={form} color={c.petal} color2={c.tip} accent={c.accent} size={size} animate={animate} idx={idx} />
+      <div style={{ position: "absolute", top: p.top, left: p.left, transform: "translate(-50%,-50%)", zIndex: 4, pointerEvents: "none" }}>
+        <Pollinator kind={creature} size={p.size} color={col} color2={c.tip} animate={animate} idx={`${idx}-cr`} />
+      </div>
     </div>
   );
 }

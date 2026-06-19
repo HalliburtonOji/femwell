@@ -8,15 +8,17 @@ import { createPageUrl } from "@/utils";
 import { T, PAPER_BG, SCRIPT, UI } from "@/components/journal/Editorial";
 import {
   RichBloomV2, FlowerGlyph, FLOWER_VARIANTS, COLORWAYS, cwOf, floraKeyframes,
-  Butterfly, Bee, Dragonfly, Moth, Ladybird,
+  Butterfly, Bee, Dragonfly, Moth, Ladybird, Bouquet, BloomWithCreature,
 } from "@/components/brand/flora";
 
+const HERO_FLOWERS = [["rose", "crimson"], ["sunflower", "gold"], ["hibiscus", "coral"]];
 const BLOOM_FORMS = [
-  ["peony", "gold"], ["rose", "crimson"], ["ranunculus", "blush"], ["camellia", "blush"],
-  ["dahlia", "plum"], ["chrysanthemum", "coral"], ["marigold", "gold"], ["cosmos", "blush"],
-  ["anemone", "crimson"], ["magnolia", "cream"], ["hellebore", "sage"], ["poppy", "crimson"],
-  ["daisy", "cream"], ["forget", "sky"], ["cornflower", "sky"], ["sunflower", "gold"],
-  ["snowdrop", "cream"], ["tulip", "coral"], ["foxglove", "plum"], ["fern", "sage"],
+  ["rose", "crimson"], ["hibiscus", "coral"], ["lily", "blush"], ["peony", "gold"],
+  ["tulip", "crimson"], ["magnolia", "cream"], ["dahlia", "plum"], ["ranunculus", "blush"],
+  ["camellia", "blush"], ["chrysanthemum", "coral"], ["marigold", "gold"], ["cosmos", "blush"],
+  ["anemone", "crimson"], ["hellebore", "sage"], ["poppy", "crimson"], ["daisy", "cream"],
+  ["forget", "sky"], ["cornflower", "sky"], ["sunflower", "gold"], ["snowdrop", "cream"],
+  ["foxglove", "plum"], ["fern", "sage"],
 ];
 
 function Tile({ label, children }) {
@@ -56,7 +58,36 @@ export default function FloraLabDemo() {
         <div style={{ fontFamily: "Cormorant Garamond, Georgia, serif", fontStyle: "italic", fontSize: 16, color: T.muted, maxWidth: 340, margin: "6px auto 0" }}>The elevated bloom + glyph + pollinator library — realism and variety, two levels up.</div>
       </div>
 
-      <Section title="Blooms" sub="RichBloomV2 — 20 forms, layered petals, lit tips, shadowed throats">
+      <Section title="The hero flowers" sub="rose · sunflower · hibiscus — each rendered to read unmistakably as itself">
+        <div style={grid(3)}>
+          {HERO_FLOWERS.map(([form, cw]) => {
+            const c = cwOf(cw);
+            return <Tile key={form} label={form}><RichBloomV2 form={form} color={c.petal} color2={c.tip} accent={c.accent} size={120} idx={`hero-${form}`} /></Tile>;
+          })}
+        </div>
+      </Section>
+
+      <Section title="Combination arrangements" sub="different flowers grouped — a posy, not one lone bloom">
+        <div style={{ display: "flex", justifyContent: "space-around", flexWrap: "wrap", gap: 8 }}>
+          <Tile label="rose · sunflower · hibiscus"><Bouquet size={210} idx="bqA" /></Tile>
+          <Tile label="peony · lily · cosmos"><Bouquet size={190} idx="bqB" items={[
+            { form: "peony", colorway: "blush", scale: 1, dx: 0, dy: 0, rot: 0 },
+            { form: "lily", colorway: "gold", scale: 0.7, dx: -0.3, dy: 0.16, rot: -15 },
+            { form: "cosmos", colorway: "plum", scale: 0.62, dx: 0.3, dy: 0.2, rot: 15 },
+            { form: "forget", colorway: "sky", scale: 0.4, dx: 0.12, dy: -0.18, rot: 6 },
+          ]} /></Tile>
+        </div>
+      </Section>
+
+      <Section title="A living garden" sub="creatures resting ON the plant — never floating in empty space">
+        <div style={grid(3)}>
+          <Tile label="butterfly on a petal"><BloomWithCreature form="rose" colorway="crimson" size={120} creature="butterfly" at="petal" idx="eco1" /></Tile>
+          <Tile label="ladybird on a leaf"><BloomWithCreature form="sunflower" colorway="gold" size={120} creature="ladybird" at="leaf" idx="eco2" /></Tile>
+          <Tile label="bee on the flower"><BloomWithCreature form="hibiscus" colorway="coral" size={120} creature="bee" at="flower" idx="eco3" /></Tile>
+        </div>
+      </Section>
+
+      <Section title="Every bloom" sub="RichBloomV2 — bespoke geometry per species, layered petals, lit tips, shadowed throats">
         <div style={grid(3)}>
           {BLOOM_FORMS.map(([form, cw]) => {
             const c = cwOf(cw);
