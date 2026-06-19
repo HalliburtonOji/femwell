@@ -1,16 +1,18 @@
 import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Sun, BookOpen, User, Menu, Sparkles } from "lucide-react";
+import { Sun, BookOpen, User, Menu } from "lucide-react";
 import { createPageUrl } from "@/utils";
 import MenuSheet from "@/components/layout/MenuSheet";
+import { FlowerGlyph, CornerSprig } from "@/components/brand/flora";
+import { T } from "@/components/journal/Editorial";
 
-// Slot order (left → right): Today · Lifestyle · Jess heart · Profile · Menu.
-// Four calm destinations + the centre heart + the "More" door (Menu) — the
-// overflow sections live behind Menu, never a sideways-scrolling bar.
+// Slot order (left → right): Today · Lifestyle · Jess bloom · Profile · Menu.
+// Four calm destinations + the centre Jess bloom + the "More" door (Menu) —
+// the overflow sections live behind Menu, never a sideways-scrolling bar.
 const SLOTS = [
   { kind: "link", label: "Today",     page: "Today",     icon: Sun },
   { kind: "link", label: "Lifestyle", page: "Lifestyle", icon: BookOpen },
-  { kind: "fab",  label: "Jess",      icon: Sparkles },
+  { kind: "fab",  label: "Jess" },
   { kind: "link", label: "Profile",   page: "Profile",   icon: User },
   { kind: "menu", label: "Menu",      icon: Menu },
 ];
@@ -37,6 +39,17 @@ export default function MobileBottomNav({ currentPageName }) {
   const [compact, setCompact] = useState(false);
   const [reduceMotion, setReduceMotion] = useState(false);
   const menuButtonRef = useRef(null);
+
+  // Frosted-glass needs backdrop-filter. Feature-detect once; when unsupported
+  // (older browsers, some Android webviews) we fall back to a near-opaque cream
+  // capsule so labels never sit on a see-through, low-contrast surface.
+  const [supportsBlur] = useState(() =>
+    typeof window !== "undefined" &&
+    typeof window.CSS !== "undefined" &&
+    typeof window.CSS.supports === "function" &&
+    (window.CSS.supports("backdrop-filter", "blur(2px)") ||
+      window.CSS.supports("-webkit-backdrop-filter", "blur(2px)"))
+  );
 
   const handleJessTap = () => {
     // Open existing assistant overlay (Layout listens for this event)
@@ -101,6 +114,7 @@ export default function MobileBottomNav({ currentPageName }) {
       >
         <div
           style={{
+            position: "relative",
             pointerEvents: "auto",
             width: "calc(100% - 28px)",   // 14px gutter each side
             maxWidth: 480,
@@ -110,11 +124,21 @@ export default function MobileBottomNav({ currentPageName }) {
             gridTemplateColumns: "repeat(5, 1fr)",
             alignItems: "center",
             paddingInline: 8,
-            background: "var(--surface)",                 // warm cream paperHi, opaque for label contrast
-            border: "1px solid rgba(168,137,63,0.40)",    // 1px gold hairline
+            // ── Frosted glass: a translucent cream gradient (lit top edge →
+            //    creamier base) OVER a backdrop blur of the page behind. The
+            //    gradient stays 0.55–0.72 alpha so labels keep contrast even on
+            //    busy content. Falls back to opaque cream when blur unsupported.
+            background: supportsBlur
+              ? "linear-gradient(177deg, rgba(255,255,255,0.58) 0%, rgba(248,243,232,0.60) 34%, rgba(236,231,218,0.70) 100%)"
+              : "var(--surface)",
+            backdropFilter: supportsBlur ? "blur(18px) saturate(150%)" : undefined,
+            WebkitBackdropFilter: supportsBlur ? "blur(18px) saturate(150%)" : undefined,
+            border: "1px solid rgba(168,137,63,0.42)",    // 1px gold hairline
             borderRadius: 9999,
+            // Layered depth: lit inner top highlight + soft inner bottom shade
+            //    (the 3D glass bevel) over a soft outer drop shadow.
             boxShadow:
-              "0 10px 30px -10px rgba(74,42,58,0.30), 0 2px 8px rgba(11,8,5,0.10)",
+              "inset 0 1px 0 rgba(255,255,255,0.65), inset 0 -1px 2px rgba(168,137,63,0.12), inset 0 8px 18px -12px rgba(255,255,255,0.55), 0 12px 32px -10px rgba(74,42,58,0.34), 0 3px 10px rgba(11,8,5,0.12)",
             transform: isCompact ? `scale(${COMPACT_SCALE})` : "scale(1)",
             transformOrigin: "bottom center",
             transition: reduceMotion
@@ -123,9 +147,25 @@ export default function MobileBottomNav({ currentPageName }) {
             willChange: "transform",
           }}
         >
+          {/* Subtle botanical brand touch — a faint gold sprig tucked into each
+              rounded end, clipped to the pill, behind the row (decorative). */}
+          <div
+            aria-hidden="true"
+            style={{
+              position: "absolute", inset: 0, borderRadius: 9999,
+              overflow: "hidden", pointerEvents: "none", zIndex: -1,
+            }}
+          >
+            <div style={{ position: "absolute", left: -8, bottom: -12, opacity: 0.12 }}>
+              <CornerSprig variant="sprig" color={T.gold} corner="bl" size={56} opacity={1} />
+            </div>
+            <div style={{ position: "absolute", right: -8, bottom: -12, opacity: 0.12, transform: "scaleX(-1)" }}>
+              <CornerSprig variant="sprig" color={T.gold} corner="bl" size={56} opacity={1} />
+            </div>
+          </div>
+
           {SLOTS.map((slot) => {
             if (slot.kind === "fab") {
-              const Icon = slot.icon;
               return (
                 <button
                   key="fab"
@@ -139,19 +179,26 @@ export default function MobileBottomNav({ currentPageName }) {
                     minHeight: 56,
                   }}
                 >
-                  {/* Jess sits INSIDE the row, flush — same footprint as the other
-                      items' 32px icon band. Still the one crimson colour pop (the
-                      brand heart accent), just calm: small disc, no lift, soft shadow. */}
+                  {/* Jess = the centre item, now a crimson BRAND BLOOM (cosmos —
+                      the cleanest flower silhouette at small size) instead of the
+                      heart. Sits flush in the row at the others' 32px band; a soft
+                      blush halo gives it presence without a heavy disc. Static SVG
+                      (no animation/blur) so it's free. */}
                   <span
                     aria-hidden="true"
                     style={{
+                      position: "relative",
                       width: 32, height: 32, borderRadius: 9999,
-                      background: "var(--rose-primary)",
-                      boxShadow: "0 2px 6px -2px rgba(212,94,82,0.45)",
                       display: "flex", alignItems: "center", justifyContent: "center",
                     }}
                   >
-                    <Icon size={18} color="white" strokeWidth={1.75} />
+                    <span
+                      style={{
+                        position: "absolute", inset: 0, borderRadius: 9999,
+                        background: "radial-gradient(circle at 50% 46%, rgba(232,180,184,0.55) 0%, rgba(232,180,184,0.18) 55%, rgba(232,180,184,0) 78%)",
+                      }}
+                    />
+                    <FlowerGlyph variant="cosmos" size={30} color={T.crimson} accent="#A8893F" idx={7} />
                   </span>
                   <span style={{ ...labelStyle(false), color: "var(--plum-deep)", fontWeight: 600 }}>
                     {slot.label}
