@@ -892,7 +892,7 @@ export default function TodayDemo6() {
 
       {sheet && <ActionSheet sheetKey={sheet} uid={uid} cycle={cycle} onClose={() => setSheet(null)} onSaved={feedGarden} />}
       {jumpOpen && <JumpSheet items={JUMP_ITEMS} onPick={onJump} onClose={() => setJumpOpen(false)} />}
-      {calOpen && <TodayCalendarSheet profile={profile} cycle={cycle} hasCycle={hasCycle} uid={uid} onClose={() => setCalOpen(false)} />}
+      {calOpen && <TodayCalendarSheet profile={profile} cycle={cycle} uid={uid} onClose={() => setCalOpen(false)} />}
       {ceremony && <FirstOpenCeremony cForm={cForm} cAccent={cAccent} cName={cName} growStage={growStage} onSkip={() => setCeremony(false)} />}
     </div>
   );
@@ -1272,16 +1272,18 @@ function JumpSheet({ items, onPick, onClose }) {
 // ── (7) UNIFIED CALENDAR — REUSES the Planner page's cycle calendar (MonthRibbon) in a bottom sheet;
 // tapping a day opens the shared Day-Actions sheet; "Plan this day" opens the shared hour-by-hour
 // Planner day view. One calendar + day view across Today and Planner (not two designs).
-function TodayCalendarSheet({ profile, cycle, hasCycle, uid, onClose }) {
+function TodayCalendarSheet({ profile, cycle, uid, onClose }) {
   useScrollLock(true);
   const [dayActions, setDayActions] = useState(null);   // dateISO → the day-actions sheet
   const [planDay, setPlanDay] = useState(null);          // dateISO → the hour-by-hour day view
   useEffect(() => { const k = (e) => { if (e.key === "Escape") onClose(); }; window.addEventListener("keydown", k); return () => window.removeEventListener("keydown", k); }, [onClose]);
-  const ribbonProfile = hasCycle ? {
-    last_period_start_date: profile.last_period_start_date,
-    cycle_avg_length: profile.cycle_avg_length || cycle.cycleLen || 28,
-    period_length: profile.period_length || cycle.periodLen || 5,
-  } : null;
+  // ALWAYS render the real Planner calendar grid — MonthRibbon shows a tappable month grid even with no
+  // period data (it draws its own faded preview + "Log a period" CTA as the empty state). Never hide the grid.
+  const ribbonProfile = {
+    last_period_start_date: profile?.last_period_start_date || null,
+    cycle_avg_length: profile?.cycle_avg_length || cycle?.cycleLen || 28,
+    period_length: profile?.period_length || cycle?.periodLen || 5,
+  };
   return (
     <div role="dialog" aria-modal="true" aria-label="Your calendar" className="fw-scrim-anim"
       onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
@@ -1295,14 +1297,7 @@ function TodayCalendarSheet({ profile, cycle, hasCycle, uid, onClose }) {
           </div>
           <button onClick={onClose} aria-label="Close" style={{ background: "transparent", border: "none", cursor: "pointer", color: T.muted, padding: 4 }}><X size={20} /></button>
         </div>
-        {ribbonProfile ? (
-          <MonthRibbon profile={ribbonProfile} habitLogs={[]} onNavigateToToday={(iso) => setDayActions(iso)} />
-        ) : (
-          <div style={{ textAlign: "center", padding: "26px 12px" }}>
-            <Hand size={16} color={T.inkSoft} style={{ display: "block", lineHeight: 1.5 }}>Add your last period in Health and your cycle calendar blooms here — then tap any day to plan it.</Hand>
-            <a href="/Health" style={{ display: "inline-block", marginTop: 12, fontFamily: UI, fontSize: 13, fontWeight: 700, color: T.muted, textDecoration: "none", border: `1px solid ${T.paperDeep}`, borderRadius: 999, padding: "7px 15px" }}>Open Health</a>
-          </div>
-        )}
+        <MonthRibbon profile={ribbonProfile} habitLogs={[]} onNavigateToToday={(iso) => setDayActions(iso)} />
         <p style={{ fontFamily: UI, fontSize: 12, color: T.muted, textAlign: "center", margin: "12px 8px 0", lineHeight: 1.5 }}>Tap any day to plan it or log for it — the same calendar + day view as your Planner.</p>
       </div>
 
