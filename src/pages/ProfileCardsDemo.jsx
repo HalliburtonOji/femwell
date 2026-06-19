@@ -24,7 +24,7 @@ export default function ProfileCardsDemo() {
   ];
   return (
     <CardDemoPage label="Demo · Profile · card system"
-      hero={{ title: "You", bloom: "peony", colorway: "blush", flankL: "primrose", flankR: "sunflower", line: "Not a settings list — a little portrait of who you are and what you're growing toward." }}>
+      hero={{ title: "You", bloom: "rose", colorway: "blush", flankL: "camellia", flankR: "primrose", creature: "butterfly", line: "Not a settings list — a little portrait of who you are and what you're growing toward." }}>
       <DemoSummary><SummaryCard eyebrow="This is you today" rows={recs} /></DemoSummary>
 
       <FwCardRow label="Your intentions" Icon={Target} accent={T.crimson} items={[{ id: "i" }]}

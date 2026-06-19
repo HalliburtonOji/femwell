@@ -29,7 +29,7 @@ export default function PlannerCardsDemo() {
   ];
   return (
     <CardDemoPage label="Demo · Planner (content) · card system"
-      hero={{ title: "Planner", bloom: "daisy", colorway: "sage", flankL: "fern", flankR: "primrose", line: "Not a wall of appointments — a few kind intentions and the rituals that hold your week." }}>
+      hero={{ title: "Planner", bloom: "cosmos", colorway: "sage", flankL: "clover", flankR: "chamomile", creature: "butterfly", line: "Not a wall of appointments — a few kind intentions and the rituals that hold your week." }}>
       <DemoSummary><SummaryCard eyebrow="Today, lightly" rows={recs} /></DemoSummary>
 
       <FwCardRow label="Add an intention" Icon={Feather} accent={T.gold} items={[{ id: "add" }]}

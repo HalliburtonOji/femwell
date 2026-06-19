@@ -37,7 +37,7 @@ export default function NutritionCardsDemo() {
   );
   return (
     <CardDemoPage label="Demo · Nutrition · card system"
-      hero={{ title: "Nutrition", bloom: "daisy", colorway: "sage", flankL: "fern", flankR: "sunflower", line: "Food that's kind to you — joyful, simple, and a little phase-aware when you want it." }}>
+      hero={{ title: "Nutrition", bloom: "marigold", colorway: "gold", flankL: "chamomile", flankR: "lavender", creature: "ladybird", line: "Food that's kind to you — joyful, simple, and a little phase-aware when you want it." }}>
       <DemoSummary><SummaryCard eyebrow="Today's plate" rows={recs} /></DemoSummary>
 
       <FwCardRow label="For you" Icon={Utensils} accent={T.gold} items={RECIPES} render={(r) => recipeCard(r, "Recipe")} />

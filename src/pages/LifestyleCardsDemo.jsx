@@ -107,10 +107,11 @@ export default function LifestyleCardsDemo() {
 
       <FwFloraHero
         title="Lifestyle"
-        bloom="daisy"
-        colorway="gold"
-        flankL="iris"
-        flankR="sunflower"
+        bloom="cosmos"
+        colorway="blush"
+        flankL="anemone"
+        flankR="cosmos"
+        creature="butterfly"
         line="A few good things to read, hear and feel today — whenever you have a moment."
       />
 

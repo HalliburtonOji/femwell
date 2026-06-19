@@ -19,7 +19,7 @@
 // owns the cycle ring; other pages use the decorative ring.
 // ─────────────────────────────────────────────────────────────────────────────
 import { T, SCRIPT, Heart as BrandHeart } from "@/components/journal/Editorial";
-import { RichBloomV2, SwayBloom, Butterfly, FlowerGlyph, cwOf, floraKeyframes } from "@/components/brand/flora";
+import { RichBloomV2, SwayBloom, Pollinator, FlowerGlyph, cwOf, floraKeyframes } from "@/components/brand/flora";
 
 // FwFloraHero — the signature flora hero.
 //   title     : the page title (short — Ephesis script).
@@ -30,7 +30,8 @@ import { RichBloomV2, SwayBloom, Butterfly, FlowerGlyph, cwOf, floraKeyframes } 
 //   butterfly : show the resting butterfly (default true).
 export function FwFloraHero({
   title, line, bloom = "daisy", colorway = "gold",
-  flankL = "iris", flankR = "sunflower", butterfly = true, ringSize = 244, bloomSize = 170, idx = "hero",
+  flankL = "iris", flankR = "sunflower", butterfly = true, creature = "butterfly",
+  ringSize = 244, bloomSize = 170, idx = "hero",
 }) {
   const cw = cwOf(colorway);
   return (
@@ -39,7 +40,7 @@ export function FwFloraHero({
       <div style={{ position: "relative", display: "flex", justifyContent: "center", width: "100%" }}>
         {/* soft coloured glow */}
         <div aria-hidden style={{ position: "absolute", top: "48%", left: "50%", width: ringSize + 52, height: ringSize + 52, transform: "translate(-50%,-50%)", borderRadius: "50%", background: `radial-gradient(circle, ${cw.petal}38 0%, ${T.sage}1F 44%, transparent 70%)`, animation: "fwcGlow 7s ease-in-out infinite", pointerEvents: "none", zIndex: 0 }} />
-        {butterfly && <div style={{ position: "absolute", top: 6, right: 42, zIndex: 2, pointerEvents: "none" }}><Butterfly size={40} color={cw.petal} color2={cw.tip} pattern="bands" animate idx={`${idx}-bf`} /></div>}
+        {butterfly && <div style={{ position: "absolute", top: 6, right: 42, zIndex: 2, pointerEvents: "none" }}><Pollinator kind={creature} size={creature === "ladybird" ? 30 : creature === "dragonfly" ? 50 : 42} color={creature === "bee" ? T.gold : creature === "ladybird" ? T.crimson : cw.petal} color2={cw.tip} pattern="bands" animate idx={`${idx}-bf`} /></div>}
         {/* DECORATIVE botanical ring (dashed gold + thin sage — no cycle markers) + the bloom */}
         <div style={{ position: "relative", zIndex: 1, width: ringSize, height: ringSize, display: "grid", placeItems: "center" }}>
           <svg width={ringSize} height={ringSize} viewBox={`0 0 ${ringSize} ${ringSize}`} aria-hidden style={{ position: "absolute", inset: 0 }}>

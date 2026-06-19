@@ -32,7 +32,7 @@ export default function ProgramsCardsDemo() {
   );
   return (
     <CardDemoPage label="Demo · Programs · card system"
-      hero={{ title: "Programs", bloom: "daisy", colorway: "gold", flankL: "sunflower", flankR: "fern", line: "Short, guided arcs you can actually finish — for your body, your head, and your life." }}>
+      hero={{ title: "Programs", bloom: "sunflower", colorway: "gold", flankL: "dahlia", flankR: "marigold", creature: "butterfly", line: "Short, guided arcs you can actually finish — for your body, your head, and your life." }}>
       <DemoSummary><SummaryCard eyebrow="Where you are" rows={recs} /></DemoSummary>
 
       <FwCardRow label="Continue" Icon={Play} accent={T.gold} items={[active]}

@@ -34,7 +34,7 @@ export default function PulseCardsDemo() {
   );
   return (
     <CardDemoPage label="Demo · Pulse · card system"
-      hero={{ title: "Pulse", bloom: "daisy", colorway: "plum", flankL: "violet", flankR: "sunflower", line: "Your week, gently read back to you — the small patterns across mood, energy and life." }}>
+      hero={{ title: "Pulse", bloom: "dahlia", colorway: "plum", flankL: "iris", flankR: "cornflower", creature: "dragonfly", line: "Your week, gently read back to you — the small patterns across mood, energy and life." }}>
       <DemoSummary><SummaryCard eyebrow="Your week, gently" rows={recs} /></DemoSummary>
 
       <FwCardRow label="This week" Icon={TrendingUp} accent={T.gold} items={INSIGHTS} render={card} />

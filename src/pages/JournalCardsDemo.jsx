@@ -33,7 +33,7 @@ export default function JournalCardsDemo() {
   ];
   return (
     <CardDemoPage label="Demo · Journal · card system"
-      hero={{ title: "Journal", bloom: "peony", colorway: "blush", flankL: "primrose", flankR: "violet", line: "A private place to think out loud — about all of it, not just how you slept." }}>
+      hero={{ title: "Journal", bloom: "ranunculus", colorway: "blush", flankL: "primrose", flankR: "violet", creature: "moth", line: "A private place to think out loud — about all of it, not just how you slept." }}>
       <DemoSummary><SummaryCard eyebrow="A moment for you" rows={recs} /></DemoSummary>
 
       <FwCardRow label="Quick write" Icon={PenLine} accent={T.crimson} items={[{ id: "w" }]}

@@ -34,7 +34,7 @@ export default function CommunityCardsDemo() {
   ];
   return (
     <CardDemoPage label="Demo · Community · card system"
-      hero={{ title: "Community", bloom: "peony", colorway: "crimson", flankL: "violet", flankR: "poppy", line: "Real talk, kindly. Pull up a chair in any room — anonymous and safe." }}>
+      hero={{ title: "Community", bloom: "cosmos", colorway: "sage", flankL: "clover", flankR: "cornflower", creature: "bee", line: "Real talk, kindly. Pull up a chair in any room — anonymous and safe." }}>
       <DemoSummary><SummaryCard eyebrow="What's alive today" rows={recs} /></DemoSummary>
 
       <FwCardRow label="Rooms" Icon={Users} accent={T.crimson} items={ROOMS}

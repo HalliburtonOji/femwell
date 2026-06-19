@@ -27,7 +27,7 @@ export default function GardenCardsDemo() {
   ];
   return (
     <CardDemoPage label="Demo · Garden · card system"
-      hero={{ title: "Garden", bloom: "peony", colorway: "sage", flankL: "fern", flankR: "primrose", line: "Your companion and the small, real things you're growing — one tended day at a time." }}>
+      hero={{ title: "Garden", bloom: "peony", colorway: "blush", flankL: "rose", flankR: "cosmos", creature: "butterfly", line: "Your companion and the small, real things you're growing — one tended day at a time." }}>
       <DemoSummary><SummaryCard eyebrow="Your garden today" rows={recs} /></DemoSummary>
 
       <FwCardRow label="Your companion" Icon={Flower2} accent="#8FAF8F" items={[{ id: "c" }]}
