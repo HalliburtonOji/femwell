@@ -1,4 +1,4 @@
-# FEMWELL — CANONICAL BRAND IDENTITY · COMPLETE MASTER (v3 · 2026-06-19)
+# FEMWELL — CANONICAL BRAND IDENTITY · COMPLETE MASTER (v4 · 2026-06-19)
 
 > **READ THIS BEFORE ANY UI / VISUAL WORK OR VISUAL SCAN. Conform to it.**
 > **This file is the single COMPLETE source of truth** — the north star + soul, typography (fonts + scale),
@@ -27,7 +27,7 @@ A woman's life is a **garden, not a chart.** It has **seasons** (the cycle), **l
 - `claude-state/BRAND_IMAGE_RESEARCH.md` — the botanical-system research (Aesop/Art Nouveau/Morris/fleuron).
 
 **MASTER INDEX:**
-0. Pre-build checklist · 1. Typography (fonts + `.fw-*` cascade + role scale) · 2. Colour (tokens + retired + phase hues + **2.5 colourways**) · 3. The heart mark · 4. Botanical brand-image system (leaves/corners/dividers/flourishes) · 5. Bloom craft (RichBloomV2) · 5.1 Flora backbone & meaning · 5.2 Variety + flora fingerprint · 5.3 Page character · **6. Surfaces & components** (6.1 cards · 6.2 backgrounds/scrims · 6.3 buttons · 6.4 chips/inputs/sheets/toggles · 6.5 nav · 6.6 icons/links) · 7. How it's applied · **8. Component map** · 9. Appendices & in-app mirrors.
+0. Pre-build checklist · 1. Typography (fonts + `.fw-*` cascade + role scale) · 2. Colour (tokens + retired + phase hues + **2.5 colourways**) · 3. The heart mark · 4. Botanical brand-image system (leaves/corners/dividers/flourishes) · 5. Bloom craft (RichBloomV2) · 5.1 Flora backbone & meaning · 5.2 Variety + flora fingerprint · 5.3 Page character · **6. Surfaces & components** (6.1 cards · 6.2 backgrounds/scrims · 6.3 buttons · 6.4 chips/inputs/sheets/toggles · 6.5 nav · 6.6 icons/links) · 7. How it's applied · **8. Component map** · **10. THE LIVING ECOSYSTEM** (v4 — lifecycle stages · fauna/omens · the rotating omen engine · safety rails · the soulful voice · craft-that-means) · 9. Appendices & in-app mirrors.
 
 ---
 
@@ -423,6 +423,44 @@ The brand system is already in code as reusable parts. A future build (the real 
 | **In-app brand docs** | `components/founders/BrandIdentityDoc.jsx` + `FloraMeaningDoc.jsx` | the Founders mirrors of this file + BRAND_FLORA. |
 
 > **NOTE (current state):** the glyph library + colourway grammar + fingerprint currently live in `pages/BrandCraftSample.jsx` (the craft sample). On lock, **promote** them to shared modules (e.g. `components/brand/flora/*`) so Today/Garden/etc. import them. Until then, `BrandCraftSample.jsx` is the source of truth for the implementations.
+
+---
+
+## 10. THE LIVING ECOSYSTEM — meaning, omens & the soulful voice (v4 direction · 2026-06-19)
+> **STATUS: this is the v4 DEPTH layer — spec'd and ready; a few dials await Halli's steer** (see the brainstorm doc's §8 "Your call"). It turns the flora from *beautiful* (v3) into *meaningful*: a living system that ties feeling + meaning to everything and talks to her about her own life. Full pitch + the big copy bank + interactive sketches: **`femwell-handoff/LIVING-ECOSYSTEM-BRAINSTORM.html`**. Grounding research: **`workspace/OMEN_VOICE_RESEARCH_2026-06-19.md`** (+ `BRAND_RESEARCH_2026-06-19.md`).
+
+**The three laws of the ecosystem:** (1) **nothing is static** — every plant is at a *lifecycle stage* that mirrors her season; (2) **everything can be read** — a bloom/creature/seal carries a gentle meaning she can tap to reveal; (3) **everything is keyed to her** — what appears is chosen from real signals, never a stock garden.
+
+### 10.1 THE FLORA LIFECYCLE (the stage IS the meaning)
+A flower has seasons; so does she. The SAME flower at a different **stage** says where she is — no chart, no words. Add a `stage` prop to `RichBloomV2` (pure render variants): **bud** (furled — anticipation/becoming: follicular, a new chapter, a goal just set), **bloom** (open — peak/expression: ovulation, a win), **seed** (the rose *hip* — harvest/integration/letting go: luteal, finishing, a lesson), **rest** (the bare cane *with a new bud on old wood* — restoration, **winter not death**: menstruation, postpartum, grief, a chosen pause), **return** (new bud — renewal, after time away). **HARD RULE: rest is a stage, not a failure — never draw "nothing"; draw dormancy with a bud on it.** (Rose canon: bud → bloom → hip → bare cane → new bud, botanically true.)
+
+### 10.2 FAUNA & OMENS (a garden that speaks)
+Creatures visit plants and carry a **gentle omen**. **The omen contract (every omen):** (a) kind & hopeful; (b) framed as folklore — *"they say…"* — never a promise; (c) ends in a small action or a true observation; (d) never doom, never guilt. A creature visits, speaks once, drifts off. The library (creature → folk meaning → spoken line) lives in the brainstorm doc + `BRAND_FLORA.md §6.3`; e.g. robin = news on the way · returning butterfly = change/the soul · ladybird = small luck (*as many happy months as spots — drawn with a real countable spot-count*) · bee = connection (+ the *"telling the bees"* ritual → "tell the garden your news") · dragonfly = clarity · moth = rest-night · firefly = hope · snail = patience · spider's dewy web = weaving. Plants give signs too (a bloom opened overnight, dew, a second/out-of-season bloom, the first snowdrop).
+
+### 10.3 THE ROTATING FLORA-OMEN ENGINE (technical — NO new function)
+Every section is **headed by a flower/bouquet** that reflects the section + her story, **rotates**, and is **tappable → a meaning reveal** (3 layers: the flower's fixed floriography meaning · the omen "they say…" line · the personal "why now").
+- **Module:** `src/components/brand/floraOmen.js` — a **static front-end module**: `MEANING_LIBRARY` (flower→meaning · creature→omen · lifecycle→meaning) + line templates + `pickOmen(signals, seed)`. **Pure render-time selection; NO backend call, NO new base44 function (50-fn cap respected).**
+- **Signals** assembled from context the page **already loads** — cycle phase & day, life-stage, recent mood/theme, days-since-last-open, programme progress, what she tends, the date + special dates, the flora fingerprint. **No new fetch.**
+- **Daily rotation:** reuse `hashSeed(userId + 'YYYY-MM-DD')` → stable all day, same on every device, rotates daily.
+- **Priority ladder** (highest available wins; seed breaks ties): 1 life-event (birthday · milestone · welcome-back · hard anniversary) → 2 body-season (phase/lifecycle) → 3 recent story (mood/theme) → 4 calendar/sky (season · moon · solstice · folk-saying) → 5 gentle daily **fallback** (seasonal time-of-day omen — **never blank, never "no data"**; library large enough it won't repeat within a fortnight).
+- **Tappable reveal** = the existing bottom-sheet (no new route). **Writes** ("press to journal", "this resonated") ride **existing dispatcher actions** — never a new function.
+- **Section headers** = existing `FwFloraHero` + the section's signature species (§5.3) + `stage` + the omen creature. Reuse, don't rebuild.
+
+### 10.4 THE FOUR SAFETY RAILS (non-negotiable)
+1. **Ration the magic** — an omen on *every* open stops working. ONE real omen/day (the Today "almanac" moment); section headers reveal **on tap only**; plain days stay plain.
+2. **Never resurface a hard memory unprompted** — "on this day"/pattern-surfacing is **gated**: a loss/breakup/low-mood entry is NEVER pushed without her opening it first. Grief patterns surface only inside Journal, gently — never a morning greeting.
+3. **Hope-only readings** — where a folk omen has a dark variant (out-of-season bloom = "survival" OR "sickness"), the engine uses ONLY the hopeful reading. No omen ever predicts harm.
+4. **The saccharine test** — if a line would fit unedited on a supermarket greeting card, cut it. Every line earns its place with a specific detail or a real action.
+
+### 10.5 THE SOULFUL VOICE (warm · funny · a little mystic)
+**Three dials:** WARMTH (always high) · WIT (dry, wry, UK — never zany) · WONDER (mystic, half-winking, ~5/10). **Method (Mailchimp):** the *voice* is constant (warm garden-mystic friend), the *tone* flexes to her state (plainer on a hard day, brighter on a high one). **Eight principles:** 1 *"they say…"* (wonder as folklore, never a promise) · 2 the **kettle rule** (every mystic line earns a domestic wink) · 3 notice, don't cheerlead · 4 action over sentiment · 5 punch up never down (never guilt/scoreboard) · 6 brevity with soul · 7 tint don't drown (lighthearted by default; low days met softly) · 8 UK to the bone (no emoji, no American pep). **Avoid the two poles:** Co-Star's brutal edge AND Duolingo's guilt. The big per-surface/per-state copy bank is in the brainstorm doc — draw from it; keep it tied to meaning, never hollow-cute.
+
+### 10.6 CRAFT THAT CARRIES MEANING (format = feeling)
+- **Wax rose seal + sealed letters:** Health becomes *correspondence* — each letter arrives **sealed with a wax rose** (her signature flower, phase-coloured); opening breaks the seal (once-only lift). Extends to a monthly **"letter from your body,"** a milestone certificate, a sealed **"letter to future you"** in Journal, Jess's notes as folds.
+- **Vines that grow with progress** (a leaf per session, a bloom at the end — growth, not a progress bar).
+- **Pressed flowers** for saved/remembered things (the garden remembers; "on this day" shows last year's pressed bloom — **gated per rail 2**).
+- **Deckle/letterpress paper**, Ephesis **script for margin-notes & omen lines** (they read hand-written), Cormorant letterpress for letters, **dawn/dusk light** that warms/cools with time of day.
+- **Cards as objects, not boxes:** `LetterCard` (deckle + wax seal + fold) · `PressedFlowerCard` (a memory) · `AlmanacCard` (the dated daily omen, script) · `GrowingCard` (vine progress). The soul is in the *format*, not a sticker on top.
 
 ---
 
