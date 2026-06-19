@@ -251,7 +251,7 @@ const RosebudProgress = memo(function RosebudProgress({ scrollPct }) {
       {fullyBloomed && (
         <div style={{
           marginTop: 4,
-          fontSize: 9, fontWeight: 700, letterSpacing: 1, textTransform: "uppercase",
+          fontSize: 12, fontWeight: 700, letterSpacing: 1, textTransform: "uppercase",
           color: "#8FAF8F", whiteSpace: "nowrap",
           display: "inline-flex", alignItems: "center", gap: 4,
         }}>
@@ -814,7 +814,7 @@ const JessObservationCard = memo(function JessObservationCard({ letterId, profil
             fontSize: 12, fontWeight: 700, color: "#0B0805", letterSpacing: 0.5,
           }}>Jess noticed</div>
           <div style={{
-            fontSize: 10, color: "#2E261B",
+            fontSize: 12, color: "#2E261B",
           }}>Based on your recent activity</div>
         </div>
       </div>
@@ -1303,7 +1303,7 @@ export default function Health() {
               <span aria-hidden="true" style={{ display: "inline-flex", verticalAlign: "middle", color: T.gold }}>{(() => { const Ic = currentLetter.icon; return <Ic size={16} strokeWidth={1.75} />; })()}</span> {currentLetter.title}
             </div>
             <div style={{
-              fontSize: 10, color: T.muted,
+              fontSize: 12, color: T.muted,
               letterSpacing: 0.5, marginTop: 1,
             }}>
               {letterIndex + 1} of {LETTERS.length}
@@ -1531,7 +1531,7 @@ export default function Health() {
                   fontSize: 18, fontWeight: 700, color: "#0B0805", letterSpacing: 0.5,
                 }}>In this letter</span>
                 <span style={{
-                  fontSize: 10, color: "#2E261B", letterSpacing: 0.3,
+                  fontSize: 12, color: "#2E261B", letterSpacing: 0.3,
                 }}>
                   ~{Math.ceil(sections.length * 1.5)} min read
                 </span>
@@ -1628,7 +1628,7 @@ export default function Health() {
                 <span style={{
                   background: "#A8893F", color: "#0B0805",
                   borderRadius: 999, padding: "1px 8px",
-                  fontSize: 11, fontWeight: 700,
+                  fontSize: 12, fontWeight: 700,
                 }}>{gpQuestions.length}</span>
               )}
             </button>
@@ -1673,7 +1673,7 @@ export default function Health() {
           </div>
 
           {/* ── In-paper disclaimer ── */}
-          <div style={{ marginTop: 16, fontSize: 10, color: "#2E261B", letterSpacing: 0.4, fontStyle: "italic", position: "relative" }}>
+          <div style={{ marginTop: 16, fontSize: 12, color: "#2E261B", letterSpacing: 0.4, fontStyle: "italic", position: "relative" }}>
             This letter is for informational purposes only and does not constitute medical advice. Always consult a qualified healthcare professional for personal health decisions.
           </div>
         </article>
@@ -1729,7 +1729,7 @@ export default function Health() {
             }}>
               <div>
                 <div style={{
-                  fontSize: 11, fontWeight: 700, letterSpacing: 1.5,
+                  fontSize: 12, fontWeight: 700, letterSpacing: 1.5,
                   textTransform: "uppercase", color: "#2E261B", marginBottom: 2,
                 }}>Your Health</div>
                 <div style={{
@@ -1768,7 +1768,7 @@ export default function Health() {
                       marginBottom: 3, lineHeight: 1.2,
                     }}>{L.title}</div>
                     <div style={{
-                      fontSize: 10, color: on ? "rgba(236,231,218,0.55)" : "#2E261B",
+                      fontSize: 12, color: on ? "rgba(236,231,218,0.55)" : "#2E261B",
                       lineHeight: 1.4,
                     }}>{L.subtitle}</div>
                   </button>
@@ -1786,7 +1786,7 @@ export default function Health() {
       <div className="hc-no-print" style={{
         background: "#0B0805", color: "rgba(236,231,218,0.6)",
         padding: "12px 20px", textAlign: "center",
-        fontSize: 10, letterSpacing: 0.5,
+        fontSize: 12, letterSpacing: 0.5,
       }}>
         This content is for informational purposes only and does not constitute medical advice. Always consult a qualified healthcare professional for personalised health decisions.
       </div>
@@ -1821,7 +1821,7 @@ export default function Health() {
                   fontSize: 22, fontWeight: 700, color: "#0B0805",
                 }}>Your GP question list</div>
                 <div style={{
-                  fontSize: 11, color: "#2E261B", marginTop: 2,
+                  fontSize: 12, color: "#2E261B", marginTop: 2,
                 }}>
                   {gpQuestions.length} saved insight{gpQuestions.length === 1 ? "" : "s"} · {healthNotes.length} note{healthNotes.length === 1 ? "" : "s"}
                 </div>
@@ -1849,7 +1849,7 @@ export default function Health() {
             {gpQuestions.length > 0 && (
               <div style={{ marginBottom: 18 }}>
                 <div style={{
-                  fontSize: 10, fontWeight: 700, letterSpacing: 1.5, textTransform: "uppercase",
+                  fontSize: 12, fontWeight: 700, letterSpacing: 1.5, textTransform: "uppercase",
                   color: "#2E261B", marginBottom: 8,
                 }}>Questions to ask</div>
                 {gpQuestions.map((q, i) => (
@@ -1860,7 +1860,7 @@ export default function Health() {
                     borderRadius: 8, marginBottom: 8,
                   }}>
                     <div style={{
-                      fontSize: 10, color: "#A8893F", fontWeight: 700,
+                      fontSize: 12, color: "#A8893F", fontWeight: 700,
                       letterSpacing: 1, textTransform: "uppercase", marginBottom: 4,
                     }}>{q.letterTitle} · {q.sectionTitle}</div>
                     <div style={{
@@ -1873,7 +1873,7 @@ export default function Health() {
                       onClick={() => setGpQuestions((prev) => prev.filter((_, j) => j !== i))}
                       style={{
                         background: "none", border: "none", cursor: "pointer",
-                        fontSize: 11, color: "#2E261B", padding: 0,
+                        fontSize: 12, color: "#2E261B", padding: 0,
                       }}
                     >Remove</button>
                   </div>
@@ -1884,7 +1884,7 @@ export default function Health() {
             {healthNotes.length > 0 && (
               <div style={{ marginBottom: 18 }}>
                 <div style={{
-                  fontSize: 10, fontWeight: 700, letterSpacing: 1.5, textTransform: "uppercase",
+                  fontSize: 12, fontWeight: 700, letterSpacing: 1.5, textTransform: "uppercase",
                   color: "#2E261B", marginBottom: 8,
                 }}>Your saved notes</div>
                 {healthNotes.map((n, i) => (
@@ -1895,7 +1895,7 @@ export default function Health() {
                     borderRadius: 8, marginBottom: 8,
                   }}>
                     <div style={{
-                      fontSize: 10, color: "#2E261B", letterSpacing: 0.5, marginBottom: 4,
+                      fontSize: 12, color: "#2E261B", letterSpacing: 0.5, marginBottom: 4,
                     }}>{n.letterTitle} · {n.sectionTitle}</div>
                     <div style={{
                       fontSize: 14, color: "#0B0805", lineHeight: 1.5,
@@ -2010,7 +2010,7 @@ const LetterSection = memo(function LetterSection({ section, isExpanded, onToggl
             pointerEvents: "none", userSelect: "none",
           }}>&ldquo;</div>
           <div style={{
-            fontSize: 9, fontWeight: 700, letterSpacing: 2,
+            fontSize: 12, fontWeight: 700, letterSpacing: 2,
             textTransform: "uppercase", color: "#A8893F",
             marginBottom: 6,
           }}>Key insight</div>
@@ -2029,7 +2029,7 @@ const LetterSection = memo(function LetterSection({ section, isExpanded, onToggl
                 background: "rgba(11,8,5,0.06)",
                 border: "1px solid rgba(11,8,5,0.18)",
                 borderRadius: 999, padding: "4px 12px", cursor: "pointer",
-                fontSize: 11, fontWeight: 700, color: "#0B0805", letterSpacing: 0.3,
+                fontSize: 12, fontWeight: 700, color: "#0B0805", letterSpacing: 0.3,
               }}
             >
               <span aria-hidden="true" style={{ color: "#A8893F" }}>+</span> Save for GP
@@ -2159,14 +2159,14 @@ const LetterHistoryStrip = memo(function LetterHistoryStrip({ currentPhase }) {
       position: "sticky", top: 84, zIndex: 9,
     }}>
       <span style={{
-        fontSize: 10, letterSpacing: 1.5, textTransform: "uppercase",
+        fontSize: 12, letterSpacing: 1.5, textTransform: "uppercase",
         color: "#2E261B", whiteSpace: "nowrap", marginRight: 6, fontWeight: 700,
       }}>Past letters</span>
       {phases.map((p) => {
         const on = p === currentPhase;
         return (
           <div key={p} style={{
-            fontSize: 11, fontWeight: 600,
+            fontSize: 12, fontWeight: 600,
             background: on ? "#0B0805" : "transparent",
             color: on ? "#ECE7DA" : "#2E261B",
             border: "1px solid rgba(11,8,5,0.15)",
@@ -2202,7 +2202,7 @@ const NewsSection = memo(function NewsSection({ tabId }) {
       {/* Cadence label so readers know news rotates monthly */}
       <div style={{
         textAlign: "center", marginBottom: 14,
-        fontSize: 10, color: "#2E261B", letterSpacing: 1, textTransform: "uppercase",
+        fontSize: 12, color: "#2E261B", letterSpacing: 1, textTransform: "uppercase",
       }}>Updated monthly</div>
       {/* Clipping-style cards with stable alternating tilt */}
       <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
@@ -2218,7 +2218,7 @@ const NewsSection = memo(function NewsSection({ tabId }) {
             boxShadow: "0 1px 2px rgba(11,8,5,0.06)",
           }}>
             <div style={{
-              fontSize: 9, fontWeight: 700, letterSpacing: 1.5,
+              fontSize: 12, fontWeight: 700, letterSpacing: 1.5,
               textTransform: "uppercase", color: "#A8893F", marginBottom: 6,
             }}>{item.source} · {item.date}</div>
             <div style={{
@@ -2231,7 +2231,7 @@ const NewsSection = memo(function NewsSection({ tabId }) {
                 target="_blank"
                 rel="noopener noreferrer"
                 style={{
-                  fontSize: 11, color: "#0B0805", letterSpacing: 0.3,
+                  fontSize: 12, color: "#0B0805", letterSpacing: 0.3,
                   textDecoration: "none", fontWeight: 600,
                   display: "inline-flex", alignItems: "center", gap: 4,
                 }}
@@ -2240,7 +2240,7 @@ const NewsSection = memo(function NewsSection({ tabId }) {
               </a>
             ) : (
               <div style={{
-                fontSize: 11, color: "#2E261B", letterSpacing: 0.3,
+                fontSize: 12, color: "#2E261B", letterSpacing: 0.3,
               }}>→ Read</div>
             )}
           </div>
@@ -2259,7 +2259,7 @@ const TILE = {
   borderRadius: 8, padding: 18, marginBottom: 14,
 };
 const TILE_LABEL = {
-  fontSize: 11, fontWeight: 700,
+  fontSize: 12, fontWeight: 700,
   letterSpacing: 1.5, textTransform: "uppercase",
   color: "#2E261B", marginBottom: 12,
 };
@@ -2401,7 +2401,7 @@ function StoryDashboard({ profile, cycle, phase, recentCheckins, recentSymptoms,
         {/* Phase legend chips */}
         <div style={{
           display: "flex", flexWrap: "wrap", gap: 10, marginTop: 14,
-          fontSize: 11, fontWeight: 600, color: "#2E261B",
+          fontSize: 12, fontWeight: 600, color: "#2E261B",
         }}>
           {["menstrual","follicular","ovulatory","luteal"].map((p) => (
             <span key={p} style={{ display: "inline-flex", alignItems: "center", gap: 5 }}>
@@ -2429,7 +2429,7 @@ function StoryDashboard({ profile, cycle, phase, recentCheckins, recentSymptoms,
             <div style={{
               position: "absolute", top: -2, left: 0, bottom: 18,
               display: "flex", flexDirection: "column", justifyContent: "space-between",
-              fontSize: 10, color: "#2E261B", paddingRight: 6,
+              fontSize: 12, color: "#2E261B", paddingRight: 6,
             }}>
               <span>High</span>
               <span>Low</span>
@@ -2468,7 +2468,7 @@ function StoryDashboard({ profile, cycle, phase, recentCheckins, recentSymptoms,
             {/* x axis day markers */}
             <div style={{
               display: "flex", justifyContent: "space-between", marginTop: 4, paddingLeft: 28,
-              fontSize: 10, color: "#2E261B",
+              fontSize: 12, color: "#2E261B",
             }}>
               <span>Day 1</span>
               <span>Day 30</span>
@@ -2489,7 +2489,7 @@ function StoryDashboard({ profile, cycle, phase, recentCheckins, recentSymptoms,
       <div style={TILE}>
         <div style={TILE_LABEL}>Top symptoms</div>
         <div style={{
-          fontSize: 11, color: "#2E261B", marginTop: -8, marginBottom: 12, letterSpacing: 0.3,
+          fontSize: 12, color: "#2E261B", marginTop: -8, marginBottom: 12, letterSpacing: 0.3,
         }}>Most frequent in last 14 days</div>
         {topSx.length ? (
           <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
@@ -2501,7 +2501,7 @@ function StoryDashboard({ profile, cycle, phase, recentCheckins, recentSymptoms,
                 fontSize: 13, fontWeight: 600,
               }}>
                 {String(name).replace(/_/g, " ")}
-                <span style={{ background: "rgba(236,231,218,0.18)", borderRadius: 999, padding: "1px 8px", fontSize: 11 }}>×{n}</span>
+                <span style={{ background: "rgba(236,231,218,0.18)", borderRadius: 999, padding: "1px 8px", fontSize: 12 }}>×{n}</span>
               </span>
             ))}
           </div>
