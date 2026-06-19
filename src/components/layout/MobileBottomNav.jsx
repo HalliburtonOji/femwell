@@ -101,6 +101,20 @@ export default function MobileBottomNav({ currentPageName }) {
 
   return (
     <>
+      {/* Kill the GLOBAL red focus ring (index.css `:focus-visible{outline:2px
+          solid #E11D48}`) for nav items — it renders as an off-brand red box
+          (e.g. around Menu when focus returns after the sheet closes). Replace
+          it with a calm on-brand gold ring: no red box in any state, while
+          keeping a visible keyboard focus indicator (a11y — never outline:none).
+          The active state stays the wax pill + plum label, set inline below. */}
+      <style>{`
+        nav[aria-label="Primary"] a:focus-visible,
+        nav[aria-label="Primary"] button:focus-visible {
+          outline: 2px solid var(--gold) !important;
+          outline-offset: 3px;
+          border-radius: 14px;
+        }
+      `}</style>
       {/* Outer rail spans full width but is click-through (pointerEvents:none) so
           taps in the side gutters fall to the page, not the nav. The capsule
           itself re-enables pointer events. */}
@@ -124,15 +138,18 @@ export default function MobileBottomNav({ currentPageName }) {
             gridTemplateColumns: "repeat(5, 1fr)",
             alignItems: "center",
             paddingInline: 8,
-            // ── Frosted glass: a translucent cream gradient (lit top edge →
-            //    creamier base) OVER a backdrop blur of the page behind. The
-            //    gradient stays 0.55–0.72 alpha so labels keep contrast even on
-            //    busy content. Falls back to opaque cream when blur unsupported.
+            // ── Frosted glass: a THIN translucent cream veil (lit top edge →
+            //    slightly creamier base) leaning hard on a strong backdrop blur,
+            //    so the page reads through it (true frosted glass, not a near-
+            //    solid bar). Alpha kept ~0.26–0.40 — low enough to see through,
+            //    high enough (with blur+saturate) to keep icon/label contrast.
+            //    Base is a touch denser so the labels (which sit low) stay legible.
+            //    Falls back to opaque cream when backdrop-filter is unsupported.
             background: supportsBlur
-              ? "linear-gradient(177deg, rgba(255,255,255,0.58) 0%, rgba(248,243,232,0.60) 34%, rgba(236,231,218,0.70) 100%)"
+              ? "linear-gradient(177deg, rgba(255,255,255,0.34) 0%, rgba(248,243,232,0.26) 42%, rgba(236,231,218,0.40) 100%)"
               : "var(--surface)",
-            backdropFilter: supportsBlur ? "blur(18px) saturate(150%)" : undefined,
-            WebkitBackdropFilter: supportsBlur ? "blur(18px) saturate(150%)" : undefined,
+            backdropFilter: supportsBlur ? "blur(22px) saturate(165%)" : undefined,
+            WebkitBackdropFilter: supportsBlur ? "blur(22px) saturate(165%)" : undefined,
             border: "1px solid rgba(168,137,63,0.42)",    // 1px gold hairline
             borderRadius: 9999,
             // Layered depth: lit inner top highlight + soft inner bottom shade
