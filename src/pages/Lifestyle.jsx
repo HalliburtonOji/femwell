@@ -1,11 +1,12 @@
 import { useState, useEffect, useRef } from "react";
+import { useNavigate } from "react-router-dom";
+import { createPageUrl } from "@/utils";
 import { base44 } from "@/api/base44Client";
-import { ExternalLink, X, Bookmark, SlidersHorizontal, Check, Sparkles, BookOpen, Headphones, Feather, Moon, ArrowRight } from "lucide-react";
+import { ExternalLink, X, Bookmark, SlidersHorizontal, Check, Sparkles, BookOpen, Headphones, Feather, Moon, ArrowRight, Play, Book } from "lucide-react";
 import { T, UI, SERIF, SCRIPT, Heart as BrandHeart } from "@/components/journal/Editorial";
 import { VineMotifV2, FlowerGlyph, RichBloomV2, SwayBloom, Butterfly, floraKeyframes, cwOf } from "@/components/brand/flora";
 import CardStack from "@/components/planner-v2/CardStack";
 import { CONTENT_CATEGORIES, categoryLabel } from "@/utils/contentCategory";
-import ForYouTab from "@/components/lifestyle/foryou/ForYouTab";
 import BrowseTab from "@/components/lifestyle/browse/BrowseTab";
 import ListenTab from "@/components/lifestyle/listen/ListenTab";
 import DailyStoryReader from "@/components/lifestyle/DailyStoryReader";
@@ -658,24 +659,26 @@ export default function Lifestyle() {
   const [showFilters, setShowFilters] = useState(false);
   // Brand-P2: real signals for the hero/summary/section cards (graceful, never hollow).
   const [landing, setLanding] = useState(null);
+  const navigate = useNavigate();
   useEffect(() => {
     let cancelled = false;
     (async () => {
       try {
         const [items, story, horo] = await Promise.all([
-          base44.entities.LifestyleItems.filter({ status: "PUBLISHED" }, "-created_date", 40).catch(() => []),
+          base44.entities.LifestyleItems.filter({ status: "PUBLISHED" }, "-engagement_score", 60).catch(() => []),
           base44.entities.DailyStory.filter({}, "-created_date", 1).catch(() => []),
           base44.entities.HoroscopeReading.filter({}, "-reading_date", 1).catch(() => []),
         ]);
         if (cancelled) return;
-        const arr = Array.isArray(items) ? items : [];
+        const arr = (Array.isArray(items) ? items : []).filter((i) => i && i.title);
         const typeOf = (i) => String(i?.media_type || i?.content_type || "").toUpperCase();
-        const read = arr.find((i) => /ARTICLE|READ|ESSAY/.test(typeOf(i)) && i?.title) || arr.find((i) => i?.title && !/PODCAST|AUDIO|VIDEO/.test(typeOf(i)));
-        const listen = arr.find((i) => /PODCAST|AUDIO|VIDEO/.test(typeOf(i)) && i?.title);
+        const read = arr.find((i) => /ARTICLE|READ|ESSAY/.test(typeOf(i))) || arr.find((i) => !/PODCAST|AUDIO|VIDEO/.test(typeOf(i)));
+        const listen = arr.find((i) => /PODCAST|AUDIO|VIDEO/.test(typeOf(i)));
         setLanding({
+          all: arr,                       // full set, grouped into per-type rows below
           read: read || null,
           listen: listen || null,
-          foryou: arr.find((i) => i?.title) || null,
+          foryou: arr[0] || null,
           story: (Array.isArray(story) ? story[0] : null) || null,
           horoscope: (Array.isArray(horo) ? horo[0] : null) || null,
         });
@@ -826,9 +829,10 @@ export default function Lifestyle() {
         <>
           {/* Today-style landing: summary recommendations + a per-section card slider */}
           <LifestyleLanding landing={landing} onJump={setTab} />
-          <div className="mx-auto pt-5" style={{ maxWidth: 1200, position: "relative", zIndex: 1 }}>
-            <ForYouTab categoryFilter={categoryFilter} />
-          </div>
+          {/* Content restructured into per-TYPE horizontal sliding rows (replaces the old
+              mixed "More to explore" feed): Articles · Stories · Videos · Podcasts · Books · Guides,
+              each a CardStack whose cards deep-link straight to the item full-screen. */}
+          <LifestyleTypeRows items={landing?.all} navigate={navigate} />
         </>
       ) : tab === "horoscope" ? (
         <div className="mx-auto pt-5" style={{ maxWidth: 820, position: "relative", zIndex: 1 }}>
@@ -953,6 +957,92 @@ function LifestyleLanding({ landing, onJump }) {
           ))}
         </CardStack>
       </div>
+    </div>
+  );
+}
+// ── PER-TYPE SLIDING ROWS — Lifestyle content restructured by content TYPE ───────────────────
+// Replaces the old mixed "More to explore" feed. Each content type (Articles · Stories · Videos ·
+// Podcasts · Books · Guides) gets its own horizontal CardStack row; every card deep-links straight
+// to that item full-screen (LifestyleDetail for reads/video/audio; FictionReader for FemWell books).
+function lfTypeOf(i) {
+  const m = String(i?.media_type || "").toUpperCase();
+  const c = String(i?.content_type || "").toUpperCase();
+  if (/PODCAST|AUDIO/.test(m)) return "podcasts";
+  if (/VIDEO|CLIP|TIKTOK|INSTAGRAM|REEL/.test(m)) return "videos";
+  if (c === "FICTION") return "books";
+  if (c === "STORY") return "stories";
+  if (c === "GUIDE") return "guides";
+  return "articles"; // ARTICLE + default
+}
+const LF_ROWS = [
+  { key: "articles", label: "Articles",     accent: "#8E6E8E", Icon: BookOpen,   flower: "iris",       cta: "Read" },
+  { key: "stories",  label: "Stories",      accent: T.crimson, Icon: Feather,    flower: "poppy",      cta: "Read" },
+  { key: "videos",   label: "Watch",        accent: T.gold,    Icon: Play,       flower: "sunflower",  cta: "Watch" },
+  { key: "podcasts", label: "Listen",       accent: T.sage,    Icon: Headphones, flower: "bluebell",   cta: "Listen" },
+  { key: "books",    label: "Books",        accent: "#5F7E8E", Icon: Book,       flower: "camellia",   cta: "Open" },
+  { key: "guides",   label: "Guides",       accent: "#A8893F", Icon: Sparkles,   flower: "primrose",   cta: "Read" },
+];
+
+function LifestyleTypeRows({ items, navigate }) {
+  const arr = Array.isArray(items) ? items : [];
+  if (!arr.length) return null;
+  const buckets = {};
+  arr.forEach((i) => { const t = lfTypeOf(i); (buckets[t] = buckets[t] || []).push(i); });
+
+  const openItem = (item, type) => {
+    const href = type === "books"
+      ? createPageUrl(`FictionReader?id=${item.id}`)
+      : createPageUrl(`LifestyleDetail?id=${item.id}`);
+    navigate(href);
+  };
+
+  const rows = LF_ROWS.filter((r) => (buckets[r.key] || []).length > 0);
+  if (!rows.length) return null;
+
+  return (
+    <div style={{ maxWidth: 600, margin: "8px auto 0", padding: "0 4px", position: "relative", zIndex: 1 }}>
+      {rows.map((r) => {
+        const list = (buckets[r.key] || []).slice(0, 8);
+        return (
+          <div key={r.key} style={{ marginTop: 18 }}>
+            <CardStack label={r.label}>
+              {list.map((item) => (
+                <article key={item.id} onClick={() => openItem(item, r.key)} style={{
+                  cursor: "pointer", position: "relative", overflow: "hidden",
+                  background: `linear-gradient(165deg, ${T.paperHi} 0%, ${r.accent}14 100%)`,
+                  border: `1px solid ${T.paperDeep}`, borderLeft: `4px solid ${r.accent}`, borderRadius: 20,
+                  display: "flex", flexDirection: "column", minHeight: 250,
+                  boxShadow: "0 4px 20px rgba(58,44,26,0.12), 0 1px 4px rgba(58,44,26,0.08)",
+                }}>
+                  {/* image / gradient header */}
+                  <div style={{ height: 116, position: "relative", overflow: "hidden", background: item.image_gradient || `linear-gradient(135deg, ${r.accent}33, ${r.accent}14)` }}>
+                    {item.image_url ? (
+                      <img src={item.image_url} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} onError={(e) => { e.target.style.display = "none"; }} />
+                    ) : null}
+                    <span style={{ position: "absolute", top: 10, left: 10, display: "inline-flex", alignItems: "center", gap: 6, background: "rgba(11,8,5,0.42)", color: T.paper, borderRadius: 999, padding: "4px 10px", fontFamily: UI, fontSize: 12, fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase" }}>
+                      <r.Icon size={12} /> {r.label}
+                    </span>
+                  </div>
+                  {/* body */}
+                  <div style={{ padding: "14px 16px 16px", display: "flex", flexDirection: "column", flex: 1, minHeight: 0 }}>
+                    <h3 style={{ fontFamily: SERIF, fontSize: 19, fontWeight: 600, color: T.ink, margin: "0 0 6px", lineHeight: 1.3, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>{item.title}</h3>
+                    {(item.summary || item.source_name || item.author_name) && (
+                      <p style={{ fontFamily: SERIF, fontSize: 14, fontWeight: 500, color: T.muted, margin: 0, lineHeight: 1.5, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>
+                        {item.summary || item.source_name || item.author_name}
+                      </p>
+                    )}
+                    <div style={{ marginTop: "auto", paddingTop: 12 }}>
+                      <span style={{ display: "inline-flex", alignItems: "center", gap: 7, background: r.accent, color: T.paper, borderRadius: 12, padding: "10px 15px", fontFamily: UI, fontSize: 13, fontWeight: 700 }}>
+                        {r.cta} <ArrowRight size={15} />
+                      </span>
+                    </div>
+                  </div>
+                </article>
+              ))}
+            </CardStack>
+          </div>
+        );
+      })}
     </div>
   );
 }
