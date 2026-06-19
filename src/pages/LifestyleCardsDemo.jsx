@@ -49,8 +49,9 @@ const DAILY_STORY = {
   excerpt: "The roses had gone the colour of embers, and somewhere past the wall a blackbird was rehearsing the same three notes, as if it too were trying to get the evening exactly right.",
 };
 const HOROSCOPE = {
+  // moon_phase drives the card TITLE ("The moon is …"); narrative is the real
+  // reading shown as the line. (No `headline` — it would just restate the title.)
   moon_phase: "waxing in Libra", reading_date: "today",
-  headline: "The moon is waxing in Libra",
   narrative: "A good day to balance the books — emotional and otherwise. Say the kind thing first; the honest thing lands softer after it. One small act of fairness to yourself sets the tone.",
 };
 
