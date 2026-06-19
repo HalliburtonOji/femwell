@@ -107,8 +107,8 @@ export default function LifestyleCardsDemo() {
 
       <FwFloraHero
         title="Lifestyle"
-        bloom="cosmos"
-        colorway="blush"
+        bloom="hibiscus"
+        colorway="coral"
         flankL="anemone"
         flankR="cosmos"
         creature="butterfly"
