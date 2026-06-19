@@ -150,6 +150,9 @@ import ExploreDemo from './pages/ExploreDemo';
 import SavedDemo from './pages/SavedDemo';
 import DealsDemo from './pages/DealsDemo';
 import EventsDemo from './pages/EventsDemo';
+// Card-system demos (BRAND_IDENTITY §6.7/§6.8 applied per page — preview-only, for
+// approval before any live rebuild). Standalone routes; live pages untouched.
+import LifestyleCardsDemo from './pages/LifestyleCardsDemo';
 // NutritionHub = the REAL new Nutrition page (Daily Hub + Hero Card Slider hybrid,
 // wired to real entities, reuses the hardened nutrition components). Lives at
 // /NutritionHub for live-verify; once verified it replaces the "Nutrition" route.
@@ -262,6 +265,7 @@ export const PAGES = {
     "SavedDemo": SavedDemo,
     "DealsDemo": DealsDemo,
     "EventsDemo": EventsDemo,
+    "LifestyleCardsDemo": LifestyleCardsDemo,
     "NutritionHub": NutritionHub,
     "JournalRedesign1": JournalRedesign1,
     "CommunityRedesign1": CommunityRedesign1,

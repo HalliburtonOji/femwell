@@ -183,6 +183,14 @@ const CATALOG = [
   { kind: "route", href: "/GardenDemo", group: CAT.PREVIEW, sub: "Page-redesign demos", status: "new", accent: "sage",
     title: "Garden — redesign demo", desc: "An immersive garden scene — the companion garden as a living, full-bleed place rather than a card." },
 
+  // ── Card-system demos (BRAND_IDENTITY §6.7/§6.8 applied per page) ──────
+  // These apply the APPROVED card family + flora-hero/summary signature, for
+  // approval BEFORE the live page is rebuilt. New ones slot in HERE with
+  // sub: "Card-system demos ★ approve". Seeded with sample content so the full
+  // experience (inline players, daily-story-first, real horoscope) is visible.
+  { kind: "route", href: "/LifestyleCardsDemo", group: CAT.PREVIEW, sub: "Card-system demos ★ approve", status: "approval", accent: "gold",
+    title: "Lifestyle — card-system demo ★ for approval", desc: "The approved card system on Lifestyle: flora-hero + summary card, per-type sliding rows (Articles/Books/Watch/Listen/Stories/Your sky), inline video + audio that play in-card, book cards that open THAT book, Daily Story first, a real horoscope snippet. Approve this and it gets applied live." },
+
   // ── Brand ─────────────────────────────────────────────────────────────
   { kind: "route", href: "/BrandCraftSample", group: CAT.PREVIEW, sub: "Brand", status: "approval", accent: "crimson",
     title: "Brand Craft Sample ★ for approval", desc: "The canonical brand-system craft direction: flat vs upgraded realistic bloom, a botanical line-motif, the carved heart in context, and a live on-device perf measurement." },
