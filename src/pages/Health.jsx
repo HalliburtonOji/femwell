@@ -22,8 +22,10 @@ import { base44 } from "@/api/base44Client";
 import { useCycleDay } from "@/hooks/useCycleDay";
 import JumpToButton from "@/components/layout/JumpToButton";
 // Brand-P2 lush layer (BRAND_IDENTITY §3 heart · §4 botanicals · §5.3 Cycle/Health = phase-hue).
-import { T, Heart as BrandHeart } from "@/components/journal/Editorial";
+import { T, PAPER_BG, Heart as BrandHeart } from "@/components/journal/Editorial";
 import { VineMotifV2, FlowerGlyph, CardFrame, floraKeyframes, cwOf } from "@/components/brand/flora";
+// Canonical signature top (BRAND_IDENTITY §6.8) — the flora hero every page opens with.
+import { FwFloraHero } from "@/components/brand/PageTop";
 
 // ════════════════════════════════════════════════════════════════════════════
 // TABS
@@ -79,18 +81,18 @@ function _TabBotanical({ tabId }) {
       // Concentric circles + centre dot — a personal-data motif (your patterns).
       return (
         <svg width="80" height="80" viewBox="0 0 80 80" fill="none" aria-hidden="true">
-          <circle cx="40" cy="40" r="36" stroke="#D4AF37" strokeWidth="0.75" opacity="0.4" />
+          <circle cx="40" cy="40" r="36" stroke="#A8893F" strokeWidth="0.75" opacity="0.4" />
           <circle cx="40" cy="40" r="26" stroke="#8FAF8F" strokeWidth="0.75" opacity="0.5" />
           <circle cx="40" cy="40" r="16" stroke="#E8B4B8" strokeWidth="0.75" opacity="0.6" />
-          <circle cx="40" cy="40" r="4" fill="#D4AF37" opacity="0.8" />
+          <circle cx="40" cy="40" r="4" fill="#A8893F" opacity="0.8" />
         </svg>
       );
     case "overview":
       return (
         <svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-          <circle cx="24" cy="24" r="22" fill="#D4AF37" opacity="0.15" />
-          <circle cx="24" cy="24" r="22" stroke="#D4AF37" strokeWidth="1" fill="none" />
-          <text x="24" y="29" textAnchor="middle" fontSize="16" fontWeight="600" fill="#D4AF37">FW</text>
+          <circle cx="24" cy="24" r="22" fill="#A8893F" opacity="0.15" />
+          <circle cx="24" cy="24" r="22" stroke="#A8893F" strokeWidth="1" fill="none" />
+          <text x="24" y="29" textAnchor="middle" fontSize="16" fontWeight="600" fill="#A8893F">FW</text>
         </svg>
       );
     case "cycle":
@@ -98,14 +100,14 @@ function _TabBotanical({ tabId }) {
         <svg width="120" height="48" viewBox="0 0 120 48" fill="none" aria-hidden="true">
           <ellipse cx="40" cy="28" rx="28" ry="14" fill="#8FAF8F" opacity="0.18" transform="rotate(-15 40 28)" />
           <ellipse cx="32" cy="20" rx="14" ry="8" fill="#8FAF8F" opacity="0.25" transform="rotate(-20 32 20)" />
-          <ellipse cx="60" cy="24" rx="4" ry="16" fill="#3A2C1A" opacity="0.25" />
-          <circle cx="60" cy="12" r="3" fill="#D4AF37" opacity="0.7" />
+          <ellipse cx="60" cy="24" rx="4" ry="16" fill="#0B0805" opacity="0.25" />
+          <circle cx="60" cy="12" r="3" fill="#A8893F" opacity="0.7" />
           <ellipse cx="80" cy="28" rx="28" ry="14" fill="#8FAF8F" opacity="0.18" transform="rotate(15 80 28)" />
           <ellipse cx="88" cy="20" rx="14" ry="8" fill="#8FAF8F" opacity="0.25" transform="rotate(20 88 20)" />
-          <circle cx="28" cy="26" r="2" fill="none" stroke="#D4AF37" strokeWidth="0.75" opacity="0.6" />
-          <circle cx="44" cy="22" r="2" fill="#D4AF37" opacity="0.4" />
-          <circle cx="76" cy="22" r="2" fill="#D4AF37" opacity="0.4" />
-          <circle cx="92" cy="26" r="2" fill="none" stroke="#D4AF37" strokeWidth="0.75" opacity="0.6" />
+          <circle cx="28" cy="26" r="2" fill="none" stroke="#A8893F" strokeWidth="0.75" opacity="0.6" />
+          <circle cx="44" cy="22" r="2" fill="#A8893F" opacity="0.4" />
+          <circle cx="76" cy="22" r="2" fill="#A8893F" opacity="0.4" />
+          <circle cx="92" cy="26" r="2" fill="none" stroke="#A8893F" strokeWidth="0.75" opacity="0.6" />
         </svg>
       );
     case "lifestage":
@@ -113,11 +115,11 @@ function _TabBotanical({ tabId }) {
         <svg width="80" height="80" viewBox="0 0 80 80" fill="none" aria-hidden="true">
           <circle cx="40" cy="40" r="36" stroke="#8FAF8F" strokeWidth="0.75" opacity="0.3" />
           <circle cx="40" cy="40" r="28" stroke="#8FAF8F" strokeWidth="0.75" opacity="0.4" />
-          <circle cx="40" cy="40" r="20" stroke="#D4AF37" strokeWidth="0.75" opacity="0.5" />
-          <circle cx="40" cy="40" r="12" stroke="#D4AF37" strokeWidth="1" opacity="0.6" />
-          <circle cx="40" cy="40" r="4" fill="#D4AF37" opacity="0.7" />
-          <line x1="40" y1="4" x2="40" y2="76" stroke="#3A2C1A" strokeWidth="0.3" opacity="0.1" />
-          <line x1="4" y1="40" x2="76" y2="40" stroke="#3A2C1A" strokeWidth="0.3" opacity="0.1" />
+          <circle cx="40" cy="40" r="20" stroke="#A8893F" strokeWidth="0.75" opacity="0.5" />
+          <circle cx="40" cy="40" r="12" stroke="#A8893F" strokeWidth="1" opacity="0.6" />
+          <circle cx="40" cy="40" r="4" fill="#A8893F" opacity="0.7" />
+          <line x1="40" y1="4" x2="40" y2="76" stroke="#0B0805" strokeWidth="0.3" opacity="0.1" />
+          <line x1="4" y1="40" x2="76" y2="40" stroke="#0B0805" strokeWidth="0.3" opacity="0.1" />
         </svg>
       );
     case "skin":
@@ -126,11 +128,11 @@ function _TabBotanical({ tabId }) {
           <ellipse cx="60" cy="24" rx="50" ry="20" fill="none" stroke="#8FAF8F" strokeWidth="1" opacity="0.5" />
           <ellipse cx="60" cy="24" rx="35" ry="14" fill="none" stroke="#8FAF8F" strokeWidth="0.75" opacity="0.4" />
           <line x1="10" y1="24" x2="110" y2="24" stroke="#8FAF8F" strokeWidth="0.75" opacity="0.3" />
-          <path d="M60 10 Q75 24 60 38" fill="none" stroke="#D4AF37" strokeWidth="0.75" opacity="0.5" />
-          <path d="M60 10 Q45 24 60 38" fill="none" stroke="#D4AF37" strokeWidth="0.75" opacity="0.5" />
+          <path d="M60 10 Q75 24 60 38" fill="none" stroke="#A8893F" strokeWidth="0.75" opacity="0.5" />
+          <path d="M60 10 Q45 24 60 38" fill="none" stroke="#A8893F" strokeWidth="0.75" opacity="0.5" />
           <path d="M60 10 Q80 18 90 24" fill="none" stroke="#8FAF8F" strokeWidth="0.5" opacity="0.4" />
           <path d="M60 10 Q40 18 30 24" fill="none" stroke="#8FAF8F" strokeWidth="0.5" opacity="0.4" />
-          <circle cx="60" cy="24" r="3" fill="#D4AF37" opacity="0.6" />
+          <circle cx="60" cy="24" r="3" fill="#A8893F" opacity="0.6" />
         </svg>
       );
     case "body":
@@ -142,25 +144,25 @@ function _TabBotanical({ tabId }) {
           <ellipse cx="40" cy="57" rx="12" ry="18" fill="#E8B4B8" opacity="0.3" transform="rotate(180 40 57)" />
           <ellipse cx="25" cy="52" rx="12" ry="18" fill="#E8B4B8" opacity="0.25" transform="rotate(240 25 52)" />
           <ellipse cx="25" cy="33" rx="12" ry="18" fill="#E8B4B8" opacity="0.25" transform="rotate(300 25 33)" />
-          <circle cx="40" cy="40" r="8" fill="#D4AF37" opacity="0.2" />
-          <circle cx="40" cy="40" r="4" fill="#D4AF37" opacity="0.5" />
+          <circle cx="40" cy="40" r="8" fill="#A8893F" opacity="0.2" />
+          <circle cx="40" cy="40" r="4" fill="#A8893F" opacity="0.5" />
         </svg>
       );
     case "mind":
       return (
         <svg width="120" height="60" viewBox="0 0 120 60" fill="none" aria-hidden="true">
-          <circle cx="60" cy="30" r="5" fill="#3A2C1A" opacity="0.2" />
+          <circle cx="60" cy="30" r="5" fill="#0B0805" opacity="0.2" />
           <path d="M60 25 Q50 15 40 10" fill="none" stroke="#8FAF8F" strokeWidth="1" opacity="0.5" />
           <path d="M60 25 Q65 12 70 8" fill="none" stroke="#8FAF8F" strokeWidth="1" opacity="0.5" />
           <path d="M60 25 Q75 18 85 14" fill="none" stroke="#8FAF8F" strokeWidth="0.75" opacity="0.4" />
           <path d="M60 25 Q45 20 35 16" fill="none" stroke="#8FAF8F" strokeWidth="0.75" opacity="0.4" />
           <path d="M40 10 Q35 5 30 4" fill="none" stroke="#8FAF8F" strokeWidth="0.5" opacity="0.3" />
           <path d="M40 10 Q38 4 42 2" fill="none" stroke="#8FAF8F" strokeWidth="0.5" opacity="0.3" />
-          <line x1="60" y1="35" x2="60" y2="55" stroke="#D4AF37" strokeWidth="1.5" opacity="0.4" />
-          <path d="M60 50 Q50 55 44 58" fill="none" stroke="#D4AF37" strokeWidth="0.75" opacity="0.4" />
-          <path d="M60 50 Q70 55 76 58" fill="none" stroke="#D4AF37" strokeWidth="0.75" opacity="0.4" />
-          <path d="M60 44 Q52 50 48 54" fill="none" stroke="#D4AF37" strokeWidth="0.5" opacity="0.3" />
-          <path d="M60 44 Q68 50 72 54" fill="none" stroke="#D4AF37" strokeWidth="0.5" opacity="0.3" />
+          <line x1="60" y1="35" x2="60" y2="55" stroke="#A8893F" strokeWidth="1.5" opacity="0.4" />
+          <path d="M60 50 Q50 55 44 58" fill="none" stroke="#A8893F" strokeWidth="0.75" opacity="0.4" />
+          <path d="M60 50 Q70 55 76 58" fill="none" stroke="#A8893F" strokeWidth="0.75" opacity="0.4" />
+          <path d="M60 44 Q52 50 48 54" fill="none" stroke="#A8893F" strokeWidth="0.5" opacity="0.3" />
+          <path d="M60 44 Q68 50 72 54" fill="none" stroke="#A8893F" strokeWidth="0.5" opacity="0.3" />
         </svg>
       );
     case "nourishment":
@@ -173,26 +175,26 @@ function _TabBotanical({ tabId }) {
           <ellipse cx="66" cy="20" rx="8" ry="4" fill="#8FAF8F" opacity="0.35" transform="rotate(30 66 20)" />
           <ellipse cx="38" cy="26" rx="7" ry="3.5" fill="#8FAF8F" opacity="0.3" transform="rotate(-40 38 26)" />
           <ellipse cx="82" cy="26" rx="7" ry="3.5" fill="#8FAF8F" opacity="0.3" transform="rotate(40 82 26)" />
-          <circle cx="60" cy="8" r="4" fill="#D4AF37" opacity="0.5" />
-          <circle cx="44" cy="14" r="3" fill="#D4AF37" opacity="0.4" />
-          <circle cx="76" cy="14" r="3" fill="#D4AF37" opacity="0.4" />
-          <ellipse cx="30" cy="38" rx="2.5" ry="1.2" fill="#9B8B7A" opacity="0.3" transform="rotate(45 30 38)" />
-          <ellipse cx="90" cy="36" rx="2.5" ry="1.2" fill="#9B8B7A" opacity="0.3" transform="rotate(-30 90 36)" />
-          <ellipse cx="20" cy="42" rx="2" ry="1" fill="#9B8B7A" opacity="0.25" transform="rotate(20 20 42)" />
+          <circle cx="60" cy="8" r="4" fill="#A8893F" opacity="0.5" />
+          <circle cx="44" cy="14" r="3" fill="#A8893F" opacity="0.4" />
+          <circle cx="76" cy="14" r="3" fill="#A8893F" opacity="0.4" />
+          <ellipse cx="30" cy="38" rx="2.5" ry="1.2" fill="#2E261B" opacity="0.3" transform="rotate(45 30 38)" />
+          <ellipse cx="90" cy="36" rx="2.5" ry="1.2" fill="#2E261B" opacity="0.3" transform="rotate(-30 90 36)" />
+          <ellipse cx="20" cy="42" rx="2" ry="1" fill="#2E261B" opacity="0.25" transform="rotate(20 20 42)" />
         </svg>
       );
     case "care":
       return (
         <svg width="80" height="60" viewBox="0 0 80 60" fill="none" aria-hidden="true">
-          <path d="M15 30 Q15 52 40 52 Q65 52 65 30" fill="none" stroke="#9B8B7A" strokeWidth="1.5" opacity="0.4" />
-          <line x1="10" y1="30" x2="70" y2="30" stroke="#9B8B7A" strokeWidth="1.5" opacity="0.4" />
-          <line x1="52" y1="10" x2="36" y2="34" stroke="#3A2C1A" strokeWidth="2" opacity="0.3" strokeLinecap="round" />
-          <ellipse cx="35" cy="35" rx="5" ry="3" fill="#3A2C1A" opacity="0.2" transform="rotate(-30 35 35)" />
+          <path d="M15 30 Q15 52 40 52 Q65 52 65 30" fill="none" stroke="#2E261B" strokeWidth="1.5" opacity="0.4" />
+          <line x1="10" y1="30" x2="70" y2="30" stroke="#2E261B" strokeWidth="1.5" opacity="0.4" />
+          <line x1="52" y1="10" x2="36" y2="34" stroke="#0B0805" strokeWidth="2" opacity="0.3" strokeLinecap="round" />
+          <ellipse cx="35" cy="35" rx="5" ry="3" fill="#0B0805" opacity="0.2" transform="rotate(-30 35 35)" />
           <path d="M30 40 Q35 36 38 40" fill="none" stroke="#8FAF8F" strokeWidth="0.75" opacity="0.5" />
           <path d="M40 42 Q45 38 48 42" fill="none" stroke="#8FAF8F" strokeWidth="0.75" opacity="0.5" />
           <circle cx="34" cy="44" r="1" fill="#8FAF8F" opacity="0.4" />
           <circle cx="42" cy="45" r="1" fill="#8FAF8F" opacity="0.4" />
-          <circle cx="48" cy="43" r="1" fill="#D4AF37" opacity="0.4" />
+          <circle cx="48" cy="43" r="1" fill="#A8893F" opacity="0.4" />
         </svg>
       );
     default:
@@ -208,17 +210,17 @@ const BotanicalDivider = memo(function BotanicalDivider() {
   return (
     <div style={{ textAlign: "center", margin: "36px 0", opacity: 0.7 }} aria-hidden="true">
       <svg width="200" height="32" viewBox="0 0 200 32" fill="none">
-        <line x1="0"   y1="16" x2="72"  y2="16" stroke="#D4AF37" strokeWidth="0.75" opacity="0.5" />
+        <line x1="0"   y1="16" x2="72"  y2="16" stroke="#A8893F" strokeWidth="0.75" opacity="0.5" />
         <line x1="72"  y1="16" x2="82"  y2="8"  stroke="#8FAF8F" strokeWidth="0.75" opacity="0.6" />
         <line x1="72"  y1="16" x2="82"  y2="24" stroke="#8FAF8F" strokeWidth="0.75" opacity="0.6" />
         <ellipse cx="100" cy="16" rx="6" ry="12" fill="#8FAF8F" opacity="0.5"  transform="rotate(-30 100 16)" />
         <ellipse cx="100" cy="16" rx="6" ry="12" fill="#8FAF8F" opacity="0.35" transform="rotate(30 100 16)" />
-        <circle  cx="100" cy="16" r="3"   fill="#D4AF37" opacity="0.8" />
+        <circle  cx="100" cy="16" r="3"   fill="#A8893F" opacity="0.8" />
         <line x1="118" y1="16" x2="128" y2="8"  stroke="#8FAF8F" strokeWidth="0.75" opacity="0.6" />
         <line x1="118" y1="16" x2="128" y2="24" stroke="#8FAF8F" strokeWidth="0.75" opacity="0.6" />
-        <line x1="128" y1="16" x2="200" y2="16" stroke="#D4AF37" strokeWidth="0.75" opacity="0.5" />
-        <circle cx="72"  cy="16" r="2" fill="#D4AF37" opacity="0.5" />
-        <circle cx="128" cy="16" r="2" fill="#D4AF37" opacity="0.5" />
+        <line x1="128" y1="16" x2="200" y2="16" stroke="#A8893F" strokeWidth="0.75" opacity="0.5" />
+        <circle cx="72"  cy="16" r="2" fill="#A8893F" opacity="0.5" />
+        <circle cx="128" cy="16" r="2" fill="#A8893F" opacity="0.5" />
       </svg>
     </div>
   );
@@ -244,7 +246,7 @@ const RosebudProgress = memo(function RosebudProgress({ scrollPct }) {
         <ellipse cx="12" cy="12" rx={4 + openness * 5} ry={8 + openness * 4} fill="#E8B4B8" opacity={0.35 + openness * 0.4} />
         <ellipse cx="12" cy="12" rx={4 + openness * 5} ry={8 + openness * 4} fill="#E8B4B8" opacity={0.3  + openness * 0.35} transform="rotate(60 12 12)" />
         <ellipse cx="12" cy="12" rx={4 + openness * 5} ry={8 + openness * 4} fill="#E8B4B8" opacity={0.3  + openness * 0.35} transform="rotate(120 12 12)" />
-        <circle cx="12" cy="12" r={2 + openness * 2} fill="#D4AF37" opacity={0.65 + openness * 0.3} />
+        <circle cx="12" cy="12" r={2 + openness * 2} fill="#A8893F" opacity={0.65 + openness * 0.3} />
       </svg>
       {fullyBloomed && (
         <div style={{
@@ -788,8 +790,8 @@ const JessObservationCard = memo(function JessObservationCard({ letterId, profil
   const frameHue = PHASE_HUE[phase] || "#A8893F";
   return (
     <div style={{
-      background: "rgba(58,44,26,0.04)",
-      border: "1px solid rgba(58,44,26,0.1)",
+      background: "rgba(11,8,5,0.04)",
+      border: "1px solid rgba(11,8,5,0.1)",
       borderRadius: 8, padding: "16px 18px", marginBottom: 24,
       position: "relative", overflow: "hidden",
     }}>
@@ -799,20 +801,20 @@ const JessObservationCard = memo(function JessObservationCard({ letterId, profil
       <div style={{
         display: "flex", alignItems: "center", gap: 10,
         marginBottom: 14, paddingBottom: 12,
-        borderBottom: "1px solid rgba(212,175,55,0.2)",
+        borderBottom: "1px solid rgba(168,137,63,0.2)",
       }}>
         <div aria-hidden="true" style={{
           width: 28, height: 28, borderRadius: "50%",
-          background: "rgba(212,175,55,0.12)",
+          background: "rgba(168,137,63,0.12)",
           display: "flex", alignItems: "center", justifyContent: "center",
-          fontSize: 14, color: "#D4AF37", flexShrink: 0,
+          fontSize: 14, color: "#A8893F", flexShrink: 0,
         }}><Sparkles size={14} strokeWidth={1.75} /></div>
         <div>
           <div style={{
-            fontSize: 12, fontWeight: 700, color: "#3A2C1A", letterSpacing: 0.5,
+            fontSize: 12, fontWeight: 700, color: "#0B0805", letterSpacing: 0.5,
           }}>Jess noticed</div>
           <div style={{
-            fontSize: 10, color: "#9B8B7A",
+            fontSize: 10, color: "#2E261B",
           }}>Based on your recent activity</div>
         </div>
       </div>
@@ -824,10 +826,10 @@ const JessObservationCard = memo(function JessObservationCard({ letterId, profil
           marginBottom: i < top.length - 1 ? 10 : 0,
         }}>
           <span aria-hidden="true" style={{
-            color: "#D4AF37", fontSize: 14, marginTop: 4, flexShrink: 0,
+            color: "#A8893F", fontSize: 14, marginTop: 4, flexShrink: 0,
           }}>◆</span>
           <p style={{
-            fontSize: 16, fontWeight: 500, color: "#3A2C1A",
+            fontSize: 16, fontWeight: 500, color: "#0B0805",
             lineHeight: 1.7, fontStyle: "italic", margin: 0,
           }}>{o}</p>
         </div>
@@ -847,15 +849,15 @@ function Term({ word, definition }) {
       <span
         onClick={() => setOpen((o) => !o)}
         style={{
-          borderBottom: "1px dotted rgba(58,44,26,0.4)",
-          cursor: "pointer", color: "#3A2C1A",
+          borderBottom: "1px dotted rgba(11,8,5,0.4)",
+          cursor: "pointer", color: "#0B0805",
         }}
       >{word}</span>
       {open && (
         <span style={{
           position: "absolute", bottom: "100%", left: "50%",
           transform: "translateX(-50%)",
-          background: "#3A2C1A", color: "#F4EDDB",
+          background: "#0B0805", color: "#ECE7DA",
           borderRadius: 6, padding: "10px 12px",
           fontSize: 12.5, fontStyle: "normal", lineHeight: 1.5,
           width: 220, zIndex: 30,
@@ -866,7 +868,7 @@ function Term({ word, definition }) {
             position: "absolute", top: "100%", left: "50%",
             transform: "translateX(-50%)",
             border: "5px solid transparent",
-            borderTopColor: "#3A2C1A",
+            borderTopColor: "#0B0805",
           }} />
         </span>
       )}
@@ -1221,7 +1223,7 @@ export default function Health() {
     <div
       className="health-page"
       style={{
-        background: "transparent", minHeight: "100vh", paddingBottom: 80,
+        ...PAPER_BG, minHeight: "100vh", paddingBottom: 80,
         touchAction: "manipulation", position: "relative",
         // `overflow-x: clip` trims the few px of horizontal AABB bleed from the letter's
         // rotate(-0.3deg) tilt (and keeps the page-texture vines tidy). Unlike `hidden`,
@@ -1266,27 +1268,42 @@ export default function Health() {
         <div style={{ position: "absolute", top: 1640, right: -24 }}><VineMotifV2 color={phaseHue} color2={T.gold} opacity={0.08} w={136} /></div>
       </div>
 
+      {/* ─── Signature flora hero (BRAND_IDENTITY §6.8) ─── */}
+      {/* The page's character bloom is the CURRENT cycle phase flora, so Health */}
+      {/* opens as "where you are" before the reader drops into the letters.     */}
+      <div className="hc-no-print" style={{ position: "relative", zIndex: 1 }}>
+        <FwFloraHero
+          title="Health"
+          bloom={{ menstrual: "poppy", follicular: "daisy", ovulatory: "daisy", luteal: "peony" }[phase] || "daisy"}
+          colorway={PHASE_CW[phase] || "sage"}
+          flankL="snowdrop"
+          flankR="dahlia"
+          line="Seven letters on your body, your cycle and your care — read one, or just the part you need."
+        />
+      </div>
+
       {/* ─── Sticky letter-nav (espresso header + cream letter strip) ───  */}
       {/* This is the ONLY navigation chrome at the top of /Health.        */}
       {/* The older inert pill bar (onClick called undefined setActiveTab) */}
       {/* is gone — its replacement, the cream strip below, is wired to   */}
       {/* goToLetter(i) so tapping any letter actually navigates.          */}
       <div className="hc-no-print" style={{ position: "sticky", top: 0, zIndex: 11 }}>
-        {/* Row 1 — current letter title + bold gold All letters CTA */}
+        {/* Row 1 — current letter title + bold gold All letters CTA (cream, on-brand — no dark slab) */}
         <div style={{
-          background: "#3A2C1A",
+          background: T.paperHi,
+          borderBottom: `1px solid ${T.paperDeep}`,
           padding: "10px 16px",
           display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12,
         }}>
           <div style={{ flex: 1, minWidth: 0 }}>
             <div style={{
-              fontSize: 17, fontWeight: 700, color: "#F4EDDB",
+              fontSize: 17, fontWeight: 700, color: T.ink,
               whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis",
             }}>
-              <span aria-hidden="true" style={{ display: "inline-flex", verticalAlign: "middle" }}>{(() => { const Ic = currentLetter.icon; return <Ic size={16} strokeWidth={1.75} />; })()}</span> {currentLetter.title}
+              <span aria-hidden="true" style={{ display: "inline-flex", verticalAlign: "middle", color: T.gold }}>{(() => { const Ic = currentLetter.icon; return <Ic size={16} strokeWidth={1.75} />; })()}</span> {currentLetter.title}
             </div>
             <div style={{
-              fontSize: 10, color: "rgba(244,237,219,0.55)",
+              fontSize: 10, color: T.muted,
               letterSpacing: 0.5, marginTop: 1,
             }}>
               {letterIndex + 1} of {LETTERS.length}
@@ -1298,31 +1315,32 @@ export default function Health() {
             aria-label="Print or save this letter as PDF"
             title="Print or save as PDF"
             style={{
-              background: "rgba(244,237,219,0.12)",
-              border: "1px solid rgba(244,237,219,0.25)",
+              background: T.paper,
+              border: `1px solid ${T.paperDeep}`,
               borderRadius: 8, width: 36, height: 36,
               display: "flex", alignItems: "center", justifyContent: "center",
               cursor: "pointer", flexShrink: 0,
             }}
           >
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-              <path d="M6 9V3h12v6M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2" stroke="#F4EDDB" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-              <rect x="6" y="14" width="12" height="8" rx="1" stroke="#F4EDDB" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+              <path d="M6 9V3h12v6M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2" stroke={T.ink} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+              <rect x="6" y="14" width="12" height="8" rx="1" stroke={T.ink} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
             </svg>
           </button>
           {/* Shared "Jump to" pill — identical chrome across Journal/Community/Nutrition/Health */}
           <JumpToButton onClick={() => setShowLibrary(true)} />
         </div>
-        {/* Row 2 — phase / day / life stage strip */}
+        {/* Row 2 — phase / day / life stage strip (cream, phase-tinted) */}
         <div style={{
-          background: "rgba(58,44,26,0.85)",
+          background: T.paper,
+          borderBottom: `1px solid ${T.paperDeep}`,
           padding: "5px 16px",
           display: "flex", alignItems: "center", justifyContent: "space-between",
         }}>
           <span style={{
-            fontSize: 11, color: "rgba(244,237,219,0.7)", letterSpacing: 0.5,
+            fontSize: 12, color: T.muted, letterSpacing: 0.5,
           }}>
-            {phaseLbl}{cycle?.cycleDay ? ` · Day ${cycle.cycleDay}` : ""} · {stageLbl}
+            <span style={{ color: phaseHue, fontWeight: 700 }}>{phaseLbl}</span>{cycle?.cycleDay ? ` · Day ${cycle.cycleDay}` : ""} · {stageLbl}
           </span>
         </div>
         {/* Row 3 — cream scrollable letter strip (the working version).   */}
@@ -1331,7 +1349,7 @@ export default function Health() {
         {/* a gold underline + Cormorant 700, idle letters fade to mauve.  */}
         <div style={{
           background: "var(--surface)",
-          borderBottom: "1px solid rgba(58,44,26,0.10)",
+          borderBottom: "1px solid rgba(11,8,5,0.10)",
           display: "flex",
           overflowX: "auto",
           WebkitOverflowScrolling: "touch",
@@ -1350,10 +1368,10 @@ export default function Health() {
                 style={{
                   background: "none", border: "none", cursor: "pointer",
                   padding: "10px 16px",
-                  borderBottom: on ? "2px solid #D4AF37" : "2px solid transparent",
+                  borderBottom: on ? "2px solid #A8893F" : "2px solid transparent",
                   fontSize: 16,
                   fontWeight: on ? 700 : 500,
-                  color: on ? "#3A2C1A" : "rgba(58,44,26,0.45)",
+                  color: on ? "#0B0805" : "rgba(11,8,5,0.45)",
                   whiteSpace: "nowrap",
                   transition: "all 0.15s",
                   display: "inline-flex", alignItems: "center", gap: 6,
@@ -1379,22 +1397,22 @@ export default function Health() {
         {letterIndex > 0 && (
           <button className="hc-no-print" onClick={goPrev} aria-label="Previous letter" style={{
             position: "absolute", left: 0, top: "50%", transform: "translateY(-50%)",
-            background: "rgba(58,44,26,0.10)", border: "1px solid rgba(58,44,26,0.18)",
+            background: "rgba(11,8,5,0.10)", border: "1px solid rgba(11,8,5,0.18)",
             borderRadius: "50%", width: 44, height: 44,
             display: "flex", alignItems: "center", justifyContent: "center",
             cursor: "pointer", zIndex: 20, pointerEvents: "auto",
-            fontSize: 22, color: "#3A2C1A", fontWeight: 600, paddingBottom: 2,
+            fontSize: 22, color: "#0B0805", fontWeight: 600, paddingBottom: 2,
           }}>‹</button>
         )}
         {/* Right arrow */}
         {letterIndex < LETTERS.length - 1 && (
           <button className="hc-no-print" onClick={goNext} aria-label="Next letter" style={{
             position: "absolute", right: 0, top: "50%", transform: "translateY(-50%)",
-            background: "rgba(58,44,26,0.10)", border: "1px solid rgba(58,44,26,0.18)",
+            background: "rgba(11,8,5,0.10)", border: "1px solid rgba(11,8,5,0.18)",
             borderRadius: "50%", width: 44, height: 44,
             display: "flex", alignItems: "center", justifyContent: "center",
             cursor: "pointer", zIndex: 20, pointerEvents: "auto",
-            fontSize: 22, color: "#3A2C1A", fontWeight: 600, paddingBottom: 2,
+            fontSize: 22, color: "#0B0805", fontWeight: 600, paddingBottom: 2,
           }}>›</button>
         )}
         <article ref={letterRef}
@@ -1414,7 +1432,7 @@ export default function Health() {
           // 3 shadow layers (was 5) — same look, half the paint cost.
           boxShadow: [
             "4px 4px 0 -1px #EAE0C8",
-            "0 12px 40px rgba(58,44,26,0.16)",
+            "0 12px 40px rgba(11,8,5,0.16)",
             "inset 0 1px 0 rgba(255,255,255,0.8)",
           ].join(", "),
         }}>
@@ -1442,28 +1460,25 @@ export default function Health() {
           }} />
 
           {/* ── Letterhead ── */}
-          <div style={{ borderBottom: "1px solid rgba(58,44,26,0.12)", paddingBottom: 24, marginBottom: 32, position: "relative" }}>
+          <div style={{ borderBottom: "1px solid rgba(11,8,5,0.12)", paddingBottom: 24, marginBottom: 32, position: "relative" }}>
             <div style={{ display: "flex", justifyContent: "center", marginBottom: 8 }}>
               <TabBotanical tabId={tab.id} />
             </div>
             {/* Thin gold rule beneath the botanical — old-letter flourish. */}
             <div aria-hidden="true" style={{
-              width: 48, height: 1, background: "#D4AF37", opacity: 0.4,
+              width: 48, height: 1, background: "#A8893F", opacity: 0.4,
               margin: "8px auto 12px",
             }} />
             <div style={{ textAlign: "center", marginTop: 12 }}>
               <div style={{ fontSize: 13, fontWeight: 600, letterSpacing: 2, color: "var(--mauve)", textTransform: "uppercase" }}>
                 FemWell Health Letter
               </div>
-              {/* Static script page-title (Halli's bar: every page opens with the carved script). */}
-              {/* Brand-P2: the single carved crimson heart (§3) + a flanking phase meaning-bloom (§5.3). */}
-              <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 9, marginTop: 2 }}>
-                <BrandHeart size={15} />
-                <h1 className="fw-display" style={{ margin: 0 }}>Health</h1>
-                <FlowerGlyph variant={phaseFlower} size={22} color={phaseCw.petal} color2={phaseCw.tip} accent={phaseCw.accent} idx="hc-hdr" />
-              </div>
-              <div className="fw-heading" style={{ marginTop: 2 }}>
-                {tab.label}
+              {/* The page hero already carries the carved "Health"; the letter masthead */}
+              {/* leads with THIS letter's title, flanked by the heart + phase meaning-bloom. */}
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 9, marginTop: 4 }}>
+                <BrandHeart size={14} />
+                <h1 className="fw-heading" style={{ margin: 0 }}>{tab.label}</h1>
+                <FlowerGlyph variant={phaseFlower} size={20} color={phaseCw.petal} color2={phaseCw.tip} accent={phaseCw.accent} idx="hc-hdr" />
               </div>
               <div style={{ fontSize: 13, fontWeight: 600, color: "var(--mauve)", marginTop: 6 }}>
                 {formattedDate} · {stageLbl}
@@ -1482,16 +1497,16 @@ export default function Health() {
 
           {/* ── Salutation ── */}
           <div style={{ marginBottom: 28, position: "relative" }}>
-            <div style={{ fontSize: 22, fontWeight: 600, color: "#3A2C1A", marginBottom: 16, fontStyle: "italic" }}>
+            <div style={{ fontSize: 22, fontWeight: 600, color: "#0B0805", marginBottom: 16, fontStyle: "italic" }}>
               Dear {name},
             </div>
             <p style={{
-              fontSize: 19, fontWeight: 500, lineHeight: 1.9, color: "#3A2C1A", margin: "0 0 16px",
+              fontSize: 19, fontWeight: 500, lineHeight: 1.9, color: "#0B0805", margin: "0 0 16px",
             }}>
               <span style={{
                 float: "left", fontSize: 80, lineHeight: "0.75",
                 marginRight: 10, marginTop: 6,
-                fontWeight: 700, color: "#3A2C1A",
+                fontWeight: 700, color: "#0B0805",
               }}>{opener.charAt(0)}</span>
               {opener.slice(1)}
             </p>
@@ -1499,9 +1514,9 @@ export default function Health() {
 
           {!isStory && (<>{/* ── Table of Contents ── */}
           <div style={{
-            border: "1.5px solid rgba(212,175,55,0.4)", borderRadius: 8,
+            border: "1.5px solid rgba(168,137,63,0.4)", borderRadius: 8,
             padding: "20px 24px", marginBottom: 32,
-            background: "rgba(212,175,55,0.05)", position: "relative", overflow: "hidden",
+            background: "rgba(168,137,63,0.05)", position: "relative", overflow: "hidden",
           }}>
             {/* Brand-P2: phase-hue corner frame (§4.2) on the "In this letter" card. */}
             <CardFrame variant="sprig" color={phaseHue} size={44} opacity={0.45} />
@@ -1509,22 +1524,22 @@ export default function Health() {
             <div style={{
               display: "flex", justifyContent: "space-between", alignItems: "center",
               marginBottom: 16, paddingBottom: 12,
-              borderBottom: "1px solid rgba(212,175,55,0.25)",
+              borderBottom: "1px solid rgba(168,137,63,0.25)",
             }}>
               <div style={{ display: "flex", alignItems: "baseline", gap: 10 }}>
                 <span style={{
-                  fontSize: 18, fontWeight: 700, color: "#3A2C1A", letterSpacing: 0.5,
+                  fontSize: 18, fontWeight: 700, color: "#0B0805", letterSpacing: 0.5,
                 }}>In this letter</span>
                 <span style={{
-                  fontSize: 10, color: "#9B8B7A", letterSpacing: 0.3,
+                  fontSize: 10, color: "#2E261B", letterSpacing: 0.3,
                 }}>
                   ~{Math.ceil(sections.length * 1.5)} min read
                 </span>
               </div>
               <button onClick={toggleAll} style={{
-                background: "none", border: "1px solid rgba(58,44,26,0.2)",
+                background: "none", border: "1px solid rgba(11,8,5,0.2)",
                 borderRadius: 14, padding: "5px 14px", cursor: "pointer",
-                fontSize: 12, fontWeight: 600, color: "#3A2C1A", letterSpacing: 0.3,
+                fontSize: 12, fontWeight: 600, color: "#0B0805", letterSpacing: 0.3,
               }}>
                 {allExpanded ? "Collapse all" : "Expand all"}
               </button>
@@ -1538,14 +1553,14 @@ export default function Health() {
               }} style={{
                 display: "flex", alignItems: "baseline", gap: 10,
                 padding: "7px 0", textDecoration: "none",
-                borderBottom: i < sections.length - 1 ? "1px solid rgba(58,44,26,0.06)" : "none",
+                borderBottom: i < sections.length - 1 ? "1px solid rgba(11,8,5,0.06)" : "none",
               }}>
                 <span style={{
-                  fontSize: 13, color: "#D4AF37", fontStyle: "italic",
+                  fontSize: 13, color: "#A8893F", fontStyle: "italic",
                   minWidth: 20, textAlign: "left",
                 }}>{romanize(i)}</span>
                 <span style={{
-                  fontSize: 17, fontWeight: 600, color: "#3A2C1A",
+                  fontSize: 17, fontWeight: 600, color: "#0B0805",
                   flex: 1, lineHeight: 1.3,
                 }}>{s.title}</span>
                 {expanded[s.id] && <Check size={12} strokeWidth={2.5} style={{ color: "#8FAF8F", flexShrink: 0 }} aria-hidden="true" />}
@@ -1595,23 +1610,23 @@ export default function Health() {
               aria-label="Open my GP question list"
               style={{
                 display: "inline-flex", alignItems: "center", gap: 10,
-                background: "#3A2C1A",
-                border: "1px solid #D4AF37",
+                background: "#0B0805",
+                border: "1px solid #A8893F",
                 borderRadius: 24, padding: "12px 20px",
                 cursor: "pointer",
-                fontSize: 13, fontWeight: 700, color: "#F4EDDB", letterSpacing: 0.3,
+                fontSize: 13, fontWeight: 700, color: "#ECE7DA", letterSpacing: 0.3,
               }}
             >
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                <rect x="4" y="3" width="16" height="18" rx="2" stroke="#D4AF37" strokeWidth="1.5"/>
-                <line x1="8" y1="8" x2="16" y2="8" stroke="#D4AF37" strokeWidth="1.5" strokeLinecap="round"/>
-                <line x1="8" y1="12" x2="16" y2="12" stroke="#D4AF37" strokeWidth="1.5" strokeLinecap="round"/>
-                <line x1="8" y1="16" x2="13" y2="16" stroke="#D4AF37" strokeWidth="1.5" strokeLinecap="round"/>
+                <rect x="4" y="3" width="16" height="18" rx="2" stroke="#A8893F" strokeWidth="1.5"/>
+                <line x1="8" y1="8" x2="16" y2="8" stroke="#A8893F" strokeWidth="1.5" strokeLinecap="round"/>
+                <line x1="8" y1="12" x2="16" y2="12" stroke="#A8893F" strokeWidth="1.5" strokeLinecap="round"/>
+                <line x1="8" y1="16" x2="13" y2="16" stroke="#A8893F" strokeWidth="1.5" strokeLinecap="round"/>
               </svg>
               Build my GP question list
               {gpQuestions.length > 0 && (
                 <span style={{
-                  background: "#D4AF37", color: "#3A2C1A",
+                  background: "#A8893F", color: "#0B0805",
                   borderRadius: 999, padding: "1px 8px",
                   fontSize: 11, fontWeight: 700,
                 }}>{gpQuestions.length}</span>
@@ -1624,41 +1639,41 @@ export default function Health() {
           <div style={{ marginTop: 28, position: "relative" }}>
             {/* Thin charcoal flourish line above the salutation. */}
             <div aria-hidden="true" style={{
-              width: 80, height: 1, background: "rgba(58,44,26,0.15)",
+              width: 80, height: 1, background: "rgba(11,8,5,0.15)",
               margin: "0 0 20px",
             }} />
-            <div style={{ fontSize: 17, fontWeight: 500, color: "#3A2C1A", marginBottom: 4 }}>
+            <div style={{ fontSize: 17, fontWeight: 500, color: "#0B0805", marginBottom: 4 }}>
               With care,
             </div>
-            <div style={{ fontSize: 22, fontWeight: 700, color: "#3A2C1A", fontStyle: "italic" }}>
+            <div style={{ fontSize: 22, fontWeight: 700, color: "#0B0805", fontStyle: "italic" }}>
               {(SIGNATURES[activeTab] || SIGNATURES.overview).name}
             </div>
-            <div style={{ fontSize: 14, fontWeight: 600, color: "#9B8B7A", letterSpacing: 0.5, marginTop: 4, marginBottom: 20 }}>
+            <div style={{ fontSize: 14, fontWeight: 600, color: "#2E261B", letterSpacing: 0.5, marginTop: 4, marginBottom: 20 }}>
               {(SIGNATURES[activeTab] || SIGNATURES.overview).role}
             </div>
             {/* FW wax-seal mark — small circular gold monogram. */}
             <div data-fw-seal="true" aria-hidden="true" style={{
               width: 36, height: 36, borderRadius: "50%",
-              background: "rgba(212,175,55,0.12)",
-              border: "1px solid rgba(212,175,55,0.35)",
+              background: "rgba(168,137,63,0.12)",
+              border: "1px solid rgba(168,137,63,0.35)",
               display: "flex", alignItems: "center", justifyContent: "center",
-              fontSize: 13, fontWeight: 700, color: "#D4AF37",
+              fontSize: 13, fontWeight: 700, color: "#A8893F",
               letterSpacing: 0.5,
             }}>FW</div>
           </div>
 
           {/* ── P.S. ── */}
-          <div style={{ marginTop: 32, paddingTop: 24, borderTop: "1px solid rgba(58,44,26,0.10)", position: "relative" }}>
+          <div style={{ marginTop: 32, paddingTop: 24, borderTop: "1px solid rgba(11,8,5,0.10)", position: "relative" }}>
             <p style={{
               fontSize: 17, fontWeight: 500, fontStyle: "italic",
-              color: "#3A2C1A", lineHeight: 1.8, margin: 0,
+              color: "#0B0805", lineHeight: 1.8, margin: 0,
             }}>
               <strong style={{ fontStyle: "normal", fontWeight: 600 }}>P.S.</strong> — {dynamicPostscript}
             </p>
           </div>
 
           {/* ── In-paper disclaimer ── */}
-          <div style={{ marginTop: 16, fontSize: 10, color: "#9B8B7A", letterSpacing: 0.4, fontStyle: "italic", position: "relative" }}>
+          <div style={{ marginTop: 16, fontSize: 10, color: "#2E261B", letterSpacing: 0.4, fontStyle: "italic", position: "relative" }}>
             This letter is for informational purposes only and does not constitute medical advice. Always consult a qualified healthcare professional for personal health decisions.
           </div>
         </article>
@@ -1679,7 +1694,7 @@ export default function Health() {
               height: 10,
               minWidth: 10,
               borderRadius: 5,
-              background: i === letterIndex ? "#3A2C1A" : "rgba(58,44,26,0.25)",
+              background: i === letterIndex ? "#0B0805" : "rgba(11,8,5,0.25)",
               border: "none",
               cursor: "pointer",
               padding: 0,
@@ -1695,7 +1710,7 @@ export default function Health() {
         <div
           onClick={() => setShowLibrary(false)}
           style={{
-            position: "fixed", inset: 0, background: "rgba(58,44,26,0.7)",
+            position: "fixed", inset: 0, background: "rgba(11,8,5,0.7)",
             zIndex: 100, display: "flex", alignItems: "flex-end",
           }}
         >
@@ -1710,15 +1725,15 @@ export default function Health() {
             <div style={{
               display: "flex", alignItems: "center", justifyContent: "space-between",
               marginBottom: 20, paddingBottom: 14,
-              borderBottom: "1px solid rgba(58,44,26,0.12)",
+              borderBottom: "1px solid rgba(11,8,5,0.12)",
             }}>
               <div>
                 <div style={{
                   fontSize: 11, fontWeight: 700, letterSpacing: 1.5,
-                  textTransform: "uppercase", color: "#9B8B7A", marginBottom: 2,
+                  textTransform: "uppercase", color: "#2E261B", marginBottom: 2,
                 }}>Your Health</div>
                 <div style={{
-                  fontSize: 22, fontWeight: 700, color: "#3A2C1A",
+                  fontSize: 22, fontWeight: 700, color: "#0B0805",
                 }}>Jump to</div>
               </div>
               <button
@@ -1726,7 +1741,7 @@ export default function Health() {
                 aria-label="Close"
                 style={{
                   background: "transparent", border: "none", cursor: "pointer",
-                  color: "#9B8B7A", padding: 4, display: "inline-flex", lineHeight: 0,
+                  color: "#2E261B", padding: 4, display: "inline-flex", lineHeight: 0,
                 }}
               >
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
@@ -1740,20 +1755,20 @@ export default function Health() {
                 const Ic = L.icon;
                 return (
                   <button key={L.id} onClick={() => { goToLetter(i); setShowLibrary(false); }} style={{
-                    background: on ? "#3A2C1A" : "var(--surface)",
-                    border: `1.5px solid ${on ? "#D4AF37" : "rgba(212,175,55,0.3)"}`,
+                    background: on ? "#0B0805" : "var(--surface)",
+                    border: `1.5px solid ${on ? "#A8893F" : "rgba(168,137,63,0.3)"}`,
                     borderRadius: 10, padding: "16px 14px",
                     cursor: "pointer", textAlign: "left",
                     transition: "all 0.15s",
                   }}>
-                    <div style={{ marginBottom: 6, color: on ? "#F4EDDB" : "#3A2C1A" }} aria-hidden="true"><Ic size={22} strokeWidth={1.75} /></div>
+                    <div style={{ marginBottom: 6, color: on ? "#ECE7DA" : "#0B0805" }} aria-hidden="true"><Ic size={22} strokeWidth={1.75} /></div>
                     <div style={{
                       fontSize: 16, fontWeight: 700,
-                      color: on ? "#F4EDDB" : "#3A2C1A",
+                      color: on ? "#ECE7DA" : "#0B0805",
                       marginBottom: 3, lineHeight: 1.2,
                     }}>{L.title}</div>
                     <div style={{
-                      fontSize: 10, color: on ? "rgba(244,237,219,0.55)" : "#9B8B7A",
+                      fontSize: 10, color: on ? "rgba(236,231,218,0.55)" : "#2E261B",
                       lineHeight: 1.4,
                     }}>{L.subtitle}</div>
                   </button>
@@ -1769,7 +1784,7 @@ export default function Health() {
 
       {/* ── Bottom not-medical-advice strip ── */}
       <div className="hc-no-print" style={{
-        background: "#3A2C1A", color: "rgba(244,237,219,0.6)",
+        background: "#0B0805", color: "rgba(236,231,218,0.6)",
         padding: "12px 20px", textAlign: "center",
         fontSize: 10, letterSpacing: 0.5,
       }}>
@@ -1782,14 +1797,14 @@ export default function Health() {
           className="hc-no-print"
           onClick={() => setGpSheetOpen(false)}
           style={{
-            position: "fixed", inset: 0, background: "rgba(58,44,26,0.7)",
+            position: "fixed", inset: 0, background: "rgba(11,8,5,0.7)",
             zIndex: 100, display: "flex", alignItems: "flex-end",
           }}
         >
           <div
             onClick={(e) => e.stopPropagation()}
             style={{
-              background: "#F4EDDB", width: "100%",
+              background: "#ECE7DA", width: "100%",
               borderRadius: "16px 16px 0 0",
               padding: "24px 18px 28px",
               maxHeight: "85vh", overflowY: "auto",
@@ -1799,14 +1814,14 @@ export default function Health() {
             <div style={{
               display: "flex", justifyContent: "space-between", alignItems: "center",
               marginBottom: 14, paddingBottom: 12,
-              borderBottom: "1px solid rgba(58,44,26,0.12)",
+              borderBottom: "1px solid rgba(11,8,5,0.12)",
             }}>
               <div>
                 <div style={{
-                  fontSize: 22, fontWeight: 700, color: "#3A2C1A",
+                  fontSize: 22, fontWeight: 700, color: "#0B0805",
                 }}>Your GP question list</div>
                 <div style={{
-                  fontSize: 11, color: "#9B8B7A", marginTop: 2,
+                  fontSize: 11, color: "#2E261B", marginTop: 2,
                 }}>
                   {gpQuestions.length} saved insight{gpQuestions.length === 1 ? "" : "s"} · {healthNotes.length} note{healthNotes.length === 1 ? "" : "s"}
                 </div>
@@ -1816,7 +1831,7 @@ export default function Health() {
                 aria-label="Close GP question list"
                 style={{
                   background: "none", border: "none", cursor: "pointer",
-                  fontSize: 22, color: "#3A2C1A", padding: 4,
+                  fontSize: 22, color: "#0B0805", padding: 4,
                 }}
               >×</button>
             </div>
@@ -1824,7 +1839,7 @@ export default function Health() {
             {/* Saved insights → reframed as clinical questions */}
             {gpQuestions.length === 0 && healthNotes.length === 0 ? (
               <div style={{
-                fontSize: 16, fontStyle: "italic", color: "#9B8B7A",
+                fontSize: 16, fontStyle: "italic", color: "#2E261B",
                 padding: "16px 4px",
               }}>
                 Nothing here yet. Tap "Save for GP +" on any key insight callout, or long-press a paragraph to capture it as a note.
@@ -1835,21 +1850,21 @@ export default function Health() {
               <div style={{ marginBottom: 18 }}>
                 <div style={{
                   fontSize: 10, fontWeight: 700, letterSpacing: 1.5, textTransform: "uppercase",
-                  color: "#9B8B7A", marginBottom: 8,
+                  color: "#2E261B", marginBottom: 8,
                 }}>Questions to ask</div>
                 {gpQuestions.map((q, i) => (
                   <div key={i} style={{
                     padding: "12px 14px",
-                    background: "rgba(212,175,55,0.08)",
-                    border: "1px solid rgba(212,175,55,0.2)",
+                    background: "rgba(168,137,63,0.08)",
+                    border: "1px solid rgba(168,137,63,0.2)",
                     borderRadius: 8, marginBottom: 8,
                   }}>
                     <div style={{
-                      fontSize: 10, color: "#D4AF37", fontWeight: 700,
+                      fontSize: 10, color: "#A8893F", fontWeight: 700,
                       letterSpacing: 1, textTransform: "uppercase", marginBottom: 4,
                     }}>{q.letterTitle} · {q.sectionTitle}</div>
                     <div style={{
-                      fontSize: 15, fontWeight: 600, color: "#3A2C1A",
+                      fontSize: 15, fontWeight: 600, color: "#0B0805",
                       lineHeight: 1.5, marginBottom: 6,
                     }}>
                       "I read that {String(q.text).replace(/^["“]|["”]$/g, "")}" — could this be relevant for me?
@@ -1858,7 +1873,7 @@ export default function Health() {
                       onClick={() => setGpQuestions((prev) => prev.filter((_, j) => j !== i))}
                       style={{
                         background: "none", border: "none", cursor: "pointer",
-                        fontSize: 11, color: "#9B8B7A", padding: 0,
+                        fontSize: 11, color: "#2E261B", padding: 0,
                       }}
                     >Remove</button>
                   </div>
@@ -1870,20 +1885,20 @@ export default function Health() {
               <div style={{ marginBottom: 18 }}>
                 <div style={{
                   fontSize: 10, fontWeight: 700, letterSpacing: 1.5, textTransform: "uppercase",
-                  color: "#9B8B7A", marginBottom: 8,
+                  color: "#2E261B", marginBottom: 8,
                 }}>Your saved notes</div>
                 {healthNotes.map((n, i) => (
                   <div key={i} style={{
                     padding: "10px 14px",
-                    background: "rgba(58,44,26,0.04)",
-                    border: "1px solid rgba(58,44,26,0.1)",
+                    background: "rgba(11,8,5,0.04)",
+                    border: "1px solid rgba(11,8,5,0.1)",
                     borderRadius: 8, marginBottom: 8,
                   }}>
                     <div style={{
-                      fontSize: 10, color: "#9B8B7A", letterSpacing: 0.5, marginBottom: 4,
+                      fontSize: 10, color: "#2E261B", letterSpacing: 0.5, marginBottom: 4,
                     }}>{n.letterTitle} · {n.sectionTitle}</div>
                     <div style={{
-                      fontSize: 14, color: "#3A2C1A", lineHeight: 1.5,
+                      fontSize: 14, color: "#0B0805", lineHeight: 1.5,
                     }}>{n.text.length > 200 ? n.text.slice(0, 200) + "…" : n.text}</div>
                   </div>
                 ))}
@@ -1895,8 +1910,8 @@ export default function Health() {
                 onClick={sendGpToExport}
                 style={{
                   width: "100%", padding: "14px 16px",
-                  background: "#3A2C1A", color: "#F4EDDB",
-                  border: "1px solid #D4AF37", borderRadius: 12,
+                  background: "#0B0805", color: "#ECE7DA",
+                  border: "1px solid #A8893F", borderRadius: 12,
                   fontSize: 14, fontWeight: 700, letterSpacing: 0.3,
                   cursor: "pointer",
                 }}
@@ -1914,7 +1929,7 @@ export default function Health() {
           style={{
             position: "fixed", bottom: 110, left: "50%",
             transform: "translateX(-50%)",
-            background: "#3A2C1A", color: "#F4EDDB",
+            background: "#0B0805", color: "#ECE7DA",
             padding: "10px 18px", borderRadius: 999,
             fontSize: 13, fontWeight: 600, letterSpacing: 0.3,
             boxShadow: "0 3px 14px rgba(40,30,18,0.16)",
@@ -1951,7 +1966,7 @@ const LetterSection = memo(function LetterSection({ section, isExpanded, onToggl
     <div id={`letter-section-${section.id}`} style={{ marginBottom: 4, scrollMarginTop: 110, position: "relative" }}>
       <button
         onClick={onToggle}
-        onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(212,175,55,0.06)"; }}
+        onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(168,137,63,0.06)"; }}
         onMouseLeave={(e) => { e.currentTarget.style.background = "none"; }}
         style={{
         width: "100%", textAlign: "left", background: "none", border: "none", cursor: "pointer",
@@ -1960,15 +1975,15 @@ const LetterSection = memo(function LetterSection({ section, isExpanded, onToggl
         borderRadius: 4,
         transition: "background 0.15s",
         display: "flex", justifyContent: "space-between", alignItems: "center",
-        borderBottom: "1px solid rgba(58,44,26,0.08)",
+        borderBottom: "1px solid rgba(11,8,5,0.08)",
       }}>
         <span style={{
-          fontWeight: 700, fontSize: 22, color: "#3A2C1A", lineHeight: 1.2,
+          fontWeight: 700, fontSize: 22, color: "#0B0805", lineHeight: 1.2,
         }}>
           {section.title}
         </span>
         <span style={{
-          fontSize: 20, color: "#D4AF37", marginLeft: 12, flexShrink: 0,
+          fontSize: 20, color: "#A8893F", marginLeft: 12, flexShrink: 0,
           display: "inline-block",
           transform: isExpanded ? "rotate(180deg)" : "rotate(0deg)",
           transition: "transform 0.2s",
@@ -1991,16 +2006,16 @@ const LetterSection = memo(function LetterSection({ section, isExpanded, onToggl
           <div aria-hidden="true" style={{
             position: "absolute", top: -4, left: 14,
             fontSize: 48,
-            color: "rgba(212,175,55,0.2)", lineHeight: 1,
+            color: "rgba(168,137,63,0.2)", lineHeight: 1,
             pointerEvents: "none", userSelect: "none",
           }}>&ldquo;</div>
           <div style={{
             fontSize: 9, fontWeight: 700, letterSpacing: 2,
-            textTransform: "uppercase", color: "#D4AF37",
+            textTransform: "uppercase", color: "#A8893F",
             marginBottom: 6,
           }}>Key insight</div>
           <div style={{
-            fontSize: 16, fontWeight: 600, color: "#3A2C1A",
+            fontSize: 16, fontWeight: 600, color: "#0B0805",
             fontStyle: "italic", lineHeight: 1.6,
           }}>{section.keyFact}</div>
           {onSaveForGp && (
@@ -2011,13 +2026,13 @@ const LetterSection = memo(function LetterSection({ section, isExpanded, onToggl
               style={{
                 marginTop: 10,
                 display: "inline-flex", alignItems: "center", gap: 6,
-                background: "rgba(58,44,26,0.06)",
-                border: "1px solid rgba(58,44,26,0.18)",
+                background: "rgba(11,8,5,0.06)",
+                border: "1px solid rgba(11,8,5,0.18)",
                 borderRadius: 999, padding: "4px 12px", cursor: "pointer",
-                fontSize: 11, fontWeight: 700, color: "#3A2C1A", letterSpacing: 0.3,
+                fontSize: 11, fontWeight: 700, color: "#0B0805", letterSpacing: 0.3,
               }}
             >
-              <span aria-hidden="true" style={{ color: "#D4AF37" }}>+</span> Save for GP
+              <span aria-hidden="true" style={{ color: "#A8893F" }}>+</span> Save for GP
             </button>
           )}
         </div>
@@ -2026,11 +2041,11 @@ const LetterSection = memo(function LetterSection({ section, isExpanded, onToggl
       {/* Big tappable Read more / close pill */}
       <button onClick={onToggle} style={{
         display: "inline-flex", alignItems: "center", gap: 6,
-        background: isExpanded ? "rgba(58,44,26,0.06)" : "rgba(212,175,55,0.12)",
-        border: `1px solid ${isExpanded ? "rgba(58,44,26,0.15)" : "rgba(212,175,55,0.4)"}`,
+        background: isExpanded ? "rgba(11,8,5,0.06)" : "rgba(168,137,63,0.12)",
+        border: `1px solid ${isExpanded ? "rgba(11,8,5,0.15)" : "rgba(168,137,63,0.4)"}`,
         borderRadius: 20, padding: "8px 16px", cursor: "pointer",
         fontSize: 13, fontWeight: 600,
-        color: isExpanded ? "#9B8B7A" : "#3A2C1A",
+        color: isExpanded ? "#2E261B" : "#0B0805",
         letterSpacing: 0.3, marginTop: 4, marginBottom: 4,
         minWidth: 110, justifyContent: "center",
       }}>
@@ -2050,7 +2065,7 @@ const LetterSection = memo(function LetterSection({ section, isExpanded, onToggl
                   onTouchCancel={cancelLongPress}
                   style={{
                     fontSize: 19, fontWeight: 500, lineHeight: 1.9,
-                    color: "#3A2C1A", margin: "0 0 16px",
+                    color: "#0B0805", margin: "0 0 16px",
                     WebkitUserSelect: "text",
                   }}
                 >{block.text}</p>
@@ -2065,10 +2080,10 @@ const LetterSection = memo(function LetterSection({ section, isExpanded, onToggl
                 }}>
                   <p style={{
                     fontSize: 18, fontWeight: 500, fontStyle: "italic",
-                    color: "#3A2C1A", margin: "0 0 8px", lineHeight: 1.8,
+                    color: "#0B0805", margin: "0 0 8px", lineHeight: 1.8,
                   }}>"{block.quote}"</p>
                   <div style={{
-                    fontSize: 14, fontWeight: 600, color: "#9B8B7A", letterSpacing: 0.4,
+                    fontSize: 14, fontWeight: 600, color: "#2E261B", letterSpacing: 0.4,
                   }}>— {block.attribution}</div>
                 </div>
               );
@@ -2077,7 +2092,7 @@ const LetterSection = memo(function LetterSection({ section, isExpanded, onToggl
               return (
                 <ul key={i} style={{
                   fontSize: 18, fontWeight: 500, lineHeight: 1.85,
-                  color: "#3A2C1A", paddingLeft: 24, margin: "0 0 16px",
+                  color: "#0B0805", paddingLeft: 24, margin: "0 0 16px",
                 }}>
                   {block.items.map((item, j) => <li key={j} style={{ marginBottom: 6 }}>{item}</li>)}
                 </ul>
@@ -2087,13 +2102,13 @@ const LetterSection = memo(function LetterSection({ section, isExpanded, onToggl
               return (
                 <div key={i} style={{
                   textAlign: "center", padding: "16px", margin: "20px 0",
-                  border: "1px solid rgba(212,175,55,0.25)", borderRadius: 4,
+                  border: "1px solid rgba(168,137,63,0.25)", borderRadius: 4,
                 }}>
                   <div style={{
-                    fontSize: 48, fontWeight: 700, color: "#D4AF37",
+                    fontSize: 48, fontWeight: 700, color: "#A8893F",
                   }}>{block.number}</div>
                   <div style={{
-                    fontSize: 13, fontWeight: 600, color: "#9B8B7A",
+                    fontSize: 13, fontWeight: 600, color: "#2E261B",
                     letterSpacing: 1, textTransform: "uppercase", marginTop: 6,
                   }}>{block.label}</div>
                 </div>
@@ -2106,16 +2121,16 @@ const LetterSection = memo(function LetterSection({ section, isExpanded, onToggl
               <button onClick={() => askJess(section.title)} style={{
                 display: "inline-flex", alignItems: "center", gap: 8,
                 background: "rgba(168,137,63,0.10)",
-                border: "1px solid rgba(212,175,55,0.35)",
+                border: "1px solid rgba(168,137,63,0.35)",
                 borderRadius: 8, padding: "10px 18px",
                 cursor: "pointer", marginTop: 4,
-                fontSize: 13, fontWeight: 600, color: "#3A2C1A", letterSpacing: 0.3,
+                fontSize: 13, fontWeight: 600, color: "#0B0805", letterSpacing: 0.3,
               }}>
                 <span aria-hidden="true" style={{
                   width: 22, height: 22, borderRadius: "50%",
-                  background: "rgba(212,175,55,0.2)",
+                  background: "rgba(168,137,63,0.2)",
                   display: "inline-flex", alignItems: "center", justifyContent: "center",
-                  fontSize: 12, flexShrink: 0, color: "#D4AF37",
+                  fontSize: 12, flexShrink: 0, color: "#A8893F",
                 }}><Sparkles size={12} strokeWidth={1.75} /></span>
                 <span>
                   Ask Jess — <em style={{ fontStyle: "italic", fontWeight: 400 }}>{String(section.title).toLowerCase()}</em>
@@ -2137,7 +2152,7 @@ const LetterHistoryStrip = memo(function LetterHistoryStrip({ currentPhase }) {
   return (
     <div style={{
       background: "var(--ivory)",
-      borderBottom: "1px solid rgba(58,44,26,0.08)",
+      borderBottom: "1px solid rgba(11,8,5,0.08)",
       padding: "10px 16px",
       display: "flex", alignItems: "center", gap: 8,
       overflowX: "auto", scrollbarWidth: "none",
@@ -2145,16 +2160,16 @@ const LetterHistoryStrip = memo(function LetterHistoryStrip({ currentPhase }) {
     }}>
       <span style={{
         fontSize: 10, letterSpacing: 1.5, textTransform: "uppercase",
-        color: "#9B8B7A", whiteSpace: "nowrap", marginRight: 6, fontWeight: 700,
+        color: "#2E261B", whiteSpace: "nowrap", marginRight: 6, fontWeight: 700,
       }}>Past letters</span>
       {phases.map((p) => {
         const on = p === currentPhase;
         return (
           <div key={p} style={{
             fontSize: 11, fontWeight: 600,
-            background: on ? "#3A2C1A" : "transparent",
-            color: on ? "#F4EDDB" : "#9B8B7A",
-            border: "1px solid rgba(58,44,26,0.15)",
+            background: on ? "#0B0805" : "transparent",
+            color: on ? "#ECE7DA" : "#2E261B",
+            border: "1px solid rgba(11,8,5,0.15)",
             borderRadius: 14, padding: "5px 14px",
             whiteSpace: "nowrap", opacity: on ? 1 : 0.7,
           }}>{p}</div>
@@ -2178,36 +2193,36 @@ const NewsSection = memo(function NewsSection({ tabId }) {
         display: "flex", alignItems: "center", gap: 10,
         marginBottom: 6,
       }}>
-        <div style={{ flex: 1, height: 1, background: "rgba(58,44,26,0.1)" }} />
+        <div style={{ flex: 1, height: 1, background: "rgba(11,8,5,0.1)" }} />
         <span style={{
-          fontSize: 14, fontStyle: "italic", color: "#9B8B7A", whiteSpace: "nowrap",
+          fontSize: 14, fontStyle: "italic", color: "#2E261B", whiteSpace: "nowrap",
         }}>What's being written about</span>
-        <div style={{ flex: 1, height: 1, background: "rgba(58,44,26,0.1)" }} />
+        <div style={{ flex: 1, height: 1, background: "rgba(11,8,5,0.1)" }} />
       </div>
       {/* Cadence label so readers know news rotates monthly */}
       <div style={{
         textAlign: "center", marginBottom: 14,
-        fontSize: 10, color: "#9B8B7A", letterSpacing: 1, textTransform: "uppercase",
+        fontSize: 10, color: "#2E261B", letterSpacing: 1, textTransform: "uppercase",
       }}>Updated monthly</div>
       {/* Clipping-style cards with stable alternating tilt */}
       <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
         {news.map((item, i) => (
           <div key={i} style={{
             background: "rgba(255,255,255,0.5)",
-            border: "1px solid rgba(58,44,26,0.1)",
+            border: "1px solid rgba(11,8,5,0.1)",
             borderRadius: 4,
             padding: "14px 16px",
             position: "relative",
             // Stable alternating tilt — GPU-composited transform, cheap.
             transform: `rotate(${i % 2 === 0 ? 0.4 : -0.3}deg)`,
-            boxShadow: "0 1px 2px rgba(58,44,26,0.06)",
+            boxShadow: "0 1px 2px rgba(11,8,5,0.06)",
           }}>
             <div style={{
               fontSize: 9, fontWeight: 700, letterSpacing: 1.5,
-              textTransform: "uppercase", color: "#D4AF37", marginBottom: 6,
+              textTransform: "uppercase", color: "#A8893F", marginBottom: 6,
             }}>{item.source} · {item.date}</div>
             <div style={{
-              fontSize: 16, fontWeight: 700, color: "#3A2C1A",
+              fontSize: 16, fontWeight: 700, color: "#0B0805",
               lineHeight: 1.35, marginBottom: 8,
             }}>{item.headline}</div>
             {item.url && item.url !== "#" ? (
@@ -2216,7 +2231,7 @@ const NewsSection = memo(function NewsSection({ tabId }) {
                 target="_blank"
                 rel="noopener noreferrer"
                 style={{
-                  fontSize: 11, color: "#3A2C1A", letterSpacing: 0.3,
+                  fontSize: 11, color: "#0B0805", letterSpacing: 0.3,
                   textDecoration: "none", fontWeight: 600,
                   display: "inline-flex", alignItems: "center", gap: 4,
                 }}
@@ -2225,7 +2240,7 @@ const NewsSection = memo(function NewsSection({ tabId }) {
               </a>
             ) : (
               <div style={{
-                fontSize: 11, color: "#9B8B7A", letterSpacing: 0.3,
+                fontSize: 11, color: "#2E261B", letterSpacing: 0.3,
               }}>→ Read</div>
             )}
           </div>
@@ -2239,14 +2254,14 @@ const NewsSection = memo(function NewsSection({ tabId }) {
 // STORY DASHBOARD (Feature 1) — data tiles in place of letter sections
 // ════════════════════════════════════════════════════════════════════════════
 const TILE = {
-  background: "rgba(212,175,55,0.06)",
-  border: "1px solid rgba(212,175,55,0.2)",
+  background: "rgba(168,137,63,0.06)",
+  border: "1px solid rgba(168,137,63,0.2)",
   borderRadius: 8, padding: 18, marginBottom: 14,
 };
 const TILE_LABEL = {
   fontSize: 11, fontWeight: 700,
   letterSpacing: 1.5, textTransform: "uppercase",
-  color: "#9B8B7A", marginBottom: 12,
+  color: "#2E261B", marginBottom: 12,
 };
 function StoryDashboard({ profile, cycle, phase, recentCheckins, recentSymptoms, habits, hydration }) {
   const cycleDay = cycle?.cycleDay || cycle?.dayInCycle || 1;
@@ -2266,9 +2281,9 @@ function StoryDashboard({ profile, cycle, phase, recentCheckins, recentSymptoms,
   }
   const phaseColour = {
     follicular: "#8FAF8F",
-    ovulatory:  "#D4AF37",
+    ovulatory: "#D4AF37",
     luteal:     "#E8B4B8",
-    menstrual:  "#9B8B7A",
+    menstrual:  "#2E261B",
   };
 
   // 30-day mood + energy series
@@ -2341,7 +2356,7 @@ function StoryDashboard({ profile, cycle, phase, recentCheckins, recentSymptoms,
         .fw-pulse-ring {
           position: absolute; inset: 0;
           border-radius: 50%;
-          background: rgba(212,175,55,0.45);
+          background: rgba(168,137,63,0.45);
           animation: fw-pulse-ring 2s ease-out infinite;
           pointer-events: none;
           will-change: transform, opacity;
@@ -2352,7 +2367,7 @@ function StoryDashboard({ profile, cycle, phase, recentCheckins, recentSymptoms,
       <div style={TILE}>
         <div style={TILE_LABEL}>Your cycle</div>
         <div style={{
-          fontSize: 17, fontWeight: 700, color: "#3A2C1A", marginBottom: 12,
+          fontSize: 17, fontWeight: 700, color: "#0B0805", marginBottom: 12,
           letterSpacing: 0.2,
         }}>
           {phaseLabels[phase] || "Follicular"} — Day {cycleDay}
@@ -2367,7 +2382,7 @@ function StoryDashboard({ profile, cycle, phase, recentCheckins, recentSymptoms,
                 <div style={{
                   width: 18, height: 18, borderRadius: "50%",
                   background: phaseColour[d.phase],
-                  border: "2px solid rgba(212,175,55,0.8)",
+                  border: "2px solid rgba(168,137,63,0.8)",
                   position: "relative", zIndex: 1, boxSizing: "border-box",
                 }} />
               </div>
@@ -2386,7 +2401,7 @@ function StoryDashboard({ profile, cycle, phase, recentCheckins, recentSymptoms,
         {/* Phase legend chips */}
         <div style={{
           display: "flex", flexWrap: "wrap", gap: 10, marginTop: 14,
-          fontSize: 11, fontWeight: 600, color: "#9B8B7A",
+          fontSize: 11, fontWeight: 600, color: "#2E261B",
         }}>
           {["menstrual","follicular","ovulatory","luteal"].map((p) => (
             <span key={p} style={{ display: "inline-flex", alignItems: "center", gap: 5 }}>
@@ -2399,7 +2414,7 @@ function StoryDashboard({ profile, cycle, phase, recentCheckins, recentSymptoms,
           ))}
         </div>
         <div style={{
-          marginTop: 12, fontSize: 13, fontWeight: 500, fontStyle: "italic", color: "#9B8B7A",
+          marginTop: 12, fontSize: 13, fontWeight: 500, fontStyle: "italic", color: "#2E261B",
         }}>
           {cycleLen}-day cycle · the pulsing dot is today
         </div>
@@ -2414,7 +2429,7 @@ function StoryDashboard({ profile, cycle, phase, recentCheckins, recentSymptoms,
             <div style={{
               position: "absolute", top: -2, left: 0, bottom: 18,
               display: "flex", flexDirection: "column", justifyContent: "space-between",
-              fontSize: 10, color: "#9B8B7A", paddingRight: 6,
+              fontSize: 10, color: "#2E261B", paddingRight: 6,
             }}>
               <span>High</span>
               <span>Low</span>
@@ -2453,18 +2468,18 @@ function StoryDashboard({ profile, cycle, phase, recentCheckins, recentSymptoms,
             {/* x axis day markers */}
             <div style={{
               display: "flex", justifyContent: "space-between", marginTop: 4, paddingLeft: 28,
-              fontSize: 10, color: "#9B8B7A",
+              fontSize: 10, color: "#2E261B",
             }}>
               <span>Day 1</span>
               <span>Day 30</span>
             </div>
           </div>
         ) : (
-          <div style={{ fontSize: 14, fontStyle: "italic", color: "#9B8B7A" }}>
+          <div style={{ fontSize: 14, fontStyle: "italic", color: "#2E261B" }}>
             No check-ins logged yet. Today is a good day to start.
           </div>
         )}
-        <div style={{ display: "flex", gap: 18, marginTop: 10, fontSize: 12, color: "#9B8B7A", fontWeight: 600 }}>
+        <div style={{ display: "flex", gap: 18, marginTop: 10, fontSize: 12, color: "#2E261B", fontWeight: 600 }}>
           <span><span style={{ display: "inline-block", width: 10, height: 10, borderRadius: "50%", background: "#E8B4B8", marginRight: 6, verticalAlign: "middle" }} />Mood</span>
           <span><span style={{ display: "inline-block", width: 10, height: 10, borderRadius: "50%", background: "#8FAF8F", marginRight: 6, verticalAlign: "middle" }} />Energy</span>
         </div>
@@ -2474,24 +2489,24 @@ function StoryDashboard({ profile, cycle, phase, recentCheckins, recentSymptoms,
       <div style={TILE}>
         <div style={TILE_LABEL}>Top symptoms</div>
         <div style={{
-          fontSize: 11, color: "#9B8B7A", marginTop: -8, marginBottom: 12, letterSpacing: 0.3,
+          fontSize: 11, color: "#2E261B", marginTop: -8, marginBottom: 12, letterSpacing: 0.3,
         }}>Most frequent in last 14 days</div>
         {topSx.length ? (
           <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
             {topSx.map(([name, n]) => (
               <span key={name} style={{
                 display: "inline-flex", alignItems: "center", gap: 6,
-                background: "#3A2C1A", color: "#F4EDDB",
+                background: "#0B0805", color: "#ECE7DA",
                 padding: "6px 12px", borderRadius: 999,
                 fontSize: 13, fontWeight: 600,
               }}>
                 {String(name).replace(/_/g, " ")}
-                <span style={{ background: "rgba(244,237,219,0.18)", borderRadius: 999, padding: "1px 8px", fontSize: 11 }}>×{n}</span>
+                <span style={{ background: "rgba(236,231,218,0.18)", borderRadius: 999, padding: "1px 8px", fontSize: 11 }}>×{n}</span>
               </span>
             ))}
           </div>
         ) : (
-          <div style={{ fontSize: 14, fontStyle: "italic", color: "#9B8B7A" }}>
+          <div style={{ fontSize: 14, fontStyle: "italic", color: "#2E261B" }}>
             No symptoms logged yet — start tracking to see patterns.
           </div>
         )}
@@ -2509,11 +2524,11 @@ function StoryDashboard({ profile, cycle, phase, recentCheckins, recentSymptoms,
               return (
                 <div key={i} style={{
                   padding: "8px 0",
-                  borderBottom: i < streaks.length - 1 ? "1px solid rgba(58,44,26,0.06)" : "none",
+                  borderBottom: i < streaks.length - 1 ? "1px solid rgba(11,8,5,0.06)" : "none",
                 }}>
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                     <span style={{
-                      fontSize: 16, fontWeight: 600, color: "#3A2C1A",
+                      fontSize: 16, fontWeight: 600, color: "#0B0805",
                     }}>{String(h.name).replace(/_/g, " ")}</span>
                     <span style={{
                       fontSize: 12, fontWeight: 700, color: "#8FAF8F",
@@ -2523,7 +2538,7 @@ function StoryDashboard({ profile, cycle, phase, recentCheckins, recentSymptoms,
                     }}>{showFire && <Flame size={11} strokeWidth={2} aria-hidden="true" style={{ marginRight: 2 }} />}{h.streak} day{h.streak === 1 ? "" : "s"}</span>
                   </div>
                   <div style={{
-                    marginTop: 6, height: 3, background: "rgba(58,44,26,0.06)",
+                    marginTop: 6, height: 3, background: "rgba(11,8,5,0.06)",
                     borderRadius: 2, overflow: "hidden",
                   }}>
                     <div style={{ width: `${pct}%`, height: "100%", background: "#8FAF8F" }} />
@@ -2533,7 +2548,7 @@ function StoryDashboard({ profile, cycle, phase, recentCheckins, recentSymptoms,
             })}
           </div>
         ) : (
-          <div style={{ fontSize: 14, fontStyle: "italic", color: "#9B8B7A" }}>
+          <div style={{ fontSize: 14, fontStyle: "italic", color: "#2E261B" }}>
             No active streaks — build one today.
           </div>
         )}
@@ -2545,7 +2560,7 @@ function StoryDashboard({ profile, cycle, phase, recentCheckins, recentSymptoms,
         {(() => {
           const pct = Math.min(1, avgMlPerDay / hydTarget);
           const meetsTarget = avgMlPerDay >= hydTarget;
-          const fillColour = meetsTarget ? "#8FAF8F" : "#9B8B7A";
+          const fillColour = meetsTarget ? "#8FAF8F" : "#2E261B";
           const fillHeight = pct * 64; // glass inner height = 64
           return (
             <div style={{ display: "flex", alignItems: "center", gap: 18, marginTop: 4 }}>
@@ -2568,18 +2583,18 @@ function StoryDashboard({ profile, cycle, phase, recentCheckins, recentSymptoms,
                   clipPath="url(#glass-inside)"
                 />
                 {/* outline */}
-                <path d="M8 6 L32 6 L29 72 L11 72 Z" fill="none" stroke="#3A2C1A" strokeWidth="1.5" strokeLinejoin="round" opacity="0.7" />
+                <path d="M8 6 L32 6 L29 72 L11 72 Z" fill="none" stroke="#0B0805" strokeWidth="1.5" strokeLinejoin="round" opacity="0.7" />
               </svg>
               {/* Number + label */}
               <div>
                 <div style={{
-                  fontSize: 28, fontWeight: 700, color: "#3A2C1A", lineHeight: 1,
+                  fontSize: 28, fontWeight: 700, color: "#0B0805", lineHeight: 1,
                 }}>
                   {(avgMlPerDay / 1000).toFixed(1)}L / {(hydTarget / 1000).toFixed(1)}L today
                 </div>
                 <div style={{
                   marginTop: 6,
-                  fontSize: 12, color: meetsTarget ? "#8FAF8F" : "#9B8B7A", fontWeight: 600, letterSpacing: 0.3,
+                  fontSize: 12, color: meetsTarget ? "#8FAF8F" : "#2E261B", fontWeight: 600, letterSpacing: 0.3,
                 }}>
                   {meetsTarget ? (<>Meeting your target <Check size={12} strokeWidth={2.5} aria-hidden="true" style={{ verticalAlign: "middle" }} /></>) : `${Math.round(pct * 100)}% of daily target`}
                 </div>
