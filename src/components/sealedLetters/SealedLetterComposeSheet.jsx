@@ -77,7 +77,7 @@ export default function SealedLetterComposeSheet({ open, onClose, onSealed }) {
           </button>
         </div>
 
-        <div style={{ flex: 1, overflowY: "auto", padding: "0 20px 48px" }}>
+        <div className="fw-sheet-safe" style={{ flex: 1, overflowY: "auto", padding: "0 20px 48px" }}>
           <h2 style={{ fontSize: 22, fontWeight: 500, color: "var(--plum-deep)", marginBottom: 4, lineHeight: 1.3 }}>
             A letter to a future you
           </h2>

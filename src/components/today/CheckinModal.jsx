@@ -665,7 +665,7 @@ export default function CheckinModal({ existing, onClose, onSave, userId, dateSt
         </div>
 
         {/* Footer */}
-        <div style={{ flexShrink: 0, padding: "12px 20px 28px", borderTop: "1px solid var(--border-subtle)" }}>
+        <div className="fw-sheet-safe" style={{ flexShrink: 0, padding: "12px 20px 28px", borderTop: "1px solid var(--border-subtle)" }}>
           {isCheckinTab ? (
             <>
               {saveError && (

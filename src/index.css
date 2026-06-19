@@ -62,6 +62,16 @@
        fixes rely on — migrating those hardcodes to this var is a no-op. */
     --fw-nav-h: calc(96px + env(safe-area-inset-bottom, 0px));
 
+    /* ── Sheet/modal bottom-clearance (single source of truth) ──────────
+       The canonical bottom padding EVERY bottom-sheet / modal / popup scroll
+       container must reserve so its last field/button always clears the
+       floating nav. = nav footprint (--fw-nav-h) + a small gap above the nav.
+       Use `padding-bottom: var(--fw-sheet-safe)` (or the `.fw-sheet-safe`
+       helper) on the scrollable surface. This is the DEFINITIVE fix for the
+       "popup hidden behind the nav" bug — sheets must use this, never a
+       hardcoded calc(96px…). */
+    --fw-sheet-safe: calc(var(--fw-nav-h) + 16px);
+
     /* FemWell Premium Palette — remapped to the EDITORIAL paper/ink system so
        the whole app shares the journal's look through this token layer.
        (Accent rose/sage/gold kept for contrast; only the neutrals shift.) */
@@ -189,6 +199,26 @@
     outline: 2px solid #E11D48;
     outline-offset: 2px;
     border-radius: 6px;
+  }
+
+  /* ── Sheet/modal bottom-clearance helpers (DEFINITIVE nav-overlap fix) ──
+     Put `fw-sheet-safe` on a bottom-sheet/modal's SCROLLABLE surface so its
+     last field/button always clears the floating nav (padding-bottom =
+     var(--fw-sheet-safe), !important so it wins over inline padding).
+     `fw-sheet-scroll` = the same + turns the element into a contained scroll
+     area. Centered dialogs cap their height so they never reach the nav. */
+  .fw-sheet-safe {
+    padding-bottom: var(--fw-sheet-safe) !important;
+  }
+  .fw-sheet-scroll {
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: var(--fw-sheet-safe) !important;
+  }
+  .fw-dialog-cap {
+    max-height: calc(100dvh - var(--fw-sheet-safe) - 24px);
+    overflow-y: auto;
   }
 
   /* sr-only utility for screen-reader-only text */

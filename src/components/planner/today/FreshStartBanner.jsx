@@ -276,7 +276,7 @@ function FreshStartResetSheet({ onClose, onAddAnchor, onPlanWithJess, onSkip }) 
 
   return (
     <div role="dialog" aria-modal="true" aria-label="Fresh start reset options" style={sheetOverlayStyle} onClick={onClose}>
-      <div style={sheetCardStyle} onClick={(e) => e.stopPropagation()}>
+      <div className="fw-sheet-safe" style={sheetCardStyle} onClick={(e) => e.stopPropagation()}>
         <div style={sheetHeadStyle}>
           <span style={sheetTitleStyle}>A small reset</span>
           <button type="button" onClick={onClose} aria-label="Close reset options" style={sheetCloseBtnStyle}>

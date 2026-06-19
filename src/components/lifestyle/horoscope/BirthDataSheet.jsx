@@ -80,7 +80,7 @@ export default function BirthDataSheet({ open, onClose, onSaved, userId, initial
 
   return (
     <div style={overlayStyle} onClick={(e) => { if (e.target === e.currentTarget) onClose?.(); }}>
-      <div style={sheetStyle} role="dialog" aria-label="Set your birth details">
+      <div style={sheetStyle} className="fw-sheet-safe" role="dialog" aria-label="Set your birth details">
         <div style={headerRowStyle}>
           <div>
             <p style={eyebrowStyle}>Your chart</p>

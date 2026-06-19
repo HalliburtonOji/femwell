@@ -281,7 +281,7 @@ export default function PlannerSettingsSheet({ open, onClose, userId, profileId,
         </div>
 
         {/* Footer */}
-        <div style={{
+        <div className="fw-sheet-safe" style={{
           padding: "10px 16px max(16px, env(safe-area-inset-bottom))",
           borderTop: `1px solid ${C.border}`,
           display: "flex", alignItems: "center", gap: 10,

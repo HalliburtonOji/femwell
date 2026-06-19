@@ -3536,6 +3536,7 @@ function AstraCard({ profile: profileProp }) {
           onClick={() => setOpen(false)}
         >
           <div
+            className="fw-sheet-safe"
             style={{
               ...modalCard,
               width: "100%", maxWidth: "100%",
@@ -4940,7 +4941,7 @@ function FullScheduleOverlay({ open, onClose, blocks, onBlockTap }) {
         </button>
       </div>
       <p style={overlayHint}>Tap a block to edit. Long press to drag.</p>
-      <div style={{ padding: "0 16px 30px" }}>
+      <div className="fw-sheet-safe" style={{ padding: "0 16px 30px" }}>
         {hours.map((h) => (
           <ScheduleHour key={h} hour={h} blocks={blocks.filter((b) => b.hour === h)}
             isCurrent={h === today.getHours()} currentMinute={today.getMinutes()} onBlockTap={onBlockTap} />
@@ -5012,7 +5013,7 @@ function FullCycleOverlay({ open, onClose, onDayTap, realProfile }) {
         </div>
         <span style={{ width: 32, height: 32 }} />
       </div>
-      <div style={{ padding: "0 16px 30px" }}>
+      <div className="fw-sheet-safe" style={{ padding: "0 16px 30px" }}>
         {/* Real production MonthRibbon — same component Planner.jsx mounts on
             the Cycle tab. Phase gradient ribbons, activity bars per day, plum
             today marker, all sourced from the production palette. */}
@@ -5259,7 +5260,7 @@ function AddPopup({ open, onClose }) {
   if (!open) return null;
   return (
     <div style={addBackdrop} onClick={onClose}>
-      <div style={addPopup} onClick={(e) => e.stopPropagation()}>
+      <div className="fw-sheet-safe" style={addPopup} onClick={(e) => e.stopPropagation()}>
         <div style={addHead}>
           <span style={kicker}>QUICK ADD</span>
           <button onClick={onClose} style={drawerCloseBtn}><X size={14} /></button>
@@ -6217,7 +6218,7 @@ const daySecondaryBtn = {
 // FAB
 const fabStyle = {
   position: "fixed", right: 20,
-  bottom: "calc(90px + env(safe-area-inset-bottom, 0px))",
+  bottom: "var(--fw-nav-h)",
   width: 56, height: 56, borderRadius: 9999,
   background: C.gold, color: C.cream,
   border: "none", cursor: "pointer",
@@ -6293,7 +6294,8 @@ const modalCard = {
   borderRadius: "22px 22px 0 0",
   // Brand-P2: clear the fixed bottom nav (~72px) + safe-area so the sheet's bottom
   // actions are never hidden behind / clipped by the nav bar.
-  padding: "16px 18px calc(90px + env(safe-area-inset-bottom, 0px))",
+  // Systemic fix: use the canonical --fw-sheet-safe clearance var.
+  padding: "16px 18px var(--fw-sheet-safe)",
   boxShadow: "0 -8px 32px rgba(58,44,26,0.18)",
 };
 const modalHead = {

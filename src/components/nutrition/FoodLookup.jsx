@@ -150,7 +150,7 @@ export default function FoodLookup({ onSelect, onClose }) {
         </div>
 
         {/* Deck of cards */}
-        <div style={{ flex: 1, overflowY: "auto", padding: "0 20px 24px" }}>
+        <div className="fw-sheet-safe" style={{ flex: 1, overflowY: "auto", padding: "0 20px 24px" }}>
           {filtered.length === 0 ? (
             <p style={{ textAlign: "center", color: "var(--mauve)", fontSize: 14, padding: "32px 0", }}>No foods found</p>
           ) : (

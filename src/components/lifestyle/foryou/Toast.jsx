@@ -12,7 +12,7 @@ export default function Toast({ message, onDone }) {
       aria-live="polite"
       style={{
         position: "fixed",
-        bottom: "calc(96px + env(safe-area-inset-bottom, 0px))",
+        bottom: "var(--fw-nav-h)",
         left: "50%",
         transform: "translateX(-50%)",
         zIndex: 90,

@@ -148,7 +148,7 @@ export default function PhaseTwin({ user, phase = null, profile = null, onClose 
   const prompt = promptForDay(day);
 
   return (
-    <div role="dialog" aria-modal="true" aria-label="Phase Twin" style={{ position: "fixed", inset: 0, zIndex: 60, overflowY: "auto", overscrollBehavior: "contain", WebkitOverflowScrolling: "touch", ...PAPER_BG }}>
+    <div role="dialog" aria-modal="true" aria-label="Phase Twin" className="fw-sheet-safe" style={{ position: "fixed", inset: 0, zIndex: 60, overflowY: "auto", overscrollBehavior: "contain", WebkitOverflowScrolling: "touch", ...PAPER_BG }}>
       <div style={{ maxWidth: 560, margin: "0 auto", padding: "40px 22px 60px", position: "relative" }}>
         {close}
 

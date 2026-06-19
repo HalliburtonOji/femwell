@@ -95,7 +95,7 @@ export default function HotFlashTracker({ user }) {
       {showForm && (
         <div style={{ position: "fixed", inset: 0, zIndex: 50 }}>
           <div onClick={() => setShowForm(false)} style={{ position: "absolute", inset: 0, backgroundColor: "rgba(42,32,53,0.4)", backdropFilter: "blur(4px)" }} />
-          <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, backgroundColor: "var(--surface)", borderRadius: "28px 28px 0 0", padding: 24, maxHeight: "70vh", overflowY: "auto" }}>
+          <div className="fw-sheet-safe" style={{ position: "absolute", bottom: 0, left: 0, right: 0, backgroundColor: "var(--surface)", borderRadius: "28px 28px 0 0", padding: 24, maxHeight: "70vh", overflowY: "auto" }}>
             <h3 style={{ fontSize: 18, color: "var(--plum)", marginBottom: 16 }}>Log hot flash</h3>
             <p style={{ ...sLabel, marginBottom: 8 }}>Severity</p>
             <div style={{ display: "flex", gap: 8, marginBottom: 16 }}>

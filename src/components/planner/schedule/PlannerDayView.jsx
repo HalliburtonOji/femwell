@@ -97,7 +97,7 @@ export function PlannerDayView({ dateISO, userId, onClose }) {
         <button onClick={add} style={overlayClose} aria-label="Add to this day"><Plus size={16} /></button>
       </div>
       <p style={overlayHint}>Tap a block to edit. Tap a free hour to add.</p>
-      <div style={{ padding: "0 16px 30px" }}>
+      <div className="fw-sheet-safe" style={{ padding: "0 16px 30px" }}>
         {hours.map((h) => (
           <ScheduleHour key={h} hour={h} blocks={blocks.filter((b) => b.hour === h)}
             isCurrent={isToday && h === now.getHours()} currentMinute={now.getMinutes()}
@@ -283,7 +283,7 @@ const schedBlockMeta = { fontSize: 9, letterSpacing: "0.10em", color: C.muted, f
 const anchorPill = { fontSize: 8.5, fontWeight: 700, letterSpacing: "0.14em", padding: "2px 6px", borderRadius: 9999, background: `${C.gold}33`, color: C.goldDeep, marginLeft: 4 };
 const schedEmptySlot = { display: "inline-flex", alignItems: "center", gap: 4, background: "transparent", color: "rgba(58,44,26,0.30)", border: "1px dashed rgba(58,44,26,0.18)", borderRadius: 9999, padding: "4px 10px", fontSize: 10, fontWeight: 700, cursor: "pointer", alignSelf: "flex-start", margin: "2px 0" };
 const modalBackdrop = { position: "fixed", inset: 0, background: "rgba(58,44,26,0.40)", zIndex: 9999, display: "flex", alignItems: "flex-end", justifyContent: "center", padding: "0 0 max(16px, env(safe-area-inset-bottom))" };
-const modalCard = { width: "100%", maxWidth: 520, background: C.cream, borderRadius: "22px 22px 0 0", padding: "16px 18px calc(90px + env(safe-area-inset-bottom, 0px))", boxShadow: "0 -8px 32px rgba(58,44,26,0.18)" };
+const modalCard = { width: "100%", maxWidth: 520, background: C.cream, borderRadius: "22px 22px 0 0", padding: "16px 18px var(--fw-sheet-safe)", boxShadow: "0 -8px 32px rgba(58,44,26,0.18)" };
 const modalHead = { display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, marginBottom: 4 };
 const drawerCloseBtn = { width: 28, height: 28, borderRadius: 9999, background: C.paperHi, border: "1px solid rgba(58,44,26,0.12)", color: C.muted, display: "inline-flex", alignItems: "center", justifyContent: "center", cursor: "pointer", flexShrink: 0 };
 const modalTitle = { fontSize: 22, fontWeight: 500, color: C.espresso, letterSpacing: "-0.01em", margin: "4px 0 14px", lineHeight: 1.25 };

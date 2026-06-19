@@ -71,7 +71,7 @@ export default function SealedLetterCompose({
   };
 
   return (
-    <div style={{ position: "fixed", inset: 0, zIndex: 92, ...PAPER_BG, overflowY: "auto", overscrollBehavior: "contain", WebkitOverflowScrolling: "touch", padding: "30px 26px 44px" }}>
+    <div className="fw-sheet-safe" style={{ position: "fixed", inset: 0, zIndex: 92, ...PAPER_BG, overflowY: "auto", overscrollBehavior: "contain", WebkitOverflowScrolling: "touch", padding: "30px 26px 44px" }}>
       <div style={{ maxWidth: 620, margin: "0 auto" }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
           <Eyebrow>A sealed letter</Eyebrow>

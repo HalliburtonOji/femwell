@@ -1333,7 +1333,7 @@ export default function SmartLoggerV4({
               <div style={{ padding: '20px 20px 12px', flexShrink: 0 }}>
                 {cardTitle(i)}
               </div>
-              <div style={{
+              <div className="fw-sheet-safe" style={{
                 padding: '0 20px 20px',
                 flex: 1, minHeight: 0, overflowY: 'auto',
                 overscrollBehavior: 'contain', WebkitOverflowScrolling: 'touch',

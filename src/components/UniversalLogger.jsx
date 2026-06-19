@@ -310,7 +310,7 @@ export default function UniversalLogger({ hideFAB = false } = {}) {
 const dualFabStack = {
   position: "fixed",
   right: 18,
-  bottom: "calc(88px + env(safe-area-inset-bottom, 0px))",
+  bottom: "var(--fw-nav-h)",
   display: "flex", flexDirection: "column",
   gap: 12, alignItems: "center",
   zIndex: 998,
@@ -340,7 +340,7 @@ function LoggerSheet({ initialType, onClose = closeLogger }) {
 
   return (
     <div style={backdrop} onClick={onClose}>
-      <div style={sheet} onClick={(e) => e.stopPropagation()}>
+      <div className="fw-sheet-safe" style={sheet} onClick={(e) => e.stopPropagation()}>
         <div style={head}>
           {picked ? (
             <>
@@ -1352,7 +1352,7 @@ function renderField(field, value, onChange) {
 // ─────────────────────────────────────────────────────────────────────────────
 const fabStyle = {
   position: "fixed", right: 20,
-  bottom: "calc(90px + env(safe-area-inset-bottom, 0px))",
+  bottom: "var(--fw-nav-h)",
   width: 56, height: 56, borderRadius: 9999,
   background: C.gold, color: C.cream,
   border: "none", cursor: "pointer",

@@ -373,7 +373,7 @@ function MRSSheet({ user, profile, onClose, onComplete }) {
 
       {!submitted && (
         <div style={{
-          padding: "12px 18px max(14px, env(safe-area-inset-bottom))",
+          padding: "12px 18px var(--fw-sheet-safe)",
           background: C.cream, borderTop: `1px solid ${C.border}`,
         }}>
           <button

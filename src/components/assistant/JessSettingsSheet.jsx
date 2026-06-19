@@ -575,7 +575,7 @@ export default function JessSettingsSheet({ open, onClose, user, profile, onProf
 
         {/* Save footer */}
         <div style={{
-          padding: "12px 18px max(16px, env(safe-area-inset-bottom))",
+          padding: "12px 18px var(--fw-sheet-safe)",
           borderTop: `1px solid ${C.border}`,
           background: C.cream,
           display: "flex", alignItems: "center", gap: 10,

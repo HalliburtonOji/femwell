@@ -52,7 +52,7 @@ export default function NutritionHubSheet({ open, onClose, onSelect }) {
           overflowY: "auto",
           overscrollBehavior: "contain",
           WebkitOverflowScrolling: "touch",
-          paddingBottom: "calc(96px + env(safe-area-inset-bottom, 0))",
+          paddingBottom: "var(--fw-sheet-safe)",
         }}
       >
         {/* Header */}

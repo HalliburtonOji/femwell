@@ -225,7 +225,7 @@ export default function WitnessInbox({ user, phase = null, profile = null, onClo
   );
 
   return (
-    <div style={{ position: "fixed", inset: 0, zIndex: 60, overflowY: "auto", overscrollBehavior: "contain", WebkitOverflowScrolling: "touch", ...PAPER_BG }}>
+    <div className="fw-sheet-safe" style={{ position: "fixed", inset: 0, zIndex: 60, overflowY: "auto", overscrollBehavior: "contain", WebkitOverflowScrolling: "touch", ...PAPER_BG }}>
       <div style={{ maxWidth: 560, margin: "0 auto", padding: "40px 22px 60px", position: "relative" }}>
         {close}
 

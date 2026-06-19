@@ -593,7 +593,7 @@ export default function NutritionTodayTab({ user, profile, nutritionProfile, day
     {drinkModal && (
       <>
         <div onClick={() => setDrinkModal(null)} style={{ position: "fixed", inset: 0, zIndex: 60, backgroundColor: "rgba(42,32,53,0.45)", backdropFilter: "blur(6px)" }} />
-        <div style={{ position: "fixed", bottom: 0, left: 0, right: 0, zIndex: 61, backgroundColor: "var(--surface)", borderRadius: "24px 24px 0 0", padding: "20px 20px 40px", maxWidth: 520, margin: "0 auto" }}>
+        <div className="fw-sheet-safe" style={{ position: "fixed", bottom: 0, left: 0, right: 0, zIndex: 61, backgroundColor: "var(--surface)", borderRadius: "24px 24px 0 0", padding: "20px 20px 40px", maxWidth: 520, margin: "0 auto" }}>
           <div style={{ display: "flex", justifyContent: "center", marginBottom: 16 }}>
             <div style={{ width: 32, height: 4, borderRadius: 9999, backgroundColor: "var(--border)" }} />
           </div>

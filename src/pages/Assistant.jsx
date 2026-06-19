@@ -34,7 +34,7 @@ export default function Assistant() {
         top: 0,
         left: 0,
         right: 0,
-        bottom: "calc(72px + env(safe-area-inset-bottom, 0px))",
+        bottom: "var(--fw-nav-h)",
         zIndex: 1,
         display: "flex",
         flexDirection: "column",

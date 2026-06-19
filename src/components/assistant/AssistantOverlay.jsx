@@ -68,7 +68,7 @@ export default function AssistantOverlay({ open, onClose, initialPrompt }) {
       <div
         style={{
           position: "fixed",
-          inset: "max(env(safe-area-inset-top),12px) 12px max(env(safe-area-inset-bottom),12px)",
+          inset: "max(env(safe-area-inset-top),12px) 12px max(var(--fw-sheet-safe), 12px)",
           zIndex: 91,
           backgroundColor: "var(--surface)",
           border: "1px solid var(--border)",

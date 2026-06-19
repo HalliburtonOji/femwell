@@ -27,6 +27,7 @@ export default function CrisisSheetLite({ onClose }) {
         aria-modal="true"
         aria-label="Support resources"
         onClick={(e) => e.stopPropagation()}
+        className="fw-sheet-safe"
         style={{ background: CREAM, width: "100%", maxWidth: 480, borderRadius: "16px 16px 0 0", padding: "24px 22px 30px", maxHeight: "88vh", overflowY: "auto", overscrollBehavior: "contain", WebkitOverflowScrolling: "touch" }}
       >
         <div style={{ background: PLUM, borderRadius: 12, padding: "18px 18px 20px", marginBottom: 16 }}>

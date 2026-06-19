@@ -193,7 +193,7 @@ export default function MergedExportSheet({ profile, plannerConfig, user, effect
       {open && (
         <>
           <div onClick={() => setOpen(false)} style={overlayStyle} aria-hidden="true" />
-          <div role="dialog" aria-label="Export options" style={sheetStyle}>
+          <div role="dialog" aria-label="Export options" className="fw-sheet-safe" style={sheetStyle}>
             <div style={sheetHeader}>
               <div style={sheetTitleWrap}>
                 <div style={sheetEyebrow}>EXPORT</div>

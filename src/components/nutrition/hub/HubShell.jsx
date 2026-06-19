@@ -78,7 +78,7 @@ export function HubSheet({ title, eyebrow, onClose, children }) {
           WebkitOverflowScrolling: "touch",
           // Brand-P2: clear the fixed bottom nav (~72px) + safe-area so the last action
           // in a surface sheet is never hidden behind / clipped by the nav bar.
-          padding: "16px 16px calc(96px + env(safe-area-inset-bottom, 0px))",
+          padding: "16px 16px var(--fw-sheet-safe)",
         }}>
           {children}
         </div>

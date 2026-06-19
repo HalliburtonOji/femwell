@@ -591,7 +591,7 @@ export default function DayDetailSheet({ date, dayData: initialDayData, userId, 
         </div>
 
         {/* Tab content */}
-        <div style={{ flex: 1, overflowY: "auto", padding: "0 20px 24px" }}>
+        <div className="fw-sheet-safe" style={{ flex: 1, overflowY: "auto", padding: "0 20px 24px" }}>
           {activeTab === "summary"  && <SummaryTab  {...tabProps} />}
           {activeTab === "checkin"  && <CheckinTab  {...tabProps} />}
           {activeTab === "cycle"    && <CycleTab    {...tabProps} />}

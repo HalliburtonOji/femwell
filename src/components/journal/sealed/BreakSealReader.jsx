@@ -50,7 +50,7 @@ export default function BreakSealReader({ letter, onClose, onSeen, onWriteBack }
         @keyframes fwSealGive { 0% { transform: scale(1); } 40% { transform: scale(1.08); } 100% { transform: scale(0.6); opacity: 0; } }
         @media (prefers-reduced-motion: reduce) { .fw-seal-anim { animation: none !important; } }
       `}</style>
-      <div onClick={(e) => e.stopPropagation()} style={{ background: T.paperHi, width: "100%", maxWidth: 560, maxHeight: "86vh", overflowY: "auto", overscrollBehavior: "contain", WebkitOverflowScrolling: "touch", padding: "32px 30px 28px", borderRadius: 3, boxShadow: "0 8px 40px rgba(51,41,28,0.22)" }}>
+      <div onClick={(e) => e.stopPropagation()} className="fw-dialog-cap" style={{ background: T.paperHi, width: "100%", maxWidth: 560, maxHeight: "86vh", overflowY: "auto", overscrollBehavior: "contain", WebkitOverflowScrolling: "touch", padding: "32px 30px 28px", borderRadius: 3, boxShadow: "0 8px 40px rgba(51,41,28,0.22)" }}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
           <Eyebrow color={T.gold}>A letter from you</Eyebrow>
           <button onClick={onClose} aria-label="Close" style={{ background: "transparent", border: "none", cursor: "pointer", color: T.muted, padding: 0, display: "inline-flex" }}><X size={18} /></button>

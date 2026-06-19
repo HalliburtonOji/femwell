@@ -548,7 +548,7 @@ export default function VoiceScheduler({ open, onClose, userId, onSaved }) {
         </div>
 
         {/* Body */}
-        <div style={{
+        <div className="fw-sheet-safe" style={{
           flex: 1, overflowY: "auto",
           padding: "22px 16px max(22px, env(safe-area-inset-bottom))",
           display: "flex", flexDirection: "column", gap: 16,

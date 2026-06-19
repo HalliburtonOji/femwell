@@ -24,7 +24,7 @@ export default function AgeGate({ children, surfaceName = "this space", onDeclin
   if (ok) return children;
 
   return (
-    <div role="dialog" aria-modal="true" aria-label="Adults only — age check" style={{ position: "fixed", inset: 0, zIndex: Z.gate, overflowY: "auto", overscrollBehavior: "contain", WebkitOverflowScrolling: "touch", ...PAPER_BG }}>
+    <div role="dialog" aria-modal="true" aria-label="Adults only — age check" className="fw-sheet-safe" style={{ position: "fixed", inset: 0, zIndex: Z.gate, overflowY: "auto", overscrollBehavior: "contain", WebkitOverflowScrolling: "touch", ...PAPER_BG }}>
       <div style={{ maxWidth: 480, margin: "0 auto", padding: "56px 24px 60px" }}>
         <Eyebrow mb={12}>Before you go in</Eyebrow>
         <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 8 }}>

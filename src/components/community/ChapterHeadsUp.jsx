@@ -61,6 +61,7 @@ export default function ChapterHeadsUp({ bookId, chapterIndex, onContinue, onDef
     >
       <div
         onClick={(e) => e.stopPropagation()}
+        className="fw-sheet-safe"
         style={{
           background: CREAM, width: "100%", maxWidth: 480, borderRadius: "18px 18px 0 0",
           padding: "22px 22px 26px", maxHeight: "86vh", overflowY: "auto",

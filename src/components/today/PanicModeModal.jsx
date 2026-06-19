@@ -101,7 +101,7 @@ export default function PanicModeModal({ userId, onClose }) {
   return (
     <>
       <div onClick={onClose} style={{ position: "fixed", inset: 0, zIndex: 95, backgroundColor: "rgba(58,44,26,0.45)", backdropFilter: "blur(8px)" }} />
-      <div style={{ position: "fixed", bottom: 0, left: 0, right: 0, zIndex: 96, backgroundColor: "var(--surface)", borderRadius: "28px 28px 0 0", maxHeight: "92vh", overflowY: "auto", boxShadow: "var(--shadow-lg)" }}>
+      <div className="fw-sheet-safe" style={{ position: "fixed", bottom: 0, left: 0, right: 0, zIndex: 96, backgroundColor: "var(--surface)", borderRadius: "28px 28px 0 0", maxHeight: "92vh", overflowY: "auto", boxShadow: "var(--shadow-lg)" }}>
         <style>{`@keyframes breath-in{0%,100%{transform:scale(1)}50%{transform:scale(1.18)}}`}</style>
         <div style={{ display: "flex", justifyContent: "center", paddingTop: 14, paddingBottom: 8 }}>
           <div style={{ width: 32, height: 4, borderRadius: 9999, backgroundColor: "var(--border)" }} />

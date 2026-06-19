@@ -297,7 +297,7 @@ export default function RitualBuilder({ open, onClose, userId, onSaved }) {
 
         {/* Footer */}
         {!saved && (
-          <div style={{
+          <div className="fw-sheet-safe" style={{
             padding: "10px 16px max(16px, env(safe-area-inset-bottom))",
             borderTop: `1px solid ${C.border}`,
             display: "flex", alignItems: "center", gap: 10,

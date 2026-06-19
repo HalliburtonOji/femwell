@@ -173,9 +173,9 @@ function TikTokModal({ item, onClose }) {
         padding: 16,
       }}
     >
-      <div style={{
+      <div className="fw-dialog-cap" style={{
         position: 'relative', width: '100%', maxWidth: 360,
-        background: 'var(--cream)', borderRadius: 14, overflow: 'hidden',
+        background: 'var(--cream)', borderRadius: 14, overflow: 'auto',
       }}>
         <button
           onClick={onClose}

@@ -442,7 +442,7 @@ function EditBundleSheet({ initial, isCycleStage, onSave, onCancel, onDelete }) 
       style={sheetBackdropStyle}
       onClick={onCancel}
     >
-      <div style={sheetCardStyle} onClick={(e) => e.stopPropagation()}>
+      <div className="fw-sheet-safe" style={sheetCardStyle} onClick={(e) => e.stopPropagation()}>
         <div style={sheetHeadStyle}>
           <span style={sheetEyebrowStyle}>{isNew ? "NEW BUNDLE" : "EDIT BUNDLE"}</span>
           <button type="button" onClick={onCancel} style={sheetCloseBtnStyle} aria-label="Close">

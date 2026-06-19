@@ -104,7 +104,7 @@ export default function NotificationBell({ userId }) {
             </div>
 
             {/* List */}
-            <div className="overflow-y-auto flex-1">
+            <div className="overflow-y-auto flex-1 fw-sheet-safe">
               {notifications.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-16 px-8 text-center">
                   <Bell size={36} style={{ color: "var(--mauve)" }} />

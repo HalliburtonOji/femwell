@@ -93,7 +93,7 @@ export default function NotificationSheet({ open, onClose, userId, onRead }) {
             </div>
 
             {/* List */}
-            <div style={{ overflowY: "auto", flex: 1 }}>
+            <div className="fw-sheet-safe" style={{ overflowY: "auto", flex: 1 }}>
               {loading ? (
                 <div style={{ display: "flex", justifyContent: "center", padding: 40 }}>
                   <div className="w-6 h-6 rounded-full border-2 border-t-transparent animate-spin" style={{ borderColor: "var(--rose-dust-light)", borderTopColor: "var(--rose-dust)" }} />

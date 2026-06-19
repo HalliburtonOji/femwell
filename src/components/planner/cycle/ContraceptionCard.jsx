@@ -402,7 +402,7 @@ function ContraceptionHistoryView({ logs, activeId, onClose }) {
   const rows = Array.isArray(logs) ? logs : [];
   return (
     <div role="dialog" aria-modal="true" aria-label="Contraception history" style={historyOverlay}>
-      <div style={historyPanel}>
+      <div className="fw-dialog-cap" style={historyPanel}>
         <header style={historyHead}>
           <button type="button" onClick={onClose} style={backBtn} aria-label="Back to summary">
             <ChevronLeft size={14} strokeWidth={2.2} />

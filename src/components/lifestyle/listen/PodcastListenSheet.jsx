@@ -145,7 +145,7 @@ export default function PodcastListenSheet({ item, source, onClose }) {
         role="dialog"
         aria-modal="true"
         aria-label="Choose where to listen"
-        className="podcast-sheet-panel"
+        className="podcast-sheet-panel fw-sheet-safe"
         style={{
           position: 'relative',
           width: '100%',

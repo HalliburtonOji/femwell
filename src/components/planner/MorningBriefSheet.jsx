@@ -393,7 +393,7 @@ export default function MorningBriefSheet({ user, profile, onDismiss }) {
       </div>
 
       {/* 4 — Dismiss button — fixed bottom, full-width */}
-      <div style={{
+      <div className="fw-sheet-safe" style={{
         padding: "14px 22px max(14px, env(safe-area-inset-bottom))",
         background: C.cream, borderTop: `1px solid ${C.border}`,
       }}>

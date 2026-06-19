@@ -504,6 +504,7 @@ function ConfirmationSheet({ items, onRemove, onSave, onTryAgain }) {
     <div
       role="dialog"
       aria-label="Review extracted items"
+      className="fw-sheet-safe"
       style={{
         position: "absolute", left: 0, right: 0, bottom: 0,
         background: C.cream,

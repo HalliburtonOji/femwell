@@ -2297,7 +2297,7 @@ function LogTab({ cards, showToast }) {
                   }}>Next →</button>
                 )}
               </div>
-              <div style={{
+              <div className="fw-sheet-safe" style={{
                 padding: "0 20px 20px", flex: 1, minHeight: 0, overflowY: "auto",
                 overscrollBehavior: "contain", WebkitOverflowScrolling: "touch",
               }}>
@@ -2318,7 +2318,7 @@ function AddTab({ initialTypeId, onClose }) {
   const [pickedId, setPickedId] = useState(initialTypeId || null);
   const picked = pickedId ? TYPES.find(t => t.id === pickedId) : null;
   return (
-    <div style={{ flex: 1, overflowY: "auto", overscrollBehavior: "contain", WebkitOverflowScrolling: "touch", padding: "10px 16px 16px" }}>
+    <div className="fw-sheet-safe" style={{ flex: 1, overflowY: "auto", overscrollBehavior: "contain", WebkitOverflowScrolling: "touch", padding: "10px 16px 16px" }}>
       {picked ? (
         <>
           <div style={{
@@ -2433,7 +2433,7 @@ export default function UnifiedTabLogger() {
       {!open && (
         <button onClick={() => openLogger()} aria-label="Open logger" style={{
           position: "fixed",
-          bottom: "calc(88px + env(safe-area-inset-bottom, 0px))",
+          bottom: "var(--fw-nav-h)",
           right: 18, zIndex: 998,
           width: 56, height: 56, borderRadius: "50%",
           background: "var(--plum)",

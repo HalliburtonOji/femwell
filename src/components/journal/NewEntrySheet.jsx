@@ -404,7 +404,7 @@ export default function NewEntrySheet({
     const q = FOLLOWUPS[phase] || "Is there one more line that wants to come — the bit you almost didn't write?";
     const continueWriting = () => { setJustSaved(false); setText(""); setMood(0); setMode("Write"); };
     return (
-      <div style={{ position: "fixed", inset: 0, zIndex: 90, ...PAPER_BG, overflowY: "auto", overscrollBehavior: "contain", WebkitOverflowScrolling: "touch", padding: "30px 26px 44px" }}>
+      <div className="fw-sheet-safe" style={{ position: "fixed", inset: 0, zIndex: 90, ...PAPER_BG, overflowY: "auto", overscrollBehavior: "contain", WebkitOverflowScrolling: "touch", padding: "30px 26px 44px" }}>
         <div style={{ maxWidth: 560, margin: "12vh auto 0", textAlign: "center" }}>
           <Eyebrow mb={10}>Held in your Journal</Eyebrow>
           <Script size={34} style={{ marginBottom: 16 }}>It{"’"}s saved.</Script>
@@ -431,7 +431,7 @@ export default function NewEntrySheet({
   }
 
   return (
-    <div style={{ position: "fixed", inset: 0, zIndex: 90, ...PAPER_BG, overflowY: "auto", overscrollBehavior: "contain", WebkitOverflowScrolling: "touch", padding: "30px 26px 44px" }}>
+    <div className="fw-sheet-safe" style={{ position: "fixed", inset: 0, zIndex: 90, ...PAPER_BG, overflowY: "auto", overscrollBehavior: "contain", WebkitOverflowScrolling: "touch", padding: "30px 26px 44px" }}>
       <style>{`
         @keyframes fwReleaseAway { 0% { opacity: 1; transform: translateY(0); filter: blur(0); } 100% { opacity: 0; transform: translateY(-14px); filter: blur(3px); } }
         @media (prefers-reduced-motion: reduce) { .fw-burning { animation: none !important; opacity: 0.2 !important; } }

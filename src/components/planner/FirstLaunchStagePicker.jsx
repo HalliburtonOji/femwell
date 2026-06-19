@@ -89,7 +89,7 @@ export default function FirstLaunchStagePicker({ profile, onSaved, onSkip, editM
       aria-label="Choose your Femwell stage"
       style={overlay}
     >
-      <div style={panel}>
+      <div className="fw-dialog-cap" style={panel}>
         <header style={head}>
           <div>
             <p style={eyebrow}>{eyebrowCopy}</p>

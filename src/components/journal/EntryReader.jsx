@@ -91,7 +91,7 @@ export default function EntryReader({ entry, profile, phase, onClose, onEdit, on
 
   return (
     <div onClick={onClose} style={{ position: "fixed", inset: 0, zIndex: 70, background: "rgba(51,41,28,0.42)", display: "flex", alignItems: "center", justifyContent: "center", padding: "0 22px" }}>
-      <div role="dialog" aria-modal="true" aria-label={`${label} entry`} onClick={(e) => e.stopPropagation()} style={{ background: T.paperHi, width: "100%", maxWidth: 580, maxHeight: "86vh", overflowY: "auto", overscrollBehavior: "contain", WebkitOverflowScrolling: "touch", padding: "32px 30px 26px", borderRadius: 3, boxShadow: "0 8px 40px rgba(51,41,28,0.20)" }}>
+      <div role="dialog" aria-modal="true" aria-label={`${label} entry`} onClick={(e) => e.stopPropagation()} className="fw-dialog-cap" style={{ background: T.paperHi, width: "100%", maxWidth: 580, maxHeight: "86vh", overflowY: "auto", overscrollBehavior: "contain", WebkitOverflowScrolling: "touch", padding: "32px 30px 26px", borderRadius: 3, boxShadow: "0 8px 40px rgba(51,41,28,0.20)" }}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
           <Eyebrow color={colour}>{label}{entry.is_pinned ? " · Pinned" : ""}</Eyebrow>
           <button onClick={onClose} aria-label="Close" style={{ background: "transparent", border: "none", cursor: "pointer", color: T.muted, padding: 0, display: "inline-flex" }}><X size={18} /></button>
