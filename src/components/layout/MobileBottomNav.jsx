@@ -139,21 +139,21 @@ export default function MobileBottomNav({ currentPageName }) {
                     minHeight: 56,
                   }}
                 >
-                  {/* The single rose/crimson disc — the one colour pop — lifted
-                      proud of the capsule's top edge (the brand heart rule). */}
+                  {/* Jess sits INSIDE the row, flush — same footprint as the other
+                      items' 32px icon band. Still the one crimson colour pop (the
+                      brand heart accent), just calm: small disc, no lift, soft shadow. */}
                   <span
                     aria-hidden="true"
                     style={{
-                      width: 54, height: 54, borderRadius: 9999,
+                      width: 32, height: 32, borderRadius: 9999,
                       background: "var(--rose-primary)",
-                      boxShadow: "var(--shadow-fab)",
-                      marginTop: -26,
+                      boxShadow: "0 2px 6px -2px rgba(212,94,82,0.45)",
                       display: "flex", alignItems: "center", justifyContent: "center",
                     }}
                   >
-                    <Icon size={22} color="white" strokeWidth={1.75} />
+                    <Icon size={18} color="white" strokeWidth={1.75} />
                   </span>
-                  <span style={{ ...labelStyle(false), color: "var(--plum-deep)", fontWeight: 600, marginTop: 4 }}>
+                  <span style={{ ...labelStyle(false), color: "var(--plum-deep)", fontWeight: 600 }}>
                     {slot.label}
                   </span>
                 </button>
