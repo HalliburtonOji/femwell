@@ -7,7 +7,7 @@
 // Daily Story / Horoscope); onSelect(id) calls the page's setTab(id).
 //
 // Props: { open, onClose, onSelect }
-import { X, Sparkles, BookOpen, Headphones, Feather, Moon } from "lucide-react";
+import { X, Sparkles, BookOpen, Headphones, Feather, Moon, Book } from "lucide-react";
 import { T, UI, HAND, PRESS, useEscape } from "../journal/Editorial";
 import { useScrollLock } from "@/utils/useScrollLock";
 
@@ -15,6 +15,7 @@ const DESTINATIONS = [
   { id: "for_you",     icon: Sparkles,   label: "For You",     sub: "Picked for your day" },
   { id: "read",        icon: BookOpen,   label: "Read",        sub: "Essays & long reads" },
   { id: "listen",      icon: Headphones, label: "Listen",      sub: "Podcasts & audio" },
+  { id: "books",       icon: Book,       label: "Books",       sub: "Read along, chapter by chapter" },
   { id: "daily_story", icon: Feather,    label: "Daily Story", sub: "Today's chapter" },
   { id: "horoscope",   icon: Moon,       label: "Horoscope",   sub: "Your sky tonight" },
 ];

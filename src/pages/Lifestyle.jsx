@@ -2,9 +2,9 @@ import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import { base44 } from "@/api/base44Client";
-import { ExternalLink, X, Bookmark, SlidersHorizontal, Check, Sparkles, BookOpen, Headphones, Feather, Moon, ArrowRight, Play, Book } from "lucide-react";
-import { T, UI, SERIF, SCRIPT, Heart as BrandHeart } from "@/components/journal/Editorial";
-import { VineMotifV2, FlowerGlyph, RichBloomV2, SwayBloom, Butterfly, floraKeyframes, cwOf } from "@/components/brand/flora";
+import { ExternalLink, X, Bookmark, SlidersHorizontal, Check, Sparkles, BookOpen, Headphones, Feather, Moon, ArrowRight, ChevronRight, Play, Book } from "lucide-react";
+import { T, UI, SERIF, SCRIPT, Eyebrow, PAPER_BG, Heart as BrandHeart } from "@/components/journal/Editorial";
+import { VineMotifV2, FlowerGlyph, CardCorner, RichBloomV2, SwayBloom, Butterfly, floraKeyframes, cwOf } from "@/components/brand/flora";
 import CardStack from "@/components/planner-v2/CardStack";
 import { CONTENT_CATEGORIES, categoryLabel } from "@/utils/contentCategory";
 import BrowseTab from "@/components/lifestyle/browse/BrowseTab";
@@ -358,6 +358,7 @@ const TABS = [
   { id: "for_you",     label: "For You" },
   { id: "read",        label: "Read" },
   { id: "listen",      label: "Listen" },
+  { id: "books",       label: "Books" },
   { id: "daily_story", label: "Daily Story" },
   { id: "horoscope",   label: "Horoscope" },
 ];
@@ -739,7 +740,7 @@ export default function Lifestyle() {
   const isForYou = tab === "for_you";
 
   return (
-    <div className="min-h-screen pb-28" style={{ backgroundColor: "var(--ivory)", position: "relative", overflowX: "clip" }}>
+    <div className="min-h-screen pb-28" style={{ ...PAPER_BG, position: "relative", overflowX: "clip" }}>
       <style>{`.lf-scroll::-webkit-scrollbar{display:none}.lf-scroll{-ms-overflow-style:none;scrollbar-width:none}@keyframes lf-spin{to{transform:rotate(360deg)}}.space-y-3>*+*{margin-top:12px}.space-y-4>*+*{margin-top:16px}.space-y-2>*+*{margin-top:8px}`}</style>
 
       {/* botanical page texture — one low-opacity vine per fold (Lifestyle char = gold/blush), clipped, behind content */}
@@ -842,6 +843,7 @@ export default function Lifestyle() {
         <div className="max-w-xl mx-auto px-4 pt-5" style={{ position: "relative", zIndex: 1 }}>
           {tab === "read"        && <BrowseTab categoryFilter={categoryFilter} activeChip={activeChip} />}
           {tab === "listen"      && <ListenTab categoryFilter={categoryFilter} activeChip={activeChip} />}
+          {tab === "books"       && <BrowseTab categoryFilter={categoryFilter} activeChip="books" />}
           {tab === "daily_story" && <DailyStoryTab />}
         </div>
       )}
@@ -961,9 +963,23 @@ function LifestyleLanding({ landing, onJump }) {
   );
 }
 // ── PER-TYPE SLIDING ROWS — Lifestyle content restructured by content TYPE ───────────────────
-// Replaces the old mixed "More to explore" feed. Each content type (Articles · Stories · Videos ·
-// Podcasts · Books · Guides) gets its own horizontal CardStack row; every card deep-links straight
-// to that item full-screen (LifestyleDetail for reads/video/audio; FictionReader for FemWell books).
+// Replaces the old mixed "More to explore" feed. Each content type gets its own labelled horizontal
+// scroll-snap row. The CARD is the TODAY page's per-section card VERBATIM (TodayOption2 TodayCard):
+// same CARD_W (365), minHeight (488), gradient + 4px accent rim + 4-corner sprig frame, ICON_DISC,
+// Eyebrow, meaning-bloom, SERIF hook (CLAMP 3) + SERIF line (CLAMP 4), full-width accent CTA.
+// Every card DEEP-LINKS straight to the item full-screen (LifestyleDetail for reads/video/audio;
+// FictionReader for FemWell books).
+const LF_CARD_W = 365;   // verbatim from TodayOption2
+const LF_GAP = 14;
+const LF_CLAMP = (n) => ({ minWidth: 0, overflow: "hidden", overflowWrap: "anywhere", wordBreak: "break-word", display: "-webkit-box", WebkitLineClamp: n, WebkitBoxOrient: "vertical" });
+const LF_ICON_DISC = (Icon, accent) => (
+  <span style={{ width: 32, height: 32, borderRadius: 9, background: T.wax, border: `1px solid ${T.paperDeep}`, display: "grid", placeItems: "center", flexShrink: 0 }}>
+    <Icon size={16} strokeWidth={1.7} color={accent} />
+  </span>
+);
+function LfFrame4({ color, opacity = 0.6, size = 46 }) {
+  return <>{["tl", "tr", "br", "bl"].map((c) => <CardCorner key={c} variant="sprig" color={color} corner={c} size={size} opacity={opacity} />)}</>;
+}
 function lfTypeOf(i) {
   const m = String(i?.media_type || "").toUpperCase();
   const c = String(i?.content_type || "").toUpperCase();
@@ -975,71 +991,92 @@ function lfTypeOf(i) {
   return "articles"; // ARTICLE + default
 }
 const LF_ROWS = [
-  { key: "articles", label: "Articles",     accent: "#8E6E8E", Icon: BookOpen,   flower: "iris",       cta: "Read" },
-  { key: "stories",  label: "Stories",      accent: T.crimson, Icon: Feather,    flower: "poppy",      cta: "Read" },
-  { key: "videos",   label: "Watch",        accent: T.gold,    Icon: Play,       flower: "sunflower",  cta: "Watch" },
-  { key: "podcasts", label: "Listen",       accent: T.sage,    Icon: Headphones, flower: "bluebell",   cta: "Listen" },
-  { key: "books",    label: "Books",        accent: "#5F7E8E", Icon: Book,       flower: "camellia",   cta: "Open" },
-  { key: "guides",   label: "Guides",       accent: "#A8893F", Icon: Sparkles,   flower: "primrose",   cta: "Read" },
+  { key: "articles", label: "Articles", accent: "#8E6E8E", Icon: BookOpen,   flower: "iris",      cta: "Read this" },
+  { key: "stories",  label: "Stories",  accent: T.crimson, Icon: Feather,    flower: "poppy",     cta: "Read this" },
+  { key: "videos",   label: "Watch",    accent: T.gold,    Icon: Play,       flower: "sunflower", cta: "Watch now" },
+  { key: "podcasts", label: "Listen",   accent: T.sage,    Icon: Headphones, flower: "bluebell",  cta: "Listen now" },
+  { key: "books",    label: "Books",    accent: "#5F7E8E", Icon: Book,       flower: "camellia",  cta: "Open this book" },
+  { key: "guides",   label: "Guides",   accent: "#A8893F", Icon: Sparkles,   flower: "primrose",  cta: "Read this" },
 ];
+
+function lfHrefFor(item, type) {
+  // Deep-link straight to the SPECIFIC item, full-screen.
+  if (type === "books") return createPageUrl(`FictionReader?id=${item.id}`);
+  return createPageUrl(`LifestyleDetail?id=${item.id}`);
+}
+
+// One card — the TODAY per-section card, verbatim treatment.
+function LifestyleRowCard({ item, row, navigate }) {
+  const a = row.accent;
+  const go = () => navigate(lfHrefFor(item, row.key));
+  const line = item.summary || item.lede || item.source_name || item.author_name || "";
+  return (
+    <section onClick={go} style={{
+      scrollSnapAlign: "center", flex: `0 0 ${LF_CARD_W}px`, width: LF_CARD_W,
+      position: "relative", overflow: "hidden", cursor: "pointer",
+      background: `linear-gradient(165deg, ${T.paperHi} 0%, ${a}14 100%)`,
+      border: `1px solid ${T.paperDeep}`, borderLeft: `4px solid ${a}`, borderRadius: 20,
+      padding: 20, display: "flex", flexDirection: "column", minHeight: 488,
+      boxShadow: "0 4px 20px rgba(58,44,26,0.12), 0 1px 4px rgba(58,44,26,0.08)",
+    }}>
+      <LfFrame4 color={a} size={46} opacity={0.6} />
+      <div style={{ position: "relative", zIndex: 1, display: "flex", flexDirection: "column", flex: 1, minHeight: 0 }}>
+        {/* header — icon disc · type eyebrow · meaning-bloom */}
+        <div style={{ display: "flex", alignItems: "center", gap: 9, marginBottom: 12 }}>
+          {LF_ICON_DISC(row.Icon, a)}
+          <Eyebrow color={a}>{row.label}</Eyebrow>
+          <span style={{ marginLeft: "auto" }}><FlowerGlyph variant={row.flower} size={30} color={a} idx={`lf-mb-${item.id}`} /></span>
+        </div>
+        {/* optional cover image */}
+        {item.image_url ? (
+          <div style={{ height: 150, borderRadius: 12, overflow: "hidden", marginBottom: 12, background: `linear-gradient(135deg, ${a}33, ${a}14)` }}>
+            <img src={item.image_url} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} onError={(e) => { e.target.parentElement.style.display = "none"; }} />
+          </div>
+        ) : null}
+        {/* hook + line — SERIF, same sizes/clamps as Today */}
+        <h3 style={{ fontFamily: SERIF, fontSize: 20, fontWeight: 600, color: T.ink, margin: "0 0 8px", lineHeight: 1.3, ...LF_CLAMP(3) }}>{item.title}</h3>
+        {line ? <p style={{ fontFamily: SERIF, fontSize: 16, color: T.inkSoft, lineHeight: 1.5, margin: "0 0 12px", ...LF_CLAMP(4) }}>{line}</p> : null}
+        {/* INLINE ACTION — full-width accent CTA (Today btnStyle) + open link, deep-linking the item */}
+        <div style={{ marginTop: "auto", paddingTop: 6 }}>
+          <button onClick={(e) => { e.stopPropagation(); go(); }} style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 8, width: "100%", boxSizing: "border-box", background: a, color: "#fff", border: "none", borderRadius: 12, padding: "13px 16px", fontFamily: UI, fontSize: 14, fontWeight: 700, cursor: "pointer" }}>
+            {row.cta}
+          </button>
+          <a href={lfHrefFor(item, row.key)} onClick={(e) => e.stopPropagation()} style={{ display: "inline-flex", alignItems: "center", gap: 4, marginTop: 12, fontFamily: UI, fontSize: 13, fontWeight: 700, color: T.muted, textDecoration: "none" }}>
+            Open full-screen <ChevronRight size={14} />
+          </a>
+        </div>
+      </div>
+    </section>
+  );
+}
 
 function LifestyleTypeRows({ items, navigate }) {
   const arr = Array.isArray(items) ? items : [];
   if (!arr.length) return null;
   const buckets = {};
   arr.forEach((i) => { const t = lfTypeOf(i); (buckets[t] = buckets[t] || []).push(i); });
-
-  const openItem = (item, type) => {
-    const href = type === "books"
-      ? createPageUrl(`FictionReader?id=${item.id}`)
-      : createPageUrl(`LifestyleDetail?id=${item.id}`);
-    navigate(href);
-  };
-
   const rows = LF_ROWS.filter((r) => (buckets[r.key] || []).length > 0);
   if (!rows.length) return null;
 
   return (
-    <div style={{ maxWidth: 600, margin: "8px auto 0", padding: "0 4px", position: "relative", zIndex: 1 }}>
+    <div style={{ position: "relative", zIndex: 1, marginTop: 6 }}>
+      <style>{`.lf-row-track{scrollbar-width:none}.lf-row-track::-webkit-scrollbar{display:none}`}</style>
       {rows.map((r) => {
-        const list = (buckets[r.key] || []).slice(0, 8);
+        const list = (buckets[r.key] || []).slice(0, 10);
         return (
-          <div key={r.key} style={{ marginTop: 18 }}>
-            <CardStack label={r.label}>
+          <div key={r.key} style={{ marginTop: 22 }}>
+            {/* row label */}
+            <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "0 18px 8px" }}>
+              <r.Icon size={15} color={r.accent} strokeWidth={1.8} />
+              <span style={{ fontFamily: UI, fontSize: 13, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: r.accent }}>{r.label}</span>
+            </div>
+            {/* the slider — Today's track geometry (CARD_W 365 · GAP 14 · scroll-snap · peek) */}
+            <div className="lf-row-track" style={{ display: "flex", gap: LF_GAP, overflowX: "auto", scrollSnapType: "x mandatory", padding: "0 18px 4px", WebkitOverflowScrolling: "touch" }}>
               {list.map((item) => (
-                <article key={item.id} onClick={() => openItem(item, r.key)} style={{
-                  cursor: "pointer", position: "relative", overflow: "hidden",
-                  background: `linear-gradient(165deg, ${T.paperHi} 0%, ${r.accent}14 100%)`,
-                  border: `1px solid ${T.paperDeep}`, borderLeft: `4px solid ${r.accent}`, borderRadius: 20,
-                  display: "flex", flexDirection: "column", minHeight: 250,
-                  boxShadow: "0 4px 20px rgba(58,44,26,0.12), 0 1px 4px rgba(58,44,26,0.08)",
-                }}>
-                  {/* image / gradient header */}
-                  <div style={{ height: 116, position: "relative", overflow: "hidden", background: item.image_gradient || `linear-gradient(135deg, ${r.accent}33, ${r.accent}14)` }}>
-                    {item.image_url ? (
-                      <img src={item.image_url} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} onError={(e) => { e.target.style.display = "none"; }} />
-                    ) : null}
-                    <span style={{ position: "absolute", top: 10, left: 10, display: "inline-flex", alignItems: "center", gap: 6, background: "rgba(11,8,5,0.42)", color: T.paper, borderRadius: 999, padding: "4px 10px", fontFamily: UI, fontSize: 12, fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase" }}>
-                      <r.Icon size={12} /> {r.label}
-                    </span>
-                  </div>
-                  {/* body */}
-                  <div style={{ padding: "14px 16px 16px", display: "flex", flexDirection: "column", flex: 1, minHeight: 0 }}>
-                    <h3 style={{ fontFamily: SERIF, fontSize: 19, fontWeight: 600, color: T.ink, margin: "0 0 6px", lineHeight: 1.3, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>{item.title}</h3>
-                    {(item.summary || item.source_name || item.author_name) && (
-                      <p style={{ fontFamily: SERIF, fontSize: 14, fontWeight: 500, color: T.muted, margin: 0, lineHeight: 1.5, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>
-                        {item.summary || item.source_name || item.author_name}
-                      </p>
-                    )}
-                    <div style={{ marginTop: "auto", paddingTop: 12 }}>
-                      <span style={{ display: "inline-flex", alignItems: "center", gap: 7, background: r.accent, color: T.paper, borderRadius: 12, padding: "10px 15px", fontFamily: UI, fontSize: 13, fontWeight: 700 }}>
-                        {r.cta} <ArrowRight size={15} />
-                      </span>
-                    </div>
-                  </div>
-                </article>
+                <LifestyleRowCard key={item.id} item={item} row={r} navigate={navigate} />
               ))}
-            </CardStack>
+              <div style={{ flex: `0 0 4px` }} aria-hidden />
+            </div>
           </div>
         );
       })}
