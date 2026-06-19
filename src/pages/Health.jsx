@@ -1157,10 +1157,11 @@ export default function Health() {
   // ── Ask Jess pre-fill (Feature 3) — passes the section's reading context. ──
   const askJess = useCallback((sectionTitle) => {
     const prompt = `I'm reading about "${sectionTitle}" in my ${tab.label} health letter. Can you tell me more about how this applies to my cycle and life stage?`;
-    try { sessionStorage.setItem("jess_initial_prompt", prompt); } catch (_) {}
+    // Open Jess inline (the global overlay) in context — it auto-sends this
+    // as the first turn and answers right here. No bounce to the /Assistant
+    // page, so the user keeps their place in the letter.
     window.dispatchEvent(new CustomEvent("fw_open_assistant", { detail: { initialPrompt: prompt } }));
-    navigate("/Assistant");
-  }, [tab.label, navigate]);
+  }, [tab.label]);
 
   // ── GP question builder — save a key insight as a clinical question.
   const saveForGp = useCallback((text, sectionTitle) => {

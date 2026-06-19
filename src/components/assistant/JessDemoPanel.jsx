@@ -746,7 +746,7 @@ export default function JessDemoPanel(props) {
 // the first invocation per page load — subsequent renders are silent.
 let _jessPanelLoggedOnce = false;
 
-function JessDemoPanelInner() {
+function JessDemoPanelInner({ initialPrompt = null } = {}) {
   if (!_jessPanelLoggedOnce) {
     _jessPanelLoggedOnce = true;
     try { console.log("[jess-mount] JessDemoPanelInner entered render"); } catch {}
@@ -2031,6 +2031,28 @@ function JessDemoPanelInner() {
     setTab("chat");
     sendUserText(label);
   }, [sendUserText]);
+
+  // ── Ask-Jess seed (inline ask-and-answer) ───────────────────────────────
+  // When opened from an "Ask Jess" surface (Health letter, pattern nudge,
+  // the /Assistant page deep-link…) the caller passes the reading context
+  // as `initialPrompt`. We auto-send it once as the user's first turn so
+  // Jess answers it right here in context — no empty panel, no bounce to a
+  // dead page. Guarded by a ref (fires exactly once per mount) and gated on
+  // auth (ensureConversation needs the user id). We flip followUpFired first
+  // so the scripted 1.4s opener can't overwrite the seeded exchange.
+  const initialPromptFiredRef = useRef(false);
+  useEffect(() => {
+    if (initialPromptFiredRef.current) return;
+    const seed = String(initialPrompt || "").trim();
+    if (!seed || !user?.id) return;
+    initialPromptFiredRef.current = true;
+    setFollowUpFired(true);
+    setTab("chat");
+    // Defer one beat so profile/context have a chance to hydrate before the
+    // turn fires (sendUserText reads the freshest context block).
+    const t = window.setTimeout(() => { sendUserText(seed); }, 500);
+    return () => window.clearTimeout(t);
+  }, [initialPrompt, user?.id, sendUserText]);
 
   // Feature 4 — Astra handoff. After 3+ user turns Jess offers a one-tap
   // jump to /Lifestyle?tab=horoscope&from=jess. We seed sessionStorage

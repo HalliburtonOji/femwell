@@ -29,11 +29,12 @@ import { X } from "lucide-react";
 import JessDemoPanel from "./JessDemoPanel";
 import { useScrollLock } from "@/utils/useScrollLock";
 
-export default function AssistantOverlay({ open, onClose, initialPrompt: _initialPrompt }) {
-  // initialPrompt is intentionally ignored — JessDemoPanel owns its
-  // own opener (the phase-aware "Good morning" greeting) and the
-  // user types into the chat tab directly. Quick-prompt deep links
-  // can be re-added later by threading the value into JessDemoPanel.
+export default function AssistantOverlay({ open, onClose, initialPrompt }) {
+  // initialPrompt threads an Ask-Jess seed (the reading context from a
+  // Health letter, a pattern nudge, etc.) straight into JessDemoPanel,
+  // which auto-sends it as the user's first turn so the answer appears
+  // inline here — no bounce to the (now retired) /Assistant stub. When
+  // there's no seed, JessDemoPanel falls back to its phase-aware opener.
 
   // Lock the background page while the overlay is open (no scroll-bleed).
   useScrollLock(open);
@@ -109,7 +110,7 @@ export default function AssistantOverlay({ open, onClose, initialPrompt: _initia
         {/* The actual Jess UI — JessDemoPanel renders edge-to-edge
             inside the rounded container. */}
         <div style={{ flex: 1, minHeight: 0 }}>
-          <JessDemoPanel />
+          <JessDemoPanel initialPrompt={initialPrompt} />
         </div>
       </div>
     </>

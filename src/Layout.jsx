@@ -29,7 +29,10 @@ export default function Layout({ children, currentPageName }) {
 
   useEffect(() => {
     const openHandler = (e) => {
-      setAssistantPrompt(e.detail?.prompt || null);
+      // Ask-Jess surfaces send the seed under either `prompt` (AssistantOrb)
+      // or `initialPrompt` (Health letter, JessPatternNudge, etc.) — accept
+      // both so the user's question actually reaches Jess.
+      setAssistantPrompt(e.detail?.prompt || e.detail?.initialPrompt || null);
       setAssistantOpen(true);
     };
     const closeHandler = () => setAssistantOpen(false);

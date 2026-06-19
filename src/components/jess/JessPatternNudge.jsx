@@ -230,15 +230,13 @@ export default function JessPatternNudge({ user, profile }) {
     }
   }
 
-  // QA Fix 3 — "Tell Jess" jumps to the assistant. Pre-open the chat
-  // by setting sessionStorage so JessDemoPanel picks it up on mount.
+  // "Tell Jess" opens the assistant inline (the global overlay) with the
+  // pattern as the seeded first turn — Jess answers it in context. No
+  // full-page navigation to the /Assistant route.
   function tellJess() {
-    try {
-      window.sessionStorage.setItem("jess_open_chat", "1");
-      window.sessionStorage.setItem("jess_chat_prompt", `I want to talk about: ${patternSummary(hit)}`);
-    } catch { /* swallow */ }
+    const prompt = `I want to talk about: ${patternSummary(hit)}`;
     close();
-    window.location.href = "/Assistant";
+    window.dispatchEvent(new CustomEvent("fw_open_assistant", { detail: { initialPrompt: prompt } }));
   }
 
   // QA Fix 3 — "I'm okay" suppresses this nudge family for 48h.
