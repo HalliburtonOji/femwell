@@ -26,6 +26,8 @@ export function darken(hex, amt) {
   const b = Math.max(0, (n & 255) - Math.round(255 * amt));
   return `#${((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1)}`;
 }
+// perceived luminance 0–1 — pale (high-lum) petals melt into the cream page, so we deepen their base/throat.
+export function lum(hex) { const n = parseInt(String(hex).replace("#", ""), 16); return (0.299 * ((n >> 16) & 255) + 0.587 * ((n >> 8) & 255) + 0.114 * (n & 255)) / 255; }
 
 // ── the 9 colourways (BRAND_IDENTITY §2.5) — colour carries meaning ───────────
 export const COLORWAYS = [
@@ -87,13 +89,14 @@ const FORM_RINGS = {
   ranunculus:   [[11, 25, 6.6, 0, "O", 0.95], [10, 19, 5.8, 17, "M", 0.97], [9, 13.5, 4.8, 9, "I", 0.98], [7, 8.5, 4, 14, "I", 0.99]],
   camellia:     [[8, 28, 8.4, 0, "O", 0.96], [7, 20, 7.2, 24, "M", 0.98], [6, 13, 6, 12, "I", 0.99]],
   marigold:     [[14, 27, 4.6, 0, "O", 0.95], [13, 20.5, 4, 13, "M", 0.97], [11, 14.5, 3.5, 7, "I", 0.98], [8, 9, 3, 11, "I", 0.99]],
-  dahlia:       [[12, 32, 5, 0, "O", 0.95, 1], [11, 24, 4.4, 15, "M", 0.97, 1], [9, 16, 3.7, 8, "I", 0.98, 1]],
-  chrysanthemum:[[18, 33, 3, 0, "O", 0.95, 1], [16, 26, 2.8, 10, "M", 0.97, 1], [13, 18, 2.5, 6, "I", 0.98, 1]],
-  cosmos:       [[8, 34, 6.4, 0, "O", 0.96]],
+  dahlia:       [[12, 33, 5, 0, "O", 0.95], [12, 26, 4.6, 15, "M", 0.97], [10, 19, 4, 7.5, "M", 0.98], [8, 12, 3.4, 11, "I", 0.99]],
+  chrysanthemum:[[18, 33, 3, 0, "O", 0.95], [16, 26, 2.8, 10, "M", 0.97], [13, 18, 2.5, 6, "I", 0.98]],
+  cosmos:       [[8, 34, 7, 0, "O", 0.96]],
   anemone:      [[7, 31, 8.8, 0, "O", 0.96]],
   magnolia:     [[9, 36, 8, 0, "O", 0.96], [6, 25, 7, 20, "M", 0.97]],
   hellebore:    [[5, 30, 11, 0, "O", 0.95]],
-  poppy:        [[5, 34, 13, 0, "O", 0.96], [5, 21, 9.5, 36, "M", 0.98]],
+  lotus:        [[8, 36, 9, 0, "O", 0.9], [7, 27, 8, 25, "M", 0.95], [6, 18, 6.6, 12, "I", 0.98]],
+  poppy:        [[5, 35, 15, 0, "O", 0.96], [5, 23, 11, 36, "M", 0.98]],
   daisy:        [[20, 35, 3.2, 0, "O", 0.97, 1], [20, 29, 2.8, 9, "M", 0.98, 1]],
   forget:       [[5, 24, 11.5, 0, "O", 0.96], [5, 15, 7.5, 36, "M", 0.98]],
   cornflower:   [[10, 30, 4, 0, "O", 0.95, 1], [8, 20, 3.4, 18, "M", 0.97, 1]],
@@ -102,7 +105,7 @@ const FORM_RINGS = {
 const CENTER_KIND = {
   peony: "tuft", rose: "tuft", ranunculus: "tuft", camellia: "tuft", marigold: "tuft", dahlia: "tuft", chrysanthemum: "tuft", magnolia: "tuft",
   poppy: "dark", anemone: "dark", cornflower: "dark",
-  daisy: "gold", forget: "gold", cosmos: "gold",
+  daisy: "gold", forget: "gold", cosmos: "gold", lotus: "gold",
   hellebore: "stamen",
 };
 // large-rounded forms get a per-petal midrib vein (reads on few big petals; clutter on many)
@@ -113,6 +116,7 @@ const SHAPE = {
   peony: "cup", camellia: "cup", ranunculus: "cup", marigold: "cup",
   anemone: "broad", cosmos: "broad", hellebore: "broad", poppy: "broad",
   dahlia: "point", chrysanthemum: "point", daisy: "point", cornflower: "point",
+  lotus: "lance",
 };
 const CUPPED = new Set(["peony", "camellia", "ranunculus", "marigold"]);
 // dedicated (non-ring) heads — bespoke geometry so the flower is unmistakable
@@ -121,7 +125,8 @@ const FORM_BELL = "foxglove", FORM_FERN = "fern", FORM_SUN = "sunflower", FORM_S
 
 export function RichBloomV2({ color = T.blush, color2 = null, accent = "#CBA24E", size = 150, animate = true, soft = true, idx = 0, form = "peony" }) {
   const cx = PETAL_BLOOM_CX, cy = PETAL_BLOOM_CY;
-  const lightest = color2 || lighten(color, 0.52), light = lighten(color, 0.34), mid = lighten(color, 0.14), deep = color, deeper = darken(color, 0.13), darkest = darken(color, 0.3);
+  const _pale = lum(color) > 0.62, _d = _pale ? 0.26 : 0.13, _k = _pale ? 0.42 : 0.3;
+  const lightest = color2 || lighten(color, 0.52), light = lighten(color, 0.34), mid = lighten(color, 0.14), deep = color, deeper = darken(color, _d), darkest = darken(color, _k);
   const sheen = lighten(color, 0.62);
   const gid = `v2${idx}`;
   const delay = `${(idx % 5) * 0.7}s`;
@@ -205,15 +210,16 @@ export function RichBloomV2({ color = T.blush, color2 = null, accent = "#CBA24E"
       </>
     );
   };
-  // SUNFLOWER — narrow ray florets + a big seed disc with a real phyllotaxis spiral
+  // SUNFLOWER — two rings of pointed ray florets + a big seed disc with a real phyllotaxis spiral
+  const sunRay = (L, w) => `M0 0 C ${-w} ${-L * 0.32} ${-w * 0.6} ${-L * 0.78} ${-w * 0.5} ${-L * 0.93} C ${-w * 0.3} ${-L} ${w * 0.3} ${-L} ${w * 0.5} ${-L * 0.93} C ${w * 0.6} ${-L * 0.78} ${w} ${-L * 0.32} 0 0 Z`;
   const sunHead = () => (
     <g>
-      {ring(26, 35, 2.7, gradFor("O"), 0.96, 0, deeper, true)}
-      {ring(26, 30, 2.5, gradFor("M"), 0.98, 6.9, deep, true)}
-      <circle cx={cx} cy={cy} r="13" fill={`url(#disc-${gid})`} />
-      {Array.from({ length: 96 }).map((_, i) => { const a = i * GOLD_ANGLE * Math.PI / 180; const rr = 1.32 * Math.sqrt(i); if (rr > 12) return null; return <circle key={`sd${i}`} cx={cx + Math.cos(a) * rr} cy={cy + Math.sin(a) * rr} r="0.72" fill={i % 2 ? "#5E4419" : "#7A5A22"} opacity="0.92" />; })}
-      <circle cx={cx} cy={cy} r="13" fill="none" stroke={darken(color, 0.22)} strokeWidth="0.6" opacity="0.45" />
-      <ellipse cx={cx - 4} cy={cy - 4} rx="3.4" ry="2" fill="#FFFFFF" opacity="0.12" transform={`rotate(-30 ${cx - 4} ${cy - 4})`} />
+      {Array.from({ length: 24 }).map((_, i) => <path key={`so${i}`} d={sunRay(34, 5.2)} fill={`url(#pO-${gid})`} stroke={deeper} strokeWidth="0.4" strokeOpacity="0.18" transform={`translate(${cx} ${cy}) rotate(${i * 15})`} />)}
+      {Array.from({ length: 24 }).map((_, i) => <path key={`sm${i}`} d={sunRay(29, 4.6)} fill={`url(#pM-${gid})`} transform={`translate(${cx} ${cy}) rotate(${7.5 + i * 15})`} />)}
+      <circle cx={cx} cy={cy} r="15.5" fill={`url(#disc-${gid})`} />
+      {Array.from({ length: 150 }).map((_, i) => { const a = i * GOLD_ANGLE * Math.PI / 180; const rr = 1.32 * Math.sqrt(i); if (rr > 14.5) return null; return <circle key={`sd${i}`} cx={cx + Math.cos(a) * rr} cy={cy + Math.sin(a) * rr} r="0.82" fill={i % 2 ? "#5E4419" : "#7A5A22"} opacity="0.92" />; })}
+      <circle cx={cx} cy={cy} r="15.5" fill="none" stroke={darken(color, 0.24)} strokeWidth="0.7" opacity="0.4" />
+      <ellipse cx={cx - 5} cy={cy - 5} rx="4" ry="2.4" fill="#FFFFFF" opacity="0.10" transform={`rotate(-30 ${cx - 5} ${cy - 5})`} />
     </g>
   );
   // SNOWDROP — a nodding white bell of 3 outer tepals + a green-marked inner cup
@@ -280,37 +286,19 @@ export function RichBloomV2({ color = T.blush, color2 = null, accent = "#CBA24E"
     };
     return <g>{frond(-20, 42, "fl")}{frond(0, 50, "fc")}{frond(20, 42, "fr")}</g>;
   };
-  // a cupped-petal ring with fold creases — the rose family building block
-  const cupRing = (count, len, wid, gradId, op, rot, edge) => Array.from({ length: count }).map((_, i) => {
-    const ang = rot + i * (360 / count);
-    return (
-      <g key={`${gradId}-${i}`} transform={`translate(${cx} ${cy}) rotate(${ang})`}>
-        <path d={petalCup(len, wid)} fill={`url(#${gradId})`} opacity={op} stroke={edge} strokeWidth="0.4" strokeOpacity="0.18" />
-        <path d={`M0 ${-len * 0.18} Q ${wid * 0.16} ${-len * 0.55} 0 ${-len * 0.9}`} stroke={sheen} strokeWidth="0.5" strokeOpacity="0.32" fill="none" strokeLinecap="round" />
-        <path d={`M ${-wid * 0.44} ${-len * 0.24} Q ${-wid * 0.28} ${-len * 0.6} ${-wid * 0.12} ${-len * 0.86}`} stroke={deeper} strokeWidth="0.4" strokeOpacity="0.18" fill="none" strokeLinecap="round" />
-      </g>
-    );
-  });
-  // ROSE — the hero. Open cupped outer petals → a spiralled, furled heart.
+  // ROSE — the hero. Three rings of reflexed guard petals → a visible SPIRAL furled heart.
+  const roseGuard = (L, w) => `M0 0 C ${-w} ${-L * 0.28} ${-w * 0.98} ${-L * 0.74} ${-w * 0.46} ${-L * 0.95} C ${-w * 0.18} ${-L * 1.04} ${w * 0.18} ${-L * 1.04} ${w * 0.46} ${-L * 0.95} C ${w * 0.98} ${-L * 0.74} ${w} ${-L * 0.28} 0 0 Z`;
   const roseHead = () => {
-    // the SPIRAL FURLED HEART — overlapping crescent petals coiling inward (the rose signature)
-    const coil = [];
-    const N = 11;
-    for (let i = 0; i < N; i++) {
-      const ang = i * 47, sc = 1.12 - i * 0.072;
-      coil.push(<path key={`c${i}`} d="M0 0 C -7.5 -1.5 -9 -9.5 -3 -13 C 1.4 -15.6 8 -11.6 7 -5.6 C 6.2 -2 1.6 -2.2 1.8 -6"
-        transform={`translate(${cx} ${cy}) rotate(${ang}) scale(${sc})`}
-        fill={i % 2 ? `url(#pM-${gid})` : `url(#pI-${gid})`} stroke={deeper} strokeWidth="0.4" strokeOpacity="0.24" opacity="0.99" />);
-    }
+    const W = "M0 0 C -8 -2 -10.5 -11 -3.5 -15.5 C 1.5 -18.5 9.5 -14 8 -6.5 C 7 -1.8 1.2 -2.4 1.6 -7";
     return (
       <g>
-        {cupRing(8, 32, 12, `pO-${gid}`, 0.96, 0, deeper)}
-        {cupRing(7, 25, 11.5, `pM-${gid}`, 0.97, 24, deep)}
-        {cupRing(6, 18, 10, `pM-${gid}`, 0.98, 12, deep)}
-        <circle cx={cx} cy={cy} r="13" fill={`url(#occ-${gid})`} />
-        {coil}
-        <circle cx={cx} cy={cy} r="1.6" fill={deeper} opacity="0.6" />
-        <ellipse cx={cx - 7} cy={cy - 8} rx="3.4" ry="2" fill="#FFFDF7" opacity="0.22" transform={`rotate(-28 ${cx - 7} ${cy - 8})`} />
+        {Array.from({ length: 5 }).map((_, i) => <path key={`g1${i}`} d={roseGuard(34, 15)} fill={`url(#pO-${gid})`} stroke={deeper} strokeWidth="0.5" strokeOpacity="0.22" transform={`translate(${cx} ${cy}) rotate(${i * 72})`} />)}
+        {Array.from({ length: 5 }).map((_, i) => <g key={`g2${i}`} transform={`translate(${cx} ${cy}) rotate(${36 + i * 72})`}><path d={roseGuard(27, 12.5)} fill={`url(#pM-${gid})`} stroke={deep} strokeWidth="0.4" strokeOpacity="0.2" /><path d="M0 -5.4 Q 2 -14.8 0 -23.2" stroke={sheen} strokeWidth="0.5" strokeOpacity="0.3" fill="none" strokeLinecap="round" /></g>)}
+        {Array.from({ length: 5 }).map((_, i) => <path key={`g3${i}`} d={roseGuard(20, 10)} fill={`url(#pM-${gid})`} stroke={deep} strokeWidth="0.4" strokeOpacity="0.2" transform={`translate(${cx} ${cy}) rotate(${i * 72})`} />)}
+        <circle cx={cx} cy={cy} r="14" fill={`url(#occ-${gid})`} />
+        {Array.from({ length: 9 }).map((_, i) => { const sc = 1.45 - i * 0.115; return <path key={`c${i}`} d={W} transform={`translate(${cx} ${cy}) rotate(${i * 52}) scale(${sc})`} fill={`url(#${i % 2 ? "pI" : "pM"}-${gid})`} stroke={deeper} strokeWidth="0.4" strokeOpacity="0.26" />; })}
+        <circle cx={cx} cy={cy} r="1.8" fill={deeper} opacity="0.55" />
+        <ellipse cx={cx - 8} cy={cy - 9} rx="4" ry="2.4" fill="#FFFDF7" opacity="0.22" transform={`rotate(-28 ${cx - 8} ${cy - 9})`} />
       </g>
     );
   };
@@ -319,16 +307,16 @@ export function RichBloomV2({ color = T.blush, color2 = null, accent = "#CBA24E"
     <g>
       {Array.from({ length: 5 }).map((_, i) => (
         <g key={i} transform={`translate(${cx} ${cy}) rotate(${i * 72})`}>
-          <path d={petalBroad(35, 15)} fill={`url(#pO-${gid})`} stroke={deeper} strokeWidth="0.4" strokeOpacity="0.16" />
-          {[-1, 0, 1].map((k) => <path key={k} d={`M0 -3 Q ${k * 3.4} ${-18} ${k * 2.2} ${-31}`} stroke={darken(color, 0.22)} strokeWidth="0.4" strokeOpacity="0.3" fill="none" strokeLinecap="round" />)}
+          <path d={petalBroad(37, 16)} fill={`url(#pO-${gid})`} stroke={deeper} strokeWidth="0.4" strokeOpacity="0.18" />
+          {[-1, 0, 1].map((k) => <path key={k} d={`M0 -3 Q ${k * 3.6} ${-19} ${k * 2.3} ${-33}`} stroke={darken(color, 0.24)} strokeWidth="0.45" strokeOpacity="0.32" fill="none" strokeLinecap="round" />)}
         </g>
       ))}
-      <circle cx={cx} cy={cy} r="9.5" fill={darken(color, 0.42)} />
-      <circle cx={cx} cy={cy} r="11" fill={`url(#occ-${gid})`} />
-      {/* staminal column up-right */}
-      <path d={`M${cx} ${cy} Q ${cx + 7} ${cy - 13} ${cx + 9.5} ${cy - 24}`} stroke={darken(color, 0.16)} strokeWidth="1.7" fill="none" strokeLinecap="round" />
-      {Array.from({ length: 9 }).map((_, i) => { const t = i / 9; const px = cx + 7 * t + (i % 2 ? 1.8 : -1.8); const py = cy - 16 * t - 5; return <circle key={i} cx={px} cy={py} r="1.15" fill="#E9CF7A" stroke="#B98F2E" strokeWidth="0.2" />; })}
-      {Array.from({ length: 5 }).map((_, i) => { const a = i * 72 * Math.PI / 180; return <circle key={`sg${i}`} cx={cx + 9.5 + Math.cos(a) * 2.2} cy={cy - 24 + Math.sin(a) * 2.2} r="1.3" fill={darken(color, 0.05)} />; })}
+      <circle cx={cx} cy={cy} r="11" fill={darken(color, 0.46)} />
+      <circle cx={cx} cy={cy} r="13" fill={`url(#occ-${gid})`} />
+      {/* the signature staminal column projecting up-right, anthers along it, 5 stigma lobes at the tip */}
+      <path d={`M${cx} ${cy} Q ${cx + 9} ${cy - 17} ${cx + 13} ${cy - 31}`} stroke={darken(color, 0.18)} strokeWidth="2" fill="none" strokeLinecap="round" />
+      {Array.from({ length: 11 }).map((_, i) => { const t = i / 11; const px = cx + 9 * t * 1.1 + (i % 2 ? 2.1 : -2.1); const py = cy - 22 * t - 6; return <circle key={i} cx={px} cy={py} r="1.25" fill="#E9CF7A" stroke="#B98F2E" strokeWidth="0.2" />; })}
+      {Array.from({ length: 5 }).map((_, i) => { const a = i * 72 * Math.PI / 180; return <circle key={`sg${i}`} cx={cx + 13 + Math.cos(a) * 2.4} cy={cy - 31 + Math.sin(a) * 2.4} r="1.5" fill={darken(color, 0.05)} />; })}
       {speculars()}
     </g>
   );
@@ -359,11 +347,24 @@ export function RichBloomV2({ color = T.blush, color2 = null, accent = "#CBA24E"
       {speculars()}
     </g>
   );
+  // PEONY — a full ruffled pompom: broad ROUNDED petals, densely packed, a soft pale heart (no dark eye).
+  const peonyRuffle = (L, w) => `M0 0 C ${-w} ${-L * 0.22} ${-w * 1.02} ${-L * 0.64} ${-w * 0.5} ${-L * 0.82} C ${-w * 0.28} ${-L * 0.9} ${-w * 0.14} ${-L * 0.84} ${-w * 0.06} ${-L * 0.93} C ${-w * 0.02} ${-L * 0.99} ${w * 0.02} ${-L * 0.99} ${w * 0.06} ${-L * 0.93} C ${w * 0.14} ${-L * 0.84} ${w * 0.28} ${-L * 0.9} ${w * 0.5} ${-L * 0.82} C ${w * 1.02} ${-L * 0.64} ${w} ${-L * 0.22} 0 0 Z`;
+  const peonyHead = () => {
+    const rings = [[11, 31, 12, 0, "O", 0.96], [11, 25, 11, 16, "M", 0.97], [10, 19, 9.5, 9, "M", 0.98], [8, 13.5, 8, 13, "I", 0.98], [6, 8.5, 6.4, 20, "I", 0.99]];
+    return (
+      <g>
+        {rings.map(([count, len, wid, rot, code, op]) => Array.from({ length: count }).map((_, i) => <path key={`${code}-${rot}-${i}`} d={peonyRuffle(len, wid)} fill={`url(#${gradFor(code)})`} opacity={op} stroke={deeper} strokeWidth="0.4" strokeOpacity="0.2" transform={`translate(${cx} ${cy}) rotate(${rot + i * (360 / count)})`} />))}
+        <circle cx={cx} cy={cy} r="6" fill={`url(#pI-${gid})`} />
+        {Array.from({ length: 7 }).map((_, i) => { const a = i * 51.4 * Math.PI / 180, rr = 3.4; return <path key={`pc${i}`} d={peonyRuffle(7, 4)} fill={`url(#pI-${gid})`} opacity="0.98" transform={`translate(${cx + Math.cos(a) * rr} ${cy + Math.sin(a) * rr}) rotate(${i * 51.4 + 90})`} />; })}
+        {speculars()}
+      </g>
+    );
+  };
   const head = formKey === FORM_BELL ? bellHead() : formKey === FORM_FERN ? fernHead()
     : formKey === FORM_SUN ? sunHead() : formKey === FORM_SNOWDROP ? snowdropHead()
     : formKey === FORM_TULIP ? tulipHead() : formKey === FORM_ROSE ? roseHead()
     : formKey === FORM_HIBISCUS ? hibiscusHead() : formKey === FORM_LILY ? lilyHead()
-    : formKey === FORM_MAGNOLIA ? magnoliaHead() : petalHead();
+    : formKey === FORM_MAGNOLIA ? magnoliaHead() : formKey === "peony" ? peonyHead() : petalHead();
 
   return (
     <div style={{ position: "relative", display: "inline-block", width: size, height: Math.round(size * 1.05), lineHeight: 0 }}>
@@ -704,23 +705,39 @@ export function FlowerGlyph({ variant = "camellia", size = 52, color = T.crimson
 
 // ── BUTTERFLY — transformation + return. Gentle drift + faint flutter (isolated, reduced-motion-safe).
 export function Butterfly({ size = 46, color = "#8E6E8E", color2 = T.gold, pattern = "spots", animate = true, idx = 0 }) {
-  const gid = `bf-${idx}`;
+  const gid = `bf-${idx}`, c = color, c2 = color2 || T.gold;
+  // marks drawn on the LEFT wing (x negative), mirrored to the right
   let marks;
-  if (pattern === "bands") marks = <g fill="none" stroke={color2} strokeWidth="2.2" strokeLinecap="round" opacity="0.8"><path d="M7 11 C 12 13 17 14 22 15" /><path d="M11 31 C 15 30 19 28 22 26" /></g>;
-  else if (pattern === "eyes") marks = <g><circle cx="10" cy="13" r="2.6" fill={color2} opacity="0.9" /><circle cx="10" cy="13" r="1.1" fill={darken(color, 0.3)} /><circle cx="14" cy="30" r="2" fill={color2} opacity="0.8" /><circle cx="14" cy="30" r="0.9" fill={darken(color, 0.3)} /></g>;
-  else marks = <g><circle cx="9" cy="13" r="1.6" fill="#FFFDF7" opacity="0.6" /><circle cx="13" cy="11" r="1" fill={color2} opacity="0.7" /><circle cx="15" cy="30" r="1.2" fill={color2} opacity="0.7" /></g>;
-  const wingL = (<g><path d="M24 15 C 17 6 5 5 3 13 C 2 19 11 22 24 20 Z" fill={`url(#bw-${gid})`} /><path d="M24 21 C 15 22 8 28 12 34 C 16 38 23 31 24 24 Z" fill={`url(#bw2-${gid})`} />{marks}</g>);
+  if (pattern === "bands") marks = <g fill="none" stroke={darken(c, 0.26)} strokeWidth="2" strokeLinecap="round" opacity="0.6"><path d="M-24 -10 C -18 -14 -10 -13 -3 -6" /><path d="M-18 13 C -12 11 -7 11 -3 7" strokeWidth="1.6" /></g>;
+  else if (pattern === "eyes") marks = <g><circle cx="-15" cy="-11" r="3.2" fill={c2} opacity="0.9" /><circle cx="-15" cy="-11" r="1.4" fill={darken(c, 0.3)} /><circle cx="-12" cy="13" r="2.4" fill={c2} opacity="0.8" /><circle cx="-12" cy="13" r="1" fill={darken(c, 0.3)} /></g>;
+  else if (pattern === "tips") marks = <g><path d="M-27 -10 C -24 -19 -17 -21 -12 -19 C -16 -14 -22 -11 -27 -10 Z" fill={darken(c, 0.3)} opacity="0.7" /><circle cx="-13" cy="11" r="1.6" fill={c2} opacity="0.7" /></g>;
+  else marks = <g><circle cx="-16" cy="-11" r="2.6" fill={c2} opacity="0.9" /><circle cx="-16" cy="-11" r="1.1" fill={darken(c, 0.3)} /><circle cx="-12" cy="13" r="1.8" fill={c2} opacity="0.8" /><circle cx="-21" cy="-7" r="1" fill="#FFFDF7" opacity="0.6" /></g>;
+  const sideWing = (
+    <g>
+      <path d="M0 -4 C -10 -22 -24 -22 -27 -10 C -29 -2 -16 -1 -1 -3 Z" fill={`url(#bw-${gid})`} stroke={darken(c, 0.22)} strokeWidth="0.5" strokeOpacity="0.5" />
+      <path d="M-1 0 C -16 0 -25 9 -21 18 C -18 24 -8 21 -2 9 Z" fill={`url(#bh-${gid})`} stroke={darken(c, 0.22)} strokeWidth="0.5" strokeOpacity="0.5" />
+      <path d="M-27 -10 C -24 -22 -10 -22 0 -4" fill="none" stroke={darken(c, 0.28)} strokeWidth="1.4" strokeLinecap="round" opacity="0.55" />
+      {marks}
+    </g>
+  );
   return (
-    <svg viewBox="0 0 48 42" width={size} height={Math.round(size * 0.88)} aria-hidden
+    <svg viewBox="0 0 60 52" width={size} height={Math.round(size * 0.86)} aria-hidden
       style={animate ? { transformBox: "fill-box", transformOrigin: "center", willChange: "transform", animation: "fwcDrift 7s ease-in-out infinite", animationDelay: `${(idx % 4) * 0.9}s` } : undefined}>
       <defs>
-        <linearGradient id={`bw-${gid}`} x1="1" y1="0" x2="0" y2="1"><stop offset="0%" stopColor={lighten(color, 0.28)} /><stop offset="100%" stopColor={color} /></linearGradient>
-        <linearGradient id={`bw2-${gid}`} x1="1" y1="0" x2="0" y2="1"><stop offset="0%" stopColor={color} /><stop offset="100%" stopColor={darken(color, 0.12)} /></linearGradient>
+        <linearGradient id={`bw-${gid}`} x1="1" y1="0" x2="0" y2="1"><stop offset="0%" stopColor={lighten(c, 0.3)} /><stop offset="60%" stopColor={c} /><stop offset="100%" stopColor={darken(c, 0.16)} /></linearGradient>
+        <linearGradient id={`bh-${gid}`} x1="1" y1="0" x2="0" y2="1"><stop offset="0%" stopColor={c} /><stop offset="100%" stopColor={darken(c, 0.2)} /></linearGradient>
       </defs>
-      <g style={animate ? { transformBox: "fill-box", transformOrigin: "right center", animation: "fwcFlutter 0.9s ease-in-out infinite" } : undefined}>{wingL}</g>
-      <g style={animate ? { transformBox: "fill-box", transformOrigin: "left center", animation: "fwcFlutter 0.9s ease-in-out infinite" } : undefined} transform="translate(48 0) scale(-1 1)">{wingL}</g>
-      <path d="M24 11 C 22.8 19 22.8 28 24 34 C 25.2 28 25.2 19 24 11 Z" fill="#2E261B" /><circle cx="24" cy="11" r="1.6" fill="#2E261B" />
-      <path d="M24 10 C 22 6 20 4 18 3" stroke="#2E261B" strokeWidth="0.7" fill="none" strokeLinecap="round" /><path d="M24 10 C 26 6 28 4 30 3" stroke="#2E261B" strokeWidth="0.7" fill="none" strokeLinecap="round" />
+      <g style={animate ? { transformBox: "fill-box", transformOrigin: "center", animation: "fwcFlutter 0.9s ease-in-out infinite" } : undefined}>
+        <g transform="translate(30 26)">{sideWing}</g>
+        <g transform="translate(30 26) scale(-1 1)">{sideWing}</g>
+      </g>
+      <g transform="translate(30 26)">
+        <path d="M0 -16 C -1.7 -8 -1.7 10 0 20 C 1.7 10 1.7 -8 0 -16 Z" fill="#2E261B" />
+        <circle cx="0" cy="-16" r="2" fill="#2E261B" />
+        <path d="M0 -16 C -2 -22 -4 -25 -7 -26" fill="none" stroke="#2E261B" strokeWidth="0.8" strokeLinecap="round" />
+        <path d="M0 -16 C 2 -22 4 -25 7 -26" fill="none" stroke="#2E261B" strokeWidth="0.8" strokeLinecap="round" />
+        <circle cx="-7" cy="-26" r="1.1" fill="#2E261B" /><circle cx="7" cy="-26" r="1.1" fill="#2E261B" />
+      </g>
     </svg>
   );
 }

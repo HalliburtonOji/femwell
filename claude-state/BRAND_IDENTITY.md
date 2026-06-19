@@ -1,11 +1,26 @@
-# FEMWELL — CANONICAL BRAND IDENTITY · COMPLETE MASTER (v2 · 2026-06-17)
+# FEMWELL — CANONICAL BRAND IDENTITY · COMPLETE MASTER (v3 · 2026-06-19)
 
 > **READ THIS BEFORE ANY UI / VISUAL WORK OR VISUAL SCAN. Conform to it.**
-> **This file is the single COMPLETE source of truth** — typography (fonts + scale), colour (tokens +
-> colourways), the heart mark, the botanical brand-image system, the flora backbone/meaning, variety &
-> per-user uniqueness, spacing, and the component map. It is **self-sufficient for building**.
+> **This file is the single COMPLETE source of truth** — the north star + soul, typography (fonts + scale),
+> colour (tokens + colourways + WCAG), the heart mark, the botanical brand-image system, the flora
+> backbone/meaning + recognisability standard, variety & per-user uniqueness, motion, spacing, and the
+> component map. It is **self-sufficient for building**.
 > If code disagrees with this file, this file wins — and the code is a fix target.
+> Phone-readable bible: **`femwell-handoff/BRAND-BIBLE.html`** (styled, renders its own live flora). Research + citations: **`workspace/BRAND_RESEARCH_2026-06-19.md`**.
 > Mirrored in-app at **Founders → Brand & UX → Brand Identity** and **→ Flora & Meaning**. Authoring/gate rules live in CLAUDE.md.
+
+---
+
+## ★ THE NORTH STAR (derive everything from this)
+> **"Your life, in bloom — a living garden that grows as you do."**
+
+A woman's life is a **garden, not a chart.** It has **seasons** (the cycle), **long arcs** (life-stages, teen-daisy → elder-magnolia), **many beds not one** (career · friendship · love · money · rest · joy · identity — *health is one room, not the house*), and it is **tended, not optimised.** FemWell is the garden that remembers what bloomed where: every flower means something true, a butterfly arrives only on a real return/change, and the garden is unmistakably **hers** (the deterministic flora fingerprint, §5.2). The app doesn't track you — it grows with you.
+
+**Why it's load-bearing:** it (a) reframes femtech away from clinical tracking toward whole-life *tending* — the documented white space (femtech flees pink *into clinical neutrality*: Clue/Elvie; FemWell flees pink *into editorial warmth*); (b) unifies every surface into one language; (c) gives the voice a concrete home; (d) is already half-built in code (flora system + fingerprint). **Open here; derive everything from it.**
+
+**BRAND PERSONALITY — the archetype north star:** a **Caregiver core**, tinted by the **Sage**, with a touch of the **Innocent's joy**. Caregiver = the warm, nurturing spine; Sage = keeps it from going saccharine (it genuinely *knows things* — cycle science, real meaning); Innocent = lighthearted by default. Every copy/design/feature decision answers to: **"a warm friend who knows things and keeps it joyful."** Avoid a pure Caregiver (reads soft/clinical-maternal) and avoid Lover-led (too romance-coded for a whole-life app). *(Source: Mark & Pearson archetypes; full citations in the research doc.)*
+
+**POSITIONING in one line:** the **warm, editorial, beautiful** lane between pink-bubblegum femtech and cold-clinical femtech — *breadth of life carries the femininity, not pink* (the Gentlewoman move). Cream + gold + crimson is the documented premium "old-money" formula (ivory + warm-gold + burgundy) — lean in, don't drift bright/pink/clinical.
 
 **APPENDICES (deep + cited; this master is self-sufficient without them):**
 - `claude-state/BRAND_FLORA.md` — the full flora map, floriography/colour research, fingerprint math, sources.
@@ -22,7 +37,7 @@ Before you add or change anything visual, confirm:
 2. **Colour** — every colour is a token from §2. **No raw hex that duplicates a token.** One gold (`#A8893F`), one crimson (`#BC2E27`), one cream-paper (`#ECE7DA`). Phase colours (§2.4) are a separate semantic set.
 3. **Heart** — if this is a primary page header or a brand signature, it carries **exactly one** carved-crimson heart (§3). Don't scatter it; don't recolour it; don't substitute the Lucide outline heart as the brand mark.
 4. **Motif** — at most **one** botanical line-motif per viewport, stroke-only, low opacity, never behind readable text (§4).
-5. **Bloom** — use the canonical `<Bloom>` (NurtureGarden), never a flat reimplementation (§5). Animation is breath/sway only, GPU-cheap, `prefers-reduced-motion`-gated.
+5. **Bloom** — use the canonical `RichBloomV2` from **`src/components/brand/flora.jsx`** (never a flat reimplementation). The species must be **recognisable** (§5.0 — a rose reads as a rose), rendered at **generous scale**, pale blooms kept defined; animation is breath/sway only, GPU-cheap, `prefers-reduced-motion`-gated. Make variety **visible** (distinct species per section / bouquets), never one lone bloom.
 6. **Surfaces/components** — snap to the spacing scale; cards, backgrounds/scrims, buttons, chips/inputs/sheets/toggles, nav, icons & links all follow §6. Buttons accent-driven (not legacy `.fw-btn`); icons Lucide/SVG only; one motif per fold. **Page background = `PAPER_BG` (not a flat `backgroundColor`).**
 7. **CARDS (§6.7) — import from `src/components/brand/Card.jsx`; NEVER hand-roll a `<div>` card.** Pick the typed variant for the content (Article/Story/Video/Audio/Book/DailyStory/Horoscope/Summary/Recommendation/LogAction). Every card carries a hook + line (or a real snippet / inline player) AND an inline action; **no empty/dumb containers, no blank fallbacks.** Inline media plays IN the card; every open/CTA **deep-links the exact item full-screen, never a parent list**.
 8. **PAGE STRUCTURE (§6.8) — the signature top.** A primary page opens with `FwFloraHero` (flora hero) → ONE `SummaryCard` → page-specific content (all rich cards). Use `src/components/brand/PageTop.jsx`.
@@ -139,6 +154,13 @@ The flora glyphs (§5) are parameterised by a **colourway** = `{petal, tip (lit)
 | **Sky** | `#9FB6C9` / `#C3D2DE` / `#5F7E8E` | trust · loyalty · constancy |
 The same colourways drive the **creatures** (white butterfly = the divine/ancestor · blue = tranquillity · gold = confidence/joy · monarch-orange = warmth). These are flower/creature palettes — **chrome still uses §2.1–2.2 tokens only**.
 
+### 2.6 ACCESSIBILITY — contrast on a warm palette (HARD RULE)
+Warm cream palettes fail WCAG AA easily because the tones are naturally close, and **the naked eye is unreliable** on them (ratios come from relative luminance — use a checker). AA = **4.5:1** normal text, **3:1** large (≥18.66px bold / 24px+).
+- **Body & small text → `ink #0B0805`, `inkSoft #1A140D`, or `muted #2E261B` ONLY** (near-black on cream clears 4.5:1 comfortably; `muted` is a dark brown, NOT a light grey — that's why it passes).
+- **`gold` / `crimson` / `sage` / `blush` are for LARGE display, accents, borders & icons — NEVER body or small captions** (they risk failing AA on cream).
+- **Anti-muddiness law (the premium fix):** one clean light ground + **ONE** saturated accent (crimson) + **ONE** deep anchor (ink). The §2.3 retirement of the mid-brown duplicates IS this rule — keep it strict; mid-tone-brown clutter is what makes warm palettes read cheap.
+- **Action:** record measured ratios for each text/bg token pair in a small table (a Ms Accessibility verification task).
+
 ---
 
 ## 3. THE HEART / LOVE BRAND MARK
@@ -188,8 +210,26 @@ Corners "grow" inward from the corner; draw for top-left, **rotate** 90/180/270 
 
 ---
 
-## 5. BLOOM / ILLUSTRATION CRAFT STANDARD  ·  ELEVATED v2 (2026-06-17)
-**Canonical implementation:** `<Bloom>` in `components/nurture/NurtureGarden.jsx`. **Reference for the elevated bar:** `RichBloomV2` in `pages/BrandCraftSample.jsx` (live at `/BrandCraftSample`). **All surfaces use the canonical component** — the flat ellipse re-implementations in the `TodayDemo*` pages are **deprecated**; the canonical `<Bloom>` is upgraded to v2 in the Today/Phase-2 build so the whole app inherits it.
+## 5. BLOOM / ILLUSTRATION CRAFT STANDARD  ·  RECOGNISABILITY v3 (2026-06-19)
+**Canonical engine (the source of truth):** `RichBloomV2` in **`src/components/brand/flora.jsx`** — production surfaces import from here. (`<Bloom>` in `components/nurture/NurtureGarden.jsx` and the copies in `pages/BrandCraftSample.jsx` are legacy/sample; de-dup toward `flora.jsx`.)
+
+### 5.0 THE RECOGNISABILITY STANDARD (v3 — the thing most criticised, now fixed)
+> **The #1 rule of the flora: a rose must read as a rose.** The prior failure was every species sharing **one radial silhouette** (a ring of identical petals + a centre), so peony ≈ camellia ≈ ranunculus and only colour changed — "the same basic slop." The v3 standard fixes this:
+- **Silhouette FIRST, colour second — bespoke geometry PER SPECIES.** Recognition is carried by the outline + signature feature, not the hue. Each species has its own head builder (or its own ring grammar with a per-species petal silhouette: cup/broad/lance/point/ruffle).
+- **The three HEROES + their non-negotiable signatures:**
+  - **ROSE (the hero)** = three rings of reflexed cupped **guard petals** coiling into a **VISIBLE SPIRAL furled heart** (overlapping crescent "wrap" petals, scaling down ~×0.115/turn at ~52°). The spiral eye must read.
+  - **SUNFLOWER** = two rings of pointed **ray florets** around a **big seed disc** with a real **phyllotaxis spiral** (golden-angle 137.5°, ~150 seed dots), browned disc.
+  - **HIBISCUS** = **5 broad veined petals** + a **deep dark throat** + the **projecting staminal column** (anthers along it, **5 stigma lobes** at the tip). The column is the signature — keep it long/prominent.
+- **Distinct silhouettes across the set:** peony = full **ruffled pompom** (broad rounded petals, packed, soft pale heart, NO dark eye — never spiky); dahlia = sharp **geometric pointed star-ball**; tulip = **closed goblet**; poppy = **broad papery petals + dark boss**; lily = **6 recurved lance tepals + protruding stamens/anthers**; magnolia = **open broad tepals + carpel cone**; lotus = **layered pointed lance**, serene. (Engine forms: rose·sunflower·hibiscus·peony·dahlia·tulip·poppy·lily·magnolia·lotus·cosmos·snowdrop·foxglove·fern + the ring forms camellia/ranunculus/marigold/chrysanthemum/anemone/cornflower/forget/daisy/hellebore.)
+- **GENEROUS SCALE.** A bloom is a centrepiece, not a tiny sticker — small renders kill the detail that makes it recognisable. Heroes render large; meaning-blooms on cards are the small exception (`FlowerGlyph`, simplified).
+- **PALE BLOOMS HOLD THEIR EDGE (v3).** Cream/blush/sky petals melt into the cream page; the engine now **deepens the petal base + throat for high-luminance petals** (`lum(color) > 0.62 → darken ×0.26/×0.42`) so the silhouette survives on `paperHi`. Never ship a pale bloom that reads as a faint smudge.
+- **VARIETY MADE VISIBLE.** Don't show one lone bloom per page. Use a **different signature species per page/section** (§5.3), **bouquets** (`Bouquet` — a posy of DIFFERENT blooms), and the Flora Lab (`/FloraLabDemo`) leads with rose/sunflower/hibiscus **side-by-side** so the distinctness is provable.
+- **CREATURES are real, EARNED, and ON the plant.** Butterflies are proper **four-wing** creatures (forewing + hindwing + body + antennae + pattern-driven eyespots) — not blobs; `BloomWithCreature` rests them physically on a petal/leaf/flower. One at a time, on a real moment, then they drift off (§5.1).
+- **Before/after proof:** `workspace/flora/before-after.png` + `real-proof-full.png` (server-rendered from the real engine).
+
+**Craft standard (the elevated "wow" bar — petals must look lifelike, not flat ovals):**
+- **Petal geometry:** real **notched/bespoke petal `<path>`s** — **never rotated ellipses**. Build a head from **layered rings** (deep outer ruff → mid offset layer → lit inner crown) OR a bespoke per-species head (rose/sunflower/hibiscus/lily/magnolia/tulip/snowdrop/foxglove/fern/peony). Layering + offset = real depth.
+- **Shading:** **4–5-stop gradients** running lit-tip → shadowed-throat; rings step in tone (outer base in shadow, inner crown lightest); a faint low-opacity petal **edge-stroke** (`~0.4w`, `~0.16–0.22 opacity`) separates petals — this linework is what reads as *illustration*, not blob. A soft **throat occlusion** radial seats the petals.
 
 **Craft standard (the elevated "wow" bar — petals must look lifelike, not flat ovals):**
 - **Petal geometry:** real **notched petal `<path>`s** (a cupped, heart-tipped silhouette) — **never rotated ellipses**. Build the head from **three layered rings**: a large **deep outer ruff** → a **mid** layer (offset between the outer petals) → a small **lit, curled inner crown**. Layering + offset rings = real depth.
@@ -217,6 +257,22 @@ The bloom is the centrepiece of a **meaning system**: flowers are chosen for doc
 **Companion species (meaning, retroactively):** peony = flourishing · foxglove = the heart-flower (folklore protection + literally heart-medicine) · fern = resilience · daisy = beginnings · + add forget-me-not (memory), lotus (rebirth), snowdrop (hope), sunflower (radiance).
 
 **Emotional/journal flowers:** grief → forget-me-not + rosemary + white lily · rest → lavender + poppy · joy → sunflower + daisy · courage → borage + yarrow + iris · love → honeysuckle + rose · hope → snowdrop + daffodil.
+
+**WHOLE-LIFE FLORIOGRAPHY (v3 — beyond the cycle; *health is one room, not the house*).** The dictionary must serve every life domain, reusing the same colourway + earned-creature grammar (no new mechanic, just more meanings):
+| Life domain (not the cycle) | Flower(s) | Meaning | Where it surfaces |
+|---|---|---|---|
+| Career / ambition / a win | **Gladiolus**, orange lily, amaryllis | strength of character; a real achievement | Planner goal complete · a "you did it" bloom |
+| Courage / under pressure | **Snapdragon**, borage, iris | grace under pressure; courage | Journal "hard day" · a brave first post |
+| Friendship | **Sunflower + Daisy**, zinnia, freesia | cheerful loyalty; enduring friendship | Community (sage + clover + bee, §5.3) |
+| Love / dating / marriage | **Honeysuckle**, rose, primrose, camellia | devoted, steadfast love | Relationships content · a partner moment |
+| Grief / remembrance | **Forget-me-not + Rosemary**, white lily | remembrance, condolence | Journal grief · loss support |
+| Joy / celebration | **Sunflower + Marigold + Daisy** | radiance, warmth, cheer | Today good-news · a celebratory butterfly |
+| Rest | **Lavender + Poppy + Chamomile** | calm, restful sleep | Tonight/dusk · luteal |
+| New beginnings | **Snowdrop + Daffodil**, almond blossom | hope; a fresh chapter | new job/chapter · follicular |
+| Identity / self-expression | **Orchid**, iris | refined self-assurance; voice | Profile · an identity moment |
+| Motherhood | **Almond blossom + Calendula + Daisy** | new life; healing | pregnancy/postpartum |
+| Eldership / wisdom | **Magnolia + Hellebore + Sage** | a second flowering; resilience; wisdom | peri/menopause |
+Colour still changes meaning (§2.5): a **red/orange gladiolus** = a real achievement, a paler one = general strength; a **monarch** (migration/return) for a life-stage crossing vs a common-blue for a gentle return.
 
 **Combinations (a pairing makes a sentence):** forget-me-not + rosemary = remembrance · lavender + chamomile + poppy = rest · snowdrop + crocus + daffodil = a fresh start · lotus + pomegranate = fertile potential · sunflower + daisy = cheer/friendship · marigold + borage (companion planting) = "we help each other bloom".
 
@@ -276,6 +332,14 @@ Each surface gets a **flora signature** (palette lean + signature species + crea
 - **Icons:** **Lucide / inline SVG ONLY — never emoji.** Stroke-weight `~1.6–2`, inline sizes `14–18px`, coloured `ink`/`muted` for chrome or the accent for emphasis. The **`ICON_DISC`** (32px wax disc) frames a section's icon (§6.1).
 - **Links / "open the full page":** inline-flex, UI **13/700**, `muted`, with a trailing `ChevronRight` (14px) — e.g. "Open your Health letters ›". Reading-body inline links stay in `ink` with a subtle weight bump, not a blue underline.
 - **The carved heart** (§3) is a brand mark, not an icon — never substitute the Lucide outline heart for it in a header.
+
+### 6.9 MOTION — breath, not bounce (v3 tokens)
+FemWell's motion is **calm and organic** — the feel comes from slow ease + the bloom's breath/sway, **never springs/bounce** (bounce reads playful/cheap for a premium calm app).
+- **Easing tokens:** `ease-out` = `cubic-bezier(.215,.61,.355,1)` (enter/exit) · `ease-in-out` = `cubic-bezier(.77,0,.175,1)` (on-screen move) · sheet curve `cubic-bezier(.32,.72,.24,1)` (§6.4) · slider `cubic-bezier(.16,1,.3,1)` (§6.5). All ease-out-family — keep them.
+- **Duration tokens:** micro **120ms** (taps/toggles) · standard **200ms** (tooltips/dropdowns) · sheet/drawer **300ms** · scrim fade **220ms**. **Exits ~20% faster** than entrances.
+- **Performance:** **transform & opacity ONLY** (GPU; skip layout/paint). `will-change:transform` for shaky animations.
+- **No bounce anywhere.** High-frequency actions (bottom-nav, card taps — touched 100+/day) stay **≤120ms or un-animated** — calm comes partly from *not* animating what you touch constantly.
+- **Reduced-motion is mandatory** on EVERY animated node: `@media (prefers-reduced-motion:reduce){animation:none}` — no exceptions, even for opacity/colour. *(Source: Emil Kowalski / web-animation principles; citations in the research doc.)*
 
 ---
 

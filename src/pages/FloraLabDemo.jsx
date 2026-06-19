@@ -55,14 +55,14 @@ export default function FloraLabDemo() {
 
       <div style={{ textAlign: "center", padding: "16px 16px 6px" }}>
         <div style={{ fontFamily: SCRIPT, fontSize: 44, color: T.ink, lineHeight: 1.05 }}>Flora Lab</div>
-        <div style={{ fontFamily: "Cormorant Garamond, Georgia, serif", fontStyle: "italic", fontSize: 16, color: T.muted, maxWidth: 340, margin: "6px auto 0" }}>The elevated bloom + glyph + pollinator library — realism and variety, two levels up.</div>
+        <div style={{ fontFamily: "Cormorant Garamond, Georgia, serif", fontStyle: "italic", fontSize: 16, color: T.muted, maxWidth: 360, margin: "6px auto 0" }}>The flora engine — bespoke geometry per species so a rose reads as a rose. Recognisable heroes, visible variety, creatures on the plant.</div>
       </div>
 
-      <Section title="The hero flowers" sub="rose · sunflower · hibiscus — each rendered to read unmistakably as itself">
+      <Section title="The hero flowers" sub="rose · sunflower · hibiscus — each carries its own signature (spiral heart · seed disc · staminal column)">
         <div style={grid(3)}>
           {HERO_FLOWERS.map(([form, cw]) => {
             const c = cwOf(cw);
-            return <Tile key={form} label={form}><RichBloomV2 form={form} color={c.petal} color2={c.tip} accent={c.accent} size={120} idx={`hero-${form}`} /></Tile>;
+            return <Tile key={form} label={form}><RichBloomV2 form={form} color={c.petal} color2={c.tip} accent={c.accent} size={138} idx={`hero-${form}`} /></Tile>;
           })}
         </div>
       </Section>
