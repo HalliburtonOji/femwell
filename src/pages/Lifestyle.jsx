@@ -6,7 +6,7 @@ import { ExternalLink, X, Bookmark, SlidersHorizontal, Check, Sparkles, BookOpen
 import { T, UI, PAPER_BG } from "@/components/journal/Editorial";
 import { VineMotifV2, floraKeyframes } from "@/components/brand/flora";
 import { FwFloraHero } from "@/components/brand/PageTop";
-import { FwCardRow, SummaryCard, ArticleCard, StoryCard, VideoCard, AudioCard, BookCard, DailyStoryCard, HoroscopeCard } from "@/components/brand/Card";
+import { FwCardRow, SummaryCard, ArticleCard, StoryCard, VideoCard, AudioCard, BookCard, DailyStoryCard, HoroscopeCard, EmptyStateCard } from "@/components/brand/Card";
 import { CONTENT_CATEGORIES, categoryLabel } from "@/utils/contentCategory";
 import BrowseTab from "@/components/lifestyle/browse/BrowseTab";
 import ListenTab from "@/components/lifestyle/listen/ListenTab";
@@ -910,21 +910,36 @@ function LifestyleForYou({ landing, navigate, onJump }) {
       </div>
 
       <FwCardRow label="Articles" Icon={BookOpen} accent="#8E6E8E" items={(by.article || []).slice(0, 10)}
-        render={(it) => <ArticleCard key={it.id} item={it} onOpen={() => openItem(it)} />} />
+        render={(it) => <ArticleCard key={it.id} item={it} onOpen={() => openItem(it)} />}
+        fallback={<EmptyStateCard Icon={BookOpen} eyebrow="Articles" flower="iris" accent="#8E6E8E"
+          title="Fresh essays are on their way" line="New reads land here as they're published — open Read to browse everything in the library."
+          ctaLabel="Browse Read" onClick={() => onJump("read")} />} />
 
       <FwCardRow label="Books" Icon={Book} accent="#5F7E8E" items={booksRow}
         render={(it) => it.__kind === "daily"
           ? <DailyStoryCard key="daily" item={L.story || {}} onOpen={() => onJump("daily_story")} />
-          : <BookCard key={it.id} item={it} onOpen={() => openBook(it)} />} />
+          : <BookCard key={it.id} item={it} onOpen={() => openBook(it)} />}
+        fallback={<EmptyStateCard Icon={Book} eyebrow="Books" flower="camellia" accent="#5F7E8E"
+          title="A shelf of good books" line="Today's chapter and a row of free, public-domain reads appear here."
+          ctaLabel="Open Books" onClick={() => onJump("books")} />} />
 
       <FwCardRow label="Watch" Icon={Play} accent={T.gold} items={(by.video || []).slice(0, 10)}
-        render={(it) => <VideoCard key={it.id} item={it} onOpen={() => openItem(it)} />} />
+        render={(it) => <VideoCard key={it.id} item={it} onOpen={() => openItem(it)} />}
+        fallback={<EmptyStateCard Icon={Play} eyebrow="Watch" flower="sunflower" accent={T.gold}
+          title="Short watches, picked for you" line="Clips and videos play right here in the card as they're added."
+          ctaLabel="Explore For You" onClick={() => onJump("for_you")} />} />
 
       <FwCardRow label="Listen" Icon={Headphones} accent={T.sage} items={(by.audio || []).slice(0, 10)}
-        render={(it) => <AudioCard key={it.id} item={it} onOpen={() => openItem(it)} />} />
+        render={(it) => <AudioCard key={it.id} item={it} onOpen={() => openItem(it)} />}
+        fallback={<EmptyStateCard Icon={Headphones} eyebrow="Listen" flower="bluebell" accent={T.sage}
+          title="A calm listen for later" line="Podcasts and audio play in the card — open Listen to see what's there now."
+          ctaLabel="Open Listen" onClick={() => onJump("listen")} />} />
 
       <FwCardRow label="Stories" Icon={Feather} accent={T.crimson} items={(by.story || []).slice(0, 10)}
-        render={(it) => <StoryCard key={it.id} item={it} onOpen={() => openItem(it)} />} />
+        render={(it) => <StoryCard key={it.id} item={it} onOpen={() => openItem(it)} />}
+        fallback={<EmptyStateCard Icon={Feather} eyebrow="Stories" flower="poppy" accent={T.crimson}
+          title="Short reads to escape into" line="Real-life stories and short fiction land here."
+          ctaLabel="Explore For You" onClick={() => onJump("for_you")} />} />
 
       {/* Horoscope — a REAL snippet, as its own row */}
       <FwCardRow label="Your sky" Icon={Moon} accent="#5F7E8E" items={[{ __kind: "horo" }]}

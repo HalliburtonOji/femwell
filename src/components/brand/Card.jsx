@@ -211,10 +211,20 @@ export function LogActionCard({ Icon = Sparkles, eyebrow = "Today", flower = "sn
   return <FwCard accent={accent} Icon={Icon} eyebrow={eyebrow} flower={flower} title={title} line={line} idx="log" {...rest}>{children}</FwCard>;
 }
 
+// ── NEVER-EMPTY fallback — a warm full card (not a blank box) for a row whose
+// type currently has no items. Always carries a hook/line AND an action. §6.7.
+export function EmptyStateCard({ Icon = Sparkles, eyebrow = "For you", flower = "primrose", accent = T.gold, title, line, ctaLabel = "Explore", onClick }) {
+  return <FwCard accent={accent} Icon={Icon} eyebrow={eyebrow} flower={flower} title={title} line={line} idx="empty"
+    action={<FwCardCTA accent={accent} onClick={onClick}>{ctaLabel}</FwCardCTA>} />;
+}
+
 // ── A labelled per-type/per-section ROW — the scroll-snap track (Today geometry) ──
 // items + render(item) → a horizontal slider of FwCards. label sits above.
-export function FwCardRow({ label, Icon, accent = T.gold, items = [], render }) {
-  if (!items.length) return null;
+// `fallback` (a node) renders when there are no items so the row is NEVER empty
+// and ALWAYS present (per-type rows + never-empty rule, §6.7). Only a row with no
+// items AND no fallback collapses.
+export function FwCardRow({ label, Icon, accent = T.gold, items = [], render, fallback = null }) {
+  if (!items.length && !fallback) return null;
   return (
     <div style={{ marginTop: 22 }}>
       <style>{`.fw-card-row{scrollbar-width:none}.fw-card-row::-webkit-scrollbar{display:none}`}</style>
@@ -225,7 +235,7 @@ export function FwCardRow({ label, Icon, accent = T.gold, items = [], render }) 
         </div>
       )}
       <div className="fw-card-row" style={{ display: "flex", gap: 14, overflowX: "auto", scrollSnapType: "x mandatory", padding: "0 18px 4px", WebkitOverflowScrolling: "touch" }}>
-        {items.map((it, i) => render(it, i))}
+        {items.length ? items.map((it, i) => render(it, i)) : fallback}
         <div style={{ flex: "0 0 4px" }} aria-hidden />
       </div>
     </div>
