@@ -46,8 +46,7 @@ import HomeRedesignDoc from "@/components/founders/HomeRedesignDoc";
 import AppHealthAuditDoc from "@/components/founders/AppHealthAuditDoc";
 import NutritionPlanDoc from "@/components/founders/NutritionPlanDoc";
 import NutritionMasterPlanDoc from "@/components/founders/NutritionMasterPlanDoc";
-import BrandIdentityDoc from "@/components/founders/BrandIdentityDoc";
-import FloraMeaningDoc from "@/components/founders/FloraMeaningDoc";
+// BrandIdentityDoc + FloraMeaningDoc folded into the single Brand Bible (brand-bible.html)
 import NurtureCompanionDoc from "@/components/founders/NurtureCompanionDoc";
 import FeatureIdeasDoc from "@/components/founders/FeatureIdeasDoc";
 import CompanionVisionDoc from "@/components/founders/CompanionVisionDoc";
@@ -61,7 +60,6 @@ import BottomNavPlanDoc from "@/components/founders/BottomNavPlanDoc";
 // script). Imported as raw strings and rendered in an auto-sized srcdoc iframe so
 // their styling AND interactivity are preserved verbatim in-app on Halli's phone.
 import brandBibleHtml from "@/components/founders/brandDocs/brand-bible.html?raw";
-import livingEcosystemHtml from "@/components/founders/brandDocs/living-ecosystem.html?raw";
 import pageBrandAuditHtml from "@/components/founders/brandDocs/page-brand-audit.html?raw";
 import intentionsGoalsHtml from "@/components/founders/brandDocs/intentions-goals.html?raw";
 import connectDaysMissionsHtml from "@/components/founders/brandDocs/connect-days-missions.html?raw";
@@ -225,20 +223,18 @@ const CATALOG = [
   { kind: "route", href: "/BrandCraftSample", group: CAT.PREVIEW, sub: "Brand", status: "approval", accent: "crimson",
     title: "Brand Craft Sample ★ for approval", desc: "The canonical brand-system craft direction: flat vs upgraded realistic bloom, a botanical line-motif, the carved heart in context, and a live on-device perf measurement." },
 
-  // ── Brand identity & plans (full HTML docs rendered in-app) ───────────
+  // ── Brand identity — the ONE consolidated bible ───────────────────────
   { kind: "doc", key: "Brand Bible", group: CAT.BRANDDOCS, status: "new", accent: "crimson",
-    title: "The Brand Bible", desc: "The A–Z identity: soul, voice, type, colour, the flora system, cards, page structure and components. Renders in-app with live flora SVGs." },
-  { kind: "doc", key: "Living Ecosystem", group: CAT.BRANDDOCS, status: "new", accent: "gold",
-    title: "Living-Ecosystem Brainstorm (v4)", desc: "Lifecycle-as-meaning, the rotating omen header, the soulful 'a little bit witch' voice and wax-seal craft. Tap the omen header to reveal — interactivity preserved." },
-  { kind: "doc", key: "Page Brand Audit", group: CAT.BRANDDOCS, status: "new", accent: "sage",
-    title: "Per-Page Brand Audit & Fix Plan (v4)", desc: "UPDATED to BRAND_IDENTITY v4: every page audited vs the full bar (60+ flora library · §6.7.6 quick-action popup · §10 living ecosystem — lifecycle flora · rotating omen headers · soulful voice) + the in-flight features. Foundation offenders ranked + a per-page v4-uplift matrix; Planner/Jess detail; Ritual Builder now BUILT (demo). For approval." },
+    title: "The Brand Bible", desc: "The ONE source of truth — soul · voice · type · colour · the full flora system (recognisability + the 64-flower library + lifecycle + meaning) · cards + the quick-action popup · page structure · components · nav. Agreed canon, plus a clearly-marked 'Proposed — awaiting sign-off' section. Renders in-app with live flora. (The old separate Living-Ecosystem / Brand Identity / Flora & Meaning docs are folded in here — one brand home.)" },
 
   // ── Specs & Plans (in-page docs) ──────────────────────────────────────
+  { kind: "doc", key: "Page Brand Audit", group: CAT.SPECS, status: "new", accent: "sage",
+    title: "Per-Page Brand Audit & Fix Plan (v4)", desc: "Every page audited vs the full bar (the 64-flower library · the quick-action popup · the living-ecosystem layer) + the in-flight features. Foundation offenders ranked + a per-page uplift matrix; Planner/Jess detail; Ritual Builder demo. For approval." },
   { kind: "doc", key: "Intentions & Goals", group: CAT.SPECS, status: "new", accent: "crimson",
     title: "Intentions, the Line of the Day & Goals", desc: "Daily intentions, a user-specific soulful 'line of the day', and whole-life goals — baked into Today/Planner/Garden/Profile with NO new nav tab, on the living-ecosystem grammar. Live flora growth sketches; cited goal-science. For your reaction." },
   { kind: "doc", key: "Connect, Days & Missions", group: CAT.SPECS, status: "new", accent: "sage",
     title: "No Garden Grows Alone", desc: "Connecting women (safe Tier 0→2 ladder, no open matchmaking), days-off activities found FOR her, and no-guilt tiny missions that grow the garden — baked into Community/Today/Lifestyle/Garden/Planner with NO new nav tab. Cited research + the UK Online-Safety/ICO legal flags and the dials for you." },
-  { kind: "doc", key: "Bottom-Nav Plan", group: CAT.BRANDDOCS, status: "new", accent: "gold",
+  { kind: "doc", key: "Bottom-Nav Plan", group: CAT.SPECS, status: "new", accent: "gold",
     title: "Bottom-Nav Plan", desc: "Floating cream capsule + shrink-on-scroll, reject horizontal-scroll nav. Research, honest drawbacks and a phased plan. Awaiting your approval." },
   { kind: "doc", key: "Today Mega-Plan", group: CAT.SPECS, accent: "gold",
     title: "Today — Mega-Plan", desc: "The full plan for the Today home surface." },
@@ -278,10 +274,7 @@ const CATALOG = [
     title: "App Health Audit", desc: "Health-surface audit and findings." },
 
   // ── Brand & UX ────────────────────────────────────────────────────────
-  { kind: "doc", key: "Brand Identity", group: CAT.BRANDDOCS, status: "updated", accent: "crimson",
-    title: "Brand Identity (in-app mirror)", desc: "The complete canonical brand master: typography, colour tokens, the carved heart, the botanical system, spacing/cards." },
-  { kind: "doc", key: "Flora & Meaning", group: CAT.BRANDDOCS, accent: "sage",
-    title: "Flora & Meaning", desc: "The flora backbone, per-user fingerprint and the meaning behind each bloom." },
+  // (former "Brand Identity" + "Flora & Meaning" entries folded into the single Brand Bible above)
   { kind: "doc", key: "UX & Design", group: CAT.BRAND, accent: "gold",
     title: "UX & Design — patterns from everywhere", desc: "25 cross-category UX patterns (Oura, Spotify, Notion, Monzo, Wordle…) translated for FemWell." },
   { kind: "doc", key: "Nurture Companion", group: CAT.BRAND, accent: "blush",
@@ -893,7 +886,6 @@ function FoundersInner({ user }) {
       {tab === "Audio"          && <AudioPlanDoc />}
       {tab === "Bottom-Nav Plan" && <DocSurface><BottomNavPlanDoc /></DocSurface>}
       {tab === "Brand Bible" && <BrandDocFrame html={brandBibleHtml} title="FemWell — Brand Bible" />}
-      {tab === "Living Ecosystem" && <BrandDocFrame html={livingEcosystemHtml} title="FemWell — Living Ecosystem" />}
       {tab === "Page Brand Audit" && <BrandDocFrame html={pageBrandAuditHtml} title="FemWell — Per-Page Brand Audit" />}
       {tab === "Intentions & Goals" && <BrandDocFrame html={intentionsGoalsHtml} title="FemWell — Intentions, Line of the Day & Goals" />}
       {tab === "Connect, Days & Missions" && <BrandDocFrame html={connectDaysMissionsHtml} title="FemWell — No Garden Grows Alone (Connection, Days Off & Tiny Missions)" />}
@@ -904,8 +896,7 @@ function FoundersInner({ user }) {
       {tab === "Journal"        && <JournalTab />}
       {tab === "Previews"       && <PreviewsTab />}
       {tab === "Nutrition Master Plan" && <NutritionMasterPlanDoc />}
-      {tab === "Brand Identity" && <DocSurface><BrandIdentityDoc /></DocSurface>}
-      {tab === "Flora & Meaning" && <DocSurface><FloraMeaningDoc /></DocSurface>}
+      {/* Brand Identity + Flora & Meaning folded into the single Brand Bible */}
       {tab === "Feature Ideas" && <DocSurface><FeatureIdeasDoc /></DocSurface>}
       {tab === "Companion Vision" && <DocSurface><CompanionVisionDoc /></DocSurface>}
       {tab === "Companion Vision v2" && <DocSurface><CompanionVisionV2Doc /></DocSurface>}

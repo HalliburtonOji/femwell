@@ -22,6 +22,13 @@ A woman's life is a **garden, not a chart.** It has **seasons** (the cycle), **l
 
 **POSITIONING in one line:** the **warm, editorial, beautiful** lane between pink-bubblegum femtech and cold-clinical femtech — *breadth of life carries the femininity, not pink* (the Gentlewoman move). Cream + gold + crimson is the documented premium "old-money" formula (ivory + warm-gold + burgundy) — lean in, don't drift bright/pink/clinical.
 
+---
+
+## ✅ AGREED vs ⏳ PROPOSED (this file is ONE bible; build only to AGREED)
+**This is the single source of truth — edited IN PLACE; do NOT spawn parallel brand docs.** The flora system and the "ecosystem" are NOT separate things — they're §5 and §10 here. Phone-readable export: `femwell-handoff/BRAND-BIBLE.html` (= the in-app **"Brand Bible"** in Ideas — the only brand entry; the old "Living Ecosystem / Brand Identity / Flora & Meaning" entries are folded into it).
+- **✅ AGREED (locked canon — §0–§9 + §10.1):** north star/soul · voice (warm · funny · nurturing · soulful — the register Halli asked for) · typography · colour (+ WCAG) · the FULL flora system incl. the **64-flower library** (§5.4) + recognisability (§5.0) + the **lifecycle stages** (§10.1) + meaning/fingerprint/page-character · cards + the **quick-action popup** (§6.7.6) · page structure · components/motion/nav.
+- **⏳ PROPOSED (NOT canon — needs Halli's explicit yes; §10.2–10.6):** the **omen system** (fauna omens · the rotating omen-header engine · tappable reveals · safety rails) · the heavier **"a little mystic"/almanac voice intensity** (Halli questioned the "witch" framing — fair; it stays proposed) · the **wax-seal / sealed-letter / growing-vine / pressed-flower craft** · the formal **Caregiver-Sage-Innocent archetype**. Do NOT build these as canon until signed off. Halli DID ask for the language to be "less generic, funny, nurturing, with soul" (with omen-flavoured examples) → that warm-soulful register is AGREED (§voice); the *systematic* omen/mystic layer is what's proposed.
+
 **APPENDICES (deep + cited; this master is self-sufficient without them):**
 - `claude-state/BRAND_FLORA.md` — the full flora map, floriography/colour research, fingerprint math, sources.
 - `claude-state/BRAND_IMAGE_RESEARCH.md` — the botanical-system research (Aesop/Art Nouveau/Morris/fleuron).
@@ -446,21 +453,21 @@ The brand system is already in code as reusable parts. A future build (the real 
 | **Fingerprint seed** | `hashSeed()` + `seededRng()` + `MiniGarden` in `pages/BrandCraftSample.jsx` | deterministic per-user selection (§5.2); future-wire the seed from `userId` + stage + phase + tended-areas + earned. |
 | **THE CARD FAMILY (§6.7)** | `src/components/brand/Card.jsx` | `FwCard` primitive (the Today card, verbatim) + typed variants `ArticleCard`/`StoryCard`/`VideoCard`/`AudioCard`/`BookCard`/`DailyStoryCard`/`HoroscopeCard`/`SummaryCard`/`RecommendationCard`/`LogActionCard` + `InlineVideo`/`InlineAudio` players + `FwCardRow` (scroll-snap row) + `FwCardCTA` + `fwTypeOf()`. **Import these — never hand-roll a card.** |
 | **SIGNATURE PAGE TOP (§6.8)** | `src/components/brand/PageTop.jsx` | `FwFloraHero` — the flora-hero (decorative ring + bloom + heart + Ephesis title + line). Pair with `SummaryCard` for the canonical top. |
-| **In-app brand docs** | `components/founders/BrandIdentityDoc.jsx` + `FloraMeaningDoc.jsx` | the Founders mirrors of this file + BRAND_FLORA. |
+| **In-app brand doc** | `components/founders/brandDocs/brand-bible.html` (the ONE "Brand Bible" in Ideas) | the single phone-readable export of this file; the old `BrandIdentityDoc.jsx`/`FloraMeaningDoc.jsx` mirrors are retired (folded in). |
 
 > **NOTE (current state):** the glyph library + colourway grammar + fingerprint currently live in `pages/BrandCraftSample.jsx` (the craft sample). On lock, **promote** them to shared modules (e.g. `components/brand/flora/*`) so Today/Garden/etc. import them. Until then, `BrandCraftSample.jsx` is the source of truth for the implementations.
 
 ---
 
-## 10. THE LIVING ECOSYSTEM — meaning, omens & the soulful voice (v4 direction · 2026-06-19)
-> **STATUS: this is the v4 DEPTH layer — spec'd and ready; a few dials await Halli's steer** (see the brainstorm doc's §8 "Your call"). It turns the flora from *beautiful* (v3) into *meaningful*: a living system that ties feeling + meaning to everything and talks to her about her own life. Full pitch + the big copy bank + interactive sketches: **`femwell-handoff/LIVING-ECOSYSTEM-BRAINSTORM.html`**. Grounding research: **`workspace/OMEN_VOICE_RESEARCH_2026-06-19.md`** (+ `BRAND_RESEARCH_2026-06-19.md`).
+## 10. THE LIVING ECOSYSTEM — lifecycle (✅ AGREED) + the omen/mystic/craft layer (⏳ PROPOSED)
+> **STATUS — split:** **§10.1 lifecycle is ✅ AGREED** (Halli asked for the lifecycle stages; they're built in the flora library + Flora Lab). **§10.2–10.6 (omens · the rotating omen engine · safety rails · the "a little mystic" voice intensity · the wax/letter/vine/pressed-flower craft) are ⏳ PROPOSED — do NOT build as canon until Halli signs off.** Halli questioned the "a little bit witch" framing (fair) and didn't ask for a formal omen system; he DID ask for a warm/funny/nurturing/soulful voice (with omen-flavoured *examples*) — that register is AGREED (see the Voice section). Grounding research: `workspace/OMEN_VOICE_RESEARCH_2026-06-19.md` (+ `BRAND_RESEARCH_2026-06-19.md`); the omen copy bank lives in the research doc, not here.
 
-**The three laws of the ecosystem:** (1) **nothing is static** — every plant is at a *lifecycle stage* that mirrors her season; (2) **everything can be read** — a bloom/creature/seal carries a gentle meaning she can tap to reveal; (3) **everything is keyed to her** — what appears is chosen from real signals, never a stock garden.
+**The three laws of the ecosystem (the proposed framing):** (1) **nothing is static** — every plant is at a *lifecycle stage* that mirrors her season [AGREED]; (2) **everything can be read** — a bloom/creature carries a gentle meaning she can tap to reveal [PROPOSED]; (3) **everything is keyed to her** — what appears is chosen from real signals [PROPOSED].
 
-### 10.1 THE FLORA LIFECYCLE (the stage IS the meaning)
+### 10.1 THE FLORA LIFECYCLE (the stage IS the meaning) — ✅ AGREED
 A flower has seasons; so does she. The SAME flower at a different **stage** says where she is — no chart, no words. Add a `stage` prop to `RichBloomV2` (pure render variants): **bud** (furled — anticipation/becoming: follicular, a new chapter, a goal just set), **bloom** (open — peak/expression: ovulation, a win), **seed** (the rose *hip* — harvest/integration/letting go: luteal, finishing, a lesson), **rest** (the bare cane *with a new bud on old wood* — restoration, **winter not death**: menstruation, postpartum, grief, a chosen pause), **return** (new bud — renewal, after time away). **HARD RULE: rest is a stage, not a failure — never draw "nothing"; draw dormancy with a bud on it.** (Rose canon: bud → bloom → hip → bare cane → new bud, botanically true.)
 
-### 10.2 FAUNA & OMENS (a garden that speaks)
+### 10.2 FAUNA & OMENS (a garden that speaks) — ⏳ PROPOSED (awaiting sign-off)
 Creatures visit plants and carry a **gentle omen**. **The omen contract (every omen):** (a) kind & hopeful; (b) framed as folklore — *"they say…"* — never a promise; (c) ends in a small action or a true observation; (d) never doom, never guilt. A creature visits, speaks once, drifts off. The library (creature → folk meaning → spoken line) lives in the brainstorm doc + `BRAND_FLORA.md §6.3`; e.g. robin = news on the way · returning butterfly = change/the soul · ladybird = small luck (*as many happy months as spots — drawn with a real countable spot-count*) · bee = connection (+ the *"telling the bees"* ritual → "tell the garden your news") · dragonfly = clarity · moth = rest-night · firefly = hope · snail = patience · spider's dewy web = weaving. Plants give signs too (a bloom opened overnight, dew, a second/out-of-season bloom, the first snowdrop).
 
 ### 10.3 THE ROTATING FLORA-OMEN ENGINE (technical — NO new function)
@@ -478,10 +485,12 @@ Every section is **headed by a flower/bouquet** that reflects the section + her 
 3. **Hope-only readings** — where a folk omen has a dark variant (out-of-season bloom = "survival" OR "sickness"), the engine uses ONLY the hopeful reading. No omen ever predicts harm.
 4. **The saccharine test** — if a line would fit unedited on a supermarket greeting card, cut it. Every line earns its place with a specific detail or a real action.
 
-### 10.5 THE SOULFUL VOICE (warm · funny · a little mystic)
-**Three dials:** WARMTH (always high) · WIT (dry, wry, UK — never zany) · WONDER (mystic, half-winking, ~5/10). **Method (Mailchimp):** the *voice* is constant (warm garden-mystic friend), the *tone* flexes to her state (plainer on a hard day, brighter on a high one). **Eight principles:** 1 *"they say…"* (wonder as folklore, never a promise) · 2 the **kettle rule** (every mystic line earns a domestic wink) · 3 notice, don't cheerlead · 4 action over sentiment · 5 punch up never down (never guilt/scoreboard) · 6 brevity with soul · 7 tint don't drown (lighthearted by default; low days met softly) · 8 UK to the bone (no emoji, no American pep). **Avoid the two poles:** Co-Star's brutal edge AND Duolingo's guilt. The big per-surface/per-state copy bank is in the brainstorm doc — draw from it; keep it tied to meaning, never hollow-cute.
+### 10.5 THE VOICE — warm · funny · nurturing · soulful (✅ AGREED) + a ⏳ PROPOSED mystic dial
+> **This is the canonical voice section.** Halli asked for the app's language to be **"less generic, more funny, nurturing, with soul"** — so the AGREED voice is exactly that: a warm, witty, nurturing smart-friend with soul.
+- **✅ AGREED register & principles:** *notice, don't cheerlead* (observe something true — "rough night?" beats "you've got this!") · *specific over sentiment* (end on a small real thing — "send the text," not "good things await") · *funny, warmly* (dry, UK, a wink in small places — a card footer, an empty state — never zany, never every screen) · *soul not saccharine* (the supermarket-card test: if it'd fit unedited on a greeting card, cut it) · *never punish a gap* (a hard stretch is weather, not failure) · *no emoji, UK English, no scoreboards/guilt, lighthearted by default* (life-stage gently tints). **Method (Mailchimp):** the *voice* is constant; the *tone* flexes to her state (plainer on a hard day, brighter on a high one). **Avoid two poles:** Co-Star's brutal edge AND Duolingo's guilt.
+- **⏳ PROPOSED — the heavier "a little mystic" intensity:** the almanac/folklore register ("they say…", "the stars are singing…", gardener's-lore) + the **WONDER dial** (~5/10, always earthed by the **kettle rule** — a domestic wink after any mystic line). Halli questioned the "a little bit witch" framing — so this intensity is **proposed**, dialled to taste on sign-off, NOT locked. (The omen-flavoured example lines he liked are illustrations of the *soul* he wants, not an agreed system.)
 
-### 10.6 CRAFT THAT CARRIES MEANING (format = feeling)
+### 10.6 CRAFT THAT CARRIES MEANING (format = feeling) — ⏳ PROPOSED (awaiting sign-off)
 - **Wax rose seal + sealed letters:** Health becomes *correspondence* — each letter arrives **sealed with a wax rose** (her signature flower, phase-coloured); opening breaks the seal (once-only lift). Extends to a monthly **"letter from your body,"** a milestone certificate, a sealed **"letter to future you"** in Journal, Jess's notes as folds.
 - **Vines that grow with progress** (a leaf per session, a bloom at the end — growth, not a progress bar).
 - **Pressed flowers** for saved/remembered things (the garden remembers; "on this day" shows last year's pressed bloom — **gated per rail 2**).
@@ -490,9 +499,9 @@ Every section is **headed by a flower/bouquet** that reflects the section + her 
 
 ---
 
-## 9. APPENDICES & IN-APP MIRRORS
-- **`claude-state/BRAND_FLORA.md`** — deep flora map, floriography + colour-symbolism research, the fingerprint permutation math (§7.1), full sources. (In-app: Founders → Brand & UX → **Flora & Meaning** = `FloraMeaningDoc.jsx`.)
+## 9. APPENDICES & IN-APP MIRROR
+- **The ONE in-app brand home:** the **"Brand Bible"** entry in the Ideas page (`components/founders/brandDocs/brand-bible.html`) = the single phone-readable export of this file. There is **exactly one** brand entry now — the former "Living Ecosystem", "Brand Identity" and "Flora & Meaning" entries are **folded into it** (the `BrandIdentityDoc.jsx`/`FloraMeaningDoc.jsx`/`living-ecosystem.html` are retired).
+- **`claude-state/BRAND_FLORA.md`** — deep flora map, floriography + colour-symbolism research, the fingerprint permutation math (§7.1), full sources (a cited *appendix* to §5/§10, not a separate brand doc).
 - **`claude-state/BRAND_IMAGE_RESEARCH.md`** — the botanical-system research brief (Aesop restraint, Art Nouveau whiplash line, William Morris, the fleuron, women's-wellness palette), with sources.
-- **In-app mirror of THIS file:** Founders → Brand & UX → **Brand Identity** = `components/founders/BrandIdentityDoc.jsx`.
-- **Live craft showcase:** `/BrandCraftSample` (preview route) — every component above, rendered.
+- **Live flora catalogue:** `/FloraLabDemo` — the full 64-flower library + foliage + lifecycle, rendered.
 - This master is **self-sufficient for building** without opening the appendices; the appendices add the cited "why" and the exhaustive lists.
