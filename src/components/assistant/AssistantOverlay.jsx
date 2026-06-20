@@ -56,7 +56,9 @@ export default function AssistantOverlay({ open, onClose, initialPrompt }) {
       <div
         onClick={onClose}
         style={{
-          position: "fixed", inset: 0, zIndex: 90,
+          // End the dim ABOVE the floating nav so the bottom nav stays visible
+          // (and tappable) while Jess is open — never cover it.
+          position: "fixed", inset: "0 0 var(--fw-nav-h) 0", zIndex: 90,
           backgroundColor: "rgba(42,32,53,0.42)",
           backdropFilter: "blur(8px)",
         }}

@@ -219,24 +219,27 @@ export default function MenuSheet({ open, onClose, returnFocusRef }) {
         role="presentation"
         onClick={onClose}
         style={{
-          position: "fixed", inset: 0, zIndex: 80,
+          // End the dim ABOVE the floating nav so the bottom nav stays visible
+          // (and tappable) while the Menu is open — never cover it.
+          position: "fixed", inset: "0 0 var(--fw-nav-h) 0", zIndex: 80,
           backgroundColor: "rgba(43,30,22,0.55)",
         }}
       />
 
-      {/* Sheet */}
+      {/* Sheet — sits ABOVE the floating nav (bottom: var(--fw-nav-h)) so the
+          nav stays visible below it; no fw-sheet-safe needed since the panel
+          itself already ends above the nav. */}
       <div
         ref={sheetRef}
         role="dialog"
         aria-modal="true"
         aria-label="Menu"
-        className="fw-sheet-safe"
         style={{
-          position: "fixed", left: 0, right: 0, bottom: 0, zIndex: 81,
+          position: "fixed", left: 0, right: 0, bottom: "var(--fw-nav-h)", zIndex: 81,
           backgroundColor: "var(--cream)",
           borderRadius: "24px 24px 0 0",
           maxHeight: "min(72vh, calc(100dvh - 48px))",
-          padding: "24px 24px 32px",
+          padding: "24px 24px 28px",
           overflowY: "auto",
           overscrollBehavior: "contain",
           WebkitOverflowScrolling: "touch",

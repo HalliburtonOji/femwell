@@ -22,7 +22,8 @@ import { T } from "@/components/journal/Editorial";
 //   reduced-motion: no spring — the pill moves instantly (clean, no animation).
 const SPRING = { stiffness: 320, damping: 32, mass: 1 };
 const PILL_INSET = 5;    // px gap between the pill and the item edges
-const PILL_HEIGHT = 46;  // wide stadium that hugs the item (radius 9999)
+const PILL_HEIGHT = 52;  // tall stadium — spans the item top-to-bottom (5px even
+                         // inset in the 62px capsule), radius 9999
 
 // Sample a critically-damped-ish spring from `fromX`→`toX` at 60fps and emit a
 // WAAPI keyframe array (transform only). Each frame's scaleX/scaleY is coupled
@@ -325,15 +326,15 @@ export default function MobileBottomNav({ currentPageName }) {
               transformOrigin: "center center",
               willChange: "transform, opacity",
               zIndex: 0,
-              // Brand wax/GOLD pill — clearly visible against the pale glass
-              // capsule (cream-on-cream read as nothing). Warm gold-tinted fill,
-              // defined gold ring + a soft lift so it reads as the active item
-              // like the reference, while staying on-brand.
+              // Soft, LIGHT active pill like the reference — a pale cream/gold
+              // wash (not a dark slab). It reads against the translucent glass
+              // because it's near-opaque with a DELICATE gold edge + a faint
+              // lift, not because it's dark.
               background:
-                "linear-gradient(180deg, rgba(212,191,143,0.98) 0%, rgba(193,169,118,0.98) 100%)",
-              border: "1px solid rgba(150,120,52,0.62)",
+                "linear-gradient(180deg, rgba(247,241,227,0.94) 0%, rgba(238,228,203,0.95) 100%)",
+              border: "1px solid rgba(168,137,63,0.45)",
               boxShadow:
-                "inset 0 1px 0 rgba(255,250,234,0.6), 0 2px 8px -1px rgba(120,90,40,0.32)",
+                "inset 0 1px 0 rgba(255,253,247,0.85), 0 1px 4px rgba(120,90,40,0.14)",
               transition: reduceMotion ? "opacity .12s linear" : "opacity .2s ease",
             }}
           />
@@ -427,6 +428,12 @@ export default function MobileBottomNav({ currentPageName }) {
                 to={createPageUrl(slot.page)}
                 aria-label={`Go to ${slot.label}`}
                 aria-current={active ? "page" : undefined}
+                onClick={() => {
+                  // Tapping a destination from the always-visible nav closes any
+                  // open overlay so you navigate cleanly (not under an open sheet).
+                  setMenuOpen(false);
+                  if (assistantOpen) window.dispatchEvent(new CustomEvent("fw_close_assistant"));
+                }}
                 style={{
                   position: "relative",
                   zIndex: 1,
