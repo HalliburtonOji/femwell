@@ -113,114 +113,118 @@ const HOME = "__home__";
 //                  switch in FoundersInner exactly.
 // status: live | new | candidate | approval | updated | archive | null.
 // group order here = section order on the home screen.
+// Two-tier IA (2026-06-20 de-clutter): CURRENT = what's actually active for
+// review now; BRANDDOCS = the ONE consolidated bible; the standing reference
+// groups; then ARCHIVE = every old/superseded/passed-on demo, collapsed by
+// default. (CAT.PREVIEW retired — all its demos moved to ARCHIVE.)
 const CAT = {
-  PREVIEW:   "Previews & Demos",
-  BRANDDOCS: "Brand identity & plans",
-  SPECS:     "Specs & Plans",
-  BRAND:     "Brand & UX",
+  CURRENT:   "Current — active for review",
+  BRANDDOCS: "Brand",
+  SPECS:     "Plans & specs",
+  BRAND:     "Companion & UX",
   VISION:    "Vision & Concepts",
-  BUILD:     "Build Status",
+  BUILD:     "Build status",
   ARCHIVE:   "Archive",
 };
-const GROUP_ORDER = [CAT.PREVIEW, CAT.BRANDDOCS, CAT.SPECS, CAT.BRAND, CAT.VISION, CAT.BUILD, CAT.ARCHIVE];
+const GROUP_ORDER = [CAT.CURRENT, CAT.BRANDDOCS, CAT.SPECS, CAT.BRAND, CAT.VISION, CAT.BUILD, CAT.ARCHIVE];
 const GROUP_BLURB = {
-  [CAT.PREVIEW]:   "Tap through to every live page, redesign preview and UX demo — no typing URLs.",
-  [CAT.BRANDDOCS]: "The full brand identity, the living-ecosystem vision, the per-page audit and the nav plan — read in-app, styling and live flora intact.",
-  [CAT.SPECS]:     "The plans and audits — what we're building and why.",
+  [CAT.CURRENT]:   "What's live for your review right now — the demos and plans waiting on you.",
+  [CAT.BRANDDOCS]: "One brand home — the consolidated Brand Bible (the old Living-Ecosystem / Brand Identity / Flora docs are folded into it).",
+  [CAT.SPECS]:     "Standing plans, specs and audits — the reference for what we're building.",
   [CAT.BRAND]:     "Companion vision, cross-app UX patterns and the PWA/widget plan.",
   [CAT.VISION]:    "Bigger-picture concepts awaiting a build decision.",
   [CAT.BUILD]:     "The living build map — features, sprints, data flow, decisions, legal.",
-  [CAT.ARCHIVE]:   "Superseded or redirected — kept for history.",
+  [CAT.ARCHIVE]:   "Older / superseded / passed-on demos — kept for history, nothing deleted. Tap to expand.",
 };
+// Groups that start collapsed (secondary) on the home screen.
+const COLLAPSED_BY_DEFAULT = new Set([CAT.ARCHIVE]);
 
 const CATALOG = [
-  // ── Previews & Demos — Live in the app ────────────────────────────────
-  { kind: "route", href: "/Nutrition",  group: CAT.PREVIEW, sub: "Live in the app", status: "live", accent: "sage",
-    title: "Nutrition — the real, live page", desc: "The chosen Daily-Hub + Hero-Card-Slider hybrid on real data — what's in the app's bottom nav." },
-  { kind: "route", href: "/TodayDemo6", group: CAT.PREVIEW, sub: "Live in the app", status: "live", accent: "espresso",
-    title: "Today (Demo 6) — the live /Today", desc: "Synthesised day: companion bloom in the cycle ring, Jess's day-paragraph, a gentle checklist, per-area sliders. The current live Today." },
+  // (The live Nutrition + Today pages used to be listed here — removed; they're
+  //  reachable from the real bottom nav, so listing them in the Ideas hub was
+  //  pure clutter. Everything below is a demo/preview/plan/tool.)
   // ── Today (home) directions ───────────────────────────────────────────
-  { kind: "route", href: "/TodayOption2", group: CAT.PREVIEW, sub: "Today (home) directions", status: "new", accent: "gold",
+  { kind: "route", href: "/TodayOption2", group: CAT.ARCHIVE, sub: "Today (home) directions", status: "new", accent: "gold",
     title: "Today — Option 2 (single smart slider)", desc: "One sliding row, one card per app section, daily-changing suggestions + inline actions (play a podcast, log water, answer the room). Compare with the live Today." },
-  { kind: "route", href: "/TodayDemo1", group: CAT.PREVIEW, sub: "Today (home) directions", accent: "crimson",
+  { kind: "route", href: "/TodayDemo1", group: CAT.ARCHIVE, sub: "Today (home) directions", accent: "crimson",
     title: "Today Demo 1 — Calm single-focus hub", desc: "One main thing: greeting + phase line, a single focus card, garden footer, everything else behind a 'more' disclosure." },
-  { kind: "route", href: "/TodayDemo2", group: CAT.PREVIEW, sub: "Today (home) directions", accent: "gold",
+  { kind: "route", href: "/TodayDemo2", group: CAT.ARCHIVE, sub: "Today (home) directions", accent: "gold",
     title: "Today Demo 2 — Cycle-led day", desc: "A phase-ring hero; focus chosen by phase; a switcher shows menopause/pregnancy reskinning the same spine." },
-  { kind: "route", href: "/TodayDemo3", group: CAT.PREVIEW, sub: "Today (home) directions", accent: "blush",
+  { kind: "route", href: "/TodayDemo3", group: CAT.ARCHIVE, sub: "Today (home) directions", accent: "blush",
     title: "Today Demo 3 — Companion / garden-led", desc: "Your garden greets you in her voice; the day's focus is gentle 'tending'; resting season is celebrated, never dies." },
-  { kind: "route", href: "/TodayDemo4", group: CAT.PREVIEW, sub: "Today (home) directions", accent: "sage",
+  { kind: "route", href: "/TodayDemo4", group: CAT.ARCHIVE, sub: "Today (home) directions", accent: "sage",
     title: "Today Demo 4 — Card-slider / deck", desc: "A short swipeable deck reusing the Hero-Card-Slider language; top card is the focus, next peeks." },
-  { kind: "route", href: "/TodayDemo5", group: CAT.PREVIEW, sub: "Today (home) directions", accent: "crimson",
+  { kind: "route", href: "/TodayDemo5", group: CAT.ARCHIVE, sub: "Today (home) directions", accent: "crimson",
     title: "Today Demo 5 — Editorial 'your day'", desc: "A dated dispatch in Jess's voice; greeting + phase + one suggestion woven into prose with inline doorways." },
   // ── Journal previews ──────────────────────────────────────────────────
-  { kind: "route", href: "/JournalRedesign1", group: CAT.PREVIEW, sub: "Journal", status: "approval", accent: "blush",
+  { kind: "route", href: "/JournalRedesign1", group: CAT.ARCHIVE, sub: "Journal", status: "approval", accent: "blush",
     title: "Journal — redesign preview", desc: "The demos' richer component language (hero cards, sheets, calmer density) on Journal — carved masthead + identity preserved. Not yet live." },
-  { kind: "route", href: "/JournalHubDemo", group: CAT.PREVIEW, sub: "Journal", accent: "blush",
+  { kind: "route", href: "/JournalHubDemo", group: CAT.ARCHIVE, sub: "Journal", accent: "blush",
     title: "Journal — Hub style (rich header + all features)", desc: "Rich reflection header + big sliding cards for the full set: Write · Echo Wall · Witness · Phase Twin · Insights · On This Day · Sealed Letters · Threads · Cycle Mirror · Burn." },
-  { kind: "route", href: "/JournalControlDemo", group: CAT.PREVIEW, sub: "Journal", accent: "blush",
+  { kind: "route", href: "/JournalControlDemo", group: CAT.ARCHIVE, sub: "Journal", accent: "blush",
     title: "Journal — Control-Center concept", desc: "Reflection-state header + a floating card: 2-col peek grid (Write/Echo/Witness/Twin/Insights/On-This-Day/Letters/Burn/Threads) + a right jump rail." },
   // (Journal theme demos appended programmatically below from JOURNAL_DEMOS)
   // ── Community previews ────────────────────────────────────────────────
-  { kind: "route", href: "/CommunityDemo6", group: CAT.PREVIEW, sub: "Community", status: "candidate", accent: "crimson",
+  { kind: "route", href: "/CommunityDemo6", group: CAT.ARCHIVE, sub: "Community", status: "candidate", accent: "crimson",
     title: "Community — Demo 6 (production candidate)", desc: "★ The chosen direction: Rooms + Tabs hybrid, OPEN comments (poster can switch off), backend auto-moderation, Jess as host + active inline support. Crisis-safe, no counts." },
-  { kind: "route", href: "/CommunityRedesign1", group: CAT.PREVIEW, sub: "Community", status: "approval", accent: "gold",
+  { kind: "route", href: "/CommunityRedesign1", group: CAT.ARCHIVE, sub: "Community", status: "approval", accent: "gold",
     title: "Community — redesign preview", desc: "Demo 6's rooms elevated with a calm hero, a peeking room slider and bottom sheets — anonymity / 18+ / crisis routing / Jess preserved. Not yet live." },
-  { kind: "route", href: "/CommunityHubDemo", group: CAT.PREVIEW, sub: "Community", accent: "sage",
+  { kind: "route", href: "/CommunityHubDemo", group: CAT.ARCHIVE, sub: "Community", accent: "sage",
     title: "Community — Hub style (rich header + all rooms)", desc: "Rich header (season/circle · Jess welcome · QOTD · invite) + big sliding cards for every surface: Lounge · Echo · Lighter Side · Library · Circles · Love · Money · Style · Health · Talk." },
-  { kind: "route", href: "/CommunityControlDemo", group: CAT.PREVIEW, sub: "Community", accent: "sage",
+  { kind: "route", href: "/CommunityControlDemo", group: CAT.ARCHIVE, sub: "Community", accent: "sage",
     title: "Community — Control-Center concept", desc: "Welcome header + floating card: 2-col peek grid (Lounge/Echo/Lighter/Library/Circles/Love/Money/Style/Health/Talk) + right jump rail. Anonymous-first." },
   // (Community UX demos 1–5 appended programmatically below from COMMUNITY_DEMOS)
   // ── Nutrition concept demos ───────────────────────────────────────────
-  { kind: "route", href: "/NutritionControlDemo", group: CAT.PREVIEW, sub: "Nutrition", accent: "crimson",
+  { kind: "route", href: "/NutritionControlDemo", group: CAT.ARCHIVE, sub: "Nutrition", accent: "crimson",
     title: "Nutrition — Control-Center concept", desc: "Daily-Hub header + a full-cover floating card holding a 2-col peek grid (Log/Today/Plan/Recipes/Shop/Progress/Insights/For-your-stage) + a right jump rail." },
-  { kind: "route", href: "/NutritionHubDemo", group: CAT.PREVIEW, sub: "Nutrition", accent: "gold",
+  { kind: "route", href: "/NutritionHubDemo", group: CAT.ARCHIVE, sub: "Nutrition", accent: "gold",
     title: "Nutrition — Hub style (reference)", desc: "Reference only — the live Nutrition page already uses this. Daily-Hub plate header + big sliding cards (Log/Today/Plan/Recipes/Shop/Progress/Insights)." },
   // (Nutrition UX demos 1–5 appended programmatically below from NUTRITION_DEMOS)
   // ── Page-redesign demos (full-page redesign directions) ───────────────
   // New full-page demos slot in HERE — add a route entry with
   // sub: "Page-redesign demos" and it appears under that heading automatically.
   // (More coming from a parallel session: Pulse, Planner, others.)
-  { kind: "route", href: "/HealthDemo", group: CAT.PREVIEW, sub: "Page-redesign demos", status: "new", accent: "crimson",
+  { kind: "route", href: "/HealthDemo", group: CAT.ARCHIVE, sub: "Page-redesign demos", status: "new", accent: "crimson",
     title: "Health — redesign demo", desc: "Vertical editorial 'letters' layout — the Health hub read as a sequence of warm letters rather than a dashboard." },
-  { kind: "route", href: "/ProfileDemo", group: CAT.PREVIEW, sub: "Page-redesign demos", status: "new", accent: "blush",
+  { kind: "route", href: "/ProfileDemo", group: CAT.ARCHIVE, sub: "Page-redesign demos", status: "new", accent: "blush",
     title: "Profile — redesign demo", desc: "Identity card + flora fingerprint + a bento grid — Profile as a personal, expressive home, not a settings list." },
-  { kind: "route", href: "/DoctorExportDemo", group: CAT.PREVIEW, sub: "Page-redesign demos", status: "new", accent: "sage",
+  { kind: "route", href: "/DoctorExportDemo", group: CAT.ARCHIVE, sub: "Page-redesign demos", status: "new", accent: "sage",
     title: "Doctor Export — redesign demo", desc: "A live document builder — watch the GP export assemble itself as you choose what to include." },
-  { kind: "route", href: "/ProgramsDemo", group: CAT.PREVIEW, sub: "Page-redesign demos", status: "new", accent: "gold",
+  { kind: "route", href: "/ProgramsDemo", group: CAT.ARCHIVE, sub: "Page-redesign demos", status: "new", accent: "gold",
     title: "Programs — redesign demo", desc: "A streaming-style gallery — programmes browsed like a streaming service, rich cover cards and rails." },
-  { kind: "route", href: "/GardenDemo", group: CAT.PREVIEW, sub: "Page-redesign demos", status: "new", accent: "sage",
+  { kind: "route", href: "/GardenDemo", group: CAT.ARCHIVE, sub: "Page-redesign demos", status: "new", accent: "sage",
     title: "Garden — redesign demo", desc: "An immersive garden scene — the companion garden as a living, full-bleed place rather than a card." },
 
   // ── Card-system demos (BRAND_IDENTITY §6.7/§6.8 applied per page) ──────
   // These apply the APPROVED card family + flora-hero/summary signature, for
   // approval BEFORE the live page is rebuilt. New ones slot in HERE with
-  // sub: "Card-system demos ★ approve". Seeded with sample content so the full
+  // sub: "Card-system demos (pending rebuild)". Seeded with sample content so the full
   // experience (inline players, daily-story-first, real horoscope) is visible.
-  { kind: "route", href: "/LifestyleCardsDemo", group: CAT.PREVIEW, sub: "Card-system demos ★ approve", status: "approval", accent: "gold",
+  { kind: "route", href: "/LifestyleCardsDemo", group: CAT.ARCHIVE, sub: "Card-system demos (pending rebuild)", status: "approval", accent: "gold",
     title: "Lifestyle — card-system demo ★ for approval", desc: "The approved card system on Lifestyle: flora-hero + summary card, per-type sliding rows (Articles/Books/Watch/Listen/Stories/Your sky), inline video + audio that play in-card, book cards that open THAT book, Daily Story first, a real horoscope snippet. Approve this and it gets applied live." },
-  { kind: "route", href: "/CommunityCardsDemo", group: CAT.PREVIEW, sub: "Card-system demos ★ approve", status: "approval", accent: "crimson",
+  { kind: "route", href: "/CommunityCardsDemo", group: CAT.ARCHIVE, sub: "Card-system demos (pending rebuild)", status: "approval", accent: "crimson",
     title: "Community — card-system demo ★ for approval", desc: "Whole-life rooms (Dating · Career & Money · Friendship · Just Venting), trending-thread cards that open the exact thread, an anonymous 'share something' card, and member-story cards — all in the card family." },
-  { kind: "route", href: "/NutritionCardsDemo", group: CAT.PREVIEW, sub: "Card-system demos ★ approve", status: "approval", accent: "sage",
+  { kind: "route", href: "/NutritionCardsDemo", group: CAT.ARCHIVE, sub: "Card-system demos (pending rebuild)", status: "approval", accent: "sage",
     title: "Nutrition — card-system demo ★ for approval", desc: "Joyful, whole-life food: recipe cards (cook this → the recipe), quick & joyful treats, an inline hydration log-card, a phase-aware row, and a 'pudding counts' card. Not a clinical macro tracker." },
-  { kind: "route", href: "/JournalCardsDemo", group: CAT.PREVIEW, sub: "Card-system demos ★ approve", status: "approval", accent: "blush",
+  { kind: "route", href: "/JournalCardsDemo", group: CAT.ARCHIVE, sub: "Card-system demos (pending rebuild)", status: "approval", accent: "blush",
     title: "Journal — card-system demo ★ for approval", desc: "A quick-write card, life-spanning prompt cards (gratitude · love · career · vent), recent-entry cards, and collection cards — every one opening the exact prompt/entry/collection." },
-  { kind: "route", href: "/ProfileCardsDemo", group: CAT.PREVIEW, sub: "Card-system demos ★ approve", status: "approval", accent: "blush",
+  { kind: "route", href: "/ProfileCardsDemo", group: CAT.ARCHIVE, sub: "Card-system demos (pending rebuild)", status: "approval", accent: "blush",
     title: "Profile — card-system demo ★ for approval", desc: "Identity-first, not a settings list: a 'this is you today' summary, an inline intentions card, and 'your spaces' tiles (garden · people · saved · privacy) as rich cards." },
-  { kind: "route", href: "/ProgramsCardsDemo", group: CAT.PREVIEW, sub: "Card-system demos ★ approve", status: "approval", accent: "gold",
+  { kind: "route", href: "/ProgramsCardsDemo", group: CAT.ARCHIVE, sub: "Card-system demos (pending rebuild)", status: "approval", accent: "gold",
     title: "Programs — card-system demo ★ for approval", desc: "Guided arcs across body, mindset, rest and money: a Continue card → the exact session, plus per-category rows where every card opens THAT programme." },
-  { kind: "route", href: "/GardenCardsDemo", group: CAT.PREVIEW, sub: "Card-system demos ★ approve", status: "approval", accent: "sage",
+  { kind: "route", href: "/GardenCardsDemo", group: CAT.ARCHIVE, sub: "Card-system demos (pending rebuild)", status: "approval", accent: "sage",
     title: "Garden — card-system demo ★ for approval", desc: "Companion-led: an inline 'tend the garden' card, a 'leave a line' card, what's-growing cards, milestones, and a private share — the rituals as the card family." },
-  { kind: "route", href: "/PulseCardsDemo", group: CAT.PREVIEW, sub: "Card-system demos ★ approve", status: "approval", accent: "plum",
+  { kind: "route", href: "/PulseCardsDemo", group: CAT.ARCHIVE, sub: "Card-system demos (pending rebuild)", status: "approval", accent: "plum",
     title: "Pulse — card-system demo ★ for approval", desc: "Your week read back gently: insight cards (mood · energy · rest), patterns-worth-knowing cards, and a phase card — life-spanning, not a clinical chart wall." },
-  { kind: "route", href: "/PlannerCardsDemo", group: CAT.PREVIEW, sub: "Card-system demos ★ approve", status: "approval", accent: "sage",
+  { kind: "route", href: "/PlannerCardsDemo", group: CAT.ARCHIVE, sub: "Card-system demos (pending rebuild)", status: "approval", accent: "sage",
     title: "Planner (content) — card-system demo ★ for approval", desc: "The CONTENT side of Planner as cards: add-an-intention, today's gentle intentions, your rituals, and soft reminders. NOT the calendar/day-view (those stay as-is)." },
-  { kind: "route", href: "/RitualBuilderDemo", group: CAT.PREVIEW, sub: "Card-system demos ★ approve", status: "approval", accent: "sage",
+  { kind: "route", href: "/RitualBuilderDemo", group: CAT.CURRENT, status: "approval", accent: "sage",
     title: "Ritual Builder — habit-loop demo ★ for approval", desc: "The daily tending loop: a one-tap ritual on Today (phase/time aware), the same RitualCard contextualised across surfaces (Nutrition=water · Journal=three lines · Pulse=pause · Community=one kind message · Garden=tend companion), the §6.7.6 quick-action popup (do it in place → it ticks), and the living-ecosystem tie (each kept ritual grows a bloom; three earns a visitor). Builder lives in Planner. Rides existing RitualsTick/HabitLogs — no new function." },
 
   // ── Brand ─────────────────────────────────────────────────────────────
-  { kind: "route", href: "/FloraLabDemo", group: CAT.PREVIEW, sub: "Brand", status: "new", accent: "sage",
+  { kind: "route", href: "/FloraLabDemo", group: CAT.CURRENT, status: "new", accent: "sage",
     title: "Flora Lab — elevated bloom library", desc: "The elevated flora system in one place: 20 realistic RichBloomV2 forms, the 9 colourways, 24 meaning-bloom glyph species, and every pollinator (butterfly · bee · dragonfly · moth · ladybird). The realism + variety lift, catalogued." },
-  { kind: "route", href: "/BrandCraftSample", group: CAT.PREVIEW, sub: "Brand", status: "approval", accent: "crimson",
+  { kind: "route", href: "/BrandCraftSample", group: CAT.ARCHIVE, sub: "Brand", status: "approval", accent: "crimson",
     title: "Brand Craft Sample ★ for approval", desc: "The canonical brand-system craft direction: flat vs upgraded realistic bloom, a botanical line-motif, the carved heart in context, and a live on-device perf measurement." },
 
   // ── Brand identity — the ONE consolidated bible ───────────────────────
@@ -228,13 +232,13 @@ const CATALOG = [
     title: "The Brand Bible", desc: "The ONE source of truth — soul · voice · type · colour · the full flora system (recognisability + the 64-flower library + lifecycle + meaning) · cards + the quick-action popup · page structure · components · nav. Agreed canon, plus a clearly-marked 'Proposed — awaiting sign-off' section. Renders in-app with live flora. (The old separate Living-Ecosystem / Brand Identity / Flora & Meaning docs are folded in here — one brand home.)" },
 
   // ── Specs & Plans (in-page docs) ──────────────────────────────────────
-  { kind: "doc", key: "Page Brand Audit", group: CAT.SPECS, status: "new", accent: "sage",
+  { kind: "doc", key: "Page Brand Audit", group: CAT.CURRENT, status: "new", accent: "sage",
     title: "Per-Page Brand Audit & Fix Plan (v4)", desc: "Every page audited vs the full bar (the 64-flower library · the quick-action popup · the living-ecosystem layer) + the in-flight features. Foundation offenders ranked + a per-page uplift matrix; Planner/Jess detail; Ritual Builder demo. For approval." },
-  { kind: "doc", key: "Intentions & Goals", group: CAT.SPECS, status: "new", accent: "crimson",
+  { kind: "doc", key: "Intentions & Goals", group: CAT.CURRENT, status: "new", accent: "crimson",
     title: "Intentions, the Line of the Day & Goals", desc: "Daily intentions, a user-specific soulful 'line of the day', and whole-life goals — baked into Today/Planner/Garden/Profile with NO new nav tab, on the living-ecosystem grammar. Live flora growth sketches; cited goal-science. For your reaction." },
-  { kind: "doc", key: "Connect, Days & Missions", group: CAT.SPECS, status: "new", accent: "sage",
+  { kind: "doc", key: "Connect, Days & Missions", group: CAT.CURRENT, status: "new", accent: "sage",
     title: "No Garden Grows Alone", desc: "Connecting women (safe Tier 0→2 ladder, no open matchmaking), days-off activities found FOR her, and no-guilt tiny missions that grow the garden — baked into Community/Today/Lifestyle/Garden/Planner with NO new nav tab. Cited research + the UK Online-Safety/ICO legal flags and the dials for you." },
-  { kind: "doc", key: "Bottom-Nav Plan", group: CAT.SPECS, status: "new", accent: "gold",
+  { kind: "doc", key: "Bottom-Nav Plan", group: CAT.CURRENT, status: "new", accent: "gold",
     title: "Bottom-Nav Plan", desc: "Floating cream capsule + shrink-on-scroll, reject horizontal-scroll nav. Research, honest drawbacks and a phased plan. Awaiting your approval." },
   { kind: "doc", key: "Today Mega-Plan", group: CAT.SPECS, accent: "gold",
     title: "Today — Mega-Plan", desc: "The full plan for the Today home surface." },
@@ -324,22 +328,28 @@ const CATALOG = [
 function demoCatalogEntries() {
   return [
     ...JOURNAL_DEMOS.map((d) => ({
-      kind: "route", href: `/${d.slug}`, group: CAT.PREVIEW, sub: "Journal", accent: "blush",
+      kind: "route", href: `/${d.slug}`, group: CAT.ARCHIVE, sub: "Journal", accent: "blush",
       title: `Journal theme demo ${d.n} — ${d.title}`, desc: `${d.subtitle}. ${d.body}`,
     })),
     ...COMMUNITY_DEMOS.filter((d) => d.slug !== "CommunityDemo6").map((d) => ({
-      kind: "route", href: `/${d.slug}`, group: CAT.PREVIEW, sub: "Community", accent: "sage",
+      kind: "route", href: `/${d.slug}`, group: CAT.ARCHIVE, sub: "Community", accent: "sage",
       title: `Community UX demo ${d.n} — ${String(d.title).replace(/^UX \d+ — /, "")}`, desc: `${d.subtitle}. ${d.body}`,
     })),
     ...NUTRITION_DEMOS.map((d) => ({
-      kind: "route", href: `/${d.slug}`, group: CAT.PREVIEW, sub: "Nutrition", accent: "gold",
+      kind: "route", href: `/${d.slug}`, group: CAT.ARCHIVE, sub: "Nutrition", accent: "gold",
       title: `Nutrition UX demo ${d.n} — ${d.title}`, desc: `${d.subtitle}. ${d.body}`,
     })),
   ];
 }
 
-// Sub-section order within Previews & Demos.
-const PREVIEW_SUB_ORDER = ["Live in the app", "Today (home) directions", "Page-redesign demos", "Nutrition", "Journal", "Community", "Brand"];
+// Sub-section order within the Archive group (keeps the old demos organised when expanded).
+const ARCHIVE_SUB_ORDER = [
+  "Page-redesign demos",
+  "Card-system demos (pending rebuild)",
+  "Today (home) directions",
+  "Journal", "Community", "Nutrition",
+  "Brand",
+];
 
 const accentColor = (a) => ({ gold: T.gold, sage: T.sage, blush: T.blush, crimson: T.crimson, espresso: T.espresso }[a] || T.gold);
 const STATUS_CHIP = {
@@ -844,6 +854,14 @@ function BrandDocFrame({ html, title }) {
 function FoundersInner({ user }) {
   const [tab, setTab] = useState(HOME);
   const [q, setQ] = useState("");
+  const [collapsed, setCollapsed] = useState(() => new Set(COLLAPSED_BY_DEFAULT));
+  const toggleGroup = useCallback((name) => {
+    setCollapsed((prev) => {
+      const next = new Set(prev);
+      if (next.has(name)) next.delete(name); else next.add(name);
+      return next;
+    });
+  }, []);
 
   const catalog = useMemo(() => [...CATALOG, ...demoCatalogEntries()], []);
   const query = lc(q).trim();
@@ -1003,30 +1021,56 @@ function FoundersInner({ user }) {
                 Nothing matches “{q.trim()}”. Try a page name (Today, Journal, Nutrition…) or a kind (demo, plan, brand).
               </div>
             )}
-            {groups.map((g) => (
-              <section key={g.name} id={slugify(g.name)} style={{ marginBottom: 26, scrollMarginTop: 132 }}>
-                <div style={{ marginBottom: 4 }}>
-                  <SectionLabel>{g.name} · {g.items.length}</SectionLabel>
-                </div>
-                {!query && GROUP_BLURB[g.name] && (
-                  <div style={{ fontSize: 12.5, color: T.textMuted, lineHeight: 1.5, margin: "-4px 0 12px" }}>{GROUP_BLURB[g.name]}</div>
-                )}
-                {/* Previews sub-group by area; everything else is a flat grid. */}
-                {g.name === CAT.PREVIEW && !query ? (
-                  PREVIEW_SUB_ORDER
-                    .map((sub) => ({ sub, items: g.items.filter((e) => e.sub === sub) }))
-                    .filter((s) => s.items.length)
-                    .map((s) => (
-                      <div key={s.sub} style={{ marginBottom: 16 }}>
-                        <div style={{ fontSize: 11.5, fontWeight: 700, letterSpacing: 0.8, textTransform: "uppercase", color: T.gold, margin: "0 0 8px" }}>{s.sub}</div>
-                        <CardGrid items={s.items} onOpen={onOpen} />
-                      </div>
-                    ))
-                ) : (
-                  <CardGrid items={g.items} onOpen={onOpen} />
-                )}
-              </section>
-            ))}
+            {groups.map((g) => {
+              const collapsible = COLLAPSED_BY_DEFAULT.has(g.name) && !query;
+              const isOpen = !collapsible || !collapsed.has(g.name);
+              // Archive sub-groups by area (ordered), with a "More" bucket for
+              // any entry without a listed sub so nothing is dropped.
+              const subSections = (() => {
+                if (g.name !== CAT.ARCHIVE) return null;
+                const ordered = ARCHIVE_SUB_ORDER
+                  .map((sub) => ({ sub, items: g.items.filter((e) => e.sub === sub) }))
+                  .filter((s) => s.items.length);
+                const placed = new Set(ordered.flatMap((s) => s.items));
+                const rest = g.items.filter((e) => !placed.has(e));
+                if (rest.length) ordered.push({ sub: "More", items: rest });
+                return ordered;
+              })();
+              return (
+                <section key={g.name} id={slugify(g.name)} style={{ marginBottom: 26, scrollMarginTop: 132 }}>
+                  <button
+                    type="button"
+                    onClick={collapsible ? () => toggleGroup(g.name) : undefined}
+                    aria-expanded={collapsible ? isOpen : undefined}
+                    style={{
+                      display: "flex", alignItems: "center", gap: 8, width: "100%",
+                      background: "transparent", border: "none", padding: 0,
+                      cursor: collapsible ? "pointer" : "default", textAlign: "left",
+                    }}
+                  >
+                    {collapsible && (
+                      <span aria-hidden="true" style={{ color: T.gold, fontSize: 12, fontWeight: 700, transform: isOpen ? "rotate(90deg)" : "none", transition: "transform 0.15s ease" }}>▸</span>
+                    )}
+                    <SectionLabel>{g.name} · {g.items.length}{collapsible && !isOpen ? " · tap to show" : ""}</SectionLabel>
+                  </button>
+                  {!query && GROUP_BLURB[g.name] && (
+                    <div style={{ fontSize: 12.5, color: T.textMuted, lineHeight: 1.5, margin: "-4px 0 12px" }}>{GROUP_BLURB[g.name]}</div>
+                  )}
+                  {isOpen && (
+                    subSections ? (
+                      subSections.map((s) => (
+                        <div key={s.sub} style={{ marginBottom: 16 }}>
+                          <div style={{ fontSize: 11.5, fontWeight: 700, letterSpacing: 0.8, textTransform: "uppercase", color: T.gold, margin: "0 0 8px" }}>{s.sub}</div>
+                          <CardGrid items={s.items} onOpen={onOpen} />
+                        </div>
+                      ))
+                    ) : (
+                      <CardGrid items={g.items} onOpen={onOpen} />
+                    )
+                  )}
+                </section>
+              );
+            })}
           </div>
         ) : (
           <div>
