@@ -99,6 +99,7 @@ export default function MobileBottomNav({ currentPageName }) {
   );
 
   // ── Liquid active-pill migration ──────────────────────────────────────────
+  const capsuleRef = useRef(null);
   const slotRefs = useRef([]);
   const pillRef = useRef(null);
   const prevLeftRef = useRef(null); // last resting pill X (null = pill hidden)
@@ -163,19 +164,38 @@ export default function MobileBottomNav({ currentPageName }) {
     prevLeftRef.current = toX;
   }, [activeIndex, hasActive, reduceMotion]);
 
-  // Keep the pill aligned if the viewport (and thus the capsule width) changes.
+  // Keep the pill aligned to the active slot whenever the CAPSULE resizes — not
+  // just window resize but also the reflow when a scroll-locking sheet (Menu)
+  // opens and the scrollbar disappears, which shifts the grid columns. Snap
+  // (no spring) since it's a layout correction, not a navigation. Guarded so
+  // the ResizeObserver's initial fire never cancels an in-flight migration.
   useEffect(() => {
-    const onResize = () => {
-      const pill = pillRef.current;
+    const cap = capsuleRef.current;
+    const pill = pillRef.current;
+    if (!cap || !pill) return;
+    const snap = () => {
+      if (!hasActive) return;
       const slot = slotRefs.current[activeIndex];
-      if (!pill || !hasActive || !slot) return;
+      if (!slot) return;
       const toX = slot.offsetLeft + PILL_INSET;
       pill.style.width = `${slot.offsetWidth - PILL_INSET * 2}px`;
-      pill.style.transform = `translateX(${toX}px)`;
+      pill.getAnimations?.().forEach((a) => a.cancel());
+      pill.style.transform = `translateX(${toX}px) scaleX(1) scaleY(1)`;
       prevLeftRef.current = toX;
     };
-    window.addEventListener("resize", onResize);
-    return () => window.removeEventListener("resize", onResize);
+    let lastW = cap.offsetWidth;
+    const ro = new ResizeObserver(() => {
+      const w = cap.offsetWidth;
+      if (w === lastW) return; // initial fire / no real change → don't kill the spring
+      lastW = w;
+      snap();
+    });
+    ro.observe(cap);
+    window.addEventListener("resize", snap);
+    return () => {
+      ro.disconnect();
+      window.removeEventListener("resize", snap);
+    };
   }, [activeIndex, hasActive]);
 
   const handleJessTap = () => {
@@ -254,6 +274,7 @@ export default function MobileBottomNav({ currentPageName }) {
         }}
       >
         <div
+          ref={capsuleRef}
           style={{
             position: "relative",
             pointerEvents: "auto",
