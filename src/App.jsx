@@ -46,6 +46,18 @@ const { Pages, Layout, mainPage } = pagesConfig;
 const mainPageKey = mainPage ?? Object.keys(Pages)[0];
 const MainPage = mainPageKey ? Pages[mainPageKey] : <></>;
 
+// KEEP-ALIVE — the primary nav-tab pages stay MOUNTED once visited (visibility-
+// toggled) so returning to them is INSTANT: no remount, no refetch (every page
+// here fetches raw on mount, so a remount = a full reload). They're also warmed
+// during idle after first paint so even the first tap is instant. Everything
+// else routes normally (mount/unmount) through the animated swap below.
+const KEEP_ALIVE = ["Today", "Lifestyle", "Profile"];
+const PAGE_ALIASES = { CommunityMP8: "Community", terms: "Terms", privacy: "Privacy", SkinHairLegacy: "SkinHair" };
+const pageNameFromPath = (pathname) => {
+  const seg = pathname === "/" ? mainPageKey : pathname.replace(/^\//, "").split("/")[0];
+  return PAGE_ALIASES[seg] || seg;
+};
+
 const LayoutWrapper = ({ children, currentPageName }) => Layout ?
   <Layout currentPageName={currentPageName}>{children}</Layout>
   : <>{children}</>;
@@ -78,6 +90,27 @@ const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
+  const currentPageName = pageNameFromPath(location.pathname);
+
+  // Keep-alive bookkeeping — which keep-alive pages have been mounted ("warmed").
+  const [warm, setWarm] = useState(() => new Set([currentPageName]));
+  useEffect(() => {
+    setWarm((w) => (w.has(currentPageName) ? w : new Set(w).add(currentPageName)));
+  }, [currentPageName]);
+  // Warm the other nav tabs during idle after first paint so the FIRST tap to
+  // each is already instant (not just returns). requestIdleCallback so it never
+  // competes with the landing page's own load.
+  useEffect(() => {
+    const ric = window.requestIdleCallback || ((cb) => setTimeout(cb, 1500));
+    const cancel = window.cancelIdleCallback || clearTimeout;
+    const warmAll = () => setWarm((w) => {
+      const n = new Set(w);
+      KEEP_ALIVE.forEach((k) => n.add(k));
+      return n;
+    });
+    const id = ric(warmAll, { timeout: 3000 });
+    return () => cancel(id);
+  }, []);
   // Sprint 8 — once-per-day Morning Brief auto-launch.
   // We resolve user + profile in a tiny background effect so the brief
   // is data-aware (cycle phase, display name) without blocking router
@@ -153,15 +186,10 @@ const AuthenticatedApp = () => {
     }
   }
 
-  // Persistent-shell routing — the ONE <Layout> (nav/sidebar/footer) now lives
-  // ABOVE the page transition, so it never unmounts between routes. This (a)
-  // keeps the floating nav mounted so its liquid active-pill can MIGRATE
-  // between items, and (b) kills the per-route double-Layout churn that made
-  // navigation feel slow/abrupt. Only the PAGE inside the keyed motion.div
-  // remounts. `currentPageName` is derived from the path for the shell.
-  const PAGE_ALIASES = { CommunityMP8: "Community", terms: "Terms", privacy: "Privacy", SkinHairLegacy: "SkinHair" };
-  const seg = location.pathname === "/" ? mainPageKey : location.pathname.replace(/^\//, "").split("/")[0];
-  const currentPageName = PAGE_ALIASES[seg] || seg;
+  // Persistent-shell routing — the ONE <Layout> (nav/sidebar/footer) lives ABOVE
+  // the page transition so it never unmounts between routes (keeps the nav +
+  // liquid pill mounted, kills double-Layout churn). `currentPageName` derived
+  // at the top of the component.
 
   // Bare routes render with NO app shell (public partner view / admin tools).
   if (location.pathname === "/PartnerView") return <PartnerView />;
@@ -194,6 +222,27 @@ const AuthenticatedApp = () => {
       {/* reducedMotion="user" → under prefers-reduced-motion framer drops the
           y-slide and the swap becomes a plain opacity cross-fade. */}
       <MotionConfig reducedMotion="user">
+      {/* KEEP-ALIVE nav tabs — mounted once warmed, visibility-toggled so
+          switching between them is INSTANT (no remount/refetch) and scroll
+          position is preserved. The non-keep-alive routes swap below. */}
+      {KEEP_ALIVE.map((name) => {
+        const PageComp = Pages[name];
+        if (!PageComp || !warm.has(name)) return null;
+        const active = currentPageName === name;
+        return (
+          <div
+            key={name}
+            data-keepalive={name}
+            aria-hidden={active ? undefined : true}
+            style={{ display: active ? "block" : "none" }}
+          >
+            <PageComp />
+          </div>
+        );
+      })}
+      {/* Everything else: animated mount/unmount swap. Not rendered while on a
+          keep-alive tab, so the active tab never double-mounts. */}
+      {!KEEP_ALIVE.includes(currentPageName) && (
       <AnimatePresence mode="wait" initial={false}>
         <motion.div
           key={location.pathname}
@@ -203,7 +252,7 @@ const AuthenticatedApp = () => {
         >
           <Routes location={location}>
             <Route path="/" element={<MainPage />} />
-            {Object.entries(Pages).map(([path, Page]) => (
+            {Object.entries(Pages).filter(([path]) => !KEEP_ALIVE.includes(path)).map(([path, Page]) => (
               <Route key={path} path={`/${path}`} element={<Page />} />
             ))}
             <Route path="/Track" element={<Navigate to="/Today" replace />} />
@@ -239,6 +288,7 @@ const AuthenticatedApp = () => {
           </Routes>
         </motion.div>
       </AnimatePresence>
+      )}
       </MotionConfig>
     </LayoutWrapper>
     </>
