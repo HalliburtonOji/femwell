@@ -216,6 +216,8 @@ const CATALOG = [
     title: "Pulse — card-system demo ★ for approval", desc: "Your week read back gently: insight cards (mood · energy · rest), patterns-worth-knowing cards, and a phase card — life-spanning, not a clinical chart wall." },
   { kind: "route", href: "/PlannerCardsDemo", group: CAT.PREVIEW, sub: "Card-system demos ★ approve", status: "approval", accent: "sage",
     title: "Planner (content) — card-system demo ★ for approval", desc: "The CONTENT side of Planner as cards: add-an-intention, today's gentle intentions, your rituals, and soft reminders. NOT the calendar/day-view (those stay as-is)." },
+  { kind: "route", href: "/RitualBuilderDemo", group: CAT.PREVIEW, sub: "Card-system demos ★ approve", status: "approval", accent: "sage",
+    title: "Ritual Builder — habit-loop demo ★ for approval", desc: "The daily tending loop: a one-tap ritual on Today (phase/time aware), the same RitualCard contextualised across surfaces (Nutrition=water · Journal=three lines · Pulse=pause · Community=one kind message · Garden=tend companion), the §6.7.6 quick-action popup (do it in place → it ticks), and the living-ecosystem tie (each kept ritual grows a bloom; three earns a visitor). Builder lives in Planner. Rides existing RitualsTick/HabitLogs — no new function." },
 
   // ── Brand ─────────────────────────────────────────────────────────────
   { kind: "route", href: "/FloraLabDemo", group: CAT.PREVIEW, sub: "Brand", status: "new", accent: "sage",
