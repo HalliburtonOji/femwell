@@ -32,6 +32,8 @@ A woman's life is a **garden, not a chart.** It has **seasons** (the cycle), **l
 ---
 
 ## 0. PRE-BUILD CHECKLIST (the 60-second gate)
+> **STANDING DELIVERY RULES also apply (see CLAUDE.md):** (1) every plan/brainstorm ships as a phone-readable styled-HTML doc **and** is linked into the FoundersOS Ideas page (reachable via the IDEAS pill, never a dead route); (2) before re-working/demoing an existing page, **read it in full first — default ADD/IMPROVE, never strip existing features** unless told; (3) every update ends with a done/queued breakdown.
+
 Before you add or change anything visual, confirm:
 1. **Type** — every text node maps to a ROLE in §1 (display / heading / title / body / caption / eyebrow / control). No free-floating `fontSize`. Use the role's exact size + weight + line-height. **No half-pixel sizes. No new sizes.**
 2. **Colour** — every colour is a token from §2. **No raw hex that duplicates a token.** One gold (`#A8893F`), one crimson (`#BC2E27`), one cream-paper (`#ECE7DA`). Phase colours (§2.4) are a separate semantic set.
