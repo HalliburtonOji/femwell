@@ -1,0 +1,210 @@
+<!doctype html><html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>FemWell · Per-Page Brand Audit & Fix Plan — for approval</title>
+<style>
+  :root{ --paper:#ECE7DA; --paperHi:#F4EFE3; --paperDeep:#D8CFBC; --ink:#0B0805; --muted:#2E261B;
+    --gold:#A8893F; --crimson:#BC2E27; --sage:#8FAF8F; --plum:#8E6E8E; --blush:#E8B4B8; --sky:#5F7E8E; }
+  *{box-sizing:border-box}
+  body{ margin:0; background:var(--paper); color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif; line-height:1.55; -webkit-text-size-adjust:100%; }
+  .wrap{ max-width:720px; margin:0 auto; padding:22px 16px 72px; }
+  h1{ font-family:Georgia,"Cormorant Garamond",serif; font-size:30px; line-height:1.12; margin:0 0 4px; }
+  h2{ font-family:Georgia,serif; font-size:22px; margin:34px 0 8px; border-bottom:1px solid var(--paperDeep); padding-bottom:6px; }
+  h3{ font-size:15px; letter-spacing:.04em; text-transform:uppercase; color:var(--gold); margin:20px 0 6px; }
+  p,li{ font-size:15.5px; color:var(--muted); }
+  .eyebrow{ font-size:12px; font-weight:700; letter-spacing:.16em; text-transform:uppercase; color:var(--gold); }
+  .lead{ font-size:17px; color:var(--ink); }
+  .card{ background:linear-gradient(165deg,var(--paperHi) 0%, rgba(168,137,63,.08) 100%);
+    border:1px solid var(--paperDeep); border-left:4px solid var(--gold); border-radius:16px; padding:14px 16px; margin:12px 0;
+    box-shadow:0 4px 20px rgba(11,8,5,.08),0 1px 4px rgba(11,8,5,.06); }
+  .card.crit{ border-left-color:var(--crimson); }
+  .card.major{ border-left-color:#C9742E; }
+  table{ width:100%; border-collapse:collapse; margin:10px 0; font-size:13px; }
+  th,td{ text-align:left; padding:8px 8px; border-bottom:1px solid var(--paperDeep); vertical-align:top; }
+  th{ font-size:11px; letter-spacing:.05em; text-transform:uppercase; color:var(--gold); }
+  td b{ color:var(--ink); }
+  code{ background:var(--paperHi); border:1px solid var(--paperDeep); border-radius:5px; padding:0 4px; font-size:12px; color:var(--muted); }
+  .sev{ display:inline-block; font-size:10px; font-weight:800; text-transform:uppercase; letter-spacing:.06em; color:#fff; border-radius:999px; padding:2px 8px; white-space:nowrap; }
+  .s-crit{background:var(--crimson)} .s-major{background:#C9742E} .s-med{background:var(--gold)} .s-minor{background:var(--sage)} .s-done{background:var(--sky)}
+  .eff{ font-weight:700; color:var(--ink); }
+  .v4{ display:inline-block; font-size:10px; font-weight:700; color:var(--plum); border:1px solid var(--plum); border-radius:999px; padding:1px 7px; }
+  .small{ font-size:12.5px; color:var(--muted); }
+  ol.steps{ padding-left:20px; } ol.steps li{ margin:4px 0; }
+  .pill{ display:inline-block; font-size:11px; font-weight:700; background:var(--paperHi); border:1px solid var(--paperDeep); border-radius:999px; padding:2px 9px; margin:0 4px 4px 0; color:var(--muted); }
+  .legend span{ margin-right:4px; }
+  hr{ border:none; border-top:1px solid var(--paperDeep); margin:18px 0; }
+</style></head><body><div class="wrap">
+
+<p class="eyebrow">FemWell · Brand rollout · 19 Jun 2026</p>
+<h1>Per-Page Brand Audit &amp; Fix Plan</h1>
+<p class="lead">Every page scanned against <b>BRAND_IDENTITY.md (v3)</b>. This is a <b>plan for your approval</b> — nothing ships to gen-pop until you approve, then I fix <b>page-by-page, demo-first</b> (a <code>/XxxCardsDemo</code>-style preview each, device-QA'd at 390px, before anything goes live).</p>
+
+<div class="card"><p style="margin:0"><b>The bar (what "on-brand" means).</b> §1 type — Cormorant/Ephesis/system-sans on the role scale, <b>floor 12px, zero sub-12</b>. §2 colour — one gold <code>#A8893F</code>, one crimson <code>#BC2E27</code>, one cream <code>#ECE7DA</code>; the legacy <code>#D4AF37 / #3A2C1A / #F4EDDB / #9B8B7A</code> are <b>retired</b>. <code>PAPER_BG</code> lush paper, never a flat fill or dark slab. The <b>signature top</b> (flora hero → one summary card) on primary pages. Cards from <code>brand/Card.jsx</code> — never hand-rolled, never empty. Exact-item deep-links. No horizontal overflow.</p></div>
+
+<p class="small"><b>Method:</b> objective source scan (retired-token counts, <code>PAPER_BG</code>/flora/<code>Card.jsx</code> presence, sub-12 font count, <code>isolation</code> stacking-traps) + live 390px walks this session. <b>Severity</b> = <span class="sev s-minor">minor</span> <span class="sev s-med">medium</span> <span class="sev s-major">major</span> <span class="sev s-crit">critical</span> <span class="sev s-done">done</span>. <b>Effort</b> S/M/L. <span class="v4">v4</span> = will also need the in-progress v4 layer (living-ecosystem flora · soulful voice · rotating section "omens") from the brand-identity session.</p>
+
+<h2>1 · The headline</h2>
+<div class="card crit"><p style="margin:0 0 6px"><span class="sev s-crit">critical</span> &nbsp;<b>Planner is the worst page in the app</b> — 6,656-line shell, <b>113</b> retired dusk-brown tokens, <b>84</b> sub-12 fonts, <b>no</b> paper background, <b>no</b> card family, an <code>isolation</code> stacking-trap. It reads off-brand top to bottom. <b>Priority #1.</b></p>
+<p style="margin:0"><span class="sev s-major">major</span> &nbsp;<b>Jess needs a visual rebuild</b> — the live panel (<code>JessDemoPanel</code>, 4,227 lines) is on the <b>legacy palette</b>, no paper, no flora, 30 sub-12 fonts. <b>Priority #2.</b> Then Garden, Doctor Export, Profile, Pulse.</p></div>
+<p class="small">Good news: <b>Lifestyle</b> and <b>Health</b> are already on-brand (card system / harmonised this week), and <b>Community / Nutrition / Journal</b> already carry paper + flora — they mainly need the card family + a font-floor pass.</p>
+
+<h2>2 · Per-page table</h2>
+<table>
+<tr><th>Page</th><th>Sev</th><th>Working theme / character</th><th>Offenders — minor → major</th><th>Fix</th><th>Eff</th></tr>
+
+<tr><td><b>Planner</b><br><span class="small"><code>PlannerV2Shell</code></span></td><td><span class="sev s-crit">critical</span><br><span class="v4">v4</span></td>
+<td>A <b>calm week</b> — a few kind intentions + the rituals that hold your days. NOT a wall of appointments.</td>
+<td>① some duplicate hairlines · ② <b>84 sub-12 fonts</b> · ③ <b>113 retired dusk + 6 gold + 2 cream tokens</b> · ④ <b>no <code>PAPER_BG</code></b> (flat) · ⑤ hand-rolled cards, no <code>Card.jsx</code> · ⑥ <code>isolation:isolate</code> stacking-trap (sheets risk hiding behind nav) · ⑦ ritual builder buried here (see §5).</td>
+<td>Full brand rebuild (see §3). Keep the calendar/day-view logic; re-skin to tokens + PAPER_BG + card family + font floor; fix the trap.</td><td class="eff">L+</td></tr>
+
+<tr><td><b>Jess</b><br><span class="small"><code>JessDemoPanel</code></span></td><td><span class="sev s-major">major</span><br><span class="v4">v4</span></td>
+<td>The <b>smart-friend</b> — warm, soulful, anonymous-safe; a sigil-halo bloom, not a clinical chatbot.</td>
+<td>① 30 sub-12 fonts · ② retired palette (4 gold/5 dusk/1 cream/4 taupe) · ③ no <code>PAPER_BG</code> · ④ no flora signature · ⑤ chat chrome reads generic, off-brand.</td>
+<td>Visual rebuild (see §4) — keep the working agent wiring, re-skin the shell.</td><td class="eff">L</td></tr>
+
+<tr><td><b>Garden</b><br><span class="small"><code>NurtureGarden</code></span></td><td><span class="sev s-major">major</span><br><span class="v4">v4</span></td>
+<td>The <b>home of the whole system</b> — companion bloom + full palette; the living garden.</td>
+<td>① 21 sub-12 fonts · ② no <code>PAPER_BG</code> (flat) · ③ doesn't use the shared flora engine (own <code>Bloom</code>) so it misses the elevated blooms/ecosystem · ④ no signature top / summary card.</td>
+<td>PAPER_BG; adopt the shared flora (companion = a real species + creatures-on-plant); signature top + a "your garden today" summary; font floor.</td><td class="eff">M–L</td></tr>
+
+<tr><td><b>Doctor Export</b><br><span class="small">Care Bridge</span></td><td><span class="sev s-major">major</span></td>
+<td>Editorial <b>"curate what your GP sees"</b> — a calm paper document that assembles live.</td>
+<td>① 3 retired dusk tokens · ② <code>isolation</code> trap · ③ <b>30 sub-12 fonts</b> (worst font offender after Planner). <span class="small">(Has PAPER_BG + flora already.)</span></td>
+<td>Font-floor pass (the big one), token sweep, remove the isolation trap; otherwise close to brand.</td><td class="eff">M</td></tr>
+
+<tr><td><b>Profile</b></td><td><span class="sev s-major">major</span></td>
+<td>Identity-first <b>portrait</b> — flora fingerprint, "this is you", life-domain tiles. Not a settings list.</td>
+<td>① 2 retired cream + 6 dusk tokens · ② 11 sub-12 fonts · ③ no <code>PAPER_BG</code> · ④ no card family / signature.</td>
+<td>The <code>/ProfileCardsDemo</code> direction → live: PAPER_BG, flora hero, summary, "your spaces" tiles from <code>Card.jsx</code>, font floor, token sweep.</td><td class="eff">M</td></tr>
+
+<tr><td><b>Pulse</b></td><td><span class="sev s-major">major</span><br><span class="v4">v4</span></td>
+<td><b>Insight</b> — patterns read back gently; plum + dragonfly, "seeing through". Not a chart wall.</td>
+<td>① 6 retired taupe tokens · ② 7 sub-12 fonts · ③ no <code>PAPER_BG</code> · ④ no flora signature / card family.</td>
+<td>The <code>/PulseCardsDemo</code> direction → live: PAPER_BG, flora hero + dragonfly, insight cards, font floor.</td><td class="eff">M</td></tr>
+
+<tr><td><b>Programs</b><br><span class="small"><code>ProgramsHub</code></span></td><td><span class="sev s-med">medium</span></td>
+<td>Guided <b>arcs</b> — a streaming-style gallery; every card → the exact programme.</td>
+<td>① 2 retired dusk tokens · ② <code>isolation</code> trap · ③ no <code>PAPER_BG</code> · ④ no card family.</td>
+<td>PAPER_BG, remove trap, adopt <code>Card.jsx</code> shelves (per <code>/ProgramsCardsDemo</code>), keep exact-programme deep-links.</td><td class="eff">M</td></tr>
+
+<tr><td><b>Onboarding</b></td><td><span class="sev s-med">medium</span></td>
+<td>A <b>gentle welcome</b> — the first bloom, hope; sets the brand tone before anything else.</td>
+<td>① 1 cream + 4 dusk tokens · ② 4 sub-12 fonts · ③ no <code>PAPER_BG</code> · ④ no flora signature (first impression!).</td>
+<td>PAPER_BG + a welcoming flora moment + font floor + token sweep. High symbolic value for first-run.</td><td class="eff">M</td></tr>
+
+<tr><td><b>Events</b></td><td><span class="sev s-med">medium</span></td>
+<td>A date-grouped <b>agenda / poster feed</b>.</td>
+<td>① 8 sub-12 fonts · ② no <code>PAPER_BG</code> · ③ no flora/card signature.</td>
+<td>PAPER_BG, font floor, adopt card family for the poster cards.</td><td class="eff">S–M</td></tr>
+
+<tr><td><b>Track</b></td><td><span class="sev s-med">medium</span></td>
+<td><b>Quick capture</b> — fast logging; should still feel warm-paper, not utilitarian.</td>
+<td>① 1 dusk token · ② no <code>PAPER_BG</code> · ③ no flora/card signature.</td>
+<td>PAPER_BG + token sweep + light card adoption.</td><td class="eff">S</td></tr>
+
+<tr><td><b>Explore</b></td><td><span class="sev s-med">medium</span></td>
+<td><b>Discovery masonry</b> across all life domains.</td>
+<td>① 3 sub-12 fonts · ② no <code>PAPER_BG</code> · ③ no flora/card signature.</td>
+<td>PAPER_BG, font floor, card family for results (per <code>/ExploreDemo</code> idea).</td><td class="eff">S–M</td></tr>
+
+<tr><td><b>Settings · CycleSettings · PartnerSettings</b></td><td><span class="sev s-med">medium</span></td>
+<td><b>Utility</b> — but still cream paper + §1 type, not stark.</td>
+<td>① 1 dusk + 2 cream (Settings), 4 sub-12 (PartnerSettings), 5 sub-12 (Settings) · ② no <code>PAPER_BG</code>. CycleSettings is small/clean.</td>
+<td>PAPER_BG + font floor + token sweep. Light touch; keep them simple.</td><td class="eff">S</td></tr>
+
+<tr><td><b>Deals · Saved</b></td><td><span class="sev s-minor">minor</span></td>
+<td>Deals = voucher <b>wallet</b>; Saved = collections <b>library</b>.</td>
+<td>Deals 3 sub-12; Saved clean. Both lack <code>PAPER_BG</code> + card signature.</td>
+<td>PAPER_BG + card family + font floor.</td><td class="eff">S</td></tr>
+
+<tr><td><b>Community</b><br><span class="small"><code>CommunityHub</code></span></td><td><span class="sev s-minor">minor</span></td>
+<td>A warm <b>meadow</b> — whole-life rooms, the bee, "we help each other bloom".</td>
+<td>① 2 sub-12 fonts · ② no <code>Card.jsx</code> yet (own card markup). <span class="small">(Has PAPER_BG + flora.)</span></td>
+<td>Adopt the card family (per <code>/CommunityCardsDemo</code>); font-floor pass.</td><td class="eff">S–M</td></tr>
+
+<tr><td><b>Nutrition</b><br><span class="small"><code>NutritionHub</code></span></td><td><span class="sev s-minor">minor</span></td>
+<td>The <b>kitchen-garden</b> — joyful food, herbs, the ladybird.</td>
+<td>① 1 sub-12 font · ② no <code>Card.jsx</code> yet. <span class="small">(Has PAPER_BG + flora.)</span></td>
+<td>Card-family adoption (per <code>/NutritionCardsDemo</code>); tiny font fix.</td><td class="eff">S–M</td></tr>
+
+<tr><td><b>Journal</b><br><span class="small"><code>JournalHub</code></span></td><td><span class="sev s-minor">minor</span></td>
+<td><b>Reflective, night</b> — willow/rosemary, the moth, private.</td>
+<td>① no <code>Card.jsx</code> yet (own card markup). <span class="small">(Has PAPER_BG + flora, 0 sub-12.)</span></td>
+<td>Card-family adoption (per <code>/JournalCardsDemo</code>) for richer, never-empty entry/prompt cards.</td><td class="eff">S–M</td></tr>
+
+<tr><td><b>Today</b><br><span class="small"><code>TodayDemo6</code></span></td><td><span class="sev s-minor">minor</span></td>
+<td>The daily <b>hearth</b> — cycle ring + "across your day" cards + warm greeting.</td>
+<td>① 10 retired dusk tokens. <span class="small">(Has PAPER_BG + flora + 0 sub-12.)</span> <b>Owned by the Today session</b> — coordinate before touching.</td>
+<td>Token sweep only. Otherwise the reference page.</td><td class="eff">S</td></tr>
+
+<tr><td><b>Health</b></td><td><span class="sev s-done">done</span></td>
+<td>The <b>Health Letter</b> — editorial letters, phase flora, dragonfly.</td>
+<td>Harmonised this week (PAPER_BG, flora hero, de-slabbed, font floor). Only 2 <code>#D4AF37</code> remain — the <b>legitimate ovulatory phase-hue</b>, not chrome.</td>
+<td>None (monitor under v4).</td><td class="eff">—</td></tr>
+
+<tr><td><b>Lifestyle</b></td><td><span class="sev s-done">done</span></td>
+<td>Editorial, <b>varied</b> — read/listen/books/horoscope; the most expressive surface.</td>
+<td>On the card system; PAPER_BG, flora, <code>Card.jsx</code>, 0 sub-12, 0 overflow.</td>
+<td>None (monitor under v4).</td><td class="eff">—</td></tr>
+</table>
+
+<p class="small"><b>Offender totals across the app:</b> ~<b>290</b> retired-token uses and ~<b>240</b> sub-12 font declarations, concentrated in Planner (113 tokens / 84 fonts), Jess (30 fonts), Doctor Export (30 fonts), Garden (21 fonts), Profile (11). Eleven primary pages still lack <code>PAPER_BG</code>; nine don't yet use <code>Card.jsx</code>.</p>
+
+<h2>3 · Planner — the deep dive (Priority #1)</h2>
+<div class="card crit">
+<p style="margin:0 0 8px"><b>Why it's the worst:</b> <code>PlannerV2Shell.jsx</code> is 6,656 lines carrying the whole planner (week strip, day view, plan-a-day sheet, settings, ritual builder, voice) on the <b>retired palette</b> with a flat background and tiny type. It's the page that most contradicts the brand.</p>
+<h3 style="margin-top:6px">Fix plan (keep the logic, re-skin the surface)</h3>
+<ol class="steps">
+<li><b>Background:</b> flat fill → <code>PAPER_BG</code>; remove the <code>isolation:isolate</code> stacking-trap (render sheets as root children so none hide behind the nav).</li>
+<li><b>Tokens:</b> guarded sweep of all 113 dusk + 6 gold + 2 cream → canonical (<code>#0B0805 / #A8893F / #ECE7DA</code>), preserving any real phase-hues.</li>
+<li><b>Type:</b> lift all 84 sub-12 to the §1 floor (≥12), on the role scale.</li>
+<li><b>Structure:</b> the <b>content</b> side (intentions, rituals, focus, reminders) becomes the <code>/PlannerCardsDemo</code> card layout — flora hero + summary + <code>Card.jsx</code> rows. The <b>calendar / hour-by-hour day-view</b> stays as the working tool, re-skinned to tokens (not replaced).</li>
+<li><b>Ritual builder:</b> surface it properly (see §5) instead of burying it in a sheet.</li>
+<li><span class="v4">v4</span> add the living-ecosystem flora + a rotating "this week" omen + soulful voice once the brand-identity session lands.</li>
+</ol>
+<p class="small" style="margin:8px 0 0"><b>Approach:</b> because it's huge, do it in two demo passes — (a) content side as a card demo, (b) re-skinned calendar — each QA'd at 390px before merge. Largest single effort in this plan.</p>
+</div>
+
+<h2>4 · Jess — visual rebuild (Priority #2)</h2>
+<div class="card major">
+<p style="margin:0 0 8px"><b>Keep the brain, rebuild the body.</b> The agent wiring works (the <code>personal_assistant</code> agent + inline answers). The <b>shell</b> is what's off — legacy palette, no paper, generic chat chrome.</p>
+<h3 style="margin-top:6px">Rebuild plan</h3>
+<ol class="steps">
+<li><b>Hero:</b> a soulful <b>sigil-halo bloom</b> (blush→gold→sage) + the carved heart + Ephesis "Jess" + a smart-friend one-liner + the privacy / not-medical line.</li>
+<li><b>Surface:</b> <code>PAPER_BG</code>; retire the legacy palette → canonical tokens; lift all 30 sub-12 fonts.</li>
+<li><b>Conversation as cards:</b> answers and starter prompts rendered in the <code>Card.jsx</code> language — <b>life-spanning</b> prompts (dating / career / friendship / fun, not just symptoms), each deep-linking the exact surface.</li>
+<li><b>Composer:</b> a warm inline "ask" card, not a stark input bar.</li>
+<li><span class="v4">v4</span> soulful voice + a rotating daily "from Jess" omen.</li>
+</ol>
+<p class="small" style="margin:8px 0 0"><b>Coordination:</b> confirm no other session is mid-flight on Jess's wiring before the re-skin; I touch visual/markup only.</p>
+</div>
+
+<h2>5 · Ritual Builder — surface it + make it cross-page</h2>
+<div class="card">
+<p style="margin:0 0 8px"><b>Today it's hidden</b> inside the Planner shell (a sheet behind a button). The rituals themselves are lovely and lightweight — <span class="pill">a moment of rest</span><span class="pill">a glass of water</span><span class="pill">a gentle stretch</span><span class="pill">a mindful pause</span> — and the code already supports <b>context-aware</b> selection (<code>RitualsForContext</code>). That's the seed of a real cross-page feature.</p>
+<h3 style="margin-top:6px">Recommendation</h3>
+<ol class="steps">
+<li><b>Surface on Today:</b> a <code>LogActionCard</code> "a small ritual for right now" in the day flow — one tap to do/log a micro-ritual, phase- and time-aware. The hearth page is where a daily ritual belongs.</li>
+<li><b>Make it cross-page (the real win):</b> the same ritual card, <b>contextualised per surface</b> — Journal → "three quiet lines"; Nutrition → "a glass of water"; Pulse → "a mindful pause"; Community → "send one kind message"; Garden → "tend your companion". One shared component (<code>RitualCard</code>) fed by <code>RitualsForContext(page, phase, timeOfDay)</code>.</li>
+<li><b>Tie to the garden &amp; streaks:</b> completing rituals waters the companion / earns a pollinator visit (the §6 ecosystem) — so rituals become the connective habit loop across the app, not a buried Planner tool.</li>
+<li><b>Builder stays in Planner</b> (compose your own ritual set) but is promoted to a clear entry, and its output feeds the cross-page cards.</li>
+</ol>
+<p class="small" style="margin:8px 0 0">Effort: a shared <code>RitualCard</code> + the context resolver is <b>M</b>; surfacing on Today is <b>S</b>. I'd prototype it as a demo on Today first.</p>
+</div>
+
+<h2>6 · Suggested execution order (after approval)</h2>
+<p>All demo-first, page-by-page, device-QA'd at 390px, explicit <code>git add</code>; nothing to gen-pop until you sign off each.</p>
+<ol class="steps">
+<li><b>Planner</b> (critical) — content card demo, then re-skinned calendar.</li>
+<li><b>Jess</b> (major rebuild).</li>
+<li><b>Garden</b>, <b>Doctor Export</b>, <b>Profile</b>, <b>Pulse</b> (major).</li>
+<li><b>Programs</b>, <b>Onboarding</b>, <b>Events</b>, <b>Track</b>, <b>Explore</b>, settings trio (medium).</li>
+<li><b>Community / Nutrition / Journal</b> card-family adoption + <b>Deals / Saved</b> (minor) — fast wins.</li>
+<li><b>Ritual Builder</b> surfacing (Today demo) — slot in alongside, high delight-per-effort.</li>
+<li><b>Today</b> token sweep — coordinate with the Today session.</li>
+</ol>
+<p class="small">Pages that already passed (<b>Lifestyle</b>, <b>Health</b>) are excluded except for the v4 layer when it lands. Where you see <span class="v4">v4</span>, that page will get a second light pass once the brand-identity session ships the living-ecosystem flora + soulful voice + rotating omens.</p>
+
+<p class="small" style="margin-top:26px; border-top:1px solid var(--paperDeep); padding-top:12px;">Audit source: per-file token/font/structure scan + live 390px walks, 19 Jun 2026 · bar = <code>claude-state/BRAND_IDENTITY.md</code> v3. Reply to approve the plan (or re-prioritise) and I'll start with Planner, demo-first.</p>
+
+</div></body></html>

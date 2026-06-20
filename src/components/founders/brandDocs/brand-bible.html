@@ -1,0 +1,417 @@
+<!doctype html>
+<html lang="en-GB"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>FemWell — Brand Bible</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500;1,600&family=Ephesis&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#ECE7DA; --paperHi:#F4EFE3; --paperDeep:#D8CFBC; --wax:#EFE3C9;
+    --ink:#0B0805; --inkSoft:#1A140D; --muted:#2E261B; --dusk:#211A12;
+    --gold:#A8893F; --crimson:#BC2E27; --blush:#E8B4B8; --sage:#8FAF8F; --plum:#8E6E8E;
+    --serif:'Cormorant Garamond',Georgia,serif; --script:'Ephesis',cursive;
+    --sans:ui-sans-serif,system-ui,-apple-system,'Segoe UI',sans-serif;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:
+     radial-gradient(120% 80% at 15% 0%, #F4EFE3 0%, rgba(244,239,227,0) 55%),
+     radial-gradient(120% 90% at 100% 100%, #E4DDCC 0%, rgba(228,221,204,0) 50%),
+     var(--paper);
+    color:var(--ink);font-family:var(--serif);font-size:18px;line-height:1.6;
+    -webkit-font-smoothing:antialiased;}
+  .doc{max-width:680px;margin:0 auto;padding:30px 22px 90px}
+  /* type */
+  .script{font-family:var(--script);color:var(--crimson);line-height:1.1}
+  h1.cover{font-family:var(--script);font-size:64px;color:var(--crimson);margin:6px 0 2px;line-height:1}
+  h2{font-family:var(--serif);font-style:italic;font-weight:600;font-size:30px;color:var(--ink);
+     margin:0 0 4px;letter-spacing:.005em}
+  h3{font-family:var(--serif);font-weight:600;font-size:21px;color:var(--ink);margin:22px 0 6px}
+  .eyebrow{font-family:var(--sans);font-size:12px;font-weight:700;letter-spacing:.16em;
+     text-transform:uppercase;color:var(--gold);margin-bottom:10px}
+  p{margin:0 0 12px}
+  .lede{font-size:20px;line-height:1.55}
+  small,.cap{font-family:var(--sans);font-size:13px;color:var(--muted);line-height:1.5}
+  b,strong{font-weight:600}
+  a{color:var(--gold)}
+  /* layout pieces */
+  .section{background:var(--paperHi);border:1px solid var(--paperDeep);border-left:4px solid var(--gold);
+     border-radius:20px;padding:22px 20px;margin:18px 0;box-shadow:0 4px 20px rgba(58,44,26,.10),0 1px 4px rgba(58,44,26,.06);position:relative;overflow:hidden}
+  .section.crimson{border-left-color:var(--crimson)}
+  .section.sage{border-left-color:var(--sage)}
+  .section.plum{border-left-color:var(--plum)}
+  .rule{height:1px;background:var(--gold);opacity:.35;margin:18px 0}
+  .heart{display:inline-block;vertical-align:middle}
+  .center{text-align:center}
+  .grid{display:flex;flex-wrap:wrap;gap:12px}
+  .flora-cell{display:flex;flex-direction:column;align-items:center;gap:4px;width:104px}
+  .flora-cell .nm{font-family:var(--sans);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+  .swrow{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0}
+  .sw{flex:1 1 130px;min-width:120px;border-radius:12px;padding:10px 12px;font-family:var(--sans);font-size:12px;line-height:1.35;border:1px solid rgba(0,0,0,.08)}
+  .sw .hex{font-weight:700;letter-spacing:.04em}
+  .dodont{display:flex;flex-wrap:wrap;gap:12px;margin-top:10px}
+  .do,.dont{flex:1 1 240px;border-radius:14px;padding:14px 16px;font-size:16px}
+  .do{background:#E4EDE2;border:1px solid #B9CDB6}
+  .dont{background:#EFE0DD;border:1px solid #DEB7B0}
+  .do .t,.dont .t{font-family:var(--sans);font-size:12px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;margin-bottom:6px}
+  .do .t{color:#3f6b3f}.dont .t{color:#8E3B2C}
+  .quote{font-style:italic;font-size:19px;color:var(--inkSoft);border-left:2px solid var(--gold);padding-left:14px;margin:12px 0}
+  table{width:100%;border-collapse:collapse;font-size:14px;font-family:var(--sans);margin:8px 0}
+  th,td{text-align:left;padding:7px 8px;border-bottom:1px solid var(--paperDeep);vertical-align:top}
+  th{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--gold)}
+  td b{font-family:var(--serif);font-size:15px}
+  .toc a{display:block;font-family:var(--sans);font-size:15px;color:var(--inkSoft);text-decoration:none;padding:6px 0;border-bottom:1px solid var(--paperDeep)}
+  .toc a span{color:var(--gold);font-weight:700;margin-right:10px}
+  .chiprow{display:flex;flex-wrap:wrap;gap:8px;margin:8px 0}
+  .chip{font-family:var(--sans);font-size:13px;font-weight:600;padding:6px 13px;border-radius:999px;background:var(--paper);border:1px solid var(--paperDeep)}
+  .typespec{margin:6px 0;border-bottom:1px dashed var(--paperDeep);padding-bottom:8px}
+  .typespec .meta{font-family:var(--sans);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--gold)}
+  .foot{font-family:var(--sans);font-size:12px;color:var(--muted);text-align:center;margin-top:30px;line-height:1.6}
+</style></head>
+<body><div class="doc">
+
+<!-- COVER -->
+<div class="center" style="padding:18px 0 6px">
+  <div class="eyebrow" style="color:var(--gold)">The FemWell Brand Bible · v3 · June 2026</div>
+  <h1 class="cover">FemWell</h1>
+  <div id="cover-bloom" style="margin:10px 0"></div>
+  <p class="lede" style="max-width:440px;margin:6px auto 0;font-style:italic">
+    Your life, in bloom — a living garden<br>that grows as you do.
+  </p>
+  <div style="margin-top:10px" id="cover-heart"></div>
+</div>
+
+<div class="section">
+  <div class="eyebrow">How to use this book</div>
+  <p style="margin-bottom:8px">This is the <b>complete, enforced source of truth</b> for how FemWell looks, sounds and feels. Read it before any visual or written work and conform to it. If the code disagrees with this book, the book wins and the code is a fix target. It is self-sufficient for building.</p>
+  <div class="toc">
+    <a href="#soul"><span>1</span>Brand soul — story, meaning, positioning, personality</a>
+    <a href="#voice"><span>2</span>Voice &amp; tone</a>
+    <a href="#type"><span>3</span>Typography</a>
+    <a href="#colour"><span>4</span>Colour</a>
+    <a href="#flora"><span>5</span>The flora &amp; illustration system</a>
+    <a href="#cards"><span>6</span>The card system</a>
+    <a href="#page"><span>7</span>Page structure</a>
+    <a href="#comp"><span>8</span>Components, motion &amp; iconography</a>
+    <a href="#check"><span>9</span>The pre-build checklist</a>
+  </div>
+</div>
+
+<!-- 1. SOUL -->
+<a id="soul"></a>
+<div class="section">
+  <div class="eyebrow">One · The soul</div>
+  <h2>Your life, in bloom.</h2>
+  <p class="lede">A woman’s life is a <b>garden, not a chart.</b></p>
+  <p>It has <b>seasons</b> — the cycle’s inner winter, spring, summer and autumn. It has <b>long arcs</b> — from the teen daisy to the elder magnolia. It has <b>many beds, not one</b> — career, friendship, love, money, rest, joy, identity. And it is <b>tended, not optimised.</b></p>
+  <p>FemWell is the garden that remembers what bloomed where. Every flower means something true; a butterfly arrives only when you genuinely return or change; and the garden is unmistakably <b>yours</b>. The app doesn’t track you — it grows with you.</p>
+  <div class="rule"></div>
+
+  <h3>The meaning — flowers as a language</h3>
+  <p>The flora is not decoration; it is a <b>symbol system</b>. Each flower is chosen for documented meaning (Victorian floriography + folk-herbalism + myth) and means the <b>same thing everywhere</b> it appears — garden, cycle, journal, chapters. A sunflower is always radiance; a forget-me-not is always memory; a butterfly always means <i>you changed and came back</i>. Because every surface draws from one dictionary, a returning woman reads the app fluently.</p>
+
+  <h3>The positioning — the warm lane no one else owns</h3>
+  <p>Femtech runs from “reflexive pink” straight into <b>clinical neutrality</b> (Clue, Elvie: teal, geometric, data-first). FemWell runs the other way — into <b>editorial warmth</b>: cream, gold and crimson; a serif voice; a living botanical world. That warm-but-not-pink, beautiful-but-not-clinical middle is documented white space, and it is ours.</p>
+  <p class="quote">Health is one room, not the house. FemWell is a whole-life wellness app for women — relationships, career, money, friendship, joy and identity, with health as one room among many. Breadth of life carries the femininity, not pink.</p>
+
+  <h3>The personality — a warm friend who knows things</h3>
+  <p>Brand archetype: a <b>Caregiver core</b>, tinted by the <b>Sage</b>, with a touch of the <b>Innocent’s joy</b>. The Caregiver is the warm, nurturing spine; the Sage keeps it from going saccharine (the app genuinely knows things — cycle science, real meaning); the Innocent keeps it lighthearted by default. Every copy, design and feature decision answers to one question:</p>
+  <p class="center" style="font-style:italic;font-size:21px;color:var(--crimson)">“A warm friend who knows things and keeps it joyful.”</p>
+</div>
+
+<!-- 2. VOICE -->
+<a id="voice"></a>
+<div class="section crimson">
+  <div class="eyebrow">Two · Voice &amp; tone</div>
+  <h2>Speak like a smart friend.</h2>
+  <p>Warm, plain, a little witty. UK English (NHS, £, en-GB). Never clinical, never cold, never a scoreboard, never guilt. Lighthearted by default; let life-stage gently <i>tint</i> the tone, never dominate it. <b>No emoji, ever.</b></p>
+  <div class="dodont">
+    <div class="do"><div class="t">Do</div>
+      “Rough night? Let’s keep today gentle. Here are three small things that tend to help.”<br>
+      <small>Warm, specific, optional. A friend, not a chart.</small></div>
+    <div class="dont"><div class="t">Don’t</div>
+      “You missed your hydration goal 3 days in a row. Streak lost.”<br>
+      <small>Scoreboard, guilt, clinical. Off-brand.</small></div>
+  </div>
+  <div class="dodont">
+    <div class="do"><div class="t">Do — empty state</div>
+      “Nothing here yet — and that’s fine. Plant the first line whenever you like.”</div>
+    <div class="dont"><div class="t">Don’t</div>
+      “No data available.”</div>
+  </div>
+  <h3>The garden has weather, not streaks</h3>
+  <p>We never punish a gap. A hard week is <i>“a frost the garden came through,”</i> not a broken streak. Engagement language is seasonal and forgiving — the hellebore blooms through the cold.</p>
+</div>
+
+<!-- 3. TYPE -->
+<a id="type"></a>
+<div class="section">
+  <div class="eyebrow">Three · Typography</div>
+  <h2>Three voices, never four.</h2>
+  <div class="typespec"><div class="meta">Script — Ephesis · display titles only</div>
+    <div class="script" style="font-size:46px">A new chapter</div></div>
+  <div class="typespec"><div class="meta">Serif — Cormorant Garamond · headings &amp; all reading</div>
+    <div style="font-family:var(--serif);font-style:italic;font-weight:600;font-size:27px">Where your body is today</div>
+    <div style="font-family:var(--serif);font-size:17px;line-height:1.55">The default reading voice — generous, warm, and set large enough to read in the hand.</div></div>
+  <div class="typespec"><div class="meta">Sans — system UI · chrome only</div>
+    <div style="font-family:var(--sans);font-size:14px;font-weight:700;letter-spacing:.04em">BUTTONS · TABS · EYEBROWS · DATES</div></div>
+
+  <h3>The rules that end the “fonts are a mess” problem</h3>
+  <ul style="padding-left:18px;margin:6px 0 12px">
+    <li><b>Ephesis (script)</b> is for <b>short page titles only</b> — never all-caps, never long; the script tangles.</li>
+    <li><b>Cormorant (serif)</b> carries every heading and all reading body.</li>
+    <li><b>System sans</b> is chrome only (eyebrows, captions, controls, nav, dates).</li>
+    <li>Never set <code>fontFamily:'Inter'</code> or <code>'Fraunces'</code> expecting a sans — in this app they are <b>remapped to Cormorant</b>. Use the real system stack for sans.</li>
+    <li>Every text node maps to a <b>role</b> below. No free-floating font sizes; no new sizes; no half-pixels.</li>
+  </ul>
+
+  <table>
+    <tr><th>Role</th><th>Font</th><th>Size</th><th>Wt</th></tr>
+    <tr><td><b>Display</b> · page title</td><td>Ephesis</td><td>clamp 44–56</td><td>400</td></tr>
+    <tr><td><b>Heading</b> · section</td><td>Serif italic</td><td>clamp 27–34</td><td>600</td></tr>
+    <tr><td><b>Sub-heading</b></td><td>Serif italic</td><td>20</td><td>600</td></tr>
+    <tr><td><b>Title</b> · card</td><td>Serif</td><td>18</td><td>600</td></tr>
+    <tr><td><b>Body</b> · reading</td><td>Serif</td><td>16</td><td>500</td></tr>
+    <tr><td><b>Body S</b></td><td>Serif</td><td>15</td><td>500</td></tr>
+    <tr><td><b>Caption</b></td><td>Sans</td><td>13–14</td><td>600</td></tr>
+    <tr><td><b>Eyebrow</b></td><td>Sans caps</td><td>12</td><td>700</td></tr>
+    <tr><td><b>Control / Nav</b></td><td>Sans</td><td>12–14</td><td>700</td></tr>
+  </table>
+  <p><small><b>Allowed sizes (px):</b> 12 · 13 · 14 · 15 · 16 · 17 · 18 · 20 + the two clamps. That’s it. <b>Nothing readable below 12px.</b> Real reading content is ≥16px. A 390px desktop window renders ~40% larger than a real phone, so verify on-device or by measuring computed px — the serif carries <code>size-adjust:150%</code> and the sans floor is 12.</small></p>
+</div>
+
+<!-- 4. COLOUR -->
+<a id="colour"></a>
+<div class="section sage">
+  <div class="eyebrow">Four · Colour</div>
+  <h2>Ivory, gold &amp; one crimson.</h2>
+  <p>FemWell’s palette is, almost exactly, the documented <b>premium-warm formula</b> — ivory cream + warm gold + burgundy reads as “old-money” luxury. Lean into it; resist any drift toward bright, pink or clinical.</p>
+  <div class="eyebrow" style="margin-top:14px">The world — neutrals</div>
+  <div class="swrow">
+    <div class="sw" style="background:#ECE7DA;color:#2E261B"><div class="hex">#ECE7DA</div>paper · the cream</div>
+    <div class="sw" style="background:#F4EFE3;color:#2E261B"><div class="hex">#F4EFE3</div>paperHi · cards</div>
+    <div class="sw" style="background:#D8CFBC;color:#2E261B"><div class="hex">#D8CFBC</div>paperDeep · hairlines</div>
+    <div class="sw" style="background:#0B0805;color:#ECE7DA"><div class="hex">#0B0805</div>ink · text</div>
+    <div class="sw" style="background:#2E261B;color:#ECE7DA"><div class="hex">#2E261B</div>muted · captions</div>
+  </div>
+  <div class="eyebrow" style="margin-top:8px">The accents — used sparingly</div>
+  <div class="swrow">
+    <div class="sw" style="background:#A8893F;color:#fff"><div class="hex">#A8893F</div>gold · the one gold</div>
+    <div class="sw" style="background:#BC2E27;color:#fff"><div class="hex">#BC2E27</div>crimson · the heart</div>
+    <div class="sw" style="background:#E8B4B8;color:#2E261B"><div class="hex">#E8B4B8</div>blush</div>
+    <div class="sw" style="background:#8FAF8F;color:#2E261B"><div class="hex">#8FAF8F</div>sage</div>
+  </div>
+  <p><small><b>Phase hues</b> (a separate semantic set): menstrual <b style="color:#BC2E27">#BC2E27</b> · follicular <b style="color:#6f8f6f">#8FAF8F</b> · ovulatory <b style="color:#9a7d1f">#D4AF37</b> · luteal <b style="color:#8E6E8E">#8E6E8E (plum)</b>. These read as the cycle’s seasons and never swap with chrome gold.</small></p>
+
+  <h3>Accessibility — the hard rule</h3>
+  <p>Warm palettes go muddy and fail contrast when text uses mid-tones. So:</p>
+  <div class="do" style="margin-bottom:8px"><div class="t">Body &amp; small text</div>
+    <b>ink</b>, <b>inkSoft</b> or <b>muted</b> only (near-black on cream clears WCAG AA 4.5:1).</div>
+  <div class="dont"><div class="t">Never for body / small captions</div>
+    gold, crimson, sage, blush — they risk failing AA on cream. Reserve them for large display, accents, borders &amp; icons.</div>
+  <p><small><b>Anti-muddiness law:</b> one clean light ground + ONE saturated accent (crimson) + ONE deep anchor (ink). Retire the legacy duplicates (<code>#D4AF37</code> as chrome, <code>#9B8B7A</code>, <code>#3A2C1A</code>, <code>#F4EDDB</code>) — those mid-brown clutterers are what make warm palettes read cheap.</small></p>
+</div>
+
+<!-- 5. FLORA -->
+<a id="flora"></a>
+<div class="section crimson">
+  <div class="eyebrow">Five · The centerpiece</div>
+  <h2>The flora &amp; illustration system.</h2>
+  <p class="lede">This is the brand. If one thing must be right, it is this: <b>a rose must read as a rose.</b></p>
+
+  <h3>The three heroes — recognisable at a glance</h3>
+  <div class="grid center" id="flora-heroes"></div>
+  <p style="margin-top:10px"><small>Each hero carries its own <b>signature</b>: the <b>rose</b> = layered reflexed guard petals coiling into a visible spiral heart; the <b>sunflower</b> = ray florets around a real phyllotaxis seed-disc; the <b>hibiscus</b> = five broad veined petals, a deep throat, and the projecting staminal column tipped with five stigma lobes.</small></p>
+
+  <div class="rule"></div>
+  <h3>Variety you can see — not one flower recoloured</h3>
+  <p>The old failure was every flower sharing one radial silhouette, so only colour changed. The standard now is <b>bespoke geometry per species</b> — silhouette first, then colour. A peony is a full ruffled pompom; a dahlia is a sharp geometric star; a tulip is a closed goblet; a poppy is broad papery petals around a dark boss.</p>
+  <div class="grid center" id="flora-variety"></div>
+
+  <div class="rule"></div>
+  <h3>The craft standard (the “wow” bar)</h3>
+  <ul style="padding-left:18px;margin:6px 0 12px">
+    <li><b>Generous scale.</b> A bloom is a centrepiece, not a tiny sticker. Small renders kill recognisability.</li>
+    <li><b>Bespoke silhouette per species</b> — never one ring of identical petals for everything.</li>
+    <li><b>Tonal depth:</b> multi-stop gradients running lit-tip → shadowed-throat; layered rings step in tone (outer in shadow, inner crown lightest); a soft throat occlusion seats the petals.</li>
+    <li><b>Fine edge linework</b> separates petals — this is what reads as <i>illustration</i> rather than blob.</li>
+    <li><b>Pale blooms hold their edge:</b> cream, blush and sky are deepened at the base so they don’t melt into the cream page.</li>
+    <li><b>One soft grounding shadow</b> per bloom — the single permitted blur. Never blur petals.</li>
+    <li><b>Motion = breath, not bounce:</b> a gentle scale-breath + multi-axis sway + dew shimmer, GPU-only, staggered, and <b>always</b> reduced-motion-gated.</li>
+  </ul>
+
+  <div class="rule"></div>
+  <h3>Pollinators — earned, never ambient, and ON the plant</h3>
+  <div class="grid center" id="flora-creatures"></div>
+  <p style="margin-top:8px"><small>A creature visits a <b>real moment</b>, one at a time, then drifts off — it is the brand’s punctuation, not its wallpaper. <b>Butterfly</b> = transformation / return · <b>moth</b> = the night / rest / menstrual dark · <b>dragonfly</b> = insight (Pulse) · <b>bee</b> = community · <b>ladybird</b> = luck (Nutrition). When shown, the creature rests physically <b>on a petal or leaf</b>, never floating beside the flower.</small></p>
+
+  <div class="rule"></div>
+  <h3>Combinations — a bouquet makes a sentence</h3>
+  <p>Pairing flowers compounds meaning (forget-me-not + rosemary = remembrance; sunflower + daisy = cheerful friendship). Surfaces may show a <b>posy of different blooms</b>, not one lone flower — variety made visible.</p>
+  <div class="center" id="flora-bouquet" style="margin:8px 0"></div>
+
+  <div class="rule"></div>
+  <h3>Floriography — meaning mapped to a whole life</h3>
+  <p class="cap" style="margin-bottom:6px">Colour changes meaning, so each flower carries its sense through the 9 colourways (a white poppy = rest; a crimson poppy = remembrance).</p>
+  <table>
+    <tr><th>Cycle season</th><th>Flower</th><th>Meaning</th></tr>
+    <tr><td><b>Menstrual</b> · rest</td><td>Poppy</td><td>consolation, restful sleep</td></tr>
+    <tr><td><b>Follicular</b> · rising</td><td>Snowdrop</td><td>hope, the first bloom</td></tr>
+    <tr><td><b>Ovulatory</b> · peak</td><td>Sunflower</td><td>radiance, adoration</td></tr>
+    <tr><td><b>Luteal</b> · softening</td><td>Dahlia</td><td>inner strength, grace</td></tr>
+  </table>
+  <table>
+    <tr><th>Life domain (not the cycle)</th><th>Flower</th><th>Meaning</th></tr>
+    <tr><td>Career / a win</td><td><b>Gladiolus</b>, amaryllis</td><td>strength of character; a real achievement</td></tr>
+    <tr><td>Courage under pressure</td><td><b>Snapdragon</b>, borage, iris</td><td>grace under pressure; courage</td></tr>
+    <tr><td>Friendship</td><td><b>Sunflower + Daisy</b>, zinnia</td><td>cheerful loyalty</td></tr>
+    <tr><td>Love / dating</td><td><b>Honeysuckle</b>, rose, camellia</td><td>devoted, steadfast love</td></tr>
+    <tr><td>Grief / remembrance</td><td><b>Forget-me-not + Rosemary</b>, lily</td><td>remembrance, condolence</td></tr>
+    <tr><td>Joy</td><td><b>Sunflower + Marigold</b></td><td>radiance, warmth</td></tr>
+    <tr><td>Rest</td><td><b>Lavender + Poppy + Chamomile</b></td><td>calm, sleep</td></tr>
+    <tr><td>New beginnings</td><td><b>Snowdrop + Daffodil</b>, almond blossom</td><td>hope, a fresh chapter</td></tr>
+    <tr><td>Identity / self</td><td><b>Orchid</b>, iris</td><td>refined self-assurance; voice</td></tr>
+    <tr><td>Motherhood</td><td><b>Almond blossom + Calendula</b></td><td>new life; healing</td></tr>
+    <tr><td>Eldership / wisdom</td><td><b>Magnolia + Hellebore + Sage</b></td><td>a second flowering; resilience</td></tr>
+  </table>
+
+  <div class="rule"></div>
+  <h3>Per-user uniqueness — the flora fingerprint</h3>
+  <p>A garden is a <b>portrait, not a slot machine.</b> Each woman’s flora is deterministically seeded from who she is and what she tends (profile + life-stage + phase + the life-areas she tends + what she’s earned) — so it’s the <b>same on every device</b> and recognisably hers, yet grows as she does. The permutation space is effectively unbounded (≈1.4 billion gardens), so no two repeat. Rarity is <b>earned, never bought</b>: a second species, then a rare bloom or creature visit, then the flowering tree and — across the community — the orchard.</p>
+  <h3>Page character — one identity, different per page</h3>
+  <p class="cap">Each surface gets a flora signature (a palette lean + a signature species + a creature) drawn from the one dictionary — Journal: gold + willow + moth · Community: sage + clover + bee · Nutrition: blush-green + herbs + ladybird · Cycle/Health: the phase hue + phase-flower + dragonfly · Garden: the full palette. Character changes the <b>accent &amp; signature only — never the bones.</b></p>
+</div>
+
+<!-- 6. CARDS -->
+<a id="cards"></a>
+<div class="section">
+  <div class="eyebrow">Six · The card system</div>
+  <h2>Cards are the language.</h2>
+  <p>A card is <b>never an empty or dumb container.</b> Build every card from the shared family (<code>brand/Card.jsx</code>) — never hand-roll a <code>&lt;div&gt;</code> card. The shell is the Today “across your day” card, standardised: <b>365×488</b>, a gradient + 4px accent left-rim, a four-corner sprig frame, radius 20.</p>
+  <h3>Every card carries, at a glance</h3>
+  <ul style="padding-left:18px;margin:6px 0 12px">
+    <li>An <b>icon disc + eyebrow</b> (the type/section) and a <b>meaning-bloom</b>.</li>
+    <li>A <b>hook</b> (serif 20) — the one line that earns the card — and a supporting <b>line</b>.</li>
+    <li>An <b>inline action</b>: media plays <i>in</i> the card; you log / tick / answer in place.</li>
+    <li>A deep-link that opens the <b>exact item full-screen</b> — never a parent list to sift.</li>
+  </ul>
+  <p class="cap">Typed variants: Article · Story · Video · Audio · Book · DailyStory · Horoscope · Summary · Recommendation · LogAction. Smart, signal-driven picks that change over time, with a warm fallback — <b>never</b> a blank box or a dead “coming soon.”</p>
+</div>
+
+<!-- 7. PAGE -->
+<a id="page"></a>
+<div class="section plum">
+  <div class="eyebrow">Seven · Page structure</div>
+  <h2>The signature top.</h2>
+  <p>Every primary page opens with the <b>same signature</b>, then varies below:</p>
+  <div class="chiprow">
+    <span class="chip">1 · Flora hero</span><span class="chip">2 · One summary card</span><span class="chip">3 · Page-specific rich cards</span>
+  </div>
+  <p><b>1. Flora hero</b> (<code>FwFloraHero</code>) — a large brand flower (the page-character colourway or the user’s fingerprint) in a <b>decorative</b> botanical ring, a soft glow, an optional resting creature, the single carved heart, an Ephesis page title and a warm line. <i>(Only Today’s hero encodes the cycle; elsewhere the ring is decorative, so the signature reads as “your garden,” not “your cycle.”)</i></p>
+  <p><b>2. One summary card</b> — a signal-driven “what’s here / what to do today,” never hollow.</p>
+  <p><b>3. Page-specific content</b> — rich cards and per-type rows. Pages differ here; they all share the signature top, all use the §6 cards, and all sit on <code>PAPER_BG</code> — never a flat fill.</p>
+</div>
+
+<!-- 8. COMPONENTS -->
+<a id="comp"></a>
+<div class="section">
+  <div class="eyebrow">Eight · Components, motion &amp; icons</div>
+  <h2>The fittings.</h2>
+  <h3>The carved heart</h3>
+  <p><span id="inline-heart" class="heart"></span> The brand mark is the <b>carved crimson heart</b> — always <b>#BC2E27</b>, never recoloured, never outline-only, never the Lucide outline heart. <b>Exactly one per surface</b> — it is the single colour pop, in a primary header and the footer signature. Not scattered on every card.</p>
+  <h3>Botanical motifs</h3>
+  <p>A small disciplined library of hairline, stroke-only line-art (leaves, corners, dividers, flourishes). <b>One motif per fold</b>, low opacity, never behind reading text, never blurred. The premium-vs-clipart test, every time: growing/asymmetric? varied species? hairline stroke-only? one per fold?</p>
+  <h3>Buttons, chips, sheets, nav</h3>
+  <p class="cap">Buttons are accent-driven (solid crimson/section-accent primary, white text, sans 14/700; bordered secondary). Chips: radius 999, sans 13/600, accent-fill when selected. Bottom-sheets: paperHi, top-rounded, slide-up over a warm scrim. One unified <b>floating glass capsule</b> bottom nav at every viewport; Jess is a crimson cosmos bloom in the row. Icons are Lucide / inline SVG only — <b>never emoji.</b></p>
+  <h3>Motion — breath, not bounce</h3>
+  <table>
+    <tr><th>Token</th><th>Value</th><th>Use</th></tr>
+    <tr><td>ease-out</td><td>cubic-bezier(.215,.61,.355,1)</td><td>enter / exit</td></tr>
+    <tr><td>ease-in-out</td><td>cubic-bezier(.77,0,.175,1)</td><td>on-screen move</td></tr>
+    <tr><td>micro</td><td>120ms</td><td>taps, toggles</td></tr>
+    <tr><td>standard</td><td>200ms</td><td>tooltips, dropdowns</td></tr>
+    <tr><td>sheet / drawer</td><td>300ms</td><td>bottom-sheets</td></tr>
+  </table>
+  <p class="cap"><b>Transform &amp; opacity only</b> (GPU). Exits ~20% faster than entrances. <b>No bounce</b> anywhere — the calm comes from slow ease + the bloom’s breath. High-frequency actions (nav, card taps) stay ≤120ms or un-animated. <code>@media (prefers-reduced-motion:reduce)</code> on <b>every</b> animated node — no exceptions.</p>
+</div>
+
+<!-- 9. CHECKLIST -->
+<a id="check"></a>
+<div class="section sage">
+  <div class="eyebrow">Nine · Before you build</div>
+  <h2>The 60-second gate.</h2>
+  <ol style="padding-left:20px;font-size:16px;line-height:1.5">
+    <li><b>Type</b> — every node maps to a role. No free font sizes, nothing below 12px.</li>
+    <li><b>Colour</b> — only the tokens. One gold, one crimson, one cream. Body text near-black only.</li>
+    <li><b>Heart</b> — exactly one carved crimson heart on a primary header/signature.</li>
+    <li><b>Motif</b> — at most one hairline botanical per fold, never behind text.</li>
+    <li><b>Flora</b> — the canonical bloom; recognisable species, generous scale, breath-not-bounce, reduced-motion-gated.</li>
+    <li><b>Cards</b> — imported from <code>brand/Card.jsx</code>, never hand-rolled; never empty; inline action + exact-item deep-link.</li>
+    <li><b>Page</b> — flora hero → one summary card → rich content, all on <code>PAPER_BG</code>.</li>
+    <li><b>Always</b> — cream/ink world, Ephesis + Cormorant + system sans, Lucide/SVG icons, no emoji, UK English, no scoreboards, no guilt.</li>
+  </ol>
+  <p class="quote">If a screen reads as plain, monochrome or sparse, it is off-brand — push it richer. Restraint here means cohesion and craft, not emptiness. FemWell is a flourishing garden, not a minimalist white app.</p>
+</div>
+
+<div class="foot">
+  FemWell Brand Bible · v3 · June 2026 — the enforced canon.<br>
+  Mirrors: <code>claude-state/BRAND_IDENTITY.md</code> · <code>BRAND_FLORA.md</code> · <code>workspace/BRAND_RESEARCH_2026-06-19.md</code>.<br>
+  Every flower on this page is rendered live by the app’s own flora engine.
+</div>
+
+</div>
+
+<!-- ── live flora engine (mirror of src/components/brand/flora.jsx) ── -->
+<script>
+function lighten(h,a){const n=parseInt(h.replace('#',''),16);const r=Math.min(255,((n>>16)&255)+Math.round(255*a)),g=Math.min(255,((n>>8)&255)+Math.round(255*a)),b=Math.min(255,(n&255)+Math.round(255*a));return '#'+((1<<24)+(r<<16)+(g<<8)+b).toString(16).slice(1);}
+function darken(h,a){const n=parseInt(h.replace('#',''),16);const r=Math.max(0,((n>>16)&255)-Math.round(255*a)),g=Math.max(0,((n>>8)&255)-Math.round(255*a)),b=Math.max(0,(n&255)-Math.round(255*a));return '#'+((1<<24)+(r<<16)+(g<<8)+b).toString(16).slice(1);}
+function lum(h){const n=parseInt(h.replace('#',''),16);return(0.299*((n>>16)&255)+0.587*((n>>8)&255)+0.114*(n&255))/255;}
+const CW={crimson:{petal:'#BC2E27',tip:'#D9554E',accent:'#2E261B'},blush:{petal:'#E8B4B8',tip:'#F4D9DC',accent:'#A8893F'},gold:{petal:'#D4AF37',tip:'#E8CE78',accent:'#6B5840'},sage:{petal:'#8FAF8F',tip:'#B6CDB6',accent:'#2E261B'},plum:{petal:'#8E6E8E',tip:'#B196B1',accent:'#D4AF37'},coral:{petal:'#E08A6A',tip:'#F0B79E',accent:'#8E3B2C'},sky:{petal:'#9FB6C9',tip:'#C3D2DE',accent:'#5F7E8E'},cream:{petal:'#E4DAC1',tip:'#F2EAD6',accent:'#A8893F'}};
+const GA=137.50776,cx=50,cy=52;
+function pBroad(L,w){return `M0 0 C ${-w*1.05} ${-L*0.2} ${-w*1.04} ${-L*0.62} ${-w*0.52} ${-L*0.9} C ${-w*0.22} ${-L*1.05} ${w*0.22} ${-L*1.05} ${w*0.52} ${-L*0.9} C ${w*1.04} ${-L*0.62} ${w*1.05} ${-L*0.2} 0 0 Z`;}
+function pLance(L,w){return `M0 0 C ${-w} ${-L*0.34} ${-w*0.5} ${-L*0.84} 0 ${-L} C ${w*0.5} ${-L*0.84} ${w} ${-L*0.34} 0 0 Z`;}
+function pPoint(L,w){return `M0 0 C ${-w} ${-L*0.36} ${-w*0.55} ${-L*0.80} 0 ${-L} C ${w*0.55} ${-L*0.80} ${w} ${-L*0.36} 0 0 Z`;}
+function defs(g,c,ac){const pale=lum(c)>0.62,dA=pale?0.26:0.13,kA=pale?0.42:0.3;const li=lighten(c,0.52),l=lighten(c,0.34),m=lighten(c,0.14),dp=c,dpr=darken(c,dA),dk=darken(c,kA);
+ return `<defs><linearGradient id="pO-${g}" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="${l}"/><stop offset="24%" stop-color="${m}"/><stop offset="68%" stop-color="${dp}"/><stop offset="100%" stop-color="${dpr}"/></linearGradient>
+ <linearGradient id="pM-${g}" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="${li}"/><stop offset="30%" stop-color="${l}"/><stop offset="72%" stop-color="${m}"/><stop offset="100%" stop-color="${dp}"/></linearGradient>
+ <linearGradient id="pI-${g}" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="${lighten(c,0.62)}"/><stop offset="45%" stop-color="${li}"/><stop offset="100%" stop-color="${l}"/></linearGradient>
+ <radialGradient id="gl-${g}" cx="50%" cy="44%" r="54%"><stop offset="0%" stop-color="${li}" stop-opacity="0.4"/><stop offset="100%" stop-color="${c}" stop-opacity="0"/></radialGradient>
+ <radialGradient id="ct-${g}" cx="42%" cy="38%" r="64%"><stop offset="0%" stop-color="${lighten(ac,0.34)}"/><stop offset="60%" stop-color="${ac}"/><stop offset="100%" stop-color="${darken(ac,0.16)}"/></radialGradient>
+ <radialGradient id="occ-${g}" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="${dk}" stop-opacity="0.55"/><stop offset="55%" stop-color="${dk}" stop-opacity="0.28"/><stop offset="100%" stop-color="${dk}" stop-opacity="0"/></radialGradient>
+ <radialGradient id="disc-${g}" cx="42%" cy="40%" r="64%"><stop offset="0%" stop-color="#A07A2E"/><stop offset="58%" stop-color="#6E4F1C"/><stop offset="100%" stop-color="#4A3412"/></radialGradient>
+ <linearGradient id="st-${g}" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#8FAF8F"/><stop offset="100%" stop-color="#5F7E5F"/></linearGradient>
+ <linearGradient id="lf-${g}" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#A6C6A6"/><stop offset="55%" stop-color="#82A282"/><stop offset="100%" stop-color="#5F7E5F"/></linearGradient></defs>`;}
+function stem(g){return `<path d="M48.4 100 C 47.9 86 49.4 72 49 62 L 51 62 C 51.4 72 52 86 51.5 100 Z" fill="url(#st-${g})"/>
+ <path d="M49 80 C 37 76 29 79 26 88 C 37 90 47 85 49 79 Z" fill="url(#lf-${g})" opacity="0.95"/><path d="M51 73 C 63 69 71 72 74 81 C 63 83 53 78 51 72 Z" fill="url(#lf-${g})" opacity="0.9"/>`;}
+function cTuft(c,ac,g){let s=`<circle cx="${cx}" cy="${cy}" r="13" fill="url(#occ-${g})"/><circle cx="${cx}" cy="${cy}" r="5.5" fill="url(#ct-${g})"/>`;for(let i=0;i<16;i++){const a=i*22.5*Math.PI/180,r=5;s+=`<circle cx="${(cx+Math.cos(a)*r).toFixed(2)}" cy="${(cy+Math.sin(a)*r).toFixed(2)}" r="1.6" fill="url(#ct-${g})" opacity="0.92"/>`;}return s;}
+function cDark(c,ac,g){let s=`<circle cx="${cx}" cy="${cy}" r="8.6" fill="${darken(c,0.5)}"/><circle cx="${cx}" cy="${cy}" r="10" fill="url(#occ-${g})"/>`;for(let i=0;i<13;i++){const a=i*27.7*Math.PI/180,r=6.3;s+=`<circle cx="${(cx+Math.cos(a)*r).toFixed(2)}" cy="${(cy+Math.sin(a)*r).toFixed(2)}" r="1" fill="${darken(c,0.66)}" opacity="0.9"/>`;}s+=`<circle cx="${cx}" cy="${cy}" r="2.8" fill="${darken(c,0.34)}"/>`;return s;}
+function cGold(c,ac,g){let s=`<circle cx="${cx}" cy="${cy}" r="7.2" fill="url(#disc-${g})"/>`;for(let i=0;i<14;i++){const a=i*25.7*Math.PI/180,r=5;s+=`<circle cx="${(cx+Math.cos(a)*r).toFixed(2)}" cy="${(cy+Math.sin(a)*r).toFixed(2)}" r="1" fill="#7A5A22" opacity="0.78"/>`;}s+=`<circle cx="${cx}" cy="${cy}" r="2.4" fill="#E9CF7A"/>`;return s;}
+function rose(c,ac,g){const dp=c,dpr=darken(c,0.13),sh=lighten(c,0.62);const G=(L,w)=>`M0 0 C ${-w} ${-L*0.28} ${-w*0.98} ${-L*0.74} ${-w*0.46} ${-L*0.95} C ${-w*0.18} ${-L*1.04} ${w*0.18} ${-L*1.04} ${w*0.46} ${-L*0.95} C ${w*0.98} ${-L*0.74} ${w} ${-L*0.28} 0 0 Z`;const W="M0 0 C -8 -2 -10.5 -11 -3.5 -15.5 C 1.5 -18.5 9.5 -14 8 -6.5 C 7 -1.8 1.2 -2.4 1.6 -7";let s='<g>';for(let i=0;i<5;i++)s+=`<path d="${G(34,15)}" fill="url(#pO-${g})" stroke="${dpr}" stroke-width="0.5" stroke-opacity="0.22" transform="translate(${cx} ${cy}) rotate(${i*72})"/>`;for(let i=0;i<5;i++)s+=`<path d="${G(27,12.5)}" fill="url(#pM-${g})" stroke="${dp}" stroke-width="0.4" stroke-opacity="0.2" transform="translate(${cx} ${cy}) rotate(${36+i*72})"/>`;for(let i=0;i<5;i++)s+=`<path d="${G(20,10)}" fill="url(#pM-${g})" stroke="${dp}" stroke-width="0.4" stroke-opacity="0.2" transform="translate(${cx} ${cy}) rotate(${i*72})"/>`;s+=`<circle cx="${cx}" cy="${cy}" r="14" fill="url(#occ-${g})"/>`;for(let i=0;i<9;i++){const sc=1.45-i*0.115;s+=`<path d="${W}" transform="translate(${cx} ${cy}) rotate(${i*52}) scale(${sc})" fill="url(#${i%2?'pI':'pM'}-${g})" stroke="${dpr}" stroke-width="0.4" stroke-opacity="0.26"/>`;}s+=`<circle cx="${cx}" cy="${cy}" r="1.8" fill="${dpr}" opacity="0.55"/></g>`;return s;}
+function sun(c,ac,g){const dpr=darken(c,0.13),R=(L,w)=>`M0 0 C ${-w} ${-L*0.32} ${-w*0.6} ${-L*0.78} ${-w*0.5} ${-L*0.93} C ${-w*0.3} ${-L} ${w*0.3} ${-L} ${w*0.5} ${-L*0.93} C ${w*0.6} ${-L*0.78} ${w} ${-L*0.32} 0 0 Z`;let s='<g>';for(let i=0;i<24;i++)s+=`<path d="${R(34,5.2)}" fill="url(#pO-${g})" stroke="${dpr}" stroke-width="0.4" stroke-opacity="0.18" transform="translate(${cx} ${cy}) rotate(${i*15})"/>`;for(let i=0;i<24;i++)s+=`<path d="${R(29,4.6)}" fill="url(#pM-${g})" transform="translate(${cx} ${cy}) rotate(${7.5+i*15})"/>`;s+=`<circle cx="${cx}" cy="${cy}" r="15.5" fill="url(#disc-${g})"/>`;for(let i=0;i<150;i++){const a=i*GA*Math.PI/180,r=1.32*Math.sqrt(i);if(r>14.5)continue;s+=`<circle cx="${(cx+Math.cos(a)*r).toFixed(2)}" cy="${(cy+Math.sin(a)*r).toFixed(2)}" r="0.82" fill="${i%2?'#5E4419':'#7A5A22'}" opacity="0.92"/>`;}s+=`<circle cx="${cx}" cy="${cy}" r="15.5" fill="none" stroke="${darken(c,0.24)}" stroke-width="0.7" opacity="0.4"/></g>`;return s;}
+function hib(c,ac,g){const dpr=darken(c,0.13);let s='<g>';for(let i=0;i<5;i++){s+=`<g transform="translate(${cx} ${cy}) rotate(${i*72})"><path d="${pBroad(37,16)}" fill="url(#pO-${g})" stroke="${dpr}" stroke-width="0.4" stroke-opacity="0.18"/>`;for(const k of[-1,0,1])s+=`<path d="M0 -3 Q ${k*3.6} -19 ${k*2.3} -33" stroke="${darken(c,0.24)}" stroke-width="0.45" stroke-opacity="0.32" fill="none" stroke-linecap="round"/>`;s+='</g>';}s+=`<circle cx="${cx}" cy="${cy}" r="11" fill="${darken(c,0.46)}"/><circle cx="${cx}" cy="${cy}" r="13" fill="url(#occ-${g})"/>`;s+=`<path d="M${cx} ${cy} Q ${cx+9} ${cy-17} ${cx+13} ${cy-31}" stroke="${darken(c,0.18)}" stroke-width="2" fill="none" stroke-linecap="round"/>`;for(let i=0;i<11;i++){const t=i/11,px=cx+9*t*1.1+(i%2?2.1:-2.1),py=cy-22*t-6;s+=`<circle cx="${px.toFixed(2)}" cy="${py.toFixed(2)}" r="1.25" fill="#E9CF7A" stroke="#B98F2E" stroke-width="0.2"/>`;}for(let i=0;i<5;i++){const a=i*72*Math.PI/180;s+=`<circle cx="${(cx+13+Math.cos(a)*2.4).toFixed(2)}" cy="${(cy-31+Math.sin(a)*2.4).toFixed(2)}" r="1.5" fill="${darken(c,0.05)}"/>`;}s+='</g>';return s;}
+function peony(c,ac,g){const dpr=darken(c,0.13);const rf=(L,w)=>`M0 0 C ${-w} ${-L*0.22} ${-w*1.02} ${-L*0.64} ${-w*0.5} ${-L*0.82} C ${-w*0.28} ${-L*0.9} ${-w*0.14} ${-L*0.84} ${-w*0.06} ${-L*0.93} C ${-w*0.02} ${-L*0.99} ${w*0.02} ${-L*0.99} ${w*0.06} ${-L*0.93} C ${w*0.14} ${-L*0.84} ${w*0.28} ${-L*0.9} ${w*0.5} ${-L*0.82} C ${w*1.02} ${-L*0.64} ${w} ${-L*0.22} 0 0 Z`;const R=[[11,31,12,0,'O',0.96],[11,25,11,16,'M',0.97],[10,19,9.5,9,'M',0.98],[8,13.5,8,13,'I',0.98],[6,8.5,6.4,20,'I',0.99]];let s='<g>';for(const[ct,L,w,rot,cd]of R)for(let i=0;i<ct;i++)s+=`<path d="${rf(L,w)}" fill="url(#p${cd}-${g})" stroke="${dpr}" stroke-width="0.4" stroke-opacity="0.2" transform="translate(${cx} ${cy}) rotate(${rot+i*(360/ct)})"/>`;s+=`<circle cx="${cx}" cy="${cy}" r="6" fill="url(#pI-${g})"/>`;for(let i=0;i<7;i++){const a=i*51.4*Math.PI/180,r=3.4;s+=`<path d="${rf(7,4)}" fill="url(#pI-${g})" transform="translate(${(cx+Math.cos(a)*r).toFixed(2)} ${(cy+Math.sin(a)*r).toFixed(2)}) rotate(${(i*51.4+90).toFixed(0)})"/>`;}s+='</g>';return s;}
+function ringF(c,ac,g,spec,shape,center,vein){const dpr=darken(c,0.13),dp=c,m=lighten(c,0.14),sh=lighten(c,0.62),edge={O:dpr,M:dp,I:m};const PF={lance:pLance,point:pPoint,broad:pBroad};let s='<g>';for(const[ct,L,w,rot,cd,op]of spec)for(let i=0;i<ct;i++){const a=rot+i*(360/ct);s+=`<path d="${(PF[shape]||pBroad)(L,w)}" fill="url(#p${cd}-${g})" opacity="${op}" stroke="${edge[cd]}" stroke-width="0.4" stroke-opacity="0.16" transform="translate(${cx} ${cy}) rotate(${a})"/>`;if(vein)s+=`<path d="M0 -1 Q ${w*0.05} ${-L*0.5} 0 ${-L*0.82}" stroke="${sh}" stroke-width="0.55" stroke-opacity="0.4" fill="none" transform="translate(${cx} ${cy}) rotate(${a})"/>`;}s+=center(c,ac,g);s+='</g>';return s;}
+function dahlia(c,ac,g){return ringF(c,ac,g,[[12,33,5,0,'O',0.95],[12,26,4.6,15,'M',0.97],[10,19,4,7.5,'M',0.98],[8,12,3.4,11,'I',0.99]],'point',cTuft,false);}
+function tulip(c,ac,g){const dp=c;const tp=(rot,sc,gr,op)=>`<path d="M0 0 C -8.5 -5 -9 -27 0 -36 C 9 -27 8.5 -5 0 0 Z" fill="url(#${gr}-${g})" opacity="${op}" stroke="${dp}" stroke-width="0.3" stroke-opacity="0.2" transform="translate(${cx} ${cy+12}) rotate(${rot}) scale(${sc})"/>`;return `<g>${tp(-22,1,'pO',0.95)}${tp(22,1,'pO',0.95)}${tp(0,1.06,'pM',0.97)}${tp(-11,0.84,'pI',0.98)}${tp(11,0.84,'pI',0.98)}</g>`;}
+function poppy(c,ac,g){return ringF(c,ac,g,[[5,35,15,0,'O',0.96],[5,23,11,36,'M',0.98]],'broad',cDark,true);}
+function lily(c,ac,g){const dpr=darken(c,0.13),AN='#9A6B2E';let s='<g>';for(let i=0;i<6;i++)s+=`<g transform="translate(${cx} ${cy}) rotate(${i*60})"><path d="${pLance(38,9)}" fill="url(#p${i%2?'M':'O'}-${g})" stroke="${dpr}" stroke-width="0.4" stroke-opacity="0.16"/><path d="M0 -3 L 0 -35" stroke="${darken(c,0.18)}" stroke-width="0.45" stroke-opacity="0.26"/></g>`;for(let i=0;i<6;i++){const a=(i*60+30)*Math.PI/180,ex=cx+Math.cos(a)*18,ey=cy+Math.sin(a)*18;s+=`<line x1="${cx}" y1="${cy}" x2="${ex.toFixed(2)}" y2="${ey.toFixed(2)}" stroke="${lighten(AN,0.18)}" stroke-width="1" stroke-linecap="round"/><ellipse cx="${ex.toFixed(2)}" cy="${ey.toFixed(2)}" rx="2.8" ry="1.4" fill="${AN}" transform="rotate(${i*60+30} ${ex.toFixed(2)} ${ey.toFixed(2)})"/>`;}s+=`<ellipse cx="${cx}" cy="${cy-1}" rx="2.2" ry="3.2" fill="url(#ct-${g})"/></g>`;return s;}
+function magnolia(c,ac,g){const dpr=darken(c,0.13);let s='<g>';for(let i=0;i<9;i++)s+=`<path d="${pBroad(37,9)}" fill="url(#p${i%2?'O':'M'}-${g})" opacity="0.96" stroke="${dpr}" stroke-width="0.4" stroke-opacity="0.14" transform="translate(${cx} ${cy}) rotate(${i*40})"/>`;s+=`<ellipse cx="${cx}" cy="${cy}" rx="4.4" ry="6.8" fill="url(#ct-${g})"/></g>`;return s;}
+function lotus(c,ac,g){return ringF(c,ac,g,[[8,36,9,0,'O',0.9],[7,27,8,25,'M',0.95],[6,18,6.6,12,'I',0.98]],'lance',cGold,false);}
+const HEADS={rose,sunflower:sun,hibiscus:hib,peony,dahlia,tulip,poppy,lily,magnolia,lotus,cosmos:(c,a,g)=>ringF(c,a,g,[[8,34,7,0,'O',0.96]],'broad',cGold,true)};
+function bloom(form,cwk,size){const c=CW[cwk]||CW.crimson,g=form+cwk,head=(HEADS[form]||peony)(c.petal,c.accent,g);return `<svg viewBox="0 0 100 108" width="${size}" height="${Math.round(size*1.08)}" style="overflow:visible">${defs(g,c.petal,c.accent)}<ellipse cx="${cx}" cy="103" rx="21" ry="4.6" fill="#2E261B" opacity="0.2"/><circle cx="${cx}" cy="${cy}" r="40" fill="url(#gl-${g})"/>${stem(g)}${head}</svg>`;}
+function butterfly(size,c,c2){const g='bf'+Math.round(c.length+size);const W=`<g><path d="M0 -4 C -10 -22 -24 -22 -27 -10 C -29 -2 -16 -1 -1 -3 Z" fill="url(#bw-${g})" stroke="${darken(c,0.22)}" stroke-width="0.5" stroke-opacity="0.5"/><path d="M-1 0 C -16 0 -25 9 -21 18 C -18 24 -8 21 -2 9 Z" fill="url(#bh-${g})" stroke="${darken(c,0.22)}" stroke-width="0.5" stroke-opacity="0.5"/><path d="M-27 -10 C -24 -22 -10 -22 0 -4" fill="none" stroke="${darken(c,0.28)}" stroke-width="1.4" stroke-linecap="round" opacity="0.55"/><circle cx="-16" cy="-11" r="2.6" fill="${c2}" opacity="0.9"/><circle cx="-16" cy="-11" r="1.1" fill="${darken(c,0.3)}"/><circle cx="-12" cy="13" r="1.8" fill="${c2}" opacity="0.8"/></g>`;
+ return `<svg viewBox="0 0 60 52" width="${size}" height="${Math.round(size*0.86)}" style="overflow:visible"><defs><linearGradient id="bw-${g}" x1="1" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="${lighten(c,0.3)}"/><stop offset="60%" stop-color="${c}"/><stop offset="100%" stop-color="${darken(c,0.16)}"/></linearGradient><linearGradient id="bh-${g}" x1="1" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="${c}"/><stop offset="100%" stop-color="${darken(c,0.2)}"/></linearGradient></defs><g transform="translate(30 26)">${W}<g transform="scale(-1 1)">${W}</g><path d="M0 -16 C -1.7 -8 -1.7 10 0 20 C 1.7 10 1.7 -8 0 -16 Z" fill="#2E261B"/><circle cx="0" cy="-16" r="2" fill="#2E261B"/><path d="M0 -16 C -2 -22 -4 -25 -7 -26" fill="none" stroke="#2E261B" stroke-width="0.8" stroke-linecap="round"/><path d="M0 -16 C 2 -22 4 -25 7 -26" fill="none" stroke="#2E261B" stroke-width="0.8" stroke-linecap="round"/><circle cx="-7" cy="-26" r="1.1" fill="#2E261B"/><circle cx="7" cy="-26" r="1.1" fill="#2E261B"/></g></svg>`;}
+function heart(size){return `<svg width="${size}" height="${size}" viewBox="0 0 24 24" style="transform:rotate(-6deg)"><path d="M12 21 C 4 14 3 9 6 6 C 8.5 3.5 11 5 12 7 C 13 5 15.5 3.5 18 6 C 21 9 20 14 12 21 Z" fill="#BC2E27"/><path d="M9 8 C 8 9 8 11 9 12" stroke="#fff" stroke-width="0.8" fill="none" opacity="0.55" stroke-linecap="round"/></svg>`;}
+function cell(svg,nm,w){return `<div class="flora-cell" style="width:${w||104}px">${svg}<div class="nm">${nm}</div></div>`;}
+// inject
+document.getElementById('cover-bloom').innerHTML=bloom('rose','crimson',150);
+document.getElementById('cover-heart').innerHTML=heart(26);
+document.getElementById('inline-heart').innerHTML=heart(20);
+document.getElementById('flora-heroes').innerHTML=cell(bloom('rose','crimson',120),'Rose',118)+cell(bloom('sunflower','gold',120),'Sunflower',118)+cell(bloom('hibiscus','coral',120),'Hibiscus',118);
+document.getElementById('flora-variety').innerHTML=[['peony','blush'],['dahlia','plum'],['tulip','crimson'],['poppy','crimson'],['lily','cream'],['magnolia','cream'],['lotus','sky'],['cosmos','plum']].map(([f,k])=>cell(bloom(f,k,92),f,84)).join('');
+document.getElementById('flora-creatures').innerHTML=cell(butterfly(70,'#8E6E8E','#D4AF37'),'butterfly·return',96)+cell(butterfly(70,'#E08A6A','#BC2E27'),'monarch',96)+cell(butterfly(70,'#9FB6C9','#FFFFFF'),'blue·calm',96);
+// bouquet
+(function(){const items=[['rose','crimson',1,0,8],['sunflower','gold',0.72,-52,28],['hibiscus','coral',0.68,52,32],['peony','blush',0.6,-18,-30],['lotus','sky',0.48,32,-22]];let h='<div style="position:relative;width:240px;height:210px;margin:0 auto">';for(const[f,k,s,dx,dy]of items){const sz=Math.round(140*s);h+=`<div style="position:absolute;left:${120+dx-sz/2}px;top:${105+dy-sz/2}px;transform:rotate(${(dx*0.16).toFixed(0)}deg)">${bloom(f,k,sz)}</div>`;}h+='</div>';document.getElementById('flora-bouquet').innerHTML=h;})();
+</script>
+</body></html>

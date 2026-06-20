@@ -1,0 +1,388 @@
+<!doctype html>
+<html lang="en-GB"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>FemWell — The Living Ecosystem (brainstorm + spec)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500;1,600&family=Ephesis&display=swap" rel="stylesheet">
+<style>
+  :root{--paper:#ECE7DA;--paperHi:#F4EFE3;--paperDeep:#D8CFBC;--wax:#EFE3C9;--ink:#0B0805;--inkSoft:#1A140D;--muted:#2E261B;--gold:#A8893F;--crimson:#BC2E27;--blush:#E8B4B8;--sage:#8FAF8F;--plum:#8E6E8E;--serif:'Cormorant Garamond',Georgia,serif;--script:'Ephesis',cursive;--sans:ui-sans-serif,system-ui,-apple-system,'Segoe UI',sans-serif;}
+  *{box-sizing:border-box}
+  body{margin:0;background:radial-gradient(120% 80% at 12% 0%,#F4EFE3 0%,rgba(244,239,227,0) 55%),radial-gradient(120% 90% at 100% 100%,#E4DDCC 0%,rgba(228,221,204,0) 50%),var(--paper);color:var(--ink);font-family:var(--serif);font-size:18px;line-height:1.6;-webkit-font-smoothing:antialiased}
+  .doc{max-width:680px;margin:0 auto;padding:30px 22px 90px}
+  h1.cover{font-family:var(--script);font-size:58px;color:var(--crimson);margin:6px 0 2px;line-height:1.02}
+  h2{font-family:var(--serif);font-style:italic;font-weight:600;font-size:29px;color:var(--ink);margin:0 0 4px}
+  h3{font-family:var(--serif);font-weight:600;font-size:21px;margin:20px 0 6px}
+  .eyebrow{font-family:var(--sans);font-size:12px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--gold);margin-bottom:10px}
+  p{margin:0 0 12px}.lede{font-size:20px;line-height:1.55}
+  small,.cap{font-family:var(--sans);font-size:13px;color:var(--muted);line-height:1.5}
+  b,strong{font-weight:600}
+  .section{background:var(--paperHi);border:1px solid var(--paperDeep);border-left:4px solid var(--gold);border-radius:20px;padding:22px 20px;margin:18px 0;box-shadow:0 4px 20px rgba(58,44,26,.10),0 1px 4px rgba(58,44,26,.06);position:relative;overflow:hidden}
+  .section.crimson{border-left-color:var(--crimson)}.section.sage{border-left-color:var(--sage)}.section.plum{border-left-color:var(--plum)}
+  .rule{height:1px;background:var(--gold);opacity:.32;margin:18px 0}
+  .center{text-align:center}
+  table{width:100%;border-collapse:collapse;font-size:14px;font-family:var(--sans);margin:8px 0}
+  th,td{text-align:left;padding:7px 8px;border-bottom:1px solid var(--paperDeep);vertical-align:top}
+  th{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--gold)}
+  td b{font-family:var(--serif);font-size:15px}
+  .toc a{display:block;font-family:var(--sans);font-size:15px;color:var(--inkSoft);text-decoration:none;padding:6px 0;border-bottom:1px solid var(--paperDeep)}
+  .toc a span{color:var(--gold);font-weight:700;margin-right:10px}
+  .omenline{font-style:italic;font-size:18px;color:var(--inkSoft);border-left:2px solid var(--gold);padding:2px 0 2px 14px;margin:10px 0}
+  .script{font-family:var(--script);color:var(--crimson)}
+  .stagecell{display:flex;flex-direction:column;align-items:center;width:120px;gap:2px}
+  .stagecell .nm{font-family:var(--sans);font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--gold)}
+  .stagecell .fl{font-family:var(--sans);font-size:11px;color:var(--muted)}
+  .grid{display:flex;flex-wrap:wrap;gap:8px;justify-content:center}
+  /* interactive header demo */
+  .demo{background:var(--paper);border:1px solid var(--paperDeep);border-radius:18px;padding:16px;margin:12px 0;position:relative;overflow:hidden}
+  .demohdr{display:flex;align-items:center;gap:14px;cursor:pointer;user-select:none}
+  .demohdr .ttl{flex:1}
+  .demohdr .k{font-family:var(--sans);font-size:11px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--gold)}
+  .demohdr .h{font-family:var(--serif);font-style:italic;font-weight:600;font-size:23px;color:var(--ink);line-height:1.1}
+  .tap{font-family:var(--sans);font-size:11px;color:var(--muted);opacity:.8;margin-top:3px}
+  .reveal{max-height:0;overflow:hidden;transition:max-height .4s cubic-bezier(.32,.72,.24,1);}
+  .reveal.open{max-height:420px}
+  .revealinner{margin-top:14px;padding-top:14px;border-top:1px dashed var(--paperDeep)}
+  .btnrow{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
+  .btn{font-family:var(--sans);font-size:12px;font-weight:700;padding:7px 13px;border-radius:999px;border:1px solid var(--paperDeep);background:var(--paperHi);color:var(--muted);cursor:pointer}
+  .btn.p{background:var(--crimson);color:#fff;border-color:var(--crimson)}
+  .copycard{background:var(--paper);border:1px solid var(--paperDeep);border-radius:12px;padding:12px 14px;margin:8px 0}
+  .copycard .st{font-family:var(--sans);font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--gold);margin-bottom:5px}
+  .copycard p{margin:0 0 6px;font-size:17px;line-height:1.45}
+  .copycard p:last-child{margin:0}
+  .pill{display:inline-block;font-family:var(--sans);font-size:12px;font-weight:600;padding:5px 12px;border-radius:999px;background:var(--paper);border:1px solid var(--paperDeep);margin:3px 4px 3px 0}
+  .dial{display:flex;align-items:center;gap:10px;margin:6px 0;font-family:var(--sans);font-size:14px}
+  .dial .bar{flex:1;height:8px;border-radius:999px;background:var(--paperDeep);position:relative}
+  .dial .bar i{position:absolute;top:-3px;width:14px;height:14px;border-radius:50%;background:var(--crimson)}
+  .q{background:#EFE6D6;border:1px solid var(--gold);border-radius:14px;padding:14px 16px;margin:10px 0}
+  .q .qn{font-family:var(--serif);font-weight:600;font-size:18px;margin-bottom:4px}
+  .foot{font-family:var(--sans);font-size:12px;color:var(--muted);text-align:center;margin-top:30px;line-height:1.6}
+  .letter{background:linear-gradient(180deg,#F6F1E5,#EFE7D4);border:1px solid var(--paperDeep);border-radius:6px;padding:18px 18px 16px;position:relative;box-shadow:0 6px 18px rgba(58,44,26,.14);margin:10px 0}
+  .letter .seal{position:absolute;right:14px;top:-14px}
+  .letter .salut{font-family:var(--serif);font-style:italic;font-size:20px;margin-bottom:6px}
+</style></head>
+<body><div class="doc">
+
+<div class="center" style="padding:14px 0 4px">
+  <div class="eyebrow" style="color:var(--gold)">FemWell · Brand deep-dive · brainstorm + spec · v4 working draft</div>
+  <h1 class="cover">The Living Ecosystem</h1>
+  <div id="cover-stage" style="margin:6px 0"></div>
+  <p class="lede" style="font-style:italic;max-width:460px;margin:4px auto 0">A garden that doesn’t just look alive — it <b>means</b> something, and it’s talking to her about her own life.</p>
+</div>
+
+<div class="section">
+  <div class="eyebrow">The shift — what “deeper” means</div>
+  <p>v3 made the flowers <b>beautiful and recognisable.</b> v4 makes them <b>mean something.</b> The brand isn’t flowers — it’s a <b>living ecosystem</b> where every element is at a <i>stage</i>, can be <i>read</i>, and is keyed to <i>her</i>:</p>
+  <table>
+    <tr><th>Principle</th><th>What it means</th></tr>
+    <tr><td><b>Nothing is static</b></td><td>Every plant is at a lifecycle stage (bud · bloom · seed · rest) that mirrors her season. The garden changes because she does.</td></tr>
+    <tr><td><b>Everything can be read</b></td><td>A bloom, a returning butterfly, a wax seal — each carries a gentle meaning she can tap to reveal. Wonder, on demand.</td></tr>
+    <tr><td><b>Everything is keyed to her</b></td><td>What appears is chosen from real signals (her season, her week, the date, what she tends). It’s <i>her</i> garden, not a stock one.</td></tr>
+  </table>
+  <div class="toc" style="margin-top:8px">
+    <a href="#eco"><span>1</span>The living ecosystem — the lifecycle of a feeling</a>
+    <a href="#omen"><span>2</span>The fauna &amp; the omens — a garden that speaks</a>
+    <a href="#engine"><span>3</span>The rotating flora-omen engine (a real mechanism)</a>
+    <a href="#voice"><span>4</span>The soulful voice — warm, funny, a little mystic</a>
+    <a href="#craft"><span>5</span>Craft that carries meaning — wax seals, letters, growing vines</a>
+    <a href="#brainstorm"><span>6</span>The wider brainstorm — a garden that remembers</a>
+    <a href="#tech"><span>7</span>How it’s built (no new function)</a>
+    <a href="#steer"><span>8</span>What I need from you</a>
+  </div>
+</div>
+
+<!-- 1. ECOSYSTEM -->
+<a id="eco"></a>
+<div class="section crimson">
+  <div class="eyebrow">One · The living ecosystem</div>
+  <h2>The lifecycle <i>is</i> the meaning.</h2>
+  <p>A flower has seasons, and so does she. The same flower shown at a different <b>stage</b> says where she is — without a chart, without a word. The rose tells it perfectly, and it’s botanically true:</p>
+  <div class="grid" id="lifecycle" style="margin:14px 0 6px"></div>
+  <table>
+    <tr><th>Stage</th><th>The feeling</th><th>Her life · when it shows</th></tr>
+    <tr><td><b>Bud</b> · furled</td><td>anticipation, potential, <i>becoming</i></td><td>a new chapter · follicular rising · a goal just set · early TTC · a fresh interest</td></tr>
+    <tr><td><b>Bloom</b> · open</td><td>expression, peak, confidence</td><td>ovulation · a win · creative flow · love flourishing · a celebration</td></tr>
+    <tr><td><b>Seed</b> · the rose hip</td><td>harvest, integration, wisdom, letting go</td><td>luteal · finishing a programme · a lesson landed · planning · mentoring someone</td></tr>
+    <tr><td><b>Rest</b> · bare cane</td><td>restoration, quiet — <b>winter, not death</b></td><td>menstruation · postpartum · grief · burnout recovery · a chosen pause</td></tr>
+    <tr><td><b>Return</b> · new bud on old wood</td><td>renewal, “again”</td><td>coming back after time away · a new cycle · healing · spring</td></tr>
+  </table>
+  <p class="cap">The garden’s rule for hard stretches: <b>rest is a stage, not a failure.</b> The bare rose cane isn’t dead — it’s holding next year’s bloom. We never draw “nothing”; we draw <i>dormancy with a bud on it.</i></p>
+</div>
+
+<!-- 2. OMENS -->
+<a id="omen"></a>
+<div class="section sage">
+  <div class="eyebrow">Two · The fauna &amp; the omens</div>
+  <h2>A garden that speaks.</h2>
+  <p>Creatures visit the plants and <b>carry a gentle omen</b> — hopeful folklore, never prophecy. The contract: every omen is (a) <b>kind &amp; hopeful</b>, (b) framed as lore — <i>“they say…”</i> — never a promise, (c) ends in a <b>small action or a true observation</b>, never doom, never guilt. A creature visits, speaks once, and drifts off.</p>
+  <div class="grid" id="omen-creatures" style="margin:10px 0"></div>
+  <table>
+    <tr><th>Visitor</th><th>Folk omen</th><th>The line it speaks</th></tr>
+    <tr><td><b>A bird</b> (robin)</td><td>news · a visitor</td><td>“A little bird’s come to your garden. They say that means news is on its way — and the good kind. Keep your phone close.”</td></tr>
+    <tr><td><b>Butterfly</b> (return)</td><td>change · the soul</td><td>“She’s back. The old gardeners said a butterfly means something in you is turning over — that restless feeling is growth, not trouble.”</td></tr>
+    <tr><td><b>Ladybird</b></td><td>small luck</td><td>“A ladybird landed. Tiny luck — but luck all the same. If there’s a small brave thing today, do it now.”</td></tr>
+    <tr><td><b>Bee</b></td><td>connection</td><td>“A bee’s working your blooms. Someone might be thinking of you today. Maybe think of them back.”</td></tr>
+    <tr><td><b>Dragonfly</b></td><td>clarity</td><td>“A dragonfly skimmed past — the fog’s lifting. That thing you keep circling? You’re closer to the answer than you feel.”</td></tr>
+    <tr><td><b>Moth</b></td><td>night · rest · intuition</td><td>“A moth at the lamp. It’s a quiet-night kind of day. Trust the soft voice, not the loud one.”</td></tr>
+    <tr><td><b>Firefly</b></td><td>hope in the dark</td><td>“A firefly lit up. Even now, a little light — and that’s all you need to find tonight.”</td></tr>
+    <tr><td><b>Snail</b></td><td>patience · timing</td><td>“A snail’s crossing the leaf. Slow is still forward. Nothing today needs rushing — least of all you.”</td></tr>
+    <tr><td><b>Spider</b> + dewy web</td><td>weaving · creativity</td><td>“A web caught the morning dew. You’re weaving something, even if you can’t see the whole pattern yet. Trust the thread.”</td></tr>
+    <tr><td><b>Cricket</b></td><td>luck · a leap</td><td>“A cricket’s singing. They say that’s lucky — and a good day to leap. The thing you’ve been weighing? Weigh it less.”</td></tr>
+    <tr><td><b>Hummingbird</b></td><td>joy, savour</td><td>“A hummingbird, gone in a blink. Joy moves fast — catch the small sweet thing before it does.”</td></tr>
+    <tr><td><b>Earthworm</b></td><td>quiet unseen work</td><td>“Down in the soil, the worms do the unglamorous work that makes everything grow. So do you. It counts, even unseen.”</td></tr>
+  </table>
+  <h3>And the plants themselves give signs</h3>
+  <div class="omenline">A bloom opened overnight → “Something opened up in the garden in the night. Maybe something’s opening for you, too.”</div>
+  <div class="omenline">Dew on the petals → “The garden wept a little overnight — a soft morning. Be gentle; you’ve earned gentle.”</div>
+  <div class="omenline">An unexpected second bloom → “A second bloom, out of nowhere. A small bonus is on its way — don’t talk yourself out of it.”</div>
+  <div class="omenline">The first snowdrop → “The first snowdrop. After a hard stretch, that’s the oldest sign of hope there is.”</div>
+  <div class="omenline">Out of season → “Something bloomed early — out of order, and lovely anyway. A bit like you.”</div>
+</div>
+
+<!-- 3. ENGINE -->
+<a id="engine"></a>
+<div class="section">
+  <div class="eyebrow">Three · The mechanism</div>
+  <h2>The rotating flora-omen engine.</h2>
+  <p>Every section is <b>headed by a flower or bouquet</b> that reflects the section <i>and</i> her current story, <b>rotates</b> (changes over time), and is <b>tappable → a little meaning reveal.</b> Tap the header below — it’s a working sketch:</p>
+
+  <div class="demo">
+    <div class="demohdr" onclick="toggleReveal(this)">
+      <div id="demo-bloom"></div>
+      <div class="ttl">
+        <div class="k">Today · your garden this morning</div>
+        <div class="h">A snowdrop, and a robin</div>
+        <div class="tap">tap the flower — what does it mean for you today?</div>
+      </div>
+    </div>
+    <div class="reveal"><div class="revealinner">
+      <p style="margin:0 0 8px"><span class="script" style="font-size:24px">Snowdrop</span> <span class="cap">— hope; the first flower of the year, blooming while the ground’s still frozen.</span></p>
+      <p class="omenline" style="margin:8px 0">“There’s a robin on your snowdrop this morning. They say a little bird means news on its way — and after the week you’ve had, the good kind’s overdue. Keep your phone close.”</p>
+      <p style="margin:6px 0 0"><b>Today, for you:</b> you came back after a few quiet days, and it’s the first follicular morning. Hope is the exactly-right flower for a fresh start.</p>
+      <div class="btnrow">
+        <span class="btn p">Press it into my journal</span><span class="btn">Tell me more</span><span class="btn">Share this</span>
+      </div>
+    </div></div>
+  </div>
+
+  <h3>The three layers of a reveal</h3>
+  <table>
+    <tr><th>Layer</th><th>What it is</th></tr>
+    <tr><td><b>The flower</b></td><td>its fixed floriography meaning (snowdrop = hope) — the stable truth.</td></tr>
+    <tr><td><b>The omen</b></td><td>the visitor’s gentle “they say…” line — the wonder.</td></tr>
+    <tr><td><b>Why now</b></td><td>the personal tie to <i>her</i> real signals today — the soul.</td></tr>
+  </table>
+
+  <h3>How it chooses — the priority ladder</h3>
+  <p class="cap">All from signals already loaded (her cycle phase &amp; day, life-stage, recent mood/theme, days-since-last-open, programme progress, what she tends, the date, special dates, her flora fingerprint). A <b>daily seed</b> = hash(her id + today’s date) makes it <b>stable all day, the same on every device, and it rotates daily.</b> Highest available rung wins; the seed breaks ties so it varies:</p>
+  <table>
+    <tr><th>#</th><th>Rung</th><th>Example</th></tr>
+    <tr><td>1</td><td><b>Life event</b></td><td>birthday · a milestone earned · welcome-back after absence · a hard anniversary</td></tr>
+    <tr><td>2</td><td><b>Body season</b></td><td>cycle phase / lifecycle stage → the phase flower at her stage</td></tr>
+    <tr><td>3</td><td><b>Recent story</b></td><td>last mood / a recurring journal theme → a matching bloom + omen</td></tr>
+    <tr><td>4</td><td><b>Calendar / sky</b></td><td>season · new/full moon · solstice · the day’s folk-saying</td></tr>
+    <tr><td>5</td><td><b>Gentle daily</b> (fallback)</td><td>a seasonal time-of-day omen from the library — <b>never blank, never “no data.”</b></td></tr>
+  </table>
+  <p class="cap"><b>Always meaningful:</b> the library is large enough that the fallback never repeats within a fortnight. The omen is honest — if there’s no real signal, it’s a gentle seasonal one, never a fake “big news.”</p>
+
+  <div class="q" style="background:#EFE0DD;border-color:var(--crimson)">
+    <div class="qn" style="color:#8E3B2C">The four safety rails (non-negotiable)</div>
+    <span class="cap" style="color:var(--inkSoft)">
+    <b>1 · Ration the magic.</b> An omen that greets <i>every</i> open stops working — warmth lands because it’s a surprise. One real omen a day (the Today “almanac” moment); section headers reveal only on tap; plain days stay plain.<br><br>
+    <b>2 · Never resurface a hard memory unprompted.</b> “On this day” / pattern-surfacing is <b>gated</b> — a loss, a breakup, a low-mood entry is <i>never</i> pushed at her without her opening it first (the lesson big platforms learned the hard way). Grief patterns surface only inside Journal, gently, never as a morning greeting.<br><br>
+    <b>3 · Hope-only readings.</b> Some folk omens have a dark variant (an out-of-season bloom can mean “survival” <i>or</i> “sickness”). The engine only ever uses the <b>hopeful</b> reading. No omen ever predicts harm.<br><br>
+    <b>4 · The saccharine test.</b> If a line would fit, unedited, on a supermarket greeting card — cut it. Every line earns its place with a specific detail or a real action.</span>
+  </div>
+</div>
+
+<!-- 4. VOICE -->
+<a id="voice"></a>
+<div class="section crimson">
+  <div class="eyebrow">Four · The soulful voice</div>
+  <h2>Warm. Funny. A little bit witch.</h2>
+  <p>The smart-friend voice, with soul and a wink. Three dials — warmth always high, wit dry (UK, never zany), wonder turned up just enough to be lovely and never enough to be a horoscope you’d roll your eyes at:</p>
+  <div class="dial">Warmth <div class="bar"><i style="left:88%"></i></div> high, always</div>
+  <div class="dial">Wit <div class="bar"><i style="left:58%"></i></div> dry, wry, UK</div>
+  <div class="dial">Wonder <div class="bar"><i style="left:50%"></i></div> mystic, half-winking</div>
+
+  <h3>The eight principles</h3>
+  <table>
+    <tr><td><b>1 · “They say…”</b></td><td>Frame wonder as folklore, never a promise. Wonder + a wink, never a prediction you could be wrong about.</td></tr>
+    <tr><td><b>2 · The kettle rule</b></td><td>Keep one foot on the ground. A mystic line earns a domestic wink: “…wash something off today — a worry, a grudge, the kettle.”</td></tr>
+    <tr><td><b>3 · Notice, don’t cheerlead</b></td><td>Observe something true about today. “Rough night?” beats “You’ve got this!”</td></tr>
+    <tr><td><b>4 · Action over sentiment</b></td><td>End on a small real thing: “send the text,” not “good things await.”</td></tr>
+    <tr><td><b>5 · Punch up, never down</b></td><td>Laugh at life’s absurdity, never at her. Never guilt, never a scoreboard.</td></tr>
+    <tr><td><b>6 · Brevity with soul</b></td><td>One good line beats three nice ones. Leave room to breathe.</td></tr>
+    <tr><td><b>7 · Tint, don’t drown</b></td><td>Let her phase/stage colour the tone; lighthearted by default. A low day is met softly, not solemnly.</td></tr>
+    <tr><td><b>8 · UK to the bone</b></td><td>Dry, warm, a bit self-deprecating. No emoji. No American pep.</td></tr>
+  </table>
+  <p class="cap" style="margin-top:8px"><b>The two poles to avoid:</b> <b>Co-Star’s brutal edge</b> (cosmic-deadpan that cuts — too sharp for a nurturing app) and <b>Duolingo’s guilt</b> (passive-aggressive nagging that users say “turns them off the product entirely”). FemWell sits between: the wit is <i>warm</i>, the wonder is <i>kind</i>, and we never, ever guilt. The method is Mailchimp’s: the <b>voice</b> is constant (warm garden-mystic friend), the <b>tone</b> flexes to her state — plainer on a hard day, brighter on a high one.</p>
+
+  <h3>The copy bank</h3>
+  <div class="copycard"><div class="st">Morning greeting · rising / follicular</div>
+    <p>“Morning. There’s a fizz to this week — the good restless kind. What do you want to start?”</p>
+    <p>“You’re in the up-swing. Bold idea you’ve been sitting on? It’ll never feel more doable than now.”</p></div>
+  <div class="copycard"><div class="st">Morning greeting · rest / menstrual</div>
+    <p>“Quiet morning. The garden’s resting and, honestly, so should you. Today’s a tea-and-low-lights kind of day.”</p>
+    <p>“Inner winter. Nothing wants forcing this week — least of all you. Small and soft is the whole assignment.”</p></div>
+  <div class="copycard"><div class="st">The daily omen line · the almanac voice</div>
+    <p>“The stars are quietly showing off tonight, and there’s a moth at your lamp. A rest-night, then. Be soft.”</p>
+    <p>“Full moon, and a second bloom on the rose. They say that’s a small bonus coming. Don’t argue with the rose.”</p>
+    <p>“Red sky this morning. The old gardeners would tell you to bring the washing in — and maybe keep your plans loose.”</p></div>
+  <div class="copycard"><div class="st">Section intro · Community</div>
+    <p>“The hive’s humming. Come and be gloriously unfiltered — no one here knows your surname.”</p></div>
+  <div class="copycard"><div class="st">Section intro · Nutrition</div>
+    <p>“The kitchen garden. Pudding counts, for the record. This isn’t that kind of app.”</p></div>
+  <div class="copycard"><div class="st">Section intro · Journal</div>
+    <p>“The quiet bench by the willow. Say the thing you’re not saying anywhere else.”</p></div>
+  <div class="copycard"><div class="st">Empty state</div>
+    <p>“Nothing here yet — and that’s allowed. Plant the first line whenever you like; the garden’s patient.”</p>
+    <p>“Bare soil. Promising, actually. Everything starts here.”</p></div>
+  <div class="copycard"><div class="st">Nudge — gentle, never naggy</div>
+    <p>“No pressure at all — but a ladybird landed, and they’re tiny luck. If there’s a small thing you’ve been putting off…”</p></div>
+  <div class="copycard"><div class="st">Celebration · a win</div>
+    <p>“Look at you. That’s a gladiolus moment — the flower they hand you for a real win. Put it somewhere you’ll see it.”</p>
+    <p>“Did the hard thing. The garden’s thrown out a bloom it usually saves for special. Earned.”</p></div>
+  <div class="copycard"><div class="st">Celebration · a rare bloom / milestone</div>
+    <p>“Something rare just opened in your garden — the kind that blooms once in a long while. You did that. Come and see.”</p></div>
+  <div class="copycard"><div class="st">Low / hard day · soft, not solemn</div>
+    <p>“Bit of a frost today, by the looks of it. The garden’s seen frost before and held. You don’t have to do anything but get through it.”</p>
+    <p>“Today can be a write-off. Genuinely. Tomorrow’s a different weather. Kettle on.”</p></div>
+  <div class="copycard"><div class="st">Returning after a while away</div>
+    <p>“There you are. The garden kept your seat — and a butterfly came back the same week you did, which the old books would call a very good sign.”</p>
+    <p>“Been a minute. No ledger here, no streak to mourn. Just: welcome back, I left the kettle on.”</p></div>
+  <div class="copycard"><div class="st">Weather, not streaks</div>
+    <p>“A dry spell, those few days. The garden held. Nothing to make up — just water it when you’re ready.”</p></div>
+  <div class="copycard"><div class="st">Tiny delight · micro-moment</div>
+    <p>“(A bee just bumbled across your screen. Carry on. She’s fine.)”</p></div>
+</div>
+
+<!-- 5. CRAFT -->
+<a id="craft"></a>
+<div class="section plum">
+  <div class="eyebrow">Five · Craft that carries meaning</div>
+  <h2>The wax seal &amp; the sealed letter.</h2>
+  <p>Health stops being a chart and becomes <b>correspondence.</b> Each Health “letter” arrives <b>sealed with a wax rose</b> — her signature flower, in her phase colour. Opening it <i>breaks the seal</i> (a small, once-only lift). You’re not reading data; you’re receiving a letter from your own body.</p>
+  <div class="letter">
+    <div class="seal" id="wax-seal"></div>
+    <div class="salut">Dear you,</div>
+    <p style="margin:0;font-size:16px;line-height:1.5">A short letter this week. Your sleep’s been broken and your body’s been asking, quite politely, for an earlier night. Three small things that tend to help are folded inside…</p>
+  </div>
+  <table>
+    <tr><th>Treatment</th><th>What it says</th></tr>
+    <tr><td><b>Wax rose seal</b></td><td>Health letters, the monthly “letter from your body,” a milestone certificate. Her flower, her colour. Breaking it = opening something personal.</td></tr>
+    <tr><td><b>The envelope / fold</b></td><td>Jess’s notes arrive folded; a “letter to future you” in Journal seals shut until its date. Intimacy by format.</td></tr>
+    <tr><td><b>Vines that grow</b></td><td>A programme or goal grows a <b>vine</b> — a leaf per session, a bloom at the end. Progress as <i>growth</i>, not a progress bar.</td></tr>
+    <tr><td><b>Pressed flowers</b></td><td>Saved &amp; remembered things are <b>pressed like a flower in a book.</b> “On this day last year” shows last year’s pressed bloom. The garden remembers.</td></tr>
+    <tr><td><b>Deckle &amp; letterpress</b></td><td>Cream paper with a torn deckle edge; Cormorant set like letterpress for the letters; Ephesis script for the <i>margin notes</i> and omen lines — they read hand-written.</td></tr>
+    <tr><td><b>Dawn &amp; dusk light</b></td><td>The whole app’s light warms and cools with the time of day — dewy and pale at dawn, amber and low at dusk. The garden has a time of day.</td></tr>
+  </table>
+  <h3>Cards as objects, not boxes</h3>
+  <p class="cap"><b>LetterCard</b> (deckle edge + wax seal + fold) · <b>PressedFlowerCard</b> (a memory, pressed) · <b>AlmanacCard</b> (the daily omen — dated, script, a little folk-wisdom) · <b>GrowingCard</b> (a vine that adds growth as she progresses). The card <i>look</i> carries the feeling; the soul is in the format, not a sticker on top.</p>
+</div>
+
+<!-- 6. BRAINSTORM -->
+<a id="brainstorm"></a>
+<div class="section">
+  <div class="eyebrow">Six · The wider brainstorm</div>
+  <h2>A garden that remembers.</h2>
+  <p>More seeds — react to any of these and I’ll grow the ones you love:</p>
+  <h3>Memory</h3>
+  <p><b>The garden remembers.</b> Anniversaries of entries; “on this day” pressed blooms; recurring patterns surfaced gently — <i>“the forget-me-not’s come up again — third autumn running. Grief has seasons too; it doesn’t mean you’re going backwards.”</i></p>
+  <h3>Ritual &amp; season</h3>
+  <p>The app quietly marks <b>solstice &amp; equinox, new &amp; full moon</b> (elegantly tied to her cycle), the <b>first frost, the first bloom of spring</b> — each a tiny ritual card. A <b>Sunday “tend your garden”</b> weekly reflection. A <b>monthly letter from your body.</b></p>
+  <h3>Rare blooms = earned milestones</h3>
+  <p>A <b>night-blooming cereus</b> (opens once a year) for a big milestone; a <b>blue rose</b> (doesn’t exist in nature — rarity itself) for something hard-won; a <b>four-leaf clover</b> found in the grass. Earned through living, never bought.</p>
+  <h3>The returning user</h3>
+  <p>The garden <b>notices she’s back</b> without a hint of guilt — a butterfly returns, a re-bloom on old wood, “I left the kettle on.” Absence is winter, not failure.</p>
+  <h3>Omens tied to real life</h3>
+  <p>A <b>birthday bloom</b> that’s just for today; a logged new job → a <b>gladiolus</b>; a hard anniversary → a <b>forget-me-not</b> and a soft line; a date in her calendar → a fitting bloom the morning of.</p>
+  <h3>One sky</h3>
+  <p>Unify the flora omens with the existing <b>horoscope/“moon is waxing”</b> into a single <b>“signs”</b> register — the garden below and the sky above telling one gentle story. <i>“The moon’s waxing in Libra and there’s a bee on your blooms — the universe and your garden agree: reach out to someone today.”</i></p>
+  <h3>The seed packet</h3>
+  <p>Onboarding as <b>planting your garden</b> — choose a few “seeds” (intentions &amp; interests) that become your starting plants. Naming your garden, your companion, even a rare bloom — naming is how you come to love a thing.</p>
+  <h3>Flowers you can give</h3>
+  <p>Send another woman a <b>meant</b> flower in Community — a borage for courage, a forget-me-not for “I remember.” The only social gift where the gift <i>says something true.</i></p>
+  <h3>Telling the bees</h3>
+  <p>There’s a real old custom — <b>“telling the bees”</b> — where you’d go to the hive and share your news, good or bad, so the bees wouldn’t leave. FemWell’s version: a <b>“tell the garden”</b> ritual — whisper your news to your garden (a job, a loss, a hope) and a fitting bloom or creature answers. It spans every life domain, it’s a gorgeous low-stakes way in to journalling, and it gives the bee its earned home.</p>
+  <h3>Little countable magic</h3>
+  <p>Folk omens have <b>mechanics</b> hiding in them: a ladybird grants “as many happy months as it has spots” — so the ladybird that lands is drawn with a real spot-count, and tapping it counts them out for her. Small, tactile, true to the lore — the kind of detail that makes people screenshot it.</p>
+</div>
+
+<!-- 7. TECH -->
+<a id="tech"></a>
+<div class="section sage">
+  <div class="eyebrow">Seven · How it’s built</div>
+  <h2>No new function. None.</h2>
+  <table>
+    <tr><th>Piece</th><th>How (rides existing infra)</th></tr>
+    <tr><td><b>The engine</b></td><td>a static front-end module <code>src/components/brand/floraOmen.js</code> — the meaning library (flower→meaning, creature→omen, lifecycle→meaning) + line templates + <code>pickOmen(signals, seed)</code>. Pure render-time selection. <b>No backend call.</b></td></tr>
+    <tr><td><b>Signals</b></td><td>assembled from context the page <i>already loads</i> — cycle phase &amp; day, life-stage, recent entries, days-since-last-open, programme progress, the date, the flora fingerprint. <b>No new fetch.</b></td></tr>
+    <tr><td><b>Daily rotation</b></td><td>reuse the existing <code>hashSeed(userId + 'YYYY-MM-DD')</code> → stable per day, same on every device, rotates daily.</td></tr>
+    <tr><td><b>Tappable reveal</b></td><td>the existing bottom-sheet component — no new route.</td></tr>
+    <tr><td><b>Writes</b> (“press to journal”, “this resonated”)</td><td>ride <b>existing dispatcher actions</b> (the journal-write path) — <b>never a new base44 function</b> (50-fn cap respected).</td></tr>
+    <tr><td><b>Lifecycle stages</b></td><td>a new <code>stage</code> prop on <code>RichBloomV2</code> (bud · bloom · seed/hip · rest) — pure render variants of the same geometry. Frontend only.</td></tr>
+    <tr><td><b>Section headers</b></td><td>the existing <code>FwFloraHero</code> + the section’s signature species (§5.3 page character) + stage + the omen creature. Reuse, don’t rebuild.</td></tr>
+  </table>
+</div>
+
+<!-- 8. STEER -->
+<a id="steer"></a>
+<div class="section">
+  <div class="eyebrow">Eight · Your call</div>
+  <h2>Shape it with me.</h2>
+  <div class="q"><div class="qn">1 · How mystic should the wonder dial sit?</div><span class="cap">My pick: ~5/10 — lovely and folkloric, always earthed by the kettle-wink. Dial up toward Co-Star, or down toward plain-warm?</span></div>
+  <div class="q"><div class="qn">2 · One daily omen, or omens everywhere?</div><span class="cap">My pick: one strong daily omen on Today (the “almanac” moment) + every section header tappable-on-demand (quiet, not shouting). Or make it more ambient?</span></div>
+  <div class="q"><div class="qn">3 · How far does the wax-letter aesthetic go?</div><span class="cap">My pick: Health letters + a monthly “letter from your body” to start. Or push it into Journal &amp; Jess too?</span></div>
+  <div class="q"><div class="qn">4 · Which 3 rare-bloom milestones first?</div><span class="cap">e.g. first full cycle logged · a hard anniversary survived · a programme finished · a year with FemWell. Pick the first three to design.</span></div>
+  <div class="q"><div class="qn">5 · Build order — where does v4 land first?</div><span class="cap">My pick: the Today daily omen + tappable header as the flagship, then the wax Health letter. Agree, or somewhere else?</span></div>
+</div>
+
+<div class="foot">
+  FemWell · The Living Ecosystem · brainstorm + spec (v4 working draft) · June 2026<br>
+  React to it and I’ll fold the agreed direction into <code>claude-state/BRAND_IDENTITY.md</code> v4 + build the engine (no new function).<br>
+  Every flower, seal and creature on this page is drawn live by the brand’s own engine.
+</div>
+</div>
+
+<!-- live engine (compact mirror of flora.jsx) -->
+<script>
+function lighten(h,a){const n=parseInt(h.replace('#',''),16);const r=Math.min(255,((n>>16)&255)+Math.round(255*a)),g=Math.min(255,((n>>8)&255)+Math.round(255*a)),b=Math.min(255,(n&255)+Math.round(255*a));return '#'+((1<<24)+(r<<16)+(g<<8)+b).toString(16).slice(1);}
+function darken(h,a){const n=parseInt(h.replace('#',''),16);const r=Math.max(0,((n>>16)&255)-Math.round(255*a)),g=Math.max(0,((n>>8)&255)-Math.round(255*a)),b=Math.max(0,(n&255)-Math.round(255*a));return '#'+((1<<24)+(r<<16)+(g<<8)+b).toString(16).slice(1);}
+function lum(h){const n=parseInt(h.replace('#',''),16);return(0.299*((n>>16)&255)+0.587*((n>>8)&255)+0.114*(n&255))/255;}
+const CW={crimson:{petal:'#BC2E27',tip:'#D9554E',accent:'#2E261B'},blush:{petal:'#E8B4B8',tip:'#F4D9DC',accent:'#A8893F'},sage:{petal:'#8FAF8F',tip:'#B6CDB6',accent:'#2E261B'},cream:{petal:'#E4DAC1',tip:'#F2EAD6',accent:'#A8893F'},sky:{petal:'#9FB6C9',tip:'#C3D2DE',accent:'#5F7E8E'},gold:{petal:'#D4AF37',tip:'#E8CE78',accent:'#6B5840'}};
+const cx=50,cy=52;
+function defs(g,c,ac){const pale=lum(c)>0.62,dA=pale?0.26:0.13,kA=pale?0.42:0.3;const li=lighten(c,0.52),l=lighten(c,0.34),m=lighten(c,0.14),dp=c,dpr=darken(c,dA),dk=darken(c,kA);
+ return `<defs><linearGradient id="pO-${g}" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="${l}"/><stop offset="24%" stop-color="${m}"/><stop offset="68%" stop-color="${dp}"/><stop offset="100%" stop-color="${dpr}"/></linearGradient>
+ <linearGradient id="pM-${g}" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="${li}"/><stop offset="30%" stop-color="${l}"/><stop offset="72%" stop-color="${m}"/><stop offset="100%" stop-color="${dp}"/></linearGradient>
+ <linearGradient id="pI-${g}" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="${lighten(c,0.62)}"/><stop offset="45%" stop-color="${li}"/><stop offset="100%" stop-color="${l}"/></linearGradient>
+ <radialGradient id="occ-${g}" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="${dk}" stop-opacity="0.55"/><stop offset="55%" stop-color="${dk}" stop-opacity="0.28"/><stop offset="100%" stop-color="${dk}" stop-opacity="0"/></radialGradient>
+ <radialGradient id="disc-${g}" cx="42%" cy="40%" r="64%"><stop offset="0%" stop-color="#A07A2E"/><stop offset="58%" stop-color="#6E4F1C"/><stop offset="100%" stop-color="#4A3412"/></radialGradient>
+ <linearGradient id="st-${g}" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#8FAF8F"/><stop offset="100%" stop-color="#5F7E5F"/></linearGradient>
+ <linearGradient id="lf-${g}" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#A6C6A6"/><stop offset="55%" stop-color="#82A282"/><stop offset="100%" stop-color="#5F7E5F"/></linearGradient></defs>`;}
+function stem(g){return `<path d="M48.4 100 C 47.9 86 49.4 72 49 62 L 51 62 C 51.4 72 52 86 51.5 100 Z" fill="url(#st-${g})"/><path d="M49 80 C 37 76 29 79 26 88 C 37 90 47 85 49 79 Z" fill="url(#lf-${g})" opacity="0.95"/><path d="M51 73 C 63 69 71 72 74 81 C 63 83 53 78 51 72 Z" fill="url(#lf-${g})" opacity="0.9"/>`;}
+function rose(c,g){const dp=c,dpr=darken(c,0.13),sh=lighten(c,0.62);const G=(L,w)=>`M0 0 C ${-w} ${-L*0.28} ${-w*0.98} ${-L*0.74} ${-w*0.46} ${-L*0.95} C ${-w*0.18} ${-L*1.04} ${w*0.18} ${-L*1.04} ${w*0.46} ${-L*0.95} C ${w*0.98} ${-L*0.74} ${w} ${-L*0.28} 0 0 Z`;const W="M0 0 C -8 -2 -10.5 -11 -3.5 -15.5 C 1.5 -18.5 9.5 -14 8 -6.5 C 7 -1.8 1.2 -2.4 1.6 -7";let s='<g>';for(let i=0;i<5;i++)s+=`<path d="${G(34,15)}" fill="url(#pO-${g})" stroke="${dpr}" stroke-width="0.5" stroke-opacity="0.22" transform="translate(${cx} ${cy}) rotate(${i*72})"/>`;for(let i=0;i<5;i++)s+=`<path d="${G(27,12.5)}" fill="url(#pM-${g})" stroke="${dp}" stroke-width="0.4" stroke-opacity="0.2" transform="translate(${cx} ${cy}) rotate(${36+i*72})"/>`;for(let i=0;i<5;i++)s+=`<path d="${G(20,10)}" fill="url(#pM-${g})" stroke="${dp}" stroke-width="0.4" stroke-opacity="0.2" transform="translate(${cx} ${cy}) rotate(${i*72})"/>`;s+=`<circle cx="${cx}" cy="${cy}" r="14" fill="url(#occ-${g})"/>`;for(let i=0;i<9;i++){const sc=1.45-i*0.115;s+=`<path d="${W}" transform="translate(${cx} ${cy}) rotate(${i*52}) scale(${sc})" fill="url(#${i%2?'pI':'pM'}-${g})" stroke="${dpr}" stroke-width="0.4" stroke-opacity="0.26"/>`;}s+=`<circle cx="${cx}" cy="${cy}" r="1.8" fill="${dpr}" opacity="0.55"/></g>`;return s;}
+function snowdrop(c,g){return `<g><path d="M50 24 C 50 36 50 44 50 50" stroke="url(#st-${g})" stroke-width="2.2" fill="none" stroke-linecap="round"/><path d="M50 44 C 58 44 62 48 59 52" stroke="#7E9A7E" stroke-width="1.3" fill="none" opacity="0.8"/><g transform="translate(50 54)"><path d="M0 1 C -10 5 -11 22 -4 31 C -1 34 1 34 0.6 30 Z" fill="url(#pM-${g})" stroke="${darken(c,0.1)}" stroke-width="0.4" stroke-opacity="0.4"/><path d="M0 1 C 10 5 11 22 4 31 C 1 34 -1 34 -0.6 30 Z" fill="url(#pM-${g})" stroke="${darken(c,0.1)}" stroke-width="0.4" stroke-opacity="0.4"/><path d="M0 1 C -3 9 -3 26 0 32 C 3 26 3 9 0 1 Z" fill="url(#pI-${g})"/><path d="M0 27 C -3 26 -3 22 0 20 C 3 22 3 26 0 27 Z" fill="#7FA77F" opacity="0.85"/></g></g>`;}
+function bloomSVG(form,cwk,size){const c=CW[cwk]||CW.crimson,g=form+cwk+size,head=form==='snowdrop'?snowdrop(c.petal,g):rose(c.petal,g);return `<svg viewBox="0 0 100 108" width="${size}" height="${Math.round(size*1.08)}" style="overflow:visible">${defs(g,c.petal,c.accent)}<ellipse cx="${cx}" cy="103" rx="20" ry="4.4" fill="#2E261B" opacity="0.2"/>${stem(g)}${head}</svg>`;}
+// lifecycle stages of a rose: bud -> bloom -> hip(seed) -> rest(bare cane)
+function roseBud(size){const g='bud';return `<svg viewBox="0 0 100 108" width="${size}" height="${Math.round(size*1.08)}" style="overflow:visible">${defs(g,'#BC2E27','#2E261B')}<ellipse cx="50" cy="103" rx="14" ry="3.6" fill="#2E261B" opacity="0.18"/><path d="M50 100 C 49 80 50 64 50 52" stroke="url(#st-${g})" stroke-width="2.4" fill="none" stroke-linecap="round"/><path d="M50 70 C 40 68 34 71 32 78 C 41 79 48 75 50 70 Z" fill="url(#lf-${g})" opacity="0.95"/><g transform="translate(50 46)"><path d="M0 8 C -9 6 -12 -6 -7 -16 C -3 -10 -2 0 0 8 Z" fill="url(#st-${g})" opacity="0.92"/><path d="M0 8 C 9 6 12 -6 7 -16 C 3 -10 2 0 0 8 Z" fill="url(#st-${g})" opacity="0.92"/><path d="M0 9 C -7 6 -8 -10 -3 -18 C 0 -22 2 -14 1.4 -6 C 1 0 0.6 5 0 9 Z" fill="url(#pO-${g})" stroke="${darken('#BC2E27',0.13)}" stroke-width="0.4" stroke-opacity="0.2"/><path d="M0 9 C 6 5 6 -10 2 -17 C 4 -8 3 0 0 9 Z" fill="url(#pM-${g})"/><path d="M-1 -16 C -1 -20 -1 -22 -1 -24 M2 -15 C 3 -19 4 -21 5 -23" stroke="#5F7E5F" stroke-width="0.9" fill="none" stroke-linecap="round" opacity="0.7"/></g></svg>`;}
+function roseHip(size){return `<svg viewBox="0 0 100 108" width="${size}" height="${Math.round(size*1.08)}" style="overflow:visible"><defs><radialGradient id="hip" cx="40%" cy="34%" r="70%"><stop offset="0%" stop-color="#E0764A"/><stop offset="55%" stop-color="#C0461F"/><stop offset="100%" stop-color="#8E2E14"/></radialGradient><linearGradient id="hst" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#8FAF8F"/><stop offset="100%" stop-color="#5F7E5F"/></linearGradient></defs><ellipse cx="50" cy="103" rx="15" ry="3.8" fill="#2E261B" opacity="0.18"/><path d="M50 100 C 49 82 50 70 50 58" stroke="url(#hst)" stroke-width="2.4" fill="none" stroke-linecap="round"/><path d="M50 78 C 60 76 66 79 68 86 C 59 87 52 83 50 78 Z" fill="#82A282"/><ellipse cx="50" cy="46" rx="13" ry="15" fill="url(#hip)"/><ellipse cx="46" cy="40" rx="4" ry="5" fill="#E89A6E" opacity="0.5"/><g stroke="#9E7A3A" stroke-width="1.1" fill="none" stroke-linecap="round" opacity="0.85"><path d="M50 32 C 49 27 48 24 46 21"/><path d="M50 32 C 51 27 52 24 54 21"/><path d="M50 32 C 50 28 50 25 50 22"/><path d="M50 32 C 47 29 44 28 41 28"/><path d="M50 32 C 53 29 56 28 59 28"/></g><circle cx="50" cy="33" r="2" fill="#7A4A22"/></svg>`;}
+function roseRest(size){return `<svg viewBox="0 0 100 108" width="${size}" height="${Math.round(size*1.08)}" style="overflow:visible"><defs><linearGradient id="cane" x1="0" y1="1" x2="0" y2="0"><stop offset="0%" stop-color="#6E5A43"/><stop offset="100%" stop-color="#8B7355"/></linearGradient></defs><ellipse cx="50" cy="103" rx="13" ry="3.4" fill="#2E261B" opacity="0.16"/><path d="M50 100 C 48 82 54 66 52 50 C 51 42 54 36 60 32" stroke="url(#cane)" stroke-width="2.6" fill="none" stroke-linecap="round"/><path d="M52 70 L 47 66 M54 58 L 59 55 M51 84 L 46 81 M53 46 L 58 44" stroke="#6E5A43" stroke-width="1.1" stroke-linecap="round" opacity="0.8"/><!-- one tiny new bud on old wood -->
+<g transform="translate(60 31)"><path d="M0 4 C -4 3 -5 -4 -2 -8 C 0 -5 0.6 0 0 4 Z" fill="#9CAE84"/><path d="M0 4 C 4 3 5 -4 2 -8 C 0 -5 -0.6 0 0 4 Z" fill="#8FAF8F"/><path d="M0 4 C -2 1 -2 -6 0 -9 C 2 -6 2 1 0 4 Z" fill="#B6543E"/></g><circle cx="60" cy="22" r="1" fill="#C0461F" opacity="0.6"/></svg>`;}
+function butterfly(size,c,c2){const g='bf'+size+c.slice(1);const W=`<g><path d="M0 -4 C -10 -22 -24 -22 -27 -10 C -29 -2 -16 -1 -1 -3 Z" fill="url(#bw-${g})" stroke="${darken(c,0.22)}" stroke-width="0.5" stroke-opacity="0.5"/><path d="M-1 0 C -16 0 -25 9 -21 18 C -18 24 -8 21 -2 9 Z" fill="url(#bh-${g})" stroke="${darken(c,0.22)}" stroke-width="0.5" stroke-opacity="0.5"/><path d="M-27 -10 C -24 -22 -10 -22 0 -4" fill="none" stroke="${darken(c,0.28)}" stroke-width="1.4" stroke-linecap="round" opacity="0.55"/><circle cx="-16" cy="-11" r="2.6" fill="${c2}" opacity="0.9"/><circle cx="-16" cy="-11" r="1.1" fill="${darken(c,0.3)}"/><circle cx="-12" cy="13" r="1.8" fill="${c2}" opacity="0.8"/></g>`;return `<svg viewBox="0 0 60 52" width="${size}" height="${Math.round(size*0.86)}" style="overflow:visible"><defs><linearGradient id="bw-${g}" x1="1" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="${lighten(c,0.3)}"/><stop offset="60%" stop-color="${c}"/><stop offset="100%" stop-color="${darken(c,0.16)}"/></linearGradient><linearGradient id="bh-${g}" x1="1" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="${c}"/><stop offset="100%" stop-color="${darken(c,0.2)}"/></linearGradient></defs><g transform="translate(30 26)">${W}<g transform="scale(-1 1)">${W}</g><path d="M0 -16 C -1.7 -8 -1.7 10 0 20 C 1.7 10 1.7 -8 0 -16 Z" fill="#2E261B"/><circle cx="0" cy="-16" r="2" fill="#2E261B"/><path d="M0 -16 C -2 -22 -4 -25 -7 -26 M0 -16 C 2 -22 4 -25 7 -26" stroke="#2E261B" stroke-width="0.8" fill="none" stroke-linecap="round"/><circle cx="-7" cy="-26" r="1.1" fill="#2E261B"/><circle cx="7" cy="-26" r="1.1" fill="#2E261B"/></g></svg>`;}
+function ladybird(size){return `<svg viewBox="0 0 32 30" width="${size}" height="${Math.round(size*0.94)}"><defs><radialGradient id="lg" cx="40%" cy="30%" r="75%"><stop offset="0%" stop-color="#E0554E"/><stop offset="70%" stop-color="#BC2E27"/><stop offset="100%" stop-color="#8E2018"/></radialGradient></defs><ellipse cx="16" cy="20" rx="11" ry="9.5" fill="url(#lg)"/><path d="M16 11 C 16 18 16 26 16 29" stroke="#2E261B" stroke-width="1.1" opacity="0.85"/><path d="M16 11 C 11 11 7.5 13 6 16.5 C 8 13.5 12 11.6 16 11.5 Z" fill="#2E261B"/><circle cx="10.5" cy="16.5" r="1.7" fill="#2E261B"/><circle cx="21.5" cy="16.5" r="1.7" fill="#2E261B"/><circle cx="9" cy="23" r="1.5" fill="#2E261B"/><circle cx="23" cy="23" r="1.5" fill="#2E261B"/><ellipse cx="16" cy="8.5" rx="4.4" ry="3.6" fill="#2E261B"/><circle cx="14.5" cy="7.8" r="0.9" fill="#fff" opacity="0.7"/></svg>`;}
+function bird(size){return `<svg viewBox="0 0 60 50" width="${size}" height="${Math.round(size*0.83)}"><defs><linearGradient id="bd" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#8B6F52"/><stop offset="100%" stop-color="#5E4A36"/></linearGradient></defs><ellipse cx="30" cy="30" rx="15" ry="11" fill="url(#bd)"/><circle cx="42" cy="20" r="7" fill="#6E5640"/><ellipse cx="30" cy="34" rx="11" ry="7" fill="#C9622E"/><path d="M44 17 C 49 15 53 16 56 19" stroke="#5E4A36" stroke-width="0" fill="none"/><path d="M48 19 L 57 18 L 48 22 Z" fill="#C99A3A"/><circle cx="45" cy="18" r="1.4" fill="#1A140D"/><circle cx="45.4" cy="17.6" r="0.5" fill="#fff" opacity="0.8"/><path d="M16 28 C 6 24 2 30 6 36 C 12 35 16 32 18 29 Z" fill="#6E5640"/><path d="M44 24 C 40 26 36 27 32 27" stroke="#4A3826" stroke-width="0.6" opacity="0.5" fill="none"/></svg>`;}
+function waxSeal(size){return `<svg viewBox="0 0 60 60" width="${size}" height="${size}"><defs><radialGradient id="wx" cx="40%" cy="34%" r="70%"><stop offset="0%" stop-color="#D9554E"/><stop offset="60%" stop-color="#BC2E27"/><stop offset="100%" stop-color="#7E1C16"/></radialGradient></defs><path d="M30 4 L37 9 L46 8 L48 17 L56 22 L51 30 L56 38 L48 43 L46 52 L37 51 L30 56 L23 51 L14 52 L12 43 L4 38 L9 30 L4 22 L12 17 L14 8 L23 9 Z" fill="url(#wx)" stroke="#6E1813" stroke-width="0.6"/><circle cx="30" cy="30" r="17" fill="none" stroke="#7E1C16" stroke-width="0.8" opacity="0.5"/><g transform="translate(30 30) scale(0.5) translate(-50 -52)" opacity="0.92">${rose('#9E211B','seal')}</g><ellipse cx="22" cy="18" rx="7" ry="4" fill="#fff" opacity="0.16" transform="rotate(-24 22 18)"/></svg>`;}
+// inject
+document.getElementById('cover-stage').innerHTML=bloomSVG('rose','crimson',132);
+document.getElementById('wax-seal').innerHTML=waxSeal(54);
+// lifecycle row
+const lc=document.getElementById('lifecycle');
+lc.innerHTML=[['Bud','becoming',roseBud(96)],['Bloom','full',bloomSVG('rose','crimson',96)],['Seed','the hip',roseHip(96)],['Rest','dormant',roseRest(96)]].map(([n,f,svg])=>`<div class="stagecell"><div style="height:104px;display:flex;align-items:flex-end">${svg}</div><div class="nm">${n}</div><div class="fl">${f}</div></div>`).join('');
+// omen creatures row
+document.getElementById('omen-creatures').innerHTML=[['bird',bird(64)],['butterfly',butterfly(60,'#E08A6A','#BC2E27')],['ladybird',ladybird(40)],['butterfly·blue',butterfly(60,'#9FB6C9','#FFFFFF')]].map(([n,svg])=>`<div class="stagecell" style="width:96px"><div style="height:54px;display:flex;align-items:center">${svg}</div><div class="nm">${n}</div></div>`).join('');
+// demo header bloom: snowdrop + robin
+(function(){const wrap=document.getElementById('demo-bloom');wrap.style.cssText='position:relative;width:64px;height:70px;flex:0 0 auto';wrap.innerHTML=bloomSVG('snowdrop','cream',64)+`<div style="position:absolute;top:-6px;left:30px">${bird(34)}</div>`;})();
+function toggleReveal(hdr){const r=hdr.parentNode.querySelector('.reveal');r.classList.toggle('open');}
+</script>
+</body></html>

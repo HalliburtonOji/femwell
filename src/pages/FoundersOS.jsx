@@ -28,7 +28,7 @@
 //   /sessions/relaxed-loving-brahmagupta/mnt/.claude/skills/FOUNDERS_OS.md
 // ─────────────────────────────────────────────────────────────────────────────
 
-import { useEffect, useMemo, useState, useCallback } from "react";
+import { useEffect, useMemo, useState, useCallback, useRef } from "react";
 import { useAuth } from "@/lib/AuthContext";
 import { base44 } from "@/api/base44Client";
 // In-app readable mirrors of the canonical claude-state plan docs (Phase 1c).
@@ -57,6 +57,12 @@ import NativeWidgetDoc from "@/components/founders/NativeWidgetDoc";
 import ArchitectureDoc from "@/components/founders/ArchitectureDoc";
 import TodayMegaPlanDoc from "@/components/founders/TodayMegaPlanDoc";
 import BottomNavPlanDoc from "@/components/founders/BottomNavPlanDoc";
+// Full brand HTML docs (self-contained — inline CSS + live flora SVGs + the omen
+// script). Imported as raw strings and rendered in an auto-sized srcdoc iframe so
+// their styling AND interactivity are preserved verbatim in-app on Halli's phone.
+import brandBibleHtml from "@/components/founders/brandDocs/brand-bible.html?raw";
+import livingEcosystemHtml from "@/components/founders/brandDocs/living-ecosystem.html?raw";
+import pageBrandAuditHtml from "@/components/founders/brandDocs/page-brand-audit.html?raw";
 // HealthCornerDemo was the multi-layout preview. The canonical health
 // experience now lives at /Health (src/pages/Health.jsx). The Health Corner
 // tab in /Ideas renders <HealthCornerRedirectCard /> instead.
@@ -108,21 +114,23 @@ const HOME = "__home__";
 // status: live | new | candidate | approval | updated | archive | null.
 // group order here = section order on the home screen.
 const CAT = {
-  PREVIEW: "Previews & Demos",
-  SPECS:   "Specs & Plans",
-  BRAND:   "Brand & UX",
-  VISION:  "Vision & Concepts",
-  BUILD:   "Build Status",
-  ARCHIVE: "Archive",
+  PREVIEW:   "Previews & Demos",
+  BRANDDOCS: "Brand identity & plans",
+  SPECS:     "Specs & Plans",
+  BRAND:     "Brand & UX",
+  VISION:    "Vision & Concepts",
+  BUILD:     "Build Status",
+  ARCHIVE:   "Archive",
 };
-const GROUP_ORDER = [CAT.PREVIEW, CAT.SPECS, CAT.BRAND, CAT.VISION, CAT.BUILD, CAT.ARCHIVE];
+const GROUP_ORDER = [CAT.PREVIEW, CAT.BRANDDOCS, CAT.SPECS, CAT.BRAND, CAT.VISION, CAT.BUILD, CAT.ARCHIVE];
 const GROUP_BLURB = {
-  [CAT.PREVIEW]: "Tap through to every live page, redesign preview and UX demo — no typing URLs.",
-  [CAT.SPECS]:   "The plans and audits — what we're building and why.",
-  [CAT.BRAND]:   "The brand system, craft direction and cross-app UX patterns.",
-  [CAT.VISION]:  "Bigger-picture concepts awaiting a build decision.",
-  [CAT.BUILD]:   "The living build map — features, sprints, data flow, decisions, legal.",
-  [CAT.ARCHIVE]: "Superseded or redirected — kept for history.",
+  [CAT.PREVIEW]:   "Tap through to every live page, redesign preview and UX demo — no typing URLs.",
+  [CAT.BRANDDOCS]: "The full brand identity, the living-ecosystem vision, the per-page audit and the nav plan — read in-app, styling and live flora intact.",
+  [CAT.SPECS]:     "The plans and audits — what we're building and why.",
+  [CAT.BRAND]:     "Companion vision, cross-app UX patterns and the PWA/widget plan.",
+  [CAT.VISION]:    "Bigger-picture concepts awaiting a build decision.",
+  [CAT.BUILD]:     "The living build map — features, sprints, data flow, decisions, legal.",
+  [CAT.ARCHIVE]:   "Superseded or redirected — kept for history.",
 };
 
 const CATALOG = [
@@ -213,8 +221,16 @@ const CATALOG = [
   { kind: "route", href: "/BrandCraftSample", group: CAT.PREVIEW, sub: "Brand", status: "approval", accent: "crimson",
     title: "Brand Craft Sample ★ for approval", desc: "The canonical brand-system craft direction: flat vs upgraded realistic bloom, a botanical line-motif, the carved heart in context, and a live on-device perf measurement." },
 
+  // ── Brand identity & plans (full HTML docs rendered in-app) ───────────
+  { kind: "doc", key: "Brand Bible", group: CAT.BRANDDOCS, status: "new", accent: "crimson",
+    title: "The Brand Bible", desc: "The A–Z identity: soul, voice, type, colour, the flora system, cards, page structure and components. Renders in-app with live flora SVGs." },
+  { kind: "doc", key: "Living Ecosystem", group: CAT.BRANDDOCS, status: "new", accent: "gold",
+    title: "Living-Ecosystem Brainstorm (v4)", desc: "Lifecycle-as-meaning, the rotating omen header, the soulful 'a little bit witch' voice and wax-seal craft. Tap the omen header to reveal — interactivity preserved." },
+  { kind: "doc", key: "Page Brand Audit", group: CAT.BRANDDOCS, status: "new", accent: "sage",
+    title: "Per-Page Brand Audit & Fix Plan", desc: "Every page audited, offenders ranked, Planner/Jess detail and the ritual-builder proposal. For approval." },
+
   // ── Specs & Plans (in-page docs) ──────────────────────────────────────
-  { kind: "doc", key: "Bottom-Nav Plan", group: CAT.SPECS, status: "new", accent: "gold",
+  { kind: "doc", key: "Bottom-Nav Plan", group: CAT.BRANDDOCS, status: "new", accent: "gold",
     title: "Bottom-Nav Plan", desc: "Floating cream capsule + shrink-on-scroll, reject horizontal-scroll nav. Research, honest drawbacks and a phased plan. Awaiting your approval." },
   { kind: "doc", key: "Today Mega-Plan", group: CAT.SPECS, accent: "gold",
     title: "Today — Mega-Plan", desc: "The full plan for the Today home surface." },
@@ -254,9 +270,9 @@ const CATALOG = [
     title: "App Health Audit", desc: "Health-surface audit and findings." },
 
   // ── Brand & UX ────────────────────────────────────────────────────────
-  { kind: "doc", key: "Brand Identity", group: CAT.BRAND, status: "updated", accent: "crimson",
-    title: "Brand Identity", desc: "The complete canonical brand master: typography, colour tokens, the carved heart, the botanical system, spacing/cards." },
-  { kind: "doc", key: "Flora & Meaning", group: CAT.BRAND, accent: "sage",
+  { kind: "doc", key: "Brand Identity", group: CAT.BRANDDOCS, status: "updated", accent: "crimson",
+    title: "Brand Identity (in-app mirror)", desc: "The complete canonical brand master: typography, colour tokens, the carved heart, the botanical system, spacing/cards." },
+  { kind: "doc", key: "Flora & Meaning", group: CAT.BRANDDOCS, accent: "sage",
     title: "Flora & Meaning", desc: "The flora backbone, per-user fingerprint and the meaning behind each bloom." },
   { kind: "doc", key: "UX & Design", group: CAT.BRAND, accent: "gold",
     title: "UX & Design — patterns from everywhere", desc: "25 cross-category UX patterns (Oura, Spotify, Notion, Monzo, Wordle…) translated for FemWell." },
@@ -767,6 +783,63 @@ function CardGrid({ items, onOpen }) {
   );
 }
 
+// Renders a full self-contained HTML brand doc (raw string) inside an auto-sized
+// srcdoc iframe. srcdoc inherits the parent origin, so the doc's inline CSS, live
+// flora SVGs and the omen <script> all run — styling + interactivity preserved.
+// We grow the iframe to its content height (re-measuring on load, font-ready,
+// taps and any body resize) so the doc flows as one page with no nested scroll.
+function BrandDocFrame({ html, title }) {
+  const ref = useRef(null);
+  useEffect(() => {
+    const f = ref.current;
+    if (!f) return;
+    let ro;
+    const fit = () => {
+      try {
+        const d = f.contentDocument;
+        if (!d) return;
+        const h = Math.max(
+          d.documentElement?.scrollHeight || 0,
+          d.body?.scrollHeight || 0,
+          d.body?.offsetHeight || 0,
+        );
+        if (h) f.style.height = h + "px";
+      } catch { /* same-origin guard */ }
+    };
+    const onLoad = () => {
+      fit();
+      try {
+        const d = f.contentDocument;
+        if (d?.body && typeof ResizeObserver !== "undefined") {
+          ro = new ResizeObserver(fit);
+          ro.observe(d.body);
+        }
+        d?.fonts?.ready?.then(fit).catch(() => {});
+        d?.addEventListener?.("click", () => setTimeout(fit, 80));
+      } catch { /* ignore */ }
+      [150, 500, 1100, 2200].forEach((t) => setTimeout(fit, t));
+    };
+    f.addEventListener("load", onLoad);
+    // If the iframe is already loaded by the time the effect runs.
+    if (f.contentDocument?.readyState === "complete") onLoad();
+    return () => { f.removeEventListener("load", onLoad); if (ro) ro.disconnect(); };
+  }, [html]);
+  return (
+    <div style={{
+      background: "#ECE7DA", borderRadius: 16, overflow: "hidden",
+      border: `1px solid ${T.border}`, boxShadow: "0 2px 12px rgba(11,8,5,0.10)",
+    }}>
+      <iframe
+        ref={ref}
+        title={title}
+        srcDoc={html}
+        loading="eager"
+        style={{ width: "100%", border: 0, display: "block", minHeight: 520, background: "#ECE7DA" }}
+      />
+    </div>
+  );
+}
+
 function FoundersInner({ user }) {
   const [tab, setTab] = useState(HOME);
   const [q, setQ] = useState("");
@@ -811,6 +884,9 @@ function FoundersInner({ user }) {
       {tab === "Whole-Life"     && <WholeLifeDoc />}
       {tab === "Audio"          && <AudioPlanDoc />}
       {tab === "Bottom-Nav Plan" && <DocSurface><BottomNavPlanDoc /></DocSurface>}
+      {tab === "Brand Bible" && <BrandDocFrame html={brandBibleHtml} title="FemWell — Brand Bible" />}
+      {tab === "Living Ecosystem" && <BrandDocFrame html={livingEcosystemHtml} title="FemWell — Living Ecosystem" />}
+      {tab === "Page Brand Audit" && <BrandDocFrame html={pageBrandAuditHtml} title="FemWell — Per-Page Brand Audit" />}
       {tab === "Ideas"     && <IdeasTab user={user} />}
       {tab === "Strategy"  && <StrategyTab />}
       {tab === "Legal"     && <LegalTab />}
