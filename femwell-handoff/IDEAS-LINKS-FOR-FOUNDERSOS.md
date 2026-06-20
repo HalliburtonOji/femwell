@@ -9,6 +9,7 @@
 | BRAND-BIBLE.html | brand-bible.html | "Brand Bible" | Brand identity & plans |
 | LIVING-ECOSYSTEM-BRAINSTORM.html | living-ecosystem.html | "Living Ecosystem" | Brand identity & plans |
 | INTENTIONS-GOALS-BRAINSTORM.html | intentions-goals.html | "Intentions & Goals" | Specs & Plans |
+| CONNECTION-DAYS-MISSIONS-BRAINSTORM.html | connect-days-missions.html | "Connect, Days & Missions" | Specs & Plans |
 
 ## Notes for the FoundersOS session
 - If I (a brand/feature session) add a new plan doc, I copy it into `brandDocs/` and wire it myself when `FoundersOS.jsx` is clean; if you hold the file, wire from this list.

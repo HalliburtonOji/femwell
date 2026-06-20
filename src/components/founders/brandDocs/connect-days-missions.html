@@ -1,0 +1,424 @@
+<!doctype html>
+<html lang="en-GB"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>FemWell — Connection, Days Off &amp; Tiny Missions</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500;1,600&family=Ephesis&display=swap" rel="stylesheet">
+<style>
+  :root{--paper:#ECE7DA;--paperHi:#F4EFE3;--paperDeep:#D8CFBC;--ink:#0B0805;--inkSoft:#1A140D;--muted:#2E261B;--gold:#A8893F;--crimson:#BC2E27;--blush:#E8B4B8;--sage:#8FAF8F;--plum:#8E6E8E;--serif:'Cormorant Garamond',Georgia,serif;--script:'Ephesis',cursive;--sans:ui-sans-serif,system-ui,-apple-system,'Segoe UI',sans-serif;}
+  *{box-sizing:border-box}
+  body{margin:0;background:radial-gradient(120% 80% at 12% 0%,#F4EFE3 0%,rgba(244,239,227,0) 55%),radial-gradient(120% 90% at 100% 100%,#E4DDCC 0%,rgba(228,221,204,0) 50%),var(--paper);color:var(--ink);font-family:var(--serif);font-size:18px;line-height:1.6;-webkit-font-smoothing:antialiased}
+  .doc{max-width:680px;margin:0 auto;padding:30px 22px 90px}
+  h1.cover{font-family:var(--script);font-size:54px;color:var(--crimson);margin:6px 0 2px;line-height:1.04}
+  h2{font-family:var(--serif);font-style:italic;font-weight:600;font-size:28px;margin:0 0 4px}
+  h3{font-family:var(--serif);font-weight:600;font-size:21px;margin:20px 0 6px}
+  h4{font-family:var(--sans);font-size:12px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--gold);margin:16px 0 4px}
+  .eyebrow{font-family:var(--sans);font-size:12px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--gold);margin-bottom:10px}
+  p{margin:0 0 12px}.lede{font-size:20px;line-height:1.55}
+  small,.cap{font-family:var(--sans);font-size:13px;color:var(--muted);line-height:1.5}
+  b,strong{font-weight:600}
+  .section{background:var(--paperHi);border:1px solid var(--paperDeep);border-left:4px solid var(--gold);border-radius:20px;padding:22px 20px;margin:18px 0;box-shadow:0 4px 20px rgba(58,44,26,.10),0 1px 4px rgba(58,44,26,.06);position:relative;overflow:hidden}
+  .section.crimson{border-left-color:var(--crimson)}.section.sage{border-left-color:var(--sage)}.section.plum{border-left-color:var(--plum)}.section.blush{border-left-color:var(--blush)}
+  .rule{height:1px;background:var(--gold);opacity:.32;margin:18px 0}
+  .center{text-align:center}
+  table{width:100%;border-collapse:collapse;font-size:14px;font-family:var(--sans);margin:8px 0}
+  th,td{text-align:left;padding:7px 8px;border-bottom:1px solid var(--paperDeep);vertical-align:top}
+  th{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--gold)}
+  td b{font-family:var(--serif);font-size:15px}
+  .toc a{display:block;font-family:var(--sans);font-size:15px;color:var(--inkSoft);text-decoration:none;padding:6px 0;border-bottom:1px solid var(--paperDeep)}
+  .toc a span{color:var(--gold);font-weight:700;margin-right:10px}
+  .omenline{font-style:italic;font-size:18px;color:var(--inkSoft);border-left:2px solid var(--gold);padding:2px 0 2px 14px;margin:10px 0}
+  .script{font-family:var(--script);color:var(--crimson)}
+  .flow{display:flex;flex-wrap:wrap;gap:6px;align-items:center;justify-content:center;margin:12px 0;font-family:var(--sans);font-size:13px}
+  .flow .node{background:var(--paper);border:1px solid var(--paperDeep);border-radius:10px;padding:7px 11px;font-weight:600;color:var(--inkSoft)}
+  .flow .ar{color:var(--gold);font-weight:700}
+  .copycard{background:var(--paper);border:1px solid var(--paperDeep);border-radius:12px;padding:12px 14px;margin:8px 0}
+  .copycard .st{font-family:var(--sans);font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--gold);margin-bottom:5px}
+  .copycard p{margin:0 0 6px;font-size:17px;line-height:1.45}.copycard p:last-child{margin:0}
+  .q{background:#EFE6D6;border:1px solid var(--gold);border-radius:14px;padding:14px 16px;margin:10px 0}
+  .q .qn{font-family:var(--serif);font-weight:600;font-size:18px;margin-bottom:4px}
+  .rec{font-family:var(--sans);font-size:13px;color:#3f6b3f;font-weight:600}
+  .foot{font-family:var(--sans);font-size:12px;color:var(--muted);text-align:center;margin-top:30px;line-height:1.6}
+  .pill{display:inline-block;font-family:var(--sans);font-size:12px;font-weight:600;padding:5px 11px;border-radius:999px;background:var(--paper);border:1px solid var(--paperDeep);margin:3px 4px 3px 0}
+  .where{background:var(--paper);border:1px solid var(--paperDeep);border-radius:12px;padding:12px 14px;margin:8px 0}
+  .where .pg{font-family:var(--serif);font-weight:600;font-size:18px;color:var(--crimson)}
+  .where .ro{font-family:var(--sans);font-size:14px;color:var(--inkSoft);margin-top:2px}
+  .tier{background:var(--paper);border:1px solid var(--paperDeep);border-radius:14px;padding:14px 16px;margin:10px 0}
+  .tier .lvl{font-family:var(--sans);font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;margin-bottom:4px}
+  .tier .nm{font-family:var(--serif);font-weight:600;font-size:19px;margin-bottom:3px}
+  .tier.green{border-left:4px solid var(--sage)}.tier.amber{border-left:4px solid var(--gold)}.tier.red{border-left:4px solid var(--crimson)}
+  .tier.green .lvl{color:#3f6b3f}.tier.amber .lvl{color:var(--gold)}.tier.red .lvl{color:var(--crimson)}
+  .flag{background:#FBEEE8;border:1px solid var(--crimson);border-radius:14px;padding:14px 16px;margin:12px 0}
+  .flag .ft{font-family:var(--sans);font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--crimson);margin-bottom:5px}
+  .flag p{margin:0 0 6px;font-size:16px}.flag p:last-child{margin:0}
+  .dial{background:var(--paperHi);border:1px solid var(--paperDeep);border-left:4px solid var(--plum);border-radius:14px;padding:14px 16px;margin:12px 0}
+  .dial .dn{font-family:var(--serif);font-weight:600;font-size:19px;margin-bottom:4px}
+  .dial .opts{font-family:var(--sans);font-size:14px;color:var(--inkSoft);margin:4px 0}
+  .src{font-family:var(--sans);font-size:12px;color:var(--muted)}
+  .src b{color:var(--inkSoft)}
+  ul{margin:4px 0 12px;padding-left:20px}li{margin:3px 0}
+  .phase{background:var(--paper);border:1px solid var(--paperDeep);border-radius:14px;padding:14px 16px;margin:10px 0}
+  .phase .pn{font-family:var(--sans);font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);margin-bottom:4px}
+  .phase .pt{font-family:var(--serif);font-weight:600;font-size:18px;margin-bottom:4px}
+</style></head>
+<body><div class="doc">
+
+<div class="center" style="padding:14px 0 4px">
+  <div class="eyebrow">FemWell · deep product brainstorm + research · for your reaction</div>
+  <h1 class="cover">No Garden<br>Grows Alone</h1>
+  <p class="lede" style="font-style:italic;max-width:480px;margin:8px auto 0">Connecting women · finding her something for her day off · tiny missions that make a day feel whole — all in the living-garden grammar, no new nav tab, nothing risky built without your word.</p>
+  <p class="cap" style="max-width:470px;margin:10px auto 0">Your idea: women feel lonely or swamped by work. Give them (a) gentle ways to <b>connect</b> with other women, (b) <b>days-off activities found FOR them</b>, and (c) <b>tiny missions</b> that fulfil. This is the brainstorm — options, the science, the brand fit, the legal flags, and the dials only you can turn.</p>
+</div>
+
+<div class="section">
+  <div class="eyebrow">The one idea everything hangs on</div>
+  <h2>A garden is tended <i>between</i> gardens.</h2>
+  <p>FemWell already says: <span class="script" style="font-size:24px">your life, in bloom.</span> But a real garden never grows in isolation — bees carry pollen <i>between</i> gardens, a gardener takes a day to wander and gather, and small daily tendings are what actually make things grow. Loneliness and overwhelm are exactly the gaps a garden fills. So the three things you asked for aren't three new features — they're the garden finally doing what a garden is for:</p>
+  <table>
+    <tr><th>Your idea</th><th>…in the garden</th><th>The feeling</th></tr>
+    <tr><td><b>Connect with women</b></td><td><b>the bees</b> — pollination between gardens (Community is already <i>sage + bee</i>)</td><td>"I'm not the only one."</td></tr>
+    <tr><td><b>Activities for days off</b></td><td><b>a day to wander</b> — the garden finds her an outing so she needn't hunt</td><td>"Something lovely, chosen for me."</td></tr>
+    <tr><td><b>Tiny missions</b></td><td><b>seeds &amp; waterings</b> — small acts that grow her garden &amp; earn a pollinator</td><td>"Today counted."</td></tr>
+  </table>
+  <p class="cap">All three ride the v4 living-ecosystem grammar (lifecycle · omens · soulful voice · rich cards · quick-action popups) — so none feel bolted on. And the headline finding from the research below points the same way as the brand: <b>the gentle, async, low-pressure version is both the nicer experience AND the one that avoids the heaviest legal duties.</b> The warm path and the safe path are the same path.</p>
+  <div class="toc" style="margin-top:8px">
+    <a href="#why"><span>1</span>Why this matters (the loneliness data)</a>
+    <a href="#connect"><span>2</span>Connection — the safe ladder (Tier 0 → 2)</a>
+    <a href="#days"><span>3</span>Days off — found FOR her</a>
+    <a href="#missions"><span>4</span>Tiny missions — seeds &amp; waterings</a>
+    <a href="#where"><span>5</span>Where it bakes in (every surface, no new tab)</a>
+    <a href="#safety"><span>6</span>Safety, privacy &amp; the law (your decisions)</a>
+    <a href="#brand"><span>7</span>Brand fit — voice, omens, cards, copy bank</a>
+    <a href="#research"><span>8</span>The research, cited</a>
+    <a href="#dials"><span>9</span>The dials for you</a>
+    <a href="#build"><span>10</span>A phased build (mostly no new function)</a>
+  </div>
+</div>
+
+<!-- 1. WHY -->
+<a id="why"></a>
+<div class="section crimson">
+  <div class="eyebrow">One · Why this matters</div>
+  <h2>The loneliness is real, and it's hers.</h2>
+  <p>This isn't a soft "nice to have." The data says women are the lonelier sex, and the life-stages FemWell already knows are the spikes:</p>
+  <ul>
+    <li><b>~7.67% of UK women</b> are chronically lonely vs <b>6.33% of men</b> — women lead on chronic loneliness (ONS, via Campaign to End Loneliness).</li>
+    <li><b>~27% of UK adults</b> feel lonely at least some of the time (ONS, 2023–24).</li>
+    <li>The <b>transition to motherhood</b> is a documented deep-loneliness event — "alone even when surrounded by others" — driven by shrunken friendships + the gendered mental load. Maternal loneliness links to depression and worse outcomes for the child. It's a real health signal, not a mood.</li>
+  </ul>
+  <p>FemWell holds <b>life-stage + season</b> for every user. That means it can meet the new mum, the perimenopausal woman, the swamped career-builder <i>precisely</i> — something a generic friend app can't. The opportunity is to be <b>the repeated, gentle touchpoint</b>, not a one-shot match.</p>
+  <p class="omenline">Friendship is a <b>time problem, not a matching problem</b>: ~50 hours of shared <i>leisure</i> makes a casual friend, ~90 a friend, 200+ a close one (Hall, 2019). A swipe introduces; only repeated low-stakes moments build. FemWell is already where she comes back daily — that's the unfair advantage.</p>
+</div>
+
+<!-- 2. CONNECTION -->
+<a id="connect"></a>
+<div class="section sage">
+  <div class="eyebrow">Two · Connection between women</div>
+  <h2>Start with the bees, not the matchmaker.</h2>
+  <p>The whole women's-friend-app industry is <i>retreating</i> from 1:1 swipe-matching: Hey! VINA shut down (raised only $1.59m, never scaled), Bumble pulled BFF out of its main app, and even Bumble is pivoting to <b>friend groups + communities</b> over dyad matching. Meanwhile the calm, async winners — Slowly (slow "letters"), Marco Polo, Letterloop (group prompts) — quietly retain. <b>Lesson: prompt → async share → optional response beats match → DM → keep-it-alive.</b></p>
+  <p>FemWell's Community is already perfectly shaped for this — anonymous-first, k-anonymous, no DMs, rooms by life-domain (Lounge · Love · Money · Style · The Lighter Side · Health), Circles, Echo Wall, QOTD, "Together this week", Close the Week. We <b>add gentle connection ON TOP of what exists — we strip nothing.</b> Here's a safety-first ladder, from "ship-today, no new legal surface" to "needs your sign-off":</p>
+
+  <div class="tier green">
+    <div class="lvl">Tier 0 · ambient + async · ship-first, lightest legal duty</div>
+    <div class="nm">"Someone like you" — felt, not contacted</div>
+    <p class="cap" style="margin:2px 0 6px"><b>No DMs. No profiles. No locale. No matching to a person.</b> Connection by <i>resonance</i>, riding existing anonymous surfaces.</p>
+    <ul>
+      <li><b>"Someone like you" warm surfacing</b> — when she posts/answers, show (anonymised, k-anon) that <i>"4 women in your season felt this too this week."</i> Resonance, never a contact. Builds the "I'm not the only one" without any 1:1 channel.</li>
+      <li><b>Season &amp; domain prompt rooms</b> — extend the existing rooms with rotating shared prompts ("What did your day off look like?", "One brave thing this week"). Everyone answers the <i>same</i> prompt async (the Letterloop pattern). Reactions only, kind-only — already how Community works.</li>
+      <li><b>The Garden of Gardens, alive</b> — the meadow of (anonymised) companions <b>already exists</b> in the Garden. Make it the ambient "you're among others" surface: a quiet field of other women's blooms, no names, no contact — pure co-presence.</li>
+      <li><b>"Tell the garden your news"</b> (v4 bee ritual) — a soft way to voice a hope/win that the collective gently echoes back ("the bees carried it — 12 others are tending the same thing").</li>
+    </ul>
+  </div>
+
+  <div class="tier amber">
+    <div class="lvl">Tier 1 · light async 1:1 · moderated · needs a small build + your nod</div>
+    <div class="nm">Sealed letters between strangers (the pen-pal tie-in)</div>
+    <p class="cap" style="margin:2px 0 6px">Builds on the <b>Sealed Letters</b> mechanic you already have. Async, slow, no real-time pressure (the Slowly model that actually retains).</p>
+    <ul>
+      <li>She writes a <b>sealed letter to "a woman like me"</b> — matched only on season/domain, never identity or place. It's delivered (gently delayed, like Slowly), she may reply, or not. No live chat, no profiles, no photos.</li>
+      <li><b>Why it's the safe 1:1:</b> async + moderated + no PII + reveal-gated. It carries <i>some</i> user-to-user duty, but avoids the high-risk vectors (open DMs, profiles, locale).</li>
+      <li><b>Hard requirement before build:</b> a moderation layer (see §6) + reporting/blocking + content scanning. This is the first rung that touches gated territory — flagged for you.</li>
+    </ul>
+  </div>
+
+  <div class="tier red">
+    <div class="lvl">Tier 2 · open matching / DMs / locale meetups · NOT recommended without legal sign-off</div>
+    <div class="nm">The dating-style matcher (we are NOT proposing to build this)</div>
+    <p class="cap" style="margin:2px 0">Profiles, swipe-matching, open 1:1 DMs, location-based meetups. This is where the real legal weight, the catfishing/"men posing as women" risk, and age-assurance burden land (§6). The research says it's <i>also</i> the version that fatigues and churns. <b>Listed for completeness; my recommendation is to not build it.</b></p>
+  </div>
+
+  <p class="rec">Recommendation: ship Tier 0 now (rides existing Community + Garden, no new legal surface), design Tier 1 sealed pen-pal as a fast-follow <i>with</i> moderation, hold Tier 2 unless you decide otherwise with legal advice.</p>
+</div>
+
+<!-- 3. DAYS OFF -->
+<a id="days"></a>
+<div class="section">
+  <div class="eyebrow">Three · Activities for days off</div>
+  <h2>The garden finds her the day.</h2>
+  <p>The burden you named — "finding it for them" — is the whole point. The science is blunt: <b>choice paralyses.</b> The famous jam study found 24 options converted at 3% vs ~30% for 6. So the feature must <b>suggest ONE lovely thing</b> (with a quiet "show me another"), never a catalogue she has to sift.</p>
+
+  <h4>How we pick (the signals)</h4>
+  <table>
+    <tr><th>Signal</th><th>From (already in the app)</th><th>Evidence?</th></tr>
+    <tr><td><b>It's a free day</b></td><td>Planner (light day / Quiet Mode / weekend)</td><td>core trigger</td></tr>
+    <tr><td><b>Solo or social</b></td><td>recent loneliness signals · her choice</td><td>✓ social connection (loneliness data)</td></tr>
+    <tr><td><b>Outdoors / nature</b></td><td>weather (coarse, opt-in)</td><td>✓✓ strong (nature-dose study)</td></tr>
+    <tr><td><b>Something new</b></td><td>rotation · what she's done before</td><td>✓ novelty (awe-walks; variety)</td></tr>
+    <tr><td><b>Her interests</b></td><td>followed_categories · saved items</td><td>✓ relevance</td></tr>
+    <tr><td><b>Energy / phase</b></td><td>cycle phase · capacity</td><td>gentle tint only — see flag</td></tr>
+    <tr><td><b>Locale / budget</b></td><td>Events · Deals (opt-in)</td><td>UX sensible</td></tr>
+  </table>
+  <div class="flag" style="border-color:var(--gold);background:#F6EFDD">
+    <div class="ft" style="color:var(--gold)">Honesty flag (from the research)</div>
+    <p>There is <b>no rigorous evidence</b> that matching an activity to menstrual phase or mood improves wellbeing. Use phase/energy as a <i>gentle tint</i> ("it's a rest week — here's a soft one"), never a clinical claim. This keeps us true to "health is one room, not the house."</p>
+  </div>
+
+  <h4>What's well-evidenced to suggest</h4>
+  <p>The strongest, ship-tomorrow nudges from the data: <b>get outdoors</b> (≥120 min/week in nature has real wellbeing data), <b>do something new</b>, <b>make it social</b> when she's low, and <b>keep it small/easy</b> (doing beats default resting — "behavioural activation"). So the suggestions skew toward gentle, joyful, novel, often outdoor or social — not chores.</p>
+
+  <h4>How it's surfaced (whole-life, joyful — never a task list)</h4>
+  <ul>
+    <li><b>A new "A day for you" lane in Lifestyle</b> — its 7th tab, alongside For You / Read / Listen / Books / Daily Story / Horoscope. One beautiful <b>RecommendationCard</b>: a single curated outing/experience + the <i>why</i> ("because it's a clear day and you've been heads-down").</li>
+    <li><b>A Today nudge the evening before / morning of a free day</b> — "Tomorrow's yours. Want me to find you something?" → opens the one suggestion in a quick-action popup.</li>
+    <li><b>Solo &amp; social options</b> — solo ("a slow wander + a coffee + the chapter you're reading"), social ("invite a friend; or a Community game night / book-club checkpoint"). Social options route to <i>existing</i> Community events, never a stranger meetup.</li>
+    <li><b>Whole-life, not wellness-y</b> — fashion (a charity-shop treasure hunt), creativity (paint badly for an hour), joy (a film + nobody's permission), friendship (the overdue call), rest (do gloriously nothing). Health is one of many beds.</li>
+  </ul>
+  <p class="rec">Recommendation: start content/solo-only (drawn from existing LifestyleItems + a small curated "experiences" set) — zero locale, zero new legal surface — then layer real-world Events/Deals with coarse, opt-in locale later.</p>
+</div>
+
+<!-- 4. MISSIONS -->
+<a id="missions"></a>
+<div class="section plum">
+  <div class="eyebrow">Four · Tiny missions</div>
+  <h2>Small seeds. A garden that notices.</h2>
+  <p>A tiny mission is a small, whole-life, <b>optional</b> quest that makes a day feel fulfilled — and the science backs the exact shape: <b>small progress</b> is the biggest booster of "inner work life" (Amabile), <b>kind acts boost the giver</b> (Lyubomirsky — and bunched + varied beats spread-thin + repeated), and <b>novelty</b> keeps the lift from fading. The model to copy is <b>Finch</b> (the self-care pet that "never punishes you for a missed day"), not <b>Forest</b> (whose tree <i>dies</i> if you slip). Growth, never guilt — which maps perfectly onto our existing Flora system.</p>
+
+  <h4>The mission library (whole-life, rotating)</h4>
+  <table>
+    <tr><th>Domain</th><th>A tiny mission</th><th>Flora reward</th></tr>
+    <tr><td><b>Friendship</b></td><td>"Send one woman a kind message — no agenda."</td><td>a bee visits · honeysuckle</td></tr>
+    <tr><td><b>Novelty</b></td><td>"Try one new thing today, however small."</td><td>a new bud opens</td></tr>
+    <tr><td><b>Nature</b></td><td>"A 20-minute walk — notice one wonder (an awe walk)."</td><td>waters the garden · dragonfly</td></tr>
+    <tr><td><b>Reaching out</b></td><td>"Reply to the message you've been avoiding."</td><td>a vine grows a leaf</td></tr>
+    <tr><td><b>Creativity</b></td><td>"Make something badly, for fun."</td><td>a wild cosmos blooms</td></tr>
+    <tr><td><b>Joy / rest</b></td><td>"Do one thing purely because it's nice."</td><td>a poppy · a resting moth</td></tr>
+    <tr><td><b>Self / courage</b></td><td>"Say the brave sentence."</td><td>a snapdragon (grace under pressure)</td></tr>
+  </table>
+
+  <h4>How they're generated &amp; rotated (no new function)</h4>
+  <p>Exactly like the v4 omen engine: a <b>static front-end library + daily-seed rotation</b>. The day's mission is picked from <b>signals the page already loads</b> — her phase/energy, which life-bed she's been neglecting, the season, what she's done lately — with a graceful fallback so it's never blank. One mission a day, <b>bunched not nagged</b> (the kindness research: 5-in-a-day beats 1-a-day-for-5). She can swap it ("not today / show another") or ignore it entirely.</p>
+
+  <h4>No guilt — by construction</h4>
+  <ul>
+    <li><b>Never a streak that breaks.</b> A done mission grows something; a skipped one is just <i>unplanted soil</i> — never red, never "you broke your run."</li>
+    <li><b>Rest is a mission too.</b> On a low day the mission softens ("today's mission: rest, on purpose").</li>
+    <li><b>Completion = a quick-action popup</b> (§6.7.6): she does it / ticks it in place, and a <b>small bloom grows / a pollinator is earned / the vine adds a leaf</b> — never a cold checkmark.</li>
+    <li><b>Sustained tending → a rare bloom</b> (a milestone, the existing rare-blooms system): e.g. a fortnight of kindness missions earns a rare honeysuckle. <b>Earned, never bought, never random.</b></li>
+    <li><b>"Tell the garden your news"</b> — finishing a meaningful mission lets her voice it; the garden (and, in Tier 0, the gentle collective) echoes it back.</li>
+  </ul>
+  <p class="rec">Recommendation: one optional tiny mission per day on Today + Garden, rewarded by real garden growth + earned pollinators + rare-bloom milestones. Rides HabitLogs / the quick-action popup / existing garden signals — no new entity strictly required.</p>
+</div>
+
+<!-- 5. WHERE -->
+<a id="where"></a>
+<div class="section sage">
+  <div class="eyebrow">Five · No new nav tab</div>
+  <h2>Every surface has a role.</h2>
+  <p>Per the standing rule: <b>no new nav tab</b>, and <b>every</b> surface gets named — not just the obvious three. One shared <b>"Connect &amp; missions"</b> door joins the existing Jump-to switcher on the relevant pages.</p>
+  <div class="where"><div class="pg">Today</div><div class="ro"><b>The daily tiny mission</b> card · the <b>day-off activity nudge</b> the evening before a free day · "someone like you" resonance under her check-in.</div></div>
+  <div class="where"><div class="pg">Community</div><div class="ro"><b>Home of connection (Tier 0).</b> Season/domain prompt rooms · "someone like you" surfacing · sealed-letter pen-pal (Tier 1) lives here · game nights &amp; book clubs are the social-activity destinations.</div></div>
+  <div class="where"><div class="pg">Lifestyle</div><div class="ro"><b>Home of activities.</b> The new "A day for you" lane (solo + social experiences). For You / Read / Listen / Daily Story / Horoscope feed activity ideas (a reading nook, a listening walk).</div></div>
+  <div class="where"><div class="pg">Garden</div><div class="ro"><b>Home of mission rewards.</b> Missions water it, grow vines, earn pollinators; rare-bloom milestones; the Garden of Gardens = ambient co-presence.</div></div>
+  <div class="where"><div class="pg">Planner</div><div class="ro"><b>Detects "days off"</b> (light day / Quiet Mode / weekend) to trigger the activity nudge. A tiny mission can drop in as a gentle, optional item — never a chore in the agenda.</div></div>
+  <div class="where"><div class="pg">Journal</div><div class="ro">A mission or a sealed letter can become a <b>pressed-flower entry</b>. "Tell the garden" voices a hope. Reflection on a day off / a connection moment.</div></div>
+  <div class="where"><div class="pg">Jess</div><div class="ro">The warm narrator: suggests the day's mission, finds the day-off activity conversationally, gently moderates Tier 1 threads (the existing auto-support pattern).</div></div>
+  <div class="where"><div class="pg">Pulse / Trends / Insights</div><div class="ro">No-guilt reflection: "your garden's been busy with friendship this month" · "you took 3 real days off." By domain &amp; season — never a scoreboard.</div></div>
+  <div class="where"><div class="pg">Nutrition</div><div class="ro">A social-activity hook (a cook-together mission, a "share your plate" prompt) · a day-off "treat yourself, properly" idea.</div></div>
+  <div class="where"><div class="pg">Health</div><div class="ro">Stays one room. A gentle nature/movement mission can surface here, framed as care not clinical task. Connection never appears as a "support group for a condition" by default.</div></div>
+  <div class="where"><div class="pg">Programs</div><div class="ro">A programme can set themed missions (a "reconnect" week) and suggest a matching day-off activity at its close.</div></div>
+  <div class="where"><div class="pg">Events &amp; Deals</div><div class="ro">The real-world supply for social/local day-off activities (later phase, opt-in locale). A deal can be a day-off treat.</div></div>
+  <div class="where"><div class="pg">Profile</div><div class="ro">Her connection &amp; mission preferences (solo/social lean, domains she wants more of, opt-out of locale) live here. Privacy controls.</div></div>
+  <div class="where"><div class="pg">Doctor Export</div><div class="ro">Untouched by connection. (If anything, social activity / loneliness is context she may choose to share — opt-in only, never auto-included.)</div></div>
+  <p class="cap"><b>RULE 2 honoured:</b> missions, activities and connection all span career · money · friendship · love · creativity · joy · identity · rest — health is one bed, not the garden.</p>
+</div>
+
+<!-- 6. SAFETY -->
+<a id="safety"></a>
+<div class="section crimson">
+  <div class="eyebrow">Six · Safety, privacy &amp; the law</div>
+  <h2>The part only you can sign off.</h2>
+  <p>Connecting women — especially anything touching strangers, member-created content at scale, or 1:1 messaging — is <b>gated territory you have NOT approved</b>. I am <b>not</b> assuming we build open matchmaking. Here are the real legal facts, the safe-vs-open trade-off, and the specific decisions I need from you.</p>
+
+  <h4>The UK legal landscape (verified)</h4>
+  <ul>
+    <li><b>Online Safety Act 2023 — no size exemption.</b> Any <i>user-to-user</i> service (users see each other's content) is in scope. The illegal-harms risk assessment was due <b>16 Mar 2025</b>; safety measures are <b>in force</b>; Ofcom is actively enforcing. <b>FemWell's existing Community already likely carries some of these duties</b> — worth confirming regardless of new features.</li>
+    <li><b>Duties scale with functionality.</b> The heavy weight attaches to <b>open posting, profiles, and stranger 1:1 DMs</b> (the CSAM / grooming / harassment vectors). Removing those <i>materially</i> shrinks both the risk and the legal duty.</li>
+    <li><b>ICO Children's Code (Age-Appropriate Design).</b> If under-18s are likely to access it: <b>geolocation off by default, data minimisation, no nudging</b> to share more. Stranger-matching + location are exactly what it polices.</li>
+    <li><b>The women's-app specific risk: men posing as women.</b> The industry answer is selfie/ID verification — but that adds friction <i>and</i> pulls in heavier biometric/special-category data duties. A real trade-off.</li>
+  </ul>
+
+  <h4>The safe path is also the warm path</h4>
+  <p>This is the happy finding: the lighter-touch design (<b>prompts not profiles · async shared answers not DMs · no stranger 1:1 messaging · no precise locale · no swipe-matching</b>) is both what women actually prefer (the async winners) <b>and</b> what avoids the highest-risk legal vectors. We don't trade safety for warmth.</p>
+
+  <div class="flag">
+    <div class="ft">Decision 1 — How far down the connection ladder?</div>
+    <p><b>Tier 0</b> (ambient resonance + prompt rooms, no 1:1) — lightest duty, ships on existing Community. <b>Tier 1</b> (moderated async sealed pen-pal) — needs a moderation build + reporting/blocking. <b>Tier 2</b> (open matching/DMs/locale) — needs legal counsel + age assurance; not recommended.</p>
+    <p class="src"><b>My pick:</b> Tier 0 now; Tier 1 next <i>with</i> moderation; not Tier 2.</p>
+  </div>
+  <div class="flag">
+    <div class="ft">Decision 2 — Moderation model (required for any 1:1 or new open content)</div>
+    <p>Human review / AI-assisted (Jess + content scanning, the existing auto-support pattern) / both. Plus: reporting, blocking, a complaints route — all OSA expectations.</p>
+    <p class="src"><b>My pick:</b> AI-assisted first-pass (Jess + scan) + human escalation + one-tap report/block, before any Tier 1 ships.</p>
+  </div>
+  <div class="flag">
+    <div class="ft">Decision 3 — Location, ever?</div>
+    <p>Never (connection by season/domain only) / coarse city-only, opt-in (for day-off <i>activities</i> only, via Events/Deals) / precise (not recommended).</p>
+    <p class="src"><b>My pick:</b> never for connection; coarse + opt-in only for activities; never precise.</p>
+  </div>
+  <div class="flag">
+    <div class="ft">Decision 4 — Age assurance</div>
+    <p>FemWell has an Age Gate. If any connection feature could be accessed by under-18s, the Children's Code applies. Confirm the app is 18+ gated for connection features, or we design to the Children's Code.</p>
+    <p class="src"><b>My pick:</b> gate all connection features to 18+ explicitly; keep ambient/garden features all-ages.</p>
+  </div>
+  <p class="rec">Nothing in Tier 1 or beyond gets built until you turn these dials. Tier 0 (no 1:1, no new content type, no locale) is the safe place to start while you decide.</p>
+</div>
+
+<!-- 7. BRAND -->
+<a id="brand"></a>
+<div class="section">
+  <div class="eyebrow">Seven · Brand fit</div>
+  <h2>Warm, a little witch, never cute-for-cute's-sake.</h2>
+  <p>Everything speaks in the v4 soulful voice (warm · dry-witty · ~5/10 mystic), ties to flora/omen meaning, and uses the card system + quick-action popups — never a bare list or a cold tick.</p>
+
+  <h4>The omen / flora tie-ins</h4>
+  <ul>
+    <li><b>Connection = the bee.</b> "They say if you tell the bees your news, they carry it to the others." A bee visiting your bloom = someone in your season felt the same.</li>
+    <li><b>A day off = a butterfly day.</b> The butterfly (change/return) marks a day that's hers — "the garden's let you off the lead."</li>
+    <li><b>Missions = seeds + pollinators.</b> Each kind grows its meaning-flower (honeysuckle = devoted friendship, snapdragon = courage, cosmos = play). The reward <i>means</i> something.</li>
+  </ul>
+
+  <h4>The card patterns (all from <code>brand/Card.jsx</code>)</h4>
+  <ul>
+    <li><b>RecommendationCard</b> — the day-off activity: one pick + the why + "save / show me another".</li>
+    <li><b>LogActionCard + quick-action popup</b> — the tiny mission: do it / tick it in place → a bloom grows.</li>
+    <li><b>A new warm "Resonance" card</b> — "someone like you" (k-anon, no contact) and the prompt-room answer card.</li>
+    <li><b>LetterCard (deckle + wax seal)</b> — the sealed pen-pal letter (Tier 1), reusing the v4 craft.</li>
+  </ul>
+
+  <h4>Voice — a little copy bank</h4>
+  <div class="copycard"><div class="st">Connection · "someone like you"</div>
+    <p>"Four women in your season left a line like yours this week. You're tending the same weather."</p>
+    <p>"You're not the only garden with this going on. The bees have been busy."</p></div>
+  <div class="copycard"><div class="st">Day off · the nudge</div>
+    <p>"Tomorrow's yours — no agenda. Want me to find you something? I'm thinking a clear-headed walk and a proper coffee."</p>
+    <p>"It's a rest week and a grey one. Permission to do gloriously nothing — or a film and a blanket, if you'd rather."</p></div>
+  <div class="copycard"><div class="st">Tiny mission · set &amp; done</div>
+    <p>"Today's little seed: send one woman a kind message, no reason. They say kindness grows back toward the giver — it's the only crop that does that."</p>
+    <p>"Done. A bee just found your honeysuckle. Lovely work."</p>
+    <p><i>(skipped)</i> "No mission today, then. That's soil resting, not a streak broken. It'll keep."</p></div>
+</div>
+
+<!-- 8. RESEARCH -->
+<a id="research"></a>
+<div class="section plum">
+  <div class="eyebrow">Eight · The research, cited</div>
+  <h2>What the evidence says.</h2>
+  <p class="cap">Every claim verified to a current source on 20/06/2026 (full file: <code>workspace/CONNECTION_ACTIVITIES_MISSIONS_RESEARCH_2026-06-20.md</code>). The honest gaps are flagged, not hidden.</p>
+
+  <h4>Connection</h4>
+  <p class="src"><b>Async beats matching.</b> Hey! VINA shut down (raised only $1.59m); Bumble pulled BFF from its main app and is pivoting to friend-groups; Slowly (slow async letters) won awards in 30+ regions. <i>(gofrendly.com; techcrunch.com; en.wikipedia.org/wiki/Slowly_(app))</i></p>
+  <p class="src"><b>Friendship = time, not matching.</b> Hall 2019: ~50/90/200+ leisure hours; only fun time counts. <i>(journals.sagepub.com/doi/10.1177/0265407518761225)</i></p>
+  <p class="src"><b>Women are lonelier.</b> ~7.67% of UK women chronically lonely vs 6.33% men; motherhood a documented spike. <i>(campaigntoendloneliness.org; psychreg.org; pmc.ncbi.nlm.nih.gov/articles/PMC8580382)</i></p>
+  <p class="src"><b>Match on values/life-stage, not demographics.</b> Homophily (McPherson 2001). <i>(annualreviews.org/.../annurev.soc.27.1.415)</i></p>
+  <p class="src"><b>Peanut</b> proves the mum segment (5m+ women) but draws "friend-swipe = waste of time" critique. <i>(apps.apple.com; erica-velander.medium.com)</i></p>
+
+  <h4>Days off / activities</h4>
+  <p class="src"><b>Choice paralyses.</b> Iyengar &amp; Lepper jam study: 24 jams → 3% bought vs 6 jams → ~30%. Suggest one, not a list. <i>(coglode.com/research/choice-paradox)</i> — effect has a replication debate, so a strong default not a law. <i>(atticusli.com)</i></p>
+  <p class="src"><b>Nature dose.</b> ≥120 min/week in nature → significantly better wellbeing; nothing below 120; White et al 2019, ~20,000 people. <i>(nature.com/articles/s41598-019-44097-3)</i></p>
+  <p class="src"><b>Awe walks.</b> Weekly 15-min wonder-walks → more positive emotion over 8 weeks (UCSF 2020). <i>(ucsf.edu/news/2020/09/418551)</i></p>
+  <p class="src"><b>Doing &gt; default resting.</b> Behavioural activation: scheduling gentle activity breaks the low-mood withdrawal cycle. <i>(bakercenter.org/behavioral-activation-2)</i></p>
+  <p class="src"><b>Phase/mood-matched activity: NOT evidenced.</b> Treat as gentle tint, never a clinical claim. <i>(flagged in the gaps log)</i></p>
+
+  <h4>Tiny missions</h4>
+  <p class="src"><b>Small wins.</b> Amabile's Progress Principle (12,000 diary entries): small progress is the top booster of inner work life. <i>(progressprinciple.com)</i></p>
+  <p class="src"><b>Kindness boosts the giver — bunched + varied.</b> Lyubomirsky: 5 kind acts in one day raised happiness; spread thin did not; variety beat repetition. <i>(sonjalyubomirsky.com; ggia.berkeley.edu)</i></p>
+  <p class="src"><b>Streak-guilt backfires.</b> SDT crowding-out; Duolingo guilt harms wellbeing; Streak Freeze (forgiveness) cut churn ~21%. <i>(arxiv.org/pdf/2203.16175; dev.to)</i></p>
+  <p class="src"><b>Model Finch, not Forest.</b> Finch "never punishes you for a missed day"; Forest's tree <i>dies</i> (loss-aversion). Finch maps onto our Flora system. <i>(selfpause.com/resources/finch; makeheadway.com)</i></p>
+
+  <h4>Safety / law</h4>
+  <p class="src"><b>OSA 2023: no size exemption</b>; duties scale with functionality; risk assessment due 16/03/2025, measures in force. <i>(ofcom.org.uk illegal-harms statement)</i></p>
+  <p class="src"><b>ICO Children's Code:</b> geolocation off by default, data minimisation, no nudging. <i>(en.wikipedia.org/wiki/Children's_Code; ico.gov.uk)</i></p>
+  <p class="src"><b>Lighter-touch = lighter duty:</b> no profiles / no stranger DMs / no locale shrinks the risk surface. <i>(reasoned from ofcom.org.uk scope)</i></p>
+</div>
+
+<!-- 9. DIALS -->
+<a id="dials"></a>
+<div class="section crimson">
+  <div class="eyebrow">Nine · Your call</div>
+  <h2>The dials only you can turn.</h2>
+  <p>Turn these and I'll spec the build. My recommendation is in green under each.</p>
+  <div class="dial"><div class="dn">1 · Connection depth</div>
+    <div class="opts">Tier 0 (ambient + prompt rooms, no 1:1) · + Tier 1 (moderated sealed pen-pal) · + Tier 2 (open matching/DMs — needs legal)</div>
+    <div class="rec">Pick: Tier 0 now, Tier 1 next with moderation, not Tier 2.</div></div>
+  <div class="dial"><div class="dn">2 · Location</div>
+    <div class="opts">Never · coarse city-only opt-in (activities only) · precise</div>
+    <div class="rec">Pick: never for connection; coarse opt-in for activities only.</div></div>
+  <div class="dial"><div class="dn">3 · Activities scope</div>
+    <div class="opts">Content/solo only (from existing library) · + real-world local (Events/Deals) · + social/group</div>
+    <div class="rec">Pick: start content+solo, layer Events/social next.</div></div>
+  <div class="dial"><div class="dn">4 · Tiny-mission intensity</div>
+    <div class="opts">One optional/day · a small set/day · off by default (opt-in)</div>
+    <div class="rec">Pick: one optional per day, easily swapped/skipped.</div></div>
+  <div class="dial"><div class="dn">5 · Mission reward depth</div>
+    <div class="opts">Garden growth only · + earned pollinators · + rare-bloom milestones</div>
+    <div class="rec">Pick: all three — growth + pollinators + rare blooms, all earned.</div></div>
+  <div class="dial"><div class="dn">6 · Moderation model (gates Tier 1)</div>
+    <div class="opts">AI-assisted (Jess + scan) · human · both</div>
+    <div class="rec">Pick: AI first-pass + human escalation + report/block.</div></div>
+  <div class="dial"><div class="dn">7 · Age gate for connection</div>
+    <div class="opts">18+ only · design to Children's Code (allow under-18)</div>
+    <div class="rec">Pick: 18+ for connection; ambient/garden all-ages.</div></div>
+</div>
+
+<!-- 10. BUILD -->
+<a id="build"></a>
+<div class="section sage">
+  <div class="eyebrow">Ten · How it's built</div>
+  <h2>Phased — and mostly no new function.</h2>
+  <p>The 50-function cap is respected: missions + activities ride <b>static rotation libraries</b> (like <code>floraOmen.js</code>) + <b>existing dispatchers/entities</b> (HabitLogs, PlannerItems, NurtureCompanion signals, LifestyleItems, Community entities). Only Tier 1 sealed pen-pal needs a new entity + a moderation path.</p>
+
+  <div class="phase"><div class="pn">Phase 0 · no new legal surface · ride existing systems</div>
+    <div class="pt">Missions + solo activities + Tier 0 connection</div>
+    <ul>
+      <li><b>Tiny missions</b> on Today + Garden — static library + daily seed + quick-action popup; rewards via existing garden signals. <b>No new function.</b></li>
+      <li><b>"A day for you"</b> lane in Lifestyle (content/solo, from existing LifestyleItems) + Today evening-before nudge. <b>No new function.</b></li>
+      <li><b>Tier 0 connection</b> — "someone like you" k-anon resonance + season/domain prompt rooms + living Garden of Gardens, all on existing Community/Garden entities.</li>
+    </ul>
+  </div>
+  <div class="phase"><div class="pn">Phase 1 · needs your dials + a small build</div>
+    <div class="pt">Pollinators + milestones + Events activities</div>
+    <ul>
+      <li>Mission <b>earned pollinators + rare-bloom milestones</b> (extends existing rare-blooms).</li>
+      <li>Day-off activities pull <b>Events/Deals</b> with coarse, opt-in locale.</li>
+      <li>Pulse "how your garden's growing" no-guilt reflection.</li>
+    </ul>
+  </div>
+  <div class="phase" style="border-left:4px solid var(--crimson)"><div class="pn" style="color:var(--crimson)">Phase 2 · ONLY with your safety sign-off</div>
+    <div class="pt">Tier 1 sealed pen-pal between women</div>
+    <ul>
+      <li>New entity (sealed cross-user letter) + <b>moderation layer + report/block/complaints</b> + 18+ gate.</li>
+      <li>Async, slow, no real-time, no profiles, no locale — the Slowly model.</li>
+      <li><b>Not started until Decisions 1, 2, 4 (§6) are made.</b></li>
+    </ul>
+  </div>
+  <p class="cap"><b>Process:</b> on your dials, Mr Lead Manager scopes each phase as an MP, Ms Atelier crafts, Ms Verify checks live before ship — per the standing roster rules.</p>
+</div>
+
+<div class="center" style="margin-top:22px">
+  <div class="rule"></div>
+  <p class="script" style="font-size:30px;margin:6px 0">No garden grows alone.</p>
+  <p class="cap" style="max-width:440px;margin:6px auto 0">Connection by resonance, days found for her, tiny seeds that grow — all warm, all optional, all hers. Turn the dials in §9 and I'll build it, gently, in the order above.</p>
+  <p class="foot">FemWell · brainstorm + cited research · 20 June 2026 · for Halli's reaction<br>Reachable in-app via the IDEAS pill → Specs &amp; Plans → "Connect, Days &amp; Missions". Nothing in gated territory built without your word.</p>
+</div>
+
+</div></body></html>
