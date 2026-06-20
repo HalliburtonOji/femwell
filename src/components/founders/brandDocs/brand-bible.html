@@ -52,6 +52,18 @@
   .divider .ln{flex:1;height:2px;background:#C98A2E;opacity:.5}
   .divider .lb{font-family:var(--sans);font-size:13px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:#8E5B14}
   .foot{font-family:var(--sans);font-size:12px;color:var(--muted);text-align:center;margin-top:30px;line-height:1.6}
+  .clipdemo{position:relative;height:200px;margin:14px 0 8px}
+  .clip{position:absolute;border:1px solid var(--paperDeep);border-radius:16px;background:var(--paper);box-shadow:0 6px 18px rgba(58,44,26,.12)}
+  .clip.back{left:30%;top:14px;width:64%;height:168px;background:#E7E0D0;transform:rotate(2deg)}
+  .clip.front{left:4%;top:6px;width:64%;height:182px;background:linear-gradient(180deg,#F6F1E5,#EFE7D4);border-left:4px solid var(--gold)}
+  .cliptop{display:flex;align-items:center;gap:8px;padding:12px 14px 6px}
+  .clip-clip{width:34px;height:9px;border-radius:4px;background:var(--gold);box-shadow:inset 0 -2px 0 rgba(0,0,0,.15)}
+  .clip-ttl{font-family:var(--serif);font-style:italic;font-weight:600;font-size:18px;color:var(--ink)}
+  .clipgrid{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:6px 14px 14px}
+  .clipgrid span{background:var(--paperHi);border:1px solid var(--paperDeep);border-radius:10px;padding:14px 8px;text-align:center;font-family:var(--sans);font-size:13px;font-weight:600;color:var(--inkSoft)}
+  .clip-arrow{position:absolute;right:2%;top:84px;font-size:32px;color:var(--gold);font-weight:700}
+  .dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--paperDeep);margin:0 3px}
+  .dot.on{background:var(--crimson)}
 </style></head>
 <body><div class="doc">
 
@@ -106,11 +118,14 @@
     <tr><td><b>Soul, not saccharine</b></td><td>if a line would fit unedited on a supermarket card, cut it.</td></tr>
     <tr><td><b>Never punish a gap</b></td><td>a hard stretch is weather, not a failure. Gentle re-entry, always.</td></tr>
   </table>
-  <div class="copycard"><div class="st">A few in-voice lines (agreed register)</div>
+  <h4>The almanac flavour — soulful, a touch of wonder <span class="badge ag">Agreed</span></h4>
+  <p>The voice carries a gentle <b>almanac / gardener's-lore</b> warmth — a little wonder, always earthed by a domestic wink (the <b>kettle rule</b>). Framed as folklore (“they say…”), never a promise; it points at meaning, never hollow-cute.</p>
+  <div class="copycard"><div class="st">In-voice lines (the agreed register)</div>
     <p>“Quiet morning. The garden's resting and, honestly, so should you. Today's a tea-and-low-lights kind of day.”</p>
-    <p>“Nothing here yet — and that's allowed. Plant the first line whenever you like; the garden's patient.”</p>
+    <p>“There's a bird on your plant this morning. They say that means good news on its way — keep your phone close. (Or it's just a bird. But still.)”</p>
+    <p>“The stars are quietly showing off tonight. Whatever you've been turning over — sleep on it, it'll look smaller by morning.”</p>
     <p>“There you are. No ledger here, no streak to mourn — just, welcome back. I left the kettle on.”</p></div>
-  <p class="cap">You also liked some <b>omen-flavoured</b> lines (“a bird's on your plant — good news might be coming,” “the stars are singing…”). Those are lovely and point at the <i>soul</i> you want — but a whole systematic omen/almanac voice (the heavier “a little mystic” register) is written up in <a href="#proposed" style="color:var(--gold)">Proposed</a> for your explicit yes, not assumed here.</p>
+  <p class="cap">Note: the warm-funny-soulful voice <i>including</i> this almanac flavour is <b>locked</b>. The systematic <b>omen feature</b> (rotating tappable section-headers that compute an omen from her data) is a separate build, still in <a href="#proposed" style="color:var(--gold)">Proposed</a> — the voice is agreed; the machinery isn't yet.</p>
 </div>
 
 <a id="type"></a>
@@ -190,6 +205,26 @@
   <h2>The fittings.</h2>
   <p><b>The carved crimson heart</b> is the brand mark — always #BC2E27, exactly one per surface. <b>Botanical motifs</b> are hairline, stroke-only line-art, one per fold, never behind text. <b>Buttons/chips/sheets</b> are accent-driven, radius-999 chips, paperHi bottom-sheets over a warm scrim (with nav clearance). <b>One unified floating glass-capsule bottom nav</b> at every viewport; Jess is a crimson bloom in the row. Icons: Lucide / inline SVG only — never emoji.</p>
   <p><b>Motion = breath, not bounce.</b> Transform/opacity only (GPU); micro 120ms · standard 200ms · sheets 300ms; no bounce anywhere; high-frequency taps stay ≤120ms or un-animated; <code>prefers-reduced-motion</code> gated on every animated node.</p>
+
+  <div class="rule"></div>
+  <h3>The Clipboard Stack Slider <span class="badge ag">Agreed</span> <span class="badge pr">demo to build</span></h3>
+  <p>A <b>“clipboard”</b> is a big framed card that <b>holds a stack/grid of smaller cards</b> (think the Profile “Your areas” tiles — Garden · People · Saved · Privacy). You <b>slide it sideways</b> and it reveals <b>another whole clipboard</b> holding a different stack — like flipping between two big boards. It groups several peer grids into one calm, swipeable surface instead of an endless scroll.</p>
+  <div class="clipdemo">
+    <div class="clip back"></div>
+    <div class="clip front">
+      <div class="cliptop"><span class="clip-clip"></span><span class="clip-ttl">Your areas</span></div>
+      <div class="clipgrid"><span>Garden</span><span>People</span><span>Saved</span><span>Privacy</span></div>
+    </div>
+    <div class="clip-arrow">›</div>
+  </div>
+  <div class="center" style="margin:-6px 0 8px"><span class="dot on"></span><span class="dot"></span><span class="dot"></span></div>
+  <table>
+    <tr><th>Part</th><th>What it is</th></tr>
+    <tr><td><b>The clipboard</b></td><td>a large <code>Card.jsx</code>-framed surface (paperHi, gold hairline, corner sprigs, a Cormorant title + a little gold “clip” at the top). Never empty.</td></tr>
+    <tr><td><b>The stack</b></td><td>a 2-col (or 2×2) grid of typed mini-tiles inside — each an icon + label + sub that taps through (deep-link or the §6 quick-action popup).</td></tr>
+    <tr><td><b>The slider</b></td><td>a horizontal pager of clipboards with snap, an <b>edge-peek</b> of the next board to invite the swipe, and page dots.</td></tr>
+  </table>
+  <p><small><b>When to use:</b> a page with several <i>peer</i> grids/areas/“rooms” (Profile areas, “your spaces”, category boards) — present them as swipeable clipboards, not one long page or a cramped single grid. <b>Motion:</b> horizontal <code>translateX</code> + scroll-snap, 240–300ms ease-out, a slight lift on the active board, the top “clip” can stay fixed while the board slides; <b>reduced-motion → instant</b>, no slide. <b>Build:</b> a snap-scroll pager over <code>Card.jsx</code> tiles — rides existing components, <b>no new function</b>. Ships as a demo (<code>/ClipboardSliderDemo</code>) for approval before going live.</small></p>
 </div>
 
 <a id="check"></a>
@@ -214,19 +249,16 @@
   <div class="eyebrow" style="color:#8E5B14">The proposed layer <span class="badge pr">Not yet canon</span></div>
   <p>These came out of the deep brainstorms. They're <b>not baked into the canon</b> — each is here for your explicit yes. Say the word on any one and it moves up into the agreed sections above.</p>
 
-  <h3>P1 · The omen system <span class="badge pr">Proposed</span></h3>
-  <p>Creatures and plants that carry a gentle, hopeful <b>omen</b> tied to her day — your “a bird's on your plant” idea, made a system. A rotating, signal-keyed flower/bouquet <b>heads each section</b> and is <b>tappable → a little meaning reveal</b> (the flower's meaning + a “they say…” line + why it's here for her today). Safety rails: ration it (one a day, not every screen), never resurface a hard memory unprompted, hope-only readings.</p>
-  <div class="copycard"><div class="st">Example omen line</div>
+  <h3>P1 · The omen <b>feature</b> (the machinery) <span class="badge pr">Proposed</span></h3>
+  <p>The omen <i>voice</i> is now agreed — this is the <b>feature</b> that automates it: a rotating, signal-keyed flower/bouquet that <b>heads each section</b> and is <b>tappable → a little meaning reveal</b> (the flower's meaning + a “they say…” line + why it's here for her today), computed from her data. Safety rails: ration it (one a day, not every screen), never resurface a hard memory unprompted, hope-only readings. (Rides a static front-end engine + existing dispatchers — no new function.)</p>
+  <div class="copycard"><div class="st">Example (what the feature would surface)</div>
     <p>“There's a robin on your snowdrop this morning. They say a little bird means news on its way — and after the week you've had, the good kind's overdue. Keep your phone close.”</p></div>
   <div class="grid" id="prop-omen" style="margin:6px 0"></div>
 
-  <h3>P2 · The “a little mystic” voice intensity <span class="badge pr">Proposed</span></h3>
-  <p>A heavier, almanac/folklore register on top of the agreed warm-funny voice — the “the stars are singing…”, “they say…”, gardener's-lore tone. You questioned the “a little bit witch” framing, fairly — so it sits here, dialled to taste, until you choose how mystic (my suggestion: gentle, always earthed by a domestic wink — “…wash something off today: a worry, a grudge, the kettle”).</p>
-
-  <h3>P3 · Craft that carries meaning <span class="badge pr">Proposed</span></h3>
+  <h3>P2 · Craft that carries meaning <span class="badge pr">Proposed</span></h3>
   <p>Health “letters” sealed with a <b>wax rose</b>; a monthly “letter from your body”; <b>vines that grow</b> with progress instead of a bar; saved things <b>pressed like flowers</b> in a book (“on this day last year…”). Format as feeling.</p>
 
-  <h3>P4 · The brand archetype <span class="badge pr">Proposed</span></h3>
+  <h3>P3 · The brand archetype <span class="badge pr">Proposed</span></h3>
   <p>A formal personality anchor — <b>Caregiver core, tinted Sage, a touch of the Innocent's joy</b> (“a warm friend who knows things and keeps it joyful”). Useful as an internal north star for tone decisions; not user-facing. Yours to adopt or leave.</p>
 </div>
 
