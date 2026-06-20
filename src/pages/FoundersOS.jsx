@@ -231,7 +231,7 @@ const CATALOG = [
   { kind: "doc", key: "Living Ecosystem", group: CAT.BRANDDOCS, status: "new", accent: "gold",
     title: "Living-Ecosystem Brainstorm (v4)", desc: "Lifecycle-as-meaning, the rotating omen header, the soulful 'a little bit witch' voice and wax-seal craft. Tap the omen header to reveal — interactivity preserved." },
   { kind: "doc", key: "Page Brand Audit", group: CAT.BRANDDOCS, status: "new", accent: "sage",
-    title: "Per-Page Brand Audit & Fix Plan", desc: "Every page audited, offenders ranked, Planner/Jess detail and the ritual-builder proposal. For approval." },
+    title: "Per-Page Brand Audit & Fix Plan (v4)", desc: "UPDATED to BRAND_IDENTITY v4: every page audited vs the full bar (60+ flora library · §6.7.6 quick-action popup · §10 living ecosystem — lifecycle flora · rotating omen headers · soulful voice) + the in-flight features. Foundation offenders ranked + a per-page v4-uplift matrix; Planner/Jess detail; Ritual Builder now BUILT (demo). For approval." },
 
   // ── Specs & Plans (in-page docs) ──────────────────────────────────────
   { kind: "doc", key: "Intentions & Goals", group: CAT.SPECS, status: "new", accent: "crimson",
