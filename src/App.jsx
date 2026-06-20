@@ -11,7 +11,7 @@ import { base44 } from '@/api/base44Client';
 import { flushPending } from '@/utils/pendingQueue';
 import { scheduleNotifications } from '@/utils/notifications';
 // next-themes removed — caused duplicate React instance (invalid hook call)
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, MotionConfig } from 'framer-motion';
 import PageNotFound from './lib/PageNotFound';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
@@ -153,6 +153,21 @@ const AuthenticatedApp = () => {
     }
   }
 
+  // Persistent-shell routing — the ONE <Layout> (nav/sidebar/footer) now lives
+  // ABOVE the page transition, so it never unmounts between routes. This (a)
+  // keeps the floating nav mounted so its liquid active-pill can MIGRATE
+  // between items, and (b) kills the per-route double-Layout churn that made
+  // navigation feel slow/abrupt. Only the PAGE inside the keyed motion.div
+  // remounts. `currentPageName` is derived from the path for the shell.
+  const PAGE_ALIASES = { CommunityMP8: "Community", terms: "Terms", privacy: "Privacy", SkinHairLegacy: "SkinHair" };
+  const seg = location.pathname === "/" ? mainPageKey : location.pathname.replace(/^\//, "").split("/")[0];
+  const currentPageName = PAGE_ALIASES[seg] || seg;
+
+  // Bare routes render with NO app shell (public partner view / admin tools).
+  if (location.pathname === "/PartnerView") return <PartnerView />;
+  if (location.pathname === "/admin/migrations") return <AdminMigrations />;
+  if (location.pathname === "/admin/jess-conversations") return <AdminJessConversations />;
+
   // Render the main app
   return (
     <>
@@ -173,68 +188,59 @@ const AuthenticatedApp = () => {
           />
         </JessErrorBoundary>
       )}
-    <AnimatePresence mode="popLayout" initial={false}>
-      <motion.div
-        key={location.pathname}
-        initial={{ x: 12, opacity: 0 }}
-        animate={{ x: 0, opacity: 1 }}
-        exit={{ x: -12, opacity: 0 }}
-        transition={{ duration: 0.18, ease: "easeOut" }}
-        style={{ minHeight: "100vh" }}
-      >
-        <Routes location={location}>
-          <Route path="/" element={
-            <LayoutWrapper currentPageName={mainPageKey}>
-              <MainPage />
-            </LayoutWrapper>
-          } />
-          {Object.entries(Pages).map(([path, Page]) => (
-            <Route
-              key={path}
-              path={`/${path}`}
-              element={
-                <LayoutWrapper currentPageName={path}>
-                  <Page />
-                </LayoutWrapper>
-              }
-            />
-          ))}
-          <Route path="/Track" element={<Navigate to="/Today" replace />} />
-          <Route path="/Saved" element={<LayoutWrapper currentPageName="Saved"><Saved /></LayoutWrapper>} />
-          <Route path="/Deals" element={<LayoutWrapper currentPageName="Deals"><Deals /></LayoutWrapper>} />
-          <Route path="/Events" element={<LayoutWrapper currentPageName="Events"><Events /></LayoutWrapper>} />
-          <Route path="/WeeklyInsights" element={<LayoutWrapper currentPageName="WeeklyInsights"><WeeklyInsights /></LayoutWrapper>} />
-          <Route path="/LifestyleDetail" element={<LayoutWrapper currentPageName="LifestyleDetail"><LifestyleDetail /></LayoutWrapper>} />
-          <Route path="/Health" element={<LayoutWrapper currentPageName="Health"><Health /></LayoutWrapper>} />
-          <Route path="/health" element={<Navigate to="/Health" replace />} />
-          <Route path="/SkinHair" element={<Navigate to="/Health" replace />} />
-          <Route path="/SkinHairLegacy" element={<LayoutWrapper currentPageName="SkinHair"><SkinHair /></LayoutWrapper>} />
-          <Route path="/LifeStageCare" element={<Navigate to="/Health" replace />} />
-          <Route path="/HealthDashboard" element={<Navigate to="/Health" replace />} />
-          <Route path="/CareBridge" element={<Navigate to="/DoctorExport" replace />} />
-          <Route path="/Care-Bridge" element={<Navigate to="/DoctorExport" replace />} />
-          <Route path="/admin/migrations" element={<AdminMigrations />} />
-          <Route path="/admin/jess-conversations" element={<AdminJessConversations />} />
-          <Route path="/DoctorExport" element={<LayoutWrapper currentPageName="DoctorExport"><DoctorExport /></LayoutWrapper>} />
-          <Route path="/PartnerSettings" element={<LayoutWrapper currentPageName="PartnerSettings"><PartnerSettings /></LayoutWrapper>} />
-          <Route path="/PartnerView" element={<PartnerView />} />
-          {/* M1 route correction: /Community now serves the editorial hybrid (Community.jsx).
-              MP8 (the retired likes-forum) kept at /CommunityMP8 only for reference. */}
-          <Route path="/Community" element={<LayoutWrapper currentPageName="Community"><Community /></LayoutWrapper>} />
-          <Route path="/CommunityMP8" element={<LayoutWrapper currentPageName="Community"><CommunityMP8 /></LayoutWrapper>} />
-          <Route path="/Settings" element={<LayoutWrapper currentPageName="Settings"><Settings /></LayoutWrapper>} />
-          <Route path="/terms" element={<LayoutWrapper currentPageName="Terms"><Terms /></LayoutWrapper>} />
-          <Route path="/privacy" element={<LayoutWrapper currentPageName="Privacy"><Privacy /></LayoutWrapper>} />
-          <Route path="/Upgrade" element={<LayoutWrapper currentPageName="Upgrade"><Upgrade /></LayoutWrapper>} />
-          <Route path="/Planner" element={<LayoutWrapper currentPageName="Planner"><Planner /></LayoutWrapper>} />
-          {/* V3 sprint Task 4 — Search across journal/symptoms/meals/tasks. */}
-          <Route path="/Search" element={<LayoutWrapper currentPageName="Search"><Search /></LayoutWrapper>} />
-          <Route path="/SealedLetters" element={<LayoutWrapper currentPageName="SealedLetters"><SealedLetters /></LayoutWrapper>} />
-          <Route path="/BookReader" element={<LayoutWrapper currentPageName="BookReader"><BookReader /></LayoutWrapper>} />
-          <Route path="*" element={<PageNotFound />} />
-        </Routes>
-      </motion.div>
-    </AnimatePresence>
+    {/* ONE persistent shell (nav/sidebar/footer) wraps the animated page swap.
+        The page cross-fades; the nav stays put + its active pill migrates. */}
+    <LayoutWrapper currentPageName={currentPageName}>
+      {/* reducedMotion="user" → under prefers-reduced-motion framer drops the
+          y-slide and the swap becomes a plain opacity cross-fade. */}
+      <MotionConfig reducedMotion="user">
+      <AnimatePresence mode="wait" initial={false}>
+        <motion.div
+          key={location.pathname}
+          initial={{ opacity: 0, y: 6 }}
+          animate={{ opacity: 1, y: 0, transition: { duration: 0.22, ease: [0.4, 0, 0.2, 1] } }}
+          exit={{ opacity: 0, y: -4, transition: { duration: 0.12, ease: "easeIn" } }}
+        >
+          <Routes location={location}>
+            <Route path="/" element={<MainPage />} />
+            {Object.entries(Pages).map(([path, Page]) => (
+              <Route key={path} path={`/${path}`} element={<Page />} />
+            ))}
+            <Route path="/Track" element={<Navigate to="/Today" replace />} />
+            <Route path="/Saved" element={<Saved />} />
+            <Route path="/Deals" element={<Deals />} />
+            <Route path="/Events" element={<Events />} />
+            <Route path="/WeeklyInsights" element={<WeeklyInsights />} />
+            <Route path="/LifestyleDetail" element={<LifestyleDetail />} />
+            <Route path="/Health" element={<Health />} />
+            <Route path="/health" element={<Navigate to="/Health" replace />} />
+            <Route path="/SkinHair" element={<Navigate to="/Health" replace />} />
+            <Route path="/SkinHairLegacy" element={<SkinHair />} />
+            <Route path="/LifeStageCare" element={<Navigate to="/Health" replace />} />
+            <Route path="/HealthDashboard" element={<Navigate to="/Health" replace />} />
+            <Route path="/CareBridge" element={<Navigate to="/DoctorExport" replace />} />
+            <Route path="/Care-Bridge" element={<Navigate to="/DoctorExport" replace />} />
+            <Route path="/DoctorExport" element={<DoctorExport />} />
+            <Route path="/PartnerSettings" element={<PartnerSettings />} />
+            {/* M1 route correction: /Community now serves the editorial hybrid (Community.jsx).
+                MP8 (the retired likes-forum) kept at /CommunityMP8 only for reference. */}
+            <Route path="/Community" element={<Community />} />
+            <Route path="/CommunityMP8" element={<CommunityMP8 />} />
+            <Route path="/Settings" element={<Settings />} />
+            <Route path="/terms" element={<Terms />} />
+            <Route path="/privacy" element={<Privacy />} />
+            <Route path="/Upgrade" element={<Upgrade />} />
+            <Route path="/Planner" element={<Planner />} />
+            {/* V3 sprint Task 4 — Search across journal/symptoms/meals/tasks. */}
+            <Route path="/Search" element={<Search />} />
+            <Route path="/SealedLetters" element={<SealedLetters />} />
+            <Route path="/BookReader" element={<BookReader />} />
+            <Route path="*" element={<PageNotFound />} />
+          </Routes>
+        </motion.div>
+      </AnimatePresence>
+      </MotionConfig>
+    </LayoutWrapper>
     </>
   );
 };

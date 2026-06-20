@@ -1,10 +1,23 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Sun, BookOpen, User, Menu } from "lucide-react";
 import { createPageUrl } from "@/utils";
 import MenuSheet from "@/components/layout/MenuSheet";
 import { FlowerGlyph, CornerSprig } from "@/components/brand/flora";
 import { T } from "@/components/journal/Editorial";
+
+// ── Liquid-migration motion spec (for the brand bible motion section) ─────────
+// The active highlight is ONE pill that physically MIGRATES between items
+// (Web Animations API, compositor-only transform → 60fps). It squash-stretches
+// mid-travel ("liquid in a tube") and settles to fill the new item.
+//   duration   : scales 360–560ms with travel distance (longer hop = longer flow)
+//   easing     : cubic-bezier(.5,1.18,.35,1) — gentle spring with a soft settle
+//   stretch    : scaleX up to 1.30 / scaleY down to 0.9 at the midpoint
+//                (volume-preserving squash-stretch), back to 1×1 at rest
+//   reduced-motion: no migration — the pill cross-fades instantly to the item
+const PILL_EASE = "cubic-bezier(.5,1.18,.35,1)";
+const PILL_INSET = 6;   // px gap between the pill and the item edges
+const PILL_HEIGHT = 50; // fills the 62px capsule with ~6px top/bottom breathing
 
 // Slot order (left → right): Today · Lifestyle · Jess bloom · Profile · Menu.
 // Four calm destinations + the centre Jess bloom + the "More" door (Menu) —
@@ -50,6 +63,81 @@ export default function MobileBottomNav({ currentPageName }) {
     (window.CSS.supports("backdrop-filter", "blur(2px)") ||
       window.CSS.supports("-webkit-backdrop-filter", "blur(2px)"))
   );
+
+  // ── Liquid active-pill migration ──────────────────────────────────────────
+  const capsuleRef = useRef(null);
+  const slotRefs = useRef([]);
+  const pillRef = useRef(null);
+  const prevLeftRef = useRef(null); // last resting pill X (null = pill hidden)
+
+  // Active index = the link slot whose page is the current route (Jess/Menu
+  // are not routes, so they never highlight). null on non-nav pages.
+  const activeIndex = SLOTS.findIndex(
+    (s) => s.kind === "link" && s.page === currentPageName
+  );
+  const hasActive = activeIndex >= 0;
+
+  // Measure the active slot and migrate the pill there. useLayoutEffect so we
+  // read geometry + start the animation before paint (no flash). offsetLeft/
+  // offsetWidth are pre-transform layout values, so the shrink-on-scroll scale
+  // never throws the geometry off.
+  useLayoutEffect(() => {
+    const pill = pillRef.current;
+    if (!pill) return;
+
+    if (!hasActive) {
+      pill.style.opacity = "0";
+      prevLeftRef.current = null;
+      return;
+    }
+    const slot = slotRefs.current[activeIndex];
+    if (!slot) return;
+
+    const toX = slot.offsetLeft + PILL_INSET;
+    const w = slot.offsetWidth - PILL_INSET * 2;
+    pill.style.width = `${w}px`;
+    pill.style.opacity = "1";
+
+    const fromX = prevLeftRef.current;
+    const reduce = reduceMotion;
+    // Cancel any in-flight migration so rapid taps don't stack.
+    pill.getAnimations?.().forEach((a) => a.cancel());
+
+    if (fromX == null || reduce || fromX === toX) {
+      // First appearance, reduced motion, or no move → settle instantly.
+      pill.style.transform = `translateX(${toX}px)`;
+    } else {
+      // Liquid migration: stretch toward the target mid-travel, settle at rest.
+      const dist = Math.abs(toX - fromX);
+      const duration = Math.min(560, Math.max(360, 300 + dist * 0.55));
+      const stretch = 1 + Math.min(0.3, dist / 700);
+      pill.style.transform = `translateX(${toX}px)`; // resting value after anim
+      pill.animate(
+        [
+          { transform: `translateX(${fromX}px) scaleX(1) scaleY(1)` },
+          { transform: `translateX(${(fromX + toX) / 2}px) scaleX(${stretch}) scaleY(0.9)`, offset: 0.5 },
+          { transform: `translateX(${toX}px) scaleX(1) scaleY(1)` },
+        ],
+        { duration, easing: PILL_EASE }
+      );
+    }
+    prevLeftRef.current = toX;
+  }, [activeIndex, hasActive, reduceMotion]);
+
+  // Keep the pill aligned if the viewport (and thus the capsule width) changes.
+  useEffect(() => {
+    const onResize = () => {
+      const pill = pillRef.current;
+      const slot = slotRefs.current[activeIndex];
+      if (!pill || !hasActive || !slot) return;
+      const toX = slot.offsetLeft + PILL_INSET;
+      pill.style.width = `${slot.offsetWidth - PILL_INSET * 2}px`;
+      pill.style.transform = `translateX(${toX}px)`;
+      prevLeftRef.current = toX;
+    };
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
+  }, [activeIndex, hasActive]);
 
   const handleJessTap = () => {
     // Open existing assistant overlay (Layout listens for this event)
@@ -181,16 +269,45 @@ export default function MobileBottomNav({ currentPageName }) {
             </div>
           </div>
 
-          {SLOTS.map((slot) => {
+          {/* The migrating active pill — ONE element that flows between items
+              (filled wax/gold pill, sits behind icon+label). Position/size/anim
+              are driven imperatively from the layout effect above (WAAPI). */}
+          <div
+            ref={pillRef}
+            aria-hidden="true"
+            style={{
+              position: "absolute",
+              left: 0,
+              top: (62 - PILL_HEIGHT) / 2,
+              height: PILL_HEIGHT,
+              width: 64,
+              borderRadius: 16,
+              opacity: 0,
+              transformOrigin: "center center",
+              willChange: "transform, opacity",
+              zIndex: 0,
+              // Brand wax/gold pill: warm cream fill, lit top, soft gold ring.
+              background:
+                "linear-gradient(180deg, rgba(244,239,227,0.95) 0%, rgba(230,219,199,0.96) 100%)",
+              border: "1px solid rgba(168,137,63,0.34)",
+              boxShadow:
+                "inset 0 1px 0 rgba(255,255,255,0.7), 0 1px 3px rgba(74,42,58,0.14)",
+              transition: reduceMotion ? "opacity .12s linear" : "opacity .2s ease",
+            }}
+          />
+
+          {SLOTS.map((slot, i) => {
             if (slot.kind === "fab") {
               return (
                 <button
                   key="fab"
+                  ref={(el) => (slotRefs.current[i] = el)}
                   type="button"
                   aria-label="Open Jess"
                   onClick={handleJessTap}
                   style={{
                     position: "relative",
+                    zIndex: 1,
                     display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
                     background: "none", border: "none", cursor: "pointer", padding: 0,
                     minHeight: 56,
@@ -229,12 +346,14 @@ export default function MobileBottomNav({ currentPageName }) {
               return (
                 <button
                   key="menu"
-                  ref={menuButtonRef}
+                  ref={(el) => { menuButtonRef.current = el; slotRefs.current[i] = el; }}
                   type="button"
                   aria-label="Open menu"
                   aria-expanded={menuOpen}
                   onClick={() => setMenuOpen(true)}
                   style={{
+                    position: "relative",
+                    zIndex: 1,
                     display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
                     background: "none", border: "none", cursor: "pointer", padding: 0,
                     minHeight: 56,
@@ -261,10 +380,13 @@ export default function MobileBottomNav({ currentPageName }) {
             return (
               <Link
                 key={slot.page}
+                ref={(el) => (slotRefs.current[i] = el)}
                 to={createPageUrl(slot.page)}
                 aria-label={`Go to ${slot.label}`}
                 aria-current={active ? "page" : undefined}
                 style={{
+                  position: "relative",
+                  zIndex: 1,
                   display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
                   textDecoration: "none", minHeight: 56,
                 }}
@@ -274,7 +396,8 @@ export default function MobileBottomNav({ currentPageName }) {
                   style={{
                     width: 44, height: 32, borderRadius: 9999,
                     display: "flex", alignItems: "center", justifyContent: "center",
-                    background: active ? "var(--cream-2)" : "transparent",
+                    // Active highlight is the migrating pill behind the item now.
+                    background: "transparent",
                   }}
                 >
                   <Icon size={22} strokeWidth={1.75} style={{ color: active ? "var(--plum-deep)" : "var(--plum-mute)" }} />
