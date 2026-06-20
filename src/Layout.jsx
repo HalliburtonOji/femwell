@@ -126,7 +126,11 @@ export default function Layout({ children, currentPageName }) {
       {showNav && <MobileBottomNav currentPageName={currentPageName} />}
       <AssistantOverlay
         open={assistantOpen}
-        onClose={() => setAssistantOpen(false)}
+        onClose={() => {
+          setAssistantOpen(false);
+          // Broadcast so the bottom nav clears the Jess active-pill on close.
+          window.dispatchEvent(new CustomEvent("fw_close_assistant"));
+        }}
         initialPrompt={assistantPrompt}
       />
       <MilestoneEventListener />

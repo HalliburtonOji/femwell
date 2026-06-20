@@ -6,18 +6,51 @@ import MenuSheet from "@/components/layout/MenuSheet";
 import { FlowerGlyph, CornerSprig } from "@/components/brand/flora";
 import { T } from "@/components/journal/Editorial";
 
-// ── Liquid-migration motion spec (for the brand bible motion section) ─────────
-// The active highlight is ONE pill that physically MIGRATES between items
-// (Web Animations API, compositor-only transform → 60fps). It squash-stretches
-// mid-travel ("liquid in a tube") and settles to fill the new item.
-//   duration   : scales 360–560ms with travel distance (longer hop = longer flow)
-//   easing     : cubic-bezier(.5,1.18,.35,1) — gentle spring with a soft settle
-//   stretch    : scaleX up to 1.30 / scaleY down to 0.9 at the midpoint
-//                (volume-preserving squash-stretch), back to 1×1 at rest
-//   reduced-motion: no migration — the pill cross-fades instantly to the item
-const PILL_EASE = "cubic-bezier(.5,1.18,.35,1)";
-const PILL_INSET = 6;   // px gap between the pill and the item edges
-const PILL_HEIGHT = 50; // fills the 62px capsule with ~6px top/bottom breathing
+// ── Liquid active-pill motion spec (for the brand bible motion section) ───────
+// ONE persistent wide STADIUM pill (radius 9999, hugs the item like the IG
+// reference) that MIGRATES between all 5 items. Motion = a real PHYSICS SPRING
+// sampled at 60fps into a Web Animations API keyframe set (compositor-only
+// transform → genuinely 60fps, no per-frame React/layout work). The liquid feel
+// comes from a velocity-coupled squash-stretch: the pill stretches along travel
+// in proportion to its instantaneous speed and relaxes to 1×1 as the spring
+// settles — fluid, never a blobby pulse.
+//   spring     : stiffness 320, damping 32, mass 1 (snappy, ~critically damped,
+//                a hair of life). Distance-independent feel; longer hops just
+//                take a little longer to settle.
+//   stretch    : scaleX 1→1.16 / scaleY 1→0.94 at peak velocity (volume-ish),
+//                eased back to 1×1 at rest.
+//   reduced-motion: no spring — the pill moves instantly (clean, no animation).
+const SPRING = { stiffness: 320, damping: 32, mass: 1 };
+const PILL_INSET = 5;    // px gap between the pill and the item edges
+const PILL_HEIGHT = 46;  // wide stadium that hugs the item (radius 9999)
+
+// Sample a critically-damped-ish spring from `fromX`→`toX` at 60fps and emit a
+// WAAPI keyframe array (transform only). Each frame's scaleX/scaleY is coupled
+// to the spring's instantaneous velocity, so the pill "flows" — stretching when
+// fast, settling round when slow.
+function springPillKeyframes(fromX, toX) {
+  const dt = 1 / 60;
+  const { stiffness: k, damping: c, mass: m } = SPRING;
+  const samples = [];
+  let x = fromX, v = 0, t = 0;
+  for (let i = 0; i < 90; i++) {
+    const a = (-k * (x - toX) - c * v) / m;
+    v += a * dt;
+    x += v * dt;
+    samples.push({ x, v });
+    t += dt;
+    if (Math.abs(x - toX) < 0.15 && Math.abs(v) < 1) break;
+  }
+  samples.push({ x: toX, v: 0 });
+  const maxV = Math.max(1, ...samples.map((s) => Math.abs(s.v)));
+  const frames = samples.map((s) => {
+    const speed = Math.abs(s.v) / maxV; // 0..1
+    const sx = 1 + speed * 0.16;
+    const sy = 1 - speed * 0.06;
+    return { transform: `translateX(${s.x}px) scaleX(${sx}) scaleY(${sy})` };
+  });
+  return { frames, duration: Math.max(260, samples.length * (1000 / 60)) };
+}
 
 // Slot order (left → right): Today · Lifestyle · Jess bloom · Profile · Menu.
 // Four calm destinations + the centre Jess bloom + the "More" door (Menu) —
@@ -65,16 +98,31 @@ export default function MobileBottomNav({ currentPageName }) {
   );
 
   // ── Liquid active-pill migration ──────────────────────────────────────────
-  const capsuleRef = useRef(null);
   const slotRefs = useRef([]);
   const pillRef = useRef(null);
   const prevLeftRef = useRef(null); // last resting pill X (null = pill hidden)
+  // The assistant (Jess) overlay open-state lives in Layout; mirror it here via
+  // the same window events so the pill can sit on Jess while it's open.
+  const [assistantOpen, setAssistantOpen] = useState(false);
+  useEffect(() => {
+    const open = () => setAssistantOpen(true);
+    const close = () => setAssistantOpen(false);
+    window.addEventListener("fw_open_assistant", open);
+    window.addEventListener("fw_close_assistant", close);
+    return () => {
+      window.removeEventListener("fw_open_assistant", open);
+      window.removeEventListener("fw_close_assistant", close);
+    };
+  }, []);
 
-  // Active index = the link slot whose page is the current route (Jess/Menu
-  // are not routes, so they never highlight). null on non-nav pages.
-  const activeIndex = SLOTS.findIndex(
-    (s) => s.kind === "link" && s.page === currentPageName
-  );
+  // The pill highlights the CURRENT destination across ALL 5 items:
+  //   Menu open  → Menu · Jess overlay open → Jess · else the route's link.
+  // (Menu/Jess are transient — the pill returns to the route when they close;
+  // on a non-nav page with nothing open there's no destination, so it hides.)
+  const linkIndex = SLOTS.findIndex((s) => s.kind === "link" && s.page === currentPageName);
+  const menuIndex = SLOTS.findIndex((s) => s.kind === "menu");
+  const fabIndex = SLOTS.findIndex((s) => s.kind === "fab");
+  const activeIndex = menuOpen ? menuIndex : assistantOpen ? fabIndex : linkIndex;
   const hasActive = activeIndex >= 0;
 
   // Measure the active slot and migrate the pill there. useLayoutEffect so we
@@ -99,27 +147,17 @@ export default function MobileBottomNav({ currentPageName }) {
     pill.style.opacity = "1";
 
     const fromX = prevLeftRef.current;
-    const reduce = reduceMotion;
     // Cancel any in-flight migration so rapid taps don't stack.
     pill.getAnimations?.().forEach((a) => a.cancel());
 
-    if (fromX == null || reduce || fromX === toX) {
+    if (fromX == null || reduceMotion || fromX === toX) {
       // First appearance, reduced motion, or no move → settle instantly.
-      pill.style.transform = `translateX(${toX}px)`;
+      pill.style.transform = `translateX(${toX}px) scaleX(1) scaleY(1)`;
     } else {
-      // Liquid migration: stretch toward the target mid-travel, settle at rest.
-      const dist = Math.abs(toX - fromX);
-      const duration = Math.min(560, Math.max(360, 300 + dist * 0.55));
-      const stretch = 1 + Math.min(0.3, dist / 700);
-      pill.style.transform = `translateX(${toX}px)`; // resting value after anim
-      pill.animate(
-        [
-          { transform: `translateX(${fromX}px) scaleX(1) scaleY(1)` },
-          { transform: `translateX(${(fromX + toX) / 2}px) scaleX(${stretch}) scaleY(0.9)`, offset: 0.5 },
-          { transform: `translateX(${toX}px) scaleX(1) scaleY(1)` },
-        ],
-        { duration, easing: PILL_EASE }
-      );
+      // Genuine spring (sampled at 60fps) with velocity-coupled liquid stretch.
+      pill.style.transform = `translateX(${toX}px) scaleX(1) scaleY(1)`; // rest after anim
+      const { frames, duration } = springPillKeyframes(fromX, toX);
+      pill.animate(frames, { duration, easing: "linear", fill: "none" });
     }
     prevLeftRef.current = toX;
   }, [activeIndex, hasActive, reduceMotion]);
@@ -269,9 +307,10 @@ export default function MobileBottomNav({ currentPageName }) {
             </div>
           </div>
 
-          {/* The migrating active pill — ONE element that flows between items
-              (filled wax/gold pill, sits behind icon+label). Position/size/anim
-              are driven imperatively from the layout effect above (WAAPI). */}
+          {/* The migrating active pill — ONE wide STADIUM that flows between all
+              5 items (filled wax/gold pill hugging the item, behind icon+label,
+              echoing the IG reference). Position/size/spring are driven
+              imperatively from the layout effect above (WAAPI). */}
           <div
             ref={pillRef}
             aria-hidden="true"
@@ -280,8 +319,8 @@ export default function MobileBottomNav({ currentPageName }) {
               left: 0,
               top: (62 - PILL_HEIGHT) / 2,
               height: PILL_HEIGHT,
-              width: 64,
-              borderRadius: 16,
+              width: 72,
+              borderRadius: 9999,   // wide stadium pill, like the reference
               opacity: 0,
               transformOrigin: "center center",
               willChange: "transform, opacity",
@@ -364,7 +403,8 @@ export default function MobileBottomNav({ currentPageName }) {
                     style={{
                       width: 44, height: 32, borderRadius: 9999,
                       display: "flex", alignItems: "center", justifyContent: "center",
-                      background: menuOpen ? "var(--cream-2)" : "transparent",
+                      // Active highlight is the migrating stadium pill behind it now.
+                      background: "transparent",
                     }}
                   >
                     <Icon size={22} strokeWidth={1.75} style={{ color: menuOpen ? "var(--plum-deep)" : "var(--plum-mute)" }} />
