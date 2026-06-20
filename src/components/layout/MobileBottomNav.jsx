@@ -325,12 +325,15 @@ export default function MobileBottomNav({ currentPageName }) {
               transformOrigin: "center center",
               willChange: "transform, opacity",
               zIndex: 0,
-              // Brand wax/gold pill: warm cream fill, lit top, soft gold ring.
+              // Brand wax/GOLD pill — clearly visible against the pale glass
+              // capsule (cream-on-cream read as nothing). Warm gold-tinted fill,
+              // defined gold ring + a soft lift so it reads as the active item
+              // like the reference, while staying on-brand.
               background:
-                "linear-gradient(180deg, rgba(244,239,227,0.95) 0%, rgba(230,219,199,0.96) 100%)",
-              border: "1px solid rgba(168,137,63,0.34)",
+                "linear-gradient(180deg, rgba(212,191,143,0.98) 0%, rgba(193,169,118,0.98) 100%)",
+              border: "1px solid rgba(150,120,52,0.62)",
               boxShadow:
-                "inset 0 1px 0 rgba(255,255,255,0.7), 0 1px 3px rgba(74,42,58,0.14)",
+                "inset 0 1px 0 rgba(255,250,234,0.6), 0 2px 8px -1px rgba(120,90,40,0.32)",
               transition: reduceMotion ? "opacity .12s linear" : "opacity .2s ease",
             }}
           />
