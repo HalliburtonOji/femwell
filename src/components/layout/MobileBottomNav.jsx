@@ -198,6 +198,29 @@ export default function MobileBottomNav({ currentPageName }) {
     };
   }, [activeIndex, hasActive]);
 
+  // When Menu/Jess toggles, their scroll-lock reflows the capsule a frame or two
+  // later (scrollbar disappears → columns shift). Re-snap the pill to the active
+  // slot once layout settles — but ONLY if the slot actually moved, so normal
+  // navigation never has its spring interrupted.
+  useEffect(() => {
+    let r1, r2;
+    r1 = requestAnimationFrame(() => {
+      r2 = requestAnimationFrame(() => {
+        const pill = pillRef.current;
+        if (!pill || !hasActive) return;
+        const slot = slotRefs.current[activeIndex];
+        if (!slot) return;
+        const toX = slot.offsetLeft + PILL_INSET;
+        if (prevLeftRef.current != null && Math.abs(prevLeftRef.current - toX) < 1) return; // no shift
+        pill.getAnimations?.().forEach((a) => a.cancel());
+        pill.style.width = `${slot.offsetWidth - PILL_INSET * 2}px`;
+        pill.style.transform = `translateX(${toX}px) scaleX(1) scaleY(1)`;
+        prevLeftRef.current = toX;
+      });
+    });
+    return () => { cancelAnimationFrame(r1); cancelAnimationFrame(r2); };
+  }, [menuOpen, assistantOpen, activeIndex, hasActive]);
+
   const handleJessTap = () => {
     // Open existing assistant overlay (Layout listens for this event)
     window.dispatchEvent(new CustomEvent("fw_open_assistant"));
