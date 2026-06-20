@@ -63,6 +63,7 @@ import BottomNavPlanDoc from "@/components/founders/BottomNavPlanDoc";
 import brandBibleHtml from "@/components/founders/brandDocs/brand-bible.html?raw";
 import livingEcosystemHtml from "@/components/founders/brandDocs/living-ecosystem.html?raw";
 import pageBrandAuditHtml from "@/components/founders/brandDocs/page-brand-audit.html?raw";
+import intentionsGoalsHtml from "@/components/founders/brandDocs/intentions-goals.html?raw";
 // HealthCornerDemo was the multi-layout preview. The canonical health
 // experience now lives at /Health (src/pages/Health.jsx). The Health Corner
 // tab in /Ideas renders <HealthCornerRedirectCard /> instead.
@@ -230,6 +231,8 @@ const CATALOG = [
     title: "Per-Page Brand Audit & Fix Plan", desc: "Every page audited, offenders ranked, Planner/Jess detail and the ritual-builder proposal. For approval." },
 
   // ── Specs & Plans (in-page docs) ──────────────────────────────────────
+  { kind: "doc", key: "Intentions & Goals", group: CAT.SPECS, status: "new", accent: "crimson",
+    title: "Intentions, the Line of the Day & Goals", desc: "Daily intentions, a user-specific soulful 'line of the day', and whole-life goals — baked into Today/Planner/Garden/Profile with NO new nav tab, on the living-ecosystem grammar. Live flora growth sketches; cited goal-science. For your reaction." },
   { kind: "doc", key: "Bottom-Nav Plan", group: CAT.BRANDDOCS, status: "new", accent: "gold",
     title: "Bottom-Nav Plan", desc: "Floating cream capsule + shrink-on-scroll, reject horizontal-scroll nav. Research, honest drawbacks and a phased plan. Awaiting your approval." },
   { kind: "doc", key: "Today Mega-Plan", group: CAT.SPECS, accent: "gold",
@@ -887,6 +890,7 @@ function FoundersInner({ user }) {
       {tab === "Brand Bible" && <BrandDocFrame html={brandBibleHtml} title="FemWell — Brand Bible" />}
       {tab === "Living Ecosystem" && <BrandDocFrame html={livingEcosystemHtml} title="FemWell — Living Ecosystem" />}
       {tab === "Page Brand Audit" && <BrandDocFrame html={pageBrandAuditHtml} title="FemWell — Per-Page Brand Audit" />}
+      {tab === "Intentions & Goals" && <BrandDocFrame html={intentionsGoalsHtml} title="FemWell — Intentions, Line of the Day & Goals" />}
       {tab === "Ideas"     && <IdeasTab user={user} />}
       {tab === "Strategy"  && <StrategyTab />}
       {tab === "Legal"     && <LegalTab />}
