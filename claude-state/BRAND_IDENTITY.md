@@ -27,7 +27,7 @@ A woman's life is a **garden, not a chart.** It has **seasons** (the cycle), **l
 - `claude-state/BRAND_IMAGE_RESEARCH.md` — the botanical-system research (Aesop/Art Nouveau/Morris/fleuron).
 
 **MASTER INDEX:**
-0. Pre-build checklist · 1. Typography (fonts + `.fw-*` cascade + role scale) · 2. Colour (tokens + retired + phase hues + **2.5 colourways**) · 3. The heart mark · 4. Botanical brand-image system (leaves/corners/dividers/flourishes) · 5. Bloom craft (RichBloomV2) · 5.1 Flora backbone & meaning · 5.2 Variety + flora fingerprint · 5.3 Page character · **6. Surfaces & components** (6.1 cards · 6.2 backgrounds/scrims · 6.3 buttons · 6.4 chips/inputs/sheets/toggles · 6.5 nav · 6.6 icons/links) · 7. How it's applied · **8. Component map** · **10. THE LIVING ECOSYSTEM** (v4 — lifecycle stages · fauna/omens · the rotating omen engine · safety rails · the soulful voice · craft-that-means) · 9. Appendices & in-app mirrors.
+0. Pre-build checklist · 1. Typography (fonts + `.fw-*` cascade + role scale) · 2. Colour (tokens + retired + phase hues + **2.5 colourways**) · 3. The heart mark · 4. Botanical brand-image system (leaves/corners/dividers/flourishes) · 5. Bloom craft (RichBloomV2) + **5.0 recognisability** · 5.1 Flora backbone & meaning · 5.2 Variety + flora fingerprint · 5.3 Page character · **5.4 THE BOTANICAL LIBRARY (60+ named species — `floraLibrary.jsx`)** · **6. Surfaces & components** (incl. **6.7.6 the quick-action popup**) (6.1 cards · 6.2 backgrounds/scrims · 6.3 buttons · 6.4 chips/inputs/sheets/toggles · 6.5 nav · 6.6 icons/links) · 7. How it's applied · **8. Component map** · **10. THE LIVING ECOSYSTEM** (v4 — lifecycle stages · fauna/omens · the rotating omen engine · safety rails · the soulful voice · craft-that-means) · 9. Appendices & in-app mirrors.
 
 ---
 
@@ -41,7 +41,7 @@ Before you add or change anything visual, confirm:
 4. **Motif** — at most **one** botanical line-motif per viewport, stroke-only, low opacity, never behind readable text (§4).
 5. **Bloom** — use the canonical `RichBloomV2` from **`src/components/brand/flora.jsx`** (never a flat reimplementation). The species must be **recognisable** (§5.0 — a rose reads as a rose), rendered at **generous scale**, pale blooms kept defined; animation is breath/sway only, GPU-cheap, `prefers-reduced-motion`-gated. Make variety **visible** (distinct species per section / bouquets), never one lone bloom.
 6. **Surfaces/components** — snap to the spacing scale; cards, backgrounds/scrims, buttons, chips/inputs/sheets/toggles, nav, icons & links all follow §6. Buttons accent-driven (not legacy `.fw-btn`); icons Lucide/SVG only; one motif per fold. **Page background = `PAPER_BG` (not a flat `backgroundColor`).**
-7. **CARDS (§6.7) — import from `src/components/brand/Card.jsx`; NEVER hand-roll a `<div>` card.** Pick the typed variant for the content (Article/Story/Video/Audio/Book/DailyStory/Horoscope/Summary/Recommendation/LogAction). Every card carries a hook + line (or a real snippet / inline player) AND an inline action; **no empty/dumb containers, no blank fallbacks.** Inline media plays IN the card; every open/CTA **deep-links the exact item full-screen, never a parent list**.
+7. **CARDS (§6.7) — import from `src/components/brand/Card.jsx`; NEVER hand-roll a `<div>` card.** Pick the typed variant for the content (Article/Story/Video/Audio/Book/DailyStory/Horoscope/Summary/Recommendation/LogAction). Every card carries a hook + line (or a real snippet / inline player) AND an inline action; **no empty/dumb containers, no blank fallbacks.** Inline media plays IN the card; a long-form *consume* CTA **deep-links the exact item full-screen** (§6.7.4), but a short *DO* task (read chapter / answer QOTD / leave a line / log a meal / tick a ritual) opens the **§6.7.6 QUICK-ACTION POPUP** — do it in place, then it ticks (never a link-out for a 10-second task, never a bare checkbox).
 8. **PAGE STRUCTURE (§6.8) — the signature top.** A primary page opens with `FwFloraHero` (flora hero) → ONE `SummaryCard` → page-specific content (all rich cards). Use `src/components/brand/PageTop.jsx`.
 9. **Always**: cream/plum world, Ephesis + Cormorant + system-sans only, Lucide/SVG icons, **no emoji**, UK English, no scoreboards, no-guilt.
 
@@ -293,6 +293,13 @@ Each surface gets a **flora signature** (palette lean + signature species + crea
 
 **Craft/perf for these elements:** `Butterfly` = SVG strokes+gradients with a gentle **drift** + faint wing **flutter** (isolated group transforms, reduced-motion-gated); `FlowerGlyph`/`PlantGlyph`/`BlossomTree`/`Creature` are **static** line-art. **No blur anywhere except the bloom's one isolated shadow.** Big library, calm view: one bloom centre-stage, one motif per fold, a creature only on a real moment.
 
+### 5.4 THE BOTANICAL LIBRARY — 60+ named species (v4 · 2026-06-20)
+> **"Variety" means a real garden, not a handful.** The canonical breadth library is **`src/components/brand/floraLibrary.jsx`** — **60+ bespoke-drawn, named species** (plus foliage, buds, and the §10.1 lifecycle stages), **each obeying the §5.0 recognisability standard** (a rose reads as a rose; an iris reads as an iris). Import **`<SpeciesBloom name="…" size={…} />`** (static decorative) for the breadth; **`RichBloomV2`** stays for the **animated hero** blooms. Both share the same colourway/gradient/petal grammar.
+- **The roster** (each is a real, recognisable flower): **roses** (crimson/pink/peach) · sunflower · hibiscus · tulip · lily · peony · ranunculus · dahlia · magnolia · orchid · iris · daffodil · lavender · daisy · marguerite · poppy · cornflower · snowdrop · foxglove · jasmine · camellia · gardenia · anemone · marigold · chrysanthemum · hydrangea · lotus · waterlily · cherry-blossom · almond-blossom · wisteria · bluebell · lily-of-the-valley · carnation · freesia · protea · gerbera · aster · echinacea · rudbeckia · calendula · chamomile · zinnia · cosmos · osteospermum · begonia · buttercup · hellebore · primrose · phlox · periwinkle · geranium · plumeria · morning-glory · hyacinth · delphinium · gladiolus · snapdragon · allium · crocus · calla. **Foliage:** fern · eucalyptus · monstera · succulent · ivy · olive.
+- **Built from archetypes + bespoke heads:** a parameterised engine (composite ray+disc · rosette · cup · star-face · spike/raceme · umbel · nodding-bell · blossom-branch) gives breadth cheaply; the iconic-shaped ones (rose · sunflower · hibiscus · lily · iris · orchid · daffodil · tulip · magnolia · foxglove · hibiscus · cornflower · calla · protea · snowdrop) are **bespoke** so they're unmistakable. Petal silhouettes: round/point/cup/broad/lance/spoon/strap/heart/frill; centres: gold-disc/dome/cone/tuft/eye/whiteEye/stamen/green. Pale-bloom luminance fix (§5.0) applies.
+- **USE IT — variety must be VISIBLE.** Page-character (§5.3), bouquets, the Garden, and the §10 omen section-headers draw a **different signature species per surface/section** from this library — never the same three flowers everywhere. The **Flora Lab** (`/FloraLabDemo`) renders the FULL library + foliage + lifecycle + buds side-by-side as the proof.
+- **Perf:** static SVG (gradients + paths, no per-petal blur); the library blooms don't animate (only the hero `RichBloomV2` breathes). Rendered via a string builder + a thin `dangerouslySetInnerHTML` wrapper (static, no user input — safe).
+
 ---
 
 ## 6. SPACING, SURFACES & COMPONENTS (every element's brand look)
@@ -383,6 +390,23 @@ FemWell's motion is **calm and organic** — the feel comes from slow ease + the
 ### 6.7.5 SMART PER-SECTION RECOMMENDATION (signal-driven, varies, never hollow)
 - Each section's card chooses its item from **real signals** (recency, cycle phase, engagement, what she's saved/skipped, time of day) and **changes over time** — not a static pick.
 - **Graceful fallback chain:** real personalised pick → recent/trending in that type → a warm curated line + an action. The card is **never** blank and never a dead "coming soon."
+
+### 6.7.6 THE QUICK-ACTION POPUP — "do it right here" (v4 · 2026-06-20)
+> **The standard interaction for any DOABLE micro-task on a page** (e.g. Today's "Your Day" / "across your day" rows: *read today's chapter · answer the Question of the Day · leave a line in your journal · log breakfast · log mood · tick a ritual · set today's intention*). Tapping it opens a **QUICK, lightweight popup so she DOES the thing in place, then it ticks.** It is **NOT a link-out** (don't navigate her away for a 10-second task) and **NOT a bare checkbox** (don't let her "tick" something she hasn't actually done).
+- **Trigger:** tap the row/card's primary affordance (or its inline action). **Behaviour:** a small **bottom-sheet/popover** sized to the task (the §6.4 sheet primitive: `paperHi`, top-rounded, slide-up over the §6.2 scrim, **`.fw-sheet-safe` clearance**, Escape/tap-scrim to close) — NOT full-screen, NOT a new route.
+- **She completes the action INSIDE the popup**, then it closes and the **source item ticks** with a gentle **optimistic** confirmation — and, per v4, a **small bloom/seed grows** (§10.1) rather than a cold checkmark. The write **rides an existing dispatcher action — never a new function** (50-fn cap).
+- **Per action-type (the popup's body):**
+  | Action | What opens in the popup | Result |
+  |---|---|---|
+  | **Read today's chapter** | the chapter (or its opening + a "read on" that expands) in an inline scroll | ticks "read"; a bloom opens |
+  | **Question of the Day** | the question + a quick input (text / choice chips) | submit → ticks; can spill to Journal |
+  | **Leave a line (Journal)** | a mini-composer (textarea + optional tag/mood) | save → ticks; becomes a pressed-flower entry |
+  | **Log breakfast / a meal** | recent + searchable food chips + a portion control | log → ticks |
+  | **Log mood / energy** | a quick mood/energy selector | tap → ticks |
+  | **Tick a ritual / habit** | a confirm + optional note | done → ticks; "a vote for who you're becoming" (§10) |
+  | **Set today's intention** | a few smart suggestions + free text | plants the seed (§10.1) |
+- **Quick-popup vs full-screen deep-link (when to use which):** use the **quick-action popup** for short *DO* tasks (answer / log / tick / short-write / short-read). Use the §6.7.4 **full-screen deep-link** for long-form *CONSUME* (open a book in the reader, a programme session, a full article) — that opens the EXACT item full-screen. Never make a quick task a navigation; never make a full read a cramped popup.
+- **Brand:** Cormorant/Ephesis, one flora accent (a meaning-bloom that grows on completion), no emoji, reduced-motion-safe. Build on the existing sheet/loggers (e.g. `SmartLoggerV4`/`UniversalLogger`/`CheckinModal` patterns) + existing dispatchers.
 
 ---
 

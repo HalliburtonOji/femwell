@@ -10,6 +10,12 @@ import {
   RichBloomV2, FlowerGlyph, FLOWER_VARIANTS, COLORWAYS, cwOf, floraKeyframes,
   Butterfly, Bee, Dragonfly, Moth, Ladybird, Bouquet, BloomWithCreature,
 } from "@/components/brand/flora";
+import {
+  FLORA_SPECIES, FLORA_FOLIAGE, FLORA_LIFECYCLE, FLORA_BUDS,
+  SpeciesBloom, LifecycleStage, FloraBud,
+} from "@/components/brand/floraLibrary";
+
+const LIBRARY_FLOWERS = FLORA_SPECIES.filter((n) => !FLORA_FOLIAGE.includes(n));
 
 const HERO_FLOWERS = [["rose", "crimson"], ["sunflower", "gold"], ["hibiscus", "coral"]];
 const BLOOM_FORMS = [
@@ -57,6 +63,27 @@ export default function FloraLabDemo() {
         <div style={{ fontFamily: SCRIPT, fontSize: 44, color: T.ink, lineHeight: 1.05 }}>Flora Lab</div>
         <div style={{ fontFamily: "Cormorant Garamond, Georgia, serif", fontStyle: "italic", fontSize: 16, color: T.muted, maxWidth: 360, margin: "6px auto 0" }}>The flora engine — bespoke geometry per species so a rose reads as a rose. Recognisable heroes, visible variety, creatures on the plant.</div>
       </div>
+
+      <Section title="The botanical library" sub={`${LIBRARY_FLOWERS.length} named flowers — a real garden, each drawn to read as itself (roses · sunflower · hibiscus · orchid · iris · daffodil · foxglove · lavender · hydrangea · protea · lily-of-the-valley · cherry blossom · cornflower · poppy · peony…).`}>
+        <div style={grid(5)}>
+          {LIBRARY_FLOWERS.map((n) => <Tile key={n} label={n.replace(/-/g, " ")}><SpeciesBloom name={n} size={76} /></Tile>)}
+        </div>
+      </Section>
+
+      <Section title="Foliage & greenery" sub="leaves carry the garden too — fern · eucalyptus · monstera · succulent · ivy · olive">
+        <div style={grid(6)}>
+          {FLORA_FOLIAGE.map((n) => <Tile key={n} label={n}><SpeciesBloom name={n} size={76} /></Tile>)}
+        </div>
+      </Section>
+
+      <Section title="Lifecycle & buds" sub="the stage is the meaning (v4): bud → bloom → seed (the rose hip) → rest (the bare cane, holding next year's bloom)">
+        <div style={grid(4)}>
+          {FLORA_LIFECYCLE.map((s) => <Tile key={s.n} label={s.n}><LifecycleStage name={s.n} size={92} /></Tile>)}
+        </div>
+        <div style={{ ...grid(4), marginTop: 8 }}>
+          {FLORA_BUDS.map((s) => <Tile key={s.n} label={s.n}><FloraBud name={s.n} size={80} /></Tile>)}
+        </div>
+      </Section>
 
       <Section title="The hero flowers" sub="rose · sunflower · hibiscus — each carries its own signature (spiral heart · seed disc · staminal column)">
         <div style={grid(3)}>
