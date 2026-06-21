@@ -6,52 +6,17 @@ import MenuSheet from "@/components/layout/MenuSheet";
 import { FlowerGlyph, CornerSprig } from "@/components/brand/flora";
 import { T } from "@/components/journal/Editorial";
 
-// ── Liquid active-pill motion spec (for the brand bible motion section) ───────
-// ONE persistent wide STADIUM pill (radius 9999, hugs the item like the IG
-// reference) that MIGRATES between all 5 items. Motion = a real PHYSICS SPRING
-// sampled at 60fps into a Web Animations API keyframe set (compositor-only
-// transform → genuinely 60fps, no per-frame React/layout work). The liquid feel
-// comes from a velocity-coupled squash-stretch: the pill stretches along travel
-// in proportion to its instantaneous speed and relaxes to 1×1 as the spring
-// settles — fluid, never a blobby pulse.
-//   spring     : stiffness 320, damping 32, mass 1 (snappy, ~critically damped,
-//                a hair of life). Distance-independent feel; longer hops just
-//                take a little longer to settle.
-//   stretch    : scaleX 1→1.16 / scaleY 1→0.94 at peak velocity (volume-ish),
-//                eased back to 1×1 at rest.
-//   reduced-motion: no spring — the pill moves instantly (clean, no animation).
-const SPRING = { stiffness: 320, damping: 32, mass: 1 };
-const PILL_INSET = 5;    // px gap between the pill and the item edges
-const PILL_HEIGHT = 52;  // tall stadium — spans the item top-to-bottom (5px even
-                         // inset in the 62px capsule), radius 9999
-
-// Sample a critically-damped-ish spring from `fromX`→`toX` at 60fps and emit a
-// WAAPI keyframe array (transform only). Each frame's scaleX/scaleY is coupled
-// to the spring's instantaneous velocity, so the pill "flows" — stretching when
-// fast, settling round when slow.
-function springPillKeyframes(fromX, toX) {
-  const dt = 1 / 60;
-  const { stiffness: k, damping: c, mass: m } = SPRING;
-  const samples = [];
-  let x = fromX, v = 0, t = 0;
-  for (let i = 0; i < 90; i++) {
-    const a = (-k * (x - toX) - c * v) / m;
-    v += a * dt;
-    x += v * dt;
-    samples.push({ x, v });
-    t += dt;
-    if (Math.abs(x - toX) < 0.15 && Math.abs(v) < 1) break;
-  }
-  samples.push({ x: toX, v: 0 });
-  const maxV = Math.max(1, ...samples.map((s) => Math.abs(s.v)));
-  const frames = samples.map((s) => {
-    const speed = Math.abs(s.v) / maxV; // 0..1
-    const sx = 1 + speed * 0.16;
-    const sy = 1 - speed * 0.06;
-    return { transform: `translateX(${s.x}px) scaleX(${sx}) scaleY(${sy})` };
-  });
-  return { frames, duration: Math.max(260, samples.length * (1000 / 60)) };
-}
+// ── Active-pill motion spec (for the brand bible motion section) ──────────────
+// ONE persistent wide STADIUM pill (radius 9999) that nearly FILLS the active
+// item (≈full width, ~3px side inset; full height, ~4px even top/bottom) and
+// SLIDES between items — the way IG/Material nav indicators do it. The slide is
+// a single CSS transform transition (translateX only → compositor 60fps), tight
+// + snappy, NO squash-stretch (that's what read as clunky).
+//   slide  : transform .24s cubic-bezier(.22,1,.36,1)  (ease-out, no overshoot)
+//   reduced-motion: no transition — the pill moves instantly.
+const PILL_INSET = 3;    // px gap between the pill and the item edges (snug)
+const PILL_HEIGHT = 54;  // near-full height — ~4px even inset in the 62px capsule
+const PILL_SLIDE = "transform .24s cubic-bezier(.22,1,.36,1)";
 
 // Slot order (left → right): Today · Lifestyle · Jess bloom · Profile · Menu.
 // Four calm destinations + the centre Jess bloom + the "More" door (Menu) —
@@ -149,17 +114,19 @@ export default function MobileBottomNav({ currentPageName }) {
     pill.style.opacity = "1";
 
     const fromX = prevLeftRef.current;
-    // Cancel any in-flight migration so rapid taps don't stack.
-    pill.getAnimations?.().forEach((a) => a.cancel());
-
-    if (fromX == null || reduceMotion || fromX === toX) {
-      // First appearance, reduced motion, or no move → settle instantly.
-      pill.style.transform = `translateX(${toX}px) scaleX(1) scaleY(1)`;
+    if (!reduceMotion && fromX != null && fromX !== toX) {
+      // Clean snappy SLIDE via a single CSS transform transition (translateX
+      // only → compositor 60fps). No squash-stretch.
+      pill.style.transition = `${PILL_SLIDE}, opacity .2s ease`;
+      pill.style.transform = `translateX(${toX}px)`;
     } else {
-      // Genuine spring (sampled at 60fps) with velocity-coupled liquid stretch.
-      pill.style.transform = `translateX(${toX}px) scaleX(1) scaleY(1)`; // rest after anim
-      const { frames, duration } = springPillKeyframes(fromX, toX);
-      pill.animate(frames, { duration, easing: "linear", fill: "none" });
+      // First appearance / reduced motion / no move → place instantly.
+      pill.style.transition = "none";
+      pill.style.transform = `translateX(${toX}px)`;
+      void pill.offsetWidth; // commit the no-transition placement
+      pill.style.transition = reduceMotion
+        ? "opacity .12s linear"
+        : `${PILL_SLIDE}, opacity .2s ease`;
     }
     prevLeftRef.current = toX;
   }, [activeIndex, hasActive, reduceMotion]);
@@ -179,14 +146,17 @@ export default function MobileBottomNav({ currentPageName }) {
       if (!slot) return;
       const toX = slot.offsetLeft + PILL_INSET;
       pill.style.width = `${slot.offsetWidth - PILL_INSET * 2}px`;
-      pill.getAnimations?.().forEach((a) => a.cancel());
-      pill.style.transform = `translateX(${toX}px) scaleX(1) scaleY(1)`;
+      // Layout correction → snap instantly (no slide).
+      pill.style.transition = "none";
+      pill.style.transform = `translateX(${toX}px)`;
+      void pill.offsetWidth;
+      pill.style.transition = `${PILL_SLIDE}, opacity .2s ease`;
       prevLeftRef.current = toX;
     };
     let lastW = cap.offsetWidth;
     const ro = new ResizeObserver(() => {
       const w = cap.offsetWidth;
-      if (w === lastW) return; // initial fire / no real change → don't kill the spring
+      if (w === lastW) return; // initial fire / no real change → don't re-snap
       lastW = w;
       snap();
     });
@@ -212,9 +182,11 @@ export default function MobileBottomNav({ currentPageName }) {
         if (!slot) return;
         const toX = slot.offsetLeft + PILL_INSET;
         if (prevLeftRef.current != null && Math.abs(prevLeftRef.current - toX) < 1) return; // no shift
-        pill.getAnimations?.().forEach((a) => a.cancel());
         pill.style.width = `${slot.offsetWidth - PILL_INSET * 2}px`;
-        pill.style.transform = `translateX(${toX}px) scaleX(1) scaleY(1)`;
+        pill.style.transition = "none";
+        pill.style.transform = `translateX(${toX}px)`;
+        void pill.offsetWidth;
+        pill.style.transition = `${PILL_SLIDE}, opacity .2s ease`;
         prevLeftRef.current = toX;
       });
     });
@@ -352,10 +324,9 @@ export default function MobileBottomNav({ currentPageName }) {
             </div>
           </div>
 
-          {/* The migrating active pill — ONE wide STADIUM that flows between all
-              5 items (filled wax/gold pill hugging the item, behind icon+label,
-              echoing the IG reference). Position/size/spring are driven
-              imperatively from the layout effect above (WAAPI). */}
+          {/* The active pill — ONE wide STADIUM that nearly fills the active item
+              and SLIDES between all 5 (light wax/gold, behind icon+label, like
+              the IG reference). Position/size/slide driven from the layout effect. */}
           <div
             ref={pillRef}
             aria-hidden="true"
@@ -364,7 +335,7 @@ export default function MobileBottomNav({ currentPageName }) {
               left: 0,
               top: (62 - PILL_HEIGHT) / 2,
               height: PILL_HEIGHT,
-              width: 72,
+              width: 76,
               borderRadius: 9999,   // wide stadium pill, like the reference
               opacity: 0,
               transformOrigin: "center center",
@@ -379,7 +350,9 @@ export default function MobileBottomNav({ currentPageName }) {
               border: "1px solid rgba(168,137,63,0.45)",
               boxShadow:
                 "inset 0 1px 0 rgba(255,253,247,0.85), 0 1px 4px rgba(120,90,40,0.14)",
-              transition: reduceMotion ? "opacity .12s linear" : "opacity .2s ease",
+              transition: reduceMotion
+                ? "opacity .12s linear"
+                : "transform .24s cubic-bezier(.22,1,.36,1), opacity .2s ease",
             }}
           />
 
