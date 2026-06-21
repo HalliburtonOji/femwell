@@ -36,6 +36,9 @@ import { useScrollLock } from "@/utils/useScrollLock";
 // not a generic prompt. The rest of Today (hero, day-paragraph, Your-Day, cycle, suggestions,
 // closing) is unchanged.
 import JumpToButton from "@/components/layout/JumpToButton";
+// Growth Phase-0 (Halli-approved, live): the daily loop — intention · line of the day ·
+// tiny mission · a day for you · someone like you. Additive; rides real entities. No new function.
+import { TodayGrowth } from "@/components/growth/GrowthLive";
 // Unified calendar: REUSE the Planner page's cycle calendar (MonthRibbon) + its hour-by-hour day view
 // + day-actions (extracted to a shared module). One calendar across Today + Planner, not two designs.
 import MonthRibbon from "@/components/planner/cycle/MonthRibbon";
@@ -766,6 +769,9 @@ export default function TodayDemo6() {
           <p key={paraSeed} className="fw-fade" style={{ fontFamily: SERIF, fontSize: 17, color: T.ink, lineHeight: 1.55, margin: 0, animation: "fwFadeUp .3s ease both" }}>{paragraph}</p>
           <div style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 15, color: T.muted, marginTop: 11 }}>— Jess</div>
         </div>
+
+        {/* GROWTH (Phase 0) — the daily loop, baked in additively below your day's words */}
+        <TodayGrowth />
 
         {/* (3) YOUR DAY — gentle checklist; ticking nourishes the garden */}
         <div id="t-yourday" style={{ scrollMarginTop: 60, position: "relative", overflow: "hidden", marginTop: 16, background: "linear-gradient(160deg, #F3F7EC 0%, #E7F0DE 100%)", border: `1px solid ${T.paperDeep}`, borderLeft: `4px solid ${T.sage}`, borderRadius: 18, padding: "17px 17px 15px", boxShadow: "0 8px 28px rgba(58,44,26,0.14), 0 2px 6px rgba(58,44,26,0.08)" }}>

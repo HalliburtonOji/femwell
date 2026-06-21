@@ -41,6 +41,9 @@ import JessNudge from "@/components/jess/JessNudge";
 import CommunityHubSheet from "@/components/community/CommunityHubSheet";
 import JumpToButton from "@/components/layout/JumpToButton";
 import EchoWall from "@/components/journal/echo/EchoWall";
+// Growth Phase-0 (Halli-approved, live): Tier 0 anonymous "someone like you" resonance
+// (read-only; no 1:1/DMs/UGC). Gated 1:1 + writable rooms HELD pending the safety dials.
+import { ResonanceLive } from "@/components/growth/GrowthLive";
 import {
   CIRCLES, CIRCLE_CATEGORIES, circleByKey, SENSITIVE_CONSENT,
   isJoined, markJoined, clearJoined, suggestedCircles,
@@ -844,6 +847,12 @@ function Home({ presence, lifeStage, onEnter, user, onCrisis, onShareTo, onOpenH
 
       {/* the ONE focal point */}
       <QotdCard user={user} onCrisis={onCrisis} />
+
+      {/* GROWTH Phase-0 (Halli-approved, live): Tier 0 ANONYMOUS connection — the
+          read-only "someone like you" resonance card (no contact, no 1:1, no UGC write).
+          The shared-prompt room above (Question of the Day) IS the async prompt room;
+          writable themed rooms stay HELD under the moderation safety dial. */}
+      <div style={{ marginTop: 14, marginBottom: 6 }}><ResonanceLive wide /></div>
 
       {/* the ONE rotating "Today in the community" slot — the real working component */}
       <Eyebrow color={T.gold} mb={8}>Today in the community</Eyebrow>

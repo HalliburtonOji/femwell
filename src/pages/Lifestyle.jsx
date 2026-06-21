@@ -2,11 +2,14 @@ import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import { base44 } from "@/api/base44Client";
-import { ExternalLink, X, Bookmark, SlidersHorizontal, Check, Sparkles, BookOpen, Headphones, Feather, Moon, Play, Book } from "lucide-react";
-import { T, UI, PAPER_BG } from "@/components/journal/Editorial";
+import { ExternalLink, X, Bookmark, SlidersHorizontal, Check, Sparkles, BookOpen, Headphones, Feather, Moon, Play, Book, Sun as SunIcon } from "lucide-react";
+import { T, UI, SERIF, PAPER_BG } from "@/components/journal/Editorial";
+// Growth Phase-0 (Halli-approved, live): the "A day for you" lane.
+import { useMe, DayOffLive } from "@/components/growth/GrowthLive";
+import { DAYOFF_ACTIVITIES, GrowthStyles } from "@/components/demos/growthKit";
 import { VineMotifV2, floraKeyframes } from "@/components/brand/flora";
 import { FwFloraHero } from "@/components/brand/PageTop";
-import { FwCardRow, SummaryCard, ArticleCard, StoryCard, VideoCard, AudioCard, BookCard, DailyStoryCard, HoroscopeCard, EmptyStateCard } from "@/components/brand/Card";
+import { FwCard, FwCardRow, SummaryCard, ArticleCard, StoryCard, VideoCard, AudioCard, BookCard, DailyStoryCard, HoroscopeCard, EmptyStateCard } from "@/components/brand/Card";
 import { CONTENT_CATEGORIES, categoryLabel } from "@/utils/contentCategory";
 import BrowseTab from "@/components/lifestyle/browse/BrowseTab";
 import ListenTab from "@/components/lifestyle/listen/ListenTab";
@@ -357,12 +360,37 @@ function EmptyState({ text }) {
 // via the resolveTab helper below.
 const TABS = [
   { id: "for_you",     label: "For You" },
+  { id: "day_for_you", label: "A day for you" },
   { id: "read",        label: "Read" },
   { id: "listen",      label: "Listen" },
   { id: "books",       label: "Books" },
   { id: "daily_story", label: "Daily Story" },
   { id: "horoscope",   label: "Horoscope" },
 ];
+
+// "A day for you" — days-off activities found FOR her (Growth Phase 0, live).
+// ONE curated pick at a time + alternatives; "save it for the day" persists a
+// PersonalTask. Solo only in Phase 0. Rides existing entities — no new function.
+function DayForYouTab() {
+  const { id } = useMe();
+  const others = DAYOFF_ACTIVITIES.slice(1);
+  return (
+    <div>
+      <GrowthStyles />
+      <div style={{ textAlign: "center", marginBottom: 14 }}>
+        <div style={{ fontFamily: UI, fontSize: 12, fontWeight: 700, letterSpacing: "0.16em", textTransform: "uppercase", color: T.gold }}>A day for you</div>
+        <p style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 16, color: T.muted, margin: "6px auto 0", maxWidth: 360, lineHeight: 1.5 }}>Your day off, found for you — one lovely thing at a time. Outdoors, creative, restful, joyful. No catalogue to sift.</p>
+      </div>
+      <DayOffLive userId={id} wide />
+      <div style={{ marginTop: 22, display: "flex", flexDirection: "column", gap: 14 }}>
+        {others.map((a) => (
+          <FwCard key={a.id} accent={a.accent} Icon={SunIcon} eyebrow={`A day for you · ${a.kind}`} flower={a.flower} title={a.title} line={a.why} idx={`alt-${a.id}`} snap={false} width="100%" minHeight={0} />
+        ))}
+      </div>
+      <p style={{ fontFamily: UI, fontSize: 12, color: T.muted, lineHeight: 1.5, marginTop: 16, textAlign: "center" }}>Solo picks for now. Social &amp; local outings (events, opt-in) come next. “Save it for the day” drops it into your planner.</p>
+    </div>
+  );
+}
 
 // Map legacy tab IDs from old URLs to current ones. Keep stable forever — users
 // have bookmarks + emails with old links.
@@ -843,6 +871,10 @@ export default function Lifestyle() {
             magazine feel — unchanged). */}
       {isForYou ? (
         <LifestyleForYou landing={landing} navigate={navigate} onJump={setTab} />
+      ) : tab === "day_for_you" ? (
+        <div className="max-w-xl mx-auto px-4 pt-5" style={{ position: "relative", zIndex: 1 }}>
+          <DayForYouTab />
+        </div>
       ) : tab === "horoscope" ? (
         <div className="mx-auto pt-5" style={{ maxWidth: 820, position: "relative", zIndex: 1 }}>
           <HoroscopeTab />

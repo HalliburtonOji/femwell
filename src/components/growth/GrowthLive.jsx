@@ -336,7 +336,7 @@ export function GardenGrowth() {
 // ═══════════════════════════ DAY OFF (live-save) ════════════════════════════
 // Solo day-off picks (Lifestyle "A day for you"). "Save it for the day" creates a
 // PersonalTask (existing entity) so it lands in her planner — a real persisted write.
-export function DayOffLive({ userId }) {
+export function DayOffLive({ userId, wide = false }) {
   const [i, setI] = useState(daySeed("dayoff") % DAYOFF_ACTIVITIES.length);
   const [saved, setSaved] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -348,6 +348,7 @@ export function DayOffLive({ userId }) {
   };
   return (
     <FwCard accent={a.accent} Icon={Sun} eyebrow={`A day for you · ${a.kind}`} flower={a.flower} idx={`do-live-${a.id}`}
+      {...(wide ? { snap: false, width: "100%", minHeight: 0 } : {})}
       title={a.title} line={a.why}
       action={saved
         ? <span style={{ fontFamily: UI, fontSize: 13, fontWeight: 700, color: "#3f6b3f", display: "inline-flex", alignItems: "center", gap: 6 }}><Check size={15} /> Saved for the day</span>
@@ -357,10 +358,11 @@ export function DayOffLive({ userId }) {
 }
 
 // ═══════════════════════════ RESONANCE (Tier 0, read-only) ══════════════════
-export function ResonanceLive() {
+export function ResonanceLive({ wide = false }) {
   const r = pickDaily(RESONANCE, "resonance");
   return (
     <FwCard accent="#8FAF8F" Icon={Heart} eyebrow="Someone like you" flower="clover" idx="reso-live"
+      {...(wide ? { snap: false, width: "100%", minHeight: 0 } : {})}
       title={r.line} line={r.sub}
       action={<span style={{ fontFamily: UI, fontSize: 12, color: T.muted }}>Anonymous · no contact · just company</span>} />
   );
@@ -371,15 +373,13 @@ export function ResonanceLive() {
 export function TodayGrowth() {
   const { id } = useMe();
   return (
-    <div style={{ marginTop: 8 }}>
+    <div style={{ marginTop: 16, display: "flex", flexDirection: "column", gap: 14 }}>
       <GrowthStyles />
-      <div style={{ maxWidth: 600, margin: "0 auto", padding: "0 16px", display: "flex", flexDirection: "column", gap: 16 }}>
-        <IntentionLive userId={id} />
-        <LineOfDayLive />
-        <TinyMissionLive userId={id} />
-      </div>
-      <FwCardRow label="A day for you" Icon={Sun} accent={T.gold} items={[{ id: "do" }]} render={() => <DayOffLive key="do" userId={id} />} />
-      <FwCardRow label="Someone like you" Icon={Heart} accent="#8FAF8F" items={[{ id: "re" }]} render={() => <ResonanceLive key="re" />} />
+      <IntentionLive userId={id} />
+      <LineOfDayLive />
+      <TinyMissionLive userId={id} />
+      <DayOffLive userId={id} wide />
+      <ResonanceLive wide />
     </div>
   );
 }
