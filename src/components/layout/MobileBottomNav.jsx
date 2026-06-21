@@ -12,7 +12,11 @@ import { T } from "@/components/journal/Editorial";
 // SLIDES between items — the way IG/Material nav indicators do it. The slide is
 // a single CSS transform transition (translateX only → compositor 60fps), tight
 // + snappy, NO squash-stretch (that's what read as clunky).
-//   slide  : transform .18s cubic-bezier(.33,1,.68,1)  (silky ease-out glide)
+//   slide  : left .18s cubic-bezier(.33,1,.68,1)  (silky ease-out glide). We
+//            animate `left` (not transform) so the % resolves against the capsule
+//            — the pill is positioned purely from activeIndex and ALWAYS lands on
+//            the right slot regardless of width changes; single tiny element so
+//            the `left` animation stays smooth.
 //   reduced-motion: no transition — the pill moves instantly.
 // Decisive DEFAULTS below; the `?navtune=1` panel can override them (persisted
 // in localStorage) so Halli can pick the exact size/speed live.
@@ -22,7 +26,7 @@ const _tune = (() => {
 })();
 const PILL_INSET = _tune.side ?? 1;      // px side gap — pill effectively edge-to-edge
 const PILL_HEIGHT = _tune.height ?? 60;  // near-full height — ~1px even top/bottom inset
-const PILL_SLIDE = `transform ${_tune.slideMs ?? 180}ms cubic-bezier(.33,1,.68,1)`; // easeOutCubic — silky
+const PILL_SLIDE = `left ${_tune.slideMs ?? 180}ms cubic-bezier(.33,1,.68,1)`; // easeOutCubic — silky
 const NAV_ICON = _tune.icon ?? 24;       // icon size — bigger/bolder active slot
 
 // Slot order (left → right): Today · Lifestyle · Jess bloom · Profile · Menu.
@@ -296,14 +300,16 @@ export default function MobileBottomNav({ currentPageName }) {
             aria-hidden="true"
             style={{
               position: "absolute",
-              left: 8 + PILL_INSET,                 // capsule paddingInline (8) + side inset
+              // left = capsule padding (8) + side inset + N columns. The % in the
+              // column term resolves against the capsule, so the pill is always
+              // exactly on slot `activeIndex` — no measurement, no wrong-slot.
+              left: `calc(${8 + PILL_INSET}px + ${Math.max(0, activeIndex)} * (100% - 16px) / 5)`,
               top: (62 - PILL_HEIGHT) / 2,
               height: PILL_HEIGHT,
               width: `calc((100% - 16px) / 5 - ${PILL_INSET * 2}px)`,
               borderRadius: 9999,                   // wide stadium pill, like the reference
-              transform: `translateX(calc(${Math.max(0, activeIndex)} * 100% + ${Math.max(0, activeIndex) * PILL_INSET * 2}px))`,
               opacity: hasActive ? 1 : 0,
-              willChange: "transform, opacity",
+              willChange: "left, opacity",
               zIndex: 0,
               // Soft, LIGHT active pill like the reference — a pale cream/gold
               // wash (not a dark slab). It reads against the translucent glass
