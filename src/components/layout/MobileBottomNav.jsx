@@ -14,7 +14,7 @@ import { T } from "@/components/journal/Editorial";
 // + snappy, NO squash-stretch (that's what read as clunky).
 //   slide  : transform .24s cubic-bezier(.22,1,.36,1)  (ease-out, no overshoot)
 //   reduced-motion: no transition — the pill moves instantly.
-const PILL_INSET = 3;    // px gap between the pill and the item edges (snug)
+const PILL_INSET = 2;    // px gap between the pill and the item edges (near-full)
 const PILL_HEIGHT = 54;  // near-full height — ~4px even inset in the 62px capsule
 const PILL_SLIDE = "transform .24s cubic-bezier(.22,1,.36,1)";
 
