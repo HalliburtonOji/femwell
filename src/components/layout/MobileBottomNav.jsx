@@ -12,7 +12,7 @@ import { T } from "@/components/journal/Editorial";
 // SLIDES between items — the way IG/Material nav indicators do it. The slide is
 // a single CSS transform transition (translateX only → compositor 60fps), tight
 // + snappy, NO squash-stretch (that's what read as clunky).
-//   slide  : transform .16s cubic-bezier(.4,0,.2,1)  (quick, light ease-out)
+//   slide  : transform .18s cubic-bezier(.33,1,.68,1)  (silky ease-out glide)
 //   reduced-motion: no transition — the pill moves instantly.
 // Decisive DEFAULTS below; the `?navtune=1` panel can override them (persisted
 // in localStorage) so Halli can pick the exact size/speed live.
@@ -20,9 +20,9 @@ const _tune = (() => {
   try { return JSON.parse(localStorage.getItem("fw_navtune") || "null") || {}; }
   catch { return {}; }
 })();
-const PILL_INSET = _tune.side ?? 1;      // px side gap — pill effectively FILLS the slot
-const PILL_HEIGHT = _tune.height ?? 56;  // ~3px even top/bottom inset in the 62px capsule
-const PILL_SLIDE = `transform ${_tune.slideMs ?? 160}ms cubic-bezier(.4,0,.2,1)`;
+const PILL_INSET = _tune.side ?? 1;      // px side gap — pill effectively edge-to-edge
+const PILL_HEIGHT = _tune.height ?? 60;  // near-full height — ~1px even top/bottom inset
+const PILL_SLIDE = `transform ${_tune.slideMs ?? 180}ms cubic-bezier(.33,1,.68,1)`; // easeOutCubic — silky
 const NAV_ICON = _tune.icon ?? 24;       // icon size — bigger/bolder active slot
 
 // Slot order (left → right): Today · Lifestyle · Jess bloom · Profile · Menu.
@@ -55,7 +55,7 @@ const labelStyle = (active) => ({
 // ── Temporary live tuner (dev-only, behind ?navtune=1) ────────────────────────
 // Lets Halli pick the exact pill size + slide speed without another round-trip.
 // Writes choices to localStorage and reloads (the nav reads them at load).
-const TUNE_DEFAULTS = { side: 1, height: 56, slideMs: 160, icon: 24 };
+const TUNE_DEFAULTS = { side: 1, height: 60, slideMs: 180, icon: 24 };
 const SHOW_TUNER = typeof window !== "undefined" && /(\?|&)navtune\b/.test(window.location.search);
 function NavTuner() {
   const cur = { ...TUNE_DEFAULTS, ..._tune };
@@ -87,8 +87,8 @@ function NavTuner() {
         Nav tuner — side {cur.side} · h {cur.height} · {cur.slideMs}ms · icon {cur.icon}
       </div>
       <Row label="Side inset" k="side" opts={[0, 1, 2]} unit="px" />
-      <Row label="Height" k="height" opts={[54, 56, 58]} unit="px" />
-      <Row label="Speed" k="slideMs" opts={[130, 160, 200]} unit="ms" />
+      <Row label="Height" k="height" opts={[58, 60, 62]} unit="px" />
+      <Row label="Speed" k="slideMs" opts={[150, 180, 210]} unit="ms" />
       <Row label="Icon" k="icon" opts={[22, 24, 26]} unit="px" />
       <button type="button" onClick={reset}
         style={{ marginTop: 4, fontSize: 11, padding: "3px 10px", borderRadius: 8, cursor: "pointer",
