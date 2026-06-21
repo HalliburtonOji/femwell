@@ -268,6 +268,7 @@ export const PAGES = {
     "TodayDemo5": TodayDemo5,
     "TodayDemo6": TodayDemo6,
     "TodayOption2": TodayOption2,
+    "TodayRitualDemo": TodayRitualDemo,
     "BrandCraftSample": BrandCraftSample,
     "HealthDemo": HealthDemo,
     "ProfileDemo": ProfileDemo,
