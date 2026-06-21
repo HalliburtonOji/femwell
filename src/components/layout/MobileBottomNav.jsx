@@ -12,11 +12,18 @@ import { T } from "@/components/journal/Editorial";
 // SLIDES between items — the way IG/Material nav indicators do it. The slide is
 // a single CSS transform transition (translateX only → compositor 60fps), tight
 // + snappy, NO squash-stretch (that's what read as clunky).
-//   slide  : transform .24s cubic-bezier(.22,1,.36,1)  (ease-out, no overshoot)
+//   slide  : transform .16s cubic-bezier(.4,0,.2,1)  (quick, light ease-out)
 //   reduced-motion: no transition — the pill moves instantly.
-const PILL_INSET = 2;    // px gap between the pill and the item edges (near-full)
-const PILL_HEIGHT = 54;  // near-full height — ~4px even inset in the 62px capsule
-const PILL_SLIDE = "transform .24s cubic-bezier(.22,1,.36,1)";
+// Decisive DEFAULTS below; the `?navtune=1` panel can override them (persisted
+// in localStorage) so Halli can pick the exact size/speed live.
+const _tune = (() => {
+  try { return JSON.parse(localStorage.getItem("fw_navtune") || "null") || {}; }
+  catch { return {}; }
+})();
+const PILL_INSET = _tune.side ?? 1;      // px side gap — pill effectively FILLS the slot
+const PILL_HEIGHT = _tune.height ?? 56;  // ~3px even top/bottom inset in the 62px capsule
+const PILL_SLIDE = `transform ${_tune.slideMs ?? 160}ms cubic-bezier(.4,0,.2,1)`;
+const NAV_ICON = _tune.icon ?? 24;       // icon size — bigger/bolder active slot
 
 // Slot order (left → right): Today · Lifestyle · Jess bloom · Profile · Menu.
 // Four calm destinations + the centre Jess bloom + the "More" door (Menu) —
@@ -44,6 +51,53 @@ const labelStyle = (active) => ({
   marginTop: 2,
   lineHeight: 1,
 });
+
+// ── Temporary live tuner (dev-only, behind ?navtune=1) ────────────────────────
+// Lets Halli pick the exact pill size + slide speed without another round-trip.
+// Writes choices to localStorage and reloads (the nav reads them at load).
+const TUNE_DEFAULTS = { side: 1, height: 56, slideMs: 160, icon: 24 };
+const SHOW_TUNER = typeof window !== "undefined" && /(\?|&)navtune\b/.test(window.location.search);
+function NavTuner() {
+  const cur = { ...TUNE_DEFAULTS, ..._tune };
+  const set = (patch) => {
+    const next = { ...cur, ...patch };
+    try { localStorage.setItem("fw_navtune", JSON.stringify(next)); } catch { /* ignore */ }
+    window.location.reload();
+  };
+  const reset = () => { try { localStorage.removeItem("fw_navtune"); } catch { /* ignore */ } window.location.reload(); };
+  const Row = ({ label, k, opts, unit = "" }) => (
+    <div style={{ display: "flex", alignItems: "center", gap: 5, margin: "5px 0" }}>
+      <span style={{ width: 86, fontSize: 11, opacity: 0.85 }}>{label}</span>
+      {opts.map((o) => (
+        <button key={o} type="button" onClick={() => set({ [k]: o })}
+          style={{ fontSize: 11, padding: "3px 8px", borderRadius: 8, cursor: "pointer",
+            border: "1px solid rgba(0,0,0,0.18)",
+            background: cur[k] === o ? "#A8893F" : "#fff",
+            color: cur[k] === o ? "#fff" : "#333", fontWeight: cur[k] === o ? 700 : 500 }}>
+          {o}{unit}
+        </button>
+      ))}
+    </div>
+  );
+  return (
+    <div style={{ position: "fixed", top: "calc(env(safe-area-inset-top,0px) + 8px)", left: 8, right: 8,
+      zIndex: 99999, background: "rgba(255,255,255,0.97)", border: "1px solid #A8893F", borderRadius: 12,
+      padding: "8px 10px", boxShadow: "0 6px 24px rgba(0,0,0,0.2)", fontFamily: "system-ui, sans-serif", color: "#222" }}>
+      <div style={{ fontSize: 12, fontWeight: 700, marginBottom: 4 }}>
+        Nav tuner — side {cur.side} · h {cur.height} · {cur.slideMs}ms · icon {cur.icon}
+      </div>
+      <Row label="Side inset" k="side" opts={[0, 1, 2]} unit="px" />
+      <Row label="Height" k="height" opts={[54, 56, 58]} unit="px" />
+      <Row label="Speed" k="slideMs" opts={[130, 160, 200]} unit="ms" />
+      <Row label="Icon" k="icon" opts={[22, 24, 26]} unit="px" />
+      <button type="button" onClick={reset}
+        style={{ marginTop: 4, fontSize: 11, padding: "3px 10px", borderRadius: 8, cursor: "pointer",
+          border: "1px solid rgba(0,0,0,0.18)", background: "#f3efe6" }}>
+        Reset to default
+      </button>
+    </div>
+  );
+}
 
 export default function MobileBottomNav({ currentPageName }) {
   useNavigate();
@@ -243,6 +297,7 @@ export default function MobileBottomNav({ currentPageName }) {
 
   return (
     <>
+      {SHOW_TUNER && <NavTuner />}
       {/* Kill the GLOBAL red focus ring (index.css `:focus-visible{outline:2px
           solid #E11D48}`) for nav items — it renders as an off-brand red box
           (e.g. around Menu when focus returns after the sheet closes). Replace
@@ -352,7 +407,7 @@ export default function MobileBottomNav({ currentPageName }) {
                 "inset 0 1px 0 rgba(255,253,247,0.85), 0 1px 4px rgba(120,90,40,0.14)",
               transition: reduceMotion
                 ? "opacity .12s linear"
-                : "transform .24s cubic-bezier(.22,1,.36,1), opacity .2s ease",
+                : `${PILL_SLIDE}, opacity .2s ease`,
             }}
           />
 
@@ -392,7 +447,7 @@ export default function MobileBottomNav({ currentPageName }) {
                         background: "radial-gradient(circle at 50% 46%, rgba(232,180,184,0.55) 0%, rgba(232,180,184,0.18) 55%, rgba(232,180,184,0) 78%)",
                       }}
                     />
-                    <FlowerGlyph variant="cosmos" size={30} color={T.crimson} accent="#A8893F" idx={7} />
+                    <FlowerGlyph variant="cosmos" size={34} color={T.crimson} accent="#A8893F" idx={7} />
                   </span>
                   <span style={{ ...labelStyle(false), color: "var(--plum-deep)", fontWeight: 600 }}>
                     {slot.label}
@@ -428,7 +483,7 @@ export default function MobileBottomNav({ currentPageName }) {
                       background: "transparent",
                     }}
                   >
-                    <Icon size={22} strokeWidth={1.75} style={{ color: menuOpen ? "var(--plum-deep)" : "var(--plum-mute)" }} />
+                    <Icon size={NAV_ICON} strokeWidth={1.75} style={{ color: menuOpen ? "var(--plum-deep)" : "var(--plum-mute)" }} />
                   </span>
                   <span style={labelStyle(menuOpen)}>{slot.label}</span>
                 </button>
@@ -467,7 +522,7 @@ export default function MobileBottomNav({ currentPageName }) {
                     background: "transparent",
                   }}
                 >
-                  <Icon size={22} strokeWidth={1.75} style={{ color: active ? "var(--plum-deep)" : "var(--plum-mute)" }} />
+                  <Icon size={NAV_ICON} strokeWidth={1.75} style={{ color: active ? "var(--plum-deep)" : "var(--plum-mute)" }} />
                 </span>
                 <span style={labelStyle(active)}>{slot.label}</span>
               </Link>
