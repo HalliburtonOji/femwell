@@ -24,8 +24,8 @@ const _tune = (() => {
   try { return JSON.parse(localStorage.getItem("fw_navtune") || "null") || {}; }
   catch { return {}; }
 })();
-const PILL_INSET = _tune.side ?? 1;      // px side gap — pill effectively edge-to-edge
-const PILL_HEIGHT = _tune.height ?? 60;  // near-full height — ~1px even top/bottom inset
+const PILL_INSET = _tune.side ?? 0;      // px side gap — pill is edge-to-edge in the slot
+const PILL_HEIGHT = _tune.height ?? 62;  // full height — fills the slot top-to-bottom
 const PILL_SLIDE = `transform ${_tune.slideMs ?? 180}ms cubic-bezier(.33,1,.68,1)`; // easeOutCubic — silky (GPU)
 const NAV_ICON = _tune.icon ?? 24;       // icon size — bigger/bolder active slot
 
@@ -59,7 +59,7 @@ const labelStyle = (active) => ({
 // ── Temporary live tuner (dev-only, behind ?navtune=1) ────────────────────────
 // Lets Halli pick the exact pill size + slide speed without another round-trip.
 // Writes choices to localStorage and reloads (the nav reads them at load).
-const TUNE_DEFAULTS = { side: 1, height: 60, slideMs: 180, icon: 24 };
+const TUNE_DEFAULTS = { side: 0, height: 62, slideMs: 180, icon: 24 };
 const SHOW_TUNER = typeof window !== "undefined" && /(\?|&)navtune\b/.test(window.location.search);
 function NavTuner() {
   const cur = { ...TUNE_DEFAULTS, ..._tune };
