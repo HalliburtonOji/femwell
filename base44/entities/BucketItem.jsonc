@@ -1,0 +1,69 @@
+{
+  "name": "BucketItem",
+  "type": "object",
+  "properties": {
+    "user_id": {
+      "type": "string"
+    },
+    "title": {
+      "type": "string"
+    },
+    "domain": {
+      "type": "string"
+    },
+    "why": {
+      "type": "string"
+    },
+    "stage": {
+      "type": "string",
+      "enum": [
+        "seed",
+        "sprout",
+        "budding",
+        "sapling",
+        "tree"
+      ],
+      "default": "seed"
+    },
+    "steps": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "text": {
+            "type": "string"
+          },
+          "done": {
+            "type": "boolean"
+          }
+        }
+      }
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "dreaming",
+        "active",
+        "done"
+      ],
+      "default": "dreaming"
+    },
+    "flower": {
+      "type": "string"
+    },
+    "accent": {
+      "type": "string"
+    },
+    "created_at": {
+      "type": "string"
+    },
+    "updated_at": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "user_id",
+    "title"
+  ],
+  "indexes": [ { "fields": ["created_date"] }, { "fields": ["status"] } ]
+}

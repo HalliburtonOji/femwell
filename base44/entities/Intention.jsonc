@@ -1,0 +1,45 @@
+{
+  "name": "Intention",
+  "type": "object",
+  "properties": {
+    "user_id": {
+      "type": "string"
+    },
+    "day_key": {
+      "type": "string"
+    },
+    "text": {
+      "type": "string"
+    },
+    "source": {
+      "type": "string",
+      "enum": [
+        "suggestion",
+        "freetext"
+      ],
+      "default": "freetext"
+    },
+    "reflection": {
+      "type": "string",
+      "enum": [
+        "",
+        "bloomed",
+        "half",
+        "rested"
+      ],
+      "default": ""
+    },
+    "created_at": {
+      "type": "string"
+    },
+    "updated_at": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "user_id",
+    "day_key",
+    "text"
+  ],
+  "indexes": [ { "fields": ["created_date"] }, { "fields": ["day_key"] } ]
+}

@@ -3,6 +3,9 @@
 import { PAPER_BG, T, SERIF, UI, Eyebrow, InkFilter, EditorialFooter, useEditorialFonts, PHASE_COLORS } from "@/components/journal/Editorial";
 import NurtureGarden, { Bloom } from "@/components/nurture/NurtureGarden";
 import { FORM_LIST } from "@/components/nurture/companion";
+// Growth Phase-0 (Halli-approved, live): goals + big-life bucket list as living flora,
+// a tiny mission that waters the garden. Additive — the companion above is untouched.
+import { GardenGrowth } from "@/components/growth/GrowthLive";
 // Brand-P2: full-palette page vines (§5.3 Garden = the full palette). The Garden already
 // carries the carved Heart + the elevated Bloom centrepiece — this only adds the edge texture.
 import { VineMotifV2, floraKeyframes } from "@/components/brand/flora";
@@ -60,6 +63,7 @@ export default function Garden() {
       </div>
       <div style={{ maxWidth: 460, margin: "0 auto", padding: "34px 20px 50px", position: "relative" }}>
         <NurtureGarden compact={false} />
+        <GardenGrowth />
         <div style={{ marginTop: 40 }}>
           <EditorialFooter />
         </div>

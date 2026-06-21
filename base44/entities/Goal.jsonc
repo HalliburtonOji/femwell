@@ -1,0 +1,68 @@
+{
+  "name": "Goal",
+  "type": "object",
+  "properties": {
+    "user_id": {
+      "type": "string"
+    },
+    "title": {
+      "type": "string"
+    },
+    "type": {
+      "type": "string",
+      "enum": [
+        "long",
+        "short"
+      ],
+      "default": "short"
+    },
+    "domain": {
+      "type": "string"
+    },
+    "stage": {
+      "type": "string",
+      "enum": [
+        "seed",
+        "sprout",
+        "budding",
+        "bloom",
+        "sapling",
+        "tree"
+      ],
+      "default": "seed"
+    },
+    "next_action": {
+      "type": "string"
+    },
+    "progress_note": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "reached",
+        "resting"
+      ],
+      "default": "active"
+    },
+    "flower": {
+      "type": "string"
+    },
+    "accent": {
+      "type": "string"
+    },
+    "created_at": {
+      "type": "string"
+    },
+    "updated_at": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "user_id",
+    "title",
+    "type"
+  ],
+  "indexes": [ { "fields": ["created_date"] }, { "fields": ["status"] } ]
+}
