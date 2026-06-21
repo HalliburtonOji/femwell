@@ -28,19 +28,15 @@ import { useNavigate } from "react-router-dom";
 import { computeCycleDay } from "@/hooks/useCycleDay";
 import {
   Feather, Waves, Eye, Users, BarChart2, Lock, Hash, CalendarHeart, Moon,
-  ChevronLeft, ChevronRight, ArrowRight, Pin,
+  Sprout, X, Check,
 } from "lucide-react";
 import {
-  T, UI, SERIF, Eyebrow, Rule, Script, Hand, Heart, InkFilter, useEditorialFonts, PAPER_BG,
+  T, UI, SERIF, Eyebrow, Rule, Hand, Heart, Script, InkFilter, useEditorialFonts, PAPER_BG,
 } from "@/components/journal/Editorial";
-import { HubSheet, SurfaceCard } from "@/components/nutrition/hub/HubShell";
-import { JournalDiaryRing } from "@/components/hub/Centerpieces";
-import { VineMotifV2, FlowerGlyph, floraKeyframes, cwOf } from "@/components/brand/flora";
+import { HubSheet } from "@/components/nutrition/hub/HubShell";
+import { VineMotifV2, floraKeyframes, Butterfly, SwayBloom } from "@/components/brand/flora";
 import JumpToButton from "@/components/layout/JumpToButton";
 import { collectThreads, entriesInThread } from "@/components/journal/threads";
-import { formatCountdown } from "@/utils/sealedLetters";
-import { heldCountLocal } from "@/components/journal/witness/witnessAnon";
-import NurtureGarden from "@/components/nurture/NurtureGarden";
 import { relativeDate, entryDateObj, cycleDayForDate } from "@/components/journal/journalDates";
 import { TWIN_ENABLED } from "@/components/journal/twin/twinConfig";
 
@@ -58,13 +54,14 @@ import ThreadView from "@/components/journal/ThreadView";
 import SealedLetterCompose from "@/components/journal/sealed/SealedLetterCompose";
 import SealedLettersList from "@/components/journal/sealed/SealedLettersSection";
 import JournalInsightsTab from "@/components/journal/JournalInsightsTab";
-import PromptCarousel from "@/components/journal/PromptCarousel";
 import JournalHubSheet from "@/components/journal/JournalHubSheet";
-import JessErrorBoundary from "@/components/jess/JessErrorBoundary";
+// v4 REDESIGN (approved 2026-06-21): flora hero + ONE summary card + the §6.10 clipboard slider + the §6.7.6 quick-line popup. Every surface (write/echo/witness/twin/threads/sealed letters/mirror/on-this-day/insights/tonight) opens its FULL real component via the kept sheets — no feature lost, no new function.
+import { SpeciesBloom } from "@/components/brand/floraLibrary";
+import { SummaryCard } from "@/components/brand/Card";
+import { ClipboardSlider, Clipboard } from "@/components/brand/ClipboardSlider";
+import { useScrollLock } from "@/utils/useScrollLock";
 
 const COL = 430;     // phone column (matches NutritionHub)
-const CARD_W = 365;  // ~85vw — next card still peeks at the right edge
-const GAP = 14;
 
 // ── Phase → season (lifted verbatim from Journal.jsx so the framing is identical) ─
 const PHASE_SEASON = {
@@ -183,7 +180,7 @@ export default function JournalHub() {
   // slider + sheets
   const [openSheet, setOpenSheet] = useState(null);    // surface id or null
   const [hubMenuOpen, setHubMenuOpen] = useState(false); // the "Jump to" switcher
-  const [active, setActive] = useState(0);             // slider index
+  const [quickLine, setQuickLine] = useState(false);   // §6.7.6 quick-line popup
 
   // composer + the four-lives flow (reused, identical to Journal.jsx)
   const [showNewEntry, setShowNewEntry] = useState(false);
@@ -203,8 +200,6 @@ export default function JournalHub() {
   const [threadFilter, setThreadFilter] = useState(null);
   const [deleteErr, setDeleteErr] = useState(false);
 
-  const trackRef = useRef(null);
-  const last = SURFACES.length - 1;
 
   // ── init: auth + entries + profile (both guarded, never crash) ─────────────
   useEffect(() => {
@@ -259,7 +254,6 @@ export default function JournalHub() {
     const d = entryDateObj(e);
     return d && (Date.now() - d.getTime()) < 7 * 86400000;
   }).length;
-  const ringFraction = Math.max(0.04, Math.min(1, weekCount / 7));
 
   // ── seed helpers — verbatim from Journal.jsx so the composer behaves identically
   const openBlank = () => { setSeedText(""); setSeedType(null); setSeedThread(""); setShowNewEntry(true); };
@@ -306,28 +300,6 @@ export default function JournalHub() {
     if (id === "write") { openBlank(); return; }
     if (id === "tonight") { openSeeded(`${TONIGHT_LINE(phase)}\n\n`, "reflection"); return; }
     setOpenSheet(id);
-  };
-
-  // ── slider scroll-snap sync (same mechanism as NutritionHub) ───────────────
-  useEffect(() => {
-    const el = trackRef.current;
-    if (!el) return;
-    let t;
-    const onScroll = () => {
-      clearTimeout(t);
-      t = setTimeout(() => {
-        const i = Math.round(el.scrollLeft / (CARD_W + GAP));
-        setActive(Math.max(0, Math.min(last, i)));
-      }, 80);
-    };
-    el.addEventListener("scroll", onScroll, { passive: true });
-    return () => { el.removeEventListener("scroll", onScroll); clearTimeout(t); };
-  }, [last, loading]);
-
-  const goTo = (i) => {
-    const idx = Math.max(0, Math.min(last, i));
-    setActive(idx);
-    trackRef.current?.scrollTo({ left: idx * (CARD_W + GAP), behavior: "smooth" });
   };
 
   // ── Jump-to switcher selection — same routing as Journal.jsx's handleHubSelect
@@ -411,205 +383,64 @@ export default function JournalHub() {
 
         {/* ── DAILY HUB header — rich summary, wired to real data ───────────── */}
         <JumpToButton pinned onClick={() => setHubMenuOpen(true)} />
-        <header style={{ padding: "20px 18px 4px" }}>
-          {/* controls row — pinned Jump-to floats top-left (follows scroll); season strip right */}
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "flex-end", gap: 10, marginBottom: 14, minHeight: 34 }}>
-            {season ? (
-              <span style={{ fontFamily: UI, fontSize: 12, color: T.muted, letterSpacing: 0.5, fontWeight: 600, textAlign: "right", maxWidth: 230 }}>
-                {season.name} · {season.line}
-              </span>
-            ) : null}
+        {/* ── v4 SIGNATURE TOP — the §6.8 flora hero (carved heart + bloom-in-ring) ── */}
+        <header style={{ padding: "12px 18px 2px" }}>
+          <div style={{ textAlign: "center" }}>
+            <Eyebrow mb={4}>
+              {firstName ? `${greeting}, ${firstName}` : greeting}{phaseWord ? ` · ${phaseWord}` : ""}{phaseWord && cycleDay ? ` · Day ${cycleDay}` : ""}{` · ${format(new Date(), "d MMMM").toUpperCase()}`}
+            </Eyebrow>
           </div>
-
-          {/* greeting — its own full-width line. No raw username (firstName is null for handle-like names). */}
-          <Eyebrow mb={4}>
-            {firstName ? `${greeting}, ${firstName}` : greeting}
-            {phaseWord ? ` · ${phaseWord}` : ""}
-            {phaseWord && cycleDay ? ` · Day ${cycleDay}` : ""}
-            {` · ${format(new Date(), "d MMMM").toUpperCase()}`}
-          </Eyebrow>
-
-          {/* carved heart in the header (§3) + flanking meaning-blooms (lush, §4/§5.1) */}
-          <div style={{ display: "flex", alignItems: "center", gap: 9, flexWrap: "wrap" }}>
-            <Heart size={15} />
-            <Script size={40} carve>your journal today</Script>
-            <FlowerGlyph variant="camellia" size={24} color={cwOf("gold").petal} color2={cwOf("gold").tip} idx="jh-hdr" />
-          </div>
-
-          {/* the JournalDiaryRing centerpiece — wired to entries-this-week (gentle glance) */}
-          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", marginTop: 12 }}>
-            <div style={{ position: "relative", width: 184, height: 184 }}>
-              <JournalDiaryRing size={184} fraction={ringFraction} />
-            </div>
-            <div style={{ textAlign: "center", marginTop: 8 }}>
-              <div style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 15, color: T.ink }}>
-                {weekCount === 0
-                  ? "A fresh page this week — whenever you’re ready."
-                  : `${weekCount} ${weekCount === 1 ? "entry" : "entries"} this week`}
-              </div>
-              {cycleCount.count > 0 ? (
-                <div style={{ fontFamily: UI, fontSize: 12, letterSpacing: 0.6, color: T.muted, marginTop: 3 }}>
-                  {cycleCount.count} {cycleCount.label} — you{"’"}re building a pattern.
-                </div>
-              ) : null}
-            </div>
-          </div>
-
-          {/* last-entry stat row — real, guarded */}
-          {lastEntry ? (
-            <button onClick={() => setReadEntry(lastEntry)} style={{
-              width: "100%", textAlign: "left", display: "flex", alignItems: "center", gap: 12, marginTop: 16,
-              background: T.paperHi, border: `1px solid ${T.paperDeep}`, borderRadius: 14, padding: "13px 15px", cursor: "pointer",
-            }}>
-              {lastEntry.is_pinned ? <Pin size={15} style={{ color: T.gold, flexShrink: 0 }} /> : <Feather size={15} style={{ color: T.muted, flexShrink: 0 }} />}
-              <span style={{ flex: 1, minWidth: 0 }}>
-                <span style={{ fontFamily: UI, fontSize: 12, letterSpacing: 1, color: T.muted, textTransform: "uppercase", display: "block" }}>
-                  Last entry · {relativeDate(lastEntry)}
-                </span>
-                <span style={{ fontFamily: SERIF, fontSize: 15, color: T.ink, display: "block", lineHeight: 1.25, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                  {entryPreview(lastEntry)}
-                </span>
-              </span>
-              <ArrowRight size={15} style={{ color: T.muted, flexShrink: 0 }} />
-            </button>
-          ) : null}
-
-          {/* Jess prompt line — live daily prompt via PromptCarousel (reused, error-boundaried) */}
-          {user && (
-            <div style={{ marginTop: 18 }}>
-              <JessErrorBoundary variant="quiet" label="JournalHub:Prompt">
-                <HubPromptLine
-                  user={user} profile={profile} phase={phase} cycleDay={cycleDay}
-                  lastEntry={lastEntry} onWrite={(p) => openSeeded(`${p}\n\n`)}
-                />
-              </JessErrorBoundary>
-            </div>
-          )}
-
-          {/* Nurture Companion presence — your living garden, grown from real engagement.
-              An inviting, tappable card → its full view (/Garden). State-not-score, never dies. */}
-          {user && (
-            <button
-              onClick={() => navigate(createPageUrl("Garden"))}
-              style={{
-                marginTop: 16, width: "100%", display: "block", cursor: "pointer",
-                background: T.paperHi, border: `1px solid ${T.paperDeep}`, borderRadius: 18, padding: "13px 14px 16px",
-              }}
-            >
-              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 2 }}>
-                <span style={{ fontFamily: UI, fontSize: 12, fontWeight: 700, letterSpacing: 1, textTransform: "uppercase", color: T.muted }}>Your garden</span>
-                <span style={{ display: "inline-flex", alignItems: "center", gap: 1, fontFamily: UI, fontSize: 12, fontWeight: 600, color: T.muted }}>Tend<ChevronRight size={13} /></span>
-              </div>
-              <NurtureGarden compact onOpen={() => navigate(createPageUrl("Garden"))} />
-            </button>
-          )}
-
-          {/* On-This-Day peek — real past entries, guarded; tap opens the reader */}
-          {onThisDay.length > 0 ? (
-            <div style={{ marginTop: 14 }}>
-              <Eyebrow mb={8}>On this day{cycleDay ? ` · Day ${cycleDay}` : ""}</Eyebrow>
-              <div style={{ display: "grid", gap: 7 }}>
-                {onThisDay.map((e) => (
-                  <button key={e.id} onClick={() => setReadEntry(e)} style={{
-                    width: "100%", textAlign: "left", display: "flex", gap: 10, alignItems: "baseline",
-                    background: "transparent", border: "none", borderLeft: `2px solid ${T.gold}`, paddingLeft: 11, cursor: "pointer",
-                  }}>
-                    <span style={{ fontFamily: UI, fontSize: 12, color: T.muted, fontWeight: 700, textTransform: "uppercase", flexShrink: 0 }}>{relativeDate(e)}</span>
-                    <span style={{ flex: 1, minWidth: 0, fontFamily: SERIF, fontSize: 13.5, color: T.ink, lineHeight: 1.25, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{entryPreview(e)}</span>
-                  </button>
-                ))}
-              </div>
-            </div>
-          ) : null}
-
-          {/* prominent WRITE button — the one clear primary action */}
-          <button onClick={openBlank} style={{
-            width: "100%", display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 10,
-            background: T.crimson, color: T.paper, border: "none", borderRadius: 16, padding: "17px 18px",
-            fontFamily: UI, fontSize: 14, fontWeight: 700, letterSpacing: 1, textTransform: "uppercase", cursor: "pointer",
-            marginTop: 18, boxShadow: "0 6px 18px rgba(188,46,39,0.25)",
-          }}>
-            <Feather size={19} /> Write a page
-          </button>
+          <JournalHero season={season} />
         </header>
 
-        {/* ── THE SPINE — Hero Card Slider of surfaces ───────────────────── */}
-        <div style={{ marginTop: 12 }}>
-          <div style={{ padding: "0 18px 10px" }}>
-            <Hand size={15} color={T.muted}>Swipe through your journal — each card opens the full thing.</Hand>
-          </div>
+        {/* ── ONE summary card — signal-driven rows, each taps to the exact target (§6.8) ── */}
+        <div style={{ padding: "16px 16px 0" }}>
+          <SummaryCard eyebrow="Your pages, today" accent={T.gold} rows={[
+            lastEntry ? { Icon: Feather, label: `Last entry · ${relativeDate(lastEntry)}`, text: entryPreview(lastEntry), onClick: () => setReadEntry(lastEntry) } : null,
+            onThisDay.length > 0 ? { Icon: CalendarHeart, label: "On this day", text: entryPreview(onThisDay[0]), onClick: () => openSurface("onthisday") } : null,
+            { Icon: BarChart2, label: weekCount > 0 ? `${weekCount} ${weekCount === 1 ? "entry" : "entries"} this week` : "A fresh page this week", text: cycleCount.count > 0 ? `${cycleCount.count} ${cycleCount.label} — you're building a pattern.` : "Whenever you're ready — a line is plenty.", onClick: () => openSurface("insights") },
+          ].filter(Boolean)} />
+        </div>
 
-          {/* segmented label rail */}
-          <div style={{ display: "flex", gap: 7, overflowX: "auto", padding: "0 18px 12px", WebkitOverflowScrolling: "touch", scrollbarWidth: "none" }}>
-            {SURFACES.map((s, i) => (
-              <button key={s.id} onClick={() => goTo(i)} style={{
-                flex: "none", background: i === active ? T.ink : "transparent", color: i === active ? T.paper : T.muted,
-                border: `1px solid ${i === active ? T.ink : T.paperDeep}`, borderRadius: 999, padding: "5px 12px",
-                fontFamily: UI, fontSize: 12, fontWeight: 700, letterSpacing: 0.5, textTransform: "uppercase", cursor: "pointer",
-              }}>{s.label}</button>
-            ))}
-          </div>
+        {/* ── COMPACT SPINE — a §6.10 CLIPBOARD SLIDER of journal spaces. Slide SIDEWAYS between boards
+            instead of scrolling down a long list; every tile opens the FULL real surface, so every
+            feature is preserved (write · echo · witness · twin · threads · sealed letters · mirror ·
+            on-this-day · insights · tonight). Uniform 365×488 boards. */}
+        <div style={{ padding: "18px 16px 0" }}>
+          <Hand size={15} color={T.muted} style={{ display: "block", margin: "0 0 8px" }}>Your whole journal, gathered on a few boards — turn them sideways; each one opens in full.</Hand>
+          <ClipboardSlider hint="Turn the page" accent={T.gold}>
+            <Clipboard title="Write & reflect" sub="today's page" accent={T.crimson} flower="poppy" idx="cb-w">
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+                <SurfaceTile Icon={Feather} label="Leave a line" sub="a quick page" accent={T.crimson} onClick={() => setQuickLine(true)} />
+                <SurfaceTile Icon={Moon} label="Tonight" sub="close the day" accent={T.sage} onClick={() => openSurface("tonight")} />
+                <SurfaceTile Icon={CalendarHeart} label="On this day" sub="across cycles" accent={T.gold} onClick={() => openSurface("onthisday")} />
+                <SurfaceTile Icon={Moon} label="Cycle Mirror" sub="your phase echoes" accent={T.sage} onClick={() => openSurface("mirror")} />
+              </div>
+            </Clipboard>
+            <Clipboard title="Your circle" sub="held, anonymously" accent={T.gold} flower="cornflower" idx="cb-c">
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+                <SurfaceTile Icon={Waves} label="Echo Wall" sub="one line, anon" accent={T.gold} onClick={() => openSurface("echo")} />
+                <SurfaceTile Icon={Eye} label="Witness" sub="hold or be held" accent={T.sage} onClick={() => openSurface("witness")} />
+                {TWIN_ENABLED && <SurfaceTile Icon={Users} label="Phase Twin" sub="twelve days, paired" accent={T.sage} onClick={() => openSurface("twin")} />}
+                <SurfaceTile Icon={Hash} label="Threads" sub="series you keep" accent={T.gold} onClick={() => openSurface("threads")} />
+              </div>
+            </Clipboard>
+            <Clipboard title="Keep & see" sub="your archive" accent={T.sage} flower="lavender" idx="cb-k">
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+                <SurfaceTile Icon={BarChart2} label="Insights" sub="the shape of it" accent={T.gold} onClick={() => openSurface("insights")} />
+                <SurfaceTile Icon={Lock} label="Sealed Letters" sub="notes to future you" accent={T.gold} onClick={() => openSurface("letters")} />
+                <SurfaceTile Icon={Sprout} label="Your garden" sub="tend it" accent={T.sage} onClick={() => navigate(createPageUrl("Garden"))} />
+                <SurfaceTile Icon={Feather} label="Write a page" sub="the full composer" accent={T.crimson} onClick={openBlank} />
+              </div>
+            </Clipboard>
+          </ClipboardSlider>
+        </div>
 
-          {/* the swipeable track — scroll-snap, next card peeks */}
-          <div ref={trackRef} className="jhub-track" style={{
-            display: "flex", gap: GAP, overflowX: "auto", scrollSnapType: "x mandatory",
-            padding: "0 18px 4px", scrollbarWidth: "none", WebkitOverflowScrolling: "touch",
-          }}>
-            <style>{`.jhub-track::-webkit-scrollbar{display:none}`}</style>
-
-            {SURFACES.map((s) => (
-              <SurfaceCard
-                key={s.id}
-                cardW={CARD_W}
-                label={s.label}
-                accent={s.accent}
-                onOpen={() => openSurface(s.id)}
-                primaryLabel={PRIMARY_LABEL[s.id] || `Open ${s.label}`}
-                primaryIcon={s.Icon}
-              >
-                <CardSummary
-                  surface={s}
-                  user={user}
-                  entries={entries}
-                  profile={profile}
-                  phase={phase}
-                  cycleDay={cycleDay}
-                  lastEntry={lastEntry}
-                  threads={threads}
-                  onThisDay={onThisDay}
-                  onWrite={openBlank}
-                  onWriteSeeded={openSeeded}
-                  onReadEntry={setReadEntry}
-                  onShareEcho={() => { setEchoSeed(null); setShowShareEcho(true); }}
-                  onAskWitness={() => { setWitnessEntry(null); setShowAskWitness(true); }}
-                  onOpenWitnessInbox={() => setShowWitnessInbox(true)}
-                  onOpenTwin={() => setShowTwin(true)}
-                  onPickThread={(name) => { setThreadFilter(name); setOpenSheet("threads"); }}
-                  onOpenSeal={() => setSealSeed("")}
-                />
-              </SurfaceCard>
-            ))}
-
-            <div style={{ flex: `0 0 ${Math.max(0, COL - CARD_W - 36)}px` }} aria-hidden />
-          </div>
-
-          {/* prev / dots / next */}
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 14, padding: "14px 18px 0" }}>
-            <button onClick={() => goTo(active - 1)} disabled={active === 0} aria-label="Previous surface" style={navBtn(active === 0)}>
-              <ChevronLeft size={18} />
-            </button>
-            <div style={{ display: "flex", gap: 7 }}>
-              {SURFACES.map((s, i) => (
-                <button key={s.id} onClick={() => goTo(i)} aria-label={s.label} style={{
-                  width: i === active ? 18 : 7, height: 7, borderRadius: 999, border: "none", padding: 0,
-                  background: i === active ? T.crimson : T.paperDeep, cursor: "pointer", transition: "width .2s",
-                }} />
-              ))}
-            </div>
-            <button onClick={() => goTo(active + 1)} disabled={active === last} aria-label="Next surface" style={navBtn(active === last)}>
-              <ChevronRight size={18} />
-            </button>
-          </div>
+        {/* prominent WRITE — the one clear primary action */}
+        <div style={{ padding: "18px 16px 0" }}>
+          <button onClick={openBlank} style={{ width: "100%", display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 10, background: T.crimson, color: T.paper, border: "none", borderRadius: 16, padding: "16px 18px", fontFamily: UI, fontSize: 14, fontWeight: 700, letterSpacing: 1, textTransform: "uppercase", cursor: "pointer", boxShadow: "0 6px 18px rgba(188,46,39,0.25)" }}>
+            <Feather size={19} /> Write a page
+          </button>
         </div>
 
         {/* footer voice */}
@@ -637,6 +468,8 @@ export default function JournalHub() {
             {renderSurface(openMeta.id)}
           </HubSheet>
         )}
+
+        {quickLine && <QuickLinePopup user={user} onClose={() => setQuickLine(false)} onSaved={(e) => setEntries((prev) => [e, ...prev])} />}
 
         {/* ── Composer (reused NewEntrySheet — the proven write path) ─────── */}
         {(showNewEntry || editEntry) && user && (
@@ -731,645 +564,100 @@ function TONIGHT_LINE(phase) {
   return TONIGHT_LINES[phase] || "Before the day closes — name one thing your body carried today. Name it, thank it, close the book.";
 }
 
-const PRIMARY_LABEL = {
-  write: "Open the composer",
-  echo: "Open the Echo Wall",
-  witness: "Open Witness",
-  twin: "Open Phase Twin",
-  insights: "Open Insights",
-  onthisday: "Open your mirror",
-  letters: "Open Sealed Letters",
-  threads: "Open Threads",
-  mirror: "Open Cycle Mirror",
-  tonight: "Close the day",
-};
-
-function navBtn(disabled) {
-  return {
-    display: "inline-flex", alignItems: "center", justifyContent: "center", width: 38, height: 38,
-    borderRadius: 999, border: `1px solid ${T.paperDeep}`, background: T.paperHi,
-    color: disabled ? T.paperDeep : T.ink, cursor: disabled ? "default" : "pointer", opacity: disabled ? 0.5 : 1,
-  };
-}
-
-// ── A compact, live Jess prompt line for the header. Renders the REUSED
-// PromptCarousel so the prompt is the same agent-generated daily prompt the live
-// page shows (same cache key), with phase fallbacks — never duplicated copy.
-function HubPromptLine(props) {
+// ── SurfaceTile — a compact §6.10 clipboard mini-tile (icon + label + sub) that opens a full surface ─
+function SurfaceTile({ Icon, label, sub, accent = T.gold, onClick }) {
   return (
-    <div style={{ background: T.dusk, color: T.paper, borderRadius: 16, padding: "14px 16px 10px" }}>
-      <div className="jhub-prompt">
-        <style>{`.jhub-prompt :is(section){margin-bottom:0!important}`}</style>
-        <PromptCarousel {...props} onDark />
-      </div>
-    </div>
+    <button onClick={onClick} aria-label={label} style={{
+      textAlign: "left", cursor: "pointer", minHeight: 98, display: "flex", flexDirection: "column",
+      background: `linear-gradient(165deg, ${T.paperHi} 0%, ${accent}14 100%)`,
+      border: `1px solid ${T.paperDeep}`, borderLeft: `4px solid ${accent}`, borderRadius: 14, padding: "13px 12px",
+      boxShadow: "0 3px 12px rgba(58,44,26,0.08)",
+    }}>
+      <span style={{ width: 32, height: 32, borderRadius: 9, background: T.wax, border: `1px solid ${T.paperDeep}`, display: "grid", placeItems: "center", marginBottom: 8 }}>
+        <Icon size={16} strokeWidth={1.7} color={accent} />
+      </span>
+      <span style={{ fontFamily: SERIF, fontSize: 16, fontWeight: 600, color: T.ink, lineHeight: 1.2 }}>{label}</span>
+      <span style={{ fontFamily: UI, fontSize: 12, color: T.muted, marginTop: 2, lineHeight: 1.3 }}>{sub}</span>
+    </button>
   );
 }
 
-// ── per-card rich summary — each card holds a FULL inline REAL-DATA preview of its
-// feature, plus a direct-on-card action where one is natural (share a line, ask for
-// witness, write tonight's reflection). The bottom sheet stays the dense/full layer.
-function CardSummary(props) {
-  const { surface } = props;
-  switch (surface.id) {
-    case "write":     return <WriteCard {...props} />;
-    case "echo":      return <EchoCard {...props} />;
-    case "witness":   return <WitnessCard {...props} />;
-    case "twin":      return <TwinCard {...props} />;
-    case "insights":  return <InsightsCard {...props} />;
-    case "onthisday": return <OnThisDayCard {...props} />;
-    case "letters":   return <LettersCard {...props} />;
-    case "threads":   return <ThreadsCard {...props} />;
-    case "mirror":    return <MirrorCard {...props} />;
-    case "tonight":   return <TonightCard {...props} />;
-    default:          return null;
-  }
-}
-
-// ── WRITE · today's prompt + last entry preview; direct-on-card = start writing ──
-function WriteCard({ phase, cycleDay, lastEntry, onWrite, onWriteSeeded }) {
-  const phaseWord = phase ? phase.charAt(0).toUpperCase() + phase.slice(1) : "Today";
-  return (
-    <div style={{ display: "flex", flexDirection: "column", flex: 1 }}>
-      <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
-        <Heart size={14} />
-        <Eyebrow>A note from Jess · {phaseWord}{cycleDay ? ` · Day ${cycleDay}` : ""}</Eyebrow>
-      </div>
-      <Script size={28} style={{ marginBottom: 6 }}>What wants to be written?</Script>
-      <Hand size={15} color={T.muted} style={{ marginBottom: 14 }}>A line is enough. It is locked to you, always.</Hand>
-
-      {/* quick starts — direct-on-card: each opens the composer seeded by format */}
-      <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 16 }}>
-        {[
-          ["Free write", null], ["Gratitude", "gratitude"], ["Reflection", "reflection"],
-          ["Mood", "mood"], ["Joy", "joy"], ["Grief", "grief"],
-        ].map(([label, type]) => (
-          <button key={label} onClick={() => (type ? onWriteSeeded("", type) : onWrite())} style={chipBtn}>
-            <Feather size={11} color={T.crimson} />
-            <span style={{ fontFamily: SERIF, fontSize: 13, color: T.ink }}>{label}</span>
-          </button>
-        ))}
-      </div>
-
-      <div style={{ marginTop: "auto" }}>
-        {lastEntry ? (
-          <>
-            <Eyebrow mb={8}>Where you left off · {relativeDate(lastEntry)}</Eyebrow>
-            <div style={{ borderLeft: `2px solid ${T.gold}`, paddingLeft: 11 }}>
-              <div style={{ fontFamily: SERIF, fontSize: 14, color: T.ink, lineHeight: 1.4 }}>{entryPreview(lastEntry)}</div>
-            </div>
-          </>
-        ) : (
-          <Empty>Your first page is waiting. Begin with a single line — gratitude, a mood, or whatever is true right now.</Empty>
-        )}
-      </div>
-    </div>
-  );
-}
-
-// ── ECHO WALL · a few live echoes (real, guarded read); direct-on-card = share a line
-function EchoCard({ phase, onShareEcho }) {
-  const [all, setAll] = useState([]);     // up to 30 live echoes (for presence + filter)
-  const [loaded, setLoaded] = useState(false);
-  const [mineOnly, setMineOnly] = useState(false);  // "your phase" filter toggle
-  useEffect(() => {
-    let alive = true;
-    base44.entities.Echo.filter({ hidden: false }, "-created_date", 30)
-      .then((rows) => { if (alive) setAll(Array.isArray(rows) ? rows.filter(Boolean) : []); })
-      .catch(() => { if (alive) setAll([]); })
-      .finally(() => { if (alive) setLoaded(true); });
-    return () => { alive = false; };
-    // user/profile/phase aren't needed for the read — the feed is everyone's live echoes
-  }, []);
-
-  // k-anon presence: distinct voices in the last 24h (author_hash if present, else rows).
-  // Bucketed to a soft "~N" — never an exact identifying count.
-  const cutoff = Date.now() - 24 * 3600e3;
-  const recent = all.filter((e) => new Date(e.created_date || 0).getTime() >= cutoff);
-  const voices = new Set(recent.map((e) => e.author_hash || e.id)).size;
-  const presence = voices >= 3 ? `~${voices} sisters left a line today` : (all.length > 0 ? "a few quiet lines today" : "");
-
-  const phaseCount = phase ? all.filter((e) => e.phase === phase).length : 0;
-  const shown = (mineOnly && phase ? all.filter((e) => e.phase === phase) : all).slice(0, 5);
-
-  return (
-    <div style={{ display: "flex", flexDirection: "column", flex: 1 }}>
-      <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
-        <Waves size={16} style={{ color: T.gold }} />
-        <Script size={26}>The Echo Wall</Script>
-      </div>
-      <Hand size={14} color={T.muted} style={{ marginBottom: 10 }}>
-        Anonymous lines, held — never replied to. Each fades in two days.
-      </Hand>
-
-      {/* presence + phase filter — a real glance at the room + a way to find your phase */}
-      {loaded && all.length > 0 ? (
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, marginBottom: 12 }}>
-          {presence ? (
-            <span style={{ fontFamily: UI, fontSize: 12, color: T.muted, fontWeight: 600, letterSpacing: 0.2 }}>{presence}</span>
-          ) : <span />}
-          {phase && phaseCount > 0 ? (
-            <button onClick={() => setMineOnly((v) => !v)} style={{
-              fontFamily: UI, fontSize: 12, fontWeight: 700, letterSpacing: 0.4, textTransform: "uppercase", cursor: "pointer",
-              padding: "4px 10px", borderRadius: 999, border: `1px solid ${mineOnly ? T.gold : T.paperDeep}`,
-              background: mineOnly ? T.gold : "transparent", color: mineOnly ? T.paper : T.muted,
-            }}>{mineOnly ? "Showing your phase" : `Your phase · ${phaseCount}`}</button>
-          ) : null}
-        </div>
-      ) : null}
-
-      <div style={{ flex: 1 }}>
-        {!loaded ? (
-          <div style={{ fontFamily: UI, fontSize: 12, color: T.muted }}>Listening for echoes…</div>
-        ) : shown.length > 0 ? (
-          <div style={{ display: "grid", gap: 10 }}>
-            {shown.map((e) => (
-              <div key={e.id} style={{ borderLeft: `2px solid ${T.paperDeep}`, paddingLeft: 11 }}>
-                <div style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 14.5, color: T.ink, lineHeight: 1.4 }}>
-                  {"“"}{(e.body || "").slice(0, 140)}{"”"}
-                </div>
-                {phase && e.phase === phase ? (
-                  <div style={{ fontFamily: UI, fontSize: 12, fontWeight: 700, letterSpacing: 0.6, textTransform: "uppercase", color: T.gold, marginTop: 3 }}>your phase</div>
-                ) : null}
-              </div>
-            ))}
-          </div>
-        ) : mineOnly ? (
-          <Empty>No echoes from your phase in this window yet. Show all, or leave the first line for your phase.</Empty>
-        ) : (
-          <Empty>Quiet, for now — no echoes in this window. Lines are anonymous and fade in 48 hours; if something is true for you, you can leave the first.</Empty>
-        )}
-      </div>
-
-      {/* direct-on-card: share one line (opens the real, crisis-screened composer) */}
-      <button onClick={onShareEcho} style={primaryChip}>
-        <Waves size={14} /> Share a line
-      </button>
-    </div>
-  );
-}
-
-// ── WITNESS · the honest model + your real "held" count; direct-on-card actions ──
-function WitnessCard({ onAskWitness, onOpenWitnessInbox }) {
-  const held = (() => { try { return heldCountLocal(); } catch { return 0; } })();
-  return (
-    <div style={{ display: "flex", flexDirection: "column", flex: 1 }}>
-      <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
-        <Eye size={16} style={{ color: T.sage }} />
-        <Script size={26}>Witness</Script>
-      </div>
-      <Hand size={14} color={T.ink} style={{ marginBottom: 14 }}>
-        Hold space for one sister, or ask one to hold yours. Anonymous, one-to-one, no replies — only presence.
-      </Hand>
-
-      {held > 0 ? (
-        <div style={{ display: "flex", alignItems: "center", gap: 8, background: T.paper, border: `1px solid ${T.sage}`, borderRadius: 10, padding: "9px 12px", marginBottom: 12 }}>
-          <Eye size={13} style={{ color: T.sage }} />
-          <span style={{ fontFamily: SERIF, fontSize: 13.5, color: T.ink }}>
-            You{"’"}ve held space for {held} {held === 1 ? "sister" : "sisters"}. Quiet, unseen, and enough.
-          </span>
-        </div>
-      ) : null}
-
-      <div style={{ display: "grid", gap: 11, marginBottom: 4 }}>
-        <Pattern title="Ask to be witnessed" detail="Send one passage out, anonymously, to a sister in your phase." />
-        <Pattern title="Hold space for someone" detail={held > 0 ? "Open your inbox to hold the next sister waiting." : "Your inbox holds requests waiting for a quiet witness."} />
-      </div>
-
-      <div style={{ marginTop: "auto", display: "grid", gap: 8 }}>
-        <button onClick={onAskWitness} style={primaryChip}>
-          <Eye size={14} /> Ask for a witness
-        </button>
-        <button onClick={onOpenWitnessInbox} style={ghostChip}>
-          Open your witness inbox
-        </button>
-      </div>
-    </div>
-  );
-}
-
-// ── PHASE TWIN · honest "twelve days, paired" preview; opens the real PhaseTwin ──
-function TwinCard({ phase, onOpenTwin }) {
-  const phaseWord = phase ? phase.charAt(0).toUpperCase() + phase.slice(1) : "your phase";
-  return (
-    <div style={{ display: "flex", flexDirection: "column", flex: 1 }}>
-      <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
-        <Users size={16} style={{ color: T.sage }} />
-        <Script size={26}>Phase Twin</Script>
-      </div>
-      <Hand size={14} color={T.ink} style={{ marginBottom: 14 }}>
-        Twelve days, paired with one woman in your {phaseWord.toLowerCase()}. One shared prompt a day; her answer stays blurred until you write yours.
-      </Hand>
-      <div style={{ display: "grid", gap: 11, marginBottom: 4 }}>
-        <Pattern title="One prompt a day" detail="A gentle, whole-life question — not just the cycle." />
-        <Pattern title="Mutual and anonymous" detail="Hashes only, no handles, no free chat. Day 12 archives it." />
-      </div>
-      <button onClick={onOpenTwin} style={{ ...primaryChip, marginTop: "auto" }}>
-        <Users size={14} /> Find your twin
-      </button>
-    </div>
-  );
-}
-
-// ── Mood trend — up to 14 most-recent entries that carried a mood, oldest→newest,
-// as soft colour-banded dots (low/steady/light). A glance at the rhythm, never a score.
-function MoodTrend({ entries }) {
-  const moods = (entries || [])
-    .filter((e) => e && e.mood_rating)
-    .map((e) => ({ m: Number(e.mood_rating), d: entryDateObj(e) }))
-    .filter((x) => x.m >= 1 && x.d)
-    .sort((a, b) => (a.d?.getTime() || 0) - (b.d?.getTime() || 0))
-    .slice(-14);
-  if (moods.length < 2) return null;   // need a couple of moods to read a trend
-  const band = (m) => (m <= 2 ? T.crimson : m === 3 ? T.muted : T.sage);
-  const avg = moods.reduce((s, x) => s + x.m, 0) / moods.length;
-  const word = avg <= 2.4 ? "tender lately" : avg >= 3.6 ? "lighter lately" : "fairly steady";
-  return (
-    <div style={{ background: T.paper, border: `1px solid ${T.paperDeep}`, borderRadius: 10, padding: "11px 13px" }}>
-      <div style={{ fontFamily: UI, fontSize: 12, fontWeight: 700, letterSpacing: 0.6, textTransform: "uppercase", color: T.muted, marginBottom: 8 }}>
-        Mood across your last {moods.length} pages · {word}
-      </div>
-      <div style={{ display: "flex", alignItems: "flex-end", gap: 5, height: 26 }}>
-        {moods.map((x, i) => (
-          <span key={i} title={`mood ${x.m}/5`} style={{
-            width: 9, height: 4 + x.m * 4, borderRadius: 999, background: band(x.m), display: "inline-block", flexShrink: 0,
-          }} />
-        ))}
-      </div>
-    </div>
-  );
-}
-
-// ── INSIGHTS · gentle real patterns from the entries (counts/threads, never scores)
-function InsightsCard({ entries, threads }) {
-  const list = (entries || []).filter(Boolean);
-  const total = list.length;
-  // a calm distribution of formats (real) — the shape of the writing, not a grade
-  const byType = {};
-  list.forEach((e) => { const k = e.card_type || "free"; byType[k] = (byType[k] || 0) + 1; });
-  const topTypes = Object.entries(byType).sort((a, b) => b[1] - a[1]).slice(0, 3);
-  const TYPE_LABEL = {
-    free: "Free writes", gratitude: "Gratitude", mood: "Mood notes", todo: "To-dos",
-    reflection: "Reflections", affirmation: "Affirmations", dream: "Dreams",
-    relationships: "Relationships", career: "Career", creativity: "Creativity",
-    money: "Money", grief: "Grief", joy: "Joy", identity: "Identity",
+// ── QuickLinePopup — the §6.7.6 quick-action popup for "Leave a line": write in place → it saves as a
+//    pressed-flower entry (existing JournalEntries path, guarded; optimistic prepend). No full composer. ─
+function QuickLinePopup({ user, onClose, onSaved }) {
+  useScrollLock(true);
+  const [text, setText] = useState("");
+  const [saved, setSaved] = useState(false);
+  useEffect(() => { const k = (e) => { if (e.key === "Escape") onClose(); }; window.addEventListener("keydown", k); return () => window.removeEventListener("keydown", k); }, [onClose]);
+  const day = (() => { try { return new Date().toISOString().slice(0, 10); } catch { return ""; } })();
+  const save = () => {
+    if (!text.trim() || saved) return;
+    setSaved(true);
+    const optimistic = { id: "tmp-" + Date.now(), session_date: day, text: text.trim(), created_date: new Date().toISOString(), card_type: "free", card_color: "cream" };
+    onSaved && onSaved(optimistic);
+    if (user?.id) base44.entities.JournalEntries.create({ user_id: user.id, session_date: day, text: text.trim(), tags: ["note"], prompt: "A quick line", card_type: "free", card_color: "cream" }).catch(() => {});
+    setTimeout(onClose, 1200);
   };
   return (
-    <div style={{ display: "flex", flexDirection: "column", flex: 1 }}>
-      <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
-        <BarChart2 size={16} style={{ color: T.gold }} />
-        <Script size={26}>The shape of it</Script>
-      </div>
-      <Hand size={14} color={T.muted} style={{ marginBottom: 14 }}>Patterns across your writing — never a grade.</Hand>
-
-      {total > 0 ? (
-        <div style={{ display: "grid", gap: 11 }}>
-          <MoodTrend entries={list} />
-          <Pattern title={`${total} ${total === 1 ? "page" : "pages"} written`} detail="Each one is a small act of paying attention to yourself." />
-          {topTypes.map(([k, n]) => (
-            <Pattern key={k} title={`${TYPE_LABEL[k] || k} · ${n}`} detail="A thread your writing keeps returning to." />
-          ))}
-          {threads.length > 0 ? (
-            <Pattern title={`${threads.length} ${threads.length === 1 ? "series" : "series"} you are keeping`} detail="Named threads you have written into more than once." />
-          ) : null}
+    <div role="dialog" aria-modal="true" aria-label="Leave a line" onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
+      style={{ position: "fixed", inset: 0, zIndex: 220, display: "flex", alignItems: "flex-end", justifyContent: "center", background: "rgba(11,8,5,0.42)" }}>
+      <div onClick={(e) => e.stopPropagation()} className="fw-sheet-safe"
+        style={{ background: T.paperHi, width: "100%", maxWidth: 460, borderRadius: "20px 20px 0 0", padding: "16px 18px 24px", maxHeight: "86vh", overflowY: "auto", boxShadow: "0 -8px 32px rgba(11,8,5,0.22)" }}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
+          <span style={{ fontFamily: UI, fontSize: 12, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: T.crimson }}>Journal · leave a line</span>
+          <button onClick={onClose} aria-label="Close" style={{ background: "transparent", border: "none", cursor: "pointer", color: T.muted, padding: 4, display: "inline-flex" }}><X size={18} /></button>
         </div>
-      ) : (
-        <Empty>
-          Patterns appear here once you have written a few pages — the formats you return to (gratitude, reflection, grief), a gentle mood trend across your recent entries, and the series your writing keeps coming back to. Write two or three pages and this fills in.
-        </Empty>
-      )}
-    </div>
-  );
-}
-
-// ── ON THIS DAY · real past entries on the same cycle-day; tap opens the reader ──
-function OnThisDayCard({ onThisDay, cycleDay, onReadEntry }) {
-  const list = (onThisDay || []).filter(Boolean);
-  return (
-    <div style={{ display: "flex", flexDirection: "column", flex: 1 }}>
-      <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
-        <CalendarHeart size={16} style={{ color: T.gold }} />
-        <Script size={26}>On this day</Script>
-      </div>
-      <Hand size={14} color={T.muted} style={{ marginBottom: 14 }}>
-        {cycleDay ? `What you wrote on Day ${cycleDay} of cycles past.` : "What you wrote on this day, before."}
-      </Hand>
-      <div style={{ flex: 1 }}>
-        {list.length > 0 ? (
-          <div style={{ display: "grid", gap: 11 }}>
-            <div style={{ fontFamily: UI, fontSize: 12, color: T.gold, fontWeight: 700, letterSpacing: 0.6, textTransform: "uppercase" }}>
-              {list.length} {list.length === 1 ? "time" : "times"} you wrote {cycleDay ? `on Day ${cycleDay}` : "on this day"}
-            </div>
-            {list.map((e) => (
-              <button key={e.id} onClick={() => onReadEntry(e)} style={{
-                width: "100%", textAlign: "left", background: "transparent", border: "none",
-                borderLeft: `2px solid ${T.gold}`, paddingLeft: 11, cursor: "pointer",
-              }}>
-                <div style={{ fontFamily: UI, fontSize: 12, color: T.muted, fontWeight: 700, textTransform: "uppercase", marginBottom: 2 }}>{relativeDate(e)}</div>
-                <div style={{ fontFamily: SERIF, fontSize: 14, color: T.ink, lineHeight: 1.4 }}>{entryPreview(e)}</div>
-              </button>
-            ))}
+        {saved ? (
+          <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "6px 0 4px" }}>
+            <span style={{ lineHeight: 0, display: "inline-block", animation: "fwcBreath 2.4s ease-in-out infinite" }}><SpeciesBloom name="camellia" size={42} /></span>
+            <span style={{ fontFamily: SERIF, fontSize: 17, color: T.ink, lineHeight: 1.4 }}>Kept — a pressed flower for today.</span>
           </div>
         ) : (
-          <Empty>Nothing to look back on for today yet. As the cycles turn, past pages from this same day will surface here.</Empty>
-        )}
-      </div>
-    </div>
-  );
-}
-
-// ── SEALED LETTERS · real state — count, ready-to-open, next-unseal timeline ──
-function LettersCard({ user, onOpenSeal }) {
-  const [letters, setLetters] = useState(null);   // null = loading
-  useEffect(() => {
-    if (!user?.id) { setLetters([]); return; }
-    let alive = true;
-    base44.entities.SealedLetters.filter({ user_id: user.id }, "-created_at")
-      .then((rows) => { if (alive) setLetters(Array.isArray(rows) ? rows.filter(Boolean) : []); })
-      .catch(() => { if (alive) setLetters([]); });
-    return () => { alive = false; };
-  }, [user?.id]);
-
-  const list = letters || [];
-  const ready = list.filter((l) => l.unsealed_at && !l.unseal_seen_at);     // arrived, not yet read
-  const sealed = list.filter((l) => !l.unsealed_at);                         // still locked
-  // upcoming unseals, soonest first (next 3) — real seal_date countdowns
-  const upcoming = sealed
-    .filter((l) => l.seal_date)
-    .sort((a, b) => String(a.seal_date).localeCompare(String(b.seal_date)))
-    .slice(0, 3);
-
-  return (
-    <div style={{ display: "flex", flexDirection: "column", flex: 1 }}>
-      <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
-        <Lock size={16} style={{ color: T.gold }} />
-        <Script size={26}>Sealed Letters</Script>
-      </div>
-      <Hand size={14} color={T.ink} style={{ marginBottom: 14 }}>
-        Time-locked notes to a future you, encrypted on your device — sealed until the moment you choose.
-      </Hand>
-
-      <div style={{ flex: 1 }}>
-        {letters === null ? (
-          <div style={{ fontFamily: UI, fontSize: 12, color: T.muted }}>Counting your letters…</div>
-        ) : list.length === 0 ? (
-          <Empty>None sealed yet. Write a line to a future you — set a date, a phase, or a milestone, and it stays encrypted until then.</Empty>
-        ) : (
           <>
-            {/* real headline state */}
-            <div style={{ fontFamily: UI, fontSize: 12, color: T.muted, fontWeight: 700, letterSpacing: 0.3, marginBottom: 12 }}>
-              {sealed.length} sealed{ready.length > 0 ? ` · ${ready.length} ready to open` : ""}
-            </div>
-            {ready.length > 0 ? (
-              <div style={{ display: "flex", alignItems: "center", gap: 8, background: T.paper, border: `1px solid ${T.gold}`, borderRadius: 10, padding: "9px 12px", marginBottom: 12 }}>
-                <Lock size={13} style={{ color: T.gold }} />
-                <span style={{ fontFamily: SERIF, fontSize: 13.5, color: T.ink }}>
-                  {ready.length === 1 ? "A letter has arrived — ready to open." : `${ready.length} letters have arrived.`}
-                </span>
-              </div>
-            ) : null}
-            {upcoming.length > 0 ? (
-              <>
-                <Eyebrow mb={8}>Unsealing next</Eyebrow>
-                <div style={{ display: "grid", gap: 7 }}>
-                  {upcoming.map((l) => (
-                    <div key={l.id} style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: 10 }}>
-                      <span style={{ fontFamily: SERIF, fontSize: 13.5, color: T.ink, minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                        {(l.title || "").trim() || "A sealed letter"}
-                      </span>
-                      <span style={{ fontFamily: UI, fontSize: 12, color: T.muted, fontWeight: 600, flexShrink: 0 }}>{formatCountdown(l.seal_date)}</span>
-                    </div>
-                  ))}
-                </div>
-              </>
-            ) : null}
+            <h2 style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 20, fontWeight: 600, color: T.ink, margin: "0 0 10px" }}>A line is enough.</h2>
+            <textarea value={text} onChange={(e) => setText(e.target.value)} rows={4} maxLength={800} autoFocus placeholder="Whatever it was today…"
+              style={{ width: "100%", boxSizing: "border-box", background: T.paper, border: `1px solid ${T.paperDeep}`, borderRadius: 12, padding: "12px 13px", resize: "none", fontFamily: SERIF, fontSize: 17, lineHeight: 1.5, color: T.ink, outline: "none" }} />
+            <button onClick={save} disabled={!text.trim()}
+              style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 8, width: "100%", boxSizing: "border-box", marginTop: 14, background: T.crimson, color: "#fff", border: "none", borderRadius: 12, padding: "13px 16px", fontFamily: UI, fontSize: 14, fontWeight: 700, cursor: text.trim() ? "pointer" : "default", opacity: text.trim() ? 1 : 0.5 }}>
+              <Check size={15} /> Keep it
+            </button>
+            <p style={{ fontFamily: UI, fontSize: 12, color: T.muted, textAlign: "center", margin: "10px 0 0" }}>Saved to your journal · open the full composer any time for more.</p>
           </>
         )}
       </div>
-
-      {/* direct-on-card: open the real on-device-encrypting composer */}
-      <button onClick={onOpenSeal} style={{ ...primaryChip, marginTop: 14 }}>
-        <Lock size={14} /> Write a sealed letter
-      </button>
     </div>
   );
 }
 
-// short relative label from a Date (for thread "last written" stamps)
-function agoShort(d) {
-  if (!d) return "";
-  const days = Math.floor((Date.now() - d.getTime()) / 86400000);
-  if (days <= 0) return "today";
-  if (days === 1) return "yesterday";
-  if (days < 7) return `${days}d ago`;
-  if (days < 30) return `${Math.floor(days / 7)}w ago`;
-  return `${Math.floor(days / 30)}mo ago`;
-}
 
-// ── THREADS · the real named series; tap a thread opens it in the sheet ──
-// Threads come pre-sorted by most-recently-written (collectThreads), so the
-// freshest series lead. Each chip shows its entry count AND when it was last
-// written into — so a glance tells you which threads are alive vs resting.
-function ThreadsCard({ threads, onPickThread, onWrite }) {
-  const list = (threads || []).filter(Boolean);
-  const freshest = list[0];
+// ── JournalHero — the §6.8 signature top, UPGRADED with the 64-species library (§5.4): a realistic
+//    SpeciesBloom (iris — identity/voice, §5.1) swaying inside a decorative ring, a resting moth (the
+//    Journal page-creature, §5.3), the carved heart (§3), the Ephesis title, flanking species. ──────
+function JournalHero({ season }) {
+  const ring = 214;
   return (
-    <div style={{ display: "flex", flexDirection: "column", flex: 1 }}>
-      <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
-        <Hash size={16} style={{ color: T.gold }} />
-        <Script size={26}>Threads</Script>
-      </div>
-      <Hand size={14} color={T.muted} style={{ marginBottom: 14 }}>
-        {list.length > 0
-          ? `${list.length} ${list.length === 1 ? "series" : "series"} you are keeping — tap one to follow it.`
-          : "Series you are keeping — tap one to follow it."}
-      </Hand>
-      <div style={{ flex: 1 }}>
-        {list.length > 0 ? (
-          <>
-            {freshest?.last ? (
-              <div style={{ fontFamily: UI, fontSize: 12, color: T.muted, fontWeight: 700, letterSpacing: 0.3, marginBottom: 10 }}>
-                Most recent · {freshest.name} ({agoShort(freshest.last)})
-              </div>
-            ) : null}
-            <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
-              {list.slice(0, 10).map((t) => (
-                <button key={t.name} onClick={() => onPickThread(t.name)} style={{ ...chipBtn, flexDirection: "column", alignItems: "flex-start", gap: 2, paddingTop: 7, paddingBottom: 7 }}>
-                  <span style={{ display: "inline-flex", alignItems: "center", gap: 5 }}>
-                    <Hash size={11} color={T.gold} />
-                    <span style={{ fontFamily: SERIF, fontSize: 13, color: T.ink }}>{t.name}</span>
-                    <span style={{ fontFamily: UI, fontSize: 12, color: T.muted, fontWeight: 700 }}>{t.count}</span>
-                  </span>
-                  {t.last ? (
-                    <span style={{ fontFamily: UI, fontSize: 12, color: T.muted, letterSpacing: 0.3 }}>last {agoShort(t.last)}</span>
-                  ) : null}
-                </button>
-              ))}
-            </div>
-          </>
-        ) : (
-          <Empty>
-            No threads yet. When you write, add a tag (like “work” or “healing”) — every entry with that tag gathers into a named series here, so you can follow one idea across weeks.
-            {onWrite ? <><br /><button onClick={onWrite} style={{ ...primaryChip, marginTop: 12, display: "inline-flex" }}><Feather size={13} /> Start one — write &amp; tag it</button></> : null}
-          </Empty>
-        )}
-      </div>
-    </div>
-  );
-}
-
-// ── CYCLE MIRROR · gentle preview of phase echoes; opens the full mirror ──
-function MirrorCard({ entries, phase, cycleDay }) {
-  const list = (entries || []).filter(Boolean);
-  const season = phase ? PHASE_SEASON[phase] : null;
-  return (
-    <div style={{ display: "flex", flexDirection: "column", flex: 1 }}>
-      <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
-        <Moon size={16} style={{ color: T.sage }} />
-        <Script size={26}>Cycle Mirror</Script>
-      </div>
-      <Hand size={14} color={T.muted} style={{ marginBottom: 14 }}>
-        {season ? `${season.name} — ${season.line}` : "Echoes from the same place in your cycle."}
-      </Hand>
-      {list.length > 0 ? (
-        <div style={{ display: "grid", gap: 11 }}>
-          <Pattern title={phase ? `What you wrote in your ${phase}` : "What you wrote before"} detail="The mirror gathers past pages from this same phase." />
-          {cycleDay ? <Pattern title={`Day ${cycleDay} of your cycle`} detail="See the through-line across the months." /> : null}
+    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", marginTop: 6 }}>
+      <style>{floraKeyframes}</style>
+      <div style={{ position: "relative", display: "flex", justifyContent: "center", width: "100%" }}>
+        <div aria-hidden style={{ position: "absolute", top: "48%", left: "50%", width: ring + 56, height: ring + 56, transform: "translate(-50%,-50%)", borderRadius: "50%", background: `radial-gradient(circle, ${T.gold}33 0%, ${T.sage}1F 44%, transparent 70%)`, animation: "fwcGlow 7s ease-in-out infinite", pointerEvents: "none", zIndex: 0 }} />
+        <div style={{ position: "absolute", top: "25%", left: "64%", transform: "translate(-50%,-50%)", zIndex: 3, pointerEvents: "none" }}><Butterfly size={38} color="#8E6E8E" color2={T.gold} pattern="bands" animate idx="jh-moth" /></div>
+        <div style={{ position: "relative", zIndex: 1, width: ring, height: ring, display: "grid", placeItems: "center" }}>
+          <svg width={ring} height={ring} viewBox={`0 0 ${ring} ${ring}`} aria-hidden style={{ position: "absolute", inset: 0 }}>
+            <circle cx={ring / 2} cy={ring / 2} r={ring / 2 - 8} fill="none" stroke={T.gold} strokeWidth="1.5" opacity="0.5" strokeDasharray="2 9" strokeLinecap="round" />
+            <circle cx={ring / 2} cy={ring / 2} r={ring / 2 - 20} fill="none" stroke={T.sage} strokeWidth="1" opacity="0.4" />
+          </svg>
+          <SwayBloom animate idx={3}><SpeciesBloom name="iris" size={150} /></SwayBloom>
         </div>
-      ) : (
-        <Empty>Once you have written across a cycle, the mirror shows you what this same phase felt like before — a quiet through-line.</Empty>
-      )}
-    </div>
-  );
-}
-
-// ── TONIGHT · the dusk close-out; direct-on-card = close the day (seeds composer) ──
-function TonightCard({ phase, onWriteSeeded }) {
-  const prompt = TONIGHT_LINE(phase);
-  return (
-    <div style={{ display: "flex", flexDirection: "column", flex: 1 }}>
-      <div style={{ background: `linear-gradient(135deg, ${T.dusk} 0%, ${T.muted} 100%)`, borderRadius: 14, padding: "20px 18px", flex: 1, display: "flex", flexDirection: "column" }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
-          <Moon size={14} style={{ color: T.blush }} />
-          <Eyebrow color="#D3C3BB">Tonight{"’"}s reflection · 90 seconds</Eyebrow>
-        </div>
-        <Script size={26} color="#F6ECE0" carve={false} style={{ marginBottom: 16 }}>{prompt}</Script>
-        <button onClick={() => onWriteSeeded(`${prompt}\n\n`, "reflection")} style={{
-          marginTop: "auto", display: "inline-flex", alignItems: "center", gap: 6, alignSelf: "flex-start",
-          background: "transparent", border: "none", cursor: "pointer", padding: 0, paddingBottom: 3,
-          fontFamily: SERIF, fontWeight: 600, fontStyle: "italic", fontSize: 18, color: "#F4E9DE",
-          borderBottom: "1px solid rgba(244,233,222,0.5)",
-        }}>
-          Close the day <ArrowRight size={13} />
-        </button>
+      </div>
+      <div style={{ display: "flex", alignItems: "center", gap: 9, marginTop: -2, flexWrap: "wrap", justifyContent: "center" }}>
+        <span style={{ lineHeight: 0 }}><SpeciesBloom name="forget-me-not" size={26} /></span>
+        <Heart size={16} />
+        <Script size={42} carve>your journal today</Script>
+        <span style={{ lineHeight: 0 }}><SpeciesBloom name="camellia" size={26} /></span>
+      </div>
+      <div style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 16, color: T.muted, marginTop: 9, textAlign: "center", maxWidth: 332, lineHeight: 1.5 }}>
+        {season ? `${season.name} · ${season.line}` : "Some days a single sentence is the whole harvest — set it down here, and watch it grow."}
       </div>
     </div>
   );
 }
-
-// ── small shared bits ────────────────────────────────────────────────────────
-function Pattern({ title, detail }) {
-  return (
-    <div style={{ display: "flex", gap: 10 }}>
-      <span style={{ width: 6, borderRadius: 999, background: T.sage, flex: "none" }} />
-      <div>
-        <div style={{ fontFamily: SERIF, fontSize: 14.5, color: T.ink, fontWeight: 600, lineHeight: 1.2 }}>{title}</div>
-        <div style={{ fontFamily: SERIF, fontSize: 12.5, color: T.muted, fontStyle: "italic", marginTop: 1 }}>{detail}</div>
-      </div>
-    </div>
-  );
-}
-function Empty({ children }) {
-  return (
-    <div style={{ border: `1px dashed ${T.paperDeep}`, borderRadius: 12, padding: "14px 13px" }}>
-      <div style={{ fontFamily: SERIF, fontSize: 13, color: T.muted, fontStyle: "italic", lineHeight: 1.4 }}>{children}</div>
-    </div>
-  );
-}
-
-// In-sheet picker shown when Threads is opened with no thread selected — reuses the
-// real ThreadView once a thread is chosen.
-function ThreadsPicker({ threads, onPick, onWrite, onNewThread }) {
-  const list = (threads || []).filter(Boolean);
-  const [newName, setNewName] = useState("");
-  const exists = (n) => list.some((t) => (t.name || "").trim().toLowerCase() === n.trim().toLowerCase());
-  const startNew = () => {
-    const n = newName.trim();
-    if (!n) return;
-    if (exists(n)) { onPick(list.find((t) => (t.name || "").trim().toLowerCase() === n.toLowerCase()).name); return; }
-    (onNewThread || onWrite)(n);   // open the composer seeded with this new series name
-  };
-  // The "start a new series" namer — explicit create path (name it here, write the first
-  // page into it). Shown in BOTH the empty and populated states so a new thread is always
-  // one tap away, not hidden inside the general composer.
-  const Namer = (
-    <div style={{ background: T.paperHi, border: `1px solid ${T.paperDeep}`, borderRadius: 12, padding: "13px 14px", marginBottom: 16 }}>
-      <Eyebrow mb={8}>Start a new series</Eyebrow>
-      <div style={{ display: "flex", gap: 8 }}>
-        <input
-          value={newName}
-          onChange={(e) => setNewName(e.target.value)}
-          onKeyDown={(e) => { if (e.key === "Enter") startNew(); }}
-          placeholder="Name it — e.g. sleep, becoming, the hard stuff"
-          style={{ flex: 1, minWidth: 0, background: T.paper, border: `1px solid ${T.paperDeep}`, borderRadius: 8, padding: "10px 12px", fontFamily: SERIF, fontSize: 15, color: T.ink, outline: "none", boxSizing: "border-box" }}
-        />
-        <button onClick={startNew} disabled={!newName.trim()} style={{
-          flexShrink: 0, display: "inline-flex", alignItems: "center", gap: 6, background: newName.trim() ? T.crimson : T.paperDeep,
-          color: T.paper, border: "none", borderRadius: 8, padding: "0 14px", cursor: newName.trim() ? "pointer" : "default",
-          fontFamily: UI, fontSize: 12, fontWeight: 700, letterSpacing: 0.4, textTransform: "uppercase",
-        }}>
-          <Feather size={13} /> Start
-        </button>
-      </div>
-      <div style={{ fontFamily: UI, fontSize: 12, color: T.muted, marginTop: 8, lineHeight: 1.4 }}>
-        Names the series and opens a page in it — write your first line and it{"’"}s kept here.
-      </div>
-    </div>
-  );
-  if (list.length === 0) {
-    return (
-      <div style={{ padding: "10px 4px" }}>
-        <Eyebrow mb={8}>Threads</Eyebrow>
-        <Script size={28} style={{ marginBottom: 6 }}>Start your first series</Script>
-        <Hand size={16} color={T.inkSoft} style={{ marginBottom: 16 }}>
-          A thread gathers pages on one idea over time — name one below, or add a tag whenever you write.
-        </Hand>
-        {Namer}
-      </div>
-    );
-  }
-  return (
-    <div>
-      {Namer}
-      <Eyebrow mb={12}>Series you are keeping</Eyebrow>
-      <div style={{ display: "grid", gap: 8 }}>
-        {list.map((t) => (
-          <button key={t.name} onClick={() => onPick(t.name)} style={{
-            width: "100%", textAlign: "left", display: "flex", alignItems: "center", gap: 10,
-            background: T.paperHi, border: `1px solid ${T.paperDeep}`, borderRadius: 12, padding: "13px 15px", cursor: "pointer",
-          }}>
-            <Hash size={15} style={{ color: T.gold, flexShrink: 0 }} />
-            <span style={{ flex: 1, fontFamily: SERIF, fontSize: 16, color: T.ink }}>{t.name}</span>
-            <span style={{ fontFamily: UI, fontSize: 12, color: T.muted, fontWeight: 700 }}>{t.count}</span>
-            <ChevronRight size={15} style={{ color: T.muted, flexShrink: 0 }} />
-          </button>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-const chipBtn = {
-  display: "inline-flex", alignItems: "center", gap: 6, background: T.wax,
-  border: `1px solid ${T.paperDeep}`, borderRadius: 999, padding: "6px 11px 6px 9px", cursor: "pointer",
-};
-const primaryChip = {
-  width: "100%", marginTop: 14, display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 8,
-  background: T.crimson, color: T.paper, border: "none", borderRadius: 12, padding: "12px 16px",
-  fontFamily: UI, fontSize: 12, fontWeight: 700, letterSpacing: 0.5, textTransform: "uppercase", cursor: "pointer",
-};
-const ghostChip = {
-  width: "100%", display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 8,
-  background: "transparent", color: T.ink, border: `1px solid ${T.paperDeep}`, borderRadius: 12, padding: "11px 16px",
-  fontFamily: UI, fontSize: 12, fontWeight: 700, letterSpacing: 0.5, textTransform: "uppercase", cursor: "pointer",
-};
