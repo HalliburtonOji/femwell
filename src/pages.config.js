@@ -134,6 +134,10 @@ import TodayDemo6 from './pages/TodayDemo6';
 // Today — Option 2 (single horizontal slider; one smart card per app section; daily-rotating
 // suggestions + inline actions). PREVIEW route only, reached via FoundersOS → Previews.
 import TodayOption2 from './pages/TodayOption2';
+// Today — Ritual Builder DEMO: the live Today (Demo6) with the "Your day" list turned into a §6.10
+// Clipboard Stack Slider — slide LEFT to reveal the ritual builder (4 ritual cards + quick-popups +
+// garden growth). PREVIEW route only, reached via FoundersOS → Previews. Live Today untouched.
+import TodayRitualDemo from './pages/TodayRitualDemo';
 // Brand craft sample (Phase-1 brand-identity craft direction — flat vs upgraded bloom,
 // botanical motif, heart in context, live perf). Self-contained preview. Linked from Previews.
 import BrandCraftSample from './pages/BrandCraftSample';
@@ -163,6 +167,7 @@ import PulseCardsDemo from './pages/PulseCardsDemo';
 import PlannerCardsDemo from './pages/PlannerCardsDemo';
 import FloraLabDemo from './pages/FloraLabDemo';
 import RitualBuilderDemo from './pages/RitualBuilderDemo';
+import PlannerRedesignDemo from './pages/PlannerRedesignDemo';
 // NutritionHub = the REAL new Nutrition page (Daily Hub + Hero Card Slider hybrid,
 // wired to real entities, reuses the hardened nutrition components). Lives at
 // /NutritionHub for live-verify; once verified it replaces the "Nutrition" route.
@@ -286,6 +291,7 @@ export const PAGES = {
     "PlannerCardsDemo": PlannerCardsDemo,
     "FloraLabDemo": FloraLabDemo,
     "RitualBuilderDemo": RitualBuilderDemo,
+    "PlannerRedesignDemo": PlannerRedesignDemo,
     "NutritionHub": NutritionHub,
     "JournalRedesign1": JournalRedesign1,
     "CommunityRedesign1": CommunityRedesign1,
