@@ -146,35 +146,34 @@ export default function MobileBottomNav({ currentPageName }) {
   const activeIndex = menuOpen ? menuIndex : assistantOpen ? fabIndex : linkIndex;
   const hasActive = activeIndex >= 0;
 
-  // FLIP slide. The pill's `left` (in JSX) is a calc() from activeIndex, so after
-  // every render it is ALREADY at the correct slot (robust, no measurement). Here
-  // we just animate the VISUAL move with a GPU transform: invert (translate the
-  // pill back to where it was) then play to translateX(0). Compositor-driven, so
-  // it never freezes even while a heavy keep-alive page mounts on the main thread.
-  const pillRef = useRef(null);
-  const prevLeftRef = useRef(null); // pill's last viewport x (for the FLIP delta)
-  const firstRef = useRef(true);
+  // Pill positioning — FULLY DECLARATIVE so it's immune to main-thread blocks
+  // (a heavy keep-alive page mounting on nav). We measure ONLY the column width
+  // (one number, via ResizeObserver so scroll-lock/viewport changes update it),
+  // then React sets the pill's `transform: translateX(activeIndex * colW)` inline
+  // and the GPU runs the transition on the compositor — never freezes, always
+  // lands exactly on the active slot.
+  const capsuleRef = useRef(null);
+  const [colW, setColW] = useState(0);
   useLayoutEffect(() => {
-    const pill = pillRef.current;
-    if (!pill) return;
-    const x = pill.getBoundingClientRect().left;     // new (correct) position
-    const prev = prevLeftRef.current;
-    prevLeftRef.current = x;
-    if (firstRef.current || reduceMotion || prev == null || prev === x) {
-      firstRef.current = false;
-      pill.style.transition = "none";
-      pill.style.transform = "translateX(0)";
-      return;
-    }
-    // Invert: jump the pill (visually) back to the old spot, then play to 0.
-    pill.style.transition = "none";
-    pill.style.transform = `translateX(${prev - x}px)`;
-    void pill.offsetWidth; // commit the inverted position
-    window.requestAnimationFrame(() => {
-      pill.style.transition = `${PILL_SLIDE}, opacity .2s ease`;
-      pill.style.transform = "translateX(0)";
-    });
-  }, [activeIndex, hasActive, reduceMotion]);
+    const cap = capsuleRef.current;
+    if (!cap) return;
+    const measure = () => {
+      // clientWidth = content+padding (excludes border); grid content = − 2×8 padding.
+      const w = (cap.clientWidth - 16) / 5;
+      setColW((prev) => (Math.abs(prev - w) > 0.1 ? w : prev));
+    };
+    measure();
+    const ro = new ResizeObserver(measure);
+    ro.observe(cap);
+    return () => ro.disconnect();
+  }, []);
+  // Enable the slide only after first paint, so the pill places instantly on
+  // load (no stray slide-in) but slides on every later nav.
+  const [slideReady, setSlideReady] = useState(false);
+  useEffect(() => {
+    const id = window.requestAnimationFrame(() => setSlideReady(true));
+    return () => window.cancelAnimationFrame(id);
+  }, []);
 
   const handleJessTap = () => {
     // Open existing assistant overlay (Layout listens for this event)
@@ -253,6 +252,7 @@ export default function MobileBottomNav({ currentPageName }) {
         }}
       >
         <div
+          ref={capsuleRef}
           style={{
             position: "relative",
             pointerEvents: "auto",
@@ -316,20 +316,17 @@ export default function MobileBottomNav({ currentPageName }) {
               (scroll-lock, page mounts) with no JS measurement — so it can never
               land on the wrong slot — and the slide stays a GPU transform. */}
           <div
-            ref={pillRef}
             aria-hidden="true"
             style={{
               position: "absolute",
-              // left = capsule padding (8) + side inset + N columns. The % in the
-              // column term resolves against the capsule, so the pill is always
-              // exactly on slot `activeIndex` — no measurement, no wrong-slot. The
-              // FLIP effect animates the VISUAL move via transform (GPU).
-              left: `calc(${8 + PILL_INSET}px + ${Math.max(0, activeIndex)} * (100% - 16px) / 5)`,
+              left: 8 + PILL_INSET,                 // capsule padding (8) + side inset (fixed)
               top: (62 - PILL_HEIGHT) / 2,
               height: PILL_HEIGHT,
-              width: `calc((100% - 16px) / 5 - ${PILL_INSET * 2}px)`,
+              // Width + slot position from the MEASURED column width (px), set
+              // declaratively → React renders translateX, the GPU runs the slide.
+              width: Math.max(0, colW - PILL_INSET * 2),
               borderRadius: 9999,                   // wide stadium pill, like the reference
-              transform: "translateX(0)",
+              transform: `translateX(${Math.max(0, activeIndex) * colW}px)`,
               opacity: hasActive ? 1 : 0,
               willChange: "transform, opacity",
               zIndex: 0,
@@ -343,7 +340,9 @@ export default function MobileBottomNav({ currentPageName }) {
                 "inset 0 1px 0 rgba(255,253,247,0.85), 0 1px 4px rgba(120,90,40,0.14)",
               transition: reduceMotion
                 ? "opacity .12s linear"
-                : `${PILL_SLIDE}, opacity .2s ease`,  // FLIP effect overrides transform mid-move
+                : slideReady
+                  ? `${PILL_SLIDE}, opacity .2s ease`
+                  : "opacity .2s ease",  // place instantly on first paint, slide after
             }}
           />
 
