@@ -56,3 +56,13 @@ routes → 404. (Memory: `femwell-preview-route-deploy-method.md`.)
 | Planner — v4 redesign demo ★ for approval (page 1) | `/PlannerRedesignDemo` | The live Planner (PlannerV2Shell) rebuilt to the v4 bible + made COMPACT (~2 screens, slide sideways). FULL FEATURE PARITY — nothing stripped: Your Day buckets · hour-by-hour day view · cycle calendar · insights · lists · body · life-stage · conditions · care (meds/contraception/symptom/body-scan/GP export) · rituals · nourishment · mind (intention/astra/mood/breathwork/cycle-psych) · tonight · Jess cards · plan-a-day/morning brief · customise/settings · voice · add FAB. v4 additive: flora-hero + omen header + §6.7.6 quick popups + soulful voice; long vertical stacks → §6.10 ClipboardSlider boards (uniform 365×488) across 2 horizontal sliders. Live Planner untouched; rides existing dispatchers (no new function). |
 
 **Status:** CATALOG entry added directly (group `CAT.CURRENT`, status "approval") per the standing rule "not done until it opens from the IDEAS pill". If you reorganise, keep it under Current.
+
+---
+
+## ADD (2026-06-21) — Profile Clipboard rebuild (full parity + clipboard, ~2 screens) → wired into CATALOG (Current)
+
+| label | route | one-line description |
+|---|---|---|
+| Profile — Clipboard rebuild (compact ~2 screens) ★ for approval | `/ProfileClipboardDemo` | The live Profile rebuilt to the v4 bible + made COMPACT (slide sideways, ~2 screens): flora-hero (Profile char = blush/gold camellia + butterfly + carved heart) carrying identity (photo upload · name · email · live phase chips), then ONE summary card (check-ins · avg mood · streak + this-week dots), then a §6.10 Clipboard Stack Slider (You / Your areas / Account & data) of uniform tiles. EVERY feature preserved — stage lever (11-stage picker), assistant/tone/birthday/city/goals (each a §6.7.6 quick-edit popup), cycle/community/reminders doors, Health & conditions + More-areas (saved/skin/preferences/privacy) full-screen overlays, plan · anonymous toggle · data export · delete. Live Profile untouched; rides existing UserProfile/UserPreferences updates (no new function). |
+
+**Status:** CATALOG entry added directly (group `CAT.CURRENT`, status "new") per the standing rule "not done until it opens from the IDEAS pill". If you reorganise, keep it under Current.
