@@ -194,6 +194,18 @@ const CATALOG = [
     title: "Programs — redesign demo", desc: "A streaming-style gallery — programmes browsed like a streaming service, rich cover cards and rails." },
   { kind: "route", href: "/GardenDemo", group: CAT.ARCHIVE, sub: "Page-redesign demos", status: "new", accent: "sage",
     title: "Garden — redesign demo", desc: "An immersive garden scene — the companion garden as a living, full-bleed place rather than a card." },
+  { kind: "route", href: "/PulseDemo", group: CAT.ARCHIVE, sub: "Page-redesign demos", status: "new", accent: "espresso",
+    title: "Pulse — redesign demo", desc: "Insight dashboard — mood/energy sparklines, pattern mini-bars, consistency dots and a phase tile." },
+  { kind: "route", href: "/PlannerDemo", group: CAT.ARCHIVE, sub: "Page-redesign demos", status: "new", accent: "sage",
+    title: "Planner — redesign demo", desc: "Week-strip + agenda timeline with inline check-off and add. A fresh concept; the live Planner is untouched." },
+  { kind: "route", href: "/ExploreDemo", group: CAT.ARCHIVE, sub: "Page-redesign demos", status: "new", accent: "gold",
+    title: "Explore — redesign demo", desc: "Search-first discovery masonry spanning every life domain — not just health." },
+  { kind: "route", href: "/SavedDemo", group: CAT.ARCHIVE, sub: "Page-redesign demos", status: "new", accent: "blush",
+    title: "Saved — redesign demo", desc: "Collections library — per-type cards with spine-stacks plus a filtered list." },
+  { kind: "route", href: "/DealsDemo", group: CAT.ARCHIVE, sub: "Page-redesign demos", status: "new", accent: "gold",
+    title: "Deals — redesign demo", desc: "Voucher wallet — perforated ticket cards for the real partner deals." },
+  { kind: "route", href: "/EventsDemo", group: CAT.ARCHIVE, sub: "Page-redesign demos", status: "new", accent: "crimson",
+    title: "Events — redesign demo", desc: "Date-grouped agenda / poster feed with online / in-person / free filters." },
 
   // ── Card-system demos (BRAND_IDENTITY §6.7/§6.8 applied per page) ──────
   // These apply the APPROVED card family + flora-hero/summary signature, for
@@ -220,10 +232,12 @@ const CATALOG = [
     title: "Planner (content) — card-system demo ★ for approval", desc: "The CONTENT side of Planner as cards: add-an-intention, today's gentle intentions, your rituals, and soft reminders. NOT the calendar/day-view (those stay as-is)." },
   { kind: "route", href: "/PlannerRedesignDemo", group: CAT.CURRENT, status: "approval", accent: "plum",
     title: "Planner — v4 redesign demo ★ for approval (page 1)", desc: "The critical page, rebuilt to the v4 Brand Bible — nothing stripped. Flora-hero + rotating tap-to-reveal omen header + summary; week strip; Today/Cycle views; Your Day time-buckets with §6.7.6 quick-action popups (do it in place → it ticks → a bloom opens); the hour-by-hour DAY VIEW + the CYCLE CALENDAR (both preserved, re-skinned); Lists, Rituals (links the builder), Intentions, Nourishment, Mind, Care, Tonight, Plan-a-day, Add FAB. PAPER_BG, Card.jsx, ≥12 fonts, soulful voice. On live rides existing dispatchers — no new function." },
+  { kind: "route", href: "/TodayRitualDemo", group: CAT.CURRENT, status: "new", accent: "crimson",
+    title: "Today — Ritual Builder (Clipboard slider) ★ for approval", desc: "The live Today (Demo 6) with the 'Your day' to-do turned into a §6.10 Clipboard Stack Slider — slide LEFT to reveal the ritual builder: a clipboard of 4 phase-aware ritual cards, each a §6.7.6 quick-action popup (do it in place → it ticks) tied to garden growth (waters the companion; a pollinator visits after a few). Everything else on Today (hero, day-paragraph, Your-Day list, calendar, sections) is unchanged — additive. For your approval before it goes live on the real Today." },
   { kind: "route", href: "/RitualBuilderDemo", group: CAT.CURRENT, status: "approval", accent: "sage",
     title: "Ritual Builder — habit-loop demo ★ for approval", desc: "The daily tending loop: a one-tap ritual on Today (phase/time aware), the same RitualCard contextualised across surfaces (Nutrition=water · Journal=three lines · Pulse=pause · Community=one kind message · Garden=tend companion), the §6.7.6 quick-action popup (do it in place → it ticks), and the living-ecosystem tie (each kept ritual grows a bloom; three earns a visitor). Builder lives in Planner. Rides existing RitualsTick/HabitLogs — no new function." },
   { kind: "route", href: "/GrowthDemo", group: CAT.CURRENT, status: "new", accent: "gold",
-    title: "Growth & Connection — Phase 0 demos ★ for approval", desc: "The approved intentions/goals + connection/days/missions directions, BUILT demo-first and baked into existing pages (no new nav tab): daily intentions (set·carry·reflect) · the line of the day · goals (long=tree, short=annual) · tiny missions (done → a bloom grows) · the big-life BUCKET LIST (e.g. 'go to Spain' = a tree/long arc) · solo days-off activities (one pick, found for her) · Tier 0 ANONYMOUS connection (resonance + async prompt rooms, no 1:1). Six per-surface demos (Today/Garden/Planner/Lifestyle/Community/Profile) via the hub. The gated 1:1/pen-pal/matching tiers are HELD pending your safety call (moderation · 18+ · no location). Rides existing dispatchers — no new function." },
+    title: "Growth & Connection — Phase 0 demos ★ for approval", desc: "The approved intentions/goals + connection/days/missions directions, BUILT demo-first and baked into existing pages (no new nav tab): daily intentions (set·carry·reflect) · the line of the day · goals (long=tree, short=annual) · tiny missions (done → a bloom grows) · the big-life BUCKET LIST (e.g. 'go to Spain' = a tree/long arc) · solo days-off activities (one pick, found for her) · Tier 0 ANONYMOUS connection (resonance + async prompt rooms, no 1:1). Open this hub, then tap any surface card to open its per-surface demo (Today/Garden/Planner/Lifestyle/Community/Profile — all 6 reachable from here). The gated 1:1/pen-pal/matching tiers are HELD pending your safety call (moderation · 18+ · no location). Rides existing dispatchers — no new function." },
 
   // ── Brand ─────────────────────────────────────────────────────────────
   { kind: "route", href: "/FloraLabDemo", group: CAT.CURRENT, status: "new", accent: "sage",
