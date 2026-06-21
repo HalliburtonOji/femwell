@@ -1,18 +1,23 @@
 // PlannerRedesignDemo — STANDALONE v4 redesign preview of the LIVE Planner
 // (PlannerV2Shell). Demo-first; the live Planner is NOT touched.
 //
-// MATCHES THE JOURNAL DIRECTION (Halli's updated spec):
-//  · FULL FEATURE PARITY — read PlannerV2Shell in full; EVERY live feature
-//    preserved (additive only). Parity checklist at the bottom of this file.
-//  · v4 BRAND BIBLE — flora-hero + one summary card signature, rich Card.jsx,
-//    §6.7.6 quick-action popups, rotating tap-to-reveal omen header, soulful
-//    voice; offenders fixed (PAPER_BG · canonical tokens · ≥12 fonts · card
-//    family · sheets clear the nav, no isolation trap).
-//  · THE SHARED CLIPBOARD SLIDER (§6.10) — long vertical stacks become sideways
-//    clipboard boards (uniform 365×488) + horizontal rows, so the whole planner
-//    is ~TWO phone screens instead of a long scroll. Uniform card sizes throughout.
-//  · On live, writes ride existing dispatchers (RitualsTick/HabitLogs/PlannerItems)
-//    — NO new function. Rituals link the existing RitualBuilder.
+// CLIPBOARD-FORWARD (matches the Journal demo's commitment): the spine is §6.10
+// ClipboardSliders whose boards each hold a GRID of uniform mini-cards (tiles) you
+// slide between — exactly like JournalClipboardDemo's SurfaceTile grids. Most of
+// Planner's content now lives as cards-in-clipboards, not vertical rows.
+//
+// FULL FEATURE PARITY (read PlannerV2Shell in full; nothing stripped — additive):
+//  Your Day · hour-by-hour day view · cycle calendar · insights · lists · body
+//  (BodyToday/SmartView/CycleZone) · life-stage (adaptive) · conditions · care
+//  (meds/contraception/symptom/body-scan/GP export) · rituals (stack/bundle/
+//  consistency/builder) · nourishment (macros/hydration/AI meal plan/phase recipes)
+//  · mind (intention/astra/mood/breathwork/cycle-psych) · tonight (reflection/
+//  tomorrow/end-of-day) · Jess cards · plan-a-day/morning brief · customise/settings
+//  · voice-to-schedule · add FAB.
+// v4 bible: flora-hero + one summary intent + rotating omen header + §6.7.6 quick
+// popups + soulful voice + PAPER_BG + ≥12 fonts + canonical tokens + .fw-sheet-safe.
+// Uniform tile + board sizes; ~2 phone screens. No new function (rides existing
+// dispatchers); rituals link the existing RitualBuilder.
 import { useState } from "react";
 import {
   ArrowLeft, Plus, Check, X, Moon, Droplet, Feather, Heart, Sparkles, ListChecks, CalendarDays,
@@ -21,8 +26,9 @@ import {
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
-import { T, SCRIPT, SERIF, UI, PAPER_BG, Heart as BrandHeart } from "@/components/journal/Editorial";
+import { T, SCRIPT, SERIF, UI, PAPER_BG, Heart as BrandHeart, Hand } from "@/components/journal/Editorial";
 import { FwFloraHero } from "@/components/brand/PageTop";
+import { SummaryCard } from "@/components/brand/Card";
 import { ClipboardSlider, Clipboard } from "@/components/brand/ClipboardSlider";
 import { RichBloomV2, FlowerGlyph, floraKeyframes, cwOf } from "@/components/brand/flora";
 
@@ -36,6 +42,26 @@ const BLOCKS = [
 const PHASE_CAL = { 1: "p", 2: "p", 3: "p", 4: "p", 5: "f", 6: "f", 7: "f", 8: "f", 9: "f", 10: "f", 11: "o", 12: "o", 13: "o", 14: "o", 15: "l", 16: "l", 17: "l", 18: "l", 19: "l", 20: "l", 21: "l", 22: "l", 23: "l", 24: "l", 25: "l", 26: "l", 27: "l", 28: "l" };
 const CAL_TONE = { p: ph.petal, f: cwOf("sage").petal, o: cwOf("gold").petal, l: cwOf("plum").petal, "": T.paperDeep };
 
+// ── a uniform clipboard mini-card (Journal's SurfaceTile pattern) ──
+function Tile({ icon: Icon, label, sub, cw = "sage", onTap, done }) {
+  const c = cwOf(cw);
+  return (
+    <button onClick={onTap} aria-label={label} style={{
+      textAlign: "left", cursor: "pointer", minHeight: 104, display: "flex", flexDirection: "column",
+      background: `linear-gradient(165deg, ${T.paperHi} 0%, ${c.petal}14 100%)`,
+      border: `1px solid ${T.paperDeep}`, borderLeft: `4px solid ${c.petal}`, borderRadius: 14, padding: "12px 11px",
+      boxShadow: "0 3px 12px rgba(11,8,5,0.06)", opacity: done ? 0.6 : 1,
+    }}>
+      <span style={{ width: 30, height: 30, borderRadius: 9, background: T.wax || T.paper, border: `1px solid ${T.paperDeep}`, display: "grid", placeItems: "center", marginBottom: 7 }}>
+        {done ? <Check size={15} color={c.petal} /> : <Icon size={15} strokeWidth={1.7} color={c.petal} />}
+      </span>
+      <span style={{ fontFamily: SERIF, fontSize: 14.5, fontWeight: 600, color: T.ink, lineHeight: 1.2 }}>{label}</span>
+      <span style={{ fontFamily: UI, fontSize: 11, color: T.muted, marginTop: 2, lineHeight: 1.3 }}>{sub}</span>
+    </button>
+  );
+}
+const Grid = ({ children }) => <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 9 }}>{children}</div>;
+
 export default function PlannerRedesignDemo() {
   const navigate = useNavigate();
   const [view, setView] = useState("today");
@@ -47,43 +73,37 @@ export default function PlannerRedesignDemo() {
   const [omenOpen, setOmenOpen] = useState(false);
   const link = (p) => navigate(createPageUrl(p));
   const pop = (id, type, icon, title, cw) => setPopup({ id, type, icon, title, cw });
+  const done2 = (id) => done[id];
   const complete = (id) => { setDone((d) => ({ ...d, [id]: true })); setPopup(null); };
-
-  // a uniform compact row that lives inside a clipboard board
-  const Row = ({ id, icon: Icon, title, sub, cw = "sage", onTap, cta }) => {
-    const c = cwOf(cw); const isDone = id && done[id];
-    return (
-      <button onClick={onTap} style={{ ...rowS, borderLeft: `3px solid ${c.petal}`, opacity: isDone ? 0.55 : 1 }}>
-        <span style={{ ...disc, background: T.wax || T.paper }}><Icon size={14} color={c.petal} /></span>
-        <span style={{ flex: 1, minWidth: 0, textAlign: "left" }}>
-          <span style={{ display: "block", fontFamily: SERIF, fontSize: 14.5, fontWeight: 600, color: T.ink, lineHeight: 1.2, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{title}</span>
-          {sub && <span style={{ display: "block", fontFamily: UI, fontSize: 11, color: T.muted, letterSpacing: ".03em" }}>{sub}</span>}
-        </span>
-        {isDone ? <Check size={15} color={c.petal} /> : cta ? <span style={{ fontFamily: UI, fontSize: 11.5, fontWeight: 700, color: c.petal, whiteSpace: "nowrap" }}>{cta}</span> : <ChevronRight size={15} color={T.muted} />}
-      </button>
-    );
-  };
-  const Stack = ({ children }) => <div style={{ display: "flex", flexDirection: "column", gap: 7 }}>{children}</div>;
 
   return (
     <div style={{ ...PAPER_BG, minHeight: "100vh", paddingBottom: 110, position: "relative", overflowX: "clip" }}>
       <style>{floraKeyframes}</style>
       <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "9px 16px", background: T.paperHi, borderBottom: `1px solid ${T.paperDeep}` }}>
         <button onClick={() => link("Ideas")} aria-label="Back to Ideas" style={ribbonBtn}><ArrowLeft size={13} /> Ideas</button>
-        <span style={{ fontFamily: UI, fontSize: 12, fontWeight: 700, letterSpacing: ".12em", textTransform: "uppercase", color: T.gold }}>Demo · Planner · v4 · ~2 screens</span>
+        <span style={{ fontFamily: UI, fontSize: 12, fontWeight: 700, letterSpacing: ".12em", textTransform: "uppercase", color: T.gold }}>Demo · Planner · v4 · clipboard-forward</span>
       </div>
 
       {/* COMPACT signature top */}
       <FwFloraHero title="Planner" bloom="cosmos" colorway={PHCW} flankL="clover" flankR="chamomile" creature="butterfly"
-        line="Your week, gently — every tool you had, now a few sideways boards instead of a long scroll." ringSize={188} bloomSize={120} />
+        line="Your week, gently — your whole planner on a few boards. Slide sideways; each card does its thing." ringSize={184} bloomSize={116} />
 
       <Wrap>
-        {/* omen header (tap-to-reveal) */}
+        {/* ONE summary intent card */}
+        <div style={{ marginTop: 6 }}>
+          <SummaryCard eyebrow="Your day, gently" accent={ph.petal} rows={[
+            { Icon: Moon, label: "First", text: "A moment of rest before the day grabs you", onClick: () => pop("m1", "ritual", Moon, "A moment of rest", "plum") },
+            { Icon: ListChecks, label: "Today", text: "3 small things — none of them urgent", onClick: () => setDayView(true) },
+            { Icon: Heart, label: "Tonight", text: "Log how today felt + three quiet lines", onClick: () => pop("e1", "mood", Heart, "Log how today felt", "crimson") },
+          ]} />
+        </div>
+
+        {/* rotating omen header (tap-to-reveal) */}
         <button onClick={() => setOmenOpen((o) => !o)} style={omenBtn}>
-          <FlowerGlyph variant="cosmos" size={34} color={ph.petal} color2={ph.tip} idx="omen" />
+          <FlowerGlyph variant="cosmos" size={32} color={ph.petal} color2={ph.tip} idx="omen" />
           <div style={{ flex: 1, minWidth: 0 }}>
             <div style={{ fontFamily: UI, fontSize: 11, fontWeight: 700, letterSpacing: ".1em", textTransform: "uppercase", color: ph.petal }}>Today's almanac</div>
-            <div style={{ fontFamily: SCRIPT, fontSize: 19, color: T.ink, lineHeight: 1.1 }}>The cosmos keeps its own time</div>
+            <div style={{ fontFamily: SCRIPT, fontSize: 18, color: T.ink, lineHeight: 1.1 }}>The cosmos keeps its own time</div>
             {omenOpen && <div style={{ marginTop: 5 }}>
               <p style={omenLine}><b>Floriography ·</b> cosmos = order out of chaos; a calm, balanced day.</p>
               <p style={omenLine}><b>They say ·</b> a flower that blooms late still blooms on time. No rush — light the kettle.</p>
@@ -93,7 +113,7 @@ export default function PlannerRedesignDemo() {
           <ChevronRight size={15} style={{ color: T.muted, transform: omenOpen ? "rotate(90deg)" : "none" }} />
         </button>
 
-        {/* week strip — the shared clipboard slider handles the day-board paging; this is the day picker */}
+        {/* week strip */}
         <div style={{ display: "flex", gap: 5, justifyContent: "space-between", marginTop: 12 }}>
           {WEEK.map((w) => (
             <div key={w.n} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: 3, padding: "7px 0", borderRadius: 12, background: w.today ? ph.petal : T.paperHi, border: `1px solid ${w.today ? ph.petal : T.paperDeep}` }}>
@@ -103,75 +123,70 @@ export default function PlannerRedesignDemo() {
           ))}
         </div>
 
-        {/* view toggle + actions */}
+        {/* view toggle */}
         <div style={{ display: "flex", gap: 6, marginTop: 10 }}>
           {[["today", "Today"], ["cycle", "Cycle"]].map(([k, l]) => (
             <button key={k} onClick={() => setView(k)} style={{ flex: 1, cursor: "pointer", fontFamily: UI, fontSize: 13, fontWeight: 700, padding: "8px 0", borderRadius: 999, border: `1px solid ${view === k ? T.ink : T.paperDeep}`, background: view === k ? T.ink : "transparent", color: view === k ? T.paper : T.muted }}>{l}</button>
           ))}
         </div>
-        <div style={{ display: "flex", gap: 6, marginTop: 8 }}>
-          <Act icon={CalendarDays} label="Plan a day" onClick={() => setSheet("plan")} />
-          <Act icon={SlidersHorizontal} label="Customise" onClick={() => setSheet("settings")} />
-          <Act icon={Mic} label="Voice" onClick={() => setSheet("voice")} />
-        </div>
 
-        <div style={{ marginTop: 12, fontFamily: UI, fontSize: 11, color: T.muted, textAlign: "center", letterSpacing: ".04em" }}>
-          {view === "today" ? "Two boards below — slide each sideways. No long scroll." : "Your cycle, your body, what's growing — slide sideways."}
-        </div>
+        <Hand size={14} color={T.muted} style={{ display: "block", margin: "12px 0 0", textAlign: "center" }}>
+          Your whole planner on a few boards — slide each sideways; every card opens or does the real thing.
+        </Hand>
       </Wrap>
 
-      {/* ── THE CLIPBOARD SLIDERS — every live row, as sideways boards ── */}
-      <div style={{ position: "relative", zIndex: 1, padding: "6px 16px 0", maxWidth: 600, margin: "0 auto" }}>
+      {/* ── THE CLIPBOARD SPINE — tile-grids in boards (Journal-style) ── */}
+      <div style={{ position: "relative", zIndex: 1, padding: "8px 16px 0", maxWidth: 600, margin: "0 auto" }}>
         {view === "today" ? (
           <>
             <ClipboardSlider hint="Slide your day" accent={ph.petal}>
               <Clipboard title="Your day" sub="MORNING · AFTERNOON · EVENING — tap to do it here" accent={ph.petal} flower="violet" idx="cb-day">
-                <Stack>
-                  <Row id="m1" icon={Moon} title="A moment of rest" sub="morning · ritual" cw="plum" cta="Do it" onTap={() => pop("m1", "ritual", Moon, "A moment of rest", "plum")} />
-                  <Row id="m2" icon={Utensils} title="Log breakfast" sub="morning · meal" cw="gold" cta="Log" onTap={() => pop("m2", "meal", Utensils, "Log breakfast", "gold")} />
-                  <Row id="m3" icon={ListChecks} title="Reply to Mum" sub="morning · task · 10 min" cw="sage" cta="Tick" onTap={() => pop("m3", "task", ListChecks, "Reply to Mum", "sage")} />
-                  <Row id="a1" icon={Footprints} title="A gentle walk" sub="afternoon · habit" cw="sage" cta="Tick" onTap={() => pop("a1", "ritual", Footprints, "A gentle walk", "sage")} />
-                  <Row id="a2" icon={Pill} title="Magnesium" sub="afternoon · supplement" cw="crimson" cta="Taken" onTap={() => pop("a2", "ritual", Pill, "Magnesium", "crimson")} />
-                  <Row id="e1" icon={Heart} title="Log how today felt" sub="evening · check-in" cw="crimson" cta="Log" onTap={() => pop("e1", "mood", Heart, "Log how today felt", "crimson")} />
-                  <Row id="e2" icon={Feather} title="Three quiet lines" sub="evening · journal" cw="blush" cta="Write" onTap={() => pop("e2", "note", Feather, "Three quiet lines", "blush")} />
-                </Stack>
+                <Grid>
+                  <Tile icon={Moon} label="A moment of rest" sub="morning · ritual" cw="plum" done={done2("m1")} onTap={() => pop("m1", "ritual", Moon, "A moment of rest", "plum")} />
+                  <Tile icon={Utensils} label="Log breakfast" sub="morning · meal" cw="gold" done={done2("m2")} onTap={() => pop("m2", "meal", Utensils, "Log breakfast", "gold")} />
+                  <Tile icon={Footprints} label="A gentle walk" sub="afternoon · habit" cw="sage" done={done2("a1")} onTap={() => pop("a1", "ritual", Footprints, "A gentle walk", "sage")} />
+                  <Tile icon={ListChecks} label="Reply to Mum" sub="task · 10 min" cw="sage" done={done2("m3")} onTap={() => pop("m3", "task", ListChecks, "Reply to Mum", "sage")} />
+                  <Tile icon={Heart} label="Log how today felt" sub="evening · check-in" cw="crimson" done={done2("e1")} onTap={() => pop("e1", "mood", Heart, "Log how today felt", "crimson")} />
+                  <Tile icon={Feather} label="Three quiet lines" sub="evening · journal" cw="blush" done={done2("e2")} onTap={() => pop("e2", "note", Feather, "Three quiet lines", "blush")} />
+                </Grid>
               </Clipboard>
-              <Clipboard title="Schedule & cycle" sub="THE HOUR-BY-HOUR DAY + THE MONTH" accent={cwOf("gold").petal} flower="iris" idx="cb-sched">
-                <Stack>
-                  <Row icon={CalendarClock} title="Today, hour by hour" sub={`${BLOCKS.length} blocks · tap to open & edit`} cw="gold" cta="Open" onTap={() => setDayView(true)} />
-                  <Row icon={CalendarDays} title="Cycle calendar" sub="day 25 of 28 · luteal" cw="plum" cta="Open" onTap={() => setCalView(true)} />
-                  <Row icon={Sparkles} title="Luteal · soften the load" sub="insight · plan gentle things" cw="plum" />
-                  <Row icon={TrendingUp} title="Focus peaks mid-morning" sub="insight · anchor deep work 10–12" cw="gold" />
-                  <Row icon={Moon} title="An earlier night pays off" sub="insight · wind down by 10" cw="plum" />
-                </Stack>
+              <Clipboard title="Schedule & plan" sub="THE HOUR-BY-HOUR DAY + THE MONTH" accent={cwOf("gold").petal} flower="iris" idx="cb-sched">
+                <Grid>
+                  <Tile icon={CalendarClock} label="Hour by hour" sub="the day view" cw="gold" onTap={() => setDayView(true)} />
+                  <Tile icon={CalendarDays} label="Cycle calendar" sub="the month" cw="plum" onTap={() => setCalView(true)} />
+                  <Tile icon={Sparkles} label="Insights" sub="today's signals" cw="plum" onTap={() => pop("ins", "task", Sparkles, "Today's insights", "plum")} />
+                  <Tile icon={CalendarDays} label="Plan a day" sub="morning brief" cw="gold" onTap={() => setSheet("plan")} />
+                  <Tile icon={Mic} label="Voice" sub="say it, I'll plan it" cw="plum" onTap={() => setSheet("voice")} />
+                  <Tile icon={SlidersHorizontal} label="Customise" sub="reorder · hide" cw="sage" onTap={() => setSheet("settings")} />
+                </Grid>
               </Clipboard>
-              <Clipboard title="Lists" sub="THE THINGS NOT TIED TO A TIME" accent={cwOf("gold").petal} flower="sunflower" idx="cb-lists">
-                <Stack>
-                  <Row icon={ListChecks} title="Book smear test" sub="this week" cw="gold" cta="Tick" onTap={() => pop("li1", "task", ListChecks, "Book smear test", "gold")} />
-                  <Row icon={ListChecks} title="Birthday card for J" sub="this week" cw="gold" cta="Tick" onTap={() => pop("li2", "task", ListChecks, "Birthday card for J", "gold")} />
-                  <Row icon={ListChecks} title="Renew prescription" sub="this week" cw="crimson" cta="Tick" onTap={() => pop("li3", "task", ListChecks, "Renew prescription", "crimson")} />
-                  <Row icon={Star} title="Plan the trip" sub="someday" cw="sage" />
-                  <Row icon={Star} title="That pottery class" sub="someday" cw="sage" />
-                  <Row icon={Plus} title="Add to a list" sub="new item" cw="gold" cta="Add" onTap={() => setSheet("add")} />
-                </Stack>
+              <Clipboard title="Lists" sub="THINGS NOT TIED TO A TIME" accent={cwOf("gold").petal} flower="sunflower" idx="cb-lists">
+                <Grid>
+                  <Tile icon={ListChecks} label="Book smear test" sub="this week" cw="gold" done={done2("li1")} onTap={() => pop("li1", "task", ListChecks, "Book smear test", "gold")} />
+                  <Tile icon={ListChecks} label="Birthday card for J" sub="this week" cw="gold" done={done2("li2")} onTap={() => pop("li2", "task", ListChecks, "Birthday card for J", "gold")} />
+                  <Tile icon={Pill} label="Renew prescription" sub="this week" cw="crimson" done={done2("li3")} onTap={() => pop("li3", "task", Pill, "Renew prescription", "crimson")} />
+                  <Tile icon={Star} label="Plan the trip" sub="someday" cw="sage" />
+                  <Tile icon={Star} label="Pottery class" sub="someday" cw="sage" />
+                  <Tile icon={Plus} label="Add to a list" sub="new item" cw="gold" onTap={() => setSheet("add")} />
+                </Grid>
               </Clipboard>
-              <Clipboard title="Your body today" sub="WHERE YOU ARE, AND WHAT HELPS" accent={ph.petal} flower="dahlia" idx="cb-body">
-                <Stack>
-                  <Row id="bmood" icon={Activity} title="Lower energy, tender" sub="day 25 · be kinder" cw="plum" cta="Log" onTap={() => pop("bmood", "mood", Activity, "Log how you feel", "plum")} />
-                  <Row icon={Brain} title="What helps this phase" sub="smart view · magnesium, rest" cw="gold" />
-                  <Row icon={CalendarDays} title="Period likely in ~3 days" sub="cycle zone" cw="crimson" cta="Calendar" onTap={() => setCalView(true)} />
-                  <Row icon={Baby} title="Reproductive · cycling" sub="life stage · adapts per stage" cw="sage" />
-                  <Row icon={Heart} title="PMDD · PCOS · endo · HRT" sub="conditions · add to track" cw="crimson" cta="Add" onTap={() => setSheet("add")} />
-                </Stack>
+              <Clipboard title="Your body" sub="WHERE YOU ARE, AND WHAT HELPS" accent={ph.petal} flower="dahlia" idx="cb-body">
+                <Grid>
+                  <Tile icon={Activity} label="Body today" sub="lower energy, tender" cw="plum" done={done2("bmood")} onTap={() => pop("bmood", "mood", Activity, "Log how you feel", "plum")} />
+                  <Tile icon={Brain} label="Smart view" sub="what helps this phase" cw="gold" onTap={() => pop("smart", "task", Brain, "Smart view", "gold")} />
+                  <Tile icon={CalendarDays} label="Cycle zone" sub="period in ~3 days" cw="crimson" onTap={() => setCalView(true)} />
+                  <Tile icon={Baby} label="Life stage" sub="reproductive · adapts" cw="sage" onTap={() => pop("stage", "task", Baby, "Life-stage planning", "sage")} />
+                </Grid>
               </Clipboard>
               <Clipboard title="Care" sub="MEDS · SYMPTOMS · SCREENING · EXPORT" accent={T.crimson} flower="anemone" idx="cb-care">
-                <Stack>
-                  <Row id="meds" icon={Pill} title="Magnesium + Vitamin D" sub="tonight's supplements" cw="crimson" cta="Taken" onTap={() => pop("meds", "ritual", Pill, "Tick tonight's meds", "crimson")} />
-                  <Row icon={ShieldCheck} title="Contraception" sub="mini-pill · daily reminder" cw="plum" cta="Taken" onTap={() => pop("contra", "ritual", ShieldCheck, "Contraception taken", "plum")} />
-                  <Row id="sx" icon={Heart} title="Log a symptom" sub="builds your GP export" cw="plum" cta="Log" onTap={() => pop("sx", "mood", Heart, "Log a symptom", "plum")} />
-                  <Row id="scan" icon={ScanLine} title="60-second body scan" sub="notice the holding" cw="sage" cta="Start" onTap={() => pop("scan", "ritual", ScanLine, "Body scan", "sage")} />
-                  <Row icon={Stethoscope} title="GP report" sub="3 months, ready to share" cw="gold" cta="Open" onTap={() => link("DoctorExport")} />
-                </Stack>
+                <Grid>
+                  <Tile icon={Pill} label="Meds & supps" sub="magnesium + Vit D" cw="crimson" done={done2("meds")} onTap={() => pop("meds", "ritual", Pill, "Tick tonight's meds", "crimson")} />
+                  <Tile icon={ShieldCheck} label="Contraception" sub="mini-pill · daily" cw="plum" done={done2("contra")} onTap={() => pop("contra", "ritual", ShieldCheck, "Contraception taken", "plum")} />
+                  <Tile icon={Heart} label="Symptom log" sub="builds GP export" cw="plum" done={done2("sx")} onTap={() => pop("sx", "mood", Heart, "Log a symptom", "plum")} />
+                  <Tile icon={ScanLine} label="Body scan" sub="60 seconds" cw="sage" done={done2("scan")} onTap={() => pop("scan", "ritual", ScanLine, "Body scan", "sage")} />
+                  <Tile icon={Stethoscope} label="GP export" sub="3 months ready" cw="gold" onTap={() => link("DoctorExport")} />
+                  <Tile icon={Heart} label="Conditions" sub="PMDD · PCOS · HRT" cw="crimson" onTap={() => setSheet("add")} />
+                </Grid>
               </Clipboard>
             </ClipboardSlider>
 
@@ -179,67 +194,64 @@ export default function PlannerRedesignDemo() {
 
             <ClipboardSlider hint="Slide your tending" accent={T.sage}>
               <Clipboard title="Rituals" sub="THE DAILY TENDING — SURFACED EVERYWHERE" accent={ph.petal} flower="violet" idx="cb-rit">
-                <Stack>
-                  <Row id="rstack" icon={Moon} title="Morning stack · 3 rituals" sub="rest · water · three lines" cw="plum" cta="Do" onTap={() => pop("rstack", "ritual", Moon, "Morning ritual", "plum")} />
-                  <Row id="rbundle" icon={Star} title="Luteal wind-down" sub="bundle · 3-step evening" cw="gold" cta="Start" onTap={() => pop("rbundle", "ritual", Star, "Wind-down bundle", "gold")} />
-                  <Row icon={Check} title="4-day streak" sub="consistency · gently kept" cw="sage" />
-                  <Row icon={Plus} title="Compose a ritual set" sub="the builder (reused)" cw="sage" cta="Open" onTap={() => link("RitualBuilderDemo")} />
-                </Stack>
+                <Grid>
+                  <Tile icon={Moon} label="Morning stack" sub="rest · water · lines" cw="plum" done={done2("rstack")} onTap={() => pop("rstack", "ritual", Moon, "Morning ritual", "plum")} />
+                  <Tile icon={Star} label="Wind-down bundle" sub="luteal · 3-step" cw="gold" done={done2("rbundle")} onTap={() => pop("rbundle", "ritual", Star, "Wind-down bundle", "gold")} />
+                  <Tile icon={Check} label="Consistency" sub="4-day streak" cw="sage" onTap={() => pop("cons", "task", Check, "Your streak", "sage")} />
+                  <Tile icon={Plus} label="Ritual builder" sub="compose a set" cw="sage" onTap={() => link("RitualBuilderDemo")} />
+                </Grid>
               </Clipboard>
               <Clipboard title="Nourishment" sub="KIND, PHASE-AWARE FUEL" accent={cwOf("gold").petal} flower="marigold" idx="cb-nour">
-                <Stack>
-                  <Row id="macro" icon={TrendingUp} title="Protein a little low" sub="macros · a handful of nuts" cw="gold" cta="Log" onTap={() => pop("macro", "meal", TrendingUp, "Log a meal", "gold")} />
-                  <Row id="hyd" icon={Droplet} title="4 of 8 glasses" sub="hydration" cw="sky" cta="+ glass" onTap={() => pop("hyd", "water", Droplet, "A glass of water", "sky")} />
-                  <Row icon={Salad} title="Tonight: red lentil dal" sub="AI meal plan · iron-friendly" cw="sage" cta="See" onTap={() => link("Nutrition")} />
-                  <Row icon={Utensils} title="Iron-rich, this week" sub="phase recipes" cw="gold" cta="Browse" onTap={() => link("Nutrition")} />
-                </Stack>
+                <Grid>
+                  <Tile icon={TrendingUp} label="Macros" sub="protein a little low" cw="gold" done={done2("macro")} onTap={() => pop("macro", "meal", TrendingUp, "Log a meal", "gold")} />
+                  <Tile icon={Droplet} label="Hydration" sub="4 of 8 glasses" cw="sky" done={done2("hyd")} onTap={() => pop("hyd", "water", Droplet, "A glass of water", "sky")} />
+                  <Tile icon={Salad} label="AI meal plan" sub="red lentil dal" cw="sage" onTap={() => link("Nutrition")} />
+                  <Tile icon={Utensils} label="Phase recipes" sub="iron-rich week" cw="gold" onTap={() => link("Nutrition")} />
+                </Grid>
               </Clipboard>
               <Clipboard title="Mind & insight" sub="INTENTION · YOUR SKY · MOOD · BREATH" accent={cwOf("plum").petal} flower="iris" idx="cb-mind">
-                <Stack>
-                  <Row id="intent" icon={Sparkles} title="“More slow mornings”" sub="today's intention · plant the seed" cw="crimson" cta="Set" onTap={() => pop("intent", "intention", Sparkles, "Set today's intention", "crimson")} />
-                  <Row icon={Star} title="The moon is waxing in Libra" sub="astra · your sky" cw="plum" cta="Read" onTap={() => link("Lifestyle")} />
-                  <Row id="mmood" icon={Heart} title="How are you, really?" sub="mood & mind" cw="plum" cta="Log" onTap={() => pop("mmood", "mood", Heart, "Log mood", "plum")} />
-                  <Row id="breath" icon={Wind} title="A 4-minute box breath" sub="breathwork" cw="sky" cta="Begin" onTap={() => pop("breath", "ritual", Wind, "Box breath", "sky")} />
-                  <Row icon={Brain} title="Why luteal feels heavier" sub="cycle psychology · 2-min read" cw="gold" />
-                </Stack>
+                <Grid>
+                  <Tile icon={Sparkles} label="Intention" sub="“more slow mornings”" cw="crimson" done={done2("intent")} onTap={() => pop("intent", "intention", Sparkles, "Set today's intention", "crimson")} />
+                  <Tile icon={Star} label="Astra · your sky" sub="moon in Libra" cw="plum" onTap={() => link("Lifestyle")} />
+                  <Tile icon={Heart} label="Mood & mind" sub="how are you, really?" cw="plum" done={done2("mmood")} onTap={() => pop("mmood", "mood", Heart, "Log mood", "plum")} />
+                  <Tile icon={Wind} label="Breathwork" sub="4-min box breath" cw="sky" done={done2("breath")} onTap={() => pop("breath", "ritual", Wind, "Box breath", "sky")} />
+                  <Tile icon={Brain} label="Cycle psychology" sub="why luteal's heavier" cw="gold" onTap={() => pop("cpsy", "task", Brain, "Cycle psychology", "gold")} />
+                </Grid>
               </Clipboard>
-              <Clipboard title="Tonight & more" sub="CLOSE THE DAY · JESS · PLAN" accent={ph.petal} flower="primrose" idx="cb-tonight">
-                <Stack>
-                  <Row id="refl" icon={Moon} title="How did today land?" sub="tonight's reflection" cw="plum" cta="Reflect" onTap={() => pop("refl", "note", Moon, "Reflect on today", "plum")} />
-                  <Row id="tom" icon={CalendarClock} title="One thing for tomorrow" sub="tomorrow preview" cw="gold" cta="Plan" onTap={() => pop("tom", "task", CalendarClock, "Plan tomorrow", "gold")} />
-                  <Row id="eod" icon={Feather} title="Leave a line" sub="end-of-day note → journal" cw="crimson" cta="Write" onTap={() => pop("eod", "note", Feather, "Leave a line", "crimson")} />
-                  <Row icon={Sparkles} title="Jess noticed a pattern" sub="brighter on the days you walked" cw="plum" />
-                  <Row icon={Activity} title="Your weekly summary" sub="from Jess · a good week" cw="gold" />
-                  <Row icon={CalendarDays} title="Plan a day / morning brief" sub="lay it out before it arrives" cw="gold" cta="Plan" onTap={() => setSheet("plan")} />
-                </Stack>
+              <Clipboard title="Tonight & Jess" sub="CLOSE THE DAY · QUIET NOTES FROM JESS" accent={ph.petal} flower="primrose" idx="cb-tonight">
+                <Grid>
+                  <Tile icon={Moon} label="Reflection" sub="how did today land?" cw="plum" done={done2("refl")} onTap={() => pop("refl", "note", Moon, "Reflect on today", "plum")} />
+                  <Tile icon={CalendarClock} label="Tomorrow" sub="one first kindness" cw="gold" done={done2("tom")} onTap={() => pop("tom", "task", CalendarClock, "Plan tomorrow", "gold")} />
+                  <Tile icon={Feather} label="End-of-day note" sub="→ your journal" cw="crimson" done={done2("eod")} onTap={() => pop("eod", "note", Feather, "Leave a line", "crimson")} />
+                  <Tile icon={Sparkles} label="Jess noticed…" sub="brighter when you walk" cw="plum" onTap={() => pop("j1", "task", Sparkles, "From Jess", "plum")} />
+                  <Tile icon={Activity} label="Weekly summary" sub="from Jess · a good week" cw="gold" onTap={() => pop("j2", "task", Activity, "Your week, from Jess", "gold")} />
+                  <Tile icon={Plus} label="Add anything" sub="task · event · ritual" cw="sage" onTap={() => setSheet("add")} />
+                </Grid>
               </Clipboard>
             </ClipboardSlider>
           </>
         ) : (
           <ClipboardSlider hint="Slide your cycle" accent={ph.petal}>
             <Clipboard title="Your cycle" sub="THE MONTH AT A GLANCE" accent={ph.petal} flower="dahlia" idx="cb-cyc">
-              <Stack>
-                <Row icon={CalendarDays} title="Day 25 of 28 · luteal" sub="tap any day for its phase" cw="plum" cta="Open" onTap={() => setCalView(true)} />
-                <Row icon={Heart} title="Period likely in ~3 days" sub="be a little kinder" cw="crimson" cta="Calendar" onTap={() => setCalView(true)} />
-                <Row icon={Sparkles} title="Energy lower today" sub="plan the gentle things" cw="gold" />
-              </Stack>
-              <div style={{ display: "grid", placeItems: "center", marginTop: 8 }}>
-                <RichBloomV2 form="dahlia" color={ph.petal} color2={ph.tip} accent={ph.accent} size={120} idx="cyc-bloom" />
-                <p style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 13.5, color: T.muted, textAlign: "center", marginTop: 4 }}>Dahlia for the luteal: strength and grace under change.</p>
-              </div>
+              <Grid>
+                <Tile icon={CalendarDays} label="Cycle calendar" sub="day 25 of 28" cw="plum" onTap={() => setCalView(true)} />
+                <Tile icon={Heart} label="Period soon" sub="in ~3 days" cw="crimson" onTap={() => setCalView(true)} />
+                <Tile icon={Sparkles} label="Energy" sub="lower today" cw="gold" />
+                <Tile icon={Activity} label="Body today" sub="tender · be kind" cw="plum" done={done2("cb-mood")} onTap={() => pop("cb-mood", "mood", Activity, "Log how you feel", "plum")} />
+              </Grid>
             </Clipboard>
-            <Clipboard title="Your body today" sub="WHERE YOU ARE, AND WHAT HELPS" accent={cwOf("plum").petal} flower="violet" idx="cb-cbody">
-              <Stack>
-                <Row id="cb-mood" icon={Activity} title="Lower energy, tender" sub="day 25" cw="plum" cta="Log" onTap={() => pop("cb-mood", "mood", Activity, "Log how you feel", "plum")} />
-                <Row icon={Brain} title="What helps this phase" sub="magnesium, gentle movement" cw="gold" />
-                <Row icon={Wind} title="A 4-minute box breath" sub="breathwork" cw="sky" cta="Begin" onTap={() => pop("cb-breath", "ritual", Wind, "Box breath", "sky")} />
-                <Row icon={Brain} title="Why luteal feels heavier" sub="cycle psychology" cw="plum" />
-              </Stack>
+            <Clipboard title="Your body" sub="WHERE YOU ARE, AND WHAT HELPS" accent={cwOf("plum").petal} flower="violet" idx="cb-cbody">
+              <Grid>
+                <Tile icon={Brain} label="Smart view" sub="what helps now" cw="gold" />
+                <Tile icon={Wind} label="Breathwork" sub="box breath" cw="sky" onTap={() => pop("cb-breath", "ritual", Wind, "Box breath", "sky")} />
+                <Tile icon={Brain} label="Cycle psychology" sub="the hormone tide" cw="plum" />
+                <Tile icon={Moon} label="Rituals" sub="luteal wind-down" cw="crimson" onTap={() => pop("cb-rit", "ritual", Moon, "Wind-down", "crimson")} />
+              </Grid>
             </Clipboard>
             <Clipboard title="What's growing" sub="YOUR WEEK, READ BACK GENTLY" accent={T.sage} flower="fern" idx="cb-grow">
-              <div style={{ display: "grid", placeItems: "center", paddingTop: 10 }}>
-                <RichBloomV2 form="cosmos" color={cwOf("sage").petal} color2={cwOf("sage").tip} accent={T.gold} size={150} idx="grow-bloom" />
-                <p style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 14, color: T.muted, textAlign: "center", marginTop: 8 }}>Three rituals kept this week — the garden noticed. They say a tended garden grows true.</p>
+              <div style={{ display: "grid", placeItems: "center", paddingTop: 8 }}>
+                <RichBloomV2 form="cosmos" color={cwOf("sage").petal} color2={cwOf("sage").tip} accent={T.gold} size={140} idx="grow-bloom" />
+                <p style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 13.5, color: T.muted, textAlign: "center", marginTop: 8 }}>Three rituals kept this week — the garden noticed. They say a tended garden grows true.</p>
               </div>
             </Clipboard>
           </ClipboardSlider>
@@ -261,12 +273,9 @@ export default function PlannerRedesignDemo() {
 
 // ── small components ──
 function Wrap({ children }) { return <div style={{ maxWidth: 600, margin: "0 auto", padding: "0 16px" }}>{children}</div>; }
-function Act({ icon: Icon, label, onClick }) {
-  return <button onClick={onClick} style={{ flex: 1, display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 5, cursor: "pointer", fontFamily: UI, fontSize: 12.5, fontWeight: 700, padding: "9px 4px", borderRadius: 12, border: `1px solid ${T.paperDeep}`, background: T.paperHi, color: T.ink }}><Icon size={14} color={T.gold} /> {label}</button>;
-}
 function QuickPopup({ item, onClose, onDone }) {
   const [note, setNote] = useState(""); const c = cwOf(item.cw || "sage"); const Icon = item.icon || Check;
-  const body = { meal: "Recent + a quick search — what did you have?", water: "Half a glass counts. Tap to add it.", mood: "How's your energy, really? Pick one.", intention: "A few smart suggestions, or your own words.", ritual: "A small tending — confirm when it's done.", task: "Tick it when it's done — no fake checkmarks.", note: "Three true sentences. Not a diary." }[item.type] || "Do it here, then it ticks.";
+  const body = { meal: "Recent + a quick search — what did you have?", water: "Half a glass counts. Tap to add it.", mood: "How's your energy, really? Pick one.", intention: "A few smart suggestions, or your own words.", ritual: "A small tending — confirm when it's done.", task: "Open it here, then it ticks.", note: "Three true sentences. Not a diary." }[item.type] || "Do it here, then it ticks.";
   return (
     <div onClick={onClose} role="dialog" aria-modal="true" style={scrim}><style>{floraKeyframes}</style>
       <div onClick={(e) => e.stopPropagation()} className="fw-sheet-safe" style={sheetStyle}>
@@ -365,10 +374,10 @@ function PlanSheet({ onClose }) {
 }
 function SettingsSheet({ onClose }) {
   const [rows, setRows] = useState([
-    { k: "insights", l: "Insights", on: true }, { k: "schedule", l: "Schedule & cycle", on: true }, { k: "yourday", l: "Your day", on: true },
-    { k: "lists", l: "Lists", on: true }, { k: "body", l: "Your body today", on: true }, { k: "stage", l: "Life stage", on: true },
-    { k: "conditions", l: "Conditions", on: false }, { k: "rituals", l: "Rituals", on: true }, { k: "nourishment", l: "Nourishment", on: true },
-    { k: "mind", l: "Mind & insight", on: true }, { k: "care", l: "Care", on: true }, { k: "tonight", l: "Tonight", on: true },
+    { k: "yourday", l: "Your day", on: true }, { k: "schedule", l: "Schedule & plan", on: true }, { k: "lists", l: "Lists", on: true },
+    { k: "body", l: "Your body", on: true }, { k: "care", l: "Care", on: true }, { k: "rituals", l: "Rituals", on: true },
+    { k: "nourishment", l: "Nourishment", on: true }, { k: "mind", l: "Mind & insight", on: true }, { k: "tonight", l: "Tonight & Jess", on: true },
+    { k: "conditions", l: "Conditions", on: false },
   ]);
   return (
     <div onClick={onClose} role="dialog" aria-modal="true" style={scrim}>
@@ -430,9 +439,8 @@ function AddPopup({ onClose }) {
 
 // ── styles ──
 const ribbonBtn = { display: "inline-flex", alignItems: "center", gap: 6, background: "transparent", border: `1px solid ${T.paperDeep}`, borderRadius: 999, padding: "5px 11px", cursor: "pointer", fontFamily: UI, fontSize: 12, fontWeight: 700, color: T.muted };
-const omenBtn = { width: "100%", textAlign: "left", cursor: "pointer", marginTop: 4, background: `linear-gradient(165deg, ${T.paperHi} 0%, ${ph.petal}14 100%)`, border: `1px solid ${T.paperDeep}`, borderLeft: `4px solid ${ph.petal}`, borderRadius: 16, padding: "11px 13px", display: "flex", alignItems: "center", gap: 11 };
+const omenBtn = { width: "100%", textAlign: "left", cursor: "pointer", marginTop: 12, background: `linear-gradient(165deg, ${T.paperHi} 0%, ${ph.petal}14 100%)`, border: `1px solid ${T.paperDeep}`, borderLeft: `4px solid ${ph.petal}`, borderRadius: 16, padding: "11px 13px", display: "flex", alignItems: "center", gap: 11 };
 const omenLine = { fontFamily: SERIF, fontSize: 13.5, color: T.muted, margin: "3px 0 0", lineHeight: 1.4 };
-const rowS = { display: "flex", alignItems: "center", gap: 10, width: "100%", background: T.paper, border: `1px solid ${T.paperDeep}`, borderRadius: 12, padding: "9px 11px", cursor: "pointer" };
 const disc = { width: 30, height: 30, borderRadius: 8, border: `1px solid ${T.paperDeep}`, display: "grid", placeItems: "center", flexShrink: 0 };
 const fab = { position: "fixed", right: 18, bottom: "calc(var(--fw-nav-h, 76px) + 14px)", width: 54, height: 54, borderRadius: 999, background: T.crimson, border: "none", boxShadow: "0 6px 22px rgba(188,46,39,.4)", display: "grid", placeItems: "center", cursor: "pointer", zIndex: 50 };
 const scrim = { position: "fixed", inset: 0, zIndex: 9999, background: "rgba(11,8,5,0.46)", display: "flex", alignItems: "flex-end", justifyContent: "center" };
@@ -447,17 +455,16 @@ const overlayHead = { display: "flex", alignItems: "center", gap: 10, padding: "
 const overEye = { fontFamily: UI, fontSize: 11, fontWeight: 700, letterSpacing: ".12em", textTransform: "uppercase", color: T.gold };
 const emptySlot = { display: "inline-flex", alignItems: "center", gap: 5, background: "transparent", border: `1px dashed ${T.paperDeep}`, borderRadius: 9, padding: "6px 10px", fontFamily: UI, fontSize: 12, fontWeight: 700, color: T.muted, cursor: "pointer" };
 
-/* ── FEATURE-PARITY CHECKLIST (live PlannerV2Shell → this demo, clipboard-compressed) ──
- Slider 1 (Your day): ✅ Your Day buckets+popups · ✅ Schedule→day view · ✅ Cycle→calendar
-   · ✅ Insights deck · ✅ Lists · ✅ Body (BodyToday/SmartView/CycleZone) · ✅ Life-stage
-   (adaptive) · ✅ Conditions · ✅ Care (meds/contraception/symptom/body-scan/GP export)
- Slider 2 (Tending): ✅ Rituals (stack/bundle/consistency/builder) · ✅ Nourishment
+/* ── FEATURE PARITY (live PlannerV2Shell → this clipboard-forward demo) ──
+ Slider 1 "Your day" boards: ✅ Your day (6 tiles: rest/breakfast/walk/task/mood/lines + popups)
+   · ✅ Schedule & plan (hour-by-hour day view · cycle calendar · insights · plan-a-day/morning
+   brief · voice · customise) · ✅ Lists · ✅ Your body (BodyToday/SmartView/CycleZone/life-stage)
+   · ✅ Care (meds · contraception · symptom log · body scan · GP export · conditions)
+ Slider 2 "Tending" boards: ✅ Rituals (stack/bundle/consistency/builder) · ✅ Nourishment
    (macros/hydration/AI meal plan/phase recipes) · ✅ Mind (intention/astra/mood/breathwork/
-   cycle-psychology) · ✅ Tonight (reflection/tomorrow/end-of-day) · ✅ Jess passive cards
-   · ✅ Plan-a-day/morning brief
- Header: ✅ greeting/hero · ✅ confidence+stage+energy meta (via omen+toggle) · ✅ Plan-a-day
-   · ✅ Customise/settings (reorder+hide) · ✅ Voice-to-schedule · ✅ week strip · ✅ Today/Cycle
- Global: ✅ Add FAB+popup · ✅ quick-action popups · Cycle view: calendar/body/what's-growing
- v4 additive: flora hero · omen header · summary signal rows · §6.10 ClipboardSlider (uniform
-   365×488 boards) · soulful voice · PAPER_BG · ≥12 fonts · canonical tokens · .fw-sheet-safe.
- ~2 phone screens: compact header + 2 horizontal sliders (Today) instead of a long vertical stack. */
+   cycle-psych) · ✅ Tonight & Jess (reflection/tomorrow/end-of-day/Jess pattern/Jess summary/add)
+ Header: ✅ flora hero · ✅ one summary intent card · ✅ omen header · ✅ week strip · ✅ Today/Cycle
+ Global: ✅ Add FAB+popup · ✅ §6.7.6 quick-action popups · ✅ overlays (day view · cycle calendar)
+   · ✅ sheets (plan · settings/customise · voice) · Cycle view = calendar/body/what's-growing boards
+ Clipboard-forward (Journal-matched): every board holds a Grid of uniform Tile cards; the slider IS
+   the spine; ~2 phone screens. v4 additive throughout. No new function. */
