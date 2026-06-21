@@ -1,6 +1,10 @@
 # FEMWELL — CANONICAL STATUS INDEX (read first · updated 2026-06-19)
 **This file is the single source of truth AND the index to every plan doc. If anything else disagrees, this wins.** (The long ship-log history continues below the index.)
 
+## ✅ NAV PILL v8 — default bumped a notch bigger (100%×100%), tuner KEPT · SHIPPED + LIVE QA · 2026-06-22 · live `index-WKk0A-dF.js`
+**Halli scoped down: keep the `?navtune=1` tuner; only change = highlight pill slightly bigger.** Just bumped the two default constants (commit `e4d9776`, `MobileBottomNav.jsx`): side inset 1→**0**, height 60→**62** → pill is now **100% of item width × 100% of capsule height** (66×62, measured) — edge-to-edge in the slot. Nothing else touched.
+- **LIVE QA (Playwright 390px, served `index-WKk0A-dF.js`):** ✅ pill 100%×100%, **off 0** (aligned, correct slot); ✅ **tuner present + working** at `?navtune=1` (shows "side 0 · h 62 · 180ms · icon 24"; rows Side inset 0/1/2 · Height 58/60/62 · Speed 150/180/210 · Icon 22/24/26 + Reset — all live-adjustable, writes localStorage + reloads); ✅ Jess open `navVisibleOnTop:true`+`pillOnJess:true`; ✅ Menu open `navVisibleOnTop:true`; ✅ keep-alive 3 tabs warm (speed untouched). Screenshot `v8-bigger-default.png`. (CSS-calc robust positioning from v7 kept.)
+
 ## ✅ NAV PILL v7 — bigger (fills slot) + smoother + WRONG-SLOT/clunk ROOT-CAUSED · SHIPPED + LIVE QA · 2026-06-21 · live `index-DUPyhclB.js`
 **Halli "slightly bigger + smoother".** Bumped defaults AND found+fixed the real cause of the clunk. Commits `2d2af23`→`4468c8d`, `MobileBottomNav.jsx`.
 - **PILL bigger:** side inset 1px, height 60px → **97% of item WIDTH and 97% of capsule HEIGHT** (measured live), icons 24px / Jess bloom 34px. Light cream/gold (not a slab). Screenshot `v8-final-today.png`. Pill ÷ icon ≈ 2.7×.
