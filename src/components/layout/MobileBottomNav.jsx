@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Sun, BookOpen, User, Menu } from "lucide-react";
 import { createPageUrl } from "@/utils";
@@ -12,11 +12,11 @@ import { T } from "@/components/journal/Editorial";
 // SLIDES between items — the way IG/Material nav indicators do it. The slide is
 // a single CSS transform transition (translateX only → compositor 60fps), tight
 // + snappy, NO squash-stretch (that's what read as clunky).
-//   slide  : left .18s cubic-bezier(.33,1,.68,1)  (silky ease-out glide). We
-//            animate `left` (not transform) so the % resolves against the capsule
-//            — the pill is positioned purely from activeIndex and ALWAYS lands on
-//            the right slot regardless of width changes; single tiny element so
-//            the `left` animation stays smooth.
+//   slide  : transform .18s cubic-bezier(.33,1,.68,1) (silky GPU ease-out glide).
+//            FLIP: `left` is a calc() from activeIndex so the pill ALWAYS lands on
+//            the right slot (container-relative, no measurement, no wrong-slot);
+//            the visual move is a compositor `transform` so it never stutters even
+//            while a heavy page mounts on the main thread.
 //   reduced-motion: no transition — the pill moves instantly.
 // Decisive DEFAULTS below; the `?navtune=1` panel can override them (persisted
 // in localStorage) so Halli can pick the exact size/speed live.
@@ -26,7 +26,7 @@ const _tune = (() => {
 })();
 const PILL_INSET = _tune.side ?? 1;      // px side gap — pill effectively edge-to-edge
 const PILL_HEIGHT = _tune.height ?? 60;  // near-full height — ~1px even top/bottom inset
-const PILL_SLIDE = `left ${_tune.slideMs ?? 180}ms cubic-bezier(.33,1,.68,1)`; // easeOutCubic — silky
+const PILL_SLIDE = `transform ${_tune.slideMs ?? 180}ms cubic-bezier(.33,1,.68,1)`; // easeOutCubic — silky (GPU)
 const NAV_ICON = _tune.icon ?? 24;       // icon size — bigger/bolder active slot
 
 // Slot order (left → right): Today · Lifestyle · Jess bloom · Profile · Menu.
@@ -146,16 +146,35 @@ export default function MobileBottomNav({ currentPageName }) {
   const activeIndex = menuOpen ? menuIndex : assistantOpen ? fabIndex : linkIndex;
   const hasActive = activeIndex >= 0;
 
-  // Enable the slide transition only AFTER first paint, so the pill places
-  // instantly on load (no stray slide-in) but slides on every later move. The
-  // pill is positioned purely with CSS calc() from `activeIndex` (below), so it
-  // ALWAYS tracks the active slot regardless of width changes (scroll-lock,
-  // keep-alive page mounts) — no measurement, no re-snap, no race.
-  const [slideReady, setSlideReady] = useState(false);
-  useEffect(() => {
-    const id = window.requestAnimationFrame(() => setSlideReady(true));
-    return () => window.cancelAnimationFrame(id);
-  }, []);
+  // FLIP slide. The pill's `left` (in JSX) is a calc() from activeIndex, so after
+  // every render it is ALREADY at the correct slot (robust, no measurement). Here
+  // we just animate the VISUAL move with a GPU transform: invert (translate the
+  // pill back to where it was) then play to translateX(0). Compositor-driven, so
+  // it never freezes even while a heavy keep-alive page mounts on the main thread.
+  const pillRef = useRef(null);
+  const prevLeftRef = useRef(null); // pill's last viewport x (for the FLIP delta)
+  const firstRef = useRef(true);
+  useLayoutEffect(() => {
+    const pill = pillRef.current;
+    if (!pill) return;
+    const x = pill.getBoundingClientRect().left;     // new (correct) position
+    const prev = prevLeftRef.current;
+    prevLeftRef.current = x;
+    if (firstRef.current || reduceMotion || prev == null || prev === x) {
+      firstRef.current = false;
+      pill.style.transition = "none";
+      pill.style.transform = "translateX(0)";
+      return;
+    }
+    // Invert: jump the pill (visually) back to the old spot, then play to 0.
+    pill.style.transition = "none";
+    pill.style.transform = `translateX(${prev - x}px)`;
+    void pill.offsetWidth; // commit the inverted position
+    window.requestAnimationFrame(() => {
+      pill.style.transition = `${PILL_SLIDE}, opacity .2s ease`;
+      pill.style.transform = "translateX(0)";
+    });
+  }, [activeIndex, hasActive, reduceMotion]);
 
   const handleJessTap = () => {
     // Open existing assistant overlay (Layout listens for this event)
@@ -297,19 +316,22 @@ export default function MobileBottomNav({ currentPageName }) {
               (scroll-lock, page mounts) with no JS measurement — so it can never
               land on the wrong slot — and the slide stays a GPU transform. */}
           <div
+            ref={pillRef}
             aria-hidden="true"
             style={{
               position: "absolute",
               // left = capsule padding (8) + side inset + N columns. The % in the
               // column term resolves against the capsule, so the pill is always
-              // exactly on slot `activeIndex` — no measurement, no wrong-slot.
+              // exactly on slot `activeIndex` — no measurement, no wrong-slot. The
+              // FLIP effect animates the VISUAL move via transform (GPU).
               left: `calc(${8 + PILL_INSET}px + ${Math.max(0, activeIndex)} * (100% - 16px) / 5)`,
               top: (62 - PILL_HEIGHT) / 2,
               height: PILL_HEIGHT,
               width: `calc((100% - 16px) / 5 - ${PILL_INSET * 2}px)`,
               borderRadius: 9999,                   // wide stadium pill, like the reference
+              transform: "translateX(0)",
               opacity: hasActive ? 1 : 0,
-              willChange: "left, opacity",
+              willChange: "transform, opacity",
               zIndex: 0,
               // Soft, LIGHT active pill like the reference — a pale cream/gold
               // wash (not a dark slab). It reads against the translucent glass
@@ -321,9 +343,7 @@ export default function MobileBottomNav({ currentPageName }) {
                 "inset 0 1px 0 rgba(255,253,247,0.85), 0 1px 4px rgba(120,90,40,0.14)",
               transition: reduceMotion
                 ? "opacity .12s linear"
-                : slideReady
-                  ? `${PILL_SLIDE}, opacity .2s ease`
-                  : "opacity .2s ease",  // place instantly on first paint, slide after
+                : `${PILL_SLIDE}, opacity .2s ease`,  // FLIP effect overrides transform mid-move
             }}
           />
 
