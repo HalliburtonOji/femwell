@@ -19,6 +19,12 @@ import { Children, useRef, useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { T, UI, Script } from "@/components/journal/Editorial";
 import { CardCorner, FlowerGlyph } from "@/components/brand/flora";
+import { FW_CARD_W, FW_CARD_MINH } from "@/components/brand/Card";
+
+// UNIFORM SIZE (§6.7.1 / §6.10): every clipboard board IS the standard Today "across your day" card
+// size — width FW_CARD_W (365) · minHeight FW_CARD_MINH (488) — and the slider stretches all boards to
+// equal height, so board 1 and board 2 never mismatch. No size mismatch between any boards or cards.
+const GAP = 14;
 
 const reduceMotion = () => { try { return window.matchMedia("(prefers-reduced-motion: reduce)").matches; } catch { return false; } };
 
@@ -42,10 +48,10 @@ export function Clipboard({ title, sub, accent = T.gold, flower = "lavender", id
     <section
       aria-label={title}
       style={{
-        position: "relative", overflow: "hidden",
+        position: "relative", overflow: "hidden", width: "100%", boxSizing: "border-box",
         background: `linear-gradient(165deg, ${T.paperHi} 0%, ${accent}14 100%)`,
         border: `1px solid ${T.paperDeep}`, borderLeft: `4px solid ${accent}`, borderRadius: 20,
-        padding: "24px 18px 18px", minHeight: 300,
+        padding: "24px 18px 18px", minHeight: FW_CARD_MINH,
         boxShadow: "0 4px 20px rgba(58,44,26,0.12), 0 1px 4px rgba(58,44,26,0.08)",
       }}
     >
@@ -96,12 +102,12 @@ export function ClipboardSlider({ children, hint, accent = T.gold }) {
       )}
       <div
         ref={trackRef} onScroll={onScroll} className="fw-clipboard-track"
-        style={{ display: "flex", gap: 12, overflowX: "auto", scrollSnapType: "x mandatory", padding: "10px 2px 4px", scrollbarWidth: "none", WebkitOverflowScrolling: "touch", margin: "0 -2px" }}
+        style={{ display: "flex", alignItems: "stretch", gap: GAP, overflowX: "auto", scrollSnapType: "x mandatory", padding: "10px 2px 4px", scrollbarWidth: "none", WebkitOverflowScrolling: "touch", margin: "0 -2px" }}
       >
         <style>{`.fw-clipboard-track::-webkit-scrollbar{display:none}`}</style>
         {boards.map((b, i) => (
           <div key={i} style={{
-            flex: "0 0 calc(100% - 28px)", scrollSnapAlign: "start", borderRadius: 20,
+            flex: `0 0 ${FW_CARD_W}px`, width: FW_CARD_W, display: "flex", scrollSnapAlign: "start", borderRadius: 20,
             transform: reduceMotion() ? "none" : (i === active ? "translateY(0) scale(1)" : "translateY(2px) scale(0.985)"),
             opacity: i === active ? 1 : 0.9,
             transition: reduceMotion() ? "none" : "transform 260ms ease-out, opacity 260ms ease-out",
@@ -110,7 +116,7 @@ export function ClipboardSlider({ children, hint, accent = T.gold }) {
           </div>
         ))}
         {/* trailing spacer so the last board can snap fully into view past the peek */}
-        <div aria-hidden style={{ flex: "0 0 14px" }} />
+        <div aria-hidden style={{ flex: "0 0 16px" }} />
       </div>
 
       {boards.length > 1 && (

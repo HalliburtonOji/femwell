@@ -36,3 +36,13 @@ routes → 404. (Memory: `femwell-preview-route-deploy-method.md`.)
 
 **Group:** please put this in the **Current** group (it's an active in-context Today proposal awaiting Halli's sign-off), `kind:"route"`, marked **NEW**.
 **Deploy:** shipped via `npx base44 site deploy -y` (local dist) as required for repo-only routes.
+
+---
+
+## ADD (2026-06-21) — Journal Clipboard rebuild → wired into CATALOG (Current) directly
+
+| label | route | one-line description |
+|---|---|---|
+| Journal — Clipboard rebuild (compact ~2 screens) ★ NEW | `/JournalClipboardDemo` | The live Journal (Hub) rebuilt to the v4 bible + made COMPACT (slide sideways, ~2 screens): flora-hero + ONE summary card, then a §6.10 Clipboard Stack Slider (Write & reflect / Your circle / Keep & see) of uniform 365×488 tiles. EVERY feature preserved (write·echo·witness·twin·threads·sealed letters·mirror·on-this-day·insights·tonight — each tile opens the full real surface) + a §6.7.6 quick-line popup. Live Journal untouched. |
+
+**Status:** I added the CATALOG entry myself (group `CAT.CURRENT`, status "new") since FoundersOS uses a data-driven CATALOG and the standing rule is "not done until it opens from the IDEAS pill". If you reorganise, keep it under Current.

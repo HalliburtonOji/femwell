@@ -138,6 +138,8 @@ import TodayOption2 from './pages/TodayOption2';
 // Clipboard Stack Slider — slide LEFT to reveal the ritual builder (4 ritual cards + quick-popups +
 // garden growth). PREVIEW route only, reached via FoundersOS → Previews. Live Today untouched.
 import TodayRitualDemo from './pages/TodayRitualDemo';
+// Journal — Clipboard rebuild DEMO (compact, §6.10 clipboard slider; all features preserved). Preview route.
+import JournalClipboardDemo from './pages/JournalClipboardDemo';
 // Brand craft sample (Phase-1 brand-identity craft direction — flat vs upgraded bloom,
 // botanical motif, heart in context, live perf). Self-contained preview. Linked from Previews.
 import BrandCraftSample from './pages/BrandCraftSample';
@@ -279,6 +281,7 @@ export const PAGES = {
     "TodayDemo6": TodayDemo6,
     "TodayOption2": TodayOption2,
     "TodayRitualDemo": TodayRitualDemo,
+    "JournalClipboardDemo": JournalClipboardDemo,
     "BrandCraftSample": BrandCraftSample,
     "HealthDemo": HealthDemo,
     "ProfileDemo": ProfileDemo,
