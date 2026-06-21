@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Sun, BookOpen, User, Menu } from "lucide-react";
 import { createPageUrl } from "@/utils";
@@ -117,11 +117,7 @@ export default function MobileBottomNav({ currentPageName }) {
       window.CSS.supports("-webkit-backdrop-filter", "blur(2px)"))
   );
 
-  // ── Liquid active-pill migration ──────────────────────────────────────────
-  const capsuleRef = useRef(null);
-  const slotRefs = useRef([]);
-  const pillRef = useRef(null);
-  const prevLeftRef = useRef(null); // last resting pill X (null = pill hidden)
+  // ── Active-pill (CSS-calc positioned, GPU transform slide) ─────────────────
   // The assistant (Jess) overlay open-state lives in Layout; mirror it here via
   // the same window events so the pill can sit on Jess while it's open.
   const [assistantOpen, setAssistantOpen] = useState(false);
@@ -146,106 +142,16 @@ export default function MobileBottomNav({ currentPageName }) {
   const activeIndex = menuOpen ? menuIndex : assistantOpen ? fabIndex : linkIndex;
   const hasActive = activeIndex >= 0;
 
-  // Measure the active slot and migrate the pill there. useLayoutEffect so we
-  // read geometry + start the animation before paint (no flash). offsetLeft/
-  // offsetWidth are pre-transform layout values, so the shrink-on-scroll scale
-  // never throws the geometry off.
-  useLayoutEffect(() => {
-    const pill = pillRef.current;
-    if (!pill) return;
-
-    if (!hasActive) {
-      pill.style.opacity = "0";
-      prevLeftRef.current = null;
-      return;
-    }
-    const slot = slotRefs.current[activeIndex];
-    if (!slot) return;
-
-    const toX = slot.offsetLeft + PILL_INSET;
-    const w = slot.offsetWidth - PILL_INSET * 2;
-    pill.style.width = `${w}px`;
-    pill.style.opacity = "1";
-
-    const fromX = prevLeftRef.current;
-    if (!reduceMotion && fromX != null && fromX !== toX) {
-      // Clean snappy SLIDE via a single CSS transform transition (translateX
-      // only → compositor 60fps). No squash-stretch.
-      pill.style.transition = `${PILL_SLIDE}, opacity .2s ease`;
-      pill.style.transform = `translateX(${toX}px)`;
-    } else {
-      // First appearance / reduced motion / no move → place instantly.
-      pill.style.transition = "none";
-      pill.style.transform = `translateX(${toX}px)`;
-      void pill.offsetWidth; // commit the no-transition placement
-      pill.style.transition = reduceMotion
-        ? "opacity .12s linear"
-        : `${PILL_SLIDE}, opacity .2s ease`;
-    }
-    prevLeftRef.current = toX;
-  }, [activeIndex, hasActive, reduceMotion]);
-
-  // Keep the pill aligned to the active slot whenever the CAPSULE resizes — not
-  // just window resize but also the reflow when a scroll-locking sheet (Menu)
-  // opens and the scrollbar disappears, which shifts the grid columns. Snap
-  // (no spring) since it's a layout correction, not a navigation. Guarded so
-  // the ResizeObserver's initial fire never cancels an in-flight migration.
+  // Enable the slide transition only AFTER first paint, so the pill places
+  // instantly on load (no stray slide-in) but slides on every later move. The
+  // pill is positioned purely with CSS calc() from `activeIndex` (below), so it
+  // ALWAYS tracks the active slot regardless of width changes (scroll-lock,
+  // keep-alive page mounts) — no measurement, no re-snap, no race.
+  const [slideReady, setSlideReady] = useState(false);
   useEffect(() => {
-    const cap = capsuleRef.current;
-    const pill = pillRef.current;
-    if (!cap || !pill) return;
-    const snap = () => {
-      if (!hasActive) return;
-      const slot = slotRefs.current[activeIndex];
-      if (!slot) return;
-      const toX = slot.offsetLeft + PILL_INSET;
-      pill.style.width = `${slot.offsetWidth - PILL_INSET * 2}px`;
-      // Layout correction → snap instantly (no slide).
-      pill.style.transition = "none";
-      pill.style.transform = `translateX(${toX}px)`;
-      void pill.offsetWidth;
-      pill.style.transition = `${PILL_SLIDE}, opacity .2s ease`;
-      prevLeftRef.current = toX;
-    };
-    let lastW = cap.offsetWidth;
-    const ro = new ResizeObserver(() => {
-      const w = cap.offsetWidth;
-      if (w === lastW) return; // initial fire / no real change → don't re-snap
-      lastW = w;
-      snap();
-    });
-    ro.observe(cap);
-    window.addEventListener("resize", snap);
-    return () => {
-      ro.disconnect();
-      window.removeEventListener("resize", snap);
-    };
-  }, [activeIndex, hasActive]);
-
-  // When Menu/Jess toggles, their scroll-lock reflows the capsule a frame or two
-  // later (scrollbar disappears → columns shift). Re-snap the pill to the active
-  // slot once layout settles — but ONLY if the slot actually moved, so normal
-  // navigation never has its spring interrupted.
-  useEffect(() => {
-    let r1, r2;
-    r1 = requestAnimationFrame(() => {
-      r2 = requestAnimationFrame(() => {
-        const pill = pillRef.current;
-        if (!pill || !hasActive) return;
-        const slot = slotRefs.current[activeIndex];
-        if (!slot) return;
-        const toX = slot.offsetLeft + PILL_INSET;
-        if (prevLeftRef.current != null && Math.abs(prevLeftRef.current - toX) < 1) return; // no shift
-        pill.style.width = `${slot.offsetWidth - PILL_INSET * 2}px`;
-        pill.style.transition = "none";
-        pill.style.transform = `translateX(${toX}px)`;
-        void pill.offsetWidth;
-        pill.style.transition = `${PILL_SLIDE}, opacity .2s ease`;
-        prevLeftRef.current = toX;
-      });
-    });
-    return () => { cancelAnimationFrame(r1); cancelAnimationFrame(r2); };
-  }, [menuOpen, assistantOpen, activeIndex, hasActive]);
+    const id = window.requestAnimationFrame(() => setSlideReady(true));
+    return () => window.cancelAnimationFrame(id);
+  }, []);
 
   const handleJessTap = () => {
     // Open existing assistant overlay (Layout listens for this event)
@@ -324,7 +230,6 @@ export default function MobileBottomNav({ currentPageName }) {
         }}
       >
         <div
-          ref={capsuleRef}
           style={{
             position: "relative",
             pointerEvents: "auto",
@@ -381,25 +286,28 @@ export default function MobileBottomNav({ currentPageName }) {
 
           {/* The active pill — ONE wide STADIUM that nearly fills the active item
               and SLIDES between all 5 (light wax/gold, behind icon+label, like
-              the IG reference). Position/size/slide driven from the layout effect. */}
+              the IG reference). Positioned PURELY with CSS calc() from
+              activeIndex: width = one grid column minus the side inset; transform
+              = translateX by N columns (translateX % is the pill's own width, +
+              the per-column inset gap). This auto-tracks ANY capsule width change
+              (scroll-lock, page mounts) with no JS measurement — so it can never
+              land on the wrong slot — and the slide stays a GPU transform. */}
           <div
-            ref={pillRef}
             aria-hidden="true"
             style={{
               position: "absolute",
-              left: 0,
+              left: 8 + PILL_INSET,                 // capsule paddingInline (8) + side inset
               top: (62 - PILL_HEIGHT) / 2,
               height: PILL_HEIGHT,
-              width: 76,
-              borderRadius: 9999,   // wide stadium pill, like the reference
-              opacity: 0,
-              transformOrigin: "center center",
+              width: `calc((100% - 16px) / 5 - ${PILL_INSET * 2}px)`,
+              borderRadius: 9999,                   // wide stadium pill, like the reference
+              transform: `translateX(calc(${Math.max(0, activeIndex)} * 100% + ${Math.max(0, activeIndex) * PILL_INSET * 2}px))`,
+              opacity: hasActive ? 1 : 0,
               willChange: "transform, opacity",
               zIndex: 0,
               // Soft, LIGHT active pill like the reference — a pale cream/gold
               // wash (not a dark slab). It reads against the translucent glass
-              // because it's near-opaque with a DELICATE gold edge + a faint
-              // lift, not because it's dark.
+              // because it's near-opaque with a DELICATE gold edge + a faint lift.
               background:
                 "linear-gradient(180deg, rgba(247,241,227,0.94) 0%, rgba(238,228,203,0.95) 100%)",
               border: "1px solid rgba(168,137,63,0.45)",
@@ -407,7 +315,9 @@ export default function MobileBottomNav({ currentPageName }) {
                 "inset 0 1px 0 rgba(255,253,247,0.85), 0 1px 4px rgba(120,90,40,0.14)",
               transition: reduceMotion
                 ? "opacity .12s linear"
-                : `${PILL_SLIDE}, opacity .2s ease`,
+                : slideReady
+                  ? `${PILL_SLIDE}, opacity .2s ease`
+                  : "opacity .2s ease",  // place instantly on first paint, slide after
             }}
           />
 
@@ -416,7 +326,6 @@ export default function MobileBottomNav({ currentPageName }) {
               return (
                 <button
                   key="fab"
-                  ref={(el) => (slotRefs.current[i] = el)}
                   type="button"
                   aria-label="Open Jess"
                   onClick={handleJessTap}
@@ -461,7 +370,7 @@ export default function MobileBottomNav({ currentPageName }) {
               return (
                 <button
                   key="menu"
-                  ref={(el) => { menuButtonRef.current = el; slotRefs.current[i] = el; }}
+                  ref={menuButtonRef}
                   type="button"
                   aria-label="Open menu"
                   aria-expanded={menuOpen}
@@ -496,7 +405,6 @@ export default function MobileBottomNav({ currentPageName }) {
             return (
               <Link
                 key={slot.page}
-                ref={(el) => (slotRefs.current[i] = el)}
                 to={createPageUrl(slot.page)}
                 aria-label={`Go to ${slot.label}`}
                 aria-current={active ? "page" : undefined}
