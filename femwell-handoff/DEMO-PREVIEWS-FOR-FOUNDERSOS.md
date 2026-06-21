@@ -46,3 +46,13 @@ routes → 404. (Memory: `femwell-preview-route-deploy-method.md`.)
 | Journal — Clipboard rebuild (compact ~2 screens) ★ NEW | `/JournalClipboardDemo` | The live Journal (Hub) rebuilt to the v4 bible + made COMPACT (slide sideways, ~2 screens): flora-hero + ONE summary card, then a §6.10 Clipboard Stack Slider (Write & reflect / Your circle / Keep & see) of uniform 365×488 tiles. EVERY feature preserved (write·echo·witness·twin·threads·sealed letters·mirror·on-this-day·insights·tonight — each tile opens the full real surface) + a §6.7.6 quick-line popup. Live Journal untouched. |
 
 **Status:** I added the CATALOG entry myself (group `CAT.CURRENT`, status "new") since FoundersOS uses a data-driven CATALOG and the standing rule is "not done until it opens from the IDEAS pill". If you reorganise, keep it under Current.
+
+---
+
+## ADD (2026-06-21) — Planner rebuild (full parity + clipboard, ~2 screens) → wired into CATALOG (Current)
+
+| label | route | one-line description |
+|---|---|---|
+| Planner — v4 redesign demo ★ for approval (page 1) | `/PlannerRedesignDemo` | The live Planner (PlannerV2Shell) rebuilt to the v4 bible + made COMPACT (~2 screens, slide sideways). FULL FEATURE PARITY — nothing stripped: Your Day buckets · hour-by-hour day view · cycle calendar · insights · lists · body · life-stage · conditions · care (meds/contraception/symptom/body-scan/GP export) · rituals · nourishment · mind (intention/astra/mood/breathwork/cycle-psych) · tonight · Jess cards · plan-a-day/morning brief · customise/settings · voice · add FAB. v4 additive: flora-hero + omen header + §6.7.6 quick popups + soulful voice; long vertical stacks → §6.10 ClipboardSlider boards (uniform 365×488) across 2 horizontal sliders. Live Planner untouched; rides existing dispatchers (no new function). |
+
+**Status:** CATALOG entry added directly (group `CAT.CURRENT`, status "approval") per the standing rule "not done until it opens from the IDEAS pill". If you reorganise, keep it under Current.
