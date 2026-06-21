@@ -167,6 +167,16 @@ import PulseCardsDemo from './pages/PulseCardsDemo';
 import PlannerCardsDemo from './pages/PlannerCardsDemo';
 import FloraLabDemo from './pages/FloraLabDemo';
 import RitualBuilderDemo from './pages/RitualBuilderDemo';
+// Growth & Connection demos (Phase 0 — intentions/line-of-day/goals/tiny-missions/
+// bucket-list/days-off/Tier-0 anonymous connection baked into existing pages, no new
+// nav tab). Standalone preview routes; live pages untouched. Gated 1:1 tiers HELD.
+import GrowthDemo from './pages/GrowthDemo';
+import GrowthTodayDemo from './pages/GrowthTodayDemo';
+import GrowthGardenDemo from './pages/GrowthGardenDemo';
+import GrowthPlannerDemo from './pages/GrowthPlannerDemo';
+import GrowthLifestyleDemo from './pages/GrowthLifestyleDemo';
+import GrowthCommunityDemo from './pages/GrowthCommunityDemo';
+import GrowthProfileDemo from './pages/GrowthProfileDemo';
 import PlannerRedesignDemo from './pages/PlannerRedesignDemo';
 // NutritionHub = the REAL new Nutrition page (Daily Hub + Hero Card Slider hybrid,
 // wired to real entities, reuses the hardened nutrition components). Lives at
@@ -292,6 +302,13 @@ export const PAGES = {
     "PlannerCardsDemo": PlannerCardsDemo,
     "FloraLabDemo": FloraLabDemo,
     "RitualBuilderDemo": RitualBuilderDemo,
+    "GrowthDemo": GrowthDemo,
+    "GrowthTodayDemo": GrowthTodayDemo,
+    "GrowthGardenDemo": GrowthGardenDemo,
+    "GrowthPlannerDemo": GrowthPlannerDemo,
+    "GrowthLifestyleDemo": GrowthLifestyleDemo,
+    "GrowthCommunityDemo": GrowthCommunityDemo,
+    "GrowthProfileDemo": GrowthProfileDemo,
     "PlannerRedesignDemo": PlannerRedesignDemo,
     "NutritionHub": NutritionHub,
     "JournalRedesign1": JournalRedesign1,
