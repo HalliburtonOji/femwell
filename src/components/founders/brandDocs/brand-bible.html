@@ -205,9 +205,10 @@
   <h2>The fittings.</h2>
   <p><b>The carved crimson heart</b> is the brand mark — always #BC2E27, exactly one per surface. <b>Botanical motifs</b> are hairline, stroke-only line-art, one per fold, never behind text. <b>Buttons/chips/sheets</b> are accent-driven, radius-999 chips, paperHi bottom-sheets over a warm scrim (with nav clearance). <b>One unified floating glass-capsule bottom nav</b> at every viewport; Jess is a crimson bloom in the row. Icons: Lucide / inline SVG only — never emoji.</p>
   <p><b>Motion = breath, not bounce.</b> Transform/opacity only (GPU); micro 120ms · standard 200ms · sheets 300ms; no bounce anywhere; high-frequency taps stay ≤120ms or un-animated; <code>prefers-reduced-motion</code> gated on every animated node.</p>
+  <p><b>The bottom-nav active pill</b> is the one bespoke spring. A <b>single persistent wide stadium gold pill</b> sits across all 5 items (one element that <i>moves</i>, not five that fade). On a tab change it migrates with a <b>physics spring</b> (stiffness 320 · damping 32 · mass 1), <b>sampled @60fps and baked into transform-only WAAPI keyframes</b> (GPU, never JS-per-frame layout), with <b>velocity-coupled squash-stretch</b> — scaleX 1→1.16 / scaleY 1→0.94 at peak travel speed, settling to 1×1 at rest (it stretches toward where it's going, lands round). <b>Reduced-motion → instant</b> (the pill jumps; no spring, no squash).</p>
 
   <div class="rule"></div>
-  <h3>The Clipboard Stack Slider <span class="badge ag">Agreed</span> <span class="badge pr">demo to build</span></h3>
+  <h3>The Clipboard Stack Slider <span class="badge ag">Agreed</span> <span class="badge pr">Today session builds</span></h3>
   <p>A <b>“clipboard”</b> is a big framed card that <b>holds a stack/grid of smaller cards</b> (think the Profile “Your areas” tiles — Garden · People · Saved · Privacy). You <b>slide it sideways</b> and it reveals <b>another whole clipboard</b> holding a different stack — like flipping between two big boards. It groups several peer grids into one calm, swipeable surface instead of an endless scroll.</p>
   <div class="clipdemo">
     <div class="clip back"></div>
@@ -224,7 +225,16 @@
     <tr><td><b>The stack</b></td><td>a 2-col (or 2×2) grid of typed mini-tiles inside — each an icon + label + sub that taps through (deep-link or the §6 quick-action popup).</td></tr>
     <tr><td><b>The slider</b></td><td>a horizontal pager of clipboards with snap, an <b>edge-peek</b> of the next board to invite the swipe, and page dots.</td></tr>
   </table>
-  <p><small><b>When to use:</b> a page with several <i>peer</i> grids/areas/“rooms” (Profile areas, “your spaces”, category boards) — present them as swipeable clipboards, not one long page or a cramped single grid. <b>Motion:</b> horizontal <code>translateX</code> + scroll-snap, 240–300ms ease-out, a slight lift on the active board, the top “clip” can stay fixed while the board slides; <b>reduced-motion → instant</b>, no slide. <b>Build:</b> a snap-scroll pager over <code>Card.jsx</code> tiles — rides existing components, <b>no new function</b>. Ships as a demo (<code>/ClipboardSliderDemo</code>) for approval before going live.</small></p>
+  <p><small><b>When to use:</b> a page with several <i>peer</i> grids/areas/“rooms” (Profile areas, “your spaces”, category boards) — present them as swipeable clipboards, not one long page or a cramped single grid. <b>Motion:</b> horizontal <code>translateX</code> + scroll-snap, 240–300ms ease-out, a slight lift on the active board, the top “clip” can stay fixed while the board slides; <b>reduced-motion → instant</b>, no slide. <b>Build:</b> a snap-scroll pager over <code>Card.jsx</code> tiles — rides existing components, <b>no new function</b>. <b>Owned by the Today session</b> (it's surfacing the Ritual Builder on Today with it) — this is the <b>spec only</b>.</small></p>
+
+  <h4>Slide-within-card (nested sliding)</h4>
+  <p>A board can itself hold a <b>horizontal sliding sub-deck</b> — the user <b>swipes WITHIN the big card</b> to move between its peer items, rather than stacking them down the page. <i>Example — Today's “loop” board: intention · line of the day · tiny mission · a day for you · someone like you, swiped through inside the one board.</i></p>
+  <table>
+    <tr><th>Part</th><th>What it is</th></tr>
+    <tr><td><b>Outer board</b></td><td>the framed clipboard (title/clip + surface) — stays put.</td></tr>
+    <tr><td><b>Inner sub-slider</b></td><td>a scroll-snap row of peer item-cards <i>inside</i> the board, with its own small page-dots; only this moves.</td></tr>
+  </table>
+  <p><small><b>When:</b> a single board holding several peer items that belong together (the Today loop, a “this week” set) — keeps it compact &amp; glanceable. Outer slider = move between <i>different</i> boards; inner = move <i>within</i> one. <b>Gesture rule (no conflict):</b> the inner horizontal swipe is captured only when the gesture starts inside the board and is dominantly horizontal; <b>vertical drags always fall through to page scroll</b>; the inner deck's end <b>does not chain</b> into the outer board slide (no nested-horizontal hijack — the outer board only advances from its own dots/pager). One axis-owner per gesture. <b>Motion:</b> <code>translateX</code> + scroll-snap, transform-only, ease-out 240–300ms, edge-peek; <b>reduced-motion → instant</b>; no bounce. Same Card/brand chrome inside (typed cards, never empty). <b>No new function; owned by the Today session.</b></small></p>
 </div>
 
 <a id="check"></a>
