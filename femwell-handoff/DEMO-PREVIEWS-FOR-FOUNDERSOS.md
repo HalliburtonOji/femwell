@@ -66,3 +66,14 @@ routes → 404. (Memory: `femwell-preview-route-deploy-method.md`.)
 | Profile — Clipboard rebuild (compact ~2 screens) ★ for approval | `/ProfileClipboardDemo` | The live Profile rebuilt to the v4 bible + made COMPACT (slide sideways, ~2 screens): flora-hero (Profile char = blush/gold camellia + butterfly + carved heart) carrying identity (photo upload · name · email · live phase chips), then ONE summary card (check-ins · avg mood · streak + this-week dots), then a §6.10 Clipboard Stack Slider (You / Your areas / Account & data) of uniform tiles. EVERY feature preserved — stage lever (11-stage picker), assistant/tone/birthday/city/goals (each a §6.7.6 quick-edit popup), cycle/community/reminders doors, Health & conditions + More-areas (saved/skin/preferences/privacy) full-screen overlays, plan · anonymous toggle · data export · delete. Live Profile untouched; rides existing UserProfile/UserPreferences updates (no new function). |
 
 **Status:** CATALOG entry added directly (group `CAT.CURRENT`, status "new") per the standing rule "not done until it opens from the IDEAS pill". If you reorganise, keep it under Current.
+
+---
+
+## ADD (2026-06-22) — Today COMPACT + Profile segmented rework (both wired into CATALOG, Current)
+
+| label | route | one-line description |
+|---|---|---|
+| Today — Clipboard COMPACT (less scroll) ★ for approval | `/TodayClipboardDemo` | The live Today (Growth-loaded) made compact — the long downward stack (Growth loop · Your day · Cycle) now rides a §6.10 clipboard slider sideways (Board 1 Your day · Board 2 Today's loop = the Growth Phase-0 loop verbatim · Board 3 Cycle & body). Masthead (hero bloom-in-ring + Jess paragraph) + the "Across your day" + "noticed" sliders kept. ~5.6→3.4 screens (measured, empty preview). Nothing stripped; live Today untouched. |
+| Profile — segmented, nothing-hidden rework ★ for approval | `/ProfileClipboardDemo` | Reworked per Halli: SETTINGS (and the rest) no longer buried in a "More areas" overlay. A MIX of BOX tiles (clipboard slider: You + Account, quick-edit popups) and full-width STRIP rows in four labelled segments (Settings · Health & cycle · Your spaces · Account) that surface every link that was hidden. Nothing stripped; live Profile untouched. |
+
+**Status:** both CATALOG entries added directly (group `CAT.CURRENT`, status "new") per the standing rule. If you reorganise, keep them under Current.

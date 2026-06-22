@@ -6,9 +6,9 @@ import {
   ChevronRight, Bell, Moon, Heart, Shield,
   Calendar, MapPin, Sparkles, Camera, Users,
   Check, AlertCircle, X, ArrowLeft,
+  Activity, Bookmark, Ticket, CalendarDays, Stethoscope, Mail, Feather, Settings, LogOut, RefreshCw,
 } from "lucide-react";
 import ConditionHealthProfile from "../components/conditions/ConditionHealthProfile";
-import ProfileNavLinks from "../components/profile/ProfileNavLinks";
 import ProfileDataModals from "../components/profile/ProfileDataModals";
 import FirstLaunchStagePicker from "../components/planner/FirstLaunchStagePicker";
 import { writeDevStageOverride } from "../components/planner/DevStageSwitcher";
@@ -184,6 +184,47 @@ function ProfileTile({ Icon, label, sub, value, accent = T.gold, onClick, danger
   );
 }
 
+// ── a STRIP card — a full-width settings/navigation row (the OTHER §6.7 card shape: not a box tile but
+//    a clear, scannable list row). Mixed WITH the box tiles so the page reads open + laid-out, and so
+//    important things (Settings, Cycle, Privacy…) are SURFACED as a visible list — never hidden behind a
+//    "more" overlay. href → a real page; onClick → an in-page action/overlay. ────────────────────────
+function ProfileStrip({ Icon, label, sub, accent = T.gold, href, onClick, value, danger }) {
+  const c = danger ? T.crimson : accent;
+  const inner = (
+    <>
+      <span style={{ width: 36, height: 36, borderRadius: 10, background: `${c}1c`, display: "grid", placeItems: "center", flexShrink: 0 }}>
+        <Icon size={17} style={{ color: c }} />
+      </span>
+      <span style={{ flex: 1, minWidth: 0 }}>
+        <span style={{ display: "block", fontFamily: SERIF, fontSize: 16, fontWeight: 600, color: danger ? T.crimson : T.ink, lineHeight: 1.25 }}>{label}</span>
+        {sub && <span style={{ display: "block", fontFamily: UI, fontSize: 12, color: T.muted, marginTop: 1, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{sub}</span>}
+      </span>
+      {value
+        ? <span style={{ fontFamily: UI, fontSize: 12.5, fontWeight: 700, color: c, flexShrink: 0 }}>{value}</span>
+        : <ChevronRight size={17} style={{ color: T.muted, flexShrink: 0 }} />}
+    </>
+  );
+  const style = {
+    display: "flex", alignItems: "center", gap: 12, width: "100%", textAlign: "left",
+    padding: "13px 14px", marginBottom: 9, borderRadius: 14, cursor: "pointer", textDecoration: "none",
+    background: `linear-gradient(165deg, ${T.paperHi} 0%, ${c}0d 100%)`,
+    border: `1px solid ${T.paperDeep}`, borderLeft: `3px solid ${c}`, boxShadow: "0 1px 4px rgba(58,44,26,0.06)",
+  };
+  if (href) return <a href={href} style={style}>{inner}</a>;
+  return <button onClick={onClick} style={style}>{inner}</button>;
+}
+
+// ── a clearly-labelled SEGMENT header (script title + small caption) so the page reads as distinct
+//    sections, not one undifferentiated list. ─────────────────────────────────────────────────────────
+function SegmentHeader({ title, sub }) {
+  return (
+    <div style={{ display: "flex", alignItems: "baseline", gap: 9, margin: "22px 2px 11px" }}>
+      <Script size={26} color={T.ink}>{title}</Script>
+      {sub && <span style={{ fontFamily: UI, fontSize: 11.5, color: T.muted }}>{sub}</span>}
+    </div>
+  );
+}
+
 // ── §6.7.6 QUICK-ACTION POPUP — edit a single field in place without a full page ─────────────────────
 function ProfileEditPopup({ cfg, onClose }) {
   const [val, setVal] = useState(cfg?.value ?? "");
@@ -280,10 +321,10 @@ export default function ProfileClipboardDemo() {
   const [showDataDeleteModal, setShowDataDeleteModal] = useState(false);
   const [showStageModal, setShowStageModal] = useState(false);
   const [stageToast, setStageToast] = useState(null);
-  // Quick-edit popup config + the two full-screen area overlays.
+  // Quick-edit popup config + the Health & conditions full-screen overlay.
   const [editing, setEditing] = useState(null);
   const [showCond, setShowCond] = useState(false);
-  const [showAreas, setShowAreas] = useState(false);
+  const handleLogout = async () => { try { await base44.auth.logout(); } catch { /* ignore */ } window.location.href = "/"; };
 
   const handlePhotoUpload = async (e) => {
     const file = e.target.files?.[0];
@@ -396,17 +437,6 @@ export default function ProfileClipboardDemo() {
     return profile.cycle_avg_length - (daysSince % profile.cycle_avg_length);
   })();
 
-  const skinCheckins = checkins.filter(c => c.skin_condition);
-  const daysLoggedSkin = skinCheckins.length;
-  const skinConditionMode = daysLoggedSkin
-    ? Object.entries(
-        skinCheckins.reduce((acc, c) => {
-          acc[c.skin_condition] = (acc[c.skin_condition] || 0) + 1;
-          return acc;
-        }, {})
-      ).sort((a, b) => b[1] - a[1])[0][0]
-    : null;
-
   if (loading) return (
     <div className="min-h-screen flex items-center justify-center" style={{ ...PAPER_BG }}>
       <div className="w-8 h-8 rounded-full border-2 border-t-transparent animate-spin"
@@ -466,8 +496,8 @@ export default function ProfileClipboardDemo() {
         />
         <ProfileSummary checkins={checkins} avgMood={avgMood} checkinStreak={checkinStreak} />
 
-        {/* §6.10 clipboard slider — three boards, sideways, ~2 phone screens total */}
-        <ClipboardSlider hint="Slide for more →" accent={T.gold}>
+        {/* PERSONALISE — BOX tiles in a §6.10 clipboard slider (You · Account); each opens a §6.7.6 quick-edit popup */}
+        <ClipboardSlider hint="Slide → account" accent={T.gold}>
           {/* Board 1 — You */}
           <Clipboard title="You" sub="Identity & how Femwell speaks to you" accent={T.gold} flower="camellia" idx="cb-you">
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
@@ -480,19 +510,8 @@ export default function ProfileClipboardDemo() {
             </div>
           </Clipboard>
 
-          {/* Board 2 — Your areas */}
-          <Clipboard title="Your areas" sub="Doors into the rest of Femwell" accent={T.blush} flower="lavender" idx="cb-areas">
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
-              <ProfileTile Icon={Moon} label="Cycle settings" value={profile?.cycle_avg_length ? `${profile.cycle_avg_length}-day cycle` : "Set up"} accent={T.crimson} onClick={() => navigate(createPageUrl("CycleSettings"))} />
-              <ProfileTile Icon={Users} label="Community" value="Anonymous, 18+" accent={T.blush} onClick={() => navigate(createPageUrl("Community"))} />
-              <ProfileTile Icon={Bell} label="Reminders" value="Check-in alerts" accent={T.gold} onClick={() => navigate(`${createPageUrl("Settings")}?section=notifications`)} />
-              <ProfileTile Icon={Shield} label="Health & conditions" value="Stage & flags" accent={T.sage} onClick={() => setShowCond(true)} />
-              <ProfileTile full Icon={Sparkles} label="More areas" value="Saved, skin log, preferences & links" accent={T.gold} onClick={() => setShowAreas(true)} />
-            </div>
-          </Clipboard>
-
-          {/* Board 3 — Account & data */}
-          <Clipboard title="Account & data" sub="Your plan, privacy and your data" accent={T.sage} flower="camellia" idx="cb-acct">
+          {/* Board 2 — Account & data */}
+          <Clipboard title="Account" sub="Your plan, privacy and your data" accent={T.sage} flower="rose" idx="cb-acct">
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
               <ProfileTile full Icon={Sparkles} label="Plan" value={profile?.plan ? `${profile.plan} Plan` : "Free Plan"} sub="Tap to see what's in the upgrade" accent={T.gold} onClick={() => navigate(createPageUrl("Upgrade"))} />
               <ProfileTile Icon={Shield} label="Anonymous mode" value={profile?.anonymous_mode ? "On" : "Off"} sub="Not linked to analytics" accent={T.sage} onClick={toggleAnon} />
@@ -501,6 +520,38 @@ export default function ProfileClipboardDemo() {
             </div>
           </Clipboard>
         </ClipboardSlider>
+
+        {/* SURFACED — clearly-segmented STRIP rows. Halli's note: important things (Settings…) must NOT be
+            hidden behind a "more" overlay. They now live as a visible, scannable list; Settings is the first
+            row of its own segment. STRIP cards (full-width rows) mixed with the BOX tiles above. */}
+        <SegmentHeader title="Settings" sub="nothing buried" />
+        <ProfileStrip Icon={Settings} label="Settings" sub="All app settings & preferences" accent={T.gold} href={createPageUrl("Settings")} />
+        <ProfileStrip Icon={Moon} label="Cycle settings" sub={profile?.cycle_avg_length ? `${profile.cycle_avg_length}-day cycle` : "Set up your cycle"} accent={T.crimson} href={createPageUrl("CycleSettings")} />
+        <ProfileStrip Icon={Bell} label="Reminders & notifications" sub="Check-in & session alerts" accent={T.gold} href={`${createPageUrl("Settings")}?section=notifications`} />
+        <ProfileStrip Icon={Shield} label="Health & conditions" sub="Stage, conditions & flags" accent={T.sage} onClick={() => setShowCond(true)} />
+        <ProfileStrip Icon={RefreshCw} label="Redo onboarding" sub="Run the setup again" accent={T.muted} href="/Onboarding?mode=redo" />
+
+        <SegmentHeader title="Health & cycle" sub="your body, tracked" />
+        <ProfileStrip Icon={Activity} label="Pulse" sub="Weekly summaries & pattern charts" accent="#8E6E8E" href={createPageUrl("Pulse")} />
+        <ProfileStrip Icon={Feather} label="Skin & Hair" sub="Phase patterns, breakouts & shedding" accent={T.blush} href={createPageUrl("SkinHair")} />
+        <ProfileStrip Icon={Stethoscope} label="Doctor export" sub="A clinician-ready summary of your data" accent={T.sage} href={createPageUrl("DoctorExport")} />
+        <ProfileStrip Icon={Heart} label="Pregnancy & Menopause support" sub="Daily tracking, setup & guidance" accent={T.crimson} href={createPageUrl("LifeStageCare")} />
+        <ProfileStrip Icon={Users} label="Partner settings" sub="Share what you choose, with whom" accent={T.gold} href={createPageUrl("PartnerSettings")} />
+
+        <SegmentHeader title="Your spaces" sub="rooms & saved things" />
+        <ProfileStrip Icon={Users} label="Community" sub="Anonymous, 18+ — a room everyone's in" accent={T.blush} href={createPageUrl("Community")} />
+        <ProfileStrip Icon={Bookmark} label="Saved" sub="Advice, content & programs you kept" accent={T.gold} href={createPageUrl("Saved")} />
+        <ProfileStrip Icon={Mail} label="Sealed letters" sub="Notes to your future self" accent={T.crimson} href={createPageUrl("SealedLetters")} />
+        <ProfileStrip Icon={Ticket} label="Deals" sub="Coupon codes & offers" accent={T.gold} href={createPageUrl("Deals")} />
+        <ProfileStrip Icon={CalendarDays} label="Events" sub="Free & paid listings near you" accent={T.sage} href={createPageUrl("Events")} />
+
+        <SegmentHeader title="Account" />
+        <ProfileStrip Icon={LogOut} label="Sign out" sub="See you soon" danger onClick={handleLogout} />
+        <div style={{ display: "flex", gap: 14, justifyContent: "center", margin: "12px 0 4px", fontFamily: UI, fontSize: 12, fontWeight: 600 }}>
+          <a href="/terms" style={{ color: T.muted, textDecoration: "none" }}>Terms</a>
+          <span style={{ color: T.paperDeep }}>·</span>
+          <a href="/privacy" style={{ color: T.muted, textDecoration: "none" }}>Privacy</a>
+        </div>
       </div>
 
       {/* ── preserved flows ── */}
@@ -536,19 +587,6 @@ export default function ProfileClipboardDemo() {
             <ConditionHealthProfile
               profile={profile}
               onProfileUpdate={(updates) => setProfile(p => ({ ...p, ...updates }))}
-            />
-          </div>
-        </ProfileAreaOverlay>
-      )}
-
-      {/* More areas overlay — preserved ProfileNavLinks (saved / skin / preferences / privacy links) */}
-      {showAreas && (
-        <ProfileAreaOverlay title="More areas" onClose={() => setShowAreas(false)}>
-          <div style={{ paddingTop: 14 }}>
-            <ProfileNavLinks
-              profile={profile}
-              daysLoggedSkin={daysLoggedSkin}
-              skinConditionMode={skinConditionMode}
             />
           </div>
         </ProfileAreaOverlay>
