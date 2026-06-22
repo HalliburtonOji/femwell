@@ -77,3 +77,16 @@ routes → 404. (Memory: `femwell-preview-route-deploy-method.md`.)
 | Profile — segmented, nothing-hidden rework ★ for approval | `/ProfileClipboardDemo` | Reworked per Halli: SETTINGS (and the rest) no longer buried in a "More areas" overlay. A MIX of BOX tiles (clipboard slider: You + Account, quick-edit popups) and full-width STRIP rows in four labelled segments (Settings · Health & cycle · Your spaces · Account) that surface every link that was hidden. Nothing stripped; live Profile untouched. |
 
 **Status:** both CATALOG entries added directly (group `CAT.CURRENT`, status "new") per the standing rule. If you reorganise, keep them under Current.
+
+---
+
+## ADD (2026-06-22) — Planner TRUE FULL PARITY rebuild (TWO sibling demos — Halli: "keep both, compare")
+
+Two sessions independently rebuilt the Planner to full parity (the prior `/PlannerRedesignDemo` had stripped **capacity planning** + buried **voice-to-plan**). Halli chose to keep BOTH wired so he can compare side-by-side, then pick a winner. Both catalog entries are in `FoundersOS.jsx` `CAT.CURRENT` in the working tree.
+
+| label | route | one-line description |
+|---|---|---|
+| Planner — TRUE FULL PARITY rebuild ★ for approval | `/PlannerClipboardDemo` | (sibling session) Mounts the **REAL** live `<CapacityTaxBar>` + `<VoiceScheduler>` components for genuine parity; clipboard + nested-CardDeck spine; broadest parity checklist (incl. pre-TTC/fertile-window/HRT/pregnancy-timeline/kick-counter/EPDS). |
+| Planner — full-parity rebuild (v2, self-contained) ★ compare | `/PlannerRedesignDemo` | (this session) Same v4 spine; **CAPACITY = a dedicated "Capacity & energy" board on the new in-card CardDeck** (capacity-tax bar w/ 100% tick · protect-your-energy Light/Moderate/Full · Defer N · 7-day energy forecast); **VOICE-TO-PLAN = an obvious primary mic button** high under the summary (co-equal w/ Plan-a-day). Re-implements capacity/voice in-page (seeded) rather than mounting the live components. |
+
+**Status:** both CATALOG entries present (`CAT.CURRENT`). ⚠️ **Coordinated deploy needed** to make both reachable from the live IDEAS pill — the working tree currently holds the sibling session's UNCOMMITTED work (`PlannerClipboardDemo.jsx` untracked + their `FoundersOS.jsx`/`pages.config.js` edits) intermingled with my catalog entry. This session committed ONLY its own page (`6983392`). Whoever runs the next `npx base44 site deploy -y` should commit FoundersOS + pages.config + BOTH page files together so neither demo references a missing component. Verified locally @390px: `/PlannerRedesignDemo` renders, no overflow (scrollW 390), voice button + Capacity CardDeck (4 pages, scroll-snap, overscroll-contain) + all parity markers present; voice sheet + quick-popups open.
