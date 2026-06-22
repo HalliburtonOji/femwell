@@ -28,7 +28,7 @@ import { useNavigate } from "react-router-dom";
 import { computeCycleDay } from "@/hooks/useCycleDay";
 import {
   Feather, Waves, Eye, Users, BarChart2, Lock, Hash, CalendarHeart, Moon,
-  Sprout, X, Check,
+  Sprout, X, Check, Mic,
 } from "lucide-react";
 import {
   T, UI, SERIF, Eyebrow, Rule, Hand, Heart, Script, InkFilter, useEditorialFonts, PAPER_BG,
@@ -184,6 +184,7 @@ export default function JournalHub() {
 
   // composer + the four-lives flow (reused, identical to Journal.jsx)
   const [showNewEntry, setShowNewEntry] = useState(false);
+  const [composerMode, setComposerMode] = useState("Write"); // which mode the composer opens into (Voice from the hub mic)
   const [editEntry, setEditEntry] = useState(null);
   const [seedText, setSeedText] = useState("");
   const [seedType, setSeedType] = useState(null);
@@ -256,7 +257,8 @@ export default function JournalHub() {
   }).length;
 
   // ── seed helpers — verbatim from Journal.jsx so the composer behaves identically
-  const openBlank = () => { setSeedText(""); setSeedType(null); setSeedThread(""); setShowNewEntry(true); };
+  const openBlank = () => { setSeedText(""); setSeedType(null); setSeedThread(""); setComposerMode("Write"); setShowNewEntry(true); };
+  const openVoice = () => { setSeedText(""); setSeedType(null); setSeedThread(""); setComposerMode("Voice"); setShowNewEntry(true); };  // hub mic → composer straight in Voice mode
   const openSeeded = (text, type = null) => { setSeedText(text || ""); setSeedType(type); setSeedThread(""); setShowNewEntry(true); };
   const openInThread = (thread) => { setSeedText(""); setSeedType(null); setSeedThread(thread || ""); setShowNewEntry(true); };
   const replyToPast = () => openSeeded("Replying to who I was…\n\n", "reflection");
@@ -402,6 +404,19 @@ export default function JournalHub() {
           ].filter(Boolean)} />
         </div>
 
+        {/* prominent PRIMARY ACTIONS — write OR speak, surfaced HIGH (right under the summary) so they're the
+            first thing you reach. Voice is a co-equal, obvious mic affordance (Halli: voice-to-journal must
+            not be buried in the composer); tapping the mic opens the composer straight in Voice mode. */}
+        <div style={{ padding: "16px 16px 0", display: "flex", gap: 10 }}>
+          <button onClick={openVoice} aria-label="Speak your journal entry (voice to text)" style={{ flex: 1, minWidth: 0, display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 9, background: T.sage, color: T.paper, border: "none", borderRadius: 16, padding: "16px 14px", fontFamily: UI, fontSize: 14, fontWeight: 700, letterSpacing: 0.6, textTransform: "uppercase", cursor: "pointer", boxShadow: "0 6px 18px rgba(143,175,143,0.32)" }}>
+            <span aria-hidden style={{ display: "grid", placeItems: "center", width: 26, height: 26, borderRadius: 999, background: "rgba(255,255,255,0.22)", flexShrink: 0 }}><Mic size={16} /></span> Speak a page
+          </button>
+          <button onClick={openBlank} aria-label="Write a journal entry" style={{ flex: 1, minWidth: 0, display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 9, background: T.crimson, color: T.paper, border: "none", borderRadius: 16, padding: "16px 14px", fontFamily: UI, fontSize: 14, fontWeight: 700, letterSpacing: 0.6, textTransform: "uppercase", cursor: "pointer", boxShadow: "0 6px 18px rgba(188,46,39,0.25)" }}>
+            <Feather size={18} /> Write a page
+          </button>
+        </div>
+        <p style={{ textAlign: "center", fontFamily: UI, fontSize: 12, color: T.muted, margin: "8px 16px 0" }}>Tap the mic to speak your entry — it writes itself.</p>
+
         {/* ── COMPACT SPINE — a §6.10 CLIPBOARD SLIDER of journal spaces. Slide SIDEWAYS between boards
             instead of scrolling down a long list; every tile opens the FULL real surface, so every
             feature is preserved (write · echo · witness · twin · threads · sealed letters · mirror ·
@@ -436,12 +451,7 @@ export default function JournalHub() {
           </ClipboardSlider>
         </div>
 
-        {/* prominent WRITE — the one clear primary action */}
-        <div style={{ padding: "18px 16px 0" }}>
-          <button onClick={openBlank} style={{ width: "100%", display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 10, background: T.crimson, color: T.paper, border: "none", borderRadius: 16, padding: "16px 18px", fontFamily: UI, fontSize: 14, fontWeight: 700, letterSpacing: 1, textTransform: "uppercase", cursor: "pointer", boxShadow: "0 6px 18px rgba(188,46,39,0.25)" }}>
-            <Feather size={19} /> Write a page
-          </button>
-        </div>
+        {/* (primary Write/Speak actions are surfaced HIGH, right under the summary — see above) */}
 
         {/* footer voice */}
         <footer style={{ textAlign: "center", padding: "30px 24px 0" }}>
@@ -478,6 +488,7 @@ export default function JournalHub() {
             editEntry={editEntry} seedText={seedText}
             seedCardType={seedType} seedThread={seedThread}
             threads={threads.map((t) => t.name)}
+            initialMode={composerMode}
             onClose={closeComposer} onSaved={handleSaved}
           />
         )}

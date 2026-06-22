@@ -151,6 +151,7 @@ const inputStyle = {
 export default function NewEntrySheet({
   user, phase, cycleDay = null, onClose, onSaved, editEntry = null,
   seedText = "", seedCardType = null, seedThread = "", threads = [],
+  initialMode = "Write",   // open the composer straight into a mode (e.g. "Voice" from the hub mic button)
 }) {
   // Lock the background page while this full-screen sheet is open (no scroll-bleed).
   useScrollLock(true);
@@ -159,7 +160,7 @@ export default function NewEntrySheet({
     ? (Array.isArray(editEntry.tags) ? editEntry.tags : String(editEntry.tags).split(",").map((s) => s.trim()).filter(Boolean))
     : [];
 
-  const [mode, setMode] = useState("Write"); // all five modes built (Phase 2)
+  const [mode, setMode] = useState(initialMode); // all five modes built (Phase 2); hub can open straight into Voice
   const [justSaved, setJustSaved] = useState(false); // post-save: Jess offers one gentle follow-up
   const [showShareEcho, setShowShareEcho] = useState(false);
   const [cardType, setCardType] = useState(editEntry?.card_type || seedCardType || "free");

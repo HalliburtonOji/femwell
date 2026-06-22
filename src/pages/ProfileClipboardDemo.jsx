@@ -14,8 +14,8 @@ import FirstLaunchStagePicker from "../components/planner/FirstLaunchStagePicker
 import { writeDevStageOverride } from "../components/planner/DevStageSwitcher";
 // Brand v4 lush layer — §3 carved heart · §4 botanicals · §5.3 Profile char = blush/gold camellia ·
 // §6.8 signature top · §6.10 Clipboard Stack Slider · §6.7.6 quick-action popup.
-import { T, UI, SERIF, Script, Heart as BrandHeart, PAPER_BG } from "@/components/journal/Editorial";
-import { VineMotifV2, FlowerGlyph, CardFrame, floraKeyframes, cwOf, Butterfly } from "@/components/brand/flora";
+import { T, UI, SERIF, Script, Hand, Eyebrow, Heart as BrandHeart, PAPER_BG } from "@/components/journal/Editorial";
+import { VineMotifV2, FlowerGlyph, CardFrame, floraKeyframes, cwOf, Butterfly, SwayBloom, SprigDivider, lighten } from "@/components/brand/flora";
 import { ClipboardSlider, Clipboard } from "@/components/brand/ClipboardSlider";
 import { SpeciesBloom } from "@/components/brand/floraLibrary";
 
@@ -57,46 +57,57 @@ const PHASE_LABELS_P = { menstrual: 'Menstrual', follicular: 'Follicular', ovula
 // the whole "who you are" fold sits in one screen instead of a scroll of separate cards.
 function ProfileHero({ user, profile, onPhoto, uploadingPhoto, cycleInfo, daysToNextPeriod, checkinStreak }) {
   const cw = cwOf("blush");
+  const hour = (() => { try { return new Date().getHours(); } catch { return 10; } })();
+  const greeting = hour < 12 ? "Good morning" : hour < 17 ? "Good afternoon" : "Good evening";
+  const firstName = (user?.full_name || "").trim().split(" ")[0] || "";
   return (
     <section style={{
-      position: "relative", overflow: "hidden", borderRadius: 24, padding: "20px 20px 18px", marginBottom: 14,
-      background: `linear-gradient(170deg, ${T.paperHi} 0%, ${cw.petal}1f 58%, ${T.gold}14 100%)`,
-      border: `1px solid ${T.paperDeep}`, boxShadow: "0 6px 26px rgba(58,44,26,0.12)",
+      position: "relative", overflow: "hidden", borderRadius: 26, padding: "26px 20px 20px", marginBottom: 16,
+      background: `linear-gradient(168deg, ${T.paperHi} 0%, ${cw.petal}26 52%, ${T.gold}16 100%)`,
+      border: `1px solid ${T.paperDeep}`, boxShadow: "0 10px 34px rgba(58,44,26,0.14), 0 2px 8px rgba(58,44,26,0.08)",
     }}>
-      <CardFrame variant="sprig" color={T.blush} size={52} opacity={0.55} />
-      <div aria-hidden style={{ position: "absolute", top: -4, right: 16, opacity: 0.9 }}>
-        <Butterfly size={38} color={T.blush} color2={T.gold} idx="pf-bf" />
+      <style>{`@keyframes fwPfGlow{0%,100%{opacity:.82;transform:translateX(-50%) scale(1)}50%{opacity:1;transform:translateX(-50%) scale(1.05)}}@media (prefers-reduced-motion:reduce){.fw-pf-glow{animation:none!important}}`}</style>
+      <CardFrame variant="sprig" color={cw.petal} size={58} opacity={0.62} />
+      {/* soft coloured glow behind the page-creature + a resting butterfly (§5.3 blush/gold camellia) */}
+      <div aria-hidden className="fw-pf-glow" style={{ position: "absolute", top: -26, left: "50%", width: 300, height: 300, transform: "translateX(-50%)", borderRadius: "50%", background: `radial-gradient(circle, ${cw.petal}44 0%, ${T.gold}20 44%, transparent 70%)`, animation: "fwPfGlow 7s ease-in-out infinite", pointerEvents: "none", zIndex: 0 }} />
+      <div aria-hidden style={{ position: "absolute", top: 10, right: 18, zIndex: 2, pointerEvents: "none" }}>
+        <Butterfly size={40} color={cw.petal} color2={T.gold} pattern="eyes" animate idx="pf-bf" />
       </div>
       <div style={{ position: "relative", zIndex: 1, display: "flex", flexDirection: "column", alignItems: "center", textAlign: "center" }}>
-        {/* page-creature crown — camellia between two meaning-blooms */}
-        <div style={{ display: "flex", alignItems: "flex-end", gap: 6, marginBottom: 2 }}>
-          <FlowerGlyph variant="lavender" size={24} color={cw.petal} color2={cw.tip} accent={cw.accent} idx="pf-l" />
-          <SpeciesBloom name="camellia" size={70} />
-          <FlowerGlyph variant="camellia" size={24} color={T.gold} idx="pf-r" />
+        {/* the page-creature bloom — gently swaying inside a soft dashed halo (the Today bloom-in-ring language) */}
+        <div style={{ position: "relative", width: 132, height: 132, display: "grid", placeItems: "center", marginBottom: 2 }}>
+          <div aria-hidden style={{ position: "absolute", inset: -1, borderRadius: "50%", border: `1px solid ${T.paperDeep}` }} />
+          <div aria-hidden style={{ position: "absolute", inset: 7, borderRadius: "50%", border: `1.5px dashed ${lighten(cw.petal, 0.1)}` }} />
+          <SwayBloom animate idx={3}><SpeciesBloom name="camellia" size={106} /></SwayBloom>
         </div>
+        <Eyebrow color={cw.accent} mb={2}>Your Femwell</Eyebrow>
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <FlowerGlyph variant="lavender" size={20} color={cw.petal} color2={cw.tip} accent={cw.accent} idx="pf-l" />
           <BrandHeart size={14} />
-          <Script size={34} color={T.ink}>your profile</Script>
+          <Script size={36} color={T.ink}>{firstName ? `${greeting}, ${firstName}` : greeting}</Script>
+          <FlowerGlyph variant="camellia" size={20} color={T.gold} idx="pf-r" />
         </div>
-        {/* identity row — photo upload preserved */}
-        <div style={{ display: "flex", alignItems: "center", gap: 12, marginTop: 14 }}>
+        <Hand size={16} color={T.muted} style={{ marginTop: 8, maxWidth: 300, lineHeight: 1.5 }}>This is you — tended, not measured. Everything here bends to your season.</Hand>
+        {/* identity — photo upload preserved, set in a soft framed sub-card */}
+        <div style={{ display: "flex", alignItems: "center", gap: 13, marginTop: 16, background: T.paper, border: `1px solid ${T.paperDeep}`, borderRadius: 16, padding: "10px 14px 10px 10px", boxShadow: "inset 0 1px 0 rgba(255,253,247,0.6)" }}>
           <label style={{ cursor: uploadingPhoto ? "wait" : "pointer", position: "relative", display: "inline-block" }}>
-            <div style={{ width: 60, height: 60, borderRadius: "50%", overflow: "hidden", border: `2px solid ${cw.petal}`, background: T.paper, display: "grid", placeItems: "center" }}>
+            <div style={{ width: 56, height: 56, borderRadius: "50%", overflow: "hidden", border: `2px solid ${cw.petal}`, background: T.paperHi, display: "grid", placeItems: "center" }}>
               {profile?.avatar_url
                 ? <img src={profile.avatar_url} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-                : <span style={{ fontSize: 24, fontWeight: 700, color: T.ink }}>{user?.full_name?.[0]?.toUpperCase() || "?"}</span>}
+                : <span style={{ fontFamily: SERIF, fontSize: 23, fontWeight: 700, color: T.ink }}>{user?.full_name?.[0]?.toUpperCase() || "?"}</span>}
             </div>
-            <span style={{ position: "absolute", bottom: 0, right: 0, width: 20, height: 20, borderRadius: "50%", background: T.crimson, border: `2px solid ${T.paperHi}`, display: "grid", placeItems: "center" }}>
+            <span style={{ position: "absolute", bottom: -1, right: -1, width: 21, height: 21, borderRadius: "50%", background: T.crimson, border: `2px solid ${T.paper}`, display: "grid", placeItems: "center" }}>
               <Camera style={{ width: 10, height: 10, color: "#fff" }} />
             </span>
             <input type="file" accept="image/*" style={{ display: "none" }} onChange={onPhoto} disabled={uploadingPhoto} />
           </label>
-          <div style={{ textAlign: "left" }}>
-            <p style={{ fontFamily: SERIF, fontSize: 19, fontWeight: 700, color: T.ink, margin: 0 }}>{user?.full_name || "You"}</p>
-            <p style={{ fontFamily: UI, fontSize: 11.5, color: T.muted, margin: "2px 0 0" }}>{user?.email}</p>
+          <div style={{ textAlign: "left", minWidth: 0 }}>
+            <p style={{ fontFamily: SERIF, fontSize: 19, fontWeight: 700, color: T.ink, margin: 0, lineHeight: 1.2 }}>{user?.full_name || "You"}</p>
+            <p style={{ fontFamily: UI, fontSize: 11.5, color: T.muted, margin: "2px 0 0", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", maxWidth: 180 }}>{user?.email}</p>
+            <p style={{ fontFamily: UI, fontSize: 11, fontWeight: 700, color: cw.accent, margin: "3px 0 0", display: "inline-flex", alignItems: "center", gap: 4 }}><Camera size={10} /> tap to change</p>
           </div>
         </div>
-        {/* live phase chips (preserved) */}
+        {/* live phase chips — refined: gold hairline, serif values */}
         {cycleInfo && (
           <div style={{ display: "flex", gap: 8, marginTop: 14, width: "100%" }}>
             {[
@@ -104,9 +115,9 @@ function ProfileHero({ user, profile, onPhoto, uploadingPhoto, cycleInfo, daysTo
               { label: "Cycle day", value: `Day ${cycleInfo.day}` },
               daysToNextPeriod != null ? { label: "Next period", value: `${daysToNextPeriod}d` } : { label: "Streak", value: `${checkinStreak}d` },
             ].map(c => (
-              <div key={c.label} style={{ flex: 1, background: T.paper, border: `1px solid ${T.paperDeep}`, borderRadius: 12, padding: "8px 6px", textAlign: "center" }}>
-                <p style={{ fontFamily: UI, fontSize: 9, fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.07em", color: cw.accent, margin: 0 }}>{c.label}</p>
-                <p style={{ fontFamily: SERIF, fontSize: 14, fontWeight: 700, color: T.ink, margin: "2px 0 0" }}>{c.value}</p>
+              <div key={c.label} style={{ flex: 1, background: T.paper, border: `1px solid ${T.paperDeep}`, borderTop: `2px solid ${cw.petal}`, borderRadius: 12, padding: "9px 6px", textAlign: "center" }}>
+                <p style={{ fontFamily: UI, fontSize: 8.5, fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.09em", color: cw.accent, margin: 0 }}>{c.label}</p>
+                <p style={{ fontFamily: SERIF, fontSize: 15, fontWeight: 700, color: T.ink, margin: "3px 0 0" }}>{c.value}</p>
               </div>
             ))}
           </div>
@@ -120,37 +131,48 @@ function ProfileHero({ user, profile, onPhoto, uploadingPhoto, cycleInfo, daysTo
 function ProfileSummary({ checkins, avgMood, checkinStreak }) {
   const last7 = Array.from({ length: 7 }, (_, i) => { const d = new Date(); d.setDate(d.getDate() - (6 - i)); return d.toISOString().split('T')[0]; });
   const set = new Set(checkins.map(c => c.date));
+  const loggedThisWeek = last7.filter(d => set.has(d)).length;
   const stats = [
     { label: "Check-ins", value: checkins.length },
     { label: "Avg mood", value: avgMood ? `${avgMood}/5` : "—" },
     { label: "Streak", value: `${checkinStreak}d` },
   ];
+  // soulful read — a gentle line, never a scoreboard (locked voice)
+  const read = checkinStreak > 0
+    ? `${checkinStreak} day${checkinStreak === 1 ? "" : "s"} in a row — a quiet rhythm you've kept.`
+    : loggedThisWeek > 0
+      ? "A few marks this week — gently does it, no streak to chase."
+      : "A fresh page. Check in whenever you like — never on demand.";
   return (
     <section style={{
-      position: "relative", overflow: "hidden", borderRadius: 20, padding: "16px 18px 14px", marginBottom: 16,
-      background: `linear-gradient(165deg, ${T.paperHi} 0%, ${T.sage}12 100%)`,
+      position: "relative", overflow: "hidden", borderRadius: 20, padding: "16px 18px 15px", marginBottom: 18,
+      background: `linear-gradient(165deg, ${T.paperHi} 0%, ${T.sage}16 100%)`,
       border: `1px solid ${T.paperDeep}`, borderLeft: `4px solid ${T.sage}`, boxShadow: "0 4px 18px rgba(58,44,26,0.10)",
     }}>
-      <div style={{ display: "flex", gap: 10, marginBottom: 14 }}>
-        {stats.map(s => (
-          <div key={s.label} style={{ flex: 1, textAlign: "center" }}>
-            <p style={{ fontFamily: SERIF, fontSize: 22, fontWeight: 700, color: T.ink, margin: 0 }}>{s.value}</p>
-            <p style={{ fontFamily: UI, fontSize: 9.5, fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.08em", color: T.muted, margin: "2px 0 0" }}>{s.label}</p>
+      <CardFrame variant="sprig" color={T.sage} size={42} opacity={0.5} />
+      <div style={{ position: "relative", display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
+        <Eyebrow color={T.sage} mb={0}>How you&apos;ve been</Eyebrow>
+        <FlowerGlyph variant="clover" size={22} color={T.sage} idx="pf-sum" />
+      </div>
+      <div style={{ position: "relative", display: "flex", gap: 8, marginBottom: 12 }}>
+        {stats.map((s, i) => (
+          <div key={s.label} style={{ flex: 1, textAlign: "center", borderLeft: i ? `1px solid ${T.paperDeep}88` : "none" }}>
+            <p style={{ fontFamily: SERIF, fontSize: 24, fontWeight: 700, color: T.ink, margin: 0, lineHeight: 1 }}>{s.value}</p>
+            <p style={{ fontFamily: UI, fontSize: 9, fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.09em", color: T.muted, margin: "4px 0 0" }}>{s.label}</p>
           </div>
         ))}
       </div>
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
-        <span style={{ fontFamily: UI, fontSize: 11.5, fontWeight: 700, color: T.muted }}>This week</span>
-        {checkinStreak > 0 && <span style={{ fontFamily: UI, fontSize: 11, color: T.crimson, fontWeight: 700 }}>{checkinStreak}-day streak</span>}
-      </div>
-      <div style={{ display: "flex", justifyContent: "space-between" }}>
+      <p style={{ position: "relative", fontFamily: SERIF, fontStyle: "italic", fontSize: 14.5, color: T.muted, margin: "0 0 13px", lineHeight: 1.45 }}>{read}</p>
+      <div style={{ position: "relative", display: "flex", justifyContent: "space-between" }}>
         {last7.map(ds => {
           const has = set.has(ds);
-          const lbl = new Date(ds + 'T12:00:00').toLocaleDateString('en-GB', { weekday: 'short' }).slice(0, 3);
+          const lbl = new Date(ds + 'T12:00:00').toLocaleDateString('en-GB', { weekday: 'short' }).slice(0, 1);
           return (
-            <div key={ds} style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 4 }}>
-              <div style={{ width: 26, height: 26, borderRadius: 999, background: has ? T.sage : T.paper, border: has ? "none" : `1px solid ${T.paperDeep}` }} />
-              <span style={{ fontFamily: UI, fontSize: 9, color: T.muted }}>{lbl}</span>
+            <div key={ds} style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 5 }}>
+              <div style={{ width: 26, height: 26, borderRadius: 999, background: has ? T.sage : T.paper, border: has ? "none" : `1px solid ${T.paperDeep}`, boxShadow: has ? "0 2px 6px rgba(143,175,143,0.4)" : "none", display: "grid", placeItems: "center" }}>
+                {has && <Check size={13} color="#fff" strokeWidth={3} />}
+              </div>
+              <span style={{ fontFamily: UI, fontSize: 9.5, fontWeight: 600, color: T.muted }}>{lbl}</span>
             </div>
           );
         })}
@@ -216,12 +238,16 @@ function ProfileStrip({ Icon, label, sub, accent = T.gold, href, onClick, value,
 
 // ── a clearly-labelled SEGMENT header (script title + small caption) so the page reads as distinct
 //    sections, not one undifferentiated list. ─────────────────────────────────────────────────────────
-function SegmentHeader({ title, sub }) {
+function SegmentHeader({ title, sub, accent = T.gold }) {
   return (
-    <div style={{ display: "flex", alignItems: "baseline", gap: 9, margin: "22px 2px 11px" }}>
-      <Script size={26} color={T.ink}>{title}</Script>
-      {sub && <span style={{ fontFamily: UI, fontSize: 11.5, color: T.muted }}>{sub}</span>}
-    </div>
+    <>
+      <SprigDivider color={accent} my={18} />
+      <div style={{ display: "flex", alignItems: "baseline", gap: 9, margin: "0 2px 11px" }}>
+        <span style={{ width: 7, height: 7, borderRadius: 999, background: accent, flexShrink: 0, transform: "translateY(-3px)" }} aria-hidden />
+        <Script size={27} color={T.ink}>{title}</Script>
+        {sub && <span style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 13, color: T.muted }}>{sub}</span>}
+      </div>
+    </>
   );
 }
 
@@ -497,9 +523,10 @@ export default function ProfileClipboardDemo() {
         <ProfileSummary checkins={checkins} avgMood={avgMood} checkinStreak={checkinStreak} />
 
         {/* PERSONALISE — BOX tiles in a §6.10 clipboard slider (You · Account); each opens a §6.7.6 quick-edit popup */}
-        <ClipboardSlider hint="Slide → account" accent={T.gold}>
+        <Hand size={15} color={T.muted} style={{ display: "block", margin: "0 2px 8px" }}>Two cards to tune you — slide between them; tap anything to change it.</Hand>
+        <ClipboardSlider hint="You · Account" accent={T.gold}>
           {/* Board 1 — You */}
-          <Clipboard title="You" sub="Identity & how Femwell speaks to you" accent={T.gold} flower="camellia" idx="cb-you">
+          <Clipboard title="You" sub="who you are · how Femwell speaks to you" accent={T.gold} flower="camellia" idx="cb-you">
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
               <ProfileTile full Icon={Moon} label="Your Femwell stage" value={stage.label} sub={stage.hint} accent={T.gold} onClick={() => setShowStageModal(true)} />
               <ProfileTile Icon={Sparkles} label="Assistant" value={profile?.ai_assistant_name || "Guide"} accent={T.gold} onClick={openAssistant} />
@@ -511,7 +538,7 @@ export default function ProfileClipboardDemo() {
           </Clipboard>
 
           {/* Board 2 — Account & data */}
-          <Clipboard title="Account" sub="Your plan, privacy and your data" accent={T.sage} flower="rose" idx="cb-acct">
+          <Clipboard title="Account" sub="your plan, your privacy, your data" accent={T.sage} flower="rose" idx="cb-acct">
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
               <ProfileTile full Icon={Sparkles} label="Plan" value={profile?.plan ? `${profile.plan} Plan` : "Free Plan"} sub="Tap to see what's in the upgrade" accent={T.gold} onClick={() => navigate(createPageUrl("Upgrade"))} />
               <ProfileTile Icon={Shield} label="Anonymous mode" value={profile?.anonymous_mode ? "On" : "Off"} sub="Not linked to analytics" accent={T.sage} onClick={toggleAnon} />
@@ -524,33 +551,42 @@ export default function ProfileClipboardDemo() {
         {/* SURFACED — clearly-segmented STRIP rows. Halli's note: important things (Settings…) must NOT be
             hidden behind a "more" overlay. They now live as a visible, scannable list; Settings is the first
             row of its own segment. STRIP cards (full-width rows) mixed with the BOX tiles above. */}
-        <SegmentHeader title="Settings" sub="nothing buried" />
+        <SegmentHeader title="Settings" sub="everything in plain sight" accent={T.gold} />
         <ProfileStrip Icon={Settings} label="Settings" sub="All app settings & preferences" accent={T.gold} href={createPageUrl("Settings")} />
         <ProfileStrip Icon={Moon} label="Cycle settings" sub={profile?.cycle_avg_length ? `${profile.cycle_avg_length}-day cycle` : "Set up your cycle"} accent={T.crimson} href={createPageUrl("CycleSettings")} />
         <ProfileStrip Icon={Bell} label="Reminders & notifications" sub="Check-in & session alerts" accent={T.gold} href={`${createPageUrl("Settings")}?section=notifications`} />
         <ProfileStrip Icon={Shield} label="Health & conditions" sub="Stage, conditions & flags" accent={T.sage} onClick={() => setShowCond(true)} />
         <ProfileStrip Icon={RefreshCw} label="Redo onboarding" sub="Run the setup again" accent={T.muted} href="/Onboarding?mode=redo" />
 
-        <SegmentHeader title="Health & cycle" sub="your body, tracked" />
+        <SegmentHeader title="Health &amp; cycle" sub="your body, in your words" accent={T.crimson} />
         <ProfileStrip Icon={Activity} label="Pulse" sub="Weekly summaries & pattern charts" accent="#8E6E8E" href={createPageUrl("Pulse")} />
         <ProfileStrip Icon={Feather} label="Skin & Hair" sub="Phase patterns, breakouts & shedding" accent={T.blush} href={createPageUrl("SkinHair")} />
         <ProfileStrip Icon={Stethoscope} label="Doctor export" sub="A clinician-ready summary of your data" accent={T.sage} href={createPageUrl("DoctorExport")} />
         <ProfileStrip Icon={Heart} label="Pregnancy & Menopause support" sub="Daily tracking, setup & guidance" accent={T.crimson} href={createPageUrl("LifeStageCare")} />
         <ProfileStrip Icon={Users} label="Partner settings" sub="Share what you choose, with whom" accent={T.gold} href={createPageUrl("PartnerSettings")} />
 
-        <SegmentHeader title="Your spaces" sub="rooms & saved things" />
+        <SegmentHeader title="Your spaces" sub="rooms, saved things, the good stuff" accent={T.blush} />
         <ProfileStrip Icon={Users} label="Community" sub="Anonymous, 18+ — a room everyone's in" accent={T.blush} href={createPageUrl("Community")} />
         <ProfileStrip Icon={Bookmark} label="Saved" sub="Advice, content & programs you kept" accent={T.gold} href={createPageUrl("Saved")} />
         <ProfileStrip Icon={Mail} label="Sealed letters" sub="Notes to your future self" accent={T.crimson} href={createPageUrl("SealedLetters")} />
         <ProfileStrip Icon={Ticket} label="Deals" sub="Coupon codes & offers" accent={T.gold} href={createPageUrl("Deals")} />
         <ProfileStrip Icon={CalendarDays} label="Events" sub="Free & paid listings near you" accent={T.sage} href={createPageUrl("Events")} />
 
-        <SegmentHeader title="Account" />
+        <SegmentHeader title="Account" sub="yours, always" accent={T.sage} />
         <ProfileStrip Icon={LogOut} label="Sign out" sub="See you soon" danger onClick={handleLogout} />
         <div style={{ display: "flex", gap: 14, justifyContent: "center", margin: "12px 0 4px", fontFamily: UI, fontSize: 12, fontWeight: 600 }}>
           <a href="/terms" style={{ color: T.muted, textDecoration: "none" }}>Terms</a>
           <span style={{ color: T.paperDeep }}>·</span>
           <a href="/privacy" style={{ color: T.muted, textDecoration: "none" }}>Privacy</a>
+        </div>
+
+        {/* soulful closing — editorial sign-off (one heart lives in the hero; here, just a sprig + a line) */}
+        <div style={{ position: "relative", overflow: "hidden", marginTop: 22, padding: "20px 18px 18px", borderRadius: 20, textAlign: "center", background: `linear-gradient(165deg, ${T.paperHi} 0%, ${cwOf("blush").petal}14 100%)`, border: `1px solid ${T.paperDeep}`, boxShadow: "0 4px 18px rgba(58,44,26,0.08)" }}>
+          <CardFrame variant="sprig" color={cwOf("blush").petal} size={44} opacity={0.5} />
+          <div style={{ position: "relative" }}>
+            <div style={{ display: "flex", justifyContent: "center", marginBottom: 6 }}><FlowerGlyph variant="camellia" size={28} color={cwOf("blush").petal} color2={cwOf("blush").tip} idx="pf-close" /></div>
+            <Hand size={15} color={T.muted} style={{ display: "block", maxWidth: 300, margin: "0 auto", lineHeight: 1.5 }}>This is your corner of Femwell — kept private, shaped by you, here whenever you need it.</Hand>
+          </div>
         </div>
       </div>
 
