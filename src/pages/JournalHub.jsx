@@ -360,7 +360,7 @@ export default function JournalHub() {
   const phaseWord = phase ? phase.charAt(0).toUpperCase() + phase.slice(1) : null;
 
   return (
-    <div style={{ ...PAPER_BG, minHeight: "100vh", fontFamily: SERIF, color: T.ink, paddingBottom: 120, position: "relative" }}>
+    <div style={{ ...PAPER_BG, minHeight: "100vh", fontFamily: SERIF, color: T.ink, paddingBottom: 120, position: "relative", overflowX: "hidden" }}>
       <InkFilter />
       {/* botanical page texture — one low-opacity vine per fold, clipped (no horizontal scroll),
           behind content, never over text (BRAND_IDENTITY §4/§6.2). */}
@@ -395,7 +395,7 @@ export default function JournalHub() {
 
         {/* ── ONE summary card — signal-driven rows, each taps to the exact target (§6.8) ── */}
         <div style={{ padding: "16px 16px 0" }}>
-          <SummaryCard eyebrow="Your pages, today" accent={T.gold} rows={[
+          <SummaryCard eyebrow="Your pages, today" accent={T.gold} width="100%" rows={[
             lastEntry ? { Icon: Feather, label: `Last entry · ${relativeDate(lastEntry)}`, text: entryPreview(lastEntry), onClick: () => setReadEntry(lastEntry) } : null,
             onThisDay.length > 0 ? { Icon: CalendarHeart, label: "On this day", text: entryPreview(onThisDay[0]), onClick: () => openSurface("onthisday") } : null,
             { Icon: BarChart2, label: weekCount > 0 ? `${weekCount} ${weekCount === 1 ? "entry" : "entries"} this week` : "A fresh page this week", text: cycleCount.count > 0 ? `${cycleCount.count} ${cycleCount.label} — you're building a pattern.` : "Whenever you're ready — a line is plenty.", onClick: () => openSurface("insights") },
