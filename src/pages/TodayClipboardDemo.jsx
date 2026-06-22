@@ -1,10 +1,10 @@
-// TodayClipboardDemo — the live Today (TodayDemo6) made COMPACT (~2 phone screens) by moving its long
-// vertical stack into the §6.10 Clipboard Stack Slider. PREVIEW route only (reachable via IDEAS →
-// Current). The LIVE /Today is UNTOUCHED. Nothing stripped — every section + the Growth Phase-0 loop
-// (intention · line of the day · tiny mission · a day for you · someone like you) is preserved; the
-// mid-page sections (the Growth loop · Your day · Cycle & body) now live in a sideways clipboard slider
-// instead of stacking down the page. Masthead (date · hero bloom-in-ring · Jess paragraph) and the
-// existing "Across your day" + "noticed" horizontal sliders are kept. Conforms to BRAND_IDENTITY.md.
+// TodayClipboardDemo — the COMPACT Today (Halli-approved → now LIVE as /Today via pages.config lock+swap;
+// also reachable at /TodayClipboardDemo as the demo/fallback). TodayDemo6 is kept as the one-line revert.
+// The long vertical stack is moved into the §6.10 Clipboard Stack Slider; nothing stripped — every section
+// + the Growth Phase-0 loop (intention · line of the day · tiny mission · a day for you · someone like you)
+// is preserved. The loop board is a NESTED CardDeck you swipe through sideways. Masthead (date · hero
+// bloom-in-ring · Jess paragraph) + the "Across your day" / "noticed" sliders are kept. Conforms to
+// BRAND_IDENTITY.md. Forked from TodayDemo6 (diff = restructure only; all logic/writes identical).
 //
 // WIRED TO REAL DATA (all reads guarded + fail-open; the hang trap honoured — nothing awaited on a
 // render path can wedge the page): cycle phase/day from UserProfile (computeCycleDay), today's
@@ -42,9 +42,12 @@ import { useScrollLock } from "@/utils/useScrollLock";
 import JumpToButton from "@/components/layout/JumpToButton";
 // Growth Phase-0 (Halli-approved, live): the daily loop — intention · line of the day ·
 // tiny mission · a day for you · someone like you. Additive; rides real entities. No new function.
-import { TodayGrowth } from "@/components/growth/GrowthLive";
-// §6.10 Clipboard Stack Slider (shared) — the compaction spine: the mid-page sections ride sideways.
-import { ClipboardSlider, Clipboard } from "@/components/brand/ClipboardSlider";
+// The Growth Phase-0 loop — the five peer items, composed into a nested swipe-deck (below) instead of a
+// vertical stack. Each is the real GrowthLive component (writes preserved); GrowthStyles carries their keyframes.
+import { IntentionLive, LineOfDayLive, TinyMissionLive, DayOffLive, ResonanceLive } from "@/components/growth/GrowthLive";
+import { GrowthStyles } from "@/components/demos/growthKit";
+// §6.10 Clipboard Stack Slider + the nested CardDeck (slide WITHIN a board) — the shared mechanics.
+import { ClipboardSlider, Clipboard, CardDeck } from "@/components/brand/ClipboardSlider";
 // Unified calendar: REUSE the Planner page's cycle calendar (MonthRibbon) + its hour-by-hour day view
 // + day-actions (extracted to a shared module). One calendar across Today + Planner, not two designs.
 import MonthRibbon from "@/components/planner/cycle/MonthRibbon";
@@ -808,11 +811,19 @@ export default function TodayClipboardDemo() {
           </div>
           </Clipboard>
 
-          {/* Board 2 — Today's loop (Growth Phase-0: intention · line of the day · tiny mission · a day for you · someone like you) — preserved verbatim, now in a board */}
-          <Clipboard title="Today's loop" sub="intention · a line · a mission · a day for you" accent={T.gold} flower="camellia" idx="cb-loop">
-          <div className="fw-hrow" style={{ maxHeight: 412, overflowY: "auto", margin: "0 -6px", padding: "0 6px" }}>
-            <TodayGrowth />
-          </div>
+          {/* Board 2 — Today's loop: a §6.10 NESTED CARD DECK. Swipe sideways INSIDE the board between the
+              five loop items (intention · line of the day · tiny mission · a day for you · someone like
+              you) — not a vertical stack. The deck's overscroll-contain keeps the inner swipe from fighting
+              the outer board slide. Each item is the real GrowthLive component, so every write is preserved. */}
+          <Clipboard title="Today's loop" sub="swipe through your loop →" accent={T.gold} flower="camellia" idx="cb-loop">
+            <GrowthStyles />
+            <CardDeck accent={T.gold}>
+              <IntentionLive userId={uid} />
+              <LineOfDayLive />
+              <TinyMissionLive userId={uid} />
+              <DayOffLive userId={uid} wide />
+              <ResonanceLive wide />
+            </CardDeck>
           </Clipboard>
 
           {/* Board 3 — Cycle & body */}

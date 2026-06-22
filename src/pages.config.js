@@ -232,11 +232,11 @@ export const PAGES = {
     "Lifestyle": Lifestyle,
     "Nutrition": NutritionHub,
     "Onboarding": Onboarding,
-    "Profile": Profile,
+    "Profile": ProfileClipboardDemo,   // lock+swap 2026-06-22 (Halli-approved segmented rework) — `Profile` kept imported above as the one-line-revert fallback
     "ProgramDay": ProgramDay,
     "ProgramDetail": ProgramDetail,
     "ProgramsHub": ProgramsHub,
-    "Today": TodayDemo6,   // lock+swap — was `Today` (kept imported above as the one-line-revert fallback)
+    "Today": TodayClipboardDemo,   // lock+swap 2026-06-22 (Halli-approved compact clipboard + nested loop deck) — TodayDemo6 kept imported above as the one-line-revert fallback
     "Trends": Trends,
     "Upgrade": Upgrade,
     "VideoManager": VideoManager,

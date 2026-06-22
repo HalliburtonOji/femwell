@@ -137,3 +137,66 @@ export function ClipboardSlider({ children, hint, accent = T.gold }) {
 function navBtn(disabled) {
   return { width: 30, height: 30, borderRadius: 999, border: `1px solid ${T.paperDeep}`, background: disabled ? "transparent" : T.paperHi, color: disabled ? T.paperDeep : T.muted, display: "grid", placeItems: "center", cursor: disabled ? "default" : "pointer", opacity: disabled ? 0.5 : 1 };
 }
+
+// ── CardDeck — "SLIDE WITHIN THE CARD" (§6.10 nested). A horizontal scroll-snap sub-deck you swipe
+// INSIDE a clipboard board to move between its PEER items (one item per page), instead of stacking them
+// vertically. Reuses the same native scroll-snap mechanics as the outer slider (compositor-driven, 60fps,
+// transform-free) + reduced-motion safe.
+//
+// GESTURE HANDLING — the inner and outer slides must not fight. `overscrollBehaviorX: "contain"` stops the
+// inner deck's horizontal scroll from CHAINING into the outer ClipboardSlider: a swipe that starts on the
+// deck stays in the deck (even at its edges), so it can never accidentally drag the board behind it. The
+// board's title/sub area above the deck (and the outer dots/arrows) remain the handle for moving between
+// BOARDS. Net: swipe on the deck → moves items; swipe on the header / tap outer dots → moves boards.
+export function CardDeck({ children, accent = T.gold, peek = false }) {
+  const items = Children.toArray(children).filter(Boolean);
+  const trackRef = useRef(null);
+  const [active, setActive] = useState(0);
+  const last = items.length - 1;
+  if (items.length <= 1) return <div>{items}</div>;   // nothing to slide through
+
+  const onScroll = () => {
+    const el = trackRef.current; if (!el) return;
+    const w = el.clientWidth || 1;
+    const i = Math.round(el.scrollLeft / w);
+    if (i !== active) setActive(Math.max(0, Math.min(last, i)));
+  };
+  const goTo = (i) => {
+    const idx = Math.max(0, Math.min(last, i));
+    setActive(idx);
+    const el = trackRef.current; if (!el) return;
+    el.scrollTo({ left: idx * el.clientWidth, behavior: reduceMotion() ? "auto" : "smooth" });
+  };
+
+  return (
+    <div>
+      <div
+        ref={trackRef} onScroll={onScroll} className="fw-deck-track"
+        style={{
+          display: "flex", overflowX: "auto", scrollSnapType: "x mandatory",
+          overscrollBehaviorX: "contain",                 // ← the inner/outer gesture firewall
+          WebkitOverflowScrolling: "touch", scrollbarWidth: "none",
+        }}
+      >
+        <style>{`.fw-deck-track::-webkit-scrollbar{display:none}`}</style>
+        {items.map((c, i) => (
+          <div key={i} style={{
+            flex: `0 0 ${peek ? 92 : 100}%`, width: peek ? "92%" : "100%",
+            minWidth: 0, boxSizing: "border-box", scrollSnapAlign: "start", paddingRight: peek ? 8 : 0,
+          }}>{c}</div>
+        ))}
+      </div>
+
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 12, padding: "10px 0 0" }}>
+        <button onClick={() => goTo(active - 1)} disabled={active === 0} aria-label="Previous item" style={navBtn(active === 0)}><ChevronLeft size={15} /></button>
+        <div style={{ display: "flex", gap: 6 }}>
+          {items.map((_, i) => (
+            <button key={i} onClick={() => goTo(i)} aria-label={`Item ${i + 1}`}
+              style={{ width: i === active ? 16 : 6, height: 6, borderRadius: 999, border: "none", padding: 0, background: i === active ? accent : T.paperDeep, cursor: "pointer", transition: "width .2s" }} />
+          ))}
+        </div>
+        <button onClick={() => goTo(active + 1)} disabled={active === last} aria-label="Next item" style={navBtn(active === last)}><ChevronRight size={15} /></button>
+      </div>
+    </div>
+  );
+}
