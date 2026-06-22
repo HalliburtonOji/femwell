@@ -144,6 +144,8 @@ import JournalClipboardDemo from './pages/JournalClipboardDemo';
 import ProfileClipboardDemo from './pages/ProfileClipboardDemo';
 // Today — Clipboard COMPACT DEMO (live TodayDemo6 with the mid-page vertical stack moved into a §6.10 slider; all features + Growth loop preserved). Preview route.
 import TodayClipboardDemo from './pages/TodayClipboardDemo';
+// Planner — Clipboard TRUE-FULL-PARITY DEMO (v4 clipboard+CardDeck; REAL CapacityTaxBar + VoiceScheduler restored & prominent). Preview route.
+import PlannerClipboardDemo from './pages/PlannerClipboardDemo';
 // Brand craft sample (Phase-1 brand-identity craft direction — flat vs upgraded bloom,
 // botanical motif, heart in context, live perf). Self-contained preview. Linked from Previews.
 import BrandCraftSample from './pages/BrandCraftSample';
@@ -289,6 +291,7 @@ export const PAGES = {
     "JournalClipboardDemo": JournalClipboardDemo,
     "ProfileClipboardDemo": ProfileClipboardDemo,
     "TodayClipboardDemo": TodayClipboardDemo,
+    "PlannerClipboardDemo": PlannerClipboardDemo,
     "BrandCraftSample": BrandCraftSample,
     "HealthDemo": HealthDemo,
     "ProfileDemo": ProfileDemo,
