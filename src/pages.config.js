@@ -142,6 +142,8 @@ import TodayRitualDemo from './pages/TodayRitualDemo';
 import JournalClipboardDemo from './pages/JournalClipboardDemo';
 // Profile — Clipboard rebuild DEMO (compact §6.10 slider + flora hero + quick-edit popups; all features preserved). Preview route.
 import ProfileClipboardDemo from './pages/ProfileClipboardDemo';
+// Today — Clipboard COMPACT DEMO (live TodayDemo6 with the mid-page vertical stack moved into a §6.10 slider; all features + Growth loop preserved). Preview route.
+import TodayClipboardDemo from './pages/TodayClipboardDemo';
 // Brand craft sample (Phase-1 brand-identity craft direction — flat vs upgraded bloom,
 // botanical motif, heart in context, live perf). Self-contained preview. Linked from Previews.
 import BrandCraftSample from './pages/BrandCraftSample';
@@ -285,6 +287,7 @@ export const PAGES = {
     "TodayRitualDemo": TodayRitualDemo,
     "JournalClipboardDemo": JournalClipboardDemo,
     "ProfileClipboardDemo": ProfileClipboardDemo,
+    "TodayClipboardDemo": TodayClipboardDemo,
     "BrandCraftSample": BrandCraftSample,
     "HealthDemo": HealthDemo,
     "ProfileDemo": ProfileDemo,
