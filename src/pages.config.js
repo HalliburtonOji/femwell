@@ -177,6 +177,7 @@ import RitualBuilderDemo from './pages/RitualBuilderDemo';
 // bucket-list/days-off/Tier-0 anonymous connection baked into existing pages, no new
 // nav tab). Standalone preview routes; live pages untouched. Gated 1:1 tiers HELD.
 import GrowthDemo from './pages/GrowthDemo';
+import PenPalDemo from './pages/PenPalDemo';
 import GrowthTodayDemo from './pages/GrowthTodayDemo';
 import GrowthGardenDemo from './pages/GrowthGardenDemo';
 import GrowthPlannerDemo from './pages/GrowthPlannerDemo';
@@ -312,6 +313,7 @@ export const PAGES = {
     "FloraLabDemo": FloraLabDemo,
     "RitualBuilderDemo": RitualBuilderDemo,
     "GrowthDemo": GrowthDemo,
+    "PenPalDemo": PenPalDemo,
     "GrowthTodayDemo": GrowthTodayDemo,
     "GrowthGardenDemo": GrowthGardenDemo,
     "GrowthPlannerDemo": GrowthPlannerDemo,
