@@ -22,6 +22,7 @@
 // edit flora.jsx / BRAND_IDENTITY.md (bible owner).
 // ─────────────────────────────────────────────────────────────────────────────
 import { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { X, Check, Sparkles, Feather, Sprout, Flower2, TreePine, Heart, MapPin, Compass,
   Plus, ChevronRight, RefreshCw, MessageCircle, Users, Sun } from "lucide-react";
 import { T, UI, SERIF, Eyebrow } from "@/components/journal/Editorial";
@@ -183,11 +184,21 @@ export function QuickActionSheet({ open, onClose, eyebrow, title, accent = T.gol
     if (!open) return;
     const k = (e) => e.key === "Escape" && onClose();
     window.addEventListener("keydown", k);
-    return () => window.removeEventListener("keydown", k);
+    // lock background scroll while the sheet is open (restore on close)
+    const prevOverflow = typeof document !== "undefined" ? document.body.style.overflow : "";
+    if (typeof document !== "undefined") document.body.style.overflow = "hidden";
+    return () => {
+      window.removeEventListener("keydown", k);
+      if (typeof document !== "undefined") document.body.style.overflow = prevOverflow;
+    };
   }, [open, onClose]);
-  if (!open) return null;
-  return (
-    <div role="dialog" aria-modal="true" style={{ position: "fixed", inset: 0, zIndex: 200, display: "flex", alignItems: "flex-end", justifyContent: "center" }}>
+  if (!open || typeof document === "undefined") return null;
+  // PORTAL to <body> so the sheet escapes any transformed/overflow-hidden ancestor
+  // (cards, animated flora) — otherwise position:fixed gets trapped + clipped and the
+  // panel sits weirdly over the card. This makes every quick-action popup a clean
+  // full-screen scrim + bottom sheet (§6.7.6), correct z-index, anywhere it's used.
+  return createPortal(
+    <div role="dialog" aria-modal="true" style={{ position: "fixed", inset: 0, zIndex: 2000, display: "flex", alignItems: "flex-end", justifyContent: "center" }}>
       <style>{growKeyframes}</style>
       <div onClick={onClose} className="fwg-anim" style={{ position: "absolute", inset: 0, background: "rgba(11,8,5,0.44)", animation: "fwgScrim .22s ease-out" }} />
       <div className="fwg-anim fw-sheet-safe" style={{ position: "relative", width: "100%", maxWidth: 520, maxHeight: "86vh", overflowY: "auto", background: T.paperHi, borderRadius: "22px 22px 0 0", borderTop: `1px solid ${T.paperDeep}`, boxShadow: "0 -8px 32px rgba(11,8,5,0.22)", padding: 18, animation: "fwgSheet .3s cubic-bezier(.32,.72,.24,1)" }}>
@@ -203,7 +214,8 @@ export function QuickActionSheet({ open, onClose, eyebrow, title, accent = T.gol
           <button onClick={onDone} style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 8, width: "100%", marginTop: 14, background: accent, color: "#fff", border: "none", borderRadius: 12, padding: "13px 16px", fontFamily: UI, fontSize: 14, fontWeight: 700, cursor: "pointer" }}><Check size={16} /> {doneLabel}</button>
         )}
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
 
