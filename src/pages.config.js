@@ -206,6 +206,7 @@ import NutritionControlDemo from './pages/NutritionControlDemo';
 // Previewable routes only — mock data; linked from FoundersOS → Previews.
 import JournalHubDemo from './pages/JournalHubDemo';
 import NutritionHubDemo from './pages/NutritionHubDemo';
+import NutritionRedesignDemo from './pages/NutritionRedesignDemo';
 import CommunityHubDemo from './pages/CommunityHubDemo';
 // Sprint 10 — Partner Sync hub (user's share-code page). The
 // matching public /partner?code=… read-only view (Partner.jsx) is
@@ -332,6 +333,7 @@ export const PAGES = {
     "NutritionControlDemo": NutritionControlDemo,
     "JournalHubDemo": JournalHubDemo,
     "NutritionHubDemo": NutritionHubDemo,
+    "NutritionRedesignDemo": NutritionRedesignDemo,
     "CommunityHubDemo": CommunityHubDemo,
     // HealthDashboard intentionally NOT registered — see import comment above.
     // "HealthDashboard": HealthDashboard,
