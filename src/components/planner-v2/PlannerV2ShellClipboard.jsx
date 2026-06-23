@@ -54,6 +54,9 @@ import { base44 } from "@/api/base44Client";
 import StageRow from "@/components/planner-v2/StageRows";
 import ConditionRow from "@/components/planner-v2/ConditionRows";
 import CardStack from "@/components/planner-v2/CardStack";
+// Coach-mark tour — kept (feature preserved). Self-guards: with no `data-tour`
+// anchors on this re-layout it no-ops (never spotlights nothing, never crashes).
+import PlannerTour from "@/components/planner-v2/PlannerTour";
 // Brand-P2 lush layer (BRAND_IDENTITY §3 heart · §4 botanicals · §5.3 — Planner char = plum/gold).
 import { Heart as BrandHeart } from "@/components/journal/Editorial";
 import { VineMotifV2, FlowerGlyph, floraKeyframes, cwOf } from "@/components/brand/flora";
@@ -843,6 +846,9 @@ export default function PlannerV2ShellClipboard({
           onChangeConditions={setDevConditions}
         />
       )}
+
+      {/* Coach-mark tour — self-guards to a no-op when no data-tour anchors exist. */}
+      <PlannerTour name={realDisplayName} />
 
       {/* ── SIGNATURE TOP (approved /PlannerClipboardDemo layout) ── */}
       <FwFloraHero

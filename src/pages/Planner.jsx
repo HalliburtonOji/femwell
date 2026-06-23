@@ -41,11 +41,10 @@ import PlanADaySheet from "@/components/PlanADaySheet";
 // localStorage flag (femwell_planner_v2) is gone entirely. The legacy
 // render path below this conditional is now unreachable; it remains
 // in the file for diff-readability but no user ever sees it.
-import PlannerV2Shell from "@/components/planner-v2/PlannerV2Shell";
-// ⬆ PROVEN shell stays live (production-safe). The approved CLIPBOARD RE-LAYOUT is
-// built + structurally verified at /PlannerV2ShellClipboard.jsx. ONE-LINE GO-LIVE:
-// swap the path above to "@/components/planner-v2/PlannerV2ShellClipboard" — only
-// after authed live write-persistence verification (Playwright test-user) passes.
+// LIVE Planner = the approved CLIPBOARD RE-LAYOUT (PlannerV2ShellClipboard) —
+// the real shell, every write/handler preserved, re-laid-out to the approved spine.
+// ONE-LINE REVERT: swap the path below back to "@/components/planner-v2/PlannerV2Shell".
+import PlannerV2Shell from "@/components/planner-v2/PlannerV2ShellClipboard";
 // Phase 2 QA-fix-bundle-8 — Planner subscribes to the module-level
 // devStageStore directly. The CustomEvent bus is no longer used here.
 import {

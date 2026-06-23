@@ -58,7 +58,15 @@ export default function PlannerTour({ name = "there" }) {
     if (!done) {
       // Tiny delay so the page has time to render its rows before we
       // measure them.
-      const t = window.setTimeout(() => setActive(true), 800);
+      const t = window.setTimeout(() => {
+        // Guard: only run if the page actually has tour anchors. The
+        // clipboard re-layout (PlannerV2ShellClipboard) has no
+        // `data-tour` nodes, so the tour safely no-ops there instead of
+        // spotlighting nothing. The original PlannerV2Shell keeps its
+        // anchors, so its behaviour is unchanged.
+        try { if (!document.querySelector("[data-tour]")) return; } catch { return; }
+        setActive(true);
+      }, 800);
       return () => window.clearTimeout(t);
     }
   }, []);
