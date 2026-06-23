@@ -59,7 +59,7 @@ import CardStack from "@/components/planner-v2/CardStack";
 import PlannerTour from "@/components/planner-v2/PlannerTour";
 // Brand-P2 lush layer (BRAND_IDENTITY §3 heart · §4 botanicals · §5.3 — Planner char = plum/gold).
 import { Heart as BrandHeart } from "@/components/journal/Editorial";
-import { VineMotifV2, FlowerGlyph, floraKeyframes, cwOf } from "@/components/brand/flora";
+import { FlowerGlyph, floraKeyframes, cwOf } from "@/components/brand/flora";
 import AiDisclaimer from "@/components/compliance/AiDisclaimer";
 import { computeStreaks } from "@/utils/habitStreaks";
 // P1-5 — shared cycle-day derivation. `derivePlannerPhase` is now an
@@ -111,7 +111,7 @@ import { Layers as DevLayersIcon, X as DevXIcon } from "lucide-react";
 // ── Clipboard re-layout imports (approved /PlannerClipboardDemo layout) ──
 // Signature top + clipboard spine + nested CardDeck. All content-agnostic brand
 // components — no new backend. CapacityTaxBar is the real cycle component.
-import { T as TT, SCRIPT, SERIF, UI as UIFONT, Hand } from "@/components/journal/Editorial";
+import { T as TT, SCRIPT, SERIF, UI as UIFONT, Hand, PAPER_BG } from "@/components/journal/Editorial";
 import { FwFloraHero } from "@/components/brand/PageTop";
 import { SummaryCard } from "@/components/brand/Card";
 import { ClipboardSlider, Clipboard, CardDeck } from "@/components/brand/ClipboardSlider";
@@ -844,17 +844,12 @@ export default function PlannerV2ShellClipboard({
   void PLANNER_ROW_DEFINITIONS; void realLifeStage;
 
   return (
-    <div style={shell}>
-      {/* Brand-P2 botanical page texture — plum/gold vines (§5.3 Planner char), one */}
-      {/* per fold, hairline + low-opacity, clipped + held behind content (zIndex 0). */}
-      <div aria-hidden="true" style={{ position: "absolute", inset: 0, overflow: "hidden", pointerEvents: "none", zIndex: 0 }}>
-        <style>{floraKeyframes}</style>
-        <div style={{ position: "absolute", top: 200, right: -26 }}><VineMotifV2 color="#8E6E8E" color2={C.gold} opacity={0.1} w={146} /></div>
-        <div style={{ position: "absolute", top: 860, left: -28 }}><VineMotifV2 color={C.gold} color2="#8E6E8E" opacity={0.08} w={138} flip /></div>
-        <div style={{ position: "absolute", top: 1520, right: -24 }}><VineMotifV2 color="#8E6E8E" color2={C.gold} opacity={0.08} w={138} /></div>
-      </div>
-      {/* content wrapper — lifted above the vine layer (zIndex:1). Sheets render AFTER this
-          wrapper as root children so they stack above the bottom nav (not trapped). */}
+    <div style={{ ...PAPER_BG, minHeight: "100vh", fontFamily: SERIF, color: TT.ink, paddingBottom: 120, position: "relative", overflowX: "hidden" }}>
+      {/* Brand cream PAPER_BG (the real paper-grain texture) — same page background as
+          Today / Journal / Lifestyle and the approved /PlannerClipboardDemo. NOT a flat fill. */}
+      <style>{floraKeyframes}</style>
+      {/* content wrapper — sheets render AFTER this wrapper as root children so they
+          stack above the bottom nav (not trapped). */}
       <div style={{ position: "relative", zIndex: 1 }}>
       {shouldShowDev() && (
         <DevPill
@@ -935,17 +930,17 @@ export default function PlannerV2ShellClipboard({
         <div style={{ display: "flex", gap: 10, marginTop: 12 }}>
           <button onClick={() => setVoiceOpen(true)} aria-label="Speak your plan (voice to schedule)" style={{
             flex: 1, minWidth: 0, display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 9,
-            background: "#8E6E8E", color: "#fff", border: "none", borderRadius: 16, padding: "15px 12px",
-            fontFamily: UIFONT, fontSize: 14, fontWeight: 700, letterSpacing: 0.5, textTransform: "uppercase",
-            cursor: "pointer", boxShadow: "0 6px 18px rgba(142,110,142,0.4)",
+            background: TT.sage, color: TT.paper, border: "none", borderRadius: 16, padding: "16px 14px",
+            fontFamily: UIFONT, fontSize: 14, fontWeight: 700, letterSpacing: 0.6, textTransform: "uppercase",
+            cursor: "pointer", boxShadow: "0 6px 18px rgba(143,175,143,0.32)",
           }}>
             <span aria-hidden style={{ display: "grid", placeItems: "center", width: 26, height: 26, borderRadius: 999, background: "rgba(255,255,255,0.22)", flexShrink: 0 }}><Mic size={16} /></span>
             Speak your plan
           </button>
           <button onClick={() => setPlanOpen(true)} aria-label="Plan a day (morning brief)" style={{
             flex: 1, minWidth: 0, display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 9,
-            background: C.gold, color: "#fff", border: "none", borderRadius: 16, padding: "15px 12px",
-            fontFamily: UIFONT, fontSize: 14, fontWeight: 700, letterSpacing: 0.5, textTransform: "uppercase",
+            background: TT.gold, color: TT.paper, border: "none", borderRadius: 16, padding: "16px 14px",
+            fontFamily: UIFONT, fontSize: 14, fontWeight: 700, letterSpacing: 0.6, textTransform: "uppercase",
             cursor: "pointer", boxShadow: "0 6px 18px rgba(168,137,63,0.32)",
           }}>
             <CalDaysIcon size={18} /> Plan a day
@@ -1031,18 +1026,22 @@ export default function PlannerV2ShellClipboard({
                 </CbGrid>
               </Clipboard>
               <Clipboard title="Lists" sub="THINGS NOT TIED TO A TIME" accent={cwOf("gold").petal} flower="sunflower" idx="cb-lists">
-                <CbGrid>
-                  <CbTile icon={ListChecks} label="Your lists" sub="work · personal · health" cw="gold" onTap={() => openCard("Lists", <ListsSection user={user} />)} />
-                  <CbTile icon={Plus} label="Add to a list" sub="new item" cw="gold" onTap={() => openLogger("task")} />
-                </CbGrid>
+                <CbBoardFill accent="gold" line="The things not tied to a time. They keep — tend them when you can.">
+                  <CbGrid>
+                    <CbTile icon={ListChecks} label="Your lists" sub="work · personal · health" cw="gold" onTap={() => openCard("Lists", <ListsSection user={user} />)} />
+                    <CbTile icon={Plus} label="Add to a list" sub="new item" cw="gold" onTap={() => openLogger("task")} />
+                  </CbGrid>
+                </CbBoardFill>
               </Clipboard>
               <Clipboard title="Your body" sub="WHERE YOU ARE, AND WHAT HELPS" accent={cwOf("plum").petal} flower="dahlia" idx="cb-body">
-                <CbGrid>
-                  <CbTile icon={Activity} label="Body today" sub="energy · symptoms" cw="plum" onTap={() => openCard("Body today", <BodyTodayCard user={user} />)} />
-                  <CbTile icon={Brain} label="Smart view" sub="what helps now" cw="gold" onTap={() => openCard("Smart view", <SmartViewCard phase={phase} />)} />
-                  <CbTile icon={CalDaysIcon} label="Cycle zone" sub="where you are" cw="crimson" onTap={() => setCycleOpen(true)} />
-                  <CbTile icon={Baby} label="Life stage" sub="adapts to you" cw="sage" onTap={() => { setClipView("cycle"); }} />
-                </CbGrid>
+                <CbBoardFill accent="plum" line="Where you are this week, and what tends to help. Lower the bar kindly.">
+                  <CbGrid>
+                    <CbTile icon={Activity} label="Body today" sub="energy · symptoms" cw="plum" onTap={() => openCard("Body today", <BodyTodayCard user={user} />)} />
+                    <CbTile icon={Brain} label="Smart view" sub="what helps now" cw="gold" onTap={() => openCard("Smart view", <SmartViewCard phase={phase} />)} />
+                    <CbTile icon={CalDaysIcon} label="Cycle zone" sub="where you are" cw="crimson" onTap={() => setCycleOpen(true)} />
+                    <CbTile icon={Baby} label="Life stage" sub="adapts to you" cw="sage" onTap={() => { setClipView("cycle"); }} />
+                  </CbGrid>
+                </CbBoardFill>
               </Clipboard>
               <Clipboard title="Care" sub="MEDS · SYMPTOMS · SCREENING · EXPORT" accent={TT.crimson} flower="anemone" idx="cb-care">
                 <CbGrid cols={3}>
@@ -1060,37 +1059,52 @@ export default function PlannerV2ShellClipboard({
 
             <ClipboardSlider hint="Slide your tending" accent={TT.sage}>
               <Clipboard title="Rituals" sub="THE DAILY TENDING" accent={cwOf("plum").petal} flower="violet" idx="cb-rit">
-                <CbGrid>
-                  <CbTile icon={Moon} label="Morning stack" sub="rest · water · lines" cw="plum" onTap={() => openCard("Morning ritual", <MorningStackCard user={user} />)} />
-                  <CbTile icon={Check} label="Consistency" sub="your streak" cw="sage" onTap={() => openCard("Consistency", <ConsistencyCard />)} />
-                  <CbTile icon={Plus} label="Ritual builder" sub="compose a set" cw="sage" onTap={() => setRitualBuilderOpen(true)} />
-                  <CbTile icon={Star} label="Add a ritual" sub="new tending" cw="gold" onTap={() => openLogger("ritual")} />
-                </CbGrid>
+                <CbBoardFill accent="plum" line="The daily tending. Small and repeated beats big and rare.">
+                  <CbGrid>
+                    <CbTile icon={Moon} label="Morning stack" sub="rest · water · lines" cw="plum" onTap={() => openCard("Morning ritual", <MorningStackCard user={user} />)} />
+                    <CbTile icon={Check} label="Consistency" sub="your streak" cw="sage" onTap={() => openCard("Consistency", <ConsistencyCard />)} />
+                    <CbTile icon={Star} label="Wind-down" sub="evening bundle" cw="gold" onTap={() => openCard("Morning ritual", <MorningStackCard user={user} />)} />
+                    <CbTile icon={Sprout} label="What's unfinished" sub="revive a habit" cw="crimson" onTap={() => openCard("Consistency", <ConsistencyCard />)} />
+                    <CbTile icon={Plus} label="Ritual builder" sub="compose a set" cw="sage" onTap={() => setRitualBuilderOpen(true)} />
+                    <CbTile icon={BellRing} label="Add a ritual" sub="new tending" cw="gold" onTap={() => openLogger("ritual")} />
+                  </CbGrid>
+                </CbBoardFill>
               </Clipboard>
               <Clipboard title="Nourishment" sub="KIND, PHASE-AWARE FUEL" accent={cwOf("gold").petal} flower="marigold" idx="cb-nour">
-                <CbGrid>
-                  <CbTile icon={TrendingUp} label="Macros" sub="protein · fibre" cw="gold" onTap={() => openCard("Nourishment", <MacroTrackerCard user={user} profile={profileProp} />)} />
-                  <CbTile icon={Droplet} label="Hydration" sub="glasses today" cw="sky" onTap={() => openCard("Hydration", <HydrationCard user={user} phase={phase} />)} />
-                  <CbTile icon={Salad} label="AI meal plan" sub="for your phase" cw="sage" onTap={() => link("Nutrition")} />
-                  <CbTile icon={Utensils} label="Phase recipes" sub="iron-rich week" cw="gold" onTap={() => openCard("Phase recipes", <PhaseRecipesCard phase={phase} />)} />
-                </CbGrid>
+                <CbBoardFill accent="gold" line="Kind, phase-aware fuel — a guide for the week, never a cap.">
+                  <CbGrid>
+                    <CbTile icon={TrendingUp} label="Macros" sub="protein · fibre" cw="gold" onTap={() => openCard("Nourishment", <MacroTrackerCard user={user} profile={profileProp} />)} />
+                    <CbTile icon={Droplet} label="Hydration" sub="glasses today" cw="sky" onTap={() => openCard("Hydration", <HydrationCard user={user} phase={phase} />)} />
+                    <CbTile icon={Salad} label="AI meal plan" sub="for your phase" cw="sage" onTap={() => link("Nutrition")} />
+                    <CbTile icon={Utensils} label="Phase recipes" sub="iron-rich week" cw="gold" onTap={() => openCard("Phase recipes", <PhaseRecipesCard phase={phase} />)} />
+                    <CbTile icon={Utensils} label="Log a meal" sub="quick add" cw="crimson" onTap={() => openLogger("meal")} />
+                    <CbTile icon={Salad} label="Full nutrition" sub="open the hub" cw="sage" onTap={() => link("Nutrition")} />
+                  </CbGrid>
+                </CbBoardFill>
               </Clipboard>
               <Clipboard title="Mind & insight" sub="INTENTION · YOUR SKY · MOOD · BREATH" accent={cwOf("plum").petal} flower="iris" idx="cb-mind">
-                <CbGrid>
-                  <CbTile icon={Sparkles} label="Intention" sub="set today's" cw="crimson" onTap={() => openCard("Intention", <IntentionCard user={user} />)} />
-                  <CbTile icon={Star} label="Astra · your sky" sub="moon in…" cw="plum" onTap={() => openCard("Astra · your sky", <AstraCard profile={profileProp} />)} />
-                  <CbTile icon={Heart} label="Mood & mind" sub="how are you?" cw="plum" onTap={() => openCard("Mood & mind", <MoodMentalHealthCard user={user} phase={phase} />)} />
-                  <CbTile icon={Wind} label="Breathwork" sub="box breath" cw="sky" onTap={() => openCard("Breathwork", <BreathworkCard phase={phase} />)} />
-                  <CbTile icon={Brain} label="Cycle psychology" sub="the hormone tide" cw="gold" onTap={() => openCard("Cycle psychology", <CyclePsychologyCard />)} />
-                </CbGrid>
+                <CbBoardFill accent="plum" line="A moment for the inner weather — name it, then let it move.">
+                  <CbGrid>
+                    <CbTile icon={Sparkles} label="Intention" sub="set today's" cw="crimson" onTap={() => openCard("Intention", <IntentionCard user={user} />)} />
+                    <CbTile icon={Star} label="Astra · your sky" sub="moon in…" cw="plum" onTap={() => openCard("Astra · your sky", <AstraCard profile={profileProp} />)} />
+                    <CbTile icon={Heart} label="Mood & mind" sub="how are you?" cw="plum" onTap={() => openCard("Mood & mind", <MoodMentalHealthCard user={user} phase={phase} />)} />
+                    <CbTile icon={Wind} label="Breathwork" sub="box breath" cw="sky" onTap={() => openCard("Breathwork", <BreathworkCard phase={phase} />)} />
+                    <CbTile icon={Brain} label="Cycle psychology" sub="the hormone tide" cw="gold" onTap={() => openCard("Cycle psychology", <CyclePsychologyCard />)} />
+                    <CbTile icon={Sparkles} label="From Jess" sub="today's read" cw="sage" onTap={() => openCard("Insights", <InsightsHeroRow phase={phase} dayInCycle={cycleDay} profile={profileProp} user={user} />)} />
+                  </CbGrid>
+                </CbBoardFill>
               </Clipboard>
               <Clipboard title="Tonight & Jess" sub="CLOSE THE DAY" accent={cwOf("plum").petal} flower="primrose" idx="cb-tonight">
-                <CbGrid>
-                  <CbTile icon={Moon} label="Reflection" sub="how did today land?" cw="plum" onTap={() => openCard("Tonight's reflection", <TonightReflectionCard user={user} />)} />
-                  <CbTile icon={CalendarClock} label="Tomorrow" sub="one first kindness" cw="gold" onTap={() => openCard("Tomorrow", <TomorrowPreviewCard user={user} phase={phase} cycleDay={cycleDay} profile={profileProp} />)} />
-                  <CbTile icon={Feather} label="End-of-day note" sub="→ your journal" cw="crimson" onTap={() => openCard("End-of-day note", <EndOfDayNoteCard user={user} />)} />
-                  <CbTile icon={Plus} label="Add anything" sub="task · event" cw="sage" onTap={() => openLogger("task")} />
-                </CbGrid>
+                <CbBoardFill accent="plum" line="Close the day softly. Tomorrow can wait until tomorrow.">
+                  <CbGrid>
+                    <CbTile icon={Moon} label="Reflection" sub="how did today land?" cw="plum" onTap={() => openCard("Tonight's reflection", <TonightReflectionCard user={user} />)} />
+                    <CbTile icon={CalendarClock} label="Tomorrow" sub="one first kindness" cw="gold" onTap={() => openCard("Tomorrow", <TomorrowPreviewCard user={user} phase={phase} cycleDay={cycleDay} profile={profileProp} />)} />
+                    <CbTile icon={Feather} label="End-of-day note" sub="→ your journal" cw="crimson" onTap={() => openCard("End-of-day note", <EndOfDayNoteCard user={user} />)} />
+                    <CbTile icon={BedDouble} label="Sleep" sub="log last night" cw="plum" onTap={() => openLogger("checkin")} />
+                    <CbTile icon={Sparkles} label="Weekly summary" sub="from Jess" cw="gold" onTap={() => openCard("Insights", <InsightsHeroRow phase={phase} dayInCycle={cycleDay} profile={profileProp} user={user} />)} />
+                    <CbTile icon={Plus} label="Add anything" sub="task · event" cw="sage" onTap={() => openLogger("task")} />
+                  </CbGrid>
+                </CbBoardFill>
               </Clipboard>
             </ClipboardSlider>
           </>
@@ -1149,12 +1163,16 @@ export default function PlannerV2ShellClipboard({
               )}
             </Clipboard>
             <Clipboard title="Your body & sky" sub="WHAT HELPS · YOUR SKY" accent={cwOf("plum").petal} flower="violet" idx="cb-cbody">
-              <CbGrid>
-                <CbTile icon={Brain} label="Smart view" sub="what helps now" cw="gold" onTap={() => openCard("Smart view", <SmartViewCard phase={phase} />)} />
-                <CbTile icon={Wind} label="Breathwork" sub="box breath" cw="sky" onTap={() => openCard("Breathwork", <BreathworkCard phase={phase} />)} />
-                <CbTile icon={Brain} label="Cycle psychology" sub="the hormone tide" cw="plum" onTap={() => openCard("Cycle psychology", <CyclePsychologyCard />)} />
-                <CbTile icon={Star} label="Astra · your sky" sub="moon in…" cw="gold" onTap={() => openCard("Astra · your sky", <AstraCard profile={profileProp} />)} />
-              </CbGrid>
+              <CbBoardFill accent="plum" line="What helps now, and a little wonder from your sky.">
+                <CbGrid>
+                  <CbTile icon={Brain} label="Smart view" sub="what helps now" cw="gold" onTap={() => openCard("Smart view", <SmartViewCard phase={phase} />)} />
+                  <CbTile icon={Wind} label="Breathwork" sub="box breath" cw="sky" onTap={() => openCard("Breathwork", <BreathworkCard phase={phase} />)} />
+                  <CbTile icon={Brain} label="Cycle psychology" sub="the hormone tide" cw="plum" onTap={() => openCard("Cycle psychology", <CyclePsychologyCard />)} />
+                  <CbTile icon={Star} label="Astra · your sky" sub="moon in…" cw="gold" onTap={() => openCard("Astra · your sky", <AstraCard profile={profileProp} />)} />
+                  <CbTile icon={Heart} label="Mood & mind" sub="how are you?" cw="crimson" onTap={() => openCard("Mood & mind", <MoodMentalHealthCard user={user} phase={phase} />)} />
+                  <CbTile icon={Activity} label="Body today" sub="energy · symptoms" cw="sage" onTap={() => openCard("Body today", <BodyTodayCard user={user} />)} />
+                </CbGrid>
+              </CbBoardFill>
             </Clipboard>
             <Clipboard title="What's growing" sub="YOUR WEEK, READ BACK GENTLY" accent={TT.sage} flower="fern" idx="cb-grow">
               <div style={{ display: "grid", placeItems: "center", paddingTop: 8 }}>
@@ -1274,6 +1292,22 @@ function CbTile({ icon: Icon, label, sub, cw = "sage", onTap, done }) {
   );
 }
 const CbGrid = ({ children, cols = 2 }) => <div style={{ display: "grid", gridTemplateColumns: cols === 3 ? "1fr 1fr 1fr" : "1fr 1fr", gap: 9 }}>{children}</div>;
+// Fills a board to its full height so sparse boards never read as dead space — the
+// grid sits at the top, a small botanical flourish + soulful line is pinned to the
+// bottom (the demo's own "What's growing" language). minHeight ≈ the Clipboard's
+// inner content height so every board feels full and intentional, not half-blank.
+function CbBoardFill({ accent = "gold", line, children }) {
+  const c = cwOf(accent);
+  return (
+    <div style={{ display: "flex", flexDirection: "column", minHeight: 398 }}>
+      <div>{children}</div>
+      <div style={{ marginTop: "auto", paddingTop: 18, display: "flex", flexDirection: "column", alignItems: "center", gap: 7 }}>
+        <FlowerGlyph variant="cosmos" size={26} color={c.petal} color2={c.tip} idx={`bf-${accent}`} />
+        <p style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 13, color: TT.muted, textAlign: "center", margin: 0, maxWidth: 264, lineHeight: 1.5 }}>{line}</p>
+      </div>
+    </div>
+  );
+}
 function CbInsight({ eyebrow, Icon, title, line, cw = "plum" }) {
   const c = cwOf(cw);
   return (
@@ -1293,17 +1327,24 @@ function CardSheet({ title, onClose, children }) {
     <div onClick={onClose} role="dialog" aria-modal="true" style={cbScrim}>
       <div onClick={(e) => e.stopPropagation()} className="fw-sheet-safe" style={cbSheet}>
         <div style={cbGrab} />
-        <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12 }}>
-          <div style={{ fontFamily: SCRIPT, fontSize: 24, color: TT.ink, flex: 1 }}>{title}</div>
+        <div style={{ display: "flex", alignItems: "center", gap: 11, marginBottom: 4 }}>
+          <span aria-hidden style={{ width: 34, height: 34, borderRadius: 10, background: TT.paper, border: `1px solid ${TT.paperDeep}`, display: "grid", placeItems: "center", flexShrink: 0 }}>
+            <FlowerGlyph variant="cosmos" size={18} color={TT.gold} color2={cwOf("gold").tip} idx="cs-head" />
+          </span>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ fontFamily: UIFONT, fontSize: 10.5, fontWeight: 700, letterSpacing: ".14em", textTransform: "uppercase", color: TT.gold }}>Planner</div>
+            <div style={{ fontFamily: SCRIPT, fontSize: 24, color: TT.ink, lineHeight: 1 }}>{title}</div>
+          </div>
           <button onClick={onClose} aria-label="Close" style={{ background: "transparent", border: "none", cursor: "pointer", color: TT.muted }}><X size={20} /></button>
         </div>
+        <div style={{ height: 1, background: TT.paperDeep, opacity: 0.7, margin: "10px 0 14px" }} />
         {children}
       </div>
     </div>
   );
 }
 const cbScrim = { position: "fixed", inset: 0, zIndex: 9999, background: "rgba(11,8,5,0.46)", display: "flex", alignItems: "flex-end", justifyContent: "center" };
-const cbSheet = { width: "100%", maxWidth: 520, background: TT.paperHi, borderTopLeftRadius: 22, borderTopRightRadius: 22, borderTop: `1px solid ${TT.paperDeep}`, boxShadow: "0 -8px 40px rgba(11,8,5,.24)", padding: "16px 18px 20px", maxHeight: "86dvh", overflowY: "auto" };
+const cbSheet = { width: "100%", maxWidth: 520, background: TT.paperHi, borderTopLeftRadius: 22, borderTopRightRadius: 22, borderTop: `3px solid ${TT.gold}`, boxShadow: "0 -8px 40px rgba(11,8,5,.24)", padding: "16px 18px 22px", maxHeight: "86dvh", overflowY: "auto" };
 const cbGrab = { width: 38, height: 4, borderRadius: 99, background: TT.paperDeep, margin: "0 auto 14px" };
 
 // ── Header ─────────────────────────────────────────────────────────────────
