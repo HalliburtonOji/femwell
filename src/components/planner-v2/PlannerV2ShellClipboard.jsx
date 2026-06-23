@@ -120,6 +120,11 @@ import CapacityTaxBar from "@/components/planner/cycle/CapacityTaxBar";
 import {
   CalendarDays as CalDaysIcon, SlidersHorizontal as SlidersIcon, ChevronRight as ChevR2,
 } from "lucide-react";
+// Tile icons for the faithful clipboard boards (demo's design, real wiring).
+import {
+  Droplet, Feather, Wind, Brain, Baby, Star, TrendingUp, Salad, ScanLine,
+  ShieldCheck, Gauge, Thermometer, FileHeart, BellRing, Sprout,
+} from "lucide-react";
 
 // ── Tokens ─────────────────────────────────────────────────────────────────
 const C = {
@@ -731,6 +736,19 @@ export default function PlannerV2ShellClipboard({
   const [omenOpen, setOmenOpen] = useState(false);
   const [toast, setToast] = useState(null);
   const flashToast = (msg) => { setToast(msg); setTimeout(() => setToast(null), 2400); };
+  // A tile can slide up the REAL card component (with its real writes) in a clean
+  // bottom sheet — `cardSheet` holds { title, node }. This keeps the demo's tile-grid
+  // LOOK on every board while every action runs the real handler/write.
+  const [cardSheet, setCardSheet] = useState(null);
+  const openCard = (title, node) => setCardSheet({ title, node });
+  const openStage = () => openCard("Stage & fertility", (
+    <StageRow stage={effectiveLifeStage} profile={profileProp} phase={phase} cycleDay={cycleDay} user={user} />
+  ));
+  const navOmen = useMemo(() => ({
+    jess: phaseInsights[phase] || phaseInsights.luteal,
+    astra: ASTRA_READINGS[phase] || ASTRA_READINGS.luteal,
+    recovery: RECOVERY_NOTES[phase] || RECOVERY_NOTES.luteal,
+  }), [phase]);
 
   // ── Real capacity inputs for <CapacityTaxBar> (Cycle view, first board) ──
   // Sourced live: today's PersonalTasks → predicted load vs phase capacity; the
@@ -982,79 +1000,97 @@ export default function PlannerV2ShellClipboard({
         {clipView === "today" ? (
           <>
             <ClipboardSlider hint="Slide your day" accent={C.gold}>
-              <Clipboard title="Your day" sub="MORNING · AFTERNOON · EVENING" accent={C.gold} flower="violet" idx="cb-day">
-                <YourDayRow user={user} phase={phase} />
+              <Clipboard title="Your day" sub="TAP TO DO IT — IT OPENS THE REAL THING" accent={cwOf("plum").petal} flower="violet" idx="cb-day">
+                <CbGrid cols={3}>
+                  <CbTile icon={ListChecks} label="Your day" sub="see & tick your plate" cw="plum" onTap={() => openCard("Your day", <YourDayRow user={user} phase={phase} />)} />
+                  <CbTile icon={Utensils} label="Log a meal" sub="breakfast · lunch" cw="gold" onTap={() => openLogger("meal")} />
+                  <CbTile icon={Footprints} label="Log a habit" sub="move · water" cw="sage" onTap={() => openLogger("habit")} />
+                  <CbTile icon={Plus} label="Add a task" sub="a to-do" cw="sage" onTap={() => openLogger("task")} />
+                  <CbTile icon={Heart} label="How you feel" sub="mood · energy" cw="crimson" onTap={() => openCard("How you feel", <BodyTodayCard user={user} />)} />
+                  <CbTile icon={Feather} label="Leave a line" sub="→ your journal" cw="blush" onTap={() => openCard("Leave a line", <EndOfDayNoteCard user={user} />)} />
+                </CbGrid>
               </Clipboard>
-              <Clipboard title="Insights" sub="JESS · YOUR SKY · RECOVERY" accent="#8E6E8E" flower="cosmos" idx="cb-ins">
-                <InsightsHeroRow phase={phase} dayInCycle={cycleDay} profile={profileProp} user={user} />
-              </Clipboard>
-              <Clipboard title="Schedule & plan" sub="HOUR-BY-HOUR · THE MONTH" accent={C.gold} flower="iris" idx="cb-sched">
-                <CardDeck accent={C.gold}>
-                  <SchedulePreviewCard blocks={blocks} onExpand={() => setScheduleOpen(true)} />
-                  <CyclePreviewCard onExpand={() => setCycleOpen(true)} phase={phase} dayInCycle={cycleDay} daysUntilPeriod={daysUntilPeriod} periodLen={periodLen} profileProp={profileProp} />
-                  <PlanADayCard />
-                  <WeekStripCard />
+              <Clipboard title="Insights" sub="JESS · YOUR SKY · RECOVERY — SWIPE INSIDE" accent={cwOf("plum").petal} flower="cosmos" idx="cb-ins">
+                <CardDeck accent={cwOf("plum").petal}>
+                  <CbInsight eyebrow="From Jess" Icon={Sparkles} cw="plum" title={navOmen.jess.title} line={navOmen.jess.body} />
+                  <CbInsight eyebrow="Your sky · Astra" Icon={Star} cw="gold" title={navOmen.astra.title} line={navOmen.astra.body} />
+                  <CbInsight eyebrow="Recovery" Icon={Heart} cw="crimson" title={navOmen.recovery.title} line={navOmen.recovery.body} />
                 </CardDeck>
+                <div style={{ marginTop: 12 }}>
+                  <CbTile icon={Sparkles} label="Open full insights" sub="Jess · your sky · recovery" cw="plum" onTap={() => openCard("Insights", <InsightsHeroRow phase={phase} dayInCycle={cycleDay} profile={profileProp} user={user} />)} />
+                </div>
               </Clipboard>
-              <Clipboard title="Lists" sub="THINGS NOT TIED TO A TIME" accent={C.gold} flower="sunflower" idx="cb-lists">
-                <ListsSection user={user} />
+              <Clipboard title="Schedule & plan" sub="THE HOUR-BY-HOUR DAY + THE MONTH" accent={cwOf("gold").petal} flower="iris" idx="cb-sched">
+                <CbGrid cols={3}>
+                  <CbTile icon={CalendarClock} label="Hour by hour" sub="the day view" cw="gold" onTap={() => setScheduleOpen(true)} />
+                  <CbTile icon={CalDaysIcon} label="Cycle calendar" sub="the month" cw="plum" onTap={() => setCycleOpen(true)} />
+                  <CbTile icon={Sparkles} label="Insights" sub="today's signals" cw="plum" onTap={() => openCard("Insights", <InsightsHeroRow phase={phase} dayInCycle={cycleDay} profile={profileProp} user={user} />)} />
+                  <CbTile icon={CalDaysIcon} label="Plan a day" sub="morning brief" cw="gold" onTap={() => setPlanOpen(true)} />
+                  <CbTile icon={Gauge} label="Capacity" sub="load vs phase" cw="crimson" onTap={() => setClipView("cycle")} />
+                  <CbTile icon={SlidersIcon} label="Customise" sub="reorder · hide" cw="sage" onTap={() => setSettingsOpen(true)} />
+                </CbGrid>
               </Clipboard>
-              <Clipboard title="Your body" sub="WHERE YOU ARE, AND WHAT HELPS" accent="#8E6E8E" flower="dahlia" idx="cb-body">
-                <BodyTodayChips phase={phase} lifeStage={effectiveLifeStage} />
-                <CardDeck accent="#8E6E8E">
-                  <BodyTodayCard user={user} />
-                  <SmartViewCard phase={phase} />
-                  <CycleZoneCard onOpen={() => setCycleOpen(true)} phase={phase} dayInCycle={cycleDay} daysUntilPeriod={daysUntilPeriod} />
-                </CardDeck>
+              <Clipboard title="Lists" sub="THINGS NOT TIED TO A TIME" accent={cwOf("gold").petal} flower="sunflower" idx="cb-lists">
+                <CbGrid>
+                  <CbTile icon={ListChecks} label="Your lists" sub="work · personal · health" cw="gold" onTap={() => openCard("Lists", <ListsSection user={user} />)} />
+                  <CbTile icon={Plus} label="Add to a list" sub="new item" cw="gold" onTap={() => openLogger("task")} />
+                </CbGrid>
+              </Clipboard>
+              <Clipboard title="Your body" sub="WHERE YOU ARE, AND WHAT HELPS" accent={cwOf("plum").petal} flower="dahlia" idx="cb-body">
+                <CbGrid>
+                  <CbTile icon={Activity} label="Body today" sub="energy · symptoms" cw="plum" onTap={() => openCard("Body today", <BodyTodayCard user={user} />)} />
+                  <CbTile icon={Brain} label="Smart view" sub="what helps now" cw="gold" onTap={() => openCard("Smart view", <SmartViewCard phase={phase} />)} />
+                  <CbTile icon={CalDaysIcon} label="Cycle zone" sub="where you are" cw="crimson" onTap={() => setCycleOpen(true)} />
+                  <CbTile icon={Baby} label="Life stage" sub="adapts to you" cw="sage" onTap={() => { setClipView("cycle"); }} />
+                </CbGrid>
               </Clipboard>
               <Clipboard title="Care" sub="MEDS · SYMPTOMS · SCREENING · EXPORT" accent={TT.crimson} flower="anemone" idx="cb-care">
-                <CardDeck accent={TT.crimson}>
-                  <MedsAndSuppsCard user={user} />
-                  <SymptomLogCard user={user} />
-                  <BodyScanCard user={user} />
-                  <GPReportCardSmall profile={profileProp} />
-                </CardDeck>
+                <CbGrid cols={3}>
+                  <CbTile icon={Pill} label="Meds & supps" sub="tick today's" cw="crimson" onTap={() => openCard("Meds & supplements", <MedsAndSuppsCard user={user} />)} />
+                  <CbTile icon={ShieldCheck} label="Contraception" sub="daily" cw="plum" onTap={() => openCard("Meds & supplements", <MedsAndSuppsCard user={user} />)} />
+                  <CbTile icon={Heart} label="Symptom log" sub="builds export" cw="plum" onTap={() => openCard("Symptom log", <SymptomLogCard user={user} />)} />
+                  <CbTile icon={ScanLine} label="Body scan" sub="60 seconds" cw="sage" onTap={() => openCard("Body scan", <BodyScanCard user={user} />)} />
+                  <CbTile icon={Stethoscope} label="GP export" sub="ready to share" cw="gold" onTap={() => link("DoctorExport")} />
+                  <CbTile icon={FileHeart} label="Conditions" sub="PMDD · PCOS" cw="crimson" onTap={() => setClipView("cycle")} />
+                </CbGrid>
               </Clipboard>
             </ClipboardSlider>
 
             <div style={{ height: 18 }} />
 
             <ClipboardSlider hint="Slide your tending" accent={TT.sage}>
-              <Clipboard title="Rituals" sub="THE DAILY TENDING" accent={C.gold} flower="violet" idx="cb-rit">
-                <CardDeck accent={C.gold}>
-                  <MorningStackCard user={user} />
-                  <ConsistencyCard />
-                  <CreateRitualCard onOpenBuilder={() => setRitualBuilderOpen(true)} />
-                  {ritualBundles.map((b) => <RitualBundleCard key={b.id} bundle={b} user={user} />)}
-                  {customRituals.map((r) => <CustomRitualCard key={r.id} ritual={r} />)}
-                </CardDeck>
-                <RowAddFooter label="Add a ritual" loggerType="ritual" />
+              <Clipboard title="Rituals" sub="THE DAILY TENDING" accent={cwOf("plum").petal} flower="violet" idx="cb-rit">
+                <CbGrid>
+                  <CbTile icon={Moon} label="Morning stack" sub="rest · water · lines" cw="plum" onTap={() => openCard("Morning ritual", <MorningStackCard user={user} />)} />
+                  <CbTile icon={Check} label="Consistency" sub="your streak" cw="sage" onTap={() => openCard("Consistency", <ConsistencyCard />)} />
+                  <CbTile icon={Plus} label="Ritual builder" sub="compose a set" cw="sage" onTap={() => setRitualBuilderOpen(true)} />
+                  <CbTile icon={Star} label="Add a ritual" sub="new tending" cw="gold" onTap={() => openLogger("ritual")} />
+                </CbGrid>
               </Clipboard>
-              <Clipboard title="Nourishment" sub="KIND, PHASE-AWARE FUEL" accent={C.gold} flower="marigold" idx="cb-nour">
-                <CardDeck accent={C.gold}>
-                  <MacroTrackerCard user={user} profile={profileProp} />
-                  <HydrationCard user={user} phase={phase} />
-                  <AIMealPlanCard phase={phase} />
-                  <PhaseRecipesCard phase={phase} />
-                </CardDeck>
-                <RowAddFooter label="Log a meal" loggerType="meal" />
+              <Clipboard title="Nourishment" sub="KIND, PHASE-AWARE FUEL" accent={cwOf("gold").petal} flower="marigold" idx="cb-nour">
+                <CbGrid>
+                  <CbTile icon={TrendingUp} label="Macros" sub="protein · fibre" cw="gold" onTap={() => openCard("Nourishment", <MacroTrackerCard user={user} profile={profileProp} />)} />
+                  <CbTile icon={Droplet} label="Hydration" sub="glasses today" cw="sky" onTap={() => openCard("Hydration", <HydrationCard user={user} phase={phase} />)} />
+                  <CbTile icon={Salad} label="AI meal plan" sub="for your phase" cw="sage" onTap={() => link("Nutrition")} />
+                  <CbTile icon={Utensils} label="Phase recipes" sub="iron-rich week" cw="gold" onTap={() => openCard("Phase recipes", <PhaseRecipesCard phase={phase} />)} />
+                </CbGrid>
               </Clipboard>
-              <Clipboard title="Mind & insight" sub="INTENTION · YOUR SKY · MOOD · BREATH" accent="#8E6E8E" flower="iris" idx="cb-mind">
-                <CardDeck accent="#8E6E8E">
-                  <IntentionCard user={user} />
-                  <AstraCard profile={profileProp} />
-                  <MoodMentalHealthCard user={user} phase={phase} />
-                  <BreathworkCard phase={phase} />
-                  <CyclePsychologyCard />
-                </CardDeck>
+              <Clipboard title="Mind & insight" sub="INTENTION · YOUR SKY · MOOD · BREATH" accent={cwOf("plum").petal} flower="iris" idx="cb-mind">
+                <CbGrid>
+                  <CbTile icon={Sparkles} label="Intention" sub="set today's" cw="crimson" onTap={() => openCard("Intention", <IntentionCard user={user} />)} />
+                  <CbTile icon={Star} label="Astra · your sky" sub="moon in…" cw="plum" onTap={() => openCard("Astra · your sky", <AstraCard profile={profileProp} />)} />
+                  <CbTile icon={Heart} label="Mood & mind" sub="how are you?" cw="plum" onTap={() => openCard("Mood & mind", <MoodMentalHealthCard user={user} phase={phase} />)} />
+                  <CbTile icon={Wind} label="Breathwork" sub="box breath" cw="sky" onTap={() => openCard("Breathwork", <BreathworkCard phase={phase} />)} />
+                  <CbTile icon={Brain} label="Cycle psychology" sub="the hormone tide" cw="gold" onTap={() => openCard("Cycle psychology", <CyclePsychologyCard />)} />
+                </CbGrid>
               </Clipboard>
-              <Clipboard title="Tonight & Jess" sub="CLOSE THE DAY" accent={C.gold} flower="primrose" idx="cb-tonight">
-                <CardDeck accent={C.gold}>
-                  <TonightReflectionCard user={user} />
-                  <TomorrowPreviewCard user={user} phase={phase} cycleDay={cycleDay} profile={profileProp} />
-                  <EndOfDayNoteCard user={user} />
-                </CardDeck>
-                <RowAddFooter label="Add a task for tomorrow" loggerType="task" />
+              <Clipboard title="Tonight & Jess" sub="CLOSE THE DAY" accent={cwOf("plum").petal} flower="primrose" idx="cb-tonight">
+                <CbGrid>
+                  <CbTile icon={Moon} label="Reflection" sub="how did today land?" cw="plum" onTap={() => openCard("Tonight's reflection", <TonightReflectionCard user={user} />)} />
+                  <CbTile icon={CalendarClock} label="Tomorrow" sub="one first kindness" cw="gold" onTap={() => openCard("Tomorrow", <TomorrowPreviewCard user={user} phase={phase} cycleDay={cycleDay} profile={profileProp} />)} />
+                  <CbTile icon={Feather} label="End-of-day note" sub="→ your journal" cw="crimson" onTap={() => openCard("End-of-day note", <EndOfDayNoteCard user={user} />)} />
+                  <CbTile icon={Plus} label="Add anything" sub="task · event" cw="sage" onTap={() => openLogger("task")} />
+                </CbGrid>
               </Clipboard>
             </ClipboardSlider>
           </>
@@ -1066,47 +1102,59 @@ export default function PlannerV2ShellClipboard({
                 activeProgram={activeProgramProp} ritualHabits={capRitualHabits}
                 onDefer={(n) => flashToast(`Deferred ${n} non-anchor task${n === 1 ? "" : "s"} to a steadier window`)} />
             </Clipboard>
-            <Clipboard title="Your cycle" sub="THE MONTH AT A GLANCE" accent="#8E6E8E" flower="dahlia" idx="cb-cyc">
-              <CardDeck accent="#8E6E8E">
-                <CyclePreviewCard onExpand={() => setCycleOpen(true)} phase={phase} dayInCycle={cycleDay} daysUntilPeriod={daysUntilPeriod} periodLen={periodLen} profileProp={profileProp} />
-                <WeekStripCard />
-              </CardDeck>
+            <Clipboard title="Your cycle" sub="THE MONTH AT A GLANCE" accent={cwOf("plum").petal} flower="dahlia" idx="cb-cyc">
+              <CbGrid cols={3}>
+                <CbTile icon={CalDaysIcon} label="Cycle calendar" sub="the month" cw="plum" onTap={() => setCycleOpen(true)} />
+                <CbTile icon={Heart} label="Period soon" sub={daysUntilPeriod != null ? `in ~${daysUntilPeriod} days` : "this cycle"} cw="crimson" onTap={() => setCycleOpen(true)} />
+                <CbTile icon={Sparkles} label="Energy ahead" sub="this week" cw="gold" onTap={() => openCard("Cycle & body", <CycleZoneCard onOpen={() => setCycleOpen(true)} phase={phase} dayInCycle={cycleDay} daysUntilPeriod={daysUntilPeriod} />)} />
+                <CbTile icon={Gauge} label="Confidence" sub="prediction" cw="sage" onTap={() => setCycleOpen(true)} />
+                <CbTile icon={CalendarClock} label="Week ahead" sub="forecast" cw="plum" onTap={() => setCycleOpen(true)} />
+                <CbTile icon={Star} label="Plan next cycle" sub="lay it out" cw="gold" onTap={() => setPlanOpen(true)} />
+              </CbGrid>
             </Clipboard>
-            <Clipboard title="Rhythms & habits" sub="ROUTINES · STREAKS" accent={TT.sage} flower="clover" idx="cb-rhythm">
-              <CardDeck accent={TT.sage}>
-                <MorningStackCard user={user} />
-                <ConsistencyCard />
-                <CreateRitualCard onOpenBuilder={() => setRitualBuilderOpen(true)} />
-              </CardDeck>
+            <Clipboard title="Rhythms & habits" sub="ROUTINES · STREAKS · STUCK HABITS" accent={TT.sage} flower="clover" idx="cb-rhythm">
+              <CbGrid cols={3}>
+                <CbTile icon={Star} label="Saved rhythms" sub="phase routines" cw="gold" onTap={() => openCard("Morning ritual", <MorningStackCard user={user} />)} />
+                <CbTile icon={Check} label="Consistency" sub="your streak" cw="sage" onTap={() => openCard("Consistency", <ConsistencyCard />)} />
+                <CbTile icon={Sprout} label="What's unfinished" sub="revive a habit" cw="crimson" onTap={() => openCard("Consistency", <ConsistencyCard />)} />
+                <CbTile icon={Moon} label="Cycle mirror" sub="mirror luteal" cw="plum" onTap={() => openCard("Morning ritual", <MorningStackCard user={user} />)} />
+                <CbTile icon={BellRing} label="Quiet mode" sub="hide non-anchors" cw="sage" onTap={() => setSettingsOpen(true)} />
+                <CbTile icon={Plus} label="Ritual builder" sub="compose a set" cw="sage" onTap={() => setRitualBuilderOpen(true)} />
+              </CbGrid>
             </Clipboard>
-            <Clipboard title="Care & clinical" sub="MEDS · SYMPTOMS · EXPORT" accent={TT.crimson} flower="anemone" idx="cb-clin">
-              <CardDeck accent={TT.crimson}>
-                <MedsAndSuppsCard user={user} />
-                <SymptomLogCard user={user} />
-                <GPReportCardSmall profile={profileProp} />
-                <BodyScanCard user={user} />
-              </CardDeck>
+            <Clipboard title="Care & clinical" sub="MEDS · CONTRACEPTION · SYMPTOMS · HRT · EXPORT" accent={TT.crimson} flower="anemone" idx="cb-clin">
+              <CbGrid cols={3}>
+                <CbTile icon={ShieldCheck} label="Contraception" sub="daily" cw="plum" onTap={() => openCard("Meds & supplements", <MedsAndSuppsCard user={user} />)} />
+                <CbTile icon={Heart} label="Symptom ribbon" sub="log · export" cw="crimson" onTap={() => openCard("Symptom log", <SymptomLogCard user={user} />)} />
+                <CbTile icon={Thermometer} label="HRT log" sub="adherence" cw="plum" onTap={() => openCard("Meds & supplements", <MedsAndSuppsCard user={user} />)} />
+                <CbTile icon={FileHeart} label="Doctor diary" sub="GP summary" cw="gold" onTap={() => link("DoctorExport")} />
+                <CbTile icon={Stethoscope} label="GP export" sub="ready" cw="sage" onTap={() => link("DoctorExport")} />
+                <CbTile icon={ScanLine} label="Body scan" sub="60 seconds" cw="sage" onTap={() => openCard("Body scan", <BodyScanCard user={user} />)} />
+              </CbGrid>
             </Clipboard>
-            <Clipboard title="Stage & fertility" sub="ADAPTS TO YOUR LIFE STAGE" accent={C.gold} flower="marigold" idx="cb-stage">
+            <Clipboard title="Stage & fertility" sub="ADAPTS TO YOUR LIFE STAGE" accent={cwOf("gold").petal} flower="marigold" idx="cb-stage">
               {stageConditionNode.suppressedNotice}
-              <div style={{ marginTop: 4 }}>
-                <StageRow stage={effectiveLifeStage} profile={profileProp} phase={phase} cycleDay={cycleDay} user={user} />
-              </div>
-              <div style={{ marginTop: 6 }}>
-                {stageConditionNode.conditionRowVisible.length > 0 ? (
+              <CbGrid cols={3}>
+                <CbTile icon={Baby} label="Life stage" sub="adapts" cw="sage" onTap={openStage} />
+                <CbTile icon={Pill} label="Pre-TTC stack" sub="folic · supps" cw="gold" onTap={openStage} />
+                <CbTile icon={Thermometer} label="Fertile window" sub="BBT · OPK" cw="crimson" onTap={openStage} />
+                <CbTile icon={Baby} label="Pregnancy" sub="40-wk milestones" cw="blush" onTap={openStage} />
+                <CbTile icon={Activity} label="Kick counter" sub="T2–T3" cw="plum" onTap={openStage} />
+                <CbTile icon={Heart} label="EPDS / annual" sub="wellbeing" cw="crimson" onTap={openStage} />
+              </CbGrid>
+              {stageConditionNode.conditionRowVisible.length > 0 && (
+                <div style={{ marginTop: 10 }}>
                   <ConditionRow conditions={stageConditionNode.conditionRowVisible} profile={profileProp} phase={phase} cycleDay={cycleDay} />
-                ) : (
-                  <ConditionEmptyPrompt />
-                )}
-              </div>
+                </div>
+              )}
             </Clipboard>
-            <Clipboard title="Your body & sky" sub="WHAT HELPS · YOUR SKY" accent="#8E6E8E" flower="violet" idx="cb-cbody">
-              <CardDeck accent="#8E6E8E">
-                <SmartViewCard phase={phase} />
-                <BreathworkCard phase={phase} />
-                <CyclePsychologyCard />
-                <AstraCard profile={profileProp} />
-              </CardDeck>
+            <Clipboard title="Your body & sky" sub="WHAT HELPS · YOUR SKY" accent={cwOf("plum").petal} flower="violet" idx="cb-cbody">
+              <CbGrid>
+                <CbTile icon={Brain} label="Smart view" sub="what helps now" cw="gold" onTap={() => openCard("Smart view", <SmartViewCard phase={phase} />)} />
+                <CbTile icon={Wind} label="Breathwork" sub="box breath" cw="sky" onTap={() => openCard("Breathwork", <BreathworkCard phase={phase} />)} />
+                <CbTile icon={Brain} label="Cycle psychology" sub="the hormone tide" cw="plum" onTap={() => openCard("Cycle psychology", <CyclePsychologyCard />)} />
+                <CbTile icon={Star} label="Astra · your sky" sub="moon in…" cw="gold" onTap={() => openCard("Astra · your sky", <AstraCard profile={profileProp} />)} />
+              </CbGrid>
             </Clipboard>
             <Clipboard title="What's growing" sub="YOUR WEEK, READ BACK GENTLY" accent={TT.sage} flower="fern" idx="cb-grow">
               <div style={{ display: "grid", placeItems: "center", paddingTop: 8 }}>
@@ -1186,6 +1234,13 @@ export default function PlannerV2ShellClipboard({
         }}
       />
 
+      {/* A tile opened a real card — mount it (with its real writes) in a bottom sheet. */}
+      {cardSheet && (
+        <CardSheet title={cardSheet.title} onClose={() => setCardSheet(null)}>
+          {cardSheet.node}
+        </CardSheet>
+      )}
+
       {toast && (
         <div role="status" style={{
           position: "fixed", left: "50%", bottom: "calc(var(--fw-nav-h, 76px) + 18px)", transform: "translateX(-50%)",
@@ -1196,6 +1251,60 @@ export default function PlannerV2ShellClipboard({
     </div>
   );
 }
+
+// ── Clipboard board primitives (the approved /PlannerClipboardDemo's ACTUAL design) ──
+// Uniform mini-tile + 2/3-col grid + full-width insight card + a bottom sheet that mounts
+// the REAL card component (so the board shows the demo's tile grid, and tapping a tile slides
+// up the real, functional card with its real writes). "The demo's look, the shell's wiring."
+function CbTile({ icon: Icon, label, sub, cw = "sage", onTap, done }) {
+  const c = cwOf(cw);
+  return (
+    <button onClick={onTap} aria-label={label} style={{
+      textAlign: "left", cursor: "pointer", minHeight: 104, display: "flex", flexDirection: "column",
+      background: `linear-gradient(165deg, ${TT.paperHi} 0%, ${c.petal}14 100%)`,
+      border: `1px solid ${TT.paperDeep}`, borderLeft: `4px solid ${c.petal}`, borderRadius: 14, padding: "12px 11px",
+      boxShadow: "0 3px 12px rgba(11,8,5,0.06)", opacity: done ? 0.6 : 1,
+    }}>
+      <span style={{ width: 30, height: 30, borderRadius: 9, background: TT.paper, border: `1px solid ${TT.paperDeep}`, display: "grid", placeItems: "center", marginBottom: 7 }}>
+        {done ? <Check size={15} color={c.petal} /> : <Icon size={15} strokeWidth={1.7} color={c.petal} />}
+      </span>
+      <span style={{ fontFamily: SERIF, fontSize: 14.5, fontWeight: 600, color: TT.ink, lineHeight: 1.2 }}>{label}</span>
+      <span style={{ fontFamily: UIFONT, fontSize: 11, color: TT.muted, marginTop: 2, lineHeight: 1.3 }}>{sub}</span>
+    </button>
+  );
+}
+const CbGrid = ({ children, cols = 2 }) => <div style={{ display: "grid", gridTemplateColumns: cols === 3 ? "1fr 1fr 1fr" : "1fr 1fr", gap: 9 }}>{children}</div>;
+function CbInsight({ eyebrow, Icon, title, line, cw = "plum" }) {
+  const c = cwOf(cw);
+  return (
+    <div style={{ position: "relative", minHeight: 188, display: "flex", flexDirection: "column", background: `linear-gradient(165deg, ${TT.paperHi} 0%, ${c.petal}16 100%)`, border: `1px solid ${TT.paperDeep}`, borderLeft: `4px solid ${c.petal}`, borderRadius: 16, padding: "16px 16px 14px", boxShadow: "0 3px 12px rgba(11,8,5,0.06)" }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 9, marginBottom: 8 }}>
+        <span style={{ width: 32, height: 32, borderRadius: 9, background: TT.paper, border: `1px solid ${TT.paperDeep}`, display: "grid", placeItems: "center" }}><Icon size={16} color={c.petal} /></span>
+        <span style={{ fontFamily: UIFONT, fontSize: 11, fontWeight: 700, letterSpacing: ".11em", textTransform: "uppercase", color: c.petal }}>{eyebrow}</span>
+        <span style={{ marginLeft: "auto" }}><FlowerGlyph variant="cosmos" size={24} color={c.petal} color2={c.tip} idx={`ins-${eyebrow}`} /></span>
+      </div>
+      <div style={{ fontFamily: SERIF, fontSize: 19, fontWeight: 600, color: TT.ink, lineHeight: 1.25, marginBottom: 6 }}>{title}</div>
+      <p style={{ fontFamily: SERIF, fontSize: 15, color: TT.muted, lineHeight: 1.5, margin: 0 }}>{line}</p>
+    </div>
+  );
+}
+function CardSheet({ title, onClose, children }) {
+  return (
+    <div onClick={onClose} role="dialog" aria-modal="true" style={cbScrim}>
+      <div onClick={(e) => e.stopPropagation()} className="fw-sheet-safe" style={cbSheet}>
+        <div style={cbGrab} />
+        <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12 }}>
+          <div style={{ fontFamily: SCRIPT, fontSize: 24, color: TT.ink, flex: 1 }}>{title}</div>
+          <button onClick={onClose} aria-label="Close" style={{ background: "transparent", border: "none", cursor: "pointer", color: TT.muted }}><X size={20} /></button>
+        </div>
+        {children}
+      </div>
+    </div>
+  );
+}
+const cbScrim = { position: "fixed", inset: 0, zIndex: 9999, background: "rgba(11,8,5,0.46)", display: "flex", alignItems: "flex-end", justifyContent: "center" };
+const cbSheet = { width: "100%", maxWidth: 520, background: TT.paperHi, borderTopLeftRadius: 22, borderTopRightRadius: 22, borderTop: `1px solid ${TT.paperDeep}`, boxShadow: "0 -8px 40px rgba(11,8,5,.24)", padding: "16px 18px 20px", maxHeight: "86dvh", overflowY: "auto" };
+const cbGrab = { width: 38, height: 4, borderRadius: 99, background: TT.paperDeep, margin: "0 auto 14px" };
 
 // ── Header ─────────────────────────────────────────────────────────────────
 // Phase B1 fix: date + stage-aware subline.

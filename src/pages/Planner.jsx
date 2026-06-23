@@ -46,7 +46,7 @@ import PlanADaySheet from "@/components/PlanADaySheet";
 // /PlannerClipboardDemo design, so it's being rebuilt to faithfully reproduce the
 // demo's card/board visuals before re-shipping). To re-ship the rebuilt clipboard
 // layout: swap the path below to "@/components/planner-v2/PlannerV2ShellClipboard".
-import PlannerV2Shell from "@/components/planner-v2/PlannerV2Shell";
+import PlannerV2Shell from "@/components/planner-v2/PlannerV2ShellClipboard";
 // Phase 2 QA-fix-bundle-8 — Planner subscribes to the module-level
 // devStageStore directly. The CustomEvent bus is no longer used here.
 import {
