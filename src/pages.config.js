@@ -86,6 +86,7 @@ import FictionReader from './pages/FictionReader';
 import Track from './pages/Track';
 import Community from './pages/Community';
 import Planner from './pages/Planner';
+import PlannerLiveTest from './pages/PlannerLiveTest';
 import Insights from './pages/Insights.jsx';
 import OneShotThankYou from './pages/OneShotThankYou';
 // `Ideas` (the Design Lab component) is no longer routed — Halli's
@@ -258,6 +259,7 @@ export const PAGES = {
     "Community": CommunityHub,
     "CommunityClassic": Community,
     "Planner": Planner,
+    "PlannerLiveTest": PlannerLiveTest,
     "Insights": Insights,
     "OneShotThankYou": OneShotThankYou,
     // /Ideas now renders FoundersOS — that's the path the in-app

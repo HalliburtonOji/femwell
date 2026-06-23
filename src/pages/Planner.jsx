@@ -46,6 +46,10 @@ import PlanADaySheet from "@/components/PlanADaySheet";
 // space, plain sheets. Being rebuilt ON-BRAND before re-shipping). To re-ship the
 // rebuilt clipboard layout: swap the path below to "@/components/planner-v2/PlannerV2ShellClipboard".
 import PlannerV2Shell from "@/components/planner-v2/PlannerV2Shell";
+// Parallel test variant — the clipboard rebuild. /Planner stays on the PROVEN
+// shell above; /PlannerLiveTest renders <Planner shellVariant="clipboard" /> so
+// it can be authed-click-tested live before any swap. (Live /Planner unchanged.)
+import PlannerV2ShellClipboard from "@/components/planner-v2/PlannerV2ShellClipboard";
 // Phase 2 QA-fix-bundle-8 — Planner subscribes to the module-level
 // devStageStore directly. The CustomEvent bus is no longer used here.
 import {
@@ -436,7 +440,7 @@ function weekdayKey(d) {
 
 const DAY_LABELS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
-export default function Planner() {
+export default function Planner({ shellVariant } = {}) {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
@@ -1226,8 +1230,11 @@ export default function Planner() {
   // The legacy return statement below this is unreachable. Left in
   // place so the diff stays readable; will be deleted in a follow-up
   // pass once we've confirmed nothing was referencing it.
+  // shellVariant="clipboard" (only the /PlannerLiveTest wrapper passes it) renders
+  // the parallel clipboard rebuild; default keeps the PROVEN shell live on /Planner.
+  const Shell = shellVariant === "clipboard" ? PlannerV2ShellClipboard : PlannerV2Shell;
   return (
-    <PlannerV2Shell
+    <Shell
       user={user}
       profile={profile}
       plannerConfig={plannerConfig}
