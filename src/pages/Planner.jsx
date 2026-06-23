@@ -45,7 +45,7 @@ import PlanADaySheet from "@/components/PlanADaySheet";
 // was off-brand: flat grey bg instead of cream PAPER_BG, dark header slabs, dead
 // space, plain sheets. Being rebuilt ON-BRAND before re-shipping). To re-ship the
 // rebuilt clipboard layout: swap the path below to "@/components/planner-v2/PlannerV2ShellClipboard".
-import PlannerV2Shell from "@/components/planner-v2/PlannerV2ShellClipboard";
+import PlannerV2Shell from "@/components/planner-v2/PlannerV2Shell";
 // Phase 2 QA-fix-bundle-8 — Planner subscribes to the module-level
 // devStageStore directly. The CustomEvent bus is no longer used here.
 import {
