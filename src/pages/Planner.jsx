@@ -42,6 +42,10 @@ import PlanADaySheet from "@/components/PlanADaySheet";
 // render path below this conditional is now unreachable; it remains
 // in the file for diff-readability but no user ever sees it.
 import PlannerV2Shell from "@/components/planner-v2/PlannerV2Shell";
+// ⬆ PROVEN shell stays live (production-safe). The approved CLIPBOARD RE-LAYOUT is
+// built + structurally verified at /PlannerV2ShellClipboard.jsx. ONE-LINE GO-LIVE:
+// swap the path above to "@/components/planner-v2/PlannerV2ShellClipboard" — only
+// after authed live write-persistence verification (Playwright test-user) passes.
 // Phase 2 QA-fix-bundle-8 — Planner subscribes to the module-level
 // devStageStore directly. The CustomEvent bus is no longer used here.
 import {
