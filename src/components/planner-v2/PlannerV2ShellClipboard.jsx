@@ -35,6 +35,7 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 // QA Fix 2 (2026-05-24) — GPReportCardSmall navigates to /DoctorExport
 // via the router rather than a full-page reload via window.location.
+import { createPortal } from "react-dom";
 import { useNavigate } from "react-router-dom";
 import {
   Sun, Moon, Zap, Calendar, Activity, X, Plus, ChevronLeft, ChevronRight,
@@ -744,6 +745,31 @@ export default function PlannerV2ShellClipboard({
   const openStage = () => openCard("Stage & fertility", (
     <StageRow stage={effectiveLifeStage} profile={profileProp} phase={phase} cycleDay={cycleDay} user={user} />
   ));
+  // Compose sheets — explicit-Save free-text flows that write the REAL entity
+  // (JournalEntries, tagged so the matching card reads them back).
+  const [compose, setCompose] = useState(null);
+  const saveJournalLine = async (text, tag) => {
+    if (!user?.id) throw new Error("no user");
+    await base44.entities.JournalEntries.create({
+      user_id: user.id, session_date: todayISO, text,
+      tags: [tag], created_at: new Date().toISOString(), updated_at: new Date().toISOString(),
+    });
+  };
+  const openLine = () => setCompose({
+    title: "Leave a line", cw: "crimson", saving: "Save the line",
+    placeholder: "A line for today — three true words are plenty…",
+    onSave: (t) => saveJournalLine(t, "planner_line").then(() => flashToast("Saved to your journal")),
+  });
+  const openEod = () => setCompose({
+    title: "End-of-day note", cw: "plum", saving: "Save",
+    placeholder: "One thing that went well today…",
+    onSave: (t) => saveJournalLine(t, "end_of_day").then(() => flashToast("Saved")),
+  });
+  const openIntention = () => setCompose({
+    title: "Today's intention", cw: "crimson", saving: "Set intention",
+    placeholder: "What do you want to hold today?",
+    onSave: (t) => saveJournalLine(t, "daily_intention").then(() => flashToast("Intention set")),
+  });
   const navOmen = useMemo(() => ({
     jess: phaseInsights[phase] || phaseInsights.luteal,
     astra: ASTRA_READINGS[phase] || ASTRA_READINGS.luteal,
@@ -1002,7 +1028,7 @@ export default function PlannerV2ShellClipboard({
                   <CbTile icon={Footprints} label="Log a habit" sub="move · water" cw="sage" onTap={() => openLogger("habit")} />
                   <CbTile icon={Plus} label="Add a task" sub="a to-do" cw="sage" onTap={() => openLogger("task")} />
                   <CbTile icon={Heart} label="How you feel" sub="mood · energy" cw="crimson" onTap={() => openCard("How you feel", <BodyTodayCard user={user} />)} />
-                  <CbTile icon={Feather} label="Leave a line" sub="→ your journal" cw="blush" onTap={() => openCard("Leave a line", <EndOfDayNoteCard user={user} />)} />
+                  <CbTile icon={Feather} label="Leave a line" sub="→ your journal" cw="blush" onTap={openLine} />
                 </CbGrid>
               </Clipboard>
               <Clipboard title="Insights" sub="JESS · YOUR SKY · RECOVERY — SWIPE INSIDE" accent={cwOf("plum").petal} flower="cosmos" idx="cb-ins">
@@ -1085,7 +1111,7 @@ export default function PlannerV2ShellClipboard({
               <Clipboard title="Mind & insight" sub="INTENTION · YOUR SKY · MOOD · BREATH" accent={cwOf("plum").petal} flower="iris" idx="cb-mind">
                 <CbBoardFill accent="plum" line="A moment for the inner weather — name it, then let it move.">
                   <CbGrid>
-                    <CbTile icon={Sparkles} label="Intention" sub="set today's" cw="crimson" onTap={() => openCard("Intention", <IntentionCard user={user} />)} />
+                    <CbTile icon={Sparkles} label="Intention" sub="set today's" cw="crimson" onTap={openIntention} />
                     <CbTile icon={Star} label="Astra · your sky" sub="moon in…" cw="plum" onTap={() => openCard("Astra · your sky", <AstraCard profile={profileProp} />)} />
                     <CbTile icon={Heart} label="Mood & mind" sub="how are you?" cw="plum" onTap={() => openCard("Mood & mind", <MoodMentalHealthCard user={user} phase={phase} />)} />
                     <CbTile icon={Wind} label="Breathwork" sub="box breath" cw="sky" onTap={() => openCard("Breathwork", <BreathworkCard phase={phase} />)} />
@@ -1099,7 +1125,7 @@ export default function PlannerV2ShellClipboard({
                   <CbGrid>
                     <CbTile icon={Moon} label="Reflection" sub="how did today land?" cw="plum" onTap={() => openCard("Tonight's reflection", <TonightReflectionCard user={user} />)} />
                     <CbTile icon={CalendarClock} label="Tomorrow" sub="one first kindness" cw="gold" onTap={() => openCard("Tomorrow", <TomorrowPreviewCard user={user} phase={phase} cycleDay={cycleDay} profile={profileProp} />)} />
-                    <CbTile icon={Feather} label="End-of-day note" sub="→ your journal" cw="crimson" onTap={() => openCard("End-of-day note", <EndOfDayNoteCard user={user} />)} />
+                    <CbTile icon={Feather} label="End-of-day note" sub="→ your journal" cw="crimson" onTap={openEod} />
                     <CbTile icon={BedDouble} label="Sleep" sub="log last night" cw="plum" onTap={() => openLogger("checkin")} />
                     <CbTile icon={Sparkles} label="Weekly summary" sub="from Jess" cw="gold" onTap={() => openCard("Insights", <InsightsHeroRow phase={phase} dayInCycle={cycleDay} profile={profileProp} user={user} />)} />
                     <CbTile icon={Plus} label="Add anything" sub="task · event" cw="sage" onTap={() => openLogger("task")} />
@@ -1120,7 +1146,7 @@ export default function PlannerV2ShellClipboard({
               <CbGrid cols={3}>
                 <CbTile icon={CalDaysIcon} label="Cycle calendar" sub="the month" cw="plum" onTap={() => setCycleOpen(true)} />
                 <CbTile icon={Heart} label="Period soon" sub={daysUntilPeriod != null ? `in ~${daysUntilPeriod} days` : "this cycle"} cw="crimson" onTap={() => setCycleOpen(true)} />
-                <CbTile icon={Sparkles} label="Energy ahead" sub="this week" cw="gold" onTap={() => openCard("Cycle & body", <CycleZoneCard onOpen={() => setCycleOpen(true)} phase={phase} dayInCycle={cycleDay} daysUntilPeriod={daysUntilPeriod} />)} />
+                <CbTile icon={Sparkles} label="Energy ahead" sub="this week" cw="gold" onTap={() => setCycleOpen(true)} />
                 <CbTile icon={Gauge} label="Confidence" sub="prediction" cw="sage" onTap={() => setCycleOpen(true)} />
                 <CbTile icon={CalendarClock} label="Week ahead" sub="forecast" cw="plum" onTap={() => setCycleOpen(true)} />
                 <CbTile icon={Star} label="Plan next cycle" sub="lay it out" cw="gold" onTap={() => setPlanOpen(true)} />
@@ -1258,6 +1284,10 @@ export default function PlannerV2ShellClipboard({
           {cardSheet.node}
         </CardSheet>
       )}
+      {/* Free-text compose with an explicit Save (leave a line · end-of-day · intention). */}
+      {compose && (
+        <ComposeSheet {...compose} onClose={() => setCompose(null)} />
+      )}
 
       {toast && (
         <div role="status" style={{
@@ -1323,7 +1353,11 @@ function CbInsight({ eyebrow, Icon, title, line, cw = "plum" }) {
   );
 }
 function CardSheet({ title, onClose, children }) {
-  return (
+  // Portaled to <body> so it can never be trapped by a transformed/overflow
+  // ancestor, and held at z 900 — ABOVE the bottom nav (z-40) but BELOW every
+  // modal a mounted card can spawn (logger z998/9500, quick popups z2000), so
+  // those always open IN FRONT of this sheet (fixes the "modal behind" bug).
+  return createPortal((
     <div onClick={onClose} role="dialog" aria-modal="true" style={cbScrim}>
       <div onClick={(e) => e.stopPropagation()} className="fw-sheet-safe" style={cbSheet}>
         <div style={cbGrab} />
@@ -1341,9 +1375,50 @@ function CardSheet({ title, onClose, children }) {
         {children}
       </div>
     </div>
-  );
+  ), document.body);
 }
-const cbScrim = { position: "fixed", inset: 0, zIndex: 9999, background: "rgba(11,8,5,0.46)", display: "flex", alignItems: "flex-end", justifyContent: "center" };
+// COMPOSE sheet — for free-text tiles (leave a line · end-of-day note · intention).
+// The real cards saved only on blur (no visible button → Halli's "no save"); this
+// gives an OBVIOUS Save that writes the real entity, then closes + toasts. Portaled
+// to <body> at z 9990 (top of stack) so it always opens in front, never trapped.
+function ComposeSheet({ title, eyebrow = "Planner", placeholder, cw = "gold", saving, onClose, onSave }) {
+  const [text, setText] = useState("");
+  const [busy, setBusy] = useState(false);
+  const c = cwOf(cw);
+  const submit = async () => {
+    const v = (text || "").trim();
+    if (!v || busy) return;
+    setBusy(true);
+    try { await onSave(v); } catch { /* surfaced by caller */ }
+    setBusy(false);
+    onClose();
+  };
+  return createPortal((
+    <div onClick={onClose} role="dialog" aria-modal="true" style={composeScrim}>
+      <div onClick={(e) => e.stopPropagation()} className="fw-sheet-safe" style={{ ...cbSheet, borderTop: `3px solid ${c.petal}` }}>
+        <div style={cbGrab} />
+        <div style={{ display: "flex", alignItems: "center", gap: 11, marginBottom: 12 }}>
+          <span aria-hidden style={{ width: 34, height: 34, borderRadius: 10, background: TT.paper, border: `1px solid ${TT.paperDeep}`, display: "grid", placeItems: "center", flexShrink: 0 }}>
+            <FlowerGlyph variant="cosmos" size={18} color={c.petal} color2={c.tip} idx="compose-head" />
+          </span>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ fontFamily: UIFONT, fontSize: 10.5, fontWeight: 700, letterSpacing: ".14em", textTransform: "uppercase", color: c.petal }}>{eyebrow}</div>
+            <div style={{ fontFamily: SCRIPT, fontSize: 24, color: TT.ink, lineHeight: 1 }}>{title}</div>
+          </div>
+          <button onClick={onClose} aria-label="Close" style={{ background: "transparent", border: "none", cursor: "pointer", color: TT.muted }}><X size={20} /></button>
+        </div>
+        <textarea autoFocus value={text} onChange={(e) => setText(e.target.value)} placeholder={placeholder} rows={4}
+          style={{ width: "100%", boxSizing: "border-box", fontFamily: SERIF, fontSize: 16, color: TT.ink, background: TT.paper, border: `1px solid ${TT.paperDeep}`, borderRadius: 12, padding: "12px 13px", resize: "vertical", minHeight: 96, outline: "none" }} />
+        <button onClick={submit} disabled={!text.trim() || busy}
+          style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 8, width: "100%", marginTop: 12, color: "#fff", background: (!text.trim() || busy) ? TT.paperDeep : c.petal, border: "none", borderRadius: 12, padding: "14px 16px", fontFamily: UIFONT, fontSize: 15, fontWeight: 700, cursor: (!text.trim() || busy) ? "default" : "pointer" }}>
+          <Check size={16} /> {busy ? "Saving…" : (saving || "Save")}
+        </button>
+      </div>
+    </div>
+  ), document.body);
+}
+const cbScrim = { position: "fixed", inset: 0, zIndex: 900, background: "rgba(11,8,5,0.46)", display: "flex", alignItems: "flex-end", justifyContent: "center" };
+const composeScrim = { position: "fixed", inset: 0, zIndex: 9990, background: "rgba(11,8,5,0.5)", display: "flex", alignItems: "flex-end", justifyContent: "center" };
 const cbSheet = { width: "100%", maxWidth: 520, background: TT.paperHi, borderTopLeftRadius: 22, borderTopRightRadius: 22, borderTop: `3px solid ${TT.gold}`, boxShadow: "0 -8px 40px rgba(11,8,5,.24)", padding: "16px 18px 22px", maxHeight: "86dvh", overflowY: "auto" };
 const cbGrab = { width: 38, height: 4, borderRadius: 99, background: TT.paperDeep, margin: "0 auto 14px" };
 
