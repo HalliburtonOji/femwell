@@ -24,8 +24,7 @@
 // v4 bible: flora-hero + ONE summary glance + §6.7.6 quick popups + soulful voice + PAPER_BG + ≥12 fonts +
 // canonical tokens + .fw-sheet-safe. ~2 phone screens. No new function; demo is seeded (no live writes).
 import { useState, useEffect } from "react";
-import {
-  ArrowLeft, Plus, Check, X, Droplet, Utensils, Search, Mic, Camera, ScanLine, Star, Clock,
+import { Plus, Check, X, Droplet, Utensils, Search, Mic, Camera, ScanLine, Star, Clock,
   ListChecks, CalendarDays, ShoppingBasket, TrendingUp, Sparkles, Target, BookOpen, Apple,
   Carrot, Soup, ChevronRight, Salad, Coffee, Wine, Beef, Wheat, Fish, Heart, Flame, GlassWater,
   Repeat, Leaf, SlidersHorizontal,
@@ -232,10 +231,6 @@ export default function NutritionRedesignDemo() {
   return (
     <div style={{ ...PAPER_BG, minHeight: "100vh", paddingBottom: 112, position: "relative", overflowX: "clip" }}>
       <style>{floraKeyframes}</style>
-      <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "9px 16px", background: T.paperHi, borderBottom: `1px solid ${T.paperDeep}` }}>
-        <button onClick={() => link("Ideas")} aria-label="Back to Ideas" style={ribbonBtn}><ArrowLeft size={13} /> Ideas</button>
-        <span style={{ fontFamily: UI, fontSize: 12, fontWeight: 700, letterSpacing: ".12em", textTransform: "uppercase", color: T.gold }}>Demo · Nutrition · v4 · clipboard-forward</span>
-      </div>
 
       {/* Canonical jump-to — the shared pinned JumpToButton (fixed top-left, z45), same as
           Today/Journal/Community/the live NutritionHub. Opens the "Jump to" area sheet. */}

@@ -235,7 +235,9 @@ export const PAGES = {
     "JournalClassic": Journal,
     "LifeStageCare": LifeStageCare,
     "Lifestyle": Lifestyle,
-    "Nutrition": NutritionHub,
+    "Nutrition": NutritionRedesignDemo,
+    // ONE-LINE REVERT: change the line above back to `"Nutrition": NutritionHub,`.
+    // NutritionHub stays live at /NutritionHub (real full surfaces; jump-to/explore tiles deep-link there).
     "Onboarding": Onboarding,
     "Profile": ProfileClipboardDemo,   // lock+swap 2026-06-22 (Halli-approved segmented rework) — `Profile` kept imported above as the one-line-revert fallback
     "ProgramDay": ProgramDay,
