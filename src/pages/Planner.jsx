@@ -41,11 +41,10 @@ import PlanADaySheet from "@/components/PlanADaySheet";
 // localStorage flag (femwell_planner_v2) is gone entirely. The legacy
 // render path below this conditional is now unreachable; it remains
 // in the file for diff-readability but no user ever sees it.
-// LIVE Planner = the PROVEN shell (reverted 2026-06-23 — the clipboard re-layout
-// was off-brand: flat grey bg instead of cream PAPER_BG, dark header slabs, dead
-// space, plain sheets. Being rebuilt ON-BRAND before re-shipping). To re-ship the
-// rebuilt clipboard layout: swap the path below to "@/components/planner-v2/PlannerV2ShellClipboard".
-import PlannerV2Shell from "@/components/planner-v2/PlannerV2Shell";
+// LIVE Planner = the CLIPBOARD REBUILD (swapped live 2026-06-24, Halli approved after
+// the authed test pass on /PlannerLiveTest). ONE-LINE REVERT: change the path below back
+// to "@/components/planner-v2/PlannerV2Shell" → build → deploy to restore the proven shell.
+import PlannerV2Shell from "@/components/planner-v2/PlannerV2ShellClipboard";
 // Parallel test variant — the clipboard rebuild. /Planner stays on the PROVEN
 // shell above; /PlannerLiveTest renders <Planner shellVariant="clipboard" /> so
 // it can be authed-click-tested live before any swap. (Live /Planner unchanged.)
