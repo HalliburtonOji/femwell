@@ -23,15 +23,18 @@
 //   • voice + barcode + photo + food lookup · suggested dinner · jump-to switcher
 // v4 bible: flora-hero + ONE summary glance + §6.7.6 quick popups + soulful voice + PAPER_BG + ≥12 fonts +
 // canonical tokens + .fw-sheet-safe. ~2 phone screens. No new function; demo is seeded (no live writes).
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   ArrowLeft, Plus, Check, X, Droplet, Utensils, Search, Mic, Camera, ScanLine, Star, Clock,
   ListChecks, CalendarDays, ShoppingBasket, TrendingUp, Sparkles, Target, BookOpen, Apple,
   Carrot, Soup, ChevronRight, Salad, Coffee, Wine, Beef, Wheat, Fish, Heart, Flame, GlassWater,
-  Repeat, Lock, Leaf, SlidersHorizontal, Compass,
+  Repeat, Leaf, SlidersHorizontal,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
+import { base44 } from "@/api/base44Client";
+import { openLogger } from "@/components/UniversalLogger";
+import JumpToButton from "@/components/layout/JumpToButton";
 import { T, SCRIPT, SERIF, UI, PAPER_BG, Hand } from "@/components/journal/Editorial";
 import { FwFloraHero } from "@/components/brand/PageTop";
 import { SummaryCard } from "@/components/brand/Card";
@@ -113,8 +116,9 @@ function Tile({ icon: Icon, label, sub, cw = "sage", onTap, done }) {
 }
 const Grid = ({ children, cols = 2 }) => <div style={{ display: "grid", gridTemplateColumns: cols === 3 ? "1fr 1fr 1fr" : "1fr 1fr", gap: 9 }}>{children}</div>;
 
-// energy ring + macro bars + water — the signature "today" glance (read-true seeded)
-function NourishGlance({ onMeal, onWater }) {
+// energy ring + macro bars + water — the signature "today" glance (REAL today data)
+function NourishGlance({ kcal = 0, water = 0, macros = MACROS }) {
+  const KCAL = kcal, WATER = water;
   const pct = Math.min(100, Math.round((KCAL / KCAL_TARGET) * 100));
   const R = 52, C = 2 * Math.PI * R, off = C * (1 - pct / 100);
   return (
@@ -134,7 +138,7 @@ function NourishGlance({ onMeal, onWater }) {
           </div>
         </div>
         <div style={{ flex: 1, minWidth: 0 }}>
-          {MACROS.map((m) => { const c = cwOf(m.cw); const p = Math.min(100, Math.round((m.had / m.guide) * 100)); return (
+          {macros.map((m) => { const c = cwOf(m.cw); const p = Math.min(100, Math.round((m.had / m.guide) * 100)); return (
             <div key={m.label} style={{ marginBottom: 9 }}>
               <div style={{ display: "flex", justifyContent: "space-between", fontFamily: UI, fontSize: 11.5, marginBottom: 3 }}>
                 <span style={{ color: T.ink, fontWeight: 600 }}>{m.label}</span>
@@ -160,13 +164,68 @@ export default function NutritionRedesignDemo() {
   const navigate = useNavigate();
   const [done, setDone] = useState({});
   const [popup, setPopup] = useState(null);
-  const [sheet, setSheet] = useState(null);   // "log" · "water" · "voice" · "jump" · "recipe" · "aiplan"
+  const [sheet, setSheet] = useState(null);   // "jump" only (log/water now route to the real logger)
   const [toast, setToast] = useState(null);
   const flash = (msg) => { setToast(msg); setTimeout(() => setToast(null), 2200); };
   const link = (p) => navigate(createPageUrl(p));
   const pop = (id, type, icon, title, cw) => setPopup({ id, type, icon, title, cw });
   const d2 = (id) => done[id];
   const complete = (id, msg) => { setDone((x) => ({ ...x, [id]: true })); setPopup(null); if (msg) flash(msg); };
+
+  // ── LIVE wiring: real user + today's real summary (energy ring + macros + water) ──
+  const [user, setUser] = useState(null);
+  const [sum, setSum] = useState({ kcal: 0, water: 0, macros: MACROS });
+  const [todayMeals, setTodayMeals] = useState([]);
+  const [tick, setTick] = useState(0);
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const me = await base44.entities.User.me().catch(() => null);
+        if (cancelled) return;
+        setUser(me);
+        if (!me?.id) return;
+        const dayKey = new Date().toISOString().split("T")[0];
+        const [meals, hyd] = await Promise.all([
+          base44.entities.MealLog.filter({ user_id: me.id, day_key: dayKey }).catch(() => []),
+          base44.entities.HydrationLog.filter({ user_id: me.id, day_key: dayKey }).catch(() => []),
+        ]);
+        if (cancelled) return;
+        let kcal = 0, protein = 0, iron = 0, fibre = 0;
+        (meals || []).forEach((m) => { const s = (m.ai_analysis && m.ai_analysis.summary) || {}; kcal += Number(s.calories || s.kcal || 0) || 0; protein += Number(s.protein_g || 0) || 0; iron += Number(s.iron_mg || 0) || 0; fibre += Number(s.fibre_g || s.fiber_g || 0) || 0; });
+        const ml = (hyd || []).reduce((a, h) => a + (Number(h.amount_ml) || 0), 0);
+        setTodayMeals((meals || []).map((m) => {
+          const s = (m.ai_analysis && m.ai_analysis.summary) || {};
+          return { id: m.id, slot: (m.meal_type || "").toString(), title: m.raw_text || m.name || (m.ai_analysis && m.ai_analysis.title) || "Meal", kcal: Math.round(Number(s.calories || s.kcal || 0) || 0) };
+        }));
+        const macros = [
+          { label: "Protein", had: Math.round(protein), guide: 90, unit: "g", cw: "crimson" },
+          { label: "Fibre", had: Math.round(fibre), guide: 30, unit: "g", cw: "sage" },
+          { label: "Iron", had: Math.round(iron), guide: 18, unit: "mg", cw: "gold" },
+        ];
+        setSum({ kcal: Math.round(kcal), water: Math.round(ml / 250), macros });
+      } catch { /* keep zeros */ }
+    })();
+    return () => { cancelled = true; };
+  }, [tick]);
+  const refreshSummary = () => setTick((t) => t + 1);
+  // Real writes / real navigation
+  const logMeal = () => openLogger("meal");            // real MealLog (UniversalLogger DetailForm)
+  const logHydration = () => openLogger("hydration");  // real HydrationLog
+  const logWater = async (ml) => {                      // quick direct water write
+    flash(`Logged ${ml} ml of water`);
+    try {
+      const me = user || (await base44.entities.User.me().catch(() => null));
+      if (!me?.id) return;
+      await base44.entities.HydrationLog.create({ user_id: me.id, day_key: new Date().toISOString().split("T")[0], amount_ml: ml, logged_at: new Date().toISOString(), source: "quick" });
+      refreshSummary();
+    } catch { /* silent */ }
+  };
+  const goHub = (tab) => navigate(createPageUrl("NutritionHub") + (tab ? `?tab=${tab}` : ""));
+  const delMeal = async (id) => {
+    setTodayMeals((prev) => prev.filter((m) => m.id !== id));
+    try { await base44.entities.MealLog.delete(id); refreshSummary(); } catch { /* silent */ }
+  };
 
   return (
     <div style={{ ...PAPER_BG, minHeight: "100vh", paddingBottom: 112, position: "relative", overflowX: "clip" }}>
@@ -176,35 +235,40 @@ export default function NutritionRedesignDemo() {
         <span style={{ fontFamily: UI, fontSize: 12, fontWeight: 700, letterSpacing: ".12em", textTransform: "uppercase", color: T.gold }}>Demo · Nutrition · v4 · clipboard-forward</span>
       </div>
 
+      {/* Canonical jump-to — the shared pinned JumpToButton (fixed top-left, z45), same as
+          Today/Journal/Community/the live NutritionHub. Opens the "Jump to" area sheet. */}
+      <JumpToButton pinned onClick={() => setSheet("jump")} />
+
       {/* COMPACT signature top */}
       <FwFloraHero title="Nutrition" bloom="marigold" colorway="gold" flankL="chamomile" flankR="sunflower" creature="bee"
         line="Nourishment is a relationship, not a test. Log in seconds; everything else is one tap from a titled board." ringSize={184} bloomSize={116} />
 
       <Wrap>
-        {/* signature glance — energy ring + macros + water */}
-        <div style={{ marginTop: 6 }}><NourishGlance /></div>
+        {/* signature glance — energy ring + macros + water (REAL today data) */}
+        <div style={{ marginTop: 6 }}><NourishGlance kcal={sum.kcal} water={sum.water} macros={sum.macros} /></div>
 
         {/* ONE summary intent card */}
         <div style={{ marginTop: 12 }}>
           <SummaryCard eyebrow="Your plate today, gently" accent={GOLD.petal} rows={[
-            { Icon: Soup, label: "Suggested", text: "Salmon + greens for dinner — tap to log it", onClick: () => complete("sugg", "Logged “Salmon + greens” to today") },
-            { Icon: ListChecks, label: "So far", text: "3 meals · protein a little low — a yoghurt would help", onClick: () => setSheet("jump") },
-            { Icon: Sparkles, label: "From Jess", text: "Iron-rich foods settle well in your luteal week", onClick: () => pop("jess", "task", Sparkles, "From Jess", "sage") },
+            { Icon: Soup, label: "Suggested", text: "A balanced dinner — tap to log it", onClick: logMeal },
+            { Icon: ListChecks, label: "So far", text: `${sum.kcal} kcal · ${sum.water} of ${WATER_TARGET} glasses today`, onClick: () => goHub("today") },
+            { Icon: Sparkles, label: "From Jess", text: "Iron-rich foods settle well in your luteal week", onClick: () => goHub("insights") },
           ]} />
         </div>
 
         {/* PROMINENT PRIMARY ACTIONS — log a meal + log water are big, obvious buttons (never buried). */}
         <div style={{ display: "flex", gap: 10, marginTop: 12 }}>
-          <button onClick={() => setSheet("log")} aria-label="Log a meal" style={{ ...primaryBtn, background: T.crimson, boxShadow: `0 6px 18px ${T.crimson}55` }}>
+          <button onClick={logMeal} aria-label="Log a meal" style={{ ...primaryBtn, background: T.crimson, boxShadow: `0 6px 18px ${T.crimson}55` }}>
             <span aria-hidden style={micDisc}><Utensils size={16} /></span> Log a meal
           </button>
-          <button onClick={() => setSheet("water")} aria-label="Log water" style={{ ...primaryBtn, background: SKY.petal, boxShadow: `0 6px 18px ${SKY.petal}55` }}>
+          <button onClick={logHydration} aria-label="Log water" style={{ ...primaryBtn, background: SKY.petal, boxShadow: `0 6px 18px ${SKY.petal}55` }}>
             <span aria-hidden style={micDisc}><Droplet size={16} /></span> Log water
           </button>
         </div>
         <div style={{ display: "flex", gap: 10, marginTop: 9 }}>
-          <button onClick={() => setSheet("voice")} aria-label="Say your meal (voice)" style={secondaryBtn}><Mic size={15} /> Say it</button>
-          <button onClick={() => setSheet("jump")} aria-label="Jump to any area" style={secondaryBtn}><Compass size={15} /> Jump to…</button>
+          <button onClick={() => logWater(250)} aria-label="Quick add 250ml water" style={secondaryBtn}><Droplet size={15} /> +250 ml</button>
+          <button onClick={() => logWater(500)} aria-label="Quick add 500ml water" style={secondaryBtn}><Droplet size={15} /> +500 ml</button>
+          <button onClick={logMeal} aria-label="Say your meal (voice)" style={secondaryBtn}><Mic size={15} /> Say it</button>
         </div>
 
         <Hand size={14} color={T.muted} style={{ display: "block", margin: "12px 0 0", textAlign: "center" }}>
@@ -217,34 +281,37 @@ export default function NutritionRedesignDemo() {
         <ClipboardSlider hint="Slide — eat today" accent={GOLD.petal}>
           <Clipboard title="Log a meal" sub="SEARCH · RECENTS · SNAP · SAY · SCAN · FAVOURITES" accent={T.crimson} flower="anemone" idx="cb-log">
             <Grid cols={3}>
-              {METHODS.map((m) => <Tile key={m.id} icon={m.Icon} label={m.label} sub={m.sub} cw={m.cw} onTap={() => setSheet("log")} />)}
+              {METHODS.map((m) => <Tile key={m.id} icon={m.Icon} label={m.label} sub={m.sub} cw={m.cw} onTap={logMeal} />)}
             </Grid>
             <div style={{ marginTop: 11 }}>
               <div style={{ fontFamily: UI, fontSize: 11, fontWeight: 700, letterSpacing: ".08em", textTransform: "uppercase", color: T.muted, marginBottom: 7 }}>Your go-tos — tap to log</div>
               <div style={{ display: "flex", flexWrap: "wrap", gap: 7 }}>
-                {RECENTS.slice(0, 4).map((r) => <button key={r} onClick={() => flash(`Logged “${r}”`)} style={chip}>{r}</button>)}
+                {RECENTS.slice(0, 4).map((r) => <button key={r} onClick={logMeal} style={chip}>{r}</button>)}
               </div>
             </div>
           </Clipboard>
 
           <Clipboard title="Today" sub="YOUR PLATE SO FAR" accent={GOLD.petal} flower="marigold" idx="cb-today">
             <div style={{ display: "flex", gap: 8, marginBottom: 11 }}>
-              <button onClick={() => flash("Logged a glass of water (250 ml)")} style={waterPill}>+250 ml</button>
-              <button onClick={() => flash("Logged 500 ml of water")} style={waterPill}>+500 ml</button>
-              <button onClick={() => setSheet("water")} style={{ ...waterPill, background: "transparent" }}>Drink log</button>
+              <button onClick={() => logWater(250)} style={waterPill}>+250 ml</button>
+              <button onClick={() => logWater(500)} style={waterPill}>+500 ml</button>
+              <button onClick={logHydration} style={{ ...waterPill, background: "transparent" }}>Drink log</button>
             </div>
             <div style={{ fontFamily: UI, fontSize: 11, fontWeight: 700, letterSpacing: ".08em", textTransform: "uppercase", color: T.muted, marginBottom: 7 }}>Logged today</div>
             <div style={{ display: "flex", flexDirection: "column", gap: 7 }}>
-              {LOGGED.map((m, i) => !d2(`rm${i}`) && (
-                <div key={i} style={loggedRow}>
-                  <span style={{ fontFamily: UI, fontSize: 10.5, fontWeight: 700, textTransform: "uppercase", color: GOLD.petal, width: 64 }}>{m.slot}</span>
+              {todayMeals.length === 0 && (
+                <p style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 13.5, color: T.muted, margin: "2px 0" }}>Nothing logged yet — tap below to add your first.</p>
+              )}
+              {todayMeals.map((m) => (
+                <div key={m.id} style={loggedRow}>
+                  {m.slot && <span style={{ fontFamily: UI, fontSize: 10.5, fontWeight: 700, textTransform: "uppercase", color: GOLD.petal, width: 64 }}>{m.slot}</span>}
                   <span style={{ flex: 1, fontFamily: SERIF, fontSize: 14.5, color: T.ink }}>{m.title}</span>
-                  <span style={{ fontFamily: UI, fontSize: 12, color: T.muted }}>{m.kcal} kcal</span>
-                  <button onClick={() => complete(`rm${i}`, "Removed")} aria-label="Remove" style={iconX}><X size={15} /></button>
+                  {m.kcal > 0 && <span style={{ fontFamily: UI, fontSize: 12, color: T.muted }}>{m.kcal} kcal</span>}
+                  <button onClick={() => delMeal(m.id)} aria-label="Remove" style={iconX}><X size={15} /></button>
                 </div>
               ))}
             </div>
-            <button onClick={() => setSheet("log")} style={{ ...addRow, marginTop: 10 }}><Plus size={14} /> Log another meal</button>
+            <button onClick={logMeal} style={{ ...addRow, marginTop: 10 }}><Plus size={14} /> Log another meal</button>
           </Clipboard>
 
           <Clipboard title="My plan" sub="A GUIDE FOR THE WEEK, NEVER A CAP" accent={GOLD.petal} flower="sunflower" idx="cb-plan">
@@ -258,7 +325,7 @@ export default function NutritionRedesignDemo() {
               ))}
             </Grid>
             <p style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 13, color: T.muted, textAlign: "center", margin: "12px 4px 0", lineHeight: 1.5 }}>Reproductive years — gentle targets from your body and stage. Tap any to adjust; nothing here is a pass/fail.</p>
-            <button onClick={() => pop("targets", "task", Target, "Adjust your targets", "gold")} style={{ ...addRow, marginTop: 10 }}><SlidersHorizontal size={14} /> Adjust targets</button>
+            <button onClick={() => goHub("plan")} style={{ ...addRow, marginTop: 10 }}><SlidersHorizontal size={14} /> Adjust targets</button>
           </Clipboard>
         </ClipboardSlider>
 
@@ -266,53 +333,28 @@ export default function NutritionRedesignDemo() {
 
         <ClipboardSlider hint="Slide — plan & explore" accent={SAGE.petal}>
           <Clipboard title="Recipes" sub="COOK WHAT YOU HAVE IN" accent={SAGE.petal} flower="clover" idx="cb-rec">
-            <div style={{ display: "flex", flexDirection: "column", gap: 7, marginBottom: 10 }}>
-              {RECIPES.map((r) => (
-                <div key={r.title} style={loggedRow}>
-                  <BookOpen size={15} color={SAGE.petal} />
-                  <span style={{ flex: 1, fontFamily: SERIF, fontSize: 14.5, color: T.ink }}>{r.title}</span>
-                  <span style={{ display: "flex", gap: 1 }}>{Array.from({ length: 5 }).map((_, i) => <Star key={i} size={11} color={GOLD.petal} fill={i < r.stars ? GOLD.petal : "none"} />)}</span>
-                  <button onClick={() => flash(`Logged “${r.title}”`)} style={miniLog}>Log</button>
-                </div>
-              ))}
-            </div>
+            <p style={{ fontFamily: SERIF, fontSize: 14.5, color: T.muted, margin: "2px 2px 10px", lineHeight: 1.5 }}>Cook from what's already in, or generate one for your stage — your saved recipes open in the hub.</p>
             <Grid>
-              <Tile icon={Carrot} label="Cook what you have" sub="ingredients → a recipe" cw="sage" onTap={() => setSheet("recipe")} />
-              <Tile icon={Sparkles} label="Generate a recipe" sub="AI · for your stage" cw="gold" onTap={() => setSheet("recipe")} />
+              <Tile icon={Carrot} label="Cook what you have" sub="ingredients → a recipe" cw="sage" onTap={() => goHub("recipes")} />
+              <Tile icon={Sparkles} label="Generate a recipe" sub="AI · for your stage" cw="gold" onTap={() => goHub("recipes")} />
             </Grid>
           </Clipboard>
 
           <Clipboard title="AI meal plan" sub="A GENTLE WEEK — EDIT · LOCK · REGENERATE" accent={SAGE.petal} flower="iris" idx="cb-ai">
-            <div style={{ display: "flex", flexDirection: "column", gap: 5, marginBottom: 10 }}>
-              {WEEK_PLAN.map((w) => (
-                <div key={w.d} style={{ display: "flex", alignItems: "center", gap: 7, padding: "7px 9px", borderRadius: 10, background: w.today ? `${SAGE.petal}1a` : T.paper, border: `1px solid ${T.paperDeep}` }}>
-                  <span style={{ fontFamily: UI, fontSize: 11, fontWeight: 700, color: w.today ? SAGE.petal : T.muted, width: 30 }}>{w.d}</span>
-                  <span style={{ flex: 1, fontFamily: SERIF, fontSize: 12.5, color: T.ink, lineHeight: 1.3 }}>{w.b} · {w.l} · {w.dn}</span>
-                  <Lock size={12} color={T.muted} />
-                </div>
-              ))}
-            </div>
+            <p style={{ fontFamily: SERIF, fontSize: 14.5, color: T.muted, margin: "2px 2px 10px", lineHeight: 1.5 }}>A gentle week, generated for your stage — edit, lock the meals you love, and regenerate the rest in the hub.</p>
             <Grid cols={3}>
-              <Tile icon={Repeat} label="Regenerate" sub="week · day · slot" cw="sage" onTap={() => setSheet("aiplan")} />
-              <Tile icon={Heart} label="Wellness goal" sub="energy · sleep…" cw="crimson" onTap={() => pop("goal", "task", Heart, "Pick a weekly focus", "crimson")} />
-              <Tile icon={Leaf} label="Dietary" sub="veg · GF · DF…" cw="sage" onTap={() => pop("diet", "task", Leaf, "Dietary preferences", "sage")} />
+              <Tile icon={Repeat} label="Regenerate" sub="week · day · slot" cw="sage" onTap={() => goHub("mealgen")} />
+              <Tile icon={Heart} label="Wellness goal" sub="energy · sleep…" cw="crimson" onTap={() => goHub("mealgen")} />
+              <Tile icon={Leaf} label="Dietary" sub="veg · GF · DF…" cw="sage" onTap={() => goHub("mealgen")} />
             </Grid>
           </Clipboard>
 
           <Clipboard title="Shop" sub="SORTED BY AISLE — TICK AS YOU GO" accent={SAGE.petal} flower="fern" idx="cb-shop">
-            <div style={{ display: "flex", flexDirection: "column", gap: 6, marginBottom: 10 }}>
-              {SHOP.map((s, i) => (
-                <button key={s.name} onClick={() => setDone((x) => ({ ...x, [`shop${i}`]: !x[`shop${i}`] }))} style={{ ...loggedRow, cursor: "pointer", opacity: (d2(`shop${i}`) || s.got) ? 0.55 : 1 }}>
-                  <span style={{ width: 19, height: 19, borderRadius: 6, border: `1.5px solid ${(d2(`shop${i}`) || s.got) ? SAGE.petal : T.paperDeep}`, background: (d2(`shop${i}`) || s.got) ? SAGE.petal : "transparent", display: "grid", placeItems: "center" }}>{(d2(`shop${i}`) || s.got) && <Check size={12} color="#fff" />}</span>
-                  <span style={{ flex: 1, textAlign: "left", fontFamily: SERIF, fontSize: 14, color: T.ink, textDecoration: (d2(`shop${i}`) || s.got) ? "line-through" : "none" }}>{s.name}</span>
-                  <span style={{ fontFamily: UI, fontSize: 10.5, color: T.muted, textTransform: "uppercase" }}>{s.aisle}</span>
-                </button>
-              ))}
-            </div>
+            <p style={{ fontFamily: SERIF, fontSize: 14.5, color: T.muted, margin: "2px 2px 10px", lineHeight: 1.5 }}>Build a list from your plan, sorted by aisle, and tick it off as you shop — your live list opens in the hub.</p>
             <Grid cols={3}>
-              <Tile icon={CalendarDays} label="Build from plan" sub="auto-fill list" cw="sage" onTap={() => flash("Built your list from this week's plan")} />
-              <Tile icon={Plus} label="Add item" sub="manual" cw="gold" onTap={() => pop("additem", "task", Plus, "Add to your list", "gold")} />
-              <Tile icon={ShoppingBasket} label="Pantry" sub="already have" cw="sage" onTap={() => pop("pantry", "task", ShoppingBasket, "What's in your pantry", "sage")} />
+              <Tile icon={CalendarDays} label="Build from plan" sub="auto-fill list" cw="sage" onTap={() => goHub("shopping")} />
+              <Tile icon={Plus} label="Add item" sub="manual" cw="gold" onTap={() => goHub("shopping")} />
+              <Tile icon={ShoppingBasket} label="Pantry" sub="already have" cw="sage" onTap={() => goHub("shopping")} />
             </Grid>
           </Clipboard>
 
@@ -323,7 +365,7 @@ export default function NutritionRedesignDemo() {
               </PanelCard>
               <PanelCard eyebrow="Patterns" Icon={Heart} cw="sage" title="Iron-leaning days felt steadier" line="On days with iron-rich meals, your logged energy ran a little higher. Worth noticing, not a rule." />
               <PanelCard eyebrow="Your body" Icon={Target} cw="crimson" title="Add a metric" line="Weight is optional and never the headline. Track what helps you — energy, sleep, mood.">
-                <button onClick={() => pop("metric", "task", Target, "Add a metric", "crimson")} style={{ ...addRow, marginTop: 8 }}><Plus size={14} /> Add a metric</button>
+                <button onClick={() => goHub("progress")} style={{ ...addRow, marginTop: 8 }}><Plus size={14} /> Add a metric</button>
               </PanelCard>
               <PanelCard eyebrow="Cycle lens" Icon={Sparkles} cw="plum" title="Across your luteal weeks" line="Your luteal meals have leaned warmer and richer — that's your body asking, not a failure." />
             </CardDeck>
@@ -341,15 +383,12 @@ export default function NutritionRedesignDemo() {
       </div>
 
       {/* obvious add FAB → log a meal */}
-      <button onClick={() => setSheet("log")} aria-label="Log a meal" style={fab}><Plus size={26} color="#fff" /></button>
+      <button onClick={logMeal} aria-label="Log a meal" style={fab}><Plus size={26} color="#fff" /></button>
 
       {popup && <QuickPopup item={popup} onClose={() => setPopup(null)} onDone={complete} />}
-      {sheet === "log" && <LogSheet onClose={() => setSheet(null)} onSaved={(n) => { setSheet(null); flash(`Added “${n}” to today`); }} />}
-      {sheet === "water" && <WaterSheet onClose={() => setSheet(null)} onSaved={(ml) => { setSheet(null); flash(`Logged ${ml} ml of water`); }} />}
-      {sheet === "voice" && <VoiceSheet onClose={() => setSheet(null)} onSaved={(n) => { setSheet(null); flash(`Heard: “${n}” — added`); }} />}
-      {sheet === "recipe" && <RecipeSheet onClose={() => setSheet(null)} onSaved={() => { setSheet(null); flash("Recipe saved"); }} />}
-      {sheet === "aiplan" && <RegenSheet onClose={() => setSheet(null)} onSaved={() => { setSheet(null); flash("Regenerated your week"); }} />}
-      {sheet === "jump" && <JumpToSheet onClose={() => setSheet(null)} onPick={(id) => { setSheet(id === "log" ? "log" : null); }} />}
+      {/* Jump-to area switcher → opens the matching REAL surface in the live hub
+          (NutritionHub reads ?tab=); "log" opens the real meal logger. */}
+      {sheet === "jump" && <JumpToSheet onClose={() => setSheet(null)} onPick={(id) => { setSheet(null); if (id === "log") logMeal(); else goHub(id); }} />}
 
       {toast && (
         <div role="status" style={{ position: "fixed", left: "50%", bottom: "calc(var(--fw-nav-h, 76px) + 18px)", transform: "translateX(-50%)", zIndex: 10000, background: T.ink, color: T.paper, fontFamily: UI, fontSize: 13, fontWeight: 700, padding: "10px 16px", borderRadius: 999, boxShadow: "0 6px 20px rgba(11,8,5,0.3)", maxWidth: "88vw", textAlign: "center" }}>{toast}</div>
