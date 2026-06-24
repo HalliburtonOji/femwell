@@ -181,6 +181,7 @@ import RitualBuilderDemo from './pages/RitualBuilderDemo';
 // nav tab). Standalone preview routes; live pages untouched. Gated 1:1 tiers HELD.
 import GrowthDemo from './pages/GrowthDemo';
 import PenPalDemo from './pages/PenPalDemo';
+import CommunityV4Demo from './pages/CommunityV4Demo';
 import GrowthTodayDemo from './pages/GrowthTodayDemo';
 import GrowthGardenDemo from './pages/GrowthGardenDemo';
 import GrowthPlannerDemo from './pages/GrowthPlannerDemo';
@@ -322,6 +323,7 @@ export const PAGES = {
     "RitualBuilderDemo": RitualBuilderDemo,
     "GrowthDemo": GrowthDemo,
     "PenPalDemo": PenPalDemo,
+    "CommunityV4Demo": CommunityV4Demo,
     "GrowthTodayDemo": GrowthTodayDemo,
     "GrowthGardenDemo": GrowthGardenDemo,
     "GrowthPlannerDemo": GrowthPlannerDemo,
