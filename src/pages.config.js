@@ -148,6 +148,7 @@ import TodayClipboardDemo from './pages/TodayClipboardDemo';
 // Planner — Clipboard TRUE-FULL-PARITY DEMO (v4 clipboard+CardDeck; REAL CapacityTaxBar + VoiceScheduler restored & prominent). Preview route.
 import PlannerClipboardDemo from './pages/PlannerClipboardDemo';
 import PulseClipboardDemo from './pages/PulseClipboardDemo';
+import DoctorExportClipboardDemo from './pages/DoctorExportClipboardDemo';
 // Brand craft sample (Phase-1 brand-identity craft direction — flat vs upgraded bloom,
 // botanical motif, heart in context, live perf). Self-contained preview. Linked from Previews.
 import BrandCraftSample from './pages/BrandCraftSample';
@@ -300,6 +301,7 @@ export const PAGES = {
     "TodayClipboardDemo": TodayClipboardDemo,
     "PlannerClipboardDemo": PlannerClipboardDemo,
     "PulseClipboardDemo": PulseClipboardDemo,
+    "DoctorExportClipboardDemo": DoctorExportClipboardDemo,
     "BrandCraftSample": BrandCraftSample,
     "HealthDemo": HealthDemo,
     "ProfileDemo": ProfileDemo,
