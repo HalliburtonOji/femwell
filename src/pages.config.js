@@ -149,6 +149,7 @@ import TodayClipboardDemo from './pages/TodayClipboardDemo';
 import PlannerClipboardDemo from './pages/PlannerClipboardDemo';
 import PulseClipboardDemo from './pages/PulseClipboardDemo';
 import DoctorExportClipboardDemo from './pages/DoctorExportClipboardDemo';
+import ProgramsClipboardDemo from './pages/ProgramsClipboardDemo';
 // Brand craft sample (Phase-1 brand-identity craft direction — flat vs upgraded bloom,
 // botanical motif, heart in context, live perf). Self-contained preview. Linked from Previews.
 import BrandCraftSample from './pages/BrandCraftSample';
@@ -302,6 +303,7 @@ export const PAGES = {
     "PlannerClipboardDemo": PlannerClipboardDemo,
     "PulseClipboardDemo": PulseClipboardDemo,
     "DoctorExportClipboardDemo": DoctorExportClipboardDemo,
+    "ProgramsClipboardDemo": ProgramsClipboardDemo,
     "BrandCraftSample": BrandCraftSample,
     "HealthDemo": HealthDemo,
     "ProfileDemo": ProfileDemo,
