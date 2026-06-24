@@ -181,7 +181,7 @@ export default function NutritionRedesignDemo() {
     let cancelled = false;
     (async () => {
       try {
-        const me = await base44.entities.User.me().catch(() => null);
+        const me = (await base44.auth.me().catch(() => null)) || (await base44.entities.User.me().catch(() => null));
         if (cancelled) return;
         setUser(me);
         if (!me?.id) return;
@@ -213,13 +213,15 @@ export default function NutritionRedesignDemo() {
   const logMeal = () => openLogger("meal");            // real MealLog (UniversalLogger DetailForm)
   const logHydration = () => openLogger("hydration");  // real HydrationLog
   const logWater = async (ml) => {                      // quick direct water write
-    flash(`Logged ${ml} ml of water`);
     try {
-      const me = user || (await base44.entities.User.me().catch(() => null));
-      if (!me?.id) return;
+      let me = user;
+      if (!me?.id) { me = await base44.auth.me().catch(() => null); }
+      if (!me?.id) { me = await base44.entities.User.me().catch(() => null); }
+      if (!me?.id) { flash("Couldn't find your account — try again"); return; }
       await base44.entities.HydrationLog.create({ user_id: me.id, day_key: new Date().toISOString().split("T")[0], amount_ml: ml, logged_at: new Date().toISOString(), source: "quick" });
+      flash(`Logged ${ml} ml of water`);
       refreshSummary();
-    } catch { /* silent */ }
+    } catch (e) { flash(`Water didn't save: ${(e && e.message) || e}`); }
   };
   const goHub = (tab) => navigate(createPageUrl("NutritionHub") + (tab ? `?tab=${tab}` : ""));
   const delMeal = async (id) => {
