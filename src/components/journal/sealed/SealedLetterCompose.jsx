@@ -55,7 +55,13 @@ export default function SealedLetterCompose({
     try {
       // v2: thread linkage rides in the CLEAR envelope meta (no entity change).
       const envelope = await encryptText(body.trim(), resolved.trigger, thread ? { thread } : null);
+      // WIRING FIX (2026-06-24): set user_id on create — every reader
+      // (SealedLettersSection / Today UnsealedLetterCard / Garden / SealedLetters page)
+      // filters by { user_id }, which base44 does NOT auto-populate, so letters
+      // sealed without it were invisible to the owner. created_by alone wasn't enough.
+      const me = await base44.auth.me().catch(() => null);
       const saved = await base44.entities.SealedLetters.create({
+        user_id: me?.id,
         body: envelope,             // CIPHERTEXT — never plaintext
         seal_date: resolved.sealDate,
         title: title.trim(),

@@ -37,7 +37,10 @@ export default function SealedLetterComposeSheet({ open, onClose, onSealed }) {
   const handleSeal = async () => {
     if (!validate()) return;
     setSealing(true);
-    const newLetter = await base44.entities.SealedLetters.create({ body: body.trim(), seal_date: sealDate, title: title.trim() });
+    // WIRING FIX (2026-06-24): set user_id — readers filter by { user_id } (not
+    // auto-populated by base44), so letters sealed without it were invisible.
+    const me = await base44.auth.me().catch(() => null);
+    const newLetter = await base44.entities.SealedLetters.create({ user_id: me?.id, body: body.trim(), seal_date: sealDate, title: title.trim() });
     setToast('Letter sealed. We\'ll keep it for you.');
     setTimeout(() => { onSealed?.(newLetter); onClose(); }, 1200);
   };
