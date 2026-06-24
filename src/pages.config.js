@@ -139,6 +139,10 @@ import TodayOption2 from './pages/TodayOption2';
 // Clipboard Stack Slider — slide LEFT to reveal the ritual builder (4 ritual cards + quick-popups +
 // garden growth). PREVIEW route only, reached via FoundersOS → Previews. Live Today untouched.
 import TodayRitualDemo from './pages/TodayRitualDemo';
+// Garden + Jess redesign DEMOS (v4 bible: flora-hero + summary + living-ecosystem clipboard /
+// on-brand chat shell; every existing feature preserved). Preview routes; live pages untouched.
+import GardenClipboardDemo from './pages/GardenClipboardDemo';
+import JessClipboardDemo from './pages/JessClipboardDemo';
 // Journal — Clipboard rebuild DEMO (compact, §6.10 clipboard slider; all features preserved). Preview route.
 import JournalClipboardDemo from './pages/JournalClipboardDemo';
 // Profile — Clipboard rebuild DEMO (compact §6.10 slider + flora hero + quick-edit popups; all features preserved). Preview route.
@@ -297,6 +301,8 @@ export const PAGES = {
     "TodayDemo6": TodayDemo6,
     "TodayOption2": TodayOption2,
     "TodayRitualDemo": TodayRitualDemo,
+    "GardenClipboardDemo": GardenClipboardDemo,
+    "JessClipboardDemo": JessClipboardDemo,
     "JournalClipboardDemo": JournalClipboardDemo,
     "ProfileClipboardDemo": ProfileClipboardDemo,
     "TodayClipboardDemo": TodayClipboardDemo,
