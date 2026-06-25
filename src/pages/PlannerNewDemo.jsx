@@ -1,47 +1,50 @@
-// PlannerNewDemo — a GROUND-UP Planner: the brand-rich SLIDING-CARD "Day, Tended". Demo-first.
+// PlannerNewDemo — the brand-rich SLIDING-CARD "Day, Tended", now ENRICHED. Demo-first.
 // Live /Planner is NOT touched.
 //
-// THE BRIEF, HELD AT ONCE (Halli, after two passes):
-//   • v1 was brand-rich but a deck of overlapping cards (duplicate pointers). WRONG.
-//   • v2 de-duplicated but went minimal/tabbed and dropped the brand + sliding cards. ALSO WRONG.
-//   • TARGET = the best of both: KEEP the full v4 brand bible (flora-hero + ONE summary signature,
-//     rich Card.jsx framing, the §6.10 Clipboard sliding cards + in-card CardDeck, paper bg, voice,
-//     the lush look) AND keep ALL the real features — but organised into a CLEAN set of DISTINCT
-//     sliding boards where NO two cards do the same thing or point to the same surface.
+// This pass folds in the approved Planner-Enrichment preview (research + cited; see the IDEAS
+// doc "Planner Enrichment"). Held together: full v4 brand bible + the §6.10 Clipboard sliding
+// cards + in-card CardDecks + every feature, organised into DISTINCT boards (no duplicate pointers).
 //
-// THE STRUCTURE — signature top, then a slider of distinct rich boards:
-//   HERO (flora) + phase ribbon + ONE SummaryCard glance.
-//   ClipboardSlider (§6.10 — slide between whole boards):
-//     1) "The day"  — the spine. A ‹date› stepper + ONE add/voice input, then an in-card CardDeck
-//        (§6.10 nested) you swipe to move between the day's THREE LENSES: Agenda · Hour-by-hour ·
-//        The week (tap a day → loads it into the agenda). All the day/time-blocking/week/voice/
-//        plan-tomorrow features live here, coherently — not as separate duplicate cards.
-//     2) "Capacity & energy" — the phase-set load meter (100% line + Ease-it) + the energy curve.
-//     3) "Intentions"        — up to 3 whole-life intentions (career/friendship/love/… not symptoms).
-//     4) "Rituals"           — morning + evening anchors (real ticks).
+// THE STRUCTURE — signature top, then a horizontal slider of FIVE distinct rich boards, several
+// carrying their OWN in-card swipe deck (slider-within-the-card):
+//   1) "The day"   — the spine: ‹date› stepper + ONE add/voice input + a 3-lens deck
+//                     (Agenda · Hour-by-hour · The week). Blocks now carry an ENERGY-TYPE tag.
+//   2) "Reserves"  — (renamed from Capacity) a 4-lens deck: Energy · Load · Recovery · Boundaries.
+//                     Boundaries holds the SEASON-OF-LIFE mode that lowers the default bar.
+//   3) "The load"  — NEW. The differentiator: a 2-lens deck — Invisible labour (who notices/owns/
+//                     tracks → hand it over fully) · Life admin (delete/delegate/automate/do).
+//   4) "Intentions"— a 2-lens deck: Today · This season (what matters this season + what you're
+//                     deliberately NOT doing).
+//   5) "Rituals"   — a 4-lens deck: Anchors · Reset (stress-cycle completers) · Focus (body-double/
+//                     2-min start) · Rhythm (consistency + seasonal flex).
 //
-// DE-DUPLICATED: there is exactly ONE way to plan (the add/voice input on the day board; "tomorrow"
-// = step the date / pick a week day). No logger-opener tiles, no alias cards, no two boards opening
-// the same surface. CUT (not planning): the clinical trackers (HRT/kick/EPDS/symptom/BBT/doctor-export)
-// — those are Health/Pulse.
+// CARD LANGUAGE — variety, not generic cards: tile-grids inside boards, in-card swipe decks,
+// accent-rim sub-cards, and focused COLOUR PILLS (filled action pills + tinted option pills).
+// HEADINGS in DEEP-RED OXBLOOD Ephesis script (page + board titles) — richer than crimson.
 //
-// v4 bible throughout: PAPER_BG · FwFloraHero + SummaryCard · Clipboard/Clipboard­Slider/CardDeck ·
-// rich framed boards · phase hues · Cormorant/Ephesis/system-sans · Lucide only, no emoji · ≥12px
-// chrome/≥13px reading · soulful voice. Seeded + interactive (React state, optimistic) so every tap
-// works in preview; each interaction is annotated with the REAL base44 entity it writes live
-// (PlannerItems / HabitLogs). No new base44 function; live wiring rides the existing PlannerDayView /
-// VoiceScheduler / CapacityTaxBar dispatchers.
+// De-duplicated: ONE way to plan (the add/voice input; "tomorrow" = step the date / pick a week
+// day). No logger-openers, no aliases, no two boards/cards opening the same surface. CUT (not
+// planning): clinical trackers (HRT/kick/EPDS/symptom/BBT/doctor-export) — Health/Pulse.
+//
+// Seeded + interactive (React state, optimistic) so every tap works in preview; each interaction
+// is annotated with the REAL base44 entity it would write live. NO new base44 FUNCTION; the only
+// live-data additions the enrichments need are small ADDITIVE FIELDS (energy_type on PlannerItems;
+// owner/admin-category for "The load"; a season pref) — demo is seeded so none are needed here.
 import { useState, useMemo, useRef } from "react";
 import {
   Plus, X, Check, Mic, ChevronLeft, ChevronRight, Sun, Moon, CalendarDays, Gauge, Sparkles,
-  Briefcase, Users, Heart, Coins, Smile, Leaf, Palette, Feather, ArrowRight,
-  Footprints, ListChecks, Utensils, Trash2, Clock,
+  Briefcase, Users, Heart, Coins, Smile, Leaf, Palette, Feather, ArrowRight, Trash2, Clock,
+  Footprints, ListChecks, Utensils, Wind, Moon as MoonI, HeartHandshake, Layers, Timer,
+  BatteryCharging, ShieldCheck, Trash, UserPlus, Repeat, CircleSlash, Baby, Flower2,
 } from "lucide-react";
 import { T, SERIF, UI, PAPER_BG, Eyebrow } from "@/components/journal/Editorial";
 import { FwFloraHero } from "@/components/brand/PageTop";
 import { SummaryCard } from "@/components/brand/Card";
 import { ClipboardSlider, Clipboard, CardDeck } from "@/components/brand/ClipboardSlider";
 import { cwOf, floraKeyframes } from "@/components/brand/flora";
+
+// deep-red OXBLOOD — the page + board script-heading colour (richer than crimson #BC2E27)
+const OXBLOOD = "#7A1A12";
 
 // ── phase model (the cycle's seasons — §2.4 semantic hues) ───────────────────
 const PHASE = {
@@ -59,13 +62,22 @@ function phaseFor(cycleDay, periodLen = 5, len = 28) {
 }
 const BASE_CYCLE_DAY = 8;
 
+// season-of-life mode — lowers the default bar + shifts the tone (rides life_stage + a pref live)
+const SEASONS = {
+  steady:     { label: "Steady",        Icon: Flower2,        mult: 1.0,  note: "Your usual rhythm." },
+  newbaby:    { label: "New baby",      Icon: Baby,           mult: 0.6,  note: "The bar is lower on purpose. Sustaining is the win." },
+  peri:       { label: "Perimenopause", Icon: Leaf,           mult: 0.72, note: "Flex with the day — small, sustainable moves." },
+  caregiving: { label: "Caregiving",    Icon: HeartHandshake, mult: 0.65, note: "Coordination is the work. Protect your reserves." },
+};
+
+// block kinds — each carries an ENERGY-TYPE (the new tag) + a load weight ─────
 const TYPE_META = {
-  focus:  { label: "Focus",  Icon: Briefcase,  cw: "plum",  load: 2   },
-  task:   { label: "Task",   Icon: ListChecks, cw: "gold",  load: 1   },
-  life:   { label: "Life",   Icon: Users,      cw: "sage",  load: 1   },
-  move:   { label: "Move",   Icon: Footprints, cw: "sage",  load: 0.5 },
-  meal:   { label: "Meal",   Icon: Utensils,   cw: "blush", load: 0.5 },
-  rest:   { label: "Rest",   Icon: Moon,       cw: "plum",  load: 0.5 },
+  focus:  { label: "Focus",  Icon: Briefcase,  cw: "plum",  load: 2,   energy: "deep" },
+  task:   { label: "Task",   Icon: ListChecks, cw: "gold",  load: 1,   energy: "admin" },
+  life:   { label: "Life",   Icon: Users,      cw: "sage",  load: 1,   energy: "social" },
+  move:   { label: "Move",   Icon: Footprints, cw: "sage",  load: 0.5, energy: "restorative" },
+  meal:   { label: "Meal",   Icon: Utensils,   cw: "blush", load: 0.5, energy: "restorative" },
+  rest:   { label: "Rest",   Icon: Moon,       cw: "plum",  load: 0.5, energy: "rest" },
 };
 const partOfDay = (h) => (h < 12 ? "Morning" : h < 17 ? "Afternoon" : "Evening");
 
@@ -99,12 +111,46 @@ const SEED_INTENTIONS = [
   { id: "i1", domain: "career", text: "Send the pitch — rough is fine, sent is better." },
   { id: "i2", domain: "friend", text: "Be present at lunch. Phone in bag." },
 ];
+const SEED_SEASON_INTENTIONS = [
+  { id: "s1", domain: "self", text: "Protect two evenings a week that are mine." },
+  { id: "s2", domain: "career", text: "Ship the side project — a little each week." },
+];
+const SEED_NOT_DOING = ["Not volunteering for the school fair this term.", "Not saying yes to the 7am calls."];
+
 const SEED_ANCHORS = [
   { id: "a1", slot: "am", title: "Sunlight + water", done: true },
   { id: "a2", slot: "am", title: "Move 5 minutes", done: true },
   { id: "a3", slot: "am", title: "Name today's intention", done: false },
   { id: "a4", slot: "pm", title: "Phone down by 10", done: false },
   { id: "a5", slot: "pm", title: "Read 10 pages", done: false },
+];
+
+// "The load" seeds — invisible labour (CPE) + life admin (reduction-biased)
+const SEED_INVISIBLE = [
+  { id: "v1", title: "Kids' dentist — book + remember", carry: "You notice · decide · track", handed: false },
+  { id: "v2", title: "Mum's repeat prescription", carry: "You notice · track", handed: false },
+  { id: "v3", title: "Sam's birthday — gift + card", carry: "You notice · plan", handed: false },
+];
+const SEED_ADMIN = [
+  { id: "ad1", title: "Car insurance renewal", due: "in 3 days", disp: null },
+  { id: "ad2", title: "Passport renewal form", due: "in 2 weeks", disp: null },
+  { id: "ad3", title: "That unused subscription", due: "—", disp: null },
+];
+const ADMIN_DISP = [
+  { id: "delete", label: "Delete", Icon: Trash, cw: "crimson" },
+  { id: "delegate", label: "Delegate", Icon: UserPlus, cw: "sage" },
+  { id: "automate", label: "Automate", Icon: Repeat, cw: "plum" },
+  { id: "do", label: "Do it", Icon: Check, cw: "gold" },
+];
+
+// stress-cycle completers (Nagoski) — the Reset lens
+const RESETS = [
+  { id: "move", label: "Move", Icon: Footprints, cw: "sage" },
+  { id: "cry", label: "A good cry", Icon: Wind, cw: "plum" },
+  { id: "hug", label: "A long hug", Icon: HeartHandshake, cw: "crimson" },
+  { id: "create", label: "Make something", Icon: Palette, cw: "blush" },
+  { id: "breath", label: "Breathe", Icon: Wind, cw: "sage" },
+  { id: "connect", label: "Reach out", Icon: Users, cw: "gold" },
 ];
 
 const HOURS = Array.from({ length: 16 }, (_, i) => i + 7);
@@ -128,6 +174,9 @@ export default function PlannerNewDemo() {
   const [days, setDays] = useState(SEED_DAYS);
   const [intentions, setIntentions] = useState(SEED_INTENTIONS);
   const [anchors, setAnchors] = useState(SEED_ANCHORS);
+  const [season, setSeason] = useState("steady");
+  const [invisible, setInvisible] = useState(SEED_INVISIBLE);
+  const [admin, setAdmin] = useState(SEED_ADMIN);
   const [editBlock, setEditBlock] = useState(null);
   const [intentDraft, setIntentDraft] = useState(null);
   const [toast, setToast] = useState(null);
@@ -138,9 +187,11 @@ export default function PlannerNewDemo() {
   const cycleDay = BASE_CYCLE_DAY + offset;
   const phaseKey = phaseFor(cycleDay);
   const ph = PHASE[phaseKey];
+  const sn = SEASONS[season];
   const blocks = useMemo(() => (days[offset] || []).slice().sort((a, b) => a.hour - b.hour), [days, offset]);
 
-  const capacity = Math.round(10 * ph.mult * 10) / 10;
+  // capacity = phase ceiling × season modifier; load fills it
+  const capacity = Math.round(10 * ph.mult * sn.mult * 10) / 10;
   const load = useMemo(() => {
     let l = blocks.filter((b) => !b.done).reduce((s, b) => s + (TYPE_META[b.type]?.load ?? 1), 0);
     if (offset === 0) l += intentions.length * 0.5;
@@ -152,12 +203,12 @@ export default function PlannerNewDemo() {
   const peakIdx = curve.indexOf(Math.max(...curve));
   const peakLabel = fmtHour(HOURS[peakIdx]);
 
-  // ── the ONE planning input (typed + voice → PlannerItems.create) ──
-  const addToDay = (raw) => {
+  // ── ONE planning input (typed + voice → PlannerItems.create) ──
+  const addToDay = (raw, kind) => {
     const t = (raw || "").trim(); if (!t) return;
     const m = /(\d{1,2})\s?(am|pm)/i.exec(t);
     const hour = m ? (Number(m[1]) % 12) + (/pm/i.test(m[2]) ? 12 : 0) : HOURS[peakIdx];
-    const type = /walk|run|gym|move|stretch|yoga/i.test(t) ? "move" : /lunch|dinner|coffee|drinks|see |call |meet/i.test(t) ? "life" : /deep|write|focus|pitch|work/i.test(t) ? "focus" : /eat|breakfast|snack|meal/i.test(t) ? "meal" : "task";
+    const type = kind || (/walk|run|gym|move|stretch|yoga/i.test(t) ? "move" : /lunch|dinner|coffee|drinks|see |call |meet/i.test(t) ? "life" : /deep|write|focus|pitch|work/i.test(t) ? "focus" : /eat|breakfast|snack|meal/i.test(t) ? "meal" : /rest|nap|breathe|reset|wind/i.test(t) ? "rest" : "task");
     const title = t.replace(/(at\s)?\d{1,2}\s?(am|pm)/i, "").trim() || t;
     const blk = { id: "n" + Date.now(), hour, title: title.charAt(0).toUpperCase() + title.slice(1), type, dur: 45, done: false };
     setDays((ds) => ({ ...ds, [offset]: [...(ds[offset] || []), blk] }));
@@ -173,67 +224,117 @@ export default function PlannerNewDemo() {
     setIntentDraft(null); flash("Intention set");
   };
   const removeIntention = (id) => setIntentions((xs) => xs.filter((x) => x.id !== id));
+  const handOver = (id) => { setInvisible((xs) => xs.map((x) => x.id === id ? { ...x, handed: true } : x)); flash("Handed over — fully"); }; // live: task.owner field
+  const setDisp = (id, disp) => { setAdmin((xs) => xs.map((x) => x.id === id ? { ...x, disp } : x)); flash(disp === "delete" ? "Let go" : disp === "delegate" ? "Delegated" : disp === "automate" ? "Set to auto" : "On the list"); };
+  const planReset = (label) => { addToDay(`${label} reset`, "rest"); flash(`Planned: ${label}`); };
   const toSlider = () => sliderRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+
+  const gold = cwOf("gold").petal;
 
   return (
     <div style={{ ...PAPER_BG, minHeight: "100vh", overflowX: "clip", paddingBottom: "calc(96px + env(safe-area-inset-bottom))" }}>
       <style>{floraKeyframes}</style>
       <div style={{ maxWidth: 430, margin: "0 auto", padding: "16px 16px 0" }}>
 
-        {/* SIGNATURE TOP — flora hero + ONE summary */}
+        {/* SIGNATURE TOP — flora hero (oxblood script title) + ONE summary */}
         <FwFloraHero
-          title="Your day" colorway="sage" bloom="snowdrop" flankL="iris" flankR="daffodil"
+          title="Your day" colorway="sage" bloom="snowdrop" flankL="iris" flankR="daffodil" titleColor={OXBLOOD}
           line="One day, tended to your energy. Build it, hold what matters, and leave room to rest."
         />
         <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, margin: "8px 0 16px" }}>
           <span style={{ width: 9, height: 9, borderRadius: 99, background: ph.hue }} />
-          <span style={{ fontFamily: UI, fontSize: 13, fontWeight: 700, color: T.inkSoft }}>{ph.label} · Day {((cycleDay - 1) % 28) + 1}</span>
+          <span style={{ fontFamily: UI, fontSize: 13, fontWeight: 700, color: T.inkSoft }}>{ph.label} · Day {((cycleDay - 1) % 28) + 1}{season !== "steady" ? ` · ${sn.label}` : ""}</span>
         </div>
 
         <SummaryCard
           eyebrow="Today, at a glance"
           rows={[
             { Icon: CalendarDays, label: "Your day", text: `${blocks.length} on the plan · your peak window is ${peakLabel}`, onClick: toSlider },
-            { Icon: Gauge, label: "Capacity", text: `${pct}% of a ${ph.label.toLowerCase()} day — ${over ? "a little full" : "room for more"}`, onClick: toSlider },
-            { Icon: Sparkles, label: "Intentions", text: intentions.length >= 3 ? "3 set — a full-hearted day" : `${intentions.length} set · room for ${3 - intentions.length} more`, onClick: toSlider },
+            { Icon: Gauge, label: "Reserves", text: `${pct}% of a ${ph.label.toLowerCase()} day — ${over ? "a little full" : "room for more"}`, onClick: toSlider },
+            { Icon: Layers, label: "The load", text: `${invisible.filter((v) => !v.handed).length} invisible · ${admin.filter((a) => !a.disp).length} admin to triage`, onClick: toSlider },
           ]}
         />
 
-        {/* THE SLIDING BOARDS (§6.10) — four DISTINCT rich clipboards */}
+        {/* THE SLIDING BOARDS (§6.10) — five DISTINCT rich clipboards, oxblood titles */}
         <div ref={sliderRef} style={{ marginTop: 18 }}>
-          <ClipboardSlider hint="Slide your planner →" accent={cwOf("gold").petal}>
+          <ClipboardSlider hint="Slide your planner →" accent={gold}>
 
-            {/* BOARD 1 — THE DAY (spine): date stepper + add/voice + CardDeck of 3 lenses */}
-            <Clipboard title="The day" sub="BUILD IT · TEND IT TO YOUR ENERGY" accent={cwOf("gold").petal} flower="rose" idx="cb-day">
+            {/* BOARD 1 — THE DAY */}
+            <Clipboard title="The day" sub="BUILD IT · TEND IT TO YOUR ENERGY" accent={gold} flower="rose" idx="cb-day" titleColor={OXBLOOD}>
               <DateStepper offset={offset} onStep={(d) => setOffset((o) => Math.max(0, Math.min(6, o + d)))} phase={ph} pct={pct} over={over} />
               <AddInline onAdd={addToDay} dayName={dayLabel(offset).split(" · ").pop()} />
-              <CardDeck accent={cwOf("gold").petal}>
-                <LensCard label="Agenda" Icon={ListChecks} accent={cwOf("gold").petal}>
+              <CardDeck accent={gold}>
+                <Lens label="Agenda" Icon={ListChecks} accent={gold}>
                   <Agenda blocks={blocks} anchors={anchors} peakIdx={peakIdx} phase={ph} offset={offset} onToggle={toggleBlock} onEdit={setEditBlock} onAnchor={toggleAnchor} />
-                </LensCard>
-                <LensCard label="Hour by hour" Icon={Clock} accent={cwOf("gold").petal}>
+                </Lens>
+                <Lens label="Hour by hour" Icon={Clock} accent={gold}>
                   <Hours blocks={blocks} peakHour={HOURS[peakIdx]} onEdit={setEditBlock} onAddHour={(h) => addToDay(`block at ${fmtHour(h)}`)} />
-                </LensCard>
-                <LensCard label="The week" Icon={CalendarDays} accent={cwOf("gold").petal}>
+                </Lens>
+                <Lens label="The week" Icon={CalendarDays} accent={gold}>
                   <Week active={offset} onPick={setOffset} />
-                </LensCard>
+                </Lens>
               </CardDeck>
             </Clipboard>
 
-            {/* BOARD 2 — CAPACITY & ENERGY */}
-            <Clipboard title="Capacity" sub="PLAN WITHIN YOUR PHASE" accent={cwOf("sage").petal} flower="snowdrop" idx="cb-cap">
-              <Capacity load={load} capacity={capacity} pct={pct} over={over} phase={ph} curve={curve} peakIdx={peakIdx} peakLabel={peakLabel}
-                onEase={over ? () => { setDays((ds) => ({ ...ds, [offset]: (ds[offset] || []).filter((b) => !(b.type === "task" && !b.done && !b.anchor)) })); flash("Lighter tasks moved off today"); } : null} />
+            {/* BOARD 2 — RESERVES (4-lens deck) */}
+            <Clipboard title="Reserves" sub="WHAT YOU'RE WORKING WITH TODAY" accent={cwOf("sage").petal} flower="snowdrop" idx="cb-res" titleColor={OXBLOOD}>
+              <CardDeck accent={cwOf("sage").petal}>
+                <Lens label="Energy" Icon={BatteryCharging} accent={cwOf("sage").petal}>
+                  <EnergyLens curve={curve} peakIdx={peakIdx} peakLabel={peakLabel} phase={ph} />
+                </Lens>
+                <Lens label="Load" Icon={Gauge} accent={cwOf("sage").petal}>
+                  <LoadLens load={load} capacity={capacity} pct={pct} over={over}
+                    onEase={over ? () => { setDays((ds) => ({ ...ds, [offset]: (ds[offset] || []).filter((b) => !(b.type === "task" && !b.done && !b.anchor)) })); flash("Lighter tasks moved off today"); } : null} />
+                </Lens>
+                <Lens label="Recovery" Icon={MoonI} accent={cwOf("sage").petal}>
+                  <RecoveryLens onPlanRest={() => { addToDay("Rest — protected", "rest"); flash("Rest block added"); }} />
+                </Lens>
+                <Lens label="Boundaries" Icon={ShieldCheck} accent={cwOf("sage").petal}>
+                  <BoundariesLens season={season} setSeason={(s) => { setSeason(s); flash(`Season: ${SEASONS[s].label}`); }} onLowDay={() => flash("Low-capacity day — plan shrunk")} />
+                </Lens>
+              </CardDeck>
             </Clipboard>
 
-            {/* BOARD 3 — INTENTIONS */}
-            <Clipboard title="Intentions" sub="WHAT MATTERS TODAY" accent={cwOf("crimson").petal} flower="poppy" idx="cb-int">
-              <Intentions intentions={intentions} phaseKey={phaseKey} onEdit={setIntentDraft} onAdd={() => setIntentDraft({ domain: "career", text: "" })} onRemove={removeIntention} />
+            {/* BOARD 3 — THE LOAD (2-lens deck) — the differentiator */}
+            <Clipboard title="The load" sub="THE INVISIBLE WORK, MADE VISIBLE" accent={cwOf("plum").petal} flower="foxglove" idx="cb-load" titleColor={OXBLOOD}>
+              <CardDeck accent={cwOf("plum").petal}>
+                <Lens label="Invisible labour" Icon={Layers} accent={cwOf("plum").petal}>
+                  <InvisibleLens items={invisible} onHand={handOver} />
+                </Lens>
+                <Lens label="Life admin" Icon={ListChecks} accent={cwOf("plum").petal}>
+                  <AdminLens items={admin} onDisp={setDisp} />
+                </Lens>
+              </CardDeck>
             </Clipboard>
 
-            {/* BOARD 4 — RITUALS */}
-            <Clipboard title="Rituals" sub="YOUR MORNING & EVENING ANCHORS" accent={cwOf("gold").petal} flower="lavender" idx="cb-rit">
-              <Rituals anchors={anchors} onToggle={toggleAnchor} />
+            {/* BOARD 4 — INTENTIONS (2-lens deck) */}
+            <Clipboard title="Intentions" sub="WHAT MATTERS — TODAY & THIS SEASON" accent={cwOf("crimson").petal} flower="poppy" idx="cb-int" titleColor={OXBLOOD}>
+              <CardDeck accent={cwOf("crimson").petal}>
+                <Lens label="Today" Icon={Sparkles} accent={cwOf("crimson").petal}>
+                  <Intentions intentions={intentions} phaseKey={phaseKey} onEdit={setIntentDraft} onAdd={() => setIntentDraft({ domain: "career", text: "" })} onRemove={removeIntention} />
+                </Lens>
+                <Lens label="This season" Icon={Leaf} accent={cwOf("crimson").petal}>
+                  <SeasonIntentions />
+                </Lens>
+              </CardDeck>
+            </Clipboard>
+
+            {/* BOARD 5 — RITUALS (4-lens deck) */}
+            <Clipboard title="Rituals" sub="ANCHORS · RESET · FOCUS · RHYTHM" accent={gold} flower="lavender" idx="cb-rit" titleColor={OXBLOOD}>
+              <CardDeck accent={gold}>
+                <Lens label="Anchors" Icon={Sun} accent={gold}>
+                  <AnchorsLens anchors={anchors} onToggle={toggleAnchor} />
+                </Lens>
+                <Lens label="Reset" Icon={Wind} accent={gold}>
+                  <ResetLens onPlan={planReset} />
+                </Lens>
+                <Lens label="Focus" Icon={Timer} accent={gold}>
+                  <FocusLens blocks={blocks} onStart={() => flash("Focus session — 25 min, I'm with you")} onFirstStep={(t) => flash(`First 2 minutes: ${t}`)} />
+                </Lens>
+                <Lens label="Rhythm" Icon={Repeat} accent={gold}>
+                  <RhythmLens season={sn} />
+                </Lens>
+              </CardDeck>
             </Clipboard>
 
           </ClipboardSlider>
@@ -253,23 +354,37 @@ export default function PlannerNewDemo() {
   );
 }
 
-// ── small shared bits ────────────────────────────────────────────────────────
-const sectionLabel = { fontFamily: UI, fontSize: 12, fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", color: T.muted };
+// ══ shared bits ══════════════════════════════════════════════════════════════
+const lbl = { fontFamily: UI, fontSize: 12, fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", color: T.muted };
+const subCard = (accent) => ({ background: T.paper, border: `1px solid ${T.paperDeep}`, borderLeft: `3px solid ${accent}`, borderRadius: 12, padding: "10px 12px" });
 
-// a deck-lens header so the user always knows which lens they're on
-function LensCard({ label, Icon, accent, children }) {
+// a focused COLOUR PILL — filled (primary action) or tinted (option)
+function Pill({ Icon, children, cw = "gold", filled, onClick, active }) {
+  const c = cwOf(cw).petal;
+  const style = filled || active
+    ? { background: c, color: "#fff", border: `1px solid ${c}` }
+    : { background: `${c}14`, color: T.inkSoft, border: `1px solid ${c}55` };
   return (
-    <div style={{ minHeight: 318 }}>
+    <button onClick={onClick} style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "7px 13px", borderRadius: 999, fontFamily: UI, fontSize: 13, fontWeight: 700, cursor: "pointer", ...style }}>
+      {Icon && <Icon size={13} color={filled || active ? "#fff" : c} />}{children}
+    </button>
+  );
+}
+
+// the lens header inside a deck (so you always know which lens you're on)
+function Lens({ label, Icon, accent, children }) {
+  return (
+    <div style={{ minHeight: 322 }}>
       <div style={{ display: "flex", alignItems: "center", gap: 7, marginBottom: 12 }}>
         <Icon size={14} color={accent} />
-        <span style={{ ...sectionLabel, color: accent }}>{label}</span>
+        <span style={{ ...lbl, color: accent }}>{label}</span>
       </div>
       {children}
     </div>
   );
 }
 
-// ── BOARD 1 · date stepper (with a slim capacity read woven in) ───────────────
+// ── BOARD 1 · date stepper (slim load read woven in) ──────────────────────────
 function DateStepper({ offset, onStep, phase, pct, over }) {
   const barColor = over ? T.crimson : pct >= 85 ? T.gold : cwOf("sage").petal;
   return (
@@ -306,7 +421,7 @@ function AddInline({ onAdd, dayName }) {
   );
 }
 
-// ── BOARD 1 · LENS A — Agenda (anchors folded in + time-grouped blocks) ──────
+// ── BOARD 1 · Agenda (anchors + time-grouped blocks w/ energy-type tag) ──────
 function Agenda({ blocks, anchors, peakIdx, phase, offset, onToggle, onEdit, onAnchor }) {
   const groups = ["Morning", "Afternoon", "Evening"];
   const byGroup = groups.map((g) => ({ g, items: blocks.filter((b) => partOfDay(b.hour) === g) })).filter((x) => x.items.length);
@@ -314,7 +429,7 @@ function Agenda({ blocks, anchors, peakIdx, phase, offset, onToggle, onEdit, onA
     <div>
       {offset === 0 && (
         <div style={{ marginBottom: 14 }}>
-          <div style={{ ...sectionLabel, fontSize: 12, marginBottom: 7 }}>Daily anchors</div>
+          <div style={{ ...lbl, marginBottom: 7 }}>Daily anchors</div>
           <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
             {anchors.map((a) => (
               <button key={a.id} onClick={() => onAnchor(a.id)} style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "6px 10px", borderRadius: 999, cursor: "pointer", background: a.done ? `${cwOf("sage").petal}1F` : T.paperHi, border: `1px solid ${a.done ? cwOf("sage").petal : T.paperDeep}`, fontFamily: UI, fontSize: 13, fontWeight: 600, color: a.done ? T.muted : T.inkSoft }}>
@@ -329,20 +444,22 @@ function Agenda({ blocks, anchors, peakIdx, phase, offset, onToggle, onEdit, onA
       {byGroup.length === 0 && <div style={{ textAlign: "center", padding: "22px 8px", fontFamily: SERIF, fontStyle: "italic", fontSize: 15, color: T.muted }}>Nothing planned yet — a soft, open day. Add the first thing above.</div>}
       {byGroup.map(({ g, items }) => (
         <div key={g} style={{ marginBottom: 12 }}>
-          <div style={{ ...sectionLabel, fontSize: 12, color: phase.hue, marginBottom: 6 }}>{g}</div>
+          <div style={{ ...lbl, color: phase.hue, marginBottom: 6 }}>{g}</div>
           <div style={{ display: "flex", flexDirection: "column", gap: 7 }}>
             {items.map((b) => {
               const tm = TYPE_META[b.type] || TYPE_META.task, tcw = cwOf(tm.cw).petal;
               const peak = !b.done && b.hour >= HOURS[peakIdx] - 1 && b.hour <= HOURS[peakIdx] + 2;
               return (
-                <div key={b.id} style={{ display: "flex", alignItems: "center", gap: 9, padding: "8px 10px", borderRadius: 12, background: T.paperHi, border: `1px solid ${T.paperDeep}`, borderLeft: `3px solid ${tcw}` }}>
+                <div key={b.id} style={{ display: "flex", alignItems: "center", gap: 9, ...subCard(tcw), padding: "8px 10px", background: T.paperHi }}>
                   <button onClick={() => onToggle(b.id)} aria-label={b.done ? "Mark not done" : "Mark done"} style={{ width: 22, height: 22, borderRadius: 7, flexShrink: 0, cursor: "pointer", border: `1.5px solid ${b.done ? cwOf("sage").petal : T.paperDeep}`, background: b.done ? cwOf("sage").petal : "transparent", display: "grid", placeItems: "center" }}>{b.done && <Check size={12} color="#fff" />}</button>
                   <span style={{ fontFamily: UI, fontSize: 12, fontWeight: 700, color: T.muted, width: 40, flexShrink: 0 }}>{fmtHour(b.hour)}</span>
                   <button onClick={() => onEdit(b)} style={{ flex: 1, minWidth: 0, textAlign: "left", background: "transparent", border: "none", cursor: "pointer", padding: 0 }}>
                     <div style={{ fontFamily: SERIF, fontSize: 15, fontWeight: 600, color: b.done ? T.muted : T.ink, textDecoration: b.done ? "line-through" : "none", lineHeight: 1.25 }}>{b.title}</div>
-                    <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 1 }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 1, flexWrap: "wrap" }}>
                       <tm.Icon size={11} color={tcw} />
-                      <span style={{ fontFamily: UI, fontSize: 12, fontWeight: 600, color: T.muted }}>{tm.label} · {b.dur}m</span>
+                      <span style={{ fontFamily: UI, fontSize: 12, fontWeight: 600, color: T.muted }}>{tm.label}</span>
+                      <span style={{ fontFamily: UI, fontSize: 12, fontWeight: 700, color: tcw, background: `${tcw}1A`, borderRadius: 999, padding: "0 7px" }}>{tm.energy}</span>
+                      <span style={{ fontFamily: UI, fontSize: 12, fontWeight: 600, color: T.muted }}>{b.dur}m</span>
                       {peak && <span style={{ fontFamily: UI, fontSize: 12, fontWeight: 700, color: phase.hue }}>· peak</span>}
                     </div>
                   </button>
@@ -356,7 +473,7 @@ function Agenda({ blocks, anchors, peakIdx, phase, offset, onToggle, onEdit, onA
   );
 }
 
-// ── BOARD 1 · LENS B — Hour by hour ──────────────────────────────────────────
+// ── BOARD 1 · Hours ──────────────────────────────────────────────────────────
 function Hours({ blocks, peakHour, onEdit, onAddHour }) {
   return (
     <div style={{ maxHeight: 290, overflowY: "auto" }}>
@@ -387,7 +504,7 @@ function Hours({ blocks, peakHour, onEdit, onAddHour }) {
   );
 }
 
-// ── BOARD 1 · LENS C — The week (cycle-tinted; tap a day → loads into agenda) ─
+// ── BOARD 1 · Week ────────────────────────────────────────────────────────────
 function Week({ active, onPick }) {
   return (
     <div>
@@ -419,9 +536,28 @@ function Week({ active, onPick }) {
   );
 }
 
-// ── BOARD 2 · Capacity & energy ──────────────────────────────────────────────
-function Capacity({ load, capacity, pct, over, phase, curve, peakIdx, peakLabel, onEase }) {
+// ══ BOARD 2 · RESERVES lenses ════════════════════════════════════════════════
+function EnergyLens({ curve, peakIdx, peakLabel, phase }) {
   const max = Math.max(...curve);
+  return (
+    <div>
+      <p style={{ fontFamily: SERIF, fontSize: 15, color: T.inkSoft, lineHeight: 1.5, margin: "0 0 12px" }}>Your energy rises and dips through the day. {phase.note}</p>
+      <div style={{ display: "flex", alignItems: "flex-end", gap: 3, height: 70, margin: "4px 0 6px" }}>
+        {curve.map((v, i) => <div key={i} style={{ flex: 1, height: `${(v / max) * 100}%`, borderRadius: "3px 3px 0 0", background: i === peakIdx ? phase.hue : cwOf("sage").petal, opacity: i === peakIdx ? 1 : 0.42 }} />)}
+      </div>
+      <div style={{ display: "flex", justifyContent: "space-between", fontFamily: UI, fontSize: 12, fontWeight: 600, color: T.muted, marginBottom: 12 }}>
+        <span>7am</span><span>peak · {peakLabel}</span><span>10pm</span>
+      </div>
+      <Eyebrow color={cwOf("sage").petal}>Match task to energy</Eyebrow>
+      <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginTop: 8 }}>
+        <Pill cw="plum">deep → your peak</Pill>
+        <Pill cw="gold">admin → the dip</Pill>
+        <Pill cw="sage">restorative → anytime</Pill>
+      </div>
+    </div>
+  );
+}
+function LoadLens({ load, capacity, pct, over, onEase }) {
   const barColor = over ? T.crimson : pct >= 85 ? T.gold : cwOf("sage").petal;
   return (
     <div>
@@ -433,38 +569,127 @@ function Capacity({ load, capacity, pct, over, phase, curve, peakIdx, peakLabel,
         <div style={{ position: "absolute", inset: 0, width: `${Math.min(130, pct) / 130 * 100}%`, background: barColor }} />
         <div style={{ position: "absolute", top: 0, left: `${100 / 130 * 100}%`, height: "100%", width: 2, background: "rgba(58,44,26,0.28)" }} />
       </div>
-      <p style={{ fontFamily: SERIF, fontSize: 15, color: T.inkSoft, lineHeight: 1.5, margin: "0 0 16px" }}>
-        {over ? `A little over your usual ${phase.label.toLowerCase()} capacity. ${phase.note} Ease one lighter task and it settles.` : `Within capacity — ${phase.note.toLowerCase()} You've planned ${load} of about ${capacity} units of energy.`}
-      </p>
-      <Eyebrow color={cwOf("sage").petal}>Your energy today</Eyebrow>
-      <div style={{ display: "flex", alignItems: "flex-end", gap: 3, height: 64, margin: "10px 0 6px" }}>
-        {curve.map((v, i) => (
-          <div key={i} style={{ flex: 1, height: `${(v / max) * 100}%`, borderRadius: "3px 3px 0 0", background: i === peakIdx ? phase.hue : cwOf("sage").petal, opacity: i === peakIdx ? 1 : 0.42 }} />
+      <p style={{ fontFamily: SERIF, fontSize: 15, color: T.inkSoft, lineHeight: 1.5, margin: "0 0 14px" }}>{over ? `A little over your usual capacity. Ease one lighter task and it settles.` : `Within capacity — you've planned ${load} of about ${capacity} units of energy.`}</p>
+      <div style={{ ...subCard(cwOf("plum").petal), marginBottom: 12 }}>
+        <div style={{ ...lbl, color: cwOf("plum").petal, marginBottom: 3 }}>The finitude question</div>
+        <p style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 15, color: T.ink, margin: 0 }}>What are you deliberately <b>not</b> doing today?</p>
+      </div>
+      {over && <Pill Icon={ArrowRight} cw="plum" filled onClick={onEase}>Ease today's load</Pill>}
+    </div>
+  );
+}
+function RecoveryLens({ onPlanRest }) {
+  // seeded WearableSync-like reads (live: WearableSync.readiness/hrv + DailyCheckins.sleep)
+  const stats = [
+    { k: "Sleep", v: "6h 20m", note: "an hour short", cw: "plum" },
+    { k: "Readiness", v: "64", note: "running low", cw: "gold" },
+    { k: "HRV", v: "−12%", note: "vs your baseline", cw: "crimson" },
+  ];
+  return (
+    <div>
+      <p style={{ fontFamily: SERIF, fontSize: 15, color: T.inkSoft, lineHeight: 1.5, margin: "0 0 12px" }}>Rest is a booking, not a leftover. Your body's asking for a softer day.</p>
+      <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 14 }}>
+        {stats.map((s) => (
+          <div key={s.k} style={{ display: "flex", alignItems: "center", gap: 10, ...subCard(cwOf(s.cw).petal) }}>
+            <span style={{ fontFamily: SERIF, fontSize: 20, fontWeight: 600, color: T.ink, width: 64 }}>{s.v}</span>
+            <span><span style={{ ...lbl, color: cwOf(s.cw).petal, display: "block" }}>{s.k}</span><span style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 14, color: T.muted }}>{s.note}</span></span>
+          </div>
         ))}
       </div>
-      <div style={{ display: "flex", justifyContent: "space-between", fontFamily: UI, fontSize: 12, fontWeight: 600, color: T.muted }}>
-        <span>7am</span><span>peak · {peakLabel}</span><span>10pm</span>
+      <div style={{ ...subCard(cwOf("sage").petal), marginBottom: 12, background: `${cwOf("sage").petal}10` }}>
+        <p style={{ fontFamily: SERIF, fontSize: 15, color: T.ink, margin: 0, lineHeight: 1.45 }}>A "rest debt" is building. Plan a protected rest block before the day fills.</p>
       </div>
-      <p style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 14, color: T.muted, margin: "12px 0 0", lineHeight: 1.5 }}>Plant focused work in your bright window ({peakLabel}); save the softer tasks for the dip.</p>
-      {over && <button onClick={onEase} style={{ marginTop: 14, display: "inline-flex", alignItems: "center", gap: 7, padding: "11px 18px", borderRadius: 999, background: cwOf("plum").petal, color: "#fff", border: "none", fontFamily: UI, fontSize: 13, fontWeight: 700, cursor: "pointer" }}><ArrowRight size={14} /> Ease today's load</button>}
+      <Pill Icon={MoonI} cw="sage" filled onClick={onPlanRest}>Plan a rest block</Pill>
+    </div>
+  );
+}
+function BoundariesLens({ season, setSeason, onLowDay }) {
+  const sn = SEASONS[season];
+  const windows = ["Evenings after 8 — no work", "Sunday — open, unplanned"];
+  return (
+    <div>
+      <Eyebrow color={cwOf("sage").petal}>Protected windows</Eyebrow>
+      <div style={{ display: "flex", flexDirection: "column", gap: 7, margin: "8px 0 14px" }}>
+        {windows.map((w) => (
+          <div key={w} style={{ display: "flex", alignItems: "center", gap: 8, ...subCard(cwOf("sage").petal) }}>
+            <ShieldCheck size={14} color={cwOf("sage").petal} style={{ flexShrink: 0 }} />
+            <span style={{ fontFamily: SERIF, fontSize: 15, color: T.ink }}>{w}</span>
+          </div>
+        ))}
+      </div>
+      <Eyebrow color={cwOf("plum").petal}>Your season of life</Eyebrow>
+      <p style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 14, color: T.muted, margin: "4px 0 8px" }}>{sn.note} The day's bar flexes to fit.</p>
+      <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 14 }}>
+        {Object.entries(SEASONS).map(([k, v]) => (
+          <Pill key={k} Icon={v.Icon} cw={k === "newbaby" ? "blush" : k === "peri" ? "sage" : k === "caregiving" ? "plum" : "gold"} active={season === k} onClick={() => setSeason(k)}>{v.label}</Pill>
+        ))}
+      </div>
+      <Pill Icon={CircleSlash} cw="plum" onClick={onLowDay}>Make today a low-capacity day</Pill>
     </div>
   );
 }
 
-// ── BOARD 3 · Intentions (whole-life) ────────────────────────────────────────
+// ══ BOARD 3 · THE LOAD lenses ════════════════════════════════════════════════
+function InvisibleLens({ items, onHand }) {
+  return (
+    <div>
+      <p style={{ fontFamily: SERIF, fontSize: 15, color: T.inkSoft, lineHeight: 1.5, margin: "0 0 12px" }}>The work no one sees — the <b>noticing</b>, <b>deciding</b> and <b>remembering</b>. Name it, then hand it over <i>fully</i> — not just the chore.</p>
+      <div style={{ display: "flex", flexDirection: "column", gap: 9 }}>
+        {items.map((v) => (
+          <div key={v.id} style={{ ...subCard(v.handed ? cwOf("sage").petal : cwOf("plum").petal) }}>
+            <div style={{ fontFamily: SERIF, fontSize: 16, fontWeight: 600, color: T.ink, marginBottom: 3 }}>{v.title}</div>
+            {v.handed
+              ? <div style={{ display: "inline-flex", alignItems: "center", gap: 6, fontFamily: UI, fontSize: 13, fontWeight: 700, color: cwOf("sage").petal }}><Check size={13} /> Handed to Alex — fully (noticing, deciding, tracking)</div>
+              : <>
+                  <div style={{ fontFamily: UI, fontSize: 13, fontWeight: 600, color: T.muted, marginBottom: 8 }}>{v.carry}</div>
+                  <Pill Icon={UserPlus} cw="plum" filled onClick={() => onHand(v.id)}>Hand it over</Pill>
+                </>}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+function AdminLens({ items, onDisp }) {
+  return (
+    <div>
+      <p style={{ fontFamily: SERIF, fontSize: 15, color: T.inkSoft, lineHeight: 1.5, margin: "0 0 12px" }}>Life admin, biased toward <b>less</b>. For each one, the kindest question first: can it go, go to someone, or go automatic?</p>
+      <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+        {items.map((a) => {
+          const chosen = ADMIN_DISP.find((d) => d.id === a.disp);
+          return (
+            <div key={a.id} style={{ ...subCard(a.disp ? cwOf(chosen.cw).petal : cwOf("gold").petal) }}>
+              <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: 8, marginBottom: 8 }}>
+                <span style={{ fontFamily: SERIF, fontSize: 16, fontWeight: 600, color: T.ink }}>{a.title}</span>
+                <span style={{ fontFamily: UI, fontSize: 12, fontWeight: 600, color: T.muted }}>{a.due}</span>
+              </div>
+              {chosen
+                ? <div style={{ display: "inline-flex", alignItems: "center", gap: 6, fontFamily: UI, fontSize: 13, fontWeight: 700, color: cwOf(chosen.cw).petal }}><chosen.Icon size={13} /> {chosen.label === "Delete" ? "Let go" : chosen.label === "Do it" ? "On the list" : chosen.label + "d"}</div>
+                : <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+                    {ADMIN_DISP.map((d) => <Pill key={d.id} Icon={d.Icon} cw={d.cw} onClick={() => onDisp(a.id, d.id)}>{d.label}</Pill>)}
+                  </div>}
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+// ══ BOARD 4 · INTENTIONS lenses ══════════════════════════════════════════════
 function Intentions({ intentions, phaseKey, onEdit, onAdd, onRemove }) {
   const lean = { menstrual: ["rest", "self"], follicular: ["career", "create"], ovulatory: ["career", "love"], luteal: ["rest", "friend"] }[phaseKey] || ["self"];
   return (
     <div>
-      <p style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 15, color: T.muted, margin: "0 0 12px", lineHeight: 1.5 }}>Up to three. Not tasks — the things that would make today feel like yours. Health is one room, not the house.</p>
+      <p style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 15, color: T.muted, margin: "0 0 12px", lineHeight: 1.5 }}>Up to three. Not tasks — the things that would make today feel like yours.</p>
       <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
         {intentions.map((it) => {
           const d = domainOf(it.domain), dcw = cwOf(d.cw).petal;
           return (
-            <div key={it.id} style={{ display: "flex", alignItems: "flex-start", gap: 9, padding: "10px 11px", borderRadius: 12, background: T.paperHi, border: `1px solid ${T.paperDeep}`, borderLeft: `3px solid ${dcw}` }}>
+            <div key={it.id} style={{ display: "flex", alignItems: "flex-start", gap: 9, ...subCard(dcw) }}>
               <span style={{ width: 26, height: 26, borderRadius: 8, background: `${dcw}1F`, display: "grid", placeItems: "center", flexShrink: 0 }}><d.Icon size={13} color={dcw} /></span>
               <button onClick={() => onEdit(it)} style={{ flex: 1, minWidth: 0, textAlign: "left", background: "transparent", border: "none", cursor: "pointer", padding: 0 }}>
-                <div style={{ ...sectionLabel, fontSize: 12, color: dcw, marginBottom: 2 }}>{d.label}</div>
+                <div style={{ ...lbl, color: dcw, marginBottom: 2 }}>{d.label}</div>
                 <div style={{ fontFamily: SERIF, fontSize: 16, color: T.ink, lineHeight: 1.35 }}>{it.text}</div>
               </button>
               <button onClick={() => onRemove(it.id)} aria-label="Remove intention" style={{ background: "transparent", border: "none", cursor: "pointer", color: T.muted, flexShrink: 0 }}><X size={15} /></button>
@@ -474,37 +699,59 @@ function Intentions({ intentions, phaseKey, onEdit, onAdd, onRemove }) {
       </div>
       {intentions.length < 3 && (
         <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginTop: 12 }}>
-          {lean.map(domainOf).map((d) => (
-            <button key={d.id} onClick={() => onEdit({ domain: d.id, text: "" })} style={{ display: "inline-flex", alignItems: "center", gap: 5, padding: "6px 11px", borderRadius: 999, background: `${cwOf(d.cw).petal}14`, border: `1px solid ${cwOf(d.cw).petal}55`, color: T.inkSoft, fontFamily: UI, fontSize: 12, fontWeight: 700, cursor: "pointer" }}>
-              <d.Icon size={12} color={cwOf(d.cw).petal} /> {d.label}
-            </button>
-          ))}
-          <button onClick={onAdd} style={{ display: "inline-flex", alignItems: "center", gap: 4, padding: "6px 11px", borderRadius: 999, background: "transparent", border: `1px dashed ${T.paperDeep}`, color: T.muted, fontFamily: UI, fontSize: 12, fontWeight: 700, cursor: "pointer" }}><Plus size={12} /> Other</button>
+          {lean.map(domainOf).map((d) => <Pill key={d.id} Icon={d.Icon} cw={d.cw} onClick={() => onEdit({ domain: d.id, text: "" })}>{d.label}</Pill>)}
+          <Pill Icon={Plus} cw="gold" onClick={onAdd}>Other</Pill>
         </div>
       )}
     </div>
   );
 }
+function SeasonIntentions() {
+  return (
+    <div>
+      <p style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 15, color: T.muted, margin: "0 0 12px", lineHeight: 1.5 }}>The longer arc — what matters across these weeks, and what you're letting go of.</p>
+      <Eyebrow color={cwOf("crimson").petal}>Holding</Eyebrow>
+      <div style={{ display: "flex", flexDirection: "column", gap: 8, margin: "8px 0 14px" }}>
+        {SEED_SEASON_INTENTIONS.map((it) => {
+          const d = domainOf(it.domain), dcw = cwOf(d.cw).petal;
+          return (
+            <div key={it.id} style={{ display: "flex", alignItems: "flex-start", gap: 9, ...subCard(dcw) }}>
+              <d.Icon size={15} color={dcw} style={{ flexShrink: 0, marginTop: 2 }} />
+              <span style={{ fontFamily: SERIF, fontSize: 16, color: T.ink, lineHeight: 1.35 }}>{it.text}</span>
+            </div>
+          );
+        })}
+      </div>
+      <Eyebrow color={cwOf("plum").petal}>Deliberately not doing</Eyebrow>
+      <div style={{ display: "flex", flexDirection: "column", gap: 7, marginTop: 8 }}>
+        {SEED_NOT_DOING.map((t) => (
+          <div key={t} style={{ display: "flex", alignItems: "center", gap: 8, ...subCard(cwOf("plum").petal) }}>
+            <CircleSlash size={14} color={cwOf("plum").petal} style={{ flexShrink: 0 }} />
+            <span style={{ fontFamily: SERIF, fontSize: 15, color: T.muted }}>{t}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
 
-// ── BOARD 4 · Rituals (morning + evening anchors) ────────────────────────────
-function Rituals({ anchors, onToggle }) {
+// ══ BOARD 5 · RITUALS lenses ═════════════════════════════════════════════════
+function AnchorsLens({ anchors, onToggle }) {
   const groups = [{ slot: "am", label: "Morning", Icon: Sun, cw: "gold" }, { slot: "pm", label: "Evening", Icon: Moon, cw: "plum" }];
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+    <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
       {groups.map((g) => {
-        const items = anchors.filter((a) => a.slot === g.slot);
-        const done = items.filter((a) => a.done).length;
-        const accent = cwOf(g.cw).petal;
+        const items = anchors.filter((a) => a.slot === g.slot), done = items.filter((a) => a.done).length, accent = cwOf(g.cw).petal;
         return (
           <div key={g.slot}>
-            <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 9 }}>
-              <g.Icon size={16} color={accent} />
+            <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
+              <g.Icon size={15} color={accent} />
               <span style={{ fontFamily: SERIF, fontSize: 17, fontWeight: 600, color: T.ink }}>{g.label}</span>
-              <span style={{ ...sectionLabel, marginLeft: "auto" }}>{done}/{items.length}</span>
+              <span style={{ ...lbl, marginLeft: "auto" }}>{done}/{items.length}</span>
             </div>
             <div style={{ display: "flex", flexDirection: "column", gap: 7 }}>
               {items.map((a) => (
-                <button key={a.id} onClick={() => onToggle(a.id)} style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", textAlign: "left", padding: "9px 11px", borderRadius: 11, background: T.paperHi, border: `1px solid ${T.paperDeep}`, cursor: "pointer" }}>
+                <button key={a.id} onClick={() => onToggle(a.id)} style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", textAlign: "left", padding: "8px 11px", borderRadius: 11, background: T.paperHi, border: `1px solid ${T.paperDeep}`, cursor: "pointer" }}>
                   <span style={{ width: 22, height: 22, borderRadius: 6, flexShrink: 0, border: `1.5px solid ${a.done ? accent : T.paperDeep}`, background: a.done ? accent : "transparent", display: "grid", placeItems: "center" }}>{a.done && <Check size={13} color="#fff" />}</span>
                   <span style={{ fontFamily: SERIF, fontSize: 15, color: a.done ? T.muted : T.ink, textDecoration: a.done ? "line-through" : "none" }}>{a.title}</span>
                 </button>
@@ -513,14 +760,69 @@ function Rituals({ anchors, onToggle }) {
           </div>
         );
       })}
-      <div style={{ display: "flex", alignItems: "center", gap: 8, justifyContent: "center", fontFamily: SERIF, fontStyle: "italic", fontSize: 14, color: T.muted }}>
-        <Leaf size={14} color={cwOf("sage").petal} /> A 4-day rhythm. The garden noticed.
+    </div>
+  );
+}
+function ResetLens({ onPlan }) {
+  return (
+    <div>
+      <p style={{ fontFamily: SERIF, fontSize: 15, color: T.inkSoft, lineHeight: 1.5, margin: "0 0 6px" }}>Stress isn't finished when the stressor is. <b>Complete the cycle</b> — your body needs an action, not just rest.</p>
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginTop: 12 }}>
+        {RESETS.map((r) => (
+          <button key={r.id} onClick={() => onPlan(r.label)} style={{ display: "flex", alignItems: "center", gap: 8, padding: "12px 12px", borderRadius: 14, cursor: "pointer", background: `${cwOf(r.cw).petal}12`, border: `1px solid ${cwOf(r.cw).petal}55`, textAlign: "left" }}>
+            <span style={{ width: 30, height: 30, borderRadius: 9, background: `${cwOf(r.cw).petal}1F`, display: "grid", placeItems: "center", flexShrink: 0 }}><r.Icon size={15} color={cwOf(r.cw).petal} /></span>
+            <span style={{ fontFamily: SERIF, fontSize: 15, fontWeight: 600, color: T.ink }}>{r.label}</span>
+          </button>
+        ))}
+      </div>
+      <p style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 13, color: T.muted, margin: "12px 0 0" }}>Tap one to plant it in your day as a protected reset.</p>
+    </div>
+  );
+}
+function FocusLens({ blocks, onStart, onFirstStep }) {
+  const stuck = blocks.filter((b) => !b.done && b.type === "focus")[0] || blocks.filter((b) => !b.done)[0];
+  return (
+    <div>
+      <p style={{ fontFamily: SERIF, fontSize: 15, color: T.inkSoft, lineHeight: 1.5, margin: "0 0 14px" }}>For a low-capacity or foggy day. Borrow some focus — start small, with company.</p>
+      <div style={{ ...subCard(cwOf("gold").petal), marginBottom: 12 }}>
+        <div style={{ ...lbl, color: cwOf("gold").petal, marginBottom: 4 }}>Body-double session</div>
+        <p style={{ fontFamily: SERIF, fontSize: 15, color: T.ink, margin: "0 0 10px", lineHeight: 1.45 }}>25 minutes, gently timed, "I'm working alongside you." The proven trick for a stuck start.</p>
+        <Pill Icon={Timer} cw="gold" filled onClick={onStart}>Start a 25-min focus</Pill>
+      </div>
+      {stuck && (
+        <div style={{ ...subCard(cwOf("plum").petal) }}>
+          <div style={{ ...lbl, color: cwOf("plum").petal, marginBottom: 4 }}>The 2-minute first step</div>
+          <p style={{ fontFamily: SERIF, fontSize: 15, color: T.ink, margin: "0 0 10px", lineHeight: 1.45 }}>Don't do "{stuck.title}". Just open it for two minutes.</p>
+          <Pill Icon={ArrowRight} cw="plum" filled onClick={() => onFirstStep(stuck.title)}>Start the first 2 minutes</Pill>
+        </div>
+      )}
+    </div>
+  );
+}
+function RhythmLens({ season }) {
+  const week = [1, 1, 0, 1, 1, 1, 0]; // last 7 days completion (seeded; live: HabitLogs)
+  return (
+    <div>
+      <p style={{ fontFamily: SERIF, fontSize: 15, color: T.inkSoft, lineHeight: 1.5, margin: "0 0 14px" }}>The honest read — gently. Consistency is a rhythm, not a scoreboard.</p>
+      <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
+        <span style={{ fontFamily: SERIF, fontSize: 28, fontWeight: 600, color: T.ink }}>4</span>
+        <span style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 16, color: T.muted }}>day rhythm — the garden noticed.</span>
+      </div>
+      <div style={{ display: "flex", gap: 6, marginBottom: 14 }}>
+        {week.map((d, i) => (
+          <div key={i} style={{ flex: 1, height: 32, borderRadius: 7, background: d ? cwOf("sage").petal : "rgba(58,44,26,0.08)", opacity: d ? 0.7 : 1, display: "grid", placeItems: "center" }}>
+            {d ? <Check size={13} color="#fff" /> : null}
+          </div>
+        ))}
+      </div>
+      <div style={{ ...subCard(cwOf("sage").petal), background: `${cwOf("sage").petal}10` }}>
+        <p style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 14, color: T.muted, margin: 0, lineHeight: 1.5 }}>In a {season.label.toLowerCase()} season, a kept anchor most days is plenty. {season.note}</p>
       </div>
     </div>
   );
 }
 
-// ── sheets (editors of the one day — not new surfaces) ───────────────────────
+// ── sheets ────────────────────────────────────────────────────────────────────
 function SheetShell({ title, eyebrowText, accent, onClose, children }) {
   return (
     <div onClick={onClose} style={{ position: "fixed", inset: 0, zIndex: 9990, background: "rgba(11,8,5,0.42)", display: "flex", alignItems: "flex-end", justifyContent: "center" }}>
@@ -553,11 +855,11 @@ function BlockSheet({ draft, peakHour, onClose, onSave, onDelete }) {
         <div><label style={fieldLabel}>How long</label>
           <select value={d.dur} onChange={(e) => set("dur", Number(e.target.value))} style={inputBase}>{[15, 30, 45, 60, 90, 120].map((m) => <option key={m} value={m}>{m} min</option>)}</select></div>
       </div>
-      <label style={fieldLabel}>Kind</label>
+      <label style={fieldLabel}>Kind · energy</label>
       <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 16 }}>
         {Object.entries(TYPE_META).map(([k, v]) => (
           <button key={k} onClick={() => set("type", k)} style={{ display: "inline-flex", alignItems: "center", gap: 5, padding: "7px 12px", borderRadius: 999, background: d.type === k ? cwOf(v.cw).petal : T.paper, color: d.type === k ? "#fff" : T.inkSoft, border: `1px solid ${d.type === k ? cwOf(v.cw).petal : T.paperDeep}`, fontFamily: UI, fontSize: 12, fontWeight: 700, cursor: "pointer" }}>
-            <v.Icon size={12} color={d.type === k ? "#fff" : cwOf(v.cw).petal} /> {v.label}
+            <v.Icon size={12} color={d.type === k ? "#fff" : cwOf(v.cw).petal} /> {v.label} · {v.energy}
           </button>
         ))}
       </div>
@@ -568,7 +870,6 @@ function BlockSheet({ draft, peakHour, onClose, onSave, onDelete }) {
     </SheetShell>
   );
 }
-
 function IntentionSheet({ draft, onClose, onSave }) {
   const [d, setD] = useState(draft);
   const dom = domainOf(d.domain);

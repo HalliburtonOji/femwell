@@ -31,7 +31,7 @@ import { RichBloomV2, SwayBloom, Pollinator, FlowerGlyph, cwOf, floraKeyframes }
 export function FwFloraHero({
   title, line, bloom = "daisy", colorway = "gold",
   flankL = "iris", flankR = "sunflower", butterfly = true, creature = "butterfly",
-  ringSize = 244, bloomSize = 170, idx = "hero",
+  ringSize = 244, bloomSize = 170, idx = "hero", titleColor = T.ink,
 }) {
   const cw = cwOf(colorway);
   return (
@@ -56,7 +56,7 @@ export function FwFloraHero({
       <div style={{ display: "flex", alignItems: "center", gap: 9, marginTop: -2, flexWrap: "wrap", justifyContent: "center" }}>
         {flankL && <FlowerGlyph variant={flankL} size={22} color={cwOf("plum").petal} color2={cwOf("plum").tip} idx={`${idx}-fl`} />}
         <BrandHeart size={16} />
-        <div style={{ fontFamily: SCRIPT, fontWeight: 400, fontSize: 44, lineHeight: 1.05, color: T.ink }}>{title}</div>
+        <div style={{ fontFamily: SCRIPT, fontWeight: 400, fontSize: 44, lineHeight: 1.05, color: titleColor }}>{title}</div>
         {flankR && <FlowerGlyph variant={flankR} size={22} color={cwOf("gold").petal} color2={cwOf("gold").tip} idx={`${idx}-fr`} />}
       </div>
       {line && <div style={{ fontFamily: "Cormorant Garamond, Georgia, serif", fontStyle: "italic", fontSize: 16, color: T.muted, marginTop: 9, textAlign: "center", maxWidth: 330, lineHeight: 1.5 }}>{line}</div>}

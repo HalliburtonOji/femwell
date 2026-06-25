@@ -43,7 +43,7 @@ function ClipDetail() {
 }
 
 // ── one clipboard — a big Card.jsx-framed surface holding a stack/grid (the `children`) ──────────────
-export function Clipboard({ title, sub, accent = T.gold, flower = "lavender", idx = "cb", children }) {
+export function Clipboard({ title, sub, accent = T.gold, flower = "lavender", idx = "cb", titleColor = T.ink, children }) {
   return (
     <section
       aria-label={title}
@@ -59,7 +59,7 @@ export function Clipboard({ title, sub, accent = T.gold, flower = "lavender", id
       <ClipDetail />
       <div style={{ position: "relative", zIndex: 1 }}>
         <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: 8 }}>
-          <Script size={30} color={T.ink}>{title}</Script>
+          <Script size={30} color={titleColor}>{title}</Script>
           {flower && <FlowerGlyph variant={flower} size={28} color={accent} idx={idx} />}
         </div>
         {sub && <p style={{ fontFamily: UI, fontSize: 12.5, color: T.muted, margin: "1px 0 14px", fontWeight: 600, letterSpacing: 0.2 }}>{sub}</p>}
