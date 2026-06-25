@@ -100,6 +100,12 @@
     --slate-500: #8C7B66;        /* brand muted label (was slate blue-grey) */
     --amber-streak: #D4AF37;     /* brand gold (was generic amber) */
     --font-serif-heading: 'Cormorant Garamond', 'Fraunces', Georgia, serif;
+    /* HEADING COLOUR (Halli 2026-06-25): all headings render in a deep oxblood/
+       deep-wine red — the "going deeper" script look. RICHER than the heart crimson
+       #BC2E27 (which stays the heart-mark + accent only). One shared token so it
+       propagates to every heading app-wide (h1–h6, .fw-display, .fw-heading). */
+    --oxblood: #7E1B16;
+    --fw-heading-color: var(--oxblood);
 
     /* MP-A Lifestyle tokens (cream / rose family) — aligned to editorial paper */
     --cream: #ECE7DA;
@@ -270,7 +276,7 @@
   h1, h2, h3, h4, h5, h6 {
     font-family: 'Cormorant Garamond', Georgia, serif;  /* Cormorant-first */
     font-weight: 700;             /* Halli: bolder headings (was 600) */
-    color: var(--plum);
+    color: var(--fw-heading-color);   /* deep oxblood red (Halli 2026-06-25), not ink */
     letter-spacing: -0.005em;
     line-height: 1.2;
     /* Carved/letterpress depth — bright raised lower lip + dark pressed-in upper
@@ -345,7 +351,7 @@
   font-weight: 400;
   line-height: 1.14;
   letter-spacing: 0;
-  color: var(--plum);
+  color: var(--fw-heading-color);   /* deep oxblood red — the "going deeper" script title */
   font-size: clamp(44px, 9.5vw, 56px);
   filter: url(#inkCarve);
 }
@@ -357,7 +363,7 @@
   font-style: italic;
   font-weight: 600;
   font-feature-settings: 'swsh' 1, 'ss01' 1, 'calt' 1;
-  color: var(--plum);
+  color: var(--fw-heading-color);   /* deep oxblood red */
   line-height: 1.18;
   letter-spacing: 0;
   font-size: clamp(27px, 6.4vw, 34px);

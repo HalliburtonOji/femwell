@@ -34,7 +34,7 @@ A woman's life is a **garden, not a chart.** It has **seasons** (the cycle), **l
 - `claude-state/BRAND_IMAGE_RESEARCH.md` — the botanical-system research (Aesop/Art Nouveau/Morris/fleuron).
 
 **MASTER INDEX:**
-0. Pre-build checklist · 1. Typography (fonts + `.fw-*` cascade + role scale) · 2. Colour (tokens + retired + phase hues + **2.5 colourways**) · 3. The heart mark · 4. Botanical brand-image system (leaves/corners/dividers/flourishes) · 5. Bloom craft (RichBloomV2) + **5.0 recognisability** · 5.1 Flora backbone & meaning · 5.2 Variety + flora fingerprint · 5.3 Page character · **5.4 THE BOTANICAL LIBRARY (60+ named species — `floraLibrary.jsx`)** · **6. Surfaces & components** (incl. **6.7.6 the quick-action popup** · **6.10 the Clipboard Stack Slider**) (6.1 cards · 6.2 backgrounds/scrims · 6.3 buttons · 6.4 chips/inputs/sheets/toggles · 6.5 nav · 6.6 icons/links) · 7. How it's applied · **8. Component map** · **10. THE LIVING ECOSYSTEM** (v4 — lifecycle stages · fauna/omens · the rotating omen engine · safety rails · the soulful voice · craft-that-means) · 9. Appendices & in-app mirrors.
+0. Pre-build checklist · 1. Typography (fonts + `.fw-*` cascade + role scale) · 2. Colour (tokens + retired + phase hues + **2.5 colourways**) · 3. The heart mark · 4. Botanical brand-image system (leaves/corners/dividers/flourishes) · 5. Bloom craft (RichBloomV2) + **5.0 recognisability** · 5.1 Flora backbone & meaning · 5.2 Variety + flora fingerprint · 5.3 Page character · **5.4 THE BOTANICAL LIBRARY (60+ named species — `floraLibrary.jsx`)** · **6. Surfaces & components** (incl. **6.7.0 the CARD LANGUAGE — the card-type vocabulary** · **6.7.6 the quick-action popup** · **6.10 the Clipboard Stack Slider**) (6.1 cards · 6.2 backgrounds/scrims · 6.3 buttons · 6.4 chips/inputs/sheets/toggles · 6.5 nav · 6.6 icons/links) · 7. How it's applied · **8. Component map** · **10. THE LIVING ECOSYSTEM** (v4 — lifecycle stages · fauna/omens · the rotating omen engine · safety rails · the soulful voice · craft-that-means) · 9. Appendices & in-app mirrors.
 
 ---
 
@@ -107,6 +107,8 @@ Fonts are declared as **explicit `@font-face`** (real gstatic **woff2**, `font-d
 **Weights: 400** (Ephesis only) · **500** (reading body) · **600** (headings, titles, captions) · **700** (eyebrows, controls, nav). No 300/800.
 **Line-heights: 1.14 / 1.18 / 1.20 / 1.30 / 1.40 / 1.50 / 1.55** — pick from the table, don't invent.
 
+> **HEADING COLOUR — DEEP OXBLOOD (Halli 2026-06-25).** All headings render in a **deep oxblood / deep-wine red — `--oxblood #7E1B16`** (the "going deeper" script look Halli loves), set via the **shared token `--fw-heading-color`** in `index.css` on `h1–h6`, `.fw-display` and `.fw-heading` so it **propagates app-wide**. This is **richer/darker than the heart crimson** — the canonical **page title** is the **deep-red Ephesis SCRIPT display** (`.fw-display` + `#inkCarve`); section headings stay **Cormorant italic (§Heading 1/2)** *in the same oxblood* (script stays short-titles-only per the role table — never set long/section headings in script, they tangle). **The heart crimson `#BC2E27` is NOT a heading colour** — it stays the carved-heart mark + rare accent (§2.2/§3). One token, one change, every heading.
+
 > **AUDIT (why this exists):** headings appeared at **25 distinct sizes (18–110px)**, body at **7 (13–16px)**, captions at **10 (7.5–12px)** — plus 11 fractional half-pixel sizes. The 3 CSS tier-classes (`.fw-display`/`.fw-heading`/body) existed but components ignored them and hand-rolled inline sizes. The fix: every node maps to a role above.
 
 ---
@@ -129,7 +131,8 @@ Fonts are declared as **explicit `@font-face`** (real gstatic **woff2**, `font-d
 | Token | Hex | Use |
 |---|---|---|
 | `gold` | `#A8893F` | **THE** gold. Hairline accents, eyebrows, card left-borders, fine flourishes. |
-| `crimson` | `#BC2E27` | **THE** single colour pop — the heart, and rare deliberate emphasis. |
+| `crimson` | `#BC2E27` | **THE** heart mark + rare deliberate accent. **NOT for headings** (use oxblood). |
+| `oxblood` | `#7E1B16` | **THE heading colour** (§1) — deep wine red, all headings, via `--fw-heading-color`. Deeper than crimson; headings only. |
 | `blush` | `#E8B4B8` | Soft rose fills, bloom petals, gentle accent. |
 | `sage` | `#8FAF8F` | Calm green accent, "tended/good" affordances. |
 
@@ -379,6 +382,31 @@ FemWell's motion is **calm and organic** — the feel comes from slow ease + the
 ## 6.7 THE CARD SYSTEM — a FIRST-CLASS brand pillar (taxonomy · anatomy · sizing) · v1 2026-06-19
 > **Cards ARE the brand language, not decoration.** A card is **never an empty/dumb container.** Every card carries something at a glance AND an inline action. **Build from the shared family `src/components/brand/Card.jsx` — never hand-roll a `<div>` card.** The shell is the Today "across your day" per-section card, standardised.
 
+### 6.7.0 THE CARD LANGUAGE — a bounded VOCABULARY of card types (NEVER default to generic) · v1 2026-06-25
+> **We use a VARIETY of card styles, each with a distinct JOB — we never default to one generic card.** A rich app is a *system of distinct card types* (each earning its place), not one card recoloured. **The discipline rule: a new card needs a new JOB, not a new colour** (EightShapes: "regions invite abuse" — bound the set, don't engineer infinity). `FwCard` (§6.7.1) is the **base shell/chrome**; the types below are the **compositions** built on/around it. Don't put three look-alike cards on one screen — pick by emphasis/job (Material 3: card variants "differ by style alone"). *Use variety + colour pills + card-in-card; don't default to generic.* Research + citations: `workspace/CARD_PATTERNS_RESEARCH_2026-06-25.md`.
+
+**THE VOCABULARY (each = a job + an anatomy):**
+| Card type | The JOB (when to use) | Anatomy |
+|---|---|---|
+| **Standard `FwCard`** (§6.7.1) | one section's rich content in a row/feed | the Today shell — header+hook+line+inline action+deep-link; 365×488, 4px accent rim, corner sprigs. |
+| **Clipboard board** (§6.10, `Clipboard`/`ClipboardSlider`) | group several **peer grids/areas/"rooms"** into one swipeable surface | a big framed board (title + gold "clip" + flora glyph) holding a stack; outer **horizontal** scroll-snap pager + edge-peek + dots/arrows. |
+| **Tile-grid-inside-a-board** | a board of **peer shortcuts/areas** (e.g. Halli's "Schedule & plan" grid) | a 2–3-col grid of **mini-cards** (icon+label+sub, each deep-links or opens a §6.7.6 quick-action popup) *inside* a board. **Bento rule: vary tile size** — one hero **2-wide** tile for the primary, 1-wide for secondary (don't make them all uniform). |
+| **In-card swipe deck** (§6.10.1, `CardDeck`) | several **peer "lenses"/items** that belong together, **one per page**, instead of a vertical stack (the Today loop) | a native horizontal scroll-snap row *inside* a board; **see the hard safeguards below.** |
+| **Accent-rim sub-card** | a **callout / insight** that should read as a distinct voice (e.g. the "From Jess" insight) | a sub-card with a **coloured left rim** whose colour **MEANS** something — a **phase hue** (§2.4) or a domain accent, **one rim per card, never a rainbow** ("semantic colour describes function, not appearance"). |
+| **Focused colour pills** | the **1–2 primary actions** on a board (e.g. purple **"Speak your plan"** + gold **"Plan a day"**) | big rounded (radius 999) colour CTA pills, **≥48px** tap height (44pt floor), UI 14–16/700, white text. **One primary + at most one secondary** (Polaris: avoid >2 filled buttons in a card; **never two filled crimson pills side by side** — they kill hierarchy). Pills + sub-cards nested **WITHIN** big cards is encouraged. |
+| **Spotlight / featured** | one hero item lifted above a row (a "today's pick") | a wider/taller card, a cover/flora, a single strong CTA. |
+| **Stat / metric tile** | a single number/streak/insight at a glance (Pulse) | big serif figure + a tiny label + a sparkline/flora; never a wall of them. |
+| **Expandable** | progressive disclosure — summary first, detail on tap | a collapsed `FwCard` that expands in place (not a new route) for the long version. |
+| **Letter / note card** | an intimate, **un-clinical** message ("a letter from your body", a Jess note) | the §10.6 sealed-letter/deckle look (PROPOSED) — the most distinctly-FemWell card. |
+| **Media-led** | audio/video/story that **plays IN the card** (§6.7.4) | cover/inline player ABOVE the hook; plays in place, deep-links to the exact item full-screen. |
+| **Timeline / agenda** | a day/week of ordered items (Planner) | a vertical rail of compact rows with times + inline tick (quick-action popup). |
+| **Progress (flora that grows)** | a goal/programme advancing over time | a vine/bloom that adds growth per step (§10.1 lifecycle) instead of a bar. |
+
+**STRUCTURAL RULES:**
+- **The MAIN page slider is HORIZONTAL.** Primary page navigation between boards/sections is a horizontal scroll-snap pager (the clipboard slider / `FwCardRow`), never a vertical-only wall.
+- **Sliders-within-sliders (in-card decks) are ALLOWED / ENCOURAGED** — but ONLY with the safeguards, because horizontal scroll is genuinely *missed* (NN/g eye-tracking) and a flush full-bleed deck reads as "nothing there" (the illusion of completeness): **(1)** show a **12–16% PEEK** of the next lens at the right edge (peek is the strong cue; **dots are weak on their own**); **(2)** **persistent (not hover-only) dots + ‹ › arrows**; **(3)** **cap at 4–5 lenses**, best-first; **(4)** an **inner gutter** so the swipe doesn't fight OS back-swipe or page vertical scroll; **(5)** the **`overscroll-behavior-x: contain` gesture firewall** (§6.10.1) so the inner deck never drags the outer board. **Never nest a horizontal deck inside ANOTHER horizontal deck** (one level of nesting only: outer board-slider → inner lens-deck).
+- **Colour pills + sub-card styles live WITHIN big cards** — a board may hold rim sub-cards, tile grids, a lens-deck and a pair of action pills. That richness *is* the language. **Don't default to a plain card when a typed one fits.**
+
 ### 6.7.1 The ONE card family + reference dimensions
 - **Reference = the Today "across your day" per-section card** (`TodayOption2` `TodayCard`). The shared primitive **`FwCard`** reproduces it verbatim and is the ONLY card shell: `width 365` (`FW_CARD_W`, ~85vw so the next card peeks) · `minHeight 488` (`FW_CARD_MINH`) · `background linear-gradient(165deg, paperHi 0%, ${accent}14 100%)` · `1px paperDeep` border + **`4px` accent left-rim** · **4-corner sprig frame** (`CardCorner`×4, size 46 / opacity 0.6) · `borderRadius 20` · `padding 20` · the layered editorial shadow (`0 4px 20px / 0 1px 4px rgba(58,44,26,…)`). One brand-lush family — same size, framing, flora, type, content length everywhere.
 - **Rows of cards** use `FwCardRow` (the Today scroll-snap track: `gap 14`, `scroll-snap x mandatory`, peek), labelled by section/type.
@@ -521,5 +549,6 @@ Every section is **headed by a flower/bouquet** that reflects the section + her 
 - **The ONE in-app brand home:** the **"Brand Bible"** entry in the Ideas page (`components/founders/brandDocs/brand-bible.html`) = the single phone-readable export of this file. There is **exactly one** brand entry now — the former "Living Ecosystem", "Brand Identity" and "Flora & Meaning" entries are **folded into it** (the `BrandIdentityDoc.jsx`/`FloraMeaningDoc.jsx`/`living-ecosystem.html` are retired).
 - **`claude-state/BRAND_FLORA.md`** — deep flora map, floriography + colour-symbolism research, the fingerprint permutation math (§7.1), full sources (a cited *appendix* to §5/§10, not a separate brand doc).
 - **`claude-state/BRAND_IMAGE_RESEARCH.md`** — the botanical-system research brief (Aesop restraint, Art Nouveau whiplash line, William Morris, the fleuron, women's-wellness palette), with sources.
+- **`workspace/CARD_PATTERNS_RESEARCH_2026-06-25.md`** — cited modern-mobile card-pattern research (M3/Carbon/Polaris/NN-g/Apple HIG/EightShapes) behind the §6.7.0 card language, incl. the nested-horizontal-scroll safeguards.
 - **Live flora catalogue:** `/FloraLabDemo` — the full 64-flower library + foliage + lifecycle, rendered.
 - This master is **self-sufficient for building** without opening the appendices; the appendices add the cited "why" and the exhaustive lists.

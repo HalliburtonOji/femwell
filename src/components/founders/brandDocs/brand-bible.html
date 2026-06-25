@@ -5,13 +5,13 @@
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500;1,600&family=Ephesis&display=swap" rel="stylesheet">
 <style>
-  :root{--paper:#ECE7DA;--paperHi:#F4EFE3;--paperDeep:#D8CFBC;--ink:#0B0805;--inkSoft:#1A140D;--muted:#2E261B;--gold:#A8893F;--crimson:#BC2E27;--blush:#E8B4B8;--sage:#8FAF8F;--plum:#8E6E8E;--serif:'Cormorant Garamond',Georgia,serif;--script:'Ephesis',cursive;--sans:ui-sans-serif,system-ui,-apple-system,'Segoe UI',sans-serif;}
+  :root{--paper:#ECE7DA;--paperHi:#F4EFE3;--paperDeep:#D8CFBC;--ink:#0B0805;--inkSoft:#1A140D;--muted:#2E261B;--gold:#A8893F;--crimson:#BC2E27;--oxblood:#7E1B16;--blush:#E8B4B8;--sage:#8FAF8F;--plum:#8E6E8E;--serif:'Cormorant Garamond',Georgia,serif;--script:'Ephesis',cursive;--sans:ui-sans-serif,system-ui,-apple-system,'Segoe UI',sans-serif;}
   *{box-sizing:border-box}
   body{margin:0;background:radial-gradient(120% 80% at 12% 0%,#F4EFE3 0%,rgba(244,239,227,0) 55%),radial-gradient(120% 90% at 100% 100%,#E4DDCC 0%,rgba(228,221,204,0) 50%),var(--paper);color:var(--ink);font-family:var(--serif);font-size:18px;line-height:1.6;-webkit-font-smoothing:antialiased}
   .doc{max-width:680px;margin:0 auto;padding:28px 22px 90px}
-  h1.cover{font-family:var(--script);font-size:62px;color:var(--crimson);margin:6px 0 2px;line-height:1}
-  h2{font-family:var(--serif);font-style:italic;font-weight:600;font-size:29px;color:var(--ink);margin:0 0 4px}
-  h3{font-family:var(--serif);font-weight:600;font-size:21px;margin:20px 0 6px}
+  h1.cover{font-family:var(--script);font-size:62px;color:var(--oxblood);margin:6px 0 2px;line-height:1}
+  h2{font-family:var(--serif);font-style:italic;font-weight:600;font-size:29px;color:var(--oxblood);margin:0 0 4px}
+  h3{font-family:var(--serif);font-weight:600;font-size:21px;color:var(--oxblood);margin:20px 0 6px}
   h4{font-family:var(--sans);font-size:12px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--gold);margin:14px 0 4px}
   .eyebrow{font-family:var(--sans);font-size:12px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--gold);margin-bottom:10px}
   p{margin:0 0 12px}.lede{font-size:20px;line-height:1.55}
@@ -132,10 +132,11 @@
 <div class="section">
   <div class="eyebrow">Three · Typography <span class="badge ag">Agreed</span></div>
   <h2>Three voices, never four.</h2>
-  <div class="typespec"><div class="meta">Script — Ephesis · short page titles only</div><div class="script" style="font-size:44px;color:var(--crimson)">A new chapter</div></div>
-  <div class="typespec"><div class="meta">Serif — Cormorant Garamond · headings &amp; all reading</div><div style="font-family:var(--serif);font-style:italic;font-weight:600;font-size:25px">Where your body is today</div></div>
+  <div class="typespec"><div class="meta">Script — Ephesis · short page titles only · deep oxblood</div><div class="script" style="font-size:44px;color:var(--oxblood)">A new chapter</div></div>
+  <div class="typespec"><div class="meta">Serif — Cormorant Garamond · section headings (in oxblood) + all reading (in ink)</div><div style="font-family:var(--serif);font-style:italic;font-weight:600;font-size:25px;color:var(--oxblood)">Where your body is today</div></div>
   <div class="typespec"><div class="meta">Sans — system UI · chrome only (buttons, tabs, eyebrows, dates)</div><div style="font-family:var(--sans);font-size:13px;font-weight:700;letter-spacing:.04em">BUTTONS · TABS · EYEBROWS · DATES</div></div>
   <p style="margin-top:8px"><b>The rules that end the “fonts are a mess” problem:</b> Ephesis = short titles only (never all-caps/long). Cormorant = every heading + all reading. System sans = chrome only. Never set Inter/Fraunces expecting a sans (they're remapped to Cormorant). Every node maps to a <b>role</b> — no free font sizes; allowed sizes 12·13·14·15·16·17·18·20 + two clamps; <b>nothing readable below 12px</b>, body ≥16.</p>
+  <p><small><b>Heading colour — deep oxblood <code>#7E1B16</code>:</b> ALL headings render in a deep wine/oxblood red (the “going deeper” script look) via the shared <code>--fw-heading-color</code> token, so it propagates app-wide — the page title is the deep-red Ephesis script; section headings are Cormorant <i>in the same oxblood</i>. The heart crimson <code>#BC2E27</code> is <b>not</b> a heading colour — it stays the heart mark + accent. (Reading body stays near-black ink.)</small></p>
 </div>
 
 <a id="colour"></a>
@@ -149,6 +150,7 @@
     <div class="sw" style="background:#0B0805;color:#ECE7DA"><div class="hex">#0B0805</div>ink · text</div>
     <div class="sw" style="background:#A8893F;color:#fff"><div class="hex">#A8893F</div>gold</div>
     <div class="sw" style="background:#BC2E27;color:#fff"><div class="hex">#BC2E27</div>crimson · the heart</div>
+    <div class="sw" style="background:#7E1B16;color:#fff"><div class="hex">#7E1B16</div>oxblood · headings</div>
     <div class="sw" style="background:#8FAF8F;color:#2E261B"><div class="hex">#8FAF8F</div>sage</div>
   </div>
   <p><small><b>Phase hues</b> (semantic, separate): menstrual crimson · follicular sage · ovulatory gold · luteal plum. <b>Accessibility:</b> body &amp; small text use <b>ink / inkSoft / muted</b> (near-black) only; gold/crimson/sage/blush are for large display, accents, borders &amp; icons — never small body on cream. One clean light + ONE saturated accent (crimson) + ONE deep anchor (ink); the retired duplicate browns/golds stay retired.</small></p>
@@ -179,6 +181,21 @@
   <div class="eyebrow">Six · Cards &amp; the quick-action popup <span class="badge ag">Agreed</span></div>
   <h2>Cards are the language.</h2>
   <p>Never hand-roll a <code>&lt;div&gt;</code> card — import the typed variants (<code>brand/Card.jsx</code>). Each carries an icon + eyebrow + meaning-bloom, a <b>hook</b> (the one line that earns it) + a line (or a real snippet / inline player), and an inline action. <b>No empty containers.</b> Sized to the Today “across your day” card.</p>
+
+  <h4>The card language — a vocabulary, never a generic card</h4>
+  <p>We use a <b>variety</b> of card styles, each with a distinct <b>job</b> — we never default to one generic card. <i>The rule: a new card needs a new job, not a new colour.</i> Don't put three look-alike cards on one screen — pick by emphasis. <b>Use variety + colour pills + card-in-card.</b></p>
+  <table>
+    <tr><th>Card type</th><th>The job (when to use)</th></tr>
+    <tr><td><b>Standard card</b></td><td>one section's rich content in a row/feed (the Today shell).</td></tr>
+    <tr><td><b>Clipboard board</b></td><td>group several peer grids/“rooms” into one big swipeable board (outer horizontal slider · §6.10).</td></tr>
+    <tr><td><b>Tile-grid in a board</b></td><td>a 2–3-col grid of mini-cards inside a board (e.g. “Schedule &amp; plan”). <b>Vary tile size</b> — one hero 2-wide tile, 1-wide for the rest (bento).</td></tr>
+    <tr><td><b>In-card swipe deck</b></td><td>swipe WITHIN a card between peer “lenses”, one per page (the Today loop · <code>CardDeck</code>). See the safeguards below.</td></tr>
+    <tr><td><b>Accent-rim sub-card</b></td><td>a callout / insight in a distinct voice (e.g. “From Jess”) — a coloured left rim whose colour <b>means</b> something (a phase hue / domain), one rim per card.</td></tr>
+    <tr><td><b>Focused colour pills</b></td><td>the 1–2 primary actions on a board (e.g. purple <b>“Speak your plan”</b> + gold <b>“Plan a day”</b>) — big colour CTA pills, ≥48px, <b>one primary + at most one secondary</b> (never two filled crimson side by side).</td></tr>
+    <tr><td><b>+ more</b></td><td>spotlight/featured · stat/metric tile · expandable · letter/note (the sealed-letter look) · media-led (plays in card) · timeline/agenda · progress (flora that grows).</td></tr>
+  </table>
+  <p><small><b>Structural rules:</b> the <b>main page slider is HORIZONTAL</b>; <b>sliders-within-sliders (in-card decks) are encouraged</b> — but ONLY with safeguards, because horizontal scroll is genuinely missed and a flush deck reads as “nothing there”: <b>(1)</b> a <b>12–16% peek</b> of the next lens (peek is the strong cue; dots alone are weak); <b>(2)</b> persistent dots + ‹ › arrows; <b>(3)</b> cap 4–5 lenses, best-first; <b>(4)</b> an inner gutter so it doesn't fight OS back-swipe / page scroll; <b>(5)</b> the <code>overscroll-behavior-x: contain</code> firewall. <b>Only one level of nesting</b> (board-slider → lens-deck — never a deck inside a deck). Colour pills + sub-cards nest <b>within</b> big cards — that richness is the language. <span class="cap">Research: M3 · Carbon · Polaris · NN/g · Apple HIG · EightShapes (file in the repo).</span></small></p>
+
   <h4>The quick-action popup — “do it right here”</h4>
   <p>When she taps a doable micro-task on a page — <b>read today's chapter · answer the Question of the Day · leave a line · log breakfast/mood · tick a ritual · set today's intention</b> — it opens a <b>quick, lightweight popup so she DOES it in place, then it ticks.</b> Not a link-out (don't navigate away for a 10-second task); not a bare checkbox (don't let her tick what she hasn't done).</p>
   <table>
