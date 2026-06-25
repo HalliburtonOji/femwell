@@ -196,6 +196,9 @@ import GrowthLifestyleDemo from './pages/GrowthLifestyleDemo';
 import GrowthCommunityDemo from './pages/GrowthCommunityDemo';
 import GrowthProfileDemo from './pages/GrowthProfileDemo';
 import PlannerRedesignDemo from './pages/PlannerRedesignDemo';
+// PlannerNewDemo = the GROUND-UP "The Day, Tended" Planner rebuild (NEW components — real
+// time-blocking + capacity/energy + whole-life intentions; NOT a PlannerV2Shell reskin). Preview route.
+import PlannerNewDemo from './pages/PlannerNewDemo';
 // NutritionHub = the REAL new Nutrition page (Daily Hub + Hero Card Slider hybrid,
 // wired to real entities, reuses the hardened nutrition components). Lives at
 // /NutritionHub for live-verify; once verified it replaces the "Nutrition" route.
@@ -343,6 +346,7 @@ export const PAGES = {
     "GrowthCommunityDemo": GrowthCommunityDemo,
     "GrowthProfileDemo": GrowthProfileDemo,
     "PlannerRedesignDemo": PlannerRedesignDemo,
+    "PlannerNewDemo": PlannerNewDemo,
     "NutritionHub": NutritionHub,
     "JournalRedesign1": JournalRedesign1,
     "CommunityRedesign1": CommunityRedesign1,
