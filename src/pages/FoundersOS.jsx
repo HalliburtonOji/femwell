@@ -63,6 +63,7 @@ import brandBibleHtml from "@/components/founders/brandDocs/brand-bible.html?raw
 import pageBrandAuditHtml from "@/components/founders/brandDocs/page-brand-audit.html?raw";
 import intentionsGoalsHtml from "@/components/founders/brandDocs/intentions-goals.html?raw";
 import connectDaysMissionsHtml from "@/components/founders/brandDocs/connect-days-missions.html?raw";
+import plannerEnrichmentHtml from "@/components/founders/brandDocs/planner-enrichment.html?raw";
 // HealthCornerDemo was the multi-layout preview. The canonical health
 // experience now lives at /Health (src/pages/Health.jsx). The Health Corner
 // tab in /Ideas renders <HealthCornerRedirectCard /> instead.
@@ -278,6 +279,8 @@ const CATALOG = [
     title: "The Brand Bible", desc: "The ONE source of truth — soul · voice · type · colour · the full flora system (recognisability + the 64-flower library + lifecycle + meaning) · cards + the quick-action popup · page structure · components · nav. Agreed canon, plus a clearly-marked 'Proposed — awaiting sign-off' section. Renders in-app with live flora. (The old separate Living-Ecosystem / Brand Identity / Flora & Meaning docs are folded in here — one brand home.)" },
 
   // ── Specs & Plans (in-page docs) ──────────────────────────────────────
+  { kind: "doc", key: "Planner Enrichment", group: CAT.CURRENT, status: "new", accent: "gold",
+    title: "Planner — going deeper (research + preview) ★ react", desc: "PREVIEW (nothing built yet) for enriching the new Planner. A full app data-scan (what FemWell already knows that a planner can use — phase/energy/sleep/HRV/symptoms/habits — + the honest gaps) and CITED research on what a women's whole-life planner should do that a generic one doesn't (cyclical energy planning · the mental load / invisible labour · caregiving logistics · life-admin · executive-function-friendly · time-blocking vs intention · energy>time · seasons of life · rest as planned). Then the concrete proposals on the sliding-card language: rework Capacity → \"Reserves\" with a 4-lens swipe deck (Energy · Load · Recovery · Boundaries); grow Rituals into a 4-lens deck (Anchors · Reset · Focus · Rhythm); add \"The load\" board (invisible labour + life-admin — the differentiator); plus intentions \"this season\", energy-type task tags, and a season-of-life mode. Includes a rides-existing-vs-needs-a-small-add data table + a fold-in order. React before we build it into /PlannerNewDemo." },
   { kind: "doc", key: "Page Brand Audit", group: CAT.CURRENT, status: "new", accent: "sage",
     title: "Per-Page Brand Audit & Fix Plan (v4)", desc: "Every page audited vs the full bar (the 64-flower library · the quick-action popup · the living-ecosystem layer) + the in-flight features. Foundation offenders ranked + a per-page uplift matrix; Planner/Jess detail; Ritual Builder demo. For approval." },
   { kind: "doc", key: "Intentions & Goals", group: CAT.CURRENT, status: "new", accent: "crimson",
@@ -951,6 +954,7 @@ function FoundersInner({ user }) {
       {tab === "Bottom-Nav Plan" && <DocSurface><BottomNavPlanDoc /></DocSurface>}
       {tab === "Brand Bible" && <BrandDocFrame html={brandBibleHtml} title="FemWell — Brand Bible" />}
       {tab === "Page Brand Audit" && <BrandDocFrame html={pageBrandAuditHtml} title="FemWell — Per-Page Brand Audit" />}
+      {tab === "Planner Enrichment" && <BrandDocFrame html={plannerEnrichmentHtml} title="FemWell — Planner Enrichment (research + preview)" />}
       {tab === "Intentions & Goals" && <BrandDocFrame html={intentionsGoalsHtml} title="FemWell — Intentions, Line of the Day & Goals" />}
       {tab === "Connect, Days & Missions" && <BrandDocFrame html={connectDaysMissionsHtml} title="FemWell — No Garden Grows Alone (Connection, Days Off & Tiny Missions)" />}
       {tab === "Ideas"     && <IdeasTab user={user} />}

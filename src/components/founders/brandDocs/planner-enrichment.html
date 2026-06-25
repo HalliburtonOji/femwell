@@ -1,0 +1,285 @@
+<!doctype html>
+<html lang="en-GB"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>FemWell — Planner Enrichment (research + preview)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500;1,600&family=Ephesis&display=swap" rel="stylesheet">
+<style>
+  :root{--paper:#ECE7DA;--paperHi:#F4EFE3;--paperDeep:#D8CFBC;--ink:#0B0805;--inkSoft:#1A140D;--muted:#2E261B;--gold:#A8893F;--crimson:#BC2E27;--blush:#E8B4B8;--sage:#8FAF8F;--plum:#8E6E8E;--serif:'Cormorant Garamond',Georgia,serif;--script:'Ephesis',cursive;--sans:ui-sans-serif,system-ui,-apple-system,'Segoe UI',sans-serif;}
+  *{box-sizing:border-box}
+  body{margin:0;background:radial-gradient(120% 80% at 12% 0%,#F4EFE3 0%,rgba(244,239,227,0) 55%),radial-gradient(120% 90% at 100% 100%,#E4DDCC 0%,rgba(228,221,204,0) 50%),var(--paper);color:var(--ink);font-family:var(--serif);font-size:18px;line-height:1.6;-webkit-font-smoothing:antialiased}
+  .doc{max-width:680px;margin:0 auto;padding:30px 22px 90px}
+  h1.cover{font-family:var(--script);font-size:52px;color:var(--crimson);margin:6px 0 2px;line-height:1.04}
+  h2{font-family:var(--serif);font-style:italic;font-weight:600;font-size:27px;margin:0 0 6px}
+  h3{font-family:var(--serif);font-weight:600;font-size:21px;margin:18px 0 6px}
+  h4{font-family:var(--sans);font-size:12px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--gold);margin:16px 0 4px}
+  .eyebrow{font-family:var(--sans);font-size:12px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--gold);margin-bottom:10px}
+  p{margin:0 0 12px}.lede{font-size:20px;line-height:1.55}
+  small,.cap{font-family:var(--sans);font-size:13px;color:var(--muted);line-height:1.5}
+  b,strong{font-weight:600}
+  a{color:var(--crimson);text-decoration:none;border-bottom:1px solid rgba(188,46,39,.3)}
+  .section{background:var(--paperHi);border:1px solid var(--paperDeep);border-left:4px solid var(--gold);border-radius:20px;padding:22px 20px;margin:18px 0;box-shadow:0 4px 20px rgba(58,44,26,.10),0 1px 4px rgba(58,44,26,.06);position:relative;overflow:hidden}
+  .section.crimson{border-left-color:var(--crimson)}.section.sage{border-left-color:var(--sage)}.section.plum{border-left-color:var(--plum)}.section.blush{border-left-color:var(--blush)}
+  .rule{height:1px;background:var(--gold);opacity:.32;margin:18px 0}
+  .center{text-align:center}
+  table{width:100%;border-collapse:collapse;font-size:14px;font-family:var(--sans);margin:8px 0}
+  th,td{text-align:left;padding:7px 8px;border-bottom:1px solid var(--paperDeep);vertical-align:top}
+  th{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--gold)}
+  td b{font-family:var(--serif);font-size:15px}
+  .toc a{display:block;font-family:var(--sans);font-size:15px;color:var(--inkSoft);text-decoration:none;border-bottom:1px solid var(--paperDeep);padding:6px 0}
+  .toc a span{color:var(--gold);font-weight:700;margin-right:10px}
+  .script{font-family:var(--script);color:var(--crimson)}
+  .pill{display:inline-block;font-family:var(--sans);font-size:12px;font-weight:600;padding:5px 11px;border-radius:999px;background:var(--paper);border:1px solid var(--paperDeep);margin:3px 4px 3px 0}
+  .pill.rec{background:#EAF1EA;border-color:var(--sage);color:#3f6b3f}
+  .pill.gap{background:#FBE9E6;border-color:var(--crimson);color:var(--crimson)}
+  .pill.ok{background:#EAF1EA;border-color:var(--sage);color:#3f6b3f}
+  .lens{background:var(--paper);border:1px solid var(--paperDeep);border-left:3px solid var(--gold);border-radius:12px;padding:12px 14px;margin:8px 0}
+  .lens .nm{font-family:var(--serif);font-weight:600;font-size:18px;color:var(--ink);margin-bottom:2px}
+  .lens .nm .ix{font-family:var(--sans);font-size:11px;font-weight:700;letter-spacing:.1em;color:var(--gold);margin-right:8px;text-transform:uppercase}
+  .lens p{margin:0;font-size:15px;line-height:1.5;color:var(--inkSoft)}
+  .lens .src{font-family:var(--sans);font-size:12px;color:var(--muted);margin-top:5px}
+  .deck{border:1px dashed var(--gold);border-radius:14px;padding:6px 12px 12px;margin:10px 0;background:rgba(168,137,63,.04)}
+  .deck .dh{font-family:var(--sans);font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);margin:8px 0 2px}
+  .num{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:999px;background:var(--crimson);color:#fff;font-family:var(--sans);font-size:12px;font-weight:700;margin-right:8px;vertical-align:1px}
+  .foot{font-family:var(--sans);font-size:12px;color:var(--muted);text-align:center;margin-top:30px;line-height:1.6}
+  ul{margin:4px 0 12px;padding-left:20px}li{margin:3px 0}
+</style></head>
+<body><div class="doc">
+
+<div class="center" style="padding:14px 0 4px">
+  <div class="eyebrow">FemWell · Planner · research + preview · for your reaction</div>
+  <h1 class="cover">The Day, Tended —<br>going deeper</h1>
+  <p class="lede" style="font-style:italic;max-width:500px;margin:8px auto 0">What a women's whole-life planner should do that a generic one doesn't — what the app already knows, what the research says, and how to grow the Capacity &amp; Rituals cards into rich swipe-decks. <b>Preview only — nothing built yet.</b></p>
+</div>
+
+<div class="section">
+  <div class="eyebrow">The one-line thesis</div>
+  <p class="lede">A generic planner schedules <b>visible tasks against the clock</b>. A women's whole-life planner schedules <b>the whole load against her energy</b> — naming the invisible work, planning to the cycle's seasons, and treating rest as a booking, not a leftover.</p>
+  <h4>The headline moves (preview)</h4>
+  <ul>
+    <li><b>Rework "Capacity" → "Reserves"</b> (name options inside) — a broader board with its own 4-lens swipe deck: <b>Energy · Load · Recovery · Boundaries</b>.</li>
+    <li><b>Grow "Rituals" into a 4-lens swipe deck:</b> <b>Anchors · Reset · Focus · Rhythm</b> — including Nagoski's "complete the stress cycle" and an EF-friendly focus/body-double mode.</li>
+    <li><b>Add the missing pillar — "The load":</b> the invisible-labour + life-admin lane (who notices/owns/tracks; delete/delegate/automate). The single biggest differentiator vs every other planner.</li>
+    <li><b>Smaller folds:</b> intentions gain a "This season" lens; blocks gain an energy-type tag; a season-of-life mode that lowers the default bar.</li>
+  </ul>
+</div>
+
+<div class="section sage">
+  <div class="eyebrow">Contents</div>
+  <div class="toc">
+    <a href="#scan"><span>1</span> What the app already knows (data scan)</a>
+    <a href="#gaps"><span>2</span> The gaps — what's missing for a real planner</a>
+    <a href="#research"><span>3</span> What the research says (cited) + Top 8</a>
+    <a href="#capacity"><span>4</span> Proposal — "Reserves" (the Capacity rework)</a>
+    <a href="#rituals"><span>5</span> Proposal — Rituals as a swipe-deck</a>
+    <a href="#new"><span>6</span> Proposal — new elements (the load, season, more)</a>
+    <a href="#data"><span>7</span> Data reality — rides existing vs needs a small add</a>
+    <a href="#first"><span>8</span> What I'd fold in first</a>
+  </div>
+</div>
+
+<!-- 1 · APP SCAN -->
+<a id="scan"></a>
+<div class="section">
+  <div class="eyebrow">1 · The data scan</div>
+  <h2>What the app already knows</h2>
+  <p>FemWell is <b>data-rich</b> for a planner — far more than a to-do app. A planner can already draw on real signals across the app, today:</p>
+  <table>
+    <tr><th>Signal</th><th>Where it lives</th></tr>
+    <tr><td><b>Cycle phase + day</b> (the seasons)</td><td>PhaseHistory · UserProfile · DailyPhaseBrief</td></tr>
+    <tr><td><b>Daily energy / mood / stress / focus</b></td><td>DailyCheckins (energy·mood·stress·focus 1–5)</td></tr>
+    <tr><td><b>Sleep &amp; recovery</b></td><td>DailyCheckins (sleep_hours/quality) · <b>WearableSync</b> (HRV, RHR, REM/deep/light, readiness_score)</td></tr>
+    <tr><td><b>Symptoms / load drains</b></td><td>SymptomLogs (severity) · DailyCheckins (cramps/pain/bloating) · MenopauseDailyLog (hot flushes, brain fog)</td></tr>
+    <tr><td><b>Tasks &amp; time-blocks</b></td><td>PersonalTasks · PlannerItems (repeat) · DailyPlan (time-slotted + duration_minutes)</td></tr>
+    <tr><td><b>Habits / rituals / streaks</b></td><td>HabitLogs · UserPrograms.streak_count · Intention (daily + reflection)</td></tr>
+    <tr><td><b>Commitments / programmes</b></td><td>UserPrograms + ProgramDays (estimated_minutes) · MedicationReminders · reminder times</td></tr>
+    <tr><td><b>Meals &amp; hydration</b></td><td>MealLog · MealPlans · HydrationLog</td></tr>
+    <tr><td><b>Goals &amp; intentions</b></td><td>Goal (seed→tree) · Intention (bloomed/half/rested)</td></tr>
+    <tr><td><b>Patterns &amp; forecasts</b></td><td>Correlations · WeeklyInsights (week_ahead) · DailyAggregates · InsightCards</td></tr>
+    <tr><td><b>Life-stage context</b></td><td>UserProfile.life_stage · Pregnancy/Menopause profiles + daily logs</td></tr>
+  </table>
+  <p class="cap"><b>Takeaway:</b> energy, recovery, cycle-season, symptoms and habit data are <b>already captured</b> — the planner just doesn't <i>use</i> most of them. The richness is there to mine; the gap is in <b>surfacing</b> and <b>acting</b> on it.</p>
+</div>
+
+<!-- 2 · GAPS -->
+<a id="gaps"></a>
+<div class="section crimson">
+  <div class="eyebrow">2 · The gaps</div>
+  <h2>What's missing for a real planner</h2>
+  <p>Honest gaps the scan surfaced — concepts a whole-life women's planner wants, that the app has <b>no data or surface for yet</b>:</p>
+  <ul>
+    <li><span class="pill gap">no effort/energy on tasks</span> PersonalTasks/PlannerItems have no <b>estimated duration or energy-cost</b> — so the planner can't weigh a day honestly.</li>
+    <li><span class="pill gap">no invisible labour</span> Every task is a flat "do" — nothing captures <b>who notices / who owns / who tracks</b> it (the mental load).</li>
+    <li><span class="pill gap">no household layer</span> Tasks are self-only; no <b>caregiving / family / shared</b> coordination (school run, parent's appointment).</li>
+    <li><span class="pill gap">no life-admin lane</span> No category for renewals / forms / bills / appointments biased toward <b>doing less</b>.</li>
+    <li><span class="pill gap">no protected time</span> No "rest block", "do-not-schedule" window, or <b>boundary</b> the plan must respect.</li>
+    <li><span class="pill gap">recovery not used</span> Sleep + HRV + readiness exist in WearableSync but <b>nothing reads them</b> to suggest a lighter day.</li>
+    <li><span class="pill gap">no symptom→capacity link</span> Severe cramps don't <b>automatically soften</b> the day's load.</li>
+    <li><span class="pill gap">rest is leftover</span> No way to <b>schedule</b> rest/recovery as a first-class, protected booking.</li>
+  </ul>
+</div>
+
+<!-- 3 · RESEARCH -->
+<a id="research"></a>
+<div class="section plum">
+  <div class="eyebrow">3 · The research (cited)</div>
+  <h2>What a women's planner should do</h2>
+  <p>Nine areas, each with the finding, the design implication, and a source. (Two are flagged as <b>popular-practice, not RCT-grade</b> — design with, don't over-claim.)</p>
+
+  <div class="lens"><div class="nm"><span class="ix">01</span>Cyclical, energy-aware planning</div>
+    <p>A 372-woman workplace survey found markedly worse self-rated concentration, energy (81% hit) and mood in the bleed/pre-bleed phases, and better in late-follicular/early-luteal (p≤0.001) — real lived experience to plan <i>with</i>, framed as energy not deficit. Hill's four "seasons" (winter/spring/summer/autumn) is the usable frame. <b>→ Suggest a phase-tinted capacity; tag tasks by energy demand; always overridable.</b></p>
+    <p class="src">Sources: <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC12398178/">PMC12398178 (workplace survey)</a> · <a href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4241821/">PMC4241821 (cognition)</a> · <a href="https://maisiehill.com/">Maisie Hill, Period Power</a> <span class="pill gap" style="font-size:11px">flag: popular-practice</span></p>
+  </div>
+
+  <div class="lens crimson" style="border-left-color:var(--crimson)"><div class="nm"><span class="ix">02</span>The mental load / invisible labour</div>
+    <p>Daminger (ASR 2019, 70 interviews) splits cognitive labour into <b>anticipate · identify · decide · monitor</b> — women carry disproportionate anticipation + monitoring, the never-finished parts. Rodsky's <i>Fair Play</i>: hand over <b>Conception→Planning→Execution</b> in full, or the load stays. <b>→ Let tasks hold "who notices/owns/tracks"; support full hand-off. The biggest differentiator.</b></p>
+    <p class="src">Sources: <a href="https://journals.sagepub.com/doi/10.1177/0003122419859007">Daminger, ASR 2019</a> · <a href="https://www.fairplaylife.com/the-book">Rodsky, Fair Play</a></p>
+  </div>
+
+  <div class="lens sage" style="border-left-color:var(--sage)"><div class="nm"><span class="ix">03</span>Caregiving &amp; family logistics</div>
+    <p>Women are the default household coordinators; 65.6% of "sandwich generation" caregivers are women, and half of those mothers have left a job over caregiving demands. The coordination <i>is</i> the labour. <b>→ A shared household/coordination layer; caregiving logistics as first-class; the season lowers pressure.</b></p>
+    <p class="src">Sources: <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC12288679/">PMC12288679 (sandwich caregiving)</a> · <a href="https://caringacross.org/wp-content/uploads/2024/01/NAC_SandwichCaregiving_Report_digital112019.pdf">Caring Across (2019)</a></p>
+  </div>
+
+  <div class="lens"><div class="nm"><span class="ix">04</span>Life admin</div>
+    <p>Emens (Columbia Law) names "life admin" — bills, forms, renewals, logistics — invisible, uncredited, expanding, landing on women. Her prescription: <b>do less, do better, redistribute</b>. <b>→ An admin lane biased toward reduction: "delete / delegate / automate?", not just "when?"</b></p>
+    <p class="src">Source: <a href="https://www.elizabethemens.com/home">Elizabeth Emens, Life Admin</a></p>
+  </div>
+
+  <div class="lens plum" style="border-left-color:var(--plum)"><div class="nm"><span class="ix">05</span>Executive-function-friendly</div>
+    <p>ADHD is widely late-diagnosed in women; core issues are <b>time-blindness</b> and <b>task initiation</b>. Reliable counters: <b>externalising</b> tasks/time and <b>body-doubling</b>. Same support helps luteal/PMDD fog and early postpartum. <b>→ Visible durations + gentle countdowns; a "2-minute first step"; a focus/body-double mode; low-capacity-day presets that shrink the plan, never guilt.</b></p>
+    <p class="src">Sources: <a href="https://add.org/adhd-time-blindness/">ADDA — time blindness</a> · <a href="https://flown.com/blog/adhd/time-blindness">FLOWN — body-doubling</a></p>
+  </div>
+
+  <div class="lens"><div class="nm"><span class="ix">06</span>Time-blocking vs intention/values</div>
+    <p>Newport's time-blocking protects deep work but always needs rescheduling; Burkeman's <i>Four Thousand Weeks</i> argues the real skill is <b>deciding what to neglect</b> (finitude). <b>→ Lead with intention/most-important-things; offer soft, re-flowable blocks underneath; make "what am I deliberately not doing?" a feature.</b></p>
+    <p class="src">Sources: <a href="https://www.timeblockplanner.com/">Cal Newport, Time-Block Planner</a> · <a href="https://www.oliverburkeman.com/fourthousandweeks">Burkeman, Four Thousand Weeks</a></p>
+  </div>
+
+  <div class="lens"><div class="nm"><span class="ix">07</span>Energy management, not time</div>
+    <p>Schwartz &amp; McCarthy (HBR): energy is the real currency, from four sources — body, emotions, mind, spirit — running on ~90-min ultradian rhythms; push past the dip and output degrades. <b>→ Tag tasks by energy type; deep work in ~90-min blocks with recovery built in; phase-energy × ultradian-energy = the right task for this hour, this week.</b></p>
+    <p class="src">Source: <a href="https://hbr.org/2007/10/manage-your-energy-not-your-time">HBR — Manage Your Energy, Not Your Time</a></p>
+  </div>
+
+  <div class="lens sage" style="border-left-color:var(--sage)"><div class="nm"><span class="ix">08</span>Seasons of life</div>
+    <p>Women's seasons collide — peak caregiving often overlaps perimenopause. Practitioners frame these as transitions to flex <i>with</i>, favouring small sustainable adjustments. <b>→ The planner's baseline ambition should shift with the season; a new-baby / perimenopause / heavy-caregiving mode lowers the default load and reframes success as sustaining.</b></p>
+    <p class="src">Sources: <a href="https://www.nextavenue.org/when-menopause-and-caregiving-collide/">Next Avenue — menopause × caregiving</a> · <a href="https://www.psychologytoday.com/us/blog/scientific-mommy/202504/what-happens-when-menopause-meets-motherhood">Psychology Today</a></p>
+  </div>
+
+  <div class="lens crimson" style="border-left-color:var(--crimson)"><div class="nm"><span class="ix">09</span>Rest &amp; recovery as planned</div>
+    <p>The Nagoskis' <i>Burnout</i>: burnout is hitting stressors without <b>completing the stress cycle</b> — and completion needs <i>action</i> (movement, sleep, laughter, crying, affection, creativity, connection), not insight. "Human Giver Syndrome" deprioritises women's rest. <b>→ Make rest + stress-cycle completers first-class, protected, plannable blocks — not leftovers.</b></p>
+    <p class="src">Sources: <a href="https://www.penguinrandomhouse.com/books/592377/burnout-by-emily-nagoski-phd-and-amelia-nagoski-dma/">Nagoski, Burnout</a> · <a href="https://brenebrown.com/podcast/brene-with-emily-and-amelia-nagoski-on-burnout-and-how-to-complete-the-stress-cycle/">Brené Brown × Nagoski</a></p>
+  </div>
+
+  <div class="rule"></div>
+  <h4>Top 8 — what we should do that a generic planner doesn't</h4>
+  <p><span class="num">1</span><b>Plan to the cycle's seasons</b>, not a flat week (overridable). <span class="num">2</span><b>Capture invisible labour</b>, not just visible tasks. <span class="num">3</span>Be a <b>household coordination layer</b>. <span class="num">4</span>Treat <b>life-admin as reduction</b>. <span class="num">5</span>Be <b>executive-function-friendly</b> by default. <span class="num">6</span><b>Lead with intention</b>, blocks second; doing-less is a feature. <span class="num">7</span><b>Schedule energy</b>, not just hours. <span class="num">8</span>Make <b>rest a protected booking</b> and flex the bar by life-season.</p>
+</div>
+
+<!-- 4 · CAPACITY REWORK -->
+<a id="capacity"></a>
+<div class="section sage">
+  <div class="eyebrow">4 · Proposal</div>
+  <h2>"Reserves" — the Capacity rework</h2>
+  <p>The current "Capacity" board does one thing (a load meter + energy curve). You wanted it to <b>hold more</b> — so make it the board about <b>everything you're working with today</b>, with its own slide-within-card deck.</p>
+  <h4>The name (it should feel broader + warmer)</h4>
+  <p><span class="pill rec">Reserves ★ recommended</span> <span class="pill">Bandwidth</span> <span class="pill">Your weather</span> <span class="pill">Energy &amp; limits</span> <span class="pill">Keep "Capacity"</span></p>
+  <p class="cap"><b>Why "Reserves":</b> garden-true (the soil you draw on), broader than "capacity", and kinder than a productivity word. "Your weather" is the playful alternate (a day has its weather). Your call — I'd lead with <b>Reserves</b>.</p>
+
+  <div class="deck">
+    <div class="dh">▸ slide within the card — 4 lenses</div>
+    <div class="lens"><div class="nm"><span class="ix">Lens 1</span>Energy</div>
+      <p>The phase-season × ultradian curve (today's bright window + dips). "Plant the bold thing in your peak; save admin for the dip." <span class="pill ok" style="font-size:11px">rides existing data</span></p>
+    </div>
+    <div class="lens"><div class="nm"><span class="ix">Lens 2</span>Load</div>
+      <p>What you've planned vs your phase-set ceiling (the meter + 100% line + Ease-it), plus the finitude prompt: <i>"What are you deliberately not doing today?"</i> <span class="pill ok" style="font-size:11px">rides existing</span></p>
+    </div>
+    <div class="lens"><div class="nm"><span class="ix">Lens 3</span>Recovery</div>
+      <p>Last night's sleep + readiness/HRV (from WearableSync) and a gentle "rest debt" read → a one-tap <b>plan a rest block</b>. Rest is a booking, not a leftover. <span class="pill gap" style="font-size:11px">part-new (reads existing wearable/sleep; rest-block needs a small add)</span></p>
+    </div>
+    <div class="lens"><div class="nm"><span class="ix">Lens 4</span>Boundaries</div>
+      <p>Protected/no-plan windows the day must respect, and a <b>low-capacity-day preset</b> that shrinks the plan (for a heavy bleed, a fog day, a hard week) — never guilt. <span class="pill gap" style="font-size:11px">new (protected-time)</span></p>
+    </div>
+  </div>
+</div>
+
+<!-- 5 · RITUALS REWORK -->
+<a id="rituals"></a>
+<div class="section">
+  <div class="eyebrow">5 · Proposal</div>
+  <h2>Rituals — as a swipe-deck</h2>
+  <p>Rituals today = morning + evening anchors. Grow it into a 4-lens deck so it carries <b>rest and focus</b>, not just habit ticks. (Name can stay "Rituals" or become "<b>Rhythm &amp; rest</b>".)</p>
+  <div class="deck">
+    <div class="dh">▸ slide within the card — 4 lenses</div>
+    <div class="lens"><div class="nm"><span class="ix">Lens 1</span>Anchors</div><p>Morning + evening tickable anchors (today's). <span class="pill ok" style="font-size:11px">rides HabitLogs</span></p></div>
+    <div class="lens"><div class="nm"><span class="ix">Lens 2</span>Reset</div><p>Nagoski's <b>stress-cycle completers</b> as plannable, protected micro-actions: a walk, a good cry, a hug, ten creative minutes, a breath. "Complete the cycle, not just rest." <span class="pill gap" style="font-size:11px">light add</span></p></div>
+    <div class="lens"><div class="nm"><span class="ix">Lens 3</span>Focus</div><p>An EF-friendly <b>focus / body-double session</b> for low-capacity days — a 25-minute "sit with me", and a "2-minute first step" to start the stuck thing. <span class="pill gap" style="font-size:11px">new (UI)</span></p></div>
+    <div class="lens"><div class="nm"><span class="ix">Lens 4</span>Rhythm</div><p>The honest consistency read (your streak, gently) + how it flexes with the season. <span class="pill ok" style="font-size:11px">rides HabitLogs</span></p></div>
+  </div>
+</div>
+
+<!-- 6 · NEW ELEMENTS -->
+<a id="new"></a>
+<div class="section crimson">
+  <div class="eyebrow">6 · Proposal</div>
+  <h2>New elements the research surfaced</h2>
+
+  <h3>★ "The load" — a new board (the differentiator)</h3>
+  <p>The single biggest thing FemWell can do that no generic planner does: hold the <b>invisible</b> work, not just the visible. A distinct board with two lenses — <b>no overlap</b> with the day's task list.</p>
+  <div class="deck">
+    <div class="dh">▸ slide within the card — 2 lenses</div>
+    <div class="lens"><div class="nm"><span class="ix">Lens 1</span>Invisible labour</div><p>Capture the mental load — each item can hold <b>who notices · who owns · who tracks</b>, with a "hand it over fully" action (not just "assign the chore"). Surfaces the anticipation/monitoring women carry. <span class="pill gap" style="font-size:11px">needs new fields</span></p></div>
+    <div class="lens"><div class="nm"><span class="ix">Lens 2</span>Life admin</div><p>A reduction-biased lane for renewals · forms · bills · appointments, each with the prompt <i>"delete · delegate · automate · or do?"</i> A planner that helps you do <b>less</b> admin. <span class="pill gap" style="font-size:11px">needs new field/category</span></p></div>
+  </div>
+
+  <h3>Smaller folds (each distinct, no duplication)</h3>
+  <ul>
+    <li><b>Intentions gains a "This season" lens.</b> Today's intentions stay; a second lens holds what matters <i>this season</i> + "what I'm deliberately not doing" (finitude). <span class="pill ok" style="font-size:11px">rides Intention</span></li>
+    <li><b>Energy-type tag on blocks.</b> Each block is already a "kind" (focus/task/life/move/rest) — map it to an <b>energy demand</b> so the day auto-suggests the right task for the phase-week + ultradian peak. <span class="pill gap" style="font-size:11px">small field on PlannerItems</span></li>
+    <li><b>Season-of-life mode.</b> A planner setting (new-baby · perimenopause · heavy-caregiving · steady) that lowers the default load and shifts the tone — success becomes <i>sustaining</i>. <span class="pill ok" style="font-size:11px">rides life_stage + a pref</span></li>
+    <li><b>EF-friendly day defaults.</b> Visible durations + gentle countdowns, soft re-flow of missed blocks (never a scoreboard), the "2-minute first step". <span class="pill ok" style="font-size:11px">mostly UI</span></li>
+  </ul>
+</div>
+
+<!-- 7 · DATA REALITY -->
+<a id="data"></a>
+<div class="section">
+  <div class="eyebrow">7 · Honest data reality</div>
+  <h2>Rides existing vs needs a small add</h2>
+  <p>So we go in with eyes open (the build rule: ride existing dispatchers; new entities only if truly needed — and stop &amp; report if so):</p>
+  <table>
+    <tr><th>Proposal</th><th>Data</th></tr>
+    <tr><td><b>Reserves · Energy + Load</b></td><td><span class="pill ok">rides existing</span> phase, DailyCheckins, blocks</td></tr>
+    <tr><td><b>Reserves · Recovery</b></td><td><span class="pill ok">reads existing</span> WearableSync/sleep — but a <b>plan-a-rest-block</b> needs a small add</td></tr>
+    <tr><td><b>Reserves · Boundaries</b></td><td><span class="pill gap">new</span> protected-time / no-plan window field</td></tr>
+    <tr><td><b>Rituals · Reset + Focus</b></td><td><span class="pill ok">mostly UI</span> logging rides HabitLogs</td></tr>
+    <tr><td><b>"The load" board</b></td><td><span class="pill gap">new fields</span> owner/notice/track + admin category (the one with real schema cost)</td></tr>
+    <tr><td><b>Intentions "This season"</b></td><td><span class="pill ok">rides</span> Intention + a season pref</td></tr>
+    <tr><td><b>Energy-type tag</b></td><td><span class="pill gap">small</span> one field on PlannerItems</td></tr>
+    <tr><td><b>Season mode</b></td><td><span class="pill ok">rides</span> life_stage + a pref</td></tr>
+  </table>
+  <p class="cap">The demo stays <b>seeded</b>, so all of this can be previewed with no schema change. Only when we make it live do the "new field" items need a small, additive schema delta (no new base44 <i>function</i>).</p>
+</div>
+
+<!-- 8 · FIRST -->
+<a id="first"></a>
+<div class="section plum">
+  <div class="eyebrow">8 · Recommendation</div>
+  <h2>What I'd fold in first</h2>
+  <p>If we want the biggest lift for the least risk, in order:</p>
+  <ul>
+    <li><b>1. Reserves rework</b> (rename + the 4-lens deck) — mostly rides existing data, instantly richer, and answers your "hold more" ask directly.</li>
+    <li><b>2. Rituals → 4-lens deck</b> — adds rest + focus, the soulful/whole-life depth, almost all UI.</li>
+    <li><b>3. Intentions "This season" + energy-type tags</b> — tiny, high-meaning.</li>
+    <li><b>4. "The load" board</b> — the true differentiator, but the one with real schema cost; preview it seeded, decide the data model deliberately before going live.</li>
+    <li><b>5. Season-of-life mode</b> — the frame that makes the whole planner kinder; layer it once the boards exist.</li>
+  </ul>
+  <p class="lede" style="margin-top:14px">All of it fits the sliding-card + slide-within-card language you liked — depth without crowding. <b>Nothing is built yet — this is the preview to react to before we fold it into <span class="script">/PlannerNewDemo</span>.</b></p>
+</div>
+
+<div class="foot">
+  FemWell · Planner Enrichment · research + preview · 25 June 2026<br>
+  Sources cited inline. Cyclical-practice + trade-book frameworks flagged as such. Demo unchanged pending your approval.
+</div>
+
+</div></body></html>
