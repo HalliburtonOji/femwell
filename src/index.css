@@ -100,11 +100,13 @@
     --slate-500: #8C7B66;        /* brand muted label (was slate blue-grey) */
     --amber-streak: #D4AF37;     /* brand gold (was generic amber) */
     --font-serif-heading: 'Cormorant Garamond', 'Fraunces', Georgia, serif;
-    /* HEADING COLOUR (Halli 2026-06-25): all headings render in a deep oxblood/
-       deep-wine red — the "going deeper" script look. RICHER than the heart crimson
-       #BC2E27 (which stays the heart-mark + accent only). One shared token so it
-       propagates to every heading app-wide (h1–h6, .fw-display, .fw-heading). */
-    --oxblood: #7E1B16;
+    /* HEADING COLOUR (Halli, confirmed 2026-06-26): the APP-WIDE standard for ALL
+       page + section headings is the deep oxblood / deep-wine red "going deeper"
+       script look — exact hex #7A1A12. RICHER/DARKER than the heart crimson #BC2E27
+       (which stays the heart-mark + accent ONLY, never a heading). One shared token
+       so it propagates to EVERY heading on EVERY page (h1–h6, .fw-display, .fw-heading);
+       pages with inline heading colours are a cleanup target → migrate to this token. */
+    --oxblood: #7A1A12;
     --fw-heading-color: var(--oxblood);
 
     /* MP-A Lifestyle tokens (cream / rose family) — aligned to editorial paper */

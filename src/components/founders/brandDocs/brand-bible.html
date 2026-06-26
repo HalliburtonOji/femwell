@@ -5,7 +5,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500;1,600&family=Ephesis&display=swap" rel="stylesheet">
 <style>
-  :root{--paper:#ECE7DA;--paperHi:#F4EFE3;--paperDeep:#D8CFBC;--ink:#0B0805;--inkSoft:#1A140D;--muted:#2E261B;--gold:#A8893F;--crimson:#BC2E27;--oxblood:#7E1B16;--blush:#E8B4B8;--sage:#8FAF8F;--plum:#8E6E8E;--serif:'Cormorant Garamond',Georgia,serif;--script:'Ephesis',cursive;--sans:ui-sans-serif,system-ui,-apple-system,'Segoe UI',sans-serif;}
+  :root{--paper:#ECE7DA;--paperHi:#F4EFE3;--paperDeep:#D8CFBC;--ink:#0B0805;--inkSoft:#1A140D;--muted:#2E261B;--gold:#A8893F;--crimson:#BC2E27;--oxblood:#7A1A12;--blush:#E8B4B8;--sage:#8FAF8F;--plum:#8E6E8E;--serif:'Cormorant Garamond',Georgia,serif;--script:'Ephesis',cursive;--sans:ui-sans-serif,system-ui,-apple-system,'Segoe UI',sans-serif;}
   *{box-sizing:border-box}
   body{margin:0;background:radial-gradient(120% 80% at 12% 0%,#F4EFE3 0%,rgba(244,239,227,0) 55%),radial-gradient(120% 90% at 100% 100%,#E4DDCC 0%,rgba(228,221,204,0) 50%),var(--paper);color:var(--ink);font-family:var(--serif);font-size:18px;line-height:1.6;-webkit-font-smoothing:antialiased}
   .doc{max-width:680px;margin:0 auto;padding:28px 22px 90px}
@@ -64,6 +64,9 @@
   .clip-arrow{position:absolute;right:2%;top:84px;font-size:32px;color:var(--gold);font-weight:700}
   .dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--paperDeep);margin:0 3px}
   .dot.on{background:var(--crimson)}
+  .pillrow{display:flex;gap:10px;margin:12px 0 4px;max-width:360px}
+  .apill{flex:1;border:none;border-radius:999px;padding:15px 18px;font-family:var(--sans);font-size:15px;font-weight:700;color:#fff;text-align:center;box-shadow:0 4px 14px rgba(58,44,26,.18);display:flex;align-items:center;justify-content:center;gap:7px}
+  .apill.plum{background:#8E6E8E}.apill.gold{background:#A8893F}
 </style></head>
 <body><div class="doc">
 
@@ -136,7 +139,7 @@
   <div class="typespec"><div class="meta">Serif — Cormorant Garamond · section headings (in oxblood) + all reading (in ink)</div><div style="font-family:var(--serif);font-style:italic;font-weight:600;font-size:25px;color:var(--oxblood)">Where your body is today</div></div>
   <div class="typespec"><div class="meta">Sans — system UI · chrome only (buttons, tabs, eyebrows, dates)</div><div style="font-family:var(--sans);font-size:13px;font-weight:700;letter-spacing:.04em">BUTTONS · TABS · EYEBROWS · DATES</div></div>
   <p style="margin-top:8px"><b>The rules that end the “fonts are a mess” problem:</b> Ephesis = short titles only (never all-caps/long). Cormorant = every heading + all reading. System sans = chrome only. Never set Inter/Fraunces expecting a sans (they're remapped to Cormorant). Every node maps to a <b>role</b> — no free font sizes; allowed sizes 12·13·14·15·16·17·18·20 + two clamps; <b>nothing readable below 12px</b>, body ≥16.</p>
-  <p><small><b>Heading colour — deep oxblood <code>#7E1B16</code>:</b> ALL headings render in a deep wine/oxblood red (the “going deeper” script look) via the shared <code>--fw-heading-color</code> token, so it propagates app-wide — the page title is the deep-red Ephesis script; section headings are Cormorant <i>in the same oxblood</i>. The heart crimson <code>#BC2E27</code> is <b>not</b> a heading colour — it stays the heart mark + accent. (Reading body stays near-black ink.)</small></p>
+  <p><small><b>Heading colour — deep oxblood <code>#7A1A12</code> · the app-wide standard for ALL pages:</b> every page's page-title and section headings render in this deep wine/oxblood red — the “going deeper” script look — via the shared <code>--fw-heading-color</code> token, so one change propagates to every heading on every page (<b>not just the planner — everywhere</b>). The page-title is the deep-red Ephesis script; section headings are Cormorant <i>in the same oxblood</i>. <b>Go-forward + cleanup:</b> new pages get it automatically; existing pages that hard-code a heading colour are a cleanup target → migrate them to the token. The heart crimson <code>#BC2E27</code> is <b>not</b> a heading colour — it stays the heart mark + accent. (Reading body stays near-black ink.)</small></p>
 </div>
 
 <a id="colour"></a>
@@ -150,7 +153,7 @@
     <div class="sw" style="background:#0B0805;color:#ECE7DA"><div class="hex">#0B0805</div>ink · text</div>
     <div class="sw" style="background:#A8893F;color:#fff"><div class="hex">#A8893F</div>gold</div>
     <div class="sw" style="background:#BC2E27;color:#fff"><div class="hex">#BC2E27</div>crimson · the heart</div>
-    <div class="sw" style="background:#7E1B16;color:#fff"><div class="hex">#7E1B16</div>oxblood · headings</div>
+    <div class="sw" style="background:#7A1A12;color:#fff"><div class="hex">#7A1A12</div>oxblood · headings</div>
     <div class="sw" style="background:#8FAF8F;color:#2E261B"><div class="hex">#8FAF8F</div>sage</div>
   </div>
   <p><small><b>Phase hues</b> (semantic, separate): menstrual crimson · follicular sage · ovulatory gold · luteal plum. <b>Accessibility:</b> body &amp; small text use <b>ink / inkSoft / muted</b> (near-black) only; gold/crimson/sage/blush are for large display, accents, borders &amp; icons — never small body on cream. One clean light + ONE saturated accent (crimson) + ONE deep anchor (ink); the retired duplicate browns/golds stay retired.</small></p>
@@ -195,6 +198,14 @@
     <tr><td><b>+ more</b></td><td>spotlight/featured · stat/metric tile · expandable · letter/note (the sealed-letter look) · media-led (plays in card) · timeline/agenda · progress (flora that grows).</td></tr>
   </table>
   <p><small><b>Structural rules:</b> the <b>main page slider is HORIZONTAL</b>; <b>sliders-within-sliders (in-card decks) are encouraged</b> — but ONLY with safeguards, because horizontal scroll is genuinely missed and a flush deck reads as “nothing there”: <b>(1)</b> a <b>12–16% peek</b> of the next lens (peek is the strong cue; dots alone are weak); <b>(2)</b> persistent dots + ‹ › arrows; <b>(3)</b> cap 4–5 lenses, best-first; <b>(4)</b> an inner gutter so it doesn't fight OS back-swipe / page scroll; <b>(5)</b> the <code>overscroll-behavior-x: contain</code> firewall. <b>Only one level of nesting</b> (board-slider → lens-deck — never a deck inside a deck). Colour pills + sub-cards nest <b>within</b> big cards — that richness is the language. <span class="cap">Research: M3 · Carbon · Polaris · NN/g · Apple HIG · EightShapes (file in the repo).</span></small></p>
+
+  <h4>The focused action pills — a reusable two-pill CTA</h4>
+  <p>The canonical example — the planner's <b>“Speak your plan” + “Plan a day”</b>: a reusable pair of big filled colour pills for the <b>1–2 primary actions</b> on a board/page. One shared component, never hand-rolled.</p>
+  <div class="pillrow">
+    <span class="apill plum">Speak your plan</span>
+    <span class="apill gold">Plan a day</span>
+  </div>
+  <p><small>Each: stadium (radius 999), solid fill, white label (UI 15–16/700), optional leading icon, <b>≥48px</b> tap height. The pair uses <b>brand tokens</b>: the <b>voice/speak</b> pill = <b>plum <code>#8E6E8E</code></b> (the Jess/expression accent); the <b>plan/do</b> pill = brand <b>gold <code>#A8893F</code></b>. <b>One primary + at most one secondary</b> — <b>never two of the same fill side by side</b> (it kills hierarchy); extra actions become quiet ghost/text buttons. Heading oxblood + the heart crimson are <b>not</b> pill fills. <b>When:</b> the headline choice on a board (speak vs plan, start vs skip, save vs share) — not lists (use inline buttons) or nav.</small></p>
 
   <h4>The quick-action popup — “do it right here”</h4>
   <p>When she taps a doable micro-task on a page — <b>read today's chapter · answer the Question of the Day · leave a line · log breakfast/mood · tick a ritual · set today's intention</b> — it opens a <b>quick, lightweight popup so she DOES it in place, then it ticks.</b> Not a link-out (don't navigate away for a 10-second task); not a bare checkbox (don't let her tick what she hasn't done).</p>
