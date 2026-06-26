@@ -30,7 +30,7 @@ import { cwOf, floraKeyframes } from "@/components/brand/flora";
 import MonthlyCalendarCard from "@/components/planner/MonthlyCalendarCard";
 import DayDetailSheet from "@/components/planner/DayDetailSheet";
 import {
-  OXBLOOD, lbl, subCard, focusPill, Pill, Panel, Deck, VSeg, TopChrome, SheetShell, JumpSheet, makeCalendarOverlay,
+  OXBLOOD, lbl, subCard, focusPill, Pill, Panel, StackedCard, BoardBody, TopChrome, SheetShell, JumpSheet, makeCalendarOverlay,
 } from "@/components/brand/SliderKit";
 
 const CalendarOverlay = makeCalendarOverlay(MonthlyCalendarCard, DayDetailSheet);
@@ -144,37 +144,45 @@ export default function NutritionNewDemo() {
         <div ref={sliderRef} style={{ marginTop: 16 }}>
           <ClipboardSlider hint="Slide your kitchen →" accent={gold}>
 
-            <Clipboard title="Today" sub="YOUR PLATE · LOG · PLAN" accent={gold} flower="poppy" idx="cb-today" titleColor={OXBLOOD}>
-              <Deck accent={gold}>
-                <Panel label="Your plate today" Icon={Salad} accent={gold}><TodayPanel kcal={kcal} water={water} meals={meals} onWater={addWater} onRemove={removeMeal} onReLog={(n) => addMeal(n, "Snack", 250)} /></Panel>
-                <VSeg accent={gold}>
-                  <Panel label="Log a meal" Icon={Utensils} accent={crimson}><LogPanel onMethod={() => setLogOpen(true)} onReLog={(n) => addMeal(n, "Snack", 250)} /></Panel>
-                  <Panel label="My plan" Icon={Target} accent={gold}><PlanTargetsPanel /></Panel>
-                </VSeg>
-              </Deck>
+            <Clipboard title="Today" sub="TWO TOPICS · EACH SLIDES SIDEWAYS" accent={gold} flower="poppy" idx="cb-today" titleColor={OXBLOOD}>
+              <BoardBody>
+                <StackedCard topAccent={gold} bottomAccent={crimson}
+                  top={[
+                    <Panel key="plate" label="Your plate today" Icon={Salad} accent={gold}><PlatePanel kcal={kcal} water={water} onWater={addWater} /></Panel>,
+                    <Panel key="logged" label="Logged & go-tos" Icon={ListChecks} accent={gold}><LoggedPanel meals={meals} onRemove={removeMeal} onReLog={(n) => addMeal(n, "Snack", 250)} /></Panel>,
+                  ]}
+                  bottom={[
+                    <Panel key="log" label="Log a meal" Icon={Utensils} accent={crimson}><LogPanel onMethod={() => setLogOpen(true)} onReLog={(n) => addMeal(n, "Snack", 250)} /></Panel>,
+                    <Panel key="plan" label="My plan" Icon={Target} accent={crimson}><PlanTargetsPanel /></Panel>,
+                  ]} />
+              </BoardBody>
             </Clipboard>
 
-            <Clipboard title="Plan" sub="WEEK PLAN · RECIPES · SHOP" accent={cwOf("sage").petal} flower="snowdrop" idx="cb-plan" titleColor={OXBLOOD}>
-              <Deck accent={cwOf("sage").petal}>
-                <Panel label="AI meal plan" Icon={CalendarDays} accent={cwOf("sage").petal}><MealPlanPanel onLog={(n) => addMeal(n, "Dinner", 520)} /></Panel>
-                <VSeg accent={cwOf("sage").petal}>
-                  <Panel label="Recipes" Icon={Soup} accent={gold}><RecipesPanel onLog={(n) => addMeal(n, "Dinner", 520)} /></Panel>
-                  <Panel label="Shopping" Icon={ShoppingBasket} accent={cwOf("sage").petal}><ShopPanel shop={shop} onToggle={toggleShop} /></Panel>
-                </VSeg>
-              </Deck>
+            <Clipboard title="Plan" sub="TWO TOPICS · EACH SLIDES SIDEWAYS" accent={cwOf("sage").petal} flower="snowdrop" idx="cb-plan" titleColor={OXBLOOD}>
+              <BoardBody>
+                <StackedCard topAccent={cwOf("sage").petal} bottomAccent={gold}
+                  top={[
+                    <Panel key="week" label="AI meal plan" Icon={CalendarDays} accent={cwOf("sage").petal}><MealPlanPanel onLog={(n) => addMeal(n, "Dinner", 520)} /></Panel>,
+                    <Panel key="recipes" label="Recipes" Icon={Soup} accent={cwOf("sage").petal}><RecipesPanel onLog={(n) => addMeal(n, "Dinner", 520)} /></Panel>,
+                  ]}
+                  bottom={[
+                    <Panel key="shop" label="Shopping" Icon={ShoppingBasket} accent={gold}><ShopPanel shop={shop} onToggle={toggleShop} /></Panel>,
+                  ]} />
+              </BoardBody>
             </Clipboard>
 
-            <Clipboard title="Insights" sub="PROGRESS · PATTERNS · FROM JESS" accent={cwOf("plum").petal} flower="foxglove" idx="cb-ins" titleColor={OXBLOOD}>
-              <Deck accent={cwOf("plum").petal}>
-                <VSeg accent={cwOf("plum").petal}>
-                  <Panel label="This week" Icon={TrendingUp} accent={cwOf("plum").petal}><ThisWeekPanel kcal={kcal} /></Panel>
-                  <Panel label="Patterns" Icon={Heart} accent={cwOf("plum").petal}><PatternsPanel water={water} /></Panel>
-                </VSeg>
-                <VSeg accent={cwOf("crimson").petal}>
-                  <Panel label="For your stage" Icon={Sparkles} accent={cwOf("crimson").petal}><StageInsightsPanel /></Panel>
-                  <Panel label="Across your cycle" Icon={Heart} accent={cwOf("crimson").petal}><CycleMemoryPanel /></Panel>
-                </VSeg>
-              </Deck>
+            <Clipboard title="Insights" sub="TWO TOPICS · EACH SLIDES SIDEWAYS" accent={cwOf("plum").petal} flower="foxglove" idx="cb-ins" titleColor={OXBLOOD}>
+              <BoardBody>
+                <StackedCard topAccent={cwOf("plum").petal} bottomAccent={cwOf("crimson").petal}
+                  top={[
+                    <Panel key="thisweek" label="This week" Icon={TrendingUp} accent={cwOf("plum").petal}><ThisWeekPanel kcal={kcal} /></Panel>,
+                    <Panel key="patterns" label="Patterns" Icon={Heart} accent={cwOf("plum").petal}><PatternsPanel water={water} /></Panel>,
+                  ]}
+                  bottom={[
+                    <Panel key="stage" label="For your stage" Icon={Sparkles} accent={cwOf("crimson").petal}><StageInsightsPanel /></Panel>,
+                    <Panel key="cycle" label="Across your cycle" Icon={Heart} accent={cwOf("crimson").petal}><CycleMemoryPanel /></Panel>,
+                  ]} />
+              </BoardBody>
             </Clipboard>
 
           </ClipboardSlider>
@@ -213,13 +221,13 @@ function SoftBar({ had, guide, color }) {
   return <span style={{ display: "block", height: 6, borderRadius: 99, background: "rgba(58,44,26,0.10)", overflow: "hidden", marginTop: 4 }}><span style={{ display: "block", height: "100%", width: `${Math.min(100, (had / guide) * 100)}%`, background: color }} /></span>;
 }
 
-// ── Today panel ──────────────────────────────────────────────────────────────
-function TodayPanel({ kcal, water, meals, onWater, onRemove, onReLog }) {
+// ── Today: plate (ring + macros + water) ─────────────────────────────────────
+function PlatePanel({ kcal, water, onWater }) {
   return (
     <div style={{ flex: 1 }}>
       <div style={{ display: "flex", gap: 14, alignItems: "center", marginBottom: 14 }}>
         <Ring value={kcal} target={KCAL_TARGET} color={cwOf("gold").petal} />
-        <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 9 }}>
+        <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 10 }}>
           {MACROS.map((m) => (
             <div key={m.label}>
               <div style={{ display: "flex", alignItems: "center", gap: 6 }}><m.Icon size={12} color={cwOf(m.cw).petal} /><span style={{ fontFamily: UI, fontSize: 12, fontWeight: 700, color: T.inkSoft }}>{m.label}</span><span style={{ fontFamily: UI, fontSize: 12, fontWeight: 600, color: T.muted, marginLeft: "auto" }}>{m.had}/{m.guide}{m.unit}</span></div>
@@ -233,6 +241,13 @@ function TodayPanel({ kcal, water, meals, onWater, onRemove, onReLog }) {
         <span style={{ fontFamily: SERIF, fontSize: 15, color: T.ink }}>{water} of {WATER_TARGET} glasses</span>
         <span style={{ marginLeft: "auto", display: "flex", gap: 6 }}><Pill cw="sky" onClick={() => onWater(1)}>+250</Pill><Pill cw="sky" onClick={() => onWater(2)}>+500</Pill></span>
       </div>
+      <div style={{ ...subCard(cwOf("gold").petal), marginTop: "auto", background: `${cwOf("gold").petal}10` }}><p style={{ fontFamily: SERIF, fontSize: 15, color: T.ink, margin: 0, lineHeight: 1.45 }}>Room for {Math.max(0, KCAL_TARGET - kcal)} more kcal — a guide, never a cap. Iron's a little kind in your luteal week.</p></div>
+    </div>
+  );
+}
+function LoggedPanel({ meals, onRemove, onReLog }) {
+  return (
+    <div style={{ flex: 1 }}>
       <div style={{ ...lbl, marginBottom: 6 }}>Logged today</div>
       <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
         {meals.map((m) => (
@@ -244,9 +259,9 @@ function TodayPanel({ kcal, water, meals, onWater, onRemove, onReLog }) {
           </div>
         ))}
       </div>
-      <div style={{ ...lbl, margin: "12px 0 6px" }}>Re-log a go-to</div>
-      <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>{RECENTS.slice(0, 4).map((r) => <Pill key={r} Icon={Repeat} cw="sage" onClick={() => onReLog(r)}>{r}</Pill>)}</div>
-      <p style={{ marginTop: "auto", paddingTop: 10, fontFamily: SERIF, fontStyle: "italic", fontSize: 13, color: T.muted }}>Room for {Math.max(0, KCAL_TARGET - kcal)} more kcal — a guide, never a cap.</p>
+      <div style={{ ...lbl, margin: "12px 0 6px" }}>Re-log a go-to — one tap</div>
+      <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>{RECENTS.map((r) => <Pill key={r} Icon={Repeat} cw="sage" onClick={() => onReLog(r)}>{r}</Pill>)}</div>
+      <p style={{ marginTop: "auto", paddingTop: 10, fontFamily: SERIF, fontStyle: "italic", fontSize: 13, color: T.muted }}>Familiar food is a quiet strength.</p>
     </div>
   );
 }

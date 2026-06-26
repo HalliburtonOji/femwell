@@ -11,7 +11,8 @@ import { T, UI, SERIF } from "@/components/journal/Editorial";
 import { cwOf } from "@/components/brand/flora";
 
 export const OXBLOOD = "#7A1A12";   // deep-red script heading colour
-export const CARD_H = 432;          // uniform card / segment content height
+export const CARD_H = 432;          // legacy single-panel height (kept for back-compat)
+export const BOARD_BODY_H = 560;    // fixed board-body height → all boards uniform, no inter-board gap
 
 export const lbl = { fontFamily: UI, fontSize: 12, fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", color: T.muted };
 export const subCard = (accent) => ({ background: T.paper, border: `1px solid ${T.paperDeep}`, borderLeft: `3px solid ${accent}`, borderRadius: 12, padding: "10px 12px" });
@@ -27,40 +28,60 @@ export function Pill({ Icon, children, cw = "gold", filled, onClick, active }) {
   return <button onClick={onClick} style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "7px 13px", borderRadius: 999, fontFamily: UI, fontSize: 13, fontWeight: 700, cursor: "pointer", ...style }}>{Icon && <Icon size={13} color={filled || active ? "#fff" : c} />}{children}</button>;
 }
 
-// a single fixed-height panel (header + content that fills CARD_H) — the unit of a card / segment
+// a FILL panel (header + content) — fills its parent's height. The unit of a sub-slider lens.
 export function Panel({ label, Icon, accent, children }) {
   return (
-    <div style={{ height: CARD_H, display: "flex", flexDirection: "column", boxSizing: "border-box" }}>
-      <div style={{ display: "flex", alignItems: "center", gap: 7, marginBottom: 10, flexShrink: 0 }}>
-        {Icon && <Icon size={14} color={accent} />}<span style={{ ...lbl, color: accent }}>{label}</span>
-      </div>
+    <div style={{ height: "100%", minHeight: 0, display: "flex", flexDirection: "column", boxSizing: "border-box" }}>
+      {(label || Icon) && (
+        <div style={{ display: "flex", alignItems: "center", gap: 7, marginBottom: 9, flexShrink: 0 }}>
+          {Icon && <Icon size={14} color={accent} />}<span style={{ ...lbl, color: accent }}>{label}</span>
+        </div>
+      )}
       <div style={{ flex: 1, minHeight: 0, overflowY: "auto", display: "flex", flexDirection: "column" }}>{children}</div>
     </div>
   );
 }
 
-// horizontal in-card deck (lens slider) — direct-scroll, ref-controllable goTo
+// a fixed-height board body — wraps a board's content so every board is the SAME height (no inter-board gap)
+export function BoardBody({ children, h = BOARD_BODY_H }) {
+  return <div style={{ height: h, minHeight: 0, display: "flex", flexDirection: "column" }}>{children}</div>;
+}
+
+// horizontal in-card deck (lens sub-slider) — FILLS its parent height; direct-scroll, ref-controllable
 export const Deck = forwardRef(function Deck({ children, accent = T.gold }, ref) {
   const items = Children.toArray(children).filter(Boolean);
   const trackRef = useRef(null); const [active, setActive] = useState(0); const last = items.length - 1;
   const goTo = (i) => { const idx = Math.max(0, Math.min(last, i)); setActive(idx); const el = trackRef.current; if (el) el.scrollLeft = idx * el.clientWidth; };
   useImperativeHandle(ref, () => ({ goTo }), [last]);
   const onScroll = () => { const el = trackRef.current; if (!el) return; const i = Math.round(el.scrollLeft / (el.clientWidth || 1)); if (i !== active) setActive(Math.max(0, Math.min(last, i))); };
-  if (items.length <= 1) return <div>{items}</div>;
+  if (items.length <= 1) return <div style={{ height: "100%", minHeight: 0, display: "flex", flexDirection: "column" }}>{items}</div>;
   return (
-    <div>
-      <div ref={trackRef} onScroll={onScroll} className="fw-deck-track" style={{ display: "flex", overflowX: "auto", scrollSnapType: "x mandatory", overscrollBehaviorX: "contain", WebkitOverflowScrolling: "touch", scrollbarWidth: "none" }}>
+    <div style={{ height: "100%", minHeight: 0, display: "flex", flexDirection: "column" }}>
+      <div ref={trackRef} onScroll={onScroll} className="fw-deck-track" style={{ flex: 1, minHeight: 0, display: "flex", overflowX: "auto", scrollSnapType: "x mandatory", overscrollBehaviorX: "contain", WebkitOverflowScrolling: "touch", scrollbarWidth: "none" }}>
         <style>{`.fw-deck-track::-webkit-scrollbar{display:none}`}</style>
-        {items.map((c, i) => <div key={i} style={{ flex: "0 0 100%", width: "100%", minWidth: 0, boxSizing: "border-box", scrollSnapAlign: "start" }}>{c}</div>)}
+        {items.map((c, i) => <div key={i} style={{ flex: "0 0 100%", width: "100%", height: "100%", minWidth: 0, boxSizing: "border-box", scrollSnapAlign: "start", display: "flex", flexDirection: "column" }}>{c}</div>)}
       </div>
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 10, padding: "10px 0 0" }}>
-        <button onClick={() => goTo(active - 1)} disabled={active === 0} aria-label="Previous card" style={navBtn(active === 0)}><ChevronLeft size={15} /></button>
-        <div style={{ display: "flex", gap: 6 }}>{items.map((_, i) => <button key={i} onClick={() => goTo(i)} aria-label={`Card ${i + 1}`} style={{ width: i === active ? 16 : 6, height: 6, borderRadius: 999, border: "none", padding: 0, background: i === active ? accent : T.paperDeep, cursor: "pointer", transition: "width .2s" }} />)}</div>
-        <button onClick={() => goTo(active + 1)} disabled={active === last} aria-label="Next card" style={navBtn(active === last)}><ChevronRight size={15} /></button>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 10, padding: "7px 0 0", flexShrink: 0 }}>
+        <button onClick={() => goTo(active - 1)} disabled={active === 0} aria-label="Previous lens" style={navBtn(active === 0)}><ChevronLeft size={15} /></button>
+        <div style={{ display: "flex", gap: 6 }}>{items.map((_, i) => <button key={i} onClick={() => goTo(i)} aria-label={`Lens ${i + 1}`} style={{ width: i === active ? 16 : 6, height: 6, borderRadius: 999, border: "none", padding: 0, background: i === active ? accent : T.paperDeep, cursor: "pointer", transition: "width .2s" }} />)}</div>
+        <button onClick={() => goTo(active + 1)} disabled={active === last} aria-label="Next lens" style={navBtn(active === last)}><ChevronRight size={15} /></button>
       </div>
     </div>
   );
 });
+
+// STACKED CARD — ONE long card split into TWO demarcations (top + bottom), EACH its own horizontal
+// sub-slider. The card stays full length; the two halves each fill ~half and slide sideways independently.
+// (Vertical reveal is allowed only WITHIN a lens via its own overflow — never as a whole-card swap.)
+export function StackedCard({ top, bottom, topAccent = T.gold, bottomAccent = T.gold }) {
+  return (
+    <div style={{ height: "100%", minHeight: 0, display: "flex", flexDirection: "column" }}>
+      <div style={{ flex: 1, minHeight: 0 }}><Deck accent={topAccent}>{top}</Deck></div>
+      <div aria-hidden style={{ flexShrink: 0, height: 1, background: T.paperDeep, opacity: 0.7, margin: "8px 0" }} />
+      <div style={{ flex: 1, minHeight: 0 }}><Deck accent={bottomAccent}>{bottom}</Deck></div>
+    </div>
+  );
+}
 
 // VERTICAL 2-(or-more)-segment in-card slide (up segment ↕ down segment)
 export function VSeg({ children, accent = T.gold }) {

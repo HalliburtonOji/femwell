@@ -19,14 +19,14 @@
 import { useState, useRef } from "react";
 import {
   BookOpen, Feather, Book, Film, Headphones, Moon, Play, Pause, Heart, Sparkles, Sun, Bookmark,
-  Wind, ChevronRight, Music2, Video, Compass,
+  Wind, ChevronRight, Music2, Compass,
 } from "lucide-react";
 import { T, SERIF, UI, PAPER_BG, Eyebrow } from "@/components/journal/Editorial";
 import { FwFloraHero } from "@/components/brand/PageTop";
 import { SummaryCard } from "@/components/brand/Card";
 import { ClipboardSlider, Clipboard } from "@/components/brand/ClipboardSlider";
 import { cwOf, floraKeyframes } from "@/components/brand/flora";
-import { OXBLOOD, lbl, subCard, focusPill, Pill, Panel, Deck, VSeg, TopChrome, SheetShell, JumpSheet } from "@/components/brand/SliderKit";
+import { OXBLOOD, lbl, subCard, focusPill, Pill, Panel, StackedCard, BoardBody, TopChrome, SheetShell, JumpSheet } from "@/components/brand/SliderKit";
 
 // ── seeded content (maps to LifestyleItems / DailyStory / HoroscopeReading live) ──
 const HERO = { type: "story", title: "The quiet power of a slow morning", source: "FemWell Editorial", why: "Editor's pick — on protecting the first hour of your day." };
@@ -93,6 +93,17 @@ const SKY = {
   weather: "The moon meets Venus tonight — a soft night for tenderness and putting something down you've been carrying.",
   cycleMoon: "Your luteal week is meeting a waning moon — both are asking you to draw inward and finish, not start.",
 };
+const PHASE_PICKS = [
+  { title: "Warming foods for a luteal week", source: "For your phase", cw: "crimson", Icon: BookOpen },
+  { title: "A wind-down meditation", source: "For your phase · 8 min", cw: "sage", Icon: Headphones },
+  { title: "Gentle movement for low days", source: "For your phase · 6 min", cw: "gold", Icon: Film },
+];
+const GUIDES = [
+  { title: "How to start cycle-syncing", source: "Guide · 4 min", why: "the gentle version" },
+  { title: "A 5-minute evening reset", source: "Guide · 3 min", why: "wind down without a whole routine" },
+  { title: "Reading your luteal week", source: "Guide · 6 min", why: "what to expect, kindly" },
+];
+const SKY_DIARY = ["Last new moon — 'started the side project'", "Full moon felt heavy; rested instead", "A note for tonight's waning moon…"];
 
 const ICON_OF = { article: BookOpen, story: Feather, book: Book, video: Film, audio: Headphones, daily_story: Feather, horoscope: Moon };
 const CW_OF = { article: "plum", story: "crimson", book: "sky", video: "gold", audio: "sage", daily_story: "crimson", horoscope: "sky" };
@@ -143,44 +154,60 @@ export default function LifestyleNewDemo() {
         <div ref={sliderRef} style={{ marginTop: 16 }}>
           <ClipboardSlider hint="Slide your shelf →" accent={gold}>
 
-            <Clipboard title="For you" sub="EDITORIAL · SAVED · TRY THIS" accent={gold} flower="daisy" idx="cb-foryou" titleColor={OXBLOOD}>
-              <Deck accent={gold}>
-                <Panel label="Picked for you" Icon={Sparkles} accent={gold}><ForYouPanel saved={saved} onSave={toggleSave} onOpen={open} /></Panel>
-                <VSeg accent={gold}>
-                  <Panel label="Saved" Icon={Bookmark} accent={cwOf("plum").petal}><SavedPanel saved={saved} onOpen={open} /></Panel>
-                  <Panel label="Try this" Icon={Wind} accent={cwOf("sage").petal}><TryThisPanel onDo={(t) => flash(`Nice — "${t}"`)} /></Panel>
-                </VSeg>
-              </Deck>
+            <Clipboard title="For you" sub="TWO TOPICS · EACH SLIDES SIDEWAYS" accent={gold} flower="daisy" idx="cb-foryou" titleColor={OXBLOOD}>
+              <BoardBody>
+                <StackedCard topAccent={gold} bottomAccent={cwOf("sage").petal}
+                  top={[
+                    <Panel key="picked" label="Picked for you" Icon={Sparkles} accent={gold}><ForYouPanel saved={saved} onSave={toggleSave} onOpen={open} /></Panel>,
+                    <Panel key="saved" label="Saved" Icon={Bookmark} accent={gold}><SavedPanel saved={saved} onOpen={open} /></Panel>,
+                  ]}
+                  bottom={[
+                    <Panel key="try" label="Try this" Icon={Wind} accent={cwOf("sage").petal}><TryThisPanel onDo={(t) => flash(`Nice — "${t}"`)} /></Panel>,
+                    <Panel key="phase" label="For your phase" Icon={Heart} accent={cwOf("sage").petal}><PhasePicksPanel onOpen={open} /></Panel>,
+                  ]} />
+              </BoardBody>
             </Clipboard>
 
-            <Clipboard title="Read" sub="ARTICLES · STORIES · BOOKS" accent={cwOf("plum").petal} flower="iris" idx="cb-read" titleColor={OXBLOOD}>
-              <Deck accent={cwOf("plum").petal}>
-                <VSeg accent={cwOf("plum").petal}>
-                  <Panel label="Articles" Icon={BookOpen} accent={cwOf("plum").petal}><ListLens items={ARTICLES} type="article" onOpen={open} cta="Read" /></Panel>
-                  <Panel label="Stories" Icon={Feather} accent={cwOf("crimson").petal}><ListLens items={STORIES} type="story" onOpen={open} cta="Read" /></Panel>
-                </VSeg>
-                <Panel label="Books" Icon={Book} accent={sky}><BooksPanel onOpen={open} /></Panel>
-              </Deck>
+            <Clipboard title="Read" sub="TWO TOPICS · EACH SLIDES SIDEWAYS" accent={cwOf("plum").petal} flower="iris" idx="cb-read" titleColor={OXBLOOD}>
+              <BoardBody>
+                <StackedCard topAccent={cwOf("plum").petal} bottomAccent={sky}
+                  top={[
+                    <Panel key="articles" label="Articles" Icon={BookOpen} accent={cwOf("plum").petal}><ListLens items={ARTICLES} type="article" onOpen={open} cta="Read" /></Panel>,
+                    <Panel key="stories" label="Stories" Icon={Feather} accent={cwOf("crimson").petal}><ListLens items={STORIES} type="story" onOpen={open} cta="Read" /></Panel>,
+                  ]}
+                  bottom={[
+                    <Panel key="books" label="Books" Icon={Book} accent={sky}><BooksPanel onOpen={open} /></Panel>,
+                    <Panel key="guides" label="Guides" Icon={Compass} accent={sky}><GuidesPanel onOpen={open} /></Panel>,
+                  ]} />
+              </BoardBody>
             </Clipboard>
 
-            <Clipboard title="Listen" sub="PODCASTS · VIDEOS · TRENDING" accent={cwOf("sage").petal} flower="bluebell" idx="cb-listen" titleColor={OXBLOOD}>
-              <Deck accent={cwOf("sage").petal}>
-                <VSeg accent={cwOf("sage").petal}>
-                  <Panel label="Podcasts" Icon={Headphones} accent={cwOf("sage").petal}><MediaLens items={PODCASTS} kind="audio" onOpen={open} /></Panel>
-                  <Panel label="Videos" Icon={Film} accent={gold}><MediaLens items={VIDEOS} kind="video" onOpen={open} /></Panel>
-                </VSeg>
-                <Panel label="Watch & trending" Icon={Video} accent={cwOf("crimson").petal}><WatchPanel onOpen={open} /></Panel>
-              </Deck>
+            <Clipboard title="Listen" sub="TWO TOPICS · EACH SLIDES SIDEWAYS" accent={cwOf("sage").petal} flower="bluebell" idx="cb-listen" titleColor={OXBLOOD}>
+              <BoardBody>
+                <StackedCard topAccent={cwOf("sage").petal} bottomAccent={cwOf("crimson").petal}
+                  top={[
+                    <Panel key="pods" label="Podcasts" Icon={Headphones} accent={cwOf("sage").petal}><MediaLens items={PODCASTS} kind="audio" onOpen={open} /></Panel>,
+                    <Panel key="vids" label="Videos" Icon={Film} accent={gold}><MediaLens items={VIDEOS} kind="video" onOpen={open} /></Panel>,
+                  ]}
+                  bottom={[
+                    <Panel key="tiktok" label="Trending on TikTok" Icon={Music2} accent={cwOf("crimson").petal}><TikTokPanel onOpen={open} /></Panel>,
+                    <Panel key="external" label="Listen externally" Icon={Compass} accent={cwOf("crimson").petal}><ExternalPanel onOpen={open} /></Panel>,
+                  ]} />
+              </BoardBody>
             </Clipboard>
 
-            <Clipboard title="Story & sky" sub="DAILY STORY · A DAY FOR YOU · HOROSCOPE" accent={cwOf("crimson").petal} flower="poppy" idx="cb-story" titleColor={OXBLOOD}>
-              <Deck accent={cwOf("crimson").petal}>
-                <VSeg accent={cwOf("crimson").petal}>
-                  <Panel label="Daily story" Icon={Feather} accent={cwOf("crimson").petal}><DailyStoryPanel onRead={() => setChapterOpen(true)} /></Panel>
-                  <Panel label="A day for you" Icon={Sun} accent={gold}><ADayPanel onSave={() => flash("Saved to your planner")} /></Panel>
-                </VSeg>
-                <Panel label="Your sky today" Icon={Moon} accent={sky}><HoroscopePanel onRead={() => setReadingOpen(true)} /></Panel>
-              </Deck>
+            <Clipboard title="Story & sky" sub="TWO TOPICS · EACH SLIDES SIDEWAYS" accent={cwOf("crimson").petal} flower="poppy" idx="cb-story" titleColor={OXBLOOD}>
+              <BoardBody>
+                <StackedCard topAccent={cwOf("crimson").petal} bottomAccent={sky}
+                  top={[
+                    <Panel key="daily" label="Daily story" Icon={Feather} accent={cwOf("crimson").petal}><DailyStoryPanel onRead={() => setChapterOpen(true)} /></Panel>,
+                    <Panel key="aday" label="A day for you" Icon={Sun} accent={gold}><ADayPanel onSave={() => flash("Saved to your planner")} /></Panel>,
+                  ]}
+                  bottom={[
+                    <Panel key="sky" label="Your sky today" Icon={Moon} accent={sky}><HoroscopePanel onRead={() => setReadingOpen(true)} /></Panel>,
+                    <Panel key="diary" label="Sky diary" Icon={Feather} accent={sky}><SkyDiaryPanel onNote={() => flash("New sky note")} /></Panel>,
+                  ]} />
+              </BoardBody>
             </Clipboard>
 
           </ClipboardSlider>
@@ -316,14 +343,48 @@ function MediaLens({ items, kind, onOpen }) {
     </div>
   );
 }
-function WatchPanel({ onOpen }) {
+function TikTokPanel({ onOpen }) {
   return (
     <div style={{ flex: 1 }}>
-      <Eyebrow color={cwOf("crimson").petal}>Trending on TikTok</Eyebrow>
-      <div style={{ display: "flex", flexDirection: "column", gap: 8, margin: "8px 0 14px" }}>{TIKTOKS.map((t, i) => <ContentRow key={i} Icon={Music2} accent={cwOf(t.cw).petal} title={t.title} meta={t.channel} cta="Watch" onOpen={() => onOpen(t.title)} />)}</div>
-      <Eyebrow color={cwOf("sage").petal}>Listen externally</Eyebrow>
-      <div style={{ display: "flex", flexDirection: "column", gap: 8, marginTop: 8 }}>{EXTERNAL_PODS.map((p, i) => <ContentRow key={i} Icon={Compass} accent={cwOf("sage").petal} title={p.title} meta={p.note} cta="Open" onOpen={() => onOpen(p.title)} />)}</div>
+      <p style={{ fontFamily: SERIF, fontSize: 15, color: T.inkSoft, lineHeight: 1.5, margin: "0 0 12px" }}>Short, trending, embeddable — they open right here.</p>
+      <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>{TIKTOKS.map((t, i) => <ContentRow key={i} Icon={Music2} accent={cwOf(t.cw).petal} title={t.title} meta={t.channel} cta="Watch" onOpen={() => onOpen(t.title)} />)}</div>
+      <p style={{ marginTop: "auto", paddingTop: 12, fontFamily: SERIF, fontStyle: "italic", fontSize: 13, color: T.muted }}>Slide → for shows you can follow elsewhere.</p>
+    </div>
+  );
+}
+function ExternalPanel({ onOpen }) {
+  return (
+    <div style={{ flex: 1 }}>
+      <p style={{ fontFamily: SERIF, fontSize: 15, color: T.inkSoft, lineHeight: 1.5, margin: "0 0 12px" }}>Shows worth following — open in your podcast app of choice.</p>
+      <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>{EXTERNAL_PODS.map((p, i) => <ContentRow key={i} Icon={Compass} accent={cwOf("sage").petal} title={p.title} meta={p.note} cta="Open" onOpen={() => onOpen(p.title)} />)}</div>
       <p style={{ marginTop: "auto", paddingTop: 12, fontFamily: SERIF, fontStyle: "italic", fontSize: 13, color: T.muted }}>The wider world, gathered in one calm place.</p>
+    </div>
+  );
+}
+function PhasePicksPanel({ onOpen }) {
+  return (
+    <div style={{ flex: 1 }}>
+      <p style={{ fontFamily: SERIF, fontSize: 15, color: T.inkSoft, lineHeight: 1.5, margin: "0 0 12px" }}>Tuned to your luteal week — warmth, rest, and a softer pace.</p>
+      <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>{PHASE_PICKS.map((p, i) => <ContentRow key={i} Icon={p.Icon} accent={cwOf(p.cw).petal} title={p.title} meta={p.source} cta="Open" onOpen={() => onOpen(p.title)} />)}</div>
+      <p style={{ marginTop: "auto", paddingTop: 12, fontFamily: SERIF, fontStyle: "italic", fontSize: 13, color: T.muted }}>The feed shifts gently with your cycle.</p>
+    </div>
+  );
+}
+function GuidesPanel({ onOpen }) {
+  return (
+    <div style={{ flex: 1 }}>
+      <p style={{ fontFamily: SERIF, fontSize: 15, color: T.inkSoft, lineHeight: 1.5, margin: "0 0 12px" }}>Short how-tos — practical, never preachy.</p>
+      <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>{GUIDES.map((g, i) => <ContentRow key={i} Icon={Compass} accent={cwOf("gold").petal} title={g.title} meta={`${g.source} · ${g.why}`} cta="Read" onOpen={() => onOpen(g.title)} />)}</div>
+      <p style={{ marginTop: "auto", paddingTop: 12, fontFamily: SERIF, fontStyle: "italic", fontSize: 13, color: T.muted }}>Saved alongside your books for later.</p>
+    </div>
+  );
+}
+function SkyDiaryPanel({ onNote }) {
+  return (
+    <div style={{ flex: 1 }}>
+      <p style={{ fontFamily: SERIF, fontSize: 15, color: T.inkSoft, lineHeight: 1.5, margin: "0 0 12px" }}>A quiet log against the sky — what each moon stirred.</p>
+      <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>{SKY_DIARY.map((l, i) => <div key={i} style={{ display: "flex", alignItems: "flex-start", gap: 8, ...subCard(cwOf("plum").petal) }}><Moon size={14} color={cwOf("plum").petal} style={{ flexShrink: 0, marginTop: 2 }} /><span style={{ fontFamily: SERIF, fontSize: 15, color: T.ink, lineHeight: 1.4 }}>{l}</span></div>)}</div>
+      <div style={{ marginTop: "auto", paddingTop: 12 }}><Pill Icon={Feather} cw="plum" filled onClick={onNote}>New sky note</Pill></div>
     </div>
   );
 }
