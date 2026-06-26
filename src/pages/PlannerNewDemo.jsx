@@ -1,39 +1,42 @@
-// PlannerNewDemo — the brand-rich SLIDING-CARD "Day, Tended": DENSER (3 boards), with the two
-// brand focus pills + a real calendar. Demo-first. Live /Planner is NOT touched.
+// PlannerNewDemo — "The Day, Tended": dense sliding cards with VERTICAL-SEGMENT in-card slides,
+// top-area chrome, and the unified calendar as an overlay. Demo-first. Live /Planner NOT touched.
 //
-// REVISIONS (Halli): fold 5 boards → 3 denser ones; no long empty space on any card; add the two
-// bible focus pills (purple "Speak your plan" + gold "Plan a day") at the planning entry; add a real
-// month CALENDAR. Keep oxblood (#7A1A12) script headings, the varied card language, all features.
+// REVISIONS (Halli): (1) MAXIMISE each card — combine short lenses into VERTICALLY-SEGMENTED cards
+// (an up segment + a down segment you slide up/down inside the card) so NO card has long empty space;
+// the MAIN page slider stays HORIZONTAL, in-card decks can be horizontal AND/OR a vertical up/down
+// slide. (2) Move the TWO FOCUS PILLS (Speak your plan · Plan a day) + the JUMP-TO pill OUT of the
+// cards into the page TOP area. (3) CALENDAR is no longer a lens — it's a TOP-AREA calendar icon that
+// opens the UNIFIED calendar (the SAME MonthlyCalendarCard + DayDetailSheet the Today page uses) as an
+// overlay that plans/logs a day. (4) Keep oxblood (#7A1A12) headings, varied card language, all
+// features, real data.
 //
-// THE STRUCTURE — signature top (flora hero + ONE summary), then a HORIZONTAL slider of THREE dense
-// boards, each carrying an in-card swipe deck (slider-within-the-card):
-//   1) "The day"   — entry: ‹date› stepper + the TWO focus pills (Speak your plan · Plan a day) +
-//                     a quick-add bar; then a 4-lens deck: Agenda · Hour-by-hour · Week · CALENDAR
-//                     (real month grid; "Plan a day" jumps the deck straight to it). Blocks carry an
-//                     energy-type tag.
-//   2) "Reserves"  — a 6-lens deck (Reserves + The load, folded): Energy · Load · Recovery ·
-//                     Boundaries (incl. season-of-life mode) · Invisible labour · Life admin.
-//   3) "Rituals"   — a 6-lens deck (Rituals + Intentions, folded): Today · This season · Anchors ·
-//                     Reset · Focus · Rhythm.
+// BOARD SET (horizontal main slider of 3 boards; each board an in-card horizontal deck whose items are
+// single panels OR vertical 2-segment slides):
+//   1) "The day"  — Agenda · Hour-by-hour · Week (single panels).
+//   2) "Reserves" — 3 vertical-slide cards: [Energy↕Load] · [Recovery↕Boundaries] · [Invisible↕Admin].
+//   3) "Rituals"  — 3 vertical-slide cards: [Intentions↕This-season] · [Anchors↕Reset] · [Focus↕Rhythm].
+// Every panel is a fixed CARD_H tall and fills it → zero long empty space anywhere.
 //
-// Each lens is built to FILL its board height (no big blank bottoms). Card variety: in-card decks,
-// tile-grids, accent-rim sub-cards, focused COLOUR PILLS (filled actions + tinted options). One way
-// to plan; no duplicate pointers. Seeded + interactive; each interaction is annotated with the real
-// base44 entity it would write live. NO new base44 FUNCTION.
+// Seeded planner cards (optimistic) + the REAL unified calendar (MonthlyCalendarCard/DayDetailSheet,
+// best-effort real user). No new base44 FUNCTION.
 import { useState, useMemo, useRef, useEffect, forwardRef, useImperativeHandle, Children } from "react";
 import {
-  Plus, X, Check, Mic, ChevronLeft, ChevronRight, Sun, Moon, CalendarDays, Gauge, Sparkles,
-  Briefcase, Users, Heart, Coins, Smile, Leaf, Palette, Feather, ArrowRight, Trash2, Clock,
-  Footprints, ListChecks, Utensils, Wind, Moon as MoonI, HeartHandshake, Layers, Timer,
-  BatteryCharging, ShieldCheck, Trash, UserPlus, Repeat, CircleSlash, Baby, Flower2, CalendarRange,
+  Plus, X, Check, Mic, ChevronLeft, ChevronRight, ChevronUp, ChevronDown, Sun, Moon, CalendarDays,
+  Gauge, Sparkles, Briefcase, Users, Heart, Coins, Smile, Leaf, Palette, Feather, ArrowRight, Trash2,
+  Clock, Footprints, ListChecks, Utensils, Wind, Moon as MoonI, HeartHandshake, Layers, Timer,
+  BatteryCharging, ShieldCheck, Trash, UserPlus, Repeat, CircleSlash, Baby, Flower2, CalendarRange, Grid2x2,
 } from "lucide-react";
+import { base44 } from "@/api/base44Client";
 import { T, SERIF, UI, PAPER_BG, Eyebrow } from "@/components/journal/Editorial";
 import { FwFloraHero } from "@/components/brand/PageTop";
 import { SummaryCard } from "@/components/brand/Card";
 import { ClipboardSlider, Clipboard } from "@/components/brand/ClipboardSlider";
 import { cwOf, floraKeyframes } from "@/components/brand/flora";
+import MonthlyCalendarCard from "@/components/planner/MonthlyCalendarCard";
+import DayDetailSheet from "@/components/planner/DayDetailSheet";
 
-const OXBLOOD = "#7A1A12"; // deep-red script-heading colour (richer than crimson)
+const OXBLOOD = "#7A1A12";   // deep-red script heading colour (== bible --fw-heading-color)
+const CARD_H = 432;          // uniform card/segment content height → fills every card, no empty space
 
 const PHASE = {
   menstrual:  { label: "Menstrual",  hue: "#BC2E27", mult: 0.55, note: "Slow and soft — plan light, protect rest." },
@@ -42,21 +45,19 @@ const PHASE = {
   luteal:     { label: "Luteal",     hue: "#8E6E8E", mult: 0.85, note: "Reflective and finishing — close loops, narrow down." },
 };
 function phaseFor(cycleDay, periodLen = 5, len = 28) {
-  const cd = (((cycleDay - 1) % len) + len) % len + 1; // robust to negatives (past dates)
+  const cd = (((cycleDay - 1) % len) + len) % len + 1;
   if (cd <= periodLen) return "menstrual";
   if (cd <= len * 0.5 - 2) return "follicular";
   if (cd <= len * 0.5 + 2) return "ovulatory";
   return "luteal";
 }
 const BASE_CYCLE_DAY = 8;
-
 const SEASONS = {
   steady:     { label: "Steady",        Icon: Flower2,        mult: 1.0,  note: "Your usual rhythm." },
   newbaby:    { label: "New baby",      Icon: Baby,           mult: 0.6,  note: "The bar is lower on purpose. Sustaining is the win." },
   peri:       { label: "Perimenopause", Icon: Leaf,           mult: 0.72, note: "Flex with the day — small, sustainable moves." },
   caregiving: { label: "Caregiving",    Icon: HeartHandshake, mult: 0.65, note: "Coordination is the work. Protect your reserves." },
 };
-
 const TYPE_META = {
   focus:  { label: "Focus",  Icon: Briefcase,  cw: "plum",  load: 2,   energy: "deep" },
   task:   { label: "Task",   Icon: ListChecks, cw: "gold",  load: 1,   energy: "admin" },
@@ -66,7 +67,6 @@ const TYPE_META = {
   rest:   { label: "Rest",   Icon: Moon,       cw: "plum",  load: 0.5, energy: "rest" },
 };
 const partOfDay = (h) => (h < 12 ? "Morning" : h < 17 ? "Afternoon" : "Evening");
-
 const SEED_DAYS = {
   0: [
     { id: "b1", hour: 8,  title: "Morning walk",            type: "move", dur: 30, done: true  },
@@ -75,13 +75,9 @@ const SEED_DAYS = {
     { id: "b4", hour: 16, title: "Admin — invoices",        type: "task", dur: 45, done: false },
     { id: "b5", hour: 20, title: "Wind-down + read",        type: "rest", dur: 30, done: false },
   ],
-  1: [
-    { id: "c1", hour: 9,  title: "Send the deck",           type: "task", dur: 20, done: false },
-    { id: "c2", hour: 18, title: "Yoga class",              type: "move", dur: 60, done: false },
-  ],
-  2: [{ id: "d1", hour: 11, title: "1:1 with Priya",        type: "focus", dur: 45, done: false }],
+  1: [{ id: "c1", hour: 9, title: "Send the deck", type: "task", dur: 20, done: false }, { id: "c2", hour: 18, title: "Yoga class", type: "move", dur: 60, done: false }],
+  2: [{ id: "d1", hour: 11, title: "1:1 with Priya", type: "focus", dur: 45, done: false }],
 };
-
 const DOMAINS = [
   { id: "career", label: "Career",     Icon: Briefcase, cw: "plum",    prompt: "One real move on the thing that matters." },
   { id: "friend", label: "Friendship", Icon: Users,     cw: "sage",    prompt: "Reach for someone — a voice note counts." },
@@ -93,20 +89,12 @@ const DOMAINS = [
   { id: "self",   label: "Self",       Icon: Feather,   cw: "plum",    prompt: "A line in your own voice — who are you today?" },
 ];
 const domainOf = (id) => DOMAINS.find((d) => d.id === id) || DOMAINS[0];
-const SEED_INTENTIONS = [
-  { id: "i1", domain: "career", text: "Send the pitch — rough is fine, sent is better." },
-  { id: "i2", domain: "friend", text: "Be present at lunch. Phone in bag." },
-];
-const SEED_SEASON_INTENTIONS = [
-  { id: "s1", domain: "self", text: "Protect two evenings a week that are mine." },
-  { id: "s2", domain: "career", text: "Ship the side project — a little each week." },
-];
+const SEED_INTENTIONS = [{ id: "i1", domain: "career", text: "Send the pitch — rough is fine, sent is better." }, { id: "i2", domain: "friend", text: "Be present at lunch. Phone in bag." }];
+const SEED_SEASON_INTENTIONS = [{ id: "s1", domain: "self", text: "Protect two evenings a week that are mine." }, { id: "s2", domain: "career", text: "Ship the side project — a little each week." }];
 const SEED_NOT_DOING = ["Not volunteering for the school fair this term.", "Not saying yes to the 7am calls."];
 const SEED_ANCHORS = [
-  { id: "a1", slot: "am", title: "Sunlight + water", done: true },
-  { id: "a2", slot: "am", title: "Move 5 minutes", done: true },
-  { id: "a3", slot: "am", title: "Name today's intention", done: false },
-  { id: "a4", slot: "pm", title: "Phone down by 10", done: false },
+  { id: "a1", slot: "am", title: "Sunlight + water", done: true }, { id: "a2", slot: "am", title: "Move 5 minutes", done: true },
+  { id: "a3", slot: "am", title: "Name today's intention", done: false }, { id: "a4", slot: "pm", title: "Phone down by 10", done: false },
   { id: "a5", slot: "pm", title: "Read 10 pages", done: false },
 ];
 const SEED_INVISIBLE = [
@@ -115,39 +103,24 @@ const SEED_INVISIBLE = [
   { id: "v3", title: "Sam's birthday — gift + card", carry: "You notice · plan", handed: false },
 ];
 const SEED_ADMIN = [
-  { id: "ad1", title: "Car insurance renewal", due: "in 3 days", disp: null },
-  { id: "ad2", title: "Passport renewal form", due: "in 2 weeks", disp: null },
-  { id: "ad3", title: "That unused subscription", due: "—", disp: null },
+  { id: "ad1", title: "Car insurance renewal", due: "in 3 days", disp: null }, { id: "ad2", title: "Passport renewal form", due: "in 2 weeks", disp: null }, { id: "ad3", title: "That unused subscription", due: "—", disp: null },
 ];
 const ADMIN_DISP = [
-  { id: "delete", label: "Delete", Icon: Trash, cw: "crimson" },
-  { id: "delegate", label: "Delegate", Icon: UserPlus, cw: "sage" },
-  { id: "automate", label: "Automate", Icon: Repeat, cw: "plum" },
-  { id: "do", label: "Do it", Icon: Check, cw: "gold" },
+  { id: "delete", label: "Delete", Icon: Trash, cw: "crimson" }, { id: "delegate", label: "Delegate", Icon: UserPlus, cw: "sage" },
+  { id: "automate", label: "Automate", Icon: Repeat, cw: "plum" }, { id: "do", label: "Do it", Icon: Check, cw: "gold" },
 ];
 const RESETS = [
-  { id: "move", label: "Move", Icon: Footprints, cw: "sage" },
-  { id: "cry", label: "A good cry", Icon: Wind, cw: "plum" },
-  { id: "hug", label: "A long hug", Icon: HeartHandshake, cw: "crimson" },
-  { id: "create", label: "Make something", Icon: Palette, cw: "blush" },
-  { id: "breath", label: "Breathe", Icon: Wind, cw: "sage" },
-  { id: "connect", label: "Reach out", Icon: Users, cw: "gold" },
+  { id: "move", label: "Move", Icon: Footprints, cw: "sage" }, { id: "cry", label: "A good cry", Icon: Wind, cw: "plum" },
+  { id: "hug", label: "A long hug", Icon: HeartHandshake, cw: "crimson" }, { id: "create", label: "Make something", Icon: Palette, cw: "blush" },
+  { id: "breath", label: "Breathe", Icon: Wind, cw: "sage" }, { id: "connect", label: "Reach out", Icon: Users, cw: "gold" },
 ];
-
 const HOURS = Array.from({ length: 16 }, (_, i) => i + 7);
 function energyCurve(phase) {
   const mult = PHASE[phase].mult;
-  return HOURS.map((h) => {
-    const base = h < 9 ? 0.4 + (h - 7) * 0.12 : h <= 12 ? 0.7 + (h - 9) * 0.1 : h <= 15 ? 0.95 - (h - 12) * 0.13 : h <= 18 ? 0.6 + (h - 15) * 0.04 : 0.7 - (h - 18) * 0.12;
-    return Math.max(0.12, Math.min(1, base * (0.7 + mult * 0.3)));
-  });
+  return HOURS.map((h) => { const base = h < 9 ? 0.4 + (h - 7) * 0.12 : h <= 12 ? 0.7 + (h - 9) * 0.1 : h <= 15 ? 0.95 - (h - 12) * 0.13 : h <= 18 ? 0.6 + (h - 15) * 0.04 : 0.7 - (h - 18) * 0.12; return Math.max(0.12, Math.min(1, base * (0.7 + mult * 0.3))); });
 }
 const fmtHour = (h) => `${h > 12 ? h - 12 : h}${h >= 12 ? "pm" : "am"}`;
-const dayLabel = (offset) => {
-  const d = new Date(); d.setDate(d.getDate() + offset);
-  const base = d.toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "short" });
-  return offset === 0 ? `${base} · Today` : offset === 1 ? `${base} · Tomorrow` : base;
-};
+const dayLabel = (offset) => { const d = new Date(); d.setDate(d.getDate() + offset); const base = d.toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "short" }); return offset === 0 ? `${base} · Today` : offset === 1 ? `${base} · Tomorrow` : base; };
 
 // ════════════════════════════════════════════════════════════════════════════
 export default function PlannerNewDemo() {
@@ -161,24 +134,23 @@ export default function PlannerNewDemo() {
   const [editBlock, setEditBlock] = useState(null);
   const [intentDraft, setIntentDraft] = useState(null);
   const [toast, setToast] = useState(null);
-  const [voiceNonce, setVoiceNonce] = useState(0);
+  const [voiceOpen, setVoiceOpen] = useState(false);
+  const [calOpen, setCalOpen] = useState(false);
+  const [jumpOpen, setJumpOpen] = useState(false);
+  const [user, setUser] = useState(null);
+  const [profile, setProfile] = useState(null);
   const sliderRef = useRef(null);
-  const dayDeckRef = useRef(null);
+
+  useEffect(() => { (async () => { try { const u = await base44.auth.me(); setUser(u); const p = await base44.entities.UserProfile.filter({ user_id: u.id }, null, 1); setProfile(p?.[0] || null); } catch { /* preview unauth — calendar still renders empty */ } })(); }, []);
 
   const flash = (m) => { setToast(m); window.clearTimeout(flash._t); flash._t = window.setTimeout(() => setToast(null), 2200); };
-
   const cycleDay = BASE_CYCLE_DAY + offset;
   const phaseKey = phaseFor(cycleDay);
   const ph = PHASE[phaseKey];
   const sn = SEASONS[season];
   const blocks = useMemo(() => (days[offset] || []).slice().sort((a, b) => a.hour - b.hour), [days, offset]);
-
   const capacity = Math.round(10 * ph.mult * sn.mult * 10) / 10;
-  const load = useMemo(() => {
-    let l = blocks.filter((b) => !b.done).reduce((s, b) => s + (TYPE_META[b.type]?.load ?? 1), 0);
-    if (offset === 0) l += intentions.length * 0.5;
-    return Math.round(l * 10) / 10;
-  }, [blocks, intentions, offset]);
+  const load = useMemo(() => { let l = blocks.filter((b) => !b.done).reduce((s, b) => s + (TYPE_META[b.type]?.load ?? 1), 0); if (offset === 0) l += intentions.length * 0.5; return Math.round(l * 10) / 10; }, [blocks, intentions, offset]);
   const pct = capacity > 0 ? Math.round((load / capacity) * 100) : 0;
   const over = load > capacity;
   const curve = useMemo(() => energyCurve(phaseKey), [phaseKey]);
@@ -191,8 +163,7 @@ export default function PlannerNewDemo() {
     const hour = m ? (Number(m[1]) % 12) + (/pm/i.test(m[2]) ? 12 : 0) : HOURS[peakIdx];
     const type = kind || (/walk|run|gym|move|stretch|yoga/i.test(t) ? "move" : /lunch|dinner|coffee|drinks|see |call |meet/i.test(t) ? "life" : /deep|write|focus|pitch|work/i.test(t) ? "focus" : /eat|breakfast|snack|meal/i.test(t) ? "meal" : /rest|nap|breathe|reset|wind/i.test(t) ? "rest" : "task");
     const title = t.replace(/(at\s)?\d{1,2}\s?(am|pm)/i, "").trim() || t;
-    const blk = { id: "n" + Date.now(), hour, title: title.charAt(0).toUpperCase() + title.slice(1), type, dur: 45, done: false };
-    setDays((ds) => ({ ...ds, [offset]: [...(ds[offset] || []), blk] }));
+    setDays((ds) => ({ ...ds, [offset]: [...(ds[offset] || []), { id: "n" + Date.now(), hour, title: title.charAt(0).toUpperCase() + title.slice(1), type, dur: 45, done: false }] }));
     flash(offset === 0 ? "Added to today" : `Added to ${dayLabel(offset).split(" · ")[0]}`);
   };
   const toggleBlock = (id) => setDays((ds) => ({ ...ds, [offset]: (ds[offset] || []).map((b) => b.id === id ? { ...b, done: !b.done } : b) }));
@@ -204,15 +175,31 @@ export default function PlannerNewDemo() {
   const handOver = (id) => { setInvisible((xs) => xs.map((x) => x.id === id ? { ...x, handed: true } : x)); flash("Handed over — fully"); };
   const setDisp = (id, disp) => { setAdmin((xs) => xs.map((x) => x.id === id ? { ...x, disp } : x)); flash(disp === "delete" ? "Let go" : disp === "delegate" ? "Delegated" : disp === "automate" ? "Set to auto" : "On the list"); };
   const planReset = (label) => { addToDay(`${label} reset`, "rest"); flash(`Planned: ${label}`); };
-  const pickDay = (off) => { setOffset(off); dayDeckRef.current?.goTo(0); flash(`Planning ${dayLabel(off).split(" · ")[0]}`); };
-  const toSlider = () => sliderRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+  const jumpToBoard = (idx) => {
+    setJumpOpen(false);
+    sliderRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    const track = sliderRef.current?.querySelector(".fw-clipboard-track");
+    const child = track?.children?.[idx];
+    if (track && child) track.scrollLeft = child.offsetLeft - track.offsetLeft;
+  };
   const gold = cwOf("gold").petal;
+  const BOARDS = [{ t: "The day", sub: "Agenda · hour-by-hour · week" }, { t: "Reserves", sub: "Energy · load · recovery · boundaries · the invisible load" }, { t: "Rituals", sub: "Intentions · anchors · reset · focus · rhythm" }];
 
   return (
     <div style={{ ...PAPER_BG, minHeight: "100vh", overflowX: "clip", paddingBottom: "calc(96px + env(safe-area-inset-bottom))" }}>
       <style>{floraKeyframes}</style>
-      <div style={{ maxWidth: 430, margin: "0 auto", padding: "16px 16px 0" }}>
 
+      {/* TOP-AREA CHROME (fixed) — Jump-to (left) + Calendar (right) */}
+      <button onClick={() => setJumpOpen(true)} aria-label="Jump to a planner area"
+        style={{ position: "fixed", top: "calc(env(safe-area-inset-top,0px) + 10px)", left: 12, zIndex: 45, display: "inline-flex", alignItems: "center", gap: 6, padding: "7px 13px", borderRadius: 999, border: `1px solid ${T.paperDeep}`, background: T.paperHi, fontFamily: UI, fontSize: 12, fontWeight: 700, color: T.inkSoft, boxShadow: "0 2px 12px rgba(58,44,26,0.18)", cursor: "pointer" }}>
+        <Grid2x2 size={13} style={{ color: T.gold }} /> Jump to
+      </button>
+      <button onClick={() => setCalOpen(true)} aria-label="Open calendar"
+        style={{ position: "fixed", top: "calc(env(safe-area-inset-top,0px) + 10px)", right: 12, zIndex: 45, display: "inline-flex", alignItems: "center", gap: 6, padding: "7px 13px", borderRadius: 999, border: `1px solid ${T.paperDeep}`, background: T.paperHi, fontFamily: UI, fontSize: 12, fontWeight: 700, color: T.inkSoft, boxShadow: "0 2px 12px rgba(58,44,26,0.18)", cursor: "pointer" }}>
+        <CalendarRange size={13} style={{ color: T.gold }} /> Calendar
+      </button>
+
+      <div style={{ maxWidth: 430, margin: "0 auto", padding: "16px 16px 0" }}>
         <FwFloraHero title="Your day" colorway="sage" bloom="snowdrop" flankL="iris" flankR="daffodil" titleColor={OXBLOOD}
           line="One day, tended to your energy. Build it, hold what matters, and leave room to rest." />
         <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, margin: "8px 0 16px" }}>
@@ -221,60 +208,62 @@ export default function PlannerNewDemo() {
         </div>
 
         <SummaryCard eyebrow="Today, at a glance" rows={[
-          { Icon: CalendarDays, label: "Your day", text: `${blocks.length} on the plan · your peak window is ${peakLabel}`, onClick: toSlider },
-          { Icon: Gauge, label: "Reserves", text: `${pct}% of a ${ph.label.toLowerCase()} day — ${over ? "a little full" : "room for more"}`, onClick: toSlider },
-          { Icon: Layers, label: "The load", text: `${invisible.filter((v) => !v.handed).length} invisible · ${admin.filter((a) => !a.disp).length} admin to triage`, onClick: toSlider },
+          { Icon: CalendarDays, label: "Your day", text: `${blocks.length} on the plan · your peak window is ${peakLabel}`, onClick: () => jumpToBoard(0) },
+          { Icon: Gauge, label: "Reserves", text: `${pct}% of a ${ph.label.toLowerCase()} day — ${over ? "a little full" : "room for more"}`, onClick: () => jumpToBoard(1) },
+          { Icon: Layers, label: "The load", text: `${invisible.filter((v) => !v.handed).length} invisible · ${admin.filter((a) => !a.disp).length} admin to triage`, onClick: () => jumpToBoard(1) },
         ]} />
 
-        {/* THREE dense sliding boards (§6.10), oxblood titles */}
-        <div ref={sliderRef} style={{ marginTop: 18 }}>
+        {/* TOP-AREA action pills (the two brand focus pills, OUT of the cards) */}
+        <div style={{ display: "flex", gap: 10, marginTop: 14 }}>
+          <button onClick={() => setVoiceOpen(true)} style={focusPill(cwOf("plum").petal)}><Mic size={16} /> Speak your plan</button>
+          <button onClick={() => setCalOpen(true)} style={focusPill(gold)}><CalendarRange size={16} /> Plan a day</button>
+        </div>
+
+        {/* THREE dense boards — main slider HORIZONTAL; cards use vertical-segment slides */}
+        <div ref={sliderRef} style={{ marginTop: 16 }}>
           <ClipboardSlider hint="Slide your planner →" accent={gold}>
 
-            {/* BOARD 1 — THE DAY (entry pills + add + 4-lens deck incl. Calendar) */}
             <Clipboard title="The day" sub="BUILD IT · TEND IT TO YOUR ENERGY" accent={gold} flower="rose" idx="cb-day" titleColor={OXBLOOD}>
               <DateStepper offset={offset} onStep={(d) => setOffset((o) => Math.max(-7, Math.min(21, o + d)))} phase={ph} pct={pct} over={over} />
-              <div style={{ display: "flex", gap: 8, margin: "0 0 10px" }}>
-                <button onClick={() => setVoiceNonce((n) => n + 1)} style={pillBtn(cwOf("plum").petal)}><Mic size={15} /> Speak your plan</button>
-                <button onClick={() => dayDeckRef.current?.goTo(3)} style={pillBtn(gold)}><CalendarRange size={15} /> Plan a day</button>
-              </div>
-              <AddInline onAdd={addToDay} dayName={dayLabel(offset).split(" · ").pop()} voiceNonce={voiceNonce} />
-              <Deck ref={dayDeckRef} accent={gold}>
-                <Lens label="Agenda" Icon={ListChecks} accent={gold}>
-                  <Agenda blocks={blocks} anchors={anchors} peakIdx={peakIdx} phase={ph} offset={offset} onToggle={toggleBlock} onEdit={setEditBlock} onAnchor={toggleAnchor} />
-                </Lens>
-                <Lens label="Hour by hour" Icon={Clock} accent={gold}>
-                  <Hours blocks={blocks} peakHour={HOURS[peakIdx]} onEdit={setEditBlock} onAddHour={(h) => addToDay(`block at ${fmtHour(h)}`)} />
-                </Lens>
-                <Lens label="Week" Icon={CalendarDays} accent={gold}>
-                  <Week active={offset} onPick={pickDay} blocksByOff={days} />
-                </Lens>
-                <Lens label="Calendar" Icon={CalendarRange} accent={gold}>
-                  <MonthCalendar active={offset} onPick={pickDay} blocksByOff={days} />
-                </Lens>
+              <AddInline onAdd={addToDay} dayName={dayLabel(offset).split(" · ").pop()} />
+              <Deck accent={gold}>
+                <Panel label="Agenda" Icon={ListChecks} accent={gold}><Agenda blocks={blocks} anchors={anchors} peakIdx={peakIdx} phase={ph} offset={offset} onToggle={toggleBlock} onEdit={setEditBlock} onAnchor={toggleAnchor} /></Panel>
+                <Panel label="Hour by hour" Icon={Clock} accent={gold}><Hours blocks={blocks} peakHour={HOURS[peakIdx]} onEdit={setEditBlock} onAddHour={(h) => addToDay(`block at ${fmtHour(h)}`)} /></Panel>
+                <Panel label="Week" Icon={CalendarDays} accent={gold}><Week active={offset} onPick={(o) => { setOffset(o); flash(`Planning ${dayLabel(o).split(" · ")[0]}`); }} blocksByOff={days} /></Panel>
               </Deck>
             </Clipboard>
 
-            {/* BOARD 2 — RESERVES (6-lens: Reserves + The load) */}
             <Clipboard title="Reserves" sub="ENERGY · LOAD · RECOVERY · BOUNDARIES · THE INVISIBLE LOAD" accent={cwOf("sage").petal} flower="snowdrop" idx="cb-res" titleColor={OXBLOOD}>
               <Deck accent={cwOf("sage").petal}>
-                <Lens label="Energy" Icon={BatteryCharging} accent={cwOf("sage").petal}><EnergyLens curve={curve} peakIdx={peakIdx} peakLabel={peakLabel} phase={ph} /></Lens>
-                <Lens label="Load" Icon={Gauge} accent={cwOf("sage").petal}><LoadLens load={load} capacity={capacity} pct={pct} over={over} onEase={over ? () => { setDays((ds) => ({ ...ds, [offset]: (ds[offset] || []).filter((b) => !(b.type === "task" && !b.done && !b.anchor)) })); flash("Lighter tasks moved off today"); } : null} /></Lens>
-                <Lens label="Recovery" Icon={MoonI} accent={cwOf("sage").petal}><RecoveryLens onPlanRest={() => { addToDay("Rest — protected", "rest"); flash("Rest block added"); }} /></Lens>
-                <Lens label="Boundaries" Icon={ShieldCheck} accent={cwOf("sage").petal}><BoundariesLens season={season} setSeason={(s) => { setSeason(s); flash(`Season: ${SEASONS[s].label}`); }} onLowDay={() => flash("Low-capacity day — plan shrunk")} /></Lens>
-                <Lens label="Invisible labour" Icon={Layers} accent={cwOf("plum").petal}><InvisibleLens items={invisible} onHand={handOver} /></Lens>
-                <Lens label="Life admin" Icon={ListChecks} accent={cwOf("plum").petal}><AdminLens items={admin} onDisp={setDisp} /></Lens>
+                <VSeg accent={cwOf("sage").petal}>
+                  <Panel label="Energy" Icon={BatteryCharging} accent={cwOf("sage").petal}><EnergyLens curve={curve} peakIdx={peakIdx} peakLabel={peakLabel} phase={ph} /></Panel>
+                  <Panel label="Load" Icon={Gauge} accent={cwOf("plum").petal}><LoadLens load={load} capacity={capacity} pct={pct} over={over} onEase={over ? () => { setDays((ds) => ({ ...ds, [offset]: (ds[offset] || []).filter((b) => !(b.type === "task" && !b.done && !b.anchor)) })); flash("Lighter tasks moved off today"); } : null} /></Panel>
+                </VSeg>
+                <VSeg accent={cwOf("sage").petal}>
+                  <Panel label="Recovery" Icon={MoonI} accent={cwOf("sage").petal}><RecoveryLens onPlanRest={() => { addToDay("Rest — protected", "rest"); flash("Rest block added"); }} /></Panel>
+                  <Panel label="Boundaries" Icon={ShieldCheck} accent={cwOf("sage").petal}><BoundariesLens season={season} setSeason={(s) => { setSeason(s); flash(`Season: ${SEASONS[s].label}`); }} onLowDay={() => flash("Low-capacity day — plan shrunk")} /></Panel>
+                </VSeg>
+                <VSeg accent={cwOf("plum").petal}>
+                  <Panel label="Invisible labour" Icon={Layers} accent={cwOf("plum").petal}><InvisibleLens items={invisible} onHand={handOver} /></Panel>
+                  <Panel label="Life admin" Icon={ListChecks} accent={cwOf("plum").petal}><AdminLens items={admin} onDisp={setDisp} /></Panel>
+                </VSeg>
               </Deck>
             </Clipboard>
 
-            {/* BOARD 3 — RITUALS (6-lens: Intentions + Rituals) */}
             <Clipboard title="Rituals" sub="INTENTIONS · ANCHORS · RESET · FOCUS · RHYTHM" accent={cwOf("crimson").petal} flower="poppy" idx="cb-rit" titleColor={OXBLOOD}>
               <Deck accent={cwOf("crimson").petal}>
-                <Lens label="Today's intentions" Icon={Sparkles} accent={cwOf("crimson").petal}><Intentions intentions={intentions} phaseKey={phaseKey} onEdit={setIntentDraft} onAdd={() => setIntentDraft({ domain: "career", text: "" })} onRemove={removeIntention} /></Lens>
-                <Lens label="This season" Icon={Leaf} accent={cwOf("crimson").petal}><SeasonIntentions /></Lens>
-                <Lens label="Anchors" Icon={Sun} accent={gold}><AnchorsLens anchors={anchors} onToggle={toggleAnchor} /></Lens>
-                <Lens label="Reset" Icon={Wind} accent={gold}><ResetLens onPlan={planReset} /></Lens>
-                <Lens label="Focus" Icon={Timer} accent={gold}><FocusLens blocks={blocks} onStart={() => flash("Focus session — 25 min, I'm with you")} onFirstStep={(t) => flash(`First 2 minutes: ${t}`)} /></Lens>
-                <Lens label="Rhythm" Icon={Repeat} accent={gold}><RhythmLens season={sn} /></Lens>
+                <VSeg accent={cwOf("crimson").petal}>
+                  <Panel label="Today's intentions" Icon={Sparkles} accent={cwOf("crimson").petal}><Intentions intentions={intentions} phaseKey={phaseKey} onEdit={setIntentDraft} onAdd={() => setIntentDraft({ domain: "career", text: "" })} onRemove={removeIntention} /></Panel>
+                  <Panel label="This season" Icon={Leaf} accent={cwOf("crimson").petal}><SeasonIntentions /></Panel>
+                </VSeg>
+                <VSeg accent={gold}>
+                  <Panel label="Anchors" Icon={Sun} accent={gold}><AnchorsLens anchors={anchors} onToggle={toggleAnchor} /></Panel>
+                  <Panel label="Reset" Icon={Wind} accent={gold}><ResetLens onPlan={planReset} /></Panel>
+                </VSeg>
+                <VSeg accent={gold}>
+                  <Panel label="Focus" Icon={Timer} accent={gold}><FocusLens blocks={blocks} onStart={() => flash("Focus session — 25 min, I'm with you")} onFirstStep={(t) => flash(`First 2 minutes: ${t}`)} /></Panel>
+                  <Panel label="Rhythm" Icon={Repeat} accent={gold}><RhythmLens season={sn} /></Panel>
+                </VSeg>
               </Deck>
             </Clipboard>
 
@@ -286,67 +275,83 @@ export default function PlannerNewDemo() {
 
       {editBlock && <BlockSheet draft={editBlock} peakHour={HOURS[peakIdx]} onClose={() => setEditBlock(null)} onSave={saveBlock} onDelete={() => deleteBlock(editBlock.id)} />}
       {intentDraft && <IntentionSheet draft={intentDraft} onClose={() => setIntentDraft(null)} onSave={saveIntention} />}
+      {voiceOpen && <VoiceSheet onClose={() => setVoiceOpen(false)} onParse={(t) => { addToDay(t); setVoiceOpen(false); }} />}
+      {jumpOpen && <JumpSheet boards={BOARDS} onClose={() => setJumpOpen(false)} onJump={jumpToBoard} />}
+      {calOpen && <CalendarOverlay user={user} profile={profile} onClose={() => setCalOpen(false)} />}
       {toast && <div style={{ position: "fixed", left: "50%", bottom: "calc(110px + env(safe-area-inset-bottom))", transform: "translateX(-50%)", zIndex: 9999, background: T.ink, color: T.paperHi, fontFamily: UI, fontSize: 13, fontWeight: 600, padding: "10px 16px", borderRadius: 999, boxShadow: "0 4px 16px rgba(11,8,5,0.3)" }}>{toast}</div>}
     </div>
   );
 }
 
-// ══ shared bits ══════════════════════════════════════════════════════════════
+// ══ shared ════════════════════════════════════════════════════════════════════
 const lbl = { fontFamily: UI, fontSize: 12, fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", color: T.muted };
 const subCard = (accent) => ({ background: T.paper, border: `1px solid ${T.paperDeep}`, borderLeft: `3px solid ${accent}`, borderRadius: 12, padding: "10px 12px" });
-const pillBtn = (c) => ({ flex: 1, display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 7, padding: "11px 10px", borderRadius: 999, background: c, color: "#fff", border: "none", fontFamily: UI, fontSize: 13, fontWeight: 700, cursor: "pointer", boxShadow: `0 2px 8px ${c}44` });
-
+const focusPill = (c) => ({ flex: 1, display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 8, padding: "13px 12px", borderRadius: 999, background: c, color: "#fff", border: "none", fontFamily: UI, fontSize: 14, fontWeight: 700, cursor: "pointer", boxShadow: `0 2px 8px ${c}40` });
 function Pill({ Icon, children, cw = "gold", filled, onClick, active }) {
-  const c = cwOf(cw).petal;
-  const style = filled || active ? { background: c, color: "#fff", border: `1px solid ${c}` } : { background: `${c}14`, color: T.inkSoft, border: `1px solid ${c}55` };
+  const c = cwOf(cw).petal; const style = filled || active ? { background: c, color: "#fff", border: `1px solid ${c}` } : { background: `${c}14`, color: T.inkSoft, border: `1px solid ${c}55` };
   return <button onClick={onClick} style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "7px 13px", borderRadius: 999, fontFamily: UI, fontSize: 13, fontWeight: 700, cursor: "pointer", ...style }}>{Icon && <Icon size={13} color={filled || active ? "#fff" : c} />}{children}</button>;
 }
 
-// lens fills the board height (flex column, generous min) so there's no blank bottom
-function Lens({ label, Icon, accent, children }) {
+// a single fixed-height panel (header + content that fills CARD_H) — the unit of a card/segment
+function Panel({ label, Icon, accent, children }) {
   return (
-    <div style={{ minHeight: 392, flex: 1, display: "flex", flexDirection: "column" }}>
-      <div style={{ display: "flex", alignItems: "center", gap: 7, marginBottom: 12 }}>
+    <div style={{ height: CARD_H, display: "flex", flexDirection: "column", boxSizing: "border-box" }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 7, marginBottom: 10, flexShrink: 0 }}>
         <Icon size={14} color={accent} /><span style={{ ...lbl, color: accent }}>{label}</span>
       </div>
-      <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>{children}</div>
+      <div style={{ flex: 1, minHeight: 0, overflowY: "auto", display: "flex", flexDirection: "column" }}>{children}</div>
     </div>
   );
 }
 
-// ── local in-card swipe Deck (the §6.10 CardDeck mechanics + controllable via ref) ──
+// ── horizontal in-card deck (lens slider) — direct-scroll, controllable ──
 const Deck = forwardRef(function Deck({ children, accent = T.gold }, ref) {
   const items = Children.toArray(children).filter(Boolean);
-  const trackRef = useRef(null);
-  const [active, setActive] = useState(0);
-  const last = items.length - 1;
-  const goTo = (i) => {
-    const idx = Math.max(0, Math.min(last, i)); setActive(idx);
-    const el = trackRef.current; if (!el) return;
-    el.scrollLeft = idx * el.clientWidth; // direct + instant — lands reliably (smooth on nested snap containers can no-op)
-  };
+  const trackRef = useRef(null); const [active, setActive] = useState(0); const last = items.length - 1;
+  const goTo = (i) => { const idx = Math.max(0, Math.min(last, i)); setActive(idx); const el = trackRef.current; if (el) el.scrollLeft = idx * el.clientWidth; };
   useImperativeHandle(ref, () => ({ goTo }), [last]);
-  const onScroll = () => { const el = trackRef.current; if (!el) return; const w = el.clientWidth || 1; const i = Math.round(el.scrollLeft / w); if (i !== active) setActive(Math.max(0, Math.min(last, i))); };
+  const onScroll = () => { const el = trackRef.current; if (!el) return; const i = Math.round(el.scrollLeft / (el.clientWidth || 1)); if (i !== active) setActive(Math.max(0, Math.min(last, i))); };
   if (items.length <= 1) return <div>{items}</div>;
   return (
     <div>
       <div ref={trackRef} onScroll={onScroll} className="fw-deck-track" style={{ display: "flex", overflowX: "auto", scrollSnapType: "x mandatory", overscrollBehaviorX: "contain", WebkitOverflowScrolling: "touch", scrollbarWidth: "none" }}>
         <style>{`.fw-deck-track::-webkit-scrollbar{display:none}`}</style>
-        {items.map((c, i) => <div key={i} style={{ flex: "0 0 100%", width: "100%", minWidth: 0, boxSizing: "border-box", scrollSnapAlign: "start", display: "flex", flexDirection: "column" }}>{c}</div>)}
+        {items.map((c, i) => <div key={i} style={{ flex: "0 0 100%", width: "100%", minWidth: 0, boxSizing: "border-box", scrollSnapAlign: "start" }}>{c}</div>)}
       </div>
       <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 10, padding: "10px 0 0" }}>
-        <button onClick={() => goTo(active - 1)} disabled={active === 0} aria-label="Previous lens" style={navBtn(active === 0)}><ChevronLeft size={15} /></button>
-        <div style={{ display: "flex", gap: 6, flexWrap: "wrap", justifyContent: "center", maxWidth: 180 }}>
-          {items.map((_, i) => <button key={i} onClick={() => goTo(i)} aria-label={`Lens ${i + 1}`} style={{ width: i === active ? 16 : 6, height: 6, borderRadius: 999, border: "none", padding: 0, background: i === active ? accent : T.paperDeep, cursor: "pointer", transition: "width .2s" }} />)}
-        </div>
-        <button onClick={() => goTo(active + 1)} disabled={active === last} aria-label="Next lens" style={navBtn(active === last)}><ChevronRight size={15} /></button>
+        <button onClick={() => goTo(active - 1)} disabled={active === 0} aria-label="Previous card" style={navBtn(active === 0)}><ChevronLeft size={15} /></button>
+        <div style={{ display: "flex", gap: 6 }}>{items.map((_, i) => <button key={i} onClick={() => goTo(i)} aria-label={`Card ${i + 1}`} style={{ width: i === active ? 16 : 6, height: 6, borderRadius: 999, border: "none", padding: 0, background: i === active ? accent : T.paperDeep, cursor: "pointer", transition: "width .2s" }} />)}</div>
+        <button onClick={() => goTo(active + 1)} disabled={active === last} aria-label="Next card" style={navBtn(active === last)}><ChevronRight size={15} /></button>
       </div>
     </div>
   );
 });
 const navBtn = (disabled) => ({ width: 30, height: 30, borderRadius: 999, border: `1px solid ${T.paperDeep}`, background: disabled ? "transparent" : T.paperHi, color: disabled ? T.paperDeep : T.muted, display: "grid", placeItems: "center", cursor: disabled ? "default" : "pointer", opacity: disabled ? 0.5 : 1, flexShrink: 0 });
 
-// ── BOARD 1 · date stepper ────────────────────────────────────────────────────
+// ── VERTICAL 2-segment in-card slide (up segment ↕ down segment) ──
+function VSeg({ children, accent = T.gold }) {
+  const items = Children.toArray(children).filter(Boolean);
+  const trackRef = useRef(null); const [active, setActive] = useState(0); const last = items.length - 1;
+  const goTo = (i) => { const idx = Math.max(0, Math.min(last, i)); setActive(idx); const el = trackRef.current; if (el) el.scrollTop = idx * el.clientHeight; };
+  const onScroll = () => { const el = trackRef.current; if (!el) return; const i = Math.round(el.scrollTop / (el.clientHeight || 1)); if (i !== active) setActive(Math.max(0, Math.min(last, i))); };
+  if (items.length <= 1) return <div>{items}</div>;
+  return (
+    <div style={{ position: "relative", height: CARD_H }}>
+      <div ref={trackRef} onScroll={onScroll} className="fw-vseg-track" style={{ height: "100%", overflowY: "auto", scrollSnapType: "y mandatory", overscrollBehaviorY: "contain", WebkitOverflowScrolling: "touch", scrollbarWidth: "none" }}>
+        <style>{`.fw-vseg-track::-webkit-scrollbar{display:none}`}</style>
+        {items.map((c, i) => <div key={i} style={{ height: CARD_H, scrollSnapAlign: "start", boxSizing: "border-box", paddingRight: 34 }}>{c}</div>)}
+      </div>
+      {/* right-edge vertical up/down nav + dots */}
+      <div style={{ position: "absolute", right: 2, top: "50%", transform: "translateY(-50%)", display: "flex", flexDirection: "column", alignItems: "center", gap: 7 }}>
+        <button onClick={() => goTo(active - 1)} disabled={active === 0} aria-label="Slide up" style={navBtn(active === 0)}><ChevronUp size={15} /></button>
+        {items.map((_, i) => <button key={i} onClick={() => goTo(i)} aria-label={`Segment ${i + 1}`} style={{ width: 6, height: i === active ? 16 : 6, borderRadius: 999, border: "none", padding: 0, background: i === active ? accent : T.paperDeep, cursor: "pointer", transition: "height .2s" }} />)}
+        <button onClick={() => goTo(active + 1)} disabled={active === last} aria-label="Slide down" style={navBtn(active === last)}><ChevronDown size={15} /></button>
+      </div>
+    </div>
+  );
+}
+
+// ── BOARD 1 panels ──────────────────────────────────────────────────────────
 function DateStepper({ offset, onStep, phase, pct, over }) {
   const barColor = over ? T.crimson : pct >= 85 ? T.gold : cwOf("sage").petal;
   return (
@@ -367,25 +372,16 @@ function DateStepper({ offset, onStep, phase, pct, over }) {
     </div>
   );
 }
-
-// ── BOARD 1 · the quick-add bar (typed + voice; voiceNonce triggers the mic) ──
-function AddInline({ onAdd, dayName, voiceNonce }) {
+function AddInline({ onAdd, dayName }) {
   const [text, setText] = useState("");
-  const [listening, setListening] = useState(false);
-  const seen = useRef(voiceNonce);
   const submit = () => { if (text.trim()) { onAdd(text); setText(""); } };
-  const mic = () => { setListening(true); window.setTimeout(() => { setText("Coffee with Sam at 3pm"); setListening(false); }, 700); };
-  useEffect(() => { if (voiceNonce !== seen.current) { seen.current = voiceNonce; mic(); } }, [voiceNonce]);
   return (
-    <div style={{ display: "flex", alignItems: "center", gap: 7, padding: "7px 7px 7px 12px", borderRadius: 999, background: T.paper, border: `1px solid ${T.paperDeep}`, marginBottom: 14 }}>
-      <input value={text} onChange={(e) => setText(e.target.value)} onKeyDown={(e) => e.key === "Enter" && submit()} placeholder={listening ? "Listening…" : `Add to ${dayName.toLowerCase()}…`} style={{ flex: 1, minWidth: 0, border: "none", background: "transparent", outline: "none", fontFamily: SERIF, fontSize: 15, color: T.ink }} />
-      <button onClick={mic} aria-label="Add by voice" style={{ width: 34, height: 34, borderRadius: 999, flexShrink: 0, background: listening ? cwOf("sage").petal : T.paperHi, border: `1px solid ${T.paperDeep}`, color: listening ? "#fff" : cwOf("sage").petal, display: "grid", placeItems: "center", cursor: "pointer" }}><Mic size={15} /></button>
+    <div style={{ display: "flex", alignItems: "center", gap: 7, padding: "7px 7px 7px 12px", borderRadius: 999, background: T.paper, border: `1px solid ${T.paperDeep}`, marginBottom: 12 }}>
+      <input value={text} onChange={(e) => setText(e.target.value)} onKeyDown={(e) => e.key === "Enter" && submit()} placeholder={`Add to ${dayName.toLowerCase()}…`} style={{ flex: 1, minWidth: 0, border: "none", background: "transparent", outline: "none", fontFamily: SERIF, fontSize: 15, color: T.ink }} />
       <button onClick={submit} aria-label="Add to your day" style={{ width: 36, height: 36, borderRadius: 999, flexShrink: 0, background: cwOf("gold").petal, border: "none", color: "#fff", display: "grid", placeItems: "center", cursor: "pointer" }}><Plus size={17} /></button>
     </div>
   );
 }
-
-// ── BOARD 1 · Agenda ──────────────────────────────────────────────────────────
 function Agenda({ blocks, anchors, peakIdx, phase, offset, onToggle, onEdit, onAnchor }) {
   const groups = ["Morning", "Afternoon", "Evening"];
   const byGroup = groups.map((g) => ({ g, items: blocks.filter((b) => partOfDay(b.hour) === g) })).filter((x) => x.items.length);
@@ -435,11 +431,9 @@ function Agenda({ blocks, anchors, peakIdx, phase, offset, onToggle, onEdit, onA
     </div>
   );
 }
-
-// ── BOARD 1 · Hours ───────────────────────────────────────────────────────────
 function Hours({ blocks, peakHour, onEdit, onAddHour }) {
   return (
-    <div style={{ flex: 1, maxHeight: 348, overflowY: "auto" }}>
+    <div style={{ flex: 1 }}>
       {HOURS.map((h) => {
         const here = blocks.filter((b) => b.hour === h); const isPeak = h === peakHour;
         return (
@@ -459,8 +453,6 @@ function Hours({ blocks, peakHour, onEdit, onAddHour }) {
     </div>
   );
 }
-
-// ── BOARD 1 · Week (cycle-tinted fullness) ────────────────────────────────────
 function Week({ active, onPick, blocksByOff }) {
   const planned = Object.values(blocksByOff).reduce((s, a) => s + a.length, 0);
   return (
@@ -468,10 +460,8 @@ function Week({ active, onPick, blocksByOff }) {
       <div style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 14, color: T.muted, marginBottom: 12 }}>This week at a glance — each day carries its phase. Lean into the bright days, soften the tender ones.</div>
       <div style={{ display: "flex", gap: 5 }}>
         {Array.from({ length: 7 }, (_, o) => {
-          const hue = PHASE[phaseFor(BASE_CYCLE_DAY + o)].hue;
-          const d = new Date(); d.setDate(d.getDate() + o);
-          const wd = d.toLocaleDateString("en-GB", { weekday: "short" }).slice(0, 2);
-          const count = (blocksByOff[o] || []).length, isActive = o === active;
+          const hue = PHASE[phaseFor(BASE_CYCLE_DAY + o)].hue; const d = new Date(); d.setDate(d.getDate() + o);
+          const wd = d.toLocaleDateString("en-GB", { weekday: "short" }).slice(0, 2); const count = (blocksByOff[o] || []).length, isActive = o === active;
           return (
             <button key={o} onClick={() => onPick(o)} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: 5, padding: "9px 1px", borderRadius: 11, cursor: "pointer", background: isActive ? `${hue}1F` : "transparent", border: isActive ? `1.5px solid ${hue}` : `1px solid ${T.paperDeep}` }}>
               <span style={{ fontFamily: UI, fontSize: 12, fontWeight: 700, color: isActive ? T.ink : T.muted }}>{wd}</span>
@@ -486,71 +476,23 @@ function Week({ active, onPick, blocksByOff }) {
         {Object.entries(PHASE).map(([k, v]) => <span key={k} style={{ display: "inline-flex", alignItems: "center", gap: 5, fontFamily: UI, fontSize: 12, fontWeight: 600, color: T.muted }}><span style={{ width: 7, height: 7, borderRadius: 99, background: v.hue }} /> {v.label}</span>)}
       </div>
       <div style={{ ...subCard(cwOf("gold").petal), marginTop: "auto" }}>
-        <p style={{ fontFamily: SERIF, fontSize: 15, color: T.ink, margin: 0, lineHeight: 1.45 }}>{planned} things planned across the week. Your brightest days are mid-week — save the bold asks for then.</p>
+        <p style={{ fontFamily: SERIF, fontSize: 15, color: T.ink, margin: 0, lineHeight: 1.45 }}>{planned} things planned across the week. Your brightest days are mid-week — save the bold asks for then. For the wider month, open the calendar.</p>
       </div>
     </div>
   );
 }
 
-// ── BOARD 1 · Calendar (real month grid; tap a day → plan it) ─────────────────
-function MonthCalendar({ active, onPick, blocksByOff }) {
-  const today = new Date(); today.setHours(0, 0, 0, 0);
-  const y = today.getFullYear(), m = today.getMonth();
-  const monthName = today.toLocaleDateString("en-GB", { month: "long", year: "numeric" });
-  const first = new Date(y, m, 1);
-  const startDow = (first.getDay() + 6) % 7; // Mon=0
-  const daysInMonth = new Date(y, m + 1, 0).getDate();
-  const cells = [];
-  for (let i = 0; i < startDow; i++) cells.push(null);
-  for (let d = 1; d <= daysInMonth; d++) cells.push(d);
-  const offOf = (d) => Math.round((new Date(y, m, d) - today) / 86400000);
-  return (
-    <div style={{ flex: 1 }}>
-      <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10 }}>
-        <CalendarRange size={15} color={cwOf("gold").petal} />
-        <span style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 17, fontWeight: 600, color: T.ink }}>{monthName}</span>
-      </div>
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(7,1fr)", gap: 3, marginBottom: 4 }}>
-        {["M", "T", "W", "T", "F", "S", "S"].map((d, i) => <span key={i} style={{ textAlign: "center", fontFamily: UI, fontSize: 12, fontWeight: 700, color: T.muted }}>{d}</span>)}
-      </div>
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(7,1fr)", gap: 3 }}>
-        {cells.map((d, i) => {
-          if (!d) return <span key={i} />;
-          const off = offOf(d), hue = PHASE[phaseFor(BASE_CYCLE_DAY + off)].hue;
-          const isToday = off === 0, isActive = off === active, count = (blocksByOff[off] || []).length, past = off < 0;
-          return (
-            <button key={i} onClick={() => onPick(off)} style={{ aspectRatio: "1", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 2, borderRadius: 9, cursor: "pointer", position: "relative", opacity: past ? 0.5 : 1, background: isActive ? `${hue}26` : "transparent", border: isToday ? `1.5px solid ${OXBLOOD}` : isActive ? `1px solid ${hue}` : `1px solid ${T.paperDeep}` }}>
-              <span style={{ fontFamily: UI, fontSize: 13, fontWeight: isToday ? 700 : 600, color: isToday ? OXBLOOD : T.ink }}>{d}</span>
-              <span style={{ width: 5, height: 5, borderRadius: 99, background: hue }} />
-              {count > 0 && <span style={{ position: "absolute", top: 3, right: 4, fontFamily: UI, fontSize: 12, fontWeight: 700, color: T.muted }}>{count}</span>}
-            </button>
-          );
-        })}
-      </div>
-      <div style={{ ...subCard(cwOf("gold").petal), marginTop: 12 }}>
-        <p style={{ fontFamily: SERIF, fontSize: 14, color: T.ink, margin: 0, lineHeight: 1.45 }}>Tap any day to plan it — the dot is its cycle phase, the number is what's already on it. Today is ringed in red.</p>
-      </div>
-    </div>
-  );
-}
-
-// ══ BOARD 2 lenses ════════════════════════════════════════════════════════════
+// ══ Reserves panels ════════════════════════════════════════════════════════════
 function EnergyLens({ curve, peakIdx, peakLabel, phase }) {
   const max = Math.max(...curve);
   return (
     <div style={{ flex: 1 }}>
       <p style={{ fontFamily: SERIF, fontSize: 15, color: T.inkSoft, lineHeight: 1.5, margin: "0 0 12px" }}>Your energy rises and dips through the day. {phase.note}</p>
-      <div style={{ display: "flex", alignItems: "flex-end", gap: 3, height: 76, margin: "4px 0 6px" }}>
-        {curve.map((v, i) => <div key={i} style={{ flex: 1, height: `${(v / max) * 100}%`, borderRadius: "3px 3px 0 0", background: i === peakIdx ? phase.hue : cwOf("sage").petal, opacity: i === peakIdx ? 1 : 0.42 }} />)}
-      </div>
+      <div style={{ display: "flex", alignItems: "flex-end", gap: 3, height: 74, margin: "4px 0 6px" }}>{curve.map((v, i) => <div key={i} style={{ flex: 1, height: `${(v / max) * 100}%`, borderRadius: "3px 3px 0 0", background: i === peakIdx ? phase.hue : cwOf("sage").petal, opacity: i === peakIdx ? 1 : 0.42 }} />)}</div>
       <div style={{ display: "flex", justifyContent: "space-between", fontFamily: UI, fontSize: 12, fontWeight: 600, color: T.muted, marginBottom: 14 }}><span>7am</span><span>peak · {peakLabel}</span><span>10pm</span></div>
       <Eyebrow color={cwOf("sage").petal}>Match the task to the energy</Eyebrow>
-      <div style={{ display: "flex", flexWrap: "wrap", gap: 6, margin: "8px 0 0" }}>
-        <Pill cw="plum">deep → your peak</Pill><Pill cw="gold">admin → the dip</Pill><Pill cw="sage">restorative → anytime</Pill>
-      </div>
-      <div style={{ ...subCard(cwOf("sage").petal), marginTop: "auto", background: `${cwOf("sage").petal}10` }}>
-        <p style={{ fontFamily: SERIF, fontSize: 15, color: T.ink, margin: 0, lineHeight: 1.45 }}>Your bright window is around {peakLabel}. Plant the boldest thing there; let the rest ride the gentler hours.</p>
-      </div>
+      <div style={{ display: "flex", flexWrap: "wrap", gap: 6, margin: "8px 0 0" }}><Pill cw="plum">deep → your peak</Pill><Pill cw="gold">admin → the dip</Pill><Pill cw="sage">restorative → anytime</Pill></div>
+      <div style={{ ...subCard(cwOf("sage").petal), marginTop: "auto", background: `${cwOf("sage").petal}10` }}><p style={{ fontFamily: SERIF, fontSize: 15, color: T.ink, margin: 0, lineHeight: 1.45 }}>Your bright window is around {peakLabel}. Plant the boldest thing there; let the rest ride the gentler hours.</p></div>
     </div>
   );
 }
@@ -558,23 +500,12 @@ function LoadLens({ load, capacity, pct, over, onEase }) {
   const barColor = over ? T.crimson : pct >= 85 ? T.gold : cwOf("sage").petal;
   return (
     <div style={{ flex: 1 }}>
-      <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", marginBottom: 8 }}>
-        <span style={{ fontFamily: SERIF, fontSize: 18, fontWeight: 600, color: T.ink }}>How full is today?</span><span style={{ fontFamily: UI, fontSize: 12, fontWeight: 700, color: barColor }}>{pct}%</span>
-      </div>
-      <div style={{ height: 9, borderRadius: 99, background: "rgba(58,44,26,0.08)", overflow: "hidden", position: "relative", marginBottom: 10 }}>
-        <div style={{ position: "absolute", inset: 0, width: `${Math.min(130, pct) / 130 * 100}%`, background: barColor }} />
-        <div style={{ position: "absolute", top: 0, left: `${100 / 130 * 100}%`, height: "100%", width: 2, background: "rgba(58,44,26,0.28)" }} />
-      </div>
+      <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", marginBottom: 8 }}><span style={{ fontFamily: SERIF, fontSize: 18, fontWeight: 600, color: T.ink }}>How full is today?</span><span style={{ fontFamily: UI, fontSize: 12, fontWeight: 700, color: barColor }}>{pct}%</span></div>
+      <div style={{ height: 9, borderRadius: 99, background: "rgba(58,44,26,0.08)", overflow: "hidden", position: "relative", marginBottom: 10 }}><div style={{ position: "absolute", inset: 0, width: `${Math.min(130, pct) / 130 * 100}%`, background: barColor }} /><div style={{ position: "absolute", top: 0, left: `${100 / 130 * 100}%`, height: "100%", width: 2, background: "rgba(58,44,26,0.28)" }} /></div>
       <p style={{ fontFamily: SERIF, fontSize: 15, color: T.inkSoft, lineHeight: 1.5, margin: "0 0 14px" }}>{over ? `A little over your usual capacity. Ease one lighter task and it settles.` : `Within capacity — you've planned ${load} of about ${capacity} units of energy.`}</p>
-      <div style={{ ...subCard(cwOf("plum").petal), marginBottom: 12 }}>
-        <div style={{ ...lbl, color: cwOf("plum").petal, marginBottom: 3 }}>The finitude question</div>
-        <p style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 16, color: T.ink, margin: 0, lineHeight: 1.4 }}>What are you deliberately <b>not</b> doing today?</p>
-      </div>
-      <div style={{ ...subCard(cwOf("gold").petal), marginBottom: 12, background: `${cwOf("gold").petal}10` }}>
-        <p style={{ fontFamily: SERIF, fontSize: 14, color: T.ink, margin: 0, lineHeight: 1.45 }}>Capacity isn't a target to fill. Leaving room is the plan working, not failing.</p>
-      </div>
-      {over ? <div style={{ marginTop: "auto" }}><Pill Icon={ArrowRight} cw="plum" filled onClick={onEase}>Ease today's load</Pill></div>
-            : <p style={{ marginTop: "auto", fontFamily: SERIF, fontStyle: "italic", fontSize: 13, color: T.muted }}>Room to spare — a good day to rest a little ahead.</p>}
+      <div style={{ ...subCard(cwOf("plum").petal), marginBottom: 12 }}><div style={{ ...lbl, color: cwOf("plum").petal, marginBottom: 3 }}>The finitude question</div><p style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 16, color: T.ink, margin: 0, lineHeight: 1.4 }}>What are you deliberately <b>not</b> doing today?</p></div>
+      <div style={{ ...subCard(cwOf("gold").petal), marginBottom: 12, background: `${cwOf("gold").petal}10` }}><p style={{ fontFamily: SERIF, fontSize: 14, color: T.ink, margin: 0, lineHeight: 1.45 }}>Capacity isn't a target to fill. Leaving room is the plan working, not failing.</p></div>
+      {over ? <div style={{ marginTop: "auto" }}><Pill Icon={ArrowRight} cw="plum" filled onClick={onEase}>Ease today's load</Pill></div> : <p style={{ marginTop: "auto", fontFamily: SERIF, fontStyle: "italic", fontSize: 13, color: T.muted }}>Room to spare — a good day to rest a little ahead.</p>}
     </div>
   );
 }
@@ -583,17 +514,8 @@ function RecoveryLens({ onPlanRest }) {
   return (
     <div style={{ flex: 1 }}>
       <p style={{ fontFamily: SERIF, fontSize: 15, color: T.inkSoft, lineHeight: 1.5, margin: "0 0 12px" }}>Rest is a booking, not a leftover. Your body's asking for a softer day.</p>
-      <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 14 }}>
-        {stats.map((s) => (
-          <div key={s.k} style={{ display: "flex", alignItems: "center", gap: 10, ...subCard(cwOf(s.cw).petal) }}>
-            <span style={{ fontFamily: SERIF, fontSize: 20, fontWeight: 600, color: T.ink, width: 64 }}>{s.v}</span>
-            <span><span style={{ ...lbl, color: cwOf(s.cw).petal, display: "block" }}>{s.k}</span><span style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 14, color: T.muted }}>{s.note}</span></span>
-          </div>
-        ))}
-      </div>
-      <div style={{ ...subCard(cwOf("sage").petal), marginBottom: 12, background: `${cwOf("sage").petal}10` }}>
-        <p style={{ fontFamily: SERIF, fontSize: 15, color: T.ink, margin: 0, lineHeight: 1.45 }}>A "rest debt" is building. Plan a protected rest block before the day fills.</p>
-      </div>
+      <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 14 }}>{stats.map((s) => <div key={s.k} style={{ display: "flex", alignItems: "center", gap: 10, ...subCard(cwOf(s.cw).petal) }}><span style={{ fontFamily: SERIF, fontSize: 20, fontWeight: 600, color: T.ink, width: 64 }}>{s.v}</span><span><span style={{ ...lbl, color: cwOf(s.cw).petal, display: "block" }}>{s.k}</span><span style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 14, color: T.muted }}>{s.note}</span></span></div>)}</div>
+      <div style={{ ...subCard(cwOf("sage").petal), marginBottom: 12, background: `${cwOf("sage").petal}10` }}><p style={{ fontFamily: SERIF, fontSize: 15, color: T.ink, margin: 0, lineHeight: 1.45 }}>A "rest debt" is building. Plan a protected rest block before the day fills.</p></div>
       <div style={{ marginTop: "auto" }}><Pill Icon={MoonI} cw="sage" filled onClick={onPlanRest}>Plan a rest block</Pill></div>
     </div>
   );
@@ -603,18 +525,10 @@ function BoundariesLens({ season, setSeason, onLowDay }) {
   return (
     <div style={{ flex: 1 }}>
       <Eyebrow color={cwOf("sage").petal}>Protected windows</Eyebrow>
-      <div style={{ display: "flex", flexDirection: "column", gap: 7, margin: "8px 0 14px" }}>
-        {["Evenings after 8 — no work", "Sunday — open, unplanned"].map((w) => (
-          <div key={w} style={{ display: "flex", alignItems: "center", gap: 8, ...subCard(cwOf("sage").petal) }}>
-            <ShieldCheck size={14} color={cwOf("sage").petal} style={{ flexShrink: 0 }} /><span style={{ fontFamily: SERIF, fontSize: 15, color: T.ink }}>{w}</span>
-          </div>
-        ))}
-      </div>
+      <div style={{ display: "flex", flexDirection: "column", gap: 7, margin: "8px 0 14px" }}>{["Evenings after 8 — no work", "Sunday — open, unplanned"].map((w) => <div key={w} style={{ display: "flex", alignItems: "center", gap: 8, ...subCard(cwOf("sage").petal) }}><ShieldCheck size={14} color={cwOf("sage").petal} style={{ flexShrink: 0 }} /><span style={{ fontFamily: SERIF, fontSize: 15, color: T.ink }}>{w}</span></div>)}</div>
       <Eyebrow color={cwOf("plum").petal}>Your season of life</Eyebrow>
       <p style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 14, color: T.muted, margin: "4px 0 8px" }}>{sn.note} The day's bar flexes to fit.</p>
-      <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 14 }}>
-        {Object.entries(SEASONS).map(([k, v]) => <Pill key={k} Icon={v.Icon} cw={k === "newbaby" ? "blush" : k === "peri" ? "sage" : k === "caregiving" ? "plum" : "gold"} active={season === k} onClick={() => setSeason(k)}>{v.label}</Pill>)}
-      </div>
+      <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 14 }}>{Object.entries(SEASONS).map(([k, v]) => <Pill key={k} Icon={v.Icon} cw={k === "newbaby" ? "blush" : k === "peri" ? "sage" : k === "caregiving" ? "plum" : "gold"} active={season === k} onClick={() => setSeason(k)}>{v.label}</Pill>)}</div>
       <div style={{ marginTop: "auto" }}><Pill Icon={CircleSlash} cw="plum" onClick={onLowDay}>Make today a low-capacity day</Pill></div>
     </div>
   );
@@ -623,16 +537,12 @@ function InvisibleLens({ items, onHand }) {
   return (
     <div style={{ flex: 1 }}>
       <p style={{ fontFamily: SERIF, fontSize: 15, color: T.inkSoft, lineHeight: 1.5, margin: "0 0 12px" }}>The work no one sees — the <b>noticing</b>, <b>deciding</b> and <b>remembering</b>. Name it, then hand it over <i>fully</i> — not just the chore.</p>
-      <div style={{ display: "flex", flexDirection: "column", gap: 9 }}>
-        {items.map((v) => (
-          <div key={v.id} style={{ ...subCard(v.handed ? cwOf("sage").petal : cwOf("plum").petal) }}>
-            <div style={{ fontFamily: SERIF, fontSize: 16, fontWeight: 600, color: T.ink, marginBottom: 3 }}>{v.title}</div>
-            {v.handed
-              ? <div style={{ display: "inline-flex", alignItems: "center", gap: 6, fontFamily: UI, fontSize: 13, fontWeight: 700, color: cwOf("sage").petal }}><Check size={13} /> Handed to Alex — fully (noticing, deciding, tracking)</div>
-              : <><div style={{ fontFamily: UI, fontSize: 13, fontWeight: 600, color: T.muted, marginBottom: 8 }}>{v.carry}</div><Pill Icon={UserPlus} cw="plum" filled onClick={() => onHand(v.id)}>Hand it over</Pill></>}
-          </div>
-        ))}
-      </div>
+      <div style={{ display: "flex", flexDirection: "column", gap: 9 }}>{items.map((v) => (
+        <div key={v.id} style={{ ...subCard(v.handed ? cwOf("sage").petal : cwOf("plum").petal) }}>
+          <div style={{ fontFamily: SERIF, fontSize: 16, fontWeight: 600, color: T.ink, marginBottom: 3 }}>{v.title}</div>
+          {v.handed ? <div style={{ display: "inline-flex", alignItems: "center", gap: 6, fontFamily: UI, fontSize: 13, fontWeight: 700, color: cwOf("sage").petal }}><Check size={13} /> Handed to Alex — fully (noticing, deciding, tracking)</div> : <><div style={{ fontFamily: UI, fontSize: 13, fontWeight: 600, color: T.muted, marginBottom: 8 }}>{v.carry}</div><Pill Icon={UserPlus} cw="plum" filled onClick={() => onHand(v.id)}>Hand it over</Pill></>}
+        </div>
+      ))}</div>
     </div>
   );
 }
@@ -640,57 +550,42 @@ function AdminLens({ items, onDisp }) {
   return (
     <div style={{ flex: 1 }}>
       <p style={{ fontFamily: SERIF, fontSize: 15, color: T.inkSoft, lineHeight: 1.5, margin: "0 0 12px" }}>Life admin, biased toward <b>less</b>. The kindest question first: can it go, go to someone, or go automatic?</p>
-      <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-        {items.map((a) => {
-          const chosen = ADMIN_DISP.find((d) => d.id === a.disp);
-          return (
-            <div key={a.id} style={{ ...subCard(a.disp ? cwOf(chosen.cw).petal : cwOf("gold").petal) }}>
-              <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: 8, marginBottom: 8 }}>
-                <span style={{ fontFamily: SERIF, fontSize: 16, fontWeight: 600, color: T.ink }}>{a.title}</span><span style={{ fontFamily: UI, fontSize: 12, fontWeight: 600, color: T.muted }}>{a.due}</span>
-              </div>
-              {chosen
-                ? <div style={{ display: "inline-flex", alignItems: "center", gap: 6, fontFamily: UI, fontSize: 13, fontWeight: 700, color: cwOf(chosen.cw).petal }}><chosen.Icon size={13} /> {chosen.label === "Delete" ? "Let go" : chosen.label === "Do it" ? "On the list" : chosen.label + "d"}</div>
-                : <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>{ADMIN_DISP.map((d) => <Pill key={d.id} Icon={d.Icon} cw={d.cw} onClick={() => onDisp(a.id, d.id)}>{d.label}</Pill>)}</div>}
-            </div>
-          );
-        })}
-      </div>
+      <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>{items.map((a) => {
+        const chosen = ADMIN_DISP.find((d) => d.id === a.disp);
+        return (
+          <div key={a.id} style={{ ...subCard(a.disp ? cwOf(chosen.cw).petal : cwOf("gold").petal) }}>
+            <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: 8, marginBottom: 8 }}><span style={{ fontFamily: SERIF, fontSize: 16, fontWeight: 600, color: T.ink }}>{a.title}</span><span style={{ fontFamily: UI, fontSize: 12, fontWeight: 600, color: T.muted }}>{a.due}</span></div>
+            {chosen ? <div style={{ display: "inline-flex", alignItems: "center", gap: 6, fontFamily: UI, fontSize: 13, fontWeight: 700, color: cwOf(chosen.cw).petal }}><chosen.Icon size={13} /> {chosen.label === "Delete" ? "Let go" : chosen.label === "Do it" ? "On the list" : chosen.label + "d"}</div> : <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>{ADMIN_DISP.map((d) => <Pill key={d.id} Icon={d.Icon} cw={d.cw} onClick={() => onDisp(a.id, d.id)}>{d.label}</Pill>)}</div>}
+          </div>
+        );
+      })}</div>
     </div>
   );
 }
 
-// ══ BOARD 3 lenses ════════════════════════════════════════════════════════════
+// ══ Rituals panels ═══════════════════════════════════════════════════════════
 function Intentions({ intentions, phaseKey, onEdit, onAdd, onRemove }) {
   const lean = { menstrual: ["rest", "self"], follicular: ["career", "create"], ovulatory: ["career", "love"], luteal: ["rest", "friend"] }[phaseKey] || ["self"];
   return (
     <div style={{ flex: 1 }}>
       <p style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 15, color: T.muted, margin: "0 0 12px", lineHeight: 1.5 }}>Up to three. Not tasks — the things that would make today feel like yours.</p>
-      <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-        {intentions.map((it) => {
-          const d = domainOf(it.domain), dcw = cwOf(d.cw).petal;
-          return (
-            <div key={it.id} style={{ display: "flex", alignItems: "flex-start", gap: 9, ...subCard(dcw) }}>
-              <span style={{ width: 26, height: 26, borderRadius: 8, background: `${dcw}1F`, display: "grid", placeItems: "center", flexShrink: 0 }}><d.Icon size={13} color={dcw} /></span>
-              <button onClick={() => onEdit(it)} style={{ flex: 1, minWidth: 0, textAlign: "left", background: "transparent", border: "none", cursor: "pointer", padding: 0 }}>
-                <div style={{ ...lbl, color: dcw, marginBottom: 2 }}>{d.label}</div><div style={{ fontFamily: SERIF, fontSize: 16, color: T.ink, lineHeight: 1.35 }}>{it.text}</div>
-              </button>
-              <button onClick={() => onRemove(it.id)} aria-label="Remove intention" style={{ background: "transparent", border: "none", cursor: "pointer", color: T.muted, flexShrink: 0 }}><X size={15} /></button>
-            </div>
-          );
-        })}
-      </div>
+      <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>{intentions.map((it) => {
+        const d = domainOf(it.domain), dcw = cwOf(d.cw).petal;
+        return (
+          <div key={it.id} style={{ display: "flex", alignItems: "flex-start", gap: 9, ...subCard(dcw) }}>
+            <span style={{ width: 26, height: 26, borderRadius: 8, background: `${dcw}1F`, display: "grid", placeItems: "center", flexShrink: 0 }}><d.Icon size={13} color={dcw} /></span>
+            <button onClick={() => onEdit(it)} style={{ flex: 1, minWidth: 0, textAlign: "left", background: "transparent", border: "none", cursor: "pointer", padding: 0 }}><div style={{ ...lbl, color: dcw, marginBottom: 2 }}>{d.label}</div><div style={{ fontFamily: SERIF, fontSize: 16, color: T.ink, lineHeight: 1.35 }}>{it.text}</div></button>
+            <button onClick={() => onRemove(it.id)} aria-label="Remove intention" style={{ background: "transparent", border: "none", cursor: "pointer", color: T.muted, flexShrink: 0 }}><X size={15} /></button>
+          </div>
+        );
+      })}</div>
       {intentions.length < 3 && (
         <div style={{ marginTop: 12 }}>
           <div style={{ ...lbl, marginBottom: 7 }}>Add one — {PHASE[phaseKey].label.toLowerCase()} leans toward</div>
-          <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
-            {lean.map(domainOf).map((d) => <Pill key={d.id} Icon={d.Icon} cw={d.cw} onClick={() => onEdit({ domain: d.id, text: "" })}>{d.label}</Pill>)}
-            <Pill Icon={Plus} cw="gold" onClick={onAdd}>Other</Pill>
-          </div>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>{lean.map(domainOf).map((d) => <Pill key={d.id} Icon={d.Icon} cw={d.cw} onClick={() => onEdit({ domain: d.id, text: "" })}>{d.label}</Pill>)}<Pill Icon={Plus} cw="gold" onClick={onAdd}>Other</Pill></div>
         </div>
       )}
-      <div style={{ ...subCard(cwOf("crimson").petal), marginTop: "auto", background: `${cwOf("crimson").petal}0D` }}>
-        <p style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 15, color: T.ink, margin: 0, lineHeight: 1.45 }}>An intention isn't a task to finish — it's a direction to lean.</p>
-      </div>
+      <div style={{ ...subCard(cwOf("crimson").petal), marginTop: "auto", background: `${cwOf("crimson").petal}0D` }}><p style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 15, color: T.ink, margin: 0, lineHeight: 1.45 }}>An intention isn't a task to finish — it's a direction to lean.</p></div>
     </div>
   );
 }
@@ -699,20 +594,9 @@ function SeasonIntentions() {
     <div style={{ flex: 1 }}>
       <p style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 15, color: T.muted, margin: "0 0 12px", lineHeight: 1.5 }}>The longer arc — what matters across these weeks, and what you're letting go of.</p>
       <Eyebrow color={cwOf("crimson").petal}>Holding</Eyebrow>
-      <div style={{ display: "flex", flexDirection: "column", gap: 8, margin: "8px 0 14px" }}>
-        {SEED_SEASON_INTENTIONS.map((it) => { const d = domainOf(it.domain), dcw = cwOf(d.cw).petal; return (
-          <div key={it.id} style={{ display: "flex", alignItems: "flex-start", gap: 9, ...subCard(dcw) }}>
-            <d.Icon size={15} color={dcw} style={{ flexShrink: 0, marginTop: 2 }} /><span style={{ fontFamily: SERIF, fontSize: 16, color: T.ink, lineHeight: 1.35 }}>{it.text}</span>
-          </div>); })}
-      </div>
+      <div style={{ display: "flex", flexDirection: "column", gap: 8, margin: "8px 0 14px" }}>{SEED_SEASON_INTENTIONS.map((it) => { const d = domainOf(it.domain), dcw = cwOf(d.cw).petal; return <div key={it.id} style={{ display: "flex", alignItems: "flex-start", gap: 9, ...subCard(dcw) }}><d.Icon size={15} color={dcw} style={{ flexShrink: 0, marginTop: 2 }} /><span style={{ fontFamily: SERIF, fontSize: 16, color: T.ink, lineHeight: 1.35 }}>{it.text}</span></div>; })}</div>
       <Eyebrow color={cwOf("plum").petal}>Deliberately not doing</Eyebrow>
-      <div style={{ display: "flex", flexDirection: "column", gap: 7, marginTop: 8 }}>
-        {SEED_NOT_DOING.map((t) => (
-          <div key={t} style={{ display: "flex", alignItems: "center", gap: 8, ...subCard(cwOf("plum").petal) }}>
-            <CircleSlash size={14} color={cwOf("plum").petal} style={{ flexShrink: 0 }} /><span style={{ fontFamily: SERIF, fontSize: 15, color: T.muted }}>{t}</span>
-          </div>
-        ))}
-      </div>
+      <div style={{ display: "flex", flexDirection: "column", gap: 7, marginTop: 8 }}>{SEED_NOT_DOING.map((t) => <div key={t} style={{ display: "flex", alignItems: "center", gap: 8, ...subCard(cwOf("plum").petal) }}><CircleSlash size={14} color={cwOf("plum").petal} style={{ flexShrink: 0 }} /><span style={{ fontFamily: SERIF, fontSize: 15, color: T.muted }}>{t}</span></div>)}</div>
       <p style={{ marginTop: "auto", paddingTop: 12, fontFamily: SERIF, fontStyle: "italic", fontSize: 13, color: T.muted }}>What you set down makes room for what you're holding.</p>
     </div>
   );
@@ -726,14 +610,7 @@ function AnchorsLens({ anchors, onToggle }) {
         return (
           <div key={g.slot}>
             <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}><g.Icon size={15} color={accent} /><span style={{ fontFamily: SERIF, fontSize: 17, fontWeight: 600, color: T.ink }}>{g.label}</span><span style={{ ...lbl, marginLeft: "auto" }}>{done}/{items.length}</span></div>
-            <div style={{ display: "flex", flexDirection: "column", gap: 7 }}>
-              {items.map((a) => (
-                <button key={a.id} onClick={() => onToggle(a.id)} style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", textAlign: "left", padding: "8px 11px", borderRadius: 11, background: T.paperHi, border: `1px solid ${T.paperDeep}`, cursor: "pointer" }}>
-                  <span style={{ width: 22, height: 22, borderRadius: 6, flexShrink: 0, border: `1.5px solid ${a.done ? accent : T.paperDeep}`, background: a.done ? accent : "transparent", display: "grid", placeItems: "center" }}>{a.done && <Check size={13} color="#fff" />}</span>
-                  <span style={{ fontFamily: SERIF, fontSize: 15, color: a.done ? T.muted : T.ink, textDecoration: a.done ? "line-through" : "none" }}>{a.title}</span>
-                </button>
-              ))}
-            </div>
+            <div style={{ display: "flex", flexDirection: "column", gap: 7 }}>{items.map((a) => <button key={a.id} onClick={() => onToggle(a.id)} style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", textAlign: "left", padding: "8px 11px", borderRadius: 11, background: T.paperHi, border: `1px solid ${T.paperDeep}`, cursor: "pointer" }}><span style={{ width: 22, height: 22, borderRadius: 6, flexShrink: 0, border: `1.5px solid ${a.done ? accent : T.paperDeep}`, background: a.done ? accent : "transparent", display: "grid", placeItems: "center" }}>{a.done && <Check size={13} color="#fff" />}</span><span style={{ fontFamily: SERIF, fontSize: 15, color: a.done ? T.muted : T.ink, textDecoration: a.done ? "line-through" : "none" }}>{a.title}</span></button>)}</div>
           </div>
         );
       })}
@@ -745,14 +622,7 @@ function ResetLens({ onPlan }) {
   return (
     <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
       <p style={{ fontFamily: SERIF, fontSize: 15, color: T.inkSoft, lineHeight: 1.5, margin: "0 0 6px" }}>Stress isn't finished when the stressor is. <b>Complete the cycle</b> — your body needs an action, not just rest.</p>
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginTop: 12 }}>
-        {RESETS.map((r) => (
-          <button key={r.id} onClick={() => onPlan(r.label)} style={{ display: "flex", alignItems: "center", gap: 8, padding: "12px 12px", borderRadius: 14, cursor: "pointer", background: `${cwOf(r.cw).petal}12`, border: `1px solid ${cwOf(r.cw).petal}55`, textAlign: "left" }}>
-            <span style={{ width: 30, height: 30, borderRadius: 9, background: `${cwOf(r.cw).petal}1F`, display: "grid", placeItems: "center", flexShrink: 0 }}><r.Icon size={15} color={cwOf(r.cw).petal} /></span>
-            <span style={{ fontFamily: SERIF, fontSize: 15, fontWeight: 600, color: T.ink }}>{r.label}</span>
-          </button>
-        ))}
-      </div>
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginTop: 12 }}>{RESETS.map((r) => <button key={r.id} onClick={() => onPlan(r.label)} style={{ display: "flex", alignItems: "center", gap: 8, padding: "12px 12px", borderRadius: 14, cursor: "pointer", background: `${cwOf(r.cw).petal}12`, border: `1px solid ${cwOf(r.cw).petal}55`, textAlign: "left" }}><span style={{ width: 30, height: 30, borderRadius: 9, background: `${cwOf(r.cw).petal}1F`, display: "grid", placeItems: "center", flexShrink: 0 }}><r.Icon size={15} color={cwOf(r.cw).petal} /></span><span style={{ fontFamily: SERIF, fontSize: 15, fontWeight: 600, color: T.ink }}>{r.label}</span></button>)}</div>
       <p style={{ marginTop: "auto", paddingTop: 12, fontFamily: SERIF, fontStyle: "italic", fontSize: 13, color: T.muted }}>Tap one to plant it in your day as a protected reset.</p>
     </div>
   );
@@ -762,18 +632,8 @@ function FocusLens({ blocks, onStart, onFirstStep }) {
   return (
     <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
       <p style={{ fontFamily: SERIF, fontSize: 15, color: T.inkSoft, lineHeight: 1.5, margin: "0 0 14px" }}>For a low-capacity or foggy day. Borrow some focus — start small, with company.</p>
-      <div style={{ ...subCard(cwOf("gold").petal), marginBottom: 12 }}>
-        <div style={{ ...lbl, color: cwOf("gold").petal, marginBottom: 4 }}>Body-double session</div>
-        <p style={{ fontFamily: SERIF, fontSize: 15, color: T.ink, margin: "0 0 10px", lineHeight: 1.45 }}>25 minutes, gently timed, "I'm working alongside you." The proven trick for a stuck start.</p>
-        <Pill Icon={Timer} cw="gold" filled onClick={onStart}>Start a 25-min focus</Pill>
-      </div>
-      {stuck && (
-        <div style={{ ...subCard(cwOf("plum").petal) }}>
-          <div style={{ ...lbl, color: cwOf("plum").petal, marginBottom: 4 }}>The 2-minute first step</div>
-          <p style={{ fontFamily: SERIF, fontSize: 15, color: T.ink, margin: "0 0 10px", lineHeight: 1.45 }}>Don't do "{stuck.title}". Just open it for two minutes.</p>
-          <Pill Icon={ArrowRight} cw="plum" filled onClick={() => onFirstStep(stuck.title)}>Start the first 2 minutes</Pill>
-        </div>
-      )}
+      <div style={{ ...subCard(cwOf("gold").petal), marginBottom: 12 }}><div style={{ ...lbl, color: cwOf("gold").petal, marginBottom: 4 }}>Body-double session</div><p style={{ fontFamily: SERIF, fontSize: 15, color: T.ink, margin: "0 0 10px", lineHeight: 1.45 }}>25 minutes, gently timed, "I'm working alongside you." The proven trick for a stuck start.</p><Pill Icon={Timer} cw="gold" filled onClick={onStart}>Start a 25-min focus</Pill></div>
+      {stuck && <div style={{ ...subCard(cwOf("plum").petal) }}><div style={{ ...lbl, color: cwOf("plum").petal, marginBottom: 4 }}>The 2-minute first step</div><p style={{ fontFamily: SERIF, fontSize: 15, color: T.ink, margin: "0 0 10px", lineHeight: 1.45 }}>Don't do "{stuck.title}". Just open it for two minutes.</p><Pill Icon={ArrowRight} cw="plum" filled onClick={() => onFirstStep(stuck.title)}>Start the first 2 minutes</Pill></div>}
       <p style={{ marginTop: "auto", paddingTop: 12, fontFamily: SERIF, fontStyle: "italic", fontSize: 13, color: T.muted }}>Foggy days are luteal days too. Smaller is not less — it's wiser.</p>
     </div>
   );
@@ -783,21 +643,37 @@ function RhythmLens({ season }) {
   return (
     <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
       <p style={{ fontFamily: SERIF, fontSize: 15, color: T.inkSoft, lineHeight: 1.5, margin: "0 0 14px" }}>The honest read — gently. Consistency is a rhythm, not a scoreboard.</p>
-      <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
-        <span style={{ fontFamily: SERIF, fontSize: 28, fontWeight: 600, color: T.ink }}>4</span><span style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 16, color: T.muted }}>day rhythm — the garden noticed.</span>
-      </div>
-      <div style={{ display: "flex", gap: 6, marginBottom: 14 }}>
-        {week.map((d, i) => <div key={i} style={{ flex: 1, height: 34, borderRadius: 7, background: d ? cwOf("sage").petal : "rgba(58,44,26,0.08)", opacity: d ? 0.7 : 1, display: "grid", placeItems: "center" }}>{d ? <Check size={13} color="#fff" /> : null}</div>)}
-      </div>
-      <div style={{ ...subCard(cwOf("sage").petal), background: `${cwOf("sage").petal}10` }}>
-        <p style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 15, color: T.ink, margin: 0, lineHeight: 1.5 }}>In a {season.label.toLowerCase()} season, a kept anchor most days is plenty. {season.note}</p>
-      </div>
+      <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}><span style={{ fontFamily: SERIF, fontSize: 28, fontWeight: 600, color: T.ink }}>4</span><span style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 16, color: T.muted }}>day rhythm — the garden noticed.</span></div>
+      <div style={{ display: "flex", gap: 6, marginBottom: 14 }}>{week.map((d, i) => <div key={i} style={{ flex: 1, height: 34, borderRadius: 7, background: d ? cwOf("sage").petal : "rgba(58,44,26,0.08)", opacity: d ? 0.7 : 1, display: "grid", placeItems: "center" }}>{d ? <Check size={13} color="#fff" /> : null}</div>)}</div>
+      <div style={{ ...subCard(cwOf("sage").petal), background: `${cwOf("sage").petal}10` }}><p style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 15, color: T.ink, margin: 0, lineHeight: 1.5 }}>In a {season.label.toLowerCase()} season, a kept anchor most days is plenty. {season.note}</p></div>
       <p style={{ marginTop: "auto", paddingTop: 12, fontFamily: SERIF, fontStyle: "italic", fontSize: 13, color: T.muted }}>Five out of seven is a rhythm. Seven out of seven is a trap.</p>
     </div>
   );
 }
 
-// ── sheets ────────────────────────────────────────────────────────────────────
+// ── overlays / sheets ──────────────────────────────────────────────────────────
+function CalendarOverlay({ user, profile, onClose }) {
+  const [selectedDay, setSelectedDay] = useState(null);
+  const [refreshKey, setRefreshKey] = useState(0);
+  useEffect(() => { const k = (e) => { if (e.key === "Escape") onClose(); }; window.addEventListener("keydown", k); return () => window.removeEventListener("keydown", k); }, [onClose]);
+  return (
+    <div style={{ position: "fixed", inset: 0, zIndex: 9990, background: T.paper, overflowY: "auto" }} role="dialog" aria-modal="true" aria-label="Calendar">
+      <div style={{ position: "sticky", top: 0, zIndex: 1, display: "flex", alignItems: "center", gap: 10, padding: "14px 16px", background: T.paperHi, borderBottom: `1px solid ${T.paperDeep}` }}>
+        <button onClick={onClose} aria-label="Close calendar" style={{ width: 32, height: 32, borderRadius: 999, background: T.paper, border: `1px solid ${T.paperDeep}`, color: T.inkSoft, display: "grid", placeItems: "center", cursor: "pointer" }}><X size={16} /></button>
+        <div style={{ flex: 1 }}>
+          <div style={{ fontFamily: UI, fontSize: 12, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: T.gold }}>Your planner</div>
+          <div style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 22, fontWeight: 600, color: OXBLOOD }}>Calendar</div>
+        </div>
+        <CalendarRange size={20} color={T.gold} />
+      </div>
+      <div style={{ maxWidth: 480, margin: "0 auto", padding: "14px 16px 40px" }}>
+        <p style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 15, color: T.muted, margin: "0 0 14px" }}>Tap any day to plan or log it. This is the one calendar across FemWell — the same month view your Today page uses.</p>
+        <MonthlyCalendarCard userId={user?.id} profile={profile} refreshKey={refreshKey} onDayPress={(day, dayData) => setSelectedDay({ day, dayData })} />
+        {selectedDay && <DayDetailSheet date={selectedDay.day} dayData={selectedDay.dayData} userId={user?.id} onClose={() => setSelectedDay(null)} onDataChanged={() => setRefreshKey((k) => k + 1)} />}
+      </div>
+    </div>
+  );
+}
 function SheetShell({ title, eyebrowText, accent, onClose, children }) {
   return (
     <div onClick={onClose} style={{ position: "fixed", inset: 0, zIndex: 9990, background: "rgba(11,8,5,0.42)", display: "flex", alignItems: "flex-end", justifyContent: "center" }}>
@@ -813,6 +689,33 @@ function SheetShell({ title, eyebrowText, accent, onClose, children }) {
 }
 const fieldLabel = { fontFamily: UI, fontSize: 12, fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", color: T.muted, display: "block", marginBottom: 6 };
 const inputBase = { width: "100%", boxSizing: "border-box", padding: "11px 13px", borderRadius: 11, background: T.paper, border: `1px solid ${T.paperDeep}`, fontFamily: SERIF, fontSize: 15, color: T.ink, outline: "none" };
+function VoiceSheet({ onClose, onParse }) {
+  const [text, setText] = useState("");
+  const [listening, setListening] = useState(false);
+  const mic = () => { setListening(true); window.setTimeout(() => { setText("Coffee with Sam at 3pm"); setListening(false); }, 700); };
+  useEffect(() => { mic(); }, []);
+  return (
+    <SheetShell title="Speak your plan" eyebrowText="Say it like you'd say it" accent={cwOf("plum").petal} onClose={onClose}>
+      <div style={{ display: "grid", placeItems: "center", margin: "4px 0 14px" }}><span style={{ width: 64, height: 64, borderRadius: 999, background: `${cwOf("plum").petal}1F`, display: "grid", placeItems: "center" }}><Mic size={26} color={cwOf("plum").petal} /></span></div>
+      <p style={{ fontFamily: SERIF, fontSize: 15, color: T.muted, textAlign: "center", margin: "0 0 14px", lineHeight: 1.5 }}>{listening ? "Listening…" : 'Say it the way you\'d tell a friend — "deep work at 10, lunch with Mara at 1" — and I\'ll lay it into your day.'}</p>
+      <input autoFocus value={text} onChange={(e) => setText(e.target.value)} placeholder="Deep work at 10am…" style={{ ...inputBase, marginBottom: 14 }} />
+      <button onClick={() => text.trim() && onParse(text)} style={{ width: "100%", padding: "13px", borderRadius: 12, background: cwOf("plum").petal, color: "#fff", border: "none", fontFamily: UI, fontSize: 14, fontWeight: 700, cursor: "pointer" }}>Lay it into my day</button>
+    </SheetShell>
+  );
+}
+function JumpSheet({ boards, onClose, onJump }) {
+  const accents = [cwOf("gold").petal, cwOf("sage").petal, cwOf("crimson").petal];
+  return (
+    <SheetShell title="Jump to" eyebrowText="Your planner" accent={cwOf("gold").petal} onClose={onClose}>
+      <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>{boards.map((b, i) => (
+        <button key={b.t} onClick={() => onJump(i)} style={{ display: "flex", alignItems: "flex-start", gap: 10, padding: "13px 14px", borderRadius: 14, background: T.paper, border: `1px solid ${T.paperDeep}`, borderLeft: `4px solid ${accents[i]}`, cursor: "pointer", textAlign: "left" }}>
+          <span><span style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 19, fontWeight: 600, color: OXBLOOD, display: "block", lineHeight: 1.1 }}>{b.t}</span><span style={{ fontFamily: UI, fontSize: 13, color: T.muted }}>{b.sub}</span></span>
+          <ChevronRight size={16} color={T.muted} style={{ marginLeft: "auto", flexShrink: 0, alignSelf: "center" }} />
+        </button>
+      ))}</div>
+    </SheetShell>
+  );
+}
 function BlockSheet({ draft, peakHour, onClose, onSave, onDelete }) {
   const [d, setD] = useState(draft);
   const set = (k, v) => setD((x) => ({ ...x, [k]: v }));
@@ -825,9 +728,7 @@ function BlockSheet({ draft, peakHour, onClose, onSave, onDelete }) {
         <div><label style={fieldLabel}>How long</label><select value={d.dur} onChange={(e) => set("dur", Number(e.target.value))} style={inputBase}>{[15, 30, 45, 60, 90, 120].map((m) => <option key={m} value={m}>{m} min</option>)}</select></div>
       </div>
       <label style={fieldLabel}>Kind · energy</label>
-      <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 16 }}>
-        {Object.entries(TYPE_META).map(([k, v]) => <button key={k} onClick={() => set("type", k)} style={{ display: "inline-flex", alignItems: "center", gap: 5, padding: "7px 12px", borderRadius: 999, background: d.type === k ? cwOf(v.cw).petal : T.paper, color: d.type === k ? "#fff" : T.inkSoft, border: `1px solid ${d.type === k ? cwOf(v.cw).petal : T.paperDeep}`, fontFamily: UI, fontSize: 12, fontWeight: 700, cursor: "pointer" }}><v.Icon size={12} color={d.type === k ? "#fff" : cwOf(v.cw).petal} /> {v.label} · {v.energy}</button>)}
-      </div>
+      <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 16 }}>{Object.entries(TYPE_META).map(([k, v]) => <button key={k} onClick={() => set("type", k)} style={{ display: "inline-flex", alignItems: "center", gap: 5, padding: "7px 12px", borderRadius: 999, background: d.type === k ? cwOf(v.cw).petal : T.paper, color: d.type === k ? "#fff" : T.inkSoft, border: `1px solid ${d.type === k ? cwOf(v.cw).petal : T.paperDeep}`, fontFamily: UI, fontSize: 12, fontWeight: 700, cursor: "pointer" }}><v.Icon size={12} color={d.type === k ? "#fff" : cwOf(v.cw).petal} /> {v.label} · {v.energy}</button>)}</div>
       <div style={{ display: "flex", gap: 8 }}>
         <button onClick={onDelete} style={{ display: "inline-flex", alignItems: "center", gap: 5, padding: "12px 14px", borderRadius: 12, background: "transparent", color: T.crimson, border: `1px solid ${T.crimson}55`, fontFamily: UI, fontSize: 13, fontWeight: 700, cursor: "pointer" }}><Trash2 size={13} /> Remove</button>
         <button onClick={() => d.title.trim() && onSave(d)} style={{ flex: 1, padding: "13px", borderRadius: 12, background: cwOf("gold").petal, color: "#fff", border: "none", fontFamily: UI, fontSize: 14, fontWeight: 700, cursor: "pointer" }}>Save</button>
@@ -841,9 +742,7 @@ function IntentionSheet({ draft, onClose, onSave }) {
   return (
     <SheetShell title="An intention" eyebrowText="What matters today" accent={cwOf("crimson").petal} onClose={onClose}>
       <label style={fieldLabel}>Which part of life?</label>
-      <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 14 }}>
-        {DOMAINS.map((x) => <button key={x.id} onClick={() => setD((s) => ({ ...s, domain: x.id }))} style={{ display: "inline-flex", alignItems: "center", gap: 5, padding: "7px 11px", borderRadius: 999, background: d.domain === x.id ? cwOf(x.cw).petal : T.paper, color: d.domain === x.id ? "#fff" : T.inkSoft, border: `1px solid ${d.domain === x.id ? cwOf(x.cw).petal : T.paperDeep}`, fontFamily: UI, fontSize: 12, fontWeight: 700, cursor: "pointer" }}><x.Icon size={12} color={d.domain === x.id ? "#fff" : cwOf(x.cw).petal} /> {x.label}</button>)}
-      </div>
+      <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 14 }}>{DOMAINS.map((x) => <button key={x.id} onClick={() => setD((s) => ({ ...s, domain: x.id }))} style={{ display: "inline-flex", alignItems: "center", gap: 5, padding: "7px 11px", borderRadius: 999, background: d.domain === x.id ? cwOf(x.cw).petal : T.paper, color: d.domain === x.id ? "#fff" : T.inkSoft, border: `1px solid ${d.domain === x.id ? cwOf(x.cw).petal : T.paperDeep}`, fontFamily: UI, fontSize: 12, fontWeight: 700, cursor: "pointer" }}><x.Icon size={12} color={d.domain === x.id ? "#fff" : cwOf(x.cw).petal} /> {x.label}</button>)}</div>
       <label style={fieldLabel}>The intention</label>
       <input autoFocus value={d.text} onChange={(e) => setD((s) => ({ ...s, text: e.target.value }))} placeholder={dom.prompt} style={{ ...inputBase, marginBottom: 8 }} />
       <p style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 14, color: T.muted, margin: "0 0 16px" }}>{dom.prompt}</p>
