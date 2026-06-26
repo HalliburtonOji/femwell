@@ -380,6 +380,13 @@ FemWell's motion is **calm and organic** — the feel comes from slow ease + the
 - **Motion:** native scroll-snap (compositor-driven, **transform-free**, 60fps); programmatic item moves `scrollTo({left: idx*clientWidth, behavior:"smooth"})`; **reduced-motion → `behavior:"auto"`** (instant). Edge-peek optional (`peek`). No bounce. Same Card/brand chrome inside (typed cards, never empty).
 - **Build:** the shipped `CardDeck` in `ClipboardSlider.jsx`; **NO new function**.
 
+### 6.10.2 VERTICAL slide-within-card (up/down segments) — MAXIMISE every card · v1 2026-06-26
+> **MAXIMISE each card — never leave a long card with empty space.** If a card has spare height, **fill it by stacking an UP segment + a DOWN segment that the user slides up/down WITHIN the same card** (one segment per "page", vertically). So **in-card decks can be HORIZONTAL** (swipe between *lenses*, §6.10.1) **AND/OR VERTICAL** (slide between *segments* of one long card). **The MAIN page slider stays HORIZONTAL** — vertical sliding only ever happens *inside* a card, never as the page's primary navigation.
+- **Anatomy:** the card holds a **vertical native scroll-snap column** (`scroll-snap-type: y mandatory`; each segment ≈ the card's height, `scroll-snap-align: start`) → an **UP segment** and a **DOWN segment** (more if needed), with an **up/down affordance** — a small ⌃ ⌄ control and/or a **peek** of the next segment's top edge + side dots. The card frame stays put; only the segment column moves.
+- **When to use:** a card with **more to say than one screenful** that should stay **ONE card** — don't split it into two cards, and **don't leave the bottom half empty**. (A "today + tonight" card, a summary with a detail segment, a primary view + a secondary view of the same thing.)
+- **Gesture rule (one axis-owner per surface):** a vertical segment-slide sets **`overscroll-behavior-y: contain`** so it doesn't chain into page scroll until the segment column reaches its bound, then page scroll resumes. **A single card surface scrolls ONE axis — either a horizontal lens-deck (§6.10.1) OR a vertical segment-slide, not both on the same element.** To combine, **nest** (a horizontal lens whose *content* is a vertical segment-slide) — **one axis per nesting level**; never two scroll axes fighting on one element.
+- **Motion:** native scroll-snap (compositor-driven, **transform-free**); programmatic moves `scrollTo({top: idx*clientHeight, behavior:"smooth"})`; **reduced-motion → `behavior:"auto"`**. No bounce. Typed cards/segments inside, never empty.
+
 ---
 
 ## 6.7 THE CARD SYSTEM — a FIRST-CLASS brand pillar (taxonomy · anatomy · sizing) · v1 2026-06-19
@@ -406,7 +413,8 @@ FemWell's motion is **calm and organic** — the feel comes from slow ease + the
 | **Progress (flora that grows)** | a goal/programme advancing over time | a vine/bloom that adds growth per step (§10.1 lifecycle) instead of a bar. |
 
 **STRUCTURAL RULES:**
-- **The MAIN page slider is HORIZONTAL.** Primary page navigation between boards/sections is a horizontal scroll-snap pager (the clipboard slider / `FwCardRow`), never a vertical-only wall.
+- **MAXIMISE every card — no long empty space.** A long card must be filled, never left half-empty: if it has spare height, **stack UP/DOWN segments with a vertical in-card slide (§6.10.2)** rather than padding dead space or splitting into a second card.
+- **The MAIN page slider is HORIZONTAL.** Primary page navigation between boards/sections is a horizontal scroll-snap pager (the clipboard slider / `FwCardRow`), never a vertical-only wall. **In-card decks may be HORIZONTAL (lenses, §6.10.1) and/or VERTICAL (segments, §6.10.2)** — but vertical sliding lives ONLY inside a card, never as the page's primary nav.
 - **Sliders-within-sliders (in-card decks) are ALLOWED / ENCOURAGED** — but ONLY with the safeguards, because horizontal scroll is genuinely *missed* (NN/g eye-tracking) and a flush full-bleed deck reads as "nothing there" (the illusion of completeness): **(1)** show a **12–16% PEEK** of the next lens at the right edge (peek is the strong cue; **dots are weak on their own**); **(2)** **persistent (not hover-only) dots + ‹ › arrows**; **(3)** **cap at 4–5 lenses**, best-first; **(4)** an **inner gutter** so the swipe doesn't fight OS back-swipe or page vertical scroll; **(5)** the **`overscroll-behavior-x: contain` gesture firewall** (§6.10.1) so the inner deck never drags the outer board. **Never nest a horizontal deck inside ANOTHER horizontal deck** (one level of nesting only: outer board-slider → inner lens-deck).
 - **Colour pills + sub-card styles live WITHIN big cards** — a board may hold rim sub-cards, tile grids, a lens-deck and a pair of action pills. That richness *is* the language. **Don't default to a plain card when a typed one fits.**
 
@@ -483,6 +491,14 @@ FemWell's motion is **calm and organic** — the feel comes from slow ease + the
 **The FLORA STORY (app↔user) — why the hero flower matters (`BRAND_FLORA.md`).** The hero bloom is not ornament: flowers carry documented meaning (floriography + cycle/folk-herbalism) and mean the **same thing everywhere** (garden, cycle, journal, chapters). The page-character flower (§5.3) + the per-user **flora fingerprint** (§5.2) make each page feel like *hers* and tie the whole app into one living garden — the hero is the daily face of that garden. Keep the cycle ring exclusive to Today; elsewhere the ring is decorative so the signature reads as "your garden," not "your cycle."
 
 **Consistency rule:** the hero + summary-card top is **fixed brand chrome** — same structure, type, flora discipline on Journal, Community, Nutrition, Lifestyle, Health, Planner, Profile, Programs, Garden. Only the flower/colourway (character) and the content below change.
+
+### 6.8.1 THE TOP-AREA CHROME STANDARD — app-wide, EVERY page (NOT inside cards) · v1 2026-06-26
+> **Every page's TOP AREA carries a fixed set of CHROME controls — page-level, never buried inside a card.** Three things, on every page:
+> 1. **The JUMP-TO pill** — the central "jump to any area" switcher (the canonical `JournalHubSheet` "Jump to" pattern; see the CLAUDE.md multi-layer rule). One consistent control to reach any section of that page.
+> 2. **The two FOCUSED ACTION PILLS (§6.7.0a)** — the page's **page-appropriate primary actions**, e.g. **Speak-your-plan / Plan-a-day** on Planner, **Log-a-meal / Log-water** on Nutrition, **Leave-a-line / Set-an-intention** on Journal. Same component everywhere; the two labels/actions change per page (plum "voice/express" pill + gold "do/plan" pill).
+> 3. **The UNIFIED CALENDAR ICON** — a single calendar control that opens the calendar as an **OVERLAY**.
+> - **These live in the page's top area** (with/just under the signature top: flora hero → summary card), as **page chrome — never inside a card, never buried.** Same placement on every page so a user always finds jump-to, the two actions, and the calendar in the same spot.
+- **THE UNIFIED CALENDAR (one calendar across the whole app):** there is **ONE** calendar — the **Today-page calendar** — and **every page opens that same calendar as an overlay** via the top calendar icon. It can **plan and log for any day**. **Do NOT build per-page calendars** — every surface reuses the single shared calendar overlay. (One calendar, one mental model; the icon is the door, the overlay is the room.)
 
 ---
 
