@@ -155,7 +155,7 @@ export default function LifestyleNewDemo() {
           <ClipboardSlider hint="Slide your shelf →" accent={gold}>
 
             <Clipboard title="For you" sub="TWO TOPICS · EACH SLIDES SIDEWAYS" accent={gold} flower="daisy" idx="cb-foryou" titleColor={OXBLOOD}>
-              <BoardBody>
+              <BoardBody h={900}>
                 <StackedCard topAccent={gold} bottomAccent={cwOf("sage").petal}
                   top={[
                     <Panel key="picked" label="Picked for you" Icon={Sparkles} accent={gold}><ForYouPanel saved={saved} onSave={toggleSave} onOpen={open} /></Panel>,
@@ -169,7 +169,7 @@ export default function LifestyleNewDemo() {
             </Clipboard>
 
             <Clipboard title="Read" sub="TWO TOPICS · EACH SLIDES SIDEWAYS" accent={cwOf("plum").petal} flower="iris" idx="cb-read" titleColor={OXBLOOD}>
-              <BoardBody>
+              <BoardBody h={900}>
                 <StackedCard topAccent={cwOf("plum").petal} bottomAccent={sky}
                   top={[
                     <Panel key="articles" label="Articles" Icon={BookOpen} accent={cwOf("plum").petal}><ListLens items={ARTICLES} type="article" onOpen={open} cta="Read" /></Panel>,
@@ -183,7 +183,7 @@ export default function LifestyleNewDemo() {
             </Clipboard>
 
             <Clipboard title="Listen" sub="TWO TOPICS · EACH SLIDES SIDEWAYS" accent={cwOf("sage").petal} flower="bluebell" idx="cb-listen" titleColor={OXBLOOD}>
-              <BoardBody>
+              <BoardBody h={900}>
                 <StackedCard topAccent={cwOf("sage").petal} bottomAccent={cwOf("crimson").petal}
                   top={[
                     <Panel key="pods" label="Podcasts" Icon={Headphones} accent={cwOf("sage").petal}><MediaLens items={PODCASTS} kind="audio" onOpen={open} /></Panel>,
@@ -197,7 +197,7 @@ export default function LifestyleNewDemo() {
             </Clipboard>
 
             <Clipboard title="Story & sky" sub="TWO TOPICS · EACH SLIDES SIDEWAYS" accent={cwOf("crimson").petal} flower="poppy" idx="cb-story" titleColor={OXBLOOD}>
-              <BoardBody>
+              <BoardBody h={900}>
                 <StackedCard topAccent={cwOf("crimson").petal} bottomAccent={sky}
                   top={[
                     <Panel key="daily" label="Daily story" Icon={Feather} accent={cwOf("crimson").petal}><DailyStoryPanel onRead={() => setChapterOpen(true)} /></Panel>,
@@ -230,8 +230,8 @@ function ContentRow({ Icon, accent, title, meta, cta = "Open", saved, onSave, on
     <div style={{ display: "flex", alignItems: "center", gap: 10, ...subCard(accent) }}>
       <Icon size={16} color={accent} style={{ flexShrink: 0 }} />
       <button onClick={onOpen} style={{ flex: 1, minWidth: 0, textAlign: "left", background: "transparent", border: "none", cursor: "pointer", padding: 0 }}>
-        <span style={{ fontFamily: SERIF, fontSize: 15, fontWeight: 600, color: T.ink, display: "block", lineHeight: 1.2 }}>{title}</span>
-        {meta && <span style={{ fontFamily: UI, fontSize: 12, color: T.muted }}>{meta}</span>}
+        <span style={{ fontFamily: SERIF, fontSize: 15, fontWeight: 600, color: T.ink, display: "block", lineHeight: 1.25, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{title}</span>
+        {meta && <span style={{ fontFamily: UI, fontSize: 12, color: T.muted, display: "block", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{meta}</span>}
       </button>
       {onSave && <button onClick={onSave} aria-label="Save" style={{ background: "transparent", border: "none", cursor: "pointer", color: saved ? cwOf("crimson").petal : T.muted, flexShrink: 0 }}><Heart size={16} fill={saved ? cwOf("crimson").petal : "none"} /></button>}
       {!onSave && <span style={{ fontFamily: UI, fontSize: 12, fontWeight: 700, color: accent, flexShrink: 0, display: "inline-flex", alignItems: "center", gap: 2 }}>{cta} <ChevronRight size={13} /></span>}
@@ -264,7 +264,6 @@ function ForYouPanel({ saved, onSave, onOpen }) {
       <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
         {PICKS.map((p, i) => <ContentRow key={i} Icon={p.Icon} accent={cwOf(p.cw).petal} title={p.title} meta={p.source} saveId={"pick" + i} saved={saved.has("pick" + i)} onSave={() => onSave("pick" + i)} onOpen={() => onOpen(p.title)} />)}
       </div>
-      <p style={{ marginTop: "auto", paddingTop: 12, fontFamily: SERIF, fontStyle: "italic", fontSize: 13, color: T.muted }}>Slide → for the next card, ↓ for your saved.</p>
     </div>
   );
 }
@@ -274,7 +273,6 @@ function SavedPanel({ saved, onOpen }) {
       <p style={{ fontFamily: SERIF, fontSize: 15, color: T.inkSoft, lineHeight: 1.5, margin: "0 0 12px" }}>The things you tucked away to come back to.</p>
       <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>{SAVED.map((s, i) => <ContentRow key={i} Icon={s.Icon} accent={cwOf(s.cw).petal} title={s.title} meta={s.source} cta="Open" onOpen={() => onOpen(s.title)} />)}</div>
       {saved.size > 0 && <div style={{ ...subCard(cwOf("crimson").petal), marginTop: 12, background: `${cwOf("crimson").petal}0D` }}><p style={{ fontFamily: SERIF, fontSize: 14, color: T.ink, margin: 0 }}>+ {saved.size} more saved just now. They'll be here whenever you are.</p></div>}
-      <p style={{ marginTop: "auto", paddingTop: 12, fontFamily: SERIF, fontStyle: "italic", fontSize: 13, color: T.muted }}>Slide ↓ for a tiny something to try.</p>
     </div>
   );
 }
@@ -288,7 +286,6 @@ function TryThisPanel({ onDo }) {
           <span style={{ fontFamily: SERIF, fontSize: 15, color: T.ink }}>{t.title}</span>
         </button>
       ))}</div>
-      <p style={{ marginTop: "auto", paddingTop: 12, fontFamily: SERIF, fontStyle: "italic", fontSize: 13, color: T.muted }}>No pressure — these are invitations, not tasks.</p>
     </div>
   );
 }
@@ -300,7 +297,6 @@ function ListLens({ items, type, onOpen, cta }) {
     <div style={{ flex: 1 }}>
       <p style={{ fontFamily: SERIF, fontSize: 15, color: T.inkSoft, lineHeight: 1.5, margin: "0 0 12px" }}>{type === "article" ? "Reads for a spare ten minutes — saved, filtered to your phase." : "Stories to disappear into for an evening."}</p>
       <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>{items.map((it, i) => <ContentRow key={i} Icon={Icon} accent={accent} title={it.title} meta={`${it.source} · ${it.why}`} cta={cta} onOpen={() => onOpen(it.title)} />)}</div>
-      <p style={{ marginTop: "auto", paddingTop: 12, fontFamily: SERIF, fontStyle: "italic", fontSize: 13, color: T.muted }}>{type === "article" ? "Slide ↓ for stories." : "Each opens full-screen, just the one you chose."}</p>
     </div>
   );
 }
@@ -316,7 +312,6 @@ function BooksPanel({ onOpen }) {
           <button onClick={() => onOpen(b.title)} style={{ fontFamily: UI, fontSize: 12, fontWeight: 700, color: "#fff", background: accent, border: "none", borderRadius: 999, padding: "5px 12px", cursor: "pointer", flexShrink: 0 }}>Open</button>
         </div>
       ))}</div>
-      <p style={{ marginTop: "auto", paddingTop: 12, fontFamily: SERIF, fontStyle: "italic", fontSize: 13, color: T.muted }}>Your place is kept across every device.</p>
     </div>
   );
 }
@@ -339,7 +334,6 @@ function MediaLens({ items, kind, onOpen }) {
           <InlinePlayer accent={accent} label={kind === "audio" ? "Tap to play" : "Tap to watch"} />
         </div>
       ))}</div>
-      <p style={{ marginTop: "auto", paddingTop: 12, fontFamily: SERIF, fontStyle: "italic", fontSize: 13, color: T.muted }}>{kind === "audio" ? "Slide ↓ for short videos." : "It plays here; the full screen is one tap away."}</p>
     </div>
   );
 }
@@ -348,7 +342,6 @@ function TikTokPanel({ onOpen }) {
     <div style={{ flex: 1 }}>
       <p style={{ fontFamily: SERIF, fontSize: 15, color: T.inkSoft, lineHeight: 1.5, margin: "0 0 12px" }}>Short, trending, embeddable — they open right here.</p>
       <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>{TIKTOKS.map((t, i) => <ContentRow key={i} Icon={Music2} accent={cwOf(t.cw).petal} title={t.title} meta={t.channel} cta="Watch" onOpen={() => onOpen(t.title)} />)}</div>
-      <p style={{ marginTop: "auto", paddingTop: 12, fontFamily: SERIF, fontStyle: "italic", fontSize: 13, color: T.muted }}>Slide → for shows you can follow elsewhere.</p>
     </div>
   );
 }
@@ -357,7 +350,6 @@ function ExternalPanel({ onOpen }) {
     <div style={{ flex: 1 }}>
       <p style={{ fontFamily: SERIF, fontSize: 15, color: T.inkSoft, lineHeight: 1.5, margin: "0 0 12px" }}>Shows worth following — open in your podcast app of choice.</p>
       <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>{EXTERNAL_PODS.map((p, i) => <ContentRow key={i} Icon={Compass} accent={cwOf("sage").petal} title={p.title} meta={p.note} cta="Open" onOpen={() => onOpen(p.title)} />)}</div>
-      <p style={{ marginTop: "auto", paddingTop: 12, fontFamily: SERIF, fontStyle: "italic", fontSize: 13, color: T.muted }}>The wider world, gathered in one calm place.</p>
     </div>
   );
 }
@@ -366,7 +358,6 @@ function PhasePicksPanel({ onOpen }) {
     <div style={{ flex: 1 }}>
       <p style={{ fontFamily: SERIF, fontSize: 15, color: T.inkSoft, lineHeight: 1.5, margin: "0 0 12px" }}>Tuned to your luteal week — warmth, rest, and a softer pace.</p>
       <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>{PHASE_PICKS.map((p, i) => <ContentRow key={i} Icon={p.Icon} accent={cwOf(p.cw).petal} title={p.title} meta={p.source} cta="Open" onOpen={() => onOpen(p.title)} />)}</div>
-      <p style={{ marginTop: "auto", paddingTop: 12, fontFamily: SERIF, fontStyle: "italic", fontSize: 13, color: T.muted }}>The feed shifts gently with your cycle.</p>
     </div>
   );
 }
@@ -375,7 +366,6 @@ function GuidesPanel({ onOpen }) {
     <div style={{ flex: 1 }}>
       <p style={{ fontFamily: SERIF, fontSize: 15, color: T.inkSoft, lineHeight: 1.5, margin: "0 0 12px" }}>Short how-tos — practical, never preachy.</p>
       <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>{GUIDES.map((g, i) => <ContentRow key={i} Icon={Compass} accent={cwOf("gold").petal} title={g.title} meta={`${g.source} · ${g.why}`} cta="Read" onOpen={() => onOpen(g.title)} />)}</div>
-      <p style={{ marginTop: "auto", paddingTop: 12, fontFamily: SERIF, fontStyle: "italic", fontSize: 13, color: T.muted }}>Saved alongside your books for later.</p>
     </div>
   );
 }
@@ -410,7 +400,6 @@ function ADayPanel({ onSave }) {
       <button onClick={onSave} style={{ width: "100%", padding: "11px", borderRadius: 12, background: cwOf("gold").petal, color: "#fff", border: "none", fontFamily: UI, fontSize: 14, fontWeight: 700, cursor: "pointer", marginBottom: 14 }}>Save it for the day</button>
       <div style={{ ...lbl, marginBottom: 7 }}>Or one of these</div>
       <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>{A_DAY.alts.map((a) => <Pill key={a} cw="sage">{a}</Pill>)}</div>
-      <p style={{ marginTop: "auto", paddingTop: 12, fontFamily: SERIF, fontStyle: "italic", fontSize: 13, color: T.muted }}>Found for you — because rest is a plan, not a leftover.</p>
     </div>
   );
 }

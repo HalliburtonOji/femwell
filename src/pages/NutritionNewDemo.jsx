@@ -145,7 +145,7 @@ export default function NutritionNewDemo() {
           <ClipboardSlider hint="Slide your kitchen →" accent={gold}>
 
             <Clipboard title="Today" sub="TWO TOPICS · EACH SLIDES SIDEWAYS" accent={gold} flower="poppy" idx="cb-today" titleColor={OXBLOOD}>
-              <BoardBody>
+              <BoardBody h={900}>
                 <StackedCard topAccent={gold} bottomAccent={crimson}
                   top={[
                     <Panel key="plate" label="Your plate today" Icon={Salad} accent={gold}><PlatePanel kcal={kcal} water={water} onWater={addWater} /></Panel>,
@@ -159,7 +159,7 @@ export default function NutritionNewDemo() {
             </Clipboard>
 
             <Clipboard title="Plan" sub="TWO TOPICS · EACH SLIDES SIDEWAYS" accent={cwOf("sage").petal} flower="snowdrop" idx="cb-plan" titleColor={OXBLOOD}>
-              <BoardBody>
+              <BoardBody h={900}>
                 <StackedCard topAccent={cwOf("sage").petal} bottomAccent={gold}
                   top={[
                     <Panel key="week" label="AI meal plan" Icon={CalendarDays} accent={cwOf("sage").petal}><MealPlanPanel onLog={(n) => addMeal(n, "Dinner", 520)} /></Panel>,
@@ -172,7 +172,7 @@ export default function NutritionNewDemo() {
             </Clipboard>
 
             <Clipboard title="Insights" sub="TWO TOPICS · EACH SLIDES SIDEWAYS" accent={cwOf("plum").petal} flower="foxglove" idx="cb-ins" titleColor={OXBLOOD}>
-              <BoardBody>
+              <BoardBody h={900}>
                 <StackedCard topAccent={cwOf("plum").petal} bottomAccent={cwOf("crimson").petal}
                   top={[
                     <Panel key="thisweek" label="This week" Icon={TrendingUp} accent={cwOf("plum").petal}><ThisWeekPanel kcal={kcal} /></Panel>,
@@ -261,7 +261,6 @@ function LoggedPanel({ meals, onRemove, onReLog }) {
       </div>
       <div style={{ ...lbl, margin: "12px 0 6px" }}>Re-log a go-to — one tap</div>
       <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>{RECENTS.map((r) => <Pill key={r} Icon={Repeat} cw="sage" onClick={() => onReLog(r)}>{r}</Pill>)}</div>
-      <p style={{ marginTop: "auto", paddingTop: 10, fontFamily: SERIF, fontStyle: "italic", fontSize: 13, color: T.muted }}>Familiar food is a quiet strength.</p>
     </div>
   );
 }
@@ -270,16 +269,15 @@ function LoggedPanel({ meals, onRemove, onReLog }) {
 function LogPanel({ onMethod, onReLog }) {
   return (
     <div style={{ flex: 1 }}>
-      <p style={{ fontFamily: SERIF, fontSize: 15, color: T.inkSoft, lineHeight: 1.5, margin: "0 0 12px" }}>Six ways to log a meal in seconds — pick whatever's easiest right now.</p>
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>{LOG_METHODS.map((m) => (
-        <button key={m.id} onClick={onMethod} style={{ display: "flex", alignItems: "center", gap: 9, padding: "11px 11px", borderRadius: 13, cursor: "pointer", background: `${cwOf(m.cw).petal}12`, border: `1px solid ${cwOf(m.cw).petal}55`, textAlign: "left" }}>
-          <span style={{ width: 30, height: 30, borderRadius: 9, background: `${cwOf(m.cw).petal}1F`, display: "grid", placeItems: "center", flexShrink: 0 }}><m.Icon size={15} color={cwOf(m.cw).petal} /></span>
-          <span><span style={{ fontFamily: SERIF, fontSize: 15, fontWeight: 600, color: T.ink, display: "block", lineHeight: 1.1 }}>{m.label}</span><span style={{ fontFamily: UI, fontSize: 12, color: T.muted }}>{m.sub}</span></span>
+      <p style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 14, color: T.muted, lineHeight: 1.4, margin: "0 0 9px" }}>Six ways — pick whatever's easiest right now.</p>
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 7 }}>{LOG_METHODS.map((m) => (
+        <button key={m.id} onClick={onMethod} style={{ display: "flex", alignItems: "center", gap: 8, padding: "9px 10px", borderRadius: 12, cursor: "pointer", background: `${cwOf(m.cw).petal}12`, border: `1px solid ${cwOf(m.cw).petal}55`, textAlign: "left" }}>
+          <span style={{ width: 28, height: 28, borderRadius: 9, background: `${cwOf(m.cw).petal}1F`, display: "grid", placeItems: "center", flexShrink: 0 }}><m.Icon size={14} color={cwOf(m.cw).petal} /></span>
+          <span style={{ minWidth: 0 }}><span style={{ fontFamily: SERIF, fontSize: 15, fontWeight: 600, color: T.ink, display: "block", lineHeight: 1.1 }}>{m.label}</span><span style={{ fontFamily: UI, fontSize: 12, color: T.muted }}>{m.sub}</span></span>
         </button>
       ))}</div>
-      <div style={{ ...lbl, margin: "14px 0 6px" }}>Recents — one tap</div>
-      <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>{RECENTS.map((r) => <Pill key={r} Icon={Repeat} cw="sage" onClick={() => onReLog(r)}>{r}</Pill>)}</div>
-      <p style={{ marginTop: "auto", paddingTop: 12, fontFamily: SERIF, fontStyle: "italic", fontSize: 13, color: T.muted }}>Slide up for your plate, down for your targets.</p>
+      <div style={{ ...lbl, margin: "11px 0 6px" }}>Recents — one tap</div>
+      <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>{RECENTS.slice(0, 4).map((r) => <Pill key={r} Icon={Repeat} cw="sage" onClick={() => onReLog(r)}>{r}</Pill>)}</div>
     </div>
   );
 }
@@ -288,14 +286,14 @@ function LogPanel({ onMethod, onReLog }) {
 function PlanTargetsPanel() {
   return (
     <div style={{ flex: 1 }}>
-      <p style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 15, color: T.muted, lineHeight: 1.5, margin: "0 0 12px" }}>Reproductive years · gentle targets for your body and stage — a guide for the week, never a cap.</p>
-      <div style={{ display: "flex", flexDirection: "column", gap: 7 }}>{TARGETS.map((t) => (
-        <div key={t.label} style={{ display: "flex", alignItems: "center", gap: 9, ...subCard(cwOf(t.cw).petal) }}>
+      <p style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 14, color: T.muted, lineHeight: 1.4, margin: "0 0 9px" }}>Reproductive years · gentle guides for the week, never caps.</p>
+      <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>{TARGETS.map((t) => (
+        <div key={t.label} style={{ display: "flex", alignItems: "center", gap: 9, ...subCard(cwOf(t.cw).petal), padding: "8px 11px" }}>
           <t.Icon size={14} color={cwOf(t.cw).petal} style={{ flexShrink: 0 }} />
-          <span style={{ flex: 1 }}><span style={{ fontFamily: SERIF, fontSize: 15, fontWeight: 600, color: T.ink }}>{t.label} · {t.v}</span><span style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 13, color: T.muted, display: "block", lineHeight: 1.35 }}>{t.why}</span></span>
+          <span style={{ flex: 1, fontFamily: SERIF, fontSize: 15, fontWeight: 600, color: T.ink }}>{t.label}</span>
+          <span style={{ fontFamily: SERIF, fontSize: 15, fontWeight: 600, color: cwOf(t.cw).petal }}>{t.v}</span>
         </div>
       ))}</div>
-      <p style={{ marginTop: "auto", paddingTop: 10, fontFamily: SERIF, fontStyle: "italic", fontSize: 13, color: T.muted }}>These shift with your stage and cycle — kindly, in the background.</p>
     </div>
   );
 }
@@ -304,8 +302,8 @@ function PlanTargetsPanel() {
 function MealPlanPanel({ onLog }) {
   return (
     <div style={{ flex: 1 }}>
-      <p style={{ fontFamily: SERIF, fontSize: 15, color: T.inkSoft, lineHeight: 1.5, margin: "0 0 10px" }}>Your week, planned around your phase. Pin what you love, regenerate the rest.</p>
-      <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>{WEEK_PLAN.map((w) => (
+      <p style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 14, color: T.muted, lineHeight: 1.4, margin: "0 0 8px" }}>Planned around your phase — pin what you love.</p>
+      <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>{WEEK_PLAN.map((w) => (
         <div key={w.d} style={{ display: "flex", alignItems: "center", gap: 8, ...subCard(w.today ? cwOf("gold").petal : T.paperDeep), background: w.today ? `${cwOf("gold").petal}12` : T.paper, padding: "7px 10px" }}>
           <span style={{ fontFamily: UI, fontSize: 12, fontWeight: 700, color: w.today ? OXBLOOD : T.muted, width: 30, flexShrink: 0 }}>{w.d}</span>
           <span style={{ flex: 1, fontFamily: SERIF, fontSize: 14, color: T.ink, minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{w.b} · {w.l} · <b>{w.dn}</b></span>
@@ -313,7 +311,6 @@ function MealPlanPanel({ onLog }) {
         </div>
       ))}</div>
       <div style={{ display: "flex", gap: 6, marginTop: 12 }}><Pill Icon={Repeat} cw="sage">Regenerate week</Pill><Pill Icon={Target} cw="gold">Wellness goal</Pill></div>
-      <p style={{ marginTop: "auto", paddingTop: 10, fontFamily: SERIF, fontStyle: "italic", fontSize: 13, color: T.muted }}>Dinner tonight is pinned — tap Log when you've eaten.</p>
     </div>
   );
 }
@@ -322,7 +319,7 @@ function MealPlanPanel({ onLog }) {
 function RecipesPanel({ onLog }) {
   return (
     <div style={{ flex: 1 }}>
-      <p style={{ fontFamily: SERIF, fontSize: 15, color: T.inkSoft, lineHeight: 1.5, margin: "0 0 12px" }}>Your saved recipes — and new ones from what's already in your kitchen.</p>
+      <p style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 14, color: T.muted, lineHeight: 1.4, margin: "0 0 9px" }}>Saved recipes — and new ones from your kitchen.</p>
       <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>{RECIPES.map((r) => (
         <div key={r.id} style={{ display: "flex", alignItems: "center", gap: 9, ...subCard(cwOf("gold").petal) }}>
           <Soup size={16} color={cwOf("gold").petal} style={{ flexShrink: 0 }} />
@@ -331,7 +328,6 @@ function RecipesPanel({ onLog }) {
         </div>
       ))}</div>
       <div style={{ display: "flex", gap: 6, marginTop: 12 }}><Pill Icon={Sparkles} cw="sage">Cook what I have</Pill><Pill Icon={Plus} cw="gold">Generate</Pill></div>
-      <p style={{ marginTop: "auto", paddingTop: 10, fontFamily: SERIF, fontStyle: "italic", fontSize: 13, color: T.muted }}>Slide down for your shopping list.</p>
     </div>
   );
 }
@@ -342,16 +338,15 @@ function ShopPanel({ shop, onToggle }) {
   const ordered = [...shop].sort((a, b) => Number(a.got) - Number(b.got));
   return (
     <div style={{ flex: 1 }}>
-      <p style={{ fontFamily: SERIF, fontSize: 15, color: T.inkSoft, lineHeight: 1.5, margin: "0 0 12px" }}>Straight from your plan, sorted by aisle. {left} to get — tick as you go.</p>
-      <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>{ordered.map((s) => (
-        <button key={s.id} onClick={() => onToggle(s.id)} style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", textAlign: "left", ...subCard(s.got ? cwOf("sage").petal : T.paperDeep), padding: "8px 11px", cursor: "pointer" }}>
+      <p style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 14, color: T.muted, lineHeight: 1.4, margin: "0 0 8px" }}>Sorted by aisle · {left} to get — tick as you go.</p>
+      <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>{ordered.map((s) => (
+        <button key={s.id} onClick={() => onToggle(s.id)} style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", textAlign: "left", ...subCard(s.got ? cwOf("sage").petal : T.paperDeep), padding: "7px 11px", cursor: "pointer" }}>
           <span style={{ width: 20, height: 20, borderRadius: 6, flexShrink: 0, border: `1.5px solid ${s.got ? cwOf("sage").petal : T.paperDeep}`, background: s.got ? cwOf("sage").petal : "transparent", display: "grid", placeItems: "center" }}>{s.got && <Check size={12} color="#fff" />}</span>
           <span style={{ flex: 1, fontFamily: SERIF, fontSize: 15, color: s.got ? T.muted : T.ink, textDecoration: s.got ? "line-through" : "none" }}>{s.name}</span>
           <span style={{ fontFamily: UI, fontSize: 12, fontWeight: 600, color: T.muted }}>{s.aisle}</span>
         </button>
       ))}</div>
       <div style={{ display: "flex", gap: 6, marginTop: 12 }}><Pill Icon={Plus} cw="gold">Build from plan</Pill><Pill Icon={ListChecks} cw="sage">Pantry</Pill></div>
-      <p style={{ marginTop: "auto", paddingTop: 10, fontFamily: SERIF, fontStyle: "italic", fontSize: 13, color: T.muted }}>Tick items off and they drop to the bottom.</p>
     </div>
   );
 }
@@ -389,7 +384,6 @@ function PatternsPanel({ water }) {
           <p style={{ fontFamily: SERIF, fontSize: 14, color: T.inkSoft, margin: 0, lineHeight: 1.45 }}>{p.b}</p>
         </div>
       ))}</div>
-      <p style={{ marginTop: "auto", paddingTop: 12, fontFamily: SERIF, fontStyle: "italic", fontSize: 13, color: T.muted }}>Familiar food is a quiet strength.</p>
     </div>
   );
 }
@@ -413,7 +407,6 @@ function StageInsightsPanel() {
           <p style={{ fontFamily: SERIF, fontSize: 14, color: T.inkSoft, margin: 0, lineHeight: 1.45 }}>{n.b}</p>
         </div>
       ))}</div>
-      <p style={{ marginTop: "auto", paddingTop: 12, fontFamily: SERIF, fontStyle: "italic", fontSize: 13, color: T.muted }}>Slide down for your cross-cycle memory.</p>
     </div>
   );
 }

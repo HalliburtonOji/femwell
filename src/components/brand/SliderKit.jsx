@@ -12,7 +12,7 @@ import { cwOf } from "@/components/brand/flora";
 
 export const OXBLOOD = "#7A1A12";   // deep-red script heading colour
 export const CARD_H = 432;          // legacy single-panel height (kept for back-compat)
-export const BOARD_BODY_H = 560;    // fixed board-body height → all boards uniform, no inter-board gap
+export const BOARD_BODY_H = 820;    // FULL-LENGTH board body → split 50/50, each half fits its lens (no internal scroll)
 
 export const lbl = { fontFamily: UI, fontSize: 12, fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", color: T.muted };
 export const subCard = (accent) => ({ background: T.paper, border: `1px solid ${T.paperDeep}`, borderLeft: `3px solid ${accent}`, borderRadius: 12, padding: "10px 12px" });

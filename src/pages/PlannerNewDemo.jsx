@@ -384,11 +384,11 @@ function EnergyLens({ curve, peakIdx, peakLabel, phase }) {
   return (
     <div style={{ flex: 1 }}>
       <p style={{ fontFamily: SERIF, fontSize: 15, color: T.inkSoft, lineHeight: 1.5, margin: "0 0 10px" }}>Your energy rises and dips through the day. {phase.note}</p>
-      <div style={{ display: "flex", alignItems: "flex-end", gap: 3, height: 64, margin: "4px 0 6px" }}>{curve.map((v, i) => <div key={i} style={{ flex: 1, height: `${(v / max) * 100}%`, borderRadius: "3px 3px 0 0", background: i === peakIdx ? phase.hue : cwOf("sage").petal, opacity: i === peakIdx ? 1 : 0.42 }} />)}</div>
-      <div style={{ display: "flex", justifyContent: "space-between", fontFamily: UI, fontSize: 12, fontWeight: 600, color: T.muted, marginBottom: 12 }}><span>7am</span><span>peak · {peakLabel}</span><span>10pm</span></div>
+      <div style={{ display: "flex", alignItems: "flex-end", gap: 3, height: 46, margin: "2px 0 5px" }}>{curve.map((v, i) => <div key={i} style={{ flex: 1, height: `${(v / max) * 100}%`, borderRadius: "3px 3px 0 0", background: i === peakIdx ? phase.hue : cwOf("sage").petal, opacity: i === peakIdx ? 1 : 0.42 }} />)}</div>
+      <div style={{ display: "flex", justifyContent: "space-between", fontFamily: UI, fontSize: 12, fontWeight: 600, color: T.muted, marginBottom: 10 }}><span>7am</span><span>peak · {peakLabel}</span><span>10pm</span></div>
       <Eyebrow color={cwOf("sage").petal}>Match the task to the energy</Eyebrow>
-      <div style={{ display: "flex", flexWrap: "wrap", gap: 6, margin: "8px 0 0" }}><Pill cw="plum">deep → your peak</Pill><Pill cw="gold">admin → the dip</Pill><Pill cw="sage">restorative → anytime</Pill></div>
-      <div style={{ ...subCard(cwOf("sage").petal), marginTop: "auto", background: `${cwOf("sage").petal}10` }}><p style={{ fontFamily: SERIF, fontSize: 15, color: T.ink, margin: 0, lineHeight: 1.45 }}>Bright window ~{peakLabel}. Plant the boldest thing there.</p></div>
+      <div style={{ display: "flex", flexWrap: "wrap", gap: 6, margin: "8px 0 10px" }}><Pill cw="plum">deep → your peak</Pill><Pill cw="gold">admin → the dip</Pill><Pill cw="sage">restorative → anytime</Pill></div>
+      <div style={{ ...subCard(cwOf("sage").petal), background: `${cwOf("sage").petal}10` }}><p style={{ fontFamily: SERIF, fontSize: 14, color: T.ink, margin: 0, lineHeight: 1.4 }}>Bright window ~{peakLabel}. Plant the boldest thing there.</p></div>
     </div>
   );
 }
@@ -430,11 +430,14 @@ function BoundariesLens({ season, setSeason, onLowDay }) {
 function InvisibleLens({ items, onHand }) {
   return (
     <div style={{ flex: 1 }}>
-      <p style={{ fontFamily: SERIF, fontSize: 15, color: T.inkSoft, lineHeight: 1.5, margin: "0 0 10px" }}>The work no one sees — the <b>noticing</b> and <b>remembering</b>. Hand it over <i>fully</i>.</p>
+      <p style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 14, color: T.muted, lineHeight: 1.4, margin: "0 0 9px" }}>The work no one sees — name it, then hand it over <i>fully</i>.</p>
       <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>{items.map((v) => (
-        <div key={v.id} style={{ ...subCard(v.handed ? cwOf("sage").petal : cwOf("plum").petal) }}>
-          <div style={{ fontFamily: SERIF, fontSize: 16, fontWeight: 600, color: T.ink, marginBottom: 3 }}>{v.title}</div>
-          {v.handed ? <div style={{ display: "inline-flex", alignItems: "center", gap: 6, fontFamily: UI, fontSize: 13, fontWeight: 700, color: cwOf("sage").petal }}><Check size={13} /> Handed to Alex — fully</div> : <><div style={{ fontFamily: UI, fontSize: 13, fontWeight: 600, color: T.muted, marginBottom: 7 }}>{v.carry}</div><Pill Icon={UserPlus} cw="plum" filled onClick={() => onHand(v.id)}>Hand it over</Pill></>}
+        <div key={v.id} style={{ display: "flex", alignItems: "center", gap: 8, ...subCard(v.handed ? cwOf("sage").petal : cwOf("plum").petal), padding: "9px 11px" }}>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ fontFamily: SERIF, fontSize: 15, fontWeight: 600, color: T.ink, lineHeight: 1.2 }}>{v.title}</div>
+            <div style={{ fontFamily: UI, fontSize: 12, fontWeight: 600, color: v.handed ? cwOf("sage").petal : T.muted }}>{v.handed ? "Handed to Alex — fully" : v.carry}</div>
+          </div>
+          {v.handed ? <Check size={16} color={cwOf("sage").petal} style={{ flexShrink: 0 }} /> : <button onClick={() => onHand(v.id)} style={{ flexShrink: 0, display: "inline-flex", alignItems: "center", gap: 5, padding: "6px 11px", borderRadius: 999, background: cwOf("plum").petal, color: "#fff", border: "none", fontFamily: UI, fontSize: 12, fontWeight: 700, cursor: "pointer" }}><UserPlus size={12} /> Hand over</button>}
         </div>
       ))}</div>
     </div>
@@ -443,13 +446,13 @@ function InvisibleLens({ items, onHand }) {
 function AdminLens({ items, onDisp }) {
   return (
     <div style={{ flex: 1 }}>
-      <p style={{ fontFamily: SERIF, fontSize: 15, color: T.inkSoft, lineHeight: 1.5, margin: "0 0 10px" }}>Life admin, biased toward <b>less</b>: can it go, go to someone, or go automatic?</p>
-      <div style={{ display: "flex", flexDirection: "column", gap: 9 }}>{items.map((a) => {
+      <p style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 14, color: T.muted, lineHeight: 1.4, margin: "0 0 9px" }}>Biased toward <b>less</b> — go, delegate or automate before "do".</p>
+      <div style={{ display: "flex", flexDirection: "column", gap: 7 }}>{items.map((a) => {
         const chosen = ADMIN_DISP.find((d) => d.id === a.disp);
         return (
-          <div key={a.id} style={{ ...subCard(a.disp ? cwOf(chosen.cw).petal : cwOf("gold").petal) }}>
-            <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: 8, marginBottom: 7 }}><span style={{ fontFamily: SERIF, fontSize: 16, fontWeight: 600, color: T.ink }}>{a.title}</span><span style={{ fontFamily: UI, fontSize: 12, fontWeight: 600, color: T.muted }}>{a.due}</span></div>
-            {chosen ? <div style={{ display: "inline-flex", alignItems: "center", gap: 6, fontFamily: UI, fontSize: 13, fontWeight: 700, color: cwOf(chosen.cw).petal }}><chosen.Icon size={13} /> {chosen.label === "Delete" ? "Let go" : chosen.label === "Do it" ? "On the list" : chosen.label + "d"}</div> : <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>{ADMIN_DISP.map((d) => <Pill key={d.id} Icon={d.Icon} cw={d.cw} onClick={() => onDisp(a.id, d.id)}>{d.label}</Pill>)}</div>}
+          <div key={a.id} style={{ ...subCard(a.disp ? cwOf(chosen.cw).petal : cwOf("gold").petal), padding: "8px 10px" }}>
+            <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: 8, marginBottom: 6 }}><span style={{ fontFamily: SERIF, fontSize: 15, fontWeight: 600, color: T.ink }}>{a.title}</span><span style={{ fontFamily: UI, fontSize: 12, fontWeight: 600, color: T.muted }}>{a.due}</span></div>
+            {chosen ? <div style={{ display: "inline-flex", alignItems: "center", gap: 6, fontFamily: UI, fontSize: 13, fontWeight: 700, color: cwOf(chosen.cw).petal }}><chosen.Icon size={13} /> {chosen.label === "Delete" ? "Let go" : chosen.label === "Do it" ? "On the list" : chosen.label + "d"}</div> : <div style={{ display: "flex", gap: 5 }}>{ADMIN_DISP.map((d) => <button key={d.id} onClick={() => onDisp(a.id, d.id)} style={{ flex: 1, display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 4, padding: "5px 3px", borderRadius: 9, background: `${cwOf(d.cw).petal}14`, border: `1px solid ${cwOf(d.cw).petal}55`, color: T.inkSoft, fontFamily: UI, fontSize: 12, fontWeight: 700, cursor: "pointer" }}><d.Icon size={12} color={cwOf(d.cw).petal} />{d.label}</button>)}</div>}
           </div>
         );
       })}</div>
@@ -489,7 +492,6 @@ function SeasonIntentions() {
       <div style={{ display: "flex", flexDirection: "column", gap: 7, margin: "8px 0 12px" }}>{SEED_SEASON_INTENTIONS.map((it) => { const d = domainOf(it.domain), dcw = cwOf(d.cw).petal; return <div key={it.id} style={{ display: "flex", alignItems: "flex-start", gap: 9, ...subCard(dcw) }}><d.Icon size={15} color={dcw} style={{ flexShrink: 0, marginTop: 2 }} /><span style={{ fontFamily: SERIF, fontSize: 16, color: T.ink, lineHeight: 1.35 }}>{it.text}</span></div>; })}</div>
       <Eyebrow color={cwOf("plum").petal}>Deliberately not doing</Eyebrow>
       <div style={{ display: "flex", flexDirection: "column", gap: 6, marginTop: 8 }}>{SEED_NOT_DOING.map((t) => <div key={t} style={{ display: "flex", alignItems: "center", gap: 8, ...subCard(cwOf("plum").petal) }}><CircleSlash size={14} color={cwOf("plum").petal} style={{ flexShrink: 0 }} /><span style={{ fontFamily: SERIF, fontSize: 15, color: T.muted }}>{t}</span></div>)}</div>
-      <p style={{ marginTop: "auto", paddingTop: 10, fontFamily: SERIF, fontStyle: "italic", fontSize: 13, color: T.muted }}>What you set down makes room for what you're holding.</p>
     </div>
   );
 }
