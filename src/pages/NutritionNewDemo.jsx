@@ -30,7 +30,7 @@ import { cwOf, floraKeyframes } from "@/components/brand/flora";
 import MonthlyCalendarCard from "@/components/planner/MonthlyCalendarCard";
 import DayDetailSheet from "@/components/planner/DayDetailSheet";
 import {
-  OXBLOOD, lbl, subCard, focusPill, Pill, Panel, StackedCard, BoardBody, TopChrome, SheetShell, JumpSheet, makeCalendarOverlay,
+  OXBLOOD, lbl, subCard, focusPill, Pill, Panel, StackedCard, BoardBody, TopChrome, SheetShell, JumpSheet, SliderArrows, makeCalendarOverlay,
 } from "@/components/brand/SliderKit";
 
 const CalendarOverlay = makeCalendarOverlay(MonthlyCalendarCard, DayDetailSheet);
@@ -141,7 +141,8 @@ export default function NutritionNewDemo() {
         </div>
 
         {/* ONE horizontal slider of 3 dense boards */}
-        <div ref={sliderRef} style={{ marginTop: 16 }}>
+        <div ref={sliderRef} style={{ marginTop: 16, position: "relative" }}>
+          <SliderArrows sliderRef={sliderRef} />
           <ClipboardSlider hint="Slide your kitchen →" accent={gold}>
 
             <Clipboard title="Today" sub="TWO TOPICS · EACH SLIDES SIDEWAYS" accent={gold} flower="poppy" idx="cb-today" titleColor={OXBLOOD}>

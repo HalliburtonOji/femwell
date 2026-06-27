@@ -26,7 +26,7 @@ import { FwFloraHero } from "@/components/brand/PageTop";
 import { SummaryCard } from "@/components/brand/Card";
 import { ClipboardSlider, Clipboard } from "@/components/brand/ClipboardSlider";
 import { cwOf, floraKeyframes } from "@/components/brand/flora";
-import { OXBLOOD, lbl, subCard, focusPill, Pill, Panel, StackedCard, BoardBody, TopChrome, SheetShell, JumpSheet } from "@/components/brand/SliderKit";
+import { OXBLOOD, lbl, subCard, focusPill, Pill, Panel, StackedCard, BoardBody, TopChrome, SheetShell, JumpSheet, SliderArrows } from "@/components/brand/SliderKit";
 
 // ── seeded content (maps to LifestyleItems / DailyStory / HoroscopeReading live) ──
 const HERO = { type: "story", title: "The quiet power of a slow morning", source: "FemWell Editorial", why: "Editor's pick — on protecting the first hour of your day." };
@@ -151,7 +151,8 @@ export default function LifestyleNewDemo() {
         </div>
 
         {/* ONE horizontal slider of 4 dense boards */}
-        <div ref={sliderRef} style={{ marginTop: 16 }}>
+        <div ref={sliderRef} style={{ marginTop: 16, position: "relative" }}>
+          <SliderArrows sliderRef={sliderRef} />
           <ClipboardSlider hint="Slide your shelf →" accent={gold}>
 
             <Clipboard title="For you" sub="TWO TOPICS · EACH SLIDES SIDEWAYS" accent={gold} flower="daisy" idx="cb-foryou" titleColor={OXBLOOD}>

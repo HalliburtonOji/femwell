@@ -30,7 +30,7 @@ import MonthlyCalendarCard from "@/components/planner/MonthlyCalendarCard";
 import DayDetailSheet from "@/components/planner/DayDetailSheet";
 import {
   OXBLOOD, lbl, subCard, focusPill, Pill, Panel, Deck, StackedCard, BoardBody, TopChrome, SheetShell, JumpSheet,
-  makeCalendarOverlay, fieldLabel, inputBase,
+  SliderArrows, makeCalendarOverlay, fieldLabel, inputBase,
 } from "@/components/brand/SliderKit";
 
 const CalendarOverlay = makeCalendarOverlay(MonthlyCalendarCard, DayDetailSheet);
@@ -185,7 +185,8 @@ export default function PlannerNewDemo() {
           <button onClick={() => setCalOpen(true)} style={focusPill(gold)}><CalendarDays size={16} /> Plan a day</button>
         </div>
 
-        <div ref={sliderRef} style={{ marginTop: 16 }}>
+        <div ref={sliderRef} style={{ marginTop: 16, position: "relative" }}>
+          <SliderArrows sliderRef={sliderRef} />
           <ClipboardSlider hint="Slide your planner →" accent={gold}>
 
             <Clipboard title="The day" sub="BUILD IT · TEND IT TO YOUR ENERGY" accent={gold} flower="rose" idx="cb-day" titleColor={OXBLOOD}>

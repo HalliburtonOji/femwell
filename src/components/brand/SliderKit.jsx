@@ -77,9 +77,31 @@ export function StackedCard({ top, bottom, topAccent = T.gold, bottomAccent = T.
   return (
     <div style={{ height: "100%", minHeight: 0, display: "flex", flexDirection: "column" }}>
       <div style={{ flex: 1, minHeight: 0 }}><Deck accent={topAccent}>{top}</Deck></div>
-      <div aria-hidden style={{ flexShrink: 0, height: 1, background: T.paperDeep, opacity: 0.7, margin: "8px 0" }} />
+      {/* quiet gold hairline between the top and bottom demarcations (fades at the ends) */}
+      <div aria-hidden style={{ flexShrink: 0, height: 1, background: `linear-gradient(90deg, transparent, ${T.gold}, transparent)`, opacity: 0.5, margin: "9px 0" }} />
       <div style={{ flex: 1, minHeight: 0 }}><Deck accent={bottomAccent}>{bottom}</Deck></div>
     </div>
+  );
+}
+
+// SliderArrows — subtle on-brand ‹ › to move between the BIGGER cards (the main board slider) by tap,
+// not only swipe. Place INSIDE a position:relative wrapper around <ClipboardSlider>. Direct-scrolls the
+// board track by one board (reliable; smooth scroll on nested tracks can no-op).
+export function SliderArrows({ sliderRef, top = 92 }) {
+  const go = (dir) => {
+    const track = sliderRef.current?.querySelector(".fw-clipboard-track"); if (!track) return;
+    const kids = [...track.children].filter((c) => c.offsetWidth > 40); if (kids.length < 2) return;
+    const pitch = kids[1].offsetLeft - kids[0].offsetLeft || track.clientWidth;
+    const cur = Math.round(track.scrollLeft / pitch);
+    const t = Math.max(0, Math.min(kids.length - 1, cur + dir));
+    track.scrollLeft = kids[t].offsetLeft - track.offsetLeft;
+  };
+  const base = { position: "absolute", top, zIndex: 6, width: 30, height: 30, borderRadius: 999, border: `1px solid ${T.paperDeep}`, background: "rgba(244,239,227,0.86)", display: "grid", placeItems: "center", cursor: "pointer", boxShadow: "0 2px 8px rgba(58,44,26,0.14)" };
+  return (
+    <>
+      <button onClick={() => go(-1)} aria-label="Previous board" style={{ ...base, left: -2 }}><ChevronLeft size={16} color={T.gold} /></button>
+      <button onClick={() => go(1)} aria-label="Next board" style={{ ...base, right: -2 }}><ChevronRight size={16} color={T.gold} /></button>
+    </>
   );
 }
 
