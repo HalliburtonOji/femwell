@@ -219,9 +219,15 @@ export default function PulseEliteShell() {
   const metricList = dataSource === "checkins" ? CHECKIN_METRICS : symptomTypes.map((t) => ({ id: t, label: t.replace(/_/g, " ") }));
 
   function jumpTo(i) {
-    sliderRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
-    const track = sliderRef.current?.querySelector(".fw-clipboard-track"); if (!track) return;
-    const card = track.children[i]; if (card) track.scrollTo({ left: card.offsetLeft - track.offsetLeft, behavior: "smooth" });
+    const wrap = sliderRef.current;
+    const track = wrap?.querySelector(".fw-clipboard-track"); if (!track) { setJumpOpen(false); return; }
+    // The track also holds a leading <style> node and a trailing spacer; filter to real boards so the
+    // index lines up with BOARDS (matches ClipboardSlider's own realBoards). Direct scrollLeft is the
+    // reliable method — smooth scroll on nested snap tracks can no-op.
+    const boards = [...track.children].filter((c) => c.offsetWidth > 40);
+    const card = boards[i];
+    if (card) track.scrollLeft = card.offsetLeft - track.offsetLeft;
+    wrap?.scrollIntoView({ behavior: "smooth", block: "start" });
     setJumpOpen(false);
   }
 
