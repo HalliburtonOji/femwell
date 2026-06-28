@@ -44,7 +44,12 @@ const ELITE_MOTION = `
 @media (prefers-reduced-motion:reduce){.fw-elite-in{animation:none}.fw-elite-press{transition:none}}
 `;
 
-const BOARDS = ["This season", "Your species", "The almanac"];
+// JumpSheet (SliderKit) reads b.t / b.sub — board OBJECTS, not bare strings.
+const BOARDS = [
+  { t: "This season", sub: "The stage you're in" },
+  { t: "Your species", sub: "Your 64-flower garden" },
+  { t: "The almanac", sub: "Today's omen, hope-only" },
+];
 const LIFECYCLE = [
   { stage: "bud", label: "Bud", meaning: "Becoming. A new chapter, a goal just set, the follicular rise — furled, full of what's coming." },
   { stage: "bloom", label: "Bloom", meaning: "Open. Peak and expression — ovulation, a win, a day you felt like yourself. You're here this week." },
@@ -245,6 +250,7 @@ function AlmanacBoard({ uid, crim, sage, gold }) {
   const [pressed, setPressed] = useState(false);
   const [popup, setPopup] = useState(false);
   return (
+    <>
     <StackedCard topAccent={gold} bottomAccent={crim}
       top={<Panel label="Today's omen" accent={gold}>
         <div style={{ display: "flex", justifyContent: "center", margin: "2px 0 8px" }}><Pollinator kind="ladybird" size={34} color={crim} animate idx="almanac-bug" /></div>
@@ -261,9 +267,11 @@ function AlmanacBoard({ uid, crim, sage, gold }) {
           <button onClick={() => setPopup(true)} className="fw-elite-press" style={{ width: "100%", display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 8, background: crim, color: T.paper, border: "none", borderRadius: 12, padding: "12px 16px", cursor: "pointer", fontFamily: UI, fontSize: 13, fontWeight: 700, letterSpacing: 0.3, textTransform: "uppercase" }}><Feather size={14} /> Press to your journal</button>
         )}
         <p style={{ fontFamily: UI, fontSize: 12, color: T.muted, margin: "12px 0 0", lineHeight: 1.5 }}>One real omen a day, hope-only — the safety rails hold. It does it in place, then it ticks.</p>
-      </Panel>} >
+      </Panel>} />
+      {/* PressPopup is a SIBLING (position:fixed) — StackedCard does NOT render children, so it must
+          live outside it or it never mounts. */}
       {popup && <PressPopup uid={uid} onClose={() => setPopup(false)} onSaved={() => { setPressed(true); setPopup(false); }} />}
-    </StackedCard>
+    </>
   );
 }
 
