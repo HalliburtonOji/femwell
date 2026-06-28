@@ -12,6 +12,17 @@
 | CONNECTION-DAYS-MISSIONS-BRAINSTORM.html | connect-days-missions.html | "Connect, Days & Missions" | Specs & Plans |
 | (Per-Page Brand Audit, Bottom-Nav Plan) | page-brand-audit.html / component | "Page Brand Audit" / "Bottom-Nav Plan" | Specs & Plans |
 
+## ⏳ TO WIRE — new LEVEL-UP plan docs (2026-06-29 planning phase)
+> These are the next-2-levels plan docs for live pages. Halli wants each in the **Ideas pill → Current** group. The HTML is already copied into `brandDocs/`; the content session can't safely edit `FoundersOS.jsx` while you declutter it — please wire from here. (The original now-built `nutrition-plan.html` / `lifestyle-plan.html` entries can be moved to an "Archive/Built" group or retired — your call.)
+
+| Doc (femwell-handoff/) | brandDocs slug | suggested FoundersOS key | group | accent |
+|---|---|---|---|---|
+| NUTRITION-LEVELUP.html | nutrition-levelup.html | "Nutrition +2" | Current | crimson |
+| LIFESTYLE-LEVELUP.html | lifestyle-levelup.html | "Lifestyle +2" | Current | plum |
+| HEALTH-PLAN.html | health-plan.html | "Health Plan" | Current | sage |
+
+Wiring per doc (3 edits each): `import nutritionLevelupHtml from "@/components/founders/brandDocs/nutrition-levelup.html?raw";` · a `{ kind:"doc", key:"Nutrition +2", group: CAT.CURRENT, status:"new", accent:"crimson", … }` CATALOG entry · a `{tab === "Nutrition +2" && <BrandDocFrame html={nutritionLevelupHtml} title="FemWell — Nutrition Level Up (+2)" />}` render branch. Then build + `npx base44 site deploy -y`.
+
 ## Notes for the FoundersOS session
 - If I (a brand/feature session) add a new plan doc, I copy it into `brandDocs/` and wire it myself when `FoundersOS.jsx` is clean; if you hold the file, wire from this list.
 - Keep the in-app `brandDocs/*.html` copies in sync with the latest femwell-handoff/ version when the content session updates a doc (the content session owns the HTML; you own the catalog wiring).

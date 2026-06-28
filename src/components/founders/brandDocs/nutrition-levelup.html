@@ -1,0 +1,265 @@
+<!doctype html>
+<html lang="en-GB"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>FemWell — Nutrition Level Up (+2)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500;1,600&family=Ephesis&display=swap" rel="stylesheet">
+<style>
+  :root{--paper:#ECE7DA;--paperHi:#F4EFE3;--paperDeep:#D8CFBC;--ink:#0B0805;--inkSoft:#1A140D;--muted:#2E261B;--gold:#A8893F;--crimson:#BC2E27;--oxblood:#7A1A12;--blush:#E8B4B8;--sage:#8FAF8F;--plum:#8E6E8E;--serif:'Cormorant Garamond',Georgia,serif;--script:'Ephesis',cursive;--sans:ui-sans-serif,system-ui,-apple-system,'Segoe UI',sans-serif;}
+  *{box-sizing:border-box}
+  body{margin:0;background:radial-gradient(120% 80% at 12% 0%,#F4EFE3 0%,rgba(244,239,227,0) 55%),radial-gradient(120% 90% at 100% 100%,#E4DDCC 0%,rgba(228,221,204,0) 50%),var(--paper);color:var(--ink);font-family:var(--serif);font-size:18px;line-height:1.6;-webkit-font-smoothing:antialiased}
+  .doc{max-width:680px;margin:0 auto;padding:30px 22px 90px}
+  h1.cover{font-family:var(--script);font-size:52px;color:var(--crimson);margin:6px 0 2px;line-height:1.04}
+  h2{font-family:var(--serif);font-style:italic;font-weight:600;font-size:27px;margin:0 0 6px;color:var(--oxblood)}
+  h3{font-family:var(--serif);font-weight:600;font-size:21px;margin:18px 0 6px}
+  h4{font-family:var(--sans);font-size:12px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--gold);margin:16px 0 4px}
+  .eyebrow{font-family:var(--sans);font-size:12px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--gold);margin-bottom:10px}
+  p{margin:0 0 12px}.lede{font-size:20px;line-height:1.55}
+  small,.cap{font-family:var(--sans);font-size:13px;color:var(--muted);line-height:1.5}
+  b,strong{font-weight:600}
+  a{color:var(--crimson);text-decoration:none;border-bottom:1px solid rgba(188,46,39,.3)}
+  .section{background:var(--paperHi);border:1px solid var(--paperDeep);border-left:4px solid var(--gold);border-radius:20px;padding:22px 20px;margin:18px 0;box-shadow:0 4px 20px rgba(58,44,26,.10),0 1px 4px rgba(58,44,26,.06);position:relative;overflow:hidden}
+  .section.crimson{border-left-color:var(--crimson)}.section.sage{border-left-color:var(--sage)}.section.plum{border-left-color:var(--plum)}.section.blush{border-left-color:var(--blush)}
+  .rule{height:1px;background:var(--gold);opacity:.32;margin:18px 0}
+  .center{text-align:center}
+  table{width:100%;border-collapse:collapse;font-size:14px;font-family:var(--sans);margin:8px 0}
+  th,td{text-align:left;padding:7px 8px;border-bottom:1px solid var(--paperDeep);vertical-align:top}
+  th{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--gold)}
+  td b{font-family:var(--serif);font-size:15px}
+  .toc a{display:block;font-family:var(--sans);font-size:15px;color:var(--inkSoft);text-decoration:none;border-bottom:1px solid var(--paperDeep);padding:6px 0}
+  .toc a span{color:var(--gold);font-weight:700;margin-right:10px}
+  .script{font-family:var(--script);color:var(--crimson)}
+  .pill{display:inline-block;font-family:var(--sans);font-size:12px;font-weight:600;padding:5px 11px;border-radius:999px;background:var(--paper);border:1px solid var(--paperDeep);margin:3px 4px 3px 0}
+  .pill.rec{background:#EAF1EA;border-color:var(--sage);color:#3f6b3f}
+  .pill.gap{background:#FBE9E6;border-color:var(--crimson);color:var(--crimson)}
+  .pill.ok{background:#EAF1EA;border-color:var(--sage);color:#3f6b3f}
+  .pill.ev{background:#EAF1EA;border-color:var(--sage);color:#3f6b3f}
+  .pill.pop{background:#FBF1E0;border-color:var(--gold);color:#8a6d22}
+  .pill.myth{background:#FBE9E6;border-color:var(--crimson);color:var(--crimson)}
+  .pill.l1{background:#EAF1EA;border-color:var(--sage);color:#3f6b3f}
+  .pill.l2{background:#F0E8F0;border-color:var(--plum);color:#6d4f6d}
+  .lens{background:var(--paper);border:1px solid var(--paperDeep);border-left:3px solid var(--gold);border-radius:12px;padding:12px 14px;margin:8px 0}
+  .lens .nm{font-family:var(--serif);font-weight:600;font-size:18px;color:var(--ink);margin-bottom:2px}
+  .lens .nm .ix{font-family:var(--sans);font-size:11px;font-weight:700;letter-spacing:.1em;color:var(--gold);margin-right:8px;text-transform:uppercase}
+  .lens p{margin:0;font-size:15px;line-height:1.5;color:var(--inkSoft)}
+  .lens .src{font-family:var(--sans);font-size:12px;color:var(--muted);margin-top:5px}
+  .deck{border:1px dashed var(--gold);border-radius:14px;padding:6px 12px 12px;margin:10px 0;background:rgba(168,137,63,.04)}
+  .deck .dh{font-family:var(--sans);font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);margin:8px 0 2px}
+  .num{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:999px;background:var(--crimson);color:#fff;font-family:var(--sans);font-size:12px;font-weight:700;margin-right:8px;vertical-align:1px}
+  .foot{font-family:var(--sans);font-size:12px;color:var(--muted);text-align:center;margin-top:30px;line-height:1.6}
+  ul{margin:4px 0 12px;padding-left:20px}li{margin:3px 0}
+</style></head>
+<body><div class="doc">
+
+<div class="center" style="padding:14px 0 4px">
+  <div class="eyebrow">FemWell · Nutrition · LEVEL UP (+2) · for your reaction</div>
+  <h1 class="cover">The whole table, raised</h1>
+  <p class="lede" style="font-style:italic;max-width:540px;margin:8px auto 0">Nutrition is live and you love it. This is the plan for the <b>next two levels</b> — finishing the last honest stubs, deepening the curation and the science, and a few real leaps that would make FemWell the only nutrition room that is cycle-aware, credible <i>and</i> refuses diet-culture. <b>Plan only — nothing built from this yet.</b></p>
+</div>
+
+<div class="section">
+  <div class="eyebrow">The one-line thesis</div>
+  <p class="lede">Level 1 made eating <b>easier and kinder</b>. Level <span class="script">+2</span> makes it <b>more accurate and more personal without ever becoming a diet</b> — real-meal nutrition (not dry-weight guesses), life-stage &amp; condition nutrient watch-lists, an honest photo logger, a GLP-1 muscle-guardian mode, and an ED-safe "numbers off" frame that no competitor dares ship.</p>
+  <h4>The headline moves</h4>
+  <ul>
+    <li><b>Level +1 — finish &amp; enrich.</b> Wire the 3 remaining stubs (share-to-the-table, an honest photo logger, real generation), widen the cook-video library with culturally-inclusive UK creators, and make "watched it → logged it" turn a recipe into an accurate composite meal.</li>
+    <li><b>Level +2 — the leaps.</b> Composite real-meal accuracy (ingredients + cooking yield, not one "lasagne" row), deeper condition personalisation (endo · thyroid · perimenopause · GDM · lactation · GLP-1), and an <b>intuitive-eating, no-grading, ED-safe</b> spine.</li>
+    <li><b>One gated decision:</b> photo→macros needs a <b>capped vision-model call</b> — the single thing the "no new function" rule reserves for your OK. Flagged honestly in §5.</li>
+  </ul>
+</div>
+
+<div class="section sage">
+  <div class="eyebrow">Contents</div>
+  <div class="toc">
+    <a href="#today"><span>1</span> What Nutrition does TODAY (honest, post-build)</a>
+    <a href="#research"><span>2</span> The deeper evidence (cited) — the frontier</a>
+    <a href="#l1"><span>3</span> Level +1 — finish &amp; enrich (in the card language)</a>
+    <a href="#l2"><span>4</span> Level +2 — the leaps (in the card language)</a>
+    <a href="#photo"><span>5</span> The one gated call: photo → macros</a>
+    <a href="#ties"><span>6</span> How it weaves into the rest of the app</a>
+    <a href="#data"><span>7</span> Data &amp; build reality</a>
+    <a href="#first"><span>8</span> What I'd build first</a>
+  </div>
+</div>
+
+<!-- 1 · TODAY -->
+<a id="today"></a>
+<div class="section crimson">
+  <div class="eyebrow">1 · The honest picture (post-build)</div>
+  <h2>What Nutrition does today</h2>
+  <p>The live <span class="script">/Nutrition</span> elite shell is genuinely rich — four boards, real writes throughout. Here's the honest real-vs-stubbed audit so the +2 plan is grounded in what's actually there.</p>
+  <table>
+    <tr><th>Surface</th><th>Status today</th></tr>
+    <tr><td><b>Log a meal</b> (text · search · barcode · voice · recents · favourites)</td><td><span class="pill ok">real</span> writes <code>MealLog</code>; text rides the <b>UK CoFID</b> floor first, search/scan ride Open Food Facts.</td></tr>
+    <tr><td><b>Macros &amp; micros</b> (ring + protein/fibre/iron, stage targets)</td><td><span class="pill ok">real</span> CoFID floor + derived stage/cycle targets.</td></tr>
+    <tr><td><b>Water · shopping list · pantry</b></td><td><span class="pill ok">real</span> <code>HydrationLog</code>, <code>ShoppingList</code> (tick + build-from-plan), <code>PantryItem</code> CRUD — all live.</td></tr>
+    <tr><td><b>Cook tonight</b> — 15 cook videos + filters + "cook what's in"</td><td><span class="pill ok">real</span> 15 <b>youtube-nocookie</b> embeds; add-to-shopping / log / save all write real entities (<code>ShoppingList</code>/<code>MealLog</code>/<code>MealTemplates</code>).</td></tr>
+    <tr><td><b>Saved recipes</b> (view your saved cook-cards)</td><td><span class="pill ok">real</span> SavedRecipesLens reads <code>MealTemplates</code>, tap re-logs. <i>(The STATUS note "no saved-recipes UI" is now resolved.)</i></td></tr>
+    <tr><td><b>Meal plan</b> + build-shopping-from-plan</td><td><span class="pill pop">real-but-curated</span> writes <code>MealPlans</code>, but generation is a <b>deterministic curated-library pick</b> — no AI/bespoke.</td></tr>
+    <tr><td><b>The kitchen table</b> (dinner prompt · 30 plants · myth-vs-fact · joy)</td><td><span class="pill ok">real</span> 6 sourced myth cards; 30-plants passive tally; rotating prompts. Warm + on-brand.</td></tr>
+    <tr><td><b>"Snap a photo"</b></td><td><span class="pill gap">honest stub</span> opens the <i>text</i> logger with a "describe your plate" nudge — no vision.</td></tr>
+    <tr><td><b>"Share to the table"</b></td><td><span class="pill gap">stub toast</span> "coming soon" — no community write yet.</td></tr>
+    <tr><td><b>Recipe / meal-plan "Generate"</b></td><td><span class="pill pop">curated, not AI</span> reliable + rule-safe, but not bespoke generation.</td></tr>
+  </table>
+  <p class="cap"><b>Takeaway:</b> the room is real and loved. The +2 work is (a) closing 3 small stubs, (b) lifting <i>accuracy</i> from "single-food guess" to "real cooked meal", and (c) the personalisation + anti-diet depth that turns a good room into a category-defining one.</p>
+</div>
+
+<!-- 2 · RESEARCH -->
+<a id="research"></a>
+<div class="section plum">
+  <div class="eyebrow">2 · The frontier (cited, 2024–26)</div>
+  <h2>The deeper evidence</h2>
+  <p>Beyond the level-1 basics (iron flagship, cycle-aware-not-rules, commensality, menopause protein — all already cited). Each row flagged <span class="pill ev">evidence</span> / <span class="pill pop">popular-practice</span> / <span class="pill myth">myth</span>.</p>
+
+  <div class="lens"><div class="nm"><span class="ix">01</span>Photo logging: ID is solved, portion isn't</div>
+    <p>Vision models hit 92–98% on food <i>identification</i> but real-world <b>portion</b> estimation falls as low as 39% — and portion drives calories. Best systems land ~10–20% volume error; micronutrients are unreliable (vit C r≈0.30). <b>→ Photo logs should show a calorie/macro RANGE, never iron/micros, and always "estimate → you confirm".</b> <span class="pill ev">evidence</span></p>
+    <p class="src"><a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC12229984/">Systematic review (PMC 2024)</a> · <a href="https://www.jmir.org/2024/1/e51432">JMIR 2024 — portion estimation</a></p>
+  </div>
+
+  <div class="lens"><div class="nm"><span class="ix">02</span>The accuracy ceiling is the data, not the UI</div>
+    <p>UK CoFID is ~3,300 generic foods, updated rarely, and <b>omits omega-3/6, folates, vitamin D</b>. Open Food Facts is "as sold" (dry pasta, not cooked) and packaged-only. The serious-app fix is <b>composite/recipe-level nutrition</b> — build a dish from ingredients with cooking-yield factors. <b>→ Route real cooked meals through a "build from ingredients" path; keep OFF for barcodes only.</b> <span class="pill ev">evidence</span></p>
+    <p class="src"><a href="https://onlinelibrary.wiley.com/doi/full/10.1111/nbu.12433">Nutrition Bulletin — CoFID limits</a> · <a href="https://nutrola.app/en/blog/open-nutrition-datasets-compared-usda-openfoodfacts-nutrola">OFF "as sold" gap</a></p>
+  </div>
+
+  <div class="lens sage" style="border-left-color:var(--sage)"><div class="nm"><span class="ix">03</span>Condition personalisation that's actually evidenced</div>
+    <p><b>PCOS:</b> inositol strongest in insulin-resistant phenotype (~metformin, fewer GI effects). <b>Endometriosis:</b> no diet has RCT superiority — Mediterranean / low-FODMAP <i>may</i> ease pain; influencer elimination diets are under-supported. <b>Hashimoto's:</b> Mediterranean &gt; blanket gluten-free. <b>Perimenopause:</b> women under-eat fibre + vit D + calcium + iron, and "the window" is peri, not post. <b>→ Per-condition nutrient watch-lists, evidence-graded, with explicit anti-myth caution.</b> <span class="pill ev">evidence</span></p>
+    <p class="src"><a href="https://academic.oup.com/jcem/article/109/6/1630/7504796">PCOS guideline 2023</a> · <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC12156139/">Endo diet review 2025</a> · <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC10780928/">Perimenopause intakes</a></p>
+  </div>
+
+  <div class="lens crimson" style="border-left-color:var(--crimson)"><div class="nm"><span class="ix">04</span>Pregnancy/GDM &amp; lactation — a safety + trust win</div>
+    <p><b>GDM:</b> NICE 2025 issued a <i>research</i> recommendation because there's no proven GDM diet; low-carb showed no benefit. <b>→ Route GDM users to their NHS dietitian + low-GI; never ship a low-carb GDM plan as "proven".</b> <b>Lactation:</b> exclusive breastfeeding needs ~+500 kcal/day; below ~2,700 kcal calcium/zinc/B6/folate run low. <b>→ A gentle lactation energy uplift + a "don't drop below" guardrail.</b> <span class="pill ev">evidence</span></p>
+    <p class="src"><a href="https://www.nice.org.uk/guidance/ng3/chapter/recommendations">NICE NG3 (GDM)</a> · <a href="https://www.ncbi.nlm.nih.gov/books/NBK235579/">Lactation energy needs</a></p>
+  </div>
+
+  <div class="lens plum" style="border-left-color:var(--plum)"><div class="nm"><span class="ix">05</span>The GLP-1 era: protect muscle, don't sell a diet</div>
+    <p>~25–40% of GLP-1 weight loss is <b>lean mass</b> (women + older adults higher-risk); protein + resistance training preserve it. <b>→ An opt-in "GLP-1 muscle-guardian" mode: protein-forward small meals, micros on a shrunken appetite, hydration, "pair with strength" — framed as protection, never weight-loss.</b> <span class="pill ev">evidence</span></p>
+    <p class="src"><a href="https://www.acefitness.org/continuing-education/certified/june-2025/8892/glp-1s-and-lean-mass-what-the-research-shows/">ACE 2025 — GLP-1 &amp; lean mass</a> · <a href="https://www.endocrine.org/news-and-advocacy/news-room/endo-annual-meeting/endo-2025-press-releases/haines-press-release">ENDO 2025</a></p>
+  </div>
+
+  <div class="lens"><div class="nm"><span class="ix">06</span>Intuitive eating beats the diet-apps — and is evidenced</div>
+    <p>2024 reviews link intuitive/mindful eating to <b>less disordered eating + depression, better body image, lower BMI, more fruit/veg/fibre</b> (pooled effect ~1.50). Meanwhile Noom (anti-diet branding, calorie-counting reality; $62M billing settlement) and Yuka (A–E food grading → documented orthorexia risk) are the anti-patterns. ZOE's microbiome explains only ~6–7% of glucose/lipid variation at ~£280/kg lost. <b>→ Make intuitive-eating the default; never grade foods A–E; ship an ED-safe "numbers off" mode.</b> <span class="pill ev">evidence</span> + <span class="pill myth">competitor hype</span></p>
+    <p class="src"><a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC11862337/">Intuitive eating review 2024</a> · <a href="https://abbylangernutrition.com/yuka-app-review-scan-or-scam/">Yuka critique</a> · <a href="https://www.nutraingredients.com/Article/2024/05/10/Zoe-hails-personalized-nutrition-trial-success-results-come-under-scrutiny/">ZOE trial scrutiny</a></p>
+  </div>
+
+  <div class="rule"></div>
+  <h4>The market gap, in one line</h4>
+  <p>ZOE · Noom · MyFitnessPal · Lifesum · Cronometer · Yuka are <b>not cycle/life-stage-aware in a clinically-grounded, anti-shame way</b> — and women report failing them at high rates. <b>That unserved space — female-physiology-aware nutrition that refuses diet-culture mechanics — is exactly what +2 builds.</b></p>
+</div>
+
+<!-- 3 · LEVEL +1 -->
+<a id="l1"></a>
+<div class="section sage">
+  <div class="eyebrow">3 · Level +1 — finish &amp; enrich</div>
+  <h2>Close the stubs, widen the table</h2>
+  <p>All inside today's 4-board, stacked sub-slider language. <span class="pill l1">Level +1</span></p>
+
+  <h3>Board 2 · "Cook tonight" — the library leap</h3>
+  <div class="deck"><div class="dh">▸ enrich the cook-video deck</div>
+    <div class="lens"><div class="nm"><span class="ix">★</span>Culturally-inclusive curation</div><p>Grow from 15 to a tagged library across <b>British · South Asian · Caribbean · West African · Mediterranean · Middle Eastern</b> home cooking (e.g. Chetna Makan, Original Flava) — multicultural Britain, not a "clean-eating" default. Each embed owner-permitted, NHS Healthier Families as the trust spine. <span class="pill gap">curation</span></p><p class="src"><a href="https://www.nhs.uk/healthier-families/recipes/">NHS Healthier Families</a></p></div>
+    <div class="lens"><div class="nm"><span class="ix">★</span>"Video unavailable" fallback</div><p>Auto-detect a removed/blocked embed (IFrame API error) → show a "watch on YouTube" link + a backup recipe, so a dead box never appears. <span class="pill gap">small</span></p></div>
+    <div class="lens"><div class="nm"><span class="ix">★★</span>"Watched it → logged it"</div><p>The big one: a cook-video card gets a <b>one-tap composite log</b> — the dish's CoFID-backed ingredients + cooking-yield = an accurate <code>MealLog</code>, not a guess. Turns the video board into your most accurate logger. <span class="pill gap">composite path</span></p></div>
+  </div>
+
+  <h3>Board 4 · "The kitchen table" — wire the joy</h3>
+  <div class="deck"><div class="dh">▸ finish the social front door</div>
+    <div class="lens"><div class="nm"><span class="ix">Share</span>"Share to the table" → real</div><p>Replace the coming-soon toast with a real, anonymous-safe post (rides the Community/LifestyleItems path) — tonight's plate, "help, what do I make with this?", comfort-food confessions. <span class="pill gap">community write</span></p></div>
+    <div class="lens"><div class="nm"><span class="ix">Plants</span>30-plants, gently gamified</div><p>Keep the passive tally; add an optional weekly nudge + a "plant of the week" — delight, never a scoreboard. <span class="pill ok">rides existing</span></p></div>
+  </div>
+
+  <h3>Board 1 · "Eat today" — the honest photo logger</h3>
+  <div class="deck"><div class="dh">▸ the snap stub, done right</div>
+    <div class="lens"><div class="nm"><span class="ix">Snap</span>Estimate → confirm → adjust</div><p>Wire real photo logging as a <b>metered</b> feature (§5): AI proposes items + portion, user accepts/swaps/resizes (1×/1.5×/2× + "about a deck of cards" hints), logs a <b>range</b>. Honest by design. <span class="pill gap">gated function</span></p></div>
+    <div class="lens"><div class="nm"><span class="ix">Same</span>"Same as yesterday"</div><p>1-tap re-log of yesterday's pattern. Tiny, high daily value. <span class="pill ok">rides existing</span></p></div>
+  </div>
+</div>
+
+<!-- 4 · LEVEL +2 -->
+<a id="l2"></a>
+<div class="section plum">
+  <div class="eyebrow">4 · Level +2 — the leaps</div>
+  <h2>Accurate, personal, never a diet</h2>
+  <p>The bigger moves that define the category. <span class="pill l2">Level +2</span></p>
+
+  <div class="deck"><div class="dh">▸ accuracy</div>
+    <div class="lens"><div class="nm"><span class="ix">A</span>Composite real-meal nutrition</div><p>A "build a meal from ingredients" path with cooking-yield factors — the single biggest accuracy upgrade. Reused by "watched it → logged it" and by recipes. Optional licensed enhanced layer (e.g. Nutritics GB23) before promising omega-3/vit D. <span class="pill ev">evidence-led</span></p></div>
+    <div class="lens"><div class="nm"><span class="ix">B</span>Macro range, not false precision</div><p>Photo + composite logs show "≈480–620 kcal" with a confidence dot — the only honest UI given 10–20% portion error, and it kills calorie-anxiety. <span class="pill ev">honest-by-design</span></p></div>
+  </div>
+
+  <div class="deck"><div class="dh">▸ personal (life-stage + condition)</div>
+    <div class="lens"><div class="nm"><span class="ix">C</span>Condition nutrient watch-lists</div><p>Opt-in, evidence-graded threads: <b>PCOS</b> (phenotype-aware, inositol info), <b>endo</b> (Mediterranean/low-FODMAP "may ease pain" + anti-elimination caution), <b>thyroid</b>, <b>perimenopause</b> (fibre+D+calcium+iron, "the window"), <b>GDM</b> (→ NHS dietitian + low-GI), <b>lactation</b> (+500 kcal + guardrail). <span class="pill ev">evidence</span></p></div>
+    <div class="lens"><div class="nm"><span class="ix">D</span>GLP-1 muscle-guardian mode</div><p>Opt-in life-context (not a clinical claim): protein-forward small meals, micros on a small appetite, hydration, "pair with strength". Reframes the hottest category as <i>protection</i>. <span class="pill ev">evidence</span></p></div>
+  </div>
+
+  <div class="deck"><div class="dh">▸ the anti-diet spine (the moat)</div>
+    <div class="lens"><div class="nm"><span class="ix">E</span>Intuitive-eating default</div><p>Gentle hunger/fullness check-ins, "joy not compliance" language, no streak-guilt — the evidence-backed, on-brand contrast to Noom. <span class="pill ev">evidence</span></p></div>
+    <div class="lens"><div class="nm"><span class="ix">F</span>ED-safe "numbers off" toggle</div><p>App-wide switch hides all calories/macros; logs become "balanced lunch · iron ✓". Inverts Noom/Yuka — sounds like removing the core feature, but it's the trust moat for a women's app. <span class="pill rec">differentiator</span></p></div>
+    <div class="lens"><div class="nm"><span class="ix">G</span>Never grade foods</div><p>No A–E / "good-bad" labels (Yuka's documented orthorexia risk). Any product context stays neutral ("higher in salt"), never moralised. <span class="pill myth">avoid Yuka pattern</span></p></div>
+  </div>
+</div>
+
+<!-- 5 · PHOTO -->
+<a id="photo"></a>
+<div class="section crimson">
+  <div class="eyebrow">5 · The one gated call</div>
+  <h2>Photo → macros needs your OK</h2>
+  <p>Everything else in +1/+2 rides existing entities and the curated/composite approach — no new function. <b>The single exception is photo→macros: it's a multimodal vision-model call, the one thing the "no new base44 function" rule reserves for your sign-off.</b></p>
+  <ul>
+    <li><b>Why a function is unavoidable:</b> each photo is a metered model invocation (real per-call cost), and accuracy degrades on mixed/cultural dishes — unlimited free snapping is both expensive and quality-risky.</li>
+    <li><b>The safe shape if you approve:</b> a <b>capped/metered vision function</b> (e.g. N free photo-logs/day), cached per image, with a graceful "switch to quick-search" fallback for low-confidence dishes; outputs a <b>range</b> + "estimate, you're the editor" disclosure; never drives iron/micros.</li>
+    <li><b>If you'd rather not:</b> the honest text-nudge stays (it's fine), and we ship every other +1/+2 item with zero rule-risk.</li>
+  </ul>
+  <p class="cap"><b>Flag:</b> this is the only item that needs a new gated capability. Recommendation: approve it <i>metered</i> — photo logging is the #1 requested logger feature and the honest "range + confirm" framing turns its weakness into a brand-trust moment. Your call.</p>
+</div>
+
+<!-- 6 · TIES -->
+<a id="ties"></a>
+<div class="section">
+  <div class="eyebrow">6 · The weave</div>
+  <h2>How Nutrition connects to the rest of the app</h2>
+  <table>
+    <tr><th>Surface</th><th>The tie</th></tr>
+    <tr><td><b>Today</b></td><td>A "nourishment" glance (energy ring + water + tonight's plan) deep-linking the exact Nutrition lens.</td></tr>
+    <tr><td><b>Health / cycle</b></td><td>Phase drives targets; the condition watch-lists (§4C) surface from the Health room near the relevant week (iron near the bleed, etc.).</td></tr>
+    <tr><td><b>Pulse / Trends</b></td><td>Food ↔ mood/energy correlations ("more protein on your better-mood days") — gentle, never causal.</td></tr>
+    <tr><td><b>Planner</b></td><td>Cook time becomes a planner block; "log tonight's dinner" from the day view.</td></tr>
+    <tr><td><b>Garden</b></td><td>A nourished day waters the garden — joy, not streak-guilt.</td></tr>
+    <tr><td><b>Community</b></td><td>"Share to the table" (§3) IS the community tie — shared plates become posts.</td></tr>
+    <tr><td><b>Jess</b></td><td>"What can I make with chicken + spinach in 20 min?" → a cook-card in her voice (the Option-B spike).</td></tr>
+    <tr><td><b>Doctor Export</b></td><td>Nutrient adequacy (iron, calcium, fibre) feeds the clinical export — useful at an NHS appointment.</td></tr>
+  </table>
+</div>
+
+<!-- 7 · DATA -->
+<a id="data"></a>
+<div class="section crimson">
+  <div class="eyebrow">7 · Honest build reality</div>
+  <h2>What's rule-safe vs what needs a call</h2>
+  <ul>
+    <li><b>Rule-safe (no new function):</b> culturally-inclusive cook-video curation, video-unavailable fallback, "watched it → logged it" + composite "build from ingredients" (CoFID + yield, client-side), share-to-the-table (existing Community path), condition watch-lists (content + existing stage logic), GLP-1 mode (life-context flag), intuitive-eating + ED-safe + no-grading (UI/state). Small additive entities only (e.g. a "numbers-off" preference, condition opt-ins).</li>
+    <li><b>Needs your OK (one function):</b> photo→macros vision (§5), metered.</li>
+    <li><b>Optional paid data:</b> a licensed enhanced composition layer (Nutritics GB23) if/when we promise omega-3 / vit D / amino acids — not required for v1.</li>
+    <li><b>Generation:</b> the curated generator is fine for now; a <b>Jess-agent spike</b> (existing agent, not a new function) could add bespoke recipes/plans later.</li>
+  </ul>
+</div>
+
+<!-- 8 · FIRST -->
+<a id="first"></a>
+<div class="section plum">
+  <div class="eyebrow">8 · Recommendation</div>
+  <h2>What I'd build first</h2>
+  <ul>
+    <li><b>1. "Watched it → logged it" + composite meals.</b> The biggest accuracy leap, rule-safe, and it makes the cook-video board you love the most useful logger in the app.</li>
+    <li><b>2. Close the 2 easy stubs:</b> share-to-the-table (real Community write) + "same as yesterday". Small, warm, high daily value.</li>
+    <li><b>3. Condition watch-lists + GLP-1 mode + ED-safe toggle.</b> Content + state; the personalisation + anti-diet depth that defines the category. Zero rule-risk.</li>
+    <li><b>4. Culturally-inclusive cook-video library + fallback.</b> Curation, instantly richer.</li>
+    <li><b>5. (Gated) the honest photo logger</b> — once you approve the metered vision call.</li>
+  </ul>
+  <p class="lede" style="margin-top:14px">All of it lives in the stacked sub-slider + embedded-video-card language you already have. <b>Nothing built from this yet — react first, then we demo/build the approved levels.</b></p>
+</div>
+
+<div class="foot">
+  FemWell · Nutrition · Level Up (+2) · 29 June 2026<br>
+  Clinical claims sourced inline (NHS/NICE/BDA/peer-review, 2024–26); popular-practice &amp; competitor hype flagged. Live Nutrition unchanged pending your approval.
+</div>
+
+</div></body></html>
