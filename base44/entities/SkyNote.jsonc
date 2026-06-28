@@ -1,0 +1,32 @@
+{
+  "name": "SkyNote",
+  "type": "object",
+  "properties": {
+    "user_id": {
+      "type": "string"
+    },
+    "text": {
+      "type": "string",
+      "description": "The note/reflection"
+    },
+    "moon_phase": {
+      "type": "string",
+      "description": "e.g. 'Waxing crescent', 'Full moon'"
+    },
+    "date": {
+      "type": "string",
+      "description": "YYYY-MM-DD"
+    },
+    "created_at": {
+      "type": "string"
+    },
+    "updated_at": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "user_id",
+    "text"
+  ],
+  "indexes": [ { "fields": ["created_date"] } ]
+}

@@ -27,10 +27,11 @@
 //     Lifestyle.jsx ArticleSheet.handleSave) — optimistic + rollback + flash, like Nutrition's toggleShop.
 import { useState, useMemo, useEffect, useRef, useCallback } from "react";
 import {
-  BookOpen, Feather, Book, Film, Headphones, Moon, Play, Pause, Heart, Sparkles, Sun, Bookmark,
-  Wind, ChevronRight, Music2, Compass, Loader, ExternalLink,
+  BookOpen, Feather, Book, Film, Headphones, Moon, Heart, Sparkles, Sun, Bookmark,
+  Wind, ChevronRight, Music2, Compass, Loader, ExternalLink, Clock, Coffee, Sunset, Check,
 } from "lucide-react";
 import { base44 } from "@/api/base44Client";
+import LifestyleMedia from "@/components/lifestyle-elite/LifestyleMedia";
 import { T, SERIF, UI, PAPER_BG, Eyebrow } from "@/components/journal/Editorial";
 import { FwFloraHero } from "@/components/brand/PageTop";
 import { SummaryCard } from "@/components/brand/Card";
@@ -41,7 +42,7 @@ import DayDetailSheet from "@/components/planner/DayDetailSheet";
 import { getCurrentCyclePhase, phaseLabel } from "@/utils/cyclePhase";
 import { withTimeout } from "@/utils/safeEntity";
 import {
-  OXBLOOD, lbl, subCard, focusPill, Pill, Panel, StackedCard, BoardBody, TopChrome, SheetShell,
+  OXBLOOD, lbl, subCard, focusPill, inputBase, Pill, Panel, StackedCard, BoardBody, TopChrome, SheetShell,
   JumpSheet, SliderArrows, makeCalendarOverlay,
 } from "@/components/brand/SliderKit";
 
@@ -89,7 +90,24 @@ const A_DAY = {
   title: "A slow Sunday, just for you", line: "A bath, a book, and nowhere to be.",
   alts: ["A long walk somewhere new", "Cook something that takes all afternoon", "Visit a gallery alone", "A film and an early night"],
 };
-const SKY_DIARY = ["Last new moon — 'started the side project'", "Full moon felt heavy; rested instead", "A note for tonight's waning moon…"];
+// seeded sky-diary lines — shown only until the user writes real SkyNotes (which then replace them)
+const SKY_DIARY_SEED = ["Last new moon — 'started the side project'", "Full moon felt heavy; rested instead", "A note for tonight's waning moon…"];
+
+// ── helpers for the new persistence (PlannerItems · SkyNote) ──
+const nowISO = () => new Date().toISOString();
+const todayKey = () => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`; };
+
+// the dopamine-menu picker — "what do you have time for?" → a bounded set by time band.
+// Each band offers a read · a listen · a make/awe prompt (the read/listen come from loaded content;
+// the make/awe is a gentle seeded prompt). NOT an infinite feed.
+const TIME_BANDS = [
+  { key: "few", label: "A few minutes", sub: "a quick read · one track · a small wonder", Icon: Clock, cw: "sage",
+    make: { title: "Notice one beautiful thing right now", line: "A daily awe drop — look up, or out the window." } },
+  { key: "fifteen", label: "Fifteen minutes", sub: "an essay · a podcast chapter · a tiny make", Icon: Coffee, cw: "gold",
+    make: { title: "Make a proper cup of tea, fully", line: "Romance the mundane — no multitasking." } },
+  { key: "evening", label: "A whole evening", sub: "a story · a long listen · a quiet hour", Icon: Sunset, cw: "plum",
+    make: { title: "A quiet hour, permission granted", line: "You're allowed an evening that's just yours." } },
+];
 
 // ── small helpers (mirror Lifestyle.jsx) ─────────────────────────────────────
 function stripHtml(str) { return str ? str.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim() : ""; }
@@ -118,6 +136,7 @@ export default function LifestyleEliteShell() {
   const [story, setStory] = useState(null);        // today's DailyStory
   const [horoscope, setHoroscope] = useState(null);// today's HoroscopeReading
   const [savedIds, setSavedIds] = useState([]);    // UserProfile.saved_item_ids (the SAVE field)
+  const [skyNotes, setSkyNotes] = useState([]);    // recent SkyNote rows (real, persisted)
 
   // overlays
   const [calOpen, setCalOpen] = useState(false);
@@ -169,6 +188,15 @@ export default function LifestyleEliteShell() {
     setHoroscope((Array.isArray(ho) ? ho[0] : null) || null);
   }, []);
 
+  // recent sky notes for the signed-in user (real SkyNote rows — guarded, never blocks render)
+  const loadSkyNotes = useCallback(async (uid) => {
+    if (!uid) return;
+    try {
+      const rows = await base44.entities.SkyNote.filter({ user_id: uid }, "-created_date", 8);
+      setSkyNotes((Array.isArray(rows) ? rows : []).filter((r) => r && r.text));
+    } catch { /* leave the seeded lines */ }
+  }, []);
+
   // Public-domain books — fetched in the BACKGROUND (never blocks the loader); the Books lane fills
   // in when it arrives, and quietly stays empty (FemWell fiction still shows) if gutendex is slow/down.
   const loadGutenberg = useCallback(async () => {
@@ -197,13 +225,14 @@ export default function LifestyleEliteShell() {
           setSavedIds(Array.isArray(p?.saved_item_ids) ? p.saved_item_ids : []);
         }
         await loadContent();
-        loadGutenberg();   // background — never blocks the loader
+        loadGutenberg();          // background — never blocks the loader
+        loadSkyNotes(u?.id);      // background — real sky-diary rows
         try { unsubItems = base44.entities.LifestyleItems.subscribe(() => loadContent()); } catch { /* no-op */ }
       } catch { /* unauth / offline — render gracefully */ }
       if (alive) setLoading(false);
     })();
     return () => { alive = false; unsubItems?.(); };
-  }, [loadContent, loadGutenberg]);
+  }, [loadContent, loadGutenberg, loadSkyNotes]);
 
   // ── SAVE toggle (persists to UserProfile.saved_item_ids — optimistic + rollback) ──
   const toggleSave = useCallback(async (item) => {
@@ -230,6 +259,38 @@ export default function LifestyleEliteShell() {
     }
   }, [savedIds, user, profile]);
 
+  // ── Sky diary → SkyNote.create (real persistence; optimistic + rollback) ──
+  const addSkyNote = useCallback(async (text) => {
+    const t = (text || "").trim(); if (!t) return;
+    if (!user?.id) { flash("Sign in to keep your sky notes"); return; }
+    const moon = horoscope?.moon_phase || "";
+    const temp = { id: "tmp" + Date.now(), user_id: user.id, text: t, moon_phase: moon, date: todayKey() };
+    setSkyNotes((xs) => [temp, ...xs]);                       // optimistic
+    flash("Added to your sky diary");
+    try {
+      const created = await withTimeout(base44.entities.SkyNote.create({ user_id: user.id, text: t, moon_phase: moon, date: todayKey(), created_at: nowISO(), updated_at: nowISO() }), 6000, "skynote");
+      if (created?.id) setSkyNotes((xs) => xs.map((x) => x.id === temp.id ? { ...x, id: created.id } : x));
+    } catch { setSkyNotes((xs) => xs.filter((x) => x.id !== temp.id)); flash("Couldn't save — try again"); }
+  }, [user, horoscope]);
+
+  // ── A day for you → PlannerItems.create (a gentle planned day-off block) ──
+  const savePlannerDay = useCallback(async (title) => {
+    if (!user?.id) { flash("Sign in to save it to your planner"); return; }
+    flash("Saved to your planner");                          // optimistic UX (no list shown here)
+    try {
+      await withTimeout(base44.entities.PlannerItems.create({ user_id: user.id, title: title || A_DAY.title, date: todayKey(), category: "wellbeing", notes: "A day for you — guilt-free, from Lifestyle.", is_completed: false, created_at: nowISO(), updated_at: nowISO() }), 6000, "planner-day");
+    } catch { flash("Couldn't save — try again"); }
+  }, [user]);
+
+  // ── Try this → PlannerItems.create (a soft intention) ──
+  const saveTryThis = useCallback(async (title) => {
+    if (!user?.id) { flash(`Nice — "${title}"`); return; }    // signed-out: gentle ack only
+    flash(`Saved — "${title}"`);                              // optimistic
+    try {
+      await withTimeout(base44.entities.PlannerItems.create({ user_id: user.id, title: title, date: todayKey(), category: "wellbeing", notes: "A soft intention from Lifestyle — try it when you fancy it.", is_completed: false, created_at: nowISO(), updated_at: nowISO() }), 6000, "planner-try");
+    } catch { flash("Couldn't save — try again"); }
+  }, [user]);
+
   // open the exact item full-screen (deep-link parity with live Lifestyle: LifestyleDetail / readers)
   const openItem = useCallback((it) => {
     if (!it) return;
@@ -248,6 +309,7 @@ export default function LifestyleEliteShell() {
 
   const gold = cwOf("gold").petal, sky = cwOf("sky").petal, crimson = cwOf("crimson").petal, plum = cwOf("plum").petal, sage = cwOf("sage").petal;
   const BOARDS = [
+    { t: "The good life", sub: "What do you have time for? · permission to enjoy it" },
     { t: "For you", sub: "Editorial · saved · try this · for your phase" },
     { t: "Read", sub: "Articles · stories · books · guides" },
     { t: "Listen", sub: "Podcasts · videos · trending · external" },
@@ -264,6 +326,16 @@ export default function LifestyleEliteShell() {
     ...grouped.book,
     ...gutenberg,
   ].slice(0, 12), [story, grouped.book, gutenberg]);
+
+  // dopamine-menu source — a BOUNDED set per time band from already-loaded content (no fetch, no feed).
+  // "few" → shortest read + a clip/short listen; "fifteen" → an article + a podcast; "evening" → a story + a long listen.
+  const pickFor = useCallback((bandKey) => {
+    const byDur = (arr) => [...(arr || [])].sort((a, b) => (a.duration_seconds || 9e9) - (b.duration_seconds || 9e9));
+    const longest = (arr) => [...(arr || [])].sort((a, b) => (b.duration_seconds || 0) - (a.duration_seconds || 0));
+    if (bandKey === "few") return { read: byDur(grouped.article)[0] || grouped.guide?.[0] || null, listen: grouped.audio?.[0] || grouped.video?.[0] || null };
+    if (bandKey === "fifteen") return { read: grouped.article?.[1] || grouped.article?.[0] || null, listen: grouped.audio?.[0] || null };
+    return { read: grouped.story?.[0] || longest(grouped.article)[0] || null, listen: longest(grouped.audio)[0] || grouped.video?.[0] || null };
+  }, [grouped]);
 
   if (loading) {
     return (
@@ -297,20 +369,33 @@ export default function LifestyleEliteShell() {
         </div>
 
         <SummaryCard eyebrow="A few good things today" accent={gold} rows={[
-          { Icon: Feather, label: "Today's chapter", text: story ? `${story.title || "Today's chapter"}${story.hook ? ` — "${story.hook}"` : ""}` : "Today's chapter is on its way — tap to open the Daily Story.", onClick: () => setChapterOpen(true) },
-          { Icon: BookOpen, label: "Your reading", text: savedItems.length ? `${savedItems.length} saved to come back to · ${grouped.article.length} fresh reads` : (editorialPick ? editorialPick.title : "Fresh reads land here as they're published."), onClick: () => jumpTo(1) },
-          { Icon: Moon, label: "Your sky", text: horoscope ? (horoscope.daily_weather || horoscope.summary || horoscope.body || "Today's reading is ready.") : "Add your birth details to read today's sky.", onClick: () => setReadingOpen(true) },
+          { Icon: Feather, label: "Today's chapter", text: story ? `${story.series_title || story.title || "Today's chapter"}${story.cliffhanger ? ` — "${story.cliffhanger}"` : ""}` : "Today's chapter is on its way — tap to open the Daily Story.", onClick: () => setChapterOpen(true) },
+          { Icon: BookOpen, label: "Your reading", text: savedItems.length ? `${savedItems.length} saved to come back to · ${grouped.article.length} fresh reads` : (editorialPick ? editorialPick.title : "Fresh reads land here as they're published."), onClick: () => jumpTo(2) },
+          { Icon: Moon, label: "Your sky", text: horoscope ? (horoscope.headline || horoscope.narrative || "Today's reading is ready.") : "Add your birth details to read today's sky.", onClick: () => setReadingOpen(true) },
         ]} />
 
         {/* two focus pills (out of cards) — Lifestyle's two daily rituals */}
         <div style={{ display: "flex", gap: 10, marginTop: 14 }}>
           <button onClick={() => setChapterOpen(true)} className="fw-elite-press" style={focusPill(crimson)}><Feather size={16} /> Today's chapter</button>
-          <button onClick={() => jumpTo(0)} className="fw-elite-press" style={focusPill(plum)}><Bookmark size={16} /> Your reading</button>
+          <button onClick={() => jumpTo(0)} className="fw-elite-press" style={focusPill(plum)}><Clock size={16} /> What do you have time for?</button>
         </div>
 
         <div ref={sliderRef} style={{ marginTop: 16, position: "relative" }}>
           <SliderArrows sliderRef={sliderRef} />
           <ClipboardSlider hint="Slide your shelf →" accent={gold}>
+
+            {/* ── BOARD 0 — THE GOOD LIFE (dopamine-menu picker + permission tone) ── */}
+            <Clipboard title="The good life" sub="WHAT DO YOU HAVE TIME FOR?" accent={gold} flower="marigold" idx="cb-goodlife" titleColor={OXBLOOD}>
+              <BoardBody>
+                <StackedCard topAccent={gold} bottomAccent={plum}
+                  top={[
+                    <Panel key="picker" label="What do you have time for?" Icon={Clock} accent={gold}><TimePickerLens pickFor={pickFor} isSaved={isSaved} onSave={toggleSave} onOpen={openItem} onTry={saveTryThis} /></Panel>,
+                  ]}
+                  bottom={[
+                    <Panel key="permission" label="Permission to enjoy it" Icon={Heart} accent={plum}><PermissionLens phaseKey={phaseKey} onQuietHour={() => savePlannerDay("A quiet hour, just for you")} /></Panel>,
+                  ]} />
+              </BoardBody>
+            </Clipboard>
 
             {/* ── BOARD 1 — FOR YOU ─────────────────────────────────────────── */}
             <Clipboard title="For you" sub="EDITORIAL · SAVED · TRY THIS · YOUR PHASE" accent={gold} flower="daisy" idx="cb-foryou" titleColor={OXBLOOD}>
@@ -321,7 +406,7 @@ export default function LifestyleEliteShell() {
                     <Panel key="saved" label="Saved" Icon={Bookmark} accent={gold}><SavedLens items={savedItems} onOpen={openItem} onUnsave={toggleSave} /></Panel>,
                   ]}
                   bottom={[
-                    <Panel key="try" label="Try this" Icon={Wind} accent={sage}><TryThisLens onDo={(t) => flash(`Nice — "${t}"`)} /></Panel>,
+                    <Panel key="try" label="Try this" Icon={Wind} accent={sage}><TryThisLens onDo={saveTryThis} /></Panel>,
                     <Panel key="phase" label="For your phase" Icon={Heart} accent={sage}><PhasePicksLens items={grouped} phaseKey={phaseKey} isSaved={isSaved} onSave={toggleSave} onOpen={openItem} /></Panel>,
                   ]} />
               </BoardBody>
@@ -351,7 +436,7 @@ export default function LifestyleEliteShell() {
                     <Panel key="vids" label="Videos" Icon={Film} accent={gold}><MediaLens items={grouped.video} kind="video" onOpen={openItem} /></Panel>,
                   ]}
                   bottom={[
-                    <Panel key="tiktok" label="Trending on TikTok" Icon={Music2} accent={crimson}><TikTokLens items={grouped.tiktok} onOpen={openItem} /></Panel>,
+                    <Panel key="tiktok" label="Trending on TikTok" Icon={Music2} accent={crimson}><TikTokLens items={grouped.tiktok} /></Panel>,
                     <Panel key="external" label="Listen externally" Icon={Compass} accent={crimson}><ExternalLens /></Panel>,
                   ]} />
               </BoardBody>
@@ -363,11 +448,11 @@ export default function LifestyleEliteShell() {
                 <StackedCard topAccent={crimson} bottomAccent={sky}
                   top={[
                     <Panel key="daily" label="Daily story" Icon={Feather} accent={crimson}><DailyStoryLens story={story} onRead={() => setChapterOpen(true)} /></Panel>,
-                    <Panel key="aday" label="A day for you" Icon={Sun} accent={gold}><ADayLens onSave={() => flash("Saved to your planner")} /></Panel>,
+                    <Panel key="aday" label="A day for you" Icon={Sun} accent={gold}><ADayLens onSave={savePlannerDay} /></Panel>,
                   ]}
                   bottom={[
                     <Panel key="sky" label="Your sky today" Icon={Moon} accent={sky}><HoroscopeLens reading={horoscope} phaseKey={phaseKey} onRead={() => setReadingOpen(true)} /></Panel>,
-                    <Panel key="diary" label="Sky diary" Icon={Feather} accent={sky}><SkyDiaryLens onNote={() => flash("New sky note")} /></Panel>,
+                    <Panel key="diary" label="Sky diary" Icon={Feather} accent={sky}><SkyDiaryLens notes={skyNotes} onNote={addSkyNote} /></Panel>,
                   ]} />
               </BoardBody>
             </Clipboard>
@@ -406,15 +491,6 @@ function ContentRow({ Icon, accent, title, meta, cta = "Open", saved, onSave, on
         <span style={{ fontFamily: UI, fontSize: 12, fontWeight: 700, color: accent, flexShrink: 0, display: "inline-flex", alignItems: "center", gap: 2 }}>{cta} <ChevronRight size={13} /></span>
       )}
     </div>
-  );
-}
-function InlinePlayer({ accent, label }) {
-  const [playing, setPlaying] = useState(false);
-  return (
-    <button onClick={(e) => { e.stopPropagation(); setPlaying((p) => !p); }} className="fw-elite-press" style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "7px 12px", borderRadius: 999, background: `${accent}14`, border: `1px solid ${accent}55`, cursor: "pointer", flexShrink: 0 }}>
-      <span style={{ width: 26, height: 26, borderRadius: 999, background: accent, display: "grid", placeItems: "center" }}>{playing ? <Pause size={13} color="#fff" /> : <Play size={13} color="#fff" />}</span>
-      <span style={{ fontFamily: UI, fontSize: 12, fontWeight: 700, color: T.inkSoft }}>{playing ? "Playing…" : label}</span>
-    </button>
   );
 }
 function EmptyLine({ children }) {
@@ -457,15 +533,17 @@ function SavedLens({ items, onOpen, onUnsave }) {
   );
 }
 function TryThisLens({ onDo }) {
+  const [done, setDone] = useState({});   // local "saved" ticks (the write persists to PlannerItems)
   return (
     <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
-      <p style={{ fontFamily: SERIF, fontSize: 15, color: T.inkSoft, lineHeight: 1.5, margin: "0 0 12px" }}>Small, doable, just-for-today. Tap one when you fancy it.</p>
-      <div style={{ display: "flex", flexDirection: "column", gap: 9 }}>{TRY_THIS.map((t, i) => (
-        <button key={i} onClick={() => onDo(t.title)} className="fw-elite-press" style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", textAlign: "left", ...subCard(cwOf(t.cw).petal), padding: "10px 12px", cursor: "pointer" }}>
-          <span style={{ width: 28, height: 28, borderRadius: 9, background: `${cwOf(t.cw).petal}1F`, display: "grid", placeItems: "center", flexShrink: 0 }}><Wind size={14} color={cwOf(t.cw).petal} /></span>
-          <span style={{ fontFamily: SERIF, fontSize: 15, color: T.ink }}>{t.title}</span>
+      <p style={{ fontFamily: SERIF, fontSize: 15, color: T.inkSoft, lineHeight: 1.5, margin: "0 0 12px" }}>Small, doable, just-for-today. Tap one to keep it — it lands softly in your planner. No streaks, no pressure.</p>
+      <div style={{ display: "flex", flexDirection: "column", gap: 9 }}>{TRY_THIS.map((t, i) => { const c = cwOf(t.cw).petal; const saved = done[i]; return (
+        <button key={i} onClick={() => { setDone((d) => ({ ...d, [i]: true })); onDo(t.title); }} className="fw-elite-press" style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", textAlign: "left", ...subCard(c), padding: "10px 12px", cursor: "pointer" }}>
+          <span style={{ width: 28, height: 28, borderRadius: 9, background: saved ? c : `${c}1F`, display: "grid", placeItems: "center", flexShrink: 0 }}>{saved ? <Check size={14} color="#fff" /> : <Wind size={14} color={c} />}</span>
+          <span style={{ fontFamily: SERIF, fontSize: 15, color: T.ink, flex: 1 }}>{t.title}</span>
+          {saved && <span style={{ fontFamily: UI, fontSize: 11, fontWeight: 700, color: c, flexShrink: 0 }}>Saved</span>}
         </button>
-      ))}</div>
+      ); })}</div>
     </div>
   );
 }
@@ -480,6 +558,55 @@ function PhasePicksLens({ items, phaseKey, isSaved, onSave, onOpen }) {
       <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>{picks.map((p) => { const t = lfTypeOf(p); return (
         <ContentRow key={p.id} Icon={ICON_OF[t] || BookOpen} accent={cwOf(t === "video" ? "gold" : t === "audio" ? "sage" : "crimson").petal} title={p.title} meta={metaOf(p)} saved={isSaved(p.id)} onSave={() => onSave(p)} onOpen={() => onOpen(p)} />
       ); })}</div>
+    </div>
+  );
+}
+
+// ── The good life — dopamine-menu picker (bounded, by time; not a feed) ──
+function TimePickerLens({ pickFor, isSaved, onSave, onOpen, onTry }) {
+  const [band, setBand] = useState(TIME_BANDS[0]);
+  const picks = pickFor(band.key);
+  const read = picks.read, listen = picks.listen;
+  return (
+    <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
+      <p style={{ fontFamily: SERIF, fontSize: 15, color: T.inkSoft, lineHeight: 1.5, margin: "0 0 10px" }}>Pick by the time you have — a small, chosen handful, never an endless scroll.</p>
+      <div style={{ display: "flex", gap: 6, marginBottom: 12 }}>{TIME_BANDS.map((b) => { const c = cwOf(b.cw).petal; const on = b.key === band.key; return (
+        <button key={b.key} onClick={() => setBand(b)} className="fw-elite-press" style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: 3, padding: "9px 4px", borderRadius: 12, cursor: "pointer", background: on ? c : `${c}12`, border: `1px solid ${on ? c : c + "55"}` }}>
+          <b.Icon size={16} color={on ? "#fff" : c} />
+          <span style={{ fontFamily: UI, fontSize: 11.5, fontWeight: 700, color: on ? "#fff" : T.inkSoft, textAlign: "center", lineHeight: 1.2 }}>{b.label}</span>
+        </button>
+      ); })}</div>
+      <div style={{ ...lbl, marginBottom: 6 }}>For {band.label.toLowerCase()}</div>
+      <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+        {read ? <ContentRow Icon={lfTypeOf(read) === "story" ? Feather : BookOpen} accent={cwOf("plum").petal} title={read.title} meta={`Read · ${metaOf(read)}`} saved={isSaved(read.id)} onSave={() => onSave(read)} onOpen={() => onOpen(read)} /> : <EmptyLine>A read lands here as the library fills out.</EmptyLine>}
+        {listen ? <ContentRow Icon={lfTypeOf(listen) === "video" ? Film : Headphones} accent={cwOf("sage").petal} title={listen.title} meta={`Listen · ${metaOf(listen)}${listen.duration_label ? ` · ${listen.duration_label}` : ""}`} saved={isSaved(listen.id)} onSave={() => onSave(listen)} onOpen={() => onOpen(listen)} /> : <EmptyLine>A listen lands here as podcasts are added.</EmptyLine>}
+        {/* the make / awe prompt — saves as a soft intention */}
+        <button onClick={() => onTry(band.make.title)} className="fw-elite-press" style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", textAlign: "left", ...subCard(cwOf("gold").petal), padding: "10px 12px", cursor: "pointer" }}>
+          <span style={{ width: 28, height: 28, borderRadius: 9, background: `${cwOf("gold").petal}1F`, display: "grid", placeItems: "center", flexShrink: 0 }}><Sparkles size={14} color={cwOf("gold").petal} /></span>
+          <span style={{ flex: 1, minWidth: 0 }}><span style={{ fontFamily: SERIF, fontSize: 15, fontWeight: 600, color: T.ink, display: "block", lineHeight: 1.2 }}>{band.make.title}</span><span style={{ fontFamily: UI, fontSize: 12, color: T.muted }}>{band.make.line}</span></span>
+        </button>
+      </div>
+    </div>
+  );
+}
+function PermissionLens({ phaseKey, onQuietHour }) {
+  const slips = [
+    "You're allowed a slow Sunday.",
+    "Rest isn't the reward for the work — it's part of it.",
+    phaseKey ? `Your ${phaseLabel(phaseKey).toLowerCase()} week asks for a gentler pace. That's not falling behind.` : "A gentler pace today isn't falling behind.",
+  ];
+  return (
+    <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
+      <p style={{ fontFamily: SERIF, fontSize: 15, color: T.inkSoft, lineHeight: 1.5, margin: "0 0 12px" }}>Permission slips, not to-do lists. No streaks here — leisure is the point, guilt isn't invited.</p>
+      <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>{slips.map((s, i) => (
+        <div key={i} style={{ display: "flex", alignItems: "flex-start", gap: 8, ...subCard(cwOf("plum").petal), background: `${cwOf("plum").petal}0D`, padding: "10px 12px" }}>
+          <Heart size={14} color={cwOf("plum").petal} style={{ flexShrink: 0, marginTop: 3 }} fill={cwOf("plum").petal} />
+          <span style={{ fontFamily: SERIF, fontSize: 15, color: T.ink, lineHeight: 1.45 }}>{s}</span>
+        </div>
+      ))}</div>
+      <div style={{ marginTop: "auto", paddingTop: 12 }}>
+        <button onClick={onQuietHour} className="fw-elite-press" style={{ width: "100%", padding: "11px", borderRadius: 12, background: cwOf("plum").petal, color: "#fff", border: "none", fontFamily: UI, fontSize: 14, fontWeight: 700, cursor: "pointer", display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 8 }}><Moon size={15} /> Book a quiet hour</button>
+      </div>
     </div>
   );
 }
@@ -553,20 +680,31 @@ function MediaLens({ items, kind, onOpen }) {
               <span style={{ fontFamily: UI, fontSize: 12, color: T.muted }}>{metaOf(it)}{it.duration_label ? ` · ${it.duration_label}` : ""}</span>
             </button>
           </div>
-          <InlinePlayer accent={accent} label={kind === "audio" ? "Tap to play" : "Tap to watch"} />
+          {/* REAL inline player (audio <audio> / youtube-nocookie / link-out) by media_type */}
+          <LifestyleMedia item={it} accent={accent} />
         </div>
       ))}</div>
     </div>
   );
 }
-function TikTokLens({ items, onOpen }) {
+function TikTokLens({ items }) {
   const real = (items || []).slice(0, 4);
+  const accent = cwOf("crimson").petal;
   return (
     <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
-      <p style={{ fontFamily: SERIF, fontSize: 15, color: T.inkSoft, lineHeight: 1.5, margin: "0 0 12px" }}>Short, trending, embeddable — they open right here.</p>
-      <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+      <p style={{ fontFamily: SERIF, fontSize: 15, color: T.inkSoft, lineHeight: 1.5, margin: "0 0 12px" }}>Short and trending — these open in the app they live in.</p>
+      <div style={{ display: "flex", flexDirection: "column", gap: 9 }}>
         {real.length
-          ? real.map((t) => <ContentRow key={t.id} Icon={Music2} accent={cwOf("crimson").petal} title={t.title} meta={metaOf(t)} cta="Watch" onOpen={() => onOpen(t)} />)
+          ? real.map((t) => (
+              <div key={t.id}>
+                <div style={{ display: "flex", alignItems: "center", gap: 7, marginBottom: 6 }}>
+                  <Music2 size={14} color={accent} style={{ flexShrink: 0 }} />
+                  <span style={{ fontFamily: SERIF, fontSize: 15, fontWeight: 600, color: T.ink, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{t.title}</span>
+                </div>
+                {/* link-out card (TIKTOK/INSTAGRAM never fake inline — per the plan) */}
+                <LifestyleMedia item={t} accent={accent} />
+              </div>
+            ))
           : TIKTOKS_FALLBACK.map((t, i) => <ContentRow key={i} Icon={Music2} accent={cwOf(t.cw).petal} title={t.title} meta={t.channel} cta="Watch" onOpen={() => {}} />)}
       </div>
     </div>
@@ -590,9 +728,9 @@ function ExternalLens() {
 // ── Story & sky ──────────────────────────────────────────────────────────────
 function DailyStoryLens({ story, onRead }) {
   const accent = cwOf("crimson").petal;
-  const title = story?.title || "Today's chapter";
-  const hook = story?.hook || story?.line || "";
-  const excerpt = stripHtml(story?.excerpt || story?.body || story?.content || "") || "Today's chapter is being written — tap below to open the Daily Story when it's ready.";
+  const title = story?.series_title || story?.title || "Today's chapter";
+  const hook = story?.cliffhanger || "";
+  const excerpt = stripHtml(story?.segment_text || "") || "Today's chapter is being written — tap below to open the Daily Story when it's ready.";
   return (
     <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
       <Eyebrow color={accent}>Daily Story · today's chapter</Eyebrow>
@@ -604,72 +742,117 @@ function DailyStoryLens({ story, onRead }) {
   );
 }
 function ADayLens({ onSave }) {
+  const [chosen, setChosen] = useState(A_DAY.title);
   return (
     <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
       <Eyebrow color={cwOf("gold").petal}>A day for you</Eyebrow>
-      <div style={{ fontFamily: SERIF, fontSize: 18, fontWeight: 600, color: T.ink, margin: "8px 0 3px" }}>{A_DAY.title}</div>
+      <div style={{ fontFamily: SERIF, fontSize: 18, fontWeight: 600, color: T.ink, margin: "8px 0 3px" }}>{chosen}</div>
       <div style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 15, color: T.muted, marginBottom: 12 }}>{A_DAY.line}</div>
-      <button onClick={onSave} className="fw-elite-press" style={{ width: "100%", padding: "11px", borderRadius: 12, background: cwOf("gold").petal, color: "#fff", border: "none", fontFamily: UI, fontSize: 14, fontWeight: 700, cursor: "pointer", marginBottom: 14 }}>Save it for the day</button>
+      <button onClick={() => onSave(chosen)} className="fw-elite-press" style={{ width: "100%", padding: "11px", borderRadius: 12, background: cwOf("gold").petal, color: "#fff", border: "none", fontFamily: UI, fontSize: 14, fontWeight: 700, cursor: "pointer", marginBottom: 14 }}>Save it for the day</button>
       <div style={{ ...lbl, marginBottom: 7 }}>Or one of these</div>
-      <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>{A_DAY.alts.map((a) => <Pill key={a} cw="sage">{a}</Pill>)}</div>
+      <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>{A_DAY.alts.map((a) => <Pill key={a} cw="sage" active={chosen === a} onClick={() => setChosen(a)}>{a}</Pill>)}</div>
     </div>
   );
 }
 function HoroscopeLens({ reading, phaseKey, onRead }) {
-  const sun = reading?.sun_sign || reading?.sun || "—";
-  const moon = reading?.moon_sign || reading?.moon || "—";
-  const rising = reading?.rising_sign || reading?.rising || "—";
-  const weather = reading?.daily_weather || reading?.summary || reading?.body || "Add your birth details to read today's sky.";
-  const cycleMoon = reading?.cycle_moon || (phaseKey ? `Your ${phaseLabel(phaseKey).toLowerCase()} week is meeting the moon — a gentle invitation to match your pace to the sky.` : "");
-  const triad = [{ k: "Sun", v: sun, cw: "gold" }, { k: "Moon", v: moon, cw: "plum" }, { k: "Rising", v: rising, cw: "sky" }];
+  const headline = reading?.headline || "Your sky today";
+  const weather = reading?.narrative || "Add your birth details to read today's sky.";
+  const moonPhase = reading?.moon_phase || "";
+  const moonPct = Number.isFinite(reading?.moon_pct) ? `${Math.round(reading.moon_pct)}%` : "";
+  // prefer the entity's own cycle↔moon pair; fall back to a gentle phase line
+  const cmTitle = reading?.cycle_moon_headline || "Cycle ↔ moon";
+  const cycleMoon = reading?.cycle_moon_body || (phaseKey ? `Your ${phaseLabel(phaseKey).toLowerCase()} week is meeting the moon — a gentle invitation to match your pace to the sky.` : "");
   return (
     <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
-      <div style={{ display: "flex", gap: 8, marginBottom: 12 }}>{triad.map((t) => (
-        <div key={t.k} style={{ flex: 1, textAlign: "center", ...subCard(cwOf(t.cw).petal), padding: "10px 6px" }}>
-          <div style={{ ...lbl, fontSize: 12, color: cwOf(t.cw).petal }}>{t.k}</div>
-          <div style={{ fontFamily: SERIF, fontSize: 15, fontWeight: 600, color: T.ink, marginTop: 2 }}>{t.v}</div>
+      {(moonPhase || phaseKey) && (
+        <div style={{ display: "flex", gap: 8, marginBottom: 12 }}>
+          {moonPhase && <div style={{ flex: 1, textAlign: "center", ...subCard(cwOf("plum").petal), padding: "10px 6px" }}><div style={{ ...lbl, fontSize: 12, color: cwOf("plum").petal }}>Moon</div><div style={{ fontFamily: SERIF, fontSize: 14, fontWeight: 600, color: T.ink, marginTop: 2 }}>{moonPhase}{moonPct ? ` · ${moonPct}` : ""}</div></div>}
+          {phaseKey && <div style={{ flex: 1, textAlign: "center", ...subCard(cwOf("crimson").petal), padding: "10px 6px" }}><div style={{ ...lbl, fontSize: 12, color: cwOf("crimson").petal }}>Your phase</div><div style={{ fontFamily: SERIF, fontSize: 14, fontWeight: 600, color: T.ink, marginTop: 2 }}>{phaseLabel(phaseKey)}</div></div>}
         </div>
-      ))}</div>
-      <div style={{ ...subCard(cwOf("sky").petal), marginBottom: 10 }}><div style={{ ...lbl, fontSize: 12, color: cwOf("sky").petal, marginBottom: 3 }}>Today's weather</div><p style={{ fontFamily: SERIF, fontSize: 15, color: T.ink, margin: 0, lineHeight: 1.5 }}>{weather}</p></div>
-      {cycleMoon && <div style={{ ...subCard(cwOf("crimson").petal), background: `${cwOf("crimson").petal}0D` }}><div style={{ ...lbl, fontSize: 12, color: cwOf("crimson").petal, marginBottom: 3 }}>Cycle ↔ moon</div><p style={{ fontFamily: SERIF, fontSize: 14, color: T.inkSoft, margin: 0, lineHeight: 1.45 }}>{cycleMoon}</p></div>}
+      )}
+      <div style={{ ...subCard(cwOf("sky").petal), marginBottom: 10 }}><div style={{ ...lbl, fontSize: 12, color: cwOf("sky").petal, marginBottom: 3 }}>{headline}</div><p style={{ fontFamily: SERIF, fontSize: 15, color: T.ink, margin: 0, lineHeight: 1.5, display: "-webkit-box", WebkitLineClamp: 4, WebkitBoxOrient: "vertical", overflow: "hidden" }}>{stripHtml(weather)}</p></div>
+      {cycleMoon && <div style={{ ...subCard(cwOf("crimson").petal), background: `${cwOf("crimson").petal}0D` }}><div style={{ ...lbl, fontSize: 12, color: cwOf("crimson").petal, marginBottom: 3 }}>{cmTitle}</div><p style={{ fontFamily: SERIF, fontSize: 14, color: T.inkSoft, margin: 0, lineHeight: 1.45, display: "-webkit-box", WebkitLineClamp: 3, WebkitBoxOrient: "vertical", overflow: "hidden" }}>{stripHtml(cycleMoon)}</p></div>}
       <button onClick={onRead} className="fw-elite-press" style={{ marginTop: "auto", width: "100%", padding: "12px", borderRadius: 12, background: cwOf("sky").petal, color: "#fff", border: "none", fontFamily: UI, fontSize: 14, fontWeight: 700, cursor: "pointer" }}>Read your full reading</button>
     </div>
   );
 }
-function SkyDiaryLens({ onNote }) {
+function SkyDiaryLens({ notes, onNote }) {
+  const [draft, setDraft] = useState("");
+  const [open, setOpen] = useState(false);
+  const accent = cwOf("plum").petal;
+  const real = (notes || []).filter((n) => n && n.text);
+  // real rows replace the seeded lines once the user has written any
+  const rows = real.length
+    ? real.map((n) => ({ key: n.id, text: n.text, moon: n.moon_phase }))
+    : SKY_DIARY_SEED.map((l, i) => ({ key: `seed-${i}`, text: l, moon: "" }));
+  const submit = () => { const t = draft.trim(); if (!t) return; onNote(t); setDraft(""); setOpen(false); };
   return (
     <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
       <p style={{ fontFamily: SERIF, fontSize: 15, color: T.inkSoft, lineHeight: 1.5, margin: "0 0 12px" }}>A quiet log against the sky — what each moon stirred.</p>
-      <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>{SKY_DIARY.map((l, i) => (
-        <div key={i} style={{ display: "flex", alignItems: "flex-start", gap: 8, ...subCard(cwOf("plum").petal), padding: "9px 11px" }}><Moon size={14} color={cwOf("plum").petal} style={{ flexShrink: 0, marginTop: 2 }} /><span style={{ fontFamily: SERIF, fontSize: 15, color: T.ink, lineHeight: 1.4 }}>{l}</span></div>
+      <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>{rows.map((r) => (
+        <div key={r.key} style={{ display: "flex", alignItems: "flex-start", gap: 8, ...subCard(accent), padding: "9px 11px" }}>
+          <Moon size={14} color={accent} style={{ flexShrink: 0, marginTop: 2 }} />
+          <span style={{ flex: 1, minWidth: 0 }}>
+            <span style={{ fontFamily: SERIF, fontSize: 15, color: T.ink, lineHeight: 1.4, display: "block" }}>{r.text}</span>
+            {r.moon && <span style={{ fontFamily: UI, fontSize: 11, color: T.muted }}>{r.moon}</span>}
+          </span>
+        </div>
       ))}</div>
-      <div style={{ marginTop: "auto", paddingTop: 12 }}><Pill Icon={Feather} cw="plum" filled onClick={onNote}>New sky note</Pill></div>
+      <div style={{ marginTop: "auto", paddingTop: 12 }}>
+        {open ? (
+          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+            <textarea value={draft} onChange={(e) => setDraft(e.target.value)} rows={2} placeholder="What did tonight's sky stir?" autoFocus
+              style={{ ...inputBase, resize: "none", lineHeight: 1.45 }} />
+            <div style={{ display: "flex", gap: 8 }}>
+              <Pill Icon={Feather} cw="plum" filled onClick={submit}>Save note</Pill>
+              <Pill cw="sage" onClick={() => { setOpen(false); setDraft(""); }}>Cancel</Pill>
+            </div>
+          </div>
+        ) : (
+          <Pill Icon={Feather} cw="plum" filled onClick={() => setOpen(true)}>New sky note</Pill>
+        )}
+      </div>
     </div>
   );
 }
 
 // ── sheets ──
 function ChapterSheet({ story, onClose }) {
-  const title = story?.title || "Today's chapter";
-  const hook = story?.hook || story?.line || "";
-  const body = stripHtml(story?.excerpt || story?.body || story?.content || "") || "Today's chapter is being written — check back soon. In the meantime, the Daily Story library is one tap away on the Lifestyle page.";
+  const title = story?.series_title || story?.title || "Today's chapter";
+  const dayLine = story?.day_number ? `Day ${story.day_number}` : "today";
+  const cliff = story?.cliffhanger || "";
+  const body = stripHtml(story?.segment_text || "") || "Today's chapter is being written — check back soon. In the meantime, the Daily Story library is one tap away on the Lifestyle page.";
   return (
-    <SheetShell title={title} eyebrowText="Daily Story · today" accent={cwOf("crimson").petal} onClose={onClose}>
-      {hook && <p style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 17, color: cwOf("crimson").petal, margin: "0 0 12px" }}>"{hook}"</p>}
-      <p style={{ fontFamily: SERIF, fontSize: 16, color: T.ink, lineHeight: 1.65, margin: "0 0 16px" }}>{body}</p>
+    <SheetShell title={title} eyebrowText={`Daily Story · ${dayLine}`} accent={cwOf("crimson").petal} onClose={onClose}>
+      <p style={{ fontFamily: SERIF, fontSize: 16, color: T.ink, lineHeight: 1.65, margin: "0 0 16px", whiteSpace: "pre-wrap" }}>{body}</p>
+      {cliff && <p style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 17, color: cwOf("crimson").petal, margin: "0 0 16px" }}>"{cliff}"</p>}
       <div style={{ display: "flex", gap: 8 }}><Pill cw="crimson" filled onClick={onClose}>Mark as read</Pill><Pill cw="sage" onClick={onClose}>Reflect on it</Pill></div>
     </SheetShell>
   );
 }
 function ReadingSheet({ reading, phaseKey, onClose }) {
-  const weather = reading?.daily_weather || reading?.summary || reading?.body || "Add your birth details on the Horoscope tab to read today's full sky.";
-  const cycleMoon = reading?.cycle_moon || (phaseKey ? `Your ${phaseLabel(phaseKey).toLowerCase()} week is meeting the moon — a night to match your pace to the sky.` : "");
-  const sun = reading?.sun_sign || reading?.sun, moon = reading?.moon_sign || reading?.moon, rising = reading?.rising_sign || reading?.rising;
+  const headline = reading?.headline || "Your sky today";
+  const narrative = reading?.narrative || "Add your birth details on the Horoscope tab to read today's full sky.";
+  const moonPhase = reading?.moon_phase || "";
+  // the verified section pairs — render each only when present
+  const sections = [
+    { title: reading?.power_title, body: reading?.power_body, cw: "gold" },
+    { title: reading?.pressure_title, body: reading?.pressure_body, cw: "plum" },
+    { title: reading?.trouble_title, body: reading?.trouble_body, cw: "crimson" },
+    { title: reading?.cycle_moon_headline, body: reading?.cycle_moon_body, cw: "sky" },
+  ].filter((s) => s.title || s.body);
+  const fallbackCycle = !reading?.cycle_moon_body && phaseKey
+    ? `Your ${phaseLabel(phaseKey).toLowerCase()} week is meeting the moon — a night to match your pace to the sky.` : "";
   return (
-    <SheetShell title="Your sky today" eyebrowText={phaseKey ? `${phaseLabel(phaseKey)} · the sky` : "The sky"} accent={cwOf("sky").petal} onClose={onClose}>
-      <p style={{ fontFamily: SERIF, fontSize: 16, color: T.ink, lineHeight: 1.6, margin: "0 0 12px" }}>{weather}</p>
-      {cycleMoon && <div style={{ ...subCard(cwOf("crimson").petal), background: `${cwOf("crimson").petal}0D`, marginBottom: 12 }}><p style={{ fontFamily: SERIF, fontSize: 15, color: T.inkSoft, margin: 0, lineHeight: 1.5 }}>{cycleMoon}</p></div>}
-      {(sun || moon || rising) && <p style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 15, color: T.muted, margin: "0 0 16px", lineHeight: 1.5 }}>{[sun && `Sun in ${sun}`, moon && `Moon in ${moon}`, rising && `${rising} rising`].filter(Boolean).join(", ")} — a night to finish gently and forgive yourself the rest.</p>}
+    <SheetShell title={headline} eyebrowText={phaseKey ? `${phaseLabel(phaseKey)} · the sky${moonPhase ? ` · ${moonPhase}` : ""}` : (moonPhase || "The sky")} accent={cwOf("sky").petal} onClose={onClose}>
+      <p style={{ fontFamily: SERIF, fontSize: 16, color: T.ink, lineHeight: 1.6, margin: "0 0 14px", whiteSpace: "pre-wrap" }}>{stripHtml(narrative)}</p>
+      {sections.map((s, i) => (
+        <div key={i} style={{ ...subCard(cwOf(s.cw).petal), marginBottom: 12 }}>
+          {s.title && <div style={{ ...lbl, fontSize: 12, color: cwOf(s.cw).petal, marginBottom: 4 }}>{s.title}</div>}
+          {s.body && <p style={{ fontFamily: SERIF, fontSize: 15, color: T.inkSoft, margin: 0, lineHeight: 1.55 }}>{stripHtml(s.body)}</p>}
+        </div>
+      ))}
+      {!sections.length && fallbackCycle && <div style={{ ...subCard(cwOf("crimson").petal), background: `${cwOf("crimson").petal}0D`, marginBottom: 12 }}><p style={{ fontFamily: SERIF, fontSize: 15, color: T.inkSoft, margin: 0, lineHeight: 1.5 }}>{fallbackCycle}</p></div>}
       <div style={{ display: "flex", gap: 8 }}><Pill cw="sky" filled onClick={onClose}>Save tonight's reading</Pill><Pill cw="sage" onClick={onClose}>Sky diary</Pill></div>
     </SheetShell>
   );
