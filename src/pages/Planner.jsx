@@ -441,7 +441,9 @@ function weekdayKey(d) {
 
 const DAY_LABELS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
-export default function Planner({ shellVariant } = {}) {
+// LIVE FLIP: /Planner now renders the elevated, fully-wired elite shell by default.
+// One-line revert: change `shellVariant = "elite"` back to `shellVariant` to restore the prior clipboard shell.
+export default function Planner({ shellVariant = "elite" } = {}) {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 

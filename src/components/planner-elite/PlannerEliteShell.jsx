@@ -247,7 +247,7 @@ export default function PlannerEliteShell() {
   const changeSeason = async (s) => { setSeason(s); flash(`Season: ${SEASONS[s].label}`); if (profile?.id) { try { await base44.entities.UserProfile.update(profile.id, { life_season: s }); } catch { /* ignore */ } } };
   const planReset = (label) => { addToDay(`${label} reset`, "rest"); flash(`Planned: ${label}`); };
   const easeLoad = async () => { const drop = blocks.filter((b) => b.type === "task" && !b.done); setBlocks((bs) => bs.filter((b) => !(b.type === "task" && !b.done))); flash("Lighter tasks moved off today"); for (const b of drop) { try { await base44.entities.PlannerItems.delete(b.id); } catch { /* ignore */ } } };
-  const jumpTo = (idx) => { setJumpOpen(false); sliderRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }); const track = sliderRef.current?.querySelector(".fw-clipboard-track"); const child = track?.children?.[idx]; if (track && child) track.scrollLeft = child.offsetLeft - track.offsetLeft; };
+  const jumpTo = (idx) => { setJumpOpen(false); sliderRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }); const track = sliderRef.current?.querySelector(".fw-clipboard-track"); if (!track) return; const boards = [...track.children].filter((c) => c.offsetWidth > 40); const child = boards[idx]; if (child) track.scrollLeft = child.offsetLeft - track.offsetLeft; };
 
   const gold = cwOf("gold").petal, sage = cwOf("sage").petal, crimson = cwOf("crimson").petal;
   const BOARDS = [{ t: "The day", sub: "Agenda · hour-by-hour · week" }, { t: "Reserves", sub: "Load · recovery · boundaries · energy · the load" }, { t: "Rituals", sub: "Intentions · anchors · reset · focus · rhythm" }];

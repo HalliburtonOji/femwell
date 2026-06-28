@@ -77,10 +77,13 @@ export function ClipboardSlider({ children, hint, accent = T.gold }) {
   const [active, setActive] = useState(0);
   const last = boards.length - 1;
 
+  // Real boards only — the track also holds a <style> node (first child) and a trailing spacer; both
+  // have ~0/small width, so filter by offsetWidth to keep indices aligned with `boards`/the dots.
+  const realBoards = (el) => [...el.children].filter((c) => c.offsetWidth > 40);
   const onScroll = () => {
     const el = trackRef.current; if (!el) return;
     let best = 0, bd = Infinity;
-    Array.from(el.children).forEach((c, i) => {
+    realBoards(el).forEach((c, i) => {
       const d = Math.abs(c.offsetLeft - el.offsetLeft - el.scrollLeft);
       if (d < bd) { bd = d; best = i; }
     });
@@ -89,8 +92,11 @@ export function ClipboardSlider({ children, hint, accent = T.gold }) {
   const goTo = (i) => {
     const idx = Math.max(0, Math.min(last, i));
     setActive(idx);
-    const el = trackRef.current; const child = el?.children?.[idx];
-    if (child) child.scrollIntoView({ behavior: reduceMotion() ? "auto" : "smooth", block: "nearest", inline: "start" });
+    // Direct scrollLeft is the reliable method (scrollIntoView / smooth scroll can no-op on nested
+    // snap tracks); matches SliderKit's SliderArrows. Instant is also reduced-motion-safe.
+    const el = trackRef.current; if (!el) return;
+    const child = realBoards(el)[idx];
+    if (child) el.scrollLeft = child.offsetLeft - el.offsetLeft;
   };
 
   return (
