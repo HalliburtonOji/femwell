@@ -21,6 +21,7 @@ import {
   Plus, X, Check, Droplet, UtensilsCrossed, Target, BookOpen,
   CalendarDays, ShoppingBasket, TrendingUp, Sparkles, Leaf, Mic, Loader, Repeat, Beef, Wheat,
   Apple, Flame, ListChecks, Salad, Search, Star, Camera, ScanLine, Fish, Carrot,
+  Clock, RefreshCw, ShieldCheck, HeartHandshake, Sprout, ChefHat, ArrowRight,
 } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { format, startOfWeek } from "date-fns";
@@ -32,6 +33,7 @@ import { cwOf, floraKeyframes, Bouquet, Pollinator } from "@/components/brand/fl
 import MonthlyCalendarCard from "@/components/planner/MonthlyCalendarCard";
 import DayDetailSheet from "@/components/planner/DayDetailSheet";
 import UnifiedLogger from "@/components/nutrition/UnifiedLogger";
+import CookVideo from "@/components/nutrition-elite/CookVideo";
 import { getCurrentCyclePhase, phaseLabel } from "@/utils/cyclePhase";
 import { deriveTargets } from "@/utils/nutritionTargets";
 import { dayNutrition } from "@/utils/foodModel";
@@ -39,8 +41,13 @@ import { mealEstimate } from "@/utils/cofid";
 import { getMealSummary, inferMealTypeFromTime } from "@/utils/nutritionAiAnalysis";
 import { withTimeout } from "@/utils/safeEntity";
 import {
+  RECIPE_LIBRARY, RECIPE_FILTERS, filterRecipes, shoppingCategoryFor, pantryCategoryFor,
+  recipeMatchesPantry, generateRecipe, generatePlanDays, recipeByTitle,
+} from "@/data/recipeLibrary";
+import { NUTRITION_MYTHS } from "@/data/nutritionMyths";
+import {
   OXBLOOD, lbl, subCard, focusPill, Pill, Panel, StackedCard, BoardBody, TopChrome, SheetShell,
-  JumpSheet, SliderArrows, makeCalendarOverlay,
+  JumpSheet, SliderArrows, makeCalendarOverlay, Deck,
 } from "@/components/brand/SliderKit";
 
 const CalendarOverlay = makeCalendarOverlay(MonthlyCalendarCard, DayDetailSheet);
@@ -149,6 +156,41 @@ function suggestedDinner(mealPlan, savedRecipes, profile) {
 const carbsFromEnergy = (kcal) => Math.round((kcal * 0.45) / 4 / 5) * 5;   // ~45% energy, /4 kcal·g, to 5g
 const fatFromEnergy = (kcal) => Math.round((kcal * 0.30) / 9 / 5) * 5;     // ~30% energy, /9 kcal·g, to 5g
 
+// "30 plants a week" gentle tally — count distinct plant foods named in today's MealLog raw_text.
+// A soft delight, never a scoreboard. Word-list is intentionally small + forgiving.
+const PLANT_WORDS = [
+  "spinach", "kale", "broccoli", "carrot", "tomato", "onion", "garlic", "pepper", "celery", "potato",
+  "sweet potato", "lentil", "chickpea", "bean", "pea", "mushroom", "courgette", "aubergine", "cauliflower",
+  "cabbage", "leek", "beetroot", "squash", "pumpkin", "avocado", "cucumber", "rocket", "lettuce", "corn",
+  "apple", "banana", "berry", "strawberr", "blueberr", "raspberr", "orange", "lemon", "lime", "mango",
+  "rice", "oat", "quinoa", "barley", "wholemeal", "wholewheat", "almond", "walnut", "cashew", "seed",
+  "lentils", "hummus", "ginger", "coriander", "parsley", "mint", "basil", "herb", "kimchi", "olive",
+];
+function countPlants(rows) {
+  const text = (rows || []).map((r) => (r?.raw_text || "")).join(" ").toLowerCase();
+  if (!text.trim()) return 0;
+  const found = new Set();
+  for (const w of PLANT_WORDS) { if (text.includes(w)) found.add(w.replace(/s$/, "")); }
+  return found.size;
+}
+
+// rotating "what's for dinner tonight?" prompts — joyful, whole-life, never clinical
+const TABLE_PROMPTS = [
+  "What's the most comforting thing you could make tonight?",
+  "Is there a dish from home you've been craving lately?",
+  "What's wilting in the fridge that wants using up?",
+  "Could tonight be a no-cook, assemble-on-the-sofa kind of evening?",
+  "What did your nan make that you've never quite recreated?",
+  "Fancy cooking something just because it's pretty?",
+  "What's a 15-minute dinner that always rescues you?",
+];
+const TABLE_IDEAS = [
+  { title: "A Sunday-roast kind of plate", note: "even on a Tuesday — roast a tray of veg and call it a feast." },
+  { title: "Comfort food, fully enjoyed", note: "mac and cheese, no guilt attached. Pleasure is part of nourishment." },
+  { title: "Cook something cultural", note: "a dish that tastes like belonging — Eid, Diwali, Lunar New Year, or just home." },
+  { title: "Eat with someone", note: "share tonight's plate, even over a video call. Eating together is good for you." },
+];
+
 // ════════════════════════════════════════════════════════════════════════════
 export default function NutritionEliteShell() {
   const [user, setUser] = useState(null);
@@ -166,8 +208,17 @@ export default function NutritionEliteShell() {
   const [mealPlan, setMealPlan] = useState(null);
   const [shopItems, setShopItems] = useState([]);
   const [savedRecipes, setSavedRecipes] = useState([]);
+  const [pantry, setPantry] = useState([]);              // PantryItem rows (powers "cook what's in")
   const [weekKcal, setWeekKcal] = useState([]);          // 7-day energy sparkbars
   const [insightText, setInsightText] = useState(null);  // WeeklyInsights/NutritionInsight body
+
+  // recipes lens local state
+  const [recipeFilter, setRecipeFilter] = useState("all"); // All · Quick · Iron · Protein · Veg · Vegan · Comfort
+  const [cookInOnly, setCookInOnly] = useState(false);     // "Cook what's in" toggle
+  const [genRecipe, setGenRecipe] = useState(null);        // last "Generate"-d recipe (pinned to front)
+  const [genSeed, setGenSeed] = useState(0);
+  const [pantryInput, setPantryInput] = useState("");
+  const [busy, setBusy] = useState(false);                 // guards generate/build actions
 
   // overlays
   const [loggerOpen, setLoggerOpen] = useState(false);
@@ -260,11 +311,18 @@ export default function NutritionEliteShell() {
     ]);
     setMealPlan((plans || []).filter(Boolean)[0] || null);
     setShopItems((shopping || []).filter(Boolean));
-    const saved = (recipes || []).filter((r) => r && r.category === "recipe" && r.recipe_json).map((r) => {
-      let title = r.title; try { title = JSON.parse(r.recipe_json)?.recipe_name || r.title; } catch { /* keep */ }
-      return { id: r.id, title, rating: r.rating || 0 };
-    }).sort((a, b) => (b.rating || 0) - (a.rating || 0));
+    // MealTemplates schema = { title, items:[{name, quantity_text, ...}], default_meal_type } —
+    // there is NO recipe_json/category/rating. A "saved recipe" = a MealTemplates row with a title.
+    const saved = (recipes || []).filter((r) => r && r.title).map((r) => ({
+      id: r.id, title: r.title, items: Array.isArray(r.items) ? r.items : [],
+    }));
     setSavedRecipes(saved);
+  }, []);
+
+  const loadPantry = useCallback(async (u) => {
+    if (!u) return;
+    const rows = await base44.entities.PantryItem.filter({ user_id: u.id }, "-created_date", 60).catch(() => []);
+    setPantry((rows || []).filter(Boolean));
   }, []);
 
   const loadInsights = useCallback(async (u) => {
@@ -298,14 +356,14 @@ export default function NutritionEliteShell() {
         setProfile((profiles || []).filter(Boolean)[0] || null);
         setNutritionProfile((nutProfiles || []).filter(Boolean)[0] || null);
         setBodyMetrics((metrics || []).filter(Boolean)[0] || null);
-        await Promise.all([loadSummary(u, todayKey()), loadRecents(u), loadWeek(u), loadKitchen(u), loadInsights(u)]);
+        await Promise.all([loadSummary(u, todayKey()), loadRecents(u), loadWeek(u), loadKitchen(u), loadInsights(u), loadPantry(u)]);
         try { unsubHydration = base44.entities.HydrationLog.subscribe(() => loadSummary(u, todayKey())); } catch { /* no-op */ }
         try { unsubMeals = base44.entities.MealLog.subscribe(() => { loadSummary(u, todayKey()); loadRecents(u); }); } catch { /* no-op */ }
       } catch { /* unauth / offline — render gracefully */ }
       if (alive) setLoading(false);
     })();
     return () => { alive = false; unsubHydration?.(); unsubMeals?.(); };
-  }, [loadSummary, loadRecents, loadWeek, loadKitchen, loadInsights]);
+  }, [loadSummary, loadRecents, loadWeek, loadKitchen, loadInsights, loadPantry]);
 
   // ── writers (all persist, optimistic + rollback) ───────────────────────────
   const reLog = useCallback(async (name, mealType) => {
@@ -349,6 +407,139 @@ export default function NutritionEliteShell() {
     catch { setShopItems((l) => l.map((r) => r.id === item.id ? { ...r, is_checked: !next } : r)); flash("Couldn't update — try again"); }
   }, [user]);
 
+  const thisMonday = useCallback(() => format(startOfWeek(new Date(), { weekStartsOn: 1 }), "yyyy-MM-dd"), []);
+
+  // ── Pantry (PantryItem) — add / remove, optimistic + rollback ───────────────
+  const addPantry = useCallback(async (rawName) => {
+    const name = (rawName || "").trim(); if (!user || !name) return;
+    const category = pantryCategoryFor(name);
+    const temp = { id: "tmp" + Date.now(), name, category };
+    setPantry((l) => [temp, ...l]); setPantryInput(""); flash(`Added ${name} to your pantry`);
+    try {
+      await withTimeout(base44.entities.PantryItem.create({ user_id: user.id, name, category }), 6000, "save");
+      loadPantry(user);
+    } catch { setPantry((l) => l.filter((r) => r.id !== temp.id)); flash("Couldn't add — try again"); }
+  }, [user, loadPantry]);
+
+  const removePantry = useCallback(async (item) => {
+    if (!user || !item?.id) return;
+    const prev = pantry; setPantry((l) => l.filter((r) => r.id !== item.id));
+    try { await withTimeout(base44.entities.PantryItem.delete(item.id), 6000, "remove"); }
+    catch { setPantry(prev); flash("Couldn't remove — try again"); }
+  }, [user, pantry]);
+
+  // ── Recipe → shopping (ShoppingList.create per ingredient) ──────────────────
+  const addRecipeToShopping = useCallback(async (recipe) => {
+    if (!user || !recipe) return;
+    const week_start = thisMonday();
+    const ings = recipe.ingredients || [];
+    flash(`Adding ${ings.length} items to your shopping list…`);
+    try {
+      await Promise.all(ings.map((ing) => withTimeout(base44.entities.ShoppingList.create({
+        user_id: user.id, week_start, ingredient_name: ing.name, quantity_text: ing.quantity_text || "",
+        category: shoppingCategoryFor(ing.name), is_checked: false, source: "manual",
+      }), 6000, "save").catch(() => null)));
+      loadKitchen(user); flash(`Added to your shopping list`);
+    } catch { flash("Couldn't add all — try again"); loadKitchen(user); }
+  }, [user, loadKitchen, thisMonday]);
+
+  // ── Recipe → log for dinner (MealLog.create, method "template") ─────────────
+  const logRecipe = useCallback(async (recipe) => {
+    if (!user || !recipe) return;
+    flash(`Logged ${recipe.title} for dinner`);
+    try {
+      await withTimeout(base44.entities.MealLog.create({
+        user_id: user.id, day_key: todayKey(), logged_at: nowISO(), meal_type: "dinner", method: "template",
+        raw_text: recipe.title,
+        ai_analysis: { summary: { calories: recipe.rough_kcal, protein_g: recipe.rough_protein_g }, estimated: true },
+      }), 6000, "save");
+      loadSummary(user, todayKey()); loadRecents(user);
+    } catch { flash("Couldn't log — try again"); }
+  }, [user, loadSummary, loadRecents]);
+
+  // ── Save recipe (MealTemplates.create — title + items[]) ────────────────────
+  const saveRecipe = useCallback(async (recipe) => {
+    if (!user || !recipe) return;
+    const already = (savedRecipes || []).some((r) => r.title === recipe.title);
+    if (already) { flash("Already in your saved recipes"); return; }
+    flash(`Saved ${recipe.title}`);
+    try {
+      await withTimeout(base44.entities.MealTemplates.create({
+        user_id: user.id, title: recipe.title,
+        items: (recipe.ingredients || []).map((ing) => ({ name: ing.name, quantity_text: ing.quantity_text || "" })),
+        default_meal_type: "dinner",
+      }), 6000, "save");
+      loadKitchen(user);
+    } catch { flash("Couldn't save — try again"); }
+  }, [user, savedRecipes, loadKitchen]);
+
+  // ── "Generate" a recipe (deterministic, stage/phase aware, no AI) ───────────
+  const generateRecipeNow = useCallback(() => {
+    const stage = profile?.life_stage || profile?.stage;
+    const diet = recipeFilter === "veg" || recipeFilter === "vegan" ? recipeFilter : "all";
+    const r = generateRecipe({ stage, phaseKey, diet, seed: genSeed });
+    setGenRecipe(r); setGenSeed((s) => s + 1); setCookInOnly(false);
+    flash(`Here's an idea — ${r.title}`);
+  }, [profile, phaseKey, recipeFilter, genSeed]);
+
+  // ── Meal-plan generator (MealPlans.create — plan_days) ──────────────────────
+  const generatePlan = useCallback(async () => {
+    if (!user || busy) return;
+    setBusy(true);
+    const stage = profile?.life_stage || profile?.stage;
+    const diet = recipeFilter === "veg" || recipeFilter === "vegan" ? recipeFilter : "all";
+    const plan_days = generatePlanDays({ stage, phaseKey, diet });
+    const week_start = thisMonday();
+    const goal = stage ? `Gentle week for ${stageLabel(profile).toLowerCase()}` : "A gentle, varied week";
+    flash("Building your week…");
+    try {
+      // simple: deactivate any prior active plan for this week, then create the new one
+      if (mealPlan?.id) { try { await base44.entities.MealPlans.update(mealPlan.id, { is_active: false }); } catch { /* ignore */ } }
+      await withTimeout(base44.entities.MealPlans.create({
+        user_id: user.id, week_start, plan_days, wellness_goal: goal, is_active: true,
+      }), 8000, "save");
+      await loadKitchen(user); flash("Your week is ready");
+    } catch { flash("Couldn't build the plan — try again"); }
+    finally { setBusy(false); }
+  }, [user, busy, profile, phaseKey, recipeFilter, mealPlan, loadKitchen, thisMonday]);
+
+  // ── Build shopping list from this week's plan (ShoppingList.create, source meal_plan) ──
+  const buildShoppingFromPlan = useCallback(async () => {
+    if (!user || busy) return;
+    const planDays = (mealPlan?.plan_days || []).filter(Boolean);
+    if (planDays.length === 0) { flash("Generate a plan first, then build the list"); return; }
+    setBusy(true);
+    const week_start = thisMonday();
+    // collect dinner + lunch recipe titles → their library ingredients (de-duped by name)
+    const titles = new Set();
+    planDays.forEach((d) => { [...(d.dinner || []), ...(d.lunch || [])].forEach((t) => { if (t) titles.add(t); }); });
+    const byName = new Map();
+    titles.forEach((t) => { const r = recipeByTitle(t); (r?.ingredients || []).forEach((ing) => { if (!byName.has(ing.name)) byName.set(ing.name, ing); }); });
+    const ings = [...byName.values()];
+    if (ings.length === 0) { setBusy(false); flash("Nothing to add from this plan"); return; }
+    flash(`Building a list from your plan (${ings.length} items)…`);
+    try {
+      await Promise.all(ings.map((ing) => withTimeout(base44.entities.ShoppingList.create({
+        user_id: user.id, week_start, ingredient_name: ing.name, quantity_text: ing.quantity_text || "",
+        category: shoppingCategoryFor(ing.name), is_checked: false, source: "meal_plan", meal_plan_id: mealPlan?.id || "",
+      }), 6000, "save").catch(() => null)));
+      await loadKitchen(user); flash("Shopping list built from your plan");
+    } catch { flash("Couldn't build the list — try again"); loadKitchen(user); }
+    finally { setBusy(false); }
+  }, [user, busy, mealPlan, loadKitchen, thisMonday]);
+
+  // recipes for the lens: filter pills, then "cook what's in" (pantry overlap), then pin a generated one
+  const pantryNames = useMemo(() => (pantry || []).map((p) => p?.name).filter(Boolean), [pantry]);
+  const recipeList = useMemo(() => {
+    let list = filterRecipes(RECIPE_LIBRARY, recipeFilter);
+    if (cookInOnly) list = list.filter((r) => recipeMatchesPantry(r, pantryNames));
+    if (genRecipe) list = [genRecipe, ...list.filter((r) => r.youtube_id !== genRecipe.youtube_id)];
+    return list;
+  }, [recipeFilter, cookInOnly, pantryNames, genRecipe]);
+
+  // distinct plant foods logged today — for the "30 plants this week" gentle tally
+  const plantsToday = useMemo(() => countPlants(dayMealRows), [dayMealRows]);
+
   const jumpTo = (idx) => {
     setJumpOpen(false);
     sliderRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -359,7 +550,12 @@ export default function NutritionEliteShell() {
 
   const gold = cwOf("gold").petal, sage = cwOf("sage").petal, sky = cwOf("sky").petal;
   const dinner = suggestedDinner(mealPlan, savedRecipes, profile);
-  const BOARDS = [{ t: "Eat today", sub: "Plate · log · water · plan" }, { t: "Plan & explore", sub: "Recipes · week · shop · progress · insights" }];
+  const BOARDS = [
+    { t: "Eat today", sub: "Plate · log · water · plan" },
+    { t: "Cook tonight", sub: "Recipes · cook videos · pantry" },
+    { t: "Plan & explore", sub: "Week · shop · progress · insights" },
+    { t: "The kitchen table", sub: "Dinner tonight · 30 plants · joy" },
+  ];
 
   // First name for the hero — fall back to "Your plate" if it looks like a handle/username.
   const rawFirst = (user?.full_name || "").split(" ")[0] || "";
@@ -418,7 +614,7 @@ export default function NutritionEliteShell() {
                   top={[
                     <Panel key="plate" label="Your plate" Icon={Salad} accent={gold}><PlateLens kcal={summary.kcal} target={calorieTarget} kcalLeft={kcalLeft} macros={macroSums} proteinTarget={proteinTarget} fibreTarget={fibreTarget} ironTarget={ironTarget} basis={targets.derived ? targets.basis : null} /></Panel>,
                     <Panel key="logged" label="Logged today" Icon={ListChecks} accent={gold}><LoggedLens meals={dayMeals} onRemove={removeMeal} onLog={() => setLoggerOpen(true)} /></Panel>,
-                    <Panel key="methods" label="Quick log" Icon={UtensilsCrossed} accent={gold}><MethodsLens onLog={() => setLoggerOpen(true)} /></Panel>,
+                    <Panel key="methods" label="Quick log" Icon={UtensilsCrossed} accent={gold}><MethodsLens onLog={() => setLoggerOpen(true)} onSnap={() => { flash("Just describe what's on your plate — we'll estimate it"); setLoggerOpen(true); }} /></Panel>,
                   ]}
                   bottom={[
                     <Panel key="water" label="Water" Icon={Droplet} accent={sky}><WaterLens glasses={glasses} target={glassesTarget} onAdd={addWater} /></Panel>,
@@ -428,18 +624,46 @@ export default function NutritionEliteShell() {
               </BoardBody>
             </Clipboard>
 
-            {/* ── BOARD 2 — PLAN & EXPLORE ────────────────────────────────── */}
-            <Clipboard title="Plan & explore" sub="RECIPES · WEEK · SHOP · PROGRESS · INSIGHTS" accent={sage} flower="iris" idx="cb-plan" titleColor={OXBLOOD}>
+            {/* ── BOARD 2 — COOK TONIGHT (recipes + cook videos + pantry) ──── */}
+            <Clipboard title="Cook tonight" sub="RECIPES · COOK VIDEOS · PANTRY" accent={sage} flower="iris" idx="cb-cook" titleColor={OXBLOOD}>
+              <BoardBody>
+                <RecipesBoard
+                  recipes={recipeList} filter={recipeFilter} onFilter={setRecipeFilter}
+                  cookInOnly={cookInOnly} onCookIn={() => setCookInOnly((v) => !v)} hasPantry={pantryNames.length > 0}
+                  onGenerate={generateRecipeNow}
+                  onAddShopping={addRecipeToShopping} onLog={logRecipe} onSave={saveRecipe} savedTitles={(savedRecipes || []).map((r) => r.title)}
+                  pantry={pantry} pantryInput={pantryInput} setPantryInput={setPantryInput} onAddPantry={addPantry} onRemovePantry={removePantry}
+                />
+              </BoardBody>
+            </Clipboard>
+
+            {/* ── BOARD 3 — PLAN & EXPLORE ────────────────────────────────── */}
+            <Clipboard title="Plan & explore" sub="WEEK · SHOP · PROGRESS · INSIGHTS" accent={sage} flower="rose" idx="cb-plan" titleColor={OXBLOOD}>
               <BoardBody>
                 <StackedCard topAccent={sage} bottomAccent={cwOf("plum").petal}
                   top={[
-                    <Panel key="plan" label="Meal plan" Icon={CalendarDays} accent={sage}><MealPlanLens mealPlan={mealPlan} dinner={dinner} onLog={() => reLog(dinner.name, "dinner")} onOpen={() => setCalOpen(true)} /></Panel>,
-                    <Panel key="recipes" label="Recipes" Icon={BookOpen} accent={sage}><RecipesLens recipes={savedRecipes} onReLog={reLog} /></Panel>,
+                    <Panel key="plan" label="Meal plan" Icon={CalendarDays} accent={sage}><MealPlanLens mealPlan={mealPlan} dinner={dinner} onLog={() => reLog(dinner.name, "dinner")} onOpen={() => setCalOpen(true)} onGenerate={generatePlan} busy={busy} /></Panel>,
+                    <Panel key="saved" label="Saved recipes" Icon={BookOpen} accent={sage}><SavedRecipesLens recipes={savedRecipes} onReLog={reLog} onExplore={() => jumpTo(1)} /></Panel>,
                   ]}
                   bottom={[
-                    <Panel key="shop" label="Shopping list" Icon={ShoppingBasket} accent={cwOf("plum").petal}><ShoppingLens items={shopItems} onToggle={toggleShop} /></Panel>,
+                    <Panel key="shop" label="Shopping list" Icon={ShoppingBasket} accent={cwOf("plum").petal}><ShoppingLens items={shopItems} onToggle={toggleShop} onBuildFromPlan={buildShoppingFromPlan} hasPlan={(mealPlan?.plan_days || []).filter(Boolean).length > 0} busy={busy} /></Panel>,
                     <Panel key="progress" label="Progress" Icon={TrendingUp} accent={cwOf("plum").petal}><ProgressLens weekKcal={weekKcal} phaseKey={phaseKey} phase={ph} /></Panel>,
                     <Panel key="insights" label="Insights" Icon={Sparkles} accent={cwOf("plum").petal}><InsightsLens jess={insightText || jessLine(profile)} nudges={stageNudges(profile)} stage={stageLabel(profile)} /></Panel>,
+                  ]} />
+              </BoardBody>
+            </Clipboard>
+
+            {/* ── BOARD 4 — THE KITCHEN TABLE (joyful, whole-life) ─────────── */}
+            <Clipboard title="The kitchen table" sub="DINNER TONIGHT · 30 PLANTS · JOY" accent={cwOf("blush").petal} flower="dahlia" idx="cb-table" titleColor={OXBLOOD}>
+              <BoardBody>
+                <StackedCard topAccent={cwOf("blush").petal} bottomAccent={sage}
+                  top={[
+                    <Panel key="dinner" label="What's for dinner tonight?" Icon={ChefHat} accent={cwOf("blush").petal}><DinnerPromptLens onLog={() => setLoggerOpen(true)} onShare={() => flash("Shared to the table — coming soon")} /></Panel>,
+                    <Panel key="plants" label="30 plants this week" Icon={Sprout} accent={sage}><PlantsLens plants={plantsToday} onLog={() => setLoggerOpen(true)} /></Panel>,
+                  ]}
+                  bottom={[
+                    <Panel key="myths" label="Myth vs fact" Icon={ShieldCheck} accent={cwOf("plum").petal}><MythsLens /></Panel>,
+                    <Panel key="comfort" label="Joy & comfort" Icon={HeartHandshake} accent={cwOf("blush").petal}><ComfortLens /></Panel>,
                   ]} />
               </BoardBody>
             </Clipboard>
@@ -531,14 +755,16 @@ const METHODS = [
   { id: "say", label: "Say it", Icon: Mic, cw: "sage", sub: "speak your meal" },
   { id: "scan", label: "Scan barcode", Icon: ScanLine, cw: "crimson", sub: "packaged food" },
 ];
-function MethodsLens({ onLog }) {
+function MethodsLens({ onLog, onSnap }) {
   return (
     <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
       <p style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 14, color: T.muted, margin: "0 0 10px", lineHeight: 1.45 }}>In seconds — tap how you'd like to log.</p>
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 8 }}>{METHODS.map((m) => {
         const c = cwOf(m.cw).petal;
+        // "Snap a photo" honestly opens the text logger with a gentle "describe your plate" nudge (no vision function).
+        const handle = m.id === "snap" ? onSnap : onLog;
         return (
-          <button key={m.id} onClick={onLog} className="fw-elite-press" style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 5, padding: "11px 4px", borderRadius: 12, background: `${c}10`, border: `1px solid ${c}44`, cursor: "pointer" }}>
+          <button key={m.id} onClick={handle} className="fw-elite-press" style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 5, padding: "11px 4px", borderRadius: 12, background: `${c}10`, border: `1px solid ${c}44`, cursor: "pointer" }}>
             <m.Icon size={17} color={c} /><span style={{ fontFamily: UI, fontSize: 11, fontWeight: 700, color: T.ink, textAlign: "center", lineHeight: 1.1 }}>{m.label}</span>
           </button>
         );
@@ -599,12 +825,12 @@ function MyPlanLens(p) {
   );
 }
 const DOW = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
-function MealPlanLens({ mealPlan, dinner, onLog, onOpen }) {
+function MealPlanLens({ mealPlan, dinner, onLog, onOpen, onGenerate, busy }) {
   const planDays = (mealPlan?.plan_days || []).filter(Boolean);
   const todayIdx = (new Date().getDay() + 6) % 7;
   return (
     <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
-      <p style={{ fontFamily: SERIF, fontSize: 14.5, color: T.muted, margin: "0 0 10px", lineHeight: 1.45 }}>A gentle week for your stage — edit and regenerate in the calendar.</p>
+      <p style={{ fontFamily: SERIF, fontSize: 14.5, color: T.muted, margin: "0 0 10px", lineHeight: 1.45 }}>A gentle week for your stage — generate it here, open the calendar to edit.</p>
       {planDays.length > 0 ? (
         <div style={{ display: "flex", flexDirection: "column", gap: 5, marginBottom: 10 }}>{planDays.slice(0, 4).map((d) => {
           const cell = d?.dinner; const name = Array.isArray(cell) ? cell[0] : (typeof cell === "string" ? cell : cell?.name);
@@ -622,53 +848,58 @@ function MealPlanLens({ mealPlan, dinner, onLog, onOpen }) {
           <div style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 13, color: T.muted }}>{dinner.why}</div>
         </div>
       )}
-      <div style={{ marginTop: "auto", display: "flex", gap: 8 }}>
-        <Pill Icon={Check} cw="sage" filled onClick={onLog}>Log tonight's dinner</Pill>
+      <div style={{ marginTop: "auto", display: "flex", flexWrap: "wrap", gap: 8 }}>
+        <Pill Icon={Sparkles} cw="gold" filled onClick={busy ? undefined : onGenerate}>{planDays.length > 0 ? "Regenerate week" : "Generate this week"}</Pill>
+        <Pill Icon={Check} cw="sage" onClick={onLog}>Log tonight's dinner</Pill>
         <Pill Icon={CalendarDays} cw="sage" onClick={onOpen}>Open week</Pill>
       </div>
     </div>
   );
 }
-function RecipesLens({ recipes, onReLog }) {
+// Saved recipes (MealTemplates: title + items) — tap to log for tonight, or jump to the cook board.
+function SavedRecipesLens({ recipes, onReLog, onExplore }) {
   const list = (recipes || []).filter(Boolean);
   return (
     <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
-      <p style={{ fontFamily: SERIF, fontSize: 14.5, color: T.muted, margin: "0 0 10px", lineHeight: 1.45 }}>Cook from what you have in, or your saved recipes — tap one to log it for tonight.</p>
-      {list.length === 0 && <div style={{ ...subCard(cwOf("sage").petal), background: `${cwOf("sage").petal}10`, marginBottom: 10 }}><p style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 14.5, color: T.ink, margin: 0, lineHeight: 1.45 }}>No saved recipes yet. Generate one for your stage, or cook from what's in.</p></div>}
-      <div style={{ display: "flex", flexDirection: "column", gap: 6, marginBottom: 10 }}>{list.slice(0, 4).map((r) => (
+      <p style={{ fontFamily: SERIF, fontSize: 14.5, color: T.muted, margin: "0 0 10px", lineHeight: 1.45 }}>Your saved recipes — tap one to log it for tonight.</p>
+      {list.length === 0 && <div style={{ ...subCard(cwOf("sage").petal), background: `${cwOf("sage").petal}10`, marginBottom: 10 }}><p style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 14.5, color: T.ink, margin: 0, lineHeight: 1.45 }}>No saved recipes yet. Browse the cook board, watch a clip, and tap “Save recipe”.</p></div>}
+      <div style={{ display: "flex", flexDirection: "column", gap: 6, marginBottom: 10 }}>{list.slice(0, 5).map((r) => (
         <button key={r.id} onClick={() => onReLog(r.title, "dinner")} className="fw-elite-press" style={{ display: "flex", alignItems: "center", gap: 9, width: "100%", textAlign: "left", ...subCard(cwOf("sage").petal), padding: "9px 11px", cursor: "pointer" }}>
           <BookOpen size={14} color={cwOf("sage").petal} style={{ flexShrink: 0 }} />
           <span style={{ flex: 1, minWidth: 0, fontFamily: SERIF, fontSize: 14.5, color: T.ink }}>{r.title}</span>
-          {r.rating > 0 && <span style={{ display: "inline-flex", alignItems: "center", gap: 2, fontFamily: UI, fontSize: 12, color: cwOf("gold").petal, flexShrink: 0 }}><Star size={11} /> {r.rating}</span>}
+          {(r.items?.length > 0) && <span style={{ fontFamily: UI, fontSize: 11, color: T.muted, flexShrink: 0 }}>{r.items.length} items</span>}
         </button>
       ))}</div>
       <div style={{ marginTop: "auto", display: "flex", gap: 8 }}>
-        <Pill Icon={Carrot} cw="sage">Cook what's in</Pill>
-        <Pill Icon={Sparkles} cw="gold">Generate</Pill>
+        <Pill Icon={ChefHat} cw="sage" filled onClick={onExplore}>Browse cook videos</Pill>
       </div>
     </div>
   );
 }
-const AISLE_ORDER = ["Produce", "Protein", "Dairy", "Bakery", "Cupboard", "Frozen", "Other"];
-function ShoppingLens({ items, onToggle }) {
+// ShoppingList real schema: ingredient_name + quantity_text + category (capitalised enum) + is_checked.
+const AISLE_ORDER = ["Produce", "Dairy & Eggs", "Meat & Seafood", "Bakery", "Pantry", "Frozen", "Beverages", "Snacks", "Other"];
+function ShoppingLens({ items, onToggle, onBuildFromPlan, hasPlan, busy }) {
   const list = (items || []).filter(Boolean);
   const groups = {};
-  list.forEach((it) => { const a = it.aisle || it.category || "Other"; (groups[a] = groups[a] || []).push(it); });
+  list.forEach((it) => { const a = it.category || "Other"; (groups[a] = groups[a] || []).push(it); });
   const aisles = Object.keys(groups).sort((a, b) => AISLE_ORDER.indexOf(a) - AISLE_ORDER.indexOf(b));
   return (
     <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
-      {list.length === 0 && <p style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 14.5, color: T.muted, margin: "2px 0 10px", lineHeight: 1.45 }}>Your list is empty — build one from your plan, and tick it off as you shop.</p>}
+      {list.length === 0 && <p style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 14.5, color: T.muted, margin: "2px 0 10px", lineHeight: 1.45 }}>Your list is empty — build one from this week's plan, or add ingredients from a recipe, then tick them off as you shop.</p>}
       <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>{aisles.map((a) => (
         <div key={a}>
           <div style={{ ...lbl, color: cwOf("plum").petal, marginBottom: 6 }}>{a}</div>
           <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>{groups[a].map((it) => (
             <button key={it.id} onClick={() => onToggle(it)} className="fw-elite-press" style={{ display: "flex", alignItems: "center", gap: 9, width: "100%", textAlign: "left", ...subCard(it.is_checked ? cwOf("sage").petal : T.paperDeep), padding: "7px 10px", cursor: "pointer", opacity: it.is_checked ? 0.65 : 1 }}>
               <span style={{ width: 20, height: 20, borderRadius: 6, flexShrink: 0, border: `1.5px solid ${it.is_checked ? cwOf("sage").petal : T.paperDeep}`, background: it.is_checked ? cwOf("sage").petal : "transparent", display: "grid", placeItems: "center" }}>{it.is_checked && <Check size={12} color="#fff" />}</span>
-              <span style={{ flex: 1, fontFamily: SERIF, fontSize: 14.5, color: T.ink, textDecoration: it.is_checked ? "line-through" : "none" }}>{it.name || it.item || it.title}</span>
+              <span style={{ flex: 1, fontFamily: SERIF, fontSize: 14.5, color: T.ink, textDecoration: it.is_checked ? "line-through" : "none" }}>{it.ingredient_name}{it.quantity_text ? <span style={{ color: T.muted, fontSize: 13 }}> · {it.quantity_text}</span> : null}</span>
             </button>
           ))}</div>
         </div>
       ))}</div>
+      <div style={{ marginTop: "auto", paddingTop: 10 }}>
+        <Pill Icon={ShoppingBasket} cw="plum" filled onClick={busy ? undefined : onBuildFromPlan}>{hasPlan ? "Build from this week's plan" : "Build from a plan (generate one first)"}</Pill>
+      </div>
     </div>
   );
 }
@@ -709,6 +940,164 @@ function InsightsLens({ jess, nudges, stage }) {
           <div style={{ flex: 1, minWidth: 0 }}><div style={{ fontFamily: SERIF, fontSize: 15, fontWeight: 600, color: T.ink, lineHeight: 1.2 }}>{n.label}</div><div style={{ fontFamily: UI, fontSize: 12, color: T.muted, lineHeight: 1.3 }}>{n.foods} — {n.why}</div></div>
         </div>
       ))}</div>
+    </div>
+  );
+}
+
+// ── COOK board — filter pills + a Deck of cook-cards (embedded video + ingredients + actions) ──
+function CookCard({ recipe, onAddShopping, onLog, onSave, saved }) {
+  const sage = cwOf("sage").petal, gold = cwOf("gold").petal;
+  return (
+    <div style={{ flex: 1, minHeight: 0, overflowY: "auto", display: "flex", flexDirection: "column", paddingRight: 2 }}>
+      {/* title + meta ABOVE the player (never overlaid) */}
+      <div style={{ marginBottom: 8 }}>
+        <div style={{ fontFamily: SERIF, fontSize: 18, fontWeight: 600, color: T.ink, lineHeight: 1.2 }}>{recipe.title}</div>
+        <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap", marginTop: 3 }}>
+          <span style={{ fontFamily: UI, fontSize: 11.5, color: T.muted }}>{recipe.channel}</span>
+          <span style={{ display: "inline-flex", alignItems: "center", gap: 3, fontFamily: UI, fontSize: 11.5, color: T.muted }}><Clock size={11} /> {recipe.minutes} min</span>
+          <span style={{ display: "inline-flex", alignItems: "center", gap: 3, fontFamily: UI, fontSize: 11.5, fontWeight: 700, color: gold }}><Leaf size={11} /> {recipe.nutrient_story}</span>
+        </div>
+      </div>
+      <CookVideo youtubeId={recipe.youtube_id} title={recipe.title} accent={gold} />
+      {/* blurb + ingredients BELOW the player */}
+      <p style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 13.5, color: T.muted, margin: "8px 0 6px", lineHeight: 1.4 }}>{recipe.blurb}</p>
+      <div style={{ ...lbl, color: sage, marginBottom: 5 }}>Ingredients</div>
+      <div style={{ display: "flex", flexWrap: "wrap", gap: 5, marginBottom: 10 }}>{(recipe.ingredients || []).map((ing, i) => (
+        <span key={i} style={{ fontFamily: UI, fontSize: 11.5, color: T.inkSoft, background: T.paper, border: `1px solid ${T.paperDeep}`, borderRadius: 999, padding: "4px 9px" }}>{ing.name}{ing.quantity_text ? <span style={{ color: T.muted }}> · {ing.quantity_text}</span> : null}</span>
+      ))}</div>
+      <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginTop: "auto" }}>
+        <Pill Icon={ShoppingBasket} cw="plum" onClick={() => onAddShopping(recipe)}>Add ingredients to shopping</Pill>
+        <Pill Icon={Check} cw="sage" filled onClick={() => onLog(recipe)}>Log this for dinner</Pill>
+        <Pill Icon={saved ? Check : Star} cw="gold" onClick={() => onSave(recipe)}>{saved ? "Saved" : "Save recipe"}</Pill>
+      </div>
+    </div>
+  );
+}
+function RecipesBoard({ recipes, filter, onFilter, cookInOnly, onCookIn, hasPantry, onGenerate, onAddShopping, onLog, onSave, savedTitles, pantry, pantryInput, setPantryInput, onAddPantry, onRemovePantry }) {
+  const sage = cwOf("sage").petal, gold = cwOf("gold").petal, carrotCw = cwOf("sage").petal;
+  const list = (recipes || []);
+  return (
+    <div style={{ height: "100%", minHeight: 0, display: "flex", flexDirection: "column" }}>
+      {/* filter pills + cook-what's-in + generate */}
+      <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 8, flexShrink: 0 }}>
+        {RECIPE_FILTERS.map((f) => (
+          <button key={f.id} onClick={() => onFilter(f.id)} className="fw-elite-press" style={{ fontFamily: UI, fontSize: 12, fontWeight: 700, padding: "5px 11px", borderRadius: 999, cursor: "pointer", border: `1px solid ${filter === f.id ? gold : T.paperDeep}`, background: filter === f.id ? gold : `${gold}10`, color: filter === f.id ? "#fff" : T.inkSoft }}>{f.label}</button>
+        ))}
+      </div>
+      <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 8, flexShrink: 0 }}>
+        <button onClick={onCookIn} className="fw-elite-press" style={{ display: "inline-flex", alignItems: "center", gap: 6, fontFamily: UI, fontSize: 12.5, fontWeight: 700, padding: "6px 12px", borderRadius: 999, cursor: "pointer", border: `1px solid ${cookInOnly ? carrotCw : T.paperDeep}`, background: cookInOnly ? carrotCw : `${carrotCw}12`, color: cookInOnly ? "#fff" : T.inkSoft }}><Carrot size={13} color={cookInOnly ? "#fff" : carrotCw} /> Cook what's in{hasPantry ? "" : " (add pantry below)"}</button>
+        <button onClick={onGenerate} className="fw-elite-press" style={{ display: "inline-flex", alignItems: "center", gap: 6, fontFamily: UI, fontSize: 12.5, fontWeight: 700, padding: "6px 12px", borderRadius: 999, cursor: "pointer", border: `1px solid ${gold}`, background: `${gold}14`, color: T.inkSoft }}><Sparkles size={13} color={gold} /> Generate</button>
+      </div>
+      {/* the cook-card deck (its own horizontal slider) */}
+      <div style={{ flex: 1, minHeight: 0 }}>
+        {list.length === 0 ? (
+          <div style={{ ...subCard(sage), background: `${sage}10`, margin: "4px 0" }}>
+            <p style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 14.5, color: T.ink, margin: 0, lineHeight: 1.45 }}>{cookInOnly ? "Nothing matches your pantry yet — add a few items below, or turn off “Cook what's in”." : "No recipes match that filter — try “All”."}</p>
+          </div>
+        ) : (
+          <Deck accent={gold}>{list.map((r) => (
+            <CookCard key={r.youtube_id} recipe={r} onAddShopping={onAddShopping} onLog={onLog} onSave={onSave} saved={(savedTitles || []).includes(r.title)} />
+          ))}</Deck>
+        )}
+      </div>
+      {/* gold hairline + the light pantry editor (powers "cook what's in") */}
+      <div aria-hidden style={{ flexShrink: 0, height: 1, background: `linear-gradient(90deg, transparent, ${T.gold}, transparent)`, opacity: 0.5, margin: "9px 0" }} />
+      <PantryStrip pantry={pantry} pantryInput={pantryInput} setPantryInput={setPantryInput} onAdd={onAddPantry} onRemove={onRemovePantry} />
+    </div>
+  );
+}
+// PantryStrip — the light "what's in" editor inside the cook board (PantryItem CRUD)
+function PantryStrip({ pantry, pantryInput, setPantryInput, onAdd, onRemove }) {
+  const sage = cwOf("sage").petal;
+  const list = (pantry || []).filter(Boolean);
+  return (
+    <div style={{ flexShrink: 0 }}>
+      <div style={{ ...lbl, color: sage, marginBottom: 6 }}>Your pantry — powers “cook what's in”</div>
+      <form onSubmit={(e) => { e.preventDefault(); onAdd(pantryInput); }} style={{ display: "flex", gap: 7, marginBottom: 8 }}>
+        <input value={pantryInput} onChange={(e) => setPantryInput(e.target.value)} placeholder="Add what you have in — e.g. spinach, tinned chickpeas"
+          style={{ flex: 1, minWidth: 0, boxSizing: "border-box", padding: "9px 12px", borderRadius: 11, background: T.paper, border: `1px solid ${T.paperDeep}`, fontFamily: SERIF, fontSize: 14, color: T.ink, outline: "none" }} />
+        <button type="submit" aria-label="Add to pantry" className="fw-elite-press" style={{ flexShrink: 0, width: 40, borderRadius: 11, border: `1px solid ${sage}`, background: sage, color: "#fff", display: "grid", placeItems: "center", cursor: "pointer" }}><Plus size={16} /></button>
+      </form>
+      {list.length === 0 ? (
+        <p style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 13, color: T.muted, margin: 0 }}>Add a few staples and we'll surface recipes you can make right now.</p>
+      ) : (
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>{list.map((p) => (
+          <span key={p.id} style={{ display: "inline-flex", alignItems: "center", gap: 6, fontFamily: UI, fontSize: 12.5, fontWeight: 600, color: T.ink, background: T.paper, border: `1px solid ${T.paperDeep}`, borderRadius: 999, padding: "5px 6px 5px 11px" }}>
+            {p.name}
+            <button onClick={() => onRemove(p)} aria-label={`Remove ${p.name}`} className="fw-elite-press" style={{ background: "transparent", border: "none", cursor: "pointer", color: T.muted, display: "grid", placeItems: "center", padding: 0 }}><X size={13} /></button>
+          </span>
+        ))}</div>
+      )}
+    </div>
+  );
+}
+
+// ── KITCHEN TABLE lenses (joyful, whole-life) ──────────────────────────────────
+function todayIndex(len) { return Math.floor(Date.now() / 86400000) % len; }
+function DinnerPromptLens({ onLog, onShare }) {
+  const blush = cwOf("blush").petal;
+  const prompt = TABLE_PROMPTS[todayIndex(TABLE_PROMPTS.length)];
+  return (
+    <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
+      <div style={{ ...subCard(blush), background: `${blush}12`, marginBottom: 10 }}>
+        <div style={{ ...lbl, color: blush, marginBottom: 4 }}>Tonight</div>
+        <p style={{ fontFamily: SERIF, fontSize: 18, fontWeight: 600, color: T.ink, margin: 0, lineHeight: 1.35 }}>{prompt}</p>
+      </div>
+      <p style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 14, color: T.muted, margin: "0 0 8px", lineHeight: 1.5 }}>No right answer — food is pleasure and belonging here, not a test. Decide, cook, and log it when you've eaten.</p>
+      <div style={{ marginTop: "auto", display: "flex", gap: 8 }}>
+        <Pill Icon={UtensilsCrossed} cw="crimson" filled onClick={onLog}>Log what I'm making</Pill>
+        <Pill Icon={HeartHandshake} cw="blush" onClick={onShare}>Share to the table</Pill>
+      </div>
+    </div>
+  );
+}
+function PlantsLens({ plants, onLog }) {
+  const sage = cwOf("sage").petal;
+  const goal = 30; const pct = Math.min(100, Math.round((plants / goal) * 100));
+  return (
+    <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
+      <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", marginBottom: 8 }}>
+        <span style={{ fontFamily: SERIF, fontSize: 18, fontWeight: 600, color: T.ink }}>Eat the rainbow</span>
+        <span style={{ fontFamily: UI, fontSize: 12, fontWeight: 700, color: sage }}>{plants} plant{plants === 1 ? "" : "s"} today</span>
+      </div>
+      <div style={{ height: 8, borderRadius: 99, background: T.paperDeep, overflow: "hidden", marginBottom: 8 }}><div style={{ width: `${pct}%`, height: "100%", background: sage, borderRadius: 99 }} /></div>
+      <p style={{ fontFamily: SERIF, fontSize: 14.5, color: T.ink, margin: "0 0 6px", lineHeight: 1.45 }}>Aiming for around 30 different plants across a week is lovely for your gut — herbs, seeds and grains all count.</p>
+      <p style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 13, color: T.muted, margin: 0, lineHeight: 1.45 }}>A gentle game, never a scoreboard. We count the plants in what you log — no need to tally anything yourself.</p>
+      <div style={{ marginTop: "auto", paddingTop: 10 }}><Pill Icon={Sprout} cw="sage" filled onClick={onLog}>Log something with veg in it</Pill></div>
+    </div>
+  );
+}
+function MythsLens() {
+  const [i, setI] = useState(todayIndex(NUTRITION_MYTHS.length));
+  const [open, setOpen] = useState(false);
+  const m = NUTRITION_MYTHS[i];
+  const crimson = cwOf("crimson").petal, sage = cwOf("sage").petal;
+  return (
+    <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
+      <p style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 13.5, color: T.muted, margin: "0 0 8px", lineHeight: 1.45 }}>The wellness internet sells a lot of nonsense. Tap to flip myth → fact.</p>
+      <button onClick={() => setOpen((v) => !v)} className="fw-elite-press" style={{ textAlign: "left", width: "100%", cursor: "pointer", ...subCard(open ? sage : crimson), background: open ? `${sage}10` : `${crimson}0D`, padding: "12px 13px", border: `1px solid ${T.paperDeep}` }}>
+        <div style={{ ...lbl, color: open ? sage : crimson, marginBottom: 4 }}>{open ? "The truth" : "The myth"}</div>
+        <p style={{ fontFamily: SERIF, fontSize: 15.5, color: T.ink, margin: 0, lineHeight: 1.45 }}>{open ? m.fact : m.myth}</p>
+        {open && <a href={m.source_url} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()} style={{ display: "inline-flex", alignItems: "center", gap: 4, marginTop: 7, fontFamily: UI, fontSize: 11.5, fontWeight: 600, color: T.muted, textDecoration: "none" }}><ArrowRight size={11} /> Source</a>}
+      </button>
+      <div style={{ marginTop: "auto", paddingTop: 10, display: "flex", gap: 8 }}>
+        <Pill Icon={RefreshCw} cw="crimson" onClick={() => { setI((x) => (x + 1) % NUTRITION_MYTHS.length); setOpen(false); }}>Another myth</Pill>
+        {!open && <Pill Icon={ShieldCheck} cw="sage" filled onClick={() => setOpen(true)}>Reveal the fact</Pill>}
+      </div>
+    </div>
+  );
+}
+function ComfortLens() {
+  const blush = cwOf("blush").petal;
+  const idea = TABLE_IDEAS[todayIndex(TABLE_IDEAS.length)];
+  return (
+    <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
+      <div style={{ ...subCard(blush), background: `${blush}12`, marginBottom: 10 }}>
+        <div style={{ ...lbl, color: blush, marginBottom: 4 }}>An idea for tonight</div>
+        <div style={{ fontFamily: SERIF, fontSize: 17, fontWeight: 600, color: T.ink, lineHeight: 1.25 }}>{idea.title}</div>
+        <p style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 14, color: T.muted, margin: "4px 0 0", lineHeight: 1.45 }}>{idea.note}</p>
+      </div>
+      <p style={{ marginTop: "auto", fontFamily: SERIF, fontStyle: "italic", fontSize: 14, color: T.muted, lineHeight: 1.5 }}>Eating together — even over a video call — triggers a little burst of belonging. Food is one of the kindest ways we look after each other.</p>
     </div>
   );
 }

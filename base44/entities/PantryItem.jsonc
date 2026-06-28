@@ -1,0 +1,42 @@
+{
+  "name": "PantryItem",
+  "type": "object",
+  "properties": {
+    "user_id": {
+      "type": "string"
+    },
+    "name": {
+      "type": "string",
+      "description": "The food/ingredient, e.g. 'spinach', 'tinned chickpeas'"
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "produce",
+        "protein",
+        "dairy",
+        "grain",
+        "cupboard",
+        "frozen",
+        "herbs",
+        "other"
+      ],
+      "default": "other"
+    },
+    "qty": {
+      "type": "string",
+      "description": "Free text, e.g. '2 tins', 'a handful'"
+    },
+    "created_at": {
+      "type": "string"
+    },
+    "updated_at": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "user_id",
+    "name"
+  ],
+  "indexes": [ { "fields": ["created_date"] } ]
+}
