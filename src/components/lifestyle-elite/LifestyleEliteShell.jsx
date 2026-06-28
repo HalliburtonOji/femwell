@@ -209,18 +209,20 @@ export default function LifestyleEliteShell() {
     flash(was ? "Removed from saved" : "Saved");
     if (!user?.id) { return; }                          // signed-out: optimistic only (no persistence path)
     try {
-      const profiles = await base44.entities.UserProfile.filter({ user_id: user.id }, undefined, 1).catch(() => []);
-      const row = profiles[0];
-      if (!row?.id) {
-        await withTimeout(base44.entities.UserProfile.create({ user_id: user.id, user_email: user.email, saved_item_ids: next }), 6000, "save");
+      // Use the profile already loaded at init — re-filtering here would be a redundant read that
+      // can hang behind the page's live subscriptions (saturated connection pool), so the write
+      // never fires. Go straight to update() with the known row id.
+      if (profile?.id) {
+        await withTimeout(base44.entities.UserProfile.update(profile.id, { saved_item_ids: next }), 6000, "save");
       } else {
-        await withTimeout(base44.entities.UserProfile.update(row.id, { saved_item_ids: next }), 6000, "save");
+        const created = await withTimeout(base44.entities.UserProfile.create({ user_id: user.id, user_email: user.email, saved_item_ids: next }), 6000, "save");
+        if (created?.id) setProfile(created);
       }
     } catch {
       setSavedIds(savedIds);                            // rollback to prior set
       flash("Couldn't update — try again");
     }
-  }, [savedIds, user]);
+  }, [savedIds, user, profile]);
 
   // open the exact item full-screen (deep-link parity with live Lifestyle: LifestyleDetail / readers)
   const openItem = useCallback((it) => {
