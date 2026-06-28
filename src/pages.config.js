@@ -252,8 +252,9 @@ export const PAGES = {
     "JournalClassic": Journal,
     "LifeStageCare": LifeStageCare,
     "Lifestyle": Lifestyle,
-    "Nutrition": NutritionRedesignDemo,
-    // ONE-LINE REVERT: change the line above back to `"Nutrition": NutritionHub,`.
+    "Nutrition": NutritionElite,
+    // LIVE FLIP (2026-06-28): /Nutrition now renders the elevated, fully-wired NutritionEliteShell.
+    // ONE-LINE REVERT: change the line above back to `"Nutrition": NutritionRedesignDemo,` (or `NutritionHub`).
     // NutritionHub stays live at /NutritionHub (real full surfaces; jump-to/explore tiles deep-link there).
     "Onboarding": Onboarding,
     "Profile": ProfileClipboardDemo,   // lock+swap 2026-06-22 (Halli-approved segmented rework) — `Profile` kept imported above as the one-line-revert fallback
