@@ -156,27 +156,31 @@ export default function LifestyleEliteShell() {
   const isSaved = useCallback((id) => savedIds.includes(id), [savedIds]);
 
   // ── loaders (real, guarded — same calls as Lifestyle.jsx) ─────────────────
+  // Essential content (real entities) — this gates the initial render. Kept off the external
+  // gutendex fetch so a slow public-domain API can never hold the whole page on the loader.
   const loadContent = useCallback(async () => {
-    const [rows, st, ho, gut] = await Promise.all([
+    const [rows, st, ho] = await Promise.all([
       base44.entities.LifestyleItems.filter({ status: "PUBLISHED" }, "-engagement_score", 60).catch(() => []),
       base44.entities.DailyStory.filter({}, "-created_date", 1).catch(() => []),
       base44.entities.HoroscopeReading.filter({}, "-reading_date", 1).catch(() => []),
-      (async () => {
-        try {
-          const r = await fetch("https://gutendex.com/books?topic=women&languages=en&page_size=12", { signal: AbortSignal.timeout(8000) });
-          if (!r.ok) return [];
-          const d = await r.json();
-          return (Array.isArray(d?.results) ? d.results : []).map((b) => ({
-            id: `gut-${b.id}`, _gutenbergId: b.id, _book: "gutenberg",
-            title: b.title || "", author: (b.authors?.[0]?.name) || "Public domain", tag: "Public domain", stars: 4,
-          }));
-        } catch { return []; }
-      })(),
     ]);
     setItems((Array.isArray(rows) ? rows : []).filter((i) => i && i.title));
     setStory((Array.isArray(st) ? st[0] : null) || null);
     setHoroscope((Array.isArray(ho) ? ho[0] : null) || null);
-    setGutenberg(Array.isArray(gut) ? gut : []);
+  }, []);
+
+  // Public-domain books — fetched in the BACKGROUND (never blocks the loader); the Books lane fills
+  // in when it arrives, and quietly stays empty (FemWell fiction still shows) if gutendex is slow/down.
+  const loadGutenberg = useCallback(async () => {
+    try {
+      const r = await fetch("https://gutendex.com/books?topic=women&languages=en&page_size=12", { signal: AbortSignal.timeout(8000) });
+      if (!r.ok) return;
+      const d = await r.json();
+      setGutenberg((Array.isArray(d?.results) ? d.results : []).map((b) => ({
+        id: `gut-${b.id}`, _gutenbergId: b.id, _book: "gutenberg",
+        title: b.title || "", author: (b.authors?.[0]?.name) || "Public domain", tag: "Public domain", stars: 4,
+      })));
+    } catch { /* leave books to FemWell fiction */ }
   }, []);
 
   // ── init ───────────────────────────────────────────────────────────────────
@@ -193,12 +197,13 @@ export default function LifestyleEliteShell() {
           setSavedIds(Array.isArray(p?.saved_item_ids) ? p.saved_item_ids : []);
         }
         await loadContent();
+        loadGutenberg();   // background — never blocks the loader
         try { unsubItems = base44.entities.LifestyleItems.subscribe(() => loadContent()); } catch { /* no-op */ }
       } catch { /* unauth / offline — render gracefully */ }
       if (alive) setLoading(false);
     })();
     return () => { alive = false; unsubItems?.(); };
-  }, [loadContent]);
+  }, [loadContent, loadGutenberg]);
 
   // ── SAVE toggle (persists to UserProfile.saved_item_ids — optimistic + rollback) ──
   const toggleSave = useCallback(async (item) => {

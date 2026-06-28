@@ -252,7 +252,9 @@ export const PAGES = {
     "Journal": JournalHub,
     "JournalClassic": Journal,
     "LifeStageCare": LifeStageCare,
-    "Lifestyle": Lifestyle,
+    "Lifestyle": LifestyleElite,
+    // LIVE FLIP (2026-06-28): /Lifestyle now renders the elevated, fully-wired LifestyleEliteShell.
+    // ONE-LINE REVERT: change the line above back to `"Lifestyle": Lifestyle,`.
     "Nutrition": NutritionElite,
     // LIVE FLIP (2026-06-28): /Nutrition now renders the elevated, fully-wired NutritionEliteShell.
     // ONE-LINE REVERT: change the line above back to `"Nutrition": NutritionRedesignDemo,` (or `NutritionHub`).
