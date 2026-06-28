@@ -1,5 +1,6 @@
 // LifestyleEliteShell — the ELEVATED, FULLY-WIRED Lifestyle page. The exact Lifestyle analogue of
 // PlannerEliteShell / NutritionEliteShell: self-loading against the SAME real base44 entities the live
+// (build nonce 2026-06-28a — force base44 rebuild)
 // Lifestyle page uses (LifestyleItems · DailyStory · HoroscopeReading · UserProfile.saved_item_ids +
 // public-domain gutendex books); the Save/bookmark control PERSISTS (optimistic write + try/catch
 // rollback + a flash() toast). Rendered by /LifestyleElite (parallel test route) while the live
