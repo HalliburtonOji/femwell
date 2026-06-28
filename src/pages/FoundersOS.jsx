@@ -66,6 +66,10 @@ import connectDaysMissionsHtml from "@/components/founders/brandDocs/connect-day
 import plannerEnrichmentHtml from "@/components/founders/brandDocs/planner-enrichment.html?raw";
 import nutritionPlanHtml from "@/components/founders/brandDocs/nutrition-plan.html?raw";
 import lifestylePlanHtml from "@/components/founders/brandDocs/lifestyle-plan.html?raw";
+// Level-up plan docs (next-2-levels for live pages) — wired from femwell-handoff/IDEAS-LINKS-FOR-FOUNDERSOS.md (2026-06-29).
+import nutritionLevelupHtml from "@/components/founders/brandDocs/nutrition-levelup.html?raw";
+import lifestyleLevelupHtml from "@/components/founders/brandDocs/lifestyle-levelup.html?raw";
+import healthPlanHtml from "@/components/founders/brandDocs/health-plan.html?raw";
 // HealthCornerDemo was the multi-layout preview. The canonical health
 // experience now lives at /Health (src/pages/Health.jsx). The Health Corner
 // tab in /Ideas renders <HealthCornerRedirectCard /> instead.
@@ -233,7 +237,14 @@ const CATALOG = [
     title: "Pulse — card-system demo ★ for approval", desc: "Your week read back gently: insight cards (mood · energy · rest), patterns-worth-knowing cards, and a phase card — life-spanning, not a clinical chart wall." },
   { kind: "route", href: "/PlannerCardsDemo", group: CAT.ARCHIVE, sub: "Card-system demos (pending rebuild)", status: "approval", accent: "sage",
     title: "Planner (content) — card-system demo ★ for approval", desc: "The CONTENT side of Planner as cards: add-an-intention, today's gentle intentions, your rituals, and soft reminders. NOT the calendar/day-view (those stay as-is)." },
-  // ── ★ TOP of Current: the two latest PLAN docs awaiting your reaction ──
+  // ── ★ TOP of Current: the latest LEVEL-UP plan docs awaiting your reaction ──
+  { kind: "doc", key: "Nutrition +2", group: CAT.CURRENT, status: "new", accent: "crimson",
+    title: "★ Nutrition +2 — the whole table, raised (level-up plan) · READ ME", desc: "Nutrition is LIVE and you love it — this is the plan for the next two levels. Builds on the original Nutrition plan: what to finish (the meal-plan generator, recipes, cook-what's-in, snap-a-photo) and what to RAISE — cited women's-nutrition research (iron flagship · cycle-aware-not-rules · protein · peri/menopause · PCOS/PMDD · GLP-1 era · food↔mood), the myth-vs-fact series, JOY & food (eating-together, the kitchen-table room), cook-videos-in-card feasibility, the card language, the weave into Today/Health/Pulse/Planner/Garden/Community/Jess, and a fold-in order. React before we touch live Nutrition." },
+  { kind: "doc", key: "Lifestyle +2", group: CAT.CURRENT, status: "new", accent: "plum",
+    title: "★ Lifestyle +2 — the good life, fed (level-up plan) · READ ME", desc: "Lifestyle is LIVE and you love the video-in-card — this is the plan for the next two levels. The domains beyond read/listen (make/learn/watch/awe/joy/rest), real media that plays INSIDE the cards (self-hosted/HLS + YouTube + podcast embeds; the Spotify preview-only gotcha; IG link-out), a 'what do you have time for?' dopamine-menu picker, a gentle 'lounge' community, FUN as a first-class streak-free pillar, the weave into the rest of the app, and a fold-in order. React before we touch live Lifestyle." },
+  { kind: "doc", key: "Health Plan", group: CAT.CURRENT, status: "new", accent: "sage",
+    title: "★ Health Plan — letters in sliding cards + the hub · READ ME", desc: "You love the health letters — and they're right to keep. The plan to render them PROPERLY: the letters in sliding cards + a real Health hub (overview · cycle · life-stage · skin & hair · body · mind · nourishment · care), how each letter becomes a §6.10 board, the wax-seal craft, and how Health weaves with Pulse/Doctor Export/Today. React before we touch live Health." },
+  // ── the original build-plan docs (still active — the +2 docs above extend these) ──
   { kind: "doc", key: "Nutrition Plan", group: CAT.CURRENT, status: "new", accent: "crimson",
     title: "★ Nutrition — the whole table (research + build plan) · READ ME", desc: "PLAN (nothing built yet) for finishing + elevating Nutrition. An HONEST what's-real-vs-stubbed audit of live /Nutrition (logging/macros/shopping are real; the meal-plan generator, recipes, 'cook what's in' and snap-a-photo are stubs) + WIDELY-CITED women's-nutrition research (NHS/BDA/peer-review): iron as the flagship story, 'cycle-aware not cycle-rules', protein nuance, peri/menopause, PCOS/PMDD, the GLP-1 era, food↔mood — each flagged evidence vs popular-practice, plus a warm myth-vs-fact series (cortisol cocktails, seed oils, detox). Then JOY & food (eating-together evidence, cultural/celebratory, the 'kitchen table' community room), the feasibility of EMBEDDING COOK VIDEOS inside our cards (YouTube embed + self-hosted HLS = yes; TikTok secondary; IG link-out), the full feature set in our card language, how it weaves into Today/Health/Pulse/Planner/Garden/Community/Jess, the one real build decision (how 'generate' works without a new function), and a fold-in order. React before we touch live Nutrition." },
   { kind: "doc", key: "Lifestyle Plan", group: CAT.CURRENT, status: "new", accent: "plum",
@@ -969,6 +980,9 @@ function FoundersInner({ user }) {
       {tab === "Planner Enrichment" && <BrandDocFrame html={plannerEnrichmentHtml} title="FemWell — Planner Enrichment (research + preview)" />}
       {tab === "Nutrition Plan" && <BrandDocFrame html={nutritionPlanHtml} title="FemWell — Nutrition (research + build plan)" />}
       {tab === "Lifestyle Plan" && <BrandDocFrame html={lifestylePlanHtml} title="FemWell — Lifestyle (research + build plan)" />}
+      {tab === "Nutrition +2" && <BrandDocFrame html={nutritionLevelupHtml} title="FemWell — Nutrition Level Up (+2)" />}
+      {tab === "Lifestyle +2" && <BrandDocFrame html={lifestyleLevelupHtml} title="FemWell — Lifestyle Level Up (+2)" />}
+      {tab === "Health Plan" && <BrandDocFrame html={healthPlanHtml} title="FemWell — Health Plan (letters in sliding cards + the hub)" />}
       {tab === "Intentions & Goals" && <BrandDocFrame html={intentionsGoalsHtml} title="FemWell — Intentions, Line of the Day & Goals" />}
       {tab === "Connect, Days & Missions" && <BrandDocFrame html={connectDaysMissionsHtml} title="FemWell — No Garden Grows Alone (Connection, Days Off & Tiny Missions)" />}
       {tab === "Ideas"     && <IdeasTab user={user} />}
