@@ -1,0 +1,302 @@
+<!doctype html>
+<html lang="en-GB"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>FemWell — Community Level Up (+2)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500;1,600&family=Ephesis&display=swap" rel="stylesheet">
+<style>
+  :root{--paper:#ECE7DA;--paperHi:#F4EFE3;--paperDeep:#D8CFBC;--ink:#0B0805;--inkSoft:#1A140D;--muted:#2E261B;--gold:#A8893F;--crimson:#BC2E27;--oxblood:#7A1A12;--blush:#E8B4B8;--sage:#8FAF8F;--plum:#8E6E8E;--serif:'Cormorant Garamond',Georgia,serif;--script:'Ephesis',cursive;--sans:ui-sans-serif,system-ui,-apple-system,'Segoe UI',sans-serif;}
+  *{box-sizing:border-box}
+  body{margin:0;background:radial-gradient(120% 80% at 12% 0%,#F4EFE3 0%,rgba(244,239,227,0) 55%),radial-gradient(120% 90% at 100% 100%,#E4DDCC 0%,rgba(228,221,204,0) 50%),var(--paper);color:var(--ink);font-family:var(--serif);font-size:18px;line-height:1.6;-webkit-font-smoothing:antialiased}
+  .doc{max-width:680px;margin:0 auto;padding:30px 22px 90px}
+  h1.cover{font-family:var(--script);font-size:52px;color:var(--crimson);margin:6px 0 2px;line-height:1.04}
+  h2{font-family:var(--serif);font-style:italic;font-weight:600;font-size:27px;margin:0 0 6px;color:var(--oxblood)}
+  h3{font-family:var(--serif);font-weight:600;font-size:21px;margin:18px 0 6px}
+  h4{font-family:var(--sans);font-size:12px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--gold);margin:16px 0 4px}
+  .eyebrow{font-family:var(--sans);font-size:12px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--gold);margin-bottom:10px}
+  p{margin:0 0 12px}.lede{font-size:20px;line-height:1.55}
+  small,.cap{font-family:var(--sans);font-size:13px;color:var(--muted);line-height:1.5}
+  b,strong{font-weight:600}
+  a{color:var(--crimson);text-decoration:none;border-bottom:1px solid rgba(188,46,39,.3)}
+  .section{background:var(--paperHi);border:1px solid var(--paperDeep);border-left:4px solid var(--gold);border-radius:20px;padding:22px 20px;margin:18px 0;box-shadow:0 4px 20px rgba(58,44,26,.10),0 1px 4px rgba(58,44,26,.06);position:relative;overflow:hidden}
+  .section.crimson{border-left-color:var(--crimson)}.section.sage{border-left-color:var(--sage)}.section.plum{border-left-color:var(--plum)}.section.blush{border-left-color:var(--blush)}
+  .rule{height:1px;background:var(--gold);opacity:.32;margin:18px 0}
+  .center{text-align:center}
+  table{width:100%;border-collapse:collapse;font-size:14px;font-family:var(--sans);margin:8px 0}
+  th,td{text-align:left;padding:7px 8px;border-bottom:1px solid var(--paperDeep);vertical-align:top}
+  th{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--gold)}
+  td b{font-family:var(--serif);font-size:15px}
+  .toc a{display:block;font-family:var(--sans);font-size:15px;color:var(--inkSoft);text-decoration:none;border-bottom:1px solid var(--paperDeep);padding:6px 0}
+  .toc a span{color:var(--gold);font-weight:700;margin-right:10px}
+  .script{font-family:var(--script);color:var(--crimson)}
+  .pill{display:inline-block;font-family:var(--sans);font-size:12px;font-weight:600;padding:5px 11px;border-radius:999px;background:var(--paper);border:1px solid var(--paperDeep);margin:3px 4px 3px 0}
+  .pill.rec{background:#EAF1EA;border-color:var(--sage);color:#3f6b3f}
+  .pill.gap{background:#FBE9E6;border-color:var(--crimson);color:var(--crimson)}
+  .pill.ok{background:#EAF1EA;border-color:var(--sage);color:#3f6b3f}
+  .pill.ev{background:#EAF1EA;border-color:var(--sage);color:#3f6b3f}
+  .pill.pop{background:#FBF1E0;border-color:var(--gold);color:#8a6d22}
+  .pill.myth{background:#FBE9E6;border-color:var(--crimson);color:var(--crimson)}
+  .pill.l1{background:#EAF1EA;border-color:var(--sage);color:#3f6b3f}
+  .pill.l2{background:#F0E8F0;border-color:var(--plum);color:#6d4f6d}
+  .pill.law{background:#EDE6F2;border-color:var(--plum);color:#6d4f6d}
+  .lens{background:var(--paper);border:1px solid var(--paperDeep);border-left:3px solid var(--gold);border-radius:12px;padding:12px 14px;margin:8px 0}
+  .lens .nm{font-family:var(--serif);font-weight:600;font-size:18px;color:var(--ink);margin-bottom:2px}
+  .lens .nm .ix{font-family:var(--sans);font-size:11px;font-weight:700;letter-spacing:.1em;color:var(--gold);margin-right:8px;text-transform:uppercase}
+  .lens p{margin:0;font-size:15px;line-height:1.5;color:var(--inkSoft)}
+  .lens .src{font-family:var(--sans);font-size:12px;color:var(--muted);margin-top:5px}
+  .deck{border:1px dashed var(--gold);border-radius:14px;padding:6px 12px 12px;margin:10px 0;background:rgba(168,137,63,.04)}
+  .deck .dh{font-family:var(--sans);font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);margin:8px 0 2px}
+  .num{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:999px;background:var(--crimson);color:#fff;font-family:var(--sans);font-size:12px;font-weight:700;margin-right:8px;vertical-align:1px}
+  .foot{font-family:var(--sans);font-size:12px;color:var(--muted);text-align:center;margin-top:30px;line-height:1.6}
+  ul{margin:4px 0 12px;padding-left:20px}li{margin:3px 0}
+</style></head>
+<body><div class="doc">
+
+<div class="center" style="padding:14px 0 4px">
+  <div class="eyebrow">FemWell · Community · LEVEL UP (+2) · for your reaction</div>
+  <h1 class="cover">The third space, made real</h1>
+  <p class="lede" style="font-style:italic;max-width:540px;margin:8px auto 0">Community is live and rich — rooms, the screened 1:1, sealed letters, the question of the day, the echo wall. This is the plan for the <b>next two levels</b> — finishing the one held connection feature, adding the trust + safety layers the evidence demands, and a couple of real leaps that would make FemWell the only women's space that is anonymous-but-accountable, expert-anchored, whole-life <i>and</i> gets you offline. <b>Plan only — nothing built from this yet.</b></p>
+</div>
+
+<div class="section">
+  <div class="eyebrow">The one-line thesis</div>
+  <p class="lede">Level 1 built the <b>rooms and the gentle, screened connection</b>. Level <span class="script">+2</span> makes the room <b>trustworthy at scale and impossible to leave lonely</b> — an expert-verified layer that neutralises peer-misinfo, a "no post sits unanswered" promise, the held free-text 1:1, and the IRL/local bridge the loneliness evidence says actually works — all under proper Online Safety Act footing.</p>
+  <h4>The headline moves</h4>
+  <ul>
+    <li><b>Level +1 — finish &amp; fortify.</b> The expert-verified answer layer + clinician AMA room (kills the "DrTok" problem), a first-responder / "no post unanswered in 24h" safety-and-warmth mechanic, healthy "me-too" reactions over vanity metrics, deeper life-stage room matching, and the intergenerational mentorship bridge.</li>
+    <li><b>Level +2 — the leaps.</b> The held <b>moderated free-text 1:1 thread</b> (the one feature already designed but parked on a safety decision), an opt-in <b>local / IRL circle</b> bridge, and optional <b>live "gather" audio rooms</b>.</li>
+    <li><b>Two gated decisions + a legal gate:</b> the moderated-DM function and (if pursued) live-audio infra need your OK; and a community is a regulated user-to-user service under the <b>UK Online Safety Act 2023</b> — §5 sets out the non-negotiables.</li>
+  </ul>
+</div>
+
+<div class="section sage">
+  <div class="eyebrow">Contents</div>
+  <div class="toc">
+    <a href="#today"><span>1</span> What Community does TODAY (honest, post-build)</a>
+    <a href="#research"><span>2</span> The deeper evidence (cited) — the frontier</a>
+    <a href="#l1"><span>3</span> Level +1 — finish &amp; fortify (in the card language)</a>
+    <a href="#l2"><span>4</span> Level +2 — the leaps (in the card language)</a>
+    <a href="#gated"><span>5</span> The gated calls + the legal gate (OSA 2023)</a>
+    <a href="#ties"><span>6</span> How it weaves into the rest of the app</a>
+    <a href="#data"><span>7</span> Data &amp; build reality</a>
+    <a href="#first"><span>8</span> What I'd build first</a>
+  </div>
+</div>
+
+<!-- 1 · TODAY -->
+<a id="today"></a>
+<div class="section crimson">
+  <div class="eyebrow">1 · The honest picture (post-build)</div>
+  <h2>What Community does today</h2>
+  <p>The live <span class="script">/Community</span> elite shell (<code>CommunityEliteShell</code>) is genuinely deep — three boards over a real engine, all behind an 18+ <code>AgeGate</code>, with a safety charter always on screen. Here's the honest real-vs-stubbed audit.</p>
+  <table>
+    <tr><th>Surface</th><th>Status today</th></tr>
+    <tr><td><b>Signature top</b> — oxblood hero, bouquet, live presence line, safety charter chips (18+ · no location · checked before sent · anonymous/block)</td><td><span class="pill ok">real</span> presence counts real recent <code>CommunityPost</code> authors; charter states the actual rails.</td></tr>
+    <tr><td><b>Talk it out · Witness</b> (the live 1:1)</td><td><span class="pill ok">real</span> rides the <b>Witness service</b> — anonymous, server-gated, crisis-screened, encrypted, matched by season <b>never location</b>, one gentle reply.</td></tr>
+    <tr><td><b>"Someone like you"</b> resonance</td><td><span class="pill ok">real</span> <code>ResonanceLive</code> — surfaces women in a like season/stage.</td></tr>
+    <tr><td><b>Sealed-letter pen-pal</b></td><td><span class="pill ok">real</span> writes <code>SealedLetters</code> — slow, anonymous, opened later.</td></tr>
+    <tr><td><b>Connection preferences &amp; block</b></td><td><span class="pill ok">real</span> new <code>ConnectionPref</code> entity persists mode/reach/blocked-list.</td></tr>
+    <tr><td><b>Question of the day</b></td><td><span class="pill ok">real</span> answers via the <code>answerQotd</code> function — anonymous, crisis-gated, server-moderated.</td></tr>
+    <tr><td><b>Echo wall</b> (ephemeral, fades 48h)</td><td><span class="pill ok">real</span> the real <code>EchoWall</code> + compose; kind reactions only.</td></tr>
+    <tr><td><b>Whole-life rooms</b> — Lounge · Love &amp; Relationships · Money &amp; Work · Style &amp; Self · The Lighter Side · Health</td><td><span class="pill ok">real</span> open the full <code>CommunityInner</code> engine (rooms / feed / posting) in a sheet. Breadth across life is built.</td></tr>
+    <tr><td><b>Together</b> — Circles · The Library (book club) · Games Room · "What the room knows" (wisdom) · "Together this week" (pool) · "Close the week"</td><td><span class="pill pop">real-but-funnelled</span> all real <code>CommunityInner</code> flows, but the board's doors mostly route to the hub/engine rather than each landing on its own deep view.</td></tr>
+    <tr><td><b>Free-text PRIVATE 1:1 message thread</b> (a real DM)</td><td><span class="pill gap">designed · held</span> can't ship without one small safety function: <code>screenContent</code> only moderates <code>post</code>/<code>comment</code>, and <code>createCommunityPost</code> forces non-whitelist rooms into the public lounge (would leak a private thread). Witness is the live 1:1 for now.</td></tr>
+    <tr><td><b>Expert-verified answers / clinician presence</b></td><td><span class="pill gap">not yet</span> no verified-answer layer or AMA — peer voices only.</td></tr>
+    <tr><td><b>Reply guarantee</b> (no post left unanswered)</td><td><span class="pill gap">not yet</span> no first-responder / seeding mechanic.</td></tr>
+  </table>
+  <p class="cap"><b>Takeaway:</b> the room is real, safe-by-design and already whole-life — a strong base most femtech never reaches. The +2 work is (a) the trust layer (expert-verified + reply guarantee), (b) finishing the one held connection feature (moderated DMs), and (c) the leaps (local bridge, live gather) that the loneliness evidence rewards.</p>
+</div>
+
+<!-- 2 · RESEARCH -->
+<a id="research"></a>
+<div class="section plum">
+  <div class="eyebrow">2 · The frontier (cited, 2023–26)</div>
+  <h2>The deeper evidence</h2>
+  <p>Each row flagged <span class="pill ev">evidence</span> / <span class="pill pop">popular-practice</span> / <span class="pill myth">myth/risk</span> / <span class="pill law">legal</span>. Women-specific where it matters.</p>
+
+  <div class="lens"><div class="nm"><span class="ix">01</span>Online peer support genuinely works — and the <i>informal</i> kind works best</div>
+    <p>Meta-analysis: mental-health benefit SMD <b>0.53</b> (73 studies, N≈52,700), physical 0.35. "Naturally-occurring" peer support (SMD 0.74) <b>out-performs</b> professional-led online support (0.60). <b>→ The open lounge IS the medicine; an expert layer augments it, never replaces it.</b> <span class="pill ev">evidence</span></p>
+    <p class="src"><a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC11886969/">Peer-support meta-analysis (PMC 2025)</a></p>
+  </div>
+
+  <div class="lens"><div class="nm"><span class="ix">02</span>Proof for a stigmatised women's condition: a topic room measurably reduces distress</div>
+    <p>Joining r/PMDD measurably reduced users' later posting in depression/anxiety subreddits (17,332 users, 41,177 posts, difference-in-differences). <b>→ FemWell's 11 life-stages map onto rooms that can move real distress — relevance-matched rooms are the unit of help.</b> <span class="pill ev">evidence</span></p>
+    <p class="src"><a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC12488957/">r/PMDD distress study (PMC 2024)</a> · <a href="https://mental.jmir.org/2024/1/e55750">Mechanisms review (JMIR 2024)</a></p>
+  </div>
+
+  <div class="lens sage" style="border-left-color:var(--sage)"><div class="nm"><span class="ix">03</span>UK women are lonelier — and the gap is <i>friendship</i>, not symptoms</div>
+    <p>7.67% of UK women vs 6.33% of men are chronically lonely; 56% vs 43% report some loneliness. Women with <b>no close friends rose from ~2% (1990) to 10% (2021)</b>. Two-thirds say all-female groups help wellbeing. <b>→ A women-only, whole-life space is itself evidence-backed; symptom-only rooms miss the actual need.</b> <span class="pill ev">evidence</span></p>
+    <p class="src"><a href="https://www.campaigntoendloneliness.org/press-release/new-analysis-of-ons-statistics-on-loneliness/">Campaign to End Loneliness (ONS)</a> · <a href="https://www.pewresearch.org/social-trends/2025/01/16/where-men-and-women-turn-for-emotional-support-and-social-connection/">Pew 2025 — connection</a></p>
+  </div>
+
+  <div class="lens crimson" style="border-left-color:var(--crimson)"><div class="nm"><span class="ix">04</span>Anonymity is the active ingredient — and the hazard</div>
+    <p>Reduced social cost lets women disclose "things they've never told their therapists." But the same disinhibition enables harassment and makes forums <i>less</i> supportive. <b>→ Keep FemWell's anonymous-to-peers / accountable-to-platform model (Flo's pattern); never pure anonymity.</b> <span class="pill ev">evidence</span> + <span class="pill myth">risk</span></p>
+    <p class="src"><a href="https://mental.jmir.org/2024/1/e55750">JMIR 2024</a> · <a href="https://help.flo.health/hc/en-us/articles/360052675971-What-is-Flo-Secret-Chats">Flo Secret Chats model</a></p>
+  </div>
+
+  <div class="lens crimson" style="border-left-color:var(--crimson)"><div class="nm"><span class="ix">05</span>Peer advice is a misinformation vector — "DrTok" quantified</div>
+    <p>In 325 PCOS TikToks, content was mostly low-quality; patient-created videos were <b>significantly more inaccurate</b> than clinician ones. Women — especially women of colour facing more medical gaslighting — seek advice outside clinical pathways where claims get amplified. <b>→ An expert-verified answer layer isn't a nicety; it's the antidote.</b> <span class="pill myth">risk</span></p>
+    <p class="src"><a href="https://pubmed.ncbi.nlm.nih.gov/39927850/">PCOS TikTok quality (2025)</a> · <a href="https://obgyn.onlinelibrary.wiley.com/doi/10.1002/ijgo.70753">Women &amp; online health advice (IJGO)</a></p>
+  </div>
+
+  <div class="lens crimson" style="border-left-color:var(--crimson)"><div class="nm"><span class="ix">06</span>Do NOT build a vanity/image feed</div>
+    <p>Photo/appearance-led feeds drive upward comparison → worse body image + disordered eating, women and girls most affected. UK: 54% of girls 11–21 wish they looked like their filtered selves; 46% would feel safer with more unedited content. <b>→ Text, prompts and "me-too" signals — never likes, follower counts or beauty photos.</b> <span class="pill ev">evidence</span></p>
+    <p class="src"><a href="https://pubmed.ncbi.nlm.nih.gov/39721448/">Social comparison &amp; body image (2024)</a> · <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC11276240/">Girlguiding 2024</a></p>
+  </div>
+
+  <div class="lens"><div class="nm"><span class="ix">07</span>Responsiveness is both a safety and a retention metric</div>
+    <p>~50% of people don't return if they get no reply within 24 hours; an un-replied post leaves users feeling ignored — worsening the isolation they came to ease. <b>→ A "no post sits unanswered" first-responder mechanic is a feature, not housekeeping.</b> <span class="pill ev">evidence</span></p>
+    <p class="src"><a href="https://mental.jmir.org/2024/1/e55750">JMIR 2024 — engagement</a></p>
+  </div>
+
+  <div class="lens"><div class="nm"><span class="ix">08</span>Trust hinges on an expert anchor</div>
+    <p>73% trust medical orgs; 67% want a way to ask experts; ~41% of digital-health adoption hinges on trust. <b>→ A periodic "Ask the NHS clinician" / AMA room directly builds platform trust and counters §05.</b> <span class="pill ev">evidence</span></p>
+    <p class="src"><a href="https://www.ama-assn.org/press-center/ama-press-releases/survey-shows-need-rebuild-trust-evidence-based-health-information">AMA trust survey</a></p>
+  </div>
+
+  <div class="lens sage" style="border-left-color:var(--sage)"><div class="nm"><span class="ix">09</span>Intergenerational mentorship fills a documented void</div>
+    <p>Women value support from older women who've "been through it," yet report <i>limited</i> intergenerational dialogue — and early open discussion predicts better coping (e.g. through menopause). <b>→ A younger ↔ post-menopause mentorship bridge.</b> <span class="pill ev">evidence</span></p>
+    <p class="src"><a href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC10704889/">Intergenerational support (PMC)</a></p>
+  </div>
+
+  <div class="lens plum" style="border-left-color:var(--plum)"><div class="nm"><span class="ix">10</span>The loneliness fix that works best is partly OFFLINE</div>
+    <p>In-person / blended interventions outperform online-only for real relationships and loneliness; purely online ties can even <i>increase</i> loneliness. <b>→ An opt-in "take it offline" / local-circle bridge is where almost every femtech community stops short — and where the evidence is strongest.</b> <span class="pill ev">evidence</span></p>
+    <p class="src"><a href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC6715013/">Loneliness interventions (PMC)</a></p>
+  </div>
+
+  <div class="lens law" style="border-left-color:var(--plum)"><div class="nm"><span class="ix">11</span>A community is a regulated service — UK Online Safety Act 2023</div>
+    <p>A user-to-user feature must: do an <b>illegal-content risk assessment</b> (within 3 months of launch, updated yearly), remove illegal content swiftly, offer easy <b>reporting + complaints</b>, moderate proportionately, set it in <b>terms of service</b>, and name an <b>accountable person</b>. If under-18s can access it, "highly effective age assurance" + a children's risk assessment apply (from 25 July 2025). <b>→ Stay 18+ with real age assurance (we have AgeGate), and stand up the formal compliance spine before scaling.</b> <span class="pill law">legal must-do</span></p>
+    <p class="src"><a href="https://www.ofcom.org.uk/online-safety/illegal-and-harmful-content/illegal-content-duties-under-the-online-safety-act">Ofcom — illegal-content duties</a> · <a href="https://www.gov.uk/government/publications/online-safety-act-explainer/online-safety-act-explainer">OSA explainer</a></p>
+  </div>
+
+  <div class="lens"><div class="nm"><span class="ix">12</span>Competitive teardown — where the incumbents stop</div>
+    <p><b>Peanut</b>: life-stage matching + live audio "Pods", but still fertility/motherhood-anchored. <b>Flo Secret Chats</b>: best-in-class anonymity+safety, but health/relationship-scoped. <b>Mumsnet</b>: proof a women's forum spans far beyond its founding topic (a "third space"), but dated + parenting-coded. <b>Reddit</b>: gold-standard candour, no safety framing or expert layer. <b>Sector privacy</b>: King's College found female-health apps mishandle sensitive data — a privacy-first community is itself a differentiator. <span class="pill pop">market</span></p>
+    <p class="src"><a href="https://flo.health/product-tour/secret-chats">Flo</a> · <a href="https://femtechinsider.com/peanut-menopaue-launch/">Peanut Pods</a> · <a href="https://www.mumsnet.com/i/audience-insights">Mumsnet</a> · <a href="https://www.kcl.ac.uk/news/female-health-apps-misuse-highly-sensitive-data-study-finds">KCL privacy study</a></p>
+  </div>
+
+  <div class="rule"></div>
+  <h4>The market gap, in one line</h4>
+  <p>No competitor combines all four of <b>(a)</b> anonymous-but-accountable safety, <b>(b)</b> an expert-verified layer that neutralises peer-misinfo, <b>(c)</b> Mumsnet-grade whole-life breadth (career, money, friendship, identity — not just symptoms) and <b>(d)</b> an IRL/local bridge the loneliness evidence says actually works. <b>FemWell can own the "safe, expert-anchored, whole-life women's third space that also gets you offline."</b></p>
+</div>
+
+<!-- 3 · LEVEL +1 -->
+<a id="l1"></a>
+<div class="section sage">
+  <div class="eyebrow">3 · Level +1 — finish &amp; fortify</div>
+  <h2>Trust, warmth, no empty rooms</h2>
+  <p>All inside today's 3-board, stacked sub-slider language. <span class="pill l1">Level +1</span></p>
+
+  <h3>Board 2 · "The rooms" — the trust layer</h3>
+  <div class="deck"><div class="dh">▸ make the room credible</div>
+    <div class="lens"><div class="nm"><span class="ix">★★</span>Expert-verified answers + the AMA room</div><p>A <b>verified-answer flag</b> on posts (a clinician/midwife/dietitian reply gets a carved-heart "verified" mark), plus a recurring <b>"Ask the NHS clinician"</b> scheduled room. Directly counters the DrTok risk (§05) and builds the trust 67% of women ask for (§08). Rides the existing post/room infra + a verified-author role; AMAs are scheduled events, not a new function. <span class="pill rec">trust moat</span></p><p class="src"><a href="https://www.ama-assn.org/press-center/ama-press-releases/survey-shows-need-rebuild-trust-evidence-based-health-information">AMA</a></p></div>
+    <div class="lens"><div class="nm"><span class="ix">★★</span>"No post left unanswered" (first-responder)</div><p>A gentle rota / "first reply" nudge + seeded warmth so no post sits &gt;24h alone (§07) — the single highest-leverage warmth-and-safety mechanic. Surfaces "3 sisters waiting for a reply" as an invitation, never a chore. <span class="pill ev">evidence-led</span></p></div>
+    <div class="lens"><div class="nm"><span class="ix">★</span>Healthy reactions, never vanity metrics</div><p>"Me-too / I felt this / holding you" reactions instead of likes, follower counts or photos (§06). Express-and-be-seen without the comparison harm. Rides the existing reaction surface. <span class="pill ok">rides existing</span></p></div>
+  </div>
+
+  <h3>Board 1 · "Connection" — deepen the matching</h3>
+  <div class="deck"><div class="dh">▸ the right woman, the right season</div>
+    <div class="lens"><div class="nm"><span class="ix">★</span>Life-stage room matching</div><p>Relevance is foundational to return engagement (§02). Surface the rooms/threads that match your life-stage + season first (peri, TTC, postpartum, new-to-the-city…), the way Resonance already finds "someone like you". <span class="pill ok">rides existing</span></p></div>
+    <div class="lens"><div class="nm"><span class="ix">★★</span>Intergenerational mentorship bridge</div><p>An opt-in "I'll mentor / I'd like a mentor" pairing across stages (a 25-year-old ↔ a post-menopause woman who's "been through it"), on the screened Witness/connection rails. Fills the documented void (§09). <span class="pill rec">differentiator</span></p></div>
+  </div>
+
+  <h3>Board 3 · "Together" — land each door</h3>
+  <div class="deck"><div class="dh">▸ give the gather-doors their own depth</div>
+    <div class="lens"><div class="nm"><span class="ix">★</span>Each door → its own deep view</div><p>Circles / Library / Games / Wisdom / Pool currently mostly funnel to the hub; give each its own landing (a real book-club thread, the games round, the wisdom collection) so "Together" reads as destinations, not a menu. <span class="pill gap">finish</span></p></div>
+    <div class="lens"><div class="nm"><span class="ix">★</span>Weekly themes &amp; structured prompts</div><p>Beyond the daily QOTD, a gentle weekly theme ("the friendship week", "money honesty week") that threads across rooms — structure sustains supportive communities. <span class="pill ok">content + existing</span></p></div>
+  </div>
+</div>
+
+<!-- 4 · LEVEL +2 -->
+<a id="l2"></a>
+<div class="section plum">
+  <div class="eyebrow">4 · Level +2 — the leaps</div>
+  <h2>Held, offline, together-in-real-time</h2>
+  <p>The bigger moves that define the category. <span class="pill l2">Level +2</span></p>
+
+  <div class="deck"><div class="dh">▸ the held feature, finished</div>
+    <div class="lens"><div class="nm"><span class="ix">A</span>Moderated free-text 1:1 thread</div><p>The real DM that's <b>already designed and parked</b> on one safety decision (§5): an anonymous, server-moderated, private thread between two matched women — the natural graduation from Witness's single reply. Needs the one small moderated-delivery function. <span class="pill gap">gated function</span></p></div>
+  </div>
+
+  <div class="deck"><div class="dh">▸ offline — the strongest loneliness lever</div>
+    <div class="lens"><div class="nm"><span class="ix">B</span>Opt-in local / IRL circle bridge</div><p>The evidence (§10) says blended/in-person beats online-only for loneliness, and it's the biggest competitor gap. A carefully safety-gated, <b>opt-in</b> "women near you who also love X want to meet" — within FemWell's no-location-by-default rule, this is a deliberate, consented exception (coarse area only, public venues, never precise location). A real product + safety decision, not a quiet toggle. <span class="pill rec">biggest gap</span> <span class="pill gap">safety review</span></p></div>
+  </div>
+
+  <div class="deck"><div class="dh">▸ together, in real time</div>
+    <div class="lens"><div class="nm"><span class="ix">C</span>Live "gather" audio rooms</div><p>Scheduled synchronous rooms (Peanut Pods are the proof) — a menopause circle, a Sunday wind-down, a Jess-hosted games night. High belonging, but needs realtime/audio infrastructure → a heavier, gated build. <span class="pill gap">infra · gated</span></p></div>
+    <div class="lens"><div class="nm"><span class="ix">D</span>Mute-keywords &amp; advanced personal safety</div><p>Per-user keyword muting (Peanut ships this), softer-feed controls, and a "step back" mode — give each woman the dial on her own exposure. <span class="pill ev">evidence-led</span></p></div>
+  </div>
+</div>
+
+<!-- 5 · GATED + LEGAL -->
+<a id="gated"></a>
+<div class="section crimson">
+  <div class="eyebrow">5 · The gated calls + the legal gate</div>
+  <h2>What needs your OK — and what the law requires</h2>
+  <p>Most of +1/+2 rides existing entities/surfaces. Three things need a decision:</p>
+  <ul>
+    <li><b>1 · Moderated free-text DM (one small function).</b> Today <code>screenContent</code> only moderates <code>post</code>/<code>comment</code>, and <code>createCommunityPost</code> forces non-whitelist rooms public — so a private thread can't be both moderated and private. The fix is <b>one small server function</b> that screens + delivers a private <code>Message</code>. Recommendation: approve it — it finishes the connection story safely. <span class="pill gap">gated function</span></li>
+    <li><b>2 · Live audio "gather" rooms (infra).</b> Realtime audio is a genuine new capability (cost + moderation of live speech). Optional; only if you want synchronous gathering. <span class="pill gap">gated infra</span></li>
+    <li><b>3 · Local/IRL bridge (policy + safety).</b> Not a function so much as a <b>deliberate exception to the no-location rule</b> — needs an explicit product + safety + legal review before any build. <span class="pill gap">policy</span></li>
+  </ul>
+  <div class="rule"></div>
+  <h4>The legal gate — Online Safety Act 2023 (non-negotiable)</h4>
+  <p>Community is a <b>regulated user-to-user service</b>. Before scaling, stand up: an <b>illegal-content risk assessment</b>, a clear <b>reporting + complaints</b> flow (ride existing report paths, formalise them), proportionate moderation set out in <b>terms of service</b>, a named <b>accountable person</b>, and a documented <b>crisis-escalation pathway</b> (we already crisis-screen). Stay <b>18+ with real age assurance</b> (AgeGate) to avoid the full children's-code burden. <span class="pill law">must-do before scale</span></p>
+  <p class="cap"><b>Flag:</b> the moderated-DM function is the only code-level gated capability in the whole plan. Everything else is content, state, existing entities/surfaces, or a policy decision. The OSA spine is operational work, not a feature — but it must precede any growth push.</p>
+</div>
+
+<!-- 6 · TIES -->
+<a id="ties"></a>
+<div class="section">
+  <div class="eyebrow">6 · The weave</div>
+  <h2>How Community connects to the rest of the app</h2>
+  <table>
+    <tr><th>Surface</th><th>The tie</th></tr>
+    <tr><td><b>Today</b></td><td>"In the circle today" glance — the QOTD + "3 sisters waiting" first-responder nudge, deep-linking the exact room.</td></tr>
+    <tr><td><b>Journal</b></td><td>"Share as an echo" already bridges private writing → the wall; extend to "ask the room" from a journal entry. Witness lives on the journal rail.</td></tr>
+    <tr><td><b>Health / cycle</b></td><td>The clinical room is NHS-grounded; the expert-verified layer + AMAs surface near the relevant life-stage; phase tints the hero.</td></tr>
+    <tr><td><b>Nutrition</b></td><td>"Share to the table" (the Nutrition plan's community write) lands as a room post — shared plates become threads.</td></tr>
+    <tr><td><b>Lifestyle</b></td><td>The Library/book-club ties to Lifestyle's Read; interest circles ↔ Lifestyle's "the good life".</td></tr>
+    <tr><td><b>Pulse / Trends</b></td><td>"Women in your season felt this too" — aggregate, anonymous resonance from the room beside your own trend.</td></tr>
+    <tr><td><b>Programs</b></td><td>A program cohort becomes a private circle — do the 4-week perimenopause program <i>together</i>.</td></tr>
+    <tr><td><b>Garden</b></td><td>The collective "Together this week" pool waters a shared garden — belonging, no scoreboard.</td></tr>
+    <tr><td><b>Jess</b></td><td>Jess hosts the Games Room round + can gently suggest the right room ("the PMDD room might help") — never auto-posting for you.</td></tr>
+  </table>
+</div>
+
+<!-- 7 · DATA -->
+<a id="data"></a>
+<div class="section crimson">
+  <div class="eyebrow">7 · Honest build reality</div>
+  <h2>What's rule-safe vs what needs a call</h2>
+  <ul>
+    <li><b>Rule-safe (no new function):</b> expert-verified flag + AMA scheduled rooms (verified-author role + content), first-responder / reply-guarantee mechanic, healthy reactions, life-stage room matching, mentorship pairing (existing connection rails), per-door deep views, weekly themes, mute-keywords (client filter). Small additive entities only (e.g. verified-author flag, mentorship opt-in, weekly-theme config).</li>
+    <li><b>Needs your OK (one function):</b> moderated free-text 1:1 DM (§5.1).</li>
+    <li><b>Needs your OK (infra):</b> live audio "gather" rooms (§5.2) — optional.</li>
+    <li><b>Needs policy/safety review:</b> the local/IRL bridge (§5.3) — exception to no-location.</li>
+    <li><b>Operational must-do:</b> the OSA 2023 compliance spine (§5) before any scale.</li>
+    <li><b>Avoid:</b> any image/photo feed, likes, follower counts or food/appearance grading (§06).</li>
+  </ul>
+</div>
+
+<!-- 8 · FIRST -->
+<a id="first"></a>
+<div class="section plum">
+  <div class="eyebrow">8 · Recommendation</div>
+  <h2>What I'd build first</h2>
+  <ul>
+    <li><b>1. The trust layer — expert-verified answers + the "Ask the NHS clinician" AMA room.</b> Highest-leverage, rule-safe, and it's the antidote to the #1 community risk (peer misinfo).</li>
+    <li><b>2. "No post left unanswered" first-responder + healthy reactions.</b> Small, warm, evidence-backed — turns a quiet room into a held one.</li>
+    <li><b>3. Intergenerational mentorship + life-stage matching.</b> Differentiator on the rails we already have.</li>
+    <li><b>4. (Gated) the moderated free-text 1:1 DM</b> — once you approve the one small safety function; finishes the connection story.</li>
+    <li><b>5. (Bigger) the local/IRL bridge</b> — the biggest competitor gap and strongest loneliness lever, after a proper safety/policy review.</li>
+    <li><b>Throughout:</b> stand up the OSA 2023 compliance spine — it's the licence to scale.</li>
+  </ul>
+  <p class="lede" style="margin-top:14px">All of it lives in the 3-board, stacked sub-slider + screened-connection language you already have. <b>Nothing built from this yet — react first, then we demo/build the approved levels.</b></p>
+</div>
+
+<div class="foot">
+  FemWell · Community · Level Up (+2) · 29 June 2026<br>
+  Evidence sourced inline (peer-review / NHS / Ofcom / Pew, 2023–26); popular-practice &amp; competitor patterns flagged; legal duties cited. Live Community unchanged pending your approval.
+</div>
+
+</div></body></html>

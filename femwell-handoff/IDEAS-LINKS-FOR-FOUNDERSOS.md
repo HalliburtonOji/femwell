@@ -20,6 +20,16 @@
 | NUTRITION-LEVELUP.html | nutrition-levelup.html | "Nutrition +2" | Current | crimson |
 | LIFESTYLE-LEVELUP.html | lifestyle-levelup.html | "Lifestyle +2" | Current | plum |
 | HEALTH-PLAN.html | health-plan.html | "Health Plan" | Current | sage |
+| COMMUNITY-PLAN.html | community-plan.html | "Community +2" | Current | crimson |
+
+### ⏳ Batch 2 — per-page LEVEL-UP plan docs (2026-06-29, content session producing one at a time)
+> Same template as Nutrition/Lifestyle +2. Each is a deep-research, per-page plan for going DEEPER on the live-elite pages. HTML copied into `brandDocs/`; wire each from here (3 edits each, pattern below).
+| Doc (femwell-handoff/) | brandDocs slug | suggested FoundersOS key | group | accent |
+|---|---|---|---|---|
+| COMMUNITY-PLAN.html | community-plan.html | "Community +2" | Current | crimson |
+<!-- PULSE-PLAN, DOCTOR-EXPORT-PLAN, PROGRAMS-PLAN, GARDEN-PLAN, JESS-PLAN to follow -->
+
+Wiring per Batch-2 doc (3 edits each): e.g. `import communityPlanHtml from "@/components/founders/brandDocs/community-plan.html?raw";` · a `{ kind:"doc", key:"Community +2", group: CAT.CURRENT, status:"new", accent:"crimson", desc:"Community page — next-2-levels plan (trust layer, moderated DMs, IRL bridge, OSA compliance)" }` CATALOG entry · a `{tab === "Community +2" && <BrandDocFrame html={communityPlanHtml} title="FemWell — Community Level Up (+2)" />}` render branch.
 
 Wiring per doc (3 edits each): `import nutritionLevelupHtml from "@/components/founders/brandDocs/nutrition-levelup.html?raw";` · a `{ kind:"doc", key:"Nutrition +2", group: CAT.CURRENT, status:"new", accent:"crimson", … }` CATALOG entry · a `{tab === "Nutrition +2" && <BrandDocFrame html={nutritionLevelupHtml} title="FemWell — Nutrition Level Up (+2)" />}` render branch. Then build + `npx base44 site deploy -y`.
 
