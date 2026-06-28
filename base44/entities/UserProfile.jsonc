@@ -171,6 +171,16 @@
         "type": "string"
       }
     },
+    "life_season": {
+      "type": "string",
+      "enum": [
+        "steady",
+        "newbaby",
+        "perimenopause",
+        "caregiving"
+      ],
+      "default": "steady"
+    },
     "hydration_target_ml": {
       "type": "number",
       "default": 2000

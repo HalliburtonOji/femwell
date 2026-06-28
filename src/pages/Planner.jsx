@@ -49,6 +49,8 @@ import PlannerV2Shell from "@/components/planner-v2/PlannerV2ShellClipboard";
 // shell above; /PlannerLiveTest renders <Planner shellVariant="clipboard" /> so
 // it can be authed-click-tested live before any swap. (Live /Planner unchanged.)
 import PlannerV2ShellClipboard from "@/components/planner-v2/PlannerV2ShellClipboard";
+// Elevated, fully-wired Planner (self-loads real entities). shellVariant="elite".
+import PlannerEliteShell from "@/components/planner-elite/PlannerEliteShell";
 // Phase 2 QA-fix-bundle-8 — Planner subscribes to the module-level
 // devStageStore directly. The CustomEvent bus is no longer used here.
 import {
@@ -1231,6 +1233,7 @@ export default function Planner({ shellVariant } = {}) {
   // pass once we've confirmed nothing was referencing it.
   // shellVariant="clipboard" (only the /PlannerLiveTest wrapper passes it) renders
   // the parallel clipboard rebuild; default keeps the PROVEN shell live on /Planner.
+  if (shellVariant === "elite") return <PlannerEliteShell />;
   const Shell = shellVariant === "clipboard" ? PlannerV2ShellClipboard : PlannerV2Shell;
   return (
     <Shell

@@ -1,0 +1,35 @@
+{
+  "name": "InvisibleTask",
+  "type": "object",
+  "properties": {
+    "user_id": {
+      "type": "string"
+    },
+    "title": {
+      "type": "string"
+    },
+    "carry": {
+      "type": "string",
+      "description": "Display text of what she carries, e.g. 'You notice · decide · track'"
+    },
+    "handed": {
+      "type": "boolean",
+      "default": false
+    },
+    "handed_to": {
+      "type": "string",
+      "description": "Who the invisible task was handed over to"
+    },
+    "created_at": {
+      "type": "string"
+    },
+    "updated_at": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "user_id",
+    "title"
+  ],
+  "indexes": [ { "fields": ["created_date"] } ]
+}

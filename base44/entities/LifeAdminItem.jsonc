@@ -1,0 +1,45 @@
+{
+  "name": "LifeAdminItem",
+  "type": "object",
+  "properties": {
+    "user_id": {
+      "type": "string"
+    },
+    "title": {
+      "type": "string"
+    },
+    "due": {
+      "type": "string",
+      "description": "Free text, e.g. 'in 3 days'"
+    },
+    "disposition": {
+      "type": "string",
+      "enum": [
+        "delete",
+        "delegate",
+        "automate",
+        "do"
+      ],
+      "description": "Reduction-biased triage choice; null = not yet triaged (no default)"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "open",
+        "done"
+      ],
+      "default": "open"
+    },
+    "created_at": {
+      "type": "string"
+    },
+    "updated_at": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "user_id",
+    "title"
+  ],
+  "indexes": [ { "fields": ["created_date"] } ]
+}
