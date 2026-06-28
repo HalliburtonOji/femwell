@@ -249,6 +249,9 @@ import PartnerSync from './pages/PartnerSync';
 // future "Story" tab.
 // import HealthDashboard from './pages/HealthDashboard';
 import Garden from './pages/Garden';
+// ELITE (2026-06-28): /Garden renders the elevated GardenEliteShell. ONE-LINE REVERT:
+// map "Garden" back to Garden below. Old garden stays reachable at /GardenHub.
+import GardenEliteShell from './components/garden-elite/GardenEliteShell';
 import __Layout from './Layout.jsx';
 
 
@@ -257,7 +260,9 @@ export const PAGES = {
     "ContentPlayer": ContentPlayer,
     "CycleSettings": CycleSettings,
     "Explore": Explore,
-    "Garden": Garden,
+    "Garden": GardenEliteShell,
+    "GardenElite": GardenEliteShell,
+    "GardenHub": Garden,
     "Journal": JournalHub,
     "JournalClassic": Journal,
     "LifeStageCare": LifeStageCare,
