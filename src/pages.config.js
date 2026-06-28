@@ -80,6 +80,9 @@ import Pulse from './pages/Pulse';
 // ELITE (2026-06-28): /Pulse renders the elevated PulseEliteShell. ONE-LINE REVERT:
 // map "Pulse" back to Pulse below. Old Pulse stays reachable at /PulseHub.
 import PulseEliteShell from './components/pulse-elite/PulseEliteShell';
+// ELITE (2026-06-28): /ProgramsHub renders the elevated ProgramsEliteShell. ONE-LINE REVERT:
+// map "ProgramsHub" back to ProgramsHub below. Old hub stays reachable at /ProgramsHubClassic.
+import ProgramsEliteShell from './components/programs-elite/ProgramsEliteShell';
 import WeeklyInsights from './pages/WeeklyInsights';
 import Saved from './pages/Saved';
 import Deals from './pages/Deals';
@@ -269,7 +272,9 @@ export const PAGES = {
     "Profile": ProfileClipboardDemo,   // lock+swap 2026-06-22 (Halli-approved segmented rework) — `Profile` kept imported above as the one-line-revert fallback
     "ProgramDay": ProgramDay,
     "ProgramDetail": ProgramDetail,
-    "ProgramsHub": ProgramsHub,
+    "ProgramsHub": ProgramsEliteShell,
+    "ProgramsElite": ProgramsEliteShell,
+    "ProgramsHubClassic": ProgramsHub,
     "Today": TodayClipboardDemo,   // lock+swap 2026-06-22 (Halli-approved compact clipboard + nested loop deck) — TodayDemo6 kept imported above as the one-line-revert fallback
     "Trends": Trends,
     "Upgrade": Upgrade,
