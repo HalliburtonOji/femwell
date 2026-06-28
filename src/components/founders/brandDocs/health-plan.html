@@ -1,0 +1,264 @@
+<!doctype html>
+<html lang="en-GB"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>FemWell — Health Plan (letters in sliding cards + the hub)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500;1,600&family=Ephesis&display=swap" rel="stylesheet">
+<style>
+  :root{--paper:#ECE7DA;--paperHi:#F4EFE3;--paperDeep:#D8CFBC;--ink:#0B0805;--inkSoft:#1A140D;--muted:#2E261B;--gold:#A8893F;--crimson:#BC2E27;--oxblood:#7A1A12;--blush:#E8B4B8;--sage:#8FAF8F;--plum:#8E6E8E;--serif:'Cormorant Garamond',Georgia,serif;--script:'Ephesis',cursive;--sans:ui-sans-serif,system-ui,-apple-system,'Segoe UI',sans-serif;}
+  *{box-sizing:border-box}
+  body{margin:0;background:radial-gradient(120% 80% at 12% 0%,#F4EFE3 0%,rgba(244,239,227,0) 55%),radial-gradient(120% 90% at 100% 100%,#E4DDCC 0%,rgba(228,221,204,0) 50%),var(--paper);color:var(--ink);font-family:var(--serif);font-size:18px;line-height:1.6;-webkit-font-smoothing:antialiased}
+  .doc{max-width:680px;margin:0 auto;padding:30px 22px 90px}
+  h1.cover{font-family:var(--script);font-size:52px;color:var(--crimson);margin:6px 0 2px;line-height:1.04}
+  h2{font-family:var(--serif);font-style:italic;font-weight:600;font-size:27px;margin:0 0 6px;color:var(--oxblood)}
+  h3{font-family:var(--serif);font-weight:600;font-size:21px;margin:18px 0 6px}
+  h4{font-family:var(--sans);font-size:12px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--gold);margin:16px 0 4px}
+  .eyebrow{font-family:var(--sans);font-size:12px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--gold);margin-bottom:10px}
+  p{margin:0 0 12px}.lede{font-size:20px;line-height:1.55}
+  small,.cap{font-family:var(--sans);font-size:13px;color:var(--muted);line-height:1.5}
+  b,strong{font-weight:600}
+  a{color:var(--crimson);text-decoration:none;border-bottom:1px solid rgba(188,46,39,.3)}
+  .section{background:var(--paperHi);border:1px solid var(--paperDeep);border-left:4px solid var(--gold);border-radius:20px;padding:22px 20px;margin:18px 0;box-shadow:0 4px 20px rgba(58,44,26,.10),0 1px 4px rgba(58,44,26,.06);position:relative;overflow:hidden}
+  .section.crimson{border-left-color:var(--crimson)}.section.sage{border-left-color:var(--sage)}.section.plum{border-left-color:var(--plum)}.section.blush{border-left-color:var(--blush)}
+  .rule{height:1px;background:var(--gold);opacity:.32;margin:18px 0}
+  .center{text-align:center}
+  table{width:100%;border-collapse:collapse;font-size:14px;font-family:var(--sans);margin:8px 0}
+  th,td{text-align:left;padding:7px 8px;border-bottom:1px solid var(--paperDeep);vertical-align:top}
+  th{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--gold)}
+  td b{font-family:var(--serif);font-size:15px}
+  .toc a{display:block;font-family:var(--sans);font-size:15px;color:var(--inkSoft);text-decoration:none;border-bottom:1px solid var(--paperDeep);padding:6px 0}
+  .toc a span{color:var(--gold);font-weight:700;margin-right:10px}
+  .script{font-family:var(--script);color:var(--crimson)}
+  .pill{display:inline-block;font-family:var(--sans);font-size:12px;font-weight:600;padding:5px 11px;border-radius:999px;background:var(--paper);border:1px solid var(--paperDeep);margin:3px 4px 3px 0}
+  .pill.rec{background:#EAF1EA;border-color:var(--sage);color:#3f6b3f}
+  .pill.gap{background:#FBE9E6;border-color:var(--crimson);color:var(--crimson)}
+  .pill.ok{background:#EAF1EA;border-color:var(--sage);color:#3f6b3f}
+  .pill.ev{background:#EAF1EA;border-color:var(--sage);color:#3f6b3f}
+  .pill.pop{background:#FBF1E0;border-color:var(--gold);color:#8a6d22}
+  .pill.myth{background:#FBE9E6;border-color:var(--crimson);color:var(--crimson)}
+  .pill.safe{background:#FBE9E6;border-color:var(--crimson);color:var(--crimson)}
+  .lens{background:var(--paper);border:1px solid var(--paperDeep);border-left:3px solid var(--gold);border-radius:12px;padding:12px 14px;margin:8px 0}
+  .lens .nm{font-family:var(--serif);font-weight:600;font-size:18px;color:var(--ink);margin-bottom:2px}
+  .lens .nm .ix{font-family:var(--sans);font-size:11px;font-weight:700;letter-spacing:.1em;color:var(--gold);margin-right:8px;text-transform:uppercase}
+  .lens p{margin:0;font-size:15px;line-height:1.5;color:var(--inkSoft)}
+  .lens .src{font-family:var(--sans);font-size:12px;color:var(--muted);margin-top:5px}
+  .deck{border:1px dashed var(--gold);border-radius:14px;padding:6px 12px 12px;margin:10px 0;background:rgba(168,137,63,.04)}
+  .deck .dh{font-family:var(--sans);font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);margin:8px 0 2px}
+  .letter{background:var(--paperHi);border:1px solid var(--paperDeep);border-radius:16px;padding:16px 18px;margin:10px 0;box-shadow:0 2px 10px rgba(58,44,26,.08)}
+  .letter .dear{font-family:var(--serif);font-style:italic;font-size:20px;color:var(--oxblood);margin-bottom:6px}
+  .letter p{font-size:15px;line-height:1.55;color:var(--inkSoft)}
+  .letter .sig{font-family:var(--script);color:var(--crimson);font-size:24px;margin-top:6px}
+  .num{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:999px;background:var(--crimson);color:#fff;font-family:var(--sans);font-size:12px;font-weight:700;margin-right:8px;vertical-align:1px}
+  .foot{font-family:var(--sans);font-size:12px;color:var(--muted);text-align:center;margin-top:30px;line-height:1.6}
+  ul{margin:4px 0 12px;padding-left:20px}li{margin:3px 0}
+</style></head>
+<body><div class="doc">
+
+<div class="center" style="padding:14px 0 4px">
+  <div class="eyebrow">FemWell · Health · redesign + research plan · for your reaction</div>
+  <h1 class="cover">Letters, properly</h1>
+  <p class="lede" style="font-style:italic;max-width:540px;margin:8px auto 0">You love the health letters — and you're right to. They're not off-brand as an <i>idea</i>; they're off-brand in their <i>rendering</i>. This is the plan to keep the beloved letters and give them the elite card language — plus the research on what the Health room, the clinical corner of the app, should actually hold. <b>Plan only — nothing built from this yet.</b></p>
+</div>
+
+<div class="section">
+  <div class="eyebrow">The one-line thesis</div>
+  <p class="lede">The letter is the <b>content</b>; the sliding card is the <b>vessel</b>. Keep the warm "Dear you" voice — render it as <span class="script">FwFloraHero</span> + <b>SummaryCard</b> + a <b>ClipboardSlider of StackedCard letter-boards</b> with oxblood headings and living flora. Then grow Health from seven editorial letters into the credible <b>clinical room</b> that ties cycle → Pulse → Doctor Export.</p>
+  <h4>The headline moves</h4>
+  <ul>
+    <li><b>Keep the letters, change the vessel.</b> The "Please Write to Me" letter format is an evidence-based UK clinical movement — the fix is the elite card language, not a rewrite.</li>
+    <li><b>Grow the hub to the real territory.</b> Mirror the Renewed Women's Health Strategy taxonomy + the under-served conditions (endo · PCOS · fibroids · PMDD · thyroid) + the one gap no rival covers: <b>heart health</b>.</li>
+    <li><b>Close the loop:</b> Health (understand) → Pulse (the trend) → Doctor Export (the one-pager you hand over) — with a letter's "add to my GP prep" feeding it. And privacy as a headline feature.</li>
+  </ul>
+</div>
+
+<div class="section sage">
+  <div class="eyebrow">Contents</div>
+  <div class="toc">
+    <a href="#today"><span>1</span> What Health does TODAY (honest) + why it reads off-brand</a>
+    <a href="#why"><span>2</span> The letters are RIGHT — the evidence</a>
+    <a href="#cards"><span>3</span> Letters in sliding cards (the redesign)</a>
+    <a href="#hub"><span>4</span> What the Health hub should hold (cited)</a>
+    <a href="#safety"><span>5</span> Screening &amp; red-flags — safe by design</a>
+    <a href="#loop"><span>6</span> The loop: Health → Pulse → Doctor Export</a>
+    <a href="#data"><span>7</span> Build reality</a>
+    <a href="#first"><span>8</span> What I'd build first</a>
+  </div>
+</div>
+
+<!-- 1 · TODAY -->
+<a id="today"></a>
+<div class="section crimson">
+  <div class="eyebrow">1 · The honest picture</div>
+  <h2>What Health does today</h2>
+  <p>Live <span class="script">/Health</span> (routed in App.jsx, not pages.config) is a <b>7-letter tabbed reader</b>: <i>Your Story · Cycle &amp; Life Stage · Body &amp; Skin · Mind &amp; Sleep · Nourishment &amp; Gut · Intimacy · Your Care</b></i>. Each is a warm editorial "letter" with a Jess observation card, a "Dear [name]" salutation, expandable sections with key-fact callouts, "Ask Jess" + "Save for GP" actions, and a sign-off.</p>
+  <table>
+    <tr><th>Aspect</th><th>Status today</th></tr>
+    <tr><td><b>Real data woven in</b></td><td><span class="pill ok">real</span> reads <code>UserProfile</code>, <code>SymptomLogs</code>, <code>DailyCheckins</code>, <code>HabitLogs</code>, <code>HydrationLog</code> + <code>useCycleDay</code> → phase-aware openers, postscripts, the Story dashboard.</td></tr>
+    <tr><td><b>Jess + GP actions</b></td><td><span class="pill ok">real-ish</span> "Ask Jess" opens Jess in context; "Save for GP" builds a list to bring to an appointment.</td></tr>
+    <tr><td><b>Clinical content</b></td><td><span class="pill pop">seeded editorial</span> <code>HEALTH_CONTENT</code>, openers, news are hand-written (good, but static).</td></tr>
+    <tr><td><b>Hero / page signature</b></td><td><span class="pill gap">off-brand</span> <b>no FwFloraHero</b> — a custom masthead instead; the flora is imported but barely animated.</td></tr>
+    <tr><td><b>Card language</b></td><td><span class="pill gap">off-brand</span> <b>no SliderKit</b> (no SummaryCard / ClipboardSlider / StackedCard / TopChrome) — it's a single-column "paper letter", prose-only, not scannable.</td></tr>
+    <tr><td><b>Headings</b></td><td><span class="pill gap">off-brand</span> plain ink <code>#0B0805</code>, not the elite <b>oxblood <code>#7A1A12</code></b>.</td></tr>
+    <tr><td><b>Connected to the app</b></td><td><span class="pill gap">island</span> no visible links out to Pulse / Doctor Export / Nutrition — a content island.</td></tr>
+  </table>
+  <p class="cap"><b>Diagnosis (your instinct, confirmed):</b> the letters are thoughtful and the data is real — but the page predates the elite card language every other room now uses (Pulse · Nutrition · Lifestyle · Garden · Community). It reads like a beautiful printable PDF, not a FemWell elite surface. <b>The letter is right; the vessel is dated.</b></p>
+</div>
+
+<!-- 2 · WHY -->
+<a id="why"></a>
+<div class="section plum">
+  <div class="eyebrow">2 · The evidence (cited)</div>
+  <h2>The letters are right — keep them</h2>
+  <p>Before redrawing them, the case for <i>keeping</i> the letter format: it's a named UK clinical best-practice, not a gimmick.</p>
+
+  <div class="lens"><div class="nm"><span class="ix">01</span>"Please Write to Me" is an official UK movement</div>
+    <p>The Academy of Medical Royal Colleges guidance (refreshed <b>Feb 2026</b>) tells clinicians to write letters <b>directly to the patient</b>, in the second person, plain English, no jargon — approved by the Plain English Campaign. <b>→ FemWell's "Dear you" letters can honestly cite "in the spirit of the Royal Colleges' Please Write to Me".</b> <span class="pill ev">evidence</span></p>
+    <p class="src"><a href="https://www.aomrc.org.uk/wp-content/uploads/2026/02/Please_write_to_me_0226.pdf">AoMRC — Please Write to Me (2026)</a></p>
+  </div>
+
+  <div class="lens"><div class="nm"><span class="ix">02</span>Plain letters aid recall + ownership</div>
+    <p>Patients report forgetting what the doctor said by the time they get home; a letter you can re-read (and show another clinician) supports informed, shared decisions. <b>→ Frame each letter as a keepsake you can re-read and bring to an appointment.</b> <span class="pill ev">evidence</span></p>
+    <p class="src"><a href="https://gmcuk.wordpress.com/2019/03/14/please-write-to-me-guidance-from-the-academy-of-medical-royal-colleges/">GMC summary</a></p>
+  </div>
+
+  <div class="lens crimson" style="border-left-color:var(--crimson)"><div class="nm"><span class="ix">03</span>The literacy case is large and quantified</div>
+    <p><b>43%</b> of working-age adults in England can't understand textual health info (61% with numbers); UK average reading age ~9–11. <b>→ Write letter bodies at reading-age 9–11; a warm low-reading-age letter beats clinical bullet points for most women.</b> <span class="pill ev">evidence</span></p>
+    <p class="src"><a href="https://library.hee.nhs.uk/patient-information/patient-information/health-literacy-and-patient-information">NHS HEE — health literacy</a></p>
+  </div>
+
+  <div class="lens sage" style="border-left-color:var(--sage)"><div class="nm"><span class="ix">04</span>Narrative helps people understand a diagnosis</div>
+    <p>Narrative medicine / bibliotherapy — reading a "someone like you" account — increases knowledge and meaning, and builds trust. <b>→ Let a letter optionally carry one short, anonymised "someone like you" line, not only facts.</b> <span class="pill ev">evidence</span></p>
+    <p class="src"><a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC3034473/">Narrative-based medicine (PMC)</a></p>
+  </div>
+  <div class="rule"></div>
+  <p class="cap"><b>So the redesign is a rendering job, not a rewrite:</b> keep the voice + the "Dear you" + the plain-English discipline; change the vessel to the elite card language (§3). One caution from the evidence: warmth must never bury a red flag — urgent things use the safe-by-design pattern in §5.</p>
+</div>
+
+<!-- 3 · CARDS -->
+<a id="cards"></a>
+<div class="section sage">
+  <div class="eyebrow">3 · The redesign</div>
+  <h2>Letters in sliding cards</h2>
+  <p>The beloved letters, rendered in the same elite language as Pulse/Nutrition/Lifestyle/Garden — <code>FwFloraHero</code>, <code>SummaryCard</code>, <code>ClipboardSlider</code> → <code>StackedCard</code>, <code>TopChrome</code>, oxblood headings, living flora.</p>
+
+  <div class="deck"><div class="dh">▸ the signature top</div>
+    <div class="lens"><div class="nm"><span class="ix">Hero</span>FwFloraHero, generic title</div><p>"Your health" in oxblood, phase-bloom + carved heart + creature (replacing the custom masthead). TopChrome = Jump-to (the 7 letters) + Calendar. <span class="pill gap">reskin</span></p></div>
+    <div class="lens"><div class="nm"><span class="ix">Glance</span>One SummaryCard</div><p>"Your health today" — this week's flagged patterns, next screening due, "1 thing for your GP prep" — what every other elite room opens with. <span class="pill gap">new</span></p></div>
+  </div>
+
+  <div class="deck"><div class="dh">▸ each letter = a StackedCard board</div>
+    <div class="lens"><div class="nm"><span class="ix">Top</span>The letter, in a card</div><p>"Dear you," salutation (serif) → plain-English body at reading-age 9–11 → the phase-aware Jess observation. Oxblood section heads. The warmth, kept. <span class="pill ok">content kept</span></p></div>
+    <div class="lens"><div class="nm"><span class="ix">Bottom</span>Scannable + actionable</div><p>Key-fact sub-cards (swipeable), "add to my GP prep", "ask Jess", a "someone like you" line, and any red-flag "worth a check" card — the actions the prose hides today. <span class="pill gap">card-ify</span></p></div>
+  </div>
+
+  <h4>What a letter-board looks like (sketch)</h4>
+  <div class="letter">
+    <div class="dear">Dear you,</div>
+    <p>You're on day 22 — the quiet, inward week. If your skin's changed and your patience is short, that's the luteal turn, not a failing. Here's what's worth knowing, and the one thing worth asking your GP if it keeps up…</p>
+    <p style="margin-top:6px"><span class="pill ok">add to GP prep</span><span class="pill">ask Jess</span><span class="pill safe">worth a check ›</span></p>
+    <div class="sig">— with care, FemWell</div>
+  </div>
+  <p class="cap">Same letter, same voice — now a board you can swipe, scan and act on, with the flora hero above it and the rest of the app one tap away. The 7 letters become the 7 boards of the ClipboardSlider; the "Jump to" sheet lists them.</p>
+</div>
+
+<!-- 4 · HUB -->
+<a id="hub"></a>
+<div class="section plum">
+  <div class="eyebrow">4 · The clinical territory (cited)</div>
+  <h2>What the Health hub should hold</h2>
+  <p>Today's 7 letters are a strong spine. The research says where to deepen — anchored to the <b>Renewed Women's Health Strategy for England (April 2026)</b> and the women's-health-gap evidence.</p>
+
+  <div class="lens crimson" style="border-left-color:var(--crimson)"><div class="nm"><span class="ix">01</span>The gap is being dismissed, not just under-informed</div>
+    <p>The UK has the G20's largest female health gap; <b>80% of women feel they haven't been listened to</b>. <b>→ Make "being heard / being prepared" the hub's emotional spine — the "second opinion in your pocket" letter that validates + arms her with NICE-aligned questions.</b> <span class="pill ev">evidence</span></p>
+    <p class="src"><a href="https://www.nuffieldtrust.org.uk/news-item/silence-sexism-and-stigma-the-state-of-working-age-women-s-health-in-england">Nuffield Trust</a></p>
+  </div>
+
+  <div class="lens"><div class="nm"><span class="ix">02</span>Mirror the Strategy's taxonomy</div>
+    <p>The 2026 Strategy names: menstrual &amp; gynae conditions, fertility &amp; loss, maternity, menopause, mental health, cancers — and adds a <b>menopause question to the NHS Health Check (40–74)</b>. <b>→ Use this as the hub's section spine — the canonical UK list + a Doctor-Export credibility anchor.</b> <span class="pill ev">evidence</span></p>
+    <p class="src"><a href="https://www.gov.uk/government/news/womens-voices-to-be-at-the-heart-of-renewed-health-strategy">GOV.UK — Renewed Strategy 2026</a></p>
+  </div>
+
+  <div class="lens sage" style="border-left-color:var(--sage)"><div class="nm"><span class="ix">03</span>First-class rooms for the under-served conditions</div>
+    <p>Endometriosis now averages <b>9 years 4 months</b> to diagnose (~11 for diverse ethnic communities); fibroids hit Black women younger and harder; 62% were unsatisfied with treatment info. <b>→ Give endo · PCOS · fibroids · PMDD · adenomyosis · thyroid their own letter-boards, ethnicity-aware — exactly what the system under-teaches.</b> <span class="pill ev">evidence</span></p>
+    <p class="src"><a href="https://www.endometriosis-uk.org/new-report-highlights-barriers-womens-health-care">Endometriosis UK</a> · <a href="https://www.rcog.org.uk/news/rcog-warns-gynaecology-system-is-failing-women-with-fibroids-with-ethnic-minority-women-hit-hardest/">RCOG — fibroids</a></p>
+  </div>
+
+  <div class="lens crimson" style="border-left-color:var(--crimson)"><div class="nm"><span class="ix">04</span>The standout gap no rival covers: heart health</div>
+    <p>Coronary heart disease kills roughly <b>twice as many UK women as breast cancer</b>, yet women are more often misdiagnosed and present atypically (jaw/back pain, nausea, breathlessness). <b>→ A heart-health letter is a genuine differentiator — almost every women's app omits CVD.</b> <span class="pill ev">evidence</span></p>
+    <p class="src"><a href="https://www.bhf.org.uk/informationsupport/heart-matters-magazine/news/heart-attacks-in-women">BHF — heart attacks in women</a></p>
+  </div>
+  <p class="cap"><b>The fuller spine (11 stages):</b> menstrual · contraception · fertility/TTC · pregnancy &amp; postpartum · peri/menopause — <b>plus</b> an under-served-conditions room, pelvic health/continence, bone health, <b>heart health</b>, breast &amp; cervical awareness, mental health, sexual health.</p>
+</div>
+
+<!-- 5 · SAFETY -->
+<a id="safety"></a>
+<div class="section crimson">
+  <div class="eyebrow">5 · Safe by design</div>
+  <h2>Screening reminders &amp; red-flags</h2>
+  <p>A gentle prevention layer is high-value and low-risk — it <b>signposts</b>, never diagnoses.</p>
+  <h4>Screening tracker (opt-in, link-out only)</h4>
+  <table>
+    <tr><th>Programme</th><th>Current UK cadence (track this, not the old one)</th></tr>
+    <tr><td><b>Cervical / HPV</b></td><td>25–64; <b>HPV-negative 25–49 now 5-yearly</b> (from July 2025); self-sampling rolling out 2026.</td></tr>
+    <tr><td><b>Breast</b></td><td>50–70, every 3 years.</td></tr>
+    <tr><td><b>Bowel</b></td><td>home FIT kit, 60–74 every 2 years (rolling down to 50).</td></tr>
+    <tr><td><b>Your own results</b></td><td>log BP · cholesterol · ferritin · thyroid · vit D · DEXA over time → surface in Pulse (the NHS Health Check omits most of these).</td></tr>
+  </table>
+  <p class="src"><a href="https://news.cancerresearchuk.org/2025/06/10/nhs-england-changes-cervical-screening-to-every-5-years/">CRUK — cervical 5-yearly</a> · <a href="https://www.nhs.uk/tests-and-treatments/nhs-health-check/">NHS Health Check</a></p>
+
+  <h4>Red-flags — calm "worth a check", never interpretation</h4>
+  <p>The MHRA regulates on <b>intended purpose</b>: "input symptom → NHS resource" is fine; "input symptom → what it might mean" is a medical device. So every red flag is <b>signposting</b>: postmenopausal bleeding, a new breast lump/change, severe/sudden pelvic pain, persistent bloating, unexplained intermenstrual/postcoital bleeding → a calm "this is always worth getting checked — here's how" card + one-tap "add to GP prep". <b>Never diagnose, never give a probability, never imply we replace care.</b> Tone: "most causes are not serious, but this one should always be checked." <span class="pill safe">safety rail</span></p>
+  <p class="src"><a href="https://www.macmillan.org.uk/healthcare-professionals/cancer-pathways/prevention-and-diagnosis/rapid-referral-guidelines/gynaecological-cancer">Macmillan — referral pathways</a> · <a href="https://compliancenavigator.bsigroup.com/en/medicaldeviceblog/uk-guidance-on-stand-alone-medical-device-software-including-apps-issued/">MHRA / SaMD guidance</a></p>
+</div>
+
+<!-- 6 · LOOP -->
+<a id="loop"></a>
+<div class="section">
+  <div class="eyebrow">6 · The differentiated loop</div>
+  <h2>Health → Pulse → Doctor Export</h2>
+  <p>The value over "just tracking" is the closed loop — and it's the thing the research says clinicians actually want.</p>
+  <table>
+    <tr><th>Step</th><th>What it does</th></tr>
+    <tr><td><b>Health (understand)</b></td><td>The letters explain; "add to my GP prep" + red-flag cards collect what matters.</td></tr>
+    <tr><td><b>Pulse (the trend)</b></td><td>Symptom/cycle patterns over time (already elite) — surfaces exactly the under-diagnosed-condition signals.</td></tr>
+    <tr><td><b>Doctor Export (the one-pager)</b></td><td>A <b>structured, dated, editable, plain-English</b> summary (frequency · severity · duration · cycle-day) — clinician-readable, answering the "patient data isn't reliable" objection. Beats Balance's Health Report by spanning all 11 stages.</td></tr>
+  </table>
+  <h4>Privacy as a headline feature</h4>
+  <p>Post-Meta/Flo (a 2025 jury found Meta illegally collected Flo's reproductive data), period-app privacy is a live fault line. <b>→ Lead with UK-GDPR: anonymous-safe by default, no third-party ad SDKs on health data, export/delete in plain sight — and say so in the Health room footer.</b> <span class="pill ev">differentiator</span></p>
+  <p class="src"><a href="https://www.balance-menopause.com/balance-app/">Balance — editable Health Report (the pattern to beat)</a> · <a href="https://www.thebureauinvestigates.com/stories/2025-09-03/meta-was-caught-eavesdropping-on-a-period-app-could-this-be-the-start-of-a-pushback-against-big-tech">TBIJ — Meta/Flo verdict</a></p>
+</div>
+
+<!-- 7 · DATA -->
+<a id="data"></a>
+<div class="section crimson">
+  <div class="eyebrow">7 · Honest build reality</div>
+  <h2>What this takes</h2>
+  <ul>
+    <li><b>Rule-safe (no new function):</b> the whole redesign is a <b>re-render</b> of existing content into SliderKit + FwFloraHero — reuses the components already live on 5 pages. The new letters (heart, endo, etc.) are editorial content. Screening tracker + "your results over time" + GP-prep are small additive entities (e.g. <code>ScreeningRecord</code>, <code>GpPrepItem</code>) — additive, no new function.</li>
+    <li><b>Reuses real data already wired:</b> <code>SymptomLogs</code>, <code>DailyCheckins</code>, <code>HydrationLog</code>, <code>HabitLogs</code>, cycle/phase — Health already reads these; the loop just routes them to Pulse + Doctor Export.</li>
+    <li><b>Clinical-safety pass required:</b> two figures flagged by research need a human/clinical check before shipping copy (the postmenopausal-bleeding-to-cancer rate vs NICE NG12; the exact Strategy menopause-Health-Check wording). And all red-flag copy should get a §5 safe-by-design review.</li>
+    <li><b>Demo-first, like the others:</b> build a <code>/HealthLettersDemo</code> (seeded) → FoundersOS → your approval → swap live with a one-line revert, exactly as Pulse/Nutrition/Garden shipped.</li>
+  </ul>
+</div>
+
+<!-- 8 · FIRST -->
+<a id="first"></a>
+<div class="section plum">
+  <div class="eyebrow">8 · Recommendation</div>
+  <h2>What I'd build first</h2>
+  <ul>
+    <li><b>1. Re-render the 7 letters in the elite card language</b> (FwFloraHero + SummaryCard + ClipboardSlider of StackedCard letter-boards, oxblood, flora) — the core of what you asked for, all reskin + reuse, zero rule-risk.</li>
+    <li><b>2. Wire the loop:</b> "add to my GP prep" + red-flag cards → Doctor Export; cross-link Pulse. Makes Health stop being an island.</li>
+    <li><b>3. The safe-by-design layer:</b> screening tracker (current cadences) + calm red-flag "worth a check" cards. High trust, clinically careful.</li>
+    <li><b>4. New letter-boards for the under-served:</b> heart health (the standout gap), endo/PCOS/fibroids/PMDD/thyroid, ethnicity-aware.</li>
+    <li><b>5. Privacy-as-a-feature footer + the "second opinion in your pocket" letter</b> — the brand-trust moments unique to a UK women's app.</li>
+  </ul>
+  <p class="lede" style="margin-top:14px">The letters you love, in the card language the rest of the app already speaks — plus the clinical depth that makes Health the credible corner. <b>Nothing built from this yet — react first, then we demo (a /HealthLettersDemo) before touching live Health.</b></p>
+</div>
+
+<div class="foot">
+  FemWell · Health · redesign + research plan · 29 June 2026<br>
+  Clinical claims sourced inline (NHS/DHSC/AoMRC/RCOG/NICE/BHF, 2024–26); safe-by-design (signposting, never diagnosis). Two figures flagged for a clinical pass before shipped copy. Live Health unchanged pending your approval.
+</div>
+
+</div></body></html>
