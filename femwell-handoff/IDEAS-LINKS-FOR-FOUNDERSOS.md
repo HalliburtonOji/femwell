@@ -27,7 +27,10 @@
 | Doc (femwell-handoff/) | brandDocs slug | suggested FoundersOS key | group | accent |
 |---|---|---|---|---|
 | COMMUNITY-PLAN.html | community-plan.html | "Community +2" | Current | crimson |
-<!-- PULSE-PLAN, DOCTOR-EXPORT-PLAN, PROGRAMS-PLAN, GARDEN-PLAN, JESS-PLAN to follow -->
+| PULSE-PLAN.html | pulse-plan.html | "Pulse +2" | Current | plum |
+<!-- DOCTOR-EXPORT-PLAN, PROGRAMS-PLAN, GARDEN-PLAN, JESS-PLAN to follow -->
+
+Pulse render branch: `{tab === "Pulse +2" && <BrandDocFrame html={pulsePlanHtml} title="FemWell — Pulse Level Up (+2)" />}` · import `import pulsePlanHtml from "@/components/founders/brandDocs/pulse-plan.html?raw";` · desc "Pulse page — next-2-levels plan (own-median predictions, correlation engine, anomaly→NHS flag, wearable import)".
 
 Wiring per Batch-2 doc (3 edits each): e.g. `import communityPlanHtml from "@/components/founders/brandDocs/community-plan.html?raw";` · a `{ kind:"doc", key:"Community +2", group: CAT.CURRENT, status:"new", accent:"crimson", desc:"Community page — next-2-levels plan (trust layer, moderated DMs, IRL bridge, OSA compliance)" }` CATALOG entry · a `{tab === "Community +2" && <BrandDocFrame html={communityPlanHtml} title="FemWell — Community Level Up (+2)" />}` render branch.
 

@@ -1,0 +1,296 @@
+<!doctype html>
+<html lang="en-GB"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>FemWell — Pulse Level Up (+2)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500;1,600&family=Ephesis&display=swap" rel="stylesheet">
+<style>
+  :root{--paper:#ECE7DA;--paperHi:#F4EFE3;--paperDeep:#D8CFBC;--ink:#0B0805;--inkSoft:#1A140D;--muted:#2E261B;--gold:#A8893F;--crimson:#BC2E27;--oxblood:#7A1A12;--blush:#E8B4B8;--sage:#8FAF8F;--plum:#8E6E8E;--serif:'Cormorant Garamond',Georgia,serif;--script:'Ephesis',cursive;--sans:ui-sans-serif,system-ui,-apple-system,'Segoe UI',sans-serif;}
+  *{box-sizing:border-box}
+  body{margin:0;background:radial-gradient(120% 80% at 12% 0%,#F4EFE3 0%,rgba(244,239,227,0) 55%),radial-gradient(120% 90% at 100% 100%,#E4DDCC 0%,rgba(228,221,204,0) 50%),var(--paper);color:var(--ink);font-family:var(--serif);font-size:18px;line-height:1.6;-webkit-font-smoothing:antialiased}
+  .doc{max-width:680px;margin:0 auto;padding:30px 22px 90px}
+  h1.cover{font-family:var(--script);font-size:52px;color:var(--crimson);margin:6px 0 2px;line-height:1.04}
+  h2{font-family:var(--serif);font-style:italic;font-weight:600;font-size:27px;margin:0 0 6px;color:var(--oxblood)}
+  h3{font-family:var(--serif);font-weight:600;font-size:21px;margin:18px 0 6px}
+  h4{font-family:var(--sans);font-size:12px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--gold);margin:16px 0 4px}
+  .eyebrow{font-family:var(--sans);font-size:12px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--gold);margin-bottom:10px}
+  p{margin:0 0 12px}.lede{font-size:20px;line-height:1.55}
+  small,.cap{font-family:var(--sans);font-size:13px;color:var(--muted);line-height:1.5}
+  b,strong{font-weight:600}
+  a{color:var(--crimson);text-decoration:none;border-bottom:1px solid rgba(188,46,39,.3)}
+  .section{background:var(--paperHi);border:1px solid var(--paperDeep);border-left:4px solid var(--gold);border-radius:20px;padding:22px 20px;margin:18px 0;box-shadow:0 4px 20px rgba(58,44,26,.10),0 1px 4px rgba(58,44,26,.06);position:relative;overflow:hidden}
+  .section.crimson{border-left-color:var(--crimson)}.section.sage{border-left-color:var(--sage)}.section.plum{border-left-color:var(--plum)}.section.blush{border-left-color:var(--blush)}
+  .rule{height:1px;background:var(--gold);opacity:.32;margin:18px 0}
+  .center{text-align:center}
+  table{width:100%;border-collapse:collapse;font-size:14px;font-family:var(--sans);margin:8px 0}
+  th,td{text-align:left;padding:7px 8px;border-bottom:1px solid var(--paperDeep);vertical-align:top}
+  th{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--gold)}
+  td b{font-family:var(--serif);font-size:15px}
+  .toc a{display:block;font-family:var(--sans);font-size:15px;color:var(--inkSoft);text-decoration:none;border-bottom:1px solid var(--paperDeep);padding:6px 0}
+  .toc a span{color:var(--gold);font-weight:700;margin-right:10px}
+  .script{font-family:var(--script);color:var(--crimson)}
+  .pill{display:inline-block;font-family:var(--sans);font-size:12px;font-weight:600;padding:5px 11px;border-radius:999px;background:var(--paper);border:1px solid var(--paperDeep);margin:3px 4px 3px 0}
+  .pill.rec{background:#EAF1EA;border-color:var(--sage);color:#3f6b3f}
+  .pill.gap{background:#FBE9E6;border-color:var(--crimson);color:var(--crimson)}
+  .pill.ok{background:#EAF1EA;border-color:var(--sage);color:#3f6b3f}
+  .pill.ev{background:#EAF1EA;border-color:var(--sage);color:#3f6b3f}
+  .pill.pop{background:#FBF1E0;border-color:var(--gold);color:#8a6d22}
+  .pill.myth{background:#FBE9E6;border-color:var(--crimson);color:var(--crimson)}
+  .pill.l1{background:#EAF1EA;border-color:var(--sage);color:#3f6b3f}
+  .pill.l2{background:#F0E8F0;border-color:var(--plum);color:#6d4f6d}
+  .lens{background:var(--paper);border:1px solid var(--paperDeep);border-left:3px solid var(--gold);border-radius:12px;padding:12px 14px;margin:8px 0}
+  .lens .nm{font-family:var(--serif);font-weight:600;font-size:18px;color:var(--ink);margin-bottom:2px}
+  .lens .nm .ix{font-family:var(--sans);font-size:11px;font-weight:700;letter-spacing:.1em;color:var(--gold);margin-right:8px;text-transform:uppercase}
+  .lens p{margin:0;font-size:15px;line-height:1.5;color:var(--inkSoft)}
+  .lens .src{font-family:var(--sans);font-size:12px;color:var(--muted);margin-top:5px}
+  .deck{border:1px dashed var(--gold);border-radius:14px;padding:6px 12px 12px;margin:10px 0;background:rgba(168,137,63,.04)}
+  .deck .dh{font-family:var(--sans);font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);margin:8px 0 2px}
+  .num{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:999px;background:var(--crimson);color:#fff;font-family:var(--sans);font-size:12px;font-weight:700;margin-right:8px;vertical-align:1px}
+  .foot{font-family:var(--sans);font-size:12px;color:var(--muted);text-align:center;margin-top:30px;line-height:1.6}
+  ul{margin:4px 0 12px;padding-left:20px}li{margin:3px 0}
+</style></head>
+<body><div class="doc">
+
+<div class="center" style="padding:14px 0 4px">
+  <div class="eyebrow">FemWell · Pulse · LEVEL UP (+2) · for your reaction</div>
+  <h1 class="cover">Patterns, made honest</h1>
+  <p class="lede" style="font-style:italic;max-width:540px;margin:8px auto 0">Pulse is live and genuinely deep — three boards of real charts over your own data, "what your body repeats", never a cold dashboard. This is the plan for the <b>next two levels</b> — making the predictions honest, adding the cross-life-domain correlations no rival ships responsibly, a gentle "this cycle is different" safety flag, real wearable trends, and a year-in-patterns retrospective. <b>Plan only — nothing built from this yet.</b></p>
+</div>
+
+<div class="section">
+  <div class="eyebrow">The one-line thesis</div>
+  <p class="lede">Level 1 turned a woman's logs into <b>gentle phase patterns and trends</b>. Level <span class="script">+2</span> makes Pulse <b>more accurate, more revealing, and safer</b> — predictions anchored to her <i>own</i> median with honest error bars, a correlation engine that finds "X tends to go with Y" across her whole life (not just symptoms) <i>with</i> the causation guardrails Bearable lacks, an evidenced anomaly flag that routes to the NHS, and real wearable trends — all in the anxiety-safe, UK-private voice that is the moat.</p>
+  <h4>The headline moves</h4>
+  <ul>
+    <li><b>Level +1 — accuracy &amp; honesty.</b> Anchor every prediction to her own median (not 28 days) with error bars, add predicted-symptom forecasting ("you tend to get headaches ~day 24"), a "this cycle is different → NHS" anomaly flag, and a clinician-ready export (replacing <code>window.print()</code>).</li>
+    <li><b>Level +2 — the leaps.</b> A guarded <b>correlation-discovery engine</b> across life domains (mood↔sleep, energy↔food, social-energy↔phase, spend↔phase), real <b>wearable import</b> (temp/RHR/HRV by phase), and a warm <b>"your year in patterns"</b> retrospective.</li>
+    <li><b>One gated decision:</b> real device import (Apple Health / Oura) needs an OAuth/API pull — the one capability that may need a small function. Everything else is client-side stats or rides the existing Jess agent. Flagged in §5.</li>
+  </ul>
+</div>
+
+<div class="section sage">
+  <div class="eyebrow">Contents</div>
+  <div class="toc">
+    <a href="#today"><span>1</span> What Pulse does TODAY (honest, post-build)</a>
+    <a href="#research"><span>2</span> The deeper evidence (cited) — the frontier</a>
+    <a href="#l1"><span>3</span> Level +1 — accuracy &amp; honesty (in the card language)</a>
+    <a href="#l2"><span>4</span> Level +2 — the leaps (in the card language)</a>
+    <a href="#gated"><span>5</span> The one gated call: real wearable import</a>
+    <a href="#ties"><span>6</span> How it weaves into the rest of the app</a>
+    <a href="#data"><span>7</span> Data &amp; build reality</a>
+    <a href="#first"><span>8</span> What I'd build first</a>
+  </div>
+</div>
+
+<!-- 1 · TODAY -->
+<a id="today"></a>
+<div class="section crimson">
+  <div class="eyebrow">1 · The honest picture (post-build)</div>
+  <h2>What Pulse does today</h2>
+  <p>The live <span class="script">/Pulse</span> elite shell (<code>PulseEliteShell</code>) self-loads real entities and mounts the real Pulse components across three boards — This week · Patterns · Over time. Honest real-vs-stubbed audit:</p>
+  <table>
+    <tr><th>Surface</th><th>Status today</th></tr>
+    <tr><td><b>This week</b> — period countdown · predictive (Jess) · AI health summary · weekly read-back · glance grid · "what now" action bar</td><td><span class="pill ok">real</span> reads <code>CycleEvents/DailyCheckins/SymptomLogs/HabitLogs/MealLog/WeeklyInsights</code>; weekly insight auto-generates Sundays.</td></tr>
+    <tr><td><b>Patterns</b> — pattern insight cards · condition pulse · wearable week · health overview</td><td><span class="pill ok">real</span> <code>PatternInsightCards</code> reads <code>InsightCards</code>; <code>ConditionPulseCards</code> reads the user's conditions.</td></tr>
+    <tr><td><b>Over time</b> — metric-by-phase bar · time-series line · habit completion · sleep/mood/energy lines · skin&amp;hair link</td><td><span class="pill ok">real</span> live <b>recharts</b> over 3/6-month windows, computed from her own check-ins &amp; symptoms by cycle day.</td></tr>
+    <tr><td><b>Phase model</b> driving the charts</td><td><span class="pill pop">simplified</span> a fixed day-of-cycle split (≤5 menstrual, ≤13 follicular, ≤16 ovulatory, else luteal) — not anchored to her own median cycle length.</td></tr>
+    <tr><td><b>Predictions</b> (period countdown / predictive card)</td><td><span class="pill pop">real-but-point</span> present, but shown as confident points without explicit error bars / "your median, not 28".</td></tr>
+    <tr><td><b>Wearable week card</b></td><td><span class="pill gap">entity, no pipe</span> reads a real <code>WearableSync</code> entity, but <b>nothing populates it from a real device</b> — there's no Apple Health / Oura import. Empty for most users.</td></tr>
+    <tr><td><b>Correlation discovery</b> across factors</td><td><span class="pill gap">partial</span> shows sleep/mood/energy on one chart + a phase-peak sentence, but no engine that <i>discovers</i> "X tends to go with Y" with confidence + a not-causation caveat.</td></tr>
+    <tr><td><b>"This cycle is different" anomaly flag</b></td><td><span class="pill gap">not yet</span> no deviation detection / NHS-routed nudge.</td></tr>
+    <tr><td><b>Predicted-symptom forecasting</b></td><td><span class="pill gap">not yet</span> charts read backwards; nothing forecasts "you tend to get migraines ~day 24".</td></tr>
+    <tr><td><b>Export</b></td><td><span class="pill pop">basic</span> "Export PDF" = <code>window.print()</code> — not a curated clinician export (that lives in Doctor Export).</td></tr>
+  </table>
+  <p class="cap"><b>Takeaway:</b> the analytics engine is real, rich and on-brand-gentle — well ahead of most femtech. The +2 work is (a) prediction <i>honesty</i>, (b) the correlation + forecasting + anomaly intelligence that turns charts into insight, and (c) finishing the wearable pipe.</p>
+</div>
+
+<!-- 2 · RESEARCH -->
+<a id="research"></a>
+<div class="section plum">
+  <div class="eyebrow">2 · The frontier (cited, 2023–26)</div>
+  <h2>The deeper evidence</h2>
+  <p>Each row flagged <span class="pill ev">evidence</span> / <span class="pill pop">popular-practice</span> / <span class="pill myth">myth/risk</span>. Women-specific.</p>
+
+  <div class="lens"><div class="nm"><span class="ix">01</span>The "28-day cycle" is a myth — only ~16% have one</div>
+    <p>In Flo's cohort (n≈1.58M) just <b>16.3%</b> had a 28-day median; 91% fell in 21–35 days. <b>→ Anchor every prediction to her OWN median, never 28 — the single biggest honesty fix.</b> <span class="pill ev">evidence</span></p>
+    <p class="src"><a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC7381001/">Flo cycle-variability cohort (PMC)</a></p>
+  </div>
+
+  <div class="lens"><div class="nm"><span class="ix">02</span>Predictions are decent, not infallible — show error bars</div>
+    <p>Pooled wearable cycle accuracy ≈0.88 but sensitivity/specificity ≈0.80 (~1 in 5 calls wrong); ML labelling of cycle-day-1 ≈61%, menses prediction ≈51%. <b>→ Present a window + confidence, never a single confident date.</b> <span class="pill ev">evidence</span></p>
+    <p class="src"><a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC12886881/">Wearable accuracy meta-analysis</a> · <a href="https://www.rbmojournal.com/article/S1472-6483(25)00002-1/abstract">ML cycle prediction 2025</a></p>
+  </div>
+
+  <div class="lens"><div class="nm"><span class="ix">03</span>Ovulation roams — never a single certain day</div>
+    <p>In the landmark prospective study, the fertile window fell within the "textbook" days 10–17 in only ~30% of women; every day from cycle-day 6–21 carried ≥10% probability. <b>→ Ovulation as a probabilistic window, with a clear "calendar maths can't see late ovulation" note.</b> <span class="pill ev">evidence</span></p>
+    <p class="src"><a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC27529/">Wilcox fertile-window study</a></p>
+  </div>
+
+  <div class="lens sage" style="border-left-color:var(--sage)"><div class="nm"><span class="ix">04</span>A model that learns the individual beats fixed averages</div>
+    <p>Bayesian/generative models that account for self-tracking gaps improve next-cycle prediction over naïve averaging; Clue openly predicts from the last 12 cycles and states stress/sleep/meds reduce accuracy. <b>→ Personalised, transparent model + honest caveats (copy Clue's transparency).</b> <span class="pill ev">evidence</span></p>
+    <p class="src"><a href="https://academic.oup.com/jamia/article/29/1/3/6371799">Generative cycle model (JAMIA)</a> · <a href="https://support.helloclue.com/hc/en-us/articles/214434406">Clue method</a></p>
+  </div>
+
+  <div class="lens"><div class="nm"><span class="ix">05</span>Cyclical symptom patterns are real — when logged forward</div>
+    <p>PMDD's gold standard is <b>2 cycles of prospective daily ratings</b> (recall over-attributes); menstrually-related migraine is well-evidenced (peri-menstrual attacks differ measurably). <b>→ FemWell's forward-logged mood/symptom-by-phase is clinically meaningful; gate forecasts behind ≥2–3 logged cycles.</b> <span class="pill ev">evidence</span></p>
+    <p class="src"><a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC11877197/">PMDD prospective rating</a> · <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC8605615/">Menstrual migraine e-diary</a></p>
+  </div>
+
+  <div class="lens crimson" style="border-left-color:var(--crimson)"><div class="nm"><span class="ix">06</span>Beware the pseudoscience — seed-cycling &amp; rigid "cycle syncing"</div>
+    <p>Seed cycling has <b>no scientific support</b>; the largest review (78 studies) found cycle phase has <i>trivial</i> effects on exercise performance and no evidence for "phase-based productivity". <b>→ Offer gentle phase <i>awareness</i> (ease off on the heaviest days), never deterministic "do X on day Y" prescriptions.</b> <span class="pill myth">myth</span></p>
+    <p class="src"><a href="https://www.scientificamerican.com/article/does-seed-cycling-help-balance-hormones/">Seed cycling (Sci-Am)</a> · <a href="https://helloclue.com/articles/diet-and-exercise/the-truth-about-cycle-syncing-and-exercise">Cycle-syncing &amp; exercise (Clue)</a></p>
+  </div>
+
+  <div class="lens"><div class="nm"><span class="ix">07</span>Insight must be interpreted — chart-dumps stall people</div>
+    <p>Personal-informatics research: raw data strands users at "reflection"; the system must do the interpretation. <b>→ Ship insights ("your mood tends to dip late-luteal"), not chart-walls — exactly Pulse's "what your body repeats" framing.</b> <span class="pill ev">evidence</span></p>
+    <p class="src"><a href="https://www.tandfonline.com/doi/full/10.1080/07370024.2016.1276456">Lived informatics (HCI)</a> · <a href="https://www.jmir.org/2024/1/e58088">Health-viz guidance (JMIR 2024)</a></p>
+  </div>
+
+  <div class="lens crimson" style="border-left-color:var(--crimson)"><div class="nm"><span class="ix">08</span>n-of-1 correlations are noisy — guardrails are mandatory</div>
+    <p>Individuals rarely run valid self-correlations; naïve correlation invites false discovery. <b>→ A correlation engine needs a minimum-data gate, restrained multiple comparisons, a confidence note, and an explicit "a pattern, not a cause" line on every card.</b> <span class="pill myth">risk</span></p>
+    <p class="src"><a href="https://par.nsf.gov/servlets/purl/10050183">Self-experiment validity (NSF)</a></p>
+  </div>
+
+  <div class="lens crimson" style="border-left-color:var(--crimson)"><div class="nm"><span class="ix">09</span>Over-tracking can become anxiety ("orthosomnia")</div>
+    <p>Clinicians report patients fixating on wearable "scores", chasing perfect numbers — a named harm. Sensitive cycle data raises the stakes. <b>→ Gentle narrative default, "patterns not scores", and a dial to turn detail down.</b> <span class="pill myth">risk</span></p>
+    <p class="src"><a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC10796313/">Orthosomnia / quantified-self harm</a></p>
+  </div>
+
+  <div class="lens sage" style="border-left-color:var(--sage)"><div class="nm"><span class="ix">10</span>Wearable physiology by phase is real (with caveats)</div>
+    <p>Wrist temp gives a <b>retrospective</b> ovulation estimate (~1.6-day error); resting HR rises ~2–7 bpm follicular→luteal (WHOOP +2.73); HRV declines into luteal. PPG wrist data is noisier than chest straps. <b>→ Surface temp/RHR/HRV by phase as <i>trends with a reliability note</i>; never a contraceptive claim (that's Natural Cycles' regulated turf).</b> <span class="pill ev">evidence</span></p>
+    <p class="src"><a href="https://academic.oup.com/humrep/article/40/3/469/7989515">Wrist-temp ovulation (Hum Reprod)</a> · <a href="https://www.whoop.com/us/en/thelocker/new-whoop-research-on-the-menstrual-cycle/">WHOOP RHR</a></p>
+  </div>
+
+  <div class="lens sage" style="border-left-color:var(--sage)"><div class="nm"><span class="ix">11</span>Irregularity is the perimenopause signal — and clinically actionable</div>
+    <p>NHS: a change in your normal pattern is often the first perimenopause sign; report bleeding &gt;1 week, more often than every 3 weeks, or any bleed ≥12 months post-period. <b>→ A "this cycle is different" flag that routes to NHS thresholds (never diagnoses) is the highest-value, lowest-risk feature.</b> <span class="pill ev">evidence</span></p>
+    <p class="src"><a href="https://www.nhs.uk/symptoms/irregular-periods/">NHS irregular periods</a></p>
+  </div>
+
+  <div class="lens crimson" style="border-left-color:var(--crimson)"><div class="nm"><span class="ix">12</span>Cycle data is special-category — privacy is a differentiator</div>
+    <p>Reproductive-health data is "special category" under UK GDPR Art. 9 (explicit consent, higher protection); post-Roe, women actively delete trackers over US data-transfer fears, and audits flag UK femtech data going to the US. <b>→ Local/anonymous-first processing, opt-in imports, data minimisation — a trust moat, not overhead.</b> <span class="pill ev">evidence</span></p>
+    <p class="src"><a href="https://edri.org/our-work/all-eyes-on-my-period-period-tracking-apps-and-the-future-of-privacy-in-a-post-roe-world/">Period-app privacy (EDRi)</a> · <a href="https://flo.health/product-tour/anonymous-mode">Flo Anonymous Mode</a></p>
+  </div>
+
+  <div class="lens"><div class="nm"><span class="ix">13</span>Competitive teardown — where rivals stop</div>
+    <p><b>Clue</b>: transparent prediction method, honest caveats — but no physiology, no correlation engine. <b>Oura/Apple/Natural Cycles</b>: strong temp/HRV/RHR physiology + retrospective ovulation — but life-context-blind, and Oura needs a £300 ring. <b>WHOOP</b>: phase into recovery, athlete-framed. <b>Bearable</b>: the <i>only</i> real cross-factor correlation engine (caffeine/sleep/work vs mood/pain) — but generic, non-cyclical, and weak on causation caveats. <span class="pill pop">market</span></p>
+    <p class="src"><a href="https://support.helloclue.com/hc/en-us/articles/214434406">Clue</a> · <a href="https://support.ouraring.com/hc/en-us/articles/4410663885331">Oura Cycle Insights</a> · <a href="https://bearable.app">Bearable</a></p>
+  </div>
+
+  <div class="rule"></div>
+  <h4>The market gap, in one line</h4>
+  <p>Every rival is either <b>cycle-strong but life-blind</b> (Clue/Oura/Apple/Natural Cycles) or <b>correlation-capable but generic and causally careless</b> (Bearable). <b>FemWell's lane: a cycle-aware, anxiety-safe, UK-private Pulse that turns "what your body and life repeat" into gentle, honestly-caveated, cross-domain patterns no competitor ships.</b></p>
+</div>
+
+<!-- 3 · LEVEL +1 -->
+<a id="l1"></a>
+<div class="section sage">
+  <div class="eyebrow">3 · Level +1 — accuracy &amp; honesty</div>
+  <h2>Make the patterns trustworthy</h2>
+  <p>All inside today's 3-board, stacked sub-slider language. <span class="pill l1">Level +1</span></p>
+
+  <h3>Board 1 · "This week" — honest predictions</h3>
+  <div class="deck"><div class="dh">▸ your median, not 28</div>
+    <div class="lens"><div class="nm"><span class="ix">★★</span>Own-median model + error bars</div><p>Re-anchor the phase split + countdown to her <b>own median cycle length</b> (not the fixed ≤5/≤13/≤16 split), and show a prediction <b>window + confidence</b> ("period likely 12–15 Jul"), with Clue-style "stress/sleep/travel can shift this". The #1 honesty upgrade. <span class="pill ev">evidence-led</span></p><p class="src"><a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC7381001/">28-day myth</a></p></div>
+    <div class="lens"><div class="nm"><span class="ix">★★</span>Predicted-symptom forecasting</div><p>"You tend to get headaches in your late-luteal days" / "lower energy is likely this week" — forward-looking, gated behind ≥2–3 prospectively-logged cycles, phrased as tendency + confidence. Grounded in PMDD/migraine cyclicity. <span class="pill rec">differentiator</span></p><p class="src"><a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC8605615/">Migraine cyclicity</a></p></div>
+  </div>
+
+  <h3>Board 2 · "Patterns" — the safety flag</h3>
+  <div class="deck"><div class="dh">▸ notice, then route to care</div>
+    <div class="lens"><div class="nm"><span class="ix">★★</span>"This cycle is different" anomaly flag</div><p>When a cycle deviates from her learned distribution, a gentle "worth noting — if this continues, it's worth a GP chat", carrying the <b>NHS thresholds</b> (&gt;7-day bleed, &lt;3-week gap, post-12-month bleeding). Highest-value, lowest-risk; never diagnoses. <span class="pill rec">safety</span></p><p class="src"><a href="https://www.nhs.uk/symptoms/irregular-periods/">NHS</a></p></div>
+    <div class="lens"><div class="nm"><span class="ix">★</span>Anxiety-safe framing dial</div><p>A "gentle / detailed" toggle (orthosomnia guard): default to narrative insight, let those who want the raw charts opt in. <span class="pill ev">evidence-led</span></p></div>
+  </div>
+
+  <h3>Board 3 · "Over time" — a real export</h3>
+  <div class="deck"><div class="dh">▸ from print() to a clinician export</div>
+    <div class="lens"><div class="nm"><span class="ix">★</span>Curated clinician export</div><p>Replace <code>window.print()</code> with a real handoff into <b>Doctor Export</b> — the phase patterns, anomaly flags and trends a GP can actually use (prospective data has clinical value). <span class="pill ok">rides Doctor Export</span></p></div>
+  </div>
+</div>
+
+<!-- 4 · LEVEL +2 -->
+<a id="l2"></a>
+<div class="section plum">
+  <div class="eyebrow">4 · Level +2 — the leaps</div>
+  <h2>Discover, import, remember</h2>
+  <p>The bigger moves that define the category. <span class="pill l2">Level +2</span></p>
+
+  <div class="deck"><div class="dh">▸ the correlation engine (the moat)</div>
+    <div class="lens"><div class="nm"><span class="ix">A</span>Guarded cross-domain correlation discovery</div><p>An engine that surfaces "your mood tends to be higher on better-sleep days" / "more protein on your stronger-energy days" — across <b>life domains</b>, not just symptoms. Inherits the mandatory guardrails Bearable lacks: minimum-data gate, restrained comparisons, a confidence dot, and "a pattern, not a cause" on every card. Client-side stats — no new function. <span class="pill rec">differentiator</span></p><p class="src"><a href="https://par.nsf.gov/servlets/purl/10050183">n-of-1 guardrails</a></p></div>
+    <div class="lens"><div class="nm"><span class="ix">B</span>Life-domain trends</div><p>Mood vs work-stress, social-energy by phase, even spend vs phase (from whole-life logs) — the whole-life differentiator no cycle app does. Same guardrails; framed "a pattern you might notice", never "do X on day Y". <span class="pill rec">whole-life</span></p></div>
+  </div>
+
+  <div class="deck"><div class="dh">▸ real physiology</div>
+    <div class="lens"><div class="nm"><span class="ix">C</span>Wearable import → finish the pipe</div><p>The <code>WearableSync</code> entity + card already exist; wire a real <b>Apple Health / Oura</b> import so temp/RHR/HRV-by-phase fill in (each with a reliability note). The one item that may need a small function (§5). Never a contraceptive claim. <span class="pill gap">gated import</span></p><p class="src"><a href="https://academic.oup.com/humrep/article/40/3/469/7989515">wrist-temp evidence</a></p></div>
+  </div>
+
+  <div class="deck"><div class="dh">▸ the story</div>
+    <div class="lens"><div class="nm"><span class="ix">D</span>"Your year in patterns" retrospective</div><p>A warm annual/seasonal retrospective — your cycle, mood and life across the year as a story, not a scoreboard (reframes analytics, reduces anxiety, shareable/exportable). <span class="pill ev">evidence-led</span></p><p class="src"><a href="https://www.jmir.org/2024/1/e58088">narrative-viz</a></p></div>
+  </div>
+</div>
+
+<!-- 5 · GATED -->
+<a id="gated"></a>
+<div class="section crimson">
+  <div class="eyebrow">5 · The one gated call</div>
+  <h2>Real wearable import needs your OK</h2>
+  <p>Almost all of +1/+2 is <b>client-side statistics</b> or rides the existing Jess agent — no new function. The forecasting, correlation engine, anomaly flag, own-median model and retrospective are all computed from data you already hold.</p>
+  <ul>
+    <li><b>Why import may need a function:</b> Base44 is a web app — it can't read Apple HealthKit directly, and pulling Oura/Garmin means an <b>OAuth token exchange + API call</b>, which wants a small server function (and stored device tokens). That's the one capability that touches the "no new function" rule.</li>
+    <li><b>The no-function fallback:</b> a manual <b>Apple Health / CSV export import</b> (the user uploads their export) populates <code>WearableSync</code> with zero new function — less magical, fully rule-safe, a fine v1.</li>
+    <li><b>If you approve the function:</b> a single capped device-sync function (OAuth + periodic pull), opt-in, minimised, with explicit consent (special-category data, §12); never a medical/contraceptive claim.</li>
+  </ul>
+  <p class="cap"><b>Flag:</b> this is the only item that may need a new gated capability — and it has a real no-function fallback. Everything else ships rule-safe. Recommendation: ship the correlation/forecasting/anomaly intelligence first (no gate), then decide import.</p>
+</div>
+
+<!-- 6 · TIES -->
+<a id="ties"></a>
+<div class="section">
+  <div class="eyebrow">6 · The weave</div>
+  <h2>How Pulse connects to the rest of the app</h2>
+  <table>
+    <tr><th>Surface</th><th>The tie</th></tr>
+    <tr><td><b>Today</b></td><td>The forecast feeds tomorrow ("lower energy likely — go gentle") and the anomaly flag surfaces as a calm Today nudge.</td></tr>
+    <tr><td><b>Health / cycle</b></td><td>Phase model is shared; the anomaly flag routes into the Health room's NHS-grounded guidance.</td></tr>
+    <tr><td><b>Nutrition</b></td><td>Food↔energy/mood correlations ("more protein on your better days") — gentle, never causal — link back to the exact Nutrition lens.</td></tr>
+    <tr><td><b>Planner</b></td><td>Forecast → plan gently ("your heavy days fall mid-week — protect them"); phase-aware planning, awareness not prescription.</td></tr>
+    <tr><td><b>Doctor Export</b></td><td>The +1 clinician export IS this tie — patterns, anomaly flags and trends become the GP handoff.</td></tr>
+    <tr><td><b>Community</b></td><td>"Women in your season felt this too" — anonymous aggregate resonance beside your own trend.</td></tr>
+    <tr><td><b>Garden</b></td><td>A consistent week of gentle listening grows the garden — reflection, not streaks.</td></tr>
+    <tr><td><b>Jess</b></td><td>Jess narrates the patterns in her voice ("I noticed your sleep dipped this luteal") and answers "why am I more tired this week?" from the same data.</td></tr>
+  </table>
+</div>
+
+<!-- 7 · DATA -->
+<a id="data"></a>
+<div class="section crimson">
+  <div class="eyebrow">7 · Honest build reality</div>
+  <h2>What's rule-safe vs what needs a call</h2>
+  <ul>
+    <li><b>Rule-safe (no new function):</b> own-median prediction + error bars, predicted-symptom forecasting, "this cycle is different" anomaly flag (NHS-routed), anxiety-safe dial, correlation-discovery engine + life-domain trends (client-side stats with guardrails), "year in patterns" retrospective, clinician export (rides Doctor Export), manual wearable CSV import. Small additive entities only (e.g. a forecast cache, a "framing" preference).</li>
+    <li><b>Needs your OK (one function, with a fallback):</b> live device import via OAuth/API (§5) — or ship the manual-import fallback with zero rule-risk.</li>
+    <li><b>Privacy must-haves:</b> opt-in imports, data minimisation, explicit consent for special-category data (§12).</li>
+    <li><b>Avoid:</b> any contraceptive/diagnostic claim (Natural Cycles' regulated turf), deterministic "do X on day Y" prescriptions, raw-score gamification.</li>
+  </ul>
+</div>
+
+<!-- 8 · FIRST -->
+<a id="first"></a>
+<div class="section plum">
+  <div class="eyebrow">8 · Recommendation</div>
+  <h2>What I'd build first</h2>
+  <ul>
+    <li><b>1. Own-median predictions + error bars.</b> The single biggest honesty fix, rule-safe, fixes the "28-day" simplification at the root.</li>
+    <li><b>2. "This cycle is different" anomaly flag → NHS.</b> Highest-value, lowest-risk, genuinely caring — and clinically actionable.</li>
+    <li><b>3. The guarded correlation engine + life-domain trends.</b> The category-defining moat — what Bearable does, done responsibly and cycle-aware.</li>
+    <li><b>4. Predicted-symptom forecasting + the clinician export.</b> Forward-looking insight + a real GP handoff.</li>
+    <li><b>5. (Gated/optional) wearable import</b> — manual-CSV first (no function), live device sync if you approve the one function.</li>
+    <li><b>6. "Your year in patterns" retrospective</b> — the warm payoff that reframes analytics as story.</li>
+  </ul>
+  <p class="lede" style="margin-top:14px">All of it lives in the 3-board, stacked sub-slider + recharts language you already have. <b>Nothing built from this yet — react first, then we demo/build the approved levels.</b></p>
+</div>
+
+<div class="foot">
+  FemWell · Pulse · Level Up (+2) · 29 June 2026<br>
+  Evidence sourced inline (peer-review / NHS / wearable studies, 2023–26); pseudoscience &amp; competitor patterns flagged. Live Pulse unchanged pending your approval.
+</div>
+
+</div></body></html>
