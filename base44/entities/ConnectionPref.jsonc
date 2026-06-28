@@ -1,0 +1,43 @@
+{
+  "name": "ConnectionPref",
+  "type": "object",
+  "properties": {
+    "user_id": {
+      "type": "string"
+    },
+    "mode": {
+      "type": "string",
+      "enum": [
+        "open",
+        "letters",
+        "paused"
+      ],
+      "default": "open"
+    },
+    "reach": {
+      "type": "string",
+      "enum": [
+        "season",
+        "stage",
+        "any"
+      ],
+      "default": "season"
+    },
+    "blocked_hashes": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "created_at": {
+      "type": "string"
+    },
+    "updated_at": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "user_id"
+  ],
+  "indexes": [ { "fields": ["created_date"] }, { "fields": ["user_id"] } ]
+}
