@@ -251,7 +251,10 @@ export default function PlannerEliteShell() {
 
   const gold = cwOf("gold").petal, sage = cwOf("sage").petal, crimson = cwOf("crimson").petal;
   const BOARDS = [{ t: "The day", sub: "Agenda · hour-by-hour · week" }, { t: "Reserves", sub: "Load · recovery · boundaries · energy · the load" }, { t: "Rituals", sub: "Intentions · anchors · reset · focus · rhythm" }];
-  const firstName = (user?.full_name || "").split(" ")[0] || "";
+  // First name for the hero — but fall back to "Your day" if it looks like a handle/username
+  // (contains digits or is implausibly long), so we never greet someone as "ojihalliburton57's day".
+  const rawFirst = (user?.full_name || "").split(" ")[0] || "";
+  const firstName = (/\d/.test(rawFirst) || rawFirst.length > 16) ? "" : (rawFirst ? rawFirst.charAt(0).toUpperCase() + rawFirst.slice(1) : "");
 
   if (loading) {
     return (
