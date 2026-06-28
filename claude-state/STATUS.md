@@ -1,6 +1,11 @@
 # FEMWELL — CANONICAL STATUS INDEX (read first · updated 2026-06-28)
 **This file is the single source of truth AND the index to every plan doc. If anything else disagrees, this wins.** (The long ship-log history continues below the index.)
 
+## ✨ OMEN FEATURE — APPROVED → CANON in the bible (Halli 2026-06-27) · committed `9beb204` · READY TO BUILD
+**Halli APPROVED the omen feature.** Moved from Proposed → AGREED/CANON in the ONE bible (`BRAND_IDENTITY.md` §10.2–10.4 + the AGREED/PROPOSED note + §10 header; synced `brand-bible.html`). The **rotating tap-to-reveal omen headers + the fauna/omen meanings + the safety rails** are now canon, alongside the already-agreed omen/almanac **voice** (§10.5). Only §10.6 craft + the formal archetype stay proposed. Doc-only; no planner files touched.
+- **The omen ENGINE rides existing real signals — NO new base44 function** (cycle phase/day, life-stage, recent mood/theme, days-since-last-open, programme progress, date + special dates, the flora fingerprint).
+- **⏭ WHAT BUILDING IT ENTAILS (one-liner to queue):** a static front-end module `src/components/brand/floraOmen.js` = a MEANING_LIBRARY (flower→meaning · creature→omen · lifecycle→meaning) + line templates + `pickOmen(signals, dailySeed)` (dailySeed = existing `hashSeed(userId+YYYY-MM-DD)`, priority ladder + graceful seasonal fallback), wired into the existing `FwFloraHero`/section headers as a tap → existing bottom-sheet reveal; writes ("press to journal") ride existing dispatchers — enforcing the §10.4 safety rails (ration ~1/day, never resurface a hard memory unprompted, hope-only). No new entity, no new function.
+
 ## 🔁 STALE-CLIENT FIX + plan docs pinned to TOP of Ideas/Current · live `index-Cxq2W_dD.js` (site-deploy) · commit `b692bc0` (2026-06-28)
 **Halli couldn't find the two plan entries — his installed PWA/browser was stuck on an OLD cached bundle.** Diagnosed + fixed:
 - **The server was NOT stale** — the served bundle already contained both entries + docs (grep-verified the live JS). The stickiness is the **installed PWA**: there is **NO service worker** (only `manifest.json`), and `index.html` is served fresh (Cloudflare `DYNAMIC`), so normal reloads self-heal but an installed PWA clings to its cached start page across deploys.
