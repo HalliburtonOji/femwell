@@ -1,0 +1,261 @@
+<!doctype html>
+<html lang="en-GB"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>FemWell — Lifestyle Level Up (+2)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500;1,600&family=Ephesis&display=swap" rel="stylesheet">
+<style>
+  :root{--paper:#ECE7DA;--paperHi:#F4EFE3;--paperDeep:#D8CFBC;--ink:#0B0805;--inkSoft:#1A140D;--muted:#2E261B;--gold:#A8893F;--crimson:#BC2E27;--oxblood:#7A1A12;--blush:#E8B4B8;--sage:#8FAF8F;--plum:#8E6E8E;--serif:'Cormorant Garamond',Georgia,serif;--script:'Ephesis',cursive;--sans:ui-sans-serif,system-ui,-apple-system,'Segoe UI',sans-serif;}
+  *{box-sizing:border-box}
+  body{margin:0;background:radial-gradient(120% 80% at 12% 0%,#F4EFE3 0%,rgba(244,239,227,0) 55%),radial-gradient(120% 90% at 100% 100%,#E4DDCC 0%,rgba(228,221,204,0) 50%),var(--paper);color:var(--ink);font-family:var(--serif);font-size:18px;line-height:1.6;-webkit-font-smoothing:antialiased}
+  .doc{max-width:680px;margin:0 auto;padding:30px 22px 90px}
+  h1.cover{font-family:var(--script);font-size:52px;color:var(--crimson);margin:6px 0 2px;line-height:1.04}
+  h2{font-family:var(--serif);font-style:italic;font-weight:600;font-size:27px;margin:0 0 6px;color:var(--oxblood)}
+  h3{font-family:var(--serif);font-weight:600;font-size:21px;margin:18px 0 6px}
+  h4{font-family:var(--sans);font-size:12px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--gold);margin:16px 0 4px}
+  .eyebrow{font-family:var(--sans);font-size:12px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--gold);margin-bottom:10px}
+  p{margin:0 0 12px}.lede{font-size:20px;line-height:1.55}
+  small,.cap{font-family:var(--sans);font-size:13px;color:var(--muted);line-height:1.5}
+  b,strong{font-weight:600}
+  a{color:var(--crimson);text-decoration:none;border-bottom:1px solid rgba(188,46,39,.3)}
+  .section{background:var(--paperHi);border:1px solid var(--paperDeep);border-left:4px solid var(--gold);border-radius:20px;padding:22px 20px;margin:18px 0;box-shadow:0 4px 20px rgba(58,44,26,.10),0 1px 4px rgba(58,44,26,.06);position:relative;overflow:hidden}
+  .section.crimson{border-left-color:var(--crimson)}.section.sage{border-left-color:var(--sage)}.section.plum{border-left-color:var(--plum)}.section.blush{border-left-color:var(--blush)}
+  .rule{height:1px;background:var(--gold);opacity:.32;margin:18px 0}
+  .center{text-align:center}
+  table{width:100%;border-collapse:collapse;font-size:14px;font-family:var(--sans);margin:8px 0}
+  th,td{text-align:left;padding:7px 8px;border-bottom:1px solid var(--paperDeep);vertical-align:top}
+  th{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--gold)}
+  td b{font-family:var(--serif);font-size:15px}
+  .toc a{display:block;font-family:var(--sans);font-size:15px;color:var(--inkSoft);text-decoration:none;border-bottom:1px solid var(--paperDeep);padding:6px 0}
+  .toc a span{color:var(--gold);font-weight:700;margin-right:10px}
+  .script{font-family:var(--script);color:var(--crimson)}
+  .pill{display:inline-block;font-family:var(--sans);font-size:12px;font-weight:600;padding:5px 11px;border-radius:999px;background:var(--paper);border:1px solid var(--paperDeep);margin:3px 4px 3px 0}
+  .pill.rec{background:#EAF1EA;border-color:var(--sage);color:#3f6b3f}
+  .pill.gap{background:#FBE9E6;border-color:var(--crimson);color:var(--crimson)}
+  .pill.ok{background:#EAF1EA;border-color:var(--sage);color:#3f6b3f}
+  .pill.ev{background:#EAF1EA;border-color:var(--sage);color:#3f6b3f}
+  .pill.pop{background:#FBF1E0;border-color:var(--gold);color:#8a6d22}
+  .pill.l1{background:#EAF1EA;border-color:var(--sage);color:#3f6b3f}
+  .pill.l2{background:#F0E8F0;border-color:var(--plum);color:#6d4f6d}
+  .lens{background:var(--paper);border:1px solid var(--paperDeep);border-left:3px solid var(--gold);border-radius:12px;padding:12px 14px;margin:8px 0}
+  .lens .nm{font-family:var(--serif);font-weight:600;font-size:18px;color:var(--ink);margin-bottom:2px}
+  .lens .nm .ix{font-family:var(--sans);font-size:11px;font-weight:700;letter-spacing:.1em;color:var(--gold);margin-right:8px;text-transform:uppercase}
+  .lens p{margin:0;font-size:15px;line-height:1.5;color:var(--inkSoft)}
+  .lens .src{font-family:var(--sans);font-size:12px;color:var(--muted);margin-top:5px}
+  .deck{border:1px dashed var(--gold);border-radius:14px;padding:6px 12px 12px;margin:10px 0;background:rgba(168,137,63,.04)}
+  .deck .dh{font-family:var(--sans);font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);margin:8px 0 2px}
+  .num{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:999px;background:var(--crimson);color:#fff;font-family:var(--sans);font-size:12px;font-weight:700;margin-right:8px;vertical-align:1px}
+  .foot{font-family:var(--sans);font-size:12px;color:var(--muted);text-align:center;margin-top:30px;line-height:1.6}
+  ul{margin:4px 0 12px;padding-left:20px}li{margin:3px 0}
+</style></head>
+<body><div class="doc">
+
+<div class="center" style="padding:14px 0 4px">
+  <div class="eyebrow">FemWell · Lifestyle · LEVEL UP (+2) · for your reaction</div>
+  <h1 class="cover">The good life, fed</h1>
+  <p class="lede" style="font-style:italic;max-width:540px;margin:8px auto 0">Lifestyle is live and you love the video-in-card. The player works beautifully — it's just under-fed. This is the plan for the <b>next two levels</b>: fill the inline players from free, legal, embeddable libraries, and grow "the good life" into a real leisure room with evidence behind every lane. <b>Plan only — nothing built from this yet.</b></p>
+</div>
+
+<div class="section">
+  <div class="eyebrow">The one-line thesis</div>
+  <p class="lede">The mechanism is solved; the <b>supply</b> is the gap. Level <span class="script">+2</span> turns Lifestyle from "a beautiful shell that often links out" into "a room always full of things that play, in your hand" — and frames the whole thing around the one truth no rival uses: <b>women have less leisure, and more guilt about it</b>. So FemWell sanctions rest.</p>
+  <h4>The headline moves</h4>
+  <ul>
+    <li><b>Level +1 — feed the players.</b> An <b>embeddability gate</b> at ingest (only store media that actually plays) + three free firehoses (LibriVox audio · Standard Ebooks · CC-BY ambient) + Acast/Buzzsprout podcast embeds. Plus the AWE · MAKE · REST lanes, and finally <i>showing</i> the intentions you already save.</li>
+    <li><b>Level +2 — the leisure room.</b> LEARN · JOY/play · a social "lounge", book/watch clubs, a deeper time-boxed dopamine menu, and "listen to this read" (TTS) so any Read card becomes a Listen card.</li>
+    <li><b>The evidence spine:</b> leisure is medicine, 5-minute "micro-acts of joy" work, the awe-walk is an RCT-backed card, and reading-for-wellbeing is NHS-credible — all hope-only, never clinical, never streak-guilt.</li>
+  </ul>
+</div>
+
+<div class="section sage">
+  <div class="eyebrow">Contents</div>
+  <div class="toc">
+    <a href="#today"><span>1</span> What Lifestyle does TODAY (honest, post-build)</a>
+    <a href="#research"><span>2</span> The deeper evidence (cited) — leisure is medicine</a>
+    <a href="#supply"><span>3</span> The content-supply fix (the priority)</a>
+    <a href="#l1"><span>4</span> Level +1 — feed it + 3 new lanes</a>
+    <a href="#l2"><span>5</span> Level +2 — the leisure room</a>
+    <a href="#ties"><span>6</span> How it weaves into the rest of the app</a>
+    <a href="#data"><span>7</span> Build reality + the one gated call</a>
+    <a href="#first"><span>8</span> What I'd build first</a>
+  </div>
+</div>
+
+<!-- 1 · TODAY -->
+<a id="today"></a>
+<div class="section crimson">
+  <div class="eyebrow">1 · The honest picture (post-build)</div>
+  <h2>What Lifestyle does today</h2>
+  <p>The live <span class="script">/Lifestyle</span> elite shell has 5 boards and a genuinely real media player. Here's the honest audit.</p>
+  <table>
+    <tr><th>Surface</th><th>Status today</th></tr>
+    <tr><td><b>5 boards</b> (The good life · For you · Read · Listen · Story &amp; sky)</td><td><span class="pill ok">real</span> all present, stacked sub-sliders, on-brand.</td></tr>
+    <tr><td><b>Media player</b> (video / audio / link-out)</td><td><span class="pill ok">real</span> youtube-nocookie video iframe (gated on <code>is_embeddable</code> + <code>video_id</code>), HTML5 audio with seek (gated on <code>audio_url</code>), TikTok/IG link-out by <code>media_type</code>.</td></tr>
+    <tr><td><b>Daily Story · Horoscope</b></td><td><span class="pill ok">real</span> read <code>segment_text</code> / <code>narrative</code>+section pairs; graceful fallback when absent.</td></tr>
+    <tr><td><b>Saves</b> (heart)</td><td><span class="pill ok">real</span> writes <code>UserProfile.saved_item_ids</code>, optimistic + rollback.</td></tr>
+    <tr><td><b>Sky diary</b> (new sky note)</td><td><span class="pill ok">real</span> writes <code>SkyNote</code>; real rows replace the 3 seed lines once you write one.</td></tr>
+    <tr><td><b>"A day for you" · "Try this" · "Book a quiet hour"</b></td><td><span class="pill pop">writes, but invisible</span> all write <code>PlannerItems</code> (real) — but it's <b>toast-only; the saved intentions are never shown back</b> in Lifestyle.</td></tr>
+    <tr><td><b>Inline VIDEO supply</b></td><td><span class="pill gap">under-fed</span> most live <code>LifestyleItems</code> videos are <code>is_embeddable:false</code> → link-out; only <b>6 curated videos</b> guarantee real inline play.</td></tr>
+    <tr><td><b>Inline AUDIO supply</b></td><td><span class="pill gap">under-fed</span> most podcasts have no <code>audio_url</code> → link-out. Player is real; the shelf is nearly empty.</td></tr>
+    <tr><td><b>Guides · external podcasts · "try this"</b></td><td><span class="pill gap">seeded</span> Guides always show static fallback (no real Guide items); external pods are a hardcoded list of 2.</td></tr>
+  </table>
+  <p class="cap"><b>Takeaway:</b> the player MECHANISM is real and lovely — the work is (a) <i>feeding</i> it with verified-embeddable content, (b) <i>showing</i> the intentions you already persist, and (c) growing "the good life" into a real, evidence-backed leisure room.</p>
+</div>
+
+<!-- 2 · RESEARCH -->
+<a id="research"></a>
+<div class="section plum">
+  <div class="eyebrow">2 · The evidence (cited, 2024–26)</div>
+  <h2>Leisure is medicine — especially for her</h2>
+  <p>Each row flagged <span class="pill ev">evidence</span> / <span class="pill pop">popular-practice</span>.</p>
+
+  <div class="lens crimson" style="border-left-color:var(--crimson)"><div class="nm"><span class="ix">01</span>The women's leisure gap is the whole "why"</div>
+    <p>UK men get ~5 more leisure hours/week, and women's leisure is more fragmented and <b>guilt-laden</b>. <b>→ Make sanctioned permission/rest the emotional spine — not "more content".</b> <span class="pill ev">evidence</span></p>
+    <p class="src"><a href="https://visual.ons.gov.uk/men-enjoy-five-hours-more-leisure-time-per-week-than-women/">ONS — the leisure gap</a></p>
+  </div>
+
+  <div class="lens sage" style="border-left-color:var(--sage)"><div class="nm"><span class="ix">02</span>5-minute "micro-acts of joy" actually work</div>
+    <p>UCSF's Big Joy Project (JMIR, June 2025): seven days of <b>5–10-minute daily micro-acts</b> (gratitude, a kind act, awe) raised wellbeing + positive emotion, lowered stress, improved sleep — the first short intervention to show such strong benefits. <b>→ Size the dopamine menu's smallest tier around the 5-minute micro-act — the sweet spot for women with no spare hour.</b> <span class="pill ev">evidence</span></p>
+    <p class="src"><a href="https://www.ucsf.edu/news/2025/06/430216/too-busy-focus-your-happiness-try-daily-micro-acts-joy">UCSF — Big Joy Project</a></p>
+  </div>
+
+  <div class="lens"><div class="nm"><span class="ix">03</span>The awe walk is a packaged, RCT-backed prescription</div>
+    <p>A 15-minute "look for wonder" walk increased awe, joy, compassion and gratitude (Sturm/Keltner, <i>Emotion</i> 2020); 2024 follow-ups show awe improves quality of life and mood. <b>→ Ship an "Awe walk" card (15 min, one prompt: "find one vast thing") — a literal evidence-based intervention.</b> <span class="pill ev">evidence</span></p>
+    <p class="src"><a href="https://www.health.harvard.edu/mind-and-mood/awe-walks-inspire-more-joy-less-distress">Harvard — awe walks</a> · <a href="https://www.nature.com/articles/s41598-025-96555-w">Awe RCT 2025</a></p>
+  </div>
+
+  <div class="lens"><div class="nm"><span class="ix">04</span>Making things lowers cortisol — skill irrelevant</div>
+    <p>45 minutes of art-making reduced cortisol regardless of artistic skill (Drexel); mind-stimulating leisure links to longevity; the creative-health field counts 600+ mechanisms (Fancourt). <b>→ A MAKE lane (craft, doodle, slow-living) is wellbeing, not decoration.</b> <span class="pill ev">evidence</span></p>
+    <p class="src"><a href="https://www.nature.com/articles/s41598-025-96555-w">awe/affect 2025</a> · Fancourt creative-health review (companion research file)</p>
+  </div>
+
+  <div class="lens plum" style="border-left-color:var(--plum)"><div class="nm"><span class="ix">05</span>Reading for pleasure is NHS-credible wellbeing</div>
+    <p>The Reading Agency's <b>Reading Well</b> scheme prescribes books like prescriptions: 92% found their book helpful, 90% of health professionals endorsed it, 3.8M+ borrowed. A 2024 study frames reading-for-pleasure as <i>salutogenic</i>. <b>→ Frame Daily Story + Read as reading-for-wellbeing, themed shelves, warm — with a light "not a substitute for care" footing where a story touches a hard theme.</b> <span class="pill ev">evidence</span></p>
+    <p class="src"><a href="https://www.artscouncil.org.uk/blog/reading-well-supporting-health-and-wellbeing-through-reading">Reading Well</a> · <a href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC11503036/">Reading &amp; wellbeing 2024</a> · <a href="https://www.tandfonline.com/doi/full/10.1080/14461242.2025.2509941">caution: don't medicalise</a></p>
+  </div>
+
+  <div class="lens"><div class="nm"><span class="ix">06</span>Abundance without paywall-anxiety — and NO streaks</div>
+    <p>Insight Timer's model is a huge <b>free</b> library (80+ new free meditations daily) — abundance, not a paywall. But Calm/Headspace/Insight all use <b>streaks</b> that re-import guilt. <b>→ Copy the free-abundance feel (our PD/CC firehoses replicate it for free); explicitly BAN punishing streaks on leisure — celebrate return, never shame absence.</b> <span class="pill pop">adapt / avoid</span></p>
+    <p class="src"><a href="https://insighttimer.com/">Insight Timer</a></p>
+  </div>
+</div>
+
+<!-- 3 · SUPPLY -->
+<a id="supply"></a>
+<div class="section sage">
+  <div class="eyebrow">3 · The priority</div>
+  <h2>The content-supply fix</h2>
+  <p>Your cards link out today because <b>nothing verifies embeddability before storing a row</b>, and the shelves aren't fed from free libraries. Three moves fix it — no CMS team.</p>
+
+  <h4>Move 1 · An embeddability gate at ingest</h4>
+  <p>Before a row is ever stored, verify it actually plays: YouTube Data API <code>status.embeddable === true</code> + UK not in <code>regionRestriction.blocked</code>; a free zero-auth <b>oEmbed</b> 200-with-<code>html</code> pre-check; for audio, a real RSS <code>&lt;enclosure&gt;</code> MP3 or an Acast/Buzzsprout embed. Store <code>embed_verified_at</code> + <code>region_ok</code> as hard columns. <span class="pill rec">the single biggest lever</span></p>
+  <p class="src"><a href="https://developers.google.com/youtube/v3/docs/videos">YouTube Data API — status.embeddable</a> · <a href="https://oembed.com/">oEmbed</a></p>
+
+  <h4>Move 2 · Three free firehoses (legal, commercial-OK)</h4>
+  <table>
+    <tr><th>Source</th><th>Lane</th><th>Why</th></tr>
+    <tr><td><b>LibriVox</b> (API)</td><td>Listen / REST</td><td>Public-domain audiobooks &amp; poetry — "use however you wish, including commercial, no credit needed". Instant, infinite sleep/calm supply for your real HTML5 player.</td></tr>
+    <tr><td><b>Standard Ebooks</b> (OPDS)</td><td>Read</td><td>Beautifully typeset public-domain books — a far more credible Read card than raw gutendex HTML.</td></tr>
+    <tr><td><b>ccMixter / Free Music Archive</b></td><td>Awe / ambience</td><td>CC-BY ambient beds (store the one-line attribution) — turns a static awe image into a 60-second "stay here a minute".</td></tr>
+  </table>
+  <p class="src"><a href="https://librivox.org/pages/public-domain/">LibriVox PD + API</a> · <a href="https://standardebooks.org/about">Standard Ebooks</a> · <a href="http://dig.ccmixter.org/free">dig.ccMixter (commercial-OK)</a></p>
+
+  <h4>Move 3 · Real podcast supply (Spotify stays link-out)</h4>
+  <p>Spotify embeds give logged-out listeners only a <b>30-second preview</b> — so it's a "preview + open full episode" link-out, never your in-card listen. The hosts that give a <b>full-episode, no-login iframe</b> are <b>Acast</b> (no cookies, no login, counts as a real download) and <b>Buzzsprout</b>. <b>→ Source UK women's-wellness shows hosted on Acast/Buzzsprout, or pull the public RSS <code>&lt;enclosure&gt;</code> MP3 into your existing seek player.</b></p>
+  <p class="src"><a href="https://learn.acast.com/en/articles/4631949-embed-player-faq">Acast embed</a> · <a href="https://www.buzzsprout.com/new/64-embed-episodes-as-an-iframe">Buzzsprout iframe</a> · <a href="https://developer.spotify.com/documentation/embeds">Spotify 30-sec preview</a></p>
+</div>
+
+<!-- 4 · LEVEL +1 -->
+<a id="l1"></a>
+<div class="section sage">
+  <div class="eyebrow">4 · Level +1</div>
+  <h2>Feed it, show it, three new lanes</h2>
+  <p>All inside today's board + stacked sub-slider language. <span class="pill l1">Level +1</span></p>
+
+  <div class="deck"><div class="dh">▸ feed the players</div>
+    <div class="lens"><div class="nm"><span class="ix">★★</span>Fill Listen + Read from the firehoses</div><p>Seed Listen with LibriVox + Acast/Buzzsprout episodes (real inline play), Read with Standard Ebooks. Grow the curated video set from 6 to a verified, culturally-inclusive library (British · South Asian · Caribbean · West African · Mediterranean), each gated on <code>status.embeddable</code>. <span class="pill gap">supply</span></p></div>
+    <div class="lens"><div class="nm"><span class="ix">★</span>"Video unavailable" fallback</div><p>Detect a removed embed → "this one's gone walkabout — here's another" + auto-demote on the weekly sweep. No dead boxes. <span class="pill gap">small</span></p></div>
+  </div>
+
+  <div class="deck"><div class="dh">▸ show what you already save</div>
+    <div class="lens"><div class="nm"><span class="ix">Show</span>The intentions shelf</div><p>"A day for you", "Try this" and "quiet hour" already write <code>PlannerItems</code> — surface a small <b>"your kept intentions"</b> shelf in Lifestyle (read-back), so saving feels real, not a toast into the void. <span class="pill gap">read existing</span></p></div>
+    <div class="lens"><div class="nm"><span class="ix">Guides</span>Real guides, not seeds</div><p>Populate a few real Guide <code>LifestyleItems</code> so the lane stops showing static fallback. <span class="pill gap">content</span></p></div>
+  </div>
+
+  <div class="deck"><div class="dh">▸ three evidence-backed lanes</div>
+    <div class="lens"><div class="nm"><span class="ix">AWE</span>Awe lane + the awe walk</div><p>A "find one vast thing" 15-min walk card (RCT-backed) + nature video (BBC Earth, embed-verified) + a CC-BY ambient "stay here a minute". <span class="pill ev">evidence</span></p></div>
+    <div class="lens"><div class="nm"><span class="ix">MAKE</span>Make lane</div><p>Slow-living / craft / doodle clips (Fairyland Cottage, journalling) — making lowers cortisol, skill irrelevant. <span class="pill ev">evidence</span></p></div>
+    <div class="lens"><div class="nm"><span class="ix">REST</span>Rest lane</div><p>LibriVox bedtime classics auto-queue + a "do nothing, on purpose" permission card — sanctioned rest for the guilt gap. <span class="pill ev">evidence</span></p></div>
+  </div>
+</div>
+
+<!-- 5 · LEVEL +2 -->
+<a id="l2"></a>
+<div class="section plum">
+  <div class="eyebrow">5 · Level +2 — the leisure room</div>
+  <h2>From content shelves to a place to live</h2>
+  <p>The deeper expansion. <span class="pill l2">Level +2</span></p>
+
+  <div class="deck"><div class="dh">▸ more lanes</div>
+    <div class="lens"><div class="nm"><span class="ix">LEARN</span>Learn lane</div><p>Bite-size "learn one thing" — a Standard-Ebooks essay, a 5-min explainer, a skill clip. Mind-stimulating leisure links to longevity. <span class="pill ev">evidence</span></p></div>
+    <div class="lens"><div class="nm"><span class="ix">JOY</span>Play / joy lane</div><p>The Big-Joy 5-min micro-acts as a tappable daily menu (gratitude, a kind act, share a proud moment) — the evidence-backed smallest tier. <span class="pill ev">evidence</span></p></div>
+    <div class="lens"><div class="nm"><span class="ix">LOUNGE</span>The social lounge</div><p>A gentle "third place" — one shared weekly thread per book/watch club, with an embedded trailer. Bounded, not a feed; third-place evidence backs loneliness reduction. <span class="pill ev">evidence</span></p></div>
+  </div>
+
+  <div class="deck"><div class="dh">▸ depth</div>
+    <div class="lens"><div class="nm"><span class="ix">Menu</span>Time-boxed dopamine menu, deeper</div><p>"What have you got — 5 min / 30 min / a whole evening?" wired to a <code>duration_bucket</code> on every item; the 5-min tier carries the micro-acts. <span class="pill ev">evidence</span></p></div>
+    <div class="lens"><div class="nm"><span class="ix">TTS</span>"Listen to this read"</div><p>Self-hosted TTS turns any Read card into a Listen card — zero new licensing, full inline-audio control. <span class="pill rec">elegant</span></p></div>
+    <div class="lens"><div class="nm"><span class="ix">Card</span>"Library card" onboarding</div><p>A tappable card stamped with her name for the Read lane — the Reading-Well prescription metaphor, warm + shareable. <span class="pill pop">delight</span></p></div>
+  </div>
+</div>
+
+<!-- 6 · TIES -->
+<a id="ties"></a>
+<div class="section">
+  <div class="eyebrow">6 · The weave</div>
+  <h2>How Lifestyle connects to the rest of the app</h2>
+  <table>
+    <tr><th>Surface</th><th>The tie</th></tr>
+    <tr><td><b>Today</b></td><td>A "for your few minutes" glance (the 5-min micro-act / one calm clip) deep-linking the exact lane.</td></tr>
+    <tr><td><b>Planner</b></td><td>"A day for you" / "quiet hour" already write <code>PlannerItems</code> — close the loop by showing them back in both rooms.</td></tr>
+    <tr><td><b>Garden</b></td><td>A leisure act (an awe walk, a chapter read) waters the garden — joy, not streak-guilt.</td></tr>
+    <tr><td><b>Community</b></td><td>Book/watch clubs ARE the community tie — the social lounge lives across both.</td></tr>
+    <tr><td><b>Health / cycle</b></td><td>Phase gently tints picks (REST surfaces near the luteal/bleed; AWE/JOY near the rise) — never a rule.</td></tr>
+    <tr><td><b>Pulse</b></td><td>"You read / rested more on your better-mood days" — gentle, never causal.</td></tr>
+    <tr><td><b>Jess</b></td><td>"I've got 10 minutes and I'm frazzled" → she opens the right lane.</td></tr>
+  </table>
+</div>
+
+<!-- 7 · DATA -->
+<a id="data"></a>
+<div class="section crimson">
+  <div class="eyebrow">7 · Honest build reality</div>
+  <h2>What's rule-safe vs the one gated call</h2>
+  <ul>
+    <li><b>Rule-safe (no new function):</b> seeding the libraries (curated, offline-verified like today's 6 videos), the new lanes, the intentions read-back shelf, real Guides, the dopamine menu depth, TTS "listen to this", the library-card onboarding. All ride existing entities (<code>LifestyleItems</code>, <code>PlannerItems</code>, <code>SkyNote</code>, <code>saved_item_ids</code>).</li>
+    <li><b>The one gated call:</b> an <b>automated verify-and-sweep job</b> (weekly oEmbed/HEAD re-check that auto-demotes dead rows + pulls a replacement) is the only piece that wants a small scheduled <b>function</b> (~150 lines). <b>v1 doesn't need it</b> — we can hand-verify the curated library exactly like the live 6 videos. Flag it for your OK only when the library grows past hand-maintenance.</li>
+    <li><b>Licensing posture:</b> LibriVox (PD, no credit), Standard Ebooks (PD), gutendex (PD), ccMixter/FMA (CC-BY, store attribution) — all commercial-OK. Spotify stays link-out (30-sec preview reality).</li>
+  </ul>
+</div>
+
+<!-- 8 · FIRST -->
+<a id="first"></a>
+<div class="section plum">
+  <div class="eyebrow">8 · Recommendation</div>
+  <h2>What I'd build first</h2>
+  <ul>
+    <li><b>1. Feed Listen + Read from the firehoses</b> (LibriVox + Standard Ebooks + a wider verified video set). Instantly the players are full — the thing you love stops linking out.</li>
+    <li><b>2. Show the intentions you already save</b> + populate real Guides. Tiny, makes the room feel honest and complete.</li>
+    <li><b>3. The AWE · MAKE · REST lanes</b> (with the awe-walk card + LibriVox bedtime queue + CC-BY ambient). High joy-per-effort, all evidence-backed, zero rule-risk.</li>
+    <li><b>4. The 5-minute micro-act menu + ban leisure streaks</b> — the engagement model that fits the guilt gap.</li>
+    <li><b>5. (Level +2) LEARN / JOY / the social lounge + book clubs + TTS</b> — the leisure room, once the shelves are full.</li>
+  </ul>
+  <p class="lede" style="margin-top:14px">All of it lives in the board + stacked sub-slider + inline-player language you already have. <b>Nothing built from this yet — react first, then we demo/build the approved levels.</b></p>
+</div>
+
+<div class="foot">
+  FemWell · Lifestyle · Level Up (+2) · 29 June 2026<br>
+  Wellbeing claims sourced inline (ONS/UCSF/Harvard/Reading Agency/peer-review, 2024–26); content sources are public-domain or Creative-Commons (commercial-OK). Live Lifestyle unchanged pending your approval.
+</div>
+
+</div></body></html>
