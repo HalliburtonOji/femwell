@@ -668,11 +668,14 @@ function GuidesLens({ items, onOpen }) {
 function MediaLens({ items, kind, onOpen }) {
   const Icon = kind === "audio" ? Headphones : Film, accent = cwOf(kind === "audio" ? "sage" : "gold").petal;
   const real = (items || []).slice(0, 4);
-  // Videos: when there are NO real LifestyleItems videos, fall back to a small hand-picked set so the
-  // inline player is visibly REAL (they play via youtube-nocookie through the same <LifestyleMedia>).
-  // Real items always win — the curated set is a graceful fallback only.
-  const usingCurated = kind === "video" && real.length === 0;
-  const list = usingCurated ? LIFESTYLE_VIDEOS.slice(0, 4) : real;
+  // Videos: many real LifestyleItems videos are link-out only (is_embeddable false / no video_id).
+  // When NONE of the real ones actually play in-card, prepend a small hand-picked, verified-embeddable
+  // set so inline video is visibly REAL (they play via youtube-nocookie through the same <LifestyleMedia>).
+  // Real items are kept too — nothing is stripped.
+  const realPlayableVideos = real.filter((r) => String(r.media_type || "").toUpperCase() === "VIDEO" && r.is_embeddable && (r.video_id || r.embed_url));
+  const usingCurated = kind === "video" && realPlayableVideos.length === 0;
+  const isCurated = (it) => String(it?.id || "").startsWith("lv-");
+  const list = kind !== "video" ? real : (usingCurated ? [...LIFESTYLE_VIDEOS.slice(0, 4), ...real] : real);
   return (
     <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
       <p style={{ fontFamily: SERIF, fontSize: 15, color: T.inkSoft, lineHeight: 1.5, margin: "0 0 12px" }}>{kind === "audio" ? "Podcasts that play right here — no app-hopping." : "Short watches that play in the card."}</p>
@@ -682,9 +685,9 @@ function MediaLens({ items, kind, onOpen }) {
         <div key={it.id} style={{ ...subCard(accent), padding: "10px 12px" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
             <Icon size={15} color={accent} style={{ flexShrink: 0 }} />
-            <button onClick={() => usingCurated ? window.open(it.content_url, "_blank", "noopener,noreferrer") : onOpen(it)} className="fw-elite-press" style={{ flex: 1, minWidth: 0, textAlign: "left", background: "transparent", border: "none", cursor: "pointer", padding: 0 }}>
+            <button onClick={() => isCurated(it) ? window.open(it.content_url, "_blank", "noopener,noreferrer") : onOpen(it)} className="fw-elite-press" style={{ flex: 1, minWidth: 0, textAlign: "left", background: "transparent", border: "none", cursor: "pointer", padding: 0 }}>
               <span style={{ fontFamily: SERIF, fontSize: 15, fontWeight: 600, color: T.ink, display: "block", lineHeight: 1.2, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{it.title}</span>
-              <span style={{ fontFamily: UI, fontSize: 12, color: T.muted }}>{usingCurated ? it.channel_name : metaOf(it)}{it.duration_label ? ` · ${it.duration_label}` : ""}</span>
+              <span style={{ fontFamily: UI, fontSize: 12, color: T.muted }}>{isCurated(it) ? it.channel_name : metaOf(it)}{it.duration_label ? ` · ${it.duration_label}` : ""}</span>
             </button>
           </div>
           {/* REAL inline player (audio <audio> / youtube-nocookie / link-out) by media_type */}
