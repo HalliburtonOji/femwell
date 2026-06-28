@@ -54,6 +54,7 @@ import Explore from './pages/Explore';
 import Journal from './pages/Journal';
 import JournalHub from './pages/JournalHub';
 import CommunityHub from './pages/CommunityHub';
+import CommunityEliteShell from './components/community-elite/CommunityEliteShell';
 import LifeStageCare from './pages/LifeStageCare';
 import Lifestyle from './pages/Lifestyle';
 // NOTE: the old Nutrition page (./pages/Nutrition) is intentionally NO LONGER
@@ -279,7 +280,9 @@ export const PAGES = {
     "BookReader": BookReader,
     "FictionReader": FictionReader,
     "Track": Track,
-    "Community": CommunityHub,
+    "Community": CommunityEliteShell,
+    "CommunityElite": CommunityEliteShell,
+    "CommunityHub": CommunityHub,
     "CommunityClassic": Community,
     "Planner": Planner,
     "PlannerLiveTest": PlannerLiveTest,
