@@ -1,0 +1,268 @@
+<!doctype html>
+<html lang="en-GB"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>FemWell — Nutrition Plan (research + build plan)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500;1,600&family=Ephesis&display=swap" rel="stylesheet">
+<style>
+  :root{--paper:#ECE7DA;--paperHi:#F4EFE3;--paperDeep:#D8CFBC;--ink:#0B0805;--inkSoft:#1A140D;--muted:#2E261B;--gold:#A8893F;--crimson:#BC2E27;--blush:#E8B4B8;--sage:#8FAF8F;--plum:#8E6E8E;--serif:'Cormorant Garamond',Georgia,serif;--script:'Ephesis',cursive;--sans:ui-sans-serif,system-ui,-apple-system,'Segoe UI',sans-serif;}
+  *{box-sizing:border-box}
+  body{margin:0;background:radial-gradient(120% 80% at 12% 0%,#F4EFE3 0%,rgba(244,239,227,0) 55%),radial-gradient(120% 90% at 100% 100%,#E4DDCC 0%,rgba(228,221,204,0) 50%),var(--paper);color:var(--ink);font-family:var(--serif);font-size:18px;line-height:1.6;-webkit-font-smoothing:antialiased}
+  .doc{max-width:680px;margin:0 auto;padding:30px 22px 90px}
+  h1.cover{font-family:var(--script);font-size:52px;color:var(--crimson);margin:6px 0 2px;line-height:1.04}
+  h2{font-family:var(--serif);font-style:italic;font-weight:600;font-size:27px;margin:0 0 6px}
+  h3{font-family:var(--serif);font-weight:600;font-size:21px;margin:18px 0 6px}
+  h4{font-family:var(--sans);font-size:12px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--gold);margin:16px 0 4px}
+  .eyebrow{font-family:var(--sans);font-size:12px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--gold);margin-bottom:10px}
+  p{margin:0 0 12px}.lede{font-size:20px;line-height:1.55}
+  small,.cap{font-family:var(--sans);font-size:13px;color:var(--muted);line-height:1.5}
+  b,strong{font-weight:600}
+  a{color:var(--crimson);text-decoration:none;border-bottom:1px solid rgba(188,46,39,.3)}
+  .section{background:var(--paperHi);border:1px solid var(--paperDeep);border-left:4px solid var(--gold);border-radius:20px;padding:22px 20px;margin:18px 0;box-shadow:0 4px 20px rgba(58,44,26,.10),0 1px 4px rgba(58,44,26,.06);position:relative;overflow:hidden}
+  .section.crimson{border-left-color:var(--crimson)}.section.sage{border-left-color:var(--sage)}.section.plum{border-left-color:var(--plum)}.section.blush{border-left-color:var(--blush)}
+  .rule{height:1px;background:var(--gold);opacity:.32;margin:18px 0}
+  .center{text-align:center}
+  table{width:100%;border-collapse:collapse;font-size:14px;font-family:var(--sans);margin:8px 0}
+  th,td{text-align:left;padding:7px 8px;border-bottom:1px solid var(--paperDeep);vertical-align:top}
+  th{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--gold)}
+  td b{font-family:var(--serif);font-size:15px}
+  .toc a{display:block;font-family:var(--sans);font-size:15px;color:var(--inkSoft);text-decoration:none;border-bottom:1px solid var(--paperDeep);padding:6px 0}
+  .toc a span{color:var(--gold);font-weight:700;margin-right:10px}
+  .script{font-family:var(--script);color:var(--crimson)}
+  .pill{display:inline-block;font-family:var(--sans);font-size:12px;font-weight:600;padding:5px 11px;border-radius:999px;background:var(--paper);border:1px solid var(--paperDeep);margin:3px 4px 3px 0}
+  .pill.rec{background:#EAF1EA;border-color:var(--sage);color:#3f6b3f}
+  .pill.gap{background:#FBE9E6;border-color:var(--crimson);color:var(--crimson)}
+  .pill.ok{background:#EAF1EA;border-color:var(--sage);color:#3f6b3f}
+  .pill.ev{background:#EAF1EA;border-color:var(--sage);color:#3f6b3f}
+  .pill.pop{background:#FBF1E0;border-color:var(--gold);color:#8a6d22}
+  .pill.myth{background:#FBE9E6;border-color:var(--crimson);color:var(--crimson)}
+  .lens{background:var(--paper);border:1px solid var(--paperDeep);border-left:3px solid var(--gold);border-radius:12px;padding:12px 14px;margin:8px 0}
+  .lens .nm{font-family:var(--serif);font-weight:600;font-size:18px;color:var(--ink);margin-bottom:2px}
+  .lens .nm .ix{font-family:var(--sans);font-size:11px;font-weight:700;letter-spacing:.1em;color:var(--gold);margin-right:8px;text-transform:uppercase}
+  .lens p{margin:0;font-size:15px;line-height:1.5;color:var(--inkSoft)}
+  .lens .src{font-family:var(--sans);font-size:12px;color:var(--muted);margin-top:5px}
+  .deck{border:1px dashed var(--gold);border-radius:14px;padding:6px 12px 12px;margin:10px 0;background:rgba(168,137,63,.04)}
+  .deck .dh{font-family:var(--sans);font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);margin:8px 0 2px}
+  .num{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:999px;background:var(--crimson);color:#fff;font-family:var(--sans);font-size:12px;font-weight:700;margin-right:8px;vertical-align:1px}
+  .foot{font-family:var(--sans);font-size:12px;color:var(--muted);text-align:center;margin-top:30px;line-height:1.6}
+  ul{margin:4px 0 12px;padding-left:20px}li{margin:3px 0}
+</style></head>
+<body><div class="doc">
+
+<div class="center" style="padding:14px 0 4px">
+  <div class="eyebrow">FemWell · Nutrition · research + build plan · for your reaction</div>
+  <h1 class="cover">The whole table</h1>
+  <p class="lede" style="font-style:italic;max-width:520px;margin:8px auto 0">Nutrition is one of the most load-bearing rooms in a woman's life — and the place a wholesome app can be genuinely useful <i>and</i> joyful. Here's what FemWell's Nutrition does today (honestly), what the evidence says, and the full plan to finish it — including <b>cook videos that play inside our cards</b>. <b>Plan only — nothing built from this yet.</b></p>
+</div>
+
+<div class="section">
+  <div class="eyebrow">The one-line thesis</div>
+  <p class="lede">A diet app counts calories and shames. A <b>whole-life</b> nutrition room makes eating <b>easier, kinder and more joyful</b> — it logs in seconds, quietly looks after the nutrients that actually matter for <i>her</i> stage, plans real meals with real cooking, and treats food as pleasure, culture and connection — not a test.</p>
+  <h4>The headline moves (this plan)</h4>
+  <ul>
+    <li><b>Finish the half-built core:</b> a real <b>meal-plan generator</b>, real <b>recipes</b> (save + "cook what's in" + generate), and the logger's last stubs (photo). These are the visible gaps today.</li>
+    <li><b>Cook videos INSIDE the cards</b> — the recipe lens becomes a swipeable deck of <b>embedded cook clips</b> (YouTube embed for curated, self-hosted for FemWell-original), playing in-card per the bible.</li>
+    <li><b>Lead with JOY:</b> a "what's for dinner tonight?" food room, cultural/celebratory dishes, comfort food, cook-along — eating <i>together</i> is evidence-backed wellbeing, not a side feature.</li>
+    <li><b>Quiet, credible, stage-aware guidance</b> anchored to NHS / BDA — iron as the flagship women's story; "cycle-aware, not cycle-rules"; a warm <b>myth-vs-fact</b> series as a trust feature.</li>
+  </ul>
+</div>
+
+<div class="section sage">
+  <div class="eyebrow">Contents</div>
+  <div class="toc">
+    <a href="#today"><span>1</span> What Nutrition does TODAY (honest: real vs stubbed)</a>
+    <a href="#research"><span>2</span> What the evidence says (cited) + the myth list</a>
+    <a href="#joy"><span>3</span> Food as joy, culture &amp; connection</a>
+    <a href="#video"><span>4</span> Cook videos inside our cards (feasibility)</a>
+    <a href="#feature"><span>5</span> The full feature set — in the card language</a>
+    <a href="#ties"><span>6</span> How it weaves into the rest of the app</a>
+    <a href="#data"><span>7</span> Data &amp; build reality (the one real decision)</a>
+    <a href="#first"><span>8</span> What I'd build first</a>
+  </div>
+</div>
+
+<!-- 1 · TODAY -->
+<a id="today"></a>
+<div class="section crimson">
+  <div class="eyebrow">1 · The honest picture</div>
+  <h2>What Nutrition does today</h2>
+  <p>The new <span class="script">/Nutrition</span> is a beautiful, real shell — but you're right that it isn't <i>complete</i>. Here's exactly what's wired vs stubbed, so the plan is honest about the work.</p>
+  <table>
+    <tr><th>Surface</th><th>Status today</th></tr>
+    <tr><td><b>Logging a meal</b> (text · search · barcode · voice · recents · favourites)</td><td><span class="pill ok">real</span> writes MealLog; search + barcode use Open Food Facts; voice parses. Solid.</td></tr>
+    <tr><td><b>Macros &amp; micros</b> (energy ring, protein/fibre/iron)</td><td><span class="pill ok">real</span> Open Food Facts + the <b>UK CoFID</b> table (iron/folate/calcium floor) + stage-aware targets.</td></tr>
+    <tr><td><b>Water / hydration</b></td><td><span class="pill ok">real</span> writes HydrationLog (+250/+500).</td></tr>
+    <tr><td><b>Shopping list</b></td><td><span class="pill ok">real</span> reads/writes ShoppingList, aisle-grouped, tick to check.</td></tr>
+    <tr><td><b>Stage / cycle guidance</b> (Jess line, nudges, insights)</td><td><span class="pill pop">part-seeded</span> reads WeeklyInsights/NutritionInsight; <b>falls back to hand-written stage copy</b> when empty (which is most of the time).</td></tr>
+    <tr><td><b>Meal PLAN</b> (the week)</td><td><span class="pill gap">stub</span> reads a MealPlans week if one exists, but there is <b>no generator</b> — "regenerate in the calendar" is a placeholder. For most users it's empty → a gentle suggested dinner.</td></tr>
+    <tr><td><b>Recipes</b></td><td><span class="pill gap">stub</span> reads saved recipes (rare), but <b>"Cook what's in" and "Generate a recipe" have no handler</b> — presentational pills.</td></tr>
+    <tr><td><b>Snap a photo</b> (log by camera)</td><td><span class="pill gap">stub</span> a tile with no camera/vision behind it.</td></tr>
+    <tr><td><b>Pantry</b></td><td><span class="pill gap">none</span> no concept yet (needed for "cook what's in").</td></tr>
+  </table>
+  <p class="cap"><b>Takeaway:</b> the <i>logging + tracking</i> half is genuinely real and good. The <i>planning + cooking + joy</i> half — the half that makes nutrition a place you <i>want</i> to be — is the work this plan is about.</p>
+</div>
+
+<!-- 2 · RESEARCH -->
+<a id="research"></a>
+<div class="section plum">
+  <div class="eyebrow">2 · The evidence (cited)</div>
+  <h2>What actually matters for women</h2>
+  <p>Every clinical claim should ride <b>NHS · BDA · British Menopause Society</b> — free, trusted, citable. The brand's edge is being <b>credible AND warm</b> in a market that's often neither. Each row is flagged <span class="pill ev">evidence</span>, <span class="pill pop">popular-practice</span> or <span class="pill myth">myth</span>.</p>
+
+  <div class="lens crimson" style="border-left-color:var(--crimson)"><div class="nm"><span class="ix">01</span>Iron is the flagship women's story</div>
+    <p>~19% of UK reproductive-age women are anaemic, ~1 in 3 iron-deficient, ~24% of teen girls deficient — it spans teen → perimenopause (heavier bleeds). This is the single most useful cross-life-stage nutrition story FemWell can own. <b>→ Make iron a recurring, gentle thread tied to the cycle (more around bleeding), never alarmist.</b> <span class="pill ev">evidence</span></p>
+    <p class="src"><a href="https://www.frontiersin.org/journals/nutrition/articles/10.3389/fnut.2025.1679989/full">Frontiers in Nutrition 2025 (UK iron)</a> · <a href="https://www.nhsinform.scot/illnesses-and-conditions/nutritional/iron-deficiency-anaemia/">NHS inform</a></p>
+  </div>
+
+  <div class="lens"><div class="nm"><span class="ix">02</span>"Cycle-aware", not "cycle-rules"</div>
+    <p>Rigid "cycle-syncing your diet" has <b>very limited evidence</b> as a protocol. What IS real: luteal appetite genuinely rises (+159–529 kcal/day), and iron matters around bleeding. <b>→ Frame phase guidance as gentle awareness ("your body may want a little more this week"), never a restrictive meal-by-phase rulebook.</b> <span class="pill pop">popular-practice</span></p>
+    <p class="src"><a href="https://thirdsister.co.uk/diet-for-hormones-evidence-based-guide/">Third Sister — evidence review</a></p>
+  </div>
+
+  <div class="lens sage" style="border-left-color:var(--sage)"><div class="nm"><span class="ix">03</span>Protein matters most in peri/menopause</div>
+    <p>~1.0–1.2 g/kg (up to ~1.6 for active/older women) supports muscle + satiety through menopause — but the wider "protein at every meal / protein-maxxing" trend is over-hyped and crowds out fibre. <b>→ Quiet protein nudges for peri/menopause; resist the maxxing aesthetic.</b> <span class="pill pop">leans-evidence, over-hyped</span></p>
+    <p class="src"><a href="https://elektrahealth.com/blog/protein-during-menopause/">Elektra Health</a> · <a href="https://mcpress.mayoclinic.org/nutrition-fitness/debunking-the-protein-propaganda-how-much-is-too-much/">Mayo Clinic Press</a></p>
+  </div>
+
+  <div class="lens"><div class="nm"><span class="ix">04</span>Life-stage levers that are real</div>
+    <p><b>PCOS:</b> low-GI eating + inositol (2023 international guideline). <b>PMS/PMDD:</b> calcium ~1200mg cut PMDD symptoms ~48%; magnesium + B6 help PMS. <b>Pregnancy/TTC:</b> 400µg folic acid pre-conception→wk12, 10µg vitamin D, avoid retinol/liver (NHS). <b>Menopause:</b> the BDA "top ten" backbone — calcium 3×/day + D, oily fish, fibre, strength 2×/wk, flush triggers. <span class="pill ev">evidence</span></p>
+    <p class="src"><a href="https://academic.oup.com/jcem/article/109/6/1630/7504796">PCOS guideline 2023</a> · <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC4794546/">Calcium/PMDD</a> · <a href="https://www.nhs.uk/pregnancy/keeping-well/pregnancy-vitamins-and-supplements/">NHS pregnancy</a> · <a href="https://www.bda.uk.com/resource/top-ten-nutrition-tips-for-the-menopause.html">BDA menopause</a></p>
+  </div>
+
+  <div class="lens plum" style="border-left-color:var(--plum)"><div class="nm"><span class="ix">05</span>The GLP-1 era is a live, unmet need</div>
+    <p>Women on Wegovy/Ozempic need protein + resistance support to avoid muscle/nutrient loss — and want <b>non-judgemental</b> help, which almost nothing offers warmly. <b>→ A gentle, opt-in "eating well on a GLP-1" thread is a real differentiator.</b> <span class="pill ev">emerging need</span></p>
+    <p class="src"><a href="https://health.usnews.com/best-diet/medication/articles/glp-1-muscle-loss-how-to-prevent-muscle-wasting-on-wegovy-and-other-glp-1s">US News — GLP-1 &amp; muscle</a></p>
+  </div>
+
+  <div class="lens"><div class="nm"><span class="ix">06</span>Food ↔ mood / gut is real but modest</div>
+    <p>Diet + fermented foods can lift <i>mild</i> mood; "30 plants a week" supports microbiome diversity. Solid and joyful as a hook — not a cure. <b>→ "30 plants" as a playful, optional game; never medicalise.</b> <span class="pill pop">real-but-modest</span></p>
+    <p class="src"><a href="https://www.bda.uk.com/resource/menopause-diet.html">BDA</a> · <a href="https://pubmed.ncbi.nlm.nih.gov/41026445/">Gut–mood review 2025</a></p>
+  </div>
+
+  <div class="rule"></div>
+  <h4>A trust feature: name the myths, warmly</h4>
+  <p>The wellness internet sells women a lot of nonsense. A gentle in-app <b>"myth vs fact"</b> card series is both on-brand and a credibility moat:</p>
+  <p><span class="pill myth">"cortisol cocktails"</span><span class="pill myth">"adrenal fatigue"</span><span class="pill myth">"seed oils are toxic"</span><span class="pill myth">rigid cycle meal-plans</span><span class="pill myth">detox teas</span> <span class="cap">— each gets a calm, sourced "here's what's actually true".</span></p>
+  <p class="src"><a href="https://www.cbsnews.com/news/cortisol-cocktails-stress-weight-loss-experts/">CBS — cortisol cocktails</a> · <a href="https://en.wikipedia.org/wiki/Seed_oil_misinformation">Seed-oil misinformation</a> · <a href="https://www.thegrocer.co.uk/analysis-and-features/inside-the-16bn-menopause-market-money-spinner-or-scam/695454.article">The Grocer — £16bn menopause market</a></p>
+</div>
+
+<!-- 3 · JOY -->
+<a id="joy"></a>
+<div class="section blush">
+  <div class="eyebrow">3 · The whole-life heart</div>
+  <h2>Food as joy, culture &amp; connection</h2>
+  <p>This is what makes Nutrition a room women <i>want</i> to open. <b>Eating together triggers endorphins and bonding; eating alone tracks with poorer health and loneliness</b> — commensality is evidence-backed wellbeing, not fluff. So food in FemWell is social, cultural, seasonal and fun by default — tracking is the quiet helper underneath.</p>
+  <div class="deck">
+    <div class="dh">▸ the joyful surfaces</div>
+    <div class="lens"><div class="nm"><span class="ix">A</span>"What's for dinner tonight?"</div><p>A warm, anonymous-safe food room — share tonight's plate, swap easy ideas, comfort-food confessions, "help, what do I make with this?". The social front door to Nutrition. <span class="pill ev">commensality evidence</span></p></div>
+    <div class="lens"><div class="nm"><span class="ix">B</span>Cultural &amp; celebratory</div><p>Seasonal + cultural dishes (a Sunday roast, Eid, Diwali, Lunar New Year), comfort food without guilt, "cook your nan's recipe" — food as identity and belonging, not macros.</p></div>
+    <div class="lens"><div class="nm"><span class="ix">C</span>Cooking as creativity</div><p>Cook-along clips, "use up what's wilting", a 15-minute-dinner rescue — pleasure and skill, framed as play not compliance.</p></div>
+    <div class="lens"><div class="nm"><span class="ix">D</span>Gentle games, never scores</div><p>"30 plants this week", a phase-friendly produce of the week, a "treat, fully enjoyed" log — delight, never a calorie scoreboard.</p></div>
+  </div>
+  <p class="src">Source: <a href="https://www.socialconnectionguidelines.org/en/evidence-briefs/should-we-make-eating-together-a-priority">Social Connection Guidelines — eating together</a> · <a href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC8295993/">Commensality &amp; wellbeing</a></p>
+</div>
+
+<!-- 4 · VIDEO -->
+<a id="video"></a>
+<div class="section">
+  <div class="eyebrow">4 · The load-bearing question</div>
+  <h2>Cook videos inside our cards — yes, here's how</h2>
+  <p>You asked whether we can embed cook videos <b>inside</b> the sliding cards. <b>Yes — and the app is already capable.</b> The Card system has <code>InlineVideo</code>/<code>InlineAudio</code> (<code>Card.jsx</code>), a YouTube/Vimeo iframe player (<code>WorkoutPlayer.jsx</code>), and there's <b>no Content-Security-Policy blocking third-party iframes</b>. The constraints are about <i>which</i> platform and <i>how</i>, not whether.</p>
+  <table>
+    <tr><th>Source</th><th>Embed in a card?</th><th>How / caveat</th></tr>
+    <tr><td><b>YouTube</b></td><td><span class="pill ok">recommended (curated)</span></td><td>Official iframe API; <code>playsinline</code> + muted autoplay. <b>Hard rule: never put an overlay ON TOP of the player or its controls</b> — chrome goes above/below only.</td></tr>
+    <tr><td><b>Self-hosted / HLS</b></td><td><span class="pill ok">recommended (originals)</span></td><td>Full card control, no ToS chrome, no "video removed" risk — best for FemWell-original cook clips. (Adds an <code>hls.js</code> dependency.)</td></tr>
+    <tr><td><b>Vimeo</b></td><td><span class="pill ok">yes</span></td><td>More player control than YouTube; smaller library. Already supported in WorkoutPlayer.</td></tr>
+    <tr><td><b>TikTok</b></td><td><span class="pill pop">secondary</span></td><td>oEmbed blockquote + <code>embed.js</code>; can't theme; vanishes if creator deletes. Fine as an occasional embed, not the backbone.</td></tr>
+    <tr><td><b>Instagram Reels</b></td><td><span class="pill gap">link-out only</span></td><td>oEmbed now needs an app-reviewed Meta app and (from Nov 2025) drops thumbnail/author data — not worth inlining. Link out.</td></tr>
+  </table>
+  <h4>How it lives in the card language</h4>
+  <p>A recipe becomes a <b>two-half stacked card</b>: the <b>top half</b> a horizontal deck of <b>embedded cook-clip cards</b> (swipe between "the 60-sec version", "the full method", "a variation"); the <b>bottom half</b> the ingredients → "add to shopping" → "log it when you've eaten". Inline play in the card; a "cook full-screen" CTA deep-links the whole recipe — exactly the bible's inline-media rule (<span class="script">§6.7</span>: <i>"inline media plays IN the card; the consume CTA deep-links the exact item full-screen"</i>).</p>
+  <p class="src">Sources: <a href="https://developers.google.com/youtube/terms/required-minimum-functionality">YouTube embed RMF (no-overlay rule)</a> · <a href="https://developers.tiktok.com/doc/embed-videos/">TikTok embed</a> · <a href="https://developers.facebook.com/docs/instagram-platform/oembed/">Instagram oEmbed</a></p>
+</div>
+
+<!-- 5 · FEATURE SET -->
+<a id="feature"></a>
+<div class="section sage">
+  <div class="eyebrow">5 · The proposal</div>
+  <h2>The full Nutrition, in our card language</h2>
+  <p>Keeping today's two boards (<b>Eat today</b> · <b>Plan &amp; explore</b>) and the stacked sub-slider language — here's the complete room, with the stubs finished and the joy added.</p>
+
+  <h3>Board 1 · "Eat today" — finish the logger, keep it 5-second</h3>
+  <div class="deck"><div class="dh">▸ top deck</div>
+    <div class="lens"><div class="nm"><span class="ix">Plate</span>Energy + macros + the day's micros</div><p>Keep the ring + protein/fibre/iron. Add a quiet "iron this week" thread tinted to phase. <span class="pill ok">rides existing</span></p></div>
+    <div class="lens"><div class="nm"><span class="ix">Log</span>Finish the methods</div><p>Text/search/barcode/voice are real — <b>wire "Snap a photo"</b> (vision estimate) and a 1-tap "same as yesterday". <span class="pill gap">photo = new</span></p></div>
+  </div>
+  <div class="deck"><div class="dh">▸ bottom deck</div>
+    <div class="lens"><div class="nm"><span class="ix">Water</span>+ recents</div><p>As today (real). <span class="pill ok">rides existing</span></p></div>
+    <div class="lens"><div class="nm"><span class="ix">My plan</span>Stage-aware targets</div><p>Real, stage + cycle aware. Add the gentle "what your stage wants this week" line. <span class="pill ok">rides existing</span></p></div>
+  </div>
+
+  <h3>Board 2 · "Plan &amp; explore" — the half to build</h3>
+  <div class="deck"><div class="dh">▸ top deck</div>
+    <div class="lens"><div class="nm"><span class="ix">★ Meal plan</span>A real generator</div><p>Generate a gentle, stage-aware week (respecting allergies/diet/budget/time), editable, → one tap builds the shopping list. <b>This is the biggest missing piece.</b> <span class="pill gap">needs generation</span></p></div>
+    <div class="lens"><div class="nm"><span class="ix">★ Recipes</span>Cook cards + videos</div><p>Saved recipes (real) + <b>"cook what's in" (reads a light Pantry) + "generate one"</b>, each a cook-card with an <b>embedded clip</b> and an ingredients→shopping→log flow. <span class="pill gap">needs generation + Pantry</span></p></div>
+  </div>
+  <div class="deck"><div class="dh">▸ bottom deck</div>
+    <div class="lens"><div class="nm"><span class="ix">Shop</span>Build-from-plan</div><p>Aisle list (real) + wire <b>"build from this week's plan"</b>. <span class="pill gap">small</span></p></div>
+    <div class="lens"><div class="nm"><span class="ix">Pantry</span>Light "what's in"</div><p>A simple have-list that powers "cook what's in" + de-dupes the shop. <span class="pill gap">new (small entity)</span></p></div>
+    <div class="lens"><div class="nm"><span class="ix">Insights</span>Real + myth-vs-fact</div><p>Weekly read (real when present) + the warm <b>myth-vs-fact</b> card series. <span class="pill ok">rides existing</span></p></div>
+  </div>
+
+  <h3>A third front door · "The kitchen table" (joy + community)</h3>
+  <p>The food room from §3 — "what's for dinner tonight?", cultural dishes, cook-alongs, "30 plants" — sitting alongside the two utility boards so Nutrition is a place to <i>enjoy</i>, not just track.</p>
+</div>
+
+<!-- 6 · TIES -->
+<a id="ties"></a>
+<div class="section">
+  <div class="eyebrow">6 · The weave</div>
+  <h2>How Nutrition connects to the rest of the app</h2>
+  <p>Today the surfaces are mostly self-contained (the scan confirmed it). The plan weaves them:</p>
+  <table>
+    <tr><th>Surface</th><th>The tie</th></tr>
+    <tr><td><b>Today</b></td><td>A "nourishment" glance row (energy ring + water + tonight's plan) deep-linking the exact Nutrition lens.</td></tr>
+    <tr><td><b>Health / cycle</b></td><td>Phase already drives targets; add the reverse — "iron-friendly ideas this week" surfaced from Health near the bleed.</td></tr>
+    <tr><td><b>Pulse / Trends</b></td><td>Food ↔ mood/energy correlations ("you log more protein on your better-mood days") — gentle, never causal.</td></tr>
+    <tr><td><b>Planner</b></td><td>"Log tonight's dinner" + a meal-prep block; the plan's cook time becomes a planner block.</td></tr>
+    <tr><td><b>Garden</b></td><td>A nourished day waters the garden (the existing growth loop) — joy, not streak-guilt.</td></tr>
+    <tr><td><b>Community</b></td><td>The "kitchen table" room IS the community tie — recipes shared become LifestyleItems/Community posts.</td></tr>
+    <tr><td><b>Jess</b></td><td>"What can I make with chicken + spinach in 20 min?" → a generated cook-card, in her voice.</td></tr>
+  </table>
+</div>
+
+<!-- 7 · DATA -->
+<a id="data"></a>
+<div class="section crimson">
+  <div class="eyebrow">7 · Honest build reality</div>
+  <h2>The one real decision: how does "generate" work?</h2>
+  <p>Most of this rides existing entities. But <b>meal-plan + recipe generation needs compute</b> — and the standing rule is <b>no new base44 <i>function</i></b>. So the key decision to make before building:</p>
+  <ul>
+    <li><b>Option A — template/rules generator (no AI, no function).</b> A curated, stage-aware recipe/meal library + smart filtering (diet, time, what's-in). Ships entirely client-side, fully within the rule. Less "magic", very reliable. <span class="pill rec">safest</span></li>
+    <li><b>Option B — route through the existing Jess agent.</b> Jess is already a base44 <i>agent</i> (not a new function) — meal/recipe generation could be a Jess capability. Needs verifying she can return structured recipes. <span class="pill pop">needs a spike</span></li>
+    <li><b>Option C — a new AI function.</b> Cleanest "generate anything" UX, but it's the one thing the rule caps — would need your explicit OK. <span class="pill gap">your call</span></li>
+  </ul>
+  <p class="cap">My recommendation: <b>A for v1</b> (a beautiful curated library + filters covers 90% of the value with zero rule-risk), with a <b>B spike</b> to see if Jess can do bespoke generation later. New small entities (Pantry; saved-recipe writes) are additive, no new function. Everything else (logging, macros, shopping, targets, insights) is already real.</p>
+</div>
+
+<!-- 8 · FIRST -->
+<a id="first"></a>
+<div class="section plum">
+  <div class="eyebrow">8 · Recommendation</div>
+  <h2>What I'd build first</h2>
+  <ul>
+    <li><b>1. The "kitchen table" joy room + the myth-vs-fact cards.</b> Mostly content + UI, instantly makes Nutrition feel whole-life and warm, zero rule-risk. The highest joy-per-effort.</li>
+    <li><b>2. Recipes with embedded cook videos</b> (curated YouTube + a few self-hosted), save + cook-card deck — the "wow", and the embed path is already proven in the codebase.</li>
+    <li><b>3. Finish the utility stubs:</b> build-from-plan shopping, "same as yesterday" log, snap-a-photo. Small, high daily value.</li>
+    <li><b>4. The meal-plan generator (Option A library)</b> + a light Pantry for "cook what's in" — the biggest missing piece, built the safe way.</li>
+    <li><b>5. The weave</b> (Today row, Planner block, Pulse correlation, Garden water) — once the rooms are rich.</li>
+  </ul>
+  <p class="lede" style="margin-top:14px">All of it fits the stacked sub-slider + embedded-video-card language. <b>Nothing built from this yet — this is the plan to react to before we touch live Nutrition.</b></p>
+</div>
+
+<div class="foot">
+  FemWell · Nutrition · research + build plan · 28 June 2026<br>
+  Clinical claims sourced inline (NHS/BDA/peer-review); popular-practice flagged as such. Live Nutrition unchanged pending your approval.
+</div>
+
+</div></body></html>

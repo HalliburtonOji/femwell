@@ -1,0 +1,258 @@
+<!doctype html>
+<html lang="en-GB"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>FemWell — Lifestyle Plan (research + build plan)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500;1,600&family=Ephesis&display=swap" rel="stylesheet">
+<style>
+  :root{--paper:#ECE7DA;--paperHi:#F4EFE3;--paperDeep:#D8CFBC;--ink:#0B0805;--inkSoft:#1A140D;--muted:#2E261B;--gold:#A8893F;--crimson:#BC2E27;--blush:#E8B4B8;--sage:#8FAF8F;--plum:#8E6E8E;--serif:'Cormorant Garamond',Georgia,serif;--script:'Ephesis',cursive;--sans:ui-sans-serif,system-ui,-apple-system,'Segoe UI',sans-serif;}
+  *{box-sizing:border-box}
+  body{margin:0;background:radial-gradient(120% 80% at 12% 0%,#F4EFE3 0%,rgba(244,239,227,0) 55%),radial-gradient(120% 90% at 100% 100%,#E4DDCC 0%,rgba(228,221,204,0) 50%),var(--paper);color:var(--ink);font-family:var(--serif);font-size:18px;line-height:1.6;-webkit-font-smoothing:antialiased}
+  .doc{max-width:680px;margin:0 auto;padding:30px 22px 90px}
+  h1.cover{font-family:var(--script);font-size:52px;color:var(--crimson);margin:6px 0 2px;line-height:1.04}
+  h2{font-family:var(--serif);font-style:italic;font-weight:600;font-size:27px;margin:0 0 6px}
+  h3{font-family:var(--serif);font-weight:600;font-size:21px;margin:18px 0 6px}
+  h4{font-family:var(--sans);font-size:12px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--gold);margin:16px 0 4px}
+  .eyebrow{font-family:var(--sans);font-size:12px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--gold);margin-bottom:10px}
+  p{margin:0 0 12px}.lede{font-size:20px;line-height:1.55}
+  small,.cap{font-family:var(--sans);font-size:13px;color:var(--muted);line-height:1.5}
+  b,strong{font-weight:600}
+  a{color:var(--crimson);text-decoration:none;border-bottom:1px solid rgba(188,46,39,.3)}
+  .section{background:var(--paperHi);border:1px solid var(--paperDeep);border-left:4px solid var(--gold);border-radius:20px;padding:22px 20px;margin:18px 0;box-shadow:0 4px 20px rgba(58,44,26,.10),0 1px 4px rgba(58,44,26,.06);position:relative;overflow:hidden}
+  .section.crimson{border-left-color:var(--crimson)}.section.sage{border-left-color:var(--sage)}.section.plum{border-left-color:var(--plum)}.section.blush{border-left-color:var(--blush)}
+  .rule{height:1px;background:var(--gold);opacity:.32;margin:18px 0}
+  .center{text-align:center}
+  table{width:100%;border-collapse:collapse;font-size:14px;font-family:var(--sans);margin:8px 0}
+  th,td{text-align:left;padding:7px 8px;border-bottom:1px solid var(--paperDeep);vertical-align:top}
+  th{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--gold)}
+  td b{font-family:var(--serif);font-size:15px}
+  .toc a{display:block;font-family:var(--sans);font-size:15px;color:var(--inkSoft);text-decoration:none;border-bottom:1px solid var(--paperDeep);padding:6px 0}
+  .toc a span{color:var(--gold);font-weight:700;margin-right:10px}
+  .script{font-family:var(--script);color:var(--crimson)}
+  .pill{display:inline-block;font-family:var(--sans);font-size:12px;font-weight:600;padding:5px 11px;border-radius:999px;background:var(--paper);border:1px solid var(--paperDeep);margin:3px 4px 3px 0}
+  .pill.rec{background:#EAF1EA;border-color:var(--sage);color:#3f6b3f}
+  .pill.gap{background:#FBE9E6;border-color:var(--crimson);color:var(--crimson)}
+  .pill.ok{background:#EAF1EA;border-color:var(--sage);color:#3f6b3f}
+  .pill.ev{background:#EAF1EA;border-color:var(--sage);color:#3f6b3f}
+  .pill.pop{background:#FBF1E0;border-color:var(--gold);color:#8a6d22}
+  .lens{background:var(--paper);border:1px solid var(--paperDeep);border-left:3px solid var(--gold);border-radius:12px;padding:12px 14px;margin:8px 0}
+  .lens .nm{font-family:var(--serif);font-weight:600;font-size:18px;color:var(--ink);margin-bottom:2px}
+  .lens .nm .ix{font-family:var(--sans);font-size:11px;font-weight:700;letter-spacing:.1em;color:var(--gold);margin-right:8px;text-transform:uppercase}
+  .lens p{margin:0;font-size:15px;line-height:1.5;color:var(--inkSoft)}
+  .lens .src{font-family:var(--sans);font-size:12px;color:var(--muted);margin-top:5px}
+  .deck{border:1px dashed var(--gold);border-radius:14px;padding:6px 12px 12px;margin:10px 0;background:rgba(168,137,63,.04)}
+  .deck .dh{font-family:var(--sans);font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);margin:8px 0 2px}
+  .num{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:999px;background:var(--crimson);color:#fff;font-family:var(--sans);font-size:12px;font-weight:700;margin-right:8px;vertical-align:1px}
+  .foot{font-family:var(--sans);font-size:12px;color:var(--muted);text-align:center;margin-top:30px;line-height:1.6}
+  ul{margin:4px 0 12px;padding-left:20px}li{margin:3px 0}
+</style></head>
+<body><div class="doc">
+
+<div class="center" style="padding:14px 0 4px">
+  <div class="eyebrow">FemWell · Lifestyle · research + build plan · for your reaction</div>
+  <h1 class="cover">The good life,<br>on purpose</h1>
+  <p class="lede" style="font-style:italic;max-width:520px;margin:8px auto 0">Lifestyle is the room where FemWell says out loud: <b>your life is more than your health.</b> Read, listen, watch, learn, make, laugh, rest — guilt-free. Here's what it does today, what the evidence says about leisure as <i>medicine</i>, and the plan to make it the best whole-life hub for women — with media that <b>plays inside our cards</b>. <b>Plan only — nothing built from this yet.</b></p>
+</div>
+
+<div class="section">
+  <div class="eyebrow">The one-line thesis</div>
+  <p class="lede">A content feed fills time. A <b>whole-life Lifestyle hub</b> gives a woman <b>permission to enjoy her life</b> — a daily ritual of read/listen/watch/learn/play tuned to who she is and how much time she has, with a warm voice, gentle community, and zero guilt. Leisure isn't the reward for wellness; <b>it IS wellness.</b></p>
+  <h4>The headline moves (this plan)</h4>
+  <ul>
+    <li><b>Make the inline players REAL.</b> Today's in-card play button is a mock — wire genuine in-card audio/video (self-hosted + YouTube + podcast embeds) per the bible.</li>
+    <li><b>Go beyond read/listen/watch</b> to the full life: creativity, learning, culture, fashion-as-joy, nature, humour, journaling, astrology — each earns its place on the evidence.</li>
+    <li><b>A "by the time you have" picker</b> (a dopamine-menu, not an infinite feed) + a single warm voice + gentle community ("what are you reading/watching?").</li>
+    <li><b>Guilt-FREE by design:</b> permission-led tone, <b>no punishing streaks</b> — the antidote to the documented leisure-guilt women carry.</li>
+  </ul>
+</div>
+
+<div class="section sage">
+  <div class="eyebrow">Contents</div>
+  <div class="toc">
+    <a href="#today"><span>1</span> What Lifestyle does TODAY (real vs stubbed)</a>
+    <a href="#research"><span>2</span> Leisure as medicine (cited)</a>
+    <a href="#domains"><span>3</span> The full domain set — beyond read/listen</a>
+    <a href="#media"><span>4</span> Media that plays inside our cards (feasibility)</a>
+    <a href="#feature"><span>5</span> The full hub — in the card language</a>
+    <a href="#ties"><span>6</span> How it weaves into the rest of the app</a>
+    <a href="#fun"><span>7</span> Fun as a first-class pillar</a>
+    <a href="#first"><span>8</span> What I'd build first</a>
+  </div>
+</div>
+
+<!-- 1 · TODAY -->
+<a id="today"></a>
+<div class="section crimson">
+  <div class="eyebrow">1 · The honest picture</div>
+  <h2>What Lifestyle does today</h2>
+  <p>The new <span class="script">/Lifestyle</span> is a lovely shell with real content — but several surfaces are seeded or presentational. Honestly:</p>
+  <table>
+    <tr><th>Surface</th><th>Status today</th></tr>
+    <tr><td><b>Content library</b> (articles · stories · guides)</td><td><span class="pill ok">real</span> reads LifestyleItems (PUBLISHED); opens deep-link the exact item.</td></tr>
+    <tr><td><b>Books</b></td><td><span class="pill ok">real</span> FemWell fiction + public-domain gutendex (fetched in background).</td></tr>
+    <tr><td><b>Daily Story · Horoscope</b></td><td><span class="pill ok">real</span> read DailyStory / HoroscopeReading entities (graceful empty states).</td></tr>
+    <tr><td><b>Save / bookmark</b></td><td><span class="pill ok">real</span> persists to UserProfile.saved_item_ids.</td></tr>
+    <tr><td><b>Inline audio / video player</b></td><td><span class="pill gap">mock</span> the in-card "Play" is a presentational toggle — <b>no actual playback</b>. (Full players exist elsewhere but aren't wired in here.)</td></tr>
+    <tr><td><b>TikTok / Reels lane</b></td><td><span class="pill gap">seeded</span> placeholder handles (@tidyhome…); no real embed yet.</td></tr>
+    <tr><td><b>Try this · A day for you · Sky diary</b></td><td><span class="pill gap">seeded</span> hand-written examples, no entity, no save action.</td></tr>
+    <tr><td><b>External podcasts</b></td><td><span class="pill gap">seeded</span> a short hard-coded list (link-out).</td></tr>
+    <tr><td><b>Content authoring / supply</b></td><td><span class="pill gap">open question</span> who writes LifestyleItems, how often? The library is small.</td></tr>
+  </table>
+  <p class="cap"><b>Takeaway:</b> the <i>scaffold</i> and the <i>save</i> are real; the <b>media playback, the live short-video lane, and the content-supply engine</b> are the work. And the hub is currently only read/listen/watch + story/horoscope — the wider life isn't in it yet.</p>
+</div>
+
+<!-- 2 · RESEARCH -->
+<a id="research"></a>
+<div class="section plum">
+  <div class="eyebrow">2 · The evidence (cited)</div>
+  <h2>Leisure is medicine — say it out loud</h2>
+  <p>The strongest "health is one room, not the house" argument is that <b>leisure itself is health</b>. The evidence is unusually strong and unusually unspoken-to-women.</p>
+
+  <div class="lens"><div class="nm"><span class="ix">01</span>600+ mechanisms by which leisure heals</div>
+    <p>A 2021 narrative review (Fancourt et al., <i>Soc Sci Med</i>) catalogues <b>600+ mechanisms</b> by which leisure improves health — used in "prevention and management of depression, anxiety, stress". Leisure is a clinical asset, not a treat. <span class="pill ev">evidence</span></p>
+    <p class="src"><a href="https://www.sciencedirect.com/science/article/pii/S0277953621007498">Fancourt et al., Soc Sci Med 2021</a></p>
+  </div>
+
+  <div class="lens crimson" style="border-left-color:var(--crimson)"><div class="nm"><span class="ix">02</span>Women have a measured leisure deficit + guilt</div>
+    <p>UK ONS: men take <b>~5 more leisure hours/week</b> (and women's leisure is more fragmented and <b>guilt-laden</b>). The product's emotional job is <b>guilt-FREE leisure</b> — sanctioned rest is the direct antidote to a documented harm. <span class="pill ev">evidence</span></p>
+    <p class="src"><a href="https://www.ons.gov.uk/economy/nationalaccounts/satelliteaccounts/articles/leisuretimeintheuk/2015">ONS — Leisure time in the UK</a></p>
+  </div>
+
+  <div class="lens sage" style="border-left-color:var(--sage)"><div class="nm"><span class="ix">03</span>Creativity, awe, learning, third places</div>
+    <p><b>45 min of art</b> lowered cortisol in 75% of people — at <i>any</i> skill level (Drexel). <b>Awe</b> expands felt time and lifts wellbeing for weeks (Keltner). Mind-stimulating <b>learning</b> links to longevity. <b>Third places</b> reduce loneliness. Each is a domain worth a room. <span class="pill ev">evidence</span></p>
+    <p class="src"><a href="https://drexel.edu/news/archive/2016/june/art-and-cortisol/">Drexel — art &amp; cortisol</a> · <a href="https://ggsc.berkeley.edu/images/uploads/GGSC-JTF_White_Paper-Awe_FINAL.pdf">Greater Good — Awe</a></p>
+  </div>
+
+  <div class="lens"><div class="nm"><span class="ix">04</span>The women's-podcast wave (the Listen tailwind)</div>
+    <p>Women's podcast listenership <b>tripled 2015→2025 (15%→45%, ~60M US women)</b>; ~9.5 episodes/week; <b>79%</b> want an enjoyable host; <b>64%</b> use podcasts to navigate life challenges. A warm, named voice is the differentiator. <span class="pill ev">evidence</span></p>
+    <p class="src"><a href="https://www.edisonresearch.com/womens-podcast-listening-has-grown-dramatically-over-the-past-decade/">Edison Research — women &amp; podcasts</a></p>
+  </div>
+
+  <div class="lens plum" style="border-left-color:var(--plum)"><div class="nm"><span class="ix">05</span>Astrology — huge female audience, done tastefully</div>
+    <p>Women are ~2× as likely to follow astrology (≈43% of women 18–49); the market is ~$3.9–4.0B (2024). Keep it ~15% of the hub, warm and reflective (not predictive/anxious), tied gently to the cycle. <span class="pill ev">evidence (audience)</span></p>
+    <p class="src"><a href="https://www.pewresearch.org/short-reads/2025/03/13/who-believes-in-astrology-and-why/">Pew — who believes in astrology</a></p>
+  </div>
+
+  <div class="rule"></div>
+  <h4>Trends to lean into — and to avoid</h4>
+  <p><b>Lean in:</b> <span class="pill pop">romanticise your life</span><span class="pill pop">soft life</span><span class="pill pop">dopamine menu</span><span class="pill pop">BookTok</span><span class="pill pop">hobby renaissance</span><span class="pill pop">slow living</span> — they map onto real wellbeing science.</p>
+  <p><b>Avoid:</b> literal hashtags as UI, infinite-scroll mechanics, punishing streaks, and gimmicky trend words (e.g. "raw-dogging") that will date badly. The tone is <b>timeless and warm</b>, riding the trend's <i>spirit</i> not its slang.</p>
+  <p class="src"><a href="https://www.vogue.com/article/romanticizing-your-life">Vogue — romanticise your life</a> · <a href="https://www.nytimes.com/2024/01/27/style/dopamine-menu-adhd.html">NYT — the dopamine menu</a></p>
+</div>
+
+<!-- 3 · DOMAINS -->
+<a id="domains"></a>
+<div class="section sage">
+  <div class="eyebrow">3 · The whole life</div>
+  <h2>Beyond read / listen / watch</h2>
+  <p>Today's hub is read · listen · watch · daily-story · horoscope. The whole-life rule says span the rest of her life too — each of these earns its place on the evidence above:</p>
+  <div class="deck"><div class="dh">▸ the domains to add</div>
+    <div class="lens"><div class="nm"><span class="ix">Make</span>Creativity &amp; hobbies</div><p>A craft/hobby corner — a tiny weekly "make something" prompt, the hobby renaissance, art-as-stress-relief. <span class="pill ev">art↓cortisol</span></p></div>
+    <div class="lens"><div class="nm"><span class="ix">Learn</span>Curiosity &amp; microlearning</div><p>A "learn one thing" card — a fact, a skill, a 3-min explainer — curiosity tied to longevity. <span class="pill ev">learning↔longevity</span></p></div>
+    <div class="lens"><div class="nm"><span class="ix">Watch</span>Entertainment &amp; clubs</div><p>What-to-watch, a gentle book/film club, "what are you watching?" — culture as connection. <span class="pill pop">BookTok</span></p></div>
+    <div class="lens"><div class="nm"><span class="ix">Awe</span>Nature &amp; a daily "awe drop"</div><p>One small awe moment a day (a sky, a sound, a wonder) — expands felt time, lifts mood. <span class="pill ev">awe science</span></p></div>
+    <div class="lens"><div class="nm"><span class="ix">Joy</span>Fashion-as-play, humour, treats</div><p>Joyful, anti-pressure fashion/beauty; a laugh; a "treat, fully enjoyed". Delight, never comparison.</p></div>
+    <div class="lens"><div class="nm"><span class="ix">Rest</span>Reflection &amp; "a quiet hour"</div><p>Journaling, sky diary, and a permission-led "a quiet hour" mode — guilt-free rest as a feature.</p></div>
+  </div>
+</div>
+
+<!-- 4 · MEDIA -->
+<a id="media"></a>
+<div class="section">
+  <div class="eyebrow">4 · The load-bearing question</div>
+  <h2>Media that plays inside our cards</h2>
+  <p>Same answer as Nutrition: <b>yes, and the app is capable</b> — the issue today is that the Lifestyle inline player is a <i>mock</i>, while real players already exist elsewhere (an ExpandedPlayer for podcasts, a YouTube/Vimeo iframe player, and <code>InlineVideo</code>/<code>InlineAudio</code> in the Card system). No CSP blocks embeds. The work is wiring the real players into the cards.</p>
+  <table>
+    <tr><th>Source</th><th>Embed in a card?</th><th>How / caveat</th></tr>
+    <tr><td><b>Self-hosted audio/video (HLS)</b></td><td><span class="pill ok">best control</span></td><td>HTML5 <code>&lt;audio&gt;</code>/<code>&lt;video&gt;</code> + hls.js — full custom chrome; pairs with a TTS "listen to this article". The backbone for FemWell-original.</td></tr>
+    <tr><td><b>YouTube</b></td><td><span class="pill ok">yes</span></td><td>iframe API; <b>no overlay on the player</b>; min 200×200. Already used in WorkoutPlayer.</td></tr>
+    <tr><td><b>Spotify</b></td><td><span class="pill pop">preview only</span></td><td>iFrame works, but <b>logged-out users get a 30-sec preview then a login wall</b> — the key gotcha. Good as "preview + open in Spotify".</td></tr>
+    <tr><td><b>Apple Podcasts</b></td><td><span class="pill ok">yes</span></td><td>Official embed iframe; follow opens the app.</td></tr>
+    <tr><td><b>TikTok</b></td><td><span class="pill pop">secondary</span></td><td>oEmbed blockquote + embed.js; can't theme. Fine for an occasional short.</td></tr>
+    <tr><td><b>Instagram Reels</b></td><td><span class="pill gap">link-out</span></td><td>App-reviewed Meta app required + Nov-2025 data cuts → not worth inlining.</td></tr>
+    <tr><td><b>Vimeo</b></td><td><span class="pill ok">yes</span></td><td>More control than YouTube.</td></tr>
+  </table>
+  <h4>How it lives in the card language</h4>
+  <p>A Listen/Watch item becomes a card with a <b>real inline player</b> (self-hosted/HLS for original audio + TTS, the native podcast/YouTube embed for the rest) — play IN the card, "open full-screen" deep-links the full ExpandedPlayer. A short-video lane is a horizontal deck of <b>embedded clips</b>. All within the bible's <span class="script">§6.7</span> inline-media rule.</p>
+  <p class="src"><a href="https://developer.spotify.com/documentation/embeds">Spotify embeds (preview-only gotcha)</a> · <a href="https://developers.google.com/youtube/terms/required-minimum-functionality">YouTube embed RMF</a></p>
+</div>
+
+<!-- 5 · FEATURE SET -->
+<a id="feature"></a>
+<div class="section plum">
+  <div class="eyebrow">5 · The proposal</div>
+  <h2>The full hub, in our card language</h2>
+  <p>Keep today's boards (For you · Read · Listen · Story &amp; sky) and grow them, plus a couple of new front doors — all stacked sub-sliders + embedded-media cards.</p>
+
+  <h3>Make the existing boards real</h3>
+  <ul>
+    <li><b>Listen / Watch:</b> wire the real inline players (the headline fix) + a TTS "listen to this article". <span class="pill gap">wire players</span></li>
+    <li><b>Read:</b> keep articles/stories/books; add a "by the time you have" filter (3-min / 15-min / a whole evening). <span class="pill ok">rides existing</span></li>
+    <li><b>Story &amp; sky:</b> keep Daily Story + Horoscope; make Sky Diary actually save. <span class="pill gap">small</span></li>
+  </ul>
+
+  <h3>New front doors</h3>
+  <div class="deck"><div class="dh">▸ the additions</div>
+    <div class="lens"><div class="nm"><span class="ix">★ Pick</span>"What do you have time for?"</div><p>A bounded <b>dopamine-menu</b> picker — choose by time + mood, get a small curated set (read this / hear this / make this / a quiet hour). The anti-infinite-feed. <span class="pill gap">new (UI + curation)</span></p></div>
+    <div class="lens"><div class="nm"><span class="ix">★ Make &amp; learn</span>Creativity + curiosity</div><p>The hobby/craft + "learn one thing" + daily "awe drop" cards from §3. <span class="pill gap">new (content)</span></p></div>
+    <div class="lens"><div class="nm"><span class="ix">★ The lounge</span>Gentle community</div><p>"What are you reading/watching?", recommendations, a soft book/watch club — a digital third place, anonymous-safe. <span class="pill gap">ties to Community</span></p></div>
+    <div class="lens"><div class="nm"><span class="ix">Voice</span>A single warm host</div><p>One named voice threading the daily ritual (the podcast-research differentiator) — the "smart friend" made concrete. <span class="pill pop">positioning</span></p></div>
+  </div>
+  <p class="cap"><b>The content-supply question</b> (the real one): the library is small. Options — a steady editorial trickle (LifestyleItems), curated public-domain + embeds (books, YouTube), light AI-assisted drafts in Jess's voice (existing agent), and community-surfaced recs. Decide the supply engine deliberately; it's what keeps the hub alive.</p>
+</div>
+
+<!-- 6 · TIES -->
+<a id="ties"></a>
+<div class="section">
+  <div class="eyebrow">6 · The weave</div>
+  <h2>How Lifestyle connects to the rest of the app</h2>
+  <table>
+    <tr><th>Surface</th><th>The tie</th></tr>
+    <tr><td><b>Today</b></td><td>A "for you today" glance row — today's chapter + one pick tuned to time/phase, deep-linking the exact item.</td></tr>
+    <tr><td><b>Health / cycle</b></td><td>Phase already tints picks; add gentle phase-true leisure ("a low-key evening this week") + cycle↔horoscope.</td></tr>
+    <tr><td><b>Planner</b></td><td>"A day for you" + "a quiet hour" become real planner blocks — guilt-free leisure, booked.</td></tr>
+    <tr><td><b>Garden</b></td><td>A leisure moment taken waters the garden — rest counts as growth.</td></tr>
+    <tr><td><b>Community</b></td><td>"The lounge" IS the tie — recs and clubs flow both ways with Community.</td></tr>
+    <tr><td><b>Jess</b></td><td>"I've got 20 minutes and feel flat — what should I do?" → a dopamine-menu pick in her voice.</td></tr>
+    <tr><td><b>Pulse</b></td><td>Gentle "you feel better on days you read/walk" reflections (never prescriptive).</td></tr>
+  </table>
+</div>
+
+<!-- 7 · FUN -->
+<a id="fun"></a>
+<div class="section blush">
+  <div class="eyebrow">7 · The pillar</div>
+  <h2>Fun, as a first-class goal</h2>
+  <p>Delight drives retention, and joy is the whole point of a Lifestyle room. Concrete, on-brand plays — with one hard rule.</p>
+  <ul>
+    <li><b>A daily "awe drop"</b> — one small wonder a day (a sky, a fact, a piece of music).</li>
+    <li><b>The dopamine-menu picker</b> — bounded, by time + mood, never endless.</li>
+    <li><b>"Permission slip" cards</b> — "you're allowed a slow Sunday" — naming the guilt and dissolving it.</li>
+    <li><b>"Romance the mundane" micro-quests</b> — make the ordinary lovely (a proper cup of tea, a walk the long way).</li>
+    <li><b>The lounge</b> — gossip-safe venting, recommendations, clubs — connection as joy.</li>
+    <li><b>A "quiet hour" mode</b> — the app gets out of the way and just gives permission to rest.</li>
+  </ul>
+  <p class="lede" style="margin-top:6px"><b>The hard rule: streak-free, guilt-free.</b> Punishing streaks would re-import the exact guilt this hub exists to remove. Encourage, never scold.</p>
+</div>
+
+<!-- 8 · FIRST -->
+<a id="first"></a>
+<div class="section crimson">
+  <div class="eyebrow">8 · Recommendation</div>
+  <h2>What I'd build first</h2>
+  <ul>
+    <li><b>1. Wire the real inline players</b> (self-hosted/HLS + TTS + YouTube/podcast embeds) — the headline fix; turns the mock into the actual promise, and the players already exist to borrow.</li>
+    <li><b>2. The "what do you have time for?" picker</b> — the single most differentiating feature, bounded and guilt-free, mostly curation + UI.</li>
+    <li><b>3. The lounge</b> (gentle community) + the "permission slip" tone — the whole-life heart and the third-place evidence.</li>
+    <li><b>4. Make &amp; learn + the daily awe drop</b> — the domains beyond read/listen, on the strongest science.</li>
+    <li><b>5. The content-supply engine</b> — decide editorial + curated-embed + AI-assist mix so the hub stays alive; then the weave (Today row, Planner block, Garden water).</li>
+  </ul>
+  <p class="lede" style="margin-top:14px">All of it fits the stacked sub-slider + embedded-media-card language. <b>Nothing built from this yet — this is the plan to react to before we touch live Lifestyle.</b></p>
+</div>
+
+<div class="foot">
+  FemWell · Lifestyle · research + build plan · 28 June 2026<br>
+  Sources cited inline; evidence vs popular-practice flagged. Live Lifestyle unchanged pending your approval.
+</div>
+
+</div></body></html>
