@@ -48,6 +48,9 @@ import { IntentionLive, LineOfDayLive, TinyMissionLive, DayOffLive, ResonanceLiv
 import { GrowthStyles } from "@/components/demos/growthKit";
 // §6.10 Clipboard Stack Slider + the nested CardDeck (slide WITHIN a board) — the shared mechanics.
 import { ClipboardSlider, Clipboard, CardDeck } from "@/components/brand/ClipboardSlider";
+// THE OMEN ENGINE (§10.2–10.5, AGREED canon) — the flagship daily almanac moment.
+import { OmenAlmanac } from "@/components/brand/OmenAlmanac";
+import { buildOmenSignals } from "@/components/brand/floraOmen";
 // Unified calendar: REUSE the Planner page's cycle calendar (MonthRibbon) + its hour-by-hour day view
 // + day-actions (extracted to a shared module). One calendar across Today + Planner, not two designs.
 import MonthRibbon from "@/components/planner/cycle/MonthRibbon";
@@ -777,6 +780,16 @@ export default function TodayClipboardDemo() {
           </div>
           <p key={paraSeed} className="fw-fade" style={{ fontFamily: SERIF, fontSize: 17, color: T.ink, lineHeight: 1.55, margin: 0, animation: "fwFadeUp .3s ease both" }}>{paragraph}</p>
           <div style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 15, color: T.muted, marginTop: 11 }}>— Jess</div>
+        </div>
+
+        {/* THE ALMANAC — ONE rationed, signal-driven omen a day (§10.2–10.4). Tap → 3-layer reveal;
+            press to your journal rides JournalEntries.create (no new function). Hope-only. */}
+        <div style={{ marginTop: 14 }}>
+          <OmenAlmanac
+            signals={buildOmenSignals({ phaseKey: hasCycle && !showFirst ? phase : null, cycleDay: cycle?.cycleDay, lifeStage: profile?.life_stage })}
+            userId={uid}
+            onPressToJournal={(omen) => { if (uid) base44.entities.JournalEntries.create({ user_id: uid, session_date: todayKey(), text: omen.line, tags: ["almanac", "omen"], prompt: "From today's almanac", card_type: "free", card_color: "cream" }).catch(() => {}); }}
+          />
         </div>
 
         {/* COMPACT — the day's doing rides a sideways §6.10 CLIPBOARD SLIDER (was a long vertical stack):

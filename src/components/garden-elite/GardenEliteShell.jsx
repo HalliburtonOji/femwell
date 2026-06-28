@@ -17,7 +17,7 @@
 // One-line revert: pages.config "Garden" → Garden.
 import { useState, useEffect, useRef } from "react";
 import { base44 } from "@/api/base44Client";
-import { Sparkles, Sprout, Leaf, Feather, BookOpen, X, Check, Share2, Flower2 } from "lucide-react";
+import { Sparkles, Sprout, Leaf, Feather, BookOpen, X, Share2, Flower2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import {
@@ -35,6 +35,10 @@ import { getCompanion, loadCompanionState, tendCompanion, tendedToday } from "@/
 import { localMilestones, loadMilestones } from "@/components/nurture/milestones";
 import NurtureGarden from "@/components/nurture/NurtureGarden";
 import { GardenGrowth } from "@/components/growth/GrowthLive";
+// THE OMEN ENGINE (§10.2–10.5, AGREED canon) — makes the almanac board signal-driven + real.
+import { useOmen, OmenReveal } from "@/components/brand/OmenAlmanac";
+import { buildOmenSignals } from "@/components/brand/floraOmen";
+import { getCurrentCyclePhase } from "@/utils/cyclePhase";
 
 const CalendarOverlay = makeCalendarOverlay(MonthlyCalendarCard, DayDetailSheet);
 const ELITE_MOTION = `
@@ -192,7 +196,7 @@ export default function GardenEliteShell() {
             {/* BOARD 3 — THE ALMANAC (omen + press-to-journal) */}
             <Clipboard title="The almanac" sub="A GARDEN THAT SPEAKS — HOPE-ONLY, NEVER A PROMISE" accent={gold} flower="lavender" idx="cb-almanac" titleColor={OXBLOOD}>
               <BoardBody>
-                <AlmanacBoard uid={uid} crim={crim} sage={sage} gold={gold} />
+                <AlmanacBoard uid={uid} profile={profile} crim={crim} gold={gold} />
               </BoardBody>
             </Clipboard>
           </ClipboardSlider>
@@ -245,59 +249,33 @@ function SeasonLens() {
   );
 }
 
-// ── BOARD 3 — the almanac (omen + a REAL press-to-journal write) ──
-function AlmanacBoard({ uid, crim, sage, gold }) {
-  const [pressed, setPressed] = useState(false);
-  const [popup, setPopup] = useState(false);
+// ── BOARD 3 — the almanac, NOW SIGNAL-DRIVEN via the real omen engine (§10.2–10.5).
+// The omen is chosen from her real signals (cycle phase · life-stage · date), rotating on a
+// daily seed; tap → the 3-layer reveal (meaning · "they say…" · why now + nudge) → press to
+// the REAL journal (JournalEntries.create). Hope-only; one omen a day. NO new function. ──
+function AlmanacBoard({ uid, profile, crim, gold }) {
+  const signals = buildOmenSignals({ phaseKey: getCurrentCyclePhase(profile)?.phase || null, lifeStage: profile?.life_stage });
+  const omen = useOmen(signals, uid);
+  const [open, setOpen] = useState(false);
+  const c = cwOf(omen?.accent || "gold");
+  const glyph = !omen ? null : omen.kind === "creature"
+    ? <Pollinator kind={omen.glyph} size={omen.glyph === "ladybird" ? 32 : 38} color={omen.glyph === "bee" ? T.gold : (omen.glyph === "ladybird" || omen.glyph === "robin") ? T.crimson : c.petal} color2={c.tip} animate idx={`g-omen-${omen.key}`} />
+    : <FlowerGlyph variant={omen.glyph} size={38} color={c.petal} color2={c.tip} idx={`g-omen-${omen.key}`} />;
   return (
     <>
     <StackedCard topAccent={gold} bottomAccent={crim}
       top={<Panel label="Today's omen" accent={gold}>
-        <div style={{ display: "flex", justifyContent: "center", margin: "2px 0 8px" }}><Pollinator kind="ladybird" size={34} color={crim} animate idx="almanac-bug" /></div>
-        <Hand size={17} color={T.ink} style={{ display: "block", textAlign: "center", lineHeight: 1.5, padding: "0 6px" }}>“A ladybird settled on your fern. They say it's as many happy months as spots — five, if you're counting.”</Hand>
-        <p style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 14, color: T.muted, textAlign: "center", margin: "8px 0 0", lineHeight: 1.5 }}>Now put the kettle on.</p>
+        <div style={{ display: "flex", justifyContent: "center", margin: "2px 0 8px" }}>{glyph}</div>
+        <Hand size={17} color={T.ink} style={{ display: "block", textAlign: "center", lineHeight: 1.5, padding: "0 6px" }}>“{omen?.line}”</Hand>
+        {omen?.nudge && <p style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 14, color: T.muted, textAlign: "center", margin: "8px 0 0", lineHeight: 1.5 }}>{omen.nudge}</p>}
       </Panel>}
       bottom={<Panel label="Keep it" accent={crim}>
-        {pressed ? (
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, background: `${sage}14`, border: `1px solid ${sage}`, borderRadius: 12, padding: "11px 14px" }}>
-            <FlowerGlyph variant="forget-me-not" size={20} color={sage} idx="pressed" />
-            <span style={{ fontFamily: UI, fontSize: 13, fontWeight: 700, color: sage }}>Pressed into your journal</span>
-          </div>
-        ) : (
-          <button onClick={() => setPopup(true)} className="fw-elite-press" style={{ width: "100%", display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 8, background: crim, color: T.paper, border: "none", borderRadius: 12, padding: "12px 16px", cursor: "pointer", fontFamily: UI, fontSize: 13, fontWeight: 700, letterSpacing: 0.3, textTransform: "uppercase" }}><Feather size={14} /> Press to your journal</button>
-        )}
-        <p style={{ fontFamily: UI, fontSize: 12, color: T.muted, margin: "12px 0 0", lineHeight: 1.5 }}>One real omen a day, hope-only — the safety rails hold. It does it in place, then it ticks.</p>
+        <button onClick={() => setOpen(true)} className="fw-elite-press" style={{ width: "100%", display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 8, background: crim, color: T.paper, border: "none", borderRadius: 12, padding: "12px 16px", cursor: "pointer", fontFamily: UI, fontSize: 13, fontWeight: 700, letterSpacing: 0.3, textTransform: "uppercase" }}><Feather size={14} /> Read &amp; press to journal</button>
+        <p style={{ fontFamily: UI, fontSize: 12, color: T.muted, margin: "12px 0 0", lineHeight: 1.5 }}>One real omen a day, hope-only, signal-driven — the rails hold. Tap to see why the garden chose this, then press it in.</p>
       </Panel>} />
-      {/* PressPopup is a SIBLING (position:fixed) — StackedCard does NOT render children, so it must
-          live outside it or it never mounts. */}
-      {popup && <PressPopup uid={uid} onClose={() => setPopup(false)} onSaved={() => { setPressed(true); setPopup(false); }} />}
+      {open && omen && <OmenReveal omen={omen} onClose={() => setOpen(false)}
+        onPressToJournal={(o) => { if (uid) base44.entities.JournalEntries.create({ user_id: uid, session_date: new Date().toISOString().slice(0, 10), text: o.line, tags: ["garden", "almanac", "omen"], prompt: "From the garden almanac", card_type: "free", card_color: "cream" }).catch(() => {}); }} />}
     </>
-  );
-}
-
-// ── §6.7.6 quick-action popup: press a line into the REAL journal (JournalEntries.create) ──
-function PressPopup({ uid, onClose, onSaved }) {
-  const [note, setNote] = useState("");
-  const [busy, setBusy] = useState(false);
-  const save = async () => {
-    if (busy) return; setBusy(true);
-    const day = (() => { try { return new Date().toISOString().slice(0, 10); } catch { return ""; } })();
-    const text = note.trim() || "A ladybird settled on my fern. A little luck, they say.";
-    onSaved();   // optimistic — close + tick immediately
-    if (uid) base44.entities.JournalEntries.create({ user_id: uid, session_date: day, text, tags: ["garden", "omen"], prompt: "From the garden almanac", card_type: "free", card_color: "cream" }).catch(() => {});
-  };
-  return (
-    <div onClick={onClose} role="dialog" aria-modal="true" style={{ position: "fixed", inset: 0, zIndex: 1000, background: "rgba(11,8,5,0.44)", display: "flex", alignItems: "flex-end", justifyContent: "center" }}>
-      <div onClick={(e) => e.stopPropagation()} className="fw-sheet-safe" style={{ width: "100%", maxWidth: 460, background: T.paperHi, borderRadius: "22px 22px 0 0", padding: "18px 18px 24px", boxShadow: "0 -8px 32px rgba(11,8,5,0.22)", border: `1px solid ${T.paperDeep}` }}>
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-          <Eyebrow color={T.crimson}>Press a line into your journal</Eyebrow>
-          <button onClick={onClose} aria-label="Close" style={{ width: 30, height: 30, borderRadius: 999, border: `1px solid ${T.paperDeep}`, background: T.paper, color: T.ink, display: "grid", placeItems: "center", cursor: "pointer" }}><X size={15} /></button>
-        </div>
-        <textarea value={note} onChange={(e) => setNote(e.target.value)} autoFocus rows={3} placeholder="What did the ladybird land on, really?"
-          style={{ width: "100%", boxSizing: "border-box", marginTop: 12, background: T.paper, border: `1px solid ${T.paperDeep}`, borderRadius: 12, padding: "11px 13px", fontFamily: SERIF, fontSize: 16, color: T.ink, outline: "none", resize: "none" }} />
-        <button onClick={save} style={{ width: "100%", marginTop: 12, background: T.crimson, color: T.paper, border: "none", borderRadius: 12, padding: "13px 16px", cursor: "pointer", fontFamily: UI, fontSize: 13, fontWeight: 700, letterSpacing: 0.4, textTransform: "uppercase" }}><Check size={14} style={{ verticalAlign: "-2px" }} /> Press it</button>
-      </div>
-    </div>
   );
 }
 
