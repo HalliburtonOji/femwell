@@ -26,10 +26,12 @@ import {
 } from "lucide-react";
 import {
   PAPER_BG, InkFilter, EditorialFooter, useEditorialFonts,
-  T, UI, SERIF, Script, Hand, Eyebrow, Heart as BrandHeart,
+  T, UI, SERIF, Hand, Eyebrow,
 } from "../components/journal/Editorial";
 // Brand-P2 lush layer (BRAND_IDENTITY §3 heart · §4 botanicals · sage/gold = calm health).
-import { VineMotifV2, FlowerGlyph, CardFrame, floraKeyframes, cwOf } from "@/components/brand/flora";
+import { VineMotifV2, CardFrame, floraKeyframes } from "@/components/brand/flora";
+// ELITE signature top — lush flora hero (phase bloom + carved heart + butterfly), OXBLOOD title.
+import { FwFloraHero } from "@/components/brand/PageTop";
 import { callJessAgent } from "@/services/jessAgentService";
 import { nutritionDoctorSummary } from "@/utils/nutritionSummary";
 
@@ -446,23 +448,22 @@ export default function DoctorExport() {
       </div>
       <div style={{ maxWidth: 640, margin: "0 auto", padding: "0 18px" }}>
 
-        {/* header */}
-        <header style={{ paddingTop: 30, marginBottom: 18 }}>
+        {/* header — ELITE signature top: lush flora hero (snowdrop = hope · sage = calm health),
+            carved heart + butterfly, OXBLOOD #7A1A12 title. Title is a GENERIC page title (never the
+            user's handle — guard against the handle bug). Back button kept as quiet top chrome. */}
+        <div style={{ paddingTop: 22, marginBottom: 4 }}>
           <button onClick={() => window.history.back()} style={iconBtn} aria-label="Back"><ArrowLeft size={16} /></button>
-          <div style={{ marginTop: 14 }}>
-            <Eyebrow mb={9}>For your GP · A publication of one</Eyebrow>
-            {/* Brand-P2: the single carved crimson heart (§3) + a flanking sage
-                meaning-bloom (snowdrop = hope) beside the script title. */}
-            <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
-              <BrandHeart size={15} />
-              <Script size={52}>Your doctor's export</Script>
-              <FlowerGlyph variant="snowdrop" size={22} color={cwOf("sage").petal} color2={cwOf("sage").tip} accent={cwOf("sage").accent} idx="de-hdr" />
-            </div>
-            <Hand size={20} color={T.inkSoft} carve={false} style={{ marginTop: 8 }}>
-              Build a calm, GP-ready summary from what you've tracked — assembled on your device.
-            </Hand>
-          </div>
-        </header>
+        </div>
+        <FwFloraHero
+          title="Your doctor's export"
+          titleColor="#7A1A12"
+          line="Build a calm, GP-ready summary from what you've tracked — assembled on your device."
+          bloom="snowdrop" colorway="sage" flankL="snowdrop" flankR="clover" creature="butterfly"
+          ringSize={210} bloomSize={132} idx="de-hero"
+        />
+        <div style={{ textAlign: "center", marginBottom: 18 }}>
+          <Eyebrow>For your GP · A publication of one · On your device</Eyebrow>
+        </div>
 
         {/* step rail */}
         <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 24 }}>

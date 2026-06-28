@@ -160,6 +160,8 @@ import TodayClipboardDemo from './pages/TodayClipboardDemo';
 import PlannerClipboardDemo from './pages/PlannerClipboardDemo';
 import PulseClipboardDemo from './pages/PulseClipboardDemo';
 import DoctorExportClipboardDemo from './pages/DoctorExportClipboardDemo';
+// Canonical Doctor Export — the real 3-step builder, elevated to ELITE (flora hero + oxblood). Now routed at /DoctorExport.
+import DoctorExport from './pages/DoctorExport';
 import ProgramsClipboardDemo from './pages/ProgramsClipboardDemo';
 // Brand craft sample (Phase-1 brand-identity craft direction — flat vs upgraded bloom,
 // botanical motif, heart in context, live perf). Self-contained preview. Linked from Previews.
@@ -333,6 +335,7 @@ export const PAGES = {
     "PlannerClipboardDemo": PlannerClipboardDemo,
     "PulseClipboardDemo": PulseClipboardDemo,
     "DoctorExportClipboardDemo": DoctorExportClipboardDemo,
+    "DoctorExport": DoctorExport,   // canonical elite builder live at /DoctorExport (revert: map to DoctorExportClipboardDemo, kept imported above)
     "ProgramsClipboardDemo": ProgramsClipboardDemo,
     "BrandCraftSample": BrandCraftSample,
     "HealthDemo": HealthDemo,
