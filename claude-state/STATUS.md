@@ -1,7 +1,16 @@
 # FEMWELL — CANONICAL STATUS INDEX (read first · updated 2026-06-28)
 **This file is the single source of truth AND the index to every plan doc. If anything else disagrees, this wins.** (The long ship-log history continues below the index.)
 
-## 📋📑 NUTRITION + LIFESTYLE PLAN DOCS — deep research + build plans, in the IDEAS pill (Current) · live `index-DEv9uWpz.js` (site-deploy) · commit `7349ec8` (2026-06-28)
+## 🔁 STALE-CLIENT FIX + plan docs pinned to TOP of Ideas/Current · live `index-Cxq2W_dD.js` (site-deploy) · commit `b692bc0` (2026-06-28)
+**Halli couldn't find the two plan entries — his installed PWA/browser was stuck on an OLD cached bundle.** Diagnosed + fixed:
+- **The server was NOT stale** — the served bundle already contained both entries + docs (grep-verified the live JS). The stickiness is the **installed PWA**: there is **NO service worker** (only `manifest.json`), and `index.html` is served fresh (Cloudflare `DYNAMIC`), so normal reloads self-heal but an installed PWA clings to its cached start page across deploys.
+- **Fix shipped:** (1) `src/main.jsx` now has a **loop-safe, SW-free build guard** — re-fetches `index.html` (no-store) on load + on PWA foreground; if a newer `index-*.js` is referenced it reloads ONCE per session (`sessionStorage` `fw_build_reloaded` → can't loop). Prevents recurrence going forward. (2) `FoundersOS.jsx`: the two plan docs moved to the **TOP of the Current group** with "★ … READ ME" titles (Current is already expanded by default; only ARCHIVE collapses).
+- **Bundle hash CHANGED** `index-DEv9uWpz.js`→`index-Cxq2W_dD.js` (via `npx base44 site deploy -y`), so any refetch pulls clearly-new code. **Served-bundle grep confirms:** Nutrition Plan + Lifestyle Plan keys (×2 each), both docs ("whole table", "the good life"), the build guard (`fw_build_reloaded`), and the READ ME titles are all in the LIVE bundle.
+- **Browser-2 verified (authed, fresh load):** bundle `index-Cxq2W_dD.js`; both entries are the **first two items in Current** (before any demo); **both open + render** ("The whole table…" / "The good life, on purpose…").
+- **Halli's CURRENT stuck client still needs ONE manual clear** (the guard only runs once his client gets the new bundle): iOS PWA → remove from home screen + Settings→Safari→Advanced→Website Data→delete femwells.com → reopen; or open `femwells.com/Ideas` in a private tab; after that, the guard auto-reloads on future deploys.
+- **Reminder:** still ship via `npx base44 site deploy -y` (NOT `deploy.mjs` — it reverts to a stale base44 build, see note below).
+
+## 📋📑 NUTRITION + LIFESTYLE PLAN DOCS — deep research + build plans, in the IDEAS pill (Current) · was `index-DEv9uWpz.js` · commit `7349ec8` (2026-06-28)
 **Halli: DEEP cited research + two PLAN docs (Nutrition, then Lifestyle) — research+planning, NOT building yet; call out what's missing/stubbed; cook-video-in-card feasibility; fold into IDEAS pill + handoff.** Done.
 - **Two phone-readable styled-HTML plan docs** (NOT raw markdown), same template as planner-enrichment: `src/components/founders/brandDocs/nutrition-plan.html` + `lifestyle-plan.html`; copies at `C:\Users\Halli\femwell-handoff\NUTRITION-PLAN.html` + `LIFESTYLE-PLAN.html`.
 - **Folded into FoundersOS Ideas → "Current — active for review"** as **"Nutrition Plan"** ("Nutrition — the whole table ★ react") + **"Lifestyle Plan"** ("Lifestyle — the good life, on purpose ★ react"). VERIFIED: /Ideas loads, both entries present in Current, the Nutrition doc renders in its srcdoc iframe ("The whole table…"). Reachable via the IDEAS pill.
