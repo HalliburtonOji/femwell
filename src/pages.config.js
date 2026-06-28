@@ -153,6 +153,9 @@ import TodayRitualDemo from './pages/TodayRitualDemo';
 // on-brand chat shell; every existing feature preserved). Preview routes; live pages untouched.
 import GardenClipboardDemo from './pages/GardenClipboardDemo';
 import JessClipboardDemo from './pages/JessClipboardDemo';
+// JESS ELITE — the LIVE elite Jess surface (approved JessClipboardDemo promoted to live;
+// working assistant preserved verbatim). Flipped onto /Jess + /Assistant.
+import JessEliteShell from './components/jess-elite/JessEliteShell';
 // Journal — Clipboard rebuild DEMO (compact, §6.10 clipboard slider; all features preserved). Preview route.
 import JournalClipboardDemo from './pages/JournalClipboardDemo';
 // Profile — Clipboard rebuild DEMO (compact §6.10 slider + flora hero + quick-edit popups; all features preserved). Preview route.
@@ -284,7 +287,10 @@ export const PAGES = {
     "Trends": Trends,
     "Upgrade": Upgrade,
     "VideoManager": VideoManager,
-    "Assistant": Assistant,
+    "Assistant": JessEliteShell,
+    "AssistantClassic": Assistant,
+    "Jess": JessEliteShell,
+    "JessElite": JessEliteShell,
     "SkinHair": SkinHair,
     "Pulse": PulseEliteShell,
     "PulseElite": PulseEliteShell,
