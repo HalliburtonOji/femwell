@@ -30,7 +30,10 @@
 | PULSE-PLAN.html | pulse-plan.html | "Pulse +2" | Current | plum |
 | DOCTOR-EXPORT-PLAN.html | doctor-export-plan.html | "Doctor Export +2" | Current | sage |
 | PROGRAMS-PLAN.html | programs-plan.html | "Programs +2" | Current | plum |
-<!-- GARDEN-PLAN, JESS-PLAN to follow -->
+| GARDEN-PLAN.html | garden-plan.html | "Garden +2" | Current | sage |
+<!-- JESS-PLAN to follow -->
+
+Garden render branch: `{tab === "Garden +2" && <BrandDocFrame html={gardenPlanHtml} title="FemWell — Garden Level Up (+2)" />}` · import `import gardenPlanHtml from "@/components/founders/brandDocs/garden-plan.html?raw";` · desc "Garden — next-2-levels plan (responsive never-dies companion, felt-that ledger, self-compassion reflection, WOOP goals, collective kindness garden)".
 
 Programs render branch: `{tab === "Programs +2" && <BrandDocFrame html={programsPlanHtml} title="FemWell — Programs Level Up (+2)" />}` · import `import programsPlanHtml from "@/components/founders/brandDocs/programs-plan.html?raw";` · desc "Programs — next-2-levels plan (Jess guide/cohorts/catch-up/habit graduation/PROMs/whole-life breadth)".
 

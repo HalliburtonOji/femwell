@@ -1,0 +1,278 @@
+<!doctype html>
+<html lang="en-GB"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>FemWell — Garden Level Up (+2)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500;1,600&family=Ephesis&display=swap" rel="stylesheet">
+<style>
+  :root{--paper:#ECE7DA;--paperHi:#F4EFE3;--paperDeep:#D8CFBC;--ink:#0B0805;--inkSoft:#1A140D;--muted:#2E261B;--gold:#A8893F;--crimson:#BC2E27;--oxblood:#7A1A12;--blush:#E8B4B8;--sage:#8FAF8F;--plum:#8E6E8E;--serif:'Cormorant Garamond',Georgia,serif;--script:'Ephesis',cursive;--sans:ui-sans-serif,system-ui,-apple-system,'Segoe UI',sans-serif;}
+  *{box-sizing:border-box}
+  body{margin:0;background:radial-gradient(120% 80% at 12% 0%,#F4EFE3 0%,rgba(244,239,227,0) 55%),radial-gradient(120% 90% at 100% 100%,#E4DDCC 0%,rgba(228,221,204,0) 50%),var(--paper);color:var(--ink);font-family:var(--serif);font-size:18px;line-height:1.6;-webkit-font-smoothing:antialiased}
+  .doc{max-width:680px;margin:0 auto;padding:30px 22px 90px}
+  h1.cover{font-family:var(--script);font-size:52px;color:var(--crimson);margin:6px 0 2px;line-height:1.04}
+  h2{font-family:var(--serif);font-style:italic;font-weight:600;font-size:27px;margin:0 0 6px;color:var(--oxblood)}
+  h3{font-family:var(--serif);font-weight:600;font-size:21px;margin:18px 0 6px}
+  h4{font-family:var(--sans);font-size:12px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--gold);margin:16px 0 4px}
+  .eyebrow{font-family:var(--sans);font-size:12px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--gold);margin-bottom:10px}
+  p{margin:0 0 12px}.lede{font-size:20px;line-height:1.55}
+  small,.cap{font-family:var(--sans);font-size:13px;color:var(--muted);line-height:1.5}
+  b,strong{font-weight:600}
+  a{color:var(--crimson);text-decoration:none;border-bottom:1px solid rgba(188,46,39,.3)}
+  .section{background:var(--paperHi);border:1px solid var(--paperDeep);border-left:4px solid var(--gold);border-radius:20px;padding:22px 20px;margin:18px 0;box-shadow:0 4px 20px rgba(58,44,26,.10),0 1px 4px rgba(58,44,26,.06);position:relative;overflow:hidden}
+  .section.crimson{border-left-color:var(--crimson)}.section.sage{border-left-color:var(--sage)}.section.plum{border-left-color:var(--plum)}.section.blush{border-left-color:var(--blush)}
+  .rule{height:1px;background:var(--gold);opacity:.32;margin:18px 0}
+  .center{text-align:center}
+  table{width:100%;border-collapse:collapse;font-size:14px;font-family:var(--sans);margin:8px 0}
+  th,td{text-align:left;padding:7px 8px;border-bottom:1px solid var(--paperDeep);vertical-align:top}
+  th{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--gold)}
+  td b{font-family:var(--serif);font-size:15px}
+  .toc a{display:block;font-family:var(--sans);font-size:15px;color:var(--inkSoft);text-decoration:none;border-bottom:1px solid var(--paperDeep);padding:6px 0}
+  .toc a span{color:var(--gold);font-weight:700;margin-right:10px}
+  .script{font-family:var(--script);color:var(--crimson)}
+  .pill{display:inline-block;font-family:var(--sans);font-size:12px;font-weight:600;padding:5px 11px;border-radius:999px;background:var(--paper);border:1px solid var(--paperDeep);margin:3px 4px 3px 0}
+  .pill.rec{background:#EAF1EA;border-color:var(--sage);color:#3f6b3f}
+  .pill.gap{background:#FBE9E6;border-color:var(--crimson);color:var(--crimson)}
+  .pill.ok{background:#EAF1EA;border-color:var(--sage);color:#3f6b3f}
+  .pill.ev{background:#EAF1EA;border-color:var(--sage);color:#3f6b3f}
+  .pill.pop{background:#FBF1E0;border-color:var(--gold);color:#8a6d22}
+  .pill.myth{background:#FBE9E6;border-color:var(--crimson);color:var(--crimson)}
+  .pill.l1{background:#EAF1EA;border-color:var(--sage);color:#3f6b3f}
+  .pill.l2{background:#F0E8F0;border-color:var(--plum);color:#6d4f6d}
+  .lens{background:var(--paper);border:1px solid var(--paperDeep);border-left:3px solid var(--gold);border-radius:12px;padding:12px 14px;margin:8px 0}
+  .lens .nm{font-family:var(--serif);font-weight:600;font-size:18px;color:var(--ink);margin-bottom:2px}
+  .lens .nm .ix{font-family:var(--sans);font-size:11px;font-weight:700;letter-spacing:.1em;color:var(--gold);margin-right:8px;text-transform:uppercase}
+  .lens p{margin:0;font-size:15px;line-height:1.5;color:var(--inkSoft)}
+  .lens .src{font-family:var(--sans);font-size:12px;color:var(--muted);margin-top:5px}
+  .deck{border:1px dashed var(--gold);border-radius:14px;padding:6px 12px 12px;margin:10px 0;background:rgba(168,137,63,.04)}
+  .deck .dh{font-family:var(--sans);font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);margin:8px 0 2px}
+  .num{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:999px;background:var(--crimson);color:#fff;font-family:var(--sans);font-size:12px;font-weight:700;margin-right:8px;vertical-align:1px}
+  .foot{font-family:var(--sans);font-size:12px;color:var(--muted);text-align:center;margin-top:30px;line-height:1.6}
+  ul{margin:4px 0 12px;padding-left:20px}li{margin:3px 0}
+</style></head>
+<body><div class="doc">
+
+<div class="center" style="padding:14px 0 4px">
+  <div class="eyebrow">FemWell · Garden · LEVEL UP (+2) · for your reaction</div>
+  <h1 class="cover">A garden that knows you</h1>
+  <p class="lede" style="font-style:italic;max-width:540px;margin:8px auto 0">The Garden is live and already the soul of the app — a companion that never dies, leave-a-line, the lifecycle, 64 real species, the signal-driven almanac, goals &amp; missions, a garden-of-gardens. And it's the one page whose philosophy the evidence <i>fully</i> backs: care, not streaks. This is the plan for the <b>next two levels</b> — a more responsive (never punishing) companion, a cross-surface emotional memory, self-compassion reflection, evidence-built goals, and a collective kindness layer. <b>Plan only — nothing built from this yet.</b></p>
+</div>
+
+<div class="section">
+  <div class="eyebrow">The one-line thesis</div>
+  <p class="lede">Level 1 built a living companion grown from real self-care. Level <span class="script">+2</span> makes it <b>feel alive and remember you</b> — a companion that responds (and recovers, never dies), a "felt that" memory of everything you do across the whole app, reflection in a self-compassion voice, goals built on what actually works, and a collective garden where women grow — and are kind — together. Finch proved a no-guilt care-companion earns 719k five-star ratings; <b>no one has built a cycle-/life-stage-tinted, whole-life one with a real collective layer. That's ours.</b></p>
+  <h4>The headline moves</h4>
+  <ul>
+    <li><b>Level +1 — make it feel alive.</b> A responsive companion with gentle states + dialogue (that wilts softly and recovers, never dies or punishes), a "felt that" emotional ledger drawing from every surface, and reflection prompts in a self-compassion / gratitude voice.</li>
+    <li><b>Level +2 — the leaps.</b> Goals→missions→milestones rebuilt on implementation-intentions + savouring, a deeper cyclical/seasonal garden, and a collective "garden of gardens" with anonymous kindness acts + a synchronous "we're tending today" moment.</li>
+    <li><b>No gated function.</b> Companion dialogue rides the existing Jess agent; everything else is state, content and existing entities. The one thing to <i>avoid</i> is guilt — no "your companion misses you" punishment notifications. §5.</li>
+  </ul>
+</div>
+
+<div class="section sage">
+  <div class="eyebrow">Contents</div>
+  <div class="toc">
+    <a href="#today"><span>1</span> What Garden does TODAY (honest, post-build)</a>
+    <a href="#research"><span>2</span> The deeper evidence (cited) — the frontier</a>
+    <a href="#l1"><span>3</span> Level +1 — make it feel alive (in the card language)</a>
+    <a href="#l2"><span>4</span> Level +2 — the leaps (in the card language)</a>
+    <a href="#gated"><span>5</span> The one rule: care, never guilt</a>
+    <a href="#ties"><span>6</span> How it weaves into the rest of the app</a>
+    <a href="#data"><span>7</span> Data &amp; build reality</a>
+    <a href="#first"><span>8</span> What I'd build first</a>
+  </div>
+</div>
+
+<!-- 1 · TODAY -->
+<a id="today"></a>
+<div class="section crimson">
+  <div class="eyebrow">1 · The honest picture (post-build)</div>
+  <h2>What Garden does today</h2>
+  <p>The live <span class="script">/Garden</span> elite shell (<code>GardenEliteShell</code>) is deep and real — a 3-board signature spine over the full <code>NurtureGarden</code> + <code>GardenGrowth</code> engines. Honest audit:</p>
+  <table>
+    <tr><th>Surface</th><th>Status today</th></tr>
+    <tr><td><b>The companion</b> — tend / leave a line / rename / reshape / share</td><td><span class="pill ok">real</span> <code>tendCompanion → CompanionState</code> (optimistic + entity persist, cross-device). It already <b>never dies</b> — the right philosophy.</td></tr>
+    <tr><td><b>Lifecycle board</b> (bud · bloom · seed · rest)</td><td><span class="pill ok">real</span> maps to cycle phases + life seasons; "rest is a stage, not a failure".</td></tr>
+    <tr><td><b>64-species library</b> + bouquet + Flora Lab</td><td><span class="pill ok">real</span> recognisable blooms; per-user fingerprint so no two gardens repeat.</td></tr>
+    <tr><td><b>The almanac</b> — signal-driven omen + press-to-journal</td><td><span class="pill ok">real</span> omen from real signals (phase/stage/date), hope-only; press → <code>JournalEntries.create</code>.</td></tr>
+    <tr><td><b>Milestones / rare blooms</b></td><td><span class="pill ok">real</span> kept chapters earned by tending.</td></tr>
+    <tr><td><b>Goals · bucket-list · missions</b> (<code>GardenGrowth</code>)</td><td><span class="pill ok">real</span> tiny missions water the garden.</td></tr>
+    <tr><td><b>Garden-of-gardens</b> (collective)</td><td><span class="pill pop">present</span> renders in <code>NurtureGarden</code>, but the collective layer's depth (real shared signal, kindness acts) is light.</td></tr>
+    <tr><td><b>Companion responsiveness</b> (mood/energy states + dialogue)</td><td><span class="pill gap">light</span> tending is a write + a growing state, but the companion doesn't visibly <i>respond</i> with moods or speak back.</td></tr>
+    <tr><td><b>Cross-surface "felt that" memory</b></td><td><span class="pill gap">implicit</span> it grows "from journal/meals/check-ins/cycle/plans" in copy, but there's no explicit emotional ledger that registers a moment from any surface.</td></tr>
+    <tr><td><b>Reflection prompts</b> (self-compassion / gratitude)</td><td><span class="pill gap">open-only</span> leave-a-line is a blank field ("how are you, really?") — no guided gratitude/best-possible-self prompts.</td></tr>
+    <tr><td><b>Goals method</b></td><td><span class="pill pop">basic</span> goals/missions exist, but not built on implementation-intentions/WOOP or savouring.</td></tr>
+  </table>
+  <p class="cap"><b>Takeaway:</b> Garden is the most philosophically-aligned page in the app — care-not-streaks, never-dies, already evidence-shaped. The +2 work is making the companion <i>feel</i> alive and remember you, deepening reflection + goals to what's evidenced, and turning the collective garden into a real "grow together".</p>
+</div>
+
+<!-- 2 · RESEARCH -->
+<a id="research"></a>
+<div class="section plum">
+  <div class="eyebrow">2 · The frontier (cited, 2023–26)</div>
+  <h2>The deeper evidence</h2>
+  <p>Each row flagged <span class="pill ev">evidence</span> / <span class="pill pop">popular-practice</span> / <span class="pill myth">myth/risk</span>. Women-specific where it matters.</p>
+
+  <div class="lens"><div class="nm"><span class="ix">01</span>Caring for a companion IS self-care — and it's the lever</div>
+    <p>The "Tamagotchi effect" is real adult psychology: nurturing a virtual creature activates social-bonding circuits, so <b>care motivates more warmly than streaks/badges</b> ("many will reliably do for something that depends on them what they won't do for themselves"). <b>→ The companion is the engine; lean into care.</b> <span class="pill ev">evidence</span></p>
+    <p class="src"><a href="https://focusdog.app/magazine/tamagotchi-effect-virtual-pets-and-focus/">Tamagotchi effect</a> · <a href="https://doi.org/10.1145/3679318.3685343">Companion-as-self-care (NordiCHI 2024)</a></p>
+  </div>
+
+  <div class="lens"><div class="nm"><span class="ix">02</span>Companion attachment lowers loneliness + lifts wellbeing</div>
+    <p>A 2025 longitudinal study: companion use → emotional attachment → <b>lower loneliness, higher wellbeing + self-consistency</b>, via self-expression and "symbolic-achievement" feedback. <b>→ Build self-expression in (reflection) and reflect achievement back (the companion notices what she did).</b> <span class="pill ev">evidence</span></p>
+    <p class="src"><a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC12833267/">Companion attachment &amp; wellbeing (2025)</a></p>
+  </div>
+
+  <div class="lens crimson" style="border-left-color:var(--crimson)"><div class="nm"><span class="ix">03</span>A companion that can "die"/wilt punitively is a dark pattern</div>
+    <p>Forest/Flora <i>kill</i> the plant if you leave; Habitica damages your avatar; Apple rings drove documented guilt/obsession → a TikTok exodus to "gentler" apps. <b>→ FemWell's never-dies companion is correct; states may wilt <i>gently</i> and recover, never die or scold.</b> <span class="pill myth">risk</span></p>
+    <p class="src"><a href="https://www.forestapp.cc/">Forest (kill mechanic)</a> · <a href="https://fortune.com/well/2025/01/24/apple-watch-bullied-burn-calories-close-rings-obsession-fitness-trackers-notifications/">Apple rings harm</a></p>
+  </div>
+
+  <div class="lens"><div class="nm"><span class="ix">04</span>Care beats streaks — the motivation science</div>
+    <p>Autonomy, competence + relatedness (SDT) drive sustained use (β≈.31/.35/.17 → intrinsic motivation); streak-fear is "introjected" regulation that predicts <b>worse</b> long-term maintenance. Self-compassionate women hold intrinsic, not ego, goals. <b>→ Design for the three needs, never for fear of breaking something.</b> <span class="pill ev">evidence</span></p>
+    <p class="src"><a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC8391751/">SDT gamification</a> · <a href="https://self-compassion.org/wp-content/uploads/2015/12/SC.SE_.Well-being.pdf">Self-compassion &amp; goals</a></p>
+  </div>
+
+  <div class="lens sage" style="border-left-color:var(--sage)"><div class="nm"><span class="ix">05</span>Tending growing things genuinely heals — even virtually</div>
+    <p>Horticultural therapy reduces depression (ES ~1.05) and anxiety (~0.70); biophilia/nature lowers stress <b>even in virtual/biophilic environments</b>. (Caveat: static virtual nature helps mood/stress, not attention — so pitch comfort, not focus.) <b>→ A verdant, living garden is a real mood/stress intervention.</b> <span class="pill ev">evidence</span></p>
+    <p class="src"><a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC11799672/">Horticultural therapy meta-analysis</a> · <a href="https://www.nature.com/articles/s41598-025-23224-3">Virtual nature</a></p>
+  </div>
+
+  <div class="lens"><div class="nm"><span class="ix">06</span>Reflection: positive + gratitude micro-writing, in a self-compassion voice</div>
+    <p>"Positive" expressive writing (gratitude, best-possible-self) has the most consistent wellbeing evidence; emotion-acceptance + genuine engagement make it stick; self-compassion practice reliably cuts self-criticism (medium effect). (Effects are modest — frame as ritual, not treatment.) <b>→ Leave-a-line should offer gentle gratitude/positive prompts in a self-compassion voice.</b> <span class="pill ev">evidence</span></p>
+    <p class="src"><a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC12094736/">Positive expressive writing (2025)</a> · <a href="https://self-compassion.org/wp-content/uploads/2021/11/Wakelin-et-al.-Effectiveness-of-self-compassion-related-intervent.pdf">Self-compassion review</a></p>
+  </div>
+
+  <div class="lens"><div class="nm"><span class="ix">07</span>Goals: if-then plans + WOOP + savouring beat wishes</div>
+    <p>Implementation intentions ("if X, then Y") have a medium-large effect on attainment (d=.65); WOOP (wish-obstacle-plan) beats either alone; <b>savouring/anticipating</b> a future positive (a bucket-list item) is itself a wellbeing boost. Self-concordant (values-based) goals are the ones that lift wellbeing. <b>→ Rebuild missions on if-then + WOOP, make bucket-list items savourable, frame goals as self-chosen.</b> <span class="pill ev">evidence</span></p>
+    <p class="src"><a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC8149892/">WOOP/MCII</a> · <a href="https://www.frontiersin.org/journals/psychology/articles/10.3389/fpsyg.2022.791040/full">Savouring</a></p>
+  </div>
+
+  <div class="lens sage" style="border-left-color:var(--sage)"><div class="nm"><span class="ix">08</span>Growing — and being kind — together fights loneliness</div>
+    <p>Prosocial/kindness acts reduce loneliness + lift wellbeing (variety matters more than volume); "Kindness by Post" (UK strangers exchanging cards) improved wellbeing; therapeutic community gardening combats loneliness — and <b>women's baseline wellbeing was below the UK norm, so they gained most</b>. Collective ritual lifts solidarity (women show distinct gains). <b>→ A collective "garden of gardens" with anonymous kindness acts + a synchronous "we're tending today" moment.</b> <span class="pill ev">evidence</span></p>
+    <p class="src"><a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC9602650/">Community gardening (Thrive)</a> · <a href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC8858806/">Kindness by Post</a></p>
+  </div>
+
+  <div class="lens crimson" style="border-left-color:var(--crimson)"><div class="nm"><span class="ix">09</span>The risk to design around: over-attachment / dependency</div>
+    <p>Companion attachment helps — but becomes problematic when it interferes with daily functioning; exploiting caregiving instincts is an ethical line. <b>→ Build sustainable habit, not dependency; if the companion ever speaks as Jess, keep it gentle, optional, non-clinical.</b> <span class="pill myth">risk</span></p>
+    <p class="src"><a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC12833267/">Dependency caveat</a></p>
+  </div>
+
+  <div class="lens"><div class="nm"><span class="ix">10</span>Competitive teardown — Finch is the flagship, and where it stops</div>
+    <p><b>Finch</b> (4.9★, 719k ratings, Editors' Choice): bird grows from self-care, <b>explicitly no penalty for incomplete goals</b>, deep customisation — the gold standard. <b>Forest/Flora/Habitica/Plant Nanny</b>: punitive (die/wilt/HP loss) — the anti-pattern. <b>Femtech (Flo/Clue):</b> <i>no nurtured companion at all</i>. <b>→ Finch stops at generic self-care; FemWell wins with cycle/life-stage tint, whole-life scope and a real in-app collective garden.</b> <span class="pill pop">market</span></p>
+    <p class="src"><a href="https://apps.apple.com/us/app/finch-self-care-pet/id1528595748">Finch</a></p>
+  </div>
+
+  <div class="rule"></div>
+  <h4>The market gap, in one line</h4>
+  <p>Finch proved a no-guilt care-companion earns 719k five-star ratings, and the science backs care over streaks — yet <b>no one has built a cycle-/life-stage-tinted, whole-life care-companion in a living garden with a genuinely collective "grow together" layer for women. That's the Garden FemWell already half-owns — +2 finishes it.</b></p>
+</div>
+
+<!-- 3 · LEVEL +1 -->
+<a id="l1"></a>
+<div class="section sage">
+  <div class="eyebrow">3 · Level +1 — make it feel alive</div>
+  <h2>A companion that responds and remembers</h2>
+  <p>All inside today's 3-board spine + the NurtureGarden engine. <span class="pill l1">Level +1</span></p>
+
+  <h3>The companion — responsive, never punishing</h3>
+  <div class="deck"><div class="dh">▸ states + a gentle voice</div>
+    <div class="lens"><div class="nm"><span class="ix">★★</span>Responsive states + dialogue</div><p>Give the companion visible <b>moods/energy</b> that shift with her week and gentle lines (via the existing Jess agent — no function): "you tended me three days running — I'm flourishing", "rough week? I'm still here". It may wilt <i>softly</i> and always recovers — <b>never dies, never scolds</b>. The single biggest aliveness upgrade. <span class="pill rec">aliveness</span></p><p class="src"><a href="https://focusdog.app/magazine/tamagotchi-effect-virtual-pets-and-focus/">care motivation</a></p></div>
+  </div>
+
+  <h3>The "felt that" memory (cross-surface)</h3>
+  <div class="deck"><div class="dh">▸ the companion remembers everything you do</div>
+    <div class="lens"><div class="nm"><span class="ix">★★</span>An emotional ledger from every surface</div><p>Make explicit what's implicit: a moment from <b>Today / Journal / Community / Nutrition / Pulse / Programs</b> registers as a "felt that" — the companion notices ("you cooked for yourself tonight", "you reached out in the Lounge") and reflects symbolic-achievement back. Self-expression + achievement feedback are the named wellbeing mechanisms. <span class="pill rec">whole-life</span></p><p class="src"><a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC12833267/">mechanisms</a></p></div>
+  </div>
+
+  <h3>Reflection — self-compassion + gratitude</h3>
+  <div class="deck"><div class="dh">▸ better than a blank field</div>
+    <div class="lens"><div class="nm"><span class="ix">★</span>Gentle prompted reflection</div><p>Offer (never force) gratitude / best-possible-self / emotion-acceptance prompts alongside the open "how are you, really?" — the most evidenced writing variants, in a self-compassion voice. Still a line is plenty. <span class="pill ev">evidence</span></p><p class="src"><a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC12094736/">positive writing</a></p></div>
+  </div>
+</div>
+
+<!-- 4 · LEVEL +2 -->
+<a id="l2"></a>
+<div class="section plum">
+  <div class="eyebrow">4 · Level +2 — the leaps</div>
+  <h2>Evidence-built goals, a living season, growing together</h2>
+  <p>The bigger moves. <span class="pill l2">Level +2</span></p>
+
+  <div class="deck"><div class="dh">▸ goals that actually work</div>
+    <div class="lens"><div class="nm"><span class="ix">A</span>Missions on if-then + WOOP + savouring</div><p>Rebuild goals/bucket-list/missions on the science: capture <b>if-then plans</b> (d=.65), pair a wish with its obstacle + plan (<b>WOOP</b>), and make bucket-list items <b>savourable</b> (anticipation is itself a wellbeing boost). Framed self-concordantly — never a quota. <span class="pill ev">evidence</span></p><p class="src"><a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC8149892/">WOOP</a></p></div>
+  </div>
+
+  <div class="deck"><div class="dh">▸ a garden that lives with her cycle + the seasons</div>
+    <div class="lens"><div class="nm"><span class="ix">B</span>Cyclical &amp; seasonal tinting</div><p>The lifecycle already maps to phases; deepen it — the garden's palette, light and blooms shift with her cycle <i>and</i> the real season (spring/winter), making the living-thing feel genuinely responsive to time. Mood/stress benefit even virtually. <span class="pill ev">evidence</span></p><p class="src"><a href="https://www.nature.com/articles/s41598-025-23224-3">virtual nature</a></p></div>
+  </div>
+
+  <div class="deck"><div class="dh">▸ the collective garden, made real</div>
+    <div class="lens"><div class="nm"><span class="ix">C</span>"Garden of gardens" + kindness acts</div><p>Turn the collective layer into a real "grow together": anonymous <b>kindness acts</b> (leave an encouraging line for a stranger, à la Kindness-by-Post), a live <b>"we're tending today"</b> presence moment (collective effervescence), a shared seasonal bloom. Kindness reduces loneliness; women gain most. Ties to the Community room. <span class="pill rec">differentiator</span></p><p class="src"><a href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC8858806/">kindness</a></p></div>
+  </div>
+</div>
+
+<!-- 5 · GATED -->
+<a id="gated"></a>
+<div class="section crimson">
+  <div class="eyebrow">5 · The one rule</div>
+  <h2>Care, never guilt — and no new function</h2>
+  <p>The Garden's whole edge is its philosophy, so the "gated" section here is really one design rule plus the happy news that nothing needs your sign-off at the code level:</p>
+  <ul>
+    <li><b>No new base44 function.</b> Companion dialogue rides the <b>existing Jess agent</b>; states, the "felt that" ledger, WOOP goals, kindness acts and seasonal tinting are all <b>state + content + existing entities</b> (CompanionState, JournalEntries, the collective/Community path). The "felt that" ledger may want a small additive entity — entities are fine.</li>
+    <li><b>The rule to hold: never weaponise the companion.</b> No "your companion is wilting — come back!" guilt notifications, no death, no streak-shame (the documented dark patterns, §03). Wilt gently, recover always, celebrate what she did — never scold what she didn't.</li>
+    <li><b>Watch over-attachment (§09):</b> keep the companion a support, not a dependency — gentle, optional, non-clinical; if it speaks as Jess, the same crisis-safety rails apply.</li>
+  </ul>
+  <p class="cap"><b>Flag:</b> there is no gated <i>function</i> in this plan. The only "decision" is to keep the Garden uncompromisingly care-based — which is exactly why it's the page the evidence loves most.</p>
+</div>
+
+<!-- 6 · TIES -->
+<a id="ties"></a>
+<div class="section">
+  <div class="eyebrow">6 · The weave</div>
+  <h2>How Garden connects to the rest of the app</h2>
+  <table>
+    <tr><th>Surface</th><th>The tie</th></tr>
+    <tr><td><b>Today</b></td><td>A small act on Today "feeds" the garden; the companion's state surfaces as a gentle Today glance.</td></tr>
+    <tr><td><b>Journal</b></td><td>Leave-a-line + the almanac already write to JournalEntries; reflections become kept chapters / rare blooms.</td></tr>
+    <tr><td><b>Community</b></td><td>The collective "garden of gardens" + kindness acts ARE a Community tie — growing together, anonymously.</td></tr>
+    <tr><td><b>Nutrition / Health / Pulse</b></td><td>Each becomes a "felt that" the companion notices (a cooked meal, a gentle week, a logged cycle) — the cross-surface ledger.</td></tr>
+    <tr><td><b>Programs</b></td><td>Programme progress + graduation grow the garden — completion as bloom, not streak.</td></tr>
+    <tr><td><b>Planner</b></td><td>Missions (if-then/WOOP) can drop a gentle block into the week; savoured bucket-list items anticipate forward.</td></tr>
+    <tr><td><b>Jess</b></td><td>Jess voices the companion's gentle lines — the same warm friend, embodied — with crisis-safety rails intact.</td></tr>
+  </table>
+</div>
+
+<!-- 7 · DATA -->
+<a id="data"></a>
+<div class="section crimson">
+  <div class="eyebrow">7 · Honest build reality</div>
+  <h2>What's rule-safe vs what needs a call</h2>
+  <ul>
+    <li><b>Rule-safe (no new function):</b> responsive companion states (state machine) + dialogue (existing Jess agent), the "felt that" cross-surface ledger (small additive entity + reads from existing surfaces), self-compassion/gratitude prompts (content), WOOP/if-then/savouring goals (state on the existing GardenGrowth engine), seasonal/cyclical tinting (client-side), collective kindness acts + "tending today" presence (the Community/collective path + a presence count, like Community already does).</li>
+    <li><b>No gated function or infra</b> in the whole plan.</li>
+    <li><b>The discipline (not a feature):</b> hold the care-not-guilt rule absolutely (§5).</li>
+    <li><b>Avoid:</b> companion death/wilt-as-punishment, guilt notifications, streaks, leaderboards, over-attachment mechanics.</li>
+  </ul>
+</div>
+
+<!-- 8 · FIRST -->
+<a id="first"></a>
+<div class="section plum">
+  <div class="eyebrow">8 · Recommendation</div>
+  <h2>What I'd build first</h2>
+  <ul>
+    <li><b>1. The responsive companion (states + Jess dialogue).</b> The biggest aliveness leap, rule-safe — the thing that turns a lovely page into a loved one.</li>
+    <li><b>2. The "felt that" cross-surface ledger.</b> Makes the whole app feed one warm home — the differentiator over Finch.</li>
+    <li><b>3. Self-compassion / gratitude reflection prompts.</b> Small, evidenced, on-voice.</li>
+    <li><b>4. WOOP/if-then + savouring goals.</b> Turns missions into goals that actually land.</li>
+    <li><b>5. The collective garden + kindness acts.</b> "Grow together" — the loneliness lever, tied to Community.</li>
+    <li><b>6. Seasonal/cyclical tinting.</b> The living-thing polish that makes it feel like it knows her.</li>
+  </ul>
+  <p class="lede" style="margin-top:14px">All of it lives in the companion + 3-board + NurtureGarden/GardenGrowth engine you already have. <b>Nothing built from this yet — react first, then we demo/build the approved levels.</b></p>
+</div>
+
+<div class="foot">
+  FemWell · Garden · Level Up (+2) · 29 June 2026<br>
+  Evidence sourced inline (peer-review / horticultural-therapy / SDT, 2023–26); streak/guilt dark-patterns flagged. Live Garden unchanged pending your approval.
+</div>
+
+</div></body></html>
