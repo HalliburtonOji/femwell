@@ -75,3 +75,4 @@ Wiring per doc (3 edits each): `import nutritionLevelupHtml from "@/components/f
 | Demo route | FoundersOS key | accent | status |
 |---|---|---|---|
 | /PulseL2Demo | "Pulse +2" | plum | built · HTTP 200 |
+| /DoctorExportL2Demo | "Doctor Export +2" | crimson | built · HTTP 200 — condition templates (NICE-mapped) · validated PROM (Greene/PBAC) · most-bothersome + Ask-3/BRAN · red-flag→NHS 2-week-wait · freq×severity timeline · plain↔clinical toggle · two-tier export · post-appointment loop · secure-share flagged not-recommended |
