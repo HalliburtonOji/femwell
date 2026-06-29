@@ -1,0 +1,288 @@
+<!doctype html>
+<html lang="en-GB"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>FemWell — Doctor Export Level Up (+2)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500;1,600&family=Ephesis&display=swap" rel="stylesheet">
+<style>
+  :root{--paper:#ECE7DA;--paperHi:#F4EFE3;--paperDeep:#D8CFBC;--ink:#0B0805;--inkSoft:#1A140D;--muted:#2E261B;--gold:#A8893F;--crimson:#BC2E27;--oxblood:#7A1A12;--blush:#E8B4B8;--sage:#8FAF8F;--plum:#8E6E8E;--serif:'Cormorant Garamond',Georgia,serif;--script:'Ephesis',cursive;--sans:ui-sans-serif,system-ui,-apple-system,'Segoe UI',sans-serif;}
+  *{box-sizing:border-box}
+  body{margin:0;background:radial-gradient(120% 80% at 12% 0%,#F4EFE3 0%,rgba(244,239,227,0) 55%),radial-gradient(120% 90% at 100% 100%,#E4DDCC 0%,rgba(228,221,204,0) 50%),var(--paper);color:var(--ink);font-family:var(--serif);font-size:18px;line-height:1.6;-webkit-font-smoothing:antialiased}
+  .doc{max-width:680px;margin:0 auto;padding:30px 22px 90px}
+  h1.cover{font-family:var(--script);font-size:52px;color:var(--crimson);margin:6px 0 2px;line-height:1.04}
+  h2{font-family:var(--serif);font-style:italic;font-weight:600;font-size:27px;margin:0 0 6px;color:var(--oxblood)}
+  h3{font-family:var(--serif);font-weight:600;font-size:21px;margin:18px 0 6px}
+  h4{font-family:var(--sans);font-size:12px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--gold);margin:16px 0 4px}
+  .eyebrow{font-family:var(--sans);font-size:12px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--gold);margin-bottom:10px}
+  p{margin:0 0 12px}.lede{font-size:20px;line-height:1.55}
+  small,.cap{font-family:var(--sans);font-size:13px;color:var(--muted);line-height:1.5}
+  b,strong{font-weight:600}
+  a{color:var(--crimson);text-decoration:none;border-bottom:1px solid rgba(188,46,39,.3)}
+  .section{background:var(--paperHi);border:1px solid var(--paperDeep);border-left:4px solid var(--gold);border-radius:20px;padding:22px 20px;margin:18px 0;box-shadow:0 4px 20px rgba(58,44,26,.10),0 1px 4px rgba(58,44,26,.06);position:relative;overflow:hidden}
+  .section.crimson{border-left-color:var(--crimson)}.section.sage{border-left-color:var(--sage)}.section.plum{border-left-color:var(--plum)}.section.blush{border-left-color:var(--blush)}
+  .rule{height:1px;background:var(--gold);opacity:.32;margin:18px 0}
+  .center{text-align:center}
+  table{width:100%;border-collapse:collapse;font-size:14px;font-family:var(--sans);margin:8px 0}
+  th,td{text-align:left;padding:7px 8px;border-bottom:1px solid var(--paperDeep);vertical-align:top}
+  th{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--gold)}
+  td b{font-family:var(--serif);font-size:15px}
+  .toc a{display:block;font-family:var(--sans);font-size:15px;color:var(--inkSoft);text-decoration:none;border-bottom:1px solid var(--paperDeep);padding:6px 0}
+  .toc a span{color:var(--gold);font-weight:700;margin-right:10px}
+  .script{font-family:var(--script);color:var(--crimson)}
+  .pill{display:inline-block;font-family:var(--sans);font-size:12px;font-weight:600;padding:5px 11px;border-radius:999px;background:var(--paper);border:1px solid var(--paperDeep);margin:3px 4px 3px 0}
+  .pill.rec{background:#EAF1EA;border-color:var(--sage);color:#3f6b3f}
+  .pill.gap{background:#FBE9E6;border-color:var(--crimson);color:var(--crimson)}
+  .pill.ok{background:#EAF1EA;border-color:var(--sage);color:#3f6b3f}
+  .pill.ev{background:#EAF1EA;border-color:var(--sage);color:#3f6b3f}
+  .pill.pop{background:#FBF1E0;border-color:var(--gold);color:#8a6d22}
+  .pill.myth{background:#FBE9E6;border-color:var(--crimson);color:var(--crimson)}
+  .pill.l1{background:#EAF1EA;border-color:var(--sage);color:#3f6b3f}
+  .pill.l2{background:#F0E8F0;border-color:var(--plum);color:#6d4f6d}
+  .lens{background:var(--paper);border:1px solid var(--paperDeep);border-left:3px solid var(--gold);border-radius:12px;padding:12px 14px;margin:8px 0}
+  .lens .nm{font-family:var(--serif);font-weight:600;font-size:18px;color:var(--ink);margin-bottom:2px}
+  .lens .nm .ix{font-family:var(--sans);font-size:11px;font-weight:700;letter-spacing:.1em;color:var(--gold);margin-right:8px;text-transform:uppercase}
+  .lens p{margin:0;font-size:15px;line-height:1.5;color:var(--inkSoft)}
+  .lens .src{font-family:var(--sans);font-size:12px;color:var(--muted);margin-top:5px}
+  .deck{border:1px dashed var(--gold);border-radius:14px;padding:6px 12px 12px;margin:10px 0;background:rgba(168,137,63,.04)}
+  .deck .dh{font-family:var(--sans);font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);margin:8px 0 2px}
+  .num{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:999px;background:var(--crimson);color:#fff;font-family:var(--sans);font-size:12px;font-weight:700;margin-right:8px;vertical-align:1px}
+  .foot{font-family:var(--sans);font-size:12px;color:var(--muted);text-align:center;margin-top:30px;line-height:1.6}
+  ul{margin:4px 0 12px;padding-left:20px}li{margin:3px 0}
+</style></head>
+<body><div class="doc">
+
+<div class="center" style="padding:14px 0 4px">
+  <div class="eyebrow">FemWell · Doctor Export · LEVEL UP (+2) · for your reaction</div>
+  <h1 class="cover">Heard faster</h1>
+  <p class="lede" style="font-style:italic;max-width:540px;margin:8px auto 0">Doctor Export is live and already strong — a real 3-step builder, Greene-domain clinical lens, a Jess-drafted brief + prioritised questions, and a genuine on-device A4 PDF. This is the plan for the <b>next two levels</b> — condition-specific templates mapped to NICE criteria, validated PROMs, a recall-beating symptom timeline, and a red-flag safety net — to make it the one tool that gets a woman believed in a 9-minute appointment. <b>Plan only — nothing built from this yet.</b></p>
+</div>
+
+<div class="section">
+  <div class="eyebrow">The one-line thesis</div>
+  <p class="lede">Level 1 built a calm, on-device, GP-ready <b>summary</b>. Level <span class="script">+2</span> makes it <b>clinician-credible and outcome-changing</b> — each export shaped to the exact NICE/guideline criteria her GP applies (endo · meno · HMB · migraine · PCOS), carrying a recognised <b>validated PROM</b>, a frequency×severity <b>timeline</b> that beats recall bias, a <b>red-flag safety net</b> that routes urgent signs to the NHS, and a post-appointment loop — all in ≤2 minutes of a GP's reading time.</p>
+  <h4>The headline moves</h4>
+  <ul>
+    <li><b>Level +1 — credibility &amp; safety.</b> Condition-specific export templates (endo/meno/HMB/migraine/PCOS) mapped to NICE data needs, an embedded validated PROM per template, a "most-bothersome symptom + Ask-3 questions" prep header, and a red-flag surfacer routing urgent signs to NHS 2-week-wait guidance.</li>
+    <li><b>Level +2 — the leaps.</b> A frequency×severity <b>symptom-timeline</b> in the export, a <b>plain ↔ clinical language toggle</b>, a <b>two-tier</b> export (one-page impact summary + full diary), and <b>post-appointment capture</b> (what was decided / next steps / what to monitor) that closes the loop into the next visit.</li>
+    <li><b>Gated/tension:</b> almost everything is content + client-side (no new function). The only tension is <b>secure-link sharing</b>, which fights the on-device-never-uploaded privacy promise — §5 recommends keeping the PDF + "your right to your data" framing instead.</li>
+  </ul>
+</div>
+
+<div class="section sage">
+  <div class="eyebrow">Contents</div>
+  <div class="toc">
+    <a href="#today"><span>1</span> What Doctor Export does TODAY (honest, post-build)</a>
+    <a href="#research"><span>2</span> The deeper evidence (cited) — the frontier</a>
+    <a href="#l1"><span>3</span> Level +1 — credibility &amp; safety (in the builder)</a>
+    <a href="#l2"><span>4</span> Level +2 — the leaps (in the builder)</a>
+    <a href="#gated"><span>5</span> The privacy tension: secure-share vs on-device</a>
+    <a href="#ties"><span>6</span> How it weaves into the rest of the app</a>
+    <a href="#data"><span>7</span> Data &amp; build reality</a>
+    <a href="#first"><span>8</span> What I'd build first</a>
+  </div>
+</div>
+
+<!-- 1 · TODAY -->
+<a id="today"></a>
+<div class="section crimson">
+  <div class="eyebrow">1 · The honest picture (post-build)</div>
+  <h2>What Doctor Export does today</h2>
+  <p>The live <span class="script">/DoctorExport</span> is a real 3-step builder (Select → Organise → Generate), routed directly, reading the real entities. It's already ahead of every period-tracker's "share with doctor". Honest audit:</p>
+  <table>
+    <tr><th>Surface</th><th>Status today</th></tr>
+    <tr><td><b>Timeframe</b> — 6 weeks (NICE NG23 default) · 90 days · custom</td><td><span class="pill ok">real</span> windows all data; NICE-aligned default.</td></tr>
+    <tr><td><b>Focus chips</b> — menopause/peri · cycle · mood · sleep · pain · meds</td><td><span class="pill ok">real</span> flip sensible section defaults.</td></tr>
+    <tr><td><b>Section toggles + symptom picker</b></td><td><span class="pill ok">real</span> per-section + per-symptom include, from real <code>DailyCheckins/SymptomLogs</code>.</td></tr>
+    <tr><td><b>Greene climacteric lens</b> (vasomotor/somatic/psychological/sexual)</td><td><span class="pill ok">real</span> symptoms grouped into the recognised clinical domains — strong, but it's a <i>lens</i>, not a scored PROM.</td></tr>
+    <tr><td><b>Jess-drafted brief + prioritised questions</b></td><td><span class="pill ok">real</span> rides the existing Jess agent; questions are reorderable/pinnable (Ask-3-style); never diagnoses.</td></tr>
+    <tr><td><b>Trends in the report</b> — monthly mood/energy/sleep/stress averages, symptom days+avg, exercise, nutrition, meds, correlations, opt-in journal</td><td><span class="pill ok">real</span> assembled from real entities; reflections OFF by default.</td></tr>
+    <tr><td><b>Outputs</b> — A4 PDF (pdfmake, on-device) · print · copy-as-text</td><td><span class="pill ok">real</span> generated on-device, never uploaded; explicit special-category consent line.</td></tr>
+    <tr><td><b>Deep-link presets</b> ?preset=diary|full|journal</td><td><span class="pill ok">real</span> Health GP hand-off + Planner card land here pre-configured.</td></tr>
+    <tr><td><b>Condition-specific templates</b> mapped to NICE criteria (endo/HMB/PCOS/migraine)</td><td><span class="pill gap">partial</span> focus chips + the meno/Greene lens exist, but no full per-condition template aligned to each guideline's data needs.</td></tr>
+    <tr><td><b>Validated PROM scoring</b> (Greene score, PBAC/HMB-VAS, etc.)</td><td><span class="pill gap">not yet</span> uses Greene as a lens but doesn't compute a recognised score or embed bleeding/impact instruments.</td></tr>
+    <tr><td><b>Symptom-timeline visualisation</b> (frequency×severity over time)</td><td><span class="pill gap">not yet</span> monthly averages + day counts, but no timeline chart in the export.</td></tr>
+    <tr><td><b>Red-flag safety net</b> (e.g. postmenopausal bleeding → 2-week-wait)</td><td><span class="pill gap">not yet</span> no urgent-sign surfacer / NHS referral routing.</td></tr>
+    <tr><td><b>Most-bothersome symptom · language toggle · two-tier · post-appointment capture</b></td><td><span class="pill gap">not yet</span> none of these yet.</td></tr>
+  </table>
+  <p class="cap"><b>Takeaway:</b> this is the strongest of the six pages at level 1 — real builder, real PDF, real clinical framing. The +2 work is depth: condition templates + validated PROMs (credibility), a timeline + red-flag net (outcome + safety), and the post-appointment loop (no competitor does it).</p>
+</div>
+
+<!-- 2 · RESEARCH -->
+<a id="research"></a>
+<div class="section plum">
+  <div class="eyebrow">2 · The frontier (cited, 2023–26)</div>
+  <h2>The deeper evidence</h2>
+  <p>Each row flagged <span class="pill ev">evidence</span> / <span class="pill pop">popular-practice</span> / <span class="pill myth">myth/risk</span>. Women-specific.</p>
+
+  <div class="lens"><div class="nm"><span class="ix">01</span>The premise is now state-endorsed — women are "gaslit"</div>
+    <p>The UK government formally accepts women are "let down" and "gaslit"; 84% of women report feeling ignored by a healthcare professional. <b>→ Design for the woman who expects not to be believed; the export is leverage, not a courtesy.</b> <span class="pill ev">evidence</span></p>
+    <p class="src"><a href="https://www.gov.uk/government/news/first-womens-health-strategy-for-england-to-tackle-gender-health-gap">Women's Health Strategy (GOV.UK)</a></p>
+  </div>
+
+  <div class="lens"><div class="nm"><span class="ix">02</span>Endometriosis takes ~8y 10m to diagnose — and pain is under-treated</div>
+    <p>UK endo diagnosis averages ~8 years 10 months (worsening); women wait longer and get less analgesia for equal pain. <b>→ A longitudinal pain-and-impact diary is the direct counter to "it's probably nothing".</b> <span class="pill ev">evidence</span></p>
+    <p class="src"><a href="https://www.york.ac.uk/news-and-events/news/2024/research/diagnosis-endometriosis-delay/">Endo delay (York 2024)</a> · <a href="https://www.tandfonline.com/doi/full/10.1080/26895293.2024.2367421">Gender pain gap (2024)</a></p>
+  </div>
+
+  <div class="lens sage" style="border-left-color:var(--sage)"><div class="nm"><span class="ix">03</span>Patient data helps as <i>corroboration</i> — but GPs must "recontextualise" it</div>
+    <p>PGHD improves communication by giving visual evidence for verbal accounts; but GPs treat it as <i>subjective evidence</i> and must do "recontextualisation work" before acting. <b>→ The export must do that work FOR the GP — summarise, structure, never dump raw logs.</b> <span class="pill ev">evidence</span></p>
+    <p class="src"><a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC10971637/">PGHD communication review</a> · <a href="https://pubmed.ncbi.nlm.nih.gov/37096688/">"Data as symptom" (2023)</a></p>
+  </div>
+
+  <div class="lens crimson" style="border-left-color:var(--crimson)"><div class="nm"><span class="ix">04</span>Data overload is the core clinician objection — brevity is a safety feature</div>
+    <p>One patient can generate thousands of unstructured points; GPs reject data dumps. The UK appointment is ~9–11 min — assume ≤2 minutes to read. <b>→ The one-page principle is dictated by the real consultation budget.</b> <span class="pill ev">evidence</span> + <span class="pill myth">risk</span></p>
+    <p class="src"><a href="https://healthmanagement.org/c/hospital/guest-post/the-power-of-patient-generated-health-data-from-information-overload-to-actionable-insights">Data overload</a> · <a href="https://bjgp.org/content/71/704/e185">GP consultation length (BJGP)</a></p>
+  </div>
+
+  <div class="lens"><div class="nm"><span class="ix">05</span>Question-prompt lists raise quality WITHOUT lengthening the visit</div>
+    <p>RCT meta-analysis: prompt lists increase questions asked + shared decision-making, time-neutral. The NHS-endorsed "Ask 3 Questions" (options / benefits-harms / likelihood) is the canonical set; BRAN (Benefits/Risks/Alternatives/Nothing) is the NHS framework for treatment <i>decisions</i>. <b>→ Ship Ask-3 as the default prep header; BRAN as a second mode for HRT/surgery decisions.</b> <span class="pill ev">evidence</span></p>
+    <p class="src"><a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC12391282/">Prompt-list meta-analysis (2025)</a> · <a href="https://aqua.nhs.uk/resources/shared-decision-making-ask-3-questions/">NHS Ask 3 Questions</a></p>
+  </div>
+
+  <div class="lens"><div class="nm"><span class="ix">06</span>Prospective diaries beat recall — by 30–40%</div>
+    <p>Migraine patients underestimate frequency by 30–40% from memory; a headache diary + interview gives an adequate diagnosis in 97.7% of cases. <b>→ A timeline assembled from logged data is MORE accurate than what she can say in the room — lead with it.</b> <span class="pill ev">evidence</span></p>
+    <p class="src"><a href="https://www.ncbi.nlm.nih.gov/books/NBK327477/">Headache-diary review (NICE/NCBI)</a></p>
+  </div>
+
+  <div class="lens sage" style="border-left-color:var(--sage)"><div class="nm"><span class="ix">07</span>Each condition has a specific data need — map to it</div>
+    <p><b>Menopause (NICE NG23, 2024):</b> clinical diagnosis in women 45+, <i>no blood test</i> — foreground vasomotor symptoms + menstrual-change timeline (and don't push FSH). <b>HMB (NG88):</b> defined by <i>impact on QoL</i> — capture life-impact (days lost, flooding), not just flow. <b>PCOS (2023 guideline):</b> Rotterdam 2-of-3, AMH can replace ultrasound — surface cycle-irregularity + androgenic-symptom history. <b>→ Condition templates mapped to the exact criteria the GP applies.</b> <span class="pill ev">evidence</span></p>
+    <p class="src"><a href="https://www.nice.org.uk/guidance/ng23/chapter/recommendations">NICE NG23</a> · <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC7011238/">PBAC/HMB</a> · <a href="https://www.monash.edu/__data/assets/pdf_file/0003/3371133/PCOS-Guideline-Summary-2023.pdf">PCOS 2023</a></p>
+  </div>
+
+  <div class="lens sage" style="border-left-color:var(--sage)"><div class="nm"><span class="ix">08</span>Validated free PROMs give instant credibility</div>
+    <p>The <b>Greene Climacteric Scale</b> (21-item, 4-domain, free) is a recognised menopause measure; <b>PBAC / HMB-VAS</b> for bleeding; <b>FUNCAP27</b> for function (Visible uses it). <b>→ Embed a recognised instrument per template — the GP recognises it, so the export reads as clinical, not bespoke.</b> <span class="pill ev">evidence</span></p>
+    <p class="src"><a href="https://patient.info/womens-health/greene-menopause-scale">Greene scale</a> · <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC9148653/">HMB-VAS</a></p>
+  </div>
+
+  <div class="lens crimson" style="border-left-color:var(--crimson)"><div class="nm"><span class="ix">09</span>A red-flag net is ethically essential — and a trust differentiator</div>
+    <p>Some signs need urgent referral, not a diary — e.g. <b>any postmenopausal bleeding</b> → suspected-cancer pathway. <b>→ A safety surfacer that flags red flags and routes to NHS 2-week-wait guidance protects the woman, and signals the tool is responsible.</b> <span class="pill ev">evidence</span> + <span class="pill myth">safety</span></p>
+    <p class="src"><a href="https://www.cancerresearchuk.org/about-cancer/womb-cancer/getting-diagnosed/referral-specialist">CRUK 2-week-wait</a> · <a href="https://www.macmillan.org.uk/healthcare-professionals/cancer-pathways/prevention-and-diagnosis/rapid-referral-guidelines/gynaecological-cancer">Macmillan referral guidance</a></p>
+  </div>
+
+  <div class="lens"><div class="nm"><span class="ix">10</span>It's HER data — Art. 20 framing is legally accurate</div>
+    <p>UK GDPR Art. 20 gives her the right to her data in a portable format; but the NHS App / GP Connect are clinician-to-clinician — third-party apps <b>can't write into the GP record</b>. <b>→ Frame the export as "your right to your data"; plan around PDF + the woman as courier, never promise write-back.</b> <span class="pill ev">evidence</span></p>
+    <p class="src"><a href="https://ico.org.uk/for-organisations/uk-gdpr-guidance-and-resources/individual-rights/individual-rights/right-to-data-portability/">ICO data portability</a> · <a href="https://www.england.nhs.uk/long-read/gp-connect/">GP Connect</a></p>
+  </div>
+
+  <div class="lens"><div class="nm"><span class="ix">11</span>Competitive teardown — where rivals stop</div>
+    <p><b>Flo</b>: one-tap 6-month PDF, generic + cycle-only. <b>Clue</b>: "Connect" shares with trusted people, not a doctor PDF — a clinician-grade export isn't even table stakes in trackers. <b>Migraine Buddy</b>: the two-tier model (diagnostic diary + impact report) worth copying. <b>Visible</b>: embeds the validated FUNCAP27 — proof the "PROM-inside-the-export" model works. <b>Bearable</b>: markets itself explicitly as an anti-medical-gaslighting tool — the philosophical sibling, but generic, not women's/NICE-templated. <span class="pill pop">market</span></p>
+    <p class="src"><a href="https://help.flo.health/hc/en-us/articles/360054973811-How-do-I-export-my-data">Flo report</a> · <a href="https://migrainebuddy.com/help-center/category/using-migraine-buddy/">Migraine Buddy</a> · <a href="https://bearable.app/medical-gaslighting-app/">Bearable anti-gaslighting</a></p>
+  </div>
+
+  <div class="rule"></div>
+  <h4>The market gap, in one line</h4>
+  <p>Rivals either export <b>generic cycle data</b> (Flo, Clue) or are <b>condition-specific but not women's-health, not NICE-templated</b> (Migraine Buddy, Visible, Bearable); the NHS rails hold the data but never turn it into a brief, validated-PROM-backed, red-flag-aware <i>prep-plus-export</i> for a 9-minute GP visit. <b>FemWell can own the women's-condition-templated, clinician-credible "be heard faster" summary — and it's already most of the way there.</b></p>
+</div>
+
+<!-- 3 · LEVEL +1 -->
+<a id="l1"></a>
+<div class="section sage">
+  <div class="eyebrow">3 · Level +1 — credibility &amp; safety</div>
+  <h2>Make every export clinician-ready</h2>
+  <p>All inside today's Select → Organise → Generate builder. <span class="pill l1">Level +1</span></p>
+
+  <h3>Select · condition templates</h3>
+  <div class="deck"><div class="dh">▸ from focus chips to real templates</div>
+    <div class="lens"><div class="nm"><span class="ix">★★</span>Condition-specific export templates</div><p>Promote the focus chips into full templates mapped to each guideline's data needs: <b>Endo</b> (cyclical pain + impact diary), <b>Meno/peri</b> (vasomotor + menstrual-change timeline, NG23 — no FSH push), <b>HMB</b> (life-impact + flooding, NG88), <b>PCOS</b> (cycle-irregularity + androgenic history, Rotterdam), <b>Migraine</b> (attack timeline + acute-med-overuse days). Each pre-selects the right sections + ordering. <span class="pill rec">credibility</span></p><p class="src"><a href="https://www.nice.org.uk/guidance/ng23/chapter/recommendations">NG23</a></p></div>
+    <div class="lens"><div class="nm"><span class="ix">★★</span>Embed a validated PROM per template</div><p>Score the <b>Greene scale</b> for meno (not just the lens), embed <b>PBAC/HMB-VAS</b> for bleeding — recognised, free instruments the GP knows on sight. <span class="pill ev">evidence</span></p><p class="src"><a href="https://patient.info/womens-health/greene-menopause-scale">Greene</a></p></div>
+  </div>
+
+  <h3>Organise · the prep header</h3>
+  <div class="deck"><div class="dh">▸ most-bothersome + Ask-3</div>
+    <div class="lens"><div class="nm"><span class="ix">★</span>"The one thing bothering me most"</div><p>A single most-bothersome-symptom field at the top of the export — the anchor GPs triage on. Pairs with the existing brief + questions. <span class="pill ev">evidence</span></p></div>
+    <div class="lens"><div class="nm"><span class="ix">★</span>Ask-3 / BRAN scaffolds</div><p>Offer the NHS Ask-3 set as the default question seed (it already drafts questions — align them to options/benefits-harms/likelihood), plus a BRAN mode for decision visits (HRT, surgery). Time-neutral, RCT-backed. <span class="pill ev">evidence</span></p><p class="src"><a href="https://aqua.nhs.uk/resources/shared-decision-making-ask-3-questions/">Ask 3</a></p></div>
+  </div>
+
+  <h3>Generate · the safety net</h3>
+  <div class="deck"><div class="dh">▸ protect, don't just record</div>
+    <div class="lens"><div class="nm"><span class="ix">★★</span>Red-flag surfacer → NHS</div><p>Scan the logged data for urgent signs (e.g. <b>any postmenopausal bleeding</b>, &gt;7-day bleed, post-coital bleeding) and surface a calm "this needs a GP soon — here's the NHS guidance" with the 2-week-wait context. Never diagnoses; the ethical must-have. <span class="pill rec">safety</span></p><p class="src"><a href="https://www.cancerresearchuk.org/about-cancer/womb-cancer/getting-diagnosed/referral-specialist">CRUK</a></p></div>
+  </div>
+</div>
+
+<!-- 4 · LEVEL +2 -->
+<a id="l2"></a>
+<div class="section plum">
+  <div class="eyebrow">4 · Level +2 — the leaps</div>
+  <h2>Timeline, language, two tiers, the loop</h2>
+  <p>The bigger moves that define the category. <span class="pill l2">Level +2</span></p>
+
+  <div class="deck"><div class="dh">▸ the visual that beats memory</div>
+    <div class="lens"><div class="nm"><span class="ix">A</span>Frequency×severity symptom timeline</div><p>Put a compact timeline chart in the export (the "visual evidence" GPs value, countering 30–40% recall bias) — symptom days across the window, severity-shaded, cycle-aligned. Reuses the app's existing charting. <span class="pill ev">evidence</span></p><p class="src"><a href="https://www.ncbi.nlm.nih.gov/books/NBK327477/">recall bias</a></p></div>
+    <div class="lens"><div class="nm"><span class="ix">B</span>Plain ↔ clinical language toggle</div><p>One artefact, two registers: her plain-language version to understand it, the clinical-language version for the GP's ≤2-minute read. Don't hand a clinician free text she must recontextualise. <span class="pill ev">evidence</span></p></div>
+  </div>
+
+  <div class="deck"><div class="dh">▸ the right amount of detail</div>
+    <div class="lens"><div class="nm"><span class="ix">C</span>Two-tier export (impact summary + full diary)</div><p>Migraine Buddy's pattern: a <b>one-page impact summary</b> as the pre-read, with the <b>full diary</b> available on request. Gives brevity without losing depth. <span class="pill pop">proven pattern</span></p><p class="src"><a href="https://migrainebuddy.com/help-center/category/using-migraine-buddy/">Migraine Buddy</a></p></div>
+  </div>
+
+  <div class="deck"><div class="dh">▸ close the loop (no competitor does this)</div>
+    <div class="lens"><div class="nm"><span class="ix">D</span>Post-appointment capture</div><p>After the visit: "what was decided · next steps · what to monitor · review date" — BRAN-style decision recording that feeds the next export's timeline and a Planner reminder. Turns a one-shot export into an ongoing care record. <span class="pill rec">differentiator</span></p></div>
+  </div>
+</div>
+
+<!-- 5 · GATED -->
+<a id="gated"></a>
+<div class="section crimson">
+  <div class="eyebrow">5 · The privacy tension</div>
+  <h2>Secure-share vs the on-device promise</h2>
+  <p>The good news: <b>almost none of +1/+2 needs a new function.</b> Templates, PROM scoring, the timeline, red-flag rules, language toggle, two-tier and most-bothersome are all <b>content + client-side</b>, rendered into the existing on-device pdfmake report. Post-appointment capture is a small additive entity (entities are fine).</p>
+  <ul>
+    <li><b>The one tension — secure-link / QR sharing.</b> A "send my GP a link" feature would mean hosting the PDF on a server — which <b>breaks the on-device, never-uploaded promise</b> that is core to the brand (special-category data, §10). A QR can't hold a whole PDF either.</li>
+    <li><b>Recommendation:</b> <b>don't</b> build server-side sharing. Keep the on-device PDF + print + copy, and lean into the <b>"your right to your data" (Art. 20)</b> framing — it's legally accurate and more trustworthy than a cloud link. If a same-room digital handoff is ever wanted, explore a local AirDrop/Share-Sheet (device-native, still no server) rather than a hosted link.</li>
+    <li><b>No new base44 function is required for the whole plan</b> — the Jess brief already rides the existing agent. The only new data object is the post-appointment record (additive entity).</li>
+  </ul>
+  <p class="cap"><b>Flag:</b> there is no gated <i>function</i> here — the only decision is the deliberate choice to <b>keep sharing on-device</b> and not add cloud delivery, which I recommend.</p>
+</div>
+
+<!-- 6 · TIES -->
+<a id="ties"></a>
+<div class="section">
+  <div class="eyebrow">6 · The weave</div>
+  <h2>How Doctor Export connects to the rest of the app</h2>
+  <table>
+    <tr><th>Surface</th><th>The tie</th></tr>
+    <tr><td><b>Health</b></td><td>The GP hand-off already lands here (preset + seeded questions via sessionStorage); condition templates fire from the relevant Health room.</td></tr>
+    <tr><td><b>Pulse</b></td><td>Pulse's anomaly flag + the symptom timeline feed straight into the export (Pulse's +1 clinician export IS this tie).</td></tr>
+    <tr><td><b>Planner</b></td><td>The Planner card deep-links here; post-appointment "review date" writes a Planner reminder.</td></tr>
+    <tr><td><b>Nutrition</b></td><td>The nutrition rollup (iron, calcium, fibre adequacy) is already a section — useful at an appointment.</td></tr>
+    <tr><td><b>Journal</b></td><td>Opt-in reflections (off by default) let her share her own words by choice.</td></tr>
+    <tr><td><b>Jess</b></td><td>Jess drafts the brief + questions, and post-visit can help capture "what was decided" in her voice.</td></tr>
+    <tr><td><b>Community</b></td><td>"How did your appointment go?" — an optional, anonymous prompt after a captured visit (never auto-shares clinical data).</td></tr>
+  </table>
+</div>
+
+<!-- 7 · DATA -->
+<a id="data"></a>
+<div class="section crimson">
+  <div class="eyebrow">7 · Honest build reality</div>
+  <h2>What's rule-safe vs what needs a call</h2>
+  <ul>
+    <li><b>Rule-safe (no new function):</b> condition templates, validated PROM scoring (Greene/PBAC/HMB-VAS — client-side maths), most-bothersome field, Ask-3/BRAN scaffolds, red-flag surfacer (rule-based, NHS-routed), symptom-timeline (existing charting → into the PDF), plain↔clinical toggle, two-tier export. All render into the existing on-device pdfmake pipeline.</li>
+    <li><b>Small additive entity:</b> post-appointment capture (a <code>VisitRecord</code>-style row) — entities are allowed; no function.</li>
+    <li><b>Recommend NOT building:</b> server-hosted secure-link sharing (breaks on-device privacy, §5).</li>
+    <li><b>Don't promise:</b> write-back into the GP/NHS record (GP Connect is clinician-only); keep the woman as courier with a portable PDF.</li>
+  </ul>
+</div>
+
+<!-- 8 · FIRST -->
+<a id="first"></a>
+<div class="section plum">
+  <div class="eyebrow">8 · Recommendation</div>
+  <h2>What I'd build first</h2>
+  <ul>
+    <li><b>1. The red-flag safety surfacer.</b> Ethically essential, rule-safe, and a powerful trust signal — the export that protects, not just records.</li>
+    <li><b>2. Condition templates + validated PROMs.</b> The credibility leap — each export shaped to the exact NICE criteria the GP applies, carrying a recognised instrument.</li>
+    <li><b>3. Most-bothersome + Ask-3/BRAN prep header.</b> Small, RCT-backed, time-neutral — directly raises being-heard.</li>
+    <li><b>4. The symptom timeline in the export.</b> The visual evidence GPs value, beating recall bias.</li>
+    <li><b>5. Two-tier export + language toggle.</b> Brevity for the clinician, clarity for her.</li>
+    <li><b>6. Post-appointment capture.</b> Closes the loop — the differentiator no competitor ships.</li>
+  </ul>
+  <p class="lede" style="margin-top:14px">All of it lives in the Select → Organise → Generate builder + on-device PDF you already have. <b>Nothing built from this yet — react first, then we demo/build the approved levels.</b></p>
+</div>
+
+<div class="foot">
+  FemWell · Doctor Export · Level Up (+2) · 29 June 2026<br>
+  Evidence sourced inline (NICE / NHS / ICO / peer-review, 2023–26); competitor patterns flagged. Self-reported tracking is a conversation-starter, never a clinical record. Live Doctor Export unchanged pending your approval.
+</div>
+
+</div></body></html>

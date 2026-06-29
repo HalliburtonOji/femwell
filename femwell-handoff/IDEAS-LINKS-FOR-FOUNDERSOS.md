@@ -28,7 +28,10 @@
 |---|---|---|---|---|
 | COMMUNITY-PLAN.html | community-plan.html | "Community +2" | Current | crimson |
 | PULSE-PLAN.html | pulse-plan.html | "Pulse +2" | Current | plum |
-<!-- DOCTOR-EXPORT-PLAN, PROGRAMS-PLAN, GARDEN-PLAN, JESS-PLAN to follow -->
+| DOCTOR-EXPORT-PLAN.html | doctor-export-plan.html | "Doctor Export +2" | Current | sage |
+<!-- PROGRAMS-PLAN, GARDEN-PLAN, JESS-PLAN to follow -->
+
+Doctor Export render branch: `{tab === "Doctor Export +2" && <BrandDocFrame html={doctorExportPlanHtml} title="FemWell — Doctor Export Level Up (+2)" />}` · import `import doctorExportPlanHtml from "@/components/founders/brandDocs/doctor-export-plan.html?raw";` · desc "Doctor Export — next-2-levels plan (condition templates + validated PROMs, symptom timeline, red-flag→NHS net, post-appointment loop)".
 
 Pulse render branch: `{tab === "Pulse +2" && <BrandDocFrame html={pulsePlanHtml} title="FemWell — Pulse Level Up (+2)" />}` · import `import pulsePlanHtml from "@/components/founders/brandDocs/pulse-plan.html?raw";` · desc "Pulse page — next-2-levels plan (own-median predictions, correlation engine, anomaly→NHS flag, wearable import)".
 
