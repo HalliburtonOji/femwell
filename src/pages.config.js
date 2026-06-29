@@ -263,6 +263,7 @@ import Garden from './pages/Garden';
 // ELITE (2026-06-28): /Garden renders the elevated GardenEliteShell. ONE-LINE REVERT:
 // map "Garden" back to Garden below. Old garden stays reachable at /GardenHub.
 import GardenEliteShell from './components/garden-elite/GardenEliteShell';
+import GardenL2Demo from './pages/GardenL2Demo';
 import __Layout from './Layout.jsx';
 
 
@@ -272,6 +273,7 @@ export const PAGES = {
     "CycleSettings": CycleSettings,
     "Explore": Explore,
     "Garden": GardenEliteShell,
+    "GardenL2Demo": GardenL2Demo,
     "GardenElite": GardenEliteShell,
     "GardenHub": Garden,
     "Journal": JournalHub,
