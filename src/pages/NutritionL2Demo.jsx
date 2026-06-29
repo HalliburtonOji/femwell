@@ -69,7 +69,7 @@ export default function NutritionL2Demo() {
     : <span style={{ fontFamily: UI, fontSize: 13, fontWeight: 700, color: T.inkSoft }}>≈ {kcalRange} kcal <span style={{ width: 8, height: 8, borderRadius: 99, background: sage, display: "inline-block", marginLeft: 4 }} /></span>;
 
   return (
-    <div style={{ position: "relative" }}>
+    <div style={{ position: "relative", overflowX: "clip" }}>
       {/* fixed demo badge */}
       <div style={{ position: "fixed", bottom: "calc(80px + env(safe-area-inset-bottom))", left: 12, zIndex: 50, fontFamily: UI, fontSize: 10.5, fontWeight: 800, letterSpacing: ".06em", textTransform: "uppercase", color: "#fff", background: gold, borderRadius: 999, padding: "5px 11px", boxShadow: "0 2px 10px rgba(58,44,26,.3)" }}>Nutrition +2 · demo</div>
 

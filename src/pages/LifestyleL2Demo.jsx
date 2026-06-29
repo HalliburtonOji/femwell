@@ -65,7 +65,7 @@ export default function LifestyleL2Demo() {
   const clip = RECIPE_LIBRARY.find((r) => r.minutes <= 30) || RECIPE_LIBRARY[0];
 
   return (
-    <div style={{ position: "relative" }}>
+    <div style={{ position: "relative", overflowX: "clip" }}>
       <div style={{ position: "fixed", bottom: "calc(80px + env(safe-area-inset-bottom))", left: 12, zIndex: 50, fontFamily: UI, fontSize: 10.5, fontWeight: 800, letterSpacing: ".06em", textTransform: "uppercase", color: "#fff", background: gold, borderRadius: 999, padding: "5px 11px", boxShadow: "0 2px 10px rgba(58,44,26,.3)" }}>Lifestyle +2 · demo</div>
 
       {/* ── THE FULL CURRENT LIVE PAGE (nothing stripped) ── */}
