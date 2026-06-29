@@ -159,6 +159,7 @@ import JessEliteShell from './components/jess-elite/JessEliteShell';
 // Batch-2 LEVEL-UP DEMOS (approved plans → demo-first; built on the elite card language, live pages untouched).
 import NutritionL2Demo from './pages/NutritionL2Demo';
 import LifestyleL2Demo from './pages/LifestyleL2Demo';
+import HealthLettersDemo from './pages/HealthLettersDemo';
 // Journal — Clipboard rebuild DEMO (compact, §6.10 clipboard slider; all features preserved). Preview route.
 import JournalClipboardDemo from './pages/JournalClipboardDemo';
 // Profile — Clipboard rebuild DEMO (compact §6.10 slider + flora hero + quick-edit popups; all features preserved). Preview route.
@@ -350,6 +351,7 @@ export const PAGES = {
     "JessClipboardDemo": JessClipboardDemo,
     "NutritionL2Demo": NutritionL2Demo,
     "LifestyleL2Demo": LifestyleL2Demo,
+    "HealthLettersDemo": HealthLettersDemo,
     "JournalClipboardDemo": JournalClipboardDemo,
     "ProfileClipboardDemo": ProfileClipboardDemo,
     "TodayClipboardDemo": TodayClipboardDemo,
