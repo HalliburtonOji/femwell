@@ -1,0 +1,293 @@
+<!doctype html>
+<html lang="en-GB"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>FemWell — Programs Level Up (+2)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500;1,600&family=Ephesis&display=swap" rel="stylesheet">
+<style>
+  :root{--paper:#ECE7DA;--paperHi:#F4EFE3;--paperDeep:#D8CFBC;--ink:#0B0805;--inkSoft:#1A140D;--muted:#2E261B;--gold:#A8893F;--crimson:#BC2E27;--oxblood:#7A1A12;--blush:#E8B4B8;--sage:#8FAF8F;--plum:#8E6E8E;--serif:'Cormorant Garamond',Georgia,serif;--script:'Ephesis',cursive;--sans:ui-sans-serif,system-ui,-apple-system,'Segoe UI',sans-serif;}
+  *{box-sizing:border-box}
+  body{margin:0;background:radial-gradient(120% 80% at 12% 0%,#F4EFE3 0%,rgba(244,239,227,0) 55%),radial-gradient(120% 90% at 100% 100%,#E4DDCC 0%,rgba(228,221,204,0) 50%),var(--paper);color:var(--ink);font-family:var(--serif);font-size:18px;line-height:1.6;-webkit-font-smoothing:antialiased}
+  .doc{max-width:680px;margin:0 auto;padding:30px 22px 90px}
+  h1.cover{font-family:var(--script);font-size:52px;color:var(--crimson);margin:6px 0 2px;line-height:1.04}
+  h2{font-family:var(--serif);font-style:italic;font-weight:600;font-size:27px;margin:0 0 6px;color:var(--oxblood)}
+  h3{font-family:var(--serif);font-weight:600;font-size:21px;margin:18px 0 6px}
+  h4{font-family:var(--sans);font-size:12px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--gold);margin:16px 0 4px}
+  .eyebrow{font-family:var(--sans);font-size:12px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--gold);margin-bottom:10px}
+  p{margin:0 0 12px}.lede{font-size:20px;line-height:1.55}
+  small,.cap{font-family:var(--sans);font-size:13px;color:var(--muted);line-height:1.5}
+  b,strong{font-weight:600}
+  a{color:var(--crimson);text-decoration:none;border-bottom:1px solid rgba(188,46,39,.3)}
+  .section{background:var(--paperHi);border:1px solid var(--paperDeep);border-left:4px solid var(--gold);border-radius:20px;padding:22px 20px;margin:18px 0;box-shadow:0 4px 20px rgba(58,44,26,.10),0 1px 4px rgba(58,44,26,.06);position:relative;overflow:hidden}
+  .section.crimson{border-left-color:var(--crimson)}.section.sage{border-left-color:var(--sage)}.section.plum{border-left-color:var(--plum)}.section.blush{border-left-color:var(--blush)}
+  .rule{height:1px;background:var(--gold);opacity:.32;margin:18px 0}
+  .center{text-align:center}
+  table{width:100%;border-collapse:collapse;font-size:14px;font-family:var(--sans);margin:8px 0}
+  th,td{text-align:left;padding:7px 8px;border-bottom:1px solid var(--paperDeep);vertical-align:top}
+  th{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--gold)}
+  td b{font-family:var(--serif);font-size:15px}
+  .toc a{display:block;font-family:var(--sans);font-size:15px;color:var(--inkSoft);text-decoration:none;border-bottom:1px solid var(--paperDeep);padding:6px 0}
+  .toc a span{color:var(--gold);font-weight:700;margin-right:10px}
+  .script{font-family:var(--script);color:var(--crimson)}
+  .pill{display:inline-block;font-family:var(--sans);font-size:12px;font-weight:600;padding:5px 11px;border-radius:999px;background:var(--paper);border:1px solid var(--paperDeep);margin:3px 4px 3px 0}
+  .pill.rec{background:#EAF1EA;border-color:var(--sage);color:#3f6b3f}
+  .pill.gap{background:#FBE9E6;border-color:var(--crimson);color:var(--crimson)}
+  .pill.ok{background:#EAF1EA;border-color:var(--sage);color:#3f6b3f}
+  .pill.ev{background:#EAF1EA;border-color:var(--sage);color:#3f6b3f}
+  .pill.pop{background:#FBF1E0;border-color:var(--gold);color:#8a6d22}
+  .pill.myth{background:#FBE9E6;border-color:var(--crimson);color:var(--crimson)}
+  .pill.l1{background:#EAF1EA;border-color:var(--sage);color:#3f6b3f}
+  .pill.l2{background:#F0E8F0;border-color:var(--plum);color:#6d4f6d}
+  .lens{background:var(--paper);border:1px solid var(--paperDeep);border-left:3px solid var(--gold);border-radius:12px;padding:12px 14px;margin:8px 0}
+  .lens .nm{font-family:var(--serif);font-weight:600;font-size:18px;color:var(--ink);margin-bottom:2px}
+  .lens .nm .ix{font-family:var(--sans);font-size:11px;font-weight:700;letter-spacing:.1em;color:var(--gold);margin-right:8px;text-transform:uppercase}
+  .lens p{margin:0;font-size:15px;line-height:1.5;color:var(--inkSoft)}
+  .lens .src{font-family:var(--sans);font-size:12px;color:var(--muted);margin-top:5px}
+  .deck{border:1px dashed var(--gold);border-radius:14px;padding:6px 12px 12px;margin:10px 0;background:rgba(168,137,63,.04)}
+  .deck .dh{font-family:var(--sans);font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);margin:8px 0 2px}
+  .num{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:999px;background:var(--crimson);color:#fff;font-family:var(--sans);font-size:12px;font-weight:700;margin-right:8px;vertical-align:1px}
+  .foot{font-family:var(--sans);font-size:12px;color:var(--muted);text-align:center;margin-top:30px;line-height:1.6}
+  ul{margin:4px 0 12px;padding-left:20px}li{margin:3px 0}
+</style></head>
+<body><div class="doc">
+
+<div class="center" style="padding:14px 0 4px">
+  <div class="eyebrow">FemWell · Programs · LEVEL UP (+2) · for your reaction</div>
+  <h1 class="cover">Journeys that finish</h1>
+  <p class="lede" style="font-style:italic;max-width:540px;margin:8px auto 0">Programs is live with a real engine — enrol, day-by-day, progress, reminders, tiers, "no streaks to break". This is the plan for the <b>next two levels</b> — the things the evidence says actually make a woman <i>complete</i> a programme: a light guide, "start-together" cohorts, shame-free catch-up, a habit graduation, real outcome measurement — and breadth across her whole life, not just her symptoms. <b>Plan only — nothing built from this yet.</b></p>
+</div>
+
+<div class="section">
+  <div class="eyebrow">The one-line thesis</div>
+  <p class="lede">Level 1 built a beautiful programme <b>engine</b>. Level <span class="script">+2</span> makes women <b>finish</b> — because completion, not enrolment, is where the benefit lives (dose-response). The levers the literature is clearest on are exactly the ones the page lacks: a warm <b>guide</b> who checks in, a <b>cohort</b> to start with, <b>catch-up without guilt</b>, a <b>programme→habit graduation</b>, <b>pre/post outcome measurement</b>, and a NICE-grade clinical spine that also spans confidence, money and relationships.</p>
+  <h4>The headline moves</h4>
+  <ul>
+    <li><b>Level +1 — make them stick.</b> A light Jess "guide" with supportive-accountability check-ins (day 1 · the wobble week · graduation), behaviourally-timed reminders, an explicit catch-up/rest mechanic, and a programme→habit graduation at the end.</li>
+    <li><b>Level +2 — the leaps.</b> "Start-together" <b>cohorts</b> (the strongest completion lever in the research), <b>pre/post validated PROMs</b> (outcomes + the £1M story), and <b>whole-life programme breadth</b> (confidence/money/relationships) on the same NICE-grade behaviour-change spine.</li>
+    <li><b>Two gated decisions:</b> real push-notification delivery (reminders are stored but not fired) and a human-coach option (cost/ops) need your OK. The Jess-guide, cohorts, PROMs, habit graduation and content are all rule-safe.</li>
+  </ul>
+</div>
+
+<div class="section sage">
+  <div class="eyebrow">Contents</div>
+  <div class="toc">
+    <a href="#today"><span>1</span> What Programs does TODAY (honest, post-build)</a>
+    <a href="#research"><span>2</span> The deeper evidence (cited) — the frontier</a>
+    <a href="#l1"><span>3</span> Level +1 — make them stick (in the card language)</a>
+    <a href="#l2"><span>4</span> Level +2 — the leaps (in the card language)</a>
+    <a href="#gated"><span>5</span> The gated calls: push notifications &amp; coaching</a>
+    <a href="#ties"><span>6</span> How it weaves into the rest of the app</a>
+    <a href="#data"><span>7</span> Data &amp; build reality</a>
+    <a href="#first"><span>8</span> What I'd build first</a>
+  </div>
+</div>
+
+<!-- 1 · TODAY -->
+<a id="today"></a>
+<div class="section crimson">
+  <div class="eyebrow">1 · The honest picture (post-build)</div>
+  <h2>What Programs does today</h2>
+  <p>The live <span class="script">/Programs</span> elite shell (<code>ProgramsEliteShell</code>) is a real, fully-wired engine — three boards (Continue · For you · Browse all) over real entities, with real enrol + reminder writes. Honest audit:</p>
+  <table>
+    <tr><th>Surface</th><th>Status today</th></tr>
+    <tr><td><b>Enrol / continue a journey</b></td><td><span class="pill ok">real</span> writes <code>UserPrograms</code> (optimistic-then-persist); routes to the real <code>ProgramDay</code>.</td></tr>
+    <tr><td><b>Day-by-day list</b> (done / today / upcoming) + progress %</b></td><td><span class="pill ok">real</span> reads <code>ProgramDays/ProgramTasks</code>; progress computed from current day.</td></tr>
+    <tr><td><b>Reminder time</b> on an active journey</td><td><span class="pill pop">stored, not fired</span> writes <code>reminder_time</code> to <code>UserPrograms</code> — but there's no evidence a push notification is actually delivered.</td></tr>
+    <tr><td><b>For you</b> — phase recs + curated collections (Sleep&amp;calm / Hormone / PMS / Postpartum / Mobility)</td><td><span class="pill ok">real</span> phase-aware + tag-matched from the real library.</td></tr>
+    <tr><td><b>Browse all</b> — search · sort · need filters · tier badges (Free/Plus/Pro) + lock</td><td><span class="pill ok">real</span> full browse + the real Upgrade flow.</td></tr>
+    <tr><td><b>Framing</b> — "no streaks to break; pick it up whenever you can"</td><td><span class="pill ok">on-brand</span> already shame-free — ahead of most competitors.</td></tr>
+    <tr><td><b>Programme library breadth</b></td><td><span class="pill pop">health-leaning</span> categories are sleep/stress/PMS/hormone/menopause/postpartum/mobility — clinical/health, little whole-life (confidence/money/relationships).</td></tr>
+    <tr><td><b>A guide / coach / check-ins</b></td><td><span class="pill gap">not yet</span> journeys are solo; no human or Jess accountability layer.</td></tr>
+    <tr><td><b>Cohorts / "start together"</b></td><td><span class="pill gap">not yet</span> everyone goes alone.</td></tr>
+    <tr><td><b>Catch-up / rest mechanic</b></td><td><span class="pill gap">not yet</span> the framing is gentle, but there's no explicit "pick up where you left off, no guilt" / rest-day flow.</td></tr>
+    <tr><td><b>Programme → habit graduation</b></td><td><span class="pill gap">not yet</span> a finished journey doesn't convert into a lasting Today habit.</td></tr>
+    <tr><td><b>Pre/post outcome measurement (PROM)</b></td><td><span class="pill gap">not yet</span> no start/end measure — so no proof of benefit (and no "N women improved X" story).</td></tr>
+  </table>
+  <p class="cap"><b>Takeaway:</b> the engine is genuinely complete and the framing is already kind. The +2 work isn't more features — it's the <i>completion science</i> (guide, cohort, catch-up, graduation, measurement) plus library breadth + content depth.</p>
+</div>
+
+<!-- 2 · RESEARCH -->
+<a id="research"></a>
+<div class="section plum">
+  <div class="eyebrow">2 · The frontier (cited, 2023–26)</div>
+  <h2>The deeper evidence</h2>
+  <p>Each row flagged <span class="pill ev">evidence</span> / <span class="pill pop">popular-practice</span> / <span class="pill myth">myth/risk</span>. Women-specific where it matters.</p>
+
+  <div class="lens"><div class="nm"><span class="ix">01</span>Completion is the outcome — dose-response is real</div>
+    <p>More sessions completed → better outcomes across digital therapies. <b>→ The programme's job is to maximise sessions-done, not sessions-offered; everything below serves completion.</b> <span class="pill ev">evidence</span></p>
+    <p class="src"><a href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC12512042/">Dose-response (PMC 2024)</a></p>
+  </div>
+
+  <div class="lens"><div class="nm"><span class="ix">02</span>Guided beats unguided — roughly double the effect</div>
+    <p>Human/coach support ~doubles effect sizes (stress g=0.76 vs 0.27; depression 0.48 vs 0.23). Even a peer/buddy/light touch helps. <b>→ A check-in layer is the single highest-leverage upgrade — and Jess can be the light guide without a clinician on every journey.</b> <span class="pill ev">evidence</span></p>
+    <p class="src"><a href="https://www.frontiersin.org/journals/psychology/articles/10.3389/fpsyg.2021.716106/full">Guided vs unguided meta-analysis</a> · <a href="https://www.jmir.org/2025/1/e72639">Supportive Accountability (2025)</a></p>
+  </div>
+
+  <div class="lens crimson" style="border-left-color:var(--crimson)"><div class="nm"><span class="ix">03</span>The dropout is brutal — even for the gold standard</div>
+    <p>The "Law of Attrition" makes heavy early dropout the norm; NHS Couch-to-5K — free, branded, beautifully structured — saw only <b>27% complete</b>, most quitting weeks 2–5. <b>→ Front-load support in the first fortnight; treat partial completion as normal and still valuable.</b> <span class="pill ev">evidence</span></p>
+    <p class="src"><a href="https://www.jmir.org/2005/1/e11/">Law of Attrition</a> · <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC10548406/">Couch-to-5K completion</a></p>
+  </div>
+
+  <div class="lens sage" style="border-left-color:var(--sage)"><div class="nm"><span class="ix">04</span>Cohorts are the strongest completion lever there is</div>
+    <p>Peer-accountability cohorts hit <b>71–90% engagement</b> vs 15–18% solo. <b>→ "Start-together" monthly intakes with a shared, anonymous-safe progress wall.</b> <span class="pill ev">evidence</span></p>
+    <p class="src"><a href="https://www.lin.health/insights/patient-engagement-digital-pain-programs-statistics">Cohort engagement data</a></p>
+  </div>
+
+  <div class="lens crimson" style="border-left-color:var(--crimson)"><div class="nm"><span class="ix">05</span>Streaks past ~90 days become shame — the dark pattern to avoid</div>
+    <p>Streaks work via loss aversion but losing a long one drives outright abandonment; engagement-maximising mechanics risk retention over benefit. <b>→ FemWell's existing "no streaks to break" is correct; add streak-freezes/grace + recovery framing, never "you ruined it".</b> <span class="pill myth">risk</span></p>
+    <p class="src"><a href="https://trophy.so/blog/what-happens-when-users-lose-streaks">Streak abandonment</a></p>
+  </div>
+
+  <div class="lens"><div class="nm"><span class="ix">06</span>Habits take ~2 months, not 21 days — graduate accordingly</div>
+    <p>Habit formation median <b>59–66 days</b> (range 4–335); helped by self-chosen habits, stable cue, enjoyment, implementation plans. <b>→ The final session converts the programme into ONE user-chosen, cue-anchored habit on Today — bridging programme-end to lasting change.</b> <span class="pill ev">evidence</span></p>
+    <p class="src"><a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC11641623/">Habit-formation meta-analysis 2024</a></p>
+  </div>
+
+  <div class="lens"><div class="nm"><span class="ix">07</span>The reliable mechanics: goal → self-monitor → feedback, tailored</div>
+    <p>The best-evidenced behaviour-change technique combo is goal-setting + self-monitoring + feedback together; success is targeted selection, not piling on mechanics (Michie BCT taxonomy underpins NICE). <b>→ Build every journey on goal→track→feedback; works for clinical AND whole-life programmes.</b> <span class="pill ev">evidence</span></p>
+    <p class="src"><a href="https://wellcomeopenresearch.org/articles/7-211">BCT taxonomy</a></p>
+  </div>
+
+  <div class="lens"><div class="nm"><span class="ix">08</span>Micro-sessions out-complete long modules</div>
+    <p>Bite-sized (3–7 min) content completes far better than 30-min lessons; reminders timed to behaviour (48h idle) beat fixed schedules, and 39% disable notifications when over-alerted. <b>→ Micro-session days + behaviourally-timed, restrained reminders.</b> <span class="pill pop">practice</span></p>
+    <p class="src"><a href="https://www.shiftelearning.com/blog/numbers-dont-lie-why-bite-sized-learning-is-better-for-your-learners-and-you-too">Bite-sized completion</a></p>
+  </div>
+
+  <div class="lens sage" style="border-left-color:var(--sage)"><div class="nm"><span class="ix">09</span>The clinical spine is NICE-grade — credible programmes exist</div>
+    <p><b>Menopause:</b> NICE NG23 (2024) recommends menopause-CBT for vasomotor/sleep/mood. <b>Insomnia:</b> digital CBT-I (Sleepio) is NICE-recommended, non-inferior to face-to-face. <b>PCOS:</b> 2023 guideline makes lifestyle first-line (body-neutral, no superior diet). <b>Pelvic floor:</b> Squeezy (+40% adherence). <b>Postpartum/PMDD:</b> iCBT evidenced. <b>→ Anchor the clinical journeys to these; frame honestly (coping skills, not cures).</b> <span class="pill ev">evidence</span></p>
+    <p class="src"><a href="https://www.nice.org.uk/guidance/ng23/chapter/recommendations">NG23</a> · <a href="https://www.nice.org.uk/guidance/mtg70">Sleepio/CBT-I</a> · <a href="https://academic.oup.com/jcem/article/108/10/2447/7242360">PCOS 2023</a></p>
+  </div>
+
+  <div class="lens crimson" style="border-left-color:var(--crimson)"><div class="nm"><span class="ix">10</span>Don't over-claim cycle-synced programming</div>
+    <p>2023 reviews find no influence of menstrual phase on acute strength or training adaptation. <b>→ Offer cycle-aware <i>comfort</i> tinting (gentler days, optional) — never claim cycle-synced programming improves results.</b> <span class="pill myth">myth</span></p>
+    <p class="src"><a href="https://www.frontiersin.org/journals/sports-and-active-living/articles/10.3389/fspor.2023.1054542/full">Cycle-phase &amp; training review</a></p>
+  </div>
+
+  <div class="lens"><div class="nm"><span class="ix">11</span>Measure outcomes, not opens</div>
+    <p>Dose-response + the law of attrition both demand outcome measurement; it's also the £1M-sale story ("N women improved their sleep by X"). <b>→ A short validated pre/post check-in per journey (ISI sleep, GAD-7/EPDS mood, ICIQ pelvic).</b> <span class="pill ev">evidence</span></p>
+    <p class="src"><a href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC12512042/">Outcome measurement</a></p>
+  </div>
+
+  <div class="lens"><div class="nm"><span class="ix">12</span>Competitive teardown — the split</div>
+    <p><b>Sleepio / Squeezy / C25K / Balance</b>: evidence-grade but <b>single-domain</b>. <b>Flo / Headspace</b>: whole-life-ish but <b>un-coached, un-cohorted</b> content feeds. <b>Noom</b>: has the coach+cohort engine — but weight-centric and pricey. <b>→ No one pairs NICE-grade clinical journeys with light coach + cohort accountability across the whole of a woman's life. That's the lane.</b> <span class="pill pop">market</span></p>
+    <p class="src"><a href="https://www.bighealth.co.uk/sleepio">Sleepio</a> · <a href="https://www.researchprotocols.org/2022/8/e37541">Noom coach model</a> · <a href="https://www.balance-menopause.com/balance-app/">Balance</a></p>
+  </div>
+
+  <div class="rule"></div>
+  <h4>The market gap, in one line</h4>
+  <p>The field splits into <b>evidence-grade-but-single-domain</b> programmes and <b>whole-life-but-un-coached</b> feeds. <b>FemWell's lane: a women's whole-life programme room that pairs NICE-grade clinical journeys with light Jess/cohort accountability, micro-sessions, shame-free catch-up, pre/post measurement and a habit graduation — spanning confidence, money and relationships as well as sleep, PCOS and peri.</b></p>
+</div>
+
+<!-- 3 · LEVEL +1 -->
+<a id="l1"></a>
+<div class="section sage">
+  <div class="eyebrow">3 · Level +1 — make them stick</div>
+  <h2>Completion, not just enrolment</h2>
+  <p>All inside today's 3-board, day-by-day engine. <span class="pill l1">Level +1</span></p>
+
+  <h3>Board 1 · "Continue" — the guide + catch-up</h3>
+  <div class="deck"><div class="dh">▸ supportive accountability</div>
+    <div class="lens"><div class="nm"><span class="ix">★★</span>A light Jess guide</div><p>Warm, well-timed check-ins from Jess (existing agent, no function): a day-1 welcome, a nudge at the <b>wobble week</b> (front-loaded support where C25K bled users), and a graduation message. Doubles effect sizes per the evidence, with zero clinician cost. <span class="pill rec">highest leverage</span></p><p class="src"><a href="https://www.jmir.org/2025/1/e72639">Supportive Accountability</a></p></div>
+    <div class="lens"><div class="nm"><span class="ix">★★</span>Catch-up / rest, no guilt</div><p>Make the kind framing a real mechanic: a "pick up where you left off" resume, optional rest days, streak-freeze/grace — recovery framing, never "you broke it". <span class="pill myth">remedy</span></p><p class="src"><a href="https://trophy.so/blog/what-happens-when-users-lose-streaks">streak shame</a></p></div>
+  </div>
+
+  <h3>Board 1 · "Continue" — the graduation</h3>
+  <div class="deck"><div class="dh">▸ programme → lasting habit</div>
+    <div class="lens"><div class="nm"><span class="ix">★★</span>Habit graduation at the finish</div><p>The final session converts the journey into <b>one self-chosen, cue-anchored habit</b> on Today (matches the ~2-month habit science) — so a finished programme leaves something that lasts. <span class="pill ev">evidence</span></p><p class="src"><a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC11641623/">habit science</a></p></div>
+  </div>
+
+  <h3>Across boards · reminders &amp; measurement</h3>
+  <div class="deck"><div class="dh">▸ time them right, prove they work</div>
+    <div class="lens"><div class="nm"><span class="ix">★</span>Behaviourally-timed reminders</div><p>Move from fixed-time chips to behaviour-triggered nudges (e.g. 48h idle), restrained so they're never spam — and actually <i>deliver</i> them (see §5). <span class="pill pop">practice</span></p></div>
+    <div class="lens"><div class="nm"><span class="ix">★</span>Pre/post outcome check-in</div><p>A short validated PROM at start + end of each journey (ISI for sleep, GAD-7/EPDS for mood) — proof of benefit for her, and the "N women improved X" story for the business. Content + a small entity. <span class="pill ev">evidence</span></p></div>
+  </div>
+</div>
+
+<!-- 4 · LEVEL +2 -->
+<a id="l2"></a>
+<div class="section plum">
+  <div class="eyebrow">4 · Level +2 — the leaps</div>
+  <h2>Together, measured, whole-life</h2>
+  <p>The bigger moves that define the category. <span class="pill l2">Level +2</span></p>
+
+  <div class="deck"><div class="dh">▸ start together (the strongest lever)</div>
+    <div class="lens"><div class="nm"><span class="ix">A</span>Cohort "start-together" intakes</div><p>Monthly cohorts with a shared, anonymous-safe progress wall — the single strongest completion mechanic (71–90% vs 15–18%). Ties directly to the Community room (a programme cohort becomes a private circle). A new cohort entity; no function. <span class="pill rec">differentiator</span></p><p class="src"><a href="https://www.lin.health/insights/patient-engagement-digital-pain-programs-statistics">cohort data</a></p></div>
+  </div>
+
+  <div class="deck"><div class="dh">▸ whole-life breadth (the mandate)</div>
+    <div class="lens"><div class="nm"><span class="ix">B</span>Beyond the clinical — confidence, money, relationships</div><p>New journeys on the same goal→track→feedback spine: "Money confidence", "Dating again", "Rebuild a friendship", "Find your style", "Creative comeback" — alongside sleep/PCOS/peri. No competitor spans this; it's the "health is one room" mandate. Content authoring; rule-safe. <span class="pill rec">whole-life</span></p><p class="src"><a href="https://wellcomeopenresearch.org/articles/7-211">BCT spine</a></p></div>
+    <div class="lens"><div class="nm"><span class="ix">C</span>Genuinely adaptive pacing</div><p>Tailor pace to life-stage + progress (and offer, never impose, gentler days around menstruation — comfort, not performance). Tailoring helps engagement; keep the cycle claim honest (§10). <span class="pill ev">evidence</span></p></div>
+  </div>
+
+  <div class="deck"><div class="dh">▸ deepen the content</div>
+    <div class="lens"><div class="nm"><span class="ix">D</span>NICE-grade clinical flagships</div><p>Author the marquee clinical journeys to guideline standard — menopause-CBT (NG23), CBT-I sleep (the most defensible DTx), PCOS-lifestyle (body-neutral), postpartum mental health — each micro-sessioned and honestly framed. The credibility that anchors the Pro tier. <span class="pill ev">evidence</span></p><p class="src"><a href="https://www.nice.org.uk/guidance/mtg70">CBT-I</a></p></div>
+  </div>
+</div>
+
+<!-- 5 · GATED -->
+<a id="gated"></a>
+<div class="section crimson">
+  <div class="eyebrow">5 · The gated calls</div>
+  <h2>Push delivery &amp; human coaching need your OK</h2>
+  <p>Most of +1/+2 is rule-safe: the Jess guide rides the existing agent, cohorts/PROMs/graduation are additive entities + content. Two things need a decision:</p>
+  <ul>
+    <li><b>1 · Real reminder delivery (notifications).</b> Today <code>reminder_time</code> is <i>stored</i> but there's no sign it fires. Actually delivering it (web-push / scheduled notification) needs notification infrastructure — likely a small service/function and OS permission. The no-infra fallback: in-app "due today" surfacing + a calendar/Today nudge (no push). <span class="pill gap">gated infra</span></li>
+    <li><b>2 · Human coaching.</b> The evidence favours human support, but a human coach is a <b>cost/ops</b> decision, not code. The strong middle path: the <b>Jess guide</b> (rule-safe) delivers most of the "supportive accountability" benefit at zero marginal cost; reserve human coaching for a premium Pro tier if you want it. <span class="pill gap">ops/cost</span></li>
+  </ul>
+  <p class="cap"><b>Flag:</b> notification delivery is the one code-level gated item (with an in-app fallback). Human coaching is a business decision — recommend Jess-as-guide first. No new base44 <i>function</i> is required for cohorts, PROMs, graduation or content.</p>
+</div>
+
+<!-- 6 · TIES -->
+<a id="ties"></a>
+<div class="section">
+  <div class="eyebrow">6 · The weave</div>
+  <h2>How Programs connects to the rest of the app</h2>
+  <table>
+    <tr><th>Surface</th><th>The tie</th></tr>
+    <tr><td><b>Today</b></td><td>Today's session surfaces as the day's gentle task; the habit graduation lands as a lasting Today habit.</td></tr>
+    <tr><td><b>Community</b></td><td>A cohort IS a private circle — do "Perimenopause Foundations" together (the Community plan's cohort tie).</td></tr>
+    <tr><td><b>Jess</b></td><td>Jess is the light guide — check-ins, the wobble-week nudge, graduation — in her voice.</td></tr>
+    <tr><td><b>Pulse</b></td><td>The pre/post PROM feeds Pulse's trends ("your sleep score improved across the journey").</td></tr>
+    <tr><td><b>Health / cycle</b></td><td>Clinical journeys surface from the relevant Health room; phase tints pacing (comfort, not claims).</td></tr>
+    <tr><td><b>Planner</b></td><td>A journey lays gentle session blocks into the week; reminders are Planner-aware.</td></tr>
+    <tr><td><b>Garden</b></td><td>Progress + graduation grow the garden — completion as bloom, not streak.</td></tr>
+    <tr><td><b>Doctor Export</b></td><td>"I completed an 8-week CBT-I programme; here's my before/after" — a credible line for the GP.</td></tr>
+  </table>
+</div>
+
+<!-- 7 · DATA -->
+<a id="data"></a>
+<div class="section crimson">
+  <div class="eyebrow">7 · Honest build reality</div>
+  <h2>What's rule-safe vs what needs a call</h2>
+  <ul>
+    <li><b>Rule-safe (no new function):</b> the Jess guide (existing agent), catch-up/rest mechanic + streak-freeze (state), habit graduation (writes an existing habit), pre/post PROMs (content + small entity), cohorts (a cohort entity + the Community path), whole-life programme content, adaptive pacing (rules). All ride the existing <code>Programs/UserPrograms/ProgramDays/ProgramTasks</code> engine.</li>
+    <li><b>Needs your OK (infra):</b> real push-notification delivery (§5.1) — or ship the in-app/Today-nudge fallback with zero rule-risk.</li>
+    <li><b>Needs your OK (ops/cost):</b> human coaching (§5.2) — recommend Jess-as-guide first.</li>
+    <li><b>Biggest real effort:</b> authoring NICE-grade clinical content + the whole-life library — content, not engineering.</li>
+    <li><b>Avoid:</b> long modules (use micro-sessions), shame streaks, cycle-synced performance claims.</li>
+  </ul>
+</div>
+
+<!-- 8 · FIRST -->
+<a id="first"></a>
+<div class="section plum">
+  <div class="eyebrow">8 · Recommendation</div>
+  <h2>What I'd build first</h2>
+  <ul>
+    <li><b>1. The Jess guide (supportive accountability).</b> Highest-leverage, rule-safe, ~doubles effect — day-1, wobble-week and graduation check-ins.</li>
+    <li><b>2. Catch-up/rest + habit graduation.</b> Small, kind, evidence-backed — makes journeys finishable and leaves something lasting.</li>
+    <li><b>3. Pre/post PROMs.</b> Proof of benefit for her, the outcome story for the £1M sale.</li>
+    <li><b>4. Cohorts ("start together").</b> The strongest completion lever — and it makes Community and Programs reinforce each other.</li>
+    <li><b>5. Whole-life programme breadth + NICE-grade clinical flagships.</b> The content that defines the category.</li>
+    <li><b>6. (Gated) real reminder delivery</b> — in-app/Today fallback now, push if you approve the infra.</li>
+  </ul>
+  <p class="lede" style="margin-top:14px">All of it lives in the 3-board, day-by-day journey engine you already have. <b>Nothing built from this yet — react first, then we demo/build the approved levels.</b></p>
+</div>
+
+<div class="foot">
+  FemWell · Programs · Level Up (+2) · 29 June 2026<br>
+  Evidence sourced inline (NICE / peer-review / NHS, 2023–26); engagement dark-patterns &amp; over-claims flagged. Live Programs unchanged pending your approval.
+</div>
+
+</div></body></html>

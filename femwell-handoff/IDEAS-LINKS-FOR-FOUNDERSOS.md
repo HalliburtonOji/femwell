@@ -29,7 +29,10 @@
 | COMMUNITY-PLAN.html | community-plan.html | "Community +2" | Current | crimson |
 | PULSE-PLAN.html | pulse-plan.html | "Pulse +2" | Current | plum |
 | DOCTOR-EXPORT-PLAN.html | doctor-export-plan.html | "Doctor Export +2" | Current | sage |
-<!-- PROGRAMS-PLAN, GARDEN-PLAN, JESS-PLAN to follow -->
+| PROGRAMS-PLAN.html | programs-plan.html | "Programs +2" | Current | plum |
+<!-- GARDEN-PLAN, JESS-PLAN to follow -->
+
+Programs render branch: `{tab === "Programs +2" && <BrandDocFrame html={programsPlanHtml} title="FemWell — Programs Level Up (+2)" />}` · import `import programsPlanHtml from "@/components/founders/brandDocs/programs-plan.html?raw";` · desc "Programs — next-2-levels plan (Jess guide/cohorts/catch-up/habit graduation/PROMs/whole-life breadth)".
 
 Doctor Export render branch: `{tab === "Doctor Export +2" && <BrandDocFrame html={doctorExportPlanHtml} title="FemWell — Doctor Export Level Up (+2)" />}` · import `import doctorExportPlanHtml from "@/components/founders/brandDocs/doctor-export-plan.html?raw";` · desc "Doctor Export — next-2-levels plan (condition templates + validated PROMs, symptom timeline, red-flag→NHS net, post-appointment loop)".
 
