@@ -42,7 +42,8 @@
 | Demo route | applies plan | catalog (kind:"route") | group |
 |---|---|---|---|
 | `/NutritionL2Demo` | nutrition-levelup.html | `{ kind:"route", key:"Nutrition +2 DEMO", href:"/NutritionL2Demo", group: CAT.CURRENT, status:"new", accent:"crimson", desc:"Nutrition +2 demo — composite real-meal accuracy, ED-safe numbers-off, cook-video log, condition watch-lists, GLP-1 guardian, share-to-table (photo→macros = labelled gated stub)" }` | Current |
-<!-- LifestyleL2Demo, HealthDemo2, CommunityL2Demo to follow -->
+| `/LifestyleL2Demo` | lifestyle-levelup.html | `{ kind:"route", key:"Lifestyle +2 DEMO", href:"/LifestyleL2Demo", group: CAT.CURRENT, status:"new", accent:"gold", desc:"Lifestyle +2 demo — fed players (LibriVox audio + embedded video + Standard Ebooks + TTS), awe/make/rest/joy evidence lanes, kept-intentions read-back, learn/lounge/library-card, sanctioned-rest spine (auto verify-sweep = labelled gated stub)" }` | Current |
+<!-- HealthDemo2, CommunityL2Demo to follow -->
 
 Route demos only need the CATALOG `kind:"route"` entry (the `href` resolves to the live route after `npx base44 site deploy -y`) — no import / no render branch needed (unlike the doc entries above).
 
