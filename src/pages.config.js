@@ -158,6 +158,7 @@ import JessClipboardDemo from './pages/JessClipboardDemo';
 // JESS ELITE — the LIVE elite Jess surface (approved JessClipboardDemo promoted to live;
 // working assistant preserved verbatim). Flipped onto /Jess + /Assistant.
 import JessEliteShell from './components/jess-elite/JessEliteShell';
+import JessL2Demo from './pages/JessL2Demo';
 // Batch-2 LEVEL-UP DEMOS (approved plans → demo-first; built on the elite card language, live pages untouched).
 import NutritionL2Demo from './pages/NutritionL2Demo';
 import LifestyleL2Demo from './pages/LifestyleL2Demo';
@@ -301,6 +302,7 @@ export const PAGES = {
     "Assistant": JessEliteShell,
     "AssistantClassic": Assistant,
     "Jess": JessEliteShell,
+    "JessL2Demo": JessL2Demo,
     "JessElite": JessEliteShell,
     "SkinHair": SkinHair,
     "Pulse": PulseEliteShell,
