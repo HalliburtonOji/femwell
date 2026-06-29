@@ -67,3 +67,11 @@ Wiring per doc (3 edits each): `import nutritionLevelupHtml from "@/components/f
 ## Notes for the FoundersOS session
 - If I (a brand/feature session) add a new plan doc, I copy it into `brandDocs/` and wire it myself when `FoundersOS.jsx` is clean; if you hold the file, wire from this list.
 - Keep the in-app `brandDocs/*.html` copies in sync with the latest femwell-handoff/ version when the content session updates a doc (the content session owns the HTML; you own the catalog wiring).
+
+## ⏳ TO WIRE — LEVEL-UP DEMO ROUTES (2026-06-29, standalone preview pages, NOT BrandDocFrame docs)
+> Halli approved the level-up plans → a DEMO route per page (applies the +1/+2 features on the page's elite design; gated features as labelled "Needs sign-off" stubs). These are **routes** (`kind:"route"`), add to FoundersOS Ideas → **Current**. Live pages UNTOUCHED. All HTTP 200. Routes resolve via pages.config, so each needs only ONE catalog entry (no import / render branch):
+> `{ kind:"route", href:"/PulseL2Demo", group: CAT.CURRENT, status:"new", accent:"plum", title:"Pulse +2 — demo ★", desc:"own-median predictions + error bars, symptom forecasting, cross-life correlation engine (causation guardrails), this-cycle-is-different→NHS anomaly flag, anxiety-safe dial, clinician export→Doctor Export, year-in-patterns retrospective, wearable import stub (needs sign-off)" }`
+
+| Demo route | FoundersOS key | accent | status |
+|---|---|---|---|
+| /PulseL2Demo | "Pulse +2" | plum | built · HTTP 200 |
