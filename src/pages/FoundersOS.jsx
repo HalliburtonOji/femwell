@@ -70,6 +70,13 @@ import lifestylePlanHtml from "@/components/founders/brandDocs/lifestyle-plan.ht
 import nutritionLevelupHtml from "@/components/founders/brandDocs/nutrition-levelup.html?raw";
 import lifestyleLevelupHtml from "@/components/founders/brandDocs/lifestyle-levelup.html?raw";
 import healthPlanHtml from "@/components/founders/brandDocs/health-plan.html?raw";
+// Batch 2 level-up plan docs (2026-06-29) — wired from IDEAS-LINKS-FOR-FOUNDERSOS.md.
+import communityPlanHtml from "@/components/founders/brandDocs/community-plan.html?raw";
+import pulsePlanHtml from "@/components/founders/brandDocs/pulse-plan.html?raw";
+import doctorExportPlanHtml from "@/components/founders/brandDocs/doctor-export-plan.html?raw";
+import programsPlanHtml from "@/components/founders/brandDocs/programs-plan.html?raw";
+import gardenPlanHtml from "@/components/founders/brandDocs/garden-plan.html?raw";
+import jessPlanHtml from "@/components/founders/brandDocs/jess-plan.html?raw";
 // HealthCornerDemo was the multi-layout preview. The canonical health
 // experience now lives at /Health (src/pages/Health.jsx). The Health Corner
 // tab in /Ideas renders <HealthCornerRedirectCard /> instead.
@@ -135,7 +142,7 @@ const CAT = {
 };
 const GROUP_ORDER = [CAT.CURRENT, CAT.BRANDDOCS, CAT.SPECS, CAT.BRAND, CAT.VISION, CAT.BUILD, CAT.ARCHIVE];
 const GROUP_BLURB = {
-  [CAT.CURRENT]:   "The short list — active plans awaiting your reaction + anything still pending your decision. (The 12 pages are now live-elite; their demos moved to Archive.)",
+  [CAT.CURRENT]:   "Active plans awaiting your reaction — the per-page level-up (+2) plans, then cross-app plans & pending decisions. (The 12 pages are live-elite; their demos are in Archive.)",
   [CAT.BRANDDOCS]: "One brand home — the consolidated Brand Bible (the old Living-Ecosystem / Brand Identity / Flora docs are folded into it).",
   [CAT.SPECS]:     "Standing plans, specs and audits — the reference for what we're building.",
   [CAT.BRAND]:     "Companion vision, cross-app UX patterns and the PWA/widget plan.",
@@ -237,18 +244,30 @@ const CATALOG = [
     title: "Pulse — card-system demo ★ for approval", desc: "Your week read back gently: insight cards (mood · energy · rest), patterns-worth-knowing cards, and a phase card — life-spanning, not a clinical chart wall." },
   { kind: "route", href: "/PlannerCardsDemo", group: CAT.ARCHIVE, sub: "Card-system demos (pending rebuild)", status: "approval", accent: "sage",
     title: "Planner (content) — card-system demo ★ for approval", desc: "The CONTENT side of Planner as cards: add-an-intention, today's gentle intentions, your rituals, and soft reminders. NOT the calendar/day-view (those stay as-is)." },
-  // ── ★ TOP of Current: the latest LEVEL-UP plan docs awaiting your reaction ──
-  { kind: "doc", key: "Nutrition +2", group: CAT.CURRENT, status: "new", accent: "crimson",
-    title: "★ Nutrition +2 — the whole table, raised (level-up plan) · READ ME", desc: "Nutrition is LIVE and you love it — this is the plan for the next two levels. Builds on the original Nutrition plan: what to finish (the meal-plan generator, recipes, cook-what's-in, snap-a-photo) and what to RAISE — cited women's-nutrition research (iron flagship · cycle-aware-not-rules · protein · peri/menopause · PCOS/PMDD · GLP-1 era · food↔mood), the myth-vs-fact series, JOY & food (eating-together, the kitchen-table room), cook-videos-in-card feasibility, the card language, the weave into Today/Health/Pulse/Planner/Garden/Community/Jess, and a fold-in order. React before we touch live Nutrition." },
-  { kind: "doc", key: "Lifestyle +2", group: CAT.CURRENT, status: "new", accent: "plum",
-    title: "★ Lifestyle +2 — the good life, fed (level-up plan) · READ ME", desc: "Lifestyle is LIVE and you love the video-in-card — this is the plan for the next two levels. The domains beyond read/listen (make/learn/watch/awe/joy/rest), real media that plays INSIDE the cards (self-hosted/HLS + YouTube + podcast embeds; the Spotify preview-only gotcha; IG link-out), a 'what do you have time for?' dopamine-menu picker, a gentle 'lounge' community, FUN as a first-class streak-free pillar, the weave into the rest of the app, and a fold-in order. React before we touch live Lifestyle." },
-  { kind: "doc", key: "Health Plan", group: CAT.CURRENT, status: "new", accent: "sage",
-    title: "★ Health Plan — letters in sliding cards + the hub · READ ME", desc: "You love the health letters — and they're right to keep. The plan to render them PROPERLY: the letters in sliding cards + a real Health hub (overview · cycle · life-stage · skin & hair · body · mind · nourishment · care), how each letter becomes a §6.10 board, the wax-seal craft, and how Health weaves with Pulse/Doctor Export/Today. React before we touch live Health." },
-  // ── the original build-plan docs (still active — the +2 docs above extend these) ──
-  { kind: "doc", key: "Nutrition Plan", group: CAT.CURRENT, status: "new", accent: "crimson",
-    title: "★ Nutrition — the whole table (research + build plan) · READ ME", desc: "PLAN (nothing built yet) for finishing + elevating Nutrition. An HONEST what's-real-vs-stubbed audit of live /Nutrition (logging/macros/shopping are real; the meal-plan generator, recipes, 'cook what's in' and snap-a-photo are stubs) + WIDELY-CITED women's-nutrition research (NHS/BDA/peer-review): iron as the flagship story, 'cycle-aware not cycle-rules', protein nuance, peri/menopause, PCOS/PMDD, the GLP-1 era, food↔mood — each flagged evidence vs popular-practice, plus a warm myth-vs-fact series (cortisol cocktails, seed oils, detox). Then JOY & food (eating-together evidence, cultural/celebratory, the 'kitchen table' community room), the feasibility of EMBEDDING COOK VIDEOS inside our cards (YouTube embed + self-hosted HLS = yes; TikTok secondary; IG link-out), the full feature set in our card language, how it weaves into Today/Health/Pulse/Planner/Garden/Community/Jess, the one real build decision (how 'generate' works without a new function), and a fold-in order. React before we touch live Nutrition." },
-  { kind: "doc", key: "Lifestyle Plan", group: CAT.CURRENT, status: "new", accent: "plum",
-    title: "★ Lifestyle — the good life, on purpose (research + build plan) · READ ME", desc: "PLAN (nothing built yet) for the whole-life Lifestyle hub. HONEST audit of live /Lifestyle (content + save are real; the inline players are a MOCK, the short-video lane + several lanes are seeded) + CITED 'leisure is medicine' research (600+ wellbeing mechanisms; the women's leisure gap + guilt; creativity/awe/learning/third-places; the women's-podcast wave; tasteful astrology). The domains BEYOND read/listen (make/learn/watch/awe/joy/rest), the feasibility of MEDIA that plays INSIDE our cards (self-hosted/HLS + YouTube + podcast embeds = yes; Spotify preview-only gotcha; IG link-out), a 'what do you have time for?' dopamine-menu picker, a gentle 'lounge' community, FUN as a first-class pillar (streak-free, guilt-free), the weave into the rest of the app, and a fold-in order. React before we touch live Lifestyle." },
+  // ── ★ TOP of Current: PAGE LEVEL-UP PLANS (one per live page) awaiting your reaction ──
+  { kind: "doc", key: "Nutrition +2", group: CAT.CURRENT, sub: "Page level-up plans", status: "new", accent: "crimson",
+    title: "★ Nutrition +2 — the whole table, raised", desc: "Nutrition is LIVE — the plan for the next two levels: finish the stubs (meal-plan generator, recipes, cook-what's-in, snap-a-photo) and RAISE it — cited women's-nutrition research (iron flagship · cycle-aware-not-rules · protein · peri/menopause · PCOS/PMDD · GLP-1 era · food↔mood), the myth-vs-fact series, JOY & food (eating-together, the kitchen-table room), cook-videos-in-card, the weave into Today/Health/Pulse/Planner/Garden/Community/Jess, and a fold-in order. React before we touch live Nutrition." },
+  { kind: "doc", key: "Lifestyle +2", group: CAT.CURRENT, sub: "Page level-up plans", status: "new", accent: "plum",
+    title: "★ Lifestyle +2 — the good life, fed", desc: "Lifestyle is LIVE — the plan for the next two levels: the domains beyond read/listen (make/learn/watch/awe/joy/rest), real media that plays INSIDE the cards (self-hosted/HLS + YouTube + podcast embeds; Spotify preview-only gotcha; IG link-out), a 'what do you have time for?' dopamine-menu picker, a gentle 'lounge' community, FUN as a first-class streak-free pillar, the weave into the app, and a fold-in order. React before we touch live Lifestyle." },
+  { kind: "doc", key: "Health Plan", group: CAT.CURRENT, sub: "Page level-up plans", status: "new", accent: "sage",
+    title: "★ Health +2 — letters in sliding cards + the hub", desc: "You love the health letters — the plan to render them PROPERLY: letters in sliding cards + a real Health hub (overview · cycle · life-stage · skin & hair · body · mind · nourishment · care), each letter a §6.10 board, the wax-seal craft, and how Health weaves with Pulse/Doctor Export/Today. React before we touch live Health." },
+  { kind: "doc", key: "Community +2", group: CAT.CURRENT, sub: "Page level-up plans", status: "new", accent: "crimson",
+    title: "★ Community +2 — trust, DMs & the IRL bridge", desc: "Community page — next-2-levels plan (trust layer, moderated DMs, IRL bridge, OSA compliance)." },
+  { kind: "doc", key: "Pulse +2", group: CAT.CURRENT, sub: "Page level-up plans", status: "new", accent: "plum",
+    title: "★ Pulse +2 — predictions & correlations", desc: "Pulse page — next-2-levels plan (own-median predictions, correlation engine, anomaly→NHS flag, wearable import)." },
+  { kind: "doc", key: "Doctor Export +2", group: CAT.CURRENT, sub: "Page level-up plans", status: "new", accent: "sage",
+    title: "★ Doctor Export +2 — PROMs & the red-flag net", desc: "Doctor Export — next-2-levels plan (condition templates + validated PROMs, symptom timeline, red-flag→NHS net, post-appointment loop)." },
+  { kind: "doc", key: "Programs +2", group: CAT.CURRENT, sub: "Page level-up plans", status: "new", accent: "plum",
+    title: "★ Programs +2 — guide, cohorts & graduation", desc: "Programs — next-2-levels plan (Jess guide/cohorts/catch-up/habit graduation/PROMs/whole-life breadth)." },
+  { kind: "doc", key: "Garden +2", group: CAT.CURRENT, sub: "Page level-up plans", status: "new", accent: "sage",
+    title: "★ Garden +2 — responsive companion & kindness garden", desc: "Garden — next-2-levels plan (responsive never-dies companion, felt-that ledger, self-compassion reflection, WOOP goals, collective kindness garden)." },
+  { kind: "doc", key: "Jess +2", group: CAT.CURRENT, sub: "Page level-up plans", status: "new", accent: "crimson",
+    title: "★ Jess +2 — guideline grounding & hardened rails", desc: "Jess — next-2-levels plan (women-tuned guideline grounding, anti-sycophancy, hardened crisis rails, transparent memory, talk-to-Jess everywhere)." },
+  // ── the original Nutrition/Lifestyle build-plan docs — RETIRED to Archive (the +2 docs above extend them) ──
+  { kind: "doc", key: "Nutrition Plan", group: CAT.ARCHIVE, sub: "Earlier plans (extended by +2)", status: "archive", accent: "crimson",
+    title: "Nutrition — the whole table (original research + build plan)", desc: "The original Nutrition build plan — superseded by Nutrition +2 (which extends it). Kept for history." },
+  { kind: "doc", key: "Lifestyle Plan", group: CAT.ARCHIVE, sub: "Earlier plans (extended by +2)", status: "archive", accent: "plum",
+    title: "Lifestyle — the good life (original research + build plan)", desc: "The original Lifestyle build plan — superseded by Lifestyle +2 (which extends it). Kept for history." },
   { kind: "route", href: "/LifestyleNewDemo", group: CAT.ARCHIVE, sub: "Superseded — page now live-elite", status: "new", accent: "gold",
     title: "Lifestyle — dense slider rebuild ★ NEW for approval", desc: "Lifestyle rebuilt to the planner pattern: the 7 stacked tabs of mostly half-empty rails (For You's 3 rails + bento · Listen's 3 rails + grid · A-Day-For-You · etc.) folded into ONE big horizontal slider → far less downward scroll, no empty cards. 4 dense boards — For you (editorial + [Saved↕Try-this]) · Read ([Articles↕Stories] + Books) · Listen ([Podcasts↕Videos, inline players] + Watch/TikTok/external) · Story & sky ([Daily story↕A-day-for-you] + Horoscope sun/moon/rising + weather + cycle↔moon). NOTHING stripped — every content type kept (article/story/book/video/podcast/tiktok/daily-story/horoscope/a-day/saved/try-this), media still plays in the card. TOP-AREA chrome out of cards: Jump-to + the two daily focus pills Today's-chapter / Your-reading. Oxblood headings, varied card language. Demo-first; live Lifestyle untouched." },
   { kind: "route", href: "/NutritionNewDemo", group: CAT.ARCHIVE, sub: "Superseded — page now live-elite", status: "new", accent: "sage",
@@ -285,7 +304,7 @@ const CATALOG = [
     title: "Ritual Builder — habit-loop demo ★ for approval", desc: "The daily tending loop: a one-tap ritual on Today (phase/time aware), the same RitualCard contextualised across surfaces (Nutrition=water · Journal=three lines · Pulse=pause · Community=one kind message · Garden=tend companion), the §6.7.6 quick-action popup (do it in place → it ticks), and the living-ecosystem tie (each kept ritual grows a bloom; three earns a visitor). Builder lives in Planner. Rides existing RitualsTick/HabitLogs — no new function." },
   { kind: "route", href: "/GrowthDemo", group: CAT.ARCHIVE, sub: "Superseded — page now live-elite", status: "new", accent: "gold",
     title: "Growth & Connection — Phase 0 demos ★ for approval", desc: "The approved intentions/goals + connection/days/missions directions, BUILT demo-first and baked into existing pages (no new nav tab): daily intentions (set·carry·reflect) · the line of the day · goals (long=tree, short=annual) · tiny missions (done → a bloom grows) · the big-life BUCKET LIST (e.g. 'go to Spain' = a tree/long arc) · solo days-off activities (one pick, found for her) · Tier 0 ANONYMOUS connection (resonance + async prompt rooms, no 1:1). Open this hub, then tap any surface card to open its per-surface demo (Today/Garden/Planner/Lifestyle/Community/Profile — all 6 reachable from here). The gated 1:1/pen-pal/matching tiers are HELD pending your safety call (moderation · 18+ · no location). Rides existing dispatchers — no new function." },
-  { kind: "route", href: "/PenPalDemo", group: CAT.CURRENT, status: "new", accent: "crimson",
+  { kind: "route", href: "/PenPalDemo", group: CAT.CURRENT, sub: "Cross-app plans & decisions", status: "new", accent: "crimson",
     title: "Gated 1:1 connection (Phase 2) — pen-pal + moderated rooms ★ for approval", desc: "Your safety dials applied: 18+ ONLY (opens behind the real AgeGate) · NO LOCATION ever (matched by season/life-stage/language only) · BACKEND MODERATION (every letter/answer shown going through a 'checked before it's sent' step). Two gentle, anonymous, async surfaces: the moderated SEALED-LETTER PEN-PAL ('a letter to a woman like you' — write, it's checked, then delivered in her time; break the seal on letters that find you; reply with a gentle line) and moderated THEMED PROMPT ROOMS. NO open matching/DMs/profiles. Live build rides EXISTING moderated functions (screenContent + createCommunityPost for rooms; the Witness service path for the pen-pal) — NO new function; new entity only. Demo-first; approve to wire live." },
   { kind: "route", href: "/CommunityV4Demo", group: CAT.ARCHIVE, sub: "Superseded — page now live-elite", status: "new", accent: "sage",
     title: "Community redesign (v4) + Connection fold-in ★ for approval", desc: "The whole Community, redesigned to the v4 bible AND with 1:1 connection folded in — demo-first, nothing stripped. 18+ AgeGate → flora hero + carved heart + ONE summary card → a §6.10 clipboard slider of three boards: CONNECTION (NEW: moderated 1:1 MESSAGING — request-to-connect, every message checked before it reaches her, 'how you want to connect' preferences, block/report; + the sealed-letter pen-pal + 'someone like you' resonance) · THE ROOMS (QOTD + Echo + the 9 whole-life rooms as a CardDeck) · TOGETHER (Circles, Library/Clubs, Games, Wisdom, Pool, Close-the-week, Witness). Rails: 18+ · NO location (season/stage match only) · backend moderation. Also fixes the live sealed-letters wiring (user_id). Live build rides screenContent + createCommunityPost/answerQotd + the Witness path — NO new function; new entity only." },
@@ -301,15 +320,15 @@ const CATALOG = [
     title: "The Brand Bible", desc: "The ONE source of truth — soul · voice · type · colour · the full flora system (recognisability + the 64-flower library + lifecycle + meaning) · cards + the quick-action popup · page structure · components · nav. Agreed canon, plus a clearly-marked 'Proposed — awaiting sign-off' section. Renders in-app with live flora. (The old separate Living-Ecosystem / Brand Identity / Flora & Meaning docs are folded in here — one brand home.)" },
 
   // ── Specs & Plans (in-page docs) ──────────────────────────────────────
-  { kind: "doc", key: "Planner Enrichment", group: CAT.CURRENT, status: "new", accent: "gold",
+  { kind: "doc", key: "Planner Enrichment", group: CAT.CURRENT, sub: "Page level-up plans", status: "new", accent: "gold",
     title: "Planner — going deeper (research + preview) ★ react", desc: "PREVIEW (nothing built yet) for enriching the new Planner. A full app data-scan (what FemWell already knows that a planner can use — phase/energy/sleep/HRV/symptoms/habits — + the honest gaps) and CITED research on what a women's whole-life planner should do that a generic one doesn't (cyclical energy planning · the mental load / invisible labour · caregiving logistics · life-admin · executive-function-friendly · time-blocking vs intention · energy>time · seasons of life · rest as planned). Then the concrete proposals on the sliding-card language: rework Capacity → \"Reserves\" with a 4-lens swipe deck (Energy · Load · Recovery · Boundaries); grow Rituals into a 4-lens deck (Anchors · Reset · Focus · Rhythm); add \"The load\" board (invisible labour + life-admin — the differentiator); plus intentions \"this season\", energy-type task tags, and a season-of-life mode. Includes a rides-existing-vs-needs-a-small-add data table + a fold-in order. React before we build it into /PlannerNewDemo." },
-  { kind: "doc", key: "Page Brand Audit", group: CAT.CURRENT, status: "new", accent: "sage",
+  { kind: "doc", key: "Page Brand Audit", group: CAT.CURRENT, sub: "Cross-app plans & decisions", status: "new", accent: "sage",
     title: "Per-Page Brand Audit & Fix Plan (v4)", desc: "Every page audited vs the full bar (the 64-flower library · the quick-action popup · the living-ecosystem layer) + the in-flight features. Foundation offenders ranked + a per-page uplift matrix; Planner/Jess detail; Ritual Builder demo. For approval." },
-  { kind: "doc", key: "Intentions & Goals", group: CAT.CURRENT, status: "new", accent: "crimson",
+  { kind: "doc", key: "Intentions & Goals", group: CAT.CURRENT, sub: "Cross-app plans & decisions", status: "new", accent: "crimson",
     title: "Intentions, the Line of the Day & Goals", desc: "Daily intentions, a user-specific soulful 'line of the day', and whole-life goals — baked into Today/Planner/Garden/Profile with NO new nav tab, on the living-ecosystem grammar. Live flora growth sketches; cited goal-science. For your reaction." },
-  { kind: "doc", key: "Connect, Days & Missions", group: CAT.CURRENT, status: "new", accent: "sage",
+  { kind: "doc", key: "Connect, Days & Missions", group: CAT.CURRENT, sub: "Cross-app plans & decisions", status: "new", accent: "sage",
     title: "No Garden Grows Alone", desc: "Connecting women (safe Tier 0→2 ladder, no open matchmaking), days-off activities found FOR her, and no-guilt tiny missions that grow the garden — baked into Community/Today/Lifestyle/Garden/Planner with NO new nav tab. Cited research + the UK Online-Safety/ICO legal flags and the dials for you." },
-  { kind: "doc", key: "Bottom-Nav Plan", group: CAT.CURRENT, status: "new", accent: "gold",
+  { kind: "doc", key: "Bottom-Nav Plan", group: CAT.CURRENT, sub: "Cross-app plans & decisions", status: "new", accent: "gold",
     title: "Bottom-Nav Plan", desc: "Floating cream capsule + shrink-on-scroll, reject horizontal-scroll nav. Research, honest drawbacks and a phased plan. Awaiting your approval." },
   { kind: "doc", key: "Today Mega-Plan", group: CAT.SPECS, accent: "gold",
     title: "Today — Mega-Plan", desc: "The full plan for the Today home surface." },
@@ -416,11 +435,17 @@ function demoCatalogEntries() {
 // Sub-section order within the Archive group (keeps the old demos organised when expanded).
 const ARCHIVE_SUB_ORDER = [
   "Superseded — page now live-elite",
+  "Earlier plans (extended by +2)",
   "Page-redesign demos",
   "Card-system demos (pending rebuild)",
   "Today (home) directions",
   "Journal", "Community", "Nutrition",
   "Brand",
+];
+// Current sub-section order (keeps Current scannable — page plans together, then cross-app).
+const CURRENT_SUB_ORDER = [
+  "Page level-up plans",
+  "Cross-app plans & decisions",
 ];
 
 const accentColor = (a) => ({ gold: T.gold, sage: T.sage, blush: T.blush, crimson: T.crimson, espresso: T.espresso }[a] || T.gold);
@@ -983,6 +1008,12 @@ function FoundersInner({ user }) {
       {tab === "Nutrition +2" && <BrandDocFrame html={nutritionLevelupHtml} title="FemWell — Nutrition Level Up (+2)" />}
       {tab === "Lifestyle +2" && <BrandDocFrame html={lifestyleLevelupHtml} title="FemWell — Lifestyle Level Up (+2)" />}
       {tab === "Health Plan" && <BrandDocFrame html={healthPlanHtml} title="FemWell — Health Plan (letters in sliding cards + the hub)" />}
+      {tab === "Community +2" && <BrandDocFrame html={communityPlanHtml} title="FemWell — Community Level Up (+2)" />}
+      {tab === "Pulse +2" && <BrandDocFrame html={pulsePlanHtml} title="FemWell — Pulse Level Up (+2)" />}
+      {tab === "Doctor Export +2" && <BrandDocFrame html={doctorExportPlanHtml} title="FemWell — Doctor Export Level Up (+2)" />}
+      {tab === "Programs +2" && <BrandDocFrame html={programsPlanHtml} title="FemWell — Programs Level Up (+2)" />}
+      {tab === "Garden +2" && <BrandDocFrame html={gardenPlanHtml} title="FemWell — Garden Level Up (+2)" />}
+      {tab === "Jess +2" && <BrandDocFrame html={jessPlanHtml} title="FemWell — Jess Level Up (+2)" />}
       {tab === "Intentions & Goals" && <BrandDocFrame html={intentionsGoalsHtml} title="FemWell — Intentions, Line of the Day & Goals" />}
       {tab === "Connect, Days & Missions" && <BrandDocFrame html={connectDaysMissionsHtml} title="FemWell — No Garden Grows Alone (Connection, Days Off & Tiny Missions)" />}
       {tab === "Ideas"     && <IdeasTab user={user} />}
@@ -1102,11 +1133,13 @@ function FoundersInner({ user }) {
             {groups.map((g) => {
               const collapsible = COLLAPSED_BY_DEFAULT.has(g.name) && !query;
               const isOpen = !collapsible || !collapsed.has(g.name);
-              // Archive sub-groups by area (ordered), with a "More" bucket for
-              // any entry without a listed sub so nothing is dropped.
+              // Archive AND Current sub-group by their ordered sub-list, with a "More"
+              // bucket for any entry without a listed sub so nothing is dropped.
+              const subOrder = g.name === CAT.ARCHIVE ? ARCHIVE_SUB_ORDER
+                : g.name === CAT.CURRENT ? CURRENT_SUB_ORDER : null;
               const subSections = (() => {
-                if (g.name !== CAT.ARCHIVE) return null;
-                const ordered = ARCHIVE_SUB_ORDER
+                if (!subOrder || !g.items.some((e) => e.sub)) return null;
+                const ordered = subOrder
                   .map((sub) => ({ sub, items: g.items.filter((e) => e.sub === sub) }))
                   .filter((s) => s.items.length);
                 const placed = new Set(ordered.flatMap((s) => s.items));
