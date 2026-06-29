@@ -77,6 +77,7 @@ import VideoManager from './pages/VideoManager';
 import Assistant from './pages/Assistant';
 import SkinHair from './pages/SkinHair';
 import Pulse from './pages/Pulse';
+import PulseL2Demo from './pages/PulseL2Demo';
 // ELITE (2026-06-28): /Pulse renders the elevated PulseEliteShell. ONE-LINE REVERT:
 // map "Pulse" back to Pulse below. Old Pulse stays reachable at /PulseHub.
 import PulseEliteShell from './components/pulse-elite/PulseEliteShell';
@@ -298,6 +299,7 @@ export const PAGES = {
     "JessElite": JessEliteShell,
     "SkinHair": SkinHair,
     "Pulse": PulseEliteShell,
+    "PulseL2Demo": PulseL2Demo,
     "PulseElite": PulseEliteShell,
     "PulseHub": Pulse,
     "WeeklyInsights": WeeklyInsights,
