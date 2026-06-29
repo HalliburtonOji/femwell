@@ -76,3 +76,4 @@ Wiring per doc (3 edits each): `import nutritionLevelupHtml from "@/components/f
 |---|---|---|---|
 | /PulseL2Demo | "Pulse +2" | plum | built · HTTP 200 |
 | /DoctorExportL2Demo | "Doctor Export +2" | crimson | built · HTTP 200 — condition templates (NICE-mapped) · validated PROM (Greene/PBAC) · most-bothersome + Ask-3/BRAN · red-flag→NHS 2-week-wait · freq×severity timeline · plain↔clinical toggle · two-tier export · post-appointment loop · secure-share flagged not-recommended |
+| /ProgramsL2Demo | "Programs +2" | sage | built · HTTP 200 — light Jess guide (day-1/wobble/graduation) · catch-up & rest no-guilt · programme→habit graduation · pre/post PROMs (ISI/GAD-7) · start-together cohorts + anonymous progress wall · whole-life journeys (money/dating/friendship/style/creative) · adaptive pacing · gated: push delivery + human coaching (needs sign-off) |
