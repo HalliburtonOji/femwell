@@ -19,7 +19,10 @@ import { FwFloraHero } from "@/components/brand/PageTop";
 import { SummaryCard } from "@/components/brand/Card";
 import { ClipboardSlider, Clipboard } from "@/components/brand/ClipboardSlider";
 import { cwOf, floraKeyframes, Bouquet, Pollinator } from "@/components/brand/flora";
-import { OXBLOOD, subCard, focusPill, Panel, StackedCard, BoardBody, TopChrome, JumpSheet, SliderArrows } from "@/components/brand/SliderKit";
+import { OXBLOOD, subCard, focusPill, Panel, StackedCard, BoardBody, SliderArrows } from "@/components/brand/SliderKit";
+// THE FULL CURRENT LIVE PAGE — the real Health letter reader (Story dashboard, all 7 letters with real
+// data + Jess observations, expandable sections, Ask-Jess, Save-for-GP). Nothing stripped.
+import Health from "@/pages/Health";
 
 const ELITE_MOTION = `
 .fw-elite-in{animation:fwEliteIn .5s cubic-bezier(.4,0,.2,1) both}
@@ -73,35 +76,49 @@ const SCREENING = [
 
 function L2Badge() { const c = cwOf("plum").petal; return <span style={{ fontFamily: UI, fontSize: 9.5, fontWeight: 800, letterSpacing: ".06em", textTransform: "uppercase", color: c, border: `1px solid ${c}`, borderRadius: 999, padding: "2px 7px" }}>New</span>; }
 
+function L2Divider({ page, tint }) {
+  const c = tint || cwOf("crimson").petal;
+  return (
+    <div style={{ maxWidth: 460, margin: "10px auto 0", padding: "0 18px" }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 12, margin: "8px 0 4px" }}>
+        <span style={{ flex: 1, height: 1, background: `linear-gradient(90deg, transparent, ${c}, transparent)`, opacity: 0.6 }} />
+        <span style={{ fontFamily: UI, fontSize: 11, fontWeight: 800, letterSpacing: ".14em", textTransform: "uppercase", color: c, whiteSpace: "nowrap" }}>✦ {page} · the letters, reimagined ✦</span>
+        <span style={{ flex: 1, height: 1, background: `linear-gradient(90deg, transparent, ${c}, transparent)`, opacity: 0.6 }} />
+      </div>
+      <p style={{ textAlign: "center", fontFamily: UI, fontSize: 11.5, color: T.muted, margin: "0 0 4px", lineHeight: 1.5 }}>Everything above is the <b>current live Health page</b> (nothing removed). Below is the <b>proposed redesign</b> — the same beloved letters, in the elite sliding-card language, plus the hub growth.</p>
+    </div>
+  );
+}
+
 export default function HealthLettersDemo() {
   useEditorialFonts();
-  const [jumpOpen, setJumpOpen] = useState(false);
   const [gpItems, setGpItems] = useState(["Heavier bleeding the last 2 cycles", "Sleep waking 3am pre-period"]);
   const ref = useMemo(() => ({ current: null }), []);
   const gold = T.gold, sage = cwOf("sage").petal, crim = T.crimson, plum = cwOf("plum").petal;
 
-  const boards = useMemo(() => [
-    ...LETTERS.map((l) => ({ t: l.title, sub: "A letter to you" })),
-    { t: "Deeper rooms", sub: "Heart · endo · PCOS · fibroids" },
-    { t: "Safe by design", sub: "Screening · red-flags · the loop" },
-  ], []);
-
   function jumpTo(i) {
-    const wrap = ref.current; const track = wrap?.querySelector(".fw-clipboard-track"); if (!track) { setJumpOpen(false); return; }
+    const wrap = ref.current; const track = wrap?.querySelector(".fw-clipboard-track"); if (!track) return;
     const cards = [...track.children].filter((c) => c.offsetWidth > 40); const card = cards[i];
     if (card) track.scrollLeft = card.offsetLeft - track.offsetLeft;
-    wrap?.scrollIntoView({ behavior: "smooth", block: "start" }); setJumpOpen(false);
+    wrap?.scrollIntoView({ behavior: "smooth", block: "start" });
   }
   const askJess = (prompt) => { try { window.dispatchEvent(new CustomEvent("fw_open_assistant", { detail: { initialPrompt: prompt } })); } catch (_) { /* */ } };
   const addGp = (text) => setGpItems((p) => p.includes(text) ? p : [...p, text]);
 
   return (
-    <div style={{ ...PAPER_BG, minHeight: "100vh", fontFamily: SERIF, color: T.ink, overflowX: "clip", paddingBottom: "calc(110px + env(safe-area-inset-bottom))", position: "relative" }}>
-      <InkFilter />
-      <style>{floraKeyframes}{ELITE_MOTION}</style>
-      <TopChrome onJump={() => setJumpOpen(true)} />
+    <div style={{ position: "relative" }}>
+      <div style={{ position: "fixed", bottom: "calc(80px + env(safe-area-inset-bottom))", left: 12, zIndex: 50, fontFamily: UI, fontSize: 10.5, fontWeight: 800, letterSpacing: ".06em", textTransform: "uppercase", color: "#fff", background: gold, borderRadius: 999, padding: "5px 11px", boxShadow: "0 2px 10px rgba(58,44,26,.3)" }}>Health letters · demo</div>
 
-      <div style={{ maxWidth: 460, margin: "0 auto", padding: "16px 18px 0", position: "relative" }} className="fw-elite-in">
+      {/* ── THE FULL CURRENT LIVE PAGE — the real Health letter reader, nothing stripped ── */}
+      <Health />
+
+      {/* ── THE PROPOSED REDESIGN: letters in sliding cards + hub growth ── */}
+      <L2Divider page="Health" tint={crim} />
+      <div style={{ ...PAPER_BG, fontFamily: SERIF, color: T.ink, overflowX: "clip", paddingBottom: "calc(110px + env(safe-area-inset-bottom))", position: "relative" }}>
+        <InkFilter />
+        <style>{floraKeyframes}{ELITE_MOTION}</style>
+
+      <div style={{ maxWidth: 460, margin: "0 auto", padding: "8px 18px 0", position: "relative" }} className="fw-elite-in">
         <div style={{ display: "flex", justifyContent: "center", marginBottom: 8 }}>
           <span style={{ fontFamily: UI, fontSize: 12, fontWeight: 700, letterSpacing: ".1em", textTransform: "uppercase", color: gold, border: `1px solid ${gold}`, borderRadius: 999, padding: "4px 12px" }}>Health · letters in sliding cards · demo · for approval</span>
         </div>
@@ -249,8 +266,7 @@ export default function HealthLettersDemo() {
         <p style={{ textAlign: "center", fontFamily: SERIF, fontStyle: "italic", fontSize: 15, color: T.muted, margin: "6px auto 0", maxWidth: 320, lineHeight: 1.55 }}>The letters you love, in the card language the rest of the app already speaks. A second opinion, in your pocket.</p>
         <div style={{ marginTop: 30 }}><EditorialFooter /></div>
       </div>
-
-      {jumpOpen && <JumpSheet boards={boards} onClose={() => setJumpOpen(false)} onJump={jumpTo} />}
+      </div>
     </div>
   );
 }
