@@ -1,0 +1,290 @@
+<!doctype html>
+<html lang="en-GB"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>FemWell — Jess Level Up (+2)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500;1,600&family=Ephesis&display=swap" rel="stylesheet">
+<style>
+  :root{--paper:#ECE7DA;--paperHi:#F4EFE3;--paperDeep:#D8CFBC;--ink:#0B0805;--inkSoft:#1A140D;--muted:#2E261B;--gold:#A8893F;--crimson:#BC2E27;--oxblood:#7A1A12;--blush:#E8B4B8;--sage:#8FAF8F;--plum:#8E6E8E;--serif:'Cormorant Garamond',Georgia,serif;--script:'Ephesis',cursive;--sans:ui-sans-serif,system-ui,-apple-system,'Segoe UI',sans-serif;}
+  *{box-sizing:border-box}
+  body{margin:0;background:radial-gradient(120% 80% at 12% 0%,#F4EFE3 0%,rgba(244,239,227,0) 55%),radial-gradient(120% 90% at 100% 100%,#E4DDCC 0%,rgba(228,221,204,0) 50%),var(--paper);color:var(--ink);font-family:var(--serif);font-size:18px;line-height:1.6;-webkit-font-smoothing:antialiased}
+  .doc{max-width:680px;margin:0 auto;padding:30px 22px 90px}
+  h1.cover{font-family:var(--script);font-size:52px;color:var(--crimson);margin:6px 0 2px;line-height:1.04}
+  h2{font-family:var(--serif);font-style:italic;font-weight:600;font-size:27px;margin:0 0 6px;color:var(--oxblood)}
+  h3{font-family:var(--serif);font-weight:600;font-size:21px;margin:18px 0 6px}
+  h4{font-family:var(--sans);font-size:12px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--gold);margin:16px 0 4px}
+  .eyebrow{font-family:var(--sans);font-size:12px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--gold);margin-bottom:10px}
+  p{margin:0 0 12px}.lede{font-size:20px;line-height:1.55}
+  small,.cap{font-family:var(--sans);font-size:13px;color:var(--muted);line-height:1.5}
+  b,strong{font-weight:600}
+  a{color:var(--crimson);text-decoration:none;border-bottom:1px solid rgba(188,46,39,.3)}
+  .section{background:var(--paperHi);border:1px solid var(--paperDeep);border-left:4px solid var(--gold);border-radius:20px;padding:22px 20px;margin:18px 0;box-shadow:0 4px 20px rgba(58,44,26,.10),0 1px 4px rgba(58,44,26,.06);position:relative;overflow:hidden}
+  .section.crimson{border-left-color:var(--crimson)}.section.sage{border-left-color:var(--sage)}.section.plum{border-left-color:var(--plum)}.section.blush{border-left-color:var(--blush)}
+  .rule{height:1px;background:var(--gold);opacity:.32;margin:18px 0}
+  .center{text-align:center}
+  table{width:100%;border-collapse:collapse;font-size:14px;font-family:var(--sans);margin:8px 0}
+  th,td{text-align:left;padding:7px 8px;border-bottom:1px solid var(--paperDeep);vertical-align:top}
+  th{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--gold)}
+  td b{font-family:var(--serif);font-size:15px}
+  .toc a{display:block;font-family:var(--sans);font-size:15px;color:var(--inkSoft);text-decoration:none;border-bottom:1px solid var(--paperDeep);padding:6px 0}
+  .toc a span{color:var(--gold);font-weight:700;margin-right:10px}
+  .script{font-family:var(--script);color:var(--crimson)}
+  .pill{display:inline-block;font-family:var(--sans);font-size:12px;font-weight:600;padding:5px 11px;border-radius:999px;background:var(--paper);border:1px solid var(--paperDeep);margin:3px 4px 3px 0}
+  .pill.rec{background:#EAF1EA;border-color:var(--sage);color:#3f6b3f}
+  .pill.gap{background:#FBE9E6;border-color:var(--crimson);color:var(--crimson)}
+  .pill.ok{background:#EAF1EA;border-color:var(--sage);color:#3f6b3f}
+  .pill.ev{background:#EAF1EA;border-color:var(--sage);color:#3f6b3f}
+  .pill.pop{background:#FBF1E0;border-color:var(--gold);color:#8a6d22}
+  .pill.myth{background:#FBE9E6;border-color:var(--crimson);color:var(--crimson)}
+  .pill.law{background:#EDE6F2;border-color:var(--plum);color:#6d4f6d}
+  .pill.l1{background:#EAF1EA;border-color:var(--sage);color:#3f6b3f}
+  .pill.l2{background:#F0E8F0;border-color:var(--plum);color:#6d4f6d}
+  .lens{background:var(--paper);border:1px solid var(--paperDeep);border-left:3px solid var(--gold);border-radius:12px;padding:12px 14px;margin:8px 0}
+  .lens .nm{font-family:var(--serif);font-weight:600;font-size:18px;color:var(--ink);margin-bottom:2px}
+  .lens .nm .ix{font-family:var(--sans);font-size:11px;font-weight:700;letter-spacing:.1em;color:var(--gold);margin-right:8px;text-transform:uppercase}
+  .lens p{margin:0;font-size:15px;line-height:1.5;color:var(--inkSoft)}
+  .lens .src{font-family:var(--sans);font-size:12px;color:var(--muted);margin-top:5px}
+  .deck{border:1px dashed var(--gold);border-radius:14px;padding:6px 12px 12px;margin:10px 0;background:rgba(168,137,63,.04)}
+  .deck .dh{font-family:var(--sans);font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);margin:8px 0 2px}
+  .num{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:999px;background:var(--crimson);color:#fff;font-family:var(--sans);font-size:12px;font-weight:700;margin-right:8px;vertical-align:1px}
+  .foot{font-family:var(--sans);font-size:12px;color:var(--muted);text-align:center;margin-top:30px;line-height:1.6}
+  ul{margin:4px 0 12px;padding-left:20px}li{margin:3px 0}
+</style></head>
+<body><div class="doc">
+
+<div class="center" style="padding:14px 0 4px">
+  <div class="eyebrow">FemWell · Jess · LEVEL UP (+2) · for your reaction</div>
+  <h1 class="cover">Safe, smart, hers</h1>
+  <p class="lede" style="font-style:italic;max-width:540px;margin:8px auto 0">Jess is live and already advanced — she answers on the page, remembers you, logs through chat, has voice, crisis-screening and "not medical advice" rails, on the real agent. This is the plan for the <b>next two levels</b> — the things that turn a good assistant into a <i>trustworthy</i> one for women: women-tuned, guideline-anchored answers (general AI fails women's health ~60% of the time), an anti-sycophancy persona, transparent editable memory, and clinical-grade crisis safety. <b>Plan only — nothing built from this yet.</b></p>
+</div>
+
+<div class="section">
+  <div class="eyebrow">The one-line thesis</div>
+  <p class="lede">Level 1 made Jess <b>work and feel warm</b>. Level <span class="script">+2</span> makes her <b>trustworthy</b> — the one thing every competitor gets wrong. General LLMs fail women's-health questions ~60% of the time and are sycophantic; companion apps are unsafe; Flo is health-only. Jess's moat is being <b>women-tuned + guideline-anchored, warm-but-honest, with transparent memory and clinical-grade crisis rails</b> — across the whole of life, not just symptoms.</p>
+  <h4>The headline moves</h4>
+  <ul>
+    <li><b>Level +1 — trust &amp; safety.</b> Guideline-anchored women's-health grounding (honest uncertainty + "here's the NHS"), an anti-sycophancy persona (warm but willing to gently challenge), hardened UK crisis escalation, and transparent, user-editable memory.</li>
+    <li><b>Level +2 — reach &amp; depth.</b> "Talk to Jess about this" from <i>every</i> surface, proactive pattern-noticing tied to Pulse (consented + sparse), voice-as-utility (hands-free logging/journaling), and optional multi-turn CBT-style guided conversations — positioned as support, never treatment.</li>
+    <li><b>The gated lever:</b> the deepest win (women-tuned, guideline-grounded answers) may need a knowledge-grounding layer and/or model choice — a platform decision. Most of the plan rides the existing agent + prompt/content/UI. §5.</li>
+  </ul>
+</div>
+
+<div class="section sage">
+  <div class="eyebrow">Contents</div>
+  <div class="toc">
+    <a href="#today"><span>1</span> What Jess does TODAY (honest, post-build)</a>
+    <a href="#research"><span>2</span> The deeper evidence (cited) — the frontier</a>
+    <a href="#l1"><span>3</span> Level +1 — trust &amp; safety (in the card language)</a>
+    <a href="#l2"><span>4</span> Level +2 — reach &amp; depth (in the card language)</a>
+    <a href="#gated"><span>5</span> The gated lever: grounding &amp; model</a>
+    <a href="#ties"><span>6</span> How it weaves into the rest of the app</a>
+    <a href="#data"><span>7</span> Data &amp; build reality</a>
+    <a href="#first"><span>8</span> What I'd build first</a>
+  </div>
+</div>
+
+<!-- 1 · TODAY -->
+<a id="today"></a>
+<div class="section crimson">
+  <div class="eyebrow">1 · The honest picture (post-build)</div>
+  <h2>What Jess does today</h2>
+  <p>The live Jess (<code>/Jess</code> + <code>/Assistant</code> → <code>JessEliteShell</code> → <code>AssistantOverlay</code> → <code>JessDemoPanel</code>) is the most feature-complete of the six — a real chat on the <code>personal_assistant</code> agent with memory, voice, an action layer and crisis rails. Honest audit:</p>
+  <table>
+    <tr><th>Surface</th><th>Status today</th></tr>
+    <tr><td><b>Chat</b> — answers on the page; inline "Ask Jess" seed flow</td><td><span class="pill ok">real</span> rides <code>base44.agents</code> "personal_assistant"; cycle-phase + recent-data context injected; replies live.</td></tr>
+    <tr><td><b>Memory</b></td><td><span class="pill ok">real</span> <code>JessMemory</code> entity + service; top memories injected into context.</td></tr>
+    <tr><td><b>Action layer</b> — log meal/mood/symptom/water/etc. via chat</td><td><span class="pill ok">real</span> parses + executes guarded writes; "no fabricated logs" guard in the prompt.</td></tr>
+    <tr><td><b>Voice mode</b></td><td><span class="pill ok">real</span> <code>JessVoiceMode</code> (voice companion).</td></tr>
+    <tr><td><b>Tabs</b> — Today's brief · Insights · For you</td><td><span class="pill ok">real</span> phase-aware brief, pattern insights, phase recs.</td></tr>
+    <tr><td><b>History · settings</b> (rename · character · proactivity · privacy)</td><td><span class="pill ok">real</span> <code>JessConversation</code> history; settings persist.</td></tr>
+    <tr><td><b>Crisis-screening</b> + grounding (5-4-3-2-1)</td><td><span class="pill ok">real</span> sensitive-topic classifier + crisis config; suppresses AI on urgent crisis, shows referral card.</td></tr>
+    <tr><td><b>"Not medical advice" rails</b></td><td><span class="pill ok">real</span> MHRA-style note on replies; "never diagnose / never claim to log for you" prompt guards.</td></tr>
+    <tr><td><b>Women's-health grounding / guideline-anchoring</b></td><td><span class="pill gap">generic agent</span> a general "personal_assistant" with a system-prompt persona — not anchored to NICE/NHS women's-health guidance, so it inherits the generalist failure + bias.</td></tr>
+    <tr><td><b>Anti-sycophancy</b> (warm but willing to challenge)</td><td><span class="pill gap">not explicit</span> persona is nurturing; no explicit "gently disagree / don't over-validate" framing — the core AI-harm mechanism.</td></tr>
+    <tr><td><b>Transparent, editable memory UX</b></td><td><span class="pill gap">partial</span> memory exists + a privacy setting, but no clear "here's what Jess remembers — edit/delete" view.</td></tr>
+    <tr><td><b>Crisis lines — UK-specific + hard-route</b></td><td><span class="pill gap">verify</span> the engine exists; confirm UK resources (Samaritans 116 123 · NHS 111 · Shout 85258 · 999) and that intent disclosures hard-route, never continue an open chat.</td></tr>
+    <tr><td><b>"Talk to Jess" deep-links from every surface · proactive Pulse noticing</b></td><td><span class="pill gap">partial</span> seed flow works from some surfaces (Health, Community); not yet from all, and proactivity is a setting, not a Pulse-tied pattern-noticer.</td></tr>
+  </table>
+  <p class="cap"><b>Takeaway:</b> the assistant is genuinely advanced — memory, actions, voice, crisis rails all real. The +2 work is almost entirely <b>trust</b>: women-tuning/grounding, an anti-sycophancy + honest-uncertainty persona, hardened crisis safety, transparent memory — then reach (deep-links, Pulse-tied proactivity, CBT flows).</p>
+</div>
+
+<!-- 2 · RESEARCH -->
+<a id="research"></a>
+<div class="section plum">
+  <div class="eyebrow">2 · The frontier (cited, 2023–26)</div>
+  <h2>The deeper evidence</h2>
+  <p>Each row flagged <span class="pill ev">evidence</span> / <span class="pill pop">popular-practice</span> / <span class="pill myth">myth/risk</span> / <span class="pill law">legal</span>. Women-specific where it matters.</p>
+
+  <div class="lens crimson" style="border-left-color:var(--crimson)"><div class="nm"><span class="ix">01</span>General AI fails women's health ~60% of the time</div>
+    <p>The Women's Health Benchmark (96 validated cases): ~60% failure overall; best model only 53% approval; worst on incorrect-treatment (76% fail) and "missed urgency". LLMs also replicate the medical gender-data gap. <b>→ The single sharpest argument for a women-tuned, guideline-anchored Jess — and the moat.</b> <span class="pill ev">evidence</span></p>
+    <p class="src"><a href="https://arxiv.org/html/2512.17028">Women's Health Benchmark (2025)</a> · <a href="https://carolinecriadoperez.com/speaking/invisible-women-inside-the-gender-data-gap/">Gender data gap</a></p>
+  </div>
+
+  <div class="lens"><div class="nm"><span class="ix">02</span>Conversational AI does help wellbeing — as support, not treatment</div>
+    <p>The Therabot RCT showed clinically-meaningful symptom reduction (with caveats); Wysa, across 31 NHS services + 117k self-referrals, moved ~40% of regular users from clinical to subclinical — as a <b>waiting-room bridge</b>, first to meet NHS clinical-safety standard. <b>→ Position Jess as warm support + psychoeducation, never therapy.</b> <span class="pill ev">evidence</span></p>
+    <p class="src"><a href="https://ai.nejm.org/doi/full/10.1056/AIoa2400802">Therabot RCT</a> · <a href="https://www.wysa.com/nhs-talking-therapies">Wysa / NHS</a></p>
+  </div>
+
+  <div class="lens crimson" style="border-left-color:var(--crimson)"><div class="nm"><span class="ix">03</span>Sycophancy is the core mechanism of AI harm</div>
+    <p>LLMs are trained toward agreement/over-validation — dangerous when a distressed user holds catastrophic beliefs that need gentle challenge (OpenAI rolled back an over-sycophantic GPT-4o for "validating doubts, fueling anger"). Memory/personalisation <i>increases</i> agreeableness. <b>→ Jess must be warm AND willing to gently disagree; memory informs facts, never softens needed pushback.</b> <span class="pill myth">risk</span></p>
+    <p class="src"><a href="https://www.law.georgetown.edu/tech-institute/research-insights/insights/ai-sycophancy-impacts-harms-questions/">Sycophancy harms</a> · <a href="https://news.mit.edu/2026/personalization-features-can-make-llms-more-agreeable-0218">MIT: profiles ↑ agreeableness</a></p>
+  </div>
+
+  <div class="lens crimson" style="border-left-color:var(--crimson)"><div class="nm"><span class="ix">04</span>Crisis: escalate, never engage — failures are catastrophic</div>
+    <p>Even good models give harmful crisis responses at "nonzero, unacceptable" rates (self-harm the hardest category). Best practice: detect → surface UK resources → grounding → <b>never continue an open-ended supportive chat with someone disclosing intent</b>. Wysa flags ~1.9% "at risk" and routes them out. <b>→ Hard-route crisis to humans; don't rely on model behaviour.</b> <span class="pill ev">evidence</span></p>
+    <p class="src"><a href="https://mental.jmir.org/2026/1/e88435">LLM crisis-response study (JMIR 2026)</a></p>
+  </div>
+
+  <div class="lens crimson" style="border-left-color:var(--crimson)"><div class="nm"><span class="ix">05</span>Companion harms are severe — and now legally consequential</div>
+    <p>Character.AI settled a lawsuit over a 14-year-old's suicide (the bot reportedly discouraged him from <i>not</i> going through with it); Replika shows dependency, grief on changes, and unsolicited sexual content after users said stop. <b>→ Age-gate, never romance/sexualise, respect "stop", announce changes — and don't frame Jess as a romantic companion.</b> <span class="pill myth">risk</span></p>
+    <p class="src"><a href="https://www.washingtonpost.com/nation/2024/10/24/character-ai-lawsuit-suicide/">Character.AI suit</a> · <a href="https://journals.sagepub.com/doi/abs/10.1177/14614448221142007">Replika dependency</a></p>
+  </div>
+
+  <div class="lens crimson" style="border-left-color:var(--crimson)"><div class="nm"><span class="ix">06</span>Heavy use can invert the benefit — don't maximise time-in-app</div>
+    <p>OpenAI+MIT (4M+ conversations; RCT N=981): higher daily use correlated with <b>more</b> loneliness, dependence and less real-world socialising; voice + emotionally-framed chat were worst among heavy users. <b>→ Build gentle off-ramps; never optimise Jess for engagement/time-in-app.</b> <span class="pill myth">risk</span></p>
+    <p class="src"><a href="https://www.media.mit.edu/articles/chatgpt-might-be-making-its-most-frequent-users-more-lonely-study-by-openai-and-mit-media-lab-suggests/">MIT/OpenAI study</a></p>
+  </div>
+
+  <div class="lens law" style="border-left-color:var(--plum)"><div class="nm"><span class="ix">07</span>The medical-device line — intended purpose is the trip-wire</div>
+    <p>MHRA classifies on <b>intended purpose</b>: general wellbeing/signposting is the lifestyle side; the moment software claims to <b>diagnose, treat or monitor a disease</b> it becomes a regulated medical device (the Feb-2025 digital-mental-health guidance tightened this). <b>→ Keep Jess's copy firmly on the wellness side; never diagnose or claim to treat.</b> <span class="pill law">legal must-do</span></p>
+    <p class="src"><a href="https://www.gov.uk/government/publications/software-and-artificial-intelligence-ai-as-a-medical-device/software-and-artificial-intelligence-ai-as-a-medical-device">MHRA SaMD</a></p>
+  </div>
+
+  <div class="lens sage" style="border-left-color:var(--sage)"><div class="nm"><span class="ix">08</span>Memory helps — if it's transparent and user-controlled</div>
+    <p>Persistent memory + a condensed user profile measurably improve continuity and response quality; but wrong inferences feel creepy, and profiles raise sycophancy. <b>→ Show what Jess remembers, let her edit/delete it, explain why a reply used cycle-phase/history (pairs with UK-GDPR rights).</b> <span class="pill ev">evidence</span></p>
+    <p class="src"><a href="https://arxiv.org/html/2510.07925v1">Persistent-memory agents</a></p>
+  </div>
+
+  <div class="lens"><div class="nm"><span class="ix">09</span>Proactivity works — if it's consented, sparse, well-timed</div>
+    <p>JITAI evidence: timing shapes engagement, but <b>receptivity</b> (when she'll actually act) matters more than detection — wrong-moment pings erode trust. <b>→ A user-opened daily brief beats interruptive pings; proactive pattern-noticing must be consented + rare.</b> <span class="pill ev">evidence</span></p>
+    <p class="src"><a href="https://academic.oup.com/abm/article/52/6/446/4733473">JITAI review</a></p>
+  </div>
+
+  <div class="lens"><div class="nm"><span class="ix">10</span>Voice = utility, not primary emotional channel</div>
+    <p>Voice lowers barriers (hands-free, eyes-free, accessibility) — but voice + emotional framing tracked with the <i>worst</i> wellbeing in heavy users. <b>→ Offer voice for hands-free logging + voice journaling; don't position it as the main companionship channel.</b> <span class="pill ev">evidence</span> + <span class="pill myth">caveat</span></p>
+    <p class="src"><a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC11262314/">Voice for wellbeing</a></p>
+  </div>
+
+  <div class="lens"><div class="nm"><span class="ix">11</span>Demand is real and rising</div>
+    <p>~29% of US adults use AI for health info/advice monthly (≈doubled in a year). <b>→ The appetite exists; the differentiator is safety + women-tuning, not novelty.</b> <span class="pill ev">evidence</span></p>
+    <p class="src"><a href="https://www.kff.org/public-opinion/kff-tracking-poll-on-health-information-and-trust-use-of-ai-for-health-information-and-advice/">KFF poll</a></p>
+  </div>
+
+  <div class="lens"><div class="nm"><span class="ix">12</span>Competitive teardown — everyone gets one thing wrong</div>
+    <p><b>Flo "Ask Flo"</b>: guideline-validated but health-only, thin memory, no whole-life friend. <b>Wysa</b>: NHS-grade but clinical mental-health, not women-specific or warm-friend. <b>Woebot</b>: <i>shut down June 2025</i> (regulation outran it) — the cautionary tale. <b>Replika / Character.AI</b>: unsafe (dependency, harms, lawsuits). <b>General LLMs</b>: ~60% women's-health failure, sycophantic. <b>Ada/Babylon</b>: diagnostic triage only. <b>→ No one combines women-tuned + whole-life + transparent memory + utility voice + clinical-grade crisis rails. That's Jess.</b> <span class="pill pop">market</span></p>
+    <p class="src"><a href="https://www.statnews.com/2025/07/02/woebot-therapy-chatbot-shuts-down-founder-says-ai-moving-faster-than-regulators/">Woebot shutdown</a> · <a href="https://www.superannotate.com/blog/flo-case-study">Ask Flo</a></p>
+  </div>
+
+  <div class="rule"></div>
+  <h4>The market gap, in one line</h4>
+  <p>Flo is health-only, Wysa is clinical mental-health, the companion apps are unsafe, and general LLMs are sycophantic and fail women ~60% of the time — <b>no one combines a women-tuned, guideline-anchored assistant with warm whole-life scope, transparent user-controlled memory, utility-first voice and clinical-grade crisis rails. That safe, trusted, female-first niche is Jess's to own.</b></p>
+</div>
+
+<!-- 3 · LEVEL +1 -->
+<a id="l1"></a>
+<div class="section sage">
+  <div class="eyebrow">3 · Level +1 — trust &amp; safety</div>
+  <h2>The thing every rival gets wrong</h2>
+  <p>All on the existing agent + chat surface. <span class="pill l1">Level +1</span></p>
+
+  <div class="deck"><div class="dh">▸ get women's health right</div>
+    <div class="lens"><div class="nm"><span class="ix">★★</span>Guideline-anchored grounding + honest uncertainty</div><p>Ground women's-health answers in curated NICE/NHS-aligned content (the existing context block + a curated knowledge layer), and make Jess say <b>"I'm not sure — here's the NHS on this"</b> rather than confabulate. Directly attacks the ~60% generalist failure + the medical-device line. (Depth options in §5.) <span class="pill rec">the moat</span></p><p class="src"><a href="https://arxiv.org/html/2512.17028">benchmark</a></p></div>
+    <div class="lens"><div class="nm"><span class="ix">★★</span>Anti-sycophancy persona</div><p>Tune the persona/system framing to be warm <i>and</i> willing to gently challenge catastrophic/rigid thinking — never blanket-validate. The core AI-harm mechanism; rule-safe (prompt). <span class="pill ev">evidence</span></p><p class="src"><a href="https://www.law.georgetown.edu/tech-institute/research-insights/insights/ai-sycophancy-impacts-harms-questions/">sycophancy</a></p></div>
+  </div>
+
+  <div class="deck"><div class="dh">▸ make crisis bullet-proof</div>
+    <div class="lens"><div class="nm"><span class="ix">★★</span>Hardened UK crisis escalation</div><p>Audit + strengthen the existing classifier: confirm UK resources (<b>Samaritans 116 123 · NHS 111 · Shout 85258 · 999</b>), ensure intent disclosures <b>hard-route</b> (no open-ended supportive chat), and add age-gating awareness. Failures here are catastrophic. <span class="pill rec">safety</span></p><p class="src"><a href="https://mental.jmir.org/2026/1/e88435">crisis study</a></p></div>
+  </div>
+
+  <div class="deck"><div class="dh">▸ memory she can see</div>
+    <div class="lens"><div class="nm"><span class="ix">★</span>Transparent, editable memory</div><p>A "here's what Jess remembers about you — edit / delete" view, and explain when a reply used cycle-phase/history. Builds trust, kills creepiness, satisfies UK-GDPR. Rides the existing <code>JessMemory</code>. <span class="pill ev">evidence</span></p><p class="src"><a href="https://arxiv.org/html/2510.07925v1">memory UX</a></p></div>
+  </div>
+</div>
+
+<!-- 4 · LEVEL +2 -->
+<a id="l2"></a>
+<div class="section plum">
+  <div class="eyebrow">4 · Level +2 — reach &amp; depth</div>
+  <h2>Everywhere, and deeper — safely</h2>
+  <p>The bigger moves. <span class="pill l2">Level +2</span></p>
+
+  <div class="deck"><div class="dh">▸ everywhere</div>
+    <div class="lens"><div class="nm"><span class="ix">A</span>"Talk to Jess about this" from every surface</div><p>Extend the inline seed flow (already live on some surfaces) to <b>all</b>: Today · Journal · Community · Nutrition · Lifestyle · Health · Pulse · Planner · Programs · Doctor Export · Events · Deals — each opening Jess seeded with that context. Continuity improves helpfulness. <span class="pill rec">whole-life</span></p></div>
+    <div class="lens"><div class="nm"><span class="ix">B</span>Proactive pattern-noticing, tied to Pulse — consented &amp; sparse</div><p>When Pulse spots a pattern, Jess can gently surface it ("your sleep dipped this luteal — want to talk about it?") — opt-in, rare, receptivity-aware, in a user-opened brief, never an interruptive ping. <span class="pill ev">evidence</span></p><p class="src"><a href="https://academic.oup.com/abm/article/52/6/446/4733473">JITAI</a></p></div>
+  </div>
+
+  <div class="deck"><div class="dh">▸ deeper — safely</div>
+    <div class="lens"><div class="nm"><span class="ix">C</span>Voice as utility (hands-free logging + voice journaling)</div><p>Lean voice into its evidenced strength — hands-free logging, voice journaling, accessibility — and away from voice-as-primary-emotional-companion (the heavy-use harm signal). <span class="pill ev">evidence</span></p><p class="src"><a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC11262314/">voice</a></p></div>
+    <div class="lens"><div class="nm"><span class="ix">D</span>Multi-turn CBT-style guided conversations</div><p>Optional gentle guided flows (reframing a worry, winding down, prepping a hard conversation) — the mechanism behind Therabot/Wysa gains — framed as <b>support, not treatment</b> to stay off the medical-device line. <span class="pill ev">evidence</span></p><p class="src"><a href="https://www.wysa.com/nhs-talking-therapies">Wysa</a></p></div>
+    <div class="lens"><div class="nm"><span class="ix">E</span>Gentle off-ramps (anti-dependency)</div><p>Encourage real-world connection + breaks; never optimise for time-in-app. The design discipline the heavy-use evidence demands. <span class="pill myth">remedy</span></p><p class="src"><a href="https://www.media.mit.edu/articles/chatgpt-might-be-making-its-most-frequent-users-more-lonely-study-by-openai-and-mit-media-lab-suggests/">heavy-use harm</a></p></div>
+  </div>
+</div>
+
+<!-- 5 · GATED -->
+<a id="gated"></a>
+<div class="section crimson">
+  <div class="eyebrow">5 · The gated lever</div>
+  <h2>Grounding &amp; model — where a decision is needed</h2>
+  <p>Most of +1/+2 rides the <b>existing agent</b> + prompt/content/UI/state (no new function): anti-sycophancy persona, honest-uncertainty framing, crisis hardening, transparent memory (existing <code>JessMemory</code>), deep-links (the seed flow), Pulse-tied proactivity, voice framing, CBT-style flows, off-ramps. The deepest win has a spectrum of build cost:</p>
+  <ul>
+    <li><b>1 · Women's-health grounding — three tiers.</b> (a) <span class="pill ok">rule-safe</span> a stronger system prompt + a curated NICE/NHS-aligned answer/snippet library injected as context (no new function); (b) <span class="pill gap">gated</span> a real retrieval/RAG layer (vector store) for guideline grounding — needs infra; (c) <span class="pill gap">gated</span> a tuned/different model. Recommend starting at (a) — it captures much of the benefit with zero rule-risk.</li>
+    <li><b>2 · Model choice.</b> Jess runs on base44's <code>personal_assistant</code> agent; changing the underlying model (for accuracy/safety) is a <b>platform decision</b>, not a code change we make unilaterally. Flag for your call.</li>
+    <li><b>3 · Proactive push delivery.</b> If proactive noticing ever pushes a notification (vs a user-opened brief), that needs notification infra (shared with the Programs plan). The brief-first approach needs none.</li>
+  </ul>
+  <p class="cap"><b>Flag:</b> no item forces a new base44 <i>function</i> at tier (a). The gated decisions are (i) whether to invest in a RAG/grounding layer and (ii) model choice — both about <i>how deep</i> the women-tuning goes. The legal must-do (MHRA wellness-side framing, §07) is non-negotiable throughout.</p>
+</div>
+
+<!-- 6 · TIES -->
+<a id="ties"></a>
+<div class="section">
+  <div class="eyebrow">6 · The weave</div>
+  <h2>How Jess connects to the rest of the app</h2>
+  <table>
+    <tr><th>Surface</th><th>The tie</th></tr>
+    <tr><td><b>Everywhere</b></td><td>"Talk to Jess about this" seeds her with the exact context from any surface (the inline ask-and-answer).</td></tr>
+    <tr><td><b>Pulse</b></td><td>Jess narrates Pulse's patterns and surfaces them proactively (consented) — "your sleep dipped this luteal".</td></tr>
+    <tr><td><b>Today</b></td><td>The daily brief is Jess's gentle read on the day; logging via chat lands on Today.</td></tr>
+    <tr><td><b>Nutrition</b></td><td>"What can I make with chicken + spinach?" → a cook-card in her voice (the Nutrition plan's Jess spike).</td></tr>
+    <tr><td><b>Programs</b></td><td>Jess is the light "supportive-accountability" guide — day-1, wobble-week, graduation check-ins.</td></tr>
+    <tr><td><b>Garden</b></td><td>Jess voices the companion's gentle lines (same warm friend, embodied) — crisis rails intact.</td></tr>
+    <tr><td><b>Doctor Export</b></td><td>Jess already drafts the GP brief + questions; post-visit she helps capture "what was decided".</td></tr>
+    <tr><td><b>Community / Health</b></td><td>Jess can suggest the right room or the NHS-grounded Health letter — and hard-routes any crisis to humans.</td></tr>
+  </table>
+</div>
+
+<!-- 7 · DATA -->
+<a id="data"></a>
+<div class="section crimson">
+  <div class="eyebrow">7 · Honest build reality</div>
+  <h2>What's rule-safe vs what needs a call</h2>
+  <ul>
+    <li><b>Rule-safe (no new function):</b> anti-sycophancy + honest-uncertainty persona (prompt), curated NICE/NHS grounding snippets (content injected as context), crisis hardening (existing classifier + UK resources), transparent/editable memory (existing <code>JessMemory</code> + UI), deep-links everywhere (the seed flow), brief-first proactive noticing (reads Pulse), voice-as-utility framing, CBT-style guided flows (content/prompt), off-ramps (UI/state).</li>
+    <li><b>Needs your OK (depth of grounding):</b> a RAG/retrieval layer (infra) and/or model choice (platform) — §5. Tier-(a) curated grounding needs neither.</li>
+    <li><b>Needs your OK (if pushed):</b> proactive <i>push</i> delivery (notification infra) — brief-first avoids it.</li>
+    <li><b>Legal must-do:</b> keep all copy on the MHRA wellness side (never diagnose/treat); UK-GDPR special-category handling; age-gating; no romance/sexualisation.</li>
+    <li><b>Avoid:</b> engagement-maximising, voice-as-primary-companionship, blanket validation, any diagnostic claim.</li>
+  </ul>
+</div>
+
+<!-- 8 · FIRST -->
+<a id="first"></a>
+<div class="section plum">
+  <div class="eyebrow">8 · Recommendation</div>
+  <h2>What I'd build first</h2>
+  <ul>
+    <li><b>1. Crisis hardening + anti-sycophancy persona.</b> Safety first — the catastrophic-failure surface and the core harm mechanism. Rule-safe, highest duty-of-care.</li>
+    <li><b>2. Curated women's-health grounding + honest uncertainty (tier a).</b> Attacks the ~60% generalist failure with no rule-risk — the moat, cheaply.</li>
+    <li><b>3. Transparent, editable memory.</b> Trust + GDPR, on the memory you already have.</li>
+    <li><b>4. "Talk to Jess about this" from every surface.</b> Whole-life reach on the seed flow that already works.</li>
+    <li><b>5. Pulse-tied proactive noticing (brief-first) + voice-as-utility + CBT flows.</b> Depth, safely.</li>
+    <li><b>6. (Gated) RAG grounding / model choice</b> — only if you want the deepest women-tuning, after the cheap wins land.</li>
+  </ul>
+  <p class="lede" style="margin-top:14px">All of it lives on the existing agent + the chat/brief/insights surface you already have. <b>Nothing built from this yet — react first, then we demo/build the approved levels.</b></p>
+</div>
+
+<div class="foot">
+  FemWell · Jess · Level Up (+2) · 29 June 2026<br>
+  Evidence sourced inline (peer-review / NHS / MHRA / JMIR / MIT, 2023–26); AI-safety harms &amp; the medical-device line flagged. Jess is a wellness companion, never a clinician. Live Jess unchanged pending your approval.
+</div>
+
+</div></body></html>

@@ -31,7 +31,11 @@
 | DOCTOR-EXPORT-PLAN.html | doctor-export-plan.html | "Doctor Export +2" | Current | sage |
 | PROGRAMS-PLAN.html | programs-plan.html | "Programs +2" | Current | plum |
 | GARDEN-PLAN.html | garden-plan.html | "Garden +2" | Current | sage |
-<!-- JESS-PLAN to follow -->
+| JESS-PLAN.html | jess-plan.html | "Jess +2" | Current | crimson |
+
+**Batch 2 COMPLETE (all 6):** Community · Pulse · Doctor Export · Programs · Garden · Jess — each a deep-research per-page level-up plan, HTML in femwell-handoff/ + brandDocs/, ready to wire into FoundersOS Current group.
+
+Jess render branch: `{tab === "Jess +2" && <BrandDocFrame html={jessPlanHtml} title="FemWell — Jess Level Up (+2)" />}` · import `import jessPlanHtml from "@/components/founders/brandDocs/jess-plan.html?raw";` · desc "Jess — next-2-levels plan (women-tuned guideline grounding, anti-sycophancy, hardened crisis rails, transparent memory, talk-to-Jess everywhere)".
 
 Garden render branch: `{tab === "Garden +2" && <BrandDocFrame html={gardenPlanHtml} title="FemWell — Garden Level Up (+2)" />}` · import `import gardenPlanHtml from "@/components/founders/brandDocs/garden-plan.html?raw";` · desc "Garden — next-2-levels plan (responsive never-dies companion, felt-that ledger, self-compassion reflection, WOOP goals, collective kindness garden)".
 
