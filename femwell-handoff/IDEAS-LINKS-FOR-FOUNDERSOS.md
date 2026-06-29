@@ -35,6 +35,17 @@
 
 **Batch 2 COMPLETE (all 6):** Community · Pulse · Doctor Export · Programs · Garden · Jess — each a deep-research per-page level-up plan, HTML in femwell-handoff/ + brandDocs/, ready to wire into FoundersOS Current group.
 
+---
+## 🟢 BATCH 2 — LEVEL-UP DEMOS (approved → demo-first; LIVE pages untouched) — wire these as `kind:"route"` in Current
+> Halli approved the plans → these are the buildable DEMOS applying each plan's +1/+2 features on the page's elite card language. Non-gated features are real/seeded; gated ones are clearly-labelled "needs sign-off" stubs. Reachable via IDEAS pill once wired.
+
+| Demo route | applies plan | catalog (kind:"route") | group |
+|---|---|---|---|
+| `/NutritionL2Demo` | nutrition-levelup.html | `{ kind:"route", key:"Nutrition +2 DEMO", href:"/NutritionL2Demo", group: CAT.CURRENT, status:"new", accent:"crimson", desc:"Nutrition +2 demo — composite real-meal accuracy, ED-safe numbers-off, cook-video log, condition watch-lists, GLP-1 guardian, share-to-table (photo→macros = labelled gated stub)" }` | Current |
+<!-- LifestyleL2Demo, HealthDemo2, CommunityL2Demo to follow -->
+
+Route demos only need the CATALOG `kind:"route"` entry (the `href` resolves to the live route after `npx base44 site deploy -y`) — no import / no render branch needed (unlike the doc entries above).
+
 Jess render branch: `{tab === "Jess +2" && <BrandDocFrame html={jessPlanHtml} title="FemWell — Jess Level Up (+2)" />}` · import `import jessPlanHtml from "@/components/founders/brandDocs/jess-plan.html?raw";` · desc "Jess — next-2-levels plan (women-tuned guideline grounding, anti-sycophancy, hardened crisis rails, transparent memory, talk-to-Jess everywhere)".
 
 Garden render branch: `{tab === "Garden +2" && <BrandDocFrame html={gardenPlanHtml} title="FemWell — Garden Level Up (+2)" />}` · import `import gardenPlanHtml from "@/components/founders/brandDocs/garden-plan.html?raw";` · desc "Garden — next-2-levels plan (responsive never-dies companion, felt-that ledger, self-compassion reflection, WOOP goals, collective kindness garden)".
