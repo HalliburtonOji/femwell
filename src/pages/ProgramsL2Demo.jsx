@@ -7,17 +7,16 @@
 // coaching. The Jess guide rides the existing agent (no new function). LIVE /ProgramsHub UNTOUCHED.
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, MessageCircle, RotateCcw, Trophy, ClipboardCheck, Users, Compass, Gauge,
+import { MessageCircle, RotateCcw, Trophy, ClipboardCheck, Users, Compass, Gauge,
   Bell, UserCheck, Lock, Sparkles, Sprout, Heart } from "lucide-react";
 import { createPageUrl } from "@/utils";
-import { T, SERIF, UI, PAPER_BG } from "@/components/journal/Editorial";
-import { FwFloraHero } from "@/components/brand/PageTop";
-import { SummaryCard } from "@/components/brand/Card";
+import { T, SERIF, UI } from "@/components/journal/Editorial";
 import { ClipboardSlider, Clipboard } from "@/components/brand/ClipboardSlider";
-import { cwOf, floraKeyframes, Bouquet, FlowerGlyph } from "@/components/brand/flora";
-import { OXBLOOD, lbl, subCard, focusPill, Panel, StackedCard, BoardBody, SliderArrows } from "@/components/brand/SliderKit";
+import { cwOf, Bouquet, FlowerGlyph } from "@/components/brand/flora";
+import { OXBLOOD, lbl, subCard, Panel, StackedCard, BoardBody } from "@/components/brand/SliderKit";
+import ProgramsEliteShell from "@/components/programs-elite/ProgramsEliteShell";
+import { L2Frame, L2Slider } from "@/components/demos/l2Frame";
 
-const ELITE_MOTION = `.fw-elite-in{animation:fwEliteIn .5s cubic-bezier(.215,.61,.355,1) both}@keyframes fwEliteIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}.fw-elite-press{transition:transform .12s ease}.fw-elite-press:active{transform:scale(.97)}@media (prefers-reduced-motion:reduce){.fw-elite-in,.fw-elite-press{animation:none!important;transition:none!important}}`;
 
 const GUIDE = [
   { when: "Day 1", icon: Sprout, msg: "“Welcome — we'll go gently, three small minutes at a time. I'll check in at the wobble, and again when you graduate.”" },
@@ -157,62 +156,37 @@ function GatedPanel({ crim }) {
 export default function ProgramsL2Demo() {
   const navigate = useNavigate();
   const gold = cwOf("gold").petal, sage = cwOf("sage").petal, crim = T.crimson, plum = cwOf("plum").petal;
-  const jumpTo = (i) => { const track = document.querySelector(".fw-clipboard-track"); if (!track) return; const kids = [...track.children].filter((c) => c.offsetWidth > 40); if (kids[i]) track.scrollLeft = kids[i].offsetLeft - track.offsetLeft; };
   return (
-    <div style={{ ...PAPER_BG, minHeight: "100vh", overflowX: "clip", paddingBottom: "calc(96px + env(safe-area-inset-bottom))" }}>
-      <style>{floraKeyframes}{ELITE_MOTION}</style>
-      <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 16px", background: T.paperHi, borderBottom: `1px solid ${T.paperDeep}` }}>
-        <button onClick={() => navigate(createPageUrl("Ideas"))} style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "transparent", border: `1px solid ${T.paperDeep}`, borderRadius: 999, padding: "5px 11px", cursor: "pointer", fontFamily: UI, fontSize: 12, fontWeight: 700, color: T.muted }}><ArrowLeft size={13} /> Ideas</button>
-        <span style={{ fontFamily: UI, fontSize: 12, fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", color: OXBLOOD }}>Programs +2 · demo</span>
+    <L2Frame label="Programmes" shell={<ProgramsEliteShell />}>
+      <L2Slider>
+        <ClipboardSlider hint="Slide the +2 lenses →" accent={gold}>
+          <Clipboard title="Stick with it" sub="GUIDE · CATCH-UP · GRADUATION" accent={plum} flower="cosmos" idx="cb-stick" titleColor={OXBLOOD}>
+            <BoardBody><StackedCard topAccent={plum} bottomAccent={sage}
+              top={[<GuidePanel key="g" plum={plum} />, <GraduationPanel key="gr" gold={gold} navigate={navigate} />]}
+              bottom={[<CatchupPanel key="c" sage={sage} />]} />
+            </BoardBody>
+          </Clipboard>
+
+          <Clipboard title="Outcomes & cohorts" sub="PRE/POST PROM · START TOGETHER" accent={gold} flower="sunflower" idx="cb-cohort" titleColor={OXBLOOD}>
+            <BoardBody><StackedCard topAccent={gold} bottomAccent={plum}
+              top={[<PromPanel key="p" crim={crim} />]}
+              bottom={[<CohortPanel key="co" plum={plum} navigate={navigate} />]} />
+            </BoardBody>
+          </Clipboard>
+
+          <Clipboard title="Beyond health" sub="WHOLE-LIFE JOURNEYS · PACING · THE CALLS" accent={sage} flower="iris" idx="cb-beyond" titleColor={OXBLOOD}>
+            <BoardBody><StackedCard topAccent={sage} bottomAccent={crim}
+              top={[<BreadthPanel key="b" gold={gold} />, <PacingPanel key="pa" sage={sage} />]}
+              bottom={[<GatedPanel key="ga" crim={crim} />]} />
+            </BoardBody>
+          </Clipboard>
+        </ClipboardSlider>
+      </L2Slider>
+
+      <div style={{ background: T.paperHi, border: `1px solid ${T.paperDeep}`, borderLeft: `4px solid ${OXBLOOD}`, borderRadius: 16, padding: "14px 16px", margin: "18px 0" }}>
+        <div style={{ ...lbl, color: OXBLOOD, marginBottom: 6 }}>What's rule-safe vs needs your call</div>
+        <p style={{ fontFamily: SERIF, fontSize: 15, color: T.inkSoft, lineHeight: 1.55, margin: 0 }}><b>Rule-safe (no new function):</b> the Jess guide (existing agent) · catch-up/rest · habit graduation · pre/post PROMs · cohorts + progress wall (new cohort entity) · whole-life journeys · adaptive pacing. <b>Needs your OK:</b> real push-notification delivery (infra) — with an in-app "due today" fallback; and human coaching (cost/ops — Jess is the rule-safe middle path). Live Programs is untouched.</p>
       </div>
-
-      <div style={{ maxWidth: 430, margin: "0 auto", padding: "16px 16px 0" }} className="fw-elite-in">
-        <FwFloraHero title="Your programmes" colorway="sage" bloom="cosmos" flankL="clover" flankR="chamomile" titleColor={OXBLOOD} creature="bee"
-          line="Built so you actually finish — a warm guide, a cohort to start with, catch-up without guilt, and a habit that lasts." />
-        <div style={{ display: "flex", justifyContent: "center", marginTop: -6, marginBottom: 8 }}>
-          <Bouquet items={[{ form: "cosmos", colorway: "sage" }, { form: "sunflower", colorway: "gold" }, { form: "clover", colorway: "gold" }]} size={146} animate idx="prog-bq" />
-        </div>
-        <SummaryCard eyebrow="What makes women finish" accent={gold} rows={[
-          { Icon: MessageCircle, label: "Your Jess guide", text: "Day-1, the wobble week, graduation — warm, well-timed check-ins", onClick: () => jumpTo(0) },
-          { Icon: Users, label: "Start together", text: "Monthly cohorts + an anonymous progress wall — the strongest completion lever", onClick: () => jumpTo(1) },
-          { Icon: Compass, label: "Beyond health", text: "Money confidence · dating again · rebuild a friendship — whole-life journeys", onClick: () => jumpTo(2) },
-        ]} />
-        <div style={{ display: "flex", gap: 10, marginTop: 14 }}>
-          <button onClick={() => jumpTo(0)} className="fw-elite-press" style={focusPill(plum)}><MessageCircle size={16} /> Meet your guide</button>
-          <button onClick={() => jumpTo(1)} className="fw-elite-press" style={focusPill(gold)}><Users size={16} /> Join a cohort</button>
-        </div>
-
-        <div style={{ position: "relative", marginTop: 16 }}>
-          <SliderArrows sliderRef={{ current: typeof document !== "undefined" ? document : null }} />
-          <ClipboardSlider hint="Slide your journeys →" accent={gold}>
-            <Clipboard title="Stick with it" sub="GUIDE · CATCH-UP · GRADUATION" accent={plum} flower="cosmos" idx="cb-stick" titleColor={OXBLOOD}>
-              <BoardBody><StackedCard topAccent={plum} bottomAccent={sage}
-                top={[<GuidePanel key="g" plum={plum} />, <GraduationPanel key="gr" gold={gold} navigate={navigate} />]}
-                bottom={[<CatchupPanel key="c" sage={sage} />]} />
-              </BoardBody>
-            </Clipboard>
-
-            <Clipboard title="Outcomes & cohorts" sub="PRE/POST PROM · START TOGETHER" accent={gold} flower="sunflower" idx="cb-cohort" titleColor={OXBLOOD}>
-              <BoardBody><StackedCard topAccent={gold} bottomAccent={plum}
-                top={[<PromPanel key="p" crim={crim} />]}
-                bottom={[<CohortPanel key="co" plum={plum} navigate={navigate} />]} />
-              </BoardBody>
-            </Clipboard>
-
-            <Clipboard title="Beyond health" sub="WHOLE-LIFE JOURNEYS · PACING · THE CALLS" accent={sage} flower="iris" idx="cb-beyond" titleColor={OXBLOOD}>
-              <BoardBody><StackedCard topAccent={sage} bottomAccent={crim}
-                top={[<BreadthPanel key="b" gold={gold} />, <PacingPanel key="pa" sage={sage} />]}
-                bottom={[<GatedPanel key="ga" crim={crim} />]} />
-              </BoardBody>
-            </Clipboard>
-          </ClipboardSlider>
-        </div>
-
-        <div style={{ background: T.paperHi, border: `1px solid ${T.paperDeep}`, borderLeft: `4px solid ${OXBLOOD}`, borderRadius: 16, padding: "14px 16px", margin: "18px 0" }}>
-          <div style={{ ...lbl, color: OXBLOOD, marginBottom: 6 }}>What's rule-safe vs needs your call</div>
-          <p style={{ fontFamily: SERIF, fontSize: 15, color: T.inkSoft, lineHeight: 1.55, margin: 0 }}><b>Rule-safe (no new function):</b> the Jess guide (existing agent) · catch-up/rest · habit graduation · pre/post PROMs · cohorts + progress wall (new cohort entity) · whole-life journeys · adaptive pacing. <b>Needs your OK:</b> real push-notification delivery (infra) — with an in-app "due today" fallback; and human coaching (cost/ops — Jess is the rule-safe middle path). Live Programs is untouched.</p>
-        </div>
-      </div>
-    </div>
+    </L2Frame>
   );
 }

@@ -8,17 +8,16 @@
 // NOT recommended (keep the on-device PDF + "your right to your data"). LIVE /DoctorExport UNTOUCHED.
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Stethoscope, ClipboardList, ShieldAlert, Activity, FileText, MessageSquare,
+import { Stethoscope, ClipboardList, ShieldAlert, Activity, FileText, MessageSquare,
   RotateCcw, Lock, CheckCircle2, HelpCircle } from "lucide-react";
 import { createPageUrl } from "@/utils";
-import { T, SERIF, UI, PAPER_BG } from "@/components/journal/Editorial";
-import { FwFloraHero } from "@/components/brand/PageTop";
-import { SummaryCard } from "@/components/brand/Card";
+import { T, SERIF, UI } from "@/components/journal/Editorial";
 import { ClipboardSlider, Clipboard } from "@/components/brand/ClipboardSlider";
-import { cwOf, floraKeyframes, Bouquet } from "@/components/brand/flora";
-import { OXBLOOD, lbl, subCard, focusPill, Panel, StackedCard, BoardBody, SliderArrows } from "@/components/brand/SliderKit";
+import { cwOf } from "@/components/brand/flora";
+import { OXBLOOD, lbl, subCard, Panel, StackedCard, BoardBody } from "@/components/brand/SliderKit";
+import DoctorExport from "@/pages/DoctorExport";
+import { L2Frame, L2Slider } from "@/components/demos/l2Frame";
 
-const ELITE_MOTION = `.fw-elite-in{animation:fwEliteIn .5s cubic-bezier(.215,.61,.355,1) both}@keyframes fwEliteIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}.fw-elite-press{transition:transform .12s ease}.fw-elite-press:active{transform:scale(.97)}@media (prefers-reduced-motion:reduce){.fw-elite-in,.fw-elite-press{animation:none!important;transition:none!important}}`;
 
 const TEMPLATES = [
   { key: "meno", name: "Meno / peri", nice: "NICE NG23", prom: "Greene Climacteric Scale (21-item)", sections: "Vasomotor symptoms · menstrual-change timeline · mood/sleep · life-impact", note: "Clinical diagnosis 45+, no blood test — never pushes FSH." },
@@ -150,62 +149,37 @@ function AfterPanel({ plum }) {
 export default function DoctorExportL2Demo() {
   const navigate = useNavigate();
   const gold = cwOf("gold").petal, sage = cwOf("sage").petal, crim = T.crimson, plum = cwOf("plum").petal;
-  const jumpTo = (i) => { const track = document.querySelector(".fw-clipboard-track"); if (!track) return; const kids = [...track.children].filter((c) => c.offsetWidth > 40); if (kids[i]) track.scrollLeft = kids[i].offsetLeft - track.offsetLeft; };
   return (
-    <div style={{ ...PAPER_BG, minHeight: "100vh", overflowX: "clip", paddingBottom: "calc(96px + env(safe-area-inset-bottom))" }}>
-      <style>{floraKeyframes}{ELITE_MOTION}</style>
-      <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 16px", background: T.paperHi, borderBottom: `1px solid ${T.paperDeep}` }}>
-        <button onClick={() => navigate(createPageUrl("Ideas"))} style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "transparent", border: `1px solid ${T.paperDeep}`, borderRadius: 999, padding: "5px 11px", cursor: "pointer", fontFamily: UI, fontSize: 12, fontWeight: 700, color: T.muted }}><ArrowLeft size={13} /> Ideas</button>
-        <span style={{ fontFamily: UI, fontSize: 12, fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", color: OXBLOOD }}>Doctor Export +2 · demo</span>
+    <L2Frame label="Doctor Export" shell={<DoctorExport />}>
+      <L2Slider>
+        <ClipboardSlider hint="Build your brief →" accent={gold}>
+          <Clipboard title="Your case" sub="CONDITION TEMPLATE · PREP" accent={crim} flower="poppy" idx="cb-case" titleColor={OXBLOOD}>
+            <BoardBody><StackedCard topAccent={crim} bottomAccent={plum}
+              top={[<TemplatePanel key="t" crim={crim} />]}
+              bottom={[<PrepPanel key="p" plum={plum} />]} />
+            </BoardBody>
+          </Clipboard>
+
+          <Clipboard title="Credible & safe" sub="VALIDATED PROM · RED-FLAG NET" accent={gold} flower="iris" idx="cb-safe" titleColor={OXBLOOD}>
+            <BoardBody><StackedCard topAccent={gold} bottomAccent={crim}
+              top={[<PromPanel key="pr" gold={gold} />]}
+              bottom={[<RedFlagPanel key="rf" crim={crim} navigate={navigate} />]} />
+            </BoardBody>
+          </Clipboard>
+
+          <Clipboard title="Export & after" sub="TIMELINE · EXPORT · POST-VISIT LOOP" accent={sage} flower="snowdrop" idx="cb-export" titleColor={OXBLOOD}>
+            <BoardBody><StackedCard topAccent={sage} bottomAccent={gold}
+              top={[<TimelinePanel key="tl" sage={sage} />, <AfterPanel key="af" plum={plum} />]}
+              bottom={[<ExportPanel key="ex" gold={gold} />]} />
+            </BoardBody>
+          </Clipboard>
+        </ClipboardSlider>
+      </L2Slider>
+
+      <div style={{ background: T.paperHi, border: `1px solid ${T.paperDeep}`, borderLeft: `4px solid ${OXBLOOD}`, borderRadius: 16, padding: "14px 16px", margin: "18px 0" }}>
+        <div style={{ ...lbl, color: OXBLOOD, marginBottom: 6, display: "inline-flex", alignItems: "center", gap: 6 }}><Lock size={13} /> The one tension — secure-share (NOT recommended)</div>
+        <p style={{ fontFamily: SERIF, fontSize: 15, color: T.inkSoft, lineHeight: 1.55, margin: 0 }}>Everything above is content + client-side (<b>no new function</b>). A "secure share link" would fight the on-device-never-uploaded promise (and GP systems can't accept third-party write-back anyway). <b>Recommendation:</b> keep the on-device PDF + the "your right to your data" framing (UK GDPR Art. 20), with the woman as courier. Live Doctor Export is untouched.</p>
       </div>
-
-      <div style={{ maxWidth: 430, margin: "0 auto", padding: "16px 16px 0" }} className="fw-elite-in">
-        <FwFloraHero title="Your brief" colorway="crimson" bloom="poppy" flankL="iris" flankR="snowdrop" titleColor={OXBLOOD} creature="butterfly"
-          line="The one tool that gets you believed in a 9-minute appointment — clinician-credible, NICE-templated, safe." />
-        <div style={{ display: "flex", justifyContent: "center", marginTop: -6, marginBottom: 8 }}>
-          <Bouquet items={[{ form: "poppy", colorway: "crimson" }, { form: "snowdrop", colorway: "sage" }, { form: "iris", colorway: "plum" }]} size={146} animate idx="dx-bq" />
-        </div>
-        <SummaryCard eyebrow="Built to be believed" accent={gold} rows={[
-          { Icon: Stethoscope, label: "Condition template", text: "Endo · meno · HMB · PCOS · migraine — mapped to the exact NICE criteria", onClick: () => jumpTo(0) },
-          { Icon: ShieldAlert, label: "Red-flag safety net", text: "Urgent signs flagged + routed to NHS 2-week-wait guidance", onClick: () => jumpTo(1) },
-          { Icon: FileText, label: "Two-tier export", text: "One-page impact a GP reads in 2 min + the full diary", onClick: () => jumpTo(2) },
-        ]} />
-        <div style={{ display: "flex", gap: 10, marginTop: 14 }}>
-          <button onClick={() => jumpTo(0)} className="fw-elite-press" style={focusPill(crim)}><Stethoscope size={16} /> Pick a template</button>
-          <button onClick={() => jumpTo(2)} className="fw-elite-press" style={focusPill(gold)}><FileText size={16} /> See the export</button>
-        </div>
-
-        <div style={{ position: "relative", marginTop: 16 }}>
-          <SliderArrows sliderRef={{ current: typeof document !== "undefined" ? document : null }} />
-          <ClipboardSlider hint="Build your brief →" accent={gold}>
-            <Clipboard title="Your case" sub="CONDITION TEMPLATE · PREP" accent={crim} flower="poppy" idx="cb-case" titleColor={OXBLOOD}>
-              <BoardBody><StackedCard topAccent={crim} bottomAccent={plum}
-                top={[<TemplatePanel key="t" crim={crim} />]}
-                bottom={[<PrepPanel key="p" plum={plum} />]} />
-              </BoardBody>
-            </Clipboard>
-
-            <Clipboard title="Credible & safe" sub="VALIDATED PROM · RED-FLAG NET" accent={gold} flower="iris" idx="cb-safe" titleColor={OXBLOOD}>
-              <BoardBody><StackedCard topAccent={gold} bottomAccent={crim}
-                top={[<PromPanel key="pr" gold={gold} />]}
-                bottom={[<RedFlagPanel key="rf" crim={crim} navigate={navigate} />]} />
-              </BoardBody>
-            </Clipboard>
-
-            <Clipboard title="Export & after" sub="TIMELINE · EXPORT · POST-VISIT LOOP" accent={sage} flower="snowdrop" idx="cb-export" titleColor={OXBLOOD}>
-              <BoardBody><StackedCard topAccent={sage} bottomAccent={gold}
-                top={[<TimelinePanel key="tl" sage={sage} />, <AfterPanel key="af" plum={plum} />]}
-                bottom={[<ExportPanel key="ex" gold={gold} />]} />
-              </BoardBody>
-            </Clipboard>
-          </ClipboardSlider>
-        </div>
-
-        <div style={{ background: T.paperHi, border: `1px solid ${T.paperDeep}`, borderLeft: `4px solid ${OXBLOOD}`, borderRadius: 16, padding: "14px 16px", margin: "18px 0" }}>
-          <div style={{ ...lbl, color: OXBLOOD, marginBottom: 6, display: "inline-flex", alignItems: "center", gap: 6 }}><Lock size={13} /> The one tension — secure-share (NOT recommended)</div>
-          <p style={{ fontFamily: SERIF, fontSize: 15, color: T.inkSoft, lineHeight: 1.55, margin: 0 }}>Everything above is content + client-side (<b>no new function</b>). A "secure share link" would fight the on-device-never-uploaded promise (and GP systems can't accept third-party write-back anyway). <b>Recommendation:</b> keep the on-device PDF + the "your right to your data" framing (UK GDPR Art. 20), with the woman as courier. Live Doctor Export is untouched.</p>
-        </div>
-      </div>
-    </div>
+    </L2Frame>
   );
 }

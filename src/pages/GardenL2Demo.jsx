@@ -8,17 +8,14 @@
 // entities — a small "felt that" entity is fine). The one rule: care, never guilt. LIVE /Garden UNTOUCHED.
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Heart, Sparkles, Feather, MessageCircle, Target, Sun, Snowflake, Leaf,
+import { Heart, Sparkles, Feather, Target, Sun, Snowflake, Leaf,
   HandHeart, Users, Flower2, BookHeart } from "lucide-react";
-import { createPageUrl } from "@/utils";
-import { T, SERIF, UI, PAPER_BG } from "@/components/journal/Editorial";
-import { FwFloraHero } from "@/components/brand/PageTop";
-import { SummaryCard } from "@/components/brand/Card";
+import { T, SERIF, UI } from "@/components/journal/Editorial";
 import { ClipboardSlider, Clipboard } from "@/components/brand/ClipboardSlider";
-import { cwOf, floraKeyframes, RichBloomV2, Bouquet, Pollinator } from "@/components/brand/flora";
-import { OXBLOOD, lbl, subCard, focusPill, Panel, StackedCard, BoardBody, SliderArrows } from "@/components/brand/SliderKit";
-
-const ELITE_MOTION = `.fw-elite-in{animation:fwEliteIn .5s cubic-bezier(.215,.61,.355,1) both}@keyframes fwEliteIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}.fw-elite-press{transition:transform .12s ease}.fw-elite-press:active{transform:scale(.97)}@media (prefers-reduced-motion:reduce){.fw-elite-in,.fw-elite-press{animation:none!important;transition:none!important}}`;
+import { cwOf, RichBloomV2, Bouquet, Pollinator } from "@/components/brand/flora";
+import { OXBLOOD, lbl, subCard, Panel, StackedCard, BoardBody } from "@/components/brand/SliderKit";
+import GardenEliteShell from "@/components/garden-elite/GardenEliteShell";
+import { L2Frame, L2Slider } from "@/components/demos/l2Frame";
 
 const STATES = [
   { key: "flourishing", label: "Flourishing", bloom: "peony", cw: "crimson", line: "“You tended me three days running — I'm flourishing. Feel that with me for a second.”" },
@@ -141,62 +138,37 @@ function CollectivePanel({ sage, navigate }) {
 export default function GardenL2Demo() {
   const navigate = useNavigate();
   const gold = cwOf("gold").petal, sage = cwOf("sage").petal, crim = T.crimson, plum = cwOf("plum").petal;
-  const jumpTo = (i) => { const track = document.querySelector(".fw-clipboard-track"); if (!track) return; const kids = [...track.children].filter((c) => c.offsetWidth > 40); if (kids[i]) track.scrollLeft = kids[i].offsetLeft - track.offsetLeft; };
   return (
-    <div style={{ ...PAPER_BG, minHeight: "100vh", overflowX: "clip", paddingBottom: "calc(96px + env(safe-area-inset-bottom))" }}>
-      <style>{floraKeyframes}{ELITE_MOTION}</style>
-      <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 16px", background: T.paperHi, borderBottom: `1px solid ${T.paperDeep}` }}>
-        <button onClick={() => navigate(createPageUrl("Ideas"))} style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "transparent", border: `1px solid ${T.paperDeep}`, borderRadius: 999, padding: "5px 11px", cursor: "pointer", fontFamily: UI, fontSize: 12, fontWeight: 700, color: T.muted }}><ArrowLeft size={13} /> Ideas</button>
-        <span style={{ fontFamily: UI, fontSize: 12, fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", color: OXBLOOD }}>Garden +2 · demo</span>
+    <L2Frame label="Garden" shell={<GardenEliteShell />}>
+      <L2Slider>
+        <ClipboardSlider hint="Slide the +2 lenses →" accent={gold}>
+          <Clipboard title="Alive" sub="COMPANION · FELT-THAT · REFLECTION" accent={crim} flower="peony" idx="cb-alive" titleColor={OXBLOOD}>
+            <BoardBody><StackedCard topAccent={crim} bottomAccent={gold}
+              top={[<CompanionPanel key="c" crim={crim} />, <ReflectPanel key="r" plum={plum} />]}
+              bottom={[<FeltPanel key="f" gold={gold} />]} />
+            </BoardBody>
+          </Clipboard>
+
+          <Clipboard title="Growing" sub="WOOP GOALS · SEASONAL TINT" accent={gold} flower="sunflower" idx="cb-growing" titleColor={OXBLOOD}>
+            <BoardBody><StackedCard topAccent={gold} bottomAccent={sage}
+              top={[<WoopPanel key="w" gold={gold} />]}
+              bottom={[<SeasonPanel key="s" />]} />
+            </BoardBody>
+          </Clipboard>
+
+          <Clipboard title="Together" sub="GARDEN OF GARDENS · KINDNESS · PRESENCE" accent={sage} flower="clover" idx="cb-together" titleColor={OXBLOOD}>
+            <BoardBody><StackedCard topAccent={sage} bottomAccent={plum}
+              top={[<CollectivePanel key="co" sage={sage} navigate={navigate} />]}
+              bottom={[<Panel key="presence" label="We're tending today" Icon={Users} accent={plum}><div style={{ textAlign: "center", padding: "6px 0" }}><Pollinator kind="butterfly" size={40} color={cwOf("blush").petal} animate idx="pres-bf" /><p style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 16, color: T.ink, margin: "8px 0 0", lineHeight: 1.5 }}>A quiet, live “we're here together” moment — collective effervescence, not a leaderboard. A shared bloom opens for everyone when enough of you show up.</p></div></Panel>]} />
+            </BoardBody>
+          </Clipboard>
+        </ClipboardSlider>
+      </L2Slider>
+
+      <div style={{ background: T.paperHi, border: `1px solid ${T.paperDeep}`, borderLeft: `4px solid ${OXBLOOD}`, borderRadius: 16, padding: "14px 16px", margin: "18px 0" }}>
+        <div style={{ ...lbl, color: OXBLOOD, marginBottom: 6 }}>Rule-safe — no gated function in the whole plan</div>
+        <p style={{ fontFamily: SERIF, fontSize: 15, color: T.inkSoft, lineHeight: 1.55, margin: 0 }}>Companion dialogue rides the <b>existing Jess agent</b>; states, the “felt that” ledger (a small additive entity), WOOP goals, seasonal tinting, kindness acts and the “tending today” presence are all state + content + existing entities. <b>The only rule:</b> keep the Garden uncompromisingly care-based — no “your companion misses you” guilt. Live Garden is untouched.</p>
       </div>
-
-      <div style={{ maxWidth: 430, margin: "0 auto", padding: "16px 16px 0" }} className="fw-elite-in">
-        <FwFloraHero title="Your garden" colorway="crimson" bloom="peony" flankL="rose" flankR="cosmos" titleColor={OXBLOOD} creature="butterfly"
-          line="Alive, and it remembers you — a companion that responds and recovers, a garden that feels everything you do, and one you grow with others." />
-        <div style={{ display: "flex", justifyContent: "center", marginTop: -6, marginBottom: 8 }}>
-          <Bouquet items={[{ form: "peony", colorway: "crimson" }, { form: "fern", colorway: "sage" }, { form: "cosmos", colorway: "blush" }]} size={148} animate idx="garden-bq" />
-        </div>
-        <SummaryCard eyebrow="A living thing" accent={gold} rows={[
-          { Icon: Heart, label: "Your companion", text: "Responds to your week with gentle moods + Jess lines — wilts softly, never dies", onClick: () => jumpTo(0) },
-          { Icon: Sparkles, label: "“Felt that”", text: "Every surface — a meal, a kind word, a rest day — registers and reflects back", onClick: () => jumpTo(0) },
-          { Icon: Users, label: "Garden of gardens", text: "312 tending today · leave a kind line for a stranger", onClick: () => jumpTo(2) },
-        ]} />
-        <div style={{ display: "flex", gap: 10, marginTop: 14 }}>
-          <button onClick={() => jumpTo(0)} className="fw-elite-press" style={focusPill(crim)}><MessageCircle size={16} /> Meet your companion</button>
-          <button onClick={() => jumpTo(2)} className="fw-elite-press" style={focusPill(sage)}><HandHeart size={16} /> Be kind</button>
-        </div>
-
-        <div style={{ position: "relative", marginTop: 16 }}>
-          <SliderArrows sliderRef={{ current: typeof document !== "undefined" ? document : null }} />
-          <ClipboardSlider hint="Slide through your garden →" accent={gold}>
-            <Clipboard title="Alive" sub="COMPANION · FELT-THAT · REFLECTION" accent={crim} flower="peony" idx="cb-alive" titleColor={OXBLOOD}>
-              <BoardBody><StackedCard topAccent={crim} bottomAccent={gold}
-                top={[<CompanionPanel key="c" crim={crim} />, <ReflectPanel key="r" plum={plum} />]}
-                bottom={[<FeltPanel key="f" gold={gold} />]} />
-              </BoardBody>
-            </Clipboard>
-
-            <Clipboard title="Growing" sub="WOOP GOALS · SEASONAL TINT" accent={gold} flower="sunflower" idx="cb-growing" titleColor={OXBLOOD}>
-              <BoardBody><StackedCard topAccent={gold} bottomAccent={sage}
-                top={[<WoopPanel key="w" gold={gold} />]}
-                bottom={[<SeasonPanel key="s" />]} />
-              </BoardBody>
-            </Clipboard>
-
-            <Clipboard title="Together" sub="GARDEN OF GARDENS · KINDNESS · PRESENCE" accent={sage} flower="clover" idx="cb-together" titleColor={OXBLOOD}>
-              <BoardBody><StackedCard topAccent={sage} bottomAccent={plum}
-                top={[<CollectivePanel key="co" sage={sage} navigate={navigate} />]}
-                bottom={[<Panel key="presence" label="We're tending today" Icon={Users} accent={plum}><div style={{ textAlign: "center", padding: "6px 0" }}><Pollinator kind="butterfly" size={40} color={cwOf("blush").petal} animate idx="pres-bf" /><p style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 16, color: T.ink, margin: "8px 0 0", lineHeight: 1.5 }}>A quiet, live “we're here together” moment — collective effervescence, not a leaderboard. A shared bloom opens for everyone when enough of you show up.</p></div></Panel>]} />
-              </BoardBody>
-            </Clipboard>
-          </ClipboardSlider>
-        </div>
-
-        <div style={{ background: T.paperHi, border: `1px solid ${T.paperDeep}`, borderLeft: `4px solid ${OXBLOOD}`, borderRadius: 16, padding: "14px 16px", margin: "18px 0" }}>
-          <div style={{ ...lbl, color: OXBLOOD, marginBottom: 6 }}>Rule-safe — no gated function in the whole plan</div>
-          <p style={{ fontFamily: SERIF, fontSize: 15, color: T.inkSoft, lineHeight: 1.55, margin: 0 }}>Companion dialogue rides the <b>existing Jess agent</b>; states, the “felt that” ledger (a small additive entity), WOOP goals, seasonal tinting, kindness acts and the “tending today” presence are all state + content + existing entities. <b>The only rule:</b> keep the Garden uncompromisingly care-based — no “your companion misses you” guilt. Live Garden is untouched.</p>
-        </div>
-      </div>
-    </div>
+    </L2Frame>
   );
 }

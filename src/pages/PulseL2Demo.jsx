@@ -8,17 +8,16 @@
 // sub-sliders + gold hairline + oxblood headings + flora + top chrome. LIVE /Pulse UNTOUCHED.
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, CalendarDays, Brain, Sparkles, Activity, ShieldAlert, TrendingUp, FileDown,
+import { CalendarDays, Brain, Sparkles, Activity, ShieldAlert, TrendingUp, FileDown,
   Link2, Watch, Lock, Sun, Moon, HeartPulse, Wallet, Users, SlidersHorizontal } from "lucide-react";
 import { createPageUrl } from "@/utils";
-import { T, SERIF, UI, PAPER_BG } from "@/components/journal/Editorial";
-import { FwFloraHero } from "@/components/brand/PageTop";
-import { SummaryCard } from "@/components/brand/Card";
+import { T, SERIF, UI } from "@/components/journal/Editorial";
 import { ClipboardSlider, Clipboard } from "@/components/brand/ClipboardSlider";
-import { cwOf, floraKeyframes, Bouquet } from "@/components/brand/flora";
-import { OXBLOOD, lbl, subCard, focusPill, Panel, StackedCard, BoardBody, SliderArrows } from "@/components/brand/SliderKit";
+import { cwOf, Bouquet } from "@/components/brand/flora";
+import { OXBLOOD, lbl, subCard, Panel, StackedCard, BoardBody } from "@/components/brand/SliderKit";
+import PulseEliteShell from "@/components/pulse-elite/PulseEliteShell";
+import { L2Frame, L2Slider } from "@/components/demos/l2Frame";
 
-const ELITE_MOTION = `.fw-elite-in{animation:fwEliteIn .5s cubic-bezier(.215,.61,.355,1) both}@keyframes fwEliteIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}.fw-elite-press{transition:transform .12s ease}.fw-elite-press:active{transform:scale(.97)}@media (prefers-reduced-motion:reduce){.fw-elite-in,.fw-elite-press{animation:none!important;transition:none!important}}`;
 
 // ── seeded demo data ──
 const PRED = { window: "12–15 Jul", median: 30, low: 28, high: 33, conf: "medium" };
@@ -165,62 +164,37 @@ function WearablePanel({ crim }) {
 export default function PulseL2Demo() {
   const navigate = useNavigate();
   const gold = cwOf("gold").petal, sage = cwOf("sage").petal, crim = T.crimson, plum = cwOf("plum").petal;
-  const jumpTo = (i) => { const track = document.querySelector(".fw-clipboard-track"); if (!track) return; const kids = [...track.children].filter((c) => c.offsetWidth > 40); if (kids[i]) track.scrollLeft = kids[i].offsetLeft - track.offsetLeft; };
   return (
-    <div style={{ ...PAPER_BG, minHeight: "100vh", overflowX: "clip", paddingBottom: "calc(96px + env(safe-area-inset-bottom))" }}>
-      <style>{floraKeyframes}{ELITE_MOTION}</style>
-      <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 16px", background: T.paperHi, borderBottom: `1px solid ${T.paperDeep}` }}>
-        <button onClick={() => navigate(createPageUrl("Ideas"))} style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "transparent", border: `1px solid ${T.paperDeep}`, borderRadius: 999, padding: "5px 11px", cursor: "pointer", fontFamily: UI, fontSize: 12, fontWeight: 700, color: T.muted }}><ArrowLeft size={13} /> Ideas</button>
-        <span style={{ fontFamily: UI, fontSize: 12, fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", color: OXBLOOD }}>Pulse +2 · demo</span>
+    <L2Frame label="Pulse" shell={<PulseEliteShell />}>
+      <L2Slider>
+        <ClipboardSlider hint="Slide the +2 lenses →" accent={gold}>
+          <Clipboard title="This week" sub="OWN-MEDIAN PREDICTIONS · FORECAST · DIAL" accent={plum} flower="cosmos" idx="cb-week" titleColor={OXBLOOD}>
+            <BoardBody><StackedCard topAccent={crim} bottomAccent={plum}
+              top={[<PredictionPanel key="p" crim={crim} />, <ForecastPanel key="f" plum={plum} />]}
+              bottom={[<DialPanel key="d" gold={gold} />, <Panel key="glance" label="At a glance" Icon={Activity} accent={sage}><p style={{ fontFamily: SERIF, fontSize: 15, color: T.inkSoft, lineHeight: 1.5 }}>Luteal · day 22. Energy easing, mood steady. A good week for less, on purpose.</p></Panel>]} />
+            </BoardBody>
+          </Clipboard>
+
+          <Clipboard title="Patterns" sub="CORRELATIONS · THE SAFETY FLAG" accent={sage} flower="iris" idx="cb-patterns" titleColor={OXBLOOD}>
+            <BoardBody><StackedCard topAccent={sage} bottomAccent={crim}
+              top={[<CorrelationPanel key="c" sage={sage} />]}
+              bottom={[<AnomalyPanel key="a" crim={crim} navigate={navigate} />]} />
+            </BoardBody>
+          </Clipboard>
+
+          <Clipboard title="Over time" sub="EXPORT · RETROSPECTIVE · WEARABLE" accent={gold} flower="dahlia" idx="cb-over" titleColor={OXBLOOD}>
+            <BoardBody><StackedCard topAccent={gold} bottomAccent={plum}
+              top={[<ExportPanel key="e" gold={gold} navigate={navigate} />, <RetroPanel key="r" plum={plum} />]}
+              bottom={[<WearablePanel key="w" crim={crim} />]} />
+            </BoardBody>
+          </Clipboard>
+        </ClipboardSlider>
+      </L2Slider>
+
+      <div style={{ background: T.paperHi, border: `1px solid ${T.paperDeep}`, borderLeft: `4px solid ${OXBLOOD}`, borderRadius: 16, padding: "14px 16px", margin: "18px 0" }}>
+        <div style={{ ...lbl, color: OXBLOOD, marginBottom: 6 }}>What's rule-safe vs needs your call</div>
+        <p style={{ fontFamily: SERIF, fontSize: 15, color: T.inkSoft, lineHeight: 1.55, margin: 0 }}><b>Rule-safe (no new function):</b> own-median predictions + error bars · symptom forecasting · the anomaly flag · the anxiety dial · the correlation engine · the year retrospective · clinician export · manual CSV import. <b>Needs your OK (one function, with a fallback):</b> live device import via OAuth — or ship the manual-CSV fallback with zero rule-risk. Live Pulse is untouched.</p>
       </div>
-
-      <div style={{ maxWidth: 430, margin: "0 auto", padding: "16px 16px 0" }} className="fw-elite-in">
-        <FwFloraHero title="Your pulse" colorway="plum" bloom="dahlia" flankL="chamomile" flankR="sunflower" titleColor={OXBLOOD} creature="dragonfly"
-          line="What your body repeats — now honest about its own median, forward-looking, and gentle by design." />
-        <div style={{ display: "flex", justifyContent: "center", marginTop: -6, marginBottom: 8 }}>
-          <Bouquet items={[{ form: "dahlia", colorway: "plum" }, { form: "cosmos", colorway: "sage" }, { form: "sunflower", colorway: "gold" }]} size={148} animate idx="pulse-bq" />
-        </div>
-        <SummaryCard eyebrow="This week, honestly" accent={gold} rows={[
-          { Icon: CalendarDays, label: "Period window", text: `Likely ${PRED.window} — your ~${PRED.median}-day median, with a window not a date`, onClick: () => jumpTo(0) },
-          { Icon: ShieldAlert, label: "Safety flag", text: "This cycle's longer than usual — a gentle, NHS-routed heads-up", onClick: () => jumpTo(1) },
-          { Icon: Sparkles, label: "Your year", text: "Your cycle, mood and life across the year — as a story", onClick: () => jumpTo(2) },
-        ]} />
-        <div style={{ display: "flex", gap: 10, marginTop: 14 }}>
-          <button onClick={() => jumpTo(0)} className="fw-elite-press" style={focusPill(plum)}><Brain size={16} /> What's likely</button>
-          <button onClick={() => jumpTo(2)} className="fw-elite-press" style={focusPill(gold)}><FileDown size={16} /> Clinician export</button>
-        </div>
-
-        <div style={{ position: "relative", marginTop: 16 }}>
-          <SliderArrows sliderRef={{ current: typeof document !== "undefined" ? document : null }} />
-          <ClipboardSlider hint="Slide your pulse →" accent={gold}>
-            <Clipboard title="This week" sub="OWN-MEDIAN PREDICTIONS · FORECAST · DIAL" accent={plum} flower="cosmos" idx="cb-week" titleColor={OXBLOOD}>
-              <BoardBody><StackedCard topAccent={crim} bottomAccent={plum}
-                top={[<PredictionPanel key="p" crim={crim} />, <ForecastPanel key="f" plum={plum} />]}
-                bottom={[<DialPanel key="d" gold={gold} />, <Panel key="glance" label="At a glance" Icon={Activity} accent={sage}><p style={{ fontFamily: SERIF, fontSize: 15, color: T.inkSoft, lineHeight: 1.5 }}>Luteal · day 22. Energy easing, mood steady. A good week for less, on purpose.</p></Panel>]} />
-              </BoardBody>
-            </Clipboard>
-
-            <Clipboard title="Patterns" sub="CORRELATIONS · THE SAFETY FLAG" accent={sage} flower="iris" idx="cb-patterns" titleColor={OXBLOOD}>
-              <BoardBody><StackedCard topAccent={sage} bottomAccent={crim}
-                top={[<CorrelationPanel key="c" sage={sage} />]}
-                bottom={[<AnomalyPanel key="a" crim={crim} navigate={navigate} />]} />
-              </BoardBody>
-            </Clipboard>
-
-            <Clipboard title="Over time" sub="EXPORT · RETROSPECTIVE · WEARABLE" accent={gold} flower="dahlia" idx="cb-over" titleColor={OXBLOOD}>
-              <BoardBody><StackedCard topAccent={gold} bottomAccent={plum}
-                top={[<ExportPanel key="e" gold={gold} navigate={navigate} />, <RetroPanel key="r" plum={plum} />]}
-                bottom={[<WearablePanel key="w" crim={crim} />]} />
-              </BoardBody>
-            </Clipboard>
-          </ClipboardSlider>
-        </div>
-
-        <div style={{ background: T.paperHi, border: `1px solid ${T.paperDeep}`, borderLeft: `4px solid ${OXBLOOD}`, borderRadius: 16, padding: "14px 16px", margin: "18px 0" }}>
-          <div style={{ ...lbl, color: OXBLOOD, marginBottom: 6 }}>What's rule-safe vs needs your call</div>
-          <p style={{ fontFamily: SERIF, fontSize: 15, color: T.inkSoft, lineHeight: 1.55, margin: 0 }}><b>Rule-safe (no new function):</b> own-median predictions + error bars · symptom forecasting · the anomaly flag · the anxiety dial · the correlation engine · the year retrospective · clinician export · manual CSV import. <b>Needs your OK (one function, with a fallback):</b> live device import via OAuth — or ship the manual-CSV fallback with zero rule-risk. Live Pulse is untouched.</p>
-        </div>
-      </div>
-    </div>
+    </L2Frame>
   );
 }

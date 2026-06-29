@@ -9,17 +9,15 @@
 // agent + prompt/content/UI (no new function). LIVE /Jess + /Assistant UNTOUCHED.
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, ShieldCheck, MessageCircle, Brain, BookOpenCheck, Lock, LifeBuoy, Database,
+import { ShieldCheck, MessageCircle, Brain, BookOpenCheck, Lock, LifeBuoy, Database,
   Mic, Sparkles, Trash2, Pencil, PhoneCall, HeartHandshake } from "lucide-react";
 import { createPageUrl } from "@/utils";
-import { T, SERIF, UI, PAPER_BG } from "@/components/journal/Editorial";
-import { FwFloraHero } from "@/components/brand/PageTop";
-import { SummaryCard } from "@/components/brand/Card";
+import { T, SERIF, UI } from "@/components/journal/Editorial";
 import { ClipboardSlider, Clipboard } from "@/components/brand/ClipboardSlider";
-import { cwOf, floraKeyframes, Bouquet } from "@/components/brand/flora";
-import { OXBLOOD, lbl, subCard, focusPill, Panel, StackedCard, BoardBody, SliderArrows } from "@/components/brand/SliderKit";
-
-const ELITE_MOTION = `.fw-elite-in{animation:fwEliteIn .5s cubic-bezier(.215,.61,.355,1) both}@keyframes fwEliteIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}.fw-elite-press{transition:transform .12s ease}.fw-elite-press:active{transform:scale(.97)}@media (prefers-reduced-motion:reduce){.fw-elite-in,.fw-elite-press{animation:none!important;transition:none!important}}`;
+import { cwOf } from "@/components/brand/flora";
+import { OXBLOOD, lbl, subCard, Panel, StackedCard, BoardBody } from "@/components/brand/SliderKit";
+import JessEliteShell from "@/components/jess-elite/JessEliteShell";
+import { L2Frame, L2Slider } from "@/components/demos/l2Frame";
 
 function Lvl({ children }) { return <span style={{ fontFamily: UI, fontSize: 11, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: "#fff", background: OXBLOOD, borderRadius: 999, padding: "2px 8px" }}>{children}</span>; }
 function GatedTag() { return <span style={{ fontFamily: UI, fontSize: 11, fontWeight: 700, color: "#fff", background: T.crimson, borderRadius: 999, padding: "2px 8px", display: "inline-flex", alignItems: "center", gap: 4 }}><Lock size={11} /> NEEDS SIGN-OFF</span>; }
@@ -121,62 +119,37 @@ function DepthPanel({ crim }) {
 export default function JessL2Demo() {
   const navigate = useNavigate();
   const gold = cwOf("gold").petal, sage = cwOf("sage").petal, crim = T.crimson, plum = cwOf("plum").petal;
-  const jumpTo = (i) => { const track = document.querySelector(".fw-clipboard-track"); if (!track) return; const kids = [...track.children].filter((c) => c.offsetWidth > 40); if (kids[i]) track.scrollLeft = kids[i].offsetLeft - track.offsetLeft; };
   return (
-    <div style={{ ...PAPER_BG, minHeight: "100vh", overflowX: "clip", paddingBottom: "calc(96px + env(safe-area-inset-bottom))" }}>
-      <style>{floraKeyframes}{ELITE_MOTION}</style>
-      <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 16px", background: T.paperHi, borderBottom: `1px solid ${T.paperDeep}` }}>
-        <button onClick={() => navigate(createPageUrl("Ideas"))} style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "transparent", border: `1px solid ${T.paperDeep}`, borderRadius: 999, padding: "5px 11px", cursor: "pointer", fontFamily: UI, fontSize: 12, fontWeight: 700, color: T.muted }}><ArrowLeft size={13} /> Ideas</button>
-        <span style={{ fontFamily: UI, fontSize: 12, fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", color: OXBLOOD }}>Jess +2 · demo</span>
+    <L2Frame label="Jess" shell={<JessEliteShell />}>
+      <L2Slider>
+        <ClipboardSlider hint="Slide the +2 trust layer →" accent={gold}>
+          <Clipboard title="Trustworthy" sub="GUIDELINE-ANCHORED · ANTI-SYCOPHANCY" accent={gold} flower="iris" idx="cb-trust" titleColor={OXBLOOD}>
+            <BoardBody><StackedCard topAccent={gold} bottomAccent={plum}
+              top={[<GroundedPanel key="g" gold={gold} />]}
+              bottom={[<PersonaPanel key="p" plum={plum} />]} />
+            </BoardBody>
+          </Clipboard>
+
+          <Clipboard title="Safe & transparent" sub="CRISIS HARD-ROUTE · EDITABLE MEMORY" accent={crim} flower="poppy" idx="cb-safe" titleColor={OXBLOOD}>
+            <BoardBody><StackedCard topAccent={crim} bottomAccent={sage}
+              top={[<CrisisPanel key="c" crim={crim} />]}
+              bottom={[<MemoryPanel key="m" sage={sage} />]} />
+            </BoardBody>
+          </Clipboard>
+
+          <Clipboard title="Everywhere & deeper" sub="TALK-ANYWHERE · NOTICING · VOICE · CBT" accent={plum} flower="rose" idx="cb-reach" titleColor={OXBLOOD}>
+            <BoardBody><StackedCard topAccent={plum} bottomAccent={crim}
+              top={[<EverywherePanel key="e" gold={gold} navigate={navigate} />, <ProactivePanel key="pr" plum={plum} />]}
+              bottom={[<DepthPanel key="d" crim={crim} />]} />
+            </BoardBody>
+          </Clipboard>
+        </ClipboardSlider>
+      </L2Slider>
+
+      <div style={{ background: T.paperHi, border: `1px solid ${T.paperDeep}`, borderLeft: `4px solid ${OXBLOOD}`, borderRadius: 16, padding: "14px 16px", margin: "18px 0" }}>
+        <div style={{ ...lbl, color: OXBLOOD, marginBottom: 6, display: "inline-flex", alignItems: "center", gap: 6 }}><ShieldCheck size={13} /> What's rule-safe vs needs your call</div>
+        <p style={{ fontFamily: SERIF, fontSize: 15, color: T.inkSoft, lineHeight: 1.55, margin: 0 }}><b>Rule-safe (no new function):</b> the anti-sycophancy + honest-uncertainty persona (prompt) · hardened UK crisis hard-route (config) · transparent editable memory (UI on JessMemory) · "talk to Jess" deep-links · Pulse-tied proactive noticing · voice utility · CBT-style framing — all ride the existing agent. <b>Needs your OK:</b> the women-tuned, guideline-<b>grounding</b> layer (a RAG/knowledge layer + model choice) — the deepest win, a platform decision. Live Jess is untouched.</p>
       </div>
-
-      <div style={{ maxWidth: 430, margin: "0 auto", padding: "16px 16px 0" }} className="fw-elite-in">
-        <FwFloraHero title="Jess" colorway="plum" bloom="iris" flankL="rose" flankR="chamomile" titleColor={OXBLOOD} creature="butterfly"
-          line="The one thing every rival gets wrong — a women-tuned, guideline-anchored friend who's warm, honest, and safe when it matters most." />
-        <div style={{ display: "flex", justifyContent: "center", marginTop: -6, marginBottom: 8 }}>
-          <Bouquet items={[{ form: "iris", colorway: "plum" }, { form: "rose", colorway: "crimson" }, { form: "chamomile", colorway: "sage" }]} size={146} animate idx="jess-bq" />
-        </div>
-        <SummaryCard eyebrow="What makes her trustworthy" accent={gold} rows={[
-          { Icon: BookOpenCheck, label: "Guideline-anchored", text: "Women-tuned answers + honest uncertainty + 'here's the NHS' (general AI fails ~60%)", onClick: () => jumpTo(0) },
-          { Icon: Brain, label: "Warm but honest", text: "Willing to gently challenge — never over-validates a risky belief", onClick: () => jumpTo(0) },
-          { Icon: LifeBuoy, label: "Safe in a crisis", text: "Hard-routes to UK help, never continues an open chat", onClick: () => jumpTo(1) },
-        ]} />
-        <div style={{ display: "flex", gap: 10, marginTop: 14 }}>
-          <button onClick={() => jumpTo(0)} className="fw-elite-press" style={focusPill(plum)}><Brain size={16} /> Her persona</button>
-          <button onClick={() => jumpTo(1)} className="fw-elite-press" style={focusPill(sage)}><Database size={16} /> Your memory</button>
-        </div>
-
-        <div style={{ position: "relative", marginTop: 16 }}>
-          <SliderArrows sliderRef={{ current: typeof document !== "undefined" ? document : null }} />
-          <ClipboardSlider hint="Slide through the trust layer →" accent={gold}>
-            <Clipboard title="Trustworthy" sub="GUIDELINE-ANCHORED · ANTI-SYCOPHANCY" accent={gold} flower="iris" idx="cb-trust" titleColor={OXBLOOD}>
-              <BoardBody><StackedCard topAccent={gold} bottomAccent={plum}
-                top={[<GroundedPanel key="g" gold={gold} />]}
-                bottom={[<PersonaPanel key="p" plum={plum} />]} />
-              </BoardBody>
-            </Clipboard>
-
-            <Clipboard title="Safe & transparent" sub="CRISIS HARD-ROUTE · EDITABLE MEMORY" accent={crim} flower="poppy" idx="cb-safe" titleColor={OXBLOOD}>
-              <BoardBody><StackedCard topAccent={crim} bottomAccent={sage}
-                top={[<CrisisPanel key="c" crim={crim} />]}
-                bottom={[<MemoryPanel key="m" sage={sage} />]} />
-              </BoardBody>
-            </Clipboard>
-
-            <Clipboard title="Everywhere & deeper" sub="TALK-ANYWHERE · NOTICING · VOICE · CBT" accent={plum} flower="rose" idx="cb-reach" titleColor={OXBLOOD}>
-              <BoardBody><StackedCard topAccent={plum} bottomAccent={crim}
-                top={[<EverywherePanel key="e" gold={gold} navigate={navigate} />, <ProactivePanel key="pr" plum={plum} />]}
-                bottom={[<DepthPanel key="d" crim={crim} />]} />
-              </BoardBody>
-            </Clipboard>
-          </ClipboardSlider>
-        </div>
-
-        <div style={{ background: T.paperHi, border: `1px solid ${T.paperDeep}`, borderLeft: `4px solid ${OXBLOOD}`, borderRadius: 16, padding: "14px 16px", margin: "18px 0" }}>
-          <div style={{ ...lbl, color: OXBLOOD, marginBottom: 6, display: "inline-flex", alignItems: "center", gap: 6 }}><ShieldCheck size={13} /> What's rule-safe vs needs your call</div>
-          <p style={{ fontFamily: SERIF, fontSize: 15, color: T.inkSoft, lineHeight: 1.55, margin: 0 }}><b>Rule-safe (no new function):</b> the anti-sycophancy + honest-uncertainty persona (prompt) · hardened UK crisis hard-route (config) · transparent editable memory (UI on JessMemory) · "talk to Jess" deep-links · Pulse-tied proactive noticing · voice utility · CBT-style framing — all ride the existing agent. <b>Needs your OK:</b> the women-tuned, guideline-<b>grounding</b> layer (a RAG/knowledge layer + model choice) — the deepest win, a platform decision. Live Jess is untouched.</p>
-        </div>
-      </div>
-    </div>
+    </L2Frame>
   );
 }
