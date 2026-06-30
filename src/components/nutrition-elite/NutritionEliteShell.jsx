@@ -216,6 +216,18 @@ const GLP1_POINTS = [
 // localStorage preference helpers (real, reload-surviving — no schema change, no new function)
 const lsGet = (k, fb) => { try { const v = window.localStorage.getItem(k); return v == null ? fb : v; } catch { return fb; } };
 const lsSet = (k, v) => { try { window.localStorage.setItem(k, v); } catch { /* private mode */ } };
+const lsGetArr = (k) => { try { return JSON.parse(window.localStorage.getItem(k) || "[]"); } catch { return []; } };
+
+// ── RECOVERED capability — the real meal-plan generator inputs (rides the EXISTING generateMealPlan fn) ──
+// Body goals (NutritionProfile.goal_mode enum), cuisine, dietary/allergy hard-constraints, quick ingredients.
+const GOAL_MODES = [
+  { id: "energy", label: "Energy" }, { id: "tone", label: "Tone & strength" }, { id: "fat_loss", label: "Gentle fat loss" },
+  { id: "hormone_support", label: "Hormone support" }, { id: "postpartum", label: "Postpartum" }, { id: "menopause", label: "Menopause" },
+];
+const GOAL_TO_WELLNESS = { energy: "steady energy", tone: "tone & strength", fat_loss: "gentle, sustainable fat loss", hormone_support: "hormone balance", postpartum: "postpartum recovery", menopause: "menopause support" };
+const PLAN_CUISINES = ["Any", "Italian", "Indian", "Mediterranean", "Mexican", "Asian", "Middle Eastern", "British", "Caribbean", "West African"];
+const PLAN_DIETARY = ["Vegetarian", "Vegan", "Gluten-Free", "Dairy-Free", "Nut-Free", "Egg-Free", "Shellfish-Free", "High-Protein"];
+const QUICK_PLAN_INGREDIENTS = ["chicken", "eggs", "oats", "spinach", "sweet potato", "salmon", "lentils", "chickpeas", "tofu", "avocado", "Greek yoghurt", "brown rice", "broccoli", "banana"];
 
 // ════════════════════════════════════════════════════════════════════════════
 export default function NutritionEliteShell() {
@@ -263,6 +275,43 @@ export default function NutritionEliteShell() {
   const setConditionP = (v) => { setCondition(v); lsSet("fw_nutri_condition", v); };
   const setGlp1P = (v) => { setGlp1(v); lsSet("fw_nutri_glp1", v ? "1" : "0"); };
   const setFullnessP = (v) => { setFullness(v); lsSet(`fw_nutri_fullness_${todayKey()}`, v); flash("Noticed — thank you for checking in"); };
+
+  // ── RECOVERED: meal-plan preferences (body goal · cuisine · dietary/allergy · ingredients) ──
+  // Persist to localStorage (instant, reload-surviving) AND to NutritionProfile (real entity fields:
+  // goal_mode, diet_preferences, allergens_avoid). Fed into the real generateMealPlan fn.
+  const [planGoal, setPlanGoal] = useState(() => lsGet("fw_nutri_goalmode", ""));
+  const [planCuisine, setPlanCuisine] = useState(() => lsGet("fw_nutri_cuisine", "Any"));
+  const [planDietary, setPlanDietary] = useState(() => lsGetArr("fw_nutri_dietary"));
+  const [planAllergens, setPlanAllergens] = useState(() => lsGetArr("fw_nutri_allergens"));
+  const [planIngredients, setPlanIngredients] = useState([]); // ephemeral picks for "cook from what I have"
+  const [allergyInput, setAllergyInput] = useState("");
+  const [planResult, setPlanResult] = useState(null); // last generateMealPlan result (focus + tip)
+  const prefHydrated = useRef(false);
+
+  // hydrate preferences from the real NutritionProfile once it loads (if the user hasn't set them locally)
+  useEffect(() => {
+    if (!nutritionProfile || prefHydrated.current) return;
+    prefHydrated.current = true;
+    if (!lsGet("fw_nutri_goalmode", "") && nutritionProfile.goal_mode) setPlanGoal(nutritionProfile.goal_mode);
+    if (lsGetArr("fw_nutri_dietary").length === 0 && nutritionProfile.diet_preferences) setPlanDietary(String(nutritionProfile.diet_preferences).split(",").map((s) => s.trim()).filter(Boolean));
+    if (lsGetArr("fw_nutri_allergens").length === 0 && nutritionProfile.allergens_avoid) setPlanAllergens(String(nutritionProfile.allergens_avoid).split(",").map((s) => s.trim()).filter(Boolean));
+  }, [nutritionProfile]);
+
+  // saver — best-effort write of preferences to the real NutritionProfile (create if none)
+  const saveNutPref = useCallback(async (patch) => {
+    if (!user) return;
+    try {
+      if (nutritionProfile?.id) await withTimeout(base44.entities.NutritionProfile.update(nutritionProfile.id, { ...patch, updated_at: nowISO() }), 6000, "pref");
+      else { const created = await withTimeout(base44.entities.NutritionProfile.create({ user_id: user.id, ...patch, created_at: nowISO(), updated_at: nowISO() }), 6000, "pref"); setNutritionProfile(created); }
+    } catch { /* localStorage already holds it */ }
+  }, [user, nutritionProfile]);
+
+  const setPlanGoalP = (v) => { const nv = v === planGoal ? "" : v; setPlanGoal(nv); lsSet("fw_nutri_goalmode", nv); saveNutPref({ goal_mode: nv || undefined }); };
+  const setPlanCuisineP = (v) => { setPlanCuisine(v); lsSet("fw_nutri_cuisine", v); };
+  const togglePlanDietary = (d) => { setPlanDietary((p) => { const next = p.includes(d) ? p.filter((x) => x !== d) : [...p, d]; lsSet("fw_nutri_dietary", JSON.stringify(next)); saveNutPref({ diet_preferences: next.join(", ") }); return next; }); };
+  const addAllergen = (raw) => { const a = (raw || "").trim(); if (!a) return; setPlanAllergens((p) => { if (p.some((x) => x.toLowerCase() === a.toLowerCase())) return p; const next = [...p, a]; lsSet("fw_nutri_allergens", JSON.stringify(next)); saveNutPref({ allergens_avoid: next.join(", ") }); return next; }); setAllergyInput(""); };
+  const removeAllergen = (a) => { setPlanAllergens((p) => { const next = p.filter((x) => x !== a); lsSet("fw_nutri_allergens", JSON.stringify(next)); saveNutPref({ allergens_avoid: next.join(", ") }); return next; }); };
+  const togglePlanIngredient = (g) => setPlanIngredients((p) => p.includes(g) ? p.filter((x) => x !== g) : [...p, g]);
 
   const flash = (m) => { setToast(m); window.clearTimeout(flash._t); flash._t = window.setTimeout(() => setToast(null), 2300); };
 
@@ -520,25 +569,71 @@ export default function NutritionEliteShell() {
   }, [profile, phaseKey, recipeFilter, genSeed]);
 
   // ── Meal-plan generator (MealPlans.create — plan_days) ──────────────────────
+  // RECOVERED: the REAL varied meal-plan generator — rides the existing generateMealPlan fn (NO new fn),
+  // 7 days × 4 meal types, honouring body goal · cuisine · dietary/allergy hard-constraints · ingredients ·
+  // calorie/protein targets. Falls back to the deterministic library plan so it can never break.
   const generatePlan = useCallback(async () => {
     if (!user || busy) return;
     setBusy(true);
-    const stage = profile?.life_stage || profile?.stage;
-    const diet = recipeFilter === "veg" || recipeFilter === "vegan" ? recipeFilter : "all";
-    const plan_days = generatePlanDays({ stage, phaseKey, diet });
+    flash("Building your varied week…");
     const week_start = thisMonday();
-    const goal = stage ? `Gentle week for ${stageLabel(profile).toLowerCase()}` : "A gentle, varied week";
-    flash("Building your week…");
+    const wellness = GOAL_TO_WELLNESS[planGoal] || (profile?.life_stage ? `${stageLabel(profile).toLowerCase()} support` : "a gentle, varied week");
+    // dietary_preferences = HARD constraints: dietary tags + allergies phrased as exclusions
+    const dietary = [...planDietary, ...planAllergens.map((a) => /(-|\s)free$/i.test(a) ? a : `No ${a}`)];
+    const pantryNamesNow = (pantry || []).map((p) => p?.name).filter(Boolean);
+    const ingredients = [...new Set([...(planIngredients || []), ...pantryNamesNow])].slice(0, 16);
     try {
-      // simple: deactivate any prior active plan for this week, then create the new one
-      if (mealPlan?.id) { try { await base44.entities.MealPlans.update(mealPlan.id, { is_active: false }); } catch { /* ignore */ } }
-      await withTimeout(base44.entities.MealPlans.create({
-        user_id: user.id, week_start, plan_days, wellness_goal: goal, is_active: true,
-      }), 8000, "save");
-      await loadKitchen(user); flash("Your week is ready");
-    } catch { flash("Couldn't build the plan — try again"); }
-    finally { setBusy(false); }
-  }, [user, busy, profile, phaseKey, recipeFilter, mealPlan, loadKitchen, thisMonday]);
+      const res = await withTimeout(base44.functions.invoke("generateMealPlan", {
+        mode: "meal_plan",
+        wellness_goal: wellness,
+        ingredients,
+        duration_days: 7,
+        dietary_preferences: dietary,
+        included_meal_types: ["breakfast", "lunch", "dinner", "snack"],
+        cuisine_preference: planCuisine && planCuisine !== "Any" ? planCuisine : undefined,
+        calorie_target: nutritionProfile?.calories_target || calorieTarget,
+        protein_target: nutritionProfile?.protein_target_g || proteinTarget,
+      }), 24000, "meal plan");
+      const data = res?.data;
+      if (data?.error) throw new Error(data.error);
+      const days = data?.days || [];
+      if (!days.length) throw new Error("empty plan");
+      const plan_days = days.map((d, i) => ({
+        day: (d.day_number ? d.day_number - 1 : i) % 7,
+        breakfast: d.meals?.breakfast?.name ? [d.meals.breakfast.name] : [],
+        lunch: d.meals?.lunch?.name ? [d.meals.lunch.name] : [],
+        dinner: d.meals?.dinner?.name ? [d.meals.dinner.name] : [],
+        snack: d.meals?.snack?.name ? [d.meals.snack.name] : [],
+      }));
+      if (mealPlan?.id) await withTimeout(base44.entities.MealPlans.update(mealPlan.id, { plan_days, wellness_goal: wellness, dietary_preferences: dietary, is_active: true, updated_at: nowISO() }), 8000, "save");
+      else await withTimeout(base44.entities.MealPlans.create({ user_id: user.id, week_start, plan_days, wellness_goal: wellness, dietary_preferences: dietary, is_active: true, created_at: nowISO() }), 8000, "save");
+      setPlanResult(data);
+      // build the shopping list from the plan's real shopping_list (best-effort, capped)
+      const sl = (data.shopping_list || []).filter(Boolean);
+      if (sl.length) {
+        try {
+          const old = await base44.entities.ShoppingList.filter({ user_id: user.id, week_start, source: "meal_plan" }).catch(() => []);
+          await Promise.all((old || []).map((o) => base44.entities.ShoppingList.delete(o.id).catch(() => null)));
+        } catch { /* ignore */ }
+        await Promise.all(sl.slice(0, 40).map((name) => withTimeout(base44.entities.ShoppingList.create({
+          user_id: user.id, week_start, ingredient_name: name, quantity_text: "", category: shoppingCategoryFor(name), is_checked: false, source: "meal_plan", meal_plan_id: mealPlan?.id || "",
+        }), 6000, "save").catch(() => null)));
+      }
+      await loadKitchen(user);
+      flash("Your varied week is ready — 4 meals a day, made for you");
+    } catch {
+      // FALLBACK — deterministic library plan (never break the page)
+      try {
+        const stage = profile?.life_stage || profile?.stage;
+        const diet = planDietary.includes("Vegan") ? "vegan" : (planDietary.includes("Vegetarian") ? "veg" : "all");
+        const plan_days = generatePlanDays({ stage, phaseKey, diet });
+        if (mealPlan?.id) await base44.entities.MealPlans.update(mealPlan.id, { plan_days, wellness_goal: wellness, is_active: true }).catch(() => {});
+        else await base44.entities.MealPlans.create({ user_id: user.id, week_start, plan_days, wellness_goal: wellness, is_active: true, created_at: nowISO() }).catch(() => {});
+        await loadKitchen(user);
+        flash("Your week is ready");
+      } catch { flash("Couldn't build the plan — try again"); }
+    } finally { setBusy(false); }
+  }, [user, busy, planGoal, planCuisine, planDietary, planAllergens, planIngredients, pantry, profile, phaseKey, nutritionProfile, calorieTarget, proteinTarget, mealPlan, loadKitchen, thisMonday]);
 
   // ── Build shopping list from this week's plan (ShoppingList.create, source meal_plan) ──
   const buildShoppingFromPlan = useCallback(async () => {
@@ -729,7 +824,13 @@ export default function NutritionEliteShell() {
               <BoardBody>
                 <StackedCard topAccent={sage} bottomAccent={cwOf("plum").petal}
                   top={[
-                    <Panel key="plan" label="Meal plan" Icon={CalendarDays} accent={sage}><MealPlanLens mealPlan={mealPlan} dinner={dinner} onLog={() => reLog(dinner.name, "dinner")} onOpen={() => setCalOpen(true)} onGenerate={generatePlan} busy={busy} /></Panel>,
+                    <Panel key="setup" label="Plan setup · goal · cuisine · allergies" Icon={Target} accent={sage}><PlanSetupLens
+                      goal={planGoal} onGoal={setPlanGoalP} cuisine={planCuisine} onCuisine={setPlanCuisineP}
+                      dietary={planDietary} onToggleDietary={togglePlanDietary} allergens={planAllergens} onAddAllergen={addAllergen} onRemoveAllergen={removeAllergen}
+                      allergyInput={allergyInput} setAllergyInput={setAllergyInput}
+                      ingredients={planIngredients} onToggleIngredient={togglePlanIngredient} pantryCount={pantryNames.length}
+                      onGenerate={generatePlan} busy={busy} /></Panel>,
+                    <Panel key="plan" label="Meal plan" Icon={CalendarDays} accent={sage}><MealPlanLens mealPlan={mealPlan} dinner={dinner} planResult={planResult} onLog={() => reLog(dinner.name, "dinner")} onOpen={() => setCalOpen(true)} onGenerate={generatePlan} busy={busy} /></Panel>,
                     <Panel key="saved" label="Saved recipes" Icon={BookOpen} accent={sage}><SavedRecipesLens recipes={savedRecipes} onReLog={reLog} onExplore={() => jumpTo(1)} /></Panel>,
                   ]}
                   bottom={[
@@ -954,32 +1055,85 @@ function MyPlanLens(p) {
     </div>
   );
 }
+// RECOVERED: the meal-plan preferences editor — body goal · cuisine · dietary/allergy · ingredients.
+// Every choice persists (localStorage + NutritionProfile) and feeds the real generateMealPlan fn.
+function PlanSetupLens({ goal, onGoal, cuisine, onCuisine, dietary, onToggleDietary, allergens, onAddAllergen, onRemoveAllergen, allergyInput, setAllergyInput, ingredients, onToggleIngredient, pantryCount, onGenerate, busy }) {
+  const sage = cwOf("sage").petal, gold = cwOf("gold").petal, crim = cwOf("crimson").petal, plum = cwOf("plum").petal;
+  const chip = (on, c) => ({ fontFamily: UI, fontSize: 11.5, fontWeight: 700, padding: "5px 10px", borderRadius: 999, cursor: "pointer", border: `1px solid ${on ? c : T.paperDeep}`, background: on ? c : `${c}10`, color: on ? "#fff" : T.inkSoft });
+  return (
+    <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 9 }}>
+      <div>
+        <div style={{ ...lbl, color: sage, marginBottom: 5 }}>Body goal</div>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>{GOAL_MODES.map((g) => <button key={g.id} onClick={() => onGoal(g.id)} className="fw-elite-press" style={chip(goal === g.id, sage)}>{g.label}</button>)}</div>
+      </div>
+      <div>
+        <div style={{ ...lbl, color: gold, marginBottom: 5 }}>Cuisine</div>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>{PLAN_CUISINES.map((c) => <button key={c} onClick={() => onCuisine(c)} className="fw-elite-press" style={chip(cuisine === c, gold)}>{c}</button>)}</div>
+      </div>
+      <div>
+        <div style={{ ...lbl, color: plum, marginBottom: 5 }}>Dietary</div>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>{PLAN_DIETARY.map((d) => <button key={d} onClick={() => onToggleDietary(d)} className="fw-elite-press" style={chip(dietary.includes(d), plum)}>{d}</button>)}</div>
+      </div>
+      <div>
+        <div style={{ ...lbl, color: crim, marginBottom: 5 }}>Allergies — never on your plate</div>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 6 }}>{allergens.map((a) => (
+          <span key={a} style={{ display: "inline-flex", alignItems: "center", gap: 5, fontFamily: UI, fontSize: 12, fontWeight: 600, color: crim, background: `${crim}14`, border: `1px solid ${crim}`, borderRadius: 999, padding: "5px 7px 5px 11px" }}>{a}<button onClick={() => onRemoveAllergen(a)} aria-label={`Remove ${a}`} className="fw-elite-press" style={{ background: "transparent", border: "none", cursor: "pointer", color: crim, display: "grid", placeItems: "center", padding: 0 }}><X size={12} /></button></span>
+        ))}</div>
+        <form onSubmit={(e) => { e.preventDefault(); onAddAllergen(allergyInput); }} style={{ display: "flex", gap: 7 }}>
+          <input value={allergyInput} onChange={(e) => setAllergyInput(e.target.value)} placeholder="e.g. peanuts, shellfish, gluten" style={{ flex: 1, minWidth: 0, boxSizing: "border-box", padding: "8px 11px", borderRadius: 11, background: T.paper, border: `1px solid ${T.paperDeep}`, fontFamily: SERIF, fontSize: 13.5, color: T.ink, outline: "none" }} />
+          <button type="submit" aria-label="Add allergy" className="fw-elite-press" style={{ flexShrink: 0, width: 38, borderRadius: 11, border: `1px solid ${crim}`, background: crim, color: "#fff", display: "grid", placeItems: "center", cursor: "pointer" }}><Plus size={15} /></button>
+        </form>
+      </div>
+      <div>
+        <div style={{ ...lbl, color: sage, marginBottom: 5 }}>Use what I have{pantryCount > 0 ? ` · +${pantryCount} from pantry` : ""}</div>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>{QUICK_PLAN_INGREDIENTS.map((g) => <button key={g} onClick={() => onToggleIngredient(g)} className="fw-elite-press" style={chip(ingredients.includes(g), sage)}>{g}</button>)}</div>
+      </div>
+      <div style={{ marginTop: "auto", paddingTop: 6 }}>
+        <Pill Icon={Sparkles} cw="gold" filled onClick={busy ? undefined : onGenerate}>{busy ? "Building your week…" : "Generate my varied week"}</Pill>
+      </div>
+    </div>
+  );
+}
+
 const DOW = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
-function MealPlanLens({ mealPlan, dinner, onLog, onOpen, onGenerate, busy }) {
+const SLOT_META = [["breakfast", "B", "gold"], ["lunch", "L", "sage"], ["dinner", "D", "crimson"], ["snack", "S", "plum"]];
+const cellName = (cell) => Array.isArray(cell) ? cell[0] : (typeof cell === "string" ? cell : cell?.name);
+function MealPlanLens({ mealPlan, dinner, planResult, onLog, onOpen, onGenerate, busy }) {
   const planDays = (mealPlan?.plan_days || []).filter(Boolean);
   const todayIdx = (new Date().getDay() + 6) % 7;
+  // count distinct dinners → proof of variety (no "same 4 meals")
+  const distinctDinners = new Set(planDays.map((d) => cellName(d?.dinner)).filter(Boolean)).size;
   return (
     <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
-      <p style={{ fontFamily: SERIF, fontSize: 14.5, color: T.muted, margin: "0 0 10px", lineHeight: 1.45 }}>A gentle week for your stage — generate it here, open the calendar to edit.</p>
-      {planDays.length > 0 ? (
-        <div style={{ display: "flex", flexDirection: "column", gap: 5, marginBottom: 10 }}>{planDays.slice(0, 4).map((d) => {
-          const cell = d?.dinner; const name = Array.isArray(cell) ? cell[0] : (typeof cell === "string" ? cell : cell?.name);
-          return (
-            <div key={d.day} style={{ display: "flex", alignItems: "center", gap: 9, ...subCard(d.day === todayIdx ? cwOf("sage").petal : T.paperDeep), padding: "7px 10px" }}>
-              <span style={{ fontFamily: UI, fontSize: 11, fontWeight: 700, color: cwOf("sage").petal, width: 34 }}>{DOW[d.day] || "—"}</span>
-              <span style={{ flex: 1, fontFamily: SERIF, fontSize: 14, color: T.ink }}>{name || "—"}</span>
-            </div>
-          );
-        })}</div>
-      ) : (
+      {planResult?.wellness_focus && (
+        <div style={{ ...subCard(cwOf("gold").petal), background: `${cwOf("gold").petal}10`, marginBottom: 8 }}>
+          <div style={{ ...lbl, color: cwOf("gold").petal, marginBottom: 2 }}>Focus · {planResult.wellness_focus}</div>
+          {planResult.weekly_tip && <p style={{ fontFamily: SERIF, fontSize: 13.5, color: T.ink, margin: 0, lineHeight: 1.45 }}>{planResult.weekly_tip}</p>}
+        </div>
+      )}
+      {planDays.length > 0 ? (<>
+        <div style={{ fontFamily: UI, fontSize: 11, color: T.muted, marginBottom: 6 }}>{distinctDinners > 1 ? <><b style={{ color: cwOf("sage").petal }}>{distinctDinners} different dinners</b> this week · breakfast · lunch · dinner · snack</> : "Breakfast · lunch · dinner · snack each day"}</div>
+        <div style={{ display: "flex", flexDirection: "column", gap: 6, marginBottom: 10 }}>{planDays.slice(0, 4).map((d) => (
+          <div key={d.day} style={{ ...subCard(d.day === todayIdx ? cwOf("sage").petal : T.paperDeep), padding: "8px 10px" }}>
+            <div style={{ fontFamily: UI, fontSize: 11, fontWeight: 700, color: cwOf("sage").petal, marginBottom: 4 }}>{DOW[d.day] || "—"}{d.day === todayIdx ? " · today" : ""}</div>
+            <div style={{ display: "flex", flexDirection: "column", gap: 3 }}>{SLOT_META.map(([slot, letter, cw]) => { const nm = cellName(d?.[slot]); if (!nm) return null; return (
+              <div key={slot} style={{ display: "flex", alignItems: "baseline", gap: 7 }}>
+                <span style={{ fontFamily: UI, fontSize: 9.5, fontWeight: 800, color: cwOf(cw).petal, width: 12, flexShrink: 0 }}>{letter}</span>
+                <span style={{ fontFamily: SERIF, fontSize: 13.5, color: T.ink, lineHeight: 1.3 }}>{nm}</span>
+              </div>
+            ); })}</div>
+          </div>
+        ))}</div>
+      </>) : (
         <div style={{ ...subCard(cwOf("sage").petal), background: `${cwOf("sage").petal}10`, marginBottom: 10 }}>
           <div style={{ ...lbl, color: cwOf("sage").petal, marginBottom: 3 }}>Suggested · dinner</div>
           <div style={{ fontFamily: SERIF, fontSize: 16, fontWeight: 600, color: T.ink }}>{dinner.name}</div>
           <div style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 13, color: T.muted }}>{dinner.why}</div>
+          <p style={{ fontFamily: UI, fontSize: 12, color: T.muted, margin: "8px 0 0", lineHeight: 1.45 }}>Set your goal, cuisine &amp; allergies in <b>Plan setup</b> (slide ←), then generate a real varied week.</p>
         </div>
       )}
       <div style={{ marginTop: "auto", display: "flex", flexWrap: "wrap", gap: 8 }}>
-        <Pill Icon={Sparkles} cw="gold" filled onClick={busy ? undefined : onGenerate}>{planDays.length > 0 ? "Regenerate week" : "Generate this week"}</Pill>
+        <Pill Icon={Sparkles} cw="gold" filled onClick={busy ? undefined : onGenerate}>{busy ? "Building…" : (planDays.length > 0 ? "Regenerate week" : "Generate this week")}</Pill>
         <Pill Icon={Check} cw="sage" onClick={onLog}>Log tonight's dinner</Pill>
         <Pill Icon={CalendarDays} cw="sage" onClick={onOpen}>Open week</Pill>
       </div>
