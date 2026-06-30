@@ -228,6 +228,10 @@ const GOAL_TO_WELLNESS = { energy: "steady energy", tone: "tone & strength", fat
 const PLAN_CUISINES = ["Any", "Italian", "Indian", "Mediterranean", "Mexican", "Asian", "Middle Eastern", "British", "Caribbean", "West African"];
 const PLAN_DIETARY = ["Vegetarian", "Vegan", "Gluten-Free", "Dairy-Free", "Nut-Free", "Egg-Free", "Shellfish-Free", "High-Protein"];
 const QUICK_PLAN_INGREDIENTS = ["chicken", "eggs", "oats", "spinach", "sweet potato", "salmon", "lentils", "chickpeas", "tofu", "avocado", "Greek yoghurt", "brown rice", "broccoli", "banana"];
+// Local breakfast/snack idea pools — so the deterministic FALLBACK plan is still a full, varied
+// 4-meal week (breakfast/lunch/dinner/snack) when the live generateMealPlan fn isn't reachable.
+const FALLBACK_BREAKFASTS = ["Overnight oats with berries & seeds", "Greek yoghurt, banana & walnuts", "Scrambled eggs on wholegrain toast", "Spinach & mushroom omelette", "Porridge with apple & cinnamon", "Smoothie — spinach, banana, oats", "Avocado & poached egg on rye"];
+const FALLBACK_SNACKS = ["Apple & a handful of almonds", "Hummus with carrot & pepper sticks", "Greek yoghurt & berries", "Oatcakes with nut butter", "A square of dark chocolate & a satsuma", "Edamame with sea salt", "Cheese & a pear"];
 
 // ════════════════════════════════════════════════════════════════════════════
 export default function NutritionEliteShell() {
@@ -593,7 +597,7 @@ export default function NutritionEliteShell() {
         cuisine_preference: planCuisine && planCuisine !== "Any" ? planCuisine : undefined,
         calorie_target: nutritionProfile?.calories_target || calorieTarget,
         protein_target: nutritionProfile?.protein_target_g || proteinTarget,
-      }), 24000, "meal plan");
+      }), 45000, "meal plan");
       const data = res?.data;
       if (data?.error) throw new Error(data.error);
       const days = data?.days || [];
@@ -622,11 +626,18 @@ export default function NutritionEliteShell() {
       await loadKitchen(user);
       flash("Your varied week is ready — 4 meals a day, made for you");
     } catch {
-      // FALLBACK — deterministic library plan (never break the page)
+      // FALLBACK — deterministic but FULL & VARIED 4-meal week (never break the page, never "same 4 meals")
       try {
         const stage = profile?.life_stage || profile?.stage;
         const diet = planDietary.includes("Vegan") ? "vegan" : (planDietary.includes("Vegetarian") ? "veg" : "all");
-        const plan_days = generatePlanDays({ stage, phaseKey, diet });
+        const base = generatePlanDays({ stage, phaseKey, diet });
+        // rotate breakfast + snack pools per day (offset by a daily seed) so all 4 meals vary across the week
+        const seed = Math.floor(Date.now() / 86400000);
+        const plan_days = base.map((d, i) => ({
+          ...d,
+          breakfast: [FALLBACK_BREAKFASTS[(i + seed) % FALLBACK_BREAKFASTS.length]],
+          snack: [FALLBACK_SNACKS[(i + seed + 2) % FALLBACK_SNACKS.length]],
+        }));
         if (mealPlan?.id) await base44.entities.MealPlans.update(mealPlan.id, { plan_days, wellness_goal: wellness, is_active: true }).catch(() => {});
         else await base44.entities.MealPlans.create({ user_id: user.id, week_start, plan_days, wellness_goal: wellness, is_active: true, created_at: nowISO() }).catch(() => {});
         await loadKitchen(user);
