@@ -1,3 +1,4 @@
+// NutritionEliteShellClassic — PRESERVED pre-+2 elite shell (one-line revert target for the +2 live ship). DO NOT EDIT.
 // NutritionEliteShell — the ELEVATED, FULLY-WIRED Nutrition page. The exact Nutrition analogue of
 // PlannerEliteShell: self-loading against real base44 entities; every control persists (optimistic
 // write + try/catch rollback + a flash() toast). Rendered by /NutritionElite (parallel test route)
@@ -22,7 +23,6 @@ import {
   CalendarDays, ShoppingBasket, TrendingUp, Sparkles, Leaf, Mic, Loader, Repeat, Beef, Wheat,
   Apple, Flame, ListChecks, Salad, Search, Star, Camera, ScanLine, Fish, Carrot,
   Clock, RefreshCw, ShieldCheck, HeartHandshake, Sprout, ChefHat, ArrowRight,
-  Eye, EyeOff, Dumbbell, Baby, HeartPulse, Lock,
 } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { format, startOfWeek } from "date-fns";
@@ -192,33 +192,8 @@ const TABLE_IDEAS = [
   { title: "Eat with someone", note: "share tonight's plate, even over a video call. Eating together is good for you." },
 ];
 
-// ── +2 LEVEL-UP DATA — condition watch-lists (evidence-graded, anti-myth) + GLP-1 + feeding ──────
-const CONDITIONS = [
-  { id: "pcos", label: "PCOS", Icon: Sparkles, cw: "gold",
-    body: "Inositol is strongest in the insulin-resistant phenotype (about as effective as metformin, with fewer gut effects). No single “PCOS diet” wins — gentle, regular meals, movement and a body-neutral frame beat any prescription.",
-    watch: ["Protein at each meal", "Slow carbs over none", "Inositol-rich · citrus, beans"] },
-  { id: "endo", label: "Endometriosis", Icon: Leaf, cw: "crimson",
-    body: "No diet has RCT superiority. A Mediterranean or low-FODMAP pattern may ease pain for some — but influencer elimination diets are under-supported and can do harm. We flag the anti-myth caution explicitly.",
-    watch: ["Omega-3 · oily fish, walnuts", "Fibre for gut comfort", "Anti-inflammatory, not restrictive"] },
-  { id: "thyroid", label: "Thyroid", Icon: Fish, cw: "sage",
-    body: "For Hashimoto’s, a Mediterranean pattern beats a blanket gluten-free diet for most. Adequate selenium and iodine from food; avoid fad restriction without a clinician.",
-    watch: ["Selenium · brazil nuts, fish", "Iodine · dairy, white fish", "Enough — don’t under-eat"] },
-  { id: "peri", label: "Perimenopause", Icon: Beef, cw: "plum",
-    body: "Women under-eat fibre, vitamin D, calcium and iron — and “the window” is peri, not post. A protein-forward, bone-supportive pattern, gently. The Nourishment letter goes deeper.",
-    watch: ["Protein · hold onto muscle", "Calcium + vitamin D · bones", "Iron · heavier cycles dip stores"] },
-];
-const GLP1_POINTS = [
-  { Icon: Beef, label: "Protein first", note: "every meal — protects the lean mass that’s otherwise lost" },
-  { Icon: Dumbbell, label: "Pair with strength", note: "2–3× a week keeps muscle on a smaller appetite" },
-  { Icon: Droplet, label: "Hydrate", note: "thirst is easy to miss when appetite drops" },
-  { Icon: Leaf, label: "Micros on a small plate", note: "make the few bites count — colour + variety" },
-];
-// localStorage preference helpers (real, reload-surviving — no schema change, no new function)
-const lsGet = (k, fb) => { try { const v = window.localStorage.getItem(k); return v == null ? fb : v; } catch { return fb; } };
-const lsSet = (k, v) => { try { window.localStorage.setItem(k, v); } catch { /* private mode */ } };
-
 // ════════════════════════════════════════════════════════════════════════════
-export default function NutritionEliteShell() {
+export default function NutritionEliteShellClassic() {
   const [user, setUser] = useState(null);
   const [profile, setProfile] = useState(null);
   const [nutritionProfile, setNutritionProfile] = useState(null);
@@ -252,17 +227,6 @@ export default function NutritionEliteShell() {
   const [jumpOpen, setJumpOpen] = useState(false);
   const [toast, setToast] = useState(null);
   const sliderRef = useRef(null);
-
-  // ── +2 LEVEL-UP state (preferences persist to localStorage; reload-surviving) ──
-  const [numbersOff, setNumbersOff] = useState(() => lsGet("fw_nutri_numbers_off", "0") === "1");
-  const [condition, setCondition] = useState(() => lsGet("fw_nutri_condition", "pcos"));
-  const [glp1, setGlp1] = useState(() => lsGet("fw_nutri_glp1", "0") === "1");
-  const [fullness, setFullness] = useState(() => lsGet(`fw_nutri_fullness_${todayKey()}`, ""));
-  const [sharedCount, setSharedCount] = useState(() => Number(lsGet("fw_nutri_shared_count", "0")) || 0);
-  const setNumbersOffP = (v) => { setNumbersOff(v); lsSet("fw_nutri_numbers_off", v ? "1" : "0"); };
-  const setConditionP = (v) => { setCondition(v); lsSet("fw_nutri_condition", v); };
-  const setGlp1P = (v) => { setGlp1(v); lsSet("fw_nutri_glp1", v ? "1" : "0"); };
-  const setFullnessP = (v) => { setFullness(v); lsSet(`fw_nutri_fullness_${todayKey()}`, v); flash("Noticed — thank you for checking in"); };
 
   const flash = (m) => { setToast(m); window.clearTimeout(flash._t); flash._t = window.setTimeout(() => setToast(null), 2300); };
 
@@ -565,42 +529,6 @@ export default function NutritionEliteShell() {
     finally { setBusy(false); }
   }, [user, busy, mealPlan, loadKitchen, thisMonday]);
 
-  // ── +2: "Same as yesterday" — re-log yesterday's real MealLog rows (creates real rows; persists) ──
-  const logYesterday = useCallback(async () => {
-    if (!user || busy) return;
-    setBusy(true);
-    const y = new Date(); y.setDate(y.getDate() - 1);
-    const key = format(y, "yyyy-MM-dd");
-    try {
-      const rows = await base44.entities.MealLog.filter({ user_id: user.id, day_key: key }).catch(() => []);
-      const meals = (rows || []).filter((r) => r && r.raw_text);
-      if (meals.length === 0) { flash("Nothing logged yesterday to copy"); setBusy(false); return; }
-      flash(`Copying ${meals.length} meal${meals.length === 1 ? "" : "s"} from yesterday…`);
-      await Promise.all(meals.map((m) => withTimeout(base44.entities.MealLog.create({
-        user_id: user.id, day_key: todayKey(), logged_at: nowISO(), meal_type: m.meal_type || "meal",
-        method: "text", raw_text: m.raw_text, ai_analysis: m.ai_analysis,
-      }), 6000, "save").catch(() => null)));
-      await loadSummary(user, todayKey()); loadRecents(user);
-      flash("Yesterday, brought forward");
-    } catch { flash("Couldn't copy — try again"); }
-    finally { setBusy(false); }
-  }, [user, busy, loadSummary, loadRecents]);
-
-  // ── +2: "Share to the table" — a real persisting write to JournalEntries (tagged), reload-surviving ──
-  const shareToTable = useCallback(async (text) => {
-    if (!user) return;
-    const body = (text || dinner?.name || "Tonight's plate").toString().slice(0, 280);
-    setSharedCount((n) => { const v = n + 1; lsSet("fw_nutri_shared_count", String(v)); return v; });
-    flash("Shared to the table 💛");
-    try {
-      await withTimeout(base44.entities.JournalEntries.create({
-        user_id: user.id, session_date: todayKey(), text: body,
-        tags: ["kitchen-table", "shared-plate"], prompt: "Shared to the kitchen table", card_type: "free", card_color: "cream",
-      }), 6000, "save");
-    } catch { /* optimistic count stays; the warmth landed */ }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user]);
-
   // recipes for the lens: filter pills, then "cook what's in" (pantry overlap), then pin a generated one
   const pantryNames = useMemo(() => (pantry || []).map((p) => p?.name).filter(Boolean), [pantry]);
   const recipeList = useMemo(() => {
@@ -627,7 +555,6 @@ export default function NutritionEliteShell() {
     { t: "Eat today", sub: "Plate · log · water · plan" },
     { t: "Cook tonight", sub: "Recipes · cook videos · pantry" },
     { t: "Plan & explore", sub: "Week · shop · progress · insights" },
-    { t: "For your body", sub: "Watch-list · GLP-1 · feeding · intuitive" },
     { t: "The kitchen table", sub: "Dinner tonight · 30 plants · joy" },
   ];
 
@@ -666,11 +593,7 @@ export default function NutritionEliteShell() {
           </span>
         </div>
 
-        <SummaryCard eyebrow="Today, at a glance" accent={gold} rows={numbersOff ? [
-          { Icon: Flame, label: "Energy", text: "Nourished — numbers are off. You're doing lovely.", onClick: () => jumpTo(0) },
-          { Icon: ListChecks, label: "Balance", text: `Protein, fibre and iron tracked gently — no figures, just ${macroSums.iron >= ironTarget ? "iron ✓" : "a nudge for iron"}.`, onClick: () => jumpTo(0) },
-          { Icon: Droplet, label: "Water", text: `${glasses >= glassesTarget ? "Well watered today ✓" : "A few more sips would be kind"}`, onClick: () => jumpTo(0) },
-        ] : [
+        <SummaryCard eyebrow="Today, at a glance" accent={gold} rows={[
           { Icon: Flame, label: "Energy", text: `${summary.kcal} of ${calorieTarget} kcal · room for ${kcalLeft} more`, onClick: () => jumpTo(0) },
           { Icon: ListChecks, label: "Macros", text: `Protein ${macroSums.protein}/${proteinTarget}g · fibre ${macroSums.fibre}/${fibreTarget}g · iron ${macroSums.iron}/${ironTarget}mg`, onClick: () => jumpTo(0) },
           { Icon: Droplet, label: "Water", text: `${glasses} of ${glassesTarget} glasses today`, onClick: () => jumpTo(0) },
@@ -681,15 +604,6 @@ export default function NutritionEliteShell() {
           <button onClick={() => addWater(WATER_GLASS_ML)} className="fw-elite-press" style={focusPill(sky)}><Droplet size={16} /> Log water</button>
         </div>
 
-        {/* +2 · ED-safe "numbers off" toggle — hides every calorie & macro on the page, persists */}
-        <button onClick={() => setNumbersOffP(!numbersOff)} className="fw-elite-press" aria-pressed={numbersOff} style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", marginTop: 10, background: numbersOff ? `${sage}1A` : T.paperHi, border: `1px solid ${numbersOff ? sage : T.paperDeep}`, borderRadius: 16, padding: "10px 13px", cursor: "pointer", textAlign: "left" }}>
-          {numbersOff ? <EyeOff size={17} color={sage} /> : <Eye size={17} color={T.muted} />}
-          <span style={{ flex: 1 }}>
-            <span style={{ fontFamily: SERIF, fontSize: 15, fontWeight: 600, color: T.ink, display: "block" }}>Numbers {numbersOff ? "off" : "on"} · <span style={{ color: sage }}>ED-safe</span></span>
-            <span style={{ fontFamily: UI, fontSize: 12, color: T.muted }}>{numbersOff ? "Calories & macros are hidden across the page." : "Tap to hide every calorie & macro — log without numbers."}</span>
-          </span>
-        </button>
-
         <div ref={sliderRef} style={{ marginTop: 16, position: "relative" }}>
           <SliderArrows sliderRef={sliderRef} />
           <ClipboardSlider hint="Slide your kitchen →" accent={gold}>
@@ -699,13 +613,13 @@ export default function NutritionEliteShell() {
               <BoardBody>
                 <StackedCard topAccent={gold} bottomAccent={sage}
                   top={[
-                    <Panel key="plate" label="Your plate" Icon={Salad} accent={gold}><PlateLens kcal={summary.kcal} target={calorieTarget} kcalLeft={kcalLeft} macros={macroSums} proteinTarget={proteinTarget} fibreTarget={fibreTarget} ironTarget={ironTarget} basis={targets.derived ? targets.basis : null} numbersOff={numbersOff} /></Panel>,
+                    <Panel key="plate" label="Your plate" Icon={Salad} accent={gold}><PlateLens kcal={summary.kcal} target={calorieTarget} kcalLeft={kcalLeft} macros={macroSums} proteinTarget={proteinTarget} fibreTarget={fibreTarget} ironTarget={ironTarget} basis={targets.derived ? targets.basis : null} /></Panel>,
                     <Panel key="logged" label="Logged today" Icon={ListChecks} accent={gold}><LoggedLens meals={dayMeals} onRemove={removeMeal} onLog={() => setLoggerOpen(true)} /></Panel>,
                     <Panel key="methods" label="Quick log" Icon={UtensilsCrossed} accent={gold}><MethodsLens onLog={() => setLoggerOpen(true)} onSnap={() => { flash("Just describe what's on your plate — we'll estimate it"); setLoggerOpen(true); }} /></Panel>,
                   ]}
                   bottom={[
                     <Panel key="water" label="Water" Icon={Droplet} accent={sky}><WaterLens glasses={glasses} target={glassesTarget} onAdd={addWater} /></Panel>,
-                    <Panel key="recents" label="Recents" Icon={Repeat} accent={sage}><RecentsLens recents={recents} onReLog={reLog} onLog={() => setLoggerOpen(true)} onSameYesterday={logYesterday} busy={busy} /></Panel>,
+                    <Panel key="recents" label="Recents" Icon={Repeat} accent={sage}><RecentsLens recents={recents} onReLog={reLog} onLog={() => setLoggerOpen(true)} /></Panel>,
                     <Panel key="plan" label="My plan" Icon={Target} accent={sage}><MyPlanLens proteinTarget={proteinTarget} carbsTarget={carbsTarget} fatTarget={fatTarget} fibreTarget={fibreTarget} ironTarget={ironTarget} glassesTarget={glassesTarget} profile={profile} basis={targets.basis} /></Panel>,
                   ]} />
               </BoardBody>
@@ -717,7 +631,7 @@ export default function NutritionEliteShell() {
                 <RecipesBoard
                   recipes={recipeList} filter={recipeFilter} onFilter={setRecipeFilter}
                   cookInOnly={cookInOnly} onCookIn={() => setCookInOnly((v) => !v)} hasPantry={pantryNames.length > 0}
-                  onGenerate={generateRecipeNow} numbersOff={numbersOff}
+                  onGenerate={generateRecipeNow}
                   onAddShopping={addRecipeToShopping} onLog={logRecipe} onSave={saveRecipe} savedTitles={(savedRecipes || []).map((r) => r.title)}
                   pantry={pantry} pantryInput={pantryInput} setPantryInput={setPantryInput} onAddPantry={addPantry} onRemovePantry={removePantry}
                 />
@@ -740,28 +654,12 @@ export default function NutritionEliteShell() {
               </BoardBody>
             </Clipboard>
 
-            {/* ── BOARD 4 — FOR YOUR BODY (+2 · condition watch-lists · GLP-1 · feeding · intuitive) ── */}
-            <Clipboard title="For your body" sub="WATCH-LIST · GLP-1 · FEEDING · INTUITIVE" accent={cwOf("plum").petal} flower="foxglove" idx="cb-body" titleColor={OXBLOOD}>
-              <BoardBody>
-                <StackedCard topAccent={cwOf("plum").petal} bottomAccent={sage}
-                  top={[
-                    <Panel key="cond" label="Your nutrient watch-list" Icon={ShieldCheck} accent={cwOf("plum").petal}><ConditionLens condition={condition} onSelect={setConditionP} onPlan={() => jumpTo(2)} /></Panel>,
-                    <Panel key="glp1" label="GLP-1 muscle-guardian" Icon={Dumbbell} accent={T.crimson}><Glp1Lens on={glp1} onToggle={() => setGlp1P(!glp1)} /></Panel>,
-                    <Panel key="feeding" label="Pregnancy & feeding" Icon={Baby} accent={sage}><FeedingLens /></Panel>,
-                  ]}
-                  bottom={[
-                    <Panel key="intuitive" label="How hungry, how full?" Icon={HeartPulse} accent={cwOf("blush").petal}><IntuitiveLens value={fullness} onSet={setFullnessP} /></Panel>,
-                    <Panel key="nevergrade" label="We never grade food" Icon={ShieldCheck} accent={sage}><NeverGradeLens /></Panel>,
-                  ]} />
-              </BoardBody>
-            </Clipboard>
-
-            {/* ── BOARD 5 — THE KITCHEN TABLE (joyful, whole-life) ─────────── */}
+            {/* ── BOARD 4 — THE KITCHEN TABLE (joyful, whole-life) ─────────── */}
             <Clipboard title="The kitchen table" sub="DINNER TONIGHT · 30 PLANTS · JOY" accent={cwOf("blush").petal} flower="dahlia" idx="cb-table" titleColor={OXBLOOD}>
               <BoardBody>
                 <StackedCard topAccent={cwOf("blush").petal} bottomAccent={sage}
                   top={[
-                    <Panel key="dinner" label="What's for dinner tonight?" Icon={ChefHat} accent={cwOf("blush").petal}><DinnerPromptLens onLog={() => setLoggerOpen(true)} onShare={shareToTable} sharedCount={sharedCount} /></Panel>,
+                    <Panel key="dinner" label="What's for dinner tonight?" Icon={ChefHat} accent={cwOf("blush").petal}><DinnerPromptLens onLog={() => setLoggerOpen(true)} onShare={() => flash("Shared to the table — coming soon")} /></Panel>,
                     <Panel key="plants" label="30 plants this week" Icon={Sprout} accent={sage}><PlantsLens plants={plantsToday} onLog={() => setLoggerOpen(true)} /></Panel>,
                   ]}
                   bottom={[
@@ -817,28 +715,7 @@ function MacroBar({ label, had, guide, unit, cw }) {
     </div>
   );
 }
-function PlateLens({ kcal, target, kcalLeft, macros, proteinTarget, fibreTarget, ironTarget, basis, numbersOff }) {
-  const sage = cwOf("sage").petal;
-  if (numbersOff) {
-    // ED-safe: no figures — gentle "enough / a nudge" chips instead of bars + ring.
-    const chips = [
-      { label: "Protein", ok: macros.protein >= proteinTarget * 0.7, cw: "crimson" },
-      { label: "Fibre", ok: macros.fibre >= fibreTarget * 0.7, cw: "sage" },
-      { label: "Iron", ok: macros.iron >= ironTarget * 0.7, cw: "gold" },
-    ];
-    return (
-      <div style={{ flex: 1 }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 10 }}>
-          <span style={{ width: 60, height: 60, borderRadius: 999, background: `${sage}1A`, border: `2px solid ${sage}`, display: "grid", placeItems: "center", flexShrink: 0 }}><Salad size={26} color={sage} /></span>
-          <div><div style={{ fontFamily: SERIF, fontSize: 18, fontWeight: 700, color: T.ink }}>Nourished today</div><div style={{ fontFamily: UI, fontSize: 12, color: T.muted }}>Numbers are off — just balance.</div></div>
-        </div>
-        <div style={{ display: "flex", flexWrap: "wrap", gap: 7 }}>{chips.map((c) => (
-          <span key={c.label} style={{ display: "inline-flex", alignItems: "center", gap: 5, fontFamily: UI, fontSize: 12.5, fontWeight: 700, color: cwOf(c.cw).petal, background: `${cwOf(c.cw).petal}14`, border: `1px solid ${cwOf(c.cw).petal}`, borderRadius: 999, padding: "6px 11px" }}>{c.label} {c.ok ? "✓" : "· a little more"}</span>
-        ))}</div>
-        <p style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 13, color: T.muted, margin: "10px 2px 0", lineHeight: 1.45 }}>Food is care, not a sum. Balance, gently — no cap, no count.</p>
-      </div>
-    );
-  }
+function PlateLens({ kcal, target, kcalLeft, macros, proteinTarget, fibreTarget, ironTarget, basis }) {
   return (
     <div style={{ flex: 1 }}>
       <div style={{ display: "flex", alignItems: "center", gap: 16, marginBottom: 6 }}>
@@ -850,7 +727,7 @@ function PlateLens({ kcal, target, kcalLeft, macros, proteinTarget, fibreTarget,
         </div>
       </div>
       <p style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 13, color: T.muted, margin: "4px 2px 0", lineHeight: 1.45 }}>
-        {basis ? `${basis} — ` : ""}a guide for the day, never a cap. Room for <b style={{ color: T.inkSoft }}>{kcalLeft}</b> more if you'd like it.
+        {basis ? `${basis} — ` : ""}a guide for the day, never a cap. Room for {kcalLeft} more if you'd like it.
       </p>
     </div>
   );
@@ -887,10 +764,8 @@ function MethodsLens({ onLog, onSnap }) {
         const c = cwOf(m.cw).petal;
         // "Snap a photo" honestly opens the text logger with a gentle "describe your plate" nudge (no vision function).
         const handle = m.id === "snap" ? onSnap : onLog;
-        const isSnap = m.id === "snap";
         return (
-          <button key={m.id} onClick={handle} className="fw-elite-press" style={{ position: "relative", display: "flex", flexDirection: "column", alignItems: "center", gap: 5, padding: "11px 4px", borderRadius: 12, background: `${c}10`, border: `1px solid ${c}44`, cursor: "pointer" }}>
-            {isSnap && <span style={{ position: "absolute", top: 4, right: 4, display: "inline-flex", alignItems: "center", gap: 2, fontFamily: UI, fontSize: 8, fontWeight: 800, letterSpacing: ".04em", textTransform: "uppercase", color: c, background: T.paperHi, border: `1px solid ${c}`, borderRadius: 999, padding: "1px 5px" }}><Lock size={7} /> soon</span>}
+          <button key={m.id} onClick={handle} className="fw-elite-press" style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 5, padding: "11px 4px", borderRadius: 12, background: `${c}10`, border: `1px solid ${c}44`, cursor: "pointer" }}>
             <m.Icon size={17} color={c} /><span style={{ fontFamily: UI, fontSize: 11, fontWeight: 700, color: T.ink, textAlign: "center", lineHeight: 1.1 }}>{m.label}</span>
           </button>
         );
@@ -917,7 +792,7 @@ function WaterLens({ glasses, target, onAdd }) {
     </div>
   );
 }
-function RecentsLens({ recents, onReLog, onLog, onSameYesterday, busy }) {
+function RecentsLens({ recents, onReLog, onLog }) {
   const list = (recents || []).filter(Boolean);
   return (
     <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
@@ -926,11 +801,7 @@ function RecentsLens({ recents, onReLog, onLog, onSameYesterday, busy }) {
       <div style={{ display: "flex", flexWrap: "wrap", gap: 7 }}>{list.map((r) => (
         <button key={r.id} onClick={() => onReLog(r.name)} className="fw-elite-press" style={{ background: T.paper, border: `1px solid ${T.paperDeep}`, borderRadius: 999, padding: "7px 12px", cursor: "pointer", fontFamily: UI, fontSize: 12.5, fontWeight: 600, color: T.ink }}>{r.name}</button>
       ))}</div>
-      {/* +2 · one-tap "same as yesterday" — copies yesterday's real meals forward */}
-      <div style={{ marginTop: "auto", paddingTop: 10, display: "flex", flexWrap: "wrap", gap: 8 }}>
-        <Pill Icon={Repeat} cw="gold" filled onClick={busy ? undefined : onSameYesterday}>Same as yesterday</Pill>
-        <Pill Icon={Plus} cw="sage" onClick={onLog}>Add a recent</Pill>
-      </div>
+      <div style={{ marginTop: "auto", paddingTop: 10 }}><Pill Icon={Plus} cw="sage" onClick={onLog}>Add a recent</Pill></div>
     </div>
   );
 }
@@ -1075,10 +946,8 @@ function InsightsLens({ jess, nudges, stage }) {
 }
 
 // ── COOK board — filter pills + a Deck of cook-cards (embedded video + ingredients + actions) ──
-function CookCard({ recipe, onAddShopping, onLog, onSave, saved, numbersOff }) {
+function CookCard({ recipe, onAddShopping, onLog, onSave, saved }) {
   const sage = cwOf("sage").petal, gold = cwOf("gold").petal;
-  const kcalLo = recipe.rough_kcal ? recipe.rough_kcal - 40 : null;
-  const kcalHi = recipe.rough_kcal ? recipe.rough_kcal + 60 : null;
   return (
     <div style={{ flex: 1, minHeight: 0, overflowY: "auto", display: "flex", flexDirection: "column", paddingRight: 2 }}>
       {/* title + meta ABOVE the player (never overlaid) */}
@@ -1097,24 +966,15 @@ function CookCard({ recipe, onAddShopping, onLog, onSave, saved, numbersOff }) {
       <div style={{ display: "flex", flexWrap: "wrap", gap: 5, marginBottom: 10 }}>{(recipe.ingredients || []).map((ing, i) => (
         <span key={i} style={{ fontFamily: UI, fontSize: 11.5, color: T.inkSoft, background: T.paper, border: `1px solid ${T.paperDeep}`, borderRadius: 999, padding: "4px 9px" }}>{ing.name}{ing.quantity_text ? <span style={{ color: T.muted }}> · {ing.quantity_text}</span> : null}</span>
       ))}</div>
-      {/* +2 · composite accuracy — a macro RANGE from the dish's ingredients, not a single false figure */}
-      {kcalLo != null && (
-        <div style={{ display: "flex", alignItems: "center", gap: 8, ...subCard(gold), background: `${gold}0D`, padding: "7px 11px", marginBottom: 9 }}>
-          <Flame size={14} color={gold} style={{ flexShrink: 0 }} />
-          <span style={{ fontFamily: UI, fontSize: 12, color: T.inkSoft, lineHeight: 1.4 }}>
-            {numbersOff ? <>Logs as a <b>balanced, protein-rich</b> plate · built from its ingredients</> : <>Logs ≈ <b>{kcalLo}–{kcalHi} kcal</b> · protein <b>~{recipe.rough_protein_g}g</b> — a range from the real ingredients, not a guess</>}
-          </span>
-        </div>
-      )}
       <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginTop: "auto" }}>
         <Pill Icon={ShoppingBasket} cw="plum" onClick={() => onAddShopping(recipe)}>Add ingredients to shopping</Pill>
-        <Pill Icon={Check} cw="sage" filled onClick={() => onLog(recipe)}>Watched it → log it</Pill>
+        <Pill Icon={Check} cw="sage" filled onClick={() => onLog(recipe)}>Log this for dinner</Pill>
         <Pill Icon={saved ? Check : Star} cw="gold" onClick={() => onSave(recipe)}>{saved ? "Saved" : "Save recipe"}</Pill>
       </div>
     </div>
   );
 }
-function RecipesBoard({ recipes, filter, onFilter, cookInOnly, onCookIn, hasPantry, onGenerate, numbersOff, onAddShopping, onLog, onSave, savedTitles, pantry, pantryInput, setPantryInput, onAddPantry, onRemovePantry }) {
+function RecipesBoard({ recipes, filter, onFilter, cookInOnly, onCookIn, hasPantry, onGenerate, onAddShopping, onLog, onSave, savedTitles, pantry, pantryInput, setPantryInput, onAddPantry, onRemovePantry }) {
   const sage = cwOf("sage").petal, gold = cwOf("gold").petal, carrotCw = cwOf("sage").petal;
   const list = (recipes || []);
   return (
@@ -1137,7 +997,7 @@ function RecipesBoard({ recipes, filter, onFilter, cookInOnly, onCookIn, hasPant
           </div>
         ) : (
           <Deck accent={gold}>{list.map((r) => (
-            <CookCard key={r.youtube_id} recipe={r} onAddShopping={onAddShopping} onLog={onLog} onSave={onSave} saved={(savedTitles || []).includes(r.title)} numbersOff={numbersOff} />
+            <CookCard key={r.youtube_id} recipe={r} onAddShopping={onAddShopping} onLog={onLog} onSave={onSave} saved={(savedTitles || []).includes(r.title)} />
           ))}</Deck>
         )}
       </div>
@@ -1175,25 +1035,19 @@ function PantryStrip({ pantry, pantryInput, setPantryInput, onAdd, onRemove }) {
 
 // ── KITCHEN TABLE lenses (joyful, whole-life) ──────────────────────────────────
 function todayIndex(len) { return Math.floor(Date.now() / 86400000) % len; }
-function DinnerPromptLens({ onLog, onShare, sharedCount }) {
+function DinnerPromptLens({ onLog, onShare }) {
   const blush = cwOf("blush").petal;
-  const [text, setText] = useState("");
   const prompt = TABLE_PROMPTS[todayIndex(TABLE_PROMPTS.length)];
-  const share = () => { onShare(text); setText(""); };
   return (
     <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
       <div style={{ ...subCard(blush), background: `${blush}12`, marginBottom: 10 }}>
         <div style={{ ...lbl, color: blush, marginBottom: 4 }}>Tonight</div>
         <p style={{ fontFamily: SERIF, fontSize: 18, fontWeight: 600, color: T.ink, margin: 0, lineHeight: 1.35 }}>{prompt}</p>
       </div>
-      <p style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 14, color: T.muted, margin: "0 0 8px", lineHeight: 1.5 }}>No right answer — food is pleasure and belonging here, not a test.</p>
-      {/* +2 · share to the table — a real, anonymous-safe note (persists to your journal, tagged) */}
-      <input value={text} onChange={(e) => setText(e.target.value)} placeholder="What's on your plate? (optional)"
-        style={{ width: "100%", boxSizing: "border-box", padding: "9px 12px", borderRadius: 11, background: T.paper, border: `1px solid ${T.paperDeep}`, fontFamily: SERIF, fontSize: 14, color: T.ink, outline: "none", marginBottom: 8 }} />
-      {sharedCount > 0 && <div style={{ fontFamily: UI, fontSize: 11.5, color: T.muted, marginBottom: 6 }}>You've shared <b style={{ color: blush }}>{sharedCount}</b> plate{sharedCount === 1 ? "" : "s"} to the table.</div>}
+      <p style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 14, color: T.muted, margin: "0 0 8px", lineHeight: 1.5 }}>No right answer — food is pleasure and belonging here, not a test. Decide, cook, and log it when you've eaten.</p>
       <div style={{ marginTop: "auto", display: "flex", gap: 8 }}>
         <Pill Icon={UtensilsCrossed} cw="crimson" filled onClick={onLog}>Log what I'm making</Pill>
-        <Pill Icon={HeartHandshake} cw="blush" onClick={share}>Share to the table</Pill>
+        <Pill Icon={HeartHandshake} cw="blush" onClick={onShare}>Share to the table</Pill>
       </div>
     </div>
   );
@@ -1245,86 +1099,6 @@ function ComfortLens() {
         <p style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 14, color: T.muted, margin: "4px 0 0", lineHeight: 1.45 }}>{idea.note}</p>
       </div>
       <p style={{ marginTop: "auto", fontFamily: SERIF, fontStyle: "italic", fontSize: 14, color: T.muted, lineHeight: 1.5 }}>Eating together — even over a video call — triggers a little burst of belonging. Food is one of the kindest ways we look after each other.</p>
-    </div>
-  );
-}
-
-// ── +2 · FOR-YOUR-BODY lenses (condition watch-lists · GLP-1 · feeding · intuitive · never-grade) ──
-function ConditionLens({ condition, onSelect, onPlan }) {
-  const c = CONDITIONS.find((x) => x.id === condition) || CONDITIONS[0];
-  const accent = cwOf(c.cw).petal;
-  return (
-    <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
-      <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 9 }}>{CONDITIONS.map((x) => {
-        const on = x.id === condition, xc = cwOf(x.cw).petal;
-        return <button key={x.id} onClick={() => onSelect(x.id)} className="fw-elite-press" style={{ display: "inline-flex", alignItems: "center", gap: 5, fontFamily: UI, fontSize: 12, fontWeight: 700, padding: "6px 11px", borderRadius: 999, cursor: "pointer", border: `1px solid ${on ? xc : T.paperDeep}`, background: on ? xc : `${xc}12`, color: on ? "#fff" : T.inkSoft }}><x.Icon size={12} color={on ? "#fff" : xc} /> {x.label}</button>;
-      })}</div>
-      <div style={{ ...subCard(accent), background: `${accent}0D` }}>
-        <span style={{ fontFamily: UI, fontSize: 10, fontWeight: 800, letterSpacing: ".06em", textTransform: "uppercase", color: cwOf("sage").petal }}>● Evidence-graded</span>
-        <p style={{ fontFamily: SERIF, fontSize: 14, color: T.ink, lineHeight: 1.5, margin: "5px 0 9px" }}>{c.body}</p>
-        <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>{c.watch.map((w) => (
-          <span key={w} style={{ fontFamily: UI, fontSize: 11.5, fontWeight: 600, color: accent, background: T.paper, border: `1px solid ${accent}`, borderRadius: 999, padding: "5px 10px" }}>{w}</span>
-        ))}</div>
-      </div>
-      <div style={{ marginTop: "auto", paddingTop: 10 }}><Pill Icon={CalendarDays} cw={c.cw} filled onClick={onPlan}>Build a gentle plan for this →</Pill></div>
-    </div>
-  );
-}
-function Glp1Lens({ on, onToggle }) {
-  const crim = cwOf("crimson").petal;
-  return (
-    <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
-      <p style={{ fontFamily: SERIF, fontSize: 14.5, color: T.ink, lineHeight: 1.55, margin: "0 0 10px" }}>On a GLP-1, around <b>25–40%</b> of the weight lost can be <b>lean muscle</b>. This opt-in mode protects it — framed as protection, never weight-loss.</p>
-      <div style={{ display: "flex", flexDirection: "column", gap: 6, marginBottom: 10 }}>{GLP1_POINTS.map((p) => (
-        <div key={p.label} style={{ display: "flex", alignItems: "flex-start", gap: 9, ...subCard(crim), padding: "8px 11px" }}>
-          <span style={{ width: 26, height: 26, borderRadius: 8, background: `${crim}1F`, display: "grid", placeItems: "center", flexShrink: 0 }}><p.Icon size={13} color={crim} /></span>
-          <div><div style={{ fontFamily: SERIF, fontSize: 14.5, fontWeight: 600, color: T.ink, lineHeight: 1.2 }}>{p.label}</div><div style={{ fontFamily: UI, fontSize: 11.5, color: T.muted, lineHeight: 1.35 }}>{p.note}</div></div>
-        </div>
-      ))}</div>
-      <div style={{ marginTop: "auto" }}><Pill Icon={Dumbbell} cw="crimson" filled={on} onClick={onToggle}>{on ? "Guardian mode on ✓" : "Turn on guardian mode"}</Pill></div>
-    </div>
-  );
-}
-function FeedingLens() {
-  const sage = cwOf("sage").petal, crim = cwOf("crimson").petal;
-  return (
-    <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
-      <div style={{ ...subCard(sage), marginBottom: 8 }}>
-        <div style={{ fontFamily: SERIF, fontSize: 15, fontWeight: 600, color: T.ink }}>Gestational diabetes</div>
-        <p style={{ fontFamily: UI, fontSize: 12.5, color: T.muted, margin: "3px 0 0", lineHeight: 1.5 }}>There’s <b>no proven GDM diet</b> (NICE 2025) — this routes you to your <b>NHS dietitian</b> + a low-GI steer. Never a “proven” low-carb plan.</p>
-      </div>
-      <div style={{ ...subCard(crim) }}>
-        <div style={{ fontFamily: SERIF, fontSize: 15, fontWeight: 600, color: T.ink }}>Breastfeeding</div>
-        <p style={{ fontFamily: UI, fontSize: 12.5, color: T.muted, margin: "3px 0 0", lineHeight: 1.5 }}>A gentle <b>~+500 kcal/day</b> uplift, plus a “don’t drop below” guardrail for calcium, zinc and B6.</p>
-      </div>
-      <p style={{ marginTop: "auto", paddingTop: 10, fontFamily: SERIF, fontStyle: "italic", fontSize: 13, color: T.muted, lineHeight: 1.45 }}>Surfaced when your stage calls for it — feeding yourself counts as much as anything.</p>
-    </div>
-  );
-}
-const FULLNESS = [["hungry", "Still hungry"], ["satisfied", "Satisfied"], ["full", "A bit full"], ["comfort", "Ate for comfort — that's ok"]];
-function IntuitiveLens({ value, onSet }) {
-  const blush = cwOf("blush").petal;
-  return (
-    <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
-      <p style={{ fontFamily: SERIF, fontSize: 14.5, color: T.ink, lineHeight: 1.55, margin: "0 0 10px" }}>A gentle check-in after eating — <b>joy, not compliance</b>. No streak to break, no number to chase.</p>
-      <div style={{ display: "flex", flexDirection: "column", gap: 7 }}>{FULLNESS.map(([id, label]) => {
-        const on = value === id;
-        return <button key={id} onClick={() => onSet(id)} className="fw-elite-press" style={{ textAlign: "left", display: "flex", alignItems: "center", gap: 9, background: on ? `${blush}1A` : T.paper, border: `1px solid ${on ? blush : T.paperDeep}`, borderRadius: 12, padding: "10px 12px", cursor: "pointer" }}>
-          <span style={{ width: 18, height: 18, borderRadius: 999, flexShrink: 0, border: `1.5px solid ${on ? blush : T.paperDeep}`, background: on ? blush : "transparent", display: "grid", placeItems: "center" }}>{on && <Check size={11} color="#fff" />}</span>
-          <span style={{ fontFamily: SERIF, fontSize: 14.5, color: T.ink }}>{label}</span>
-        </button>;
-      })}</div>
-      <p style={{ marginTop: "auto", paddingTop: 10, fontFamily: SERIF, fontStyle: "italic", fontSize: 12.5, color: T.muted }}>{value ? "Saved for today — thank you for listening to your body." : "The evidence-backed contrast to diet apps."}</p>
-    </div>
-  );
-}
-function NeverGradeLens() {
-  const sage = cwOf("sage").petal;
-  return (
-    <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
-      <div style={{ display: "grid", placeItems: "center", padding: "8px 0 12px" }}><span style={{ width: 56, height: 56, borderRadius: 999, background: `${sage}1A`, border: `2px solid ${sage}`, display: "grid", placeItems: "center" }}><ShieldCheck size={26} color={sage} /></span></div>
-      <p style={{ fontFamily: SERIF, fontSize: 16, color: T.ink, lineHeight: 1.55, textAlign: "center", margin: 0 }}>No <b>A–E scores</b>. No “good” or “bad” foods. Any product note stays neutral (“higher in salt”) — <b>never moralised</b>.</p>
-      <p style={{ marginTop: "auto", paddingTop: 12, fontFamily: SERIF, fontStyle: "italic", fontSize: 13, color: T.muted, textAlign: "center", lineHeight: 1.5 }}>The opposite of the food-grading apps — and the trust at the heart of this room.</p>
     </div>
   );
 }
