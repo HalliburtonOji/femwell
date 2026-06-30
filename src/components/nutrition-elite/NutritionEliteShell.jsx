@@ -22,7 +22,7 @@ import {
   CalendarDays, ShoppingBasket, TrendingUp, Sparkles, Leaf, Mic, Loader, Repeat, Beef, Wheat,
   Apple, Flame, ListChecks, Salad, Search, Star, Camera, ScanLine, Fish, Carrot,
   Clock, RefreshCw, ShieldCheck, HeartHandshake, Sprout, ChefHat, ArrowRight,
-  Eye, EyeOff, Dumbbell, Baby, HeartPulse, Lock,
+  Eye, EyeOff, Dumbbell, Baby, HeartPulse,
 } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { format, startOfWeek } from "date-fns";
@@ -195,23 +195,23 @@ const TABLE_IDEAS = [
 // ── +2 LEVEL-UP DATA — condition watch-lists (evidence-graded, anti-myth) + GLP-1 + feeding ──────
 const CONDITIONS = [
   { id: "pcos", label: "PCOS", Icon: Sparkles, cw: "gold",
-    body: "Inositol is strongest in the insulin-resistant phenotype (about as effective as metformin, with fewer gut effects). No single “PCOS diet” wins — gentle, regular meals, movement and a body-neutral frame beat any prescription.",
-    watch: ["Protein at each meal", "Slow carbs over none", "Inositol-rich · citrus, beans"] },
+    body: "There’s no single “PCOS diet”. Gentle, regular meals with some protein and slow carbs help most — and so does inositol, found in citrus and beans. Being kind to yourself works better than any strict plan.",
+    watch: ["Some protein at each meal", "Slow carbs, not no carbs", "Citrus and beans (inositol)"] },
   { id: "endo", label: "Endometriosis", Icon: Leaf, cw: "crimson",
-    body: "No diet has RCT superiority. A Mediterranean or low-FODMAP pattern may ease pain for some — but influencer elimination diets are under-supported and can do harm. We flag the anti-myth caution explicitly.",
-    watch: ["Omega-3 · oily fish, walnuts", "Fibre for gut comfort", "Anti-inflammatory, not restrictive"] },
+    body: "No diet is proven to fix it. Mediterranean-style food may ease pain for some. Be wary of strict cut-out-everything diets from social media — they can do more harm than good.",
+    watch: ["Oily fish and walnuts", "Fibre for gut comfort", "Easy on the gut, not strict"] },
   { id: "thyroid", label: "Thyroid", Icon: Fish, cw: "sage",
-    body: "For Hashimoto’s, a Mediterranean pattern beats a blanket gluten-free diet for most. Adequate selenium and iodine from food; avoid fad restriction without a clinician.",
-    watch: ["Selenium · brazil nuts, fish", "Iodine · dairy, white fish", "Enough — don’t under-eat"] },
+    body: "For most, Mediterranean-style food beats going fully gluten-free. Get enough selenium and iodine from food, and don’t cut things out on a whim — check with your doctor first.",
+    watch: ["Brazil nuts and fish (selenium)", "Dairy and white fish (iodine)", "Eat enough — don’t under-eat"] },
   { id: "peri", label: "Perimenopause", Icon: Beef, cw: "plum",
-    body: "Women under-eat fibre, vitamin D, calcium and iron — and “the window” is peri, not post. A protein-forward, bone-supportive pattern, gently. The Nourishment letter goes deeper.",
-    watch: ["Protein · hold onto muscle", "Calcium + vitamin D · bones", "Iron · heavier cycles dip stores"] },
+    body: "Many women fall short on fibre, vitamin D, calcium and iron — and this is the time it matters most. Lean a little more on protein and bone-friendly food. The Nourishment letter goes deeper.",
+    watch: ["Protein to keep muscle", "Calcium + vitamin D for bones", "Iron — heavier periods drain it"] },
 ];
 const GLP1_POINTS = [
-  { Icon: Beef, label: "Protein first", note: "every meal — protects the lean mass that’s otherwise lost" },
-  { Icon: Dumbbell, label: "Pair with strength", note: "2–3× a week keeps muscle on a smaller appetite" },
-  { Icon: Droplet, label: "Hydrate", note: "thirst is easy to miss when appetite drops" },
-  { Icon: Leaf, label: "Micros on a small plate", note: "make the few bites count — colour + variety" },
+  { Icon: Beef, label: "Protein first", note: "at every meal — it keeps the muscle you’d otherwise lose" },
+  { Icon: Dumbbell, label: "Add some strength training", note: "2–3× a week keeps muscle while you eat less" },
+  { Icon: Droplet, label: "Keep drinking water", note: "thirst is easy to miss when you’re less hungry" },
+  { Icon: Leaf, label: "Make small meals count", note: "fewer bites, so add colour and variety" },
 ];
 // localStorage preference helpers (real, reload-surviving — no schema change, no new function)
 const lsGet = (k, fb) => { try { const v = window.localStorage.getItem(k); return v == null ? fb : v; } catch { return fb; } };
@@ -264,6 +264,8 @@ export default function NutritionEliteShell() {
 
   // overlays
   const [loggerOpen, setLoggerOpen] = useState(false);
+  const [loggerView, setLoggerView] = useState(null); // null=home · "photo"=open straight to Snap
+  const openLogger = (view) => { setLoggerView(view || null); openLogger(); };
   const [calOpen, setCalOpen] = useState(false);
   const [jumpOpen, setJumpOpen] = useState(false);
   const [toast, setToast] = useState(null);
@@ -761,7 +763,7 @@ export default function NutritionEliteShell() {
       <div style={{ maxWidth: 430, margin: "0 auto", padding: "16px 16px 0" }} className="fw-elite-in">
         {/* lush flora hero — phase bloom + bouquet + resting creature */}
         <FwFloraHero title={firstName ? `${firstName}'s plate` : "Your plate"} colorway={ph.cw} bloom={ph.bloom} flankL="chamomile" flankR="sunflower" titleColor={OXBLOOD} creature="bee"
-          line="Nourishment is a relationship, not a test. Log in seconds; everything else is one tap from a titled board." />
+          line="Food is fuel and joy, not a test. Log in seconds — everything else is one easy tap away." />
         <div style={{ display: "flex", justifyContent: "center", marginTop: -6, marginBottom: 2 }}>
           <Bouquet items={[{ form: ph.bloom, colorway: ph.cw }, { form: "fern", colorway: "sage" }, { form: "marigold", colorway: "gold" }]} size={150} animate idx="elite-bq" />
         </div>
@@ -782,17 +784,21 @@ export default function NutritionEliteShell() {
           { Icon: Droplet, label: "Water", text: `${glasses} of ${glassesTarget} glasses today`, onClick: () => jumpTo(0) },
         ]} />
 
-        <div style={{ display: "flex", gap: 10, marginTop: 14 }}>
-          <button onClick={() => setLoggerOpen(true)} className="fw-elite-press" style={focusPill(T.crimson)}><UtensilsCrossed size={16} /> Log a meal</button>
-          <button onClick={() => addWater(WATER_GLASS_ML)} className="fw-elite-press" style={focusPill(sky)}><Droplet size={16} /> Log water</button>
+        {/* QUICK ACTIONS — the everyday taps, front and centre */}
+        <div style={{ ...lbl, margin: "2px 2px 7px" }}>Add to today</div>
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 9 }}>
+          <button onClick={() => openLogger("photo")} className="fw-elite-press" style={focusPill(cwOf("plum").petal)}><Camera size={16} /> Snap a photo</button>
+          <button onClick={() => openLogger()} className="fw-elite-press" style={focusPill(T.crimson)}><UtensilsCrossed size={16} /> Add a meal</button>
+          <button onClick={() => addWater(WATER_GLASS_ML)} className="fw-elite-press" style={focusPill(sky)}><Droplet size={16} /> Add water</button>
+          <button onClick={busy ? undefined : logYesterday} className="fw-elite-press" style={focusPill(sage)}><Repeat size={16} /> Same as yesterday</button>
         </div>
 
-        {/* +2 · ED-safe "numbers off" toggle — hides every calorie & macro on the page, persists */}
+        {/* ED-safe "numbers off" toggle — hides every calorie & number on the page, persists */}
         <button onClick={() => setNumbersOffP(!numbersOff)} className="fw-elite-press" aria-pressed={numbersOff} style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", marginTop: 10, background: numbersOff ? `${sage}1A` : T.paperHi, border: `1px solid ${numbersOff ? sage : T.paperDeep}`, borderRadius: 16, padding: "10px 13px", cursor: "pointer", textAlign: "left" }}>
           {numbersOff ? <EyeOff size={17} color={sage} /> : <Eye size={17} color={T.muted} />}
           <span style={{ flex: 1 }}>
-            <span style={{ fontFamily: SERIF, fontSize: 15, fontWeight: 600, color: T.ink, display: "block" }}>Numbers {numbersOff ? "off" : "on"} · <span style={{ color: sage }}>ED-safe</span></span>
-            <span style={{ fontFamily: UI, fontSize: 12, color: T.muted }}>{numbersOff ? "Calories & macros are hidden across the page." : "Tap to hide every calorie & macro — log without numbers."}</span>
+            <span style={{ fontFamily: SERIF, fontSize: 15, fontWeight: 600, color: T.ink, display: "block" }}>Numbers are {numbersOff ? "off" : "on"}</span>
+            <span style={{ fontFamily: UI, fontSize: 12, color: T.muted }}>{numbersOff ? "Calories and grams are hidden. Just balance, no counting." : "Tap to hide all calories and grams — log without numbers."}</span>
           </span>
         </button>
 
@@ -806,12 +812,12 @@ export default function NutritionEliteShell() {
                 <StackedCard topAccent={gold} bottomAccent={sage}
                   top={[
                     <Panel key="plate" label="Your plate" Icon={Salad} accent={gold}><PlateLens kcal={summary.kcal} target={calorieTarget} kcalLeft={kcalLeft} macros={macroSums} proteinTarget={proteinTarget} fibreTarget={fibreTarget} ironTarget={ironTarget} basis={targets.derived ? targets.basis : null} numbersOff={numbersOff} /></Panel>,
-                    <Panel key="logged" label="Logged today" Icon={ListChecks} accent={gold}><LoggedLens meals={dayMeals} onRemove={removeMeal} onLog={() => setLoggerOpen(true)} /></Panel>,
-                    <Panel key="methods" label="Quick log" Icon={UtensilsCrossed} accent={gold}><MethodsLens onLog={() => setLoggerOpen(true)} onSnap={() => { flash("Just describe what's on your plate — we'll estimate it"); setLoggerOpen(true); }} /></Panel>,
+                    <Panel key="logged" label="Logged today" Icon={ListChecks} accent={gold}><LoggedLens meals={dayMeals} onRemove={removeMeal} onLog={() => openLogger()} /></Panel>,
+                    <Panel key="methods" label="Quick log" Icon={UtensilsCrossed} accent={gold}><MethodsLens onLog={() => openLogger()} onSnap={() => openLogger("photo")} /></Panel>,
                   ]}
                   bottom={[
                     <Panel key="water" label="Water" Icon={Droplet} accent={sky}><WaterLens glasses={glasses} target={glassesTarget} onAdd={addWater} /></Panel>,
-                    <Panel key="recents" label="Recents" Icon={Repeat} accent={sage}><RecentsLens recents={recents} onReLog={reLog} onLog={() => setLoggerOpen(true)} onSameYesterday={logYesterday} busy={busy} /></Panel>,
+                    <Panel key="recents" label="Recents" Icon={Repeat} accent={sage}><RecentsLens recents={recents} onReLog={reLog} onLog={() => openLogger()} onSameYesterday={logYesterday} busy={busy} /></Panel>,
                     <Panel key="plan" label="My plan" Icon={Target} accent={sage}><MyPlanLens proteinTarget={proteinTarget} carbsTarget={carbsTarget} fatTarget={fatTarget} fibreTarget={fibreTarget} ironTarget={ironTarget} glassesTarget={glassesTarget} profile={profile} basis={targets.basis} /></Panel>,
                   ]} />
               </BoardBody>
@@ -858,7 +864,7 @@ export default function NutritionEliteShell() {
                 <StackedCard topAccent={cwOf("plum").petal} bottomAccent={sage}
                   top={[
                     <Panel key="cond" label="Your nutrient watch-list" Icon={ShieldCheck} accent={cwOf("plum").petal}><ConditionLens condition={condition} onSelect={setConditionP} onPlan={() => jumpTo(2)} /></Panel>,
-                    <Panel key="glp1" label="GLP-1 muscle-guardian" Icon={Dumbbell} accent={T.crimson}><Glp1Lens on={glp1} onToggle={() => setGlp1P(!glp1)} /></Panel>,
+                    <Panel key="glp1" label="On GLP-1 meds" Icon={Dumbbell} accent={T.crimson}><Glp1Lens on={glp1} onToggle={() => setGlp1P(!glp1)} /></Panel>,
                     <Panel key="feeding" label="Pregnancy & feeding" Icon={Baby} accent={sage}><FeedingLens /></Panel>,
                   ]}
                   bottom={[
@@ -873,8 +879,8 @@ export default function NutritionEliteShell() {
               <BoardBody>
                 <StackedCard topAccent={cwOf("blush").petal} bottomAccent={sage}
                   top={[
-                    <Panel key="dinner" label="What's for dinner tonight?" Icon={ChefHat} accent={cwOf("blush").petal}><DinnerPromptLens onLog={() => setLoggerOpen(true)} onShare={shareToTable} sharedCount={sharedCount} /></Panel>,
-                    <Panel key="plants" label="30 plants this week" Icon={Sprout} accent={sage}><PlantsLens plants={plantsToday} onLog={() => setLoggerOpen(true)} /></Panel>,
+                    <Panel key="dinner" label="What's for dinner tonight?" Icon={ChefHat} accent={cwOf("blush").petal}><DinnerPromptLens onLog={() => openLogger()} onShare={shareToTable} sharedCount={sharedCount} /></Panel>,
+                    <Panel key="plants" label="30 plants this week" Icon={Sprout} accent={sage}><PlantsLens plants={plantsToday} onLog={() => openLogger()} /></Panel>,
                   ]}
                   bottom={[
                     <Panel key="myths" label="Myth vs fact" Icon={ShieldCheck} accent={cwOf("plum").petal}><MythsLens /></Panel>,
@@ -893,8 +899,8 @@ export default function NutritionEliteShell() {
       {jumpOpen && <JumpSheet boards={BOARDS} onClose={() => setJumpOpen(false)} onJump={jumpTo} />}
       {calOpen && <CalendarOverlay user={user} profile={profile} onClose={() => setCalOpen(false)} />}
       {loggerOpen && user && (
-        <SheetShell title="Log a meal" eyebrowText="Snap · Say · Scan · Search · Recents" accent={T.crimson} onClose={() => setLoggerOpen(false)}>
-          <UnifiedLogger user={user} profile={profile} onLogged={() => { loadSummary(user, todayKey()); loadRecents(user); setLoggerOpen(false); flash("Added to today"); }} />
+        <SheetShell title={loggerView === "photo" ? "Snap your meal" : "Add a meal"} eyebrowText={loggerView === "photo" ? "Photo → we'll estimate it" : "Snap · say · scan · search · recent"} accent={T.crimson} onClose={() => { setLoggerOpen(false); setLoggerView(null); }}>
+          <UnifiedLogger user={user} profile={profile} initialView={loggerView} onLogged={() => { loadSummary(user, todayKey()); loadRecents(user); setLoggerOpen(false); setLoggerView(null); flash("Added to today"); }} />
         </SheetShell>
       )}
       {toast && <div className="fw-elite-in" style={{ position: "fixed", left: "50%", bottom: "calc(110px + env(safe-area-inset-bottom))", transform: "translateX(-50%)", zIndex: 9999, background: T.ink, color: T.paperHi, fontFamily: UI, fontSize: 13, fontWeight: 600, padding: "10px 16px", borderRadius: 999, boxShadow: "0 4px 16px rgba(11,8,5,0.3)" }}>{toast}</div>}
@@ -984,30 +990,27 @@ function LoggedLens({ meals, onRemove, onLog }) {
   );
 }
 const METHODS = [
-  { id: "search", label: "Search", Icon: Search, cw: "gold", sub: "food database" },
-  { id: "recents", label: "Recents", Icon: Repeat, cw: "sage", sub: "your go-tos" },
-  { id: "favourites", label: "Favourites", Icon: Star, cw: "gold", sub: "saved meals" },
-  { id: "snap", label: "Snap a photo", Icon: Camera, cw: "plum", sub: "vision estimate" },
+  { id: "snap", label: "Snap a photo", Icon: Camera, cw: "plum", sub: "we read the plate" },
   { id: "say", label: "Say it", Icon: Mic, cw: "sage", sub: "speak your meal" },
+  { id: "search", label: "Search", Icon: Search, cw: "gold", sub: "food list" },
   { id: "scan", label: "Scan barcode", Icon: ScanLine, cw: "crimson", sub: "packaged food" },
+  { id: "recents", label: "Recent", Icon: Repeat, cw: "sage", sub: "your go-tos" },
+  { id: "favourites", label: "Favourites", Icon: Star, cw: "gold", sub: "saved meals" },
 ];
 function MethodsLens({ onLog, onSnap }) {
   return (
     <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
-      <p style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 14, color: T.muted, margin: "0 0 10px", lineHeight: 1.45 }}>In seconds — tap how you'd like to log.</p>
+      <p style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 14, color: T.muted, margin: "0 0 10px", lineHeight: 1.45 }}>Pick the easiest way right now — a photo is quickest.</p>
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 8 }}>{METHODS.map((m) => {
         const c = cwOf(m.cw).petal;
-        // "Snap a photo" honestly opens the text logger with a gentle "describe your plate" nudge (no vision function).
         const handle = m.id === "snap" ? onSnap : onLog;
-        const isSnap = m.id === "snap";
         return (
-          <button key={m.id} onClick={handle} className="fw-elite-press" style={{ position: "relative", display: "flex", flexDirection: "column", alignItems: "center", gap: 5, padding: "11px 4px", borderRadius: 12, background: `${c}10`, border: `1px solid ${c}44`, cursor: "pointer" }}>
-            {isSnap && <span style={{ position: "absolute", top: 4, right: 4, display: "inline-flex", alignItems: "center", gap: 2, fontFamily: UI, fontSize: 8, fontWeight: 800, letterSpacing: ".04em", textTransform: "uppercase", color: c, background: T.paperHi, border: `1px solid ${c}`, borderRadius: 999, padding: "1px 5px" }}><Lock size={7} /> soon</span>}
-            <m.Icon size={17} color={c} /><span style={{ fontFamily: UI, fontSize: 11, fontWeight: 700, color: T.ink, textAlign: "center", lineHeight: 1.1 }}>{m.label}</span>
+          <button key={m.id} onClick={handle} className="fw-elite-press" style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 4, padding: "11px 4px", borderRadius: 12, background: `${c}10`, border: `1px solid ${c}44`, cursor: "pointer" }}>
+            <m.Icon size={17} color={c} /><span style={{ fontFamily: UI, fontSize: 11, fontWeight: 700, color: T.ink, textAlign: "center", lineHeight: 1.1 }}>{m.label}</span><span style={{ fontFamily: UI, fontSize: 9, color: T.muted, textAlign: "center", lineHeight: 1 }}>{m.sub}</span>
           </button>
         );
       })}</div>
-      <div style={{ marginTop: "auto", paddingTop: 10 }}><Pill Icon={UtensilsCrossed} cw="crimson" filled onClick={onLog}>Open the logger</Pill></div>
+      <div style={{ marginTop: "auto", paddingTop: 10 }}><Pill Icon={Camera} cw="plum" filled onClick={onSnap}>Snap a photo of my plate</Pill></div>
     </div>
   );
 }
@@ -1439,14 +1442,14 @@ function Glp1Lens({ on, onToggle }) {
   const crim = cwOf("crimson").petal;
   return (
     <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
-      <p style={{ fontFamily: SERIF, fontSize: 14.5, color: T.ink, lineHeight: 1.55, margin: "0 0 10px" }}>On a GLP-1, around <b>25–40%</b> of the weight lost can be <b>lean muscle</b>. This opt-in mode protects it — framed as protection, never weight-loss.</p>
+      <p style={{ fontFamily: SERIF, fontSize: 14.5, color: T.ink, lineHeight: 1.55, margin: "0 0 10px" }}>On a GLP-1 med, around <b>25–40%</b> of the weight you lose can be <b>muscle</b>. Turn these tips on to help keep it — this is about protecting your body, not losing more.</p>
       <div style={{ display: "flex", flexDirection: "column", gap: 6, marginBottom: 10 }}>{GLP1_POINTS.map((p) => (
         <div key={p.label} style={{ display: "flex", alignItems: "flex-start", gap: 9, ...subCard(crim), padding: "8px 11px" }}>
           <span style={{ width: 26, height: 26, borderRadius: 8, background: `${crim}1F`, display: "grid", placeItems: "center", flexShrink: 0 }}><p.Icon size={13} color={crim} /></span>
           <div><div style={{ fontFamily: SERIF, fontSize: 14.5, fontWeight: 600, color: T.ink, lineHeight: 1.2 }}>{p.label}</div><div style={{ fontFamily: UI, fontSize: 11.5, color: T.muted, lineHeight: 1.35 }}>{p.note}</div></div>
         </div>
       ))}</div>
-      <div style={{ marginTop: "auto" }}><Pill Icon={Dumbbell} cw="crimson" filled={on} onClick={onToggle}>{on ? "Guardian mode on ✓" : "Turn on guardian mode"}</Pill></div>
+      <div style={{ marginTop: "auto" }}><Pill Icon={Dumbbell} cw="crimson" filled={on} onClick={onToggle}>{on ? "Tips are on" : "Show me these tips"}</Pill></div>
     </div>
   );
 }

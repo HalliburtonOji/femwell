@@ -260,9 +260,9 @@ function EditableDraft({ draft, onChange, onConfirm, saving, mealType, onMealTyp
   );
 }
 
-export default function UnifiedLogger({ user, profile, onLogged }) {
-  // view: home | search | scan | say | type | draft | done
-  const [view, setView] = useState("home");
+export default function UnifiedLogger({ user, profile, onLogged, initialView }) {
+  // view: home | search | scan | say | type | photo | draft | done
+  const [view, setView] = useState(initialView || "home");
   const [mealType, setMealType] = useState(() => inferMealTypeFromTime());
 
   // recents + favourites (real)
