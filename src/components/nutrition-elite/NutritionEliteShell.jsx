@@ -26,7 +26,7 @@ import {
 } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { format, startOfWeek } from "date-fns";
-import { T, SERIF, UI, PAPER_BG } from "@/components/journal/Editorial";
+import { T, SERIF, UI, PAPER_BG, SHEET_BG } from "@/components/journal/Editorial";
 import { FwFloraHero } from "@/components/brand/PageTop";
 import { SummaryCard } from "@/components/brand/Card";
 import { ClipboardSlider, Clipboard } from "@/components/brand/ClipboardSlider";
@@ -1786,9 +1786,9 @@ function GeneratorOverlay({ onClose, setup, mealPlan, planResult, history, activ
   const doSwap = (meal) => { const nn = onSwapMeal(meal.dayIdx, meal.slot); if (nn) setOpenMeal((mm) => (mm ? { ...mm, name: nn } : mm)); };
   const doShop = (meal) => { onShopMeal(meal.name); };
   return (
-    <div style={{ position: "fixed", inset: 0, zIndex: 9992, background: PAPER_BG, overflowY: "auto" }} className="fw-elite-in">
-      <div style={{ maxWidth: 480, margin: "0 auto", padding: "0 16px calc(40px + env(safe-area-inset-bottom))" }}>
-        <div style={{ position: "sticky", top: 0, zIndex: 2, background: PAPER_BG, display: "flex", alignItems: "center", gap: 10, padding: "16px 0 12px", borderBottom: `1px solid ${T.paperDeep}` }}>
+    <div style={{ position: "fixed", inset: 0, zIndex: 9992, backgroundColor: T.paper, ...SHEET_BG, overflowY: "auto" }}>
+      <div style={{ maxWidth: 480, margin: "0 auto", padding: "0 16px calc(40px + env(safe-area-inset-bottom))" }} className="fw-elite-in">
+        <div style={{ position: "sticky", top: 0, zIndex: 2, backgroundColor: T.paper, display: "flex", alignItems: "center", gap: 10, padding: "16px 0 12px", borderBottom: `1px solid ${T.paperDeep}` }}>
           <div style={{ flex: 1 }}>
             <div style={{ fontFamily: UI, fontSize: 12, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: gold }}>Plan &amp; cook</div>
             <div style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 23, fontWeight: 600, color: OXBLOOD }}>Plan your week</div>
