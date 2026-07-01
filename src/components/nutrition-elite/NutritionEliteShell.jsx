@@ -22,7 +22,7 @@ import {
   CalendarDays, ShoppingBasket, TrendingUp, Sparkles, Leaf, Mic, Loader, Repeat, Beef, Wheat,
   Apple, Flame, ListChecks, Salad, Search, Star, Camera, ScanLine, Fish, Carrot,
   Clock, RefreshCw, ShieldCheck, HeartHandshake, Sprout, ChefHat, ArrowRight,
-  Eye, EyeOff, Dumbbell, Baby, HeartPulse,
+  Eye, EyeOff, Dumbbell, Baby, HeartPulse, ChevronRight, PlayCircle,
 } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { format, startOfWeek } from "date-fns";
@@ -30,7 +30,7 @@ import { T, SERIF, UI, PAPER_BG } from "@/components/journal/Editorial";
 import { FwFloraHero } from "@/components/brand/PageTop";
 import { SummaryCard } from "@/components/brand/Card";
 import { ClipboardSlider, Clipboard } from "@/components/brand/ClipboardSlider";
-import { cwOf, floraKeyframes, Bouquet, Pollinator } from "@/components/brand/flora";
+import { cwOf, floraKeyframes, Bouquet, Pollinator, FlowerGlyph, SprigDivider } from "@/components/brand/flora";
 import MonthlyCalendarCard from "@/components/planner/MonthlyCalendarCard";
 import DayDetailSheet from "@/components/planner/DayDetailSheet";
 import UnifiedLogger from "@/components/nutrition/UnifiedLogger";
@@ -74,6 +74,24 @@ const phaseMeta = (key) => PHASE_BLOOM[key] || PHASE_BLOOM.follicular;
 const WATER_GLASS_ML = 250;
 const todayKey = () => format(new Date(), "yyyy-MM-dd");
 const nowISO = () => new Date().toISOString();
+
+// Find a cook-library recipe for any meal name — exact first, then keyword overlap (so an LLM-named
+// "Lemon lentil soup" still surfaces the real "Red Lentil Soup" cook video + ingredients where it can).
+const STOP_WORDS = new Set(["with", "and", "the", "your", "some", "made", "over", "into", "from", "warm", "fresh", "easy", "quick", "gentle", "little"]);
+function findRecipeFor(name) {
+  if (!name) return null;
+  const exact = recipeByTitle(name);
+  if (exact) return exact;
+  const words = String(name).toLowerCase().split(/[^a-z]+/).filter((w) => w.length > 3 && !STOP_WORDS.has(w));
+  if (!words.length) return null;
+  let best = null, bestScore = 0;
+  for (const r of RECIPE_LIBRARY) {
+    const hay = `${r.title} ${(r.ingredients || []).map((i) => i.name).join(" ")}`.toLowerCase();
+    let score = 0; words.forEach((w) => { if (hay.includes(w)) score += 1; });
+    if (score > bestScore) { bestScore = score; best = r; }
+  }
+  return bestScore >= 1 ? best : null;
+}
 
 // stage label (for the My-plan framing line)
 const STAGE_LABEL = {
@@ -700,6 +718,65 @@ export default function NutritionEliteShell() {
     flash("Brought that week back");
   }, []);
 
+  // ── SWAP a single meal in the active plan — updates INSTANTLY, persists to MealPlans in the background ──
+  const swapMeal = useCallback((dayIdx, slot) => {
+    if (!user || !mealPlan?.id) { flash("Generate a week first"); return null; }
+    const days = (mealPlan.plan_days || []).filter(Boolean);
+    const day = days.find((d) => d.day === dayIdx) || days[dayIdx];
+    if (!day) return null;
+    const current = cellName(day[slot]);
+    let next = null;
+    if (slot === "breakfast" || slot === "snack") {
+      const pool = slot === "breakfast" ? FALLBACK_BREAKFASTS : FALLBACK_SNACKS;
+      const opts = pool.filter((x) => x !== current);
+      next = opts[Math.floor(Math.random() * opts.length)] || pool[0];
+    } else {
+      const diet = planDietary.includes("Vegan") ? "vegan" : (planDietary.includes("Vegetarian") ? "veg" : "all");
+      let pool = RECIPE_LIBRARY.filter((r) => diet === "all" || (r.diet || []).includes(diet));
+      if (pool.length < 2) pool = RECIPE_LIBRARY;
+      const titles = pool.map((r) => r.title).filter((t) => t !== current);
+      next = titles[Math.floor(Math.random() * titles.length)] || (pool[0] && pool[0].title);
+    }
+    if (!next || next === current) return null;
+    const newDays = days.map((d) => (d.day === day.day ? { ...d, [slot]: [next] } : d));
+    setMealPlan((p) => ({ ...p, plan_days: newDays })); // instant, optimistic
+    flash("Swapped — a new idea");
+    // persist in the background so the card/sheet never wait on the network
+    withTimeout(base44.entities.MealPlans.update(mealPlan.id, { plan_days: newDays, updated_at: nowISO() }), 8000, "swap").catch(() => flash("Swapped here, but couldn't save — try again"));
+    return next;
+  }, [user, mealPlan, planDietary]);
+
+  // ── Add one meal's ingredients (or the meal itself) to the shopping list — real ShoppingList write ──
+  const shopMeal = useCallback(async (name) => {
+    if (!user || !name) return;
+    const recipe = findRecipeFor(name);
+    if (recipe && (recipe.ingredients || []).length) { await addRecipeToShopping(recipe); return; }
+    const week_start = thisMonday();
+    flash("Adding to your shopping list…");
+    try {
+      await withTimeout(base44.entities.ShoppingList.create({ user_id: user.id, week_start, ingredient_name: name, quantity_text: "", category: shoppingCategoryFor(name), is_checked: false, source: "manual" }), 6000, "save");
+      loadKitchen(user); flash("Added to your shopping list");
+    } catch { flash("Couldn't add — try again"); }
+  }, [user, addRecipeToShopping, loadKitchen, thisMonday]);
+
+  // ── Log a whole day's plan for today — writes 4 MealLog rows (real; persists) ──
+  const logPlanDay = useCallback(async (dayIdx) => {
+    if (!user || !mealPlan) return;
+    const days = (mealPlan.plan_days || []).filter(Boolean);
+    const day = days.find((d) => d.day === dayIdx) || days[dayIdx];
+    if (!day) return;
+    const meals = SLOT_META.map(([slot]) => ({ slot, name: cellName(day[slot]) })).filter((m) => m.name);
+    if (!meals.length) { flash("Nothing to log for this day"); return; }
+    flash(`Logging ${meals.length} meals for today…`);
+    try {
+      await Promise.all(meals.map((m) => { const est = mealEstimate(m.name, m.slot); return withTimeout(base44.entities.MealLog.create({
+        user_id: user.id, day_key: todayKey(), logged_at: nowISO(), meal_type: m.slot, method: "template", raw_text: m.name,
+        ai_analysis: { summary: { calories: est.kcal, protein_g: est.protein_g, carbs_g: est.carbs_g, fat_g: est.fat_g, fiber_g: est.fiber_g, iron_mg: est.iron_mg }, estimated: true },
+      }), 6000, "log").catch(() => null); }));
+      loadSummary(user, todayKey()); loadRecents(user); flash("Today's plan, logged");
+    } catch { flash("Couldn't log all — try again"); }
+  }, [user, mealPlan, loadSummary, loadRecents]);
+
   // ── +2: "Same as yesterday" — re-log yesterday's real MealLog rows (creates real rows; persists) ──
   const logYesterday = useCallback(async () => {
     if (!user || busy) return;
@@ -934,8 +1011,9 @@ export default function NutritionEliteShell() {
             ingredients: planIngredients, onToggleIngredient: togglePlanIngredient, onAddIngredient: addIngredient, onRemoveIngredient: removeIngredient,
             ingredientInput, setIngredientInput, pantryCount: pantryNames.length, onGenerate: generatePlan,
           }}
-          mealPlan={mealPlan} planResult={planResult} history={planHistory} activeId={mealPlan?.id}
-          onUsePlan={usePlan} onLogDinner={() => reLog(dinner.name, "dinner")} onOpenWeek={() => { setPlannerOpen(false); setCalOpen(true); }} busy={busy}
+          mealPlan={mealPlan} planResult={planResult} history={planHistory} activeId={mealPlan?.id} numbersOff={numbersOff}
+          onUsePlan={usePlan} onOpenWeek={() => { setPlannerOpen(false); setCalOpen(true); }}
+          onBuildShopping={buildShoppingFromPlan} onLogMeal={reLog} onSwapMeal={swapMeal} onShopMeal={shopMeal} onLogDay={logPlanDay} busy={busy}
         />
       )}
       {loggerOpen && user && (
@@ -1602,14 +1680,111 @@ function SavedPlansLens({ history, activeId, onUse }) {
   );
 }
 
-// ── FULL-SCREEN meal-generator overlay — the long planning flow lifted out of the cramped board ──
-function GeneratorOverlay({ onClose, setup, mealPlan, planResult, history, activeId, onUsePlan, onLogDinner, onOpenWeek, busy }) {
+// ── elite meal cards — each meal is a proper brand card (flora rail · name · warm macros · tappable) ──
+const DOW_FULL = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
+const SLOT_ORDER = ["breakfast", "lunch", "dinner", "snack"];
+const SLOT_FULL = {
+  breakfast: { label: "Breakfast", cw: "gold", flora: "sunflower", line: "A kind way to start the day." },
+  lunch: { label: "Lunch", cw: "sage", flora: "dahlia", line: "Enough to carry the afternoon." },
+  dinner: { label: "Dinner", cw: "crimson", flora: "poppy", line: "Something warm to come home to." },
+  snack: { label: "Snack", cw: "plum", flora: "chrysanthemum", line: "A little something between meals." },
+};
+const planMacros = (name, slot) => { const e = mealEstimate(name, slot) || {}; return { kcal: Math.round(e.kcal || 0), protein: Math.round(e.protein_g || 0), fibre: Math.round(e.fiber_g || 0), iron: Math.round(e.iron_mg || 0) }; };
+
+function PlanMealCard({ dayIdx, slot, name, numbersOff, onOpen }) {
+  const meta = SLOT_FULL[slot]; const c = cwOf(meta.cw).petal;
+  const m = planMacros(name, slot);
+  const hasVid = !!findRecipeFor(name);
+  return (
+    <button onClick={() => onOpen({ dayIdx, slot, name })} className="fw-elite-press" style={{ display: "flex", alignItems: "stretch", width: "100%", textAlign: "left", background: T.paperHi, border: `1px solid ${T.paperDeep}`, borderRadius: 15, overflow: "hidden", cursor: "pointer", padding: 0 }}>
+      <span style={{ width: 46, flexShrink: 0, background: `${c}14`, display: "grid", placeItems: "center", borderRight: `1px solid ${c}26` }}><FlowerGlyph variant={meta.flora} size={30} color={c} idx={`pm-${dayIdx}-${slot}`} /></span>
+      <span style={{ flex: 1, minWidth: 0, padding: "9px 11px" }}>
+        <span style={{ display: "flex", alignItems: "center", gap: 7, marginBottom: 1 }}>
+          <span style={{ fontFamily: UI, fontSize: 9.5, fontWeight: 800, letterSpacing: ".07em", textTransform: "uppercase", color: c }}>{meta.label}</span>
+          {hasVid && <span style={{ display: "inline-flex", alignItems: "center", gap: 2, fontFamily: UI, fontSize: 9, fontWeight: 700, color: cwOf("crimson").petal }}><PlayCircle size={9} /> cook video</span>}
+        </span>
+        <span style={{ display: "block", fontFamily: SERIF, fontSize: 15, fontWeight: 600, color: T.ink, lineHeight: 1.2, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{name}</span>
+        <span style={{ fontFamily: UI, fontSize: 11, color: T.muted }}>{numbersOff ? "a balanced plate" : <>~<b style={{ color: T.ink }}>{m.kcal}</b> kcal · protein <b style={{ color: T.ink }}>{m.protein}g</b>{m.iron >= 2 ? <> · iron <b style={{ color: T.ink }}>{m.iron}mg</b></> : ""}</>}</span>
+      </span>
+      <span style={{ display: "grid", placeItems: "center", paddingRight: 7, color: T.muted, flexShrink: 0 }}><ChevronRight size={16} /></span>
+    </button>
+  );
+}
+function PlanDayBlock({ day, isToday, numbersOff, onOpenMeal, onLogDay, busy }) {
+  const sage = cwOf("sage").petal;
+  const slots = SLOT_ORDER.map((slot) => ({ slot, name: cellName(day[slot]) })).filter((s) => s.name);
+  if (!slots.length) return null;
+  return (
+    <div style={{ marginBottom: 15 }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 8, margin: "0 2px 8px" }}>
+        <span style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 17, fontWeight: 600, color: OXBLOOD }}>{DOW_FULL[day.day] || "Day"}</span>
+        {isToday && <span style={{ fontFamily: UI, fontSize: 9.5, fontWeight: 800, letterSpacing: ".05em", textTransform: "uppercase", color: "#fff", background: sage, borderRadius: 999, padding: "2px 8px" }}>Today</span>}
+        <span style={{ flex: 1, height: 1, background: `linear-gradient(90deg, ${T.paperDeep}, transparent)` }} />
+      </div>
+      <div style={{ display: "flex", flexDirection: "column", gap: 7 }}>{slots.map((s) => <PlanMealCard key={s.slot} dayIdx={day.day} slot={s.slot} name={s.name} numbersOff={numbersOff} onOpen={onOpenMeal} />)}</div>
+      <div style={{ marginTop: 8 }}>
+        <button onClick={() => onLogDay(day.day)} disabled={busy} className="fw-elite-press" style={{ display: "inline-flex", alignItems: "center", gap: 6, fontFamily: UI, fontSize: 11.5, fontWeight: 700, color: sage, background: `${sage}12`, border: `1px solid ${sage}55`, borderRadius: 999, padding: "6px 12px", cursor: "pointer" }}><Check size={13} /> Log this day for today</button>
+      </div>
+    </div>
+  );
+}
+// meal detail sheet — opens over the planner (recipe · embedded cook video · ingredients · real actions)
+function MealSheet({ meal, numbersOff, onClose, onLog, onSwap, onShop, busy }) {
+  const meta = SLOT_FULL[meal.slot]; const c = cwOf(meta.cw).petal;
+  const recipe = findRecipeFor(meal.name);
+  const m = planMacros(meal.name, meal.slot);
+  return (
+    <div onClick={onClose} style={{ position: "fixed", inset: 0, zIndex: 9995, background: "rgba(11,8,5,0.5)", display: "flex", alignItems: "flex-end", justifyContent: "center" }} className="fw-elite-in">
+      <div onClick={(e) => e.stopPropagation()} style={{ width: "100%", maxWidth: 460, maxHeight: "90vh", overflowY: "auto", background: T.paperHi, borderRadius: "22px 22px 0 0", borderTop: `3px solid ${c}`, padding: "16px 18px calc(26px + env(safe-area-inset-bottom))" }}>
+        <div style={{ display: "flex", alignItems: "flex-start", gap: 10, marginBottom: 10 }}>
+          <span style={{ width: 46, height: 46, borderRadius: 12, flexShrink: 0, background: `${c}16`, display: "grid", placeItems: "center" }}><FlowerGlyph variant={meta.flora} size={34} color={c} idx="ms" /></span>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ fontFamily: UI, fontSize: 10.5, fontWeight: 800, letterSpacing: ".08em", textTransform: "uppercase", color: c }}>{meta.label}</div>
+            <div style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 21, fontWeight: 600, color: OXBLOOD, lineHeight: 1.15 }}>{meal.name}</div>
+          </div>
+          <button onClick={onClose} aria-label="Close" className="fw-elite-press" style={{ width: 32, height: 32, borderRadius: 999, background: T.paper, border: `1px solid ${T.paperDeep}`, color: T.muted, cursor: "pointer", display: "grid", placeItems: "center", flexShrink: 0 }}><X size={16} /></button>
+        </div>
+        <p style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 14, color: T.muted, margin: "0 0 12px", lineHeight: 1.5 }}>{meta.line}</p>
+        <div style={{ display: "flex", alignItems: "center", gap: 8, background: `${cwOf("gold").petal}0D`, border: `1px solid ${cwOf("gold").petal}`, borderRadius: 12, padding: "9px 12px", marginBottom: 12 }}>
+          <Flame size={15} color={cwOf("gold").petal} style={{ flexShrink: 0 }} />
+          <span style={{ fontFamily: UI, fontSize: 12.5, color: T.inkSoft, lineHeight: 1.4 }}>{numbersOff ? <>Logs as a <b>balanced, protein-rich</b> plate — no numbers.</> : <>Roughly <b style={{ color: T.ink }}>{m.kcal} kcal</b> · protein <b style={{ color: T.ink }}>{m.protein}g</b>{m.fibre >= 2 ? <> · fibre <b style={{ color: T.ink }}>{m.fibre}g</b></> : ""}{m.iron >= 2 ? <> · iron <b style={{ color: T.ink }}>{m.iron}mg</b></> : ""} — an estimate from the dish.</>}</span>
+        </div>
+        {recipe ? (<>
+          <div style={{ ...lbl, color: c, marginBottom: 6 }}>How to make it</div>
+          <CookVideo youtubeId={recipe.youtube_id} title={recipe.title} accent={c} />
+          {recipe.blurb && <p style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 13.5, color: T.muted, margin: "8px 0", lineHeight: 1.45 }}>{recipe.blurb}</p>}
+          <div style={{ ...lbl, color: cwOf("sage").petal, margin: "4px 0 5px" }}>What's in it</div>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 5, marginBottom: 14 }}>{(recipe.ingredients || []).map((ing, i) => (
+            <span key={i} style={{ fontFamily: UI, fontSize: 11.5, color: T.inkSoft, background: T.paper, border: `1px solid ${T.paperDeep}`, borderRadius: 999, padding: "4px 9px" }}>{ing.name}{ing.quantity_text ? <span style={{ color: T.muted }}> · {ing.quantity_text}</span> : null}</span>
+          ))}</div>
+        </>) : (
+          <div style={{ ...subCard(cwOf("sage").petal), background: `${cwOf("sage").petal}0D`, marginBottom: 14 }}>
+            <p style={{ fontFamily: SERIF, fontSize: 13.5, color: T.ink, margin: 0, lineHeight: 1.5 }}>A simple, wholesome plate. Add it to your shopping list below, or tap <b>Swap</b> for a different idea. For a step-by-step, the Cook board is full of short recipe videos.</p>
+          </div>
+        )}
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+          <Pill Icon={Check} cw="crimson" filled onClick={() => onLog(meal)}>Log it</Pill>
+          <Pill Icon={RefreshCw} cw="gold" onClick={busy ? undefined : () => onSwap(meal)}>Swap</Pill>
+          <Pill Icon={ShoppingBasket} cw="plum" onClick={() => onShop(meal)}>Add to shopping</Pill>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── FULL-SCREEN meal-generator overlay — elite cards: a day at a time, each meal its own tappable card ──
+function GeneratorOverlay({ onClose, setup, mealPlan, planResult, history, activeId, numbersOff, onUsePlan, onOpenWeek, onBuildShopping, onLogMeal, onSwapMeal, onShopMeal, onLogDay, busy }) {
   const gold = cwOf("gold").petal, sage = cwOf("sage").petal;
-  const planDays = (mealPlan?.plan_days || []).filter(Boolean);
+  const planDays = [...((mealPlan?.plan_days || []).filter(Boolean))].sort((a, b) => (a.day ?? 0) - (b.day ?? 0));
   const todayIdx = (new Date().getDay() + 6) % 7;
   const distinctDinners = new Set(planDays.map((d) => cellName(d?.dinner)).filter(Boolean)).size;
+  const [openMeal, setOpenMeal] = useState(null);
   const Section = ({ children }) => <div style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 19, fontWeight: 600, color: OXBLOOD, margin: "20px 2px 9px" }}>{children}</div>;
   const card = { background: T.paperHi, border: `1px solid ${T.paperDeep}`, borderRadius: 18, padding: "13px 14px" };
+  const doLog = (meal) => { onLogMeal(meal.name, meal.slot); setOpenMeal(null); };
+  // synchronous — swapMeal returns the new name immediately; batches with its own setMealPlan into one render
+  const doSwap = (meal) => { const nn = onSwapMeal(meal.dayIdx, meal.slot); if (nn) setOpenMeal((mm) => (mm ? { ...mm, name: nn } : mm)); };
+  const doShop = (meal) => { onShopMeal(meal.name); };
   return (
     <div style={{ position: "fixed", inset: 0, zIndex: 9992, background: PAPER_BG, overflowY: "auto" }} className="fw-elite-in">
       <div style={{ maxWidth: 480, margin: "0 auto", padding: "0 16px calc(40px + env(safe-area-inset-bottom))" }}>
@@ -1632,28 +1807,22 @@ function GeneratorOverlay({ onClose, setup, mealPlan, planResult, history, activ
               {planResult.weekly_tip && <p style={{ fontFamily: SERIF, fontSize: 14, color: T.ink, margin: 0, lineHeight: 1.5 }}>{planResult.weekly_tip}</p>}
             </div>
           )}
-          <div style={{ fontFamily: UI, fontSize: 11.5, color: T.muted, margin: "0 2px 8px" }}>{distinctDinners > 1 ? <><b style={{ color: sage }}>{distinctDinners} different dinners</b> this week · breakfast · lunch · dinner · snack</> : "Breakfast · lunch · dinner · snack each day"}</div>
-          <div style={{ display: "flex", flexDirection: "column", gap: 7 }}>{planDays.map((d) => (
-            <div key={d.day} style={{ ...card, padding: "11px 13px", borderColor: d.day === todayIdx ? sage : T.paperDeep }}>
-              <div style={{ fontFamily: UI, fontSize: 11, fontWeight: 800, color: sage, marginBottom: 5 }}>{DOW[d.day] || "—"}{d.day === todayIdx ? " · today" : ""}</div>
-              <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>{SLOT_META.map(([slot, letter, cw]) => { const nm = cellName(d?.[slot]); if (!nm) return null; return (
-                <div key={slot} style={{ display: "flex", alignItems: "baseline", gap: 8 }}>
-                  <span style={{ fontFamily: UI, fontSize: 10, fontWeight: 800, color: cwOf(cw).petal, width: 13, flexShrink: 0 }}>{letter}</span>
-                  <span style={{ fontFamily: SERIF, fontSize: 14.5, color: T.ink, lineHeight: 1.3 }}>{nm}</span>
-                </div>
-              ); })}</div>
-            </div>
-          ))}</div>
-          <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginTop: 12 }}>
-            <Pill Icon={Check} cw="sage" filled onClick={onLogDinner}>Log tonight's dinner</Pill>
+          <div style={{ fontFamily: UI, fontSize: 11.5, color: T.muted, margin: "0 2px 9px", lineHeight: 1.45 }}>{distinctDinners > 1 ? <><b style={{ color: sage }}>{distinctDinners} different dinners</b> this week. Tap any meal to see the recipe, swap it, or log it.</> : "Tap any meal to see the recipe, swap it, or log it."}</div>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 14 }}>
+            <Pill Icon={ShoppingBasket} cw="plum" filled onClick={busy ? undefined : onBuildShopping}>Shopping list for the week</Pill>
             <Pill Icon={CalendarDays} cw="gold" onClick={onOpenWeek}>Open in calendar</Pill>
           </div>
+          <SprigDivider color={T.gold} my={4} />
+          <div style={{ marginTop: 14 }}>{planDays.map((d) => (
+            <PlanDayBlock key={d.day} day={d} isToday={d.day === todayIdx} numbersOff={numbersOff} onOpenMeal={setOpenMeal} onLogDay={onLogDay} busy={busy} />
+          ))}</div>
         </>)}
 
         <Section>Saved weeks</Section>
         <p style={{ fontFamily: UI, fontSize: 12, color: T.muted, margin: "0 2px 9px", lineHeight: 1.45 }}>Every week you generate is kept here — tap one to bring it back.</p>
         <SavedPlansLens history={history} activeId={activeId} onUse={onUsePlan} />
       </div>
+      {openMeal && <MealSheet meal={openMeal} numbersOff={numbersOff} onClose={() => setOpenMeal(null)} onLog={doLog} onSwap={doSwap} onShop={doShop} busy={busy} />}
     </div>
   );
 }
