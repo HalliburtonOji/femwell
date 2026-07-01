@@ -79,3 +79,16 @@ Wiring per doc (3 edits each): `import nutritionLevelupHtml from "@/components/f
 | /ProgramsL2Demo | "Programs +2" | sage | built · HTTP 200 — light Jess guide (day-1/wobble/graduation) · catch-up & rest no-guilt · programme→habit graduation · pre/post PROMs (ISI/GAD-7) · start-together cohorts + anonymous progress wall · whole-life journeys (money/dating/friendship/style/creative) · adaptive pacing · gated: push delivery + human coaching (needs sign-off) |
 | /GardenL2Demo | "Garden +2" | crimson | built · HTTP 200 — responsive companion states + Jess dialogue (wilts softly, never dies) · "felt that" cross-surface emotional ledger · self-compassion/gratitude reflection prompts · WOOP/if-then/savouring goals · cyclical & seasonal tinting · garden-of-gardens + anonymous kindness acts + "we're tending today" presence · NO gated function (care-not-guilt rule) |
 | /JessL2Demo | "Jess +2" | plum | built · HTTP 200 — guideline-anchored women's-health answers + honest uncertainty + "here's the NHS" · anti-sycophancy persona (warm but gently challenges) · hardened UK crisis hard-route (Samaritans 116 123 / Shout 85258 / NHS 111 / 999) · transparent user-editable memory · "talk to Jess" from every surface · Pulse-tied proactive noticing (consented) · voice-as-utility · CBT-style guided flows (support not treatment) · GATED: the women-tuned guideline-GROUNDING layer (RAG + model choice) — needs sign-off |
+
+---
+## ⏳ TO WIRE — CARD STYLES plan doc (2026-07-01, content session) → Ideas → Current
+> A plan doc (BrandDocFrame, like the +2 plans) expanding our card-style library (bento · media-hero + carousel · category shelf · rich-stat · dismissible nudge · expandable · spotlight/stat-tile/letter). Phone HTML in `femwell-handoff/CARD-STYLES-EXPANSION.html`; copied to `brandDocs/card-styles-expansion.html`. Content session can't safely edit `FoundersOS.jsx` — please wire (3 edits). Feeds a bible §6.7.0 card-language update after Halli approves.
+
+| Doc (femwell-handoff/) | brandDocs slug | FoundersOS key | group | accent |
+|---|---|---|---|---|
+| CARD-STYLES-EXPANSION.html | card-styles-expansion.html | "Card Styles" | Current | gold |
+
+Wiring (3 edits):
+- import: `import cardStylesHtml from "@/components/founders/brandDocs/card-styles-expansion.html?raw";`
+- CATALOG entry: `{ kind:"doc", key:"Card Styles", group: CAT.CURRENT, sub:"Card language plans", status:"new", accent:"gold", title:"Card Styles — research + expansion", desc:"Expanded card-style library — bento mixed-size tiles · media/hero card + category carousel · category shelf · rich-stat card (progress ring + flora + inline actions + status badge + … menu) · dismissible suggestion card · expandable card · spotlight/stat-tile/letter — all adapted to our cream/flora/oxblood brand (not dark fintech). Cited research; live on-brand mockups. Plan only; feeds a bible §6.7.0 update after approval." }`
+- render branch: `{tab === "Card Styles" && <BrandDocFrame html={cardStylesHtml} title="FemWell — Card Styles: research + expansion" />}`
