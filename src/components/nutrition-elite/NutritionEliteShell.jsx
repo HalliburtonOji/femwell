@@ -265,8 +265,10 @@ export default function NutritionEliteShell() {
   // overlays
   const [loggerOpen, setLoggerOpen] = useState(false);
   const [loggerView, setLoggerView] = useState(null); // null=home · "photo"=open straight to Snap
-  const openLogger = (view) => { setLoggerView(view || null); openLogger(); };
+  const openLogger = (view) => { setLoggerView(view || null); setLoggerOpen(true); };
   const [calOpen, setCalOpen] = useState(false);
+  const [plannerOpen, setPlannerOpen] = useState(false); // full-screen meal-generator overlay
+  const openPlanner = () => setPlannerOpen(true);
   const [jumpOpen, setJumpOpen] = useState(false);
   const [toast, setToast] = useState(null);
   const sliderRef = useRef(null);
@@ -289,9 +291,11 @@ export default function NutritionEliteShell() {
   const [planCuisine, setPlanCuisine] = useState(() => lsGet("fw_nutri_cuisine", "Any"));
   const [planDietary, setPlanDietary] = useState(() => lsGetArr("fw_nutri_dietary"));
   const [planAllergens, setPlanAllergens] = useState(() => lsGetArr("fw_nutri_allergens"));
-  const [planIngredients, setPlanIngredients] = useState([]); // ephemeral picks for "cook from what I have"
+  const [planIngredients, setPlanIngredients] = useState([]); // picks + free-typed "cook from what I have"
+  const [ingredientInput, setIngredientInput] = useState(""); // free-text ingredient the user types in
   const [allergyInput, setAllergyInput] = useState("");
   const [planResult, setPlanResult] = useState(null); // last generateMealPlan result (focus + tip)
+  const [planHistory, setPlanHistory] = useState([]); // every saved MealPlans row (look-back history)
   const prefHydrated = useRef(false);
 
   // hydrate preferences from the real NutritionProfile once it loads (if the user hasn't set them locally)
@@ -318,6 +322,18 @@ export default function NutritionEliteShell() {
   const addAllergen = (raw) => { const a = (raw || "").trim(); if (!a) return; setPlanAllergens((p) => { if (p.some((x) => x.toLowerCase() === a.toLowerCase())) return p; const next = [...p, a]; lsSet("fw_nutri_allergens", JSON.stringify(next)); saveNutPref({ allergens_avoid: next.join(", ") }); return next; }); setAllergyInput(""); };
   const removeAllergen = (a) => { setPlanAllergens((p) => { const next = p.filter((x) => x !== a); lsSet("fw_nutri_allergens", JSON.stringify(next)); saveNutPref({ allergens_avoid: next.join(", ") }); return next; }); };
   const togglePlanIngredient = (g) => setPlanIngredients((p) => p.includes(g) ? p.filter((x) => x !== g) : [...p, g]);
+  // free-text ingredient add (type your own — not just the preset chips). Accepts comma-separated too.
+  const addIngredient = (raw) => {
+    const parts = String(raw || "").split(",").map((s) => s.trim()).filter(Boolean);
+    if (!parts.length) return;
+    setPlanIngredients((p) => {
+      const next = [...p];
+      parts.forEach((a) => { if (!next.some((x) => x.toLowerCase() === a.toLowerCase())) next.push(a); });
+      return next;
+    });
+    setIngredientInput("");
+  };
+  const removeIngredient = (g) => setPlanIngredients((p) => p.filter((x) => x !== g));
 
   const flash = (m) => { setToast(m); window.clearTimeout(flash._t); flash._t = window.setTimeout(() => setToast(null), 2300); };
 
@@ -397,11 +413,15 @@ export default function NutritionEliteShell() {
     if (!u) return;
     const weekStart = format(startOfWeek(new Date(), { weekStartsOn: 1 }), "yyyy-MM-dd");
     const [plans, shopping, recipes] = await Promise.all([
-      base44.entities.MealPlans.filter({ user_id: u.id, week_start: weekStart }).catch(() => []),
+      // newest-first across ALL weeks → powers both the active plan and the look-back history
+      base44.entities.MealPlans.filter({ user_id: u.id }, "-created_date", 24).catch(() => []),
       base44.entities.ShoppingList.filter({ user_id: u.id, week_start: weekStart }).catch(() => []),
       base44.entities.MealTemplates.filter({ user_id: u.id }, "-created_date", 50).catch(() => []),
     ]);
-    setMealPlan((plans || []).filter(Boolean)[0] || null);
+    const allPlans = (plans || []).filter(Boolean);
+    setPlanHistory(allPlans);
+    // active plan = newest for THIS week (keep week semantics), else newest overall as a gentle fallback
+    setMealPlan(allPlans.find((p) => p.week_start === weekStart) || allPlans[0] || null);
     setShopItems((shopping || []).filter(Boolean));
     // MealTemplates schema = { title, items:[{name, quantity_text, ...}], default_meal_type } —
     // there is NO recipe_json/category/rating. A "saved recipe" = a MealTemplates row with a title.
@@ -611,8 +631,8 @@ export default function NutritionEliteShell() {
         dinner: d.meals?.dinner?.name ? [d.meals.dinner.name] : [],
         snack: d.meals?.snack?.name ? [d.meals.snack.name] : [],
       }));
-      if (mealPlan?.id) await withTimeout(base44.entities.MealPlans.update(mealPlan.id, { plan_days, wellness_goal: wellness, dietary_preferences: dietary, is_active: true, updated_at: nowISO() }), 8000, "save");
-      else await withTimeout(base44.entities.MealPlans.create({ user_id: user.id, week_start, plan_days, wellness_goal: wellness, dietary_preferences: dietary, is_active: true, created_at: nowISO() }), 8000, "save");
+      // Always CREATE a new row → every generated week is kept and revisitable in the history list.
+      await withTimeout(base44.entities.MealPlans.create({ user_id: user.id, week_start, plan_days, wellness_goal: wellness, dietary_preferences: dietary, is_active: true, created_at: nowISO() }), 8000, "save");
       setPlanResult(data);
       // build the shopping list from the plan's real shopping_list (best-effort, capped)
       const sl = (data.shopping_list || []).filter(Boolean);
@@ -640,8 +660,7 @@ export default function NutritionEliteShell() {
           breakfast: [FALLBACK_BREAKFASTS[(i + seed) % FALLBACK_BREAKFASTS.length]],
           snack: [FALLBACK_SNACKS[(i + seed + 2) % FALLBACK_SNACKS.length]],
         }));
-        if (mealPlan?.id) await base44.entities.MealPlans.update(mealPlan.id, { plan_days, wellness_goal: wellness, is_active: true }).catch(() => {});
-        else await base44.entities.MealPlans.create({ user_id: user.id, week_start, plan_days, wellness_goal: wellness, is_active: true, created_at: nowISO() }).catch(() => {});
+        await base44.entities.MealPlans.create({ user_id: user.id, week_start, plan_days, wellness_goal: wellness, is_active: true, created_at: nowISO() }).catch(() => {});
         await loadKitchen(user);
         flash("Your week is ready");
       } catch { flash("Couldn't build the plan — try again"); }
@@ -672,6 +691,14 @@ export default function NutritionEliteShell() {
     } catch { flash("Couldn't build the list — try again"); loadKitchen(user); }
     finally { setBusy(false); }
   }, [user, busy, mealPlan, loadKitchen, thisMonday]);
+
+  // ── Bring a saved week back — show a past MealPlans row as the current plan (history → active view) ──
+  const usePlan = useCallback((plan) => {
+    if (!plan) return;
+    setMealPlan(plan);
+    setPlanResult(null); // the focus/tip belongs to a fresh generate, not a recalled week
+    flash("Brought that week back");
+  }, []);
 
   // ── +2: "Same as yesterday" — re-log yesterday's real MealLog rows (creates real rows; persists) ──
   const logYesterday = useCallback(async () => {
@@ -841,13 +868,12 @@ export default function NutritionEliteShell() {
               <BoardBody>
                 <StackedCard topAccent={sage} bottomAccent={cwOf("plum").petal}
                   top={[
-                    <Panel key="setup" label="Plan setup · goal · cuisine · allergies" Icon={Target} accent={sage}><PlanSetupLens
-                      goal={planGoal} onGoal={setPlanGoalP} cuisine={planCuisine} onCuisine={setPlanCuisineP}
-                      dietary={planDietary} onToggleDietary={togglePlanDietary} allergens={planAllergens} onAddAllergen={addAllergen} onRemoveAllergen={removeAllergen}
-                      allergyInput={allergyInput} setAllergyInput={setAllergyInput}
-                      ingredients={planIngredients} onToggleIngredient={togglePlanIngredient} pantryCount={pantryNames.length}
-                      onGenerate={generatePlan} busy={busy} /></Panel>,
-                    <Panel key="plan" label="Meal plan" Icon={CalendarDays} accent={sage}><MealPlanLens mealPlan={mealPlan} dinner={dinner} planResult={planResult} onLog={() => reLog(dinner.name, "dinner")} onOpen={() => setCalOpen(true)} onGenerate={generatePlan} busy={busy} /></Panel>,
+                    <Panel key="setup" label="Plan your week" Icon={Sparkles} accent={gold}><PlanOpenerLens
+                      goal={planGoal} cuisine={planCuisine} allergens={planAllergens}
+                      hasPlan={(mealPlan?.plan_days || []).filter(Boolean).length > 0}
+                      distinctDinners={new Set((mealPlan?.plan_days || []).map((d) => cellName(d?.dinner)).filter(Boolean)).size}
+                      onOpen={openPlanner} /></Panel>,
+                    <Panel key="plan" label="Meal plan" Icon={CalendarDays} accent={sage}><MealPlanLens mealPlan={mealPlan} dinner={dinner} planResult={planResult} onLog={() => reLog(dinner.name, "dinner")} onOpen={() => setCalOpen(true)} onGenerate={openPlanner} busy={busy} /></Panel>,
                     <Panel key="saved" label="Saved recipes" Icon={BookOpen} accent={sage}><SavedRecipesLens recipes={savedRecipes} onReLog={reLog} onExplore={() => jumpTo(1)} /></Panel>,
                   ]}
                   bottom={[
@@ -898,6 +924,20 @@ export default function NutritionEliteShell() {
 
       {jumpOpen && <JumpSheet boards={BOARDS} onClose={() => setJumpOpen(false)} onJump={jumpTo} />}
       {calOpen && <CalendarOverlay user={user} profile={profile} onClose={() => setCalOpen(false)} />}
+      {plannerOpen && (
+        <GeneratorOverlay
+          onClose={() => setPlannerOpen(false)}
+          setup={{
+            goal: planGoal, onGoal: setPlanGoalP, cuisine: planCuisine, onCuisine: setPlanCuisineP,
+            dietary: planDietary, onToggleDietary: togglePlanDietary, allergens: planAllergens, onAddAllergen: addAllergen, onRemoveAllergen: removeAllergen,
+            allergyInput, setAllergyInput,
+            ingredients: planIngredients, onToggleIngredient: togglePlanIngredient, onAddIngredient: addIngredient, onRemoveIngredient: removeIngredient,
+            ingredientInput, setIngredientInput, pantryCount: pantryNames.length, onGenerate: generatePlan,
+          }}
+          mealPlan={mealPlan} planResult={planResult} history={planHistory} activeId={mealPlan?.id}
+          onUsePlan={usePlan} onLogDinner={() => reLog(dinner.name, "dinner")} onOpenWeek={() => { setPlannerOpen(false); setCalOpen(true); }} busy={busy}
+        />
+      )}
       {loggerOpen && user && (
         <SheetShell title={loggerView === "photo" ? "Snap your meal" : "Add a meal"} eyebrowText={loggerView === "photo" ? "Photo → we'll estimate it" : "Snap · say · scan · search · recent"} accent={T.crimson} onClose={() => { setLoggerOpen(false); setLoggerView(null); }}>
           <UnifiedLogger user={user} profile={profile} initialView={loggerView} onLogged={() => { loadSummary(user, todayKey()); loadRecents(user); setLoggerOpen(false); setLoggerView(null); flash("Added to today"); }} />
@@ -1069,9 +1109,31 @@ function MyPlanLens(p) {
     </div>
   );
 }
+// Compact inline opener — keeps the board short; the full editor + result + history live in the overlay.
+function PlanOpenerLens({ goal, cuisine, allergens, hasPlan, distinctDinners, onOpen }) {
+  const gold = cwOf("gold").petal, sage = cwOf("sage").petal, crim = cwOf("crimson").petal;
+  const goalLabel = (GOAL_MODES.find((g) => g.id === goal) || {}).label;
+  const chip = (c, txt) => <span key={txt} style={{ fontFamily: UI, fontSize: 11.5, fontWeight: 700, color: "#fff", background: c, border: `1px solid ${c}`, borderRadius: 999, padding: "5px 10px" }}>{txt}</span>;
+  const hasPrefs = goalLabel || (cuisine && cuisine !== "Any") || allergens.length > 0;
+  return (
+    <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
+      <p style={{ fontFamily: SERIF, fontSize: 14.5, color: T.muted, margin: "0 0 10px", lineHeight: 1.5 }}>Tell me your goal, the food you love and what's in your kitchen — I'll plan a varied week and keep every one you make.</p>
+      <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 10 }}>
+        {goalLabel && chip(gold, goalLabel)}
+        {cuisine && cuisine !== "Any" && chip(sage, cuisine)}
+        {allergens.slice(0, 2).map((a) => chip(crim, `No ${a}`))}
+        {!hasPrefs && <span style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 13.5, color: T.muted }}>No preferences set yet — tap to choose.</span>}
+      </div>
+      {hasPlan && <div style={{ ...subCard(sage), background: `${sage}10`, marginBottom: 10 }}><p style={{ fontFamily: SERIF, fontSize: 13.5, color: T.ink, margin: 0, lineHeight: 1.4 }}>You've a week ready{distinctDinners > 1 ? <> · <b>{distinctDinners} different dinners</b></> : ""}. Open it to view, tweak or regenerate.</p></div>}
+      <div style={{ marginTop: "auto", paddingTop: 6 }}>
+        <Pill Icon={Sparkles} cw="gold" filled onClick={onOpen}>{hasPlan ? "Open the planner" : "Plan my week"}</Pill>
+      </div>
+    </div>
+  );
+}
 // RECOVERED: the meal-plan preferences editor — body goal · cuisine · dietary/allergy · ingredients.
 // Every choice persists (localStorage + NutritionProfile) and feeds the real generateMealPlan fn.
-function PlanSetupLens({ goal, onGoal, cuisine, onCuisine, dietary, onToggleDietary, allergens, onAddAllergen, onRemoveAllergen, allergyInput, setAllergyInput, ingredients, onToggleIngredient, pantryCount, onGenerate, busy }) {
+function PlanSetupLens({ goal, onGoal, cuisine, onCuisine, dietary, onToggleDietary, allergens, onAddAllergen, onRemoveAllergen, allergyInput, setAllergyInput, ingredients, onToggleIngredient, onAddIngredient, onRemoveIngredient, ingredientInput, setIngredientInput, pantryCount, onGenerate, busy }) {
   const sage = cwOf("sage").petal, gold = cwOf("gold").petal, crim = cwOf("crimson").petal, plum = cwOf("plum").petal;
   const chip = (on, c) => ({ fontFamily: UI, fontSize: 11.5, fontWeight: 700, padding: "5px 10px", borderRadius: 999, cursor: "pointer", border: `1px solid ${on ? c : T.paperDeep}`, background: on ? c : `${c}10`, color: on ? "#fff" : T.inkSoft });
   return (
@@ -1099,8 +1161,20 @@ function PlanSetupLens({ goal, onGoal, cuisine, onCuisine, dietary, onToggleDiet
         </form>
       </div>
       <div>
-        <div style={{ ...lbl, color: sage, marginBottom: 5 }}>Use what I have{pantryCount > 0 ? ` · +${pantryCount} from pantry` : ""}</div>
-        <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>{QUICK_PLAN_INGREDIENTS.map((g) => <button key={g} onClick={() => onToggleIngredient(g)} className="fw-elite-press" style={chip(ingredients.includes(g), sage)}>{g}</button>)}</div>
+        <div style={{ ...lbl, color: sage, marginBottom: 5 }}>Cook from what I have{pantryCount > 0 ? ` · +${pantryCount} from your pantry` : ""}</div>
+        {/* anything you've added — typed or tapped — shown as removable chips */}
+        {ingredients.length > 0 && (
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 7 }}>{ingredients.map((g) => (
+            <span key={g} style={{ display: "inline-flex", alignItems: "center", gap: 5, fontFamily: UI, fontSize: 12, fontWeight: 600, color: "#fff", background: sage, border: `1px solid ${sage}`, borderRadius: 999, padding: "5px 7px 5px 11px" }}>{g}<button onClick={() => onRemoveIngredient(g)} aria-label={`Remove ${g}`} className="fw-elite-press" style={{ background: "transparent", border: "none", cursor: "pointer", color: "#fff", display: "grid", placeItems: "center", padding: 0 }}><X size={12} /></button></span>
+          ))}</div>
+        )}
+        {/* TYPE YOUR OWN — free text, not just the presets (comma-separate to add several) */}
+        <form onSubmit={(e) => { e.preventDefault(); onAddIngredient(ingredientInput); }} style={{ display: "flex", gap: 7, marginBottom: 7 }}>
+          <input value={ingredientInput} onChange={(e) => setIngredientInput(e.target.value)} placeholder="Type any ingredient — courgette, feta, leftover rice…" style={{ flex: 1, minWidth: 0, boxSizing: "border-box", padding: "8px 11px", borderRadius: 11, background: T.paper, border: `1px solid ${T.paperDeep}`, fontFamily: SERIF, fontSize: 13.5, color: T.ink, outline: "none" }} />
+          <button type="submit" aria-label="Add ingredient" className="fw-elite-press" style={{ flexShrink: 0, width: 38, borderRadius: 11, border: `1px solid ${sage}`, background: sage, color: "#fff", display: "grid", placeItems: "center", cursor: "pointer" }}><Plus size={15} /></button>
+        </form>
+        <div style={{ fontFamily: UI, fontSize: 10.5, color: T.muted, marginBottom: 5 }}>Or tap a quick pick:</div>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>{QUICK_PLAN_INGREDIENTS.filter((g) => !ingredients.some((x) => x.toLowerCase() === g.toLowerCase())).map((g) => <button key={g} onClick={() => onToggleIngredient(g)} className="fw-elite-press" style={chip(false, sage)}>{g}</button>)}</div>
       </div>
       <div style={{ marginTop: "auto", paddingTop: 6 }}>
         <Pill Icon={Sparkles} cw="gold" filled onClick={busy ? undefined : onGenerate}>{busy ? "Building your week…" : "Generate my varied week"}</Pill>
@@ -1428,7 +1502,7 @@ function ConditionLens({ condition, onSelect, onPlan }) {
         return <button key={x.id} onClick={() => onSelect(x.id)} className="fw-elite-press" style={{ display: "inline-flex", alignItems: "center", gap: 5, fontFamily: UI, fontSize: 12, fontWeight: 700, padding: "6px 11px", borderRadius: 999, cursor: "pointer", border: `1px solid ${on ? xc : T.paperDeep}`, background: on ? xc : `${xc}12`, color: on ? "#fff" : T.inkSoft }}><x.Icon size={12} color={on ? "#fff" : xc} /> {x.label}</button>;
       })}</div>
       <div style={{ ...subCard(accent), background: `${accent}0D` }}>
-        <span style={{ fontFamily: UI, fontSize: 10, fontWeight: 800, letterSpacing: ".06em", textTransform: "uppercase", color: cwOf("sage").petal }}>● Evidence-graded</span>
+        <span style={{ fontFamily: UI, fontSize: 10, fontWeight: 800, letterSpacing: ".06em", textTransform: "uppercase", color: cwOf("sage").petal }}>● Kind, sensible guidance</span>
         <p style={{ fontFamily: SERIF, fontSize: 14, color: T.ink, lineHeight: 1.5, margin: "5px 0 9px" }}>{c.body}</p>
         <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>{c.watch.map((w) => (
           <span key={w} style={{ fontFamily: UI, fontSize: 11.5, fontWeight: 600, color: accent, background: T.paper, border: `1px solid ${accent}`, borderRadius: 999, padding: "5px 10px" }}>{w}</span>
@@ -1454,18 +1528,22 @@ function Glp1Lens({ on, onToggle }) {
   );
 }
 function FeedingLens() {
-  const sage = cwOf("sage").petal, crim = cwOf("crimson").petal;
+  const sage = cwOf("sage").petal, gold = cwOf("gold").petal, crim = cwOf("crimson").petal;
   return (
-    <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
-      <div style={{ ...subCard(sage), marginBottom: 8 }}>
-        <div style={{ fontFamily: SERIF, fontSize: 15, fontWeight: 600, color: T.ink }}>Gestational diabetes</div>
-        <p style={{ fontFamily: UI, fontSize: 12.5, color: T.muted, margin: "3px 0 0", lineHeight: 1.5 }}>There’s <b>no proven GDM diet</b> (NICE 2025) — this routes you to your <b>NHS dietitian</b> + a low-GI steer. Never a “proven” low-carb plan.</p>
+    <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 8 }}>
+      <div style={{ ...subCard(gold) }}>
+        <div style={{ fontFamily: SERIF, fontSize: 15, fontWeight: 600, color: T.ink }}>Cravings — and how to ride them</div>
+        <p style={{ fontFamily: UI, fontSize: 12.5, color: T.muted, margin: "3px 0 0", lineHeight: 1.5 }}>A craving is your body asking for a top-up, not a failing. <b>Salty</b> often means you need a drink first — have water, then the snack. <b>Sweet</b> is usually tiredness; fruit with yoghurt holds you longer than sweets. Craving <b>ice or non-food</b> things is worth a quick word with your midwife.</p>
+      </div>
+      <div style={{ ...subCard(sage) }}>
+        <div style={{ fontFamily: SERIF, fontSize: 15, fontWeight: 600, color: T.ink }}>When your tummy's tender</div>
+        <p style={{ fontFamily: UI, fontSize: 12.5, color: T.muted, margin: "3px 0 0", lineHeight: 1.5 }}>A <b>dry cracker or some ginger</b> before you get up settles early queasiness. <b>Small, frequent</b> plates sit better than three big ones, and cold food smells less — so it's often kinder on a rough morning.</p>
       </div>
       <div style={{ ...subCard(crim) }}>
-        <div style={{ fontFamily: SERIF, fontSize: 15, fontWeight: 600, color: T.ink }}>Breastfeeding</div>
-        <p style={{ fontFamily: UI, fontSize: 12.5, color: T.muted, margin: "3px 0 0", lineHeight: 1.5 }}>A gentle <b>~+500 kcal/day</b> uplift, plus a “don’t drop below” guardrail for calcium, zinc and B6.</p>
+        <div style={{ fontFamily: SERIF, fontSize: 15, fontWeight: 600, color: T.ink }}>Feeding a baby is hungry work</div>
+        <p style={{ fontFamily: UI, fontSize: 12.5, color: T.muted, margin: "3px 0 0", lineHeight: 1.5 }}>You'll naturally want a bit more while breastfeeding — that's right, not greedy. Keep <b>easy one-handed snacks</b> (oatcakes, nuts, fruit) and a water bottle wherever you feed. Look after you, and the rest follows.</p>
       </div>
-      <p style={{ marginTop: "auto", paddingTop: 10, fontFamily: SERIF, fontStyle: "italic", fontSize: 13, color: T.muted, lineHeight: 1.45 }}>Surfaced when your stage calls for it — feeding yourself counts as much as anything.</p>
+      <p style={{ marginTop: "auto", paddingTop: 6, fontFamily: SERIF, fontStyle: "italic", fontSize: 13, color: T.muted, lineHeight: 1.45 }}>Feeding yourself counts as much as anything. If something worries you, your midwife is the one to ask.</p>
     </div>
   );
 }
@@ -1474,7 +1552,7 @@ function IntuitiveLens({ value, onSet }) {
   const blush = cwOf("blush").petal;
   return (
     <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
-      <p style={{ fontFamily: SERIF, fontSize: 14.5, color: T.ink, lineHeight: 1.55, margin: "0 0 10px" }}>A gentle check-in after eating — <b>joy, not compliance</b>. No streak to break, no number to chase.</p>
+      <p style={{ fontFamily: SERIF, fontSize: 14.5, color: T.ink, lineHeight: 1.55, margin: "0 0 10px" }}>A gentle check-in after eating — <b>just noticing, not marking yourself</b>. No streak to break, no number to chase.</p>
       <div style={{ display: "flex", flexDirection: "column", gap: 7 }}>{FULLNESS.map(([id, label]) => {
         const on = value === id;
         return <button key={id} onClick={() => onSet(id)} className="fw-elite-press" style={{ textAlign: "left", display: "flex", alignItems: "center", gap: 9, background: on ? `${blush}1A` : T.paper, border: `1px solid ${on ? blush : T.paperDeep}`, borderRadius: 12, padding: "10px 12px", cursor: "pointer" }}>
@@ -1482,7 +1560,7 @@ function IntuitiveLens({ value, onSet }) {
           <span style={{ fontFamily: SERIF, fontSize: 14.5, color: T.ink }}>{label}</span>
         </button>;
       })}</div>
-      <p style={{ marginTop: "auto", paddingTop: 10, fontFamily: SERIF, fontStyle: "italic", fontSize: 12.5, color: T.muted }}>{value ? "Saved for today — thank you for listening to your body." : "The evidence-backed contrast to diet apps."}</p>
+      <p style={{ marginTop: "auto", paddingTop: 10, fontFamily: SERIF, fontStyle: "italic", fontSize: 12.5, color: T.muted }}>{value ? "Saved for today — thank you for listening to your body." : "However you feel is information, never a verdict."}</p>
     </div>
   );
 }
@@ -1491,8 +1569,91 @@ function NeverGradeLens() {
   return (
     <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
       <div style={{ display: "grid", placeItems: "center", padding: "8px 0 12px" }}><span style={{ width: 56, height: 56, borderRadius: 999, background: `${sage}1A`, border: `2px solid ${sage}`, display: "grid", placeItems: "center" }}><ShieldCheck size={26} color={sage} /></span></div>
-      <p style={{ fontFamily: SERIF, fontSize: 16, color: T.ink, lineHeight: 1.55, textAlign: "center", margin: 0 }}>No <b>A–E scores</b>. No “good” or “bad” foods. Any product note stays neutral (“higher in salt”) — <b>never moralised</b>.</p>
-      <p style={{ marginTop: "auto", paddingTop: 12, fontFamily: SERIF, fontStyle: "italic", fontSize: 13, color: T.muted, textAlign: "center", lineHeight: 1.5 }}>The opposite of the food-grading apps — and the trust at the heart of this room.</p>
+      <p style={{ fontFamily: SERIF, fontSize: 16, color: T.ink, lineHeight: 1.55, textAlign: "center", margin: 0 }}>No scores. No <b>“good”</b> or <b>“bad”</b> foods. If something's worth a note, we keep it plain (“higher in salt”) — never a telling-off.</p>
+      <p style={{ marginTop: "auto", paddingTop: 12, fontFamily: SERIF, fontStyle: "italic", fontSize: 13, color: T.muted, textAlign: "center", lineHeight: 1.5 }}>You never have to earn your dinner. That trust is the heart of this room.</p>
+    </div>
+  );
+}
+
+// ── Saved plans · history (every generated week, newest first — tap to bring one back) ──────────
+function SavedPlansLens({ history, activeId, onUse }) {
+  const sage = cwOf("sage").petal, gold = cwOf("gold").petal;
+  const list = (history || []).filter(Boolean);
+  const whenOf = (p) => { try { const d = new Date(p.created_at || p.created_date || p.week_start); return Number.isNaN(d.getTime()) ? "" : format(d, "d MMM"); } catch { return ""; } };
+  if (list.length === 0) return (
+    <p style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 14, color: T.muted, margin: "2px 0 0", lineHeight: 1.5 }}>No saved weeks yet — generate one above and it'll be kept here for you to look back on any time.</p>
+  );
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 7 }}>{list.map((p) => {
+      const dinners = (p.plan_days || []).map((d) => cellName(d?.dinner)).filter(Boolean);
+      const distinct = new Set(dinners).size;
+      const active = p.id === activeId;
+      return (
+        <button key={p.id} onClick={() => onUse(p)} className="fw-elite-press" style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", textAlign: "left", ...subCard(active ? sage : T.paperDeep), background: active ? `${sage}12` : T.paper, padding: "10px 12px", cursor: "pointer" }}>
+          <span style={{ width: 30, height: 30, borderRadius: 9, flexShrink: 0, background: `${gold}1A`, display: "grid", placeItems: "center" }}><CalendarDays size={15} color={gold} /></span>
+          <span style={{ flex: 1, minWidth: 0 }}>
+            <span style={{ display: "block", fontFamily: SERIF, fontSize: 14.5, fontWeight: 600, color: T.ink, lineHeight: 1.2, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{p.wellness_goal ? p.wellness_goal.charAt(0).toUpperCase() + p.wellness_goal.slice(1) : "A varied week"}</span>
+            <span style={{ fontFamily: UI, fontSize: 11.5, color: T.muted }}>{whenOf(p)}{whenOf(p) ? " · " : ""}{distinct > 1 ? `${distinct} different dinners` : `${dinners.length} day${dinners.length === 1 ? "" : "s"}`}</span>
+          </span>
+          {active ? <span style={{ fontFamily: UI, fontSize: 10, fontWeight: 800, letterSpacing: ".05em", textTransform: "uppercase", color: sage, flexShrink: 0 }}>Showing</span> : <ArrowRight size={15} color={T.muted} style={{ flexShrink: 0 }} />}
+        </button>
+      );
+    })}</div>
+  );
+}
+
+// ── FULL-SCREEN meal-generator overlay — the long planning flow lifted out of the cramped board ──
+function GeneratorOverlay({ onClose, setup, mealPlan, planResult, history, activeId, onUsePlan, onLogDinner, onOpenWeek, busy }) {
+  const gold = cwOf("gold").petal, sage = cwOf("sage").petal;
+  const planDays = (mealPlan?.plan_days || []).filter(Boolean);
+  const todayIdx = (new Date().getDay() + 6) % 7;
+  const distinctDinners = new Set(planDays.map((d) => cellName(d?.dinner)).filter(Boolean)).size;
+  const Section = ({ children }) => <div style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 19, fontWeight: 600, color: OXBLOOD, margin: "20px 2px 9px" }}>{children}</div>;
+  const card = { background: T.paperHi, border: `1px solid ${T.paperDeep}`, borderRadius: 18, padding: "13px 14px" };
+  return (
+    <div style={{ position: "fixed", inset: 0, zIndex: 9992, background: PAPER_BG, overflowY: "auto" }} className="fw-elite-in">
+      <div style={{ maxWidth: 480, margin: "0 auto", padding: "0 16px calc(40px + env(safe-area-inset-bottom))" }}>
+        <div style={{ position: "sticky", top: 0, zIndex: 2, background: PAPER_BG, display: "flex", alignItems: "center", gap: 10, padding: "16px 0 12px", borderBottom: `1px solid ${T.paperDeep}` }}>
+          <div style={{ flex: 1 }}>
+            <div style={{ fontFamily: UI, fontSize: 12, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: gold }}>Plan &amp; cook</div>
+            <div style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 23, fontWeight: 600, color: OXBLOOD }}>Plan your week</div>
+          </div>
+          <button onClick={onClose} aria-label="Close" className="fw-elite-press" style={{ width: 34, height: 34, borderRadius: 999, background: T.paper, border: `1px solid ${T.paperDeep}`, color: T.muted, cursor: "pointer", display: "grid", placeItems: "center", flexShrink: 0 }}><X size={17} /></button>
+        </div>
+
+        <Section>Tell me what would help</Section>
+        <div style={card}><div style={{ display: "flex", flexDirection: "column", minHeight: 10 }}><PlanSetupLens {...setup} busy={busy} /></div></div>
+
+        {planDays.length > 0 && (<>
+          <Section>Your week</Section>
+          {planResult?.wellness_focus && (
+            <div style={{ ...card, background: `${gold}10`, marginBottom: 10 }}>
+              <div style={{ ...lbl, color: gold, marginBottom: 2 }}>Focus · {planResult.wellness_focus}</div>
+              {planResult.weekly_tip && <p style={{ fontFamily: SERIF, fontSize: 14, color: T.ink, margin: 0, lineHeight: 1.5 }}>{planResult.weekly_tip}</p>}
+            </div>
+          )}
+          <div style={{ fontFamily: UI, fontSize: 11.5, color: T.muted, margin: "0 2px 8px" }}>{distinctDinners > 1 ? <><b style={{ color: sage }}>{distinctDinners} different dinners</b> this week · breakfast · lunch · dinner · snack</> : "Breakfast · lunch · dinner · snack each day"}</div>
+          <div style={{ display: "flex", flexDirection: "column", gap: 7 }}>{planDays.map((d) => (
+            <div key={d.day} style={{ ...card, padding: "11px 13px", borderColor: d.day === todayIdx ? sage : T.paperDeep }}>
+              <div style={{ fontFamily: UI, fontSize: 11, fontWeight: 800, color: sage, marginBottom: 5 }}>{DOW[d.day] || "—"}{d.day === todayIdx ? " · today" : ""}</div>
+              <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>{SLOT_META.map(([slot, letter, cw]) => { const nm = cellName(d?.[slot]); if (!nm) return null; return (
+                <div key={slot} style={{ display: "flex", alignItems: "baseline", gap: 8 }}>
+                  <span style={{ fontFamily: UI, fontSize: 10, fontWeight: 800, color: cwOf(cw).petal, width: 13, flexShrink: 0 }}>{letter}</span>
+                  <span style={{ fontFamily: SERIF, fontSize: 14.5, color: T.ink, lineHeight: 1.3 }}>{nm}</span>
+                </div>
+              ); })}</div>
+            </div>
+          ))}</div>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginTop: 12 }}>
+            <Pill Icon={Check} cw="sage" filled onClick={onLogDinner}>Log tonight's dinner</Pill>
+            <Pill Icon={CalendarDays} cw="gold" onClick={onOpenWeek}>Open in calendar</Pill>
+          </div>
+        </>)}
+
+        <Section>Saved weeks</Section>
+        <p style={{ fontFamily: UI, fontSize: 12, color: T.muted, margin: "0 2px 9px", lineHeight: 1.45 }}>Every week you generate is kept here — tap one to bring it back.</p>
+        <SavedPlansLens history={history} activeId={activeId} onUse={onUsePlan} />
+      </div>
     </div>
   );
 }
