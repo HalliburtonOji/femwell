@@ -531,8 +531,8 @@ function bloomList(list,name,size){const sp=list.find(s=>s.n===name);if(!sp)retu
 function ring(pct,size,col){const r=size/2-6,c=2*Math.PI*r,off=c*(1-pct);return `<svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}"><circle cx="${size/2}" cy="${size/2}" r="${r}" fill="none" stroke="#D8CFBC" stroke-width="7"/><circle cx="${size/2}" cy="${size/2}" r="${r}" fill="none" stroke="${col}" stroke-width="7" stroke-linecap="round" stroke-dasharray="${c}" stroke-dashoffset="${off}" transform="rotate(-90 ${size/2} ${size/2})"/><text x="${size/2}" y="${size/2+5}" text-anchor="middle" font-family="Cormorant Garamond,serif" font-weight="600" font-size="18" fill="#7A1A12">${Math.round(pct*100)}%</text></svg>`;}
 document.getElementById('stat-ring').innerHTML=ring(0.72,64,'#8FAF8F');
 try{
-  document.getElementById('bento-bloom').innerHTML=bloom('rose','crimson',40);
-  document.getElementById('hero-bloom').innerHTML=bloom('peony','blush',110);
+  document.getElementById('bento-bloom').innerHTML=bloom('rose',40);
+  document.getElementById('hero-bloom').innerHTML=bloom('peony',110);
 }catch(e){}
 </script>
 </body></html>
