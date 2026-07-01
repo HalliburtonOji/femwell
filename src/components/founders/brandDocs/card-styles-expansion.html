@@ -219,7 +219,21 @@
 <div class="section plum">
   <div class="eyebrow">Five · The research</div>
   <h2>Grounded, cited.</h2>
-  <p id="research-body" class="cap">Cited research pass in progress (bento/fintech homes · streaming hero+carousel · category shelves · rich stat cards · dismissible nudges · expandable/list-vs-card · arrangement) → lands in <code>workspace/CARD_STYLES_RESEARCH_2026-07-01.md</code> and is folded in here on the next pass. It extends the earlier <code>CARD_PATTERNS_RESEARCH_2026-06-25.md</code>.</p>
+  <p>Every proposal is grounded (full cites: <code>workspace/CARD_STYLES_RESEARCH_2026-07-01.md</code> — Netflix/Monzo/Spotify/Apple teardowns, NN/g, bento &amp; design-system sources). The rules that came out of it:</p>
+  <table>
+    <tr><th>Finding</th><th>The rule we adopt</th></tr>
+    <tr><td><b>Bento — size is the loudness dial</b> (a bigger tile gets ~2.6× longer fixation)</td><td>vary size for hierarchy; <b>max TWO hero tiles</b>, <b>≤12 tiles</b>/screen. If you must read a label to know which number matters, the sizing is wrong.</td></tr>
+    <tr><td><b>Hero card</b> — quiet chrome lets the image shout</td><td>full-width botanical hero, <b>ONE</b> tag ON the art ("New"/"Day 14"), <b>no autoplay</b>.</td></tr>
+    <tr><td><b>Shelf</b> — horizontal scroll is genuinely <i>skipped</i> (a 120-person eyetracking study: <b>zero</b> fixations right of the fold)</td><td>every shelf needs a reliable second path — a <b>"See all"</b>; the <b>peek</b> (not dots) does discovery; best item first; ≤6–8 cards, ≤3–4 shelves/page.</td></tr>
+    <tr><td><b>Stat card</b></td><td>a <b>ring OR a figure, never both</b>; ring = cyclical snapshot, bar = linear programme; one status chip + one inline pill + a "…" overflow for the quiet extras.</td></tr>
+    <tr><td><b>Nudge card</b></td><td>botanical + one warm line + one CTA + a real labelled ✕; <b>snooze ≠ dismiss</b> so it never nags; a nudge never carries status.</td></tr>
+    <tr><td><b>Expandable</b></td><td>a <b>caret</b> (not +/arrow — those read as "add"/"jump"); opens the long read <b>inline</b> to keep her place.</td></tr>
+  </table>
+  <div style="background:#EFE0DD;border:1px solid #DEB7B0;border-radius:14px;padding:14px 16px;margin-top:10px">
+    <div style="font-family:var(--sans);font-size:12px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#8E3B2C;margin-bottom:6px">The big warning</div>
+    <p style="margin:0;font-size:16px"><b>Modular ≠ legible.</b> Monzo's own community called its bento home "a mess" / "convoluted" (2023). Dark-fintech density won't suit a calm cream app — <b>our restraint must beat it</b>: bigger gutters, <b>one gold figure per tile</b>, botanical rules instead of hairlines, a page as a <b>stack (≤3–4 card families) not a collage</b>. Canonical arrangement: FwFloraHero → one SummaryCard → ≤1 bento + 1–3 shelves + optional one stat card + one top nudge. Keep <b>lists</b> (not cards) for dense scan surfaces (Planner agenda, settings).</p>
+  </div>
+  <p class="cap" style="margin-top:8px">Build note: on approval, ship the new types <b>demo-first</b> as one seeded <code>/CardStylesV2Demo</code> route linked from the IDEAS pill, before any live rebuild (the card-system demo-first workflow).</p>
 </div>
 
 <!-- 6 -->
