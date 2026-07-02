@@ -1,142 +1,135 @@
 <!doctype html>
 <html lang="en-GB"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<title>FemWell — Card Styles: research + expansion (v2)</title>
+<title>FemWell — Card Styles: the gallery</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500;1,600&family=Ephesis&display=swap" rel="stylesheet">
 <style>
   :root{--paper:#ECE7DA;--paperHi:#F4EFE3;--paperDeep:#D8CFBC;--ink:#0B0805;--inkSoft:#1A140D;--muted:#2E261B;--gold:#A8893F;--crimson:#BC2E27;--oxblood:#7A1A12;--blush:#E8B4B8;--sage:#8FAF8F;--plum:#8E6E8E;--serif:'Cormorant Garamond',Georgia,serif;--script:'Ephesis',cursive;--sans:ui-sans-serif,system-ui,-apple-system,'Segoe UI',sans-serif;}
   *{box-sizing:border-box}
-  body{margin:0;background:radial-gradient(120% 80% at 12% 0%,#F4EFE3 0%,rgba(244,239,227,0) 55%),radial-gradient(120% 90% at 100% 100%,#E4DDCC 0%,rgba(228,221,204,0) 50%),var(--paper);color:var(--ink);font-family:var(--serif);font-size:18px;line-height:1.6;-webkit-font-smoothing:antialiased}
-  .doc{max-width:680px;margin:0 auto;padding:28px 22px 90px}
+  body{margin:0;background:radial-gradient(120% 80% at 12% 0%,#F4EFE3 0%,rgba(244,239,227,0) 55%),radial-gradient(120% 90% at 100% 100%,#E4DDCC 0%,rgba(228,221,204,0) 50%),var(--paper);color:var(--ink);font-family:var(--serif);font-size:18px;line-height:1.55;-webkit-font-smoothing:antialiased}
+  .doc{max-width:680px;margin:0 auto;padding:26px 20px 90px}
   h1.cover{font-family:var(--script);font-size:52px;color:var(--oxblood);margin:6px 0 2px;line-height:1.04}
-  h2{font-family:var(--serif);font-style:italic;font-weight:600;font-size:28px;color:var(--oxblood);margin:0 0 4px}
-  h3{font-family:var(--serif);font-weight:600;font-size:22px;color:var(--oxblood);margin:20px 0 4px}
-  h4{font-family:var(--sans);font-size:12px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--gold);margin:14px 0 4px}
-  .eyebrow{font-family:var(--sans);font-size:12px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--gold);margin-bottom:10px}
-  p{margin:0 0 12px}.lede{font-size:20px;line-height:1.55}
-  small,.cap{font-family:var(--sans);font-size:13px;color:var(--muted);line-height:1.5}
+  h2{font-family:var(--serif);font-style:italic;font-weight:600;font-size:27px;color:var(--oxblood);margin:0 0 4px}
+  h3{font-family:var(--serif);font-weight:600;font-size:19px;color:var(--oxblood);margin:16px 0 3px}
+  .eyebrow{font-family:var(--sans);font-size:12px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--gold);margin-bottom:8px}
+  p{margin:0 0 10px}.lede{font-size:20px;line-height:1.5}
+  small,.cap{font-family:var(--sans);font-size:13px;color:var(--muted);line-height:1.45}
   b,strong{font-weight:600}
-  .section{background:var(--paperHi);border:1px solid var(--paperDeep);border-left:4px solid var(--gold);border-radius:20px;padding:22px 20px;margin:18px 0;box-shadow:0 4px 20px rgba(58,44,26,.10),0 1px 4px rgba(58,44,26,.06);position:relative;overflow:hidden}
-  .section.crimson{border-left-color:var(--oxblood)}.section.sage{border-left-color:var(--sage)}.section.plum{border-left-color:var(--plum)}
-  .section.lead{border-left-color:var(--oxblood);border-width:1px 1px 1px 5px;background:linear-gradient(180deg,#F6EFE0,#F1E8D6)}
-  .rule{height:1px;background:var(--gold);opacity:.3;margin:16px 0}
-  table{width:100%;border-collapse:collapse;font-size:14px;font-family:var(--sans);margin:8px 0}
-  th,td{text-align:left;padding:7px 8px;border-bottom:1px solid var(--paperDeep);vertical-align:top}
-  th{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--gold)}
-  td b{font-family:var(--serif);font-size:15px}
+  .section{background:var(--paperHi);border:1px solid var(--paperDeep);border-left:4px solid var(--gold);border-radius:18px;padding:18px 16px;margin:16px 0;box-shadow:0 4px 18px rgba(58,44,26,.09)}
+  .section.a{border-left-color:var(--oxblood)}.section.b{border-left-color:var(--gold)}.section.c{border-left-color:var(--sage)}.section.d{border-left-color:var(--plum)}.section.e{border-left-color:var(--crimson)}.section.f{border-left-color:var(--muted)}
   .toc a{display:block;font-family:var(--sans);font-size:15px;color:var(--inkSoft);text-decoration:none;padding:6px 0;border-bottom:1px solid var(--paperDeep)}
   .toc a span{color:var(--gold);font-weight:700;margin-right:10px}
-  .whereline{font-family:var(--sans);font-size:13px;color:#6B5840;margin:4px 0 2px}
-  .whereline b{color:var(--muted)}
-  .tag{display:inline-block;font-family:var(--sans);font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;padding:3px 9px;border-radius:999px;background:#EFE3C9;color:#7a5f1c}
-  .tag.new{background:var(--oxblood);color:#fff}.tag.sage{background:#DDE7DD;color:#3f6b3f}
-  /* card kit */
-  .fwcard{background:linear-gradient(165deg,var(--paperHi),#EFE7D6);border:1px solid var(--paperDeep);border-left:4px solid var(--gold);border-radius:16px;padding:14px;position:relative;box-shadow:0 4px 14px rgba(58,44,26,.10)}
-  .cardttl{font-family:var(--serif);font-weight:600;font-size:19px;color:var(--oxblood);margin:0 0 2px}
-  .cardline{font-family:var(--serif);font-size:15px;color:var(--inkSoft);margin:0}
-  .eyerow{font-family:var(--sans);font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--gold)}
-  .pill{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:9px 14px;font-family:var(--sans);font-size:13px;font-weight:700;border:none;cursor:pointer}
-  .pill.plum{background:var(--plum);color:#fff}.pill.gold{background:var(--gold);color:#fff}.pill.ghost{background:transparent;border:1px solid var(--paperDeep);color:var(--muted)}
-  .badge{display:inline-block;font-family:var(--sans);font-size:11px;font-weight:700;padding:3px 9px;border-radius:999px}
-  .badge.gold{background:#EFE3C9;color:#7a5f1c}.badge.sage{background:#DDE7DD;color:#3f6b3f}
-  .xbtn{position:absolute;top:8px;right:10px;font-family:var(--sans);font-size:15px;color:var(--muted);opacity:.55;cursor:pointer;width:30px;height:30px;text-align:center;line-height:30px}
-  .kebab{position:absolute;top:10px;right:12px;font-family:var(--sans);font-size:20px;color:var(--muted);opacity:.5;cursor:pointer;letter-spacing:1px}
-  .btnrow{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
-  .flex{display:flex;gap:10px;align-items:center}
-  .mock{margin:12px 0 6px}
-  .interactive{outline:1px dashed rgba(168,137,63,.5);outline-offset:6px;border-radius:18px}
-  .tapnote{font-family:var(--sans);font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--crimson);text-align:center;margin:14px 0 2px}
-  /* HERO + tap-to-promote rail */
-  .hero{border-radius:16px;overflow:hidden;border:1px solid var(--paperDeep);box-shadow:0 6px 18px rgba(58,44,26,.14);transition:opacity .22s ease}
-  .hero.swap{opacity:0}
-  .hero .cover{height:150px;background:radial-gradient(80% 130% at 30% 15%,#F5EAD2,#E7D6B4);position:relative;display:flex;align-items:center;justify-content:center}
-  .hero .cover .rib{position:absolute;top:10px;left:0;background:var(--oxblood);color:#fff;font-family:var(--sans);font-size:11px;font-weight:700;letter-spacing:.05em;padding:5px 12px 5px 10px;border-radius:0 999px 999px 0}
-  .hero .body{background:var(--paperHi);padding:12px 14px}
-  .shelfhdr{display:flex;align-items:center;justify-content:space-between;margin:10px 2px 6px}
-  .shelfhdr .s-ttl{font-family:var(--serif);font-style:italic;font-weight:600;font-size:19px;color:var(--oxblood)}
-  .shelfhdr .s-all{font-family:var(--sans);font-size:12px;font-weight:700;color:var(--gold);cursor:pointer}
-  .rail{display:flex;gap:8px;overflow-x:auto;padding:2px 2px 6px;scroll-snap-type:x mandatory}
-  .thumb{flex:0 0 108px;scroll-snap-align:start;border-radius:12px;background:linear-gradient(160deg,#F3EAD6,#E9DCC0);border:1px solid var(--paperDeep);padding:8px;cursor:pointer;transition:transform .15s ease,box-shadow .15s ease;position:relative}
-  .thumb:hover{transform:translateY(-2px);box-shadow:0 4px 12px rgba(58,44,26,.14)}
-  .thumb .th-b{height:44px;display:flex;align-items:center;justify-content:center}
-  .thumb .th-t{font-family:var(--sans);font-size:11px;font-weight:700;color:var(--muted);line-height:1.15;margin-top:4px}
-  .navrow{display:flex;align-items:center;justify-content:center;gap:14px;margin-top:4px}
-  .arrows{font-family:var(--sans);color:var(--muted);opacity:.6;font-weight:700;font-size:18px;cursor:pointer;user-select:none}
-  .dotrow{display:flex;gap:4px}.d{width:6px;height:6px;border-radius:50%;background:var(--paperDeep)}.d.on{width:16px;background:var(--oxblood)}
-  /* expandable */
-  .exp{cursor:pointer}
-  .exp .caret{font-family:var(--sans);font-size:22px;color:var(--muted);transition:transform .25s ease;display:inline-block}
-  .exp.open .caret{transform:rotate(180deg)}
-  .exp .more{max-height:0;overflow:hidden;transition:max-height .3s cubic-bezier(.32,.72,.24,1)}
-  .exp.open .more{max-height:220px}
-  .exp .more .inner{padding-top:10px;margin-top:10px;border-top:1px dashed var(--paperDeep);font-family:var(--serif);font-size:15px;color:var(--inkSoft)}
-  /* bento */
-  .bento{display:grid;grid-template-columns:1fr 1fr;grid-auto-rows:70px;gap:8px}
-  .tile{background:var(--paperHi);border:1px solid var(--paperDeep);border-radius:14px;padding:10px;display:flex;flex-direction:column;justify-content:flex-end;position:relative}
-  .tile.big{grid-row:span 2;background:linear-gradient(160deg,#F6EFDE,#EFE3CC);border-left:3px solid var(--gold)}
-  .tile .tl{font-family:var(--sans);font-size:12px;font-weight:700;color:var(--inkSoft)}.tile .ts{font-family:var(--sans);font-size:11px;color:#6B5840}
-  .tile .big-n{font-family:var(--serif);font-weight:600;font-size:30px;color:var(--oxblood);line-height:1}
-  /* stat tiles */
-  .stattiles{display:flex;gap:8px}
-  .stile{flex:1;background:var(--paperHi);border:1px solid var(--paperDeep);border-radius:14px;padding:12px;text-align:center}
-  .stile .n{font-family:var(--serif);font-weight:600;font-size:30px;color:var(--oxblood);line-height:1}
-  .stile .l{font-family:var(--sans);font-size:11px;color:#6B5840;text-transform:uppercase;letter-spacing:.06em;margin-top:2px}
-  /* letter */
-  .letter{background:linear-gradient(180deg,#F7F1E4,#EFE6D2);border:1px solid var(--paperDeep);border-radius:6px;padding:16px 16px 14px;position:relative;box-shadow:0 6px 16px rgba(58,44,26,.13)}
-  .letter .seal{position:absolute;right:14px;top:-12px}
-  .letter .salut{font-family:var(--serif);font-style:italic;font-size:19px;color:var(--oxblood);margin-bottom:4px}
-  /* affirmation */
-  .affirm{border-radius:16px;padding:22px 18px;text-align:center;background:radial-gradient(90% 130% at 50% 0%,#F3E7CF,#EAD9BC);border:1px solid var(--paperDeep);position:relative;overflow:hidden}
-  .affirm .q{font-family:var(--serif);font-style:italic;font-weight:600;font-size:22px;color:var(--oxblood);line-height:1.3}
-  .affirm .who{font-family:var(--sans);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:#6B5840;margin-top:8px}
-  /* now-playing */
-  .np{display:flex;align-items:center;gap:12px}
-  .np .art{width:52px;height:52px;border-radius:12px;background:radial-gradient(80% 100% at 30% 20%,#F3E7CF,#E3CE9E);display:flex;align-items:center;justify-content:center;flex:0 0 auto}
-  .np .play{width:34px;height:34px;border-radius:50%;background:var(--plum);color:#fff;display:flex;align-items:center;justify-content:center;font-size:14px;flex:0 0 auto}
-  .bar{height:4px;background:var(--paperDeep);border-radius:2px;margin-top:6px;position:relative}.bar i{position:absolute;left:0;top:0;height:4px;width:40%;background:var(--gold);border-radius:2px}
-  /* check-in chips */
-  .chips{display:flex;gap:7px;flex-wrap:wrap;margin-top:8px}
-  .chip2{font-family:var(--sans);font-size:13px;font-weight:600;padding:8px 13px;border-radius:999px;border:1px solid var(--paperDeep);background:var(--paper);color:var(--muted);cursor:pointer}
-  .chip2.on{background:var(--sage);color:#fff;border-color:var(--sage)}
-  /* checklist */
-  .chk{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--paperDeep);font-family:var(--serif);font-size:16px}
-  .chk .box{width:20px;height:20px;border-radius:6px;border:1.5px solid var(--gold);flex:0 0 auto;display:flex;align-items:center;justify-content:center;color:var(--sage);font-size:13px}
-  .chk.done{color:#6B5840}.chk.done .box{background:var(--sage);border-color:var(--sage);color:#fff}
-  /* continue */
-  .cont{display:flex;align-items:center;gap:12px}
-  .cont .thumbc{width:60px;height:60px;border-radius:12px;background:radial-gradient(80% 100% at 30% 20%,#F3E7CF,#E3CE9E);flex:0 0 auto;display:flex;align-items:center;justify-content:center}
-  .prog2{height:5px;background:var(--paperDeep);border-radius:3px;margin-top:6px}.prog2 i{display:block;height:5px;width:65%;background:var(--oxblood);border-radius:3px}
-  .foot{font-family:var(--sans);font-size:12px;color:var(--muted);text-align:center;margin-top:30px;line-height:1.6}
+  .whereline{font-family:var(--sans);font-size:12.5px;color:#6B5840;margin:3px 0 2px}.whereline b{color:var(--muted)}
+  .mock{margin:8px 0 4px}
+  .rule{height:1px;background:var(--gold);opacity:.22;margin:12px 0}
+  .tapnote{font-family:var(--sans);font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--crimson);margin:6px 0 2px}
+  .interactive{outline:1px dashed rgba(168,137,63,.45);outline-offset:5px;border-radius:16px}
+  /* base card kit */
+  .fwcard{background:linear-gradient(165deg,var(--paperHi),#EFE7D6);border:1px solid var(--paperDeep);border-left:4px solid var(--gold);border-radius:15px;padding:13px;position:relative;box-shadow:0 3px 12px rgba(58,44,26,.09)}
+  .cardttl{font-family:var(--serif);font-weight:600;font-size:18px;color:var(--oxblood);margin:0 0 1px}
+  .cardline{font-family:var(--serif);font-size:14px;color:var(--inkSoft);margin:0}
+  .eyerow{font-family:var(--sans);font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--gold)}
+  .pill{display:inline-flex;align-items:center;gap:5px;border-radius:999px;padding:8px 13px;font-family:var(--sans);font-size:12.5px;font-weight:700;border:none;cursor:pointer}
+  .pill.plum{background:var(--plum);color:#fff}.pill.gold{background:var(--gold);color:#fff}.pill.ghost{background:transparent;border:1px solid var(--paperDeep);color:var(--muted)}.pill.sm{padding:6px 11px;font-size:12px}
+  .badge{display:inline-block;font-family:var(--sans);font-size:11px;font-weight:700;padding:2px 8px;border-radius:999px}.badge.gold{background:#EFE3C9;color:#7a5f1c}.badge.sage{background:#DDE7DD;color:#3f6b3f}
+  .btnrow{display:flex;gap:7px;margin-top:8px;flex-wrap:wrap}.flex{display:flex;gap:9px;align-items:center}
+  .xbtn{position:absolute;top:7px;right:9px;font-size:14px;color:var(--muted);opacity:.55;cursor:pointer;font-family:var(--sans);width:26px;height:26px;text-align:center;line-height:26px}
+  .kebab{position:absolute;top:8px;right:11px;font-family:var(--sans);font-size:18px;color:var(--muted);opacity:.5;cursor:pointer}
+  /* hero+rail */
+  .hero{border-radius:15px;overflow:hidden;border:1px solid var(--paperDeep);box-shadow:0 5px 16px rgba(58,44,26,.13);transition:opacity .22s ease}.hero.swap{opacity:0}
+  .hero .cover{height:130px;background:radial-gradient(80% 130% at 30% 15%,#F5EAD2,#E7D6B4);position:relative;display:flex;align-items:center;justify-content:center}
+  .hero .cover .rib{position:absolute;top:9px;left:0;background:var(--oxblood);color:#fff;font-family:var(--sans);font-size:10px;font-weight:700;padding:4px 11px 4px 9px;border-radius:0 999px 999px 0}
+  .hero .body{background:var(--paperHi);padding:11px 13px}
+  .shelfhdr{display:flex;align-items:center;justify-content:space-between;margin:8px 2px 5px}.shelfhdr .s-ttl{font-family:var(--serif);font-style:italic;font-weight:600;font-size:18px;color:var(--oxblood)}.shelfhdr .s-all{font-family:var(--sans);font-size:12px;font-weight:700;color:var(--gold);cursor:pointer}
+  .rail{display:flex;gap:7px;overflow-x:auto;padding:2px 2px 5px;scroll-snap-type:x mandatory}
+  .thumb{flex:0 0 96px;scroll-snap-align:start;border-radius:11px;background:linear-gradient(160deg,#F3EAD6,#E9DCC0);border:1px solid var(--paperDeep);padding:7px;cursor:pointer;transition:transform .15s}.thumb:hover{transform:translateY(-2px)}
+  .thumb .th-b{height:40px;display:flex;align-items:center;justify-content:center}.thumb .th-t{font-family:var(--sans);font-size:10.5px;font-weight:700;color:var(--muted);margin-top:3px;line-height:1.1}
+  .navrow{display:flex;align-items:center;justify-content:center;gap:12px;margin-top:3px}.arrows{font-family:var(--sans);color:var(--muted);opacity:.6;font-weight:700;font-size:16px;cursor:pointer}
+  .dotrow{display:flex;gap:4px}.d{width:6px;height:6px;border-radius:50%;background:var(--paperDeep)}.d.on{width:15px;background:var(--oxblood)}
+  /* editorial cover */
+  .cover2{position:relative;height:160px;border-radius:15px;overflow:hidden;border:1px solid var(--paperDeep);background:radial-gradient(90% 120% at 25% 10%,#EFE0C4,#DCC79C)}
+  .cover2 .scrim{position:absolute;inset:0;background:linear-gradient(0deg,rgba(40,28,16,.5),rgba(40,28,16,0) 55%)}
+  .cover2 .txt{position:absolute;left:14px;right:14px;bottom:12px;color:#FCF5E6}
+  .cover2 .k{font-family:var(--sans);font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;opacity:.9}
+  .cover2 .h{font-family:var(--serif);font-style:italic;font-weight:600;font-size:26px;line-height:1.05;margin:2px 0}
+  .cover2 .sf{font-family:var(--serif);font-size:14px;opacity:.92}
+  .cover2 .art{position:absolute;top:8px;right:10px}
+  /* video */
+  .vid{position:relative;height:130px;border-radius:15px;overflow:hidden;border:1px solid var(--paperDeep);background:radial-gradient(80% 120% at 40% 20%,#EDE0C6,#D9C39A);display:flex;align-items:center;justify-content:center}
+  .vid .play{width:52px;height:52px;border-radius:50%;background:rgba(122,26,18,.85);color:#fff;display:flex;align-items:center;justify-content:center;font-size:20px}
+  .vid .lab{position:absolute;bottom:10px;left:12px;color:#FCF5E6;font-family:var(--serif);font-style:italic;font-size:17px}
+  /* photo tile + masonry */
+  .ptile{position:relative;height:120px;border-radius:14px;overflow:hidden;border:1px solid var(--paperDeep);background:radial-gradient(80% 110% at 30% 20%,#F3E7CF,#E3CE9E);display:flex;align-items:flex-end;padding:9px}
+  .ptile .h{position:absolute;top:8px;right:9px;width:28px;height:28px;border-radius:50%;background:rgba(255,255,255,.7);display:flex;align-items:center;justify-content:center;color:var(--oxblood);font-size:15px;cursor:pointer}
+  .ptile .cap{font-family:var(--sans);font-size:12px;font-weight:700;color:var(--muted);background:rgba(244,239,227,.85);padding:3px 9px;border-radius:999px}
+  .mason{column-count:2;column-gap:8px}.mason>div{break-inside:avoid;margin-bottom:8px;border-radius:12px;border:1px solid var(--paperDeep);background:linear-gradient(160deg,#F3EAD6,#E9DCC0);padding:9px;display:flex;align-items:flex-end}
+  .mason .mt{font-family:var(--sans);font-size:11px;font-weight:700;color:var(--muted)}
+  /* stat */
+  .stattiles{display:flex;gap:7px}.stile{flex:1;background:var(--paperHi);border:1px solid var(--paperDeep);border-radius:13px;padding:11px;text-align:center}.stile .n{font-family:var(--serif);font-weight:600;font-size:27px;color:var(--oxblood);line-height:1}.stile .l{font-family:var(--sans);font-size:10.5px;color:#6B5840;text-transform:uppercase;letter-spacing:.05em;margin-top:2px}
+  .steps{display:flex;align-items:center;gap:0;margin:6px 0}.step{width:26px;height:26px;border-radius:50%;border:1.5px solid var(--paperDeep);display:flex;align-items:center;justify-content:center;font-family:var(--sans);font-size:12px;font-weight:700;color:var(--muted);flex:0 0 auto;background:var(--paperHi)}.step.done{background:var(--sage);border-color:var(--sage);color:#fff}.step.on{border-color:var(--oxblood);color:var(--oxblood)}.stepline{flex:1;height:2px;background:var(--paperDeep)}.stepline.done{background:var(--sage)}
+  .streak{display:grid;grid-template-columns:repeat(14,1fr);gap:4px}.sq{aspect-ratio:1;border-radius:3px;background:var(--paperDeep)}.sq.l1{background:#CFDCC7}.sq.l2{background:#A9C29B}.sq.l3{background:var(--sage)}
+  .ba{display:flex;gap:8px}.bap{flex:1;border:1px solid var(--paperDeep);border-radius:12px;padding:10px;background:var(--paperHi);text-align:center}.bap .t{font-family:var(--sans);font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#6B5840}.bap .n{font-family:var(--serif);font-weight:600;font-size:24px;color:var(--oxblood)}
+  .achieve{display:flex;align-items:center;gap:12px}.medal{width:56px;height:56px;border-radius:50%;background:radial-gradient(70% 70% at 35% 30%,#EAD08A,#B8912E);display:flex;align-items:center;justify-content:center;flex:0 0 auto;box-shadow:0 3px 8px rgba(120,90,20,.3)}
+  .cont{display:flex;align-items:center;gap:11px}.thumbc{width:56px;height:56px;border-radius:11px;background:radial-gradient(80% 100% at 30% 20%,#F3E7CF,#E3CE9E);flex:0 0 auto;display:flex;align-items:center;justify-content:center}.prog2{height:5px;background:var(--paperDeep);border-radius:3px;margin-top:5px}.prog2 i{display:block;height:5px;width:65%;background:var(--oxblood);border-radius:3px}
+  /* input */
+  .chips{display:flex;gap:6px;flex-wrap:wrap;margin-top:7px}.chip2{font-family:var(--sans);font-size:12.5px;font-weight:600;padding:7px 12px;border-radius:999px;border:1px solid var(--paperDeep);background:var(--paper);color:var(--muted);cursor:pointer}.chip2.on{background:var(--sage);color:#fff;border-color:var(--sage)}
+  .tags .chip2.on{background:var(--gold);border-color:var(--gold)}
+  .qlog{display:flex;align-items:center;justify-content:center;gap:16px;margin-top:6px}.qbtn{width:38px;height:38px;border-radius:50%;border:1.5px solid var(--gold);background:var(--paperHi);color:var(--oxblood);font-size:20px;font-family:var(--sans);cursor:pointer;line-height:1}.qnum{font-family:var(--serif);font-weight:600;font-size:26px;color:var(--oxblood);min-width:64px;text-align:center}
+  .stars{font-size:22px;color:var(--paperDeep);letter-spacing:2px;cursor:pointer}.stars .on{color:var(--gold)}
+  .rangec{height:6px;background:var(--paperDeep);border-radius:3px;position:relative;margin:14px 6px 6px}.rangec i{position:absolute;left:0;height:6px;width:60%;background:var(--gold);border-radius:3px}.rangec .th{position:absolute;left:60%;top:-6px;width:18px;height:18px;border-radius:50%;background:var(--oxblood);transform:translateX(-50%)}
+  .poll .prow{position:relative;border:1px solid var(--paperDeep);border-radius:10px;padding:9px 11px;margin:6px 0;font-family:var(--sans);font-size:13px;font-weight:600;color:var(--inkSoft);overflow:hidden;cursor:pointer}.poll .prow .fill{position:absolute;left:0;top:0;bottom:0;background:#E7DcC0}.poll .prow .lb2{position:relative;display:flex;justify-content:space-between}
+  .chk{display:flex;align-items:center;gap:9px;padding:7px 0;border-bottom:1px solid var(--paperDeep);font-family:var(--serif);font-size:15px}.chk .box{width:19px;height:19px;border-radius:5px;border:1.5px solid var(--gold);flex:0 0 auto;display:flex;align-items:center;justify-content:center;color:#fff;font-size:12px;cursor:pointer}.chk.done .box{background:var(--sage);border-color:var(--sage)}.chk.done{color:#6B5840}
+  /* content */
+  .exp{cursor:pointer}.exp .caret{font-size:20px;color:var(--muted);transition:transform .25s;display:inline-block}.exp.open .caret{transform:rotate(180deg)}.exp .more{max-height:0;overflow:hidden;transition:max-height .3s cubic-bezier(.32,.72,.24,1)}.exp.open .more{max-height:200px}.exp .more .inner{padding-top:9px;margin-top:9px;border-top:1px dashed var(--paperDeep);font-family:var(--serif);font-size:14px;color:var(--inkSoft)}
+  .acc .arow{border-bottom:1px solid var(--paperDeep);padding:9px 0;cursor:pointer}.acc .arow .ah{display:flex;justify-content:space-between;font-family:var(--serif);font-weight:600;font-size:16px;color:var(--inkSoft)}.acc .arow .am{max-height:0;overflow:hidden;transition:max-height .25s}.acc .arow.open .am{max-height:80px}.acc .arow .am .inn{padding-top:6px;font-family:var(--serif);font-size:14px;color:#6B5840}.acc .arow .cr{transition:transform .2s}.acc .arow.open .cr{transform:rotate(180deg)}
+  .tabs .th{display:flex;background:var(--paper);border:1px solid var(--paperDeep);border-radius:999px;padding:3px;gap:3px;margin-bottom:9px}.tabs .tb{flex:1;text-align:center;font-family:var(--sans);font-size:12.5px;font-weight:700;padding:7px;border-radius:999px;color:var(--muted);cursor:pointer}.tabs .tb.on{background:var(--oxblood);color:#fff}
+  .pq{position:relative;padding:8px 6px 8px 20px}.pq:before{content:'\201C';position:absolute;left:-2px;top:-8px;font-family:var(--serif);font-size:54px;color:var(--gold);opacity:.5}.pq .q{font-family:var(--serif);font-style:italic;font-weight:600;font-size:21px;color:var(--oxblood);line-height:1.3}.pq .a{font-family:var(--sans);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:#6B5840;margin-top:6px}
+  .jrnl .date{font-family:var(--sans);font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--gold)}.jrnl .body{font-family:var(--serif);font-size:15px;color:var(--inkSoft);margin:3px 0 6px}
+  .recipe{display:flex;gap:11px}.recipe .img{width:74px;height:74px;border-radius:11px;background:radial-gradient(80% 100% at 30% 20%,#F0DFBE,#DDBF87);flex:0 0 auto}.recipe .meta{display:flex;gap:12px;font-family:var(--sans);font-size:11.5px;color:#6B5840;margin-top:4px}
+  .letter{background:linear-gradient(180deg,#F7F1E4,#EFE6D2);border:1px solid var(--paperDeep);border-radius:5px;padding:14px;position:relative;box-shadow:0 5px 14px rgba(58,44,26,.12)}.letter .seal{position:absolute;right:12px;top:-11px}.letter .salut{font-family:var(--serif);font-style:italic;font-size:18px;color:var(--oxblood);margin-bottom:3px}
+  .affirm{border-radius:15px;padding:20px 16px;text-align:center;background:radial-gradient(90% 130% at 50% 0%,#F3E7CF,#EAD9BC);border:1px solid var(--paperDeep)}.affirm .q{font-family:var(--serif);font-style:italic;font-weight:600;font-size:21px;color:var(--oxblood);line-height:1.3}.affirm .who{font-family:var(--sans);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:#6B5840;margin-top:7px}
+  .np{display:flex;align-items:center;gap:11px}.np .art{width:50px;height:50px;border-radius:11px;background:radial-gradient(80% 100% at 30% 20%,#F3E7CF,#E3CE9E);display:flex;align-items:center;justify-content:center;flex:0 0 auto}.np .play{width:32px;height:32px;border-radius:50%;background:var(--plum);color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;flex:0 0 auto}.bar{height:4px;background:var(--paperDeep);border-radius:2px;margin-top:5px;position:relative}.bar i{position:absolute;left:0;height:4px;width:40%;background:var(--gold);border-radius:2px}
+  /* community */
+  .voice{display:flex;gap:10px}.voice .av{width:34px;height:34px;border-radius:50%;background:radial-gradient(70% 70% at 35% 30%,#EBD9E0,#C99BB0);flex:0 0 auto;display:flex;align-items:center;justify-content:center;font-family:var(--serif);color:#7a3a55;font-weight:600}.voice .q{font-family:var(--serif);font-size:15.5px;color:var(--inkSoft);font-style:italic}.voice .m{font-family:var(--sans);font-size:11px;color:#6B5840;margin-top:3px}
+  .story{position:relative;height:150px;border-radius:15px;overflow:hidden;border:1px solid var(--paperDeep);background:radial-gradient(80% 120% at 40% 25%,#EEE0C6,#D9C39A);display:flex;align-items:flex-end;padding:12px}.story .bars{position:absolute;top:9px;left:10px;right:10px;display:flex;gap:5px}.story .bars i{flex:1;height:3px;border-radius:2px;background:rgba(255,255,255,.45)}.story .bars i.on{background:#fff}.story .cap{color:#FCF5E6;font-family:var(--serif);font-style:italic;font-size:17px}
+  .lb .lr{display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid var(--paperDeep);font-family:var(--sans);font-size:13.5px}.lb .rk{font-family:var(--serif);font-weight:600;font-size:17px;color:var(--gold);width:20px}.lb .who{flex:1;color:var(--inkSoft)}.lb .val{color:#6B5840;font-weight:600}
+  /* utility */
+  .empty{text-align:center;padding:14px 8px}.empty .line{font-family:var(--serif);font-style:italic;font-size:17px;color:var(--inkSoft);margin:6px 0 8px}
+  .map{position:relative;height:120px;border-radius:14px;overflow:hidden;border:1px solid var(--paperDeep);background:linear-gradient(135deg,#E4E7D6,#D6DcC4)}.map .road{position:absolute;background:#EFEDE0}.map .pin{position:absolute;left:46%;top:38%;width:22px;height:22px;border-radius:50% 50% 50% 0;background:var(--oxblood);transform:rotate(-45deg);box-shadow:0 3px 6px rgba(0,0,0,.2)}.map .place{position:absolute;left:10px;right:10px;bottom:10px;background:rgba(244,239,227,.92);border-radius:10px;padding:8px 11px;font-family:var(--sans);font-size:12.5px;font-weight:700;color:var(--muted)}
+  .calstrip{display:flex;gap:5px}.cday{flex:1;text-align:center;border:1px solid var(--paperDeep);border-radius:10px;padding:7px 0;font-family:var(--sans);background:var(--paperHi)}.cday .dn{font-size:10px;color:#6B5840;text-transform:uppercase;letter-spacing:.04em}.cday .dd{font-family:var(--serif);font-weight:600;font-size:17px;color:var(--inkSoft);margin-top:1px}.cday.on{background:var(--oxblood);border-color:var(--oxblood)}.cday.on .dn,.cday.on .dd{color:#fff}
+  .bento{display:grid;grid-template-columns:1fr 1fr;grid-auto-rows:62px;gap:7px}.tile{background:var(--paperHi);border:1px solid var(--paperDeep);border-radius:12px;padding:9px;display:flex;flex-direction:column;justify-content:flex-end;position:relative}.tile.big{grid-row:span 2;background:linear-gradient(160deg,#F6EFDE,#EFE3CC);border-left:3px solid var(--gold)}.tile .tl{font-family:var(--sans);font-size:11.5px;font-weight:700;color:var(--inkSoft)}.tile .ts{font-family:var(--sans);font-size:10.5px;color:#6B5840}.tile .big-n{font-family:var(--serif);font-weight:600;font-size:26px;color:var(--oxblood);line-height:1}
+  .foot{font-family:var(--sans);font-size:12px;color:var(--muted);text-align:center;margin-top:28px;line-height:1.6}
   .center{text-align:center}
 </style></head>
 <body><div class="doc">
 
-<div class="center" style="padding:14px 0 4px">
-  <div class="eyebrow">FemWell · plan doc · v2 (every style shown) · for your reaction</div>
-  <h1 class="cover">Card Styles — research<br>&amp; expansion</h1>
-  <p class="lede" style="font-style:italic;max-width:470px;margin:6px auto 0">Now with <b>every</b> style shown, not told — and the media hero + <b>tap-to-promote</b> rail you liked as the lead. <span class="cap">(Dashed outline = an interactive mock; tap it.)</span></p>
+<div class="center" style="padding:12px 0 4px">
+  <div class="eyebrow">FemWell · the card gallery · v3 · for your reaction</div>
+  <h1 class="cover">Card Styles — the gallery</h1>
+  <p class="lede" style="font-style:italic;max-width:480px;margin:6px auto 0"><span id="count">36</span> card styles, <b>every one shown</b> — pick the ones you love. <span class="cap">(Dashed = interactive; tap it.)</span></p>
 </div>
 
 <div class="section">
-  <div class="eyebrow">This pass</div>
-  <p>You liked <b>#2 (media hero + category row)</b> most → it's now the <b>lead</b>, with the <b>tap-to-promote</b> interaction designed &amp; mocked. You liked the <b>expandable</b> card → now first-class + shown. And per your note, <b>every</b> style is a real on-brand mock (cream/flora/oxblood), never prose-only. Plan only — nothing built live. Feeds a bible §6.7.0 update on approval.</p>
+  <div class="eyebrow">How to browse</div>
+  <p>A big visual gallery — no text-only lists. Each style: a real on-brand mock (cream/flora/oxblood) + one line (interaction · where it shines). Grouped for the phone. <b>Plan only — nothing built live; feeds a bible §6.7.0 update after you pick.</b></p>
   <div class="toc">
-    <a href="#hero"><span>★</span>THE LEAD — media hero + tap-to-promote rail</a>
-    <a href="#exp"><span>2</span>The expandable card</a>
-    <a href="#lib"><span>3</span>The rest of the library — all shown</a>
-    <a href="#adapt"><span>4</span>Keep it FemWell (adapt, don't copy)</a>
-    <a href="#research"><span>5</span>The research (cited)</a>
-    <a href="#next"><span>6</span>Rules kept + your dials</a>
+    <a href="#media"><span>A</span>Media &amp; hero — 8</a>
+    <a href="#stat"><span>B</span>Stat &amp; progress — 8</a>
+    <a href="#input"><span>C</span>Input &amp; check-in — 6</a>
+    <a href="#content"><span>D</span>Content &amp; editorial — 9</a>
+    <a href="#community"><span>E</span>Community — 3</a>
+    <a href="#utility"><span>F</span>Utility — 5</a>
   </div>
 </div>
 
-<!-- LEAD -->
-<a id="hero"></a>
-<div class="section lead">
-  <div class="eyebrow" style="color:var(--oxblood)">★ The lead pattern</div>
-  <h2>Media hero + tap-to-promote rail.</h2>
-  <p>A big <b>featured hero</b> card with a rail of thumbnails beneath. <b>Tap a thumbnail and it PROMOTES</b> — it smoothly takes the hero's place (the old hero drops back into the rail). One surface, many stories, no page change.</p>
+<!-- A MEDIA & HERO -->
+<a id="media"></a>
+<div class="section a">
+  <div class="eyebrow" style="color:var(--oxblood)">A · Media &amp; hero</div>
+  <h2>Browse &amp; feature.</h2>
+
+  <h3>★ Hero + tap-to-promote rail</h3>
   <div class="tapnote">↓ tap a thumbnail to promote it ↓</div>
   <div class="mock interactive">
     <div class="hero" id="hero-card"></div>
@@ -144,210 +137,208 @@
     <div class="rail" id="hero-rail"></div>
     <div class="navrow"><span class="arrows">‹</span><span class="dotrow" id="hero-dots"></span><span class="arrows">›</span></div>
   </div>
-  <div class="rule"></div>
-  <h4>The interaction, spelled out</h4>
-  <ol style="font-size:15px;line-height:1.5;padding-left:18px;margin:0 0 8px">
-    <li><b>Default:</b> item #1 (best/newest) is the hero; the rest sit in the rail below, peeking off the right edge.</li>
-    <li><b>Tap a rail thumbnail →</b> the hero <b>cross-fades</b> (≈220ms) and the tapped item becomes the hero; the previous hero animates down into the rail's front slot.</li>
-    <li><b>The rail stays a horizontal slider</b> (swipe / ‹ › arrows / dots), with the §6.10.3 peek + See-all discipline — "See all" opens the full grid (the reliable second path, since horizontal scroll gets missed).</li>
-    <li><b>One tag ON the hero art</b> ("No.1 this week" / "New"), quiet chrome so the flora cover reads.</li>
-  </ol>
-  <p class="whereline"><b>Where it shines:</b> Lifestyle (Read / Listen / Watch / Daily Story), Programs (featured programme + shelves), Community (featured room). The single most reusable "browse a category" surface.</p>
+  <p class="whereline"><b>Tap a rail thumb → it cross-fades into the hero.</b> Lifestyle / Programs / Community. (The image-gallery "thumbnail-to-hero" pattern.)</p>
+
+  <div class="rule"></div><h3>Media hero (single)</h3>
+  <div class="mock"><div class="hero"><div class="cover"><span class="rib">New</span><div id="mh-bloom"></div></div><div class="body"><div class="eyerow">Watch</div><div class="cardttl">A walk at first light</div><div class="btnrow"><span class="pill gold sm">Play</span><span class="pill ghost sm">Save</span></div></div></div></div>
+  <p class="whereline"><b>One featured item, big.</b> Daily story, a featured programme.</p>
+
+  <div class="rule"></div><h3>Category shelf</h3>
+  <div class="mock"><div class="shelfhdr"><span class="s-ttl">Tonight's calm</span><span class="s-all">See all ›</span></div>
+    <div class="rail"><div class="thumb"><div class="th-b" id="sh1"></div><div class="th-t">Wind-down</div></div><div class="thumb"><div class="th-b" id="sh2"></div><div class="th-t">Sleep story</div></div><div class="thumb"><div class="th-b" id="sh3"></div><div class="th-t">Breathe</div></div><div class="thumb"><div class="th-t">Bath</div></div></div>
+    <div class="navrow"><span class="arrows">‹</span><span class="dotrow"><span class="d on"></span><span class="d"></span></span><span class="arrows">›</span></div></div>
+  <p class="whereline"><b>Swipe a row of peers.</b> Recipes, programmes, rooms.</p>
+
+  <div class="rule"></div><h3>Spotlight / featured</h3>
+  <div class="mock"><div class="fwcard" style="border-left-color:var(--oxblood);display:flex;gap:11px;align-items:center"><div id="spot-bloom"></div><div><div class="eyerow" style="color:var(--oxblood)">Today's pick</div><div class="cardttl" style="font-size:20px">A five-minute reset</div><div class="cardline">Because today felt heavy.</div><div class="btnrow"><span class="pill gold sm">Begin</span></div></div></div></div>
+  <p class="whereline"><b>One item lifted above a row.</b> Top of any shelf.</p>
+
+  <div class="rule"></div><h3>Cover story (editorial)</h3>
+  <div class="mock"><div class="cover2"><div class="art" id="cov-bloom"></div><div class="scrim"></div><div class="txt"><div class="k">The long read</div><div class="h">What rest really costs us</div><div class="sf">And the quiet case for doing less.</div></div></div></div>
+  <p class="whereline"><b>Full-bleed cover → kicker → headline → standfirst.</b> Lifestyle long-reads, features.</p>
+
+  <div class="rule"></div><h3>Hero video</h3>
+  <div class="mock"><div class="vid"><div class="play">▶</div><span class="lab">Gentle morning flow · 8 min</span></div></div>
+  <p class="whereline"><b>Play over the cover, in place.</b> Watch, movement, meditations.</p>
+
+  <div class="rule"></div><h3>Photo tile (save)</h3>
+  <div class="mock"><div class="flex" style="gap:8px"><div class="ptile" style="flex:1"><span class="h">♡</span><span class="cap">Roasted figs</span></div><div class="ptile" style="flex:1"><span class="h" style="color:var(--oxblood)">♥</span><span class="cap">Slow oats</span></div></div></div>
+  <p class="whereline"><b>Photo-first; heart fills oxblood when saved.</b> Recipes, deals, saved.</p>
+
+  <div class="rule"></div><h3>Masonry collection</h3>
+  <div class="mock"><div class="mason"><div style="height:78px"><span class="mt">On friendship</span></div><div style="height:56px"><span class="mt">A recipe</span></div><div style="height:60px"><span class="mt">Money talk</span></div><div style="height:82px"><span class="mt">Your sky</span></div></div></div>
+  <p class="whereline"><b>Variable-height pin-board.</b> "For you" / saved — browses like Pinterest.</p>
 </div>
 
-<!-- EXPANDABLE -->
-<a id="exp"></a>
+<!-- B STAT & PROGRESS -->
+<a id="stat"></a>
+<div class="section b">
+  <div class="eyebrow">B · Stat &amp; progress</div>
+  <h2>See how it's going.</h2>
+
+  <h3>Rich stat / status</h3>
+  <div class="mock"><div class="fwcard"><span class="kebab">⋯</span><div class="flex" style="align-items:flex-start"><div id="stat-ring"></div><div style="flex:1"><div class="eyerow">This cycle · goals</div><div class="cardttl">On track <span class="badge sage">3 of 4</span></div><div class="cardline">Your money-plant's nearly in bud.</div><div class="btnrow"><span class="pill plum sm">Tend it</span><span class="pill ghost sm">Steps</span></div></div></div></div></div>
+  <p class="whereline"><b>Ring + status + one action + quiet "…".</b> Pulse, Programs, Goals. (Ring OR figure — never both.)</p>
+
+  <div class="rule"></div><h3>Metric + sparkline</h3>
+  <div class="mock"><div class="fwcard"><div class="flex" style="justify-content:space-between;align-items:flex-end"><div><div class="eyerow">Avg sleep · 7 days</div><div class="cardttl" style="font-size:26px">6.4 h <span class="badge sage">+0.3</span></div></div><div id="spark1"></div></div></div></div>
+  <p class="whereline"><b>A number + a tiny trend line.</b> Pulse, Health summaries.</p>
+
+  <div class="rule"></div><h3>Stat tiles (mini)</h3>
+  <div class="mock"><div class="stattiles"><div class="stile"><div class="n">7</div><div class="l">day streak</div></div><div class="stile"><div class="n">6.4</div><div class="l">avg sleep</div></div><div class="stile"><div class="n">Day 14</div><div class="l">cycle</div></div></div></div>
+  <p class="whereline"><b>One figure each, at a glance.</b> A Pulse row, bento cells.</p>
+
+  <div class="rule"></div><h3>Progress steps</h3>
+  <div class="mock"><div class="fwcard"><div class="eyerow">Doctor export · 3 of 5</div><div class="steps"><span class="step done">✓</span><span class="stepline done"></span><span class="step done">✓</span><span class="stepline done"></span><span class="step on">3</span><span class="stepline"></span><span class="step">4</span><span class="stepline"></span><span class="step">5</span></div><div class="cardline">Next: choose what your GP sees.</div></div></div>
+  <p class="whereline"><b>A stepper toward a goal.</b> Export, onboarding, a programme.</p>
+
+  <div class="rule"></div><h3>Streak / calendar</h3>
+  <div class="mock"><div class="fwcard"><div class="eyerow">Your fortnight of tending</div><div class="streak" style="margin-top:7px"><span class="sq l2"></span><span class="sq l3"></span><span class="sq l1"></span><span class="sq"></span><span class="sq l2"></span><span class="sq l3"></span><span class="sq l3"></span><span class="sq l1"></span><span class="sq l2"></span><span class="sq"></span><span class="sq l3"></span><span class="sq l2"></span><span class="sq l3"></span><span class="sq l1"></span></div></div></div>
+  <p class="whereline"><b>A gentle heatmap — weather, not a scoreboard.</b> Journal, habits.</p>
+
+  <div class="rule"></div><h3>Cycle wheel</h3>
+  <div class="mock"><div class="fwcard"><div class="flex" style="gap:13px"><div id="cycle-wheel"></div><div><div class="eyerow">Where you are</div><div class="cardttl" style="font-size:19px">Follicular · Day 14</div><div class="cardline">The up-swing — a good week to start things.</div></div></div></div></div>
+  <p class="whereline"><b>Phase wheel in the four phase hues.</b> Today, Health. Your season, not a fertility dial.</p>
+
+  <div class="rule"></div><h3>Before &amp; after</h3>
+  <div class="mock"><div class="fwcard"><div class="ba"><div class="bap"><div class="t">3 months ago</div><div class="n">5.6 h</div></div><div class="bap" style="border-color:var(--sage)"><div class="t">Now</div><div class="n">6.9 h</div></div></div><div class="cardline" style="margin-top:6px">Sleep's come a long way. Quietly done.</div></div></div>
+  <p class="whereline"><b>Then vs now, side by side.</b> Progress reflections, milestones.</p>
+
+  <div class="rule"></div><h3>Badge / milestone</h3>
+  <div class="mock"><div class="fwcard"><div class="achieve"><div class="medal" style="color:#7A4A12;font-size:24px">★</div><div><div class="eyerow">A quiet milestone</div><div class="cardttl" style="font-size:18px">First full cycle logged</div><div class="cardline">A rare bloom just opened in your garden.</div></div></div></div></div>
+  <p class="whereline"><b>An earned marker — soft, not gamified.</b> Milestones, rare blooms.</p>
+</div>
+
+<!-- C INPUT & CHECK-IN -->
+<a id="input"></a>
+<div class="section c">
+  <div class="eyebrow">C · Input &amp; check-in</div>
+  <h2>Do it on the card.</h2>
+
+  <h3>Daily check-in (mood chips)</h3>
+  <div class="tapnote">↓ tap a word ↓</div>
+  <div class="mock interactive"><div class="fwcard"><div class="eyerow">How's today?</div><div class="cardttl" style="font-size:17px">Tap a word — nothing more.</div><div class="chips"><span class="chip2 on">Soft</span><span class="chip2">Bright</span><span class="chip2">Tender</span><span class="chip2">Frayed</span><span class="chip2">Quiet</span></div></div></div>
+  <p class="whereline"><b>Log a feeling in place; feeds personalisation.</b> Today, Pulse, Journal.</p>
+
+  <div class="rule"></div><h3>Quick log (± stepper)</h3>
+  <div class="mock interactive"><div class="fwcard"><div class="eyerow">Water today</div><div class="qlog"><span class="qbtn" id="wminus">−</span><span class="qnum" id="wnum">4 glasses</span><span class="qbtn" id="wplus">+</span></div></div></div>
+  <p class="whereline"><b>Tap ± to log — no keyboard.</b> Water, servings, doses.</p>
+
+  <div class="rule"></div><h3>Rating / slider</h3>
+  <div class="mock interactive"><div class="fwcard"><div class="eyerow">How's your energy?</div><div class="stars" id="stars"><span class="on">★</span><span class="on">★</span><span class="on">★</span><span>★</span><span>★</span></div><div class="rangec"><i></i><span class="th"></span></div></div></div>
+  <p class="whereline"><b>Stars or a slider, tap/drag.</b> Symptom severity, energy, mood.</p>
+
+  <div class="rule"></div><h3>Poll / vote</h3>
+  <div class="mock interactive"><div class="fwcard"><div class="eyerow">Community · quick poll</div><div class="cardttl" style="font-size:17px">Evenings or mornings for you?</div><div class="poll"><div class="prow"><span class="fill" style="width:62%"></span><span class="lb2"><span>Evenings</span><span>62%</span></span></div><div class="prow"><span class="fill" style="width:38%"></span><span class="lb2"><span>Mornings</span><span>38%</span></span></div></div></div></div>
+  <p class="whereline"><b>Vote on the card face; results fill in.</b> Community, gentle prompts.</p>
+
+  <div class="rule"></div><h3>Tag / chip filter</h3>
+  <div class="mock interactive"><div class="fwcard"><div class="eyerow">Filter · Lifestyle</div><div class="chips tags"><span class="chip2 on">All</span><span class="chip2">Read</span><span class="chip2">Listen</span><span class="chip2">Watch</span><span class="chip2">Stories</span></div></div></div>
+  <p class="whereline"><b>Tap chips to filter what's below.</b> Any list/shelf page.</p>
+
+  <div class="rule"></div><h3>Checklist / ritual</h3>
+  <div class="mock"><div class="fwcard"><div class="eyerow">Tonight's ritual</div><div class="chk done"><span class="box">✓</span> Warm shower</div><div class="chk done"><span class="box">✓</span> Phone on charge, out of reach</div><div class="chk"><span class="box"></span> Three slow breaths</div><div class="chk" style="border:none"><span class="box"></span> Lights low</div></div></div>
+  <p class="whereline"><b>Tick in place (a bloom grows).</b> Rituals, Programs steps.</p>
+</div>
+
+<!-- D CONTENT & EDITORIAL -->
+<a id="content"></a>
+<div class="section d">
+  <div class="eyebrow">D · Content &amp; editorial</div>
+  <h2>Read &amp; reflect.</h2>
+
+  <h3>★ Expandable</h3>
+  <div class="tapnote">↓ tap to expand ↓</div>
+  <div class="mock interactive"><div class="fwcard exp" onclick="this.classList.toggle('open')"><div class="flex" style="justify-content:space-between;align-items:flex-start"><div><div class="eyerow">Your Health · Letter II</div><div class="cardttl" style="font-size:17px">Your heart, this season</div><div class="cardline">A short letter — key facts, then the full read.</div></div><span class="caret">⌄</span></div><div class="more"><div class="inner">Your resting heart rate dipped a little this month — a good sign your rest is landing. Three gentle things that keep a heart happy are folded in, plus two questions worth asking your GP.</div></div></div></div>
+  <p class="whereline"><b>Caret opens the detail inline.</b> Health letters, Journal, FAQs.</p>
+
+  <div class="rule"></div><h3>Accordion list</h3>
+  <div class="mock interactive"><div class="fwcard acc" id="acc"><div class="arow"><div class="ah">What is perimenopause? <span class="cr">⌄</span></div><div class="am"><div class="inn">The years of change before your last period — often a decade of shifting hormones.</div></div></div><div class="arow"><div class="ah">Is this normal? <span class="cr">⌄</span></div><div class="am"><div class="inn">Very likely — but here's when to check with your GP.</div></div></div></div></div>
+  <p class="whereline"><b>Several expandables in one card.</b> FAQs, a letter's sections.</p>
+
+  <div class="rule"></div><h3>Tabbed card</h3>
+  <div class="mock interactive"><div class="fwcard tabs" id="tabs"><div class="th"><span class="tb on">Today</span><span class="tb">This week</span><span class="tb">Sky</span></div><div class="tp" id="tp"><div class="cardttl" style="font-size:17px">A soft day ahead</div><div class="cardline">Follicular · Day 14 — start something small.</div></div></div></div>
+  <p class="whereline"><b>Switch views inside one card.</b> Today/week, a multi-view summary.</p>
+
+  <div class="rule"></div><h3>Pull quote</h3>
+  <div class="mock"><div class="fwcard"><div class="pq"><div class="q">"Rest is a stage, not a failure."</div><div class="a">from your daily story</div></div></div></div>
+  <p class="whereline"><b>One big line, tap-to-share.</b> A story highlight, a moment.</p>
+
+  <div class="rule"></div><h3>Journal entry</h3>
+  <div class="mock"><div class="fwcard" style="border-left-color:var(--plum)"><div class="jrnl"><div class="date">Tue · 2 July</div><div class="body">Slept badly but the walk helped. Told the group about the interview — they were so kind.</div><span class="badge gold">grateful</span></div></div></div>
+  <p class="whereline"><b>A dated entry + mood tag.</b> Journal, the garden's memory.</p>
+
+  <div class="rule"></div><h3>Recipe card</h3>
+  <div class="mock"><div class="fwcard"><div class="recipe"><div class="img" id="rec-bloom"></div><div><div class="cardttl" style="font-size:17px">Slow-cooked figs &amp; oats</div><div class="meta"><span>◷ 15 min</span><span>♀ serves 2</span><span>◐ easy</span></div><div class="btnrow"><span class="pill gold sm">Cook this</span></div></div></div></div></div>
+  <p class="whereline"><b>Image + time/servings/level + cook CTA.</b> Nutrition.</p>
+
+  <div class="rule"></div><h3>Letter / note (wax seal)</h3>
+  <div class="mock"><div class="letter"><div class="seal" id="letter-seal"></div><div class="salut">Dear you,</div><p style="margin:0;font-family:var(--serif);font-size:15px;line-height:1.5;color:var(--inkSoft)">A short letter this week. Your body's asking, quite politely, for an earlier night…</p></div></div>
+  <p class="whereline"><b>Deckle paper + a wax-rose seal.</b> Health letters, a monthly letter. <span class="cap">(craft §10.6 proposed.)</span></p>
+
+  <div class="rule"></div><h3>Affirmation / moment</h3>
+  <div class="mock"><div class="affirm"><div class="q">"You've done harder<br>than today."</div><div class="who">your garden, today</div></div></div>
+  <p class="whereline"><b>One line on a soft ground, tap-to-save.</b> A daily moment; the omen line.</p>
+
+  <div class="rule"></div><h3>Now-playing / audio</h3>
+  <div class="mock"><div class="fwcard"><div class="np"><div class="art" id="np-bloom"></div><div style="flex:1"><div class="eyerow">Listening</div><div class="cardttl" style="font-size:16px">A walk through the meadow</div><div class="bar"><i></i></div></div><div class="play">▶</div></div></div></div>
+  <p class="whereline"><b>Plays in the card.</b> Listen, sleep stories, meditations.</p>
+</div>
+
+<!-- E COMMUNITY -->
+<a id="community"></a>
+<div class="section e">
+  <div class="eyebrow">E · Community</div>
+  <h2>Together, safely.</h2>
+
+  <h3>Voice card (anon)</h3>
+  <div class="mock"><div class="fwcard"><div class="voice"><div class="av">M</div><div><div class="q">"Told my boss I need Fridays lighter. She just… said yes."</div><div class="m">anon · Career &amp; money room · 12 me-toos</div></div></div></div></div>
+  <p class="whereline"><b>An anonymous quote + a gentle reaction.</b> Community rooms.</p>
+
+  <div class="rule"></div><h3>Testimonial / rating</h3>
+  <div class="mock"><div class="fwcard"><div class="stars" style="font-size:16px"><span class="on">★</span><span class="on">★</span><span class="on">★</span><span class="on">★</span><span class="on">★</span></div><div class="cardline" style="font-size:15px;margin-top:4px">"The letters made me finally book the GP. Kind, never scary."</div><div class="eyerow" style="margin-top:5px">— on Health</div></div></div>
+  <p class="whereline"><b>Stars + a short quote.</b> Expert-verified answers, reviews.</p>
+
+  <div class="rule"></div><h3>Community wall / gentle leaderboard</h3>
+  <div class="mock"><div class="fwcard"><div class="eyerow">This week, together</div><div class="lb"><div class="lr"><span class="rk">✿</span><span class="who">Kind words sent</span><span class="val">1,204</span></div><div class="lr"><span class="rk">✿</span><span class="who">First posts answered</span><span class="val">100%</span></div><div class="lr" style="border:none"><span class="rk">✿</span><span class="who">Gardens tended</span><span class="val">3,880</span></div></div></div></div>
+  <p class="whereline"><b>Collective totals, never a ranking of people.</b> Community, the orchard.</p>
+</div>
+
+<!-- F UTILITY -->
+<a id="utility"></a>
+<div class="section f">
+  <div class="eyebrow">F · Utility</div>
+  <h2>The fittings.</h2>
+
+  <h3>Bento overview</h3>
+  <div class="mock"><div class="bento"><div class="tile big"><div class="eyerow">Today</div><div class="big-n">Day 14</div><div class="ts">follicular</div><div id="bento-bloom" style="position:absolute;top:7px;right:7px"></div></div><div class="tile"><div class="tl">Water</div><div class="ts">4 / 6</div></div><div class="tile"><div class="tl">Mood</div><div class="ts">log</div></div><div class="tile"><div class="tl">Chapter</div><div class="ts">2 min</div></div><div class="tile"><div class="tl">Garden</div><div class="ts">a bee</div></div></div></div>
+  <p class="whereline"><b>A big tile + small ones.</b> Today / Profile / Garden overview.</p>
+
+  <div class="rule"></div><h3>Dismissible nudge</h3>
+  <div class="mock"><div class="fwcard" style="border-left-color:var(--sage)"><span class="xbtn" onclick="this.closest('.fwcard').style.opacity=.35">✕</span><div class="eyerow">A small idea</div><div class="cardttl" style="font-size:16px">4 evenings journalled running.</div><div class="cardline">A gentle 9pm nudge to keep it?</div><div class="btnrow"><span class="pill gold sm">Yes</span><span class="pill ghost sm">Not now</span></div></div></div>
+  <p class="whereline"><b>✕ dismisses (sticks); snooze ≠ dismiss.</b> Today, Community. Never nags.</p>
+
+  <div class="rule"></div><h3>Empty state (botanical)</h3>
+  <div class="mock"><div class="fwcard"><div class="empty"><div id="empty-bloom"></div><div class="line">Nothing here yet — and that's allowed.</div><span class="pill gold sm">Plant the first line</span></div></div></div>
+  <p class="whereline"><b>A bloom + a warm line + a soft CTA — never a grey null.</b> Any empty list.</p>
+
+  <div class="rule"></div><h3>Map / place</h3>
+  <div class="mock"><div class="map"><span class="pin"></span><div class="place">Women's walk · Sat 9am · 0.4 mi away</div></div></div>
+  <p class="whereline"><b>A place pin + a detail row.</b> Events, deals, IRL meets.</p>
+
+  <div class="rule"></div><h3>Calendar strip (week)</h3>
+  <div class="mock"><div class="calstrip"><div class="cday"><div class="dn">M</div><div class="dd">1</div></div><div class="cday on"><div class="dn">T</div><div class="dd">2</div></div><div class="cday"><div class="dn">W</div><div class="dd">3</div></div><div class="cday"><div class="dn">T</div><div class="dd">4</div></div><div class="cday"><div class="dn">F</div><div class="dd">5</div></div><div class="cday"><div class="dn">S</div><div class="dd">6</div></div><div class="cday"><div class="dn">S</div><div class="dd">7</div></div></div></div>
+  <p class="whereline"><b>The week at a glance; tap a day.</b> Planner, the unified calendar's strip.</p>
+</div>
+
+<!-- close -->
 <div class="section">
-  <div class="eyebrow">Two · First-class now</div>
-  <h2>The expandable card.</h2>
-  <p>Summary on the surface; <b>tap the caret to open the detail inline</b> — she keeps her place, no route change.</p>
-  <div class="tapnote">↓ tap the card to expand ↓</div>
-  <div class="mock interactive">
-    <div class="fwcard exp" id="exp-card" onclick="this.classList.toggle('open')">
-      <div class="flex" style="justify-content:space-between;align-items:flex-start">
-        <div><div class="eyerow">Your Health · Letter II</div><div class="cardttl" style="font-size:18px">Your heart, this season</div>
-        <div class="cardline" style="margin-top:2px">A short letter — the key facts, then the full read.</div></div>
-        <span class="caret">⌄</span>
-      </div>
-      <div class="more"><div class="inner">Your blood pressure's been steady and your resting heart rate dipped a little this month — a good sign your rest is landing. Three gentle things that keep a heart happy this season are folded in, plus two questions worth asking your GP if the tiredness lingers.</div></div>
-    </div>
-  </div>
-  <p class="whereline"><b>Look:</b> a normal card + a ⌄ caret; open rotates it to ⌃ and grows the card. <b>Interaction:</b> tap anywhere to toggle (animated height, reduced-motion safe). <b>Caret, not + or arrow</b> (those read as "add"/"jump"). <b>Where:</b> Health letters, Journal entries, FAQs, any summary some want expanded.</p>
+  <div class="eyebrow">Your dials</div>
+  <p>React freely — <b>circle the ones you love</b>, cross the ones you don't, tell me what's still missing. On your picks I fold the agreed set into the bible §6.7.0 and we spin a demo-first <code>/CardStylesV2Demo</code>. <b>Plan only — nothing built live.</b></p>
+  <p class="cap">Grounding research (60+ sources): <code>workspace/CARD_STYLES_RESEARCH_2026-07-01/02/03.md</code>. Every style here has a documented pattern behind it, adapted to our cream/flora/oxblood world (never dark fintech).</p>
 </div>
 
-<!-- LIBRARY (all shown) -->
-<a id="lib"></a>
-<div class="section crimson">
-  <div class="eyebrow">Three · The rest — every one shown</div>
-  <h2>The library, visible.</h2>
-
-  <h3>Bento mixed-size tiles</h3>
-  <div class="mock"><div class="bento">
-    <div class="tile big"><div class="eyerow">Today</div><div class="big-n">Day 14</div><div class="ts">follicular · rising</div><div id="bento-bloom" style="position:absolute;top:8px;right:8px"></div></div>
-    <div class="tile"><div class="tl">Water</div><div class="ts">4 / 6 glasses</div></div>
-    <div class="tile"><div class="tl">Mood</div><div class="ts">tap to log</div></div>
-    <div class="tile"><div class="tl">Chapter</div><div class="ts">2 min read</div></div>
-    <div class="tile"><div class="tl">Garden</div><div class="ts">a bee visited</div></div>
-  </div></div>
-  <p class="whereline"><b>Look:</b> a big hero tile + small ones. <b>Interaction:</b> each taps to its full thing. <b>Where:</b> Today / Profile / Garden overview. (≤2 hero tiles, ≤12 total.)</p>
-
-  <div class="rule"></div>
-  <h3>Category shelf</h3>
-  <div class="mock">
-    <div class="shelfhdr"><span class="s-ttl">Tonight's calm</span><span class="s-all">See all ›</span></div>
-    <div class="rail"><div class="thumb"><div class="th-b" id="sh1"></div><div class="th-t">Wind-down</div></div><div class="thumb"><div class="th-b" id="sh2"></div><div class="th-t">Sleep story</div></div><div class="thumb"><div class="th-b" id="sh3"></div><div class="th-t">Breathe</div></div><div class="thumb"><div class="th-t">Bath ritual</div></div></div>
-    <div class="navrow"><span class="arrows">‹</span><span class="dotrow"><span class="d on"></span><span class="d"></span></span><span class="arrows">›</span></div>
-  </div>
-  <p class="whereline"><b>Look:</b> title + See-all + a peeking row. <b>Interaction:</b> swipe / arrows; See-all opens the grid. <b>Where:</b> recipes, programmes, rooms, deals.</p>
-
-  <div class="rule"></div>
-  <h3>Rich stat / status card</h3>
-  <div class="mock"><div class="fwcard"><span class="kebab">⋯</span>
-    <div class="flex" style="align-items:flex-start"><div id="stat-ring" style="flex:0 0 auto"></div>
-      <div style="flex:1"><div class="eyerow">This cycle · goals</div><div class="cardttl">On track <span class="badge sage">3 of 4</span></div>
-      <div class="cardline">Your money-plant's nearly in bud — one more week.</div>
-      <div class="btnrow"><span class="pill plum">Tend it</span><span class="pill ghost">See steps</span></div></div></div>
-  </div></div>
-  <p class="whereline"><b>Look:</b> a ring (growth, not a dial) + status badge + one action + a quiet "…". <b>Where:</b> Pulse, Programs, Goals. (Ring OR figure — never both.)</p>
-
-  <div class="rule"></div>
-  <h3>Dismissible suggestion card</h3>
-  <div class="mock"><div class="fwcard" style="border-left-color:var(--sage)"><span class="xbtn" onclick="this.closest('.fwcard').style.opacity=.35">✕</span>
-    <div class="eyerow">A small idea</div><div class="cardttl" style="font-size:17px">You've journalled 4 evenings running.</div>
-    <div class="cardline">Want a gentle 9pm nudge to keep it? No pressure.</div>
-    <div class="btnrow"><span class="pill gold">Yes, remind me</span><span class="pill ghost">Not now</span></div>
-  </div></div>
-  <p class="whereline"><b>Look:</b> a warm nudge + a real ✕. <b>Interaction:</b> ✕ dismisses (sticks); "Not now" snoozes. <b>Where:</b> Today, Community, Nutrition. Never nags; never carries status.</p>
-
-  <div class="rule"></div>
-  <h3>Spotlight / featured</h3>
-  <div class="mock"><div class="fwcard" style="border-left-color:var(--oxblood);display:flex;gap:12px;align-items:center">
-    <div id="spot-bloom" style="flex:0 0 auto"></div>
-    <div><div class="eyerow" style="color:var(--oxblood)">Today's pick</div><div class="cardttl" style="font-size:21px">A five-minute reset</div>
-    <div class="cardline">Because you said today felt heavy.</div><div class="btnrow"><span class="pill gold">Begin</span></div></div>
-  </div></div>
-  <p class="whereline"><b>Look:</b> one item lifted above a row — a flora + big title + ONE CTA. <b>Where:</b> the top of any shelf; a "today's pick".</p>
-
-  <div class="rule"></div>
-  <h3>Stat tiles (small metrics)</h3>
-  <div class="mock"><div class="stattiles">
-    <div class="stile"><div class="n">7</div><div class="l">day streak</div></div>
-    <div class="stile"><div class="n">6.4</div><div class="l">avg sleep</div></div>
-    <div class="stile"><div class="n">Day 14</div><div class="l">cycle</div></div>
-  </div></div>
-  <p class="whereline"><b>Look:</b> a big serif figure + a tiny label. <b>Where:</b> a Pulse row, or bento cells. One gold figure per tile; never a wall of them.</p>
-
-  <div class="rule"></div>
-  <h3>Letter / note card</h3>
-  <div class="mock"><div class="letter"><div class="seal" id="letter-seal"></div>
-    <div class="salut">Dear you,</div>
-    <p style="margin:0;font-family:var(--serif);font-size:16px;line-height:1.5;color:var(--inkSoft)">A short letter this week. Your sleep's been broken and your body's asking, quite politely, for an earlier night…</p>
-  </div></div>
-  <p class="whereline"><b>Look:</b> deckle paper + a wax-rose seal + "Dear you,". <b>Where:</b> Health letters, a monthly "letter from your body", a Jess note. Our most distinctly-FemWell card. <span class="cap">(craft still §10.6 proposed.)</span></p>
-
-  <div class="rule"></div>
-  <h3>Affirmation / moment card</h3>
-  <div class="mock"><div class="affirm"><div class="q">"Rest is a stage,<br>not a failure."</div><div class="who">your garden, today</div></div></div>
-  <p class="whereline"><b>Look:</b> one beautiful line on a soft flora ground. <b>Interaction:</b> tap to save/share. <b>Where:</b> a daily "moment" on Today; the omen line's home.</p>
-
-  <div class="rule"></div>
-  <h3>Now-playing / audio card</h3>
-  <div class="mock"><div class="fwcard"><div class="np">
-    <div class="art" id="np-bloom"></div>
-    <div style="flex:1"><div class="eyerow">Listening</div><div class="cardttl" style="font-size:17px">A walk through the meadow</div><div class="bar"><i></i></div></div>
-    <div class="play">▶</div>
-  </div></div></div>
-  <p class="whereline"><b>Look:</b> art + title + a progress bar + a play control. <b>Interaction:</b> plays IN the card. <b>Where:</b> Lifestyle Listen, sleep stories, meditations.</p>
-
-  <div class="rule"></div>
-  <h3>Checklist / ritual card</h3>
-  <div class="mock"><div class="fwcard">
-    <div class="eyerow">Tonight's ritual</div>
-    <div class="chk done"><span class="box">✓</span> Warm shower</div>
-    <div class="chk done"><span class="box">✓</span> Phone on charge, out of reach</div>
-    <div class="chk"><span class="box"></span> Three slow breaths</div>
-    <div style="border:none" class="chk"><span class="box"></span> Lights low</div>
-  </div></div>
-  <p class="whereline"><b>Look:</b> a few tappable check rows. <b>Interaction:</b> tick in place (a bloom grows). <b>Where:</b> rituals, a Today ritual, Programs steps.</p>
-
-  <div class="rule"></div>
-  <h3>Continue where you left off</h3>
-  <div class="mock"><div class="fwcard"><div class="cont">
-    <div class="thumbc" id="cont-bloom"></div>
-    <div style="flex:1"><div class="eyerow">Pick up again</div><div class="cardttl" style="font-size:17px">Perimenopause, gently — Day 3</div><div class="prog2"><i></i></div></div>
-    <span class="pill gold">Resume</span>
-  </div></div></div>
-  <p class="whereline"><b>Look:</b> thumbnail + where-you-are + a progress bar + Resume. <b>Where:</b> Programs, a half-read book, a saved recipe.</p>
-
-  <div class="rule"></div>
-  <h3>Daily check-in (log on the card face)</h3>
-  <div class="mock"><div class="fwcard"><div class="eyerow">How's today?</div>
-    <div class="cardttl" style="font-size:18px;margin-top:2px">Tap a word — nothing more.</div>
-    <div class="chips"><span class="chip2 on">Soft</span><span class="chip2">Bright</span><span class="chip2">Tender</span><span class="chip2">Frayed</span><span class="chip2">Quiet</span></div>
-  </div></div>
-  <p class="whereline"><b>Look:</b> warm mood/energy chips ON the card. <b>Interaction:</b> tap logs in place (no pushed screen); feeds personalisation. <b>Where:</b> Today, Pulse, Journal.</p>
-
-  <div class="rule"></div>
-  <h3>Cycle wheel (soft, not a gauge)</h3>
-  <div class="mock"><div class="fwcard"><div class="flex" style="align-items:center;gap:14px">
-    <div id="cycle-wheel" style="flex:0 0 auto"></div>
-    <div><div class="eyerow">Where you are</div><div class="cardttl" style="font-size:19px">Follicular · Day 14</div><div class="cardline">The up-swing — a good week to start things.</div></div>
-  </div></div></div>
-  <p class="whereline"><b>Look:</b> a phase wheel in the four phase hues + a day marker — glanceable, warm copy. <b>Where:</b> Today, Health, Pulse. Reads as your season, never a fertility dial.</p>
-</div>
-
-<!-- ADAPT -->
-<a id="adapt"></a>
-<div class="section sage">
-  <div class="eyebrow">Four · Keep it FemWell</div>
-  <h2>Adapt, don't copy.</h2>
-  <table>
-    <tr><th>The reference does</th><th>FemWell does instead</th></tr>
-    <tr><td>Dark cards, neon accents, dense grids</td><td><b>Cream paper</b>, gold hairlines, generous gutters, one accent rim per card</td></tr>
-    <tr><td>Stock photos / poster art</td><td><b>Flora illustration</b> + soft paper gradients as the "imagery"</td></tr>
-    <tr><td>Loud status, big kebabs, autoplay</td><td>Quiet gold/sage badges, a small "…", <b>oxblood headings</b>, no autoplay</td></tr>
-    <tr><td>Marketing voice</td><td>Warm plain <b>smart-friend</b> voice on every label</td></tr>
-  </table>
-  <p class="cap">A new card earns its place with a new JOB, not a new colour. The vocabulary stays bounded — each type here has a distinct job + a mock above.</p>
-</div>
-
-<!-- RESEARCH -->
-<a id="research"></a>
-<div class="section plum">
-  <div class="eyebrow">Five · The research</div>
-  <h2>Broader than the examples.</h2>
-  <p>Fresh cited pass across wellness/lifestyle/media/editorial apps (Calm · Headspace · Oura · Flo · Airbnb · Pinterest · Apple News/Music · NYT Cooking · Instagram · Duolingo — <b>40 sources</b>, <code>workspace/CARD_STYLES_RESEARCH_2026-07-02.md</code>). Monzo/Netflix were only examples; the patterns above are drawn from the whole field.</p>
-  <h4>The lead pattern has a name — and rules</h4>
-  <p><small>The hero+rail is the <b>image-gallery / "thumbnail-to-hero"</b> pattern (a thumbnail overview + a primary viewer). Best-practice, folded into the lead mock: <b>highlight the current item</b> so she keeps her place (we do — it leaves the rail and becomes the hero); <b>show all thumbs at ≤10–14</b>, and if you truncate you MUST peek/"+N" (else people think the visible set is all there is); <b>crossfade ≤220ms</b> (we use 220 — a promotion, not a scene change); <b>never autoplay</b>; keyboard-completable focus.</small></p>
-  <h4>Candidate styles the research also named</h4>
-  <p><small>Several are already mocked above (now-playing · affirmation/moment · checklist · daily check-in · cycle wheel). The rest are a menu — say which to mock next:</small></p>
-  <table>
-    <tr><th>Candidate</th><th>One line</th></tr>
-    <tr><td><b>CoverStory</b></td><td>full-bleed cover → kicker → Fraunces headline → standfirst (the editorial ladder).</td></tr>
-    <tr><td><b>PullQuote</b></td><td>one big Cormorant line on cream + a botanical flourish, tap-to-share.</td></tr>
-    <tr><td><b>MasonryCollection</b></td><td>a variable-height botanical pin-board for "For You"/saved (browses like Pinterest).</td></tr>
-    <tr><td><b>PhotoTile (save)</b></td><td>photo-first card, the heart fills oxblood when saved; a photo-only dense variant.</td></tr>
-    <tr><td><b>StoryCard</b></td><td>Instagram tap-through with segmented bars + press-and-hold to pause (calm reading).</td></tr>
-    <tr><td><b>CollectionCard</b></td><td>save into a "Saved" box with folders (NYT-Cooking style).</td></tr>
-    <tr><td><b>+ VoiceCard · PollCard · ComparisonCard · MapCard · EmptyStateCard</b></td><td>anon community quote · vote-on-the-face · "then vs now" · a place for events/deals · a botanical empty state (never a grey null).</td></tr>
-  </table>
-</div>
-
-<!-- NEXT -->
-<a id="next"></a>
-<div class="section">
-  <div class="eyebrow">Six · Rules kept + your dials</div>
-  <h2>Same discipline, more range.</h2>
-  <p><b>Unchanged:</b> the MAIN page slider stays HORIZONTAL · no long empty space · in-card decks keep the safeguards (12–16% peek + dots + ‹ › arrows + <code>overscroll-behavior-x:contain</code>) · one accent rim per card · typed cards never empty · a page is a stack (≤3–4 card families) not a collage · warm voice, oxblood headings, no emoji.</p>
-  <div style="background:#EFE6D6;border:1px solid var(--gold);border-radius:14px;padding:14px 16px;font-family:var(--sans);font-size:14px;color:var(--inkSoft)">
-    <b>Your dials:</b> (1) hero+rail — build it first on Lifestyle? (2) which of the shown styles make the cut vs park? (3) tap-to-promote: cross-fade (shown) or a slide-up? (4) any style still missing? On your yes I fold the agreed ones into the bible §6.7.0 and we spin a demo-first <code>/CardStylesV2Demo</code>.
-  </div>
-</div>
-
-<div class="foot">
-  FemWell · Card Styles — research + expansion (v2, every style shown) · plan doc · July 2026<br>
-  Feeds a bible §6.7.0 card-language update after you approve. Plan only — nothing built live.
-</div>
+<div class="foot">FemWell · Card Styles — the gallery (v3) · plan doc · July 2026 · refreshes in the Ideas pill in place.</div>
 </div>
 <script>// FemWell flora — the 50+ species botanical library (reference build → ports to flora.jsx).
 // Archetype engine (composite/rosette/cup/star/bell/spike/umbel/branch) + bespoke heads + a SPECIES registry.
@@ -623,47 +614,33 @@ function bloomList(list,name,size){const sp=list.find(s=>s.n===name);if(!sp)retu
 
 </script>
 <script>
-function progRing(pct,size,col){const r=size/2-6,c=2*Math.PI*r,off=c*(1-pct);return `<svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}"><circle cx="${size/2}" cy="${size/2}" r="${r}" fill="none" stroke="#D8CFBC" stroke-width="7"/><circle cx="${size/2}" cy="${size/2}" r="${r}" fill="none" stroke="${col}" stroke-width="7" stroke-linecap="round" stroke-dasharray="${c}" stroke-dashoffset="${off}" transform="rotate(-90 ${size/2} ${size/2})"/><text x="${size/2}" y="${size/2+5}" text-anchor="middle" font-family="Cormorant Garamond,serif" font-weight="600" font-size="18" fill="#7A1A12">${Math.round(pct*100)}%</text></svg>`;}
 function B(sp,s){try{return bloom(sp,s);}catch(e){return '';}}
-// wax seal (crimson scallop + rose)
-function waxSeal(size){let rose='';for(let i=0;i<8;i++){const a=i*45,sc=1-i*0.09;rose+=`<path d="M0 0 C -3 -0.6 -3.6 -3.4 -1.2 -4.6 C 0.6 -5.4 2.6 -4 2.4 -1.8 C 2.2 -0.6 0.6 -0.8 0.7 -2.2" transform="rotate(${a}) scale(${sc})" fill="none" stroke="#9E211B" stroke-width="0.7" opacity="0.75"/>`;}
-  return `<svg viewBox="0 0 60 60" width="${size}" height="${size}"><defs><radialGradient id="wx" cx="40%" cy="34%" r="70%"><stop offset="0%" stop-color="#D9554E"/><stop offset="60%" stop-color="#BC2E27"/><stop offset="100%" stop-color="#7E1C16"/></radialGradient></defs><path d="M30 4 L37 9 L46 8 L48 17 L56 22 L51 30 L56 38 L48 43 L46 52 L37 51 L30 56 L23 51 L14 52 L12 43 L4 38 L9 30 L4 22 L12 17 L14 8 L23 9 Z" fill="url(#wx)" stroke="#6E1813" stroke-width="0.6"/><circle cx="30" cy="30" r="15" fill="none" stroke="#7E1C16" stroke-width="0.8" opacity="0.5"/><g transform="translate(30 30)">${rose}</g><ellipse cx="23" cy="18" rx="6" ry="3.4" fill="#fff" opacity="0.16" transform="rotate(-24 23 18)"/></svg>`;}
-// ── HERO + tap-to-promote rail ──
-const READ=[
-  {ttl:"The Garden at Dusk",line:"A five-minute read for a soft evening.",sp:"peony",badge:"No.1 this week"},
-  {ttl:"On rest",line:"Why doing less is doing something.",sp:"poppy",badge:""},
-  {ttl:"Money & you",line:"A calm word about the thing we don't talk about.",sp:"sunflower",badge:""},
-  {ttl:"A love letter",line:"To the friend who always texts back.",sp:"rose",badge:""},
-  {ttl:"The women who make it",line:"On friendship, in this season.",sp:"cosmos",badge:"New"},
-];
+function progRing(pct,size,col){const r=size/2-6,c=2*Math.PI*r,off=c*(1-pct);return `<svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}"><circle cx="${size/2}" cy="${size/2}" r="${r}" fill="none" stroke="#D8CFBC" stroke-width="7"/><circle cx="${size/2}" cy="${size/2}" r="${r}" fill="none" stroke="${col}" stroke-width="7" stroke-linecap="round" stroke-dasharray="${c}" stroke-dashoffset="${off}" transform="rotate(-90 ${size/2} ${size/2})"/><text x="${size/2}" y="${size/2+5}" text-anchor="middle" font-family="Cormorant Garamond,serif" font-weight="600" font-size="18" fill="#7A1A12">${Math.round(pct*100)}%</text></svg>`;}
+function spark(w,h,pts,col){const mx=Math.max(...pts),mn=Math.min(...pts);const X=(i)=>i/(pts.length-1)*w;const Y=(v)=>h-((v-mn)/(mx-mn||1))*(h-4)-2;let d=pts.map((v,i)=>`${i?'L':'M'} ${X(i).toFixed(1)} ${Y(v).toFixed(1)}`).join(' ');return `<svg width="${w}" height="${h}"><path d="${d}" fill="none" stroke="${col}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="${X(pts.length-1).toFixed(1)}" cy="${Y(pts[pts.length-1]).toFixed(1)}" r="3" fill="${col}"/></svg>`;}
+function cycleWheel(size){const cx=size/2,cy=size/2,r=size/2-7;const arcs=[['#BC2E27',0,0.22],['#8FAF8F',0.22,0.55],['#D4AF37',0.55,0.72],['#8E6E8E',0.72,1]];const pt=(f)=>{const a=(f*360-90)*Math.PI/180;return [cx+Math.cos(a)*r,cy+Math.sin(a)*r];};let s=`<svg viewBox="0 0 ${size} ${size}" width="${size}" height="${size}">`;for(const [col,a,b] of arcs){const [x1,y1]=pt(a),[x2,y2]=pt(b);const large=(b-a)>0.5?1:0;s+=`<path d="M ${x1.toFixed(1)} ${y1.toFixed(1)} A ${r} ${r} 0 ${large} 1 ${x2.toFixed(1)} ${y2.toFixed(1)}" fill="none" stroke="${col}" stroke-width="7" stroke-linecap="round"/>`;}const [mx,my]=pt(0.42);s+=`<circle cx="${mx.toFixed(1)}" cy="${my.toFixed(1)}" r="5" fill="#F4EFE3" stroke="#8FAF8F" stroke-width="2.5"/><text x="${cx}" y="${cy-2}" text-anchor="middle" font-family="Cormorant Garamond,serif" font-weight="600" font-size="14" fill="#7A1A12">Day</text><text x="${cx}" y="${cy+13}" text-anchor="middle" font-family="Cormorant Garamond,serif" font-weight="600" font-size="15" fill="#7A1A12">14</text></svg>`;return s;}
+function waxSeal(size){let rose='';for(let i=0;i<8;i++){const a=i*45,sc=1-i*0.09;rose+=`<path d="M0 0 C -3 -0.6 -3.6 -3.4 -1.2 -4.6 C 0.6 -5.4 2.6 -4 2.4 -1.8 C 2.2 -0.6 0.6 -0.8 0.7 -2.2" transform="rotate(${a}) scale(${sc})" fill="none" stroke="#9E211B" stroke-width="0.7" opacity="0.75"/>`;}return `<svg viewBox="0 0 60 60" width="${size}" height="${size}"><defs><radialGradient id="wx" cx="40%" cy="34%" r="70%"><stop offset="0%" stop-color="#D9554E"/><stop offset="60%" stop-color="#BC2E27"/><stop offset="100%" stop-color="#7E1C16"/></radialGradient></defs><path d="M30 4 L37 9 L46 8 L48 17 L56 22 L51 30 L56 38 L48 43 L46 52 L37 51 L30 56 L23 51 L14 52 L12 43 L4 38 L9 30 L4 22 L12 17 L14 8 L23 9 Z" fill="url(#wx)"/><circle cx="30" cy="30" r="15" fill="none" stroke="#7E1C16" stroke-width="0.8" opacity="0.5"/><g transform="translate(30 30)">${rose}</g></svg>`;}
+// hero + tap-to-promote
+const READ=[{ttl:"The Garden at Dusk",line:"A five-minute read for a soft evening.",sp:"peony",badge:"No.1 this week"},{ttl:"On rest",line:"Why doing less is doing something.",sp:"poppy",badge:""},{ttl:"Money & you",line:"A calm word about the thing we don't talk about.",sp:"sunflower",badge:""},{ttl:"A love letter",line:"To the friend who always texts back.",sp:"rose",badge:""},{ttl:"The women who make it",line:"On friendship, in this season.",sp:"cosmos",badge:"New"}];
 let active=0;
-function renderHero(){const it=READ[active];const el=document.getElementById('hero-card');
-  el.innerHTML=`<div class="cover">${it.badge?`<span class="rib">${it.badge}</span>`:''}${B(it.sp,120)}</div><div class="body"><div class="eyerow">Daily story</div><div class="cardttl">${it.ttl}</div><div class="cardline">${it.line}</div><div class="btnrow"><span class="pill gold">Read now</span><span class="pill ghost">Save</span></div></div>`;
-  const rail=document.getElementById('hero-rail');rail.innerHTML='';
-  READ.forEach((r,i)=>{if(i===active)return;const t=document.createElement('div');t.className='thumb';t.style.flex='0 0 108px';
-    t.innerHTML=`<div class="th-b">${B(r.sp,46)}</div><div class="th-t">${r.ttl}</div>`;
-    t.onclick=()=>promote(i);rail.appendChild(t);});
-  const dots=document.getElementById('hero-dots');dots.innerHTML=READ.map((_,i)=>`<span class="d ${i===active?'on':''}"></span>`).join('');
-}
+function renderHero(){const it=READ[active];const el=document.getElementById('hero-card');el.innerHTML=`<div class="cover">${it.badge?`<span class="rib">${it.badge}</span>`:''}${B(it.sp,104)}</div><div class="body"><div class="eyerow">Daily story</div><div class="cardttl">${it.ttl}</div><div class="cardline">${it.line}</div><div class="btnrow"><span class="pill gold sm">Read now</span><span class="pill ghost sm">Save</span></div></div>`;const rail=document.getElementById('hero-rail');rail.innerHTML='';READ.forEach((r,i)=>{if(i===active)return;const t=document.createElement('div');t.className='thumb';t.innerHTML=`<div class="th-b">${B(r.sp,40)}</div><div class="th-t">${r.ttl}</div>`;t.onclick=()=>promote(i);rail.appendChild(t);});document.getElementById('hero-dots').innerHTML=READ.map((_,i)=>`<span class="d ${i===active?'on':''}"></span>`).join('');}
 function promote(i){const el=document.getElementById('hero-card');el.classList.add('swap');setTimeout(()=>{active=i;renderHero();el.classList.remove('swap');},220);}
 renderHero();
-// other blooms
-document.getElementById('bento-bloom').innerHTML=B('rose',40);
-document.getElementById('spot-bloom').innerHTML=B('marigold',72);
-document.getElementById('np-bloom').innerHTML=B('lavender',44);
-document.getElementById('cont-bloom').innerHTML=B('hellebore',52);
-document.getElementById('stat-ring').innerHTML=progRing(0.72,64,'#8FAF8F');
-['sh1','sh2','sh3'].forEach((id,i)=>{const el=document.getElementById(id);if(el)el.innerHTML=B(['snowdrop','lotus','forget-me-not'][i],42);});
-document.getElementById('letter-seal').innerHTML=waxSeal(52);
-// cycle wheel — 4 phase arcs + a day marker
-function cycleWheel(size){const cx=size/2,cy=size/2,r=size/2-7;const arcs=[['#BC2E27',0,0.22],['#8FAF8F',0.22,0.55],['#D4AF37',0.55,0.72],['#8E6E8E',0.72,1]];
-  const pt=(f)=>{const a=(f*360-90)*Math.PI/180;return [cx+Math.cos(a)*r,cy+Math.sin(a)*r];};
-  let s=`<svg viewBox="0 0 ${size} ${size}" width="${size}" height="${size}">`;
-  for(const [col,a,b] of arcs){const [x1,y1]=pt(a),[x2,y2]=pt(b);const large=(b-a)>0.5?1:0;s+=`<path d="M ${x1.toFixed(1)} ${y1.toFixed(1)} A ${r} ${r} 0 ${large} 1 ${x2.toFixed(1)} ${y2.toFixed(1)}" fill="none" stroke="${col}" stroke-width="7" stroke-linecap="round"/>`;}
-  const [mx,my]=pt(0.42);s+=`<circle cx="${mx.toFixed(1)}" cy="${my.toFixed(1)}" r="5" fill="#F4EFE3" stroke="#8FAF8F" stroke-width="2.5"/>`;
-  s+=`<text x="${cx}" y="${cy-2}" text-anchor="middle" font-family="Cormorant Garamond,serif" font-weight="600" font-size="15" fill="#7A1A12">Day</text><text x="${cx}" y="${cy+13}" text-anchor="middle" font-family="Cormorant Garamond,serif" font-weight="600" font-size="16" fill="#7A1A12">14</text></svg>`;return s;}
-document.getElementById('cycle-wheel').innerHTML=cycleWheel(72);
-// check-in chips: tap to select (single)
+// blooms + svgs
+const set=(id,html)=>{const el=document.getElementById(id);if(el)el.innerHTML=html;};
+set('mh-bloom',B('lily',96));set('spot-bloom',B('marigold',66));set('cov-bloom',B('magnolia',72));
+set('bento-bloom',B('rose',36));set('np-bloom',B('lavender',42));set('rec-bloom',B('cosmos',62));set('empty-bloom',B('snowdrop',64));
+['sh1','sh2','sh3'].forEach((id,i)=>set(id,B(['snowdrop','lotus','forget-me-not'][i],38)));
+set('stat-ring',progRing(0.72,62,'#8FAF8F'));set('cycle-wheel',cycleWheel(70));set('letter-seal',waxSeal(50));
+set('spark1',spark(72,34,[5.9,6.1,5.7,6.4,6.2,6.6,6.4],'#A8893F'));
+// interactions
 document.querySelectorAll('.chips .chip2').forEach(c=>c.onclick=()=>{c.parentNode.querySelectorAll('.chip2').forEach(x=>x.classList.remove('on'));c.classList.add('on');});
+let water=4;const wn=document.getElementById('wnum');document.getElementById('wplus').onclick=()=>{water++;wn.textContent=water+' glasses';};document.getElementById('wminus').onclick=()=>{if(water>0)water--;wn.textContent=water+' glasses';};
+document.querySelectorAll('#stars span').forEach((s,i)=>s.onclick=()=>{document.querySelectorAll('#stars span').forEach((x,j)=>x.className=j<=i?'on':'');});
+document.querySelectorAll('#acc .arow').forEach(r=>r.onclick=()=>r.classList.toggle('open'));
+const TP=[['A soft day ahead','Follicular · Day 14 — start something small.'],['A gentle week','Three small intentions, no pressure.'],['Your sky','The moon is waxing in Libra.']];
+document.querySelectorAll('#tabs .tb').forEach((t,i)=>t.onclick=()=>{document.querySelectorAll('#tabs .tb').forEach(x=>x.classList.remove('on'));t.classList.add('on');document.getElementById('tp').innerHTML=`<div class="cardttl" style="font-size:17px">${TP[i][0]}</div><div class="cardline">${TP[i][1]}</div>`;});
+document.querySelectorAll('.poll .prow').forEach(p=>p.onclick=()=>p.style.outline='2px solid #A8893F');
+// count
+document.getElementById('count').textContent=document.querySelectorAll('.section h3').length;
 </script>
 </body></html>
