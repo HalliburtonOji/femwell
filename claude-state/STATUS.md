@@ -2,6 +2,7 @@
 **This file is the single source of truth AND the index to every plan doc. If anything else disagrees, this wins.** (The long ship-log history continues below the index.)
 
 ## 📑✅ FOUNDERS OS — "Card Styles" plan doc wired into Current · SHIPPED LIVE · live `index-DxN8OARI.js` (site-deploy) · commit `e052e05` (2026-07-02)
+> REDEPLOYED 2026-07-02: brand session refreshed the doc in place (commit `b64cf94`, "Card Styles v2 — every style shown"); republished via `npx base44 site deploy -y` → live `index-Dvtx4wWQ.js`. Confirmed on Browser: Ideas → Current → "Card Styles" opens the V2 doc ("V2 (EVERY STYLE SHOWN)", iframe 7876px). No code change (wiring already in place).
 Wired the brand session's new plan doc from `femwell-handoff/IDEAS-LINKS-FOR-FOUNDERSOS.md` into **Ideas → Current** exactly per the handoff (3 edits: `?raw` import · `kind:"doc"` CATALOG entry · `BrandDocFrame` render) + added the new sub **"Card language plans"** to `CURRENT_SUB_ORDER`. Entry key **"Card Styles"** (`card-styles-expansion.html`, gold, sub "Card language plans"). Only `FoundersOS.jsx` changed. **CURRENT = 25.**
 - **CLICK-TESTED LIVE (Browser `9ef09b12…`, authed, bundle `index-DxN8OARI.js`):** `/Ideas` → CURRENT · 25, "CARD LANGUAGE PLANS" sub renders, "Card Styles — research + expansion" entry present, and it **OPENS** its BrandDocFrame iframe (real content "Card Styles — research & expansion", auto-height 7045px, back-bar) ✓.
 - **VERIFY:** eslint 0 · vite build exit 0 · pushed `e052e05` · `npx base44 site deploy -y` · live `index-DxN8OARI.js`.
