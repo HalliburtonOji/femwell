@@ -95,6 +95,10 @@
   .np .art{width:52px;height:52px;border-radius:12px;background:radial-gradient(80% 100% at 30% 20%,#F3E7CF,#E3CE9E);display:flex;align-items:center;justify-content:center;flex:0 0 auto}
   .np .play{width:34px;height:34px;border-radius:50%;background:var(--plum);color:#fff;display:flex;align-items:center;justify-content:center;font-size:14px;flex:0 0 auto}
   .bar{height:4px;background:var(--paperDeep);border-radius:2px;margin-top:6px;position:relative}.bar i{position:absolute;left:0;top:0;height:4px;width:40%;background:var(--gold);border-radius:2px}
+  /* check-in chips */
+  .chips{display:flex;gap:7px;flex-wrap:wrap;margin-top:8px}
+  .chip2{font-family:var(--sans);font-size:13px;font-weight:600;padding:8px 13px;border-radius:999px;border:1px solid var(--paperDeep);background:var(--paper);color:var(--muted);cursor:pointer}
+  .chip2.on{background:var(--sage);color:#fff;border-color:var(--sage)}
   /* checklist */
   .chk{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--paperDeep);font-family:var(--serif);font-size:16px}
   .chk .box{width:20px;height:20px;border-radius:6px;border:1.5px solid var(--gold);flex:0 0 auto;display:flex;align-items:center;justify-content:center;color:var(--sage);font-size:13px}
@@ -274,6 +278,22 @@
     <span class="pill gold">Resume</span>
   </div></div></div>
   <p class="whereline"><b>Look:</b> thumbnail + where-you-are + a progress bar + Resume. <b>Where:</b> Programs, a half-read book, a saved recipe.</p>
+
+  <div class="rule"></div>
+  <h3>Daily check-in (log on the card face)</h3>
+  <div class="mock"><div class="fwcard"><div class="eyerow">How's today?</div>
+    <div class="cardttl" style="font-size:18px;margin-top:2px">Tap a word — nothing more.</div>
+    <div class="chips"><span class="chip2 on">Soft</span><span class="chip2">Bright</span><span class="chip2">Tender</span><span class="chip2">Frayed</span><span class="chip2">Quiet</span></div>
+  </div></div>
+  <p class="whereline"><b>Look:</b> warm mood/energy chips ON the card. <b>Interaction:</b> tap logs in place (no pushed screen); feeds personalisation. <b>Where:</b> Today, Pulse, Journal.</p>
+
+  <div class="rule"></div>
+  <h3>Cycle wheel (soft, not a gauge)</h3>
+  <div class="mock"><div class="fwcard"><div class="flex" style="align-items:center;gap:14px">
+    <div id="cycle-wheel" style="flex:0 0 auto"></div>
+    <div><div class="eyerow">Where you are</div><div class="cardttl" style="font-size:19px">Follicular · Day 14</div><div class="cardline">The up-swing — a good week to start things.</div></div>
+  </div></div></div>
+  <p class="whereline"><b>Look:</b> a phase wheel in the four phase hues + a day marker — glanceable, warm copy. <b>Where:</b> Today, Health, Pulse. Reads as your season, never a fertility dial.</p>
 </div>
 
 <!-- ADAPT -->
@@ -296,7 +316,21 @@
 <div class="section plum">
   <div class="eyebrow">Five · The research</div>
   <h2>Broader than the examples.</h2>
-  <p id="research-body" class="cap">Fresh cited pass across wellness/lifestyle/media/editorial apps (Calm · Headspace · Oura · Flo · Airbnb · Pinterest · Apple News/Music · NYT Cooking · Kinfolk · Finch) → lands in <code>workspace/CARD_STYLES_RESEARCH_2026-07-02.md</code>, folded in on the next pass. Monzo/Netflix were only <i>examples</i>, not templates — the patterns above are drawn from the whole field.</p>
+  <p>Fresh cited pass across wellness/lifestyle/media/editorial apps (Calm · Headspace · Oura · Flo · Airbnb · Pinterest · Apple News/Music · NYT Cooking · Instagram · Duolingo — <b>40 sources</b>, <code>workspace/CARD_STYLES_RESEARCH_2026-07-02.md</code>). Monzo/Netflix were only examples; the patterns above are drawn from the whole field.</p>
+  <h4>The lead pattern has a name — and rules</h4>
+  <p><small>The hero+rail is the <b>image-gallery / "thumbnail-to-hero"</b> pattern (a thumbnail overview + a primary viewer). Best-practice, folded into the lead mock: <b>highlight the current item</b> so she keeps her place (we do — it leaves the rail and becomes the hero); <b>show all thumbs at ≤10–14</b>, and if you truncate you MUST peek/"+N" (else people think the visible set is all there is); <b>crossfade ≤220ms</b> (we use 220 — a promotion, not a scene change); <b>never autoplay</b>; keyboard-completable focus.</small></p>
+  <h4>Candidate styles the research also named</h4>
+  <p><small>Several are already mocked above (now-playing · affirmation/moment · checklist · daily check-in · cycle wheel). The rest are a menu — say which to mock next:</small></p>
+  <table>
+    <tr><th>Candidate</th><th>One line</th></tr>
+    <tr><td><b>CoverStory</b></td><td>full-bleed cover → kicker → Fraunces headline → standfirst (the editorial ladder).</td></tr>
+    <tr><td><b>PullQuote</b></td><td>one big Cormorant line on cream + a botanical flourish, tap-to-share.</td></tr>
+    <tr><td><b>MasonryCollection</b></td><td>a variable-height botanical pin-board for "For You"/saved (browses like Pinterest).</td></tr>
+    <tr><td><b>PhotoTile (save)</b></td><td>photo-first card, the heart fills oxblood when saved; a photo-only dense variant.</td></tr>
+    <tr><td><b>StoryCard</b></td><td>Instagram tap-through with segmented bars + press-and-hold to pause (calm reading).</td></tr>
+    <tr><td><b>CollectionCard</b></td><td>save into a "Saved" box with folders (NYT-Cooking style).</td></tr>
+    <tr><td><b>+ VoiceCard · PollCard · ComparisonCard · MapCard · EmptyStateCard</b></td><td>anon community quote · vote-on-the-face · "then vs now" · a place for events/deals · a botanical empty state (never a grey null).</td></tr>
+  </table>
 </div>
 
 <!-- NEXT -->
@@ -621,5 +655,15 @@ document.getElementById('cont-bloom').innerHTML=B('hellebore',52);
 document.getElementById('stat-ring').innerHTML=progRing(0.72,64,'#8FAF8F');
 ['sh1','sh2','sh3'].forEach((id,i)=>{const el=document.getElementById(id);if(el)el.innerHTML=B(['snowdrop','lotus','forget-me-not'][i],42);});
 document.getElementById('letter-seal').innerHTML=waxSeal(52);
+// cycle wheel — 4 phase arcs + a day marker
+function cycleWheel(size){const cx=size/2,cy=size/2,r=size/2-7;const arcs=[['#BC2E27',0,0.22],['#8FAF8F',0.22,0.55],['#D4AF37',0.55,0.72],['#8E6E8E',0.72,1]];
+  const pt=(f)=>{const a=(f*360-90)*Math.PI/180;return [cx+Math.cos(a)*r,cy+Math.sin(a)*r];};
+  let s=`<svg viewBox="0 0 ${size} ${size}" width="${size}" height="${size}">`;
+  for(const [col,a,b] of arcs){const [x1,y1]=pt(a),[x2,y2]=pt(b);const large=(b-a)>0.5?1:0;s+=`<path d="M ${x1.toFixed(1)} ${y1.toFixed(1)} A ${r} ${r} 0 ${large} 1 ${x2.toFixed(1)} ${y2.toFixed(1)}" fill="none" stroke="${col}" stroke-width="7" stroke-linecap="round"/>`;}
+  const [mx,my]=pt(0.42);s+=`<circle cx="${mx.toFixed(1)}" cy="${my.toFixed(1)}" r="5" fill="#F4EFE3" stroke="#8FAF8F" stroke-width="2.5"/>`;
+  s+=`<text x="${cx}" y="${cy-2}" text-anchor="middle" font-family="Cormorant Garamond,serif" font-weight="600" font-size="15" fill="#7A1A12">Day</text><text x="${cx}" y="${cy+13}" text-anchor="middle" font-family="Cormorant Garamond,serif" font-weight="600" font-size="16" fill="#7A1A12">14</text></svg>`;return s;}
+document.getElementById('cycle-wheel').innerHTML=cycleWheel(72);
+// check-in chips: tap to select (single)
+document.querySelectorAll('.chips .chip2').forEach(c=>c.onclick=()=>{c.parentNode.querySelectorAll('.chip2').forEach(x=>x.classList.remove('on'));c.classList.add('on');});
 </script>
 </body></html>
