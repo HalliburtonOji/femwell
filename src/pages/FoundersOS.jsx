@@ -77,6 +77,8 @@ import doctorExportPlanHtml from "@/components/founders/brandDocs/doctor-export-
 import programsPlanHtml from "@/components/founders/brandDocs/programs-plan.html?raw";
 import gardenPlanHtml from "@/components/founders/brandDocs/garden-plan.html?raw";
 import jessPlanHtml from "@/components/founders/brandDocs/jess-plan.html?raw";
+// Card Styles plan doc (2026-07-01) — wired from IDEAS-LINKS-FOR-FOUNDERSOS.md.
+import cardStylesHtml from "@/components/founders/brandDocs/card-styles-expansion.html?raw";
 // HealthCornerDemo was the multi-layout preview. The canonical health
 // experience now lives at /Health (src/pages/Health.jsx). The Health Corner
 // tab in /Ideas renders <HealthCornerRedirectCard /> instead.
@@ -348,6 +350,8 @@ const CATALOG = [
     title: "No Garden Grows Alone", desc: "Connecting women (safe Tier 0→2 ladder, no open matchmaking), days-off activities found FOR her, and no-guilt tiny missions that grow the garden — baked into Community/Today/Lifestyle/Garden/Planner with NO new nav tab. Cited research + the UK Online-Safety/ICO legal flags and the dials for you." },
   { kind: "doc", key: "Bottom-Nav Plan", group: CAT.CURRENT, sub: "Cross-app plans & decisions", status: "new", accent: "gold",
     title: "Bottom-Nav Plan", desc: "Floating cream capsule + shrink-on-scroll, reject horizontal-scroll nav. Research, honest drawbacks and a phased plan. Awaiting your approval." },
+  { kind: "doc", key: "Card Styles", group: CAT.CURRENT, sub: "Card language plans", status: "new", accent: "gold",
+    title: "Card Styles — research + expansion", desc: "Expanded card-style library — bento mixed-size tiles · media/hero card + category carousel · category shelf · rich-stat card (progress ring + flora + inline actions + status badge + … menu) · dismissible suggestion card · expandable card · spotlight/stat-tile/letter — all adapted to our cream/flora/oxblood brand (not dark fintech). Cited research; live on-brand mockups. Plan only; feeds a bible §6.7.0 update after approval." },
   { kind: "doc", key: "Today Mega-Plan", group: CAT.SPECS, accent: "gold",
     title: "Today — Mega-Plan", desc: "The full plan for the Today home surface." },
   { kind: "doc", key: "Journal", group: CAT.SPECS, accent: "gold",
@@ -464,6 +468,7 @@ const ARCHIVE_SUB_ORDER = [
 const CURRENT_SUB_ORDER = [
   "Page level-up plans + demos",
   "Cross-app plans & decisions",
+  "Card language plans",
 ];
 
 const accentColor = (a) => ({ gold: T.gold, sage: T.sage, blush: T.blush, crimson: T.crimson, espresso: T.espresso }[a] || T.gold);
@@ -1032,6 +1037,7 @@ function FoundersInner({ user }) {
       {tab === "Programs +2" && <BrandDocFrame html={programsPlanHtml} title="FemWell — Programs Level Up (+2)" />}
       {tab === "Garden +2" && <BrandDocFrame html={gardenPlanHtml} title="FemWell — Garden Level Up (+2)" />}
       {tab === "Jess +2" && <BrandDocFrame html={jessPlanHtml} title="FemWell — Jess Level Up (+2)" />}
+      {tab === "Card Styles" && <BrandDocFrame html={cardStylesHtml} title="FemWell — Card Styles: research + expansion" />}
       {tab === "Intentions & Goals" && <BrandDocFrame html={intentionsGoalsHtml} title="FemWell — Intentions, Line of the Day & Goals" />}
       {tab === "Connect, Days & Missions" && <BrandDocFrame html={connectDaysMissionsHtml} title="FemWell — No Garden Grows Alone (Connection, Days Off & Tiny Missions)" />}
       {tab === "Ideas"     && <IdeasTab user={user} />}
