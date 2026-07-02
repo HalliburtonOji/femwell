@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="en-GB"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<title>FemWell — Card Styles: research + expansion</title>
+<title>FemWell — Card Styles: research + expansion (v2)</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500;1,600&family=Ephesis&display=swap" rel="stylesheet">
 <style>
@@ -11,7 +11,7 @@
   .doc{max-width:680px;margin:0 auto;padding:28px 22px 90px}
   h1.cover{font-family:var(--script);font-size:52px;color:var(--oxblood);margin:6px 0 2px;line-height:1.04}
   h2{font-family:var(--serif);font-style:italic;font-weight:600;font-size:28px;color:var(--oxblood);margin:0 0 4px}
-  h3{font-family:var(--serif);font-weight:600;font-size:22px;color:var(--oxblood);margin:22px 0 6px}
+  h3{font-family:var(--serif);font-weight:600;font-size:22px;color:var(--oxblood);margin:20px 0 4px}
   h4{font-family:var(--sans);font-size:12px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--gold);margin:14px 0 4px}
   .eyebrow{font-family:var(--sans);font-size:12px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--gold);margin-bottom:10px}
   p{margin:0 0 12px}.lede{font-size:20px;line-height:1.55}
@@ -19,88 +19,165 @@
   b,strong{font-weight:600}
   .section{background:var(--paperHi);border:1px solid var(--paperDeep);border-left:4px solid var(--gold);border-radius:20px;padding:22px 20px;margin:18px 0;box-shadow:0 4px 20px rgba(58,44,26,.10),0 1px 4px rgba(58,44,26,.06);position:relative;overflow:hidden}
   .section.crimson{border-left-color:var(--oxblood)}.section.sage{border-left-color:var(--sage)}.section.plum{border-left-color:var(--plum)}
-  .rule{height:1px;background:var(--gold);opacity:.32;margin:18px 0}
+  .section.lead{border-left-color:var(--oxblood);border-width:1px 1px 1px 5px;background:linear-gradient(180deg,#F6EFE0,#F1E8D6)}
+  .rule{height:1px;background:var(--gold);opacity:.3;margin:16px 0}
   table{width:100%;border-collapse:collapse;font-size:14px;font-family:var(--sans);margin:8px 0}
   th,td{text-align:left;padding:7px 8px;border-bottom:1px solid var(--paperDeep);vertical-align:top}
   th{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--gold)}
   td b{font-family:var(--serif);font-size:15px}
   .toc a{display:block;font-family:var(--sans);font-size:15px;color:var(--inkSoft);text-decoration:none;padding:6px 0;border-bottom:1px solid var(--paperDeep)}
   .toc a span{color:var(--gold);font-weight:700;margin-right:10px}
-  .cap-src{font-family:var(--sans);font-size:12px;color:#6B5840;font-style:normal}
-  /* ── card mockup kit (on-brand) ── */
-  .mock{margin:12px 0 6px}
+  .whereline{font-family:var(--sans);font-size:13px;color:#6B5840;margin:4px 0 2px}
+  .whereline b{color:var(--muted)}
+  .tag{display:inline-block;font-family:var(--sans);font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;padding:3px 9px;border-radius:999px;background:#EFE3C9;color:#7a5f1c}
+  .tag.new{background:var(--oxblood);color:#fff}.tag.sage{background:#DDE7DD;color:#3f6b3f}
+  /* card kit */
   .fwcard{background:linear-gradient(165deg,var(--paperHi),#EFE7D6);border:1px solid var(--paperDeep);border-left:4px solid var(--gold);border-radius:16px;padding:14px;position:relative;box-shadow:0 4px 14px rgba(58,44,26,.10)}
   .cardttl{font-family:var(--serif);font-weight:600;font-size:19px;color:var(--oxblood);margin:0 0 2px}
   .cardline{font-family:var(--serif);font-size:15px;color:var(--inkSoft);margin:0}
   .eyerow{font-family:var(--sans);font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--gold)}
-  .pill{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:9px 14px;font-family:var(--sans);font-size:13px;font-weight:700;border:none;cursor:default}
+  .pill{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:9px 14px;font-family:var(--sans);font-size:13px;font-weight:700;border:none;cursor:pointer}
   .pill.plum{background:var(--plum);color:#fff}.pill.gold{background:var(--gold);color:#fff}.pill.ghost{background:transparent;border:1px solid var(--paperDeep);color:var(--muted)}
-  .badge{display:inline-block;font-family:var(--sans);font-size:11px;font-weight:700;letter-spacing:.04em;padding:3px 9px;border-radius:999px}
-  .badge.gold{background:#EFE3C9;color:#7a5f1c}.badge.sage{background:#DDE7DD;color:#3f6b3f}.badge.new{background:var(--oxblood);color:#fff}
-  .xbtn{position:absolute;top:8px;right:10px;font-family:var(--sans);font-size:16px;color:var(--muted);opacity:.55;cursor:pointer}
-  .dots{position:absolute;top:12px;right:12px;font-family:var(--sans);font-size:20px;color:var(--muted);opacity:.5;letter-spacing:1px}
-  /* bento */
-  .bento{display:grid;grid-template-columns:1fr 1fr;grid-auto-rows:74px;gap:8px}
-  .tile{background:var(--paperHi);border:1px solid var(--paperDeep);border-radius:14px;padding:10px;display:flex;flex-direction:column;justify-content:flex-end;position:relative}
-  .tile.big{grid-row:span 2;grid-column:span 1;background:linear-gradient(160deg,#F6EFDE,#EFE3CC);border-left:3px solid var(--gold)}
-  .tile .tl{font-family:var(--sans);font-size:12px;font-weight:700;color:var(--inkSoft)}
-  .tile .ts{font-family:var(--sans);font-size:11px;color:#6B5840}
-  .tile .big-n{font-family:var(--serif);font-weight:600;font-size:30px;color:var(--oxblood);line-height:1}
-  /* media hero */
-  .hero{border-radius:16px;overflow:hidden;border:1px solid var(--paperDeep);box-shadow:0 6px 18px rgba(58,44,26,.14)}
-  .hero .cover{height:150px;background:radial-gradient(80% 120% at 30% 20%,#F3E7CF,#E7D6B4);position:relative;display:flex;align-items:center;justify-content:center}
-  .hero .cover .rib{position:absolute;top:10px;left:0;background:var(--oxblood);color:#fff;font-family:var(--sans);font-size:11px;font-weight:700;letter-spacing:.06em;padding:5px 12px 5px 10px;border-radius:0 999px 999px 0}
-  .hero .body{background:var(--paperHi);padding:12px 14px}
-  .row{display:flex;gap:8px;overflow-x:auto;padding-bottom:4px}
-  .thumb{flex:0 0 92px;height:78px;border-radius:12px;background:linear-gradient(160deg,#F3EAD6,#E9DcC0);border:1px solid var(--paperDeep);display:flex;align-items:flex-end;padding:6px;font-family:var(--sans);font-size:10px;font-weight:700;color:var(--muted)}
-  .arrows{font-family:var(--sans);color:var(--muted);opacity:.6;font-weight:700}
-  .dotrow{display:flex;gap:4px;justify-content:center;margin-top:6px}
-  .d{width:6px;height:6px;border-radius:50%;background:var(--paperDeep)}.d.on{width:16px;background:var(--oxblood)}
-  .flex{display:flex;gap:10px;align-items:center}
+  .badge{display:inline-block;font-family:var(--sans);font-size:11px;font-weight:700;padding:3px 9px;border-radius:999px}
+  .badge.gold{background:#EFE3C9;color:#7a5f1c}.badge.sage{background:#DDE7DD;color:#3f6b3f}
+  .xbtn{position:absolute;top:8px;right:10px;font-family:var(--sans);font-size:15px;color:var(--muted);opacity:.55;cursor:pointer;width:30px;height:30px;text-align:center;line-height:30px}
+  .kebab{position:absolute;top:10px;right:12px;font-family:var(--sans);font-size:20px;color:var(--muted);opacity:.5;cursor:pointer;letter-spacing:1px}
   .btnrow{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
-  .shelfhdr{display:flex;align-items:center;justify-content:space-between;margin:2px 2px 6px}
-  .shelfhdr .s-ttl{font-family:var(--serif);font-style:italic;font-weight:600;font-size:20px;color:var(--oxblood)}
-  .shelfhdr .s-all{font-family:var(--sans);font-size:12px;font-weight:700;color:var(--gold)}
+  .flex{display:flex;gap:10px;align-items:center}
+  .mock{margin:12px 0 6px}
+  .interactive{outline:1px dashed rgba(168,137,63,.5);outline-offset:6px;border-radius:18px}
+  .tapnote{font-family:var(--sans);font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--crimson);text-align:center;margin:14px 0 2px}
+  /* HERO + tap-to-promote rail */
+  .hero{border-radius:16px;overflow:hidden;border:1px solid var(--paperDeep);box-shadow:0 6px 18px rgba(58,44,26,.14);transition:opacity .22s ease}
+  .hero.swap{opacity:0}
+  .hero .cover{height:150px;background:radial-gradient(80% 130% at 30% 15%,#F5EAD2,#E7D6B4);position:relative;display:flex;align-items:center;justify-content:center}
+  .hero .cover .rib{position:absolute;top:10px;left:0;background:var(--oxblood);color:#fff;font-family:var(--sans);font-size:11px;font-weight:700;letter-spacing:.05em;padding:5px 12px 5px 10px;border-radius:0 999px 999px 0}
+  .hero .body{background:var(--paperHi);padding:12px 14px}
+  .shelfhdr{display:flex;align-items:center;justify-content:space-between;margin:10px 2px 6px}
+  .shelfhdr .s-ttl{font-family:var(--serif);font-style:italic;font-weight:600;font-size:19px;color:var(--oxblood)}
+  .shelfhdr .s-all{font-family:var(--sans);font-size:12px;font-weight:700;color:var(--gold);cursor:pointer}
+  .rail{display:flex;gap:8px;overflow-x:auto;padding:2px 2px 6px;scroll-snap-type:x mandatory}
+  .thumb{flex:0 0 108px;scroll-snap-align:start;border-radius:12px;background:linear-gradient(160deg,#F3EAD6,#E9DCC0);border:1px solid var(--paperDeep);padding:8px;cursor:pointer;transition:transform .15s ease,box-shadow .15s ease;position:relative}
+  .thumb:hover{transform:translateY(-2px);box-shadow:0 4px 12px rgba(58,44,26,.14)}
+  .thumb .th-b{height:44px;display:flex;align-items:center;justify-content:center}
+  .thumb .th-t{font-family:var(--sans);font-size:11px;font-weight:700;color:var(--muted);line-height:1.15;margin-top:4px}
+  .navrow{display:flex;align-items:center;justify-content:center;gap:14px;margin-top:4px}
+  .arrows{font-family:var(--sans);color:var(--muted);opacity:.6;font-weight:700;font-size:18px;cursor:pointer;user-select:none}
+  .dotrow{display:flex;gap:4px}.d{width:6px;height:6px;border-radius:50%;background:var(--paperDeep)}.d.on{width:16px;background:var(--oxblood)}
+  /* expandable */
+  .exp{cursor:pointer}
+  .exp .caret{font-family:var(--sans);font-size:22px;color:var(--muted);transition:transform .25s ease;display:inline-block}
+  .exp.open .caret{transform:rotate(180deg)}
+  .exp .more{max-height:0;overflow:hidden;transition:max-height .3s cubic-bezier(.32,.72,.24,1)}
+  .exp.open .more{max-height:220px}
+  .exp .more .inner{padding-top:10px;margin-top:10px;border-top:1px dashed var(--paperDeep);font-family:var(--serif);font-size:15px;color:var(--inkSoft)}
+  /* bento */
+  .bento{display:grid;grid-template-columns:1fr 1fr;grid-auto-rows:70px;gap:8px}
+  .tile{background:var(--paperHi);border:1px solid var(--paperDeep);border-radius:14px;padding:10px;display:flex;flex-direction:column;justify-content:flex-end;position:relative}
+  .tile.big{grid-row:span 2;background:linear-gradient(160deg,#F6EFDE,#EFE3CC);border-left:3px solid var(--gold)}
+  .tile .tl{font-family:var(--sans);font-size:12px;font-weight:700;color:var(--inkSoft)}.tile .ts{font-family:var(--sans);font-size:11px;color:#6B5840}
+  .tile .big-n{font-family:var(--serif);font-weight:600;font-size:30px;color:var(--oxblood);line-height:1}
+  /* stat tiles */
+  .stattiles{display:flex;gap:8px}
+  .stile{flex:1;background:var(--paperHi);border:1px solid var(--paperDeep);border-radius:14px;padding:12px;text-align:center}
+  .stile .n{font-family:var(--serif);font-weight:600;font-size:30px;color:var(--oxblood);line-height:1}
+  .stile .l{font-family:var(--sans);font-size:11px;color:#6B5840;text-transform:uppercase;letter-spacing:.06em;margin-top:2px}
+  /* letter */
+  .letter{background:linear-gradient(180deg,#F7F1E4,#EFE6D2);border:1px solid var(--paperDeep);border-radius:6px;padding:16px 16px 14px;position:relative;box-shadow:0 6px 16px rgba(58,44,26,.13)}
+  .letter .seal{position:absolute;right:14px;top:-12px}
+  .letter .salut{font-family:var(--serif);font-style:italic;font-size:19px;color:var(--oxblood);margin-bottom:4px}
+  /* affirmation */
+  .affirm{border-radius:16px;padding:22px 18px;text-align:center;background:radial-gradient(90% 130% at 50% 0%,#F3E7CF,#EAD9BC);border:1px solid var(--paperDeep);position:relative;overflow:hidden}
+  .affirm .q{font-family:var(--serif);font-style:italic;font-weight:600;font-size:22px;color:var(--oxblood);line-height:1.3}
+  .affirm .who{font-family:var(--sans);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:#6B5840;margin-top:8px}
+  /* now-playing */
+  .np{display:flex;align-items:center;gap:12px}
+  .np .art{width:52px;height:52px;border-radius:12px;background:radial-gradient(80% 100% at 30% 20%,#F3E7CF,#E3CE9E);display:flex;align-items:center;justify-content:center;flex:0 0 auto}
+  .np .play{width:34px;height:34px;border-radius:50%;background:var(--plum);color:#fff;display:flex;align-items:center;justify-content:center;font-size:14px;flex:0 0 auto}
+  .bar{height:4px;background:var(--paperDeep);border-radius:2px;margin-top:6px;position:relative}.bar i{position:absolute;left:0;top:0;height:4px;width:40%;background:var(--gold);border-radius:2px}
+  /* checklist */
+  .chk{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--paperDeep);font-family:var(--serif);font-size:16px}
+  .chk .box{width:20px;height:20px;border-radius:6px;border:1.5px solid var(--gold);flex:0 0 auto;display:flex;align-items:center;justify-content:center;color:var(--sage);font-size:13px}
+  .chk.done{color:#6B5840}.chk.done .box{background:var(--sage);border-color:var(--sage);color:#fff}
+  /* continue */
+  .cont{display:flex;align-items:center;gap:12px}
+  .cont .thumbc{width:60px;height:60px;border-radius:12px;background:radial-gradient(80% 100% at 30% 20%,#F3E7CF,#E3CE9E);flex:0 0 auto;display:flex;align-items:center;justify-content:center}
+  .prog2{height:5px;background:var(--paperDeep);border-radius:3px;margin-top:6px}.prog2 i{display:block;height:5px;width:65%;background:var(--oxblood);border-radius:3px}
   .foot{font-family:var(--sans);font-size:12px;color:var(--muted);text-align:center;margin-top:30px;line-height:1.6}
+  .center{text-align:center}
 </style></head>
 <body><div class="doc">
 
-<div class="center" style="text-align:center;padding:14px 0 4px">
-  <div class="eyebrow">FemWell · plan doc · for your reaction</div>
+<div class="center" style="padding:14px 0 4px">
+  <div class="eyebrow">FemWell · plan doc · v2 (every style shown) · for your reaction</div>
   <h1 class="cover">Card Styles — research<br>&amp; expansion</h1>
-  <p class="lede" style="font-style:italic;max-width:470px;margin:6px auto 0">More variety in how we show things — the fintech-bento &amp; streaming-carousel ideas you liked, adapted into <b>our</b> cream-and-flora world.</p>
+  <p class="lede" style="font-style:italic;max-width:470px;margin:6px auto 0">Now with <b>every</b> style shown, not told — and the media hero + <b>tap-to-promote</b> rail you liked as the lead. <span class="cap">(Dashed outline = an interactive mock; tap it.)</span></p>
 </div>
 
 <div class="section">
-  <div class="eyebrow">The brief</div>
-  <p>You want <b>more card variety</b> than our current set. This is a <b>plan</b> (not a build): the research, then a proposed <b>expanded card-style library</b>, each adapted to our brand — cream paper, deep-oxblood headings, gold, flora, warm plain voice. <b>On approval it folds into the bible's card-language (§6.7.0).</b></p>
-  <p style="margin-bottom:6px"><b>Your references, in one line each:</b> a <b>Monzo-style bento</b> home (different-sized tiles) · <b>dismissible</b> suggestion cards (an ✕) · a rich <b>"Loans · On track"</b> card (progress ring + illustration + inline actions + a "…" menu) · section headers · and a <b>Netflix-style</b> media carousel (big hero cards with imagery + a "No.1 in Films" badge + a featured area, then a smaller category row).</p>
+  <div class="eyebrow">This pass</div>
+  <p>You liked <b>#2 (media hero + category row)</b> most → it's now the <b>lead</b>, with the <b>tap-to-promote</b> interaction designed &amp; mocked. You liked the <b>expandable</b> card → now first-class + shown. And per your note, <b>every</b> style is a real on-brand mock (cream/flora/oxblood), never prose-only. Plan only — nothing built live. Feeds a bible §6.7.0 update on approval.</p>
   <div class="toc">
-    <a href="#now"><span>1</span>What we already have</a>
-    <a href="#new"><span>2</span>The expanded library — new card styles</a>
-    <a href="#adapt"><span>3</span>How we keep it FemWell (not dark fintech)</a>
-    <a href="#where"><span>4</span>Where each shines</a>
+    <a href="#hero"><span>★</span>THE LEAD — media hero + tap-to-promote rail</a>
+    <a href="#exp"><span>2</span>The expandable card</a>
+    <a href="#lib"><span>3</span>The rest of the library — all shown</a>
+    <a href="#adapt"><span>4</span>Keep it FemWell (adapt, don't copy)</a>
     <a href="#research"><span>5</span>The research (cited)</a>
-    <a href="#next"><span>6</span>Rules kept + next step</a>
+    <a href="#next"><span>6</span>Rules kept + your dials</a>
   </div>
 </div>
 
-<!-- 1 -->
-<a id="now"></a>
-<div class="section">
-  <div class="eyebrow">One · The set we have</div>
-  <h2>Six, already good.</h2>
-  <p>Our current card language (bible §6.7.0 / §6.10): the <b>standard FwCard</b> · the <b>clipboard board</b> (big framed board + horizontal board-slider) · <b>stacked top/bottom demarcations</b> (each its own horizontal sub-slider) · <b>tile-grid in a board</b> · <b>accent-rim sub-card</b> · <b>focused colour pills</b> · the <b>in-card horizontal deck</b>. This plan <b>adds to</b> that — a bounded vocabulary, each new type with a distinct job.</p>
+<!-- LEAD -->
+<a id="hero"></a>
+<div class="section lead">
+  <div class="eyebrow" style="color:var(--oxblood)">★ The lead pattern</div>
+  <h2>Media hero + tap-to-promote rail.</h2>
+  <p>A big <b>featured hero</b> card with a rail of thumbnails beneath. <b>Tap a thumbnail and it PROMOTES</b> — it smoothly takes the hero's place (the old hero drops back into the rail). One surface, many stories, no page change.</p>
+  <div class="tapnote">↓ tap a thumbnail to promote it ↓</div>
+  <div class="mock interactive">
+    <div class="hero" id="hero-card"></div>
+    <div class="shelfhdr"><span class="s-ttl">More to read</span><span class="s-all">See all ›</span></div>
+    <div class="rail" id="hero-rail"></div>
+    <div class="navrow"><span class="arrows">‹</span><span class="dotrow" id="hero-dots"></span><span class="arrows">›</span></div>
+  </div>
+  <div class="rule"></div>
+  <h4>The interaction, spelled out</h4>
+  <ol style="font-size:15px;line-height:1.5;padding-left:18px;margin:0 0 8px">
+    <li><b>Default:</b> item #1 (best/newest) is the hero; the rest sit in the rail below, peeking off the right edge.</li>
+    <li><b>Tap a rail thumbnail →</b> the hero <b>cross-fades</b> (≈220ms) and the tapped item becomes the hero; the previous hero animates down into the rail's front slot.</li>
+    <li><b>The rail stays a horizontal slider</b> (swipe / ‹ › arrows / dots), with the §6.10.3 peek + See-all discipline — "See all" opens the full grid (the reliable second path, since horizontal scroll gets missed).</li>
+    <li><b>One tag ON the hero art</b> ("No.1 this week" / "New"), quiet chrome so the flora cover reads.</li>
+  </ol>
+  <p class="whereline"><b>Where it shines:</b> Lifestyle (Read / Listen / Watch / Daily Story), Programs (featured programme + shelves), Community (featured room). The single most reusable "browse a category" surface.</p>
 </div>
 
-<!-- 2 -->
-<a id="new"></a>
-<div class="section crimson">
-  <div class="eyebrow">Two · The expanded library</div>
-  <h2>Nine new card styles.</h2>
+<!-- EXPANDABLE -->
+<a id="exp"></a>
+<div class="section">
+  <div class="eyebrow">Two · First-class now</div>
+  <h2>The expandable card.</h2>
+  <p>Summary on the surface; <b>tap the caret to open the detail inline</b> — she keeps her place, no route change.</p>
+  <div class="tapnote">↓ tap the card to expand ↓</div>
+  <div class="mock interactive">
+    <div class="fwcard exp" id="exp-card" onclick="this.classList.toggle('open')">
+      <div class="flex" style="justify-content:space-between;align-items:flex-start">
+        <div><div class="eyerow">Your Health · Letter II</div><div class="cardttl" style="font-size:18px">Your heart, this season</div>
+        <div class="cardline" style="margin-top:2px">A short letter — the key facts, then the full read.</div></div>
+        <span class="caret">⌄</span>
+      </div>
+      <div class="more"><div class="inner">Your blood pressure's been steady and your resting heart rate dipped a little this month — a good sign your rest is landing. Three gentle things that keep a heart happy this season are folded in, plus two questions worth asking your GP if the tiredness lingers.</div></div>
+    </div>
+  </div>
+  <p class="whereline"><b>Look:</b> a normal card + a ⌄ caret; open rotates it to ⌃ and grows the card. <b>Interaction:</b> tap anywhere to toggle (animated height, reduced-motion safe). <b>Caret, not + or arrow</b> (those read as "add"/"jump"). <b>Where:</b> Health letters, Journal entries, FAQs, any summary some want expanded.</p>
+</div>
 
-  <h3>1 · Bento mixed-size tiles</h3>
-  <p>A grid of <b>different-sized</b> tiles — one big hero tile + several small ones — so a page overview is glanceable, not a uniform grid. (Your Monzo reference.)</p>
+<!-- LIBRARY (all shown) -->
+<a id="lib"></a>
+<div class="section crimson">
+  <div class="eyebrow">Three · The rest — every one shown</div>
+  <h2>The library, visible.</h2>
+
+  <h3>Bento mixed-size tiles</h3>
   <div class="mock"><div class="bento">
     <div class="tile big"><div class="eyerow">Today</div><div class="big-n">Day 14</div><div class="ts">follicular · rising</div><div id="bento-bloom" style="position:absolute;top:8px;right:8px"></div></div>
     <div class="tile"><div class="tl">Water</div><div class="ts">4 / 6 glasses</div></div>
@@ -108,149 +185,134 @@
     <div class="tile"><div class="tl">Chapter</div><div class="ts">2 min read</div></div>
     <div class="tile"><div class="tl">Garden</div><div class="ts">a bee visited</div></div>
   </div></div>
-  <p><small><b>Anatomy:</b> a 2-col grid, a big 2-row hero tile (the day/most-important) + 1×1 tiles; each tile = icon/flora + a label + one number/status, taps to the full thing. <b>When:</b> a page's at-a-glance overview (Today, Profile, Garden). <b>Rule:</b> vary the size for hierarchy — never all-uniform; fill the grid, no empty cells.</small></p>
+  <p class="whereline"><b>Look:</b> a big hero tile + small ones. <b>Interaction:</b> each taps to its full thing. <b>Where:</b> Today / Profile / Garden overview. (≤2 hero tiles, ≤12 total.)</p>
 
   <div class="rule"></div>
-  <h3>2 · Media / hero card + category row</h3>
-  <p>A large <b>featured</b> card with imagery/flora + a small badge ("New" / "No.1 this week"), then a smaller <b>category row</b> of thumbnails beneath. (Your Netflix reference.)</p>
-  <div class="mock">
-    <div class="hero">
-      <div class="cover"><span class="rib">No.1 this week</span><div id="hero-bloom"></div></div>
-      <div class="body"><div class="eyerow">Daily story</div><div class="cardttl">The Garden at Dusk</div><div class="cardline">A five-minute read for a soft evening.</div>
-        <div class="btnrow"><span class="pill gold">Read now</span><span class="pill ghost">Save</span></div></div>
-    </div>
-    <div class="shelfhdr" style="margin-top:10px"><span class="s-ttl">More to read</span><span class="s-all">See all ›</span></div>
-    <div class="row"><span class="thumb">On rest</span><span class="thumb">Money &amp; you</span><span class="thumb">A love letter</span><span class="thumb">Friendship</span></div>
-    <div class="dotrow"><span class="d on"></span><span class="d"></span><span class="d"></span></div>
-  </div>
-  <p><small><b>Anatomy:</b> a hero card (cover area with a flora/soft-gradient image + a small ribbon badge) → title + line + a primary action; then a labelled <b>shelf</b> (title + "See all" + a peeking row of thumbnails with dots + ‹ › arrows). <b>When:</b> Lifestyle (Read/Listen/Watch), Programs, Daily Story. <b>Brand:</b> imagery is <b>flora/soft paper gradients</b>, not stock photos; badges are quiet gold/sage, not loud red.</small></p>
-
-  <div class="rule"></div>
-  <h3>3 · Category row / shelf</h3>
-  <p>The labelled horizontally-scrolling <b>shelf</b> on its own (title + See-all + a row of cards + peek + arrows) — the workhorse for "a row of things in a category".</p>
+  <h3>Category shelf</h3>
   <div class="mock">
     <div class="shelfhdr"><span class="s-ttl">Tonight's calm</span><span class="s-all">See all ›</span></div>
-    <div class="row"><span class="thumb">Wind-down</span><span class="thumb">Sleep story</span><span class="thumb">Breathe</span><span class="thumb">Bath ritual</span></div>
-    <div class="flex" style="justify-content:center;gap:14px;margin-top:6px"><span class="arrows">‹</span><span class="dotrow" style="margin:0"><span class="d on"></span><span class="d"></span><span class="d"></span></span><span class="arrows">›</span></div>
+    <div class="rail"><div class="thumb"><div class="th-b" id="sh1"></div><div class="th-t">Wind-down</div></div><div class="thumb"><div class="th-b" id="sh2"></div><div class="th-t">Sleep story</div></div><div class="thumb"><div class="th-b" id="sh3"></div><div class="th-t">Breathe</div></div><div class="thumb"><div class="th-t">Bath ritual</div></div></div>
+    <div class="navrow"><span class="arrows">‹</span><span class="dotrow"><span class="d on"></span><span class="d"></span></span><span class="arrows">›</span></div>
   </div>
-  <p><small><b>When:</b> any "row of peers in a category" — recipes, programmes, community rooms, deals. <b>Rule:</b> 12–16% peek + dots + tappable ‹ › arrows (our §6.10.3 standard); cap ~8, best first; a "See all" opens the full grid.</small></p>
+  <p class="whereline"><b>Look:</b> title + See-all + a peeking row. <b>Interaction:</b> swipe / arrows; See-all opens the grid. <b>Where:</b> recipes, programmes, rooms, deals.</p>
 
   <div class="rule"></div>
-  <h3>4 · Rich stat / status card</h3>
-  <p>One rich card = a <b>progress ring</b> (or mini-chart) + a <b>flora illustration</b> + <b>inline action buttons</b> + a <b>status badge</b> + a quiet <b>"…" menu</b>. (Your "Loans · On track".)</p>
-  <div class="mock"><div class="fwcard"><span class="dots">⋯</span>
-    <div class="flex" style="align-items:flex-start">
-      <div id="stat-ring" style="flex:0 0 auto"></div>
-      <div style="flex:1">
-        <div class="eyerow">This cycle · goals</div>
-        <div class="cardttl">On track <span class="badge sage">3 of 4</span></div>
-        <div class="cardline">Your money-plant's nearly in bud — one more week.</div>
-        <div class="btnrow"><span class="pill plum">Tend it</span><span class="pill ghost">See steps</span></div>
-      </div>
-    </div>
+  <h3>Rich stat / status card</h3>
+  <div class="mock"><div class="fwcard"><span class="kebab">⋯</span>
+    <div class="flex" style="align-items:flex-start"><div id="stat-ring" style="flex:0 0 auto"></div>
+      <div style="flex:1"><div class="eyerow">This cycle · goals</div><div class="cardttl">On track <span class="badge sage">3 of 4</span></div>
+      <div class="cardline">Your money-plant's nearly in bud — one more week.</div>
+      <div class="btnrow"><span class="pill plum">Tend it</span><span class="pill ghost">See steps</span></div></div></div>
   </div></div>
-  <p><small><b>Anatomy:</b> a ring/chart (in a phase hue or gold) + a flora motif + a serif title + a <b>status badge</b> ("On track"/"3 of 4") + two inline actions + a top-right "…" overflow (edit/snooze/hide). <b>When:</b> Pulse, Programs progress, Goals, Health summaries. <b>Brand:</b> the ring reads as <i>growth</i> (paired with the flora lifecycle), never a clinical dial; the "…" is quiet, not a loud kebab.</small></p>
+  <p class="whereline"><b>Look:</b> a ring (growth, not a dial) + status badge + one action + a quiet "…". <b>Where:</b> Pulse, Programs, Goals. (Ring OR figure — never both.)</p>
 
   <div class="rule"></div>
-  <h3>5 · Dismissible suggestion card</h3>
-  <p>A gentle nudge you can <b>dismiss</b> with an ✕ (or snooze) — so suggestions never nag.</p>
-  <div class="mock"><div class="fwcard" style="border-left-color:var(--sage)"><span class="xbtn">✕</span>
-    <div class="eyerow">A small idea</div>
-    <div class="cardttl" style="font-size:17px">You've journalled 4 evenings running.</div>
+  <h3>Dismissible suggestion card</h3>
+  <div class="mock"><div class="fwcard" style="border-left-color:var(--sage)"><span class="xbtn" onclick="this.closest('.fwcard').style.opacity=.35">✕</span>
+    <div class="eyerow">A small idea</div><div class="cardttl" style="font-size:17px">You've journalled 4 evenings running.</div>
     <div class="cardline">Want a gentle 9pm nudge to keep it? No pressure.</div>
     <div class="btnrow"><span class="pill gold">Yes, remind me</span><span class="pill ghost">Not now</span></div>
   </div></div>
-  <p><small><b>Anatomy:</b> a warm suggestion + an ✕ (dismiss) / "Not now" (snooze) + a light accent rim (sage). <b>When:</b> Today nudges, Community prompts, Nutrition tips. <b>Rules:</b> dismiss sticks (don't re-show the same one); the ✕ has a real ≥44px target + label for a screen reader; never guilt.</small></p>
+  <p class="whereline"><b>Look:</b> a warm nudge + a real ✕. <b>Interaction:</b> ✕ dismisses (sticks); "Not now" snoozes. <b>Where:</b> Today, Community, Nutrition. Never nags; never carries status.</p>
 
   <div class="rule"></div>
-  <h3>6 · Expandable card (tap to open)</h3>
-  <p>Summary first, <b>tap to expand in place</b> for the detail — no route change.</p>
-  <div class="mock"><div class="fwcard">
-    <div class="flex" style="justify-content:space-between"><div><div class="eyerow">Your Health · Letter II</div><div class="cardttl" style="font-size:18px">Your heart, this season</div></div><span class="arrows" style="font-size:22px">⌄</span></div>
-    <div class="cardline" style="margin-top:4px">A short letter — the key facts, then tap for the full read + your GP prep.</div>
+  <h3>Spotlight / featured</h3>
+  <div class="mock"><div class="fwcard" style="border-left-color:var(--oxblood);display:flex;gap:12px;align-items:center">
+    <div id="spot-bloom" style="flex:0 0 auto"></div>
+    <div><div class="eyerow" style="color:var(--oxblood)">Today's pick</div><div class="cardttl" style="font-size:21px">A five-minute reset</div>
+    <div class="cardline">Because you said today felt heavy.</div><div class="btnrow"><span class="pill gold">Begin</span></div></div>
   </div></div>
-  <p><small><b>When:</b> Health letters, Journal entries, FAQ-style content, a summary that some want expanded. <b>Rule:</b> expands in place (animated height, reduced-motion safe); a clear ⌄/⌃ affordance.</small></p>
+  <p class="whereline"><b>Look:</b> one item lifted above a row — a flora + big title + ONE CTA. <b>Where:</b> the top of any shelf; a "today's pick".</p>
 
   <div class="rule"></div>
-  <h3>7–9 · Three more</h3>
-  <table>
-    <tr><th>Style</th><th>Job · brand fit</th></tr>
-    <tr><td><b>Spotlight / featured</b></td><td>lift ONE item above a shelf (a "today's pick") — a wider card + a single strong CTA. (Formalises what we do ad-hoc.)</td></tr>
-    <tr><td><b>Stat tile</b> (small)</td><td>a single number/streak at a glance (a bento cell, or a Pulse micro-tile) — big serif figure + a tiny label + a sparkline/flora; never a wall of them.</td></tr>
-    <tr><td><b>Letter / note card</b></td><td>an intimate, un-clinical message (a "letter from your body", a Jess note) — the deckle/wax-seal look (still §10.6 proposed craft). Our most distinctly-FemWell card.</td></tr>
-  </table>
+  <h3>Stat tiles (small metrics)</h3>
+  <div class="mock"><div class="stattiles">
+    <div class="stile"><div class="n">7</div><div class="l">day streak</div></div>
+    <div class="stile"><div class="n">6.4</div><div class="l">avg sleep</div></div>
+    <div class="stile"><div class="n">Day 14</div><div class="l">cycle</div></div>
+  </div></div>
+  <p class="whereline"><b>Look:</b> a big serif figure + a tiny label. <b>Where:</b> a Pulse row, or bento cells. One gold figure per tile; never a wall of them.</p>
+
+  <div class="rule"></div>
+  <h3>Letter / note card</h3>
+  <div class="mock"><div class="letter"><div class="seal" id="letter-seal"></div>
+    <div class="salut">Dear you,</div>
+    <p style="margin:0;font-family:var(--serif);font-size:16px;line-height:1.5;color:var(--inkSoft)">A short letter this week. Your sleep's been broken and your body's asking, quite politely, for an earlier night…</p>
+  </div></div>
+  <p class="whereline"><b>Look:</b> deckle paper + a wax-rose seal + "Dear you,". <b>Where:</b> Health letters, a monthly "letter from your body", a Jess note. Our most distinctly-FemWell card. <span class="cap">(craft still §10.6 proposed.)</span></p>
+
+  <div class="rule"></div>
+  <h3>Affirmation / moment card</h3>
+  <div class="mock"><div class="affirm"><div class="q">"Rest is a stage,<br>not a failure."</div><div class="who">your garden, today</div></div></div>
+  <p class="whereline"><b>Look:</b> one beautiful line on a soft flora ground. <b>Interaction:</b> tap to save/share. <b>Where:</b> a daily "moment" on Today; the omen line's home.</p>
+
+  <div class="rule"></div>
+  <h3>Now-playing / audio card</h3>
+  <div class="mock"><div class="fwcard"><div class="np">
+    <div class="art" id="np-bloom"></div>
+    <div style="flex:1"><div class="eyerow">Listening</div><div class="cardttl" style="font-size:17px">A walk through the meadow</div><div class="bar"><i></i></div></div>
+    <div class="play">▶</div>
+  </div></div></div>
+  <p class="whereline"><b>Look:</b> art + title + a progress bar + a play control. <b>Interaction:</b> plays IN the card. <b>Where:</b> Lifestyle Listen, sleep stories, meditations.</p>
+
+  <div class="rule"></div>
+  <h3>Checklist / ritual card</h3>
+  <div class="mock"><div class="fwcard">
+    <div class="eyerow">Tonight's ritual</div>
+    <div class="chk done"><span class="box">✓</span> Warm shower</div>
+    <div class="chk done"><span class="box">✓</span> Phone on charge, out of reach</div>
+    <div class="chk"><span class="box"></span> Three slow breaths</div>
+    <div style="border:none" class="chk"><span class="box"></span> Lights low</div>
+  </div></div>
+  <p class="whereline"><b>Look:</b> a few tappable check rows. <b>Interaction:</b> tick in place (a bloom grows). <b>Where:</b> rituals, a Today ritual, Programs steps.</p>
+
+  <div class="rule"></div>
+  <h3>Continue where you left off</h3>
+  <div class="mock"><div class="fwcard"><div class="cont">
+    <div class="thumbc" id="cont-bloom"></div>
+    <div style="flex:1"><div class="eyerow">Pick up again</div><div class="cardttl" style="font-size:17px">Perimenopause, gently — Day 3</div><div class="prog2"><i></i></div></div>
+    <span class="pill gold">Resume</span>
+  </div></div></div>
+  <p class="whereline"><b>Look:</b> thumbnail + where-you-are + a progress bar + Resume. <b>Where:</b> Programs, a half-read book, a saved recipe.</p>
 </div>
 
-<!-- 3 -->
+<!-- ADAPT -->
 <a id="adapt"></a>
 <div class="section sage">
-  <div class="eyebrow">Three · Keep it FemWell</div>
+  <div class="eyebrow">Four · Keep it FemWell</div>
   <h2>Adapt, don't copy.</h2>
-  <p>The references are dark, dense, photo-heavy fintech/streaming. We take the <b>arrangement</b>, not the look:</p>
   <table>
-    <tr><th>Reference does</th><th>FemWell does instead</th></tr>
-    <tr><td>Dark charcoal cards, neon accents</td><td><b>Cream paper</b> (PAPER_BG), gold hairlines, one accent rim per card</td></tr>
-    <tr><td>Stock photography / poster art</td><td><b>Flora illustration</b> + soft paper gradients as the "imagery"</td></tr>
-    <tr><td>Loud red/green status, big kebabs</td><td>Quiet <b>gold/sage badges</b>, a small "…" menu, oxblood headings</td></tr>
-    <tr><td>Dense data dials</td><td>Progress rings paired with the <b>flora lifecycle</b> (growth, not a clinical gauge)</td></tr>
-    <tr><td>Punchy marketing voice</td><td>Warm plain <b>smart-friend</b> voice on every label</td></tr>
+    <tr><th>The reference does</th><th>FemWell does instead</th></tr>
+    <tr><td>Dark cards, neon accents, dense grids</td><td><b>Cream paper</b>, gold hairlines, generous gutters, one accent rim per card</td></tr>
+    <tr><td>Stock photos / poster art</td><td><b>Flora illustration</b> + soft paper gradients as the "imagery"</td></tr>
+    <tr><td>Loud status, big kebabs, autoplay</td><td>Quiet gold/sage badges, a small "…", <b>oxblood headings</b>, no autoplay</td></tr>
+    <tr><td>Marketing voice</td><td>Warm plain <b>smart-friend</b> voice on every label</td></tr>
   </table>
-  <p class="cap">A new card earns its place with a new JOB, not a new colour — the vocabulary stays bounded (~12–15 named types), each with a seeded demo.</p>
+  <p class="cap">A new card earns its place with a new JOB, not a new colour. The vocabulary stays bounded — each type here has a distinct job + a mock above.</p>
 </div>
 
-<!-- 4 -->
-<a id="where"></a>
-<div class="section">
-  <div class="eyebrow">Four · Where each shines</div>
-  <table>
-    <tr><th>Surface</th><th>Best-fit new styles</th></tr>
-    <tr><td><b>Today</b></td><td>bento overview · dismissible nudge · rich-stat (the loop)</td></tr>
-    <tr><td><b>Lifestyle</b></td><td>media hero + category rows (Read/Listen/Watch/Story)</td></tr>
-    <tr><td><b>Pulse</b></td><td>rich-stat cards · stat tiles · spotlight insight</td></tr>
-    <tr><td><b>Programs</b></td><td>media hero (featured programme) + category shelves · rich-stat progress</td></tr>
-    <tr><td><b>Profile / Garden</b></td><td>bento tiles (your areas / what's growing)</td></tr>
-    <tr><td><b>Health</b></td><td>expandable letters · rich-stat summaries · letter/note cards</td></tr>
-    <tr><td><b>Nutrition · Community</b></td><td>category shelves (recipes / rooms) · dismissible tips · spotlight</td></tr>
-  </table>
-</div>
-
-<!-- 5 -->
+<!-- RESEARCH -->
 <a id="research"></a>
 <div class="section plum">
   <div class="eyebrow">Five · The research</div>
-  <h2>Grounded, cited.</h2>
-  <p>Every proposal is grounded (full cites: <code>workspace/CARD_STYLES_RESEARCH_2026-07-01.md</code> — Netflix/Monzo/Spotify/Apple teardowns, NN/g, bento &amp; design-system sources). The rules that came out of it:</p>
-  <table>
-    <tr><th>Finding</th><th>The rule we adopt</th></tr>
-    <tr><td><b>Bento — size is the loudness dial</b> (a bigger tile gets ~2.6× longer fixation)</td><td>vary size for hierarchy; <b>max TWO hero tiles</b>, <b>≤12 tiles</b>/screen. If you must read a label to know which number matters, the sizing is wrong.</td></tr>
-    <tr><td><b>Hero card</b> — quiet chrome lets the image shout</td><td>full-width botanical hero, <b>ONE</b> tag ON the art ("New"/"Day 14"), <b>no autoplay</b>.</td></tr>
-    <tr><td><b>Shelf</b> — horizontal scroll is genuinely <i>skipped</i> (a 120-person eyetracking study: <b>zero</b> fixations right of the fold)</td><td>every shelf needs a reliable second path — a <b>"See all"</b>; the <b>peek</b> (not dots) does discovery; best item first; ≤6–8 cards, ≤3–4 shelves/page.</td></tr>
-    <tr><td><b>Stat card</b></td><td>a <b>ring OR a figure, never both</b>; ring = cyclical snapshot, bar = linear programme; one status chip + one inline pill + a "…" overflow for the quiet extras.</td></tr>
-    <tr><td><b>Nudge card</b></td><td>botanical + one warm line + one CTA + a real labelled ✕; <b>snooze ≠ dismiss</b> so it never nags; a nudge never carries status.</td></tr>
-    <tr><td><b>Expandable</b></td><td>a <b>caret</b> (not +/arrow — those read as "add"/"jump"); opens the long read <b>inline</b> to keep her place.</td></tr>
-  </table>
-  <div style="background:#EFE0DD;border:1px solid #DEB7B0;border-radius:14px;padding:14px 16px;margin-top:10px">
-    <div style="font-family:var(--sans);font-size:12px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#8E3B2C;margin-bottom:6px">The big warning</div>
-    <p style="margin:0;font-size:16px"><b>Modular ≠ legible.</b> Monzo's own community called its bento home "a mess" / "convoluted" (2023). Dark-fintech density won't suit a calm cream app — <b>our restraint must beat it</b>: bigger gutters, <b>one gold figure per tile</b>, botanical rules instead of hairlines, a page as a <b>stack (≤3–4 card families) not a collage</b>. Canonical arrangement: FwFloraHero → one SummaryCard → ≤1 bento + 1–3 shelves + optional one stat card + one top nudge. Keep <b>lists</b> (not cards) for dense scan surfaces (Planner agenda, settings).</p>
-  </div>
-  <p class="cap" style="margin-top:8px">Build note: on approval, ship the new types <b>demo-first</b> as one seeded <code>/CardStylesV2Demo</code> route linked from the IDEAS pill, before any live rebuild (the card-system demo-first workflow).</p>
+  <h2>Broader than the examples.</h2>
+  <p id="research-body" class="cap">Fresh cited pass across wellness/lifestyle/media/editorial apps (Calm · Headspace · Oura · Flo · Airbnb · Pinterest · Apple News/Music · NYT Cooking · Kinfolk · Finch) → lands in <code>workspace/CARD_STYLES_RESEARCH_2026-07-02.md</code>, folded in on the next pass. Monzo/Netflix were only <i>examples</i>, not templates — the patterns above are drawn from the whole field.</p>
 </div>
 
-<!-- 6 -->
+<!-- NEXT -->
 <a id="next"></a>
 <div class="section">
-  <div class="eyebrow">Six · Rules kept + next step</div>
+  <div class="eyebrow">Six · Rules kept + your dials</div>
   <h2>Same discipline, more range.</h2>
-  <p><b>Unchanged:</b> the MAIN page slider stays HORIZONTAL · no long empty space (bento fills / stacked demarcations) · in-card decks keep the safeguards (12–16% peek + dots + ‹ › arrows + `overscroll-behavior-x:contain`) · one accent rim per card · typed cards never empty · warm voice, no emoji, oxblood headings.</p>
-  <p><b>Next:</b> react to these — tell me which styles to keep, which to drop, which to try first. On your yes I fold the agreed ones into the bible's card-language (§6.7.0) and we spin buildable demos. <b>Plan only for now — nothing built.</b></p>
-  <div class="q" style="background:#EFE6D6;border:1px solid var(--gold);border-radius:14px;padding:14px 16px;font-family:var(--sans);font-size:14px;color:var(--inkSoft)">
-    <b>The dials for you:</b> (1) which of the 9 make the cut? (2) media-hero + carousel on Lifestyle first, or bento on Today first? (3) how loud can badges be (my pick: whisper-quiet gold/sage)? (4) dismissible nudges — dismiss-only or dismiss + snooze?
+  <p><b>Unchanged:</b> the MAIN page slider stays HORIZONTAL · no long empty space · in-card decks keep the safeguards (12–16% peek + dots + ‹ › arrows + <code>overscroll-behavior-x:contain</code>) · one accent rim per card · typed cards never empty · a page is a stack (≤3–4 card families) not a collage · warm voice, oxblood headings, no emoji.</p>
+  <div style="background:#EFE6D6;border:1px solid var(--gold);border-radius:14px;padding:14px 16px;font-family:var(--sans);font-size:14px;color:var(--inkSoft)">
+    <b>Your dials:</b> (1) hero+rail — build it first on Lifestyle? (2) which of the shown styles make the cut vs park? (3) tap-to-promote: cross-fade (shown) or a slide-up? (4) any style still missing? On your yes I fold the agreed ones into the bible §6.7.0 and we spin a demo-first <code>/CardStylesV2Demo</code>.
   </div>
 </div>
 
 <div class="foot">
-  FemWell · Card Styles — research + expansion · plan doc · July 2026<br>
-  Feeds a bible card-language (§6.7.0) update after you approve. The brand bible stays the one source of truth.
+  FemWell · Card Styles — research + expansion (v2, every style shown) · plan doc · July 2026<br>
+  Feeds a bible §6.7.0 card-language update after you approve. Plan only — nothing built live.
 </div>
 </div>
 <script>// FemWell flora — the 50+ species botanical library (reference build → ports to flora.jsx).
@@ -527,12 +589,37 @@ function bloomList(list,name,size){const sp=list.find(s=>s.n===name);if(!sp)retu
 
 </script>
 <script>
-// progress ring (SVG) + a couple of flora accents
-function ring(pct,size,col){const r=size/2-6,c=2*Math.PI*r,off=c*(1-pct);return `<svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}"><circle cx="${size/2}" cy="${size/2}" r="${r}" fill="none" stroke="#D8CFBC" stroke-width="7"/><circle cx="${size/2}" cy="${size/2}" r="${r}" fill="none" stroke="${col}" stroke-width="7" stroke-linecap="round" stroke-dasharray="${c}" stroke-dashoffset="${off}" transform="rotate(-90 ${size/2} ${size/2})"/><text x="${size/2}" y="${size/2+5}" text-anchor="middle" font-family="Cormorant Garamond,serif" font-weight="600" font-size="18" fill="#7A1A12">${Math.round(pct*100)}%</text></svg>`;}
-document.getElementById('stat-ring').innerHTML=ring(0.72,64,'#8FAF8F');
-try{
-  document.getElementById('bento-bloom').innerHTML=bloom('rose',40);
-  document.getElementById('hero-bloom').innerHTML=bloom('peony',110);
-}catch(e){}
+function progRing(pct,size,col){const r=size/2-6,c=2*Math.PI*r,off=c*(1-pct);return `<svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}"><circle cx="${size/2}" cy="${size/2}" r="${r}" fill="none" stroke="#D8CFBC" stroke-width="7"/><circle cx="${size/2}" cy="${size/2}" r="${r}" fill="none" stroke="${col}" stroke-width="7" stroke-linecap="round" stroke-dasharray="${c}" stroke-dashoffset="${off}" transform="rotate(-90 ${size/2} ${size/2})"/><text x="${size/2}" y="${size/2+5}" text-anchor="middle" font-family="Cormorant Garamond,serif" font-weight="600" font-size="18" fill="#7A1A12">${Math.round(pct*100)}%</text></svg>`;}
+function B(sp,s){try{return bloom(sp,s);}catch(e){return '';}}
+// wax seal (crimson scallop + rose)
+function waxSeal(size){let rose='';for(let i=0;i<8;i++){const a=i*45,sc=1-i*0.09;rose+=`<path d="M0 0 C -3 -0.6 -3.6 -3.4 -1.2 -4.6 C 0.6 -5.4 2.6 -4 2.4 -1.8 C 2.2 -0.6 0.6 -0.8 0.7 -2.2" transform="rotate(${a}) scale(${sc})" fill="none" stroke="#9E211B" stroke-width="0.7" opacity="0.75"/>`;}
+  return `<svg viewBox="0 0 60 60" width="${size}" height="${size}"><defs><radialGradient id="wx" cx="40%" cy="34%" r="70%"><stop offset="0%" stop-color="#D9554E"/><stop offset="60%" stop-color="#BC2E27"/><stop offset="100%" stop-color="#7E1C16"/></radialGradient></defs><path d="M30 4 L37 9 L46 8 L48 17 L56 22 L51 30 L56 38 L48 43 L46 52 L37 51 L30 56 L23 51 L14 52 L12 43 L4 38 L9 30 L4 22 L12 17 L14 8 L23 9 Z" fill="url(#wx)" stroke="#6E1813" stroke-width="0.6"/><circle cx="30" cy="30" r="15" fill="none" stroke="#7E1C16" stroke-width="0.8" opacity="0.5"/><g transform="translate(30 30)">${rose}</g><ellipse cx="23" cy="18" rx="6" ry="3.4" fill="#fff" opacity="0.16" transform="rotate(-24 23 18)"/></svg>`;}
+// ── HERO + tap-to-promote rail ──
+const READ=[
+  {ttl:"The Garden at Dusk",line:"A five-minute read for a soft evening.",sp:"peony",badge:"No.1 this week"},
+  {ttl:"On rest",line:"Why doing less is doing something.",sp:"poppy",badge:""},
+  {ttl:"Money & you",line:"A calm word about the thing we don't talk about.",sp:"sunflower",badge:""},
+  {ttl:"A love letter",line:"To the friend who always texts back.",sp:"rose",badge:""},
+  {ttl:"The women who make it",line:"On friendship, in this season.",sp:"cosmos",badge:"New"},
+];
+let active=0;
+function renderHero(){const it=READ[active];const el=document.getElementById('hero-card');
+  el.innerHTML=`<div class="cover">${it.badge?`<span class="rib">${it.badge}</span>`:''}${B(it.sp,120)}</div><div class="body"><div class="eyerow">Daily story</div><div class="cardttl">${it.ttl}</div><div class="cardline">${it.line}</div><div class="btnrow"><span class="pill gold">Read now</span><span class="pill ghost">Save</span></div></div>`;
+  const rail=document.getElementById('hero-rail');rail.innerHTML='';
+  READ.forEach((r,i)=>{if(i===active)return;const t=document.createElement('div');t.className='thumb';t.style.flex='0 0 108px';
+    t.innerHTML=`<div class="th-b">${B(r.sp,46)}</div><div class="th-t">${r.ttl}</div>`;
+    t.onclick=()=>promote(i);rail.appendChild(t);});
+  const dots=document.getElementById('hero-dots');dots.innerHTML=READ.map((_,i)=>`<span class="d ${i===active?'on':''}"></span>`).join('');
+}
+function promote(i){const el=document.getElementById('hero-card');el.classList.add('swap');setTimeout(()=>{active=i;renderHero();el.classList.remove('swap');},220);}
+renderHero();
+// other blooms
+document.getElementById('bento-bloom').innerHTML=B('rose',40);
+document.getElementById('spot-bloom').innerHTML=B('marigold',72);
+document.getElementById('np-bloom').innerHTML=B('lavender',44);
+document.getElementById('cont-bloom').innerHTML=B('hellebore',52);
+document.getElementById('stat-ring').innerHTML=progRing(0.72,64,'#8FAF8F');
+['sh1','sh2','sh3'].forEach((id,i)=>{const el=document.getElementById(id);if(el)el.innerHTML=B(['snowdrop','lotus','forget-me-not'][i],42);});
+document.getElementById('letter-seal').innerHTML=waxSeal(52);
 </script>
 </body></html>
