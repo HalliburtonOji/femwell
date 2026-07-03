@@ -351,7 +351,7 @@ const CATALOG = [
   { kind: "doc", key: "Bottom-Nav Plan", group: CAT.CURRENT, sub: "Cross-app plans & decisions", status: "new", accent: "gold",
     title: "Bottom-Nav Plan", desc: "Floating cream capsule + shrink-on-scroll, reject horizontal-scroll nav. Research, honest drawbacks and a phased plan. Awaiting your approval." },
   { kind: "doc", key: "Card Styles", group: CAT.CURRENT, sub: "Card language plans", status: "new", accent: "gold",
-    title: "Card Styles — research + expansion", desc: "Expanded card-style library — bento mixed-size tiles · media/hero card + category carousel · category shelf · rich-stat card (progress ring + flora + inline actions + status badge + … menu) · dismissible suggestion card · expandable card · spotlight/stat-tile/letter — all adapted to our cream/flora/oxblood brand (not dark fintech). Cited research; live on-brand mockups. Plan only; feeds a bible §6.7.0 update after approval." },
+    title: "Card Styles — 39 examples (new)", desc: "The GALLERY: 39 distinct card styles, every one a visual on-brand mock, grouped — bento mixed-size tiles · media/hero card + category carousel · category shelf · rich-stat card (progress ring + flora + inline actions + status badge + … menu) · dismissible suggestion · expandable · spotlight/stat-tile/letter · daily check-in · cycle wheel — all in our cream/flora/oxblood brand (not dark fintech). Cited research. Plan only; feeds a bible §6.7.0 update after approval." },
   { kind: "doc", key: "Today Mega-Plan", group: CAT.SPECS, accent: "gold",
     title: "Today — Mega-Plan", desc: "The full plan for the Today home surface." },
   { kind: "doc", key: "Journal", group: CAT.SPECS, accent: "gold",
@@ -466,9 +466,9 @@ const ARCHIVE_SUB_ORDER = [
 ];
 // Current sub-section order (keeps Current scannable — page plans together, then cross-app).
 const CURRENT_SUB_ORDER = [
+  "Card language plans",
   "Page level-up plans + demos",
   "Cross-app plans & decisions",
-  "Card language plans",
 ];
 
 const accentColor = (a) => ({ gold: T.gold, sage: T.sage, blush: T.blush, crimson: T.crimson, espresso: T.espresso }[a] || T.gold);
