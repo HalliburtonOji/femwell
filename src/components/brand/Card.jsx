@@ -19,13 +19,15 @@
 // item's existing video_url / audio_url and the native player.
 // ─────────────────────────────────────────────────────────────────────────────
 import { useRef, useState } from "react";
-import { ChevronRight, Play, Pause, BookOpen, Headphones, Film, Feather, Moon, Sparkles, Book } from "lucide-react";
+import { ChevronRight, ChevronDown, ChevronLeft, Play, Pause, BookOpen, Headphones, Film, Feather, Moon, Sparkles, Book } from "lucide-react";
 import { T, UI, SERIF, Eyebrow } from "@/components/journal/Editorial";
 import { CardCorner, FlowerGlyph } from "@/components/brand/flora";
 
 // The Today reference dimensions — the ONE card family standardises on these.
 export const FW_CARD_W = 365;
 export const FW_CARD_MINH = 488;
+// The deep-red script heading colour (bible §2 oxblood) — used by hero/rail eyebrows.
+export const FW_OXBLOOD = "#7A1A12";
 
 const clamp = (n) => ({ minWidth: 0, overflow: "hidden", overflowWrap: "anywhere", wordBreak: "break-word", display: "-webkit-box", WebkitLineClamp: n, WebkitBoxOrient: "vertical" });
 
@@ -55,7 +57,7 @@ export function FwCardCTA({ accent = T.gold, onClick, href, children, icon: Icon
 // adds the "open full-screen" deep-link beneath it.
 export function FwCard({
   accent = T.gold, Icon, eyebrow, flower = "camellia", title, line, media, inset,
-  children, action, onOpen, openLabel = "Open full-screen", onClick,
+  children, action, onOpen, openLabel = "Open full-screen", onClick, corner,
   width = FW_CARD_W, minHeight = FW_CARD_MINH, snap = true, idx = "fw",
 }) {
   return (
@@ -71,6 +73,7 @@ export function FwCard({
       }}
     >
       <Frame4 color={accent} />
+      {corner && <div style={{ position: "absolute", top: 12, right: 14, zIndex: 2, pointerEvents: "none" }}>{corner}</div>}
       <div style={{ position: "relative", zIndex: 1, display: "flex", flexDirection: "column", flex: 1, minHeight: 0 }}>
         {(Icon || eyebrow || flower) && (
           <div style={{ display: "flex", alignItems: "center", gap: 9, marginBottom: 12 }}>
@@ -237,6 +240,117 @@ export function FwCardRow({ label, Icon, accent = T.gold, items = [], render, fa
       <div className="fw-card-row" style={{ display: "flex", gap: 14, overflowX: "auto", scrollSnapType: "x mandatory", padding: "0 18px 4px", WebkitOverflowScrolling: "touch" }}>
         {items.length ? items.map((it, i) => render(it, i)) : fallback}
         <div style={{ flex: "0 0 4px" }} aria-hidden />
+      </div>
+    </div>
+  );
+}
+
+// ── EXPANDABLE CARD (§6.7.0) — progressive disclosure: summary first, detail on tap ──
+// A canonical FwCard that reveals `detail` in place (never a route). Caret rotates on open.
+// Props: accent, Icon, eyebrow, flower, title, line, detail (node revealed), defaultOpen,
+//        media/inset/action pass through, idx. Snap/width/minHeight forwarded to FwCard.
+export function ExpandableCard({
+  accent = T.gold, Icon, eyebrow, flower = "camellia", title, line, detail,
+  defaultOpen = false, idx = "exp", snap = false, minHeight = 0, action, media, inset, ...rest
+}) {
+  const [open, setOpen] = useState(defaultOpen);
+  return (
+    <FwCard
+      accent={accent} Icon={Icon} eyebrow={eyebrow} flower={flower} title={title} line={line}
+      media={media} inset={inset} action={action} idx={idx} snap={snap} minHeight={minHeight}
+      onClick={() => setOpen((o) => !o)}
+      corner={<ChevronDown size={20} color={T.muted} style={{ transition: "transform .25s ease", transform: open ? "rotate(180deg)" : "none" }} />}
+      {...rest}
+    >
+      {detail != null && (
+        <div style={{ display: "grid", gridTemplateRows: open ? "1fr" : "0fr", transition: "grid-template-rows .3s cubic-bezier(.32,.72,.24,1)" }}>
+          <div style={{ overflow: "hidden", minHeight: 0 }}>
+            <div style={{ paddingTop: 10, marginTop: 10, borderTop: `1px dashed ${T.paperDeep}`, fontFamily: SERIF, fontSize: 15, color: T.inkSoft, lineHeight: 1.55 }}>
+              {detail}
+            </div>
+          </div>
+        </div>
+      )}
+    </FwCard>
+  );
+}
+
+// ── HERO + TAP-TO-PROMOTE RAIL (§6.7.0 · the "image-gallery / thumbnail-to-hero" pattern) ──
+// The pattern Halli chose as the lead. One big HERO card (the active item) over a horizontal
+// RAIL of peer thumbnails; TAP a thumb → it cross-fades (~220ms) into the hero and becomes it.
+// Props:
+//   items: [{ id, eyebrow, title, line, accent?, flower?, cover?, thumb?, ctaLabel?, onOpen? }]
+//   initialIndex, railLabel, onSeeAll, accent (rail/fallback), width, minHeight, flower (fallback)
+// `cover`/`thumb` are optional nodes (an <img>, a gradient block); default = a meaning-bloom.
+export function HeroPromoteRail({
+  items = [], initialIndex = 0, railLabel = "More to explore", onSeeAll,
+  accent = T.gold, flower = "poppy", minHeight = 0,
+}) {
+  const [active, setActive] = useState(Math.min(initialIndex, Math.max(0, items.length - 1)));
+  const [fading, setFading] = useState(false);
+  const timer = useRef(null);
+  if (!items.length) return null;
+  const promote = (i) => {
+    if (i === active || fading) return;
+    setFading(true);
+    clearTimeout(timer.current);
+    timer.current = setTimeout(() => { setActive(i); setFading(false); }, 200);
+  };
+  const hero = items[active] || {};
+  const hAccent = hero.accent || accent;
+  return (
+    <div style={{ width: "100%" }}>
+      <style>{`.fw-hpr-rail{scrollbar-width:none}.fw-hpr-rail::-webkit-scrollbar{display:none}`}</style>
+      {/* HERO — cross-fades on promote */}
+      <div style={{ transition: "opacity .22s ease", opacity: fading ? 0 : 1 }}>
+        <FwCard
+          snap={false} minHeight={minHeight} accent={hAccent}
+          eyebrow={hero.eyebrow} flower={hero.flower || flower} title={hero.title} line={hero.line}
+          media={hero.cover}
+          action={hero.onOpen ? <FwCardCTA accent={hAccent} onClick={() => hero.onOpen(hero)}>{hero.ctaLabel || "Open"}</FwCardCTA> : null}
+          idx={`hpr-${hero.id ?? active}`}
+        />
+      </div>
+      {/* RAIL header */}
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", margin: "12px 2px 8px" }}>
+        <span style={{ fontFamily: SERIF, fontStyle: "italic", fontWeight: 600, fontSize: 18, color: FW_OXBLOOD }}>{railLabel}</span>
+        {onSeeAll && (
+          <button onClick={onSeeAll} style={{ background: "transparent", border: "none", cursor: "pointer", fontFamily: UI, fontSize: 12.5, fontWeight: 700, color: T.gold, display: "inline-flex", alignItems: "center", gap: 3 }}>
+            See all <ChevronRight size={14} />
+          </button>
+        )}
+      </div>
+      {/* RAIL of thumbnails */}
+      <div className="fw-hpr-rail" style={{ display: "flex", gap: 8, overflowX: "auto", padding: "2px 2px 6px", scrollSnapType: "x mandatory", WebkitOverflowScrolling: "touch", overscrollBehaviorX: "contain" }}>
+        {items.map((it, i) => {
+          const on = i === active;
+          const c = it.accent || accent;
+          return (
+            <button
+              key={it.id ?? i} onClick={() => promote(i)} aria-label={`Show ${it.title}`} aria-pressed={on}
+              style={{
+                flex: "0 0 96px", scrollSnapAlign: "start", borderRadius: 12, cursor: "pointer",
+                background: `linear-gradient(160deg, ${T.paperHi} 0%, ${c}12 100%)`,
+                border: `1px solid ${on ? c : T.paperDeep}`, boxShadow: on ? `0 0 0 1px ${c}, 0 2px 8px ${c}30` : "0 1px 3px rgba(58,44,26,0.08)",
+                padding: 7, transition: "border-color .15s, box-shadow .15s, transform .15s", transform: on ? "translateY(-1px)" : "none",
+              }}
+            >
+              <span style={{ height: 42, display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden", borderRadius: 8 }}>
+                {it.thumb || <FlowerGlyph variant={it.flower || flower} size={30} color={c} idx={`hprt-${it.id ?? i}`} />}
+              </span>
+              <span style={{ display: "block", fontFamily: UI, fontSize: 10.5, fontWeight: 700, color: on ? c : T.muted, marginTop: 4, lineHeight: 1.15, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{it.eyebrow || it.title}</span>
+            </button>
+          );
+        })}
+        <span style={{ flex: "0 0 2px" }} aria-hidden />
+      </div>
+      {/* dots + prev/next */}
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 12, marginTop: 2 }}>
+        <button onClick={() => promote(Math.max(0, active - 1))} disabled={active === 0} aria-label="Previous" style={{ background: "transparent", border: "none", cursor: active === 0 ? "default" : "pointer", opacity: active === 0 ? 0.4 : 0.7, color: T.muted, display: "grid", placeItems: "center" }}><ChevronLeft size={16} /></button>
+        <div style={{ display: "flex", gap: 5 }}>
+          {items.map((_, i) => <span key={i} onClick={() => promote(i)} style={{ width: i === active ? 15 : 6, height: 6, borderRadius: 999, background: i === active ? hAccent : T.paperDeep, cursor: "pointer", transition: "width .2s" }} />)}
+        </div>
+        <button onClick={() => promote(Math.min(items.length - 1, active + 1))} disabled={active === items.length - 1} aria-label="Next" style={{ background: "transparent", border: "none", cursor: active === items.length - 1 ? "default" : "pointer", opacity: active === items.length - 1 ? 0.4 : 0.7, color: T.muted, display: "grid", placeItems: "center" }}><ChevronRight size={16} /></button>
       </div>
     </div>
   );
