@@ -161,6 +161,7 @@ import JessEliteShell from './components/jess-elite/JessEliteShell';
 import JessL2Demo from './pages/JessL2Demo';
 // Batch-2 LEVEL-UP DEMOS (approved plans → demo-first; built on the elite card language, live pages untouched).
 import NutritionL2Demo from './pages/NutritionL2Demo';
+import NutritionV2Demo from './pages/NutritionV2Demo';
 import LifestyleL2Demo from './pages/LifestyleL2Demo';
 import HealthLettersDemo from './pages/HealthLettersDemo';
 import CommunityL2Demo from './pages/CommunityL2Demo';
@@ -360,6 +361,7 @@ export const PAGES = {
     "GardenClipboardDemo": GardenClipboardDemo,
     "JessClipboardDemo": JessClipboardDemo,
     "NutritionL2Demo": NutritionL2Demo,
+    "NutritionV2Demo": NutritionV2Demo,
     "LifestyleL2Demo": LifestyleL2Demo,
     "HealthLettersDemo": HealthLettersDemo,
     "CommunityL2Demo": CommunityL2Demo,
