@@ -264,6 +264,11 @@ const V2_FUNNIES = [
   "You're allowed to eat the same lunch five days running. It's called having a signature dish.",
 ];
 const pickAt = (arr, s) => (arr.length ? arr[((s % arr.length) + arr.length) % arr.length] : "");
+// Module-level so they SURVIVE a remount (the platform re-mounts this route periodically); they reset
+// on a real page reload — which is exactly "varies each load" for the seed, and a reliable sheet toggle.
+let _v2Seed = null;
+let _v2SheetOpen = false;
+const v2Seed = () => { if (_v2Seed === null) _v2Seed = Math.floor(Math.random() * 100000); return _v2Seed; };
 function nutritionJessSummary(seed, ctx) {
   const { firstName, kcalLeft, glasses, glassesTarget, phaseKey, hasPlan, numbersOff, plants, loggedCount } = ctx;
   const signal = [];
@@ -394,9 +399,10 @@ export default function NutritionV2Shell() {
   const [calOpen, setCalOpen] = useState(false);
   const [plannerOpen, setPlannerOpen] = useState(false); // full-screen meal-generator overlay
   const openPlanner = () => setPlannerOpen(true);
-  // V2 · a per-mount seed so Jess's summary VARIES every load; Jess-sheet open-state lifted here (stable)
-  const [loadSeed] = useState(() => Math.floor(Math.random() * 100000));
-  const [jessSheetOpen, setJessSheetOpen] = useState(false);
+  // V2 · seed + Jess-sheet open-state are backed by module vars so they survive the route's periodic re-mounts
+  const [loadSeed] = useState(v2Seed);
+  const [jessSheetOpen, setJessSheetRaw] = useState(() => _v2SheetOpen);
+  const setJessSheetOpen = (v) => { _v2SheetOpen = v; setJessSheetRaw(v); };
   const [jumpOpen, setJumpOpen] = useState(false);
   const [toast, setToast] = useState(null);
   const sliderRef = useRef(null);
