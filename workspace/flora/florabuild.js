@@ -1,0 +1,112 @@
+// FemWell flora — plain-JS reference build (mirror of what ports into src/components/brand/flora.jsx)
+function lighten(hex,amt){const n=parseInt(hex.replace('#',''),16);const r=Math.min(255,((n>>16)&255)+Math.round(255*amt));const g=Math.min(255,((n>>8)&255)+Math.round(255*amt));const b=Math.min(255,(n&255)+Math.round(255*amt));return '#'+((1<<24)+(r<<16)+(g<<8)+b).toString(16).slice(1);}
+function darken(hex,amt){const n=parseInt(hex.replace('#',''),16);const r=Math.max(0,((n>>16)&255)-Math.round(255*amt));const g=Math.max(0,((n>>8)&255)-Math.round(255*amt));const b=Math.max(0,(n&255)-Math.round(255*amt));return '#'+((1<<24)+(r<<16)+(g<<8)+b).toString(16).slice(1);}
+function lum(hex){const n=parseInt(hex.replace('#',''),16);return(0.299*((n>>16)&255)+0.587*((n>>8)&255)+0.114*(n&255))/255;}
+const COLORWAYS={crimson:{petal:'#BC2E27',tip:'#D9554E',accent:'#2E261B'},blush:{petal:'#E8B4B8',tip:'#F4D9DC',accent:'#A8893F'},gold:{petal:'#D4AF37',tip:'#E8CE78',accent:'#6B5840'},sage:{petal:'#8FAF8F',tip:'#B6CDB6',accent:'#2E261B'},plum:{petal:'#8E6E8E',tip:'#B196B1',accent:'#D4AF37'},coral:{petal:'#E08A6A',tip:'#F0B79E',accent:'#8E3B2C'},sky:{petal:'#9FB6C9',tip:'#C3D2DE',accent:'#5F7E8E'},cream:{petal:'#E4DAC1',tip:'#F2EAD6',accent:'#A8893F'},lavender:{petal:'#B6A6C9',tip:'#D4C9E2',accent:'#8E6E8E'}};
+const GOLD_ANGLE=137.50776; const cx=50, cy=52;
+function pRound(L,w){return `M0 0 C ${-w} ${-L*0.24} ${-w*0.98} ${-L*0.70} ${-w*0.42} ${-L*0.88} C ${-w*0.18} ${-L*0.97} ${-w*0.05} ${-L} 0 ${-L*0.92} C ${w*0.05} ${-L} ${w*0.18} ${-L*0.97} ${w*0.42} ${-L*0.88} C ${w*0.98} ${-L*0.70} ${w} ${-L*0.24} 0 0 Z`;}
+function pPoint(L,w){return `M0 0 C ${-w} ${-L*0.36} ${-w*0.55} ${-L*0.80} 0 ${-L} C ${w*0.55} ${-L*0.80} ${w} ${-L*0.36} 0 0 Z`;}
+function pCup(L,w){return `M0 0 C ${-w} ${-L*0.30} ${-w*0.95} ${-L*0.82} ${-w*0.34} ${-L*0.99} C ${-w*0.10} ${-L*1.02} ${w*0.10} ${-L*1.02} ${w*0.34} ${-L*0.99} C ${w*0.95} ${-L*0.82} ${w} ${-L*0.30} 0 0 Z`;}
+function pBroad(L,w){return `M0 0 C ${-w*1.05} ${-L*0.20} ${-w*1.04} ${-L*0.62} ${-w*0.52} ${-L*0.90} C ${-w*0.22} ${-L*1.05} ${w*0.22} ${-L*1.05} ${w*0.52} ${-L*0.90} C ${w*1.04} ${-L*0.62} ${w*1.05} ${-L*0.20} 0 0 Z`;}
+function pLance(L,w){return `M0 0 C ${-w} ${-L*0.34} ${-w*0.5} ${-L*0.84} 0 ${-L} C ${w*0.5} ${-L*0.84} ${w} ${-L*0.34} 0 0 Z`;}
+const PFN={round:pRound,point:pPoint,cup:pCup,broad:pBroad,lance:pLance};
+function defs(gid,color,accent){
+  const pale=lum(color)>0.62, dAmt=pale?0.26:0.13, kAmt=pale?0.42:0.3;
+  const lightest=lighten(color,0.52),light=lighten(color,0.34),mid=lighten(color,0.14),deep=color,deeper=darken(color,dAmt),darkest=darken(color,kAmt),sheen=lighten(color,0.62);
+  return `<defs>
+    <linearGradient id="pO-${gid}" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="${light}"/><stop offset="24%" stop-color="${mid}"/><stop offset="68%" stop-color="${deep}"/><stop offset="100%" stop-color="${deeper}"/></linearGradient>
+    <linearGradient id="pM-${gid}" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="${lightest}"/><stop offset="30%" stop-color="${light}"/><stop offset="72%" stop-color="${mid}"/><stop offset="100%" stop-color="${deep}"/></linearGradient>
+    <linearGradient id="pI-${gid}" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="${sheen}"/><stop offset="45%" stop-color="${lightest}"/><stop offset="100%" stop-color="${light}"/></linearGradient>
+    <radialGradient id="gl-${gid}" cx="50%" cy="44%" r="54%"><stop offset="0%" stop-color="${lightest}" stop-opacity="0.40"/><stop offset="100%" stop-color="${color}" stop-opacity="0"/></radialGradient>
+    <radialGradient id="ct-${gid}" cx="42%" cy="38%" r="64%"><stop offset="0%" stop-color="${lighten(accent,0.34)}"/><stop offset="60%" stop-color="${accent}"/><stop offset="100%" stop-color="${darken(accent,0.16)}"/></radialGradient>
+    <radialGradient id="occ-${gid}" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="${darkest}" stop-opacity="0.55"/><stop offset="55%" stop-color="${darkest}" stop-opacity="0.28"/><stop offset="100%" stop-color="${darkest}" stop-opacity="0"/></radialGradient>
+    <radialGradient id="disc-${gid}" cx="42%" cy="40%" r="64%"><stop offset="0%" stop-color="#A07A2E"/><stop offset="58%" stop-color="#6E4F1C"/><stop offset="100%" stop-color="#4A3412"/></radialGradient>
+    <linearGradient id="st-${gid}" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#8FAF8F"/><stop offset="100%" stop-color="#5F7E5F"/></linearGradient>
+    <linearGradient id="lf-${gid}" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#A6C6A6"/><stop offset="55%" stop-color="#82A282"/><stop offset="100%" stop-color="#5F7E5F"/></linearGradient>
+  </defs>`;
+}
+function stemLeaves(gid){return `<path d="M48.4 100 C 47.9 86 49.4 72 49 62 L 51 62 C 51.4 72 52 86 51.5 100 Z" fill="url(#st-${gid})"/>
+  <path d="M49 80 C 37 76 29 79 26 88 C 37 90 47 85 49 79 Z" fill="url(#lf-${gid})" opacity="0.95"/><path d="M49 80 C 41 81 33 84 27 88" stroke="#5F7E5F" stroke-width="0.7" fill="none" stroke-linecap="round" opacity="0.7"/>
+  <path d="M51 73 C 63 69 71 72 74 81 C 63 83 53 78 51 72 Z" fill="url(#lf-${gid})" opacity="0.9"/><path d="M51 73 C 59 74 67 77 73 81" stroke="#5F7E5F" stroke-width="0.7" fill="none" stroke-linecap="round" opacity="0.65"/>`;}
+function ringHead(form,color,accent,gid,spec,shape,center,veined){
+  const deep=color,deeper=darken(color,0.13),mid=lighten(color,0.14),sheen=lighten(color,0.62);
+  const edge={O:deeper,M:deep,I:mid};
+  let s='<g>';
+  for(const [count,len,wid,rot,code,op] of spec){for(let i=0;i<count;i++){const a=rot+i*(360/count);
+    s+=`<path d="${(PFN[shape]||pRound)(len,wid)}" fill="url(#p${code}-${gid})" opacity="${op}" stroke="${edge[code]}" stroke-width="0.4" stroke-opacity="0.16" transform="translate(${cx} ${cy}) rotate(${a})"/>`;
+    if(shape==='cup') s+=`<path d="M0 ${-len*0.18} Q ${wid*0.16} ${-len*0.55} 0 ${-len*0.9}" stroke="${sheen}" stroke-width="0.5" stroke-opacity="0.3" fill="none" transform="translate(${cx} ${cy}) rotate(${a})"/>`;
+    if(veined) s+=`<path d="M0 -1 Q ${wid*0.05} ${-len*0.5} 0 ${-len*0.82}" stroke="${sheen}" stroke-width="0.55" stroke-opacity="0.4" fill="none" transform="translate(${cx} ${cy}) rotate(${a})"/>`;}}
+  s+=center(color,accent,gid);
+  s+=`<ellipse cx="${cx-8}" cy="${cy-10}" rx="4" ry="2.4" fill="#FFFDF7" opacity="0.2" transform="rotate(-28 ${cx-8} ${cy-10})"/>`;
+  s+='</g>'; return s;
+}
+function cTuft(color,accent,gid){let s=`<circle cx="${cx}" cy="${cy}" r="13" fill="url(#occ-${gid})"/><circle cx="${cx}" cy="${cy}" r="5.5" fill="url(#ct-${gid})"/>`;
+  for(let i=0;i<16;i++){const a=i*22.5*Math.PI/180,rr=5;s+=`<circle cx="${(cx+Math.cos(a)*rr).toFixed(2)}" cy="${(cy+Math.sin(a)*rr).toFixed(2)}" r="1.6" fill="url(#ct-${gid})" opacity="0.92"/>`;}
+  for(let i=0;i<9;i++){const a=i*40*Math.PI/180,rr=2.5;s+=`<circle cx="${(cx+Math.cos(a)*rr).toFixed(2)}" cy="${(cy+Math.sin(a)*rr).toFixed(2)}" r="0.8" fill="${darken(accent,0.18)}" opacity="0.85"/>`;}return s;}
+function cDark(color,accent,gid){let s=`<circle cx="${cx}" cy="${cy}" r="8.6" fill="${darken(color,0.5)}"/><circle cx="${cx}" cy="${cy}" r="10" fill="url(#occ-${gid})"/>`;
+  for(let i=0;i<13;i++){const a=i*27.7*Math.PI/180,rr=6.3;s+=`<circle cx="${(cx+Math.cos(a)*rr).toFixed(2)}" cy="${(cy+Math.sin(a)*rr).toFixed(2)}" r="1" fill="${darken(color,0.66)}" opacity="0.9"/>`;}
+  s+=`<circle cx="${cx}" cy="${cy}" r="2.8" fill="${darken(color,0.34)}"/>`;return s;}
+function cGold(color,accent,gid){let s=`<circle cx="${cx}" cy="${cy}" r="7.2" fill="url(#disc-${gid})"/>`;
+  for(let i=0;i<14;i++){const a=i*25.7*Math.PI/180,rr=5;s+=`<circle cx="${(cx+Math.cos(a)*rr).toFixed(2)}" cy="${(cy+Math.sin(a)*rr).toFixed(2)}" r="1" fill="#7A5A22" opacity="0.78"/>`;}
+  s+=`<circle cx="${cx}" cy="${cy}" r="2.4" fill="#E9CF7A"/><circle cx="${cx-1}" cy="${cy-1}" r="1" fill="#FFF6D8" opacity="0.7"/>`;return s;}
+function roseHead(color,accent,gid){
+  const deep=color,deeper=darken(color,0.13),sheen=lighten(color,0.62);
+  function guard(L,w){return `M0 0 C ${-w} ${-L*0.28} ${-w*0.98} ${-L*0.74} ${-w*0.46} ${-L*0.95} C ${-w*0.18} ${-L*1.04} ${w*0.18} ${-L*1.04} ${w*0.46} ${-L*0.95} C ${w*0.98} ${-L*0.74} ${w} ${-L*0.28} 0 0 Z`;}
+  const wrap="M0 0 C -8 -2 -10.5 -11 -3.5 -15.5 C 1.5 -18.5 9.5 -14 8 -6.5 C 7 -1.8 1.2 -2.4 1.6 -7";
+  let s='<g>';
+  for(let i=0;i<5;i++){const a=i*72;s+=`<path d="${guard(34,15)}" fill="url(#pO-${gid})" stroke="${deeper}" stroke-width="0.5" stroke-opacity="0.22" transform="translate(${cx} ${cy}) rotate(${a})"/>`;}
+  for(let i=0;i<5;i++){const a=36+i*72;s+=`<path d="${guard(27,12.5)}" fill="url(#pM-${gid})" stroke="${deep}" stroke-width="0.4" stroke-opacity="0.2" transform="translate(${cx} ${cy}) rotate(${a})"/><path d="M0 -5.4 Q 2 -14.8 0 -23.2" stroke="${sheen}" stroke-width="0.5" stroke-opacity="0.3" fill="none" transform="translate(${cx} ${cy}) rotate(${a})"/>`;}
+  for(let i=0;i<5;i++){const a=i*72;s+=`<path d="${guard(20,10)}" fill="url(#pM-${gid})" stroke="${deep}" stroke-width="0.4" stroke-opacity="0.2" transform="translate(${cx} ${cy}) rotate(${a})"/>`;}
+  s+=`<circle cx="${cx}" cy="${cy}" r="14" fill="url(#occ-${gid})"/>`;
+  for(let i=0;i<9;i++){const ang=i*52,sc=1.45-i*0.115;s+=`<path d="${wrap}" transform="translate(${cx} ${cy}) rotate(${ang}) scale(${sc})" fill="url(#${i%2?'pI':'pM'}-${gid})" stroke="${deeper}" stroke-width="0.4" stroke-opacity="0.26"/>`;}
+  s+=`<circle cx="${cx}" cy="${cy}" r="1.8" fill="${deeper}" opacity="0.55"/><ellipse cx="${cx-8}" cy="${cy-9}" rx="4" ry="2.4" fill="#FFFDF7" opacity="0.22" transform="rotate(-28 ${cx-8} ${cy-9})"/></g>`;
+  return s;
+}
+function sunflowerHead(color,accent,gid){const deeper=darken(color,0.13);
+  function ray(L,w){return `M0 0 C ${-w} ${-L*0.32} ${-w*0.6} ${-L*0.78} ${-w*0.5} ${-L*0.93} C ${-w*0.3} ${-L} ${w*0.3} ${-L} ${w*0.5} ${-L*0.93} C ${w*0.6} ${-L*0.78} ${w} ${-L*0.32} 0 0 Z`;}
+  let s='<g>';
+  for(let i=0;i<24;i++){const a=i*15;s+=`<path d="${ray(34,5.2)}" fill="url(#pO-${gid})" stroke="${deeper}" stroke-width="0.4" stroke-opacity="0.18" transform="translate(${cx} ${cy}) rotate(${a})"/>`;}
+  for(let i=0;i<24;i++){const a=7.5+i*15;s+=`<path d="${ray(29,4.6)}" fill="url(#pM-${gid})" transform="translate(${cx} ${cy}) rotate(${a})"/>`;}
+  s+=`<circle cx="${cx}" cy="${cy}" r="15.5" fill="url(#disc-${gid})"/>`;
+  for(let i=0;i<150;i++){const a=i*GOLD_ANGLE*Math.PI/180,rr=1.32*Math.sqrt(i);if(rr>14.5)continue;s+=`<circle cx="${(cx+Math.cos(a)*rr).toFixed(2)}" cy="${(cy+Math.sin(a)*rr).toFixed(2)}" r="0.82" fill="${i%2?'#5E4419':'#7A5A22'}" opacity="0.92"/>`;}
+  s+=`<circle cx="${cx}" cy="${cy}" r="15.5" fill="none" stroke="${darken(color,0.24)}" stroke-width="0.7" opacity="0.4"/></g>`;return s;}
+function hibiscusHead(color,accent,gid){const deeper=darken(color,0.13);
+  function broad(L,w){return `M0 0 C ${-w*1.05} ${-L*0.2} ${-w*1.04} ${-L*0.62} ${-w*0.52} ${-L*0.9} C ${-w*0.22} ${-L*1.05} ${w*0.22} ${-L*1.05} ${w*0.52} ${-L*0.9} C ${w*1.04} ${-L*0.62} ${w*1.05} ${-L*0.2} 0 0 Z`;}
+  let s='<g>';
+  for(let i=0;i<5;i++){const a=i*72;s+=`<g transform="translate(${cx} ${cy}) rotate(${a})"><path d="${broad(37,16)}" fill="url(#pO-${gid})" stroke="${deeper}" stroke-width="0.4" stroke-opacity="0.18"/>`;
+    for(const k of[-1,0,1])s+=`<path d="M0 -3 Q ${k*3.6} -19 ${k*2.3} -33" stroke="${darken(color,0.24)}" stroke-width="0.45" stroke-opacity="0.32" fill="none" stroke-linecap="round"/>`;s+='</g>';}
+  s+=`<circle cx="${cx}" cy="${cy}" r="11" fill="${darken(color,0.46)}"/><circle cx="${cx}" cy="${cy}" r="13" fill="url(#occ-${gid})"/>`;
+  s+=`<path d="M${cx} ${cy} Q ${cx+9} ${cy-17} ${cx+13} ${cy-31}" stroke="${darken(color,0.18)}" stroke-width="2" fill="none" stroke-linecap="round"/>`;
+  for(let i=0;i<11;i++){const t=i/11,px=cx+9*t*1.1+(i%2?2.1:-2.1),py=cy-22*t-6;s+=`<circle cx="${px.toFixed(2)}" cy="${py.toFixed(2)}" r="1.25" fill="#E9CF7A" stroke="#B98F2E" stroke-width="0.2"/>`;}
+  for(let i=0;i<5;i++){const a=i*72*Math.PI/180;s+=`<circle cx="${(cx+13+Math.cos(a)*2.4).toFixed(2)}" cy="${(cy-31+Math.sin(a)*2.4).toFixed(2)}" r="1.5" fill="${darken(color,0.05)}"/>`;}
+  s+='</g>';return s;}
+function peonyHead(color,accent,gid){
+  const deeper=darken(color,0.13);
+  function ruffle(L,w){return `M0 0 C ${-w} ${-L*0.22} ${-w*1.02} ${-L*0.64} ${-w*0.5} ${-L*0.82} C ${-w*0.28} ${-L*0.9} ${-w*0.14} ${-L*0.84} ${-w*0.06} ${-L*0.93} C ${-w*0.02} ${-L*0.99} ${w*0.02} ${-L*0.99} ${w*0.06} ${-L*0.93} C ${w*0.14} ${-L*0.84} ${w*0.28} ${-L*0.9} ${w*0.5} ${-L*0.82} C ${w*1.02} ${-L*0.64} ${w} ${-L*0.22} 0 0 Z`;}
+  const rings=[[11,31,12,0,'O',0.96],[11,25,11,16,'M',0.97],[10,19,9.5,9,'M',0.98],[8,13.5,8,13,'I',0.98],[6,8.5,6.4,20,'I',0.99]];
+  let s='<g>';
+  for(const [count,len,wid,rot,code,op] of rings){for(let i=0;i<count;i++){const a=rot+i*(360/count);
+    s+=`<path d="${ruffle(len,wid)}" fill="url(#p${code}-${gid})" opacity="${op}" stroke="${deeper}" stroke-width="0.4" stroke-opacity="0.2" transform="translate(${cx} ${cy}) rotate(${a})"/>`;}}
+  s+=`<circle cx="${cx}" cy="${cy}" r="6" fill="url(#pI-${gid})"/>`;
+  for(let i=0;i<7;i++){const a=i*51.4*Math.PI/180,rr=3.4;s+=`<path d="${ruffle(7,4)}" fill="url(#pI-${gid})" opacity="0.98" transform="translate(${(cx+Math.cos(a)*rr).toFixed(2)} ${(cy+Math.sin(a)*rr).toFixed(2)}) rotate(${(i*51.4+90).toFixed(0)})"/>`;}
+  s+=`<ellipse cx="${cx-8}" cy="${cy-10}" rx="4" ry="2.4" fill="#FFFDF7" opacity="0.22" transform="rotate(-28 ${cx-8} ${cy-10})"/></g>`;
+  return s;}
+function dahliaHead(color,accent,gid){return ringHead('dahlia',color,accent,gid,[[12,33,5,0,'O',0.95],[12,26,4.6,15,'M',0.97],[10,19,4,7.5,'M',0.98],[8,12,3.4,11,'I',0.99]],'point',cTuft,false);}
+function lotusHead(color,accent,gid){return ringHead('lotus',color,accent,gid,[[8,36,9,0,'O',0.9],[7,27,8,25,'M',0.95],[6,18,6.6,12,'I',0.98]],'lance',cGold,false);}
+function poppyHead(color,accent,gid){return ringHead('poppy',color,accent,gid,[[5,35,15,0,'O',0.96],[5,23,11,36,'M',0.98]],'broad',cDark,true);}
+function cosmosHead(color,accent,gid){return ringHead('cosmos',color,accent,gid,[[8,34,7,0,'O',0.96]],'broad',cGold,true);}
+function lilyHead(color,accent,gid){const deeper=darken(color,0.13),ANTHER='#9A6B2E';let s='<g>';
+  for(let i=0;i<6;i++){const a=i*60;s+=`<g transform="translate(${cx} ${cy}) rotate(${a})"><path d="${pLance(38,9)}" fill="url(#p${i%2?'M':'O'}-${gid})" stroke="${deeper}" stroke-width="0.4" stroke-opacity="0.16"/><path d="M0 -3 L 0 -35" stroke="${darken(color,0.18)}" stroke-width="0.45" stroke-opacity="0.26"/></g>`;}
+  for(let i=0;i<6;i++){const a=(i*60+30)*Math.PI/180,ex=cx+Math.cos(a)*18,ey=cy+Math.sin(a)*18;s+=`<line x1="${cx}" y1="${cy}" x2="${ex.toFixed(2)}" y2="${ey.toFixed(2)}" stroke="${lighten(ANTHER,0.18)}" stroke-width="1" stroke-linecap="round"/><ellipse cx="${ex.toFixed(2)}" cy="${ey.toFixed(2)}" rx="2.8" ry="1.4" fill="${ANTHER}" transform="rotate(${i*60+30} ${ex.toFixed(2)} ${ey.toFixed(2)})"/>`;}
+  s+=`<ellipse cx="${cx}" cy="${cy-1}" rx="2.2" ry="3.2" fill="url(#ct-${gid})"/></g>`;return s;}
+function magnoliaHead(color,accent,gid){const deeper=darken(color,0.13);let s='<g>';
+  for(let i=0;i<9;i++){s+=`<path d="${pBroad(37,9)}" fill="url(#p${i%2?'O':'M'}-${gid})" opacity="0.96" stroke="${deeper}" stroke-width="0.4" stroke-opacity="0.14" transform="translate(${cx} ${cy}) rotate(${i*40})"/>`;}
+  s+=`<ellipse cx="${cx}" cy="${cy}" rx="4.4" ry="6.8" fill="url(#ct-${gid})"/>`;
+  for(let i=0;i<11;i++){const a=i*33*Math.PI/180;s+=`<circle cx="${(cx+Math.cos(a)*3).toFixed(2)}" cy="${(cy+Math.sin(a)*4.6).toFixed(2)}" r="0.7" fill="${darken(accent,0.12)}" opacity="0.7"/>`;}
+  s+='</g>';return s;}
+function tulipHead(color,accent,gid){const deep=color;function tp(rot,sc,grad,op){return `<path d="M0 0 C -8.5 -5 -9 -27 0 -36 C 9 -27 8.5 -5 0 0 Z" fill="url(#${grad}-${gid})" opacity="${op}" stroke="${deep}" stroke-width="0.3" stroke-opacity="0.2" transform="translate(${cx} ${cy+12}) rotate(${rot}) scale(${sc})"/>`;}
+  return `<g>${tp(-22,1,'pO',0.95)}${tp(22,1,'pO',0.95)}${tp(0,1.06,'pM',0.97)}${tp(-11,0.84,'pI',0.98)}${tp(11,0.84,'pI',0.98)}<ellipse cx="${cx-3}" cy="${cy-12}" rx="2.4" ry="6.5" fill="#FFFFFF" opacity="0.2" transform="rotate(-12 ${cx-3} ${cy-12})"/></g>`;}
+const HEADS={rose:roseHead,sunflower:sunflowerHead,hibiscus:hibiscusHead,peony:peonyHead,dahlia:dahliaHead,lotus:lotusHead,poppy:poppyHead,cosmos:cosmosHead,lily:lilyHead,magnolia:magnoliaHead,tulip:tulipHead};
+function bloomSVG(form,cwKey,size){const cw=COLORWAYS[cwKey]||COLORWAYS.crimson;const gid=form+'-'+cwKey;const head=(HEADS[form]||peonyHead)(cw.petal,cw.accent,gid);
+  return `<svg viewBox="0 0 100 108" width="${size}" height="${Math.round(size*1.08)}" style="overflow:visible">${defs(gid,cw.petal,cw.accent)}
+    <ellipse cx="${cx}" cy="103" rx="21" ry="4.6" fill="#2E261B" opacity="0.20"/><circle cx="${cx}" cy="${cy}" r="40" fill="url(#gl-${gid})"/>${stemLeaves(gid)}${head}</svg>`;}

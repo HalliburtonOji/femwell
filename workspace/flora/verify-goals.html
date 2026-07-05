@@ -1,0 +1,5 @@
+<!doctype html><html><head><meta charset="utf-8"><style>body{margin:0;background:#ECE7DA;font-family:Georgia}.row{display:flex;gap:14px;padding:20px;align-items:flex-end}.c{display:flex;flex-direction:column;align-items:center;width:160px}.l{font-size:13px;color:#6B5840;text-transform:uppercase;letter-spacing:.08em}.card{background:#F4EFE3;border:1px solid #D8CFBC;border-radius:14px;padding:8px}</style></head><body>
+<div class="row" id="r"></div><script src="gextract.js"></script><script>
+const items=[['seed',seed(140)],['sprout',sprout(140)],['budding',budding(140)],['bloom',bloomSVG('crimson',140)],['tree/orchard',tree(150)]];
+document.getElementById('r').innerHTML=items.map(([n,s])=>`<div class="c"><div class="card">${s}</div><div class="l">${n}</div></div>`).join('');
+</script></body></html>

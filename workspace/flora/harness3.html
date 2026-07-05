@@ -1,0 +1,83 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><style>
+  body{margin:0;background:#ECE7DA;font-family:Georgia,serif;color:#2E261B}
+  .wrap{padding:24px}.row{display:flex;flex-wrap:wrap;gap:18px;align-items:flex-end}
+  .cell{display:flex;flex-direction:column;align-items:center;gap:5px}
+  .lbl{font-size:13px;letter-spacing:.1em;text-transform:uppercase;color:#6B5840}
+  h2{font-family:Georgia;font-style:italic;color:#A8893F;font-weight:500;margin:20px 0 6px;font-size:21px}
+  .card{background:#F4EFE3;border:1px solid #D8CFBC;border-radius:16px;padding:8px;position:relative}
+</style></head><body><div class="wrap" id="root"></div>
+<script src="florabuild.js"></script>
+<script>
+const root=document.getElementById('root');
+function cell(svg,label,w){return `<div class="cell"><div class="card" style="width:${w||150}px;display:flex;justify-content:center">${svg}</div><div class="lbl">${label}</div></div>`;}
+
+// improved butterfly (test)
+function butterfly(size,color,color2){
+  const gid='bf'; const c=color, c2=color2||'#D4AF37';
+  return `<svg viewBox="0 0 60 52" width="${size}" height="${Math.round(size*0.86)}" style="overflow:visible">
+  <defs>
+    <linearGradient id="bw-${gid}" x1="1" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="${lighten(c,0.3)}"/><stop offset="60%" stop-color="${c}"/><stop offset="100%" stop-color="${darken(c,0.16)}"/></linearGradient>
+    <linearGradient id="bh-${gid}" x1="1" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="${c}"/><stop offset="100%" stop-color="${darken(c,0.2)}"/></linearGradient>
+  </defs>
+  <g transform="translate(30 26)">
+    <!-- left wings -->
+    <g>
+      <!-- forewing -->
+      <path d="M0 -4 C -10 -22 -24 -22 -27 -10 C -29 -2 -16 -1 -1 -3 Z" fill="url(#bw-${gid})" stroke="${darken(c,0.22)}" stroke-width="0.5" stroke-opacity="0.5"/>
+      <!-- hindwing -->
+      <path d="M-1 0 C -16 0 -25 9 -21 18 C -18 24 -8 21 -2 9 Z" fill="url(#bh-${gid})" stroke="${darken(c,0.22)}" stroke-width="0.5" stroke-opacity="0.5"/>
+      <!-- edge band + spots -->
+      <path d="M-27 -10 C -24 -22 -10 -22 0 -4" fill="none" stroke="${darken(c,0.28)}" stroke-width="1.4" stroke-linecap="round" opacity="0.55"/>
+      <circle cx="-16" cy="-11" r="2.6" fill="${c2}" opacity="0.9"/><circle cx="-16" cy="-11" r="1.1" fill="${darken(c,0.3)}"/>
+      <circle cx="-12" cy="13" r="1.8" fill="${c2}" opacity="0.8"/>
+      <circle cx="-21" cy="-7" r="1" fill="#FFFDF7" opacity="0.6"/>
+    </g>
+    <g transform="scale(-1 1)">
+      <path d="M0 -4 C -10 -22 -24 -22 -27 -10 C -29 -2 -16 -1 -1 -3 Z" fill="url(#bw-${gid})" stroke="${darken(c,0.22)}" stroke-width="0.5" stroke-opacity="0.5"/>
+      <path d="M-1 0 C -16 0 -25 9 -21 18 C -18 24 -8 21 -2 9 Z" fill="url(#bh-${gid})" stroke="${darken(c,0.22)}" stroke-width="0.5" stroke-opacity="0.5"/>
+      <path d="M-27 -10 C -24 -22 -10 -22 0 -4" fill="none" stroke="${darken(c,0.28)}" stroke-width="1.4" stroke-linecap="round" opacity="0.55"/>
+      <circle cx="-16" cy="-11" r="2.6" fill="${c2}" opacity="0.9"/><circle cx="-16" cy="-11" r="1.1" fill="${darken(c,0.3)}"/>
+      <circle cx="-12" cy="13" r="1.8" fill="${c2}" opacity="0.8"/>
+      <circle cx="-21" cy="-7" r="1" fill="#FFFDF7" opacity="0.6"/>
+    </g>
+    <!-- body -->
+    <path d="M0 -16 C -1.7 -8 -1.7 10 0 20 C 1.7 10 1.7 -8 0 -16 Z" fill="#2E261B"/>
+    <circle cx="0" cy="-16" r="2" fill="#2E261B"/>
+    <!-- antennae -->
+    <path d="M0 -16 C -2 -22 -4 -25 -7 -26" fill="none" stroke="#2E261B" stroke-width="0.8" stroke-linecap="round"/>
+    <path d="M0 -16 C 2 -22 4 -25 7 -26" fill="none" stroke="#2E261B" stroke-width="0.8" stroke-linecap="round"/>
+    <circle cx="-7" cy="-26" r="1.1" fill="#2E261B"/><circle cx="7" cy="-26" r="1.1" fill="#2E261B"/>
+  </g></svg>`;
+}
+
+root.innerHTML=`
+<h2>Improved butterfly (4 wings · body · antennae · eyespots)</h2>
+<div class="row">
+  ${cell(butterfly(110,'#8E6E8E','#D4AF37'),'plum',150)}
+  ${cell(butterfly(110,'#E08A6A','#BC2E27'),'monarch',150)}
+  ${cell(butterfly(110,'#9FB6C9','#FFFFFF'),'blue',150)}
+  ${cell(butterfly(110,'#BC2E27','#D4AF37'),'crimson',150)}
+</div>
+<h2>Combination — a bouquet (different blooms, a posy not one lone flower)</h2>
+<div class="row" id="bq"></div>
+<h2>A living moment — a creature resting ON the bloom</h2>
+<div class="row" id="bwc"></div>
+`;
+// bouquet: place blooms absolutely
+function bouquet(){
+  const items=[{form:'rose',cw:'crimson',s:1.0,dx:0,dy:6},{form:'sunflower',cw:'gold',s:0.74,dx:-58,dy:30},{form:'hibiscus',cw:'coral',s:0.7,dx:58,dy:34},{form:'peony',cw:'blush',s:0.62,dx:-20,dy:-34},{form:'lotus',cw:'sky',s:0.5,dx:34,dy:-26}];
+  let h='<div style="position:relative;width:260px;height:240px">';
+  for(const it of items){const sz=Math.round(150*it.s);h+=`<div style="position:absolute;left:${130+it.dx-sz/2}px;top:${120+it.dy-sz/2}px;transform:rotate(${(it.dx*0.18).toFixed(0)}deg)">${bloomSVG(it.form,it.cw,sz)}</div>`;}
+  h+='</div>';return h;
+}
+document.getElementById('bq').innerHTML=cell(bouquet(),'Rose · sunflower · hibiscus · peony · lotus',280);
+// bloom + creature on petal
+function bwc(form,cw,creature,col,col2,top,left){
+  return `<div style="position:relative;display:inline-block">${bloomSVG(form,cw,170)}<div style="position:absolute;top:${top};left:${left};transform:translate(-50%,-50%)">${butterfly(46,col,col2)}</div></div>`;
+}
+document.getElementById('bwc').innerHTML=
+  cell(bwc('rose','crimson','butterfly','#8E6E8E','#D4AF37','18%','62%'),'Butterfly on a rose petal',200)+
+  cell(bwc('sunflower','gold','butterfly','#E08A6A','#BC2E27','20%','64%'),'On a sunflower',200)+
+  cell(bwc('hibiscus','coral','butterfly','#9FB6C9','#FFFFFF','16%','60%'),'On a hibiscus',200);
+</script></body></html>

@@ -1,0 +1,167 @@
+[
+  {
+    "youtube_id": "-h4KJXsFstc",
+    "title": "Easy Harissa Chicken (5 Ingredients, Quick & Easy)",
+    "channel": "Jamie Oliver",
+    "minutes": 20,
+    "diet": ["meat", "gf"],
+    "nutrient_story": "protein",
+    "stage_relevance": "fast high-protein dinner for busy reproductive-age weeks",
+    "rough_kcal": 480,
+    "rough_protein_g": 38
+  },
+  {
+    "youtube_id": "DeYvfSLYWOE",
+    "title": "Red Lentil Soup with Lemon Mint Yogurt",
+    "channel": "Food Wishes",
+    "minutes": 35,
+    "diet": ["veg", "gf"],
+    "nutrient_story": "iron",
+    "stage_relevance": "plant iron + folate around your period",
+    "rough_kcal": 320,
+    "rough_protein_g": 16
+  },
+  {
+    "youtube_id": "SchFUWo4ivU",
+    "title": "The Best Green Lentil \"Gumbo\" Soup",
+    "channel": "Food Wishes",
+    "minutes": 45,
+    "diet": ["veg"],
+    "nutrient_story": "iron",
+    "stage_relevance": "iron-rich batch soup to restock after a heavy period",
+    "rough_kcal": 360,
+    "rough_protein_g": 18
+  },
+  {
+    "youtube_id": "YD_04AAH7q4",
+    "title": "Quick & Easy Healthy Spinach, Sweet Potato & Lentil Dhal",
+    "channel": "BBC Good Food",
+    "minutes": 30,
+    "diet": ["vegan", "gf"],
+    "nutrient_story": "folate",
+    "stage_relevance": "folate + iron for pre-conception and pregnancy",
+    "rough_kcal": 410,
+    "rough_protein_g": 17
+  },
+  {
+    "youtube_id": "5bsvxIDkm4g",
+    "title": "Chickpea Curry, an (almost) Perfect One-Pot Meal",
+    "channel": "Rainbow Plant Life",
+    "minutes": 45,
+    "diet": ["vegan", "gf"],
+    "nutrient_story": "fibre",
+    "stage_relevance": "gut-friendly fibre + plant iron, great vegan batch",
+    "rough_kcal": 430,
+    "rough_protein_g": 15
+  },
+  {
+    "youtube_id": "8_ZBOIIftvM",
+    "title": "The Best Crispy Tofu (Tested Every Way)",
+    "channel": "Rainbow Plant Life",
+    "minutes": 30,
+    "diet": ["vegan", "gf"],
+    "nutrient_story": "protein",
+    "stage_relevance": "soy protein + calcium for perimenopause",
+    "rough_kcal": 300,
+    "rough_protein_g": 22
+  },
+  {
+    "youtube_id": "8KEtFdVpFZQ",
+    "title": "Speedy 20-Minute Vegan Meals",
+    "channel": "Pick Up Limes",
+    "minutes": 20,
+    "diet": ["vegan"],
+    "nutrient_story": "fibre",
+    "stage_relevance": "quick wholesome weeknight plant meals",
+    "rough_kcal": 450,
+    "rough_protein_g": 18
+  },
+  {
+    "youtube_id": "Jjub18AHC9M",
+    "title": "Epic Tofu Recipes + Dipping Sauces",
+    "channel": "Pick Up Limes",
+    "minutes": 30,
+    "diet": ["vegan"],
+    "nutrient_story": "protein",
+    "stage_relevance": "plant protein + bone-supporting calcium for menopause",
+    "rough_kcal": 380,
+    "rough_protein_g": 24
+  },
+  {
+    "youtube_id": "6KCWzRfFyr4",
+    "title": "Bibimbap (Korean Mixed Rice Bowl)",
+    "channel": "Maangchi",
+    "minutes": 40,
+    "diet": ["meat"],
+    "nutrient_story": "iron",
+    "stage_relevance": "celebratory iron-rich bowl (beef + spinach) around your period",
+    "rough_kcal": 560,
+    "rough_protein_g": 26
+  },
+  {
+    "youtube_id": "i1djfV9uigc",
+    "title": "Japchae (Glass Noodles Stir-Fried with Vegetables)",
+    "channel": "Maangchi",
+    "minutes": 50,
+    "diet": ["veg"],
+    "nutrient_story": "comfort",
+    "stage_relevance": "celebratory veg-forward party dish, easy to make vegan",
+    "rough_kcal": 480,
+    "rough_protein_g": 12
+  },
+  {
+    "youtube_id": "sbmZjvjavaU",
+    "title": "Kimchi Stew (Kimchi-Jjigae) with a Bean Sprout Side",
+    "channel": "Maangchi",
+    "minutes": 35,
+    "diet": ["meat"],
+    "nutrient_story": "comfort",
+    "stage_relevance": "warming, gut-friendly fermented comfort food",
+    "rough_kcal": 420,
+    "rough_protein_g": 22
+  },
+  {
+    "youtube_id": "6OBoHKRQdHI",
+    "title": "7-Minute Salmon Piccata (Lemon Butter Pan Sauce)",
+    "channel": "Food Wishes",
+    "minutes": 15,
+    "diet": ["gf"],
+    "nutrient_story": "protein",
+    "stage_relevance": "fast high-protein + omega-3 for perimenopause",
+    "rough_kcal": 420,
+    "rough_protein_g": 34
+  },
+  {
+    "youtube_id": "CkwflddQShk",
+    "title": "Veggie Spaghetti Bolognese (Mushroom & Lentil Ragu)",
+    "channel": "Jamie Oliver",
+    "minutes": 40,
+    "diet": ["veg"],
+    "nutrient_story": "iron",
+    "stage_relevance": "lentil iron in a comforting family classic, batch-friendly",
+    "rough_kcal": 520,
+    "rough_protein_g": 20
+  },
+  {
+    "youtube_id": "Mlos6kuwRUQ",
+    "title": "Oven-Baked Sausage Ragu",
+    "channel": "Jamie Oliver",
+    "minutes": 60,
+    "diet": ["meat"],
+    "nutrient_story": "comfort",
+    "stage_relevance": "hands-off batch-cook comfort dinner, freezes well",
+    "rough_kcal": 610,
+    "rough_protein_g": 28
+  },
+  {
+    "youtube_id": "coYqrXsDPdU",
+    "title": "Thomas Jefferson's Macaroni and Cheese",
+    "channel": "Food Wishes",
+    "minutes": 45,
+    "diet": ["veg"],
+    "nutrient_story": "calcium",
+    "stage_relevance": "calcium-rich joyful comfort food for bone health",
+    "rough_kcal": 640,
+    "rough_protein_g": 24
+  }
+]

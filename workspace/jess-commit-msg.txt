@@ -1,0 +1,23 @@
+Jess: make the assistant actually answer in-page + fix inline Ask-Jess
+
+The /Assistant page was a hollow stub that dispatched fw_open_assistant
+and relied on the global overlay opening, but on a direct load the page
+mount effect fired before Layout attached its listener (effects run
+child-first), so the event was missed and the user was stranded on the
+dead "Assistant is open / Back to Today" stub. The Ask-Jess seed prompt
+was also dropped at three points (Layout read .prompt not .initialPrompt;
+the overlay ignored initialPrompt; JessDemoPanel never read it), so Jess
+never received the question.
+
+- /Assistant now renders the real JessDemoPanel directly (Jess answers on
+  the page), seeded from sessionStorage; no event race.
+- Thread initialPrompt through Layout, AssistantOverlay, JessDemoPanel,
+  which auto-sends it once as the user's first turn (suppressing the
+  scripted opener so it cannot overwrite the seeded exchange).
+- Health corner Ask-Jess + JessPatternNudge "Tell Jess" now open the inline
+  overlay in context instead of navigating to the dead page.
+
+Backend unchanged: rides the existing base44.agents personal_assistant
+agent, no new function (50-fn cap respected), no model key.
+
+Co-Authored-By: Claude Opus 4.8 (1M context) <noreply@anthropic.com>

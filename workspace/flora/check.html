@@ -1,0 +1,10 @@
+<!doctype html><html><head><meta charset="utf-8"><style>body{margin:0;background:#ECE7DA;font-family:Georgia}.grid{display:flex;flex-wrap:wrap;gap:10px;padding:16px}.c{width:150px;display:flex;flex-direction:column;align-items:center}.card{background:#F4EFE3;border:1px solid #D8CFBC;border-radius:12px;padding:6px}.nm{font-size:12px;color:#6B5840;text-transform:uppercase;letter-spacing:.05em}h2{width:100%;font-style:italic;color:#A8893F;margin:6px 0}</style></head><body>
+<div class="grid" id="g"></div><script src="lib50.js"></script><script src="lib50b.js"></script><script>
+let h='<h2>fixed bells + freesia</h2>';
+['bluebell','lily-of-the-valley','freesia'].forEach(n=>h+=`<div class="c"><div class="card">${bloom(n,138)}</div><div class="nm">${n.replace(/-/g,' ')}</div></div>`);
+h+='<h2>lifecycle (rose) — bud → bloom → seed → rest</h2>';
+LIFECYCLE.forEach(s=>h+=`<div class="c"><div class="card">${bloomList(LIFECYCLE,s.n,138)}</div><div class="nm">${s.n}</div></div>`);
+h+='<h2>buds</h2>';
+BUDS.forEach(s=>h+=`<div class="c"><div class="card">${bloomList(BUDS,s.n,120)}</div><div class="nm">${s.n}</div></div>`);
+document.getElementById('g').innerHTML=h;
+</script></body></html>

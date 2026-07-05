@@ -284,8 +284,8 @@ function nutritionJessSummary(seed, ctx) {
 // ── V2 · the top sliding row — UNIFORM-HEIGHT panels (no dead space). Slide 1 = Today-at-a-glance +
 // Add-to-today · Slide 2 = the detailed Jess card (with an upward-sliding inner sheet for the deep read).
 const SWIPE_H = 380;
-function JessCard({ eyebrow, digest, chips, sheetSections, accent }) {
-  const [open, setOpen] = useState(false);
+function JessCard({ eyebrow, digest, chips, sheetSections, accent, open, onOpen, onClose }) {
+  // open-state is LIFTED to the parent (stable across the page's frequent re-renders) so the sheet is reliable
   return (
     <FwCard snap={false} minHeight={SWIPE_H} accent={accent} Icon={Leaf} eyebrow={eyebrow} flower="camellia" idx="v2-jess">
       <div style={{ display: "flex", flexDirection: "column", flex: 1, minHeight: 0 }}>
@@ -297,7 +297,7 @@ function JessCard({ eyebrow, digest, chips, sheetSections, accent }) {
           </div>
         ))}</div>
         <div style={{ marginTop: "auto", paddingTop: 12 }}>
-          <button onClick={() => setOpen(true)} className="fw-elite-press" style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 7, width: "100%", boxSizing: "border-box", background: accent, color: "#fff", border: "none", borderRadius: 12, padding: "12px 16px", fontFamily: UI, fontSize: 13.5, fontWeight: 700, cursor: "pointer" }}>Open Jess's full read <ChevronUp size={16} /></button>
+          <button onClick={onOpen} className="fw-elite-press" style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 7, width: "100%", boxSizing: "border-box", background: accent, color: "#fff", border: "none", borderRadius: 12, padding: "12px 16px", fontFamily: UI, fontSize: 13.5, fontWeight: 700, cursor: "pointer" }}>Open Jess's full read <ChevronUp size={16} /></button>
         </div>
       </div>
       {/* upward-sliding inner sheet — slides up WITHIN the card so it holds much more without growing it */}
@@ -305,7 +305,7 @@ function JessCard({ eyebrow, digest, chips, sheetSections, accent }) {
         <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "15px 20px 10px", borderBottom: `1px solid ${T.paperDeep}` }}>
           <Leaf size={15} color={accent} />
           <span style={{ flex: 1, fontFamily: SERIF, fontStyle: "italic", fontSize: 18, fontWeight: 600, color: FW_OXBLOOD }}>Jess's full read</span>
-          <button onClick={() => setOpen(false)} aria-label="Close" className="fw-elite-press" style={{ width: 30, height: 30, borderRadius: 999, background: T.paper, border: `1px solid ${T.paperDeep}`, color: T.muted, cursor: "pointer", display: "grid", placeItems: "center" }}><ChevronDown size={17} /></button>
+          <button onClick={onClose} aria-label="Close" className="fw-elite-press" style={{ width: 30, height: 30, borderRadius: 999, background: T.paper, border: `1px solid ${T.paperDeep}`, color: T.muted, cursor: "pointer", display: "grid", placeItems: "center" }}><ChevronDown size={17} /></button>
         </div>
         <div style={{ flex: 1, minHeight: 0, overflowY: "auto", padding: "13px 20px 18px", display: "flex", flexDirection: "column", gap: 15 }}>{sheetSections.map((s) => (
           <div key={s.title}>
@@ -394,8 +394,9 @@ export default function NutritionV2Shell() {
   const [calOpen, setCalOpen] = useState(false);
   const [plannerOpen, setPlannerOpen] = useState(false); // full-screen meal-generator overlay
   const openPlanner = () => setPlannerOpen(true);
-  // V2 · a per-mount seed so Jess's summary VARIES every load
+  // V2 · a per-mount seed so Jess's summary VARIES every load; Jess-sheet open-state lifted here (stable)
   const [loadSeed] = useState(() => Math.floor(Math.random() * 100000));
+  const [jessSheetOpen, setJessSheetOpen] = useState(false);
   const [jumpOpen, setJumpOpen] = useState(false);
   const [toast, setToast] = useState(null);
   const sliderRef = useRef(null);
@@ -1033,6 +1034,7 @@ export default function NutritionV2Shell() {
                 }
                 jessPanel={
                   <JessCard accent={sage} eyebrow={jess.eyebrow} digest={jess.body}
+                    open={jessSheetOpen} onOpen={() => setJessSheetOpen(true)} onClose={() => setJessSheetOpen(false)}
                     chips={[
                       { Icon: CalendarDays, cw: "sage", label: "Plan", text: hasPlan ? `${distinctDinners > 1 ? `${distinctDinners} different dinners` : "a plan"} this week — tap below to open it` : "No plan yet — I can sort the week for you" },
                       { Icon: Flame, cw: "gold", label: "Today", text: numbersOff ? "Balance over numbers — you're doing lovely" : `${summary.kcal}/${calorieTarget} kcal · ${glasses}/${glassesTarget} glasses water` },

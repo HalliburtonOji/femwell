@@ -1,0 +1,21 @@
+{
+  "url": "https://femwells.com/Today",
+  "bundle": "index-D9C6zs_n.js",
+  "checkedAt": "2026-06-18",
+  "tSectionTrackPresent": true,
+  "sectionLandings": {
+    "Nutrition": {"idx": 1, "expectedScrollLeft": 379, "activeChip": "Health", "scrollLeft": 360, "chipPass": false, "scrollPass": true},
+    "Journal":   {"idx": 4, "expectedScrollLeft": 1516, "activeChip": "Health", "scrollLeft": 1498, "chipPass": false, "scrollPass": true},
+    "Pulse":     {"idx": 7, "expectedScrollLeft": 2653, "activeChip": "Health", "scrollLeft": 2634, "chipPass": false, "scrollPass": true},
+    "Companion": {"idx": 8, "expectedScrollLeft": 3032, "activeChip": "Health", "scrollLeft": 3014, "maxScroll": 3038, "chipPass": false, "scrollPass": true}
+  },
+  "areaLandings": {
+    "top_scrollY": 0,
+    "yourday_top": 60,
+    "noticed_top": 170
+  },
+  "newConsoleErrors": 0,
+  "overflowOk": true,
+  "verdict": "PARTIAL",
+  "notes": "Scroll lands correctly for all four sections (within +/-25, Companion clamps to max ~3038). The active rail chip did NOT follow: it stayed frozen on Health for every section click, and also stayed on Health when the track was manually scrolled. Single rail (.fw-hrow, 9 chips), active=non-transparent bg; only Health had sage bg rgb(143,175,143)+cream text, all others transparent. Chip-guard regression unresolved. Areas (Top/Your day/Noticed) all pass. No new console errors; no overflow regression."
+}
