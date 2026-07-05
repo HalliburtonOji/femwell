@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>FemWell — One Universal Calendar + Calendar-as-Logger</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,600&family=Ephesis&display=swap');
+
+  :root{
+    --paper:#ECE7DA; --paperHi:#F4EFE3; --paperDeep:#D8CFBC;
+    --ink:#0B0805; --muted:#2E261B; --soft:#6B5E4A;
+    --gold:#A8893F; --crimson:#BC2E27; --oxblood:#7A1A12;
+    --blush:#E8B4B8; --sage:#8FAF8F; --plum:#8E6E8E;
+    --serif:"Cormorant Garamond",Georgia,serif;
+    --script:"Ephesis","Pinyon Script",cursive;
+    --ui:ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0; background:var(--paper); color:var(--ink);
+    font-family:var(--serif); font-size:18px; line-height:1.62;
+    -webkit-text-size-adjust:100%;
+    background-image:radial-gradient(120% 80% at 15% 0%, #F7F2E6 0%, rgba(247,242,230,0) 45%), radial-gradient(140% 100% at 100% 100%, rgba(216,207,188,0.35) 0%, rgba(216,207,188,0) 40%);
+  }
+  .wrap{max-width:720px; margin:0 auto; padding:26px 18px 96px}
+  .eyebrow{font-family:var(--ui); font-size:11px; font-weight:700; letter-spacing:.18em; text-transform:uppercase; color:var(--gold)}
+  h1{font-family:var(--script); font-weight:400; color:var(--oxblood); font-size:clamp(42px,11vw,60px); line-height:1.05; margin:.18em 0 .1em; letter-spacing:.5px}
+  h2{font-family:var(--serif); font-style:italic; font-weight:600; color:var(--oxblood); font-size:clamp(25px,6.6vw,32px); line-height:1.15; margin:1.9em 0 .35em; letter-spacing:.2px}
+  h3{font-family:var(--serif); font-weight:600; color:var(--oxblood); font-size:21px; margin:1.5em 0 .3em}
+  h4{font-family:var(--ui); font-weight:700; font-size:12.5px; letter-spacing:.05em; text-transform:uppercase; color:var(--soft); margin:1.3em 0 .3em}
+  p{margin:.5em 0}
+  b,strong{color:var(--ink); font-weight:600}
+  em{color:var(--muted)}
+  a{color:var(--crimson)}
+  ul,ol{margin:.4em 0 .9em; padding-left:1.25em}
+  li{margin:.32em 0}
+  code{font-family:ui-monospace,"SF Mono",Menlo,monospace; font-size:13.5px; background:var(--paperHi); border:1px solid var(--paperDeep); border-radius:6px; padding:1px 6px; color:var(--oxblood)}
+  hr{border:none; border-top:1px solid var(--paperDeep); margin:2.2em 0}
+
+  .lede{font-size:20px; color:var(--muted)}
+  .card{background:var(--paperHi); border:1px solid var(--paperDeep); border-radius:18px; padding:17px 18px; margin:16px 0; box-shadow:0 1px 0 rgba(255,255,255,.5) inset}
+  .rec{background:linear-gradient(180deg,#FBF7EC,#F4EFE3); border:1px solid var(--gold); border-left:4px solid var(--gold); border-radius:14px; padding:14px 16px; margin:14px 0}
+  .rec .tag{font-family:var(--ui); font-size:10.5px; font-weight:800; letter-spacing:.12em; text-transform:uppercase; color:var(--gold); display:block; margin-bottom:3px}
+  .warn{background:#FBEEEC; border:1px solid #E7B7B2; border-left:4px solid var(--crimson); border-radius:14px; padding:13px 16px; margin:14px 0}
+  .warn .tag{font-family:var(--ui); font-size:10.5px; font-weight:800; letter-spacing:.12em; text-transform:uppercase; color:var(--crimson); display:block; margin-bottom:3px}
+  .grid2{display:grid; grid-template-columns:1fr 1fr; gap:10px}
+  @media(max-width:520px){.grid2{grid-template-columns:1fr}}
+
+  .opt{border:1px solid var(--paperDeep); border-radius:12px; padding:12px 14px; margin:10px 0; background:#FBF8EF}
+  .opt .h{font-family:var(--ui); font-weight:700; font-size:13.5px; color:var(--ink); letter-spacing:.02em}
+  .opt .verdict{font-family:var(--ui); font-size:11px; font-weight:700; padding:2px 9px; border-radius:999px; float:right}
+  .win{background:var(--sage); color:#12240f}
+  .no{background:var(--paperDeep); color:var(--muted)}
+  .pro{color:#3f6b3a} .con{color:var(--crimson)}
+
+  table{width:100%; border-collapse:collapse; font-size:15px; margin:12px 0; font-family:var(--ui)}
+  th,td{border:1px solid var(--paperDeep); padding:8px 10px; text-align:left; vertical-align:top}
+  th{background:var(--paperHi); font-weight:700; font-size:12px; text-transform:uppercase; letter-spacing:.03em; color:var(--soft)}
+  .tblwrap{overflow-x:auto}
+
+  /* ── phone mockups ── */
+  .phone{max-width:320px; margin:14px auto; border:9px solid #1a1512; border-radius:34px; background:var(--paper); overflow:hidden; box-shadow:0 18px 44px rgba(11,8,5,.28)}
+  .phone .screen{padding:14px 12px 18px; position:relative; min-height:120px}
+  .stat{font-family:var(--ui); font-size:10px; color:var(--soft); display:flex; justify-content:space-between; padding:2px 6px 8px}
+  .mtitle{font-family:var(--script); font-size:30px; color:var(--oxblood); text-align:center; line-height:1}
+  .msub{font-family:var(--ui); font-size:10px; text-transform:uppercase; letter-spacing:.14em; color:var(--gold); text-align:center; margin-top:2px}
+  .cal{display:grid; grid-template-columns:repeat(7,1fr); gap:3px; margin-top:12px}
+  .dow{font-family:var(--ui); font-size:9px; font-weight:700; text-align:center; color:var(--soft)}
+  .cell{aspect-ratio:1; border-radius:9px; display:flex; flex-direction:column; align-items:center; justify-content:center; font-family:var(--ui); font-size:12px; color:var(--muted); border:1px solid transparent; position:relative}
+  .cell .dots{display:flex; gap:2px; margin-top:2px}
+  .dot{width:4px; height:4px; border-radius:50%}
+  .d-per{background:var(--crimson)} .d-mood{background:var(--sage)} .d-sym{background:var(--gold)} .d-note{background:var(--plum)}
+  .cell.today{border:1.6px solid var(--oxblood); color:var(--oxblood); font-weight:700}
+  .cell.sel{background:var(--oxblood); color:#fff; font-weight:700}
+  .cell.per{background:rgba(188,46,39,.12)}
+  .cell.fert{background:rgba(143,175,143,.16)}
+  .cell.fut{color:var(--soft); opacity:.6}
+  .legend{display:flex; gap:12px; justify-content:center; flex-wrap:wrap; margin-top:11px; padding-top:10px; border-top:1px solid var(--paperDeep)}
+  .legend div{display:flex; align-items:center; gap:4px; font-family:var(--ui); font-size:9.5px; color:var(--soft)}
+  .barbtn{font-family:var(--ui); font-weight:700; font-size:12px; border-radius:999px; padding:9px 0; text-align:center; border:none}
+  .btn-solid{background:var(--crimson); color:#fff}
+  .btn-ghost{background:transparent; border:1px solid var(--paperDeep); color:var(--muted)}
+
+  .fab-x{width:52px; height:52px; border-radius:50%; background:#1a1512; color:#fff; display:flex; align-items:center; justify-content:center; font-size:26px; position:absolute; right:12px; bottom:12px; box-shadow:0 8px 20px rgba(0,0,0,.3)}
+  .strike{position:relative}
+  .strike:after{content:""; position:absolute; inset:0; border-radius:50%; background:linear-gradient(45deg,transparent 44%,var(--crimson) 46%,var(--crimson) 54%,transparent 56%)}
+
+  .flowrow{display:flex; align-items:center; gap:8px; font-family:var(--ui); font-size:13px; flex-wrap:wrap; margin:8px 0}
+  .chip{display:inline-block; font-family:var(--ui); font-size:12px; font-weight:600; padding:5px 11px; border-radius:999px; background:var(--paperHi); border:1px solid var(--paperDeep); color:var(--muted)}
+  .chip.on{background:var(--oxblood); color:#fff; border-color:var(--oxblood)}
+  .chip.acc{background:rgba(168,137,63,.16); border-color:var(--gold); color:var(--oxblood)}
+  .arrow{color:var(--gold); font-weight:800}
+  .toc a{display:block; font-family:var(--ui); font-size:14px; color:var(--muted); text-decoration:none; padding:5px 0; border-bottom:1px solid var(--paperDeep)}
+  .toc a b{color:var(--oxblood)}
+  .field{background:var(--paper); border:1px solid var(--paperDeep); border-radius:10px; padding:9px 11px; font-family:var(--ui); font-size:12.5px; color:var(--muted); margin:6px 0}
+  .seg{display:flex; gap:5px; margin:6px 0}
+  .seg .chip{flex:1; text-align:center}
+  .note-tiny{font-family:var(--ui); font-size:11px; color:var(--soft); font-style:normal}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <span class="eyebrow">FemWell · System plan · Plan-first (no live code changes this pass)</span>
+  <h1>One Calendar,<br>One Way In</h1>
+  <p class="lede">A single universal calendar everywhere — and the calendar <em>becomes</em> the way you log. The floating <b>+</b> retires; the calendar icon takes its place. Tap a day to log <em>for that day</em>. This is the deep brainstorm before we touch a line of the loggers.</p>
+
+  <div class="card toc">
+    <h4 style="margin-top:0">On this page</h4>
+    <a href="#now">1 · What we actually have today <b>— the audit</b></a>
+    <a href="#vision">2 · The idea in one screen</a>
+    <a href="#calendar">3 · The Universal Calendar <b>— the component</b></a>
+    <a href="#opened">4 · The opened calendar + the general "Log" button</a>
+    <a href="#daytap">5 · Tap a day → day-specific logging <b>(options + pick)</b></a>
+    <a href="#prefill">6 · The date + time prefill model (Today / day-view / Planner slot)</a>
+    <a href="#icon">7 · The persistent calendar icon, per page</a>
+    <a href="#modal">8 · The rebuilt Log modal</a>
+    <a href="#migration">9 · Retiring the "+" FAB without breaking logging</a>
+    <a href="#edge">10 · Edge cases</a>
+    <a href="#build">11 · Engineering shape + build order</a>
+    <a href="#questions">12 · Open questions for you · DONE / QUEUED</a>
+  </div>
+
+  <div class="rec">
+    <span class="tag">The headline recommendation</span>
+    Build <b>one</b> <code>FwCalendar</code> component (cream / flora / oxblood, real card chrome) and mount it behind a <b>persistent calendar icon</b> in the top bar of every page. Opening it shows the month + a general <b>Log</b> button (logs to today, editable). <b>Tapping a day</b> opens the rebuilt <b>Log sheet pre-set to that date</b>. In the Planner day-view, tapping a free hour opens the same sheet with <b>date + time</b> pre-filled. The old photo-background month grid (<code>MonthlyCalendarCard.jsx</code>) and every other one-off calendar get replaced by <code>FwCalendar</code>. The gold/black <b>+</b> FAB is removed app-wide.</div>
+
+  <hr>
+
+  <!-- ─────────────────────────────────────── -->
+  <h2 id="now">1 · What we actually have today</h2>
+  <p>Before designing, here's the honest state of the code — because the mess <em>is</em> the argument for this work.</p>
+
+  <h3>Not one calendar — at least four</h3>
+  <div class="tblwrap"><table>
+    <tr><th>Calendar</th><th>Where</th><th>Look</th><th>Tap does</th></tr>
+    <tr><td><code>MonthlyCalendarCard.jsx</code></td><td>Planner (cycle)</td><td><b>The "OLD" one.</b> Per-month Unsplash beach/sunset photo, dark gradient, white text; legend <b>Period / Mood / Symptoms</b></td><td><code>onDayPress</code> → opens a read-only <em>DayDetailSheet</em></td></tr>
+    <tr><td><code>TrackCalendar.jsx</code></td><td>Today → "track" tab</td><td>Cleaner cream grid, but <b>legacy tokens</b> (rose-dust / plum / sage); legend Period / Fertile / Today</td><td><code>onSelectDate</code> — <b>but blocks all future dates</b></td></tr>
+    <tr><td><code>MonthRibbon.jsx</code></td><td>Planner cycle strip</td><td>Horizontal week ribbon</td><td>scrub day</td></tr>
+    <tr><td><code>HabitStreakCalendar</code>, <code>ui/calendar.jsx</code></td><td>Habits, misc</td><td>Two more grid styles</td><td>varies</td></tr>
+  </table></div>
+  <p>Four+ calendars, three colour languages, two of them on retired tokens, none of them a real logging entry point. That's the "OLD" feeling you're describing.</p>
+
+  <h3>Logging is welded to "today"</h3>
+  <p>Every logger writes to the current date/time — there is no way to say <em>"log this for Tuesday."</em> Concretely:</p>
+  <ul>
+    <li><code>SmartLoggerV4.jsx</code> (the real production logger behind the FAB) hardcodes <code>day_key: today()</code> and <code>logged_at: now()</code>.</li>
+    <li><code>UniversalLogger.jsx</code>'s <code>DetailForm</code> hardcodes <code>todayISO</code> for every entity write.</li>
+    <li>Nutrition <code>UnifiedLogger.jsx</code> hardcodes <code>day_key = new Date()…</code>.</li>
+    <li>The global opener is <code>openLogger(type)</code> — it takes a <b>type only</b>. There is nowhere to pass a date or time.</li>
+  </ul>
+  <div class="warn"><span class="tag">The core engineering truth</span>This whole feature rests on one change: <b>logging must accept a target date + time</b>, threaded from <code>openLogger(type, ctx)</code> all the way to every <code>create()</code> call. Everything visual is downstream of that. It's very doable — the write sites are few and centralised — but it is the real work, so we plan it deliberately.</div>
+
+  <h3>The "+" today</h3>
+  <p>The FAB is rendered <em>inside</em> <code>SmartLoggerV4</code> at <code>position:fixed; bottom:88; right:18</code>. On the Planner it becomes a <b>dual stack</b> (a small pen for the smart logger + a big espresso <b>+</b> for planner items). "Log a meal" pills and the nav's "Log today" all funnel into the same <code>openLogger()</code>. Good news: because it's all one dispatcher, we can swap the entry surface without rewriting the 50+ call sites.</p>
+
+  <hr>
+
+  <!-- ─────────────────────────────────────── -->
+  <h2 id="vision">2 · The idea in one screen</h2>
+  <div class="grid2">
+    <div class="card"><h4 style="margin-top:0">Before</h4>
+      <ul style="font-family:var(--ui);font-size:14px">
+        <li>Floating <b>+</b> on every page</li>
+        <li>Photo-bg calendar buried in Planner</li>
+        <li>Logging = always "now"</li>
+        <li>Calendar = a thing you <em>look at</em></li>
+      </ul></div>
+    <div class="card" style="border-color:var(--gold)"><h4 style="margin-top:0;color:var(--gold)">After</h4>
+      <ul style="font-family:var(--ui);font-size:14px">
+        <li><b>Calendar icon</b> on every page</li>
+        <li><b>One</b> cream calendar, everywhere</li>
+        <li>Logging = any day you choose</li>
+        <li>Calendar = the thing you <em>log through</em></li>
+      </ul></div>
+  </div>
+  <p style="text-align:center" class="note-tiny">The mental model shifts from <b>"add something (to now)"</b> → <b>"open my calendar, touch a day, tend to it."</b> Warmer, more whole-life, and it makes back-filling and planning-ahead first-class instead of impossible.</p>
+
+  <hr>
+
+  <!-- ─────────────────────────────────────── -->
+  <h2 id="calendar">3 · The Universal Calendar</h2>
+  <p>One component — <code>FwCalendar</code> — living in <code>src/components/brand/</code>. Real card chrome (<code>paperHi</code> surface, <code>paperDeep</code> hairline, radius 18), oxblood month title, flora-tinted phase days, a soft botanical corner. It replaces <em>all</em> the calendars above. Same everywhere: Today, Nutrition, Planner, Health, Journal.</p>
+
+  <div class="phone"><div class="screen">
+    <div class="stat"><span>9:41</span><span>▲ ▼ ✦</span></div>
+    <div class="mtitle">July</div>
+    <div class="msub">2026 · Your month</div>
+    <div class="cal" style="margin-top:10px">
+      <div class="dow">M</div><div class="dow">T</div><div class="dow">W</div><div class="dow">T</div><div class="dow">F</div><div class="dow">S</div><div class="dow">S</div>
+      <div class="cell">1</div><div class="cell per">2</div><div class="cell per">3<div class="dots"><span class="dot d-per"></span></div></div><div class="cell per">4</div><div class="cell">5<div class="dots"><span class="dot d-mood"></span></div></div><div class="cell">6</div><div class="cell">7</div>
+      <div class="cell">8</div><div class="cell">9</div><div class="cell fert">10</div><div class="cell fert">11<div class="dots"><span class="dot d-sym"></span></div></div><div class="cell fert">12</div><div class="cell">13</div><div class="cell">14</div>
+      <div class="cell">15</div><div class="cell today">16</div><div class="cell">17</div><div class="cell">18</div><div class="cell fut">19</div><div class="cell fut">20</div><div class="cell fut">21</div>
+      <div class="cell fut">22</div><div class="cell fut">23</div><div class="cell fut">24</div><div class="cell fut">25</div><div class="cell fut">26</div><div class="cell fut">27</div><div class="cell fut">28</div>
+    </div>
+    <div class="legend">
+      <div><span class="dot d-per"></span>Period</div>
+      <div><span class="dot" style="background:var(--sage)"></span>Fertile</div>
+      <div><span class="dot d-mood"></span>Mood</div>
+      <div><span class="dot d-sym"></span>Symptom</div>
+      <div><span class="dot d-note"></span>Note</div>
+    </div>
+  </div></div>
+  <p class="note-tiny" style="text-align:center">Cream, not a stock beach. Phase is a soft wash (crimson period band, sage fertile), today is an oxblood ring, entries are small flora-coloured dots. Future days are reachable, just dimmed.</p>
+
+  <h4>Spec</h4>
+  <ul>
+    <li><b>Chrome:</b> <code>background paperHi #F4EFE3</code>, <code>1px solid paperDeep</code>, <code>radius 18</code>, <code>padding 16</code>. Opaque — never see-through over content.</li>
+    <li><b>Month title</b> in oxblood; day-of-week row in muted UI 700; day numbers UI.</li>
+    <li><b>Phase tint</b> from the existing <code>getCyclePhase()</code> logic already in both current calendars — reused verbatim, just recoloured to brand phase hues (menstrual <code>#BC2E27</code>, follicular/fertile <code>#8FAF8F</code>, ovulatory <code>#D4AF37</code>, luteal <code>#8E6E8E</code>).</li>
+    <li><b>Entry dots</b> (max 3) coloured by domain — and crucially <b>whole-life</b>, not just clinical: period, mood, symptom, note/journal, meal, plan/event. Health is one dot among many.</li>
+    <li><b>Today</b> = oxblood ring; <b>selected</b> = oxblood fill; <b>future</b> = dimmed but tappable (see §10).</li>
+    <li><b>Props:</b> <code>{ value, onSelectDate(dateStr), onLogGeneral(), entriesByDate, profile, minDate, maxDate, density:'card'|'sheet'|'strip' }</code>. The same component renders as an inline card, a full sheet, or (density=strip) the week ribbon — so <code>MonthRibbon</code> folds in too.</li>
+  </ul>
+
+  <hr>
+
+  <!-- ─────────────────────────────────────── -->
+  <h2 id="opened">4 · The opened calendar + the general "Log" button</h2>
+  <p>You asked: when the calendar opens, a <b>Log</b> button appears for general logging (no specific day); then tapping a specific day makes it day-specific. Here's how the two intents live together without confusing anyone.</p>
+
+  <div class="phone"><div class="screen">
+    <div class="mtitle" style="font-size:26px">July</div>
+    <div class="msub">Tap a day to tend it</div>
+    <div class="cal" style="margin-top:8px">
+      <div class="dow">M</div><div class="dow">T</div><div class="dow">W</div><div class="dow">T</div><div class="dow">F</div><div class="dow">S</div><div class="dow">S</div>
+      <div class="cell">14</div><div class="cell">15</div><div class="cell today">16</div><div class="cell">17</div><div class="cell">18</div><div class="cell fut">19</div><div class="cell fut">20</div>
+    </div>
+    <div style="height:1px;background:var(--paperDeep);margin:12px 4px"></div>
+    <div class="barbtn btn-solid" style="display:flex;align-items:center;justify-content:center;gap:7px">◔ &nbsp;Log for today</div>
+    <p class="note-tiny" style="text-align:center;margin:8px 4px 2px">Quick log, no hunting for the date — goes to <b>today</b>, and you can still change it. Touch any day above to log <em>for that day</em> instead.</p>
+  </div></div>
+
+  <div class="rec"><span class="tag">Recommended resolution</span>
+  The general button is labelled <b>"Log for today"</b> (not a bare "Log") so the default target is <em>named</em>, never ambiguous. It sits under the grid as a solid crimson bar. The moment you tap a <b>day</b>, that day's context takes over (see §5). So: <b>general = a fast path to today; a day-tap = an explicit path to that day.</b> Same destination sheet, different pre-set date. No mode switch to learn.</div>
+
+  <h4>Why name the default instead of a neutral "Log"</h4>
+  <p>A bare "Log" begs the question "log <em>when?</em>" and users then distrust where it landed. "Log for today" answers it up front and still allows a change inside the sheet — honest and calm, which is the brand.</p>
+
+  <hr>
+
+  <!-- ─────────────────────────────────────── -->
+  <h2 id="daytap">5 · Tap a day → day-specific logging</h2>
+  <p>The heart of it. When a day is tapped, what appears? Three candidate patterns — pros, cons, and a pick.</p>
+
+  <div class="opt"><span class="verdict no">Too small</span><span class="h">A · Inline expand (accordion under the row)</span>
+    <p><span class="pro">+</span> Keeps the month visible; feels light.<br><span class="con">–</span> Cramped on a phone; the full rebuilt logger (meals, symptoms, water, mood…) can't breathe in a squeezed row; awkward with the bottom nav.</p></div>
+
+  <div class="opt"><span class="verdict win">Recommended</span><span class="h">B · Bottom sheet — day summary → log</span>
+    <p><span class="pro">+</span> Matches the app's whole sheet vocabulary (<code>fw-sheet-safe</code>, top-rounded paperHi, slide-up). Shows <b>that day at a glance</b> (what's already logged) <em>and</em> the log actions. Date is pre-set and shown in the header, one tap to change. Clears the nav. Works identically on every page.<br><span class="con">–</span> One extra layer over the calendar — mitigated by making the calendar itself a sheet, so the day sheet just replaces its content.</p></div>
+
+  <div class="opt"><span class="verdict no">Overkill</span><span class="h">C · Full-screen day overlay</span>
+    <p><span class="pro">+</span> Maximum room.<br><span class="con">–</span> Heavy; loses the month for context; feels like leaving the calendar. Reserve full-screen for the Planner's existing hour-by-hour day-view, which is its own thing (§6).</p></div>
+
+  <div class="rec"><span class="tag">Pick: B — the Day Sheet</span>
+  Tapping a day slides up a <b>Day Sheet</b>: header shows the chosen date (<em>"Tue 16 July"</em>) with a small "change" affordance; a compact recap of what's already on that day (the dots, spelled out); then the log surface. General "Log for today" and a day-tap both land in this same sheet — the only difference is which date is pre-filled. One component, one behaviour to learn.</div>
+
+  <div class="phone"><div class="screen" style="padding-top:8px">
+    <div style="text-align:center;color:var(--paperDeep);font-size:20px">━</div>
+    <div class="flowrow" style="justify-content:space-between">
+      <div><div style="font-family:var(--serif);font-style:italic;font-size:20px;color:var(--oxblood)">Tuesday 16 July</div>
+      <div class="note-tiny">Today · luteal phase</div></div>
+      <span class="chip acc">Change date</span>
+    </div>
+    <div class="field" style="margin-top:10px"><b style="color:var(--muted)">Already here:</b> &nbsp;<span class="dot d-per" style="display:inline-block"></span> period &nbsp; <span class="dot d-mood" style="display:inline-block"></span> mood 4/5</div>
+    <h4 style="margin:12px 0 6px">Add to this day</h4>
+    <div class="seg"><span class="chip">Meal</span><span class="chip">Water</span><span class="chip">Mood</span><span class="chip">Symptom</span></div>
+    <div class="seg"><span class="chip">Note</span><span class="chip">Habit</span><span class="chip">Med</span><span class="chip">Event</span></div>
+    <div class="barbtn btn-solid" style="margin-top:10px">Continue</div>
+  </div></div>
+
+  <hr>
+
+  <!-- ─────────────────────────────────────── -->
+  <h2 id="prefill">6 · The date + time prefill model</h2>
+  <p>The prefill rules must be consistent everywhere yet respect context. One rule table, three surfaces:</p>
+
+  <div class="tblwrap"><table>
+    <tr><th>You open logging from…</th><th>Date pre-fills to</th><th>Time pre-fills to</th><th>Both editable?</th></tr>
+    <tr><td>General "Log for today" (any page)</td><td><b>Today</b></td><td>Now</td><td>Yes</td></tr>
+    <tr><td>Tapping a <b>day</b> in the calendar</td><td><b>That day</b></td><td>Now (or blank for a past day)</td><td>Yes</td></tr>
+    <tr><td>Planner day-view → tapping a <b>free hour</b></td><td><b>That day</b></td><td><b>That hour</b></td><td>Yes (date + time)</td></tr>
+    <tr><td>A page's own context (e.g. Nutrition "Log a meal")</td><td>Today (or the page's active date if it has one)</td><td>Inferred meal time</td><td>Yes</td></tr>
+  </table></div>
+
+  <div class="rec"><span class="tag">The one rule</span>
+  <b>Whoever opens the logger passes a context; the sheet always shows that context and always lets you change it.</b> Signature becomes <code>openLogger(type, { date, time, scope })</code> where <code>scope</code> is <code>'today' | 'day' | 'slot'</code>. When <code>date</code>/<code>time</code> are omitted it falls back to today/now — so <b>all 50+ existing call sites keep working untouched</b> (they just get the old behaviour).</p></div>
+
+  <h4>How editing feels</h4>
+  <p>Inside the rebuilt sheet, a single <b>date · time row</b> sits at the top (below the title). It's pre-filled per the table. Tap the date → a mini month popover (the same <code>FwCalendar</code> in <code>density:'sheet'</code>) — <em>recursion done right, one component</em>. Tap the time → a native time wheel. Change either; the pre-fill was just a helpful default, never a lock.</p>
+
+  <h3 style="margin-top:1.4em">Planner time-slot in action</h3>
+  <p>The Planner day-view (<code>PlannerDayView.jsx</code>) already renders hour rows 6am–11pm with "Tap a free hour to add" — but today it calls <code>openLogger("event")</code> with <b>no hour</b>. We thread the hour through:</p>
+
+  <div class="phone"><div class="screen">
+    <div style="font-family:var(--serif);font-style:italic;font-size:19px;color:var(--oxblood)">Tuesday, hour by hour</div>
+    <div style="margin-top:8px;font-family:var(--ui);font-size:12px">
+      <div class="flowrow" style="border-bottom:1px solid var(--paperDeep);padding:8px 2px"><span style="width:44px;color:var(--soft)">9 AM</span><span class="chip on" style="flex:1">Yoga · 30m</span></div>
+      <div class="flowrow" style="border-bottom:1px solid var(--paperDeep);padding:8px 2px;background:rgba(168,137,63,.08)"><span style="width:44px;color:var(--soft)">10 AM</span><span class="chip acc" style="flex:1;text-align:left">+ &nbsp;tap to add at 10:00</span></div>
+      <div class="flowrow" style="border-bottom:1px solid var(--paperDeep);padding:8px 2px"><span style="width:44px;color:var(--soft)">11 AM</span><span style="color:var(--soft)">free</span></div>
+    </div>
+    <p class="note-tiny" style="text-align:center;margin-top:10px">Tap <b>10 AM</b> → the log sheet opens with <b>Tue 16 July · 10:00</b> already set. Change either if you meant something else.</p>
+  </div></div>
+
+  <hr>
+
+  <!-- ─────────────────────────────────────── -->
+  <h2 id="icon">7 · The persistent calendar icon, per page</h2>
+  <p>The calendar icon replaces the FAB as the always-there entry point. Where it lives and what it opens is consistent, but each page can pre-select the right sub-context.</p>
+
+  <div class="tblwrap"><table>
+    <tr><th>Page</th><th>Icon lives</th><th>Opens</th><th>Page-specific tint</th></tr>
+    <tr><td><b>Today</b></td><td>Top bar, right</td><td>FwCalendar sheet, month view</td><td>Dots show all domains; "Log for today" primary</td></tr>
+    <tr><td><b>Nutrition</b></td><td>Top bar, right</td><td>Same calendar</td><td>Day sheet defaults its type chips to <b>Meal / Water</b> first</td></tr>
+    <tr><td><b>Planner</b></td><td>Top bar, right</td><td>Calendar → tap day → <b>day-view</b> (hour grid) for time-slot logging</td><td>Deep-links into the existing hour-by-hour view</td></tr>
+    <tr><td><b>Health</b></td><td>Top bar, right</td><td>Same calendar</td><td>Day sheet leads with <b>Symptom / Mood / Med</b></td></tr>
+    <tr><td><b>Journal / Community / Lifestyle / Pulse</b></td><td>Top bar, right</td><td>Same calendar</td><td>Leads with <b>Note</b>; Pulse opens the day already selected for its trends</td></tr>
+  </table></div>
+
+  <div class="rec"><span class="tag">Placement recommendation</span>
+  One <b>fixed calendar icon in the top-app-bar (right)</b> on every page — not floating over content. It's the twin of the existing "Jump to" pattern: a small, quiet, always-in-the-same-spot control. A single mount (<code>&lt;FwCalendarButton /&gt;</code> in <code>Layout.jsx</code>) so it can never drift page to page. The page passes it a <code>leadTypes</code> prop for the tint above; everything else is identical.</div>
+
+  <p><b>Whole-life gate:</b> the type chips in the day sheet must always span life, not just health — Meal, Water, Mood, Symptom, Note, Habit, Med, Event, plus lighter ones (a "moment", a win, a plan with a friend). Health leads on Health; elsewhere it's one option among many. This keeps the calendar from feeling like a clinical tracker.</p>
+
+  <hr>
+
+  <!-- ─────────────────────────────────────── -->
+  <h2 id="modal">8 · The rebuilt Log modal</h2>
+  <p>The current <code>UnifiedLogger</code> / <code>SmartLoggerV4</code> pair works but is today-only and visually inconsistent (it still uses some retired tokens like <code>#D4AF37</code> gold and <code>#3A2C1A</code> espresso). The rebuild keeps every capability and adds the date/time model.</p>
+
+  <h4>Keep (do NOT strip — carry forward every capability)</h4>
+  <ul>
+    <li>All log types: <b>Meal, Water/Hydration, Mood/Check-in, Symptom, Note, Habit, Medication, Event, Ritual, Task</b>.</li>
+    <li>Meal's rich pipeline: Search (Open Food Facts) · Barcode scan · Say it (voice) · Type it · Snap a photo → editable draft → real <code>MealLog</code> + background <code>analyzeMeal</code> + <code>NutritionInsight</code>.</li>
+    <li>Voice-to-intent quick add (the mic that parses "porridge at 8" into a typed draft).</li>
+    <li>Recents / Favourites one-tap re-log; the gentle stage-nutrient closing line; no scoreboards / no-guilt.</li>
+  </ul>
+
+  <h4>Rebuild</h4>
+  <ul>
+    <li><b>One opaque bottom sheet</b>, real chrome: <code>paperHi</code>, top-rounded <code>22px</code>, <code>box-shadow 0 -8px 32px rgba(11,8,5,.22)</code>, <code>fw-sheet-safe</code> so the last control clears the floating nav.</li>
+    <li><b>Brand tokens only</b> — retire <code>#D4AF37 / #3A2C1A / #F4EDDB</code> for <code>gold #A8893F / ink #0B0805 / paper #ECE7DA</code>; oxblood headings; Cormorant + system-sans; no emoji.</li>
+    <li><b>The date · time row up top</b> — the new spine. Pre-filled per §6; both editable; a past date quietly hides "now".</li>
+    <li>Type grid → chosen type's form, all writing to the <b>chosen</b> date/time.</li>
+  </ul>
+
+  <div class="phone"><div class="screen" style="padding-top:8px">
+    <div style="text-align:center;color:var(--paperDeep);font-size:20px">━</div>
+    <div class="flowrow" style="justify-content:space-between">
+      <div style="font-family:var(--serif);font-style:italic;font-size:21px;color:var(--oxblood)">Log a meal</div>
+      <span class="chip">✕</span>
+    </div>
+    <div class="seg" style="margin-top:4px">
+      <span class="chip acc" style="flex:2">📅 Tue 16 Jul</span>
+      <span class="chip acc" style="flex:1">◷ 13:00</span>
+    </div>
+    <div class="note-tiny" style="text-align:center;margin:2px 0 8px">Pre-set from where you tapped — tap to change either</div>
+    <div class="field" style="min-height:44px">What did you eat? Describe it naturally…</div>
+    <div class="seg"><span class="chip on">Midday</span><span class="chip">Morning</span><span class="chip">Evening</span><span class="chip">Snack</span></div>
+    <div class="flowrow"><span class="chip">Search</span><span class="chip">Scan</span><span class="chip">Say</span><span class="chip">Snap</span></div>
+    <div class="barbtn btn-solid" style="margin-top:8px">Add to Tuesday</div>
+  </div></div>
+  <p class="note-tiny" style="text-align:center">Note the CTA reads <b>"Add to Tuesday"</b>, not "Add to today" — the button confirms the target date, closing the trust loop.</p>
+
+  <hr>
+
+  <!-- ─────────────────────────────────────── -->
+  <h2 id="migration">9 · Retiring the "+" FAB without breaking logging</h2>
+  <p>Because everything funnels through the <code>openLogger()</code> singleton, the swap is surgical:</p>
+  <ol>
+    <li><b>Keep</b> <code>openLogger()</code> + the sheet exactly as the dispatcher (extend its signature per §6). The 50+ call sites and every "Log a meal" pill keep working.</li>
+    <li><b>Remove</b> the FAB render blocks: in <code>SmartLoggerV4</code> the <code>!open &amp;&amp; !hideFAB</code> button, and in <code>UniversalLogger</code> the Planner dual-FAB stack. The sheet still opens on command — it just no longer paints a floating button.</li>
+    <li><b>Add</b> the <code>&lt;FwCalendarButton /&gt;</code> to the top bar in <code>Layout.jsx</code>. Its tap = open calendar; the calendar's "Log for today" / day-tap call <code>openLogger(...)</code> with context.</li>
+    <li><b>Planner:</b> the big espresso "+" (planner items) folds into the day-view's "tap a free hour" + the day sheet's Event chip — so the dedicated planner-add FAB isn't needed either.</li>
+    <li><b>Ship behind a flag</b> for one build so we can A/B the reachability before deleting FAB code for good.</li>
+  </ol>
+  <div class="warn"><span class="tag">Reachability gate</span>The FAB is currently the <em>only</em> obvious "add" affordance for many users. Before it goes, the calendar icon must be unmistakable and the "Log for today" button must be one tap from every page — or logging frequency drops. This is the one risk to watch; the flagged rollout de-risks it.</div>
+
+  <hr>
+
+  <!-- ─────────────────────────────────────── -->
+  <h2 id="edge">10 · Edge cases</h2>
+  <div class="tblwrap"><table>
+    <tr><th>Case</th><th>Behaviour</th></tr>
+    <tr><td><b>Future date</b></td><td>Allowed (unlike today's <code>TrackCalendar</code>, which blocks it). Logging future = <b>planning</b> (an event, a planned meal, a ritual). "Now" time hides; symptom/mood chips soften to "plan to…". This is what makes the calendar whole-life, not just a back-log.</td></tr>
+    <tr><td><b>Past date</b></td><td>Fully allowed — back-fill a missed day. Time defaults to blank (you rarely remember the minute); meal-type/phase still inferred from the date.</td></tr>
+    <tr><td><b>Multiple entries per day</b></td><td>Expected. The day sheet's "already here" recap lists them; adding another never overwrites. Dots cap at 3 with a "+2" overflow.</td></tr>
+    <tr><td><b>Change date after pre-fill</b></td><td>The date row is always live. Changing it mid-log just retargets the pending write — nothing is saved until Confirm, so no orphaned rows.</td></tr>
+    <tr><td><b>Very old date / different cycle</b></td><td>Phase tint recomputes for that date's cycle; if we lack cycle data that far back, the tint simply drops (no false colour).</td></tr>
+    <tr><td><b>Timezone / midnight</b></td><td><code>day_key</code> is a local <code>YYYY-MM-DD</code>; <code>logged_at</code> is ISO. Keep the existing convention so historical rows stay comparable.</td></tr>
+    <tr><td><b>Reduced motion</b></td><td>Sheet slide + month swipe honour <code>prefers-reduced-motion</code> (already the app standard).</td></tr>
+  </table></div>
+
+  <hr>
+
+  <!-- ─────────────────────────────────────── -->
+  <h2 id="build">11 · Engineering shape + build order</h2>
+  <h4>The one enabling change</h4>
+  <p>Thread a target date/time through the write path:</p>
+  <ul>
+    <li><code>openLogger(type, ctx)</code> → singleton <code>_state = { open, type, ctx }</code> (<code>ctx = { date, time, scope }</code>, defaulting to today/now).</li>
+    <li><code>SmartLoggerV4</code> / <code>DetailForm</code> / nutrition <code>UnifiedLogger</code>: replace hardcoded <code>today()</code>/<code>now()</code> with <code>ctx.date</code>/<code>ctx.time</code> where present. ~a dozen <code>create()</code> sites, all centralised.</li>
+    <li>Add the <b>date · time row</b> to the sheet, seeded from <code>ctx</code>, both editable.</li>
+  </ul>
+
+  <h4>Then the surfaces</h4>
+  <ol>
+    <li>Build <code>FwCalendar</code> (card / sheet / strip densities) in <code>src/components/brand/</code>. Reuse the existing <code>getCyclePhase()</code> + the entity-loading already in <code>MonthlyCalendarCard</code>/<code>TrackCalendar</code>.</li>
+    <li>Build the <b>Day Sheet</b> (recap + type grid) that calls <code>openLogger(type, { date, scope:'day' })</code>.</li>
+    <li>Add <code>&lt;FwCalendarButton /&gt;</code> to <code>Layout.jsx</code> top bar.</li>
+    <li>Planner day-view: pass the tapped hour → <code>openLogger('event', { date, time, scope:'slot' })</code>.</li>
+    <li>Swap each page's old calendar → <code>FwCalendar</code>; remove FAB renders (flagged).</li>
+    <li>Delete <code>MonthlyCalendarCard</code>'s photo system + retire the duplicate calendars once parity is verified.</li>
+  </ol>
+  <p class="note-tiny">Demo-first per the house rule: build a <code>/UniversalCalendarDemo</code> preview (seeded) reachable from the IDEAS pill; you approve; <em>then</em> we touch live pages + the real write path.</p>
+
+  <hr>
+
+  <!-- ─────────────────────────────────────── -->
+  <h2 id="questions">12 · Open questions for you</h2>
+  <ol>
+    <li><b>Calendar icon home:</b> top-bar right (recommended) — or do you want it somewhere thumb-closer (bottom bar, replacing the FAB's corner)?</li>
+    <li><b>General button label:</b> "Log for today" (recommended) vs a neutral "Log" vs "Quick log"?</li>
+    <li><b>Future-date logging:</b> confirm you want planning-ahead enabled (I recommend yes — it's the whole-life win). Any life-stage where a future symptom log should be blocked?</li>
+    <li><b>Planner's second "+":</b> OK to fold the espresso planner-add FAB into the day-view + Event chip, or keep a dedicated planner add somewhere?</li>
+    <li><b>Scope of first ship:</b> all pages at once, or Today + Planner + Nutrition first, rest to follow?</li>
+  </ol>
+
+  <div class="card" style="border-color:var(--gold)">
+    <h4 style="margin-top:0">✅ Done this pass</h4>
+    <ul style="font-family:var(--ui);font-size:14px;margin:0">
+      <li>Read the real code: <code>MonthlyCalendarCard</code> (the OLD photo-bg one), <code>TrackCalendar</code>, <code>SmartLoggerV4</code>, <code>UniversalLogger</code>, nutrition <code>UnifiedLogger</code>, <code>PlannerDayView</code>, the FAB + <code>openLogger()</code> dispatcher.</li>
+      <li>Diagnosed the two blockers: calendar fragmentation (4+ variants, retired tokens) and today-only logging (no date/time in the write path).</li>
+      <li>Designed: one <code>FwCalendar</code>, calendar-icon entry, general vs day-specific flow, the date/time prefill rule, the Planner time-slot path, the rebuilt log sheet, FAB migration, edge cases, build order — with mockups.</li>
+    </ul>
+    <h4>⏭ Queued / awaiting you</h4>
+    <ul style="font-family:var(--ui);font-size:14px;margin:0">
+      <li>Your answers to the 5 questions above.</li>
+      <li>On approval: build the <code>/UniversalCalendarDemo</code> preview (IDEAS-pill reachable) — <em>demo-first, no live logger changes yet</em>.</li>
+      <li>Then: thread <code>ctx</code> through the write path → swap pages → retire the FAB behind a flag → Ms Verify live-walk.</li>
+    </ul>
+  </div>
+
+  <p class="note-tiny" style="text-align:center;margin-top:26px">FemWell · plan doc · one calendar, one way in · no live calendar/logger code changed this pass.</p>
+
+</div>
+</body>
+</html>

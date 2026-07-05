@@ -3,6 +3,18 @@
 > Per CLAUDE.md Standing Rule #1: every plan/brainstorm ships as a phone-readable styled-HTML doc to `C:\Users\Halli\femwell-handoff\` **and** is linked into the FoundersOS "Ideas" page so Halli reaches it via the floating IDEAS pill (never a dead route).
 > Mechanism (established): copy the HTML into `src/components/founders/brandDocs/<slug>.html`, `import …?raw` in `FoundersOS.jsx`, add a `{ kind:"doc", key:"…" }` CATALOG entry, and a `{tab === "…" && <BrandDocFrame html={…} title="…" />}` render branch. Then build + `npx base44 site deploy -y`.
 
+## ⭐ TO WIRE FIRST — Universal Calendar + Logger plan doc (2026-07-05, content session) → Ideas → Current
+> Deep brainstorm+plan for Halli's app-wide change: ONE universal calendar everywhere (replacing the OLD photo-bg `MonthlyCalendarCard.jsx`), the calendar icon replacing the "+" FAB as the single logging entry, tap-a-day-to-log with date/time prefill, Planner time-slot prefill, and a rebuilt log sheet. Plan only — no live calendar/logger code changed. Phone HTML in `femwell-handoff/UNIVERSAL-CALENDAR-LOGGER.html`; copied to `brandDocs/universal-calendar-logger.html`. Content session can't safely edit `FoundersOS.jsx` — please wire (3 edits, pattern below).
+
+| Doc (femwell-handoff/) | brandDocs slug | FoundersOS key | group | accent |
+|---|---|---|---|---|
+| UNIVERSAL-CALENDAR-LOGGER.html | universal-calendar-logger.html | "Universal Calendar" | Current | gold |
+
+Wiring (3 edits):
+- import: `import universalCalendarHtml from "@/components/founders/brandDocs/universal-calendar-logger.html?raw";`
+- CATALOG entry: `{ kind:"doc", key:"Universal Calendar", group: CAT.CURRENT, sub:"Calendar + logger plans", status:"new", accent:"gold", title:"Universal Calendar + Logger", desc:"One universal cream/flora/oxblood calendar everywhere (replaces the OLD photo-bg month grid + 3 other one-off calendars); the calendar ICON replaces the + FAB as the single logging entry; tap a day to log for that day (date prefilled, editable); Planner time-slot prefills date+time; general 'Log for today' button vs day-specific flow; rebuilt opaque log sheet keeping every capability (meals/water/mood/symptom/note/habit/med/event + OFF/scan/voice/photo). Deep brainstorm w/ options+recommendations+mockups. Plan only." }`
+- render branch: `{tab === "Universal Calendar" && <BrandDocFrame html={universalCalendarHtml} title="FemWell — One Universal Calendar + Logger" />}`
+
 ## Wired (in-app, reachable via IDEAS pill)
 > CONSOLIDATED 2026-06-20: there is now **exactly ONE brand entry** ("Brand Bible"). The old "Living Ecosystem", "Brand Identity" and "Flora & Meaning" entries are **folded into it and removed** (`living-ecosystem.html` deleted; `BrandIdentityDoc.jsx`/`FloraMeaningDoc.jsx` unwired). The brand bible is edited IN PLACE — do not re-add parallel brand docs. Feature PLANS stay separate under Specs & Plans.
 | Doc (phone HTML in femwell-handoff/) | in-app brandDocs slug | FoundersOS key | group |
