@@ -22,7 +22,7 @@ import {
   CalendarDays, ShoppingBasket, TrendingUp, Sparkles, Leaf, Mic, Loader, Repeat, Beef, Wheat,
   Apple, Flame, ListChecks, Salad, Search, Star, Camera, ScanLine, Fish, Carrot,
   Clock, RefreshCw, ShieldCheck, HeartHandshake, Sprout, ChefHat, ArrowRight,
-  Eye, EyeOff, Dumbbell, Baby, HeartPulse, ChevronRight, PlayCircle,
+  Eye, EyeOff, Dumbbell, Baby, HeartPulse, ChevronRight, PlayCircle, ChevronUp, ChevronDown,
 } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { format, startOfWeek } from "date-fns";
@@ -281,47 +281,79 @@ function nutritionJessSummary(seed, ctx) {
   return { eyebrow: "Jess · your plate today", body: `${lead}${s} ${f}` };
 }
 
-// ── V2 · the swipe row: Jess summary (panel 1) → swipe left → Today-at-a-glance + Add-to-today (panel 2) ──
-function JessGlanceSwipe({ jess, glanceRows, actions, accent }) {
+// ── V2 · the top sliding row — UNIFORM-HEIGHT panels (no dead space). Slide 1 = Today-at-a-glance +
+// Add-to-today · Slide 2 = the detailed Jess card (with an upward-sliding inner sheet for the deep read).
+const SWIPE_H = 380;
+function JessCard({ eyebrow, digest, chips, sheetSections, accent }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <FwCard snap={false} minHeight={SWIPE_H} accent={accent} Icon={Leaf} eyebrow={eyebrow} flower="camellia" idx="v2-jess">
+      <div style={{ display: "flex", flexDirection: "column", flex: 1, minHeight: 0 }}>
+        <p style={{ fontFamily: SERIF, fontSize: 15.5, color: T.inkSoft, lineHeight: 1.5, margin: "0 0 12px" }}>{digest}</p>
+        <div style={{ display: "flex", flexDirection: "column", gap: 9 }}>{chips.map((c) => (
+          <div key={c.label} style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            <span style={{ width: 26, height: 26, borderRadius: 8, background: `${cwOf(c.cw).petal}1F`, display: "grid", placeItems: "center", flexShrink: 0 }}><c.Icon size={13} color={cwOf(c.cw).petal} /></span>
+            <span style={{ flex: 1, minWidth: 0, fontFamily: SERIF, fontSize: 13.5, color: T.ink, lineHeight: 1.3 }}><b style={{ color: cwOf(c.cw).petal, fontFamily: UI, fontSize: 10.5, fontWeight: 800, textTransform: "uppercase", letterSpacing: ".04em", marginRight: 6 }}>{c.label}</b>{c.text}</span>
+          </div>
+        ))}</div>
+        <div style={{ marginTop: "auto", paddingTop: 12 }}>
+          <button onClick={() => setOpen(true)} className="fw-elite-press" style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 7, width: "100%", boxSizing: "border-box", background: accent, color: "#fff", border: "none", borderRadius: 12, padding: "12px 16px", fontFamily: UI, fontSize: 13.5, fontWeight: 700, cursor: "pointer" }}>Open Jess's full read <ChevronUp size={16} /></button>
+        </div>
+      </div>
+      {/* upward-sliding inner sheet — slides up WITHIN the card so it holds much more without growing it */}
+      <div style={{ position: "absolute", top: -20, left: -20, right: -20, bottom: -20, background: T.paperHi, transform: open ? "translateY(0)" : "translateY(101%)", transition: "transform .34s cubic-bezier(.32,.72,.24,1)", zIndex: 6, display: "flex", flexDirection: "column" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "15px 20px 10px", borderBottom: `1px solid ${T.paperDeep}` }}>
+          <Leaf size={15} color={accent} />
+          <span style={{ flex: 1, fontFamily: SERIF, fontStyle: "italic", fontSize: 18, fontWeight: 600, color: FW_OXBLOOD }}>Jess's full read</span>
+          <button onClick={() => setOpen(false)} aria-label="Close" className="fw-elite-press" style={{ width: 30, height: 30, borderRadius: 999, background: T.paper, border: `1px solid ${T.paperDeep}`, color: T.muted, cursor: "pointer", display: "grid", placeItems: "center" }}><ChevronDown size={17} /></button>
+        </div>
+        <div style={{ flex: 1, minHeight: 0, overflowY: "auto", padding: "13px 20px 18px", display: "flex", flexDirection: "column", gap: 15 }}>{sheetSections.map((s) => (
+          <div key={s.title}>
+            <div style={{ display: "flex", alignItems: "center", gap: 7, marginBottom: 6 }}><span style={{ width: 24, height: 24, borderRadius: 7, background: `${cwOf(s.cw).petal}1F`, display: "grid", placeItems: "center" }}><s.Icon size={12} color={cwOf(s.cw).petal} /></span><span style={{ fontFamily: UI, fontSize: 11.5, fontWeight: 800, letterSpacing: ".05em", textTransform: "uppercase", color: cwOf(s.cw).petal }}>{s.title}</span></div>
+            <p style={{ fontFamily: SERIF, fontSize: 14.5, color: T.inkSoft, lineHeight: 1.5, margin: 0 }}>{s.body}</p>
+            {s.action && <div style={{ marginTop: 8 }}>{s.action}</div>}
+          </div>
+        ))}</div>
+      </div>
+    </FwCard>
+  );
+}
+function JessGlanceSwipe({ accent, glancePanel, jessPanel }) {
   const [idx, setIdx] = useState(0);
   const ref = useRef(null);
-  const onScroll = () => { const el = ref.current; if (!el) return; setIdx(Math.round(el.scrollLeft / el.clientWidth)); };
+  const onScroll = () => { const el = ref.current; if (!el) return; setIdx(Math.round(el.scrollLeft / Math.max(1, el.clientWidth))); };
   const go = (i) => { const el = ref.current; if (el) el.scrollTo({ left: i * el.clientWidth, behavior: "smooth" }); };
   return (
     <div>
-      <div ref={ref} onScroll={onScroll} className="fw-v2-swipe" style={{ display: "flex", overflowX: "auto", scrollSnapType: "x mandatory", gap: 12, WebkitOverflowScrolling: "touch", overscrollBehaviorX: "contain" }}>
+      <div ref={ref} onScroll={onScroll} className="fw-v2-swipe" style={{ display: "flex", alignItems: "stretch", overflowX: "auto", scrollSnapType: "x mandatory", gap: 12, WebkitOverflowScrolling: "touch", overscrollBehaviorX: "contain" }}>
         <style>{`.fw-v2-swipe{scrollbar-width:none}.fw-v2-swipe::-webkit-scrollbar{display:none}`}</style>
-        <div style={{ flex: "0 0 100%", scrollSnapAlign: "center", minWidth: 0 }}>
-          <FwCard snap={false} minHeight={0} accent={cwOf("sage").petal} Icon={Leaf} eyebrow={jess.eyebrow} flower="camellia" line={jess.body} idx="v2-jess" />
-        </div>
-        <div style={{ flex: "0 0 100%", scrollSnapAlign: "center", minWidth: 0 }}>
-          <FwCard snap={false} minHeight={0} accent={accent} Icon={Flame} eyebrow="Today, at a glance" flower="marigold" idx="v2-glance"
-            action={<div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, width: "100%" }}>{actions}</div>}>
-            <div style={{ display: "flex", flexDirection: "column", gap: 7, marginBottom: 2 }}>{glanceRows.map((r) => (
-              <button key={r.label} onClick={r.onClick} className="fw-elite-press" style={{ display: "flex", alignItems: "center", gap: 10, textAlign: "left", background: T.paper, border: `1px solid ${T.paperDeep}`, borderRadius: 12, padding: "9px 11px", cursor: "pointer" }}>
-                <span style={{ width: 28, height: 28, borderRadius: 8, background: `${cwOf(r.cw).petal}1F`, display: "grid", placeItems: "center", flexShrink: 0 }}><r.Icon size={14} color={cwOf(r.cw).petal} /></span>
-                <span style={{ flex: 1, minWidth: 0 }}><span style={{ display: "block", fontFamily: UI, fontSize: 11, fontWeight: 700, color: cwOf(r.cw).petal }}>{r.label}</span><span style={{ fontFamily: SERIF, fontSize: 14, color: T.ink, lineHeight: 1.3 }}>{r.text}</span></span>
-              </button>
-            ))}</div>
-          </FwCard>
-        </div>
+        <div style={{ flex: "0 0 100%", scrollSnapAlign: "center", minWidth: 0 }}>{glancePanel}</div>
+        <div style={{ flex: "0 0 100%", scrollSnapAlign: "center", minWidth: 0 }}>{jessPanel}</div>
       </div>
       <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, marginTop: 8 }}>
-        {[0, 1].map((i) => <button key={i} onClick={() => go(i)} aria-label={i === 0 ? "Jess" : "Today at a glance"} style={{ width: idx === i ? 16 : 6, height: 6, borderRadius: 999, background: idx === i ? accent : T.paperDeep, border: "none", cursor: "pointer", transition: "width .2s" }} />)}
-        <span style={{ fontFamily: UI, fontSize: 11, fontWeight: 700, color: T.muted, marginLeft: 4 }}>{idx === 0 ? "swipe for today's glance →" : "← Jess's note"}</span>
+        {[0, 1].map((i) => <button key={i} onClick={() => go(i)} aria-label={i === 0 ? "Today at a glance" : "Jess's read"} style={{ width: idx === i ? 16 : 6, height: 6, borderRadius: 999, background: idx === i ? accent : T.paperDeep, border: "none", cursor: "pointer", transition: "width .2s" }} />)}
+        <span style={{ fontFamily: UI, fontSize: 11, fontWeight: 700, color: T.muted, marginLeft: 4 }}>{idx === 0 ? "swipe for Jess's read →" : "← today's glance"}</span>
       </div>
     </div>
   );
 }
 
-// ── V2 · a dismissible smart nudge (persists dismissal) ──────────────────────
-function V2Nudge({ text, cta, onCta, onDismiss, accent }) {
+// ── V2 · below-main = a horizontal row of COMPACT one-line cards. Every one is a real jump/action. ──
+function V2QuickRow({ items }) {
   return (
-    <div style={{ position: "relative", background: `linear-gradient(165deg, ${T.paperHi} 0%, ${accent}14 100%)`, border: `1px solid ${T.paperDeep}`, borderLeft: `4px solid ${accent}`, borderRadius: 16, padding: "13px 40px 13px 14px", marginBottom: 12 }}>
-      <button onClick={onDismiss} aria-label="Dismiss" className="fw-elite-press" style={{ position: "absolute", top: 10, right: 10, width: 26, height: 26, borderRadius: 999, background: T.paper, border: `1px solid ${T.paperDeep}`, color: T.muted, cursor: "pointer", display: "grid", placeItems: "center" }}><X size={13} /></button>
-      <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 5 }}><Sparkles size={14} color={accent} /><span style={{ fontFamily: UI, fontSize: 11, fontWeight: 800, letterSpacing: ".06em", textTransform: "uppercase", color: accent }}>A little nudge</span></div>
-      <p style={{ fontFamily: SERIF, fontSize: 14.5, color: T.ink, margin: "0 0 9px", lineHeight: 1.45 }}>{text}</p>
-      <button onClick={onCta} className="fw-elite-press" style={{ display: "inline-flex", alignItems: "center", gap: 6, fontFamily: UI, fontSize: 12.5, fontWeight: 700, color: "#fff", background: accent, border: "none", borderRadius: 999, padding: "7px 14px", cursor: "pointer" }}>{cta} <ArrowRight size={13} /></button>
+    <div className="fw-v2-quick" style={{ display: "flex", gap: 9, overflowX: "auto", padding: "2px 2px 8px", WebkitOverflowScrolling: "touch", overscrollBehaviorX: "contain" }}>
+      <style>{`.fw-v2-quick{scrollbar-width:none}.fw-v2-quick::-webkit-scrollbar{display:none}`}</style>
+      {items.map((it) => {
+        const c = cwOf(it.cw).petal;
+        return (
+          <button key={it.label} onClick={it.onClick} className="fw-elite-press" style={{ flex: "0 0 auto", display: "inline-flex", alignItems: "center", gap: 9, background: `linear-gradient(160deg, ${T.paperHi} 0%, ${c}12 100%)`, border: `1px solid ${T.paperDeep}`, borderLeft: `3px solid ${c}`, borderRadius: 13, padding: "10px 13px", cursor: "pointer", whiteSpace: "nowrap" }}>
+            <span style={{ width: 26, height: 26, borderRadius: 8, background: `${c}1F`, display: "grid", placeItems: "center", flexShrink: 0 }}><it.Icon size={13} color={c} /></span>
+            <span style={{ fontFamily: UI, fontSize: 13, fontWeight: 700, color: T.ink }}>{it.label}</span>
+            <ChevronRight size={15} color={T.muted} />
+          </button>
+        );
+      })}
+      <span style={{ flex: "0 0 2px" }} aria-hidden />
     </div>
   );
 }
@@ -362,10 +394,8 @@ export default function NutritionV2Shell() {
   const [calOpen, setCalOpen] = useState(false);
   const [plannerOpen, setPlannerOpen] = useState(false); // full-screen meal-generator overlay
   const openPlanner = () => setPlannerOpen(true);
-  // V2 · a per-mount seed so Jess's summary VARIES every load; nudge dismissal persists
+  // V2 · a per-mount seed so Jess's summary VARIES every load
   const [loadSeed] = useState(() => Math.floor(Math.random() * 100000));
-  const [nudgeDismissed, setNudgeDismissed] = useState(() => lsGet(`fw_v2_nudge_${todayKey()}`, "0") === "1");
-  const dismissNudge = () => { setNudgeDismissed(true); lsSet(`fw_v2_nudge_${todayKey()}`, "1"); };
   const [jumpOpen, setJumpOpen] = useState(false);
   const [toast, setToast] = useState(null);
   const sliderRef = useRef(null);
@@ -966,27 +996,60 @@ export default function NutritionV2Shell() {
           { id: "body", eyebrow: "Your body", flower: "foxglove", accent: cwOf("plum").petal, title: "For your body", line: "Cycle, PCOS, thyroid, GLP-1, pregnancy — gentle, sensible steers, never clinical.", ctaLabel: "Open", onOpen: () => jumpTo(3) },
         ]} />
 
-        {/* 3 + 4 · WRITTEN JESS SUMMARY (varies every load) → swipe left for Today-at-a-glance + Add to today */}
-        <div style={{ marginTop: 18 }}>
-          <JessGlanceSwipe accent={gold}
-            jess={nutritionJessSummary(loadSeed, { firstName, kcalLeft, glasses, glassesTarget, phaseKey, hasPlan: (mealPlan?.plan_days || []).filter(Boolean).length > 0, numbersOff, plants: plantsToday, loggedCount: dayMeals.length })}
-            glanceRows={numbersOff ? [
-              { Icon: Flame, cw: "gold", label: "Energy", text: "Nourished — numbers are off. You're doing lovely.", onClick: () => jumpTo(0) },
-              { Icon: ListChecks, cw: "sage", label: "Balance", text: `Protein, fibre & iron tracked gently${macroSums.iron >= ironTarget ? " — iron's there" : " — a nudge for iron"}.`, onClick: () => jumpTo(0) },
-              { Icon: Droplet, cw: "sky", label: "Water", text: glasses >= glassesTarget ? "Well watered today" : "A few more sips would be kind", onClick: () => jumpTo(0) },
-            ] : [
-              { Icon: Flame, cw: "gold", label: "Energy", text: `${summary.kcal} of ${calorieTarget} kcal · room for ${kcalLeft} more`, onClick: () => jumpTo(0) },
-              { Icon: ListChecks, cw: "sage", label: "Macros", text: `Protein ${macroSums.protein}/${proteinTarget}g · fibre ${macroSums.fibre}/${fibreTarget}g · iron ${macroSums.iron}/${ironTarget}mg`, onClick: () => jumpTo(0) },
-              { Icon: Droplet, cw: "sky", label: "Water", text: `${glasses} of ${glassesTarget} glasses today`, onClick: () => jumpTo(0) },
-            ]}
-            actions={<>
-              <button onClick={() => openLogger("photo")} className="fw-elite-press" style={focusPill(cwOf("plum").petal)}><Camera size={16} /> Snap a photo</button>
-              <button onClick={() => openLogger()} className="fw-elite-press" style={focusPill(T.crimson)}><UtensilsCrossed size={16} /> Add a meal</button>
-              <button onClick={() => addWater(WATER_GLASS_ML)} className="fw-elite-press" style={focusPill(sky)}><Droplet size={16} /> Add water</button>
-              <button onClick={busy ? undefined : logYesterday} className="fw-elite-press" style={focusPill(sage)}><Repeat size={16} /> Same as yesterday</button>
-            </>}
-          />
-        </div>
+        {/* 3 + 4 · TOP SLIDING ROW — uniform panels. Slide 1 = today-at-a-glance + add-to-today; Slide 2 = the detailed Jess card */}
+        {(() => {
+          const jess = nutritionJessSummary(loadSeed, { firstName, kcalLeft, glasses, glassesTarget, phaseKey, hasPlan: (mealPlan?.plan_days || []).filter(Boolean).length > 0, numbersOff, plants: plantsToday, loggedCount: dayMeals.length });
+          const planDays = (mealPlan?.plan_days || []).filter(Boolean);
+          const hasPlan = planDays.length > 0;
+          const distinctDinners = new Set(planDays.map((d) => cellName(d?.dinner)).filter(Boolean)).size;
+          const glanceRows = numbersOff ? [
+            { Icon: Flame, cw: "gold", label: "Energy", text: "Nourished — numbers are off. You're doing lovely.", onClick: () => jumpTo(0) },
+            { Icon: ListChecks, cw: "sage", label: "Balance", text: `Protein, fibre & iron tracked gently${macroSums.iron >= ironTarget ? " — iron's there" : " — a nudge for iron"}.`, onClick: () => jumpTo(0) },
+            { Icon: Droplet, cw: "sky", label: "Water", text: glasses >= glassesTarget ? "Well watered today" : "A few more sips would be kind", onClick: () => jumpTo(0) },
+          ] : [
+            { Icon: Flame, cw: "gold", label: "Energy", text: `${summary.kcal} of ${calorieTarget} kcal · room for ${kcalLeft} more`, onClick: () => jumpTo(0) },
+            { Icon: ListChecks, cw: "sage", label: "Macros", text: `Protein ${macroSums.protein}/${proteinTarget}g · fibre ${macroSums.fibre}/${fibreTarget}g · iron ${macroSums.iron}/${ironTarget}mg`, onClick: () => jumpTo(0) },
+            { Icon: Droplet, cw: "sky", label: "Water", text: `${glasses} of ${glassesTarget} glasses today`, onClick: () => jumpTo(0) },
+          ];
+          const cravingLine = phaseKey === "menstrual" ? "Chocolate around your period is your body chasing magnesium — a couple of squares is a perfectly sensible answer." : "Sweet cravings are usually tiredness; fruit with yoghurt holds you longer than sweets alone.";
+          return (
+            <div style={{ marginTop: 18 }}>
+              <JessGlanceSwipe accent={gold}
+                glancePanel={
+                  <FwCard snap={false} minHeight={SWIPE_H} accent={gold} Icon={Flame} eyebrow="Today, at a glance" flower="marigold" idx="v2-glance"
+                    action={<div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, width: "100%" }}>
+                      <button onClick={() => openLogger("photo")} className="fw-elite-press" style={focusPill(cwOf("plum").petal)}><Camera size={16} /> Snap a photo</button>
+                      <button onClick={() => openLogger()} className="fw-elite-press" style={focusPill(T.crimson)}><UtensilsCrossed size={16} /> Add a meal</button>
+                      <button onClick={() => addWater(WATER_GLASS_ML)} className="fw-elite-press" style={focusPill(sky)}><Droplet size={16} /> Add water</button>
+                      <button onClick={busy ? undefined : logYesterday} className="fw-elite-press" style={focusPill(sage)}><Repeat size={16} /> Same as yesterday</button>
+                    </div>}>
+                    <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 2 }}>{glanceRows.map((r) => (
+                      <button key={r.label} onClick={r.onClick} className="fw-elite-press" style={{ display: "flex", alignItems: "center", gap: 10, textAlign: "left", background: T.paper, border: `1px solid ${T.paperDeep}`, borderRadius: 12, padding: "9px 11px", cursor: "pointer" }}>
+                        <span style={{ width: 28, height: 28, borderRadius: 8, background: `${cwOf(r.cw).petal}1F`, display: "grid", placeItems: "center", flexShrink: 0 }}><r.Icon size={14} color={cwOf(r.cw).petal} /></span>
+                        <span style={{ flex: 1, minWidth: 0 }}><span style={{ display: "block", fontFamily: UI, fontSize: 11, fontWeight: 700, color: cwOf(r.cw).petal }}>{r.label}</span><span style={{ fontFamily: SERIF, fontSize: 14, color: T.ink, lineHeight: 1.3 }}>{r.text}</span></span>
+                      </button>
+                    ))}</div>
+                  </FwCard>
+                }
+                jessPanel={
+                  <JessCard accent={sage} eyebrow={jess.eyebrow} digest={jess.body}
+                    chips={[
+                      { Icon: CalendarDays, cw: "sage", label: "Plan", text: hasPlan ? `${distinctDinners > 1 ? `${distinctDinners} different dinners` : "a plan"} this week — tap below to open it` : "No plan yet — I can sort the week for you" },
+                      { Icon: Flame, cw: "gold", label: "Today", text: numbersOff ? "Balance over numbers — you're doing lovely" : `${summary.kcal}/${calorieTarget} kcal · ${glasses}/${glassesTarget} glasses water` },
+                      { Icon: Sprout, cw: "plum", label: phaseKey ? phaseLabel(phaseKey) : stageLabel(profile), text: ph.note },
+                      { Icon: ChefHat, cw: "crimson", label: "Tonight", text: dinner.name },
+                    ]}
+                    sheetSections={[
+                      { Icon: Sprout, cw: "plum", title: `Your ${phaseLabel(phaseKey || "follicular").toLowerCase()} phase`, body: <>Your appetite, energy and cravings shift across the month — that's biology, not a lack of willpower. {phaseKey === "luteal" ? "Right now, steady carbs and a little magnesium (dark chocolate counts) soften the dip, and slightly bigger portions are completely normal." : phaseKey === "menstrual" ? "Right now, iron-rich and warming foods tend to settle best — lentils, red meat if you eat it, and a warm bowl over a cold salad." : "Right now, fresh and bright food tends to match your rising energy — lean into colour and protein."} Nothing here is a rule; it's just what tends to feel good.</> },
+                      { Icon: HeartHandshake, cw: "sage", title: "Cravings, and how to ride them", body: <>A craving is your body asking for a top-up, not a failing. <b>Salty</b> often means you need a drink first. {cravingLine} And sometimes a craving is just wanting something nice — also allowed. The trick isn't willpower, it's not arriving ravenous.</> },
+                      { Icon: ChefHat, cw: "crimson", title: "What to cook", body: <>Tonight I'd reach for <b>{dinner.name}</b>. {dinner.why || "A warm, balanced plate that fits where you are this week."}</>, action: <button onClick={() => jumpTo(1)} className="fw-elite-press" style={{ display: "inline-flex", alignItems: "center", gap: 6, fontFamily: UI, fontSize: 12.5, fontWeight: 700, color: "#fff", background: cwOf("crimson").petal, border: "none", borderRadius: 999, padding: "8px 14px", cursor: "pointer" }}><ChefHat size={13} /> Browse cook videos</button> },
+                    ]}
+                  />
+                }
+              />
+            </div>
+          );
+        })()}
 
         {/* ED-safe "numbers off" toggle — hides every calorie & number on the page, persists */}
         <button onClick={() => setNumbersOffP(!numbersOff)} className="fw-elite-press" aria-pressed={numbersOff} style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", marginTop: 12, background: numbersOff ? `${sage}1A` : T.paperHi, border: `1px solid ${numbersOff ? sage : T.paperDeep}`, borderRadius: 16, padding: "10px 13px", cursor: "pointer", textAlign: "left" }}>
@@ -1086,67 +1149,17 @@ export default function NutritionV2Shell() {
           </ClipboardSlider>
         </div>
 
-        {/* 6 · MORE FOR YOUR PLATE — the new card language + kept features, no walls of text */}
-        <div style={{ marginTop: 24 }}>
-          <div style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 20, fontWeight: 600, color: OXBLOOD, margin: "0 2px 12px" }}>More for your plate</div>
-
-          {/* dismissible smart nudge — signal-driven, dismissal persists for today */}
-          {!nudgeDismissed && (() => {
-            const noPlan = (mealPlan?.plan_days || []).filter(Boolean).length === 0;
-            const waterLow = glasses < Math.ceil((glassesTarget || 8) / 2);
-            const n = noPlan ? { text: "Want your week sorted so 6pm isn't a scramble? I'll plan varied meals and a shopping list to match.", cta: "Plan my week", onCta: openPlanner }
-              : waterLow ? { text: "You're a little behind on water today. One glass now — future-you says thanks.", cta: "Add a glass", onCta: () => addWater(WATER_GLASS_ML) }
-              : { text: "Snap your next plate and I'll do the maths. You just eat.", cta: "Snap a photo", onCta: () => openLogger("photo") };
-            return <V2Nudge accent={T.crimson} text={n.text} cta={n.cta} onCta={n.onCta} onDismiss={dismissNudge} />;
-          })()}
-
-          {/* progress stat card — bold numbers, respects numbers-off */}
-          <div style={{ marginBottom: 12 }}>
-            <FwCard snap={false} minHeight={0} accent={gold} Icon={Flame} eyebrow="Where today's at" flower="marigold" idx="v2-stat"
-              line={numbersOff ? "Numbers are off, so here's the gentle version — balance, not scores." : "A quick read on protein and water — nudges, never targets."}
-              action={<FwCardCTA accent={gold} onClick={() => openLogger()} icon={Plus}>Log a meal</FwCardCTA>}>
-              {numbersOff ? (
-                <div style={{ display: "flex", flexDirection: "column", gap: 7, marginBottom: 4 }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: 9, background: T.paper, border: `1px solid ${T.paperDeep}`, borderRadius: 12, padding: "9px 11px" }}><Beef size={15} color={T.crimson} /><span style={{ fontFamily: SERIF, fontSize: 14.5, color: T.ink }}>{macroSums.protein >= proteinTarget ? "Protein's in a lovely place today." : "A little more protein would sit nicely."}</span></div>
-                  <div style={{ display: "flex", alignItems: "center", gap: 9, background: T.paper, border: `1px solid ${T.paperDeep}`, borderRadius: 12, padding: "9px 11px" }}><Droplet size={15} color={cwOf("sky").petal} /><span style={{ fontFamily: SERIF, fontSize: 14.5, color: T.ink }}>{glasses >= glassesTarget ? "Well watered — nicely done." : "A few more sips would be kind."}</span></div>
-                </div>
-              ) : (
-                <div style={{ display: "flex", flexDirection: "column", gap: 10, marginBottom: 4 }}>
-                  {[{ Icon: Beef, cw: "crimson", label: "Protein", v: macroSums.protein, g: proteinTarget, unit: "g" }, { Icon: Droplet, cw: "sky", label: "Water", v: glasses, g: glassesTarget, unit: " glasses" }].map((s) => {
-                    const pct = s.g > 0 ? Math.min(100, Math.round((s.v / s.g) * 100)) : 0; const c = cwOf(s.cw).petal;
-                    return (
-                      <div key={s.label}>
-                        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 4 }}>
-                          <span style={{ display: "inline-flex", alignItems: "center", gap: 6, fontFamily: UI, fontSize: 12.5, fontWeight: 700, color: c }}><s.Icon size={13} /> {s.label}</span>
-                          <span style={{ fontFamily: UI, fontSize: 12.5, color: T.muted }}><b style={{ color: T.ink }}>{s.v}</b> / {s.g}{s.unit}</span>
-                        </div>
-                        <div style={{ height: 8, borderRadius: 999, background: T.paper, border: `1px solid ${T.paperDeep}`, overflow: "hidden" }}><div style={{ width: `${pct}%`, height: "100%", background: c, borderRadius: 999, transition: "width .4s" }} /></div>
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
-            </FwCard>
-          </div>
-
-          {/* long-form → ExpandableCard (opens in place, no wall of text) */}
-          <ExpandableCard accent={cwOf("plum").petal} Icon={Sprout} eyebrow="This week, gently" flower="foxglove" idx="v2-phase"
-            title={`Your ${phaseLabel(phaseKey || "follicular").toLowerCase()} phase`} line={ph.note}
-            detail={<>Your appetite, energy and cravings shift across the month — that's biology, not a lack of willpower. {phaseKey === "luteal" ? "Right now, steady carbs and a little magnesium (dark chocolate counts) soften the dip, and slightly bigger portions are completely normal." : phaseKey === "menstrual" ? "Right now, iron-rich and warming foods tend to settle best — think lentils, red meat if you eat it, and a warm bowl over a cold salad." : "Right now, fresh and bright food tends to match your rising energy — lean into colour and protein."} Nothing here is a rule; it's just what tends to feel good. If something else works for you, that wins.</>} />
-          <div style={{ height: 12 }} />
-
-          <ExpandableCard accent={sage} Icon={HeartHandshake} eyebrow="Cravings" flower="dahlia" idx="v2-crave"
-            title="Cravings, and how to ride them" line="A craving is your body asking for a top-up, not a failing."
-            detail={<><b>Salty</b> often means you need a drink first — have water, then the snack. <b>Sweet</b> is usually tiredness; fruit with yoghurt holds you longer than sweets alone. <b>Chocolate</b> around your period is your body chasing magnesium — a couple of squares is a perfectly sensible answer. And sometimes a craving is just wanting something nice, which is also allowed. The trick isn't willpower — it's not arriving ravenous.</>} />
-          <div style={{ height: 12 }} />
-
-          {/* chip-filter → jumps to matching cook videos */}
-          <FwCard snap={false} minHeight={0} accent={sage} Icon={Search} eyebrow="Find something to cook" flower="iris" idx="v2-find"
-            title="What are you in the mood for?" line="Pick a lane and I'll take you straight to matching recipes.">
-            <div style={{ display: "flex", flexWrap: "wrap", gap: 7, marginBottom: 2 }}>{RECIPE_FILTERS.map((f) => (
-              <button key={f.id} onClick={() => { setRecipeFilter(f.id); jumpTo(1); }} className="fw-elite-press" style={{ fontFamily: UI, fontSize: 12.5, fontWeight: 700, padding: "7px 13px", borderRadius: 999, cursor: "pointer", border: `1px solid ${recipeFilter === f.id ? sage : T.paperDeep}`, background: recipeFilter === f.id ? sage : `${sage}12`, color: recipeFilter === f.id ? "#fff" : T.inkSoft }}>{f.label}</button>
-            ))}</div>
-          </FwCard>
+        {/* 6 · QUICK JUMPS — a horizontal row of COMPACT one-line cards; every one is a real action/jump */}
+        <div style={{ marginTop: 22 }}>
+          <div style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 18, fontWeight: 600, color: OXBLOOD, margin: "0 2px 9px" }}>Handy right now</div>
+          <V2QuickRow items={[
+            { Icon: Check, cw: "crimson", label: "Log tonight's dinner", onClick: () => reLog(dinner.name, "dinner") },
+            { Icon: ShoppingBasket, cw: "plum", label: "This week's shopping", onClick: openPlanner },
+            { Icon: ChefHat, cw: "sage", label: "Cook videos", onClick: () => jumpTo(1) },
+            { Icon: CalendarDays, cw: "gold", label: "Saved weeks", onClick: openPlanner },
+            { Icon: Sprout, cw: "sage", label: `${plantsToday} of 30 plants`, onClick: () => jumpTo(4) },
+            { Icon: HeartPulse, cw: "plum", label: "For your body", onClick: () => jumpTo(3) },
+          ]} />
         </div>
 
         <div style={{ display: "grid", placeItems: "center", margin: "22px 0 0" }}><Pollinator kind="bee" size={32} color={T.gold} color2={cwOf(ph.cw).tip} pattern="bands" animate idx="elite-close" /></div>
