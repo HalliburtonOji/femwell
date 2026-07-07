@@ -104,3 +104,16 @@ Wiring (3 edits):
 - import: `import cardStylesHtml from "@/components/founders/brandDocs/card-styles-expansion.html?raw";`
 - CATALOG entry: `{ kind:"doc", key:"Card Styles", group: CAT.CURRENT, sub:"Card language plans", status:"new", accent:"gold", title:"Card Styles — research + expansion", desc:"Expanded card-style library — bento mixed-size tiles · media/hero card + category carousel · category shelf · rich-stat card (progress ring + flora + inline actions + status badge + … menu) · dismissible suggestion card · expandable card · spotlight/stat-tile/letter — all adapted to our cream/flora/oxblood brand (not dark fintech). Cited research; live on-brand mockups. Plan only; feeds a bible §6.7.0 update after approval." }`
 - render branch: `{tab === "Card Styles" && <BrandDocFrame html={cardStylesHtml} title="FemWell — Card Styles: research + expansion" />}`
+
+---
+## ⏳ TO WIRE — NUTRITION HERO tap-to-bloom brainstorm (2026-07-07) → Ideas → Current
+> Short phone-readable brainstorm for merging the tap-to-promote interaction INTO the floral hero on /NutritionV2Demo (same flower, different bloom stage per tapped card). Phone HTML in `femwell-handoff/NUTRITION-HERO-BLOOM-TAP.html`; copied to `brandDocs/nutrition-hero-bloom-tap.html`. Already BUILT + live on /NutritionV2Demo — this doc records the model/rationale. Please wire (3 edits).
+
+| Doc (femwell-handoff/) | brandDocs slug | FoundersOS key | group | accent |
+|---|---|---|---|---|
+| NUTRITION-HERO-BLOOM-TAP.html | nutrition-hero-bloom-tap.html | "Hero Bloom Tap" | Current | crimson |
+
+Wiring (3 edits):
+- import: `import heroBloomTapHtml from "@/components/founders/brandDocs/nutrition-hero-bloom-tap.html?raw";`
+- CATALOG entry: `{ kind:"doc", key:"Hero Bloom Tap", group: CAT.CURRENT, sub:"Page level-up plans + demos", status:"new", accent:"crimson", title:"Nutrition hero — tap-to-bloom", desc:"Merges the tap-to-promote cards INTO the floral hero: the small cards become the hero's controller; tapping re-writes the header AND re-blooms the same flower to a different STAGE (bud → opening → full) + mood tint + companion. Recommended model + card→bloom map. Built + live on /NutritionV2Demo." }`
+- render branch: `{tab === "Hero Bloom Tap" && <BrandDocFrame html={heroBloomTapHtml} title="Nutrition hero — one flower, blooming through the day" />}`

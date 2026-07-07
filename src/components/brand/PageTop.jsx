@@ -31,7 +31,7 @@ import { RichBloomV2, SwayBloom, Pollinator, FlowerGlyph, cwOf, floraKeyframes }
 export function FwFloraHero({
   title, line, bloom = "daisy", colorway = "gold",
   flankL = "iris", flankR = "sunflower", butterfly = true, creature = "butterfly",
-  ringSize = 244, bloomSize = 170, idx = "hero", titleColor = T.ink,
+  ringSize = 244, bloomSize = 170, idx = "hero", titleColor = T.ink, openness = 1,
 }) {
   const cw = cwOf(colorway);
   return (
@@ -48,7 +48,7 @@ export function FwFloraHero({
             <circle cx={ringSize / 2} cy={ringSize / 2} r={ringSize / 2 - 20} fill="none" stroke={T.sage} strokeWidth="1" opacity="0.4" />
           </svg>
           <SwayBloom animate idx={3}>
-            <RichBloomV2 form={bloom} color={cw.petal} color2={cw.tip} accent={T.gold} size={bloomSize} animate soft idx={idx} />
+            <RichBloomV2 form={bloom} color={cw.petal} color2={cw.tip} accent={T.gold} size={bloomSize} animate soft idx={idx} openness={openness} />
           </SwayBloom>
         </div>
       </div>

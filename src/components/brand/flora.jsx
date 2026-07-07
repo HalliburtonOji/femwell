@@ -123,7 +123,7 @@ const CUPPED = new Set(["peony", "camellia", "ranunculus", "marigold"]);
 const FORM_BELL = "foxglove", FORM_FERN = "fern", FORM_SUN = "sunflower", FORM_SNOWDROP = "snowdrop", FORM_TULIP = "tulip",
   FORM_ROSE = "rose", FORM_HIBISCUS = "hibiscus", FORM_LILY = "lily", FORM_MAGNOLIA = "magnolia";
 
-export function RichBloomV2({ color = T.blush, color2 = null, accent = "#CBA24E", size = 150, animate = true, soft = true, idx = 0, form = "peony" }) {
+export function RichBloomV2({ color = T.blush, color2 = null, accent = "#CBA24E", size = 150, animate = true, soft = true, idx = 0, form = "peony", openness = 1 }) {
   const cx = PETAL_BLOOM_CX, cy = PETAL_BLOOM_CY;
   const _pale = lum(color) > 0.62, _d = _pale ? 0.26 : 0.13, _k = _pale ? 0.42 : 0.3;
   const lightest = color2 || lighten(color, 0.52), light = lighten(color, 0.34), mid = lighten(color, 0.14), deep = color, deeper = darken(color, _d), darkest = darken(color, _k);
@@ -402,8 +402,10 @@ export function RichBloomV2({ color = T.blush, color2 = null, accent = "#CBA24E"
           <path d="M51 71 C 59 72 67 75 73 79" stroke="#5F7E5F" strokeWidth="0.7" fill="none" strokeLinecap="round" opacity="0.65" />
           <path d="M58 73 L 61 71 M62 75 L 65 74 M66 77 L 68 76" stroke="#5F7E5F" strokeWidth="0.5" fill="none" strokeLinecap="round" opacity="0.5" />
         </g>
-        <g style={animate ? { transformBox: "fill-box", transformOrigin: "center", willChange: "transform", animation: `fwcBreath 6s ease-in-out infinite`, animationDelay: delay } : undefined}>
-          {head}
+        <g style={{ transform: `scale(${openness})`, transformBox: "fill-box", transformOrigin: "center", transition: "transform .55s cubic-bezier(.34,1.25,.4,1)" }}>
+          <g style={animate ? { transformBox: "fill-box", transformOrigin: "center", willChange: "transform", animation: `fwcBreath 6s ease-in-out infinite`, animationDelay: delay } : undefined}>
+            {head}
+          </g>
         </g>
       </svg>
     </div>

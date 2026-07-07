@@ -1,0 +1,54 @@
+<div class="wrap">
+  <style>
+    .wrap{max-width:640px;margin:0 auto;padding:22px 18px 60px;font-family:"Cormorant Garamond",Georgia,serif;color:#0B0805;background:#ECE7DA;line-height:1.5}
+    .wrap h1{font-family:"Ephesis",cursive;font-weight:400;font-size:40px;line-height:1.05;color:#7A1A12;margin:0 0 4px}
+    .wrap .sub{font-style:italic;color:#2E261B;font-size:17px;margin:0 0 20px}
+    .wrap h2{font-family:"Fraunces",Georgia,serif;font-size:12px;font-weight:800;letter-spacing:.09em;text-transform:uppercase;color:#A8893F;margin:26px 0 8px;border-bottom:1px solid #D8CFBC;padding-bottom:5px}
+    .wrap p{font-size:16.5px;margin:0 0 11px}
+    .wrap b{color:#0B0805}
+    .rec{background:#F4EFE3;border:1px solid #D8CFBC;border-left:4px solid #BC2E27;border-radius:14px;padding:13px 15px;margin:12px 0}
+    .rec .k{font-family:"Fraunces",Georgia,serif;font-size:11px;font-weight:800;letter-spacing:.07em;text-transform:uppercase;color:#BC2E27}
+    .opt{background:#F4EFE3;border:1px solid #D8CFBC;border-radius:12px;padding:10px 13px;margin:8px 0}
+    .opt .t{font-family:"Fraunces",Georgia,serif;font-weight:700;font-size:15px}
+    table{width:100%;border-collapse:collapse;margin:8px 0 4px;font-size:14.5px}
+    th,td{text-align:left;padding:7px 8px;border-bottom:1px solid #D8CFBC;vertical-align:top}
+    th{font-family:"Fraunces",Georgia,serif;font-size:11px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;color:#A8893F}
+    td .c{font-family:"Fraunces",Georgia,serif;font-weight:700}
+    .tag{display:inline-block;font-family:"Fraunces",Georgia,serif;font-size:10.5px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;color:#8FAF8F;background:#8FAF8F1F;border-radius:999px;padding:2px 9px;margin-left:6px}
+    .live{background:#8FAF8F1A;border:1px solid #8FAF8F;border-radius:12px;padding:11px 14px;margin:14px 0;font-size:15px}
+  </style>
+
+  <h1>One flower, blooming through the day</h1>
+  <p class="sub">The tap-to-promote hero, merged INTO the floral hero itself. <span class="tag">Built · live on /NutritionV2Demo</span></p>
+
+  <p>The separate big “promote” card is gone. The small cards move up to sit <b>where the little bloom used to be</b>, and they become the <b>controller for the hero</b>. Tap one and the hero does two things at once: its <b>header re-writes</b> (title + line) and the <b>flower re-blooms</b> — <b>same species, a different bloom stage.</b></p>
+
+  <h2>“Same flower, different bloom” — the options</h2>
+  <div class="opt"><span class="t">A · Bloom stages (bud → opening → full)</span><br>The same flower shown further open or more closed. Reads as a living thing responding to you. Meaningful: planning = a bud (promise), tonight = full bloom (arrival).</div>
+  <div class="opt"><span class="t">B · Same bloom, tint / mood shift</span><br>Only the colourway changes (sage → gold → crimson → plum). Subtle, but on its own it can feel like a filter swap, not a life.</div>
+  <div class="opt"><span class="t">C · Different companion / omen</span><br>The flower is constant; the creature on it changes (bee, butterfly, ladybird, dragonfly). Charming, but easy to miss at a glance.</div>
+
+  <div class="rec"><span class="k">Recommended — A, layered with B + C</span><br>Lead with <b>bloom stage (openness)</b> so the flower visibly opens or furls as you tap — that’s the “wow”. Then <b>tint</b> it to the card’s mood and give it a <b>matching companion</b>. Stage carries the meaning; tint + companion make each stop feel like its own little world. Not random — it’s <b>the day of a plate</b>: set it (bud), capture it (opening), come home to it (full bloom).</p></div>
+
+  <h2>Each card → header + bloom</h2>
+  <table>
+    <tr><th>Card</th><th>Header</th><th>Bloom</th><th>Action</th></tr>
+    <tr><td class="c">Plan</td><td><b>Your week</b><br>“Set it once, and 6pm sorts itself.”</td><td>bud (½ open)<br>sage · ladybird</td><td>Open the planner</td></tr>
+    <tr><td class="c">Snap</td><td><b>Your plate</b><br>“A photo now, and I’ll do the maths.”</td><td>opening<br>gold · bee</td><td>Snap a photo</td></tr>
+    <tr><td class="c">Tonight</td><td><b>Tonight</b><br>the dinner’s own line</td><td>full bloom<br>crimson · butterfly</td><td>Log tonight’s dinner</td></tr>
+    <tr><td class="c">Cook</td><td><b>In the kitchen</b><br>“Short clips you can cook from.”</td><td>lively / near-full<br>sage · dragonfly</td><td>Browse cook videos</td></tr>
+    <tr><td class="c">Body</td><td><b>For your body</b><br>“Gentle, sensible steers.”</td><td>half, inward<br>plum · bee</td><td>Open for your body</td></tr>
+  </table>
+  <p><b>Default (on load):</b> the <b>Snap</b> stop — the hero reads “Your plate”, mid-opening, so the page’s identity is intact before you touch anything.</p>
+
+  <h2>The transition</h2>
+  <p>The flower <b>morphs</b> — the petal head scales open/closed over ~0.55s with a soft spring, so it genuinely furls and unfurls rather than cutting. Colour and companion cross to the new mood; the title + line swap in step. One tap, one gentle bloom.</p>
+
+  <h2>Where the actions live now</h2>
+  <p>No promote card means no buried CTA. The <b>selected card’s primary action is a full-width button right under the hero</b>, and it changes with your choice — so <b>“Log tonight’s dinner” is one tap away</b> whenever Tonight is selected, Plan gives “Open the planner”, Snap gives “Snap a photo”, and so on. Everything the old promote card did is still here, just tied to the bloom.</p>
+
+  <h2>Uniform cards (bible rule)</h2>
+  <p>The five controller cards are <b>identical size</b> (fixed 72×64 tiles, icon + label), in a centred row — matching the new “sliding-row cards must be uniform” rule.</p>
+
+  <div class="live">✦ <b>Built and live</b> on <b>/NutritionV2Demo</b> (open it from the IDEAS pill). Everything else on the page is intact — the Jess digest slide, the generator + saved weeks, snap, logger, boards, and the one-line “Handy right now” row. The bloom-stage lever is an <b>additive <code>openness</code> prop</b> on the shared bloom component (defaults to fully-open, so no other page changes).</div>
+</div>

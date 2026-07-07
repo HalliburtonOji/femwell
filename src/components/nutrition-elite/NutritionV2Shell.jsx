@@ -268,6 +268,7 @@ const pickAt = (arr, s) => (arr.length ? arr[((s % arr.length) + arr.length) % a
 // on a real page reload — which is exactly "varies each load" for the seed, and a reliable sheet toggle.
 let _v2Seed = null;
 let _v2SheetOpen = false;
+let _v2HeroCard = 1; // which controller card drives the hero bloom (1 = Snap → "Your plate" identity)
 const v2Seed = () => { if (_v2Seed === null) _v2Seed = Math.floor(Math.random() * 100000); return _v2Seed; };
 function nutritionJessSummary(seed, ctx) {
   const { firstName, kcalLeft, glasses, glassesTarget, phaseKey, hasPlan, numbersOff, plants, loggedCount } = ctx;
@@ -403,6 +404,8 @@ export default function NutritionV2Shell() {
   const [loadSeed] = useState(v2Seed);
   const [jessSheetOpen, setJessSheetRaw] = useState(() => _v2SheetOpen);
   const setJessSheetOpen = (v) => { _v2SheetOpen = v; setJessSheetRaw(v); };
+  const [heroCard, setHeroCardRaw] = useState(() => _v2HeroCard); // tap-to-bloom hero controller
+  const setHeroCard = (i) => { _v2HeroCard = i; setHeroCardRaw(i); };
   const [jumpOpen, setJumpOpen] = useState(false);
   const [toast, setToast] = useState(null);
   const sliderRef = useRef(null);
@@ -981,27 +984,41 @@ export default function NutritionV2Shell() {
       <TopChrome onJump={() => setJumpOpen(true)} onCalendar={() => setCalOpen(true)} />
 
       <div style={{ maxWidth: 430, margin: "0 auto", padding: "16px 16px 0" }} className="fw-elite-in">
-        {/* lush flora hero — phase bloom + bouquet + resting creature */}
-        <FwFloraHero title={firstName ? `${firstName}'s plate` : "Your plate"} colorway={ph.cw} bloom={ph.bloom} flankL="chamomile" flankR="sunflower" titleColor={OXBLOOD} creature="bee"
-          line="Food is fuel and joy, not a test. Log in seconds — everything else is one easy tap away." />
-        <div style={{ display: "flex", justifyContent: "center", marginTop: -6, marginBottom: 2 }}>
-          <Bouquet items={[{ form: ph.bloom, colorway: ph.cw }, { form: "fern", colorway: "sage" }, { form: "marigold", colorway: "gold" }]} size={150} animate idx="elite-bq" />
-        </div>
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, margin: "2px 0 16px" }}>
-          <span style={{ width: 9, height: 9, borderRadius: 99, background: ph.hue }} />
-          <span style={{ fontFamily: UI, fontSize: 13, fontWeight: 700, color: T.inkSoft }}>
-            {phaseKey ? `${phaseLabel(phaseKey)}${cycleDay ? ` · Day ${cycleDay}` : ""}` : stageLabel(profile)}
-          </span>
-        </div>
-
-        {/* 2 · SLIDER CARDS BELOW THE HEADER — tap a thumb to promote it into the hero */}
-        <HeroPromoteRail railLabel="Jump into your kitchen" accent={gold} minHeight={0} items={[
-          { id: "plan", eyebrow: "Plan", flower: "poppy", accent: sage, title: "Plan your week", line: "Your goal, the food you love, what's in your kitchen — I'll plan a varied week and keep every one.", ctaLabel: "Open the planner", onOpen: () => openPlanner() },
-          { id: "snap", eyebrow: "Snap", flower: "sunflower", accent: cwOf("plum").petal, title: "Snap your plate", line: "A photo of your meal and I'll estimate it — you can tweak every number before it's logged.", ctaLabel: "Snap a photo", onOpen: () => openLogger("photo") },
-          { id: "dinner", eyebrow: "Tonight", flower: "dahlia", accent: T.crimson, title: dinner.name, line: dinner.why || "A warm idea for tonight — tap to log it in one go.", ctaLabel: "Log tonight's dinner", onOpen: () => reLog(dinner.name, "dinner") },
-          { id: "cook", eyebrow: "Cook", flower: "iris", accent: sage, title: "Cook videos", line: "Short recipe clips you can actually cook from — filter by quick, iron, protein or veg.", ctaLabel: "Browse recipes", onOpen: () => jumpTo(1) },
-          { id: "body", eyebrow: "Your body", flower: "foxglove", accent: cwOf("plum").petal, title: "For your body", line: "Cycle, PCOS, thyroid, GLP-1, pregnancy — gentle, sensible steers, never clinical.", ctaLabel: "Open", onOpen: () => jumpTo(3) },
-        ]} />
+        {/* FLORAL HERO with TAP-TO-BLOOM — the small cards below it ARE the controller (same flower, different bloom stage) */}
+        {(() => {
+          const HERO_CARDS = [
+            { id: "plan", Icon: CalendarDays, label: "Plan", title: "Your week", line: "Set it once, and 6pm sorts itself.", openness: 0.5, cw: "sage", creature: "ladybird", action: { label: "Open the planner", on: openPlanner } },
+            { id: "snap", Icon: Camera, label: "Snap", title: firstName ? `${firstName}'s plate` : "Your plate", line: "A photo now, and I'll do the maths — you just eat.", openness: 0.8, cw: "gold", creature: "bee", action: { label: "Snap a photo", on: () => openLogger("photo") } },
+            { id: "tonight", Icon: ChefHat, label: "Tonight", title: "Tonight", line: dinner.why || "Something warm to come home to.", openness: 1, cw: "crimson", creature: "butterfly", action: { label: "Log tonight's dinner", on: () => reLog(dinner.name, "dinner") } },
+            { id: "cook", Icon: PlayCircle, label: "Cook", title: "In the kitchen", line: "Short clips you can actually cook from.", openness: 0.92, cw: "sage", creature: "dragonfly", action: { label: "Browse cook videos", on: () => jumpTo(1) } },
+            { id: "body", Icon: HeartPulse, label: "Body", title: "For your body", line: "Gentle, sensible steers — never clinical.", openness: 0.66, cw: "plum", creature: "bee", action: { label: "Open for your body", on: () => jumpTo(3) } },
+          ];
+          const active = HERO_CARDS[heroCard] || HERO_CARDS[1];
+          const aCol = cwOf(active.cw).petal;
+          return (
+            <>
+              <FwFloraHero title={active.title} colorway={active.cw} bloom={ph.bloom} openness={active.openness} creature={active.creature} flankL="chamomile" flankR="sunflower" titleColor={OXBLOOD} line={active.line} />
+              {/* controller cards — UNIFORM size — sit where the little bloom used to be; tap to re-bloom + re-title the hero */}
+              <div className="fw-hero-ctl" style={{ display: "flex", gap: 8, overflowX: "auto", padding: "12px 2px 2px", justifyContent: "center" }}>
+                <style>{`.fw-hero-ctl{scrollbar-width:none}.fw-hero-ctl::-webkit-scrollbar{display:none}`}</style>
+                {HERO_CARDS.map((c, i) => { const on = i === heroCard; const col = cwOf(c.cw).petal; return (
+                  <button key={c.id} onClick={() => setHeroCard(i)} aria-pressed={on} className="fw-elite-press" style={{ flex: "0 0 72px", height: 64, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 5, borderRadius: 14, cursor: "pointer", background: on ? `linear-gradient(160deg, ${T.paperHi} 0%, ${col}20 100%)` : T.paperHi, border: `1px solid ${on ? col : T.paperDeep}`, boxShadow: on ? `0 0 0 1px ${col}, 0 2px 8px ${col}30` : "0 1px 3px rgba(58,44,26,0.08)", transform: on ? "translateY(-1px)" : "none", transition: "border-color .15s, box-shadow .15s, transform .15s" }}>
+                    <span style={{ width: 27, height: 27, borderRadius: 8, background: `${col}1F`, display: "grid", placeItems: "center" }}><c.Icon size={15} color={col} /></span>
+                    <span style={{ fontFamily: UI, fontSize: 10.5, fontWeight: 700, color: on ? col : T.muted }}>{c.label}</span>
+                  </button>
+                ); })}
+              </div>
+              {/* phase pill + the SELECTED card's primary action (log-tonight etc. stays reachable) */}
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, margin: "11px 0 10px" }}>
+                <span style={{ width: 9, height: 9, borderRadius: 99, background: ph.hue }} />
+                <span style={{ fontFamily: UI, fontSize: 13, fontWeight: 700, color: T.inkSoft }}>{phaseKey ? `${phaseLabel(phaseKey)}${cycleDay ? ` · Day ${cycleDay}` : ""}` : stageLabel(profile)}</span>
+              </div>
+              <button onClick={active.action.on} className="fw-elite-press" style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 8, width: "100%", boxSizing: "border-box", background: aCol, color: "#fff", border: "none", borderRadius: 14, padding: "13px 16px", fontFamily: UI, fontSize: 14, fontWeight: 700, cursor: "pointer", transition: "background .35s ease" }}>
+                <active.Icon size={16} /> {active.action.label}
+              </button>
+            </>
+          );
+        })()}
 
         {/* 3 + 4 · TOP SLIDING ROW — uniform panels. Slide 1 = today-at-a-glance + add-to-today; Slide 2 = the detailed Jess card */}
         {(() => {
