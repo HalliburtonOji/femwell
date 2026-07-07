@@ -475,10 +475,22 @@
     <li><b>Commit</b> — the included rows become plan entries on their dates (dots on the calendar).</li>
   </ol>
 
-  <h4>Handles / honest limits (stated in-sheet)</h4>
+  <h4>Real rota shape — worked against Halli's actual "Shift Overview" (July 2026)</h4>
+  <p>Built + verified against his real rota (date · day · start–end · location, with a done tick). The extractor + editable review list handle the tricky bits:</p>
+  <div class="tblwrap"><table>
+    <tr><th>Rota reality</th><th>What the flow does</th></tr>
+    <tr><td><b>Each shift row</b> (01 Wed 1–10pm · 03 Fri · 09 Thu · 11 Sat · 12 Sun …)</td><td>Becomes an <b>editable review row</b>: a "Work shift" title, a <b>date picker</b>, <b>start &amp; end time</b> pickers, plus a checkbox — untick or edit any of it before saving.</td></tr>
+    <tr><td><b>Overnight</b> (3:00 PM – 12:00 AM crosses midnight)</td><td>Detected (end ≤ start ⇒ <code>end_next_day</code>); the row shows an <b>"OVERNIGHT · ends +1 day"</b> badge and stores end 00:00 on the following day. Re-derived live if you edit the times.</td></tr>
+    <tr><td><b>Shared location</b> ("Halliburton Oji, Paddington" on every row)</td><td>Lifted to a single <b>"Location · all shifts"</b> field at the top — edit once, applies to all (no repetition per row).</td></tr>
+    <tr><td><b>Already-done row</b> (04 Sat, green check)</td><td>Detected as <code>done</code> → the row is <b>pre-unticked</b> with an <b>"ALREADY DONE"</b> tag, so it isn't added as an upcoming plan. You can still tick it if you want it in.</td></tr>
+    <tr><td><b>Future work shifts</b></td><td>Added as <b>PLAN</b> entries (respects the log-vs-plan gate). <b>One action</b> ("Add 5 shifts to your plan") writes the whole selected set at once — a dot lands on each shift's date.</td></tr>
+    <tr><td><b>Weekly repeat</b></td><td>Offered <em>only when it's genuinely easy</em> — i.e. the selected shifts all fall on one weekday. Halli's rota is irregular (Wed/Fri/Thu/Sat/Sun), so no offer — it just adds the parsed set.</td></tr>
+  </table></div>
+  <p><b>Verified live:</b> the sample = his exact rota; the review showed all 6 shifts, the 3 overnight badges, the shared location field, and 04 Sat pre-unticked as "already done"; "Add 5 shifts" dropped plan dots on 1·3·9·11·12 July and <em>not</em> on the done 4th.</p>
+
+  <h4>Honest limits (stated in-sheet)</h4>
   <ul>
-    <li><b>Handles:</b> a weekly rota of shifts (weekday → upcoming date), and a list of dated events/appointments.</li>
-    <li><b>Limits:</b> handwriting and very dense timetables can miss rows; ambiguous or missing dates are flagged rather than guessed; a non-schedule image degrades to a calm "no schedule found." That's exactly why the <b>review step</b> exists.</li>
+    <li>Handwriting and very dense timetables can miss rows; ambiguous or missing dates are flagged ("needs a date") rather than guessed; a non-schedule image degrades to a calm "no schedule found." That's exactly why the <b>review step</b> exists — you check &amp; edit before anything saves.</li>
   </ul>
 
   <div class="warn"><span class="tag">Needs your sign-off for the REAL build (not the demo)</span>
