@@ -162,6 +162,10 @@ import JessL2Demo from './pages/JessL2Demo';
 // Batch-2 LEVEL-UP DEMOS (approved plans → demo-first; built on the elite card language, live pages untouched).
 import NutritionL2Demo from './pages/NutritionL2Demo';
 import NutritionV2Demo from './pages/NutritionV2Demo';
+// UniversalCalendarDemo — demo-first preview of the "One Universal Calendar + Calendar-as-Logger"
+// system (icon-top-right entry, tap-past/today→LOG, tap-future→PLAN gated by data type, Planner
+// time-slot prefill, rebuilt log/plan modal). Seeded, NO base44 writes; live pages/logger untouched.
+import UniversalCalendarDemo from './pages/UniversalCalendarDemo';
 import LifestyleL2Demo from './pages/LifestyleL2Demo';
 import HealthLettersDemo from './pages/HealthLettersDemo';
 import CommunityL2Demo from './pages/CommunityL2Demo';
@@ -362,6 +366,7 @@ export const PAGES = {
     "JessClipboardDemo": JessClipboardDemo,
     "NutritionL2Demo": NutritionL2Demo,
     "NutritionV2Demo": NutritionV2Demo,
+    "UniversalCalendarDemo": UniversalCalendarDemo,
     "LifestyleL2Demo": LifestyleL2Demo,
     "HealthLettersDemo": HealthLettersDemo,
     "CommunityL2Demo": CommunityL2Demo,
