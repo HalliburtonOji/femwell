@@ -122,6 +122,18 @@
     <a href="#questions">12 · Open questions for you · DONE / QUEUED</a>
   </div>
 
+  <div class="rec" style="border-color:var(--crimson);border-left-color:var(--crimson)">
+    <span class="tag" style="color:var(--crimson)">✅ Locked by Halli — 2026-07-05 (for the eventual bible fold)</span>
+    <ol style="margin:.3em 0 0;padding-left:1.15em">
+      <li><b>Calendar icon home:</b> top bar, right (the persistent entry; the "+" FAB retires).</li>
+      <li><b>LOG vs PLAN split by time + data type</b> — the key refinement. <b>Past/today → LOG</b> (retrospective: meals eaten, a headache, mood, water). <b>Future → PLAN, not log</b> — tapping a future day opens planning (meals/menu, events, reminders) and <b>blocks retrospective health/symptom/mood/water/note logging</b> ("you can't log a headache for tomorrow").</li>
+      <li><b>The gate is by DATA TYPE, not life-stage:</b> symptom/mood/water/note = today-or-past only; meal/event/reminder/habit/med = plannable ahead.</li>
+      <li><b>General button label:</b> "Log for today".</li>
+      <li><b>Planner's second "+":</b> folded into the day-view "tap a free hour" + the Event chip — no separate planner add FAB.</li>
+      <li><b>Scope:</b> demo-first. <b>The demo is built + live:</b> <code>/UniversalCalendarDemo</code> (reachable from the IDEAS pill once the FoundersOS session wires the route). Live pages/logger untouched until this is approved.</li>
+    </ol>
+  </div>
+
   <div class="rec">
     <span class="tag">The headline recommendation</span>
     Build <b>one</b> <code>FwCalendar</code> component (cream / flora / oxblood, real card chrome) and mount it behind a <b>persistent calendar icon</b> in the top bar of every page. Opening it shows the month + a general <b>Log</b> button (logs to today, editable). <b>Tapping a day</b> opens the rebuilt <b>Log sheet pre-set to that date</b>. In the Planner day-view, tapping a free hour opens the same sheet with <b>date + time</b> pre-filled. The old photo-background month grid (<code>MonthlyCalendarCard.jsx</code>) and every other one-off calendar get replaced by <code>FwCalendar</code>. The gold/black <b>+</b> FAB is removed app-wide.</div>
@@ -383,7 +395,7 @@
   <h2 id="edge">10 · Edge cases</h2>
   <div class="tblwrap"><table>
     <tr><th>Case</th><th>Behaviour</th></tr>
-    <tr><td><b>Future date</b></td><td>Allowed (unlike today's <code>TrackCalendar</code>, which blocks it). Logging future = <b>planning</b> (an event, a planned meal, a ritual). "Now" time hides; symptom/mood chips soften to "plan to…". This is what makes the calendar whole-life, not just a back-log.</td></tr>
+    <tr><td><b>Future date</b></td><td><b>PLAN mode, never LOG</b> (Halli's locked rule). The day sheet switches to plannable types only — meal/menu, event, reminder, habit, med — and <b>blocks retrospective health logging</b> (symptom, mood, water, note) with a "🔒 can't log ahead" row and the line <em>"you can't log a headache for a day that hasn't happened."</em> "Now" time hides. Gate is by data type, not life-stage. This is what makes the calendar whole-life <em>and</em> honest.</td></tr>
     <tr><td><b>Past date</b></td><td>Fully allowed — back-fill a missed day. Time defaults to blank (you rarely remember the minute); meal-type/phase still inferred from the date.</td></tr>
     <tr><td><b>Multiple entries per day</b></td><td>Expected. The day sheet's "already here" recap lists them; adding another never overwrites. Dots cap at 3 with a "+2" overflow.</td></tr>
     <tr><td><b>Change date after pre-fill</b></td><td>The date row is always live. Changing it mid-log just retargets the pending write — nothing is saved until Confirm, so no orphaned rows.</td></tr>
