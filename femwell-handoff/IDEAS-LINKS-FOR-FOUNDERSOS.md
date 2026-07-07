@@ -137,3 +137,18 @@ Wiring (3 edits):
 - import: `import floraHeaderDemoHtml from "@/components/founders/brandDocs/flora-header-demo.html?raw";`
 - CATALOG entry: `{ kind:"doc", key:"Flora Header", group: CAT.CURRENT, sub:"Brand + card language", status:"new", accent:"sage", title:"Flora header — fuller redesign (pick one)", desc:"6 fuller treatments of the flower header (FwFloraHero) — bouquet · branch · little tree · foliage nest · flowering bush · living wreath. No dashed ring; same real bloom (species + mood tint + companion bee); every style still reblooms on tap (bud→full). Pick one → folds into the bible as the canonical flora hero. Demo only." }`
 - render branch: `{tab === "Flora Header" && <BrandDocFrame html={floraHeaderDemoHtml} title="FemWell — the flora header, fuller (redesign)" />}`
+
+---
+## ⏳ TO WIRE — FLORA HEADER · BLOSSOMING BRANCH variations (2026-07-03, follow-up) → Ideas → Current
+> **Halli picked style 2 (the "Blossoming branch")** from the Flora Header demo above — "looks great but needs MORE." This follow-up demo focuses on that branch and brainstorms **6 richer variations**: more blooms & petals, more leaves framing the wood, a **bed of grass at the base** (grounded, not floating), and real depth. Each uses the **REAL bloom** (SSR'd `RichBloomV2` — same species, mood tint, companion bee/butterfly), **no dashed ring**, real card chrome, and **still reblooms on tap** (bud→full). Halli picks a variation → folds into the bible as the canonical flora hero. Phone HTML in `femwell-handoff/FLORA-BRANCH-DEMO.html`; copied to `brandDocs/flora-branch-demo.html`. Don't edit `FoundersOS.jsx` — please wire (3 edits). (This supersedes the multi-style "Flora Header" entry above as the active pick — you can keep or retire that one.)
+
+| Doc (femwell-handoff/) | brandDocs slug | FoundersOS key | group | accent |
+|---|---|---|---|---|
+| FLORA-BRANCH-DEMO.html | flora-branch-demo.html | "Branch Header" | Current | sage |
+
+The 6 variations: **1 Bough in bloom** (dense 3-bloom cluster + buds + leaves + grass at the foot) · **2 Arching garland** (an arc grounded on a grass bed) · **3 Grounded branch** (upright, rising from a full grass bed) · **4 Layered depth** (a soft back bough behind a crisp front branch) · **5 Blossom spray** (many smaller blooms + buds + a butterfly, a spring spray) · **6 Peony bough** (the fuller, many-petalled bloom for maximum petal richness).
+
+Wiring (3 edits):
+- import: `import floraBranchDemoHtml from "@/components/founders/brandDocs/flora-branch-demo.html?raw";`
+- CATALOG entry: `{ kind:"doc", key:"Branch Header", group: CAT.CURRENT, sub:"Brand + card language", status:"new", accent:"sage", title:"Flora header — the blossoming branch, richer", desc:"Halli picked the branch → 6 richer variations: bough in bloom · arching garland · grounded branch · layered depth · blossom spray · peony bough. More blooms/petals, more leaves, grass at the base, real depth. Same real bloom + mood tint + companion; no dashed ring; still reblooms on tap. Pick one → canonical flora hero. Demo only." }`
+- render branch: `{tab === "Branch Header" && <BrandDocFrame html={floraBranchDemoHtml} title="FemWell — the blossoming branch, richer" />}`
