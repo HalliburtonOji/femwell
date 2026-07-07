@@ -152,3 +152,18 @@ Wiring (3 edits):
 - import: `import floraBranchDemoHtml from "@/components/founders/brandDocs/flora-branch-demo.html?raw";`
 - CATALOG entry: `{ kind:"doc", key:"Branch Header", group: CAT.CURRENT, sub:"Brand + card language", status:"new", accent:"sage", title:"Flora header — the blossoming branch, richer", desc:"Halli picked the branch → 6 richer variations: bough in bloom · arching garland · grounded branch · layered depth · blossom spray · peony bough. More blooms/petals, more leaves, grass at the base, real depth. Same real bloom + mood tint + companion; no dashed ring; still reblooms on tap. Pick one → canonical flora hero. Demo only." }`
 - render branch: `{tab === "Branch Header" && <BrandDocFrame html={floraBranchDemoHtml} title="FemWell — the blossoming branch, richer" />}`
+
+---
+## ⏳ TO WIRE — FLORA HERO · REALISTIC BRANCH (2026-07-03, craft/realism pass) → Ideas → Current
+> **Halli saw the rotating branch hero LIVE and it looks artificial** — flat/geometric sticks (his BAD example = the "Your day" hero, a thin awkward cross/Y stick; the "Health" hero = the CORRECT diagonal direction). New direction (supersedes the 6-orientation rotation): **ONE fixed diagonal bough** (lower-left → upper-right), **realistic tapered/curved bark with nodes**, believable **leaves on petioles**, grounded in **grass** — vary ONLY the **side twig** + the **flower**. This demo shows **5 realistic variations** (rose · peony · coral rose · magnolia · hibiscus) on the SAME bough, each with the **real `RichBloomV2` bloom**, **no dashed ring**, real card chrome, still **reblooms on tap** (bud→full) + mood tint + companion creature. Phone HTML in `femwell-handoff/FLORA-BRANCH-REALISM.html`; copied to `brandDocs/flora-branch-realism.html`. Don't edit `FoundersOS.jsx` — please wire (3 edits). **Once Halli picks, the realistic bough replaces the live rotation (`floraBranch.js`/`PageTop.jsx`) + folds into bible §6.8.**
+
+| Doc (femwell-handoff/) | brandDocs slug | FoundersOS key | group | accent |
+|---|---|---|---|---|
+| FLORA-BRANCH-REALISM.html | flora-branch-realism.html | "Realistic Branch" | Current | sage |
+
+The 5 variations (SAME diagonal bough; only the side twig + flower change): **1 Rose** (twig lifting up-left) · **2 Peony** (fuller petals, low offshoot) · **3 Coral rose** (warm, short crown twig) · **4 Magnolia** (cream, low bough) · **5 Hibiscus** (crimson heart-colour, forked twig).
+
+Wiring (3 edits):
+- import: `import floraRealismHtml from "@/components/founders/brandDocs/flora-branch-realism.html?raw";`
+- CATALOG entry: `{ kind:"doc", key:"Realistic Branch", group: CAT.CURRENT, sub:"Brand + card language", status:"new", accent:"sage", title:"Flora hero — the branch, done properly (realism)", desc:"Realism pass on the flora hero: ONE fixed diagonal bough (Health-hero direction) with tapered curved bark, real leaves on petioles, grounded in grass, no dashed ring. Only the side twig + flower vary. 5 flowers on the same bough (rose/peony/coral/magnolia/hibiscus); real bloom, still reblooms on tap + mood tint + creature. Pick one → replaces the live rotation. Demo only." }`
+- render branch: `{tab === "Realistic Branch" && <BrandDocFrame html={floraRealismHtml} title="FemWell — the branch, done properly (realism)" />}`
