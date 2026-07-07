@@ -1,6 +1,10 @@
 # FEMWELL — CANONICAL STATUS INDEX (read first · updated 2026-06-30)
 **This file is the single source of truth AND the index to every plan doc. If anything else disagrees, this wins.** (The long ship-log history continues below the index.)
 
+## 🔗✅ DEPLOY RECONCILED — flora-hero + Branch Header + calendar demo in ONE bundle · live `index-BtfIdx5Z.js` (2026-07-07)
+Several sessions deployed near-simultaneously (my wiring `8b26ce8` + brand `88980fd` flora-hero), so the prior live bundle risked missing one. Pulled all (HEAD `abee953`); verified BOTH `8b26ce8` and `88980fd` are ancestors of HEAD + all 3 markers in source. CLEAN build (rm -rf dist && npx vite build) → npx base44 site deploy -y.
+- **CONFIRMED all three in the ONE served bundle `index-BtfIdx5Z.js`:** rotating branch FwFloraHero (floraBranch: BRANCH_VARIANTS/pickBranchVariant) ✓, Branch Header doc ("the blossoming branch, richer") ✓, /UniversalCalendarDemo route ✓. (8.67 MB bundle.) Nothing lost across the concurrent deploys.
+
 ## 🌳✅ FOUNDERS OS — Branch Header doc + Universal Calendar DEMO route wired into Current · SHIPPED LIVE · live `index-CNlIJma9.js` (clean site-deploy) · commit `8b26ce8` (2026-07-07)
 Two wirings from IDEAS-LINKS-FOR-FOUNDERSOS.md, both in Ideas → Current (New chips). Only FoundersOS.jsx changed. CLEAN build (rm -rf dist && npx vite build) → npx base44 site deploy -y.
 - (1) Branch Header (doc — Halli picked the branch; supersedes Flora Header): 3 edits (?raw import · kind:doc key Branch Header sub "Brand + card language" sage title "Flora header — the blossoming branch, richer" · BrandDocFrame render). Placed just ABOVE Flora Header (same sub) so the active pick shows first; Flora Header kept, not retired.
