@@ -117,3 +117,18 @@ Wiring (3 edits):
 - import: `import heroBloomTapHtml from "@/components/founders/brandDocs/nutrition-hero-bloom-tap.html?raw";`
 - CATALOG entry: `{ kind:"doc", key:"Hero Bloom Tap", group: CAT.CURRENT, sub:"Page level-up plans + demos", status:"new", accent:"crimson", title:"Nutrition hero — tap-to-bloom", desc:"Merges the tap-to-promote cards INTO the floral hero: the small cards become the hero's controller; tapping re-writes the header AND re-blooms the same flower to a different STAGE (bud → opening → full) + mood tint + companion. Recommended model + card→bloom map. Built + live on /NutritionV2Demo." }`
 - render branch: `{tab === "Hero Bloom Tap" && <BrandDocFrame html={heroBloomTapHtml} title="Nutrition hero — one flower, blooming through the day" />}`
+
+---
+## ⏳ TO WIRE — FLORA HEADER redesign DEMO (2026-07-03) → Ideas → Current
+> Halli: the flower header (`FwFloraHero`) looks **thin — one stem, sparse**, inside a **dashed ring**; wants it **fuller, like part of a plant/tree**, ring **removed**. This demo shows **6 fuller treatments** of the hero, each rendered with the **REAL bloom** (SSR'd `RichBloomV2` — same species, mood tint, companion bee) on the **real card chrome**, **no dashed ring**, and each **still reblooms on tap** (bud → full; tap a header). Halli picks one → it folds into `BRAND_IDENTITY.md` as the canonical flora hero. Phone HTML in `femwell-handoff/FLORA-HEADER-DEMO.html`; copied to `brandDocs/flora-header-demo.html`. This session must not edit `FoundersOS.jsx` — please wire (3 edits).
+
+| Doc (femwell-handoff/) | brandDocs slug | FoundersOS key | group | accent |
+|---|---|---|---|---|
+| FLORA-HEADER-DEMO.html | flora-header-demo.html | "Flora Header" | Current | sage |
+
+The 6 styles: **1 Gathered bouquet** (bloom + 2 companions + buds on a leaf fan) · **2 Blossoming branch** (a woody bough, bloom at a node) · **3 Little tree** (trunk + layered canopy, bloom nested in the crown) · **4 Foliage nest** (a fan of leaves cradling the bloom) · **5 Flowering bush** (a low mound, 3 blooms at different heights) · **6 Living wreath** (the removed ring reborn as a leafy vine around the bloom).
+
+Wiring (3 edits):
+- import: `import floraHeaderDemoHtml from "@/components/founders/brandDocs/flora-header-demo.html?raw";`
+- CATALOG entry: `{ kind:"doc", key:"Flora Header", group: CAT.CURRENT, sub:"Brand + card language", status:"new", accent:"sage", title:"Flora header — fuller redesign (pick one)", desc:"6 fuller treatments of the flower header (FwFloraHero) — bouquet · branch · little tree · foliage nest · flowering bush · living wreath. No dashed ring; same real bloom (species + mood tint + companion bee); every style still reblooms on tap (bud→full). Pick one → folds into the bible as the canonical flora hero. Demo only." }`
+- render branch: `{tab === "Flora Header" && <BrandDocFrame html={floraHeaderDemoHtml} title="FemWell — the flora header, fuller (redesign)" />}`
