@@ -81,6 +81,8 @@ import jessPlanHtml from "@/components/founders/brandDocs/jess-plan.html?raw";
 import cardStylesHtml from "@/components/founders/brandDocs/card-styles-expansion.html?raw";
 // Universal Calendar + Logger plan doc (2026-07-05) — wired from IDEAS-LINKS-FOR-FOUNDERSOS.md.
 import universalCalendarHtml from "@/components/founders/brandDocs/universal-calendar-logger.html?raw";
+// Nutrition hero tap-to-bloom brainstorm (2026-07-07) — wired from IDEAS-LINKS-FOR-FOUNDERSOS.md.
+import heroBloomTapHtml from "@/components/founders/brandDocs/nutrition-hero-bloom-tap.html?raw";
 // HealthCornerDemo was the multi-layout preview. The canonical health
 // experience now lives at /Health (src/pages/Health.jsx). The Health Corner
 // tab in /Ideas renders <HealthCornerRedirectCard /> instead.
@@ -253,6 +255,8 @@ const CATALOG = [
     title: "★ Nutrition +2 — the whole table, raised", desc: "Nutrition is LIVE — the plan for the next two levels: finish the stubs (meal-plan generator, recipes, cook-what's-in, snap-a-photo) and RAISE it — cited women's-nutrition research (iron flagship · cycle-aware-not-rules · protein · peri/menopause · PCOS/PMDD · GLP-1 era · food↔mood), the myth-vs-fact series, JOY & food (eating-together, the kitchen-table room), cook-videos-in-card, the weave into Today/Health/Pulse/Planner/Garden/Community/Jess, and a fold-in order. React before we touch live Nutrition." },
   { kind: "route", href: "/NutritionL2Demo", group: CAT.CURRENT, sub: "Page level-up plans + demos", status: "approval", accent: "crimson",
     title: "Nutrition +2 — demo ★ approve", desc: "Nutrition +2 demo — composite real-meal accuracy, ED-safe numbers-off, cook-video log, condition watch-lists, GLP-1 guardian, share-to-table (photo→macros = labelled gated stub)." },
+  { kind: "doc", key: "Hero Bloom Tap", group: CAT.CURRENT, sub: "Page level-up plans + demos", status: "new", accent: "crimson",
+    title: "Nutrition hero — tap-to-bloom", desc: "Merges the tap-to-promote cards INTO the floral hero: the small cards become the hero's controller; tapping re-writes the header AND re-blooms the same flower to a different STAGE (bud → opening → full) + mood tint + companion. Recommended model + card→bloom map. Built + live on /NutritionV2Demo." },
   { kind: "route", href: "/NutritionV2Demo", group: CAT.CURRENT, sub: "Page level-up plans + demos", status: "new", accent: "gold",
     title: "Nutrition V2 — full new page ★ demo", desc: "The next Nutrition page, fully wired: FwFloraHero → tap-to-promote HeroPromoteRail → a Jess summary that VARIES each load and swipes left to Today-at-a-glance + Add-to-today → the 5 clipboard boards → a 'More for your plate' section in the new card language (ExpandableCard, stat card, dismissible nudge, chip-finder). Contains EVERYTHING the live page does (real generator + saved weeks, Snap→photo, logger, water, same-as-yesterday, feeding) — nothing stripped." },
   { kind: "doc", key: "Lifestyle +2", group: CAT.CURRENT, sub: "Page level-up plans + demos", status: "new", accent: "plum",
@@ -1045,6 +1049,7 @@ function FoundersInner({ user }) {
       {tab === "Garden +2" && <BrandDocFrame html={gardenPlanHtml} title="FemWell — Garden Level Up (+2)" />}
       {tab === "Jess +2" && <BrandDocFrame html={jessPlanHtml} title="FemWell — Jess Level Up (+2)" />}
       {tab === "Universal Calendar" && <BrandDocFrame html={universalCalendarHtml} title="FemWell — One Universal Calendar + Logger" />}
+      {tab === "Hero Bloom Tap" && <BrandDocFrame html={heroBloomTapHtml} title="Nutrition hero — one flower, blooming through the day" />}
       {tab === "Card Styles" && <BrandDocFrame html={cardStylesHtml} title="FemWell — Card Styles: research + expansion" />}
       {tab === "Intentions & Goals" && <BrandDocFrame html={intentionsGoalsHtml} title="FemWell — Intentions, Line of the Day & Goals" />}
       {tab === "Connect, Days & Missions" && <BrandDocFrame html={connectDaysMissionsHtml} title="FemWell — No Garden Grows Alone (Connection, Days Off & Tiny Missions)" />}
