@@ -273,8 +273,8 @@ export default function UniversalCalendarDemo() {
           <button onClick={() => setSheet({ stage: "smartshot", mode: "plan", date: iso(addDays(TODAY, 1)) })} style={{ ...typeCard, width: "100%" }}>
             <span style={{ ...typeChip, background: `${T.gold}22`, color: T.gold }}><WandSparkles size={15} /></span>
             <div style={{ textAlign: "left" }}>
-              <div style={{ fontFamily: UI, fontWeight: 700, fontSize: 13.5, color: T.ink }}>Photo → schedule</div>
-              <div style={{ fontFamily: UI, fontSize: 11, color: T.muted }}>Read a rota/event screenshot → reviewable plan entries</div>
+              <div style={{ fontFamily: UI, fontWeight: 700, fontSize: 13.5, color: T.ink }}>Photo → log or plan anything</div>
+              <div style={{ fontFamily: UI, fontSize: 11, color: T.muted }}>Meal · rota · symptom · moment — your intent routes it (try the receipt)</div>
             </div>
           </button>
         </div>
@@ -423,12 +423,10 @@ function DaySheet({ sheet, entries, onPick, onRunDay, onSmartShot, onClose }) {
         One pass through {isFuture ? "meals, plans, reminders" : "meals, water, mood, symptoms, meds"} — quick, skippable, one save.
       </div>
 
-      {/* ── PRIMARY (plan only): read a screenshot → schedule ── */}
-      {isFuture && (
-        <button onClick={onSmartShot} style={{ ...ghostBtn, width: "100%", marginTop: 8, borderColor: T.gold, color: OX }}>
-          <WandSparkles size={15} style={{ marginRight: 7, verticalAlign: -2, color: T.gold }} />Read a photo → plan your schedule
-        </button>
-      )}
+      {/* ── PRIMARY: add a photo (intent-driven — food / rota / symptom / moment) ── */}
+      <button onClick={onSmartShot} style={{ ...ghostBtn, width: "100%", marginTop: 8, borderColor: T.gold, color: OX }}>
+        <WandSparkles size={15} style={{ marginRight: 7, verticalAlign: -2, color: T.gold }} />Add a photo — {isFuture ? "plan or log from a picture" : "log from a picture"}
+      </button>
 
       <div style={{ ...eyebrow, marginTop: 16 }}>{isFuture ? "…or plan one thing" : "…or log one thing"}</div>
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
@@ -801,42 +799,180 @@ function renderSampleRota() {
   return c.toDataURL("image/png");
 }
 
+// Draw a clean sample RESTAURANT RECEIPT (the food-intent example Halli gave) to a
+// canvas → data URL, so the demo can show the intent→food route without a real photo.
+function renderSampleReceipt() {
+  const c = document.createElement("canvas");
+  c.width = 400; c.height = 500;
+  const g = c.getContext("2d");
+  g.fillStyle = "#fff"; g.fillRect(0, 0, c.width, c.height);
+  g.fillStyle = "#111"; g.textAlign = "center";
+  g.font = "bold 26px system-ui, Arial"; g.fillText("THE OLIVE TREE", 200, 52);
+  g.font = "14px system-ui, Arial"; g.fillStyle = "#555";
+  g.fillText("Bistro & Wine Bar", 200, 76);
+  g.fillText(`${format(TODAY, "d MMM yyyy")}  ·  Table 12`, 200, 98);
+  g.textAlign = "left"; g.fillStyle = "#111"; g.font = "17px system-ui, Arial";
+  const items = [["Bruschetta", "6.50"], ["Sea bass & greens", "18.00"], ["Tiramisu", "7.00"], ["Sparkling water", "3.50"], ["Glass of red", "8.50"]];
+  let y = 150; g.strokeStyle = "#ddd";
+  items.forEach((it) => { g.fillText(it[0], 30, y); g.textAlign = "right"; g.fillText("£" + it[1], 370, y); g.textAlign = "left"; g.beginPath(); g.moveTo(30, y + 12); g.lineTo(370, y + 12); g.stroke(); y += 40; });
+  g.font = "bold 20px system-ui, Arial"; g.fillText("TOTAL", 30, y + 14); g.textAlign = "right"; g.fillText("£43.50", 370, y + 14);
+  g.textAlign = "center"; g.font = "14px system-ui, Arial"; g.fillStyle = "#777"; g.fillText("Thank you — see you soon!", 200, y + 60);
+  return c.toDataURL("image/jpeg", 0.8);
+}
+
+// Client-side classifier fallback — the demo works even when the vision call can't run
+// (e.g. an unauthenticated browser): the user's own words are the primary signal.
+const cap = (s) => (s ? s[0].toUpperCase() + s.slice(1) : s);
+function guessMeal() { const h = new Date().getHours(); return h < 11 ? "breakfast" : h < 15 ? "lunch" : h < 21 ? "dinner" : "snack"; }
+function guessSymptom(t = "") { const s = t.toLowerCase(); for (const [k, v] of [["headache", "Headache"], ["migraine", "Headache"], ["cramp", "Cramps"], ["tired", "Fatigue"], ["fatigue", "Fatigue"], ["exhaust", "Fatigue"], ["nausea", "Nausea"], ["sick", "Nausea"], ["mood", "Low mood"], ["down", "Low mood"]]) if (s.includes(k)) return v; return null; }
+function classifyByText(text, sampleKind) {
+  const t = (text || "").toLowerCase();
+  if (sampleKind === "rota" || /\b(rota|roster|shift|shifts|schedule|timetable|work week|week of)\b/.test(t))
+    return { detected: "schedule", is_retrospective: false, meal_type_guess: null, title: "Work rota" };
+  if (sampleKind === "receipt" || /\b(ate|eat|eaten|had|food|meal|lunch|dinner|breakfast|brunch|snack|coffee|receipt|restaurant|takeaway|takeout|dinner)\b/.test(t))
+    return { detected: "food", is_retrospective: true, meal_type_guess: guessMeal(), title: "A meal" };
+  if (/\b(headache|migraine|cramp|pain|nausea|nauseous|sick|dizzy|tired|fatigue|symptom|rash|sore|ache|bloated|period)\b/.test(t))
+    return { detected: "symptom", is_retrospective: true, meal_type_guess: null, title: "A symptom" };
+  if (/\b(moment|view|sunset|happy|lovely|memory|felt|beautiful|pet|dog|cat|selfie|walk|flowers)\b/.test(t))
+    return { detected: "moment", is_retrospective: true, meal_type_guess: null, title: "A moment" };
+  return { detected: "moment", is_retrospective: true, meal_type_guess: null, title: "A note" };
+}
+
+const INTENT_ROUTES = {
+  food:     { type: "meal",    label: "Food",     Icon: Utensils,     tone: T.gold },
+  symptom:  { type: "symptom", label: "Symptom",  Icon: Stethoscope,  tone: PHASE.menstrual },
+  moment:   { type: "note",    label: "Moment",   Icon: StickyNote,   tone: T.plum || "#8E6E8E" },
+  schedule: { type: "event",   label: "Schedule", Icon: CalendarClock,tone: "#A6862B" },
+  other:    { type: "note",    label: "Note",     Icon: StickyNote,   tone: T.muted },
+};
+// The one client-owned follow-up per route (Halli: 1-2 quick, skippable, most-probable highlighted).
+const FOLLOWUPS = {
+  food:    { key: "meal", q: "Log it as", options: ["Breakfast", "Lunch", "Dinner", "Snack"] },
+  symptom: { key: "sym",  q: "What is it", options: ["Headache", "Cramps", "Fatigue", "Nausea", "Low mood"] },
+};
+
+// Rota fallback entries (used only when the live parse can't run) — resolved to upcoming dates.
+function fallbackRotaEntries() {
+  const shifts = [["Monday", "Early shift", "07:00", "15:00"], ["Tuesday", "Late shift", "14:00", "22:00"], ["Thursday", "Early shift", "07:00", "15:00"], ["Friday", "Late shift", "14:00", "22:00"], ["Saturday", "Day shift", "09:00", "17:00"]];
+  return shifts.map((s, i) => ({ _id: i, include: true, title: s[1], day_label: s[0], date: resolveDayLabel(s[0]), start: s[2], end: s[3], all_day: false, confidence: "medium" }));
+}
+
+// ════════════════════════════════════════════════════════════════════════════════
+// PHOTO → ANYTHING (intent-driven). Add a picture → say what it is → the app reads
+// image + intent, asks a smart follow-up (most-probable pre-highlighted + "type your
+// own"), guards LOG-vs-PLAN conflicts, and routes to food / symptom / moment / schedule.
+// Uses the EXISTING analyzeMealPhoto function (mode:"intent" / "schedule") — no new fn/key.
+// Always a review/confirm step before saving. (Component keeps the SmartShotSheet name so
+// the render branch is unchanged.)
+// ════════════════════════════════════════════════════════════════════════════════
 function SmartShotSheet({ sheet, onBack, onClose, onConfirm }) {
-  const [stage, setStage] = useState("pick"); // pick | reading | review | empty | error
+  const [stage, setStage] = useState("pick"); // pick|intent|reading|guard|followups|review|schedule_review|error
+  const [imageUrl, setImageUrl] = useState(null);
+  const [sampleKind, setSampleKind] = useState(null);
+  const [intentText, setIntentText] = useState("");
+  const [cls, setCls] = useState(null);
+  const [answer, setAnswer] = useState("");
+  const [customOn, setCustomOn] = useState(false);
+  const [customText, setCustomText] = useState("");
+  const [titleEdit, setTitleEdit] = useState("");
   const [rows, setRows] = useState([]);
-  const [notes, setNotes] = useState("");
-  const [detected, setDetected] = useState("");
+  const [guard, setGuard] = useState(null); // { kind, msg }
+  const [target, setTarget] = useState({ date: sheet.date, mode: sheet.date > TODAY_STR ? "plan" : "log" });
   const fileRef = useRef(null);
 
-  async function parse(dataUrl) {
+  const pick = (url, kind) => { setImageUrl(url); setSampleKind(kind || null); setStage("intent"); };
+  const onFile = (e) => { const f = e.target.files?.[0]; if (!f) return; const r = new FileReader(); r.onload = () => pick(r.result, null); r.readAsDataURL(f); };
+
+  async function classify() {
     setStage("reading");
+    let c = null;
     try {
       const res = await demo44.functions.invoke("analyzeMealPhoto", {
-        mode: "schedule", reference_date: TODAY_STR, image_base64: dataUrl,
+        mode: "intent", reference_date: TODAY_STR, intent_text: intentText,
+        time_of_day: new Date().getHours() < 12 ? "morning" : new Date().getHours() < 17 ? "afternoon" : "evening",
+        image_base64: imageUrl,
       });
-      const dta = res?.data || res;
-      const es = Array.isArray(dta?.entries) ? dta.entries : [];
-      setNotes(dta?.notes || ""); setDetected(dta?.detected_type || "");
-      if (!es.length || dta?.analysis_unavailable) { setStage("empty"); return; }
-      setRows(es.map((e, i) => ({ ...e, include: true, _id: i, date: e.date || resolveDayLabel(e.day_label) })));
-      setStage("review");
-    } catch { setStage("error"); }
+      const d = res?.data || res;
+      if (d && d.kind === "intent" && !d.analysis_unavailable && d.detected) c = d;
+    } catch { /* fall through to heuristic */ }
+    if (!c) { const h = classifyByText(intentText, sampleKind); c = { ...h, notes: "" }; } // resilient: user's words drive it
+    setCls(c);
+    routeFrom(c);
   }
-  const onFile = (e) => { const f = e.target.files?.[0]; if (!f) return; const r = new FileReader(); r.onload = () => parse(r.result); r.readAsDataURL(f); };
-  const trySample = () => parse(renderSampleRota());
 
-  const addAll = () => {
+  function routeFrom(c) {
+    const targetIsFuture = sheet.date > TODAY_STR;
+    // LOG-vs-PLAN intent guard
+    if (c.is_retrospective && targetIsFuture) {
+      setGuard({ kind: "retro_on_future", msg: `This looks like something you ${c.detected === "food" ? "had" : "logged"} — log it for today instead of planning it for ${format(parseISO(sheet.date), "EEE d MMM")}?` });
+      setStage("guard"); return;
+    }
+    if (c.detected === "schedule" && !targetIsFuture) {
+      setGuard({ kind: "schedule_on_log", msg: `This looks like a schedule to plan ahead — add these as plans on their own dates?` });
+      setStage("guard"); return;
+    }
+    proceed(c, { date: sheet.date, mode: targetIsFuture ? "plan" : "log" });
+  }
+
+  function resolveGuard(choice) {
+    const g = guard.kind;
+    if (g === "retro_on_future") {
+      const t = choice === "today" ? { date: TODAY_STR, mode: "log" } : { date: sheet.date, mode: "plan" };
+      proceed(cls, t);
+    } else { // schedule_on_log
+      if (choice === "plan") proceed({ ...cls, detected: "schedule" }, { date: sheet.date, mode: "plan" });
+      else proceed({ ...cls, detected: "moment" }, { date: TODAY_STR, mode: "log" });
+    }
+  }
+
+  async function proceed(c, t) {
+    setTarget(t);
+    if (c.detected === "schedule") { await loadSchedule(); return; }
+    // set up the follow-up with the most-probable answer pre-selected
+    const fu = FOLLOWUPS[c.detected];
+    if (fu) {
+      const rec = c.detected === "food" ? cap(c.meal_type_guess || guessMeal()) : guessSymptom(intentText);
+      setAnswer(rec || fu.options[0]);
+    }
+    setTitleEdit(c.title || INTENT_ROUTES[c.detected]?.label || "Note");
+    setStage(fu ? "followups" : "review");
+  }
+
+  async function loadSchedule() {
+    setStage("reading");
+    let entries = null;
+    try {
+      const res = await demo44.functions.invoke("analyzeMealPhoto", { mode: "schedule", reference_date: TODAY_STR, image_base64: imageUrl });
+      const d = res?.data || res;
+      if (Array.isArray(d?.entries) && d.entries.length && !d.analysis_unavailable)
+        entries = d.entries.map((e, i) => ({ ...e, include: true, _id: i, date: e.date || resolveDayLabel(e.day_label) }));
+    } catch { /* fall through */ }
+    if (!entries && sampleKind === "rota") entries = fallbackRotaEntries();
+    if (!entries) { setStage("error"); return; }
+    setRows(entries); setStage("schedule_review");
+  }
+
+  const recFor = () => cls?.detected === "food" ? cap(cls.meal_type_guess || guessMeal()) : guessSymptom(intentText);
+  const finalAnswer = customOn && customText.trim() ? customText.trim() : answer;
+
+  const saveSingle = () => {
+    const route = INTENT_ROUTES[cls.detected] || INTENT_ROUTES.other;
+    onConfirm([{ date: target.date, type: route.type, plan: target.mode === "plan" }]);
+  };
+  const saveSchedule = () => {
     const list = rows.filter((r) => r.include && r.date).map((r) => ({ date: r.date, type: "event", plan: true }));
     onConfirm(list);
   };
   const includedWithDate = rows.filter((r) => r.include && r.date).length;
 
+  const route = cls ? (INTENT_ROUTES[cls.detected] || INTENT_ROUTES.other) : null;
+
   return (
     <>
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-          <button onClick={onBack} style={iconBtn} aria-label="Back"><ArrowLeft size={15} /></button>
-          <span style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 20, color: OX }}>Photo → schedule</span>
+          <button onClick={stage === "pick" ? onBack : () => setStage("pick")} style={iconBtn} aria-label="Back"><ArrowLeft size={15} /></button>
+          <span style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 20, color: OX }}>Add a photo</span>
         </div>
         <button onClick={onClose} style={iconBtn} aria-label="Close"><X size={15} /></button>
       </div>
@@ -846,78 +982,166 @@ function SmartShotSheet({ sheet, onBack, onClose, onConfirm }) {
       {stage === "pick" && (
         <>
           <p style={{ fontFamily: SERIF, fontSize: 15, color: T.muted, lineHeight: 1.5, marginTop: 0 }}>
-            Got a photo of your <b>work rota</b> or a <b>list of events</b>? Drop it in — it reads the shifts and dates,
-            and you <b>check &amp; edit everything before anything is saved</b>.
+            A photo of <b>anything</b> — a meal or receipt, a work rota, a symptom, a moment. You tell it what it is; it reads the picture and helps you log or plan it.
           </p>
           <button onClick={() => fileRef.current?.click()} style={{ ...solidBtn, marginBottom: 8 }}>
             <ImageIcon size={15} style={{ marginRight: 7, verticalAlign: -2 }} />Choose a photo from library
           </button>
-          <button onClick={trySample} style={{ ...ghostBtn, width: "100%", borderColor: T.gold, color: OX }}>
-            <Sparkles size={14} style={{ marginRight: 7, verticalAlign: -2, color: T.gold }} />Try the sample rota
-          </button>
-          <div style={{ fontFamily: UI, fontSize: 10.5, color: T.muted, marginTop: 10, lineHeight: 1.5 }}>
-            Reads with the app's existing photo AI (the same one meal-snap uses) — no new service. Works best on a clear,
-            upright screenshot. Handwriting &amp; very dense timetables can miss rows — that's why you review first.
+          <div style={{ ...eyebrow, marginTop: 12, marginBottom: 6 }}>Or try a sample</div>
+          <div style={{ display: "flex", gap: 8 }}>
+            <button onClick={() => pick(renderSampleReceipt(), "receipt")} style={{ ...ghostBtn, flex: 1, borderColor: T.gold, color: OX }}><Utensils size={13} style={{ marginRight: 6, verticalAlign: -2 }} />Receipt</button>
+            <button onClick={() => pick(renderSampleRota(), "rota")} style={{ ...ghostBtn, flex: 1, borderColor: T.gold, color: OX }}><CalendarClock size={13} style={{ marginRight: 6, verticalAlign: -2 }} />Work rota</button>
           </div>
+          <div style={{ fontFamily: UI, fontSize: 10.5, color: T.muted, marginTop: 10, lineHeight: 1.5 }}>
+            Reads with the app's existing photo AI (the same one meal-snap uses) — no new service. You always review before anything is saved.
+          </div>
+        </>
+      )}
+
+      {stage === "intent" && (
+        <>
+          {imageUrl && <img src={imageUrl} alt="" style={{ width: "100%", maxHeight: 190, objectFit: "contain", borderRadius: 12, border: `1px solid ${T.paperDeep}`, background: "#fff", marginBottom: 10 }} />}
+          <div style={{ ...eyebrow, marginBottom: 6 }}>What's this? — your words</div>
+          <textarea value={intentText} onChange={(e) => setIntentText(e.target.value)} rows={2} autoFocus
+            placeholder="e.g. this is what I had for lunch just now"
+            style={{ width: "100%", boxSizing: "border-box", padding: "11px 12px", borderRadius: 10, border: `1px solid ${T.paperDeep}`, background: T.paper, color: T.ink, fontFamily: SERIF, fontSize: 15, outline: "none", resize: "vertical", marginBottom: 8 }} />
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 12 }}>
+            {[["Food I had", "this is what I had to eat"], ["My schedule", "this is my work rota"], ["A symptom", "logging a symptom"], ["A moment", "a moment to remember"]].map(([lab, val]) => (
+              <button key={lab} onClick={() => setIntentText(val)} style={{ ...pill, cursor: "pointer", background: T.paperHi, borderColor: T.paperDeep, color: T.muted }}>{lab}</button>
+            ))}
+          </div>
+          <button onClick={classify} style={solidBtn}><WandSparkles size={15} style={{ marginRight: 7, verticalAlign: -2 }} />Continue</button>
         </>
       )}
 
       {stage === "reading" && (
         <div style={{ ...inset, padding: 22, textAlign: "center" }}>
           <Loader2 size={26} color={T.crimson} className="animate-spin" style={{ margin: "0 auto 10px", display: "block" }} />
-          <div style={{ fontFamily: SERIF, fontSize: 15, color: T.ink }}>Reading your schedule…</div>
-          <div style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 12.5, color: T.muted }}>Finding shifts, dates and times.</div>
+          <div style={{ fontFamily: SERIF, fontSize: 15, color: T.ink }}>Reading your photo…</div>
+          <div style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 12.5, color: T.muted }}>Working out what you mean.</div>
         </div>
       )}
 
-      {stage === "review" && (
+      {stage === "guard" && guard && (
+        <div style={{ ...inset, padding: 16, borderColor: T.gold }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 6, fontFamily: UI, fontSize: 10.5, fontWeight: 800, letterSpacing: 0.6, color: "#8a6e23", marginBottom: 8 }}><CalendarClock size={13} /> QUICK CHECK</div>
+          <div style={{ fontFamily: SERIF, fontSize: 16, color: T.ink, lineHeight: 1.45, marginBottom: 14 }}>{guard.msg}</div>
+          <div style={{ display: "flex", gap: 8 }}>
+            {guard.kind === "retro_on_future" ? (
+              <>
+                <button onClick={() => resolveGuard("today")} style={{ ...solidBtn, flex: 1 }}>Log for today</button>
+                <button onClick={() => resolveGuard("keep")} style={{ ...ghostBtn, flex: 1 }}>Keep for that day</button>
+              </>
+            ) : (
+              <>
+                <button onClick={() => resolveGuard("plan")} style={{ ...solidBtn, flex: 1, background: "#A6862B" }}>Yes, plan these</button>
+                <button onClick={() => resolveGuard("note")} style={{ ...ghostBtn, flex: 1 }}>Just note today</button>
+              </>
+            )}
+          </div>
+        </div>
+      )}
+
+      {stage === "followups" && cls && (
+        <>
+          <div style={{ display: "inline-flex", alignItems: "center", gap: 6, fontFamily: UI, fontSize: 10.5, fontWeight: 800, letterSpacing: 0.6, padding: "3px 10px", borderRadius: 999, marginBottom: 10, background: `${route.tone}22`, color: OX }}>
+            <route.Icon size={12} /> {route.label.toUpperCase()} · {target.mode === "plan" ? "PLAN" : "LOG"} · {target.date === TODAY_STR ? "today" : format(parseISO(target.date), "EEE d MMM")}
+          </div>
+          <div style={{ ...eyebrow, marginBottom: 8 }}>{FOLLOWUPS[cls.detected].q}</div>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 7, marginBottom: 8 }}>
+            {FOLLOWUPS[cls.detected].options.map((o) => {
+              const isRec = o === recFor();
+              const on = !customOn && o === answer;
+              return (
+                <button key={o} onClick={() => { setCustomOn(false); setAnswer(o); }} style={{
+                  ...pill, cursor: "pointer", position: "relative",
+                  background: on ? OX : isRec ? `${T.gold}22` : T.paperHi,
+                  color: on ? T.paper : OX, borderColor: on ? OX : isRec ? T.gold : T.paperDeep,
+                  fontWeight: isRec || on ? 800 : 600,
+                }}>
+                  {o}{isRec ? <span style={{ marginLeft: 5, fontSize: 8.5, fontWeight: 800, letterSpacing: 0.4, opacity: 0.85 }}>★ MOST LIKELY</span> : null}
+                </button>
+              );
+            })}
+            <button onClick={() => setCustomOn(true)} style={{ ...pill, cursor: "pointer", background: customOn ? OX : T.paperHi, color: customOn ? T.paper : T.muted, borderColor: customOn ? OX : T.paperDeep }}>Type your own</button>
+          </div>
+          {customOn && (
+            <input value={customText} onChange={(e) => setCustomText(e.target.value)} autoFocus placeholder="Something else…"
+              style={{ width: "100%", boxSizing: "border-box", padding: "10px 12px", borderRadius: 10, border: `1px solid ${T.paperDeep}`, background: T.paper, color: T.ink, fontFamily: UI, fontSize: 14, outline: "none", marginBottom: 8 }} />
+          )}
+          <div style={{ display: "flex", gap: 8, marginTop: 6 }}>
+            <button onClick={() => setStage("review")} style={{ ...ghostBtn, flex: 1 }}>Skip</button>
+            <button onClick={() => setStage("review")} style={{ ...solidBtn, flex: 2 }}>Continue</button>
+          </div>
+        </>
+      )}
+
+      {stage === "review" && cls && (
+        <>
+          <div style={{ display: "inline-flex", alignItems: "center", gap: 6, fontFamily: UI, fontSize: 10.5, fontWeight: 800, letterSpacing: 0.6, padding: "3px 10px", borderRadius: 999, marginBottom: 10, background: "rgba(143,175,143,0.2)", color: "#3f6b3a" }}>
+            <Check size={12} /> REVIEW BEFORE SAVING
+          </div>
+          {imageUrl && <img src={imageUrl} alt="" style={{ width: "100%", maxHeight: 130, objectFit: "contain", borderRadius: 12, border: `1px solid ${T.paperDeep}`, background: "#fff", marginBottom: 10 }} />}
+          <div style={{ ...inset, padding: 12 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
+              <span style={{ ...typeChip, background: `${route.tone}22`, color: route.tone }}><route.Icon size={15} /></span>
+              <span style={{ fontFamily: UI, fontWeight: 800, fontSize: 12, letterSpacing: 0.4, color: OX }}>{route.label.toUpperCase()}</span>
+              <span style={{ marginLeft: "auto", fontFamily: UI, fontSize: 11, fontWeight: 700, color: target.mode === "plan" ? "#A6862B" : OX }}>{target.mode === "plan" ? "PLAN" : "LOG"} · {target.date === TODAY_STR ? "today" : format(parseISO(target.date), "EEE d MMM")}</span>
+            </div>
+            <input value={titleEdit} onChange={(e) => setTitleEdit(e.target.value)} style={{ width: "100%", boxSizing: "border-box", padding: "10px 12px", borderRadius: 10, border: `1px solid ${T.paperDeep}`, background: T.paper, color: T.ink, fontFamily: SERIF, fontSize: 15, outline: "none", marginBottom: 8 }} />
+            {FOLLOWUPS[cls.detected] && (
+              <div style={{ fontFamily: UI, fontSize: 12.5, color: T.muted }}>{FOLLOWUPS[cls.detected].q}: <b style={{ color: T.ink }}>{finalAnswer}</b></div>
+            )}
+          </div>
+          <div style={{ fontFamily: UI, fontSize: 10.5, color: T.muted, margin: "8px 0 10px" }}>Nothing is saved until you tap below.</div>
+          <button onClick={saveSingle} style={{ ...solidBtn, background: target.mode === "plan" ? "#A6862B" : T.crimson }}>
+            <Check size={15} style={{ marginRight: 7, verticalAlign: -2 }} />{target.mode === "plan" ? "Add to plan" : "Log it"} · {target.date === TODAY_STR ? "today" : format(parseISO(target.date), "EEE d MMM")}
+          </button>
+        </>
+      )}
+
+      {stage === "schedule_review" && (
         <>
           <div style={{ display: "inline-flex", alignItems: "center", gap: 6, fontFamily: UI, fontSize: 10.5, fontWeight: 800, letterSpacing: 0.6, padding: "3px 10px", borderRadius: 999, marginBottom: 8, background: "rgba(143,175,143,0.2)", color: "#3f6b3a" }}>
-            <Check size={12} /> REVIEW BEFORE SAVING · {detected === "rota" ? "rota" : detected === "event_list" ? "event list" : "schedule"}
+            <Check size={12} /> REVIEW BEFORE SAVING · schedule
           </div>
           <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 10 }}>
             {rows.map((r, i) => (
               <div key={r._id} style={{ ...inset, padding: "10px 12px", opacity: r.include ? 1 : 0.5 }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                  <button onClick={() => setRows((p) => p.map((x, j) => j === i ? { ...x, include: !x.include } : x))}
-                    aria-label="Include" style={{ width: 22, height: 22, borderRadius: 6, flexShrink: 0, cursor: "pointer",
-                      border: `1.5px solid ${r.include ? T.sage : T.paperDeep}`, background: r.include ? T.sage : "transparent",
-                      display: "grid", placeItems: "center", padding: 0 }}>
+                  <button onClick={() => setRows((p) => p.map((x, j) => j === i ? { ...x, include: !x.include } : x))} aria-label="Include"
+                    style={{ width: 22, height: 22, borderRadius: 6, flexShrink: 0, cursor: "pointer", border: `1.5px solid ${r.include ? T.sage : T.paperDeep}`, background: r.include ? T.sage : "transparent", display: "grid", placeItems: "center", padding: 0 }}>
                     {r.include && <Check size={13} color="#fff" />}
                   </button>
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ fontFamily: SERIF, fontSize: 15, fontWeight: 600, color: T.ink, lineHeight: 1.2 }}>{r.title}</div>
                     <div style={{ fontFamily: UI, fontSize: 11.5, color: T.muted, marginTop: 1 }}>
-                      {r.date ? format(parseISO(r.date), "EEE d MMM") : (r.day_label || "no date")}
-                      {r.start ? ` · ${r.start}${r.end ? `–${r.end}` : ""}` : (r.all_day ? " · all day" : "")}
+                      {r.date ? format(parseISO(r.date), "EEE d MMM") : (r.day_label || "no date")}{r.start ? ` · ${r.start}${r.end ? `–${r.end}` : ""}` : ""}
                       {!r.date && <span style={{ color: T.crimson }}> · needs a date</span>}
                     </div>
                   </div>
-                  <span style={{ fontFamily: UI, fontSize: 9, fontWeight: 700, textTransform: "uppercase", letterSpacing: 0.5, color: r.confidence === "high" ? T.sage : r.confidence === "medium" ? T.gold : T.muted }}>{r.confidence}</span>
                   <button onClick={() => setRows((p) => p.filter((_, j) => j !== i))} aria-label="Remove" style={{ ...iconBtn, width: 26, height: 26 }}><Trash2 size={12} /></button>
                 </div>
               </div>
             ))}
           </div>
-          {notes && <div style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 12.5, color: T.muted, marginBottom: 10 }}>Note: {notes}</div>}
-          <div style={{ fontFamily: UI, fontSize: 10.5, color: T.muted, marginBottom: 10 }}>Untick anything wrong, remove a row, or fix it — nothing is saved until you tap below.</div>
-          <button onClick={addAll} disabled={includedWithDate === 0} style={{ ...solidBtn, background: "#A6862B", opacity: includedWithDate === 0 ? 0.45 : 1, cursor: includedWithDate === 0 ? "default" : "pointer" }}>
+          <div style={{ fontFamily: UI, fontSize: 10.5, color: T.muted, marginBottom: 10 }}>Untick or remove anything wrong — nothing is saved until you tap below.</div>
+          <button onClick={saveSchedule} disabled={includedWithDate === 0} style={{ ...solidBtn, background: "#A6862B", opacity: includedWithDate === 0 ? 0.45 : 1, cursor: includedWithDate === 0 ? "default" : "pointer" }}>
             <Check size={15} style={{ marginRight: 7, verticalAlign: -2 }} />Add {includedWithDate} to your plan
           </button>
         </>
       )}
 
-      {(stage === "empty" || stage === "error") && (
+      {stage === "error" && (
         <div style={{ ...inset, padding: 18, textAlign: "center" }}>
-          <div style={{ fontFamily: SERIF, fontSize: 15, color: T.ink, marginBottom: 4 }}>{stage === "error" ? "Couldn't read that one" : "No schedule found in that image"}</div>
-          <div style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 13, color: T.muted, marginBottom: 6 }}>{notes || "Try a clearer, upright screenshot of a rota or event list."}</div>
+          <div style={{ fontFamily: SERIF, fontSize: 15, color: T.ink, marginBottom: 4 }}>Couldn't read that one</div>
+          <div style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 13, color: T.muted, marginBottom: 6 }}>Try a clearer, upright photo — or tell it what this is and we'll go from your words.</div>
           <button onClick={() => setStage("pick")} style={{ ...solidBtn, marginTop: 6 }}>Try another photo</button>
         </div>
       )}
     </>
   );
 }
-
 // ── sheet shell bits ────────────────────────────────────────────────────────────
 function Backdrop({ children, onClose }) {
   return (

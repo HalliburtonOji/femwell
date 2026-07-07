@@ -32,13 +32,71 @@ Deno.serve(async (req) => {
     const body = await withTimeout(req.json(), 4000, 'parse').catch(() => null);
     if (!body) return Response.json({ error: 'Bad request', analysis_unavailable: true }, { status: 400 });
 
-    const { image_base64, cycle_phase, wellness_goal, meal_log_id, mode, reference_date } = body;
+    const { image_base64, cycle_phase, wellness_goal, meal_log_id, mode, reference_date, intent_text, time_of_day } = body;
     if (!image_base64) return Response.json({ error: 'image_base64 required' }, { status: 400 });
 
     // Accept either a full data URL or raw base64; normalise to a data URL.
     const imageUrl = String(image_base64).startsWith('data:')
       ? String(image_base64)
       : `data:image/jpeg;base64,${image_base64}`;
+
+    // ── INTENT MODE (NEW) — classify what the user means from image + their words ──
+    // The photo logger is NOT schedule-only: it routes to food / symptom / moment /
+    // schedule based on the user's stated intent AND what's in the image. Returns a
+    // classification + a meal-type guess + whether it's retrospective (already happened)
+    // vs a plan. The CLIENT owns the follow-up chips + review/confirm before any save.
+    if (mode === 'intent') {
+      const refDate = /^\d{4}-\d{2}-\d{2}$/.test(String(reference_date || ''))
+        ? String(reference_date) : new Date().toISOString().slice(0, 10);
+      const said = String(intent_text || '').slice(0, 300);
+      const tod = String(time_of_day || '').slice(0, 20);
+      const INTENT_UNAVAILABLE = { kind: 'intent', detected: 'other', is_retrospective: true, title: '', meal_type_guess: null, analysis_unavailable: true, notes: '' };
+
+      let data;
+      try {
+        const response = await withTimeout(openai.chat.completions.create({
+          model: "gpt-4o-mini",
+          messages: [
+            { role: "system", content: `You classify what a user is trying to log from a PHOTO plus their own words, for a women's wellness app. Pick the single best category and a few hints. If the user's words state the intent, trust them over the image. Return valid JSON only.` },
+            {
+              role: "user",
+              content: [
+                {
+                  type: "text",
+                  text: `The user added this image and said: "${said || '(nothing)'}". Today is ${refDate}${tod ? `, it is currently ${tod}` : ''}.
+Return EXACT JSON:
+{
+  "kind": "intent",
+  "detected": "food" | "schedule" | "symptom" | "moment" | "other",
+  "is_retrospective": true | false,
+  "title": "short human label of what's in the image (<=6 words)",
+  "meal_type_guess": "breakfast" | "lunch" | "dinner" | "snack" | null,
+  "notes": "one short honest sentence"
+}
+Guidance: a receipt, a plate of food, a menu, a fridge, groceries → "food". A work rota / roster / shift timetable or a list of future events → "schedule" (is_retrospective=false). A rash / swelling / medication box / note about feeling unwell → "symptom". A scenic / selfie / pet / keepsake with no data → "moment". "is_retrospective" is true when it describes something that ALREADY happened (a meal eaten, a symptom felt, a moment), false when it's a plan for the future. meal_type_guess only for food (use the time of day + any words as a hint).`,
+                },
+                { type: "image_url", image_url: { url: imageUrl } },
+              ],
+            },
+          ],
+          response_format: { type: "json_object" },
+        }), 25000, 'vision-intent');
+        data = JSON.parse(response.choices[0].message.content);
+      } catch {
+        return Response.json(INTENT_UNAVAILABLE);
+      }
+
+      const det = ['food', 'schedule', 'symptom', 'moment', 'other'].includes(data?.detected) ? data.detected : 'other';
+      const mt = ['breakfast', 'lunch', 'dinner', 'snack'].includes(data?.meal_type_guess) ? data.meal_type_guess : null;
+      return Response.json({
+        kind: 'intent',
+        detected: det,
+        is_retrospective: typeof data?.is_retrospective === 'boolean' ? data.is_retrospective : (det !== 'schedule'),
+        title: data?.title ? String(data.title).slice(0, 60) : '',
+        meal_type_guess: mt,
+        notes: data?.notes ? String(data.notes).slice(0, 200) : '',
+      });
+    }
 
     // ── SCHEDULE MODE (NEW) — read a rota / event list → reviewable entries ──────
     if (mode === 'schedule') {
