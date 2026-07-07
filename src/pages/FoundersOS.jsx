@@ -83,6 +83,8 @@ import cardStylesHtml from "@/components/founders/brandDocs/card-styles-expansio
 import universalCalendarHtml from "@/components/founders/brandDocs/universal-calendar-logger.html?raw";
 // Nutrition hero tap-to-bloom brainstorm (2026-07-07) — wired from IDEAS-LINKS-FOR-FOUNDERSOS.md.
 import heroBloomTapHtml from "@/components/founders/brandDocs/nutrition-hero-bloom-tap.html?raw";
+// Flora Header redesign demo (2026-07-03) — wired from IDEAS-LINKS-FOR-FOUNDERSOS.md.
+import floraHeaderDemoHtml from "@/components/founders/brandDocs/flora-header-demo.html?raw";
 // HealthCornerDemo was the multi-layout preview. The canonical health
 // experience now lives at /Health (src/pages/Health.jsx). The Health Corner
 // tab in /Ideas renders <HealthCornerRedirectCard /> instead.
@@ -360,6 +362,8 @@ const CATALOG = [
     title: "Bottom-Nav Plan", desc: "Floating cream capsule + shrink-on-scroll, reject horizontal-scroll nav. Research, honest drawbacks and a phased plan. Awaiting your approval." },
   { kind: "doc", key: "Universal Calendar", group: CAT.CURRENT, sub: "Calendar + logger plans", status: "new", accent: "gold",
     title: "Universal Calendar + Logger", desc: "One universal cream/flora/oxblood calendar everywhere (replaces the OLD photo-bg month grid + 3 other one-off calendars); the calendar ICON replaces the + FAB as the single logging entry; tap a day to log for that day (date prefilled, editable); Planner time-slot prefills date+time; general 'Log for today' button vs day-specific flow; rebuilt opaque log sheet keeping every capability (meals/water/mood/symptom/note/habit/med/event + OFF/scan/voice/photo). Deep brainstorm w/ options+recommendations+mockups. Plan only." },
+  { kind: "doc", key: "Flora Header", group: CAT.CURRENT, sub: "Brand + card language", status: "new", accent: "sage",
+    title: "Flora header — fuller redesign (pick one)", desc: "6 fuller treatments of the flower header (FwFloraHero) — bouquet · branch · little tree · foliage nest · flowering bush · living wreath. No dashed ring; same real bloom (species + mood tint + companion bee); every style still reblooms on tap (bud→full). Pick one → folds into the bible as the canonical flora hero. Demo only." },
   { kind: "doc", key: "Card Styles", group: CAT.CURRENT, sub: "Card language plans", status: "new", accent: "gold",
     title: "Card Styles — 39 examples (new)", desc: "The GALLERY: 39 distinct card styles, every one a visual on-brand mock, grouped — bento mixed-size tiles · media/hero card + category carousel · category shelf · rich-stat card (progress ring + flora + inline actions + status badge + … menu) · dismissible suggestion · expandable · spotlight/stat-tile/letter · daily check-in · cycle wheel — all in our cream/flora/oxblood brand (not dark fintech). Cited research. Plan only; feeds a bible §6.7.0 update after approval." },
   { kind: "doc", key: "Today Mega-Plan", group: CAT.SPECS, accent: "gold",
@@ -478,6 +482,7 @@ const ARCHIVE_SUB_ORDER = [
 const CURRENT_SUB_ORDER = [
   "Calendar + logger plans",
   "Card language plans",
+  "Brand + card language",
   "Page level-up plans + demos",
   "Cross-app plans & decisions",
 ];
@@ -1050,6 +1055,7 @@ function FoundersInner({ user }) {
       {tab === "Jess +2" && <BrandDocFrame html={jessPlanHtml} title="FemWell — Jess Level Up (+2)" />}
       {tab === "Universal Calendar" && <BrandDocFrame html={universalCalendarHtml} title="FemWell — One Universal Calendar + Logger" />}
       {tab === "Hero Bloom Tap" && <BrandDocFrame html={heroBloomTapHtml} title="Nutrition hero — one flower, blooming through the day" />}
+      {tab === "Flora Header" && <BrandDocFrame html={floraHeaderDemoHtml} title="FemWell — the flora header, fuller (redesign)" />}
       {tab === "Card Styles" && <BrandDocFrame html={cardStylesHtml} title="FemWell — Card Styles: research + expansion" />}
       {tab === "Intentions & Goals" && <BrandDocFrame html={intentionsGoalsHtml} title="FemWell — Intentions, Line of the Day & Goals" />}
       {tab === "Connect, Days & Missions" && <BrandDocFrame html={connectDaysMissionsHtml} title="FemWell — No Garden Grows Alone (Connection, Days Off & Tiny Missions)" />}
