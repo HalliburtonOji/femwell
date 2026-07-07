@@ -349,8 +349,12 @@
     <li>Recents / Favourites one-tap re-log; the gentle stage-nutrient closing line; no scoreboards / no-guilt.</li>
   </ul>
 
+  <div class="warn" style="border-color:var(--crimson);border-left-color:var(--crimson)"><span class="tag">✅ LOCKED — method order/prominence (Halli, 2026-07-05)</span>
+  <b>Voice and Type are the PRIMARY logging methods — front and centre</b> in the modal (two large buttons at the top: “Say it” · “Type it”). <b>Photo is SECONDARY</b> (a small “More ways” row), never front-and-centre. And <b>Photo must let the user ADD A PICTURE FROM THEIR LIBRARY</b>, not only the live camera — the current logger only opens the camera; the rebuild offers <b>“Choose from library” (an ordinary image picker) first, then “Camera”</b>. Order/prominence: <b>Voice · Type</b> → then Photo (library or camera) · Search · Scan. Every existing capability kept — just reprioritised. <em>(In the real build: library = <code>&lt;input type="file" accept="image/*"&gt;</code>; camera = the same with <code>capture="environment"</code>. For bible fold.)</em></div>
+
   <h4>Rebuild</h4>
   <ul>
+    <li><b>Voice · Type primary, Photo secondary (library-first)</b> — the locked rule above; baked into the demo.</li>
     <li><b>One opaque bottom sheet</b>, real chrome: <code>paperHi</code>, top-rounded <code>22px</code>, <code>box-shadow 0 -8px 32px rgba(11,8,5,.22)</code>, <code>fw-sheet-safe</code> so the last control clears the floating nav.</li>
     <li><b>Brand tokens only</b> — retire <code>#D4AF37 / #3A2C1A / #F4EDDB</code> for <code>gold #A8893F / ink #0B0805 / paper #ECE7DA</code>; oxblood headings; Cormorant + system-sans; no emoji.</li>
     <li><b>The date · time row up top</b> — the new spine. Pre-filled per §6; both editable; a past date quietly hides "now".</li>
@@ -368,9 +372,12 @@
       <span class="chip acc" style="flex:1">◷ 13:00</span>
     </div>
     <div class="note-tiny" style="text-align:center;margin:2px 0 8px">Pre-set from where you tapped — tap to change either</div>
-    <div class="field" style="min-height:44px">What did you eat? Describe it naturally…</div>
+    <div class="note-tiny" style="margin:2px 0 4px;font-weight:700;color:var(--soft)">HOW TO LOG — VOICE OR TYPE</div>
+    <div class="seg"><span class="chip on" style="flex:1;padding:10px 0">◉ Say it</span><span class="chip acc" style="flex:1;padding:10px 0">✎ Type it</span></div>
+    <div class="field" style="min-height:40px">What did you eat? Describe it naturally…</div>
     <div class="seg"><span class="chip on">Midday</span><span class="chip">Morning</span><span class="chip">Evening</span><span class="chip">Snack</span></div>
-    <div class="flowrow"><span class="chip">Search</span><span class="chip">Scan</span><span class="chip">Say</span><span class="chip">Snap</span></div>
+    <div class="note-tiny" style="margin:4px 0 2px;color:var(--soft)">More ways (optional)</div>
+    <div class="flowrow"><span class="chip">▤ Photo — library / camera</span><span class="chip">Search</span><span class="chip">Scan</span></div>
     <div class="barbtn btn-solid" style="margin-top:8px">Add to Tuesday</div>
   </div></div>
   <p class="note-tiny" style="text-align:center">Note the CTA reads <b>"Add to Tuesday"</b>, not "Add to today" — the button confirms the target date, closing the trust loop.</p>

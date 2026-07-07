@@ -25,7 +25,7 @@ import {
 import {
   CalendarDays, X, ArrowLeft, ChevronLeft, ChevronRight, Utensils, Droplets, Smile,
   Stethoscope, StickyNote, Footprints, Pill, CalendarClock, Bell, Check, Search,
-  ScanBarcode, Mic, Camera, Pen, Clock, Lock,
+  ScanBarcode, Mic, Camera, Pen, Clock, Lock, Image as ImageIcon, ChevronDown,
 } from "lucide-react";
 import { T, SERIF, UI, SCRIPT, PAPER_BG, Heart, useEditorialFonts } from "@/components/journal/Editorial";
 
@@ -389,6 +389,10 @@ function FormSheet({ sheet, onBack, onClose, onConfirm }) {
   const isMeal = type === "meal";
   const verb = mode === "plan" ? "Plan" : "Log";
   const dayWord = date === TODAY_STR ? "today" : format(d, "EEEE");
+  // PRIMARY method = voice or type (front and centre, LOCKED). Photo is secondary.
+  const [method, setMethod] = useState("type"); // 'type' | 'voice'
+  const [photoOpen, setPhotoOpen] = useState(false);
+  const [photoPick, setPhotoPick] = useState(null); // 'library' | 'camera'
 
   return (
     <>
@@ -420,30 +424,75 @@ function FormSheet({ sheet, onBack, onClose, onConfirm }) {
       </div>
       <div style={{ fontFamily: UI, fontSize: 10.5, color: T.muted, marginBottom: 12 }}>Prefilled from where you tapped — tap to change either.</div>
 
-      {/* body */}
-      {isMeal ? (
+      {/* ── PRIMARY methods — VOICE + TYPE, front and centre (Halli LOCKED) ── */}
+      <div style={{ ...eyebrow, marginBottom: 6 }}>How to {verb.toLowerCase()} — voice or type</div>
+      <div style={{ display: "flex", gap: 8, marginBottom: 10 }}>
+        <button onClick={() => setMethod("voice")} style={primaryMethod(method === "voice", T.crimson)}>
+          <Mic size={20} color={method === "voice" ? T.paper : T.crimson} />
+          <span>Say it</span>
+          <span style={pmSub(method === "voice")}>Speak naturally</span>
+        </button>
+        <button onClick={() => setMethod("type")} style={primaryMethod(method === "type", OX)}>
+          <Pen size={20} color={method === "type" ? T.paper : OX} />
+          <span>Type it</span>
+          <span style={pmSub(method === "type")}>Write it out</span>
+        </button>
+      </div>
+
+      {/* the input reflects the chosen primary method */}
+      {method === "voice" ? (
+        <div style={{ ...inputBox, minHeight: 52, marginBottom: 8, display: "flex", alignItems: "center", gap: 8, fontStyle: "italic" }}>
+          <span style={{ width: 9, height: 9, borderRadius: "50%", background: T.crimson, flexShrink: 0 }} />
+          Listening… “{isMeal ? (mode === "plan" ? "salmon and greens for dinner" : "porridge with berries") : `${t.label.toLowerCase()} ${dayWord}`}”
+        </div>
+      ) : (
+        <div style={{ ...inputBox, minHeight: 52, marginBottom: 8 }}>
+          {isMeal ? (mode === "plan" ? "What’s on the menu?" : "What did you eat? Describe it naturally…")
+                  : (mode === "plan" ? `Add a ${t.label.toLowerCase()} for ${dayWord}…` : `${t.label} for ${dayWord}…`)}
+        </div>
+      )}
+
+      {isMeal && (
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 5, marginBottom: 10 }}>
+          {["Morning", "Midday", "Evening", "Snack"].map((k, i) => (
+            <span key={k} style={{ ...pill, background: i === 1 ? OX : T.paperHi, color: i === 1 ? T.paper : T.muted, borderColor: i === 1 ? OX : T.paperDeep }}>{k}</span>
+          ))}
+        </div>
+      )}
+
+      {/* ── SECONDARY methods — Photo (library OR camera) + the rest ── */}
+      {isMeal && mode === "log" && (
         <>
-          <div style={{ ...inputBox, minHeight: 52, marginBottom: 8 }}>{mode === "plan" ? "What’s on the menu?" : "What did you eat? Describe it naturally…"}</div>
-          <div style={{ display: "flex", flexWrap: "wrap", gap: 5, marginBottom: 10 }}>
-            {["Morning", "Midday", "Evening", "Snack"].map((k, i) => (
-              <span key={k} style={{ ...pill, background: i === 1 ? OX : T.paperHi, color: i === 1 ? T.paper : T.muted, borderColor: i === 1 ? OX : T.paperDeep }}>{k}</span>
-            ))}
+          <div style={{ ...eyebrow, marginBottom: 6, color: T.muted }}>More ways (optional)</div>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: photoOpen ? 8 : 4 }}>
+            <button onClick={() => setPhotoOpen((v) => !v)} style={{ ...pill, cursor: "pointer", background: photoOpen ? "rgba(168,137,63,0.14)" : T.paperHi, borderColor: photoOpen ? T.gold : T.paperDeep, color: photoOpen ? OX : T.muted }}>
+              <ImageIcon size={12} style={{ verticalAlign: -2, marginRight: 4 }} />Photo
+              <ChevronDown size={11} style={{ verticalAlign: -1, marginLeft: 3, transform: photoOpen ? "rotate(180deg)" : "none", transition: "transform .15s" }} />
+            </button>
+            <span style={{ ...pill, background: T.paperHi, borderColor: T.paperDeep, color: T.muted }}><Search size={12} style={{ verticalAlign: -2, marginRight: 4 }} />Search</span>
+            <span style={{ ...pill, background: T.paperHi, borderColor: T.paperDeep, color: T.muted }}><ScanBarcode size={12} style={{ verticalAlign: -2, marginRight: 4 }} />Scan</span>
           </div>
-          {mode === "log" && (
-            <>
-              <div style={{ ...eyebrow, marginBottom: 6 }}>Every live method kept</div>
-              <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 6 }}>
-                {[["Search", Search], ["Scan", ScanBarcode], ["Say", Mic], ["Snap", Camera], ["Type", Pen]].map(([l, Ic]) => (
-                  <span key={l} style={{ ...pill, background: T.paperHi, borderColor: T.paperDeep, color: T.muted }}><Ic size={12} style={{ verticalAlign: -2, marginRight: 4 }} />{l}</span>
-                ))}
+
+          {/* Photo expands to LIBRARY (choose existing) OR CAMERA — library is now first */}
+          {photoOpen && (
+            <div style={{ ...inset, marginBottom: 6 }}>
+              <div style={{ fontFamily: UI, fontSize: 10.5, fontWeight: 700, letterSpacing: 0.6, textTransform: "uppercase", color: T.gold, marginBottom: 7 }}>Add a picture</div>
+              <div style={{ display: "flex", gap: 8 }}>
+                <button onClick={() => setPhotoPick("library")} style={photoChoice(photoPick === "library")}>
+                  <ImageIcon size={17} color={OX} /><span>Choose from library</span>
+                </button>
+                <button onClick={() => setPhotoPick("camera")} style={photoChoice(photoPick === "camera")}>
+                  <Camera size={17} color={OX} /><span>Camera</span>
+                </button>
               </div>
-            </>
+              <div style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 12.5, color: T.muted, marginTop: 7 }}>
+                {photoPick === "library" ? "Opens your photo library — pick a photo you already took."
+                  : photoPick === "camera" ? "Opens the camera to take a new photo."
+                  : "Pick an existing photo from your library, or take a new one. (The old logger only opened the camera.)"}
+              </div>
+            </div>
           )}
         </>
-      ) : (
-        <div style={{ ...inputBox, minHeight: 48, marginBottom: 10 }}>
-          {mode === "plan" ? `Add a ${t.label.toLowerCase()} for ${dayWord}…` : `${t.label} for ${dayWord}…`}
-        </div>
       )}
 
       <button onClick={onConfirm} style={{ ...solidBtn, background: mode === "plan" ? "#A6862B" : T.crimson }}>
@@ -517,3 +566,16 @@ const typeCard = { display: "flex", alignItems: "center", gap: 9, padding: "11px
 const typeChip = { width: 30, height: 30, borderRadius: 9, display: "grid", placeItems: "center", flexShrink: 0 };
 const dtField = { display: "flex", alignItems: "center", gap: 7, background: T.paper, border: `1px solid ${T.paperDeep}`, borderRadius: 10, padding: "10px 11px" };
 const inputBox = { background: T.paper, border: `1px solid ${T.paperDeep}`, borderRadius: 10, padding: "11px 12px", fontFamily: SERIF, fontSize: 14, color: T.muted };
+const primaryMethod = (on, tone) => ({
+  flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: 3, cursor: "pointer",
+  padding: "12px 8px", borderRadius: 14, minHeight: 74,
+  border: `1.5px solid ${on ? tone : T.paperDeep}`, background: on ? tone : T.paperHi,
+  color: on ? T.paper : T.ink, fontFamily: UI, fontSize: 13.5, fontWeight: 700,
+});
+const pmSub = (on) => ({ fontFamily: UI, fontSize: 10, fontWeight: 500, color: on ? "rgba(255,255,255,0.8)" : T.muted });
+const photoChoice = (on) => ({
+  flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: 5, cursor: "pointer",
+  padding: "12px 8px", borderRadius: 12, minHeight: 62,
+  border: `1.5px solid ${on ? T.gold : T.paperDeep}`, background: on ? "rgba(168,137,63,0.14)" : T.paper,
+  color: T.ink, fontFamily: UI, fontSize: 12, fontWeight: 700,
+});
