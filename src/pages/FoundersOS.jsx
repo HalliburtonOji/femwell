@@ -85,6 +85,8 @@ import universalCalendarHtml from "@/components/founders/brandDocs/universal-cal
 import heroBloomTapHtml from "@/components/founders/brandDocs/nutrition-hero-bloom-tap.html?raw";
 // Flora Header redesign demo (2026-07-03) — wired from IDEAS-LINKS-FOR-FOUNDERSOS.md.
 import floraHeaderDemoHtml from "@/components/founders/brandDocs/flora-header-demo.html?raw";
+// Branch Header — richer blossoming-branch flora demo (2026-07 · Halli's pick, supersedes Flora Header).
+import floraBranchDemoHtml from "@/components/founders/brandDocs/flora-branch-demo.html?raw";
 // HealthCornerDemo was the multi-layout preview. The canonical health
 // experience now lives at /Health (src/pages/Health.jsx). The Health Corner
 // tab in /Ideas renders <HealthCornerRedirectCard /> instead.
@@ -362,6 +364,10 @@ const CATALOG = [
     title: "Bottom-Nav Plan", desc: "Floating cream capsule + shrink-on-scroll, reject horizontal-scroll nav. Research, honest drawbacks and a phased plan. Awaiting your approval." },
   { kind: "doc", key: "Universal Calendar", group: CAT.CURRENT, sub: "Calendar + logger plans", status: "new", accent: "gold",
     title: "Universal Calendar + Logger", desc: "One universal cream/flora/oxblood calendar everywhere (replaces the OLD photo-bg month grid + 3 other one-off calendars); the calendar ICON replaces the + FAB as the single logging entry; tap a day to log for that day (date prefilled, editable); Planner time-slot prefills date+time; general 'Log for today' button vs day-specific flow; rebuilt opaque log sheet keeping every capability (meals/water/mood/symptom/note/habit/med/event + OFF/scan/voice/photo). Deep brainstorm w/ options+recommendations+mockups. Plan only." },
+  { kind: "route", href: "/UniversalCalendarDemo", group: CAT.CURRENT, sub: "Calendar + logger plans", status: "new", accent: "gold",
+    title: "Universal Calendar — demo ★", desc: "Tappable demo of the one-calendar system: calendar ICON top-bar-right entry (no + FAB), one cream/flora/oxblood FwCalendar, 'Log for today' button, tap a PAST/TODAY day → LOG sheet (all types), tap a FUTURE day → PLAN sheet with retrospective health/symptom/mood/water/note BLOCKED (gate by data type — 'can't log a headache for tomorrow'), Planner time-slot → date+TIME prefill, rebuilt opaque LOG/PLAN modal with the date·time row. Every live log method kept. Live-tested." },
+  { kind: "doc", key: "Branch Header", group: CAT.CURRENT, sub: "Brand + card language", status: "new", accent: "sage",
+    title: "Flora header — the blossoming branch, richer", desc: "Halli picked the branch → 6 richer variations: bough in bloom · arching garland · grounded branch · layered depth · blossom spray · peony bough. More blooms/petals, more leaves, grass at the base, real depth. Same real bloom + mood tint + companion; no dashed ring; still reblooms on tap. Pick one → canonical flora hero. Demo only." },
   { kind: "doc", key: "Flora Header", group: CAT.CURRENT, sub: "Brand + card language", status: "new", accent: "sage",
     title: "Flora header — fuller redesign (pick one)", desc: "6 fuller treatments of the flower header (FwFloraHero) — bouquet · branch · little tree · foliage nest · flowering bush · living wreath. No dashed ring; same real bloom (species + mood tint + companion bee); every style still reblooms on tap (bud→full). Pick one → folds into the bible as the canonical flora hero. Demo only." },
   { kind: "doc", key: "Card Styles", group: CAT.CURRENT, sub: "Card language plans", status: "new", accent: "gold",
@@ -1055,6 +1061,7 @@ function FoundersInner({ user }) {
       {tab === "Jess +2" && <BrandDocFrame html={jessPlanHtml} title="FemWell — Jess Level Up (+2)" />}
       {tab === "Universal Calendar" && <BrandDocFrame html={universalCalendarHtml} title="FemWell — One Universal Calendar + Logger" />}
       {tab === "Hero Bloom Tap" && <BrandDocFrame html={heroBloomTapHtml} title="Nutrition hero — one flower, blooming through the day" />}
+      {tab === "Branch Header" && <BrandDocFrame html={floraBranchDemoHtml} title="FemWell — the blossoming branch, richer" />}
       {tab === "Flora Header" && <BrandDocFrame html={floraHeaderDemoHtml} title="FemWell — the flora header, fuller (redesign)" />}
       {tab === "Card Styles" && <BrandDocFrame html={cardStylesHtml} title="FemWell — Card Styles: research + expansion" />}
       {tab === "Intentions & Goals" && <BrandDocFrame html={intentionsGoalsHtml} title="FemWell — Intentions, Line of the Day & Goals" />}
