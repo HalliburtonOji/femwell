@@ -783,39 +783,45 @@ function resolveDayLabel(label) {
   return iso(addDays(dt, add));
 }
 
-// Draw a clean sample weekly rota to a canvas → PNG data URL, so the demo can prove a
-// real end-to-end parse without the user needing their own screenshot.
+// Draw a sample "Shift Overview" work rota to a canvas → PNG data URL, matching the real
+// rota shape Halli shared (date · day · start–end · location, with a done tick). Lets the
+// demo prove a real end-to-end parse without needing his actual screenshot.
 function renderSampleRota() {
   const c = document.createElement("canvas");
-  c.width = 720; c.height = 560;
+  c.width = 760; c.height = 620;
   const g = c.getContext("2d");
   g.fillStyle = "#ffffff"; g.fillRect(0, 0, c.width, c.height);
-  g.fillStyle = "#111111";
-  g.font = "bold 30px system-ui, Arial";
-  g.fillText("Weekly Rota", 30, 48);
-  g.font = "18px system-ui, Arial";
-  g.fillStyle = "#555555";
-  g.fillText(`Week of Mon ${format(addDays(TODAY, ((1 - TODAY.getDay() + 7) % 7)), "d MMM yyyy")}`, 30, 78);
+  g.fillStyle = "#111111"; g.font = "bold 30px system-ui, Arial";
+  g.fillText("Shift Overview", 30, 50);
+  g.font = "18px system-ui, Arial"; g.fillStyle = "#555555";
+  g.fillText("July 2026", 30, 80);
+  // rows: [dayNum, dayName, time, done]
   const rows = [
-    ["Monday", "Early", "07:00 – 15:00"],
-    ["Tuesday", "Late", "14:00 – 22:00"],
-    ["Wednesday", "OFF", ""],
-    ["Thursday", "Early", "07:00 – 15:00"],
-    ["Friday", "Late", "14:00 – 22:00"],
-    ["Saturday", "Day", "09:00 – 17:00"],
-    ["Sunday", "OFF", ""],
+    ["01", "Wed", "1:00 PM – 10:00 PM", false],
+    ["03", "Fri", "3:00 PM – 12:00 AM", false],
+    ["04", "Sat", "3:00 PM – 12:00 AM", true],
+    ["09", "Thu", "1:00 PM – 10:00 PM", false],
+    ["11", "Sat", "9:00 AM – 6:00 PM", false],
+    ["12", "Sun", "3:00 PM – 12:00 AM", false],
   ];
-  let y = 120;
-  g.strokeStyle = "#cccccc"; g.lineWidth = 1;
+  let y = 130;
+  g.strokeStyle = "#dddddd"; g.lineWidth = 1;
   rows.forEach((r) => {
-    g.font = "bold 22px system-ui, Arial"; g.fillStyle = "#111111";
+    g.textAlign = "left";
+    g.font = "bold 24px system-ui, Arial"; g.fillStyle = "#111111";
     g.fillText(r[0], 30, y);
-    g.font = "22px system-ui, Arial"; g.fillStyle = r[1] === "OFF" ? "#999999" : "#7A1A12";
-    g.fillText(r[1], 240, y);
-    g.fillStyle = "#333333"; g.font = "22px system-ui, Arial";
-    g.fillText(r[2], 380, y);
-    g.beginPath(); g.moveTo(30, y + 16); g.lineTo(690, y + 16); g.stroke();
-    y += 58;
+    g.font = "20px system-ui, Arial"; g.fillStyle = "#555";
+    g.fillText(r[1], 78, y);
+    g.font = "21px system-ui, Arial"; g.fillStyle = "#111";
+    g.fillText(r[2], 150, y);
+    g.font = "16px system-ui, Arial"; g.fillStyle = "#7A1A12";
+    g.fillText("Halliburton Oji, Paddington", 150, y + 24);
+    if (r[3]) { // done — green check
+      g.fillStyle = "#2e9e5b"; g.font = "bold 26px system-ui, Arial";
+      g.fillText("✓", 700, y);
+    }
+    g.beginPath(); g.moveTo(30, y + 40); g.lineTo(730, y + 40); g.stroke();
+    y += 76;
   });
   return c.toDataURL("image/png");
 }
@@ -872,10 +878,24 @@ const FOLLOWUPS = {
   symptom: { key: "sym",  q: "What is it", options: ["Headache", "Cramps", "Fatigue", "Nausea", "Low mood"] },
 };
 
-// Rota fallback entries (used only when the live parse can't run) — resolved to upcoming dates.
+const ROTA_LOCATION = "Halliburton Oji, Paddington";
+// Rota fallback (used only when the live parse can't run) — mirrors Halli's real "Shift
+// Overview" July 2026 rota exactly: date · day · start–end · shared location, with the
+// 04 Sat row already DONE (green tick) and the 3PM–12AM shifts marked overnight.
 function fallbackRotaEntries() {
-  const shifts = [["Monday", "Early shift", "07:00", "15:00"], ["Tuesday", "Late shift", "14:00", "22:00"], ["Thursday", "Early shift", "07:00", "15:00"], ["Friday", "Late shift", "14:00", "22:00"], ["Saturday", "Day shift", "09:00", "17:00"]];
-  return shifts.map((s, i) => ({ _id: i, include: true, title: s[1], day_label: s[0], date: resolveDayLabel(s[0]), start: s[2], end: s[3], all_day: false, confidence: "medium" }));
+  const shifts = [
+    // [date, day, start, end, overnight, done]
+    ["2026-07-01", "Wed", "13:00", "22:00", false, false],
+    ["2026-07-03", "Fri", "15:00", "00:00", true, false],
+    ["2026-07-04", "Sat", "15:00", "00:00", true, true],
+    ["2026-07-09", "Thu", "13:00", "22:00", false, false],
+    ["2026-07-11", "Sat", "09:00", "18:00", false, false],
+    ["2026-07-12", "Sun", "15:00", "00:00", true, false],
+  ];
+  return shifts.map((s, i) => ({
+    _id: i, include: !s[5], title: "Work shift", date: s[0], day_label: s[1],
+    start: s[2], end: s[3], end_next_day: s[4], location: ROTA_LOCATION, done: s[5], confidence: "high",
+  }));
 }
 
 // ════════════════════════════════════════════════════════════════════════════════
@@ -900,6 +920,8 @@ function SmartShotSheet({ sheet, onBack, onClose, onConfirm }) {
   const [guard, setGuard] = useState(null); // { kind, msg }
   const [target, setTarget] = useState({ date: sheet.date, mode: sheet.date > TODAY_STR ? "plan" : "log" });
   const [degraded, setDegraded] = useState(false); // vision didn't return → we went by the words
+  const [schedLocation, setSchedLocation] = useState(""); // shared rota location, applied to all
+  const [repeatWeekly, setRepeatWeekly] = useState(false);
   const fileRef = useRef(null);
 
   const pick = (url, kind) => { setImageUrl(url); setSampleKind(kind || null); setStage("intent"); };
@@ -968,16 +990,30 @@ function SmartShotSheet({ sheet, onBack, onClose, onConfirm }) {
 
   async function loadSchedule() {
     setStage("reading");
-    let entries = null;
+    let entries = null, loc = null;
     try {
       const small = await downscaleDataUrl(imageUrl);
       const res = await withTimeout(base44.functions.invoke("analyzeMealPhoto", { mode: "schedule", reference_date: TODAY_STR, image_base64: small }), VISION_TIMEOUT_MS);
       const d = res?.data || res;
-      if (Array.isArray(d?.entries) && d.entries.length && !d.analysis_unavailable)
-        entries = d.entries.map((e, i) => ({ ...e, include: true, _id: i, date: e.date || resolveDayLabel(e.day_label) }));
+      if (Array.isArray(d?.entries) && d.entries.length && !d.analysis_unavailable) {
+        loc = d.location || null;
+        entries = d.entries.map((e, i) => ({
+          ...e, _id: i,
+          title: e.title || "Work shift",
+          date: e.date || resolveDayLabel(e.day_label),
+          include: !e.done,                                             // done rows default unselected
+          location: e.location || d.location || null,
+          end_next_day: !!e.end_next_day || (!!e.start && !!e.end && e.end <= e.start),
+          done: !!e.done,
+        }));
+      }
     } catch { /* timeout / network / auth — fall through */ }
-    if (!entries && sampleKind === "rota") entries = fallbackRotaEntries();
+    if (!entries && sampleKind === "rota") { entries = fallbackRotaEntries(); loc = ROTA_LOCATION; }
     if (!entries) { setStage("error"); return; }
+    // derive a shared location if every row carries the same one
+    if (!loc) { const locs = [...new Set(entries.map((e) => e.location).filter(Boolean))]; if (locs.length === 1) loc = locs[0]; }
+    setSchedLocation(loc || "");
+    setRepeatWeekly(false);
     setRows(entries); setStage("schedule_review");
   }
 
@@ -988,11 +1024,24 @@ function SmartShotSheet({ sheet, onBack, onClose, onConfirm }) {
     const route = INTENT_ROUTES[cls.detected] || INTENT_ROUTES.other;
     onConfirm([{ date: target.date, type: route.type, plan: target.mode === "plan" }]);
   };
+  const setRow = (i, patch) => setRows((p) => p.map((x, j) => j === i ? { ...x, ...patch } : x));
+  const selectedRows = rows.filter((r) => r.include && r.date);
+  const includedWithDate = selectedRows.length;
+  // "weekly-ish" only when it's genuinely easy: 2+ selected shifts that all fall on the
+  // same weekday. (Halli's real rota is irregular → no offer, we just add the parsed set.)
+  const weeklyish = (() => {
+    const dows = selectedRows.map((r) => parseISO(r.date).getDay());
+    return dows.length >= 2 && new Set(dows).size === 1;
+  })();
   const saveSchedule = () => {
-    const list = rows.filter((r) => r.include && r.date).map((r) => ({ date: r.date, type: "event", plan: true }));
+    const base = selectedRows.map((r) => ({ date: r.date, type: "event", plan: true }));
+    let list = base;
+    if (repeatWeekly && weeklyish) {
+      list = [];
+      for (const r of selectedRows) for (let w = 0; w < 4; w++) list.push({ date: iso(addDays(parseISO(r.date), w * 7)), type: "event", plan: true });
+    }
     onConfirm(list);
   };
-  const includedWithDate = rows.filter((r) => r.include && r.date).length;
 
   const route = cls ? (INTENT_ROUTES[cls.detected] || INTENT_ROUTES.other) : null;
 
@@ -1134,31 +1183,56 @@ function SmartShotSheet({ sheet, onBack, onClose, onConfirm }) {
       {stage === "schedule_review" && (
         <>
           <div style={{ display: "inline-flex", alignItems: "center", gap: 6, fontFamily: UI, fontSize: 10.5, fontWeight: 800, letterSpacing: 0.6, padding: "3px 10px", borderRadius: 999, marginBottom: 8, background: "rgba(143,175,143,0.2)", color: "#3f6b3a" }}>
-            <Check size={12} /> REVIEW BEFORE SAVING · schedule
+            <Check size={12} /> REVIEW BEFORE SAVING · {rows.length} shift{rows.length === 1 ? "" : "s"} · PLAN
           </div>
+          {degraded && <div style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 12.5, color: T.muted, marginBottom: 8 }}>Couldn't fully read the picture — check these carefully.</div>}
+
+          {/* shared location — applied to every shift, edit once */}
+          <div style={{ ...eyebrow, marginBottom: 4 }}>Location · all shifts</div>
+          <input value={schedLocation} onChange={(e) => setSchedLocation(e.target.value)} placeholder="e.g. Halliburton Oji, Paddington"
+            style={{ width: "100%", boxSizing: "border-box", padding: "9px 11px", borderRadius: 10, border: `1px solid ${T.paperDeep}`, background: T.paper, color: T.ink, fontFamily: UI, fontSize: 13, outline: "none", marginBottom: 10 }} />
+
           <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 10 }}>
-            {rows.map((r, i) => (
-              <div key={r._id} style={{ ...inset, padding: "10px 12px", opacity: r.include ? 1 : 0.5 }}>
-                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                  <button onClick={() => setRows((p) => p.map((x, j) => j === i ? { ...x, include: !x.include } : x))} aria-label="Include"
-                    style={{ width: 22, height: 22, borderRadius: 6, flexShrink: 0, cursor: "pointer", border: `1.5px solid ${r.include ? T.sage : T.paperDeep}`, background: r.include ? T.sage : "transparent", display: "grid", placeItems: "center", padding: 0 }}>
-                    {r.include && <Check size={13} color="#fff" />}
-                  </button>
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontFamily: SERIF, fontSize: 15, fontWeight: 600, color: T.ink, lineHeight: 1.2 }}>{r.title}</div>
-                    <div style={{ fontFamily: UI, fontSize: 11.5, color: T.muted, marginTop: 1 }}>
-                      {r.date ? format(parseISO(r.date), "EEE d MMM") : (r.day_label || "no date")}{r.start ? ` · ${r.start}${r.end ? `–${r.end}` : ""}` : ""}
-                      {!r.date && <span style={{ color: T.crimson }}> · needs a date</span>}
-                    </div>
+            {rows.map((r, i) => {
+              const overnight = r.end_next_day || (r.start && r.end && r.end <= r.start);
+              return (
+                <div key={r._id} style={{ ...inset, padding: "10px 11px", opacity: r.include ? 1 : 0.55 }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
+                    <button onClick={() => setRow(i, { include: !r.include })} aria-label="Include"
+                      style={{ width: 22, height: 22, borderRadius: 6, flexShrink: 0, cursor: "pointer", border: `1.5px solid ${r.include ? T.sage : T.paperDeep}`, background: r.include ? T.sage : "transparent", display: "grid", placeItems: "center", padding: 0 }}>
+                      {r.include && <Check size={13} color="#fff" />}
+                    </button>
+                    <input value={r.title} onChange={(e) => setRow(i, { title: e.target.value })}
+                      style={{ flex: 1, minWidth: 0, padding: "6px 9px", borderRadius: 8, border: `1px solid ${T.paperDeep}`, background: T.paper, color: T.ink, fontFamily: SERIF, fontSize: 14.5, fontWeight: 600, outline: "none" }} />
+                    {r.done && <span style={{ fontFamily: UI, fontSize: 9, fontWeight: 800, letterSpacing: 0.4, color: "#2e9e5b", background: "rgba(46,158,91,0.12)", padding: "2px 6px", borderRadius: 6 }}>ALREADY DONE</span>}
+                    <button onClick={() => setRows((p) => p.filter((_, j) => j !== i))} aria-label="Remove" style={{ ...iconBtn, width: 24, height: 24, flexShrink: 0 }}><Trash2 size={11} /></button>
                   </div>
-                  <button onClick={() => setRows((p) => p.filter((_, j) => j !== i))} aria-label="Remove" style={{ ...iconBtn, width: 26, height: 26 }}><Trash2 size={12} /></button>
+                  <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap", paddingLeft: 30 }}>
+                    <input type="date" value={r.date || ""} onChange={(e) => setRow(i, { date: e.target.value })} style={miniField} />
+                    <input type="time" value={r.start || ""} onChange={(e) => setRow(i, { start: e.target.value })} style={miniField} />
+                    <span style={{ fontFamily: UI, fontSize: 12, color: T.muted }}>–</span>
+                    <input type="time" value={r.end || ""} onChange={(e) => setRow(i, { end: e.target.value })} style={miniField} />
+                    {overnight && <span style={{ fontFamily: UI, fontSize: 9.5, fontWeight: 800, letterSpacing: 0.3, color: "#8a6e23", background: "rgba(168,137,63,0.16)", padding: "2px 6px", borderRadius: 6 }}>OVERNIGHT · ends +1 day</span>}
+                    {!r.date && <span style={{ fontFamily: UI, fontSize: 10, color: T.crimson }}>needs a date</span>}
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
-          <div style={{ fontFamily: UI, fontSize: 10.5, color: T.muted, marginBottom: 10 }}>Untick or remove anything wrong — nothing is saved until you tap below.</div>
+
+          {/* weekly repeat — only when it's genuinely easy (all selected on one weekday) */}
+          {weeklyish && (
+            <label style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10, cursor: "pointer" }}>
+              <input type="checkbox" checked={repeatWeekly} onChange={(e) => setRepeatWeekly(e.target.checked)} style={{ accentColor: "#A6862B" }} />
+              <span style={{ fontFamily: UI, fontSize: 12.5, color: T.muted }}>These look weekly — repeat for the next 4 weeks?</span>
+            </label>
+          )}
+
+          <div style={{ fontFamily: UI, fontSize: 10.5, color: T.muted, marginBottom: 10 }}>
+            Untick a shift, edit any time/date, or remove a row. Done shifts are unticked. Nothing is saved until you tap below.
+          </div>
           <button onClick={saveSchedule} disabled={includedWithDate === 0} style={{ ...solidBtn, background: "#A6862B", opacity: includedWithDate === 0 ? 0.45 : 1, cursor: includedWithDate === 0 ? "default" : "pointer" }}>
-            <Check size={15} style={{ marginRight: 7, verticalAlign: -2 }} />Add {includedWithDate} to your plan
+            <Check size={15} style={{ marginRight: 7, verticalAlign: -2 }} />Add {repeatWeekly && weeklyish ? includedWithDate * 4 : includedWithDate} shift{(repeatWeekly && weeklyish ? includedWithDate * 4 : includedWithDate) === 1 ? "" : "s"} to your plan
           </button>
         </>
       )}
@@ -1225,6 +1299,7 @@ const primaryMethod = (on, tone) => ({
 });
 const pmSub = (on) => ({ fontFamily: UI, fontSize: 10, fontWeight: 500, color: on ? "rgba(255,255,255,0.8)" : T.muted });
 const stepBtn = { width: 40, height: 40, borderRadius: 12, border: `1px solid ${T.paperDeep}`, background: T.paperHi, color: OX, fontSize: 20, fontWeight: 700, cursor: "pointer", display: "grid", placeItems: "center", lineHeight: 1 };
+const miniField = { padding: "5px 7px", borderRadius: 8, border: `1px solid ${T.paperDeep}`, background: T.paper, color: T.ink, fontFamily: "ui-sans-serif,system-ui,-apple-system,sans-serif", fontSize: 12, outline: "none", minWidth: 0 };
 const photoChoice = (on) => ({
   flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: 5, cursor: "pointer",
   padding: "12px 8px", borderRadius: 12, minHeight: 62,

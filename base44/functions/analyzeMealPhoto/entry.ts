@@ -122,25 +122,33 @@ Guidance: a receipt, a plate of food, a menu, a fridge, groceries → "food". A 
               content: [
                 {
                   type: "text",
-                  text: `Extract every schedule entry visible in this image. Today's date is ${refDate} (use it to resolve weekday-only rows to the NEXT matching upcoming date; if a full date is printed, use that).
+                  text: `Extract every shift/entry from this work rota or schedule image. Today's date is ${refDate}.
 Return this EXACT JSON:
 {
   "kind": "schedule",
   "detected_type": "rota" | "event_list" | "unknown",
+  "location": "the shared location/place if the SAME one applies to every row (else null)",
   "entries": [
     {
-      "title": "string — shift label or event name (e.g. 'Early shift', 'Dentist')",
-      "date": "YYYY-MM-DD or null (resolve if a weekday/day is given)",
-      "day_label": "string as printed (e.g. 'Mon', 'Tue 9 Jul') or null",
+      "title": "string — shift/event name (e.g. 'Work shift', 'Early', 'Dentist')",
+      "date": "YYYY-MM-DD or null",
+      "day_label": "string as printed (e.g. 'Wed', '01 Wed', 'Tue 9 Jul') or null",
       "start": "HH:MM 24h or null",
       "end": "HH:MM 24h or null",
-      "all_day": false,
+      "end_next_day": true or false,
+      "location": "this row's place/location or null",
+      "done": true or false,
       "confidence": "low" | "medium" | "high"
     }
   ],
   "notes": "one short honest sentence about anything ambiguous, unread, or assumed"
 }
-Rules: up to 20 entries. Times in 24h. If only a weekday is shown (a rota), resolve "date" to the next upcoming date for that weekday relative to today and keep the printed text in "day_label". If neither a date nor a resolvable weekday is present, set date null and lower confidence. If the image is not a schedule, return detected_type "unknown", empty entries, and a note.`,
+Rules:
+- Times in 24h. A day-of-month + a visible month/year header → combine into a full "date" (e.g. day "01" under a "July 2026" header → "2026-07-01"). If only a weekday is shown, resolve "date" to the next upcoming date for that weekday relative to today and keep the printed text in "day_label".
+- OVERNIGHT: if the shift ends after midnight (e.g. "3:00 PM – 12:00 AM" or an end time that is 00:00 or earlier than the start), set "end_next_day": true and end "00:00". Otherwise false.
+- LOCATION: capture each row's place; if every row shares the same place, also set the top-level "location".
+- DONE: set "done": true when a row is visibly marked completed — a tick/check mark, a green highlight, greyed-out, or struck through (already worked). Else false.
+- Up to 30 entries. If the image is not a schedule, return detected_type "unknown", empty entries, and a note.`,
                 },
                 { type: "image_url", image_url: { url: imageUrl } },
               ],
@@ -155,19 +163,28 @@ Rules: up to 20 entries. Times in 24h. If only a weekday is shown (a rota), reso
 
       // Normalise defensively — never trust the shape blindly; cap at 20; NEVER write
       // anything here (the client reviews + saves). This endpoint only PARSES.
-      const entries = Array.isArray(data?.entries) ? data.entries.slice(0, 20) : [];
+      const entries = Array.isArray(data?.entries) ? data.entries.slice(0, 30) : [];
+      const sharedLoc = data?.location ? String(data.location).slice(0, 80) : null;
       return Response.json({
         kind: 'schedule',
         detected_type: ['rota', 'event_list', 'unknown'].includes(data?.detected_type) ? data.detected_type : 'unknown',
-        entries: entries.map((e: any) => ({
-          title: String(e?.title || 'Untitled').slice(0, 80),
-          date: /^\d{4}-\d{2}-\d{2}$/.test(String(e?.date || '')) ? e.date : null,
-          day_label: e?.day_label ? String(e.day_label).slice(0, 40) : null,
-          start: /^\d{1,2}:\d{2}$/.test(String(e?.start || '')) ? e.start : null,
-          end: /^\d{1,2}:\d{2}$/.test(String(e?.end || '')) ? e.end : null,
-          all_day: !!e?.all_day,
-          confidence: ['low', 'medium', 'high'].includes(e?.confidence) ? e.confidence : 'low',
-        })),
+        location: sharedLoc,
+        entries: entries.map((e: any) => {
+          const start = /^\d{1,2}:\d{2}$/.test(String(e?.start || '')) ? e.start : null;
+          const end = /^\d{1,2}:\d{2}$/.test(String(e?.end || '')) ? e.end : null;
+          // Derive overnight defensively too (model flag OR end<=start with both present).
+          const overnight = !!e?.end_next_day || (!!start && !!end && end <= start);
+          return {
+            title: String(e?.title || 'Work shift').slice(0, 80),
+            date: /^\d{4}-\d{2}-\d{2}$/.test(String(e?.date || '')) ? e.date : null,
+            day_label: e?.day_label ? String(e.day_label).slice(0, 40) : null,
+            start, end,
+            end_next_day: overnight,
+            location: e?.location ? String(e.location).slice(0, 80) : sharedLoc,
+            done: !!e?.done,
+            confidence: ['low', 'medium', 'high'].includes(e?.confidence) ? e.confidence : 'low',
+          };
+        }),
         notes: data?.notes ? String(data.notes).slice(0, 240) : '',
       });
     }
