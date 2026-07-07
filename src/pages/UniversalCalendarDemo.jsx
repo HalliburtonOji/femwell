@@ -17,7 +17,7 @@
 // gate by data type; Planner 2nd-FAB folded into day-view + Event chip; demo-first.
 //
 // Brand: Editorial cream/plum tokens (T), Cormorant + system-sans, Lucide icons, NO EMOJI.
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import {
   format, startOfMonth, endOfMonth, startOfWeek, endOfWeek, addDays, addMonths,
   isSameMonth, isSameDay, parseISO,
@@ -26,7 +26,9 @@ import {
   CalendarDays, X, ArrowLeft, ChevronLeft, ChevronRight, Utensils, Droplets, Smile,
   Stethoscope, StickyNote, Footprints, Pill, CalendarClock, Bell, Check, Search,
   ScanBarcode, Mic, Camera, Pen, Clock, Lock, Image as ImageIcon, ChevronDown,
+  Sparkles, ListChecks, Loader2, Upload, Trash2, WandSparkles,
 } from "lucide-react";
+import { base44 } from "@/api/base44Client";
 import { T, SERIF, UI, SCRIPT, PAPER_BG, Heart, useEditorialFonts } from "@/components/journal/Editorial";
 
 const OX = "#7A1A12"; // oxblood — the app-wide heading colour (BRAND_IDENTITY §1)
@@ -179,6 +181,18 @@ export default function UniversalCalendarDemo() {
     setSheet((s) => ({ ...s, stage: "done" }));
   };
 
+  // one-flow + smart-picture commit a BATCH of entries in a single save
+  const commitEntries = (list) => {
+    setEntries((prev) => {
+      const next = { ...prev };
+      for (const it of list) {
+        if (!it?.date) continue;
+        next[it.date] = [...(next[it.date] || []), { type: it.type, plan: !!it.plan }];
+      }
+      return next;
+    });
+  };
+
   const closeAll = () => { setSheet(null); setCalOpen(false); };
 
   return (
@@ -226,6 +240,27 @@ export default function UniversalCalendarDemo() {
               <div style={{ fontFamily: SERIF, fontSize: 14, color: T.muted, lineHeight: 1.4 }}>Plan ahead — a menu, an event, a reminder. <b>You can’t log a headache for tomorrow.</b></div>
             </div>
           </div>
+        </div>
+      </div>
+
+      {/* ── NEW capabilities — one-tap launch for the demo ── */}
+      <div style={{ maxWidth: 460, margin: "14px auto", padding: "0 16px" }}>
+        <div style={{ ...card, borderColor: T.gold }}>
+          <div style={{ ...eyebrow, color: T.crimson }}>New in this demo</div>
+          <button onClick={() => setSheet({ stage: "dayrun", mode: "log", date: TODAY_STR })} style={{ ...typeCard, width: "100%", marginBottom: 8 }}>
+            <span style={{ ...typeChip, background: `${T.crimson}22`, color: T.crimson }}><ListChecks size={15} /></span>
+            <div style={{ textAlign: "left" }}>
+              <div style={{ fontFamily: UI, fontWeight: 700, fontSize: 13.5, color: T.ink }}>Run through your whole day</div>
+              <div style={{ fontFamily: UI, fontSize: 11, color: T.muted }}>Meals · water · mood · symptoms · meds — one pass, one save</div>
+            </div>
+          </button>
+          <button onClick={() => setSheet({ stage: "smartshot", mode: "plan", date: iso(addDays(TODAY, 1)) })} style={{ ...typeCard, width: "100%" }}>
+            <span style={{ ...typeChip, background: `${T.gold}22`, color: T.gold }}><WandSparkles size={15} /></span>
+            <div style={{ textAlign: "left" }}>
+              <div style={{ fontFamily: UI, fontWeight: 700, fontSize: 13.5, color: T.ink }}>Photo → schedule</div>
+              <div style={{ fontFamily: UI, fontSize: 11, color: T.muted }}>Read a rota/event screenshot → reviewable plan entries</div>
+            </div>
+          </button>
         </div>
       </div>
 
@@ -299,8 +334,21 @@ export default function UniversalCalendarDemo() {
       {sheet && (
         <Backdrop onClose={closeAll}>
           <Sheet>
-            {sheet.stage === "day" && <DaySheet sheet={sheet} entries={entries} onPick={(type) => openForm(sheet.date, type)} onClose={closeAll} />}
+            {sheet.stage === "day" && <DaySheet sheet={sheet} entries={entries}
+              onPick={(type) => openForm(sheet.date, type)}
+              onRunDay={() => setSheet({ stage: "dayrun", mode: sheet.mode, date: sheet.date })}
+              onSmartShot={() => setSheet({ stage: "smartshot", mode: "plan", date: sheet.date })}
+              onClose={closeAll} />}
             {sheet.stage === "form" && <FormSheet sheet={sheet} onBack={() => setSheet({ stage: "day", mode: sheet.mode, date: sheet.date })} onClose={closeAll} onConfirm={confirm} setSheet={setSheet} />}
+            {sheet.stage === "dayrun" && <DayRunSheet sheet={sheet}
+              onBack={() => setSheet({ stage: "day", mode: sheet.mode, date: sheet.date })}
+              onClose={closeAll}
+              onSave={(list) => { commitEntries(list); flash(`${sheet.mode === "plan" ? "Planned" : "Logged"} your day — ${list.length} ${list.length === 1 ? "thing" : "things"}`); closeAll(); }}
+              onSmartShot={() => setSheet({ stage: "smartshot", mode: "plan", date: sheet.date })} />}
+            {sheet.stage === "smartshot" && <SmartShotSheet sheet={sheet}
+              onBack={() => setSheet({ stage: "day", mode: sheet.mode, date: sheet.date })}
+              onClose={closeAll}
+              onConfirm={(list) => { commitEntries(list); flash(`Added ${list.length} to your plan`); closeAll(); }} />}
             {sheet.stage === "done" && <DoneSheet sheet={sheet} onClose={closeAll} onAnother={() => setSheet({ stage: "day", mode: sheet.mode, date: sheet.date })} />}
           </Sheet>
         </Backdrop>
@@ -315,7 +363,7 @@ export default function UniversalCalendarDemo() {
 }
 
 // ── DAY sheet — the log/plan gate lives here ────────────────────────────────────
-function DaySheet({ sheet, entries, onPick, onClose }) {
+function DaySheet({ sheet, entries, onPick, onRunDay, onSmartShot, onClose }) {
   const { date, mode } = sheet;
   const d = parseISO(date);
   const isTod = date === TODAY_STR;
@@ -350,7 +398,23 @@ function DaySheet({ sheet, entries, onPick, onClose }) {
         </div>
       )}
 
-      <div style={{ ...eyebrow, marginTop: 14 }}>{isFuture ? "Plan for this day" : "Add to this day"}</div>
+      {/* ── PRIMARY: run/plan the WHOLE day in one pass (one-flow) ── */}
+      <button onClick={onRunDay} style={{ ...solidBtn, background: mode === "plan" ? "#A6862B" : T.crimson, marginTop: 14 }}>
+        <ListChecks size={16} style={{ marginRight: 8, verticalAlign: -3 }} />
+        {mode === "plan" ? "Plan the whole day" : "Run through the day"}
+      </button>
+      <div style={{ fontFamily: UI, fontSize: 10.5, color: T.muted, textAlign: "center", margin: "5px 0 2px" }}>
+        One pass through {isFuture ? "meals, plans, reminders" : "meals, water, mood, symptoms, meds"} — quick, skippable, one save.
+      </div>
+
+      {/* ── PRIMARY (plan only): read a screenshot → schedule ── */}
+      {isFuture && (
+        <button onClick={onSmartShot} style={{ ...ghostBtn, width: "100%", marginTop: 8, borderColor: T.gold, color: OX }}>
+          <WandSparkles size={15} style={{ marginRight: 7, verticalAlign: -2, color: T.gold }} />Read a photo → plan your schedule
+        </button>
+      )}
+
+      <div style={{ ...eyebrow, marginTop: 16 }}>{isFuture ? "…or plan one thing" : "…or log one thing"}</div>
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
         {available.map((t) => (
           <button key={t.id} onClick={() => onPick(t.id)} style={typeCard}>
@@ -522,6 +586,322 @@ function DoneSheet({ sheet, onClose, onAnother }) {
   );
 }
 
+// ════════════════════════════════════════════════════════════════════════════════
+// ONE-FLOW "run/plan the whole day" — a single sheet, sectioned, skippable, one save
+// ════════════════════════════════════════════════════════════════════════════════
+function DayRunSheet({ sheet, onBack, onClose, onSave, onSmartShot }) {
+  const { date, mode } = sheet;
+  const d = parseISO(date);
+  const isFuture = date > TODAY_STR;
+  const dayWord = date === TODAY_STR ? "today" : format(d, "EEEE d MMM");
+
+  // Sections respect the LOG-vs-PLAN gate: a future day shows only plannable sections
+  // (no retrospective water/mood/symptoms); today/past shows the full retrospective run.
+  const SECTIONS = isFuture
+    ? [
+        { id: "meal",     label: "Meals / menu",   Icon: Utensils,     tone: T.gold,          kind: "multi", opts: ["Breakfast", "Lunch", "Dinner", "Snack"] },
+        { id: "event",    label: "Events & plans", Icon: CalendarClock,tone: "#A6862B",       kind: "multi", opts: ["Work shift", "Gym", "Dinner out", "Appointment"], smart: true },
+        { id: "reminder", label: "Reminders",      Icon: Bell,         tone: T.muted,         kind: "multi", opts: ["Umbrella", "Take meds", "Water bottle", "Charger"] },
+        { id: "habit",    label: "Habits",         Icon: Footprints,   tone: T.sage,          kind: "multi", opts: ["Walk", "Yoga", "Reading", "Early night"] },
+        { id: "med",      label: "Meds",           Icon: Pill,         tone: T.blush,         kind: "multi", opts: ["Vitamin D", "Iron", "Magnesium"] },
+      ]
+    : [
+        { id: "meal",    label: "Meals",    Icon: Utensils,    tone: T.gold,           kind: "multi", opts: ["Breakfast", "Lunch", "Dinner", "Snack"] },
+        { id: "water",   label: "Water",    Icon: Droplets,    tone: "#5E93B8",        kind: "count" },
+        { id: "mood",    label: "Mood",     Icon: Smile,       tone: T.crimson,        kind: "scale" },
+        { id: "symptom", label: "Symptoms", Icon: Stethoscope, tone: PHASE.menstrual,  kind: "multi", opts: ["Cramps", "Headache", "Fatigue", "Bloating", "Low mood"] },
+        { id: "med",     label: "Meds",     Icon: Pill,        tone: T.blush,          kind: "multi", opts: ["Vitamin D", "Iron", "Painkiller"] },
+        { id: "event",   label: "Events",   Icon: CalendarClock,tone: "#A6862B",       kind: "multi", opts: ["Work shift", "Gym", "Dinner out"] },
+      ];
+
+  const [data, setData] = useState({});
+  const set = (id, v) => setData((p) => ({ ...p, [id]: v }));
+
+  const countFor = (s) => {
+    const v = data[s.id];
+    if (s.kind === "multi") return (v || []).length;
+    return v ? 1 : 0; // count / scale
+  };
+  const total = SECTIONS.reduce((n, s) => n + countFor(s), 0);
+  const touched = SECTIONS.filter((s) => countFor(s) > 0).length;
+  const scrollTo = (id) => document.getElementById(`dr-${id}`)?.scrollIntoView({ behavior: "smooth", block: "start" });
+
+  const save = () => {
+    const list = [];
+    for (const s of SECTIONS) {
+      const v = data[s.id];
+      if (s.kind === "count") { if (v) list.push({ date, type: "water", plan: isFuture }); }
+      else if (s.kind === "scale") { if (v) list.push({ date, type: "mood", plan: false }); }
+      else (v || []).forEach(() => list.push({ date, type: s.id, plan: isFuture }));
+    }
+    if (list.length) onSave(list);
+  };
+
+  return (
+    <>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 6 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <button onClick={onBack} style={iconBtn} aria-label="Back"><ArrowLeft size={15} /></button>
+          <div>
+            <div style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 20, color: OX, lineHeight: 1.05 }}>{mode === "plan" ? "Plan the whole day" : "Run through the day"}</div>
+            <div style={{ fontFamily: UI, fontSize: 11, color: T.muted }}>{format(d, "EEEE d MMMM")} · <b style={{ color: mode === "plan" ? "#A6862B" : OX }}>{mode === "plan" ? "PLAN" : "LOG"}</b></div>
+          </div>
+        </div>
+        <button onClick={onClose} style={iconBtn} aria-label="Close"><X size={15} /></button>
+      </div>
+
+      {/* jump-to rail (the app's central switcher pattern) + progress */}
+      <div style={{ display: "flex", gap: 6, overflowX: "auto", padding: "2px 0 8px" }}>
+        {SECTIONS.map((s) => {
+          const n = countFor(s);
+          return (
+            <button key={s.id} onClick={() => scrollTo(s.id)} style={{ ...pill, flexShrink: 0, cursor: "pointer",
+              background: n ? `${s.tone}22` : T.paperHi, borderColor: n ? s.tone : T.paperDeep, color: n ? OX : T.muted }}>
+              {n ? <Check size={11} style={{ verticalAlign: -1, marginRight: 3 }} /> : null}{s.label}
+            </button>
+          );
+        })}
+      </div>
+      <div style={{ fontFamily: UI, fontSize: 10.5, color: T.muted, marginBottom: 10 }}>
+        {touched}/{SECTIONS.length} sections · {total} {total === 1 ? "thing" : "things"} · every section optional — skip freely.
+      </div>
+
+      {/* the sections, one continuous scroll */}
+      <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+        {SECTIONS.map((s) => {
+          const n = countFor(s);
+          return (
+            <div key={s.id} id={`dr-${s.id}`} style={{ ...inset, padding: 12 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
+                <span style={{ ...typeChip, width: 26, height: 26, background: `${s.tone}22`, color: s.tone }}><s.Icon size={13} /></span>
+                <span style={{ fontFamily: UI, fontWeight: 700, fontSize: 13.5, color: T.ink }}>{s.label}</span>
+                {n > 0 && <span style={{ marginLeft: "auto", fontFamily: UI, fontSize: 10.5, fontWeight: 700, color: T.sage }}><Check size={11} style={{ verticalAlign: -1 }} /> {n}</span>}
+              </div>
+
+              {s.kind === "multi" && (
+                <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+                  {s.opts.map((o) => {
+                    const on = (data[s.id] || []).includes(o);
+                    return (
+                      <button key={o} onClick={() => set(s.id, on ? (data[s.id] || []).filter((x) => x !== o) : [...(data[s.id] || []), o])}
+                        style={{ ...pill, cursor: "pointer", background: on ? s.tone : T.paperHi, color: on ? T.paper : T.muted, borderColor: on ? s.tone : T.paperDeep }}>{o}</button>
+                    );
+                  })}
+                </div>
+              )}
+
+              {s.kind === "count" && (
+                <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                  <button onClick={() => set(s.id, Math.max(0, (data[s.id] || 0) - 1))} style={stepBtn}>−</button>
+                  <span style={{ fontFamily: SERIF, fontSize: 17, color: T.ink, minWidth: 78, textAlign: "center" }}>{data[s.id] || 0} glass{(data[s.id] || 0) === 1 ? "" : "es"}</span>
+                  <button onClick={() => set(s.id, (data[s.id] || 0) + 1)} style={stepBtn}>+</button>
+                </div>
+              )}
+
+              {s.kind === "scale" && (
+                <div style={{ display: "flex", gap: 6 }}>
+                  {["Low", "Meh", "OK", "Good", "Great"].map((lab, i) => {
+                    const on = data[s.id] === i + 1;
+                    return (
+                      <button key={lab} onClick={() => set(s.id, on ? null : i + 1)} style={{ flex: 1, padding: "8px 0", borderRadius: 10, cursor: "pointer",
+                        border: `1.5px solid ${on ? s.tone : T.paperDeep}`, background: on ? `${s.tone}22` : T.paperHi, color: on ? OX : T.muted, fontFamily: UI, fontSize: 11, fontWeight: 700 }}>{lab}</button>
+                    );
+                  })}
+                </div>
+              )}
+
+              {s.smart && (
+                <button onClick={onSmartShot} style={{ ...pill, cursor: "pointer", marginTop: 8, background: "rgba(168,137,63,0.14)", borderColor: T.gold, color: OX }}>
+                  <WandSparkles size={12} style={{ verticalAlign: -2, marginRight: 5, color: T.gold }} />Read a photo → add shifts/events
+                </button>
+              )}
+            </div>
+          );
+        })}
+      </div>
+
+      {/* ONE save at the end — sticky to the sheet's bottom */}
+      <div style={{ position: "sticky", bottom: 0, paddingTop: 12, marginTop: 6, background: `linear-gradient(to top, ${T.paperHi} 74%, transparent)` }}>
+        <button onClick={save} disabled={total === 0} style={{ ...solidBtn, background: mode === "plan" ? "#A6862B" : T.crimson, opacity: total === 0 ? 0.45 : 1, cursor: total === 0 ? "default" : "pointer" }}>
+          <Check size={15} style={{ marginRight: 7, verticalAlign: -2 }} />
+          {mode === "plan" ? "Save the plan" : "Save the day"}{total > 0 ? ` · ${total} ${total === 1 ? "thing" : "things"}` : ""}
+        </button>
+      </div>
+    </>
+  );
+}
+
+// ════════════════════════════════════════════════════════════════════════════════
+// SMART PICTURE → SCHEDULE — screenshot of a rota / event list → reviewable entries.
+// Uses the EXISTING analyzeMealPhoto function (mode:"schedule") — same gpt-4o-mini +
+// same OpenAI key, NO new function. ALWAYS shows a review/confirm step before saving.
+// ════════════════════════════════════════════════════════════════════════════════
+const WEEKDAYS = ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"];
+function resolveDayLabel(label) {
+  // fallback: turn a weekday-only label (e.g. "Tue") into the next upcoming date.
+  if (!label) return null;
+  const l = String(label).toLowerCase();
+  const idx = WEEKDAYS.findIndex((w) => l.includes(w.slice(0, 3)));
+  if (idx < 0) return null;
+  let dt = new Date(TODAY); const cur = dt.getDay();
+  let add = (idx - cur + 7) % 7; if (add === 0) add = 7;
+  return iso(addDays(dt, add));
+}
+
+// Draw a clean sample weekly rota to a canvas → PNG data URL, so the demo can prove a
+// real end-to-end parse without the user needing their own screenshot.
+function renderSampleRota() {
+  const c = document.createElement("canvas");
+  c.width = 720; c.height = 560;
+  const g = c.getContext("2d");
+  g.fillStyle = "#ffffff"; g.fillRect(0, 0, c.width, c.height);
+  g.fillStyle = "#111111";
+  g.font = "bold 30px system-ui, Arial";
+  g.fillText("Weekly Rota", 30, 48);
+  g.font = "18px system-ui, Arial";
+  g.fillStyle = "#555555";
+  g.fillText(`Week of Mon ${format(addDays(TODAY, ((1 - TODAY.getDay() + 7) % 7)), "d MMM yyyy")}`, 30, 78);
+  const rows = [
+    ["Monday", "Early", "07:00 – 15:00"],
+    ["Tuesday", "Late", "14:00 – 22:00"],
+    ["Wednesday", "OFF", ""],
+    ["Thursday", "Early", "07:00 – 15:00"],
+    ["Friday", "Late", "14:00 – 22:00"],
+    ["Saturday", "Day", "09:00 – 17:00"],
+    ["Sunday", "OFF", ""],
+  ];
+  let y = 120;
+  g.strokeStyle = "#cccccc"; g.lineWidth = 1;
+  rows.forEach((r) => {
+    g.font = "bold 22px system-ui, Arial"; g.fillStyle = "#111111";
+    g.fillText(r[0], 30, y);
+    g.font = "22px system-ui, Arial"; g.fillStyle = r[1] === "OFF" ? "#999999" : "#7A1A12";
+    g.fillText(r[1], 240, y);
+    g.fillStyle = "#333333"; g.font = "22px system-ui, Arial";
+    g.fillText(r[2], 380, y);
+    g.beginPath(); g.moveTo(30, y + 16); g.lineTo(690, y + 16); g.stroke();
+    y += 58;
+  });
+  return c.toDataURL("image/png");
+}
+
+function SmartShotSheet({ sheet, onBack, onClose, onConfirm }) {
+  const [stage, setStage] = useState("pick"); // pick | reading | review | empty | error
+  const [rows, setRows] = useState([]);
+  const [notes, setNotes] = useState("");
+  const [detected, setDetected] = useState("");
+  const fileRef = useRef(null);
+
+  async function parse(dataUrl) {
+    setStage("reading");
+    try {
+      const res = await base44.functions.invoke("analyzeMealPhoto", {
+        mode: "schedule", reference_date: TODAY_STR, image_base64: dataUrl,
+      });
+      const dta = res?.data || res;
+      const es = Array.isArray(dta?.entries) ? dta.entries : [];
+      setNotes(dta?.notes || ""); setDetected(dta?.detected_type || "");
+      if (!es.length || dta?.analysis_unavailable) { setStage("empty"); return; }
+      setRows(es.map((e, i) => ({ ...e, include: true, _id: i, date: e.date || resolveDayLabel(e.day_label) })));
+      setStage("review");
+    } catch { setStage("error"); }
+  }
+  const onFile = (e) => { const f = e.target.files?.[0]; if (!f) return; const r = new FileReader(); r.onload = () => parse(r.result); r.readAsDataURL(f); };
+  const trySample = () => parse(renderSampleRota());
+
+  const addAll = () => {
+    const list = rows.filter((r) => r.include && r.date).map((r) => ({ date: r.date, type: "event", plan: true }));
+    onConfirm(list);
+  };
+  const includedWithDate = rows.filter((r) => r.include && r.date).length;
+
+  return (
+    <>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <button onClick={onBack} style={iconBtn} aria-label="Back"><ArrowLeft size={15} /></button>
+          <span style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 20, color: OX }}>Photo → schedule</span>
+        </div>
+        <button onClick={onClose} style={iconBtn} aria-label="Close"><X size={15} /></button>
+      </div>
+
+      <input ref={fileRef} type="file" accept="image/*" onChange={onFile} style={{ display: "none" }} />
+
+      {stage === "pick" && (
+        <>
+          <p style={{ fontFamily: SERIF, fontSize: 15, color: T.muted, lineHeight: 1.5, marginTop: 0 }}>
+            Got a photo of your <b>work rota</b> or a <b>list of events</b>? Drop it in — it reads the shifts and dates,
+            and you <b>check &amp; edit everything before anything is saved</b>.
+          </p>
+          <button onClick={() => fileRef.current?.click()} style={{ ...solidBtn, marginBottom: 8 }}>
+            <ImageIcon size={15} style={{ marginRight: 7, verticalAlign: -2 }} />Choose a photo from library
+          </button>
+          <button onClick={trySample} style={{ ...ghostBtn, width: "100%", borderColor: T.gold, color: OX }}>
+            <Sparkles size={14} style={{ marginRight: 7, verticalAlign: -2, color: T.gold }} />Try the sample rota
+          </button>
+          <div style={{ fontFamily: UI, fontSize: 10.5, color: T.muted, marginTop: 10, lineHeight: 1.5 }}>
+            Reads with the app's existing photo AI (the same one meal-snap uses) — no new service. Works best on a clear,
+            upright screenshot. Handwriting &amp; very dense timetables can miss rows — that's why you review first.
+          </div>
+        </>
+      )}
+
+      {stage === "reading" && (
+        <div style={{ ...inset, padding: 22, textAlign: "center" }}>
+          <Loader2 size={26} color={T.crimson} className="animate-spin" style={{ margin: "0 auto 10px", display: "block" }} />
+          <div style={{ fontFamily: SERIF, fontSize: 15, color: T.ink }}>Reading your schedule…</div>
+          <div style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 12.5, color: T.muted }}>Finding shifts, dates and times.</div>
+        </div>
+      )}
+
+      {stage === "review" && (
+        <>
+          <div style={{ display: "inline-flex", alignItems: "center", gap: 6, fontFamily: UI, fontSize: 10.5, fontWeight: 800, letterSpacing: 0.6, padding: "3px 10px", borderRadius: 999, marginBottom: 8, background: "rgba(143,175,143,0.2)", color: "#3f6b3a" }}>
+            <Check size={12} /> REVIEW BEFORE SAVING · {detected === "rota" ? "rota" : detected === "event_list" ? "event list" : "schedule"}
+          </div>
+          <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 10 }}>
+            {rows.map((r, i) => (
+              <div key={r._id} style={{ ...inset, padding: "10px 12px", opacity: r.include ? 1 : 0.5 }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                  <button onClick={() => setRows((p) => p.map((x, j) => j === i ? { ...x, include: !x.include } : x))}
+                    aria-label="Include" style={{ width: 22, height: 22, borderRadius: 6, flexShrink: 0, cursor: "pointer",
+                      border: `1.5px solid ${r.include ? T.sage : T.paperDeep}`, background: r.include ? T.sage : "transparent",
+                      display: "grid", placeItems: "center", padding: 0 }}>
+                    {r.include && <Check size={13} color="#fff" />}
+                  </button>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontFamily: SERIF, fontSize: 15, fontWeight: 600, color: T.ink, lineHeight: 1.2 }}>{r.title}</div>
+                    <div style={{ fontFamily: UI, fontSize: 11.5, color: T.muted, marginTop: 1 }}>
+                      {r.date ? format(parseISO(r.date), "EEE d MMM") : (r.day_label || "no date")}
+                      {r.start ? ` · ${r.start}${r.end ? `–${r.end}` : ""}` : (r.all_day ? " · all day" : "")}
+                      {!r.date && <span style={{ color: T.crimson }}> · needs a date</span>}
+                    </div>
+                  </div>
+                  <span style={{ fontFamily: UI, fontSize: 9, fontWeight: 700, textTransform: "uppercase", letterSpacing: 0.5, color: r.confidence === "high" ? T.sage : r.confidence === "medium" ? T.gold : T.muted }}>{r.confidence}</span>
+                  <button onClick={() => setRows((p) => p.filter((_, j) => j !== i))} aria-label="Remove" style={{ ...iconBtn, width: 26, height: 26 }}><Trash2 size={12} /></button>
+                </div>
+              </div>
+            ))}
+          </div>
+          {notes && <div style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 12.5, color: T.muted, marginBottom: 10 }}>Note: {notes}</div>}
+          <div style={{ fontFamily: UI, fontSize: 10.5, color: T.muted, marginBottom: 10 }}>Untick anything wrong, remove a row, or fix it — nothing is saved until you tap below.</div>
+          <button onClick={addAll} disabled={includedWithDate === 0} style={{ ...solidBtn, background: "#A6862B", opacity: includedWithDate === 0 ? 0.45 : 1, cursor: includedWithDate === 0 ? "default" : "pointer" }}>
+            <Check size={15} style={{ marginRight: 7, verticalAlign: -2 }} />Add {includedWithDate} to your plan
+          </button>
+        </>
+      )}
+
+      {(stage === "empty" || stage === "error") && (
+        <div style={{ ...inset, padding: 18, textAlign: "center" }}>
+          <div style={{ fontFamily: SERIF, fontSize: 15, color: T.ink, marginBottom: 4 }}>{stage === "error" ? "Couldn't read that one" : "No schedule found in that image"}</div>
+          <div style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 13, color: T.muted, marginBottom: 6 }}>{notes || "Try a clearer, upright screenshot of a rota or event list."}</div>
+          <button onClick={() => setStage("pick")} style={{ ...solidBtn, marginTop: 6 }}>Try another photo</button>
+        </div>
+      )}
+    </>
+  );
+}
+
 // ── sheet shell bits ────────────────────────────────────────────────────────────
 function Backdrop({ children, onClose }) {
   return (
@@ -573,6 +953,7 @@ const primaryMethod = (on, tone) => ({
   color: on ? T.paper : T.ink, fontFamily: UI, fontSize: 13.5, fontWeight: 700,
 });
 const pmSub = (on) => ({ fontFamily: UI, fontSize: 10, fontWeight: 500, color: on ? "rgba(255,255,255,0.8)" : T.muted });
+const stepBtn = { width: 40, height: 40, borderRadius: 12, border: `1px solid ${T.paperDeep}`, background: T.paperHi, color: OX, fontSize: 20, fontWeight: 700, cursor: "pointer", display: "grid", placeItems: "center", lineHeight: 1 };
 const photoChoice = (on) => ({
   flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: 5, cursor: "pointer",
   padding: "12px 8px", borderRadius: 12, minHeight: 62,

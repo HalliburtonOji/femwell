@@ -2,9 +2,12 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 import OpenAI from 'npm:openai';
 
-// Photo meal logging — uses the SAME OpenAI key as analyzeMeal (no new key).
-// gpt-4o-mini is multimodal/vision-capable, so we pass the meal photo as an
-// image_url and get back the same editable-draft JSON shape analyzeMeal returns.
+// Photo logging — uses the SAME OpenAI key + SAME gpt-4o-mini vision model for BOTH:
+//   • mode "meal" (default, unchanged): a meal photo → editable macro draft.
+//   • mode "schedule" (NEW): a screenshot of a work rota / roster / list of events →
+//     structured, REVIEWABLE schedule entries (dates, times, shifts, event names).
+// No new function, no new key — one multimodal path, branched by `mode`. The client
+// ALWAYS shows a review/confirm step for schedule mode before anything is saved.
 const openai = new OpenAI({ apiKey: Deno.env.get("OPENAI_API_KEY") });
 
 // Timeout guard — an awaited platform/AI call that HANGS would wedge the function.
@@ -29,7 +32,7 @@ Deno.serve(async (req) => {
     const body = await withTimeout(req.json(), 4000, 'parse').catch(() => null);
     if (!body) return Response.json({ error: 'Bad request', analysis_unavailable: true }, { status: 400 });
 
-    const { image_base64, cycle_phase, wellness_goal, meal_log_id } = body;
+    const { image_base64, cycle_phase, wellness_goal, meal_log_id, mode, reference_date } = body;
     if (!image_base64) return Response.json({ error: 'image_base64 required' }, { status: 400 });
 
     // Accept either a full data URL or raw base64; normalise to a data URL.
@@ -37,6 +40,81 @@ Deno.serve(async (req) => {
       ? String(image_base64)
       : `data:image/jpeg;base64,${image_base64}`;
 
+    // ── SCHEDULE MODE (NEW) — read a rota / event list → reviewable entries ──────
+    if (mode === 'schedule') {
+      const refDate = /^\d{4}-\d{2}-\d{2}$/.test(String(reference_date || ''))
+        ? String(reference_date)
+        : new Date().toISOString().slice(0, 10);
+
+      // Clean fast-degrade payload — returned 200 whenever vision is slow/unreadable so
+      // the client can show a tidy "couldn't read it" state and never auto-commits.
+      const SCHED_UNAVAILABLE = { kind: 'schedule', entries: [], detected_type: 'unknown', analysis_unavailable: true, notes: '' };
+
+      let data;
+      try {
+        const response = await withTimeout(openai.chat.completions.create({
+          model: "gpt-4o-mini",
+          messages: [
+            {
+              role: "system",
+              content: `You read a photo or screenshot of a personal SCHEDULE — a work rota/roster of shifts, or a list of upcoming events/appointments — and extract structured calendar entries a person can review before saving. You never invent entries. If something is unreadable or ambiguous, say so in "notes" and lower confidence. Return valid JSON only.`,
+            },
+            {
+              role: "user",
+              content: [
+                {
+                  type: "text",
+                  text: `Extract every schedule entry visible in this image. Today's date is ${refDate} (use it to resolve weekday-only rows to the NEXT matching upcoming date; if a full date is printed, use that).
+Return this EXACT JSON:
+{
+  "kind": "schedule",
+  "detected_type": "rota" | "event_list" | "unknown",
+  "entries": [
+    {
+      "title": "string — shift label or event name (e.g. 'Early shift', 'Dentist')",
+      "date": "YYYY-MM-DD or null (resolve if a weekday/day is given)",
+      "day_label": "string as printed (e.g. 'Mon', 'Tue 9 Jul') or null",
+      "start": "HH:MM 24h or null",
+      "end": "HH:MM 24h or null",
+      "all_day": false,
+      "confidence": "low" | "medium" | "high"
+    }
+  ],
+  "notes": "one short honest sentence about anything ambiguous, unread, or assumed"
+}
+Rules: up to 20 entries. Times in 24h. If only a weekday is shown (a rota), resolve "date" to the next upcoming date for that weekday relative to today and keep the printed text in "day_label". If neither a date nor a resolvable weekday is present, set date null and lower confidence. If the image is not a schedule, return detected_type "unknown", empty entries, and a note.`,
+                },
+                { type: "image_url", image_url: { url: imageUrl } },
+              ],
+            },
+          ],
+          response_format: { type: "json_object" },
+        }), 25000, 'vision-schedule');
+        data = JSON.parse(response.choices[0].message.content);
+      } catch {
+        return Response.json(SCHED_UNAVAILABLE);
+      }
+
+      // Normalise defensively — never trust the shape blindly; cap at 20; NEVER write
+      // anything here (the client reviews + saves). This endpoint only PARSES.
+      const entries = Array.isArray(data?.entries) ? data.entries.slice(0, 20) : [];
+      return Response.json({
+        kind: 'schedule',
+        detected_type: ['rota', 'event_list', 'unknown'].includes(data?.detected_type) ? data.detected_type : 'unknown',
+        entries: entries.map((e: any) => ({
+          title: String(e?.title || 'Untitled').slice(0, 80),
+          date: /^\d{4}-\d{2}-\d{2}$/.test(String(e?.date || '')) ? e.date : null,
+          day_label: e?.day_label ? String(e.day_label).slice(0, 40) : null,
+          start: /^\d{1,2}:\d{2}$/.test(String(e?.start || '')) ? e.start : null,
+          end: /^\d{1,2}:\d{2}$/.test(String(e?.end || '')) ? e.end : null,
+          all_day: !!e?.all_day,
+          confidence: ['low', 'medium', 'high'].includes(e?.confidence) ? e.confidence : 'low',
+        })),
+        notes: data?.notes ? String(data.notes).slice(0, 240) : '',
+      });
+    }
+
+    // ── MEAL MODE (default, UNCHANGED) ──────────────────────────────────────────
     // Clean fast-degrade payload (same convention as analyzeMeal) — returned 200
     // whenever the vision call is slow or can't read the photo, so the client
     // always gets a parseable response and can show a tidy "couldn't read it" state.
