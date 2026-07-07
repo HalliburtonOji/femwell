@@ -79,6 +79,8 @@ import gardenPlanHtml from "@/components/founders/brandDocs/garden-plan.html?raw
 import jessPlanHtml from "@/components/founders/brandDocs/jess-plan.html?raw";
 // Card Styles plan doc (2026-07-01) — wired from IDEAS-LINKS-FOR-FOUNDERSOS.md.
 import cardStylesHtml from "@/components/founders/brandDocs/card-styles-expansion.html?raw";
+// Universal Calendar + Logger plan doc (2026-07-05) — wired from IDEAS-LINKS-FOR-FOUNDERSOS.md.
+import universalCalendarHtml from "@/components/founders/brandDocs/universal-calendar-logger.html?raw";
 // HealthCornerDemo was the multi-layout preview. The canonical health
 // experience now lives at /Health (src/pages/Health.jsx). The Health Corner
 // tab in /Ideas renders <HealthCornerRedirectCard /> instead.
@@ -352,6 +354,8 @@ const CATALOG = [
     title: "No Garden Grows Alone", desc: "Connecting women (safe Tier 0→2 ladder, no open matchmaking), days-off activities found FOR her, and no-guilt tiny missions that grow the garden — baked into Community/Today/Lifestyle/Garden/Planner with NO new nav tab. Cited research + the UK Online-Safety/ICO legal flags and the dials for you." },
   { kind: "doc", key: "Bottom-Nav Plan", group: CAT.CURRENT, sub: "Cross-app plans & decisions", status: "new", accent: "gold",
     title: "Bottom-Nav Plan", desc: "Floating cream capsule + shrink-on-scroll, reject horizontal-scroll nav. Research, honest drawbacks and a phased plan. Awaiting your approval." },
+  { kind: "doc", key: "Universal Calendar", group: CAT.CURRENT, sub: "Calendar + logger plans", status: "new", accent: "gold",
+    title: "Universal Calendar + Logger", desc: "One universal cream/flora/oxblood calendar everywhere (replaces the OLD photo-bg month grid + 3 other one-off calendars); the calendar ICON replaces the + FAB as the single logging entry; tap a day to log for that day (date prefilled, editable); Planner time-slot prefills date+time; general 'Log for today' button vs day-specific flow; rebuilt opaque log sheet keeping every capability (meals/water/mood/symptom/note/habit/med/event + OFF/scan/voice/photo). Deep brainstorm w/ options+recommendations+mockups. Plan only." },
   { kind: "doc", key: "Card Styles", group: CAT.CURRENT, sub: "Card language plans", status: "new", accent: "gold",
     title: "Card Styles — 39 examples (new)", desc: "The GALLERY: 39 distinct card styles, every one a visual on-brand mock, grouped — bento mixed-size tiles · media/hero card + category carousel · category shelf · rich-stat card (progress ring + flora + inline actions + status badge + … menu) · dismissible suggestion · expandable · spotlight/stat-tile/letter · daily check-in · cycle wheel — all in our cream/flora/oxblood brand (not dark fintech). Cited research. Plan only; feeds a bible §6.7.0 update after approval." },
   { kind: "doc", key: "Today Mega-Plan", group: CAT.SPECS, accent: "gold",
@@ -468,6 +472,7 @@ const ARCHIVE_SUB_ORDER = [
 ];
 // Current sub-section order (keeps Current scannable — page plans together, then cross-app).
 const CURRENT_SUB_ORDER = [
+  "Calendar + logger plans",
   "Card language plans",
   "Page level-up plans + demos",
   "Cross-app plans & decisions",
@@ -1039,6 +1044,7 @@ function FoundersInner({ user }) {
       {tab === "Programs +2" && <BrandDocFrame html={programsPlanHtml} title="FemWell — Programs Level Up (+2)" />}
       {tab === "Garden +2" && <BrandDocFrame html={gardenPlanHtml} title="FemWell — Garden Level Up (+2)" />}
       {tab === "Jess +2" && <BrandDocFrame html={jessPlanHtml} title="FemWell — Jess Level Up (+2)" />}
+      {tab === "Universal Calendar" && <BrandDocFrame html={universalCalendarHtml} title="FemWell — One Universal Calendar + Logger" />}
       {tab === "Card Styles" && <BrandDocFrame html={cardStylesHtml} title="FemWell — Card Styles: research + expansion" />}
       {tab === "Intentions & Goals" && <BrandDocFrame html={intentionsGoalsHtml} title="FemWell — Intentions, Line of the Day & Goals" />}
       {tab === "Connect, Days & Missions" && <BrandDocFrame html={connectDaysMissionsHtml} title="FemWell — No Garden Grows Alone (Connection, Days Off & Tiny Missions)" />}
