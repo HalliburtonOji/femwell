@@ -1,6 +1,10 @@
 # FEMWELL — CANONICAL STATUS INDEX (read first · updated 2026-06-30)
 **This file is the single source of truth AND the index to every plan doc. If anything else disagrees, this wins.** (The long ship-log history continues below the index.)
 
+## 🌿✅ FOUNDERS OS — Realistic Branch flora doc wired (top of Brand+card sub) + one-bundle deploy · live `index-CUihOD9B.js` (2026-07-07)
+Wired the newest flora pick from IDEAS-LINKS-FOR-FOUNDERSOS.md into Ideas → Current (3 edits: ?raw import · kind:doc key "Realistic Branch" sub "Brand + card language" sage title "Flora hero — the branch, done properly (realism)" · BrandDocFrame render). Placed at the TOP of the Brand+card sub, ABOVE Branch Header / Flora Header (New chip). Only FoundersOS.jsx changed. Pulled all (HEAD had the realistic-branch demo + photo-intent logger work), CLEAN build (rm -rf dist && npx vite build) → npx base44 site deploy -y so everything lands in one bundle.
+- CONFIRMED in the served bundle index-CUihOD9B.js: Realistic Branch title ("the branch, done properly (realism)") + key ✓, /UniversalCalendarDemo route ✓, Branch Header still present ✓. eslint 0 · vite build exit 0 · pushed eaca108.
+
 ## 🔗✅ DEPLOY RECONCILED — flora-hero + Branch Header + calendar demo in ONE bundle · live `index-BtfIdx5Z.js` (2026-07-07)
 Several sessions deployed near-simultaneously (my wiring `8b26ce8` + brand `88980fd` flora-hero), so the prior live bundle risked missing one. Pulled all (HEAD `abee953`); verified BOTH `8b26ce8` and `88980fd` are ancestors of HEAD + all 3 markers in source. CLEAN build (rm -rf dist && npx vite build) → npx base44 site deploy -y.
 - **CONFIRMED all three in the ONE served bundle `index-BtfIdx5Z.js`:** rotating branch FwFloraHero (floraBranch: BRANCH_VARIANTS/pickBranchVariant) ✓, Branch Header doc ("the blossoming branch, richer") ✓, /UniversalCalendarDemo route ✓. (8.67 MB bundle.) Nothing lost across the concurrent deploys.
