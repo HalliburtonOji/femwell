@@ -436,8 +436,58 @@
 
   <hr>
 
+  <!-- ═══════════════════════════════════════ -->
+  <h2 id="oneflow">12 · One-flow: run / plan a whole day in one pass</h2>
+  <p>Today, capturing a day means hopping modal-to-modal: log a meal, close, open symptoms, close, open meds… Each hop is friction and a reason to stop early. The fix: a <b>single continuous flow</b> that walks you through the whole day — or lets you <b>plan</b> a whole future day — in one pass, one save.</p>
+
+  <div class="opt"><span class="verdict no">Tappy</span><span class="h">A · Stepper / wizard (one section per screen)</span>
+    <p><span class="pro">+</span> Focused; each step uncluttered; feels like a gentle ritual.<br><span class="con">–</span> A tap (Next) between every section; N screens to review; back-and-forth to change an earlier answer. Slow for a quick daily sweep.</p></div>
+
+  <div class="opt"><span class="verdict win">Recommended</span><span class="h">B · One sectioned sheet (stacked, skippable, one save)</span>
+    <p><span class="pro">+</span> The whole day on one scroll — Meals · Water · Mood · Symptoms · Meds · Events. Each section is a compact inline capture with a <b>Skip</b>; a <b>jump-to rail</b> (the app's central-switcher pattern) pins the sections at the top; a running <b>progress</b> counter; and <b>ONE save</b> at the end. Fast for power users, jumpable, nothing to learn. Matches your "run through your day" phrasing exactly.<br><span class="con">–</span> Can feel long — mitigated by the jump rail, skippable sections, and each section staying to one compact row.</p></div>
+
+  <div class="opt"><span class="verdict no">Slower</span><span class="h">C · Chat-style (Jess asks section by section)</span>
+    <p><span class="pro">+</span> Warm, conversational, very on-brand (Jess's voice); naturally skippable.<br><span class="con">–</span> Slower turn-taking; harder to jump around or review/edit; more friction for a quick daily log.</p></div>
+
+  <div class="rec"><span class="tag">Pick: B — the one-sheet "Run through the day"</span>
+  A single sheet with a jump-to rail + progress + a sticky <b>Save the day</b>. Entered from the day sheet's primary button — <b>"Run through the day"</b> (log) or <b>"Plan the whole day"</b> (plan) — with the individual type chips kept below for single quick logs. <b>The LOG-vs-PLAN gate is respected:</b> a future day shows only plannable sections (meals-as-menu, events, reminders, habits, meds); the retrospective sections (water, mood, symptoms) are hidden — you don't "run through" a headache you haven't had. A "focus mode" that turns B into a one-at-a-time stepper (option A) is an easy future toggle for anyone who prefers it.</div>
+
+  <div class="card" style="border-color:var(--sage)"><span class="eyebrow" style="color:#3f6b3a">✅ Built &amp; live-verified in the demo</span>
+  <p style="margin:.3em 0 0">Open the demo → "Run through your whole day": sections capture, the jump rail lights a check per touched section, the progress reads "N/6 · N things", and one <b>Save the day · N things</b> drops the dots onto that day. Confirmed end-to-end.</p></div>
+
+  <hr>
+
+  <!-- ═══════════════════════════════════════ -->
+  <h2 id="smartshot">13 · Smart picture → schedule</h2>
+  <p>Snap or screenshot your <b>work rota</b> (or a list of upcoming events) → it reads the shifts, dates and times → you <b>review and edit</b> → then it becomes plan entries. A genuine time-saver for shift workers and busy planners.</p>
+
+  <div class="rec" style="border-color:var(--crimson);border-left-color:var(--crimson)"><span class="tag" style="color:var(--crimson)">✅ Stayed inside the function/key rule</span>
+  <b>No new base44 function, no new key.</b> This <b>extends the existing <code>analyzeMealPhoto</code></b> function (the one meal-snap already uses) with a <code>mode:"schedule"</code> branch — same <b>gpt-4o-mini</b> multimodal model, same <b>OpenAI key</b>. The meal path is untouched (default mode). Deployed via <code>base44 functions deploy analyzeMealPhoto</code>.</div>
+
+  <h4>The flow (review-before-save is non-negotiable)</h4>
+  <ol>
+    <li><b>Pick</b> — choose a photo from library (or "Try the sample rota" in the demo). Camera optional.</li>
+    <li><b>Read</b> — the image + today's date go to <code>analyzeMealPhoto(mode:"schedule")</code>; it returns structured entries (title, date, day-label, start/end, confidence) + an honest <code>notes</code> line. Weekday-only rota rows are resolved to the next upcoming date.</li>
+    <li><b>Review / confirm</b> — <b>every parsed entry is shown for you to check &amp; edit first</b>: a per-row include tick, the date/time, a confidence tag, and a remove button. A row with no resolvable date is flagged <em>"needs a date."</em> <b>Nothing is saved until you tap "Add N to your plan."</b> Never a silent auto-commit.</li>
+    <li><b>Commit</b> — the included rows become plan entries on their dates (dots on the calendar).</li>
+  </ol>
+
+  <h4>Handles / honest limits (stated in-sheet)</h4>
+  <ul>
+    <li><b>Handles:</b> a weekly rota of shifts (weekday → upcoming date), and a list of dated events/appointments.</li>
+    <li><b>Limits:</b> handwriting and very dense timetables can miss rows; ambiguous or missing dates are flagged rather than guessed; a non-schedule image degrades to a calm "no schedule found." That's exactly why the <b>review step</b> exists.</li>
+  </ul>
+
+  <div class="warn"><span class="tag">Needs your sign-off for the REAL build (not the demo)</span>
+  Two things when we promote this off the demo: (1) the "Add to plan" step will write real <b>PlannerItems</b> (a live schedule write) — confirm that's the target entity/behaviour. (2) The demo's live OCR parse should be eyeballed on your <b>authenticated device</b> — see the verification note below. The function/key rule was met with room to spare (no new function, no new key).</div>
+
+  <div class="warn" style="border-color:var(--gold);border-left-color:var(--gold)"><span class="tag" style="color:var(--gold)">Verification note (honest)</span>
+  Built, deployed, and wired. In this session the only connected test browser was <b>unauthenticated</b>, so the live vision call returns the function's own auth-guard (<code>503</code>) rather than parsing — i.e. the request <em>reaches</em> the extended function (routing + payload + the schedule branch are live), it just can't authenticate an anonymous browser. The OCR parse itself needs a signed-in session (your Browser 2 / on-device) to confirm end-to-end. All the UI states (pick · reading · review · empty · error) render and degrade gracefully.</div>
+
+  <hr>
+
   <!-- ─────────────────────────────────────── -->
-  <h2 id="questions">12 · Open questions for you</h2>
+  <h2 id="questions">14 · Open questions for you</h2>
   <ol>
     <li><b>Calendar icon home:</b> top-bar right (recommended) — or do you want it somewhere thumb-closer (bottom bar, replacing the FAB's corner)?</li>
     <li><b>General button label:</b> "Log for today" (recommended) vs a neutral "Log" vs "Quick log"?</li>
