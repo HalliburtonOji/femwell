@@ -28,24 +28,45 @@ import {
   ScanBarcode, Mic, Camera, Pen, Clock, Lock, Image as ImageIcon, ChevronDown,
   Sparkles, ListChecks, Loader2, Upload, Trash2, WandSparkles,
 } from "lucide-react";
-import { createClient } from "@base44/sdk";
-import { appParams } from "@/lib/app-params";
+import { base44 } from "@/api/base44Client";
 import { T, SERIF, UI, SCRIPT, PAPER_BG, Heart, useEditorialFonts } from "@/components/journal/Editorial";
 
-// Demo-local base44 client for the schedule-vision call. The shared client reads its
-// appId from appParams, which can be null in a locally-built bundle (VITE_BASE44_APP_ID
-// isn't baked in outside base44's own build) — that made functions.invoke hit
-// /api/apps/null/... → 404. We pin the known app id as a fallback so the vision call
-// resolves; on a real prod build appParams.appId is used unchanged.
-const _demoAppId = appParams.appId || "69a9891a6ccccc1822bbb4bc";
-const demo44 = createClient({
-  appId: _demoAppId,
-  token: appParams.token,
-  functionsVersion: appParams.functionsVersion,
-  serverUrl: "",
-  requiresAuth: false,
-  appBaseUrl: appParams.appBaseUrl,
-});
+// Vision-call safety (the photo read must NEVER hang). We use the app's SHARED base44
+// client — it carries the real auth session on a signed-in device (a separate createClient
+// instance has no session token and STALLS on auth → the infinite spinner bug). Every
+// invoke is raced against an 8s timeout and every image is downscaled first, exactly like
+// the app's meal-photo path. Any timeout / error / 503 → we fall back to the word
+// classifier and advance, so the user is never stuck.
+const VISION_TIMEOUT_MS = 8000;
+function withTimeout(promise, ms) {
+  return Promise.race([
+    promise,
+    new Promise((_, reject) => setTimeout(() => reject(new Error("vision-timeout")), ms)),
+  ]);
+}
+// Downscale a data URL to a ~1000px JPEG so the payload is small (a raw multi-MB photo
+// slows/stalls the call). Resolves to the original on any failure — never throws.
+function downscaleDataUrl(dataUrl, maxEdge = 1000) {
+  return new Promise((resolve) => {
+    try {
+      const img = new Image();
+      img.onload = () => {
+        try {
+          const long = Math.max(img.width, img.height) || 1;
+          const scale = Math.min(1, maxEdge / long);
+          const w = Math.max(1, Math.round(img.width * scale));
+          const h = Math.max(1, Math.round(img.height * scale));
+          const c = document.createElement("canvas"); c.width = w; c.height = h;
+          const g = c.getContext("2d"); if (!g) { resolve(dataUrl); return; }
+          g.drawImage(img, 0, 0, w, h);
+          resolve(c.toDataURL("image/jpeg", 0.7));
+        } catch { resolve(dataUrl); }
+      };
+      img.onerror = () => resolve(dataUrl);
+      img.src = dataUrl;
+    } catch { resolve(dataUrl); }
+  });
+}
 
 const OX = "#7A1A12"; // oxblood — the app-wide heading colour (BRAND_IDENTITY §1)
 const PHASE = { menstrual: "#BC2E27", follicular: "#8FAF8F", ovulatory: "#D4AF37", luteal: "#8E6E8E" };
@@ -878,26 +899,33 @@ function SmartShotSheet({ sheet, onBack, onClose, onConfirm }) {
   const [rows, setRows] = useState([]);
   const [guard, setGuard] = useState(null); // { kind, msg }
   const [target, setTarget] = useState({ date: sheet.date, mode: sheet.date > TODAY_STR ? "plan" : "log" });
+  const [degraded, setDegraded] = useState(false); // vision didn't return → we went by the words
   const fileRef = useRef(null);
 
   const pick = (url, kind) => { setImageUrl(url); setSampleKind(kind || null); setStage("intent"); };
   const onFile = (e) => { const f = e.target.files?.[0]; if (!f) return; const r = new FileReader(); r.onload = () => pick(r.result, null); r.readAsDataURL(f); };
 
+  // The photo read must NEVER hang. Race the vision call against an 8s timeout; on ANY
+  // timeout / error / 503 / unusable payload, fall back to the word classifier and advance.
+  // A `finally`-guaranteed route means we always leave the "reading" spinner.
   async function classify() {
     setStage("reading");
-    let c = null;
+    setDegraded(false);
+    let c = null, ok = false;
     try {
-      const res = await demo44.functions.invoke("analyzeMealPhoto", {
+      const small = await downscaleDataUrl(imageUrl);
+      const res = await withTimeout(base44.functions.invoke("analyzeMealPhoto", {
         mode: "intent", reference_date: TODAY_STR, intent_text: intentText,
         time_of_day: new Date().getHours() < 12 ? "morning" : new Date().getHours() < 17 ? "afternoon" : "evening",
-        image_base64: imageUrl,
-      });
+        image_base64: small,
+      }), VISION_TIMEOUT_MS);
       const d = res?.data || res;
-      if (d && d.kind === "intent" && !d.analysis_unavailable && d.detected) c = d;
-    } catch { /* fall through to heuristic */ }
-    if (!c) { const h = classifyByText(intentText, sampleKind); c = { ...h, notes: "" }; } // resilient: user's words drive it
+      if (d && d.kind === "intent" && !d.analysis_unavailable && d.detected) { c = d; ok = true; }
+    } catch { /* timeout / network / auth — fall through to the words */ }
+    if (!c) c = { ...classifyByText(intentText, sampleKind), notes: "" }; // resilient: user's words drive it
+    setDegraded(!ok);
     setCls(c);
-    routeFrom(c);
+    routeFrom(c); // always advances (guard or a route) — the spinner can never persist
   }
 
   function routeFrom(c) {
@@ -942,11 +970,12 @@ function SmartShotSheet({ sheet, onBack, onClose, onConfirm }) {
     setStage("reading");
     let entries = null;
     try {
-      const res = await demo44.functions.invoke("analyzeMealPhoto", { mode: "schedule", reference_date: TODAY_STR, image_base64: imageUrl });
+      const small = await downscaleDataUrl(imageUrl);
+      const res = await withTimeout(base44.functions.invoke("analyzeMealPhoto", { mode: "schedule", reference_date: TODAY_STR, image_base64: small }), VISION_TIMEOUT_MS);
       const d = res?.data || res;
       if (Array.isArray(d?.entries) && d.entries.length && !d.analysis_unavailable)
         entries = d.entries.map((e, i) => ({ ...e, include: true, _id: i, date: e.date || resolveDayLabel(e.day_label) }));
-    } catch { /* fall through */ }
+    } catch { /* timeout / network / auth — fall through */ }
     if (!entries && sampleKind === "rota") entries = fallbackRotaEntries();
     if (!entries) { setStage("error"); return; }
     setRows(entries); setStage("schedule_review");
@@ -1047,6 +1076,7 @@ function SmartShotSheet({ sheet, onBack, onClose, onConfirm }) {
           <div style={{ display: "inline-flex", alignItems: "center", gap: 6, fontFamily: UI, fontSize: 10.5, fontWeight: 800, letterSpacing: 0.6, padding: "3px 10px", borderRadius: 999, marginBottom: 10, background: `${route.tone}22`, color: OX }}>
             <route.Icon size={12} /> {route.label.toUpperCase()} · {target.mode === "plan" ? "PLAN" : "LOG"} · {target.date === TODAY_STR ? "today" : format(parseISO(target.date), "EEE d MMM")}
           </div>
+          {degraded && <div style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 12.5, color: T.muted, marginBottom: 8 }}>Couldn't fully read the picture — going by what you said.</div>}
           <div style={{ ...eyebrow, marginBottom: 8 }}>{FOLLOWUPS[cls.detected].q}</div>
           <div style={{ display: "flex", flexWrap: "wrap", gap: 7, marginBottom: 8 }}>
             {FOLLOWUPS[cls.detected].options.map((o) => {
@@ -1081,6 +1111,7 @@ function SmartShotSheet({ sheet, onBack, onClose, onConfirm }) {
           <div style={{ display: "inline-flex", alignItems: "center", gap: 6, fontFamily: UI, fontSize: 10.5, fontWeight: 800, letterSpacing: 0.6, padding: "3px 10px", borderRadius: 999, marginBottom: 10, background: "rgba(143,175,143,0.2)", color: "#3f6b3a" }}>
             <Check size={12} /> REVIEW BEFORE SAVING
           </div>
+          {degraded && !FOLLOWUPS[cls.detected] && <div style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 12.5, color: T.muted, marginBottom: 8 }}>Couldn't fully read the picture — going by what you said.</div>}
           {imageUrl && <img src={imageUrl} alt="" style={{ width: "100%", maxHeight: 130, objectFit: "contain", borderRadius: 12, border: `1px solid ${T.paperDeep}`, background: "#fff", marginBottom: 10 }} />}
           <div style={{ ...inset, padding: 12 }}>
             <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
