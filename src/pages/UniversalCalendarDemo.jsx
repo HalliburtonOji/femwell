@@ -28,8 +28,24 @@ import {
   ScanBarcode, Mic, Camera, Pen, Clock, Lock, Image as ImageIcon, ChevronDown,
   Sparkles, ListChecks, Loader2, Upload, Trash2, WandSparkles,
 } from "lucide-react";
-import { base44 } from "@/api/base44Client";
+import { createClient } from "@base44/sdk";
+import { appParams } from "@/lib/app-params";
 import { T, SERIF, UI, SCRIPT, PAPER_BG, Heart, useEditorialFonts } from "@/components/journal/Editorial";
+
+// Demo-local base44 client for the schedule-vision call. The shared client reads its
+// appId from appParams, which can be null in a locally-built bundle (VITE_BASE44_APP_ID
+// isn't baked in outside base44's own build) — that made functions.invoke hit
+// /api/apps/null/... → 404. We pin the known app id as a fallback so the vision call
+// resolves; on a real prod build appParams.appId is used unchanged.
+const _demoAppId = appParams.appId || "69a9891a6ccccc1822bbb4bc";
+const demo44 = createClient({
+  appId: _demoAppId,
+  token: appParams.token,
+  functionsVersion: appParams.functionsVersion,
+  serverUrl: "",
+  requiresAuth: false,
+  appBaseUrl: appParams.appBaseUrl,
+});
 
 const OX = "#7A1A12"; // oxblood — the app-wide heading colour (BRAND_IDENTITY §1)
 const PHASE = { menstrual: "#BC2E27", follicular: "#8FAF8F", ovulatory: "#D4AF37", luteal: "#8E6E8E" };
@@ -795,7 +811,7 @@ function SmartShotSheet({ sheet, onBack, onClose, onConfirm }) {
   async function parse(dataUrl) {
     setStage("reading");
     try {
-      const res = await base44.functions.invoke("analyzeMealPhoto", {
+      const res = await demo44.functions.invoke("analyzeMealPhoto", {
         mode: "schedule", reference_date: TODAY_STR, image_base64: dataUrl,
       });
       const dta = res?.data || res;
