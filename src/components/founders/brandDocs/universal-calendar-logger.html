@@ -119,7 +119,10 @@
     <a href="#migration">9 · Retiring the "+" FAB without breaking logging</a>
     <a href="#edge">10 · Edge cases</a>
     <a href="#build">11 · Engineering shape + build order</a>
-    <a href="#questions">12 · Open questions for you · DONE / QUEUED</a>
+    <a href="#oneflow">12 · One-flow — run / plan a whole day <b>(new)</b></a>
+    <a href="#smartshot">13 · Smart picture → schedule <b>(new)</b></a>
+    <a href="#photointent">14 · Photo → anything — intent-driven <b>(new)</b></a>
+    <a href="#questions">15 · Open questions for you · DONE / QUEUED</a>
   </div>
 
   <div class="rec" style="border-color:var(--crimson);border-left-color:var(--crimson)">
@@ -486,8 +489,51 @@
 
   <hr>
 
+  <!-- ═══════════════════════════════════════ -->
+  <h2 id="photointent">14 · Photo → anything (intent-driven)</h2>
+  <p>The photo logger must not be schedule-only. A picture can mean many things — a <b>receipt</b> ("what I had for lunch"), a <b>rota</b> ("my shifts"), a <b>symptom</b>, a <b>moment</b>. What it becomes should follow <b>what the user means</b>, not just what's in the pixels. Halli's example: a restaurant receipt is <em>food I had</em>, not a schedule.</p>
+
+  <h4>How intent is captured — options</h4>
+  <div class="opt"><span class="verdict no">Guesses wrong</span><span class="h">A · Vision-only auto-classify</span>
+    <p><span class="pro">+</span> Zero typing.<br><span class="con">–</span> A receipt could be "food" or "an expense"; a whiteboard could be a plan or a note. Guessing without the user's words is where it feels dumb.</p></div>
+  <div class="opt"><span class="verdict win">Recommended</span><span class="h">B · Image + a one-line intent, together</span>
+    <p><span class="pro">+</span> After adding the picture, the user says it in their own words ("this is what I had for lunch"). The model reads <b>image + intent</b> and the <b>user's words win</b> when they conflict. Fast (one line, or a quick chip: Food I had · My schedule · A symptom · A moment), and it's what makes routing feel smart.<br><span class="con">–</span> One extra line of input — worth it for correct routing.</p></div>
+  <div class="opt"><span class="verdict no">Slower</span><span class="h">C · Ask a long questionnaire</span>
+    <p><span class="con">–</span> Too many taps for a quick log. We want 1–2 quick, skippable questions, not a form.</p></div>
+
+  <div class="rec"><span class="tag">Pick: B — intent-led, vision-augmented</span>
+  Add photo → <b>one intent line</b> (free text + quick chips) → the model classifies into <b>food / schedule / symptom / moment</b> (with <code>is_retrospective</code> + a meal-type guess) → <b>1 smart follow-up</b> → <b>review</b> → save. The rota→schedule parse becomes <em>one outcome</em> of this path, not the whole thing. <b>Intent is the primary signal</b> — so even if the vision call can't run, the flow still works from the user's words (and the demo proves this).</div>
+
+  <h4>Smart follow-ups + how the "most likely" is highlighted</h4>
+  <p>After classifying, the app asks <b>one</b> short multiple-choice question (skippable) — e.g. food → <em>"Log it as"</em> [Breakfast · Lunch · <b>Dinner</b> · Snack]. The <b>most-probable answer is pre-selected and emphasised</b>: it renders <b>filled + bold with a "★ MOST LIKELY" tag</b>, and it's already the chosen value so a user can just hit Continue. The guess comes from the model's <code>meal_type_guess</code> (or the time of day) for food, and keyword cues for symptoms. Every question also offers <b>"Type your own"</b> → a free-text reply, so the user is never boxed into the chips.</p>
+
+  <h4>Routing table</h4>
+  <div class="tblwrap"><table>
+    <tr><th>Detected</th><th>Follow-up</th><th>Becomes</th></tr>
+    <tr><td><b>Food</b> (receipt, plate, menu)</td><td>"Log it as" — meal type (most-likely highlighted)</td><td>A meal log</td></tr>
+    <tr><td><b>Schedule</b> (rota, event list)</td><td>— (straight to the row review)</td><td>Reviewable <b>plan</b> entries on their dates</td></tr>
+    <tr><td><b>Symptom</b></td><td>"What is it" — symptom chips</td><td>A symptom log</td></tr>
+    <tr><td><b>Moment</b> (scenic, keepsake)</td><td>— (skippable)</td><td>A note / moment</td></tr>
+  </table></div>
+
+  <h4>The LOG-vs-PLAN intent guard</h4>
+  <p>When the <b>entry's nature conflicts with the selected date's mode</b>, the app <b>confirms and redirects</b> rather than doing the wrong thing:</p>
+  <ul>
+    <li><b>Future date + retrospective thing</b> (e.g. food you just ate while a future day is selected): <em>"This looks like something you had — log it for today instead of planning it for [date]?"</em> → <b>[Log for today]</b> (redirects to today, log mode) / [Keep for that day].</li>
+    <li><b>Log date + a schedule</b> (a rota while today is selected): <em>"This looks like a schedule to plan ahead — add these as plans on their own dates?"</em> → <b>[Yes, plan these]</b> / [Just note today].</li>
+  </ul>
+  <p>This is the same LOG-vs-PLAN rule from §2, now enforced at the moment of intent — the app quietly steers the entry to the right date and mode.</p>
+
+  <div class="rec" style="border-color:var(--crimson);border-left-color:var(--crimson)"><span class="tag" style="color:var(--crimson)">✅ Function/key rule met</span>
+  Extends the same <code>analyzeMealPhoto</code> with a <code>mode:"intent"</code> classifier branch (alongside <code>mode:"schedule"</code>) — same <b>gpt-4o-mini</b>, same <b>OpenAI key</b>, <b>no new function/key</b>. The client owns the follow-up chips + highlighting + guard + review, so nothing saves without confirmation.</div>
+
+  <div class="card" style="border-color:var(--sage)"><span class="eyebrow" style="color:#3f6b3a">✅ Built &amp; live-verified in the demo</span>
+  <p style="margin:.3em 0 0">"Photo → log or plan anything" → sample <b>receipt</b> + "Food I had" → classified <b>food</b> → the <b>guard</b> fired ("log for today instead of planning for Wed 8 Jul?") → follow-up showed <b>Dinner ★ MOST LIKELY</b> pre-selected → review → logged. Sample <b>rota</b> + "My schedule" → classified <b>schedule</b> → 5 shifts resolved to upcoming dates in the review → plan. Because intent leads, this all worked on an <em>unauthenticated</em> browser (the vision call augments; the user's words drive).</p></div>
+
+  <hr>
+
   <!-- ─────────────────────────────────────── -->
-  <h2 id="questions">14 · Open questions for you</h2>
+  <h2 id="questions">15 · Open questions for you</h2>
   <ol>
     <li><b>Calendar icon home:</b> top-bar right (recommended) — or do you want it somewhere thumb-closer (bottom bar, replacing the FAB's corner)?</li>
     <li><b>General button label:</b> "Log for today" (recommended) vs a neutral "Log" vs "Quick log"?</li>
