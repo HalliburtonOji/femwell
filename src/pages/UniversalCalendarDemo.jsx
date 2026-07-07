@@ -364,7 +364,7 @@ export default function UniversalCalendarDemo() {
             {sheet.stage === "smartshot" && <SmartShotSheet sheet={sheet}
               onBack={() => setSheet({ stage: "day", mode: sheet.mode, date: sheet.date })}
               onClose={closeAll}
-              onConfirm={(list) => { commitEntries(list); flash(`Added ${list.length} to your plan`); closeAll(); }} />}
+              onConfirm={(list) => { commitEntries(list); const planned = list.length > 0 && list.every((x) => x.plan); flash(`${planned ? "Added" : "Logged"} ${list.length} ${planned ? "to your plan" : list.length === 1 ? "thing" : "things"}`); closeAll(); }} />}
             {sheet.stage === "done" && <DoneSheet sheet={sheet} onClose={closeAll} onAnother={() => setSheet({ stage: "day", mode: sheet.mode, date: sheet.date })} />}
           </Sheet>
         </Backdrop>
