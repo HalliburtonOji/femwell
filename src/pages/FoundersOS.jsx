@@ -81,6 +81,8 @@ import jessPlanHtml from "@/components/founders/brandDocs/jess-plan.html?raw";
 import cardStylesHtml from "@/components/founders/brandDocs/card-styles-expansion.html?raw";
 // Universal Calendar + Logger plan doc (2026-07-05) — wired from IDEAS-LINKS-FOR-FOUNDERSOS.md.
 import universalCalendarHtml from "@/components/founders/brandDocs/universal-calendar-logger.html?raw";
+// Calendar Sync (Google + Apple) research+plan doc (2026-07-08) — wired from IDEAS-LINKS-FOR-FOUNDERSOS.md.
+import calendarSyncHtml from "@/components/founders/brandDocs/calendar-sync-plan.html?raw";
 // Nutrition hero tap-to-bloom brainstorm (2026-07-07) — wired from IDEAS-LINKS-FOR-FOUNDERSOS.md.
 import heroBloomTapHtml from "@/components/founders/brandDocs/nutrition-hero-bloom-tap.html?raw";
 // Flora Header redesign demo (2026-07-03) — wired from IDEAS-LINKS-FOR-FOUNDERSOS.md.
@@ -368,6 +370,8 @@ const CATALOG = [
     title: "Universal Calendar + Logger", desc: "One universal cream/flora/oxblood calendar everywhere (replaces the OLD photo-bg month grid + 3 other one-off calendars); the calendar ICON replaces the + FAB as the single logging entry; tap a day to log for that day (date prefilled, editable); Planner time-slot prefills date+time; general 'Log for today' button vs day-specific flow; rebuilt opaque log sheet keeping every capability (meals/water/mood/symptom/note/habit/med/event + OFF/scan/voice/photo). Deep brainstorm w/ options+recommendations+mockups. Plan only." },
   { kind: "route", href: "/UniversalCalendarDemo", group: CAT.CURRENT, sub: "Calendar + logger plans", status: "new", accent: "gold",
     title: "Universal Calendar — demo ★", desc: "Tappable demo of the one-calendar system: calendar ICON top-bar-right entry (no + FAB), one cream/flora/oxblood FwCalendar, 'Log for today' button, tap a PAST/TODAY day → LOG sheet (all types), tap a FUTURE day → PLAN sheet with retrospective health/symptom/mood/water/note BLOCKED (gate by data type — 'can't log a headache for tomorrow'), Planner time-slot → date+TIME prefill, rebuilt opaque LOG/PLAN modal with the date·time row. Every live log method kept. Live-tested." },
+  { kind: "doc", key: "Calendar Sync", group: CAT.CURRENT, sub: "Calendar + logger plans", status: "new", accent: "plum",
+    title: "Calendar Sync — Google + Apple (research + plan)", desc: "How the Planner + Logger could two-way sync with Google (OAuth + Calendar API) and Apple (webcal/.ics, CalDAV later). Current state = NONE. Import vs export, data-model deltas (external_event_id/source/tz + a CalendarConnection entity), edge cases (dupes/timezones/overnight/recurrence/revoke/GDPR), phased plan. GATED: needs a NEW base44 fn + external OAuth creds + Google verification → sign-off before build." },
   { kind: "doc", key: "Realistic Branch", group: CAT.CURRENT, sub: "Brand + card language", status: "new", accent: "sage",
     title: "Flora hero — the branch, done properly (realism)", desc: "Realism pass on the flora hero: ONE fixed diagonal bough (Health-hero direction) with tapered curved bark, real leaves on petioles, grounded in grass, no dashed ring. Only the side twig + flower vary. 5 flowers on the same bough (rose/peony/coral/magnolia/hibiscus); real bloom, still reblooms on tap + mood tint + creature. Pick one → replaces the live rotation. Demo only." },
   { kind: "doc", key: "Branch Header", group: CAT.CURRENT, sub: "Brand + card language", status: "new", accent: "sage",
@@ -1064,6 +1068,7 @@ function FoundersInner({ user }) {
       {tab === "Garden +2" && <BrandDocFrame html={gardenPlanHtml} title="FemWell — Garden Level Up (+2)" />}
       {tab === "Jess +2" && <BrandDocFrame html={jessPlanHtml} title="FemWell — Jess Level Up (+2)" />}
       {tab === "Universal Calendar" && <BrandDocFrame html={universalCalendarHtml} title="FemWell — One Universal Calendar + Logger" />}
+      {tab === "Calendar Sync" && <BrandDocFrame html={calendarSyncHtml} title="FemWell — Calendar Sync (Google + Apple): research + plan" />}
       {tab === "Hero Bloom Tap" && <BrandDocFrame html={heroBloomTapHtml} title="Nutrition hero — one flower, blooming through the day" />}
       {tab === "Realistic Branch" && <BrandDocFrame html={floraRealismHtml} title="FemWell — the branch, done properly (realism)" />}
       {tab === "Branch Header" && <BrandDocFrame html={floraBranchDemoHtml} title="FemWell — the blossoming branch, richer" />}
