@@ -208,14 +208,19 @@ export default function UniversalCalendarDemo() {
     const isFuture = date > TODAY_STR;
     setSheet({ stage: "form", mode: isFuture ? "plan" : "log", date, type, time });
   };
-  const confirm = () => {
+  // repeatWeeks: 0 = once; N = also add on date+7·1 … date+7·(N-1) (a fixed weekly plan).
+  const confirm = (repeatWeeks = 0) => {
     const { date, type, mode } = sheet;
     setEntries((prev) => {
       const next = { ...prev };
-      next[date] = [...(next[date] || []), { type, plan: mode === "plan" }];
+      const weeks = repeatWeeks > 0 ? repeatWeeks : 1;
+      for (let w = 0; w < weeks; w++) {
+        const dk = w === 0 ? date : iso(addDays(parseISO(date), w * 7));
+        next[dk] = [...(next[dk] || []), { type, plan: mode === "plan" }];
+      }
       return next;
     });
-    setSheet((s) => ({ ...s, stage: "done" }));
+    setSheet((s) => ({ ...s, stage: "done", repeated: repeatWeeks }));
   };
 
   // one-flow + smart-picture commit a BATCH of entries in a single save
@@ -492,6 +497,8 @@ function FormSheet({ sheet, onBack, onClose, onConfirm }) {
   const [method, setMethod] = useState("type"); // 'type' | 'voice'
   const [photoOpen, setPhotoOpen] = useState(false);
   const [photoPick, setPhotoPick] = useState(null); // 'library' | 'camera'
+  const [eventRepeat, setEventRepeat] = useState(0); // 0 = once; N weeks (fixed weekly)
+  const isEvent = type === "event";
 
   return (
     <>
@@ -594,8 +601,21 @@ function FormSheet({ sheet, onBack, onClose, onConfirm }) {
         </>
       )}
 
-      <button onClick={onConfirm} style={{ ...solidBtn, background: mode === "plan" ? "#A6862B" : T.crimson }}>
-        <Check size={15} style={{ marginRight: 7, verticalAlign: -2 }} />{verb === "Plan" ? "Add to plan" : "Add to"} {verb === "Plan" ? `· ${dayWord}` : dayWord}
+      {/* manual planner entry: same fixed/flexible choice as a screenshot schedule */}
+      {isEvent && (
+        <div style={{ marginBottom: 10 }}>
+          <div style={{ ...eyebrow, marginBottom: 6 }}>Repeats?</div>
+          <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+            {[[0, "Just once"], [4, "Weekly · 4 wks"], [8, "Weekly · 8 wks"]].map(([n, lab]) => (
+              <button key={n} onClick={() => setEventRepeat(n)} style={{ ...pill, cursor: "pointer", background: eventRepeat === n ? OX : T.paperHi, color: eventRepeat === n ? T.paper : T.muted, borderColor: eventRepeat === n ? OX : T.paperDeep }}>{lab}</button>
+            ))}
+          </div>
+        </div>
+      )}
+
+      <button onClick={() => onConfirm(isEvent ? eventRepeat : 0)} style={{ ...solidBtn, background: mode === "plan" ? "#A6862B" : T.crimson }}>
+        <Check size={15} style={{ marginRight: 7, verticalAlign: -2 }} />
+        {isEvent && eventRepeat > 0 ? `Add ${eventRepeat} weekly to plan` : `${verb === "Plan" ? "Add to plan" : "Add to"} ${verb === "Plan" ? `· ${dayWord}` : dayWord}`}
       </button>
     </>
   );
@@ -921,7 +941,11 @@ function SmartShotSheet({ sheet, onBack, onClose, onConfirm }) {
   const [target, setTarget] = useState({ date: sheet.date, mode: sheet.date > TODAY_STR ? "plan" : "log" });
   const [degraded, setDegraded] = useState(false); // vision didn't return → we went by the words
   const [schedLocation, setSchedLocation] = useState(""); // shared rota location, applied to all
-  const [repeatWeekly, setRepeatWeekly] = useState(false);
+  // Schedules are FIXED (same each week → offer weekly repeat) or FLEXIBLE (varies → the
+  // parsed rows as-is). We detect a default and always let the user confirm ("same every
+  // week, or does it change?"). repeatWeeks applies only when fixed.
+  const [scheduleKind, setScheduleKind] = useState("flexible"); // 'fixed' | 'flexible'
+  const [repeatWeeks, setRepeatWeeks] = useState(4);
   const fileRef = useRef(null);
 
   const pick = (url, kind) => { setImageUrl(url); setSampleKind(kind || null); setStage("intent"); };
@@ -1013,7 +1037,12 @@ function SmartShotSheet({ sheet, onBack, onClose, onConfirm }) {
     // derive a shared location if every row carries the same one
     if (!loc) { const locs = [...new Set(entries.map((e) => e.location).filter(Boolean))]; if (locs.length === 1) loc = locs[0]; }
     setSchedLocation(loc || "");
-    setRepeatWeekly(false);
+    // Detect a fixed/flexible DEFAULT: a schedule whose entries all fall on ONE weekday
+    // reads as a fixed weekly pattern; a mixed/irregular set reads as flexible. The user
+    // always confirms via the "same every week?" control in the review.
+    const dows = entries.filter((e) => e.date).map((e) => parseISO(e.date).getDay());
+    setScheduleKind(dows.length >= 2 && new Set(dows).size === 1 ? "fixed" : "flexible");
+    setRepeatWeeks(4);
     setRows(entries); setStage("schedule_review");
   }
 
@@ -1027,18 +1056,15 @@ function SmartShotSheet({ sheet, onBack, onClose, onConfirm }) {
   const setRow = (i, patch) => setRows((p) => p.map((x, j) => j === i ? { ...x, ...patch } : x));
   const selectedRows = rows.filter((r) => r.include && r.date);
   const includedWithDate = selectedRows.length;
-  // "weekly-ish" only when it's genuinely easy: 2+ selected shifts that all fall on the
-  // same weekday. (Halli's real rota is irregular → no offer, we just add the parsed set.)
-  const weeklyish = (() => {
-    const dows = selectedRows.map((r) => parseISO(r.date).getDay());
-    return dows.length >= 2 && new Set(dows).size === 1;
-  })();
+  // FIXED → every selected entry recurs weekly for `repeatWeeks`. FLEXIBLE → the parsed
+  // set once (varies week to week, no recurrence assumed).
+  const savedCount = scheduleKind === "fixed" ? includedWithDate * repeatWeeks : includedWithDate;
   const saveSchedule = () => {
-    const base = selectedRows.map((r) => ({ date: r.date, type: "event", plan: true }));
-    let list = base;
-    if (repeatWeekly && weeklyish) {
-      list = [];
-      for (const r of selectedRows) for (let w = 0; w < 4; w++) list.push({ date: iso(addDays(parseISO(r.date), w * 7)), type: "event", plan: true });
+    let list = [];
+    if (scheduleKind === "fixed") {
+      for (const r of selectedRows) for (let w = 0; w < repeatWeeks; w++) list.push({ date: iso(addDays(parseISO(r.date), w * 7)), type: "event", plan: true });
+    } else {
+      list = selectedRows.map((r) => ({ date: r.date, type: "event", plan: true }));
     }
     onConfirm(list);
   };
@@ -1183,12 +1209,32 @@ function SmartShotSheet({ sheet, onBack, onClose, onConfirm }) {
       {stage === "schedule_review" && (
         <>
           <div style={{ display: "inline-flex", alignItems: "center", gap: 6, fontFamily: UI, fontSize: 10.5, fontWeight: 800, letterSpacing: 0.6, padding: "3px 10px", borderRadius: 999, marginBottom: 8, background: "rgba(143,175,143,0.2)", color: "#3f6b3a" }}>
-            <Check size={12} /> REVIEW BEFORE SAVING · {rows.length} shift{rows.length === 1 ? "" : "s"} · PLAN
+            <Check size={12} /> REVIEW BEFORE SAVING · {rows.length} {rows.length === 1 ? "entry" : "entries"} · PLAN
           </div>
           {degraded && <div style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 12.5, color: T.muted, marginBottom: 8 }}>Couldn't fully read the picture — check these carefully.</div>}
 
-          {/* shared location — applied to every shift, edit once */}
-          <div style={{ ...eyebrow, marginBottom: 4 }}>Location · all shifts</div>
+          {/* FIXED vs FLEXIBLE — the general schedule question (detected default, user confirms) */}
+          <div style={{ ...eyebrow, marginBottom: 6 }}>Is this the same every week?</div>
+          <div style={{ display: "flex", gap: 6, marginBottom: scheduleKind === "fixed" ? 8 : 12 }}>
+            {[["fixed", "Same every week"], ["flexible", "Varies week to week"]].map(([k, lab]) => {
+              const on = scheduleKind === k;
+              return (
+                <button key={k} onClick={() => setScheduleKind(k)} style={{ flex: 1, padding: "9px 6px", borderRadius: 10, cursor: "pointer",
+                  border: `1.5px solid ${on ? "#A6862B" : T.paperDeep}`, background: on ? "rgba(168,137,63,0.16)" : T.paperHi, color: on ? OX : T.muted, fontFamily: UI, fontSize: 12.5, fontWeight: 700 }}>{lab}</button>
+              );
+            })}
+          </div>
+          {scheduleKind === "fixed" && (
+            <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap", marginBottom: 12 }}>
+              <span style={{ fontFamily: UI, fontSize: 11.5, color: T.muted }}>Repeat weekly for</span>
+              {[4, 8, 12].map((w) => (
+                <button key={w} onClick={() => setRepeatWeeks(w)} style={{ ...pill, cursor: "pointer", background: repeatWeeks === w ? OX : T.paperHi, color: repeatWeeks === w ? T.paper : T.muted, borderColor: repeatWeeks === w ? OX : T.paperDeep }}>{w} wks</button>
+              ))}
+            </div>
+          )}
+
+          {/* shared location — applied to every entry, edit once */}
+          <div style={{ ...eyebrow, marginBottom: 4 }}>Location · all entries</div>
           <input value={schedLocation} onChange={(e) => setSchedLocation(e.target.value)} placeholder="e.g. Halliburton Oji, Paddington"
             style={{ width: "100%", boxSizing: "border-box", padding: "9px 11px", borderRadius: 10, border: `1px solid ${T.paperDeep}`, background: T.paper, color: T.ink, fontFamily: UI, fontSize: 13, outline: "none", marginBottom: 10 }} />
 
@@ -1220,19 +1266,11 @@ function SmartShotSheet({ sheet, onBack, onClose, onConfirm }) {
             })}
           </div>
 
-          {/* weekly repeat — only when it's genuinely easy (all selected on one weekday) */}
-          {weeklyish && (
-            <label style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10, cursor: "pointer" }}>
-              <input type="checkbox" checked={repeatWeekly} onChange={(e) => setRepeatWeekly(e.target.checked)} style={{ accentColor: "#A6862B" }} />
-              <span style={{ fontFamily: UI, fontSize: 12.5, color: T.muted }}>These look weekly — repeat for the next 4 weeks?</span>
-            </label>
-          )}
-
           <div style={{ fontFamily: UI, fontSize: 10.5, color: T.muted, marginBottom: 10 }}>
-            Untick a shift, edit any time/date, or remove a row. Done shifts are unticked. Nothing is saved until you tap below.
+            Untick an entry, edit any time/date, or remove a row. Done ones are unticked. Nothing is saved until you tap below.
           </div>
           <button onClick={saveSchedule} disabled={includedWithDate === 0} style={{ ...solidBtn, background: "#A6862B", opacity: includedWithDate === 0 ? 0.45 : 1, cursor: includedWithDate === 0 ? "default" : "pointer" }}>
-            <Check size={15} style={{ marginRight: 7, verticalAlign: -2 }} />Add {repeatWeekly && weeklyish ? includedWithDate * 4 : includedWithDate} shift{(repeatWeekly && weeklyish ? includedWithDate * 4 : includedWithDate) === 1 ? "" : "s"} to your plan
+            <Check size={15} style={{ marginRight: 7, verticalAlign: -2 }} />Add {savedCount} {savedCount === 1 ? "entry" : "entries"} to your plan{scheduleKind === "fixed" ? ` · ${repeatWeeks} wks` : ""}
           </button>
         </>
       )}
