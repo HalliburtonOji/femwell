@@ -1042,7 +1042,7 @@ export default function NutritionV2Shell() {
                 glancePanel={
                   <FwCard snap={false} minHeight={SWIPE_H} accent={gold} Icon={Flame} eyebrow="Today, at a glance" flower="marigold" idx="v2-glance"
                     action={<div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, width: "100%" }}>
-                      <button onClick={() => openLogger("photo")} className="fw-elite-press" style={focusPill(cwOf("plum").petal)}><Camera size={16} /> Snap a photo</button>
+                      <button onClick={() => openLogger("say")} className="fw-elite-press" style={focusPill(cwOf("plum").petal)}><Mic size={16} /> Say a meal</button>
                       <button onClick={() => openLogger()} className="fw-elite-press" style={focusPill(T.crimson)}><UtensilsCrossed size={16} /> Add a meal</button>
                       <button onClick={() => addWater(WATER_GLASS_ML)} className="fw-elite-press" style={focusPill(sky)}><Droplet size={16} /> Add water</button>
                       <button onClick={busy ? undefined : logYesterday} className="fw-elite-press" style={focusPill(sage)}><Repeat size={16} /> Same as yesterday</button>
@@ -1209,7 +1209,7 @@ export default function NutritionV2Shell() {
         />
       )}
       {loggerOpen && user && (
-        <SheetShell title={loggerView === "photo" ? "Snap your meal" : "Add a meal"} eyebrowText={loggerView === "photo" ? "Photo → we'll estimate it" : "Snap · say · scan · search · recent"} accent={T.crimson} onClose={() => { setLoggerOpen(false); setLoggerView(null); }}>
+        <SheetShell title={loggerView === "photo" ? "Snap your meal" : loggerView === "say" ? "Say your meal" : "Add a meal"} eyebrowText={loggerView === "photo" ? "Photo → we'll estimate it" : loggerView === "say" ? "Speak it → we'll log it" : "Snap · say · scan · search · recent"} accent={T.crimson} onClose={() => { setLoggerOpen(false); setLoggerView(null); }}>
           <UnifiedLogger user={user} profile={profile} initialView={loggerView} onLogged={() => { loadSummary(user, todayKey()); loadRecents(user); setLoggerOpen(false); setLoggerView(null); flash("Added to today"); }} />
         </SheetShell>
       )}
