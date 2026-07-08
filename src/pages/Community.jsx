@@ -65,7 +65,10 @@ import { useScrollLock } from "@/utils/useScrollLock";
 import {
   Heart, Briefcase, Sparkles, Moon, Stethoscope, Dices, BookOpen, HelpCircle,
   ChevronUp, ChevronDown, ChevronRight, Eye, Feather, MessagesSquare, Sprout, CalendarDays,
+  Mail, SlidersHorizontal, MapPinOff,
 } from "lucide-react";
+import SealedLetterComposeSheet from "@/components/sealedLetters/SealedLetterComposeSheet";
+import { withTimeout } from "@/utils/safeEntity";
 import { FwFloraHero } from "@/components/brand/PageTop";
 import { Clipboard, ClipboardSlider } from "@/components/brand/ClipboardSlider";
 import { SummaryCard, FwCard } from "@/components/brand/Card";
@@ -1852,6 +1855,51 @@ function RoomView({ roomKey, posts, loading, error, user, onNav, onCrisis, onRel
 // via the same moderated createCommunityPost path), the Echo Wall, or a 1:1 Witness
 // (these two open in the Journal where the on-device scrub / encryption lives). Nothing
 // leaves the app. Crisis-checked on every input.
+// ── Connection preferences + block (ported from CommunityEliteShell so the redesign
+// keeps every live Connection surface — real ConnectionPref persistence, optimistic). ──
+const nowISO = () => new Date().toISOString();
+function ConnectPrefsSheet({ user, onClose }) {
+  useScrollLock(true);
+  const [prefs, setPrefs] = useState({ mode: "open", reach: "season", blocked_hashes: [] });
+  const [prefRow, setPrefRow] = useState(null);
+  useEffect(() => {
+    let alive = true;
+    if (!user?.id) return;
+    base44.entities.ConnectionPref.filter({ user_id: user.id }, "-created_date", 1).catch(() => [])
+      .then((rows) => { if (!alive) return; const r = rows?.[0]; if (r) { setPrefRow(r); setPrefs({ mode: r.mode || "open", reach: r.reach || "season", blocked_hashes: r.blocked_hashes || [] }); } });
+    return () => { alive = false; };
+  }, [user?.id]);
+  const save = async (next) => {
+    setPrefs(next);   // optimistic
+    if (!user?.id) return;
+    try {
+      if (prefRow?.id) await withTimeout(base44.entities.ConnectionPref.update(prefRow.id, { ...next, updated_at: nowISO() }), 6000, "pref");
+      else { const created = await withTimeout(base44.entities.ConnectionPref.create({ user_id: user.id, ...next, created_at: nowISO(), updated_at: nowISO() }), 6000, "pref"); setPrefRow(created); }
+    } catch { /* optimistic stays */ }
+  };
+  const crimson = cwOf("crimson").petal, sage = cwOf("sage").petal;
+  return (
+    <div onClick={onClose} style={{ position: "fixed", inset: 0, zIndex: 2000, background: "rgba(36,26,38,0.45)", display: "flex", alignItems: "flex-end", justifyContent: "center" }}>
+      <div onClick={(e) => e.stopPropagation()} role="dialog" aria-label="How you want to connect" style={{ width: "100%", maxWidth: 460, background: T.paper, borderRadius: "14px 14px 0 0", padding: "20px 18px 28px", paddingBottom: "var(--fw-sheet-safe)", maxHeight: "88vh", overflowY: "auto" }}>
+        <Eyebrow color={T.gold} mb={8}>How you want to connect</Eyebrow>
+        <Script size={26} style={{ marginBottom: 12 }}>On your terms</Script>
+        <div style={{ fontFamily: UI, fontSize: 11.5, fontWeight: 700, letterSpacing: ".06em", textTransform: "uppercase", color: T.muted, marginBottom: 7 }}>I'm open to</div>
+        {[["open", "Messages + letters"], ["letters", "Sealed letters only"], ["paused", "Paused for now"]].map(([v, l]) => (
+          <button key={v} onClick={() => save({ ...prefs, mode: v })} style={{ textAlign: "left", width: "100%", background: prefs.mode === v ? `${crimson}14` : T.paperHi, border: `1px solid ${prefs.mode === v ? crimson : T.paperDeep}`, borderRadius: 11, padding: "11px 13px", cursor: "pointer", fontFamily: SERIF, fontSize: 15.5, fontWeight: 600, color: T.ink, display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 7 }}>{l}{prefs.mode === v && <Check size={15} color={crimson} />}</button>
+        ))}
+        <div style={{ fontFamily: UI, fontSize: 11.5, fontWeight: 700, letterSpacing: ".06em", textTransform: "uppercase", color: T.muted, margin: "10px 0 7px" }}>Who can reach me</div>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 12 }}>
+          {[["season", "my season"], ["stage", "my life-stage"], ["any", "any woman 18+"]].map(([v, l]) => (
+            <button key={v} onClick={() => save({ ...prefs, reach: v })} style={{ fontFamily: UI, fontSize: 13, fontWeight: 600, padding: "7px 13px", borderRadius: 999, background: prefs.reach === v ? `${crimson}1F` : T.paperHi, border: `1px solid ${prefs.reach === v ? crimson : T.paperDeep}`, color: prefs.reach === v ? crimson : T.inkSoft, cursor: "pointer" }}>{l}</button>
+          ))}
+        </div>
+        <div style={{ display: "flex", gap: 7, alignItems: "flex-start", marginBottom: 16 }}><MapPinOff size={14} color={sage} style={{ flexShrink: 0, marginTop: 1 }} /><span style={{ fontFamily: UI, fontSize: 12, color: T.muted, lineHeight: 1.5 }}>Never by location. Block or report anyone, anytime — from any post's "…" menu ({(prefs.blocked_hashes || []).length} blocked).</span></div>
+        <button onClick={onClose} style={{ ...primaryBtn, width: "100%", justifyContent: "center" }}><Check size={14} /> Done</button>
+      </div>
+    </div>
+  );
+}
+
 function ShareToSheet({ user, onClose }) {
   useScrollLock(true);   // lock the background page while the sheet is open
   const [text, setText] = useState("");
@@ -1985,8 +2033,10 @@ const SHELVES = [
     tiles: [
       { key: "echo", Icon: Waves, name: "Echo Wall", note: "anonymous lines, fade in 48h" },
       { key: "witness", Icon: Eye, name: "Witness", note: "one sister holds your entry" },
+      { key: "sealed", Icon: Mail, name: "Sealed letter", note: "a slow letter, opened later" },
       { key: "share", Icon: Send, name: "Share a thought", note: "into a space that's yours" },
       { key: "twin", Icon: Users, name: "Phase Twin", note: "twelve days, paired" },
+      { key: "connect", Icon: SlidersHorizontal, name: "How you connect", note: "who can reach you · block" },
     ] },
 ];
 
@@ -2337,6 +2387,8 @@ export function CommunityInner({ initialView = null, embedded = false, homeVaria
   const [loadErr, setLoadErr] = useState(false);
   const [crisis, setCrisis] = useState(false);
   const [shareTo, setShareTo] = useState(false);
+  const [letterOpen, setLetterOpen] = useState(false);   // sealed-letter pen-pal (ported from elite)
+  const [connectOpen, setConnectOpen] = useState(false); // connection prefs + block (ported from elite)
   const [hubOpen, setHubOpen] = useState(false);
   const navigate = useNavigate();
   const onHubSelect = (id) => {
@@ -2419,6 +2471,8 @@ export function CommunityInner({ initialView = null, embedded = false, homeVaria
   // nothing stripped). Special destinations (share/witness/twin) match the classic paths.
   const enterShelf = useCallback((dest) => {
     if (dest === "share") { setShareTo(true); return; }
+    if (dest === "sealed") { setLetterOpen(true); return; }        // sealed-letter pen-pal (ported)
+    if (dest === "connect") { setConnectOpen(true); return; }      // connection prefs + block (ported)
     if (dest === "witness") { navigate(createPageUrl("Journal?open=witness")); return; }
     if (dest === "twin") { navigate(createPageUrl("Journal?open=twin")); return; }
     setView(dest);
@@ -2477,6 +2531,8 @@ export function CommunityInner({ initialView = null, embedded = false, homeVaria
       </div>
       {crisis && <CrisisSheet onClose={() => setCrisis(false)} />}
       {shareTo && <ShareToSheet user={user} onClose={() => setShareTo(false)} />}
+      {letterOpen && <SealedLetterComposeSheet open onClose={() => setLetterOpen(false)} onSealed={() => setLetterOpen(false)} />}
+      {connectOpen && <ConnectPrefsSheet user={user} onClose={() => setConnectOpen(false)} />}
       <CommunityHubSheet open={hubOpen} onClose={() => setHubOpen(false)} onSelect={onHubSelect} />
     </div>
   );

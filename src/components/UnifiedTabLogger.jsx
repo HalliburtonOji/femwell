@@ -60,6 +60,9 @@ const T = {
 };
 
 // ── Time helpers ────────────────────────────────────────────────────────────
+// GO-LIVE 2026-07: retire the app-wide "+" FAB (calendar icon is the single entry).
+// Flip to true to bring the legacy FAB back.
+const SHOW_LEGACY_FAB = false;
 const todayISO = () => new Date().toISOString().split("T")[0];
 const nowISO   = () => new Date().toISOString();
 
@@ -2429,8 +2432,11 @@ export default function UnifiedTabLogger() {
 
   return (
     <>
-      {/* Single gold + FAB (always visible when sheet closed) */}
-      {!open && (
+      {/* GO-LIVE 2026-07: the app-wide "+" FAB is RETIRED — the persistent calendar
+          icon (top-bar right, mounted in Layout) is now the single logging entry.
+          UnifiedTabLogger stays mounted as the programmatic writer (all openLogger()
+          call-sites keep working); only its FAB is suppressed. REVERT: set to true. */}
+      {SHOW_LEGACY_FAB && !open && (
         <button onClick={() => openLogger()} aria-label="Open logger" style={{
           position: "fixed",
           bottom: "var(--fw-nav-h)",

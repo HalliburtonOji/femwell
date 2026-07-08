@@ -328,7 +328,7 @@ export const PAGES = {
     "BookReader": BookReader,
     "FictionReader": FictionReader,
     "Track": Track,
-    "Community": CommunityEliteShell,
+    "Community": Community,
     "CommunityElite": CommunityEliteShell,
     "CommunityHub": CommunityHub,
     "CommunityClassic": Community,

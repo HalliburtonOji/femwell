@@ -65,13 +65,18 @@ function _notify() { for (const fn of _subs) fn(); }
  * type grid and go straight to that form. Valid types:
  *   habit · task · med · meal · event · ritual · hydration · note
  *   · checkin · symptom
+ *
+ * Optional second arg `ctx` = { date, time, scope } lets a caller (e.g. the
+ * calendar day-tap or the Planner time-slot) prefill the target date/time.
+ * BACKWARD COMPATIBLE: omitted → ctx is null and every existing call-site
+ * (openLogger(), openLogger("symptom")) behaves exactly as before (today/now).
  */
-export function openLogger(type) {
-  _state = { open: true, type: type || null };
+export function openLogger(type, ctx) {
+  _state = { open: true, type: type || null, ctx: ctx || null };
   _notify();
 }
 export function closeLogger() {
-  _state = { open: false, type: null };
+  _state = { open: false, type: null, ctx: null };
   _notify();
 }
 /** External subscription to the logger singleton. Returns an unsubscribe fn. */
