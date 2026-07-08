@@ -123,7 +123,7 @@ const CUPPED = new Set(["peony", "camellia", "ranunculus", "marigold"]);
 const FORM_BELL = "foxglove", FORM_FERN = "fern", FORM_SUN = "sunflower", FORM_SNOWDROP = "snowdrop", FORM_TULIP = "tulip",
   FORM_ROSE = "rose", FORM_HIBISCUS = "hibiscus", FORM_LILY = "lily", FORM_MAGNOLIA = "magnolia";
 
-export function RichBloomV2({ color = T.blush, color2 = null, accent = "#CBA24E", size = 150, animate = true, soft = true, idx = 0, form = "peony", openness = 1 }) {
+export function RichBloomV2({ color = T.blush, color2 = null, accent = "#CBA24E", size = 150, animate = true, soft = true, idx = 0, form = "peony", openness = 1, headOnly = false }) {
   const cx = PETAL_BLOOM_CX, cy = PETAL_BLOOM_CY;
   const _pale = lum(color) > 0.62, _d = _pale ? 0.26 : 0.13, _k = _pale ? 0.42 : 0.3;
   const lightest = color2 || lighten(color, 0.52), light = lighten(color, 0.34), mid = lighten(color, 0.14), deep = color, deeper = darken(color, _d), darkest = darken(color, _k);
@@ -368,7 +368,7 @@ export function RichBloomV2({ color = T.blush, color2 = null, accent = "#CBA24E"
 
   return (
     <div style={{ position: "relative", display: "inline-block", width: size, height: Math.round(size * 1.05), lineHeight: 0 }}>
-      {soft && (
+      {soft && !headOnly && (
         <svg viewBox="0 0 100 105" width={size} height={Math.round(size * 1.05)} aria-hidden style={{ position: "absolute", inset: 0 }}>
           <defs><filter id={`bl-${gid}`} x="-60%" y="-60%" width="220%" height="220%"><feGaussianBlur stdDeviation="1.9" /></filter></defs>
           <ellipse cx={cx} cy={97} rx={20} ry={4.6} fill="#2E261B" opacity="0.22" filter={`url(#bl-${gid})`} />
@@ -392,16 +392,18 @@ export function RichBloomV2({ color = T.blush, color2 = null, accent = "#CBA24E"
           <linearGradient id={`st-${gid}`} x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#8FAF8F" /><stop offset="100%" stopColor="#5F7E5F" /></linearGradient>
           <linearGradient id={`lf-${gid}`} x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stopColor="#A6C6A6" /><stop offset="55%" stopColor="#82A282" /><stop offset="100%" stopColor="#5F7E5F" /></linearGradient>
         </defs>
-        <circle cx={cx} cy={cy} r="36" fill={`url(#gl-${gid})`} />
-        <path d={`M48.4 97 C 47.9 84 49.4 70 49 60 L 51 60 C 51.4 70 52 84 51.5 97 Z`} fill={`url(#st-${gid})`} />
-        <g>
-          <path d="M49 78 C 37 74 29 77 26 86 C 37 88 47 83 49 77 Z" fill={`url(#lf-${gid})`} opacity="0.95" />
-          <path d="M49 78 C 41 79 33 82 27 86" stroke="#5F7E5F" strokeWidth="0.7" fill="none" strokeLinecap="round" opacity="0.7" />
-          <path d="M42 79 L 39 76 M37 81 L 34 79 M33 83 L 31 82" stroke="#5F7E5F" strokeWidth="0.5" fill="none" strokeLinecap="round" opacity="0.55" />
-          <path d="M51 71 C 63 67 71 70 74 79 C 63 81 53 76 51 70 Z" fill={`url(#lf-${gid})`} opacity="0.9" />
-          <path d="M51 71 C 59 72 67 75 73 79" stroke="#5F7E5F" strokeWidth="0.7" fill="none" strokeLinecap="round" opacity="0.65" />
-          <path d="M58 73 L 61 71 M62 75 L 65 74 M66 77 L 68 76" stroke="#5F7E5F" strokeWidth="0.5" fill="none" strokeLinecap="round" opacity="0.5" />
-        </g>
+        {!headOnly && <>
+          <circle cx={cx} cy={cy} r="36" fill={`url(#gl-${gid})`} />
+          <path d={`M48.4 97 C 47.9 84 49.4 70 49 60 L 51 60 C 51.4 70 52 84 51.5 97 Z`} fill={`url(#st-${gid})`} />
+          <g>
+            <path d="M49 78 C 37 74 29 77 26 86 C 37 88 47 83 49 77 Z" fill={`url(#lf-${gid})`} opacity="0.95" />
+            <path d="M49 78 C 41 79 33 82 27 86" stroke="#5F7E5F" strokeWidth="0.7" fill="none" strokeLinecap="round" opacity="0.7" />
+            <path d="M42 79 L 39 76 M37 81 L 34 79 M33 83 L 31 82" stroke="#5F7E5F" strokeWidth="0.5" fill="none" strokeLinecap="round" opacity="0.55" />
+            <path d="M51 71 C 63 67 71 70 74 79 C 63 81 53 76 51 70 Z" fill={`url(#lf-${gid})`} opacity="0.9" />
+            <path d="M51 71 C 59 72 67 75 73 79" stroke="#5F7E5F" strokeWidth="0.7" fill="none" strokeLinecap="round" opacity="0.65" />
+            <path d="M58 73 L 61 71 M62 75 L 65 74 M66 77 L 68 76" stroke="#5F7E5F" strokeWidth="0.5" fill="none" strokeLinecap="round" opacity="0.5" />
+          </g>
+        </>}
         <g style={{ transform: `scale(${openness})`, transformBox: "fill-box", transformOrigin: "center", transition: "transform .55s cubic-bezier(.34,1.25,.4,1)" }}>
           <g style={animate ? { transformBox: "fill-box", transformOrigin: "center", willChange: "transform", animation: `fwcBreath 6s ease-in-out infinite`, animationDelay: delay } : undefined}>
             {head}
