@@ -1,0 +1,212 @@
+<!doctype html>
+<html lang="en-GB"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>FemWell — Your Bloomprint: the personal flora identity</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500;1,600&family=Ephesis&display=swap" rel="stylesheet">
+<style>
+  :root{--paper:#ECE7DA;--paperHi:#F4EFE3;--paperDeep:#D8CFBC;--ink:#0B0805;--inkSoft:#1A140D;--muted:#2E261B;--gold:#A8893F;--crimson:#BC2E27;--oxblood:#7A1A12;--blush:#E8B4B8;--sage:#8FAF8F;--plum:#8E6E8E;--serif:'Cormorant Garamond',Georgia,serif;--script:'Ephesis',cursive;--sans:ui-sans-serif,system-ui,-apple-system,'Segoe UI',sans-serif;}
+  *{box-sizing:border-box}
+  body{margin:0;background:radial-gradient(120% 80% at 12% 0%,#F4EFE3 0%,rgba(244,239,227,0) 55%),radial-gradient(120% 90% at 100% 100%,#E4DDCC 0%,rgba(228,221,204,0) 50%),var(--paper);color:var(--ink);font-family:var(--serif);font-size:18px;line-height:1.6;-webkit-font-smoothing:antialiased}
+  .doc{max-width:680px;margin:0 auto;padding:28px 22px 90px}
+  h1.cover{font-family:var(--script);font-size:60px;color:var(--oxblood);margin:6px 0 2px;line-height:1}
+  h2{font-family:var(--serif);font-style:italic;font-weight:600;font-size:29px;color:var(--oxblood);margin:0 0 4px}
+  h3{font-family:var(--serif);font-weight:600;font-size:21px;color:var(--oxblood);margin:20px 0 6px}
+  h4{font-family:var(--sans);font-size:12px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--gold);margin:14px 0 4px}
+  .eyebrow{font-family:var(--sans);font-size:12px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--gold);margin-bottom:10px}
+  p{margin:0 0 12px}.lede{font-size:20px;line-height:1.55}
+  small,.cap{font-family:var(--sans);font-size:13px;color:var(--muted);line-height:1.5}
+  b,strong{font-weight:600}
+  .section{background:var(--paperHi);border:1px solid var(--paperDeep);border-left:4px solid var(--gold);border-radius:20px;padding:22px 20px;margin:18px 0;box-shadow:0 4px 20px rgba(58,44,26,.10),0 1px 4px rgba(58,44,26,.06);position:relative;overflow:hidden}
+  .section.crimson{border-left-color:var(--crimson)}.section.sage{border-left-color:var(--sage)}.section.plum{border-left-color:var(--plum)}
+  .section.prop{border-left-color:#C98A2E;border-left-style:dashed;background:#F6EEDD}
+  .rule{height:1px;background:var(--gold);opacity:.32;margin:18px 0}
+  .center{text-align:center}
+  table{width:100%;border-collapse:collapse;font-size:14px;font-family:var(--sans);margin:8px 0}
+  th,td{text-align:left;padding:7px 8px;border-bottom:1px solid var(--paperDeep);vertical-align:top}
+  th{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--gold)}
+  td b{font-family:var(--serif);font-size:15px}
+  .badge{display:inline-block;font-family:var(--sans);font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;padding:3px 9px;border-radius:999px;vertical-align:middle}
+  .ag{background:#DDE7DD;color:#3f6b3f}.pr{background:#F0E2C6;color:#8E5B14}
+  .divider{display:flex;align-items:center;gap:12px;margin:30px 0 6px}
+  .divider .ln{flex:1;height:2px;background:#C98A2E;opacity:.5}
+  .divider .lb{font-family:var(--sans);font-size:13px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:#8E5B14}
+  .quote{font-style:italic;font-size:19px;color:var(--inkSoft);border-left:2px solid var(--gold);padding-left:14px;margin:12px 0}
+  .foot{font-family:var(--sans);font-size:12px;color:var(--muted);text-align:center;margin-top:30px;line-height:1.6}
+  ul{margin:2px 0 12px;padding-left:20px}li{margin:4px 0}
+  /* mockup helpers */
+  .mock{background:var(--paper);border:1px solid var(--paperDeep);border-radius:14px;padding:14px;margin:12px 0}
+  .mock .cap{display:block;margin-top:8px;text-align:center}
+  .bloomdot{display:inline-grid;place-items:center;border-radius:50%;flex-shrink:0}
+  .petalrow{display:flex;flex-wrap:wrap;gap:4px;margin:8px 0}
+  .petal{width:10px;height:13px;border-radius:50% 50% 50% 50%/60% 60% 40% 40%;border:1px solid var(--crimson)}
+  .petal.on{background:var(--crimson);opacity:.85}.petal.off{opacity:.4}
+  .presence{display:flex;align-items:center;gap:11px;background:var(--paperHi);border:1px solid var(--paperDeep);border-left:4px solid var(--crimson);border-radius:14px;padding:11px 13px;margin:8px 0}
+  .presence .nm{font-family:var(--sans);font-size:13.5px;font-weight:800;color:var(--ink)}
+  .presence .sb{font-family:var(--sans);font-size:11px;color:var(--muted)}
+  .tierlabel{font-family:var(--sans);font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--gold);margin:14px 0 2px}
+  .shelf{display:flex;gap:14px;flex-wrap:wrap;margin:10px 0}
+  .shelfitem{width:78px;text-align:center}
+  .halo{width:56px;height:56px;margin:0 auto;border-radius:50%;border:1px solid var(--gold);box-shadow:0 0 0 1px rgba(168,137,63,.35);display:grid;place-items:center;background:radial-gradient(circle,rgba(168,137,63,.18),transparent 70%)}
+  .shelfitem .t{font-family:var(--serif);font-size:12.5px;font-weight:600;color:var(--ink);margin-top:5px;line-height:1.15}
+  .star{color:var(--gold)}
+</style></head>
+<body><div class="doc">
+
+<div class="center" style="padding:14px 0 4px">
+  <div class="eyebrow">Deep brainstorm · Personal identity · 8 July 2026</div>
+  <h1 class="cover">Your Bloomprint</h1>
+  <p class="lede" style="font-style:italic;max-width:460px;margin:8px auto 0">A signature flower and a living garden that grow as she does — so every woman's FemWell feels unmistakably <em>hers</em>, in her own pages and in the rooms.</p>
+</div>
+
+<div class="section">
+  <div class="eyebrow">The idea in one breath</div>
+  <h2>One woman, one garden — recognisably hers, everywhere.</h2>
+  <p>Every woman already has a companion bloom seeded uniquely to her account. We lift that quiet thing into a real <b>identity</b>: a <b>signature flower</b> in <b>her</b> colour, growing through five life-stages of her own tending, carrying gently-earned <b>petals, rare blooms, stars and seasons</b>. It becomes her <b>face in the Community</b> — unique but safe — and it lives on her <b>Profile, Today and Garden</b>. Not a score. A portrait that fills in as she shows up.</p>
+  <p class="cap"><b>Why now:</b> the whole engine is already built — this is mostly making it <em>legible</em> and <em>present</em>, then giving it a body in Community. We build <b>on</b> the Garden, we don't reinvent it.</p>
+</div>
+
+<div class="divider"><span class="ln"></span><span class="lb">1 · The identity model</span><span class="ln"></span></div>
+
+<div class="section">
+  <h2>The Bloomprint — deterministic, meaningful, hers.</h2>
+  <p>Her identity is <b>composed, never random</b> — a portrait seeded from her real life. Five layers, all already in the flora system:</p>
+  <table>
+    <tr><th>Layer</th><th>What it is</th><th>Where it comes from</th></tr>
+    <tr><td><b>Signature flower</b></td><td>her species — stays hers</td><td>seeded from her account id (6 companion forms today; scalable to the 60-species library)</td></tr>
+    <tr><td><b>Signature colour</b></td><td>her hue, carries a meaning (crimson = love · remembrance; sage = renewal · hope…)</td><td><code>fingerprintColourway(userId)</code> — 1 of 9 meaningful colourways</td></tr>
+    <tr><td><b>Today's face</b></td><td>the daily tint — her body's season</td><td>cycle phase flower + hue (poppy / snowdrop / sunflower / dahlia)</td></tr>
+    <tr><td><b>Growth stage</b></td><td>seed → sprout → bud → bloom → full</td><td>real engagement across 8 life-areas (journal, nutrition, check-ins, cycle, programs, planner, community, reading)</td></tr>
+    <tr><td><b>Companion creature</b></td><td>a bee / butterfly / ladybird that rides her bloom</td><td>seeded; visits on real moments (returns, kindnesses)</td></tr>
+  </table>
+  <p class="cap">The maths already gives <b>~1.4 billion distinct gardens</b> — no two women repeat. A returning user reads it fluently: a sunflower always means radiance, a forget-me-not always means memory, a butterfly always means <em>you changed and came back</em>. Meaning is the moat — 84% of wellness gamification is points-for-points with zero meaning; ours is floriography, first.</p>
+</div>
+
+<div class="divider"><span class="ln"></span><span class="lb">2 · What she grows (the earned layers)</span><span class="ln"></span></div>
+
+<div class="section sage">
+  <h2>Four soft layers — collection, never score.</h2>
+  <p>Everything here <b>only ever gathers</b>. Nothing wilts, breaks, decays or can be lost. Growth is triggered by <b>showing up and reflecting</b>, not by output or counts.</p>
+
+  <h3>Petals — the everyday unit</h3>
+  <p>Each real act of showing up settles a <b>petal</b> onto her bloom — a line written, a check-in, a meal logged, a kind reply in the rooms. Petals fill toward the next growth stage. One calm daily notice ("+2 petals today"), never a nag.</p>
+  <div class="mock">
+    <div class="petalrow">
+      <span class="petal on"></span><span class="petal on"></span><span class="petal on"></span><span class="petal on"></span><span class="petal on"></span><span class="petal on"></span><span class="petal on"></span><span class="petal on"></span><span class="petal on"></span><span class="petal on"></span><span class="petal on"></span><span class="petal on"></span><span class="petal on"></span><span class="petal on"></span><span class="petal off"></span><span class="petal off"></span><span class="petal off"></span><span class="petal off"></span>
+    </div>
+    <span class="cap">Additive fill toward "in full bloom" — the empty petals are a gentle invitation, never a deficit.</span>
+  </div>
+
+  <h3>Rare blooms — earned through living</h3>
+  <p>The milestones already in the app become a <b>shelf of collectibles</b> that's only hers — a hundred journal lines, a full cycle tracked, a year grown, "not alone" (her first reach into community). Earned by <em>living</em>, never by hitting a target.</p>
+  <div class="mock">
+    <div class="shelf">
+      <div class="shelfitem"><div class="halo"><span class="star">✿</span></div><div class="t">Fifty lines</div></div>
+      <div class="shelfitem"><div class="halo"><span class="star">✿</span></div><div class="t">Not alone</div></div>
+      <div class="shelfitem"><div class="halo"><span class="star">✿</span></div><div class="t">A season kept</div></div>
+      <div class="shelfitem" style="opacity:.42"><div class="halo" style="border-style:dashed;box-shadow:none;background:none">🌱</div><div class="t" style="font-style:italic;color:var(--muted)">still to grow</div></div>
+    </div>
+    <span class="cap">Gold-haloed, hand-drawn — never a badge, never a number. "Still to grow" is a bud, not a locked door.</span>
+  </div>
+
+  <h3>Stars — the rare, luminous moments</h3>
+  <p>Stars are held back for the few things that deserve a hush: <b>a return after time away</b>, <b>a kindness</b> (someone held her words), <b>a season kept</b>. A handful of quiet lights over her night meadow — a star means the app <em>noticed she was good to herself or to someone else</em>. Never a currency.</p>
+
+  <h3>Seasons — her months, each a bloom</h3>
+  <p>Every month becomes a small bloom in her garden (already built as "chapters"). A year → a ring of seasons, an orchard. Seasons are <b>time, not effort</b> — a resting season is still a season, drawn as dormancy-with-a-bud, never as nothing.</p>
+</div>
+
+<div class="section prop">
+  <div class="eyebrow" style="color:#8E5B14">The kind-growth promise <span class="badge pr">guardrail</span></div>
+  <h2 style="color:#8E5B14">The rules that keep it warm, not grindy.</h2>
+  <ul>
+    <li><b>Additive only</b> — nothing wilts, breaks or can be lost. (Loss aversion is asymmetric; a wilted bloom hurts more than a new one delights — and that's exactly the anxiety our audience avoids.)</li>
+    <li><b>Grown from showing up and reflecting</b>, never from output or counts.</li>
+    <li><b>A gap is a resting season</b>, met with a welcome-back — never guilt, never a broken streak.</li>
+    <li><b>Everything means something</b> — every petal, bloom and star maps to floriography or a real moment. No points for points.</li>
+    <li><b>No leaderboards, no public tallies, no comparison.</b> Her garden is measured only against yesterday's garden — and only if she looks.</li>
+    <li><b>Creatures visit and drift</b> — no push-guilt. If she doesn't come, nothing bad happens; things simply wait.</li>
+  </ul>
+</div>
+
+<div class="divider"><span class="ln"></span><span class="lb">3 · In the Community</span><span class="ln"></span></div>
+
+<div class="section crimson">
+  <h2>Unique in the rooms — anonymous where she wants, personal where she asks.</h2>
+  <p>Today a post shows a warm botanical alias ("Wild Poppy") and a plain sprout icon. We give her a <b>face</b>: her flower becomes her <b>presence</b> — so she feels like <em>someone</em>, not a grey blank. Femtech norm (Peanut, Flo) is <b>layered disclosure</b>; visual anonymity actually <em>raises</em> belonging for women in support spaces, and a generated flora avatar beats a photo. Three tiers, her choice per room:</p>
+
+  <div class="tierlabel">Tier 1 · Veiled (default — fully anonymous)</div>
+  <div class="presence">
+    <span class="bloomdot" style="width:40px;height:40px;background:radial-gradient(circle,rgba(190,46,39,.22),transparent 70%);border:1px solid var(--paperDeep)">✿</span>
+    <span><span class="nm">Wild Poppy</span><br><span class="sb">anonymous — a bloom seeded just for the rooms</span></span>
+  </div>
+  <p class="cap">A small bloom seeded from her <b>anonymous room-token</b> (not her account) — consistent across her thread so she's a recognisable voice, but <b>uncorrelated with her real garden or identity</b>. It shows species + colour only — never her growth or activity, so it can't out how active she is.</p>
+
+  <div class="tierlabel">Tier 2 · My flower (opt-in — bring her signature)</div>
+  <div class="presence">
+    <span class="bloomdot" style="width:40px;height:40px;background:radial-gradient(circle,rgba(143,175,143,.28),transparent 70%);border:1px solid var(--paperDeep)">✿</span>
+    <span><span class="nm">Wild Poppy</span><br><span class="sb">your real signature flower · still no name</span></span>
+  </div>
+  <p class="cap">She chooses to show her <b>actual</b> signature bloom — "this is my flower" — personal where she wants it. Still no name, still no PII; the alias name stays.</p>
+
+  <div class="tierlabel">Tier 3 · Named (opt-in — a chosen name)</div>
+  <div class="presence">
+    <span class="bloomdot" style="width:40px;height:40px;background:radial-gradient(circle,rgba(143,175,143,.28),transparent 70%);border:1px solid var(--paperDeep)">✿</span>
+    <span><span class="nm">Rosewater</span><br><span class="sb">your chosen name · shown only where you allow it</span></span>
+  </div>
+  <p class="cap">Her signature flower + a display name she picks (the existing meadow name-share). Never her real name unless she types one.</p>
+
+  <h4 style="margin-top:18px">How it stays safe (the reconciliation)</h4>
+  <p>The <b>Talk-rooms system remains the keeper of anonymity</b> — this feature only decides the <em>face</em>. The veiled bloom is derived from the anonymous SHA-256 room-token, in a separate namespace from her account, so it can never be traced back. The Community session owns the room wiring; we hand them the presence-bloom component and coordinate via the baton.</p>
+</div>
+
+<div class="section prop">
+  <div class="eyebrow" style="color:#8E5B14">Cross-pollination <span class="badge pr">next idea</span></div>
+  <h2 style="color:#8E5B14">Kindness you can see, nobody exposed.</h2>
+  <p>When another woman <b>holds</b> your words in the rooms, a bee carries a little of her colour back to your garden — an <b>anonymous flower planted by a stranger's kindness</b>. It inverts the streak-loss dynamic entirely: your garden gets richer from <em>connection</em>, not from grind, and no one is identified. (Pairs with a quiet "a kindness" star on your room-bloom.)</p>
+  <p class="cap">Sibling idea from the research: <b>the garden gardens itself while she's away</b> — a return after a gap finds a small wildflower has seeded itself. Absence yields a gift, never a punishment.</p>
+</div>
+
+<div class="divider"><span class="ln"></span><span class="lb">4 · On her own pages</span><span class="ln"></span></div>
+
+<div class="section plum">
+  <h2>Fully hers, with her name on it.</h2>
+  <table>
+    <tr><th>Surface</th><th>How the Bloomprint shows up</th></tr>
+    <tr><td><b>Garden</b></td><td>the home of the identity — her signature bloom at its true stage, the rare-bloom shelf, the seasons, the stars, her creature, and a "this is your Bloomprint" header (flower · colour meaning · stage · what it grew from).</td></tr>
+    <tr><td><b>Profile</b></td><td>her <b>signature bloom becomes her avatar</b> (replacing the initial-in-a-circle) + her colour's meaning + her stage + rare blooms earned. Even her profile feels like her garden.</td></tr>
+    <tr><td><b>Today</b></td><td>the existing "Your garden" card gains today's petal ("+2 petals today · Blooming") and the daily phase tint — a living hello at the top of her day.</td></tr>
+  </table>
+  <p class="cap">On her own pages she's named and personal; in the rooms she's veiled by default. Same flower, two disclosure worlds — that's the whole reconciliation.</p>
+</div>
+
+<div class="divider"><span class="ln"></span><span class="lb">5 · What's built + what's next</span><span class="ln"></span></div>
+
+<div class="section">
+  <div class="eyebrow">Shipped this pass</div>
+  <h2>A first robust demo — reachable, on real data.</h2>
+  <p>A tappable demo lives at <b>Ideas pill → Current → "Bloomprint — identity ★"</b>. It reads her <b>real</b> Garden data where available (companion identity, earned milestones, season chapters) and falls back to a warm seeded persona so it's always full. It shows: the signature-bloom hero, the four identity facts, all four earned layers (with a working "leave a line → +1 petal"), the three Community tiers (tap to switch the post's face), the cross-pollination teaser, and the Profile/Today previews — plus the kind-growth promise. Seeded + read-only; no writes; live pages untouched.</p>
+
+  <h4>Build plan (phased, on Halli's yes)</h4>
+  <ul>
+    <li><b>Phase 1 — the presence bloom in Community.</b> Swap the generic sprout chip for the veiled bloom-avatar (seeded from the room-token). One component; coordinate with the Community session. Biggest felt-uniqueness win, zero anonymity risk.</li>
+    <li><b>Phase 2 — petals + stars, derived (no new entity).</b> Compute petals/stars from the signals the Garden already reads; surface the daily petal on Today and the identity header on Garden.</li>
+    <li><b>Phase 3 — Profile avatar</b> becomes the signature bloom; the disclosure toggle (veiled / my-flower / named) in Community settings.</li>
+    <li><b>Phase 4 — cross-pollination + self-seeding garden</b> (the two research gems) — needs a light data touch; spec via Mr Lead Manager + Ms Data.</li>
+  </ul>
+
+  <h4>Open questions for you</h4>
+  <ul>
+    <li><b>Name:</b> is "<b>Bloomprint</b>" the keeper, or "your signature flower / your bloom"?</li>
+    <li><b>Community default:</b> veiled-by-default with opt-in to show her flower — agree? (Recommended, safest.)</li>
+    <li><b>Stars:</b> keep them ultra-rare (returns / kindness / season / year) or add a couple more moments?</li>
+    <li><b>Signature species:</b> keep the 6 companion forms, or let her signature draw from the full 60-species library over time as she earns them?</li>
+  </ul>
+</div>
+
+<div class="foot">
+  FemWell · Personal Flora Identity ("Bloomprint") · deep brainstorm + first demo · 8 July 2026<br>
+  Grounded in the existing Garden/companion + milestones + chapters, the flora meaning-system (§5/§10), and sourced research on kind, non-grindy identity design (Finch · Neko Atsume · Peanut · Flo · NN/g · JMIR). Build only to what's agreed; the Community session owns the Talk-rooms anonymity wiring.
+</div>
+
+</div></body></html>

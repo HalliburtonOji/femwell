@@ -119,15 +119,19 @@ export default function BloomprintDemo() {
 
   // ── her Bloomprint (deterministic identity) ──
   const cw = useMemo(() => fingerprintColourway(userId), [userId]);          // HER hue (carries meaning)
-  const rng = useMemo(() => seededRng(hashSeed(userId + "::bloomprint")), [userId]);
+  // seeded baselines computed ONCE per user (seededRng is stateful — never call it in the render body)
+  const seeded = useMemo(() => {
+    const r = seededRng(hashSeed(userId + "::bloomprint"));
+    return { basePetals: 14 + Math.floor(r() * 26), todayPetals: 2 + Math.floor(r() * 3) };
+  }, [userId]);
   const seasonKey = currentChapterKey();
   const season = seasonOf(seasonKey);
 
   // petals: additive-only unit of "showing up". Real activeDays where we have a chapter, else seeded.
   const curChapter = chapters.find((c) => c.chapter_key === seasonKey);
-  const basePetals = curChapter?.active_days != null ? curChapter.active_days * 3 : 14 + Math.floor(rng() * 26);
+  const basePetals = curChapter?.active_days != null ? curChapter.active_days * 3 : seeded.basePetals;
   const petalsSeason = basePetals + petalPulse;
-  const petalsToday = 2 + Math.floor(rng() * 3) + (petalPulse > 0 ? petalPulse : 0);
+  const petalsToday = seeded.todayPetals + petalPulse;
   const stage = stageFor(petalsSeason);
   const nextStage = STAGES[Math.min(STAGES.length - 1, STAGES.indexOf(stage) + 1)];
   const toNext = Math.max(0, nextStage.min - petalsSeason);

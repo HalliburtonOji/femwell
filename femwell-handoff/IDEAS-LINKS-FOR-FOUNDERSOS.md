@@ -3,6 +3,26 @@
 > Per CLAUDE.md Standing Rule #1: every plan/brainstorm ships as a phone-readable styled-HTML doc to `C:\Users\Halli\femwell-handoff\` **and** is linked into the FoundersOS "Ideas" page so Halli reaches it via the floating IDEAS pill (never a dead route).
 > Mechanism (established): copy the HTML into `src/components/founders/brandDocs/<slug>.html`, `import …?raw` in `FoundersOS.jsx`, add a `{ kind:"doc", key:"…" }` CATALOG entry, and a `{tab === "…" && <BrandDocFrame html={…} title="…" />}` render branch. Then build + `npx base44 site deploy -y`.
 
+## ⭐ TO WIRE — Personal Flora Identity ("Bloomprint") brainstorm + DEMO (2026-07-08, flora session) → Ideas → Current
+> Deep brainstorm for Halli's "make each user feel UNIQUE" feature: a personal signature flower + garden that grows with real activity, gently-earned petals/rare-blooms/stars/seasons (collection not score, additive-only, never grindy), her anonymous-but-unique presence in Community (3 disclosure tiers — veiled/my-flower/named — reconciled with the botanical-alias system), and her Profile/Today/Garden avatar. Built ON the existing companion + milestones + chapters + Meadow. Doc + a live demo BOTH need wiring. This flora session can't safely edit `FoundersOS.jsx` — please wire.
+>
+> **Two entries** — a DOC and a ROUTE (the route needs only ONE catalog line; no import/render branch).
+
+**(a) The brainstorm DOC** — phone HTML in `femwell-handoff/PERSONAL-FLORA-IDENTITY.html`; copied to `brandDocs/personal-flora-identity.html`.
+
+| Doc (femwell-handoff/) | brandDocs slug | FoundersOS key | group | accent |
+|---|---|---|---|---|
+| PERSONAL-FLORA-IDENTITY.html | personal-flora-identity.html | "Bloomprint" | Current | sage |
+
+Wiring (3 edits):
+- import: `import bloomprintHtml from "@/components/founders/brandDocs/personal-flora-identity.html?raw";`
+- CATALOG entry: `{ kind:"doc", key:"Bloomprint", group: CAT.CURRENT, sub:"Identity & garden", status:"new", accent:"sage", title:"Your Bloomprint — personal flora identity", desc:"Deep brainstorm: each woman's signature flower + garden that grows with real activity; gently-earned petals/rare-blooms/stars/seasons (collection not score, additive-only, never wilts); her anonymous-but-unique presence in Community across 3 disclosure tiers (veiled/my-flower/named) reconciled with the Talk-rooms botanical alias; and her Profile/Today/Garden avatar. Identity model + earning mechanics + anonymity reconciliation + kind-growth guardrails + mockups + phased build plan + open questions. Built ON the existing companion + milestones + chapters." }`
+- render branch: `{tab === "Bloomprint" && <BrandDocFrame html={bloomprintHtml} title="FemWell — Your Bloomprint: the personal flora identity" />}`
+
+**(b) The DEMO route** — `/BloomprintDemo` (already registered in `pages.config.js` + `src/pages/BloomprintDemo.jsx`). Add ONE catalog entry to Ideas → **Current**:
+> `{ kind:"route", href:"/BloomprintDemo", group: CAT.CURRENT, status:"new", accent:"sage", title:"Bloomprint — identity ★", desc:"Tappable demo of the personal flora identity: her signature-bloom hero (species+colour+stage, tinted with her fingerprint colourway), the four identity facts, all four earned layers (petals with a working 'leave a line → +1 petal', rare-bloom shelf, stars, seasons), the 3 Community tiers (tap Veiled/My-flower/Named to switch the post's face), cross-pollination teaser, Profile+Today avatar previews, and the kind-growth promise. Reads REAL Garden data (companion + milestones + chapters) with a seeded fallback; read-only, no writes; live pages untouched." }`
+> Verified: clean vite build 0 errors · renders on preview (1161 gradient petal paths, no blanks) · tier toggle switches the post identity · 'leave a line' increments petals correctly (fixed a stateful-seededRng-in-render drift). Live via `npx base44 site deploy -y`.
+
 ## ⭐ TO WIRE FIRST — Universal Calendar + Logger plan doc (2026-07-05, content session) → Ideas → Current
 > Deep brainstorm+plan for Halli's app-wide change: ONE universal calendar everywhere (replacing the OLD photo-bg `MonthlyCalendarCard.jsx`), the calendar icon replacing the "+" FAB as the single logging entry, tap-a-day-to-log with date/time prefill, Planner time-slot prefill, and a rebuilt log sheet. Plan only — no live calendar/logger code changed. Phone HTML in `femwell-handoff/UNIVERSAL-CALENDAR-LOGGER.html`; copied to `brandDocs/universal-calendar-logger.html`. Content session can't safely edit `FoundersOS.jsx` — please wire (3 edits, pattern below).
 
