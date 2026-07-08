@@ -283,15 +283,21 @@ export default function Explore() {
       try {
         const u = await base44.auth.me();
         setUser(u);
-        const [ents, bookmarks, items, profileResult, recs] = await Promise.all([
+        const [ents, bookmarks, savedContent, items, profileResult, recs] = await Promise.all([
           base44.entities.Entitlements.filter({ user_id: u.id }).catch(() => []),
           base44.entities.ContentBookmarks.filter({ user_id: u.id }).catch(() => []),
+          base44.entities.SavedItems.filter({ user_id: u.id, item_type: "CONTENT" }, "-created_at", 200).catch(() => []),
           base44.entities.ContentItems.list("-created_date", 60).catch(() => []),
           base44.entities.UserProfile.filter({ user_id: u.id }).catch(() => []),
           base44.entities.ProgramRecommendations.filter({ user_id: u.id }, "-created_date", 4).catch(() => []),
         ]);
         if (ents[0]) setUserPlan(ents[0].plan || "free");
-        setBookmarkIds(new Set(bookmarks.map((b) => b.content_id)));
+        // MERGE: ContentBookmarks→SavedItems — dual-read so bookmarks from BOTH
+        // the legacy entity (content_id) and SavedItems (item_id) all show.
+        setBookmarkIds(new Set([
+          ...(bookmarks || []).map((b) => b.content_id),
+          ...(savedContent || []).map((s) => s.item_id),
+        ].filter(Boolean)));
         setContent(items);
         if (profileResult?.[0]) setUserProfile(profileResult[0]);
         const oneWeekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
@@ -308,15 +314,29 @@ export default function Explore() {
   const toggleBookmark = async (contentId) => {
     if (!user) return;
     if (bookmarkIds.has(contentId)) {
-      const bms = await base44.entities.ContentBookmarks.filter({ user_id: user.id, content_id: contentId });
-      if (bms[0]) await base44.entities.ContentBookmarks.delete(bms[0].id);
+      // Dual-delete: remove from legacy ContentBookmarks AND SavedItems.
+      const [bms, saved] = await Promise.all([
+        base44.entities.ContentBookmarks.filter({ user_id: user.id, content_id: contentId }).catch(() => []),
+        base44.entities.SavedItems.filter({ user_id: user.id, item_type: "CONTENT", item_id: contentId }).catch(() => []),
+      ]);
+      if (bms[0]) await base44.entities.ContentBookmarks.delete(bms[0].id).catch(() => {});
+      for (const s of (saved || [])) await base44.entities.SavedItems.delete(s.id).catch(() => {});
       setBookmarkIds((s) => {
         const n = new Set(s);
         n.delete(contentId);
         return n;
       });
     } else {
-      await base44.entities.ContentBookmarks.create({ user_id: user.id, content_id: contentId });
+      // MERGE: write ONLY to SavedItems (surviving entity). title is required.
+      const it = (content || []).find((c) => c.id === contentId);
+      await base44.entities.SavedItems.create({
+        user_id: user.id,
+        item_type: "CONTENT",
+        item_id: contentId,
+        title: it?.title || "Saved content",
+        preview_text: it?.summary || "",
+        meta_json: JSON.stringify({ route: createPageUrl("ContentPlayer") + "?id=" + contentId }),
+      });
       setBookmarkIds((s) => new Set([...s, contentId]));
     }
   };

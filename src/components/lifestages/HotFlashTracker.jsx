@@ -14,6 +14,27 @@ const TRIGGERS = [
   { key: "other", label: "Other" },
 ];
 
+// MERGE: HotFlashLog→MenopauseSymptomEntry (dual-read). New flashes write to
+// MenopauseSymptomEntry as symptom_type "Hot flush" (already in its enum); we
+// READ both entities so any pre-existing HotFlashLog rows still show. Severity
+// maps to/from the 1–5 scale; a single trigger maps to/from trigger_tags[].
+const SEV_TO_NUM = { mild: 2, moderate: 3, severe: 5 };
+const numToSev = (n) => (n <= 2 ? "mild" : n === 3 ? "moderate" : "severe");
+function normFlash(r) {
+  if (!r) return null;
+  const isMSE = r.severity_1_5 !== undefined || r.trigger_tags !== undefined || r.symptom_type !== undefined;
+  if (isMSE) {
+    return {
+      id: r.id,
+      logged_at: r.created_at || r.logged_at,
+      severity: typeof r.severity_1_5 === "number" ? numToSev(r.severity_1_5) : (r.severity || "moderate"),
+      trigger: Array.isArray(r.trigger_tags) ? r.trigger_tags[0] : r.trigger,
+      notes: r.notes,
+    };
+  }
+  return { id: r.id, logged_at: r.logged_at, severity: r.severity, trigger: r.trigger, notes: r.notes };
+}
+
 const sLabel = {
   fontSize: "0.6rem", fontWeight: 600, textTransform: "uppercase",
   letterSpacing: "0.12em", color: "var(--mauve)", };
@@ -30,20 +51,32 @@ export default function HotFlashTracker({ user }) {
 
   useEffect(() => {
     if (!user) return;
-    base44.entities.HotFlashLog.filter({ user_id: user.id }, "-logged_at", 20)
-      .then(setLogs).catch(() => {});
+    Promise.all([
+      base44.entities.MenopauseSymptomEntry.filter({ user_id: user.id, symptom_type: "Hot flush" }, "-created_at", 20).catch(() => []),
+      base44.entities.HotFlashLog.filter({ user_id: user.id }, "-logged_at", 20).catch(() => []),
+    ]).then(([mse, old]) => {
+      const merged = [...(mse || []), ...(old || [])]
+        .map(normFlash)
+        .filter(Boolean)
+        .sort((a, b) => String(b.logged_at || "").localeCompare(String(a.logged_at || "")))
+        .slice(0, 20);
+      setLogs(merged);
+    }).catch(() => {});
   }, [user]);
 
   const logFlash = async () => {
     setSaving(true);
-    const created = await base44.entities.HotFlashLog.create({
+    // MERGE: write to MenopauseSymptomEntry (surviving entity); normalise the
+    // returned row back to the display shape this card uses.
+    const created = await base44.entities.MenopauseSymptomEntry.create({
       user_id: user.id,
-      logged_at: new Date().toISOString(),
-      severity,
-      trigger: trigger || undefined,
+      day_key: new Date().toISOString().split("T")[0],
+      symptom_type: "Hot flush",
+      severity_1_5: SEV_TO_NUM[severity] || 3,
+      trigger_tags: trigger ? [trigger] : [],
       notes: notes.trim() || undefined,
     });
-    setLogs(prev => [created, ...prev]);
+    setLogs(prev => [normFlash(created), ...prev]);
     setShowForm(false);
     setSeverity("moderate");
     setTrigger("");

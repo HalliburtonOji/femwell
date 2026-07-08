@@ -161,12 +161,14 @@ export default function ContentPlayer() {
   const toggleBookmark = async () => {
     if (!user || !item) return;
     if (bookmarked) {
-      if (bookmarkId) await base44.entities.ContentBookmarks.delete(bookmarkId);
+      // Dual-delete: remove any legacy ContentBookmarks row + the SavedItems row.
+      if (bookmarkId) await base44.entities.ContentBookmarks.delete(bookmarkId).catch(() => {});
       await removeSavedItem("CONTENT", item.id);
       setBookmarked(false);
       setBookmarkId(null);
     } else {
-      const bm = await base44.entities.ContentBookmarks.create({ user_id: user.id, content_id: item.id });
+      // MERGE: ContentBookmarks→SavedItems — write ONLY to SavedItems now.
+      // The init effect still dual-reads ContentBookmarks so legacy bookmarks show.
       await saveItem({
         itemType: "CONTENT",
         itemId: item.id,
@@ -175,7 +177,7 @@ export default function ContentPlayer() {
         meta: { route: createPageUrl(`ContentPlayer?id=${item.id}`) },
       });
       setBookmarked(true);
-      setBookmarkId(bm.id);
+      setBookmarkId(null);
     }
   };
 

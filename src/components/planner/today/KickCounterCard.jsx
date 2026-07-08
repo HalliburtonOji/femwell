@@ -28,6 +28,31 @@ function calcDurationMinutes(startIso) {
   return Math.max(1, Math.round(diff / 60000));
 }
 
+// MERGE: KickLog→PregnancyKickSession (dual-read). New sessions write to
+// PregnancyKickSession; we still READ both entities so any pre-existing KickLog
+// rows keep showing. normKick maps either shape onto the display shape the card
+// uses (date / session_start / kick_count / duration_minutes).
+function normKick(r) {
+  if (!r) return null;
+  const isPKS = r.day_key !== undefined || r.started_at !== undefined || r.kicks !== undefined || r.duration_seconds !== undefined;
+  if (isPKS) {
+    return {
+      id: r.id,
+      date: r.day_key || r.date,
+      session_start: r.started_at || r.session_start,
+      kick_count: Number(r.kicks ?? r.kick_count) || 0,
+      duration_minutes: r.duration_seconds != null ? Math.max(1, Math.round(r.duration_seconds / 60)) : r.duration_minutes,
+    };
+  }
+  return {
+    id: r.id,
+    date: r.date,
+    session_start: r.session_start,
+    kick_count: Number(r.kick_count) || 0,
+    duration_minutes: r.duration_minutes,
+  };
+}
+
 export default function KickCounterCard({ userId }) {
   const [sessions, setSessions]     = useState([]);
   const [weekRows, setWeekRows]     = useState([]); // last-7-day rows for the chart
@@ -44,21 +69,24 @@ export default function KickCounterCard({ userId }) {
   const loadSessions = useCallback(async () => {
     if (!userId) return;
     try {
-      // Today's sessions for the "Today's sessions" list.
-      const todayRows = await base44.entities.KickLog.filter(
-        { user_id: userId, date: TODAY },
-        "-session_start",
-        20,
-      );
+      // Today's sessions for the "Today's sessions" list — dual-read both entities.
+      const [todayNew, todayOld] = await Promise.all([
+        base44.entities.PregnancyKickSession.filter({ user_id: userId, day_key: TODAY }, "-started_at", 20).catch(() => []),
+        base44.entities.KickLog.filter({ user_id: userId, date: TODAY }, "-session_start", 20).catch(() => []),
+      ]);
+      const todayRows = [...(todayNew || []), ...(todayOld || [])]
+        .map(normKick)
+        .filter(Boolean)
+        .sort((a, b) => String(b.session_start || "").localeCompare(String(a.session_start || "")));
       setSessions(todayRows);
-      // Last 7 calendar days for the History chart.
+      // Last 7 calendar days for the History chart — dual-read both entities.
       const cutoff = format(subDays(new Date(), 6), "yyyy-MM-dd");
-      const wkRows = await base44.entities.KickLog.filter(
-        { user_id: userId },
-        "-date",
-        80,
-      );
-      setWeekRows((Array.isArray(wkRows) ? wkRows : []).filter((r) => r?.date >= cutoff));
+      const [wkNew, wkOld] = await Promise.all([
+        base44.entities.PregnancyKickSession.filter({ user_id: userId }, "-day_key", 80).catch(() => []),
+        base44.entities.KickLog.filter({ user_id: userId }, "-date", 80).catch(() => []),
+      ]);
+      const wkRows = [...(wkNew || []), ...(wkOld || [])].map(normKick).filter(Boolean);
+      setWeekRows(wkRows.filter((r) => r?.date >= cutoff));
     } catch {
       setSessions([]);
       setWeekRows([]);
@@ -98,12 +126,16 @@ export default function KickCounterCard({ userId }) {
     if (!userId || !sessionStart || saving) return;
     setSaving(true);
     try {
-      await base44.entities.KickLog.create({
+      // MERGE: write to PregnancyKickSession (the surviving entity), mapping the
+      // old KickLog fields onto its shape. Dual-read above still surfaces any
+      // legacy KickLog rows.
+      await base44.entities.PregnancyKickSession.create({
         user_id: userId,
-        date: TODAY,
-        session_start: sessionStart,
-        kick_count: kickCount,
-        duration_minutes: calcDurationMinutes(sessionStart),
+        day_key: TODAY,
+        started_at: sessionStart,
+        ended_at: new Date().toISOString(),
+        kicks: kickCount,
+        duration_seconds: calcDurationMinutes(sessionStart) * 60,
       });
       setInSession(false);
       setSessionStart(null);
