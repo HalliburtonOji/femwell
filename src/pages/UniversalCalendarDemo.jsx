@@ -30,6 +30,26 @@ import {
 } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { T, SERIF, UI, SCRIPT, PAPER_BG, Heart, useEditorialFonts } from "@/components/journal/Editorial";
+import { FlowerGlyph, CornerSprig } from "@/components/brand/flora";
+
+// real FemWell card chrome — the FwCard recipe (Card.jsx): warm 165deg cream→accent
+// gradient, paperDeep hairline + a 4px accent left-rim, radius 20, the layered editorial
+// shadow. Reused for the calendar + the food logger so they read unmistakably on-brand.
+const fwChrome = (accent = OX) => ({
+  position: "relative", overflow: "hidden",
+  background: `linear-gradient(165deg, ${T.paperHi} 0%, ${accent}12 100%)`,
+  border: `1px solid ${T.paperDeep}`, borderLeft: `4px solid ${accent}`, borderRadius: 20,
+  boxShadow: "0 4px 20px rgba(58,44,26,0.12), 0 1px 4px rgba(58,44,26,0.08)",
+});
+// two corner sprigs (tr + bl) — the botanical frame, quiet
+function CornerVines({ color = T.gold }) {
+  return (
+    <>
+      <div style={{ position: "absolute", top: -4, right: -4, zIndex: 0, pointerEvents: "none" }}><CornerSprig variant="sprig" color={color} size={62} opacity={0.5} corner="tr" idx="cal-tr" /></div>
+      <div style={{ position: "absolute", bottom: -4, left: -4, zIndex: 0, pointerEvents: "none" }}><CornerSprig variant="sprig" color={color} size={62} opacity={0.42} corner="bl" idx="cal-bl" /></div>
+    </>
+  );
+}
 
 // Vision-call safety (the photo read must NEVER hang). We use the app's SHARED base44
 // client — it carries the real auth session on a signed-in device (a separate createClient
@@ -117,72 +137,80 @@ function cyclePhase(dateStr) {
   return "luteal";
 }
 
-// ── the universal calendar grid ────────────────────────────────────────────────
+// ── the universal calendar — real FemWell card chrome (cream/flora/oxblood) ──────
 function FwCalendar({ month, onPrev, onNext, onSelectDate, entries }) {
   const gStart = startOfWeek(startOfMonth(month), { weekStartsOn: 1 });
   const gEnd = endOfWeek(endOfMonth(month), { weekStartsOn: 1 });
   const days = []; for (let d = gStart; d <= gEnd; d = addDays(d, 1)) days.push(new Date(d));
   return (
-    <div>
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
-        <button onClick={onPrev} style={navBtn} aria-label="Previous month"><ChevronLeft size={16} color={OX} /></button>
-        <div style={{ textAlign: "center" }}>
-          <div style={{ fontFamily: SERIF, fontStyle: "italic", fontWeight: 600, fontSize: 24, color: OX, lineHeight: 1 }}>{format(month, "MMMM")}</div>
-          <div style={{ fontFamily: UI, fontSize: 10, letterSpacing: 1.4, textTransform: "uppercase", color: T.gold, marginTop: 2 }}>{format(month, "yyyy")} · your month</div>
+    <div style={{ ...fwChrome(OX), padding: "16px 15px 14px" }}>
+      <CornerVines />
+      <div style={{ position: "relative", zIndex: 1 }}>
+        {/* header — Ephesis month title in oxblood + a flora glyph, chevrons flanking */}
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
+          <button onClick={onPrev} style={navBtn} aria-label="Previous month"><ChevronLeft size={16} color={OX} /></button>
+          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", lineHeight: 1 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 7 }}>
+              <FlowerGlyph variant="camellia" size={22} color={T.gold} idx="cal-flower" />
+              <span style={{ fontFamily: SCRIPT, fontWeight: 400, fontSize: 40, color: OX, lineHeight: 0.9 }}>{format(month, "MMMM")}</span>
+            </div>
+            <div style={{ fontFamily: UI, fontSize: 9.5, letterSpacing: 1.6, textTransform: "uppercase", color: T.gold, marginTop: 4 }}>{format(month, "yyyy")} · your month</div>
+          </div>
+          <button onClick={onNext} style={navBtn} aria-label="Next month"><ChevronRight size={16} color={OX} /></button>
         </div>
-        <button onClick={onNext} style={navBtn} aria-label="Next month"><ChevronRight size={16} color={OX} /></button>
-      </div>
 
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(7,1fr)", marginBottom: 4 }}>
-        {["M", "T", "W", "T", "F", "S", "S"].map((d, i) => (
-          <div key={i} style={{ textAlign: "center", fontFamily: UI, fontSize: 9.5, fontWeight: 700, color: T.muted }}>{d}</div>
-        ))}
-      </div>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(7,1fr)", marginBottom: 5 }}>
+          {["M", "T", "W", "T", "F", "S", "S"].map((d, i) => (
+            <div key={i} style={{ textAlign: "center", fontFamily: UI, fontSize: 9.5, fontWeight: 800, letterSpacing: 0.5, color: T.gold }}>{d}</div>
+          ))}
+        </div>
 
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(7,1fr)", gap: 3 }}>
-        {days.map((day, i) => {
-          const ds = iso(day);
-          const inMonth = isSameMonth(day, month);
-          const isTod = ds === TODAY_STR;
-          const isFuture = ds > TODAY_STR;
-          const ph = cyclePhase(ds);
-          const es = entries[ds] || [];
-          let bg = "transparent";
-          if (ph === "menstrual") bg = "rgba(188,46,39,0.12)";
-          else if (ph === "ovulatory") bg = "rgba(212,175,55,0.14)";
-          else if (ph === "follicular") bg = "rgba(143,175,143,0.16)";
-          return (
-            <button
-              key={i}
-              onClick={() => inMonth && onSelectDate(ds, isFuture)}
-              disabled={!inMonth}
-              style={{
-                aspectRatio: "1 / 1", minHeight: 40, borderRadius: 10, cursor: inMonth ? "pointer" : "default",
-                border: isTod ? `1.6px solid ${OX}` : "1px solid transparent",
-                background: bg, position: "relative", display: "flex", flexDirection: "column",
-                alignItems: "center", justifyContent: "center", padding: 0,
-                opacity: inMonth ? (isFuture ? 0.62 : 1) : 0.16,
-              }}
-            >
-              <span style={{ fontFamily: UI, fontSize: 12.5, fontWeight: isTod ? 800 : 500, color: isTod ? OX : T.ink }}>{format(day, "d")}</span>
-              {es.length > 0 && (
-                <div style={{ display: "flex", gap: 2, marginTop: 2 }}>
-                  {es.slice(0, 3).map((e, j) => (
-                    <span key={j} style={{ width: 4, height: 4, borderRadius: "50%", background: DOT[e.type] || T.muted, outline: e.plan ? `1px solid ${T.paperHi}` : "none", opacity: e.plan ? 0.85 : 1 }} />
-                  ))}
-                </div>
-              )}
-            </button>
-          );
-        })}
-      </div>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(7,1fr)", gap: 3 }}>
+          {days.map((day, i) => {
+            const ds = iso(day);
+            const inMonth = isSameMonth(day, month);
+            const isTod = ds === TODAY_STR;
+            const isFuture = ds > TODAY_STR;
+            const ph = cyclePhase(ds);
+            const es = entries[ds] || [];
+            let bg = "transparent";
+            if (ph === "menstrual") bg = "rgba(188,46,39,0.13)";
+            else if (ph === "ovulatory") bg = "rgba(168,137,63,0.15)";
+            else if (ph === "follicular") bg = "rgba(143,175,143,0.16)";
+            return (
+              <button
+                key={i}
+                onClick={() => inMonth && onSelectDate(ds, isFuture)}
+                disabled={!inMonth}
+                style={{
+                  aspectRatio: "1 / 1", minHeight: 40, borderRadius: 11, cursor: inMonth ? "pointer" : "default",
+                  border: isTod ? `1.8px solid ${OX}` : "1px solid transparent",
+                  background: isTod ? "rgba(122,26,18,0.06)" : bg, position: "relative", display: "flex", flexDirection: "column",
+                  alignItems: "center", justifyContent: "center", padding: 0,
+                  opacity: inMonth ? (isFuture ? 0.6 : 1) : 0.14,
+                  boxShadow: isTod ? "0 1px 5px rgba(122,26,18,0.14)" : "none",
+                }}
+              >
+                <span style={{ fontFamily: SERIF, fontSize: 15, fontWeight: isTod ? 700 : 500, color: isTod ? OX : T.ink, lineHeight: 1 }}>{format(day, "d")}</span>
+                {es.length > 0 && (
+                  <div style={{ display: "flex", gap: 2.5, marginTop: 3 }}>
+                    {es.slice(0, 3).map((e, j) => (
+                      <span key={j} style={{ width: 4.5, height: 4.5, borderRadius: "50%", background: DOT[e.type] || T.muted, border: e.plan ? `1px solid ${DOT[e.type] || T.muted}` : "none", backgroundColor: e.plan ? T.paperHi : (DOT[e.type] || T.muted) }} />
+                    ))}
+                  </div>
+                )}
+              </button>
+            );
+          })}
+        </div>
 
-      <div style={{ display: "flex", gap: 12, justifyContent: "center", flexWrap: "wrap", marginTop: 12, paddingTop: 10, borderTop: `1px solid ${T.paperDeep}` }}>
-        {[["Period", T.crimson], ["Fertile", T.sage], ["Mood", T.sage], ["Meal", T.gold], ["Plan", "#A6862B"]].map(([l, c]) => (
-          <span key={l} style={{ display: "flex", alignItems: "center", gap: 4, fontFamily: UI, fontSize: 9.5, color: T.muted }}>
-            <span style={{ width: 6, height: 6, borderRadius: "50%", background: c }} />{l}
-          </span>
-        ))}
+        <div style={{ display: "flex", gap: 12, justifyContent: "center", flexWrap: "wrap", marginTop: 13, paddingTop: 11, borderTop: `1px solid ${T.gold}44` }}>
+          {[["Period", T.crimson], ["Fertile", T.sage], ["Mood", T.sage], ["Meal", T.gold], ["Plan (ring)", "#A6862B"]].map(([l, c]) => (
+            <span key={l} style={{ display: "flex", alignItems: "center", gap: 4, fontFamily: UI, fontSize: 9.5, fontWeight: 600, color: T.muted }}>
+              <span style={{ width: 6, height: 6, borderRadius: "50%", background: c }} />{l}
+            </span>
+          ))}
+        </div>
       </div>
     </div>
   );
@@ -306,20 +334,18 @@ export default function UniversalCalendarDemo() {
         </div>
       </div>
 
-      {/* ── inline calendar (also openable via the icon) ── */}
+      {/* ── inline calendar (also openable via the icon) — its own on-brand card chrome ── */}
       <div style={{ maxWidth: 460, margin: "0 auto", padding: "0 16px" }}>
-        <div style={{ ...card, padding: 16 }}>
-          <FwCalendar
-            month={month}
-            onPrev={() => setMonth((m) => addMonths(m, -1))}
-            onNext={() => setMonth((m) => addMonths(m, 1))}
-            onSelectDate={openDay}
-            entries={entries}
-          />
-          <button onClick={() => setSheet({ stage: "day", mode: "log", date: TODAY_STR })} style={{ ...solidBtn, marginTop: 14 }}>
-            <Clock size={15} style={{ marginRight: 7, verticalAlign: -2 }} />Log for today
-          </button>
-        </div>
+        <FwCalendar
+          month={month}
+          onPrev={() => setMonth((m) => addMonths(m, -1))}
+          onNext={() => setMonth((m) => addMonths(m, 1))}
+          onSelectDate={openDay}
+          entries={entries}
+        />
+        <button onClick={() => setSheet({ stage: "day", mode: "log", date: TODAY_STR })} style={{ ...solidBtn, marginTop: 12 }}>
+          <Clock size={15} style={{ marginRight: 7, verticalAlign: -2 }} />Log for today
+        </button>
       </div>
 
       {/* ── mini Planner day-view: time-slot → date+time prefill ── */}
@@ -377,10 +403,14 @@ export default function UniversalCalendarDemo() {
         <Backdrop onClose={closeAll}>
           <Sheet>
             {sheet.stage === "day" && <DaySheet sheet={sheet} entries={entries}
-              onPick={(type) => openForm(sheet.date, type)}
+              onPick={(type) => type === "meal" ? setSheet({ stage: "food", mode: sheet.mode, date: sheet.date }) : openForm(sheet.date, type)}
               onRunDay={() => setSheet({ stage: "dayrun", mode: sheet.mode, date: sheet.date })}
               onSmartShot={() => setSheet({ stage: "smartshot", mode: "plan", date: sheet.date })}
               onClose={closeAll} />}
+            {sheet.stage === "food" && <FoodLogSheet sheet={sheet}
+              onBack={() => setSheet({ stage: "day", mode: sheet.mode, date: sheet.date })}
+              onClose={closeAll}
+              onConfirm={(list, meta) => { commitEntries(list); flash(`${sheet.date > TODAY_STR ? "Planned" : "Logged"} your ${meta?.meal || "meal"}${meta?.water ? ` + ${meta.water} water` : ""}`); closeAll(); }} />}
             {sheet.stage === "form" && <FormSheet sheet={sheet} onBack={() => setSheet({ stage: "day", mode: sheet.mode, date: sheet.date })} onClose={closeAll} onConfirm={confirm} setSheet={setSheet} />}
             {sheet.stage === "dayrun" && <DayRunSheet sheet={sheet}
               onBack={() => setSheet({ stage: "day", mode: sheet.mode, date: sheet.date })}
@@ -390,6 +420,7 @@ export default function UniversalCalendarDemo() {
             {sheet.stage === "smartshot" && <SmartShotSheet sheet={sheet}
               onBack={() => setSheet({ stage: "day", mode: sheet.mode, date: sheet.date })}
               onClose={closeAll}
+              onFood={({ date, meal, photoUrl }) => setSheet({ stage: "food", mode: date > TODAY_STR ? "plan" : "log", date, initialMeal: meal, photoUrl })}
               onConfirm={(list) => { commitEntries(list); const planned = list.length > 0 && list.every((x) => x.plan); flash(`${planned ? "Added" : "Logged"} ${list.length} ${planned ? "to your plan" : list.length === 1 ? "thing" : "things"}`); closeAll(); }} />}
             {sheet.stage === "done" && <DoneSheet sheet={sheet} onClose={closeAll} onAnother={() => setSheet({ stage: "day", mode: sheet.mode, date: sheet.date })} />}
           </Sheet>
@@ -638,6 +669,189 @@ function DoneSheet({ sheet, onClose, onAnother }) {
         <button onClick={onClose} style={{ ...solidBtn, flex: 1 }}>Done</button>
       </div>
     </div>
+  );
+}
+
+// ════════════════════════════════════════════════════════════════════════════════
+// FOOD LOG — the proper, rich meal logger (brand card chrome). Food search + common
+// foods + recents/favourites, per-item portion, meal type, the photo path integrated,
+// optional macros / notes / "how it felt", inline water quick-add, and a warm review.
+// ════════════════════════════════════════════════════════════════════════════════
+const COMMON_FOODS = ["Porridge", "Greek yoghurt", "Banana", "Eggs", "Sourdough toast", "Avocado", "Chicken salad", "Salmon", "Brown rice", "Pasta", "Hummus", "Apple", "Coffee", "Green smoothie", "Lentil soup", "Berries", "Almonds", "Stir-fry", "Roast veg", "Dark chocolate"];
+const FOOD_RECENTS = ["Greek yoghurt & berries", "Porridge with banana", "Chicken & avocado salad"];
+const FOOD_FAVES = ["Overnight oats", "Salmon & greens", "Green smoothie"];
+const FEELINGS = ["Light", "Satisfied", "Full", "Energised", "Sluggish", "Still peckish"];
+const PORTIONS = ["Small", "Medium", "Large"];
+const MEALS = [["breakfast", "Breakfast"], ["lunch", "Lunch"], ["dinner", "Dinner"], ["snack", "Snack"]];
+
+function FoodLogSheet({ sheet, onBack, onClose, onConfirm }) {
+  const { date, mode } = sheet;
+  const isFuture = date > TODAY_STR;
+  const dayWord = date === TODAY_STR ? "today" : format(parseISO(date), "EEE d MMM");
+  const [mealType, setMealType] = useState(sheet.initialMeal || (() => { const h = new Date().getHours(); return h < 11 ? "breakfast" : h < 15 ? "lunch" : h < 21 ? "dinner" : "snack"; })());
+  const [items, setItems] = useState(sheet.suggested ? [{ name: sheet.suggested, portion: "Medium" }] : []);
+  const [query, setQuery] = useState("");
+  const [photoUrl, setPhotoUrl] = useState(sheet.photoUrl || null);
+  const [reading, setReading] = useState(false);
+  const [feeling, setFeeling] = useState(null);
+  const [showMacros, setShowMacros] = useState(false);
+  const [kcal, setKcal] = useState(""); const [protein, setProtein] = useState("");
+  const [showNotes, setShowNotes] = useState(false); const [notes, setNotes] = useState("");
+  const [water, setWater] = useState(0);
+  const fileRef = useRef(null);
+
+  const addItem = (name) => { if (!name) return; setItems((p) => p.some((i) => i.name.toLowerCase() === name.toLowerCase()) ? p : [...p, { name, portion: "Medium" }]); setQuery(""); };
+  const setPortion = (i, portion) => setItems((p) => p.map((x, j) => j === i ? { ...x, portion } : x));
+  const removeItem = (i) => setItems((p) => p.filter((_, j) => j !== i));
+  const matches = query.trim() ? COMMON_FOODS.filter((f) => f.toLowerCase().includes(query.trim().toLowerCase())) : [];
+
+  // photo path INTEGRATED — pick a food photo → the app's existing meal vision names the
+  // items and adds them (8s-timeout + downscale, same safety as everywhere; unauth/slow →
+  // just attaches the photo and you type). This is the photo+intent path inside the logger.
+  const onFile = async (e) => {
+    const f = e.target.files?.[0]; if (!f) return;
+    const r = new FileReader();
+    r.onload = async () => {
+      setPhotoUrl(r.result); setReading(true);
+      try {
+        const small = await downscaleDataUrl(r.result);
+        const res = await withTimeout(base44.functions.invoke("analyzeMealPhoto", { image_base64: small, mode: "meal" }), VISION_TIMEOUT_MS);
+        const d = res?.data || res;
+        const names = Array.isArray(d?.items) ? d.items.map((it) => it?.name).filter(Boolean) : [];
+        if (names.length) setItems((p) => { const have = new Set(p.map((x) => x.name.toLowerCase())); return [...p, ...names.filter((n) => !have.has(n.toLowerCase())).map((n) => ({ name: n, portion: "Medium" }))]; });
+      } catch { /* attach the photo; user types the food */ }
+      setReading(false);
+    };
+    r.readAsDataURL(f);
+  };
+
+  const canSave = items.length > 0;
+  const save = () => {
+    const list = [{ date, type: "meal", plan: isFuture }];
+    for (let i = 0; i < water; i++) list.push({ date, type: "water", plan: isFuture });
+    onConfirm(list, { meal: mealType, count: items.length, water });
+  };
+
+  return (
+    <>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <button onClick={onBack} style={iconBtn} aria-label="Back"><ArrowLeft size={15} /></button>
+          <div style={{ display: "flex", alignItems: "center", gap: 7 }}>
+            <FlowerGlyph variant="poppy" size={20} color={T.gold} idx="food-flower" />
+            <span style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 21, color: OX }}>{isFuture ? "Plan a meal" : "Log a meal"}</span>
+          </div>
+        </div>
+        <button onClick={onClose} style={iconBtn} aria-label="Close"><X size={15} /></button>
+      </div>
+      <div style={{ display: "inline-flex", alignItems: "center", gap: 6, fontFamily: UI, fontSize: 10, fontWeight: 800, letterSpacing: 0.6, padding: "3px 10px", borderRadius: 999, marginBottom: 12, background: "rgba(168,137,63,0.16)", color: OX }}>
+        <Utensils size={11} /> {isFuture ? "PLAN" : "LOG"} · {dayWord}
+      </div>
+
+      {/* meal type */}
+      <div style={{ ...eyebrow, marginBottom: 6 }}>Which meal</div>
+      <div style={{ display: "flex", gap: 6, marginBottom: 14 }}>
+        {MEALS.map(([id, lab]) => {
+          const on = mealType === id;
+          return <button key={id} onClick={() => setMealType(id)} style={{ flex: 1, padding: "9px 4px", borderRadius: 10, cursor: "pointer", border: `1.5px solid ${on ? OX : T.paperDeep}`, background: on ? OX : T.paperHi, color: on ? T.paper : T.muted, fontFamily: UI, fontSize: 12, fontWeight: 700 }}>{lab}</button>;
+        })}
+      </div>
+
+      {/* photo (integrated) */}
+      <input ref={fileRef} type="file" accept="image/*" onChange={onFile} style={{ display: "none" }} />
+      {photoUrl ? (
+        <div style={{ display: "flex", alignItems: "center", gap: 10, ...inset, padding: 8, marginBottom: 12 }}>
+          <img src={photoUrl} alt="" style={{ width: 52, height: 52, objectFit: "cover", borderRadius: 10, border: `1px solid ${T.paperDeep}` }} />
+          <div style={{ flex: 1, fontFamily: UI, fontSize: 12, color: T.muted }}>{reading ? <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}><Loader2 size={13} className="animate-spin" /> Reading your plate…</span> : "From your photo"}</div>
+          <button onClick={() => setPhotoUrl(null)} style={{ ...iconBtn, width: 26, height: 26 }}><X size={12} /></button>
+        </div>
+      ) : (
+        <button onClick={() => fileRef.current?.click()} style={{ ...ghostBtn, width: "100%", marginBottom: 12, borderColor: T.gold, color: OX }}>
+          <Camera size={14} style={{ marginRight: 7, verticalAlign: -2, color: T.gold }} />Add a photo of your plate
+        </button>
+      )}
+
+      {/* add food — search + common foods */}
+      <div style={{ ...eyebrow, marginBottom: 6 }}>Add food</div>
+      <div style={{ display: "flex", alignItems: "center", gap: 8, ...inset, padding: "9px 11px", marginBottom: 8 }}>
+        <Search size={14} color={T.muted} />
+        <input value={query} onChange={(e) => setQuery(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter" && query.trim()) addItem(query.trim()); }}
+          placeholder="Search or type a food…" style={{ flex: 1, border: "none", background: "none", outline: "none", fontFamily: UI, fontSize: 14, color: T.ink }} />
+        {query.trim() && <button onClick={() => addItem(query.trim())} style={{ ...pill, cursor: "pointer", background: OX, color: T.paper, borderColor: OX }}>Add</button>}
+      </div>
+      {matches.length > 0 && (
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 10 }}>
+          {matches.slice(0, 8).map((f) => <button key={f} onClick={() => addItem(f)} style={{ ...pill, cursor: "pointer" }}>{f}</button>)}
+        </div>
+      )}
+      {!query.trim() && (
+        <>
+          <div style={{ fontFamily: UI, fontSize: 10, fontWeight: 700, letterSpacing: 0.6, textTransform: "uppercase", color: T.gold, margin: "2px 0 5px" }}>Favourites</div>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 8 }}>
+            {FOOD_FAVES.map((f) => <button key={f} onClick={() => addItem(f)} style={{ ...pill, cursor: "pointer", background: "rgba(188,46,39,0.08)", borderColor: `${T.crimson}55`, color: T.ink }}>♥ {f}</button>)}
+          </div>
+          <div style={{ fontFamily: UI, fontSize: 10, fontWeight: 700, letterSpacing: 0.6, textTransform: "uppercase", color: T.gold, margin: "2px 0 5px" }}>Recent</div>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 12 }}>
+            {FOOD_RECENTS.map((f) => <button key={f} onClick={() => addItem(f)} style={{ ...pill, cursor: "pointer" }}>↺ {f}</button>)}
+          </div>
+        </>
+      )}
+
+      {/* the plate — added items with per-item portion */}
+      {items.length > 0 && (
+        <div style={{ ...eyebrow, marginTop: 4, marginBottom: 6 }}>On your plate · {items.length}</div>
+      )}
+      <div style={{ display: "flex", flexDirection: "column", gap: 7, marginBottom: items.length ? 12 : 0 }}>
+        {items.map((it, i) => (
+          <div key={i} style={{ ...inset, padding: "9px 11px" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 7 }}>
+              <span style={{ fontFamily: SERIF, fontSize: 15.5, fontWeight: 600, color: T.ink, flex: 1, minWidth: 0 }}>{it.name}</span>
+              <button onClick={() => removeItem(i)} style={{ ...iconBtn, width: 24, height: 24 }}><Trash2 size={11} /></button>
+            </div>
+            <div style={{ display: "flex", gap: 5 }}>
+              {PORTIONS.map((p) => { const on = it.portion === p; return <button key={p} onClick={() => setPortion(i, p)} style={{ flex: 1, padding: "5px 0", borderRadius: 8, cursor: "pointer", border: `1px solid ${on ? T.gold : T.paperDeep}`, background: on ? "rgba(168,137,63,0.16)" : T.paper, color: on ? OX : T.muted, fontFamily: UI, fontSize: 11, fontWeight: 700 }}>{p}</button>; })}
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* details — how it felt / macros / notes (optional) */}
+      <div style={{ ...eyebrow, marginTop: 4, marginBottom: 6 }}>How it felt <span style={{ textTransform: "none", fontWeight: 500, color: T.muted }}>· optional</span></div>
+      <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 12 }}>
+        {FEELINGS.map((f) => { const on = feeling === f; return <button key={f} onClick={() => setFeeling(on ? null : f)} style={{ ...pill, cursor: "pointer", background: on ? T.sage : T.paperHi, color: on ? "#12240f" : T.muted, borderColor: on ? T.sage : T.paperDeep }}>{f}</button>; })}
+      </div>
+      <div style={{ display: "flex", gap: 8, marginBottom: showMacros || showNotes ? 8 : 12 }}>
+        <button onClick={() => setShowMacros((v) => !v)} style={{ ...pill, cursor: "pointer", background: showMacros ? "rgba(168,137,63,0.14)" : T.paperHi, borderColor: showMacros ? T.gold : T.paperDeep, color: showMacros ? OX : T.muted }}>＋ Macros</button>
+        <button onClick={() => setShowNotes((v) => !v)} style={{ ...pill, cursor: "pointer", background: showNotes ? "rgba(168,137,63,0.14)" : T.paperHi, borderColor: showNotes ? T.gold : T.paperDeep, color: showNotes ? OX : T.muted }}>＋ Notes</button>
+      </div>
+      {showMacros && (
+        <div style={{ display: "flex", gap: 8, marginBottom: 12 }}>
+          <div style={{ ...inset, flex: 1, display: "flex", alignItems: "center", gap: 6, padding: "8px 10px" }}>
+            <input value={kcal} onChange={(e) => setKcal(e.target.value.replace(/[^0-9]/g, ""))} inputMode="numeric" placeholder="0" style={{ width: "100%", border: "none", background: "none", outline: "none", fontFamily: UI, fontSize: 14, color: T.ink }} /><span style={{ fontFamily: UI, fontSize: 11, color: T.muted }}>kcal</span>
+          </div>
+          <div style={{ ...inset, flex: 1, display: "flex", alignItems: "center", gap: 6, padding: "8px 10px" }}>
+            <input value={protein} onChange={(e) => setProtein(e.target.value.replace(/[^0-9]/g, ""))} inputMode="numeric" placeholder="0" style={{ width: "100%", border: "none", background: "none", outline: "none", fontFamily: UI, fontSize: 14, color: T.ink }} /><span style={{ fontFamily: UI, fontSize: 11, color: T.muted }}>g protein</span>
+          </div>
+        </div>
+      )}
+      {showNotes && (
+        <textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={2} placeholder="Anything to remember about this meal…"
+          style={{ width: "100%", boxSizing: "border-box", padding: "10px 12px", borderRadius: 10, border: `1px solid ${T.paperDeep}`, background: T.paper, color: T.ink, fontFamily: SERIF, fontSize: 14, outline: "none", resize: "vertical", marginBottom: 12 }} />
+      )}
+
+      {/* water quick-add */}
+      <div style={{ display: "flex", alignItems: "center", gap: 10, ...inset, padding: "9px 12px", marginBottom: 14 }}>
+        <Droplets size={16} color="#5E93B8" />
+        <span style={{ fontFamily: UI, fontSize: 12.5, fontWeight: 700, color: T.ink, flex: 1 }}>Water with this</span>
+        <button onClick={() => setWater((w) => Math.max(0, w - 1))} style={{ ...iconBtn, width: 30, height: 30 }}>−</button>
+        <span style={{ fontFamily: SERIF, fontSize: 15, color: T.ink, minWidth: 58, textAlign: "center" }}>{water} glass{water === 1 ? "" : "es"}</span>
+        <button onClick={() => setWater((w) => w + 1)} style={{ ...iconBtn, width: 30, height: 30 }}>+</button>
+      </div>
+
+      <button onClick={save} disabled={!canSave} style={{ ...solidBtn, background: isFuture ? "#A6862B" : T.crimson, opacity: canSave ? 1 : 0.45, cursor: canSave ? "pointer" : "default" }}>
+        <Check size={15} style={{ marginRight: 7, verticalAlign: -2 }} />{isFuture ? "Add to plan" : "Log"} {MEALS.find(([m]) => m === mealType)[1].toLowerCase()} · {dayWord}{water ? ` + ${water} water` : ""}
+      </button>
+    </>
   );
 }
 
@@ -926,7 +1140,7 @@ function fallbackRotaEntries() {
 // Always a review/confirm step before saving. (Component keeps the SmartShotSheet name so
 // the render branch is unchanged.)
 // ════════════════════════════════════════════════════════════════════════════════
-function SmartShotSheet({ sheet, onBack, onClose, onConfirm }) {
+function SmartShotSheet({ sheet, onBack, onClose, onConfirm, onFood }) {
   const [stage, setStage] = useState("pick"); // pick|intent|reading|guard|followups|review|schedule_review|error
   const [imageUrl, setImageUrl] = useState(null);
   const [sampleKind, setSampleKind] = useState(null);
@@ -1199,10 +1413,21 @@ function SmartShotSheet({ sheet, onBack, onClose, onConfirm }) {
               <div style={{ fontFamily: UI, fontSize: 12.5, color: T.muted }}>{FOLLOWUPS[cls.detected].q}: <b style={{ color: T.ink }}>{finalAnswer}</b></div>
             )}
           </div>
-          <div style={{ fontFamily: UI, fontSize: 10.5, color: T.muted, margin: "8px 0 10px" }}>Nothing is saved until you tap below.</div>
-          <button onClick={saveSingle} style={{ ...solidBtn, background: target.mode === "plan" ? "#A6862B" : T.crimson }}>
-            <Check size={15} style={{ marginRight: 7, verticalAlign: -2 }} />{target.mode === "plan" ? "Add to plan" : "Log it"} · {target.date === TODAY_STR ? "today" : format(parseISO(target.date), "EEE d MMM")}
-          </button>
+          {cls.detected === "food" ? (
+            <>
+              <div style={{ fontFamily: UI, fontSize: 10.5, color: T.muted, margin: "8px 0 10px" }}>Take it into the full food log to add items, portions and how it felt.</div>
+              <button onClick={() => onFood({ date: target.date, meal: (finalAnswer || "").toLowerCase(), photoUrl: imageUrl })} style={{ ...solidBtn, background: T.crimson }}>
+                <Utensils size={15} style={{ marginRight: 7, verticalAlign: -2 }} />Continue to food log
+              </button>
+            </>
+          ) : (
+            <>
+              <div style={{ fontFamily: UI, fontSize: 10.5, color: T.muted, margin: "8px 0 10px" }}>Nothing is saved until you tap below.</div>
+              <button onClick={saveSingle} style={{ ...solidBtn, background: target.mode === "plan" ? "#A6862B" : T.crimson }}>
+                <Check size={15} style={{ marginRight: 7, verticalAlign: -2 }} />{target.mode === "plan" ? "Add to plan" : "Log it"} · {target.date === TODAY_STR ? "today" : format(parseISO(target.date), "EEE d MMM")}
+              </button>
+            </>
+          )}
         </>
       )}
 
