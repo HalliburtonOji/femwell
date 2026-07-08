@@ -99,6 +99,8 @@ import floraHeaderDemoHtml from "@/components/founders/brandDocs/flora-header-de
 import floraBranchDemoHtml from "@/components/founders/brandDocs/flora-branch-demo.html?raw";
 // Realistic Branch — the realism/craft pass on the flora hero (2026-07-03 · newest flora pick).
 import floraRealismHtml from "@/components/founders/brandDocs/flora-branch-realism.html?raw";
+// Entity Audit — read-only audit of all 149 base44 entities + removal plan (2026-07-09).
+import entityAuditHtml from "@/components/founders/brandDocs/entity-audit.html?raw";
 // HealthCornerDemo was the multi-layout preview. The canonical health
 // experience now lives at /Health (src/pages/Health.jsx). The Health Corner
 // tab in /Ideas renders <HealthCornerRedirectCard /> instead.
@@ -266,6 +268,8 @@ const CATALOG = [
     title: "Pulse — card-system demo ★ for approval", desc: "Your week read back gently: insight cards (mood · energy · rest), patterns-worth-knowing cards, and a phase card — life-spanning, not a clinical chart wall." },
   { kind: "route", href: "/PlannerCardsDemo", group: CAT.ARCHIVE, sub: "Card-system demos (pending rebuild)", status: "approval", accent: "sage",
     title: "Planner (content) — card-system demo ★ for approval", desc: "The CONTENT side of Planner as cards: add-an-intention, today's gentle intentions, your rituals, and soft reminders. NOT the calendar/day-view (those stay as-is)." },
+  // ── ★ TOP of Current: Data hygiene ──
+  { kind:"doc", key:"Entity Audit", group: CAT.CURRENT, sub:"Data hygiene", status:"new", accent:"crimson", title:"Entity Audit & Removal Plan — cull the dead weight", desc:"Read-only deep audit of all 149 base44 entities. 121 active (frontend) · 12 backend-only · 15 removal candidates: 13 with ZERO code refs (AnonymousSession, BookContentCache, ConditionProfiles, DailyAggregates, DayTaskOverrides, DealsProducts, DealsSources, DischargeLogs, EvidenceRefs, InsightSnapshots, MediaAssets, SexualHealthLogs, VoiceCache) + 2 superseded duplicates (CommunityPosts, Posts). Full ledger table + tiered shortlists + a back-up-before-deletion gate. Live row counts pending data access. NO deletions made — approve per-item." },
   // ── ★ TOP of Current: PAGE LEVEL-UP PLANS (one per live page) awaiting your reaction ──
   { kind: "route", href: "/CommunityRedesignDemo", group: CAT.CURRENT, sub: "Page level-up plans + demos", status: "new", accent: "crimson",
     title: "Community Redesign — demo ★", desc: "Phase-1 redesign SHELL on the canonical §6.8.2 page template: flora hero (bouquet = many women) + tap-to-rebloom shelf switcher (Talk · Circles · Together · Quietly) · summary card · glance⇆Community-Jess sliding row w/ upward inner sheet · clipboard slider of the 4 shelf-boards · handy row · resonance. Reuses every real feature (rooms/circles/clubs/library/games/echo/rituals). PLUS feature #1 = robust TALK ROOMS (botanical alias per anon hash · daily life-tinted room prompt · hide-a-voice · mute-a-word · per-room presence — real reads/writes). All safety rails intact (18+/crisis/moderation/report→hide/k-anon). Live /Community untouched." },
@@ -516,6 +520,7 @@ const ARCHIVE_SUB_ORDER = [
 ];
 // Current sub-section order (keeps Current scannable — page plans together, then cross-app).
 const CURRENT_SUB_ORDER = [
+  "Data hygiene",
   "Calendar + logger plans",
   "Card language plans",
   "Brand + card language",
@@ -1104,6 +1109,7 @@ function FoundersInner({ user }) {
       {tab === "Card Styles" && <BrandDocFrame html={cardStylesHtml} title="FemWell — Card Styles: research + expansion" />}
       {tab === "Intentions & Goals" && <BrandDocFrame html={intentionsGoalsHtml} title="FemWell — Intentions, Line of the Day & Goals" />}
       {tab === "Connect, Days & Missions" && <BrandDocFrame html={connectDaysMissionsHtml} title="FemWell — No Garden Grows Alone (Connection, Days Off & Tiny Missions)" />}
+      {tab === "Entity Audit" && <BrandDocFrame html={entityAuditHtml} title="FemWell — Entity Audit & Removal Plan" />}
       {tab === "Ideas"     && <IdeasTab user={user} />}
       {tab === "Strategy"  && <StrategyTab />}
       {tab === "Legal"     && <LegalTab />}
