@@ -83,6 +83,8 @@ import cardStylesHtml from "@/components/founders/brandDocs/card-styles-expansio
 import universalCalendarHtml from "@/components/founders/brandDocs/universal-calendar-logger.html?raw";
 // Calendar Sync (Google + Apple) research+plan doc (2026-07-08) — wired from IDEAS-LINKS-FOR-FOUNDERSOS.md.
 import calendarSyncHtml from "@/components/founders/brandDocs/calendar-sync-plan.html?raw";
+// Community deep-audit + redesign (IA/structure fix) plan doc (2026-07-08) — wired from IDEAS-LINKS-FOR-FOUNDERSOS.md.
+import communityRedesignHtml from "@/components/founders/brandDocs/community-redesign.html?raw";
 // Nutrition hero tap-to-bloom brainstorm (2026-07-07) — wired from IDEAS-LINKS-FOR-FOUNDERSOS.md.
 import heroBloomTapHtml from "@/components/founders/brandDocs/nutrition-hero-bloom-tap.html?raw";
 // Flora Header redesign demo (2026-07-03) — wired from IDEAS-LINKS-FOR-FOUNDERSOS.md.
@@ -259,6 +261,8 @@ const CATALOG = [
   { kind: "route", href: "/PlannerCardsDemo", group: CAT.ARCHIVE, sub: "Card-system demos (pending rebuild)", status: "approval", accent: "sage",
     title: "Planner (content) — card-system demo ★ for approval", desc: "The CONTENT side of Planner as cards: add-an-intention, today's gentle intentions, your rituals, and soft reminders. NOT the calendar/day-view (those stay as-is)." },
   // ── ★ TOP of Current: PAGE LEVEL-UP PLANS (one per live page) awaiting your reaction ──
+  { kind: "doc", key: "Community Redesign", group: CAT.CURRENT, sub: "Page level-up plans + demos", status: "new", accent: "crimson",
+    title: "Community — deep audit + redesign (clearer IA)", desc: "Halli finds Community confusing. Deep audit of the CURRENT information architecture (exactly as built) + a redesign PLAN on the canonical page structure. Diagnosis: 3 fuzzy grouping words (Rooms/Circles/Clubs) + the same places shown 4 different ways (door grid · daily slot · sticky tabs · Jump sheet); books in 4 places, creativity in 2; doors behave 3 different ways; Echo/Witness/Twin pretend to be Community but live in the Journal. Fix: ONE hierarchy, FOUR named shelves (Talk · Circles · Together · Quietly) on the Nutrition page language (flora hero → summary → Today sliding deck → clipboard shelves → one Jump map). Every feature kept, all safety rails untouched. Plan-first — no live change." },
   { kind: "doc", key: "Nutrition +2", group: CAT.CURRENT, sub: "Page level-up plans + demos", status: "new", accent: "crimson",
     title: "★ Nutrition +2 — the whole table, raised", desc: "Nutrition is LIVE — the plan for the next two levels: finish the stubs (meal-plan generator, recipes, cook-what's-in, snap-a-photo) and RAISE it — cited women's-nutrition research (iron flagship · cycle-aware-not-rules · protein · peri/menopause · PCOS/PMDD · GLP-1 era · food↔mood), the myth-vs-fact series, JOY & food (eating-together, the kitchen-table room), cook-videos-in-card, the weave into Today/Health/Pulse/Planner/Garden/Community/Jess, and a fold-in order. React before we touch live Nutrition." },
   { kind: "route", href: "/NutritionL2Demo", group: CAT.CURRENT, sub: "Page level-up plans + demos", status: "approval", accent: "crimson",
@@ -1069,6 +1073,7 @@ function FoundersInner({ user }) {
       {tab === "Jess +2" && <BrandDocFrame html={jessPlanHtml} title="FemWell — Jess Level Up (+2)" />}
       {tab === "Universal Calendar" && <BrandDocFrame html={universalCalendarHtml} title="FemWell — One Universal Calendar + Logger" />}
       {tab === "Calendar Sync" && <BrandDocFrame html={calendarSyncHtml} title="FemWell — Calendar Sync (Google + Apple): research + plan" />}
+      {tab === "Community Redesign" && <BrandDocFrame html={communityRedesignHtml} title="FemWell — Community: deep audit + redesign plan" />}
       {tab === "Hero Bloom Tap" && <BrandDocFrame html={heroBloomTapHtml} title="Nutrition hero — one flower, blooming through the day" />}
       {tab === "Realistic Branch" && <BrandDocFrame html={floraRealismHtml} title="FemWell — the branch, done properly (realism)" />}
       {tab === "Branch Header" && <BrandDocFrame html={floraBranchDemoHtml} title="FemWell — the blossoming branch, richer" />}
