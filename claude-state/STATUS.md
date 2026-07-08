@@ -1,6 +1,14 @@
 # FEMWELL — CANONICAL STATUS INDEX (read first · updated 2026-06-30)
 **This file is the single source of truth AND the index to every plan doc. If anything else disagrees, this wins.** (The long ship-log history continues below the index.)
 
+## 🗂️✅ ENTITY AUDIT wired into Ideas + RECONCILE DEPLOY — calendar fixes + entity-audit doc unified · live `index-qZJoCBgD.js` · commit `fa6bff7` (2026-07-09)
+- **What changed:** Wired the "Entity Audit" doc into `src/pages/FoundersOS.jsx` (3-edit handoff: `?raw` import + CATALOG doc entry at TOP of Current under a new **"Data hygiene"** sub + `BrandDocFrame` render branch; **New** chip, crimson). Reconcile-deployed so ONE bundle carries the previously-409-blocked entity-audit doc **and** the calendar fixes (`5465561`).
+- **Shipped vs demo:** SHIPPED (doc live in Ideas pill; calendar fixes already live in-app).
+- **Live bundle hash:** `index-qZJoCBgD.js` (deploy clean, first try — no 409). Local clean build (`rm -rf dist node_modules/.vite && vite build`) reproduced the same hash.
+- **Verification:** served-bundle marker check (all YES): calendar → "Period end logged", "Spotting logged", "PeriodStart"+"PeriodEnd", `fw_open_calendar`; Entity Audit → CATALOG key "Entity Audit & Removal Plan" + doc body "BookContentCache". Browser not driven (as requested; authed founder browser not connected). `writePeriod`/`CycleSheet` are minified identifiers — used durable user-visible strings instead.
+- ✅ done: Entity Audit wired (Current/Data hygiene/New) · clean build · deploy · both feature sets confirmed in the live bundle · pushed `fa6bff7` to main.
+- ⏭ queued: none for this task. (Entity-audit deletions still await Halli's per-item approval — the doc explicitly makes NO deletions.)
+
 ## 🗓️🩸 CALENDAR FIXES — collision + on-brand sweep + slide-months + PERIOD/CYCLE logging built in · deployed `index-KUGHbUdq.js` · commit `5465561` (2026-07-09)
 **Four fixes from Halli (screenshots) on the live calendar go-live.** ⚠️ NOT browser-tested by me (orchestrator holds the authed session; overlay chokes the harness) — build markers confirmed in-bundle; Halli/orchestrator do the on-device tap.
 - **(1) COLLISION FIXED:** the per-page top-right "Calendar" pill (`SliderKit.TopChrome`, on all elite shells) is **removed** — the persistent global calendar icon is the ONE entry. Also moved Community's "All surfaces" pill from `right:12`→`left:12` so it no longer sits under the icon. TopChrome still accepts (ignores) `onCalendar` so callers don't break. (Today's calendar icon is inline-left in its date row — not a fixed collision.)
