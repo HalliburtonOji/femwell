@@ -64,12 +64,13 @@ import { useScrollLock } from "@/utils/useScrollLock";
 // ── canonical page template (§6.8.2) — the redesign home is built from these ──
 import {
   Heart, Briefcase, Sparkles, Moon, Stethoscope, Dices, BookOpen, HelpCircle,
-  ChevronUp, ChevronDown, ChevronRight, Eye, Feather, MessagesSquare, Sprout,
+  ChevronUp, ChevronDown, ChevronRight, Eye, Feather, MessagesSquare, Sprout, CalendarDays,
 } from "lucide-react";
 import { FwFloraHero } from "@/components/brand/PageTop";
 import { Clipboard, ClipboardSlider } from "@/components/brand/ClipboardSlider";
 import { SummaryCard, FwCard } from "@/components/brand/Card";
 import { cwOf, Pollinator } from "@/components/brand/flora";
+import EventsTogether from "@/components/community/EventsTogether";
 
 const PLUM = "#241a26"; // the single permitted dark surface
 const HANDFAM = '"Cormorant Garamond","Fraunces",Georgia,serif';
@@ -1946,13 +1947,13 @@ const SHELVES = [
       { key: "circles", Icon: BookOpen, name: "Shared loves", note: "books · career · creativity · movement" },
     ] },
   { id: "together", Icon: HeartHandshake, label: "Together", cw: "sage", openness: 0.88, creature: "dragonfly",
-    title: "Together", line: "Do a thing side by side — read a book, play a round, make something.",
-    sub: "What you do together", flower: "sunflower", action: { label: "See what's on", key: "library" },
+    title: "Together", line: "Do a thing side by side — go to an event, read a book, play a round, make something.",
+    sub: "What you do together", flower: "sunflower", action: { label: "See what's on", key: "events" },
     tiles: [
+      { key: "events", Icon: CalendarDays, name: "Events", note: "go together, near you + online" },
       { key: "library", Icon: BookOpen, name: "The Library", note: "book club + readers' corners" },
       { key: "games", Icon: Dices, name: "The Games Room", note: "Jess's nightly round + games" },
-      { key: "clubs", Icon: HeartHandshake, name: "Slow mornings", note: "a gentle daily check-in" },
-      { key: "clubs", Icon: Feather, name: "Creativity corner", note: "make a small thing together" },
+      { key: "clubs", Icon: HeartHandshake, name: "Clubs", note: "slow mornings · creativity corner" },
     ] },
   { id: "quietly", Icon: Feather, label: "Quietly", cw: "gold", openness: 0.5, creature: "ladybird",
     title: "Quietly", line: "Somewhere softer — anonymous, one-to-one, or just for you.",
@@ -2335,6 +2336,8 @@ export function CommunityInner({ initialView = null, embedded = false, homeVaria
               <PoolCard user={user} />
               <WisdomCard onOpen={() => setView("wisdom")} />
             </div>
+          : view === "events"
+          ? <EventsTogether user={user} onBack={() => setView("home")} />
           : view === "wisdom"
           ? <WisdomLibrary onBack={() => setView("home")} />
           : view === "bookclub"

@@ -1,0 +1,206 @@
+<!doctype html>
+<html lang="en-GB"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>FemWell — Together / Events: robust & safe (feature #2)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500;1,600&family=Ephesis&display=swap" rel="stylesheet">
+<style>
+  :root{--paper:#ECE7DA;--paperHi:#F4EFE3;--paperDeep:#D8CFBC;--ink:#0B0805;--inkSoft:#1A140D;--muted:#2E261B;--gold:#A8893F;--crimson:#BC2E27;--oxblood:#7A1A12;--blush:#E8B4B8;--sage:#8FAF8F;--plum:#8E6E8E;--serif:'Cormorant Garamond',Georgia,serif;--script:'Ephesis',cursive;--sans:ui-sans-serif,system-ui,-apple-system,'Segoe UI',sans-serif;}
+  *{box-sizing:border-box}
+  body{margin:0;background:radial-gradient(120% 80% at 12% 0%,#F4EFE3 0%,rgba(244,239,227,0) 55%),radial-gradient(120% 90% at 100% 100%,#E4DDCC 0%,rgba(228,221,204,0) 50%),var(--paper);color:var(--ink);font-family:var(--serif);font-size:18px;line-height:1.6;-webkit-font-smoothing:antialiased}
+  .doc{max-width:680px;margin:0 auto;padding:30px 22px 90px}
+  h1.cover{font-family:var(--script);font-size:50px;color:var(--crimson);margin:6px 0 2px;line-height:1.04}
+  h2{font-family:var(--serif);font-style:italic;font-weight:600;font-size:27px;margin:0 0 6px;color:var(--oxblood)}
+  h3{font-family:var(--serif);font-weight:600;font-size:21px;margin:18px 0 6px}
+  h4{font-family:var(--sans);font-size:12px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--gold);margin:16px 0 4px}
+  .eyebrow{font-family:var(--sans);font-size:12px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--gold);margin-bottom:10px}
+  p{margin:0 0 12px}.lede{font-size:20px;line-height:1.55}
+  small,.cap{font-family:var(--sans);font-size:13px;color:var(--muted);line-height:1.5}
+  b,strong{font-weight:600}
+  a{color:var(--crimson);text-decoration:none;border-bottom:1px solid rgba(188,46,39,.3)}
+  .section{background:var(--paperHi);border:1px solid var(--paperDeep);border-left:4px solid var(--gold);border-radius:20px;padding:22px 20px;margin:18px 0;box-shadow:0 4px 20px rgba(58,44,26,.10),0 1px 4px rgba(58,44,26,.06);position:relative;overflow:hidden}
+  .section.crimson{border-left-color:var(--crimson)}.section.sage{border-left-color:var(--sage)}.section.plum{border-left-color:var(--plum)}.section.blush{border-left-color:var(--blush)}
+  .rule{height:1px;background:var(--gold);opacity:.32;margin:18px 0}
+  .center{text-align:center}
+  table{width:100%;border-collapse:collapse;font-size:14px;font-family:var(--sans);margin:8px 0}
+  th,td{text-align:left;padding:7px 8px;border-bottom:1px solid var(--paperDeep);vertical-align:top}
+  th{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--gold)}
+  td b{font-family:var(--serif);font-size:15px}
+  .toc a{display:block;font-family:var(--sans);font-size:15px;color:var(--inkSoft);text-decoration:none;border-bottom:1px solid var(--paperDeep);padding:6px 0}
+  .toc a span{color:var(--gold);font-weight:700;margin-right:10px}
+  .script{font-family:var(--script);color:var(--crimson)}
+  .pill{display:inline-block;font-family:var(--sans);font-size:12px;font-weight:600;padding:5px 11px;border-radius:999px;background:var(--paper);border:1px solid var(--paperDeep);margin:3px 4px 3px 0}
+  .pill.done{background:#EAF1EA;border-color:var(--sage);color:#3f6b3f}
+  .pill.gate{background:#FBE9E6;border-color:var(--crimson);color:var(--crimson)}
+  .pill.next{background:#FBF1E0;border-color:var(--gold);color:#8a6d22}
+  .lens{background:var(--paper);border:1px solid var(--paperDeep);border-left:3px solid var(--gold);border-radius:12px;padding:12px 14px;margin:8px 0}
+  .lens .nm{font-family:var(--serif);font-weight:600;font-size:18px;color:var(--ink);margin-bottom:2px}
+  .lens .nm .ix{font-family:var(--sans);font-size:11px;font-weight:700;letter-spacing:.1em;color:var(--gold);margin-right:8px;text-transform:uppercase}
+  .lens p{margin:0;font-size:15px;line-height:1.5;color:var(--inkSoft)}
+  .lens .src{font-family:var(--sans);font-size:12px;color:var(--muted);margin-top:5px}
+  .num{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:999px;background:var(--crimson);color:#fff;font-family:var(--sans);font-size:12px;font-weight:700;margin-right:8px;vertical-align:1px}
+  .foot{font-family:var(--sans);font-size:12px;color:var(--muted);text-align:center;margin-top:30px;line-height:1.6}
+  ul{margin:4px 0 12px;padding-left:20px}li{margin:3px 0}
+  .wf{border:1px solid var(--paperDeep);border-radius:16px;background:var(--paper);padding:12px;margin:12px 0;font-family:var(--sans)}
+  .wf .lbl{font-size:10.5px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--gold);margin-bottom:8px}
+  .box{border:1px dashed #b9ab8e;border-radius:12px;padding:10px 12px;margin:7px 0;background:var(--paperHi);font-size:13px;color:var(--inkSoft)}
+  .box .t{font-family:var(--serif);font-weight:600;font-size:16px;color:var(--ink)}
+  .safe{counter-reset:s}
+  .safe .r{display:flex;gap:11px;margin:9px 0;align-items:flex-start}
+  .safe .r::before{counter-increment:s;content:counter(s);flex-shrink:0;width:24px;height:24px;border-radius:999px;background:var(--sage);color:#fff;font-family:var(--sans);font-size:12px;font-weight:700;display:grid;place-items:center}
+  .safe .r b{font-family:var(--serif);font-size:16px}
+  .safe .r span{font-family:var(--sans);font-size:13px;color:var(--inkSoft);line-height:1.45}
+</style></head>
+<body><div class="doc">
+
+<div class="center" style="padding:14px 0 4px">
+  <div class="eyebrow">FemWell · Community · FEATURE #2 of 6 · Together / Events · brainstorm + build</div>
+  <h1 class="cover">Nobody walks in alone</h1>
+  <p class="lede" style="font-style:italic;max-width:560px;margin:8px auto 0">Real things to do — near you and online — that women can go to <b>together</b>. Find one, say you're going, bring a friend. And because in-person meetups are the part where safety <i>really</i> matters, the safety model is built into how it works, not bolted on. This is the deep-brainstorm <b>and</b> what's now built into the redesign demo, grounded in cited research on how women's meetup apps actually keep people safe.</p>
+</div>
+
+<div class="section">
+  <div class="eyebrow">The one-line thesis</div>
+  <p class="lede">The loneliest group in the UK is <b>young women</b> — and the thing that helps isn't another feed, it's <b>showing up somewhere with people</b>. So we surface real events with <b>ticket links</b> (we never take payment), let a woman say <b>"I'm going"</b> (kept private), help her <b>bring a friend</b>, and wrap it all in a <b>safety model</b> that treats venue-level-only location, tell-a-friend and trust signals as non-negotiable defaults.</p>
+</div>
+
+<div class="section sage">
+  <div class="eyebrow">Contents</div>
+  <div class="toc">
+    <a href="#model"><span>1</span> The event model</a>
+    <a href="#safety"><span>2</span> The safety model (the numbered spec)</a>
+    <a href="#built"><span>3</span> What's BUILT this pass (in the demo)</a>
+    <a href="#realgate"><span>4</span> Real now vs needs sign-off (the gates)</a>
+    <a href="#online"><span>5</span> Online events</a>
+    <a href="#warm"><span>6</span> Warmth, "why go" & app ties</a>
+  </div>
+</div>
+
+<!-- 1 -->
+<a id="model"></a>
+<div class="section crimson">
+  <div class="eyebrow">1 · The model</div>
+  <h2>What "Together / Events" is</h2>
+  <p>Two ways in — <b>in person</b> and <b>online</b> — across the whole of life, not just health: socials, walks, gigs &amp; comedy, career coffees, fashion swaps, crafting hours, book-club calls, co-working, watch-alongs.</p>
+  <ul>
+    <li><b>Browse &amp; discover</b> real events, filter by in-person/online, category, free.</li>
+    <li><b>Ticket links out</b> to the official ticket site — <b>we never process payment</b> (keeps us out of refund/consumer-contract liability).</li>
+    <li><b>"I'm going"</b> — a soft, changeable RSVP, <b>kept private on your phone</b>.</li>
+    <li><b>Save</b> an event, <b>bring a friend</b> (share), and <b>report</b> anything wrong.</li>
+    <li><b>Trust signals</b> — a Verified-organiser badge, the ticket platform, and an Unverified flag when a link isn't checked.</li>
+  </ul>
+  <p class="cap">FemWell is a <b>directory that surfaces &amp; links</b> events, not the organiser — an important legal line (see §2/§4). FemWell-<i>native</i> meetups (walks, pods) would be the higher-duty tier, built only with the full safety spec enforced.</p>
+</div>
+
+<!-- 2 -->
+<a id="safety"></a>
+<div class="section sage">
+  <div class="eyebrow">2 · Safety first, always</div>
+  <h2>The safety model — the rules the feature enforces</h2>
+  <p>Drawn from how Bumble, Meetup, Peanut and Girl Gone International actually keep women safe. This is a numbered spec, and the build honours it:</p>
+  <div class="safe">
+    <div class="r"><b>Venue-level only, never precise.</b><span>We show the venue or town — never a home address, and we never ask for or store your precise location. <span class="src" style="display:inline">(Bumble: don't give out home/office; abstract details.)</span></span></div>
+    <div class="r"><b>Your going-status is private.</b><span>"I'm going" lives on your phone. No other woman, and not us, can see where you'll be — unless you choose to share it.</span></div>
+    <div class="r"><b>Public, well-lit venues; daytime first.</b><span>Every event is a public venue; the interstitial reminds you to meet in daylight the first time, low-pressure (a walk, a tea).</span></div>
+    <div class="r"><b>Tell someone where you'll be.</b><span>One tap shares the event and time with a friend — someone always knows. (Bumble "Share Date" pattern.)</span></div>
+    <div class="r"><b>Trust the signals.</b><span>Verified-organiser + known-platform badges; unverified links flagged. Native events would need a <b>named, present host</b> who passes a liveness check.</span></div>
+    <div class="r"><b>Trust your gut, leave any time.</b><span>Arrange your own way there and back; leave the moment anything feels off — no explanation owed.</span></div>
+    <div class="r"><b>Report + block everywhere.</b><span>Flag an event or organiser; serious conduct routes to us and is signposted to police.</span></div>
+    <div class="r"><b>No payment in-app.</b><span>Every ticket link passes a "you're leaving FemWell — pay only on the official site, never by transfer to a stranger" interstitial.</span></div>
+  </div>
+  <div class="lens" style="margin-top:14px"><div class="nm"><span class="ix">Legal note</span>Surface-vs-host + women-only</div><p>The Online Safety Act governs the <i>on-platform</i> listings/comments/RSVPs, not the offline meet — but we still owe an illegal-content risk assessment + report/redress. "We surface &amp; link" carries lighter duty than "we host". Women-only rests on the Equality Act single-sex basis (same as the Talk-rooms doc). <b>Both need real UK legal sign-off on the disclaimer + safeguarding copy before public launch.</b></p><div class="src">gov.uk OSA explainer · Equality Act / EHRC · Meetup &amp; Bumble safety centres</div></div>
+</div>
+
+<!-- 3 -->
+<a id="built"></a>
+<div class="section">
+  <div class="eyebrow">3 · Shipped this pass</div>
+  <h2>What's built in the redesign demo</h2>
+  <p>In the Together shelf → <b>Events</b>. Real reads/writes — <b>not a stub</b>:</p>
+  <div class="wf">
+    <div class="lbl">Together → Events</div>
+    <div class="box" style="border-style:solid;border-color:var(--sage)"><b style="color:var(--sage)">✔ Meeting safely, always</b> — public venues · venue-level only · your plans stay private · tap to read our promise</div>
+    <div class="box">[ All ] [ In person ] [ Online ] &nbsp;·&nbsp; Free only · categories</div>
+    <div class="box" style="border-style:solid"><span style="color:var(--sage);font-size:11px;font-weight:700">IN PERSON · VERIFIED ORGANISER · FREE</span><br><span class="t">Sunday women's canal walk — Little Venice</span><br><small>Sun 10am · Paddington · Meetup &nbsp;·&nbsp; <b>[ I'm going ]</b> [ Tickets ] · ♥ Save · Bring a friend · Report</small></div>
+  </div>
+  <table>
+    <tr><th>Feature</th><th>What it does · why it matters</th></tr>
+    <tr><td><b>Browse &amp; discover</b></td><td>Reads the real <b>EventsItems</b> — filter In person / Online / All, category, Free. Rich on-brand cards with date, venue (area-level), price, tags.</td></tr>
+    <tr><td><b>Trust signals</b></td><td>Verified-organiser badge, ticket platform, and an <b>Unverified</b> flag straight from the event data.</td></tr>
+    <tr><td><b>"I'm going" (private)</b></td><td>Soft, changeable RSVP kept on your device — "You're going to 3 events, kept private". Nobody can see where you'll be.</td></tr>
+    <tr><td><b>Ticket link-out + interstitial</b></td><td>Tapping Tickets opens a <b>meet-safe interstitial</b> (public venue · tell a friend · own transport · trust your gut · third-party disclaimer · unverified warning) before leaving to the official site.</td></tr>
+    <tr><td><b>Save · Bring a friend · Report</b></td><td>Save = real SavedItems write (cross-device). Bring a friend = native share / WhatsApp. Report = flags + hides it for you.</td></tr>
+    <tr><td><b>Safety guide</b></td><td>A one-tap "Our safety promise" sheet — the full numbered model, always reachable.</td></tr>
+    <tr><td><b>Online section</b></td><td>Online events show in the list (tap Online); hosted FemWell online circles are labelled honestly as coming.</td></tr>
+  </table>
+  <p><span class="pill done">real EventsItems reads</span><span class="pill done">real SavedItems writes</span><span class="pill done">device-local RSVP (private)</span><span class="pill done">no in-app payment</span><span class="pill done">safety baked in</span><span class="pill done">on-brand cards</span></p>
+</div>
+
+<!-- 4 -->
+<a id="realgate"></a>
+<div class="section crimson">
+  <div class="eyebrow">4 · The honest line</div>
+  <h2>Real now vs needs your sign-off</h2>
+  <p>Per the function-cap rule, here's exactly what's real today and what needs a new backend function / entity / external creds — <b>flagged before building</b>:</p>
+  <table>
+    <tr><th>Capability</th><th>Status</th></tr>
+    <tr><td>Browse / discover / filter events</td><td><span class="pill done">REAL now</span> reads EventsItems (populated by the existing refreshEvents)</td></tr>
+    <tr><td>Ticket link-out + safety interstitial</td><td><span class="pill done">REAL now</span></td></tr>
+    <tr><td>Save an event</td><td><span class="pill done">REAL now</span> SavedItems</td></tr>
+    <tr><td>"I'm going" (private, device-local)</td><td><span class="pill done">REAL now</span></td></tr>
+    <tr><td>Report / hide an event</td><td><span class="pill done">REAL now</span> (hides for you; server-side moderator routing = small function later)</td></tr>
+    <tr><td><b>See who else is going + "go-together" pods</b></td><td><span class="pill gate">NEEDS SIGN-OFF</span> new <b>Event/RSVP + Pod entity + an anonymous-write function</b> (shared attendance, pseudonymous, in-app-only chat, auto-dissolve). Presented as a labelled opt-in in the demo, not faked.</td></tr>
+    <tr><td><b>"Get home safe" check-in</b></td><td><span class="pill next">NEXT</span> device-local doable; trusted-contact share is a light function</td></tr>
+    <tr><td><b>Host verification</b> (liveness for native hosts/pod-openers)</td><td><span class="pill gate">NEEDS SIGN-OFF</span> function + a verification vendor (creds)</td></tr>
+    <tr><td><b>Live external feeds</b> (Ticketmaster + Skiddle)</td><td><span class="pill gate">NEEDS SIGN-OFF</span> server-side key <b>function + external API creds + normalisation</b>. <b>Note:</b> Eventbrite &amp; Meetup have <i>closed</i> their public search APIs — only Ticketmaster Discovery + UK's Skiddle are open. Defer; curated + native events need zero creds.</td></tr>
+    <tr><td>In-app payment</td><td><span class="pill gate">DELIBERATELY NOT DOING</span> link-out only (liability + trust)</td></tr>
+  </table>
+  <div class="src" style="font-family:var(--sans);font-size:12px;color:var(--muted)">API reality: github.com/Automattic/eventbrite-api/issues/83 (Eventbrite search removed) · help.meetup.com (Pro/OAuth-gated) · developer.ticketmaster.com (open, 5k/day) · skiddle.com/api (free UK key)</div>
+</div>
+
+<!-- 5 -->
+<a id="online"></a>
+<div class="section plum">
+  <div class="eyebrow">5 · Online, together</div>
+  <h2>Formats that build belonging from home</h2>
+  <p>For the nervous or lonely, online is the toe-in-the-water — presence without performance. The evidence points to <b>recurring, fixed-slot, low-stakes</b> formats (the parkrun/VIDA lesson):</p>
+  <ul>
+    <li><b>Co-working / body-doubling hours</b> — cameras optional, chat-only welcome, declare-your-intention, no recording. (VIDA runs this for women — direct precedent.)</li>
+    <li><b>Book-club &amp; watch-along calls</b> — shared low-stakes focus, host-moderated (ties to the Library).</li>
+    <li><b>Virtual walks / "walk-and-talk"</b> — audio-first, gentle.</li>
+    <li><b>Live audio rooms by life-domain</b> — Love, Work, Style, the Lighter Side (reuses the Talk-rooms tone).</li>
+    <li><b>"Cycle-sync" gentle sessions</b> — health-tinted but optional, private RSVP.</li>
+  </ul>
+  <p class="cap">Real external online events already appear in the list. <b>FemWell-hosted</b> live circles need live-audio/video we won't rush (a sign-off item) — shown honestly as "coming", never faked.</p>
+</div>
+
+<!-- 6 -->
+<a id="warm"></a>
+<div class="section">
+  <div class="eyebrow">6 · Warmth & wiring</div>
+  <h2>Why go — and how it ties in</h2>
+  <h4>Warm / fun mechanics</h4>
+  <ul>
+    <li><b>"Come strangers, leave friends"</b> + a <b>first-timer</b> reassurance — "you won't be the only new one."</li>
+    <li><b>"Go with someone"</b> — bring a friend now; the opt-in pod ("me too, let's meet at the door") when it's signed off.</li>
+    <li><b>Fuzzy warmth, never a scoreboard</b> — "a cosy group forming · a few first-timers" not "27 attending."</li>
+    <li><b>Recurring rituals across life domains</b> — a weekly co-working hour, a monthly city walk, a Friday watch-along.</li>
+    <li><b>Gentle reminders + post-event reconnection</b> — "lovely having you — find the next one?"</li>
+    <li><b>Two ways in</b> — every in-person event can have an online sibling to dip a toe first.</li>
+  </ul>
+  <h4>How it ties into the app</h4>
+  <ul>
+    <li><b>Planner / calendar</b> — "add to my planner" + a gentle reminder (the shared calendar overlay owns the write).</li>
+    <li><b>Talk rooms</b> — "anywhere good lately?" flows into the Lounge; an event can be shared into a room.</li>
+    <li><b>Library</b> — book-club calls sit across Events + Library.</li>
+    <li><b>Jess</b> — "things to do near me", nudges, first-timer reassurance.</li>
+    <li><b>Life-stage = a tint, never a gate</b> — events span relationships, career, hobbies, joy; health is one flavour, not the filter.</li>
+  </ul>
+</div>
+
+<div class="foot">
+  FemWell · Community feature #2 · Together / Events — brainstorm + build · research: workspace/research_events_together_2026-07-08.md<br>
+  Built into the Community redesign demo · live pages untouched · reachable from the IDEAS pill → Current
+</div>
+
+</div></body></html>
