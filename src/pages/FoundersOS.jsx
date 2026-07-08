@@ -87,6 +87,10 @@ import calendarSyncHtml from "@/components/founders/brandDocs/calendar-sync-plan
 import communityRedesignHtml from "@/components/founders/brandDocs/community-redesign.html?raw";
 // Community Talk-rooms robustness (feature #1) brainstorm doc (2026-07-08) — wired from IDEAS-LINKS-FOR-FOUNDERSOS.md.
 import communityTalkRoomsHtml from "@/components/founders/brandDocs/community-talk-rooms.html?raw";
+// Personal flora identity ("Bloomprint") + Community safety-principle + Together-shelf docs (2026-07-08).
+import bloomprintHtml from "@/components/founders/brandDocs/personal-flora-identity.html?raw";
+import communitySafetyHtml from "@/components/founders/brandDocs/community-safety-principle.html?raw";
+import communityTogetherHtml from "@/components/founders/brandDocs/community-together.html?raw";
 // Nutrition hero tap-to-bloom brainstorm (2026-07-07) — wired from IDEAS-LINKS-FOR-FOUNDERSOS.md.
 import heroBloomTapHtml from "@/components/founders/brandDocs/nutrition-hero-bloom-tap.html?raw";
 // Flora Header redesign demo (2026-07-03) — wired from IDEAS-LINKS-FOR-FOUNDERSOS.md.
@@ -267,6 +271,14 @@ const CATALOG = [
     title: "Community Redesign — demo ★", desc: "Phase-1 redesign SHELL on the canonical §6.8.2 page template: flora hero (bouquet = many women) + tap-to-rebloom shelf switcher (Talk · Circles · Together · Quietly) · summary card · glance⇆Community-Jess sliding row w/ upward inner sheet · clipboard slider of the 4 shelf-boards · handy row · resonance. Reuses every real feature (rooms/circles/clubs/library/games/echo/rituals). PLUS feature #1 = robust TALK ROOMS (botanical alias per anon hash · daily life-tinted room prompt · hide-a-voice · mute-a-word · per-room presence — real reads/writes). All safety rails intact (18+/crisis/moderation/report→hide/k-anon). Live /Community untouched." },
   { kind: "doc", key: "Talk Rooms", group: CAT.CURRENT, sub: "Page level-up plans + demos", status: "new", accent: "sage",
     title: "Talk rooms — robust, safe & fun (feature #1)", desc: "Feature #1 of 6 in the Community robustness program. Deep-research brainstorm (Peanut/Elpha/Mumsnet/Yik-Yak lessons, SDT relatedness, OSA 2023, all cited) + what's BUILT this pass: botanical alias per anon hash · daily life-tinted room prompt · hide-a-voice · mute-a-word · per-room presence. Roadmap (safety floor: no-woman-unheard/rate-limit/thread-lock; then warmth: first-post bloom/weekly threads). Two gates flagged for Halli: age-assurance (Ofcom 'highly effective' bar) + women-only wording (post-For-Women-Scotland legal review)." },
+  { kind: "doc", key: "Safety Principle", group: CAT.CURRENT, sub: "Page level-up plans + demos", status: "new", accent: "sage",
+    title: "Community safety — calm on the surface", desc: "Halli: safety was too in-your-face (helpline on every post, disclaimers everywhere). New Community-wide principle: safe by design, calm on the surface — backend moderation silent, report/hide tucked into a '…' menu, crisis help contextual-only + one quiet Support corner, no disclaimer walls, meet-safe reminders in-context. Protection unchanged (moderation/crisis/report/k-anon/18+/in-person safety); only surface noise removed. Retrofitted to Talk + Events; every future feature inherits it." },
+  { kind: "doc", key: "Together Shelf", group: CAT.CURRENT, sub: "Page level-up plans + demos", status: "new", accent: "crimson",
+    title: "The Together shelf — things we do together (feature #2, holistic)", desc: "Events was just one example — Together is the whole shelf: everything women DO together. Cited research (synchrony/collective-effervescence, the Wordle no-leaderboard lesson, anti-ghost-town structure). 7 pillars: weekly rituals · read-along · together challenges · daily game · watch-along · live circles · events. BUILT this pass: a real Together HUB (rotating 'this week together' shared moment w/ soft 'I'm in' + join-the-chat · pillar tiles deep-linking real surfaces · the REAL collective-pool aggregate + close-the-week inline). Async-first, aggregate 'we' not scoreboards, seeded so nothing shows zero. Next: a TogetherActivity entity+fn unlocks full challenges/read-along/watch-along; live circles = sign-off." },
+  { kind: "doc", key: "Bloomprint", group: CAT.CURRENT, sub: "Identity & garden", status: "new", accent: "sage",
+    title: "Your Bloomprint — personal flora identity", desc: "Deep brainstorm: each woman's signature flower + garden that grows with real activity; gently-earned petals/rare-blooms/stars/seasons (collection not score, additive-only, never wilts); her anonymous-but-unique presence in Community across 3 disclosure tiers (veiled/my-flower/named) reconciled with the Talk-rooms botanical alias; and her Profile/Today/Garden avatar. Identity model + earning mechanics + anonymity reconciliation + kind-growth guardrails + mockups + phased build plan + open questions. Built ON the existing companion + milestones + chapters." },
+  { kind: "route", href: "/BloomprintDemo", group: CAT.CURRENT, sub: "Identity & garden", status: "new", accent: "sage",
+    title: "Bloomprint — identity ★", desc: "Tappable demo of the personal flora identity: her signature-bloom hero (species+colour+stage, tinted with her fingerprint colourway), the four identity facts, all four earned layers (petals with a working 'leave a line → +1 petal', rare-bloom shelf, stars, seasons), the 3 Community tiers (tap Veiled/My-flower/Named to switch the post's face), cross-pollination teaser, Profile+Today avatar previews, and the kind-growth promise. Reads REAL Garden data (companion + milestones + chapters) with a seeded fallback; read-only, no writes; live pages untouched." },
   { kind: "doc", key: "Community Redesign", group: CAT.CURRENT, sub: "Page level-up plans + demos", status: "new", accent: "crimson",
     title: "Community — deep audit + redesign (clearer IA)", desc: "Halli finds Community confusing. Deep audit of the CURRENT information architecture (exactly as built) + a redesign PLAN on the canonical page structure. Diagnosis: 3 fuzzy grouping words (Rooms/Circles/Clubs) + the same places shown 4 different ways (door grid · daily slot · sticky tabs · Jump sheet); books in 4 places, creativity in 2; doors behave 3 different ways; Echo/Witness/Twin pretend to be Community but live in the Journal. Fix: ONE hierarchy, FOUR named shelves (Talk · Circles · Together · Quietly) on the Nutrition page language (flora hero → summary → Today sliding deck → clipboard shelves → one Jump map). Every feature kept, all safety rails untouched. Plan-first — no live change." },
   { kind: "doc", key: "Nutrition +2", group: CAT.CURRENT, sub: "Page level-up plans + demos", status: "new", accent: "crimson",
@@ -507,6 +519,7 @@ const CURRENT_SUB_ORDER = [
   "Calendar + logger plans",
   "Card language plans",
   "Brand + card language",
+  "Identity & garden",
   "Page level-up plans + demos",
   "Cross-app plans & decisions",
 ];
@@ -1081,6 +1094,9 @@ function FoundersInner({ user }) {
       {tab === "Calendar Sync" && <BrandDocFrame html={calendarSyncHtml} title="FemWell — Calendar Sync (Google + Apple): research + plan" />}
       {tab === "Community Redesign" && <BrandDocFrame html={communityRedesignHtml} title="FemWell — Community: deep audit + redesign plan" />}
       {tab === "Talk Rooms" && <BrandDocFrame html={communityTalkRoomsHtml} title="FemWell — Talk rooms: robust, safe & fun" />}
+      {tab === "Safety Principle" && <BrandDocFrame html={communitySafetyHtml} title="FemWell — Community safety: calm on the surface" />}
+      {tab === "Together Shelf" && <BrandDocFrame html={communityTogetherHtml} title="FemWell — the Together shelf: things we do together" />}
+      {tab === "Bloomprint" && <BrandDocFrame html={bloomprintHtml} title="FemWell — Your Bloomprint: the personal flora identity" />}
       {tab === "Hero Bloom Tap" && <BrandDocFrame html={heroBloomTapHtml} title="Nutrition hero — one flower, blooming through the day" />}
       {tab === "Realistic Branch" && <BrandDocFrame html={floraRealismHtml} title="FemWell — the branch, done properly (realism)" />}
       {tab === "Branch Header" && <BrandDocFrame html={floraBranchDemoHtml} title="FemWell — the blossoming branch, richer" />}
