@@ -10,6 +10,7 @@
 // gated. Every existing prop preserved — species/colourway/openness are the
 // page's; tap-to-rebloom still driven by `openness`. Scene: flora/floraScene.jsx.
 // ─────────────────────────────────────────────────────────────────────────────
+import { useId, useMemo } from "react";
 import { T, SCRIPT, Heart as BrandHeart } from "@/components/journal/Editorial";
 import { RichBloomV2, Pollinator, FlowerGlyph, cwOf, floraKeyframes } from "@/components/brand/flora";
 import { FLORA_STAGE, FLORA_SCENE_DEFS, FLORA_SCENE, FLORA_BLOOMS, FLORA_CREATURE, FLORA_HEAD_OFF, bloomLocalOpen, Bud, FLORA_SCENE_KEYFRAMES } from "@/components/brand/floraScene";
@@ -28,6 +29,13 @@ export function FwFloraHero({
   ringSize = 244, bloomSize = 170, idx = "hero", titleColor = T.ink, openness = 1, variant,
 }) {
   const cw = cwOf(colorway);
+  // namespace ALL scene + bloom gradient/filter ids per instance so two heroes on
+  // one page (e.g. a hidden + a visible) never collide (collision → faint fills).
+  const rawUid = useId();
+  const uid = "h" + rawUid.replace(/[^a-zA-Z0-9]/g, "");
+  const sceneHtml = useMemo(() => (FLORA_SCENE_DEFS + FLORA_SCENE)
+    .replace(/id="([\w-]+)"/g, `id="$1-${uid}"`)
+    .replace(/url\(#([\w-]+)\)/g, `url(#$1-${uid})`), [uid]);
   const creatureKind = creature || "butterfly";
   const cSize = creatureKind === "ladybird" ? 26 : creatureKind === "dragonfly" ? 46 : creatureKind === "butterfly" ? 38 : 40;
   const cCol = creatureKind === "bee" ? T.gold : creatureKind === "ladybird" ? T.crimson : creatureKind === "butterfly" ? "#8E6E8E" : cw.petal;
@@ -42,7 +50,7 @@ export function FwFloraHero({
         {/* the realistic bough + dusk-meadow scene (static SVG) */}
         <svg viewBox={`0 0 ${FLORA_STAGE.w} ${FLORA_STAGE.h}`} aria-hidden
           style={{ position: "absolute", inset: 0, width: "100%", height: "100%", overflow: "visible", zIndex: 1 }}
-          dangerouslySetInnerHTML={{ __html: FLORA_SCENE_DEFS + FLORA_SCENE }} />
+          dangerouslySetInnerHTML={{ __html: sceneHtml }} />
         {/* the BIG two-tone blooms distributed along the bough — open ONE → MANY */}
         {FLORA_BLOOMS.map((b, i) => {
           const lo = bloomLocalOpen(openness, b.order);
@@ -51,7 +59,7 @@ export function FwFloraHero({
             <div key={`bl${i}`}>
               {/* the open flower head (fades in as it opens) */}
               <div style={{ position: "absolute", left: b.left, top: b.top, transform: `translate(-50%,-50%) scale(${b.scale})`, transformOrigin: "center", zIndex: 2, opacity: Math.min(1, lo * 2.2), transition: "opacity .45s ease", pointerEvents: "none" }}>
-                <RichBloomV2 form={bloom} color={cw.petal} color2={cw.tip} accent={cw.accent} size={150} soft={false} headOnly animate idx={`${idx}-b${i}`} openness={Math.max(0.02, lo)} />
+                <RichBloomV2 form={bloom} color={cw.petal} color2={cw.tip} accent={cw.accent} size={150} soft={false} headOnly animate idx={`${idx}-b${i}-${uid}`} openness={Math.max(0.02, lo)} />
               </div>
               {/* the closed bud (fades out as it opens) */}
               <div style={{ position: "absolute", left: b.left, top: fy, transform: `translate(-50%,-50%) scale(${b.scale})`, transformOrigin: "center", zIndex: 2, opacity: 1 - Math.min(1, lo * 2.6), transition: "opacity .45s ease", pointerEvents: "none" }}>
@@ -63,16 +71,16 @@ export function FwFloraHero({
         {/* the companion creature (drifts) */}
         {butterfly && (
           <div style={{ position: "absolute", left: FLORA_CREATURE.left, top: FLORA_CREATURE.top, transform: `scale(${FLORA_CREATURE.scale})`, transformOrigin: "center", zIndex: 4, pointerEvents: "none" }}>
-            <Pollinator kind={creatureKind} size={cSize} color={cCol} color2={cCol2} pattern="bands" animate idx={`${idx}-cr`} />
+            <Pollinator kind={creatureKind} size={cSize} color={cCol} color2={cCol2} pattern="bands" animate idx={`${idx}-cr-${uid}`} />
           </div>
         )}
       </div>
       {/* carved heart (§3) + Ephesis script title + flanking meaning-blooms */}
       <div style={{ display: "flex", alignItems: "center", gap: 9, marginTop: 2, flexWrap: "wrap", justifyContent: "center" }}>
-        {flankL && <FlowerGlyph variant={flankL} size={22} color={cwOf("plum").petal} color2={cwOf("plum").tip} idx={`${idx}-fl`} />}
+        {flankL && <FlowerGlyph variant={flankL} size={22} color={cwOf("plum").petal} color2={cwOf("plum").tip} idx={`${idx}-fl-${uid}`} />}
         <BrandHeart size={16} />
         <div style={{ fontFamily: SCRIPT, fontWeight: 400, fontSize: 44, lineHeight: 1.05, color: titleColor }}>{title}</div>
-        {flankR && <FlowerGlyph variant={flankR} size={22} color={cwOf("gold").petal} color2={cwOf("gold").tip} idx={`${idx}-fr`} />}
+        {flankR && <FlowerGlyph variant={flankR} size={22} color={cwOf("gold").petal} color2={cwOf("gold").tip} idx={`${idx}-fr-${uid}`} />}
       </div>
       {line && <div style={{ fontFamily: "Cormorant Garamond, Georgia, serif", fontStyle: "italic", fontSize: 16, color: T.muted, marginTop: 9, textAlign: "center", maxWidth: 330, lineHeight: 1.5 }}>{line}</div>}
     </div>
