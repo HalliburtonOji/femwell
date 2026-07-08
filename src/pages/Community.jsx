@@ -61,6 +61,15 @@ import {
 } from "@/components/community/ritualsConfig";
 import { createPageUrl } from "@/utils";
 import { useScrollLock } from "@/utils/useScrollLock";
+// ── canonical page template (§6.8.2) — the redesign home is built from these ──
+import {
+  Heart, Briefcase, Sparkles, Moon, Stethoscope, Dices, BookOpen, HelpCircle,
+  ChevronUp, ChevronDown, ChevronRight, Eye, Feather, MessagesSquare, Sprout,
+} from "lucide-react";
+import { FwFloraHero } from "@/components/brand/PageTop";
+import { Clipboard, ClipboardSlider } from "@/components/brand/ClipboardSlider";
+import { SummaryCard, FwCard } from "@/components/brand/Card";
+import { cwOf, Pollinator } from "@/components/brand/flora";
 
 const PLUM = "#241a26"; // the single permitted dark surface
 const HANDFAM = '"Cormorant Garamond","Fraunces",Georgia,serif';
@@ -96,6 +105,66 @@ function closesInLabel(closesAt) {
   if (h >= 2) return `closes in about ${h} hours`;
   const m = Math.max(1, Math.round(ms / 60000));
   return h === 1 ? "closes in about an hour" : `closes in about ${m} minutes`;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// TALK-ROOMS ROBUSTNESS (feature #1) — real, safety-woven upgrades, demo-gated
+// via `enhanced` so LIVE Community stays byte-identical until Halli promotes.
+// Grounded in workspace/research_talk_rooms_2026-07-08.md (Peanut/Elpha/Mumsnet
+// /Yik-Yak lessons; OSA 2023; SDT relatedness; no-scoreboard k-anon).
+// ═══════════════════════════════════════════════════════════════════════════
+// (1) BOTANICAL ALIAS — a stable, warm, NON-identifying handle derived purely from
+// the anonymous author_hash (no PII, deterministic). Gives a thread coherence +
+// accountability brake without ever exposing a real identity (Peanut/Elpha lesson;
+// random-per-post like Yik Yak loses the thread). "You" for your own posts.
+const ALIAS_ADJ = ["Wild", "Quiet", "Golden", "Soft", "Bright", "Gentle", "Bold", "Still", "Sunny", "Velvet", "Little", "Brave", "Wandering", "Calm", "Amber", "Silver"];
+const ALIAS_NOUN = ["Poppy", "Fern", "Willow", "Rose", "Sage", "Ivy", "Bluebell", "Daisy", "Heather", "Marigold", "Clover", "Fox", "Wren", "Robin", "Lark", "Thistle", "Meadow", "Hazel", "Juniper", "Primrose"];
+function botanicalAlias(hash) {
+  const s = String(hash || "");
+  if (!s) return "A friend";
+  let h = 2166136261; for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); }
+  h = h >>> 0;
+  return `${ALIAS_ADJ[h % ALIAS_ADJ.length]} ${ALIAS_NOUN[(h >> 5) % ALIAS_NOUN.length]}`;
+}
+
+// (2) SAFETY — anonymous-layer "hide a voice" (block by author_hash) + "mute a word"
+// (keyword filter). Both device-local, instant, no read needed — the research's
+// high-impact anti-pile-on / trust mechanics that work WITHOUT exposing identity.
+const HIDDEN_KEY = "fw_cm_hidden_authors", MUTED_KEY = "fw_cm_muted_words";
+const readSet = (k) => { try { return new Set(JSON.parse(localStorage.getItem(k) || "[]")); } catch { return new Set(); } };
+const writeSet = (k, set) => { try { localStorage.setItem(k, JSON.stringify([...set])); } catch { /* ignore */ } };
+const isAuthorHidden = (h) => h && readSet(HIDDEN_KEY).has(h);
+const hideAuthor = (h) => { if (!h) return; const s = readSet(HIDDEN_KEY); s.add(h); writeSet(HIDDEN_KEY, s); };
+const mutedWords = () => [...readSet(MUTED_KEY)];
+const addMutedWord = (w) => { const t = String(w || "").trim().toLowerCase(); if (!t) return; const s = readSet(MUTED_KEY); s.add(t); writeSet(MUTED_KEY, s); };
+const removeMutedWord = (w) => { const s = readSet(MUTED_KEY); s.delete(w); writeSet(MUTED_KEY, s); };
+const matchesMuted = (text, words) => { const t = (text || "").toLowerCase(); return (words || []).some((w) => t.includes(w)); };
+
+// (3) DAILY ROOM PROMPT — one lightweight, whole-life, life-stage-TINTED ritual prompt
+// per room (seeded deterministic per day+room, like QOTD). The research's #1 warmth
+// mechanic + first-post care: a warm reason to post. "Answer this" pre-fills the
+// moderated composer (same crisis-check + screening path). Never clinical; life-stage
+// gently tints, never dominates (CLAUDE.md whole-life rule).
+const ROOM_PROMPTS = {
+  lounge: ["What's one small thing that lifted you today?", "What did you say no to this week — and how did it feel?", "What's taking up space in your head right now?", "Tell the room one tiny, ordinary win."],
+  love: ["What's a green flag you didn't appreciate until recently?", "How do you show a friend you love them without saying it?", "What's a small thing your person does that you'd miss?", "Dating, married, or happily neither — what's on your mind?"],
+  money: ["What money thing are you quietly proud of this month?", "What's a work boundary you're trying to hold?", "What would 'enough' look like for you this year?", "Career question you'd never ask out loud — ask it here."],
+  style: ["What did you wear that made you feel like YOU today?", "One charity-shop or bargain find you love?", "What's a look you want to try but haven't dared?", "Rate the vibe you're going for this week — in three words."],
+  health: ["What's one gentle thing you did for your body today?", "What symptom finally got taken seriously — and how?", "What's a wellness 'rule' you've happily let go of?", "One question about your body you've been sitting on?"],
+  lighter: ["Pettiest thing that annoyed you this week?", "Recommend the room one small comfort — a show, a song, a snack.", "What are you watching that you can't shut up about?", "If today had a weather, what was yours?"],
+};
+const ROOM_TINT = {
+  "pregnant-t1": "as you grow a whole person, ", "pregnant-t2": "as you grow a whole person, ", "pregnant-t3": "as you grow a whole person, ",
+  postpartum: "in the newborn fog, ", perimenopause: "through the shift, ", menopause: "through it and out the other side, ", ttc: "in the waiting, ",
+};
+function roomPromptForDay(roomKey, lifeStage) {
+  const list = ROOM_PROMPTS[roomKey] || ROOM_PROMPTS.lounge;
+  const day = new Date().toISOString().split("T")[0];
+  const epoch = Math.floor(new Date(day + "T00:00:00Z").getTime() / 86400000);
+  const seed = (epoch + (roomKey || "").length * 7);
+  const base = list[((seed % list.length) + list.length) % list.length];
+  const tint = lifeStage && ROOM_TINT[lifeStage];
+  return tint ? tint + base.charAt(0).toLowerCase() + base.slice(1) : base;
 }
 
 const inputStyle = {
@@ -140,7 +209,7 @@ function CrisisSheet({ onClose }) {
 }
 
 // ── one post + its comments ──────────────────────────────────────────────────
-function PostCard({ post, user, onCrisis, onChanged }) {
+function PostCard({ post, user, onCrisis, onChanged, enhanced = false, myHash = null }) {
   const [comments, setComments] = useState(null);   // null = not loaded
   const [commentsErr, setCommentsErr] = useState(false);   // W5 — distinguish error from empty
   const [open, setOpen] = useState(false);
@@ -234,10 +303,18 @@ function PostCard({ post, user, onCrisis, onChanged }) {
 
   return (
     <div style={{ background: T.paperHi, border: `1px solid ${T.paperDeep}`, borderRadius: 4, padding: "16px 17px", marginBottom: 14 }}>
-      {post.domain && <Eyebrow color={T.gold} mb={6}>{post.domain}</Eyebrow>}
+      {/* enhanced: a warm botanical alias (derived from the anon hash — no identity) */}
+      {enhanced && post.author_hash && (
+        <div style={{ display: "flex", alignItems: "center", gap: 7, marginBottom: 7 }}>
+          <span style={{ width: 22, height: 22, borderRadius: 999, background: `${T.gold}22`, display: "grid", placeItems: "center", flexShrink: 0 }}><Sprout size={12} color={T.gold} /></span>
+          <span style={{ fontFamily: UI, fontSize: 12, fontWeight: 700, color: T.inkSoft }}>{myHash && post.author_hash === myHash ? "You" : botanicalAlias(post.author_hash)}</span>
+          {post.domain && <span style={{ fontFamily: UI, fontSize: 10.5, color: T.muted, marginLeft: "auto", letterSpacing: 0.3, textTransform: "uppercase" }}>{post.domain}</span>}
+        </div>
+      )}
+      {!enhanced && post.domain && <Eyebrow color={T.gold} mb={6}>{post.domain}</Eyebrow>}
       <Hand size={20} color={T.ink} style={{ marginBottom: 12 }}>{post.body}</Hand>
 
-      {/* reactions (never counted) + report */}
+      {/* reactions (never counted) + report (+ enhanced: hide this voice) */}
       <div style={{ display: "flex", flexWrap: "wrap", gap: 7, alignItems: "center" }}>
         {REACTIONS.map((k) => {
           const on = hasReacted(post.id, k);
@@ -249,7 +326,12 @@ function PostCard({ post, user, onCrisis, onChanged }) {
             }}>{k}</button>
           );
         })}
-        <button onClick={report} aria-label="Report this post" title="Report" style={{ marginLeft: "auto", background: "transparent", border: "none", cursor: "pointer", color: T.muted, display: "inline-flex" }}>
+        {enhanced && post.author_hash && (!myHash || post.author_hash !== myHash) && (
+          <button onClick={() => { hideAuthor(post.author_hash); onChanged?.(); }} aria-label="Hide this voice" title="Hide this voice — you won't see them again" style={{ marginLeft: "auto", background: "transparent", border: "none", cursor: "pointer", color: T.muted, display: "inline-flex", alignItems: "center", gap: 4, fontFamily: UI, fontSize: 11, fontWeight: 700 }}>
+            <Eye size={13} /> Hide
+          </button>
+        )}
+        <button onClick={report} aria-label="Report this post" title="Report" style={{ marginLeft: enhanced && post.author_hash ? 0 : "auto", background: "transparent", border: "none", cursor: "pointer", color: T.muted, display: "inline-flex" }}>
           <Flag size={13} />
         </button>
       </div>
@@ -1623,11 +1705,27 @@ function GamesView({ user, onCrisis }) {
   );
 }
 
-function RoomView({ roomKey, posts, loading, error, user, onNav, onCrisis, onReload, onPostCreated, seed = "", initialCircle = null, profile = null, onOpenCorner, onOpenHub }) {
+function RoomView({ roomKey, posts, loading, error, user, onNav, onCrisis, onReload, onPostCreated, seed = "", initialCircle = null, profile = null, onOpenCorner, onOpenHub, enhanced = false, lifeStage = null }) {
   const [composing, setComposing] = useState(() => !!seed);
   const [voicing, setVoicing] = useState(false);
+  const [myHash, setMyHash] = useState(null);
+  const [muteOpen, setMuteOpen] = useState(false);
+  const [muteDraft, setMuteDraft] = useState("");
+  const [safetyTick, setSafetyTick] = useState(0);   // re-render after hide/mute (device-local)
   const room = ROOMS.find((r) => r.key === roomKey) || ROOMS[0];
-  const feed = posts.filter((p) => p.room === roomKey);
+  useEffect(() => { let a = true; communityHash(user?.id).then((h) => { if (a) setMyHash(h); }).catch(() => {}); return () => { a = false; }; }, [user?.id]);
+
+  const rawFeed = posts.filter((p) => p.room === roomKey);
+  // enhanced: apply the device-local safety filters (hide-a-voice + mute-a-word); never hide your own.
+  const words = enhanced ? mutedWords() : [];   // read fresh each render (safetyTick forces it)
+  const feed = enhanced
+    ? rawFeed.filter((p) => (p.author_hash === myHash) || (!isAuthorHidden(p.author_hash) && !matchesMuted(p.body, words)))
+    : rawFeed;
+  const filteredN = rawFeed.length - feed.length;
+  // enhanced: a per-room k-anon presence line + today's life-tinted prompt.
+  const activeN = enhanced ? new Set(rawFeed.filter((p) => Date.now() - new Date(p.created_date || 0).getTime() <= PRESENCE_WINDOW_HRS * 3600e3).map((p) => p.author_hash)).size : 0;
+  const prompt = enhanced ? roomPromptForDay(roomKey, lifeStage) : null;
+  void safetyTick;
   return (
     <div>
       {/* sticky tab bar */}
@@ -1653,7 +1751,44 @@ function RoomView({ roomKey, posts, loading, error, user, onNav, onCrisis, onRel
         ) : (
         <>
         <Script size={32} style={{ marginBottom: 4 }}>{room.name}</Script>
-        <Hand size={17} color={T.muted} style={{ marginBottom: 16 }}>{room.line}</Hand>
+        <Hand size={17} color={T.muted} style={{ marginBottom: enhanced ? 10 : 16 }}>{room.line}</Hand>
+
+        {/* enhanced: per-room k-anon presence + a "mute a word" control (anonymous-layer safety) */}
+        {enhanced && (
+          <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 14, flexWrap: "wrap" }}>
+            <span style={{ display: "inline-flex", alignItems: "center", gap: 6, fontFamily: UI, fontSize: 12, fontWeight: 600, color: T.muted }}>
+              <Users size={13} color={T.gold} /> {activeN <= 0 ? "Quiet in here — leave the first word" : activeN < 5 ? "A few women are around" : "Several women are here"}
+            </span>
+            <button onClick={() => setMuteOpen((o) => !o)} style={{ ...ghostBtn, marginLeft: "auto", padding: "6px 11px", fontSize: 11.5 }}>
+              <Eye size={12} /> {mutedWords().length ? `Muted (${mutedWords().length})` : "Mute a word"}
+            </button>
+          </div>
+        )}
+        {enhanced && muteOpen && (
+          <div style={{ background: T.paperHi, border: `1px solid ${T.paperDeep}`, borderRadius: 10, padding: "12px 13px", marginBottom: 14 }}>
+            <div style={{ fontFamily: UI, fontSize: 11.5, color: T.muted, marginBottom: 8, lineHeight: 1.5 }}>Hide any post that mentions a word — just for you, on this device. Nothing leaves your phone.</div>
+            <div style={{ display: "flex", gap: 8 }}>
+              <input value={muteDraft} onChange={(e) => setMuteDraft(e.target.value)} placeholder="a word to mute…" style={{ ...inputStyle, minHeight: 0, padding: "9px 11px", fontSize: 14 }} />
+              <button onClick={() => { addMutedWord(muteDraft); setMuteDraft(""); setSafetyTick((t) => t + 1); }} disabled={!muteDraft.trim()} style={{ ...primaryBtn, padding: "9px 14px", opacity: muteDraft.trim() ? 1 : 0.5 }}>Mute</button>
+            </div>
+            {mutedWords().length > 0 && (
+              <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginTop: 10 }}>
+                {mutedWords().map((w) => (
+                  <button key={w} onClick={() => { removeMutedWord(w); setSafetyTick((t) => t + 1); }} style={{ fontFamily: UI, fontSize: 11.5, fontWeight: 700, padding: "5px 11px", borderRadius: 999, border: `1px solid ${T.paperDeep}`, background: T.paper, color: T.inkSoft, cursor: "pointer" }}>{w} ×</button>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* enhanced: today's warm, life-tinted room prompt — a reason to post (a line is plenty) */}
+        {enhanced && prompt && !composing && (
+          <div style={{ background: `linear-gradient(160deg, ${T.paperHi} 0%, ${T.gold}12 100%)`, border: `1px solid ${T.paperDeep}`, borderLeft: `4px solid ${T.gold}`, borderRadius: 14, padding: "14px 15px", marginBottom: 16 }}>
+            <Eyebrow color={T.gold} mb={6}>Today in {room.name.replace(/^The /, "")}</Eyebrow>
+            <div style={{ fontFamily: HANDFAM, fontStyle: "italic", fontWeight: 600, fontSize: 19, color: T.ink, lineHeight: 1.3, marginBottom: 12 }}>{prompt}</div>
+            <button onClick={() => setComposing(true)} style={{ ...primaryBtn, padding: "9px 15px" }}><Feather size={13} /> Answer this — a line is plenty</button>
+          </div>
+        )}
 
         {/* M4 async voice-notes — dormant until VOICE_NOTES_ENABLED + an STT key */}
         {VOICE_NOTES_ENABLED && roomKey === "lounge" && (
@@ -1678,8 +1813,11 @@ function RoomView({ roomKey, posts, loading, error, user, onNav, onCrisis, onRel
           <Hand size={18} color={T.inkSoft}>Quiet in here right now. Leave the first word — someone always comes by.</Hand>
         )}
         {!loading && !error && feed.map((p) => (
-          <PostCard key={p.id} post={p} user={user} onCrisis={onCrisis} onChanged={onReload} />
+          <PostCard key={p.id} post={p} user={user} onCrisis={onCrisis} onChanged={onReload} enhanced={enhanced} myHash={myHash} />
         ))}
+        {enhanced && filteredN > 0 && (
+          <div style={{ fontFamily: UI, fontSize: 11.5, color: T.muted, textAlign: "center", marginTop: 10 }}>{filteredN} {filteredN === 1 ? "post is" : "posts are"} hidden by your mutes.</div>
+        )}
         </>
         )}
       </div>
@@ -1771,7 +1909,312 @@ function DestChip({ active, label, onClick }) {
   );
 }
 
-export function CommunityInner({ initialView = null, embedded = false } = {}) {
+// ═══════════════════════════════════════════════════════════════════════════
+// REDESIGN HOME (§6.8.2 canonical page template) — the 4-shelf Community home.
+// Talk · Circles · Together · Quietly, on the Nutrition-V2 skeleton (flora hero
+// + tap-to-rebloom shelf switcher → summary card → glance⇆Jess sliding row →
+// clipboard shelf-boards → handy row → closing). Demo-first (rendered by
+// /CommunityRedesignDemo via CommunityInner homeVariant="redesign"); REUSES every
+// existing feature view (rooms, circles, clubs, library, games, echo, rituals) —
+// nothing stripped, all safety rails intact (18+ gate, crisis check, anon posting).
+// ═══════════════════════════════════════════════════════════════════════════
+const OXBLOOD = "#7A1A12";
+const CSWIPE_H = 392;
+const cPickAt = (arr, s) => arr[(((s % arr.length) + arr.length) % arr.length)];
+const cFocusPill = (c) => ({ display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 7, padding: "12px 10px", borderRadius: 999, background: c, color: "#fff", border: "none", fontFamily: UI, fontSize: 13, fontWeight: 700, cursor: "pointer", boxShadow: `0 2px 8px ${c}40` });
+
+// The four shelves — the ONE map (hero controllers = clipboard boards = Jump sheet).
+// `key` is the CommunityInner view (or a special: "share"/"witness"/"twin").
+const SHELVES = [
+  { id: "talk", Icon: MessagesSquare, label: "Talk", cw: "crimson", openness: 1, creature: "butterfly",
+    title: "The rooms", line: "Drop into a room and say it plainly — silly to serious, no names.",
+    sub: "Rooms you drop into", flower: "camellia", action: { label: "Ask the Lounge", key: "lounge" },
+    tiles: [
+      { key: "lounge", Icon: MessageCircle, name: "The Lounge", note: "vent, spill it, be heard" },
+      { key: "love", Icon: Heart, name: "Love", note: "dating, friends, marriage" },
+      { key: "money", Icon: Briefcase, name: "Money & Work", note: "careers, pay, pensions" },
+      { key: "style", Icon: Sparkles, name: "Style", note: "fashion as confidence" },
+      { key: "health", Icon: Stethoscope, name: "Health", note: "NHS-grounded, one room" },
+      { key: "lighter", Icon: Moon, name: "The Lighter Side", note: "telly, the stars, fun" },
+    ] },
+  { id: "circles", Icon: Users, label: "Circles", cw: "plum", openness: 0.72, creature: "bee",
+    title: "Your circles", line: "Smaller rooms for who you are and what you love. Lurk freely; join what's yours.",
+    sub: "Who you are", flower: "iris", action: { label: "Find your circle", key: "circles" },
+    tiles: [
+      { key: "circles", Icon: Sprout, name: "Life stages", note: "TTC · pregnancy · peri · menopause" },
+      { key: "circles", Icon: Heart, name: "Living with", note: "PCOS · endo · PMDD" },
+      { key: "circles", Icon: BookOpen, name: "Shared loves", note: "books · career · creativity · movement" },
+    ] },
+  { id: "together", Icon: HeartHandshake, label: "Together", cw: "sage", openness: 0.88, creature: "dragonfly",
+    title: "Together", line: "Do a thing side by side — read a book, play a round, make something.",
+    sub: "What you do together", flower: "sunflower", action: { label: "See what's on", key: "library" },
+    tiles: [
+      { key: "library", Icon: BookOpen, name: "The Library", note: "book club + readers' corners" },
+      { key: "games", Icon: Dices, name: "The Games Room", note: "Jess's nightly round + games" },
+      { key: "clubs", Icon: HeartHandshake, name: "Slow mornings", note: "a gentle daily check-in" },
+      { key: "clubs", Icon: Feather, name: "Creativity corner", note: "make a small thing together" },
+    ] },
+  { id: "quietly", Icon: Feather, label: "Quietly", cw: "gold", openness: 0.5, creature: "ladybird",
+    title: "Quietly", line: "Somewhere softer — anonymous, one-to-one, or just for you.",
+    sub: "Private & 1:1 · opens in your Journal", flower: "chamomile", action: { label: "Leave an echo", key: "echo" },
+    tiles: [
+      { key: "echo", Icon: Waves, name: "Echo Wall", note: "anonymous lines, fade in 48h" },
+      { key: "witness", Icon: Eye, name: "Witness", note: "one sister holds your entry" },
+      { key: "share", Icon: Send, name: "Share a thought", note: "into a space that's yours" },
+      { key: "twin", Icon: Users, name: "Phase Twin", note: "twelve days, paired" },
+    ] },
+];
+
+const CJESS_GREET = ["Hello, you.", "Here you are.", "Come in.", "Good to see you.", "Settle in."];
+const CJESS_FUN = [
+  "The kettle's on, metaphorically.",
+  "No handles, no likes, no scoreboard — just women and honesty.",
+  "Whatever you bring, someone here has been there.",
+  "Lurking counts. You don't have to say a word.",
+  "It's a room everyone's in — and no one has to perform.",
+];
+function communityJessSummary(seed, ctx) {
+  const { firstName, quiet, question, season } = ctx;
+  const signal = [];
+  signal.push(quiet
+    ? "It's gentle in here just now — a lovely time to leave the first word for whoever comes next."
+    : "There are women around today — you're not the only one here.");
+  if (question) signal.push(`Today's question is "${question}" — a line is plenty.`);
+  if (season) signal.push(season);
+  const g = cPickAt(CJESS_GREET, seed);
+  const s = cPickAt(signal, seed + 1);
+  const f = cPickAt(CJESS_FUN, seed + 2);
+  const lead = firstName ? `${g} ${firstName} — ` : `${g} — `;
+  return { eyebrow: "Jess · in the rooms today", body: `${lead}${s} ${f}` };
+}
+
+// glance ⇆ Jess sliding row (uniform panels, §6.8.2 band 2)
+function CGlanceSwipe({ accent, glancePanel, jessPanel }) {
+  const [idx, setIdx] = useState(0);
+  const ref = useRef(null);
+  const onScroll = () => { const el = ref.current; if (!el) return; setIdx(Math.round(el.scrollLeft / Math.max(1, el.clientWidth))); };
+  const go = (i) => { const el = ref.current; if (el) el.scrollTo({ left: i * el.clientWidth, behavior: "smooth" }); };
+  return (
+    <div>
+      <div ref={ref} onScroll={onScroll} className="fw-cm-swipe" style={{ display: "flex", alignItems: "stretch", overflowX: "auto", scrollSnapType: "x mandatory", gap: 12, WebkitOverflowScrolling: "touch", overscrollBehaviorX: "contain" }}>
+        <style>{`.fw-cm-swipe{scrollbar-width:none}.fw-cm-swipe::-webkit-scrollbar{display:none}`}</style>
+        <div style={{ flex: "0 0 100%", scrollSnapAlign: "center", minWidth: 0 }}>{glancePanel}</div>
+        <div style={{ flex: "0 0 100%", scrollSnapAlign: "center", minWidth: 0 }}>{jessPanel}</div>
+      </div>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, marginTop: 8 }}>
+        {[0, 1].map((i) => <button key={i} onClick={() => go(i)} aria-label={i === 0 ? "Today in the community" : "Jess's read"} style={{ width: idx === i ? 16 : 6, height: 6, borderRadius: 999, background: idx === i ? accent : T.paperDeep, border: "none", cursor: "pointer", transition: "width .2s" }} />)}
+        <span style={{ fontFamily: UI, fontSize: 11, fontWeight: 700, color: T.muted, marginLeft: 4 }}>{idx === 0 ? "swipe for Jess's read →" : "← today in the community"}</span>
+      </div>
+    </div>
+  );
+}
+
+// the Jess digest card with an upward-sliding inner sheet (§6.8.2 band 2 / §6.7.6)
+function CJessCard({ eyebrow, digest, chips, sheetSections, accent, open, onOpen, onClose }) {
+  return (
+    <FwCard snap={false} minHeight={CSWIPE_H} accent={accent} Icon={HeartHandshake} eyebrow={eyebrow} flower="camellia" idx="cm-jess">
+      <div style={{ display: "flex", flexDirection: "column", flex: 1, minHeight: 0 }}>
+        <p style={{ fontFamily: SERIF, fontSize: 15.5, color: T.inkSoft, lineHeight: 1.5, margin: "0 0 12px" }}>{digest}</p>
+        <div style={{ display: "flex", flexDirection: "column", gap: 9 }}>{chips.map((c) => (
+          <div key={c.label} style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            <span style={{ width: 26, height: 26, borderRadius: 8, background: `${cwOf(c.cw).petal}1F`, display: "grid", placeItems: "center", flexShrink: 0 }}><c.Icon size={13} color={cwOf(c.cw).petal} /></span>
+            <span style={{ flex: 1, minWidth: 0, fontFamily: SERIF, fontSize: 13.5, color: T.ink, lineHeight: 1.3 }}><b style={{ color: cwOf(c.cw).petal, fontFamily: UI, fontSize: 10.5, fontWeight: 800, textTransform: "uppercase", letterSpacing: ".04em", marginRight: 6 }}>{c.label}</b>{c.text}</span>
+          </div>
+        ))}</div>
+        <div style={{ marginTop: "auto", paddingTop: 12 }}>
+          <button onClick={onOpen} style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 7, width: "100%", boxSizing: "border-box", background: accent, color: "#fff", border: "none", borderRadius: 12, padding: "12px 16px", fontFamily: UI, fontSize: 13.5, fontWeight: 700, cursor: "pointer" }}>Open Jess's full read <ChevronUp size={16} /></button>
+        </div>
+      </div>
+      <div style={{ position: "absolute", top: -20, left: -20, right: -20, bottom: -20, background: T.paperHi, transform: open ? "translateY(0)" : "translateY(101%)", transition: "transform .34s cubic-bezier(.32,.72,.24,1)", zIndex: 6, display: "flex", flexDirection: "column" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "15px 20px 10px", borderBottom: `1px solid ${T.paperDeep}` }}>
+          <HeartHandshake size={15} color={accent} />
+          <span style={{ flex: 1, fontFamily: SERIF, fontStyle: "italic", fontSize: 18, fontWeight: 600, color: OXBLOOD }}>Jess's full read</span>
+          <button onClick={onClose} aria-label="Close" style={{ width: 30, height: 30, borderRadius: 999, background: T.paper, border: `1px solid ${T.paperDeep}`, color: T.muted, cursor: "pointer", display: "grid", placeItems: "center" }}><ChevronDown size={17} /></button>
+        </div>
+        <div style={{ flex: 1, minHeight: 0, overflowY: "auto", padding: "13px 20px 18px", display: "flex", flexDirection: "column", gap: 15 }}>{sheetSections.map((s) => (
+          <div key={s.title}>
+            <div style={{ display: "flex", alignItems: "center", gap: 7, marginBottom: 6 }}><span style={{ width: 24, height: 24, borderRadius: 7, background: `${cwOf(s.cw).petal}1F`, display: "grid", placeItems: "center" }}><s.Icon size={12} color={cwOf(s.cw).petal} /></span><span style={{ fontFamily: UI, fontSize: 11.5, fontWeight: 800, letterSpacing: ".05em", textTransform: "uppercase", color: cwOf(s.cw).petal }}>{s.title}</span></div>
+            <p style={{ fontFamily: SERIF, fontSize: 14.5, color: T.inkSoft, lineHeight: 1.5, margin: 0 }}>{s.body}</p>
+            {s.action && <div style={{ marginTop: 8 }}>{s.action}</div>}
+          </div>
+        ))}</div>
+      </div>
+    </FwCard>
+  );
+}
+
+// "Handy right now" one-line quick row (§6.8.2 band 4)
+function CQuickRow({ items }) {
+  return (
+    <div className="fw-cm-quick" style={{ display: "flex", gap: 9, overflowX: "auto", padding: "2px 2px 8px", WebkitOverflowScrolling: "touch", overscrollBehaviorX: "contain" }}>
+      <style>{`.fw-cm-quick{scrollbar-width:none}.fw-cm-quick::-webkit-scrollbar{display:none}`}</style>
+      {items.map((it) => { const c = cwOf(it.cw).petal; return (
+        <button key={it.label} onClick={it.onClick} style={{ flex: "0 0 auto", display: "inline-flex", alignItems: "center", gap: 9, background: `linear-gradient(160deg, ${T.paperHi} 0%, ${c}12 100%)`, border: `1px solid ${T.paperDeep}`, borderLeft: `3px solid ${c}`, borderRadius: 13, padding: "10px 13px", cursor: "pointer", whiteSpace: "nowrap" }}>
+          <span style={{ width: 26, height: 26, borderRadius: 8, background: `${c}1F`, display: "grid", placeItems: "center", flexShrink: 0 }}><it.Icon size={13} color={c} /></span>
+          <span style={{ fontFamily: UI, fontSize: 13, fontWeight: 700, color: T.ink }}>{it.label}</span>
+          <ChevronRight size={15} color={T.muted} />
+        </button>
+      ); })}
+      <span style={{ flex: "0 0 2px" }} aria-hidden />
+    </div>
+  );
+}
+
+// one shelf board (a tile grid inside a Clipboard, §6.10) — no dead space, real jumps
+function ShelfBoard({ shelf, onEnter }) {
+  const acc = cwOf(shelf.cw).petal;
+  return (
+    <Clipboard title={shelf.title} sub={shelf.sub} accent={acc} flower={shelf.flower} idx={`cm-${shelf.id}`} titleColor={OXBLOOD}>
+      <p style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 15, color: T.inkSoft, lineHeight: 1.5, margin: "0 0 14px" }}>{shelf.line}</p>
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 9 }}>
+        {shelf.tiles.map((t, i) => (
+          <button key={t.name + i} onClick={() => onEnter(t.key)} style={{ textAlign: "left", background: `linear-gradient(160deg, ${T.paperHi} 0%, ${acc}10 100%)`, border: `1px solid ${T.paperDeep}`, borderRadius: 13, padding: "12px 12px", cursor: "pointer" }}>
+            <span style={{ width: 30, height: 30, borderRadius: 9, background: `${acc}1F`, display: "grid", placeItems: "center", marginBottom: 8 }}><t.Icon size={16} color={acc} /></span>
+            <div style={{ fontFamily: SERIF, fontWeight: 600, fontSize: 15.5, color: T.ink, lineHeight: 1.15, marginBottom: 2 }}>{t.name}</div>
+            <div style={{ fontFamily: UI, fontSize: 11, color: T.muted, lineHeight: 1.35 }}>{t.note}</div>
+          </button>
+        ))}
+      </div>
+      <div style={{ marginTop: "auto", paddingTop: 14, display: "flex", alignItems: "center", gap: 7 }}>
+        <ShieldAlert size={12} color={acc} />
+        <span style={{ fontFamily: UI, fontSize: 10.5, color: T.muted, lineHeight: 1.4 }}>Anonymous · 18+ · every line screened, kind by design.</span>
+      </div>
+    </Clipboard>
+  );
+}
+
+function RedesignHome({ presence, lifeStage, profile, user, onEnter, onCrisis, onOpenHub }) {
+  const [shelfIdx, setShelfIdx] = useState(0);
+  const [jessOpen, setJessOpen] = useState(false);
+  const seed = useMemo(() => Math.floor(Math.random() * 100000), []);
+  const qotd = useMemo(() => qotdForDay(), []);
+  const season = lifeStage ? SEASONS[lifeStage] : null;
+  const slot = todaySlot();
+  const active = SHELVES[shelfIdx] || SHELVES[0];
+  const aCol = cwOf(active.cw).petal;
+  const gold = cwOf("gold").petal;
+  const quiet = /quiet/i.test(presence || "");
+  const rawFirst = (user?.full_name || "").split(" ")[0] || "";
+  const firstName = (/\d/.test(rawFirst) || rawFirst.length > 16) ? "" : (rawFirst ? rawFirst.charAt(0).toUpperCase() + rawFirst.slice(1) : "");
+  const jess = communityJessSummary(seed, { firstName, quiet, question: qotd.text, season: season?.line });
+  const ritual = slot === "wisdom" ? { label: "Living wisdom", text: "A line worth keeping, from the women before you.", go: () => onEnter("wisdom") }
+    : slot === "pool" ? { label: "Together this week", text: "Small kindnesses, adding up — add one.", go: () => onEnter("rituals") }
+    : slot === "close" ? { label: "Close the week", text: "One line to let this week go, together.", go: () => onEnter("rituals") }
+    : { label: "Tonight's game", text: "Jess's round — no winners, just company.", go: () => onEnter("games") };
+
+  return (
+    <div>
+      {/* top chrome — the Jump pill (§6.8.1; calendar N/A for Community) */}
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 4 }}>
+        <Eyebrow>{MASTHEAD.eyebrow}</Eyebrow>
+        {onOpenHub && <JumpToButton onClick={onOpenHub} />}
+      </div>
+
+      {/* 1 · FLORA HERO + shelf CONTROLLER cards (tap-to-rebloom = the shelf switcher) */}
+      <FwFloraHero title={active.title} colorway={active.cw} bloom={active.flower} openness={active.openness} creature={active.creature} flankL="chamomile" flankR="cosmos" titleColor={OXBLOOD} line={active.line} />
+      <div className="fw-cm-ctl" style={{ display: "flex", gap: 8, overflowX: "auto", padding: "12px 2px 2px", justifyContent: "center" }}>
+        <style>{`.fw-cm-ctl{scrollbar-width:none}.fw-cm-ctl::-webkit-scrollbar{display:none}`}</style>
+        {SHELVES.map((c, i) => { const on = i === shelfIdx; const col = cwOf(c.cw).petal; return (
+          <button key={c.id} onClick={() => setShelfIdx(i)} aria-pressed={on} style={{ flex: "0 0 76px", height: 64, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 5, borderRadius: 14, cursor: "pointer", background: on ? `linear-gradient(160deg, ${T.paperHi} 0%, ${col}20 100%)` : T.paperHi, border: `1px solid ${on ? col : T.paperDeep}`, boxShadow: on ? `0 0 0 1px ${col}, 0 2px 8px ${col}30` : "0 1px 3px rgba(58,44,26,0.08)", transform: on ? "translateY(-1px)" : "none", transition: "border-color .15s, box-shadow .15s, transform .15s" }}>
+            <span style={{ width: 27, height: 27, borderRadius: 8, background: `${col}1F`, display: "grid", placeItems: "center" }}><c.Icon size={15} color={col} /></span>
+            <span style={{ fontFamily: UI, fontSize: 10.5, fontWeight: 700, color: on ? col : T.muted }}>{c.label}</span>
+          </button>
+        ); })}
+      </div>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, margin: "11px 0 10px" }}>
+        <span style={{ width: 9, height: 9, borderRadius: 99, background: aCol }} />
+        <span style={{ fontFamily: UI, fontSize: 12.5, fontWeight: 700, color: T.inkSoft }}>{season ? season.label : "Anonymous · 18+ · kind by design"}</span>
+      </div>
+      <button onClick={() => onEnter(active.action.key)} style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 8, width: "100%", boxSizing: "border-box", background: aCol, color: "#fff", border: "none", borderRadius: 14, padding: "13px 16px", fontFamily: UI, fontSize: 14, fontWeight: 700, cursor: "pointer", transition: "background .35s ease" }}>
+        <active.Icon size={16} /> {active.action.label}
+      </button>
+
+      {/* 2 · SUMMARY CARD — "alive here today" */}
+      <div style={{ marginTop: 18 }}>
+        <SummaryCard eyebrow="Alive here today" accent={gold} rows={[
+          { Icon: HelpCircle, label: "Today's question", text: qotd.text, onClick: () => onEnter("qotd") },
+          { Icon: Users, label: "Who's around", text: presence, onClick: onOpenHub },
+          { Icon: ritual.label === "Tonight's game" ? Dices : Sparkles, label: ritual.label, text: ritual.text, onClick: ritual.go },
+        ]} />
+      </div>
+
+      {/* 3 · TOP SLIDING ROW — glance ⇆ Jess digest */}
+      <div style={{ marginTop: 18 }}>
+        <CGlanceSwipe accent={gold}
+          glancePanel={
+            <FwCard snap={false} minHeight={CSWIPE_H} accent={gold} Icon={MessagesSquare} eyebrow="Today in the community" flower="marigold" idx="cm-glance"
+              action={<div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, width: "100%" }}>
+                <button onClick={() => onEnter("qotd")} style={cFocusPill(cwOf("plum").petal)}><HelpCircle size={15} /> Answer today</button>
+                <button onClick={() => onEnter("lounge")} style={cFocusPill(T.crimson)}><MessageCircle size={15} /> Ask the room</button>
+                <button onClick={() => onEnter("echo")} style={cFocusPill(cwOf("sky").petal || cwOf("sage").petal)}><Waves size={15} /> Leave an echo</button>
+                <button onClick={() => onEnter("games")} style={cFocusPill(cwOf("sage").petal)}><Dices size={15} /> Tonight's game</button>
+              </div>}>
+              <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                {[
+                  { Icon: HelpCircle, cw: "plum", label: "The question", text: qotd.text, on: () => onEnter("qotd") },
+                  { Icon: Users, cw: "gold", label: "Around today", text: quiet ? "Gentle in here — leave the first word." : "Women are here — you're not alone.", on: onOpenHub },
+                  { Icon: ritual.label === "Tonight's game" ? Dices : Sparkles, cw: "sage", label: ritual.label, text: ritual.text, on: ritual.go },
+                ].map((r) => (
+                  <button key={r.label} onClick={r.on} style={{ display: "flex", alignItems: "center", gap: 10, textAlign: "left", background: T.paper, border: `1px solid ${T.paperDeep}`, borderRadius: 12, padding: "9px 11px", cursor: "pointer" }}>
+                    <span style={{ width: 28, height: 28, borderRadius: 8, background: `${cwOf(r.cw).petal}1F`, display: "grid", placeItems: "center", flexShrink: 0 }}><r.Icon size={14} color={cwOf(r.cw).petal} /></span>
+                    <span style={{ flex: 1, minWidth: 0 }}><span style={{ display: "block", fontFamily: UI, fontSize: 11, fontWeight: 700, color: cwOf(r.cw).petal }}>{r.label}</span><span style={{ fontFamily: SERIF, fontSize: 14, color: T.ink, lineHeight: 1.3 }}>{r.text}</span></span>
+                  </button>
+                ))}
+              </div>
+            </FwCard>
+          }
+          jessPanel={
+            <CJessCard accent={cwOf("sage").petal} eyebrow={jess.eyebrow} digest={jess.body}
+              open={jessOpen} onOpen={() => setJessOpen(true)} onClose={() => setJessOpen(false)}
+              chips={[
+                { Icon: MessagesSquare, cw: "crimson", label: "Rooms", text: "Six warm rooms, all anonymous" },
+                { Icon: HelpCircle, cw: "plum", label: "Today", text: qotd.text },
+                { Icon: Users, cw: "gold", label: "You're among", text: season ? season.label : "women who get it" },
+                { Icon: ShieldAlert, cw: "sage", label: "Kind + safe", text: "Every line screened; heavy stuff routes to real help" },
+              ]}
+              sheetSections={[
+                { Icon: MessagesSquare, cw: "crimson", title: "What the room's for", body: <>This is the whole of your life, not just your cycle — the love and the laugh, the money question, the late-night vent. Health is one room here, never the house. No handles, no DMs, no likes, no leaderboards.</> },
+                { Icon: ShieldAlert, cw: "sage", title: "Staying safe & kind here", body: <>You're anonymous — only a device hash is kept, never your name. Every post and reply is screened, anything unkind is removed, and if a line reads heavy I'll gently point you to real support (Samaritans 116 123, NHS 111, Shout 85258). You can react-only, report, or just lurk.</> },
+                { Icon: Sparkles, cw: "gold", title: "Today, together", body: ritual.text, action: <button onClick={ritual.go} style={{ ...ghostBtn }}><ChevronRight size={13} /> {ritual.label}</button> },
+              ]}
+            />
+          }
+        />
+      </div>
+
+      {/* 4 · THE SHELVES — clipboard slider of the 4 boards (the deep content) */}
+      <div style={{ marginTop: 22 }}>
+        <ClipboardSlider hint="Slide the shelves →" accent={aCol}>
+          {SHELVES.map((s) => <ShelfBoard key={s.id} shelf={s} onEnter={onEnter} />)}
+        </ClipboardSlider>
+      </div>
+
+      {/* 5 · HANDY RIGHT NOW — one-line quick row */}
+      <div style={{ marginTop: 22 }}>
+        <div style={{ fontFamily: HANDFAM, fontStyle: "italic", fontSize: 20, color: OXBLOOD, marginBottom: 8 }}>Handy right now</div>
+        <CQuickRow items={[
+          { Icon: HelpCircle, cw: "plum", label: "Question of the day", onClick: () => onEnter("qotd") },
+          { Icon: Sparkles, cw: "gold", label: "Living wisdom", onClick: () => onEnter("wisdom") },
+          { Icon: HeartHandshake, cw: "sage", label: "Together this week", onClick: () => onEnter("rituals") },
+          { Icon: Moon, cw: "plum", label: "Close the week", onClick: () => onEnter("rituals") },
+          { Icon: Dices, cw: "crimson", label: "Tonight's game", onClick: () => onEnter("games") },
+          { Icon: Send, cw: "gold", label: "Invite a friend", onClick: () => onEnter("share") },
+        ]} />
+      </div>
+
+      {/* Tier-0 anonymous resonance — the "someone like you" read-only belonging beat */}
+      <div style={{ marginTop: 20 }}><ResonanceLive wide /></div>
+
+      {/* 6 · closing signature */}
+      <div style={{ display: "flex", flexDirection: "column", alignItems: "center", marginTop: 30, gap: 10 }}>
+        <Pollinator kind="butterfly" size={34} color="#8E6E8E" color2={gold} animate idx="cm-close" />
+        <div style={{ fontFamily: HANDFAM, fontStyle: "italic", fontSize: 17, color: T.muted, textAlign: "center", maxWidth: 300, lineHeight: 1.5 }}>{FOOTER_LINE}</div>
+      </div>
+    </div>
+  );
+}
+
+export function CommunityInner({ initialView = null, embedded = false, homeVariant = "classic" } = {}) {
   useEditorialFonts();
   const [user, setUser] = useState(null);
   const [view, setView] = useState(initialView || "home");      // "home" | room key
@@ -1858,6 +2301,16 @@ export function CommunityInner({ initialView = null, embedded = false } = {}) {
     load();
   }, [load]);
 
+  // Redesign-home shelf navigation — reuses the existing routing/actions (nothing new,
+  // nothing stripped). Special destinations (share/witness/twin) match the classic paths.
+  const enterShelf = useCallback((dest) => {
+    if (dest === "share") { setShareTo(true); return; }
+    if (dest === "witness") { navigate(createPageUrl("Journal?open=witness")); return; }
+    if (dest === "twin") { navigate(createPageUrl("Journal?open=twin")); return; }
+    setView(dest);
+    try { window.scrollTo({ top: 0, behavior: "instant" }); } catch { /* ignore */ }
+  }, [navigate]);
+
   return (
     // embedded (rendered inside a HubSheet): no own page background or 100vh — inherit
     // the sheet's single flat surface so there are no nested/mismatched background edges.
@@ -1865,7 +2318,23 @@ export function CommunityInner({ initialView = null, embedded = false } = {}) {
       <InkFilter />
       <div style={{ maxWidth: 460, margin: "0 auto", padding: view === "home" ? "30px 18px 50px" : "0 0 50px" }}>
         {view === "home"
-          ? <Home presence={presence} lifeStage={lifeStage} onEnter={setView} user={user} onCrisis={() => setCrisis(true)} onShareTo={() => setShareTo(true)} onOpenHub={() => setHubOpen(true)} />
+          ? (homeVariant === "redesign"
+              ? <RedesignHome presence={presence} lifeStage={lifeStage} profile={profile} user={user} onEnter={enterShelf} onCrisis={() => setCrisis(true)} onOpenHub={() => setHubOpen(true)} />
+              : <Home presence={presence} lifeStage={lifeStage} onEnter={setView} user={user} onCrisis={() => setCrisis(true)} onShareTo={() => setShareTo(true)} onOpenHub={() => setHubOpen(true)} />)
+          : view === "qotd"
+          ? <div style={{ padding: "26px 18px 50px" }}>
+              <button onClick={() => setView("home")} style={{ ...ghostBtn, marginBottom: 14, padding: "7px 11px" }}><ChevronLeft size={14} /> Community</button>
+              <QotdCard user={user} onCrisis={() => setCrisis(true)} />
+            </div>
+          : view === "rituals"
+          ? <div style={{ padding: "26px 18px 50px" }}>
+              <button onClick={() => setView("home")} style={{ ...ghostBtn, marginBottom: 14, padding: "7px 11px" }}><ChevronLeft size={14} /> Community</button>
+              <Eyebrow color={T.gold} mb={8}>Today, together</Eyebrow>
+              <Script size={32} style={{ marginBottom: 12 }}>The daily rituals</Script>
+              <CloseWeekCard user={user} onCrisis={() => setCrisis(true)} />
+              <PoolCard user={user} />
+              <WisdomCard onOpen={() => setView("wisdom")} />
+            </div>
           : view === "wisdom"
           ? <WisdomLibrary onBack={() => setView("home")} />
           : view === "bookclub"
@@ -1878,9 +2347,9 @@ export function CommunityInner({ initialView = null, embedded = false } = {}) {
               <EchoWall user={user} profile={profile} lifeStage={lifeStage} />
             </div>
           : <RoomView key={tick} roomKey={view} posts={posts} loading={loading} error={loadErr} user={user} onNav={setView} onCrisis={() => setCrisis(true)} onReload={reload} onPostCreated={onPostCreated} seed={roomSeed} initialCircle={initialCircle} profile={profile}
-              onOpenHub={() => setHubOpen(true)}
+              onOpenHub={() => setHubOpen(true)} enhanced={homeVariant === "redesign"} lifeStage={lifeStage}
               onOpenCorner={(key, title) => { setInitialClub(key); setClubTitle(title || ""); setView("clubs"); }} />}
-        {view === "home" && (
+        {view === "home" && homeVariant === "classic" && (
           <>
             <Rule mt={30} mb={14} />
             <div style={{ fontFamily: UI, fontSize: 11.5, color: T.muted, lineHeight: 1.5 }}>{FOOTER_LINE}</div>

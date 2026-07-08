@@ -1,0 +1,176 @@
+<!doctype html>
+<html lang="en-GB"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>FemWell — Talk rooms: robust, safe & fun (feature #1)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500;1,600&family=Ephesis&display=swap" rel="stylesheet">
+<style>
+  :root{--paper:#ECE7DA;--paperHi:#F4EFE3;--paperDeep:#D8CFBC;--ink:#0B0805;--inkSoft:#1A140D;--muted:#2E261B;--gold:#A8893F;--crimson:#BC2E27;--oxblood:#7A1A12;--blush:#E8B4B8;--sage:#8FAF8F;--plum:#8E6E8E;--serif:'Cormorant Garamond',Georgia,serif;--script:'Ephesis',cursive;--sans:ui-sans-serif,system-ui,-apple-system,'Segoe UI',sans-serif;}
+  *{box-sizing:border-box}
+  body{margin:0;background:radial-gradient(120% 80% at 12% 0%,#F4EFE3 0%,rgba(244,239,227,0) 55%),radial-gradient(120% 90% at 100% 100%,#E4DDCC 0%,rgba(228,221,204,0) 50%),var(--paper);color:var(--ink);font-family:var(--serif);font-size:18px;line-height:1.6;-webkit-font-smoothing:antialiased}
+  .doc{max-width:680px;margin:0 auto;padding:30px 22px 90px}
+  h1.cover{font-family:var(--script);font-size:50px;color:var(--crimson);margin:6px 0 2px;line-height:1.04}
+  h2{font-family:var(--serif);font-style:italic;font-weight:600;font-size:27px;margin:0 0 6px;color:var(--oxblood)}
+  h3{font-family:var(--serif);font-weight:600;font-size:21px;margin:18px 0 6px}
+  h4{font-family:var(--sans);font-size:12px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--gold);margin:16px 0 4px}
+  .eyebrow{font-family:var(--sans);font-size:12px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--gold);margin-bottom:10px}
+  p{margin:0 0 12px}.lede{font-size:20px;line-height:1.55}
+  small,.cap{font-family:var(--sans);font-size:13px;color:var(--muted);line-height:1.5}
+  b,strong{font-weight:600}
+  a{color:var(--crimson);text-decoration:none;border-bottom:1px solid rgba(188,46,39,.3)}
+  .section{background:var(--paperHi);border:1px solid var(--paperDeep);border-left:4px solid var(--gold);border-radius:20px;padding:22px 20px;margin:18px 0;box-shadow:0 4px 20px rgba(58,44,26,.10),0 1px 4px rgba(58,44,26,.06);position:relative;overflow:hidden}
+  .section.crimson{border-left-color:var(--crimson)}.section.sage{border-left-color:var(--sage)}.section.plum{border-left-color:var(--plum)}.section.blush{border-left-color:var(--blush)}
+  .rule{height:1px;background:var(--gold);opacity:.32;margin:18px 0}
+  .center{text-align:center}
+  table{width:100%;border-collapse:collapse;font-size:14px;font-family:var(--sans);margin:8px 0}
+  th,td{text-align:left;padding:7px 8px;border-bottom:1px solid var(--paperDeep);vertical-align:top}
+  th{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--gold)}
+  td b{font-family:var(--serif);font-size:15px}
+  .toc a{display:block;font-family:var(--sans);font-size:15px;color:var(--inkSoft);text-decoration:none;border-bottom:1px solid var(--paperDeep);padding:6px 0}
+  .toc a span{color:var(--gold);font-weight:700;margin-right:10px}
+  .script{font-family:var(--script);color:var(--crimson)}
+  .pill{display:inline-block;font-family:var(--sans);font-size:12px;font-weight:600;padding:5px 11px;border-radius:999px;background:var(--paper);border:1px solid var(--paperDeep);margin:3px 4px 3px 0}
+  .pill.done{background:#EAF1EA;border-color:var(--sage);color:#3f6b3f}
+  .pill.next{background:#FBF1E0;border-color:var(--gold);color:#8a6d22}
+  .pill.gate{background:#FBE9E6;border-color:var(--crimson);color:var(--crimson)}
+  .lens{background:var(--paper);border:1px solid var(--paperDeep);border-left:3px solid var(--gold);border-radius:12px;padding:12px 14px;margin:8px 0}
+  .lens .nm{font-family:var(--serif);font-weight:600;font-size:18px;color:var(--ink);margin-bottom:2px}
+  .lens .nm .ix{font-family:var(--sans);font-size:11px;font-weight:700;letter-spacing:.1em;color:var(--gold);margin-right:8px;text-transform:uppercase}
+  .lens p{margin:0;font-size:15px;line-height:1.5;color:var(--inkSoft)}
+  .lens .src{font-family:var(--sans);font-size:12px;color:var(--muted);margin-top:5px}
+  .num{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:999px;background:var(--crimson);color:#fff;font-family:var(--sans);font-size:12px;font-weight:700;margin-right:8px;vertical-align:1px}
+  .foot{font-family:var(--sans);font-size:12px;color:var(--muted);text-align:center;margin-top:30px;line-height:1.6}
+  ul{margin:4px 0 12px;padding-left:20px}li{margin:3px 0}
+  .wf{border:1px solid var(--paperDeep);border-radius:16px;background:var(--paper);padding:12px;margin:12px 0;font-family:var(--sans)}
+  .wf .lbl{font-size:10.5px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--gold);margin-bottom:8px}
+  .box{border:1px dashed #b9ab8e;border-radius:12px;padding:10px 12px;margin:7px 0;background:var(--paperHi);font-size:13px;color:var(--inkSoft)}
+  .box .t{font-family:var(--serif);font-weight:600;font-size:16px;color:var(--ink)}
+  .alias{display:inline-flex;align-items:center;gap:6px;font-family:var(--sans);font-size:12px;font-weight:700;color:var(--inkSoft);background:rgba(168,137,63,.13);border-radius:999px;padding:4px 10px}
+</style></head>
+<body><div class="doc">
+
+<div class="center" style="padding:14px 0 4px">
+  <div class="eyebrow">FemWell · Community · FEATURE #1 of 6 · Talk rooms · brainstorm + build</div>
+  <h1 class="cover">Rooms that feel alive</h1>
+  <p class="lede" style="font-style:italic;max-width:560px;margin:8px auto 0">The first feature we make genuinely <b>robust</b>. The Talk rooms — the Lounge, Love, Money, Style, Health, the Lighter Side — should feel warm, safe and a little bit fun the moment you walk in: a reason to post, a face you recognise (without a name), and safety you can feel. This is the deep-brainstorm <b>and</b> what's now built into the redesign demo — grounded in cited research on what makes anonymous women's communities work (and what killed the ones that failed).</p>
+</div>
+
+<div class="section">
+  <div class="eyebrow">The one-line thesis</div>
+  <p class="lede">A room is alive when a woman has <b>a reason to speak</b>, gets <b>a warm reply</b>, recognises <b>who she's talking to</b> (a friendly alias, never a name), and can <b>make herself safe in one tap</b>. Anonymity isn't the magic — <b>norms + moderation + warmth</b> are. So we keep the anonymity women come for, and add the accountability and warmth the evidence demands.</p>
+</div>
+
+<div class="section sage">
+  <div class="eyebrow">Contents</div>
+  <div class="toc">
+    <a href="#now"><span>1</span> What the rooms are today (honest)</a>
+    <a href="#evidence"><span>2</span> The evidence — what makes them work (cited)</a>
+    <a href="#built"><span>3</span> What's BUILT this pass (in the demo)</a>
+    <a href="#roadmap"><span>4</span> The full robustness roadmap</a>
+    <a href="#gates"><span>5</span> Safety &amp; legal must-haves (the gates)</a>
+    <a href="#ties"><span>6</span> How the rooms tie into the app</a>
+  </div>
+</div>
+
+<!-- 1 -->
+<a id="now"></a>
+<div class="section crimson">
+  <div class="eyebrow">1 · Starting point</div>
+  <h2>What the Talk rooms already do</h2>
+  <p>They're not empty — they already have real bones: anonymous posts + flat comments, <b>kind reactions</b> (held · me too · hear you · saved, never counted), a per-post <b>reaction-only</b> option, a <b>crisis pre-check</b> on every input (Samaritans 116 123 · NHS 111 · Shout 85258 · Mind), <b>publish-then-screen</b> moderation, <b>report → hide</b>, <b>k-anon presence</b> (no counts, no leaderboards), <b>anonymous posting</b> (only a device hash stored), and <b>Jess</b> leaving at most one supportive reply on heavier posts.</p>
+  <p>What they <i>lacked</i> — and what made them feel like a shell: <b>no reason to post</b> (a blank composer is intimidating), <b>no sense of who's who</b> (every post looked like a stranger, so threads never warmed up), and <b>no felt safety controls</b> (you could report, but not quietly make a voice or a word go away).</p>
+</div>
+
+<!-- 2 -->
+<a id="evidence"></a>
+<div class="section">
+  <div class="eyebrow">2 · The evidence (verified sources)</div>
+  <h2>What makes an anonymous women's room work</h2>
+  <div class="lens"><div class="nm"><span class="ix">Identity</span>Anonymity needs an accountability brake</div><p>Consequence-free anonymity curdles — <b>Yik Yak</b> (fully anonymous + hyperlocal) drowned in bullying and shut down in 2017. <b>Peanut</b> keeps posts anonymous but replies accountable; <b>Elpha</b> ran on "believed by default" moderation. The winning model is a <b>stable, warm pseudonym</b> — recognisable across a thread, tied to no real identity.</p><div class="src">extractalpha.com · em360tech.com · en.wikipedia.org/wiki/Peanut_App · medium.com/age-of-awareness (Elpha)</div></div>
+  <div class="lens"><div class="nm"><span class="ix">Warmth</span>Relatedness &gt; badges; the first post is everything</div><p>Self-determination research finds <b>relatedness</b> is the strongest engagement driver, and <b>weak ties from posting reduce loneliness</b>. The single biggest retention lever is that a first post <b>never goes unanswered</b> — structured welcome lifts first-year retention 25–40%. Leaderboards <i>demotivate</i>, so: private progress yes, public rankings no.</p><div class="src">nature.com/articles/s41598-024-74878-4 · ncbi.nlm.nih.gov/PMC10737572 · higherlogic.com · springer 10.1007/s11423-023-10337-7</div></div>
+  <div class="lens"><div class="nm"><span class="ix">Moderation</span>Publish-then-screen, warm not cold</div><p><b>Mumsnet</b> keeps intervention minimal and reviews against guidelines rather than auto-removing on report — validating our publish-then-screen. Pair it with a <b>free automated floor</b> (OpenAI Moderation, 13 categories incl. self-harm): auto-hide only the unambiguous, route borderline to a warm human/Jess queue. <b>Elpha's shutdown</b> warns: a purely human-moderated niche community is financially fragile — automate the floor.</p><div class="src">mumsnet.com/i/netiquette · developers.openai.com/api/docs/guides/moderation · integrative-psych.org · jmir.org/2026/1/e81943</div></div>
+  <div class="lens"><div class="nm"><span class="ix">Safety</span>Block/mute must work without a name</div><p>Pile-ons "rely on volume" — <b>rate-limiting</b> breaks them; <b>mute-by-keyword</b>, <b>mute-a-thread</b> and <b>hide-an-author</b> are the anonymous-layer equivalent of block. Reporting women trust = <b>"believed by default"</b> (hide first, review after — never make the target argue).</p><div class="src">about.iftas.org/library/brigading · mediaremoval.com · esafety.gov.au Safety-by-Design</div></div>
+  <div class="lens"><div class="nm"><span class="ix">Fun</span>Lightweight rituals build rhythm</div><p>Repeatable low-barrier prompts ("one word for today", "pettiest thing this week") "mark belonging" and give a reason to return, without pressure. Life-stage can <b>tint</b> a prompt, never gate the room.</p><div class="src">mightynetworks.com/resources/community-engagement-ideas</div></div>
+</div>
+
+<!-- 3 -->
+<a id="built"></a>
+<div class="section sage">
+  <div class="eyebrow">3 · Shipped this pass</div>
+  <h2>What's now built in the redesign demo</h2>
+  <p>Real, working, safety-woven — <b>not stubs</b>. All in the Community redesign demo (live pages untouched; these show only inside the demo until you promote):</p>
+
+  <div class="wf">
+    <div class="lbl">A Talk room, opened</div>
+    <div class="box"><span class="t">The Lounge</span> · <span style="color:#8a6d22">A few women are around</span> &nbsp;·&nbsp; <b>[ Mute a word ]</b></div>
+    <div class="box" style="border-style:solid;border-color:var(--gold)"><b style="color:var(--gold);font-size:11px;letter-spacing:.1em">TODAY IN THE LOUNGE</b><br><span style="font-family:var(--serif);font-style:italic;font-size:17px;color:var(--ink)">What's one small thing that lifted you today?</span><br><span class="pill" style="margin-top:6px">✒ Answer this — a line is plenty</span></div>
+    <div class="box"><span class="alias">🌱 Wild Poppy</span><br><span style="font-family:var(--serif);font-size:16px;color:var(--ink)">Told my manager no today. The ceiling didn't cave in.</span><br><small>held · me too · hear you · saved &nbsp;·&nbsp; Hide · Report</small></div>
+  </div>
+
+  <table>
+    <tr><th>Feature</th><th>What it does · why it matters</th></tr>
+    <tr><td><b>Botanical alias</b></td><td>A stable, warm handle — "Wild Poppy", "Quiet Fern" — derived purely from the anonymous device-hash (no PII, deterministic). Threads warm up because you recognise a voice; the accountability brake Yik Yak lacked. Your own posts read "You".</td></tr>
+    <tr><td><b>Daily room prompt</b></td><td>One lightweight, whole-life, <b>life-stage-tinted</b> prompt per room (seeded per day, like the QOTD). "Answer this" opens the moderated composer. A warm reason to post — the #1 warmth mechanic.</td></tr>
+    <tr><td><b>Hide a voice</b></td><td>One tap hides a device-hash so that author never reaches you again — block, at the anonymous layer. Instant, device-local, no name needed.</td></tr>
+    <tr><td><b>Mute a word</b></td><td>Hide any post mentioning a word — just for you, on your device. The anti-pile-on / trust mechanic the research flags as high-impact.</td></tr>
+    <tr><td><b>Per-room presence</b></td><td>A fuzzy k-anon "a few women are around" line at the top of each room — liveness without a count.</td></tr>
+  </table>
+  <p><span class="pill done">real reads/writes</span><span class="pill done">same crisis + moderation path</span><span class="pill done">no counts / no leaderboards</span><span class="pill done">demo-gated (live untouched)</span></p>
+  <p class="cap">Built additively — every existing safety rail (18+ gate, crisis pre-check, publish-then-screen, report→hide, reaction-only, k-anon, Jess support) is intact and unchanged.</p>
+</div>
+
+<!-- 4 -->
+<a id="roadmap"></a>
+<div class="section">
+  <div class="eyebrow">4 · The rest of robust Talk</div>
+  <h2>Roadmap — safety floor, then warmth</h2>
+  <p>The research is clear: <b>an unsafe room can't be fun</b>, so safety ships before warmth. What's above is the first slice; here's the rest, ranked, to build out feature #1 to "complete":</p>
+  <h4>Next — safety floor (server-side)</h4>
+  <ul>
+    <li><b>"No woman left unheard"</b> — if a post sits at zero replies for a while, Jess leaves one warm reply and/or it gets a gentle boost. The single biggest retention lever.</li>
+    <li><b>Rate-limit + new-hash throttle</b> — cap posts/comments per hour on a hot thread to break brigades; slow drive-by abuse from brand-new hashes.</li>
+    <li><b>Thread-lock</b> — a poster (or Jess) can switch a heated thread to reaction-only to stop a pile-on.</li>
+    <li><b>Moderation floor already live</b> — OpenAI Moderation on publish (auto-hide the unambiguous, route borderline to review); this is present and stays.</li>
+  </ul>
+  <h4>Then — warmth layer</h4>
+  <ul>
+    <li><b>First-post bloom</b> — a woman's first post in a room quietly earns a private bloom in her garden (private progress, never a public badge).</li>
+    <li><b>Weekly Wins / Weekly Vent</b> — one recurring low-barrier thread per week, rotating light and heavy.</li>
+    <li><b>Warm welcome flow</b> — a guaranteed kind reply to a first-ever post.</li>
+    <li><b>Alias on comments too</b>, and a gentle "someone reacted" (never a number).</li>
+  </ul>
+</div>
+
+<!-- 5 -->
+<a id="gates"></a>
+<div class="section crimson">
+  <div class="eyebrow">5 · The gates (needs your call)</div>
+  <h2>Safety &amp; legal must-haves</h2>
+  <p>Most are already in place; two are genuine forks that need a decision before a <b>public</b> launch (not for the demo):</p>
+  <div class="lens"><div class="nm"><span class="ix">Gate 1</span>Age assurance <span class="pill gate">decision</span></div><p>The Online Safety Act's child-safety duties (live 25 Jul 2025) are avoided only if under-18s genuinely can't access. Ofcom says <b>self-declared 18+ is NOT "highly effective age assurance."</b> So either we accept the child-safety duties apply, or add a highly-effective method (facial age estimation / digital ID). A real decision — flagged, not for me to pick.</p><div class="src">ofcom.org.uk/online-safety · gov.uk/online-safety-act-explainer</div></div>
+  <div class="lens"><div class="nm"><span class="ix">Gate 2</span>Women-only wording <span class="pill gate">legal review</span></div><p>A single-sex service is defensible under the Equality Act (Sch. 3, "legitimate aim + proportionality"), and <i>For Women Scotland</i> (Supreme Court, Apr 2025) strengthens the footing — but makes the <b>wording sensitive</b>. Warrants a real UK legal review, not a copywriting pass. Keep it factual and NHS-grounded meanwhile.</p><div class="src">equalityhumanrights.com · UK Supreme Court 2025</div></div>
+  <h4>Already in place (keep)</h4>
+  <p><span class="pill done">OSA user-to-user posture: publish-then-screen + report→hide</span><span class="pill done">crisis pre-check + 4 UK resources</span><span class="pill done">"not medical advice" + NHS routing on Health</span><span class="pill done">no exact counts / no leaderboards</span></p>
+</div>
+
+<!-- 6 -->
+<a id="ties"></a>
+<div class="section plum">
+  <div class="eyebrow">6 · Whole-life wiring</div>
+  <h2>How the rooms tie into the app</h2>
+  <ul>
+    <li><b>Journal → Lounge whisper</b> — at the end of a journal entry, "keep this private, or whisper it to the Lounge anonymously?" (strip identity, keep the words). Turns private venting into a first weak-tie post — the highest-leverage loneliness moment.</li>
+    <li><b>Jess</b> — seeds the daily prompts, backstops "no woman left unheard", one supportive reply on heavier posts. Always clearly labelled AI.</li>
+    <li><b>Cycle / life-stage = a TINT, never a gate</b> — a Style prompt softly tinted for pregnancy; the room is never cycle-locked (that would collapse whole-life into a symptom tracker).</li>
+    <li><b>Health / Nutrition rooms</b> — peer support + lifestyle, carry "not a therapy/medical substitute", soft-route clinical questions to NHS 111 / GP.</li>
+    <li><b>Programs · Events · Deals</b> — a thread can surface a relevant Program or local Event as a gentle inline card, never a hard sell (Events is feature #2).</li>
+    <li><b>Pulse</b> — aggregate, k-anon room sentiment ("the Lounge is talking about work stress this week") feeds Pulse without surfacing any individual.</li>
+  </ul>
+</div>
+
+<div class="foot">
+  FemWell · Community feature #1 · Talk rooms — brainstorm + build · research: workspace/research_talk_rooms_2026-07-08.md<br>
+  Built into the Community redesign demo · live pages untouched · reachable from the IDEAS pill → Current
+</div>
+
+</div></body></html>

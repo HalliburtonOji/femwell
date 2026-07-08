@@ -218,6 +218,7 @@ import RitualBuilderDemo from './pages/RitualBuilderDemo';
 import GrowthDemo from './pages/GrowthDemo';
 import PenPalDemo from './pages/PenPalDemo';
 import CommunityV4Demo from './pages/CommunityV4Demo';
+import CommunityRedesignDemo from './pages/CommunityRedesignDemo';
 import GrowthTodayDemo from './pages/GrowthTodayDemo';
 import GrowthGardenDemo from './pages/GrowthGardenDemo';
 import GrowthPlannerDemo from './pages/GrowthPlannerDemo';
@@ -405,6 +406,7 @@ export const PAGES = {
     "GrowthDemo": GrowthDemo,
     "PenPalDemo": PenPalDemo,
     "CommunityV4Demo": CommunityV4Demo,
+    "CommunityRedesignDemo": CommunityRedesignDemo,
     "GrowthTodayDemo": GrowthTodayDemo,
     "GrowthGardenDemo": GrowthGardenDemo,
     "GrowthPlannerDemo": GrowthPlannerDemo,
