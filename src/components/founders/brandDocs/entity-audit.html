@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="en-GB"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<title>FemWell — Entity Audit &amp; Removal Plan</title>
+<title>FemWell — Entity Audit, Removal &amp; Consolidation Plan</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500;1,600&family=Ephesis&display=swap" rel="stylesheet">
 <style>
@@ -23,7 +23,7 @@
   .rule{height:1px;background:var(--gold);opacity:.32;margin:18px 0}
   .center{text-align:center}
   .statgrid{display:flex;flex-wrap:wrap;gap:10px;margin:10px 0}
-  .stat{flex:1 1 100px;background:var(--paper);border:1px solid var(--paperDeep);border-radius:14px;padding:12px 10px;text-align:center}
+  .stat{flex:1 1 90px;background:var(--paper);border:1px solid var(--paperDeep);border-radius:14px;padding:12px 10px;text-align:center}
   .stat .n{font-family:var(--serif);font-weight:600;font-size:32px;color:var(--crimson);line-height:1}
   .stat.ok .n{color:var(--sage)}.stat.warn .n{color:var(--gold)}
   .stat .l{font-family:var(--sans);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-top:5px}
@@ -41,78 +41,205 @@
   .chips b{font-family:var(--sans);font-size:13px;font-weight:600;display:inline-block;background:#FBE9E6;border:1px solid var(--crimson);color:var(--crimson);border-radius:999px;padding:4px 10px;margin:3px 4px 3px 0}
   .chips.sup b{background:#F6ECD6;border-color:var(--gold);color:#7a6320}
   .foot{font-family:var(--sans);font-size:12px;color:var(--muted);text-align:center;margin-top:30px;line-height:1.6}
+  .merge{background:var(--paper);border:1px solid var(--paperDeep);border-left:3px solid var(--sage);border-radius:12px;padding:12px 14px;margin:10px 0}
+  .merge .mh{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
+  .merge .arrow{font-family:var(--sans);font-size:14px;color:var(--inkSoft)}
+  .merge .arrow b{font-family:var(--serif);font-size:16px;color:var(--crimson)}
+  .netpill{font-family:var(--sans);font-size:12px;font-weight:700;background:#EAF1EA;border:1px solid var(--sage);color:#3f6b3f;border-radius:999px;padding:3px 9px}
+  .merge p{margin:6px 0 0;font-size:14px;font-family:var(--sans);line-height:1.5;color:var(--inkSoft)}
+  .merge .mgn{color:var(--muted)}
+  .banner{background:linear-gradient(180deg,#FBE9E6,rgba(251,233,230,0));border:1px solid var(--crimson);border-radius:16px;padding:14px 16px;margin:14px 0}
+  .arrowbig{font-family:var(--script);color:var(--crimson);font-size:30px}
 </style></head>
 <body><div class="doc">
 <div class="center" style="padding:10px 0 4px">
   <div class="eyebrow">FemWell · Data hygiene · read-only audit · for your approval</div>
-  <h1 class="cover">The Entity<br>Cull</h1>
-  <p class="lede" style="font-style:italic;max-width:520px;margin:8px auto 0">A deep, read-only sweep of all <b>149</b> base44 entities — which are still wired into the app, which are dead weight from an earlier era, and which are safe to retire. <b>Nothing was deleted or changed.</b> You approve each removal, one by one.</p>
+  <h1 class="cover">The Entity<br>Cull &amp; Merge</h1>
+  <p class="lede" style="font-style:italic;max-width:520px;margin:8px auto 0">A deep sweep of all <b>149</b> base44 entities — what's dead (kill), what's redundant (merge), and what's core. <b>Nothing was deleted, merged, or changed.</b> Part A = the 13 you approved to remove (safety + mechanism + the blocker). Part B = the consolidation map.</p>
 </div>
 
 <div class="section crimson">
-  <div class="eyebrow">The headline</div>
-  <div class="statgrid">
-    <div class="stat"><div class="n">149</div><div class="l">Total entities</div></div>
-    <div class="stat ok"><div class="n">121</div><div class="l">Active (frontend)</div></div>
-    <div class="stat warn"><div class="n">12</div><div class="l">Backend-only</div></div>
-    <div class="stat"><div class="n">15</div><div class="l">Removal candidates</div></div>
+  <div class="eyebrow">The two headlines</div>
+  <div class="banner center">
+    <div style="font-family:var(--sans);font-size:12px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--crimson)">Consolidation potential</div>
+    <div style="margin:4px 0"><span style="font-family:var(--serif);font-size:44px;font-weight:600;color:var(--crimson)">149</span> <span class="arrowbig">&rarr;</span> <span style="font-family:var(--serif);font-size:44px;font-weight:600;color:var(--sage)">~109</span></div>
+    <div class="cap">40 fewer entities — 13 dead removed + ~27 redundant shapes merged. A ~27% cut, done in stages.</div>
   </div>
-  <p style="margin-top:8px"><b>15 entities are candidates for removal</b> — 13 with <b>no code references anywhere</b>, plus 2 that a newer entity has clearly superseded. The other 134 are earning their keep (121 used in the app, 12 used only by backend functions, 1 is the base44 system <code>User</code>).</p>
-  <p class="cap"><b>How this was measured:</b> every entity name was cross-referenced (whole-word) across <code>src/</code>, <code>base44/functions/</code>, and <code>base44/agents/</code>. &quot;No references&quot; means no import, read, write, filter, or string mention in any code file. Schemas of the candidates were opened by hand to confirm.</p>
+  <div class="statgrid">
+    <div class="stat"><div class="n">149</div><div class="l">Total today</div></div>
+    <div class="stat ok"><div class="n">121</div><div class="l">Active</div></div>
+    <div class="stat warn"><div class="n">13</div><div class="l">Kill now</div></div>
+    <div class="stat"><div class="n">~27</div><div class="l">Mergeable</div></div>
+  </div>
+  <p style="margin-top:8px"><b>Is ~half waste?</b> Directionally yes on <em>table count</em>, but it splits three ways: <b>~13 are truly dead</b> (no code, no purpose — kill now), <b>~27 are redundant shapes</b> (real data, but too many near-identical tables — merge), and the rest are core. Getting to a literal ~75 would need aggressive log/profile unification with real migration cost; a safe, high-value target lands around <b>~109</b>.</p>
 </div>
 
+<h2 class="center" style="font-style:normal;font-family:var(--script);color:var(--crimson);font-size:40px;margin-top:30px">Part A — Removal</h2>
+
 <div class="section" style="border-left-color:var(--crimson)">
-  <div class="eyebrow">Do this before ANY deletion</div>
-  <h3 style="margin-top:2px">Back up first — deletion is irreversible</h3>
-  <p>Removing a base44 entity is <b>destructive and cannot be undone</b>. I could <b>not</b> read live row counts this session — the only credential on this machine is the platform <em>deploy</em> token, which is refused (403) by the data API, and the base44 data MCP tools aren&rsquo;t connected here. <b>So I cannot yet tell you which candidates hold live user data.</b></p>
+  <div class="eyebrow">The mechanism · important</div>
+  <h3 style="margin-top:2px">How base44 entity removal actually works</h3>
+  <p>I traced the build/deploy path. <b>The <code>base44/entities/*.jsonc</code> files are a local MIRROR, not the deploy source.</b> The build is pure Vite over <code>src/</code>; nothing in <code>scripts/deploy.mjs</code> or the build reads the entities folder. <code>deploy.mjs</code> only POSTs the app bundle to <code>/api/apps/&lt;id&gt;/deploy</code>.</p>
   <ul>
-    <li><b>Step 1 — get row counts.</b> Connect the base44 data MCP (or hand me an app <code>api_key</code> / test-user token) and I&rsquo;ll return exact record counts + a data/seed sample for every candidate.</li>
-    <li><b>Step 2 — export any that hold rows.</b> A CSV/JSON export per entity, saved to <code>femwell-handoff/</code>, before it&rsquo;s touched.</li>
-    <li><b>Step 3 — remove one entity at a time</b>, redeploy, and walk the app. Never a batch delete.</li>
+    <li><b>Deleting a <code>.jsonc</code> file + deploying does NOT remove the entity or its data</b> from Base44 — it just desyncs the mirror. So there's no "remove via code" path.</li>
+    <li><b>Real removal is a Base44 platform action</b> — the dashboard (<code>app.base44.com</code> → your app → Data → the entity → delete), which <b>drops the table and all its rows (destructive, irreversible)</b>. The schema API exposed here has create/update but no delete, so it's a dashboard job.</li>
+    <li><b>Therefore code can't do this deletion</b> — it needs you (or an authorised session) in the Base44 dashboard.</li>
   </ul>
 </div>
 
 <div class="section sage">
-  <div class="eyebrow">The shortlist · tier 1</div>
-  <h3 style="margin-top:2px">Safe to remove — no code references anywhere (13)</h3>
-  <p>These appear in <b>zero</b> code files (only their own schema definition). Nothing in the app reads or writes them. Pending a row-count check + backup, these are the cleanest removals.</p>
+  <div class="eyebrow">Part A · status</div>
+  <h3 style="margin-top:2px">The 13 approved — re-verified, but blocked before deletion</h3>
+  <p><b>Re-verified zero references</b> across <b>all</b> code — <code>src</code> (pages/components/lib), <code>base44/functions</code> (backend), <code>base44/agents</code>, <code>scripts</code>, and <code>config.jsonc</code>. The only mentions are this audit doc + the FoundersOS catalog entry describing them (not real usage). <b>All 13 confirmed dead in code.</b></p>
   <p class="chips">
     <b>AnonymousSession</b><b>BookContentCache</b><b>ConditionProfiles</b><b>DailyAggregates</b><b>DayTaskOverrides</b><b>DealsProducts</b><b>DealsSources</b><b>DischargeLogs</b><b>EvidenceRefs</b><b>InsightSnapshots</b><b>MediaAssets</b><b>SexualHealthLogs</b><b>VoiceCache</b>
   </p>
-  <p class="cap"><b>Note:</b> <code>DailyAggregates</code> is referenced only inside a brand HTML doc, not real code. The three <code>Deals*</code> siblings show the shape of the rot: <code>Deals</code> + <code>DealsItems</code> are live, but <code>DealsProducts</code> &amp; <code>DealsSources</code> were never wired. <code>SexualHealthLogs</code> &amp; <code>DischargeLogs</code> are health logs that hold potentially <b>sensitive data</b> if ever populated — export before removing.</p>
+  <p><b>Why I did NOT delete them:</b> two hard blockers, exactly as instructed —</p>
+  <ul>
+    <li><b>No row counts.</b> The base44 data MCP isn't connected in my session and the only credential on disk (the platform <em>deploy</em> token) is refused (403) on the data API — ms-data confirmed across both hosts + three auth shapes. <b>So I cannot see which of these hold live user data.</b> Blind-deleting <code>SexualHealthLogs</code> or <code>DischargeLogs</code> — sensitive if populated — is exactly what your instruction forbids.</li>
+    <li><b>No deletion access.</b> Removal is a dashboard action (above); I can't reach it from code.</li>
+  </ul>
+  <p><b>So Part A stops here, deliberately.</b> Zero destructive action taken. To finish it: get row counts (below), export any non-empty ones, then delete the confirmed-empty + zero-ref entities in the dashboard.</p>
 </div>
 
 <div class="section" style="border-left-color:var(--gold)">
-  <div class="eyebrow">The shortlist · tier 2</div>
-  <h3 style="margin-top:2px">Confirm with Halli — superseded duplicates (2)</h3>
-  <p>A newer entity does the same job. These still have a few references, so removal must wait until the <b>legacy page</b> that uses them is retired.</p>
-  <p class="chips sup"><b>CommunityPosts</b><b>Posts</b></p>
+  <div class="eyebrow">What unblocks the deletion</div>
+  <h3 style="margin-top:2px">How to see row counts + finish safely</h3>
   <ul>
-    <li><b>CommunityPosts</b> — the old &quot;MP#8&quot; community post schema. Superseded by <code>CommunityPost</code> (the current anonymous rooms, now live). Only touched by <code>CommunityMP8.jsx</code>, which is <b>not routed</b> (an orphan page) + founder docs. Low risk once the orphan page is deleted.</li>
-    <li><b>Posts</b> — an even older generic posts entity. Superseded by <code>CommunityPost</code>/<code>Comment</code>. Still read/written by <code>CommunityHub.jsx</code>, which <b>is</b> still routed — so removing <code>Posts</code> would break that legacy page. Retire the page first, then the entity.</li>
+    <li><b>Fastest — the dashboard.</b> <code>app.base44.com</code> → FemWell → <b>Data</b>. Each entity shows its <b>row count</b> at a glance (and last-updated). Read the 13 counts off directly; any at <b>0 rows</b> are safe to delete on the spot.</li>
+    <li><b>For me to pull them — connect the data connector.</b> Wire the base44 data MCP into my session (the <code>list_entity_schemas</code> / <code>query_entities</code> tools Ms Data uses), <b>or</b> hand me an app <code>api_key</code> / a test-user token. Then I return exact counts + a real-data-vs-seed sample per entity.</li>
+    <li><b>Then:</b> export any non-empty entity to <code>femwell-handoff/</code> (CSV/JSON) → delete in the dashboard → done. One at a time.</li>
   </ul>
+</div>
+
+<h2 class="center" style="font-style:normal;font-family:var(--script);color:var(--crimson);font-size:40px;margin-top:34px">Part B — Consolidation</h2>
+<p class="center cap" style="margin-top:0;max-width:520px;margin-left:auto;margin-right:auto">Read-only plan. Merges need data migration, so <b>nothing here is built</b> — this is the map + the order to do it in. Net entity reduction shown per merge.</p>
+
+<div class="section sage">
+  <div class="eyebrow">Tier 1 · easy wins</div>
+  <h3 style="margin-top:2px">Near-duplicate pairs &middot; &minus;8 entities</h3>
+  <p>Two tables that are the same thing from different eras. Thin migrations, low risk. Do these first.</p>
+  
+  <div class="merge">
+    <div class="mh"><span class="arrow">DrinkLog &rarr; <b>HydrationLog</b></span><span class="netpill">&minus;1</span></div>
+    <p class="why"><b>Why:</b> DrinkLog = caffeine/alcohol + calories; HydrationLog = water volume. Near-identical schema (both user_id+day_key+amount_ml+drink_type).</p>
+    <p class="mgn"><b>Migration:</b> Add `calories` to HydrationLog; migrate DrinkLog rows with their drink_type. Update ~7 DrinkLog call-sites.</p>
+  </div>
+  <div class="merge">
+    <div class="mh"><span class="arrow">KickLog &rarr; <b>PregnancyKickSession</b></span><span class="netpill">&minus;1</span></div>
+    <p class="why"><b>Why:</b> Both are fetal-kick counting sessions. KickLog is the older shape (kick_count/duration_minutes) vs PregnancyKickSession (kicks/duration_seconds).</p>
+    <p class="mgn"><b>Migration:</b> Map KickLog fields → PregnancyKickSession units; migrate ~2 call-sites; retire KickLog.</p>
+  </div>
+  <div class="merge">
+    <div class="mh"><span class="arrow">CommunityPosts + Posts &rarr; <b>CommunityPost</b></span><span class="netpill">&minus;2</span></div>
+    <p class="why"><b>Why:</b> Three eras of the same thing: current anon rooms (CommunityPost) + MP#8 (CommunityPosts) + the original generic Posts.</p>
+    <p class="mgn"><b>Migration:</b> Already flagged. Retire orphan CommunityMP8 page + legacy CommunityHub page first, then drop both old entities.</p>
+  </div>
+  <div class="merge">
+    <div class="mh"><span class="arrow">SupplementLog &rarr; <b>MedicationLogs</b></span><span class="netpill">&minus;1</span></div>
+    <p class="why"><b>Why:</b> SupplementLog's wide boolean columns (folic_acid/vitamin_d/omega3/iron) are a legacy shape. A supplement is a med with category='supplement'.</p>
+    <p class="mgn"><b>Migration:</b> Represent each supplement as a MedicationLogs row (item_name + category); migrate ~8 call-sites.</p>
+  </div>
+  <div class="merge">
+    <div class="mh"><span class="arrow">ContentBookmarks &rarr; <b>SavedItems</b></span><span class="netpill">&minus;1</span></div>
+    <p class="why"><b>Why:</b> SavedItems is the general saver (item_type/item_id/title). A bookmark is just item_type='content'.</p>
+    <p class="mgn"><b>Migration:</b> Migrate ContentBookmarks → SavedItems rows; update ~3 call-sites (some already read SavedItems).</p>
+  </div>
+  <div class="merge">
+    <div class="mh"><span class="arrow">HotFlashLog &rarr; <b>MenopauseSymptomEntry</b></span><span class="netpill">&minus;1</span></div>
+    <p class="why"><b>Why:</b> A hot flash is one menopause symptom_type. MenopauseSymptomEntry already has symptom_type + severity + trigger_tags.</p>
+    <p class="mgn"><b>Migration:</b> Migrate HotFlashLog rows as symptom_type='hot_flash'; update 1 call-site.</p>
+  </div>
+  <div class="merge">
+    <div class="mh"><span class="arrow">HairRoutine + SkinRoutine &rarr; <b>BeautyRoutine (new, or fold to LogAction)</b></span><span class="netpill">&minus;1</span></div>
+    <p class="why"><b>Why:</b> Two thin one-off beauty logs (1 call-site each). Both are 'a beauty/self-care routine event'.</p>
+    <p class="mgn"><b>Migration:</b> Either one BeautyRoutine entity with a `kind` (hair/skin) field, or fold into a generic tracking log. Small.</p>
+  </div>
+</div>
+
+<div class="section" style="border-left-color:var(--gold)">
+  <div class="eyebrow">Tier 2 · type-discriminator merges</div>
+  <h3 style="margin-top:2px">Fold variants into one typed table &middot; &minus;16 entities</h3>
+  <p>Several tables that are really one shape with a <code>type</code>/<code>action</code> field. More call-sites to migrate, but big structural payoff (esp. the content-interaction merge).</p>
+  
+  <div class="merge">
+    <div class="mh"><span class="arrow">ContentHistory + ContentRatings + PodcastListens + ReadingActivity &rarr; <b>ContentInteraction (base = LifestyleInteractions)</b></span><span class="netpill">&minus;4</span></div>
+    <p class="why"><b>Why:</b> All are 'user did X to a content/lifestyle item' events. LifestyleInteractions already has action+category+item_id. ContentHistory=completion, ContentRatings=stars/review, PodcastListens=position, ReadingActivity=progress.</p>
+    <p class="mgn"><b>Migration:</b> Unify to one interaction table: action ∈ {view,complete,rate,listen,read,progress} + a meta_json carrying stars/position/completion. This is the single biggest structural win but touches the whole content/lifestyle read layer.</p>
+  </div>
+  <div class="merge">
+    <div class="mh"><span class="arrow">AdviceThreads + AdviceMessages + AdviceHistory &rarr; <b>JessConversation / JessMemory</b></span><span class="netpill">&minus;3</span></div>
+    <p class="why"><b>Why:</b> Advice threads/messages mirror a chat — the same shape as Jess. Three Advice* entities duplicate the assistant-conversation model.</p>
+    <p class="mgn"><b>Migration:</b> Fold Advice threads/messages into JessConversation (role/content/thread) + JessMemory; retire the 3 Advice* entities. Check the advice UI + the 1 backend fn.</p>
+  </div>
+  <div class="merge">
+    <div class="mh"><span class="arrow">InvisibleTask + LifeAdminItem &rarr; <b>PersonalTasks</b></span><span class="netpill">&minus;2</span></div>
+    <p class="why"><b>Why:</b> Three task-ish entities. InvisibleTask (mental-load carry/hand-off) + LifeAdminItem (admin due/disposition) are variants of PersonalTasks (title/date/category/completed).</p>
+    <p class="mgn"><b>Migration:</b> Add category/meta to PersonalTasks to carry the invisible-load + life-admin fields; migrate ~2 call-sites each.</p>
+  </div>
+  <div class="merge">
+    <div class="mh"><span class="arrow">StoryPack + StoryVisualPool &rarr; <b>StoryItem</b></span><span class="netpill">&minus;2</span></div>
+    <p class="why"><b>Why:</b> Backend story-generation pipeline split across StoryItem + StoryPack + StoryVisualPool (+ DailyStory as the surfaced one).</p>
+    <p class="mgn"><b>Migration:</b> Collapse the generation-side pack/visual-pool into StoryItem with a status/type; keep DailyStory as the read surface. Backend-only, so no UI churn.</p>
+  </div>
+  <div class="merge">
+    <div class="mh"><span class="arrow">DealsItems &rarr; <b>Deals</b></span><span class="netpill">&minus;1</span></div>
+    <p class="why"><b>Why:</b> Deals + DealsItems (+ the two killed DealsProducts/DealsSources). One deal object with a type is enough.</p>
+    <p class="mgn"><b>Migration:</b> Fold DealsItems (coupon-shaped) into Deals with a `kind`; migrate the 2 backend fns.</p>
+  </div>
+  <div class="merge">
+    <div class="mh"><span class="arrow">ProgramRecommendations &rarr; <b>Recommendations (unified)</b></span><span class="netpill">&minus;1</span></div>
+    <p class="why"><b>Why:</b> TodayRecommendations + ProgramRecommendations are the same 'a recommendation for a surface' shape.</p>
+    <p class="mgn"><b>Migration:</b> Add a `surface` field to TodayRecommendations and fold ProgramRecommendations in.</p>
+  </div>
+  <div class="merge">
+    <div class="mh"><span class="arrow">NutritionInsight &rarr; <b>InsightCards</b></span><span class="netpill">&minus;1</span></div>
+    <p class="why"><b>Why:</b> InsightCards already has a `type` enum (PHASE/SKIN/NUTRITION/SLEEP/MOOD...). NutritionInsight duplicates the nutrition slice.</p>
+    <p class="mgn"><b>Migration:</b> Emit nutrition insights as InsightCards type='NUTRITION'; migrate ~12 nutrition call-sites (bigger read surface).</p>
+  </div>
+  <div class="merge">
+    <div class="mh"><span class="arrow">PainMap &rarr; <b>SymptomLogs</b></span><span class="netpill">&minus;1</span></div>
+    <p class="why"><b>Why:</b> PainMap = a symptom with a body `region`. SymptomLogs is the general daily symptom log.</p>
+    <p class="mgn"><b>Migration:</b> Add `region`/`pain_type` meta to SymptomLogs; migrate PainMap's ~3 call-sites.</p>
+  </div>
+  <div class="merge">
+    <div class="mh"><span class="arrow">BbtLog + OpkLog &rarr; <b>FertilityLog (new)</b></span><span class="netpill">&minus;1</span></div>
+    <p class="why"><b>Why:</b> BbtLog (basal temp) + OpkLog (ovulation test) are both single-metric fertility trackers used together.</p>
+    <p class="mgn"><b>Migration:</b> One FertilityLog with metric ∈ {bbt,opk} + value/result; migrate ~4+4 call-sites.</p>
+  </div>
+</div>
+
+<div class="section" style="border-left-color:var(--plum)">
+  <div class="eyebrow">Tier 3 · bigger migrations</div>
+  <h3 style="margin-top:2px">Structural &middot; &minus;3+ entities &middot; do last</h3>
+  <p>Highest payoff-per-table but touches wide read layers. Plan carefully; not a first move.</p>
+  
+  <div class="merge">
+    <div class="mh"><span class="arrow">MenopauseProfile + PregnancyProfile + NutritionProfile + LifestyleProfile &rarr; <b>UserProfile (nested) or Profile{domain,data}</b></span><span class="netpill">&minus;3</span></div>
+    <p class="why"><b>Why:</b> Five+ single-row per-user 'profile' entities. Each is one row per user holding a domain's settings. UserProfile is already 60 fields.</p>
+    <p class="mgn"><b>Migration:</b> Either nest these as JSON sections on UserProfile, or a generic Profile{domain,data_json}. Touches many read sites across the app — highest migration cost, do last.</p>
+  </div>
+  <div class="merge">
+    <div class="mh"><span class="arrow">(evaluate) DailyPromptResponse, Intention, SkyNote, others &rarr; <b>TrackingLog (polymorphic daily log)</b></span><span class="netpill">&minus;0</span></div>
+    <p class="why"><b>Why:</b> ~47 entities are user_id+date+a few fields. A fully polymorphic daily log (type+payload) could absorb many single-domain logs — but risks over-normalising and losing typed queryability.</p>
+    <p class="mgn"><b>Migration:</b> NOT recommended wholesale. Only unify logs that share query patterns. Listed as the aggressive ceiling, not a first move.</p>
+  </div>
 </div>
 
 <div class="section">
-  <div class="eyebrow">Watch-list · not removals</div>
-  <h3 style="margin-top:2px">Overlaps worth a decision (keep for now)</h3>
+  <div class="eyebrow">How to confirm what's really waste</div>
+  <h3 style="margin-top:2px">Signals + where to get them</h3>
   <ul>
-    <li><b>DrinkLog</b> vs <b>HydrationLog</b> — both drink-related, but <code>DrinkLog</code> tracks caffeine/alcohol type while <code>HydrationLog</code> tracks water volume. Distinct purpose; both used. Possible future merge, not a removal.</li>
-    <li><b>KickLog</b> vs <b>PregnancyKickSession</b> — both count fetal kicks. Likely a legacy pair. Confirm which one the live pregnancy flow actually writes, then retire the other.</li>
-    <li><b>InsightSnapshots</b> (unused, in tier 1) overlaps <code>InsightCards</code> / <code>WeeklyInsights</code> / <code>Correlations</code> — the live insight surfaces. Safe to drop.</li>
+    <li><b>Row count = 0</b> → dead, delete. <b>Where:</b> Base44 dashboard → Data (per-entity count), or the data connector.</li>
+    <li><b>Last-write date old / never</b> → abandoned even if it once held rows. <b>Where:</b> query <code>-updated_at</code> limit 1 per entity via the data connector.</li>
+    <li><b>Backend-only + owning function dead</b> → the 12 backend-only entities (Fiction*, Story*, Voice*, WeeklyBookPick…) are only safe to keep if their pipeline still runs. <b>Where:</b> check the function's last invocation / whether it's still scheduled.</li>
+    <li><b>Few call-sites + thin schema</b> → merge candidate (already mapped above). <b>Where:</b> this audit's ref counts.</li>
   </ul>
-</div>
-
-<div class="section plum">
-  <div class="eyebrow">Backend-only · keep, but verify</div>
-  <h3 style="margin-top:2px">No frontend refs — used only by functions (12)</h3>
-  <p>These aren&rsquo;t dead — a deployed backend function reads/writes each. But since no UI touches them, if a whole backend feature was abandoned, some of these could follow. Verify the owning function is still live before trusting them.</p>
-  <p class="chips sup"><b>AdviceHistory</b><b>DealsItems</b><b>FictionChapter</b><b>FictionWork</b><b>GoalContribution</b><b>IngestErrorLog</b><b>LifestyleSources</b><b>StoryPack</b><b>StoryVisualPool</b><b>VoiceProfiles</b><b>VoiceScripts</b><b>WeeklyBookPick</b></p>
-  <p class="cap"><code>IngestErrorLog</code> (17 function files) and <code>LifestyleSources</code> (8) are clearly load-bearing. The <code>Fiction*</code>, <code>Story*</code>, <code>Voice*</code>, and <code>WeeklyBookPick</code> ones belong to content-generation pipelines — confirm those pipelines still run.</p>
+  <p class="cap">The one thing I'm missing is the live DB. Everything else (refs, schemas, overlap) is done. Give me the data connector or read the counts off the dashboard and the picture is complete.</p>
 </div>
 
 <h2 class="center" style="font-style:normal;font-family:var(--script);color:var(--crimson);font-size:38px;margin-top:34px">The full ledger</h2>
-<p class="center cap" style="margin-top:0">All 149 entities · sorted removal-candidates first · scroll the table sideways on a phone</p>
+<p class="center cap" style="margin-top:0">All 149 entities · removal-candidates first · scroll sideways on a phone</p>
 <div class="tablewrap">
 <table>
 <thead><tr><th>Entity</th><th>Class</th><th>Used? / where</th><th>Recommendation</th></tr></thead>
@@ -271,23 +398,20 @@
 </div>
 
 <div class="section" style="margin-top:22px">
-  <div class="eyebrow">What happens next</div>
+  <div class="eyebrow">Where this stands</div>
   <h4>Done this pass</h4>
   <ul>
-    <li>Enumerated all <b>149</b> entities from <code>base44/entities/*.jsonc</code>.</li>
-    <li>Cross-referenced every one across <code>src</code>, <code>functions</code>, <code>agents</code> (whole-word).</li>
-    <li>Classified all 149 · opened candidate schemas by hand · flagged superseded pairs &amp; overlaps.</li>
-    <li>Shipped this report + wired it to the IDEAS pill. <b>No entity or data was deleted or modified.</b></li>
+    <li><b>Part A:</b> re-verified all 13 are zero-ref incl. backend · traced the removal mechanism (dashboard-only, destructive) · stopped short of deletion (no row counts, no delete access) — <b>zero destructive action</b>.</li>
+    <li><b>Part B:</b> examined all 149 for overlap · built the consolidation map (149 &rarr; ~109) · tiered easy/medium/bigger · documented how to confirm waste.</li>
+    <li>Refreshed this doc + redeployed. <b>No entity or data deleted, merged, or modified.</b></li>
   </ul>
-  <h4>Queued / awaiting Halli</h4>
+  <h4>Awaiting you</h4>
   <ul>
-    <li><b>You:</b> approve which of the 15 candidates to remove (tier 1 first).</li>
-    <li><b>Me (once you approve + data access is unblocked):</b> pull live row counts, export any with rows, then remove one-at-a-time with a redeploy + walk between each.</li>
-    <li>Decide the <code>DrinkLog</code>/<code>Hydration</code> and <code>KickLog</code>/<code>PregnancyKickSession</code> merges separately.</li>
-    <li>Retire orphan legacy pages (<code>CommunityMP8</code>, then <code>CommunityHub</code>) to unlock the tier-2 removals.</li>
+    <li><b>To finish Part A:</b> read the 13 row counts off the Base44 dashboard (or connect the data connector so I can) → export any non-empty → delete the confirmed-empty in the dashboard.</li>
+    <li><b>To start Part B:</b> greenlight the Tier-1 easy merges (DrinkLog→Hydration, KickLog→PregnancyKickSession, SupplementLog→MedicationLogs, ContentBookmarks→SavedItems, HotFlashLog→MenopauseSymptomEntry, Hair+Skin routines). Each is a small migration MP.</li>
   </ul>
 </div>
 
-<div class="foot">FemWell · Entity Audit &amp; Removal Plan · generated read-only 2026-07-09 · no deletions performed<br>Measured from the repo at HEAD. Live row counts pending data-API access.</div>
+<div class="foot">FemWell · Entity Audit, Removal &amp; Consolidation Plan · read-only · updated 2026-07-09 · no deletions or merges performed<br>Measured from the repo at HEAD. Live row counts pending Base44 data access.</div>
 
 </div></body></html>
