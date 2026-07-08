@@ -1,0 +1,373 @@
+<!doctype html>
+<html lang="en-GB"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>FemWell — Community: deep audit + redesign plan</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500;1,600&family=Ephesis&display=swap" rel="stylesheet">
+<style>
+  :root{--paper:#ECE7DA;--paperHi:#F4EFE3;--paperDeep:#D8CFBC;--ink:#0B0805;--inkSoft:#1A140D;--muted:#2E261B;--gold:#A8893F;--crimson:#BC2E27;--oxblood:#7A1A12;--blush:#E8B4B8;--sage:#8FAF8F;--plum:#8E6E8E;--serif:'Cormorant Garamond',Georgia,serif;--script:'Ephesis',cursive;--sans:ui-sans-serif,system-ui,-apple-system,'Segoe UI',sans-serif;}
+  *{box-sizing:border-box}
+  body{margin:0;background:radial-gradient(120% 80% at 12% 0%,#F4EFE3 0%,rgba(244,239,227,0) 55%),radial-gradient(120% 90% at 100% 100%,#E4DDCC 0%,rgba(228,221,204,0) 50%),var(--paper);color:var(--ink);font-family:var(--serif);font-size:18px;line-height:1.6;-webkit-font-smoothing:antialiased}
+  .doc{max-width:680px;margin:0 auto;padding:30px 22px 90px}
+  h1.cover{font-family:var(--script);font-size:52px;color:var(--crimson);margin:6px 0 2px;line-height:1.04}
+  h2{font-family:var(--serif);font-style:italic;font-weight:600;font-size:27px;margin:0 0 6px;color:var(--oxblood)}
+  h3{font-family:var(--serif);font-weight:600;font-size:21px;margin:18px 0 6px}
+  h4{font-family:var(--sans);font-size:12px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--gold);margin:16px 0 4px}
+  .eyebrow{font-family:var(--sans);font-size:12px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--gold);margin-bottom:10px}
+  p{margin:0 0 12px}.lede{font-size:20px;line-height:1.55}
+  small,.cap{font-family:var(--sans);font-size:13px;color:var(--muted);line-height:1.5}
+  b,strong{font-weight:600}
+  a{color:var(--crimson);text-decoration:none;border-bottom:1px solid rgba(188,46,39,.3)}
+  .section{background:var(--paperHi);border:1px solid var(--paperDeep);border-left:4px solid var(--gold);border-radius:20px;padding:22px 20px;margin:18px 0;box-shadow:0 4px 20px rgba(58,44,26,.10),0 1px 4px rgba(58,44,26,.06);position:relative;overflow:hidden}
+  .section.crimson{border-left-color:var(--crimson)}.section.sage{border-left-color:var(--sage)}.section.plum{border-left-color:var(--plum)}.section.blush{border-left-color:var(--blush)}
+  .rule{height:1px;background:var(--gold);opacity:.32;margin:18px 0}
+  .center{text-align:center}
+  table{width:100%;border-collapse:collapse;font-size:14px;font-family:var(--sans);margin:8px 0}
+  th,td{text-align:left;padding:7px 8px;border-bottom:1px solid var(--paperDeep);vertical-align:top}
+  th{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--gold)}
+  td b{font-family:var(--serif);font-size:15px}
+  .toc a{display:block;font-family:var(--sans);font-size:15px;color:var(--inkSoft);text-decoration:none;border-bottom:1px solid var(--paperDeep);padding:6px 0}
+  .toc a span{color:var(--gold);font-weight:700;margin-right:10px}
+  .script{font-family:var(--script);color:var(--crimson)}
+  .pill{display:inline-block;font-family:var(--sans);font-size:12px;font-weight:600;padding:5px 11px;border-radius:999px;background:var(--paper);border:1px solid var(--paperDeep);margin:3px 4px 3px 0}
+  .pill.rec{background:#EAF1EA;border-color:var(--sage);color:#3f6b3f}
+  .pill.gap{background:#FBE9E6;border-color:var(--crimson);color:var(--crimson)}
+  .pill.keep{background:#EAF1EA;border-color:var(--sage);color:#3f6b3f}
+  .pill.warn{background:#FBF1E0;border-color:var(--gold);color:#8a6d22}
+  .lens{background:var(--paper);border:1px solid var(--paperDeep);border-left:3px solid var(--gold);border-radius:12px;padding:12px 14px;margin:8px 0}
+  .lens .nm{font-family:var(--serif);font-weight:600;font-size:18px;color:var(--ink);margin-bottom:2px}
+  .lens .nm .ix{font-family:var(--sans);font-size:11px;font-weight:700;letter-spacing:.1em;color:var(--gold);margin-right:8px;text-transform:uppercase}
+  .lens p{margin:0;font-size:15px;line-height:1.5;color:var(--inkSoft)}
+  .num{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:999px;background:var(--crimson);color:#fff;font-family:var(--sans);font-size:12px;font-weight:700;margin-right:8px;vertical-align:1px}
+  .foot{font-family:var(--sans);font-size:12px;color:var(--muted);text-align:center;margin-top:30px;line-height:1.6}
+  ul{margin:4px 0 12px;padding-left:20px}li{margin:3px 0}
+  /* wireframe blocks */
+  .wf{border:1px solid var(--paperDeep);border-radius:16px;background:var(--paper);padding:12px;margin:12px 0;font-family:var(--sans)}
+  .wf .lbl{font-size:10.5px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--gold);margin-bottom:8px}
+  .box{border:1px dashed #b9ab8e;border-radius:12px;padding:10px 12px;margin:7px 0;background:var(--paperHi);font-size:13px;color:var(--inkSoft)}
+  .box .t{font-family:var(--serif);font-weight:600;font-size:16px;color:var(--ink)}
+  .box.hero{border-style:solid;border-color:var(--sage);background:linear-gradient(160deg,#F4EFE3,#E9E1CE)}
+  .box.jess{border-color:var(--gold);background:#FBF1E0}
+  .row2{display:grid;grid-template-columns:1fr 1fr;gap:7px}
+  .row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px}
+  .tile{border:1px solid var(--paperDeep);border-radius:10px;padding:8px 9px;background:var(--paperHi);font-size:12px}
+  .tile b{font-family:var(--serif);font-size:14px;display:block;color:var(--ink)}
+  .tile small{font-size:10.5px;color:var(--muted)}
+  .clip{border:1px solid var(--gold);border-radius:14px;padding:10px 12px;margin:9px 0;background:rgba(168,137,63,.05)}
+  .clip .ch{font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--gold);margin-bottom:2px}
+  .clip .cs{font-family:var(--serif);font-style:italic;font-size:15px;color:var(--oxblood);margin-bottom:8px}
+  .dots{text-align:center;color:#c3b596;font-size:15px;letter-spacing:3px;margin-top:6px}
+  .arrow{color:var(--muted);font-weight:700}
+  .flow{font-family:var(--sans);font-size:13px;color:var(--inkSoft);background:var(--paper);border:1px solid var(--paperDeep);border-radius:10px;padding:8px 11px;margin:6px 0}
+  .flow b{color:var(--oxblood)}
+  .bad{color:var(--crimson);font-weight:700}
+  .good{color:#3f6b3f;font-weight:700}
+</style></head>
+<body><div class="doc">
+
+<div class="center" style="padding:14px 0 4px">
+  <div class="eyebrow">FemWell · Community · DEEP AUDIT + REDESIGN PLAN · plan-first, nothing rebuilt yet</div>
+  <h1 class="cover">One clear house, not eleven doors</h1>
+  <p class="lede" style="font-style:italic;max-width:560px;margin:8px auto 0">Community is <b>feature-rich and safe</b> — but it grew a <b>tangle of parallel words</b> (rooms, circles, clubs, corners, the wall, the pool) and <b>four different maps</b> of the same places. You said it feels disorganised — it is, and this doc proves exactly where and why, then lays out a <b>clearer structure on the canonical page language</b> (flora hero, sliding rows, clipboard shelves, the one Jump map). <b>No live Community code changed — this is the plan for your reaction.</b></p>
+</div>
+
+<div class="section">
+  <div class="eyebrow">The one-line thesis</div>
+  <p class="lede">The problem isn't the features — it's that Community uses <b>three grouping words with fuzzy edges</b> (Rooms / Circles / Clubs) and shows the <b>same destinations four different ways</b> (a door grid, a daily-rotating slot, a sticky tab strip, and the Jump sheet), each a <i>different subset with different labels</i>. The fix: <b>one hierarchy, four clearly-named shelves, shown by ONE map</b> — laid onto the Nutrition-style page (flora hero → summary → sliding rows → clipboard shelves → handy row). <b>Every feature is kept</b> — reorganised, never stripped.</p>
+</div>
+
+<div class="section sage">
+  <div class="eyebrow">Contents</div>
+  <div class="toc">
+    <a href="#map"><span>1</span> The CURRENT map — exactly as built (honest)</a>
+    <a href="#why"><span>2</span> Why it feels confusing — 7 named faults</a>
+    <a href="#canon"><span>3</span> The canonical page structure we map onto</a>
+    <a href="#four"><span>4</span> The fix — ONE hierarchy, FOUR shelves</a>
+    <a href="#before"><span>5</span> Before → After (consolidate &amp; rename)</a>
+    <a href="#layout"><span>6</span> The new page — layout + mockups</a>
+    <a href="#keep"><span>7</span> Everything KEPT + the safety rails</a>
+    <a href="#build"><span>8</span> What I'd build first + open questions</a>
+  </div>
+</div>
+
+<!-- 1 · CURRENT MAP -->
+<a id="map"></a>
+<div class="section crimson">
+  <div class="eyebrow">1 · The honest current map</div>
+  <h2>What Community is, exactly as built</h2>
+  <p>Entry: <b>/Community → 18+ age gate → the "home" view</b>. Everything is one React component switching an internal <b>view</b> variable (not real routes; deep-links just set the starting view). The <b>home</b> is a long vertical scroll:</p>
+  <div class="wf">
+    <div class="lbl">/Community · home (scroll top → bottom)</div>
+    <div class="box"><span class="t">Masthead</span> — "For the whole of you" + subtitle</div>
+    <div class="box">Ambient presence ("a few women are around today") + a "your season" line + a <b>Jump</b> button</div>
+    <div class="box"><span class="t">Question of the Day</span> — "the one focal point"</div>
+    <div class="box">Resonance card — "someone like you" (read-only)</div>
+    <div class="box"><span class="t">"Today in the community"</span> — ONE slot that <span class="bad">rotates daily</span> between 4 whole features: Wisdom · Pool · Close-the-week · Clubs</div>
+    <div class="box"><span class="t">"The rooms — step into any one"</span> — a 2-col grid of <span class="bad">11 doors</span> (below)</div>
+    <div class="box">Jess nudge → Journal · slim links (Share a thought · Quietly 1:1 · Talk to Jess · Invite) · footer</div>
+  </div>
+  <h4>The 11 "doors" — and here's the trap: they behave three different ways</h4>
+  <table>
+    <tr><th>Door</th><th>What it actually opens</th><th>Type</th></tr>
+    <tr><td><b>The Lounge</b></td><td>a flat post feed + composer</td><td>feed</td></tr>
+    <tr><td><b>Love &amp; Relationships</b></td><td>a flat post feed</td><td>feed</td></tr>
+    <tr><td><b>Money &amp; Work</b></td><td>a flat post feed</td><td>feed</td></tr>
+    <tr><td><b>Style</b></td><td>a flat post feed</td><td>feed</td></tr>
+    <tr><td><b>The Lighter Side</b></td><td>a flat post feed</td><td>feed</td></tr>
+    <tr><td><b>Health</b></td><td>a flat post feed</td><td>feed</td></tr>
+    <tr><td><b>Circles</b></td><td>a <b>directory of 12 more rooms</b> (3 categories) → each opens its own feed</td><td class="bad">container</td></tr>
+    <tr><td><b>Clubs</b></td><td>a <b>directory of 2 clubs</b> → each its own feed (+ gated "start a club")</td><td class="bad">container</td></tr>
+    <tr><td><b>The Library</b></td><td>Book Club (checkpoints + reader) + per-book "readers' corners"</td><td class="bad">container</td></tr>
+    <tr><td><b>The Games Room</b></td><td>a nightly round + 6 named mini-games</td><td class="bad">mini-app</td></tr>
+    <tr><td><b>Echo Wall</b></td><td>a feature that <b>actually lives in the Journal</b></td><td class="bad">elsewhere</td></tr>
+  </table>
+  <p class="cap">Same tile, same look — but a tap lands you in a feed, or a directory of <i>more</i> doors, or a game, or the Journal. That unpredictability is the felt "confusion."</p>
+  <h4>Inside the 4 container doors</h4>
+  <p><b>Circles (12)</b> — <i>Life stages:</i> TTC · Pregnancy · Postpartum · Perimenopause · Menopause &amp; after. <i>Living with (sensitive):</i> PCOS · Endometriosis · PMDD. <i>Shared loves:</i> Books &amp; reading · Career &amp; ambition · Creativity · Movement &amp; walks.<br>
+  <b>Clubs (2)</b> — Slow mornings · Creativity corner (+ member-created clubs, built but flagged off).<br>
+  <b>Library</b> — the Jess-hosted Book Club (spoiler-safe checkpoints) + a readers' corner per book.<br>
+  <b>Games</b> — This or That · One Word · Caption the Feeling · One-Line Story · Tiny Confession · Comfort Pick.</p>
+  <h4>And the SAME places appear in four different navigators</h4>
+  <table>
+    <tr><th>Navigator</th><th>Shows</th></tr>
+    <tr><td><b>The door grid</b> (home)</td><td>Echo · Lounge · Circles · Library · Games · Love · Money · Style · Lighter · Health · Clubs</td></tr>
+    <tr><td><b>The "Today" slot</b></td><td>1 of {Wisdom, Pool, Close-week, Clubs} — <span class="bad">rotates daily</span></td></tr>
+    <tr><td><b>The sticky tab bar</b> (inside a feed)</td><td>Lounge · Circles · Library · Games · Love · Money · Style · Lighter · Health (feeds + containers mixed)</td></tr>
+    <tr><td><b>The Jump sheet</b></td><td>Qotd · Echo · Lounge · Circles · Clubs · Library · Games · Love · Money · Style · Lighter · Health · Witness · Phase&nbsp;Twin (14)</td></tr>
+  </table>
+  <p class="cap">Four maps, four subsets, four label sets — for one set of places. There is <b>no single canonical map</b> a user can learn once.</p>
+</div>
+
+<!-- 2 · WHY -->
+<a id="why"></a>
+<div class="section">
+  <div class="eyebrow">2 · Diagnosis</div>
+  <h2>Why it feels disorganised — 7 named faults</h2>
+  <div class="lens"><div class="nm"><span class="ix">Fault 1</span>Three grouping words, fuzzy edges</div><p>"Rooms" vs "Circles" vs "Clubs" — a user can't predict which word holds what. And they <b>overlap</b>: Circles is <i>itself</i> a Room; <b>books/reading lives in FOUR places</b> (a Books circle · the Library room · the Book Club · per-book readers'-corner clubs) and <b>creativity in TWO</b> (a Creativity circle · a Creativity-corner club).</p></div>
+  <div class="lens"><div class="nm"><span class="ix">Fault 2</span>Doors don't behave the same</div><p>One affordance (a tile in the grid) does four different jobs — open a feed, open a directory of more doors, open a game, or leave for the Journal. Nothing signals which.</p></div>
+  <div class="lens"><div class="nm"><span class="ix">Fault 3</span>Four rival navigators</div><p>The door grid, the daily slot, the sticky tabs and the Jump sheet each show a <i>different</i> slice with <i>different</i> names. No map to learn — you re-orient every screen.</p></div>
+  <div class="lens"><div class="nm"><span class="ix">Fault 4</span>The daily slot hides 3 of 4 features</div><p>Wisdom, Pool, Close-the-week and Clubs each surface only ~1 day in 4 through that single rotating slot — otherwise they're near-unreachable. Discoverability is a lottery.</p></div>
+  <div class="lens"><div class="nm"><span class="ix">Fault 5</span>Split-brain with the Journal</div><p>Echo Wall, Witness and Phase Twin are advertised in Community but actually <b>live in / route to the Journal</b>. The boundary is invisible — you tap a "Community" thing and land somewhere else.</p></div>
+  <div class="lens"><div class="nm"><span class="ix">Fault 6</span>No canonical page structure</div><p>No flora hero, no summary card, no sliding rows, no card language — it's a bespoke scroll with its own nav stack and a <i>different back-button label per branch</i> ("Community" / "Circles" / "Clubs" / "Doors").</p></div>
+  <div class="lens"><div class="nm"><span class="ix">Fault 7</span>Poetic names, no signposts</div><p>Lounge, Circles, Clubs, Living Wisdom, Close the Week, Together This Week, Readers' Corner — lovely, but nothing tells a user <b>what's a place vs what's a daily ritual</b>. The vocabulary is the load.</p></div>
+  <p style="margin-top:12px"><b>Root cause in one line:</b> the app has <b>~25 real surfaces</b> and only enough structure to keep them <i>next to</i> each other, not <i>under</i> each other. It needs one shallow hierarchy and one map.</p>
+</div>
+
+<!-- 3 · CANON -->
+<a id="canon"></a>
+<div class="section plum">
+  <div class="eyebrow">3 · The template</div>
+  <h2>The canonical page structure we build onto</h2>
+  <p>The brand's page language (bible §6.8 / the Nutrition page as the reference) is exactly the discipline Community lacks. Every primary page opens the <b>same signature top</b>, then varies below:</p>
+  <ul>
+    <li><b>Flora hero</b> (<span class="script">FwFloraHero</span>) — the animated realistic bough; <b>tap-to-rebloom controller cards</b> under it re-title the hero and re-bloom the same flower. Here the controllers become the <b>section switcher</b>.</li>
+    <li><b>ONE Summary card</b> — a signal-driven "what's alive here today," never hollow.</li>
+    <li><b>Top-area chrome</b> (§6.8.1) — the <b>Jump-to pill</b> + up to two page actions, same spot every page.</li>
+    <li><b>Uniform top sliding row</b> — equal-height cards; a swipeable "today" deck + a <b>Jess digest</b> card with an upward inner sheet.</li>
+    <li><b>Clipboard shelves</b> (§6.10) — a big framed board holding a tidy tile-grid; <b>slide sideways</b> to the next board. This is the exact tool for "several peer rooms/areas."</li>
+    <li><b>Compact one-line "handy right now" row</b> · <b>uniform same-row cards</b> · <b>no dead space</b>.</li>
+  </ul>
+  <p class="cap">Community's mess maps perfectly: the parallel nouns become <b>peer clipboard boards</b>; the four rival navigators collapse into the <b>hero switcher = the boards = the Jump map</b> (one map, three touch-points).</p>
+</div>
+
+<!-- 4 · FOUR SHELVES -->
+<a id="four"></a>
+<div class="section crimson">
+  <div class="eyebrow">4 · The core idea</div>
+  <h2>One hierarchy. Four clearly-named shelves.</h2>
+  <p>Collapse "Rooms / Circles / Clubs / corners / wall" into <b>FOUR shelves a user can learn in one glance</b>. Every one of today's surfaces lands in exactly one shelf — no surface in two places, no door that behaves unlike its neighbours.</p>
+  <div class="clip"><div class="ch">Shelf 1</div><div class="cs">Talk — the rooms you drop into</div>
+    <div class="row2">
+      <div class="tile"><b>The Lounge</b><small>vent, spill it, be heard</small></div>
+      <div class="tile"><b>Love</b><small>dating, friendship, marriage</small></div>
+      <div class="tile"><b>Money &amp; Work</b><small>careers, pay, pensions</small></div>
+      <div class="tile"><b>Style</b><small>fashion as confidence</small></div>
+      <div class="tile"><b>Health</b><small>NHS-grounded, one room</small></div>
+      <div class="tile"><b>The Lighter Side</b><small>telly, the stars, fun</small></div>
+    </div>
+    <p class="cap" style="margin-top:8px">The 6 flat feeds — what "rooms" should have meant all along. Every tile opens a feed. Nothing else.</p>
+  </div>
+  <div class="clip"><div class="ch">Shelf 2</div><div class="cs">Circles — who you are</div>
+    <div class="row3">
+      <div class="tile"><b>Life stages</b><small>TTC · pregnancy · postpartum · peri · menopause</small></div>
+      <div class="tile"><b>Living with</b><small>PCOS · endo · PMDD (sensitive)</small></div>
+      <div class="tile"><b>Shared loves</b><small>books · career · creativity · movement</small></div>
+    </div>
+    <p class="cap" style="margin-top:8px"><b>Yours</b> surface first; the rest grouped. Same 12 circles, just given a real home instead of being a "door inside the door grid."</p>
+  </div>
+  <div class="clip"><div class="ch">Shelf 3</div><div class="cs">Together — what you do side by side</div>
+    <div class="row2">
+      <div class="tile"><b>The Library</b><small>book club + readers' corners</small></div>
+      <div class="tile"><b>The Games Room</b><small>Jess's nightly round + games</small></div>
+      <div class="tile"><b>Slow mornings</b><small>gentle daily check-in</small></div>
+      <div class="tile"><b>Creativity corner</b><small>make a small thing together</small></div>
+    </div>
+    <p class="cap" style="margin-top:8px">"Clubs" + Library + Games unified as one <b>doing-something-together</b> shelf. Books/reading now lives in <b>one</b> place, not four.</p>
+  </div>
+  <div class="clip"><div class="ch">Shelf 4</div><div class="cs">Quietly — private &amp; one-to-one</div>
+    <div class="row2">
+      <div class="tile"><b>Echo Wall</b><small>anonymous lines, fade 48h</small></div>
+      <div class="tile"><b>Witness</b><small>one sister holds your entry</small></div>
+      <div class="tile"><b>Share a thought</b><small>into a space that's yours</small></div>
+      <div class="tile"><b>Phase Twin</b><small>twelve days, paired</small></div>
+    </div>
+    <p class="cap" style="margin-top:8px">The private/1:1 surfaces gathered — and <b>honestly labelled</b> "opens in your Journal, where the encryption lives." The split-brain becomes a <b>named bridge</b>, not a hidden jump.</p>
+  </div>
+  <p style="margin-top:14px"><b>The daily rituals</b> (Question of the Day · Living Wisdom · Together-this-week Pool · Close the Week) stop being a lottery slot — they move into the <b>top sliding "Today" deck</b> where all are swipeable every day (see §6).</p>
+</div>
+
+<!-- 5 · BEFORE/AFTER -->
+<a id="before"></a>
+<div class="section">
+  <div class="eyebrow">5 · The moves</div>
+  <h2>Before → After: consolidate &amp; rename</h2>
+  <table>
+    <tr><th>Today</th><th>Becomes</th><th>Why</th></tr>
+    <tr><td>3 grouping words (Rooms/Circles/Clubs) blurred</td><td><b>4 named shelves</b> (Talk · Circles · Together · Quietly)</td><td>each has a clear, non-overlapping job</td></tr>
+    <tr><td>11 look-alike doors, 3 behaviours</td><td><b>only feeds are "rooms";</b> everything else is a shelf</td><td>a tile always does one predictable thing</td></tr>
+    <tr><td>Books in 4 places</td><td><b>one</b> place (Library, in Together)</td><td>kills duplication</td></tr>
+    <tr><td>Creativity in 2 places</td><td><b>one</b> (Creativity corner; the circle folds in)</td><td>kills duplication</td></tr>
+    <tr><td>4 rival navigators</td><td><b>1 map</b> = hero switcher = shelves = Jump sheet</td><td>learn it once</td></tr>
+    <tr><td>Daily-rotating "Today" slot (hides 3/4)</td><td><b>swipeable Today deck</b> (all every day)</td><td>nothing hidden by the calendar</td></tr>
+    <tr><td>Echo/Witness/Twin pretend to be Community</td><td><b>Quietly shelf, labelled "in your Journal"</b></td><td>honest boundary</td></tr>
+    <tr><td>Per-branch back buttons + bespoke stack</td><td><b>one signature top + Jump on every layer</b></td><td>consistent nav</td></tr>
+    <tr><td>No hero / summary / cards</td><td><b>flora hero → summary → §6.7 cards</b></td><td>on-brand, like Nutrition</td></tr>
+  </table>
+  <p class="cap"><b>Naming:</b> keep the warm names (Lounge, Lighter Side) but present the four shelves as the plain nouns <b>Talk · Circles · Together · Quietly</b> so a user always knows place-vs-ritual. No feature renamed away; only the <i>grouping</i> is clarified.</p>
+</div>
+
+<!-- 6 · LAYOUT -->
+<a id="layout"></a>
+<div class="section sage">
+  <div class="eyebrow">6 · The redesigned page</div>
+  <h2>Layout + mockups (top → bottom)</h2>
+
+  <div class="wf">
+    <div class="lbl">Signature top</div>
+    <div class="box hero"><span class="t">Flora hero</span> — realistic bough (a <b>gathered bouquet / many blooms</b> = "many women, one room"). Tap-to-rebloom.
+      <div class="row3" style="margin-top:8px">
+        <div class="tile"><b>Talk</b><small>the rooms</small></div>
+        <div class="tile"><b>Together</b><small>do a thing</small></div>
+        <div class="tile"><b>Quietly</b><small>just you</small></div>
+      </div>
+      <small style="display:block;margin-top:6px">the controller cards ARE the shelf switcher — tapping re-titles the hero + reblooms + scrolls to that shelf</small>
+    </div>
+    <div class="box"><span class="t">Summary card</span> — "Alive here today": today's question · who's around (k-anon) · one warm nudge. Each row taps to its target.</div>
+    <div class="box">Top chrome: <b>[ Jump ]</b> pill + <b>[ Share a thought ]</b> action — same spot as every page</div>
+  </div>
+
+  <div class="wf">
+    <div class="lbl">Uniform top sliding row (equal-height cards, swipe →)</div>
+    <div class="box"><span class="t">Slide 1 · "Today in the community"</span> — an in-card deck, swipe through them ALL:
+      <div class="dots">Question of the day &nbsp;·&nbsp; an Echo &nbsp;·&nbsp; tonight's Game &nbsp;·&nbsp; this week's Ritual &nbsp;○○○○</div>
+    </div>
+    <div class="box jess"><span class="t">Slide 2 · Jess digest</span> — "what's warm in the rooms right now" + an <b>upward inner sheet</b> ("Open Jess's full read") holding the phase-aware notes, without growing the card.</div>
+    <div class="dots">● ○</div>
+  </div>
+
+  <div class="wf">
+    <div class="lbl">The shelves — a clipboard slider (swipe between big boards ‹ ›)</div>
+    <div class="clip"><div class="ch">Board 1 · slide →</div><div class="cs">Talk — the rooms</div>
+      <div class="row3"><div class="tile"><b>Lounge</b></div><div class="tile"><b>Love</b></div><div class="tile"><b>Money</b></div><div class="tile"><b>Style</b></div><div class="tile"><b>Health</b></div><div class="tile"><b>Lighter</b></div></div>
+    </div>
+    <div class="clip"><div class="ch">Board 2 · slide →</div><div class="cs">Circles — who you are</div>
+      <div class="row3"><div class="tile"><b>Yours ★</b></div><div class="tile"><b>Life stages</b></div><div class="tile"><b>Living with</b></div><div class="tile"><b>Shared loves</b></div></div>
+    </div>
+    <div class="clip"><div class="ch">Board 3 · slide →</div><div class="cs">Together — what you do</div>
+      <div class="row2"><div class="tile"><b>Library</b></div><div class="tile"><b>Games</b></div><div class="tile"><b>Slow mornings</b></div><div class="tile"><b>Creativity corner</b></div></div>
+    </div>
+    <div class="clip"><div class="ch">Board 4</div><div class="cs">Quietly — private &amp; 1:1 <small>(opens in your Journal)</small></div>
+      <div class="row2"><div class="tile"><b>Echo Wall</b></div><div class="tile"><b>Witness</b></div><div class="tile"><b>Share a thought</b></div><div class="tile"><b>Phase Twin</b></div></div>
+    </div>
+    <div class="dots">● ● ● ●&nbsp;&nbsp;<span class="arrow">‹ ›</span></div>
+    <small style="display:block;margin-top:6px;font-family:var(--sans);color:var(--muted)">One board per swipe, edge-peek + dots + arrows (§6.10). The 4 boards = the 4 shelves = the hero switcher = the Jump sheet. <b>One map.</b></small>
+  </div>
+
+  <div class="wf">
+    <div class="lbl">Compact one-line "Handy right now" row (swipe →)</div>
+    <div class="flow">Question of the day &nbsp;›</div>
+    <div class="flow">Your circles &nbsp;›</div>
+    <div class="flow">Tonight's game &nbsp;›</div>
+    <div class="flow">This week's ritual &nbsp;›</div>
+    <div class="flow">Invite a friend &nbsp;›</div>
+  </div>
+
+  <div class="wf">
+    <div class="lbl">The ONE Jump sheet (mirrors the 4 boards exactly)</div>
+    <div class="row2">
+      <div class="tile"><b>Talk</b><small>Lounge · Love · Money · Style · Health · Lighter</small></div>
+      <div class="tile"><b>Circles</b><small>yours + all 12</small></div>
+      <div class="tile"><b>Together</b><small>Library · Games · clubs</small></div>
+      <div class="tile"><b>Quietly</b><small>Echo · Witness · Share · Twin</small></div>
+    </div>
+    <small style="display:block;margin-top:6px;font-family:var(--sans);color:var(--muted)">Replaces today's flat 14-item list. Grouped under the same four headings, so the sheet <i>teaches</i> the map instead of dumping it.</small>
+  </div>
+
+  <h4>A room, opened (the feed layer)</h4>
+  <p>Inside a Talk room: the signature top shrinks to a slim header + the <b>same Jump pill</b> (no bespoke "Doors/Circles/Clubs" back-buttons — one consistent control), then the <b>composer + feed</b> exactly as today (post card, reactions, replies, report, reaction-only mode, Jess support). <b>The feed itself is unchanged — only how you get to it changes.</b></p>
+</div>
+
+<!-- 7 · KEEP -->
+<a id="keep"></a>
+<div class="section">
+  <div class="eyebrow">7 · Nothing stripped</div>
+  <h2>Every feature kept — and every safety rail</h2>
+  <p>This is a <b>re-organisation, not a rebuild</b>. Read the whole page in full; here is the inventory, each mapped to its new home:</p>
+  <table>
+    <tr><th>Feature (today)</th><th>New home</th></tr>
+    <tr><td>6 whole-life feed rooms</td><td>Shelf 1 · Talk</td></tr>
+    <tr><td>12 Circles (3 categories, sensitive-consent)</td><td>Shelf 2 · Circles</td></tr>
+    <tr><td>Clubs (2 + gated member-created) · Book Club · readers' corners · Games</td><td>Shelf 3 · Together</td></tr>
+    <tr><td>Echo Wall · Witness · Phase Twin · Share-to sheet</td><td>Shelf 4 · Quietly (labelled "in Journal")</td></tr>
+    <tr><td>Question of the Day (+ your thread of days)</td><td>Today deck (slide 1) + summary row</td></tr>
+    <tr><td>Living Wisdom · Collective Pool · Close the Week</td><td>Today deck (swipeable, all days)</td></tr>
+    <tr><td>Resonance ("someone like you")</td><td>Summary card / Today deck</td></tr>
+    <tr><td>Jess digest + support replies</td><td>Sliding row slide 2 + in-feed (unchanged)</td></tr>
+    <tr><td>Voice notes (gated), invite/share</td><td>kept, in their rooms / Handy row</td></tr>
+  </table>
+  <h4>Safety rails — untouched (these are non-negotiable)</h4>
+  <p>
+    <span class="pill keep">18+ age gate</span>
+    <span class="pill keep">crisis pre-check on every input</span>
+    <span class="pill keep">UK resources sheet</span>
+    <span class="pill keep">anonymous service-role posting (device hash only)</span>
+    <span class="pill keep">publish-then-screen moderation</span>
+    <span class="pill keep">report → hide</span>
+    <span class="pill keep">reaction-only mode</span>
+    <span class="pill keep">k-anon presence (no counts)</span>
+    <span class="pill keep">no scoreboards / no vanity metrics</span>
+    <span class="pill keep">sensitive-circle consent</span>
+    <span class="pill keep">Jess tone-lock</span>
+    <span class="pill keep">member-created clubs stay flagged off (OSA/ICO floor)</span>
+  </p>
+  <p class="cap">The redesign is <b>presentation-layer only</b> — same entities (CommunityPost, Comment, Circle/Club membership, QotdResponse, etc.), same functions, same moderation path. No schema change, no new function required for the re-organisation itself.</p>
+</div>
+
+<!-- 8 · BUILD -->
+<a id="build"></a>
+<div class="section plum">
+  <div class="eyebrow">8 · Sequencing</div>
+  <h2>What I'd build first — and what I need from you</h2>
+  <h4>Phased, demo-first (live Community untouched until you approve)</h4>
+  <ul>
+    <li><b>Phase 1 — the new home shell (a demo route).</b> Flora hero + switcher · summary card · the Today sliding deck · the 4-board clipboard slider · handy row · the one Jump sheet. Wired to the <i>real</i> data + real rooms behind it, so it's tappable. Live pages untouched.</li>
+    <li><b>Phase 2 — consolidate the duplicates.</b> Fold the Books circle → Library; the Creativity circle → Creativity corner; retire the daily-rotating slot in favour of the deck. Unify the back-nav to the signature top + Jump on every layer.</li>
+    <li><b>Phase 3 — promote to live /Community</b> (one-file shell swap, revert-safe, same pattern as the Nutrition V2 promotion), then Ms Verify live-walk at 390px.</li>
+  </ul>
+  <h4>Open questions for you (Halli)</h4>
+  <ul>
+    <li><b>The four shelf names</b> — happy with <b>Talk · Circles · Together · Quietly</b>? Or prefer e.g. "Rooms" for shelf 1, "Circles/Cohorts," "Do together," "Just you"?</li>
+    <li><b>Quietly / the Journal split</b> — keep Echo/Witness/Twin surfaced in Community as a labelled bridge (my recommendation), or move them out of Community entirely so Community = public-only and Journal = private?</li>
+    <li><b>Circles vs Together</b> — comfortable that "who you are" (Circles) and "what you do" (Together) stay two shelves, or fold to one "Groups" shelf for even less vocabulary?</li>
+    <li><b>The hero species</b> — a gathered bouquet / many-blooms to signify "many women"? (Distinct from Nutrition's single-plate flower.)</li>
+    <li><b>Scope of this pass</b> — re-organisation only (recommended), or fold in any of the "Community +2" ideas (expert-verified answers, no-post-unanswered, moderated DMs) at the same time? Those are separate, gated builds.</li>
+  </ul>
+  <p style="margin-top:10px"><b>Recommendation:</b> approve the four-shelf model + names → I build the Phase-1 demo route on the canonical page language, link it into the IDEAS pill, you tap it on your phone, then we promote. <b>Plan-first — no live Community change until you say go.</b></p>
+</div>
+
+<div class="foot">
+  FemWell · Community deep audit + redesign plan · plan-first (nothing rebuilt) · maps onto BRAND_IDENTITY §6.8 canonical page structure<br>
+  Reachable from the IDEAS pill · Founder OS → Current
+</div>
+
+</div></body></html>
