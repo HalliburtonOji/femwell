@@ -29,6 +29,11 @@ export function FwFloraHero({
   ringSize = 244, bloomSize = 170, idx = "hero", titleColor = T.ink, openness = 1, variant,
 }) {
   const cw = cwOf(colorway);
+  // the hero wants BIG, lush, colourful blooms on every phase — small/pale/pendant
+  // species read washed-out/bud-like when distributed along the bough, so substitute
+  // a full rounded form (keeping the page's COLOURWAY/mood tint = the phase meaning).
+  const LUSH_HERO_FORM = { snowdrop: "camellia", "lily-of-the-valley": "peony", bluebell: "cosmos", cornflower: "cosmos", "forget-me-not": "cosmos", chamomile: "cosmos", daisy: "camellia" };
+  const heroBloom = LUSH_HERO_FORM[bloom] || bloom;
   // namespace ALL scene + bloom gradient/filter ids per instance so two heroes on
   // one page (e.g. a hidden + a visible) never collide (collision → faint fills).
   const rawUid = useId();
@@ -59,7 +64,7 @@ export function FwFloraHero({
             <div key={`bl${i}`}>
               {/* the open flower head (fades in as it opens) */}
               <div style={{ position: "absolute", left: b.left, top: b.top, transform: `translate(-50%,-50%) scale(${b.scale})`, transformOrigin: "center", zIndex: 2, opacity: Math.min(1, lo * 2.2), transition: "opacity .45s ease", pointerEvents: "none" }}>
-                <RichBloomV2 form={bloom} color={cw.petal} color2={cw.tip} accent={cw.accent} size={150} soft={false} headOnly animate idx={`${idx}-b${i}-${uid}`} openness={Math.max(0.02, lo)} />
+                <RichBloomV2 form={heroBloom} color={cw.petal} color2={cw.tip} accent={cw.accent} size={150} soft={false} headOnly animate idx={`${idx}-b${i}-${uid}`} openness={Math.max(0.02, lo)} />
               </div>
               {/* the closed bud (fades out as it opens) */}
               <div style={{ position: "absolute", left: b.left, top: fy, transform: `translate(-50%,-50%) scale(${b.scale})`, transformOrigin: "center", zIndex: 2, opacity: 1 - Math.min(1, lo * 2.6), transition: "opacity .45s ease", pointerEvents: "none" }}>
