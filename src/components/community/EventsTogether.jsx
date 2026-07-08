@@ -17,7 +17,7 @@
 import { useEffect, useMemo, useState, useCallback } from "react";
 import {
   ChevronLeft, CalendarDays, MapPin, Ticket, Users, ShieldCheck, ShieldAlert,
-  Check, Share2, Flag, Globe, Heart, ExternalLink, Info, UserPlus, Sparkles,
+  Check, Share2, Flag, Globe, Heart, ExternalLink, UserPlus, Sparkles,
 } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import {
@@ -218,6 +218,8 @@ export default function EventsTogether({ user, onBack, embedded = false }) {
     else { window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, "_blank", "noopener"); }
   };
   const onReport = (ev) => { hideEv(ev.id); setTick((t) => t + 1); flash("Flagged — we'll review it, and it's hidden from you."); };
+  // Online events have no in-person meet, so they skip the meet-safe interstitial (proportionate).
+  const onTickets = (ev) => { if (ev.is_online) { if (ev.link) window.open(ev.link, "_blank", "noopener"); } else { setTicketEv(ev); } };
 
   const nextUp = shown[0] || null;
 
@@ -227,16 +229,12 @@ export default function EventsTogether({ user, onBack, embedded = false }) {
         {onBack && <button onClick={onBack} style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "transparent", border: `1px solid ${T.paperDeep}`, borderRadius: 10, padding: "7px 11px", fontFamily: UI, fontSize: 12.5, fontWeight: 600, color: T.ink, cursor: "pointer", marginBottom: 14 }}><ChevronLeft size={14} /> Together</button>}
         <Eyebrow color={T.gold} mb={6}>Together · Events</Eyebrow>
         <Script size={38} style={{ marginBottom: 4 }}>Go together</Script>
-        <Hand size={17} color={T.muted} style={{ marginBottom: 16 }}>Real things to do — near you and online. Find one, say you're going, and bring a friend. Nobody has to walk in alone.</Hand>
+        <Hand size={17} color={T.muted} style={{ marginBottom: 10 }}>Real things to do — near you and online. Find one, say you're going, and bring a friend. Nobody has to walk in alone.</Hand>
 
-        {/* SAFETY spine — always visible, opens the full promise */}
-        <button onClick={() => setGuideOpen(true)} style={{ display: "flex", alignItems: "center", gap: 11, width: "100%", textAlign: "left", background: `linear-gradient(160deg, ${T.paperHi} 0%, ${T.sage}16 100%)`, border: `1px solid ${T.sage}`, borderRadius: 14, padding: "13px 14px", cursor: "pointer", marginBottom: 18 }}>
-          <span style={{ width: 36, height: 36, borderRadius: 10, background: `${T.sage}22`, display: "grid", placeItems: "center", flexShrink: 0 }}><ShieldCheck size={19} color={T.sage} /></span>
-          <span style={{ flex: 1 }}>
-            <span style={{ display: "block", fontFamily: HANDFAM, fontStyle: "italic", fontWeight: 700, fontSize: 17, color: T.ink }}>Meeting safely, always</span>
-            <span style={{ fontFamily: UI, fontSize: 11.5, color: T.muted }}>Public venues · venue-level only · your plans stay private · tap to read our promise</span>
-          </span>
-          <Info size={16} color={T.sage} />
+        {/* SAFETY = calm on the surface: one quiet link, not a big banner (protection is in
+            the background; the meet-safe reminder appears in context when you get tickets). */}
+        <button onClick={() => setGuideOpen(true)} style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "transparent", border: "none", cursor: "pointer", color: T.sage, fontFamily: UI, fontSize: 12.5, fontWeight: 600, padding: 0, marginBottom: 16 }}>
+          <ShieldCheck size={14} /> How we keep meetups safe
         </button>
 
         {/* filters */}
@@ -271,7 +269,7 @@ export default function EventsTogether({ user, onBack, embedded = false }) {
         )}
         {(shown || []).map((ev) => (
           <EventCard key={ev.id} ev={ev} going={isGoing(ev.id)} saved={savedIds.has(ev.id)}
-            onGoing={onGoing} onSave={onSave} onTickets={setTicketEv} onShare={onShare} onReport={onReport} />
+            onGoing={onGoing} onSave={onSave} onTickets={onTickets} onShare={onShare} onReport={onReport} />
         ))}
 
         {/* GO TOGETHER — the community pod (honest, labelled OPT-IN · needs sign-off) */}

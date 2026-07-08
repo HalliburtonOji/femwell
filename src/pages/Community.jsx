@@ -18,7 +18,7 @@ import { useNavigate, Link } from "react-router-dom";
 import {
   Grid2x2, MessageCircle, Send, Lock, Unlock, Plus, Flag,
   ShieldAlert, Phone, Mic, Check, ChevronLeft, Users,
-  HeartHandshake, Waves,
+  HeartHandshake, Waves, MoreHorizontal, EyeOff,
 } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import {
@@ -31,7 +31,7 @@ import {
   hasReported, markReported, answeredQotd, markQotd,
 } from "@/components/community/communityAnon";
 import {
-  MASTHEAD, ROOMS, REACTIONS, POST_MAX, COMMENT_DISCLAIMER, COMMENT_KINDNESS,
+  MASTHEAD, ROOMS, REACTIONS, POST_MAX, COMMENT_KINDNESS,
   COMMENT_MAX, COMMENT_EMPTY, MOD_REMOVED, UK_RESOURCES, FOOTER_LINE, PRESENCE_WINDOW_HRS,
   VOICE_NOTES_ENABLED, qotdForDay, presenceLine, crisisCheck,
 } from "@/components/community/communityConfig";
@@ -218,6 +218,7 @@ function PostCard({ post, user, onCrisis, onChanged, enhanced = false, myHash = 
   const [busy, setBusy] = useState(false);
   const [commentErr, setCommentErr] = useState(false);
   const [reactErr, setReactErr] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);   // tucked "…" menu (report/hide) — calm on the surface
   const isOpen = post.comments_mode !== "reaction";
   const jessTried = useRef(false);
 
@@ -315,7 +316,8 @@ function PostCard({ post, user, onCrisis, onChanged, enhanced = false, myHash = 
       {!enhanced && post.domain && <Eyebrow color={T.gold} mb={6}>{post.domain}</Eyebrow>}
       <Hand size={20} color={T.ink} style={{ marginBottom: 12 }}>{post.body}</Hand>
 
-      {/* reactions (never counted) + report (+ enhanced: hide this voice) */}
+      {/* reactions (warmth, never counted) + a QUIET "…" menu for report/hide (safe by
+          design, calm on the surface — protection stays, the friction goes). */}
       <div style={{ display: "flex", flexWrap: "wrap", gap: 7, alignItems: "center" }}>
         {REACTIONS.map((k) => {
           const on = hasReacted(post.id, k);
@@ -327,14 +329,26 @@ function PostCard({ post, user, onCrisis, onChanged, enhanced = false, myHash = 
             }}>{k}</button>
           );
         })}
-        {enhanced && post.author_hash && (!myHash || post.author_hash !== myHash) && (
-          <button onClick={() => { hideAuthor(post.author_hash); onChanged?.(); }} aria-label="Hide this voice" title="Hide this voice — you won't see them again" style={{ marginLeft: "auto", background: "transparent", border: "none", cursor: "pointer", color: T.muted, display: "inline-flex", alignItems: "center", gap: 4, fontFamily: UI, fontSize: 11, fontWeight: 700 }}>
-            <Eye size={13} /> Hide
+        <div style={{ marginLeft: "auto", position: "relative" }}>
+          <button onClick={() => setMenuOpen((o) => !o)} aria-label="More" style={{ background: "transparent", border: "none", cursor: "pointer", color: T.muted, display: "inline-flex", padding: 4 }}>
+            <MoreHorizontal size={16} />
           </button>
-        )}
-        <button onClick={report} aria-label="Report this post" title="Report" style={{ marginLeft: enhanced && post.author_hash ? 0 : "auto", background: "transparent", border: "none", cursor: "pointer", color: T.muted, display: "inline-flex" }}>
-          <Flag size={13} />
-        </button>
+          {menuOpen && (
+            <>
+              <div onClick={() => setMenuOpen(false)} style={{ position: "fixed", inset: 0, zIndex: 40 }} />
+              <div role="menu" style={{ position: "absolute", top: "100%", right: 0, zIndex: 41, background: T.paperHi, border: `1px solid ${T.paperDeep}`, borderRadius: 10, boxShadow: "0 6px 20px rgba(58,44,26,0.16)", padding: 5, minWidth: 168 }}>
+                {enhanced && post.author_hash && (!myHash || post.author_hash !== myHash) && (
+                  <button onClick={() => { setMenuOpen(false); hideAuthor(post.author_hash); onChanged?.(); }} style={{ display: "flex", alignItems: "center", gap: 9, width: "100%", background: "transparent", border: "none", cursor: "pointer", color: T.ink, fontFamily: UI, fontSize: 13, fontWeight: 600, padding: "9px 10px", borderRadius: 7, textAlign: "left" }}>
+                    <EyeOff size={14} color={T.muted} /> Hide this voice
+                  </button>
+                )}
+                <button onClick={() => { setMenuOpen(false); report(); }} style={{ display: "flex", alignItems: "center", gap: 9, width: "100%", background: "transparent", border: "none", cursor: "pointer", color: T.ink, fontFamily: UI, fontSize: 13, fontWeight: 600, padding: "9px 10px", borderRadius: 7, textAlign: "left" }}>
+                  <Flag size={14} color={T.muted} /> Report
+                </button>
+              </div>
+            </>
+          )}
+        </div>
       </div>
       {reactErr && <div style={{ fontFamily: UI, fontSize: 11, color: T.crimson, marginTop: 5 }}>Couldn{"’"}t register that — try again.</div>}
 
@@ -374,7 +388,8 @@ function PostCard({ post, user, onCrisis, onChanged, enhanced = false, myHash = 
                   <Send size={13} /> {busy ? "Sending…" : "Reply"}
                 </button>
               </div>
-              <div style={{ fontFamily: UI, fontSize: 10, color: T.muted, marginTop: 6 }}>{COMMENT_DISCLAIMER}</div>
+              {/* the per-comment medical disclaimer wall removed (calm on the surface); the
+                  medical-advice note now lives once in the quiet Support corner. */}
             </div>
           </div>
         )}
@@ -1930,6 +1945,7 @@ const SHELVES = [
   { id: "talk", Icon: MessagesSquare, label: "Talk", cw: "crimson", openness: 1, creature: "butterfly",
     title: "The rooms", line: "Drop into a room and say it plainly — silly to serious, no names.",
     sub: "Rooms you drop into", flower: "camellia", action: { label: "Ask the Lounge", key: "lounge" },
+    close: "Say as much, or as little, as you like.",
     tiles: [
       { key: "lounge", Icon: MessageCircle, name: "The Lounge", note: "vent, spill it, be heard" },
       { key: "love", Icon: Heart, name: "Love", note: "dating, friends, marriage" },
@@ -1941,6 +1957,7 @@ const SHELVES = [
   { id: "circles", Icon: Users, label: "Circles", cw: "plum", openness: 0.72, creature: "bee",
     title: "Your circles", line: "Smaller rooms for who you are and what you love. Lurk freely; join what's yours.",
     sub: "Who you are", flower: "iris", action: { label: "Find your circle", key: "circles" },
+    close: "Lurk as long as you like before you say hello.",
     tiles: [
       { key: "circles", Icon: Sprout, name: "Life stages", note: "TTC · pregnancy · peri · menopause" },
       { key: "circles", Icon: Heart, name: "Living with", note: "PCOS · endo · PMDD" },
@@ -1948,7 +1965,8 @@ const SHELVES = [
     ] },
   { id: "together", Icon: HeartHandshake, label: "Together", cw: "sage", openness: 0.88, creature: "dragonfly",
     title: "Together", line: "Do a thing side by side — go to an event, read a book, play a round, make something.",
-    sub: "What you do together", flower: "sunflower", action: { label: "See what's on", key: "events" },
+    sub: "What you do together", flower: "sunflower", action: { label: "See what's on", key: "together" },
+    close: "Nobody has to walk in alone.",
     tiles: [
       { key: "events", Icon: CalendarDays, name: "Events", note: "go together, near you + online" },
       { key: "library", Icon: BookOpen, name: "The Library", note: "book club + readers' corners" },
@@ -1958,6 +1976,7 @@ const SHELVES = [
   { id: "quietly", Icon: Feather, label: "Quietly", cw: "gold", openness: 0.5, creature: "ladybird",
     title: "Quietly", line: "Somewhere softer — anonymous, one-to-one, or just for you.",
     sub: "Private & 1:1 · opens in your Journal", flower: "chamomile", action: { label: "Leave an echo", key: "echo" },
+    close: "Whatever you're carrying, you don't have to hold it out loud.",
     tiles: [
       { key: "echo", Icon: Waves, name: "Echo Wall", note: "anonymous lines, fade in 48h" },
       { key: "witness", Icon: Eye, name: "Witness", note: "one sister holds your entry" },
@@ -2076,11 +2095,97 @@ function ShelfBoard({ shelf, onEnter }) {
           </button>
         ))}
       </div>
-      <div style={{ marginTop: "auto", paddingTop: 14, display: "flex", alignItems: "center", gap: 7 }}>
-        <ShieldAlert size={12} color={acc} />
-        <span style={{ fontFamily: UI, fontSize: 10.5, color: T.muted, lineHeight: 1.4 }}>Anonymous · 18+ · every line screened, kind by design.</span>
+      <div style={{ marginTop: "auto", paddingTop: 14 }}>
+        <span style={{ fontFamily: HANDFAM, fontStyle: "italic", fontSize: 15, color: T.muted, lineHeight: 1.4 }}>{shelf.close}</span>
       </div>
     </Clipboard>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// TOGETHER HUB (feature #2, holistic) — "everything you DO together", not just events.
+// Ties the REAL existing surfaces (Events · Library/book club · Games) + real shared
+// aggregate rituals (the collective pool · close-the-week) + new shared-MOMENT formats
+// (watch-along · read-along · challenge · wind-down) with a warm "I'm in" + join-the-chat.
+// Reuses PoolCard/CloseWeekCard/EventsTogether; routes to real views via onEnter.
+// ═══════════════════════════════════════════════════════════════════════════
+const TOG_IN_KEY = "fw_tog_in";
+const togIn = (id) => { try { return JSON.parse(localStorage.getItem(TOG_IN_KEY) || "[]").includes(id); } catch { return false; } };
+const toggleTogIn = (id) => { let a; try { a = JSON.parse(localStorage.getItem(TOG_IN_KEY) || "[]"); } catch { a = []; } const i = a.indexOf(id); if (i >= 0) a.splice(i, 1); else a.push(id); try { localStorage.setItem(TOG_IN_KEY, JSON.stringify(a)); } catch { /* ignore */ } return a.includes(id); };
+
+// A rotating "this week, together" shared moment (async-friendly: shared focus + a chat
+// thread, so it works even without everyone online at once). Deterministic per week.
+const TOGETHER_MOMENTS = [
+  { id: "watch", Icon: Sparkles, cw: "plum", tag: "Watch-along", title: "We're watching something cosy", blurb: "Pick tonight's comfort watch, then spill your reactions in the Lighter Side — no spoilers for the stragglers.", room: "lighter", cta: "Join the watch chat" },
+  { id: "read", Icon: BookOpen, cw: "sage", tag: "Read-along", title: "A book, at our own pace", blurb: "We're reading together, spoiler-safe checkpoints, no one's behind. Open the book club when you reach one.", room: "library", cta: "Open the book club" },
+  { id: "challenge", Icon: HeartHandshake, cw: "gold", tag: "This week's challenge", title: "Small kindnesses, added up", blurb: "One gentle thing for yourself this week — and watch the room's add up. No names, no scores, just us.", room: "rituals", cta: "See the challenge" },
+];
+function togetherMomentForWeek() {
+  const day = new Date().toISOString().split("T")[0];
+  const epoch = Math.floor(new Date(day + "T00:00:00Z").getTime() / 86400000);
+  const wk = Math.floor(epoch / 7);
+  return TOGETHER_MOMENTS[((wk % TOGETHER_MOMENTS.length) + TOGETHER_MOMENTS.length) % TOGETHER_MOMENTS.length];
+}
+
+function TogetherHub({ user, onEnter, onCrisis, onBack }) {
+  const moment = useMemo(() => togetherMomentForWeek(), []);
+  const [inIt, setInIt] = useState(() => togIn(moment.id));
+  const mCol = cwOf(moment.cw).petal;
+  // the ways to be together — each a REAL surface (deep-links) or a real ritual
+  const PILLARS = [
+    { key: "events", Icon: CalendarDays, cw: "crimson", name: "Go to something", note: "events & meetups, near you + online" },
+    { key: "library", Icon: BookOpen, cw: "sage", name: "Read together", note: "the book club + readers' corners" },
+    { key: "games", Icon: Dices, cw: "gold", name: "Play together", note: "Jess's nightly round + games" },
+    { key: "rituals", Icon: HeartHandshake, cw: "plum", name: "Shared rituals", note: "this week's kindness + close the week" },
+  ];
+  return (
+    <div style={{ padding: "26px 18px 60px", maxWidth: 460, margin: "0 auto" }}>
+      {onBack && <button onClick={onBack} style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "transparent", border: `1px solid ${T.paperDeep}`, borderRadius: 10, padding: "7px 11px", fontFamily: UI, fontSize: 12.5, fontWeight: 600, color: T.ink, cursor: "pointer", marginBottom: 14 }}><ChevronLeft size={14} /> Community</button>}
+      <Eyebrow color={T.gold} mb={6}>Together</Eyebrow>
+      <Script size={38} style={{ marginBottom: 4 }}>Things we do together</Script>
+      <Hand size={17} color={T.muted} style={{ marginBottom: 18 }}>Not another feed to scroll — real ways to do something alongside other women. Go out, read, play, take something on. Dip in for five minutes or the whole evening.</Hand>
+
+      {/* THIS WEEK, TOGETHER — the rotating shared moment (async-friendly) */}
+      <div style={{ position: "relative", overflow: "hidden", background: `linear-gradient(160deg, ${T.paperHi} 0%, ${mCol}14 100%)`, border: `1px solid ${T.paperDeep}`, borderLeft: `4px solid ${mCol}`, borderRadius: 18, padding: "17px 17px", marginBottom: 18 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
+          <span style={{ width: 30, height: 30, borderRadius: 9, background: `${mCol}1F`, display: "grid", placeItems: "center" }}><moment.Icon size={16} color={mCol} /></span>
+          <span style={{ fontFamily: UI, fontSize: 10.5, fontWeight: 800, letterSpacing: ".06em", textTransform: "uppercase", color: mCol }}>{moment.tag}</span>
+        </div>
+        <div style={{ fontFamily: HANDFAM, fontStyle: "italic", fontWeight: 700, fontSize: 20, color: T.ink, marginBottom: 6 }}>{moment.title}</div>
+        <Hand size={15.5} color={T.inkSoft} style={{ marginBottom: 12 }}>{moment.blurb}</Hand>
+        <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+          <button onClick={() => { const now = toggleTogIn(moment.id); setInIt(now); }} style={{ display: "inline-flex", alignItems: "center", gap: 6, borderRadius: 999, padding: "10px 15px", border: inIt ? `1px solid ${mCol}` : "none", background: inIt ? `${mCol}1C` : T.ink, color: inIt ? mCol : T.paperHi, fontFamily: UI, fontSize: 13, fontWeight: 700, cursor: "pointer" }}>
+            {inIt ? <><Check size={14} /> You're in</> : <><HeartHandshake size={14} /> I'm in</>}
+          </button>
+          <button onClick={() => onEnter(moment.room)} style={{ display: "inline-flex", alignItems: "center", gap: 6, borderRadius: 999, padding: "10px 15px", border: `1px solid ${T.paperDeep}`, background: T.paperHi, color: T.ink, fontFamily: UI, fontSize: 13, fontWeight: 700, cursor: "pointer" }}>
+            <MessageCircle size={14} /> {moment.cta}
+          </button>
+        </div>
+        {inIt && <div style={{ fontFamily: UI, fontSize: 11, color: T.muted, marginTop: 10 }}>Lovely — you'll find the others in the chat. No pressure to keep up.</div>}
+      </div>
+
+      {/* WAYS TO BE TOGETHER — the pillars, each a real surface */}
+      <Eyebrow color={T.gold} mb={10}>Ways to be together</Eyebrow>
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 20 }}>
+        {PILLARS.map((p) => { const c = cwOf(p.cw).petal; return (
+          <button key={p.key} onClick={() => onEnter(p.key)} style={{ textAlign: "left", background: `linear-gradient(160deg, ${T.paperHi} 0%, ${c}10 100%)`, border: `1px solid ${T.paperDeep}`, borderRadius: 14, padding: "14px 13px", cursor: "pointer" }}>
+            <span style={{ width: 32, height: 32, borderRadius: 9, background: `${c}1F`, display: "grid", placeItems: "center", marginBottom: 9 }}><p.Icon size={17} color={c} /></span>
+            <div style={{ fontFamily: SERIF, fontWeight: 600, fontSize: 16, color: T.ink, lineHeight: 1.15, marginBottom: 2 }}>{p.name}</div>
+            <div style={{ fontFamily: UI, fontSize: 11, color: T.muted, lineHeight: 1.35 }}>{p.note}</div>
+          </button>
+        ); })}
+      </div>
+
+      {/* THE REAL SHARED-AGGREGATE — the collective pool ("together this week") rendered inline */}
+      <Eyebrow color={T.gold} mb={8}>Together, right now</Eyebrow>
+      <PoolCard user={user} />
+      <CloseWeekCard user={user} onCrisis={onCrisis} />
+
+      <div style={{ display: "flex", flexDirection: "column", alignItems: "center", marginTop: 24, gap: 8 }}>
+        <Pollinator kind="dragonfly" size={30} color={cwOf("sage").petal} color2={cwOf("gold").petal} animate idx="tog-close" />
+        <div style={{ fontFamily: HANDFAM, fontStyle: "italic", fontSize: 16, color: T.muted, textAlign: "center", maxWidth: 290, lineHeight: 1.5 }}>Come as you are, stay as long as you like.</div>
+      </div>
+    </div>
   );
 }
 
@@ -2175,7 +2280,7 @@ function RedesignHome({ presence, lifeStage, profile, user, onEnter, onCrisis, o
               ]}
               sheetSections={[
                 { Icon: MessagesSquare, cw: "crimson", title: "What the room's for", body: <>This is the whole of your life, not just your cycle — the love and the laugh, the money question, the late-night vent. Health is one room here, never the house. No handles, no DMs, no likes, no leaderboards.</> },
-                { Icon: ShieldAlert, cw: "sage", title: "Staying safe & kind here", body: <>You're anonymous — only a device hash is kept, never your name. Every post and reply is screened, anything unkind is removed, and if a line reads heavy I'll gently point you to real support (Samaritans 116 123, NHS 111, Shout 85258). You can react-only, report, or just lurk.</> },
+                { Icon: HeartHandshake, cw: "sage", title: "You're looked after here", body: <>You're anonymous — no name, ever. Kindness is kept quietly in the background so you don't have to think about it: react, reply, or just lurk. And if you're ever really struggling, help is a tap away.</> },
                 { Icon: Sparkles, cw: "gold", title: "Today, together", body: ritual.text, action: <button onClick={ritual.go} style={{ ...ghostBtn }}><ChevronRight size={13} /> {ritual.label}</button> },
               ]}
             />
@@ -2206,10 +2311,12 @@ function RedesignHome({ presence, lifeStage, profile, user, onEnter, onCrisis, o
       {/* Tier-0 anonymous resonance — the "someone like you" read-only belonging beat */}
       <div style={{ marginTop: 20 }}><ResonanceLive wide /></div>
 
-      {/* 6 · closing signature */}
+      {/* 6 · closing signature — and the ONE quiet support corner (safety lives here, not
+          repeated on every post; calm on the surface, protection in the background). */}
       <div style={{ display: "flex", flexDirection: "column", alignItems: "center", marginTop: 30, gap: 10 }}>
         <Pollinator kind="butterfly" size={34} color="#8E6E8E" color2={gold} animate idx="cm-close" />
         <div style={{ fontFamily: HANDFAM, fontStyle: "italic", fontSize: 17, color: T.muted, textAlign: "center", maxWidth: 300, lineHeight: 1.5 }}>{FOOTER_LINE}</div>
+        <button onClick={() => onCrisis && onCrisis()} style={{ background: "transparent", border: "none", cursor: "pointer", fontFamily: UI, fontSize: 12, fontWeight: 600, color: T.muted, textDecoration: "underline", textUnderlineOffset: 3, marginTop: 2 }}>Anonymous &amp; 18+ · Feeling low? Find support</button>
       </div>
     </div>
   );
@@ -2336,6 +2443,8 @@ export function CommunityInner({ initialView = null, embedded = false, homeVaria
               <PoolCard user={user} />
               <WisdomCard onOpen={() => setView("wisdom")} />
             </div>
+          : view === "together"
+          ? <TogetherHub user={user} onEnter={enterShelf} onCrisis={() => setCrisis(true)} onBack={() => setView("home")} />
           : view === "events"
           ? <EventsTogether user={user} onBack={() => setView("home")} />
           : view === "wisdom"

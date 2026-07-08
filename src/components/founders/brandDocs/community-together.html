@@ -1,0 +1,168 @@
+<!doctype html>
+<html lang="en-GB"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>FemWell — The Together shelf (feature #2, holistic)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500;1,600&family=Ephesis&display=swap" rel="stylesheet">
+<style>
+  :root{--paper:#ECE7DA;--paperHi:#F4EFE3;--paperDeep:#D8CFBC;--ink:#0B0805;--inkSoft:#1A140D;--muted:#2E261B;--gold:#A8893F;--crimson:#BC2E27;--oxblood:#7A1A12;--blush:#E8B4B8;--sage:#8FAF8F;--plum:#8E6E8E;--serif:'Cormorant Garamond',Georgia,serif;--script:'Ephesis',cursive;--sans:ui-sans-serif,system-ui,-apple-system,'Segoe UI',sans-serif;}
+  *{box-sizing:border-box}
+  body{margin:0;background:radial-gradient(120% 80% at 12% 0%,#F4EFE3 0%,rgba(244,239,227,0) 55%),radial-gradient(120% 90% at 100% 100%,#E4DDCC 0%,rgba(228,221,204,0) 50%),var(--paper);color:var(--ink);font-family:var(--serif);font-size:18px;line-height:1.6;-webkit-font-smoothing:antialiased}
+  .doc{max-width:680px;margin:0 auto;padding:30px 22px 90px}
+  h1.cover{font-family:var(--script);font-size:50px;color:var(--crimson);margin:6px 0 2px;line-height:1.04}
+  h2{font-family:var(--serif);font-style:italic;font-weight:600;font-size:27px;margin:0 0 6px;color:var(--oxblood)}
+  h4{font-family:var(--sans);font-size:12px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--gold);margin:16px 0 4px}
+  .eyebrow{font-family:var(--sans);font-size:12px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--gold);margin-bottom:10px}
+  p{margin:0 0 12px}.lede{font-size:20px;line-height:1.55}
+  small,.cap{font-family:var(--sans);font-size:13px;color:var(--muted);line-height:1.5}
+  b,strong{font-weight:600}
+  a{color:var(--crimson);text-decoration:none;border-bottom:1px solid rgba(188,46,39,.3)}
+  .section{background:var(--paperHi);border:1px solid var(--paperDeep);border-left:4px solid var(--gold);border-radius:20px;padding:22px 20px;margin:18px 0;box-shadow:0 4px 20px rgba(58,44,26,.10),0 1px 4px rgba(58,44,26,.06)}
+  .section.crimson{border-left-color:var(--crimson)}.section.sage{border-left-color:var(--sage)}.section.plum{border-left-color:var(--plum)}
+  table{width:100%;border-collapse:collapse;font-size:14px;font-family:var(--sans);margin:8px 0}
+  th,td{text-align:left;padding:7px 8px;border-bottom:1px solid var(--paperDeep);vertical-align:top}
+  th{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--gold)}
+  td b{font-family:var(--serif);font-size:15px}
+  .toc a{display:block;font-family:var(--sans);font-size:15px;color:var(--inkSoft);text-decoration:none;border-bottom:1px solid var(--paperDeep);padding:6px 0}
+  .toc a span{color:var(--gold);font-weight:700;margin-right:10px}
+  .script{font-family:var(--script);color:var(--crimson)}
+  .pill{display:inline-block;font-family:var(--sans);font-size:12px;font-weight:600;padding:5px 11px;border-radius:999px;background:var(--paper);border:1px solid var(--paperDeep);margin:3px 4px 3px 0}
+  .pill.done{background:#EAF1EA;border-color:var(--sage);color:#3f6b3f}
+  .pill.gate{background:#FBE9E6;border-color:var(--crimson);color:var(--crimson)}
+  .pill.next{background:#FBF1E0;border-color:var(--gold);color:#8a6d22}
+  .lens{background:var(--paper);border:1px solid var(--paperDeep);border-left:3px solid var(--gold);border-radius:12px;padding:12px 14px;margin:8px 0}
+  .lens .nm{font-family:var(--serif);font-weight:600;font-size:18px;color:var(--ink);margin-bottom:2px}
+  .lens .nm .ix{font-family:var(--sans);font-size:11px;font-weight:700;letter-spacing:.1em;color:var(--gold);margin-right:8px;text-transform:uppercase}
+  .lens p{margin:0;font-size:15px;line-height:1.5;color:var(--inkSoft)}
+  .lens .src{font-family:var(--sans);font-size:12px;color:var(--muted);margin-top:5px}
+  .num{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:999px;background:var(--crimson);color:#fff;font-family:var(--sans);font-size:12px;font-weight:700;margin-right:8px;vertical-align:1px}
+  .foot{font-family:var(--sans);font-size:12px;color:var(--muted);text-align:center;margin-top:30px;line-height:1.6}
+  ul{margin:4px 0 12px;padding-left:20px}li{margin:3px 0}
+  .wf{border:1px solid var(--paperDeep);border-radius:16px;background:var(--paper);padding:12px;margin:12px 0;font-family:var(--sans)}
+  .wf .lbl{font-size:10.5px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--gold);margin-bottom:8px}
+  .box{border:1px dashed #b9ab8e;border-radius:12px;padding:10px 12px;margin:7px 0;background:var(--paperHi);font-size:13px;color:var(--inkSoft)}
+  .box .t{font-family:var(--serif);font-weight:600;font-size:16px;color:var(--ink)}
+  .row2{display:grid;grid-template-columns:1fr 1fr;gap:7px}
+  .tile{border:1px solid var(--paperDeep);border-radius:10px;padding:8px 9px;background:var(--paperHi);font-size:12px}
+  .tile b{font-family:var(--serif);font-size:14px;display:block;color:var(--ink)}
+</style></head>
+<body><div class="doc">
+
+<div class="center" style="padding:14px 0 4px;text-align:center">
+  <div class="eyebrow">FemWell · Community · FEATURE #2 (holistic) · the TOGETHER shelf · brainstorm + build</div>
+  <h1 class="cover">Things we do together</h1>
+  <p class="lede" style="font-style:italic;max-width:560px;margin:8px auto 0">Events were just the example. <b>Together</b> is the whole shelf — everything women <i>do</i> alongside each other: go out, read, play, take something on, watch, wind down. Built so it feels alive even in a small, anonymous community, and warm rather than a scoreboard. This is the deep brainstorm, the pillars I picked, and what's now built into the redesign demo — grounded in cited research on what actually makes people show up together.</p>
+</div>
+
+<div class="section">
+  <div class="eyebrow">The one-line thesis</div>
+  <p class="lede">Belonging comes from <b>doing the same small thing at the same rhythm</b> — not from another feed. So Together is a set of <b>shared activities</b> (rituals, read-along, challenges, a daily game, watch-along, live circles, events), each <b>async-first</b> (works without a crowd online), each showing a warm <b>"the room did X"</b> aggregate, and <b>never a leaderboard</b>. One hub, one calm front door, nothing that ever reads "0 online."</p>
+</div>
+
+<div class="section sage">
+  <div class="eyebrow">Contents</div>
+  <div class="toc">
+    <a href="#evidence"><span>1</span> The evidence — what makes "together" work (cited)</a>
+    <a href="#pillars"><span>2</span> The strongest set — 7 pillars</a>
+    <a href="#built"><span>3</span> What's BUILT this pass (the hub)</a>
+    <a href="#empty"><span>4</span> Never a ghost town — the structure rule</a>
+    <a href="#realgate"><span>5</span> Real now vs needs sign-off</a>
+  </div>
+</div>
+
+<!-- 1 -->
+<a id="evidence"></a>
+<div class="section">
+  <div class="eyebrow">1 · The evidence (verified sources)</div>
+  <h2>What actually makes women show up together</h2>
+  <div class="lens"><div class="nm"><span class="ix">The engine</span>Synchrony &amp; "collective effervescence"</div><p>The deepest belonging lever is <b>doing the same small thing at the same rhythm</b> — shared synchronous experience produces spontaneous emotional synchrony and "a sense of emotional unity." Bonding tracks <b>shared emotional intensity, not co-presence</b> — which is why a shared ritual bonds even async.</p><div class="src">pmc.ncbi.nlm.nih.gov/PMC7423264 · bpspsychub (BJSP 12723) · Royal Society Open Sci 240048</div></div>
+  <div class="lens"><div class="nm"><span class="ix">The Wordle lesson</span>One shared thing · no scoreboard</div><p>Wordle works because it's <b>one puzzle a day, same for everyone, spoiler-safe to share, and has NO leaderboard</b> — simultaneous yet comparison-free. That's the template: a shared daily/weekly artefact + no ranking = belonging without pressure.</p><div class="src">cnbc.com (Wordle psychology, ABC of needs)</div></div>
+  <div class="lens"><div class="nm"><span class="ix">What kills it</span>Leaderboards &amp; flake-shame</div><p>Competition <b>demotivates the ~80% who know they won't win</b>, and comparison "works" short-term but makes people "quit things that make them feel chronically guilty." So: no public scoreboards, and a <b>streak-freeze</b> so a missed day never surfaces shame.</p><div class="src">commoninja.com · medium/practical-motivation-science · streaksapp.com</div></div>
+  <div class="lens"><div class="nm"><span class="ix">The "I'm in"</span>A gentle commitment device</div><p>A public "I'm in" is an <b>identity claim</b> that's motivating — but for career/identity goals, over-broadcasting backfires, so keep it <b>soft, specific, to the small group</b>, changeable, penalty-free. Written commitments beat verbal.</p><div class="src">finestreak.com/blog/commitment-devices-that-work · nature s41598-024-74878-4 (SDT relatedness)</div></div>
+  <div class="lens"><div class="nm"><span class="ix">Async is fine</span>Small community, no guaranteed crowd</div><p>A small anonymous community can't promise people are online now — so default <b>async-first</b>: a shared artefact (one chapter/prompt/challenge), threads that stay warm for latecomers, and aggregate "we" signals. Live formats become <b>fixed-slot rituals</b> (the parkrun formula — you manufacture simultaneity with a standing appointment).</p><div class="src">bookclubs.com · teleparty.com · p2pu.org · cmgr.live</div></div>
+</div>
+
+<!-- 2 -->
+<a id="pillars"></a>
+<div class="section crimson">
+  <div class="eyebrow">2 · The set I picked</div>
+  <h2>Seven pillars of Together</h2>
+  <table>
+    <tr><th>Pillar</th><th>Why it's in · how it runs</th></tr>
+    <tr><td><b>Weekly rituals</b></td><td>Deepest belonging, lowest build, pure async — the heartbeat. Close-the-week + collective-kindness; everyone answers in their own time, then sees the room's aggregate.</td></tr>
+    <tr><td><b>Read-along</b></td><td>Proven async structure (a thread per chapter-range, spoiler-safe), spans life beyond health. Reuses the book club.</td></tr>
+    <tr><td><b>Together challenges</b></td><td>A collective goal ("the room did X"), no rank, streak-freeze, soft "I'm in". Whole-life: read 20 mins, one creative thing, text a friend, no-spend week.</td></tr>
+    <tr><td><b>Daily game</b></td><td>The Wordle formula — one shared prompt, no leaderboard. Whole-life prompts (style, would-you-rather), never a cycle quiz.</td></tr>
+    <tr><td><b>Watch-along</b></td><td>Gossip/joy/entertainment. An <b>async per-episode reaction thread</b> (+ an optional live slot) — never needs a crowd online. (Not a synced watch-party — too heavy.)</td></tr>
+    <tr><td><b>Live circles</b></td><td>Fixed-slot presence = manufactured simultaneity: co-working/body-doubling, gentle movement, wind-down. Reuses the talk-rooms audio (gated).</td></tr>
+    <tr><td><b>Events / meetups</b></td><td>The 7th pillar — real events women attend together, safe in-person design + ticket links (its own doc: feature #2a).</td></tr>
+  </table>
+  <p class="cap"><b>Whole-life, not clinical:</b> gentle-movement is the <i>only</i> health-tinted pillar; the rest span relationships, career, hobbies, creativity, joy and entertainment.</p>
+</div>
+
+<!-- 3 -->
+<a id="built"></a>
+<div class="section sage">
+  <div class="eyebrow">3 · Shipped this pass</div>
+  <h2>The Together hub, built</h2>
+  <p>In the redesign demo, the <b>Together</b> shelf now opens a real hub (not a menu of empty rooms):</p>
+  <div class="wf">
+    <div class="lbl">Together — the hub</div>
+    <div class="box" style="border-style:solid;border-color:var(--plum)"><b style="color:var(--plum);font-size:11px">THIS WEEK · WATCH-ALONG</b><br><span class="t">We're watching something cosy</span><br><small>[ I'm in ] [ Join the watch chat ] · soft, changeable, "no pressure to keep up"</small></div>
+    <div class="lbl" style="margin-top:6px">Ways to be together</div>
+    <div class="row2"><div class="tile"><b>Go to something</b><small>events & meetups</small></div><div class="tile"><b>Read together</b><small>the book club</small></div><div class="tile"><b>Play together</b><small>Jess's games</small></div><div class="tile"><b>Shared rituals</b><small>kindness + close the week</small></div></div>
+    <div class="box" style="margin-top:6px">Together, right now — the <b>real collective pool</b> ("women here added N small kindnesses this week") + <b>Close the week</b></div>
+  </div>
+  <table>
+    <tr><th>Piece</th><th>What it does · real?</th></tr>
+    <tr><td><b>This week, together</b></td><td>A rotating shared moment (watch-along · read-along · challenge), seeded per week so it's <b>never empty</b>. Soft <b>"I'm in"</b> (device-local, changeable) + <b>join-the-chat</b> deep-link to the real room. <span class="pill done">real</span></td></tr>
+    <tr><td><b>Ways to be together</b></td><td>Four pillar tiles that deep-link to the <b>real</b> surfaces — Events, the book club, the Games room, the shared rituals. <span class="pill done">real</span></td></tr>
+    <tr><td><b>Together, right now</b></td><td>The <b>real collective-pool aggregate</b> ("the room added N kindnesses" — a live shared count via the existing function) + the real Close-the-week ritual, rendered inline. The purest "we did X together" belonging signal. <span class="pill done">real (existing fn)</span></td></tr>
+  </table>
+  <p><span class="pill done">async-first</span><span class="pill done">aggregate "we", no scoreboard</span><span class="pill done">soft "I'm in", no flake-shame</span><span class="pill done">seeded so no pillar shows zero</span><span class="pill done">safety = calm on the surface</span></p>
+</div>
+
+<!-- 4 -->
+<a id="empty"></a>
+<div class="section plum">
+  <div class="eyebrow">4 · The hard rule</div>
+  <h2>Never a ghost town</h2>
+  <p>The research is blunt: <i>"you cannot fix a structural collapse with better marketing… digital mansions too big to clean and too empty to feel cozy."</i> Silence is a <b>structure</b> problem. So Together follows the anti-ghost-town rules:</p>
+  <ul>
+    <li><b>Start tight, not sprawling</b> — a handful of strong pillars, not 30 empty rooms.</li>
+    <li><b>An aggregate front door</b> — "this week, together" + the real pool aggregate greet you, never an empty grid.</li>
+    <li><b>Seed relentlessly</b> — editorial + Jess prompts so <b>no pillar ever shows zero</b>.</li>
+    <li><b>Async warmth as the floor</b> — always-on threads + "we" signals so a 2am visitor still feels the room inhabited.</li>
+    <li><b>Fixed-slot rituals as the heartbeat</b> — a predictable weekly appointment gives a reliable pulse.</li>
+    <li><b>Never show emptiness as a number</b> — no "0 online", no "1 going" — fuzzy warmth only.</li>
+  </ul>
+  <div class="src" style="font-family:var(--sans);font-size:12px;color:var(--muted)">cmgr.live (the Ghost Town Myth) · communityroundtable.com (seeding) · mightynetworks.com (activity feed + welcome checklist) · geneva.com (one home, many modes)</div>
+</div>
+
+<!-- 5 -->
+<a id="realgate"></a>
+<div class="section crimson">
+  <div class="eyebrow">5 · The honest line</div>
+  <h2>Real now vs needs your sign-off</h2>
+  <table>
+    <tr><th>Capability</th><th>Status</th></tr>
+    <tr><td>The Together hub (rotating moment · pillars · aggregate)</td><td><span class="pill done">REAL now</span> reuses real views + the existing collective-pool function</td></tr>
+    <tr><td>Soft "I'm in" (device-local, changeable)</td><td><span class="pill done">REAL now</span></td></tr>
+    <tr><td>Deep-links to Events / book club / Games / rituals</td><td><span class="pill done">REAL now</span></td></tr>
+    <tr><td>Collective-kindness pool + Close the week</td><td><span class="pill done">REAL now</span> existing functions</td></tr>
+    <tr><td><b>Together challenges with a shared streak/goal + "the room did X"</b></td><td><span class="pill next">NEXT</span> a <b>TogetherActivity entity + a light function</b> (collective goal, aggregate result, soft states)</td></tr>
+    <tr><td><b>Read-along threads per chapter-range</b></td><td><span class="pill next">NEXT</span> reuses thread infra; a small entity</td></tr>
+    <tr><td><b>Daily game (cross-device rounds)</b></td><td><span class="pill next">NEXT</span> the game round entity/function already exists — extend to whole-life prompts</td></tr>
+    <tr><td><b>Watch-along per-episode reaction threads</b></td><td><span class="pill next">NEXT</span> entity + thread</td></tr>
+    <tr><td><b>Live circles</b> (co-working / movement / wind-down)</td><td><span class="pill gate">NEEDS SIGN-OFF</span> live audio/video infra (already deferred)</td></tr>
+    <tr><td><b>Synced watch-party (Teleparty-style)</b></td><td><span class="pill gate">DELIBERATELY NOT v1</span> too heavy; the async thread wins</td></tr>
+  </table>
+  <p class="cap">This pass ships the hub + the real aggregate rituals + soft "I'm in" with <b>zero new backend</b>. The next pass would add a single <b>TogetherActivity entity + light function</b> to turn challenges/read-along/watch-along into full shared-streak activities — one sign-off unlocks most of the remaining pillars.</p>
+</div>
+
+<div class="foot">
+  FemWell · Community feature #2 (holistic) · the Together shelf — brainstorm + build · research: workspace/research_together_shelf_2026-07-08.md<br>
+  Built into the Community redesign demo · safety = calm on the surface · live pages untouched · IDEAS pill → Current
+</div>
+
+</div></body></html>

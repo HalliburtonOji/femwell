@@ -1,0 +1,442 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// BloomprintDemo.jsx — PERSONAL FLORA IDENTITY ("your Bloomprint") · founder demo.
+//
+// Each woman has a signature flower + a garden that GROWS with real activity, plus
+// gently EARNED layers (petals · rare blooms · stars · seasons) — collection, never
+// score; additive-only, nothing wilts. It becomes her PRESENCE in Community (an
+// anonymous bloom-avatar that's "hers in the room", reconciled with the botanical-
+// alias system across three disclosure tiers she controls) and lives on her own
+// Profile / Today / Garden. Built ON the existing companion + milestones + chapters.
+//
+// Reads REAL Garden data where available (companion identity, earned milestones,
+// season chapters); falls back to a warm seeded persona so the demo is always full.
+// Seeded + read-only — NO writes. Reachable at /BloomprintDemo (IDEAS pill → Current).
+// ─────────────────────────────────────────────────────────────────────────────
+import React, { useState, useEffect, useMemo } from "react";
+import { T, SERIF, UI, PAPER_BG, Heart } from "@/components/journal/Editorial";
+import { OXBLOOD } from "@/components/brand/SliderKit";
+import {
+  RichBloomV2, cwOf, fingerprintColourway, hashSeed, seededRng,
+  Pollinator, FlowerGlyph, floraKeyframes,
+} from "@/components/brand/flora";
+import { baseCompanion, getCompanion, loadCompanionState } from "@/components/nurture/companion";
+import { MILESTONES, localMilestones } from "@/components/nurture/milestones";
+import { loadGardenChapters, chapterLabel, currentChapterKey, seasonOf, seasonColor } from "@/components/nurture/garden";
+import { base44 } from "@/api/base44Client";
+import {
+  Sparkles, Star, Leaf, Users, Eye, EyeOff, User as UserIcon, Flower2,
+  ChevronLeft, ChevronRight, Feather, HeartHandshake, Bird,
+} from "lucide-react";
+
+const SCRIPT = '"Ephesis","Pinyon Script",cursive';
+
+// growth stages (mirrors the Garden — engagement → stage; rest is a stage, never death)
+const STAGES = [
+  { key: "seed", min: 0, name: "Just planted", open: 0.12 },
+  { key: "sprout", min: 4, name: "Sprouting", open: 0.3 },
+  { key: "budding", min: 12, name: "Budding", open: 0.55 },
+  { key: "blooming", min: 28, name: "Blooming", open: 0.82 },
+  { key: "full", min: 60, name: "In full bloom", open: 1 },
+];
+const stageFor = (n) => { let s = STAGES[0]; for (const st of STAGES) if ((n || 0) >= st.min) s = st; return s; };
+
+// RichBloomV2 renders lush heads; map the companion's 6 forms to a supported lush head
+// (keeps her SPECIES meaning; small/pendant forms read washed-out big, like the hero §6.8).
+const LUSH = { peony: "peony", daisy: "daisy", poppy: "poppy", forget: "forget", foxglove: "cosmos", fern: "camellia" };
+const lushForm = (k) => LUSH[k] || "peony";
+
+// the anonymous botanical alias (verbatim from Community.jsx — derived from an anon hash, no PII)
+const ALIAS_ADJ = ["Wild", "Quiet", "Golden", "Soft", "Bright", "Gentle", "Bold", "Still", "Sunny", "Velvet", "Little", "Brave", "Wandering", "Calm", "Amber", "Silver"];
+const ALIAS_NOUN = ["Poppy", "Fern", "Willow", "Rose", "Sage", "Ivy", "Bluebell", "Daisy", "Heather", "Marigold", "Clover", "Fox", "Wren", "Robin", "Lark", "Thistle", "Meadow", "Hazel", "Juniper", "Primrose"];
+function botanicalAlias(hash) {
+  const s = String(hash || "");
+  if (!s) return "A friend";
+  let h = 2166136261; for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); }
+  h = h >>> 0;
+  return `${ALIAS_ADJ[h % ALIAS_ADJ.length]} ${ALIAS_NOUN[(h >> 5) % ALIAS_NOUN.length]}`;
+}
+const VEIL_FORMS = ["poppy", "daisy", "forget", "cosmos", "camellia", "marigold"];
+const CW_KEYS = ["crimson", "blush", "gold", "sage", "plum", "lavender", "cream", "coral", "sky"];
+
+// ── little reusable chrome ──────────────────────────────────────────────────
+function Eyebrow({ children, color = T.gold }) {
+  return <div style={{ fontFamily: UI, fontSize: 11, fontWeight: 800, letterSpacing: ".16em", textTransform: "uppercase", color, marginBottom: 8 }}>{children}</div>;
+}
+function SectionTitle({ children }) {
+  return <div style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 25, fontWeight: 600, color: OXBLOOD, lineHeight: 1.1 }}>{children}</div>;
+}
+const cardBase = (accent) => ({
+  background: `linear-gradient(165deg, ${T.paperHi} 0%, ${accent}14 100%)`,
+  border: `1px solid ${T.paperDeep}`, borderLeft: `4px solid ${accent}`,
+  borderRadius: 18, padding: "16px 15px",
+  boxShadow: "0 4px 20px rgba(58,44,26,.09), 0 1px 4px rgba(58,44,26,.05)",
+  position: "relative", overflow: "hidden",
+});
+
+// a bloom in a soft disc — the reusable "presence" avatar
+function BloomAvatar({ form, cw, size = 40, rare = false, ring = T.paperDeep }) {
+  const c = cwOf(cw);
+  return (
+    <span style={{ position: "relative", width: size + 12, height: size + 12, borderRadius: "50%", display: "grid", placeItems: "center", flexShrink: 0, background: `radial-gradient(circle, ${c.petal}20 0%, ${c.petal}0C 55%, transparent 72%)`, border: `1px solid ${rare ? T.gold : ring}`, boxShadow: rare ? `0 0 0 1px ${T.gold}66` : "none" }}>
+      <RichBloomV2 form={lushForm(form)} color={c.petal} color2={c.tip} accent={c.accent} size={size} soft={false} headOnly animate={false} openness={0.92} idx={`av-${form}-${cw}-${size}`} />
+    </span>
+  );
+}
+
+export default function BloomprintDemo() {
+  const [userId, setUserId] = useState("demo-bloomprint");
+  const [companion, setCompanion] = useState(() => baseCompanion("demo-bloomprint"));
+  const [earnedKeys, setEarnedKeys] = useState([]);
+  const [chapters, setChapters] = useState([]);
+  const [firstName, setFirstName] = useState("");
+  const [tier, setTier] = useState("veiled");         // veiled · signature · named
+  const [petalPulse, setPetalPulse] = useState(0);    // gentle "leave a line → +1 petal" demo
+  const [ready, setReady] = useState(false);
+
+  // hydrate from REAL garden data where available; keep the seeded persona as the floor
+  useEffect(() => {
+    let alive = true;
+    (async () => {
+      try {
+        const me = await base44.entities.User.me().catch(() => null);
+        const id = me?.id || "demo-bloomprint";
+        if (!alive) return;
+        setUserId(id);
+        setFirstName((me?.full_name || "").trim().split(/\s+/)[0] || "");
+        await loadCompanionState(id).catch(() => {});
+        if (!alive) return;
+        setCompanion(getCompanion(id));
+        const mk = localMilestones(id) || [];
+        setEarnedKeys(mk.length ? mk : ["first_community_act", "journal_50", "season_showing_up"]); // warm demo floor
+        const ch = await loadGardenChapters(id).catch(() => []);
+        if (!alive) return;
+        setChapters(Array.isArray(ch) ? ch.filter(Boolean) : []);
+      } catch { /* fail-open: seeded persona stands */ }
+      finally { if (alive) setReady(true); }
+    })();
+    return () => { alive = false; };
+  }, []);
+
+  // ── her Bloomprint (deterministic identity) ──
+  const cw = useMemo(() => fingerprintColourway(userId), [userId]);          // HER hue (carries meaning)
+  const rng = useMemo(() => seededRng(hashSeed(userId + "::bloomprint")), [userId]);
+  const seasonKey = currentChapterKey();
+  const season = seasonOf(seasonKey);
+
+  // petals: additive-only unit of "showing up". Real activeDays where we have a chapter, else seeded.
+  const curChapter = chapters.find((c) => c.chapter_key === seasonKey);
+  const basePetals = curChapter?.active_days != null ? curChapter.active_days * 3 : 14 + Math.floor(rng() * 26);
+  const petalsSeason = basePetals + petalPulse;
+  const petalsToday = 2 + Math.floor(rng() * 3) + (petalPulse > 0 ? petalPulse : 0);
+  const stage = stageFor(petalsSeason);
+  const nextStage = STAGES[Math.min(STAGES.length - 1, STAGES.indexOf(stage) + 1)];
+  const toNext = Math.max(0, nextStage.min - petalsSeason);
+
+  // rare blooms (earned milestones = collectibles) + the ones still to grow
+  const earned = MILESTONES.filter((m) => earnedKeys.includes(m.key));
+  const toGrow = MILESTONES.filter((m) => !earnedKeys.includes(m.key)).slice(0, 3);
+
+  // stars — reserved for rare luminous moments (a return · a kindness · a season kept)
+  const stars = [
+    { label: "You came back", line: "A star for returning after a quiet stretch — that's the omen, really.", lit: true },
+    { label: "A kindness held", line: "Someone held your words in the rooms. A star lit itself.", lit: earnedKeys.includes("first_community_act") },
+    { label: "A season kept", line: "Thirty days across the months, come back to yourself.", lit: earnedKeys.includes("season_showing_up") },
+    { label: "A year, grown", line: "Still to come — a year of small attentions.", lit: earnedKeys.includes("year_on_femwell") },
+  ];
+
+  // seasons — real chapters where present, else 4 seeded snapshots
+  const seasonChips = (chapters.length ? chapters.slice(0, 6) : [
+    { chapter_key: "2026-04", form_key: companion.form.key, season: "spring", active_days: 9 },
+    { chapter_key: "2026-05", form_key: "forget", season: "spring", active_days: 14 },
+    { chapter_key: "2026-06", form_key: "daisy", season: "summer", active_days: 21 },
+    { chapter_key: seasonKey, form_key: companion.form.key, season, active_days: Math.round(petalsSeason / 3) },
+  ]);
+
+  const alias = botanicalAlias(userId + "::community");   // her room-persona name
+  // veiled avatar seeded from the ANON hash (uncorrelated with her real identity)
+  const veilSeed = hashSeed(userId + "::community");
+  const veilForm = VEIL_FORMS[veilSeed % VEIL_FORMS.length];
+  const veilCw = CW_KEYS[(veilSeed >>> 4) % CW_KEYS.length];
+
+  const bloomName = companion.name || `${cw.label} ${companion.form.name}`;
+
+  return (
+    <div style={{ ...PAPER_BG, minHeight: "100vh", paddingBottom: 64 }} className="fwc-anim">
+      <style>{floraKeyframes}{`@keyframes bpFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}`}</style>
+
+      {/* top bar */}
+      <div style={{ maxWidth: 440, margin: "0 auto", padding: "14px 16px 0", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+        <a href="/Ideas" style={{ display: "inline-flex", alignItems: "center", gap: 5, fontFamily: UI, fontSize: 12.5, fontWeight: 700, color: T.muted, textDecoration: "none" }}><ChevronLeft size={15} /> Ideas</a>
+        <span style={{ fontFamily: UI, fontSize: 10.5, fontWeight: 800, letterSpacing: ".14em", textTransform: "uppercase", color: T.gold }}>Founder demo · Identity</span>
+      </div>
+
+      <div style={{ maxWidth: 440, margin: "0 auto", padding: "8px 16px 0" }}>
+
+        {/* ── HERO — her signature bloom ─────────────────────────────────── */}
+        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", textAlign: "center", marginTop: 6 }}>
+          <div style={{ position: "relative", width: 230, height: 220, display: "grid", placeItems: "center" }}>
+            <div aria-hidden style={{ position: "absolute", width: 200, height: 190, borderRadius: "50%", background: `radial-gradient(circle, ${cw.petal}22 0%, ${T.sage}12 48%, transparent 72%)`, animation: "fwcGlow 7s ease-in-out infinite" }} />
+            <div style={{ animation: "bpFloat 6s ease-in-out infinite" }}>
+              <RichBloomV2 form={lushForm(companion.form.key)} color={cw.petal} color2={cw.tip} accent={cw.accent} size={188} soft={false} openness={stage.open} animate idx="bp-hero" />
+            </div>
+            <div style={{ position: "absolute", right: 26, top: 22 }}>
+              <Pollinator kind="butterfly" size={34} color="#8E6E8E" color2={T.gold} pattern="bands" animate idx="bp-cr" />
+            </div>
+          </div>
+          <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 2 }}>
+            <Heart size={15} />
+            <span style={{ fontFamily: SCRIPT, fontSize: 42, lineHeight: 1.02, color: OXBLOOD }}>{bloomName}</span>
+          </div>
+          <div style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 16.5, color: T.muted, marginTop: 6, maxWidth: 330, lineHeight: 1.5 }}>
+            Your signature bloom — {cw.label.toLowerCase()} for <b style={{ color: cw.accent, fontStyle: "normal" }}>{cw.meaning}</b>. Grown from how you show up, not what you finish.
+          </div>
+          <div style={{ display: "inline-flex", alignItems: "center", gap: 7, marginTop: 11, background: `${cw.petal}18`, border: `1px solid ${cw.petal}44`, borderRadius: 999, padding: "6px 13px" }}>
+            <Sparkles size={13} color={cw.accent} />
+            <span style={{ fontFamily: UI, fontSize: 12.5, fontWeight: 700, color: T.ink }}>{stage.name}{firstName ? ` · ${firstName}'s` : ""}</span>
+          </div>
+        </div>
+
+        {/* identity facts */}
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 9, marginTop: 20 }}>
+          {[
+            { Icon: Flower2, k: "Flower", v: companion.form.name, s: "your species — stays yours" },
+            { Icon: Sparkles, k: "Colour", v: cw.label, s: cw.meaning },
+            { Icon: Leaf, k: "Stage", v: stage.name, s: `${toNext > 0 ? `${toNext} petals to ${nextStage.name.toLowerCase()}` : "fully open"}` },
+            { Icon: Star, k: "Season", v: chapterLabel(seasonKey), s: `${season} · a season kept` },
+          ].map((f) => (
+            <div key={f.k} style={cardBase(cw.petal)}>
+              <div style={{ display: "flex", alignItems: "center", gap: 7, marginBottom: 5 }}>
+                <span style={{ width: 24, height: 24, borderRadius: 7, background: `${cw.petal}1F`, display: "grid", placeItems: "center" }}><f.Icon size={13} color={cw.petal} /></span>
+                <span style={{ fontFamily: UI, fontSize: 10.5, fontWeight: 800, letterSpacing: ".08em", textTransform: "uppercase", color: cw.petal }}>{f.k}</span>
+              </div>
+              <div style={{ fontFamily: SERIF, fontSize: 17, fontWeight: 600, color: T.ink, lineHeight: 1.15 }}>{f.v}</div>
+              <div style={{ fontFamily: UI, fontSize: 11.5, color: T.muted, marginTop: 2 }}>{f.s}</div>
+            </div>
+          ))}
+        </div>
+
+        {/* ── EARNED LAYERS ──────────────────────────────────────────────── */}
+        <div style={{ marginTop: 28 }}>
+          <Eyebrow>What she grows</Eyebrow>
+          <SectionTitle>Gently earned, never spent</SectionTitle>
+          <p style={{ fontFamily: SERIF, fontSize: 14.5, color: T.inkSoft, lineHeight: 1.5, margin: "8px 2px 0" }}>
+            Four soft layers, all collection and never score. Everything here only ever gathers — nothing wilts, breaks, or can be lost.
+          </p>
+
+          {/* PETALS */}
+          <div style={{ ...cardBase(cw.petal), marginTop: 14 }}>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+              <div>
+                <div style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 20, fontWeight: 600, color: OXBLOOD }}>Petals</div>
+                <div style={{ fontFamily: UI, fontSize: 12, color: T.muted }}>the everyday unit of showing up</div>
+              </div>
+              <div style={{ textAlign: "right" }}>
+                <div style={{ fontFamily: SERIF, fontSize: 26, fontWeight: 700, color: cw.petal, lineHeight: 1 }}>{petalsSeason}</div>
+                <div style={{ fontFamily: UI, fontSize: 10.5, color: T.muted }}>this season</div>
+              </div>
+            </div>
+            {/* petal dots — additive fill toward the next stage */}
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 4, marginTop: 12 }}>
+              {Array.from({ length: Math.max(petalsSeason, nextStage.min) }).slice(0, 60).map((_, i) => (
+                <span key={i} style={{ width: 9, height: 12, borderRadius: "50% 50% 50% 50% / 60% 60% 40% 40%", background: i < petalsSeason ? cw.petal : "transparent", border: `1px solid ${i < petalsSeason ? cw.petal : T.paperDeep}`, opacity: i < petalsSeason ? 0.85 : 0.5, transform: `rotate(${(i % 5 - 2) * 8}deg)` }} />
+              ))}
+            </div>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: 12, gap: 10 }}>
+              <span style={{ fontFamily: SERIF, fontSize: 13.5, color: T.inkSoft, lineHeight: 1.35 }}>
+                <b style={{ color: cw.petal }}>+{petalsToday} today.</b> A line written, a check-in, a meal, a kind reply — each settles a petal.
+              </span>
+              <button onClick={() => setPetalPulse((p) => p + 1)} style={{ flexShrink: 0, display: "inline-flex", alignItems: "center", gap: 6, background: cw.petal, color: "#fff", border: "none", borderRadius: 999, padding: "9px 13px", fontFamily: UI, fontSize: 12.5, fontWeight: 700, cursor: "pointer" }}>
+                <Feather size={13} /> Leave a line
+              </button>
+            </div>
+          </div>
+
+          {/* RARE BLOOMS */}
+          <div style={{ ...cardBase(T.gold), marginTop: 12 }}>
+            <div style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 20, fontWeight: 600, color: OXBLOOD }}>Rare blooms</div>
+            <div style={{ fontFamily: UI, fontSize: 12, color: T.muted, marginBottom: 12 }}>earned through living — a shelf that's only yours</div>
+            <div style={{ display: "flex", gap: 14, overflowX: "auto", paddingBottom: 4, scrollbarWidth: "none" }}>
+              {earned.map((m) => (
+                <div key={m.key} style={{ flex: "0 0 auto", width: 92, textAlign: "center" }}>
+                  <BloomAvatar form={m.form} cw="gold" size={54} rare />
+                  <div style={{ fontFamily: SERIF, fontSize: 12.5, fontWeight: 600, color: T.ink, marginTop: 6, lineHeight: 1.2 }}>{m.title}</div>
+                </div>
+              ))}
+              {toGrow.map((m) => (
+                <div key={m.key} style={{ flex: "0 0 auto", width: 92, textAlign: "center", opacity: 0.42 }}>
+                  <span style={{ display: "grid", placeItems: "center", width: 66, height: 66, margin: "0 auto", borderRadius: "50%", border: `1px dashed ${T.paperDeep}` }}><Leaf size={22} color={T.muted} /></span>
+                  <div style={{ fontFamily: SERIF, fontSize: 12, fontStyle: "italic", color: T.muted, marginTop: 6, lineHeight: 1.2 }}>still to grow</div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* STARS */}
+          <div style={{ ...cardBase("#8E6E8E"), marginTop: 12, background: `linear-gradient(165deg, #2E261B 0%, #3B3145 100%)`, borderColor: "#4A3F55" }}>
+            <div style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 20, fontWeight: 600, color: "#F4EFE3" }}>Stars</div>
+            <div style={{ fontFamily: UI, fontSize: 12, color: "#C9BEDA", marginBottom: 12 }}>the rare, luminous moments — a return, a kindness, a season</div>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 9 }}>
+              {stars.map((s) => (
+                <div key={s.label} style={{ display: "flex", gap: 9, alignItems: "flex-start", opacity: s.lit ? 1 : 0.4 }}>
+                  <Star size={16} color={s.lit ? T.gold : "#8A7F99"} fill={s.lit ? T.gold : "none"} style={{ flexShrink: 0, marginTop: 1 }} />
+                  <div>
+                    <div style={{ fontFamily: UI, fontSize: 12.5, fontWeight: 700, color: "#F4EFE3" }}>{s.label}</div>
+                    <div style={{ fontFamily: SERIF, fontSize: 12, color: "#D4CBE0", lineHeight: 1.35 }}>{s.line}</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* SEASONS */}
+          <div style={{ ...cardBase(T.sage), marginTop: 12 }}>
+            <div style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 20, fontWeight: 600, color: OXBLOOD }}>Seasons</div>
+            <div style={{ fontFamily: UI, fontSize: 12, color: T.muted, marginBottom: 12 }}>your months, each a bloom — a resting season still counts</div>
+            <div style={{ display: "flex", gap: 12, overflowX: "auto", paddingBottom: 4, scrollbarWidth: "none" }}>
+              {seasonChips.map((c) => (
+                <div key={c.chapter_key} style={{ flex: "0 0 auto", width: 78, textAlign: "center" }}>
+                  <BloomAvatar form={c.form_key} cw={CW_KEYS[hashSeed(c.chapter_key) % CW_KEYS.length]} size={44} ring={seasonColor(c.season)} />
+                  <div style={{ fontFamily: SERIF, fontSize: 12, fontWeight: 600, color: T.ink, marginTop: 5, lineHeight: 1.15 }}>{chapterLabel(c.chapter_key)}</div>
+                  <div style={{ fontFamily: UI, fontSize: 10.5, color: T.muted }}>{c.active_days} {c.active_days === 1 ? "day" : "days"}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* ── IN COMMUNITY ───────────────────────────────────────────────── */}
+        <div style={{ marginTop: 30 }}>
+          <Eyebrow color={T.crimson}>Where she's seen</Eyebrow>
+          <SectionTitle>Unique in the rooms — as much or as little as she wants</SectionTitle>
+          <p style={{ fontFamily: SERIF, fontSize: 14.5, color: T.inkSoft, lineHeight: 1.5, margin: "8px 2px 0" }}>
+            Her flower becomes her <b>presence</b> when she posts — so she feels like <i>someone</i>, not a grey blank. Three tiers, and she chooses per room. Anonymous stays anonymous; personal only where she asks for it.
+          </p>
+
+          {/* tier switch */}
+          <div style={{ display: "flex", gap: 7, marginTop: 14 }}>
+            {[
+              { k: "veiled", label: "Veiled", Icon: EyeOff },
+              { k: "signature", label: "My flower", Icon: Flower2 },
+              { k: "named", label: "Named", Icon: UserIcon },
+            ].map((t) => {
+              const on = tier === t.k;
+              return (
+                <button key={t.k} onClick={() => setTier(t.k)} style={{ flex: 1, display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 6, padding: "9px 6px", borderRadius: 12, cursor: "pointer", background: on ? `${cw.petal}1A` : T.paperHi, border: `1px solid ${on ? cw.petal : T.paperDeep}`, boxShadow: on ? `0 0 0 1px ${cw.petal}` : "none", fontFamily: UI, fontSize: 12, fontWeight: 700, color: on ? cw.petal : T.muted }}>
+                  <t.Icon size={13} /> {t.label}
+                </button>
+              );
+            })}
+          </div>
+
+          {/* mock post card */}
+          {(() => {
+            const isVeiled = tier === "veiled";
+            const avForm = isVeiled ? veilForm : companion.form.key;
+            const avCw = isVeiled ? veilCw : cw.key;
+            const nameLine = tier === "named" ? (firstName || "Rosewater") : alias;
+            const sub = tier === "veiled" ? "anonymous — a bloom seeded just for the rooms" : tier === "signature" ? "your real signature flower · still no name" : "your chosen name · shown only where you allow it";
+            return (
+              <div style={{ ...cardBase(T.crimson), marginTop: 12 }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 11, marginBottom: 11 }}>
+                  <BloomAvatar form={avForm} cw={avCw} size={40} />
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontFamily: UI, fontSize: 13.5, fontWeight: 800, color: T.ink }}>{nameLine}</div>
+                    <div style={{ fontFamily: UI, fontSize: 11, color: T.muted }}>{sub}</div>
+                  </div>
+                  <span style={{ fontFamily: UI, fontSize: 10, fontWeight: 700, letterSpacing: ".06em", textTransform: "uppercase", color: T.muted }}>Friendship</span>
+                </div>
+                <div style={{ fontFamily: SERIF, fontSize: 15, color: T.ink, lineHeight: 1.5 }}>
+                  Made a new friend at 34 and I feel oddly nervous, like it's a first date. Anyone else find friendship harder to start than it used to be?
+                </div>
+                <div style={{ display: "flex", gap: 8, marginTop: 12 }}>
+                  {["held", "me too", "hear you"].map((r) => (
+                    <span key={r} style={{ fontFamily: UI, fontSize: 11.5, fontWeight: 700, color: T.muted, background: T.paper, border: `1px solid ${T.paperDeep}`, borderRadius: 999, padding: "5px 11px" }}>{r}</span>
+                  ))}
+                  <span style={{ marginLeft: "auto", display: "inline-flex", alignItems: "center", gap: 5, fontFamily: UI, fontSize: 11.5, fontWeight: 700, color: T.gold }}><Star size={12} fill={T.gold} color={T.gold} /> a kindness</span>
+                </div>
+              </div>
+            );
+          })()}
+
+          {/* reconciliation note */}
+          <div style={{ display: "flex", gap: 10, marginTop: 12, padding: "13px 14px", background: `${T.sage}12`, border: `1px solid ${T.sage}44`, borderRadius: 14 }}>
+            <Eye size={17} color={T.sage} style={{ flexShrink: 0, marginTop: 1 }} />
+            <div style={{ fontFamily: SERIF, fontSize: 13, color: T.inkSoft, lineHeight: 1.45 }}>
+              <b style={{ color: T.sage }}>How it stays safe.</b> The veiled bloom is seeded from your <i>anonymous room-token</i>, not your account — so it's consistent across your thread but can't be traced back to you or your real garden. It never shows your growth or activity. The keeper of anonymity is the Talk-rooms system; this only decides the face.
+            </div>
+          </div>
+
+          {/* cross-pollination — the research gem */}
+          <div style={{ ...cardBase(T.gold), marginTop: 12 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
+              <Bird size={16} color={T.gold} />
+              <span style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 18, fontWeight: 600, color: OXBLOOD }}>Cross-pollination</span>
+              <span style={{ fontFamily: UI, fontSize: 9.5, fontWeight: 800, letterSpacing: ".1em", color: T.gold, border: `1px solid ${T.gold}`, borderRadius: 6, padding: "2px 6px" }}>NEXT</span>
+            </div>
+            <div style={{ fontFamily: SERIF, fontSize: 13.5, color: T.inkSoft, lineHeight: 1.45 }}>
+              When someone holds your words, a bee carries a little of their colour back to your garden — an anonymous flower planted by a stranger's kindness. You feel connected, nobody's exposed.
+            </div>
+          </div>
+        </div>
+
+        {/* ── ON HER OWN PAGES ───────────────────────────────────────────── */}
+        <div style={{ marginTop: 30 }}>
+          <Eyebrow color={T.plum}>Where she lives with it</Eyebrow>
+          <SectionTitle>On your own pages, it's fully yours</SectionTitle>
+
+          {/* profile avatar preview */}
+          <div style={{ ...cardBase(cw.petal), marginTop: 14, display: "flex", alignItems: "center", gap: 14 }}>
+            <BloomAvatar form={companion.form.key} cw={cw.key} size={58} />
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ fontFamily: UI, fontSize: 10, fontWeight: 800, letterSpacing: ".12em", textTransform: "uppercase", color: T.muted }}>Profile</div>
+              <div style={{ fontFamily: SERIF, fontSize: 19, fontWeight: 700, color: OXBLOOD, lineHeight: 1.1 }}>{firstName || "Your name"}</div>
+              <div style={{ fontFamily: SERIF, fontSize: 13, fontStyle: "italic", color: T.muted }}>{cw.label} {companion.form.name} · {stage.name.toLowerCase()}</div>
+            </div>
+          </div>
+
+          {/* today card preview */}
+          <div style={{ ...cardBase(T.sage), marginTop: 12 }}>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
+              <span style={{ fontFamily: UI, fontSize: 10, fontWeight: 800, letterSpacing: ".12em", textTransform: "uppercase", color: T.muted }}>Today · your garden</span>
+              <span style={{ display: "inline-flex", alignItems: "center", gap: 2, fontFamily: UI, fontSize: 11, fontWeight: 700, color: T.muted }}>Tend <ChevronRight size={13} /></span>
+            </div>
+            <div style={{ display: "flex", alignItems: "center", gap: 13 }}>
+              <BloomAvatar form={companion.form.key} cw={cw.key} size={48} />
+              <div style={{ fontFamily: SERIF, fontSize: 14.5, color: T.ink, lineHeight: 1.45 }}>
+                <b style={{ color: cw.petal }}>+{petalsToday} petals today.</b> {stage.name}. {toNext > 0 ? `${toNext} more and she opens a little further.` : "Fully open — and still growing seasons."}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* ── THE KIND-GROWTH CONTRACT ───────────────────────────────────── */}
+        <div style={{ marginTop: 30, ...cardBase(T.gold) }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10 }}>
+            <HeartHandshake size={18} color={T.gold} />
+            <span style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 20, fontWeight: 600, color: OXBLOOD }}>The kind-growth promise</span>
+          </div>
+          {[
+            "Additive only — nothing wilts, breaks, or can be lost.",
+            "Grown from showing up and reflecting, never from output or counts.",
+            "A gap is a resting season, met with a welcome — never guilt.",
+            "Every petal, bloom and star means something — no points for points.",
+            "No leaderboards, no public tallies, no comparison. Just your garden.",
+          ].map((r, i) => (
+            <div key={i} style={{ display: "flex", gap: 9, alignItems: "flex-start", marginTop: i ? 8 : 0 }}>
+              <FlowerGlyph variant="daisy" size={15} color={T.gold} color2={T.sage} idx={`kg-${i}`} />
+              <span style={{ fontFamily: SERIF, fontSize: 13.5, color: T.inkSoft, lineHeight: 1.4 }}>{r}</span>
+            </div>
+          ))}
+        </div>
+
+        {/* closing */}
+        <div style={{ display: "grid", placeItems: "center", margin: "26px 0 0" }}>
+          <Pollinator kind="bee" size={30} color={T.gold} color2={cw.tip} pattern="bands" animate idx="bp-close" />
+          <p style={{ textAlign: "center", fontFamily: SERIF, fontStyle: "italic", fontSize: 15, color: T.muted, margin: "8px auto 0", maxWidth: 300, lineHeight: 1.55 }}>
+            One garden, grown at your own pace — recognisably, unmistakably yours.
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+}

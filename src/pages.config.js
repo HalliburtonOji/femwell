@@ -151,6 +151,11 @@ import TodayOption2 from './pages/TodayOption2';
 // Clipboard Stack Slider — slide LEFT to reveal the ritual builder (4 ritual cards + quick-popups +
 // garden growth). PREVIEW route only, reached via FoundersOS → Previews. Live Today untouched.
 import TodayRitualDemo from './pages/TodayRitualDemo';
+// BLOOMPRINT — the PERSONAL FLORA IDENTITY demo: each woman's signature bloom + garden that grows
+// from real activity, gently-earned petals/rare-blooms/stars/seasons, her anonymous-but-unique
+// presence in Community (3 disclosure tiers), and her Profile/Today avatar. Reads real Garden data
+// (companion + milestones + chapters) with a seeded fallback. Preview route; live pages untouched.
+import BloomprintDemo from './pages/BloomprintDemo';
 // Garden + Jess redesign DEMOS (v4 bible: flora-hero + summary + living-ecosystem clipboard /
 // on-brand chat shell; every existing feature preserved). Preview routes; live pages untouched.
 import GardenClipboardDemo from './pages/GardenClipboardDemo';
@@ -363,6 +368,7 @@ export const PAGES = {
     "TodayDemo6": TodayDemo6,
     "TodayOption2": TodayOption2,
     "TodayRitualDemo": TodayRitualDemo,
+    "BloomprintDemo": BloomprintDemo,
     "GardenClipboardDemo": GardenClipboardDemo,
     "JessClipboardDemo": JessClipboardDemo,
     "NutritionL2Demo": NutritionL2Demo,

@@ -220,3 +220,22 @@ Wiring (3 edits):
 - import: `import communityEventsHtml from "@/components/founders/brandDocs/community-events.html?raw";`
 - CATALOG entry: `{ kind:"doc", key:"Events Together", group: CAT.CURRENT, sub:"Page level-up plans + demos", status:"new", accent:"crimson", title:"Together / Events — robust & safe (feature #2)", desc:"Feature #2 of 6. Real events women attend TOGETHER, built into the Community demo (Together→Events). Browse/discover real EventsItems · ticket link-out + meet-safe interstitial · 'I'm going' (device-local, PRIVATE) · Save · bring-a-friend · report · verified/organiser trust · a numbered SAFETY MODEL (venue-level only, going private, public venues, tell-a-friend, no in-app payment). Cited research (Bumble/Meetup/Peanut/GGI, OSA 2023). GATED: who's-going + go-together PODS (new entity+fn), get-home-safe check-in, host verification, live feeds (Ticketmaster+Skiddle — Eventbrite/Meetup APIs closed). Real-now vs sign-off table inside." }`
 - render branch: `{tab === "Events Together" && <BrandDocFrame html={communityEventsHtml} title="FemWell — Together / Events: robust & safe" />}`
+
+---
+## ⭐ TO WIRE — COMMUNITY: SAFETY PRINCIPLE + holistic TOGETHER shelf (2026-07-08) → Ideas → Current
+> Two Halli corrections applied. **(A) SAFETY too in-your-face → reworked to "calm on the surface"** (proportionate, woven-in): backend moderation silent, report/hide tucked into a "…" menu, crisis contextual-only, disclaimers removed from the wall → one quiet Support corner. Retrofitted the Talk rooms + Events; set as the Community-wide principle every feature inherits. **(B) TOGETHER is holistic, not just events** — the whole "what you do together" shelf (rituals · read-along · challenges · daily game · watch-along · live circles · events). Built a real Together HUB in the demo. Both live in the redesign demo (`/CommunityRedesignDemo` → Together). Please wire BOTH docs (3 edits each).
+
+| Doc (femwell-handoff/) | brandDocs slug | FoundersOS key | group | accent |
+|---|---|---|---|---|
+| COMMUNITY-SAFETY-PRINCIPLE.html | community-safety-principle.html | "Safety Principle" | Current | sage |
+| COMMUNITY-TOGETHER.html | community-together.html | "Together Shelf" | Current | crimson |
+
+Safety Principle (3 edits):
+- import: `import communitySafetyHtml from "@/components/founders/brandDocs/community-safety-principle.html?raw";`
+- CATALOG entry: `{ kind:"doc", key:"Safety Principle", group: CAT.CURRENT, sub:"Page level-up plans + demos", status:"new", accent:"sage", title:"Community safety — calm on the surface", desc:"Halli: safety was too in-your-face (helpline on every post, disclaimers everywhere). New Community-wide principle: safe by design, calm on the surface — backend moderation silent, report/hide tucked into a '…' menu, crisis help contextual-only + one quiet Support corner, no disclaimer walls, meet-safe reminders in-context. Protection unchanged (moderation/crisis/report/k-anon/18+/in-person safety); only surface noise removed. Retrofitted to Talk + Events; every future feature inherits it." }`
+- render branch: `{tab === "Safety Principle" && <BrandDocFrame html={communitySafetyHtml} title="FemWell — Community safety: calm on the surface" />}`
+
+Together Shelf (3 edits):
+- import: `import communityTogetherHtml from "@/components/founders/brandDocs/community-together.html?raw";`
+- CATALOG entry: `{ kind:"doc", key:"Together Shelf", group: CAT.CURRENT, sub:"Page level-up plans + demos", status:"new", accent:"crimson", title:"The Together shelf — things we do together (feature #2, holistic)", desc:"Events was just one example — Together is the whole shelf: everything women DO together. Cited research (synchrony/collective-effervescence, the Wordle no-leaderboard lesson, anti-ghost-town structure). 7 pillars: weekly rituals · read-along · together challenges · daily game · watch-along · live circles · events. BUILT this pass: a real Together HUB (rotating 'this week together' shared moment w/ soft 'I'm in' + join-the-chat · pillar tiles deep-linking real surfaces · the REAL collective-pool aggregate + close-the-week inline). Async-first, aggregate 'we' not scoreboards, seeded so nothing shows zero. Next: a TogetherActivity entity+fn unlocks full challenges/read-along/watch-along; live circles = sign-off." }`
+- render branch: `{tab === "Together Shelf" && <BrandDocFrame html={communityTogetherHtml} title="FemWell — the Together shelf: things we do together" />}`
