@@ -58,9 +58,11 @@ function branch(pts, wBase, wTip, { grad = "bk3", knots = [], per = 22, grain = 
   const under = "M" + C.map((p, i) => { const t = i / (n - 1); const a = C[Math.max(0, i - 1)], b = C[Math.min(n - 1, i + 1)]; let dx = b[0] - a[0], dy = b[1] - a[1]; const L = Math.hypot(dx, dy) || 1; let w = (wBase + (wTip - wBase) * Math.pow(t, 0.85)) / 2; return (p[0] - (-dy / L) * w * 0.34).toFixed(1) + " " + (p[1] - (dx / L) * w * 0.34).toFixed(1); }).join(" L ");
   let grainP = "";
   if (grain) grainP = `<path d="${"M" + C.filter((_, i) => i % 2 === 0).map(fmt).join(" L ")}" fill="none" stroke="#4E3D2A" stroke-width="0.5" stroke-opacity="0.25"/>`;
+  // lit bark highlight along the upper edge (the light-catching side)
+  const hi = `<path d="${"M" + right.map(fmt).join(" L ")}" fill="none" stroke="#C9B084" stroke-width="0.9" stroke-opacity="0.5" stroke-linecap="round"/>`;
   return `<path d="${outline}" fill="url(#${grad})" stroke="#4E3D2A" stroke-width="0.5" stroke-opacity="0.4"/>`
     + `<path d="${under} L ${right.slice().reverse().map(fmt).join(" L ")} Z" fill="#4E3D2A" fill-opacity="0.16"/>`
-    + grainP;
+    + grainP + hi;
 }
 // a small twig knot (where a side branch or leaf springs)
 function knot(x, y, r = 2.4) { return `<ellipse cx="${x}" cy="${y}" rx="${r}" ry="${r * 0.8}" fill="#6E5A40" opacity="0.5"/>`; }
