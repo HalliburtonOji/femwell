@@ -210,6 +210,11 @@ export default function MonthlyCalendarCard({ userId, profile, onDayPress, refre
               animate="center"
               exit="exit"
               transition={{ type: "spring", stiffness: 300, damping: 30 }}
+              drag="x"
+              dragConstraints={{ left: 0, right: 0 }}
+              dragElastic={0.16}
+              onDragEnd={(e, info) => { if (info.offset.x < -55) goNext(); else if (info.offset.x > 55) goPrev(); }}
+              style={{ touchAction: "pan-y", cursor: "grab" }}
             >
               <MonthView
                 month={currentMonth}

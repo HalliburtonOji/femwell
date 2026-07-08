@@ -127,13 +127,15 @@ export function VSeg({ children, accent = T.gold }) {
   );
 }
 
-// fixed top-left Jump-to + top-right Calendar chrome pills (every page)
-export function TopChrome({ onJump, onCalendar }) {
+// fixed top-left Jump-to pill (every page). GO-LIVE 2026-07: the per-page top-RIGHT
+// "Calendar" pill is RETIRED — the persistent global calendar icon (Layout, top-right)
+// is now the single calendar entry, so this used to sit UNDER it. `onCalendar` is
+// accepted-but-ignored so existing callers don't break.
+export function TopChrome({ onJump }) {
   const base = { position: "fixed", top: "calc(env(safe-area-inset-top,0px) + 10px)", zIndex: 45, display: "inline-flex", alignItems: "center", gap: 6, padding: "7px 13px", borderRadius: 999, border: `1px solid ${T.paperDeep}`, background: T.paperHi, fontFamily: UI, fontSize: 12, fontWeight: 700, color: T.inkSoft, boxShadow: "0 2px 12px rgba(58,44,26,0.18)", cursor: "pointer" };
   return (
     <>
       <button onClick={onJump} aria-label="Jump to an area" style={{ ...base, left: 12 }}><Grid2x2 size={13} style={{ color: T.gold }} /> Jump to</button>
-      {onCalendar && <button onClick={onCalendar} aria-label="Open calendar" style={{ ...base, right: 12 }}><CalendarRange size={13} style={{ color: T.gold }} /> Calendar</button>}
     </>
   );
 }

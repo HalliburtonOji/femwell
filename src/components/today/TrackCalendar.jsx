@@ -5,7 +5,7 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
 const DOT_TYPE_COLORS = {
-  cycle:   "var(--rose-dust)",
+  cycle:   "#BC2E27",
   symptom: "#E8B84B",
   habit:   "var(--sage)",
   med:     "#9B7FCC",
@@ -97,24 +97,24 @@ export default function TrackCalendar({ user, profile, onSelectDate, selectedDat
   const isAtCurrentMonth = viewYear === now.getFullYear() && viewMonth === now.getMonth();
 
   return (
-    <div style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border)", borderRadius: 20, padding: 16, marginBottom: 16, boxShadow: "var(--shadow-sm)" }}>
+    <div style={{ background: "linear-gradient(165deg, #F4EFE3 0%, rgba(122,26,18,0.06) 100%)", border: "1px solid #D8CFBC", borderLeft: "4px solid #7A1A12", borderRadius: 20, padding: 16, marginBottom: 16, boxShadow: "0 4px 20px rgba(58,44,26,0.12), 0 1px 4px rgba(58,44,26,0.08)" }}>
       {/* Month nav */}
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
         <button
           onClick={prevMonth}
-          style={{ width: 32, height: 32, borderRadius: 9999, backgroundColor: "var(--ivory-dark)", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}
+          style={{ width: 32, height: 32, borderRadius: 9999, backgroundColor: "#F4EFE3", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}
         >
-          <ChevronLeft style={{ width: 16, height: 16, color: "var(--plum)" }} />
+          <ChevronLeft style={{ width: 16, height: 16, color: "#7A1A12" }} />
         </button>
-        <p style={{ fontSize: 16, fontWeight: 600, color: "var(--plum)", }}>
+        <p style={{ fontSize: 16, fontWeight: 600, color: "#7A1A12", }}>
           {format(currentMonthDate, "MMMM yyyy")}
         </p>
         <button
           onClick={nextMonth}
           disabled={isAtCurrentMonth}
-          style={{ width: 32, height: 32, borderRadius: 9999, backgroundColor: "var(--ivory-dark)", border: "none", cursor: isAtCurrentMonth ? "not-allowed" : "pointer", display: "flex", alignItems: "center", justifyContent: "center", opacity: isAtCurrentMonth ? 0.3 : 1 }}
+          style={{ width: 32, height: 32, borderRadius: 9999, backgroundColor: "#F4EFE3", border: "none", cursor: isAtCurrentMonth ? "not-allowed" : "pointer", display: "flex", alignItems: "center", justifyContent: "center", opacity: isAtCurrentMonth ? 0.3 : 1 }}
         >
-          <ChevronRight style={{ width: 16, height: 16, color: "var(--plum)" }} />
+          <ChevronRight style={{ width: 16, height: 16, color: "#7A1A12" }} />
         </button>
       </div>
 
@@ -153,7 +153,7 @@ export default function TrackCalendar({ user, profile, onSelectDate, selectedDat
           const hasCheckin = checkinDates.has(dateStr);
 
           let bgColor = "transparent";
-          let textColor = "var(--plum)";
+          let textColor = "#0B0805";
           let borderStyle = "none";
           let fontWeight = 400;
 
@@ -163,12 +163,12 @@ export default function TrackCalendar({ user, profile, onSelectDate, selectedDat
             fontWeight = 700;
           } else if (isTodayDay) {
             bgColor = "transparent";
-            textColor = "var(--plum)";
-            borderStyle = "2px solid var(--plum)";
+            textColor = "#7A1A12";
+            borderStyle = "2px solid #7A1A12";
             fontWeight = 700;
           } else if (hasCycle) {
-            bgColor = "var(--rose-dust-subtle)";
-            textColor = "var(--rose-dust)";
+            bgColor = "rgba(188,46,39,0.14)";
+            textColor = "#BC2E27";
             fontWeight = 600;
           } else if (phase === "ovulatory") {
             bgColor = "var(--sage-subtle)";
@@ -198,7 +198,7 @@ export default function TrackCalendar({ user, profile, onSelectDate, selectedDat
               {isSelected && (
                 <motion.div
                   layoutId="selected-track-day"
-                  style={{ position: "absolute", inset: 0, borderRadius: 10, backgroundColor: "var(--plum)", zIndex: 0 }}
+                  style={{ position: "absolute", inset: 0, borderRadius: 10, backgroundColor: "#7A1A12", zIndex: 0 }}
                   transition={{ type: "spring", stiffness: 380, damping: 35 }}
                 />
               )}
@@ -208,7 +208,7 @@ export default function TrackCalendar({ user, profile, onSelectDate, selectedDat
               {(hasCheckin || dots.length > 0) && (
                 <div style={{ position: "relative", zIndex: 1, display: "flex", gap: 2, marginTop: 3, justifyContent: "center" }}>
                   {hasCheckin && (
-                    <div style={{ width: 4, height: 4, borderRadius: 9999, backgroundColor: isSelected ? "rgba(255,255,255,0.8)" : "var(--rose-dust)" }} />
+                    <div style={{ width: 4, height: 4, borderRadius: 9999, backgroundColor: isSelected ? "rgba(255,255,255,0.8)" : "#BC2E27" }} />
                   )}
                   {dots.filter(t => t !== "cycle").slice(0, 2).map(type => (
                     <div key={type} style={{ width: 4, height: 4, borderRadius: 9999, backgroundColor: isSelected ? "rgba(255,255,255,0.6)" : DOT_TYPE_COLORS[type] }} />
@@ -224,9 +224,9 @@ export default function TrackCalendar({ user, profile, onSelectDate, selectedDat
       {/* Legend */}
       <div style={{ display: "flex", gap: 16, marginTop: 12, paddingTop: 12, borderTop: "1px solid var(--border-subtle)", flexWrap: "wrap" }}>
         {[
-          { color: "var(--rose-dust)", label: "Period" },
+          { color: "#BC2E27", label: "Period" },
           { color: "var(--sage)", label: "Fertile window" },
-          { color: "var(--plum)", label: "Today" },
+          { color: "#7A1A12", label: "Today" },
         ].map(({ color, label }) => (
           <div key={label} style={{ display: "flex", alignItems: "center", gap: 5 }}>
             <div style={{ width: 10, height: 10, borderRadius: 9999, backgroundColor: color }} />

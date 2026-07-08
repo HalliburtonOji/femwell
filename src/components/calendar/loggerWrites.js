@@ -86,6 +86,28 @@ export async function writeEvent(user_id, date, { title, time, notes = "" }) {
   }).catch(() => {});
 }
 
+// ── PERIOD / CYCLE (drives the calendar gradient + phase app-wide) ──────────────
+// Writes a CycleEvents row (the app's period model) AND, for a period START, bumps
+// UserProfile.last_period_start_date — the single anchor every phase calc reads. So a
+// logged period immediately re-tints the calendar and updates phase everywhere.
+export async function writePeriod(user_id, date, { type = "PeriodStart", flow = "medium" }) {
+  const stampISO = nowISO();
+  const payload = { user_id, date, type, created_at: stampISO, updated_at: stampISO };
+  if (type !== "Spotting" && flow) payload.flow_level = flow;
+  await base44.entities.CycleEvents.create(payload).catch(() => {});
+  if (type === "PeriodStart") {
+    try {
+      const profs = await base44.entities.UserProfile.filter({ user_id }).catch(() => []);
+      const p = (profs || [])[0];
+      if (p?.id) await base44.entities.UserProfile.update(p.id, { last_period_start_date: date }).catch(() => {});
+    } catch { /* ignore */ }
+  }
+}
+
+export async function loadProfile(user_id) {
+  try { const profs = await base44.entities.UserProfile.filter({ user_id }).catch(() => []); return (profs || [])[0] || null; } catch { return null; }
+}
+
 export async function writeTask(user_id, date, { title, time_of_day = null }) {
   await base44.entities.PersonalTasks.create({
     user_id, date, title: title || "Task", category: "personal",
@@ -127,7 +149,7 @@ export async function loadMonthEntries(user_id) {
     (map[k] ||= []).push({ type, plan });
   };
   const todayS = todayISO();
-  const [meals, hydra, moods, symptoms, habits, meds, planner] = await Promise.all([
+  const [meals, hydra, moods, symptoms, habits, meds, planner, cycles] = await Promise.all([
     base44.entities.MealLog.filter({ user_id }, "-day_key", 300).catch(() => []),
     base44.entities.HydrationLog.filter({ user_id }, "-day_key", 300).catch(() => []),
     base44.entities.DailyCheckins.filter({ user_id }, "-date", 300).catch(() => []),
@@ -135,6 +157,7 @@ export async function loadMonthEntries(user_id) {
     base44.entities.HabitLogs.filter({ user_id }, "-date", 300).catch(() => []),
     base44.entities.MedicationLogs.filter({ user_id }, "-date", 300).catch(() => []),
     base44.entities.PlannerItems.filter({ user_id }, "-date", 300).catch(() => []),
+    base44.entities.CycleEvents.filter({ user_id }, "-date", 300).catch(() => []),
   ]);
   (meals || []).forEach((m) => add(m.day_key, "meal"));
   (hydra || []).forEach((h) => add(h.day_key, "water"));
@@ -143,5 +166,6 @@ export async function loadMonthEntries(user_id) {
   (habits || []).forEach((h) => add(h.date, "habit"));
   (meds || []).forEach((m) => add(m.date, "med"));
   (planner || []).forEach((p) => add(p.date, "event", String(p.date).slice(0, 10) > todayS));
+  (cycles || []).forEach((c) => { if (c.type === "PeriodStart" || c.type === "Spotting") add(c.date, "period"); });
   return map;
 }

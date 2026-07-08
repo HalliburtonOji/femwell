@@ -31,7 +31,8 @@ import {
 import { base44 } from "@/api/base44Client";
 import { T, SERIF, UI, SCRIPT, PAPER_BG, Heart, useEditorialFonts } from "@/components/journal/Editorial";
 import { FlowerGlyph, CornerSprig } from "@/components/brand/flora";
-import { commitEntries as commitReal, writeMealLog, writeHydration, loadMonthEntries } from "./loggerWrites";
+import { motion, AnimatePresence } from "framer-motion";
+import { commitEntries as commitReal, writeMealLog, writeHydration, writePeriod, loadProfile, loadMonthEntries } from "./loggerWrites";
 
 // real FemWell card chrome — the FwCard recipe (Card.jsx): warm 165deg cream→accent
 // gradient, paperDeep hairline + a 4px accent left-rim, radius 20, the layered editorial
@@ -108,7 +109,17 @@ const TYPES = [
   { id: "reminder", label: "Reminder", Icon: Bell,         tone: T.muted,  log: false, plan: true,  planLabel: "Set a reminder" },
 ];
 const TYPE = Object.fromEntries(TYPES.map(t => [t.id, t]));
-const DOT = { meal: T.gold, water: "#5E93B8", mood: T.sage, symptom: T.crimson, note: "#8E6E8E", habit: T.sage, med: T.blush, event: "#A6862B", reminder: T.muted };
+const DOT = { meal: T.gold, water: "#5E93B8", mood: T.sage, symptom: T.crimson, note: "#8E6E8E", habit: T.sage, med: T.blush, event: "#A6862B", reminder: T.muted, period: T.crimson };
+const PHASE_LABEL = { menstrual: "Menstrual", follicular: "Follicular", ovulatory: "Ovulatory", luteal: "Luteal" };
+// cycle-day from the same anchor the whole app uses (UserProfile.last_period_start_date)
+function cycleDayFor(dateStr) {
+  const p = _liveProfile;
+  if (!p?.last_period_start_date) return null;
+  const cycleLen = p.cycle_avg_length || 28;
+  const diff = Math.floor((parseISO(dateStr) - parseISO(String(p.last_period_start_date).slice(0, 10))) / 86400000);
+  if (diff < 0) return null;
+  return (((diff % cycleLen) + cycleLen) % cycleLen) + 1;
+}
 
 const iso = (d) => format(d, "yyyy-MM-dd");
 const TODAY = new Date(); TODAY.setHours(0, 0, 0, 0);
@@ -160,7 +171,16 @@ function FwCalendar({ month, onPrev, onNext, onSelectDate, entries }) {
           ))}
         </div>
 
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(7,1fr)", gap: 3 }}>
+        <div style={{ overflow: "hidden", position: "relative" }}>
+        <AnimatePresence initial={false} mode="popLayout">
+        <motion.div
+          key={format(month, "yyyy-MM")}
+          drag="x" dragConstraints={{ left: 0, right: 0 }} dragElastic={0.16}
+          onDragEnd={(e, info) => { if (info.offset.x < -55) onNext(); else if (info.offset.x > 55) onPrev(); }}
+          initial={{ opacity: 0, x: 26 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -26 }}
+          transition={{ duration: 0.22, ease: [0.4, 0, 0.2, 1] }}
+          style={{ display: "grid", gridTemplateColumns: "repeat(7,1fr)", gap: 3, cursor: "grab", touchAction: "pan-y" }}
+        >
           {days.map((day, i) => {
             const ds = iso(day);
             const inMonth = isSameMonth(day, month);
@@ -197,10 +217,12 @@ function FwCalendar({ month, onPrev, onNext, onSelectDate, entries }) {
               </button>
             );
           })}
+        </motion.div>
+        </AnimatePresence>
         </div>
 
         <div style={{ display: "flex", gap: 12, justifyContent: "center", flexWrap: "wrap", marginTop: 13, paddingTop: 11, borderTop: `1px solid ${T.gold}44` }}>
-          {[["Period", T.crimson], ["Fertile", T.sage], ["Mood", T.sage], ["Meal", T.gold], ["Plan (ring)", "#A6862B"]].map(([l, c]) => (
+          {[["Period", T.crimson], ["Follicular", T.sage], ["Ovulatory", T.gold], ["Meal", T.gold], ["Plan (ring)", "#A6862B"]].map(([l, c]) => (
             <span key={l} style={{ display: "flex", alignItems: "center", gap: 4, fontFamily: UI, fontSize: 9.5, fontWeight: 600, color: T.muted }}>
               <span style={{ width: 6, height: 6, borderRadius: "50%", background: c }} />{l}
             </span>
@@ -225,9 +247,11 @@ export default function CalendarOverlay() {
   const [entries, setEntries] = useState({});
   const [toast, setToast] = useState("");
   const [userId, setUserId] = useState(null);
+  const [phaseTick, setPhaseTick] = useState(0); // bump to re-tint after a period log
 
   const flash = (msg) => { setToast(msg); setTimeout(() => setToast(""), 1900); };
   const reload = async (id = userId) => { if (id) { try { setEntries(await loadMonthEntries(id)); } catch { /* ignore */ } } };
+  const reloadProfile = async (id = userId) => { if (id) { try { setLiveProfile(await loadProfile(id)); setPhaseTick((t) => t + 1); } catch { /* ignore */ } } };
 
   // auth + profile (for phase tint) + first entries load
   useEffect(() => {
@@ -237,12 +261,20 @@ export default function CalendarOverlay() {
         const me = await base44.entities.User.me();
         if (!alive || !me?.id) return;
         setUserId(me.id);
-        try { const profs = await base44.entities.UserProfile.filter({ user_id: me.id }).catch(() => []); setLiveProfile((profs || [])[0] || null); } catch { /* ignore */ }
+        try { setLiveProfile(await loadProfile(me.id)); setPhaseTick((t) => t + 1); } catch { /* ignore */ }
         reload(me.id);
       } catch { /* anonymous — overlay still opens, writes just no-op */ }
     })();
     return () => { alive = false; };
   }, []);
+
+  // log a period / cycle event → writes CycleEvents (+ bumps the profile anchor) so the
+  // gradient + phase legend reflect real cycle data everywhere.
+  const commitPeriod = async ({ date, type, flow }) => {
+    if (userId) { await writePeriod(userId, date, { type, flow }); await reloadProfile(); await reload(); }
+    flash(type === "PeriodStart" ? "Period logged — cycle updated" : type === "PeriodEnd" ? "Period end logged" : "Spotting logged");
+    closeAll();
+  };
 
   // the top-bar calendar icon (in Layout) opens the calendar via this event
   useEffect(() => {
@@ -265,14 +297,24 @@ export default function CalendarOverlay() {
           <Sheet>
             <SheetHead title="Calendar" onClose={() => setCalOpen(false)} />
             <FwCalendar
+              key={`cal-${phaseTick}`}
               month={month}
               onPrev={() => setMonth((m) => addMonths(m, -1))}
               onNext={() => setMonth((m) => addMonths(m, 1))}
               onSelectDate={openDay}
               entries={entries}
             />
-            <button onClick={() => { setSheet({ stage: "day", mode: "log", date: TODAY_STR }); setCalOpen(false); }} style={{ ...solidBtn, marginTop: 14 }}>
+            {(() => { const ph = cyclePhase(TODAY_STR); const cd = cycleDayFor(TODAY_STR); return ph ? (
+              <div style={{ display: "flex", alignItems: "center", gap: 6, justifyContent: "center", marginTop: 12, fontFamily: UI, fontSize: 12, color: T.muted }}>
+                <span style={{ width: 8, height: 8, borderRadius: "50%", background: PHASE[ph] }} />
+                <span><b style={{ color: OX }}>{PHASE_LABEL[ph]}</b> phase{cd ? ` · cycle day ${cd}` : ""}</span>
+              </div>
+            ) : null; })()}
+            <button onClick={() => { setSheet({ stage: "day", mode: "log", date: TODAY_STR }); setCalOpen(false); }} style={{ ...solidBtn, marginTop: 12 }}>
               <Clock size={15} style={{ marginRight: 7, verticalAlign: -2 }} />Log for today
+            </button>
+            <button onClick={() => { setSheet({ stage: "cycle", mode: "log", date: TODAY_STR }); setCalOpen(false); }} style={{ ...ghostBtn, width: "100%", marginTop: 8, borderColor: T.crimson, color: T.crimson }}>
+              <Droplets size={14} style={{ marginRight: 7, verticalAlign: -2 }} />Log a period
             </button>
             <p style={{ fontFamily: SERIF, fontSize: 13, fontStyle: "italic", color: T.muted, textAlign: "center", marginTop: 8 }}>
               …or tap any day to tend it.
@@ -291,7 +333,12 @@ export default function CalendarOverlay() {
                 : setSheet({ stage: "quick", mode: sheet.mode, date: sheet.date, type })}
               onRunDay={() => setSheet({ stage: "dayrun", mode: sheet.mode, date: sheet.date })}
               onSmartShot={() => setSheet({ stage: "smartshot", mode: sheet.mode, date: sheet.date })}
+              onCycle={() => setSheet({ stage: "cycle", mode: sheet.mode, date: sheet.date })}
               onClose={closeAll} />}
+
+            {sheet.stage === "cycle" && <CycleSheet sheet={sheet}
+              onBack={() => setSheet({ stage: "day", mode: sheet.mode, date: sheet.date })}
+              onClose={closeAll} onSave={commitPeriod} />}
 
             {sheet.stage === "food" && <FoodLogSheet sheet={sheet}
               onBack={() => setSheet({ stage: "day", mode: sheet.mode, date: sheet.date })}
@@ -428,8 +475,54 @@ function QuickForm({ sheet, onBack, onClose, onSave }) {
   );
 }
 
+// ── CYCLE sheet — log a period (start/end/spotting + flow); drives the gradient ──
+function CycleSheet({ sheet, onBack, onClose, onSave }) {
+  const { date } = sheet;
+  const dayWord = date === TODAY_STR ? "today" : format(parseISO(date), "EEE d MMM");
+  const ph = cyclePhase(date);
+  const cd = cycleDayFor(date);
+  const [flow, setFlow] = useState("medium");
+  const FLOWS = [["light", "Light"], ["medium", "Medium"], ["heavy", "Heavy"]];
+  return (
+    <>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <button onClick={onBack} style={iconBtn} aria-label="Back"><ArrowLeft size={15} /></button>
+          <div style={{ display: "flex", alignItems: "center", gap: 7 }}>
+            <Droplets size={18} color={T.crimson} />
+            <span style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 21, color: OX }}>Period &amp; cycle</span>
+          </div>
+        </div>
+        <button onClick={onClose} style={iconBtn} aria-label="Close"><X size={15} /></button>
+      </div>
+      <div style={{ fontFamily: UI, fontSize: 11, color: T.muted, marginBottom: 12 }}>
+        For <b style={{ color: OX }}>{dayWord}</b>{ph ? <> · currently <b style={{ color: OX }}>{PHASE_LABEL[ph]}</b>{cd ? `, cycle day ${cd}` : ""}</> : <> · no cycle set yet</>}
+      </div>
+
+      <div style={{ ...inset, padding: 14, marginBottom: 10 }}>
+        <div style={{ ...eyebrow, color: T.crimson, marginBottom: 8 }}>My period started</div>
+        <div style={{ ...eyebrow, marginBottom: 6 }}>Flow</div>
+        <div style={{ display: "flex", gap: 6, marginBottom: 12 }}>
+          {FLOWS.map(([v, l]) => { const on = flow === v; return <button key={v} onClick={() => setFlow(v)} style={{ flex: 1, padding: "9px 0", borderRadius: 10, cursor: "pointer", border: `1.5px solid ${on ? T.crimson : T.paperDeep}`, background: on ? `${T.crimson}18` : T.paperHi, color: on ? T.crimson : T.muted, fontFamily: UI, fontSize: 12, fontWeight: 700 }}>{l}</button>; })}
+        </div>
+        <button onClick={() => onSave({ date, type: "PeriodStart", flow })} style={{ ...solidBtn, background: T.crimson }}>
+          <Check size={15} style={{ marginRight: 7, verticalAlign: -2 }} />Log period start · {dayWord}
+        </button>
+        <div style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 12.5, color: T.muted, marginTop: 8 }}>
+          This sets your cycle from this date — the calendar gradient &amp; phases update from here.
+        </div>
+      </div>
+
+      <div style={{ display: "flex", gap: 8 }}>
+        <button onClick={() => onSave({ date, type: "PeriodEnd" })} style={{ ...ghostBtn, flex: 1 }}>Period ended</button>
+        <button onClick={() => onSave({ date, type: "Spotting" })} style={{ ...ghostBtn, flex: 1 }}>Spotting</button>
+      </div>
+    </>
+  );
+}
+
 // ── DAY sheet — the log/plan gate lives here ────────────────────────────────────
-function DaySheet({ sheet, entries, onPick, onRunDay, onSmartShot, onClose }) {
+function DaySheet({ sheet, entries, onPick, onRunDay, onSmartShot, onCycle, onClose }) {
   const { date, mode } = sheet;
   const d = parseISO(date);
   const isTod = date === TODAY_STR;
@@ -477,6 +570,13 @@ function DaySheet({ sheet, entries, onPick, onRunDay, onSmartShot, onClose }) {
       <button onClick={onSmartShot} style={{ ...ghostBtn, width: "100%", marginTop: 8, borderColor: T.gold, color: OX }}>
         <WandSparkles size={15} style={{ marginRight: 7, verticalAlign: -2, color: T.gold }} />Add a photo — {isFuture ? "plan or log from a picture" : "log from a picture"}
       </button>
+
+      {/* ── Period & cycle (log-mode only — a period is retrospective) ── */}
+      {!isFuture && onCycle && (
+        <button onClick={onCycle} style={{ ...ghostBtn, width: "100%", marginTop: 8, borderColor: T.crimson, color: T.crimson }}>
+          <Droplets size={14} style={{ marginRight: 7, verticalAlign: -2 }} />Log a period / cycle
+        </button>
+      )}
 
       <div style={{ ...eyebrow, marginTop: 16 }}>{isFuture ? "…or plan one thing" : "…or log one thing"}</div>
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
