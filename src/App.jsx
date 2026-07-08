@@ -38,6 +38,7 @@ import Planner from './pages/Planner';
 import SealedLetters from './pages/SealedLetters';
 import BookReader from './pages/BookReader';
 import UnifiedTabLogger from './components/UnifiedTabLogger';
+import CalendarOverlay from './components/calendar/CalendarOverlay';
 import MorningBriefSheet from './components/planner/MorningBriefSheet';
 import JessErrorBoundary from '@/components/jess/JessErrorBoundary';
 
@@ -371,9 +372,13 @@ function App() {
           </Routes>
         </Router>
         <Toaster />
-        {/* Universal Logger — global gold + FAB available on every page.
-            Module-level openLogger() lets any component trigger it. */}
+        {/* Universal Logger — the proven programmatic writer for all 50+ openLogger()
+            call-sites. Its "+" FAB is now retired (SHOW_LEGACY_FAB=false); the persistent
+            top-bar calendar icon (Layout) is the single logging entry. */}
         <UnifiedTabLogger />
+        {/* GO-LIVE 2026-07: the universal calendar + rebuilt logger. Mounted once at
+            root; opened by the top-bar calendar icon ("fw_open_calendar"). Real writes. */}
+        <CalendarOverlay />
       </QueryClientProvider>
     </AuthProvider>
   );

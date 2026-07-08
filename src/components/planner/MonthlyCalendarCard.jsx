@@ -6,24 +6,12 @@ import {
 } from "date-fns";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { T, SERIF, UI, SCRIPT } from "@/components/journal/Editorial";
 
+const OX = "#7A1A12"; // oxblood — the app-wide heading colour
+// on-brand phase washes (crimson period · sage follicular/fertile · gold ovulatory · plum luteal)
 const PHASE_COLORS = {
-  menstrual: "#C4849A", follicular: "#7A9E8E", ovulatory: "#B89E6A", luteal: "#8A7E88",
-};
-
-const MONTH_PHOTOS = {
-  0: "https://images.unsplash.com/photo-1478719059408-592965723cbc?w=900&q=80",
-  1: "https://images.unsplash.com/photo-1506816561089-6c5e24ae8a73?w=900&q=80",
-  2: "https://images.unsplash.com/photo-1519331379826-f10be5486c6f?w=900&q=80",
-  3: "https://images.unsplash.com/photo-1522748906645-95d8adfd52c7?w=900&q=80",
-  4: "https://images.unsplash.com/photo-1490750967868-88df5691cc2b?w=900&q=80",
-  5: "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=900&q=80",
-  6: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=900&q=80",
-  7: "https://images.unsplash.com/photo-1504701954957-2010ec3bcec1?w=900&q=80",
-  8: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=900&q=80",
-  9: "https://images.unsplash.com/photo-1477414348463-c0eb7f1359b6?w=900&q=80",
-  10: "https://images.unsplash.com/photo-1508739773434-c26b3d09e071?w=900&q=80",
-  11: "https://images.unsplash.com/photo-1418985991508-e47386d96a71?w=900&q=80",
+  menstrual: "#BC2E27", follicular: "#8FAF8F", ovulatory: "#A8893F", luteal: "#8E6E8E",
 };
 
 function getCyclePhase(date, lastPeriodDate, cycleLen = 28, periodLen = 5) {
@@ -43,7 +31,6 @@ function MonthView({ month, today, data, profile, onDayPress }) {
   const monthEnd = endOfMonth(month);
   const gridStart = startOfWeek(monthStart, { weekStartsOn: 1 });
   const gridEnd = endOfWeek(monthEnd, { weekStartsOn: 1 });
-  const photo = MONTH_PHOTOS[month.getMonth()];
   const isCurrentMonth = isSameMonth(month, today);
 
   const predictedNextPeriod = (() => {
@@ -55,33 +42,32 @@ function MonthView({ month, today, data, profile, onDayPress }) {
   let d = gridStart;
   while (d <= gridEnd) { days.push(new Date(d)); d = addDays(d, 1); }
 
+  // GO-LIVE 2026-07: on-brand cream card chrome (was a per-month Unsplash photo + dark
+  // overlay + white text). Same data + onDayPress contract — every caller unchanged.
   return (
-    <div style={{ position: "relative", borderRadius: 28, overflow: "hidden", boxShadow: "0 24px 60px rgba(42,32,53,0.28)" }}>
-      <img src={photo} alt="" loading="lazy" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", zIndex: 0 }} onError={e => { e.target.style.display = "none"; }} />
-      <div style={{ position: "absolute", inset: 0, zIndex: 1, background: "linear-gradient(to bottom, rgba(18,10,30,0.45) 0%, rgba(18,10,30,0.70) 40%, rgba(18,10,30,0.93) 100%)" }} />
-
-      <div style={{ position: "relative", zIndex: 2, padding: "22px 14px 20px" }}>
-        <div style={{ textAlign: "center", marginBottom: 18 }}>
-          <p style={{ fontSize: 28, fontWeight: 700, color: "white", letterSpacing: "-0.02em", lineHeight: 1 }}>
+    <div style={{
+      position: "relative", overflow: "hidden", borderRadius: 20,
+      background: `linear-gradient(165deg, ${T.paperHi} 0%, ${OX}10 100%)`,
+      border: `1px solid ${T.paperDeep}`, borderLeft: `4px solid ${OX}`,
+      boxShadow: "0 4px 20px rgba(58,44,26,0.12), 0 1px 4px rgba(58,44,26,0.08)",
+    }}>
+      <div style={{ position: "relative", zIndex: 2, padding: "18px 15px 16px" }}>
+        <div style={{ textAlign: "center", marginBottom: 14 }}>
+          <p style={{ fontFamily: SCRIPT, fontSize: 40, fontWeight: 400, color: OX, lineHeight: 0.95, margin: 0 }}>
             {format(month, "MMMM")}
           </p>
-          <p style={{ fontSize: 12, color: "rgba(255,255,255,0.5)", marginTop: 3 }}>
-            {format(month, "yyyy")}
+          <p style={{ fontFamily: UI, fontSize: 9.5, letterSpacing: "0.14em", textTransform: "uppercase", color: T.gold, marginTop: 3 }}>
+            {format(month, "yyyy")}{isCurrentMonth ? " · your month" : ""}
           </p>
-          {isCurrentMonth && (
-            <div style={{ display: "inline-block", marginTop: 6, backgroundColor: "rgba(196,132,154,0.35)", border: "1px solid rgba(196,132,154,0.6)", borderRadius: 9999, padding: "2px 12px" }}>
-              <span style={{ fontSize: 10, fontWeight: 700, color: "#ffc8d8", letterSpacing: "0.08em", textTransform: "uppercase" }}>Current Month</span>
-            </div>
-          )}
         </div>
 
         <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: 2, marginBottom: 5 }}>
           {["Mo","Tu","We","Th","Fr","Sa","Su"].map(d => (
-            <div key={d} style={{ textAlign: "center", fontSize: 9, fontWeight: 700, color: "rgba(255,255,255,0.35)", letterSpacing: "0.06em" }}>{d}</div>
+            <div key={d} style={{ textAlign: "center", fontSize: 9.5, fontWeight: 800, color: T.gold, letterSpacing: "0.04em" }}>{d}</div>
           ))}
         </div>
 
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: 2 }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: 3 }}>
           {days.map((day, i) => {
             const ds = format(day, "yyyy-MM-dd");
             const inMonth = isSameMonth(day, month);
@@ -93,31 +79,32 @@ function MonthView({ month, today, data, profile, onDayPress }) {
             const checkinMood = data.checkins[ds]?.mood;
             const hasSymptoms = (data.symptoms[ds]?.length || 0) > 0;
             const isPredicted = predictedNextPeriod && isSameDay(day, predictedNextPeriod);
-            const moodColor = checkinMood ? (checkinMood >= 4 ? "#81C784" : checkinMood >= 3 ? "#FFD54F" : "#E57373") : "rgba(255,255,255,0.5)";
+            const moodColor = checkinMood ? (checkinMood >= 4 ? "#8FAF8F" : checkinMood >= 3 ? "#A8893F" : "#BC2E27") : T.sage;
 
             return (
               <button key={i} onClick={() => inMonth && onDayPress(day, { ds, checkin: data.checkins[ds] || null, symptoms: data.symptoms[ds] || [], habitLogs: data.habitLogs[ds] || [], tasks: data.tasks[ds] || [], meds: data.meds[ds] || [], cycleEvents: data.cycleEvents[ds] || [] })}
-                style={{ minHeight: 50, padding: "4px 2px 3px", display: "flex", flexDirection: "column", alignItems: "center", cursor: inMonth ? "pointer" : "default", borderRadius: 10,
-                  background: isToday ? "rgba(255,255,255,0.25)" : phaseColor && inMonth ? `${phaseColor}22` : "rgba(255,255,255,0.04)",
-                  border: isToday ? "1.5px solid rgba(255,255,255,0.7)" : "1px solid rgba(255,255,255,0.06)",
-                  opacity: inMonth ? 1 : 0.15, outline: "none" }}>
-                <span style={{ fontSize: 12, fontWeight: isToday ? 800 : 400, color: isToday ? "white" : "rgba(255,255,255,0.85)", lineHeight: 1 }}>{format(day, "d")}</span>
-                <div style={{ display: "flex", gap: 1.5, marginTop: 3, flexWrap: "wrap", justifyContent: "center", minHeight: 8 }}>
-                  {hasPeriod && <div style={{ width: 4, height: 4, borderRadius: "50%", backgroundColor: "#ff8fab" }} />}
-                  {isPredicted && !hasPeriod && <div style={{ width: 4, height: 4, borderRadius: "50%", border: "1.5px dashed #ff8fab" }} />}
-                  {hasCheckin && <div style={{ width: 4, height: 4, borderRadius: "50%", backgroundColor: moodColor }} />}
-                  {hasSymptoms && <div style={{ width: 3, height: 3, borderRadius: "50%", backgroundColor: "#FFB347" }} />}
+                style={{ minHeight: 48, padding: "4px 2px 3px", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", cursor: inMonth ? "pointer" : "default", borderRadius: 11,
+                  background: isToday ? "rgba(122,26,18,0.06)" : phaseColor && inMonth ? `${phaseColor}20` : "transparent",
+                  border: isToday ? `1.8px solid ${OX}` : "1px solid transparent",
+                  boxShadow: isToday ? "0 1px 5px rgba(122,26,18,0.14)" : "none",
+                  opacity: inMonth ? 1 : 0.14, outline: "none" }}>
+                <span style={{ fontFamily: SERIF, fontSize: 15, fontWeight: isToday ? 700 : 500, color: isToday ? OX : T.ink, lineHeight: 1 }}>{format(day, "d")}</span>
+                <div style={{ display: "flex", gap: 2, marginTop: 3, flexWrap: "wrap", justifyContent: "center", minHeight: 7 }}>
+                  {hasPeriod && <div style={{ width: 4.5, height: 4.5, borderRadius: "50%", backgroundColor: "#BC2E27" }} />}
+                  {isPredicted && !hasPeriod && <div style={{ width: 4.5, height: 4.5, borderRadius: "50%", border: "1.5px dashed #BC2E27" }} />}
+                  {hasCheckin && <div style={{ width: 4.5, height: 4.5, borderRadius: "50%", backgroundColor: moodColor }} />}
+                  {hasSymptoms && <div style={{ width: 3.5, height: 3.5, borderRadius: "50%", backgroundColor: "#A8893F" }} />}
                 </div>
               </button>
             );
           })}
         </div>
 
-        <div style={{ display: "flex", gap: 10, marginTop: 14, justifyContent: "center", flexWrap: "wrap" }}>
-          {[{ color: "#ff8fab", label: "Period" }, { color: "#81C784", label: "Mood" }, { color: "#FFB347", label: "Symptoms" }].map(l => (
-            <div key={l.label} style={{ display: "flex", alignItems: "center", gap: 3 }}>
-              <div style={{ width: 5, height: 5, borderRadius: "50%", backgroundColor: l.color }} />
-              <span style={{ fontSize: 9, color: "rgba(255,255,255,0.35)", }}>{l.label}</span>
+        <div style={{ display: "flex", gap: 12, marginTop: 13, paddingTop: 11, borderTop: `1px solid ${T.gold}44`, justifyContent: "center", flexWrap: "wrap" }}>
+          {[{ color: "#BC2E27", label: "Period" }, { color: "#8FAF8F", label: "Mood" }, { color: "#A8893F", label: "Symptoms" }].map(l => (
+            <div key={l.label} style={{ display: "flex", alignItems: "center", gap: 4 }}>
+              <div style={{ width: 6, height: 6, borderRadius: "50%", backgroundColor: l.color }} />
+              <span style={{ fontFamily: UI, fontSize: 9.5, fontWeight: 600, color: T.muted }}>{l.label}</span>
             </div>
           ))}
         </div>

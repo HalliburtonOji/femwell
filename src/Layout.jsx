@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
+import { CalendarDays } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import FloatingSidebar from "./components/layout/FloatingSidebar";
 import AssistantOverlay from "./components/assistant/AssistantOverlay";
@@ -64,6 +65,29 @@ export default function Layout({ children, currentPageName }) {
           Mounted once at the shell root; the 0x0 svg is invisible/aria-hidden. */}
       <InkFilter />
       <style>{`@media print { .no-print { display: none !important; } .print-only { display: block !important; } }`}</style>
+      {/* GO-LIVE 2026-07: the persistent CALENDAR ICON — the single logging entry
+          (replaces the retired "+" FAB). Top-right, on every nav page; opens the
+          universal calendar (CalendarOverlay listens for "fw_open_calendar"). */}
+      {showNav && (
+        <button
+          onClick={() => { try { window.dispatchEvent(new CustomEvent("fw_open_calendar")); } catch { /* noop */ } }}
+          aria-label="Open calendar — log or plan"
+          className="no-print"
+          style={{
+            position: "fixed",
+            top: "calc(env(safe-area-inset-top, 0px) + 10px)",
+            right: 12,
+            zIndex: 70,
+            width: 42, height: 42, borderRadius: 13,
+            border: "1px solid var(--border, #D8CFBC)",
+            background: "var(--surface, #F4EFE3)",
+            display: "grid", placeItems: "center", cursor: "pointer",
+            boxShadow: "0 2px 10px rgba(11,8,5,0.16)",
+          }}
+        >
+          <CalendarDays size={20} color="#7A1A12" strokeWidth={1.9} />
+        </button>
+      )}
       {showNav && <FloatingSidebar currentPageName={currentPageName} mode={navMode} openQuickLog={openQuickLog} />}
       <main
         id="main-content"

@@ -30,11 +30,17 @@ const TOUR_TO_ACTION = {
 };
 const DEFAULT_ACTION = { label: "Log", type: undefined };
 
+// GO-LIVE 2026-07: the Planner's floating contextual "+" is RETIRED — the single
+// logging entry is now the top-bar calendar icon, and the Planner day-view's own
+// "tap a free hour" + Event action cover in-place adds. REVERT: set to false.
+const CONTEXTUAL_FAB_RETIRED = true;
+
 export default function ContextualFAB({ scrollRoot = null } = {}) {
   const [active, setActive] = useState(DEFAULT_ACTION);
   const ratiosRef = useRef(new Map());
 
   useEffect(() => {
+    if (CONTEXTUAL_FAB_RETIRED) return; // retired — don't observe
     if (typeof window === "undefined" || typeof IntersectionObserver === "undefined") return;
     // Scan known tour wrappers — Phase 1 added `data-tour="stage"` /
     // `data-tour="conditions"`; the original demo already had `body`,
@@ -75,6 +81,8 @@ export default function ContextualFAB({ scrollRoot = null } = {}) {
   function handleTap() {
     try { openLogger(active.type); } catch { /* swallow */ }
   }
+
+  if (CONTEXTUAL_FAB_RETIRED) return null;
 
   return (
     <button
