@@ -1,0 +1,293 @@
+<!doctype html>
+<html lang="en-GB"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>FemWell — Entity Audit &amp; Removal Plan</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500;1,600&family=Ephesis&display=swap" rel="stylesheet">
+<style>
+  :root{--paper:#ECE7DA;--paperHi:#F4EFE3;--paperDeep:#D8CFBC;--ink:#0B0805;--inkSoft:#1A140D;--muted:#2E261B;--gold:#A8893F;--crimson:#BC2E27;--blush:#E8B4B8;--sage:#8FAF8F;--plum:#8E6E8E;--serif:'Cormorant Garamond',Georgia,serif;--script:'Ephesis',cursive;--sans:ui-sans-serif,system-ui,-apple-system,'Segoe UI',sans-serif;}
+  *{box-sizing:border-box}
+  body{margin:0;background:radial-gradient(120% 80% at 12% 0%,#F4EFE3 0%,rgba(244,239,227,0) 55%),radial-gradient(120% 90% at 100% 100%,#E4DDCC 0%,rgba(228,221,204,0) 50%),var(--paper);color:var(--ink);font-family:var(--serif);font-size:18px;line-height:1.6;-webkit-font-smoothing:antialiased}
+  .doc{max-width:680px;margin:0 auto;padding:30px 22px 90px}
+  h1.cover{font-family:var(--script);font-size:52px;color:var(--crimson);margin:6px 0 2px;line-height:1.04}
+  h2{font-family:var(--serif);font-style:italic;font-weight:600;font-size:27px;margin:22px 0 6px}
+  h3{font-family:var(--serif);font-weight:600;font-size:21px;margin:18px 0 6px}
+  h4{font-family:var(--sans);font-size:12px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--gold);margin:16px 0 4px}
+  .eyebrow{font-family:var(--sans);font-size:12px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--gold);margin-bottom:10px}
+  p{margin:0 0 12px}.lede{font-size:20px;line-height:1.55}
+  small,.cap{font-family:var(--sans);font-size:13px;color:var(--muted);line-height:1.5}
+  b,strong{font-weight:600}
+  a{color:var(--crimson);text-decoration:none;border-bottom:1px solid rgba(188,46,39,.3)}
+  .section{background:var(--paperHi);border:1px solid var(--paperDeep);border-left:4px solid var(--gold);border-radius:20px;padding:22px 20px;margin:18px 0;box-shadow:0 4px 20px rgba(58,44,26,.10),0 1px 4px rgba(58,44,26,.06);position:relative;overflow:hidden}
+  .section.crimson{border-left-color:var(--crimson)}.section.sage{border-left-color:var(--sage)}.section.plum{border-left-color:var(--plum)}
+  .rule{height:1px;background:var(--gold);opacity:.32;margin:18px 0}
+  .center{text-align:center}
+  .statgrid{display:flex;flex-wrap:wrap;gap:10px;margin:10px 0}
+  .stat{flex:1 1 100px;background:var(--paper);border:1px solid var(--paperDeep);border-radius:14px;padding:12px 10px;text-align:center}
+  .stat .n{font-family:var(--serif);font-weight:600;font-size:32px;color:var(--crimson);line-height:1}
+  .stat.ok .n{color:var(--sage)}.stat.warn .n{color:var(--gold)}
+  .stat .l{font-family:var(--sans);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-top:5px}
+  .tablewrap{overflow-x:auto;-webkit-overflow-scrolling:touch;border-radius:14px;border:1px solid var(--paperDeep)}
+  table{width:100%;border-collapse:collapse;font-size:14px;font-family:var(--sans);margin:0;min-width:520px}
+  th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--paperDeep);vertical-align:top}
+  th{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--gold);background:var(--paper);position:sticky;top:0}
+  td b{font-family:var(--serif);font-size:15px}
+  tr:last-child td{border-bottom:none}
+  .pill{display:inline-block;font-family:var(--sans);font-size:11px;font-weight:600;padding:3px 9px;border-radius:999px;background:var(--paper);border:1px solid var(--paperDeep);white-space:nowrap}
+  .pill.ok{background:#EAF1EA;border-color:var(--sage);color:#3f6b3f}
+  .pill.gap{background:#FBE9E6;border-color:var(--crimson);color:var(--crimson)}
+  ul{margin:4px 0 12px;padding-left:20px}li{margin:4px 0}
+  code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:13px;background:var(--paper);border:1px solid var(--paperDeep);border-radius:5px;padding:1px 5px}
+  .chips b{font-family:var(--sans);font-size:13px;font-weight:600;display:inline-block;background:#FBE9E6;border:1px solid var(--crimson);color:var(--crimson);border-radius:999px;padding:4px 10px;margin:3px 4px 3px 0}
+  .chips.sup b{background:#F6ECD6;border-color:var(--gold);color:#7a6320}
+  .foot{font-family:var(--sans);font-size:12px;color:var(--muted);text-align:center;margin-top:30px;line-height:1.6}
+</style></head>
+<body><div class="doc">
+<div class="center" style="padding:10px 0 4px">
+  <div class="eyebrow">FemWell · Data hygiene · read-only audit · for your approval</div>
+  <h1 class="cover">The Entity<br>Cull</h1>
+  <p class="lede" style="font-style:italic;max-width:520px;margin:8px auto 0">A deep, read-only sweep of all <b>149</b> base44 entities — which are still wired into the app, which are dead weight from an earlier era, and which are safe to retire. <b>Nothing was deleted or changed.</b> You approve each removal, one by one.</p>
+</div>
+
+<div class="section crimson">
+  <div class="eyebrow">The headline</div>
+  <div class="statgrid">
+    <div class="stat"><div class="n">149</div><div class="l">Total entities</div></div>
+    <div class="stat ok"><div class="n">121</div><div class="l">Active (frontend)</div></div>
+    <div class="stat warn"><div class="n">12</div><div class="l">Backend-only</div></div>
+    <div class="stat"><div class="n">15</div><div class="l">Removal candidates</div></div>
+  </div>
+  <p style="margin-top:8px"><b>15 entities are candidates for removal</b> — 13 with <b>no code references anywhere</b>, plus 2 that a newer entity has clearly superseded. The other 134 are earning their keep (121 used in the app, 12 used only by backend functions, 1 is the base44 system <code>User</code>).</p>
+  <p class="cap"><b>How this was measured:</b> every entity name was cross-referenced (whole-word) across <code>src/</code>, <code>base44/functions/</code>, and <code>base44/agents/</code>. &quot;No references&quot; means no import, read, write, filter, or string mention in any code file. Schemas of the candidates were opened by hand to confirm.</p>
+</div>
+
+<div class="section" style="border-left-color:var(--crimson)">
+  <div class="eyebrow">Do this before ANY deletion</div>
+  <h3 style="margin-top:2px">Back up first — deletion is irreversible</h3>
+  <p>Removing a base44 entity is <b>destructive and cannot be undone</b>. I could <b>not</b> read live row counts this session — the only credential on this machine is the platform <em>deploy</em> token, which is refused (403) by the data API, and the base44 data MCP tools aren&rsquo;t connected here. <b>So I cannot yet tell you which candidates hold live user data.</b></p>
+  <ul>
+    <li><b>Step 1 — get row counts.</b> Connect the base44 data MCP (or hand me an app <code>api_key</code> / test-user token) and I&rsquo;ll return exact record counts + a data/seed sample for every candidate.</li>
+    <li><b>Step 2 — export any that hold rows.</b> A CSV/JSON export per entity, saved to <code>femwell-handoff/</code>, before it&rsquo;s touched.</li>
+    <li><b>Step 3 — remove one entity at a time</b>, redeploy, and walk the app. Never a batch delete.</li>
+  </ul>
+</div>
+
+<div class="section sage">
+  <div class="eyebrow">The shortlist · tier 1</div>
+  <h3 style="margin-top:2px">Safe to remove — no code references anywhere (13)</h3>
+  <p>These appear in <b>zero</b> code files (only their own schema definition). Nothing in the app reads or writes them. Pending a row-count check + backup, these are the cleanest removals.</p>
+  <p class="chips">
+    <b>AnonymousSession</b><b>BookContentCache</b><b>ConditionProfiles</b><b>DailyAggregates</b><b>DayTaskOverrides</b><b>DealsProducts</b><b>DealsSources</b><b>DischargeLogs</b><b>EvidenceRefs</b><b>InsightSnapshots</b><b>MediaAssets</b><b>SexualHealthLogs</b><b>VoiceCache</b>
+  </p>
+  <p class="cap"><b>Note:</b> <code>DailyAggregates</code> is referenced only inside a brand HTML doc, not real code. The three <code>Deals*</code> siblings show the shape of the rot: <code>Deals</code> + <code>DealsItems</code> are live, but <code>DealsProducts</code> &amp; <code>DealsSources</code> were never wired. <code>SexualHealthLogs</code> &amp; <code>DischargeLogs</code> are health logs that hold potentially <b>sensitive data</b> if ever populated — export before removing.</p>
+</div>
+
+<div class="section" style="border-left-color:var(--gold)">
+  <div class="eyebrow">The shortlist · tier 2</div>
+  <h3 style="margin-top:2px">Confirm with Halli — superseded duplicates (2)</h3>
+  <p>A newer entity does the same job. These still have a few references, so removal must wait until the <b>legacy page</b> that uses them is retired.</p>
+  <p class="chips sup"><b>CommunityPosts</b><b>Posts</b></p>
+  <ul>
+    <li><b>CommunityPosts</b> — the old &quot;MP#8&quot; community post schema. Superseded by <code>CommunityPost</code> (the current anonymous rooms, now live). Only touched by <code>CommunityMP8.jsx</code>, which is <b>not routed</b> (an orphan page) + founder docs. Low risk once the orphan page is deleted.</li>
+    <li><b>Posts</b> — an even older generic posts entity. Superseded by <code>CommunityPost</code>/<code>Comment</code>. Still read/written by <code>CommunityHub.jsx</code>, which <b>is</b> still routed — so removing <code>Posts</code> would break that legacy page. Retire the page first, then the entity.</li>
+  </ul>
+</div>
+
+<div class="section">
+  <div class="eyebrow">Watch-list · not removals</div>
+  <h3 style="margin-top:2px">Overlaps worth a decision (keep for now)</h3>
+  <ul>
+    <li><b>DrinkLog</b> vs <b>HydrationLog</b> — both drink-related, but <code>DrinkLog</code> tracks caffeine/alcohol type while <code>HydrationLog</code> tracks water volume. Distinct purpose; both used. Possible future merge, not a removal.</li>
+    <li><b>KickLog</b> vs <b>PregnancyKickSession</b> — both count fetal kicks. Likely a legacy pair. Confirm which one the live pregnancy flow actually writes, then retire the other.</li>
+    <li><b>InsightSnapshots</b> (unused, in tier 1) overlaps <code>InsightCards</code> / <code>WeeklyInsights</code> / <code>Correlations</code> — the live insight surfaces. Safe to drop.</li>
+  </ul>
+</div>
+
+<div class="section plum">
+  <div class="eyebrow">Backend-only · keep, but verify</div>
+  <h3 style="margin-top:2px">No frontend refs — used only by functions (12)</h3>
+  <p>These aren&rsquo;t dead — a deployed backend function reads/writes each. But since no UI touches them, if a whole backend feature was abandoned, some of these could follow. Verify the owning function is still live before trusting them.</p>
+  <p class="chips sup"><b>AdviceHistory</b><b>DealsItems</b><b>FictionChapter</b><b>FictionWork</b><b>GoalContribution</b><b>IngestErrorLog</b><b>LifestyleSources</b><b>StoryPack</b><b>StoryVisualPool</b><b>VoiceProfiles</b><b>VoiceScripts</b><b>WeeklyBookPick</b></p>
+  <p class="cap"><code>IngestErrorLog</code> (17 function files) and <code>LifestyleSources</code> (8) are clearly load-bearing. The <code>Fiction*</code>, <code>Story*</code>, <code>Voice*</code>, and <code>WeeklyBookPick</code> ones belong to content-generation pipelines — confirm those pipelines still run.</p>
+</div>
+
+<h2 class="center" style="font-style:normal;font-family:var(--script);color:var(--crimson);font-size:38px;margin-top:34px">The full ledger</h2>
+<p class="center cap" style="margin-top:0">All 149 entities · sorted removal-candidates first · scroll the table sideways on a phone</p>
+<div class="tablewrap">
+<table>
+<thead><tr><th>Entity</th><th>Class</th><th>Used? / where</th><th>Recommendation</th></tr></thead>
+<tbody>
+<tr><td><b>AnonymousSession</b></td><td><span class="pill gap">LIKELY-UNUSED</span></td><td>No references anywhere (src / functions / agents)</td><td>REMOVAL CANDIDATE</td></tr>
+<tr><td><b>BookContentCache</b></td><td><span class="pill gap">LIKELY-UNUSED</span></td><td>No references anywhere (src / functions / agents)</td><td>REMOVAL CANDIDATE</td></tr>
+<tr><td><b>ConditionProfiles</b></td><td><span class="pill gap">LIKELY-UNUSED</span></td><td>No references anywhere (src / functions / agents)</td><td>REMOVAL CANDIDATE</td></tr>
+<tr><td><b>DailyAggregates</b></td><td><span class="pill gap">LIKELY-UNUSED</span></td><td>Only appears in a brand HTML doc (planner-enrichment.html) — no live code reads or writes it.</td><td>REMOVAL CANDIDATE</td></tr>
+<tr><td><b>DayTaskOverrides</b></td><td><span class="pill gap">LIKELY-UNUSED</span></td><td>No references anywhere (src / functions / agents)</td><td>REMOVAL CANDIDATE</td></tr>
+<tr><td><b>DealsProducts</b></td><td><span class="pill gap">LIKELY-UNUSED</span></td><td>No references anywhere (src / functions / agents)</td><td>REMOVAL CANDIDATE</td></tr>
+<tr><td><b>DealsSources</b></td><td><span class="pill gap">LIKELY-UNUSED</span></td><td>No references anywhere (src / functions / agents)</td><td>REMOVAL CANDIDATE</td></tr>
+<tr><td><b>DischargeLogs</b></td><td><span class="pill gap">LIKELY-UNUSED</span></td><td>No references anywhere (src / functions / agents)</td><td>REMOVAL CANDIDATE</td></tr>
+<tr><td><b>EvidenceRefs</b></td><td><span class="pill gap">LIKELY-UNUSED</span></td><td>No references anywhere (src / functions / agents)</td><td>REMOVAL CANDIDATE</td></tr>
+<tr><td><b>InsightSnapshots</b></td><td><span class="pill gap">LIKELY-UNUSED</span></td><td>No references anywhere (src / functions / agents)</td><td>REMOVAL CANDIDATE</td></tr>
+<tr><td><b>MediaAssets</b></td><td><span class="pill gap">LIKELY-UNUSED</span></td><td>No references anywhere (src / functions / agents)</td><td>REMOVAL CANDIDATE</td></tr>
+<tr><td><b>SexualHealthLogs</b></td><td><span class="pill gap">LIKELY-UNUSED</span></td><td>No references anywhere (src / functions / agents)</td><td>REMOVAL CANDIDATE</td></tr>
+<tr><td><b>VoiceCache</b></td><td><span class="pill gap">LIKELY-UNUSED</span></td><td>No references anywhere (src / functions / agents)</td><td>REMOVAL CANDIDATE</td></tr>
+<tr><td><b>CommunityPosts</b></td><td><span class="pill gap">SUPERSEDED</span></td><td>Legacy MP#8 posts — superseded by <b>CommunityPost</b> (current anon rooms). Only referenced by the orphan, un-routed CommunityMP8.jsx + founder docs.</td><td>Confirm w/ Halli — remove after legacy page retired</td></tr>
+<tr><td><b>Posts</b></td><td><span class="pill gap">SUPERSEDED</span></td><td>Old generic posts — superseded by <b>CommunityPost/Comment</b>. Still read/written by the legacy CommunityHub page (which IS routed).</td><td>Confirm w/ Halli — remove after legacy page retired</td></tr>
+<tr><td><b>AdviceHistory</b></td><td><span class="pill">BACKEND-ONLY</span></td><td>No frontend refs · 1 function / 0 agent file(s)</td><td>KEEP — verify the backend feature is still live</td></tr>
+<tr><td><b>DealsItems</b></td><td><span class="pill">BACKEND-ONLY</span></td><td>No frontend refs · 2 function / 0 agent file(s)</td><td>KEEP — verify the backend feature is still live</td></tr>
+<tr><td><b>FictionChapter</b></td><td><span class="pill">BACKEND-ONLY</span></td><td>No frontend refs · 3 function / 0 agent file(s)</td><td>KEEP — verify the backend feature is still live</td></tr>
+<tr><td><b>FictionWork</b></td><td><span class="pill">BACKEND-ONLY</span></td><td>No frontend refs · 5 function / 0 agent file(s)</td><td>KEEP — verify the backend feature is still live</td></tr>
+<tr><td><b>GoalContribution</b></td><td><span class="pill">BACKEND-ONLY</span></td><td>No frontend refs · 1 function / 0 agent file(s)</td><td>KEEP — verify the backend feature is still live</td></tr>
+<tr><td><b>IngestErrorLog</b></td><td><span class="pill">BACKEND-ONLY</span></td><td>No frontend refs · 17 function / 0 agent file(s)<div style="color:var(--muted);font-size:12px;margin-top:3px">Backend error log — heavily used across ingest functions.</div></td><td>KEEP — verify the backend feature is still live</td></tr>
+<tr><td><b>LifestyleSources</b></td><td><span class="pill">BACKEND-ONLY</span></td><td>No frontend refs · 8 function / 0 agent file(s)</td><td>KEEP — verify the backend feature is still live</td></tr>
+<tr><td><b>StoryPack</b></td><td><span class="pill">BACKEND-ONLY</span></td><td>No frontend refs · 6 function / 0 agent file(s)</td><td>KEEP — verify the backend feature is still live</td></tr>
+<tr><td><b>StoryVisualPool</b></td><td><span class="pill">BACKEND-ONLY</span></td><td>No frontend refs · 3 function / 0 agent file(s)</td><td>KEEP — verify the backend feature is still live</td></tr>
+<tr><td><b>VoiceProfiles</b></td><td><span class="pill">BACKEND-ONLY</span></td><td>No frontend refs · 1 function / 0 agent file(s)</td><td>KEEP — verify the backend feature is still live</td></tr>
+<tr><td><b>VoiceScripts</b></td><td><span class="pill">BACKEND-ONLY</span></td><td>No frontend refs · 3 function / 0 agent file(s)</td><td>KEEP — verify the backend feature is still live</td></tr>
+<tr><td><b>WeeklyBookPick</b></td><td><span class="pill">BACKEND-ONLY</span></td><td>No frontend refs · 2 function / 0 agent file(s)</td><td>KEEP — verify the backend feature is still live</td></tr>
+<tr><td><b>AdviceMessages</b></td><td><span class="pill ok">ACTIVE</span></td><td>1 src · 1 fn · 0 agent file(s)</td><td>KEEP</td></tr>
+<tr><td><b>AdviceThreads</b></td><td><span class="pill ok">ACTIVE</span></td><td>1 src · 1 fn · 0 agent file(s)</td><td>KEEP</td></tr>
+<tr><td><b>AppEvent</b></td><td><span class="pill ok">ACTIVE</span></td><td>1 src · 0 fn · 0 agent file(s)</td><td>KEEP</td></tr>
+<tr><td><b>AstroProfile</b></td><td><span class="pill ok">ACTIVE</span></td><td>5 src · 6 fn · 0 agent file(s)</td><td>KEEP</td></tr>
+<tr><td><b>AtelierLetters</b></td><td><span class="pill ok">ACTIVE</span></td><td>2 src · 1 fn · 0 agent file(s)</td><td>KEEP</td></tr>
+<tr><td><b>AudioSegments</b></td><td><span class="pill ok">ACTIVE</span></td><td>2 src · 0 fn · 0 agent file(s)</td><td>KEEP</td></tr>
+<tr><td><b>BbtLog</b></td><td><span class="pill ok">ACTIVE</span></td><td>4 src · 0 fn · 0 agent file(s)</td><td>KEEP</td></tr>
+<tr><td><b>BodyMetrics</b></td><td><span class="pill ok">ACTIVE</span></td><td>7 src · 0 fn · 0 agent file(s)</td><td>KEEP</td></tr>
+<tr><td><b>BookClubPick</b></td><td><span class="pill ok">ACTIVE</span></td><td>7 src · 0 fn · 0 agent file(s)</td><td>KEEP</td></tr>
+<tr><td><b>BucketItem</b></td><td><span class="pill ok">ACTIVE</span></td><td>4 src · 0 fn · 0 agent file(s)</td><td>KEEP</td></tr>
+<tr><td><b>CircleMembership</b></td><td><span class="pill ok">ACTIVE</span></td><td>2 src · 1 fn · 0 agent file(s)</td><td>KEEP</td></tr>
+<tr><td><b>Club</b></td><td><span class="pill ok">ACTIVE</span></td><td>24 src · 5 fn · 0 agent file(s)</td><td>KEEP</td></tr>
+<tr><td><b>ClubCheckpoint</b></td><td><span class="pill ok">ACTIVE</span></td><td>3 src · 0 fn · 0 agent file(s)</td><td>KEEP</td></tr>
+<tr><td><b>ClubMembership</b></td><td><span class="pill ok">ACTIVE</span></td><td>2 src · 2 fn · 0 agent file(s)</td><td>KEEP</td></tr>
+<tr><td><b>ClubNote</b></td><td><span class="pill ok">ACTIVE</span></td><td>5 src · 1 fn · 0 agent file(s)</td><td>KEEP</td></tr>
+<tr><td><b>Comment</b></td><td><span class="pill ok">ACTIVE</span></td><td>6 src · 3 fn · 0 agent file(s)</td><td>KEEP</td></tr>
+<tr><td><b>CommunityPost</b></td><td><span class="pill ok">ACTIVE</span></td><td>11 src · 3 fn · 0 agent file(s)</td><td>KEEP</td></tr>
+<tr><td><b>CompanionShare</b></td><td><span class="pill ok">ACTIVE</span></td><td>2 src · 0 fn · 0 agent file(s)</td><td>KEEP</td></tr>
+<tr><td><b>CompanionState</b></td><td><span class="pill ok">ACTIVE</span></td><td>7 src · 0 fn · 0 agent file(s)</td><td>KEEP</td></tr>
+<tr><td><b>CompatibilityReading</b></td><td><span class="pill ok">ACTIVE</span></td><td>1 src · 1 fn · 0 agent file(s)</td><td>KEEP</td></tr>
+<tr><td><b>ConnectionPref</b></td><td><span class="pill ok">ACTIVE</span></td><td>3 src · 0 fn · 0 agent file(s)</td><td>KEEP</td></tr>
+<tr><td><b>ContentBookmarks</b></td><td><span class="pill ok">ACTIVE</span></td><td>3 src · 0 fn · 1 agent file(s)</td><td>KEEP</td></tr>
+<tr><td><b>ContentHistory</b></td><td><span class="pill ok">ACTIVE</span></td><td>7 src · 2 fn · 1 agent file(s)</td><td>KEEP</td></tr>
+<tr><td><b>ContentItems</b></td><td><span class="pill ok">ACTIVE</span></td><td>12 src · 6 fn · 2 agent file(s)</td><td>KEEP</td></tr>
+<tr><td><b>ContentRatings</b></td><td><span class="pill ok">ACTIVE</span></td><td>1 src · 0 fn · 0 agent file(s)</td><td>KEEP</td></tr>
+<tr><td><b>ContractionSession</b></td><td><span class="pill ok">ACTIVE</span></td><td>3 src · 1 fn · 1 agent file(s)</td><td>KEEP</td></tr>
+<tr><td><b>Correlations</b></td><td><span class="pill ok">ACTIVE</span></td><td>8 src · 4 fn · 0 agent file(s)</td><td>KEEP</td></tr>
+<tr><td><b>CycleEvents</b></td><td><span class="pill ok">ACTIVE</span></td><td>23 src · 6 fn · 2 agent file(s)</td><td>KEEP</td></tr>
+<tr><td><b>CyclePredictions</b></td><td><span class="pill ok">ACTIVE</span></td><td>1 src · 0 fn · 0 agent file(s)<div style="color:var(--muted);font-size:12px;margin-top:3px">Read/written by src/lib/adaptivePrediction.js — active.</div></td><td>KEEP</td></tr>
+<tr><td><b>DailyCheckins</b></td><td><span class="pill ok">ACTIVE</span></td><td>71 src · 18 fn · 2 agent file(s)</td><td>KEEP</td></tr>
+<tr><td><b>DailyPhaseBrief</b></td><td><span class="pill ok">ACTIVE</span></td><td>3 src · 1 fn · 0 agent file(s)</td><td>KEEP</td></tr>
+<tr><td><b>DailyPlan</b></td><td><span class="pill ok">ACTIVE</span></td><td>13 src · 2 fn · 1 agent file(s)</td><td>KEEP</td></tr>
+<tr><td><b>DailyPromptResponse</b></td><td><span class="pill ok">ACTIVE</span></td><td>2 src · 1 fn · 1 agent file(s)</td><td>KEEP</td></tr>
+<tr><td><b>DailyStory</b></td><td><span class="pill ok">ACTIVE</span></td><td>12 src · 0 fn · 0 agent file(s)</td><td>KEEP</td></tr>
+<tr><td><b>Deals</b></td><td><span class="pill ok">ACTIVE</span></td><td>19 src · 0 fn · 0 agent file(s)</td><td>KEEP</td></tr>
+<tr><td><b>DrinkLog</b></td><td><span class="pill ok">ACTIVE</span></td><td>7 src · 0 fn · 1 agent file(s)<div style="color:var(--muted);font-size:12px;margin-top:3px">Caffeine/alcohol log — overlaps HydrationLog (water) but distinct purpose. Keep; possible future merge.</div></td><td>KEEP</td></tr>
+<tr><td><b>Echo</b></td><td><span class="pill ok">ACTIVE</span></td><td>63 src · 2 fn · 0 agent file(s)</td><td>KEEP</td></tr>
+<tr><td><b>Entitlements</b></td><td><span class="pill ok">ACTIVE</span></td><td>7 src · 2 fn · 0 agent file(s)</td><td>KEEP</td></tr>
+<tr><td><b>EventsItems</b></td><td><span class="pill ok">ACTIVE</span></td><td>5 src · 2 fn · 0 agent file(s)</td><td>KEEP</td></tr>
+<tr><td><b>FertileWindowLog</b></td><td><span class="pill ok">ACTIVE</span></td><td>2 src · 0 fn · 0 agent file(s)</td><td>KEEP</td></tr>
+<tr><td><b>GameResponse</b></td><td><span class="pill ok">ACTIVE</span></td><td>1 src · 3 fn · 0 agent file(s)</td><td>KEEP</td></tr>
+<tr><td><b>GameRound</b></td><td><span class="pill ok">ACTIVE</span></td><td>3 src · 3 fn · 0 agent file(s)</td><td>KEEP</td></tr>
+<tr><td><b>GardenChapter</b></td><td><span class="pill ok">ACTIVE</span></td><td>1 src · 0 fn · 0 agent file(s)</td><td>KEEP</td></tr>
+<tr><td><b>Goal</b></td><td><span class="pill ok">ACTIVE</span></td><td>15 src · 0 fn · 0 agent file(s)</td><td>KEEP</td></tr>
+<tr><td><b>HabitLogs</b></td><td><span class="pill ok">ACTIVE</span></td><td>49 src · 4 fn · 2 agent file(s)</td><td>KEEP</td></tr>
+<tr><td><b>HairRoutine</b></td><td><span class="pill ok">ACTIVE</span></td><td>1 src · 0 fn · 0 agent file(s)</td><td>KEEP</td></tr>
+<tr><td><b>HoroscopePersistedClassification</b></td><td><span class="pill ok">ACTIVE</span></td><td>2 src · 2 fn · 0 agent file(s)</td><td>KEEP</td></tr>
+<tr><td><b>HoroscopeReading</b></td><td><span class="pill ok">ACTIVE</span></td><td>12 src · 2 fn · 0 agent file(s)</td><td>KEEP</td></tr>
+<tr><td><b>HotFlashLog</b></td><td><span class="pill ok">ACTIVE</span></td><td>1 src · 0 fn · 0 agent file(s)</td><td>KEEP</td></tr>
+<tr><td><b>HydrationLog</b></td><td><span class="pill ok">ACTIVE</span></td><td>41 src · 3 fn · 1 agent file(s)</td><td>KEEP</td></tr>
+<tr><td><b>InsightCards</b></td><td><span class="pill ok">ACTIVE</span></td><td>11 src · 9 fn · 0 agent file(s)</td><td>KEEP</td></tr>
+<tr><td><b>Intention</b></td><td><span class="pill ok">ACTIVE</span></td><td>17 src · 0 fn · 0 agent file(s)</td><td>KEEP</td></tr>
+<tr><td><b>InvisibleTask</b></td><td><span class="pill ok">ACTIVE</span></td><td>1 src · 0 fn · 0 agent file(s)</td><td>KEEP</td></tr>
+<tr><td><b>JessConversation</b></td><td><span class="pill ok">ACTIVE</span></td><td>6 src · 0 fn · 0 agent file(s)</td><td>KEEP</td></tr>
+<tr><td><b>JessMemory</b></td><td><span class="pill ok">ACTIVE</span></td><td>7 src · 0 fn · 0 agent file(s)</td><td>KEEP</td></tr>
+<tr><td><b>JournalEntries</b></td><td><span class="pill ok">ACTIVE</span></td><td>47 src · 2 fn · 2 agent file(s)</td><td>KEEP</td></tr>
+<tr><td><b>KickLog</b></td><td><span class="pill ok">ACTIVE</span></td><td>2 src · 0 fn · 0 agent file(s)<div style="color:var(--muted);font-size:12px;margin-top:3px">Overlaps PregnancyKickSession (kick counting). Possible legacy pair — confirm which the live pregnancy flow writes.</div></td><td>KEEP</td></tr>
+<tr><td><b>LabResults</b></td><td><span class="pill ok">ACTIVE</span></td><td>1 src · 0 fn · 0 agent file(s)</td><td>KEEP</td></tr>
+<tr><td><b>LifeAdminItem</b></td><td><span class="pill ok">ACTIVE</span></td><td>1 src · 0 fn · 0 agent file(s)</td><td>KEEP</td></tr>
+<tr><td><b>LifestyleInteractions</b></td><td><span class="pill ok">ACTIVE</span></td><td>4 src · 4 fn · 0 agent file(s)</td><td>KEEP</td></tr>
+<tr><td><b>LifestyleItems</b></td><td><span class="pill ok">ACTIVE</span></td><td>28 src · 27 fn · 1 agent file(s)</td><td>KEEP</td></tr>
+<tr><td><b>LifestyleProfile</b></td><td><span class="pill ok">ACTIVE</span></td><td>3 src · 4 fn · 0 agent file(s)</td><td>KEEP</td></tr>
+<tr><td><b>MealItems</b></td><td><span class="pill ok">ACTIVE</span></td><td>2 src · 2 fn · 0 agent file(s)<div style="color:var(--muted);font-size:12px;margin-top:3px">Written by meal-vision functions; low frontend use but active.</div></td><td>KEEP</td></tr>
+<tr><td><b>MealLog</b></td><td><span class="pill ok">ACTIVE</span></td><td>52 src · 3 fn · 1 agent file(s)</td><td>KEEP</td></tr>
+<tr><td><b>MealPlans</b></td><td><span class="pill ok">ACTIVE</span></td><td>20 src · 1 fn · 1 agent file(s)</td><td>KEEP</td></tr>
+<tr><td><b>MealTemplates</b></td><td><span class="pill ok">ACTIVE</span></td><td>13 src · 0 fn · 0 agent file(s)</td><td>KEEP</td></tr>
+<tr><td><b>MedicationLogs</b></td><td><span class="pill ok">ACTIVE</span></td><td>21 src · 1 fn · 1 agent file(s)</td><td>KEEP</td></tr>
+<tr><td><b>MedicationReminders</b></td><td><span class="pill ok">ACTIVE</span></td><td>7 src · 2 fn · 0 agent file(s)</td><td>KEEP</td></tr>
+<tr><td><b>MenopauseDailyLog</b></td><td><span class="pill ok">ACTIVE</span></td><td>11 src · 1 fn · 0 agent file(s)</td><td>KEEP</td></tr>
+<tr><td><b>MenopauseProfile</b></td><td><span class="pill ok">ACTIVE</span></td><td>5 src · 0 fn · 0 agent file(s)</td><td>KEEP</td></tr>
+<tr><td><b>MenopauseSymptomEntry</b></td><td><span class="pill ok">ACTIVE</span></td><td>1 src · 1 fn · 1 agent file(s)</td><td>KEEP</td></tr>
+<tr><td><b>MenopauseWeeklyReport</b></td><td><span class="pill ok">ACTIVE</span></td><td>1 src · 1 fn · 1 agent file(s)</td><td>KEEP</td></tr>
+<tr><td><b>MigrationLog</b></td><td><span class="pill ok">ACTIVE</span></td><td>1 src · 0 fn · 0 agent file(s)</td><td>KEEP</td></tr>
+<tr><td><b>NotificationLog</b></td><td><span class="pill ok">ACTIVE</span></td><td>4 src · 3 fn · 0 agent file(s)</td><td>KEEP</td></tr>
+<tr><td><b>NutritionInsight</b></td><td><span class="pill ok">ACTIVE</span></td><td>12 src · 0 fn · 1 agent file(s)</td><td>KEEP</td></tr>
+<tr><td><b>NutritionProfile</b></td><td><span class="pill ok">ACTIVE</span></td><td>10 src · 0 fn · 1 agent file(s)</td><td>KEEP</td></tr>
+<tr><td><b>OpkLog</b></td><td><span class="pill ok">ACTIVE</span></td><td>4 src · 0 fn · 0 agent file(s)</td><td>KEEP</td></tr>
+<tr><td><b>PainMap</b></td><td><span class="pill ok">ACTIVE</span></td><td>3 src · 0 fn · 0 agent file(s)</td><td>KEEP</td></tr>
+<tr><td><b>PanicLog</b></td><td><span class="pill ok">ACTIVE</span></td><td>3 src · 0 fn · 0 agent file(s)</td><td>KEEP</td></tr>
+<tr><td><b>PanicSessions</b></td><td><span class="pill ok">ACTIVE</span></td><td>4 src · 0 fn · 0 agent file(s)</td><td>KEEP</td></tr>
+<tr><td><b>PantryItem</b></td><td><span class="pill ok">ACTIVE</span></td><td>5 src · 0 fn · 0 agent file(s)</td><td>KEEP</td></tr>
+<tr><td><b>PartnerAccess</b></td><td><span class="pill ok">ACTIVE</span></td><td>1 src · 1 fn · 0 agent file(s)</td><td>KEEP</td></tr>
+<tr><td><b>PersonalTasks</b></td><td><span class="pill ok">ACTIVE</span></td><td>22 src · 1 fn · 0 agent file(s)</td><td>KEEP</td></tr>
+<tr><td><b>PhaseHistory</b></td><td><span class="pill ok">ACTIVE</span></td><td>1 src · 4 fn · 0 agent file(s)</td><td>KEEP</td></tr>
+<tr><td><b>PlannerItems</b></td><td><span class="pill ok">ACTIVE</span></td><td>36 src · 0 fn · 0 agent file(s)</td><td>KEEP</td></tr>
+<tr><td><b>PodcastListens</b></td><td><span class="pill ok">ACTIVE</span></td><td>2 src · 0 fn · 0 agent file(s)</td><td>KEEP</td></tr>
+<tr><td><b>PregnancyDailyLog</b></td><td><span class="pill ok">ACTIVE</span></td><td>6 src · 0 fn · 0 agent file(s)</td><td>KEEP</td></tr>
+<tr><td><b>PregnancyKickSession</b></td><td><span class="pill ok">ACTIVE</span></td><td>4 src · 1 fn · 1 agent file(s)</td><td>KEEP</td></tr>
+<tr><td><b>PregnancyProfile</b></td><td><span class="pill ok">ACTIVE</span></td><td>5 src · 1 fn · 0 agent file(s)</td><td>KEEP</td></tr>
+<tr><td><b>ProgramDays</b></td><td><span class="pill ok">ACTIVE</span></td><td>6 src · 0 fn · 1 agent file(s)</td><td>KEEP</td></tr>
+<tr><td><b>ProgramRecommendations</b></td><td><span class="pill ok">ACTIVE</span></td><td>1 src · 1 fn · 0 agent file(s)</td><td>KEEP</td></tr>
+<tr><td><b>Programs</b></td><td><span class="pill ok">ACTIVE</span></td><td>42 src · 10 fn · 1 agent file(s)</td><td>KEEP</td></tr>
+<tr><td><b>ProgramTasks</b></td><td><span class="pill ok">ACTIVE</span></td><td>5 src · 1 fn · 1 agent file(s)</td><td>KEEP</td></tr>
+<tr><td><b>QotdResponse</b></td><td><span class="pill ok">ACTIVE</span></td><td>3 src · 1 fn · 0 agent file(s)</td><td>KEEP</td></tr>
+<tr><td><b>Reaction</b></td><td><span class="pill ok">ACTIVE</span></td><td>3 src · 1 fn · 0 agent file(s)</td><td>KEEP</td></tr>
+<tr><td><b>ReadingActivity</b></td><td><span class="pill ok">ACTIVE</span></td><td>2 src · 1 fn · 0 agent file(s)</td><td>KEEP</td></tr>
+<tr><td><b>Reports</b></td><td><span class="pill ok">ACTIVE</span></td><td>3 src · 0 fn · 0 agent file(s)</td><td>KEEP</td></tr>
+<tr><td><b>RitualContribution</b></td><td><span class="pill ok">ACTIVE</span></td><td>1 src · 1 fn · 0 agent file(s)</td><td>KEEP</td></tr>
+<tr><td><b>SavedItems</b></td><td><span class="pill ok">ACTIVE</span></td><td>7 src · 1 fn · 1 agent file(s)</td><td>KEEP</td></tr>
+<tr><td><b>SealedLetters</b></td><td><span class="pill ok">ACTIVE</span></td><td>15 src · 0 fn · 0 agent file(s)</td><td>KEEP</td></tr>
+<tr><td><b>ShoppingList</b></td><td><span class="pill ok">ACTIVE</span></td><td>13 src · 0 fn · 1 agent file(s)</td><td>KEEP</td></tr>
+<tr><td><b>SkinRoutine</b></td><td><span class="pill ok">ACTIVE</span></td><td>1 src · 0 fn · 0 agent file(s)</td><td>KEEP</td></tr>
+<tr><td><b>SkyNote</b></td><td><span class="pill ok">ACTIVE</span></td><td>2 src · 0 fn · 0 agent file(s)</td><td>KEEP</td></tr>
+<tr><td><b>StoryItem</b></td><td><span class="pill ok">ACTIVE</span></td><td>1 src · 5 fn · 0 agent file(s)</td><td>KEEP</td></tr>
+<tr><td><b>Subscription</b></td><td><span class="pill ok">ACTIVE</span></td><td>1 src · 1 fn · 0 agent file(s)</td><td>KEEP</td></tr>
+<tr><td><b>SupplementLog</b></td><td><span class="pill ok">ACTIVE</span></td><td>8 src · 0 fn · 0 agent file(s)</td><td>KEEP</td></tr>
+<tr><td><b>SymptomLogs</b></td><td><span class="pill ok">ACTIVE</span></td><td>47 src · 4 fn · 2 agent file(s)</td><td>KEEP</td></tr>
+<tr><td><b>TodayRecommendations</b></td><td><span class="pill ok">ACTIVE</span></td><td>1 src · 2 fn · 1 agent file(s)</td><td>KEEP</td></tr>
+<tr><td><b>TwinEntry</b></td><td><span class="pill ok">ACTIVE</span></td><td>2 src · 2 fn · 0 agent file(s)</td><td>KEEP</td></tr>
+<tr><td><b>TwinPair</b></td><td><span class="pill ok">ACTIVE</span></td><td>2 src · 4 fn · 0 agent file(s)</td><td>KEEP</td></tr>
+<tr><td><b>UserPreferences</b></td><td><span class="pill ok">ACTIVE</span></td><td>3 src · 7 fn · 1 agent file(s)</td><td>KEEP</td></tr>
+<tr><td><b>UserProfile</b></td><td><span class="pill ok">ACTIVE</span></td><td>92 src · 27 fn · 1 agent file(s)</td><td>KEEP</td></tr>
+<tr><td><b>UserPrograms</b></td><td><span class="pill ok">ACTIVE</span></td><td>18 src · 9 fn · 1 agent file(s)</td><td>KEEP</td></tr>
+<tr><td><b>UserTaskCompletions</b></td><td><span class="pill ok">ACTIVE</span></td><td>3 src · 0 fn · 1 agent file(s)</td><td>KEEP</td></tr>
+<tr><td><b>VoiceNote</b></td><td><span class="pill ok">ACTIVE</span></td><td>2 src · 1 fn · 0 agent file(s)</td><td>KEEP</td></tr>
+<tr><td><b>WearableSync</b></td><td><span class="pill ok">ACTIVE</span></td><td>6 src · 1 fn · 0 agent file(s)</td><td>KEEP</td></tr>
+<tr><td><b>WeeklyInsights</b></td><td><span class="pill ok">ACTIVE</span></td><td>20 src · 1 fn · 0 agent file(s)</td><td>KEEP</td></tr>
+<tr><td><b>WellnessSessions</b></td><td><span class="pill ok">ACTIVE</span></td><td>1 src · 1 fn · 0 agent file(s)</td><td>KEEP</td></tr>
+<tr><td><b>WisdomEntry</b></td><td><span class="pill ok">ACTIVE</span></td><td>3 src · 1 fn · 0 agent file(s)</td><td>KEEP</td></tr>
+<tr><td><b>WitnessRequest</b></td><td><span class="pill ok">ACTIVE</span></td><td>4 src · 7 fn · 0 agent file(s)</td><td>KEEP</td></tr>
+<tr><td><b>WitnessStrike</b></td><td><span class="pill ok">ACTIVE</span></td><td>3 src · 2 fn · 0 agent file(s)</td><td>KEEP</td></tr>
+<tr><td><b>User</b></td><td><span class="pill">SYSTEM</span></td><td>base44 built-in auth entity</td><td>KEEP — never remove</td></tr>
+</tbody>
+</table>
+</div>
+
+<div class="section" style="margin-top:22px">
+  <div class="eyebrow">What happens next</div>
+  <h4>Done this pass</h4>
+  <ul>
+    <li>Enumerated all <b>149</b> entities from <code>base44/entities/*.jsonc</code>.</li>
+    <li>Cross-referenced every one across <code>src</code>, <code>functions</code>, <code>agents</code> (whole-word).</li>
+    <li>Classified all 149 · opened candidate schemas by hand · flagged superseded pairs &amp; overlaps.</li>
+    <li>Shipped this report + wired it to the IDEAS pill. <b>No entity or data was deleted or modified.</b></li>
+  </ul>
+  <h4>Queued / awaiting Halli</h4>
+  <ul>
+    <li><b>You:</b> approve which of the 15 candidates to remove (tier 1 first).</li>
+    <li><b>Me (once you approve + data access is unblocked):</b> pull live row counts, export any with rows, then remove one-at-a-time with a redeploy + walk between each.</li>
+    <li>Decide the <code>DrinkLog</code>/<code>Hydration</code> and <code>KickLog</code>/<code>PregnancyKickSession</code> merges separately.</li>
+    <li>Retire orphan legacy pages (<code>CommunityMP8</code>, then <code>CommunityHub</code>) to unlock the tier-2 removals.</li>
+  </ul>
+</div>
+
+<div class="foot">FemWell · Entity Audit &amp; Removal Plan · generated read-only 2026-07-09 · no deletions performed<br>Measured from the repo at HEAD. Live row counts pending data-API access.</div>
+
+</div></body></html>
