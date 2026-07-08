@@ -2309,6 +2309,7 @@ function RedesignHome({ presence, lifeStage, profile, user, onEnter, onCrisis, o
           { Icon: HeartHandshake, cw: "sage", label: "Together this week", onClick: () => onEnter("rituals") },
           { Icon: Moon, cw: "plum", label: "Close the week", onClick: () => onEnter("rituals") },
           { Icon: Dices, cw: "crimson", label: "Tonight's game", onClick: () => onEnter("games") },
+          { Icon: MessageCircle, cw: "sage", label: "Talk to Jess", onClick: () => window.dispatchEvent(new CustomEvent("fw_open_assistant", { detail: { from: "community" } })) },
           { Icon: Send, cw: "gold", label: "Invite a friend", onClick: () => onEnter("share") },
         ]} />
       </div>
@@ -2483,9 +2484,17 @@ export function CommunityInner({ initialView = null, embedded = false, homeVaria
 
 export default function Community() {
   const navigate = useNavigate();
+  // LIVE PROMOTION (2026-07-08): /Community renders the 4-shelf REDESIGN home on the
+  // canonical §6.8.2 page template + the finished Talk rooms (enhanced) + the calm
+  // "safe on the surface" model + inclusive wording + light 18+ gate. It is a strict
+  // SUPERSET of the classic home — every surface (rooms · circles · clubs · library ·
+  // games · echo · QotD · resonance · wisdom/pool/close rituals · witness/twin/share ·
+  // Jess) is reachable via the shelf boards / hero / summary / handy row / Jump hub.
+  // ONE-LINE REVERT: change homeVariant="redesign" back to homeVariant="classic" (or
+  // drop the prop) — the classic Home component is kept verbatim below as the fallback.
   return (
     <AgeGate surfaceName="the Community" onDecline={() => navigate("/Today")}>
-      <CommunityInner />
+      <CommunityInner homeVariant="redesign" />
     </AgeGate>
   );
 }
