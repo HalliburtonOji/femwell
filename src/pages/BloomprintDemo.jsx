@@ -559,6 +559,77 @@ export default function BloomprintDemo() {
           </div>
         </div>
 
+        {/* ── YOUR BLOOM IS A PLACE ──────────────────────────────────────── */}
+        <div style={{ marginTop: 30 }}>
+          <Eyebrow color={cw.petal}>A place, not a profile</Eyebrow>
+          <SectionTitle>Your bloom is a little patch that's you</SectionTitle>
+          <p style={{ fontFamily: SERIF, fontSize: 14.5, color: T.inkSoft, lineHeight: 1.5, margin: "8px 2px 0" }}>
+            When you open up (My-flower or Named), your bloom becomes a small place others can visit — a corner of the meadow that's yours. You curate it: a line you're holding, a few notes tucked in the border, the blooms and seasons you've earned, your companion. Never a corporate profile — <b>a garden patch that <i>is</i> you</b>. This is what a visitor sees:
+          </p>
+          <PatchView
+            isOwner
+            patch={{ id: "me", tier: "owner", name: bloomName, form: companion.form.key, cw: cw.key, stage: stage.name,
+              quote: "Grown gently, at my own pace.",
+              notes: ["Trying to end the day with one kind thought. Some days it's just 'the tea was nice.'", "Signed up for the pottery class. Terrified. Going anyway."],
+              earned: earned.map((m) => m.title).slice(0, 3), seasons: seasonChips.length }}
+            guests={myGuests} viewerCw={cw.key}
+          />
+        </div>
+
+        {/* ── THE MEADOW — VISIT EACH OTHER ──────────────────────────────── */}
+        <div style={{ marginTop: 30 }}>
+          <Eyebrow color={T.sage}>One living thing</Eyebrow>
+          <SectionTitle>The meadow — where blooms stand together</SectionTitle>
+          <p style={{ fontFamily: SERIF, fontSize: 14.5, color: T.inkSoft, lineHeight: 1.5, margin: "8px 2px 0" }}>
+            Your garden and the meadow are <b>one surface at different zooms</b>: your patch up close, the whole field wide, and a <b>visit</b> is walking up to another woman's bloom. Tap one to visit her patch and leave a kind note — a petal in her colour. Veiled blooms stand in the field too, but keep to themselves.
+          </p>
+
+          {/* the field — a strip of neighbour blooms */}
+          <div style={{ display: "flex", gap: 12, overflowX: "auto", padding: "14px 2px 6px", scrollbarWidth: "none" }}>
+            {NEIGHBOURS.map((n) => {
+              const visitable = n.tier !== "veiled";
+              const on = visiting === n.id;
+              return (
+                <button key={n.id} onClick={() => setVisiting(on ? null : n.id)} style={{ flex: "0 0 auto", width: 92, display: "flex", flexDirection: "column", alignItems: "center", gap: 5, padding: "10px 6px", borderRadius: 14, cursor: "pointer", background: on ? `${cwOf(n.cw).petal}14` : T.paperHi, border: `1px solid ${on ? cwOf(n.cw).petal : T.paperDeep}`, opacity: visitable ? 1 : 0.72 }}>
+                  <BloomAvatar form={n.form} cw={n.cw} size={44} ring={visitable ? cwOf(n.cw).petal : T.paperDeep} />
+                  <span style={{ fontFamily: UI, fontSize: 11, fontWeight: 700, color: visitable ? T.ink : T.muted, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", maxWidth: 84 }}>{visitable ? neighbourName(n) : "A quiet bloom"}</span>
+                  <span style={{ fontFamily: UI, fontSize: 9.5, fontWeight: 700, letterSpacing: ".04em", textTransform: "uppercase", color: visitable ? T.sage : T.muted }}>{visitable ? "visit" : "veiled"}</span>
+                </button>
+              );
+            })}
+          </div>
+
+          {/* the open patch, or a prompt */}
+          {(() => {
+            const n = NEIGHBOURS.find((x) => x.id === visiting);
+            if (!n) return <div style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 14, color: T.muted, textAlign: "center", padding: "14px 0 2px" }}>Tap a bloom above to visit her patch.</div>;
+            if (n.tier === "veiled") return (
+              <div style={{ ...cardBase(T.muted), marginTop: 4, display: "flex", gap: 11, alignItems: "center" }}>
+                <BloomAvatar form={n.form} cw={n.cw} size={40} />
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontFamily: SERIF, fontSize: 15, fontWeight: 600, color: T.ink }}>A quiet bloom, keeping to herself.</div>
+                  <div style={{ fontFamily: UI, fontSize: 12, color: T.muted }}>She's veiled — present in the meadow, but her patch isn't open to visit. That's her choice, always honoured.</div>
+                </div>
+              </div>
+            );
+            return (
+              <PatchView
+                patch={{ id: n.id, tier: n.tier, name: n.tier === "named" ? n.name : null, form: n.form, cw: n.cw, stage: n.stage, quote: n.quote, notes: n.notes, earned: n.earned, seasons: n.seasons }}
+                guests={guestbooks[n.id] || []} viewerCw={cw.key}
+                onLeave={(g) => leaveNote(n.id, g)} onClose={() => setVisiting(null)}
+              />
+            );
+          })()}
+
+          {/* meadow-relationship note */}
+          <div style={{ display: "flex", gap: 10, marginTop: 12, padding: "13px 14px", background: `${cw.petal}10`, border: `1px solid ${cw.petal}33`, borderRadius: 14 }}>
+            <Flower2 size={17} color={cw.petal} style={{ flexShrink: 0, marginTop: 1 }} />
+            <div style={{ fontFamily: SERIF, fontSize: 13, color: T.inkSoft, lineHeight: 1.45 }}>
+              <b style={{ color: cw.petal }}>Garden and meadow are the same living thing.</b> Your Garden is your patch up close; the meadow is every opted-in patch standing together; visiting is a zoom into someone else's. Nothing new to learn — it's one place, seen near or far.
+            </div>
+          </div>
+        </div>
+
         {/* ── THE KIND-GROWTH CONTRACT ───────────────────────────────────── */}
         <div style={{ marginTop: 30, ...cardBase(T.gold) }}>
           <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10 }}>
