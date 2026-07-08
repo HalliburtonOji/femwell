@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>FemWell — Google + Apple Calendar Sync (research + plan)</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,600&family=Ephesis&display=swap');
+  :root{
+    --paper:#ECE7DA; --paperHi:#F4EFE3; --paperDeep:#D8CFBC;
+    --ink:#0B0805; --muted:#2E261B; --soft:#6B5E4A;
+    --gold:#A8893F; --crimson:#BC2E27; --oxblood:#7A1A12;
+    --blush:#E8B4B8; --sage:#8FAF8F; --plum:#8E6E8E;
+    --serif:"Cormorant Garamond",Georgia,serif;
+    --script:"Ephesis","Pinyon Script",cursive;
+    --ui:ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;
+  }
+  *{box-sizing:border-box}
+  body{margin:0; background:var(--paper); color:var(--ink); font-family:var(--serif); font-size:18px; line-height:1.62; -webkit-text-size-adjust:100%;
+    background-image:radial-gradient(120% 80% at 15% 0%, #F7F2E6 0%, rgba(247,242,230,0) 45%), radial-gradient(140% 100% at 100% 100%, rgba(216,207,188,0.35) 0%, rgba(216,207,188,0) 40%);}
+  .wrap{max-width:720px; margin:0 auto; padding:26px 18px 96px}
+  .eyebrow{font-family:var(--ui); font-size:11px; font-weight:700; letter-spacing:.18em; text-transform:uppercase; color:var(--gold)}
+  h1{font-family:var(--script); font-weight:400; color:var(--oxblood); font-size:clamp(40px,10vw,58px); line-height:1.03; margin:.18em 0 .1em; letter-spacing:.5px}
+  h2{font-family:var(--serif); font-style:italic; font-weight:600; color:var(--oxblood); font-size:clamp(24px,6.4vw,31px); line-height:1.15; margin:1.9em 0 .35em}
+  h3{font-family:var(--serif); font-weight:600; color:var(--oxblood); font-size:21px; margin:1.4em 0 .3em}
+  h4{font-family:var(--ui); font-weight:700; font-size:12.5px; letter-spacing:.05em; text-transform:uppercase; color:var(--soft); margin:1.3em 0 .3em}
+  p{margin:.5em 0} b,strong{color:var(--ink); font-weight:600} em{color:var(--muted)} a{color:var(--crimson)}
+  ul,ol{margin:.4em 0 .9em; padding-left:1.25em} li{margin:.32em 0}
+  code{font-family:ui-monospace,"SF Mono",Menlo,monospace; font-size:13.5px; background:var(--paperHi); border:1px solid var(--paperDeep); border-radius:6px; padding:1px 6px; color:var(--oxblood)}
+  hr{border:none; border-top:1px solid var(--paperDeep); margin:2.2em 0}
+  .lede{font-size:20px; color:var(--muted)}
+  .card{background:var(--paperHi); border:1px solid var(--paperDeep); border-radius:18px; padding:17px 18px; margin:16px 0; box-shadow:0 1px 0 rgba(255,255,255,.5) inset}
+  .rec{background:linear-gradient(180deg,#FBF7EC,#F4EFE3); border:1px solid var(--gold); border-left:4px solid var(--gold); border-radius:14px; padding:14px 16px; margin:14px 0}
+  .rec .tag{font-family:var(--ui); font-size:10.5px; font-weight:800; letter-spacing:.12em; text-transform:uppercase; color:var(--gold); display:block; margin-bottom:3px}
+  .warn{background:#FBEEEC; border:1px solid #E7B7B2; border-left:4px solid var(--crimson); border-radius:14px; padding:13px 16px; margin:14px 0}
+  .warn .tag{font-family:var(--ui); font-size:10.5px; font-weight:800; letter-spacing:.12em; text-transform:uppercase; color:var(--crimson); display:block; margin-bottom:3px}
+  .stop{background:#FBE9E7; border:2px solid var(--crimson); border-radius:16px; padding:16px 18px; margin:18px 0}
+  .stop .tag{font-family:var(--ui); font-size:12px; font-weight:800; letter-spacing:.1em; text-transform:uppercase; color:var(--crimson); display:block; margin-bottom:5px}
+  table{width:100%; border-collapse:collapse; font-size:15px; margin:12px 0; font-family:var(--ui)}
+  th,td{border:1px solid var(--paperDeep); padding:8px 10px; text-align:left; vertical-align:top}
+  th{background:var(--paperHi); font-weight:700; font-size:12px; text-transform:uppercase; letter-spacing:.03em; color:var(--soft)}
+  .tblwrap{overflow-x:auto}
+  .opt{border:1px solid var(--paperDeep); border-radius:12px; padding:12px 14px; margin:10px 0; background:#FBF8EF}
+  .opt .h{font-family:var(--ui); font-weight:700; font-size:13.5px; color:var(--ink)}
+  .opt .verdict{font-family:var(--ui); font-size:11px; font-weight:700; padding:2px 9px; border-radius:999px; float:right}
+  .win{background:var(--sage); color:#12240f} .no{background:var(--paperDeep); color:var(--muted)}
+  .pro{color:#3f6b3a} .con{color:var(--crimson)}
+  .toc a{display:block; font-family:var(--ui); font-size:14px; color:var(--muted); text-decoration:none; padding:5px 0; border-bottom:1px solid var(--paperDeep)}
+  .toc a b{color:var(--oxblood)}
+  .flow{font-family:var(--ui); font-size:14px; background:#FBF8EF; border:1px solid var(--paperDeep); border-radius:12px; padding:12px 14px; margin:10px 0}
+  .arrow{color:var(--gold); font-weight:800}
+  .pill{display:inline-block; font-family:var(--ui); font-size:12px; font-weight:600; padding:3px 10px; border-radius:999px; background:var(--paperHi); border:1px solid var(--paperDeep); color:var(--muted); margin:2px}
+  .note-tiny{font-family:var(--ui); font-size:11px; color:var(--soft)}
+  .phase{border-left:3px solid var(--gold); padding:2px 0 2px 14px; margin:12px 0}
+  .phase .n{font-family:var(--ui); font-weight:800; font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--gold)}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <span class="eyebrow">FemWell · Research + plan · NOT built — needs sign-off before any build</span>
+  <h1>Calendar Sync<br>— Google &amp; Apple</h1>
+  <p class="lede">How FemWell's <b>Planner</b> and <b>Logger</b> could sync two-way with a user's Google and Apple calendars — so a rota you photographed, a planned meal, or a scan appointment shows up in their phone calendar, and their real-life events show up in FemWell. This is a <b>plan</b>. Building it crosses two hard lines (a new backend function + external OAuth credentials), so it's <b>gated on your sign-off</b>.</p>
+
+  <div class="stop">
+    <span class="tag">⛔ Build gate — read first</span>
+    This cannot be built inside our current rules. It <b>requires all three</b>: (1) a <b>NEW base44 function</b> (OAuth callback + sync worker — the photo work reused an existing function; this genuinely can't), (2) <b>external OAuth credentials</b> (a Google Cloud project + OAuth consent screen; an Apple app-specific-password or CalDAV setup), and (3) <b>possibly paid quota / verification</b> (Google API quota is free at our scale, but the OAuth consent screen needs Google <em>verification</em> because Calendar is a "sensitive/restricted" scope — a review process, not a bill). <b>None of this should start without your explicit go-ahead.</b> The rest of this doc is the plan for when you say yes.
+  </div>
+
+  <div class="card toc">
+    <h4 style="margin-top:0">On this page</h4>
+    <a href="#now">1 · Current state <b>— what exists today (spoiler: nothing)</b></a>
+    <a href="#goal">2 · What "sync" should mean for FemWell</a>
+    <a href="#google">3 · Google Calendar — the approach</a>
+    <a href="#apple">4 · Apple / iCloud — the harder one</a>
+    <a href="#direction">5 · One-way vs two-way · import vs export</a>
+    <a href="#flow">6 · How items flow (Planner + Logger)</a>
+    <a href="#data">7 · Data-model changes we'd need</a>
+    <a href="#edge">8 · Edge cases (dupes · timezones · overnight · recurrence · revoke)</a>
+    <a href="#build">9 · Exactly what building it requires</a>
+    <a href="#rec">10 · Recommended path + phasing</a>
+  </div>
+
+  <hr>
+
+  <!-- 1 -->
+  <h2 id="now">1 · Current state — what exists today</h2>
+  <p>I searched the whole codebase. <b>There is no calendar sync, import, or export of any kind.</b> Specifically:</p>
+  <div class="tblwrap"><table>
+    <tr><th>Looked for</th><th>Found</th></tr>
+    <tr><td>Google Calendar API / CalDAV / iCloud / <code>.ics</code> / webcal</td><td><b>None.</b> No library, no endpoint, no import/export.</td></tr>
+    <tr><td>An events sync function</td><td><code>refreshEvents</code> exists but it's <b>community-event discovery</b> (LLM-curated women's networking/fitness listings into an admin-only <code>EventsItems</code> table) — <em>not</em> a personal calendar sync.</td></tr>
+    <tr><td>Any OAuth integration to copy</td><td>Only <b>Stripe</b> (payments) — and that's an <b>API-key</b>, not an OAuth user-consent flow. So there's <b>no OAuth pattern in the app to reuse</b> — we'd build the first one.</td></tr>
+    <tr><td>Existing "export" flows</td><td>The GP/Doctor export (<code>GpExportButton</code>, <code>MergedExportSheet</code>) produces a <b>PDF health summary</b> — not a calendar file.</td></tr>
+    <tr><td>Backend secret handling</td><td>base44 supports per-app secrets (<code>base44 secrets set KEY=…</code>, read via <code>Deno.env.get</code>). Functions already use <code>OPENAI_API_KEY</code>, <code>STRIPE_API_KEY</code>, ElevenLabs, etc. So <b>secret storage is solved</b> — the missing piece is an OAuth <em>flow</em>, not a place to keep keys.</td></tr>
+  </table></div>
+  <p>The <b>Planner</b> data (<code>PlannerItems</code>) stores <code>date</code> (local <code>YYYY-MM-DD</code>), <code>time</code> (local <code>HH:MM</code>), <code>title</code>, <code>category</code>, and a <code>repeat</code> field (once/daily/weekly/monthly). Logs (<code>MealLog</code>, <code>SymptomLogs</code>, <code>HabitLogs</code>) key off a local <code>day_key</code>. <b>Crucially: no timezone field, and no place to store an external calendar's event id</b> — both of which sync needs.</p>
+
+  <hr>
+
+  <!-- 2 -->
+  <h2 id="goal">2 · What "sync" should mean for FemWell</h2>
+  <p>Two surfaces, two directions:</p>
+  <div class="tblwrap"><table>
+    <tr><th>Surface</th><th>Out → their calendar</th><th>In → FemWell</th></tr>
+    <tr><td><b>Planner</b> (events, plans, the rota shifts we now parse)</td><td>A planned shift / appointment / event appears in Google/Apple Calendar with time + location.</td><td>Their real calendar events appear in the Planner day-view so FemWell knows when they're busy (and can plan cycle-aware around it).</td></tr>
+    <tr><td><b>Logger</b> (retrospective logs — meals, symptoms, meds)</td><td>Optional: a lightweight "took meds 8am" or "migraine 2pm" as a calendar event, for people who live in their calendar.</td><td><b>Rarely inbound.</b> Logs are FemWell-native; we don't pull food/symptoms <em>from</em> a calendar. So the Logger is <b>export-mostly</b>, one-way.</td></tr>
+  </table></div>
+  <div class="rec"><span class="tag">Framing</span>The <b>Planner is the two-way surface</b> (events flow both ways). The <b>Logger is export-only and optional</b> (and privacy-sensitive — a "migraine" or a fertility appointment in a shared Google calendar is a real disclosure risk, see §8). Lead with the Planner.</div>
+
+  <hr>
+
+  <!-- 3 -->
+  <h2 id="google">3 · Google Calendar — the approach</h2>
+  <p>The mature, well-documented path. <b>OAuth 2.0 + the Google Calendar REST API.</b></p>
+  <h4>How it works</h4>
+  <ol>
+    <li><b>Consent:</b> user taps "Connect Google Calendar" in Settings → we redirect to Google's OAuth consent screen (scope <code>calendar.events</code>) → Google redirects back to <b>our callback</b> with an auth code.</li>
+    <li><b>Token exchange:</b> a base44 function swaps the code for an <b>access token + refresh token</b>, stored per-user (encrypted, server-side — never in the client).</li>
+    <li><b>Export (out):</b> when a Planner item is created/edited, the function calls <code>events.insert</code>/<code>events.patch</code> and stores the returned Google <code>eventId</code> on our row.</li>
+    <li><b>Import (in):</b> a sync worker calls <code>events.list</code> with a <b>sync token</b> (Google's incremental-sync mechanism — only changed events since last pull) and upserts them into the Planner.</li>
+  </ol>
+  <div class="flow"><b>Sync trigger options:</b> <span class="pill">on app open</span> <span class="pill">a "Refresh" button</span> <span class="pill">a daily cron</span> <span class="pill">push via Google "watch" webhooks (advanced)</span> — recommend <b>on-open + manual refresh</b> for v1; webhooks later.</div>
+  <p class="note-tiny"><b>Cost/quota reality:</b> the Calendar API is free at our scale (generous per-user quotas). The real cost is the <b>OAuth consent-screen verification</b>: <code>calendar.events</code> is a Google "sensitive scope," so the consent screen must pass Google review before &gt;100 users can connect (a form + a demo video + a privacy-policy URL — days-to-weeks, not money). Until verified, it works for a test-user allowlist.</p>
+
+  <hr>
+
+  <!-- 4 -->
+  <h2 id="apple">4 · Apple / iCloud — the harder one</h2>
+  <p>Apple has <b>no clean public Calendar REST API</b> like Google. Three routes, none as tidy:</p>
+  <div class="opt"><span class="verdict no">Fiddly</span><span class="h">A · CalDAV to iCloud</span>
+    <p><span class="pro">+</span> True two-way. <span class="con">–</span> Requires the user to generate an <b>app-specific password</b> in their Apple ID (clunky UX), and CalDAV is a verbose XML protocol; iCloud's CalDAV is under-documented and quirky.</p></div>
+  <div class="opt"><span class="verdict win">Best for v1</span><span class="h">B · <code>.ics</code> subscribe + export</span>
+    <p><span class="pro">+</span> Export FemWell → a hosted <code>webcal://</code> feed the user <b>subscribes</b> to in Apple Calendar (read-only, auto-refreshing). Import their events → let them export an <code>.ics</code> from Apple Calendar and upload it (one-off). No passwords, no Apple API. <span class="con">–</span> Not live two-way — the subscribe feed is one-way (FemWell → Apple), and inbound is a manual file, not continuous.</p></div>
+  <div class="opt"><span class="verdict no">Native-only</span><span class="h">C · EventKit (a real iOS app)</span>
+    <p><span class="con">–</span> The proper native API — but needs a real iOS app wrapper. FemWell is a web app on femwells.com, so this is off the table until/unless there's a native shell.</p></div>
+  <div class="rec"><span class="tag">Apple recommendation</span>Ship <b>B (a <code>webcal</code> subscribe feed out + <code>.ics</code> upload in)</b> for Apple users — no app-specific passwords, works today on a web app. Offer CalDAV (A) later only if users ask for live two-way. This means <b>Apple is one-way-live + manual-in</b>, while <b>Google is fully two-way</b> — set that expectation.</p></div>
+
+  <hr>
+
+  <!-- 5 -->
+  <h2 id="direction">5 · One-way vs two-way · import vs export</h2>
+  <div class="tblwrap"><table>
+    <tr><th></th><th>Google</th><th>Apple</th></tr>
+    <tr><td><b>Export (FemWell → calendar)</b></td><td>Live, per-item (events.insert/patch)</td><td>Live via a <code>webcal</code> subscribe feed (read-only on their side)</td></tr>
+    <tr><td><b>Import (calendar → FemWell)</b></td><td>Live, incremental (sync token)</td><td>Manual <code>.ics</code> upload (or CalDAV later)</td></tr>
+    <tr><td><b>Direction v1</b></td><td><b>Two-way</b></td><td><b>One-way live + manual in</b></td></tr>
+  </table></div>
+  <div class="rec"><span class="tag">Sequencing recommendation</span>Build in this order so value lands early and risk stays low: <b>(1) Export-only, Google</b> — planned items push out (simplest, no merge conflicts). <b>(2) Import, Google</b> — pull their events in (adds dedupe + tz work). <b>(3) Apple <code>webcal</code>/<code>.ics</code>.</b> <b>(4) two-way conflict polish + Apple CalDAV</b> if wanted. Each phase is independently shippable and independently sign-off-able.</div>
+
+  <hr>
+
+  <!-- 6 -->
+  <h2 id="flow">6 · How items flow (Planner + Logger)</h2>
+  <div class="flow"><b>Planner item created in FemWell</b> <span class="arrow">→</span> sync worker builds a calendar event (title, start = <code>date</code>+<code>time</code> in the user's tz, end = +duration or the parsed shift end, location, a "via FemWell" note) <span class="arrow">→</span> <code>events.insert</code> <span class="arrow">→</span> store the returned <code>eventId</code> + <code>calendarId</code> on our row so future edits <code>patch</code> the same event (no duplicates).</div>
+  <div class="flow"><b>External event changes in Google</b> <span class="arrow">→</span> incremental <code>events.list</code> <span class="arrow">→</span> for each: if it carries our marker it's ours (skip/update); else it's a <b>real-life event</b> we upsert into the Planner as a read-only "from your calendar" block, so cycle-aware planning routes around it.</div>
+  <div class="flow"><b>The rota we now parse from a photo</b> <span class="arrow">→</span> the reviewed shifts (already PLAN entries, with overnight + location) <span class="arrow">→</span> each becomes a Google event; a <b>fixed</b> weekly rota maps neatly to a Google <b>RRULE recurring event</b> (one recurring event instead of N copies — see §8).</div>
+  <p><b>Logger:</b> meals/symptoms/meds are FemWell-native. Export is <b>opt-in per type</b> ("also add meds to my calendar as reminders"). Nothing about the cycle or symptoms goes to an external calendar unless the user explicitly turns that type on — default OFF.</p>
+
+  <hr>
+
+  <!-- 7 -->
+  <h2 id="data">7 · Data-model changes we'd need</h2>
+  <p>Sync needs a few new fields (a schema delta — owned by Ms Data, done as an MP, backward-compatible/additive):</p>
+  <ul>
+    <li><b>On <code>PlannerItems</code>:</b> <code>external_event_id</code>, <code>external_calendar_id</code>, <code>source</code> (enum: <code>manual</code> | <code>google</code> | <code>apple</code>), <code>synced_at</code> (ISO), <code>tz</code> (IANA, e.g. <code>Europe/London</code>). These let us dedupe, patch the right event, and show "from your calendar."</li>
+    <li><b>A new <code>CalendarConnection</code> entity:</b> <code>user_id</code>, <code>provider</code>, <code>access/refresh token</code> (encrypted), <code>scope</code>, <code>sync_token</code>, <code>calendar_id</code>, <code>last_synced_at</code>, <code>status</code>, <code>revoked_at</code>. One row per connected calendar.</li>
+    <li><b>On <code>UserProfile</code>:</b> a <code>timezone</code> (IANA) — asked once at connect, or inferred from the browser (<code>Intl.DateTimeFormat().resolvedOptions().timeZone</code>). Today the app assumes local time everywhere with no tz stored; sync makes an explicit tz mandatory.</li>
+  </ul>
+
+  <hr>
+
+  <!-- 8 -->
+  <h2 id="edge">8 · Edge cases</h2>
+  <div class="tblwrap"><table>
+    <tr><th>Case</th><th>Handling</th></tr>
+    <tr><td><b>Duplicates</b> (sync loops — our export comes back on import)</td><td>Tag every FemWell-created event with an <b>extended property / marker</b> (<code>femwell:itemId</code>). On import, skip events carrying our marker (they're already ours). Store the <code>external_event_id</code> so re-exports <b>patch</b>, never re-insert.</td></tr>
+    <tr><td><b>Timezones</b></td><td>Store a real <b>IANA tz</b> per user; convert our local <code>date</code>+<code>time</code> → an RFC5339 datetime <em>with</em> tz for Google; convert incoming events back to local <code>day_key</code>+<code>HH:MM</code>. This is the single biggest correctness risk — the app currently has <b>no tz at all</b>.</td></tr>
+    <tr><td><b>Overnight shifts</b> (3pm–12am, the rota case)</td><td>We already flag <code>end_next_day</code>. In a calendar event, end = <b>next day 00:00</b> in the same tz — a normal cross-midnight event. No all-day flattening.</td></tr>
+    <tr><td><b>Recurrence / fixed rotas</b></td><td>A <b>fixed</b> weekly schedule → a single Google event with an <b>RRULE</b> (<code>FREQ=WEEKLY</code>), not 12 copies — cleaner and editable in one place. A <b>flexible</b> schedule → discrete events. (Maps directly onto the fixed/flexible model we just built into the Planner.)</td></tr>
+    <tr><td><b>Conflict (edited both places)</b></td><td>v1 rule: <b>last-write-wins by <code>updated_at</code></b>, and never delete a user's external event on our sync — only ones we created. Surface conflicts rather than silently overwriting.</td></tr>
+    <tr><td><b>Revoke / disconnect</b></td><td>"Disconnect calendar" → revoke the token, stop syncing, and <b>offer</b> to remove the events we added (don't touch anything else). Mark imported blocks stale rather than deleting the user's data.</td></tr>
+    <tr><td><b>Privacy</b> (UK GDPR)</td><td>Health data leaving to a third-party calendar is a real disclosure. Logger export is <b>opt-in per type, default OFF</b>; a clear "this will appear in your Google/Apple calendar, which may sync to other devices/people" consent line; the privacy policy must name Google/Apple as processors.</td></tr>
+  </table></div>
+
+  <hr>
+
+  <!-- 9 -->
+  <h2 id="build">9 · Exactly what building it requires</h2>
+  <div class="warn"><span class="tag">The three gates (all needed)</span>
+  <ol style="margin:.3em 0 0">
+    <li><b>A NEW base44 function</b> (at least one): an OAuth <b>callback handler</b> + a <b>sync worker</b> (token refresh, events.list/insert/patch, dedupe). The photo feature reused <code>analyzeMealPhoto</code>; this genuinely cannot reuse an existing function — it's new backend surface. (Per the function-cap rule, this needs your OK.)</li>
+    <li><b>External OAuth credentials</b>: a <b>Google Cloud project</b> with an OAuth client ID/secret + a configured <b>consent screen</b> (privacy-policy URL, scopes, and — for &gt;100 users — Google's <b>verification review</b>). For Apple: a hosting endpoint for the <code>webcal</code> feed (no creds) or, for CalDAV, the user's app-specific password.</li>
+    <li><b>Secrets + schema</b>: store <code>GOOGLE_OAUTH_CLIENT_ID/SECRET</code> via <code>base44 secrets</code>; add the <code>CalendarConnection</code> entity + the <code>PlannerItems</code>/<code>UserProfile</code> fields (§7) as an MP.</li>
+  </ol></div>
+  <p><b>What's already in our favour:</b> base44's serverless-function + env-secret pattern is proven (OpenAI/Stripe use it), the Planner has a <code>repeat</code> field, and we just built the fixed/flexible + overnight + location model that maps cleanly onto calendar events. So the <em>app-side</em> is largely ready; the new work is the OAuth function + Google project + the schema delta.</p>
+  <p class="note-tiny"><b>Rough effort (for scoping only, post-sign-off):</b> Phase 1 (Google export-only) ≈ one focused build + a Google project setup; Phase 2 (import + dedupe + tz) is the bulk of the real engineering; Apple <code>webcal</code>/<code>.ics</code> ≈ a small add. Google <em>verification</em> is calendar-time (their review), not our build time.</p>
+
+  <hr>
+
+  <!-- 10 -->
+  <h2 id="rec">10 · Recommended path + phasing</h2>
+  <div class="rec"><span class="tag">Recommendation</span>
+  <b>Start with Google, export-only, from the Planner</b> — it's the highest-value, lowest-risk slice (planned shifts/appointments land in the user's real calendar, no merge conflicts, no inbound tz headaches). Add Google <b>import</b> next (the two-way value). Do <b>Apple via a <code>webcal</code> subscribe feed + <code>.ics</code> upload</b> third (no Apple creds needed). Keep the <b>Logger export opt-in and default-off</b> for privacy. Treat each phase as its own sign-off.</div>
+  <div class="phase"><span class="n">Phase 1 · Google export</span><p>Connect Google (OAuth) → planned Planner items + reviewed rota shifts push out as events (fixed rotas as RRULE). Schema: <code>CalendarConnection</code> + the new <code>PlannerItems</code> fields + user tz.</p></div>
+  <div class="phase"><span class="n">Phase 2 · Google import (two-way)</span><p>Incremental <code>events.list</code> pulls real-life events into the Planner as read-only blocks; dedupe via markers; full timezone correctness. Cycle-aware planning now routes around real commitments.</p></div>
+  <div class="phase"><span class="n">Phase 3 · Apple</span><p><code>webcal://</code> subscribe feed out + <code>.ics</code> upload in. No Apple credentials. CalDAV only if users demand live two-way.</p></div>
+  <div class="phase"><span class="n">Phase 4 · Logger export + polish</span><p>Opt-in per type (meds/appointments), conflict-resolution UX, optional Google push webhooks.</p></div>
+
+  <div class="card" style="border-color:var(--crimson)">
+    <h4 style="margin-top:0">✅ For Halli — the decisions I need</h4>
+    <ol style="font-family:var(--ui);font-size:14px;margin:0">
+      <li><b>Go / no-go</b> on starting this at all (it opens a new function + a Google Cloud project — the two gated things).</li>
+      <li><b>Scope of v1:</b> Google export-only (recommended) vs full two-way from the start?</li>
+      <li><b>Apple:</b> is a <code>webcal</code>/<code>.ics</code> (one-way-live) acceptable for v1, or is live two-way (CalDAV, app-specific passwords) required?</li>
+      <li><b>Logger export:</b> include it, or Planner-only? (I recommend Planner-first, Logger export opt-in later.)</li>
+    </ol>
+    <p class="note-tiny" style="margin-top:8px">Nothing gets built until you answer #1. This doc is the plan; the demo work so far (the universal calendar + the rota parser) is unaffected and stays as-is.</p>
+  </div>
+
+  <p class="note-tiny" style="text-align:center;margin-top:26px">FemWell · calendar-sync research + plan · no integration built · gated on sign-off (new function + external OAuth creds).</p>
+
+</div>
+</body>
+</html>
