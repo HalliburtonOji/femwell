@@ -1,6 +1,9 @@
 # FEMWELL — CANONICAL STATUS INDEX (read first · updated 2026-06-30)
 **This file is the single source of truth AND the index to every plan doc. If anything else disagrees, this wins.** (The long ship-log history continues below the index.)
 
+## 🎙️✅ NUTRITION V2 — glance row: duplicate Snap → VOICE log button · live `index-BfIBmqnU.js` · commit `HEAD` (2026-07-08)
+The "Today, at a glance" quick-actions row's purple **"Snap a photo"** duplicated the hero's Snap CTA. Replaced it with **"Say a meal"** (Mic icon, same purple) → `openLogger("say")` opens `UnifiedLogger` straight into the **voice method** (`view==="say"` — speak-your-meal → the existing `analyzeMeal`/intent logging path; user taps Start to speak, then confirms the draft). SheetShell gains a "say" case ("Say your meal" · "Speak it → we'll log it"). Other three buttons (Add a meal · Add water · Same as yesterday) unchanged; the hero Snap CTA unchanged. VERIFY: vite build exit 0 · pushed · `npx base44 site deploy -y` · live `index-BfIBmqnU.js`. (Orchestrator holds the authed browser — did not drive it.)
+
 ## 🗓️🚀 CALENDAR + LOGGER GO-LIVE — universal calendar + rebuilt logger LIVE app-wide (FAB retired → calendar icon) · deployed `index-C_mi_mhE.js` · commit `d511945` (2026-07-08)
 **Halli: "take live."** Promoted the universal calendar + rebuilt logger from `/UniversalCalendarDemo` to LIVE. Built on latest (Nutrition V2 + flora hero). ⚠️ **NOT browser-tested by me — the orchestrator holds the authed browser (9ef09b12) and runs the authenticated + UX test.** Report + checklist below.
 - **FAB retired → calendar icon:** the app-wide gold "+" FAB is OFF (`UnifiedTabLogger` `SHOW_LEGACY_FAB=false`), and the Planner's contextual "+" is retired (`ContextualFAB` `CONTEXTUAL_FAB_RETIRED=true`). The single logging entry is now a **persistent top-bar CALENDAR ICON** (mounted in `Layout.jsx`, fixed top-right, every nav page) that dispatches `fw_open_calendar`.
