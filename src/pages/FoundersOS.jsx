@@ -85,6 +85,8 @@ import universalCalendarHtml from "@/components/founders/brandDocs/universal-cal
 import calendarSyncHtml from "@/components/founders/brandDocs/calendar-sync-plan.html?raw";
 // Community deep-audit + redesign (IA/structure fix) plan doc (2026-07-08) — wired from IDEAS-LINKS-FOR-FOUNDERSOS.md.
 import communityRedesignHtml from "@/components/founders/brandDocs/community-redesign.html?raw";
+// Community Talk-rooms robustness (feature #1) brainstorm doc (2026-07-08) — wired from IDEAS-LINKS-FOR-FOUNDERSOS.md.
+import communityTalkRoomsHtml from "@/components/founders/brandDocs/community-talk-rooms.html?raw";
 // Nutrition hero tap-to-bloom brainstorm (2026-07-07) — wired from IDEAS-LINKS-FOR-FOUNDERSOS.md.
 import heroBloomTapHtml from "@/components/founders/brandDocs/nutrition-hero-bloom-tap.html?raw";
 // Flora Header redesign demo (2026-07-03) — wired from IDEAS-LINKS-FOR-FOUNDERSOS.md.
@@ -261,6 +263,10 @@ const CATALOG = [
   { kind: "route", href: "/PlannerCardsDemo", group: CAT.ARCHIVE, sub: "Card-system demos (pending rebuild)", status: "approval", accent: "sage",
     title: "Planner (content) — card-system demo ★ for approval", desc: "The CONTENT side of Planner as cards: add-an-intention, today's gentle intentions, your rituals, and soft reminders. NOT the calendar/day-view (those stay as-is)." },
   // ── ★ TOP of Current: PAGE LEVEL-UP PLANS (one per live page) awaiting your reaction ──
+  { kind: "route", href: "/CommunityRedesignDemo", group: CAT.CURRENT, sub: "Page level-up plans + demos", status: "new", accent: "crimson",
+    title: "Community Redesign — demo ★", desc: "Phase-1 redesign SHELL on the canonical §6.8.2 page template: flora hero (bouquet = many women) + tap-to-rebloom shelf switcher (Talk · Circles · Together · Quietly) · summary card · glance⇆Community-Jess sliding row w/ upward inner sheet · clipboard slider of the 4 shelf-boards · handy row · resonance. Reuses every real feature (rooms/circles/clubs/library/games/echo/rituals). PLUS feature #1 = robust TALK ROOMS (botanical alias per anon hash · daily life-tinted room prompt · hide-a-voice · mute-a-word · per-room presence — real reads/writes). All safety rails intact (18+/crisis/moderation/report→hide/k-anon). Live /Community untouched." },
+  { kind: "doc", key: "Talk Rooms", group: CAT.CURRENT, sub: "Page level-up plans + demos", status: "new", accent: "sage",
+    title: "Talk rooms — robust, safe & fun (feature #1)", desc: "Feature #1 of 6 in the Community robustness program. Deep-research brainstorm (Peanut/Elpha/Mumsnet/Yik-Yak lessons, SDT relatedness, OSA 2023, all cited) + what's BUILT this pass: botanical alias per anon hash · daily life-tinted room prompt · hide-a-voice · mute-a-word · per-room presence. Roadmap (safety floor: no-woman-unheard/rate-limit/thread-lock; then warmth: first-post bloom/weekly threads). Two gates flagged for Halli: age-assurance (Ofcom 'highly effective' bar) + women-only wording (post-For-Women-Scotland legal review)." },
   { kind: "doc", key: "Community Redesign", group: CAT.CURRENT, sub: "Page level-up plans + demos", status: "new", accent: "crimson",
     title: "Community — deep audit + redesign (clearer IA)", desc: "Halli finds Community confusing. Deep audit of the CURRENT information architecture (exactly as built) + a redesign PLAN on the canonical page structure. Diagnosis: 3 fuzzy grouping words (Rooms/Circles/Clubs) + the same places shown 4 different ways (door grid · daily slot · sticky tabs · Jump sheet); books in 4 places, creativity in 2; doors behave 3 different ways; Echo/Witness/Twin pretend to be Community but live in the Journal. Fix: ONE hierarchy, FOUR named shelves (Talk · Circles · Together · Quietly) on the Nutrition page language (flora hero → summary → Today sliding deck → clipboard shelves → one Jump map). Every feature kept, all safety rails untouched. Plan-first — no live change." },
   { kind: "doc", key: "Nutrition +2", group: CAT.CURRENT, sub: "Page level-up plans + demos", status: "new", accent: "crimson",
@@ -1074,6 +1080,7 @@ function FoundersInner({ user }) {
       {tab === "Universal Calendar" && <BrandDocFrame html={universalCalendarHtml} title="FemWell — One Universal Calendar + Logger" />}
       {tab === "Calendar Sync" && <BrandDocFrame html={calendarSyncHtml} title="FemWell — Calendar Sync (Google + Apple): research + plan" />}
       {tab === "Community Redesign" && <BrandDocFrame html={communityRedesignHtml} title="FemWell — Community: deep audit + redesign plan" />}
+      {tab === "Talk Rooms" && <BrandDocFrame html={communityTalkRoomsHtml} title="FemWell — Talk rooms: robust, safe & fun" />}
       {tab === "Hero Bloom Tap" && <BrandDocFrame html={heroBloomTapHtml} title="Nutrition hero — one flower, blooming through the day" />}
       {tab === "Realistic Branch" && <BrandDocFrame html={floraRealismHtml} title="FemWell — the branch, done properly (realism)" />}
       {tab === "Branch Header" && <BrandDocFrame html={floraBranchDemoHtml} title="FemWell — the blossoming branch, richer" />}
