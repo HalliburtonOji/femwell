@@ -16,7 +16,7 @@ import {
 export const MASTHEAD = {
   eyebrow: "FemWell · Community",
   title: "For the whole of you",
-  subtitle: "Health is one room here — not the whole house. For the love, the laugh, the money question, the late-night vent. Anonymous, 18+, a room everyone's in.",
+  subtitle: "Health is one room here — not the whole house. For the love, the laugh, the money question, the late-night vent. Anonymous, 18+ — for women, and everyone living a woman's health journey.",
 };
 export const PRESENCE = { count: 31, line: "are here right now — you're not alone tonight." };
 
@@ -125,7 +125,7 @@ export const UK_RESOURCES = [
   { name: "Mind",       detail: "Call 0300 123 3393 (Mon–Fri).", Icon: Phone },
 ];
 
-export const FOOTER_LINE = "No handles. No DMs. No likes, no leaderboards. Anonymous, 18+ — a room everyone's in.";
+export const FOOTER_LINE = "No handles. No DMs. No likes, no leaderboards. Anonymous, 18+ — for women, and everyone living a woman's health journey.";
 
 // ── COMMENTS (OPEN-WRITE BY DEFAULT; FLAT, anonymous, no counts) ──────────────
 // Comments are OPEN by default — anyone can write one. The poster keeps the

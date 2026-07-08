@@ -26,6 +26,7 @@ import { base44 } from "@/api/base44Client";
 import {
   Sparkles, Star, Leaf, Users, Eye, EyeOff, User as UserIcon, Flower2,
   ChevronLeft, ChevronRight, Feather, HeartHandshake, Bird,
+  Quote, Lock, Send, MapPin, X, Sprout,
 } from "lucide-react";
 
 const SCRIPT = '"Ephesis","Pinyon Script",cursive';
@@ -83,6 +84,147 @@ function BloomAvatar({ form, cw, size = 40, rare = false, ring = T.paperDeep }) 
   );
 }
 
+// ── THE MEADOW — seeded neighbours (hand-authored, warm, UK, emoji-free). A visitable
+// bloom exists ONLY at My-flower / Named tier; veiled blooms stand in the field but have
+// no page. Everything shown is whitelist-safe (curated) — NEVER cycle/symptoms/journal. ──
+const NEIGHBOURS = [
+  {
+    id: "rosewater", tier: "named", name: "Rosewater", form: "peony", cw: "crimson",
+    stage: "In full bloom", quote: "You are allowed to take up space.",
+    notes: ["Told my sister I loved her, out of nowhere. She cried — the good kind.", "Perimenopause club: we should absolutely have jackets."],
+    earned: ["A year, grown", "Not alone"], seasons: 8,
+    guests: [{ by: "Wild Fern", cw: "sage", text: "This landed for me today. Thank you." }],
+  },
+  {
+    id: "juniper", tier: "named", name: "Juniper", form: "forget", cw: "sage",
+    stage: "Blooming", quote: "Small and often beats big and never.",
+    notes: ["Walked in the rain on purpose. Ten out of ten.", "Learning to like my knees. Progress: neutral, which is a win."],
+    earned: ["Fifty lines", "A season kept"], seasons: 5,
+    guests: [{ by: "Quiet Willow", cw: "plum", text: "Stealing 'small and often'." }],
+  },
+  {
+    id: "poppy-anon", tier: "signature", name: null, form: "poppy", cw: "plum",
+    stage: "Budding", quote: "The dark-chocolate square is a sound decision.",
+    notes: ["Cosy socks deployed for the week.", "Made soup for a friend who's having a time of it."],
+    earned: ["A full cycle, tracked"], seasons: 3,
+    guests: [],
+  },
+  { id: "veil-1", tier: "veiled", form: "marigold", cw: "gold" },
+  { id: "veil-2", tier: "veiled", form: "daisy", cw: "blush" },
+];
+const neighbourName = (n) => n.tier === "named" ? n.name : n.tier === "signature" ? botanicalAlias(n.id + "::community") : botanicalAlias(n.id + "::community");
+
+// a small "seed-packet" note tucked in her border
+function NoteChip({ text, cw }) {
+  const c = cwOf(cw);
+  return (
+    <div style={{ display: "flex", gap: 9, alignItems: "flex-start", background: T.paper, border: `1px solid ${T.paperDeep}`, borderLeft: `3px solid ${c.petal}`, borderRadius: 11, padding: "9px 11px" }}>
+      <Leaf size={13} color={c.petal} style={{ flexShrink: 0, marginTop: 2 }} />
+      <span style={{ fontFamily: SERIF, fontSize: 13.5, color: T.ink, lineHeight: 1.4 }}>{text}</span>
+    </div>
+  );
+}
+
+// a kind note left by a visitor — a tinted petal + line (cross-pollination made visible)
+function GuestPetal({ g }) {
+  const c = cwOf(g.cw);
+  return (
+    <div style={{ display: "flex", gap: 9, alignItems: "flex-start" }}>
+      <span style={{ width: 14, height: 18, borderRadius: "50% 50% 50% 50% / 60% 60% 40% 40%", background: c.petal, opacity: 0.9, flexShrink: 0, marginTop: 2, transform: "rotate(-8deg)" }} />
+      <div>
+        <span style={{ fontFamily: SERIF, fontSize: 13.5, color: T.ink, lineHeight: 1.4 }}>{g.text}</span>
+        <span style={{ fontFamily: UI, fontSize: 11, color: T.muted, marginLeft: 6 }}>— {g.by}</span>
+      </div>
+    </div>
+  );
+}
+
+// THE BLOOM-AS-PLACE — her patch, as a visitor sees it (or an owner-preview). Meadow-native,
+// not a corporate profile: her bloom, a pinned line, notes tucked in the border, the shareable
+// shelf, her companion, and a guestbook. `isOwner` shows the privacy note; else a note composer.
+function PatchView({ patch, isOwner, guests, onLeave, viewerCw, onClose }) {
+  const [note, setNote] = useState("");
+  const c = cwOf(patch.cw);
+  const name = patch.name || botanicalAlias(patch.id + "::community");
+  const tierChip = patch.tier === "named" ? "Named" : patch.tier === "owner" ? "Your bloom" : "My flower · no name";
+  return (
+    <div style={{ ...cardBase(c.petal), marginTop: 12, padding: 0, overflow: "hidden" }}>
+      {/* header — the bloom, standing in her patch */}
+      <div style={{ background: `radial-gradient(120% 90% at 50% 0%, ${c.petal}22 0%, transparent 60%), ${T.paperHi}`, padding: "18px 16px 14px", textAlign: "center", position: "relative" }}>
+        {onClose && <button onClick={onClose} aria-label="Leave" style={{ position: "absolute", right: 12, top: 12, width: 28, height: 28, borderRadius: 999, background: T.paper, border: `1px solid ${T.paperDeep}`, color: T.muted, cursor: "pointer", display: "grid", placeItems: "center" }}><X size={15} /></button>}
+        <div style={{ display: "inline-flex", position: "relative" }}>
+          <RichBloomV2 form={lushForm(patch.form)} color={c.petal} color2={c.tip} accent={c.accent} size={110} soft={false} openness={0.95} animate idx={`patch-${patch.id}`} />
+          <div style={{ position: "absolute", right: -6, top: 2 }}><Pollinator kind="bee" size={22} color={T.gold} color2={c.tip} pattern="bands" animate idx={`patch-cr-${patch.id}`} /></div>
+        </div>
+        <div style={{ fontFamily: SCRIPT, fontSize: 34, color: OXBLOOD, lineHeight: 1.05, marginTop: 2 }}>{name}</div>
+        <div style={{ display: "inline-flex", alignItems: "center", gap: 6, marginTop: 4, background: `${c.petal}18`, border: `1px solid ${c.petal}40`, borderRadius: 999, padding: "3px 11px" }}>
+          <MapPin size={11} color={c.accent} />
+          <span style={{ fontFamily: UI, fontSize: 11, fontWeight: 700, color: T.inkSoft }}>{tierChip} · {patch.stage || "Blooming"}</span>
+        </div>
+      </div>
+
+      <div style={{ padding: "4px 15px 16px" }}>
+        {/* pinned quote */}
+        {patch.quote && (
+          <div style={{ display: "flex", gap: 10, alignItems: "flex-start", margin: "14px 0 4px" }}>
+            <Quote size={18} color={c.petal} style={{ flexShrink: 0, marginTop: 3, transform: "scaleX(-1)" }} />
+            <span style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 18.5, fontWeight: 600, color: OXBLOOD, lineHeight: 1.3 }}>{patch.quote}</span>
+          </div>
+        )}
+
+        {/* notes tucked in the border */}
+        {patch.notes?.length > 0 && (
+          <div style={{ marginTop: 14 }}>
+            <div style={{ fontFamily: UI, fontSize: 10.5, fontWeight: 800, letterSpacing: ".1em", textTransform: "uppercase", color: T.muted, marginBottom: 7 }}>Tucked in her border</div>
+            <div style={{ display: "flex", flexDirection: "column", gap: 7 }}>{patch.notes.map((n, i) => <NoteChip key={i} text={n} cw={patch.cw} />)}</div>
+          </div>
+        )}
+
+        {/* shareable shelf — earned blooms + seasons (safe, never health) */}
+        <div style={{ marginTop: 16, display: "flex", gap: 16, flexWrap: "wrap" }}>
+          {patch.earned?.length > 0 && (
+            <div style={{ flex: "1 1 140px" }}>
+              <div style={{ fontFamily: UI, fontSize: 10.5, fontWeight: 800, letterSpacing: ".1em", textTransform: "uppercase", color: T.gold, marginBottom: 7 }}>Rare blooms</div>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>{patch.earned.map((e) => (
+                <span key={e} style={{ display: "inline-flex", alignItems: "center", gap: 5, background: `${T.gold}14`, border: `1px solid ${T.gold}55`, borderRadius: 999, padding: "4px 10px", fontFamily: SERIF, fontSize: 12.5, color: T.ink }}><Star size={11} color={T.gold} fill={T.gold} /> {e}</span>
+              ))}</div>
+            </div>
+          )}
+          {patch.seasons != null && (
+            <div style={{ flex: "0 0 auto" }}>
+              <div style={{ fontFamily: UI, fontSize: 10.5, fontWeight: 800, letterSpacing: ".1em", textTransform: "uppercase", color: T.sage, marginBottom: 7 }}>Seasons kept</div>
+              <span style={{ display: "inline-flex", alignItems: "center", gap: 6, fontFamily: SERIF, fontSize: 15, fontWeight: 600, color: T.ink }}><Sprout size={14} color={T.sage} /> {patch.seasons}</span>
+            </div>
+          )}
+        </div>
+
+        {/* guestbook — kind notes left here */}
+        <div style={{ marginTop: 18, paddingTop: 14, borderTop: `1px solid ${T.paperDeep}` }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 7, marginBottom: 9 }}>
+            <HeartHandshake size={15} color={c.petal} />
+            <span style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 17, fontWeight: 600, color: OXBLOOD }}>Kind notes left here</span>
+          </div>
+          {guests.length === 0
+            ? <div style={{ fontFamily: SERIF, fontSize: 13.5, fontStyle: "italic", color: T.muted, marginBottom: 10 }}>No notes yet — be the first to plant a petal.</div>
+            : <div style={{ display: "flex", flexDirection: "column", gap: 9, marginBottom: 12 }}>{guests.map((g, i) => <GuestPetal key={i} g={g} />)}</div>}
+
+          {isOwner ? (
+            <div style={{ display: "flex", gap: 9, alignItems: "flex-start", padding: "10px 12px", background: `${T.sage}12`, border: `1px solid ${T.sage}44`, borderRadius: 12 }}>
+              <Lock size={15} color={T.sage} style={{ flexShrink: 0, marginTop: 1 }} />
+              <span style={{ fontFamily: SERIF, fontSize: 13, color: T.inkSoft, lineHeight: 1.45 }}><b style={{ color: T.sage }}>What stays private.</b> Your cycle, symptoms, moods and journal are never shown here — only what you choose to pin. You approve every kind note before it settles.</span>
+            </div>
+          ) : (
+            <div style={{ display: "flex", gap: 8 }}>
+              <input value={note} onChange={(e) => setNote(e.target.value)} placeholder="Leave a kind note…" maxLength={90} style={{ flex: 1, minWidth: 0, fontFamily: SERIF, fontSize: 14, color: T.ink, background: T.paper, border: `1px solid ${T.paperDeep}`, borderRadius: 11, padding: "10px 12px", outline: "none" }} />
+              <button onClick={() => { const t = note.trim(); if (!t) return; onLeave({ by: "You", cw: viewerCw, text: t }); setNote(""); }} style={{ flexShrink: 0, display: "inline-flex", alignItems: "center", gap: 6, background: c.petal, color: "#fff", border: "none", borderRadius: 11, padding: "10px 13px", fontFamily: UI, fontSize: 12.5, fontWeight: 700, cursor: "pointer" }}><Send size={13} /> Plant</button>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function BloomprintDemo() {
   const [userId, setUserId] = useState("demo-bloomprint");
   const [companion, setCompanion] = useState(() => baseCompanion("demo-bloomprint"));
@@ -92,6 +234,10 @@ export default function BloomprintDemo() {
   const [tier, setTier] = useState("veiled");         // veiled · signature · named
   const [petalPulse, setPetalPulse] = useState(0);    // gentle "leave a line → +1 petal" demo
   const [ready, setReady] = useState(false);
+  const [visiting, setVisiting] = useState(null);     // which neighbour's patch is open
+  const [guestbooks, setGuestbooks] = useState(() => Object.fromEntries(NEIGHBOURS.map((n) => [n.id, n.guests || []])));
+  const [myGuests, setMyGuests] = useState([{ by: "Golden Marigold", cw: "gold", text: "Your garden made me smile. Keep going." }]);
+  const leaveNote = (id, g) => setGuestbooks((gb) => ({ ...gb, [id]: [...(gb[id] || []), g] }));
 
   // hydrate from REAL garden data where available; keep the seeded persona as the floor
   useEffect(() => {

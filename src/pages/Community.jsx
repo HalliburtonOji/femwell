@@ -375,6 +375,9 @@ function PostCard({ post, user, onCrisis, onChanged, enhanced = false, myHash = 
               ) : (
                 <div key={c.id} style={{ background: c.by === "jess" ? T.paper : "transparent", border: c.by === "jess" ? `1px solid ${T.gold}` : "none", borderRadius: c.by === "jess" ? 8 : 0, padding: c.by === "jess" ? "9px 11px" : "7px 0", marginBottom: 4 }}>
                   {c.by === "jess" && <Eyebrow color={T.gold} mb={3}>Jess · here with you</Eyebrow>}
+                  {c.by !== "jess" && enhanced && c.author_hash && (
+                    <div style={{ fontFamily: UI, fontSize: 11, fontWeight: 700, color: T.muted, marginBottom: 2 }}>{myHash && c.author_hash === myHash ? "You" : botanicalAlias(c.author_hash)}</div>
+                  )}
                   <Hand size={17} color={T.inkSoft}>{c.body}</Hand>
                 </div>
               )
@@ -994,7 +997,7 @@ function Home({ presence, lifeStage, onEnter, user, onCrisis, onShareTo, onOpenH
           kind: "invite",
           line: "Come find your people — anonymous, whole-life, kind. For all of you, not just your cycle.",
           footer: "An invitation", url: "https://femwells.com",
-          shareText: "I think you'd like FemWell — a whole-life space for women. Anonymous, 18+.",
+          shareText: "I think you'd like FemWell — a whole-life space for women, and everyone on a woman's health journey. Anonymous, 18+.",
         }} />
       </div>
     </div>
@@ -1735,7 +1738,7 @@ function RoomView({ roomKey, posts, loading, error, user, onNav, onCrisis, onRel
   // enhanced: apply the device-local safety filters (hide-a-voice + mute-a-word); never hide your own.
   const words = enhanced ? mutedWords() : [];   // read fresh each render (safetyTick forces it)
   const feed = enhanced
-    ? rawFeed.filter((p) => (p.author_hash === myHash) || (!isAuthorHidden(p.author_hash) && !matchesMuted(p.body, words)))
+    ? rawFeed.filter((p) => !hasReported(p.id) && ((p.author_hash === myHash) || (!isAuthorHidden(p.author_hash) && !matchesMuted(p.body, words))))
     : rawFeed;
   const filteredN = rawFeed.length - feed.length;
   // enhanced: a per-room k-anon presence line + today's life-tinted prompt.
@@ -1775,8 +1778,10 @@ function RoomView({ roomKey, posts, loading, error, user, onNav, onCrisis, onRel
             <span style={{ display: "inline-flex", alignItems: "center", gap: 6, fontFamily: UI, fontSize: 12, fontWeight: 600, color: T.muted }}>
               <Users size={13} color={T.gold} /> {activeN <= 0 ? "Quiet in here — leave the first word" : activeN < 5 ? "A few women are around" : "Several women are here"}
             </span>
-            <button onClick={() => setMuteOpen((o) => !o)} style={{ ...ghostBtn, marginLeft: "auto", padding: "6px 11px", fontSize: 11.5 }}>
-              <Eye size={12} /> {mutedWords().length ? `Muted (${mutedWords().length})` : "Mute a word"}
+            {/* room options tucked into a quiet "…" (mute-a-word lives here — calm on the surface) */}
+            <button onClick={() => setMuteOpen((o) => !o)} aria-label="Room options" title="Mute a word" style={{ marginLeft: "auto", background: "transparent", border: "none", cursor: "pointer", color: T.muted, display: "inline-flex", alignItems: "center", gap: 4, padding: 4 }}>
+              {mutedWords().length > 0 && <span style={{ fontFamily: UI, fontSize: 10.5, fontWeight: 700, color: T.gold }}>{mutedWords().length}</span>}
+              <MoreHorizontal size={16} />
             </button>
           </div>
         )}
