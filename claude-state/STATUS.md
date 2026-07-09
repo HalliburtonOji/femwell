@@ -1,6 +1,13 @@
 # FEMWELL — CANONICAL STATUS INDEX (read first · updated 2026-06-30)
 **This file is the single source of truth AND the index to every plan doc. If anything else disagrees, this wins.** (The long ship-log history continues below the index.)
 
+## 🛒✅ NUTRITION V2 — shopping list: compact + add-item + remove + export · live `index-C9Zy2hKC.js` · commit `HEAD` (2026-07-09)
+Three fixes to `ShoppingLens` in NutritionV2Shell (the "Plan & explore" → Shopping list panel):
+1. **COMPACT:** aisle sections are now **collapsible** (tap the aisle header to fold; shows `done/total` per aisle) inside a **capped-height 320px scroll** — no more one giant wall.
+2. **ADD ITEM (was broken):** an **"Add an item" input** at the top writes a real `ShoppingList` row — new `addShopItem` (optimistic insert → `base44.entities.ShoppingList.create` → swaps temp id for the created row; rollback on failure) → **persists**. Each item gains a **Trash remove** button — new `removeShop` (real `ShoppingList.delete`, optimistic + rollback; unsaved `tmp` rows just drop locally).
+3. **EXPORT:** **Copy** (clipboard) + **Share** (Web Share API → native share sheet, falls back to clipboard) of a **plain-text, aisle-grouped** list (✓/• per item) to send to herself or take to the shop.
+Kept on-brand (subCard/Pill/plum chrome, tick-to-check unchanged) + the Build-from-plan pill. Uncontrolled add-input (ref) so it survives the page's re-mounts. Only NutritionV2Shell touched; no new base44 function (rides ShoppingList create/update/delete). VERIFY: vite build exit 0 · pushed · `npx base44 site deploy -y` · live `index-C9Zy2hKC.js`. (Orchestrator holds the authed browser — did not drive it.)
+
 ## 🔗✅ ENTITY MERGE — Tier-1: 3 of 7 pairs repointed SAFELY (write→target + dual-read); 4 deferred with reasons · live `index-BmCrxgA3.js` · commit `d70a8be` (2026-07-09)
 **Halli greenlit the −8 Tier-1 easy merges; do them safely + non-destructively (no live-DB touch, no deletes). Don't break water/HydrationLog/calendar/logger/Nutrition.** Did the 3 that are genuinely safe; deferred 4 that would regress or need a new entity — surfaced honestly.
 - **MERGED (write repointed to target + DUAL-READ so existing source rows still show; all writes use EXISTING target fields + enum values → NO schema/.jsonc change, no unknown-field-rejection risk):**
