@@ -15,6 +15,7 @@
     "comments_mode": { "type": "string", "enum": ["open", "reaction"], "default": "open", "description": "open = anyone can comment; reaction = reaction-only (poster's choice)." },
     "by": { "type": "string", "enum": ["member", "jess"], "default": "member", "description": "member or Jess (host)." },
     "domain": { "type": "string", "description": "Optional light label (Career, Dating, Joy…) — never a category that identifies." },
+    "content_warning": { "type": "string", "description": "Circles feature #4: optional author-set content warning (a short neutral label, e.g. 'loss', 'fertility'). When present the UI shows a 'tap to read' veil so readers can prepare — never a hard block." },
     "report_count": { "type": "number", "default": 0, "description": "Reports; auto-hides past the threshold." },
     "hidden": { "type": "boolean", "default": false, "description": "Suppressed from the room (moderation/report)." },
     "flagged": { "type": "boolean", "default": false, "description": "M2: OpenAI moderation flagged this as borderline (visible but queued for human review). Clearly-harmful posts are rejected at creation, not stored." },

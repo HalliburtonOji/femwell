@@ -172,6 +172,9 @@ Deno.serve(async (req) => {
 
   // ── post (default): create a room/circle/club post ────────────────────────────────────
   const { room, body, comments_mode, domain } = p;
+  // Author-set content warning (Circles, sensitive topics) — a short neutral label; the UI
+  // shows a "tap to read" veil when present. Stored on the post, never a hard block.
+  const cw = (typeof p?.content_warning === 'string' && p.content_warning.trim()) ? String(p.content_warning).trim().slice(0, 60) : '';
   const circle = p?.circle && CIRCLE_KEYS.has(String(p.circle)) ? String(p.circle) : '';
   let club = '';
   if (p?.club) {
@@ -202,12 +205,12 @@ Deno.serve(async (req) => {
   if (circle) core.circle = circle;
   if (club) core.club = club;
   let createErr = '';
-  let post = await withTimeout(sb.entities.CommunityPost.create({ ...core, flagged: false, report_count: 0, ...(domain ? { domain: String(domain).slice(0, 40) } : {}) }), 6000, 'create-full')
+  let post = await withTimeout(sb.entities.CommunityPost.create({ ...core, flagged: false, report_count: 0, ...(domain ? { domain: String(domain).slice(0, 40) } : {}), ...(cw ? { content_warning: cw } : {}) }), 6000, 'create-full')
     .catch((e: any) => { createErr = e?.message || String(e); console.error('createCommunityPost full create failed:', createErr); return null; });
   if (!post) {
     post = await withTimeout(sb.entities.CommunityPost.create(core), 6000, 'create-core')
       .catch((e: any) => { createErr = e?.message || String(e); console.error('createCommunityPost core create failed:', createErr); return null; });
   }
   if (!post) return Response.json({ error: 'Write failed', detail: createErr }, { status: 500 });
-  return Response.json({ ok: true, post: { id: post.id, room: post.room, circle: post.circle || null, club: post.club || null, body: post.body, comments_mode: post.comments_mode, by: post.by, domain: post.domain || null, created_date: post.created_date } });
+  return Response.json({ ok: true, post: { id: post.id, room: post.room, circle: post.circle || null, club: post.club || null, body: post.body, comments_mode: post.comments_mode, by: post.by, domain: post.domain || null, content_warning: post.content_warning || null, created_date: post.created_date } });
 });

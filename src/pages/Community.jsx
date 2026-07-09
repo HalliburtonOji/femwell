@@ -17,7 +17,7 @@ import { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import {
   Grid2x2, MessageCircle, Send, Lock, Unlock, Plus, Flag,
-  ShieldAlert, Phone, Mic, Check, ChevronLeft, Users,
+  ShieldAlert, ShieldCheck, Phone, Mic, Check, ChevronLeft, Users,
   HeartHandshake, Waves, MoreHorizontal, EyeOff,
 } from "lucide-react";
 import { base44 } from "@/api/base44Client";
@@ -47,6 +47,7 @@ import { ResonanceLive } from "@/components/growth/GrowthLive";
 import {
   CIRCLES, CIRCLE_CATEGORIES, circleByKey, SENSITIVE_CONSENT,
   isJoined, markJoined, clearJoined, suggestedCircles,
+  circlePromptForDay, CIRCLE_INFO,
 } from "@/components/community/circlesConfig";
 import {
   CLUBS, CLUB_CATEGORIES, clubByKey, CLUBS_USER_CREATE_ENABLED,
@@ -223,6 +224,7 @@ function PostCard({ post, user, onCrisis, onChanged, enhanced = false, myHash = 
   const [commentErr, setCommentErr] = useState(false);
   const [reactErr, setReactErr] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);   // tucked "…" menu (report/hide) — calm on the surface
+  const [revealed, setRevealed] = useState(false);   // content-warning veil (Circles) — tap to read
   const isOpen = post.comments_mode !== "reaction";
   const jessTried = useRef(false);
 
@@ -323,7 +325,15 @@ function PostCard({ post, user, onCrisis, onChanged, enhanced = false, myHash = 
         </div>
       )}
       {!enhanced && post.domain && <Eyebrow color={T.gold} mb={6}>{post.domain}</Eyebrow>}
-      <Hand size={20} color={T.ink} style={{ marginBottom: 12 }}>{post.body}</Hand>
+      {/* content-warning veil (Circles) — neutral, "tap to read", never a hard block */}
+      {post.content_warning && !revealed ? (
+        <button onClick={() => setRevealed(true)} style={{ display: "flex", alignItems: "center", gap: 9, width: "100%", textAlign: "left", background: `${T.plum || "#8E6E8E"}12`, border: `1px dashed ${T.paperDeep}`, borderRadius: 12, padding: "13px 14px", marginBottom: 12, cursor: "pointer" }}>
+          <ShieldAlert size={16} color={T.plum || "#8E6E8E"} style={{ flexShrink: 0 }} />
+          <span style={{ fontFamily: UI, fontSize: 12.5, color: T.inkSoft, lineHeight: 1.4 }}><b>Sensitive — {post.content_warning}.</b> Tap to read when you're ready.</span>
+        </button>
+      ) : (
+        <Hand size={20} color={T.ink} style={{ marginBottom: 12 }}>{post.body}</Hand>
+      )}
 
       {/* reactions (warmth, never counted) + a QUIET "…" menu for report/hide (safe by
           design, calm on the surface — protection stays, the friction goes). */}
@@ -411,9 +421,11 @@ function PostCard({ post, user, onCrisis, onChanged, enhanced = false, myHash = 
 }
 
 // ── room composer ────────────────────────────────────────────────────────────
-function RoomComposer({ room, circle, club, user, onCrisis, onPosted, onCancel, initialBody = "" }) {
+function RoomComposer({ room, circle, club, user, onCrisis, onPosted, onCancel, initialBody = "", sensitive = false }) {
   const [body, setBody] = useState(initialBody);
   const [mode, setMode] = useState("open");
+  const [cw, setCw] = useState("");            // author-set content warning (sensitive circles)
+  const [cwOpen, setCwOpen] = useState(false);
   const [busy, setBusy] = useState(false);
   const [declined, setDeclined] = useState(false);
   const [err, setErr] = useState(false);
@@ -426,7 +438,7 @@ function RoomComposer({ room, circle, club, user, onCrisis, onPosted, onCancel, 
     setErr(false);
     try {
       const wh = await communityHash(user?.id);
-      const r = await base44.functions.invoke("createCommunityPost", { user_id: user?.id, author_hash: wh, room, circle: circle || undefined, club: club || undefined, body: text, comments_mode: mode });
+      const r = await base44.functions.invoke("createCommunityPost", { user_id: user?.id, author_hash: wh, room, circle: circle || undefined, club: club || undefined, body: text, comments_mode: mode, content_warning: (cwOpen && cw.trim()) ? cw.trim() : undefined });
       const d = r?.data ?? r;
       if (d?.intercept) { onCrisis(); return; }
       if (d?.error === "rate") { setBusy(false); return; }
@@ -455,6 +467,17 @@ function RoomComposer({ room, circle, club, user, onCrisis, onPosted, onCancel, 
         <div style={{ marginTop: 8, fontFamily: UI, fontSize: 12, color: T.crimson, lineHeight: 1.45 }}>
           Couldn't post that just now — give it another try in a moment.
         </div>
+      )}
+      {/* sensitive circles: optional author-set content note (a "tap to read" veil for readers) */}
+      {sensitive && (
+        cwOpen ? (
+          <div style={{ marginTop: 10, background: `${T.plum || "#8E6E8E"}0E`, border: `1px solid ${T.paperDeep}`, borderRadius: 10, padding: "10px 11px" }}>
+            <div style={{ fontFamily: UI, fontSize: 11.5, color: T.muted, marginBottom: 6 }}>A gentle heads-up for readers (optional) — one or two words.</div>
+            <input value={cw} onChange={(e) => setCw(e.target.value)} maxLength={40} placeholder="e.g. loss · fertility · surgery" style={{ ...inputStyle, minHeight: 0, padding: "9px 11px", fontSize: 14 }} />
+          </div>
+        ) : (
+          <button onClick={() => setCwOpen(true)} style={{ ...ghostBtn, marginTop: 10, fontSize: 12 }}><ShieldAlert size={13} /> Add a content note</button>
+        )
       )}
       <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap", marginTop: 10 }}>
         <button onClick={() => setMode(mode === "open" ? "reaction" : "open")} style={{ ...ghostBtn }}>
@@ -1268,16 +1291,19 @@ function CircleCard({ circle, joined, onOpen }) {
   );
 }
 
-function CirclesDirectory({ onOpen, profile = null }) {
+function CirclesDirectory({ onOpen, profile = null, onHome = null }) {
   const [, force] = useState(0);   // re-render after join-state changes elsewhere
   useEffect(() => { force((n) => n + 1); }, []);
   const mine = CIRCLES.filter((c) => isJoined(c.key));   // v2 — your circles, device-local
-  const suggested = suggestedCircles(profile).filter((c) => !isJoined(c.key));   // P6 — from stage + interests
+  // "A few for you" — from stage + interests only (NEVER inferred from tracked symptoms); whole-life.
+  const suggested = suggestedCircles(profile).filter((c) => !isJoined(c.key)).slice(0, 4);
   return (
     <div>
-      <Script size={30} color={OXBLOOD} style={{ marginBottom: 4 }}>Circles</Script>
+      {onHome && <button onClick={onHome} style={{ ...ghostBtn, marginBottom: 14, padding: "7px 11px" }}><ChevronLeft size={14} /> Community</button>}
+      <Eyebrow color={T.gold} mb={6}>Circles · who you are</Eyebrow>
+      <Script size={34} color={OXBLOOD} style={{ marginBottom: 4 }}>Your circles</Script>
       <Hand size={17} color={T.muted} style={{ marginBottom: 18 }}>
-        Smaller rooms by what you're living and what you love. Lurk freely; join the ones that are yours.
+        Smaller rooms for what you're living and what you love — here it's <i>believed</i>. Lurk freely; join the ones that are yours.
       </Hand>
       {mine.length > 0 && (
         <div style={{ marginBottom: 20 }}>
@@ -1295,7 +1321,7 @@ function CirclesDirectory({ onOpen, profile = null }) {
       )}
       {suggested.length > 0 && (
         <div style={{ marginBottom: 20 }}>
-          <Eyebrow color={T.gold} mb={8}>Suggested for you</Eyebrow>
+          <Eyebrow color={T.gold} mb={8}>A few circles for you</Eyebrow>
           {suggested.map((c) => (
             <CircleCard key={c.key} circle={c} joined={false} onOpen={onOpen} />
           ))}
@@ -1321,6 +1347,12 @@ function CircleView({ circleKey, user, onCrisis, onBack }) {
   const [needConsent, setNeedConsent] = useState(false);
   const [joinErr, setJoinErr] = useState(false);
   const [busy, setBusy] = useState(false);
+  const [myHash, setMyHash] = useState(null);
+  useEffect(() => { let a = true; communityHash(user?.id).then((h) => { if (a) setMyHash(h); }).catch(() => {}); return () => { a = false; }; }, [user?.id]);
+  const prompt = circlePromptForDay(circleKey);
+  const info = CIRCLE_INFO[circleKey] || null;
+  // k-anon "who's here" — distinct recent author_hashes in this circle (bucketed, never a count).
+  const activeN = Array.isArray(posts) ? new Set(posts.filter((p) => Date.now() - new Date(p.created_date || 0).getTime() <= PRESENCE_WINDOW_HRS * 3600e3).map((p) => p.author_hash)).size : 0;
 
   const load = useCallback(async () => {
     try {
@@ -1361,11 +1393,32 @@ function CircleView({ circleKey, user, onCrisis, onBack }) {
     <div>
       <button onClick={onBack} style={{ ...ghostBtn, marginBottom: 14, padding: "7px 11px" }}><ChevronLeft size={14} /> Circles</button>
       <Script size={30} color={OXBLOOD} style={{ marginBottom: 4 }}>{circle.name}</Script>
-      <Hand size={17} color={T.muted} style={{ marginBottom: 14 }}>{circle.line}</Hand>
+      <Hand size={17} color={T.muted} style={{ marginBottom: 8 }}>{circle.line}</Hand>
+      {/* k-anon "who's here" — warmth, never a count */}
+      <div style={{ display: "inline-flex", alignItems: "center", gap: 6, fontFamily: UI, fontSize: 12, fontWeight: 600, color: T.muted, marginBottom: 14 }}>
+        <Users size={13} color={T.gold} /> {circle.sensitive ? "It's believed here — " : ""}{activeN <= 0 ? "quiet so far; a lovely place to be first" : activeN < 5 ? "a few women are around" : "several women are here"}
+      </div>
+
+      {/* per-condition NHS/charity info anchor — the misinformation counterweight (calm, grounded) */}
+      {info && (
+        <div style={{ display: "flex", gap: 9, alignItems: "flex-start", background: `${T.sage}12`, border: `1px solid ${T.paperDeep}`, borderRadius: 10, padding: "10px 12px", marginBottom: 14 }}>
+          <ShieldCheck size={15} color={T.sage} style={{ flexShrink: 0, marginTop: 2 }} />
+          <span style={{ fontFamily: UI, fontSize: 12, color: T.inkSoft, lineHeight: 1.5 }}>{info.line} {info.href && <a href={info.href} target="_blank" rel="noopener noreferrer" style={{ color: T.gold, fontWeight: 700 }}>NHS info →</a>}</span>
+        </div>
+      )}
 
       {/* Books circle hosts the seasonal shared read (Phase 2) — a signpost into the Jess-hosted
           Book Club + readers' corner, not a member-hosting surface. Lurkable; no join required. */}
       {circleKey === "books" && <BooksCircleSharedRead />}
+
+      {/* circle ritual prompt — a warm, life-tinted on-ramp (a circle never reads empty) */}
+      {prompt && !composing && (
+        <div style={{ background: `linear-gradient(160deg, ${T.paperHi} 0%, ${T.gold}12 100%)`, border: `1px solid ${T.paperDeep}`, borderLeft: `4px solid ${T.gold}`, borderRadius: 14, padding: "13px 15px", marginBottom: 14 }}>
+          <Eyebrow color={T.gold} mb={5}>This week in {circle.name}</Eyebrow>
+          <div style={{ fontFamily: HANDFAM, fontStyle: "italic", fontWeight: 600, fontSize: 18, color: T.ink, lineHeight: 1.3, marginBottom: joined ? 10 : 4 }}>{prompt}</div>
+          {joined && <button onClick={() => setComposing(true)} style={{ ...primaryBtn, padding: "8px 14px" }}><Feather size={13} /> Answer this</button>}
+        </div>
+      )}
 
       {needConsent ? (
         <section style={{ background: T.paperHi, border: `1px solid ${T.gold}`, borderRadius: 6, padding: "15px 16px", marginBottom: 16 }}>
@@ -1390,27 +1443,30 @@ function CircleView({ circleKey, user, onCrisis, onBack }) {
         <button onClick={() => setComposing(true)} style={{ ...primaryBtn, marginBottom: 16 }}><Plus size={14} /> Add to {circle.name}</button>
       )}
       {composing && (
-        <RoomComposer room="circles" circle={circleKey} user={user} onCrisis={onCrisis}
+        <RoomComposer room="circles" circle={circleKey} user={user} onCrisis={onCrisis} sensitive={!!circle.sensitive}
           onPosted={(post) => { setComposing(false); if (post?.id) setPosts((prev) => [post, ...(Array.isArray(prev) ? prev : [])]); load(); }} onCancel={() => setComposing(false)} />
       )}
 
       {posts === null && <Hand size={18} color={T.muted}>Opening the circle…</Hand>}
       {posts === false && <Hand size={18} color={T.muted}>Couldn{"’"}t reach the circle just now. Pull down to try again.</Hand>}
       {posts && posts.length === 0 && (
-        <Hand size={18} color={T.inkSoft}>Quiet in here so far. {joined ? "Leave the first word — someone always comes by." : "Join to leave the first word."}</Hand>
+        <div style={{ background: T.paperHi, border: `1px dashed ${T.paperDeep}`, borderRadius: 14, padding: "22px 18px", textAlign: "center" }}>
+          <Hand size={18} color={T.ink}>{circle.sensitive ? "Quiet so far — and you're not too much for this room." : "Quiet in here so far."}</Hand>
+          <Hand size={15} color={T.muted}>{joined ? "Leave the first word — someone always comes by, and Jess is here too." : "Join to leave the first word — lurking's welcome as long as you like."}</Hand>
+        </div>
       )}
       {posts && posts.map((p) => (
-        <PostCard key={p.id} post={p} user={user} onCrisis={onCrisis} onChanged={load} />
+        <PostCard key={p.id} post={p} user={user} onCrisis={onCrisis} onChanged={load} enhanced myHash={myHash} />
       ))}
     </div>
   );
 }
 
-function CirclesView({ user, onCrisis, initialActive = null, profile = null }) {
+function CirclesView({ user, onCrisis, initialActive = null, profile = null, onHome = null }) {
   const [active, setActive] = useState(initialActive);   // null = directory; else circle key
   return active
     ? <CircleView circleKey={active} user={user} onCrisis={onCrisis} onBack={() => setActive(null)} />
-    : <CirclesDirectory onOpen={setActive} profile={profile} />;
+    : <CirclesDirectory onOpen={setActive} profile={profile} onHome={onHome} />;
 }
 
 // ── Clubs — "what you do together" (Jess-hosted; member-created flagged off) ──
@@ -2543,6 +2599,8 @@ export function CommunityInner({ initialView = null, embedded = false, homeVaria
           : view === "library"
           ? <LibraryTogether user={user} onBack={goBack} onNav={setView}
               onOpenCorner={(key, title) => { setInitialClub(key); setClubTitle(title || ""); setView("clubs"); }} />
+          : view === "circles"
+          ? <div style={{ padding: "26px 18px 50px" }}><CirclesView user={user} onCrisis={() => setCrisis(true)} initialActive={initialCircle} profile={profile} onHome={goBack} /></div>
           : view === "wisdom"
           ? <WisdomLibrary onBack={goBack} />
           : view === "bookclub"

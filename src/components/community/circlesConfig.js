@@ -67,8 +67,46 @@ export function suggestedCircles(profile) {
 }
 
 // The careful, consent-first note shown before joining a special-category circle.
+// (Feature #4: adds the UK-GDPR "leaving removes you from the member list" line.)
 export const SENSITIVE_CONSENT = (name) =>
-  `This circle gathers people living with ${name}. What's shared here is sensitive — post anonymously, never anything that could identify you. Joining is your choice, and you can leave any time.`;
+  `This circle gathers people living with ${name}. What's shared here is sensitive — post anonymously, never anything that could identify you. Joining is your choice; leaving removes you from the member list, and you can leave any time.`;
+
+// ── Per-circle RITUAL PROMPT (feature #4) — a warm, low-barrier, life-tinted opener per
+// circle, seeded deterministically per day (like the room/QOTD prompts). Gives a lurker an
+// on-ramp; a circle never reads empty. Whole-life by design (a condition circle also talks life).
+export const CIRCLE_PROMPTS = {
+  ttc:           ["One kind thing you did for yourself in the wait this week?", "What helped on a hard day recently?", "What are you quietly hopeful about?"],
+  pregnancy:     ["What surprised you about this week — good or strange?", "One thing you want to remember from right now?", "What's the room's best comfort tip?"],
+  postpartum:    ["What got you through the fog today, however small?", "One thing no one warned you about?", "What would you tell a new-you a month ago?"],
+  perimenopause: ["The symptom no one warned you about — name it here.", "What's actually helped, if anything?", "One small win this week?"],
+  menopause:     ["What's freer about this chapter than you expected?", "What do you wish younger women knew?", "One thing that helped this week?"],
+  pcos:          ["What's one thing that's helped you feel more yourself?", "A myth about PCOS you'd love to bust?", "Beyond symptoms — what brought you joy this week?"],
+  endo:          ["What helped on a flare day recently?", "A time you were finally believed — how did it feel?", "One good thing this week, pain aside?"],
+  pmdd:          ["A kind thing you can do for luteal-you in advance?", "What helps you ride the two weeks?", "One small light this week?"],
+  books:         ["What are you reading — and what's it doing to you?", "A book that wrecked you (in a good way)?", "What's next on your pile?"],
+  career:        ["A work win, however small, this week?", "The question you'd never ask aloud — ask it here.", "What are you trying to change about work?"],
+  creativity:    ["What did you make this week — however tiny?", "What do you want to try but haven't dared?", "Share a line, a stitch, a sketch."],
+  movement:      ["How did you move today — gently counts?", "A walk/swim/stretch that felt good lately?", "What's your kind goal this week?"],
+};
+export function circlePromptForDay(circleKey) {
+  const list = CIRCLE_PROMPTS[circleKey];
+  if (!list || !list.length) return null;
+  const day = new Date().toISOString().split("T")[0];
+  const epoch = Math.floor(new Date(day + "T00:00:00Z").getTime() / 86400000);
+  const i = (((epoch % list.length) + list.length) % list.length);
+  return list[i];
+}
+
+// ── Per-condition NHS / charity INFO ANCHOR (feature #4) — one calm, grounded line atop a
+// condition circle. The k-anon substitute for upvoting good info + a misinformation counterweight
+// (JMIR 2025). Peer support, never a diagnosis; points to NHS/established charities.
+export const CIRCLE_INFO = {
+  pcos:          { line: "Peer support, not medical advice. For PCOS care, the NHS and Verity (the UK PCOS charity) are solid starting points.", href: "https://www.nhs.uk/conditions/polycystic-ovary-syndrome-pcos/" },
+  endo:          { line: "Peer support, not medical advice. Endometriosis UK and the NHS have reliable, up-to-date information.", href: "https://www.nhs.uk/conditions/endometriosis/" },
+  pmdd:          { line: "Peer support, not medical advice. If PMDD is affecting your life, the NHS and Mind can help you find the right support.", href: "https://www.nhs.uk/conditions/pre-menstrual-syndrome/" },
+  perimenopause: { line: "Peer support, not medical advice. The NHS and the Daisy Network / Menopause Matters have grounded guidance.", href: "https://www.nhs.uk/conditions/menopause/" },
+  menopause:     { line: "Peer support, not medical advice. The NHS has clear, current menopause information and treatment options.", href: "https://www.nhs.uk/conditions/menopause/" },
+};
 
 // device-local joined-state (anonymous, same model as reactions/qotd — no read needed for UX)
 export const isJoined = (key) => { try { return localStorage.getItem("fw_circle_" + key) === "1"; } catch { return false; } };
