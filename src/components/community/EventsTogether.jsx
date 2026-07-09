@@ -54,6 +54,16 @@ const ONLINE_IDEAS = [
   "Book-club video calls", "Cycle-sync sessions", "Watch-alongs", "Cosy co-working", "Guided workshops", "Evening AMAs",
 ];
 
+// Curated ONLINE community moments — always present so Events is never empty, even before
+// refreshEvents/EventsItems is populated. Free, online, RSVP is device-local ("I'm going");
+// these are FemWell online gatherings (no external ticket, no CSP dependency). Reversible.
+const CURATED_ONLINE = [
+  { id: "fw-bookclub-call", title: "Book-club call · this week's read", date: "Weekly · online", is_online: true, is_free: true, source_name: "FemWell · online", tags: ["books", "wellness"], verified: true, curated: true },
+  { id: "fw-watchalong", title: "Watch-along · Friday comfort film", date: "Fridays · online", is_online: true, is_free: true, source_name: "FemWell · online", tags: ["social", "online"], verified: true, curated: true },
+  { id: "fw-coworking", title: "Co-working hour · gentle body-doubling", date: "Weekday mornings · online", is_online: true, is_free: true, source_name: "FemWell · online", tags: ["wellness", "online"], verified: true, curated: true },
+  { id: "fw-cyclesync", title: "Cycle-sync · a soft evening session", date: "Fortnightly · online", is_online: true, is_free: true, source_name: "FemWell · online", tags: ["wellness"], verified: true, curated: true },
+];
+
 // ── a meet-safe interstitial before leaving to any external ticket platform ──
 function TicketInterstitial({ ev, onClose }) {
   useScrollLock(true);
@@ -169,6 +179,7 @@ export default function EventsTogether({ user, onBack, embedded = false }) {
   const [guideOpen, setGuideOpen] = useState(false);
   const [toast, setToast] = useState("");
   const [tick, setTick] = useState(0);            // re-render after device-local going/hide
+  const [rsvpIds, setRsvpIds] = useState(new Set());   // "I'm going" synced via EventRSVP (cross-device)
 
   useEffect(() => {
     (async () => {
@@ -176,6 +187,12 @@ export default function EventsTogether({ user, onBack, embedded = false }) {
         const rows = await base44.entities.EventsItems.list("date", 120);
         setEvents(Array.isArray(rows) ? rows : []);
       } catch { setEvents([]); }
+      try {
+        if (user?.id) {
+          const rsvps = await base44.entities.EventRSVP.filter({ user_id: user.id }, "-created_date", 200).catch(() => []);
+          setRsvpIds(new Set((rsvps || []).map((r) => r.event_id)));
+        }
+      } catch { /* ignore — device-local going still works */ }
       try {
         if (user?.id) {
           const saved = await base44.entities.SavedItems.filter({ user_id: user.id, item_type: "EVENT" }, "-created_at", 120);
@@ -188,7 +205,9 @@ export default function EventsTogether({ user, onBack, embedded = false }) {
   const flash = useCallback((m) => { setToast(m); setTimeout(() => setToast(""), 2600); }, []);
 
   const shown = useMemo(() => {
-    const list = (events || []).filter((e) => !isEvHidden(e.id));
+    // curated online moments always available + real EventsItems (so Events is never empty)
+    const merged = [...CURATED_ONLINE, ...(events || [])];
+    const list = merged.filter((e) => !isEvHidden(e.id));
     return list.filter((e) => {
       const modeMatch = mode === "all" || (mode === "online" ? e.is_online === true : e.is_online !== true);
       const catMatch = cat === "all" || (Array.isArray(e.tags) && e.tags.includes(cat)) || e.category === cat;
@@ -203,9 +222,21 @@ export default function EventsTogether({ user, onBack, embedded = false }) {
     return ["all", ...[...s].slice(0, 8)];
   }, [events]);
 
-  const goingCount = readArr(GOING_KEY).length;   // recomputed via tick
+  const goingCount = new Set([...readArr(GOING_KEY), ...rsvpIds]).size;   // device-local ∪ synced
 
-  const onGoing = (ev) => { const nowGoing = toggleGoing(ev.id); setTick((t) => t + 1); flash(nowGoing ? "You're going — kept private on your phone." : "Taken off your list."); };
+  // "I'm going": optimistic device-local + guarded EventRSVP sync (cross-device, private).
+  const onGoing = async (ev) => {
+    const nowGoing = toggleGoing(ev.id);
+    setRsvpIds((s) => { const n = new Set(s); if (nowGoing) n.add(ev.id); else n.delete(ev.id); return n; });
+    setTick((t) => t + 1);
+    flash(nowGoing ? "You're going — saved to your events (private)." : "Taken off your list.");
+    if (!user?.id) return;
+    try {
+      const iso = new Date().toISOString();
+      if (nowGoing) { await base44.entities.EventRSVP.create({ user_id: user.id, event_id: ev.id, title: ev.title, status: "going", created_at: iso, updated_at: iso }).catch(() => {}); }
+      else { const rows = await base44.entities.EventRSVP.filter({ user_id: user.id, event_id: ev.id }, "-created_date", 5).catch(() => []); (rows || []).forEach((r) => base44.entities.EventRSVP.delete(r.id).catch(() => {})); }
+    } catch { /* fail-open — device-local going stands */ }
+  };
   const onSave = async (ev) => {
     try {
       const r = await toggleSavedItem({ itemType: "EVENT", itemId: ev.id, title: ev.title, previewText: `${ev.is_online ? "Online" : (ev.location || ev.city || "")} · ${ev.price || (ev.is_free ? "Free" : "Paid")}`, meta: { url: ev.link } });
@@ -268,7 +299,7 @@ export default function EventsTogether({ user, onBack, embedded = false }) {
           </div>
         )}
         {(shown || []).map((ev) => (
-          <EventCard key={ev.id} ev={ev} going={isGoing(ev.id)} saved={savedIds.has(ev.id)}
+          <EventCard key={ev.id} ev={ev} going={isGoing(ev.id) || rsvpIds.has(ev.id)} saved={savedIds.has(ev.id)}
             onGoing={onGoing} onSave={onSave} onTickets={onTickets} onShare={onShare} onReport={onReport} />
         ))}
 

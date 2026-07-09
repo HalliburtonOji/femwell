@@ -233,15 +233,20 @@ function PostCard({ post, user, onCrisis, onChanged, enhanced = false, myHash = 
     const list = Array.isArray(rows) ? rows : [];
     setComments(list);
 
-    // Judicious Jess: once per post per device, only if the thread is open, has no Jess
-    // reply yet, and reads as heavier/asking. The server re-gates + the model may decline,
-    // so a fired call can still come back empty — that's fine, we just don't ask again.
+    // Judicious Jess: once per post per device, only if the thread is open + has no Jess reply.
+    // Fires when the post reads heavier/asking, OR — the "no post left unanswered" BACKSTOP —
+    // when a thread has sat with ZERO replies for a while (>15 min). The server re-gates + the
+    // model may decline, so a fired call can still come back empty; we just don't ask again.
+    const noReplies = list.length === 0;
+    const ageMin = (Date.now() - new Date(post.created_date || post.created_at || 0).getTime()) / 60000;
+    const heavy = clientHeavy(post.body);
+    const isBackstop = !heavy && noReplies && ageMin > 15;
     if (!jessTried.current && isOpen && !list.some((c) => c.by === "jess")
-        && clientHeavy(post.body) && !jessAsked(post.id)) {
+        && (heavy || isBackstop) && !jessAsked(post.id)) {
       jessTried.current = true;
       markJessAsked(post.id);
       try {
-        const r = await base44.functions.invoke("jessSupport", { post_id: post.id });
+        const r = await base44.functions.invoke("jessSupport", { post_id: post.id, backstop: isBackstop });
         const d = r?.data ?? r;
         if (d?.comment) {
           const rows2 = await base44.entities.Comment.filter({ post_id: post.id, hidden: false }, "created_date", 100).catch(() => []);
@@ -308,7 +313,7 @@ function PostCard({ post, user, onCrisis, onChanged, enhanced = false, myHash = 
   };
 
   return (
-    <div style={{ background: T.paperHi, border: `1px solid ${T.paperDeep}`, borderRadius: 4, padding: "16px 17px", marginBottom: 14 }}>
+    <div style={{ background: `linear-gradient(165deg, ${T.paperHi} 0%, ${T.paperDeep}22 100%)`, border: `1px solid ${T.paperDeep}`, borderRadius: 14, padding: "15px 16px", marginBottom: 13, boxShadow: "0 2px 12px rgba(58,44,26,0.08), 0 1px 3px rgba(58,44,26,0.05)" }}>
       {/* enhanced: a warm botanical alias (derived from the anon hash — no identity) */}
       {enhanced && post.author_hash && (
         <div style={{ display: "flex", alignItems: "center", gap: 7, marginBottom: 7 }}>
@@ -626,7 +631,7 @@ function BookClubView({ user, onCrisis, onBack }) {
     <div style={{ padding: "26px 18px 60px" }}>
       <button onClick={onBack} style={{ ...ghostBtn, marginBottom: 14, padding: "7px 11px" }}><ChevronLeft size={14} /> Community</button>
       <Eyebrow color={T.gold} mb={8}>Book club · Jess hosts</Eyebrow>
-      <Script size={32} style={{ marginBottom: 2 }}>{pick.title}</Script>
+      <Script size={32} color={OXBLOOD} style={{ marginBottom: 2 }}>{pick.title}</Script>
       <div style={{ fontFamily: UI, fontSize: 12.5, color: T.muted, marginBottom: 12 }}>{pick.author}{pick.cadence ? ` · ${pick.cadence}` : ""}</div>
       <Hand size={17} color={T.inkSoft} style={{ marginBottom: 14 }}>{pick.host_intro}</Hand>
 
@@ -708,7 +713,7 @@ function WisdomLibrary({ onBack }) {
     <div style={{ padding: "26px 18px 60px" }}>
       <button onClick={onBack} style={{ ...ghostBtn, marginBottom: 14, padding: "7px 11px" }}><ChevronLeft size={14} /> Community</button>
       <Eyebrow color={T.gold} mb={8}>Living wisdom</Eyebrow>
-      <Script size={34} style={{ marginBottom: 6 }}>What the room knows</Script>
+      <Script size={34} color={OXBLOOD} style={{ marginBottom: 6 }}>What the room knows</Script>
       <Hand size={17} color={T.muted} style={{ marginBottom: 16 }}>
         The lines worth keeping — held by women who came before, saved here so they outlast the day they were said.
       </Hand>
@@ -1270,7 +1275,7 @@ function CirclesDirectory({ onOpen, profile = null }) {
   const suggested = suggestedCircles(profile).filter((c) => !isJoined(c.key));   // P6 — from stage + interests
   return (
     <div>
-      <Script size={30} style={{ marginBottom: 4 }}>Circles</Script>
+      <Script size={30} color={OXBLOOD} style={{ marginBottom: 4 }}>Circles</Script>
       <Hand size={17} color={T.muted} style={{ marginBottom: 18 }}>
         Smaller rooms by what you're living and what you love. Lurk freely; join the ones that are yours.
       </Hand>
@@ -1355,7 +1360,7 @@ function CircleView({ circleKey, user, onCrisis, onBack }) {
   return (
     <div>
       <button onClick={onBack} style={{ ...ghostBtn, marginBottom: 14, padding: "7px 11px" }}><ChevronLeft size={14} /> Circles</button>
-      <Script size={30} style={{ marginBottom: 4 }}>{circle.name}</Script>
+      <Script size={30} color={OXBLOOD} style={{ marginBottom: 4 }}>{circle.name}</Script>
       <Hand size={17} color={T.muted} style={{ marginBottom: 14 }}>{circle.line}</Hand>
 
       {/* Books circle hosts the seasonal shared read (Phase 2) — a signpost into the Jess-hosted
@@ -1432,7 +1437,7 @@ function ClubsDirectory({ onOpen, onBack, user }) {
   return (
     <div>
       {onBack && <button onClick={onBack} style={{ ...ghostBtn, marginBottom: 14, padding: "7px 11px" }}><Grid2x2 size={13} /> Doors</button>}
-      <Script size={30} style={{ marginBottom: 4 }}>Clubs</Script>
+      <Script size={30} color={OXBLOOD} style={{ marginBottom: 4 }}>Clubs</Script>
       <Hand size={17} color={T.muted} style={{ marginBottom: 18 }}>
         Small groups for doing a thing together — hosted by Jess. Lurk freely; join the ones that are yours.
       </Hand>
@@ -1590,7 +1595,7 @@ function ClubView({ clubKey, user, onCrisis, onBack, clubTitle = "" }) {
   return (
     <div>
       <button onClick={onBack} style={{ ...ghostBtn, marginBottom: 14, padding: "7px 11px" }}><ChevronLeft size={14} /> Clubs</button>
-      <Script size={30} style={{ marginBottom: 4 }}>{club.name}</Script>
+      <Script size={30} color={OXBLOOD} style={{ marginBottom: 4 }}>{club.name}</Script>
       <Hand size={17} color={T.muted} style={{ marginBottom: 14 }}>{club.line}</Hand>
 
       {club.dailyRead && (
@@ -1619,12 +1624,14 @@ function ClubView({ clubKey, user, onCrisis, onBack, clubTitle = "" }) {
       </div>
       {joinErr && <div style={{ fontFamily: UI, fontSize: 12, color: T.crimson, marginBottom: 12 }}>Couldn{"’"}t join just now — please try again.</div>}
 
-      {!composing && joined && (
+      {/* Readers' corners (daily-read book clubs) drop the join friction — you can post
+          straight away and are AUTO-JOINED on your first word. Hosted convo clubs still ask. */}
+      {!composing && (joined || club.dailyRead) && (
         <button onClick={() => setComposing(true)} style={{ ...primaryBtn, marginBottom: 16 }}><Plus size={14} /> Add to {club.name}</button>
       )}
       {composing && (
         <RoomComposer room="clubs" club={clubKey} user={user} onCrisis={onCrisis}
-          onPosted={(post) => { setComposing(false); if (post?.id) setPosts((prev) => [post, ...(Array.isArray(prev) ? prev : [])]); load(); }} onCancel={() => setComposing(false)} />
+          onPosted={(post) => { setComposing(false); if (!joined && club.dailyRead) { try { markClubJoined(clubKey); } catch { /* ignore */ } setJoined(true); } if (post?.id) setPosts((prev) => [post, ...(Array.isArray(prev) ? prev : [])]); load(); }} onCancel={() => setComposing(false)} />
       )}
 
       {/* Async voice-notes about the book — gated behind VOICE_NOTES_ENABLED + an STT key.
@@ -1709,7 +1716,7 @@ function LibraryView({ user, onCrisis, onNav, onOpenCorner }) {
 function GamesView({ user, onCrisis }) {
   return (
     <div>
-      <Script size={32} style={{ marginBottom: 4 }}>The Games Room</Script>
+      <Script size={32} color={OXBLOOD} style={{ marginBottom: 4 }}>The Games Room</Script>
       <Hand size={17} color={T.muted} style={{ marginBottom: 16 }}>Play, lightly. Jess hosts every round — no winners, no scores, no leaderboards. Whatever you say, the room only ever sees the warm whole of it.</Hand>
 
       {/* the headline nightly round (day-rotated format) */}
@@ -1728,7 +1735,7 @@ function GamesView({ user, onCrisis }) {
   );
 }
 
-function RoomView({ roomKey, posts, loading, error, user, onNav, onCrisis, onReload, onPostCreated, seed = "", initialCircle = null, profile = null, onOpenCorner, onOpenHub, enhanced = false, lifeStage = null }) {
+function RoomView({ roomKey, posts, loading, error, user, onNav, onHome, onCrisis, onReload, onPostCreated, seed = "", initialCircle = null, profile = null, onOpenCorner, onOpenHub, enhanced = false, lifeStage = null }) {
   const [composing, setComposing] = useState(() => !!seed);
   const [voicing, setVoicing] = useState(false);
   const [myHash, setMyHash] = useState(null);
@@ -1753,7 +1760,7 @@ function RoomView({ roomKey, posts, loading, error, user, onNav, onCrisis, onRel
     <div>
       {/* sticky tab bar */}
       <div style={{ position: "sticky", top: 0, zIndex: 10, background: "rgba(244,239,227,0.97)", backdropFilter: "blur(8px)", borderBottom: `1px solid ${T.paperDeep}`, padding: "9px 12px", display: "flex", alignItems: "center", gap: 6, overflowX: "auto" }}>
-        <button onClick={() => onNav("home")} aria-label="All rooms" style={{ ...ghostBtn, flexShrink: 0, padding: "7px 11px" }}><Grid2x2 size={13} /> Doors</button>
+        <button onClick={onHome || (() => onNav("home"))} aria-label="All rooms" style={{ ...ghostBtn, flexShrink: 0, padding: "7px 11px" }}><Grid2x2 size={13} /> Doors</button>
         {onOpenHub && <JumpToButton onClick={onOpenHub} />}
         {ROOMS.map((r) => (
           <button key={r.key} onClick={() => onNav(r.key)} style={{
@@ -1773,7 +1780,7 @@ function RoomView({ roomKey, posts, loading, error, user, onNav, onCrisis, onRel
           <GamesView user={user} onCrisis={onCrisis} />
         ) : (
         <>
-        <Script size={32} style={{ marginBottom: 4 }}>{room.name}</Script>
+        <Script size={32} color={OXBLOOD} style={{ marginBottom: 4 }}>{room.name}</Script>
         <Hand size={17} color={T.muted} style={{ marginBottom: enhanced ? 10 : 16 }}>{room.line}</Hand>
 
         {/* enhanced: per-room k-anon presence + a "mute a word" control (anonymous-layer safety) */}
@@ -2199,7 +2206,7 @@ function TogetherHub({ user, onEnter, onCrisis, onBack }) {
     <div style={{ padding: "26px 18px 60px", maxWidth: 460, margin: "0 auto" }}>
       {onBack && <button onClick={onBack} style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "transparent", border: `1px solid ${T.paperDeep}`, borderRadius: 10, padding: "7px 11px", fontFamily: UI, fontSize: 12.5, fontWeight: 600, color: T.ink, cursor: "pointer", marginBottom: 14 }}><ChevronLeft size={14} /> Community</button>}
       <Eyebrow color={T.gold} mb={6}>Together</Eyebrow>
-      <Script size={38} style={{ marginBottom: 4 }}>Things we do together</Script>
+      <Script size={38} color={OXBLOOD} style={{ marginBottom: 4 }}>Things we do together</Script>
       <Hand size={17} color={T.muted} style={{ marginBottom: 18 }}>Not another feed to scroll — real ways to do something alongside other women. Go out, read, play, take something on. Dip in for five minutes or the whole evening.</Hand>
 
       {/* THIS WEEK, TOGETHER — the rotating shared moment (async-friendly) */}
@@ -2435,6 +2442,29 @@ export function CommunityInner({ initialView = null, embedded = false, homeVaria
     } catch { /* ignore */ }
   }, []);
 
+  // ── BACK-BUTTON FIX ──────────────────────────────────────────────────────────
+  // Community sub-views are internal `view` STATE, not routes — so the browser/global
+  // back button used to pop the ROUTE stack and leave Community entirely (jumping to
+  // whatever came before, e.g. Profile). Fix: while in a sub-view, push ONE same-URL
+  // history "trap" entry so back is caught here and returns to the Community HOME instead
+  // of leaving. (Same-URL pushState → React Router does not navigate.) Reversible: remove
+  // these two effects + goBack, and point the sub-view onBack props back at setView("home").
+  const trapped = useRef(false);
+  useEffect(() => {
+    if (view === "home") { trapped.current = false; return; }
+    if (!trapped.current) { try { window.history.pushState({ __fwCommunity: 1 }, ""); } catch { /* ignore */ } trapped.current = true; }
+  }, [view]);
+  useEffect(() => {
+    const onPop = () => { if (trapped.current) { trapped.current = false; setView("home"); } /* else: at home → let the browser leave */ };
+    window.addEventListener("popstate", onPop);
+    return () => window.removeEventListener("popstate", onPop);
+  }, []);
+  // in-app back buttons route through this so the trap entry is consumed cleanly.
+  const goBack = useCallback(() => {
+    if (trapped.current) { try { window.history.back(); return; } catch { /* fall through */ } }
+    setView("home");
+  }, []);
+
   useEffect(() => { base44.auth.me().then(setUser).catch(() => setUser(null)); }, []);
   useEffect(() => {
     base44.entities.UserProfile.filter({}, "-created_date", 1)
@@ -2493,37 +2523,37 @@ export function CommunityInner({ initialView = null, embedded = false, homeVaria
               : <Home presence={presence} lifeStage={lifeStage} onEnter={setView} user={user} onCrisis={() => setCrisis(true)} onShareTo={() => setShareTo(true)} onOpenHub={() => setHubOpen(true)} />)
           : view === "qotd"
           ? <div style={{ padding: "26px 18px 50px" }}>
-              <button onClick={() => setView("home")} style={{ ...ghostBtn, marginBottom: 14, padding: "7px 11px" }}><ChevronLeft size={14} /> Community</button>
+              <button onClick={goBack} style={{ ...ghostBtn, marginBottom: 14, padding: "7px 11px" }}><ChevronLeft size={14} /> Community</button>
               <QotdCard user={user} onCrisis={() => setCrisis(true)} />
             </div>
           : view === "rituals"
           ? <div style={{ padding: "26px 18px 50px" }}>
-              <button onClick={() => setView("home")} style={{ ...ghostBtn, marginBottom: 14, padding: "7px 11px" }}><ChevronLeft size={14} /> Community</button>
+              <button onClick={goBack} style={{ ...ghostBtn, marginBottom: 14, padding: "7px 11px" }}><ChevronLeft size={14} /> Community</button>
               <Eyebrow color={T.gold} mb={8}>Today, together</Eyebrow>
-              <Script size={32} style={{ marginBottom: 12 }}>The daily rituals</Script>
+              <Script size={32} color={OXBLOOD} style={{ marginBottom: 12 }}>The daily rituals</Script>
               <CloseWeekCard user={user} onCrisis={() => setCrisis(true)} />
               <PoolCard user={user} />
               <WisdomCard onOpen={() => setView("wisdom")} />
             </div>
           : view === "together"
-          ? <TogetherHub user={user} onEnter={enterShelf} onCrisis={() => setCrisis(true)} onBack={() => setView("home")} />
+          ? <TogetherHub user={user} onEnter={enterShelf} onCrisis={() => setCrisis(true)} onBack={goBack} />
           : view === "events"
-          ? <EventsTogether user={user} onBack={() => setView("home")} />
+          ? <EventsTogether user={user} onBack={goBack} />
           : view === "library"
-          ? <LibraryTogether user={user} onBack={() => setView("home")} onNav={setView}
+          ? <LibraryTogether user={user} onBack={goBack} onNav={setView}
               onOpenCorner={(key, title) => { setInitialClub(key); setClubTitle(title || ""); setView("clubs"); }} />
           : view === "wisdom"
-          ? <WisdomLibrary onBack={() => setView("home")} />
+          ? <WisdomLibrary onBack={goBack} />
           : view === "bookclub"
           ? <BookClubView user={user} onCrisis={() => setCrisis(true)} onBack={() => setView("library")} />
           : view === "clubs"
-          ? <div style={{ padding: "30px 18px 50px" }}><ClubsView user={user} onCrisis={() => setCrisis(true)} onBack={() => setView("home")} initialActive={initialClub} clubTitle={clubTitle} /></div>
+          ? <div style={{ padding: "30px 18px 50px" }}><ClubsView user={user} onCrisis={() => setCrisis(true)} onBack={goBack} initialActive={initialClub} clubTitle={clubTitle} /></div>
           : view === "echo"
           ? <div style={{ padding: "26px 18px 50px" }}>
-              <button onClick={() => setView("home")} style={{ ...ghostBtn, marginBottom: 14, padding: "7px 11px" }}><ChevronLeft size={14} /> Community</button>
+              <button onClick={goBack} style={{ ...ghostBtn, marginBottom: 14, padding: "7px 11px" }}><ChevronLeft size={14} /> Community</button>
               <EchoWall user={user} profile={profile} lifeStage={lifeStage} />
             </div>
-          : <RoomView key={tick} roomKey={view} posts={posts} loading={loading} error={loadErr} user={user} onNav={setView} onCrisis={() => setCrisis(true)} onReload={reload} onPostCreated={onPostCreated} seed={roomSeed} initialCircle={initialCircle} profile={profile}
+          : <RoomView key={tick} roomKey={view} posts={posts} loading={loading} error={loadErr} user={user} onNav={setView} onHome={goBack} onCrisis={() => setCrisis(true)} onReload={reload} onPostCreated={onPostCreated} seed={roomSeed} initialCircle={initialCircle} profile={profile}
               onOpenHub={() => setHubOpen(true)} enhanced={homeVariant === "redesign"} lifeStage={lifeStage}
               onOpenCorner={(key, title) => { setInitialClub(key); setClubTitle(title || ""); setView("clubs"); }} />}
         {view === "home" && homeVariant === "classic" && (

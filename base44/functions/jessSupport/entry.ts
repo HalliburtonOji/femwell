@@ -70,6 +70,11 @@ Deno.serve(async (req) => {
   try { p = await req.json(); } catch { return Response.json({ error: 'Bad JSON' }, { status: 400 }); }
   const post_id = p?.post_id;
   if (!post_id) return Response.json({ error: 'post_id required' }, { status: 400 });
+  // BACKSTOP mode ("no post left unanswered"): the client fires this for an OPEN post that has
+  // sat with ZERO replies for a while. In backstop mode we relax the heaviness pre-gate + the
+  // sampling gate so a genuinely unanswered post gets a warm look — the model still decides
+  // (should_reply) and dedup/closed still apply, so Jess never doubles up or fills pure noise.
+  const backstop = p?.backstop === true;
 
   const sb = base44.asServiceRole;
   const post = await withTimeout(sb.entities.CommunityPost.get(String(post_id)), 2500, 'get').catch(() => null);
@@ -85,23 +90,30 @@ Deno.serve(async (req) => {
   }
 
   // Gate 2 — heaviness pre-gate: don't spend an LLM call on pure logistics/celebration.
-  if (!looksHeavy(post.body || '')) {
+  // Skipped in backstop mode (an unanswered post deserves a look regardless of weight).
+  if (!backstop && !looksHeavy(post.body || '')) {
     return Response.json({ ok: true, skipped: 'light' }, { status: 200 });
   }
 
   // Gate 2.5 — SAMPLING: Jess replies are OCCASIONAL, not one per eligible heavy thread.
   // A deterministic hash of the post id (stable per thread) keeps paid LLM calls to ~1 in 3.
-  let _h = 0; const _pid = String(post_id);
-  for (let i = 0; i < _pid.length; i++) _h = (_h * 31 + _pid.charCodeAt(i)) | 0;
-  if (Math.abs(_h) % 3 !== 0) return Response.json({ ok: true, skipped: 'sampled-out' }, { status: 200 });
+  // Skipped in backstop mode so a lingering unanswered post is actually caught.
+  if (!backstop) {
+    let _h = 0; const _pid = String(post_id);
+    for (let i = 0; i < _pid.length; i++) _h = (_h * 31 + _pid.charCodeAt(i)) | 0;
+    if (Math.abs(_h) % 3 !== 0) return Response.json({ ok: true, skipped: 'sampled-out' }, { status: 200 });
+  }
 
   // Gate 3 — the model may still decline.
   let ai: any = null;
   try {
     // Hard 12s cap: InvokeLLM takes no abort signal, so race it against a timeout.
     // Jess is best-effort enrichment — a slow/hung model must never hang this function.
+    const backstopNote = backstop
+      ? '\n\nNo one has replied to her yet. If there is any warm, brief, genuine thing to say so she is not left completely unheard, please do — a simple acknowledgement is plenty. It is still fine to decline if the post truly needs nothing.'
+      : '';
     const llm = sb.integrations.Core.InvokeLLM({
-      prompt: JESS_SYSTEM + '\n\nThe member wrote:\n"""\n' + String(post.body || '').slice(0, 1200) + '\n"""\n\nReturn JSON only.',
+      prompt: JESS_SYSTEM + backstopNote + '\n\nThe member wrote:\n"""\n' + String(post.body || '').slice(0, 1200) + '\n"""\n\nReturn JSON only.',
       response_json_schema: {
         type: 'object',
         properties: {

@@ -1,0 +1,18 @@
+{
+  // EventRSVP — a woman's PRIVATE "I'm going" for an event (syncs her going-status across
+  // devices). Owner-scoped (no rls block → Base44 owner default, like SavedItems/UserBook);
+  // the client always filters by user_id. Private by design — no one, not other women nor us,
+  // sees where she'll be unless she opts into a pod (EventPod). Lean: one row per (user,event).
+  "name": "EventRSVP",
+  "type": "object",
+  "properties": {
+    "user_id": { "type": "string" },
+    "event_id": { "type": "string", "description": "EventsItems id or a curated event key." },
+    "title": { "type": "string", "description": "Snapshot title (so a saved RSVP reads well even if the source event rotates)." },
+    "status": { "type": "string", "enum": ["going", "maybe"], "default": "going" },
+    "created_at": { "type": "string" },
+    "updated_at": { "type": "string" }
+  },
+  "required": ["user_id", "event_id"],
+  "indexes": [ { "fields": ["user_id"] }, { "fields": ["event_id"] }, { "fields": ["created_date"] } ]
+}
