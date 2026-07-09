@@ -1,0 +1,170 @@
+<!doctype html>
+<html lang="en-GB"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>FemWell — Library / Book Club: robust (feature #3)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500;1,600&family=Ephesis&display=swap" rel="stylesheet">
+<style>
+  :root{--paper:#ECE7DA;--paperHi:#F4EFE3;--paperDeep:#D8CFBC;--ink:#0B0805;--inkSoft:#1A140D;--muted:#2E261B;--gold:#A8893F;--crimson:#BC2E27;--oxblood:#7A1A12;--blush:#E8B4B8;--sage:#8FAF8F;--plum:#8E6E8E;--serif:'Cormorant Garamond',Georgia,serif;--script:'Ephesis',cursive;--sans:ui-sans-serif,system-ui,-apple-system,'Segoe UI',sans-serif;}
+  *{box-sizing:border-box}
+  body{margin:0;background:radial-gradient(120% 80% at 12% 0%,#F4EFE3 0%,rgba(244,239,227,0) 55%),radial-gradient(120% 90% at 100% 100%,#E4DDCC 0%,rgba(228,221,204,0) 50%),var(--paper);color:var(--ink);font-family:var(--serif);font-size:18px;line-height:1.6;-webkit-font-smoothing:antialiased}
+  .doc{max-width:680px;margin:0 auto;padding:30px 22px 90px}
+  h1.cover{font-family:var(--script);font-size:50px;color:var(--crimson);margin:6px 0 2px;line-height:1.04}
+  h2{font-family:var(--serif);font-style:italic;font-weight:600;font-size:27px;margin:0 0 6px;color:var(--oxblood)}
+  h4{font-family:var(--sans);font-size:12px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--gold);margin:16px 0 4px}
+  .eyebrow{font-family:var(--sans);font-size:12px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--gold);margin-bottom:10px}
+  p{margin:0 0 12px}.lede{font-size:20px;line-height:1.55}
+  small,.cap{font-family:var(--sans);font-size:13px;color:var(--muted);line-height:1.5}
+  b,strong{font-weight:600}
+  a{color:var(--crimson);text-decoration:none;border-bottom:1px solid rgba(188,46,39,.3)}
+  .section{background:var(--paperHi);border:1px solid var(--paperDeep);border-left:4px solid var(--gold);border-radius:20px;padding:22px 20px;margin:18px 0;box-shadow:0 4px 20px rgba(58,44,26,.10),0 1px 4px rgba(58,44,26,.06)}
+  .section.crimson{border-left-color:var(--crimson)}.section.sage{border-left-color:var(--sage)}.section.plum{border-left-color:var(--plum)}
+  table{width:100%;border-collapse:collapse;font-size:14px;font-family:var(--sans);margin:8px 0}
+  th,td{text-align:left;padding:7px 8px;border-bottom:1px solid var(--paperDeep);vertical-align:top}
+  th{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--gold)}
+  td b{font-family:var(--serif);font-size:15px}
+  .toc a{display:block;font-family:var(--sans);font-size:15px;color:var(--inkSoft);text-decoration:none;border-bottom:1px solid var(--paperDeep);padding:6px 0}
+  .toc a span{color:var(--gold);font-weight:700;margin-right:10px}
+  .script{font-family:var(--script);color:var(--crimson)}
+  .pill{display:inline-block;font-family:var(--sans);font-size:12px;font-weight:600;padding:5px 11px;border-radius:999px;background:var(--paper);border:1px solid var(--paperDeep);margin:3px 4px 3px 0}
+  .pill.done{background:#EAF1EA;border-color:var(--sage);color:#3f6b3f}
+  .pill.gate{background:#FBE9E6;border-color:var(--crimson);color:var(--crimson)}
+  .pill.next{background:#FBF1E0;border-color:var(--gold);color:#8a6d22}
+  .lens{background:var(--paper);border:1px solid var(--paperDeep);border-left:3px solid var(--gold);border-radius:12px;padding:12px 14px;margin:8px 0}
+  .lens .nm{font-family:var(--serif);font-weight:600;font-size:18px;color:var(--ink);margin-bottom:2px}
+  .lens .nm .ix{font-family:var(--sans);font-size:11px;font-weight:700;letter-spacing:.1em;color:var(--gold);margin-right:8px;text-transform:uppercase}
+  .lens p{margin:0;font-size:15px;line-height:1.5;color:var(--inkSoft)}
+  .lens .src{font-family:var(--sans);font-size:12px;color:var(--muted);margin-top:5px}
+  .foot{font-family:var(--sans);font-size:12px;color:var(--muted);text-align:center;margin-top:30px;line-height:1.6}
+  ul{margin:4px 0 12px;padding-left:20px}li{margin:3px 0}
+  .wf{border:1px solid var(--paperDeep);border-radius:16px;background:var(--paper);padding:12px;margin:12px 0;font-family:var(--sans)}
+  .wf .lbl{font-size:10.5px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--gold);margin-bottom:8px}
+  .box{border:1px dashed #b9ab8e;border-radius:12px;padding:10px 12px;margin:7px 0;background:var(--paperHi);font-size:13px;color:var(--inkSoft)}
+  .box .t{font-family:var(--serif);font-weight:600;font-size:16px;color:var(--ink)}
+</style></head>
+<body><div class="doc">
+
+<div class="center" style="padding:14px 0 4px;text-align:center">
+  <div class="eyebrow">FemWell · Community · FEATURE #3 · Library / Book Club · brainstorm + build</div>
+  <h1 class="cover">Read together</h1>
+  <p class="lede" style="font-style:italic;max-width:560px;margin:8px auto 0">Halli's ask: "let users attach books and others talk about it." So the Library becomes a real reading community — keep a shelf, find the women reading the same book, join the season's read — spoiler-safe, no counts, no streaks, no shame. This is the deep brainstorm and what's now built into the live Community's Together shelf, grounded in cited research on how StoryGraph, Fable and the book-club world actually work.</p>
+</div>
+
+<div class="section">
+  <div class="eyebrow">The one-line thesis</div>
+  <p class="lede">Attach a book → find your people around it. A woman shelves what she's reading, sees <b>"others reading this now"</b> (fuzzy, never a number), and drops into a <b>spoiler-safe, moderated per-book thread</b>. The differentiator vs Goodreads is what we <i>refuse</i> to do: <b>no reading goals, no yearly challenge, no "books-read" count, and "Set aside" instead of DNF</b> — the anti-shame that makes women defect from the trackers.</p>
+</div>
+
+<div class="section sage">
+  <div class="eyebrow">Contents</div>
+  <div class="toc">
+    <a href="#model"><span>1</span> The book model</a>
+    <a href="#evidence"><span>2</span> The evidence (cited)</a>
+    <a href="#built"><span>3</span> What's BUILT this pass</a>
+    <a href="#realgate"><span>4</span> Real now vs needs sign-off</a>
+    <a href="#warm"><span>5</span> Warmth, safety & app ties</a>
+  </div>
+</div>
+
+<!-- 1 -->
+<a id="model"></a>
+<div class="section crimson">
+  <div class="eyebrow">1 · The model</div>
+  <h2>What the Library is</h2>
+  <ul>
+    <li><b>Attach a book</b> — search (title/author) or add by hand; it lands on your shelf with a warm on-brand cover.</li>
+    <li><b>Your shelf, warm states</b> — <b>Reading now · Want to read · Finished</b> (and "Set aside", never "DNF"). No counts, no goals.</li>
+    <li><b>Talk about it</b> — every book has a <b>moderated readers' corner</b> (a per-book thread) where the women reading it talk — spoiler-safe, kind, anonymous.</li>
+    <li><b>The season's read</b> — the curated Book Club pick with spoiler-safe checkpoints + <b>"I'm reading this too"</b> and a fuzzy "N reading along".</li>
+    <li><b>Discover</b> — "books women here love" (whole-life: classics, romance, memoir — never a menopause reading list as the front door).</li>
+  </ul>
+</div>
+
+<!-- 2 -->
+<a id="evidence"></a>
+<div class="section">
+  <div class="eyebrow">2 · The evidence (verified sources)</div>
+  <h2>What makes a book community work</h2>
+  <div class="lens"><div class="nm"><span class="ix">Shelf</span>Four warm states · "Set aside" not "DNF"</div><p>StoryGraph/Fable/Goodreads all converge on <b>Want / Reading / Finished / DNF</b> — but the thing women defect from Goodreads <i>for</i> is DNF-shame; the top-upvoted asks are literally "DNF not counted toward the goal." "<b>Set aside</b>" reads far warmer. Search-to-attach (one tap, cover appears) is the norm; manual is the fallback.</p><div class="src">thestorygraph.com · roadmap.thestorygraph.com (DNF/goal) · bookriot.com (Fable)</div></div>
+  <div class="lens"><div class="nm"><span class="ix">API</span>Open Library — no key, no creds, no function</div><p>The gating fact: <b>Open Library Search + Covers are free, keyless, CORS-friendly and client-callable</b> — so the whole attach surface is buildable with <b>zero external-creds sign-off</b>. Google Books needs a key-in-a-function and its terms forbid charging users; Goodreads' API is dead; ISBNdb is paid. So Open Library is the pick, with metadata cached on attach.</p><div class="src">openlibrary.org/developers/api · openlibrary.org/dev/docs/api/covers · developers.google.com/books/terms</div></div>
+  <div class="lens"><div class="nm"><span class="ix">Spoilers</span>Progress-locking beats tags</div><p>StoryGraph locks a comment to a %/page and "anyone not up to chapter 5 won't see it," rounding <i>up</i> for safety. That's <b>FemWell's existing checkpoint model</b> — generalise it to any book. Add tap-to-reveal spoiler blur as belt-and-braces. Anonymity + async threads + a warm Jess host defuse the "one member dominates" club-killer.</p><div class="src">thissplendidshambles.com (buddy reads) · bookriot.com (Fable) · writercosmos.com</div></div>
+  <div class="lens"><div class="nm"><span class="ix">Completion</span>Short picks · async · someone leading</div><p>Clubs die from over-long picks (250–350pg completes; 500pg collapses "under guilt about falling behind"), no leader, no variety. Async-first is correct for a small community — StoryGraph buddy reads are fully async. Keep Jess leading, short varied picks, "a few others are reading this now" as the belonging signal.</p><div class="src">bookdot.app · viktorcessan.com</div></div>
+  <div class="lens"><div class="nm"><span class="ix">Discovery</span>Mood, not stars; whole-life not clinical</div><p>Mood/emotion discovery ("a warm hug", "twisty", "hopeful") is the proven warm model — surface "books women here loved" as fuzzy warmth, never ranked star-counts. Life-stage is a <b>soft optional tint</b> (a "perimenopause memoirs" rail can exist beside "swoony romance" — never as the front door).</p><div class="src">whichbook.net · goodreads.com (mood lists) · adventuresinlit.com</div></div>
+</div>
+
+<!-- 3 -->
+<a id="built"></a>
+<div class="section sage">
+  <div class="eyebrow">3 · Shipped this pass (live, Together → Library)</div>
+  <h2>What's built — real, not a shell</h2>
+  <div class="wf">
+    <div class="lbl">Together → The Library</div>
+    <div class="box" style="border-style:solid;border-color:var(--crimson)"><b style="color:var(--crimson);font-size:11px">THIS SEASON, TOGETHER</b> · Little Women<br><small>N reading along · [ The book club ] [ I'm reading this too ] [ Readers' corner ]</small></div>
+    <div class="lbl" style="margin-top:6px">My shelf &nbsp;·&nbsp; [ + Add a book ]</div>
+    <div class="box"><b>📕→</b> a book cover + title/author · Reading now / Want to read / Finished · <b>Talk about it</b> · Read · Remove</div>
+    <div class="lbl" style="margin-top:6px">Books women here love (whole-life)</div>
+    <div class="box">Little Women · Pride & Prejudice · Jane Eyre · The Awakening · Persuasion · … — add or talk-about, one tap</div>
+  </div>
+  <table>
+    <tr><th>Feature</th><th>What it does · real?</th></tr>
+    <tr><td><b>Attach a book</b></td><td><b>Live Open Library search</b> (title/author → tap to shelve) + add-by-hand + curated quick-adds. On-brand flora "covers" (no external image = CSP-safe). <span class="pill done">real, no creds</span></td></tr>
+    <tr><td><b>My shelf + states</b></td><td>Reading now / Want to read / Finished, filterable. Device-local v1 (private). <span class="pill done">real</span> <span class="pill next">persistent = entity</span></td></tr>
+    <tr><td><b>Talk about any book</b></td><td>Opens that book's <b>moderated readers' corner</b> (the existing club-scoped CommunityPost thread — publish-then-screen moderation, report/block in the "…" menu, botanical aliases). <span class="pill done">real</span></td></tr>
+    <tr><td><b>The season's read</b></td><td>The curated Book Club pick + spoiler-safe checkpoints (existing BookClubView) + <b>"I'm reading this too"</b> (real anonymous ReadingActivity progress) + fuzzy <b>"N reading along"</b> (real k-floored cohort). <span class="pill done">real</span></td></tr>
+    <tr><td><b>Discover</b></td><td>"Books women here love" — whole-life starters, add or talk in one tap. <span class="pill done">real</span></td></tr>
+  </table>
+  <p><span class="pill done">no counts / no goals / no streaks</span><span class="pill done">"Set aside" ethos, no DNF-shame</span><span class="pill done">spoiler-safe checkpoints</span><span class="pill done">moderated discussion</span><span class="pill done">calm safety in the "…" menu</span></p>
+  <p class="cap">Reuses the existing infra (BookClubPick · checkpoints/ClubNote · readers' corners · ReadingActivity cohort · the BookReader) — nothing duplicated, nothing stripped. Reversible: the Library route falls back to the old view in one line.</p>
+</div>
+
+<!-- 4 -->
+<a id="realgate"></a>
+<div class="section crimson">
+  <div class="eyebrow">4 · The honest line</div>
+  <h2>Real now vs needs your sign-off</h2>
+  <table>
+    <tr><th>Capability</th><th>Status</th></tr>
+    <tr><td>Attach a book (Open Library search + manual + curated)</td><td><span class="pill done">REAL now</span> Open Library needs no key/creds/function</td></tr>
+    <tr><td>Per-book discussion (moderated readers' corner)</td><td><span class="pill done">REAL now</span> existing CommunityPost path</td></tr>
+    <tr><td>Season's read + checkpoints + "I'm reading this too" + cohort</td><td><span class="pill done">REAL now</span> existing BookClubPick + ReadingActivity</td></tr>
+    <tr><td>My shelf + reading states (device-local)</td><td><span class="pill done">REAL now</span> private, on your phone</td></tr>
+    <tr><td><b>Persistent, cross-device, searchable shelf</b></td><td><span class="pill gate">NEEDS SIGN-OFF</span> a new <b>`UserBook` entity</b> (alias · book ref · state · progress) + a light <b>`Book`</b> cache entity (OL id/isbn · title · author · cover · content-warnings) populated on attach. No external creds — just two entities.</td></tr>
+    <tr><td><b>Small-group "buddy read" invites</b></td><td><span class="pill next">NEXT (v1.1)</span> the shared per-book thread ships now; add small-group invites next (entity)</td></tr>
+    <tr><td><b>Google Books / richer metadata</b></td><td><span class="pill gate">DEFER</span> key-in-a-function + terms forbid charging users — not needed (Open Library covers v1)</td></tr>
+  </table>
+  <div class="src" style="font-family:var(--sans);font-size:12px;color:var(--muted)">One honest caveat to verify signed-in: the live Open Library search is a client fetch — if this host's CSP blocks it, the box degrades silently to the always-present manual + curated add (so the feature never breaks; only live-search availability is in question). The orchestrator's authed walk will confirm whether search returns results here.</div>
+</div>
+
+<!-- 5 -->
+<a id="warm"></a>
+<div class="section plum">
+  <div class="eyebrow">5 · Warmth, safety & wiring</div>
+  <h2>Warm, safe, and tied into the app</h2>
+  <h4>Warm / fun mechanics (built + planned)</h4>
+  <ul>
+    <li><b>Search-to-attach that feels like texting</b> — one tap, a cover appears.</li>
+    <li><b>"Set aside," never "DNF"</b> — a no-guilt state (v1.1 adds it as a 4th shelf).</li>
+    <li><b>Fuzzy "others reading this now"</b> — belonging without a number.</li>
+    <li><b>No counts, goals, streaks or challenges</b> — your profile shows <i>what</i> you read, never <i>how many</i>.</li>
+    <li><b>Content-warning first</b> — heavy themes flagged before you open (already in the pick entity).</li>
+    <li><b>Jess hosts every room</b> — no thread is ever empty; no single voice dominates.</li>
+    <li><b>"Lurking counts" welcome</b> — attach one book you loved as the gentle first step.</li>
+  </ul>
+  <h4>Safety (calm on the surface — inherited)</h4>
+  <p>Discussion rides the <b>moderated</b> CommunityPost path (background publish-then-screen, report/block tucked in the "…" menu, botanical aliases); every text input is crisis-checked; spoiler-safe checkpoints by default; content warnings on heavy reads. No new safety friction on the surface.</p>
+  <h4>How it ties in</h4>
+  <ul>
+    <li><b>The BookReader</b> — public-domain picks open in the in-app reader; progress feeds the Garden's "reading" days.</li>
+    <li><b>Together</b> — read-along is a core Together pillar; the season's read shares the "this week, together" rhythm.</li>
+    <li><b>Profile / Bloomprint</b> — "currently reading" as a gentle identity chip (when the shelf entity lands).</li>
+    <li><b>Jess</b> — hosts the checkpoints and seeds openers; "what should I read next?" is a natural Jess ask.</li>
+    <li><b>Life-stage = a soft tint</b> — a "perimenopause memoirs" rail can sit beside romance and thrillers, never the front door.</li>
+  </ul>
+</div>
+
+<div class="foot">
+  FemWell · Community feature #3 · Library / Book Club — brainstorm + build · research: workspace/research_library_bookclub_2026-07-09.md<br>
+  Built into the LIVE Community → Together → The Library · reversible · safety intact · IDEAS pill → Current
+</div>
+
+</div></body></html>

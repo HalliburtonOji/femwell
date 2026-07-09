@@ -74,6 +74,7 @@ import { Clipboard, ClipboardSlider } from "@/components/brand/ClipboardSlider";
 import { SummaryCard, FwCard } from "@/components/brand/Card";
 import { cwOf, Pollinator } from "@/components/brand/flora";
 import EventsTogether from "@/components/community/EventsTogether";
+import LibraryTogether from "@/components/community/LibraryTogether";
 
 const PLUM = "#241a26"; // the single permitted dark surface
 const HANDFAM = '"Cormorant Garamond","Fraunces",Georgia,serif';
@@ -2507,6 +2508,9 @@ export function CommunityInner({ initialView = null, embedded = false, homeVaria
           ? <TogetherHub user={user} onEnter={enterShelf} onCrisis={() => setCrisis(true)} onBack={() => setView("home")} />
           : view === "events"
           ? <EventsTogether user={user} onBack={() => setView("home")} />
+          : view === "library"
+          ? <LibraryTogether user={user} onBack={() => setView("home")} onNav={setView}
+              onOpenCorner={(key, title) => { setInitialClub(key); setClubTitle(title || ""); setView("clubs"); }} />
           : view === "wisdom"
           ? <WisdomLibrary onBack={() => setView("home")} />
           : view === "bookclub"

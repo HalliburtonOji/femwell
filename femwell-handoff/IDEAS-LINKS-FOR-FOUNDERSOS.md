@@ -242,6 +242,18 @@ Wiring (3 edits):
 - render branch: `{tab === "Events Together" && <BrandDocFrame html={communityEventsHtml} title="FemWell — Together / Events: robust & safe" />}`
 
 ---
+## ⭐ TO WIRE — COMMUNITY FEATURE #3 = LIBRARY / BOOK CLUB brainstorm (doc) (2026-07-09) → Ideas → Current
+> Feature #3: "attach a book, others talk about it" — a robust Library built into the LIVE Community (Together → The Library). Deep-research brainstorm (StoryGraph/Fable/Open Library/spoiler-locking, all cited) + what's BUILT: attach-a-book (LIVE Open Library search + manual + curated, on-brand flora covers), a personal shelf (Reading/Want/Finished, device-local v1), per-book DISCUSSION via the moderated readers'-corner (report/block "…" menu + aliases + background moderation), the season's read + spoiler-safe checkpoints + "I'm reading this too" (real ReadingActivity cohort), and whole-life discovery. No counts/goals/streaks; "Set aside" ethos. Reuses existing infra (BookClubPick/checkpoints/readers'-corner/ReadingActivity/BookReader) — nothing duplicated/stripped; reversible. GATED: persistent cross-device shelf = a new UserBook + Book cache entity (no external creds); Google Books deferred. Please wire the doc (3 edits).
+
+| Doc (femwell-handoff/) | brandDocs slug | FoundersOS key | group | accent |
+|---|---|---|---|---|
+| COMMUNITY-LIBRARY.html | community-library.html | "Library Book Club" | Current | crimson |
+
+- import: `import communityLibraryHtml from "@/components/founders/brandDocs/community-library.html?raw";`
+- CATALOG entry: `{ kind:"doc", key:"Library Book Club", group: CAT.CURRENT, sub:"Page level-up plans + demos", status:"new", accent:"crimson", title:"Library / Book Club — attach a book, others talk (feature #3)", desc:"Robust Library in the LIVE Community (Together→The Library). Cited research (StoryGraph/Fable/Open Library/spoiler-locking). BUILT: attach-a-book (LIVE Open Library search + manual + curated, on-brand flora covers) · personal shelf Reading/Want/Finished (device-local v1) · per-book DISCUSSION via the moderated readers'-corner (report/block '…' + aliases + background moderation) · the season's read + spoiler-safe checkpoints + 'I''m reading this too' (real ReadingActivity cohort) · whole-life discovery. NO counts/goals/streaks; 'Set aside' not DNF. Reuses existing infra, reversible. GATED: persistent x-device shelf = new UserBook + Book cache entity (no external creds); Google Books deferred. CSP caveat: OL search degrades to manual if blocked." }`
+- render branch: `{tab === "Library Book Club" && <BrandDocFrame html={communityLibraryHtml} title="FemWell — Library / Book Club: robust" />}`
+
+---
 ## ⭐ TO WIRE — COMMUNITY: SAFETY PRINCIPLE + holistic TOGETHER shelf (2026-07-08) → Ideas → Current
 > Two Halli corrections applied. **(A) SAFETY too in-your-face → reworked to "calm on the surface"** (proportionate, woven-in): backend moderation silent, report/hide tucked into a "…" menu, crisis contextual-only, disclaimers removed from the wall → one quiet Support corner. Retrofitted the Talk rooms + Events; set as the Community-wide principle every feature inherits. **(B) TOGETHER is holistic, not just events** — the whole "what you do together" shelf (rituals · read-along · challenges · daily game · watch-along · live circles · events). Built a real Together HUB in the demo. Both live in the redesign demo (`/CommunityRedesignDemo` → Together). Please wire BOTH docs (3 edits each).
 
