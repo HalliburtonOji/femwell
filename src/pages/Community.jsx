@@ -1769,11 +1769,17 @@ function LibraryView({ user, onCrisis, onNav, onOpenCorner }) {
 }
 
 // ── The Games Room — play, lightly (Jess's round) ────────────────────────────
-function GamesView({ user, onCrisis }) {
+function GamesView({ user, onCrisis, onHome, onNav }) {
   return (
     <div>
-      <Script size={32} color={OXBLOOD} style={{ marginBottom: 4 }}>The Games Room</Script>
-      <Hand size={17} color={T.muted} style={{ marginBottom: 16 }}>Play, lightly. Jess hosts every round — no winners, no scores, no leaderboards. Whatever you say, the room only ever sees the warm whole of it.</Hand>
+      {onHome && <button onClick={onHome} style={{ ...ghostBtn, marginBottom: 14, padding: "7px 11px" }}><ChevronLeft size={14} /> Community</button>}
+      <Eyebrow color={T.gold} mb={6}>Together · play lightly</Eyebrow>
+      <Script size={34} color={OXBLOOD} style={{ marginBottom: 4 }}>The Games Room</Script>
+      <Hand size={17} color={T.muted} style={{ marginBottom: 10 }}>Jess hosts every round — <b>no winners, no scores, no leaderboards</b>. You answer in a word or a line; when the round closes, she gathers the <i>warm whole</i> of what the room said. Never who said what.</Hand>
+      {/* k-anon warmth — the room is playing, never a count/ranking */}
+      <div style={{ display: "inline-flex", alignItems: "center", gap: 6, fontFamily: UI, fontSize: 12, fontWeight: 600, color: T.muted, marginBottom: 16 }}>
+        <Dices size={13} color={T.gold} /> The room's playing tonight — join in, no pressure.
+      </div>
 
       {/* the headline nightly round (day-rotated format) */}
       <GameRoundCard user={user} onCrisis={onCrisis} />
@@ -1783,6 +1789,15 @@ function GamesView({ user, onCrisis }) {
       {NAMED_GAMES.map((g) => (
         <GameRoundCard key={g.kind} kind={g.kind} name={g.name} blurb={g.blurb} user={user} onCrisis={onCrisis} />
       ))}
+
+      {/* gentle social hook — carry the fun into a room, no pressure */}
+      {onNav && (
+        <button onClick={() => onNav("lighter")} style={{ display: "flex", alignItems: "center", gap: 9, width: "100%", textAlign: "left", background: `linear-gradient(160deg, ${T.paperHi} 0%, ${cwOf("gold").petal}12 100%)`, border: `1px solid ${T.paperDeep}`, borderLeft: `3px solid ${cwOf("gold").petal}`, borderRadius: 13, padding: "12px 14px", cursor: "pointer", margin: "14px 0 8px" }}>
+          <span style={{ width: 28, height: 28, borderRadius: 8, background: `${cwOf("gold").petal}1F`, display: "grid", placeItems: "center", flexShrink: 0 }}><MessageCircle size={14} color={cwOf("gold").petal} /></span>
+          <span style={{ flex: 1 }}><span style={{ display: "block", fontFamily: SERIF, fontSize: 15.5, fontWeight: 600, color: T.ink }}>Keep the fun going</span><span style={{ fontFamily: UI, fontSize: 11.5, color: T.muted }}>Chat about tonight's round in the Lighter Side</span></span>
+          <ChevronRight size={15} color={T.muted} />
+        </button>
+      )}
 
       <div style={{ fontFamily: UI, fontSize: 11, color: T.muted, lineHeight: 1.5, marginTop: 6 }}>
         Every answer is anonymous and one-per-round. Jess screens for anything unkind, and reveals only the shared mood — never who said what.
@@ -2093,14 +2108,14 @@ const SHELVES = [
     ] },
   { id: "quietly", Icon: Feather, label: "Quietly", cw: "gold", openness: 0.5, creature: "ladybird",
     title: "Quietly", line: "Somewhere softer — anonymous, one-to-one, or just for you.",
-    sub: "Private & 1:1 · opens in your Journal", flower: "chamomile", action: { label: "Leave an echo", key: "echo" },
+    sub: "Private & one-to-one", flower: "chamomile", action: { label: "Leave an echo", key: "echo" },
     close: "Whatever you're carrying, you don't have to hold it out loud.",
     tiles: [
       { key: "echo", Icon: Waves, name: "Echo Wall", note: "anonymous lines, fade in 48h" },
-      { key: "witness", Icon: Eye, name: "Witness", note: "one sister holds your entry" },
+      { key: "witness", Icon: Eye, name: "Witness", note: "one sister holds your entry (in Journal)" },
       { key: "sealed", Icon: Mail, name: "Sealed letter", note: "a slow letter, opened later" },
       { key: "share", Icon: Send, name: "Share a thought", note: "into a space that's yours" },
-      { key: "twin", Icon: Users, name: "Phase Twin", note: "twelve days, paired" },
+      { key: "twin", Icon: Users, name: "Phase Twin", note: "twelve days, paired (in Journal)" },
       { key: "connect", Icon: SlidersHorizontal, name: "How you connect", note: "who can reach you · block" },
     ] },
 ];
@@ -2601,6 +2616,8 @@ export function CommunityInner({ initialView = null, embedded = false, homeVaria
               onOpenCorner={(key, title) => { setInitialClub(key); setClubTitle(title || ""); setView("clubs"); }} />
           : view === "circles"
           ? <div style={{ padding: "26px 18px 50px" }}><CirclesView user={user} onCrisis={() => setCrisis(true)} initialActive={initialCircle} profile={profile} onHome={goBack} /></div>
+          : view === "games"
+          ? <div style={{ padding: "26px 18px 50px" }}><GamesView user={user} onCrisis={() => setCrisis(true)} onHome={goBack} onNav={setView} /></div>
           : view === "wisdom"
           ? <WisdomLibrary onBack={goBack} />
           : view === "bookclub"

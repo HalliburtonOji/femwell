@@ -295,3 +295,15 @@ Together Shelf (3 edits):
 - import: `import communityCirclesHtml from "@/components/founders/brandDocs/community-circles.html?raw";`
 - CATALOG entry: `{ kind:"doc", key:"Circles", group: CAT.CURRENT, sub:"Page level-up plans + demos", status:"new", accent:"plum", title:"Circles — robust cohorts (feature #4, brainstorm)", desc:"Making Circles (life-stage/condition/interest cohorts) robust, warm + safe. Cited research (Peanut/Mumsnet/HealthUnlocked/PCOS study/JMIR/ACM). 7-pillar v1: seed every circle (never empty) · per-circle Jess host + no-post-unanswered · warm first-post welcome ('believed here') · per-condition NHS info anchor · whole-life 'a few circles for you' discovery (condition circles last, never from symptoms) · author-set content-warning veil · circle ritual of the week. Buildable now on existing entities; only CommunityPost.content_warning needs a small schema add. Build PAUSED for reaction." }`
 - render branch: `{tab === "Circles" && <BrandDocFrame html={communityCirclesHtml} title="FemWell — Circles: robust cohorts" />}`
+
+---
+## ⭐ TO WIRE — COMMUNITY FEATURE #5 = GAMES (The Games Room) brainstorm (doc) (2026-07-09) → Ideas → Current
+> Brief brainstorm + build for the Games Room (Together shelf). Built ON the existing games engine (openGameRoundV2/submitGameResponse/finalizeGameRound + GameRound/GameResponse) — NO new entity/function. The Wordle lesson: one shared round, spoiler-safe, NO leaderboard; aggregate the room ("we"), never rank people. Shipped: Jess's nightly round + 6 named games made robust/inviting, k-anon "the room's playing" warmth, a gentle social hook (chat about it in the Lighter Side), on-brand canonical top-level page (oxblood title, Jump-left chrome, back-nav to Community home). Phone HTML in femwell-handoff/COMMUNITY-GAMES.html; copied to brandDocs/community-games.html. Please wire (3 edits).
+
+| Doc (femwell-handoff/) | brandDocs slug | FoundersOS key | group | accent |
+|---|---|---|---|---|
+| COMMUNITY-GAMES.html | community-games.html | "Games Room" | Current | gold |
+
+- import: `import communityGamesHtml from "@/components/founders/brandDocs/community-games.html?raw";`
+- CATALOG entry: `{ kind:"doc", key:"Games Room", group: CAT.CURRENT, sub:"Page level-up plans + demos", status:"new", accent:"gold", title:"The Games Room — play lightly (feature #5)", desc:"Games made robust + social + safe. Built ON the existing games engine (no new entity/function). Wordle lesson: one shared round, spoiler-safe, NO leaderboard — aggregate the room ('we'), never rank people. Jess's nightly round + 6 named games (This or That/One Word/Caption/One-Line Story/Tiny Confession/Comfort Pick) inviting + quick; k-anon 'room's playing' warmth; gentle social hook to the Lighter Side; on-brand canonical top-level page + back-nav. Live in Together → The Games Room." }`
+- render branch: `{tab === "Games Room" && <BrandDocFrame html={communityGamesHtml} title="FemWell — The Games Room: play lightly" />}`

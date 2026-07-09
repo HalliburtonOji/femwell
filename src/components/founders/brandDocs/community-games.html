@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="en-GB"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>FemWell — The Games Room (feature #5)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500;1,600&family=Ephesis&display=swap" rel="stylesheet">
+<style>
+  :root{--paper:#ECE7DA;--paperHi:#F4EFE3;--paperDeep:#D8CFBC;--ink:#0B0805;--inkSoft:#1A140D;--muted:#2E261B;--gold:#A8893F;--crimson:#BC2E27;--oxblood:#7A1A12;--blush:#E8B4B8;--sage:#8FAF8F;--plum:#8E6E8E;--serif:'Cormorant Garamond',Georgia,serif;--script:'Ephesis',cursive;--sans:ui-sans-serif,system-ui,-apple-system,'Segoe UI',sans-serif;}
+  *{box-sizing:border-box}
+  body{margin:0;background:radial-gradient(120% 80% at 12% 0%,#F4EFE3 0%,rgba(244,239,227,0) 55%),radial-gradient(120% 90% at 100% 100%,#E4DDCC 0%,rgba(228,221,204,0) 50%),var(--paper);color:var(--ink);font-family:var(--serif);font-size:18px;line-height:1.6}
+  .doc{max-width:680px;margin:0 auto;padding:30px 22px 90px}
+  h1.cover{font-family:var(--script);font-size:50px;color:var(--crimson);margin:6px 0 2px;line-height:1.04}
+  h2{font-family:var(--serif);font-style:italic;font-weight:600;font-size:26px;margin:0 0 6px;color:var(--oxblood)}
+  h4{font-family:var(--sans);font-size:12px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--gold);margin:16px 0 4px}
+  .eyebrow{font-family:var(--sans);font-size:12px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--gold);margin-bottom:10px}
+  p{margin:0 0 12px}.lede{font-size:20px;line-height:1.55}
+  b,strong{font-weight:600}
+  .section{background:var(--paperHi);border:1px solid var(--paperDeep);border-left:4px solid var(--gold);border-radius:20px;padding:22px 20px;margin:18px 0;box-shadow:0 4px 20px rgba(58,44,26,.10)}
+  .section.crimson{border-left-color:var(--crimson)}.section.sage{border-left-color:var(--sage)}
+  table{width:100%;border-collapse:collapse;font-size:14px;font-family:var(--sans);margin:8px 0}
+  th,td{text-align:left;padding:7px 8px;border-bottom:1px solid var(--paperDeep);vertical-align:top}
+  th{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--gold)}
+  td b{font-family:var(--serif);font-size:15px}
+  .pill{display:inline-block;font-family:var(--sans);font-size:12px;font-weight:600;padding:5px 11px;border-radius:999px;background:var(--paper);border:1px solid var(--paperDeep);margin:3px 4px 3px 0}
+  .pill.done{background:#EAF1EA;border-color:var(--sage);color:#3f6b3f}
+  .foot{font-family:var(--sans);font-size:12px;color:var(--muted);text-align:center;margin-top:30px;line-height:1.6}
+  ul{margin:4px 0 12px;padding-left:20px}li{margin:3px 0}
+  .src{font-family:var(--sans);font-size:12px;color:var(--muted)}
+</style></head>
+<body><div class="doc">
+
+<div class="center" style="padding:14px 0 4px;text-align:center">
+  <div class="eyebrow">FemWell · Community · FEATURE #5 · The Games Room · brief brainstorm + build</div>
+  <h1 class="cover">Play, lightly</h1>
+  <p class="lede" style="font-style:italic;max-width:540px;margin:8px auto 0">A little joy, together — and <b>no one loses</b>. Jess hosts a shared round; you answer in a word or a line; when it closes she gathers the <i>warm whole</i> of what the room said. The whole design is the Wordle lesson: <b>one shared thing, spoiler-safe, no leaderboard</b> — belonging without pressure.</p>
+</div>
+
+<div class="section">
+  <div class="eyebrow">The one-line thesis</div>
+  <p class="lede">Games are the <b>lightest belonging surface</b>. The rule that makes them safe and fun for women: <b>aggregate the room, never rank the people</b>. A "we" signal ("the room's playing tonight", the shared reveal) — never a scoreboard, never a count that shames a lurker. Async-first, so it works even when no one else is online right now.</p>
+</div>
+
+<div class="section sage">
+  <div class="eyebrow">1 · The evidence (already in our canon)</div>
+  <p>From the Together-shelf research: <b>Wordle works because it's one puzzle a day, same for everyone, spoiler-safe to share, and has NO leaderboard</b> — simultaneous-yet-independent, comparison-free. And <b>leaderboards demotivate the ~80% who know they won't win</b> and drive long-term quitting. So: a shared daily round + a warm aggregate reveal + zero ranking = joy without shame. <span class="src">(cnbc.com Wordle psychology · commoninja.com / medium practical-motivation-science on leaderboards · workspace/research_together_shelf_2026-07-08.md)</span></p>
+</div>
+
+<div class="section crimson">
+  <div class="eyebrow">2 · Shipped this pass (live · Together → The Games Room)</div>
+  <h2>What's built — real, not a shell</h2>
+  <p>Built <b>on the existing games engine</b> (nothing duplicated): the real cross-device round backend (<code>openGameRoundV2</code> / <code>submitGameResponse</code> / <code>finalizeGameRound</code> + GameRound/GameResponse), the nightly headline round, and the <b>6 named games</b> (This or That · One Word · Caption the Feeling · One-Line Story · Tiny Confession · Comfort Pick) — each a real, separately-playable round with its own aggregate reveal.</p>
+  <table>
+    <tr><th>Piece</th><th>What it does · real?</th></tr>
+    <tr><td><b>Jess's nightly round</b></td><td>A day-rotated shared prompt everyone answers; on close, Jess reveals the room's warm whole (no winners). Local-first so it's <b>always playable</b>, upgrades to the real cross-device round. <span class="pill done">real</span></td></tr>
+    <tr><td><b>6 mini-games, inviting</b></td><td>Each has a warm blurb/how-to and is quick to play (a word, a tap, a line). Real per-game rounds + reveals. <span class="pill done">real</span></td></tr>
+    <tr><td><b>Aggregate, never a leaderboard</b></td><td>One answer per round, anonymous; the reveal is the shared mood — <b>never who said what, never a ranking</b>. <span class="pill done">real</span></td></tr>
+    <tr><td><b>k-anon warmth</b></td><td>"The room's playing tonight — join in, no pressure." A "we" signal, never a count. <span class="pill done">real</span></td></tr>
+    <tr><td><b>Gentle social hook</b></td><td>"Keep the fun going → chat about tonight's round in the Lighter Side" (a soft deep-link, no pressure). <span class="pill done">real</span></td></tr>
+    <tr><td><b>On-brand + canonical</b></td><td>Top-level page (oxblood title, Jump-left/calendar-right chrome, correct back-nav to Community home). Ties into the Together "this week" rhythm (the hub's "tonight's game" moment). <span class="pill done">real</span></td></tr>
+  </table>
+  <p><b>Safety:</b> every answer anonymous + one-per-round + crisis-checked + screened for anything unkind; the reveal is aggregate-only. Calm on the surface.</p>
+</div>
+
+<div class="section">
+  <div class="eyebrow">3 · Build reality</div>
+  <p><b>No new entity or function needed</b> — the games engine already exists and is aggregate-based (no leaderboard to remove). This pass made the <b>frontend robust, inviting, on-brand and social</b>, and routed it as a proper canonical page.</p>
+  <h4>Nice-to-haves (not built; propose if wanted)</h4>
+  <ul>
+    <li>A private, device-local "you've played N today" (no public count) as a gentle streak-for-you.</li>
+    <li>A weekly rotating "game of the week" tied to the Together "this week" moment.</li>
+    <li>A "share my answer as an echo" one-tap (reuse the Echo Wall) for a joyful anonymous keepsake.</li>
+  </ul>
+</div>
+
+<div class="foot">
+  FemWell · Community feature #5 · The Games Room — brief brainstorm + build · reuses the existing games engine, no new entity/function<br>
+  Built into the LIVE Community → Together → The Games Room · IDEAS pill → Current
+</div>
+
+</div></body></html>
