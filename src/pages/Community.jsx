@@ -946,13 +946,13 @@ function Home({ presence, lifeStage, onEnter, user, onCrisis, onShareTo, onOpenH
       <Script size={42} style={{ marginBottom: 8 }}>{MASTHEAD.title}</Script>
       <Hand size={19} color={T.inkSoft} style={{ marginBottom: 14 }}>{MASTHEAD.subtitle}</Hand>
 
-      {/* ambient presence (+ a folded, count-free belonging line) + the central Jump control */}
-      <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 10, marginBottom: 24 }}>
+      {/* Jump-to pill on the LEFT (§6.8.1 division; calendar stays top-right) + ambient presence */}
+      <div style={{ display: "flex", alignItems: "flex-start", gap: 12, marginBottom: 24 }}>
+        {onOpenHub && <JumpToButton onClick={onOpenHub} />}
         <div>
           <div style={{ fontFamily: UI, fontSize: 12.5, color: T.muted, fontWeight: 600, lineHeight: 1.5 }}>{presence}</div>
           {season && <div style={{ fontFamily: UI, fontSize: 12, color: T.muted, lineHeight: 1.5, marginTop: 3 }}>{season.line}</div>}
         </div>
-        {onOpenHub && <JumpToButton onClick={onOpenHub} />}
       </div>
 
       {/* the ONE focal point */}
@@ -2274,10 +2274,11 @@ function RedesignHome({ presence, lifeStage, profile, user, onEnter, onCrisis, o
 
   return (
     <div>
-      {/* top chrome — the Jump pill (§6.8.1; calendar N/A for Community) */}
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 4 }}>
-        <Eyebrow>{MASTHEAD.eyebrow}</Eyebrow>
+      {/* top chrome (§6.8.1 canonical division): Jump-to pill on the LEFT — the persistent
+          calendar icon lives top-RIGHT (universal-calendar standard), so they never collide. */}
+      <div style={{ display: "flex", alignItems: "center", gap: 11, marginBottom: 6 }}>
         {onOpenHub && <JumpToButton onClick={onOpenHub} />}
+        <Eyebrow>{MASTHEAD.eyebrow}</Eyebrow>
       </div>
 
       {/* 1 · FLORA HERO + shelf CONTROLLER cards (tap-to-rebloom = the shelf switcher) */}
