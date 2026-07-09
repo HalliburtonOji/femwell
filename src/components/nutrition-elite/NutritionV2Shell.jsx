@@ -22,7 +22,7 @@ import {
   CalendarDays, ShoppingBasket, TrendingUp, Sparkles, Leaf, Mic, Loader, Repeat, Beef, Wheat,
   Apple, Flame, ListChecks, Salad, Search, Star, Camera, ScanLine, Fish, Carrot,
   Clock, RefreshCw, ShieldCheck, HeartHandshake, Sprout, ChefHat, ArrowRight,
-  Eye, EyeOff, Dumbbell, Baby, HeartPulse, ChevronRight, PlayCircle, ChevronUp, ChevronDown,
+  Eye, EyeOff, Dumbbell, Baby, HeartPulse, ChevronRight, PlayCircle, ChevronUp, ChevronDown, Copy, Share2, Trash2,
 } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { format, startOfWeek } from "date-fns";
@@ -677,6 +677,29 @@ export default function NutritionV2Shell() {
     catch { setPantry(prev); flash("Couldn't remove — try again"); }
   }, [user, pantry]);
 
+  // ── Shopping list: add your own item / remove an item (real ShoppingList writes, optimistic + rollback) ──
+  const addShopItem = useCallback(async (rawName) => {
+    const name = (rawName || "").trim(); if (!user || !name) return;
+    const week_start = thisMonday();
+    const category = shoppingCategoryFor(name);
+    const temp = { id: "tmp" + Date.now(), user_id: user.id, week_start, ingredient_name: name, quantity_text: "", category, is_checked: false, source: "manual" };
+    setShopItems((l) => [temp, ...(l || [])]);
+    flash(`Added ${name}`);
+    try {
+      const created = await withTimeout(base44.entities.ShoppingList.create({ user_id: user.id, week_start, ingredient_name: name, quantity_text: "", category, is_checked: false, source: "manual" }), 6000, "save");
+      if (created?.id) setShopItems((l) => l.map((r) => r.id === temp.id ? created : r));
+    } catch { setShopItems((l) => l.filter((r) => r.id !== temp.id)); flash("Couldn't add — try again"); }
+  }, [user, thisMonday]);
+
+  const removeShop = useCallback(async (item) => {
+    if (!user || !item?.id) return;
+    const prev = shopItems;
+    setShopItems((l) => l.filter((r) => r.id !== item.id));
+    if (String(item.id).startsWith("tmp")) return; // never persisted — nothing to delete
+    try { await withTimeout(base44.entities.ShoppingList.delete(item.id), 6000, "remove"); }
+    catch { setShopItems(prev); flash("Couldn't remove — try again"); }
+  }, [user, shopItems]);
+
   // ── Recipe → shopping (ShoppingList.create per ingredient) ──────────────────
   const addRecipeToShopping = useCallback(async (recipe) => {
     if (!user || !recipe) return;
@@ -1133,7 +1156,7 @@ export default function NutritionV2Shell() {
                     <Panel key="saved" label="Saved recipes" Icon={BookOpen} accent={sage}><SavedRecipesLens recipes={savedRecipes} onReLog={reLog} onExplore={() => jumpTo(1)} /></Panel>,
                   ]}
                   bottom={[
-                    <Panel key="shop" label="Shopping list" Icon={ShoppingBasket} accent={cwOf("plum").petal}><ShoppingLens items={shopItems} onToggle={toggleShop} onBuildFromPlan={buildShoppingFromPlan} hasPlan={(mealPlan?.plan_days || []).filter(Boolean).length > 0} busy={busy} /></Panel>,
+                    <Panel key="shop" label="Shopping list" Icon={ShoppingBasket} accent={cwOf("plum").petal}><ShoppingLens items={shopItems} onToggle={toggleShop} onAdd={addShopItem} onRemove={removeShop} onBuildFromPlan={buildShoppingFromPlan} hasPlan={(mealPlan?.plan_days || []).filter(Boolean).length > 0} busy={busy} /></Panel>,
                     <Panel key="progress" label="Progress" Icon={TrendingUp} accent={cwOf("plum").petal}><ProgressLens weekKcal={weekKcal} phaseKey={phaseKey} phase={ph} /></Panel>,
                     <Panel key="insights" label="Insights" Icon={Sparkles} accent={cwOf("plum").petal}><InsightsLens jess={insightText || jessLine(profile)} nudges={stageNudges(profile)} stage={stageLabel(profile)} /></Panel>,
                   ]} />
@@ -1520,26 +1543,70 @@ function SavedRecipesLens({ recipes, onReLog, onExplore }) {
 }
 // ShoppingList real schema: ingredient_name + quantity_text + category (capitalised enum) + is_checked.
 const AISLE_ORDER = ["Produce", "Dairy & Eggs", "Meat & Seafood", "Bakery", "Pantry", "Frozen", "Beverages", "Snacks", "Other"];
-function ShoppingLens({ items, onToggle, onBuildFromPlan, hasPlan, busy }) {
+function ShoppingLens({ items, onToggle, onAdd, onRemove, onBuildFromPlan, hasPlan, busy }) {
   const list = (items || []).filter(Boolean);
   const groups = {};
   list.forEach((it) => { const a = it.category || "Other"; (groups[a] = groups[a] || []).push(it); });
   const aisles = Object.keys(groups).sort((a, b) => AISLE_ORDER.indexOf(a) - AISLE_ORDER.indexOf(b));
+  const plum = cwOf("plum").petal, sage = cwOf("sage").petal;
+  const inputRef = useRef(null);
+  const [collapsed, setCollapsed] = useState({});
+  const [note, setNote] = useState("");
+  const checked = list.filter((i) => i.is_checked).length;
+  const flashNote = (m) => { setNote(m); clearTimeout(flashNote._t); flashNote._t = setTimeout(() => setNote(""), 1900); };
+  const buildText = () => {
+    const out = ["Shopping list", ""];
+    aisles.forEach((a) => { out.push(a.toUpperCase()); groups[a].forEach((it) => out.push(`${it.is_checked ? "✓ " : "• "}${it.ingredient_name}${it.quantity_text ? ` (${it.quantity_text})` : ""}`)); out.push(""); });
+    return out.join("\n").trim();
+  };
+  const doCopy = async () => { try { await navigator.clipboard.writeText(buildText()); flashNote("Copied to clipboard"); } catch { flashNote("Couldn't copy — try again"); } };
+  const doShare = async () => { const text = buildText(); try { if (navigator.share) { await navigator.share({ title: "My shopping list", text }); } else { await navigator.clipboard.writeText(text); flashNote("Copied (sharing not supported here)"); } } catch { /* user cancelled the share sheet */ } };
+  const submitAdd = (e) => { e.preventDefault(); const v = (inputRef.current?.value || "").trim(); if (!v) return; onAdd(v); if (inputRef.current) inputRef.current.value = ""; };
+  const ghost = { display: "inline-flex", alignItems: "center", gap: 5, fontFamily: UI, fontSize: 12, fontWeight: 700, color: plum, background: `${plum}12`, border: `1px solid ${plum}44`, borderRadius: 999, padding: "6px 11px", cursor: "pointer" };
   return (
-    <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
-      {list.length === 0 && <p style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 14.5, color: T.muted, margin: "2px 0 10px", lineHeight: 1.45 }}>Your list is empty — build one from this week's plan, or add ingredients from a recipe, then tick them off as you shop.</p>}
-      <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>{aisles.map((a) => (
-        <div key={a}>
-          <div style={{ ...lbl, color: cwOf("plum").petal, marginBottom: 6 }}>{a}</div>
-          <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>{groups[a].map((it) => (
-            <button key={it.id} onClick={() => onToggle(it)} className="fw-elite-press" style={{ display: "flex", alignItems: "center", gap: 9, width: "100%", textAlign: "left", ...subCard(it.is_checked ? cwOf("sage").petal : T.paperDeep), padding: "7px 10px", cursor: "pointer", opacity: it.is_checked ? 0.65 : 1 }}>
-              <span style={{ width: 20, height: 20, borderRadius: 6, flexShrink: 0, border: `1.5px solid ${it.is_checked ? cwOf("sage").petal : T.paperDeep}`, background: it.is_checked ? cwOf("sage").petal : "transparent", display: "grid", placeItems: "center" }}>{it.is_checked && <Check size={12} color="#fff" />}</span>
-              <span style={{ flex: 1, fontFamily: SERIF, fontSize: 14.5, color: T.ink, textDecoration: it.is_checked ? "line-through" : "none" }}>{it.ingredient_name}{it.quantity_text ? <span style={{ color: T.muted, fontSize: 13 }}> · {it.quantity_text}</span> : null}</span>
-            </button>
-          ))}</div>
+    <div style={{ flex: 1, display: "flex", flexDirection: "column", minHeight: 0 }}>
+      {/* ADD YOUR OWN ITEM — writes to ShoppingList (persists) */}
+      <form onSubmit={submitAdd} style={{ display: "flex", gap: 7, marginBottom: 9 }}>
+        <input ref={inputRef} placeholder="Add an item — e.g. oat milk, bananas" aria-label="Add a shopping item" style={{ flex: 1, minWidth: 0, boxSizing: "border-box", padding: "9px 12px", borderRadius: 11, background: T.paper, border: `1px solid ${T.paperDeep}`, fontFamily: SERIF, fontSize: 14, color: T.ink, outline: "none" }} />
+        <button type="submit" aria-label="Add item" className="fw-elite-press" style={{ flexShrink: 0, width: 40, borderRadius: 11, border: `1px solid ${plum}`, background: plum, color: "#fff", display: "grid", placeItems: "center", cursor: "pointer" }}><Plus size={16} /></button>
+      </form>
+
+      {/* count + EXPORT (copy / share) */}
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, marginBottom: 8 }}>
+        <span style={{ fontFamily: UI, fontSize: 12, fontWeight: 700, color: T.muted }}>{list.length ? `${list.length} item${list.length === 1 ? "" : "s"}${checked ? ` · ${checked} ticked` : ""}` : "Empty"}</span>
+        <div style={{ display: "flex", gap: 6 }}>
+          <button onClick={doCopy} disabled={!list.length} className="fw-elite-press" style={{ ...ghost, opacity: list.length ? 1 : 0.45 }}><Copy size={13} /> Copy</button>
+          <button onClick={doShare} disabled={!list.length} className="fw-elite-press" style={{ ...ghost, opacity: list.length ? 1 : 0.45 }}><Share2 size={13} /> Share</button>
         </div>
-      ))}</div>
-      <div style={{ marginTop: "auto", paddingTop: 10 }}>
+      </div>
+      {note && <div style={{ fontFamily: UI, fontSize: 12, fontWeight: 700, color: sage, background: `${sage}18`, border: `1px solid ${sage}`, borderRadius: 10, padding: "6px 10px", marginBottom: 8 }}>{note}</div>}
+
+      {list.length === 0 && <p style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 14.5, color: T.muted, margin: "2px 0 10px", lineHeight: 1.45 }}>Nothing here yet — type an item above, add ingredients from a recipe, or build a list from this week's plan, then tick things off as you shop.</p>}
+
+      {/* COLLAPSIBLE aisle sections in a capped scroll — never one giant wall */}
+      <div style={{ flex: 1, minHeight: 0, maxHeight: 320, overflowY: "auto", display: "flex", flexDirection: "column", gap: 8, paddingRight: 2 }}>{aisles.map((a) => {
+        const grp = groups[a]; const open = !collapsed[a]; const done = grp.filter((i) => i.is_checked).length;
+        return (
+          <div key={a}>
+            <button onClick={() => setCollapsed((c) => ({ ...c, [a]: !c[a] }))} className="fw-elite-press" style={{ display: "flex", alignItems: "center", gap: 8, width: "100%", textAlign: "left", background: `${plum}10`, border: `1px solid ${plum}33`, borderRadius: 10, padding: "7px 10px", cursor: "pointer" }}>
+              <ChevronDown size={15} color={plum} style={{ transition: "transform .2s", transform: open ? "none" : "rotate(-90deg)", flexShrink: 0 }} />
+              <span style={{ flex: 1, fontFamily: UI, fontSize: 11.5, fontWeight: 800, letterSpacing: ".05em", textTransform: "uppercase", color: plum }}>{a}</span>
+              <span style={{ fontFamily: UI, fontSize: 11, fontWeight: 700, color: T.muted }}>{done}/{grp.length}</span>
+            </button>
+            {open && <div style={{ display: "flex", flexDirection: "column", gap: 5, marginTop: 5 }}>{grp.map((it) => (
+              <div key={it.id} style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                <button onClick={() => onToggle(it)} className="fw-elite-press" style={{ flex: 1, minWidth: 0, display: "flex", alignItems: "center", gap: 9, textAlign: "left", ...subCard(it.is_checked ? sage : T.paperDeep), padding: "7px 10px", cursor: "pointer", opacity: it.is_checked ? 0.6 : 1 }}>
+                  <span style={{ width: 20, height: 20, borderRadius: 6, flexShrink: 0, border: `1.5px solid ${it.is_checked ? sage : T.paperDeep}`, background: it.is_checked ? sage : "transparent", display: "grid", placeItems: "center" }}>{it.is_checked && <Check size={12} color="#fff" />}</span>
+                  <span style={{ flex: 1, minWidth: 0, fontFamily: SERIF, fontSize: 14.5, color: T.ink, textDecoration: it.is_checked ? "line-through" : "none", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{it.ingredient_name}{it.quantity_text ? <span style={{ color: T.muted, fontSize: 13 }}> · {it.quantity_text}</span> : null}</span>
+                </button>
+                <button onClick={() => onRemove(it)} aria-label={`Remove ${it.ingredient_name}`} className="fw-elite-press" style={{ flexShrink: 0, width: 30, height: 30, borderRadius: 8, background: T.paper, border: `1px solid ${T.paperDeep}`, color: T.muted, display: "grid", placeItems: "center", cursor: "pointer" }}><Trash2 size={13} /></button>
+              </div>
+            ))}</div>}
+          </div>
+        );
+      })}</div>
+
+      <div style={{ marginTop: 10 }}>
         <Pill Icon={ShoppingBasket} cw="plum" filled onClick={busy ? undefined : onBuildFromPlan}>{hasPlan ? "Build from this week's plan" : "Build from a plan (generate one first)"}</Pill>
       </div>
     </div>
