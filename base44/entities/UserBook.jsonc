@@ -1,0 +1,33 @@
+{
+  // UserBook — a woman's PRIVATE bookshelf row (Community Library, feature #3 sync).
+  // One row per book she's attached. Private per-user (owner-scoped, like SavedItems /
+  // ConnectionPref — no explicit rls block → Base44 owner default; the client also always
+  // filters by user_id). Full display metadata lives on the row so the shelf syncs across
+  // devices from this entity alone; the shared `Book` cache is a bonus dedup lookup.
+  // No "books-read" count, ever — status is a warm state, not a score.
+  "name": "UserBook",
+  "type": "object",
+  "properties": {
+    "user_id": { "type": "string", "description": "Owner — the client always filters by this." },
+    "book_key": { "type": "string", "description": "Stable dedup key: g:<gutenberg_id> · ol:<olid> · s:<title-author slug>." },
+    "title": { "type": "string" },
+    "author": { "type": "string" },
+    "gutenberg_id": { "type": "string", "description": "Set for public-domain reads that open in the in-app BookReader." },
+    "olid": { "type": "string", "description": "Open Library work/edition id when attached via search." },
+    "cover_hint": { "type": "string", "description": "Colourway hint for the on-brand flora cover (no external image rendered)." },
+    "status": {
+      "type": "string",
+      "enum": ["reading", "want", "finished", "set_aside"],
+      "default": "want",
+      "description": "reading = currently reading · want = want to read · finished · set_aside = set aside (never 'DNF')."
+    },
+    "source": { "type": "string", "description": "search | manual | curated | pick" },
+    "added_at": { "type": "string" },
+    "updated_at": { "type": "string" }
+  },
+  "required": ["user_id", "book_key", "title"],
+  "indexes": [
+    { "fields": ["user_id"] },
+    { "fields": ["created_date"] }
+  ]
+}

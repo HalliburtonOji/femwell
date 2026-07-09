@@ -1,0 +1,34 @@
+{
+  // Book — a lightweight SHARED metadata cache for the Community Library (feature #3).
+  // Populated on attach from Open Library (or manual/curated), keyed by book_key, so a
+  // title/author/cover is looked up once and reused. NOT on the shelf's critical path — the
+  // display metadata also lives on each UserBook row, so a Book write failing never breaks
+  // the shelf (the client upserts best-effort, fail-open).
+  //
+  // Shared cache: PUBLIC read + any-signed-in create (a woman may add a book others then
+  // reuse); update/delete locked to admin so no one edits/removes another's cache row.
+  // (Per Base44 rls: omitting read → public read, omitting create → any signed-in user.)
+  "name": "Book",
+  "type": "object",
+  "properties": {
+    "book_key": { "type": "string", "description": "Stable dedup key: g:<gutenberg_id> · ol:<olid> · s:<title-author slug>." },
+    "title": { "type": "string" },
+    "author": { "type": "string" },
+    "olid": { "type": "string", "description": "Open Library work/edition id." },
+    "isbn": { "type": "string" },
+    "gutenberg_id": { "type": "string" },
+    "cover_url": { "type": "string", "description": "Optional external cover URL (kept for reference; the UI renders an on-brand flora cover, not this)." },
+    "cover_hint": { "type": "string", "description": "Colourway hint for the on-brand flora cover." },
+    "source": { "type": "string", "description": "search | manual | curated | pick" },
+    "created_at": { "type": "string" }
+  },
+  "required": ["book_key", "title"],
+  "indexes": [
+    { "fields": ["book_key"] },
+    { "fields": ["created_date"] }
+  ],
+  "rls": {
+    "update": { "user_condition": { "role": "admin" } },
+    "delete": { "user_condition": { "role": "admin" } }
+  }
+}

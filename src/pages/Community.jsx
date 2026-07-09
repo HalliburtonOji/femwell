@@ -1807,11 +1807,12 @@ function RoomView({ roomKey, posts, loading, error, user, onNav, onCrisis, onRel
         )}
 
         {/* enhanced: today's warm, life-tinted room prompt — a reason to post (a line is plenty) */}
-        {enhanced && prompt && !composing && (
+        {enhanced && prompt && (
           <div style={{ background: `linear-gradient(160deg, ${T.paperHi} 0%, ${T.gold}12 100%)`, border: `1px solid ${T.paperDeep}`, borderLeft: `4px solid ${T.gold}`, borderRadius: 14, padding: "14px 15px", marginBottom: 16 }}>
             <Eyebrow color={T.gold} mb={6}>Today in {room.name.replace(/^The /, "")}</Eyebrow>
-            <div style={{ fontFamily: HANDFAM, fontStyle: "italic", fontWeight: 600, fontSize: 19, color: T.ink, lineHeight: 1.3, marginBottom: 12 }}>{prompt}</div>
-            <button onClick={() => setComposing(true)} style={{ ...primaryBtn, padding: "9px 15px" }}><Feather size={13} /> Answer this — a line is plenty</button>
+            <div style={{ fontFamily: HANDFAM, fontStyle: "italic", fontWeight: 600, fontSize: 19, color: T.ink, lineHeight: 1.3, marginBottom: composing ? 0 : 12 }}>{prompt}</div>
+            {/* keep the question visible while composing so she sees what she's answering */}
+            {!composing && <button onClick={() => setComposing(true)} style={{ ...primaryBtn, padding: "9px 15px" }}><Feather size={13} /> Answer this — a line is plenty</button>}
           </div>
         )}
 

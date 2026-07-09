@@ -27,33 +27,21 @@ import { CornerSprig, FlowerGlyph, cwOf } from "@/components/brand/flora";
 import { SEED_PICK, clubReached } from "@/components/community/bookClubConfig";
 import { dailyReadClubKey } from "@/components/community/clubsConfig";
 import { cohortReachedCount, recordProgress } from "@/components/community/readingActivity";
+import { loadShelf, addBook, setStatus as setShelfStatusRemote, removeBook } from "@/components/community/bookshelf";
 import { useScrollLock } from "@/utils/useScrollLock";
 
 const HANDFAM = '"Cormorant Garamond","Fraunces",Georgia,serif';
+// Warm states — "Set aside" instead of "DNF" (research: DNF-shame is why women defect from Goodreads).
 const STATUSES = [
   { key: "reading", label: "Reading now" },
   { key: "want", label: "Want to read" },
   { key: "finished", label: "Finished" },
+  { key: "set_aside", label: "Set aside" },
 ];
 
-// ── device-local shelf (v1 — private, no backend; persistent x-device = flagged entity) ──
-const SHELF_KEY = "fw_bookshelf";
+// Shelf persistence lives in bookshelf.js (UserBook sync + device-local fallback). A local slug
+// is kept only for deriving a readers'-corner key / cover id for a title.
 const slug = (s) => String(s || "").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 40);
-function readShelf() { try { return JSON.parse(localStorage.getItem(SHELF_KEY) || "[]"); } catch { return []; } }
-function writeShelf(a) { try { localStorage.setItem(SHELF_KEY, JSON.stringify(a)); } catch { /* ignore */ } }
-function addToShelf(book) {
-  const a = readShelf();
-  const id = book.id || slug(`${book.title}-${book.author || ""}`);
-  if (a.some((b) => b.id === id)) { // already on shelf → just update status
-    writeShelf(a.map((b) => b.id === id ? { ...b, status: book.status || b.status } : b));
-    return id;
-  }
-  a.unshift({ id, title: book.title, author: book.author || "", gutenberg_id: book.gutenberg_id || null, status: book.status || "want", added: 1 });
-  writeShelf(a);
-  return id;
-}
-const setShelfStatus = (id, status) => writeShelf(readShelf().map((b) => b.id === id ? { ...b, status } : b));
-const removeFromShelf = (id) => writeShelf(readShelf().filter((b) => b.id !== id));
 
 // A warm, on-brand book "cover" — no external image (CSP-safe): colourway by title + a flora glyph.
 const COVER_CW = ["crimson", "sage", "plum", "gold", "blush"];
@@ -165,13 +153,13 @@ function ShelfBook({ book, onStatus, onTalk, onRead, onRemove }) {
         {book.author && <div style={{ fontFamily: UI, fontSize: 12, color: T.muted, marginBottom: 7 }}>{book.author}</div>}
         <div style={{ display: "flex", gap: 5, flexWrap: "wrap", marginBottom: 8 }}>
           {STATUSES.map((s) => (
-            <button key={s.key} onClick={() => onStatus(book.id, s.key)} style={{ borderRadius: 999, padding: "4px 10px", border: `1px solid ${book.status === s.key ? cwOf("sage").petal : T.paperDeep}`, background: book.status === s.key ? `${cwOf("sage").petal}1C` : "transparent", color: book.status === s.key ? cwOf("sage").petal : T.muted, fontFamily: UI, fontSize: 10.5, fontWeight: 700, cursor: "pointer" }}>{s.label}</button>
+            <button key={s.key} onClick={() => onStatus(book.key, s.key)} style={{ borderRadius: 999, padding: "4px 10px", border: `1px solid ${book.status === s.key ? cwOf("sage").petal : T.paperDeep}`, background: book.status === s.key ? `${cwOf("sage").petal}1C` : "transparent", color: book.status === s.key ? cwOf("sage").petal : T.muted, fontFamily: UI, fontSize: 10.5, fontWeight: 700, cursor: "pointer" }}>{s.label}</button>
           ))}
         </div>
         <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
           <button onClick={() => onTalk(book)} style={{ display: "inline-flex", alignItems: "center", gap: 5, background: "transparent", border: "none", cursor: "pointer", color: T.crimson, fontFamily: UI, fontSize: 12, fontWeight: 700 }}><MessageCircle size={13} /> Talk about it</button>
           {book.gutenberg_id && <button onClick={() => onRead(book)} style={{ display: "inline-flex", alignItems: "center", gap: 5, background: "transparent", border: "none", cursor: "pointer", color: T.gold, fontFamily: UI, fontSize: 12, fontWeight: 700 }}><BookOpen size={13} /> Read</button>}
-          <button onClick={() => onRemove(book.id)} aria-label="Remove" style={{ marginLeft: "auto", background: "transparent", border: "none", cursor: "pointer", color: T.muted, fontFamily: UI, fontSize: 11 }}>Remove</button>
+          <button onClick={() => onRemove(book.key)} aria-label="Remove" style={{ marginLeft: "auto", background: "transparent", border: "none", cursor: "pointer", color: T.muted, fontFamily: UI, fontSize: 11 }}>Remove</button>
         </div>
       </div>
     </div>
@@ -181,13 +169,15 @@ function ShelfBook({ book, onStatus, onTalk, onRead, onRemove }) {
 export default function LibraryTogether({ user, onBack, onNav, onOpenCorner }) {
   useEditorialFonts();
   const navigate = useNavigate();
-  const [shelf, setShelf] = useState(() => readShelf());
+  const [shelf, setShelf] = useState([]);            // {key,title,author,gutenberg_id,status,cover_hint,_row}
   const [addOpen, setAddOpen] = useState(false);
   const [filter, setFilter] = useState("all");
   const [cohort, setCohort] = useState(undefined);   // season's-read cohort (k-floored)
   const pick = SEED_PICK;   // the live BookClubPick would upgrade this; seed is always present
+  const uid = user?.id;
 
-  const refresh = useCallback(() => setShelf(readShelf()), []);
+  // load the shelf: UserBook (synced) + local fallback + migrate local-only up (bookshelf.js)
+  useEffect(() => { let alive = true; loadShelf(uid).then((items) => { if (alive) setShelf(items); }).catch(() => {}); return () => { alive = false; }; }, [uid]);
   useEffect(() => {
     let alive = true;
     const at = Math.max(0, clubReached(pick.pick_key));
@@ -200,10 +190,10 @@ export default function LibraryTogether({ user, onBack, onNav, onOpenCorner }) {
     onOpenCorner?.(dailyReadClubKey(id), book.title);   // the moderated readers' corner
   }, [onOpenCorner]);
   const read = useCallback((book) => { if (book.gutenberg_id) navigate(createPageUrl(`BookReader?gutenberg_id=${book.gutenberg_id}`)); }, [navigate]);
-  const onAdded = (book) => { addToShelf(book); refresh(); };
-  const onStatus = (id, s) => { setShelfStatus(id, s); refresh(); };
-  const onRemove = (id) => { removeFromShelf(id); refresh(); };
-  const readingPick = () => { recordProgress(pick.gutenberg_id, Math.max(0, clubReached(pick.pick_key)), user?.id); onAdded({ ...pick, id: slug(pick.title), status: "reading" }); };
+  const onAdded = (book) => { setFilter("all"); addBook(uid, book).then(setShelf).catch(() => {}); };   // never let a new book hide behind a filter
+  const onStatus = (key, s) => { setShelfStatusRemote(uid, key, s).then(setShelf).catch(() => {}); };
+  const onRemove = (key) => { removeBook(uid, key).then(setShelf).catch(() => {}); };
+  const readingPick = () => { recordProgress(pick.gutenberg_id, Math.max(0, clubReached(pick.pick_key)), uid); onAdded({ title: pick.title, author: pick.author, gutenberg_id: pick.gutenberg_id, status: "reading", source: "pick" }); };
 
   const shown = filter === "all" ? shelf : shelf.filter((b) => b.status === filter);
 
@@ -256,7 +246,7 @@ export default function LibraryTogether({ user, onBack, onNav, onOpenCorner }) {
           </div>
         ) : (
           <div style={{ marginBottom: 20 }}>
-            {shown.map((b) => <ShelfBook key={b.id} book={b} onStatus={onStatus} onTalk={talk} onRead={read} onRemove={onRemove} />)}
+            {shown.map((b) => <ShelfBook key={b.key} book={b} onStatus={onStatus} onTalk={talk} onRead={read} onRemove={onRemove} />)}
             {shown.length === 0 && <Hand size={15} color={T.muted}>Nothing under that shelf yet.</Hand>}
           </div>
         )}
