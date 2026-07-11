@@ -1,0 +1,211 @@
+<!doctype html>
+<html lang="en-GB"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>FemWell — 1:1 / DM: the spec (safety-critical)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500;1,600&family=Ephesis&display=swap" rel="stylesheet">
+<style>
+  :root{--paper:#ECE7DA;--paperHi:#F4EFE3;--paperDeep:#D8CFBC;--ink:#0B0805;--inkSoft:#1A140D;--muted:#2E261B;--gold:#A8893F;--crimson:#BC2E27;--oxblood:#7A1A12;--blush:#E8B4B8;--sage:#8FAF8F;--plum:#8E6E8E;--serif:'Cormorant Garamond',Georgia,serif;--script:'Ephesis',cursive;--sans:ui-sans-serif,system-ui,-apple-system,'Segoe UI',sans-serif;}
+  *{box-sizing:border-box}
+  body{margin:0;background:radial-gradient(120% 80% at 12% 0%,#F4EFE3 0%,rgba(244,239,227,0) 55%),radial-gradient(120% 90% at 100% 100%,#E4DDCC 0%,rgba(228,221,204,0) 50%),var(--paper);color:var(--ink);font-family:var(--serif);font-size:18px;line-height:1.6;-webkit-font-smoothing:antialiased}
+  .doc{max-width:700px;margin:0 auto;padding:30px 22px 90px}
+  h1.cover{font-family:var(--script);font-size:48px;color:var(--crimson);margin:6px 0 2px;line-height:1.04}
+  h2{font-family:var(--serif);font-style:italic;font-weight:600;font-size:25px;margin:0 0 6px;color:var(--oxblood)}
+  h3{font-family:var(--serif);font-weight:600;font-size:19px;margin:16px 0 4px;color:var(--ink)}
+  h4{font-family:var(--sans);font-size:12px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--gold);margin:14px 0 4px}
+  .eyebrow{font-family:var(--sans);font-size:12px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--gold);margin-bottom:10px}
+  p{margin:0 0 12px}.lede{font-size:20px;line-height:1.55}
+  b,strong{font-weight:600}
+  .section{background:var(--paperHi);border:1px solid var(--paperDeep);border-left:4px solid var(--gold);border-radius:20px;padding:20px 20px;margin:16px 0;box-shadow:0 4px 20px rgba(58,44,26,.10)}
+  .section.crimson{border-left-color:var(--crimson)}.section.sage{border-left-color:var(--sage)}.section.plum{border-left-color:var(--plum)}
+  table{width:100%;border-collapse:collapse;font-size:13.5px;font-family:var(--sans);margin:8px 0}
+  th,td{text-align:left;padding:6px 8px;border-bottom:1px solid var(--paperDeep);vertical-align:top}
+  th{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--gold)}
+  td b{font-family:var(--serif);font-size:15px}
+  .toc a{display:block;font-family:var(--sans);font-size:15px;color:var(--inkSoft);text-decoration:none;border-bottom:1px solid var(--paperDeep);padding:6px 0}
+  .toc a span{color:var(--gold);font-weight:700;margin-right:10px}
+  .rec{background:#EAF1EA;border:1px solid var(--sage);border-radius:10px;padding:11px 13px;margin:9px 0;font-family:var(--sans);font-size:14px;color:#3f6b3f;line-height:1.5}
+  .rec b{color:#2f5a2f}
+  .rail{background:#FBE9E6;border:1px solid var(--crimson);border-radius:10px;padding:9px 12px;margin:6px 0;font-family:var(--sans);font-size:13.5px;color:var(--crimson);line-height:1.5;display:flex;gap:8px}
+  .rail .n{flex-shrink:0;font-weight:800}
+  .pill{display:inline-block;font-family:var(--sans);font-size:11.5px;font-weight:600;padding:4px 10px;border-radius:999px;background:var(--paper);border:1px solid var(--paperDeep);margin:2px 3px 2px 0}
+  .pill.now{background:#EAF1EA;border-color:var(--sage);color:#3f6b3f}
+  .pill.sign{background:#FBE9E6;border-color:var(--crimson);color:var(--crimson)}
+  .pill.later{background:#EDE6F2;border-color:var(--plum);color:#6d4f6d}
+  .wf{border:1px solid var(--paperDeep);border-radius:16px;background:var(--paper);padding:12px;margin:12px 0;font-family:var(--sans)}
+  .wf .lbl{font-size:10.5px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--gold);margin-bottom:8px}
+  .row{display:flex;gap:9px;align-items:center;border:1px dashed #b9ab8e;border-radius:12px;padding:9px 11px;margin:6px 0;background:var(--paperHi);font-size:13px}
+  .row .av{width:30px;height:30px;border-radius:50%;background:radial-gradient(circle,#BC2E2733,transparent 70%);flex-shrink:0;display:grid;place-items:center;color:var(--crimson);font-size:14px}
+  .row .t{flex:1}.row .t b{font-family:var(--serif);font-size:15px;color:var(--ink)}
+  .row .ts{font-size:11px;color:var(--muted)}
+  .bub{max-width:75%;padding:9px 12px;border-radius:14px;font-size:14px;line-height:1.4;margin:5px 0}
+  .bub.them{background:var(--paperHi);border:1px solid var(--paperDeep);border-bottom-left-radius:4px}
+  .bub.me{background:linear-gradient(160deg,#BC2E27,#7A1A12);color:#fff;margin-left:auto;border-bottom-right-radius:4px}
+  .bub .ts{font-size:10px;opacity:.7;display:block;margin-top:3px}
+  .foot{font-family:var(--sans);font-size:12px;color:var(--muted);text-align:center;margin-top:30px;line-height:1.6}
+  ul{margin:4px 0 10px;padding-left:20px}li{margin:3px 0}
+</style></head>
+<body><div class="doc">
+
+<div class="center" style="padding:14px 0 4px;text-align:center">
+  <div class="eyebrow">FemWell · Community · 1:1 / DM · FULL SPEC · SAFETY-CRITICAL · sign-off before ANY build</div>
+  <h1 class="cover">Held, one to one</h1>
+  <p class="lede" style="font-style:italic;max-width:580px;margin:8px auto 0">Halli wants it to feel like <b>WhatsApp</b> — a conversations list, message bubbles, timestamps, a normal chat — but inside FemWell's brand and rails. That's the whole tension: WhatsApp feels <i>instant</i>, and our safety promise is that <b>no message reaches a woman before it's been checked</b>. This spec resolves that, and specifies exactly what to build. <b>Nothing is built — this is for your sign-off. It ships only with every rail, never half.</b></p>
+</div>
+
+<div class="section">
+  <div class="eyebrow">The one-line thesis</div>
+  <p class="lede">A familiar chat that's <b>anonymous by default</b> (her botanical alias + presence bloom, never a name or location), <b>opt-in only</b> (request-to-chat — no cold DMs), and <b>screened before delivery</b> (a sub-second check so it still feels instant). Text-only at launch. Block, report or leave any time.</p>
+</div>
+
+<div class="section sage">
+  <div class="eyebrow">Contents</div>
+  <div class="toc">
+    <a href="#today"><span>1</span> The 1:1 today (Witness) + the gap</a>
+    <a href="#ux"><span>2</span> The WhatsApp-style UX (in our brand)</a>
+    <a href="#start"><span>3</span> How you start a DM + the anonymity model</a>
+    <a href="#safety"><span>4</span> The safety model + the instant tension</a>
+    <a href="#backend"><span>5</span> Exact backend — the sign-off list</a>
+    <a href="#phases"><span>6</span> Feasible now vs sign-off · phased build</a>
+    <a href="#q"><span>7</span> Open questions for you</a>
+  </div>
+</div>
+
+<!-- 1 -->
+<a id="today"></a>
+<div class="section crimson">
+  <div class="eyebrow">1 · Where we are</div>
+  <h2>The 1:1 today = Witness</h2>
+  <p>The live 1:1 is the <b>Witness</b> path: you hand one hard moment to a matched woman in your season, she reads it once and sends one fixed reply, then it seals. Anonymous, moderated, no location — <b>safe, but not a conversation</b>, and (Halli's point) with <b>no proper explanation, no drivers, no nudges</b>. This spec keeps everything safe about Witness and turns it into a real, familiar, ongoing chat.</p>
+</div>
+
+<!-- 2 -->
+<a id="ux"></a>
+<div class="section">
+  <div class="eyebrow">2 · The experience</div>
+  <h2>WhatsApp-familiar, FemWell-warm</h2>
+
+  <h3>a · The conversations list</h3>
+  <div class="wf">
+    <div class="lbl">Chats (Quietly → 1:1)</div>
+    <div class="row"><span class="av">✿</span><span class="t"><b>Wild Poppy</b><br><span style="color:var(--muted)">Thank you — that really helped.</span></span><span class="ts">2m ·&nbsp;•</span></div>
+    <div class="row"><span class="av">✿</span><span class="t"><b>Quiet Fern</b><br><span style="color:var(--muted)">You're not too much, honestly.</span></span><span class="ts">1h</span></div>
+    <div class="row" style="border-style:solid;border-color:var(--gold)"><span class="t"><b style="color:var(--gold)">Requests (1)</b> — Amber Lark would like to chat</span></div>
+  </div>
+  <p>Each row: her <b>presence bloom + alias</b>, the last line, a timestamp, an unread dot. A <b>Requests</b> section holds pending chat requests (accept / decline). On-brand paper cards, oxblood headings — not a green clone.</p>
+
+  <h3>b · The chat thread</h3>
+  <div class="wf">
+    <div class="lbl">Chat with Wild Poppy &nbsp;·&nbsp; "…" (block · report · leave · how this works)</div>
+    <div class="bub them">The work thing you posted — I've been exactly there.<span class="ts">14:02</span></div>
+    <div class="bub me">Really? It's been eating me all week.<span class="ts">14:03 ·&nbsp;✓</span></div>
+    <div class="bub them">You're allowed to be tired of holding it all.<span class="ts">14:05</span></div>
+  </div>
+  <p>Message <b>bubbles</b> (yours right, in oxblood→crimson; hers left, paper), <b>timestamps</b>, a day divider, a top bar with her alias + bloom and a "<b>…</b>" menu (block · report · leave · how this works). A compose bar with a text field + send. A single <b>✓ "sent"</b> tick after the check passes. Optional <b>typing…</b> indicator (safe — no content). <b>No location. No media button at launch.</b></p>
+
+  <h3>c · Onboarding / explanation (the missing piece)</h3>
+  <p>First time she opens 1:1, a warm card — <b>what it is · who she's talking to · how to stay safe</b>:</p>
+  <div class="rec"><b>"One to one, privately."</b> You're talking with another woman here — <b>anonymously</b> (a flower and a name like "Wild Poppy", never real names, never your location). <b>Every message is checked before it reaches her</b>, so unkindness doesn't land. You can <b>block, report or leave</b> any chat, any time. This isn't for emergencies — if things are heavy, <b>help is here</b> (Samaritans 116 123 · NHS 111). 18+.</div>
+
+  <h3>d · Conversation drivers + return nudges (the substance)</h3>
+  <ul>
+    <li><b>Icebreakers when you request a chat</b> — a one-line context ("your post about work stress spoke to me") + optional starter prompts so it's never a cold blank box.</li>
+    <li><b>Gentle in-thread prompts</b> when it goes quiet — "what would you like held today?" — never nagging.</li>
+    <li><b>Return nudges</b> (rate-limited, no pressure): "a sister replied" · "your chat request was accepted" · "Wild Poppy is thinking of you".</li>
+  </ul>
+</div>
+
+<!-- 3 -->
+<a id="start"></a>
+<div class="section plum">
+  <div class="eyebrow">3 · Starting + identity</div>
+  <h2>How a DM begins, and who you are in it</h2>
+  <h3>How you start — REQUEST-TO-CHAT (recommended)</h3>
+  <p>You can ask to chat from a <b>post/comment</b> that resonated, from <b>"someone like you"</b> resonance, or from a <b>Witness</b> exchange (turn a one-shot into an ongoing chat). You <b>never</b> cold-message anyone: you send a <b>request</b> (your alias + a one-line why), and a conversation only opens when she <b>accepts</b>. There are no public profiles to DM from (the app is anonymous).</p>
+  <div class="rec"><b>Recommendation:</b> mutual opt-in <b>request-to-chat</b>. It removes the single biggest harassment vector (unsolicited DMs), and it's warm — she chose to talk to you. Decline is silent (he/she never knows). Requests are rate-limited.</div>
+  <h3>The anonymity model — reconciled</h3>
+  <p>She chats as her <b>botanical alias + presence bloom</b> — the <i>same</i> veiled identity as the Talk rooms and her Bloomprint. Consistent, anonymous, no real name, no location.</p>
+  <table>
+    <tr><th>Tier (Bloomprint)</th><th>In a DM</th></tr>
+    <tr><td><b>Veiled</b> (default)</td><td>Alias + presence bloom only — "Wild Poppy". No name, no location. <b>Launch default.</b></td></tr>
+    <tr><td><b>My flower</b></td><td>A richer bloom shown; still no real name.</td></tr>
+    <tr><td><b>Named</b> (opt-in, per chat)</td><td>A <b>chosen display name</b> (never real name / never verified identity) she may reveal in a specific trusted chat. Opt-in, reversible.</td></tr>
+  </table>
+  <p class="rec"><b>Recommendation:</b> launch <b>veiled-only</b> (alias + bloom). Add the "named" (chosen-name) reveal later, per-conversation and opt-in — never a real-name or location reveal, ever.</p>
+</div>
+
+<!-- 4 -->
+<a id="safety"></a>
+<div class="section crimson">
+  <div class="eyebrow">4 · Safety — the heart of it</div>
+  <h2>Instant feel vs "checked before it lands"</h2>
+  <p>WhatsApp feels instant because it delivers immediately. Our promise is the opposite: <b>a harmful message must never reach a woman</b>. In a 1:1 the harm lands on <i>one person, directly</i> — so the "publish-then-hide" model we use for public posts is <b>not acceptable here</b>. We resolve it with a fast <b>screen-before-deliver</b>.</p>
+  <table>
+    <tr><th>Approach</th><th>Verdict</th></tr>
+    <tr><td><b>Deliver-then-screen</b> (instant, hide after)</td><td>Feels instant — but the harm reaches her first. <b>Rejected for 1:1.</b></td></tr>
+    <tr><td><b>Screen-before-deliver</b> (a sub-second check, then deliver)</td><td><b>Recommended.</b> Feels near-instant + honours the rail.</td></tr>
+  </table>
+  <div class="rec"><b>Recommendation — screen-before-deliver, layered + fast:</b> on send, the message goes to a server function that runs <b>(1)</b> an instant local crisis + keyword pre-check (0ms) and <b>(2)</b> the OpenAI Moderation API (free, ~200–400ms). Only on a <b>clean pass</b> is the Message created as <b>delivered</b> and it appears for her. Risky → <b>auto-held, never delivered</b>: the sender sees "this can't be sent as written — reword it", or crisis language → the sender is gently routed to support and the peer never receives it. The UX cost is a brief "sending…/✓" tick — which WhatsApp already has, so it reads as native, not slow.</div>
+  <h4 style="color:var(--crimson)">HARD RAILS — non-negotiable (ship all, or don't ship)</h4>
+  <div class="rail"><span class="n">1</span><span><b>18+ only</b> — the whole surface sits behind the app's age gate.</span></div>
+  <div class="rail"><span class="n">2</span><span><b>NEVER share or ask location</b> — no location field, no "where are you" prompts; matching is season/life-stage only. (If a user types an address, the check can flag it.)</span></div>
+  <div class="rail"><span class="n">3</span><span><b>EVERY message screened before/at delivery</b> — server-side, before it reaches the recipient. No exceptions.</span></div>
+  <div class="rail"><span class="n">4</span><span><b>Crisis → support, never a peer</b> — heavy/self-harm content is not delivered to another woman; the sender is routed to Samaritans/NHS 111/Shout.</span></div>
+  <div class="rail"><span class="n">5</span><span><b>Block · report · leave</b> on every conversation; a blocked woman can never message you again; reports hide + queue for review.</span></div>
+  <div class="rail"><span class="n">6</span><span><b>Request-to-chat</b> (no cold DMs) + <b>rate-limits</b> (anti-spam/brigade) + <b>new-account throttle.</b></span></div>
+  <div class="rail"><span class="n">7</span><span><b>TEXT-ONLY at launch.</b> Media/photos are a <b>later, heavily-gated</b> decision — image harassment and, critically, <b>CSAM</b> risk require hash-matching (PhotoDNA-class) scanning + legal reporting duties. Do NOT enable media in v1.</span></div>
+  <p style="font-size:14px;font-family:var(--sans);color:var(--muted)">OSA 2023: a 1:1 messaging feature is a user-to-user service with illegal-content duties; a real UK legal review of the DM policy + safeguarding copy is required before public launch (not legal advice).</p>
+</div>
+
+<!-- 5 -->
+<a id="backend"></a>
+<div class="section">
+  <div class="eyebrow">5 · The sign-off list</div>
+  <h2>Exact backend to build</h2>
+  <table>
+    <tr><th>Piece</th><th>What it is</th></tr>
+    <tr><td><b>Conversation entity</b></td><td>id · the two participant author_hashes (+ aliases) · status (pending / active / blocked / left) · initiator · context-line · created · last_message_at. RLS: only the two participants (via functions).</td></tr>
+    <tr><td><b>Message entity</b></td><td>conversation_id · sender_hash · body · status (delivered / held / blocked) · created · read_at?. Writes service-role (via the function); reads limited to the conversation's participants + delivered only.</td></tr>
+    <tr><td><b>sendMessage function</b> ⚠️</td><td><b>The safety-critical one.</b> 18+ check → crisis pre-check (route to support, no delivery) → OpenAI moderation → clean = create <b>delivered</b> Message; else <b>held/blocked</b> (never delivered). Block-check (recipient blocked sender → no delivery). Rate-limit. Returns delivered / held-reason. <b>Moderation happens BEFORE the Message is created/delivered.</b></td></tr>
+    <tr><td><b>chatRequest function</b></td><td>Create a Conversation in <b>pending</b> (request-to-chat) · accept → active · decline (silent) · rate-limited.</td></tr>
+    <tr><td><b>block / report / leave</b></td><td>Block (reuse ConnectionPref's blocked-hash list) · report a message (hide + review queue) · leave a conversation. A small function or folded into the above.</td></tr>
+    <tr><td><b>Reuse (no new build)</b></td><td>botanical alias · PresenceBloom · the AgeGate (18+) · the crisis check · OpenAI moderation (already used by screenContent) · ConnectionPref block list.</td></tr>
+  </table>
+  <p><span class="pill sign">NEW: Conversation entity · Message entity · sendMessage fn (safety-critical) · chatRequest fn · block/report/leave</span></p>
+</div>
+
+<!-- 6 -->
+<a id="phases"></a>
+<div class="section sage">
+  <div class="eyebrow">6 · Sequencing</div>
+  <h2>Feasible now vs sign-off · phased</h2>
+  <ul>
+    <li><b>Phase 0 — buildable NOW (no backend):</b> the <b>explanation/onboarding</b> + the <b>charter</b> + <b>conversation drivers</b> layered onto the existing <b>Witness</b> 1:1 (so today's 1:1 stops being unexplained). <span class="pill now">now</span></li>
+    <li><b>Phase 1 — the DM system (SIGN-OFF):</b> request-to-chat + text DMs with <b>screen-before-deliver</b> + block/report/leave + the WhatsApp-style conversations list &amp; thread. Text-only, veiled-only. <span class="pill sign">needs the entities + functions above</span></li>
+    <li><b>Phase 2 — later, separate calls:</b> typing/read affordances, "named" chosen-name reveal (opt-in per chat), maybe <b>screened voice notes</b>. <span class="pill later">later</span></li>
+    <li><b>Deliberately NOT v1:</b> media/photos (CSAM + harassment gating), real-time presence, group DMs. <span class="pill later">gated / deferred</span></li>
+  </ul>
+  <p class="rec"><b>Recommendation:</b> Phase 0 can ship immediately to fix the "no explanation" gap on the existing Witness 1:1. Phase 1 (the real WhatsApp‑style DM) waits on your explicit go on the <b>sendMessage moderation‑before‑delivery function + the Conversation/Message entities</b> — and ships only with all seven rails.</p>
+</div>
+
+<!-- 7 -->
+<a id="q"></a>
+<div class="section plum">
+  <div class="eyebrow">7 · For you to decide</div>
+  <h2>Open questions</h2>
+  <ul>
+    <li><b>Start model:</b> confirm <b>request-to-chat</b> (mutual opt-in) as the only way to open a DM? (Recommended.)</li>
+    <li><b>Anonymity:</b> confirm <b>veiled-only at launch</b> (alias + bloom, no chosen name yet)?</li>
+    <li><b>Moderation approach:</b> confirm <b>screen-before-deliver</b> (sub-second) over deliver-then-hide?</li>
+    <li><b>Text-only launch</b> confirmed (media deferred behind CSAM/harassment gating)?</li>
+    <li><b>Phase 0 now?</b> Shall I ship the explanation/onboarding + drivers on the existing Witness 1:1 while Phase 1 awaits sign-off — or hold everything until the full DM is approved?</li>
+    <li><b>Legal:</b> a UK legal review of the DM policy + safeguarding copy before public launch — agreed?</li>
+  </ul>
+</div>
+
+<div class="foot">
+  FemWell · 1:1 / DM · full spec · SAFETY-CRITICAL · nothing built — awaiting sign-off on the sendMessage moderation-before-delivery function + Conversation/Message entities · ships only with all rails, never half<br>
+  Reachable from the IDEAS pill → Current
+</div>
+
+</div></body></html>
