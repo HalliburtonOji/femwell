@@ -71,6 +71,7 @@ import {
 import SealedLetterComposeSheet from "@/components/sealedLetters/SealedLetterComposeSheet";
 import { withTimeout } from "@/utils/safeEntity";
 import { FwFloraHero } from "@/components/brand/PageTop";
+import PresenceBloom from "@/components/brand/PresenceBloom";
 import { Clipboard, ClipboardSlider } from "@/components/brand/ClipboardSlider";
 import { SummaryCard, FwCard } from "@/components/brand/Card";
 import { cwOf, Pollinator } from "@/components/brand/flora";
@@ -320,7 +321,7 @@ function PostCard({ post, user, onCrisis, onChanged, enhanced = false, myHash = 
       {/* enhanced: a warm botanical alias (derived from the anon hash — no identity) */}
       {enhanced && post.author_hash && (
         <div style={{ display: "flex", alignItems: "center", gap: 7, marginBottom: 7 }}>
-          <span style={{ width: 22, height: 22, borderRadius: 999, background: `${T.gold}22`, display: "grid", placeItems: "center", flexShrink: 0 }}><Sprout size={12} color={T.gold} /></span>
+          <PresenceBloom hash={post.author_hash} size={22} />
           <span style={{ fontFamily: UI, fontSize: 12, fontWeight: 700, color: T.inkSoft }}>{myHash && post.author_hash === myHash ? "You" : botanicalAlias(post.author_hash)}</span>
           {post.domain && <span style={{ fontFamily: UI, fontSize: 10.5, color: T.muted, marginLeft: "auto", letterSpacing: 0.3, textTransform: "uppercase" }}>{post.domain}</span>}
         </div>
@@ -396,7 +397,10 @@ function PostCard({ post, user, onCrisis, onChanged, enhanced = false, myHash = 
                 <div key={c.id} style={{ background: c.by === "jess" ? T.paper : "transparent", border: c.by === "jess" ? `1px solid ${T.gold}` : "none", borderRadius: c.by === "jess" ? 8 : 0, padding: c.by === "jess" ? "9px 11px" : "7px 0", marginBottom: 4 }}>
                   {c.by === "jess" && <Eyebrow color={T.gold} mb={3}>Jess · here with you</Eyebrow>}
                   {c.by !== "jess" && enhanced && c.author_hash && (
-                    <div style={{ fontFamily: UI, fontSize: 11, fontWeight: 700, color: T.muted, marginBottom: 2 }}>{myHash && c.author_hash === myHash ? "You" : botanicalAlias(c.author_hash)}</div>
+                    <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 2 }}>
+                      <PresenceBloom hash={c.author_hash} size={16} />
+                      <span style={{ fontFamily: UI, fontSize: 11, fontWeight: 700, color: T.muted }}>{myHash && c.author_hash === myHash ? "You" : botanicalAlias(c.author_hash)}</span>
+                    </div>
                   )}
                   <Hand size={17} color={T.inkSoft}>{c.body}</Hand>
                 </div>

@@ -1,0 +1,247 @@
+<!doctype html>
+<html lang="en-GB"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>FemWell — Community: the substance plan (all features)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500;1,600&family=Ephesis&display=swap" rel="stylesheet">
+<style>
+  :root{--paper:#ECE7DA;--paperHi:#F4EFE3;--paperDeep:#D8CFBC;--ink:#0B0805;--inkSoft:#1A140D;--muted:#2E261B;--gold:#A8893F;--crimson:#BC2E27;--oxblood:#7A1A12;--blush:#E8B4B8;--sage:#8FAF8F;--plum:#8E6E8E;--serif:'Cormorant Garamond',Georgia,serif;--script:'Ephesis',cursive;--sans:ui-sans-serif,system-ui,-apple-system,'Segoe UI',sans-serif;}
+  *{box-sizing:border-box}
+  body{margin:0;background:radial-gradient(120% 80% at 12% 0%,#F4EFE3 0%,rgba(244,239,227,0) 55%),radial-gradient(120% 90% at 100% 100%,#E4DDCC 0%,rgba(228,221,204,0) 50%),var(--paper);color:var(--ink);font-family:var(--serif);font-size:18px;line-height:1.6;-webkit-font-smoothing:antialiased}
+  .doc{max-width:700px;margin:0 auto;padding:30px 22px 90px}
+  h1.cover{font-family:var(--script);font-size:50px;color:var(--crimson);margin:6px 0 2px;line-height:1.04}
+  h2{font-family:var(--serif);font-style:italic;font-weight:600;font-size:26px;margin:0 0 4px;color:var(--oxblood)}
+  h4{font-family:var(--sans);font-size:12px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--gold);margin:14px 0 4px}
+  .eyebrow{font-family:var(--sans);font-size:12px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--gold);margin-bottom:10px}
+  p{margin:0 0 12px}.lede{font-size:20px;line-height:1.55}
+  b,strong{font-weight:600}
+  .section{background:var(--paperHi);border:1px solid var(--paperDeep);border-left:4px solid var(--gold);border-radius:20px;padding:20px 20px;margin:16px 0;box-shadow:0 4px 20px rgba(58,44,26,.10)}
+  .section.crimson{border-left-color:var(--crimson)}.section.sage{border-left-color:var(--sage)}.section.plum{border-left-color:var(--plum)}.section.blush{border-left-color:var(--blush)}
+  table{width:100%;border-collapse:collapse;font-size:13.5px;font-family:var(--sans);margin:8px 0}
+  th,td{text-align:left;padding:6px 8px;border-bottom:1px solid var(--paperDeep);vertical-align:top}
+  th{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--gold)}
+  td b{font-family:var(--serif);font-size:15px}
+  .toc a{display:block;font-family:var(--sans);font-size:15px;color:var(--inkSoft);text-decoration:none;border-bottom:1px solid var(--paperDeep);padding:6px 0}
+  .toc a span{color:var(--gold);font-weight:700;margin-right:10px}
+  .thin{font-family:var(--sans);font-size:13.5px;color:var(--crimson);background:#FBE9E6;border-radius:8px;padding:8px 11px;margin:8px 0;line-height:1.5}
+  .thin b{color:var(--crimson)}
+  .pill{display:inline-block;font-family:var(--sans);font-size:11.5px;font-weight:600;padding:4px 10px;border-radius:999px;background:var(--paper);border:1px solid var(--paperDeep);margin:2px 3px 2px 0}
+  .pill.now{background:#EAF1EA;border-color:var(--sage);color:#3f6b3f}
+  .pill.ent{background:#FBF1E0;border-color:var(--gold);color:#8a6d22}
+  .pill.fn{background:#EDE6F2;border-color:var(--plum);color:#6d4f6d}
+  .pill.rt{background:#FBE9E6;border-color:var(--crimson);color:var(--crimson)}
+  .nudge{font-family:var(--sans);font-size:13px;color:var(--inkSoft);background:var(--paper);border:1px solid var(--paperDeep);border-left:3px solid var(--sage);border-radius:8px;padding:7px 10px;margin:5px 0}
+  .foot{font-family:var(--sans);font-size:12px;color:var(--muted);text-align:center;margin-top:30px;line-height:1.6}
+  ul{margin:4px 0 10px;padding-left:20px}li{margin:3px 0}
+  .num{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:999px;background:var(--crimson);color:#fff;font-family:var(--sans);font-size:12px;font-weight:700;margin-right:8px;vertical-align:1px}
+</style></head>
+<body><div class="doc">
+
+<div class="center" style="padding:14px 0 4px;text-align:center">
+  <div class="eyebrow">FemWell · Community · THE SUBSTANCE PLAN · every feature · vision + build order</div>
+  <h1 class="cover">From working to worth returning to</h1>
+  <p class="lede" style="font-style:italic;max-width:580px;margin:8px auto 0">The shelves are built and safe — but thin. This is the plan to give <b>every Community feature real substance</b>: actual content and mechanics, proper explanation, conversation and engagement drivers, and reasons a woman comes <i>back</i>. One doc, all eight features, an honest backend split, and a recommended order. Games is done (the model); the rest follow the same bar.</p>
+</div>
+
+<div class="section">
+  <div class="eyebrow">The substance test (applied to every feature)</div>
+  <p>A feature has substance when it passes five checks:</p>
+  <ul>
+    <li><b>Real content/mechanics</b> — something genuinely worth doing, not a thin container.</li>
+    <li><b>Explanation/onboarding</b> — a woman instantly understands what it is and how to use it.</li>
+    <li><b>Drivers</b> — prompts, starters, hosts that get her participating.</li>
+    <li><b>Return nudges</b> — a concrete reason to come back tomorrow ("someone replied", "today's word is up").</li>
+    <li><b>Why she returns</b> — the emotional payoff (belonging, being heard, a little joy, being believed).</li>
+  </ul>
+</div>
+
+<div class="section sage">
+  <div class="eyebrow">Contents</div>
+  <div class="toc">
+    <a href="#talk"><span>1</span> Talk rooms</a>
+    <a href="#together"><span>2</span> Together (the hub)</a>
+    <a href="#events"><span>3</span> Events</a>
+    <a href="#library"><span>4</span> Library / Book club</a>
+    <a href="#circles"><span>5</span> Circles</a>
+    <a href="#games"><span>6</span> Games (done — reference)</a>
+    <a href="#quietly"><span>7</span> Quietly</a>
+    <a href="#dm"><span>8</span> 1:1 / DM (safety-critical)</a>
+    <a href="#order"><span>9</span> Build order + backend flags</a>
+  </div>
+</div>
+
+<!-- 1 TALK -->
+<a id="talk"></a>
+<div class="section crimson">
+  <div class="eyebrow">1 · Talk rooms</div>
+  <h2>Real warm conversation</h2>
+  <div class="thin"><b>Thin now:</b> a flat feed, a one-line daily prompt, flat comments (no reply-to-reply), no first-post welcome, and few reasons to return once you've posted.</div>
+  <h4>Depth ideas</h4>
+  <ul>
+    <li><b>Threaded replies</b> — reply-to-reply so a real conversation can build (today it's flat).</li>
+    <li><b>The daily prompt as a proper ritual</b> — a warm setup + the question + a one-tap answer, per room (Lounge/Love/Money/Style/Health/Lighter), life-stage-tinted.</li>
+    <li><b>Warm first-post welcome</b> — a guaranteed kind reply to a woman's first-ever post (the biggest retention lever).</li>
+    <li><b>Weekly rituals</b> — "Weekly Wins" (Fri) and "Weekly Vent" (Mon) recurring threads per room.</li>
+    <li><b>Trending this week</b> — a k-anon "the Lounge is talking about work stress" beat (no counts).</li>
+    <li><b>Voice notes</b> (built, gated on an STT key).</li>
+  </ul>
+  <div class="nudge">Nudges: "someone replied to your vent" · "today's Lounge question is up" · "your line got three kind hearts".</div>
+  <p><span class="pill now">now: rich prompts · first-post welcome · weekly threads (client + Jess)</span> <span class="pill ent">threaded replies = Comment.parent_id field</span> <span class="pill fn">reply notifications = a notify path</span></p>
+</div>
+
+<!-- 2 TOGETHER -->
+<a id="together"></a>
+<div class="section sage">
+  <div class="eyebrow">2 · Together (the hub)</div>
+  <h2>A room that's actually doing something</h2>
+  <div class="thin"><b>Thin now:</b> the "this week, together" moment is a static rotation; the pillars are just links; the only real shared thing is the kindness pool.</div>
+  <h4>Depth ideas</h4>
+  <ul>
+    <li><b>A real weekly challenge with shared progress</b> — "the room read 40 chapters this week", "37 joined the wind-down" — aggregate, never a rank; streak-freeze so a missed day never shames.</li>
+    <li><b>Watch-along</b> — a real schedule ("Friday comfort film") + a persistent per-episode reaction thread.</li>
+    <li><b>Co-working / body-doubling</b> — a fixed-slot room (declare intention, cameras optional) — the proven belonging format.</li>
+    <li><b>An aggregate "what the room is doing" front door</b> so it never reads empty.</li>
+  </ul>
+  <div class="nudge">Nudges: "this week's challenge is live" · "the wind-down starts at 8" · "the room's halfway to its goal".</div>
+  <p><span class="pill now">now: richer rotating moment · real kindness-pool challenges</span> <span class="pill ent">full challenges/watch-along = a TogetherActivity entity + light fn</span> <span class="pill rt">live co-working = real-time/audio</span></p>
+</div>
+
+<!-- 3 EVENTS -->
+<a id="events"></a>
+<div class="section crimson">
+  <div class="eyebrow">3 · Events</div>
+  <h2>Go together, safely</h2>
+  <div class="thin"><b>Thin now:</b> the list depends on EventsItems being populated (often sparse); going-status is private but there's no "who's going" / pods; no reminders; discovery is a plain list.</div>
+  <h4>Depth ideas</h4>
+  <ul>
+    <li><b>A real, populated feed</b> — curated + refreshEvents; categories, "near you" at venue/town level (never precise), women-only vs mixed tags, accessibility.</li>
+    <li><b>Go-together pods</b> — opt-in, pseudonymous, in-app-only, "meet at the door" (the <b>EventPod</b> entity is already added).</li>
+    <li><b>"Get home safe" check-in</b> — expected-return time, one-tap "I'm safe", optional trusted-contact share.</li>
+    <li><b>Reminders + post-event reconnection</b> — "your walk's tomorrow"; "lovely having you — find the next one?".</li>
+  </ul>
+  <div class="nudge">Nudges: "your event is tomorrow at 10" · "two women are going too" · "did you get home okay?".</div>
+  <p><span class="pill now">now: richer curated feed · device reminders · RSVP sync (EventRSVP live)</span> <span class="pill ent">pods UI on EventPod</span> <span class="pill fn">live external feeds = Ticketmaster/Skiddle fn+creds</span></p>
+</div>
+
+<!-- 4 LIBRARY -->
+<a id="library"></a>
+<div class="section sage">
+  <div class="eyebrow">4 · Library / Book club</div>
+  <h2>A reading life, together</h2>
+  <div class="thin"><b>Thin now:</b> the shelf is basic; per-book "talk" is a generic corner; no buddy reads, no mood discovery, no reading progress.</div>
+  <h4>Depth ideas</h4>
+  <ul>
+    <li><b>Mood/theme discovery shelves</b> — "a warm hug", "twisty", "hopeful", "perimenopause memoirs beside swoony romance" (whole-life, never a health list up front).</li>
+    <li><b>Buddy reads</b> — pair with a woman reading the same book, async, spoiler-locked (the <b>BuddyRead</b> entity is already added).</li>
+    <li><b>Reading progress + checkpoint-gated discussion</b> — a thread unlocks only when you say you've reached it (spoiler-safe).</li>
+    <li><b>"Currently reading" as a gentle profile/presence chip</b>; a proper Jess-hosted book of the month arc.</li>
+  </ul>
+  <div class="nudge">Nudges: "your book-club checkpoint is open" · "someone's reading your book too" · "your buddy left a note".</div>
+  <p><span class="pill now">now: mood shelves · reading progress · Open Library search (live)</span> <span class="pill ent">buddy-read UI on BuddyRead · cross-device shelf on UserBook (live)</span></p>
+</div>
+
+<!-- 5 CIRCLES -->
+<a id="circles"></a>
+<div class="section plum">
+  <div class="eyebrow">5 · Circles</div>
+  <h2>Where it's believed — and alive</h2>
+  <div class="thin"><b>Thin now:</b> a circle can still feel empty; no circle-specific content/events; little cross-tie to Health/Journal/life-stage.</div>
+  <h4>Depth ideas</h4>
+  <ul>
+    <li><b>Jess "first light"</b> — a seeded warm opener in every live circle so none reads empty.</li>
+    <li><b>Circle-specific events + book picks</b> — a PCOS circle hosts a session; the Books circle its read (already the pattern).</li>
+    <li><b>Journal → "whisper to your circle"</b> — turn a private entry into an anonymous first post (the highest-leverage bridge).</li>
+    <li><b>Health self-declaration → gently offer the condition circle</b> (opt-in only, never inferred from tracked symptoms).</li>
+    <li><b>Intergenerational</b> — a menopause woman quietly mentors a peri woman.</li>
+  </ul>
+  <div class="nudge">Nudges: "your circle's ritual is up" · "someone new joined TTC" · "a reply in Perimenopause".</div>
+  <p><span class="pill now">now: first-light · circle events/picks · whisper bridge (all on existing entities)</span> <span class="pill fn">mentorship pairing = entity + fn</span></p>
+</div>
+
+<!-- 6 GAMES -->
+<a id="games"></a>
+<div class="section crimson">
+  <div class="eyebrow">6 · Games — DONE (the reference)</div>
+  <h2>Real arcade, built</h2>
+  <p>Already deepened (see the "Games Deep" doc): a real client-side arcade — <b>The Daily Word</b>, <b>Daily Trivia</b>, <b>Tic-tac-toe vs the app</b>, <b>Hangman</b> + the room party rounds, with how-to, private streaks, share-to-room. This is the substance bar every other feature should hit.</p>
+  <p><span class="pill now">now arcade shipped</span> <span class="pill ent">play-a-real-woman = GameMatch entity + move fn</span> <span class="pill fn">Ludo/Whot bigger</span> <span class="pill rt">real-time later</span></p>
+</div>
+
+<!-- 7 QUIETLY -->
+<a id="quietly"></a>
+<div class="section blush">
+  <div class="eyebrow">7 · Quietly</div>
+  <h2>The reflective shelf, explained</h2>
+  <div class="thin"><b>Thin now:</b> Echo/Witness/Sealed/Twin/Connect are mostly deep-links with little explanation (Halli's 1:1 point — "no proper explanation, no drivers/nudges").</div>
+  <h4>Depth ideas</h4>
+  <ul>
+    <li><b>Proper onboarding per surface</b> — a one-card "what this is / how it works / the promise" for Witness, Echo, Sealed letter, Phase Twin.</li>
+    <li><b>Echo Wall</b> — kind one-way reactions, "echoes that stayed with the room" (a gentle keepsake), the daily rhythm.</li>
+    <li><b>Sealed letters</b> — writing prompts ("a letter to future-you, opened in 3 months") + a nudge when one opens.</li>
+    <li><b>Phase Twin</b> — a proper 12-day guided, paired arc with explanation + gentle prompts.</li>
+  </ul>
+  <div class="nudge">Nudges: "your sealed letter opens today" · "a sister is holding space" · "an echo you left is still resonating".</div>
+  <p><span class="pill now">now: explanation/onboarding cards · echo reactions · letter prompts</span> <span class="pill fn">open-date reminders = a notify path</span></p>
+</div>
+
+<!-- 8 DM -->
+<a id="dm"></a>
+<div class="section crimson">
+  <div class="eyebrow">8 · 1:1 / DM — SAFETY-CRITICAL</div>
+  <h2>Being held, one to one</h2>
+  <div class="thin"><b>Thin now:</b> the live 1:1 is the <b>Witness</b> path (one matched, anonymous, moderated, one-shot reply) — but with <b>no proper explanation, no conversation drivers, no nudges</b>. A richer free-text back-and-forth is designed but <b>parked on a safety decision</b>.</div>
+  <h4>Depth ideas</h4>
+  <ul>
+    <li><b>Proper explanation + charter</b> — what the 1:1 is, how matching works, the promises (anonymous, no location, moderated, block/report, not for crisis → routes to support).</li>
+    <li><b>Conversation drivers</b> — "what would you like held?", suggested openers, a gentle structure so it's never a blank box.</li>
+    <li><b>Return nudges</b> — "a sister replied", "your witness is holding space" (with strict anti-abuse rate-limits).</li>
+    <li><b>The richer free-text thread</b> — an ongoing (not one-shot) exchange, still anonymous, still no location.</li>
+  </ul>
+  <h4 style="color:var(--crimson)">HARD RAILS (non-negotiable — ship these or don't ship)</h4>
+  <ul>
+    <li><b>18+</b> gate (already app-wide).</li>
+    <li><b>NEVER share or ask for location</b> — matched on season/life-stage only.</li>
+    <li><b>Server-side moderation BEFORE a message is delivered</b> — every message is screened by a function before it reaches the recipient; harmful → blocked, never delivered.</li>
+    <li><b>Block + report</b> on every message; crisis pre-check routes heavy content to support, never to a peer.</li>
+    <li><b>Do NOT ship half-built</b> — the free-text thread ships only with all of the above.</li>
+  </ul>
+  <p><span class="pill now">now: explanation + conversation drivers + charter on the EXISTING Witness path (client)</span></p>
+  <p><span class="pill fn">FLAG — the free-text DM thread needs: a <b>Message entity</b> + a <b>matched-thread entity</b> + a <b>moderation-BEFORE-delivery function</b> (screens each message pre-delivery) + block/report. This is the sign-off item — do NOT build the thread without it.</span></p>
+</div>
+
+<!-- 9 ORDER -->
+<a id="order"></a>
+<div class="section">
+  <div class="eyebrow">9 · Recommended order + backend flags</div>
+  <h2>What to deepen first</h2>
+  <ol>
+    <li><b>1:1 / DM</b> — Halli's flagged example + safety-critical. <i>First: the explanation + drivers + charter on the Witness path (buildable now). The free-text thread waits on the moderation-before-delivery function sign-off.</i></li>
+    <li><b>Talk rooms</b> — highest daily value: threaded replies + first-post welcome + rituals.</li>
+    <li><b>Circles</b> — first-light + whisper bridge + circle events (all on existing entities).</li>
+    <li><b>Library</b> — mood shelves + buddy reads (entity ready) + reading progress.</li>
+    <li><b>Together</b> — real weekly challenge (TogetherActivity entity).</li>
+    <li><b>Events</b> — pods UI (entity ready) + reminders + get-home-safe.</li>
+    <li><b>Games multiplayer</b> — play-a-real-woman (GameMatch entity + move fn).</li>
+    <li><b>Quietly</b> — explanation cards + Echo/Sealed/Twin depth.</li>
+  </ol>
+  <h4>Backend needs (the sign-off list)</h4>
+  <table>
+    <tr><th>Need</th><th>For</th><th>Class</th></tr>
+    <tr><td><b>Moderation-before-delivery fn + Message + Thread entity</b></td><td>1:1 free-text DM</td><td><span class="pill fn">SIGN-OFF (safety-critical)</span></td></tr>
+    <tr><td><b>Comment.parent_id</b> field</td><td>threaded replies (Talk)</td><td><span class="pill ent">small schema</span></td></tr>
+    <tr><td><b>TogetherActivity</b> entity + light fn</td><td>weekly challenges / watch-along</td><td><span class="pill ent">entity + fn</span></td></tr>
+    <tr><td><b>GameMatch</b> entity + move fn</td><td>play a real woman</td><td><span class="pill ent">entity + fn</span></td></tr>
+    <tr><td><b>EventPod</b> / <b>BuddyRead</b> (entities EXIST)</td><td>pods / buddy reads</td><td><span class="pill now">UI only</span></td></tr>
+    <tr><td><b>A notify path</b> (reuse NotificationLog?)</td><td>reply/reminder nudges everywhere</td><td><span class="pill fn">a path</span></td></tr>
+    <tr><td>Live external feeds; real-time; mentorship pairing</td><td>Events feeds / co-working / mentorship</td><td><span class="pill rt">defer / creds</span></td></tr>
+  </table>
+  <p class="lede" style="font-size:16px;margin-top:12px"><b>The principle:</b> most depth is buildable now on what exists; the two big sign-off items are the <b>1:1 moderation-before-delivery function</b> (safety) and the <b>TogetherActivity / GameMatch</b> entities (shared state). Pick a feature and I'll bring it to the Games bar.</p>
+</div>
+
+<div class="foot">
+  FemWell · Community substance plan · all features · vision + build order + backend flags<br>
+  Companion docs in the IDEAS pill: Games Deep · Circles · Library · Events · Talk Rooms · Together · Safety Principle<br>
+  Reachable from the IDEAS pill → Current
+</div>
+
+</div></body></html>

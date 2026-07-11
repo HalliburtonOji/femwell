@@ -319,3 +319,15 @@ Together Shelf (3 edits):
 - import: `import gamesDeepHtml from "@/components/founders/brandDocs/community-games-deep.html?raw";`
 - CATALOG entry: `{ kind:"doc", key:"Games Deep", group: CAT.CURRENT, sub:"Page level-up plans + demos", status:"new", accent:"crimson", title:"The Games Room, done properly (deep dive)", desc:"Reset: real games, not health prompts. Full 5-shelf menu (The Daily · vs the app · play a real woman · with the room · cozy solo) + mechanics (how-to, nudges, 'we' not leaderboard, share-to-room) + safety + feasible-now vs needs-sign-off. BUILT client-side (zero backend): The Daily Word (Wordle-style + streak + share), Daily Trivia, Tic-tac-toe vs the app (minimax), Hangman, + the room party rounds. FLAGGED: play-a-real-woman async = new GameMatch entity + move fn; Ludo/Whot bigger; real-time later." }`
 - render branch: `{tab === "Games Deep" && <BrandDocFrame html={gamesDeepHtml} title="FemWell — The Games Room, done properly" />}`
+
+---
+## ⭐ TO WIRE — COMMUNITY SUBSTANCE MASTER (vision doc, all features) (2026-07-09) → Ideas → Current
+> Halli: the deep-substance treatment applies to EVERY Community feature (Games was just first). The master vision doc — for EACH feature (Talk · Together · Events · Library · Circles · Games[ref] · Quietly · 1:1/DM): where it's THIN now → concrete DEPTH ideas (real mechanics/content, onboarding, drivers + return NUDGES, why she returns) + a feasible-now vs needs-backend split + a recommended BUILD ORDER + a backend-flags table. Key flag: 1:1/DM free-text thread is SAFETY-CRITICAL — needs a moderation-BEFORE-delivery function + Message/Thread entities + block/report; do NOT ship half-built. Phone HTML in femwell-handoff/COMMUNITY-SUBSTANCE-MASTER.html; copied to brandDocs/community-substance-master.html. Please wire (3 edits).
+
+| Doc (femwell-handoff/) | brandDocs slug | FoundersOS key | group | accent |
+|---|---|---|---|---|
+| COMMUNITY-SUBSTANCE-MASTER.html | community-substance-master.html | "Substance Plan" | Current | gold |
+
+- import: `import substancePlanHtml from "@/components/founders/brandDocs/community-substance-master.html?raw";`
+- CATALOG entry: `{ kind:"doc", key:"Substance Plan", group: CAT.CURRENT, sub:"Page level-up plans + demos", status:"new", accent:"gold", title:"Community — the substance plan (all features)", desc:"The whole-Community vision: give EVERY feature real substance (not thin shells). Per feature (Talk/Together/Events/Library/Circles/Games/Quietly/1:1-DM): where it's THIN now → concrete DEPTH (real mechanics/content, onboarding, engagement drivers + return nudges, why she returns) + feasible-now vs needs-backend split. Recommended build order (1:1/DM first — safety-critical; then Talk/Circles/Library/Together/Events/Games-multiplayer/Quietly) + a backend-flags table. Flags: 1:1 free-text DM needs a moderation-BEFORE-delivery fn + Message/Thread entities (do NOT ship half-built); TogetherActivity + GameMatch entities; EventPod/BuddyRead entities already exist (UI only)." }`
+- render branch: `{tab === "Substance Plan" && <BrandDocFrame html={substancePlanHtml} title="FemWell — Community: the substance plan" />}`
