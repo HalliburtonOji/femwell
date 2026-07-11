@@ -307,3 +307,15 @@ Together Shelf (3 edits):
 - import: `import communityGamesHtml from "@/components/founders/brandDocs/community-games.html?raw";`
 - CATALOG entry: `{ kind:"doc", key:"Games Room", group: CAT.CURRENT, sub:"Page level-up plans + demos", status:"new", accent:"gold", title:"The Games Room — play lightly (feature #5)", desc:"Games made robust + social + safe. Built ON the existing games engine (no new entity/function). Wordle lesson: one shared round, spoiler-safe, NO leaderboard — aggregate the room ('we'), never rank people. Jess's nightly round + 6 named games (This or That/One Word/Caption/One-Line Story/Tiny Confession/Comfort Pick) inviting + quick; k-anon 'room's playing' warmth; gentle social hook to the Lighter Side; on-brand canonical top-level page + back-nav. Live in Together → The Games Room." }`
 - render branch: `{tab === "Games Room" && <BrandDocFrame html={communityGamesHtml} title="FemWell — The Games Room: play lightly" />}`
+
+---
+## ⭐ TO WIRE — COMMUNITY GAMES · DEEP DIVE (real arcade) (2026-07-09) → Ideas → Current
+> Halli reset: features are working but SHALLOW; Games "no substance". New approach = lead with a RICH ideas doc, then build real substance. This is the deep Games rethink — an ACTUAL arcade (not health prompts): the full 5-shelf menu (The Daily · vs the app · play a real woman · with the room · cozy solo), mechanics (how-to, nudges, "we" not leaderboard, share-to-room, featured), safety, and an honest feasible-now vs needs-sign-off split. BUILT this pass (client-side, zero backend): The Daily Word (Wordle-style, streak, share), Daily Trivia, Tic-tac-toe vs the app (minimax), Hangman + the room party rounds. FLAGGED for sign-off: play-a-real-woman async = a GameMatch entity + move fn; Ludo/Whot bigger; real-time later. Phone HTML in femwell-handoff/COMMUNITY-GAMES-DEEP.html; copied to brandDocs/community-games-deep.html. Please wire (3 edits).
+
+| Doc (femwell-handoff/) | brandDocs slug | FoundersOS key | group | accent |
+|---|---|---|---|---|
+| COMMUNITY-GAMES-DEEP.html | community-games-deep.html | "Games Deep" | Current | crimson |
+
+- import: `import gamesDeepHtml from "@/components/founders/brandDocs/community-games-deep.html?raw";`
+- CATALOG entry: `{ kind:"doc", key:"Games Deep", group: CAT.CURRENT, sub:"Page level-up plans + demos", status:"new", accent:"crimson", title:"The Games Room, done properly (deep dive)", desc:"Reset: real games, not health prompts. Full 5-shelf menu (The Daily · vs the app · play a real woman · with the room · cozy solo) + mechanics (how-to, nudges, 'we' not leaderboard, share-to-room) + safety + feasible-now vs needs-sign-off. BUILT client-side (zero backend): The Daily Word (Wordle-style + streak + share), Daily Trivia, Tic-tac-toe vs the app (minimax), Hangman, + the room party rounds. FLAGGED: play-a-real-woman async = new GameMatch entity + move fn; Ludo/Whot bigger; real-time later." }`
+- render branch: `{tab === "Games Deep" && <BrandDocFrame html={gamesDeepHtml} title="FemWell — The Games Room, done properly" />}`

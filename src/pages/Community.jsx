@@ -76,6 +76,7 @@ import { SummaryCard, FwCard } from "@/components/brand/Card";
 import { cwOf, Pollinator } from "@/components/brand/flora";
 import EventsTogether from "@/components/community/EventsTogether";
 import LibraryTogether from "@/components/community/LibraryTogether";
+import GamesArcade from "@/components/community/GamesArcade";
 
 const PLUM = "#241a26"; // the single permitted dark surface
 const HANDFAM = '"Cormorant Garamond","Fraunces",Georgia,serif';
@@ -1775,17 +1776,21 @@ function GamesView({ user, onCrisis, onHome, onNav }) {
       {onHome && <button onClick={onHome} style={{ ...ghostBtn, marginBottom: 14, padding: "7px 11px" }}><ChevronLeft size={14} /> Community</button>}
       <Eyebrow color={T.gold} mb={6}>Together · play lightly</Eyebrow>
       <Script size={34} color={OXBLOOD} style={{ marginBottom: 4 }}>The Games Room</Script>
-      <Hand size={17} color={T.muted} style={{ marginBottom: 10 }}>Jess hosts every round — <b>no winners, no scores, no leaderboards</b>. You answer in a word or a line; when the round closes, she gathers the <i>warm whole</i> of what the room said. Never who said what.</Hand>
-      {/* k-anon warmth — the room is playing, never a count/ranking */}
-      <div style={{ display: "inline-flex", alignItems: "center", gap: 6, fontFamily: UI, fontSize: 12, fontWeight: 600, color: T.muted, marginBottom: 16 }}>
-        <Dices size={13} color={T.gold} /> The room's playing tonight — join in, no pressure.
+      <Hand size={17} color={T.muted} style={{ marginBottom: 16 }}>Real games, a little joy — <b>no winners, no scores, no leaderboards</b>. A fresh puzzle every day, something to beat right now, and the room's party rounds. Play for the fun of it.</Hand>
+
+      {/* the ARCADE — real games (Daily Word · Trivia · Tic-tac-toe · Hangman), client-side */}
+      <GamesArcade onShareToRoom={onNav ? () => onNav("lighter") : null} />
+
+      {/* With the room — the async party rounds (existing engine, aggregate reveal) */}
+      <div style={{ marginTop: 22 }}>
+        <Eyebrow color={T.gold} mb={4}>Play with the room</Eyebrow>
+        <Hand size={14.5} color={T.muted} style={{ marginBottom: 12 }}>Jess hosts a shared round; you answer in a word or line; she reveals the warm whole when it closes — never who said what.</Hand>
       </div>
 
       {/* the headline nightly round (day-rotated format) */}
       <GameRoundCard user={user} onCrisis={onCrisis} />
 
       {/* the named games — each its own real, separately-playable round */}
-      <Eyebrow color={T.gold} mb={10}>More ways to play</Eyebrow>
       {NAMED_GAMES.map((g) => (
         <GameRoundCard key={g.kind} kind={g.kind} name={g.name} blurb={g.blurb} user={user} onCrisis={onCrisis} />
       ))}

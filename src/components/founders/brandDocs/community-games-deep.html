@@ -1,0 +1,170 @@
+<!doctype html>
+<html lang="en-GB"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>FemWell — The Games Room, done properly (deep dive)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500;1,600&family=Ephesis&display=swap" rel="stylesheet">
+<style>
+  :root{--paper:#ECE7DA;--paperHi:#F4EFE3;--paperDeep:#D8CFBC;--ink:#0B0805;--inkSoft:#1A140D;--muted:#2E261B;--gold:#A8893F;--crimson:#BC2E27;--oxblood:#7A1A12;--blush:#E8B4B8;--sage:#8FAF8F;--plum:#8E6E8E;--serif:'Cormorant Garamond',Georgia,serif;--script:'Ephesis',cursive;--sans:ui-sans-serif,system-ui,-apple-system,'Segoe UI',sans-serif;}
+  *{box-sizing:border-box}
+  body{margin:0;background:radial-gradient(120% 80% at 12% 0%,#F4EFE3 0%,rgba(244,239,227,0) 55%),radial-gradient(120% 90% at 100% 100%,#E4DDCC 0%,rgba(228,221,204,0) 50%),var(--paper);color:var(--ink);font-family:var(--serif);font-size:18px;line-height:1.6;-webkit-font-smoothing:antialiased}
+  .doc{max-width:680px;margin:0 auto;padding:30px 22px 90px}
+  h1.cover{font-family:var(--script);font-size:50px;color:var(--crimson);margin:6px 0 2px;line-height:1.04}
+  h2{font-family:var(--serif);font-style:italic;font-weight:600;font-size:26px;margin:0 0 6px;color:var(--oxblood)}
+  h3{font-family:var(--serif);font-weight:600;font-size:20px;margin:16px 0 4px;color:var(--ink)}
+  h4{font-family:var(--sans);font-size:12px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--gold);margin:16px 0 4px}
+  .eyebrow{font-family:var(--sans);font-size:12px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--gold);margin-bottom:10px}
+  p{margin:0 0 12px}.lede{font-size:20px;line-height:1.55}
+  b,strong{font-weight:600}
+  .section{background:var(--paperHi);border:1px solid var(--paperDeep);border-left:4px solid var(--gold);border-radius:20px;padding:22px 20px;margin:18px 0;box-shadow:0 4px 20px rgba(58,44,26,.10)}
+  .section.crimson{border-left-color:var(--crimson)}.section.sage{border-left-color:var(--sage)}.section.plum{border-left-color:var(--plum)}
+  table{width:100%;border-collapse:collapse;font-size:14px;font-family:var(--sans);margin:8px 0}
+  th,td{text-align:left;padding:7px 8px;border-bottom:1px solid var(--paperDeep);vertical-align:top}
+  th{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--gold)}
+  td b{font-family:var(--serif);font-size:15px}
+  .toc a{display:block;font-family:var(--sans);font-size:15px;color:var(--inkSoft);text-decoration:none;border-bottom:1px solid var(--paperDeep);padding:6px 0}
+  .toc a span{color:var(--gold);font-weight:700;margin-right:10px}
+  .pill{display:inline-block;font-family:var(--sans);font-size:12px;font-weight:600;padding:5px 11px;border-radius:999px;background:var(--paper);border:1px solid var(--paperDeep);margin:3px 4px 3px 0}
+  .pill.now{background:#EAF1EA;border-color:var(--sage);color:#3f6b3f}
+  .pill.ent{background:#FBF1E0;border-color:var(--gold);color:#8a6d22}
+  .pill.rt{background:#FBE9E6;border-color:var(--crimson);color:var(--crimson)}
+  .pill.build{background:#EDE6F2;border-color:var(--plum);color:#6d4f6d}
+  .lens{background:var(--paper);border:1px solid var(--paperDeep);border-left:3px solid var(--gold);border-radius:12px;padding:12px 14px;margin:8px 0}
+  .lens .nm{font-family:var(--serif);font-weight:600;font-size:17px;color:var(--ink);margin-bottom:2px}
+  .lens p{margin:0;font-size:14.5px;line-height:1.5;color:var(--inkSoft)}
+  .foot{font-family:var(--sans);font-size:12px;color:var(--muted);text-align:center;margin-top:30px;line-height:1.6}
+  ul{margin:4px 0 12px;padding-left:20px}li{margin:3px 0}
+  .wire{font-family:var(--sans);font-size:12px;color:var(--muted);background:var(--paper);border:1px dashed var(--paperDeep);border-radius:10px;padding:8px 11px;margin:6px 0}
+</style></head>
+<body><div class="doc">
+
+<div class="center" style="padding:14px 0 4px;text-align:center">
+  <div class="eyebrow">FemWell · Community · FEATURE #5 · The Games Room — DEEP DIVE · lead with ideas, then build substance</div>
+  <h1 class="cover">An actual arcade</h1>
+  <p class="lede" style="font-style:italic;max-width:560px;margin:8px auto 0">Fair feedback: the Games Room was thin — a couple of health-ish prompts, no substance. This is the rethink: <b>real games women actually enjoy</b> — a daily word puzzle, trivia, Ludo, Whot, connect‑4, hangman, would‑you‑rather — with proper how‑to, warm framing, and reasons to come back. <b>Not health‑gated. Just fun, together, safe.</b> The full menu, the mechanics, and an honest feasible‑now vs needs‑sign‑off split — then the strongest real set I can build now.</p>
+</div>
+
+<div class="section">
+  <div class="eyebrow">The one-line thesis</div>
+  <p class="lede">A Games Room earns a daily visit when there's <b>a fresh thing every day</b> (the Daily), <b>something to beat right now</b> (play vs the app), <b>a turn waiting for you</b> (play a real woman), and <b>the room to join</b> (party rounds) — all with <b>zero ranking-shame</b> (celebrate playing, aggregate the room, never a leaderboard). The nudges write themselves: "today's word is up", "your turn in Ludo".</p>
+</div>
+
+<div class="section sage">
+  <div class="eyebrow">Contents</div>
+  <div class="toc">
+    <a href="#menu"><span>1</span> The full menu — 5 shelves of games</a>
+    <a href="#mechanics"><span>2</span> Mechanics — how-to, nudges, the "we" rule</a>
+    <a href="#safety"><span>3</span> Safety &amp; anti-shame</a>
+    <a href="#feasible"><span>4</span> Feasible now vs needs sign-off</a>
+    <a href="#build"><span>5</span> Recommended build + what I shipped</a>
+  </div>
+</div>
+
+<!-- 1 -->
+<a id="menu"></a>
+<div class="section crimson">
+  <div class="eyebrow">1 · The menu</div>
+  <h2>Five shelves of real games</h2>
+
+  <h3>A · The Daily — one fresh thing every day (solo, but shared)</h3>
+  <p>The daily‑return engine. Same puzzle for everyone each day; play solo; share a spoiler‑safe result; see how the room did (aggregate, no ranking).</p>
+  <ul>
+    <li><b>The Daily Word</b> — a Wordle‑style 5‑letter guess in 6 tries, on‑screen keyboard, share your colour‑block result. <i>The flagship.</i></li>
+    <li><b>Daily Trivia</b> — 5 fun general‑knowledge / pop‑culture questions, instant right/wrong, a warm score, "how the room did".</li>
+    <li><b>Daily Hangman</b> — guess the day's word letter by letter.</li>
+    <li><b>Daily Number</b> — a tiny logic/number puzzle (guess‑the‑number, a mini sudoku‑lite).</li>
+  </ul>
+
+  <h3>B · Play vs the app — instant, solo, satisfying</h3>
+  <p>No waiting, no opponent needed — a real game against a decent computer, any time.</p>
+  <ul>
+    <li><b>Tic‑tac‑toe</b> (smart‑but‑beatable AI) · <b>Connect‑4</b> · <b>Dots‑and‑boxes</b> · <b>Hangman</b> (endless words) · a <b>solitaire</b>‑style cosy card game.</li>
+  </ul>
+
+  <h3>C · Play a real woman — async turn‑based (the social heart)</h3>
+  <p>Take a turn, put your phone down, come back when it's your move. Anonymous (botanical alias), no chat required. "Your turn" nudges bring her back.</p>
+  <ul>
+    <li><b>Ludo</b> (2–4) · <b>Whot</b> (the card game) · <b>Connect‑4</b> · <b>Tic‑tac‑toe</b> · <b>Dots‑and‑boxes</b> · <b>Word duel</b> (take turns building words).</li>
+    <li>Play <b>with the room</b> (matched to any woman), <b>with a circle</b>, or <b>invite a friend</b> (a share link into an existing conversation).</li>
+  </ul>
+
+  <h3>D · Play with the room — party rounds (async, aggregate reveal)</h3>
+  <p>The existing engine, deepened. One prompt, everyone answers, Jess reveals the warm whole.</p>
+  <ul>
+    <li><b>Would‑you‑rather · This‑or‑That · Trivia night · Categories · Story chain · Caption this · Two truths · Hot takes.</b></li>
+  </ul>
+
+  <h3>E · Cozy solo — wind‑down</h3>
+  <p><b>Word‑search · flora colour‑by‑number · a gentle memory/match game.</b> No timer, no pressure.</p>
+</div>
+
+<!-- 2 -->
+<a id="mechanics"></a>
+<div class="section">
+  <div class="eyebrow">2 · What makes it stick</div>
+  <h2>Mechanics — explanation, nudges, "we" not "who won"</h2>
+  <div class="lens"><div class="nm">Proper onboarding per game</div><p>Every game opens with a one‑card <b>how‑to</b> (2–3 lines + an example), a warm framing ("no timer, no losers"), and a big "Play" button. No one should ever stare at a board wondering what to do.</p></div>
+  <div class="lens"><div class="nm">Reasons to come back (nudges)</div><p>"<b>Today's word is up</b>" · "<b>Your turn in Ludo with Wild Poppy</b>" · "<b>Trivia night starts this evening</b>" · a gentle "you're on a 4‑day streak with the Daily" (private, for you — never public).</p></div>
+  <div class="lens"><div class="nm">Aggregate, never a leaderboard</div><p>Celebrate <b>playing</b>: "you solved it in 4 · the room's average today was 4.2" · "68% of the room picked cosy night in". Never a ranked list of people. A missed day never breaks anything shameful.</p></div>
+  <div class="lens"><div class="nm">Share into a room, softly</div><p>One tap to drop your result (the spoiler‑safe blocks, your trivia score) into the Lighter Side — a conversation starter, never a brag.</p></div>
+  <div class="lens"><div class="nm">Featured &amp; the Together rhythm</div><p>A <b>game of the day</b> + a <b>game of the week</b> tied to the Together "this week" moment, so the Games Room has a heartbeat.</p></div>
+</div>
+
+<!-- 3 -->
+<a id="safety"></a>
+<div class="section plum">
+  <div class="eyebrow">3 · Safe &amp; kind</div>
+  <h2>Safety — fun without the sharp edges</h2>
+  <ul>
+    <li><b>Anonymous by default</b> — botanical alias; you never need a real name to play.</li>
+    <li><b>No ranking‑shame</b> — no public leaderboards, no "you lost" framing, no counts that shame a lurker.</li>
+    <li><b>Moderation on any user text</b> — caption/story‑chain/word entries go through the same publish‑then‑screen + crisis‑check as posts; report/block in the "…" menu.</li>
+    <li><b>Opt‑out of multiplayer</b> — solo + vs‑app options for anyone who doesn't want to play a stranger; block a match anytime.</li>
+    <li><b>No money, no gambling</b> — purely for joy.</li>
+  </ul>
+</div>
+
+<!-- 4 -->
+<a id="feasible"></a>
+<div class="section crimson">
+  <div class="eyebrow">4 · The honest split</div>
+  <h2>Feasible now vs needs your sign-off</h2>
+  <table>
+    <tr><th>Game / capability</th><th>Class</th></tr>
+    <tr><td><b>The Daily Word</b> (Wordle‑style, deterministic daily word, share blocks)</td><td><span class="pill now">NOW — client-side, no backend</span></td></tr>
+    <tr><td><b>Daily Trivia</b> (client question bank, score, share)</td><td><span class="pill now">NOW</span></td></tr>
+    <tr><td><b>Play vs the app</b> — Tic‑tac‑toe, Connect‑4, Dots‑and‑boxes, Hangman (AI opponent)</td><td><span class="pill now">NOW</span></td></tr>
+    <tr><td><b>Cozy solo</b> — word‑search, colour‑by‑flora, memory</td><td><span class="pill now">NOW</span></td></tr>
+    <tr><td><b>Party rounds with the room</b> (would‑you‑rather etc.)</td><td><span class="pill now">NOW — existing engine</span></td></tr>
+    <tr><td><b>Private "your streak" + aggregate "how the room did"</b></td><td><span class="pill now">NOW (device‑local streak; light aggregate)</span></td></tr>
+    <tr><td><b>Play a REAL woman — async turn‑based</b> (Tic‑tac‑toe/Connect‑4/Dots‑&‑boxes vs a person)</td><td><span class="pill ent">NEEDS SIGN‑OFF — new GameMatch entity + a move/matchmaking function</span></td></tr>
+    <tr><td><b>Ludo · Whot</b> (multi‑player board/card, dealer/state)</td><td><span class="pill build">BIGGER BUILD + GameMatch entity/fn</span> (do after the 2‑player base proves out)</td></tr>
+    <tr><td><b>Live / real‑time rounds</b> (everyone at once)</td><td><span class="pill rt">NEEDS REAL‑TIME INFRA (websockets/polling fn) — defer</span></td></tr>
+  </table>
+  <p style="font-size:14px;font-family:var(--sans);color:var(--muted)"><b>Why the split:</b> anything you play <i>against a real woman</i> needs shared, turn‑based state → a <b>GameMatch</b> entity (board · players' aliases · whose turn · status) + an <b>anonymous move function</b> (writes are service‑role + moderated, like posts). That's one entity + one function — lean, but it's the line that needs your OK. Everything solo/daily/vs‑app/with‑the‑room is <b>buildable now with zero new backend</b>.</p>
+</div>
+
+<!-- 5 -->
+<a id="build"></a>
+<div class="section sage">
+  <div class="eyebrow">5 · The recommendation + what shipped</div>
+  <h2>Build the "now" arcade first — real substance, zero backend</h2>
+  <p><b>Recommended first build (shipped this pass):</b> a proper arcade home + these real games, all client‑side:</p>
+  <ul>
+    <li><b>The Daily Word</b> — full Wordle‑style game (deterministic daily answer, 6 guesses, on‑screen keyboard, win/lose, private streak, share your result blocks). The flagship daily‑return hook.</li>
+    <li><b>Daily Trivia</b> — 5 rotating fun questions, instant feedback + a warm score, share it.</li>
+    <li><b>Tic‑tac‑toe vs the app</b> — a real smart‑but‑beatable opponent, instant play.</li>
+    <li><b>Hangman</b> — guess the word, endless bank.</li>
+    <li><b>With the room</b> — the party prompt games kept, framed as one shelf.</li>
+    <li>Proper <b>how‑to</b> on each, warm framing, private streaks, "share into the Lighter Side", on‑brand canonical page + back‑nav.</li>
+  </ul>
+  <p><b>Then, on your sign‑off:</b> the <b>GameMatch</b> entity + move function unlocks <b>play‑a‑real‑woman</b> (Connect‑4 / Tic‑tac‑toe / Dots‑&‑boxes async), and after that the bigger <b>Ludo / Whot</b> builds. Real‑time is a later, separate call.</p>
+  <p style="font-size:14px;font-family:var(--sans);color:var(--muted)"><b>The point:</b> this is the arcade you can open every day and actually enjoy — before we even touch multiplayer. Then multiplayer makes it social.</p>
+</div>
+
+<div class="foot">
+  FemWell · Community feature #5 (deep) · The Games Room — real games, not health prompts · client‑side arcade now · GameMatch entity+fn flagged for multiplayer<br>
+  Built into the LIVE Community → Together → The Games Room · IDEAS pill → Current
+</div>
+
+</div></body></html>
