@@ -6,6 +6,7 @@ import { createPageUrl } from "@/utils";
 import { isCycleLifeStage, filterProgramsByStage } from "@/utils/plannerAdapter";
 import { computeCycleDay } from "@/hooks/useCycleDay";
 import NurtureGarden from "@/components/nurture/NurtureGarden";
+import { BloomprintLine } from "@/components/nurture/BloomprintCard";
 import {
   AlertCircle, ChevronRight, Feather, Brain, Salad, Zap,
   Droplets, UtensilsCrossed, BookOpen, Activity, Lightbulb, TrendingUp, X
@@ -569,6 +570,7 @@ export default function Today() {
                 <span style={{ fontFamily: "Inter, sans-serif", fontSize: 10.5, fontWeight: 700, letterSpacing: 1, textTransform: "uppercase", color: "var(--text-muted, #9B8B7A)" }}>Your garden</span>
                 <span style={{ display: "inline-flex", alignItems: "center", gap: 1, fontFamily: "Inter, sans-serif", fontSize: 11, fontWeight: 600, color: "var(--text-muted, #9B8B7A)" }}>Tend<ChevronRight size={13} /></span>
               </div>
+              <div style={{ marginBottom: 4 }}><BloomprintLine /></div>
               <NurtureGarden compact />
             </a>
 

@@ -15,7 +15,9 @@ import { writeDevStageOverride } from "../components/planner/DevStageSwitcher";
 // Brand v4 lush layer — §3 carved heart · §4 botanicals · §5.3 Profile char = blush/gold camellia ·
 // §6.8 signature top · §6.10 Clipboard Stack Slider · §6.7.6 quick-action popup.
 import { T, UI, SERIF, Script, Hand, Eyebrow, Heart as BrandHeart, PAPER_BG } from "@/components/journal/Editorial";
-import { VineMotifV2, FlowerGlyph, CardFrame, floraKeyframes, cwOf, Butterfly, SwayBloom, SprigDivider, lighten } from "@/components/brand/flora";
+import { VineMotifV2, FlowerGlyph, CardFrame, floraKeyframes, cwOf, Butterfly, SwayBloom, SprigDivider, lighten, RichBloomV2 } from "@/components/brand/flora";
+import BloomprintCard from "@/components/nurture/BloomprintCard";
+import { bloomprintSignature } from "@/components/nurture/bloomprint";
 import { ClipboardSlider, Clipboard } from "@/components/brand/ClipboardSlider";
 import { SpeciesBloom } from "@/components/brand/floraLibrary";
 
@@ -94,7 +96,9 @@ function ProfileHero({ user, profile, onPhoto, uploadingPhoto, cycleInfo, daysTo
             <div style={{ width: 56, height: 56, borderRadius: "50%", overflow: "hidden", border: `2px solid ${cw.petal}`, background: T.paperHi, display: "grid", placeItems: "center" }}>
               {profile?.avatar_url
                 ? <img src={profile.avatar_url} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-                : <span style={{ fontFamily: SERIF, fontSize: 23, fontWeight: 700, color: T.ink }}>{user?.full_name?.[0]?.toUpperCase() || "?"}</span>}
+                : user?.id
+                  ? (() => { const s = bloomprintSignature(user.id); const f = ({ foxglove: "cosmos", fern: "camellia" })[s.form] || s.form; return <RichBloomV2 form={f} color={s.cw.petal} color2={s.cw.tip} accent={s.cw.accent} size={48} soft={false} headOnly animate={false} openness={0.95} idx="pfd-av" />; })()
+                  : <span style={{ fontFamily: SERIF, fontSize: 23, fontWeight: 700, color: T.ink }}>{user?.full_name?.[0]?.toUpperCase() || "?"}</span>}
             </div>
             <span style={{ position: "absolute", bottom: -1, right: -1, width: 21, height: 21, borderRadius: "50%", background: T.crimson, border: `2px solid ${T.paper}`, display: "grid", placeItems: "center" }}>
               <Camera style={{ width: 10, height: 10, color: "#fff" }} />
@@ -521,6 +525,9 @@ export default function ProfileClipboardDemo() {
           cycleInfo={cycleInfo} daysToNextPeriod={daysToNextPeriod} checkinStreak={checkinStreak}
         />
         <ProfileSummary checkins={checkins} avgMood={avgMood} checkinStreak={checkinStreak} />
+
+        {/* Bloomprint — her personal flora identity (signature + earned shelf + disclosure tier) */}
+        <div style={{ margin: "0 0 14px" }}><BloomprintCard userId={user?.id} /></div>
 
         {/* PERSONALISE — BOX tiles in a §6.10 clipboard slider (You · Account); each opens a §6.7.6 quick-edit popup */}
         <Hand size={15} color={T.muted} style={{ display: "block", margin: "0 2px 8px" }}>Two cards to tune you — slide between them; tap anything to change it.</Hand>

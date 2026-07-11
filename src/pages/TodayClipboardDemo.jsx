@@ -614,8 +614,9 @@ export default function TodayClipboardDemo() {
     // GARDEN / COMPANION — her real bloom + inline tend
     (() => {
       const accent = T.sage;
+      const bpCw = fingerprintColourway(uid);   // her Bloomprint signature colour (carries meaning)
       return { key: "garden", section: "Companion", accent, Icon: Sprout, tag: "Your garden", flower: "rose", open: { href: "/Garden", label: "Open your garden" },
-        hook: cName, line: tendedToday(uid) ? `Blooming — you've tended her today${tended > 0 ? ` (${tended})` : ""}.` : "Blooming — she grows from everything you already do.",
+        hook: cName, line: (tendedToday(uid) ? `Blooming — you've tended her today${tended > 0 ? ` (${tended})` : ""}.` : "Blooming — she grows from everything you already do.") + ` Your ${bpCw.label.toLowerCase()} ${(cForm?.name || "bloom").toLowerCase()} — ${bpCw.meaning}.`,
         bloom: { form: cForm?.key || "peony", color: cAccent },
         action: { type: "check", Icon: Feather, label: "Tend her", note: "Tended from Today", doneLabel: `${cName} felt that — a little more open.` } };
     })(),

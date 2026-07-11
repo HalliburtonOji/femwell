@@ -21,6 +21,24 @@ const SCRIPT = '"Ephesis","Pinyon Script",cursive';
 const LUSH = { foxglove: "cosmos", fern: "camellia" };
 const lush = (k) => LUSH[k] || k || "peony";
 
+// a one-line signature caption for compact surfaces (Today's "Your garden" card).
+export function BloomprintLine({ userId: userIdProp = null }) {
+  const [id, setId] = useState(userIdProp);
+  useEffect(() => {
+    if (userIdProp) return;
+    let alive = true;
+    base44.entities.User.me().then((me) => { if (alive && me?.id) setId(me.id); }).catch(() => {});
+    return () => { alive = false; };
+  }, [userIdProp]);
+  if (!id) return null;
+  const s = bloomprintSignature(id);
+  return (
+    <span style={{ fontFamily: "'Cormorant Garamond',Georgia,serif", fontStyle: "italic", fontSize: 13, color: s.cw.accent }}>
+      {s.cw.label} {s.formName.toLowerCase()} · {s.cw.meaning}
+    </span>
+  );
+}
+
 export default function BloomprintCard({ userId: userIdProp = null }) {
   const [userId, setUserId] = useState(userIdProp);
   const [companion, setCompanion] = useState(null);

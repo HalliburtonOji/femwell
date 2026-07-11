@@ -34,6 +34,7 @@ import { OXBLOOD, subCard, focusPill, Panel, StackedCard, BoardBody, TopChrome, 
 import { getCompanion, loadCompanionState, tendCompanion, tendedToday } from "@/components/nurture/companion";
 import { localMilestones, loadMilestones } from "@/components/nurture/milestones";
 import NurtureGarden from "@/components/nurture/NurtureGarden";
+import BloomprintCard from "@/components/nurture/BloomprintCard";
 import { GardenGrowth } from "@/components/growth/GrowthLive";
 // THE OMEN ENGINE (§10.2–10.5, AGREED canon) — makes the almanac board signal-driven + real.
 import { useOmen, OmenReveal } from "@/components/brand/OmenAlmanac";
@@ -209,6 +210,8 @@ export default function GardenEliteShell() {
           <span style={{ flex: 1, height: 1, background: T.paperDeep }} />
         </div>
         <div id="fw-garden-real">
+          {/* Your Bloomprint — the identity header for your patch (this Garden IS your bloom, up close) */}
+          <div style={{ marginBottom: 14 }}><BloomprintCard /></div>
           <NurtureGarden />
           <div style={{ marginTop: 8 }}><GardenGrowth /></div>
         </div>

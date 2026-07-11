@@ -13,7 +13,9 @@ import FirstLaunchStagePicker from "../components/planner/FirstLaunchStagePicker
 import { writeDevStageOverride } from "../components/planner/DevStageSwitcher";
 // Brand-P2 lush layer (BRAND_IDENTITY §3 heart · §4 botanicals · §5.3 — Profile char = blush/gold).
 import { T, Heart as BrandHeart } from "@/components/journal/Editorial";
-import { VineMotifV2, FlowerGlyph, CardFrame, floraKeyframes, cwOf } from "@/components/brand/flora";
+import { VineMotifV2, FlowerGlyph, CardFrame, floraKeyframes, cwOf, RichBloomV2 } from "@/components/brand/flora";
+import BloomprintCard from "@/components/nurture/BloomprintCard";
+import { bloomprintSignature } from "@/components/nurture/bloomprint";
 
 // Friendly labels for the 12 supported life_stage enum values — used by the
 // prominent "Your Femwell stage" card below to read the current stage.
@@ -358,6 +360,13 @@ export default function Profile() {
               }}>
                 {profile?.avatar_url ? (
                   <img src={profile.avatar_url} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                ) : user?.id ? (
+                  (() => {
+                    // her signature Bloomprint bloom as her avatar (no photo) — even her profile feels like her garden
+                    const s = bloomprintSignature(user.id);
+                    const f = ({ foxglove: "cosmos", fern: "camellia" })[s.form] || s.form;
+                    return <RichBloomV2 form={f} color={s.cw.petal} color2={s.cw.tip} accent={s.cw.accent} size={62} soft={false} headOnly animate={false} openness={0.95} idx="profile-av" />;
+                  })()
                 ) : (
                   <span style={{ fontSize: 26, fontWeight: 700, color: "var(--plum)" }}>
                     {user?.full_name?.[0]?.toUpperCase() || "?"}
@@ -411,6 +420,11 @@ export default function Profile() {
             </div>
           )}
           </div>
+        </div>
+
+        {/* Bloomprint — her personal flora identity (signature + earned shelf + disclosure tier) */}
+        <div style={{ marginBottom: 16 }}>
+          <BloomprintCard userId={user?.id} />
         </div>
 
         {/* Stat strip */}
