@@ -1,0 +1,45 @@
+{
+  // Community 1:1 / DM (safety-critical, 2026-07-13) — a private one-to-one thread between two
+  // anonymous members. Identity is the SAME veiled botanical alias used in the rooms: only the
+  // device-derived author_hash + a display alias snapshot are stored, NEVER a user id, NEVER a
+  // name, NEVER location (there is no location field anywhere in DM — hard rail).
+  //
+  // FULLY LOCKED: create/update/delete AND read are all admin-only. Clients NEVER touch these rows
+  // directly — every DM operation (request/respond/send/messages/conversations/block/report/leave)
+  // goes through createCommunityPost's `dm.*` actions asServiceRole, which verify the caller is a
+  // participant. This is what keeps a thread private (a client can't query someone else's chat).
+  "name": "Conversation",
+  "type": "object",
+  "properties": {
+    "a_hash": { "type": "string", "description": "Participant A = the initiator (device-derived anon author_hash). Never a user id." },
+    "b_hash": { "type": "string", "description": "Participant B = the recipient of the chat request." },
+    "a_alias": { "type": "string", "description": "Botanical alias snapshot for A (display only; deterministic from a_hash)." },
+    "b_alias": { "type": "string", "description": "Botanical alias snapshot for B." },
+    "initiator_hash": { "type": "string", "description": "Who opened the request (= a_hash). No cold DMs: B must accept before either can send." },
+    "context": { "type": "string", "description": "The one-line 'why I'm reaching out' from the chat request (screened; drives the conversation)." },
+    "status": { "type": "string", "enum": ["pending", "active", "declined", "blocked", "left"], "default": "pending", "description": "pending = request awaiting B; active = both can send; declined = B said no; blocked = one blocked the other (no more messages); left = one left the thread." },
+    "blocked_by": { "type": "string", "description": "author_hash of whoever blocked (status blocked). The other side can no longer send or see it." },
+    "left_by": { "type": "string", "description": "author_hash of whoever left (status left). Hidden from their list." },
+    "reported": { "type": "boolean", "default": false, "description": "Flagged for human review via dm.report (visible to moderation; the conversation is not auto-deleted)." },
+    "last_message_at": { "type": "string", "format": "date-time", "description": "For ordering the conversations list; updated only on a DELIVERED message." },
+    "last_message_snippet": { "type": "string", "description": "Short preview of the last delivered message for the list row." },
+    "a_last_read": { "type": "string", "format": "date-time", "description": "When A last opened the thread (for the unread dot)." },
+    "b_last_read": { "type": "string", "format": "date-time", "description": "When B last opened the thread." }
+  },
+  "required": ["a_hash", "b_hash"],
+  "indexes": [
+    { "fields": ["a_hash"] },
+    { "fields": ["b_hash"] },
+    { "fields": ["status"] },
+    { "fields": ["last_message_at"] },
+    { "fields": ["created_date"] }
+  ],
+  // Fully private: reads AND writes admin-only. All access via the dm.* dispatcher (asServiceRole),
+  // which checks the caller is a participant. Verify on deploy: direct client Conversation.filter → 403.
+  "rls": {
+    "read": { "user_condition": { "role": "admin" } },
+    "create": { "user_condition": { "role": "admin" } },
+    "update": { "user_condition": { "role": "admin" } },
+    "delete": { "user_condition": { "role": "admin" } }
+  }
+}

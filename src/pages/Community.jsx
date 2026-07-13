@@ -72,6 +72,8 @@ import SealedLetterComposeSheet from "@/components/sealedLetters/SealedLetterCom
 import { withTimeout } from "@/utils/safeEntity";
 import { FwFloraHero } from "@/components/brand/PageTop";
 import PresenceBloom from "@/components/brand/PresenceBloom";
+import DMView from "@/components/community/DMView";
+import { dmApi } from "@/components/community/dm";
 import { Clipboard, ClipboardSlider } from "@/components/brand/ClipboardSlider";
 import { SummaryCard, FwCard } from "@/components/brand/Card";
 import { cwOf, Pollinator } from "@/components/brand/flora";
@@ -227,8 +229,31 @@ function PostCard({ post, user, onCrisis, onChanged, enhanced = false, myHash = 
   const [reactErr, setReactErr] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);   // tucked "…" menu (report/hide) — calm on the surface
   const [revealed, setRevealed] = useState(false);   // content-warning veil (Circles) — tap to read
+  const [askOpen, setAskOpen] = useState(false);     // "ask to chat privately" — request-to-chat composer
+  const [askCtx, setAskCtx] = useState("");
+  const [askBusy, setAskBusy] = useState(false);
+  const [askDone, setAskDone] = useState(false);
+  const [askErr, setAskErr] = useState("");
   const isOpen = post.comments_mode !== "reaction";
   const jessTried = useRef(false);
+  const canAskToChat = enhanced && post.author_hash && (!myHash || post.author_hash !== myHash);
+
+  // request-to-chat (no cold DMs): sends a PENDING request the recipient must accept. We do NOT
+  // navigate — the thread only becomes real once she says yes; we point her to Quietly → Messages.
+  const sendAsk = async () => {
+    if (askBusy) return;
+    setAskBusy(true); setAskErr("");
+    try {
+      const wh = await communityHash(user?.id);
+      const r = await dmApi.request(user, post.author_hash, botanicalAlias(wh), botanicalAlias(post.author_hash), askCtx.trim());
+      const d = r || {};
+      if (d.intercept) { onCrisis?.(); setAskBusy(false); return; }
+      if (d.held) { setAskErr(d.reason === "unkind" ? "Let's keep that note kind — try rephrasing." : "That note couldn't be sent."); setAskBusy(false); return; }
+      if (d.error && !d.ok) { setAskErr(d.message || "Couldn't send that request just now."); setAskBusy(false); return; }
+      setAskDone(true);
+    } catch { setAskErr("Couldn't send that request just now — try again in a moment."); }
+    finally { setAskBusy(false); }
+  };
 
   const loadComments = useCallback(async () => {
     let rows;
@@ -358,6 +383,11 @@ function PostCard({ post, user, onCrisis, onChanged, enhanced = false, myHash = 
             <>
               <div onClick={() => setMenuOpen(false)} style={{ position: "fixed", inset: 0, zIndex: 40 }} />
               <div role="menu" style={{ position: "absolute", top: "100%", right: 0, zIndex: 41, background: T.paperHi, border: `1px solid ${T.paperDeep}`, borderRadius: 10, boxShadow: "0 6px 20px rgba(58,44,26,0.16)", padding: 5, minWidth: 168 }}>
+                {canAskToChat && (
+                  <button onClick={() => { setMenuOpen(false); setAskOpen(true); setAskDone(false); setAskErr(""); }} style={{ display: "flex", alignItems: "center", gap: 9, width: "100%", background: "transparent", border: "none", cursor: "pointer", color: T.ink, fontFamily: UI, fontSize: 13, fontWeight: 600, padding: "9px 10px", borderRadius: 7, textAlign: "left" }}>
+                    <MessageCircle size={14} color={T.muted} /> Ask to chat privately
+                  </button>
+                )}
                 {enhanced && post.author_hash && (!myHash || post.author_hash !== myHash) && (
                   <button onClick={() => { setMenuOpen(false); hideAuthor(post.author_hash); onChanged?.(); }} style={{ display: "flex", alignItems: "center", gap: 9, width: "100%", background: "transparent", border: "none", cursor: "pointer", color: T.ink, fontFamily: UI, fontSize: 13, fontWeight: 600, padding: "9px 10px", borderRadius: 7, textAlign: "left" }}>
                     <EyeOff size={14} color={T.muted} /> Hide this voice
@@ -372,6 +402,43 @@ function PostCard({ post, user, onCrisis, onChanged, enhanced = false, myHash = 
         </div>
       </div>
       {reactErr && <div style={{ fontFamily: UI, fontSize: 11, color: T.crimson, marginTop: 5 }}>Couldn{"’"}t register that — try again.</div>}
+
+      {/* Ask to chat privately — request-to-chat composer (no cold DMs; she must accept) */}
+      {askOpen && (
+        <>
+          <div onClick={() => setAskOpen(false)} style={{ position: "fixed", inset: 0, zIndex: 60, background: "rgba(20,14,8,0.42)" }} />
+          <div role="dialog" aria-label="Ask to chat privately" style={{ position: "fixed", left: 0, right: 0, bottom: 0, zIndex: 61, background: T.paperHi, borderTop: `1px solid ${T.paperDeep}`, borderRadius: "18px 18px 0 0", boxShadow: "0 -8px 30px rgba(58,44,26,0.22)", padding: "18px 18px calc(20px + env(safe-area-inset-bottom))", maxWidth: 460, margin: "0 auto" }}>
+            {askDone ? (
+              <div style={{ textAlign: "center", padding: "6px 4px 2px" }}>
+                <div style={{ margin: "0 auto 12px", width: 46, height: 46, borderRadius: 999, background: `${T.sage || "#8FAF8F"}22`, display: "grid", placeItems: "center" }}><Check size={22} color={T.sage || "#8FAF8F"} /></div>
+                <div style={{ fontFamily: UI, fontSize: 16, fontWeight: 800, color: T.ink, marginBottom: 7 }}>Request sent</div>
+                <Hand size={15} color={T.muted}>She'll see a gentle request — no pressure, and she stays anonymous. If she says yes, your conversation opens in <b>Quietly → Messages</b>.</Hand>
+                <button onClick={() => setAskOpen(false)} style={{ width: "100%", marginTop: 14, background: "#7A1A12", color: "#fff", border: "none", borderRadius: 12, padding: "12px", fontFamily: UI, fontSize: 14, fontWeight: 800, cursor: "pointer" }}>Done</button>
+              </div>
+            ) : (
+              <>
+                <div style={{ display: "flex", alignItems: "center", gap: 9, marginBottom: 4 }}>
+                  <PresenceBloom hash={post.author_hash} size={30} />
+                  <div>
+                    <div style={{ fontFamily: UI, fontSize: 15, fontWeight: 800, color: T.ink }}>Ask {botanicalAlias(post.author_hash)} to chat</div>
+                    <div style={{ fontFamily: UI, fontSize: 11.5, color: T.muted }}>A private, one-to-one request — she can say yes or no.</div>
+                  </div>
+                </div>
+                <div style={{ display: "flex", gap: 8, alignItems: "flex-start", background: `${T.gold}10`, border: `1px solid ${T.paperDeep}`, borderRadius: 10, padding: "9px 11px", margin: "12px 0" }}>
+                  <ShieldCheck size={15} color={T.gold} style={{ flexShrink: 0, marginTop: 1 }} />
+                  <span style={{ fontFamily: UI, fontSize: 12, color: T.inkSoft, lineHeight: 1.42 }}>You'll both stay anonymous — no names, no location. Every message is checked before it arrives, and you can block or leave any time.</span>
+                </div>
+                <textarea value={askCtx} onChange={(e) => { setAskCtx(e.target.value); if (askErr) setAskErr(""); }} maxLength={200} placeholder="Add a line about why you're reaching out (optional)…" style={{ ...inputStyle, minHeight: 62, fontSize: 16 }} />
+                {askErr && <div style={{ fontFamily: UI, fontSize: 12, color: T.crimson, marginTop: 6 }}>{askErr}</div>}
+                <div style={{ display: "flex", gap: 9, marginTop: 12 }}>
+                  <button onClick={() => setAskOpen(false)} style={{ ...ghostBtn, flex: 1, justifyContent: "center", padding: "12px" }}>Cancel</button>
+                  <button disabled={askBusy} onClick={sendAsk} style={{ flex: 1.4, background: "#7A1A12", color: "#fff", border: "none", borderRadius: 999, padding: "12px", fontFamily: UI, fontSize: 14, fontWeight: 800, cursor: askBusy ? "default" : "pointer", opacity: askBusy ? 0.7 : 1 }}>{askBusy ? "Sending…" : "Send request"}</button>
+                </div>
+              </>
+            )}
+          </div>
+        </>
+      )}
 
       {/* comments */}
       <div style={{ marginTop: 12, paddingTop: 10, borderTop: `1px solid ${T.paperDeep}` }}>
@@ -2120,6 +2187,7 @@ const SHELVES = [
     sub: "Private & one-to-one", flower: "chamomile", action: { label: "Leave an echo", key: "echo" },
     close: "Whatever you're carrying, you don't have to hold it out loud.",
     tiles: [
+      { key: "dm", Icon: MessageCircle, name: "Messages", note: "your one-to-one chats · ask to chat from any post" },
       { key: "echo", Icon: Waves, name: "Echo Wall", note: "anonymous lines, fade in 48h" },
       { key: "witness", Icon: Eye, name: "Witness", note: "one sister holds your entry (in Journal)" },
       { key: "sealed", Icon: Mail, name: "Sealed letter", note: "a slow letter, opened later" },
@@ -2638,6 +2706,8 @@ export function CommunityInner({ initialView = null, embedded = false, homeVaria
               <button onClick={goBack} style={{ ...ghostBtn, marginBottom: 14, padding: "7px 11px" }}><ChevronLeft size={14} /> Community</button>
               <EchoWall user={user} profile={profile} lifeStage={lifeStage} />
             </div>
+          : view === "dm"
+          ? <DMView user={user} onBack={goBack} onCrisis={() => setCrisis(true)} />
           : <RoomView key={tick} roomKey={view} posts={posts} loading={loading} error={loadErr} user={user} onNav={setView} onHome={goBack} onCrisis={() => setCrisis(true)} onReload={reload} onPostCreated={onPostCreated} seed={roomSeed} initialCircle={initialCircle} profile={profile}
               onOpenHub={() => setHubOpen(true)} enhanced={homeVariant === "redesign"} lifeStage={lifeStage}
               onOpenCorner={(key, title) => { setInitialClub(key); setClubTitle(title || ""); setView("clubs"); }} />}

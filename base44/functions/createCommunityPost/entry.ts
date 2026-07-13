@@ -59,6 +59,47 @@ function withTimeout(p: Promise<any>, ms: number, label: string): Promise<any> {
   });
 }
 
+// ── DM moderation (1:1 / Community, 2026-07-13) — the OpenAI moderation layer used BY dm.send,
+// INLINE and BEFORE a message is ever delivered (unlike screenContent which runs post-publish for
+// rooms). Same omni-moderation model + the health allowlist so legitimate reproductive-health talk
+// between two women isn't held. If the key is missing / API errors, available:false and dm.send
+// falls back to the local crisis+keyword floor (which has ALREADY run) — it never delivers on the
+// strength of a failed AI call, it simply relies on the floor that already passed.
+const DM_REMOVE_CATEGORIES = [
+  'harassment', 'harassment/threatening', 'hate', 'hate/threatening',
+  'violence', 'violence/graphic', 'sexual/minors', 'self-harm', 'self-harm/intent', 'self-harm/instructions',
+];
+const DM_HEALTH_VOCAB = [
+  'period', 'menstru', 'menopaus', 'perimenopaus', 'ovula', 'cycle', 'cramp', 'pms', 'pmdd',
+  'pregnan', 'miscarriage', 'miscarry', 'stillbirth', 'postpartum', 'breastfeed', 'nipple',
+  'cervix', 'cervical', 'vagina', 'vulva', 'discharge', 'uterus', 'endometri', 'fibroid',
+  'pcos', 'fertility', 'ttc', 'ivf', 'hormone', 'oestrogen', 'estrogen', 'progesterone',
+  'libido', 'sex drive', 'incontinence', 'pelvic', 'smear', 'mammogram', 'hrt', 'coil', 'iud',
+  'abortion', 'termination', 'bleeding', 'spotting', 'hot flush', 'night sweat', 'gp', 'nhs',
+];
+function dmIsHealthContext(text: string): boolean {
+  const t = (text || '').toLowerCase();
+  return DM_HEALTH_VOCAB.some((w) => t.includes(w));
+}
+async function dmOpenaiModerate(text: string): Promise<{ available: boolean; flagged: boolean; categories: Record<string, boolean> }> {
+  const key = Deno.env.get('OPENAI_API_KEY');
+  if (!key) return { available: false, flagged: false, categories: {} };
+  try {
+    const ctrl = new AbortController();
+    const timer = setTimeout(() => ctrl.abort(), 6000);
+    const r = await fetch('https://api.openai.com/v1/moderations', {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${key}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ model: 'omni-moderation-latest', input: String(text || '').slice(0, 4000) }),
+      signal: ctrl.signal,
+    }).finally(() => clearTimeout(timer));
+    if (!r.ok) return { available: false, flagged: false, categories: {} };
+    const j = await r.json();
+    const res = j?.results?.[0] || {};
+    return { available: true, flagged: !!res.flagged, categories: res.categories || {} };
+  } catch { return { available: false, flagged: false, categories: {} }; }
+}
+
 Deno.serve(async (req) => {
   const base44 = createClientFromRequest(req);
   const me = await base44.auth.me().catch(() => null);
@@ -70,6 +111,183 @@ Deno.serve(async (req) => {
   const action = String(p.action || 'post');
   const { user_id, author_hash } = p;
   if (user_id && me.role !== 'admin' && me.id !== user_id) return Response.json({ error: 'Forbidden' }, { status: 403 });
+
+  // ════════════════════════════════════════════════════════════════════════════════════════════
+  // 1:1 / DM (safety-critical, 2026-07-13). Every dm.* op is asServiceRole + verifies the caller is
+  // a participant, so a client can never read/write someone else's thread. THE hard rails live here:
+  //   • request-to-chat only (dm.request → pending; dm.send refuses unless status 'active') — no cold DMs
+  //   • EVERY message screened BEFORE delivery (dm.send: crisis floor → banned floor → OpenAI) — a
+  //     risky message is stored status 'held' and is NEVER returned to the recipient (dm.messages
+  //     reads status:'delivered' only). Crisis → sender routed to support, never delivered to a peer.
+  //   • block / report / leave everywhere (dm.block/report/leave)
+  //   • rate-limits (per-day requests, per-minute sends) — anti-spam / anti-cold-DM
+  //   • text-only (body only; no media field exists) · NO location field anywhere (hard rail)
+  // 18+ is enforced client-side by the shared AgeGate before the DM surface mounts.
+  // ════════════════════════════════════════════════════════════════════════════════════════════
+  if (action.startsWith('dm.')) {
+    const ah = String(author_hash || '');
+    if (!ah) return Response.json({ error: 'author_hash required' }, { status: 400 });
+    const sbd = base44.asServiceRole;
+    const Conv = sbd.entities.Conversation;
+    const Msg = sbd.entities.Message;
+    const nowISO = new Date().toISOString();
+    const isParticipant = (c: any) => !!c && (c.a_hash === ah || c.b_hash === ah);
+    const pubConv = (c: any) => {
+      const other = c.a_hash === ah ? { hash: c.b_hash, alias: c.b_alias } : { hash: c.a_hash, alias: c.a_alias };
+      const myRead = c.a_hash === ah ? c.a_last_read : c.b_last_read;
+      const unread = !!c.last_message_at && (!myRead || myRead < c.last_message_at)
+        && c.last_message_snippet !== undefined; // only meaningful once a message exists
+      return {
+        id: c.id, status: c.status, context: c.context || '',
+        other_alias: other.alias || '', other_hash: other.hash,
+        last_message_snippet: c.last_message_snippet || '', last_message_at: c.last_message_at || '',
+        is_initiator: c.initiator_hash === ah,
+        i_am_recipient: c.b_hash === ah && c.initiator_hash !== ah,
+        i_blocked: c.status === 'blocked' && c.blocked_by === ah,
+        they_blocked: c.status === 'blocked' && c.blocked_by && c.blocked_by !== ah,
+        i_left: c.status === 'left' && c.left_by === ah,
+        unread: !!unread,
+      };
+    };
+    const pubMsg = (m: any) => ({ id: m.id, sender_hash: m.sender_hash, body: m.body, created_date: m.created_date });
+
+    // — dm.request: request-to-chat (no cold DMs). Creates a PENDING conversation; B must accept. —
+    if (action === 'dm.request') {
+      const target_hash = String(p.target_hash || '');
+      const context = String(p.context || '').slice(0, 200).trim();
+      const a_alias = String(p.a_alias || '').slice(0, 48);
+      const b_alias = String(p.b_alias || '').slice(0, 48);
+      if (!target_hash || target_hash === ah) return Response.json({ error: 'bad target' }, { status: 400 });
+      // the context line is screened too (it's the first thing B sees)
+      if (context) {
+        const ls = localScreen(context);
+        if (ls.crisis) return Response.json({ ok: false, intercept: true }, { status: 200 });
+        if (ls.remove) return Response.json({ ok: false, held: true, reason: 'unkind' }, { status: 200 });
+      }
+      const existing = await withTimeout(Conv.filter({}, '-created_date', 300), 4000, 'dm-dedup').catch(() => []);
+      // already an open thread between these two? → return it (idempotent, no duplicate requests)
+      const found = (existing || []).find((c: any) =>
+        ((c.a_hash === ah && c.b_hash === target_hash) || (c.a_hash === target_hash && c.b_hash === ah))
+        && (c.status === 'pending' || c.status === 'active'));
+      if (found) return Response.json({ ok: true, conversation: pubConv(found), existed: true }, { status: 200 });
+      // rate limit: max 10 requests initiated per day
+      const mineToday = (existing || []).filter((c: any) => c.initiator_hash === ah && (c.created_date || '') >= startOfTodayISO());
+      if (mineToday.length >= 10) return Response.json({ error: 'rate', message: 'You have sent a lot of chat requests today — take a breath and try again tomorrow.' }, { status: 200 });
+      const conv = await withTimeout(Conv.create({
+        a_hash: ah, b_hash: target_hash, a_alias, b_alias,
+        initiator_hash: ah, context, status: 'pending',
+      }), 6000, 'dm-create').catch((e: any) => { console.error('dm.request failed:', e?.message || e); return null; });
+      if (!conv) return Response.json({ error: 'request failed' }, { status: 500 });
+      return Response.json({ ok: true, conversation: pubConv(conv) }, { status: 200 });
+    }
+
+    // — dm.respond: B accepts or declines the request. Only the recipient can respond. —
+    if (action === 'dm.respond') {
+      const conversation_id = String(p.conversation_id || '');
+      const accept = p.accept === true;
+      const c = await withTimeout(Conv.get(conversation_id), 3000, 'dm-get').catch(() => null);
+      if (!c || c.b_hash !== ah || c.status !== 'pending') return Response.json({ error: 'not found' }, { status: 404 });
+      await withTimeout(Conv.update(conversation_id, { status: accept ? 'active' : 'declined' }), 6000, 'dm-respond').catch(() => {});
+      return Response.json({ ok: true, status: accept ? 'active' : 'declined' }, { status: 200 });
+    }
+
+    // — dm.send: THE moderation-before-delivery path. A message is created 'delivered' ONLY after it
+    //   passes every screen; risky content is stored 'held' and never surfaced to the recipient. —
+    if (action === 'dm.send') {
+      const conversation_id = String(p.conversation_id || '');
+      const body = String(p.body || '').trim();
+      if (!body) return Response.json({ error: 'empty' }, { status: 400 });
+      if (body.length > 2000) return Response.json({ error: 'too long', message: 'That message is a little long — try trimming it.' }, { status: 200 });
+      const c = await withTimeout(Conv.get(conversation_id), 3000, 'dm-get').catch(() => null);
+      if (!c || !isParticipant(c)) return Response.json({ error: 'not found' }, { status: 404 });
+      if (c.status !== 'active') {
+        const why = c.status === 'pending' ? 'This chat is still waiting to be accepted.'
+          : c.status === 'blocked' ? 'This conversation is closed.'
+          : c.status === 'left' ? 'This conversation has ended.'
+          : 'This chat isn\'t open.';
+        return Response.json({ ok: false, held: true, reason: 'closed', message: why }, { status: 200 });
+      }
+      // rate limit: max 15 sends / 60s by me in this thread
+      const recent = await withTimeout(Msg.filter({ conversation_id }, '-created_date', 30), 3000, 'dm-rate').catch(() => []);
+      const mineRecent = (recent || []).filter((m: any) => m.sender_hash === ah && (Date.now() - new Date(m.created_date || 0).getTime()) < 60000);
+      if (mineRecent.length >= 15) return Response.json({ ok: false, held: true, reason: 'rate', message: 'Slow down a moment — you\'re sending very fast.' }, { status: 200 });
+
+      // ── SCREEN BEFORE DELIVERY ──
+      // 1) crisis → route the SENDER to support (never delivered to a peer); store held for care.
+      if (isCrisis(body)) {
+        await Msg.create({ conversation_id, sender_hash: ah, body, status: 'held', held_reason: 'crisis' }).catch(() => {});
+        return Response.json({ ok: false, intercept: true, held: true, reason: 'crisis' }, { status: 200 });
+      }
+      // 2) local banned-word floor → held, gentle nudge, not delivered.
+      const ls = localScreen(body);
+      if (ls.remove) {
+        await Msg.create({ conversation_id, sender_hash: ah, body, status: 'held', held_reason: 'unkind' }).catch(() => {});
+        return Response.json({ ok: false, held: true, reason: 'unkind', message: 'This message wasn\'t sent — let\'s keep it kind here.' }, { status: 200 });
+      }
+      // 3) OpenAI moderation → held if flagged (sexual-only in clear health context is allowed).
+      const ai = await dmOpenaiModerate(body);
+      if (ai.available && ai.flagged) {
+        const hit = DM_REMOVE_CATEGORIES.filter((cat) => ai.categories[cat]);
+        const onlySexual = hit.length > 0 && hit.every((cat) => cat.startsWith('sexual')) && !hit.includes('sexual/minors');
+        const shouldHold = hit.length > 0 && !(onlySexual && dmIsHealthContext(body));
+        if (shouldHold) {
+          await Msg.create({ conversation_id, sender_hash: ah, body, status: 'held', held_reason: 'flagged' }).catch(() => {});
+          return Response.json({ ok: false, held: true, reason: 'flagged', message: 'This message wasn\'t sent — it may breach our community care rules.' }, { status: 200 });
+        }
+      }
+      // ── CLEAN → DELIVER ──
+      const msg = await withTimeout(Msg.create({ conversation_id, sender_hash: ah, body, status: 'delivered' }), 6000, 'dm-msg').catch((e: any) => { console.error('dm.send create failed:', e?.message || e); return null; });
+      if (!msg) return Response.json({ error: 'send failed' }, { status: 500 });
+      const patch: any = { last_message_at: nowISO, last_message_snippet: body.slice(0, 80) };
+      if (c.a_hash === ah) patch.a_last_read = nowISO; else patch.b_last_read = nowISO;
+      await Conv.update(conversation_id, patch).catch(() => {});
+      return Response.json({ ok: true, delivered: true, message: pubMsg(msg) }, { status: 200 });
+    }
+
+    // — dm.messages: delivered messages of MY conversation (participant-checked); marks me read. —
+    if (action === 'dm.messages') {
+      const conversation_id = String(p.conversation_id || '');
+      const c = await withTimeout(Conv.get(conversation_id), 3000, 'dm-get').catch(() => null);
+      if (!c || !isParticipant(c)) return Response.json({ error: 'not found' }, { status: 404 });
+      const rows = await withTimeout(Msg.filter({ conversation_id, status: 'delivered' }, 'created_date', 300), 4000, 'dm-msgs').catch(() => []);
+      const patch: any = c.a_hash === ah ? { a_last_read: nowISO } : { b_last_read: nowISO };
+      await Conv.update(conversation_id, patch).catch(() => {});
+      return Response.json({ ok: true, conversation: pubConv(c), messages: (rows || []).map(pubMsg) }, { status: 200 });
+    }
+
+    // — dm.conversations: my list (active + pending). Excludes threads I left / that were declined. —
+    if (action === 'dm.conversations') {
+      const all = await withTimeout(Conv.filter({}, '-last_message_at', 400), 5000, 'dm-list').catch(() => []);
+      const mine = (all || []).filter((c: any) =>
+        isParticipant(c) && c.status !== 'declined'
+        && !(c.status === 'left' && c.left_by === ah)
+        && !(c.status === 'blocked' && c.blocked_by !== ah && c.blocked_by)); // if THEY blocked me, hide it
+      return Response.json({ ok: true, conversations: mine.map(pubConv) }, { status: 200 });
+    }
+
+    // — dm.block / dm.leave: end the thread from my side. Either participant, any active/pending state. —
+    if (action === 'dm.block' || action === 'dm.leave') {
+      const conversation_id = String(p.conversation_id || '');
+      const c = await withTimeout(Conv.get(conversation_id), 3000, 'dm-get').catch(() => null);
+      if (!c || !isParticipant(c)) return Response.json({ error: 'not found' }, { status: 404 });
+      const patch = action === 'dm.block'
+        ? { status: 'blocked', blocked_by: ah }
+        : { status: 'left', left_by: ah };
+      await withTimeout(Conv.update(conversation_id, patch), 6000, 'dm-end').catch(() => {});
+      return Response.json({ ok: true }, { status: 200 });
+    }
+
+    // — dm.report: flag the thread (and optionally a message) for human review; not auto-deleted. —
+    if (action === 'dm.report') {
+      const conversation_id = String(p.conversation_id || '');
+      const c = await withTimeout(Conv.get(conversation_id), 3000, 'dm-get').catch(() => null);
+      if (!c || !isParticipant(c)) return Response.json({ error: 'not found' }, { status: 404 });
+      await withTimeout(Conv.update(conversation_id, { reported: true }), 6000, 'dm-report').catch(() => {});
+      return Response.json({ ok: true }, { status: 200 });
+    }
+
+    return Response.json({ error: 'unknown dm action' }, { status: 400 });
+  }
 
   // ── reading activity (Books & Book Clubs) — handled before the author_hash guard since the
   // aggregate reads don't need it. asServiceRole; only author_hash + book/chapter ever stored. ──

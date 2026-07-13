@@ -1,0 +1,31 @@
+{
+  // Community 1:1 / DM message (safety-critical, 2026-07-13). THE core safety invariant lives here:
+  // a message is only ever created with status "delivered" AFTER it passes moderation (instant local
+  // crisis/keyword floor + OpenAI moderation) inside dm.send. Risky content is stored with status
+  // "held" (audit trail for review) and is NEVER shown to the recipient — reads filter to
+  // status:"delivered" only. There is no media/attachment field: text-only at launch (hard rail).
+  //
+  // FULLY LOCKED (read + write admin-only). Clients only ever see delivered messages of their OWN
+  // conversations, returned through the dm.messages dispatcher action after a participant check.
+  "name": "Message",
+  "type": "object",
+  "properties": {
+    "conversation_id": { "type": "string", "description": "The Conversation this belongs to." },
+    "sender_hash": { "type": "string", "description": "Device-derived anon author_hash of the sender. Never a user id." },
+    "body": { "type": "string", "description": "Text only. Screened BEFORE delivery — a delivered row is already clean." },
+    "status": { "type": "string", "enum": ["delivered", "held", "blocked"], "default": "delivered", "description": "delivered = passed moderation, shown to recipient; held = failed moderation (crisis/unkind/flagged), NEVER delivered, kept for review; blocked = attempted into a blocked/left thread." },
+    "held_reason": { "type": "string", "description": "Why a held message was withheld: crisis | unkind | flagged. Sender is shown a gentle explanation (and crisis support if crisis); recipient never sees it." }
+  },
+  "required": ["conversation_id", "sender_hash"],
+  "indexes": [
+    { "fields": ["conversation_id"] },
+    { "fields": ["status"] },
+    { "fields": ["created_date"] }
+  ],
+  "rls": {
+    "read": { "user_condition": { "role": "admin" } },
+    "create": { "user_condition": { "role": "admin" } },
+    "update": { "user_condition": { "role": "admin" } },
+    "delete": { "user_condition": { "role": "admin" } }
+  }
+}
