@@ -5,7 +5,7 @@ import {
   isSameMonth, isSameDay, parseISO, differenceInDays, addMonths, subMonths
 } from "date-fns";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
+import SwipeMonths from "@/components/calendar/SwipeMonths";
 import { T, SERIF, UI, SCRIPT } from "@/components/journal/Editorial";
 
 const OX = "#7A1A12"; // oxblood — the app-wide heading colour
@@ -116,9 +116,9 @@ function MonthView({ month, today, data, profile, onDayPress }) {
 export default function MonthlyCalendarCard({ userId, profile, onDayPress, refreshKey }) {
   const today = new Date();
   const [currentOffset, setCurrentOffset] = useState(0); // 0 = current month
-  const [direction, setDirection] = useState(1); // 1 = forward, -1 = back
   const [data, setData] = useState({ checkins: {}, symptoms: {}, habitLogs: {}, tasks: {}, cycleEvents: {}, meds: {} });
   const [loaded, setLoaded] = useState(false);
+  const ctlRef = useRef(null); // SwipeMonths controls (arrows trigger the same slide)
 
   const currentMonth = addMonths(startOfMonth(today), currentOffset);
   const prevMonth = addMonths(currentMonth, -1);
@@ -149,9 +149,10 @@ export default function MonthlyCalendarCard({ userId, profile, onDayPress, refre
     })();
   }, [userId, refreshKey]);
 
-  const goNext = () => { setDirection(1); setCurrentOffset(o => o + 1); };
-  const goPrev = () => { setDirection(-1); setCurrentOffset(o => o - 1); };
-  const goToday = () => { setDirection(currentOffset < 0 ? 1 : -1); setCurrentOffset(0); };
+  // arrows + preview strip trigger the SAME smooth carousel slide
+  const goNext = () => ctlRef.current?.next?.();
+  const goPrev = () => ctlRef.current?.prev?.();
+  const goToday = () => setCurrentOffset(0);
 
   if (!loaded) return (
     <div style={{ textAlign: "center", padding: "48px 0" }}>
@@ -160,11 +161,6 @@ export default function MonthlyCalendarCard({ userId, profile, onDayPress, refre
     </div>
   );
 
-  const variants = {
-    enter: (dir) => ({ x: dir > 0 ? "100%" : "-100%", opacity: 0 }),
-    center: { x: 0, opacity: 1 },
-    exit: (dir) => ({ x: dir > 0 ? "-100%" : "100%", opacity: 0 }),
-  };
 
   return (
     <div>
@@ -199,32 +195,16 @@ export default function MonthlyCalendarCard({ userId, profile, onDayPress, refre
         <div style={{ position: "absolute", top: 10, left: 10, right: -10, bottom: -10, borderRadius: 28, backgroundColor: "rgba(42,32,53,0.12)", zIndex: 0 }} />
         <div style={{ position: "absolute", top: 5, left: 5, right: -5, bottom: -5, borderRadius: 28, backgroundColor: "rgba(42,32,53,0.18)", zIndex: 1 }} />
 
-        {/* Animated front card */}
-        <div style={{ position: "relative", zIndex: 2, overflow: "hidden", borderRadius: 28 }}>
-          <AnimatePresence custom={direction} mode="wait">
-            <motion.div
-              key={currentOffset}
-              custom={direction}
-              variants={variants}
-              initial="enter"
-              animate="center"
-              exit="exit"
-              transition={{ type: "spring", stiffness: 300, damping: 30 }}
-              drag="x"
-              dragConstraints={{ left: 0, right: 0 }}
-              dragElastic={0.16}
-              onDragEnd={(e, info) => { if (info.offset.x < -55) goNext(); else if (info.offset.x > 55) goPrev(); }}
-              style={{ touchAction: "pan-y", cursor: "grab" }}
-            >
-              <MonthView
-                month={currentMonth}
-                today={today}
-                data={data}
-                profile={profile}
-                onDayPress={onDayPress}
-              />
-            </motion.div>
-          </AnimatePresence>
+        {/* Smooth month carousel — the whole month card slides (current out, next in) */}
+        <div style={{ position: "relative", zIndex: 2, borderRadius: 28 }}>
+          <SwipeMonths
+            month={currentMonth}
+            controlsRef={ctlRef}
+            onChange={(m) => setCurrentOffset((o) => (m.getTime() > currentMonth.getTime() ? o + 1 : o - 1))}
+            render={(m) => (
+              <MonthView month={m} today={today} data={data} profile={profile} onDayPress={onDayPress} />
+            )}
+          />
         </div>
       </div>
 

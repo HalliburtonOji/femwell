@@ -31,7 +31,7 @@ import {
 import { base44 } from "@/api/base44Client";
 import { T, SERIF, UI, SCRIPT, PAPER_BG, Heart, useEditorialFonts } from "@/components/journal/Editorial";
 import { FlowerGlyph, CornerSprig } from "@/components/brand/flora";
-import { motion, AnimatePresence } from "framer-motion";
+import SwipeMonths from "./SwipeMonths";
 import { commitEntries as commitReal, writeMealLog, writeHydration, writePeriod, loadProfile, loadMonthEntries } from "./loggerWrites";
 
 // real FemWell card chrome — the FwCard recipe (Card.jsx): warm 165deg cream→accent
@@ -143,18 +143,63 @@ function cyclePhase(dateStr) {
   return "luteal";
 }
 
-// ── the universal calendar — real FemWell card chrome (cream/flora/oxblood) ──────
-function FwCalendar({ month, onPrev, onNext, onSelectDate, entries }) {
+// one month's 42-cell grid (the carousel slides three of these). Pure/presentational.
+function MonthGrid({ month, entries, onSelectDate }) {
   const gStart = startOfWeek(startOfMonth(month), { weekStartsOn: 1 });
   const gEnd = endOfWeek(endOfMonth(month), { weekStartsOn: 1 });
   const days = []; for (let d = gStart; d <= gEnd; d = addDays(d, 1)) days.push(new Date(d));
   return (
+    <div style={{ display: "grid", gridTemplateColumns: "repeat(7,1fr)", gap: 3 }}>
+      {days.map((day, i) => {
+        const ds = iso(day);
+        const inMonth = isSameMonth(day, month);
+        const isTod = ds === TODAY_STR;
+        const isFuture = ds > TODAY_STR;
+        const ph = cyclePhase(ds);
+        const es = entries[ds] || [];
+        let bg = "transparent";
+        if (ph === "menstrual") bg = "rgba(188,46,39,0.13)";
+        else if (ph === "ovulatory") bg = "rgba(168,137,63,0.15)";
+        else if (ph === "follicular") bg = "rgba(143,175,143,0.16)";
+        return (
+          <button
+            key={i}
+            onClick={() => inMonth && onSelectDate(ds, isFuture)}
+            disabled={!inMonth}
+            style={{
+              aspectRatio: "1 / 1", minHeight: 40, borderRadius: 11, cursor: inMonth ? "pointer" : "default",
+              border: isTod ? `1.8px solid ${OX}` : "1px solid transparent",
+              background: isTod ? "rgba(122,26,18,0.06)" : bg, position: "relative", display: "flex", flexDirection: "column",
+              alignItems: "center", justifyContent: "center", padding: 0,
+              opacity: inMonth ? (isFuture ? 0.6 : 1) : 0.14,
+              boxShadow: isTod ? "0 1px 5px rgba(122,26,18,0.14)" : "none",
+            }}
+          >
+            <span style={{ fontFamily: SERIF, fontSize: 15, fontWeight: isTod ? 700 : 500, color: isTod ? OX : T.ink, lineHeight: 1 }}>{format(day, "d")}</span>
+            {es.length > 0 && (
+              <div style={{ display: "flex", gap: 2.5, marginTop: 3 }}>
+                {es.slice(0, 3).map((e, j) => (
+                  <span key={j} style={{ width: 4.5, height: 4.5, borderRadius: "50%", background: DOT[e.type] || T.muted, border: e.plan ? `1px solid ${DOT[e.type] || T.muted}` : "none", backgroundColor: e.plan ? T.paperHi : (DOT[e.type] || T.muted) }} />
+                ))}
+              </div>
+            )}
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
+// ── the universal calendar — real FemWell card chrome + a smooth month carousel ──
+function FwCalendar({ month, onMonthChange, onSelectDate, entries }) {
+  const ctl = useRef(null);
+  return (
     <div style={{ ...fwChrome(OX), padding: "16px 15px 14px" }}>
       <CornerVines />
       <div style={{ position: "relative", zIndex: 1 }}>
-        {/* header — Ephesis month title in oxblood + a flora glyph, chevrons flanking */}
+        {/* header — Ephesis month title in oxblood + a flora glyph; arrows fire the same slide */}
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
-          <button onClick={onPrev} style={navBtn} aria-label="Previous month"><ChevronLeft size={16} color={OX} /></button>
+          <button onClick={() => ctl.current?.prev?.()} style={navBtn} aria-label="Previous month"><ChevronLeft size={16} color={OX} /></button>
           <div style={{ display: "flex", flexDirection: "column", alignItems: "center", lineHeight: 1 }}>
             <div style={{ display: "flex", alignItems: "center", gap: 7 }}>
               <FlowerGlyph variant="camellia" size={22} color={T.gold} idx="cal-flower" />
@@ -162,7 +207,7 @@ function FwCalendar({ month, onPrev, onNext, onSelectDate, entries }) {
             </div>
             <div style={{ fontFamily: UI, fontSize: 9.5, letterSpacing: 1.6, textTransform: "uppercase", color: T.gold, marginTop: 4 }}>{format(month, "yyyy")} · your month</div>
           </div>
-          <button onClick={onNext} style={navBtn} aria-label="Next month"><ChevronRight size={16} color={OX} /></button>
+          <button onClick={() => ctl.current?.next?.()} style={navBtn} aria-label="Next month"><ChevronRight size={16} color={OX} /></button>
         </div>
 
         <div style={{ display: "grid", gridTemplateColumns: "repeat(7,1fr)", marginBottom: 5 }}>
@@ -171,55 +216,8 @@ function FwCalendar({ month, onPrev, onNext, onSelectDate, entries }) {
           ))}
         </div>
 
-        <div style={{ overflow: "hidden", position: "relative" }}>
-        <AnimatePresence initial={false} mode="popLayout">
-        <motion.div
-          key={format(month, "yyyy-MM")}
-          drag="x" dragConstraints={{ left: 0, right: 0 }} dragElastic={0.16}
-          onDragEnd={(e, info) => { if (info.offset.x < -55) onNext(); else if (info.offset.x > 55) onPrev(); }}
-          initial={{ opacity: 0, x: 26 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -26 }}
-          transition={{ duration: 0.22, ease: [0.4, 0, 0.2, 1] }}
-          style={{ display: "grid", gridTemplateColumns: "repeat(7,1fr)", gap: 3, cursor: "grab", touchAction: "pan-y" }}
-        >
-          {days.map((day, i) => {
-            const ds = iso(day);
-            const inMonth = isSameMonth(day, month);
-            const isTod = ds === TODAY_STR;
-            const isFuture = ds > TODAY_STR;
-            const ph = cyclePhase(ds);
-            const es = entries[ds] || [];
-            let bg = "transparent";
-            if (ph === "menstrual") bg = "rgba(188,46,39,0.13)";
-            else if (ph === "ovulatory") bg = "rgba(168,137,63,0.15)";
-            else if (ph === "follicular") bg = "rgba(143,175,143,0.16)";
-            return (
-              <button
-                key={i}
-                onClick={() => inMonth && onSelectDate(ds, isFuture)}
-                disabled={!inMonth}
-                style={{
-                  aspectRatio: "1 / 1", minHeight: 40, borderRadius: 11, cursor: inMonth ? "pointer" : "default",
-                  border: isTod ? `1.8px solid ${OX}` : "1px solid transparent",
-                  background: isTod ? "rgba(122,26,18,0.06)" : bg, position: "relative", display: "flex", flexDirection: "column",
-                  alignItems: "center", justifyContent: "center", padding: 0,
-                  opacity: inMonth ? (isFuture ? 0.6 : 1) : 0.14,
-                  boxShadow: isTod ? "0 1px 5px rgba(122,26,18,0.14)" : "none",
-                }}
-              >
-                <span style={{ fontFamily: SERIF, fontSize: 15, fontWeight: isTod ? 700 : 500, color: isTod ? OX : T.ink, lineHeight: 1 }}>{format(day, "d")}</span>
-                {es.length > 0 && (
-                  <div style={{ display: "flex", gap: 2.5, marginTop: 3 }}>
-                    {es.slice(0, 3).map((e, j) => (
-                      <span key={j} style={{ width: 4.5, height: 4.5, borderRadius: "50%", background: DOT[e.type] || T.muted, border: e.plan ? `1px solid ${DOT[e.type] || T.muted}` : "none", backgroundColor: e.plan ? T.paperHi : (DOT[e.type] || T.muted) }} />
-                    ))}
-                  </div>
-                )}
-              </button>
-            );
-          })}
-        </motion.div>
-        </AnimatePresence>
-        </div>
+        <SwipeMonths month={month} onChange={onMonthChange} controlsRef={ctl}
+          render={(m) => <MonthGrid month={m} entries={entries} onSelectDate={onSelectDate} />} />
 
         <div style={{ display: "flex", gap: 12, justifyContent: "center", flexWrap: "wrap", marginTop: 13, paddingTop: 11, borderTop: `1px solid ${T.gold}44` }}>
           {[["Period", T.crimson], ["Follicular", T.sage], ["Ovulatory", T.gold], ["Meal", T.gold], ["Plan (ring)", "#A6862B"]].map(([l, c]) => (
@@ -297,10 +295,8 @@ export default function CalendarOverlay() {
           <Sheet>
             <SheetHead title="Calendar" onClose={() => setCalOpen(false)} />
             <FwCalendar
-              key={`cal-${phaseTick}`}
               month={month}
-              onPrev={() => setMonth((m) => addMonths(m, -1))}
-              onNext={() => setMonth((m) => addMonths(m, 1))}
+              onMonthChange={(m) => setMonth(startOfMonth(m))}
               onSelectDate={openDay}
               entries={entries}
             />
