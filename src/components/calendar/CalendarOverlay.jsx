@@ -190,16 +190,16 @@ function MonthGrid({ month, entries, onSelectDate }) {
   );
 }
 
-// ── the universal calendar — real FemWell card chrome + a smooth month carousel ──
-function FwCalendar({ month, onMonthChange, onSelectDate, entries }) {
-  const ctl = useRef(null);
+// ── ONE month's WHOLE calendar card (chrome + header + grid + legend). This is the unit
+// that slides in the carousel — the entire card moves, not the inner grid. ──
+function FwCalendarCard({ month, entries, onSelectDate, onPrev, onNext }) {
   return (
-    <div style={{ ...fwChrome(OX), padding: "16px 15px 14px" }}>
+    <div style={{ ...fwChrome(OX), padding: "16px 15px 14px", width: "100%", boxSizing: "border-box" }}>
       <CornerVines />
       <div style={{ position: "relative", zIndex: 1 }}>
         {/* header — Ephesis month title in oxblood + a flora glyph; arrows fire the same slide */}
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
-          <button onClick={() => ctl.current?.prev?.()} style={navBtn} aria-label="Previous month"><ChevronLeft size={16} color={OX} /></button>
+          <button onClick={onPrev} style={navBtn} aria-label="Previous month"><ChevronLeft size={16} color={OX} /></button>
           <div style={{ display: "flex", flexDirection: "column", alignItems: "center", lineHeight: 1 }}>
             <div style={{ display: "flex", alignItems: "center", gap: 7 }}>
               <FlowerGlyph variant="camellia" size={22} color={T.gold} idx="cal-flower" />
@@ -207,7 +207,7 @@ function FwCalendar({ month, onMonthChange, onSelectDate, entries }) {
             </div>
             <div style={{ fontFamily: UI, fontSize: 9.5, letterSpacing: 1.6, textTransform: "uppercase", color: T.gold, marginTop: 4 }}>{format(month, "yyyy")} · your month</div>
           </div>
-          <button onClick={() => ctl.current?.next?.()} style={navBtn} aria-label="Next month"><ChevronRight size={16} color={OX} /></button>
+          <button onClick={onNext} style={navBtn} aria-label="Next month"><ChevronRight size={16} color={OX} /></button>
         </div>
 
         <div style={{ display: "grid", gridTemplateColumns: "repeat(7,1fr)", marginBottom: 5 }}>
@@ -216,8 +216,7 @@ function FwCalendar({ month, onMonthChange, onSelectDate, entries }) {
           ))}
         </div>
 
-        <SwipeMonths month={month} onChange={onMonthChange} controlsRef={ctl}
-          render={(m) => <MonthGrid month={m} entries={entries} onSelectDate={onSelectDate} />} />
+        <MonthGrid month={month} entries={entries} onSelectDate={onSelectDate} />
 
         <div style={{ display: "flex", gap: 12, justifyContent: "center", flexWrap: "wrap", marginTop: 13, paddingTop: 11, borderTop: `1px solid ${T.gold}44` }}>
           {[["Period", T.crimson], ["Follicular", T.sage], ["Ovulatory", T.gold], ["Meal", T.gold], ["Plan (ring)", "#A6862B"]].map(([l, c]) => (
@@ -228,6 +227,27 @@ function FwCalendar({ month, onMonthChange, onSelectDate, entries }) {
         </div>
       </div>
     </div>
+  );
+}
+
+// ── the universal calendar — the WHOLE card slides (mirrors ClipboardSlider/CardDeck) ──
+function FwCalendar({ month, onMonthChange, onSelectDate, entries }) {
+  const ctl = useRef(null);
+  return (
+    <SwipeMonths
+      month={month}
+      onChange={onMonthChange}
+      controlsRef={ctl}
+      render={(m) => (
+        <FwCalendarCard
+          month={m}
+          entries={entries}
+          onSelectDate={onSelectDate}
+          onPrev={() => ctl.current?.prev?.()}
+          onNext={() => ctl.current?.next?.()}
+        />
+      )}
+    />
   );
 }
 
