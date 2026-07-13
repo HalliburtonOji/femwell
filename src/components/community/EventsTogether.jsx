@@ -17,7 +17,7 @@
 import { useEffect, useMemo, useState, useCallback } from "react";
 import {
   ChevronLeft, CalendarDays, MapPin, Ticket, Users, ShieldCheck, ShieldAlert,
-  Check, Share2, Flag, Globe, Heart, ExternalLink, UserPlus, Sparkles,
+  Check, Share2, Flag, Globe, Heart, ExternalLink, UserPlus,
 } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import {
@@ -26,6 +26,9 @@ import {
 import { CornerSprig } from "@/components/brand/flora";
 import { toggleSavedItem } from "@/lib/savedItems";
 import { useScrollLock } from "@/utils/useScrollLock";
+import { communityHash, botanicalAlias } from "@/components/community/communityAnon";
+import { joinPod, podFor, setSafeCheckin, clearSafeCheckin, activeSafeCheckins, isReminding, toggleRemind } from "@/components/community/eventExtras";
+import { Bell, ShieldHalf } from "lucide-react";
 
 const HANDFAM = '"Cormorant Garamond","Fraunces",Georgia,serif';
 
@@ -124,7 +127,7 @@ function SafetyGuide({ onClose }) {
   );
 }
 
-function EventCard({ ev, going, saved, onGoing, onSave, onTickets, onShare, onReport }) {
+function EventCard({ ev, going, saved, onGoing, onSave, onTickets, onShare, onReport, onPod, onRemind, reminding }) {
   const online = !!ev.is_online;
   const acc = online ? T.sage : T.gold;
   const tags = Array.isArray(ev.tags) ? ev.tags : [];
@@ -157,12 +160,106 @@ function EventCard({ ev, going, saved, onGoing, onSave, onTickets, onShare, onRe
           </button>
           {ev.link && <button onClick={() => onTickets(ev)} style={{ flex: 1, minWidth: 130, display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 6, borderRadius: 999, padding: "10px 12px", border: "none", background: T.ink, color: T.paperHi, fontFamily: UI, fontSize: 12.5, fontWeight: 700, cursor: "pointer" }}><Ticket size={14} /> Tickets</button>}
         </div>
+        {/* go-together pod (in-person) + remind me */}
+        <div style={{ display: "flex", gap: 8, marginTop: 8, flexWrap: "wrap" }}>
+          {!online && onPod && (
+            <button onClick={() => onPod(ev)} style={{ flex: 1, minWidth: 130, display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 6, borderRadius: 999, padding: "9px 12px", border: `1px solid ${T.sage}`, background: `${T.sage}1C`, color: T.sage, fontFamily: UI, fontSize: 12.5, fontWeight: 700, cursor: "pointer" }}><Users size={14} /> Go together</button>
+          )}
+          {onRemind && (
+            <button onClick={() => onRemind(ev)} style={{ flex: 1, minWidth: 130, display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 6, borderRadius: 999, padding: "9px 12px", border: reminding ? `1px solid ${T.gold}` : `1px solid ${T.paperDeep}`, background: reminding ? `${T.gold}1C` : T.paperHi, color: reminding ? T.gold : T.inkSoft, fontFamily: UI, fontSize: 12.5, fontWeight: 700, cursor: "pointer" }}>{reminding ? <><Check size={14} /> Reminder on</> : <><Bell size={14} /> Remind me</>}</button>
+          )}
+        </div>
         {/* secondary row — save · bring a friend · report */}
         <div style={{ display: "flex", gap: 4, marginTop: 8, alignItems: "center" }}>
           <button onClick={() => onSave(ev)} style={{ display: "inline-flex", alignItems: "center", gap: 5, background: "transparent", border: "none", cursor: "pointer", color: saved ? T.crimson : T.muted, fontFamily: UI, fontSize: 11.5, fontWeight: 700 }}><Heart size={13} fill={saved ? T.crimson : "none"} /> {saved ? "Saved" : "Save"}</button>
           <button onClick={() => onShare(ev)} style={{ display: "inline-flex", alignItems: "center", gap: 5, background: "transparent", border: "none", cursor: "pointer", color: T.muted, fontFamily: UI, fontSize: 11.5, fontWeight: 700 }}><Share2 size={13} /> Bring a friend</button>
           <button onClick={() => onReport(ev)} aria-label="Report this event" style={{ marginLeft: "auto", display: "inline-flex", alignItems: "center", gap: 4, background: "transparent", border: "none", cursor: "pointer", color: T.muted, fontFamily: UI, fontSize: 11.5, fontWeight: 700 }}><Flag size={12} /> Report</button>
         </div>
+      </div>
+    </div>
+  );
+}
+
+// ── GO-TOGETHER POD (substance #6) — opt-in, pseudonymous, in-app only. See other women going
+// (k-anon, botanical alias + optional short note), say you'll go too, and "meet at the door". Never
+// precise location. Includes a device-local "get home safe" self-check-in (no external send). ──
+function PodSheet({ ev, user, onClose, flash }) {
+  useScrollLock();
+  const [pod, setPod] = useState(null);
+  const [myHash, setMyHash] = useState(null);
+  const [joined, setJoined] = useState(false);
+  const [note, setNote] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState("");
+  const [backAt, setBackAt] = useState("");
+
+  useEffect(() => { let a = true; communityHash(user?.id).then((h) => { if (a) setMyHash(h); }).catch(() => {}); return () => { a = false; }; }, [user?.id]);
+  const load = useCallback(async () => { setPod(await podFor(ev.id)); }, [ev.id]);
+  useEffect(() => { load(); }, [load]);
+
+  const activeN = Array.isArray(pod) ? new Set(pod.map((p) => p.author_hash)).size : 0;
+
+  const join = async () => {
+    if (busy) return;
+    setBusy(true); setErr("");
+    const r = await joinPod(user, ev.id, { hash: myHash, name: myHash ? botanicalAlias(myHash) : "A woman going" }, note);
+    setBusy(false);
+    if (r?.intercept) { onClose?.(); return; }
+    if (r?.error) { setErr("Couldn't join the pod just now — try again."); return; }
+    setJoined(true); setNote(""); load();
+  };
+  const armSafe = () => {
+    if (!backAt) return;
+    setSafeCheckin(ev.id, ev.title, new Date(backAt).toISOString());
+    flash?.("Safe check-in set — we'll nudge YOU if the time passes. Nothing is shared.");
+    onClose?.();
+  };
+
+  return (
+    <div onClick={onClose} style={{ position: "fixed", inset: 0, zIndex: 70, background: "rgba(20,14,8,0.5)", display: "flex", alignItems: "flex-end", justifyContent: "center" }}>
+      <div onClick={(e) => e.stopPropagation()} role="dialog" aria-label="Go together" style={{ background: T.paperHi, width: "100%", maxWidth: 460, borderRadius: "16px 16px 0 0", padding: "20px 18px", paddingBottom: "var(--fw-sheet-safe)", maxHeight: "88vh", overflowY: "auto" }}>
+        <Eyebrow color={T.gold} mb={6}>Go together</Eyebrow>
+        <div style={{ fontFamily: HANDFAM, fontStyle: "italic", fontWeight: 700, fontSize: 19, color: T.ink, lineHeight: 1.2, marginBottom: 4 }}>{ev.title}</div>
+        <div style={{ display: "inline-flex", alignItems: "center", gap: 6, fontFamily: UI, fontSize: 12, fontWeight: 600, color: T.muted, marginBottom: 12 }}>
+          <Users size={13} color={T.sage} /> {activeN <= 0 ? "No one in the pod yet — be the first" : activeN < 4 ? "a few women are going too" : `${activeN} women are going too`}
+        </div>
+
+        <div style={{ display: "flex", gap: 8, alignItems: "flex-start", background: `${T.sage}12`, border: `1px solid ${T.paperDeep}`, borderRadius: 10, padding: "9px 11px", marginBottom: 12 }}>
+          <ShieldCheck size={15} color={T.sage} style={{ flexShrink: 0, marginTop: 1 }} />
+          <span style={{ fontFamily: UI, fontSize: 11.5, color: T.inkSoft, lineHeight: 1.42 }}>Pods are pseudonymous and in-app only — a botanical alias, never your name or location. Meet at the venue door, in public, and tell someone offline where you're going.</span>
+        </div>
+
+        {/* who's going */}
+        {pod === null && <Hand size={14} color={T.muted}>Finding your pod…</Hand>}
+        {pod && pod.map((p) => (
+          <div key={p.id} style={{ background: T.paper, border: `1px solid ${T.paperDeep}`, borderRadius: 11, padding: "9px 12px", marginBottom: 7 }}>
+            <div style={{ fontFamily: UI, fontSize: 11.5, fontWeight: 700, color: T.muted, marginBottom: p.note ? 3 : 0 }}>{p.author_hash === myHash ? "You" : (p.alias || "A woman going")}</div>
+            {p.note && <Hand size={14} color={T.inkSoft}>{p.note}</Hand>}
+          </div>
+        ))}
+
+        {/* join */}
+        {!joined ? (
+          <>
+            <textarea value={note} onChange={(e) => { setNote(e.target.value); if (err) setErr(""); }} maxLength={160} placeholder="Optional — 'first-timer, going alone', 'happy to meet at the door'…" style={{ width: "100%", background: T.paper, border: `1px solid ${T.paperDeep}`, borderRadius: 10, padding: "10px 12px", fontFamily: SERIF, fontSize: 16, minHeight: 54, resize: "none", boxSizing: "border-box", marginTop: 8 }} />
+            {err && <div style={{ fontFamily: UI, fontSize: 12, color: T.crimson, marginTop: 6 }}>{err}</div>}
+            <button disabled={busy} onClick={join} style={{ width: "100%", background: T.sage, color: "#fff", border: "none", borderRadius: 12, padding: "13px", fontFamily: UI, fontSize: 14, fontWeight: 800, cursor: busy ? "default" : "pointer", opacity: busy ? 0.7 : 1, marginTop: 10 }}>{busy ? "Joining…" : "I'll go too"}</button>
+          </>
+        ) : (
+          <div style={{ textAlign: "center", padding: "6px 0", fontFamily: UI, fontSize: 14, fontWeight: 800, color: T.sage }}>You're in the pod — see you at the door</div>
+        )}
+
+        {/* get home safe — device-local self check-in (no external send) */}
+        <div style={{ marginTop: 14, background: T.paper, border: `1px solid ${T.paperDeep}`, borderRadius: 12, padding: "12px 13px" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 7, marginBottom: 6 }}><ShieldHalf size={15} color={T.gold} /><span style={{ fontFamily: UI, fontSize: 13, fontWeight: 800, color: T.ink }}>Get home safe</span></div>
+          <Hand size={13.5} color={T.muted} style={{ marginBottom: 9 }}>Set when you expect to be home. If the time passes without your "I'm safe" tap, the app nudges <b>you</b> — nothing is sent to anyone.</Hand>
+          <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
+            <input type="datetime-local" value={backAt} onChange={(e) => setBackAt(e.target.value)} style={{ flex: 1, minWidth: 150, background: T.paperHi, border: `1px solid ${T.paperDeep}`, borderRadius: 9, padding: "8px 10px", fontFamily: UI, fontSize: 13, color: T.ink }} />
+            <button disabled={!backAt} onClick={armSafe} style={{ background: backAt ? T.gold : T.paperDeep, color: "#fff", border: "none", borderRadius: 9, padding: "9px 14px", fontFamily: UI, fontSize: 12.5, fontWeight: 700, cursor: backAt ? "pointer" : "default" }}>Set check-in</button>
+          </div>
+        </div>
+
+        <button onClick={onClose} style={{ width: "100%", marginTop: 10, background: "transparent", border: "none", fontFamily: UI, fontSize: 12.5, fontWeight: 700, color: T.muted, cursor: "pointer", padding: 6 }}>Close</button>
       </div>
     </div>
   );
@@ -180,6 +277,8 @@ export default function EventsTogether({ user, onBack, embedded = false }) {
   const [toast, setToast] = useState("");
   const [tick, setTick] = useState(0);            // re-render after device-local going/hide
   const [rsvpIds, setRsvpIds] = useState(new Set());   // "I'm going" synced via EventRSVP (cross-device)
+  const [podEv, setPodEv] = useState(null);       // event whose go-together pod is open
+  const safeCheckins = useMemo(() => activeSafeCheckins(), [tick]);   // device-local get-home-safe
 
   useEffect(() => {
     (async () => {
@@ -251,6 +350,8 @@ export default function EventsTogether({ user, onBack, embedded = false }) {
   const onReport = (ev) => { hideEv(ev.id); setTick((t) => t + 1); flash("Flagged — we'll review it, and it's hidden from you."); };
   // Online events have no in-person meet, so they skip the meet-safe interstitial (proportionate).
   const onTickets = (ev) => { if (ev.is_online) { if (ev.link) window.open(ev.link, "_blank", "noopener"); } else { setTicketEv(ev); } };
+  const onPod = (ev) => setPodEv(ev);
+  const onRemind = (ev) => { const on = toggleRemind(ev.id, ev.title); setTick((t) => t + 1); flash(on ? "Reminder set — we'll flag it near the time (on this device)." : "Reminder off."); };
 
   const nextUp = shown[0] || null;
 
@@ -284,6 +385,18 @@ export default function EventsTogether({ user, onBack, embedded = false }) {
 
         {goingCount > 0 && <div style={{ fontFamily: UI, fontSize: 12, fontWeight: 700, color: T.sage, margin: "8px 0 14px", display: "inline-flex", alignItems: "center", gap: 6 }}><Check size={13} /> You're going to {goingCount} {goingCount === 1 ? "event" : "events"} — kept private</div>}
 
+        {/* active "get home safe" check-ins — device-local nudge (nothing sent anywhere) */}
+        {safeCheckins.length > 0 && safeCheckins.map((s) => {
+          const overdue = s.backAt && new Date(s.backAt).getTime() < Date.now();
+          return (
+            <div key={s.eventId} style={{ display: "flex", alignItems: "center", gap: 10, background: overdue ? "#FBE9E6" : `${T.gold}12`, border: `1px solid ${overdue ? T.crimson : T.paperDeep}`, borderRadius: 12, padding: "10px 13px", marginBottom: 10 }}>
+              <ShieldHalf size={16} color={overdue ? T.crimson : T.gold} style={{ flexShrink: 0 }} />
+              <span style={{ flex: 1, fontFamily: UI, fontSize: 12.5, color: T.inkSoft, lineHeight: 1.4 }}>{overdue ? <b>Are you home safe?</b> : "Safe check-in set"} — {s.title}</span>
+              <button onClick={() => { clearSafeCheckin(s.eventId); setTick((t) => t + 1); flash("Glad you're safe."); }} style={{ background: overdue ? T.crimson : T.sage, color: "#fff", border: "none", borderRadius: 999, padding: "7px 12px", fontFamily: UI, fontSize: 12, fontWeight: 700, cursor: "pointer", flexShrink: 0 }}>I'm safe</button>
+            </div>
+          );
+        })}
+
         {/* the list */}
         {events === null && <Hand size={17} color={T.muted}>Finding what's on…</Hand>}
         {events !== null && shown.length === 0 && (
@@ -300,17 +413,18 @@ export default function EventsTogether({ user, onBack, embedded = false }) {
         )}
         {(shown || []).map((ev) => (
           <EventCard key={ev.id} ev={ev} going={isGoing(ev.id) || rsvpIds.has(ev.id)} saved={savedIds.has(ev.id)}
-            onGoing={onGoing} onSave={onSave} onTickets={onTickets} onShare={onShare} onReport={onReport} />
+            onGoing={onGoing} onSave={onSave} onTickets={onTickets} onShare={onShare} onReport={onReport}
+            onPod={onPod} onRemind={onRemind} reminding={isReminding(ev.id)} />
         ))}
 
-        {/* GO TOGETHER — the community pod (honest, labelled OPT-IN · needs sign-off) */}
-        <div style={{ background: `linear-gradient(160deg, ${T.paperHi} 0%, ${T.plum || "#8E6E8E"}12 100%)`, border: `1px dashed ${T.paperDeep}`, borderRadius: 16, padding: "16px 16px", marginTop: 20 }}>
+        {/* GO TOGETHER — pods are now LIVE (opt-in, pseudonymous, in-app). This is the explainer/driver. */}
+        <div style={{ background: `linear-gradient(160deg, ${T.paperHi} 0%, ${T.sage}12 100%)`, border: `1px solid ${T.paperDeep}`, borderRadius: 16, padding: "16px 16px", marginTop: 20 }}>
           <Eyebrow color={T.gold} mb={6}>Going together</Eyebrow>
-          <div style={{ fontFamily: HANDFAM, fontStyle: "italic", fontWeight: 700, fontSize: 18, color: T.ink, marginBottom: 6 }}>Find other women going — and go as a little group.</div>
-          <Hand size={15} color={T.inkSoft} style={{ marginBottom: 10 }}>Right now, whether you're going is private to you. A future <b>opt-in "go-together"</b> would let a few women quietly say "me too" on an event and meet at the door — anonymous aliases, no contact details, no exact location. It needs a safe shared space to build, so it's off until it's signed off and built properly.</Hand>
+          <div style={{ fontFamily: HANDFAM, fontStyle: "italic", fontWeight: 700, fontSize: 18, color: T.ink, marginBottom: 6 }}>Nobody has to walk in alone.</div>
+          <Hand size={15} color={T.inkSoft} style={{ marginBottom: 10 }}>On any in-person event, tap <b>Go together</b> to see other women going and quietly say "me too" — a botanical alias only, no names, no contact details, no exact location. Meet at the venue door, in public. You can also set a private <b>get-home-safe</b> check-in that nudges only you.</Hand>
           <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
             <button onClick={() => onShareGeneric()} style={{ display: "inline-flex", alignItems: "center", gap: 6, borderRadius: 999, padding: "9px 14px", border: `1px solid ${T.paperDeep}`, background: T.paperHi, color: T.ink, fontFamily: UI, fontSize: 12.5, fontWeight: 700, cursor: "pointer" }}><UserPlus size={14} /> Bring a friend you know</button>
-            <span style={{ display: "inline-flex", alignItems: "center", gap: 5, fontFamily: UI, fontSize: 11, fontWeight: 700, color: T.muted, background: "#FBF1E0", border: `1px solid ${T.gold}`, borderRadius: 999, padding: "6px 11px" }}><Sparkles size={12} color={T.gold} /> Community pods — opt-in, coming (needs sign-off)</span>
+            <button onClick={() => setGuideOpen(true)} style={{ display: "inline-flex", alignItems: "center", gap: 5, fontFamily: UI, fontSize: 12, fontWeight: 700, color: T.sage, background: `${T.sage}1C`, border: "none", borderRadius: 999, padding: "9px 14px", cursor: "pointer" }}><ShieldCheck size={13} /> How pods stay safe</button>
           </div>
         </div>
 
@@ -326,6 +440,7 @@ export default function EventsTogether({ user, onBack, embedded = false }) {
 
       {ticketEv && <TicketInterstitial ev={ticketEv} onClose={() => setTicketEv(null)} />}
       {guideOpen && <SafetyGuide onClose={() => setGuideOpen(false)} />}
+      {podEv && <PodSheet ev={podEv} user={user} onClose={() => setPodEv(null)} flash={flash} />}
       {toast && (
         <div style={{ position: "fixed", left: "50%", bottom: "calc(96px + env(safe-area-inset-bottom))", transform: "translateX(-50%)", zIndex: 2300, background: T.ink, color: T.paperHi, fontFamily: UI, fontSize: 12.5, fontWeight: 600, padding: "10px 16px", borderRadius: 999, boxShadow: "0 4px 16px rgba(0,0,0,0.2)", maxWidth: "90vw", textAlign: "center" }}>{toast}</div>
       )}
