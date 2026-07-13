@@ -8,6 +8,7 @@
   "type": "object",
   "properties": {
     "post_id": { "type": "string", "description": "The CommunityPost this comments on." },
+    "parent_id": { "type": "string", "description": "Talk substance #2: if set, this reply nests under another Comment (same post) — a real threaded conversation, not a flat list. One level deep (replies to a reply still attach to the top-level parent). Empty/absent = a top-level comment." },
     "author_hash": { "type": "string", "description": "Device-derived anonymous author token." },
     "body": { "type": "string", "description": "The comment text (crisis-checked + moderated server-side)." },
     "by": { "type": "string", "enum": ["member", "jess"], "default": "member", "description": "member or Jess (host/support)." },
@@ -17,8 +18,9 @@
     "flagged": { "type": "boolean", "default": false, "description": "M2: OpenAI moderation flagged this as borderline (visible but queued for human review). Clearly-harmful comments are status:removed instead." }
   },
   "required": ["post_id", "author_hash"],
-  "indexes": [{ "fields": ["created_date"] }, 
+  "indexes": [{ "fields": ["created_date"] },
     { "fields": ["post_id"] },
+    { "fields": ["parent_id"] },
     { "fields": ["author_hash"] }
   ],
   // Write-lock; READ public (rooms + their comments are lurkable).

@@ -66,7 +66,7 @@ import { useScrollLock } from "@/utils/useScrollLock";
 import {
   Heart, Briefcase, Sparkles, Moon, Stethoscope, Dices, BookOpen, HelpCircle,
   ChevronUp, ChevronDown, ChevronRight, Eye, Feather, MessagesSquare, Sprout, CalendarDays,
-  Mail, SlidersHorizontal, MapPinOff,
+  Mail, SlidersHorizontal, MapPinOff, X,
 } from "lucide-react";
 import SealedLetterComposeSheet from "@/components/sealedLetters/SealedLetterComposeSheet";
 import { withTimeout } from "@/utils/safeEntity";
@@ -177,6 +177,49 @@ function roomPromptForDay(roomKey, lifeStage) {
   return tint ? tint + base.charAt(0).toLowerCase() + base.slice(1) : base;
 }
 
+// ── Talk substance: per-room WELCOME/onboarding (what this room is for · how it's safe · how to
+// post) — shown once per room, per device. Warm, plain, whole-life (health is one room, not the app).
+const ROOM_ABOUT = {
+  lounge: "the whole-life room — anything on your mind, big or small, cheerful or heavy, health or not",
+  love: "for relationships, dating, marriage and friendship — the people in your life",
+  money: "for work, money, career and the quiet ambitions you don't say out loud",
+  style: "for fashion, beauty and feeling like yourself",
+  health: "for your body, cycle and wellbeing — one room of many here, never the whole app",
+  lighter: "for the light stuff — telly, small joys, and a bit of harmless venting",
+};
+const ROOM_SAFE = "You're anonymous, always — no name, no profile. Kindness is kept quietly in the background, so you can just talk. If you're ever really struggling, help is a tap away.";
+const ROOM_HOW = "Leave a line — a sentence is plenty. React, reply to build a thread, or just read. Lurking is welcome.";
+
+// ── Talk substance: WEEKLY RITUALS — a rhythm beyond the daily prompt so there's a reason to
+// return. Weekly Vent early week, Weekly Wins into the weekend (per the master plan). Client-side
+// + deterministic by weekday; the daily prompt carries mid-week.
+const WEEKLY_WINS = {
+  lounge: "What's a win from this week — however small?",
+  love: "A relationship or friendship moment that warmed you this week?",
+  money: "A money or work win this week — big or tiny?",
+  style: "What made you feel most like YOU this week?",
+  health: "One kind thing your body did, or you did for it, this week?",
+  lighter: "Best small joy of your week — a show, a snack, a laugh?",
+};
+const WEEKLY_VENT = {
+  lounge: "What do you need to get off your chest to start the week?",
+  love: "Something in your love or friend life quietly bugging you?",
+  money: "A work or money frustration you can let out here?",
+  style: "A beauty/fashion gripe or 'why is this so hard' moment?",
+  health: "A symptom or body thing that's wearing you down right now?",
+  lighter: "Pettiest thing that annoyed you this week? Let it out.",
+};
+function roomRitualForWeek(roomKey) {
+  const dow = new Date().getDay();   // 0 Sun … 6 Sat
+  if (dow === 1 || dow === 2) return { kind: "vent", label: "Weekly Vent", prompt: WEEKLY_VENT[roomKey] || WEEKLY_VENT.lounge };
+  if (dow === 5 || dow === 6 || dow === 0) return { kind: "wins", label: "Weekly Wins", prompt: WEEKLY_WINS[roomKey] || WEEKLY_WINS.lounge };
+  return null;   // Wed/Thu — the daily prompt carries the room
+}
+const roomSeenAbout = (k) => { try { return localStorage.getItem("fw_room_about_" + k) === "1"; } catch { return false; } };
+const markSeenAbout = (k) => { try { localStorage.setItem("fw_room_about_" + k, "1"); } catch { /* ignore */ } };
+const hasPostedEver = () => { try { return localStorage.getItem("fw_posted_ever") === "1"; } catch { return false; } };
+const markPostedEver = () => { try { localStorage.setItem("fw_posted_ever", "1"); } catch { /* ignore */ } };
+
 const inputStyle = {
   width: "100%", background: T.paperHi, border: `1px solid ${T.paperDeep}`,
   padding: "12px 14px", borderRadius: 3, resize: "none", fontFamily: SERIF, fontSize: 18,
@@ -219,10 +262,12 @@ function CrisisSheet({ onClose }) {
 }
 
 // ── one post + its comments ──────────────────────────────────────────────────
-function PostCard({ post, user, onCrisis, onChanged, enhanced = false, myHash = null }) {
+function PostCard({ post, user, onCrisis, onChanged, enhanced = false, myHash = null, autoOpen = false, onSeenReplies }) {
   const [comments, setComments] = useState(null);   // null = not loaded
   const [commentsErr, setCommentsErr] = useState(false);   // W5 — distinguish error from empty
   const [open, setOpen] = useState(false);
+  const [replyTo, setReplyTo] = useState(null);     // threaded replies: { id, alias } of the comment being replied to
+  const [collapsed, setCollapsed] = useState({});   // per-parent: collapse its reply stack
   const [draft, setDraft] = useState("");
   const [busy, setBusy] = useState(false);
   const [commentErr, setCommentErr] = useState(false);
@@ -286,6 +331,10 @@ function PostCard({ post, user, onCrisis, onChanged, enhanced = false, myHash = 
   }, [post.id, isOpen, post.body]);
 
   const toggleComments = () => { const next = !open; setOpen(next); if (next && comments === null) loadComments(); };
+  // reply-nudge: if the room routed us here ("a reply came in on your line"), auto-open the thread.
+  useEffect(() => { if (autoOpen && !open) { setOpen(true); if (comments === null) loadComments(); } /* eslint-disable-next-line react-hooks/exhaustive-deps */ }, [autoOpen]);
+  // once my thread is on screen, mark its replies seen so the nudge clears next visit.
+  useEffect(() => { if (open && comments && onSeenReplies) { const n = comments.filter((c) => c.status !== "removed").length; onSeenReplies(post.id, n); } /* eslint-disable-next-line react-hooks/exhaustive-deps */ }, [open, comments]);
 
   const react = async (kind) => {
     if (hasReacted(post.id, kind)) return;
@@ -325,7 +374,7 @@ function PostCard({ post, user, onCrisis, onChanged, enhanced = false, myHash = 
     setCommentErr(false);
     try {
       const wh = await communityHash(user?.id);
-      const r = await base44.functions.invoke("createCommunityPost", { action: "comment", user_id: user?.id, author_hash: wh, post_id: post.id, body: text });
+      const r = await base44.functions.invoke("createCommunityPost", { action: "comment", user_id: user?.id, author_hash: wh, post_id: post.id, body: text, parent_id: replyTo?.id || undefined });
       const d = r?.data ?? r;
       if (d?.intercept) { onCrisis(); return; }
       // A failed comment must NOT hang the box — surface an error and unblock.
@@ -336,10 +385,40 @@ function PostCard({ post, user, onCrisis, onChanged, enhanced = false, myHash = 
       // in <1s; reconcile with a background refetch (NOT awaited — never gate on the sorted read).
       setComments((prev) => [...(Array.isArray(prev) ? prev : []), d.comment]);
       setDraft("");
+      setReplyTo(null);
       loadComments();
     } catch (e) { console.error("comment failed:", e); setCommentErr(true); }
     finally { setBusy(false); }
   };
+
+  // threaded replies (Comment.parent_id): split into top-level + replies-by-parent (one level deep).
+  const cList = Array.isArray(comments) ? comments : [];
+  const topLevel = cList.filter((c) => !c.parent_id);
+  const repliesByParent = cList.reduce((m, c) => { if (c.parent_id) { (m[c.parent_id] = m[c.parent_id] || []).push(c); } return m; }, {});
+
+  const CommentBubble = (c, { isReply = false } = {}) => (
+    c.status === "removed" ? (
+      <div key={c.id} style={{ fontFamily: UI, fontSize: 12, color: T.muted, fontStyle: "italic", padding: "7px 0", marginLeft: isReply ? 14 : 0 }}>{MOD_REMOVED}</div>
+    ) : (
+      <div key={c.id} style={{ background: c.by === "jess" ? T.paper : "transparent", border: c.by === "jess" ? `1px solid ${T.gold}` : "none", borderRadius: c.by === "jess" ? 8 : 0, padding: c.by === "jess" ? "9px 11px" : "7px 0", marginBottom: 4, marginLeft: isReply ? 14 : 0, borderLeft: isReply ? `2px solid ${T.paperDeep}` : undefined, paddingLeft: isReply ? 11 : undefined }}>
+        {c.by === "jess" && <Eyebrow color={T.gold} mb={3}>Jess · here with you</Eyebrow>}
+        {c.by !== "jess" && enhanced && c.author_hash && (
+          <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 2 }}>
+            <PresenceBloom hash={c.author_hash} size={isReply ? 14 : 16} />
+            <span style={{ fontFamily: UI, fontSize: 11, fontWeight: 700, color: T.muted }}>{myHash && c.author_hash === myHash ? "You" : botanicalAlias(c.author_hash)}</span>
+          </div>
+        )}
+        <Hand size={17} color={T.inkSoft}>{c.body}</Hand>
+        {/* reply-to (threaded) — only on top-level, only when the post allows comments */}
+        {!isReply && isOpen && (
+          <button onClick={() => { setReplyTo({ id: c.id, alias: c.by === "jess" ? "Jess" : (myHash && c.author_hash === myHash ? "your line" : botanicalAlias(c.author_hash)) }); }}
+            style={{ background: "transparent", border: "none", cursor: "pointer", color: T.gold, fontFamily: UI, fontSize: 11, fontWeight: 700, padding: "3px 0 0", display: "inline-flex", alignItems: "center", gap: 5 }}>
+            <MessageCircle size={11} /> Reply
+          </button>
+        )}
+      </div>
+    )
+  );
 
   return (
     <div style={{ background: `linear-gradient(165deg, ${T.paperHi} 0%, ${T.paperDeep}22 100%)`, border: `1px solid ${T.paperDeep}`, borderRadius: 14, padding: "15px 16px", marginBottom: 13, boxShadow: "0 2px 12px rgba(58,44,26,0.08), 0 1px 3px rgba(58,44,26,0.05)" }}>
@@ -457,29 +536,40 @@ function PostCard({ post, user, onCrisis, onChanged, enhanced = false, myHash = 
             {comments === null && <Hand size={16} color={T.muted}>Loading the kind voices…</Hand>}
             {commentsErr && <Hand size={16} color={T.muted}>Couldn{"’"}t load replies just now. Try again in a moment.</Hand>}
             {!commentsErr && comments && comments.length === 0 && <Hand size={16} color={T.muted}>{COMMENT_EMPTY}</Hand>}
-            {comments && comments.map((c) => (
-              c.status === "removed" ? (
-                <div key={c.id} style={{ fontFamily: UI, fontSize: 12, color: T.muted, fontStyle: "italic", padding: "7px 0" }}>{MOD_REMOVED}</div>
-              ) : (
-                <div key={c.id} style={{ background: c.by === "jess" ? T.paper : "transparent", border: c.by === "jess" ? `1px solid ${T.gold}` : "none", borderRadius: c.by === "jess" ? 8 : 0, padding: c.by === "jess" ? "9px 11px" : "7px 0", marginBottom: 4 }}>
-                  {c.by === "jess" && <Eyebrow color={T.gold} mb={3}>Jess · here with you</Eyebrow>}
-                  {c.by !== "jess" && enhanced && c.author_hash && (
-                    <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 2 }}>
-                      <PresenceBloom hash={c.author_hash} size={16} />
-                      <span style={{ fontFamily: UI, fontSize: 11, fontWeight: 700, color: T.muted }}>{myHash && c.author_hash === myHash ? "You" : botanicalAlias(c.author_hash)}</span>
+            {comments && topLevel.map((c) => {
+              const kids = repliesByParent[c.id] || [];
+              const isCol = collapsed[c.id];
+              const shown = isCol ? [] : kids;
+              return (
+                <div key={c.id}>
+                  {CommentBubble(c)}
+                  {kids.length > 0 && (
+                    <div style={{ marginLeft: 14 }}>
+                      {kids.length > 2 && (
+                        <button onClick={() => setCollapsed((s) => ({ ...s, [c.id]: !s[c.id] }))} style={{ background: "transparent", border: "none", cursor: "pointer", color: T.muted, fontFamily: UI, fontSize: 11, fontWeight: 700, padding: "2px 0 6px" }}>
+                          {isCol ? `Show ${kids.length} replies` : "Hide replies"}
+                        </button>
+                      )}
+                      {shown.map((k) => CommentBubble(k, { isReply: true }))}
                     </div>
                   )}
-                  <Hand size={17} color={T.inkSoft}>{c.body}</Hand>
                 </div>
-              )
-            ))}
+              );
+            })}
             <div style={{ marginTop: 8 }}>
-              <textarea value={draft} onChange={(e) => { setDraft(e.target.value); if (commentErr) setCommentErr(false); }} maxLength={COMMENT_MAX} placeholder="A kind word… you don't have to fix it." style={{ ...inputStyle, minHeight: 56, fontSize: 16 }} />
+              {replyTo && (
+                <div style={{ display: "flex", alignItems: "center", gap: 8, background: `${T.gold}12`, border: `1px solid ${T.paperDeep}`, borderRadius: 9, padding: "6px 10px", marginBottom: 6 }}>
+                  <MessageCircle size={12} color={T.gold} />
+                  <span style={{ fontFamily: UI, fontSize: 11.5, color: T.inkSoft, flex: 1 }}>Replying to <b>{replyTo.alias}</b></span>
+                  <button onClick={() => setReplyTo(null)} aria-label="Cancel reply" style={{ background: "transparent", border: "none", cursor: "pointer", color: T.muted, fontFamily: UI, fontSize: 11, fontWeight: 700, padding: 2 }}>Cancel</button>
+                </div>
+              )}
+              <textarea value={draft} onChange={(e) => { setDraft(e.target.value); if (commentErr) setCommentErr(false); }} maxLength={COMMENT_MAX} placeholder={replyTo ? `A kind word back to ${replyTo.alias}…` : "A kind word… you don't have to fix it."} style={{ ...inputStyle, minHeight: 56, fontSize: 16 }} />
               {commentErr && <div style={{ fontFamily: UI, fontSize: 12, color: T.crimson, lineHeight: 1.45, marginTop: 6 }}>Couldn{"’"}t add that just now — give it another try in a moment.</div>}
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: 6 }}>
                 <span style={{ fontFamily: UI, fontSize: 10.5, color: T.muted }}>{COMMENT_KINDNESS}</span>
                 <button onClick={sendComment} disabled={!draft.trim() || busy} style={{ ...primaryBtn, padding: "8px 14px", opacity: (!draft.trim() || busy) ? 0.5 : 1 }}>
-                  <Send size={13} /> {busy ? "Sending…" : "Reply"}
+                  <Send size={13} /> {busy ? "Sending…" : replyTo ? "Reply" : "Post"}
                 </button>
               </div>
               {/* the per-comment medical disclaimer wall removed (calm on the surface); the
@@ -1889,8 +1979,14 @@ function RoomView({ roomKey, posts, loading, error, user, onNav, onHome, onCrisi
   const [muteOpen, setMuteOpen] = useState(false);
   const [muteDraft, setMuteDraft] = useState("");
   const [safetyTick, setSafetyTick] = useState(0);   // re-render after hide/mute (device-local)
+  const [showAbout, setShowAbout] = useState(() => enhanced && !roomSeenAbout(roomKey));   // first-visit room welcome
+  const [welcomed, setWelcomed] = useState(false);   // first-ever-post celebration
+  const [ritualDismissed, setRitualDismissed] = useState(false);
+  const [replyNudge, setReplyNudge] = useState(null);   // { postId, n } — "a reply came in on your line"
+  const [autoOpenPostId, setAutoOpenPostId] = useState(null);
   const room = ROOMS.find((r) => r.key === roomKey) || ROOMS[0];
   useEffect(() => { let a = true; communityHash(user?.id).then((h) => { if (a) setMyHash(h); }).catch(() => {}); return () => { a = false; }; }, [user?.id]);
+  useEffect(() => { setShowAbout(enhanced && !roomSeenAbout(roomKey)); setReplyNudge(null); setAutoOpenPostId(null); }, [roomKey, enhanced]);
 
   const rawFeed = posts.filter((p) => p.room === roomKey);
   // enhanced: apply the device-local safety filters (hide-a-voice + mute-a-word); never hide your own.
@@ -1902,7 +1998,45 @@ function RoomView({ roomKey, posts, loading, error, user, onNav, onHome, onCrisi
   // enhanced: a per-room k-anon presence line + today's life-tinted prompt.
   const activeN = enhanced ? new Set(rawFeed.filter((p) => Date.now() - new Date(p.created_date || 0).getTime() <= PRESENCE_WINDOW_HRS * 3600e3).map((p) => p.author_hash)).size : 0;
   const prompt = enhanced ? roomPromptForDay(roomKey, lifeStage) : null;
+  const ritual = enhanced ? roomRitualForWeek(roomKey) : null;
   void safetyTick;
+
+  // ENGAGEMENT NUDGE — "a reply came in on your line". Bounded, client-only (no cold function):
+  // check reply counts for up to 8 of my recent posts in this room; if any grew since I last
+  // looked (per-device), surface a gentle banner that auto-opens that thread. Real push
+  // notifications would need a notify path (flagged, not built).
+  useEffect(() => {
+    if (!enhanced || !myHash) return;
+    const mine = rawFeed.filter((p) => p.author_hash === myHash).slice(0, 8);
+    if (!mine.length) return;
+    let cancel = false;
+    (async () => {
+      for (const p of mine) {
+        try {
+          const rows = await base44.entities.Comment.filter({ post_id: p.id, hidden: false }, "-created_date", 60);
+          const n = Array.isArray(rows) ? rows.filter((c) => c.status !== "removed").length : 0;
+          let seen = 0; try { seen = Number(localStorage.getItem("fw_seen_replies_" + p.id) || 0); } catch { /* ignore */ }
+          if (n > seen) { if (!cancel) setReplyNudge({ postId: p.id, n: n - seen }); return; }
+        } catch { /* ignore */ }
+      }
+    })();
+    return () => { cancel = true; };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [myHash, enhanced, roomKey, rawFeed.length]);
+  const markRepliesSeen = useCallback((postId, n) => { try { localStorage.setItem("fw_seen_replies_" + postId, String(n)); } catch { /* ignore */ } setReplyNudge((cur) => (cur && cur.postId === postId ? null : cur)); }, []);
+
+  const onFirstPostMaybe = (postArg) => {
+    if (!hasPostedEver()) {
+      markPostedEver();
+      setWelcomed(true);
+      // guaranteed warm welcome: prompt Jess (existing fn, backstop mode) to leave one kind reply
+      // on her first-ever line so it's never met with silence. Model stays tasteful; dedup prevents
+      // a double with PostCard's own backstop. Fire-and-forget — never blocks the post.
+      if (postArg?.id) base44.functions.invoke("jessSupport", { post_id: postArg.id, backstop: true }).catch(() => {});
+    }
+    (onPostCreated || onReload)(postArg);
+  };
+
   return (
     <div>
       {/* sticky tab bar */}
@@ -1960,6 +2094,36 @@ function RoomView({ roomKey, posts, loading, error, user, onNav, onHome, onCrisi
           </div>
         )}
 
+        {/* Talk substance: first-visit room WELCOME — what it's for · how it's safe · how to post */}
+        {enhanced && showAbout && (
+          <div style={{ background: `linear-gradient(165deg, ${T.paperHi} 0%, ${T.sage || "#8FAF8F"}12 100%)`, border: `1px solid ${T.paperDeep}`, borderRadius: 15, padding: "15px 16px 13px", marginBottom: 16 }}>
+            <Eyebrow color={T.sage || "#8FAF8F"} mb={7}>Welcome to {room.name.replace(/^The /, "")}</Eyebrow>
+            {[
+              { Icon: MessageCircle, t: `This room is ${ROOM_ABOUT[roomKey] || ROOM_ABOUT.lounge}.` },
+              { Icon: ShieldCheck, t: ROOM_SAFE },
+              { Icon: Feather, t: ROOM_HOW },
+            ].map((r, i) => (
+              <div key={i} style={{ display: "flex", gap: 10, alignItems: "flex-start", marginBottom: 9 }}>
+                <span style={{ flexShrink: 0, marginTop: 1 }}><r.Icon size={15} color={T.sage || "#8FAF8F"} /></span>
+                <Hand size={14.5} color={T.inkSoft}>{r.t}</Hand>
+              </div>
+            ))}
+            <button onClick={() => { markSeenAbout(roomKey); setShowAbout(false); }} style={{ ...ghostBtn, marginTop: 3 }}>Got it</button>
+          </div>
+        )}
+
+        {/* Talk substance: first-ever-post WELCOME — the biggest retention moment, a warm hello */}
+        {enhanced && welcomed && (
+          <div style={{ background: `linear-gradient(160deg, ${T.paperHi} 0%, ${T.gold}18 100%)`, border: `1px solid ${T.gold}`, borderRadius: 14, padding: "14px 15px", marginBottom: 16, display: "flex", gap: 11, alignItems: "flex-start" }}>
+            <span style={{ flexShrink: 0, marginTop: 1 }}><Sparkles size={18} color={T.gold} /></span>
+            <div style={{ flex: 1 }}>
+              <div style={{ fontFamily: SERIF, fontSize: 16, fontWeight: 700, color: T.ink, marginBottom: 3 }}>That's your first line here — welcome.</div>
+              <Hand size={14.5} color={T.inkSoft}>You've just added your voice to the room. Someone will come by — and if it's quiet, Jess will make sure your line isn't left alone. You can react, reply, or just read from here.</Hand>
+            </div>
+            <button onClick={() => setWelcomed(false)} aria-label="Dismiss" style={{ background: "transparent", border: "none", cursor: "pointer", color: T.muted, padding: 2, flexShrink: 0 }}><X size={15} /></button>
+          </div>
+        )}
+
         {/* enhanced: today's warm, life-tinted room prompt — a reason to post (a line is plenty) */}
         {enhanced && prompt && (
           <div style={{ background: `linear-gradient(160deg, ${T.paperHi} 0%, ${T.gold}12 100%)`, border: `1px solid ${T.paperDeep}`, borderLeft: `4px solid ${T.gold}`, borderRadius: 14, padding: "14px 15px", marginBottom: 16 }}>
@@ -1967,6 +2131,19 @@ function RoomView({ roomKey, posts, loading, error, user, onNav, onHome, onCrisi
             <div style={{ fontFamily: HANDFAM, fontStyle: "italic", fontWeight: 600, fontSize: 19, color: T.ink, lineHeight: 1.3, marginBottom: composing ? 0 : 12 }}>{prompt}</div>
             {/* keep the question visible while composing so she sees what she's answering */}
             {!composing && <button onClick={() => setComposing(true)} style={{ ...primaryBtn, padding: "9px 15px" }}><Feather size={13} /> Answer this — a line is plenty</button>}
+          </div>
+        )}
+
+        {/* Talk substance: WEEKLY RITUAL — a rhythm beyond the daily (Vent early week · Wins into the weekend) */}
+        {enhanced && ritual && !ritualDismissed && (
+          <div style={{ background: `linear-gradient(160deg, ${T.paperHi} 0%, ${(ritual.kind === "wins" ? T.gold : T.crimson)}12 100%)`, border: `1px solid ${T.paperDeep}`, borderLeft: `4px solid ${ritual.kind === "wins" ? T.gold : T.crimson}`, borderRadius: 14, padding: "13px 15px", marginBottom: 16 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 7, marginBottom: 6 }}>
+              {ritual.kind === "wins" ? <Sparkles size={14} color={T.gold} /> : <Waves size={14} color={T.crimson} />}
+              <span style={{ fontFamily: UI, fontSize: 10.5, fontWeight: 800, letterSpacing: 1, textTransform: "uppercase", color: ritual.kind === "wins" ? T.gold : T.crimson }}>{ritual.label} · this week</span>
+              <button onClick={() => setRitualDismissed(true)} aria-label="Dismiss" style={{ marginLeft: "auto", background: "transparent", border: "none", cursor: "pointer", color: T.muted, padding: 2 }}><X size={13} /></button>
+            </div>
+            <div style={{ fontFamily: HANDFAM, fontStyle: "italic", fontWeight: 600, fontSize: 18, color: T.ink, lineHeight: 1.3, marginBottom: composing ? 0 : 11 }}>{ritual.prompt}</div>
+            {!composing && <button onClick={() => setComposing(true)} style={{ ...primaryBtn, padding: "9px 15px" }}><Feather size={13} /> {ritual.kind === "wins" ? "Share a win" : "Let it out"}</button>}
           </div>
         )}
 
@@ -1982,7 +2159,20 @@ function RoomView({ roomKey, posts, loading, error, user, onNav, onHome, onCrisi
         )}
         {composing && (
           <RoomComposer room={roomKey} user={user} onCrisis={onCrisis} initialBody={seed}
-            onPosted={(post) => { setComposing(false); (onPostCreated || onReload)(post); }} onCancel={() => setComposing(false)} />
+            onPosted={(post) => { setComposing(false); onFirstPostMaybe(post); }} onCancel={() => setComposing(false)} />
+        )}
+
+        {/* Talk substance: ENGAGEMENT NUDGE — "a reply came in on your line" (client-only, bounded) */}
+        {enhanced && replyNudge && (
+          <button onClick={() => { setAutoOpenPostId(replyNudge.postId); setReplyNudge(null); try { window.scrollTo({ top: 0, behavior: "instant" }); } catch { /* ignore */ } }}
+            style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", textAlign: "left", background: `linear-gradient(160deg, ${T.paperHi} 0%, ${T.sage || "#8FAF8F"}1A 100%)`, border: `1px solid ${T.paperDeep}`, borderLeft: `4px solid ${T.sage || "#8FAF8F"}`, borderRadius: 13, padding: "12px 14px", marginBottom: 14, cursor: "pointer" }}>
+            <span style={{ width: 30, height: 30, borderRadius: 999, background: `${T.sage || "#8FAF8F"}22`, display: "grid", placeItems: "center", flexShrink: 0 }}><MessageCircle size={15} color={T.sage || "#8FAF8F"} /></span>
+            <span style={{ flex: 1 }}>
+              <span style={{ display: "block", fontFamily: SERIF, fontSize: 15, fontWeight: 700, color: T.ink }}>{replyNudge.n === 1 ? "A reply came in on your line" : `${replyNudge.n} new replies on your line`}</span>
+              <span style={{ fontFamily: UI, fontSize: 11.5, color: T.muted }}>Someone came by — tap to read it</span>
+            </span>
+            <ChevronRight size={16} color={T.muted} />
+          </button>
         )}
 
         {loading && <Hand size={18} color={T.muted}>Opening the room…</Hand>}
@@ -1993,7 +2183,8 @@ function RoomView({ roomKey, posts, loading, error, user, onNav, onHome, onCrisi
           <Hand size={18} color={T.inkSoft}>Quiet in here right now. Leave the first word — someone always comes by.</Hand>
         )}
         {!loading && !error && feed.map((p) => (
-          <PostCard key={p.id} post={p} user={user} onCrisis={onCrisis} onChanged={onReload} enhanced={enhanced} myHash={myHash} />
+          <PostCard key={p.id} post={p} user={user} onCrisis={onCrisis} onChanged={onReload} enhanced={enhanced} myHash={myHash}
+            autoOpen={autoOpenPostId === p.id} onSeenReplies={markRepliesSeen} />
         ))}
         {enhanced && filteredN > 0 && (
           <div style={{ fontFamily: UI, fontSize: 11.5, color: T.muted, textAlign: "center", marginTop: 10 }}>{filteredN} {filteredN === 1 ? "post is" : "posts are"} hidden by your mutes.</div>

@@ -370,12 +370,22 @@ Deno.serve(async (req) => {
     if (!post) return Response.json({ error: 'Not found' }, { status: 404 });
     if (post.hidden) return Response.json({ error: 'unavailable' }, { status: 409 });
     if (post.comments_mode === 'reaction') return Response.json({ error: 'reaction-only' }, { status: 409 });
+    // Talk substance #2 — threaded replies. parent_id nests this under another comment of the SAME
+    // post. Normalise to ONE level: a reply to a reply re-attaches to the top-level parent, so the
+    // thread never runs away to the right. A parent that's missing / from another post is ignored.
+    let parent_id = '';
+    const rawParent = String(p.parent_id || '').trim();
+    if (rawParent) {
+      const parent = await withTimeout(sb.entities.Comment.get(rawParent), 2500, 'parent-read').catch(() => null);
+      if (parent && parent.post_id === String(post_id)) parent_id = parent.parent_id ? String(parent.parent_id) : String(rawParent);
+    }
     const mod = localScreen(text);
     if (mod.crisis) return Response.json({ ok: false, intercept: true }, { status: 200 });
     const status = mod.remove ? 'removed' : 'visible';
     const core: Record<string, unknown> = {
       post_id: String(post_id), author_hash: String(author_hash),
       body: status === 'removed' ? '' : text, by: 'member', status, hidden: false,
+      ...(parent_id ? { parent_id } : {}),
     };
     let createErr = '';
     let comment = await withTimeout(sb.entities.Comment.create({ ...core, flagged: false, report_count: 0 }), 6000, 'create-full')
@@ -385,7 +395,7 @@ Deno.serve(async (req) => {
         .catch((e: any) => { createErr = e?.message || String(e); console.error('addComment core create failed:', createErr); return null; });
     }
     if (!comment) return Response.json({ error: 'Write failed', detail: createErr }, { status: 500 });
-    return Response.json({ ok: true, comment: { id: comment.id, post_id: comment.post_id, body: comment.body, by: comment.by, status: comment.status, created_date: comment.created_date } });
+    return Response.json({ ok: true, comment: { id: comment.id, post_id: comment.post_id, parent_id: comment.parent_id || '', body: comment.body, by: comment.by, status: comment.status, created_date: comment.created_date } });
   }
 
   // ── post (default): create a room/circle/club post ────────────────────────────────────
