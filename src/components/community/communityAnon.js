@@ -49,3 +49,17 @@ export function markReported(targetId) { const s = readSet(REPORTED_KEY); s.add(
 
 export function answeredQotd(day) { return readSet(QOTD_KEY).has(day); }
 export function markQotd(day) { const s = readSet(QOTD_KEY); s.add(day); writeSet(QOTD_KEY, s); }
+
+// Canonical botanical alias — a warm, stable, NON-identifying handle derived purely from the
+// anonymous author_hash (FNV-1a, same arrays as the rooms so aliases match across every surface:
+// rooms, circles, buddy reads, DMs). No PII; deterministic. Exported so non-page components
+// (LibraryTogether, etc.) render the SAME alias for the same hash.
+const ALIAS_ADJ = ["Wild", "Quiet", "Golden", "Soft", "Bright", "Gentle", "Bold", "Still", "Sunny", "Velvet", "Little", "Brave", "Wandering", "Calm", "Amber", "Silver"];
+const ALIAS_NOUN = ["Poppy", "Fern", "Willow", "Rose", "Sage", "Ivy", "Bluebell", "Daisy", "Heather", "Marigold", "Clover", "Fox", "Wren", "Robin", "Lark", "Thistle", "Meadow", "Hazel", "Juniper", "Primrose"];
+export function botanicalAlias(hash) {
+  const s = String(hash || "");
+  if (!s) return "A friend";
+  let h = 2166136261; for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); }
+  h = h >>> 0;
+  return `${ALIAS_ADJ[h % ALIAS_ADJ.length]} ${ALIAS_NOUN[(h >> 5) % ALIAS_NOUN.length]}`;
+}
