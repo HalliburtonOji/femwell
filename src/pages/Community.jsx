@@ -48,6 +48,8 @@ import {
   CIRCLES, CIRCLE_CATEGORIES, circleByKey, SENSITIVE_CONSENT,
   isJoined, markJoined, clearJoined, suggestedCircles,
   circlePromptForDay, CIRCLE_INFO,
+  circleFirstLight, circleRhythm, circleBelongsTo,
+  circlePostedEver, markCirclePosted, circleSeenCount, markCircleSeen,
 } from "@/components/community/circlesConfig";
 import {
   CLUBS, CLUB_CATEGORIES, clubByKey, CLUBS_USER_CREATE_ENABLED,
@@ -1501,7 +1503,100 @@ function CirclesDirectory({ onOpen, profile = null, onHome = null }) {
   );
 }
 
-function CircleView({ circleKey, user, onCrisis, onBack }) {
+// ── JOURNAL → WHISPER bridge (Circles substance #3) — a gentle, fully opt-in path from her private
+// Journal into the matching circle. She sees ONLY her own free-text reflections (never mood scores,
+// tags, cycle or symptom data), PICKS one, EDITS it, and confirms before anything is posted. It goes
+// in anonymously under her botanical alias via the same createCommunityPost path — nothing private is
+// ever auto-shared. Reuses existing entities/functions; no new backend.
+function WhisperFromJournalSheet({ circleKey, circleName, user, onClose, onPosted }) {
+  const [entries, setEntries] = useState(null);   // null=loading, []=none, [..]=list
+  const [picked, setPicked] = useState(null);     // the chosen entry
+  const [text, setText] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState("");
+
+  useEffect(() => {
+    let alive = true;
+    (async () => {
+      if (!user?.id) { setEntries([]); return; }
+      try {
+        const rows = await base44.entities.JournalEntries.filter({ user_id: user.id }, "-created_date", 40);
+        // ONLY her own free-text reflections — never mood-score or todo cards, never tags/cycle data.
+        const safe = (Array.isArray(rows) ? rows : []).filter((e) =>
+          typeof e.text === "string" && e.text.trim().length >= 12 && !["mood", "todo"].includes(e.card_type));
+        if (alive) setEntries(safe.slice(0, 12));
+      } catch { if (alive) setEntries([]); }
+    })();
+    return () => { alive = false; };
+  }, [user?.id]);
+
+  const pick = (e) => { setPicked(e); setText(String(e.text || "").slice(0, POST_MAX)); setErr(""); };
+
+  const share = async () => {
+    const body = text.trim();
+    if (!body || busy) return;
+    if (crisisCheck(body).intercept) { onClose?.(); onPosted?.({ crisis: true }); return; }
+    setBusy(true); setErr("");
+    try {
+      const wh = await communityHash(user?.id);
+      const r = await base44.functions.invoke("createCommunityPost", { user_id: user?.id, author_hash: wh, room: "circles", circle: circleKey, body, comments_mode: "open" });
+      const d = r?.data ?? r;
+      if (d?.intercept) { onClose?.(); onPosted?.({ crisis: true }); return; }
+      if (!d?.post?.id) { setErr("Couldn't share that just now — try again in a moment."); setBusy(false); return; }
+      base44.functions.invoke("screenContent", { kind: "post", id: d.post.id }).catch(() => {});
+      onPosted?.(d.post);
+      onClose?.();
+    } catch { setErr("Couldn't share that just now — try again in a moment."); }
+    finally { setBusy(false); }
+  };
+
+  return (
+    <>
+      <div onClick={onClose} style={{ position: "fixed", inset: 0, zIndex: 60, background: "rgba(20,14,8,0.42)" }} />
+      <div role="dialog" aria-label="Whisper from your journal" style={{ position: "fixed", left: 0, right: 0, bottom: 0, zIndex: 61, background: T.paperHi, borderTop: `1px solid ${T.paperDeep}`, borderRadius: "18px 18px 0 0", boxShadow: "0 -8px 30px rgba(58,44,26,0.22)", padding: "18px 18px calc(20px + env(safe-area-inset-bottom))", maxWidth: 460, margin: "0 auto", maxHeight: "82vh", overflowY: "auto" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 9, marginBottom: 4 }}>
+          <span style={{ width: 30, height: 30, borderRadius: 999, background: `${T.plum || "#8E6E8E"}1F`, display: "grid", placeItems: "center", flexShrink: 0 }}><Feather size={15} color={T.plum || "#8E6E8E"} /></span>
+          <div>
+            <div style={{ fontFamily: UI, fontSize: 15, fontWeight: 800, color: T.ink }}>Whisper from your journal</div>
+            <div style={{ fontFamily: UI, fontSize: 11.5, color: T.muted }}>Into {circleName} — anonymous, only what you choose</div>
+          </div>
+        </div>
+        <div style={{ display: "flex", gap: 8, alignItems: "flex-start", background: `${T.sage || "#8FAF8F"}12`, border: `1px solid ${T.paperDeep}`, borderRadius: 10, padding: "9px 11px", margin: "12px 0" }}>
+          <ShieldCheck size={15} color={T.sage || "#8FAF8F"} style={{ flexShrink: 0, marginTop: 1 }} />
+          <span style={{ fontFamily: UI, fontSize: 12, color: T.inkSoft, lineHeight: 1.42 }}>Nothing from your journal is shared automatically. Pick a reflection, edit it however you like, and it posts anonymously under your circle alias. Your cycle, moods and tags never leave your journal.</span>
+        </div>
+
+        {!picked ? (
+          <>
+            {entries === null && <Hand size={15} color={T.muted}>Opening your journal…</Hand>}
+            {entries && entries.length === 0 && (
+              <Hand size={15} color={T.muted}>No written reflections to whisper from yet. When you write a free reflection in your Journal, it'll show here — or just add a line to the circle directly.</Hand>
+            )}
+            {entries && entries.map((e) => (
+              <button key={e.id} onClick={() => pick(e)} style={{ display: "block", width: "100%", textAlign: "left", background: T.paper, border: `1px solid ${T.paperDeep}`, borderRadius: 12, padding: "11px 13px", marginBottom: 9, cursor: "pointer" }}>
+                <div style={{ fontFamily: UI, fontSize: 10.5, color: T.muted, marginBottom: 4 }}>{e.session_date ? new Date(e.session_date).toLocaleDateString("en-GB", { day: "numeric", month: "short" }) : ""}{e.card_type && e.card_type !== "free" ? ` · ${e.card_type}` : ""}</div>
+                <div style={{ fontFamily: SERIF, fontSize: 15, color: T.ink, lineHeight: 1.4, display: "-webkit-box", WebkitLineClamp: 3, WebkitBoxOrient: "vertical", overflow: "hidden" }}>{e.text}</div>
+              </button>
+            ))}
+            <button onClick={onClose} style={{ ...ghostBtn, width: "100%", justifyContent: "center", padding: "12px", marginTop: 4 }}>Cancel</button>
+          </>
+        ) : (
+          <>
+            <div style={{ fontFamily: UI, fontSize: 11.5, fontWeight: 700, color: T.muted, marginBottom: 6 }}>Edit before you share — make it exactly what you want the circle to see:</div>
+            <textarea value={text} onChange={(e) => { setText(e.target.value); if (err) setErr(""); }} maxLength={POST_MAX} style={{ ...inputStyle, minHeight: 120, fontSize: 16 }} />
+            {err && <div style={{ fontFamily: UI, fontSize: 12, color: T.crimson, marginTop: 6 }}>{err}</div>}
+            <div style={{ display: "flex", gap: 9, marginTop: 12 }}>
+              <button onClick={() => setPicked(null)} style={{ ...ghostBtn, flex: 1, justifyContent: "center", padding: "12px" }}>Back</button>
+              <button disabled={busy || !text.trim()} onClick={share} style={{ flex: 1.4, background: OXBLOOD, color: "#fff", border: "none", borderRadius: 999, padding: "12px", fontFamily: UI, fontSize: 14, fontWeight: 800, cursor: (busy || !text.trim()) ? "default" : "pointer", opacity: (busy || !text.trim()) ? 0.7 : 1 }}>{busy ? "Sharing…" : "Whisper it in"}</button>
+            </div>
+          </>
+        )}
+      </div>
+    </>
+  );
+}
+
+function CircleView({ circleKey, user, onCrisis, onBack, profile = null, onNav = null }) {
   const circle = circleByKey(circleKey);
   const [joined, setJoined] = useState(() => isJoined(circleKey));
   const [posts, setPosts] = useState(null);
@@ -1510,19 +1605,42 @@ function CircleView({ circleKey, user, onCrisis, onBack }) {
   const [joinErr, setJoinErr] = useState(false);
   const [busy, setBusy] = useState(false);
   const [myHash, setMyHash] = useState(null);
+  const [whisperOpen, setWhisperOpen] = useState(false);
+  const [activeNudge, setActiveNudge] = useState(false);   // "your circle has been active since you were here"
   useEffect(() => { let a = true; communityHash(user?.id).then((h) => { if (a) setMyHash(h); }).catch(() => {}); return () => { a = false; }; }, [user?.id]);
   const prompt = circlePromptForDay(circleKey);
   const info = CIRCLE_INFO[circleKey] || null;
+  const rhythm = circleRhythm(circleKey);
+  const belongs = circleBelongsTo(circleKey, profile);   // her stage/interest points here (self-declared only)
   // k-anon "who's here" — distinct recent author_hashes in this circle (bucketed, never a count).
   const activeN = Array.isArray(posts) ? new Set(posts.filter((p) => Date.now() - new Date(p.created_date || 0).getTime() <= PRESENCE_WINDOW_HRS * 3600e3).map((p) => p.author_hash)).size : 0;
 
   const load = useCallback(async () => {
     try {
       const rows = await base44.entities.CommunityPost.filter({ circle: circleKey, hidden: false }, "-created_date", 100);
-      setPosts(Array.isArray(rows) ? rows : []);
+      const list = Array.isArray(rows) ? rows : [];
+      setPosts(list);
+      // "your circle has been active" — has it grown since I last looked? (per-device, no backend)
+      const seen = circleSeenCount(circleKey);
+      if (seen > 0 && list.length > seen) setActiveNudge(true);
+      markCircleSeen(circleKey, list.length);
     } catch (e) { console.error("circle feed failed:", e); setPosts(false); }
   }, [circleKey]);
   useEffect(() => { load(); }, [load]);
+
+  // guaranteed warm welcome: on her FIRST line in this circle, prompt Jess (existing fn, backstop)
+  // so a quiet circle never leaves her first post unanswered. Dedup + model taste still apply.
+  const onCirclePosted = (post) => {
+    setComposing(false);
+    if (post?.id) {
+      setPosts((prev) => [post, ...(Array.isArray(prev) ? prev : [])]);
+      if (!circlePostedEver(circleKey)) {
+        markCirclePosted(circleKey);
+        base44.functions.invoke("jessSupport", { post_id: post.id, backstop: true }).catch(() => {});
+      }
+    }
+    load();
+  };
 
   const doJoin = async (consented) => {
     if (busy) return;
@@ -1557,9 +1675,23 @@ function CircleView({ circleKey, user, onCrisis, onBack }) {
       <Script size={30} color={OXBLOOD} style={{ marginBottom: 4 }}>{circle.name}</Script>
       <Hand size={17} color={T.muted} style={{ marginBottom: 8 }}>{circle.line}</Hand>
       {/* k-anon "who's here" — warmth, never a count */}
-      <div style={{ display: "inline-flex", alignItems: "center", gap: 6, fontFamily: UI, fontSize: 12, fontWeight: 600, color: T.muted, marginBottom: 14 }}>
+      <div style={{ display: "inline-flex", alignItems: "center", gap: 6, fontFamily: UI, fontSize: 12, fontWeight: 600, color: T.muted, marginBottom: belongs ? 8 : 14 }}>
         <Users size={13} color={T.gold} /> {circle.sensitive ? "It's believed here — " : ""}{activeN <= 0 ? "quiet so far; a lovely place to be first" : activeN < 5 ? "a few women are around" : "several women are here"}
       </div>
+      {/* belonging cue — why this circle is hers (from self-declared stage/interest only) */}
+      {belongs && (
+        <div style={{ display: "inline-flex", alignItems: "center", gap: 6, fontFamily: UI, fontSize: 12, fontWeight: 700, color: T.gold, background: `${T.gold}14`, borderRadius: 999, padding: "4px 11px", marginBottom: 14 }}>
+          <Sparkles size={12} /> This circle matches where you are right now
+        </div>
+      )}
+
+      {/* "your circle has been active" — a gentle return cue (per-device, no counts shown) */}
+      {activeNudge && (
+        <div style={{ display: "flex", alignItems: "center", gap: 9, background: `linear-gradient(160deg, ${T.paperHi} 0%, ${T.sage || "#8FAF8F"}18 100%)`, border: `1px solid ${T.paperDeep}`, borderLeft: `4px solid ${T.sage || "#8FAF8F"}`, borderRadius: 12, padding: "10px 13px", marginBottom: 14 }}>
+          <Waves size={15} color={T.sage || "#8FAF8F"} style={{ flexShrink: 0 }} />
+          <span style={{ fontFamily: UI, fontSize: 12.5, color: T.inkSoft, lineHeight: 1.4 }}>Your circle's been busy since you were last here — new voices below.</span>
+        </div>
+      )}
 
       {/* per-condition NHS/charity info anchor — the misinformation counterweight (calm, grounded) */}
       {info && (
@@ -1569,9 +1701,34 @@ function CircleView({ circleKey, user, onCrisis, onBack }) {
         </div>
       )}
 
+      {/* JESS "FIRST LIGHT" — a warm, circle-specific opener so a quiet circle never reads empty.
+          Jess's voice (no post created); shown when the circle is quiet. */}
+      {posts && activeN <= 0 && (
+        <div style={{ background: T.paper, border: `1px solid ${T.gold}`, borderRadius: 14, padding: "14px 15px", marginBottom: 14 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 7, marginBottom: 6 }}>
+            <span style={{ width: 24, height: 24, borderRadius: 999, background: `${T.gold}22`, display: "grid", placeItems: "center", flexShrink: 0 }}><HeartHandshake size={13} color={T.gold} /></span>
+            <Eyebrow color={T.gold}>Jess · first light</Eyebrow>
+          </div>
+          <Hand size={17} color={T.inkSoft} style={{ marginBottom: joined ? 10 : 0 }}>{circleFirstLight(circleKey)} Leave a line whenever you're ready — if it's quiet, I'll be here, and I'll make sure you're not left alone.</Hand>
+          {joined && <button onClick={() => setComposing(true)} style={{ ...primaryBtn, padding: "8px 14px" }}><Feather size={13} /> Leave the first line</button>}
+        </div>
+      )}
+
       {/* Books circle hosts the seasonal shared read (Phase 2) — a signpost into the Jess-hosted
           Book Club + readers' corner, not a member-hosting surface. Lurkable; no join required. */}
       {circleKey === "books" && <BooksCircleSharedRead />}
+
+      {/* CIRCLE RHYTHM — this circle gathers around a recurring moment; ties into Events/Together heartbeat */}
+      {rhythm && (
+        <button onClick={() => onNav && onNav("events")} disabled={!onNav} style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", textAlign: "left", background: `linear-gradient(160deg, ${T.paperHi} 0%, ${T.plum || "#8E6E8E"}12 100%)`, border: `1px solid ${T.paperDeep}`, borderLeft: `4px solid ${T.plum || "#8E6E8E"}`, borderRadius: 13, padding: "12px 14px", marginBottom: 14, cursor: onNav ? "pointer" : "default" }}>
+          <span style={{ width: 30, height: 30, borderRadius: 8, background: `${T.plum || "#8E6E8E"}1F`, display: "grid", placeItems: "center", flexShrink: 0 }}><CalendarDays size={15} color={T.plum || "#8E6E8E"} /></span>
+          <span style={{ flex: 1 }}>
+            <span style={{ display: "block", fontFamily: SERIF, fontSize: 15, fontWeight: 600, color: T.ink }}>This circle gathers around {rhythm.moment}</span>
+            <span style={{ fontFamily: UI, fontSize: 11.5, color: T.muted }}>See what's on in Together — belonging with a heartbeat</span>
+          </span>
+          {onNav && <ChevronRight size={15} color={T.muted} />}
+        </button>
+      )}
 
       {/* circle ritual prompt — a warm, life-tinted on-ramp (a circle never reads empty) */}
       {prompt && !composing && (
@@ -1602,19 +1759,28 @@ function CircleView({ circleKey, user, onCrisis, onBack }) {
       {joinErr && <div style={{ fontFamily: UI, fontSize: 12, color: T.crimson, marginBottom: 12 }}>Couldn{"’"}t join just now — please try again.</div>}
 
       {!composing && joined && (
-        <button onClick={() => setComposing(true)} style={{ ...primaryBtn, marginBottom: 16 }}><Plus size={14} /> Add to {circle.name}</button>
+        <div style={{ display: "flex", gap: 9, flexWrap: "wrap", marginBottom: 16 }}>
+          <button onClick={() => setComposing(true)} style={{ ...primaryBtn }}><Plus size={14} /> Add to {circle.name}</button>
+          {/* JOURNAL → WHISPER bridge — bring a private reflection in, anonymised, only what you choose */}
+          <button onClick={() => setWhisperOpen(true)} style={{ ...ghostBtn, borderColor: T.plum || "#8E6E8E", color: T.plum || "#8E6E8E" }}><Feather size={13} /> Whisper from your journal</button>
+        </div>
       )}
       {composing && (
         <RoomComposer room="circles" circle={circleKey} user={user} onCrisis={onCrisis} sensitive={!!circle.sensitive}
-          onPosted={(post) => { setComposing(false); if (post?.id) setPosts((prev) => [post, ...(Array.isArray(prev) ? prev : [])]); load(); }} onCancel={() => setComposing(false)} />
+          onPosted={onCirclePosted} onCancel={() => setComposing(false)} />
+      )}
+      {whisperOpen && (
+        <WhisperFromJournalSheet circleKey={circleKey} circleName={circle.name} user={user}
+          onClose={() => setWhisperOpen(false)}
+          onPosted={(post) => { if (post?.crisis) { onCrisis?.(); return; } onCirclePosted(post); }} />
       )}
 
       {posts === null && <Hand size={18} color={T.muted}>Opening the circle…</Hand>}
       {posts === false && <Hand size={18} color={T.muted}>Couldn{"’"}t reach the circle just now. Pull down to try again.</Hand>}
-      {posts && posts.length === 0 && (
+      {posts && posts.length === 0 && !joined && (
         <div style={{ background: T.paperHi, border: `1px dashed ${T.paperDeep}`, borderRadius: 14, padding: "22px 18px", textAlign: "center" }}>
           <Hand size={18} color={T.ink}>{circle.sensitive ? "Quiet so far — and you're not too much for this room." : "Quiet in here so far."}</Hand>
-          <Hand size={15} color={T.muted}>{joined ? "Leave the first word — someone always comes by, and Jess is here too." : "Join to leave the first word — lurking's welcome as long as you like."}</Hand>
+          <Hand size={15} color={T.muted}>Join to leave the first word — lurking's welcome as long as you like.</Hand>
         </div>
       )}
       {posts && posts.map((p) => (
@@ -1624,10 +1790,10 @@ function CircleView({ circleKey, user, onCrisis, onBack }) {
   );
 }
 
-function CirclesView({ user, onCrisis, initialActive = null, profile = null, onHome = null }) {
+function CirclesView({ user, onCrisis, initialActive = null, profile = null, onHome = null, onNav = null }) {
   const [active, setActive] = useState(initialActive);   // null = directory; else circle key
   return active
-    ? <CircleView circleKey={active} user={user} onCrisis={onCrisis} onBack={() => setActive(null)} />
+    ? <CircleView circleKey={active} user={user} onCrisis={onCrisis} onBack={() => setActive(null)} profile={profile} onNav={onNav} />
     : <CirclesDirectory onOpen={setActive} profile={profile} onHome={onHome} />;
 }
 
@@ -2054,7 +2220,7 @@ function RoomView({ roomKey, posts, loading, error, user, onNav, onHome, onCrisi
 
       <div style={{ padding: "20px 18px 60px" }}>
         {roomKey === "circles" ? (
-          <CirclesView user={user} onCrisis={onCrisis} initialActive={initialCircle} profile={profile} />
+          <CirclesView user={user} onCrisis={onCrisis} initialActive={initialCircle} profile={profile} onNav={onNav} />
         ) : roomKey === "library" ? (
           <LibraryView user={user} onCrisis={onCrisis} onNav={onNav} onOpenCorner={onOpenCorner} />
         ) : roomKey === "games" ? (
@@ -2883,7 +3049,7 @@ export function CommunityInner({ initialView = null, embedded = false, homeVaria
           ? <LibraryTogether user={user} onBack={goBack} onNav={setView}
               onOpenCorner={(key, title) => { setInitialClub(key); setClubTitle(title || ""); setView("clubs"); }} />
           : view === "circles"
-          ? <div style={{ padding: "26px 18px 50px" }}><CirclesView user={user} onCrisis={() => setCrisis(true)} initialActive={initialCircle} profile={profile} onHome={goBack} /></div>
+          ? <div style={{ padding: "26px 18px 50px" }}><CirclesView user={user} onCrisis={() => setCrisis(true)} initialActive={initialCircle} profile={profile} onHome={goBack} onNav={setView} /></div>
           : view === "games"
           ? <div style={{ padding: "26px 18px 50px" }}><GamesView user={user} onCrisis={() => setCrisis(true)} onHome={goBack} onNav={setView} /></div>
           : view === "wisdom"

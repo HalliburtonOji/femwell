@@ -108,7 +108,58 @@ export const CIRCLE_INFO = {
   menopause:     { line: "Peer support, not medical advice. The NHS has clear, current menopause information and treatment options.", href: "https://www.nhs.uk/conditions/menopause/" },
 };
 
+// ── JESS "FIRST LIGHT" (substance #3) — a warm, circle-specific opener so a live circle never
+// reads empty. Rendered as Jess's voice (client-side; no post created). One warm line per circle,
+// wrapped in a shared frame. When a woman leaves her first line in the circle, the existing
+// jessSupport fn (backstop mode) is prompted so she also gets a real reply — never met with silence.
+export const CIRCLE_FIRST_LIGHT = {
+  ttc:           "This is a soft place for the wait — the hope, the ache, the not-talking-about-it. Whatever's happening in your cycle, you're among women who get it.",
+  pregnancy:     "However this is going for you — the wonder and the worry both belong here, week by week.",
+  postpartum:    "The fourth trimester is a lot. Newborn fog, healing, becoming — you can bring all of it here.",
+  perimenopause: "The shift before the shift is real, and often dismissed. Here it's named, and believed.",
+  menopause:     "Through it and out the other side — honest and unfiltered. Nothing's too much for this room.",
+  pcos:          "The long road with PCOS is easier shared. Symptoms and life both — you don't have to be clinical here.",
+  endo:          "The pain that gets dismissed elsewhere is believed here. So is the rest of your life.",
+  pmdd:          "The two weeks that take you under don't make you too much. You're among women who understand.",
+  books:         "For what you're reading, what wrecked you, what's next — pull up a chair.",
+  career:        "Work, pay, the dumb questions, the big swings — say the thing you'd never say aloud.",
+  creativity:    "Whatever you're making, however small — this is your permission to play.",
+  movement:      "Bodies in motion, kindly — walks, swims, stretches, and the days you didn't manage either.",
+};
+export const circleFirstLight = (key) => CIRCLE_FIRST_LIGHT[key] || "You're welcome here exactly as you are.";
+
+// ── CIRCLE RHYTHM (substance #3) — each circle gathers around a recurring moment, tying it into the
+// Together/Events heartbeat. `tag` matches the curated online sessions in EventsTogether; `moment`
+// is the belonging line. Signposts into the Events shelf (no new events invented here).
+export const CIRCLE_RHYTHM = {
+  ttc:           { moment: "a gentle monthly check-in and the cycle-sync evening", tag: "wellness" },
+  pregnancy:     { moment: "the cycle-sync evening and soft online meet-ups", tag: "wellness" },
+  postpartum:    { moment: "a gentle co-working hour while babies nap", tag: "online" },
+  perimenopause: { moment: "the cycle-sync evening and gentle wellness sessions", tag: "wellness" },
+  menopause:     { moment: "honest wellness sessions and online meet-ups", tag: "wellness" },
+  pcos:          { moment: "gentle wellness sessions and the cycle-sync evening", tag: "wellness" },
+  endo:          { moment: "gentle wellness sessions and the cycle-sync evening", tag: "wellness" },
+  pmdd:          { moment: "the cycle-sync evening — soft company for the hard fortnight", tag: "wellness" },
+  books:         { moment: "the weekly book-club call", tag: "books" },
+  career:        { moment: "the co-working hour — gentle body-doubling", tag: "online" },
+  creativity:    { moment: "a making hour and the co-working sessions", tag: "online" },
+  movement:      { moment: "group walks and the gentle movement sessions", tag: "wellness" },
+};
+export const circleRhythm = (key) => CIRCLE_RHYTHM[key] || null;
+
+// belonging cue — is THIS circle one her profile (stage/interest) points to? (never inferred from
+// tracked cycle/symptoms — only self-declared stage + followed interests, same guardrail as discovery)
+export function circleBelongsTo(key, profile) {
+  return suggestedCircles(profile).some((c) => c.key === key);
+}
+
 // device-local joined-state (anonymous, same model as reactions/qotd — no read needed for UX)
 export const isJoined = (key) => { try { return localStorage.getItem("fw_circle_" + key) === "1"; } catch { return false; } };
 export const markJoined = (key) => { try { localStorage.setItem("fw_circle_" + key, "1"); } catch { /* ignore */ } };
 export const clearJoined = (key) => { try { localStorage.removeItem("fw_circle_" + key); } catch { /* ignore */ } };
+// first-line-in-this-circle flag (for the guaranteed Jess welcome reply, once per circle per device)
+export const circlePostedEver = (key) => { try { return localStorage.getItem("fw_circle_posted_" + key) === "1"; } catch { return false; } };
+export const markCirclePosted = (key) => { try { localStorage.setItem("fw_circle_posted_" + key, "1"); } catch { /* ignore */ } };
+// "your circle has been active" nudge — remember the last post-count I saw per circle
+export const circleSeenCount = (key) => { try { return Number(localStorage.getItem("fw_circle_seen_" + key) || 0); } catch { return 0; } };
+export const markCircleSeen = (key, n) => { try { localStorage.setItem("fw_circle_seen_" + key, String(n)); } catch { /* ignore */ } };
