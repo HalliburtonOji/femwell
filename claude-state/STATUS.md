@@ -18,6 +18,15 @@
 - **Files (3):** NEW `components/calendar/SwipeMonths.jsx` · `components/calendar/CalendarOverlay.jsx` (FwCalendar → MonthGrid + SwipeMonths) · `components/planner/MonthlyCalendarCard.jsx` (deck → SwipeMonths). **Revert:** `git revert 780fd2a`.
 - **VERIFY (build):** clean `vite build` exit 0 → `index-BiAzYg96.js` (SwipeMonths/controlsRef markers in bundle) · committed `780fd2a` · pushed · `npx base44 site deploy -y` → deployed. **⏭ on-device:** swipe a month — finger-tracked, settles crisply, current slides out/next in; arrows do the same smooth slide (no delayed jump).
 
+## 🎟️✅ COMMUNITY EVENTS — SUBSTANCE PASS, LIVE (build order #6) · deployed `index-EhF6z0b6.js` · commit `a9650ad` (2026-07-14)
+**Go together, safely. UI-ONLY on existing entities (EventPod client create+read; EventRSVP; EventsItems) — no new backend, no sign-off. Reversible; nothing stripped (going, ticket interstitial, safety guide, save/share/report, curated online feed kept). Safety-first guardrails intact (never precise/home location; going-status private).**
+- **GO-TOGETHER PODS** (`PodSheet` on `EventPod`): on any in-person event → "Go together" → k-anon "who's going too" + join under a botanical alias + optional short **crisis-checked** note ("going alone", "meet at the door"). Pseudonymous, in-app only, public-venue framing. Replaced the old "pods coming/needs sign-off" placeholder with the real live feature + explainer.
+- **GET-HOME-SAFE** (device-local, NO external send): set expected-back time before an in-person event; if it passes without your "I'm safe" tap the app nudges YOU (overdue banner at top of Events). Nothing sent anywhere.
+- **REMINDERS:** device-local "Remind me" toggle per event (in-app surfacing near the time).
+- `eventExtras.js` (joinPod/podFor + safe-checkin + remind). Shared `botanicalAlias` from communityAnon.
+- **FLAGGED (not built, need sign-off/creds):** external ticket feeds (Ticketmaster/Skiddle) = fn+creds · trusted-contact safe-share = comms integration + per-send consent · OS push reminders = notify path.
+- **✅ done this pass:** pods (join + k-anon + note) · get-home-safe check-in · reminders · live explainer · build+deploy `index-EhF6z0b6.js` live-confirmed. **⏭ PAUSED for Halli** before build #7 = **Games multiplayer** (needs `GameMatch` entity + a move fn = SIGN-OFF, will flag first) and #8 = **Quietly** polish.
+
 ## 🤝✅ COMMUNITY TOGETHER — SUBSTANCE PASS, LIVE (build order #5) · deployed `index-Dw18gAuj.js` · commit `265e3b4` (2026-07-14)
 **Real weekly challenge with shared progress + watch-along. Backend pre-approved ("approved all"). Reversible; nothing stripped (this-week moment, 4 pillars, kindness pool, close-the-week all kept).**
 - **ENTITY (pushed):** `TogetherActivity` — curated weekly activity def (week_key · kind challenge|watchalong · slug · title · blurb · unit · goal · schedule · cta_room · status). Fully RLS admin (function-mediated). Progress + who's-in are COUNTS of **reused `GoalContribution`** (goal_key `tap:<id>`=step, `taj:<id>`=join) — aggregate-only, k-anon, NEVER a leaderboard.
