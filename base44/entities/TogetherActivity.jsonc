@@ -1,0 +1,38 @@
+{
+  // Community Together substance (#5, 2026-07-14) — a real WEEKLY shared activity: a collective
+  // challenge (the room works toward one aggregate goal, never a leaderboard) or a watch/read-along
+  // (a scheduled shared moment with a discussion room). One curated row per activity per ISO-week,
+  // seeded idempotently by the together.current dispatcher action (no manual admin needed).
+  //
+  // AGGREGATE-ONLY, k-anon: this row holds the DEFINITION + goal; actual progress + who's-in are
+  // counted from GoalContribution rows (goal_key "tap:<id>" = a step, "taj:<id>" = a join) — reusing
+  // the collective-pool pattern, so there is never a per-person score or rank stored here.
+  //
+  // Fully function-mediated (all RLS admin): clients only ever touch it through together.* actions.
+  "name": "TogetherActivity",
+  "type": "object",
+  "properties": {
+    "week_key": { "type": "string", "description": "Monday YYYY-MM-DD of the week this activity runs (matches collectivePool's weekKey)." },
+    "kind": { "type": "string", "enum": ["challenge", "watchalong"], "default": "challenge", "description": "challenge = collective goal with shared progress; watchalong = a scheduled shared read/watch moment." },
+    "slug": { "type": "string", "description": "Stable curated slug (e.g. 'read-40', 'friday-film') so re-seeds dedup within a week." },
+    "title": { "type": "string" },
+    "blurb": { "type": "string" },
+    "unit": { "type": "string", "description": "challenge: what a step is (chapters, check-ins, kindnesses, evenings)." },
+    "goal": { "type": "number", "default": 40, "description": "challenge: the collective target the room fills together (aggregate, never per-person)." },
+    "schedule": { "type": "string", "description": "watchalong: human schedule line, e.g. 'Fridays · 8pm'." },
+    "cta_room": { "type": "string", "description": "Which room/surface the discussion/thread opens (lounge/library/lighter/…)." },
+    "status": { "type": "string", "enum": ["open", "closed"], "default": "open", "description": "closed = past its week; shows the close-of-week reveal." }
+  },
+  "required": ["week_key", "kind", "slug", "title"],
+  "indexes": [
+    { "fields": ["week_key"] },
+    { "fields": ["slug"] },
+    { "fields": ["created_date"] }
+  ],
+  "rls": {
+    "read": { "user_condition": { "role": "admin" } },
+    "create": { "user_condition": { "role": "admin" } },
+    "update": { "user_condition": { "role": "admin" } },
+    "delete": { "user_condition": { "role": "admin" } }
+  }
+}

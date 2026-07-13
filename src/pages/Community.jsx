@@ -76,6 +76,7 @@ import { FwFloraHero } from "@/components/brand/PageTop";
 import PresenceBloom from "@/components/brand/PresenceBloom";
 import DMView from "@/components/community/DMView";
 import { dmApi } from "@/components/community/dm";
+import { togetherApi, participantsLabel } from "@/components/community/together";
 import { Clipboard, ClipboardSlider } from "@/components/brand/ClipboardSlider";
 import { SummaryCard, FwCard } from "@/components/brand/Card";
 import { cwOf, Pollinator } from "@/components/brand/flora";
@@ -2696,6 +2697,97 @@ function togetherMomentForWeek() {
   return TOGETHER_MOMENTS[((wk % TOGETHER_MOMENTS.length) + TOGETHER_MOMENTS.length) % TOGETHER_MOMENTS.length];
 }
 
+// ── WEEKLY TOGETHER (substance #5) — real shared activities with LIVE aggregate progress. A
+// collective challenge (the room fills one goal together — aggregate, never a leaderboard) + a
+// watch/read-along (a scheduled shared moment → its discussion room). Powered by TogetherActivity
+// + GoalContribution via the together.* dispatcher actions. Calm, k-anon, on-brand.
+function WeeklyTogether({ user, onEnter }) {
+  const [acts, setActs] = useState(null);   // null=loading, []=none, [..]=activities
+  const [busyId, setBusyId] = useState(null);
+
+  const load = useCallback(async () => {
+    try { const r = await togetherApi.current(user); setActs(Array.isArray(r?.activities) ? r.activities : []); }
+    catch { setActs([]); }
+  }, [user]);
+  useEffect(() => { load(); }, [load]);
+
+  const join = async (a) => {
+    setBusyId(a.id);
+    try { await togetherApi.join(user, a.id); await load(); } catch { /* ignore */ } finally { setBusyId(null); }
+  };
+  const step = async (a) => {
+    setBusyId(a.id);
+    // optimistic bump so the bar visibly moves the instant she taps
+    setActs((prev) => (prev || []).map((x) => x.id === a.id ? { ...x, progress: x.progress + 1, steppedToday: true, joined: true, participants: x.joined ? x.participants : x.participants + 1 } : x));
+    try { await togetherApi.step(user, a.id); await load(); } catch { /* ignore */ } finally { setBusyId(null); }
+  };
+
+  if (acts === null) return <Hand size={15} color={T.muted}>Finding what the room's up to this week…</Hand>;
+  if (acts.length === 0) return null;
+
+  const challenge = acts.find((a) => a.kind === "challenge");
+  const watch = acts.find((a) => a.kind === "watchalong");
+
+  return (
+    <div style={{ marginBottom: 4 }}>
+      {/* THE COLLECTIVE CHALLENGE — shared progress bar that moves as women take part */}
+      {challenge && (() => {
+        const pct = challenge.goal > 0 ? Math.min(100, Math.round((challenge.progress / challenge.goal) * 100)) : 0;
+        const done = challenge.goal > 0 && challenge.progress >= challenge.goal;
+        const gc = cwOf("sage").petal;
+        return (
+          <div style={{ position: "relative", overflow: "hidden", background: `linear-gradient(160deg, ${T.paperHi} 0%, ${gc}14 100%)`, border: `1px solid ${T.paperDeep}`, borderLeft: `4px solid ${gc}`, borderRadius: 18, padding: "16px 16px", marginBottom: 14 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 7, marginBottom: 7 }}>
+              <span style={{ width: 28, height: 28, borderRadius: 8, background: `${gc}1F`, display: "grid", placeItems: "center" }}><HeartHandshake size={15} color={gc} /></span>
+              <span style={{ fontFamily: UI, fontSize: 10.5, fontWeight: 800, letterSpacing: ".06em", textTransform: "uppercase", color: gc }}>This week’s challenge · together</span>
+            </div>
+            <div style={{ fontFamily: HANDFAM, fontStyle: "italic", fontWeight: 700, fontSize: 20, color: T.ink, lineHeight: 1.2, marginBottom: 4 }}>{challenge.title}</div>
+            <Hand size={14.5} color={T.inkSoft} style={{ marginBottom: 10 }}>{challenge.blurb}</Hand>
+            {/* shared progress bar (aggregate, never a rank) */}
+            <div style={{ height: 10, borderRadius: 999, background: `${T.paperDeep}66`, overflow: "hidden", marginBottom: 6 }}>
+              <div style={{ height: "100%", width: `${Math.max(3, pct)}%`, borderRadius: 999, background: `linear-gradient(90deg, ${gc} 0%, ${cwOf("gold").petal} 100%)`, transition: "width .5s ease" }} />
+            </div>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 12 }}>
+              <span style={{ fontFamily: UI, fontSize: 12.5, fontWeight: 700, color: T.ink }}>{done ? `Goal reached — ${challenge.progress} ${challenge.unit} and counting` : `We’re ${pct}% there · ${challenge.progress} of ${challenge.goal} ${challenge.unit}`}</span>
+              <span style={{ fontFamily: UI, fontSize: 11, color: T.muted }}>{participantsLabel(challenge.participants)}</span>
+            </div>
+            <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+              <button disabled={busyId === challenge.id || challenge.steppedToday} onClick={() => step(challenge)} style={{ display: "inline-flex", alignItems: "center", gap: 6, borderRadius: 999, padding: "10px 15px", border: "none", background: challenge.steppedToday ? `${gc}1C` : T.ink, color: challenge.steppedToday ? gc : T.paperHi, fontFamily: UI, fontSize: 13, fontWeight: 700, cursor: challenge.steppedToday ? "default" : "pointer", opacity: busyId === challenge.id ? 0.6 : 1 }}>
+                {challenge.steppedToday ? <><Check size={14} /> Added today</> : <><Plus size={14} /> I did my bit</>}
+              </button>
+              {!challenge.joined && !challenge.steppedToday && (
+                <button disabled={busyId === challenge.id} onClick={() => join(challenge)} style={{ display: "inline-flex", alignItems: "center", gap: 6, borderRadius: 999, padding: "10px 15px", border: `1px solid ${gc}`, background: `${gc}1C`, color: gc, fontFamily: UI, fontSize: 13, fontWeight: 700, cursor: "pointer" }}><HeartHandshake size={14} /> I'm in</button>
+              )}
+              <button onClick={() => onEnter?.(challenge.cta_room)} style={{ display: "inline-flex", alignItems: "center", gap: 6, borderRadius: 999, padding: "10px 15px", border: `1px solid ${T.paperDeep}`, background: T.paperHi, color: T.ink, fontFamily: UI, fontSize: 13, fontWeight: 700, cursor: "pointer" }}><MessageCircle size={14} /> Cheer each other on</button>
+            </div>
+            {challenge.steppedToday && <div style={{ fontFamily: UI, fontSize: 11, color: T.muted, marginTop: 9 }}>You’ve added to the room today — come back tomorrow. A missed day never shows.</div>}
+          </div>
+        );
+      })()}
+
+      {/* WATCH / READ-ALONG — a scheduled shared moment + its thread */}
+      {watch && (() => {
+        const wc = cwOf("plum").petal;
+        return (
+          <div style={{ background: `linear-gradient(160deg, ${T.paperHi} 0%, ${wc}12 100%)`, border: `1px solid ${T.paperDeep}`, borderLeft: `4px solid ${wc}`, borderRadius: 16, padding: "14px 15px", marginBottom: 4 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 7, marginBottom: 6 }}>
+              <span style={{ width: 26, height: 26, borderRadius: 8, background: `${wc}1F`, display: "grid", placeItems: "center" }}><CalendarDays size={14} color={wc} /></span>
+              <span style={{ fontFamily: UI, fontSize: 10.5, fontWeight: 800, letterSpacing: ".06em", textTransform: "uppercase", color: wc }}>Watch-along{watch.schedule ? ` · ${watch.schedule}` : ""}</span>
+            </div>
+            <div style={{ fontFamily: HANDFAM, fontStyle: "italic", fontWeight: 700, fontSize: 18, color: T.ink, lineHeight: 1.2, marginBottom: 3 }}>{watch.title}</div>
+            <Hand size={14} color={T.inkSoft} style={{ marginBottom: 10 }}>{watch.blurb}</Hand>
+            <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
+              <button disabled={busyId === watch.id || watch.joined} onClick={() => join(watch)} style={{ display: "inline-flex", alignItems: "center", gap: 6, borderRadius: 999, padding: "9px 14px", border: watch.joined ? `1px solid ${wc}` : "none", background: watch.joined ? `${wc}1C` : T.ink, color: watch.joined ? wc : T.paperHi, fontFamily: UI, fontSize: 13, fontWeight: 700, cursor: watch.joined ? "default" : "pointer" }}>{watch.joined ? <><Check size={14} /> You're watching</> : <><HeartHandshake size={14} /> I'm watching</>}</button>
+              <button onClick={() => onEnter?.(watch.cta_room)} style={{ display: "inline-flex", alignItems: "center", gap: 6, borderRadius: 999, padding: "9px 14px", border: `1px solid ${T.paperDeep}`, background: T.paperHi, color: T.ink, fontFamily: UI, fontSize: 13, fontWeight: 700, cursor: "pointer" }}><MessageCircle size={14} /> Open the thread</button>
+              <span style={{ fontFamily: UI, fontSize: 11, color: T.muted, marginLeft: "auto" }}>{participantsLabel(watch.participants)}</span>
+            </div>
+          </div>
+        );
+      })()}
+    </div>
+  );
+}
+
 function TogetherHub({ user, onEnter, onCrisis, onBack }) {
   const moment = useMemo(() => togetherMomentForWeek(), []);
   const [inIt, setInIt] = useState(() => togIn(moment.id));
@@ -2732,6 +2824,9 @@ function TogetherHub({ user, onEnter, onCrisis, onBack }) {
         </div>
         {inIt && <div style={{ fontFamily: UI, fontSize: 11, color: T.muted, marginTop: 10 }}>Lovely — you'll find the others in the chat. No pressure to keep up.</div>}
       </div>
+
+      {/* THE REAL WEEKLY CHALLENGE + WATCH-ALONG — live shared progress (TogetherActivity) */}
+      <WeeklyTogether user={user} onEnter={onEnter} />
 
       {/* WAYS TO BE TOGETHER — the pillars, each a real surface */}
       <Eyebrow color={T.gold} mb={10}>Ways to be together</Eyebrow>

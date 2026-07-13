@@ -100,6 +100,35 @@ async function dmOpenaiModerate(text: string): Promise<{ available: boolean; fla
   } catch { return { available: false, flagged: false, categories: {} }; }
 }
 
+// ── Together substance (#5, 2026-07-14) — curated WEEKLY activities. Deterministic per ISO-week so
+// there's always something live without manual admin; seeded idempotently by together.current.
+function weekKeyMonday(): string {
+  const n = new Date();
+  const d = new Date(Date.UTC(n.getUTCFullYear(), n.getUTCMonth(), n.getUTCDate()));
+  const dow = (d.getUTCDay() + 6) % 7;   // Mon=0
+  d.setUTCDate(d.getUTCDate() - dow);
+  return d.toISOString().slice(0, 10);
+}
+function weekEpoch(mondayISO: string): number {
+  return Math.floor(new Date(mondayISO + 'T00:00:00Z').getTime() / (7 * 86400000));
+}
+const TA_CHALLENGES = [
+  { slug: 'read-together', title: 'Read 40 chapters, together', unit: 'chapters', goal: 40, cta_room: 'library',
+    blurb: 'Every chapter anyone reads adds to the room’s total. No rush, no rank — just a shelf we fill as one.' },
+  { slug: 'move-together', title: 'Move together, 60 times', unit: 'check-ins', goal: 60, cta_room: 'lighter',
+    blurb: 'A walk, a stretch, a kitchen dance — tap when you move and watch the room’s total climb.' },
+  { slug: 'kind-to-self', title: '30 small kindnesses to yourself', unit: 'kindnesses', goal: 30, cta_room: 'lounge',
+    blurb: 'Rest, water, a pause, a no. Add one when you manage it — the bar rises with the whole room.' },
+  { slug: 'wind-downs', title: 'A week of wind-downs', unit: 'evenings', goal: 40, cta_room: 'lounge',
+    blurb: 'One gentle offline evening. Tap when you take yours — we’re winding down together.' },
+];
+const TA_WATCH = [
+  { slug: 'friday-film', title: 'Friday comfort film', schedule: 'Fridays · 8pm', cta_room: 'lighter',
+    blurb: 'We press play around the same time and chat as we go — no spoilers ahead of the room.' },
+  { slug: 'sunday-read', title: 'Sunday cosy read-along', schedule: 'Sundays · 7pm', cta_room: 'library',
+    blurb: 'An hour with this season’s book, together. Bring tea.' },
+];
+
 Deno.serve(async (req) => {
   const base44 = createClientFromRequest(req);
   const me = await base44.auth.me().catch(() => null);
@@ -287,6 +316,86 @@ Deno.serve(async (req) => {
     }
 
     return Response.json({ error: 'unknown dm action' }, { status: 400 });
+  }
+
+  // ════════════════════════════════════════════════════════════════════════════════════════════
+  // TOGETHER — weekly shared activities (challenge / watch-along). AGGREGATE-ONLY + k-anon: progress
+  // and who's-in are COUNTS of GoalContribution rows (tap:<id> = a step, taj:<id> = a join), never a
+  // per-person score or rank. The week's curated activities are seeded idempotently on first read.
+  // ════════════════════════════════════════════════════════════════════════════════════════════
+  if (action.startsWith('together.')) {
+    const sbt = base44.asServiceRole;
+    const TA = sbt.entities.TogetherActivity;
+    const GC = sbt.entities.GoalContribution;
+    const wk = weekKeyMonday();
+    const ep = weekEpoch(wk);
+    const ah = String(author_hash || '');
+
+    const ensure = async () => {
+      let rows: any[] = await withTimeout(TA.filter({ week_key: wk }, '-created_date', 50), 4000, 'ta-list').catch(() => []);
+      rows = Array.isArray(rows) ? rows : [];
+      const chal = TA_CHALLENGES[((ep % TA_CHALLENGES.length) + TA_CHALLENGES.length) % TA_CHALLENGES.length];
+      const watch = TA_WATCH[((ep % TA_WATCH.length) + TA_WATCH.length) % TA_WATCH.length];
+      const want = [{ kind: 'challenge', ...chal }, { kind: 'watchalong', ...watch }];
+      for (const w of want) {
+        if (!rows.some((r) => r.slug === w.slug && r.week_key === wk)) {
+          const created = await withTimeout(TA.create({ week_key: wk, status: 'open', ...w }), 6000, 'ta-seed').catch(() => null);
+          if (created) rows.push(created);
+        }
+      }
+      const seen = new Set<string>();
+      return rows.filter((r) => { if (seen.has(r.slug)) return false; seen.add(r.slug); return true; });
+    };
+
+    if (action === 'together.current') {
+      const acts = await ensure();
+      const out: any[] = [];
+      for (const a of acts) {
+        const steps: any[] = await withTimeout(GC.filter({ goal_key: `tap:${a.id}` }, '-created_date', 4000), 3500, 'ta-steps').catch(() => []);
+        const joins: any[] = await withTimeout(GC.filter({ goal_key: `taj:${a.id}` }, '-created_date', 2000), 3000, 'ta-joins').catch(() => []);
+        const stepRows = Array.isArray(steps) ? steps : [];
+        const joinRows = Array.isArray(joins) ? joins : [];
+        const participants = new Set([...stepRows, ...joinRows].map((r) => r.author_hash)).size;
+        let joined = false, steppedToday = false;
+        if (ah) {
+          joined = joinRows.some((r) => r.author_hash === ah) || stepRows.some((r) => r.author_hash === ah);
+          const since = startOfTodayISO();
+          steppedToday = stepRows.some((r) => r.author_hash === ah && (r.created_date || '') >= since);
+        }
+        out.push({
+          id: a.id, kind: a.kind, slug: a.slug, title: a.title, blurb: a.blurb,
+          unit: a.unit || '', goal: a.goal || 0, schedule: a.schedule || '', cta_room: a.cta_room || 'lounge',
+          progress: stepRows.length, participants, joined, steppedToday,
+        });
+      }
+      return Response.json({ ok: true, week_key: wk, activities: out }, { status: 200 });
+    }
+
+    if (!ah) return Response.json({ error: 'author_hash required' }, { status: 400 });
+    const activity_id = String(p.activity_id || '');
+    if (!activity_id) return Response.json({ error: 'activity_id required' }, { status: 400 });
+
+    if (action === 'together.join') {
+      const existing = await withTimeout(GC.filter({ goal_key: `taj:${activity_id}`, author_hash: ah }, '-created_date', 5), 3000, 'ta-j').catch(() => []);
+      if (!(Array.isArray(existing) && existing.length)) {
+        await withTimeout(GC.create({ goal_key: `taj:${activity_id}`, moment: 'join', author_hash: ah }), 6000, 'ta-jc').catch(() => {});
+      }
+      return Response.json({ ok: true, joined: true }, { status: 200 });
+    }
+
+    if (action === 'together.step') {
+      // per-device daily cap keeps the collective count honest without a leaderboard
+      const since = startOfTodayISO();
+      const mine: any[] = await withTimeout(GC.filter({ goal_key: `tap:${activity_id}`, author_hash: ah }, '-created_date', 30), 3000, 'ta-s').catch(() => []);
+      const today = (Array.isArray(mine) ? mine : []).filter((r) => (r.created_date || '') >= since).length;
+      if (today >= 5) return Response.json({ ok: true, capped: true }, { status: 200 });
+      await withTimeout(GC.create({ goal_key: `tap:${activity_id}`, moment: 'step', author_hash: ah }), 6000, 'ta-sc').catch(() => {});
+      const j = await withTimeout(GC.filter({ goal_key: `taj:${activity_id}`, author_hash: ah }, '-created_date', 5), 3000, 'ta-j2').catch(() => []);
+      if (!(Array.isArray(j) && j.length)) await withTimeout(GC.create({ goal_key: `taj:${activity_id}`, moment: 'join', author_hash: ah }), 6000, 'ta-jc2').catch(() => {});
+      return Response.json({ ok: true, added: true }, { status: 200 });
+    }
+
+    return Response.json({ error: 'unknown together action' }, { status: 400 });
   }
 
   // ── reading activity (Books & Book Clubs) — handled before the author_hash guard since the
