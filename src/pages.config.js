@@ -156,6 +156,7 @@ import TodayRitualDemo from './pages/TodayRitualDemo';
 // presence in Community (3 disclosure tiers), and her Profile/Today avatar. Reads real Garden data
 // (companion + milestones + chapters) with a seeded fallback. Preview route; live pages untouched.
 import BloomprintDemo from './pages/BloomprintDemo';
+import FloraCoverDemo from './pages/FloraCoverDemo';
 // Garden + Jess redesign DEMOS (v4 bible: flora-hero + summary + living-ecosystem clipboard /
 // on-brand chat shell; every existing feature preserved). Preview routes; live pages untouched.
 import GardenClipboardDemo from './pages/GardenClipboardDemo';
@@ -369,6 +370,7 @@ export const PAGES = {
     "TodayOption2": TodayOption2,
     "TodayRitualDemo": TodayRitualDemo,
     "BloomprintDemo": BloomprintDemo,
+    "FloraCoverDemo": FloraCoverDemo,
     "GardenClipboardDemo": GardenClipboardDemo,
     "JessClipboardDemo": JessClipboardDemo,
     "NutritionL2Demo": NutritionL2Demo,
