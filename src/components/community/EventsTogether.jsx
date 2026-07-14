@@ -27,7 +27,7 @@ import { CornerSprig } from "@/components/brand/flora";
 import { toggleSavedItem } from "@/lib/savedItems";
 import { useScrollLock } from "@/utils/useScrollLock";
 import { communityHash, botanicalAlias } from "@/components/community/communityAnon";
-import { joinPod, podFor, setSafeCheckin, clearSafeCheckin, activeSafeCheckins, isReminding, toggleRemind } from "@/components/community/eventExtras";
+import { joinPod, podFor, reportPod, setSafeCheckin, clearSafeCheckin, activeSafeCheckins, isReminding, toggleRemind } from "@/components/community/eventExtras";
 import { Bell, ShieldHalf } from "lucide-react";
 
 const HANDFAM = '"Cormorant Garamond","Fraunces",Georgia,serif';
@@ -192,6 +192,7 @@ function PodSheet({ ev, user, onClose, flash }) {
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState("");
   const [backAt, setBackAt] = useState("");
+  const [reported, setReported] = useState(() => new Set());
 
   useEffect(() => { let a = true; communityHash(user?.id).then((h) => { if (a) setMyHash(h); }).catch(() => {}); return () => { a = false; }; }, [user?.id]);
   const load = useCallback(async () => { setPod(await podFor(ev.id)); }, [ev.id]);
@@ -206,7 +207,15 @@ function PodSheet({ ev, user, onClose, flash }) {
     setBusy(false);
     if (r?.intercept) { onClose?.(); return; }
     if (r?.error) { setErr("Couldn't join the pod just now — try again."); return; }
+    if (r?.note_held) flash?.("You're in the pod — your note couldn't be added, so we've left it off. Let's keep it kind.");
     setJoined(true); setNote(""); load();
+  };
+  const report = async (row) => {
+    if (reported.has(row.id)) return;
+    setReported((s) => new Set(s).add(row.id));
+    await reportPod(user, row.id);
+    flash?.("Thank you — this has been sent to us to review.");
+    load();
   };
   const armSafe = () => {
     if (!backAt) return;
@@ -233,7 +242,12 @@ function PodSheet({ ev, user, onClose, flash }) {
         {pod === null && <Hand size={14} color={T.muted}>Finding your pod…</Hand>}
         {pod && pod.map((p) => (
           <div key={p.id} style={{ background: T.paper, border: `1px solid ${T.paperDeep}`, borderRadius: 11, padding: "9px 12px", marginBottom: 7 }}>
-            <div style={{ fontFamily: UI, fontSize: 11.5, fontWeight: 700, color: T.muted, marginBottom: p.note ? 3 : 0 }}>{p.author_hash === myHash ? "You" : (p.alias || "A woman going")}</div>
+            <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: p.note ? 3 : 0 }}>
+              <div style={{ fontFamily: UI, fontSize: 11.5, fontWeight: 700, color: T.muted, flex: 1 }}>{p.author_hash === myHash ? "You" : (p.alias || "A woman going")}</div>
+              {p.author_hash !== myHash && (
+                <button onClick={() => report(p)} disabled={reported.has(p.id)} style={{ background: "transparent", border: "none", cursor: reported.has(p.id) ? "default" : "pointer", color: T.muted, fontFamily: UI, fontSize: 10.5, fontWeight: 600, padding: 0, opacity: reported.has(p.id) ? 0.6 : 1 }}>{reported.has(p.id) ? "Reported" : "Report"}</button>
+              )}
+            </div>
             {p.note && <Hand size={14} color={T.inkSoft}>{p.note}</Hand>}
           </div>
         ))}

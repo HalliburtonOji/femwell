@@ -29,7 +29,7 @@ import { dailyReadClubKey } from "@/components/community/clubsConfig";
 import { cohortReachedCount, recordProgress } from "@/components/community/readingActivity";
 import { loadShelf, addBook, setStatus as setShelfStatusRemote, removeBook } from "@/components/community/bookshelf";
 import { communityHash, botanicalAlias } from "@/components/community/communityAnon";
-import { MOOD_SHELVES, readProgress, setReadProgress, progressLabel, joinBuddyRead, buddiesFor, parseBuddyNote } from "@/components/community/libraryExtras";
+import { MOOD_SHELVES, readProgress, setReadProgress, progressLabel, joinBuddyRead, buddiesFor, reportBuddy, parseBuddyNote } from "@/components/community/libraryExtras";
 import { useScrollLock } from "@/utils/useScrollLock";
 
 const HANDFAM = '"Cormorant Garamond","Fraunces",Georgia,serif';
@@ -193,6 +193,8 @@ function BuddyReadSheet({ book, user, myHash, onClose, onTalk }) {
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState("");
   const [reveal, setReveal] = useState({});   // note id -> revealed despite spoiler gate
+  const [reported, setReported] = useState(() => new Set());
+  const [notice, setNotice] = useState("");
 
   const load = useCallback(async () => { setBuddies(await buddiesFor(bk)); }, [bk]);
   useEffect(() => { load(); }, [load]);
@@ -209,7 +211,15 @@ function BuddyReadSheet({ book, user, myHash, onClose, onTalk }) {
     setBusy(false);
     if (r?.intercept) { onClose?.(); return; }
     if (r?.error) { setErr("Couldn't join just now — try again in a moment."); return; }
+    if (r?.note_held) setNotice("You're in — your note couldn't be added, so we've left it off. Let's keep it kind.");
     setJoined(true); setNote(""); load();
+  };
+  const report = async (row) => {
+    if (reported.has(row.id)) return;
+    setReported((s) => new Set(s).add(row.id));
+    await reportBuddy(user, row.id);
+    setNotice("Thank you — this has been sent to us to review.");
+    load();
   };
 
   return (
@@ -249,6 +259,9 @@ function BuddyReadSheet({ book, user, myHash, onClose, onTalk }) {
               <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 4 }}>
                 <span style={{ fontFamily: UI, fontSize: 11, fontWeight: 700, color: T.muted }}>{b.author_hash === myHash ? "You" : (b.alias || "A reader")}</span>
                 {notePct > 0 && <span style={{ fontFamily: UI, fontSize: 10, color: T.muted, marginLeft: "auto" }}>{progressLabel(notePct)}</span>}
+                {b.author_hash !== myHash && (
+                  <button onClick={() => report(b)} disabled={reported.has(b.id)} style={{ marginLeft: notePct > 0 ? 8 : "auto", background: "transparent", border: "none", cursor: reported.has(b.id) ? "default" : "pointer", color: T.muted, fontFamily: UI, fontSize: 10, fontWeight: 600, padding: 0, opacity: reported.has(b.id) ? 0.6 : 1 }}>{reported.has(b.id) ? "Reported" : "Report"}</button>
+                )}
               </div>
               {spoiler ? (
                 <button onClick={() => setReveal((r) => ({ ...r, [b.id]: true }))} style={{ display: "flex", alignItems: "center", gap: 8, width: "100%", textAlign: "left", background: `${cwOf("plum").petal}10`, border: `1px dashed ${T.paperDeep}`, borderRadius: 9, padding: "9px 11px", cursor: "pointer" }}>
@@ -261,6 +274,13 @@ function BuddyReadSheet({ book, user, myHash, onClose, onTalk }) {
             </div>
           );
         })}
+
+        {notice && (
+          <div style={{ display: "flex", gap: 8, alignItems: "flex-start", background: `${cwOf("sage").petal}12`, border: `1px solid ${T.paperDeep}`, borderRadius: 10, padding: "9px 11px", margin: "6px 0 10px" }}>
+            <ShieldCheck size={14} color={cwOf("sage").petal} style={{ flexShrink: 0, marginTop: 1 }} />
+            <span style={{ fontFamily: UI, fontSize: 12, color: T.inkSoft, lineHeight: 1.4 }}>{notice}</span>
+          </div>
+        )}
 
         {/* join / leave a note */}
         {!joined ? (

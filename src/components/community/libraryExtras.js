@@ -59,17 +59,30 @@ export const progressLabel = (pct) => pct <= 0 ? "Not started" : pct >= 100 ? "F
 // ── buddy reads — on the BuddyRead entity (client create + read; hidden flag = admin moderation).
 // A note is short, crisis-checked client-side before write, and carries the writer's progress so the
 // UI can spoiler-gate it. Deeper conversation still routes to the fully-moderated readers' corner. ──
+// The note is SCREENED SERVER-SIDE before it's stored (crisis + banned + OpenAI, via the note.create
+// dispatcher, asServiceRole; the entity's create is admin-only so it can't be bypassed). The server
+// prepends the "[pct%]" spoiler-gate prefix. A crisis note routes her to support; an unkind/flagged
+// note is held — she still joins, just without the note.
 export async function joinBuddyRead(user, book_key, title, alias, note, pct) {
   const clean = String(note || "").trim().slice(0, 240);
   if (clean && crisisCheck(clean).intercept) return { intercept: true };
   try {
-    const row = await base44.entities.BuddyRead.create({
-      book_key, title: String(title || "").slice(0, 200),
+    const r = await base44.functions.invoke("createCommunityPost", {
+      action: "note.create", note_kind: "buddy", user_id: user?.id,
       author_hash: alias?.hash || "", alias: alias?.name || "A reader",
-      note: clean ? `[${Math.max(0, Math.min(100, Math.round(pct || 0)))}%] ${clean}` : "",
-      hidden: false, created_at: new Date().toISOString(),
+      book_key, title: String(title || "").slice(0, 200), note: clean, pct: Math.max(0, Math.min(100, Math.round(pct || 0))),
     });
-    return { ok: true, row };
+    const d = r?.data ?? r ?? {};
+    if (d.intercept) return { intercept: true };
+    if (!d.ok) return { error: true };
+    return { ok: true, row: d.row, note_held: !!d.note_held, reason: d.reason || "" };
+  } catch { return { error: true }; }
+}
+// report a buddy note (server +1s report_count → auto-hides past the threshold).
+export async function reportBuddy(user, row_id) {
+  try {
+    const r = await base44.functions.invoke("createCommunityPost", { action: "note.report", note_kind: "buddy", user_id: user?.id, row_id: String(row_id || "") });
+    return r?.data ?? r ?? {};
   } catch { return { error: true }; }
 }
 export async function buddiesFor(book_key) {

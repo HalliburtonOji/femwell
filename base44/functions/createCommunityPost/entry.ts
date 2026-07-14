@@ -685,6 +685,74 @@ Deno.serve(async (req) => {
     return Response.json({ ok: true, lines: lines.length >= READING_K_FLOOR ? lines : [] });
   }
 
+  // ════════════════════════════════════════════════════════════════════════════════════════════
+  // BROADCAST NOTES (P1 fix, 2026-07-14) — EventPod "go-together" notes + BuddyRead buddy notes are
+  // short free-text shown to OTHER women, so they must be SCREENED before they're stored and be
+  // REPORTABLE (previously they were written straight to the entity with only a client crisis check
+  // and had no report path). note.create screens the note through the SAME pipeline as dm.send
+  // (crisis floor → banned floor → OpenAI) then creates the row asServiceRole; the entities' create
+  // is locked to admin so the screen can't be bypassed. A crisis note routes the writer to support
+  // and is NOT stored; an unkind/flagged note still lets her JOIN (the row is created) but WITHOUT
+  // the note (held, never broadcast). note.report +1s report_count and auto-hides past the threshold.
+  if (action === 'note.create' || action === 'note.report') {
+    const sbn = base44.asServiceRole;
+    const noteKind = p.note_kind === 'buddy' ? 'buddy' : 'pod';
+    const Ent = noteKind === 'buddy' ? sbn.entities.BuddyRead : sbn.entities.EventPod;
+
+    if (action === 'note.report') {
+      const row_id = String(p.row_id || '');
+      if (!row_id) return Response.json({ error: 'row_id required' }, { status: 400 });
+      const row = await withTimeout(Ent.get(row_id), 3000, 'note-get').catch(() => null);
+      if (!row) return Response.json({ error: 'not found' }, { status: 404 });
+      const report_count = (row.report_count || 0) + 1;
+      const hidden = report_count >= AUTOHIDE_THRESHOLD;
+      await withTimeout(Ent.update(row_id, { report_count, hidden }), 6000, 'note-report').catch(() => {});
+      return Response.json({ ok: true, hidden }, { status: 200 });
+    }
+
+    // note.create
+    const ah = String(author_hash || '');
+    if (!ah) return Response.json({ error: 'author_hash required' }, { status: 400 });
+    const alias = String(p.alias || '').slice(0, 48) || (noteKind === 'buddy' ? 'A reader' : 'A woman going');
+    const rawNote = String(p.note || '').trim().slice(0, noteKind === 'buddy' ? 240 : 160);
+
+    // ── SCREEN BEFORE STORE (same order as dm.send) ──
+    let noteHeld = false, heldReason = '', noteOut = rawNote;
+    if (rawNote) {
+      if (isCrisis(rawNote)) return Response.json({ ok: false, intercept: true }, { status: 200 });
+      const ls = localScreen(rawNote);
+      if (ls.remove) { noteHeld = true; heldReason = 'unkind'; noteOut = ''; }
+      else {
+        const ai = await dmOpenaiModerate(rawNote);
+        if (ai.available && ai.flagged) {
+          const hit = DM_REMOVE_CATEGORIES.filter((cat) => ai.categories[cat]);
+          const onlySexual = hit.length > 0 && hit.every((cat) => cat.startsWith('sexual')) && !hit.includes('sexual/minors');
+          if (hit.length > 0 && !(onlySexual && dmIsHealthContext(rawNote))) { noteHeld = true; heldReason = 'flagged'; noteOut = ''; }
+        }
+      }
+    }
+
+    // NB: report_count is intentionally NOT set on create — the entity default (0) + note.report's
+    // (row.report_count || 0) handle it, so create never writes a field that may not be in the
+    // schema yet during a deploy gap.
+    const base: Record<string, unknown> = { author_hash: ah, alias, note: noteOut, hidden: false, created_at: new Date().toISOString() };
+    if (noteKind === 'buddy') {
+      const book_key = String(p.book_key || '').trim();
+      if (!book_key) return Response.json({ error: 'book_key required' }, { status: 400 });
+      const pct = Math.max(0, Math.min(100, Math.round(Number(p.pct) || 0)));
+      base.book_key = book_key;
+      base.title = String(p.title || '').slice(0, 200);
+      if (noteOut) base.note = `[${pct}%] ${noteOut}`;   // preserve the spoiler-gate prefix
+    } else {
+      const event_id = String(p.event_id || '').trim();
+      if (!event_id) return Response.json({ error: 'event_id required' }, { status: 400 });
+      base.event_id = event_id;
+    }
+    const created = await withTimeout(Ent.create(base), 6000, 'note-create').catch((e: any) => { console.error('note.create failed:', e?.message || e); return null; });
+    if (!created) return Response.json({ error: 'create failed' }, { status: 500 });
+    return Response.json({ ok: true, row: created, note_held: noteHeld, reason: heldReason }, { status: 200 });
+  }
+
   if (!author_hash) return Response.json({ error: 'author_hash required' }, { status: 400 });
   const sb = base44.asServiceRole;
 

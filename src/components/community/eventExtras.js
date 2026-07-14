@@ -6,17 +6,31 @@
 import { base44 } from "@/api/base44Client";
 import { crisisCheck } from "@/components/community/communityConfig";
 
-// ── go-together pods (EventPod) ──
+// ── go-together pods (EventPod) — the note is SCREENED SERVER-SIDE before it's stored (crisis +
+// banned + OpenAI, via the note.create dispatcher, asServiceRole; the entity's create is admin-only
+// so it can't be bypassed). A crisis note routes her to support; an unkind/flagged note is held —
+// she still joins the pod, just without the note. The fast client crisis-check is a courtesy
+// pre-screen; the server re-screens authoritatively. ──
 export async function joinPod(user, event_id, alias, note) {
   const clean = String(note || "").trim().slice(0, 160);
   if (clean && crisisCheck(clean).intercept) return { intercept: true };
   try {
-    const row = await base44.entities.EventPod.create({
-      event_id: String(event_id), author_hash: alias?.hash || "",
-      alias: alias?.name || "A woman going", note: clean, hidden: false,
-      created_at: new Date().toISOString(),
+    const r = await base44.functions.invoke("createCommunityPost", {
+      action: "note.create", note_kind: "pod", user_id: user?.id,
+      author_hash: alias?.hash || "", alias: alias?.name || "A woman going",
+      event_id: String(event_id), note: clean,
     });
-    return { ok: true, row };
+    const d = r?.data ?? r ?? {};
+    if (d.intercept) return { intercept: true };
+    if (!d.ok) return { error: true };
+    return { ok: true, row: d.row, note_held: !!d.note_held, reason: d.reason || "" };
+  } catch { return { error: true }; }
+}
+// report a pod note (server +1s report_count → auto-hides past the threshold).
+export async function reportPod(user, row_id) {
+  try {
+    const r = await base44.functions.invoke("createCommunityPost", { action: "note.report", note_kind: "pod", user_id: user?.id, row_id: String(row_id || "") });
+    return r?.data ?? r ?? {};
   } catch { return { error: true }; }
 }
 export async function podFor(event_id) {

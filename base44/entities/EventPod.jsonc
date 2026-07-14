@@ -3,21 +3,23 @@
   // per event, keyed by a device-derived author_hash + a warm botanical alias (NO user_id,
   // NO contact info, NO location — pods coordinate in-app only). Shared: PUBLIC read so a
   // small group can see "a few women going" (fuzzy, no exact count in the UI) and meet at the
-  // door; any signed-in woman may add her own row; admin-only update/delete so no one edits
-  // another's. UI is v1.1 (entity added + ready). Safety: aliases only, venue-level only.
+  // door. CREATE is admin-only (via the note.create dispatcher, asServiceRole) so every note is
+  // SCREENED before it's stored; update/delete admin-only. Safety: aliases only, venue-level only.
   "name": "EventPod",
   "type": "object",
   "properties": {
     "event_id": { "type": "string", "description": "EventsItems id or curated event key." },
     "author_hash": { "type": "string", "description": "Device-derived anonymous token — never a raw user id/email." },
     "alias": { "type": "string", "description": "Warm botanical alias shown to the pod (e.g. 'Wild Poppy'). No real name." },
-    "note": { "type": "string", "description": "Optional short in-app note ('first-timer, going alone') — crisis-checked + moderated before write." },
-    "hidden": { "type": "boolean", "default": false, "description": "Moderation flag (admin)." },
+    "note": { "type": "string", "description": "Optional short in-app note ('first-timer, going alone') — SCREENED server-side (crisis+banned+OpenAI) before write via the note.create dispatcher action; a held note is dropped, the join still stands." },
+    "hidden": { "type": "boolean", "default": false, "description": "Moderation flag — admin OR auto-hidden once report_count crosses the threshold." },
+    "report_count": { "type": "number", "default": 0, "description": "User reports (note.report); auto-hides past the threshold, like CommunityPost." },
     "created_at": { "type": "string" }
   },
   "required": ["event_id", "author_hash"],
   "indexes": [ { "fields": ["event_id"] }, { "fields": ["author_hash"] }, { "fields": ["created_date"] } ],
   "rls": {
+    "create": { "user_condition": { "role": "admin" } },
     "update": { "user_condition": { "role": "admin" } },
     "delete": { "user_condition": { "role": "admin" } }
   }

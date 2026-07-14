@@ -2,8 +2,9 @@
   // BuddyRead — a lean, PSEUDONYMOUS "reading this, open to a buddy" opt-in for a book. One
   // row per member per book, keyed by author_hash + a warm botanical alias (no user_id/PII).
   // Shared: PUBLIC read so a woman can see "a few reading this, open to buddies" and pair up
-  // for an async buddy-read; any signed-in woman may add her own row; admin-only update/delete.
-  // UI is v1.1 (entity added + ready). Reuses the Library's book_key + the calm-safety model.
+  // for an async buddy-read. CREATE is admin-only (via the note.create dispatcher, asServiceRole)
+  // so every note is SCREENED before it's stored; update/delete admin-only. Reuses the Library's
+  // book_key + the calm-safety model.
   "name": "BuddyRead",
   "type": "object",
   "properties": {
@@ -11,13 +12,15 @@
     "title": { "type": "string" },
     "author_hash": { "type": "string", "description": "Device-derived anonymous token — never a raw user id/email." },
     "alias": { "type": "string", "description": "Warm botanical alias (e.g. 'Quiet Fern'). No real name." },
-    "note": { "type": "string", "description": "Optional short in-app note — crisis-checked + moderated before write." },
-    "hidden": { "type": "boolean", "default": false, "description": "Moderation flag (admin)." },
+    "note": { "type": "string", "description": "Optional short in-app note (carries a '[pct%]' spoiler-gate prefix) — SCREENED server-side (crisis+banned+OpenAI) before write via the note.create dispatcher action; a held note is dropped, the join still stands." },
+    "hidden": { "type": "boolean", "default": false, "description": "Moderation flag — admin OR auto-hidden once report_count crosses the threshold." },
+    "report_count": { "type": "number", "default": 0, "description": "User reports (note.report); auto-hides past the threshold, like CommunityPost." },
     "created_at": { "type": "string" }
   },
   "required": ["book_key", "author_hash"],
   "indexes": [ { "fields": ["book_key"] }, { "fields": ["author_hash"] }, { "fields": ["created_date"] } ],
   "rls": {
+    "create": { "user_condition": { "role": "admin" } },
     "update": { "user_condition": { "role": "admin" } },
     "delete": { "user_condition": { "role": "admin" } }
   }
