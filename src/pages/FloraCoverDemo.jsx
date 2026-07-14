@@ -55,7 +55,7 @@ export default function FloraCoverDemo() {
         <div style={{ fontFamily: UI, fontSize: 11, fontWeight: 800, letterSpacing: "0.14em", textTransform: "uppercase", color: GOLD }}>FemWell · Lifestyle level-up · Piece 1</div>
         <h1 style={{ fontFamily: SCRIPT, fontWeight: 400, fontSize: 42, color: OXBLOOD, margin: "2px 0 6px", lineHeight: 1.02 }}>The FloraCover — a living ecosystem</h1>
         <p style={{ fontFamily: SERIF, fontSize: 16.5, color: T.inkSoft, margin: "0 0 4px", lineHeight: 1.5, maxWidth: 600 }}>
-          On-brand article covers, composed entirely in-app — no stock, no fetch. Not one flower but the whole garden: blooms, buds, vines, a real dusk meadow &amp; bough, butterflies, bees, dragonflies, moths, ladybirds, a moon &amp; stars, a wax-rose seal. <b>9 scene archetypes × 9 colourways × seeded variation</b>, each chosen by the content's category so different writing reads visibly different. Deterministic — the same piece always wears the same face.
+          On-brand article covers, composed entirely in-app — no stock, no fetch. Not one flower but the whole garden: blooms with depth-of-field + ground shadow, buds, vines, a real dusk meadow &amp; bough, butterflies, bees, dragonflies, moths, ladybirds, a moon &amp; stars, a wax-rose seal. <b>10 scene archetypes × 9 colourways × wide seeded variation</b> (flip, creature, species, counts, positions), each chosen by the content's category so different writing reads visibly different. Deterministic — the same piece always wears the same face. Every title meets <b>WCAG AA</b> contrast on an adaptive scrim, on every colourway.
         </p>
 
         <Section eyebrow="Segmented by content" title="Nine worlds, one per kind of writing" note="Each category maps to its own ecosystem scene + colourway. Three samples per segment (different seeds → different species, creatures, positions) so you can see both the segmentation and the variety within it.">
@@ -74,7 +74,15 @@ export default function FloraCoverDemo() {
           ))}
         </Section>
 
-        <Section eyebrow="The whole palette" title="One scene across the colourways" note="The same 'bough' scene, retinted through all nine colourways — each carries its own meaning.">
+        <Section eyebrow="Rarely repeats" title="Widened variation" note="Eight covers of the SAME segment (reading), each a different seed — flip, creature, species, counts and positions all vary, so a shelf of articles never looks copy-pasted.">
+          <div style={grid3}>
+            {["kale", "moss", "quill", "amber", "wren", "flint", "reed", "dove"].map((k) => (
+              <FloraCover key={k} title="A good thing to read today" eyebrow="Read · 4 min" category="book" seed={k} height={150} />
+            ))}
+          </div>
+        </Section>
+
+        <Section eyebrow="The whole palette" title="One scene across the colourways" note="The same 'bough' scene, retinted through all nine colourways — each carries its own meaning. Note the eyebrow stays legible on every one (AA-guaranteed).">
           <div style={grid3}>
             {COLORWAYS.map((c) => (
               <div key={c.key}>

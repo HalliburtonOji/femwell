@@ -157,6 +157,7 @@ import TodayRitualDemo from './pages/TodayRitualDemo';
 // (companion + milestones + chapters) with a seeded fallback. Preview route; live pages untouched.
 import BloomprintDemo from './pages/BloomprintDemo';
 import FloraCoverDemo from './pages/FloraCoverDemo';
+import LifestyleDeckDemo from './pages/LifestyleDeckDemo';
 // Garden + Jess redesign DEMOS (v4 bible: flora-hero + summary + living-ecosystem clipboard /
 // on-brand chat shell; every existing feature preserved). Preview routes; live pages untouched.
 import GardenClipboardDemo from './pages/GardenClipboardDemo';
@@ -371,6 +372,7 @@ export const PAGES = {
     "TodayRitualDemo": TodayRitualDemo,
     "BloomprintDemo": BloomprintDemo,
     "FloraCoverDemo": FloraCoverDemo,
+    "LifestyleDeckDemo": LifestyleDeckDemo,
     "GardenClipboardDemo": GardenClipboardDemo,
     "JessClipboardDemo": JessClipboardDemo,
     "NutritionL2Demo": NutritionL2Demo,
