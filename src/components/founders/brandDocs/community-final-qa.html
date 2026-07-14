@@ -28,18 +28,23 @@
   <h1>Final QA — whole live Community</h1>
   <p class="muted">Fresh-eyes adversarial code-trace + logic verification (the live Community view chokes the browser harness, so this is a read/write-path + safety-logic audit, not a click-through). 2026-07-14 · reviewer did not build these features.</p>
 
-  <div class="box p0">
-    <div style="font-weight:800;font-size:15px;">Headline</div>
-    <p style="margin:6px 0 0;"><b>64 checks · 58 PASS.</b> <b>1 P0</b> found (DM identity model — <span class="tag tag-open">open · needs you</span>, an architecture call, not blind-fixed). <b>4 P1</b> — <b>3 fixed &amp; deploying</b> (<span class="tag tag-fix">fixed</span> comment mute/hide, comment report, cross-user shelf bleed); <b>1 flagged</b> (<span class="tag tag-flag">flag</span> unmoderated broadcast notes). Remaining are P2 polish. <b>No location leak, no unmoderated chat, no private cycle/journal data anywhere in Community, all new entities correctly admin-RLS-locked.</b></p>
+  <div class="box fixed">
+    <div style="font-weight:800;font-size:15px;">Headline — updated 2026-07-14 (round 2: P0 + note-moderation now FIXED &amp; LIVE)</div>
+    <p style="margin:6px 0 0;"><b>64 checks · 58 PASS.</b> The <b>1 P0</b> (DM identity spoofing) is now <span class="tag tag-fix">fixed &amp; live</span> — identity is proven server-side, never trusted from the request body, with <b>zero thread-migration</b>. All <b>4 P1</b> are now <span class="tag tag-fix">fixed &amp; live</span> (comment mute/hide, comment report, cross-user shelf bleed, and the unmoderated broadcast notes). Remaining items are P2 polish. <b>No location leak, no unmoderated chat, no private cycle/journal data anywhere in Community, all new entities correctly admin-RLS-locked.</b> The <code>served.js</code> mystery is resolved (a generated build artifact — see below).</p>
   </div>
 
-  <h2>The one P0 — DM identity is a bearer token (open)</h2>
-  <div class="box p0">
-    <p style="margin:0 0 6px;"><b>What's solid:</b> <code>Conversation</code> &amp; <code>Message</code> are fully admin-RLS-locked (no client can query them). Every <code>dm.*</code> op runs <code>asServiceRole</code>, checks the caller is a participant, and screens every message <i>before</i> delivery (crisis floor → banned-word → OpenAI); held messages reach nobody; <code>dm.messages</code> reads delivered-only. That part is genuinely well-built.</p>
-    <p style="margin:0 0 6px;"><b>The gap:</b> the dispatcher trusts the <b>client-supplied <code>author_hash</code></b> as the caller's identity (<code>createCommunityPost/entry.ts:177,193</code>) — it can't recompute it (the hash = <code>sha256(community::userId::deviceSecret)</code> and the device secret never leaves the phone). That same hash is <b>publicly harvestable</b>: it ships on every public <code>CommunityPost</code> row (used for presence/alias/"ask to chat"), and on <code>BuddyRead</code>/<code>EventPod</code> rows and the DM <code>other_hash</code>.</p>
-    <p style="margin:0 0 6px;"><b>The exploit:</b> a signed-in user (via the SDK / devtools, not the UI) reads a stranger's <code>author_hash</code> from a public post, then calls <code>createCommunityPost {action:"dm.conversations", author_hash:&lt;hers&gt;}</code> (<code>user_id</code> is optional, so the <code>me.id</code> guard is skipped) → gets her conversation list; then <code>dm.messages</code> → reads her delivered message bodies; and could <code>dm.send</code>/<code>dm.block</code> as her. The admin-lock is bypassed because the trusted function does the read on the forged identity's behalf.</p>
-    <p style="margin:0 0 6px;"><b>Why not blind-fixed:</b> the correct fix is an identity re-architecture — <b>never expose a raw <code>author_hash</code> to clients; do all hash-targeting server-side by post/comment id</b> (e.g. "ask to chat" sends a <code>post_id</code>; the server resolves the author hash), and derive/verify DM identity server-side. That changes how presence, alias, hide-a-voice and "ask to chat" get their token and needs a small migration. Shipping it unreviewed in a QA pass risks locking women out of their own threads (per-device secrets mean one woman legitimately has several hashes). <b>This is your call.</b></p>
-    <p style="margin:0;" class="muted">Severity note: exploiting it needs technical effort (an SDK/console call), not a tap — but for a women's-safety app whose stated guarantee is "a client can't query someone else's chat," it's a real gap between promise and implementation. Recommend prioritising the server-mediated-targeting refactor next.</p>
+  <h2>The P0 — DM identity spoofing — FIXED &amp; LIVE</h2>
+  <div class="box fixed">
+    <p style="margin:0 0 6px;"><b>The gap (was):</b> the <code>dm.*</code>/<code>game.*</code> dispatcher trusted the <b>client-supplied <code>author_hash</code></b> as the caller's identity — and that hash is publicly harvestable (it ships on public post rows). A signed-in user could spoof a stranger's hash and call <code>dm.conversations</code>/<code>dm.messages</code> to read her private conversation list + delivered message bodies (or <code>dm.send</code>/<code>dm.block</code> as her). The admin-RLS lock was bypassed because the trusted <code>asServiceRole</code> function did the read on the forged identity's behalf.</p>
+    <p style="margin:10px 0 4px;"><b>The new identity model (deployed):</b> identity is now <b>proven server-side, never asserted by the body</b>.</p>
+    <ul style="margin:2px 0 8px;">
+      <li>The community <code>author_hash</code> = <code>sha256("community::"+userId+"::"+deviceSecret)</code>. The client now sends the <b>device secret</b> with every <code>dm.*</code>/<code>game.*</code> call; the server recomputes the hash from the <b>authenticated <code>me.id</code></b> + that secret and <b>rejects (403)</b> unless it matches the presented <code>author_hash</code> (<code>verifyIdentity</code>, constant-time compare).</li>
+      <li><b>A forged/harvested hash gets you nothing:</b> to pass, you'd need a secret that hashes, <i>with your own authenticated id</i>, to someone else's hash — preimage-resistant. Absent secret → 403. Admins bypass (moderation tooling) only.</li>
+      <li><b>DM targeting no longer harvests a hash:</b> "ask to chat" now sends the target's <b>post/comment id</b>; the server resolves her identity + derives both aliases server-side (<code>dm.request</code> → <code>target_post_id</code>). <code>target_hash</code> kept only as a transitional fallback.</li>
+    </ul>
+    <p style="margin:0 0 6px;"><b>Existing threads preserved — no migration, no lock-outs (the key worry):</b> identity is still the <i>same device hash</i>, so every existing <code>Conversation</code>/<code>Message</code> resolves exactly as before — same device → same secret → same proof → same threads. Nothing is rewritten. The per-device multi-hash reality is handled natively: each device has its own secret+hash and each verifies independently against <code>me.id</code>; a woman on two devices keeps whatever access she had before (unchanged). Account-switch on a shared device correctly yields a different verified identity (as it already did).</p>
+    <p style="margin:0 0 6px;"><b>Verification (traced — criteria a/b/c):</b> (a) <code>dm.conversations</code>/<code>messages</code> filter on the <i>proven</i> <code>ah</code>, so a caller only ever sees threads she's a participant in; (b) a forged/absent-secret body hash → 403, nothing returned; (c) the legit owner on her own device reproduces the same hash+secret → verifies → her existing threads open. Live checks: function deployed &amp; healthy (loads, returns 401 on the pre-gate auth check, no 500 from the new crypto), and both hosts serve the matching client that sends <code>device_secret</code>.</p>
+    <p style="margin:0;" class="muted">Verification limit (honest): a live black-box test of the non-admin 403 wasn't possible from the QA environment — the only available account (founder) bypasses the gate by design, the CLI <code>exec</code> tool hit a local file-lock, and the browser wasn't driven (per instruction). Verification is therefore by rigorous code-trace + deploy/health/sync confirmation. Files: <code>entry.ts</code> (verifyIdentity gate + server-side alias + post-id resolution), <code>communityAnon.js</code> (communitySecret), <code>dm.js</code>/<code>gamematch.js</code> (send proof), <code>Community.jsx</code> (target by post id). Commit <code>364e4c4</code>. Reversible: <code>git revert</code>.</p>
   </div>
 
   <h2>Fixed &amp; deploying this pass</h2>
@@ -49,10 +54,25 @@
     <p style="margin:0;"><span class="tag tag-fix">fixed</span> <b>Cross-user shelf bleed</b> (<code>bookshelf.js</code>). The Library shelf's local mirror used one global key (<code>fw_bookshelf</code>), so on a shared device / account switch, one woman's shelf showed to the next user <i>and</i> migrated up into her <code>UserBook</code>. The mirror is now scoped per <code>user_id</code>; server <code>UserBook</code> rows remain the source of truth.</p>
   </div>
 
-  <h2>Flagged — needs you (not blind-fixed)</h2>
+  <h2>Broadcast notes — screened &amp; reportable — FIXED &amp; LIVE</h2>
+  <div class="box fixed">
+    <p style="margin:0 0 6px;"><span class="tag tag-fix">fixed</span> <b><code>EventPod</code> "go-together" notes + <code>BuddyRead</code> buddy notes</b> were written straight to the entity with only a client-side crisis check and had no report path. Now folded into the existing <code>createCommunityPost</code> dispatcher (no new function name — the 50-fn cap holds):</p>
+    <ul style="margin:2px 0 6px;">
+      <li><b><code>note.create</code></b> screens the note through the <i>same</i> pipeline as <code>dm.send</code> (crisis floor → banned floor → OpenAI moderation) <b>before</b> it's stored, then writes the row <code>asServiceRole</code>. A crisis note routes the writer to support (not stored); an unkind/flagged note is <b>held</b> (dropped) but she still <b>joins</b> the pod/buddy — just without the note.</li>
+      <li><b><code>note.report</code></b> +1s <code>report_count</code> and auto-hides past the threshold (like <code>CommunityPost</code>). A <b>Report</b> control now sits on every other woman's note in both sheets, with gentle "held / reported" feedback.</li>
+      <li><b>Enforcement:</b> <code>EventPod</code>/<code>BuddyRead</code> <b>create is now admin-only</b> (via the dispatcher) so the screen can't be bypassed; read stays public, update/delete admin. <code>report_count</code> field added.</li>
+    </ul>
+    <p style="margin:0;" class="muted">Files: <code>entry.ts</code> (note.create/report), <code>EventPod.jsonc</code>/<code>BuddyRead.jsonc</code> (lock+field), <code>eventExtras.js</code>/<code>libraryExtras.js</code> (route + report helpers), <code>EventsTogether.jsx</code>/<code>LibraryTogether.jsx</code> (Report UI). Commit <code>f27f3b9</code>. Deployed function → site → entities (no create-lock window). Reversible: <code>git revert</code> + re-push entities.</p>
+  </div>
+
+  <h2>Still open — needs you (not fixed)</h2>
   <div class="box p1">
-    <p style="margin:0 0 8px;"><span class="tag tag-flag">flag</span> <b>Broadcast free-text notes aren't server-screened or reportable</b> (P1). <code>EventPod</code> "go-together" notes and <code>BuddyRead</code> buddy notes are written straight to the entity with only a <i>client-side</i> crisis check — they skip the publish-then-screen (OpenAI) pipeline the rooms use, and there's no report/hide control in their sheets. They're short, in-app, pseudonymous and admin-hideable, but they're text broadcast to other women (some meeting in person). <b>Recommend:</b> route both through a screened dispatcher action + add an inline report affordance (small function work — flagged, not built, to respect the 50-fn cap intentionally).</p>
-    <p style="margin:0;"><span class="tag tag-flag">flag</span> <b>The "no post left unanswered" Jess reply is client-triggered, not guaranteed</b> (P1). The backstop <code>jessSupport</code> call fires only when a thread is <i>opened</i> (<code>Community.jsx</code>). A quiet post whose author never re-opens it can sit with zero replies. A server-side sweep would make the guarantee real (needs a notify/cron path — already on the parked list).</p>
+    <p style="margin:0;"><span class="tag tag-flag">flag</span> <b>The "no post left unanswered" Jess reply is client-triggered, not guaranteed</b> (P1). The backstop <code>jessSupport</code> call fires only when a thread is <i>opened</i> (<code>Community.jsx</code>). A quiet post whose author never re-opens it can sit with zero replies. A server-side sweep would make the guarantee real (needs a notify/cron path — already on your parked list). Left for you because it needs infrastructure, not a code tweak.</p>
+  </div>
+
+  <h2>served.js — resolved (Part 3)</h2>
+  <div class="box fixed">
+    <p style="margin:0;"><b>What it is:</b> <code>served.js</code> is a git-tracked, <b>minified build artifact</b> (a full-app bundle — it opens with mangled JS + the React production licence) that some build sessions re-commit. The ~1,200-line uncommitted diff present at the start was <b>stale minification churn</b> from an earlier session's partial build (same logic, different mangled variable names). Running the build during this pass regenerated it back to <b>match the committed <code>HEAD</code></b>, so it is now <b>clean</b> — nothing to commit or discard. It is not referenced by the deploy path (<code>deploy.mjs</code>/<code>site deploy</code> build from <code>src/</code> + <code>base44/functions/</code>), so it's effectively vestigial. If it ever shows a stray diff again, <code>git checkout -- served.js</code> discards it safely.</p>
   </div>
 
   <h2>Feature-by-feature results</h2>
@@ -68,7 +88,7 @@
     <tr><td>Block / report / leave; block respected by game.chat</td><td class="pass">PASS</td><td></td><td>All participant-checked; game.chat refuses on prior block</td></tr>
     <tr><td>Text-only; no media / no location field anywhere</td><td class="pass">PASS</td><td></td><td>Body only; grep clean for location/geo/media</td></tr>
     <tr><td>18+ gate</td><td class="pass">PASS</td><td></td><td>Whole Community under <code>AgeGate</code></td></tr>
-    <tr><td>Caller identity cannot be forged</td><td class="fail">FAIL</td><td class="sev sev0">P0</td><td>Client-supplied <code>author_hash</code> trusted + publicly harvestable — see P0 above</td></tr>
+    <tr><td>Caller identity cannot be forged</td><td class="pass">FIXED</td><td class="sev sev0">P0</td><td>Identity proven server-side (device-secret vs authenticated me.id); forged hash → 403 — see P0 above</td></tr>
   </table></div>
 
   <h3>Community home · nav · chrome</h3>
@@ -125,7 +145,7 @@
     <tr><td>Together weekly challenge — aggregate, no leaderboard</td><td class="pass">PASS</td><td></td><td><code>GoalContribution</code> counts; per-device daily step cap; join/step wired</td></tr>
     <tr><td>Watch/read-along → discussion room</td><td class="pass">PASS</td><td></td><td>Schedule + "I'm watching" + open-thread</td></tr>
     <tr><td>EventPod go-together: k-anon, alias, NEVER precise/home location</td><td class="pass">PASS</td><td></td><td>No lat/lng/geo/address/geolocation anywhere; venue-level curator text only</td></tr>
-    <tr><td>EventPod / BuddyRead notes: server-screened + reportable</td><td class="fail">FAIL</td><td class="sev sev1">P1</td><td>Client-crisis-check only, no report affordance — flagged</td></tr>
+    <tr><td>EventPod / BuddyRead notes: server-screened + reportable</td><td class="pass">FIXED</td><td class="sev sev1">P1</td><td>note.create screens (crisis+banned+OpenAI) before store; note.report + create locked to admin</td></tr>
     <tr><td>Get-home-safe: device-local, nothing sent externally</td><td class="pass">PASS</td><td></td><td>localStorage + self-nudge; no fetch/email/sms</td></tr>
     <tr><td>Reminders: device-local toggle</td><td class="pass">PASS</td><td></td><td>Wired, not dead</td></tr>
     <tr><td>Single-player arcade intact alongside multiplayer</td><td class="pass">PASS</td><td></td><td>Self-contained; nothing stripped</td></tr>
@@ -148,8 +168,8 @@
 
   <h2>P2 recommendations (not fixed)</h2>
   <ul>
-    <li>Route EventPod &amp; BuddyRead notes through a screened dispatcher action + add report affordances (with the P1 above).</li>
     <li>Make the Jess "always answered" guarantee real via a server sweep (needs the parked notify/cron path).</li>
+    <li>Defense-in-depth (optional, now that spoofing is closed): stop returning raw <code>author_hash</code> on client-readable rows entirely by projecting reads through the server with a derived display token — larger effort (touches the alias/bloom system app-wide); not needed for the P0, which the identity proof already closes.</li>
     <li>Replies orphan when their top-level parent is hard-hidden (server <code>hidden:true</code>) — render a tombstone so the reply stack survives.</li>
     <li>Unify <code>botanicalAlias</code> (duplicated in <code>Community.jsx</code> and <code>communityAnon.js</code>) to one source before either array is edited.</li>
     <li>Extend the device-local hide/mute post filter into the Circles &amp; Clubs feeds (currently RoomView only).</li>
@@ -160,5 +180,5 @@
     <li>Fix the stale "optimistic" comment on the multiplayer move (it renders server-only — the comment misleads).</li>
   </ul>
 
-  <p class="muted" style="margin-top:26px;">Deployed with the 3 fixes above. The P0 and the note-moderation P1 are the two items awaiting your decision.</p>
+  <p class="muted" style="margin-top:26px;">Round 1 shipped the 3 comment/shelf P1s. Round 2 (this update) shipped the <b>P0 identity fix</b> and the <b>note-moderation P1</b>. The only remaining flagged item is the Jess-guarantee server sweep (needs infra). Everything else is P2 polish.</p>
 </div>
