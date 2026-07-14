@@ -293,8 +293,9 @@ function PostCard({ post, user, onCrisis, onChanged, enhanced = false, myHash = 
     if (askBusy) return;
     setAskBusy(true); setAskErr("");
     try {
-      const wh = await communityHash(user?.id);
-      const r = await dmApi.request(user, post.author_hash, botanicalAlias(wh), botanicalAlias(post.author_hash), askCtx.trim());
+      // Target her by POST id — the server resolves her identity + aliases; we never send a
+      // harvested author_hash. Identity of the SENDER is proven server-side (device_secret).
+      const r = await dmApi.request(user, { target_post_id: post.id, context: askCtx.trim() });
       const d = r || {};
       if (d.intercept) { onCrisis?.(); setAskBusy(false); return; }
       if (d.held) { setAskErr(d.reason === "unkind" ? "Let's keep that note kind — try rephrasing." : "That note couldn't be sent."); setAskBusy(false); return; }

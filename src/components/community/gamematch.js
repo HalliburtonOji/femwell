@@ -2,12 +2,15 @@
 // actions, folded into createCommunityPost like dm.*/together.*). Anonymous (botanical alias),
 // server-authoritative moves, no free-text (preset emotes only).
 import { base44 } from "@/api/base44Client";
-import { communityHash, botanicalAlias } from "./communityAnon";
+import { communityHash, communitySecret, botanicalAlias } from "./communityAnon";
 
 async function gm(action, payload, user) {
   const author_hash = await communityHash(user?.id);
   const alias = botanicalAlias(author_hash);
-  const r = await base44.functions.invoke("createCommunityPost", { action, user_id: user?.id, author_hash, alias, ...payload });
+  // device_secret PROVES this author_hash belongs to the authenticated caller (server verifies;
+  // a forged hash can't move/forfeit/chat as someone else). See communityAnon.communitySecret.
+  const device_secret = communitySecret();
+  const r = await base44.functions.invoke("createCommunityPost", { action, user_id: user?.id, author_hash, alias, device_secret, ...payload });
   return r?.data ?? r ?? {};
 }
 

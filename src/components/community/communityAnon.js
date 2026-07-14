@@ -36,6 +36,17 @@ export async function communityHash(userId) {
   return sha256Hex(`community::${userId}::${deviceSecret()}`);
 }
 
+// IDENTITY PROOF (safety-critical, 2026-07-14). The community author_hash embeds the SIGNED-IN
+// userId + this device secret. For identity-bearing server actions (DM, games) the client sends
+// this secret so the server can PROVE the presented author_hash belongs to the authenticated
+// caller — recomputing sha256("community::"+me.id+"::"+secret) and rejecting any mismatch. A
+// harvested hash you don't own can't be forged (you'd need a secret that hashes, with YOUR
+// authenticated id, to someone else's hash). The secret only ever leaves the device over the
+// authenticated call to our own backend, and is used transiently to verify — never persisted.
+export function communitySecret() {
+  try { return available() ? deviceSecret() : ""; } catch { return ""; }
+}
+
 // ── dedup sets ───────────────────────────────────────────────────────────────
 function readSet(key) { try { return new Set(JSON.parse(window.localStorage.getItem(key) || "[]")); } catch { return new Set(); } }
 function writeSet(key, set) { try { window.localStorage.setItem(key, JSON.stringify([...set])); } catch { /* ignore */ } }

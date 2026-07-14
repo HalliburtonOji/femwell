@@ -5,20 +5,26 @@
 // server-mediated: the function verifies the caller is a participant, so a client can't read or
 // write anyone else's thread. All moderation-before-delivery happens server-side in dm.send.
 import { base44 } from "@/api/base44Client";
-import { communityHash } from "./communityAnon";
+import { communityHash, communitySecret } from "./communityAnon";
 
 async function dm(action, payload, user) {
   const author_hash = await communityHash(user?.id);
+  // device_secret PROVES this author_hash belongs to the authenticated caller (server verifies;
+  // a forged/harvested hash is rejected). See communityAnon.communitySecret.
+  const device_secret = communitySecret();
   const r = await base44.functions.invoke("createCommunityPost", {
-    action, user_id: user?.id, author_hash, ...payload,
+    action, user_id: user?.id, author_hash, device_secret, ...payload,
   });
   return r?.data ?? r ?? {};
 }
 
 export const dmApi = {
   // request-to-chat (no cold DMs): creates a PENDING conversation; the recipient must accept.
-  request: (user, target_hash, a_alias, b_alias, context) =>
-    dm("dm.request", { target_hash, a_alias, b_alias, context }, user),
+  // Target the OTHER woman by her POST id (or comment id) — the server resolves her identity
+  // server-side, so the client never harvests/sends a raw author_hash. (Aliases are derived
+  // server-side too.) `target_hash` is still accepted as a transitional fallback.
+  request: (user, { target_post_id, target_comment_id, target_hash, context } = {}) =>
+    dm("dm.request", { target_post_id, target_comment_id, target_hash, context }, user),
   // recipient accepts / declines a pending request
   respond: (user, conversation_id, accept) =>
     dm("dm.respond", { conversation_id, accept: !!accept }, user),

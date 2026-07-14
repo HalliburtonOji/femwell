@@ -165,6 +165,47 @@ function tttWinner(board: string): string | null {
   return null;
 }
 
+// ════════════════════════════════════════════════════════════════════════════════════════════
+// IDENTITY PROOF (safety-critical P0 fix, 2026-07-14). The community author_hash is a device
+// token = sha256("community::"+userId+"::"+deviceSecret). Previously the DM/game dispatcher
+// TRUSTED the author_hash a client put in the request body as the caller's identity — and that
+// hash is publicly harvestable (it ships on public post rows), so anyone could spoof a stranger's
+// hash and read her private threads. THE FIX: identity is now PROVEN, never asserted. For every
+// identity-bearing action (dm.*, game.*) the client sends the device secret; we recompute the
+// hash from the AUTHENTICATED me.id + that secret and reject unless it matches the presented
+// author_hash. A harvested hash you don't own can't be forged (you'd need a secret that hashes,
+// with YOUR authenticated id, to someone else's hash — preimage-resistant). This preserves every
+// existing thread (identity is still the same device hash; same device → same proof → same
+// threads) with NO row migration, and naturally supports the per-device multi-hash reality.
+async function sha256Hex(str: string): Promise<string> {
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
+  return Array.from(new Uint8Array(buf)).map((b) => b.toString(16).padStart(2, '0')).join('');
+}
+function timingSafeEqual(a: string, b: string): boolean {
+  if (a.length !== b.length) return false;
+  let diff = 0;
+  for (let i = 0; i < a.length; i++) diff |= a.charCodeAt(i) ^ b.charCodeAt(i);
+  return diff === 0;
+}
+async function verifyIdentity(meId: string, authorHash: string, deviceSecret: string): Promise<boolean> {
+  if (!meId || !authorHash || !deviceSecret) return false;
+  const expected = await sha256Hex(`community::${meId}::${deviceSecret}`).catch(() => '');
+  return !!expected && timingSafeEqual(expected, String(authorHash).toLowerCase());
+}
+// Canonical botanical alias — MUST stay byte-identical to communityAnon.botanicalAlias (client)
+// so a server-derived alias matches every surface. Lets dm.request derive both aliases server-side
+// (the client no longer sends a harvested hash to compute the other woman's alias).
+const ALIAS_ADJ = ['Wild', 'Quiet', 'Golden', 'Soft', 'Bright', 'Gentle', 'Bold', 'Still', 'Sunny', 'Velvet', 'Little', 'Brave', 'Wandering', 'Calm', 'Amber', 'Silver'];
+const ALIAS_NOUN = ['Poppy', 'Fern', 'Willow', 'Rose', 'Sage', 'Ivy', 'Bluebell', 'Daisy', 'Heather', 'Marigold', 'Clover', 'Fox', 'Wren', 'Robin', 'Lark', 'Thistle', 'Meadow', 'Hazel', 'Juniper', 'Primrose'];
+function botanicalAlias(hash: string): string {
+  const s = String(hash || '');
+  if (!s) return 'A friend';
+  let h = 2166136261;
+  for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); }
+  h = h >>> 0;
+  return `${ALIAS_ADJ[h % ALIAS_ADJ.length]} ${ALIAS_NOUN[(h >> 5) % ALIAS_NOUN.length]}`;
+}
+
 Deno.serve(async (req) => {
   const base44 = createClientFromRequest(req);
   const me = await base44.auth.me().catch(() => null);
@@ -176,6 +217,16 @@ Deno.serve(async (req) => {
   const action = String(p.action || 'post');
   const { user_id, author_hash } = p;
   if (user_id && me.role !== 'admin' && me.id !== user_id) return Response.json({ error: 'Forbidden' }, { status: 403 });
+
+  // ── IDENTITY GATE (P0) — dm.* and game.* are identity-bearing (they read/act as "me"), so the
+  // presented author_hash MUST be cryptographically proven to belong to the authenticated caller.
+  // The body can no longer just ASSERT who you are: a forged/harvested hash is rejected here,
+  // before any thread is read or any move is made. Non-identity public actions (post/comment/…)
+  // are unaffected. Admins bypass (moderation tooling).
+  if ((action.startsWith('dm.') || action.startsWith('game.')) && me.role !== 'admin') {
+    const proven = await verifyIdentity(me.id, String(author_hash || ''), String(p.device_secret || ''));
+    if (!proven) return Response.json({ error: 'identity', message: 'We couldn\'t verify your identity for this action. Please reload and try again.' }, { status: 403 });
+  }
 
   // ════════════════════════════════════════════════════════════════════════════════════════════
   // 1:1 / DM (safety-critical, 2026-07-13). Every dm.* op is asServiceRole + verifies the caller is
@@ -218,10 +269,24 @@ Deno.serve(async (req) => {
 
     // — dm.request: request-to-chat (no cold DMs). Creates a PENDING conversation; B must accept. —
     if (action === 'dm.request') {
-      const target_hash = String(p.target_hash || '');
       const context = String(p.context || '').slice(0, 200).trim();
-      const a_alias = String(p.a_alias || '').slice(0, 48);
-      const b_alias = String(p.b_alias || '').slice(0, 48);
+      // Resolve the target SERVER-SIDE from a post/comment id so the client never harvests/sends a
+      // raw author_hash to address a chat. (target_hash is still accepted as a transitional fallback.)
+      let target_hash = '';
+      const target_post_id = String(p.target_post_id || '');
+      const target_comment_id = String(p.target_comment_id || '');
+      if (target_post_id) {
+        const tp = await withTimeout(sbd.entities.CommunityPost.get(target_post_id), 3000, 'dm-tp').catch(() => null);
+        if (tp?.author_hash) target_hash = String(tp.author_hash);
+      } else if (target_comment_id) {
+        const tc = await withTimeout(sbd.entities.Comment.get(target_comment_id), 3000, 'dm-tc').catch(() => null);
+        if (tc?.author_hash) target_hash = String(tc.author_hash);
+      } else if (p.target_hash) {
+        target_hash = String(p.target_hash || '');
+      }
+      // Aliases are derived server-side from the (verified) hashes, matching every other surface.
+      const a_alias = botanicalAlias(ah);
+      const b_alias = botanicalAlias(target_hash);
       if (!target_hash || target_hash === ah) return Response.json({ error: 'bad target' }, { status: 400 });
       // the context line is screened too (it's the first thing B sees)
       if (context) {
