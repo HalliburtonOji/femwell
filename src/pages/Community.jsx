@@ -83,6 +83,7 @@ import { cwOf, Pollinator } from "@/components/brand/flora";
 import EventsTogether from "@/components/community/EventsTogether";
 import LibraryTogether from "@/components/community/LibraryTogether";
 import GamesArcade from "@/components/community/GamesArcade";
+import MultiplayerArcade from "@/components/community/MultiplayerArcade";
 
 const PLUM = "#241a26"; // the single permitted dark surface
 const HANDFAM = '"Cormorant Garamond","Fraunces",Georgia,serif';
@@ -2109,6 +2110,11 @@ function GamesView({ user, onCrisis, onHome, onNav }) {
       {/* the ARCADE — real games (Daily Word · Trivia · Tic-tac-toe · Hangman), client-side */}
       <GamesArcade onShareToRoom={onNav ? () => onNav("lighter") : null} />
 
+      {/* PLAY A REAL WOMAN — async turn-based multiplayer (GameMatch); sits alongside the arcade */}
+      <div style={{ marginTop: 24, paddingTop: 20, borderTop: `1px solid ${T.paperDeep}` }}>
+        <MultiplayerArcade user={user} />
+      </div>
+
       {/* With the room — the async party rounds (existing engine, aggregate reveal) */}
       <div style={{ marginTop: 22 }}>
         <Eyebrow color={T.gold} mb={4}>Play with the room</Eyebrow>
@@ -2665,10 +2671,84 @@ function ShelfBoard({ shelf, onEnter }) {
           </button>
         ))}
       </div>
+      {shelf.id === "quietly" && (
+        <button onClick={() => onEnter("quietlyhub")} style={{ display: "inline-flex", alignItems: "center", gap: 5, background: "transparent", border: "none", cursor: "pointer", color: acc, fontFamily: UI, fontSize: 12, fontWeight: 700, padding: "12px 0 0" }}>
+          New to these? What each one is, and how it’s private <ChevronRight size={13} />
+        </button>
+      )}
       <div style={{ marginTop: "auto", paddingTop: 14 }}>
         <span style={{ fontFamily: HANDFAM, fontStyle: "italic", fontSize: 15, color: T.muted, lineHeight: 1.4 }}>{shelf.close}</span>
       </div>
     </Clipboard>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// QUIETLY (substance #8) — the private/soft surfaces, each with a proper explanation card
+// (what it is · how it's private/safe · a gentle driver). Calm-safety, aliases, consent intact.
+// ═══════════════════════════════════════════════════════════════════════════
+const QUIETLY_SURFACES = [
+  { key: "dm", Icon: MessageCircle, cw: "crimson", name: "Messages",
+    what: "Private one-to-one chats with another woman here.",
+    safe: "You're both anonymous (a botanical alias, never a name). Every message is screened before it arrives, and you can block or leave any time.",
+    driver: "Start one by tapping “Ask to chat privately” on any post that resonates.", cta: "Open Messages" },
+  { key: "echo", Icon: Waves, cw: "sage", name: "Echo Wall",
+    what: "Anonymous one-liners that fade after 48 hours.",
+    safe: "No profile, no history — say the thing and let it go. Nothing traces back to you.",
+    driver: "Leave a line; a kind echo usually comes back.", cta: "Open the Echo Wall" },
+  { key: "witness", Icon: Eye, cw: "plum", name: "Witness",
+    what: "One sister quietly holds a single entry of yours.",
+    safe: "Anonymous and moderated — one gentle reply, never a back-and-forth you have to keep up with.",
+    driver: "Hand over something you’re carrying, and let someone hold it.", cta: "Open Witness (in Journal)" },
+  { key: "sealed", Icon: Mail, cw: "gold", name: "Sealed letter",
+    what: "A slow letter — to future-you or a stranger — opened later.",
+    safe: "Sealed until its open date, screened, no identities on either side.",
+    driver: "Write to yourself three months from now.", cta: "Write a sealed letter" },
+  { key: "share", Icon: Send, cw: "sage", name: "Share a thought",
+    what: "Drop a thought into a space that’s simply yours.",
+    safe: "Anonymous by default — a soft place to put something down.",
+    driver: "Say the small thing you don’t need answered.", cta: "Share a thought" },
+  { key: "twin", Icon: Users, cw: "plum", name: "Phase Twin",
+    what: "Twelve days gently paired with one woman in a similar season.",
+    safe: "Anonymous, softly matched on where you are — never your location, never your details.",
+    driver: "Be quietly accompanied for a fortnight.", cta: "Find your Phase Twin (in Journal)" },
+  { key: "connect", Icon: SlidersHorizontal, cw: "gold", name: "How you connect",
+    what: "Your reach-me settings and your block list.",
+    safe: "You decide who can reach you, and you can block anyone, any time — it takes effect everywhere.",
+    driver: "Set your boundaries once; we’ll hold them.", cta: "Open your settings" },
+];
+
+function QuietlyHub({ onOpen, onBack }) {
+  return (
+    <div style={{ padding: "26px 18px 60px", maxWidth: 460, margin: "0 auto" }}>
+      {onBack && <button onClick={onBack} style={{ ...ghostBtn, marginBottom: 14, padding: "7px 11px" }}><ChevronLeft size={14} /> Community</button>}
+      <Eyebrow color={T.gold} mb={6}>Quietly</Eyebrow>
+      <Script size={36} color={OXBLOOD} style={{ marginBottom: 4 }}>Somewhere softer</Script>
+      <Hand size={17} color={T.muted} style={{ marginBottom: 8 }}>The gentler corners of the community — anonymous, one-to-one, or just for you. Here’s what each one is, and how it stays private.</Hand>
+      <div style={{ display: "flex", alignItems: "center", gap: 7, background: `${T.sage || "#8FAF8F"}12`, border: `1px solid ${T.paperDeep}`, borderRadius: 10, padding: "9px 12px", marginBottom: 18 }}>
+        <ShieldCheck size={15} color={T.sage || "#8FAF8F"} style={{ flexShrink: 0 }} />
+        <span style={{ fontFamily: UI, fontSize: 12, color: T.inkSoft, lineHeight: 1.45 }}>Everything here is anonymous by default. Kindness is screened in the background, and if you’re ever really struggling, help is a tap away.</span>
+      </div>
+      {QUIETLY_SURFACES.map((s) => { const acc = cwOf(s.cw).petal; return (
+        <div key={s.key} style={{ background: `linear-gradient(160deg, ${T.paperHi} 0%, ${acc}10 100%)`, border: `1px solid ${T.paperDeep}`, borderLeft: `4px solid ${acc}`, borderRadius: 15, padding: "15px 16px", marginBottom: 13 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 9, marginBottom: 8 }}>
+            <span style={{ width: 32, height: 32, borderRadius: 9, background: `${acc}1F`, display: "grid", placeItems: "center", flexShrink: 0 }}><s.Icon size={16} color={acc} /></span>
+            <div style={{ fontFamily: SERIF, fontWeight: 600, fontSize: 18, color: T.ink }}>{s.name}</div>
+          </div>
+          <Hand size={15.5} color={T.ink} style={{ marginBottom: 8 }}>{s.what}</Hand>
+          <div style={{ display: "flex", gap: 8, alignItems: "flex-start", marginBottom: 6 }}>
+            <ShieldCheck size={13} color={acc} style={{ flexShrink: 0, marginTop: 3 }} />
+            <span style={{ fontFamily: UI, fontSize: 12, color: T.muted, lineHeight: 1.45 }}>{s.safe}</span>
+          </div>
+          <div style={{ fontFamily: HANDFAM, fontStyle: "italic", fontSize: 15, color: T.inkSoft, marginBottom: 11 }}>{s.driver}</div>
+          <button onClick={() => onOpen(s.key)} style={{ ...primaryBtn, padding: "9px 15px" }}>{s.cta} <ChevronRight size={13} /></button>
+        </div>
+      ); })}
+      <div style={{ display: "flex", flexDirection: "column", alignItems: "center", marginTop: 20, gap: 8 }}>
+        <Pollinator kind="butterfly" size={28} color={cwOf("plum").petal} color2={cwOf("gold").petal} animate idx="quiet-close" />
+        <div style={{ fontFamily: HANDFAM, fontStyle: "italic", fontSize: 16, color: T.muted, textAlign: "center", maxWidth: 290, lineHeight: 1.5 }}>Whatever you’re carrying, you don’t have to hold it out loud.</div>
+      </div>
+    </div>
   );
 }
 
@@ -3104,6 +3184,7 @@ export function CommunityInner({ initialView = null, embedded = false, homeVaria
   // nothing stripped). Special destinations (share/witness/twin) match the classic paths.
   const enterShelf = useCallback((dest) => {
     if (dest === "share") { setShareTo(true); return; }
+    if (dest === "quietlyhub") { setView("quietly"); try { window.scrollTo({ top: 0, behavior: "instant" }); } catch { /* ignore */ } return; }
     if (dest === "sealed") { setLetterOpen(true); return; }        // sealed-letter pen-pal (ported)
     if (dest === "connect") { setConnectOpen(true); return; }      // connection prefs + block (ported)
     if (dest === "witness") { navigate(createPageUrl("Journal?open=witness")); return; }
@@ -3160,6 +3241,8 @@ export function CommunityInner({ initialView = null, embedded = false, homeVaria
             </div>
           : view === "dm"
           ? <DMView user={user} onBack={goBack} onCrisis={() => setCrisis(true)} />
+          : view === "quietly"
+          ? <QuietlyHub onOpen={enterShelf} onBack={goBack} />
           : <RoomView key={tick} roomKey={view} posts={posts} loading={loading} error={loadErr} user={user} onNav={setView} onHome={goBack} onCrisis={() => setCrisis(true)} onReload={reload} onPostCreated={onPostCreated} seed={roomSeed} initialCircle={initialCircle} profile={profile}
               onOpenHub={() => setHubOpen(true)} enhanced={homeVariant === "redesign"} lifeStage={lifeStage}
               onOpenCorner={(key, title) => { setInitialClub(key); setClubTitle(title || ""); setView("clubs"); }} />}

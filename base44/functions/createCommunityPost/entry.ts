@@ -129,6 +129,42 @@ const TA_WATCH = [
     blurb: 'An hour with this season’s book, together. Bring tea.' },
 ];
 
+// ── Games multiplayer (#7, 2026-07-14) — server-authoritative board logic for the game.* actions.
+// Boards are compact strings ('0' empty, '1' player A, '2' player B). C4 = 6×7 row-major; TTT = 9.
+const GAME_EMOTES = ['Good move', 'Nice one', 'Well played', 'Close!', 'Good game', 'Ha!', 'Thinking…'];
+function newBoard(game: string): string { return game === 'tictactoe' ? '0'.repeat(9) : '0'.repeat(42); }
+function boardFull(board: string): boolean { return !board.includes('0'); }
+// Connect-4: drop a disc into a column (0–6); returns the new board or null if illegal.
+function c4Drop(board: string, col: number, mark: string): string | null {
+  if (!Number.isInteger(col) || col < 0 || col > 6) return null;
+  for (let row = 5; row >= 0; row--) {
+    const idx = row * 7 + col;
+    if (board[idx] === '0') return board.slice(0, idx) + mark + board.slice(idx + 1);
+  }
+  return null;   // column full
+}
+function c4Winner(board: string): string | null {
+  const at = (r: number, c: number) => (r >= 0 && r < 6 && c >= 0 && c < 7) ? board[r * 7 + c] : '0';
+  const dirs = [[0, 1], [1, 0], [1, 1], [1, -1]];
+  for (let r = 0; r < 6; r++) for (let c = 0; c < 7; c++) {
+    const v = at(r, c); if (v === '0') continue;
+    for (const [dr, dc] of dirs) {
+      if (at(r + dr, c + dc) === v && at(r + 2 * dr, c + 2 * dc) === v && at(r + 3 * dr, c + 3 * dc) === v) return v;
+    }
+  }
+  return null;
+}
+// Tic-tac-toe: place at cell 0–8; returns new board or null if illegal.
+function tttPlace(board: string, cell: number, mark: string): string | null {
+  if (!Number.isInteger(cell) || cell < 0 || cell > 8 || board[cell] !== '0') return null;
+  return board.slice(0, cell) + mark + board.slice(cell + 1);
+}
+function tttWinner(board: string): string | null {
+  const L = [[0, 1, 2], [3, 4, 5], [6, 7, 8], [0, 3, 6], [1, 4, 7], [2, 5, 8], [0, 4, 8], [2, 4, 6]];
+  for (const [a, b, c] of L) { if (board[a] !== '0' && board[a] === board[b] && board[b] === board[c]) return board[a]; }
+  return null;
+}
+
 Deno.serve(async (req) => {
   const base44 = createClientFromRequest(req);
   const me = await base44.auth.me().catch(() => null);
@@ -396,6 +432,128 @@ Deno.serve(async (req) => {
     }
 
     return Response.json({ error: 'unknown together action' }, { status: 400 });
+  }
+
+  // ════════════════════════════════════════════════════════════════════════════════════════════
+  // GAMES MULTIPLAYER — async turn-based matches vs a real (anonymous) woman. Server-authoritative:
+  // every move is validated + the board mutated here, so a client can't cheat or read another match.
+  // No free-text — only preset emotes. Block/report/forfeit on every match. 18+ inherited (AgeGate).
+  // ════════════════════════════════════════════════════════════════════════════════════════════
+  if (action.startsWith('game.')) {
+    const sbg = base44.asServiceRole;
+    const GM = sbg.entities.GameMatch;
+    const ah = String(author_hash || '');
+    if (!ah) return Response.json({ error: 'author_hash required' }, { status: 400 });
+    const myAlias = String(p.alias || '').slice(0, 48);
+    const nowISO = new Date().toISOString();
+
+    const pub = (m: any) => {
+      const iAm = m.a_hash === ah ? 'a' : (m.b_hash === ah ? 'b' : null);
+      return {
+        id: m.id, game: m.game, status: m.status, board: m.board || newBoard(m.game),
+        turn: m.turn, winner: m.winner || '', move_count: m.move_count || 0,
+        a_alias: m.a_alias || '', b_alias: m.b_alias || '', a_emote: m.a_emote || '', b_emote: m.b_emote || '',
+        invite: !!m.invite, room: m.room || '', reported: !!m.reported,
+        iAm, myTurn: !!iAm && m.status === 'active' && m.turn === iAm,
+        opponent_alias: iAm === 'a' ? (m.b_alias || '') : (m.a_alias || ''),
+        last_move_at: m.last_move_at || '',
+      };
+    };
+
+    // matchmaking: join a waiting public match (not mine), else create one
+    if (action === 'game.find') {
+      const game = p.game === 'tictactoe' ? 'tictactoe' : 'connect4';
+      const waiting: any[] = await withTimeout(GM.filter({ game, status: 'waiting', invite: false }, '-created_date', 40), 4000, 'gm-find').catch(() => []);
+      const open = (Array.isArray(waiting) ? waiting : []).find((m) => m.a_hash !== ah && !m.b_hash);
+      if (open) {
+        await withTimeout(GM.update(open.id, { b_hash: ah, b_alias: myAlias, status: 'active', turn: 'a', last_move_at: nowISO }), 6000, 'gm-join').catch(() => {});
+        const fresh = await GM.get(open.id).catch(() => ({ ...open, b_hash: ah, b_alias: myAlias, status: 'active' }));
+        return Response.json({ ok: true, match: pub(fresh) }, { status: 200 });
+      }
+      const created = await withTimeout(GM.create({ game, status: 'waiting', a_hash: ah, a_alias: myAlias, board: newBoard(game), turn: 'a', winner: '', move_count: 0, invite: false, last_move_at: nowISO }), 6000, 'gm-create').catch(() => null);
+      if (!created) return Response.json({ error: 'create failed' }, { status: 500 });
+      return Response.json({ ok: true, match: pub(created), waiting: true }, { status: 200 });
+    }
+
+    // invite a room-mate — a private waiting match joined by its id
+    if (action === 'game.invite') {
+      const game = p.game === 'tictactoe' ? 'tictactoe' : 'connect4';
+      const created = await withTimeout(GM.create({ game, status: 'waiting', a_hash: ah, a_alias: myAlias, board: newBoard(game), turn: 'a', winner: '', move_count: 0, invite: true, room: String(p.room || '').slice(0, 40), last_move_at: nowISO }), 6000, 'gm-inv').catch(() => null);
+      if (!created) return Response.json({ error: 'create failed' }, { status: 500 });
+      return Response.json({ ok: true, match: pub(created) }, { status: 200 });
+    }
+
+    if (action === 'game.join') {
+      const m = await withTimeout(GM.get(String(p.match_id || '')), 3000, 'gm-get').catch(() => null);
+      if (!m) return Response.json({ error: 'not found' }, { status: 404 });
+      if (m.a_hash === ah) return Response.json({ ok: true, match: pub(m) }, { status: 200 });   // it's yours
+      if (m.status !== 'waiting' || m.b_hash) return Response.json({ error: 'unavailable', message: 'That game’s already been joined.' }, { status: 200 });
+      await withTimeout(GM.update(m.id, { b_hash: ah, b_alias: myAlias, status: 'active', turn: 'a', last_move_at: nowISO }), 6000, 'gm-j').catch(() => {});
+      const fresh = await GM.get(m.id).catch(() => ({ ...m, b_hash: ah, b_alias: myAlias, status: 'active' }));
+      return Response.json({ ok: true, match: pub(fresh) }, { status: 200 });
+    }
+
+    if (action === 'game.state') {
+      const m = await withTimeout(GM.get(String(p.match_id || '')), 3000, 'gm-get').catch(() => null);
+      if (!m || (m.a_hash !== ah && m.b_hash !== ah)) return Response.json({ error: 'not found' }, { status: 404 });
+      return Response.json({ ok: true, match: pub(m) }, { status: 200 });
+    }
+
+    // my active/waiting matches (for the list + "your turn" nudge)
+    if (action === 'game.mine') {
+      const all: any[] = await withTimeout(GM.filter({}, '-last_move_at', 200), 4000, 'gm-mine').catch(() => []);
+      const mine = (Array.isArray(all) ? all : []).filter((m) => (m.a_hash === ah || m.b_hash === ah) && m.status !== 'abandoned').slice(0, 30);
+      return Response.json({ ok: true, matches: mine.map(pub) }, { status: 200 });
+    }
+
+    // THE move — server validates turn + legality, mutates the board, detects a win/draw
+    if (action === 'game.move') {
+      const m = await withTimeout(GM.get(String(p.match_id || '')), 3000, 'gm-get').catch(() => null);
+      if (!m || (m.a_hash !== ah && m.b_hash !== ah)) return Response.json({ error: 'not found' }, { status: 404 });
+      if (m.status !== 'active') return Response.json({ error: 'not active', match: pub(m) }, { status: 200 });
+      const iAm = m.a_hash === ah ? 'a' : 'b';
+      if (m.turn !== iAm) return Response.json({ error: 'not your turn', match: pub(m) }, { status: 200 });
+      const mark = iAm === 'a' ? '1' : '2';
+      const board0 = m.board || newBoard(m.game);
+      const spot = Number(p.spot);
+      const next = m.game === 'tictactoe' ? tttPlace(board0, spot, mark) : c4Drop(board0, spot, mark);
+      if (!next) return Response.json({ error: 'illegal move', match: pub(m) }, { status: 200 });
+      const win = m.game === 'tictactoe' ? tttWinner(next) : c4Winner(next);
+      let status = 'active', winner = '', turn = iAm === 'a' ? 'b' : 'a';
+      if (win) { status = 'finished'; winner = win === '1' ? 'a' : 'b'; }
+      else if (boardFull(next)) { status = 'finished'; winner = 'draw'; }
+      await withTimeout(GM.update(m.id, { board: next, turn, status, winner, move_count: (m.move_count || 0) + 1, last_move_at: nowISO }), 6000, 'gm-mv').catch(() => {});
+      return Response.json({ ok: true, match: pub({ ...m, board: next, turn, status, winner, move_count: (m.move_count || 0) + 1 }) }, { status: 200 });
+    }
+
+    // preset emote only (no free text ever)
+    if (action === 'game.emote') {
+      const m = await withTimeout(GM.get(String(p.match_id || '')), 3000, 'gm-get').catch(() => null);
+      if (!m || (m.a_hash !== ah && m.b_hash !== ah)) return Response.json({ error: 'not found' }, { status: 404 });
+      const emote = String(p.emote || '');
+      if (!GAME_EMOTES.includes(emote)) return Response.json({ error: 'bad emote' }, { status: 400 });
+      const patch = m.a_hash === ah ? { a_emote: emote } : { b_emote: emote };
+      await withTimeout(GM.update(m.id, patch), 6000, 'gm-em').catch(() => {});
+      return Response.json({ ok: true }, { status: 200 });
+    }
+
+    if (action === 'game.forfeit') {
+      const m = await withTimeout(GM.get(String(p.match_id || '')), 3000, 'gm-get').catch(() => null);
+      if (!m || (m.a_hash !== ah && m.b_hash !== ah)) return Response.json({ error: 'not found' }, { status: 404 });
+      const iAm = m.a_hash === ah ? 'a' : 'b';
+      const patch = m.status === 'waiting' ? { status: 'abandoned' } : { status: 'finished', winner: iAm === 'a' ? 'b' : 'a' };
+      await withTimeout(GM.update(m.id, patch), 6000, 'gm-ff').catch(() => {});
+      return Response.json({ ok: true }, { status: 200 });
+    }
+
+    if (action === 'game.report') {
+      const m = await withTimeout(GM.get(String(p.match_id || '')), 3000, 'gm-get').catch(() => null);
+      if (!m || (m.a_hash !== ah && m.b_hash !== ah)) return Response.json({ error: 'not found' }, { status: 404 });
+      await withTimeout(GM.update(m.id, { reported: true }), 6000, 'gm-rp').catch(() => {});
+      return Response.json({ ok: true }, { status: 200 });
+    }
+
+    return Response.json({ error: 'unknown game action' }, { status: 400 });
   }
 
   // ── reading activity (Books & Book Clubs) — handled before the author_hash guard since the

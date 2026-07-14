@@ -1,0 +1,45 @@
+{
+  // Community Games multiplayer (#7, 2026-07-14) — an ASYNC, turn-based match between two anonymous
+  // women (like async chess/words: no heavy real-time infra, you take a turn whenever). Connect-4 &
+  // Tic-tac-toe to start. Server-authoritative: every move is validated + the board mutated inside the
+  // game.* dispatcher actions (asServiceRole), so a client can't cheat or read another match.
+  //
+  // SAFETY: NO free-text chat channel in a game — only a tiny allowlist of preset emotes. Block /
+  // report / forfeit on every match. 18+ inherited from the Community AgeGate. Aggregate/no-shame
+  // framing (no ELO, no ranking, "just for company"). Fully RLS admin (function-mediated).
+  "name": "GameMatch",
+  "type": "object",
+  "properties": {
+    "game": { "type": "string", "enum": ["connect4", "tictactoe"], "default": "connect4", "description": "Which turn-based game." },
+    "status": { "type": "string", "enum": ["waiting", "active", "finished", "abandoned"], "default": "waiting", "description": "waiting = an open seat (matchmaking/invite); active = both in; finished = won/drawn/forfeited." },
+    "a_hash": { "type": "string", "description": "Player A = the creator (anon device token). Never a user id." },
+    "b_hash": { "type": "string", "description": "Player B = whoever joins. Empty until matched." },
+    "a_alias": { "type": "string", "description": "Botanical alias for A (display only)." },
+    "b_alias": { "type": "string", "description": "Botanical alias for B." },
+    "board": { "type": "string", "description": "Compact board state. connect4 = 42 chars (6 rows × 7 cols, row-major, '0' empty '1' A '2' B); tictactoe = 9 chars." },
+    "turn": { "type": "string", "enum": ["a", "b"], "default": "a", "description": "Whose move it is." },
+    "winner": { "type": "string", "enum": ["", "a", "b", "draw"], "default": "", "description": "Set when finished." },
+    "move_count": { "type": "number", "default": 0 },
+    "a_emote": { "type": "string", "description": "A's last preset emote (allowlisted words only — never free text)." },
+    "b_emote": { "type": "string", "description": "B's last preset emote." },
+    "invite": { "type": "boolean", "default": false, "description": "true = created as an invite (not surfaced to random matchmaking); a room-mate joins by its id." },
+    "room": { "type": "string", "description": "Optional room the invite came from." },
+    "reported": { "type": "boolean", "default": false },
+    "last_move_at": { "type": "string", "format": "date-time" }
+  },
+  "required": ["game", "a_hash"],
+  "indexes": [
+    { "fields": ["game"] },
+    { "fields": ["status"] },
+    { "fields": ["a_hash"] },
+    { "fields": ["b_hash"] },
+    { "fields": ["last_move_at"] },
+    { "fields": ["created_date"] }
+  ],
+  "rls": {
+    "read": { "user_condition": { "role": "admin" } },
+    "create": { "user_condition": { "role": "admin" } },
+    "update": { "user_condition": { "role": "admin" } },
+    "delete": { "user_condition": { "role": "admin" } }
+  }
+}
