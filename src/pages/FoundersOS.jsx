@@ -109,6 +109,8 @@ import communityGamesHtml from "@/components/founders/brandDocs/community-games.
 import gamesDeepHtml from "@/components/founders/brandDocs/community-games-deep.html?raw";
 import substancePlanHtml from "@/components/founders/brandDocs/community-substance-master.html?raw";
 import dmSpecHtml from "@/components/founders/brandDocs/community-dm-spec.html?raw";
+// Community final QA + safety audit (2026-07-14) — wired from IDEAS-LINKS handoff.
+import communityQaHtml from "@/components/founders/brandDocs/community-final-qa.html?raw";
 // HealthCornerDemo was the multi-layout preview. The canonical health
 // experience now lives at /Health (src/pages/Health.jsx). The Health Corner
 // tab in /Ideas renders <HealthCornerRedirectCard /> instead.
@@ -278,6 +280,7 @@ const CATALOG = [
     title: "Planner (content) — card-system demo ★ for approval", desc: "The CONTENT side of Planner as cards: add-an-intention, today's gentle intentions, your rituals, and soft reminders. NOT the calendar/day-view (those stay as-is)." },
   // ── ★ TOP of Current: Data hygiene ──
   { kind:"doc", key:"Entity Audit", group: CAT.CURRENT, sub:"Data hygiene", status:"new", accent:"crimson", title:"Entity Audit & Removal Plan — cull the dead weight", desc:"Read-only deep audit of all 149 base44 entities. 121 active (frontend) · 12 backend-only · 15 removal candidates: 13 with ZERO code refs (AnonymousSession, BookContentCache, ConditionProfiles, DailyAggregates, DayTaskOverrides, DealsProducts, DealsSources, DischargeLogs, EvidenceRefs, InsightSnapshots, MediaAssets, SexualHealthLogs, VoiceCache) + 2 superseded duplicates (CommunityPosts, Posts). Full ledger table + tiered shortlists + a back-up-before-deletion gate. Live row counts pending data access. NO deletions made — approve per-item." },
+  { kind:"doc", key:"CommunityQA", group: CAT.CURRENT, sub:"QA & safety", status:"new", accent:"crimson", title:"Community — final QA + safety audit", desc:"Fresh-eyes adversarial code-trace of the whole live Community. 64 checks / 58 pass. 1 P0 (DM identity is a spoofable client-supplied bearer token → private-thread read; architecture decision needed), 4 P1 (3 fixed & deployed: comment mute/hide, comment report, cross-user shelf bleed; 1 flagged: unmoderated broadcast notes). No location leak, no unmoderated chat, no private cycle/journal data, all new entities admin-RLS-locked. Per-feature pass/fail tables + P2 recommendations." },
   // ── ★ TOP of Current: PAGE LEVEL-UP PLANS (one per live page) awaiting your reaction ──
   { kind: "route", href: "/CommunityRedesignDemo", group: CAT.CURRENT, sub: "Page level-up plans + demos", status: "new", accent: "crimson",
     title: "Community Redesign — demo ★", desc: "Phase-1 redesign SHELL on the canonical §6.8.2 page template: flora hero (bouquet = many women) + tap-to-rebloom shelf switcher (Talk · Circles · Together · Quietly) · summary card · glance⇆Community-Jess sliding row w/ upward inner sheet · clipboard slider of the 4 shelf-boards · handy row · resonance. Reuses every real feature (rooms/circles/clubs/library/games/echo/rituals). PLUS feature #1 = robust TALK ROOMS (botanical alias per anon hash · daily life-tinted room prompt · hide-a-voice · mute-a-word · per-room presence — real reads/writes). All safety rails intact (18+/crisis/moderation/report→hide/k-anon). Live /Community untouched." },
@@ -536,6 +539,7 @@ const ARCHIVE_SUB_ORDER = [
 // Current sub-section order (keeps Current scannable — page plans together, then cross-app).
 const CURRENT_SUB_ORDER = [
   "Data hygiene",
+  "QA & safety",
   "Calendar + logger plans",
   "Card language plans",
   "Brand + card language",
@@ -1125,6 +1129,7 @@ function FoundersInner({ user }) {
       {tab === "Intentions & Goals" && <BrandDocFrame html={intentionsGoalsHtml} title="FemWell — Intentions, Line of the Day & Goals" />}
       {tab === "Connect, Days & Missions" && <BrandDocFrame html={connectDaysMissionsHtml} title="FemWell — No Garden Grows Alone (Connection, Days Off & Tiny Missions)" />}
       {tab === "Entity Audit" && <BrandDocFrame html={entityAuditHtml} title="FemWell — Entity Audit & Removal Plan" />}
+      {tab === "CommunityQA" && <BrandDocFrame html={communityQaHtml} title="FemWell — Community: final QA + safety audit" />}
       {tab === "Events Together" && <BrandDocFrame html={communityEventsHtml} title="FemWell — Together / Events: robust & safe" />}
       {tab === "Library Book Club" && <BrandDocFrame html={communityLibraryHtml} title="FemWell — Library / Book Club: robust" />}
       {tab === "Circles" && <BrandDocFrame html={communityCirclesHtml} title="FemWell — Circles: robust cohorts" />}
