@@ -395,10 +395,29 @@ function PostCard({ post, user, onCrisis, onChanged, enhanced = false, myHash = 
     finally { setBusy(false); }
   };
 
+  // report a single comment/reply (server supports target_type:"comment" → auto-hide at threshold).
+  const reportComment = async (commentId) => {
+    if (!commentId || hasReported(commentId)) return;
+    markReported(commentId);
+    onChanged?.();
+    try {
+      const wh = await communityHash(user?.id);
+      await base44.functions.invoke("createCommunityPost", { action: "report", user_id: user?.id, author_hash: wh, target_type: "comment", target_id: commentId });
+    } catch (e) { console.error("comment report failed:", e); }
+  };
+
   // threaded replies (Comment.parent_id): split into top-level + replies-by-parent (one level deep).
+  // SAFETY PARITY WITH POSTS: the device-local hide-a-voice + mute-a-word + report filters now apply
+  // to comments too (previously posts-only — a muted word or a hidden voice still showed in replies,
+  // a pile-on vector). Never filter Jess or your own line. Reading fresh each render (safetyTick).
   const cList = Array.isArray(comments) ? comments : [];
-  const topLevel = cList.filter((c) => !c.parent_id);
-  const repliesByParent = cList.reduce((m, c) => { if (c.parent_id) { (m[c.parent_id] = m[c.parent_id] || []).push(c); } return m; }, {});
+  const cMuted = enhanced ? mutedWords() : [];
+  const cVisible = enhanced
+    ? cList.filter((c) => c.by === "jess" || (myHash && c.author_hash === myHash)
+        || (!hasReported(c.id) && !isAuthorHidden(c.author_hash) && !matchesMuted(c.body, cMuted)))
+    : cList;
+  const topLevel = cVisible.filter((c) => !c.parent_id);
+  const repliesByParent = cVisible.reduce((m, c) => { if (c.parent_id) { (m[c.parent_id] = m[c.parent_id] || []).push(c); } return m; }, {});
 
   const CommentBubble = (c, { isReply = false } = {}) => (
     c.status === "removed" ? (
@@ -413,13 +432,29 @@ function PostCard({ post, user, onCrisis, onChanged, enhanced = false, myHash = 
           </div>
         )}
         <Hand size={17} color={T.inkSoft}>{c.body}</Hand>
-        {/* reply-to (threaded) — only on top-level, only when the post allows comments */}
-        {!isReply && isOpen && (
-          <button onClick={() => { setReplyTo({ id: c.id, alias: c.by === "jess" ? "Jess" : (myHash && c.author_hash === myHash ? "your line" : botanicalAlias(c.author_hash)) }); }}
-            style={{ background: "transparent", border: "none", cursor: "pointer", color: T.gold, fontFamily: UI, fontSize: 11, fontWeight: 700, padding: "3px 0 0", display: "inline-flex", alignItems: "center", gap: 5 }}>
-            <MessageCircle size={11} /> Reply
-          </button>
-        )}
+        {/* reply · report · hide — reply only on top-level; report/hide on any real member comment */}
+        <div style={{ display: "flex", alignItems: "center", gap: 12, marginTop: 3, flexWrap: "wrap" }}>
+          {!isReply && isOpen && (
+            <button onClick={() => { setReplyTo({ id: c.id, alias: c.by === "jess" ? "Jess" : (myHash && c.author_hash === myHash ? "your line" : botanicalAlias(c.author_hash)) }); }}
+              style={{ background: "transparent", border: "none", cursor: "pointer", color: T.gold, fontFamily: UI, fontSize: 11, fontWeight: 700, padding: 0, display: "inline-flex", alignItems: "center", gap: 5 }}>
+              <MessageCircle size={11} /> Reply
+            </button>
+          )}
+          {enhanced && c.by !== "jess" && (!myHash || c.author_hash !== myHash) && (
+            <>
+              <button onClick={() => reportComment(c.id)} disabled={hasReported(c.id)}
+                style={{ background: "transparent", border: "none", cursor: hasReported(c.id) ? "default" : "pointer", color: T.muted, fontFamily: UI, fontSize: 11, fontWeight: 600, padding: 0, display: "inline-flex", alignItems: "center", gap: 4, opacity: hasReported(c.id) ? 0.6 : 1 }}>
+                <Flag size={11} /> {hasReported(c.id) ? "Reported" : "Report"}
+              </button>
+              {c.author_hash && (
+                <button onClick={() => { hideAuthor(c.author_hash); onChanged?.(); }}
+                  style={{ background: "transparent", border: "none", cursor: "pointer", color: T.muted, fontFamily: UI, fontSize: 11, fontWeight: 600, padding: 0, display: "inline-flex", alignItems: "center", gap: 4 }}>
+                  <EyeOff size={11} /> Hide
+                </button>
+              )}
+            </>
+          )}
+        </div>
       </div>
     )
   );

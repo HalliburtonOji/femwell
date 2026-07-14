@@ -24,8 +24,14 @@ function norm(b) {
   return { key: bookKey(b), title: b.title, author: b.author || "", gutenberg_id: b.gutenberg_id || null, olid: b.olid || null, status: b.status || "want", cover_hint: b.cover_hint || null, source: b.source || "manual" };
 }
 
-export function readLocal() { try { return (JSON.parse(localStorage.getItem(SHELF_KEY) || "[]") || []).map(norm); } catch { return []; } }
-function writeLocal(a) { try { localStorage.setItem(SHELF_KEY, JSON.stringify(a.map(norm))); } catch { /* ignore */ } }
+// PRIVACY — the local mirror is scoped PER USER. A single global key leaked one woman's shelf
+// into the next account on a shared device (and migrated it UP into her UserBook). Scoping by
+// user_id keeps each shelf separate; unauthed falls back to the shared offline key. Legacy global
+// data is intentionally NOT migrated into a scoped shelf (that ambiguity was the bleed) — the
+// per-user UserBook rows are the source of truth and repopulate the scoped mirror on load.
+const shelfKeyFor = (userId) => (userId ? `${SHELF_KEY}::${userId}` : SHELF_KEY);
+export function readLocal(userId) { try { return (JSON.parse(localStorage.getItem(shelfKeyFor(userId)) || "[]") || []).map(norm); } catch { return []; } }
+function writeLocal(userId, a) { try { localStorage.setItem(shelfKeyFor(userId), JSON.stringify(a.map(norm))); } catch { /* ignore */ } }
 
 // Best-effort shared Book cache upsert — fail-open, never awaited on the UI path.
 function cacheBook(item) {
@@ -55,16 +61,16 @@ async function findRowId(userId, key) {
 
 // Load the shelf: server (authed) merged with local-only rows (migrated up), else local.
 export async function loadShelf(userId) {
-  const local = readLocal();
+  const local = readLocal(userId);
   if (!userId) return local.map((l) => ({ ...l, _row: null }));
   try {
     const rows = await base44.entities.UserBook.filter({ user_id: userId }, "-created_date", 300);
     const server = (Array.isArray(rows) ? rows : []).map((r) => ({ _row: r.id, key: r.book_key, title: r.title, author: r.author || "", gutenberg_id: r.gutenberg_id || null, olid: r.olid || null, status: r.status || "want", cover_hint: r.cover_hint || null, source: r.source || "manual" }));
     const serverKeys = new Set(server.map((s) => s.key));
-    const localOnly = local.filter((l) => !serverKeys.has(l.key));
+    const localOnly = local.filter((l) => !serverKeys.has(l.key));   // only THIS user's scoped local rows
     localOnly.forEach((l) => createRow(userId, l));   // migrate up (fire-and-forget); keep showing meanwhile
     const merged = [...server, ...localOnly.map((l) => ({ ...l, _row: null }))];
-    writeLocal(merged);   // refresh the local mirror so it never loses a synced book
+    writeLocal(userId, merged);   // refresh the local mirror so it never loses a synced book
     return merged;
   } catch { return local.map((l) => ({ ...l, _row: null })); }
 }
@@ -72,9 +78,9 @@ export async function loadShelf(userId) {
 // Add (optimistic local + guarded server create, deduped). Returns the updated list.
 export async function addBook(userId, book) {
   const item = norm(book);
-  const local = readLocal();
+  const local = readLocal(userId);
   const list = local.some((l) => l.key === item.key) ? local : [item, ...local];
-  writeLocal(list);
+  writeLocal(userId, list);
   if (userId) {
     const existing = await findRowId(userId, item.key);
     if (!existing) createRow(userId, item);
@@ -83,15 +89,15 @@ export async function addBook(userId, book) {
 }
 
 export async function setStatus(userId, key, status) {
-  const list = readLocal().map((l) => (l.key === key ? { ...l, status } : l));
-  writeLocal(list);
+  const list = readLocal(userId).map((l) => (l.key === key ? { ...l, status } : l));
+  writeLocal(userId, list);
   if (userId) { const id = await findRowId(userId, key); if (id) base44.entities.UserBook.update(id, { status, updated_at: nowISO() }).catch(() => {}); }
   return list.map((l) => ({ ...l, _row: null }));
 }
 
 export async function removeBook(userId, key) {
-  const list = readLocal().filter((l) => l.key !== key);
-  writeLocal(list);
+  const list = readLocal(userId).filter((l) => l.key !== key);
+  writeLocal(userId, list);
   if (userId) { const id = await findRowId(userId, key); if (id) base44.entities.UserBook.delete(id).catch(() => {}); }
   return list.map((l) => ({ ...l, _row: null }));
 }

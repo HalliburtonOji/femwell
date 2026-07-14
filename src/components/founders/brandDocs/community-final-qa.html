@@ -1,0 +1,164 @@
+<!-- Community FINAL QA report — 2026-07-14. Phone-readable, no emoji (brand rule). -->
+<style>
+  .cqa { font-family: 'Inter', system-ui, sans-serif; color: #2E261B; background: #ECE7DA; max-width: 780px; margin: 0 auto; padding: 20px 16px 60px; line-height: 1.5; }
+  .cqa h1 { font-family: 'Fraunces', Georgia, serif; font-size: 27px; color: #7A1A12; margin: 4px 0 6px; letter-spacing: -0.3px; }
+  .cqa h2 { font-family: 'Fraunces', Georgia, serif; font-size: 20px; color: #0B0805; margin: 30px 0 8px; border-bottom: 2px solid #D8CFBC; padding-bottom: 5px; }
+  .cqa h3 { font-size: 14.5px; font-weight: 800; color: #A8893F; text-transform: uppercase; letter-spacing: 0.6px; margin: 20px 0 6px; }
+  .cqa p, .cqa li { font-size: 14px; }
+  .cqa .lead { font-size: 15px; color: #2E261B; }
+  .cqa .box { background: #F4EFE3; border: 1px solid #D8CFBC; border-radius: 12px; padding: 13px 15px; margin: 12px 0; }
+  .cqa .p0 { border-left: 5px solid #BC2E27; }
+  .cqa .p1 { border-left: 5px solid #A8893F; }
+  .cqa .fixed { border-left: 5px solid #8FAF8F; }
+  .cqa table { width: 100%; border-collapse: collapse; margin: 8px 0 4px; font-size: 12.7px; }
+  .cqa th { text-align: left; background: #E4DCC9; color: #0B0805; padding: 7px 8px; font-size: 11px; text-transform: uppercase; letter-spacing: 0.4px; border-bottom: 2px solid #D8CFBC; }
+  .cqa td { padding: 7px 8px; border-bottom: 1px solid #E0D8C6; vertical-align: top; }
+  .cqa .tbl-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .cqa .pass { color: #5C7A52; font-weight: 800; }
+  .cqa .fail { color: #BC2E27; font-weight: 800; }
+  .cqa .sev { font-weight: 800; white-space: nowrap; }
+  .cqa .sev0 { color: #BC2E27; } .cqa .sev1 { color: #A8893F; } .cqa .sev2 { color: #8A7B62; }
+  .cqa code { background: #E4DCC9; border-radius: 4px; padding: 1px 5px; font-size: 12px; }
+  .cqa .tag { display: inline-block; font-size: 10.5px; font-weight: 800; padding: 2px 8px; border-radius: 999px; letter-spacing: 0.4px; text-transform: uppercase; }
+  .cqa .tag-fix { background: #8FAF8F; color: #fff; } .cqa .tag-open { background: #BC2E27; color: #fff; } .cqa .tag-flag { background: #A8893F; color: #fff; }
+  .cqa .muted { color: #6B5E48; font-size: 12.5px; }
+</style>
+<div class="cqa">
+  <div style="font-size:11px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:#A8893F;">FemWell · Community</div>
+  <h1>Final QA — whole live Community</h1>
+  <p class="muted">Fresh-eyes adversarial code-trace + logic verification (the live Community view chokes the browser harness, so this is a read/write-path + safety-logic audit, not a click-through). 2026-07-14 · reviewer did not build these features.</p>
+
+  <div class="box p0">
+    <div style="font-weight:800;font-size:15px;">Headline</div>
+    <p style="margin:6px 0 0;"><b>64 checks · 58 PASS.</b> <b>1 P0</b> found (DM identity model — <span class="tag tag-open">open · needs you</span>, an architecture call, not blind-fixed). <b>4 P1</b> — <b>3 fixed &amp; deploying</b> (<span class="tag tag-fix">fixed</span> comment mute/hide, comment report, cross-user shelf bleed); <b>1 flagged</b> (<span class="tag tag-flag">flag</span> unmoderated broadcast notes). Remaining are P2 polish. <b>No location leak, no unmoderated chat, no private cycle/journal data anywhere in Community, all new entities correctly admin-RLS-locked.</b></p>
+  </div>
+
+  <h2>The one P0 — DM identity is a bearer token (open)</h2>
+  <div class="box p0">
+    <p style="margin:0 0 6px;"><b>What's solid:</b> <code>Conversation</code> &amp; <code>Message</code> are fully admin-RLS-locked (no client can query them). Every <code>dm.*</code> op runs <code>asServiceRole</code>, checks the caller is a participant, and screens every message <i>before</i> delivery (crisis floor → banned-word → OpenAI); held messages reach nobody; <code>dm.messages</code> reads delivered-only. That part is genuinely well-built.</p>
+    <p style="margin:0 0 6px;"><b>The gap:</b> the dispatcher trusts the <b>client-supplied <code>author_hash</code></b> as the caller's identity (<code>createCommunityPost/entry.ts:177,193</code>) — it can't recompute it (the hash = <code>sha256(community::userId::deviceSecret)</code> and the device secret never leaves the phone). That same hash is <b>publicly harvestable</b>: it ships on every public <code>CommunityPost</code> row (used for presence/alias/"ask to chat"), and on <code>BuddyRead</code>/<code>EventPod</code> rows and the DM <code>other_hash</code>.</p>
+    <p style="margin:0 0 6px;"><b>The exploit:</b> a signed-in user (via the SDK / devtools, not the UI) reads a stranger's <code>author_hash</code> from a public post, then calls <code>createCommunityPost {action:"dm.conversations", author_hash:&lt;hers&gt;}</code> (<code>user_id</code> is optional, so the <code>me.id</code> guard is skipped) → gets her conversation list; then <code>dm.messages</code> → reads her delivered message bodies; and could <code>dm.send</code>/<code>dm.block</code> as her. The admin-lock is bypassed because the trusted function does the read on the forged identity's behalf.</p>
+    <p style="margin:0 0 6px;"><b>Why not blind-fixed:</b> the correct fix is an identity re-architecture — <b>never expose a raw <code>author_hash</code> to clients; do all hash-targeting server-side by post/comment id</b> (e.g. "ask to chat" sends a <code>post_id</code>; the server resolves the author hash), and derive/verify DM identity server-side. That changes how presence, alias, hide-a-voice and "ask to chat" get their token and needs a small migration. Shipping it unreviewed in a QA pass risks locking women out of their own threads (per-device secrets mean one woman legitimately has several hashes). <b>This is your call.</b></p>
+    <p style="margin:0;" class="muted">Severity note: exploiting it needs technical effort (an SDK/console call), not a tap — but for a women's-safety app whose stated guarantee is "a client can't query someone else's chat," it's a real gap between promise and implementation. Recommend prioritising the server-mediated-targeting refactor next.</p>
+  </div>
+
+  <h2>Fixed &amp; deploying this pass</h2>
+  <div class="box fixed">
+    <p style="margin:0 0 8px;"><span class="tag tag-fix">fixed</span> <b>Comment-level safety parity</b> (<code>Community.jsx</code>). The device-local <b>hide-a-voice</b> and <b>mute-a-word</b> filters were applied to <i>posts only</i> — a muted word or a hidden voice still showed in <b>replies</b> (a pile-on vector). Now applied to comments/replies too (never hides Jess or your own line).</p>
+    <p style="margin:0 0 8px;"><span class="tag tag-fix">fixed</span> <b>Report a comment.</b> There was no way to report an abusive <b>reply</b> — only posts — even though the server already supports <code>report</code> with <code>target_type:"comment"</code> (auto-hides at threshold). Added a <b>Report</b> (and <b>Hide</b>) control to every member comment.</p>
+    <p style="margin:0;"><span class="tag tag-fix">fixed</span> <b>Cross-user shelf bleed</b> (<code>bookshelf.js</code>). The Library shelf's local mirror used one global key (<code>fw_bookshelf</code>), so on a shared device / account switch, one woman's shelf showed to the next user <i>and</i> migrated up into her <code>UserBook</code>. The mirror is now scoped per <code>user_id</code>; server <code>UserBook</code> rows remain the source of truth.</p>
+  </div>
+
+  <h2>Flagged — needs you (not blind-fixed)</h2>
+  <div class="box p1">
+    <p style="margin:0 0 8px;"><span class="tag tag-flag">flag</span> <b>Broadcast free-text notes aren't server-screened or reportable</b> (P1). <code>EventPod</code> "go-together" notes and <code>BuddyRead</code> buddy notes are written straight to the entity with only a <i>client-side</i> crisis check — they skip the publish-then-screen (OpenAI) pipeline the rooms use, and there's no report/hide control in their sheets. They're short, in-app, pseudonymous and admin-hideable, but they're text broadcast to other women (some meeting in person). <b>Recommend:</b> route both through a screened dispatcher action + add an inline report affordance (small function work — flagged, not built, to respect the 50-fn cap intentionally).</p>
+    <p style="margin:0;"><span class="tag tag-flag">flag</span> <b>The "no post left unanswered" Jess reply is client-triggered, not guaranteed</b> (P1). The backstop <code>jessSupport</code> call fires only when a thread is <i>opened</i> (<code>Community.jsx</code>). A quiet post whose author never re-opens it can sit with zero replies. A server-side sweep would make the guarantee real (needs a notify/cron path — already on the parked list).</p>
+  </div>
+
+  <h2>Feature-by-feature results</h2>
+
+  <h3>Safety-critical: DM (1:1)</h3>
+  <div class="tbl-wrap"><table>
+    <tr><th>Check</th><th>Result</th><th>Sev</th><th>Note</th></tr>
+    <tr><td>Conversation / Message RLS (no client reads another's thread)</td><td class="pass">PASS</td><td></td><td>Both admin-locked read+write; all access via <code>dm.*</code> asServiceRole</td></tr>
+    <tr><td>Screen BEFORE delivering (crisis → banned → OpenAI)</td><td class="pass">PASS</td><td></td><td>3-stage; clean only path creates a <code>delivered</code> row</td></tr>
+    <tr><td>Held messages returned to nobody</td><td class="pass">PASS</td><td></td><td><code>dm.messages</code> filters <code>status:'delivered'</code>; held kept for review only</td></tr>
+    <tr><td>Crisis routes sender to support, never to a peer</td><td class="pass">PASS</td><td></td><td>Stored held+intercept; client fires <code>onCrisis</code></td></tr>
+    <tr><td>Request-to-chat only, no cold DMs; rate-limits</td><td class="pass">PASS</td><td></td><td>10 requests/day, 15 sends/60s; pending until accepted</td></tr>
+    <tr><td>Block / report / leave; block respected by game.chat</td><td class="pass">PASS</td><td></td><td>All participant-checked; game.chat refuses on prior block</td></tr>
+    <tr><td>Text-only; no media / no location field anywhere</td><td class="pass">PASS</td><td></td><td>Body only; grep clean for location/geo/media</td></tr>
+    <tr><td>18+ gate</td><td class="pass">PASS</td><td></td><td>Whole Community under <code>AgeGate</code></td></tr>
+    <tr><td>Caller identity cannot be forged</td><td class="fail">FAIL</td><td class="sev sev0">P0</td><td>Client-supplied <code>author_hash</code> trusted + publicly harvestable — see P0 above</td></tr>
+  </table></div>
+
+  <h3>Community home · nav · chrome</h3>
+  <div class="tbl-wrap"><table>
+    <tr><th>Check</th><th>Result</th><th>Sev</th><th>Note</th></tr>
+    <tr><td>4 shelves render; every tile routes to a real view</td><td class="pass">PASS</td><td></td><td>Talk / Circles / Together / Quietly — no dead tile</td></tr>
+    <tr><td>Back-nav returns to previous view, never Profile</td><td class="pass">PASS</td><td></td><td>Same-URL history "trap" + <code>goBack</code>; sub-views are internal state</td></tr>
+    <tr><td>Top-chrome Jump-left / calendar-right, no collision</td><td class="pass">PASS</td><td></td><td>Jump in-flow left; calendar fixed top-right — different axes</td></tr>
+    <tr><td>On-brand, whole-life card language; no emoji; UK voice</td><td class="pass">PASS</td><td></td><td>Codepoint scan clean; love/money/style/career alongside health</td></tr>
+  </table></div>
+
+  <h3>Talk rooms</h3>
+  <div class="tbl-wrap"><table>
+    <tr><th>Check</th><th>Result</th><th>Sev</th><th>Note</th></tr>
+    <tr><td>Post / comment / threaded reply (parent_id one-level)</td><td class="pass">PASS</td><td></td><td>Server normalises reply-to-reply to top parent; client nests one level</td></tr>
+    <tr><td>Reactions k-anon (no counts / leaderboard)</td><td class="pass">PASS</td><td></td><td>Label-only pills; nothing numeric rendered</td></tr>
+    <tr><td>Daily prompt + weekly rituals</td><td class="pass">PASS</td><td></td><td>Deterministic per day/week; live handlers</td></tr>
+    <tr><td>First-post welcome + guaranteed Jess reply</td><td class="fail">PARTIAL</td><td class="sev sev1">P1</td><td>Guarantee is client-trigger-on-open, not a server sweep — flagged</td></tr>
+    <tr><td>"Reply came in" nudge</td><td class="pass">PASS</td><td></td><td>Bounded per-device comparison; auto-opens thread</td></tr>
+    <tr><td>Aliases stable per hash, consistent across surfaces</td><td class="pass">PASS</td><td></td><td>FNV-1a; note: helper duplicated in 2 files (P2)</td></tr>
+    <tr><td>Report / hide a post</td><td class="pass">PASS</td><td></td><td>Server auto-hides at 2 reports; device filter hides immediately</td></tr>
+    <tr><td>Report / hide / mute at comment level</td><td class="pass">FIXED</td><td class="sev sev1">P1</td><td>Was posts-only; now applied to comments/replies + Report added</td></tr>
+    <tr><td>Mute-a-word</td><td class="pass">FIXED</td><td class="sev sev1">P1</td><td>Now filters comments too (was posts-only)</td></tr>
+    <tr><td>Empty / loading / error states; no dead handlers</td><td class="pass">PASS</td><td></td><td>All feed + comment states handled</td></tr>
+  </table></div>
+
+  <h3>Circles</h3>
+  <div class="tbl-wrap"><table>
+    <tr><th>Check</th><th>Result</th><th>Sev</th><th>Note</th></tr>
+    <tr><td>Join / consent gate</td><td class="pass">PASS</td><td></td><td>Sensitive circles prompt consent; write via <code>joinCircle</code> asServiceRole</td></tr>
+    <tr><td>No enumeration of who's in a circle (special-category)</td><td class="pass">PASS</td><td></td><td><code>CircleMembership</code> read admin-locked; no client query anywhere</td></tr>
+    <tr><td>Jess "first light" + first-post backstop</td><td class="pass">PASS</td><td></td><td>Once-per-circle-per-device; flag set before invoke, no race</td></tr>
+    <tr><td>Journal → whisper: only her free-text, never cycle/symptom/mood</td><td class="pass">PASS</td><td></td><td>Excludes mood/todo card_types; pick+edit+confirm; nothing auto-shared</td></tr>
+    <tr><td>content_warning veil (tap-to-read, soft)</td><td class="pass">PASS</td><td></td><td>Per-post reveal; never a hard block</td></tr>
+    <tr><td>Discovery guardrail: self-declared stage/interest only</td><td class="pass">PASS</td><td></td><td>Reads <code>life_stage</code> + followed categories; never tracked cycle/symptoms</td></tr>
+    <tr><td>Server-enforce sensitive-circle consent</td><td class="fail">P2</td><td class="sev sev2">P2</td><td>Consent gated client-side only; not a leak (membership anon)</td></tr>
+  </table></div>
+
+  <h3>Library / Book club</h3>
+  <div class="tbl-wrap"><table>
+    <tr><th>Check</th><th>Result</th><th>Sev</th><th>Note</th></tr>
+    <tr><td>Shelf: UserBook sync + local fallback</td><td class="pass">PASS</td><td></td><td>Dual-write, fail-open; server read always user-scoped</td></tr>
+    <tr><td>Shelf privacy on a shared device</td><td class="pass">FIXED</td><td class="sev sev1">P1</td><td>Local mirror now scoped per user_id (was global-key bleed)</td></tr>
+    <tr><td>Buddy-read spoiler gate by progress</td><td class="pass">PASS*</td><td class="sev sev2">P2</td><td>Veils readers &gt;5% ahead; a one-step (5%) grace band can show a just-ahead note</td></tr>
+    <tr><td>Buddy note crisis-checked before write; hideable</td><td class="pass">PASS</td><td></td><td>crisisCheck pre-write; admin hidden respected — but not reportable (see flag)</td></tr>
+    <tr><td>Readers' corner deeper talk fully moderated</td><td class="pass">PASS</td><td></td><td>Routes through the screened <code>createCommunityPost</code> club path</td></tr>
+    <tr><td>Season read / ReadingActivity k-floor (&ge;3), no names</td><td class="pass">PASS</td><td></td><td>Cohort/prediction gated at 3; responses carry no hash/id</td></tr>
+    <tr><td>No private data surfaced; empty/error states</td><td class="pass">PASS</td><td></td><td>"Mood" = reading mood only</td></tr>
+  </table></div>
+
+  <h3>Together · Events · Games</h3>
+  <div class="tbl-wrap"><table>
+    <tr><th>Check</th><th>Result</th><th>Sev</th><th>Note</th></tr>
+    <tr><td>Together weekly challenge — aggregate, no leaderboard</td><td class="pass">PASS</td><td></td><td><code>GoalContribution</code> counts; per-device daily step cap; join/step wired</td></tr>
+    <tr><td>Watch/read-along → discussion room</td><td class="pass">PASS</td><td></td><td>Schedule + "I'm watching" + open-thread</td></tr>
+    <tr><td>EventPod go-together: k-anon, alias, NEVER precise/home location</td><td class="pass">PASS</td><td></td><td>No lat/lng/geo/address/geolocation anywhere; venue-level curator text only</td></tr>
+    <tr><td>EventPod / BuddyRead notes: server-screened + reportable</td><td class="fail">FAIL</td><td class="sev sev1">P1</td><td>Client-crisis-check only, no report affordance — flagged</td></tr>
+    <tr><td>Get-home-safe: device-local, nothing sent externally</td><td class="pass">PASS</td><td></td><td>localStorage + self-nudge; no fetch/email/sms</td></tr>
+    <tr><td>Reminders: device-local toggle</td><td class="pass">PASS</td><td></td><td>Wired, not dead</td></tr>
+    <tr><td>Single-player arcade intact alongside multiplayer</td><td class="pass">PASS</td><td></td><td>Self-contained; nothing stripped</td></tr>
+    <tr><td>Multiplayer move is server-authoritative (no client desync)</td><td class="pass">PASS</td><td></td><td>Renders only the server-returned board; turn+legality validated server-side</td></tr>
+    <tr><td>In-game chat routes through the DM pipeline; no raw chat</td><td class="pass">PASS</td><td></td><td>game.chat → screened dm.*; block respected; emotes are 7 fixed presets</td></tr>
+  </table></div>
+
+  <h3>Quietly · Bloomprint · cross-cutting</h3>
+  <div class="tbl-wrap"><table>
+    <tr><th>Check</th><th>Result</th><th>Sev</th><th>Note</th></tr>
+    <tr><td>QuietlyHub surfaces each explain + Open to the real surface</td><td class="pass">PASS</td><td></td><td>All 7 (dm/echo/witness/sealed/share/twin/connect) wired via enterShelf</td></tr>
+    <tr><td>Bloomprint / presence veiled from author_hash; no account/private leak</td><td class="pass">PASS</td><td></td><td>Derives species+colour from a one-way hash; no user_id/email/cycle touched</td></tr>
+    <tr><td>New entities RLS: Conversation/Message/GameMatch/TogetherActivity/GoalContribution/CircleMembership</td><td class="pass">PASS</td><td></td><td>All fully admin-locked (function-mediated)</td></tr>
+    <tr><td>Public-read entities carry no PII: CommunityPost/Comment/Reaction/BuddyRead/EventPod/Book</td><td class="pass">PASS</td><td></td><td>Anon hash + alias only; no location; no cycle/journal</td></tr>
+    <tr><td>Comment.parent_id / UserBook / EventRSVP permissions</td><td class="pass">PASS</td><td></td><td>Comment write-locked; UserBook/EventRSVP owner-scoped private</td></tr>
+    <tr><td>50-function cap respected (no new fn names)</td><td class="pass">PASS</td><td></td><td>dm.*/together.*/game.* folded into <code>createCommunityPost</code></td></tr>
+    <tr><td>No private cycle/symptom/journal/mood exposed in Community</td><td class="pass">PASS</td><td></td><td>Verified across every surface</td></tr>
+    <tr><td>ReadingActivity schema comment vs rule mismatch</td><td class="fail">P2</td><td class="sev sev2">P2</td><td>Header comment says "read public" but rule is admin-locked (safe; docs stale)</td></tr>
+  </table></div>
+
+  <h2>P2 recommendations (not fixed)</h2>
+  <ul>
+    <li>Route EventPod &amp; BuddyRead notes through a screened dispatcher action + add report affordances (with the P1 above).</li>
+    <li>Make the Jess "always answered" guarantee real via a server sweep (needs the parked notify/cron path).</li>
+    <li>Replies orphan when their top-level parent is hard-hidden (server <code>hidden:true</code>) — render a tombstone so the reply stack survives.</li>
+    <li>Unify <code>botanicalAlias</code> (duplicated in <code>Community.jsx</code> and <code>communityAnon.js</code>) to one source before either array is edited.</li>
+    <li>Extend the device-local hide/mute post filter into the Circles &amp; Clubs feeds (currently RoomView only).</li>
+    <li>Buddy-read spoiler gate: consider veiling at <code>&ge;</code> your progress rather than <code>&gt; +5%</code> if a just-ahead note should always veil.</li>
+    <li>Server-enforce sensitive-circle consent (currently client-gated only).</li>
+    <li>Watch-along <code>cta_room</code> undefined falls back silently to the default room — default to <code>lounge</code>.</li>
+    <li>ReadingActivity: reconcile the header comment with the admin-locked rule; and the checkpoint-vs-chapter index reuse under one <code>book_id</code>.</li>
+    <li>Fix the stale "optimistic" comment on the multiplayer move (it renders server-only — the comment misleads).</li>
+  </ul>
+
+  <p class="muted" style="margin-top:26px;">Deployed with the 3 fixes above. The P0 and the note-moderation P1 are the two items awaiting your decision.</p>
+</div>

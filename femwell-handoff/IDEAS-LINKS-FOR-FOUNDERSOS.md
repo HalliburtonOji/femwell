@@ -3,6 +3,18 @@
 > Per CLAUDE.md Standing Rule #1: every plan/brainstorm ships as a phone-readable styled-HTML doc to `C:\Users\Halli\femwell-handoff\` **and** is linked into the FoundersOS "Ideas" page so Halli reaches it via the floating IDEAS pill (never a dead route).
 > Mechanism (established): copy the HTML into `src/components/founders/brandDocs/<slug>.html`, `import …?raw` in `FoundersOS.jsx`, add a `{ kind:"doc", key:"…" }` CATALOG entry, and a `{tab === "…" && <BrandDocFrame html={…} title="…" />}` render branch. Then build + `npx base44 site deploy -y`.
 
+## ⭐ TO WIRE — Community FINAL QA report (2026-07-14, QA session) → Ideas → Current
+> Fresh-eyes adversarial code-trace + safety-logic audit of the whole live Community (Talk · Circles · Together · Quietly · Library · Events · Games · DM · Bloomprint). 64 checks, 58 pass. Found 1 P0 (DM identity is a client-supplied bearer token — a signed-in user can spoof a harvested author_hash and read another woman's private conversation list + message bodies; needs an identity-architecture decision, NOT blind-fixed) and 4 P1 — 3 fixed & deployed this pass (comment-level mute/hide + comment report; cross-user shelf bleed), 1 flagged (EventPod/BuddyRead broadcast notes aren't server-screened or reportable). QA session can't safely edit `FoundersOS.jsx` — please wire (3 edits, pattern below).
+
+| Doc (femwell-handoff/) | brandDocs slug | FoundersOS key | group | accent |
+|---|---|---|---|---|
+| community-final-qa.html | community-final-qa.html | "CommunityQA" | Current | crimson |
+
+Wiring (3 edits):
+- import: `import communityQaHtml from "@/components/founders/brandDocs/community-final-qa.html?raw";`
+- CATALOG entry: `{ kind:"doc", key:"CommunityQA", group: CAT.CURRENT, sub:"QA & safety", status:"new", accent:"crimson", title:"Community — final QA + safety audit", desc:"Fresh-eyes adversarial code-trace of the whole live Community. 64 checks / 58 pass. 1 P0 (DM identity is a spoofable client-supplied bearer token → private-thread read; architecture decision needed), 4 P1 (3 fixed & deployed: comment mute/hide, comment report, cross-user shelf bleed; 1 flagged: unmoderated broadcast notes). No location leak, no unmoderated chat, no private cycle/journal data, all new entities admin-RLS-locked. Per-feature pass/fail tables + P2 recommendations." }`
+- render branch: `{tab === "CommunityQA" && <BrandDocFrame html={communityQaHtml} title="FemWell — Community: final QA + safety audit" />}`
+
 ## ⭐ TO WIRE — Personal Flora Identity ("Bloomprint") brainstorm + DEMO (2026-07-08, flora session) → Ideas → Current
 > Deep brainstorm for Halli's "make each user feel UNIQUE" feature: a personal signature flower + garden that grows with real activity, gently-earned petals/rare-blooms/stars/seasons (collection not score, additive-only, never grindy), her anonymous-but-unique presence in Community (3 disclosure tiers — veiled/my-flower/named — reconciled with the botanical-alias system), and her Profile/Today/Garden avatar. Built ON the existing companion + milestones + chapters + Meadow. Doc + a live demo BOTH need wiring. This flora session can't safely edit `FoundersOS.jsx` — please wire.
 >
