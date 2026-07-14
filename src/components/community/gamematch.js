@@ -21,6 +21,7 @@ export const gameApi = {
   emote: (user, match_id, emote) => gm("game.emote", { match_id, emote }, user),
   forfeit: (user, match_id) => gm("game.forfeit", { match_id }, user),
   report: (user, match_id) => gm("game.report", { match_id }, user),
+  chat: (user, match_id) => gm("game.chat", { match_id }, user),   // establish/open the DM thread for this match
 };
 
 export const GAME_EMOTES = ["Good move", "Nice one", "Well played", "Close!", "Good game", "Ha!", "Thinking…"];

@@ -2112,7 +2112,7 @@ function GamesView({ user, onCrisis, onHome, onNav }) {
 
       {/* PLAY A REAL WOMAN — async turn-based multiplayer (GameMatch); sits alongside the arcade */}
       <div style={{ marginTop: 24, paddingTop: 20, borderTop: `1px solid ${T.paperDeep}` }}>
-        <MultiplayerArcade user={user} />
+        <MultiplayerArcade user={user} onCrisis={onCrisis} />
       </div>
 
       {/* With the room — the async party rounds (existing engine, aggregate reveal) */}

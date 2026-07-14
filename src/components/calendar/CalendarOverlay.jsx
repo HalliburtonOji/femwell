@@ -26,7 +26,7 @@ import {
   CalendarDays, X, ArrowLeft, ChevronLeft, ChevronRight, Utensils, Droplets, Smile,
   Stethoscope, StickyNote, Footprints, Pill, CalendarClock, Bell, Check, Search,
   ScanBarcode, Mic, Camera, Pen, Clock, Lock, Image as ImageIcon, ChevronDown,
-  Sparkles, ListChecks, Loader2, Upload, Trash2, WandSparkles,
+  Sparkles, ListChecks, Loader2, Upload, Trash2, WandSparkles, ArrowRight, CornerUpLeft,
 } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { T, SERIF, UI, SCRIPT, PAPER_BG, Heart, useEditorialFonts } from "@/components/journal/Editorial";
@@ -320,6 +320,13 @@ export default function CalendarOverlay() {
               onSelectDate={openDay}
               entries={entries}
             />
+            {format(month, "yyyy-MM") !== TODAY_STR.slice(0, 7) && (
+              <div style={{ display: "flex", justifyContent: "center", marginTop: 10 }}>
+                <button onClick={() => setMonth(startOfMonth(parseISO(TODAY_STR)))} style={{ ...pill, cursor: "pointer", background: `${T.gold}18`, borderColor: T.gold, color: OX }}>
+                  <CornerUpLeft size={12} style={{ verticalAlign: -2, marginRight: 5 }} />Jump to today
+                </button>
+              </div>
+            )}
             {(() => { const ph = cyclePhase(TODAY_STR); const cd = cycleDayFor(TODAY_STR); return ph ? (
               <div style={{ display: "flex", alignItems: "center", gap: 6, justifyContent: "center", marginTop: 12, fontFamily: UI, fontSize: 12, color: T.muted }}>
                 <span style={{ width: 8, height: 8, borderRadius: "50%", background: PHASE[ph] }} />
@@ -350,6 +357,8 @@ export default function CalendarOverlay() {
               onRunDay={() => setSheet({ stage: "dayrun", mode: sheet.mode, date: sheet.date })}
               onSmartShot={() => setSheet({ stage: "smartshot", mode: sheet.mode, date: sheet.date })}
               onCycle={() => setSheet({ stage: "cycle", mode: sheet.mode, date: sheet.date })}
+              onFreeEntry={(value) => setSheet({ stage: "quick", mode: sheet.mode, date: sheet.date, type: sheet.mode === "plan" ? "event" : "note", initialTitle: value, initialText: value })}
+              onJumpToday={() => setSheet({ stage: "day", mode: "log", date: TODAY_STR })}
               onClose={closeAll} />}
 
             {sheet.stage === "cycle" && <CycleSheet sheet={sheet}
@@ -408,14 +417,16 @@ function QuickForm({ sheet, onBack, onClose, onSave }) {
   const isFuture = date > TODAY_STR;
   const [mood, setMood] = useState(3);
   const [syms, setSyms] = useState([]);
+  const [customSym, setCustomSym] = useState("");
   const [sev, setSev] = useState(3);
-  const [text, setText] = useState("");
-  const [title, setTitle] = useState("");
+  const [text, setText] = useState(sheet.initialText || "");
+  const [title, setTitle] = useState(sheet.initialTitle || "");
   const [time, setTime] = useState(sheet.time || "09:00");
   const [water, setWater] = useState(1);
 
   const SYMPTOMS = ["Cramps", "Headache", "Fatigue", "Bloating", "Low mood", "Nausea"];
   const MOODS = ["Low", "Meh", "OK", "Good", "Great"];
+  const addCustomSym = () => { const v = customSym.trim(); if (!v) return; setSyms((p) => p.some((x) => x.toLowerCase() === v.toLowerCase()) ? p : [...p, v]); setCustomSym(""); };
 
   const save = () => {
     let list = [], label = `${isFuture ? "Planned" : "Logged"} ${t.label.toLowerCase()} · ${dayWord}`;
@@ -453,8 +464,14 @@ function QuickForm({ sheet, onBack, onClose, onSave }) {
       )}
       {type === "symptom" && (
         <>
-          <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 12 }}>
-            {SYMPTOMS.map((s) => { const on = syms.includes(s); return <button key={s} onClick={() => setSyms((p) => on ? p.filter((x) => x !== s) : [...p, s])} style={{ ...pill, cursor: "pointer", background: on ? PHASE.menstrual : T.paperHi, color: on ? "#fff" : T.muted, borderColor: on ? PHASE.menstrual : T.paperDeep }}>{s}</button>; })}
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 10 }}>
+            {[...SYMPTOMS, ...syms.filter((s) => !SYMPTOMS.includes(s))].map((s) => { const on = syms.includes(s); return <button key={s} onClick={() => setSyms((p) => on ? p.filter((x) => x !== s) : [...p, s])} style={{ ...pill, cursor: "pointer", background: on ? PHASE.menstrual : T.paperHi, color: on ? "#fff" : T.muted, borderColor: on ? PHASE.menstrual : T.paperDeep }}>{s}</button>; })}
+          </div>
+          <div style={{ display: "flex", gap: 6, marginBottom: 12 }}>
+            <input value={customSym} onChange={(e) => setCustomSym(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addCustomSym(); } }}
+              placeholder="Type your own symptom…"
+              style={{ flex: 1, boxSizing: "border-box", padding: "9px 11px", borderRadius: 10, border: `1px solid ${T.paperDeep}`, background: T.paper, color: T.ink, fontFamily: SERIF, fontSize: 14, outline: "none" }} />
+            <button onClick={addCustomSym} disabled={!customSym.trim()} style={{ ...ghostBtn, padding: "9px 14px", opacity: customSym.trim() ? 1 : 0.4, cursor: customSym.trim() ? "pointer" : "default" }}>Add</button>
           </div>
           <div style={{ ...eyebrow, marginBottom: 6 }}>Severity · {sev}/5</div>
           <input type="range" min="1" max="5" value={sev} onChange={(e) => setSev(Number(e.target.value))} style={{ width: "100%", accentColor: PHASE.menstrual, marginBottom: 14 }} />
@@ -538,7 +555,7 @@ function CycleSheet({ sheet, onBack, onClose, onSave }) {
 }
 
 // ── DAY sheet — the log/plan gate lives here ────────────────────────────────────
-function DaySheet({ sheet, entries, onPick, onRunDay, onSmartShot, onCycle, onClose }) {
+function DaySheet({ sheet, entries, onPick, onRunDay, onSmartShot, onCycle, onFreeEntry, onJumpToday, onClose }) {
   const { date, mode } = sheet;
   const d = parseISO(date);
   const isTod = date === TODAY_STR;
@@ -548,6 +565,8 @@ function DaySheet({ sheet, entries, onPick, onRunDay, onSmartShot, onCycle, onCl
   const isFuture = date > TODAY_STR;
   const available = TYPES.filter((t) => (isFuture ? t.plan : t.log));
   const blocked = isFuture ? TYPES.filter((t) => t.log && !t.plan) : [];
+  const [free, setFree] = useState("");
+  const submitFree = () => { const v = free.trim(); if (!v) return; onFreeEntry(v); };
 
   return (
     <>
@@ -561,6 +580,12 @@ function DaySheet({ sheet, entries, onPick, onRunDay, onSmartShot, onCycle, onCl
         </div>
         <button onClick={onClose} style={iconBtn} aria-label="Close"><X size={15} /></button>
       </div>
+
+      {!isTod && onJumpToday && (
+        <button onClick={onJumpToday} style={{ ...pill, cursor: "pointer", marginTop: 6, background: `${T.gold}18`, borderColor: T.gold, color: OX }}>
+          <CornerUpLeft size={12} style={{ verticalAlign: -2, marginRight: 5 }} />Jump to today
+        </button>
+      )}
 
       {es.length > 0 && (
         <div style={{ ...inset, marginTop: 8 }}>
@@ -592,6 +617,21 @@ function DaySheet({ sheet, entries, onPick, onRunDay, onSmartShot, onCycle, onCl
         <button onClick={onCycle} style={{ ...ghostBtn, width: "100%", marginTop: 8, borderColor: T.crimson, color: T.crimson }}>
           <Droplets size={14} style={{ marginRight: 7, verticalAlign: -2 }} />Log a period / cycle
         </button>
+      )}
+
+      {/* FREE-TEXT — say it in your own words (not boxed into the presets) */}
+      {onFreeEntry && (
+        <div style={{ marginTop: 16 }}>
+          <div style={{ ...eyebrow, marginBottom: 6 }}>{isFuture ? "…or say what you're planning" : "…or say what happened"}</div>
+          <div style={{ display: "flex", gap: 8 }}>
+            <input value={free} onChange={(e) => setFree(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); submitFree(); } }}
+              placeholder={isFuture ? "What are you planning?" : "What do you want to note?"}
+              style={{ flex: 1, boxSizing: "border-box", padding: "12px 13px", borderRadius: 12, border: `1px solid ${T.paperDeep}`, background: T.paper, color: T.ink, fontFamily: SERIF, fontSize: 15, outline: "none" }} />
+            <button onClick={submitFree} disabled={!free.trim()} aria-label="Continue" style={{ ...solidBtn, width: "auto", padding: "0 16px", background: isFuture ? "#A6862B" : T.crimson, opacity: free.trim() ? 1 : 0.4, cursor: free.trim() ? "pointer" : "default" }}>
+              <ArrowRight size={18} />
+            </button>
+          </div>
+        </div>
       )}
 
       <div style={{ ...eyebrow, marginTop: 16 }}>{isFuture ? "…or plan one thing" : "…or log one thing"}</div>
@@ -992,7 +1032,9 @@ function DayRunSheet({ sheet, onBack, onClose, onSave, onSmartShot }) {
       ];
 
   const [data, setData] = useState({});
+  const [draft, setDraft] = useState({}); // per-section "add your own" text
   const set = (id, v) => setData((p) => ({ ...p, [id]: v }));
+  const addCustom = (id) => { const val = (draft[id] || "").trim(); if (!val) return; setData((p) => ({ ...p, [id]: (p[id] || []).some((x) => x.toLowerCase() === val.toLowerCase()) ? p[id] : [...(p[id] || []), val] })); setDraft((p) => ({ ...p, [id]: "" })); };
 
   const countFor = (s) => {
     const v = data[s.id];

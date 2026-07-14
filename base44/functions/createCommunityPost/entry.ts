@@ -553,6 +553,33 @@ Deno.serve(async (req) => {
       return Response.json({ ok: true }, { status: 200 });
     }
 
+    // game.chat — the in-game chat routes through the DM pipeline (NOT a separate game chat). A
+    // shared ACTIVE match is a fair basis for a direct thread, so we find-or-create a DM Conversation
+    // between the two players set to 'active'; from here the client uses the normal dm.messages /
+    // dm.send (screen-BEFORE-deliver) / dm.block / dm.report / dm.leave. A prior BLOCK is respected
+    // (chat refused). Every DM rail still applies: 18+, no location, every message screened, block/report.
+    if (action === 'game.chat') {
+      const m = await withTimeout(GM.get(String(p.match_id || '')), 3000, 'gm-get').catch(() => null);
+      if (!m || (m.a_hash !== ah && m.b_hash !== ah)) return Response.json({ error: 'not found' }, { status: 404 });
+      if (!m.b_hash || (m.status !== 'active' && m.status !== 'finished')) return Response.json({ ok: false, message: 'No opponent to chat with yet.' }, { status: 200 });
+      const Conv = sbg.entities.Conversation;
+      const all: any[] = await withTimeout(Conv.filter({}, '-created_date', 300), 4000, 'gc-dedup').catch(() => []);
+      const pair = (Array.isArray(all) ? all : []).find((c) =>
+        (c.a_hash === m.a_hash && c.b_hash === m.b_hash) || (c.a_hash === m.b_hash && c.b_hash === m.a_hash));
+      if (pair) {
+        if (pair.status === 'blocked') return Response.json({ ok: false, blocked: true, message: 'Chat isn’t available for this match.' }, { status: 200 });
+        if (pair.status === 'pending' || pair.status === 'left') await withTimeout(Conv.update(pair.id, { status: 'active' }), 6000, 'gc-reopen').catch(() => {});
+        return Response.json({ ok: true, conversation_id: pair.id, other_alias: pair.a_hash === ah ? (pair.b_alias || '') : (pair.a_alias || '') }, { status: 200 });
+      }
+      const gname = m.game === 'tictactoe' ? 'Tic-tac-toe' : 'Connect 4';
+      const conv = await withTimeout(Conv.create({
+        a_hash: m.a_hash, b_hash: m.b_hash, a_alias: m.a_alias || '', b_alias: m.b_alias || '',
+        initiator_hash: m.a_hash, context: `Playing ${gname} together`, status: 'active',
+      }), 6000, 'gc-create').catch(() => null);
+      if (!conv) return Response.json({ error: 'chat unavailable' }, { status: 500 });
+      return Response.json({ ok: true, conversation_id: conv.id, other_alias: m.a_hash === ah ? (m.b_alias || '') : (m.a_alias || '') }, { status: 200 });
+    }
+
     return Response.json({ error: 'unknown game action' }, { status: 400 });
   }
 

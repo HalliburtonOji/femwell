@@ -2,10 +2,132 @@
 // vs an anonymous opponent. Server-authoritative moves, no free-text (preset emotes only), block/
 // report/forfeit, no-shame framing. Sits ALONGSIDE the single-player arcade (nothing stripped).
 import React, { useCallback, useEffect, useRef, useState } from "react";
-import { Users, ChevronLeft, Flag, LogOut, Copy, Check, Swords, Clock } from "lucide-react";
+import { Users, ChevronLeft, Flag, LogOut, Copy, Check, Swords, Clock, MessageCircle, Send, ShieldCheck, Ban } from "lucide-react";
 import { T, UI, Hand } from "@/components/journal/Editorial";
 import PresenceBloom from "@/components/brand/PresenceBloom";
 import { gameApi, GAME_EMOTES, GAMES_MP } from "@/components/community/gamematch";
+import { dmApi } from "@/components/community/dm";
+import { communityHash } from "@/components/community/communityAnon";
+
+const OXBLOOD = "#7A1A12";
+function fmtT(iso) { const d = new Date(iso || 0); if (isNaN(d.getTime())) return ""; let h = d.getHours(); const m = d.getMinutes(); const ap = h >= 12 ? "pm" : "am"; h = h % 12 || 12; return `${h}:${String(m).padStart(2, "0")}${ap}`; }
+
+// ── IN-GAME CHAT — routes through the DM PIPELINE (not a separate game chat). game.chat establishes
+// the moderated Conversation; from here every message uses dm.send (screen-BEFORE-deliver), and
+// block/report/leave use the DM actions. Same veiled alias identity + all DM safety rails.
+function GameChat({ user, matchId, otherAlias, onClose, onCrisis }) {
+  const [convId, setConvId] = useState(null);
+  const [state, setState] = useState("loading");   // loading | ready | blocked | error
+  const [myHash, setMyHash] = useState(null);
+  const [msgs, setMsgs] = useState([]);
+  const [draft, setDraft] = useState("");
+  const [held, setHeld] = useState(null);
+  const [sending, setSending] = useState(false);
+  const [menu, setMenu] = useState(false);
+  const endRef = useRef(null);
+  const timer = useRef(null);
+
+  useEffect(() => { let a = true; communityHash(user?.id).then((h) => { if (a) setMyHash(h); }).catch(() => {}); return () => { a = false; }; }, [user?.id]);
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const r = await gameApi.chat(user, matchId);
+        if (r?.blocked) { setState("blocked"); return; }
+        if (!r?.conversation_id) { setState("error"); return; }
+        setConvId(r.conversation_id); setState("ready");
+      } catch { setState("error"); }
+    })();
+  }, [user, matchId]);
+
+  const load = useCallback(async () => {
+    if (!convId) return;
+    try { const r = await dmApi.messages(user, convId); if (r?.messages) setMsgs(r.messages); } catch { /* ignore */ }
+  }, [user, convId]);
+  useEffect(() => { load(); }, [load]);
+  useEffect(() => { if (!convId) return; timer.current = setInterval(load, 6000); return () => { if (timer.current) clearInterval(timer.current); }; }, [convId, load]);
+  useEffect(() => { try { endRef.current?.scrollIntoView({ behavior: "smooth" }); } catch { /* ignore */ } }, [msgs]);
+
+  const send = async () => {
+    const body = draft.trim();
+    if (!body || sending || !convId) return;
+    setSending(true); setHeld(null);
+    try {
+      const r = await dmApi.send(user, convId, body);
+      if (r?.intercept) { onCrisis?.(); setDraft(""); }
+      else if (r?.delivered && r?.message) { setMsgs((p) => [...(p || []), r.message]); setDraft(""); }
+      else if (r?.held) setHeld(r.message || "That message wasn’t sent.");
+    } catch { setHeld("Couldn’t send just now — try again."); }
+    finally { setSending(false); }
+  };
+  const endThread = async (kind) => {
+    setMenu(false);
+    try { if (kind === "block") await dmApi.block(user, convId); else if (kind === "leave") await dmApi.leave(user, convId); else if (kind === "report") await dmApi.report(user, convId); } catch { /* ignore */ }
+    if (kind !== "report") onClose?.(); else setHeld("Thank you — sent to us to review. You can also block or leave from the menu.");
+  };
+
+  return (
+    <div style={{ position: "fixed", inset: 0, zIndex: 80, background: "rgba(20,14,8,0.5)", display: "flex", alignItems: "flex-end", justifyContent: "center" }}>
+      <div onClick={(e) => e.stopPropagation()} style={{ background: T.paperHi, width: "100%", maxWidth: 460, borderRadius: "16px 16px 0 0", height: "76vh", display: "flex", flexDirection: "column", overflow: "hidden" }}>
+        {/* header */}
+        <div style={{ display: "flex", alignItems: "center", gap: 9, padding: "12px 14px", borderBottom: `1px solid ${T.paperDeep}` }}>
+          <MessageCircle size={16} color={OXBLOOD} />
+          <div style={{ minWidth: 0, flex: 1 }}>
+            <div style={{ fontFamily: UI, fontSize: 13.5, fontWeight: 800, color: T.ink }}>{otherAlias || "Your opponent"}</div>
+            <div style={{ fontFamily: UI, fontSize: 10.5, color: T.muted }}>anonymous · every message screened before it arrives</div>
+          </div>
+          {convId && (
+            <div style={{ position: "relative" }}>
+              <button onClick={() => setMenu((o) => !o)} aria-label="Chat options" style={{ background: "transparent", border: "none", cursor: "pointer", color: T.muted, padding: 5 }}>⋯</button>
+              {menu && (
+                <>
+                  <div onClick={() => setMenu(false)} style={{ position: "fixed", inset: 0, zIndex: 40 }} />
+                  <div style={{ position: "absolute", right: 0, top: "100%", zIndex: 41, background: T.paperHi, border: `1px solid ${T.paperDeep}`, borderRadius: 10, boxShadow: "0 6px 20px rgba(58,44,26,0.18)", padding: 5, minWidth: 150 }}>
+                    <button onClick={() => endThread("report")} style={{ display: "flex", alignItems: "center", gap: 8, width: "100%", background: "transparent", border: "none", cursor: "pointer", color: T.ink, fontFamily: UI, fontSize: 13, fontWeight: 600, padding: "9px 10px", borderRadius: 7, textAlign: "left" }}><Flag size={14} color={T.muted} /> Report</button>
+                    <button onClick={() => endThread("leave")} style={{ display: "flex", alignItems: "center", gap: 8, width: "100%", background: "transparent", border: "none", cursor: "pointer", color: T.ink, fontFamily: UI, fontSize: 13, fontWeight: 600, padding: "9px 10px", borderRadius: 7, textAlign: "left" }}><LogOut size={14} color={T.muted} /> Leave chat</button>
+                    <button onClick={() => endThread("block")} style={{ display: "flex", alignItems: "center", gap: 8, width: "100%", background: "transparent", border: "none", cursor: "pointer", color: T.crimson, fontFamily: UI, fontSize: 13, fontWeight: 600, padding: "9px 10px", borderRadius: 7, textAlign: "left" }}><Ban size={14} color={T.crimson} /> Block</button>
+                  </div>
+                </>
+              )}
+            </div>
+          )}
+          <button onClick={onClose} style={{ background: "transparent", border: "none", cursor: "pointer", color: T.muted, fontFamily: UI, fontSize: 12.5, fontWeight: 700, padding: 5 }}>Close</button>
+        </div>
+
+        {/* body */}
+        <div style={{ flex: 1, overflowY: "auto", padding: "14px", background: T.paper }}>
+          {state === "loading" && <Hand size={14} color={T.muted}>Opening a safe chat…</Hand>}
+          {state === "blocked" && <Hand size={14} color={T.muted}>Chat isn’t available for this match.</Hand>}
+          {state === "error" && <Hand size={14} color={T.muted}>Couldn’t open the chat just now.</Hand>}
+          {state === "ready" && msgs.length === 0 && <div style={{ textAlign: "center", padding: "20px 10px" }}><Hand size={14} color={T.muted}>Say hello — keep it kind. Every message is checked before it reaches her.</Hand></div>}
+          {state === "ready" && msgs.map((m) => {
+            const mine = m.sender_hash === myHash;
+            return (
+              <div key={m.id} style={{ display: "flex", justifyContent: mine ? "flex-end" : "flex-start", marginBottom: 7 }}>
+                <div style={{ maxWidth: "78%", padding: "8px 12px 6px", borderRadius: mine ? "14px 14px 4px 14px" : "14px 14px 14px 4px", background: mine ? `linear-gradient(160deg, ${OXBLOOD} 0%, ${T.crimson} 100%)` : T.paperHi, border: mine ? "none" : `1px solid ${T.paperDeep}` }}>
+                  <div style={{ fontFamily: UI, fontSize: 14.5, lineHeight: 1.4, color: mine ? "#fff" : T.ink, whiteSpace: "pre-wrap", wordBreak: "break-word" }}>{m.body}</div>
+                  <div style={{ textAlign: "right", fontFamily: UI, fontSize: 10, color: mine ? "rgba(255,255,255,0.72)" : T.muted, marginTop: 2 }}>{fmtT(m.created_date)}</div>
+                </div>
+              </div>
+            );
+          })}
+          <div ref={endRef} />
+        </div>
+
+        {/* compose */}
+        {state === "ready" && (
+          <div style={{ borderTop: `1px solid ${T.paperDeep}`, padding: "10px 12px calc(12px + env(safe-area-inset-bottom))" }}>
+            {held && <div style={{ display: "flex", gap: 8, alignItems: "flex-start", background: `${T.crimson}0E`, border: `1px solid ${T.crimson}44`, borderRadius: 9, padding: "8px 10px", marginBottom: 8 }}><ShieldCheck size={14} color={T.crimson} style={{ flexShrink: 0, marginTop: 1 }} /><span style={{ fontFamily: UI, fontSize: 12, color: T.inkSoft, lineHeight: 1.4 }}>{held}</span></div>}
+            <div style={{ display: "flex", gap: 8, alignItems: "flex-end" }}>
+              <textarea value={draft} onChange={(e) => { setDraft(e.target.value); if (held) setHeld(null); }} placeholder="Message her…" rows={1} style={{ flex: 1, resize: "none", minHeight: 42, maxHeight: 110, fontFamily: UI, fontSize: 16, lineHeight: 1.4, color: T.ink, background: T.paper, border: `1px solid ${T.paperDeep}`, borderRadius: 20, padding: "10px 14px", outline: "none", boxSizing: "border-box" }} />
+              <button disabled={sending || !draft.trim()} onClick={send} aria-label="Send" style={{ flexShrink: 0, width: 42, height: 42, borderRadius: 999, border: "none", background: draft.trim() ? OXBLOOD : T.paperDeep, color: "#fff", cursor: draft.trim() ? "pointer" : "default", display: "grid", placeItems: "center" }}><Send size={17} /></button>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
 
 const A_COL = "#BC2E27";   // player A disc (crimson)
 const B_COL = "#A8893F";   // player B disc (gold)
@@ -49,11 +171,12 @@ function Board({ match, onMove, myMark }) {
   );
 }
 
-function MatchBoard({ user, matchId, onExit }) {
+function MatchBoard({ user, matchId, onExit, onCrisis }) {
   const [match, setMatch] = useState(null);
   const [busy, setBusy] = useState(false);
   const [menu, setMenu] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [chatOpen, setChatOpen] = useState(false);
   const timer = useRef(null);
 
   const load = useCallback(async () => {
@@ -143,14 +266,25 @@ function MatchBoard({ user, matchId, onExit }) {
           {GAME_EMOTES.map((e) => <button key={e} onClick={() => emote(e)} style={{ ...ghost, padding: "6px 11px", fontWeight: 600 }}>{e}</button>)}
         </div>
       )}
+
+      {/* MESSAGE HER — opens the moderated DM thread for this match (screen-before-deliver) */}
+      {match.opponent_alias && (match.status === "active" || match.status === "finished") && (
+        <div style={{ textAlign: "center", marginTop: 16 }}>
+          <button onClick={() => setChatOpen(true)} style={{ ...ghost, padding: "9px 15px", color: "#7A1A12", borderColor: "#7A1A12" }}><MessageCircle size={14} /> Message her</button>
+          <div style={{ fontFamily: UI, fontSize: 10.5, color: T.muted, marginTop: 6 }}>A private, screened chat — every message is checked before it reaches her. Block or report any time.</div>
+        </div>
+      )}
+
       {match.status === "finished" && (
         <div style={{ textAlign: "center", marginTop: 16 }}><button onClick={onExit} style={{ ...primary }}>Back to games</button></div>
       )}
+
+      {chatOpen && <GameChat user={user} matchId={matchId} otherAlias={match.opponent_alias} onClose={() => setChatOpen(false)} onCrisis={onCrisis} />}
     </div>
   );
 }
 
-export default function MultiplayerArcade({ user }) {
+export default function MultiplayerArcade({ user, onCrisis }) {
   const [pick, setPick] = useState("connect4");
   const [openId, setOpenId] = useState(null);
   const [mine, setMine] = useState([]);
@@ -172,7 +306,7 @@ export default function MultiplayerArcade({ user }) {
     catch { setErr("Couldn’t join that game."); } finally { setBusy(false); }
   };
 
-  if (openId) return <MatchBoard user={user} matchId={openId} onExit={() => { setOpenId(null); loadMine(); }} />;
+  if (openId) return <MatchBoard user={user} matchId={openId} onExit={() => { setOpenId(null); loadMine(); }} onCrisis={onCrisis} />;
 
   const yourTurn = mine.filter((m) => m.myTurn);
   const waiting = mine.filter((m) => m.status === "waiting");
