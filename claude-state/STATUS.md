@@ -1,6 +1,15 @@
 # FEMWELL — CANONICAL STATUS INDEX (read first · updated 2026-06-30)
 **This file is the single source of truth AND the index to every plan doc. If anything else disagrees, this wins.** (The long ship-log history continues below the index.)
 
+## 🧩✅ "CommunityQA" doc wired into Ideas · live `index-Zptxkgwx.js` · commit `bb15955` (2026-07-14)
+- **What changed:** Wired the Community final-QA doc into `src/pages/FoundersOS.jsx` (3-edit handoff: `?raw` import + CATALOG doc entry + `BrandDocFrame` render branch) under a new **"QA & safety"** sub at the TOP of Current (next to Entity Audit / Data hygiene), **New** chip, crimson. Renders `brandDocs/community-final-qa.html` (the fresh-eyes audit: 64 checks / 58 pass, 1 P0 open, 3 P1 fixed).
+- **Coordination:** another session was actively fixing the DM P0 in the same repo. Pulled before build AND before push (`--rebase --autostash`); confirmed no overlap — my edit is FoundersOS.jsx only, the DM-P0 fix lives in `base44/functions/createCommunityPost/entry.ts` + `src/components/community/dm.js`. HEAD unchanged through my work (they hadn't pushed); clean fast-forward push, no clobber.
+- **Shipped vs demo:** SHIPPED (reachable via IDEAS pill → Founder OS → Current → QA & safety → CommunityQA).
+- **Live bundle hash:** `index-Zptxkgwx.js` (deploy clean, first try — no 409). Local clean build (`rm -rf dist node_modules/.vite && vite build`) reproduced the same hash.
+- **Verification:** served-bundle marker check (both YES): CATALOG title "Community — final QA + safety audit" + doc body ("64 checks"). Browser not driven (as requested).
+- ✅ done: doc wired (Current/QA & safety/New) · coordinated pull · clean build · deploy · marker confirmed live · pushed `bb15955` to main.
+- ⏭ queued: the DM P0 itself (spoofable client bearer token → private-thread read) remains OPEN — owned by the other session / awaiting Halli's architecture decision; this task only wired the audit DOC.
+
 ## 🔍🛡️ COMMUNITY FINAL QA — fresh-eyes adversarial audit + 3 P1 fixes · LIVE `index-CzoIDwk6.js` · commit `95c9d88` (2026-07-14)
 **Halli-requested FINAL whole-Community QA (the substance lineup was complete). Code-trace + safety-logic audit by a fresh reviewer who did NOT build these (live Community chokes the browser harness → traced real read/write paths, not clicks). 64 checks · 58 pass.**
 - **HEADLINE: 1 P0 (open — needs Halli), 4 P1 (3 FIXED & LIVE, 1 flagged), rest P2.** No location leak, no unmoderated chat, no private cycle/journal data anywhere in Community, all new entities (Conversation/Message/GameMatch/TogetherActivity/GoalContribution/CircleMembership) correctly admin-RLS-locked, DM screen-before-deliver + held-to-nobody verified, in-game chat is DM-pipeline-only, 50-fn cap respected.
