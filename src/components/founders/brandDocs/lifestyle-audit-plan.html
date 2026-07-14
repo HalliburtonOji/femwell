@@ -1,0 +1,177 @@
+<!-- Lifestyle DEEP AUDIT + redesign/substance PLAN — 2026-07-14. Phone-readable, no emoji (brand rule). Plan-first: no live Lifestyle code changed. -->
+<style>
+  .lap { font-family: 'Inter', system-ui, sans-serif; color: #2E261B; background: #ECE7DA; max-width: 820px; margin: 0 auto; padding: 20px 16px 72px; line-height: 1.5; }
+  .lap h1 { font-family: 'Fraunces', Georgia, serif; font-size: 27px; color: #7A1A12; margin: 4px 0 6px; letter-spacing: -0.3px; }
+  .lap h2 { font-family: 'Fraunces', Georgia, serif; font-size: 20px; color: #0B0805; margin: 32px 0 8px; border-bottom: 2px solid #D8CFBC; padding-bottom: 5px; }
+  .lap h3 { font-size: 14.5px; font-weight: 800; color: #A8893F; text-transform: uppercase; letter-spacing: 0.6px; margin: 20px 0 6px; }
+  .lap p, .lap li { font-size: 14px; }
+  .lap .lead { font-size: 15px; color: #2E261B; }
+  .lap .box { background: #F4EFE3; border: 1px solid #D8CFBC; border-radius: 12px; padding: 13px 15px; margin: 12px 0; }
+  .lap .win { border-left: 5px solid #8FAF8F; }
+  .lap .gap { border-left: 5px solid #BC2E27; }
+  .lap .warn { border-left: 5px solid #A8893F; }
+  .lap .note { border-left: 5px solid #8E6E8E; }
+  .lap table { width: 100%; border-collapse: collapse; margin: 8px 0 4px; font-size: 12.7px; }
+  .lap th { text-align: left; background: #E4DCC9; color: #0B0805; padding: 7px 8px; font-size: 11px; text-transform: uppercase; letter-spacing: 0.4px; border-bottom: 2px solid #D8CFBC; }
+  .lap td { padding: 7px 8px; border-bottom: 1px solid #E0D8C6; vertical-align: top; }
+  .lap .tbl-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .lap code { background: #E4DCC9; border-radius: 4px; padding: 1px 5px; font-size: 12px; font-family: ui-monospace, Menlo, monospace; }
+  .lap .tag { display: inline-block; font-size: 10.5px; font-weight: 800; padding: 2px 8px; border-radius: 999px; letter-spacing: 0.4px; text-transform: uppercase; white-space: nowrap; }
+  .lap .t-now { background: #8FAF8F; color: #fff; }      /* feasible now */
+  .lap .t-back { background: #A8893F; color: #fff; }     /* needs backend / content-ops */
+  .lap .t-new { background: #BC2E27; color: #fff; }      /* needs new fn — avoid */
+  .lap .t-live { background: #7A1A12; color: #fff; }
+  .lap .t-dark { background: #6B5E48; color: #fff; }
+  .lap .muted { color: #6B5E48; font-size: 12.5px; }
+  .lap .big { font-size: 15px; font-weight: 800; }
+  .lap ol.build { counter-reset: step; list-style: none; padding-left: 0; }
+  .lap ol.build > li { position: relative; padding: 10px 12px 10px 46px; margin: 9px 0; background: #F4EFE3; border: 1px solid #D8CFBC; border-radius: 12px; }
+  .lap ol.build > li::before { counter-increment: step; content: counter(step); position: absolute; left: 10px; top: 10px; width: 26px; height: 26px; background: #7A1A12; color: #fff; border-radius: 999px; display: grid; place-items: center; font-weight: 800; font-size: 13px; }
+  .lap .kicker { font-size: 11px; font-weight: 800; letter-spacing: 1px; text-transform: uppercase; color: #A8893F; }
+  .lap .pill-row { display: flex; flex-wrap: wrap; gap: 6px; margin: 6px 0; }
+</style>
+<div class="lap">
+  <div class="kicker">FemWell · Lifestyle</div>
+  <h1>Lifestyle — deep audit + redesign &amp; substance plan</h1>
+  <p class="muted">Plan-first pass (no live Lifestyle code changed). Same treatment we gave Community and Nutrition: bring the page onto the canonical §6.8.2 template and deepen every feature. Code-trace audit of the live shell + every sub-surface, entity and function. 2026-07-14.</p>
+
+  <div class="box win">
+    <div class="big">TL;DR</div>
+    <p style="margin:6px 0 0;">The live Lifestyle page (<code>LifestyleEliteShell</code>) is <b>good but a generation behind</b>. It was flipped live on <b>2026-06-28</b> to the <b>older §6.8 v1 signature</b> (hero &rarr; SummaryCard &rarr; boards). Nutrition and Community were later rebuilt to the <b>newer §6.8.2 canonical template</b> (2026-07-08): flora hero <b>+ tap-to-rebloom controller cards</b> &rarr; <b>glance&nbsp;&#8646;&nbsp;Jess sliding row</b> (a rotating per-page Jess digest with an upward inner sheet) &rarr; boards &rarr; <b>&ldquo;Handy right now&rdquo; quick row</b> &rarr; closing. Lifestyle is missing bands 1(controller cards), 2 and 4.</p>
+    <p style="margin:8px 0 0;">Bigger than the shape: the page is <b>starving its own backend</b>. A full personalisation engine (<code>getLifestyleFeed</code> + <code>LifestyleProfile</code> + <code>LifestyleInteractions</code> + <code>recordLifestyleAction</code>) already exists and is <b>completely unwired</b> — &ldquo;Picked for you&rdquo; is really just top-<code>engagement_score</code>. Two of the app&rsquo;s <b>richest readers</b> — the immersive Kindle-flip <b>Daily Story reader</b> and the ~15-section <b>Horoscope reader</b> (with birth-chart onboarding) — were <b>dropped</b> when the Elite shell re-implemented those surfaces inline, and are <b>dark in production</b>. Almost every fix below is <b>feasible now with the code and functions that already exist</b>; new backend is rarely needed.</p>
+  </div>
+
+  <h2>1 &middot; Current information architecture (what&rsquo;s actually live)</h2>
+
+  <div class="box note">
+    <p style="margin:0;"><span class="tag t-live">routing truth</span> <code>pages.config.js:294</code> maps <code>"Lifestyle": LifestyleElite</code> &rarr; <code>LifestyleEliteShell.jsx</code> (869 lines). <b>That is the live page.</b> <code>src/pages/Lifestyle.jsx</code> (the 981-line 7-tab hub) is imported only as the one-line-revert fallback and is <b>NOT routed</b> &mdash; it, and everything only it mounts, is dark. <code>LifestyleDetail</code>, <code>FictionReader</code>, <code>BookReader</code> are separately routed, so the readers themselves stay reachable via deep-link.</p>
+  </div>
+
+  <p class="lead">The live shell, top to bottom:</p>
+  <div class="tbl-wrap"><table>
+    <tr><th>Band</th><th>What&rsquo;s there now</th><th>§6.8.2 verdict</th></tr>
+    <tr><td><b>Top chrome</b></td><td><code>TopChrome</code> (Jump pill + calendar overlay).</td><td><span class="tag t-now">on-spec</span></td></tr>
+    <tr><td><b>Hero</b></td><td><code>FwFloraHero</code> (phase bloom) + a separate static <code>Bouquet</code> + a phase/day pill line + <b>two focus pills</b> (Today&rsquo;s chapter / What do you have time for).</td><td><span class="tag t-new">old signature</span> &mdash; <b>no controller cards</b>. The hero is static, not a tap-to-rebloom controller.</td></tr>
+    <tr><td><b>Summary</b></td><td>One <code>SummaryCard</code>, 3 rows (Today&rsquo;s chapter / Your reading / Your sky).</td><td><span class="tag t-new">old signature</span> &mdash; this is §6.8 v1. No <b>glance&#8646;Jess</b> row, <b>no rotating Jess digest</b>, no inner sheet.</td></tr>
+    <tr><td><b>Boards</b></td><td><code>ClipboardSlider</code> with <b>5 boards</b>: The good life &middot; For you &middot; Read &middot; Listen &middot; Story &amp; sky. Each is a <code>StackedCard</code> with two horizontal sub-sliders of lenses.</td><td><span class="tag t-now">on-spec &amp; strong</span> &mdash; the best part of the page; keep and deepen.</td></tr>
+    <tr><td><b>Quick row</b></td><td>&mdash; absent &mdash;</td><td><span class="tag t-new">missing</span> &mdash; no &ldquo;Handy right now&rdquo; <code>V2QuickRow</code>.</td></tr>
+    <tr><td><b>Closing</b></td><td><code>Pollinator</code> + warm Cormorant line.</td><td><span class="tag t-now">on-spec</span></td></tr>
+    <tr><td><b>Overlays</b></td><td>Jump, Calendar, <b>ChapterSheet</b> (static story excerpt), <b>ReadingSheet</b> (horoscope headline/narrative).</td><td><span class="tag t-back">shallow doors</span> &mdash; both replace far richer readers that exist (see §3).</td></tr>
+  </table></div>
+
+  <h3>The 5 boards, and what each holds today</h3>
+  <ul>
+    <li><b>The good life</b> &mdash; a &ldquo;what do you have time for?&rdquo; dopamine-menu (3 time bands &rarr; a read + a listen + a make/awe prompt) + a &ldquo;permission to enjoy it&rdquo; lens (static slips + &ldquo;book a quiet hour&rdquo;). <span class="muted">Genuinely novel; the picks are real, the permission copy is static.</span></li>
+    <li><b>For you</b> &mdash; Editor&rsquo;s pick + more &middot; Saved &middot; Try this &middot; For your phase. <span class="muted">Real data, but <b>not personalised</b> (top engagement only); Try this = 3 hardcoded prompts.</span></li>
+    <li><b>Read</b> &mdash; Articles &middot; Stories &middot; Books (today&rsquo;s chapter + FemWell fiction + Gutendex public-domain) &middot; Guides. <span class="muted">Articles/Stories/Books real; Guides mostly a static fallback.</span></li>
+    <li><b>Listen</b> &mdash; Podcasts (real <code>&lt;audio&gt;</code> player) &middot; Videos (inline youtube-nocookie) &middot; Trending TikTok (link-out) &middot; External pods (2 static). <span class="muted">Player works; the <b>video/podcast content itself is nearly all placeholder</b> (see §3).</span></li>
+    <li><b>Story &amp; sky</b> &mdash; Daily story (static excerpt) &middot; A day for you (1 title + 4 alts, hardcoded) &middot; Horoscope lens &middot; Sky diary (real <code>SkyNote</code> persistence). <span class="muted">Sky diary is real; the story + horoscope are thin shadows of the real readers.</span></li>
+  </ul>
+  <p class="muted">Persistence that <i>does</i> work today: Save &rarr; <code>UserProfile.saved_item_ids</code>; Sky diary &rarr; <code>SkyNote</code>; A day for you / Try this &rarr; <code>PlannerItems</code> (wellbeing). All optimistic + rollback + toast.</p>
+
+  <h2>2 &middot; Where it&rsquo;s thin, off-brand, or broken</h2>
+
+  <div class="box gap">
+    <p style="margin:0 0 6px;"><span class="tag t-new">headline gap</span> <b>The personalisation engine is unplugged.</b> The shell reads <code>LifestyleItems.filter({status:"PUBLISHED"}, "-engagement_score", 60)</code> &mdash; a flat popularity sort &mdash; and has <b>zero</b> references to <code>getLifestyleFeed</code>, <code>LifestyleProfile</code>, <code>LifestyleInteractions</code>, or <code>recordLifestyleAction</code>. Those functions/entities <b>already exist and work</b> (followed topics/sources, hidden ids, like/save/hide &rarr; category weights, cycle/energy boosts). So &ldquo;Picked for you&rdquo; and &ldquo;For your phase&rdquo; aren&rsquo;t actually tuned to her, and her taps teach the system nothing.</p>
+  </div>
+
+  <div class="box gap">
+    <p style="margin:0 0 6px;"><span class="tag t-dark">dark in prod</span> <b>Two of the app&rsquo;s richest readers were dropped.</b></p>
+    <ul style="margin:4px 0 0;">
+      <li><b>Immersive Daily Story reader</b> (<code>DailyStoryReader.jsx</code>, ~2,000 lines: measured pagination, 3D page-flip, movie mode, themes, bookmarks, cliffhanger countdown). The Elite shell replaced it with a static <code>ChapterSheet</code> excerpt of <code>segment_text</code>. The rich reader now survives only inside Fiction/Book readers.</li>
+      <li><b>Full Horoscope reader</b> (<code>HoroscopeTab.jsx</code>: Triad sun/moon/rising, GoddessBench, CycleMoonDial, RedWhiteMoon, AnnualProfections, Compatibility, AskTheSky, QuietMode, &hellip; ~15 sections, real generated readings). The Elite shell shows only a small <code>HoroscopeLens</code> + <code>ReadingSheet</code>. Worse: <b><code>BirthDataSheet</code> (birth-chart onboarding) isn&rsquo;t imported in the Elite shell</b>, yet the ReadingSheet tells users to &ldquo;add birth details on the Horoscope tab&rdquo; &mdash; a tab that isn&rsquo;t mounted. New users may have <b>no way to set up their chart</b> on the live page. <span class="muted">(Worth a 30-second live confirm; inferred from imports.)</span></li>
+    </ul>
+  </div>
+
+  <div class="box gap">
+    <p style="margin:0;"><span class="tag t-back">content gap</span> <b>No real video, thin real audio.</b> <code>src/data/lifestyleVideos.js</code> is <b>6 hardcoded YouTube clips</b>, and its own header notes the live items carry no media URLs &mdash; so those 6 are effectively the whole Videos lane, and real videos link-out rather than play. External podcasts are a static curated list. The ingestion + summarise pipeline exists (<code>ingestYouTubeChannels</code>, <code>summarizeLifestyleItem</code>) but isn&rsquo;t populating playable media.</p>
+  </div>
+
+  <div class="box warn">
+    <p style="margin:0 0 6px;"><span class="tag t-back">stale copy</span> <b>Hardcoded lenses that should breathe.</b> Try this (3 static), Guides (static fallback), External pods (2 static), TikTok fallback (3 static), A day for you (1+4 static), Permission slips (static). None rotate; none are signal-driven. On a template whose Jess digest is supposed to change every load, these read flat.</p>
+  </div>
+
+  <div class="box warn">
+    <p style="margin:0;"><span class="tag t-back">whole-life</span> <b>Too cycle-tinted for a whole-life room.</b> Lifestyle is FemWell&rsquo;s most life-spanning surface, but the picks lean health/cycle (phase picks, &ldquo;cycle-syncing&rdquo; guides). The <code>LifestyleItems.category</code> enum has 27 values &mdash; the life domains (relationships &middot; dating &middot; friendship &middot; career/money &middot; fashion/beauty &middot; creativity &middot; joy &middot; entertainment &middot; venting/&ldquo;gossip&rdquo;) are under-surfaced. Let life-stage <i>tint</i>, not dominate (CLAUDE.md).</p>
+  </div>
+
+  <div class="box note">
+    <p style="margin:0;"><span class="tag t-now">latent bug</span> <b>Today&rsquo;s Daily-Story reel deep-links are stale.</b> <code>DailyStoryReel.jsx</code> (on /Today) routes to legacy <code>?tab=daily_story&amp;open=</code> / <code>?tab=for_you&amp;open=</code> contracts the Elite shell <b>doesn&rsquo;t consume</b> &mdash; so a tap lands on the Lifestyle page&rsquo;s default state, not the intended chapter/item. Cheap fix once the shell honours an <code>?open=</code>/chapter param.</p>
+  </div>
+
+  <h2>3 &middot; The target &mdash; §6.8.2 mapped onto Lifestyle</h2>
+  <p class="lead">Rebuild the page as <code>LifestyleV2Shell.jsx</code>, mirroring <code>NutritionV2Shell</code> / Community. <b>Keep all 5 boards and every real surface</b> &mdash; this reorganises the top and deepens the middle; it strips nothing. The band-2/band-4 components (<code>JessGlanceSwipe</code>, <code>JessCard</code>, <code>V2QuickRow</code>) and the controller-card renderer live locally in each shell (they are NOT in <code>SliderKit</code>), so we port them exactly as Community did.</p>
+
+  <div class="tbl-wrap"><table>
+    <tr><th>Band</th><th>Fills with (Lifestyle)</th></tr>
+    <tr><td><b>0 &middot; Top chrome</b><br><span class="muted">fixed</span></td><td><code>TopChrome</code> (Jump + calendar overlay) &mdash; already present. <code>PAPER_BG</code>.</td></tr>
+    <tr><td><b>1 &middot; Hero + controller cards</b><br><span class="muted">hero fixed &middot; controllers vary</span></td><td><code>FwFloraHero</code> driven by <b>5 tap-to-rebloom controller cards</b> (<code>{id,Icon,label,title,line,openness,cw,creature,action}</code>). Proposed destinations, life-spanning:<div class="pill-row"><span class="tag t-live">Read</span><span class="tag t-live">Listen</span><span class="tag t-live">Watch</span><span class="tag t-live">Story</span><span class="tag t-live">Sky &amp; slow</span></div>Each rewrites the hero title/line, re-tints the colourway, re-blooms one&rarr;many, and shows the phase pill + that card&rsquo;s single primary action (e.g. Read &rarr; open editorial pick; Story &rarr; open the Daily Story reader; Sky &rarr; open the Horoscope reader).</td></tr>
+    <tr><td><b>2 &middot; Glance &#8646; Jess</b><br><span class="muted">structure fixed &middot; copy varies</span></td><td><code>JessGlanceSwipe</code> with two equal-height panels. <b>Slide 1 &mdash; &ldquo;Today, for you&rdquo;</b>: 2&ndash;3 signal rows (today&rsquo;s chapter ready? saved to return to? your sky today?) + an add-to-today focus-pill grid (Read a chapter / Save a read / A day for you / New sky note). <b>Slide 2 &mdash; the Jess digest</b>: a new <code>lifestyleJessSummary(seed, ctx)</code> returning <code>{eyebrow, body}</code>, <b>rotating every load</b> (module seed), with 3&ndash;4 chips and &ldquo;Open Jess&rsquo;s full read&rdquo; raising an upward inner sheet (phase read &middot; what to read/hear tonight &middot; a permission slip). This <b>replaces</b> the old <code>SummaryCard</code> + focus pills.</td></tr>
+    <tr><td><b>3 &middot; Boards</b><br><span class="muted">frame fixed &middot; boards vary</span></td><td>Keep the <b>5 boards</b> (The good life &middot; For you &middot; Read &middot; Listen &middot; Story &amp; sky) &mdash; now fed by real personalisation + the restored readers + rotating copy. Add life-domain filter chips (relationships/career/creativity/joy/&hellip;) so Read/Listen/For-you span life, not just cycle.</td></tr>
+    <tr><td><b>4 &middot; Handy right now</b><br><span class="muted">structure fixed &middot; items vary</span></td><td>New <code>V2QuickRow</code>, ~6 real one-line jumps: Today&rsquo;s chapter &middot; Your sky &middot; Saved &middot; A day for you &middot; What do you have time for &middot; Browse Read.</td></tr>
+    <tr><td><b>5 &middot; Closing</b><br><span class="muted">fixed</span></td><td>Existing <code>Pollinator</code> + warm line &mdash; keep.</td></tr>
+    <tr><td><b>Overlays</b><br><span class="muted">fixed doors, richer content</span></td><td>Jump &middot; shared Calendar &middot; <b>the real <code>DailyStoryReader</code></b> (replacing the excerpt sheet) &middot; <b>the real <code>HoroscopeTab</code> + <code>BirthDataSheet</code></b> (replacing the shallow ReadingSheet).</td></tr>
+  </table></div>
+
+  <h2>4 &middot; Per-feature substance pass</h2>
+  <p class="muted">For each feature: where it&rsquo;s thin now &rarr; concrete depth &rarr; feasibility. <span class="tag t-now">now</span> = no backend (existing code/fns). <span class="tag t-back">backend/ops</span> = needs an existing function wired or content populated, no NEW function. <span class="tag t-new">new fn</span> = would need a new function (avoid &mdash; see §6).</p>
+
+  <div class="tbl-wrap"><table>
+    <tr><th>Feature</th><th>Thin now</th><th>Depth (why she returns)</th><th>Feasibility</th></tr>
+    <tr><td><b>Picked for you / For your phase</b></td><td>Flat top-engagement; taps teach nothing.</td><td>Wire <code>getLifestyleFeed</code> (for_you mode) for the pick + phase rail; log every save/open/hide via <code>recordLifestyleAction</code> so the feed learns. A visibly &ldquo;more me each week&rdquo; feed is the core return driver.</td><td><span class="tag t-now">now</span> <span class="muted">(fns exist)</span></td></tr>
+    <tr><td><b>Daily Story</b></td><td>Static excerpt sheet; the immersive reader is dark.</td><td>Open the real <code>DailyStoryReader</code> (flip, movie mode, bookmark, cliffhanger countdown-to-midnight) from the Story controller + board. Countdown + &ldquo;tomorrow&rsquo;s chapter unlocks at midnight&rdquo; is a proven daily-return hook.</td><td><span class="tag t-now">now</span> <span class="muted">(component exists; fns <code>ensureDailyStoryPack</code>/<code>storyWorker</code> already run)</span></td></tr>
+    <tr><td><b>Horoscope</b></td><td>Headline/narrative lens; full reader + birth onboarding dark/unreachable.</td><td>Mount <code>HoroscopeTab</code> + <code>BirthDataSheet</code> as the Sky door: Triad, CycleMoonDial, RedWhiteMoon, AskTheSky, compatibility. Daily generated reading = a daily reason to open. <b>Also fixes onboarding reachability.</b></td><td><span class="tag t-now">now</span> <span class="muted">(component + <code>generateHoroscopeReading</code>/<code>askStars</code> exist)</span></td></tr>
+    <tr><td><b>The good life (time menu)</b></td><td>Novel, but picks are unranked; permission copy static.</td><td>Feed the time bands from the ranked feed; rotate permission slips per load; let &ldquo;book a quiet hour&rdquo; drop a real <code>PlannerItems</code> block (already does) + surface it back on Today.</td><td><span class="tag t-now">now</span></td></tr>
+    <tr><td><b>Try this</b></td><td>3 hardcoded cycle-ish prompts.</td><td>A rotating, <b>life-spanning</b> deck (friendship: &ldquo;text the friend you keep meaning to&rdquo;; creativity; joy; self) seeded per load; tapping keeps it in Planner (already wired). Optional: draw from a small seeded pool per life-domain.</td><td><span class="tag t-now">now</span></td></tr>
+    <tr><td><b>A day for you</b></td><td>1 title + 4 static alts.</td><td>Rotate the menu; tint by phase gently; the saved day appears on Today/Planner and nudges a real day off. Keep guilt-free, no streaks.</td><td><span class="tag t-now">now</span></td></tr>
+    <tr><td><b>Read: Articles / Stories / Guides</b></td><td>Articles/Stories real; Guides mostly static.</td><td>Personalise + add life-domain chips; ensure Guides pulls real <code>GUIDE</code> items (generate a few via <code>generateFemwellContent</code> if the shelf is empty). Deep-link into <code>LifestyleDetail</code> (already rich).</td><td><span class="tag t-now">now</span> / <span class="tag t-back">ops</span> <span class="muted">(guide content)</span></td></tr>
+    <tr><td><b>Books</b></td><td>Works (FemWell fiction + Gutendex).</td><td>Keep; surface &ldquo;continue reading&rdquo; from reader bookmarks; connect to the Community Library / Book Club deep-link (BookReader already has the cohort hooks).</td><td><span class="tag t-now">now</span></td></tr>
+    <tr><td><b>Listen: Videos / Podcasts</b></td><td>6 static clips; real media nearly absent; external pods static.</td><td>Populate playable media via the existing ingestion pipeline (<code>ingestYouTubeChannels</code> &rarr; <code>summarizeLifestyleItem</code> embed-gate), so real videos/podcasts play in-card. Rotate external pods.</td><td><span class="tag t-back">ops</span> <span class="muted">(fns exist; needs a populated run + review)</span></td></tr>
+    <tr><td><b>Trending / TikTok</b></td><td>Link-out with static fallback.</td><td>Keep link-out (ToS); rotate the fallback set; label as &ldquo;opens in TikTok&rdquo;. Low priority.</td><td><span class="tag t-now">now</span></td></tr>
+    <tr><td><b>Sky diary</b></td><td>Already real (<code>SkyNote</code>).</td><td>Keep; thread it into the Horoscope reader&rsquo;s SkyDiary section so the two aren&rsquo;t separate.</td><td><span class="tag t-now">now</span></td></tr>
+    <tr><td><b>Today&rsquo;s Daily-Story reel</b></td><td>Deep-links land on default state.</td><td>Teach the shell to read <code>?open=</code>/chapter params (or route the reel straight into the reader route). Small fix, real reachability win.</td><td><span class="tag t-now">now</span></td></tr>
+  </table></div>
+
+  <h2>5 &middot; Recommended build order (one feature at a time)</h2>
+  <ol class="build">
+    <li><b>Structural rebuild &rarr; <code>LifestyleV2Shell</code> (§6.8.2).</b> Port controller cards + <code>JessGlanceSwipe</code>/<code>JessCard</code> + <code>lifestyleJessSummary</code> + <code>V2QuickRow</code> from Nutrition/Community; keep all 5 boards and every real surface. Biggest visible win; <b>no backend</b>. Flip <code>pages.config</code> only after Ms Verify passes (one-line revert kept). <span class="tag t-now">now</span></li>
+    <li><b>Wire real personalisation.</b> <code>getLifestyleFeed</code> for Picked-for-you + phase picks; <code>recordLifestyleAction</code> on every save/open/hide. The feed starts learning. <span class="tag t-now">now</span></li>
+    <li><b>Restore the immersive Daily Story reader</b> + fix the Today reel deep-links. Crown-jewel reading experience back on the live page. <span class="tag t-now">now</span></li>
+    <li><b>Restore the full Horoscope reader + birth-chart onboarding</b> as the Sky door. Rich daily surface + fixes the onboarding dead-end. <span class="tag t-now">now</span></li>
+    <li><b>De-hardcode the lenses &amp; go whole-life.</b> Rotate Try this / A day for you / permission / external pods per load; add life-domain filter chips to Read/Listen/For-you. <span class="tag t-now">now</span></li>
+    <li><b>Fill the real media lane.</b> Run the ingestion + summarise pipeline so videos/podcasts actually play; review to PUBLISHED. Content-ops, existing functions. <span class="tag t-back">backend/ops</span></li>
+  </ol>
+  <p class="muted">Steps 1&ndash;5 need <b>no new backend</b>. Each is a self-contained, shippable pass with its own Ms Verify gate; deploy + STATUS entry per step.</p>
+
+  <h2>6 &middot; Feasibility, entities &amp; the function cap</h2>
+  <div class="box win">
+    <p style="margin:0 0 6px;"><b>Entities &mdash; all needed ones already exist:</b> <code>LifestyleItems</code>, <code>DailyStory</code>, <code>HoroscopeReading</code>, <code>SkyNote</code>, <code>PlannerItems</code>, <code>LifestyleProfile</code>, <code>LifestyleInteractions</code>, <code>AstroProfile</code>, <code>UserProfile</code>. <b>No new entity required</b> for steps 1&ndash;5.</p>
+    <p style="margin:0 0 6px;"><b>Functions to reuse (no new ones):</b> <code>getLifestyleFeed</code> / <code>rankLifestyleFeed</code> / <code>recordLifestyleAction</code> (personalisation), <code>generateHoroscopeReading</code> / <code>askStars</code> / <code>generateCompatibility</code> (sky), <code>ensureDailyStoryPack</code> / <code>storyWorker</code> / <code>generateNextStoryItem</code> (story), <code>expandContent</code> (article body), <code>fetchGutenbergBook</code> (books), <code>ingestYouTubeChannels</code> / <code>summarizeLifestyleItem</code> (media, step 6).</p>
+    <p style="margin:0;"><b>Target: zero new functions.</b> Every substance idea above rides an existing function or is pure front-end.</p>
+  </div>
+  <div class="box gap">
+    <p style="margin:0;"><span class="tag t-new">flag for Halli</span> <b>The 50-function cap is already blown.</b> <code>base44/functions/</code> holds <b>118 function directories</b> today &mdash; well over the cap in CLAUDE.md. This isn&rsquo;t caused by Lifestyle, but it means <b>we must not add any new function here</b>, and it&rsquo;s worth a separate reconcile (is the cap per-deployed-app? are legacy/backfill functions un-deployed?). The Lifestyle plan is designed to add none.</p>
+  </div>
+
+  <h2>7 &middot; Done this pass / queued</h2>
+  <div class="box win">
+    <p class="big" style="margin:0 0 4px;">Done this pass</p>
+    <ul style="margin:0;">
+      <li>Deep code-trace audit of the live <code>LifestyleEliteShell</code> + all 11 sub-surfaces (readers, tabs, media, hub, Today reel, curated data).</li>
+      <li>Mapped current IA band-by-band and against the §6.8.2 canonical template.</li>
+      <li>Found the headline gaps: unwired personalisation engine; two rich readers dropped/dark; birth-chart onboarding likely unreachable; no real video; stale Today-reel deep-links.</li>
+      <li>Full redesign (§6.8.2 mapped) + per-feature substance table + a 6-step, one-at-a-time build order, with a feasible-now vs backend/ops split and the 50-fn-cap flag.</li>
+      <li>This doc shipped phone-readable to <code>femwell-handoff/</code> + <code>brandDocs/</code>, wired into the IDEAS pill.</li>
+    </ul>
+  </div>
+  <div class="box warn">
+    <p class="big" style="margin:0 0 4px;">Queued / awaiting Halli</p>
+    <ul style="margin:0;">
+      <li><b>Your go</b> to start step 1 (the <code>LifestyleV2Shell</code> rebuild) &mdash; plan-first, nothing built yet.</li>
+      <li>30-second live confirm of the <b>birth-chart onboarding dead-end</b> (is <code>BirthDataSheet</code> truly unreachable on the live page?).</li>
+      <li>Decision on the <b>function-cap reconcile</b> (separate from Lifestyle).</li>
+      <li>Content-ops window for <b>step 6</b> (populate real playable video/podcast media).</li>
+    </ul>
+  </div>
+  <p class="muted" style="margin-top:18px;">Plan-first &mdash; no live Lifestyle code was changed in this pass. Reference: BRAND_IDENTITY.md §6.8 / §6.8.2 · <code>NutritionV2Shell.jsx</code> · <code>Community.jsx</code> (both on §6.8.2) · <code>LifestyleEliteShell.jsx</code> (live) · <code>getLifestyleFeed</code> / <code>recordLifestyleAction</code> · <code>DailyStoryReader.jsx</code> · <code>HoroscopeTab.jsx</code>.</p>
+</div>
