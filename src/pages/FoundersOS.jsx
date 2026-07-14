@@ -551,6 +551,123 @@ const CURRENT_SUB_ORDER = [
   "Cross-app plans & decisions",
 ];
 
+// ─── DASHBOARD SECTIONS (app-in-app IA · 2026-07-14 rebuild) ─────────────
+// The home screen is now a DASHBOARD of tappable SECTION tiles + a prominent
+// search + a "New & recently added" rail. Which section an entry lands in is
+// DERIVED from its existing group/sub (see `sectionOf`), so adding a catalog
+// entry needs NO section edit — it auto-routes by its `sub` or `group`. To make
+// a new entry surface at the top of the dashboard, give it a date (either set
+// `added:"YYYY-MM-DD"` on the entry, or add one line to RECENT_DATES below).
+const SECTION = {
+  brand:     { id:"brand",     title:"Brand, cards & flora",       accent:"crimson",  icon:"bloom",  blurb:"The Brand Bible, the card system and every flora / header treatment." },
+  pages:     { id:"pages",     title:"Page level-ups & demos",     accent:"gold",     icon:"page",   blurb:"Per-page +2 plans and their approval demos — Nutrition, Lifestyle, Health, Pulse, Programs, Garden, Jess, Planner." },
+  community: { id:"community", title:"Community program",          accent:"crimson",  icon:"people", blurb:"The deep Community build — Talk rooms, Circles, Together, Events, Library, Games, DMs, safety." },
+  calendar:  { id:"calendar",  title:"Calendar & logger",          accent:"gold",     icon:"cal",    blurb:"The one universal calendar, the logger overhaul and calendar sync." },
+  identity:  { id:"identity",  title:"Identity & garden",          accent:"sage",     icon:"leaf",   blurb:"Bloomprint — each woman's signature flower and the garden that grows with her." },
+  data:      { id:"data",      title:"Data hygiene & QA",          accent:"crimson",  icon:"shield", blurb:"Entity audit, removal plan and the Community final QA + safety audit." },
+  crossapp:  { id:"crossapp",  title:"Cross-app plans & decisions",accent:"sage",     icon:"link",   blurb:"Plans that span the whole app — intentions, connection, bottom nav, brand audit, pending decisions." },
+  specs:     { id:"specs",     title:"Plans, specs & vision",      accent:"gold",     icon:"doc",    blurb:"The standing reference — master plans, audits, companion vision and bigger concepts." },
+  build:     { id:"build",     title:"Build status & tools",       accent:"espresso", icon:"tools",  blurb:"The living build map — features, roadmap, data-flow, decisions, strategy, legal, ideas backlog." },
+  more:      { id:"more",      title:"More — active",              accent:"gold",     icon:"doc",    blurb:"Active entries that don't yet fit a named section (curate these into one)." },
+  archive:   { id:"archive",   title:"Archive",                    accent:"espresso", icon:"box",    blurb:"Superseded demos (the page shipped live-elite) + older / passed-on previews — kept for history, nothing deleted." },
+};
+const SECTION_ORDER = ["brand","pages","community","calendar","identity","data","crossapp","specs","build","more","archive"];
+
+// A CURRENT-group entry routes to a section by its `sub`.
+const SUB_TO_SECTION = {
+  "Data hygiene":                     "data",
+  "QA & safety":                      "data",
+  "Calendar + logger plans":          "calendar",
+  "Identity & garden":                "identity",
+  "Card language plans":              "brand",
+  "Brand + card language":            "brand",
+  "Card-system demos (pending rebuild)": "brand",
+  "Cross-app plans & decisions":      "crossapp",
+};
+// Entries under the overloaded "Page level-up plans + demos" sub that belong to
+// the Community program rather than a single page (by `key` for docs / `href`
+// for routes).
+const COMMUNITY_KEYS = new Set([
+  "Talk Rooms","Safety Principle","Together Shelf","Events Together","Library Book Club",
+  "Circles","Games Room","Games Deep","Substance Plan","DM Spec","Community Redesign","Community +2",
+]);
+const COMMUNITY_HREFS = new Set(["/CommunityRedesignDemo","/CommunityL2Demo"]);
+
+// Which dashboard section an entry belongs to. Deterministic; every entry lands
+// in exactly one section (last resort: `more`), so nothing is ever dropped.
+function sectionOf(e) {
+  if (e.group === CAT.ARCHIVE)   return "archive";
+  if (e.group === CAT.BRANDDOCS) return "brand";
+  if (e.group === CAT.BUILD)     return "build";
+  if (e.group === CAT.SPECS || e.group === CAT.VISION || e.group === CAT.BRAND) return "specs";
+  // CAT.CURRENT — route by sub.
+  if (e.sub && SUB_TO_SECTION[e.sub]) return SUB_TO_SECTION[e.sub];
+  if (e.sub === "Page level-up plans + demos") {
+    return (COMMUNITY_KEYS.has(e.key) || COMMUNITY_HREFS.has(e.href)) ? "community" : "pages";
+  }
+  return "more";
+}
+
+// Within the (large) Pages section, group by the page named in the title.
+const PAGE_WORDS = ["Nutrition","Lifestyle","Health","Pulse","Doctor Export","Programs","Garden","Jess","Planner","Today","Journal","Community","Profile"];
+function pageLabelOf(e) {
+  const hay = String(e.title || "");
+  for (const w of PAGE_WORDS) if (hay.includes(w)) return w;
+  return "More";
+}
+
+// Recency signal for the "New & recently added" rail. Keyed by entry `key`
+// (docs) or `href` (routes). Add a line when you ship something new — or set
+// `added:"YYYY-MM-DD"` directly on the catalog entry — so it surfaces up top.
+const RECENT_DATES = {
+  "/FloraCoverDemo":        "2026-07-14",
+  "LifestyleAuditPlan":     "2026-07-14",
+  "CommunityQA":            "2026-07-14",
+  "Entity Audit":           "2026-07-09",
+  "Events Together":        "2026-07-09",
+  "Library Book Club":      "2026-07-09",
+  "Circles":                "2026-07-09",
+  "Games Room":             "2026-07-09",
+  "Games Deep":             "2026-07-09",
+  "Substance Plan":         "2026-07-09",
+  "DM Spec":                "2026-07-09",
+  "Bloomprint":             "2026-07-08",
+  "/BloomprintDemo":        "2026-07-08",
+  "Community Redesign":     "2026-07-08",
+  "/CommunityRedesignDemo": "2026-07-08",
+  "Talk Rooms":             "2026-07-08",
+  "Safety Principle":       "2026-07-08",
+  "Together Shelf":         "2026-07-08",
+  "Calendar Sync":          "2026-07-08",
+  "Universal Calendar":     "2026-07-05",
+  "/UniversalCalendarDemo": "2026-07-05",
+  "Realistic Branch":       "2026-07-03",
+  "Branch Header":          "2026-07-03",
+  "Flora Header":           "2026-07-03",
+  "Card Styles":            "2026-07-01",
+};
+
+// Sub-group helpers for the section drill-in view.
+const sortByAdded = (items) =>
+  [...items].sort((a, b) => { const x = a.added || "", y = b.added || ""; return x < y ? 1 : x > y ? -1 : 0; });
+function groupByPage(items) {
+  const map = new Map();
+  items.forEach((e) => { const p = pageLabelOf(e); if (!map.has(p)) map.set(p, []); map.get(p).push(e); });
+  const out = [];
+  PAGE_WORDS.forEach((p) => { if (map.has(p)) { out.push({ sub: p, items: map.get(p) }); map.delete(p); } });
+  for (const [p, its] of map) out.push({ sub: p, items: its });
+  return out;
+}
+function groupBySub(items, order) {
+  const map = new Map();
+  items.forEach((e) => { const s = e.sub || "General"; if (!map.has(s)) map.set(s, []); map.get(s).push(e); });
+  const out = [];
+  (order || []).forEach((s) => { if (map.has(s)) { out.push({ sub: s, items: map.get(s) }); map.delete(s); } });
+  for (const [s, its] of map) out.push({ sub: s, items: its });
+  if (out.length === 1) out[0].sub = null; // single group → no redundant sub-heading
+  return out;
+}
+
 const accentColor = (a) => ({ gold: T.gold, sage: T.sage, blush: T.blush, crimson: T.crimson, espresso: T.espresso }[a] || T.gold);
 const STATUS_CHIP = {
   live:      { label: "Live",       bg: T.sage,    fg: "#fff" },
@@ -1051,35 +1168,170 @@ function BrandDocFrame({ html, title }) {
   );
 }
 
+// Small on-brand line glyphs for the section tiles (Lucide-ish strokes, no emoji).
+function FloraGlyph({ kind, color = T.gold, size = 22 }) {
+  const p = { fill: "none", stroke: color, strokeWidth: 1.7, strokeLinecap: "round", strokeLinejoin: "round" };
+  const paths = {
+    bloom:  <><circle cx="12" cy="12" r="2.6" {...p} /><path d="M12 9.4c.9-2.4 3.4-2.6 3.4-.4M14.6 12c2.4-.9 2.6 1.6.4 1.9M12 14.6c-.9 2.4-3.4 2.2-3.4 0M9.4 12c-2.4.9-2.4-1.9-.2-2" {...p} /><path d="M12 15v4" {...p} /></>,
+    page:   <><path d="M6 3.5h8l4 4v13H6z" {...p} /><path d="M14 3.5v4h4M9 12h6M9 15.5h6" {...p} /></>,
+    people: <><circle cx="9" cy="9" r="2.4" {...p} /><circle cx="16" cy="10.5" r="2" {...p} /><path d="M4.5 19c0-2.8 2-4.4 4.5-4.4s4.5 1.6 4.5 4.4M15 14.4c2.2.1 4 1.6 4 4.1" {...p} /></>,
+    cal:    <><rect x="4" y="5.5" width="16" height="14" rx="2" {...p} /><path d="M4 9.5h16M8 3.5v4M16 3.5v4M8.5 13h1.5M14 13h1.5M8.5 16.5h1.5M14 16.5h1.5" {...p} /></>,
+    leaf:   <><path d="M5 19c0-8 6-13 14-13 0 8-5 13-13 13-.5 0-1 0-1 0z" {...p} /><path d="M6 18C10 13 13 11 17 9" {...p} /></>,
+    shield: <><path d="M12 3.5l7 2.5v5c0 4.5-3 7.7-7 9-4-1.3-7-4.5-7-9v-5z" {...p} /><path d="M9 12l2 2 4-4" {...p} /></>,
+    link:   <><path d="M10 14a4 4 0 0 0 5.7 0l2.5-2.5a4 4 0 0 0-5.7-5.7L11 7" {...p} /><path d="M14 10a4 4 0 0 0-5.7 0L5.8 12.5a4 4 0 0 0 5.7 5.7L13 17" {...p} /></>,
+    doc:    <><path d="M6 3.5h8l4 4v13H6z" {...p} /><path d="M14 3.5v4h4M9 11h6M9 14h6M9 17h4" {...p} /></>,
+    tools:  <><path d="M14.5 6.5a3.5 3.5 0 0 0 4.6 4.6l-8 8a2.1 2.1 0 0 1-3-3z" {...p} /><path d="M6 6l3 3" {...p} /></>,
+    box:    <><path d="M4 8l8-4 8 4-8 4z" {...p} /><path d="M4 8v8l8 4 8-4V8M12 12v8" {...p} /></>,
+  };
+  return <svg width={size} height={size} viewBox="0 0 24 24" aria-hidden="true" style={{ display: "block", flexShrink: 0 }}>{paths[kind] || paths.doc}</svg>;
+}
+
+// A big tappable dashboard SECTION tile.
+function SectionTile({ section, count, onOpen }) {
+  const accent = accentColor(section.accent);
+  return (
+    <button type="button" onClick={onOpen} style={{
+      display: "block", textAlign: "left", width: "100%", boxSizing: "border-box", cursor: "pointer",
+      background: T.surface, border: `1px solid ${T.border}`, borderTop: `3px solid ${accent}`,
+      borderRadius: 14, padding: "15px 16px 14px", font: "inherit", color: "inherit",
+      boxShadow: "0 1px 8px rgba(11,8,5,0.04)",
+    }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 7 }}>
+        <FloraGlyph kind={section.icon} color={accent} />
+        <span style={{ fontFamily: SERIF_STACK, fontSize: 19, fontWeight: 700, color: T.textHi, lineHeight: 1.15, flex: 1, minWidth: 0 }}>{section.title}</span>
+        <span style={{ fontSize: 12, fontWeight: 700, color: accent, background: T.surfaceHi, border: `1px solid ${T.border}`, borderRadius: 999, padding: "2px 9px", flexShrink: 0 }}>{count}</span>
+      </div>
+      <div style={{ fontSize: 12.5, color: T.textMid, lineHeight: 1.5, ...CLAMP2 }}>{section.blurb}</div>
+      <div style={{ marginTop: 9, fontSize: 12, fontWeight: 700, color: accent }}>Open section →</div>
+    </button>
+  );
+}
+
+// Dashboard home — the "New & recent" rail + the grid of section tiles.
+function Dashboard({ counts, recent, onOpenSection, onOpen }) {
+  return (
+    <div>
+      {recent.length > 0 && (
+        <section style={{ marginBottom: 24 }}>
+          <SectionLabel>New &amp; recently added</SectionLabel>
+          <div style={{ display: "flex", gap: 10, overflowX: "auto", scrollbarWidth: "none", WebkitOverflowScrolling: "touch", padding: "0 2px 4px", margin: "0 -2px" }}>
+            {recent.map((e) => (
+              <div key={(e.href || e.key) + e.title} style={{ flex: "0 0 82%", maxWidth: 300, minWidth: 240 }}>
+                <EntryCard e={e} onOpen={onOpen} />
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
+      <SectionLabel>Sections · tap to open</SectionLabel>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(240px, 1fr))", gap: 12 }}>
+        {SECTION_ORDER.filter((id) => counts[id]).map((id) => (
+          <SectionTile key={id} section={SECTION[id]} count={counts[id]} onOpen={() => onOpenSection(id)} />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// One section drilled into — a header card, then its entries sub-grouped.
+function SectionView({ sectionId, items, onOpen, onBack }) {
+  const meta = SECTION[sectionId] || SECTION.more;
+  const accent = accentColor(meta.accent);
+  const groups = sectionId === "pages" ? groupByPage(items)
+    : sectionId === "community" ? [{ sub: null, items: sortByAdded(items) }]
+    : groupBySub(items, sectionId === "archive" ? ARCHIVE_SUB_ORDER : CURRENT_SUB_ORDER);
+  return (
+    <div>
+      <div style={{
+        background: T.surface, border: `1px solid ${T.border}`, borderLeft: `4px solid ${accent}`,
+        borderRadius: 14, padding: "16px 18px", marginBottom: 18,
+      }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+          <FloraGlyph kind={meta.icon} color={accent} size={24} />
+          <span style={{ fontFamily: SERIF_STACK, fontSize: 23, fontWeight: 700, color: T.textHi, lineHeight: 1.1, flex: 1 }}>{meta.title}</span>
+          <span style={{ fontSize: 12, fontWeight: 700, color: accent, background: T.surfaceHi, border: `1px solid ${T.border}`, borderRadius: 999, padding: "3px 10px", flexShrink: 0 }}>{items.length}</span>
+        </div>
+        <div style={{ fontSize: 13, color: T.textMid, lineHeight: 1.55, marginTop: 8 }}>{meta.blurb}</div>
+        {onBack && (
+          <button type="button" onClick={onBack} style={{
+            marginTop: 12, background: "transparent", border: `1px solid ${T.border}`, color: T.textMid,
+            borderRadius: 999, padding: "6px 13px", fontSize: 12.5, fontWeight: 700, cursor: "pointer",
+          }}>← Back to dashboard</button>
+        )}
+      </div>
+      {groups.map((g) => (
+        <div key={g.sub || "all"} style={{ marginBottom: 18 }}>
+          {g.sub && (
+            <div style={{ fontSize: 11.5, fontWeight: 700, letterSpacing: 0.8, textTransform: "uppercase", color: T.gold, margin: "0 0 8px" }}>{g.sub}</div>
+          )}
+          <CardGrid items={g.items} onOpen={onOpen} />
+        </div>
+      ))}
+    </div>
+  );
+}
+
+// Search results — every matching entry, grouped by the same sections.
+function SearchResults({ results, q, onOpen }) {
+  const bySection = SECTION_ORDER
+    .map((id) => ({ id, items: results.filter((e) => sectionOf(e) === id) }))
+    .filter((g) => g.items.length);
+  return (
+    <div>
+      <div style={{ fontSize: 12.5, color: T.textMuted, margin: "2px 0 14px", letterSpacing: 0.3 }}>
+        {results.length} {results.length === 1 ? "result" : "results"} for “{q.trim()}”
+      </div>
+      {results.length === 0 && (
+        <div style={{ padding: "32px 8px", textAlign: "center", color: T.textMuted, fontSize: 14 }}>
+          Nothing matches “{q.trim()}”. Try a page name (Nutrition, Community, Lifestyle…) or a kind (card, demo, plan, calendar).
+        </div>
+      )}
+      {bySection.map((g) => (
+        <section key={g.id} style={{ marginBottom: 20 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 8, margin: "0 0 10px" }}>
+            <FloraGlyph kind={SECTION[g.id].icon} color={accentColor(SECTION[g.id].accent)} size={17} />
+            <span style={{ fontSize: 12, fontWeight: 700, letterSpacing: 0.6, textTransform: "uppercase", color: T.textMuted }}>
+              {SECTION[g.id].title} · {g.items.length}
+            </span>
+          </div>
+          <CardGrid items={g.items} onOpen={onOpen} />
+        </section>
+      ))}
+    </div>
+  );
+}
+
 function FoundersInner({ user }) {
   const [tab, setTab] = useState(HOME);
+  const [section, setSection] = useState(null);   // null = dashboard; else a SECTION id
   const [q, setQ] = useState("");
-  const [collapsed, setCollapsed] = useState(() => new Set(COLLAPSED_BY_DEFAULT));
-  const toggleGroup = useCallback((name) => {
-    setCollapsed((prev) => {
-      const next = new Set(prev);
-      if (next.has(name)) next.delete(name); else next.add(name);
-      return next;
-    });
-  }, []);
 
-  const catalog = useMemo(() => [...CATALOG, ...demoCatalogEntries()], []);
+  // Merge the recency dates in (entry `added` wins, else the RECENT_DATES map).
+  const catalog = useMemo(
+    () => [...CATALOG, ...demoCatalogEntries()].map((e) => ({
+      ...e, added: e.added || RECENT_DATES[e.key] || RECENT_DATES[e.href] || null,
+    })),
+    [],
+  );
   const query = lc(q).trim();
   const results = useMemo(() => catalog.filter((e) => matchesQuery(e, query)), [catalog, query]);
 
+  // The "New & recently added" rail — newest dated entries, regardless of section.
+  const recent = useMemo(() => sortByAdded(catalog.filter((e) => e.added)).slice(0, 8), [catalog]);
+  // Count per section for the dashboard tiles.
+  const counts = useMemo(() => {
+    const m = {};
+    catalog.forEach((e) => { const s = sectionOf(e); m[s] = (m[s] || 0) + 1; });
+    return m;
+  }, [catalog]);
+
   const onOpen = useCallback((e) => { setTab(e.key); window.scrollTo?.(0, 0); }, []);
   const goHome = useCallback(() => { setTab(HOME); window.scrollTo?.(0, 0); }, []);
-  const jumpTo = useCallback((name) => {
-    setQ("");
-    requestAnimationFrame(() => document.getElementById(slugify(name))?.scrollIntoView({ behavior: "smooth", block: "start" }));
-  }, []);
+  const openSection = useCallback((id) => { setSection(id); window.scrollTo?.(0, 0); }, []);
+  const backToDashboard = useCallback(() => { setSection(null); window.scrollTo?.(0, 0); }, []);
 
   const activeEntry = catalog.find((e) => e.kind === "doc" && e.key === tab);
-
-  // Groups present (in fixed order), each with its matching entries.
-  const groups = GROUP_ORDER
-    .map((name) => ({ name, items: results.filter((e) => e.group === name) }))
-    .filter((g) => g.items.length);
+  const sectionItems = section ? catalog.filter((e) => sectionOf(e) === section) : [];
 
   // The in-page doc/tool render — kept verbatim from the prior shell, plus the
   // new Bottom-Nav Plan. `tab` keys match the catalog `key`s exactly.
@@ -1193,18 +1445,18 @@ function FoundersInner({ user }) {
                 flexShrink: 0, background: T.surface, border: `1px solid ${T.border}`,
                 color: T.textMid, borderRadius: 999, padding: "7px 13px",
                 fontSize: 12.5, fontWeight: 700, cursor: "pointer",
-              }}>← All sections</button>
+              }}>← Back</button>
             )}
           </div>
 
           {tab === HOME && (
             <>
-              {/* Search */}
+              {/* Search — the #1 way to find anything. Always available on the home. */}
               <div style={{ position: "relative", marginTop: 12 }}>
                 <input
                   value={q}
                   onChange={(e) => setQ(e.target.value)}
-                  placeholder="Search previews, specs, demos, plans…"
+                  placeholder="Search everything — type “card”, “nutrition”, “calendar”…"
                   aria-label="Search Founder OS"
                   style={{
                     width: "100%", boxSizing: "border-box",
@@ -1224,17 +1476,16 @@ function FoundersInner({ user }) {
                 )}
               </div>
 
-              {/* Jump-to switcher (the multi-layer-page UX rule) */}
-              {!query && (
-                <div style={{ display: "flex", gap: 7, marginTop: 10, overflowX: "auto", scrollbarWidth: "none", paddingBottom: 2 }}>
-                  {GROUP_ORDER.map((name) => (
-                    <button key={name} type="button" onClick={() => jumpTo(name)} style={{
-                      flexShrink: 0, padding: "6px 12px", borderRadius: 999,
-                      background: "transparent", color: T.textMid,
-                      border: `1px solid ${T.border}`, fontSize: 12, fontWeight: 600,
-                      cursor: "pointer", whiteSpace: "nowrap",
-                    }}>{name}</button>
-                  ))}
+              {/* Breadcrumb — Dashboard ▸ Section when drilled into a section. */}
+              {!query && section && (
+                <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 10 }}>
+                  <button type="button" onClick={backToDashboard} style={{
+                    flexShrink: 0, padding: "6px 12px", borderRadius: 999,
+                    background: "transparent", color: T.textMid,
+                    border: `1px solid ${T.border}`, fontSize: 12, fontWeight: 700,
+                    cursor: "pointer", whiteSpace: "nowrap",
+                  }}>← Dashboard</button>
+                  <span style={{ fontSize: 12.5, color: T.textMuted, fontWeight: 600 }}>{SECTION[section]?.title}</span>
                 </div>
               )}
             </>
@@ -1245,68 +1496,13 @@ function FoundersInner({ user }) {
       <main style={{ maxWidth: 1100, margin: "0 auto", padding: "16px 16px 96px" }}>
         {tab === HOME ? (
           <div>
-            {query && (
-              <div style={{ fontSize: 12.5, color: T.textMuted, margin: "2px 0 12px", letterSpacing: 0.3 }}>
-                {results.length} {results.length === 1 ? "result" : "results"} for “{q.trim()}”
-              </div>
+            {query ? (
+              <SearchResults results={results} q={q} onOpen={onOpen} />
+            ) : section ? (
+              <SectionView sectionId={section} items={sectionItems} onOpen={onOpen} onBack={backToDashboard} />
+            ) : (
+              <Dashboard counts={counts} recent={recent} onOpenSection={openSection} onOpen={onOpen} />
             )}
-            {groups.length === 0 && (
-              <div style={{ padding: "32px 8px", textAlign: "center", color: T.textMuted, fontSize: 14 }}>
-                Nothing matches “{q.trim()}”. Try a page name (Today, Journal, Nutrition…) or a kind (demo, plan, brand).
-              </div>
-            )}
-            {groups.map((g) => {
-              const collapsible = COLLAPSED_BY_DEFAULT.has(g.name) && !query;
-              const isOpen = !collapsible || !collapsed.has(g.name);
-              // Archive AND Current sub-group by their ordered sub-list, with a "More"
-              // bucket for any entry without a listed sub so nothing is dropped.
-              const subOrder = g.name === CAT.ARCHIVE ? ARCHIVE_SUB_ORDER
-                : g.name === CAT.CURRENT ? CURRENT_SUB_ORDER : null;
-              const subSections = (() => {
-                if (!subOrder || !g.items.some((e) => e.sub)) return null;
-                const ordered = subOrder
-                  .map((sub) => ({ sub, items: g.items.filter((e) => e.sub === sub) }))
-                  .filter((s) => s.items.length);
-                const placed = new Set(ordered.flatMap((s) => s.items));
-                const rest = g.items.filter((e) => !placed.has(e));
-                if (rest.length) ordered.push({ sub: "More", items: rest });
-                return ordered;
-              })();
-              return (
-                <section key={g.name} id={slugify(g.name)} style={{ marginBottom: 26, scrollMarginTop: 132 }}>
-                  <button
-                    type="button"
-                    onClick={collapsible ? () => toggleGroup(g.name) : undefined}
-                    aria-expanded={collapsible ? isOpen : undefined}
-                    style={{
-                      display: "flex", alignItems: "center", gap: 8, width: "100%",
-                      background: "transparent", border: "none", padding: 0,
-                      cursor: collapsible ? "pointer" : "default", textAlign: "left",
-                    }}
-                  >
-                    {collapsible && (
-                      <span aria-hidden="true" style={{ color: T.gold, fontSize: 12, fontWeight: 700, transform: isOpen ? "rotate(90deg)" : "none", transition: "transform 0.15s ease" }}>▸</span>
-                    )}
-                    <SectionLabel>{g.name} · {g.items.length}{collapsible && !isOpen ? " · tap to show" : ""}</SectionLabel>
-                  </button>
-                  {!query && GROUP_BLURB[g.name] && (
-                    <div style={{ fontSize: 12.5, color: T.textMuted, lineHeight: 1.5, margin: "-4px 0 12px" }}>{GROUP_BLURB[g.name]}</div>
-                  )}
-                  {isOpen && (
-                    subSections ? (
-                      subSections.map((s) => (
-                        <div key={s.sub} style={{ marginBottom: 16 }}>
-                          <div style={{ fontSize: 11.5, fontWeight: 700, letterSpacing: 0.8, textTransform: "uppercase", color: T.gold, margin: "0 0 8px" }}>{s.sub}</div>
-                          <CardGrid items={s.items} onOpen={onOpen} />
-                        </div>
-                      ))
-                    ) : (
-                      <CardGrid items={g.items} onOpen={onOpen} />
-                    )
-                  )}
-                </section>
-              );
-            })}
           </div>
         ) : (
           <div>
@@ -1316,7 +1512,7 @@ function FoundersInner({ user }) {
               background: "transparent", border: "none", color: T.gold,
               fontSize: 13, fontWeight: 700, cursor: "pointer", padding: 0,
             }}>
-              ← {activeEntry ? `${activeEntry.group} · all sections` : "All sections"}
+              ← Back to {section ? SECTION[section]?.title : "dashboard"}
             </button>
             {detail}
           </div>
