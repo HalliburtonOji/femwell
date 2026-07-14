@@ -622,7 +622,7 @@ function DaySheet({ sheet, entries, onPick, onRunDay, onSmartShot, onCycle, onFr
       {/* FREE-TEXT — say it in your own words (not boxed into the presets) */}
       {onFreeEntry && (
         <div style={{ marginTop: 16 }}>
-          <div style={{ ...eyebrow, marginBottom: 6 }}>{isFuture ? "…or say what you're planning" : "…or say what happened"}</div>
+          <div style={{ ...eyebrow, marginBottom: 6 }}>{isFuture ? "Say what you're planning" : "Say it in your words"}</div>
           <div style={{ display: "flex", gap: 8 }}>
             <input value={free} onChange={(e) => setFree(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); submitFree(); } }}
               placeholder={isFuture ? "What are you planning?" : "What do you want to note?"}
@@ -1049,9 +1049,13 @@ function DayRunSheet({ sheet, onBack, onClose, onSave, onSmartShot }) {
     const list = [];
     for (const s of SECTIONS) {
       const v = data[s.id];
-      if (s.kind === "count") { if (v) list.push({ date, type: "water", plan: isFuture }); }
-      else if (s.kind === "scale") { if (v) list.push({ date, type: "mood", plan: false }); }
-      else (v || []).forEach(() => list.push({ date, type: s.id, plan: isFuture }));
+      if (s.kind === "count") { for (let i = 0; i < (v || 0); i++) list.push({ date, type: "water", plan: isFuture }); }
+      else if (s.kind === "scale") { if (v) list.push({ date, type: "mood", mood: v, plan: false }); }
+      else (v || []).forEach((val) => {
+        if (s.id === "meal") list.push({ date, type: "meal", title: val, meal_type: String(val).toLowerCase(), plan: isFuture });
+        else if (s.id === "symptom") list.push({ date, type: "symptom", title: val, symptoms: [val], plan: isFuture });
+        else list.push({ date, type: s.id, title: val, plan: isFuture });
+      });
     }
     if (list.length) onSave(list);
   };
@@ -1098,15 +1102,24 @@ function DayRunSheet({ sheet, onBack, onClose, onSave, onSmartShot }) {
               </div>
 
               {s.kind === "multi" && (
-                <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
-                  {s.opts.map((o) => {
-                    const on = (data[s.id] || []).includes(o);
-                    return (
-                      <button key={o} onClick={() => set(s.id, on ? (data[s.id] || []).filter((x) => x !== o) : [...(data[s.id] || []), o])}
-                        style={{ ...pill, cursor: "pointer", background: on ? s.tone : T.paperHi, color: on ? T.paper : T.muted, borderColor: on ? s.tone : T.paperDeep }}>{o}</button>
-                    );
-                  })}
-                </div>
+                <>
+                  <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+                    {[...s.opts, ...((data[s.id] || []).filter((o) => !s.opts.includes(o)))].map((o) => {
+                      const on = (data[s.id] || []).includes(o);
+                      return (
+                        <button key={o} onClick={() => set(s.id, on ? (data[s.id] || []).filter((x) => x !== o) : [...(data[s.id] || []), o])}
+                          style={{ ...pill, cursor: "pointer", background: on ? s.tone : T.paperHi, color: on ? T.paper : T.muted, borderColor: on ? s.tone : T.paperDeep }}>{o}</button>
+                      );
+                    })}
+                  </div>
+                  <div style={{ display: "flex", gap: 6, marginTop: 8 }}>
+                    <input value={draft[s.id] || ""} onChange={(e) => setDraft((p) => ({ ...p, [s.id]: e.target.value }))}
+                      onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addCustom(s.id); } }}
+                      placeholder="Add your own…"
+                      style={{ flex: 1, boxSizing: "border-box", padding: "8px 10px", borderRadius: 9, border: `1px solid ${T.paperDeep}`, background: T.paperHi, color: T.ink, fontFamily: SERIF, fontSize: 13.5, outline: "none" }} />
+                    <button onClick={() => addCustom(s.id)} disabled={!(draft[s.id] || "").trim()} style={{ ...ghostBtn, padding: "8px 12px", fontSize: 12, opacity: (draft[s.id] || "").trim() ? 1 : 0.4, cursor: (draft[s.id] || "").trim() ? "pointer" : "default" }}>Add</button>
+                  </div>
+                </>
               )}
 
               {s.kind === "count" && (
@@ -1139,8 +1152,8 @@ function DayRunSheet({ sheet, onBack, onClose, onSave, onSmartShot }) {
         })}
       </div>
 
-      {/* ONE save at the end — sticky to the sheet's bottom */}
-      <div style={{ position: "sticky", bottom: 0, paddingTop: 12, marginTop: 6, background: `linear-gradient(to top, ${T.paperHi} 74%, transparent)` }}>
+      {/* ONE save at the end — in-flow footer (sits at the end of the day's sections) */}
+      <div style={{ paddingTop: 14, marginTop: 8, borderTop: `1px solid ${T.paperDeep}` }}>
         <button onClick={save} disabled={total === 0} style={{ ...solidBtn, background: mode === "plan" ? "#A6862B" : T.crimson, opacity: total === 0 ? 0.45 : 1, cursor: total === 0 ? "default" : "pointer" }}>
           <Check size={15} style={{ marginRight: 7, verticalAlign: -2 }} />
           {mode === "plan" ? "Save the plan" : "Save the day"}{total > 0 ? ` · ${total} ${total === 1 ? "thing" : "things"}` : ""}
