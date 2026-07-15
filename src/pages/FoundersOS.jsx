@@ -621,6 +621,7 @@ function pageLabelOf(e) {
 // (docs) or `href` (routes). Add a line when you ship something new — or set
 // `added:"YYYY-MM-DD"` directly on the catalog entry — so it surfaces up top.
 const RECENT_DATES = {
+  "/LifestyleDeckDemo":     "2026-07-15",
   "/FloraCoverDemo":        "2026-07-14",
   "LifestyleAuditPlan":     "2026-07-14",
   "CommunityQA":            "2026-07-14",
