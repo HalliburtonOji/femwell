@@ -7,7 +7,10 @@ Deno.serve(async (req) => {
     if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
 
     const body = await req.json().catch(() => ({}));
-    const { mode = 'for_you', page = 0, page_size = 15 } = body;
+    // `phase` is an OPTIONAL soft ranking signal — the CLIENT sends only the derived cycle-phase
+    // label (e.g. "luteal"); no symptom/journal/cycle-day data is read or exposed here. Used only
+    // to gently boost content already tagged for that phase (privacy-safe personalisation).
+    const { mode = 'for_you', page = 0, page_size = 15, phase = '' } = body;
 
     // Get user lifestyle profile for personalization
     const [profiles, interactions] = await Promise.all([
@@ -70,6 +73,9 @@ Deno.serve(async (req) => {
 
       // User interest in category
       score += (catWeights[item.category] || 0) * 5;
+
+      // Gentle cycle-phase fit — boost content already tagged for her current phase (soft, optional).
+      if (phase && Array.isArray(item.phase_tags) && item.phase_tags.includes(phase)) score += 8;
 
       // Editor pick boost
       if (item.is_editor_pick) score += 20;

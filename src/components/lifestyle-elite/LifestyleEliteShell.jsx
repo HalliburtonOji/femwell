@@ -139,6 +139,7 @@ export default function LifestyleEliteShell() {
   const [horoscope, setHoroscope] = useState(null);// today's HoroscopeReading
   const [savedIds, setSavedIds] = useState([]);    // UserProfile.saved_item_ids (the SAVE field)
   const [skyNotes, setSkyNotes] = useState([]);    // recent SkyNote rows (real, persisted)
+  const [feed, setFeed] = useState(null);          // personalised reads from getLifestyleFeed (or null)
 
   // overlays
   const [calOpen, setCalOpen] = useState(false);
@@ -173,9 +174,13 @@ export default function LifestyleEliteShell() {
 
   const editorialPick = grouped.story[0] || grouped.article[0] || items[0] || null;
   const morePicks = useMemo(() => [grouped.article[0], grouped.video[0], grouped.audio[0]].filter(Boolean).slice(0, 2), [grouped]);
-  // featured "Reads for you" deck — fed from the reads this page already loads (articles + stories),
-  // normalised to the deck shape; empty → the deck's own seeded fallback (never empty).
-  const articleDeckItems = useMemo(() => [...(grouped.article || []), ...(grouped.story || [])].slice(0, 6).map(toDeckItem), [grouped]);
+  // featured "Reads for you" deck — PERSONALISED via getLifestyleFeed (ranked by her interests +
+  // interaction history + freshness + a gentle phase fit); falls back to the page's already-loaded
+  // reads if the feed is empty/unavailable, then to the deck's own seeded fallback (never empty).
+  const articleDeckItems = useMemo(() => {
+    const source = (feed && feed.length) ? feed : [...(grouped.article || []), ...(grouped.story || [])];
+    return source.slice(0, 6).map(toDeckItem);
+  }, [feed, grouped]);
   const savedItems = useMemo(() => (items || []).filter((i) => savedIds.includes(i.id)), [items, savedIds]);
   const isSaved = useCallback((id) => savedIds.includes(id), [savedIds]);
 
@@ -191,6 +196,27 @@ export default function LifestyleEliteShell() {
     setItems((Array.isArray(rows) ? rows : []).filter((i) => i && i.title));
     setStory((Array.isArray(st) ? st[0] : null) || null);
     setHoroscope((Array.isArray(ho) ? ho[0] : null) || null);
+  }, []);
+
+  // PERSONALISED reads — the existing getLifestyleFeed engine (interests + interaction history +
+  // freshness + diversity; privacy-safe — no symptom/journal/cycle-day data). `phase` is only the
+  // derived cycle-phase LABEL, a soft boost for content already tagged for that phase. Background,
+  // guarded; on any failure `feed` stays null and the deck uses the page's loaded reads.
+  const loadFeed = useCallback(async (phase) => {
+    try {
+      const res = await withTimeout(base44.functions.invoke("getLifestyleFeed", { mode: "for_you", page: 0, page_size: 12, phase: phase || "" }), 6000, "feed");
+      const rows = res?.data?.items || res?.items || [];
+      const reads = (Array.isArray(rows) ? rows : []).filter((r) => r && r.title && /ARTICLE|STORY|GUIDE|FICTION/.test(String(r.content_type || "").toUpperCase()));
+      if (reads.length) setFeed(reads);
+    } catch { /* leave feed null → deck falls back to loaded reads */ }
+  }, []);
+
+  // record a real action (open / save) so the feed LEARNS — fire-and-forget, never blocks UX,
+  // never records the seeded fallback (no raw id). Reuses recordLifestyleAction (existing fn).
+  const recordAction = useCallback((rawOrItem, action) => {
+    const raw = rawOrItem?.raw || rawOrItem;
+    if (!raw?.id || String(raw.id).startsWith("seed-") || String(raw.id).startsWith("gut-")) return;
+    try { base44.functions.invoke("recordLifestyleAction", { item_id: raw.id, action, category: raw.category || "", source_id: raw.source_id || raw.source_name || "" }).catch(() => {}); } catch { /* ignore */ }
   }, []);
 
   // recent sky notes for the signed-in user (real SkyNote rows — guarded, never blocks render)
@@ -222,22 +248,24 @@ export default function LifestyleEliteShell() {
     (async () => {
       try {
         const u = await base44.auth.me().catch(() => null); if (!alive) return; setUser(u);
+        let p = null;
         if (u?.id) {
           const profiles = await base44.entities.UserProfile.filter({ user_id: u.id }).catch(() => []);
           if (!alive) return;
-          const p = (profiles || []).filter(Boolean)[0] || null;
+          p = (profiles || []).filter(Boolean)[0] || null;
           setProfile(p);
           setSavedIds(Array.isArray(p?.saved_item_ids) ? p.saved_item_ids : []);
         }
         await loadContent();
         loadGutenberg();          // background — never blocks the loader
         loadSkyNotes(u?.id);      // background — real sky-diary rows
+        if (u?.id) loadFeed(getCurrentCyclePhase(p));  // background — personalised "Reads for you"
         try { unsubItems = base44.entities.LifestyleItems.subscribe(() => loadContent()); } catch { /* no-op */ }
       } catch { /* unauth / offline — render gracefully */ }
       if (alive) setLoading(false);
     })();
     return () => { alive = false; unsubItems?.(); };
-  }, [loadContent, loadGutenberg, loadSkyNotes]);
+  }, [loadContent, loadGutenberg, loadSkyNotes, loadFeed]);
 
   // ── SAVE toggle (persists to UserProfile.saved_item_ids — optimistic + rollback) ──
   const toggleSave = useCallback(async (item) => {
@@ -247,6 +275,7 @@ export default function LifestyleEliteShell() {
     const next = was ? savedIds.filter((x) => x !== id) : Array.from(new Set([...savedIds, id]));
     setSavedIds(next);                                  // optimistic
     flash(was ? "Removed from saved" : "Saved");
+    if (!was) recordAction(item, "save");               // teach the feed she liked this (on save only)
     if (!user?.id) { return; }                          // signed-out: optimistic only (no persistence path)
     try {
       // Use the profile already loaded at init — re-filtering here would be a redundant read that
@@ -262,7 +291,7 @@ export default function LifestyleEliteShell() {
       setSavedIds(savedIds);                            // rollback to prior set
       flash("Couldn't update — try again");
     }
-  }, [savedIds, user, profile]);
+  }, [savedIds, user, profile, recordAction]);
 
   // ── Sky diary → SkyNote.create (real persistence; optimistic + rollback) ──
   const addSkyNote = useCallback(async (text) => {
@@ -299,10 +328,11 @@ export default function LifestyleEliteShell() {
   // open the exact item full-screen (deep-link parity with live Lifestyle: LifestyleDetail / readers)
   const openItem = useCallback((it) => {
     if (!it) return;
+    recordAction(it, "open");   // teach the feed she opened this (fire-and-forget)
     if (it._book === "gutenberg") { window.location.assign(`/BookReader?gutenberg_id=${it._gutenbergId}`); return; }
     if (lfTypeOf(it) === "book") { window.location.assign(`/FictionReader?id=${it.id}`); return; }
     window.location.assign(`/LifestyleDetail?id=${it.id}`);
-  }, []);
+  }, [recordAction]);
 
   const jumpTo = (idx) => {
     setJumpOpen(false);
