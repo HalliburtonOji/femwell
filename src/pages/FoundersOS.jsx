@@ -113,6 +113,7 @@ import dmSpecHtml from "@/components/founders/brandDocs/community-dm-spec.html?r
 import communityQaHtml from "@/components/founders/brandDocs/community-final-qa.html?raw";
 import lifestyleAuditPlanHtml from "@/components/founders/brandDocs/lifestyle-audit-plan.html?raw";
 import lifestyleMotherboardHtml from "@/components/founders/brandDocs/lifestyle-motherboard.html?raw";
+import clipboardExpandHtml from "@/components/founders/brandDocs/clipboard-expand-cards.html?raw";
 // HealthCornerDemo was the multi-layout preview. The canonical health
 // experience now lives at /Health (src/pages/Health.jsx). The Health Corner
 // tab in /Ideas renders <HealthCornerRedirectCard /> instead.
@@ -430,6 +431,8 @@ const CATALOG = [
     title: "Flora header — fuller redesign (pick one)", desc: "6 fuller treatments of the flower header (FwFloraHero) — bouquet · branch · little tree · foliage nest · flowering bush · living wreath. No dashed ring; same real bloom (species + mood tint + companion bee); every style still reblooms on tap (bud→full). Pick one → folds into the bible as the canonical flora hero. Demo only." },
   { kind: "doc", key: "Card Styles", group: CAT.CURRENT, sub: "Card language plans", status: "new", accent: "gold",
     title: "Card Styles — 39 examples (new)", desc: "The GALLERY: 39 distinct card styles, every one a visual on-brand mock, grouped — bento mixed-size tiles · media/hero card + category carousel · category shelf · rich-stat card (progress ring + flora + inline actions + status badge + … menu) · dismissible suggestion · expandable · spotlight/stat-tile/letter · daily check-in · cycle wheel — all in our cream/flora/oxblood brand (not dark fintech). Cited research. Plan only; feeds a bible §6.7.0 update after approval." },
+  { kind:"route", href:"/ClipboardExpandDemo", group: CAT.CURRENT, sub:"Card language plans", status:"new", accent:"gold", added:"2026-07-16", title:"Cards — tap to expand ★", desc:"Tappable demo: a ClipboardSlider of flora-cover content cards (edge-peek + pager dots) → tap one → it expands into a full-screen detail card (big FloraCover · Fraunces title · inline play/pause player with a progress bar · warm detail rows · topic chips · rich body · sticky Save + primary action) with a smooth scale-fade expand + back/Esc/scrim to collapse. 7 content cards, 7 flora scenes; content-only (people/connection flagged for the DM rails). No writes; live pages untouched." },
+  { kind:"doc", key:"Tap-to-expand cards", group: CAT.CURRENT, sub:"Card language plans", status:"new", accent:"gold", added:"2026-07-16", title:"Tap-to-expand cards (browse → dive)", desc:"Breeze-inspired 'tap a card → it opens into a big rich detail page' on our ClipboardSlider, adapted to the FemWell brand for CONTENT (reads/listens/sessions/books/recipes/content-rooms/discover). Flora covers, Fraunces titles, inline player, topic chips, sticky actions, expand-animation options (scale-fade built · FLIP morph next). Hard-flagged: people/connection must run through the DM safety rails — demo stays on content." },
   { kind: "doc", key: "Today Mega-Plan", group: CAT.SPECS, accent: "gold",
     title: "Today — Mega-Plan", desc: "The full plan for the Today home surface." },
   { kind: "doc", key: "Journal", group: CAT.SPECS, accent: "gold",
@@ -1392,6 +1395,7 @@ function FoundersInner({ user }) {
       {tab === "CommunityQA" && <BrandDocFrame html={communityQaHtml} title="FemWell — Community: final QA + safety audit" />}
       {tab === "LifestyleAuditPlan" && <BrandDocFrame html={lifestyleAuditPlanHtml} title="FemWell — Lifestyle: deep audit + redesign & substance plan" />}
       {tab === "LifestyleMotherboard" && <BrandDocFrame html={lifestyleMotherboardHtml} title="FemWell — Lifestyle: the motherboard" />}
+      {tab === "Tap-to-expand cards" && <BrandDocFrame html={clipboardExpandHtml} title="FemWell — Tap-to-expand cards (browse → dive)" />}
       {tab === "Events Together" && <BrandDocFrame html={communityEventsHtml} title="FemWell — Together / Events: robust & safe" />}
       {tab === "Library Book Club" && <BrandDocFrame html={communityLibraryHtml} title="FemWell — Library / Book Club: robust" />}
       {tab === "Circles" && <BrandDocFrame html={communityCirclesHtml} title="FemWell — Circles: robust cohorts" />}
