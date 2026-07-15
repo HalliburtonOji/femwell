@@ -1,0 +1,311 @@
+<!-- Lifestyle — THE MOTHERBOARD. Exhaustive map + deep per-piece brainstorm + new pieces + rebuilt build order. 2026-07-15. Phone-readable, no emoji. Plan/brainstorm only — nothing built this pass. -->
+<style>
+  .mb { font-family: 'Inter', system-ui, sans-serif; color: #2E261B; background: #ECE7DA; max-width: 860px; margin: 0 auto; padding: 20px 15px 80px; line-height: 1.5; }
+  .mb h1 { font-family: 'Fraunces', Georgia, serif; font-size: 28px; color: #7A1A12; margin: 4px 0 4px; letter-spacing: -0.3px; }
+  .mb h2 { font-family: 'Fraunces', Georgia, serif; font-size: 21px; color: #0B0805; margin: 34px 0 8px; border-bottom: 2px solid #D8CFBC; padding-bottom: 5px; }
+  .mb h3 { font-family: 'Fraunces', Georgia, serif; font-size: 17px; color: #7A1A12; margin: 22px 0 4px; }
+  .mb h4 { font-size: 13px; font-weight: 800; color: #A8893F; text-transform: uppercase; letter-spacing: 0.6px; margin: 16px 0 5px; }
+  .mb p, .mb li { font-size: 14px; }
+  .mb .lead { font-size: 15px; }
+  .mb .box { background: #F4EFE3; border: 1px solid #D8CFBC; border-radius: 12px; padding: 12px 14px; margin: 11px 0; }
+  .mb .now { border-left: 5px solid #8FAF8F; } .mb .gap { border-left: 5px solid #BC2E27; }
+  .mb .warn { border-left: 5px solid #A8893F; } .mb .new { border-left: 5px solid #7A1A12; background:#F6EEE6; }
+  .mb .note { border-left: 5px solid #8E6E8E; }
+  .mb table { width: 100%; border-collapse: collapse; margin: 8px 0; font-size: 12.6px; }
+  .mb th { text-align: left; background: #E4DCC9; color: #0B0805; padding: 6px 8px; font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.4px; border-bottom: 2px solid #D8CFBC; }
+  .mb td { padding: 6px 8px; border-bottom: 1px solid #E0D8C6; vertical-align: top; }
+  .mb .tw { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .mb code { background: #E4DCC9; border-radius: 4px; padding: 1px 5px; font-size: 11.6px; font-family: ui-monospace, Menlo, monospace; }
+  .mb .tag { display: inline-block; font-size: 10px; font-weight: 800; padding: 2px 7px; border-radius: 999px; letter-spacing: 0.3px; text-transform: uppercase; white-space: nowrap; }
+  .mb .t-live { background: #8FAF8F; color: #fff; } .mb .t-thin { background: #A8893F; color: #fff; }
+  .mb .t-dark { background: #6B5E48; color: #fff; } .mb .t-new { background: #7A1A12; color: #fff; }
+  .mb .t-done { background: #5C7A52; color: #fff; } .mb .t-fn { background: #BC2E27; color: #fff; }
+  .mb .muted { color: #6B5E48; font-size: 12.4px; }
+  .mb .big { font-size: 15px; font-weight: 800; }
+  .mb .kicker { font-size: 11px; font-weight: 800; letter-spacing: 1px; text-transform: uppercase; color: #A8893F; }
+  .mb .pc { display:grid; grid-template-columns:auto 1fr; gap:4px 10px; margin:6px 0; }
+  .mb .pc b { color:#7A1A12; }
+  .mb ol.bo { counter-reset: s; list-style: none; padding-left: 0; }
+  .mb ol.bo > li { position: relative; padding: 9px 12px 9px 44px; margin: 8px 0; background: #F4EFE3; border: 1px solid #D8CFBC; border-radius: 11px; font-size: 13.5px; }
+  .mb ol.bo > li::before { counter-increment: s; content: counter(s); position: absolute; left: 9px; top: 9px; width: 25px; height: 25px; background: #7A1A12; color: #fff; border-radius: 999px; display: grid; place-items: center; font-weight: 800; font-size: 12px; }
+  .mb .done > li[data-done]::before { background:#5C7A52; }
+  .mb .track { font-family:'Fraunces',serif; font-size:15px; font-weight:600; color:#7A1A12; margin:16px 0 2px; }
+</style>
+<div class="mb">
+  <div class="kicker">FemWell · Lifestyle</div>
+  <h1>Lifestyle — the motherboard</h1>
+  <p class="muted">An exhaustive map of every part of Lifestyle, a deep focused brainstorm of each, brand-new whole-life pieces that should exist, and a rebuilt granular build order that supersedes the old thin plan. Plan/brainstorm only — nothing built this pass. 2026-07-15.</p>
+
+  <div class="box new">
+    <p class="big" style="margin:0 0 4px;">Orientation</p>
+    <p style="margin:0 0 6px;">Lifestyle is FemWell's <b>whole-life</b> room — "your life in bloom," not a content feed and not a cycle tracker with articles bolted on. Today it's a good skeleton running well below its potential: a flora hero, a SummaryCard, a (new, personalised) big-card <b>Reads</b> deck, and five clipboard boards — but most boards are one-line lists, two of the app's <b>richest readers are dark</b>, the whole-life domains (movement, rest, beauty, home, money, creativity, relationships, nature, joy) are barely present, and there's no daily reason-to-return ritual.</p>
+    <p style="margin:0;"><b>Already done &amp; LIVE</b> (pieces 1–4, this build stream): <span class="tag t-done">1 FloraCover</span> the in-app ecosystem cover system · <span class="tag t-done">2 Article deck</span> big-card showcase deck · <span class="tag t-done">3 Live drop-in</span> deck on the real page · <span class="tag t-done">4 Personalisation</span> getLifestyleFeed + recordLifestyleAction wired (interests + behaviour + gentle phase, privacy-safe). This doc plans <b>everything after</b>.</p>
+  </div>
+
+  <p class="lead"><b>Legend:</b> <span class="tag t-live">rich/live</span> <span class="tag t-thin">thin</span> <span class="tag t-dark">dark (built but unmounted)</span> <span class="tag t-new">new</span> <span class="tag t-done">done</span> <span class="tag t-fn">needs backend</span></p>
+
+  <!-- ============================================================= -->
+  <h2>A · The motherboard map — every part, labelled</h2>
+  <p class="muted">The live page is <code>LifestyleEliteShell.jsx</code> (routed at <code>/Lifestyle</code>). Top → bottom: 18 content "lenses" across 5 boards + a hero, a summary, the new deck, and 4 overlays. Here is every trace, what it does now, and the entity behind it.</p>
+
+  <h3>Band 0–2 — the top</h3>
+  <div class="tw"><table>
+    <tr><th>Part</th><th>What it does now</th><th>Data / entity</th><th>State</th></tr>
+    <tr><td><b>TopChrome</b> (Jump + Calendar)</td><td>Jump-to sheet (5 boards) + the shared calendar overlay.</td><td>—</td><td><span class="tag t-live">ok</span></td></tr>
+    <tr><td><b>FwFloraHero</b> + <b>Bouquet</b> + <b>phase pill</b></td><td>Phase-tinted flora hero, a static bouquet, a "menstrual · Day N · a slow inward day" pill.</td><td>UserProfile cycle</td><td><span class="tag t-thin">static</span></td></tr>
+    <tr><td><b>2 focus pills</b></td><td>"Today's chapter" (opens ChapterSheet) · "What do you have time for?" (jumps to board 0).</td><td>—</td><td><span class="tag t-thin">thin</span></td></tr>
+    <tr><td><b>SummaryCard</b></td><td>3 rows: today's chapter · your reading · your sky. Signal-driven glances.</td><td>DailyStory · items · HoroscopeReading</td><td><span class="tag t-live">ok</span></td></tr>
+    <tr><td><b>"Reads for you" deck</b></td><td>Big-card article deck: FloraCover + eyebrow + title + hook + save + read. Personalised via getLifestyleFeed; learns via recordLifestyleAction.</td><td>LifestyleItems · LifestyleProfile · LifestyleInteractions</td><td><span class="tag t-done">1–4 done</span></td></tr>
+  </table></div>
+
+  <h3>Band 3 — the five boards (18 lenses)</h3>
+  <div class="tw"><table>
+    <tr><th>Board</th><th>Lens</th><th>What it does now</th><th>Entity</th><th>State</th></tr>
+    <tr><td rowspan="2"><b>The good life</b></td><td>TimePickerLens</td><td>Dopamine menu: pick a time band (few/fifteen/evening) → a read + a listen + a make/awe prompt.</td><td>grouped content</td><td><span class="tag t-thin">shallow</span></td></tr>
+    <tr><td>PermissionLens</td><td>3 static "permission slips" + "book a quiet hour" → PlannerItems.</td><td>PlannerItems</td><td><span class="tag t-thin">static</span></td></tr>
+    <tr><td rowspan="4"><b>For you</b></td><td>ForYouLens</td><td>Editor's pick + 2 "more for you" rows.</td><td>LifestyleItems</td><td><span class="tag t-thin">not personalised here</span></td></tr>
+    <tr><td>SavedLens</td><td>The things she saved (from UserProfile.saved_item_ids).</td><td>UserProfile</td><td><span class="tag t-live">ok</span></td></tr>
+    <tr><td>TryThisLens</td><td>3 hardcoded try-this prompts → PlannerItems.</td><td>PlannerItems</td><td><span class="tag t-thin">3 static</span></td></tr>
+    <tr><td>PhasePicksLens</td><td>"For your phase" — a mix tuned to cycle phase.</td><td>grouped content</td><td><span class="tag t-thin">flat pick</span></td></tr>
+    <tr><td rowspan="4"><b>Read</b></td><td>ContentListLens (Articles)</td><td>Up to 5 article one-liners (cramped).</td><td>LifestyleItems</td><td><span class="tag t-thin">tiles</span></td></tr>
+    <tr><td>ContentListLens (Stories)</td><td>Up to 5 story one-liners.</td><td>LifestyleItems (STORY/FICTION)</td><td><span class="tag t-thin">tiles</span></td></tr>
+    <tr><td>BooksLens</td><td>Today's chapter chip + FemWell fiction + Gutendex public-domain books → readers.</td><td>DailyStory · LifestyleItems · gutendex</td><td><span class="tag t-live">real</span></td></tr>
+    <tr><td>GuidesLens</td><td>Short how-tos; mostly a static fallback.</td><td>LifestyleItems (GUIDE)</td><td><span class="tag t-thin">fallback</span></td></tr>
+    <tr><td rowspan="4"><b>Listen</b></td><td>MediaLens (Podcasts)</td><td>Real inline &lt;audio&gt; player (LifestyleMedia).</td><td>LifestyleItems (PODCAST)</td><td><span class="tag t-thin">little content</span></td></tr>
+    <tr><td>MediaLens (Videos)</td><td>Inline youtube-nocookie; 6 hardcoded clips stand in (live items carry no media URLs).</td><td>lifestyleVideos.js</td><td><span class="tag t-fn">no real video</span></td></tr>
+    <tr><td>TikTokLens</td><td>Trending link-outs + 3 static fallbacks.</td><td>LifestyleItems (TIKTOK)</td><td><span class="tag t-thin">static</span></td></tr>
+    <tr><td>ExternalLens</td><td>2 hardcoded external podcast shows.</td><td>hardcoded</td><td><span class="tag t-thin">2 static</span></td></tr>
+    <tr><td rowspan="4"><b>Story &amp; sky</b></td><td>DailyStoryLens</td><td>Static excerpt of today's chapter → ChapterSheet (excerpt only).</td><td>DailyStory</td><td><span class="tag t-thin">excerpt sheet</span></td></tr>
+    <tr><td>ADayLens</td><td>"A day for you" — 1 title + 4 static alts → PlannerItems.</td><td>PlannerItems</td><td><span class="tag t-thin">static</span></td></tr>
+    <tr><td>HoroscopeLens</td><td>Moon + phase + weather snippet → ReadingSheet (headline/narrative).</td><td>HoroscopeReading</td><td><span class="tag t-thin">shallow door</span></td></tr>
+    <tr><td>SkyDiaryLens</td><td>Real "sky diary" — write a note against the moon.</td><td>SkyNote</td><td><span class="tag t-live">real</span></td></tr>
+  </table></div>
+
+  <h3>Bands 4–5, overlays, states, and the DARK readers</h3>
+  <div class="tw"><table>
+    <tr><th>Part</th><th>What / status</th></tr>
+    <tr><td><b>"Handy right now" quick row (band 4)</b></td><td>— absent — the §6.8.2 one-line quick-jump row isn't built. <span class="tag t-new">missing</span></td></tr>
+    <tr><td><b>Closing pollinator + line</b></td><td>A drifting pollinator + a warm Cormorant line. <span class="tag t-live">ok</span></td></tr>
+    <tr><td><b>JumpSheet · CalendarOverlay</b></td><td>Board jump-to + the shared app calendar. <span class="tag t-live">ok</span></td></tr>
+    <tr><td><b>ChapterSheet</b></td><td>A static excerpt of today's chapter — NOT the real reader. <span class="tag t-thin">shallow</span></td></tr>
+    <tr><td><b>ReadingSheet</b></td><td>Horoscope headline + narrative + section pairs — NOT the full reader. <span class="tag t-thin">shallow</span></td></tr>
+    <tr><td><b>Loading state</b></td><td>"Tending your day…" spinner. <span class="tag t-live">ok</span></td></tr>
+    <tr><td><b>Empty states</b></td><td>Per-lens warm "lands here as it's published" lines (EmptyLine). <span class="tag t-live">ok, but generic</span></td></tr>
+    <tr><td><b>LifestyleDetail</b> (reader)</td><td>The rich magazine article reader (drop-cap, pull-quote, YT embed, related rail, ContentActionBar). Reachable by deep-link. <span class="tag t-live">rich</span></td></tr>
+    <tr><td><b>DailyStoryReader</b> (~2,000 lines)</td><td>The immersive Kindle-flip reader (pagination, movie mode, bookmarks, cliffhanger countdown). <b>NOT mounted</b> by the shell — only via Fiction/Book readers. <span class="tag t-dark">dark on the Story surface</span></td></tr>
+    <tr><td><b>HoroscopeTab</b> + <b>BirthDataSheet</b></td><td>The full ~15-section astrology reader (Triad · CycleMoonDial · RedWhiteMoon · AskTheSky · Compatibility · AnnualProfections …) + birth-chart onboarding. <b>NOT mounted</b> — birth-chart setup likely unreachable on the live page. <span class="tag t-dark">dark</span></td></tr>
+    <tr><td><b>FictionReader · BookReader · LifestyleMedia</b></td><td>FemWell-fiction reader · Gutenberg reader (schedule marks, cohort) · inline media player. Reachable. <span class="tag t-live">rich</span></td></tr>
+    <tr><td><b>DailyStoryReel</b> (on /Today)</td><td>Today-page teaser of the chapter; deep-links use stale <code>?tab=…&amp;open=</code> params the shell ignores → lands on default. <span class="tag t-fn">stale links</span></td></tr>
+  </table></div>
+
+  <h4>Entities behind Lifestyle (the silicon)</h4>
+  <p class="muted"><b>Content:</b> LifestyleItems · LifestyleSources · ContentItems/History/Bookmarks/Ratings · Deals/DealsItems. <b>Personalisation:</b> LifestyleProfile · LifestyleInteractions. <b>Story:</b> DailyStory · StoryPack · StoryItem · StoryVisualPool. <b>Books:</b> UserBook · Book · BookClubPick · WeeklyBookPick · BookContentCache. <b>Sky:</b> HoroscopeReading · HoroscopePersistedClassification · AstroProfile · SkyNote. <b>Cycle/plan:</b> UserProfile · PlannerItems · PhaseHistory · DailyPhaseBrief · CycleEvents. <b>Advice:</b> AdviceThreads/Messages/History. <b>~38 Lifestyle-domain functions</b> already exist (feed, ranking, story pipeline, horoscope, fiction, ingestion, voice/audio, images) — most are under-used by the front end.</p>
+
+  <!-- ============================================================= -->
+  <h2>B · Deep brainstorm — every piece, made rich</h2>
+  <p class="muted">For each part: <b>now → thin/broken → depth (real mechanics + content + craft) → additions → onboarding → return nudge → why she returns.</b> Brand-anchored (BRAND_IDENTITY §6.7 cards, §6.8.2 structure, §4–5 flora, §10 living ecosystem).</p>
+
+  <h3>The flora hero + phase pill</h3>
+  <div class="box">
+    <div class="pc"><b>Now</b><span>Phase-tinted hero + a separate static bouquet + a phase/day pill.</span><b>Thin</b><span>Static; a crowding second bouquet; no controller; doesn't do anything.</span></div>
+    <p style="margin:6px 0 0;"><b>Depth:</b> make it the §6.8.2 <b>tap-to-rebloom controller</b> — 5 whole-life destinations (Read · Listen · Story · Sky &amp; slow · Move/Feel) that rewrite the title, re-tint the colourway, and re-bloom one→many. The hero flower becomes <b>hers</b> (Bloomprint fingerprint) and shifts with the <b>season</b> and time of day (dawn/dusk light). Drop the second bouquet. <b>Return:</b> the hero visibly changes with her cycle/season/mood so the page feels alive and personal every open.</p>
+  </div>
+
+  <h3>The good life — TimePicker + Permission</h3>
+  <div class="box">
+    <div class="pc"><b>Now</b><span>Time-band picker (few/15/evening) → one read + listen + a make/awe prompt; static permission slips.</span><b>Thin</b><span>Picks are unranked; permission copy never changes.</span></div>
+    <p style="margin:6px 0 0;"><b>Depth:</b> rank the band picks through <code>getLifestyleFeed</code>; add a 4th band "a whole day" → routes to <b>"A day for you"</b>. Add a <b>mood switch</b> (cosy · adventurous · tender · bright) that recomposes picks + colourway. Rotate permission slips per load, phase-tinted, warm. Make "book a quiet hour" actually schedule + surface on Today with a bloom. <b>Return:</b> "what do I have time for right now" is the single most-useful daily question — becomes her go-to.</p>
+  </div>
+
+  <h3>For you — editorial · saved · try-this · phase</h3>
+  <div class="box">
+    <div class="pc"><b>Now</b><span>Editor pick + more; saved; 3 static try-this; phase mix.</span><b>Thin</b><span>Not personalised here (piece 4 only wired the deck); try-this is 3 hardcoded cycle-ish lines.</span></div>
+    <p style="margin:6px 0 0;"><b>Depth:</b> feed the whole board from the personalised engine; <b>Try this</b> becomes a rotating, <b>life-spanning</b> micro-action deck (a friendship text · a creative prompt · a joy dare · a rest permission · a money kindness) seeded per load, each a §6.7.6 quick-action that lands in Planner and grows a bloom. Saved → a real <b>Collections</b> surface ("my slow Sundays", "for the bath"). <b>Return:</b> a feed that visibly learns + tiny doable joys.</p>
+  </div>
+
+  <h3>Read — articles · stories · books · guides</h3>
+  <div class="box">
+    <div class="pc"><b>Now</b><span>Cramped one-line tiles (Articles/Stories); real Books; fallback Guides.</span><b>Thin</b><span>Tiles not big cards; Guides mostly static; no reading progress.</span></div>
+    <p style="margin:6px 0 0;"><b>Depth:</b> convert Articles + Stories to the <b>big-card deck</b> (piece 2/3 already proves it) with FloraCovers; give Guides real generated content (<code>generateFemwellContent</code>); add <b>reading progress</b> + "continue reading" from reader bookmarks; a proper <b>reading life</b> shelf (UserBook) with a "currently reading / want / finished" and a Book-Club tie. <b>Return:</b> her library remembers where she was; a beautiful shelf worth browsing.</p>
+  </div>
+
+  <h3>Listen — podcasts · videos · trending · external</h3>
+  <div class="box gap">
+    <div class="pc"><b>Now</b><span>Real audio player; 6 hardcoded videos (no real video content); static externals.</span><b>Broken</b><span>The whole video/podcast lane is placeholder — the biggest content hole.</span></div>
+    <p style="margin:6px 0 0;"><b>Depth:</b> run the existing ingestion (<code>ingestYouTubeChannels</code> → <code>summarizeLifestyleItem</code> embed-gate) so <b>real</b> videos/podcasts play in-card; add an <b>audio-first "Listen to your Lifestyle"</b> — a daily Jess audio digest (your chapter + your sky + a read, voiced via <code>generateAudio</code>); "walk-with-a-listen" pairings (a podcast + a route length). <b>Return:</b> hands-free Lifestyle for commutes/walks/chores.</p>
+  </div>
+
+  <h3>Story &amp; sky — daily story · a day for you · horoscope · sky diary</h3>
+  <div class="box gap">
+    <div class="pc"><b>Now</b><span>Static chapter excerpt; static "a day"; shallow horoscope door; real sky diary.</span><b>Dark</b><span>The immersive DailyStoryReader and the full HoroscopeTab (+ birth onboarding) are built but NOT mounted here.</span></div>
+    <p style="margin:6px 0 0;"><b>Depth:</b> open the <b>real DailyStoryReader</b> (flip, movie mode, <b>cliffhanger countdown-to-midnight</b>) from the Story tile — a proven daily-return hook; fix the Today reel deep-links so a tap lands on the right chapter. Mount the <b>full HoroscopeTab + BirthDataSheet</b> as the Sky door (Triad · CycleMoonDial · RedWhiteMoon · AskTheSky) and <b>fix the onboarding dead-end</b>. "A day for you" rotates + tints by season. Sky diary threads into the reader's SkyDiary. <b>Return:</b> a nightly chapter + a daily sky = two rituals with a reason to come back tomorrow.</p>
+  </div>
+
+  <h3>Cross-cutting: covers, empty states, motion, voice</h3>
+  <div class="box note">
+    <ul style="margin:0;">
+      <li><b>Covers:</b> FloraCover (done) everywhere a stock image was — articles, stories, books, the reel, LifestyleDetail hero. Retire stock across the domain.</li>
+      <li><b>Empty states:</b> replace generic "lands here" lines with warm, specific, <b>on-brand seeded</b> content so a new user never sees a hollow page (the deck's fallback pattern, everywhere).</li>
+      <li><b>Motion (§6.9):</b> hero one→many bloom on tap; gentle card-in on scroll; the pollinator drifts; reduced-motion safe. Never bouncy.</li>
+      <li><b>Voice (§10.5):</b> warm smart-friend, whole-life, never clinical; life-stage tints, never dominates.</li>
+    </ul>
+  </div>
+
+  <!-- ============================================================= -->
+  <h2>C · New pieces — the whole life, in bloom</h2>
+  <p class="muted">Lifestyle today serves ~2 domains (reads + sky). A true "your life in bloom" hub spans them all. Each new piece below is a board/lens or overlay in the same card language, whole-life, with a daily/weekly ritual. Backend flagged (most reuse <code>LifestyleItems</code> + a new category + existing fns; the 50-fn cap is already tight — <span class="tag t-fn">needs backend</span> means STOP-and-sign-off).</p>
+
+  <h3>Move — joyful movement, never a workout <span class="tag t-live">reuse</span></h3>
+  <div class="box new">
+    <p style="margin:0 0 5px;"><b>What:</b> short, joyful movement — a 3-min "shake it out", a stretch to one song, dance-in-the-kitchen, a walk-with-a-listen. <b>Energy-tuned</b> (low day → gentle sway; bright → playful), never calories/reps.</p>
+    <div class="pc"><b>Mechanics</b><span>"How's your energy?" → one movement + one pairing. A 1-tap "moved today" grows a bloom (no streak, no guilt).</span><b>Content</b><span>Curated movement clips = LifestyleItems VIDEO + a <code>movement</code> category; phase-aware.</span><b>Onboarding</b><span>"How do you like to move?" (walk/dance/stretch/gentle).</span><b>Return</b><span>Daily 1-tap bloom; a soft weekly "how you moved" recap. <b>Backend:</b> reuse LifestyleItems + PlannerItems — no new fn.</span></div>
+  </div>
+
+  <h3>Wind-down / Tonight — the evening companion <span class="tag t-live">reuse</span></h3>
+  <div class="box new">
+    <p style="margin:0 0 5px;"><b>What:</b> after dusk the page offers a <b>Tonight</b> door — a wind-down ritual (tea · no-phone · a page · a sleep story), a "put the day down" one-line, a dim/quiet mode, a luteal slow-mode.</p>
+    <div class="pc"><b>Mechanics</b><span>Time-of-day trigger (~her set wind-down hour) → a calming reader/audio; a nightly "how did today land?".</span><b>Content</b><span>Sleep stories = fiction + <code>generateAudio</code> (exist); calming reads.</span><b>Onboarding</b><span>"What time do you wind down?" sets the dusk trigger.</span><b>Return</b><span>A nightly ritual; "nights tended" garden growth. <b>Backend:</b> reuse voice fns + DailyStory; optional <code>LifestyleRitual</code> entity <span class="tag t-fn">flag</span> (or reuse PlannerItems).</span></div>
+  </div>
+
+  <h3>Mirror — beauty, style, self-image <span class="tag t-live">reuse</span></h3>
+  <div class="box new">
+    <p style="margin:0 0 5px;"><b>What:</b> a "glow in 5", a season/phase capsule wardrobe, outfit-from-your-closet prompts, and a <b>kind-mirror</b> self-image line (the app's warmth, not a beauty-standard feed).</p>
+    <div class="pc"><b>Mechanics</b><span>"What's the day?" → an outfit vibe + a 5-min glow + a kind mirror affirmation.</span><b>Content</b><span>Beauty/style reads + clips = <code>beauty</code> category; seasonal edits.</span><b>Onboarding</b><span>"Your style in three words."</span><b>Return</b><span>Daily glow; seasonal wardrobe refresh. <b>Backend:</b> reuse LifestyleItems.</span></div>
+  </div>
+
+  <h3>Nest — home &amp; cosy <span class="tag t-live">reuse</span></h3>
+  <div class="box new">
+    <p style="margin:0 0 5px;"><b>What:</b> a 10-min tidy reset, "make one corner nice", seasonal home rituals, plant care, cosy-ify.</p>
+    <div class="pc"><b>Mechanics</b><span>A daily "one small thing" home mission → done blooms; a seasonal "nest for autumn" set.</span><b>Return</b><span>Daily tiny win; seasonal refresh. <b>Backend:</b> reuse LifestyleItems + PlannerItems.</span></div>
+  </div>
+
+  <h3>Money, gently — shame-free money life <span class="tag t-fn">flag</span></h3>
+  <div class="box new">
+    <p style="margin:0 0 5px;"><b>What:</b> a monthly "money date" (10 mins, a cuppa, the numbers), a <b>joy-spend</b> celebration, a no-spend-day gentle log, money-mindset reads. Warm, never budgeting software, never a leak of real bank data.</p>
+    <div class="pc"><b>Mechanics</b><span>Monthly prompt + a "one joy-spend this week" + reads.</span><b>Onboarding</b><span>"Money makes me feel ___" (kind reframing).</span><b>Return</b><span>Monthly date; weekly joy-spend. <b>Backend:</b> reads reuse LifestyleItems; a light money-date log → PlannerItems or a tiny <code>MoneyMoment</code> entity <span class="tag t-fn">flag</span>. No real financial data handled (privacy).</span></div>
+  </div>
+
+  <h3>Make — creativity &amp; hobbies <span class="tag t-fn">flag</span></h3>
+  <div class="box new">
+    <p style="margin:0 0 5px;"><b>What:</b> a daily creative prompt, a <b>streak-free maker's log</b> ("finish one thing"), craft/art/BookTok discovery, a private "made this" gallery that grows a maker's garden.</p>
+    <div class="pc"><b>Mechanics</b><span>Daily prompt → optional photo/note → the gallery grows.</span><b>Onboarding</b><span>"What do you like to make?"</span><b>Return</b><span>Daily prompt; the growing gallery. <b>Backend:</b> prompts seeded/rotated; "made this" → reuse Journal, or a <code>MakerLog</code> entity <span class="tag t-fn">flag</span>.</span></div>
+  </div>
+
+  <h3>Kindred — relationships &amp; friendship <span class="tag t-fn">flag</span></h3>
+  <div class="box new">
+    <p style="margin:0 0 5px;"><b>What:</b> a weekly "tend one relationship" nudge (text a friend / plan a date), a date-idea &amp; friend-date shuffle, love-language reads, a gentle "who to reach out to." Ties into Community.</p>
+    <div class="pc"><b>Mechanics</b><span>Weekly nudge → done blooms; an idea shuffle.</span><b>Onboarding</b><span>"Who do you want to stay close to?" (private, optional).</span><b>Return</b><span>Weekly tending; the shuffle. <b>Backend:</b> reads reuse LifestyleItems; a private "people to tend" list → a <code>KindredNote</code> entity or reuse Journal <span class="tag t-fn">flag</span>.</span></div>
+  </div>
+
+  <h3>Outside — nature &amp; awe <span class="tag t-live">reuse</span></h3>
+  <div class="box new">
+    <p style="margin:0 0 5px;"><b>What:</b> a daily <b>awe drop</b> ("notice one beautiful thing"), a living almanac (moon/season/garden), birdsong/nature audio, a "touch grass" nudge, seasonal foraging notes.</p>
+    <div class="pc"><b>Mechanics</b><span>Daily awe prompt → a one-line "what I noticed" (reuses SkyNote/Journal); nature audio to play.</span><b>Return</b><span>Daily awe; seasonal shifts. <b>Backend:</b> reuse SkyNote + LifestyleItems audio.</span></div>
+  </div>
+
+  <h3>Curious — learning &amp; growth <span class="tag t-live">reuse</span></h3>
+  <div class="box new">
+    <p style="margin:0 0 5px;"><b>What:</b> learn-one-thing-a-day, a "rabbit hole of the week", short skill sprints, talks/documentaries.</p>
+    <div class="pc"><b>Mechanics</b><span>A daily idea + a "go deeper" read; a weekly rabbit hole.</span><b>Return</b><span>Daily curiosity. <b>Backend:</b> reuse LifestyleItems (<code>learning</code>); daily facts via <code>generateFemwellContent</code>.</span></div>
+  </div>
+
+  <h3>Delight — joy, fun, entertainment <span class="tag t-fn">flag</span></h3>
+  <div class="box new">
+    <p style="margin:0 0 5px;"><b>What:</b> a <b>delight menu</b>, games (ties to Community games), a guilty-pleasure watch list, a "what made you laugh" log, and a <b>joy jar</b> she visibly fills.</p>
+    <div class="pc"><b>Mechanics</b><span>A daily delight; the joy jar fills (a jar/garden motif); watch/laugh logs.</span><b>Return</b><span>The filling jar; daily delight. <b>Backend:</b> joy jar → reuse Journal tags, or a <code>JoyMoment</code> entity <span class="tag t-fn">flag</span>.</span></div>
+  </div>
+
+  <h3>The Almanac — living seasonal + lunar ritual <span class="tag t-live">reuse</span></h3>
+  <div class="box new">
+    <p style="margin:0 0 5px;"><b>What:</b> a living almanac — the <b>month's theme</b>, the moon's phase, the season's mood, equinox/solstice rituals, "a season of you." <b>Astra</b> as a daily companion. Rides existing signals (like the Omen feature) — no new engine.</p>
+    <div class="pc"><b>Mechanics</b><span>A rotating seasonal header + a ritual of the week, tying horoscope + phase + season.</span><b>Return</b><span>The season shifts under her; a monthly theme to belong to. <b>Backend:</b> reuse horoscope/astro + a seasonal content set — no new fn.</span></div>
+  </div>
+
+  <h3>Becoming — identity &amp; self-expression <span class="tag t-live">reuse</span></h3>
+  <div class="box new">
+    <p style="margin:0 0 5px;"><b>What:</b> a "who am I becoming" thread, a values/manifesto surface, a "this is me this season" self-portrait (her Bloomprint flora avatar).</p>
+    <div class="pc"><b>Mechanics</b><span>A gentle seasonal self-check → a line that becomes part of her garden.</span><b>Return</b><span>A mirror of her own growth. <b>Backend:</b> reuse Journal + Bloomprint/Garden.</span></div>
+  </div>
+
+  <h4>Connective-tissue new pieces</h4>
+  <div class="tw"><table>
+    <tr><th>Piece</th><th>What</th><th>Backend</th></tr>
+    <tr><td><b>Collections — "my shelves"</b></td><td>She curates her own boards ("slow Sundays", "reads for the bath", "when I can't sleep") from any content.</td><td><code>LifestyleCollection</code> entity <span class="tag t-fn">flag</span></td></tr>
+    <tr><td><b>Mood presets</b></td><td>Pick a mood (cosy/adventurous/tender/bright) → the page recomposes picks + colourway.</td><td>reuse feed + colourway <span class="tag t-live">reuse</span></td></tr>
+    <tr><td><b>Audio-first digest</b></td><td>"Listen to your Lifestyle" — a daily Jess audio (chapter + sky + a read), voiced.</td><td>reuse <code>generateAudio</code>/<code>generateVoiceScript</code>; a small digest assembler <span class="tag t-fn">maybe fn</span></td></tr>
+    <tr><td><b>"Your week in bloom" — the Sunday letter</b></td><td>A weekly editorial digest recapping what she read/felt/did + growing her garden — a soft ritual + retention loop.</td><td><code>generateLifestyleDigest</code> fn <span class="tag t-fn">flag hard (50-fn cap)</span></td></tr>
+    <tr><td><b>Garden growth tie (Bloomprint)</b></td><td>Lifestyle engagement grows her personal flora/garden — the reward that isn't a streak.</td><td>reuse Garden/Bloomprint <span class="tag t-live">reuse</span></td></tr>
+  </table></div>
+
+  <!-- ============================================================= -->
+  <h2>D · Brand anchor, backend flags &amp; the rebuilt build order</h2>
+
+  <h4>Brand anchor</h4>
+  <p style="margin:0 0 6px;">Every piece builds to <b>BRAND_IDENTITY.md</b>: the §6.8.2 canonical page template (top chrome → flora hero + controller cards → glance⇆Jess row → clipboard boards → handy row → closing); the §6.7 card language (typed cards, hook + line + inline action, no dumb containers, FloraCover on top); §6.7.6 quick-action popups for micro-tasks; §4–5 flora + §10 living ecosystem (fauna, seasons, the soulful whole-life voice); one calendar overlay (§6.8.1). Cards are big and considered, never cramped tiles.</p>
+
+  <div class="box gap">
+    <p class="big" style="margin:0 0 4px;">Backend flags (50-fn cap — currently ~118 fn dirs; add nothing without sign-off)</p>
+    <ul style="margin:0;">
+      <li><b>Reuse, no new backend:</b> restore readers, personalise boards, de-hardcode/rotate, Move, Mirror, Nest, Outside, Curious, Almanac, Becoming, Mood presets, Garden tie, real media (existing ingestion fns).</li>
+      <li><b>New ENTITY (small, no fn) — sign-off:</b> <code>LifestyleCollection</code> (my shelves) · optional <code>LifestyleRitual</code> / <code>MakerLog</code> / <code>KindredNote</code> / <code>JoyMoment</code> / <code>MoneyMoment</code> (several could reuse Journal instead — prefer reuse).</li>
+      <li><b>New FUNCTION — hard flag:</b> <code>generateLifestyleDigest</code> (the Sunday letter) and possibly an audio-digest assembler. Given the cap, prefer riding existing weekly/voice fns or a cron already present; do NOT add without explicit sign-off.</li>
+    </ul>
+  </div>
+
+  <h4>The rebuilt build order — small, well-finished pieces (supersedes the old thin plan)</h4>
+  <p class="muted">Grouped in tracks; each numbered item is one small piece built to a high finish, one at a time. Pieces 1–4 are done &amp; live.</p>
+
+  <div class="track">Done &amp; live</div>
+  <ol class="bo done">
+    <li data-done><b>FloraCover</b> — in-app ecosystem cover system. <span class="tag t-done">live</span></li>
+    <li data-done><b>Article deck</b> — big-card showcase deck. <span class="tag t-done">live</span></li>
+    <li data-done><b>Live drop-in</b> — deck on the real /Lifestyle. <span class="tag t-done">live</span></li>
+    <li data-done><b>Personalisation</b> — getLifestyleFeed + recordLifestyleAction wired (interests + behaviour + gentle phase). <span class="tag t-done">live</span></li>
+  </ol>
+
+  <div class="track">Track A — restore &amp; deepen what exists (high ROI, mostly no backend)</div>
+  <ol class="bo" start="5">
+    <li><b>Daily Story reader restore</b> — mount the real DailyStoryReader from the Story tile (flip, cliffhanger countdown) + fix the Today reel deep-links.</li>
+    <li><b>Horoscope reader + birth onboarding restore</b> — mount HoroscopeTab + BirthDataSheet as the Sky door; fix the onboarding dead-end.</li>
+    <li><b>Real media lane</b> — run ingestion so real videos/podcasts play in-card (retire the 6 hardcoded clips).</li>
+    <li><b>De-hardcode + rotate</b> — Try this · A day for you · Guides · permission slips · external pods become rotating, life-spanning, real.</li>
+    <li><b>Personalise the whole "For you" board</b> — extend the feed beyond the deck (editor pick, phase picks) + collections-ready Saved.</li>
+    <li><b>Read board → big cards</b> — Articles + Stories decks with FloraCovers; reading progress + continue-reading; a real reading-life shelf.</li>
+  </ol>
+
+  <div class="track">Track B — bring the page to the §6.8.2 canonical structure</div>
+  <ol class="bo" start="11">
+    <li><b>Whole-life controller cards + rebuilt hero</b> — 5 tap-to-rebloom destinations; drop the crowding bouquet.</li>
+    <li><b>glance ⇆ Jess row</b> — a rotating per-load <code>lifestyleJessSummary</code> digest + an upward inner sheet.</li>
+    <li><b>"Handy right now" quick row</b> — the §6.8.2 one-line quick-jump band.</li>
+    <li><b>Assemble LifestyleV2Shell + flip</b> — compose the bands, keep every board, one-line route flip (revert kept).</li>
+  </ol>
+
+  <div class="track">Track C — the whole-life expansion (each a small, finished board/lens)</div>
+  <ol class="bo" start="15">
+    <li><b>Move</b> — joyful movement.</li>
+    <li><b>Tonight / Wind-down</b> — the evening companion + sleep stories.</li>
+    <li><b>Mirror</b> — beauty, style, kind self-image.</li>
+    <li><b>Nest</b> — home &amp; cosy.</li>
+    <li><b>Make</b> — creativity &amp; the maker's log.</li>
+    <li><b>Kindred</b> — relationships &amp; friendship.</li>
+    <li><b>Outside</b> — nature &amp; awe + the almanac.</li>
+    <li><b>Curious</b> — learning &amp; growth.</li>
+    <li><b>Delight</b> — joy, fun &amp; the joy jar.</li>
+    <li><b>Money, gently</b> — shame-free money life. <span class="tag t-fn">entity sign-off</span></li>
+    <li><b>Becoming</b> — identity &amp; self-expression.</li>
+  </ol>
+
+  <div class="track">Track D — connective tissue (the loops that make her return)</div>
+  <ol class="bo" start="26">
+    <li><b>Collections — "my shelves"</b> — she curates her own boards. <span class="tag t-fn">entity</span></li>
+    <li><b>Mood presets</b> — pick a mood → the page recomposes.</li>
+    <li><b>Audio-first digest</b> — "listen to your Lifestyle."</li>
+    <li><b>"Your week in bloom"</b> — the Sunday letter + garden growth. <span class="tag t-fn">fn sign-off</span></li>
+    <li><b>Garden-growth tie</b> — Lifestyle engagement grows her Bloomprint flora.</li>
+  </ol>
+
+  <p class="muted" style="margin-top:18px;"><b>Sequencing note:</b> Track A first (restores dark richness + fills the media hole with almost no backend), then Track B (structure), then Track C one domain at a time (each a shippable board), Track D last (the retention loops). Every piece: build small → Ms Atelier craft → Ms Verify → drop onto live → next. <b>Nothing is stripped; everything is reversible.</b></p>
+
+  <p class="muted" style="margin-top:12px;">Plan/brainstorm only — no code changed this pass. Reference: <code>LifestyleEliteShell.jsx</code> · BRAND_IDENTITY.md §6.7–6.8.2 / §4–5 / §10 · the ~38 existing Lifestyle functions · pieces 1–4 (FloraCover · Article deck · live drop-in · personalisation).</p>
+</div>
