@@ -3,7 +3,8 @@
 > Per CLAUDE.md Standing Rule #1: every plan/brainstorm ships as a phone-readable styled-HTML doc to `C:\Users\Halli\femwell-handoff\` **and** is linked into the FoundersOS "Ideas" page so Halli reaches it via the floating IDEAS pill (never a dead route).
 > Mechanism (established): copy the HTML into `src/components/founders/brandDocs/<slug>.html`, `import …?raw` in `FoundersOS.jsx`, add a `{ kind:"doc", key:"…" }` CATALOG entry, and a `{tab === "…" && <BrandDocFrame html={…} title="…" />}` render branch. Then build + `npx base44 site deploy -y`.
 
-## ⭐ TO WIRE — Tap-to-expand cards (browse → dive) DOC + DEMO (2026-07-16, flora session) → Ideas → Current
+## ✅ WIRED (2026-07-16, code) — Tap-to-expand cards (browse → dive) DOC + DEMO (2026-07-16, flora session) → Ideas → Current
+> WIRED into `FoundersOS.jsx` (import + doc CATALOG `Tap-to-expand cards` + BrandDocFrame branch + route CATALOG `/ClipboardExpandDemo`), commit `0ae10f2`, built `index-aNLtFfYT.js`. ⛔ NOT yet deployed — `npx base44 site deploy -y` auth expired ("You need to login first"); needs `base44 login` then re-deploy. Nothing to re-wire.
 > Side exploration (parallel to Lifestyle): a Breeze-inspired "browse a card carousel → tap a card → it expands into a big rich full-screen detail card" interaction on our ClipboardSlider, adapted FULLY to the FemWell brand and kept to CONTENT (reads/listens/sessions/books/recipes/content-rooms/discover) — NO dating, NO photos, NO people-swiping (that stays behind the DM safety rails, flagged in the doc). Flora covers, Fraunces titles, inline player, topic chips, sticky actions, smooth scale-fade expand + back-to-collapse. Doc + a live demo both need wiring; this flora session can't safely edit `FoundersOS.jsx`.
 >
 > Use `sub:"Card language plans"` (files under the card-language section) + `added:"2026-07-16"` so it surfaces in "New & recently added".
