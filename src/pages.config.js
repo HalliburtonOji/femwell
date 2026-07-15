@@ -156,6 +156,11 @@ import TodayRitualDemo from './pages/TodayRitualDemo';
 // presence in Community (3 disclosure tiers), and her Profile/Today avatar. Reads real Garden data
 // (companion + milestones + chapters) with a seeded fallback. Preview route; live pages untouched.
 import BloomprintDemo from './pages/BloomprintDemo';
+// CLIPBOARD TAP-TO-EXPAND — a Breeze-inspired "browse cards → tap → big rich detail card"
+// interaction on our ClipboardSlider, adapted fully to the FemWell brand for CONTENT (reads/
+// listens/sessions/books/recipes/circles/discover) — flora covers, inline player, sticky
+// actions, smooth expand/collapse. Preview route; live pages untouched.
+import ClipboardExpandDemo from './pages/ClipboardExpandDemo';
 import FloraCoverDemo from './pages/FloraCoverDemo';
 import LifestyleDeckDemo from './pages/LifestyleDeckDemo';
 // Garden + Jess redesign DEMOS (v4 bible: flora-hero + summary + living-ecosystem clipboard /
@@ -371,6 +376,7 @@ export const PAGES = {
     "TodayOption2": TodayOption2,
     "TodayRitualDemo": TodayRitualDemo,
     "BloomprintDemo": BloomprintDemo,
+    "ClipboardExpandDemo": ClipboardExpandDemo,
     "FloraCoverDemo": FloraCoverDemo,
     "LifestyleDeckDemo": LifestyleDeckDemo,
     "GardenClipboardDemo": GardenClipboardDemo,

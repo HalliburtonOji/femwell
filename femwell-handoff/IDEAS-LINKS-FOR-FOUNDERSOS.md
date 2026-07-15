@@ -3,6 +3,25 @@
 > Per CLAUDE.md Standing Rule #1: every plan/brainstorm ships as a phone-readable styled-HTML doc to `C:\Users\Halli\femwell-handoff\` **and** is linked into the FoundersOS "Ideas" page so Halli reaches it via the floating IDEAS pill (never a dead route).
 > Mechanism (established): copy the HTML into `src/components/founders/brandDocs/<slug>.html`, `import …?raw` in `FoundersOS.jsx`, add a `{ kind:"doc", key:"…" }` CATALOG entry, and a `{tab === "…" && <BrandDocFrame html={…} title="…" />}` render branch. Then build + `npx base44 site deploy -y`.
 
+## ⭐ TO WIRE — Tap-to-expand cards (browse → dive) DOC + DEMO (2026-07-16, flora session) → Ideas → Current
+> Side exploration (parallel to Lifestyle): a Breeze-inspired "browse a card carousel → tap a card → it expands into a big rich full-screen detail card" interaction on our ClipboardSlider, adapted FULLY to the FemWell brand and kept to CONTENT (reads/listens/sessions/books/recipes/content-rooms/discover) — NO dating, NO photos, NO people-swiping (that stays behind the DM safety rails, flagged in the doc). Flora covers, Fraunces titles, inline player, topic chips, sticky actions, smooth scale-fade expand + back-to-collapse. Doc + a live demo both need wiring; this flora session can't safely edit `FoundersOS.jsx`.
+>
+> Use `sub:"Card language plans"` (files under the card-language section) + `added:"2026-07-16"` so it surfaces in "New & recently added".
+
+**(a) The DOC** — phone HTML `femwell-handoff/CLIPBOARD-EXPAND-CARDS.html` → copied to `brandDocs/clipboard-expand-cards.html`.
+
+| Doc | brandDocs slug | key | group | accent |
+|---|---|---|---|---|
+| CLIPBOARD-EXPAND-CARDS.html | clipboard-expand-cards.html | "Tap-to-expand cards" | Current | gold |
+
+Wiring (3 edits):
+- import: `import clipboardExpandHtml from "@/components/founders/brandDocs/clipboard-expand-cards.html?raw";`
+- CATALOG entry: `{ kind:"doc", key:"Tap-to-expand cards", group: CAT.CURRENT, sub:"Card language plans", status:"new", accent:"gold", added:"2026-07-16", title:"Tap-to-expand cards (browse → dive)", desc:"Breeze-inspired 'tap a card → it opens into a big rich detail page' on our ClipboardSlider, adapted to the FemWell brand for CONTENT (reads/listens/sessions/books/recipes/content-rooms/discover). Flora covers, Fraunces titles, inline player, topic chips, sticky actions, expand-animation options (scale-fade built · FLIP morph next). Hard-flagged: people/connection must run through the DM safety rails — demo stays on content." }`
+- render branch: `{tab === "Tap-to-expand cards" && <BrandDocFrame html={clipboardExpandHtml} title="FemWell — Tap-to-expand cards (browse → dive)" />}`
+
+**(b) The DEMO route** — `/ClipboardExpandDemo` (already registered in `pages.config.js` + `src/pages/ClipboardExpandDemo.jsx`). Add ONE catalog entry to Ideas → **Current**:
+> `{ kind:"route", href:"/ClipboardExpandDemo", group: CAT.CURRENT, sub:"Card language plans", status:"new", accent:"gold", added:"2026-07-16", title:"Cards — tap to expand ★", desc:"Tappable demo: a ClipboardSlider of flora-cover content cards (edge-peek + pager dots) → tap one → it expands into a full-screen detail card (big FloraCover · Fraunces title · inline play/pause player with a progress bar · warm detail rows · topic chips · rich body · sticky Save + primary action) with a smooth scale-fade expand + back/Esc/scrim to collapse. 7 content cards, 7 flora scenes; content-only (people/connection flagged for the DM rails). No writes; live pages untouched." }`
+
 > **⚙️ DASHBOARD REBUILD (2026-07-14) — this wiring path is UNCHANGED, and adding an entry is now easier.** FoundersOS is now an app-in-app DASHBOARD (section tiles + prominent search + a "New & recently added" rail) instead of one long scroll. **You do NOT need to touch any dashboard/section code** — a new CATALOG entry auto-lands in the right dashboard section, derived from its existing `group` + `sub` (see the `sectionOf()` / `SUB_TO_SECTION` map near the top of `FoundersOS.jsx`). Just keep using a `sub:` that already exists (e.g. `"Page level-up plans + demos"`, `"QA & safety"`, `"Data hygiene"`, `"Calendar + logger plans"`, `"Identity & garden"`, `"Cross-app plans & decisions"`, `"Card language plans"`, `"Brand + card language"`). Two extras: (1) to make it surface at the TOP under "New & recently added", either set `added:"YYYY-MM-DD"` on the entry OR add one line to the `RECENT_DATES` map. (2) if the entry is a Community-program doc under `"Page level-up plans + demos"`, add its `key`/`href` to `COMMUNITY_KEYS`/`COMMUNITY_HREFS` so it files under the "Community program" tile rather than "Page level-ups"; otherwise no change needed. Search already indexes title/desc/group/sub/href, so a new entry is findable immediately.
 
 ## ✅ WIRED (2026-07-15) — Lifestyle "THE MOTHERBOARD" — exhaustive map + deep brainstorm + new pieces (2026-07-15, Lifestyle session) → Ideas → Current

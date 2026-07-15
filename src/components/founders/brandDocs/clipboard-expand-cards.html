@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="en-GB"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>FemWell — Tap-to-expand cards (browse → dive)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500;1,600&family=Fraunces:opsz,wght@9..144,400;9..144,600&family=Ephesis&display=swap" rel="stylesheet">
+<style>
+  :root{--paper:#ECE7DA;--paperHi:#F4EFE3;--paperDeep:#D8CFBC;--ink:#0B0805;--inkSoft:#1A140D;--muted:#2E261B;--gold:#A8893F;--crimson:#BC2E27;--oxblood:#7A1A12;--blush:#E8B4B8;--sage:#8FAF8F;--plum:#8E6E8E;--serif:'Cormorant Garamond',Georgia,serif;--fraunces:'Fraunces',var(--serif);--script:'Ephesis',cursive;--sans:ui-sans-serif,system-ui,-apple-system,'Segoe UI',sans-serif;}
+  *{box-sizing:border-box}
+  body{margin:0;background:radial-gradient(120% 80% at 12% 0%,#F4EFE3 0%,rgba(244,239,227,0) 55%),radial-gradient(120% 90% at 100% 100%,#E4DDCC 0%,rgba(228,221,204,0) 50%),var(--paper);color:var(--ink);font-family:var(--serif);font-size:18px;line-height:1.6;-webkit-font-smoothing:antialiased}
+  .doc{max-width:680px;margin:0 auto;padding:28px 22px 90px}
+  h1.cover{font-family:var(--script);font-size:58px;color:var(--oxblood);margin:6px 0 2px;line-height:1}
+  h2{font-family:var(--fraunces);font-weight:600;font-size:27px;color:var(--oxblood);margin:0 0 4px}
+  h3{font-family:var(--serif);font-weight:600;font-size:21px;color:var(--oxblood);margin:18px 0 6px}
+  .eyebrow{font-family:var(--sans);font-size:12px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--gold);margin-bottom:10px}
+  p{margin:0 0 12px}.lede{font-size:20px;line-height:1.55;font-style:italic}
+  small,.cap{font-family:var(--sans);font-size:13px;color:var(--muted);line-height:1.5}
+  b,strong{font-weight:600}
+  .section{background:var(--paperHi);border:1px solid var(--paperDeep);border-left:4px solid var(--gold);border-radius:20px;padding:22px 20px;margin:18px 0;box-shadow:0 4px 20px rgba(58,44,26,.10),0 1px 4px rgba(58,44,26,.06)}
+  .section.crimson{border-left-color:var(--crimson)}.section.sage{border-left-color:var(--sage)}.section.plum{border-left-color:var(--plum)}
+  .section.prop{border-left-color:#C98A2E;border-left-style:dashed;background:#F6EEDD}
+  table{width:100%;border-collapse:collapse;font-size:14px;font-family:var(--sans);margin:8px 0}
+  th,td{text-align:left;padding:7px 8px;border-bottom:1px solid var(--paperDeep);vertical-align:top}
+  th{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--gold)}
+  td b{font-family:var(--serif);font-size:15px}
+  ul{margin:2px 0 12px;padding-left:20px}li{margin:5px 0}
+  .badge{display:inline-block;font-family:var(--sans);font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;padding:3px 9px;border-radius:999px;background:#DDE7DD;color:#3f6b3f;vertical-align:middle}
+  .divider{display:flex;align-items:center;gap:12px;margin:28px 0 6px}.divider .ln{flex:1;height:2px;background:#C98A2E;opacity:.5}.divider .lb{font-family:var(--sans);font-size:13px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:#8E5B14}
+  .foot{font-family:var(--sans);font-size:12px;color:var(--muted);text-align:center;margin-top:30px;line-height:1.6}
+  .mock{background:var(--paper);border:1px solid var(--paperDeep);border-radius:14px;padding:14px;margin:12px 0}
+</style></head>
+<body><div class="doc">
+
+<div style="text-align:center;padding:14px 0 4px">
+  <div class="eyebrow">Side exploration · Card interaction · 16 Jul 2026</div>
+  <h1 class="cover">Browse, then dive</h1>
+  <p class="lede" style="max-width:470px;margin:8px auto 0">A "tap a card → it opens into a whole rich page" interaction for our sliding clipboard — Breeze's expand pattern, made unmistakably FemWell and kept to <b>content</b>.</p>
+</div>
+
+<div class="section">
+  <div class="eyebrow">The idea</div>
+  <h2>A carousel you browse, and cards that open all the way up.</h2>
+  <p>Breeze (the dating app) does one thing beautifully: a horizontal carousel of cards with pager dots, and when you tap a card it <b>expands into a full-screen detail card</b> — a big cover, a title, an inline "anthem" player, detail rows, interest chips, and sticky primary actions. The <em>motion</em> and <em>information shape</em> are lovely. We take those, and drop the dating entirely.</p>
+  <p>In FemWell it becomes: a <b>ClipboardSlider of flora-cover content cards</b> → tap one → it opens into a beautiful page with a <b>FloraCover</b> hero, a <b>Fraunces</b> title, an <b>inline player</b> (a story/session that plays in the card), warm <b>detail rows</b>, <b>topic chips</b>, and <b>sticky actions</b> (Save · Play · Open) — with a smooth expand and a back to collapse. Same premium feel; no people, no photos, no swiping.</p>
+</div>
+
+<div class="section crimson">
+  <div class="eyebrow" style="color:var(--crimson)">The hard line — read this</div>
+  <h2>This pattern is for CONTENT. Not people.</h2>
+  <p>The reference is a <em>dating</em> app, so the temptation is "cards of women you tap to open." <b>We do not do that here.</b> People &amp; connection in FemWell live behind the <b>safety rails</b> — anonymity by default, k-anon presence, no cold-DMs, consent-gated messaging, report/block, screened-for-kindness. A tap-to-open "profile card" would bulldoze all of that.</p>
+  <p><b>So this demo stays on content:</b> reads, listens, guided sessions, books, recipes, and <em>content rooms</em> (a topic circle you peek into, not a person). If we ever want this shape for connection, it's a separate build that <b>routes every open + action through the DM/connection rails</b> — flagged, not assumed.</p>
+</div>
+
+<div class="divider"><span class="ln"></span><span class="lb">Where it fits</span><span class="ln"></span></div>
+
+<div class="section sage">
+  <h2>Seven honest homes for it (all content).</h2>
+  <table>
+    <tr><th>Surface</th><th>The card → the dive</th></tr>
+    <tr><td><b>Lifestyle · Read</b></td><td>essays &amp; long-reads — tap → the article opens with a cover, byline row, chips, and "Read this".</td></tr>
+    <tr><td><b>Lifestyle · Listen</b></td><td>sleep stories &amp; audio — tap → an <b>inline player</b> (the anthem equivalent) plays in the page.</td></tr>
+    <tr><td><b>Programs · Sessions</b></td><td>guided resets/meditations — tap → a session page with an inline player + "Begin".</td></tr>
+    <tr><td><b>Book club</b></td><td>this month's pick — tap → cover, blurb, "a room reading along", "Open the reader".</td></tr>
+    <tr><td><b>Nutrition · Recipes</b></td><td>tonight's recipe — tap → hero, time/one-pan rows, chips, "Cook this".</td></tr>
+    <tr><td><b>Community · Content rooms</b></td><td>a <em>topic</em> circle (Slow Sunday) as a card — tap → "this week's prompt" + the anonymity note + "Peek inside". (Still rails; it's a room, not a person.)</td></tr>
+    <tr><td><b>Today · Discover</b></td><td>a daily "small wonder" — tap → a one-minute delight. The browse-y front door to everything above.</td></tr>
+  </table>
+  <p class="cap">It elevates the clipboard from "cards that link out" to "cards that <b>contain</b> a whole experience" — the open feels like arriving, not navigating away. Great for a <b>Discover</b>/for-you rail that spans life domains.</p>
+</div>
+
+<div class="divider"><span class="ln"></span><span class="lb">The expand animation</span><span class="ln"></span></div>
+
+<div class="section">
+  <h2>Three ways to open — and what I built.</h2>
+  <table>
+    <tr><th>Option</th><th>Feel</th><th>Cost</th></tr>
+    <tr><td><b>A · Scale-fade overlay</b> <span class="badge">built</span></td><td>the page fades + scales up (0.96→1) from centre, cover animates in. Premium, calm, GPU-cheap.</td><td>Low. Reduced-motion safe (snaps).</td></tr>
+    <tr><td><b>B · Shared-element FLIP</b></td><td>the tapped card <em>morphs</em> — its cover grows into the full-screen hero (most "magic", closest to Breeze).</td><td>Higher — measure card rect, animate to full-screen, reconcile. Worth it if this becomes core.</td></tr>
+    <tr><td><b>C · Slide-up sheet</b></td><td>the detail rises from the bottom like a sheet.</td><td>Low, but reads as "a sheet", not "the card became a page".</td></tr>
+  </table>
+  <p>I shipped <b>A</b> for the demo — it delivers ~90% of the feeling at a fraction of the complexity, and it's reduced-motion-safe. <b>B (FLIP)</b> is the upgrade if Halli wants the true card-morph; noted as the next step, not built.</p>
+  <h3>The rest of the polish</h3>
+  <ul>
+    <li><b>Edge-peek + pager dots</b> — the carousel shows a sliver of the next card and a dot rail (reusing <code>ClipboardSlider</code>), so it reads as "there's more".</li>
+    <li><b>Inline player</b> — a real play/pause with a progress bar that fills over the run-time (simulated in the demo; wires to real audio later). This is the reference's "anthem", reframed as a story/session.</li>
+    <li><b>Sticky actions</b> — Save + one primary (Play/Read/Begin/Cook/Open) pinned to the bottom over a cream fade, always reachable.</li>
+    <li><b>Brand, not dating</b> — FloraCover scenes (no stock photos), Fraunces/Cormorant/Ephesis type, oxblood titles, meaning-blooms + a drifting pollinator, cream paper world.</li>
+  </ul>
+</div>
+
+<div class="section prop">
+  <div class="eyebrow" style="color:#8E5B14">Shipped this pass <span class="badge">demo</span></div>
+  <h2 style="color:#8E5B14">A working demo — reachable, tappable.</h2>
+  <p>Live at <b>Ideas pill → Current → "Cards — tap to expand ★"</b> (route <code>/ClipboardExpandDemo</code>). Slide the carousel (peek + dots), tap any card → it expands into the full page (cover · Fraunces title · inline player on the listen/session cards · detail rows · topic chips · rich body · sticky Save + primary action) → back/Esc/tap-scrim to collapse. Seven content cards, seven flora scenes; no writes, live pages untouched.</p>
+  <h3>If we take it further</h3>
+  <ul>
+    <li><b>FLIP morph</b> (option B) for the true card-becomes-page magic.</li>
+    <li>Wire real content (Lifestyle reads/listens, Programs sessions, book-club, recipes) + real audio into the inline player.</li>
+    <li>A <b>Discover</b> rail on Today that pulls one card from each domain.</li>
+    <li><b>Only if pointed at people:</b> a separate, rails-first build — never this demo repurposed.</li>
+  </ul>
+</div>
+
+<div class="foot">
+  FemWell · Tap-to-expand cards (browse → dive) · side exploration · 16 Jul 2026<br>
+  Reuses <code>ClipboardSlider</code> + <code>FloraCover</code> + the card language. Content-only by design; people &amp; connection stay behind the DM safety rails.
+</div>
+
+</div></body></html>
