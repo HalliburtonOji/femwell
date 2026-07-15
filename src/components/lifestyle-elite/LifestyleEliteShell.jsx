@@ -32,6 +32,7 @@ import {
 } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import LifestyleMedia from "@/components/lifestyle-elite/LifestyleMedia";
+import LifestyleArticleDeck, { toDeckItem } from "@/components/lifestyle/LifestyleArticleDeck";
 import { LIFESTYLE_VIDEOS } from "@/data/lifestyleVideos";
 import { T, SERIF, UI, PAPER_BG, Eyebrow } from "@/components/journal/Editorial";
 import { FwFloraHero } from "@/components/brand/PageTop";
@@ -172,6 +173,9 @@ export default function LifestyleEliteShell() {
 
   const editorialPick = grouped.story[0] || grouped.article[0] || items[0] || null;
   const morePicks = useMemo(() => [grouped.article[0], grouped.video[0], grouped.audio[0]].filter(Boolean).slice(0, 2), [grouped]);
+  // featured "Reads for you" deck — fed from the reads this page already loads (articles + stories),
+  // normalised to the deck shape; empty → the deck's own seeded fallback (never empty).
+  const articleDeckItems = useMemo(() => [...(grouped.article || []), ...(grouped.story || [])].slice(0, 6).map(toDeckItem), [grouped]);
   const savedItems = useMemo(() => (items || []).filter((i) => savedIds.includes(i.id)), [items, savedIds]);
   const isSaved = useCallback((id) => savedIds.includes(id), [savedIds]);
 
@@ -381,7 +385,21 @@ export default function LifestyleEliteShell() {
           <button onClick={() => jumpTo(0)} className="fw-elite-press" style={focusPill(plum)}><Clock size={16} /> What do you have time for?</button>
         </div>
 
-        <div ref={sliderRef} style={{ marginTop: 16, position: "relative" }}>
+        {/* featured READS — the big-card article deck (piece 3): FloraCover + hook + save + open.
+            Fed by the reads this page already loads; graceful seeded fallback so it's never empty.
+            The full "Read" board below (Articles · Stories · Books · Guides) stays intact. */}
+        <div style={{ marginTop: 20 }}>
+          <LifestyleArticleDeck
+            label="Reads for you"
+            items={articleDeckItems}
+            onOpen={(it) => openItem(it.raw || it)}
+            onSave={(it) => toggleSave(it.raw || it)}
+            isSaved={(it) => isSaved(it.id)}
+            maxItems={5}
+          />
+        </div>
+
+        <div ref={sliderRef} style={{ marginTop: 20, position: "relative" }}>
           <SliderArrows sliderRef={sliderRef} />
           <ClipboardSlider hint="Slide your shelf →" accent={gold}>
 

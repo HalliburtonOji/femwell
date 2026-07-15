@@ -33,8 +33,9 @@ const FALLBACK = [
   { id: "seed-move", type: "article", category: "movement & nature", title: "Ten minutes outside, no phone", eyebrow: "Body · 2 min", hook: "The smallest reset there is — and the one your nervous system keeps asking for." },
 ];
 
-// normalise a real LifestyleItems row → the deck's item shape
-function normalise(row) {
+// normalise a real LifestyleItems row → the deck's item shape (exported so the live
+// Lifestyle shell can feed the deck from the content it already loads)
+export function toDeckItem(row) {
   const ct = String(row.content_type || "").toUpperCase();
   const type = ct === "FICTION" ? "story" : ct === "STORY" ? "story" : ct === "GUIDE" ? "guide" : "article";
   const mins = row.duration_label || (row.read_minutes ? `${row.read_minutes} min` : "");
@@ -71,14 +72,19 @@ export default function LifestyleArticleDeck({
         const arr = (Array.isArray(rows) ? rows : [])
           .filter((r) => r && r.title && /ARTICLE|STORY|GUIDE|FICTION/.test(String(r.content_type || "").toUpperCase()))
           .slice(0, maxItems)
-          .map(normalise);
+          .map(toDeckItem);
         setLoaded(arr.length ? arr : FALLBACK.slice(0, maxItems));
       } catch { if (alive) setLoaded(FALLBACK.slice(0, maxItems)); }
     })();
     return () => { alive = false; };
   }, [itemsProp, maxItems]);
 
-  const items = useMemo(() => (itemsProp || loaded || FALLBACK).slice(0, maxItems), [itemsProp, loaded, maxItems]);
+  // itemsProp with content → use it; itemsProp empty (shell has no reads yet) → seeded
+  // fallback (never empty); no itemsProp → the self-loaded set (or its fallback).
+  const items = useMemo(() => {
+    const base = (itemsProp && itemsProp.length) ? itemsProp : (itemsProp ? FALLBACK : (loaded || FALLBACK));
+    return base.slice(0, maxItems);
+  }, [itemsProp, loaded, maxItems]);
 
   const isSaved = useCallback((it) => (isSavedProp ? isSavedProp(it) : !!localSaved[it.id]), [isSavedProp, localSaved]);
   const onSave = useCallback((it) => {
