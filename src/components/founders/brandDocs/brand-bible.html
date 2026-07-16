@@ -230,6 +230,27 @@
     <tr><td><b>Tick a ritual</b></td><td>a confirm + optional note → ticks</td></tr>
   </table>
   <p class="cap">Quick-popup for short <i>do</i> tasks; the full-screen deep-link (the exact item) for long-form <i>consume</i> (a book, a programme session). On completion the source item ticks gently; writes ride existing actions — <b>no new function.</b></p>
+
+  <h4>The clipboard board — StackedCard × tap-to-expand <span class="badge ag">Agreed · 2026-07-16</span></h4>
+  <p><b>This is how the clipboard houses content, app-wide.</b> The clipboard is <b>multiple horizontally-sliding boards</b> (never one lone board). <b>Each board</b> is one big clipboard card in the <b>StackedCard</b> structure: split <b>top</b> and <b>bottom</b> by the quiet <b>gold hairline</b>, and <b>each half is its own horizontal sub-slider</b> of cover-cards — <b>edge-peek + pager dots + subtle ‹ › arrows</b>, never a vertical whole-card swap. A board = a theme; its two halves = two related shelves (Articles ⁄ Books, Reads ⁄ Listens, Sessions ⁄ Series, Tonight ⁄ This week).</p>
+  <p><b>Browse → dive.</b> Swipe a half to browse; <b>tap any cover → it opens into the full-screen detail card</b> — big flora cover · Fraunces title · typed blocks · <b>sticky Save + one primary action</b> — with a smooth <b>scale-fade expand</b> and back / Esc / tap-scrim to collapse. The swipe and the tap-to-open must feel <b>identical in every half and every board</b>: one learned gesture, everywhere.</p>
+
+  <h4>The card set — ten types, one language</h4>
+  <p>Every content type rides the <em>same</em> cover→expand. The type drives the eyebrow, icon, colourway (which carries meaning) and flora scene; the <b>blocks</b> render only when the item has them. Add a <b>block</b>, never a bespoke detail page.</p>
+  <table>
+    <tr><th>Type</th><th>Opens with</th><th>Action</th></tr>
+    <tr><td><b>Article / essay</b></td><td>body prose (+ optional narrated player)</td><td>Read this</td></tr>
+    <tr><td><b>Book</b></td><td>author + an excerpt</td><td>Talk about it · Open reader</td></tr>
+    <tr><td><b>Audio / podcast</b></td><td>inline player + show notes</td><td>Open episode</td></tr>
+    <tr><td><b>Guided session</b></td><td>voiced player + “what you'll do”</td><td>Begin</td></tr>
+    <tr><td><b>Daily story</b></td><td>today's excerpt</td><td>Read today's chapter</td></tr>
+    <tr><td><b>Video</b></td><td>inline player (video framing)</td><td>Watch</td></tr>
+    <tr><td><b>Ritual / practice</b></td><td>numbered steps</td><td>Begin</td></tr>
+    <tr><td><b>Quote / affirmation</b></td><td>a big pull-quote</td><td>Set as today's</td></tr>
+    <tr><td><b>Horoscope / almanac</b></td><td>an almanac reading (hope-only)</td><td>Read your reading</td></tr>
+    <tr><td><b>Recipe</b></td><td>ingredients + method</td><td>Cook this</td></tr>
+  </table>
+  <p><small><b>Hard rules.</b> Covers are <b>flora, never photos</b> (the scene + colourway come from the item's category). Uniform sizes on a row. Each half slides <b>horizontally</b>; the gold hairline separates them. <b>One expand everywhere</b> — add a block, not a new card. Every card carries a real hook + an inline action, and the open deep-links the <b>exact</b> item. <b style="color:var(--crimson)">Content only</b> — pointed at people or connection this pattern must run through the <b>DM / connection safety rails</b> (consent-gated messaging, anonymity by default, report/block); never repurpose these cards for people. Code: <code>brand/expandCards.jsx</code> (<code>CoverCard</code> · <code>ExpandDetailCard</code> · <code>CARD_TYPES</code> · <code>resolveCard</code> · <code>SAMPLE_CARDS</code>). See <code>/CardVariationsDemo</code>, <code>/StackedExpandDemo</code>.</small></p>
 </div>
 
 <a id="page"></a>

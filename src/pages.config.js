@@ -165,6 +165,10 @@ import ClipboardExpandDemo from './pages/ClipboardExpandDemo';
 // card split into TOP (articles) + BOTTOM (books) halves by the gold hairline, each a horizontal
 // peek sub-slider → tap any cover → the shared full-screen expand. Preview route; live untouched.
 import StackedExpandDemo from './pages/StackedExpandDemo';
+// THE CARD SET (§6.7.1) — every content type the clipboard houses (article · book · audio ·
+// session · daily story · video · ritual · quote · horoscope · recipe) on the ONE shared
+// cover→expand pattern. Driven by CARD_TYPES + SAMPLE_CARDS in brand/expandCards.jsx.
+import CardVariationsDemo from './pages/CardVariationsDemo';
 import FloraCoverDemo from './pages/FloraCoverDemo';
 import LifestyleDeckDemo from './pages/LifestyleDeckDemo';
 // Garden + Jess redesign DEMOS (v4 bible: flora-hero + summary + living-ecosystem clipboard /
@@ -382,6 +386,7 @@ export const PAGES = {
     "BloomprintDemo": BloomprintDemo,
     "ClipboardExpandDemo": ClipboardExpandDemo,
     "StackedExpandDemo": StackedExpandDemo,
+    "CardVariationsDemo": CardVariationsDemo,
     "FloraCoverDemo": FloraCoverDemo,
     "LifestyleDeckDemo": LifestyleDeckDemo,
     "GardenClipboardDemo": GardenClipboardDemo,

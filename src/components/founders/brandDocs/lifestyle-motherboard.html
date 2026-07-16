@@ -45,6 +45,31 @@
   <p class="lead"><b>Legend:</b> <span class="tag t-live">rich/live</span> <span class="tag t-thin">thin</span> <span class="tag t-dark">dark (built but unmounted)</span> <span class="tag t-new">new</span> <span class="tag t-done">done</span> <span class="tag t-fn">needs backend</span></p>
 
   <!-- ============================================================= -->
+  <div class="box new">
+    <p class="big" style="margin:0 0 4px;">A0 · THE BOARD STANDARD — how the clipboard houses all of this <span class="tag t-done">approved 2026-07-16</span></p>
+    <p style="margin:0 0 8px;"><b>Halli-approved and folded into BRAND_IDENTITY §6.7.7.</b> This is the structure the Lifestyle rebuild organises everything into — it supersedes the current one-line-list boards. Components are built + exported and ready to consume: <code>src/components/brand/expandCards.jsx</code>. Reference demos: <code>/CardVariationsDemo</code> · <code>/StackedExpandDemo</code> · <code>/ClipboardExpandDemo</code>.</p>
+    <p style="margin:0 0 8px;"><b>1 · The clipboard is MULTIPLE horizontally-SLIDING boards.</b> The main slider is <b>horizontal</b> — you swipe sideways between boards (edge-peek + pager dots + ‹ › arrows). It is <b>never one lone board</b>, and never a vertical stack of everything. Each board = a <b>theme</b>.</p>
+    <p style="margin:0 0 8px;"><b>2 · Each board is ONE big card in the StackedCard structure.</b> Split <b>top</b> / <b>bottom</b> by the quiet <b>gold hairline</b>; <b>each half is its own horizontal sub-slider</b> of cover-cards (edge-peek + dots + subtle arrows) — never a vertical whole-card swap. So one board carries <b>two related shelves</b>: e.g. <b>Read: Articles ⁄ Books</b> · <b>Listen: Podcasts ⁄ Videos</b> · <b>Story &amp; sky: Daily story ⁄ Almanac</b> · <b>The good life: Rituals ⁄ Recipes</b>.</p>
+    <p style="margin:0 0 8px;"><b>3 · Tap any cover → the full-screen detail card.</b> Big FloraCover · Fraunces title · typed blocks · sticky <b>Save + one primary action</b>; scale-fade expand, back/Esc/scrim to collapse. <b>Identical in every half and every board</b> — one learned gesture.</p>
+    <p style="margin:0 0 8px;"><b>4 · These cards HOUSE the content that's currently scattered.</b> Today's Lifestyle spreads 18 thin lenses across 5 boards, with the richest readers dark. In the standard, every one of those becomes a <b>typed cover-card in the right half of the right board</b>, and its depth lives in the <b>expand</b> (or deep-links the real reader). That's the organising move: <i>fewer, richer boards; the depth is one tap in, not one line out.</i></p>
+    <p style="margin:0;"><b>5 · The VARIATION SET is the standard</b> (§6.7.7 · <code>CARD_TYPES</code>). Every content type rides the same cover→expand; the <code>type</code> drives eyebrow/icon/colourway/flora scene + the default action, and typed <b>blocks</b> render only when the item carries them — <b>add a block, never a bespoke detail page</b>:</p>
+    <table style="margin-top:8px">
+      <tr><th>Type</th><th>Opens with</th><th>Action</th><th>Lifestyle home</th></tr>
+      <tr><td><b>article</b></td><td>body prose (+ optional narrated player)</td><td>Read this</td><td>Read ▸ top</td></tr>
+      <tr><td><b>book</b></td><td>author + an excerpt</td><td>Talk about it · Open reader</td><td>Read ▸ bottom</td></tr>
+      <tr><td><b>audio</b></td><td>inline player + show notes</td><td>Open episode</td><td>Listen ▸ top</td></tr>
+      <tr><td><b>video</b></td><td>inline player (video framing)</td><td>Watch</td><td>Listen ▸ bottom</td></tr>
+      <tr><td><b>daily_story</b></td><td>today's excerpt</td><td>Read today's chapter</td><td>Story &amp; sky ▸ top → the real DailyStoryReader</td></tr>
+      <tr><td><b>horoscope</b></td><td>an almanac reading (hope-only)</td><td>Read your reading</td><td>Story &amp; sky ▸ bottom → the full HoroscopeTab</td></tr>
+      <tr><td><b>session</b></td><td>voiced player + “what you'll do”</td><td>Begin</td><td>The good life / Programs</td></tr>
+      <tr><td><b>ritual</b></td><td>numbered steps</td><td>Begin</td><td>The good life ▸ top</td></tr>
+      <tr><td><b>recipe</b></td><td>ingredients + method</td><td>Cook this</td><td>The good life ▸ bottom / Nutrition</td></tr>
+      <tr><td><b>quote</b></td><td>a big pull-quote</td><td>Set as today's</td><td>For you ▸ a line to keep</td></tr>
+    </table>
+    <p style="margin:8px 0 0;"><small><b>Rules that hold:</b> covers are <b>flora, never photos</b> (FloraCover picks scene+colourway from the item's category) · uniform sizes on a row · halves slide <b>horizontally</b>, gold hairline between · every card has a real hook + an inline action, and the open deep-links the <b>exact</b> item. <b style="color:#BC2E27">Content only</b> — pointed at people/connection this pattern must run through the <b>DM safety rails</b>; never repurpose these cards for people.</small></p>
+  </div>
+
+  <!-- ============================================================= -->
   <h2>A · The motherboard map — every part, labelled</h2>
   <p class="muted">The live page is <code>LifestyleEliteShell.jsx</code> (routed at <code>/Lifestyle</code>). Top → bottom: 18 content "lenses" across 5 boards + a hero, a summary, the new deck, and 4 overlays. Here is every trace, what it does now, and the entity behind it.</p>
 

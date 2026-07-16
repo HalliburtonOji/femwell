@@ -515,6 +515,42 @@ FemWell's motion is **calm and organic** — the feel comes from slow ease + the
 - **Quick-popup vs full-screen deep-link (when to use which):** use the **quick-action popup** for short *DO* tasks (answer / log / tick / short-write / short-read). Use the §6.7.4 **full-screen deep-link** for long-form *CONSUME* (open a book in the reader, a programme session, a full article) — that opens the EXACT item full-screen. Never make a quick task a navigation; never make a full read a cramped popup.
 - **Brand:** Cormorant/Ephesis, one flora accent (a meaning-bloom that grows on completion), no emoji, reduced-motion-safe. Build on the existing sheet/loggers (e.g. `SmartLoggerV4`/`UniversalLogger`/`CheckinModal` patterns) + existing dispatchers.
 
+### 6.7.7 THE CLIPBOARD BOARD — StackedCard × TAP-TO-EXPAND + THE CARD SET (✅ AGREED · Halli 2026-07-16) · v1
+> **This is how the clipboard houses content, app-wide.** Halli-approved from `/StackedExpandDemo` + `/CardVariationsDemo`. Code: **`src/components/brand/expandCards.jsx`** (the card language) + `ClipboardSlider`/`StackedCard` (§6.10). **Import these — never hand-roll a cover card or a detail page.**
+
+**THE BOARD (what a clipboard card IS).** The clipboard is **MULTIPLE horizontally-SLIDING boards** (the main slider is horizontal — never one lone board). **Each board** = ONE big clipboard card in the **StackedCard** structure (§6.10.2): split into a **TOP** and a **BOTTOM** half by the **quiet gold hairline**; **each half is its own HORIZONTAL sub-slider** of cover-cards (**edge-peek + pager dots + subtle ‹ › arrows**) — never a vertical whole-card swap. Real card chrome (gradient paper wash, 1px paperDeep, soft double shadow, corner sprig, the gold "clip"). A board = a THEME; its two halves = two related shelves (e.g. **Articles / Books**, Reads / Listens, Sessions / Series, Tonight / This week).
+
+**THE INTERACTION (browse → dive).** **Swipe** a half sideways to browse; **TAP any cover → it opens into the full-screen `ExpandDetailCard`** — big `FloraCover` · **Fraunces** title · typed blocks · **sticky Save + one primary action** — with a **scale-fade expand** (opacity + `scale(.96→1)` + 14px rise, 280–320ms `cubic-bezier(.32,.72,.24,1)`) and **back / Esc / tap-scrim** to collapse. Reduced-motion snaps. **The swipe + tap-to-open must feel IDENTICAL in every half and every board** — one learned gesture, everywhere. (The **FLIP card-morph** expand is a ⏳ PROPOSED upgrade; the scale-fade is the agreed default.)
+
+**THE CARD SET (the variation set — `CARD_TYPES`).** Every content type rides the SAME cover→expand pattern; the `type` drives the eyebrow, icon, **colourway (carries meaning)**, FloraCover scene, and the default inline action. Typed **BLOCKS** render only when the item carries their data — so one `ExpandDetailCard` serves all:
+
+| type | eyebrow · colourway | the expand leads with | primary action |
+|---|---|---|---|
+| `article` | Read · Essay · cream | body prose (+ optional narrated player) | Read this |
+| `book` | Book · Book club · gold | author + an **excerpt** inset | Talk about it · **Open reader** |
+| `audio` | Listen · Podcast · sage | **inline player** + show notes | Open episode |
+| `session` | Session · Guided · sky | **voiced player** + **steps** ("what you'll do") | Begin |
+| `daily_story` | Daily Story · plum | today's **excerpt** | Read today's chapter |
+| `video` | Watch · Film · gold | **inline player** (video framing) | Watch |
+| `ritual` | Ritual · Practice · sage | numbered **steps** | Begin |
+| `quote` | A line · To keep · blush | a big **pull-quote** | Set as today's |
+| `horoscope` | Your sky · Almanac · lavender | an almanac **reading** (hope-only, §10.4) | Read your reading |
+| `recipe` | Recipe · Tonight · coral | **ingredients** + **method** | Cook this |
+
+- **Blocks available:** `player` (+`mediaKind:"audio"|"video"`, `duration`) · `excerpt` (+`excerptLabel`) · `quote{text,attrib}` · `reading{headline,lines[]}` · `ingredients{serves,time,items[]}` · `steps[]` (+`stepsLabel`) · `meta[[icon,label]]` · `chips[]` · `body[]` · `actions[]` · `safe` (the content-room anonymity note).
+- **Consumers pass content, not chrome:** `resolveCard(item)` merges the type's defaults, so an item is just `{ id, type, title, subtitle, …blocks }`. `SAMPLE_CARDS` is a worked example per type (reference + template).
+- **Exports to reuse:** `CoverCard` (+ `compact` for a StackedCard half) · `ExpandDetailCard` · `InlinePlayer` · `Chip` · `CARD_TYPES` / `CARD_TYPE_KEYS` / `resolveCard` / `SAMPLE_CARDS`.
+
+**HARD RULES.**
+1. **Covers are FLORA, never photos** — `FloraCover` picks the scene + colourway from the item's `category`/`type` (§4). No stock imagery, ever.
+2. **Uniform same-row sizes** (§6.7.0) — every cover in a half shares height/width.
+3. **Each half slides HORIZONTALLY** (§6.10.2) — the gold hairline separates the halves; vertical reveal only WITHIN a lens.
+4. **One expand, everywhere** — never a bespoke detail page per type; add a **block**, not a new card.
+5. **Every card carries a real hook + an inline action** (§6.7.2/§6.7.4); the open deep-links the EXACT item.
+6. 🔴 **CONTENT ONLY.** This pattern is for reads/listens/sessions/books/recipes/rituals/almanac/content-rooms. **Pointed at PEOPLE or CONNECTION it must run through the DM/connection safety rails** (consent-gated messaging, anonymity-by-default, k-anon, report/block) — a tap-to-open "profile card" would bulldoze them. Never repurpose these cards for people.
+
+**Reference:** `/CardVariationsDemo` (the ten types) · `/StackedExpandDemo` (a board: Articles ⁄ Books) · `/ClipboardExpandDemo` (the standalone carousel).
+
 ---
 
 ## 6.8 CANONICAL PAGE STRUCTURE — the brand SIGNATURE on every page · v1 2026-06-19
