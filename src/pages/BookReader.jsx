@@ -333,7 +333,7 @@ export default function BookReader() {
           <button
             type="button"
             onClick={() => { setError(""); setLoading(true); setLoadingMsg("Loading the book…"); setRetryTick((t) => t + 1); }}
-            style={{ display: "inline-flex", alignItems: "center", gap: 7, background: "var(--plum, #0B0805)", color: "var(--surface, #F4EFE3)", border: "none", borderRadius: 12, padding: "11px 18px", fontFamily: 'ui-sans-serif,system-ui,sans-serif', fontSize: 14, fontWeight: 700, cursor: "pointer" }}
+            style={{ display: "inline-flex", alignItems: "center", gap: 7, background: "#0B0805", color: "#F4EFE3", border: "none", borderRadius: 12, padding: "11px 18px", fontFamily: 'ui-sans-serif,system-ui,sans-serif', fontSize: 14, fontWeight: 700, cursor: "pointer" }}
           >
             <RefreshCw className="w-4 h-4" /> Tap to try again
           </button>
@@ -436,20 +436,20 @@ const emptyStyle = {
   padding: "60px 24px",
   textAlign: "center",
   fontSize: 14,
-  color: "var(--plum-mute, #6b4a56)",
+  color: "#2E261B",
 };
 const catchupNote = {
   maxWidth: 880,
   margin: "16px auto 0",
   padding: "12px 16px",
   borderRadius: 12,
-  border: "1px solid var(--border, #D8CFBC)",
-  background: "var(--surface, #F4EFE3)",
+  border: "1px solid #D8CFBC",
+  background: "#F4EFE3",
   fontFamily: '"Cormorant Garamond","Fraunces",Georgia,serif',
   fontStyle: "italic",
   fontSize: 16,
   lineHeight: 1.5,
-  color: "var(--plum, #0B0805)",
+  color: "#0B0805",
 };
 
 // ── Two marks bar — physical bookmark + smart (daily-read schedule) mark ───────
@@ -472,7 +472,7 @@ function MarksBar({ current, expected, physical, total, onJump }) {
   return (
     <div style={{
       maxWidth: 880, margin: "0 auto 18px", padding: "12px 16px", borderRadius: 14,
-      border: "1px solid var(--border, #D8CFBC)", background: "var(--surface, #F4EFE3)",
+      border: "1px solid #D8CFBC", background: "#F4EFE3",
     }}>
       <p style={{ fontFamily: UI, fontSize: 11, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: GOLD, margin: "0 0 4px" }}>Your two marks</p>
       <div style={{ ...row, borderBottom: "1px solid rgba(43,30,22,0.12)" }}>
@@ -502,23 +502,23 @@ function MarksBar({ current, expected, physical, total, onJump }) {
 
 function Frame({ children, onBack, title, author, sourceUrl, cornerHref, cornerLabel }) {
   return (
-    <div style={{ minHeight: "100vh", backgroundColor: "var(--ivory)" }}>
+    <div style={{ minHeight: "100vh", backgroundColor: "#ECE7DA" }}>
       <div className="max-w-2xl mx-auto px-4 pt-8 pb-8">
         <button
           onClick={onBack}
           className="w-10 h-10 rounded-xl flex items-center justify-center shadow-sm mb-6"
           style={{ backgroundColor: "rgba(255,255,255,0.85)" }}
         >
-          <ArrowLeft className="w-4 h-4" style={{ color: "var(--plum)" }} />
+          <ArrowLeft className="w-4 h-4" style={{ color: "#7A1A12" }} />
         </button>
         <h1 className="fw-display" style={{ margin: "0 0 10px 0" }}>Library</h1>
         {title && (
-          <h2 className="fw-heading" style={{ color: "var(--plum-deep)", margin: "0 0 8px 0" }}>
+          <h2 className="fw-heading" style={{ color: "#7A1A12", margin: "0 0 8px 0" }}>
             {title}
           </h2>
         )}
         {author && (
-          <p style={{ fontSize: 14, color: "var(--plum-mute)", marginBottom: 20 }}>
+          <p style={{ fontSize: 14, color: "#2E261B", marginBottom: 20 }}>
             {author} · Public domain
           </p>
         )}
@@ -527,7 +527,7 @@ function Frame({ children, onBack, title, author, sourceUrl, cornerHref, cornerL
             href={sourceUrl}
             target="_blank"
             rel="noopener noreferrer"
-            style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 12, color: "var(--rose-primary)", textDecoration: "none", marginBottom: 20 }}
+            style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 12, color: "#BC2E27", textDecoration: "none", marginBottom: 20 }}
           >
             <ExternalLink className="w-3 h-3" />
             Read at gutenberg.org
@@ -536,9 +536,9 @@ function Frame({ children, onBack, title, author, sourceUrl, cornerHref, cornerL
         {cornerHref && (
           <Link
             to={cornerHref}
-            style={{ display: "flex", alignItems: "center", gap: 7, fontSize: 13, color: "var(--plum)", textDecoration: "none", marginBottom: 20, padding: "9px 13px", borderRadius: 12, border: "1px solid var(--border)", backgroundColor: "var(--surface)" }}
+            style={{ display: "flex", alignItems: "center", gap: 7, fontSize: 13, color: "#7A1A12", textDecoration: "none", marginBottom: 20, padding: "9px 13px", borderRadius: 12, border: "1px solid #D8CFBC", backgroundColor: "#F4EFE3" }}
           >
-            <Users className="w-3.5 h-3.5" style={{ color: "var(--rose-dust)" }} />
+            <Users className="w-3.5 h-3.5" style={{ color: "#E8B4B8" }} />
             {cornerLabel || "Others reading this — join the readers' corner (spoiler-safe)"}
           </Link>
         )}

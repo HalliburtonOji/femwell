@@ -14,9 +14,15 @@
 //   item = {
 //     id, type,                       // type ∈ CARD_TYPES (defaults kind/Icon/cw/category/action)
 //     title, subtitle, author?, overline?,
+//     summary?,                       // §5 a real hook — shown on the COVER + as "In short"
 //     meta: [[iconKey, label]…], chips: [str], body: [str],
 //     // typed blocks (each optional — presence renders the block):
-//     player?, mediaKind?: "audio"|"video", duration?, playerLabel?,
+//     videoSrc?,                      // §1 plays INLINE (FloraCover = the poster). external:true → link out instead
+//     audioSrc?,                      // §2 plays INLINE + the flora visualiser
+//     external?,                      // true = an off-platform embed (TikTok/YouTube) → never fake-embed, link out
+//     gutenbergId? | readingText?,    // §3 books open INTO a paged reading pane (2 taps)
+//     onOpenFullReader?,              // §3 the one clear "Open the full reader" option
+//     player?, mediaKind?: "audio"|"video", duration?, playerLabel?,  // simulated fallback (demos/no src)
 //     excerpt?,                       // an inset pull from the text (story/book)
 //     quote?: { text, attrib },       // a big pull-quote (quote/affirmation)
 //     reading?: { headline, lines[] },// an almanac/horoscope reading
@@ -37,10 +43,11 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import { T, SERIF, UI, PAPER_BG, Heart } from "@/components/journal/Editorial";
 import { OXBLOOD } from "@/components/brand/SliderKit";
+import { base44 } from "@/api/base44Client";
 import FloraCover from "@/components/brand/FloraCover";
-import { cwOf, Pollinator, floraKeyframes } from "@/components/brand/flora";
+import { cwOf, Pollinator, floraKeyframes, FlowerGlyph } from "@/components/brand/flora";
 import {
-  ChevronRight, ArrowLeft, Play, Pause, Bookmark, BookmarkCheck, Quote as QuoteIcon,
+  ChevronRight, ChevronLeft, ArrowLeft, Play, Pause, Bookmark, BookmarkCheck, Quote as QuoteIcon,
   BookOpen, Feather, Headphones, Moon, Clock, HeartPulse, Book, Users, Flame,
   MessageCircle, Sparkles, Leaf, Film, UtensilsCrossed, ListChecks, Star, Sun, Wind,
 } from "lucide-react";
@@ -197,6 +204,210 @@ function StepsBlock({ steps, accent, label = "How it goes" }) {
   );
 }
 
+// ── §5 SUMMARY — a card must never look empty. One real, warm sentence of substance.
+// Ladder: summary → subtitle → excerpt → first line of body. Never a label, never lorem.
+export function summaryOf(item) {
+  const s = item?.summary || item?.subtitle || item?.excerpt || (Array.isArray(item?.body) ? item.body[0] : "");
+  return typeof s === "string" ? s.trim() : "";
+}
+function SummaryBlock({ text, accent }) {
+  if (!text) return null;
+  return (
+    <div style={{ background: `${accent}0E`, border: `1px solid ${accent}30`, borderRadius: 16, padding: "13px 15px", marginBottom: 16 }}>
+      <div style={blockHead(accent)}>In short</div>
+      <p style={{ fontFamily: SERIF, fontSize: 16, color: T.inkSoft, lineHeight: 1.55, margin: 0 }}>{text}</p>
+    </div>
+  );
+}
+
+// ── §2 THE FLORA VISUALISER — our living-ecosystem answer to a bar meter. A row of
+// stems topped with blooms that SWAY + PULSE while audio plays, each on its own seeded
+// phase so it breathes like a meadow, not an equaliser. Pure CSS animation (GPU-cheap,
+// zero JS loop) with `animationPlayState` tied to playback; reduced-motion → it rests.
+const VIZ_KEYS = `
+@keyframes fwVizStem{0%{transform:scaleY(.5)}100%{transform:scaleY(1)}}
+@keyframes fwVizBloom{0%{transform:scale(.78) rotate(-7deg)}100%{transform:scale(1.14) rotate(7deg)}}
+@media (prefers-reduced-motion:reduce){.fw-viz-stem,.fw-viz-bloom{animation:none!important}}
+`;
+function MiniBloom({ size = 11, color, accent }) {
+  const r = size / 2;
+  return (
+    <svg width={size} height={size} viewBox="0 0 20 20" style={{ display: "block", overflow: "visible" }} aria-hidden>
+      {[0, 72, 144, 216, 288].map((a) => (
+        <ellipse key={a} cx="10" cy="5.6" rx="3.1" ry="4.4" fill={color} opacity="0.92" transform={`rotate(${a} 10 10)`} />
+      ))}
+      <circle cx="10" cy="10" r="2.4" fill={accent} />
+    </svg>
+  );
+}
+export function FloraVisualiser({ playing, height = 66 }) {
+  // oxblood · gold · sage · cream — the brand's own palette, not a rainbow
+  const STEMS = [
+    { h: 0.42, c: T.sage, a: T.gold, d: 1.55, p: -0.2 },
+    { h: 0.68, c: T.gold, a: OXBLOOD, d: 1.15, p: -0.9 },
+    { h: 0.92, c: OXBLOOD, a: T.gold, d: 1.35, p: -0.45 },
+    { h: 0.6, c: T.sage, a: T.gold, d: 1.7, p: -1.3 },
+    { h: 0.8, c: T.gold, a: OXBLOOD, d: 1.25, p: -0.6 },
+    { h: 0.5, c: T.crimson, a: T.gold, d: 1.45, p: -1.05 },
+    { h: 0.72, c: T.sage, a: OXBLOOD, d: 1.6, p: -0.3 },
+  ];
+  return (
+    <div aria-hidden style={{ display: "flex", alignItems: "flex-end", justifyContent: "center", gap: 9, height, padding: "0 4px" }}>
+      <style>{VIZ_KEYS}</style>
+      {STEMS.map((s, i) => {
+        const run = playing ? "running" : "paused";
+        return (
+          <div key={i} style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "flex-end", height: "100%" }}>
+            <span className="fw-viz-bloom" style={{ lineHeight: 0, transformOrigin: "center bottom", animation: `fwVizBloom ${s.d}s ease-in-out ${s.p}s infinite alternate`, animationPlayState: run }}>
+              <MiniBloom size={12} color={s.c} accent={s.a} />
+            </span>
+            <span className="fw-viz-stem" style={{ width: 2.5, height: Math.round(height * s.h), borderRadius: 999, background: `linear-gradient(180deg, ${s.c}, ${T.sage}66)`, transformOrigin: "bottom", animation: `fwVizStem ${s.d}s ease-in-out ${s.p}s infinite alternate`, animationPlayState: run }} />
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+const fmtTime = (s) => (Number.isFinite(s) ? `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, "0")}` : "0:00");
+
+// ── §2 REAL inline AUDIO + the flora visualiser ──────────────────────────────
+export function FloraAudio({ src, label, accent, initialDuration = 0 }) {
+  const ref = useRef(null);
+  const [playing, setPlaying] = useState(false);
+  const [t, setT] = useState(0);
+  const [dur, setDur] = useState(initialDuration);
+  const [err, setErr] = useState(false);
+  const toggle = () => {
+    const a = ref.current; if (!a) return;
+    if (a.paused) { a.play().then(() => setPlaying(true)).catch(() => setErr(true)); }
+    else { a.pause(); setPlaying(false); }
+  };
+  const pct = dur > 0 ? Math.min(100, (t / dur) * 100) : 0;
+  return (
+    <div style={{ background: T.paper, border: `1px solid ${T.paperDeep}`, borderRadius: 16, padding: "12px 14px 10px", boxShadow: "inset 0 1px 0 rgba(255,253,247,0.6)" }}>
+      <FloraVisualiser playing={playing} />
+      <div style={{ display: "flex", alignItems: "center", gap: 13, marginTop: 6 }}>
+        <button onClick={toggle} aria-label={playing ? "Pause" : "Play"} style={{ width: 46, height: 46, borderRadius: 999, background: accent, color: "#fff", border: "none", display: "grid", placeItems: "center", cursor: "pointer", flexShrink: 0, boxShadow: `0 4px 14px ${accent}55` }}>
+          {playing ? <Pause size={19} /> : <Play size={19} style={{ marginLeft: 2 }} />}
+        </button>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ fontFamily: UI, fontSize: 12.5, fontWeight: 700, color: T.ink, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{err ? "This one won't play here — open it instead." : label}</div>
+          <div style={{ height: 5, borderRadius: 999, background: T.paperDeep, margin: "8px 0 4px", overflow: "hidden" }}>
+            <div style={{ width: `${pct}%`, height: "100%", background: accent, borderRadius: 999, transition: "width .2s linear" }} />
+          </div>
+          <div style={{ display: "flex", justifyContent: "space-between", fontFamily: UI, fontSize: 10.5, fontWeight: 600, color: T.muted }}>
+            <span>{fmtTime(t)}</span><span>{fmtTime(dur)}</span>
+          </div>
+        </div>
+      </div>
+      <audio ref={ref} src={src} preload="metadata"
+        onLoadedMetadata={(e) => setDur(e.currentTarget.duration)}
+        onTimeUpdate={(e) => setT(e.currentTarget.currentTime)}
+        onEnded={() => { setPlaying(false); setT(0); }}
+        onError={() => setErr(true)} />
+    </div>
+  );
+}
+
+// ── §1 REAL inline VIDEO — the FloraCover IS the poster; tap the bloom-play and the
+// real <video> takes its place and plays in-card. Never autoplays; reduced-motion safe.
+export function FloraVideo({ src, item, accent }) {
+  const [started, setStarted] = useState(false);
+  const [err, setErr] = useState(false);
+  if (err) return null;
+  if (started) {
+    return (
+      <video src={src} controls autoPlay playsInline preload="metadata" onError={() => setErr(true)}
+        style={{ width: "100%", maxHeight: 260, borderRadius: 16, display: "block", background: T.ink, border: `1px solid ${T.paperDeep}` }} />
+    );
+  }
+  return (
+    <button onClick={() => setStarted(true)} aria-label="Play" className="fw-ce-press" style={{ position: "relative", width: "100%", padding: 0, border: `1px solid ${T.paperDeep}`, borderRadius: 16, overflow: "hidden", cursor: "pointer", display: "block", background: "transparent" }}>
+      <FloraCover title={item.title} category={item.category} colorway={item.cw} seed={`${item.id}-poster`} height={180} radius={0} showTitle={false} idx={`vpost-${item.id}`} />
+      <span style={{ position: "absolute", inset: 0, display: "grid", placeItems: "center", background: "rgba(28,20,12,0.16)" }}>
+        <span style={{ width: 60, height: 60, borderRadius: 999, background: "rgba(244,239,227,0.94)", border: `1px solid ${accent}`, display: "grid", placeItems: "center", boxShadow: "0 6px 20px rgba(58,44,26,0.28)" }}>
+          <Play size={26} color={accent} style={{ marginLeft: 3 }} />
+        </span>
+      </span>
+    </button>
+  );
+}
+
+// picks the right media for the item: real video → real audio → the simulated player
+// (demos/no-src). External platforms (TikTok/YouTube) never fake-embed — they link out.
+function MediaBlock({ item, accent }) {
+  if (item.videoSrc && !item.external) return <FloraVideo src={item.videoSrc} item={item} accent={accent} />;
+  if (item.audioSrc && !item.external) return <FloraAudio src={item.audioSrc} label={item.playerLabel || item.title} accent={accent} initialDuration={item.duration || 0} />;
+  if (item.player) return <InlinePlayer label={item.playerLabel || item.title} duration={item.duration || 300} accent={accent} mediaKind={item.mediaKind || "audio"} />;
+  return null;
+}
+
+// ── §3 THE READING PANE — books open INTO reading (2 taps, not 3). Paginates the
+// opening pages right here; the FULL reader stays one clear button away. Reuses the
+// EXISTING `fetchGutenbergBook` function — no new backend.
+const READ_WORDS = 150;
+function paginateText(text, per = READ_WORDS) {
+  const words = String(text || "").replace(/\s+/g, " ").trim().split(" ").filter(Boolean);
+  const out = [];
+  for (let i = 0; i < words.length; i += per) out.push(words.slice(i, i + per).join(" "));
+  return out;
+}
+export function ReadingPane({ item, accent, onOpenFull }) {
+  const [pages, setPages] = useState(() => (item.readingText ? paginateText(item.readingText) : null));
+  const [page, setPage] = useState(0);
+  const [state, setState] = useState(item.readingText ? "ready" : (item.gutenbergId ? "loading" : "none"));
+  useEffect(() => {
+    let alive = true;
+    if (pages || !item.gutenbergId) return;
+    (async () => {
+      try {
+        const res = await base44.functions.invoke("fetchGutenbergBook", { gutenberg_id: item.gutenbergId });
+        const raw = res?.data?.text || res?.text || "";
+        if (!alive) return;
+        // strip the Gutenberg header, then keep the opening stretch — this is a taster,
+        // the full reader does the real chaptering.
+        const start = raw.search(/\*\*\*\s*START OF (THE|THIS) PROJECT GUTENBERG/i);
+        const body = start > -1 ? raw.slice(raw.indexOf("\n", start) + 1) : raw;
+        const opening = body.replace(/\r/g, "").trim().slice(0, 14000);
+        const p = paginateText(opening);
+        if (p.length) { setPages(p); setState("ready"); } else setState("error");
+      } catch { if (alive) setState("error"); }
+    })();
+    return () => { alive = false; };
+  }, [item.gutenbergId, pages]);
+
+  const full = onOpenFull && (
+    <button onClick={onOpenFull} className="fw-ce-press" style={{ display: "inline-flex", alignItems: "center", gap: 7, background: T.paperHi, border: `1px solid ${accent}`, color: accent, borderRadius: 12, padding: "10px 14px", fontFamily: UI, fontSize: 13, fontWeight: 800, cursor: "pointer" }}>
+      <Book size={15} /> Open the full reader
+    </button>
+  );
+
+  if (state === "none") return null;
+  return (
+    <div style={{ marginBottom: 16 }}>
+      <div style={blockHead(accent)}>Start reading</div>
+      <div style={{ background: T.paperHi, border: `1px solid ${T.paperDeep}`, borderRadius: 16, padding: "16px 16px 12px", position: "relative", overflow: "hidden" }}>
+        <span aria-hidden style={{ position: "absolute", top: -6, right: -6, opacity: 0.4, lineHeight: 0 }}><FlowerGlyph variant="camellia" size={26} color={accent} idx={`rp-${item.id}`} /></span>
+        {state === "loading" && <p style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 15.5, color: T.muted, margin: "6px 0 10px" }}>Turning to the first page…</p>}
+        {state === "error" && <p style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 15.5, color: T.muted, margin: "6px 0 10px" }}>The pages wouldn't come through here — the full reader will have them.</p>}
+        {state === "ready" && pages && (
+          <>
+            <p style={{ fontFamily: SERIF, fontSize: 17, color: T.ink, lineHeight: 1.68, margin: "0 0 12px", minHeight: 132 }}>{pages[page]}</p>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", borderTop: `1px solid ${T.paperDeep}`, paddingTop: 10 }}>
+              <button onClick={() => setPage((p) => Math.max(0, p - 1))} disabled={page === 0} aria-label="Previous page" style={pageBtn(page === 0, accent)}><ChevronLeft size={16} /></button>
+              <span style={{ fontFamily: UI, fontSize: 11.5, fontWeight: 700, color: T.muted }}>Page {page + 1} of {pages.length}</span>
+              <button onClick={() => setPage((p) => Math.min(pages.length - 1, p + 1))} disabled={page >= pages.length - 1} aria-label="Next page" style={pageBtn(page >= pages.length - 1, accent)}><ChevronRight size={16} /></button>
+            </div>
+          </>
+        )}
+      </div>
+      {full && <div style={{ marginTop: 10 }}>{full}</div>}
+    </div>
+  );
+}
+const pageBtn = (disabled, accent) => ({ width: 34, height: 34, borderRadius: 999, border: `1px solid ${disabled ? T.paperDeep : accent}`, background: disabled ? "transparent" : T.paper, color: disabled ? T.paperDeep : accent, display: "grid", placeItems: "center", cursor: disabled ? "default" : "pointer", opacity: disabled ? 0.5 : 1 });
+
 // ── COLLAPSED cover card — `compact` = the StackedCard-half variant ───────────
 export function CoverCard({ item: raw, onOpen, compact = false }) {
   const item = resolveCard(raw);
@@ -208,7 +419,15 @@ export function CoverCard({ item: raw, onOpen, compact = false }) {
       <div style={{ padding: compact ? "10px 13px 12px" : "13px 15px 15px", flex: 1, display: "flex", flexDirection: "column" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 6, fontFamily: UI, fontSize: 10, fontWeight: 800, letterSpacing: ".1em", textTransform: "uppercase", color: c.petal }}><I size={12} /> {item.kind}</div>
         <div style={{ fontFamily: FRAUNCES, fontWeight: 600, fontSize: compact ? 18 : 22, lineHeight: 1.12, color: OXBLOOD, margin: "5px 0 3px" }}>{item.title}</div>
-        {!compact && <div style={{ fontFamily: SERIF, fontSize: 14.5, color: T.inkSoft, lineHeight: 1.4 }}>{item.subtitle}</div>}
+        {/* §5 — a real hook at rest: a card should never look empty (summary → subtitle → excerpt → body) */}
+        {(() => {
+          const s = summaryOf(item);
+          if (!s) return null;
+          const lines = compact ? 2 : 3;
+          return (
+            <div style={{ fontFamily: SERIF, fontSize: compact ? 13.5 : 14.5, color: T.inkSoft, lineHeight: 1.4, display: "-webkit-box", WebkitLineClamp: lines, WebkitBoxOrient: "vertical", overflow: "hidden" }}>{s}</div>
+          );
+        })()}
         <div style={{ display: "flex", alignItems: "center", gap: 12, marginTop: "auto", paddingTop: 9 }}>
           {(compact ? item.meta.slice(0, 1) : item.meta).map(([ic, label]) => { const M = ICON[ic] || Clock; return (
             <span key={label} style={{ display: "inline-flex", alignItems: "center", gap: 5, fontFamily: UI, fontSize: 11.5, fontWeight: 600, color: T.muted }}><M size={13} color={c.accent} /> {label}</span>
@@ -265,7 +484,20 @@ export function ExpandDetailCard({ item: raw, onClose, saved: savedProp, onSave 
           {item.subtitle && <p style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 17, color: T.muted, lineHeight: 1.45, margin: "0 0 16px" }}>{item.subtitle}</p>}
 
           {/* typed blocks — presence renders the block */}
-          {item.player && <div style={{ marginBottom: 16 }}><InlinePlayer label={item.playerLabel || item.title} duration={item.duration || 300} accent={c.petal} mediaKind={item.mediaKind || "audio"} /></div>}
+          {/* §1/§2 media: real inline video (FloraCover poster) · real inline audio + the
+              flora visualiser · the simulated player when there's no src (demos). */}
+          {(item.videoSrc || item.audioSrc || item.player) && (
+            <div style={{ marginBottom: 16 }}><MediaBlock item={item} accent={c.petal} /></div>
+          )}
+          {/* §3 books open INTO reading — 2 taps, with the full reader one clear button away */}
+          {(item.gutenbergId || item.readingText) && (
+            <ReadingPane item={item} accent={c.petal} onOpenFull={item.onOpenFullReader} />
+          )}
+          {/* §5 a summary block, so the page opens with substance instead of air.
+              Only when it ADDS something — never an echo of the subtitle above it. */}
+          {!item.quote && item.summary && item.summary !== item.subtitle && (
+            <SummaryBlock text={item.summary} accent={c.petal} />
+          )}
           {item.quote && <PullQuote quote={item.quote} accent={c.petal} />}
           {item.reading && <ReadingBlock reading={item.reading} accent={c.petal} />}
           {item.excerpt && <ExcerptBlock excerpt={item.excerpt} accent={c.petal} label={item.excerptLabel} />}

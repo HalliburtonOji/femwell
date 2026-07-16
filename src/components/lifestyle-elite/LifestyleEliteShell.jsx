@@ -439,14 +439,23 @@ export default function LifestyleEliteShell() {
   // Every action is REAL: reads/books/video → the real reader; rituals → Planner, no navigation.
   const openExternal = useCallback((url) => { if (url) window.open(url, "_blank", "noopener,noreferrer"); }, []);
 
+  // §1/§2 — only a REAL media file plays in-card. Platform pages (YouTube/TikTok/a show's
+  // site) are never fake-embedded: they keep their honest link-out action.
+  const playableMedia = (url) => /^https?:\/\/\S+\.(mp4|webm|mov|m4v|mp3|m4a|aac|ogg|wav)(\?|#|$)/i.test(String(url || ""));
+
   const rowCard = useCallback((r, type) => ({
     id: r.id, type,
     title: r.title,
     subtitle: stripHtml(r.why_it_matters || r.summary || r.lede || "") || metaOf(r),
+    // §5 a real hook so a card is never empty — the substance, distinct from the short subtitle
+    summary: stripHtml(r.summary || r.lede || "") || undefined,
     category: r.category || undefined,
     meta: [["Clock", r.duration_label || ((type === "audio" || type === "video") ? "A short listen" : "A few minutes")], ["BookOpen", r.source_name || r.author_name || "FemWell Editorial"]],
     chips: [r.category, r.emotional_tag].filter(Boolean).slice(0, 3),
     body: [stripHtml(r.lede || r.summary || "") || "Open it full-screen to read the whole thing."],
+    // §1/§2 play INLINE when the source is a real media file; off-platform stays an honest link-out
+    ...(type === "video" ? (playableMedia(r.content_url) ? { videoSrc: r.content_url } : { external: true }) : {}),
+    ...(type === "audio" && playableMedia(r.audio_url) ? { audioSrc: r.audio_url } : {}),
     _raw: r,
     actions: [{
       label: type === "video" ? "Watch" : type === "audio" ? "Open episode" : type === "book" ? "Open reader" : "Read this",
@@ -468,16 +477,19 @@ export default function LifestyleEliteShell() {
   }, [grouped, rowCard]);
   const videoCards = useMemo(() => {
     const real = (grouped.video || []).slice(0, 4).map((r) => rowCard(r, "video"));
+    // off-platform watches (YouTube/TikTok) are `external` — never fake-embedded, always an honest link-out
     const curated = real.length ? [] : LIFESTYLE_VIDEOS.slice(0, 4).map((v) => ({
-      id: v.id, type: "video", title: v.title, subtitle: v.channel_name,
+      id: v.id, type: "video", title: v.title, subtitle: v.channel_name, external: true,
+      summary: v.summary || "A hand-picked watch from a channel we trust — it opens on YouTube, where it lives.",
       meta: [["Film", v.duration_label || "A short watch"], ["Play", v.channel_name]], chips: ["watch"],
-      body: ["A hand-picked watch — it opens on YouTube."],
+      body: [],
       actions: [{ label: "Watch", Icon: "Film", primary: true, onClick: () => openExternal(v.content_url) }],
     }));
     const tik = (grouped.tiktok || []).slice(0, 3).map((t) => ({
-      id: t.id, type: "video", title: t.title, subtitle: t.source_name || "Trending",
+      id: t.id, type: "video", title: t.title, subtitle: t.source_name || "Trending", external: true,
+      summary: "Short and trending — it opens in the app it lives in.",
       meta: [["Film", "Short · trending"]], chips: ["trending"],
-      body: ["Short and trending — it opens in the app it lives in."],
+      body: [],
       actions: [{ label: "Open", Icon: "ChevronRight", primary: true, onClick: () => openExternal(t.content_url) }],
     }));
     return [...curated, ...real, ...tik];
@@ -493,10 +505,15 @@ export default function LifestyleEliteShell() {
     }] : [];
     return [...daily, ...(grouped.book || []).slice(0, 5).map((r) => rowCard(r, "book"))];
   }, [story, grouped, rowCard]);
+  // §3 BOOKS — 2 taps, not 3: tap the card and you're READING (the pane paginates the
+  // opening pages via the existing fetchGutenbergBook fn); the FULL reader is one clear option.
   const classicCards = useMemo(() => (gutenberg || []).slice(0, 6).map((b) => ({
     id: b.id, type: "book", title: b.title, subtitle: b.author || "Public domain",
+    summary: b.summary || "A free, public-domain classic — start reading here, or open the full reader for chapters, reflections and the club.",
     meta: [["Book", b.tag || "Public domain"], ["Star", b.stars ? "★".repeat(b.stars) : "A classic"]],
-    chips: ["free", "classic"], body: ["A free, public-domain read — it opens in the reader."],
+    chips: ["free", "classic"], body: [],
+    gutenbergId: b._gutenbergId,
+    onOpenFullReader: () => openItem(b),
     actions: [{ label: "Open reader", Icon: "Book", primary: true, onClick: () => openItem(b) }],
   })), [gutenberg, openItem]);
   const dailyStoryCards = useMemo(() => (story ? [{

@@ -1003,7 +1003,7 @@ export default function DailyStoryReader({
                 aria-label={isCurrentBookmarked ? "Remove bookmark" : "Set your bookmark here"}
                 aria-pressed={isCurrentBookmarked}
                 title={isCurrentBookmarked ? "Remove bookmark" : "Set your bookmark here"}
-                style={isCurrentBookmarked ? { color: "var(--rose-primary, #BC2E27)" } : undefined}
+                style={isCurrentBookmarked ? { color: "var(--accent, #BC2E27)" } : undefined}
               >
                 <Bookmark size={16} fill={isCurrentBookmarked ? "currentColor" : "none"} />
               </button>
@@ -1197,26 +1197,26 @@ function ReaderStyles({ reducedMotion }) {
         inset: 0;
         z-index: 9999;
         max-width: none;
-        background: var(--paper, #FFFAF5);
+        background: var(--paper, #ECE7DA);
         padding: 0;
         overflow: hidden;
         display: flex;
         flex-direction: column;
-        /* theme defaults — Cream */
-        --paper: #FFFAF5;
-        --ink: #2A2035;
-        --ink-mute: #8A7E88;
-        --accent: #D45E52;
-        --rule: rgba(74,42,58,0.10);
+        /* theme defaults — CREAM (the brand paper world: §2 tokens, oxblood accent) */
+        --paper: #ECE7DA;
+        --ink: #0B0805;
+        --ink-mute: #2E261B;
+        --accent: #7A1A12;
+        --rule: rgba(58,44,26,0.14);
       }
-      /* Theme overrides (applied via root class fw-theme-honey / -plum) */
+      /* Theme overrides (applied via root class fw-theme-honey / -plum) — on-brand alternates */
       .ds-reader-root.ds-immersive.fw-theme-honey {
-        --paper: #F5E6CD; --ink: #3A2818; --ink-mute: #7A6048;
-        --accent: #B68A3C; --rule: rgba(58,40,24,0.14);
+        --paper: #F4EFE3; --ink: #0B0805; --ink-mute: #2E261B;
+        --accent: #A8893F; --rule: rgba(58,44,26,0.14);
       }
       .ds-reader-root.ds-immersive.fw-theme-plum {
-        --paper: #2B1E26; --ink: #F5E6D3; --ink-mute: #C9B8B0;
-        --accent: #E89289; --rule: rgba(245,230,211,0.14);
+        --paper: #2E261B; --ink: #F4EFE3; --ink-mute: #D8CFBC;
+        --accent: #E8B4B8; --rule: rgba(244,239,227,0.14);
       }
       /* The stage in immersive is no longer a card — it's a transparent
          reading column floated on the paper. The visible body is the page. */
@@ -1233,7 +1233,7 @@ function ReaderStyles({ reducedMotion }) {
         max-height: none;
         overflow: hidden;
         padding: 64px 32px 56px;
-        color: var(--ink, #2A2035);
+        color: var(--ink, #0B0805);
       }
       @media (max-width: 768px) {
         .ds-reader-root.ds-immersive .ds-reader-stage {
@@ -1243,14 +1243,14 @@ function ReaderStyles({ reducedMotion }) {
       /* Visible body inside the stage uses --ink for prose; clipped so a
          miscount can't overflow. */
       .ds-reader-root.ds-immersive .ds-reader-body { overflow: hidden; }
-      .ds-reader-root.ds-immersive .ds-reader-p { color: var(--ink, #2A2035); }
-      .ds-reader-root.ds-immersive .ds-reader-h1 { color: var(--ink, #2A2035); }
+      .ds-reader-root.ds-immersive .ds-reader-p { color: var(--ink, #0B0805); }
+      .ds-reader-root.ds-immersive .ds-reader-h1 { color: var(--ink, #0B0805); }
       .ds-reader-root.ds-immersive .ds-reader-p-first::first-letter {
-        color: var(--accent, #D45E52);
+        color: var(--accent, #7A1A12);
       }
-      .ds-reader-root.ds-immersive .ds-reader-ornament { color: var(--accent, #D45E52); }
+      .ds-reader-root.ds-immersive .ds-reader-ornament { color: var(--accent, #7A1A12); }
       .ds-reader-root.ds-immersive .ds-reader-chapter-strip {
-        color: var(--ink-mute, #8A7E88);
+        color: var(--ink-mute, #2E261B);
       }
       /* In immersive, the inline series label is irrelevant — the bar
          carries identity. Hide it so the page is unambiguously the page. */
@@ -1270,7 +1270,7 @@ function ReaderStyles({ reducedMotion }) {
         display: flex;
         align-items: center;
         justify-content: space-between;
-        background: linear-gradient(to bottom, var(--paper, #FFFAF5) 60%, rgba(255,250,245,0) 100%);
+        background: linear-gradient(to bottom, var(--paper, #ECE7DA) 60%, rgba(255,250,245,0) 100%);
         z-index: 4;
         transition: opacity 200ms ease, transform 200ms ease;
       }
@@ -1292,7 +1292,7 @@ function ReaderStyles({ reducedMotion }) {
         height: 40px;
         padding: 0 16px;
         display: flex; align-items: center; justify-content: center;
-        background: linear-gradient(to top, var(--paper, #FFFAF5) 0%, rgba(255,250,245,0) 100%);
+        background: linear-gradient(to top, var(--paper, #ECE7DA) 0%, rgba(255,250,245,0) 100%);
         z-index: 4;
         transition: opacity 200ms ease, transform 200ms ease;
         pointer-events: none;
@@ -1303,7 +1303,7 @@ function ReaderStyles({ reducedMotion }) {
         font-weight: 500;
         letter-spacing: 0.08em;
         text-transform: uppercase;
-        color: var(--ink-mute, #8A7E88);
+        color: var(--ink-mute, #2E261B);
         white-space: nowrap;
       }
       .ds-reader-root.ds-chrome-hidden .ds-reader-bottom-bar {
@@ -1336,8 +1336,8 @@ function ReaderStyles({ reducedMotion }) {
       .ds-reader-center-tap:focus { outline: none; }
 
       /* Bookmark button — sits inside the immersive-bar right side. */
-      .ds-reader-bookmark-btn { color: var(--ink-mute, #8A7E88); }
-      .ds-reader-bookmark-btn:hover { color: var(--accent, #D45E52); }
+      .ds-reader-bookmark-btn { color: var(--ink-mute, #2E261B); }
+      .ds-reader-bookmark-btn:hover { color: var(--accent, #7A1A12); }
 
       /* v4c — right-side cluster (Aa + Bookmark) — gap matches button size */
       .ds-reader-imm-right { display: inline-flex; align-items: center; gap: 10px; }
@@ -1352,8 +1352,8 @@ function ReaderStyles({ reducedMotion }) {
       .ds-reader-aa-glyph::first-letter { font-size: 0.62em; vertical-align: 6px; }
       /* The bookmark icon inside the chunky pill follows currentColor too. */
       .ds-reader-bookmark-btn { color: currentColor; }
-      .ds-reader-bookmark-btn.is-bookmarked { color: var(--accent, #D45E52); }
-      .ds-reader-bookmark-btn.is-bookmarked svg { fill: var(--accent, #D45E52); }
+      .ds-reader-bookmark-btn.is-bookmarked { color: var(--accent, #7A1A12); }
+      .ds-reader-bookmark-btn.is-bookmarked svg { fill: var(--accent, #7A1A12); }
 
       /* v4c — settings drawer (60vh bottom sheet) */
       .ds-reader-scrim {
@@ -1372,8 +1372,8 @@ function ReaderStyles({ reducedMotion }) {
         margin: 0 auto;
         height: 60vh;
         max-height: 560px;
-        background: var(--paper, #FFFAF5);
-        color: var(--ink, #2A2035);
+        background: var(--paper, #ECE7DA);
+        color: var(--ink, #0B0805);
         border-radius: 24px 24px 0 0;
         box-shadow: 0 -8px 32px rgba(74,42,58,0.18);
         z-index: 10001;
@@ -1414,7 +1414,7 @@ function ReaderStyles({ reducedMotion }) {
         font-style: italic;
         font-weight: 500;
         font-size: 13px;
-        color: var(--ink-mute, #8A7E88);
+        color: var(--ink-mute, #2E261B);
         margin: 0 0 10px;
       }
 
@@ -1425,8 +1425,8 @@ function ReaderStyles({ reducedMotion }) {
         min-height: 88px;
         border-radius: 14px;
         border: 1px solid var(--rule, rgba(74,42,58,0.16));
-        background: var(--paper, #FFFAF5);
-        color: var(--ink, #2A2035);
+        background: var(--paper, #ECE7DA);
+        color: var(--ink, #0B0805);
         cursor: pointer;
         display: flex;
         flex-direction: column;
@@ -1439,7 +1439,7 @@ function ReaderStyles({ reducedMotion }) {
         outline-offset: -2px;
       }
       .ds-reader-tile.is-selected {
-        outline-color: var(--accent, #D45E52);
+        outline-color: var(--accent, #7A1A12);
         outline-width: 2px;
       }
       .ds-reader-tile:hover:not(.is-selected) { transform: translateY(-1px); }
@@ -1454,7 +1454,7 @@ function ReaderStyles({ reducedMotion }) {
         font-family: 'Inter', sans-serif;
         font-size: 11px;
         letter-spacing: 0.04em;
-        color: var(--ink-mute, #8A7E88);
+        color: var(--ink-mute, #2E261B);
       }
 
       /* Pill rows for line spacing + margins */
@@ -1464,17 +1464,17 @@ function ReaderStyles({ reducedMotion }) {
         padding: 10px 12px;
         border-radius: 9999px;
         border: 1px solid var(--rule, rgba(74,42,58,0.16));
-        background: var(--paper, #FFFAF5);
-        color: var(--ink, #2A2035);
+        background: var(--paper, #ECE7DA);
+        color: var(--ink, #0B0805);
         cursor: pointer;
         font-family: 'Inter', sans-serif;
         font-size: 13px;
         font-weight: 500;
       }
       .ds-reader-pill.is-selected {
-        background: var(--accent, #D45E52);
-        color: #FFFAF5;
-        border-color: var(--accent, #D45E52);
+        background: var(--accent, #7A1A12);
+        color: #F4EFE3;
+        border-color: var(--accent, #7A1A12);
       }
 
       /* Variant: the slider lives inside the sheet too — match the paper bg */
@@ -1525,11 +1525,11 @@ function ReaderStyles({ reducedMotion }) {
         height: 32px;
         padding: 0 10px;
         border: 1px solid var(--border, #EDE8E4);
-        background: var(--surface, #fff);
+        background: var(--paper, #ECE7DA);
         font-family: 'Inter', sans-serif;
         font-size: 14px;
         font-weight: 600;
-        color: var(--plum-mute, #8A7E88);
+        color: var(--ink-mute, #2E261B);
         border-radius: 9999px;
         cursor: pointer;
         transition: background 120ms, color 120ms;
@@ -1537,7 +1537,7 @@ function ReaderStyles({ reducedMotion }) {
         align-items: center;
         justify-content: center;
       }
-      .ds-reader-ctrl-btn:hover { color: var(--plum-deep, #2b1e16); }
+      .ds-reader-ctrl-btn:hover { color: var(--ink, #0B0805); }
       .ds-reader-ctrl-fullscreen { font-size: 14px; }
 
       /* True range-slider font control — small A · [thumb on track] · big A */
@@ -1545,7 +1545,7 @@ function ReaderStyles({ reducedMotion }) {
         display: inline-flex;
         align-items: center;
         gap: 10px;
-        background: var(--surface, #fff);
+        background: var(--paper, #ECE7DA);
         border: 1px solid var(--border, #EDE8E4);
         border-radius: 9999px;
         padding: 4px 12px;
@@ -1553,7 +1553,7 @@ function ReaderStyles({ reducedMotion }) {
       }
       .ds-reader-slider-mark {
         font-family: 'Fraunces', Georgia, serif;
-        color: var(--plum-mute, #8A7E88);
+        color: var(--ink-mute, #2E261B);
         line-height: 1;
         font-weight: 500;
         user-select: none;
@@ -1581,9 +1581,9 @@ function ReaderStyles({ reducedMotion }) {
         width: 16px; height: 16px;
         margin-top: -7px;
         border-radius: 9999px;
-        background: var(--rose-primary, #D45E52);
-        border: 2px solid var(--surface, #fff);
-        box-shadow: 0 1px 3px rgba(74,42,58,0.25);
+        background: var(--accent, #7A1A12);
+        border: 2px solid var(--paper, #ECE7DA);
+        box-shadow: 0 1px 3px rgba(58,44,26,0.25);
         cursor: pointer;
       }
       /* Firefox track + thumb */
@@ -1595,9 +1595,9 @@ function ReaderStyles({ reducedMotion }) {
       .ds-reader-slider-input::-moz-range-thumb {
         width: 16px; height: 16px;
         border-radius: 9999px;
-        background: var(--rose-primary, #D45E52);
-        border: 2px solid var(--surface, #fff);
-        box-shadow: 0 1px 3px rgba(74,42,58,0.25);
+        background: var(--accent, #7A1A12);
+        border: 2px solid var(--paper, #ECE7DA);
+        box-shadow: 0 1px 3px rgba(58,44,26,0.25);
         cursor: pointer;
       }
       .ds-reader-slider.is-immersive {
@@ -1635,35 +1635,35 @@ function ReaderStyles({ reducedMotion }) {
       .ds-reader-imm-btn {
         width: 48px; height: 48px;
         border-radius: 9999px;
-        border: 1.5px solid var(--ink, #2A2035);
-        background: var(--paper, #FFFAF5);
-        color: var(--ink, #2A2035);
+        border: 1.5px solid var(--ink, #0B0805);
+        background: var(--paper, #ECE7DA);
+        color: var(--ink, #0B0805);
         cursor: pointer;
         display: inline-flex; align-items: center; justify-content: center;
         box-shadow: 0 2px 10px rgba(74,42,58,0.18);
         transition: background 120ms, color 120ms, transform 120ms, box-shadow 120ms;
       }
       .ds-reader-imm-btn:hover {
-        background: var(--accent, #D45E52);
-        color: var(--paper, #FFFAF5);
-        border-color: var(--accent, #D45E52);
+        background: var(--accent, #7A1A12);
+        color: var(--paper, #ECE7DA);
+        border-color: var(--accent, #7A1A12);
         box-shadow: 0 4px 14px rgba(212,94,82,0.30);
       }
       .ds-reader-imm-btn:active { transform: scale(0.94); }
       .ds-reader-imm-btn:focus-visible {
-        outline: 3px solid var(--accent, #D45E52);
+        outline: 3px solid var(--accent, #7A1A12);
         outline-offset: 2px;
       }
       /* Dark theme — flip the chip to ink-on-paper so it pops on plum */
       .fw-theme-plum .ds-reader-imm-btn {
-        background: var(--ink, #F5E6D3);
-        color: var(--paper, #2B1E26);
-        border-color: var(--ink, #F5E6D3);
+        background: var(--ink, #F4EFE3);
+        color: var(--paper, #2E261B);
+        border-color: var(--ink, #F4EFE3);
       }
       .fw-theme-plum .ds-reader-imm-btn:hover {
-        background: var(--accent, #E89289);
-        color: var(--paper, #2B1E26);
-        border-color: var(--accent, #E89289);
+        background: var(--accent, #E8B4B8);
+        color: var(--paper, #2E261B);
+        border-color: var(--accent, #E8B4B8);
       }
       .ds-reader-vol.is-immersive {
         background: rgba(255,255,255,0.85);
@@ -1677,7 +1677,7 @@ function ReaderStyles({ reducedMotion }) {
         padding: 10px 16px;
         border-radius: 12px;
         background: var(--rose-soft-bg, #fbe9e6);
-        color: var(--plum-deep, #2b1e16);
+        color: var(--ink, #0B0805);
         display: flex;
         align-items: center;
         justify-content: space-between;
@@ -1693,7 +1693,7 @@ function ReaderStyles({ reducedMotion }) {
       .ds-reader-dnd-dismiss {
         flex: 0 0 auto;
         border: none;
-        background: var(--rose-primary, #D45E52);
+        background: var(--accent, #7A1A12);
         color: white;
         font-family: 'Inter', sans-serif;
         font-size: 12px;
@@ -1708,7 +1708,7 @@ function ReaderStyles({ reducedMotion }) {
         font-weight: 700;
         text-transform: uppercase;
         letter-spacing: 0.12em;
-        color: var(--mauve);
+        color: var(--ink-mute, #2E261B);
         text-align: center;
         margin: 0 0 16px;
         font-family: 'Inter', sans-serif;
@@ -1729,7 +1729,7 @@ function ReaderStyles({ reducedMotion }) {
         font-weight: 600;
         letter-spacing: 0.08em;
         text-transform: uppercase;
-        color: var(--mauve, #8A7E88);
+        color: var(--ink-mute, #2E261B);
         text-align: center;
         margin: 0 0 14px;
       }
@@ -1752,7 +1752,7 @@ function ReaderStyles({ reducedMotion }) {
          slice into the visible body; the rest is held in a hidden measurer
          off to the side. */
       .ds-reader-stage {
-        background: var(--surface, #fff);
+        background: var(--paper, #ECE7DA);
         border: 1px solid var(--border, #EDE8E4);
         border-radius: 20px;
         box-shadow: 0 8px 32px rgba(42,32,53,0.10), 0 2px 8px rgba(42,32,53,0.06);
@@ -1779,7 +1779,7 @@ function ReaderStyles({ reducedMotion }) {
         font-family: 'Fraunces', 'Fraunces', Georgia, serif;
         font-size: clamp(18px, 4vw, 22px);
         font-weight: 500;
-        color: var(--plum-deep, #2b1e16);
+        color: var(--ink, #0B0805);
         letter-spacing: -0.01em;
         line-height: 1.3;
         margin: 0 0 10px;
@@ -1788,7 +1788,7 @@ function ReaderStyles({ reducedMotion }) {
 
       .ds-reader-ornament {
         text-align: center;
-        color: var(--rose-primary, #D45E52);
+        color: var(--accent, #7A1A12);
         font-size: 14px;
         letter-spacing: 0.3em;
         margin: 0 0 24px;
@@ -1804,7 +1804,7 @@ function ReaderStyles({ reducedMotion }) {
       .ds-reader-p {
         font-family: 'Fraunces', Georgia, serif;
         font-size: clamp(16px, 2.5vw, 18px);
-        color: var(--plum, #2A2035);
+        color: var(--ink, #0B0805);
         line-height: 1.78;
         margin: 0 0 18px;
       }
@@ -1833,7 +1833,7 @@ function ReaderStyles({ reducedMotion }) {
         line-height: 0.78;
         float: left;
         margin: 6px 8px -2px 0;
-        color: var(--rose-primary, #D45E52);
+        color: var(--accent, #7A1A12);
       }
       .ds-text-s .ds-reader-p-first::first-letter { font-size: 3.6em; }
       .ds-text-l .ds-reader-p-first::first-letter { font-size: 4.8em; }
@@ -1857,7 +1857,7 @@ function ReaderStyles({ reducedMotion }) {
       .ds-reader-attribution {
         font-family: 'Inter', sans-serif;
         font-size: 11px;
-        color: var(--mauve, #8A7E88);
+        color: var(--ink-mute, #2E261B);
         font-style: italic;
         text-align: right;
         margin-top: 8px;
@@ -1866,7 +1866,7 @@ function ReaderStyles({ reducedMotion }) {
       .ds-reader-footer-label {
         font-family: 'Inter', sans-serif;
         font-size: 11px;
-        color: var(--mauve, #8A7E88);
+        color: var(--ink-mute, #2E261B);
         text-align: center;
         margin-top: 16px;
       }
@@ -1886,7 +1886,7 @@ function ReaderStyles({ reducedMotion }) {
         flex-shrink: 0;
       }
       .ds-reader-dot-visited { background: var(--rose-soft, #d4a5a0); }
-      .ds-reader-dot-current { background: var(--rose-primary, #D45E52); width: 10px; border-radius: 3px; }
+      .ds-reader-dot-current { background: var(--accent, #7A1A12); width: 10px; border-radius: 3px; }
       .ds-reader-dot-future  { background: var(--border, #EDE8E4); }
 
       /* Locked screen */
@@ -1897,7 +1897,7 @@ function ReaderStyles({ reducedMotion }) {
         align-items: center;
         justify-content: center;
         text-align: center;
-        background: linear-gradient(160deg, #2A2035 0%, #1a1224 100%);
+        background: linear-gradient(160deg, #2E261B 0%, #1A140D 100%);
         border-radius: 18px;
         padding: 40px 28px;
         position: relative;
@@ -1915,7 +1915,7 @@ function ReaderStyles({ reducedMotion }) {
       }
 
       .ds-reader-lock-ornament {
-        color: var(--rose-primary, #D45E52);
+        color: var(--accent, #7A1A12);
         font-size: 14px;
         letter-spacing: 0.3em;
         margin: 0 0 20px;
@@ -1971,8 +1971,8 @@ function ReaderStyles({ reducedMotion }) {
         height: 38px;
         border-radius: 50%;
         border: 1px solid var(--border, #EDE8E4);
-        background: var(--surface, #fff);
-        color: var(--plum, #2A2035);
+        background: var(--paper, #ECE7DA);
+        color: var(--ink, #0B0805);
         display: flex;
         align-items: center;
         justify-content: center;
@@ -1991,7 +1991,7 @@ function ReaderStyles({ reducedMotion }) {
         font-family: 'Inter', sans-serif;
         font-size: 12px;
         font-weight: 600;
-        color: var(--mauve, #8A7E88);
+        color: var(--ink-mute, #2E261B);
         min-width: 120px;
         text-align: center;
       }
@@ -2009,7 +2009,7 @@ function ReaderStyles({ reducedMotion }) {
         width: 24px;
         height: 24px;
         border: 2px solid var(--rose-soft-bg, #FBE9E6);
-        border-top-color: var(--rose-primary, #D45E52);
+        border-top-color: var(--accent, #7A1A12);
         border-radius: 50%;
         animation: ds-spin 0.7s linear infinite;
       }
@@ -2017,7 +2017,7 @@ function ReaderStyles({ reducedMotion }) {
       .ds-reader-loading-text {
         font-family: 'Inter', sans-serif;
         font-size: 13px;
-        color: var(--mauve, #8A7E88);
+        color: var(--ink-mute, #2E261B);
       }
 
       .ds-reader-empty {
@@ -2025,7 +2025,7 @@ function ReaderStyles({ reducedMotion }) {
         padding: 60px 24px;
         font-family: 'Inter', sans-serif;
         font-size: 14px;
-        color: var(--mauve, #8A7E88);
+        color: var(--ink-mute, #2E261B);
       }
 
       ${flipAnim}

@@ -3,6 +3,14 @@
 > Per CLAUDE.md Standing Rule #1: every plan/brainstorm ships as a phone-readable styled-HTML doc to `C:\Users\Halli\femwell-handoff\` **and** is linked into the FoundersOS "Ideas" page so Halli reaches it via the floating IDEAS pill (never a dead route).
 > Mechanism (established): copy the HTML into `src/components/founders/brandDocs/<slug>.html`, `import …?raw` in `FoundersOS.jsx`, add a `{ kind:"doc", key:"…" }` CATALOG entry, and a `{tab === "…" && <BrandDocFrame html={…} title="…" />}` render branch. Then build + `npx base44 site deploy -y`.
 
+## ⭐ TO WIRE — MEDIA & READERS craft (motherboard component #2) DOC (2026-07-16, flora session) → Ideas → Current
+> The focused brainstorm behind component #2 (built + live this pass): video plays **inline** (FloraCover = the poster; external TikTok/YouTube stays an honest link-out) · audio plays inline with a **branded flora visualiser** (stems + blooms sway/pulse, oxblood/gold/sage/cream — not a bar meter) · **books 3 taps → 2** (tap card → you're reading; full reader one clear option) · the three **readers rebranded** to cream/oxblood/flora · a **summary block** so cards never feel empty. **No new backend** (reuses `fetchGutenbergBook` + existing entity fields). `sub:"Card language plans"` + `added:"2026-07-16"`.
+
+**DOC** — `femwell-handoff/MEDIA-READERS-CRAFT.html` → `brandDocs/media-readers-craft.html`.
+- import: `import mediaReadersHtml from "@/components/founders/brandDocs/media-readers-craft.html?raw";`
+- CATALOG: `{ kind:"doc", key:"Media & readers", group: CAT.CURRENT, sub:"Card language plans", status:"new", accent:"sage", added:"2026-07-16", title:"Media & readers craft (component #2)", desc:"Motherboard component #2, built + live: inline video (FloraCover poster, external stays a link-out) · inline audio + the flora visualiser (stems/blooms sway in our palette) · books 3 taps → 2 (tap card → reading pane + one 'Open the full reader') · BookReader/FictionReader/DailyStoryReader rebranded to cream paper + oxblood + flora · a summary block so cards never look empty. No new backend." }`
+- render branch: `{tab === "Media & readers" && <BrandDocFrame html={mediaReadersHtml} title="FemWell — Media & readers craft (component #2)" />}`
+
 ## ⭐ TO WIRE — THE CARD SET demo (the 10 typed variations) (2026-07-16, flora session) → Ideas → Current
 > The approved card language's **variation set**: every content type the clipboard houses (article · book · audio · session · daily story · video · ritual · quote · horoscope · recipe) on the ONE shared FloraCover cover → tap → full-screen expand, with the right typed blocks + inline action per type. Driven by `CARD_TYPES` + `SAMPLE_CARDS` in `brand/expandCards.jsx` — the same components Lifestyle/Library/Programs consume. **Route only** (no doc — the canon now lives in BRAND_IDENTITY §6.7.7 + the Brand Bible). `sub:"Card language plans"` + `added:"2026-07-16"`.
 

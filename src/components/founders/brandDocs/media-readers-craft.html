@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="en-GB"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>FemWell — Media &amp; readers craft (component #2)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500;1,600&family=Fraunces:opsz,wght@9..144,400;9..144,600&family=Ephesis&display=swap" rel="stylesheet">
+<style>
+  :root{--paper:#ECE7DA;--paperHi:#F4EFE3;--paperDeep:#D8CFBC;--ink:#0B0805;--inkSoft:#1A140D;--muted:#2E261B;--gold:#A8893F;--crimson:#BC2E27;--oxblood:#7A1A12;--sage:#8FAF8F;--plum:#8E6E8E;--serif:'Cormorant Garamond',Georgia,serif;--fraunces:'Fraunces',var(--serif);--script:'Ephesis',cursive;--sans:ui-sans-serif,system-ui,-apple-system,'Segoe UI',sans-serif;}
+  *{box-sizing:border-box}
+  body{margin:0;background:radial-gradient(120% 80% at 12% 0%,#F4EFE3 0%,rgba(244,239,227,0) 55%),radial-gradient(120% 90% at 100% 100%,#E4DDCC 0%,rgba(228,221,204,0) 50%),var(--paper);color:var(--ink);font-family:var(--serif);font-size:18px;line-height:1.6;-webkit-font-smoothing:antialiased}
+  .doc{max-width:680px;margin:0 auto;padding:26px 22px 80px}
+  h1.cover{font-family:var(--script);font-size:52px;color:var(--oxblood);margin:6px 0 2px;line-height:1}
+  h2{font-family:var(--fraunces);font-weight:600;font-size:24px;color:var(--oxblood);margin:0 0 4px}
+  h3{font-family:var(--serif);font-weight:600;font-size:19px;color:var(--oxblood);margin:16px 0 5px}
+  .eyebrow{font-family:var(--sans);font-size:11.5px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--gold);margin-bottom:9px}
+  p{margin:0 0 11px}.lede{font-size:19px;line-height:1.5;font-style:italic}
+  small,.cap{font-family:var(--sans);font-size:13px;color:var(--muted);line-height:1.5}
+  b,strong{font-weight:600}
+  .section{background:var(--paperHi);border:1px solid var(--paperDeep);border-left:4px solid var(--gold);border-radius:18px;padding:20px 18px;margin:16px 0;box-shadow:0 4px 18px rgba(58,44,26,.09)}
+  .section.sage{border-left-color:var(--sage)}.section.plum{border-left-color:var(--plum)}.section.crimson{border-left-color:var(--crimson)}
+  table{width:100%;border-collapse:collapse;font-size:14px;font-family:var(--sans);margin:8px 0}
+  th,td{text-align:left;padding:7px 8px;border-bottom:1px solid var(--paperDeep);vertical-align:top}
+  th{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--gold)}
+  td b{font-family:var(--serif);font-size:15px}
+  ul{margin:2px 0 11px;padding-left:19px}li{margin:4px 0}
+  .badge{display:inline-block;font-family:var(--sans);font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;padding:3px 9px;border-radius:999px;background:#DDE7DD;color:#3f6b3f}
+  .badge.no{background:#E4EDE2;color:#3f6b3f}
+  .foot{font-family:var(--sans);font-size:12px;color:var(--muted);text-align:center;margin-top:26px;line-height:1.6}
+  .viz{display:flex;align-items:flex-end;justify-content:center;gap:7px;height:64px;background:var(--paper);border:1px solid var(--paperDeep);border-radius:12px;padding:8px;margin:10px 0}
+  .viz i{width:7px;border-radius:9px 9px 3px 3px;display:block}
+  .taps{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0}
+  .tap{flex:1 1 120px;border:1px solid var(--paperDeep);border-radius:12px;padding:9px 11px;background:var(--paper);font-family:var(--sans);font-size:12.5px}
+  .tap b{display:block;font-family:var(--serif);font-size:15px;color:var(--oxblood)}
+  .strike{text-decoration:line-through;opacity:.55}
+</style></head>
+<body><div class="doc">
+
+<div style="text-align:center;padding:12px 0 2px">
+  <div class="eyebrow">Motherboard component #2 · 16 Jul 2026</div>
+  <h1 class="cover">Media &amp; readers</h1>
+  <p class="lede" style="max-width:460px;margin:8px auto 0">Make the cards actually play, actually read, and actually look like us — and never feel empty.</p>
+</div>
+
+<div class="section">
+  <div class="eyebrow">The diagnosis</div>
+  <h2>Five gaps, one pass.</h2>
+  <table>
+    <tr><th>Gap</th><th>Now</th><th>Fix</th></tr>
+    <tr><td><b>Video</b></td><td>Every video links OUT — even ones we could play.</td><td>Play <b>inline</b> in the expand; only true externals (TikTok) link out.</td></tr>
+    <tr><td><b>Audio</b></td><td>A simulated bar; no real playback, no soul.</td><td>Real inline audio + a <b>flora visualiser</b> that sways with it.</td></tr>
+    <tr><td><b>Books</b></td><td><span class="strike">tap card → tap "Open reader" → page-nav away → another tap</span> = 3 taps + a jarring jump.</td><td><b>2 taps</b>: tap card → you're reading. Full reader is one clear option.</td></tr>
+    <tr><td><b>Readers</b></td><td>Off-brand: dusk purple <code>#2A2035</code>/<code>#D45E52</code> (story), <code>--plum/--surface</code> (book), <code>#FAF4EA</code> (fiction).</td><td>Cream paper, oxblood headings, flora sprigs, our type.</td></tr>
+    <tr><td><b>Empty cards</b></td><td>Cover + title + a thin line — lots of dead space.</td><td>A real <b>summary/hook</b> on the cover <em>and</em> a summary block in the expand.</td></tr>
+  </table>
+  <p class="cap"><b>Backend: none needed <span class="badge no">no new fn</span></b> — all presentational, reusing the existing <code>fetchGutenbergBook</code> function, existing entity fields, and the existing readers.</p>
+</div>
+
+<div class="section sage">
+  <div class="eyebrow">1 · Video &amp; 2 · Audio</div>
+  <h2>The cover is the poster. The flora is the visualiser.</h2>
+  <p><b>Video, inline.</b> The <b>FloraCover is the poster</b> — tap the bloom-play button and the real <code>&lt;video&gt;</code> takes its place and plays in the card (native controls, <code>playsInline</code>, never autoplay, reduced-motion safe). If it's an external platform (TikTok/YouTube), we keep the honest <b>link-out</b> action — no fake embed.</p>
+  <p><b>Audio, inline + alive.</b> Real <code>&lt;audio&gt;</code>, plus the bit that makes it ours: a <b>flora visualiser</b> instead of a generic bar meter. A little row of <b>stems topped with blooms</b> — while it plays they <b>sway and pulse</b>, each stem on its own seeded phase so it breathes like a meadow, not a graphic equaliser. Palette: <b>oxblood · gold · sage · cream</b>. Reduced-motion → it simply rests, open and still.</p>
+  <div class="viz">
+    <i style="height:26px;background:var(--sage)"></i><i style="height:44px;background:var(--gold)"></i><i style="height:58px;background:var(--oxblood)"></i><i style="height:38px;background:var(--sage)"></i><i style="height:50px;background:var(--gold)"></i><i style="height:30px;background:var(--crimson)"></i><i style="height:46px;background:var(--sage)"></i>
+  </div>
+  <p class="cap">Stems + blooms, swaying on their own phases — a meadow in the wind, not an equaliser. (Time-driven, so it works on any source and never fights CORS.)</p>
+</div>
+
+<div class="section plum">
+  <div class="eyebrow">3 · Books</div>
+  <h2>Three taps become two.</h2>
+  <div class="taps">
+    <div class="tap"><b>Tap 1</b> the book cover card</div>
+    <div class="tap"><b>Tap 2</b> — <span class="strike">"Open reader"</span> → you're <b>already reading</b>: a paged view, right there in the expand, with <b>Next page</b>.</div>
+    <div class="tap"><b>Option</b> "Open the full reader" — the whole experience (chapters, reflections, the club), one clear button.</div>
+  </div>
+  <p>The expand <em>becomes</em> the reading experience: opening pages fetched via the existing Gutenberg function, paginated to a comfortable page, with next/prev and a page count. It degrades honestly — if the text is slow or unavailable, the pane says so and the full reader is one tap away. <b>Nothing is removed</b>: the full reader keeps everything it has.</p>
+</div>
+
+<div class="section crimson">
+  <div class="eyebrow">4 · The readers</div>
+  <h2>They should look like the app they live in.</h2>
+  <p>Three readers, three different palettes, none of them ours. The craft pass: <b>cream paper</b> (<code>#ECE7DA</code>/<code>#F4EFE3</code>), <b>oxblood headings</b> (<code>#7A1A12</code>), <b>gold/sage flora accents</b>, <b>corner sprigs</b>, Fraunces/Cormorant/Ephesis type — the same world as the cards that open them. <b>Every mechanic stays</b>: chapters, reflections, warnings, progress, the club, flip/movie mode, the cliffhanger countdown.</p>
+</div>
+
+<div class="section">
+  <div class="eyebrow">5 · The summary block</div>
+  <h2>A card should never look empty.</h2>
+  <p>New to the card set (§6.7.7): <b><code>summary</code></b> — one real, warm sentence of substance (a hook, a lede, or a true excerpt), not a label.</p>
+  <ul>
+    <li><b>On the cover:</b> under the title, so a card at rest already tells you something worth tapping.</li>
+    <li><b>In the expand:</b> an "In short" block right under the title, so the page opens with substance instead of air.</li>
+    <li><b>Fallback ladder:</b> <code>summary → subtitle → excerpt → first line of body</code> — a card is never blank, and never a lorem placeholder.</li>
+  </ul>
+  <p class="cap">Joins the block list in §6.7.7 alongside player · excerpt · pull-quote · reading · ingredients · steps. Add a block, never a bespoke card.</p>
+</div>
+
+<div class="foot">
+  FemWell · Motherboard component #2 — media &amp; readers craft · 16 Jul 2026<br>
+  Builds on <code>brand/expandCards.jsx</code> (§6.7.7). No new backend. The six live Lifestyle boards, Save, and actions keep working.
+</div>
+
+</div></body></html>

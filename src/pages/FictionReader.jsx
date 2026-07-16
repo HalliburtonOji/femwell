@@ -280,7 +280,7 @@ function CoverPage({ item, pageCount, chapterCount, onOpen }) {
 // ─── Frame ───────────────────────────────────────────────────────────────────
 function Frame({ children, onBack }) {
   return (
-    <div style={{ minHeight: "100vh", paddingBottom: 80, background: "var(--ivory, #FAF4EA)" }}>
+    <div style={{ minHeight: "100vh", paddingBottom: 80, background: "#ECE7DA" }}>
       <div style={frameHeaderStyle}>
         <div style={frameHeaderInnerStyle}>
           <button
@@ -304,12 +304,12 @@ const emptyStyle = {
   padding: "40px 24px",
   textAlign: "center",
   fontSize: 14,
-  color: "var(--plum-mute, #6b4a56)",
+  color: "#2E261B",
 };
 const errorTitleStyle = {
   fontWeight: 400,
   fontSize: 22,
-  color: "var(--plum-deep)",
+  color: "#7A1A12",
   margin: "40px 0 6px",
   textAlign: "center",
 };
@@ -318,7 +318,7 @@ const frameHeaderStyle = {
   position: "sticky", top: 0, zIndex: 30,
   background: "rgba(250,248,245,0.97)",
   backdropFilter: "blur(20px)",
-  borderBottom: "1px solid var(--border, rgba(43,30,22,0.08))",
+  borderBottom: "1px solid #D8CFBC",
 };
 const frameHeaderInnerStyle = {
   maxWidth: 760, margin: "0 auto",
@@ -327,9 +327,9 @@ const frameHeaderInnerStyle = {
 };
 const backButtonStyle = {
   width: 36, height: 36, borderRadius: 9999,
-  border: "1px solid var(--border, rgba(43,30,22,0.08))",
-  background: "var(--cream, #FAF4EA)",
-  color: "var(--plum-deep, #2b1e16)",
+  border: "1px solid #D8CFBC",
+  background: "#ECE7DA",
+  color: "#7A1A12",
   cursor: "pointer",
   display: "flex", alignItems: "center", justifyContent: "center",
 };
@@ -401,8 +401,8 @@ const tagPillStyle = {
   fontSize: 11,
   fontWeight: 600,
   letterSpacing: "0.04em",
-  color: "var(--plum-mute)",
-  background: "var(--cream-2, rgba(43,30,22,0.05))",
+  color: "#2E261B",
+  background: "rgba(58,44,26,0.05)",
   padding: "5px 11px",
   borderRadius: 9999,
   border: "1px solid var(--ink-line, rgba(43,30,22,0.08))",
@@ -411,8 +411,8 @@ const openButtonStyle = {
   fontWeight: 600,
   fontSize: 14,
   letterSpacing: "0.02em",
-  color: "var(--cream, #FAF4EA)",
-  background: "var(--rose-primary, #D45E52)",
+  color: "#ECE7DA",
+  background: "#BC2E27",
   border: "none",
   borderRadius: 9999,
   padding: "14px 22px",
