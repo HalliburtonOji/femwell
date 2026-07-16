@@ -3,7 +3,8 @@
 > Per CLAUDE.md Standing Rule #1: every plan/brainstorm ships as a phone-readable styled-HTML doc to `C:\Users\Halli\femwell-handoff\` **and** is linked into the FoundersOS "Ideas" page so Halli reaches it via the floating IDEAS pill (never a dead route).
 > Mechanism (established): copy the HTML into `src/components/founders/brandDocs/<slug>.html`, `import …?raw` in `FoundersOS.jsx`, add a `{ kind:"doc", key:"…" }` CATALOG entry, and a `{tab === "…" && <BrandDocFrame html={…} title="…" />}` render branch. Then build + `npx base44 site deploy -y`.
 
-## ⭐ TO WIRE — StackedCard × tap-to-expand DOC + DEMO (2026-07-16, flora session) → Ideas → Current
+## ✅ WIRED (2026-07-16) — StackedCard × tap-to-expand DOC + DEMO (2026-07-16, flora session) → Ideas → Current
+> WIRED into `FoundersOS.jsx` (import + doc CATALOG `Stacked-expand cards` + BrandDocFrame branch + route CATALOG `/StackedExpandDemo`), commit `330ff35`, LIVE `index-BAy2ev8H.js` (route 200 both hosts). Nothing to do.
 > Marries the tap-to-expand cards with our StackedCard: ONE big clipboard card split TOP (articles) + BOTTOM (books) by the gold hairline, each half a horizontal PEEK sub-slider (edge-peek + dots + subtle ‹›arrows) → tap any cover → the SAME full-screen expand as `/ClipboardExpandDemo`. Content-only. Reuses `brand/expandCards.jsx` (shared) + FloraCover. `sub:"Card language plans"` + `added:"2026-07-16"`. (Follows the same wiring you just did for the standalone demo.)
 
 **(a) DOC** — `femwell-handoff/STACKED-EXPAND-CARDS.html` → `brandDocs/stacked-expand-cards.html`.
