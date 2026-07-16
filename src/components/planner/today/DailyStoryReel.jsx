@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
+import { loadStoryChapters, chapterForDay } from "@/components/lifestyle/dailyStory";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // DailyStoryReel — Today-A T-A3 (MP-Today-A).
@@ -78,15 +79,15 @@ export default function DailyStoryReel({ profile, cycleInfo }) {
     let cancelled = false;
     (async () => {
       try {
-        const todayISO = toDateISO(today);
-        const [stories, allItems] = await Promise.all([
-          base44.entities.DailyStory.filter({ is_active: true }, "-published_date", 40).catch(() => []),
+        const [chapters, allItems] = await Promise.all([
+          // ONE gating contract (dailyStory.js) — this used to take the newest chapter
+          // published on-or-before today, which served a 37-day-stale chapter as "today's".
+          loadStoryChapters(),
           base44.entities.LifestyleItems.filter({}, "-published_at", 40).catch(() => []),
         ]);
         if (cancelled) return;
 
-        const visibleStory = (stories || []).find(s => s?.published_date && s.published_date <= todayISO);
-        setDailyStory(visibleStory || null);
+        setDailyStory(chapterForDay(chapters)?.chapter || null);
 
         // Phase-match (when known) + exclude already-read locally.
         const phaseFilter = phase

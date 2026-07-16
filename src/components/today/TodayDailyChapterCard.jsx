@@ -1,10 +1,8 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { ArrowRight } from "lucide-react";
-import { base44 } from "@/api/base44Client";
 import { createPageUrl } from "@/utils";
-
-const todayStr = new Date().toISOString().split("T")[0];
+import { loadStoryChapters, chapterForDay } from "@/components/lifestyle/dailyStory";
 
 export default function TodayDailyChapterCard() {
   const [segment, setSegment] = useState(null);
@@ -13,10 +11,13 @@ export default function TodayDailyChapterCard() {
   useEffect(() => {
     let mounted = true;
     (async () => {
-      const all = await base44.entities.DailyStory.list("-day_number", 100).catch(() => []);
-      const today = all.find(s => s.published_date === todayStr && s.is_active);
+      // ONE gating contract (dailyStory.js). This card used to demand
+      // published_date === today, so it went BLANK the day the series ended.
+      // Now it shows the same chapter every other surface shows today.
+      const chapters = await loadStoryChapters();
+      const pick = chapterForDay(chapters);
       if (mounted) {
-        setSegment(today || null);
+        setSegment(pick?.chapter || null);
         setLoading(false);
       }
     })();

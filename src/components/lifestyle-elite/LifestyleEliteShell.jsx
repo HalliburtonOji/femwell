@@ -35,6 +35,9 @@ import LifestyleMedia from "@/components/lifestyle-elite/LifestyleMedia";
 import LifestyleArticleDeck, { toDeckItem } from "@/components/lifestyle/LifestyleArticleDeck";
 // the clipboard's card language (§6.7.7) — consumed, never duplicated
 import { CoverCard, ExpandDetailCard } from "@/components/brand/expandCards";
+// the Daily Story — ONE gating contract + the real immersive reader (component #5)
+import { DAILY_STORY_SERIES, loadStoryChapters, chapterForDay, nextChapterOf, chapterLabel, framingLine, markChapterRead, isChapterRead, readCount } from "@/components/lifestyle/dailyStory";
+import DailyStoryReader from "@/components/lifestyle/DailyStoryReader";
 import ReadingColumn from "@/components/brand/ReadingColumn";
 import { LIFESTYLE_VIDEOS } from "@/data/lifestyleVideos";
 import { T, SERIF, UI, PAPER_BG, Eyebrow } from "@/components/journal/Editorial";
@@ -199,7 +202,7 @@ export default function LifestyleEliteShell() {
   // real content (grouped per type, mirrors LifestyleForYou)
   const [items, setItems] = useState([]);          // all PUBLISHED LifestyleItems
   const [gutenberg, setGutenberg] = useState([]);  // public-domain books
-  const [story, setStory] = useState(null);        // today's DailyStory
+  const [chapters, setChapters] = useState([]);    // the whole active series (one gating contract)
   const [horoscope, setHoroscope] = useState(null);// today's HoroscopeReading
   const [savedIds, setSavedIds] = useState([]);    // UserProfile.saved_item_ids (the SAVE field)
   const [skyNotes, setSkyNotes] = useState([]);    // recent SkyNote rows (real, persisted)
@@ -211,6 +214,7 @@ export default function LifestyleEliteShell() {
   const [chapterOpen, setChapterOpen] = useState(false);
   const [readingOpen, setReadingOpen] = useState(false);
   const [expanded, setExpanded] = useState(null);   // the tap-to-expand card item (§6.7.7)
+  const [readerOpen, setReaderOpen] = useState(false); // the REAL immersive Daily Story reader
   const [toast, setToast] = useState(null);
   const sliderRef = useRef(null);
 
@@ -237,6 +241,13 @@ export default function LifestyleEliteShell() {
     return by;
   }, [items]);
 
+  // THE gate — the same chapter every surface shows today (evergreen unless a fresh one exists)
+  const storyPick = useMemo(() => chapterForDay(chapters), [chapters]);
+  const story = storyPick?.chapter || null;
+  const storyNext = useMemo(() => nextChapterOf(chapters), [chapters]);
+  const storyRead = story ? isChapterRead(story.id) : false;
+  const storyReadCount = useMemo(() => readCount(chapters), [chapters, expanded, readerOpen]); // eslint-disable-line react-hooks/exhaustive-deps
+
   const editorialPick = grouped.story[0] || grouped.article[0] || items[0] || null;
   const morePicks = useMemo(() => [grouped.article[0], grouped.video[0], grouped.audio[0]].filter(Boolean).slice(0, 2), [grouped]);
   // featured "Reads for you" deck — PERSONALISED via getLifestyleFeed (ranked by her interests +
@@ -253,13 +264,15 @@ export default function LifestyleEliteShell() {
   // Essential content (real entities) — this gates the initial render. Kept off the external
   // gutendex fetch so a slow public-domain API can never hold the whole page on the loader.
   const loadContent = useCallback(async () => {
-    const [rows, st, ho] = await Promise.all([
+    const [rows, chs, ho] = await Promise.all([
       base44.entities.LifestyleItems.filter({ status: "PUBLISHED" }, "-engagement_score", 60).catch(() => []),
-      base44.entities.DailyStory.filter({}, "-created_date", 1).catch(() => []),
+      // ONE gating contract (dailyStory.js) — never the newest-ever row, never a stale
+      // chapter dressed up as "today's". The whole series; the gate picks the day's chapter.
+      loadStoryChapters(),
       base44.entities.HoroscopeReading.filter({}, "-reading_date", 1).catch(() => []),
     ]);
     setItems((Array.isArray(rows) ? rows : []).filter((i) => i && i.title));
-    setStory((Array.isArray(st) ? st[0] : null) || null);
+    setChapters(Array.isArray(chs) ? chs : []);
     setHoroscope((Array.isArray(ho) ? ho[0] : null) || null);
   }, []);
 
@@ -748,14 +761,38 @@ export default function LifestyleEliteShell() {
       {chapterOpen && (
         <ChapterSheet
           story={story}
+          pick={storyPick}
+          nextPick={storyNext}
+          readSoFar={storyReadCount}
+          onImmersive={() => { setChapterOpen(false); setReaderOpen(true); }}
           onClose={() => setChapterOpen(false)}
           onMarkRead={() => {
+            markChapterRead(story?.id);
             recordProgress(story?.id || story?.series_title || "daily-story", story?.day_number ?? 0, user?.id);
             flash("Marked as read — it counts in your garden");
             setChapterOpen(false);
           }}
           onReflect={() => { setChapterOpen(false); window.location.assign(createPageUrl("Journal")); }}
         />
+      )}
+      {/* the REAL immersive reader (component #5) — the finished series, straight through.
+          Opens AT today's gated chapter; position/bookmarks persist; reaching a chapter marks
+          it read AND records progress (the same Garden signal as "Mark as read"). */}
+      {readerOpen && (
+        <div style={{ position: "fixed", inset: 0, zIndex: 1200, ...PAPER_BG }}>
+          <DailyStoryReader
+            seriesKey={DAILY_STORY_SERIES}
+            bookId="daily_the_long_room"
+            goToChapter={storyPick?.index ?? 0}
+            defaultImmersive
+            onExit={() => setReaderOpen(false)}
+            onChapterReached={(i) => {
+              const c = chapters[i]; if (!c?.id) return;
+              markChapterRead(c.id);
+              recordProgress(c.id, c.day_number ?? i, user?.id);
+            }}
+          />
+        </div>
       )}
       {readingOpen && (
         <ReadingSheet
@@ -1123,20 +1160,35 @@ function SkyDiaryLens({ notes, onNote }) {
 }
 
 // ── sheets ──
-function ChapterSheet({ story, onClose, onMarkRead, onReflect }) {
+function ChapterSheet({ story, pick, nextPick, readSoFar = 0, onImmersive, onClose, onMarkRead, onReflect }) {
   const title = story?.series_title || story?.title || "Today's chapter";
-  const dayLine = story?.day_number ? `Day ${story.day_number}` : "today";
   const cliff = story?.cliffhanger || "";
   const body = stripHtml(story?.segment_text || "") || "Today's chapter is being written — check back soon. In the meantime, the Daily Story library is one tap away on the Lifestyle page.";
+  const crimsonC = cwOf("crimson").petal;
+  // HONEST framing — "Chapter 7 of 30", and we say plainly it's a finished story served a
+  // chapter a day. Never "fresh today" unless it genuinely is.
+  const label = pick ? chapterLabel(pick) : "today";
   return (
-    <SheetShell title={title} eyebrowText={`Daily Story · ${dayLine}`} accent={cwOf("crimson").petal} onClose={onClose}>
+    <SheetShell title={title} eyebrowText={`Daily Story · ${label}`} accent={crimsonC} onClose={onClose}>
+      <p style={{ fontFamily: UI, fontSize: 12.5, color: T.muted, margin: "0 0 12px", lineHeight: 1.45 }}>{framingLine(pick)}</p>
       {/* §6.7.8 — today's chapter is FICTION: it reads through the shared column with the
           indent variant (indent, no paragraph gaps). The sheet already owns the gutter. */}
       <ReadingColumn variant="dailyStory" size={17} style={{ paddingInline: 0, marginBottom: 16 }}>
         {String(body || "").split(/\n\s*\n+/).filter(Boolean).map((para, i) => <p key={i}>{para}</p>)}
       </ReadingColumn>
-      {cliff && <p style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 17, color: cwOf("crimson").petal, margin: "0 0 16px" }}>"{cliff}"</p>}
-      <div style={{ display: "flex", gap: 8 }}><Pill cw="crimson" filled onClick={onMarkRead || onClose}>Mark as read</Pill><Pill cw="sage" onClick={onReflect || onClose}>Reflect on it</Pill></div>
+      {cliff && <p style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 17, color: crimsonC, margin: "0 0 16px" }}>"{cliff}"</p>}
+      {/* the kind return model: where she's up to + a gentle tease. No streak, no scold. */}
+      {(readSoFar > 0 || nextPick) && (
+        <p style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 14.5, color: T.muted, margin: "0 0 14px", lineHeight: 1.5 }}>
+          {readSoFar > 0 ? `You've read ${readSoFar} of ${pick?.total ?? 30} so far. ` : ""}
+          {nextPick ? `Tomorrow: ${chapterLabel(nextPick).toLowerCase()}.` : ""}
+        </p>
+      )}
+      <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+        <Pill cw="crimson" filled onClick={onMarkRead || onClose}>Mark as read</Pill>
+        {onImmersive && <Pill Icon={BookOpen} cw="plum" onClick={onImmersive}>Read straight through</Pill>}
+        <Pill cw="sage" onClick={onReflect || onClose}>Reflect on it</Pill>
+      </div>
     </SheetShell>
   );
 }

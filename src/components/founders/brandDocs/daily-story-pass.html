@@ -1,0 +1,92 @@
+<!-- Component #5 — the immersive Daily Story: bug fix + evergreen chapter-a-day + parked fresh-source options. 2026-07-16. Phone-readable, no emoji. -->
+<style>
+  .ds { font-family:'Inter',system-ui,sans-serif; color:#2E261B; background:#ECE7DA; max-width:820px; margin:0 auto; padding:20px 15px 70px; line-height:1.5; }
+  .ds h1 { font-family:'Fraunces',Georgia,serif; font-size:27px; color:#7A1A12; margin:4px 0 5px; letter-spacing:-.3px; }
+  .ds h2 { font-family:'Fraunces',Georgia,serif; font-size:20px; color:#0B0805; margin:30px 0 8px; border-bottom:2px solid #D8CFBC; padding-bottom:5px; }
+  .ds h3 { font-family:'Fraunces',Georgia,serif; font-size:16.5px; color:#7A1A12; margin:20px 0 4px; }
+  .ds p,.ds li { font-size:14px; }
+  .ds .box { background:#F4EFE3; border:1px solid #D8CFBC; border-radius:12px; padding:12px 14px; margin:11px 0; }
+  .ds .gap { border-left:5px solid #BC2E27; } .ds .now { border-left:5px solid #8FAF8F; }
+  .ds .warn { border-left:5px solid #A8893F; } .ds .new { border-left:5px solid #7A1A12; background:#F6EEE6; }
+  .ds table { width:100%; border-collapse:collapse; margin:8px 0; font-size:12.5px; }
+  .ds th { text-align:left; background:#E4DCC9; padding:6px 8px; font-size:10.5px; text-transform:uppercase; letter-spacing:.4px; border-bottom:2px solid #D8CFBC; }
+  .ds td { padding:6px 8px; border-bottom:1px solid #E0D8C6; vertical-align:top; }
+  .ds .tw { overflow-x:auto; -webkit-overflow-scrolling:touch; }
+  .ds code { background:#E4DCC9; border-radius:4px; padding:1px 5px; font-size:11.5px; font-family:ui-monospace,Menlo,monospace; }
+  .ds .tag { display:inline-block; font-size:10px; font-weight:800; padding:2px 7px; border-radius:999px; text-transform:uppercase; white-space:nowrap; }
+  .ds .t-fix { background:#8FAF8F; color:#fff; } .ds .t-bug { background:#BC2E27; color:#fff; }
+  .ds .t-park { background:#A8893F; color:#fff; } .ds .t-no { background:#6B5E48; color:#fff; }
+  .ds .muted { color:#6B5E48; font-size:12.4px; }
+  .ds .big { font-size:15px; font-weight:800; }
+  .ds .kicker { font-size:11px; font-weight:800; letter-spacing:1px; text-transform:uppercase; color:#A8893F; }
+</style>
+<div class="ds">
+  <div class="kicker">FemWell · Lifestyle · component #5</div>
+  <h1>The Daily Story — honest, evergreen, immersive</h1>
+  <p class="muted">Built + live: one gating contract (the stale/blank bug fixed), an honest chapter-a-day on the finished 30-chapter series, and the real immersive reader. Plus the parked options for a truly fresh daily source. 2026-07-16.</p>
+
+  <div class="box new">
+    <p class="big" style="margin:0 0 4px;">The situation</p>
+    <p style="margin:0;">"The Long Room" (<code>series_key: the_long_room</code>) is <b>30 real ~500-word chapters, days 1–30</b> — a genuinely finished story. It ended ~37 days ago and <b>nothing refills the entity</b>. So the app had two bad options and was doing <i>both</i>: pretending a 37-day-old chapter was "Today's chapter", or showing nothing at all. We now do the honest third thing.</p>
+  </div>
+
+  <h2>1 · The bug — five surfaces, five different questions <span class="tag t-fix">fixed</span></h2>
+  <p class="muted">The audit found three readers. There were <b>five</b> — and the live Today page wasn't the one named (it's <code>TodayClipboardDemo</code>, not TodayDemo6).</p>
+  <div class="tw"><table>
+    <tr><th>Surface</th><th>What it asked (before)</th><th>What she saw</th></tr>
+    <tr><td><b>LifestyleEliteShell</b></td><td><code>filter({}, "-created_date", 1)</code></td><td>Newest-ever row — no <code>is_active</code>, no date gate → <b>a 37-day-stale chapter labelled "Today's chapter"</b> <span class="tag t-bug">the bug</span></td></tr>
+    <tr><td><b>TodayDailyChapterCard</b></td><td><code>published_date === today && is_active</code></td><td><b>Nothing</b> — <code>return null</code> the day the series ended <span class="tag t-bug">blank</span></td></tr>
+    <tr><td><b>DailyStoryReel</b> (Today)</td><td><code>{is_active}</code> → first <code>published_date &lt;= today</code></td><td>Latest-available → also stale</td></tr>
+    <tr><td><b>TodayClipboardDemo</b> <i>(the LIVE Today)</i></td><td><code>{is_active}</code> → first <code>&lt;= today</code></td><td>Also stale — <b>a 5th consumer the audit missed</b></td></tr>
+    <tr><td><b>DailyStoryReader</b></td><td><code>{series_key, is_active}</code> → all <code>&lt;= today</code></td><td>The straight-through read (correct — kept)</td></tr>
+  </table></div>
+  <div class="box now">
+    <p style="margin:0;"><b>The fix: ONE contract</b> — <code>src/components/lifestyle/dailyStory.js</code>. Every surface now calls <code>chapterForDay()</code> and gets the <b>same chapter</b>, framed honestly. <b>Never stale-as-today; never blank.</b> The reader keeps its own whole-series load on purpose — that <i>is</i> the straight-through mode.</p>
+  </div>
+
+  <h2>2 · The evergreen model — honest, not a trick</h2>
+  <div class="box">
+    <p style="margin:0 0 6px;"><b>Deterministic by calendar day:</b> <code>((daysSinceEpoch − anchor) mod 30)</code> → <b>every woman is on the same chapter today</b>, it advances one a day, and it cycles. No randomness, no drift across devices or reloads.</p>
+    <p style="margin:0 0 6px;"><b>Framed truthfully</b> — the sheet says, in as many words: <i>“A chapter a day from ‘The Long Room’ — a finished story you can also read straight through.”</i> The eyebrow reads <b>“Chapter 7 of 30”</b>, never "fresh today" unless it genuinely is.</p>
+    <p style="margin:0;"><b>Graceful upgrade built in:</b> a chapter genuinely published for <i>today</i> <b>always wins</b> over the evergreen pick. So if the series is ever refilled (any option below), this module needs <b>no change</b> — it simply stops falling back. The evergreen is a floor, not a ceiling.</p>
+  </div>
+
+  <h3>The kind return model (no streak-shame)</h3>
+  <ul style="margin:0;">
+    <li><b>Where she's up to</b> — "You've read 9 of 30 so far." A count, never a streak, never a scold for a gap.</li>
+    <li><b>Resume</b> — the reader persists position + bookmarks per-book (<code>fw_reader_pos_daily_the_long_room</code>), so it reopens where she left off.</li>
+    <li><b>A gentle tease</b> — "Tomorrow: chapter 8." An invitation, not a countdown.</li>
+    <li><b>Read means one thing app-wide</b> — the same <code>fw_read_chapter_&lt;id&gt;</code> key the Today reel already used, so the surfaces agree.</li>
+    <li><b>Mark as read → the garden</b> — via the existing <code>recordProgress()</code> (component #3's contract). Reaching a chapter in the immersive reader records it too.</li>
+  </ul>
+
+  <h3>The immersive read</h3>
+  <p style="margin:0;">"Read straight through" opens the <b>real <code>DailyStoryReader</code></b> full-screen at <b>today's</b> chapter — the measured pagination + page-flip + movie mode + themes + bookmarks (components #3/#4's craft), reading through the shared <code>ReadingColumn</code>. Reused, not duplicated.</p>
+
+  <h2>3 · PARKED — a truly fresh daily source <span class="tag t-park">needs Halli</span></h2>
+  <p class="muted">Not built. The evergreen makes the page honest and never-empty today; these are the routes to genuinely new writing.</p>
+  <div class="box warn">
+    <p style="margin:0 0 4px;"><b>(a) Author / seed more chapters</b> <span class="tag t-fix">no backend</span></p>
+    <p style="margin:0;">Write (or commission) a second series and seed <code>DailyStory</code> rows with real <code>published_date</code>s. <b>Zero code changes</b> — the gate already prefers a genuinely-fresh chapter. Cheapest, highest quality, entirely a content decision. <b>Mx Storyteller is the named owner for long-form fiction.</b></p>
+  </div>
+  <div class="box warn">
+    <p style="margin:0 0 4px;"><b>(b) A generator + cron</b> <span class="tag t-bug">NEW function + AI cost + sign-off</span></p>
+    <p style="margin:0;">A nightly job writing tomorrow's chapter. <b>Costs:</b> a new function (the 50-fn cap is <i>already blown</i> — ~118 dirs), recurring AI spend, plus a cron/notify path that's on the parked list. <b>Quality risk:</b> serialized fiction that stays coherent over 30+ chapters is exactly what LLMs drift on — and a bad chapter is worse than a re-read. <b>Note:</b> a fiction pipeline already exists (<code>generateFemwellFiction</code>, <code>generateNextChapter</code>, <code>fictionWorker</code>) but it writes <b>LifestyleItems</b> FICTION with <code>chapters_json</code> — not <code>DailyStory</code>. Reusing it beats writing a new one.</p>
+  </div>
+  <div class="box">
+    <p style="margin:0 0 4px;"><b>(c) Repoint at StoryPack/StoryItem</b> <span class="tag t-no">doesn't fit — checked</span></p>
+    <p style="margin:0;">I checked the schemas rather than assume. <code>StoryPack</code> is <b>per-user</b> (<code>user_id</code>, <code>day_key</code>) and <code>StoryItem</code> carries <code>pack_id</code>, <code>slot_index</code>, <code>cta_label</code> — that's the <b>Today story-<i>slots</i></b> subsystem (Instagram-style daily cards), <b>not serialized fiction</b>. Repointing would mean rebuilding it into something it isn't. <b>Recommend dropping (c).</b></p>
+    <p style="margin:6px 0 0;"><b>(c′) The better third option:</b> point the Daily Story at the <b>existing FemWell fiction</b> in <code>LifestyleItems</code> (<code>FEMWELL_FICTION_*</code>, real <code>chapters_json</code>) — already generated, already rendered by <code>FictionReader</code>. A chapter-a-day could draw from that library with <b>no new function</b>. Worth a look before (b).</p>
+  </div>
+  <p class="muted"><b>Recommendation:</b> (a) for quality, (c′) for breadth — both avoid a new function. Hold (b) unless you want AI-written serial fiction as a product bet.</p>
+
+  <h2>4 · What shipped</h2>
+  <ul style="margin:0;">
+    <li><b>NEW</b> <code>src/components/lifestyle/dailyStory.js</code> — the one gate: <code>loadStoryChapters</code> · <code>chapterForDay</code> · <code>nextChapterOf</code> · <code>chapterLabel</code> · <code>framingLine</code> · <code>markChapterRead</code>/<code>isChapterRead</code>/<code>readCount</code>.</li>
+    <li><b>Rewired</b> LifestyleEliteShell · TodayDailyChapterCard · DailyStoryReel · TodayClipboardDemo (the live Today) → one contract.</li>
+    <li><b>ChapterSheet</b> gains the honest framing line, "Chapter N of 30", the read-count + tomorrow tease, and a <b>Read straight through</b> door into the real immersive reader.</li>
+    <li><b>Reused, not duplicated:</b> <code>DailyStoryReader</code> · <code>ReadingColumn</code> · <code>recordProgress</code>.</li>
+    <li><b>No backend.</b> No new entity, no new function, no schema change. Reversible in one commit.</li>
+  </ul>
+  <p class="muted" style="margin-top:16px;">Voiced read: the global player exists (<code>PodcastPlayerProvider</code>/<code>usePodcastPlayer</code>) but there is <b>no audio for these chapters</b> — voicing them would need <code>generateAudio</code> runs + storage per chapter. Flagged, not faked: a play button with nothing behind it is worse than none.</p>
+</div>

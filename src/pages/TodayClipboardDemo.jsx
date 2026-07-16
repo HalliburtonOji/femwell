@@ -22,6 +22,7 @@ import {
   PHASE_COLORS, PHASE_LABEL,
 } from "@/components/journal/Editorial";
 import { base44 } from "@/api/base44Client";
+import { loadStoryChapters, chapterForDay } from "@/components/lifestyle/dailyStory";
 import { computeCycleDay } from "@/hooks/useCycleDay";
 import { nutritionToday } from "@/utils/nutritionSummary";
 import { communityHash } from "@/components/community/communityAnon";
@@ -348,10 +349,11 @@ export default function TodayClipboardDemo() {
         if (alive) setSymptoms((rows || []).filter(Boolean));
       }).catch(() => {});
       // ── REAL content surfaces (global/user content; each guarded + fail-open → graceful curated fallback) ──
-      const todayISO = todayKey();
-      withTimeout(base44.entities.DailyStory.filter({ is_active: true }, "-published_date", 20)).then((rows) => {
-        if (!alive) return; const arr = (rows || []).filter(Boolean);
-        const s = arr.find((r) => !r.published_date || String(r.published_date).slice(0, 10) <= todayISO) || arr[0];
+      // ONE gating contract (dailyStory.js) — this used to take the newest chapter published
+      // on-or-before today, which presented a long-finished chapter as "today's".
+      withTimeout(loadStoryChapters()).then((chapters) => {
+        if (!alive) return;
+        const s = chapterForDay(chapters)?.chapter;
         if (s) setContent((c) => ({ ...c, story: s }));
       }).catch(() => {});
       withTimeout(base44.entities.LifestyleItems.filter({}, "-published_at", 12)).then((rows) => {
