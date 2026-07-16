@@ -1,0 +1,161 @@
+<!-- Lifestyle CLIPBOARD / BOARDS — focused reorg brainstorm (component 1 of the motherboard build). 2026-07-16. Phone-readable, no emoji. Plan only. -->
+<style>
+  .cb { font-family:'Inter',system-ui,sans-serif; color:#2E261B; background:#ECE7DA; max-width:820px; margin:0 auto; padding:20px 15px 70px; line-height:1.5; }
+  .cb h1 { font-family:'Fraunces',Georgia,serif; font-size:27px; color:#7A1A12; margin:4px 0 5px; letter-spacing:-.3px; }
+  .cb h2 { font-family:'Fraunces',Georgia,serif; font-size:20px; color:#0B0805; margin:30px 0 8px; border-bottom:2px solid #D8CFBC; padding-bottom:5px; }
+  .cb h3 { font-family:'Fraunces',Georgia,serif; font-size:16.5px; color:#7A1A12; margin:20px 0 4px; }
+  .cb p,.cb li { font-size:14px; }
+  .cb .box { background:#F4EFE3; border:1px solid #D8CFBC; border-radius:12px; padding:12px 14px; margin:11px 0; }
+  .cb .gap { border-left:5px solid #BC2E27; } .cb .now { border-left:5px solid #8FAF8F; }
+  .cb .warn { border-left:5px solid #A8893F; } .cb .new { border-left:5px solid #7A1A12; background:#F6EEE6; }
+  .cb table { width:100%; border-collapse:collapse; margin:8px 0; font-size:12.6px; }
+  .cb th { text-align:left; background:#E4DCC9; color:#0B0805; padding:6px 8px; font-size:10.5px; text-transform:uppercase; letter-spacing:.4px; border-bottom:2px solid #D8CFBC; }
+  .cb td { padding:6px 8px; border-bottom:1px solid #E0D8C6; vertical-align:top; }
+  .cb .tw { overflow-x:auto; -webkit-overflow-scrolling:touch; }
+  .cb code { background:#E4DCC9; border-radius:4px; padding:1px 5px; font-size:11.6px; font-family:ui-monospace,Menlo,monospace; }
+  .cb .tag { display:inline-block; font-size:10px; font-weight:800; padding:2px 7px; border-radius:999px; text-transform:uppercase; white-space:nowrap; }
+  .cb .t-v { background:#7A1A12; color:#fff; } .cb .t-do { background:#8FAF8F; color:#fff; }
+  .cb .t-c { background:#8E6E8E; color:#fff; } .cb .t-fn { background:#BC2E27; color:#fff; }
+  .cb .muted { color:#6B5E48; font-size:12.4px; }
+  .cb .big { font-size:15px; font-weight:800; }
+  .cb .kicker { font-size:11px; font-weight:800; letter-spacing:1px; text-transform:uppercase; color:#A8893F; }
+  .cb .board { background:#F4EFE3; border:1px solid #D8CFBC; border-left:5px solid #7A1A12; border-radius:12px; padding:11px 13px; margin:9px 0; }
+  .cb .shelf { border-top:1px dashed #D8CFBC; margin-top:8px; padding-top:8px; }
+  .cb .shelf b { color:#7A1A12; }
+</style>
+<div class="cb">
+  <div class="kicker">FemWell · Lifestyle · component 1</div>
+  <h1>The Lifestyle clipboard — reorganised</h1>
+  <p class="muted">Focused brainstorm for ONE component: the Lifestyle clipboard (the horizontal board slider). Halli: the content is "just all over the place" — the fix is the approved <b>sliding StackedCard × tap-to-expand</b> card language. Plan only; the live rebuild follows once the brand session's typed card variations land. 2026-07-16.</p>
+
+  <div class="box new">
+    <p class="big" style="margin:0 0 4px;">The shape we're building to</p>
+    <p style="margin:0;">The clipboard is <b>multiple horizontally-SLIDING boards</b> (a board slider with edge-peek + ‹ › arrows + dots). <b>Each board is a StackedCard</b> — split TOP / BOTTOM by the gold hairline — and <b>each half is its own horizontal peek sub-slider of FloraCover cover-cards</b>. <b>Tap any cover → the same full-screen expand</b> (big cover · Fraunces title · meta rows · chips · rich body · inline player where it applies · sticky Save + primary action). Consume the brand session's <code>expandCards.jsx</code> (<code>CoverCard</code>, <code>ExpandDetailCard</code>) + the typed variations — never duplicate them.</p>
+  </div>
+
+  <h2>1 · What's on the clipboard now (all 18 lenses)</h2>
+  <p class="muted">Every item currently living in the 5 boards. <span class="tag t-c">consume</span> = something she reads/hears. <span class="tag t-do">do</span> = an action/ritual.</p>
+  <div class="tw"><table>
+    <tr><th>Board</th><th>Lens</th><th>What it holds</th><th>Job</th></tr>
+    <tr><td rowspan="2">The good life</td><td>TimePickerLens</td><td>Time-band picker (few/15/evening) → a read + a listen + a make prompt</td><td><span class="tag t-do">do</span></td></tr>
+    <tr><td>PermissionLens</td><td>3 static permission slips + "book a quiet hour"</td><td><span class="tag t-do">do</span></td></tr>
+    <tr><td rowspan="4">For you</td><td>ForYouLens</td><td>Editor's pick + 2 "more for you"</td><td><span class="tag t-c">consume</span></td></tr>
+    <tr><td>SavedLens</td><td>What she saved</td><td><span class="tag t-c">consume</span></td></tr>
+    <tr><td>TryThisLens</td><td>3 static micro-actions → Planner</td><td><span class="tag t-do">do</span></td></tr>
+    <tr><td>PhasePicksLens</td><td>A mix tuned to her phase</td><td><span class="tag t-c">consume</span></td></tr>
+    <tr><td rowspan="4">Read</td><td>Articles</td><td>Up to 5 one-line article rows</td><td><span class="tag t-c">consume</span></td></tr>
+    <tr><td>Stories</td><td>Up to 5 one-line story rows</td><td><span class="tag t-c">consume</span></td></tr>
+    <tr><td>Books</td><td>Today's chapter chip + FemWell fiction + Gutendex classics</td><td><span class="tag t-c">consume</span></td></tr>
+    <tr><td>Guides</td><td>Short how-tos (mostly a static fallback)</td><td><span class="tag t-c">consume</span></td></tr>
+    <tr><td rowspan="4">Listen</td><td>Podcasts</td><td>Real inline audio player</td><td><span class="tag t-c">consume</span></td></tr>
+    <tr><td>Videos</td><td>Inline youtube-nocookie (6 hardcoded clips stand in)</td><td><span class="tag t-c">consume</span></td></tr>
+    <tr><td>TikTok</td><td>Trending link-outs + static fallbacks</td><td><span class="tag t-c">consume</span></td></tr>
+    <tr><td>External</td><td>2 hardcoded external shows</td><td><span class="tag t-c">consume</span></td></tr>
+    <tr><td rowspan="4">Story &amp; sky</td><td>DailyStoryLens</td><td>Static excerpt of today's chapter</td><td><span class="tag t-c">consume</span></td></tr>
+    <tr><td>ADayLens</td><td>"A day for you" — 1 + 4 static alts → Planner</td><td><span class="tag t-do">do</span></td></tr>
+    <tr><td>HoroscopeLens</td><td>Moon + phase + weather snippet</td><td><span class="tag t-c">consume</span></td></tr>
+    <tr><td>SkyDiaryLens</td><td>Write a note against the moon</td><td><span class="tag t-do">do</span></td></tr>
+  </table></div>
+
+  <h2>2 · Why it reads "all over the place"</h2>
+  <div class="box gap">
+    <ol style="margin:0; padding-left:18px;">
+      <li><b>Boards mix jobs.</b> "For you" holds a shelf (editorial, saved) next to a doing-lens (try this). "Story &amp; sky" holds a story + a planner action + an astrology door + a writing surface. A board isn't one room — so nothing has an obvious home.</li>
+      <li><b>One content type lives in five places.</b> Articles appear in the new Reads deck, For-you's editor pick, For-you's "more", Read/Articles, The-good-life's time picks, and Phase picks. Same for audio. She can't tell where "the articles" are.</li>
+      <li><b>Two card languages on one page.</b> The new deck is big FloraCover cards; every board lens is a cramped one-line <code>ContentRow</code>. The boards look like a list app bolted under a magazine.</li>
+      <li><b>Density kills the cards.</b> Up to 4 lenses per board (2 per shelf) leaves no room for a real cover — hence the tiles.</li>
+      <li><b>Dead ends.</b> Rows open a route or nothing; there's no in-place "look closer" — so browsing costs a full navigation every time.</li>
+    </ol>
+  </div>
+
+  <h2>3 · The reorganised boards</h2>
+  <div class="box now">
+    <p style="margin:0 0 5px;"><b>The rules</b> (each fixes one problem above):</p>
+    <ul style="margin:0;">
+      <li><b>One board = one room = one job.</b> Consume-shelves and do-shelves never share a shelf.</li>
+      <li><b>Every item is a cover-card</b> (<code>CoverCard</code> + FloraCover) — no one-line rows anywhere on the clipboard.</li>
+      <li><b>Each shelf is a peek sub-slider</b> (edge-peek + dots + subtle ‹ ›); uniform card size within a shelf (§6.7.0).</li>
+      <li><b>Tap = expand in place</b> (the shared <code>ExpandDetailCard</code>), never a blind route. The route is the <i>last</i> step, from inside the expand.</li>
+      <li><b>Never empty</b> — every shelf carries a seeded fallback (the deck's pattern).</li>
+      <li><b>One type, one home.</b> The personalised <b>"Reads for you" deck</b> (already live, above the clipboard) owns "picked for you" — so the boards stop duplicating it.</li>
+    </ul>
+  </div>
+
+  <p class="lead"><b>Six boards, each a StackedCard with two shelves:</b></p>
+
+  <div class="board">
+    <b>1 · Read</b> <span class="muted">— the library</span>
+    <div class="shelf"><b>TOP · Articles &amp; guides</b> → <span class="tag t-v">article</span> covers. <span class="muted">(rehomes: Articles, Guides)</span></div>
+    <div class="shelf"><b>BOTTOM · Stories &amp; fiction</b> → <span class="tag t-v">story</span> covers. <span class="muted">(rehomes: Stories)</span></div>
+  </div>
+
+  <div class="board">
+    <b>2 · Listen &amp; watch</b> <span class="muted">— the sound + screen room</span>
+    <div class="shelf"><b>TOP · Podcasts &amp; shows</b> → <span class="tag t-v">audio</span> covers (external shows = same variation, link-out action). <span class="muted">(rehomes: Podcasts, External)</span></div>
+    <div class="shelf"><b>BOTTOM · Watch &amp; trending</b> → <span class="tag t-v">video</span> covers (TikTok = link-out, never fake inline). <span class="muted">(rehomes: Videos, TikTok)</span></div>
+  </div>
+
+  <div class="board">
+    <b>3 · Books</b> <span class="muted">— the long form</span>
+    <div class="shelf"><b>TOP · Your shelf</b> — continue reading + FemWell fiction → <span class="tag t-v">book</span> covers. <span class="muted">(rehomes: Books/fiction)</span></div>
+    <div class="shelf"><b>BOTTOM · Free classics</b> — Gutendex public-domain (+ book-club tie) → <span class="tag t-v">book</span> covers. <span class="muted">(rehomes: Books/gutendex)</span></div>
+  </div>
+
+  <div class="board">
+    <b>4 · Story &amp; sky</b> <span class="muted">— the two daily rituals</span>
+    <div class="shelf"><b>TOP · Today's chapter</b> → <span class="tag t-v">story</span> cover (expand → the real reader). <span class="muted">(rehomes: DailyStory)</span></div>
+    <div class="shelf"><b>BOTTOM · Your sky</b> — today's reading + the sky diary → <span class="tag t-v">horoscope</span> + <span class="tag t-v">ritual</span>. <span class="muted">(rehomes: Horoscope, SkyDiary)</span></div>
+  </div>
+
+  <div class="board">
+    <b>5 · The good life</b> <span class="muted">— leisure &amp; permission (the doing room)</span>
+    <div class="shelf"><b>TOP · What do you have time for</b> — the band picker; its picks render as their own variations (<span class="tag t-v">article</span>/<span class="tag t-v">audio</span>). <span class="muted">(rehomes: TimePicker)</span></div>
+    <div class="shelf"><b>BOTTOM · Permission &amp; small joys</b> — a day for you · try this · permission slips → <span class="tag t-v">ritual</span> + <span class="tag t-v">quote</span>. <span class="muted">(rehomes: ADay, TryThis, Permission)</span></div>
+  </div>
+
+  <div class="board">
+    <b>6 · Yours</b> <span class="muted">— what she kept / what fits her now</span>
+    <div class="shelf"><b>TOP · Saved</b> — everything she tucked away → mixed variations by type. <span class="muted">(rehomes: Saved)</span></div>
+    <div class="shelf"><b>BOTTOM · For your phase</b> — the gentle phase-fit mix → mixed variations. <span class="muted">(rehomes: PhasePicks)</span></div>
+  </div>
+
+  <div class="box warn">
+    <p style="margin:0;"><b>Rehome ledger — nothing stripped.</b> All 18 lenses land: Articles+Guides→1·TOP · Stories→1·BOTTOM · Podcasts+External→2·TOP · Videos+TikTok→2·BOTTOM · Books(fiction)→3·TOP · Books(classics)→3·BOTTOM · DailyStory→4·TOP · Horoscope+SkyDiary→4·BOTTOM · TimePicker→5·TOP · ADay+TryThis+Permission→5·BOTTOM · Saved→6·TOP · PhasePicks→6·BOTTOM. <b>ForYouLens (editor's pick + more)</b> is the one absorbed rather than moved — the live personalised <b>"Reads for you" deck</b> already owns that job above the clipboard (it's the same content, better presented); its editor's pick becomes the deck's lead card. Nothing is lost.</p>
+  </div>
+
+  <h2>4 · Tap-to-expand behaviour, per variation</h2>
+  <div class="tw"><table>
+    <tr><th>Variation</th><th>Collapsed cover</th><th>Tap → expand shows</th><th>Primary action (from inside)</th></tr>
+    <tr><td><span class="tag t-v">article</span></td><td>FloraCover + "Essay/Guide · N min" + title</td><td>Big cover · title · read-time + source meta · topic chips · the real lede/opening</td><td><b>Read full</b> → <code>/LifestyleDetail?id=</code> (+ Save)</td></tr>
+    <tr><td><span class="tag t-v">story</span></td><td>Cover + "Story · N min"</td><td>Cover · opening lines · the cliffhanger · day-N meta</td><td><b>Read the chapter</b> → the immersive reader (<code>DailyStoryReader</code>/<code>FictionReader</code>)</td></tr>
+    <tr><td><span class="tag t-v">audio</span></td><td>Cover + "Listen · duration"</td><td>Cover · <b>inline player</b> (real audio) · show notes · chips</td><td><b>Open episode</b> / link-out for external shows</td></tr>
+    <tr><td><span class="tag t-v">video</span></td><td>Cover + "Watch · duration"</td><td>Cover · <b>inline youtube-nocookie</b> player · channel meta</td><td><b>Watch</b>; TikTok/IG → <b>link-out</b> (never fake inline)</td></tr>
+    <tr><td><span class="tag t-v">book</span></td><td>Cover + author + progress</td><td>Cover · blurb · progress / "continue where you left off" · content heads-up</td><td><b>Open the reader</b> → <code>BookReader</code>/<code>FictionReader</code></td></tr>
+    <tr><td><span class="tag t-v">horoscope</span></td><td>Cover + moon phase + phase pill</td><td>Cover · the sky read · moon/triad meta · cycle↔moon line</td><td><b>Open your full reading</b> → the real <code>HoroscopeTab</code></td></tr>
+    <tr><td><span class="tag t-v">ritual</span></td><td>Cover + "A day for you" / "Try this"</td><td>Cover · what it is · why it's kind · no-streak framing</td><td><b>Quick-action in place</b> (§6.7.6) → writes <code>PlannerItems</code>, ticks + blooms. <b>No navigation.</b></td></tr>
+    <tr><td><span class="tag t-v">quote</span></td><td>Cover + the slip's first line</td><td>Cover · the permission slip in full (Cormorant, roomy)</td><td><b>Book a quiet hour</b> → Planner (or just close — it's allowed to be only a kindness)</td></tr>
+  </table></div>
+  <p class="muted"><b>Unused here (available, belong elsewhere):</b> <code>recipe</code> (Nutrition) · <code>session</code> (Programs). Lifestyle consumes 8 of the 10 variations.</p>
+
+  <h2>5 · Before the live rebuild — two blockers on the shared component</h2>
+  <div class="box gap">
+    <p style="margin:0 0 6px;"><b>Found while reading <code>expandCards.jsx</code> — both must be resolved or the rehome would REGRESS live behaviour</b> (the boards' rows currently do real save + real open):</p>
+    <ol style="margin:0; padding-left:18px;">
+      <li><b>Save is local-only.</b> <code>ExpandDetailCard</code> holds <code>const [saved, setSaved] = useState(false)</code> — a demo toggle. Live it must be <b>controlled</b>: <code>saved</code> + <code>onSave</code> props, so it persists to <code>UserProfile.saved_item_ids</code> AND fires <code>recordLifestyleAction</code> (the piece-4 learning loop).</li>
+      <li><b>Actions aren't wired.</b> <code>item.actions.map(...)</code> renders buttons with <b>no onClick</b> — so "Read full" would do nothing. Needs <code>actions[].onClick</code> pass-through.</li>
+    </ol>
+    <p style="margin:8px 0 0;"><b>Both are small, additive, backward-compatible props</b> (defaults keep the demos working). <b>Owner: the brand session</b> (it's their file) — or I add them additively once they've landed the variation set, coordinated via the baton so nothing is clobbered.</p>
+  </div>
+
+  <h2>6 · Build steps (this component only)</h2>
+  <ol style="margin:0; padding-left:18px;">
+    <li><b>Wait for the typed variation set</b> to land in <code>expandCards.jsx</code> (article/book/audio/story/video/ritual/quote/horoscope). <span class="tag t-fn">blocking</span></li>
+    <li><b>Controlled Save + action onClick</b> on <code>ExpandDetailCard</code> (above). <span class="tag t-fn">blocking</span></li>
+    <li><b>Item adapters</b> — map each live source (LifestyleItems row · DailyStory · HoroscopeReading · Planner ritual · permission slip · Gutendex book) into the shared item shape (<code>{id,title,subtitle,category,cw,kind,Icon,meta,chips,body,player,actions}</code>). Deterministic covers by <code>seed=item.id</code>.</li>
+    <li><b>Rebuild the six boards</b> as StackedCards of peek shelves of <code>CoverCard</code>s, in the existing <code>ClipboardSlider</code>. Keep the board slider's arrows/dots/hint + the Jump sheet (retarget to the six).</li>
+    <li><b>Wire the real handlers</b> — Save → <code>toggleSave</code> (+ record), open → <code>openItem</code>/readers, rituals → Planner quick-action.</li>
+    <li><b>Verify + drop live</b>, one commit, reversible; nothing stripped.</li>
+  </ol>
+
+  <p class="muted" style="margin-top:16px;">Plan only — no code changed. Consumes: <code>expandCards.jsx</code> (<code>CoverCard</code>/<code>ExpandDetailCard</code>/<code>InlinePlayer</code>) · <code>FloraCover</code> (piece 1) · <code>ClipboardSlider</code>/<code>StackedCard</code> (§6.10) · BRAND_IDENTITY §6.7 card language. Live page: <code>LifestyleEliteShell.jsx</code>.</p>
+</div>
