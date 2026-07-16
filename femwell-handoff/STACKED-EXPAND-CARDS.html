@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="en-GB"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>FemWell — StackedCard × tap-to-expand</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500;1,600&family=Fraunces:opsz,wght@9..144,400;9..144,600&family=Ephesis&display=swap" rel="stylesheet">
+<style>
+  :root{--paper:#ECE7DA;--paperHi:#F4EFE3;--paperDeep:#D8CFBC;--ink:#0B0805;--inkSoft:#1A140D;--muted:#2E261B;--gold:#A8893F;--crimson:#BC2E27;--oxblood:#7A1A12;--sage:#8FAF8F;--plum:#8E6E8E;--serif:'Cormorant Garamond',Georgia,serif;--fraunces:'Fraunces',var(--serif);--script:'Ephesis',cursive;--sans:ui-sans-serif,system-ui,-apple-system,'Segoe UI',sans-serif;}
+  *{box-sizing:border-box}
+  body{margin:0;background:radial-gradient(120% 80% at 12% 0%,#F4EFE3 0%,rgba(244,239,227,0) 55%),radial-gradient(120% 90% at 100% 100%,#E4DDCC 0%,rgba(228,221,204,0) 50%),var(--paper);color:var(--ink);font-family:var(--serif);font-size:18px;line-height:1.6;-webkit-font-smoothing:antialiased}
+  .doc{max-width:680px;margin:0 auto;padding:28px 22px 90px}
+  h1.cover{font-family:var(--script);font-size:56px;color:var(--oxblood);margin:6px 0 2px;line-height:1}
+  h2{font-family:var(--fraunces);font-weight:600;font-size:26px;color:var(--oxblood);margin:0 0 4px}
+  h3{font-family:var(--serif);font-weight:600;font-size:20px;color:var(--oxblood);margin:18px 0 6px}
+  .eyebrow{font-family:var(--sans);font-size:12px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--gold);margin-bottom:10px}
+  p{margin:0 0 12px}.lede{font-size:20px;line-height:1.55;font-style:italic}
+  small,.cap{font-family:var(--sans);font-size:13px;color:var(--muted);line-height:1.5}
+  b,strong{font-weight:600}
+  .section{background:var(--paperHi);border:1px solid var(--paperDeep);border-left:4px solid var(--gold);border-radius:20px;padding:22px 20px;margin:18px 0;box-shadow:0 4px 20px rgba(58,44,26,.10),0 1px 4px rgba(58,44,26,.06)}
+  .section.plum{border-left-color:var(--plum)}.section.prop{border-left-color:#C98A2E;border-left-style:dashed;background:#F6EEDD}
+  table{width:100%;border-collapse:collapse;font-size:14px;font-family:var(--sans);margin:8px 0}
+  th,td{text-align:left;padding:7px 8px;border-bottom:1px solid var(--paperDeep);vertical-align:top}
+  th{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--gold)}
+  td b{font-family:var(--serif);font-size:15px}
+  ul{margin:2px 0 12px;padding-left:20px}li{margin:5px 0}
+  .badge{display:inline-block;font-family:var(--sans);font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;padding:3px 9px;border-radius:999px;background:#DDE7DD;color:#3f6b3f;vertical-align:middle}
+  .foot{font-family:var(--sans);font-size:12px;color:var(--muted);text-align:center;margin-top:30px;line-height:1.6}
+  /* mini mock of the stacked card */
+  .stack{background:var(--paper);border:1px solid var(--paperDeep);border-radius:16px;padding:12px;margin:12px 0;max-width:320px}
+  .clip{width:30px;height:8px;border-radius:4px;background:var(--gold);margin-bottom:8px}
+  .row{display:flex;gap:8px;overflow:hidden}
+  .cc{flex:0 0 78%;border:1px solid var(--paperDeep);border-radius:12px;overflow:hidden;background:var(--paperHi)}
+  .cc .cov{height:52px;background:linear-gradient(135deg,#D9B24E33,#8FAF8F33)}
+  .cc .cov.b{background:linear-gradient(135deg,#8E6E8E33,#9FB6C933)}
+  .cc .t{font-family:var(--fraunces);font-weight:600;font-size:13px;color:var(--oxblood);padding:7px 9px 9px;line-height:1.1}
+  .hair{height:1px;background:linear-gradient(90deg,transparent,var(--gold),transparent);opacity:.5;margin:12px 0}
+  .dots{display:flex;gap:5px;justify-content:center;margin-top:8px}.dots i{width:6px;height:6px;border-radius:9px;background:var(--paperDeep)}.dots i.on{width:15px;background:var(--gold)}
+  .lbl{font-family:var(--sans);font-size:10px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);margin-bottom:5px}
+</style></head>
+<body><div class="doc">
+
+<div style="text-align:center;padding:14px 0 4px">
+  <div class="eyebrow">Side exploration · Card interaction · 16 Jul 2026</div>
+  <h1 class="cover">One card, two shelves</h1>
+  <p class="lede" style="max-width:470px;margin:8px auto 0">The tap-to-expand cards, married to our StackedCard: a single clipboard card split top/bottom, each half a swipeable shelf that opens into the big detail card.</p>
+</div>
+
+<div class="section">
+  <div class="eyebrow">The idea</div>
+  <h2>StackedCard × tap-to-expand.</h2>
+  <p>Take the browse-then-dive interaction (from <b>/ClipboardExpandDemo</b>) and drop it into our <b>StackedCard</b> structure: <b>one</b> big clipboard card, split into a <b>top</b> and a <b>bottom</b> half by the subtle gold hairline. Each half is its own <b>horizontal peek sub-slider</b> — swipe sideways, edge-peek, pager dots, subtle ‹ › arrows. Tap any cover → the <b>same</b> full-screen detail card opens (identical expand in both halves).</p>
+  <p><b>Top = Articles</b> (flora-cover reads → tap opens the article: cover · Fraunces title · a "listen to this read" inline player on narrated ones · detail rows · chips · Save + Read). <b>Bottom = the Book club</b> (flora-cover book cards → tap opens the book: cover · title + author · a paragraph hook · <b>Save · Talk about it · Open reader</b>, tied to our Library language).</p>
+  <div class="stack">
+    <div class="clip"></div>
+    <div class="lbl">Articles</div>
+    <div class="row"><div class="cc"><div class="cov"></div><div class="t">The quiet power of leaving early</div></div><div class="cc"><div class="cov"></div><div class="t">How to rest without earning it</div></div></div>
+    <div class="dots"><i class="on"></i><i></i><i></i><i></i><i></i></div>
+    <div class="hair"></div>
+    <div class="lbl">Book club</div>
+    <div class="row"><div class="cc"><div class="cov b"></div><div class="t">Hamnet</div></div><div class="cc"><div class="cov b"></div><div class="t">Wintering</div></div></div>
+    <div class="dots"><i class="on"></i><i></i><i></i><i></i><i></i></div>
+  </div>
+</div>
+
+<div class="section">
+  <div class="eyebrow">Why it's good</div>
+  <h2>Density without clutter.</h2>
+  <ul>
+    <li><b>Two shelves in one card</b> — articles and books live together, each browsable, without a wall of stacked cards or a long scroll.</li>
+    <li><b>One learned gesture</b> — swipe a row, tap a cover. It's the same in both halves and the same as the standalone carousel, so nothing new to learn.</li>
+    <li><b>The StackedCard rules hold</b> — each half is a <em>horizontal</em> sub-slider (never a vertical whole-card swap), the gold hairline separates them, subtle arrows + dots, real card chrome (gradient paper, corner sprig, soft double shadow).</li>
+    <li><b>Cohesive</b> — reuses the exact <code>FloraCover</code> + expand transition from the first demo (extracted into <code>brand/expandCards.jsx</code> so both demos share one source).</li>
+  </ul>
+  <h3>Where it fits</h3>
+  <p>Any surface with <b>two related content shelves</b>: Lifestyle (<b>Reads / Listens</b>), Library (<b>Articles / Books</b>), Programs (<b>Sessions / Series</b>), Nutrition (<b>Tonight / This week</b>), Today's Discover (<b>For you / Saved</b>). It's the natural "board" for a two-lane content rail.</p>
+</div>
+
+<div class="section prop">
+  <div class="eyebrow" style="color:#8E5B14">Shipped this pass <span class="badge">demo</span></div>
+  <h2 style="color:#8E5B14">A working demo — reachable, tappable.</h2>
+  <p>Live at <b>Ideas pill → Current → "Stacked cards — tap to expand ★"</b> (route <code>/StackedExpandDemo</code>). One clipboard card; swipe the <b>Articles</b> row and the <b>Book club</b> row independently (peek + dots + arrows); tap any cover → it expands into the full detail card; back/Esc/scrim to collapse. Reuses the shared expand + FloraCover; no writes; live pages untouched. <b>Content only</b> — people &amp; connection stay behind the DM safety rails.</p>
+  <h3>Next, on Halli's yes</h3>
+  <p>Fold the StackedCard × tap-to-expand pattern into <b>BRAND_IDENTITY.md §6.7</b> (the card system) as a named board type, alongside the standalone expand cards. Optionally: the FLIP card-morph expand, and wiring real Library/Lifestyle content + audio.</p>
+</div>
+
+<div class="foot">
+  FemWell · StackedCard × tap-to-expand · side exploration · 16 Jul 2026<br>
+  Reuses <code>StackedCard</code> structure + <code>brand/expandCards.jsx</code> + <code>FloraCover</code>. Content-only; people &amp; connection run through the DM safety rails. Fold into §6.7 after approval.
+</div>
+
+</div></body></html>

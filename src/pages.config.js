@@ -161,6 +161,10 @@ import BloomprintDemo from './pages/BloomprintDemo';
 // listens/sessions/books/recipes/circles/discover) — flora covers, inline player, sticky
 // actions, smooth expand/collapse. Preview route; live pages untouched.
 import ClipboardExpandDemo from './pages/ClipboardExpandDemo';
+// STACKED × EXPAND — the tap-to-expand cards married with our StackedCard: one big clipboard
+// card split into TOP (articles) + BOTTOM (books) halves by the gold hairline, each a horizontal
+// peek sub-slider → tap any cover → the shared full-screen expand. Preview route; live untouched.
+import StackedExpandDemo from './pages/StackedExpandDemo';
 import FloraCoverDemo from './pages/FloraCoverDemo';
 import LifestyleDeckDemo from './pages/LifestyleDeckDemo';
 // Garden + Jess redesign DEMOS (v4 bible: flora-hero + summary + living-ecosystem clipboard /
@@ -377,6 +381,7 @@ export const PAGES = {
     "TodayRitualDemo": TodayRitualDemo,
     "BloomprintDemo": BloomprintDemo,
     "ClipboardExpandDemo": ClipboardExpandDemo,
+    "StackedExpandDemo": StackedExpandDemo,
     "FloraCoverDemo": FloraCoverDemo,
     "LifestyleDeckDemo": LifestyleDeckDemo,
     "GardenClipboardDemo": GardenClipboardDemo,
