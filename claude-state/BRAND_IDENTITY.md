@@ -570,6 +570,26 @@ FemWell's motion is **calm and organic** — the feel comes from slow ease + the
 
 **Reference:** `/CardVariationsDemo` (the ten types) · `/StackedExpandDemo` (a board: Articles ⁄ Books) · `/ClipboardExpandDemo` (the standalone carousel).
 
+### 6.7.8 THE READER STANDARD — one reading-craft foundation for every text surface (✅ AGREED · Halli 2026-07-16) · v1
+> **Every reading surface reads through `src/components/brand/ReadingColumn.jsx`.** Six surfaces styling long-form text separately is exactly how craft drifts — so the column is **the ONLY thing allowed to set measure, side padding and leading**. Researched: `mnt/femwell/research_reading_foundation.md` + `research_reader_and_cards.md`.
+
+**⚠️ THE INVISIBLE TRAP (read this before touching any reader).** `src/index.css` remaps **BOTH `'Inter'` AND `'Fraunces'`** to Cormorant at **`size-adjust: 150%`**. A surface declaring those fonts renders **1.5× its nominal px** — invisible from the declared size. It is why the two reading engines sat at **~29 CPL** while every `SERIF` surface was a healthy ~45–50. **Reading text always uses the un-adjusted `SERIF` stack**, where a size means what it says. (Display headings may keep the remapped face — that's a deliberate visual, not a measure surface.)
+
+**THE RULES (enforced by the component, not by copy discipline):**
+1. **MEASURE IS IN `ex`, NEVER `ch`.** `1ch` is the advance of the "0" glyph — **20–30% wider** than the average character — so the popular `max-width:65ch` yields **~80–85 characters** (at/over the WCAG 80 cap). *Tailwind's `prose` ships that overshoot; copying it copies the bug.* USWDS — the only system that tokenises measure — uses `ex`; its 66-character target is **`60ex`** = our `READING.measure`.
+2. **SELF-CLAMPING:** `width: min(measure, 100%)` + `margin-inline: auto`. **Never `max-width` under a padded ancestor** — that is the double-framing bug.
+3. **SOLE PADDING OWNER.** No parent card/sheet/page may add side padding to reading text. **At 390px the max-width never binds — PADDING *IS* MEASURE.** The bug is structural, not typographic.
+4. **NEVER SHRINK TYPE TO BUY CHARACTERS.** **45 CPL is unreachable at 390px** with readable type (~38 CPL at 18px is the honest arithmetic). **Accept 38–42 on a phone.** The "<45 = danger" line is desktop-derived, and positive polarity (our cream) pays *more* as type gets smaller. Floors: **18px immersive / 16px absolute**.
+5. **LEADING ≥ 1.5** (we ship 1.62).
+6. **INDENT XOR SPACE (Butterick), by `variant`:** `article` · `horoscope` · `card` → **spaced, no indent**. `fiction` · `book` · `dailyStory` → **indent, no gap**. This one switch is what separates our readers. Never both.
+7. **ESCAPE HATCHES ON DAY ONE:** `bleed` + `measure="none"`. A component with no legal exit gets copy-pasted and mutated — **and that IS drift**.
+8. **NO ARTICLE PROGRESS BAR.** Zero evidence they help; across **32 experiments** progress bars **backfire** under high early investment — a long read is exactly that.
+9. **READ-TIME IS PERMISSION WHEN SMALL, A DETERRENT WHEN LARGE.** Say "4 min read" proudly; **past ~10 min say nothing** (or offer the next *break*) — stating a large time cost made **fewer** people finish. Use `readTimeLabel()`, which returns `null` past the threshold. (The famous "+40% engagement" figure is vendor marketing with no method — **do not cite it**.)
+10. **SILENT auto-resume.** Restore her position with **no ceremony and no "continue reading?" prompt**. Precedent exists (Pocket/Instapaper); measured benefit does not — ship it quietly, claim nothing.
+11. **A BUTTON MUST DO WHAT IT SAYS.** ("Mark as read" / "Save tonight's reading" shipped as no-ops that just closed the sheet — a button that lies is worse than no button. "Mark as read" now feeds the **Garden** via `recordProgress`.)
+
+**APPLIED (2026-07-16):** the in-card expand body + the book `ReadingPane` (`expandCards.jsx`), `ChapterSheet` (dailyStory variant) and `ReadingSheet` (horoscope variant) in `LifestyleEliteShell`, and the **article reader** `LifestyleDetail` (font-trap fixed, de-framed, tokens migrated, read-time + silent resume). **`DailyStoryReader` is flagged for its own component pass** (2,033 lines; it is the engine behind BOTH `FictionReader` and `BookReader`, and its measured pagination is coupled to the font metrics — a font change there forces a pagination re-tune. It is already on-brand; its measure fix must be done deliberately, not as a craft sweep).
+
 ---
 
 ## 6.8 CANONICAL PAGE STRUCTURE — the brand SIGNATURE on every page · v1 2026-06-19

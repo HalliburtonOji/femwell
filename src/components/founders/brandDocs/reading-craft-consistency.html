@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="en-GB"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>FemWell — Reading-craft consistency (component #3)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500;1,600&family=Ephesis&display=swap" rel="stylesheet">
+<style>
+  :root{--paper:#ECE7DA;--paperHi:#F4EFE3;--paperDeep:#D8CFBC;--ink:#0B0805;--inkSoft:#1A140D;--muted:#2E261B;--gold:#A8893F;--crimson:#BC2E27;--oxblood:#7A1A12;--sage:#8FAF8F;--plum:#8E6E8E;--serif:'Cormorant Garamond',Georgia,serif;--script:'Ephesis',cursive;--sans:ui-sans-serif,system-ui,-apple-system,'Segoe UI',sans-serif;}
+  *{box-sizing:border-box}
+  body{margin:0;background:radial-gradient(120% 80% at 12% 0%,#F4EFE3 0%,rgba(244,239,227,0) 55%),var(--paper);color:var(--ink);font-family:var(--serif);font-size:18px;line-height:1.6;-webkit-font-smoothing:antialiased}
+  .doc{max-width:680px;margin:0 auto;padding:26px 22px 80px}
+  h1.cover{font-family:var(--script);font-size:52px;color:var(--oxblood);margin:6px 0 2px;line-height:1}
+  h2{font-family:var(--serif);font-weight:600;font-style:italic;font-size:25px;color:var(--oxblood);margin:0 0 4px}
+  h3{font-family:var(--serif);font-weight:600;font-size:19px;color:var(--oxblood);margin:16px 0 5px}
+  .eyebrow{font-family:var(--sans);font-size:11.5px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--gold);margin-bottom:9px}
+  p{margin:0 0 11px}.lede{font-size:19px;line-height:1.5;font-style:italic}
+  small,.cap{font-family:var(--sans);font-size:13px;color:var(--muted);line-height:1.5}
+  b,strong{font-weight:600}
+  .section{background:var(--paperHi);border:1px solid var(--paperDeep);border-left:4px solid var(--gold);border-radius:18px;padding:20px 18px;margin:16px 0;box-shadow:0 4px 18px rgba(58,44,26,.09)}
+  .section.crimson{border-left-color:var(--crimson)}.section.sage{border-left-color:var(--sage)}
+  .section.prop{border-left-color:#C98A2E;border-left-style:dashed;background:#F6EEDD}
+  table{width:100%;border-collapse:collapse;font-size:13.5px;font-family:var(--sans);margin:8px 0}
+  th,td{text-align:left;padding:7px 7px;border-bottom:1px solid var(--paperDeep);vertical-align:top}
+  th{font-size:10.5px;letter-spacing:.09em;text-transform:uppercase;color:var(--gold)}
+  td b{font-family:var(--serif);font-size:14.5px}
+  ul{margin:2px 0 11px;padding-left:19px}li{margin:4px 0}
+  .badge{display:inline-block;font-family:var(--sans);font-size:10.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;padding:2px 8px;border-radius:999px;background:#DDE7DD;color:#3f6b3f}
+  .badge.no{background:#F0E2C6;color:#8E5B14}
+  .foot{font-family:var(--sans);font-size:12px;color:var(--muted);text-align:center;margin-top:26px;line-height:1.6}
+</style></head>
+<body><div class="doc">
+
+<div style="text-align:center;padding:12px 0 2px">
+  <div class="eyebrow">Motherboard component #3 · 16 Jul 2026</div>
+  <h1 class="cover">Reading craft</h1>
+  <p class="lede" style="max-width:470px;margin:8px auto 0">Fixing the book reader showed the articles had it worse. So: audit every reading surface, fix them the same way, and build one foundation so it never drifts again.</p>
+</div>
+
+<div class="section crimson">
+  <div class="eyebrow" style="color:var(--crimson)">The root cause — invisible from the code</div>
+  <h2>Two fonts were secretly 1.5× bigger than they said.</h2>
+  <p><code>src/index.css</code> remaps <b>both <code>'Inter'</code> and <code>'Fraunces'</code></b> to Cormorant at <b><code>size-adjust: 150%</code></b>. So a surface declaring <code>font-size: 16px</code> in <code>'Inter'</code> actually renders at <b>~24px</b> — while a surface using the <code>SERIF</code> stack renders at face value. Nothing in the component tells you this.</p>
+  <p>That single line explains the whole inconsistency: <b>the two reading engines sat at ~29 characters per line</b> (some sizes as low as 22) while every <code>SERIF</code> surface was a healthy ~45–50. It was never a "the articles are a bit off" problem — it was a font remap nobody could see.</p>
+</div>
+
+<div class="section prop">
+  <div class="eyebrow" style="color:#8E5B14">The research corrected me twice <span class="badge no">honest</span></div>
+  <h2 style="color:#8E5B14">I was about to fix it the wrong way.</h2>
+  <ul>
+    <li><b>"Use <code>max-width: 66ch</code>" — wrong.</b> <code>1ch</code> is the width of the <b>"0" glyph</b>, ~20–30% wider than an average character. <code>66ch</code> actually yields <b>~80–85 characters</b> — over the accessibility cap. (Tailwind's <code>prose</code> ships <code>65ch</code>, so the reference implementation carries the bug.) The right unit is <b><code>ex</code></b>: USWDS — the only design system that tokenises measure — puts 66 characters at <b>60ex</b>.</li>
+    <li><b>"Get above 45 CPL" — unreachable, and I said it too confidently last pass.</b> At 390px, 45 characters needs ~16px type <em>and</em> ~16px margins. The honest target on a phone is <b>38–42</b>, and you must <b>never shrink type to buy characters</b> (cream's readability advantage actually <em>grows</em> as type gets smaller). <b>At 390px the max-width never binds — padding IS measure.</b> So the bug was always <em>structural</em> (double-framing), not typographic.</li>
+    <li><b>Read-time cuts both ways.</b> Stating a 10-minute cost made <b>fewer</b> people finish. So: "4 min read" proudly; past ~10 min, say nothing.</li>
+    <li><b>No article progress bar.</b> No evidence they help; across 32 experiments they <b>backfire</b> when early investment is high — a long read is exactly that.</li>
+  </ul>
+</div>
+
+<div class="section sage">
+  <div class="eyebrow">The foundation</div>
+  <h2>One column. It owns measure, padding and leading — nothing else may.</h2>
+  <p><code>brand/ReadingColumn.jsx</code> is now the only thing allowed to set those on any reading surface. It enforces, structurally rather than by copy discipline:</p>
+  <ul>
+    <li><b>Measure as a token, in <code>ex</code></b> (<code>60ex</code> ≈ 66 chars) — most systems tokenise size and leading and leave measure to whoever writes the page. <em>That is how six surfaces drift.</em></li>
+    <li><b><code>width: min(measure, 100%)</code> + <code>margin-inline:auto</code></b> — self-clamping. Never <code>max-width</code> under a padded ancestor.</li>
+    <li><b>Sole padding owner</b>; type floors 18/16px; leading 1.62.</li>
+    <li><b>Indent XOR space by <code>variant</code></b> — article/horoscope/card spaced; fiction/book/dailyStory indented. Never both.</li>
+    <li><b>Escape hatches on day one</b> (<code>bleed</code>, <code>measure="none"</code>) — a component with no legal exit gets forked, and forking <em>is</em> drift.</li>
+    <li>Always the <b>un-adjusted</b> SERIF stack, so it can't fall into the 150% trap.</li>
+  </ul>
+</div>
+
+<div class="section">
+  <div class="eyebrow">Per surface — current state → fix → done</div>
+  <h2>Every reading surface on Lifestyle.</h2>
+  <table>
+    <tr><th>Surface</th><th>Was</th><th>Fixed</th></tr>
+    <tr><td><b>Article reader</b><br><code>LifestyleDetail</code></td><td><b>Worst offender.</b> 'Inter' 16px → <b>~24px effective → ~29 CPL</b>; double-framed (page gutter + card pad → 310px); <b>every</b> colour a legacy token; no resume; no read-time.</td><td>Un-adjusted SERIF 17px (18px ≥md); one padding owner (~334px ≈ <b>39 CPL</b>); <b>0 legacy tokens</b>; read-time (small only); <b>silent auto-resume</b>. <span class="badge">done</span></td></tr>
+    <tr><td><b>In-card expand body</b><br><code>ExpandDetailCard</code></td><td>~45–50 CPL, on-brand — but hand-rolled paragraph styling.</td><td>Reads through <code>ReadingColumn variant="card"</code> (spaced). <span class="badge">done</span></td></tr>
+    <tr><td><b>Book reading pane</b><br><code>ReadingPane</code></td><td><b>My own bug from #2:</b> it had <b>both</b> <code>textIndent</code> AND a paragraph <code>margin</code> — while the comment above it said "indent XOR space". It also flattened whitespace, destroying paragraph breaks.</td><td>Pagination now packs <b>real paragraphs</b> (never word-slices across them) and renders through <code>ReadingColumn variant="book"</code> — indent, no gaps. <span class="badge">done</span></td></tr>
+    <tr><td><b>Daily-story sheet</b><br><code>ChapterSheet</code></td><td>~50 CPL (fine). But "Mark as read" and "Reflect on it" were <b>no-ops that just closed the sheet</b>.</td><td><code>variant="dailyStory"</code> (indent). <b>"Mark as read" now really marks it read</b> — via the same recorder the <b>Garden</b> reads, so a finished chapter feeds her garden. "Reflect on it" opens the Journal. <span class="badge">done</span></td></tr>
+    <tr><td><b>Horoscope reading</b><br><code>ReadingSheet</code></td><td>~49–50 CPL (fine). "Save tonight's reading" and "Sky diary" were <b>also no-ops</b>.</td><td><code>variant="horoscope"</code> (spaced). <b>Save</b> writes a real Planner item; <b>Sky diary</b> jumps to the sky board. <span class="badge">done</span></td></tr>
+    <tr><td><b>Fiction / Book readers</b><br><code>FictionReader</code> · <code>BookReader</code></td><td>Thin cover/chrome wrappers — already on-brand from #2. They delegate the reading to DailyStoryReader.</td><td>No change needed. <span class="badge">ok</span></td></tr>
+    <tr><td><b>Story engine</b><br><code>DailyStoryReader</code></td><td>On-brand, and the <b>richest</b> reader we have (resume, bookmarks, 5 text sizes, 3 themes, page-flip). But 'Fraunces' → <b>~29 CPL</b> (~22 at XL).</td><td><b>FLAGGED — needs its own component.</b> See below. <span class="badge no">flagged</span></td></tr>
+  </table>
+</div>
+
+<div class="section prop">
+  <div class="eyebrow" style="color:#8E5B14">Flagged for its own component</div>
+  <h2 style="color:#8E5B14">The story engine — deliberately, not as a sweep.</h2>
+  <p><code>DailyStoryReader</code> is <b>2,033 lines</b> and is the engine behind <b>both</b> FictionReader and BookReader — it's three surfaces at once. Its <b>pagination is measured against the live font metrics</b>, so changing the typeface or size forces a pagination re-tune; and it owns 5 text sizes, 3 themes, bookmarks, resume and a page-flip animation. It is <b>already on-brand</b>, so nothing is ugly today — it's the <b>measure</b> (~29 CPL) that needs fixing, and doing that safely means re-tuning the pagination with it. <b>Highest blast radius on the page; it deserves a proper pass, not a craft sweep.</b></p>
+  <p class="cap">Recommended fix when we do it: move <code>.ds-reader-p</code> off the remapped <code>'Fraunces'</code> onto the un-adjusted stack, re-baseline the 5 text sizes around an 18px floor, and re-tune the pagination measurement — then verify CPL by counting real characters, not by trusting the unit.</p>
+</div>
+
+<div class="section">
+  <div class="eyebrow">Also found</div>
+  <h2>Dead code, and four buttons that lied.</h2>
+  <ul>
+    <li><b>Four no-op buttons</b> ("Mark as read", "Reflect on it", "Save tonight's reading", "Sky diary") only closed their sheet. <b>All four now do the real thing</b> — a button that lies is worse than no button, and this is a trust issue, not a craft one.</li>
+    <li><b><code>src/pages/Lifestyle.jsx</code> is dead code</b> — no route maps to it (the live page is <code>LifestyleElite → LifestyleEliteShell</code>). Its ForYou/Browse/Listen/Horoscope tabs are <b>unreachable</b>. Left untouched this pass; worth a deliberate delete so nobody "fixes" a page nobody can open.</li>
+  </ul>
+</div>
+
+<div class="foot">
+  FemWell · Motherboard component #3 — reading-craft consistency · 16 Jul 2026<br>
+  Standard folded into BRAND_IDENTITY §6.7.8. Research: <code>mnt/femwell/research_reading_foundation.md</code> · <code>research_reader_and_cards.md</code>. No new backend.
+</div>
+
+</div></body></html>

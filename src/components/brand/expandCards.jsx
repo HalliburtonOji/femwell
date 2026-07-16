@@ -45,6 +45,7 @@ import { T, SERIF, UI, PAPER_BG, Heart } from "@/components/journal/Editorial";
 import { OXBLOOD } from "@/components/brand/SliderKit";
 import { base44 } from "@/api/base44Client";
 import { usePodcastPlayer } from "@/hooks/usePodcastPlayer";
+import ReadingColumn from "@/components/brand/ReadingColumn";
 import FloraCover from "@/components/brand/FloraCover";
 import { cwOf, Pollinator, floraKeyframes, FlowerGlyph } from "@/components/brand/flora";
 import {
@@ -444,11 +445,22 @@ function MediaBlock({ item, accent }) {
 //  • INDENT XOR SPACE (Butterick) — a book indents its paragraphs and does NOT space them.
 const READ_WORDS = 150;
 const WPM = 200;   // the reading rate behind "~N min left"
+// Pack PARAGRAPHS into pages (never word-slice across them) so the page can be typeset like a
+// book: each paragraph indents and does NOT gap. v1 flattened the whitespace, which destroyed
+// the paragraph breaks and left one block carrying both an indent AND a margin — indent-AND-
+// space, the exact defect the rule forbids. Returns: pages[] of paragraph[].
 function paginateText(text, per = READ_WORDS) {
-  const words = String(text || "").replace(/\s+/g, " ").trim().split(" ").filter(Boolean);
-  const out = [];
-  for (let i = 0; i < words.length; i += per) out.push(words.slice(i, i + per).join(" "));
-  return out;
+  const paras = String(text || "").replace(/\r/g, "").split(/\n\s*\n+/)
+    .map((p) => p.replace(/\s+/g, " ").trim()).filter(Boolean);
+  const pages = [];
+  let cur = [], count = 0;
+  for (const p of paras) {
+    const w = p.split(" ").length;
+    if (count && count + w > per) { pages.push(cur); cur = []; count = 0; }
+    cur.push(p); count += w;
+  }
+  if (cur.length) pages.push(cur);
+  return pages;
 }
 export function ReadingPane({ item, accent, onOpenFull }) {
   const [pages, setPages] = useState(() => (item.readingText ? paginateText(item.readingText) : null));
@@ -503,8 +515,12 @@ export function ReadingPane({ item, accent, onOpenFull }) {
         {state === "error" && <p style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 15.5, color: T.muted, margin: "6px 0 10px" }}>The pages wouldn't come through here — the full reader will have them.</p>}
         {state === "ready" && pages && (
           <>
-            {/* indent XOR space (Butterick): a book indents and does not gap its paragraphs */}
-            <p style={{ fontFamily: SERIF, fontSize: 17.5, color: T.ink, lineHeight: 1.7, margin: "0 0 14px", minHeight: 150, textIndent: "1.2em", hyphens: "auto" }}>{pages[page]}</p>
+            {/* §6.7.8 — the shared ReadingColumn owns measure/padding/leading and enforces
+                indent-XOR-space via `variant="book"`. It is the SOLE padding owner, so it
+                bleeds out of this pane's own padding rather than being framed by it. */}
+            <ReadingColumn variant="book" size={17.5} style={{ minHeight: 150, marginBottom: 14, paddingInline: 0 }}>
+              {pages[page].map((para, i) => <p key={i} style={{ hyphens: "auto" }}>{para}</p>)}
+            </ReadingColumn>
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", borderTop: `1px solid ${T.paperDeep}`, paddingTop: 10 }}>
               <button onClick={() => setPage((p) => Math.max(0, p - 1))} disabled={page === 0} aria-label="Previous page" style={pageBtn(page === 0, accent)}><ChevronLeft size={16} /></button>
               <span style={{ fontFamily: UI, fontSize: 11.5, fontWeight: 700, color: T.muted }}>~{minsLeft} min left</span>
@@ -638,9 +654,13 @@ export function ExpandDetailCard({ item: raw, onClose, saved: savedProp, onSave 
             </div>
           )}
 
-          {item.body.map((p, i) => (
-            <p key={i} style={{ fontFamily: SERIF, fontSize: 16.5, color: T.ink, lineHeight: 1.62, margin: "0 0 13px" }}>{p}</p>
-          ))}
+          {/* §6.7.8 — the expand's body reads through the shared column (spaced paragraphs;
+              `card` variant). paddingInline:0 because the expand already owns the gutter. */}
+          {item.body.length > 0 && (
+            <ReadingColumn variant="card" size={16.5} style={{ paddingInline: 0, marginBottom: 4 }}>
+              {item.body.map((p, i) => <p key={i}>{p}</p>)}
+            </ReadingColumn>
+          )}
 
           <div style={{ display: "grid", placeItems: "center", margin: "18px 0 0" }}>
             <Pollinator kind="butterfly" size={30} color={c.petal} color2={T.gold} pattern="bands" animate idx={`xcr-${item.id}`} />

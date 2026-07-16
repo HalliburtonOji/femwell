@@ -35,6 +35,7 @@ import LifestyleMedia from "@/components/lifestyle-elite/LifestyleMedia";
 import LifestyleArticleDeck, { toDeckItem } from "@/components/lifestyle/LifestyleArticleDeck";
 // the clipboard's card language (§6.7.7) — consumed, never duplicated
 import { CoverCard, ExpandDetailCard } from "@/components/brand/expandCards";
+import ReadingColumn from "@/components/brand/ReadingColumn";
 import { LIFESTYLE_VIDEOS } from "@/data/lifestyleVideos";
 import { T, SERIF, UI, PAPER_BG, Eyebrow } from "@/components/journal/Editorial";
 import { FwFloraHero } from "@/components/brand/PageTop";
@@ -45,6 +46,10 @@ import MonthlyCalendarCard from "@/components/planner/MonthlyCalendarCard";
 import DayDetailSheet from "@/components/planner/DayDetailSheet";
 import { getCurrentCyclePhase, phaseLabel } from "@/utils/cyclePhase";
 import { withTimeout } from "@/utils/safeEntity";
+import { createPageUrl } from "@/utils";
+// "Mark as read" must actually MARK IT READ — this is the same recorder the Garden reads
+// (readingDaySet), so a chapter she finishes really does feed her garden.
+import { recordProgress } from "@/components/community/readingActivity";
 import {
   OXBLOOD, lbl, subCard, focusPill, inputBase, Pill, Panel, StackedCard, BoardBody, TopChrome, SheetShell,
   JumpSheet, SliderArrows, makeCalendarOverlay,
@@ -738,8 +743,28 @@ export default function LifestyleEliteShell() {
       {/* tap-to-expand — the shared card language's full-screen detail (§6.7.7).
           Save is CONTROLLED → real persistence + the feed's learning loop. */}
       {expanded && <ExpandDetailCard item={expanded} onClose={() => setExpanded(null)} saved={isCardSaved(expanded)} onSave={onCardSave} />}
-      {chapterOpen && <ChapterSheet story={story} onClose={() => setChapterOpen(false)} />}
-      {readingOpen && <ReadingSheet reading={horoscope} phaseKey={phaseKey} onClose={() => setReadingOpen(false)} />}
+      {/* These sheets' buttons used to be no-ops that just closed — a button that lies is worse
+          than no button. Each now does the real thing. */}
+      {chapterOpen && (
+        <ChapterSheet
+          story={story}
+          onClose={() => setChapterOpen(false)}
+          onMarkRead={() => {
+            recordProgress(story?.id || story?.series_title || "daily-story", story?.day_number ?? 0, user?.id);
+            flash("Marked as read — it counts in your garden");
+            setChapterOpen(false);
+          }}
+          onReflect={() => { setChapterOpen(false); window.location.assign(createPageUrl("Journal")); }}
+        />
+      )}
+      {readingOpen && (
+        <ReadingSheet
+          reading={horoscope} phaseKey={phaseKey}
+          onClose={() => setReadingOpen(false)}
+          onSaveReading={() => { savePlannerDay(horoscope?.headline || "Tonight's reading"); setReadingOpen(false); }}
+          onSkyDiary={() => { setReadingOpen(false); jumpTo(3); }}
+        />
+      )}
       {toast && <div className="fw-elite-in" style={{ position: "fixed", left: "50%", bottom: "calc(110px + env(safe-area-inset-bottom))", transform: "translateX(-50%)", zIndex: 9999, background: T.ink, color: T.paperHi, fontFamily: UI, fontSize: 13, fontWeight: 600, padding: "10px 16px", borderRadius: 999, boxShadow: "0 4px 16px rgba(11,8,5,0.3)" }}>{toast}</div>}
     </div>
   );
@@ -1098,20 +1123,24 @@ function SkyDiaryLens({ notes, onNote }) {
 }
 
 // ── sheets ──
-function ChapterSheet({ story, onClose }) {
+function ChapterSheet({ story, onClose, onMarkRead, onReflect }) {
   const title = story?.series_title || story?.title || "Today's chapter";
   const dayLine = story?.day_number ? `Day ${story.day_number}` : "today";
   const cliff = story?.cliffhanger || "";
   const body = stripHtml(story?.segment_text || "") || "Today's chapter is being written — check back soon. In the meantime, the Daily Story library is one tap away on the Lifestyle page.";
   return (
     <SheetShell title={title} eyebrowText={`Daily Story · ${dayLine}`} accent={cwOf("crimson").petal} onClose={onClose}>
-      <p style={{ fontFamily: SERIF, fontSize: 16, color: T.ink, lineHeight: 1.65, margin: "0 0 16px", whiteSpace: "pre-wrap" }}>{body}</p>
+      {/* §6.7.8 — today's chapter is FICTION: it reads through the shared column with the
+          indent variant (indent, no paragraph gaps). The sheet already owns the gutter. */}
+      <ReadingColumn variant="dailyStory" size={17} style={{ paddingInline: 0, marginBottom: 16 }}>
+        {String(body || "").split(/\n\s*\n+/).filter(Boolean).map((para, i) => <p key={i}>{para}</p>)}
+      </ReadingColumn>
       {cliff && <p style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 17, color: cwOf("crimson").petal, margin: "0 0 16px" }}>"{cliff}"</p>}
-      <div style={{ display: "flex", gap: 8 }}><Pill cw="crimson" filled onClick={onClose}>Mark as read</Pill><Pill cw="sage" onClick={onClose}>Reflect on it</Pill></div>
+      <div style={{ display: "flex", gap: 8 }}><Pill cw="crimson" filled onClick={onMarkRead || onClose}>Mark as read</Pill><Pill cw="sage" onClick={onReflect || onClose}>Reflect on it</Pill></div>
     </SheetShell>
   );
 }
-function ReadingSheet({ reading, phaseKey, onClose }) {
+function ReadingSheet({ reading, phaseKey, onClose, onSaveReading, onSkyDiary }) {
   const headline = reading?.headline || "Your sky today";
   const narrative = reading?.narrative || "Add your birth details on the Horoscope tab to read today's full sky.";
   const moonPhase = reading?.moon_phase || "";
@@ -1126,7 +1155,10 @@ function ReadingSheet({ reading, phaseKey, onClose }) {
     ? `Your ${phaseLabel(phaseKey).toLowerCase()} week is meeting the moon — a night to match your pace to the sky.` : "";
   return (
     <SheetShell title={headline} eyebrowText={phaseKey ? `${phaseLabel(phaseKey)} · the sky${moonPhase ? ` · ${moonPhase}` : ""}` : (moonPhase || "The sky")} accent={cwOf("sky").petal} onClose={onClose}>
-      <p style={{ fontFamily: SERIF, fontSize: 16, color: T.ink, lineHeight: 1.6, margin: "0 0 14px", whiteSpace: "pre-wrap" }}>{stripHtml(narrative)}</p>
+      {/* §6.7.8 — the reading is prose: spaced paragraphs, no indent (horoscope variant). */}
+      <ReadingColumn variant="horoscope" size={16.5} style={{ paddingInline: 0, marginBottom: 14 }}>
+        {String(stripHtml(narrative) || "").split(/\n\s*\n+/).filter(Boolean).map((para, i) => <p key={i}>{para}</p>)}
+      </ReadingColumn>
       {sections.map((s, i) => (
         <div key={i} style={{ ...subCard(cwOf(s.cw).petal), marginBottom: 12 }}>
           {s.title && <div style={{ ...lbl, fontSize: 12, color: cwOf(s.cw).petal, marginBottom: 4 }}>{s.title}</div>}
@@ -1134,7 +1166,7 @@ function ReadingSheet({ reading, phaseKey, onClose }) {
         </div>
       ))}
       {!sections.length && fallbackCycle && <div style={{ ...subCard(cwOf("crimson").petal), background: `${cwOf("crimson").petal}0D`, marginBottom: 12 }}><p style={{ fontFamily: SERIF, fontSize: 15, color: T.inkSoft, margin: 0, lineHeight: 1.5 }}>{fallbackCycle}</p></div>}
-      <div style={{ display: "flex", gap: 8 }}><Pill cw="sky" filled onClick={onClose}>Save tonight's reading</Pill><Pill cw="sage" onClick={onClose}>Sky diary</Pill></div>
+      <div style={{ display: "flex", gap: 8 }}><Pill cw="sky" filled onClick={onSaveReading || onClose}>Save tonight's reading</Pill><Pill cw="sage" onClick={onSkyDiary || onClose}>Sky diary</Pill></div>
     </SheetShell>
   );
 }

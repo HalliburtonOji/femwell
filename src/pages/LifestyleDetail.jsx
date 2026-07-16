@@ -5,6 +5,7 @@ import { format } from "date-fns";
 import { getCategoryGradient, attachFallbackOverlay } from "@/utils/imageFallback";
 import ContentActionBar from "@/components/common/ContentActionBar";
 import ShareButton from "@/components/share/ShareButton";
+import { readTimeLabel, countWords } from "@/components/brand/ReadingColumn";
 
 // Map a content category to the best-fit whole-life Community room (default: the Lounge).
 const CATEGORY_ROOM = {
@@ -158,6 +159,25 @@ export default function LifestyleDetail() {
     return () => window.removeEventListener("message", onMsg);
   }, []);
 
+  // §6.7.8 — SILENT auto-resume. She comes back to where she was, with no ceremony and no
+  // "continue reading?" prompt. (Precedent: Pocket/Instapaper restore position; there's no
+  // measured benefit in the literature, so we ship it quietly and claim nothing.)
+  useEffect(() => {
+    if (!id || !fullBody) return;
+    const key = `fw_article_pos_${id}`;
+    try {
+      const y = parseInt(localStorage.getItem(key) || "0", 10);
+      if (y > 40) window.requestAnimationFrame(() => window.scrollTo(0, y));
+    } catch { /* ignore */ }
+    let t = null;
+    const onScroll = () => {
+      if (t) return;
+      t = window.setTimeout(() => { t = null; try { localStorage.setItem(key, String(Math.round(window.scrollY))); } catch { /* ignore */ } }, 400);
+    };
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => { window.removeEventListener("scroll", onScroll); if (t) window.clearTimeout(t); };
+  }, [id, fullBody]);
+
   useEffect(() => {
     let cancelled = false;
     (async () => {
@@ -265,10 +285,10 @@ export default function LifestyleDetail() {
   // Loading state — never flash "Article not found" while fetching.
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: "var(--ivory)" }}>
+      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: "#ECE7DA" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-          <Loader2 style={{ width: 20, height: 20, color: "var(--rose-dust)", animation: "spin 0.7s linear infinite" }} />
-          <span style={{ fontSize: 14, color: "var(--mauve)", }}>Loading…</span>
+          <Loader2 style={{ width: 20, height: 20, color: "#E8B4B8", animation: "spin 0.7s linear infinite" }} />
+          <span style={{ fontSize: 14, color: "#2E261B", }}>Loading…</span>
         </div>
         <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
       </div>
@@ -278,17 +298,17 @@ export default function LifestyleDetail() {
   // Genuine not-found, only after fetch settled.
   if (!item) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center" style={{ backgroundColor: "var(--ivory)", padding: 24 }}>
-        <p style={{ fontSize: 18, color: "var(--plum)", fontWeight: 500, marginBottom: 8 }}>
+      <div className="min-h-screen flex flex-col items-center justify-center" style={{ backgroundColor: "#ECE7DA", padding: 24 }}>
+        <p style={{ fontSize: 18, color: "#0B0805", fontWeight: 500, marginBottom: 8 }}>
           That article isn't here.
         </p>
-        <p style={{ fontSize: 14, color: "var(--mauve)", marginBottom: 20, }}>
+        <p style={{ fontSize: 14, color: "#2E261B", marginBottom: 20, }}>
           It may have been removed or the link is out of date.
         </p>
         <button
           onClick={() => window.history.back()}
           style={{
-            backgroundColor: "var(--rose-dust)",
+            backgroundColor: "#E8B4B8",
             color: "white",
             border: "none",
             borderRadius: 12,
@@ -364,13 +384,13 @@ export default function LifestyleDetail() {
   }));
 
   return (
-    <div className="min-h-screen pb-10" style={{ backgroundColor: "var(--ivory)" }}>
+    <div className="min-h-screen pb-10" style={{ backgroundColor: "#ECE7DA" }}>
       <style>{`
         @keyframes spin { to { transform: rotate(360deg); } }
         .fw-reader-card .fw-dropcap {
           font-family: 'Fraunces', serif;
           font-weight: 500;
-          color: var(--rose-primary);
+          color: #BC2E27;
           float: left;
           line-height: 0.85;
           padding: 4px 10px 0 0;
@@ -381,30 +401,36 @@ export default function LifestyleDetail() {
         }
         .fw-reader-card .fw-ornament {
           text-align: center;
-          color: var(--rose-primary);
+          color: #BC2E27;
           letter-spacing: 12px;
           font-size: 18px;
           line-height: 28px;
           margin: 28px 0;
           font-family: 'Fraunces', serif;
         }
+        /* §6.7.8 READING CRAFT — this body used 'Inter' 16px, but src/index.css remaps BOTH
+           'Inter' and 'Fraunces' to Cormorant at size-adjust:150%, so it actually rendered at
+           ~24px → ~29 characters per line (the ~45-75 target's floor is 45; the honest mobile
+           accept is 38-42). The fix is the UN-ADJUSTED Cormorant stack, where a size means what
+           it says. Article variant = spaced paragraphs, NO indent (indent XOR space, Butterick). */
         .fw-reader-card .fw-body-p {
-          font-family: 'Inter', sans-serif;
-          font-size: 16px;
-          line-height: 1.78;
-          color: var(--plum);
+          font-family: "Cormorant Garamond", Georgia, serif;
+          font-size: 17px;
+          line-height: 1.62;
+          color: #0B0805;
           font-weight: 400;
-          margin: 0 0 18px;
+          margin: 0 0 16px;
+          text-indent: 0;
         }
         @media (min-width: 768px) {
-          .fw-reader-card .fw-body-p { font-size: 17px; }
+          .fw-reader-card .fw-body-p { font-size: 18px; }
         }
         .fw-reader-card .fw-body-p:last-child { margin-bottom: 0; }
         .fw-reader-card .fw-h2 {
           font-family: 'Fraunces', serif;
           font-weight: 500;
           font-size: 22px;
-          color: var(--plum-deep);
+          color: #7A1A12;
           line-height: 1.25;
           margin: 28px 0 12px;
         }
@@ -417,14 +443,14 @@ export default function LifestyleDetail() {
           font-weight: 700;
           text-transform: uppercase;
           letter-spacing: 0.14em;
-          color: var(--rose-primary);
+          color: #BC2E27;
           margin: 22px 0 8px;
         }
         .fw-reader-card .fw-chapter {
           font-family: 'Fraunces', serif;
           font-weight: 600;
           font-size: 22px;
-          color: var(--plum-deep);
+          color: #7A1A12;
           letter-spacing: -0.005em;
           line-height: 1.25;
           margin: 32px 0 18px;
@@ -442,7 +468,7 @@ export default function LifestyleDetail() {
           -webkit-overflow-scrolling: touch;
         }
         .fw-related-rail::-webkit-scrollbar { height: 6px; }
-        .fw-related-rail::-webkit-scrollbar-thumb { background: var(--rose-dust-light); border-radius: 999px; }
+        .fw-related-rail::-webkit-scrollbar-thumb { background: #E8B4B8; border-radius: 999px; }
         .fw-related-card {
           width: 240px;
           flex-shrink: 0;
@@ -460,26 +486,30 @@ export default function LifestyleDetail() {
 
       <div className="max-w-2xl mx-auto px-4 pt-12">
         <div className="flex items-center justify-between mb-6">
-          <button onClick={() => window.history.back()} className="w-10 h-10 rounded-xl flex items-center justify-center shadow-sm" style={{ backgroundColor: "rgba(244,239,227,0.9)", border: "1px solid var(--border)" }}>
-            <ArrowLeft className="w-4 h-4" style={{ color: "var(--plum)" }} />
+          <button onClick={() => window.history.back()} className="w-10 h-10 rounded-xl flex items-center justify-center shadow-sm" style={{ backgroundColor: "rgba(244,239,227,0.9)", border: "1px solid #D8CFBC" }}>
+            <ArrowLeft className="w-4 h-4" style={{ color: "#0B0805" }} />
           </button>
           <div className="flex items-center gap-2">
-            <button onClick={toggleLiked} className="w-10 h-10 rounded-xl flex items-center justify-center shadow-sm" style={{ backgroundColor: "rgba(244,239,227,0.9)", border: "1px solid var(--border)" }}>
-              {liked ? <Heart className="w-4 h-4" style={{ color: "var(--rose-dust)", fill: "var(--rose-dust)" }} /> : <HeartOff className="w-4 h-4" style={{ color: "var(--mauve)" }} />}
+            <button onClick={toggleLiked} className="w-10 h-10 rounded-xl flex items-center justify-center shadow-sm" style={{ backgroundColor: "rgba(244,239,227,0.9)", border: "1px solid #D8CFBC" }}>
+              {liked ? <Heart className="w-4 h-4" style={{ color: "#E8B4B8", fill: "#E8B4B8" }} /> : <HeartOff className="w-4 h-4" style={{ color: "#2E261B" }} />}
             </button>
-            <button onClick={toggleSaved} className="w-10 h-10 rounded-xl flex items-center justify-center shadow-sm" style={{ backgroundColor: "rgba(244,239,227,0.9)", border: "1px solid var(--border)" }}>
-              {saved ? <BookmarkCheck className="w-4 h-4" style={{ color: "#A07830" }} /> : <Bookmark className="w-4 h-4" style={{ color: "var(--mauve)" }} />}
+            <button onClick={toggleSaved} className="w-10 h-10 rounded-xl flex items-center justify-center shadow-sm" style={{ backgroundColor: "rgba(244,239,227,0.9)", border: "1px solid #D8CFBC" }}>
+              {saved ? <BookmarkCheck className="w-4 h-4" style={{ color: "#A8893F" }} /> : <Bookmark className="w-4 h-4" style={{ color: "#2E261B" }} />}
             </button>
           </div>
         </div>
 
         <h1 className="fw-display" style={{ margin: "0 0 16px" }}>Lifestyle</h1>
 
+        {/* §6.7.8 — ONE padding owner. At 390px the max-width never binds: PADDING *IS* MEASURE.
+            The page gutter (px-4) + a 24px card pad double-framed the text to ~310px. The card
+            keeps a slim mobile gutter so the column can breathe (~334px ≈ 39 CPL at 17px —
+            inside the honest 38-42 mobile accept; we do NOT shrink type to buy characters). */}
         <div
-          className="fw-reader-card p-6 md:p-10"
+          className="fw-reader-card px-3 py-6 md:p-10"
           style={{
-            backgroundColor: "var(--surface)",
-            border: "1px solid var(--ink-line)",
+            backgroundColor: "#F4EFE3",
+            border: "1px solid #D8CFBC",
             boxShadow: "var(--shadow-card)",
             borderRadius: 24,
             overflow: "hidden",
@@ -492,7 +522,7 @@ export default function LifestyleDetail() {
                 fontWeight: 700,
                 textTransform: "uppercase",
                 letterSpacing: "0.14em",
-                color: "var(--rose-primary)",
+                color: "#BC2E27",
                 marginBottom: 10,
                 marginTop: 0,
               }}>
@@ -506,7 +536,7 @@ export default function LifestyleDetail() {
                   paddingBottom: "56.25%", /* 16:9 */
                   borderRadius: 14,
                   overflow: "hidden",
-                  border: "1px solid var(--ink-line)",
+                  border: "1px solid #D8CFBC",
                   boxShadow: "var(--shadow-card)",
                 }}>
                   <iframe
@@ -525,7 +555,7 @@ export default function LifestyleDetail() {
                     aspectRatio: "16/9",
                     borderRadius: 14,
                     overflow: "hidden",
-                    background: "linear-gradient(135deg, var(--plum-deep) 0%, var(--rose-dust) 100%)",
+                    background: "linear-gradient(135deg, #7A1A12 0%, #E8B4B8 100%)",
                     display: "flex",
                     flexDirection: "column",
                     alignItems: "center",
@@ -533,13 +563,13 @@ export default function LifestyleDetail() {
                     gap: 14,
                     padding: 24,
                     cursor: "pointer",
-                    border: "1px solid var(--ink-line)",
+                    border: "1px solid #D8CFBC",
                     boxShadow: "var(--shadow-card)",
                   }}
                   onClick={() => item.content_url && window.open(item.content_url, "_blank", "noopener,noreferrer")}
                 >
-                  <PlayCircle size={56} color="var(--cream)" strokeWidth={1.5} />
-                  <p style={{ font: "italic 400 18px/1.3 'Fraunces', serif", color: "var(--cream)", margin: 0, textAlign: "center", maxWidth: 320 }}>
+                  <PlayCircle size={56} color="#ECE7DA" strokeWidth={1.5} />
+                  <p style={{ font: "italic 400 18px/1.3 'Fraunces', serif", color: "#ECE7DA", margin: 0, textAlign: "center", maxWidth: 320 }}>
                     {decodedTitle}
                   </p>
                   <p style={{ font: "600 12px/1 'Inter', sans-serif", color: "rgba(247,240,230,0.8)", margin: 0, letterSpacing: "0.06em", textTransform: "uppercase" }}>
@@ -548,12 +578,22 @@ export default function LifestyleDetail() {
                 </div>
               )}
 
+              {/* §6.7.8 — read-time is PERMISSION when the number is small, a DETERRENT when
+                  it's large (stating a 10-min cost made fewer people finish). readTimeLabel
+                  returns null past the threshold — better silence than an off-putting number.
+                  No top progress bar: zero evidence they help, and they backfire on long reads. */}
+              {(() => {
+                const label = readTimeLabel(countWords(fullBody || item.summary || ""));
+                return label ? (
+                  <p style={{ marginTop: 12, marginBottom: 0, fontSize: 12, fontWeight: 600, color: "#A8893F" }}>{label}</p>
+                ) : null;
+              })()}
               {byline && (
                 <p style={{
                   marginTop: 12,
                   marginBottom: 0,
                   fontSize: 12,
-                  color: "var(--mauve)",
+                  color: "#2E261B",
                 }}>
                   {byline}
                   {item.author_url ? (
@@ -563,7 +603,7 @@ export default function LifestyleDetail() {
                         href={item.author_url}
                         target="_blank"
                         rel="noopener noreferrer"
-                        style={{ color: "var(--rose-primary)", textDecoration: "none", fontWeight: 600 }}
+                        style={{ color: "#BC2E27", textDecoration: "none", fontWeight: 600 }}
                       >
                         Channel
                       </a>
@@ -615,7 +655,7 @@ export default function LifestyleDetail() {
                 left: 24,
                 right: 24,
                 bottom: 24,
-                color: "var(--cream)",
+                color: "#ECE7DA",
               }}>
                 {eyebrowBits.length > 0 && (
                   <p style={{
@@ -631,7 +671,7 @@ export default function LifestyleDetail() {
                   </p>
                 )}
                 <h1 style={{
-                  color: "var(--cream)",
+                  color: "#ECE7DA",
                   lineHeight: 1.08,
                   margin: 0,
                   // Clamp long titles to 3 lines so they never push out of the
@@ -662,7 +702,7 @@ export default function LifestyleDetail() {
           {item.phase_tags?.length > 0 && (
             <div style={{ display: "flex", gap: 6, marginBottom: 14, flexWrap: "wrap" }}>
               {item.phase_tags.map((pt) => (
-                <span key={pt} style={{ fontSize: 10, fontWeight: 600, color: "var(--mauve)", backgroundColor: "var(--ivory-dark)", borderRadius: 9999, padding: "3px 10px", textTransform: "capitalize", }}>
+                <span key={pt} style={{ fontSize: 10, fontWeight: 600, color: "#2E261B", backgroundColor: "#D8CFBC", borderRadius: 9999, padding: "3px 10px", textTransform: "capitalize", }}>
                   {pt} phase
                 </span>
               ))}
@@ -672,13 +712,13 @@ export default function LifestyleDetail() {
           {/* Body — editorial blocks */}
           {bodyLoading ? (
             <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "20px 0" }}>
-              <Loader2 style={{ width: 18, height: 18, color: "var(--rose-dust)", animation: "spin 0.7s linear infinite" }} />
-              <span style={{ fontSize: 13, color: "var(--mauve)", }}>Loading the rest…</span>
+              <Loader2 style={{ width: 18, height: 18, color: "#E8B4B8", animation: "spin 0.7s linear infinite" }} />
+              <span style={{ fontSize: 13, color: "#2E261B", }}>Loading the rest…</span>
             </div>
           ) : (
             <div>
               {blocks.length === 0 && (
-                <p className="fw-body-p" style={{ fontSize: 16, lineHeight: 1.78, color: "var(--plum)" }}>
+                <p className="fw-body-p" style={{ fontSize: 16, lineHeight: 1.78, color: "#0B0805" }}>
                   {stripMarkdown(decodeHtmlEntities(item.summary || ""))}
                 </p>
               )}
@@ -735,8 +775,8 @@ export default function LifestyleDetail() {
                         padding: "24px 0",
                         textAlign: "center",
                         maxWidth: 560,
-                        borderTop: "1px solid var(--rose-primary)",
-                        borderBottom: "1px solid var(--rose-primary)",
+                        borderTop: "1px solid #BC2E27",
+                        borderBottom: "1px solid #BC2E27",
                       }}
                     >
                       <p style={{
@@ -744,7 +784,7 @@ export default function LifestyleDetail() {
                         fontWeight: 400,
                         fontSize: 22,
                         lineHeight: 1.4,
-                        color: "var(--plum-deep)",
+                        color: "#7A1A12",
                         margin: 0,
                       }} className="fw-pullquote">
                         {decodedWhy}
@@ -776,8 +816,8 @@ export default function LifestyleDetail() {
           {/* Takeaways */}
           {takeaways.length > 0 && (
             <div style={{
-              backgroundColor: "var(--cream-2)",
-              border: "1px solid var(--rose-dust-light)",
+              backgroundColor: "#D8CFBC",
+              border: "1px solid #E8B4B8",
               borderRadius: 18,
               padding: "24px 22px",
               marginTop: 32,
@@ -786,7 +826,7 @@ export default function LifestyleDetail() {
                 fontStyle: "italic",
                 fontWeight: 400,
                 fontSize: 14,
-                color: "var(--plum-deep)",
+                color: "#7A1A12",
                 marginTop: 0,
                 marginBottom: 14,
               }}>
@@ -802,15 +842,15 @@ export default function LifestyleDetail() {
                       gap: 14,
                       alignItems: "flex-start",
                       padding: "12px 0",
-                      borderBottom: isLast ? "none" : "1px solid var(--rose-dust-light)",
+                      borderBottom: isLast ? "none" : "1px solid #E8B4B8",
                     }}
                   >
                     <span style={{
                       width: 28,
                       height: 28,
                       borderRadius: "50%",
-                      backgroundColor: "var(--rose-primary)",
-                      color: "var(--cream)",
+                      backgroundColor: "#BC2E27",
+                      color: "#ECE7DA",
                       fontSize: 16,
                       fontWeight: 500,
                       lineHeight: 1,
@@ -824,7 +864,7 @@ export default function LifestyleDetail() {
                     <p style={{
                       fontSize: 15,
                       lineHeight: 1.55,
-                      color: "var(--plum)",
+                      color: "#0B0805",
                       margin: 0,
                       flex: 1,
                     }}>
@@ -849,8 +889,8 @@ export default function LifestyleDetail() {
                 padding: "12px 22px",
                 fontSize: 14,
                 fontWeight: 600,
-                backgroundColor: "var(--rose-primary)",
-                color: "var(--cream)",
+                backgroundColor: "#BC2E27",
+                color: "#ECE7DA",
                 border: "none",
                 cursor: "pointer",
                 boxShadow: "var(--shadow-sm)",
@@ -885,7 +925,7 @@ export default function LifestyleDetail() {
               fontStyle: "italic",
               fontWeight: 400,
               fontSize: 22,
-              color: "var(--plum-deep)",
+              color: "#7A1A12",
               margin: "0 0 16px",
             }}>
               More like this
@@ -928,7 +968,7 @@ export default function LifestyleDetail() {
                             display: "flex", alignItems: "center", justifyContent: "center",
                             padding: 12, textAlign: "center",
                             fontStyle: "italic", fontWeight: 400, fontSize: 18,
-                            color: "var(--cream)", opacity: 0.7,
+                            color: "#ECE7DA", opacity: 0.7,
                             pointerEvents: "none",
                           }}
                         >
@@ -942,7 +982,7 @@ export default function LifestyleDetail() {
                         fontWeight: 500,
                         fontSize: 16,
                         lineHeight: 1.25,
-                        color: "var(--plum)",
+                        color: "#0B0805",
                         margin: "10px 0 0",
                       }}
                     >
@@ -954,7 +994,7 @@ export default function LifestyleDetail() {
                         fontWeight: 600,
                         textTransform: "uppercase",
                         letterSpacing: "0.1em",
-                        color: "var(--mauve)",
+                        color: "#2E261B",
                         margin: "6px 0 0",
                       }}>
                         {metaBits.join(" · ")}
