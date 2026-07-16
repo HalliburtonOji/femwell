@@ -28,11 +28,13 @@
 import { useState, useMemo, useEffect, useRef, useCallback } from "react";
 import {
   BookOpen, Feather, Book, Film, Headphones, Moon, Heart, Sparkles, Sun, Bookmark,
-  Wind, ChevronRight, Music2, Compass, Loader, ExternalLink, Clock, Coffee, Sunset, Check,
+  Wind, ChevronRight, ChevronLeft, Music2, Compass, Loader, ExternalLink, Clock, Coffee, Sunset, Check,
 } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import LifestyleMedia from "@/components/lifestyle-elite/LifestyleMedia";
 import LifestyleArticleDeck, { toDeckItem } from "@/components/lifestyle/LifestyleArticleDeck";
+// the clipboard's card language (§6.7.7) — consumed, never duplicated
+import { CoverCard, ExpandDetailCard } from "@/components/brand/expandCards";
 import { LIFESTYLE_VIDEOS } from "@/data/lifestyleVideos";
 import { T, SERIF, UI, PAPER_BG, Eyebrow } from "@/components/journal/Editorial";
 import { FwFloraHero } from "@/components/brand/PageTop";
@@ -124,9 +126,66 @@ const lfTypeOf = (i) => {
   return "article";
 };
 const isTikTok = (i) => /TIKTOK|INSTAGRAM|REEL/.test(String(i?.media_type || "").toUpperCase());
+// our per-type lane → the card language's `type` (§6.7.7 variation set)
+const CARD_TYPE_OF = (i) => {
+  const t = lfTypeOf(i);
+  return t === "video" ? "video" : t === "audio" ? "audio" : t === "book" ? "book" : t === "story" ? "daily_story" : "article";
+};
 const metaOf = (i) => [i?.source_name || i?.author_name, i?.category].filter(Boolean).join(" · ") || "FemWell Editorial";
 
 // ════════════════════════════════════════════════════════════════════════════
+// ── PEEK SHELF — one half of a StackedCard: a horizontal peek sub-slider of tap-to-expand
+// cover-cards (edge-peek + dots + subtle ‹ ›). Mirrors the approved /StackedExpandDemo geometry.
+// Children may be CoverCards or (where a lens is genuinely interactive) a Panel.
+function PeekShelf({ label, accent, children }) {
+  const trackRef = useRef(null);
+  const [active, setActive] = useState(0);
+  const arr = (Array.isArray(children) ? children : [children]).flat().filter(Boolean);
+  const last = Math.max(0, arr.length - 1);
+  const kids = () => (trackRef.current ? [...trackRef.current.children].filter((c) => c.offsetWidth > 40) : []);
+  const onScroll = () => {
+    const el = trackRef.current; if (!el) return;
+    let best = 0, bd = Infinity;
+    kids().forEach((c, i) => { const d = Math.abs(c.offsetLeft - el.offsetLeft - el.scrollLeft); if (d < bd) { bd = d; best = i; } });
+    if (best !== active) setActive(best);
+  };
+  const goTo = (i) => { const idx = Math.max(0, Math.min(last, i)); setActive(idx); const el = trackRef.current; const c = kids()[idx]; if (el && c) el.scrollLeft = c.offsetLeft - el.offsetLeft; };
+  return (
+    <div style={{ height: "100%", minHeight: 0, display: "flex", flexDirection: "column" }}>
+      {label && <div style={{ ...lbl, marginBottom: 7, flexShrink: 0 }}>{label}</div>}
+      <div ref={trackRef} onScroll={onScroll} className="fw-peek-track"
+        style={{ flex: 1, minHeight: 0, display: "flex", gap: 12, overflowX: "auto", scrollSnapType: "x mandatory", WebkitOverflowScrolling: "touch", overscrollBehaviorX: "contain", scrollbarWidth: "none", padding: "2px 0" }}>
+        <style>{`.fw-peek-track::-webkit-scrollbar{display:none}`}</style>
+        {arr.map((c, i) => (
+          <div key={i} style={{ flex: "0 0 82%", maxWidth: 300, scrollSnapAlign: "start", display: "flex", flexDirection: "column", minWidth: 0 }}>{c}</div>
+        ))}
+        <div aria-hidden style={{ flex: "0 0 4px" }} />
+      </div>
+      {arr.length > 1 && (
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 10, padding: "6px 0 0", flexShrink: 0 }}>
+          <button onClick={() => goTo(active - 1)} disabled={active === 0} aria-label="Previous" style={navBtnSm(active === 0)}><ChevronLeft size={14} /></button>
+          <div style={{ display: "flex", gap: 5 }}>
+            {arr.map((_, i) => <button key={i} onClick={() => goTo(i)} aria-label={`Card ${i + 1}`} style={{ width: i === active ? 15 : 6, height: 6, borderRadius: 999, border: "none", padding: 0, background: i === active ? accent : T.paperDeep, cursor: "pointer", transition: "width .2s" }} />)}
+          </div>
+          <button onClick={() => goTo(active + 1)} disabled={active === last} aria-label="Next" style={navBtnSm(active === last)}><ChevronRight size={14} /></button>
+        </div>
+      )}
+    </div>
+  );
+}
+const navBtnSm = (disabled) => ({ width: 28, height: 28, borderRadius: 999, border: `1px solid ${T.paperDeep}`, background: disabled ? "transparent" : "rgba(244,239,227,0.9)", color: disabled ? T.paperDeep : T.muted, display: "grid", placeItems: "center", cursor: disabled ? "default" : "pointer", opacity: disabled ? 0.5 : 1, flexShrink: 0 });
+
+// ── the StackedCard structure: TOP shelf + the quiet gold hairline + BOTTOM shelf ──
+function StackedShelves({ top, bottom }) {
+  return (
+    <div style={{ height: "100%", minHeight: 0, display: "flex", flexDirection: "column" }}>
+      <div style={{ flex: 1, minHeight: 0 }}>{top}</div>
+      <div aria-hidden style={{ flexShrink: 0, height: 1, background: `linear-gradient(90deg, transparent, ${T.gold}, transparent)`, opacity: 0.5, margin: "9px 0" }} />
+      <div style={{ flex: 1, minHeight: 0 }}>{bottom}</div>
+    </div>
+  );
+}
+
 export default function LifestyleEliteShell() {
   const [user, setUser] = useState(null);
   const [profile, setProfile] = useState(null);
@@ -146,6 +205,7 @@ export default function LifestyleEliteShell() {
   const [jumpOpen, setJumpOpen] = useState(false);
   const [chapterOpen, setChapterOpen] = useState(false);
   const [readingOpen, setReadingOpen] = useState(false);
+  const [expanded, setExpanded] = useState(null);   // the tap-to-expand card item (§6.7.7)
   const [toast, setToast] = useState(null);
   const sliderRef = useRef(null);
 
@@ -343,12 +403,14 @@ export default function LifestyleEliteShell() {
   };
 
   const gold = cwOf("gold").petal, sky = cwOf("sky").petal, crimson = cwOf("crimson").petal, plum = cwOf("plum").petal, sage = cwOf("sage").petal;
+  // the SIX reorganised boards (one board = one room = one job) — also drives the Jump sheet
   const BOARDS = [
-    { t: "The good life", sub: "What do you have time for? · permission to enjoy it" },
-    { t: "For you", sub: "Editorial · saved · try this · for your phase" },
-    { t: "Read", sub: "Articles · stories · books · guides" },
-    { t: "Listen", sub: "Podcasts · videos · trending · external" },
-    { t: "Story & sky", sub: "Daily story · a day for you · horoscope · diary" },
+    { t: "Read", sub: "Articles & guides · stories & fiction" },
+    { t: "Listen & watch", sub: "Podcasts & shows · watch & trending" },
+    { t: "Books", sub: "Your shelf · free classics" },
+    { t: "Story & sky", sub: "Today's chapter · your sky" },
+    { t: "The good life", sub: "What do you have time for · permission & small joys" },
+    { t: "Yours", sub: "Saved · for your phase" },
   ];
 
   // First name for the hero — fall back to "Lifestyle" if it looks like a handle/username.
@@ -371,6 +433,131 @@ export default function LifestyleEliteShell() {
     if (bandKey === "fifteen") return { read: grouped.article?.[1] || grouped.article?.[0] || null, listen: grouped.audio?.[0] || null };
     return { read: grouped.story?.[0] || longest(grouped.article)[0] || null, listen: longest(grouped.audio)[0] || grouped.video?.[0] || null };
   }, [grouped]);
+
+  // ── CARD ADAPTERS (§6.7.7) — turn each live source into the shared card item.
+  // We pass CONTENT only; `type` supplies the chrome (kind/Icon/colourway/scene/primary).
+  // Every action is REAL: reads/books/video → the real reader; rituals → Planner, no navigation.
+  const openExternal = useCallback((url) => { if (url) window.open(url, "_blank", "noopener,noreferrer"); }, []);
+
+  const rowCard = useCallback((r, type) => ({
+    id: r.id, type,
+    title: r.title,
+    subtitle: stripHtml(r.why_it_matters || r.summary || r.lede || "") || metaOf(r),
+    category: r.category || undefined,
+    meta: [["Clock", r.duration_label || ((type === "audio" || type === "video") ? "A short listen" : "A few minutes")], ["BookOpen", r.source_name || r.author_name || "FemWell Editorial"]],
+    chips: [r.category, r.emotional_tag].filter(Boolean).slice(0, 3),
+    body: [stripHtml(r.lede || r.summary || "") || "Open it full-screen to read the whole thing."],
+    _raw: r,
+    actions: [{
+      label: type === "video" ? "Watch" : type === "audio" ? "Open episode" : type === "book" ? "Open reader" : "Read this",
+      Icon: type === "video" ? "Film" : type === "audio" ? "Headphones" : type === "book" ? "Book" : "BookOpen",
+      primary: true,
+      onClick: () => (type === "audio" && r.episode_url) ? openExternal(r.episode_url) : openItem(r),
+    }],
+  }), [openItem, openExternal]);
+
+  const articleCards = useMemo(() => [...(grouped.article || []), ...(grouped.guide || [])].slice(0, 6).map((r) => rowCard(r, "article")), [grouped, rowCard]);
+  const storyCards = useMemo(() => (grouped.story || []).slice(0, 6).map((r) => rowCard(r, "daily_story")), [grouped, rowCard]);
+  const audioCards = useMemo(() => {
+    const real = (grouped.audio || []).slice(0, 5).map((r) => rowCard(r, "audio"));
+    const ext = EXTERNAL_PODS.map((pd, i) => ({
+      id: `ext-${i}`, type: "audio", title: pd.title, subtitle: "A show worth following — open it in your podcast app.",
+      meta: [["Headphones", pd.note]], chips: ["podcast"], body: [`${pd.title} — find it on ${pd.note}.`], actions: [],
+    }));
+    return [...real, ...ext];
+  }, [grouped, rowCard]);
+  const videoCards = useMemo(() => {
+    const real = (grouped.video || []).slice(0, 4).map((r) => rowCard(r, "video"));
+    const curated = real.length ? [] : LIFESTYLE_VIDEOS.slice(0, 4).map((v) => ({
+      id: v.id, type: "video", title: v.title, subtitle: v.channel_name,
+      meta: [["Film", v.duration_label || "A short watch"], ["Play", v.channel_name]], chips: ["watch"],
+      body: ["A hand-picked watch — it opens on YouTube."],
+      actions: [{ label: "Watch", Icon: "Film", primary: true, onClick: () => openExternal(v.content_url) }],
+    }));
+    const tik = (grouped.tiktok || []).slice(0, 3).map((t) => ({
+      id: t.id, type: "video", title: t.title, subtitle: t.source_name || "Trending",
+      meta: [["Film", "Short · trending"]], chips: ["trending"],
+      body: ["Short and trending — it opens in the app it lives in."],
+      actions: [{ label: "Open", Icon: "ChevronRight", primary: true, onClick: () => openExternal(t.content_url) }],
+    }));
+    return [...curated, ...real, ...tik];
+  }, [grouped, rowCard, openExternal]);
+  const shelfBookCards = useMemo(() => {
+    const daily = story ? [{
+      id: "daily-chapter", type: "daily_story", title: story.series_title || story.title || "Today's chapter",
+      subtitle: story.cliffhanger ? `"${story.cliffhanger}"` : "Today's chapter is ready.",
+      meta: [["Feather", story.day_number ? `Day ${story.day_number}` : "Today"], ["Clock", "A few minutes"]],
+      chips: ["daily story"], excerpt: stripHtml(story.segment_text || "").slice(0, 220) || undefined,
+      body: [stripHtml(story.segment_text || "") || "Today's chapter is being written."],
+      actions: [{ label: "Read today's chapter", Icon: "Feather", primary: true, onClick: () => { setExpanded(null); setChapterOpen(true); } }],
+    }] : [];
+    return [...daily, ...(grouped.book || []).slice(0, 5).map((r) => rowCard(r, "book"))];
+  }, [story, grouped, rowCard]);
+  const classicCards = useMemo(() => (gutenberg || []).slice(0, 6).map((b) => ({
+    id: b.id, type: "book", title: b.title, subtitle: b.author || "Public domain",
+    meta: [["Book", b.tag || "Public domain"], ["Star", b.stars ? "★".repeat(b.stars) : "A classic"]],
+    chips: ["free", "classic"], body: ["A free, public-domain read — it opens in the reader."],
+    actions: [{ label: "Open reader", Icon: "Book", primary: true, onClick: () => openItem(b) }],
+  })), [gutenberg, openItem]);
+  const dailyStoryCards = useMemo(() => (story ? [{
+    id: "story-today", type: "daily_story", title: story.series_title || story.title || "Today's chapter",
+    subtitle: story.cliffhanger ? `"${story.cliffhanger}"` : "Today's chapter is ready to read.",
+    meta: [["Feather", story.day_number ? `Day ${story.day_number}` : "Today"], ["Clock", "A few minutes"]],
+    chips: ["daily story", "fiction"], excerpt: stripHtml(story.segment_text || "").slice(0, 240) || undefined,
+    body: [stripHtml(story.segment_text || "") || "Today's chapter is being written — check back soon."],
+    actions: [{ label: "Read today's chapter", Icon: "Feather", primary: true, onClick: () => { setExpanded(null); setChapterOpen(true); } }],
+  }] : [{
+    id: "story-soon", type: "daily_story", title: "Today's chapter is on its way",
+    subtitle: "A new chapter lands each morning.", meta: [["Clock", "Back tomorrow"]], chips: ["daily story"],
+    body: ["Your serialised story is being written — it'll be here shortly."], actions: [],
+  }]), [story]);
+  const horoscopeCards = useMemo(() => [{
+    id: "sky-today", type: "horoscope", title: horoscope?.headline || "Your sky today",
+    subtitle: horoscope ? (horoscope.moon_phase ? `The moon is ${horoscope.moon_phase}` : "Today's reading is ready.") : "Add your birth details to read today's sky.",
+    meta: [["Moon", horoscope?.moon_phase || "The sky"], ["Sparkles", phaseKey ? phaseLabel(phaseKey) : "Your phase"]],
+    chips: ["sky", "moon"].concat(phaseKey ? [phaseLabel(phaseKey).toLowerCase()] : []),
+    reading: horoscope ? { headline: horoscope.headline || "Your sky today", lines: [stripHtml(horoscope.narrative || ""), stripHtml(horoscope.cycle_moon_body || "")].filter(Boolean) } : undefined,
+    body: [stripHtml(horoscope?.narrative || "") || "Add your birth details and a reading appears here each day."],
+    actions: [{ label: "Read your full reading", Icon: "Moon", primary: true, onClick: () => { setExpanded(null); setReadingOpen(true); } }],
+  }], [horoscope, phaseKey]);
+  const ritualCards = useMemo(() => {
+    const aday = [{ title: A_DAY.title, line: A_DAY.line }, ...A_DAY.alts.map((a) => ({ title: a, line: "A day that's just yours — guilt-free." }))]
+      .map((d, i) => ({
+        id: `aday-${i}`, type: "ritual", title: d.title, subtitle: d.line,
+        meta: [["Sun", "A day for you"], ["Heart", "No streaks, no pressure"]], chips: ["a day for you"],
+        body: ["Leisure is the point — this lands softly in your planner, and nothing nags you if the day goes another way."],
+        actions: [{ label: "Save it for the day", Icon: "Star", primary: true, onClick: () => { savePlannerDay(d.title); setExpanded(null); } }],
+      }));
+    const trys = TRY_THIS.map((t, i) => ({
+      id: `try-${i}`, type: "ritual", title: t.title, subtitle: "Small, doable, just for today.", cw: t.cw,
+      meta: [["Wind", "A small thing"], ["Heart", "No streaks"]], chips: ["try this"],
+      body: ["Tap to keep it — it lands softly in your planner. Try it when you fancy it; leave it if you don't."],
+      actions: [{ label: "Keep it for today", Icon: "Star", primary: true, onClick: () => { saveTryThis(t.title); setExpanded(null); } }],
+    }));
+    return [...aday, ...trys];
+  }, [savePlannerDay, saveTryThis]);
+  const permissionCards = useMemo(() => {
+    const slips = [
+      "You're allowed a slow Sunday.",
+      "Rest isn't the reward for the work — it's part of it.",
+      phaseKey ? `Your ${phaseLabel(phaseKey).toLowerCase()} week asks for a gentler pace. That's not falling behind.` : "A gentler pace today isn't falling behind.",
+    ];
+    return slips.map((sl, i) => ({
+      id: `slip-${i}`, type: "quote", title: sl, subtitle: "A permission slip, not a to-do.",
+      meta: [["Heart", "Permission"]], chips: ["permission"], quote: { text: sl, attrib: "FemWell" },
+      body: ["No streaks here — leisure is the point, and guilt isn't invited."],
+      actions: [{ label: "Book a quiet hour", Icon: "Moon", primary: true, onClick: () => { savePlannerDay("A quiet hour, just for you"); setExpanded(null); } }],
+    }));
+  }, [phaseKey, savePlannerDay]);
+  const savedCards = useMemo(() => (savedItems || []).slice(0, 8).map((r) => rowCard(r, CARD_TYPE_OF(r))), [savedItems, rowCard]);
+  const phaseCards = useMemo(() => {
+    const picks = [grouped.article?.[1] || grouped.article?.[0], grouped.audio?.[0], grouped.video?.[0]].filter(Boolean).slice(0, 3);
+    return picks.map((r) => rowCard(r, CARD_TYPE_OF(r)));
+  }, [grouped, rowCard]);
+
+  // save from inside an expanded card → the REAL persistence + the feed's learning loop
+  const isCardSaved = useCallback((it) => !!(it?._raw?.id && savedIds.includes(it._raw.id)), [savedIds]);
+  const onCardSave = useCallback((_next, it) => { if (it?._raw) toggleSave(it._raw); }, [toggleSave]);
 
   if (loading) {
     return (
@@ -405,14 +592,14 @@ export default function LifestyleEliteShell() {
 
         <SummaryCard eyebrow="A few good things today" accent={gold} rows={[
           { Icon: Feather, label: "Today's chapter", text: story ? `${story.series_title || story.title || "Today's chapter"}${story.cliffhanger ? ` — "${story.cliffhanger}"` : ""}` : "Today's chapter is on its way — tap to open the Daily Story.", onClick: () => setChapterOpen(true) },
-          { Icon: BookOpen, label: "Your reading", text: savedItems.length ? `${savedItems.length} saved to come back to · ${grouped.article.length} fresh reads` : (editorialPick ? editorialPick.title : "Fresh reads land here as they're published."), onClick: () => jumpTo(2) },
+          { Icon: BookOpen, label: "Your reading", text: savedItems.length ? `${savedItems.length} saved to come back to · ${grouped.article.length} fresh reads` : (editorialPick ? editorialPick.title : "Fresh reads land here as they're published."), onClick: () => jumpTo(0) },
           { Icon: Moon, label: "Your sky", text: horoscope ? (horoscope.headline || horoscope.narrative || "Today's reading is ready.") : "Add your birth details to read today's sky.", onClick: () => setReadingOpen(true) },
         ]} />
 
         {/* two focus pills (out of cards) — Lifestyle's two daily rituals */}
         <div style={{ display: "flex", gap: 10, marginTop: 14 }}>
           <button onClick={() => setChapterOpen(true)} className="fw-elite-press" style={focusPill(crimson)}><Feather size={16} /> Today's chapter</button>
-          <button onClick={() => jumpTo(0)} className="fw-elite-press" style={focusPill(plum)}><Clock size={16} /> What do you have time for?</button>
+          <button onClick={() => jumpTo(4)} className="fw-elite-press" style={focusPill(plum)}><Clock size={16} /> What do you have time for?</button>
         </div>
 
         {/* featured READS — the big-card article deck (piece 3): FloraCover + hook + save + open.
@@ -433,76 +620,85 @@ export default function LifestyleEliteShell() {
           <SliderArrows sliderRef={sliderRef} />
           <ClipboardSlider hint="Slide your shelf →" accent={gold}>
 
-            {/* ── BOARD 0 — THE GOOD LIFE (dopamine-menu picker + permission tone) ── */}
-            <Clipboard title="The good life" sub="WHAT DO YOU HAVE TIME FOR?" accent={gold} flower="marigold" idx="cb-goodlife" titleColor={OXBLOOD}>
+            {/* ══ THE SIX BOARDS — each a StackedCard of two peek shelves of tap-to-expand
+                 cover-cards (§6.7.7). One board = one room = one job. Nothing stripped. ══ */}
+
+            {/* ── BOARD 0 — READ ────────────────────────────────────────────── */}
+            <Clipboard title="Read" sub="ARTICLES & GUIDES · STORIES & FICTION" accent={plum} flower="iris" idx="cb-read" titleColor={OXBLOOD}>
               <BoardBody>
-                <StackedCard topAccent={gold} bottomAccent={plum}
-                  top={[
-                    <Panel key="picker" label="What do you have time for?" Icon={Clock} accent={gold}><TimePickerLens pickFor={pickFor} isSaved={isSaved} onSave={toggleSave} onOpen={openItem} onTry={saveTryThis} /></Panel>,
-                  ]}
-                  bottom={[
-                    <Panel key="permission" label="Permission to enjoy it" Icon={Heart} accent={plum}><PermissionLens phaseKey={phaseKey} onQuietHour={() => savePlannerDay("A quiet hour, just for you")} /></Panel>,
-                  ]} />
+                <StackedShelves
+                  top={<PeekShelf label="Articles & guides" accent={plum}>{articleCards.map((it) => <CoverCard key={it.id} item={it} compact onOpen={() => setExpanded(it)} />)}</PeekShelf>}
+                  bottom={<PeekShelf label="Stories & fiction" accent={crimson}>{storyCards.map((it) => <CoverCard key={it.id} item={it} compact onOpen={() => setExpanded(it)} />)}</PeekShelf>} />
               </BoardBody>
             </Clipboard>
 
-            {/* ── BOARD 1 — FOR YOU ─────────────────────────────────────────── */}
-            <Clipboard title="For you" sub="EDITORIAL · SAVED · TRY THIS · YOUR PHASE" accent={gold} flower="daisy" idx="cb-foryou" titleColor={OXBLOOD}>
+            {/* ── BOARD 1 — LISTEN & WATCH ──────────────────────────────────── */}
+            <Clipboard title="Listen & watch" sub="PODCASTS & SHOWS · WATCH & TRENDING" accent={sage} flower="bluebell" idx="cb-listen" titleColor={OXBLOOD}>
               <BoardBody>
-                <StackedCard topAccent={gold} bottomAccent={sage}
-                  top={[
-                    <Panel key="picked" label="Picked for you" Icon={Sparkles} accent={gold}><ForYouLens pick={editorialPick} more={morePicks} isSaved={isSaved} onSave={toggleSave} onOpen={openItem} /></Panel>,
-                    <Panel key="saved" label="Saved" Icon={Bookmark} accent={gold}><SavedLens items={savedItems} onOpen={openItem} onUnsave={toggleSave} /></Panel>,
-                  ]}
-                  bottom={[
-                    <Panel key="try" label="Try this" Icon={Wind} accent={sage}><TryThisLens onDo={saveTryThis} /></Panel>,
-                    <Panel key="phase" label="For your phase" Icon={Heart} accent={sage}><PhasePicksLens items={grouped} phaseKey={phaseKey} isSaved={isSaved} onSave={toggleSave} onOpen={openItem} /></Panel>,
-                  ]} />
+                <StackedShelves
+                  top={<PeekShelf label="Podcasts & shows" accent={sage}>{audioCards.map((it) => <CoverCard key={it.id} item={it} compact onOpen={() => setExpanded(it)} />)}</PeekShelf>}
+                  bottom={<PeekShelf label="Watch & trending" accent={gold}>{videoCards.map((it) => <CoverCard key={it.id} item={it} compact onOpen={() => setExpanded(it)} />)}</PeekShelf>} />
               </BoardBody>
             </Clipboard>
 
-            {/* ── BOARD 2 — READ ────────────────────────────────────────────── */}
-            <Clipboard title="Read" sub="ARTICLES · STORIES · BOOKS · GUIDES" accent={plum} flower="iris" idx="cb-read" titleColor={OXBLOOD}>
+            {/* ── BOARD 2 — BOOKS ───────────────────────────────────────────── */}
+            <Clipboard title="Books" sub="YOUR SHELF · FREE CLASSICS" accent={sky} flower="camellia" idx="cb-books" titleColor={OXBLOOD}>
               <BoardBody>
-                <StackedCard topAccent={plum} bottomAccent={sky}
-                  top={[
-                    <Panel key="articles" label="Articles" Icon={BookOpen} accent={plum}><ContentListLens items={grouped.article} type="article" cw="plum" intro="Reads for a spare ten minutes — saved, filtered to your phase." isSaved={isSaved} onSave={toggleSave} onOpen={openItem} /></Panel>,
-                    <Panel key="stories" label="Stories" Icon={Feather} accent={crimson}><ContentListLens items={grouped.story} type="story" cw="crimson" intro="Real-life stories and short fiction to disappear into." isSaved={isSaved} onSave={toggleSave} onOpen={openItem} /></Panel>,
-                  ]}
-                  bottom={[
-                    <Panel key="books" label="Books" Icon={Book} accent={sky}><BooksLens books={booksRow} story={story} onOpen={openItem} onDaily={() => setChapterOpen(true)} /></Panel>,
-                    <Panel key="guides" label="Guides" Icon={Compass} accent={sky}><GuidesLens items={grouped.guide} onOpen={openItem} /></Panel>,
-                  ]} />
+                <StackedShelves
+                  top={<PeekShelf label="Your shelf" accent={sky}>{shelfBookCards.map((it) => <CoverCard key={it.id} item={it} compact onOpen={() => setExpanded(it)} />)}</PeekShelf>}
+                  bottom={<PeekShelf label="Free classics" accent={sky}>{classicCards.map((it) => <CoverCard key={it.id} item={it} compact onOpen={() => setExpanded(it)} />)}</PeekShelf>} />
               </BoardBody>
             </Clipboard>
 
-            {/* ── BOARD 3 — LISTEN ──────────────────────────────────────────── */}
-            <Clipboard title="Listen" sub="PODCASTS · VIDEOS · TRENDING · EXTERNAL" accent={sage} flower="bluebell" idx="cb-listen" titleColor={OXBLOOD}>
+            {/* ── BOARD 3 — STORY & SKY (the two daily rituals) ─────────────── */}
+            <Clipboard title="Story & sky" sub="TODAY'S CHAPTER · YOUR SKY" accent={crimson} flower="poppy" idx="cb-story" titleColor={OXBLOOD}>
               <BoardBody>
-                <StackedCard topAccent={sage} bottomAccent={crimson}
-                  top={[
-                    <Panel key="pods" label="Podcasts" Icon={Headphones} accent={sage}><MediaLens items={grouped.audio} kind="audio" onOpen={openItem} /></Panel>,
-                    <Panel key="vids" label="Videos" Icon={Film} accent={gold}><MediaLens items={grouped.video} kind="video" onOpen={openItem} /></Panel>,
-                  ]}
-                  bottom={[
-                    <Panel key="tiktok" label="Trending on TikTok" Icon={Music2} accent={crimson}><TikTokLens items={grouped.tiktok} /></Panel>,
-                    <Panel key="external" label="Listen externally" Icon={Compass} accent={crimson}><ExternalLens /></Panel>,
-                  ]} />
+                <StackedShelves
+                  top={<PeekShelf label="Today's chapter" accent={crimson}>{dailyStoryCards.map((it) => <CoverCard key={it.id} item={it} compact onOpen={() => setExpanded(it)} />)}</PeekShelf>}
+                  bottom={
+                    <PeekShelf label="Your sky" accent={sky}>
+                      {horoscopeCards.map((it) => <CoverCard key={it.id} item={it} compact onOpen={() => setExpanded(it)} />)}
+                      {/* the sky diary stays a real WRITE surface — a cover-card can't hold a composer */}
+                      <Panel key="diary" label="Sky diary" Icon={Feather} accent={sky}><SkyDiaryLens notes={skyNotes} onNote={addSkyNote} /></Panel>
+                    </PeekShelf>
+                  } />
               </BoardBody>
             </Clipboard>
 
-            {/* ── BOARD 4 — STORY & SKY ─────────────────────────────────────── */}
-            <Clipboard title="Story & sky" sub="DAILY STORY · A DAY FOR YOU · HOROSCOPE · DIARY" accent={crimson} flower="poppy" idx="cb-story" titleColor={OXBLOOD}>
+            {/* ── BOARD 4 — THE GOOD LIFE (the doing room) ──────────────────── */}
+            <Clipboard title="The good life" sub="WHAT DO YOU HAVE TIME FOR · PERMISSION & SMALL JOYS" accent={gold} flower="marigold" idx="cb-goodlife" titleColor={OXBLOOD}>
               <BoardBody>
-                <StackedCard topAccent={crimson} bottomAccent={sky}
-                  top={[
-                    <Panel key="daily" label="Daily story" Icon={Feather} accent={crimson}><DailyStoryLens story={story} onRead={() => setChapterOpen(true)} /></Panel>,
-                    <Panel key="aday" label="A day for you" Icon={Sun} accent={gold}><ADayLens onSave={savePlannerDay} /></Panel>,
-                  ]}
-                  bottom={[
-                    <Panel key="sky" label="Your sky today" Icon={Moon} accent={sky}><HoroscopeLens reading={horoscope} phaseKey={phaseKey} onRead={() => setReadingOpen(true)} /></Panel>,
-                    <Panel key="diary" label="Sky diary" Icon={Feather} accent={sky}><SkyDiaryLens notes={skyNotes} onNote={addSkyNote} /></Panel>,
-                  ]} />
+                <StackedShelves
+                  top={
+                    <PeekShelf label="What do you have time for?" accent={gold}>
+                      {/* an interactive picker — kept as a real lens (a cover-card can't pick) */}
+                      <Panel key="picker" label="Pick by the time you have" Icon={Clock} accent={gold}><TimePickerLens pickFor={pickFor} isSaved={isSaved} onSave={toggleSave} onOpen={openItem} onTry={saveTryThis} /></Panel>
+                    </PeekShelf>
+                  }
+                  bottom={
+                    <PeekShelf label="Permission & small joys" accent={plum}>
+                      {[...ritualCards, ...permissionCards].map((it) => <CoverCard key={it.id} item={it} compact onOpen={() => setExpanded(it)} />)}
+                    </PeekShelf>
+                  } />
+              </BoardBody>
+            </Clipboard>
+
+            {/* ── BOARD 5 — YOURS ───────────────────────────────────────────── */}
+            <Clipboard title="Yours" sub="SAVED · FOR YOUR PHASE" accent={gold} flower="daisy" idx="cb-yours" titleColor={OXBLOOD}>
+              <BoardBody>
+                <StackedShelves
+                  top={
+                    <PeekShelf label="Saved" accent={gold}>
+                      {savedCards.length ? savedCards.map((it) => <CoverCard key={it.id} item={it} compact onOpen={() => setExpanded(it)} />)
+                        : <Panel key="nosaved" label="Saved" Icon={Bookmark} accent={gold}><EmptyLine>Nothing saved yet — tap the heart on any read and it waits for you here.</EmptyLine></Panel>}
+                    </PeekShelf>
+                  }
+                  bottom={
+                    <PeekShelf label="For your phase" accent={sage}>
+                      {phaseCards.length ? phaseCards.map((it) => <CoverCard key={it.id} item={it} compact onOpen={() => setExpanded(it)} />)
+                        : <Panel key="nophase" label="For your phase" Icon={Heart} accent={sage}><EmptyLine>Phase-tuned picks appear here as the library fills out.</EmptyLine></Panel>}
+                    </PeekShelf>
+                  } />
               </BoardBody>
             </Clipboard>
 
@@ -515,6 +711,9 @@ export default function LifestyleEliteShell() {
 
       {jumpOpen && <JumpSheet boards={BOARDS} onClose={() => setJumpOpen(false)} onJump={jumpTo} />}
       {calOpen && <CalendarOverlay user={user} profile={profile} onClose={() => setCalOpen(false)} />}
+      {/* tap-to-expand — the shared card language's full-screen detail (§6.7.7).
+          Save is CONTROLLED → real persistence + the feed's learning loop. */}
+      {expanded && <ExpandDetailCard item={expanded} onClose={() => setExpanded(null)} saved={isCardSaved(expanded)} onSave={onCardSave} />}
       {chapterOpen && <ChapterSheet story={story} onClose={() => setChapterOpen(false)} />}
       {readingOpen && <ReadingSheet reading={horoscope} phaseKey={phaseKey} onClose={() => setReadingOpen(false)} />}
       {toast && <div className="fw-elite-in" style={{ position: "fixed", left: "50%", bottom: "calc(110px + env(safe-area-inset-bottom))", transform: "translateX(-50%)", zIndex: 9999, background: T.ink, color: T.paperHi, fontFamily: UI, fontSize: 13, fontWeight: 600, padding: "10px 16px", borderRadius: 999, boxShadow: "0 4px 16px rgba(11,8,5,0.3)" }}>{toast}</div>}
