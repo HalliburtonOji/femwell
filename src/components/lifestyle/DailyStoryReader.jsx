@@ -3,6 +3,9 @@ import { createPortal } from "react-dom";
 import { ChevronLeft, ChevronRight, Lock, ArrowLeft, Bookmark, Feather } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import { useScrollLock } from "@/utils/useScrollLock";
+// §6.7.8 — the reader reads its measure/type standard from the ONE source, so it can never
+// drift from the other readers again.
+import { READING } from "@/components/brand/ReadingColumn";
 
 // v4c — persisted reader preferences (theme, typeface, line, margins).
 // All keys live in one place so other components could read them if needed.
@@ -266,7 +269,7 @@ function ProgressDots({ current, total }) {
 // pages of paragraphs fit in the available viewport — and the user can flip
 // inside the chapter without ever scrolling. Re-measures when the textSize
 // changes or the viewport resizes.
-function ChapterPage({ chapter, dayLabel, indexHint, total, animClass, textSize, pageInChapter, onPageCount, immersive }) {
+function ChapterPage({ chapter, dayLabel, indexHint, total, animClass, textSize, pageInChapter, onPageCount, immersive, layoutKey }) {
   const { heading, body } = useMemo(
     () => parseChapter(chapter.body || chapter.segment_text || ""),
     [chapter]
@@ -283,6 +286,7 @@ function ChapterPage({ chapter, dayLabel, indexHint, total, animClass, textSize,
   // slices: [[startParaIdx, endParaIdx], ...] — end is inclusive.
   const measureRef = useRef(null);
   const [slices, setSlices] = useState(null);
+  const [tallPages, setTallPages] = useState([]);
   const [vpKey, setVpKey] = useState(0);
 
   useEffect(() => {
@@ -296,39 +300,79 @@ function ChapterPage({ chapter, dayLabel, indexHint, total, animClass, textSize,
   }, []);
 
   useLayoutEffect(() => {
-    if (!measureRef.current) return;
-    const ps = Array.from(measureRef.current.querySelectorAll(".ds-measure-p"));
-    if (!ps.length) {
-      setSlices([[0, 0]]);
-      onPageCount && onPageCount(chapter.id, 1);
-      return;
-    }
-    // How much vertical room is actually available inside the stage:
-    // viewport height minus the reader chrome (control bar + chapter strip +
-    // heading + footer dots + stage padding). Tuned conservatively so the
-    // last paragraph never gets clipped, even with the drop-cap on the first.
-    const reserved = immersive ? 220 : 280;
-    const minAvail = 260;
-    const available = Math.max(minAvail, window.innerHeight - reserved);
+    let cancelled = false;
+    let raf = 0;
 
-    const out = [];
-    let start = 0;
-    let topAtStart = ps[0].offsetTop;
-    for (let i = 0; i < ps.length; i++) {
-      const bottom = ps[i].offsetTop + ps[i].offsetHeight;
-      const heightFromStart = bottom - topAtStart;
-      if (heightFromStart > available && i > start) {
-        out.push([start, i - 1]);
-        start = i;
-        topAtStart = ps[i].offsetTop;
+    const measure = () => {
+      if (cancelled || !measureRef.current) return;
+      const ps = Array.from(measureRef.current.querySelectorAll(".ds-measure-p"));
+      if (!ps.length) {
+        setSlices([[0, 0]]);
+        onPageCount && onPageCount(chapter.id, 1, 0);
+        return;
       }
+
+      // EXACT available height — MEASURED, not guessed.
+      // Was: `window.innerHeight - (immersive ? 220 : 280)` — a magic number hand-tuned to the
+      // old chrome AND the old 1.5x-remapped type. Any type/chrome change silently invalidates
+      // it (which is exactly what the §6.7.8 pass would have done). Now we read the real
+      // geometry: from where the real body starts to where the stage's content box ends.
+      // getBoundingClientRect is sub-pixel; offsetTop/offsetHeight are INTEGER-ROUNDED, and
+      // ~1px is precisely enough to admit or drop a line at a page edge.
+      let available = 0;
+      const stage = measureRef.current.closest(".ds-reader-stage");
+      const realBody = measureRef.current.closest(".ds-reader-page")?.querySelector(".ds-reader-body");
+      if (stage && realBody) {
+        const padB = parseFloat(getComputedStyle(stage).paddingBottom) || 0;
+        available = (stage.getBoundingClientRect().bottom - padB) - realBody.getBoundingClientRect().top;
+      }
+      // Fallback only when the geometry isn't readable yet (keeps the old conservative guess).
+      if (!(available > 160)) available = Math.max(260, window.innerHeight - (immersive ? 220 : 280));
+
+      const out = [];
+      const tall = [];   // slices that CANNOT fit — see the guard below
+      let start = 0;
+      let topAtStart = ps[0].getBoundingClientRect().top;
+      const pushSlice = (a, b) => {
+        const h = ps[b].getBoundingClientRect().bottom - ps[a].getBoundingClientRect().top;
+        if (h > available) tall.push(out.length);   // a single paragraph taller than the page
+        out.push([a, b]);
+      };
+      for (let i = 0; i < ps.length; i++) {
+        const bottom = ps[i].getBoundingClientRect().bottom;
+        if (bottom - topAtStart > available && i > start) {
+          pushSlice(start, i - 1);
+          start = i;
+          topAtStart = ps[i].getBoundingClientRect().top;
+        }
+      }
+      pushSlice(start, ps.length - 1);
+      if (cancelled) return;
+      // GUARD: this engine breaks only BETWEEN paragraphs (so orphans/widows are impossible
+      // by construction). The one case it cannot fit is a single paragraph taller than the
+      // page — previously that silently CLIPPED, i.e. lost her words in a hard-hidden body.
+      // Letting that rare page scroll is the honest trade: a scroll is a nuisance, missing
+      // text is a bug. (The full fix is mid-paragraph breaking via Range.getClientRects —
+      // noted as the upgrade path, not smuggled into a measure pass.)
+      setTallPages(tall);
+      setSlices(out);
+      // report the slices so the parent can resume by a STABLE PARAGRAPH ANCHOR, not a page index
+      onPageCount && onPageCount(chapter.id, out.length, ps.length, out);
+    };
+
+    // Measure now so the page paints — then AGAIN once the webfonts land. Our faces are remote
+    // woff2: measuring before they swap paginates against FALLBACK metrics, so every break
+    // would be wrong the moment the real font arrives. (`size-adjust` needs no special
+    // handling — measuring in the same declared font accounts for it automatically.)
+    measure();
+    if (typeof document !== "undefined" && document.fonts && document.fonts.ready) {
+      document.fonts.ready.then(() => { if (!cancelled) raf = requestAnimationFrame(measure); }).catch(() => {});
     }
-    out.push([start, ps.length - 1]);
-    setSlices(out);
-    onPageCount && onPageCount(chapter.id, out.length);
-  // We intentionally watch chapter.id, textSize, vpKey, immersive.
+    return () => { cancelled = true; if (raf) cancelAnimationFrame(raf); };
+  // layoutKey carries font / line-spacing / margins — changing any of them reflows the column,
+  // so pagination MUST recompute (it previously did not, leaving stale, clipped pages).
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [chapter.id, paragraphs.length, textSize, vpKey, immersive]);
+  }, [chapter.id, paragraphs.length, textSize, vpKey, immersive, layoutKey]);
 
   // Clamp pageInChapter into range — re-flow may shrink the count.
   const safePage = Math.max(0, Math.min((slices?.length ?? 1) - 1, pageInChapter || 0));
@@ -361,7 +405,7 @@ function ChapterPage({ chapter, dayLabel, indexHint, total, animClass, textSize,
       )}
 
       {/* Visible slice */}
-      <div className="ds-reader-body">
+      <div className={`ds-reader-body${tallPages.includes(safePage) ? " ds-body-scroll" : ""}`}>
         {slices && paragraphs.slice(from, to + 1).map((p, j) => {
           const i = from + j;
           // Drop cap only on the very first paragraph of the very first page.
@@ -509,11 +553,24 @@ export default function DailyStoryReader({
   }, [bookmarksKey, currentIndex, pageInChapter]);
   // chapter id → page count (reported back by ChapterPage's measurement pass)
   const [chapterPageCounts, setChapterPageCounts] = useState({});
-  const reportPageCount = useCallback((chapterId, count) => {
+  // Slices per chapter — kept so resume can land on a STABLE PARAGRAPH ANCHOR rather than a
+  // page index. A page index is meaningless across a reflow: change the type, the margins or
+  // the phone's orientation and "page 7" is a different place in the book — which is exactly
+  // why resume used to jump.
+  const chapterSlicesRef = useRef({});
+  const reportPageCount = useCallback((chapterId, count, _paraCount, slices) => {
     if (!chapterId) return;
+    if (slices) chapterSlicesRef.current[chapterId] = slices;
     setChapterPageCounts(prev =>
       prev[chapterId] === count ? prev : { ...prev, [chapterId]: count }
     );
+  }, []);
+  // Which page currently holds a given paragraph (the anchor → page lookup after any reflow).
+  const pageForParagraph = useCallback((chapterId, paraIdx) => {
+    const slices = chapterSlicesRef.current[chapterId];
+    if (!slices || !slices.length) return 0;
+    const i = slices.findIndex(([from, to]) => paraIdx >= from && paraIdx <= to);
+    return i < 0 ? 0 : i;
   }, []);
   const [loading, setLoading] = useState(!providedSource);
   const [error, setError] = useState(false);
@@ -665,14 +722,26 @@ export default function DailyStoryReader({
   // currently restoring a saved position (which sets pageInChapter directly
   // and shouldn't be stomped). v4d uses pendingPageRef for that.
   const pendingPageRef = useRef(null);
+  // The saved PARAGRAPH anchor, waiting for this chapter's slices to be measured.
+  const pendingAnchorRef = useRef(null);
   useEffect(() => {
     if (pendingPageRef.current != null) {
       setPageInChapter(pendingPageRef.current);
       pendingPageRef.current = null;
-    } else {
+    } else if (pendingAnchorRef.current == null) {
       setPageInChapter(0);
     }
   }, [currentIndex]);
+
+  // Land the anchor once the chapter has actually been measured: the paragraph she left off
+  // at may now sit on a different page (bigger type, wider margins, a rotated phone) — so we
+  // resolve the page from the anchor rather than trusting a stale page number.
+  useEffect(() => {
+    if (pendingAnchorRef.current == null || !currentChapterRef) return;
+    if (measuredPages === undefined) return;   // wait for the measurement pass
+    setPageInChapter(pageForParagraph(currentChapterRef.id, pendingAnchorRef.current));
+    pendingAnchorRef.current = null;
+  }, [measuredPages, currentChapterRef, pageForParagraph]);
 
   // Phase-1 Books — fire the chapter-boundary hook whenever the reader REACHES a
   // chapter (initial mount included). Fire-and-forget + guarded so a throwing or
@@ -695,7 +764,10 @@ export default function DailyStoryReader({
       if (raw) {
         const pos = JSON.parse(raw);
         const chIdx = Math.min(Math.max(0, pos.chapterIndex || 0), chapters.length - 1);
-        pendingPageRef.current = pos.pageInChapter || 0;
+        // Prefer the PARAGRAPH ANCHOR; fall back to the legacy page index for anyone
+        // mid-book with an old saved position (so nobody loses their place on this deploy).
+        pendingAnchorRef.current = Number.isFinite(pos.paragraphIndex) ? pos.paragraphIndex : null;
+        pendingPageRef.current = pendingAnchorRef.current == null ? (pos.pageInChapter || 0) : 0;
         setCurrentIndex(chIdx);
       }
     } catch { /* silent */ }
@@ -706,8 +778,13 @@ export default function DailyStoryReader({
   useEffect(() => {
     if (!posKey || !positionRestoredRef.current) return;
     try {
+      const slices = currentChapterRef ? chapterSlicesRef.current[currentChapterRef.id] : null;
+      const paragraphIndex = slices && slices[pageInChapter] ? slices[pageInChapter][0] : null;
       localStorage.setItem(posKey, JSON.stringify({
         chapterIndex: currentIndex,
+        // the ANCHOR — survives any reflow (type size, margins, rotation, a font swap)
+        paragraphIndex,
+        // kept for backwards-compat with older builds reading this key
         pageInChapter,
         ts: Date.now(),
       }));
@@ -1063,6 +1140,7 @@ export default function DailyStoryReader({
             pageInChapter={pageInChapter}
             onPageCount={reportPageCount}
             immersive={immersive}
+            layoutKey={`${font}|${line}|${margins}`}
           />
         )}
       </div>
@@ -1243,6 +1321,10 @@ function ReaderStyles({ reducedMotion }) {
       /* Visible body inside the stage uses --ink for prose; clipped so a
          miscount can't overflow. */
       .ds-reader-root.ds-immersive .ds-reader-body { overflow: hidden; }
+      /* The rare page holding one paragraph taller than the screen: let it scroll rather than
+         clip her words. Never reached for normal prose. */
+      .ds-reader-body.ds-body-scroll,
+      .ds-reader-root.ds-immersive .ds-reader-body.ds-body-scroll { overflow-y: auto; -webkit-overflow-scrolling: touch; }
       .ds-reader-root.ds-immersive .ds-reader-p { color: var(--ink, #0B0805); }
       .ds-reader-root.ds-immersive .ds-reader-h1 { color: var(--ink, #0B0805); }
       .ds-reader-root.ds-immersive .ds-reader-p-first::first-letter {
@@ -1449,7 +1531,7 @@ function ReaderStyles({ reducedMotion }) {
         line-height: 1;
         font-weight: 500;
       }
-      .ds-reader-tile-font.fw-font-inter .ds-reader-tile-aa { font-family: 'Inter', sans-serif; }
+      .ds-reader-tile-font.fw-font-inter .ds-reader-tile-aa { font-family: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif; }
       .ds-reader-tile-label {
         font-family: 'Inter', sans-serif;
         font-size: 11px;
@@ -1486,7 +1568,7 @@ function ReaderStyles({ reducedMotion }) {
 
       /* v4c — typeface override. When user picks Inter, body paragraphs use
          Inter; the h1 and drop-cap stay Fraunces (per Atelier). */
-      .fw-font-inter .ds-reader-p { font-family: 'Inter', sans-serif; }
+      .fw-font-inter .ds-reader-p { font-family: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif; }
 
       /* v4c — line-spacing override. Multiplies the per-size line-height. */
       .fw-line-tight   .ds-reader-p { line-height: 1.55 !important; }
@@ -1605,19 +1687,25 @@ function ReaderStyles({ reducedMotion }) {
         backdrop-filter: blur(8px);
       }
 
-      /* Hidden measuring layer — visually invisible but laid out at the same
-         width so paragraph offsetTop / offsetHeight are accurate. */
+      /* Hidden measuring layer.
+         🔴 THE BUG (fixed 2026-07-16): this was capped at max-width:720px while the REAL
+         reading column is 580px (480/680 on the narrow/wide margin settings). Width is THE
+         determinant of measured text height, so the mirror measured every paragraph in a
+         column ~24% wider than it renders → it under-counted lines → the slicer packed too
+         many paragraphs onto a page → the last one overflowed a hard-clipped body. That is
+         exactly the "cut off last line" symptom.
+         It must inherit the page's real width (left:0/right:0, NO max-width of its own), so
+         it measures what actually renders. visibility:hidden is deliberate — display:none
+         generates no boxes, so there would be nothing to measure. */
       .ds-reader-measure {
         position: absolute;
         top: 0; left: 0; right: 0;
         visibility: hidden;
         pointer-events: none;
         opacity: 0;
-        max-width: 720px;
-        margin: 0 auto;
+        margin: 0;
         padding: 0;
       }
-      .ds-immersive .ds-reader-measure { max-width: 720px; }
 
       /* Immersive top bar — minimal: ← Aa-volume ✕ */
       .ds-reader-immersive-bar {
@@ -1801,21 +1889,27 @@ function ReaderStyles({ reducedMotion }) {
         /* intentionally no max-height/overflow — pages should flow */
       }
 
+      /* §6.7.8 — the UN-ADJUSTED stack. This used 'Fraunces', but src/index.css remaps BOTH
+         'Fraunces' and 'Inter' at size-adjust:150%, so every size here rendered 1.5x its
+         nominal px: the 18px default was really ~27px → ~29 characters per line (XL was ~22).
+         That is the whole reason this reader read too big and broke pages oddly. On the
+         un-adjusted stack a size means what it says, and the pagination measures what it
+         renders. Sizes come from the ONE standard (READING.scale). */
       .ds-reader-p {
-        font-family: 'Fraunces', Georgia, serif;
-        font-size: clamp(16px, 2.5vw, 18px);
+        font-family: ${READING.fontStack};
+        font-size: ${READING.scale.m}px;
         color: var(--ink, #0B0805);
-        line-height: 1.78;
+        line-height: 1.7;
         margin: 0 0 18px;
       }
 
-      /* Text-size variants — absolute px per Atelier v4 spec (no clamp; we
-         control the page width via the 580px reading column). */
-      .ds-text-xs .ds-reader-p { font-size: 15px; line-height: 1.65; margin: 0 0 14px; }
-      .ds-text-s  .ds-reader-p { font-size: 16px; line-height: 1.70; margin: 0 0 16px; }
-      .ds-text-m  .ds-reader-p { font-size: 18px; line-height: 1.75; margin: 0 0 18px; }
-      .ds-text-l  .ds-reader-p { font-size: 20px; line-height: 1.80; margin: 0 0 20px; }
-      .ds-text-xl .ds-reader-p { font-size: 23px; line-height: 1.84; margin: 0 0 22px; }
+      /* Text-size variants — absolute px, re-baselined for the un-adjusted face.
+         xs is the absolute floor (16px): we never shrink type to buy characters. */
+      .ds-text-xs .ds-reader-p { font-size: ${READING.scale.xs}px; line-height: 1.65; margin: 0 0 14px; }
+      .ds-text-s  .ds-reader-p { font-size: ${READING.scale.s}px;  line-height: 1.68; margin: 0 0 16px; }
+      .ds-text-m  .ds-reader-p { font-size: ${READING.scale.m}px;  line-height: 1.70; margin: 0 0 18px; }
+      .ds-text-l  .ds-reader-p { font-size: ${READING.scale.l}px;  line-height: 1.76; margin: 0 0 20px; }
+      .ds-text-xl .ds-reader-p { font-size: ${READING.scale.xl}px; line-height: 1.80; margin: 0 0 22px; }
 
       /* h1 = 1.55em of body, centred, tight leading. Drop-cap sizes follow. */
       .ds-reader-h1 { font-size: 1.55em; line-height: 1.25; margin: 0 0 8px; text-align: center; font-weight: 500; }

@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="en-GB"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>FemWell — The pagination measure pass (component #4)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500;1,600&family=Ephesis&display=swap" rel="stylesheet">
+<style>
+  :root{--paper:#ECE7DA;--paperHi:#F4EFE3;--paperDeep:#D8CFBC;--ink:#0B0805;--muted:#2E261B;--gold:#A8893F;--crimson:#BC2E27;--oxblood:#7A1A12;--sage:#8FAF8F;--serif:'Cormorant Garamond',Georgia,serif;--script:'Ephesis',cursive;--sans:ui-sans-serif,system-ui,-apple-system,'Segoe UI',sans-serif;}
+  *{box-sizing:border-box}
+  body{margin:0;background:radial-gradient(120% 80% at 12% 0%,#F4EFE3 0%,rgba(244,239,227,0) 55%),var(--paper);color:var(--ink);font-family:var(--serif);font-size:18px;line-height:1.6}
+  .doc{max-width:680px;margin:0 auto;padding:26px 22px 80px}
+  h1.cover{font-family:var(--script);font-size:52px;color:var(--oxblood);margin:6px 0 2px;line-height:1}
+  h2{font-family:var(--serif);font-weight:600;font-style:italic;font-size:25px;color:var(--oxblood);margin:0 0 4px}
+  h3{font-family:var(--serif);font-weight:600;font-size:19px;color:var(--oxblood);margin:16px 0 5px}
+  .eyebrow{font-family:var(--sans);font-size:11.5px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--gold);margin-bottom:9px}
+  p{margin:0 0 11px}.lede{font-size:19px;line-height:1.5;font-style:italic}
+  small,.cap{font-family:var(--sans);font-size:13px;color:var(--muted);line-height:1.5}
+  b,strong{font-weight:600}
+  code{font-size:.86em;background:#0B08050d;padding:1px 4px;border-radius:4px}
+  .section{background:var(--paperHi);border:1px solid var(--paperDeep);border-left:4px solid var(--gold);border-radius:18px;padding:20px 18px;margin:16px 0;box-shadow:0 4px 18px rgba(58,44,26,.09)}
+  .section.crimson{border-left-color:var(--crimson)}.section.sage{border-left-color:var(--sage)}
+  .section.prop{border-left-color:#C98A2E;border-left-style:dashed;background:#F6EEDD}
+  table{width:100%;border-collapse:collapse;font-size:13.5px;font-family:var(--sans);margin:8px 0}
+  th,td{text-align:left;padding:7px;border-bottom:1px solid var(--paperDeep);vertical-align:top}
+  th{font-size:10.5px;letter-spacing:.09em;text-transform:uppercase;color:var(--gold)}
+  td b{font-family:var(--serif);font-size:14.5px}
+  ul{margin:2px 0 11px;padding-left:19px}li{margin:4px 0}
+  .badge{display:inline-block;font-family:var(--sans);font-size:10.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;padding:2px 8px;border-radius:999px;background:#DDE7DD;color:#3f6b3f}
+  .badge.no{background:#F0E2C6;color:#8E5B14}
+  .foot{font-family:var(--sans);font-size:12px;color:var(--muted);text-align:center;margin-top:26px;line-height:1.6}
+</style></head>
+<body><div class="doc">
+
+<div style="text-align:center;padding:12px 0 2px">
+  <div class="eyebrow">Motherboard component #4 · 16 Jul 2026</div>
+  <h1 class="cover">The measure</h1>
+  <p class="lede" style="max-width:470px;margin:8px auto 0">A 2,000-line pagination engine was measuring its pages in a column 24% wider than the one it draws them in.</p>
+</div>
+
+<div class="section crimson">
+  <div class="eyebrow" style="color:var(--crimson)">What was mis-measuring</div>
+  <h2>The mirror was the wrong width.</h2>
+  <p>The reader paginates by laying every paragraph out in a hidden measuring layer and asking how tall they are. That layer was capped at <b><code>max-width: 720px</code></b> — while the real reading column is <b><code>580px</code></b> (480/680 on the narrow/wide margin settings).</p>
+  <p><b>Width is <em>the</em> determinant of measured text height.</b> Measuring in a column ~24% too wide means every paragraph is reported <b>shorter than it renders</b> → the slicer packs too many onto a page → the last one <b>overflows a hard-clipped body</b>. That is precisely the "cut off last line". It has been silently losing the bottom of pages, and it would have got worse the moment the type changed.</p>
+  <h3>Four more, all real</h3>
+  <table>
+    <tr><th>Defect</th><th>Why it broke</th></tr>
+    <tr><td><b>The 1.5× type</b></td><td><code>.ds-reader-p</code> used <code>'Fraunces'</code> — which <code>index.css</code> remaps at <b><code>size-adjust:150%</code></b>. The 18px default really rendered at <b>~27px → ~29 CPL</b>; XL at ~34.5px → <b>~22 CPL</b>. The reader read enormous, and the 580px column was designed for the un-adjusted face.</td></tr>
+    <tr><td><b>A magic number</b></td><td>Available height was <code>window.innerHeight − (immersive ? 220 : 280)</code> — a guess hand-tuned to the old chrome <em>and</em> the old type. Any type change silently invalidates it. (Component #3 would have done exactly that.)</td></tr>
+    <tr><td><b>Measuring before the fonts</b></td><td>No <code>document.fonts.ready</code> gate. Our faces are <b>remote woff2</b>, so the first pagination measured <b>fallback metrics</b> — every break wrong the instant the real font swapped in.</td></tr>
+    <tr><td><b>Integer rounding</b></td><td><code>offsetTop</code>/<code>offsetHeight</code> are <b>rounded to whole pixels</b>. ~1px is exactly enough to admit or drop a line at a page edge.</td></tr>
+    <tr><td><b>Stale pages</b></td><td>Changing <b>font, line-spacing or margins</b> reflows the column — but none of them were in the measurement's dependencies, so pagination never recomputed.</td></tr>
+    <tr><td><b>Resume jumped</b></td><td>It saved a <b>page index</b>. After any reflow "page 7" is a different place in the book — so she landed somewhere she'd never been.</td></tr>
+  </table>
+</div>
+
+<div class="section prop">
+  <div class="eyebrow" style="color:#8E5B14">The research corrected my plan three times <span class="badge no">honest</span></div>
+  <h2 style="color:#8E5B14">I was going to build the wrong thing.</h2>
+  <ul>
+    <li><b>"Build a proper measuring mirror" — no.</b> The 29-property mirror list everyone copies comes from a <em>textarea</em> library and is <b>incomplete for prose</b> (no <code>hyphens</code>, <code>fontKerning</code>, <code>whiteSpace</code>, <code>overflowWrap</code>). Every property you forget is a silent mispagination — and an app-wide type change is exactly the event that desynchronises a hand-copied list. <b>Measure the real, already-styled container</b>, hidden with <code>visibility:hidden</code> (never <code>display:none</code> — it generates no boxes, so there'd be nothing to measure).</li>
+    <li><b>The clean-break formula I'd have reached for is unsourced and wrong.</b> <code>floor(available / lineHeight) × lineHeight</code> has no authority behind it, assumes uniform leading, and breaks at any heading, blockquote or image. The correct cut is <b>the last line-box whose bottom fits</b> — sub-pixel, via rects.</li>
+    <li><b>Orphans/widows CSS wouldn't have helped.</b> <code>orphans</code>/<code>widows</code> don't work in non-fragmented flow; <code>break-inside:avoid</code> only binds when the <em>browser</em> fragments — and we are our own fragmenter. Both would have been inert.</li>
+    <li><b>And no library.</b> Every live option is an EPUB or print engine (epub.js needs EPUB files; paged.js targets PDF; bindery is dead). Our in-house approach is right.</li>
+    <li class="cap"><b>One thing needed no work:</b> <code>size-adjust</code> requires no special handling — measuring in the same declared font accounts for it automatically. The remap was a <em>type</em> bug, not a measurement one.</li>
+  </ul>
+</div>
+
+<div class="section sage">
+  <div class="eyebrow">The fix</div>
+  <h2>Measure what you actually draw.</h2>
+  <ul>
+    <li><b>The mirror now inherits the real column width</b> — its <code>max-width:720px</code> is gone, so it measures the page it renders. <em>This is the cut-line fix.</em></li>
+    <li><b>Un-adjusted serif + a re-baselined scale</b>, both read from the ONE standard (<code>READING.fontStack</code>, <code>READING.scale</code>) so it can't drift from the other readers again. Default <b>18px means 18px</b> → ~38 CPL at 390px, the honest mobile accept.</li>
+    <li><b>The magic number is gone.</b> Available height is now <b>measured</b>: from where the real body starts to where the stage's content box ends. Nothing to re-tune when the chrome or type changes.</li>
+    <li><b><code>document.fonts.ready</code> gate</b> — paint once, then re-measure the moment the real fonts land.</li>
+    <li><b><code>getBoundingClientRect()</code> everywhere</b> — sub-pixel; no 1px admit/drop.</li>
+    <li><b>Font / line-spacing / margins now re-paginate</b> (a <code>layoutKey</code> in the dependencies).</li>
+    <li><b>Resume is a paragraph ANCHOR, not a page.</b> We save the paragraph she was on and resolve the page <em>after</em> the measurement — so she lands exactly where she left off no matter how the text reflowed. Old saved positions still work (legacy fallback), so nobody loses their place on this deploy.</li>
+    <li><b>No more silent clipping.</b> A single paragraph taller than the screen can't be split by a between-paragraphs engine — it used to be cut off. That rare page now <b>scrolls</b>. A scroll is a nuisance; missing words are a bug.</li>
+  </ul>
+  <p class="cap"><b>Orphans/widows:</b> impossible by construction here — the engine only ever breaks <em>between</em> paragraphs, never inside one.</p>
+</div>
+
+<div class="section">
+  <div class="eyebrow">Deliberately not done</div>
+  <h2>Two things I left alone, on purpose.</h2>
+  <ul>
+    <li><b>Mid-paragraph breaking</b> (binary-search + <code>Range.getClientRects()</code>) — the full engine upgrade. It would let a page fill to the last line and kill the over-tall case properly. It's a rewrite of the slicer, not a measure pass; noted as the upgrade path.</li>
+    <li><b>Deleting <code>src/pages/Lifestyle.jsx</code></b> — <b>I did not delete it, and I think the brief was working from my own imprecise wording.</b> No <em>route</em> maps to it, but <code>pages.config.js</code> still imports it and the line beneath the route says: <em>"ONE-LINE REVERT: change the line above back to <code>&quot;Lifestyle&quot;: Lifestyle</code>"</em>. It's the deliberate revert path — the same convention we keep for <code>Profile.jsx</code> and <code>Today.jsx</code>. Deleting it removes the escape hatch and breaks the build unless the import goes too. Say the word and I'll remove file + import + comment together.</li>
+  </ul>
+</div>
+
+<div class="section">
+  <div class="eyebrow">Also fixed — a control that lied</div>
+  <h2>"Sans" was a serif.</h2>
+  <p>The reader offers a <b>Serif / Sans</b> choice. But <code>index.css</code> remaps <b>both</b> <code>'Fraunces'</code> <b>and</b> <code>'Inter'</code> to Cormorant — so picking "Sans" gave you <b>Cormorant, a serif, at 150%</b>. The toggle did nothing but pretend. "Sans" now resolves to a real system sans, and both options measure correctly.</p>
+</div>
+
+<div class="foot">
+  FemWell · Motherboard component #4 — the pagination measure pass · 16 Jul 2026<br>
+  Engine reads its standard from §6.7.8 <code>ReadingColumn</code>. Research: <code>mnt/femwell/research_pagination_engine.md</code>. No new backend; nothing stripped.
+</div>
+
+</div></body></html>

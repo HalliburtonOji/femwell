@@ -51,6 +51,17 @@ export const READING = {
   sizeMin: 16,       // absolute floor
   leading: 1.62,     // ≥1.5
   padX: 22,          // the ONLY side padding on reading text
+  // The un-adjusted Cormorant stack. Reading text MUST use this: `src/index.css` remaps
+  // 'Inter'/'Fraunces' at size-adjust:150%, so those render 1.5× their nominal px.
+  fontStack: '"Cormorant Garamond", Georgia, serif',
+  // Desktop reading-column cap in px, for surfaces that own their own column (the story
+  // engine's measured pagination can't use an `ex` max-width — it needs a real number to
+  // measure against). 580px @ 18px un-adjusted ≈ 64 CPL — inside the 45–75 target.
+  columnMaxPx: 580,
+  // The story engine's text-size scale, re-baselined for the UN-ADJUSTED face so a size
+  // means what it says. `m` (18px) is the immersive default and lands ~38 CPL at 390px —
+  // the honest mobile accept (45 is unreachable; never shrink type to buy characters).
+  scale: { xs: 16, s: 17, m: 18, l: 20, xl: 23 },
 };
 
 // article/horoscope/card → spaced paragraphs, no indent. fiction/book/dailyStory → indent, no gap.
