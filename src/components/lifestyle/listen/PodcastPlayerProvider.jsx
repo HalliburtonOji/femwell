@@ -2,6 +2,10 @@ import { createContext, useState, useRef, useEffect, useCallback } from 'react';
 import { base44 } from '@/api/base44Client';
 
 const SPEED_OPTIONS = [0.8, 1.0, 1.25, 1.5, 1.75, 2.0];
+// The sleep timer FADES rather than cutting — a meditation stopped mid-breath is a jolt in
+// the exact moment we promised calm. Ramp the last stretch, then pause. (Fade-out is still an
+// open, unfulfilled request on Spotify — see mnt/femwell/research_inline_media_ux.md §E.)
+const SLEEP_FADE_SEC = 20;
 const COMPLETED_THRESHOLD = 0.95; // 95% of duration → mark completed
 const PERSIST_DEBOUNCE_MS = 5000;
 const STORAGE_KEY_SPEED = 'fw_podcast_playback_rate';
@@ -77,6 +81,7 @@ export function PodcastPlayerProvider({ children }) {
   });
   const [sleepTimerMin, setSleepTimerMinState] = useState(null); // null = off
   const [sleepRemainingSec, setSleepRemainingSec] = useState(0);
+  const [sleepFading, setSleepFading] = useState(false);          // true during the final fade-out
 
   // Resolve current user once for PodcastListens upserts. Non-fatal if it
   // fails — anonymous playback still works, just no resume persistence.
@@ -406,32 +411,48 @@ export function PodcastPlayerProvider({ children }) {
     setPlaybackRate(next);
   }, [setPlaybackRate]);
 
-  // Sleep timer — pauses playback when N minutes elapse. Pass null to cancel.
-  // Tracks remaining seconds for the UI countdown.
+  // Sleep timer — FADES OUT and then pauses when N minutes elapse. Pass null to cancel.
+  //
+  // RESEARCHED (16/07/2026): a hard stop is a jolt in the exact moment we promised calm — a
+  // meditation cut off mid-breath. Fade-out is still an OPEN, unfulfilled user request on
+  // Spotify, so it's a cheap on-brand win we can simply beat them to: we ramp the volume over
+  // the last SLEEP_FADE_SEC and only then pause. `sleepFading` is exposed so the UI can fold
+  // the flora closed as it goes. Volume is always restored (on end, on cancel, on unmount).
   const setSleepTimer = useCallback((min) => {
     // Clear any existing interval first.
     if (sleepTimerRef.current) {
       clearInterval(sleepTimerRef.current);
       sleepTimerRef.current = null;
     }
+    const restoreVolume = () => { const a = audioRef.current; if (a) { try { a.volume = 1; } catch { /* noop */ } } };
     if (!min || min <= 0) {
       setSleepTimerMinState(null);
       setSleepRemainingSec(0);
+      setSleepFading(false);
+      restoreVolume();   // cancelling mid-fade must not leave her audio quiet
       return;
     }
     setSleepTimerMinState(min);
     setSleepRemainingSec(Math.floor(min * 60));
+    setSleepFading(false);
     sleepTimerRef.current = setInterval(() => {
       setSleepRemainingSec((prev) => {
         const next = prev - 1;
+        const a = audioRef.current;
         if (next <= 0) {
-          // Time's up — pause playback + clear interval.
+          // Faded to nothing — now pause, clear, and restore the volume for next time.
           clearInterval(sleepTimerRef.current);
           sleepTimerRef.current = null;
-          const a = audioRef.current;
           if (a) { try { a.pause(); } catch { /* noop */ } }
+          restoreVolume();
           setSleepTimerMinState(null);
+          setSleepFading(false);
           return 0;
+        }
+        // The last stretch: ease the volume down instead of cutting it.
+        if (next <= SLEEP_FADE_SEC) {
+          setSleepFading(true);
+          if (a) { try { a.volume = Math.max(0, Math.min(1, next / SLEEP_FADE_SEC)); } catch { /* noop */ } }
         }
         return next;
       });
@@ -463,6 +484,7 @@ export function PodcastPlayerProvider({ children }) {
     playbackRate,
     sleepTimerMin,
     sleepRemainingSec,
+    sleepFading,        // true during the final fade — the UI folds the flora closed as it goes
     speedOptions: SPEED_OPTIONS,
     play,
     pause,

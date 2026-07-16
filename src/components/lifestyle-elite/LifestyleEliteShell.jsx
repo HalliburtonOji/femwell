@@ -456,6 +456,13 @@ export default function LifestyleEliteShell() {
     // §1/§2 play INLINE when the source is a real media file; off-platform stays an honest link-out
     ...(type === "video" ? (playableMedia(r.content_url) ? { videoSrc: r.content_url } : { external: true }) : {}),
     ...(type === "audio" && playableMedia(r.audio_url) ? { audioSrc: r.audio_url } : {}),
+    // captions (video · WCAG SC 1.2.2 Level A) + transcript (audio-only · SC 1.2.1) when we have them
+    ...(r.captions_url ? { captionsSrc: r.captions_url } : {}),
+    ...(r.transcript ? { transcript: stripHtml(r.transcript) } : {}),
+    // identity for the global player's lock-screen metadata
+    sourceName: r.source_name || r.author_name || "FemWell",
+    imageUrl: r.image_url || undefined,
+    duration: Number(r.duration_seconds) || undefined,
     _raw: r,
     actions: [{
       label: type === "video" ? "Watch" : type === "audio" ? "Open episode" : type === "book" ? "Open reader" : "Read this",

@@ -95,9 +95,86 @@
   <p class="cap">Joins the block list in §6.7.7 alongside player · excerpt · pull-quote · reading · ingredients · steps. Add a block, never a bespoke card.</p>
 </div>
 
+<div class="section" style="border-left-color:#C98A2E;border-left-style:dashed;background:#F6EEDD">
+  <div class="eyebrow" style="color:#8E5B14">The method (standing, from here)</div>
+  <h2 style="color:#8E5B14">Research each sub-piece separately, then add what's missing.</h2>
+  <p>Halli's refinement, now the standard for <b>every</b> component pass: don't just implement the ask — <b>brainstorm each sub-piece on its own, research what a genuinely great version looks like, and ADD what's needed.</b> Below: five mini-brainstorms, each with what the research changed and what we're <b>adding beyond the ask</b>. Sources: <code>mnt/femwell/research_inline_media_ux.md</code> · <code>mnt/femwell/research_reader_and_cards.md</code> (26+ URLs, all fetched 16/07/2026).</p>
+  <p class="cap"><b>Two claims we refused to make</b> (the researcher dropped them rather than invent): there is <b>no</b> reading evidence for or against drop caps, and <b>no</b> real evidence that serif beats sans for long-form on screen. Fraunces/Cormorant are a <b>brand</b> decision — we won't cite fake science for them. Likewise "cream is kinder on the eyes" is anecdotal; the defensible argument for <code>#ECE7DA</code> is NN/g's positive-polarity evidence (and it <em>strengthens</em> as text gets smaller).</p>
+</div>
+
+<div class="section sage">
+  <div class="eyebrow">Mini-brainstorm 1 · Inline video</div>
+  <h2>Tap-to-play was right. Captions were a Level A fail.</h2>
+  <p><b>Validated:</b> tap-to-play is correct for editorial ("users don't appreciate being surprised by video that begins playing without their consent" — NN/g). Muted autoplay is only defensible as a GIF-replacement, and iOS defeats it anyway (autoplay pauses when non-visible, and in Low Power Mode) — so <b>poster + play affordance is the only consistent experience</b>. <code>playsinline</code> is mandatory or iPhone forces fullscreen. Native <code>controls</code> beat a custom bar: free fullscreen, PiP, AirPlay, OS caption styling, keyboard.</p>
+  <p><b>What the research changed:</b> two real defects. (1) <b>We ship zero <code>&lt;track&gt;</code> — that's a WCAG SC 1.2.2 <span style="color:var(--crimson)">Level A failure</span></b>, and for a wellness app captions aren't an a11y tax: she's watching in bed, on mute, beside a sleeping partner. (2) <b><code>preload="metadata"</code> is not the cheap option</b> — browsers can't predict metadata location, so every card in a feed quietly bills her mobile data.</p>
+  <h3>ADDING beyond the ask</h3>
+  <ul>
+    <li><b>Captions</b> — <code>&lt;track default kind="captions" srclang="en"&gt;</code> via a new <code>captionsSrc</code> field (+ <code>crossorigin</code> when the VTT is remote).</li>
+    <li><b>Data discipline</b> — <code>preload="none"</code> + <code>loading="lazy"</code>. The FloraCover poster is generative SVG, so it costs no fetch at all.</li>
+    <li><b>Duration on the card face</b> — NN/g: a video card must give the topic and <b>the length</b>. Ours didn't.</li>
+  </ul>
+</div>
+
+<div class="section plum">
+  <div class="eyebrow">Mini-brainstorm 2 · Inline audio + the flora visualiser</div>
+  <h2>The visualiser was right — for a bigger reason than taste.</h2>
+  <p><b>The decisive finding.</b> Never drive the visualiser from Web Audio's <code>AnalyserNode</code> on our media: for cross-origin audio a <code>MediaElementAudioSourceNode</code> <b>outputs zeroes — the track goes silent</b>. It's <b>undetectable and irreversible</b> ("it simply gets muted with no conservative way to revert it"). The failure mode is <b>a sleep story that plays silently</b>. Our time-driven CSS visualiser dodges a one-way trap. And at 5–9 stems, CSS transforms on a promoted layer beat canvas (canvas only wins "when you have hundreds of elements"). The ambient craft rule — "multiple asynchronous, very slow modulation sources… so it shifts and breathes" — is <b>exactly</b> our per-stem seeded phases. Gimmicky = beat-locked, uniform, fast. Tasteful = slow, unsynced, drifting.</p>
+  <p><b>What the research changed — and a discovery in our own codebase.</b> The great player wants scrub, ±skip, speed, resume, <b>lock-screen controls</b> and background continue. We were building a dead-end <code>&lt;audio&gt;</code> in a card… while <code>PodcastPlayerProvider</code> <b>already has all of it</b> (Media Session, sleep timer, speed, resume-from-position via PodcastListens) and its MiniPlayer is <b>already mounted globally in Layout</b>. So the great version isn't to rebuild it — it's to <b>route card audio into it</b>. Reuse, don't duplicate.</p>
+  <h3>ADDING beyond the ask</h3>
+  <ul>
+    <li><b>Card audio → the global player.</b> Tap play on a card and the app's real player takes it: it <b>keeps playing when she navigates or locks the phone</b>, resumes where she left off, and gets speed + sleep timer for free.</li>
+    <li><b>The sleep timer FADES.</b> A meditation cut off mid-breath is a jolt in the exact moment we promised calm. Spotify users are <em>still asking</em> for fade-out — so we ship it: <b>volume ramps over the last ~20s</b> and <b>the flora folds closed as it fades</b>. Called <b>"End of story"</b>.</li>
+    <li><b>The visualiser goes where the audio actually lives</b> — into the expanded player, not just the card.</li>
+    <li><b>A transcript, not captions.</b> Audio-only is a <em>different</em> criterion (SC 1.2.1) — it wants a <b>transcript</b>. "Read it instead" is also just good: she may want to read the sleep story.</li>
+    <li><b>Reduced motion</b> → the flora holds a <b>still, open bloom</b>. Stillness is brand-right; hiding it isn't.</li>
+  </ul>
+  <p class="cap"><b>Explicitly NOT building:</b> an AnalyserNode visualiser (silences audio), a custom video control bar (loses fullscreen/PiP/AirPlay/captions), a canvas port of the flora (slower at our scale).</p>
+</div>
+
+<div class="section">
+  <div class="eyebrow">Mini-brainstorm 3 · The book 2-tap flow</div>
+  <h2>Paginate for feel — never claim it aids comprehension.</h2>
+  <p><b>The premise everyone repeats is refuted.</b> A 2025 CHI study (n=100, real phones, ten short stories) found <b>no significant difference</b> between scrolling and pagination on comprehension (14.8 vs 14.7), duration, or workload. The "pagination aids comprehension" line is 10+ years old and desktop-based. But the <em>qualitative</em> data rescues it: "a sense of progression", "less intimidating", "more digestible". <b>So we paginate — for feel, honestly — and the paper itself recommends offering both.</b> Fiction-vs-article is genuinely unresolved; the defensible split is <b>paginate the book &amp; daily story, scroll the essays</b>.</p>
+  <p><b>The finding that reframes progress:</b> a percentage <b>scores</b> her; <b>"6 min left" gives her permission to start</b>. The enemy was never comprehension — it's not opening it.</p>
+  <h3>ADDING beyond the ask</h3>
+  <ul>
+    <li><b>"~N min left" instead of a bare page count</b> — permission, not scoring.</li>
+    <li><b>Silent auto-resume</b> — she returns to the page she left, with no ceremony.</li>
+    <li><b>A real measure fix (a live bug we found).</b> On a 390px phone the danger <b>inverts</b>: the risk isn't lines too long, it's <b>too short</b> — under ~45 characters. Our pane double-framed the text (a card inside the expand) down to <b>~41 CPL</b>. Un-frame it and let the page breathe.</li>
+  </ul>
+</div>
+
+<div class="section crimson">
+  <div class="eyebrow">Mini-brainstorm 4 · In-app reader design</div>
+  <h2>Beautiful is measure, leading and margins — not ornament.</h2>
+  <p>The craft that actually carries a reader: a comfortable <b>measure</b> (~45–75 characters; our real risk at 390px is falling <em>under</em> it), generous <b>margins</b>, honest <b>leading</b>, and the oldest typographic tell of a real book — <b>indent XOR space</b>, never both (Butterick). Fiction gets a first-line indent and no paragraph gap; articles get spaced paragraphs and no indent. It's the cheapest "this is a real book" win available.</p>
+  <p><b>Honest limits:</b> no evidence exists for or against drop caps, and serif-vs-sans for screen reading is null. Those stay <b>brand</b> calls under the bible, not science. The defensible case for cream <code>#ECE7DA</code> is positive polarity (dark-on-light), which <em>strengthens</em> as text gets smaller.</p>
+  <h3>ADDING beyond the ask</h3>
+  <ul>
+    <li><b>Indent-XOR-space, split by type</b> — the story/book reads like a book; essays read like essays.</li>
+    <li><b>Measure + leading held deliberately</b> in the reading surfaces, not left to whatever the container gives.</li>
+    <li><b>Dark mode: offer, don't default</b> (NN/g names book readers explicitly) — the story reader's Plum theme already is exactly this, now on-brand.</li>
+  </ul>
+</div>
+
+<div class="section">
+  <div class="eyebrow">Mini-brainstorm 5 · Card summaries</div>
+  <h2>Honesty doesn't cost taps. Vagueness does.</h2>
+  <p><b>The finding that kills the "don't spoil it" instinct.</b> Across 8,977 A/B tests and 35,910 headlines, concreteness→clicks is an <b>inverted-U</b>: too vague <em>lowers</em> clicks — "there is such a thing as omitting too much information." And 54.5% report <b>decreased trust</b> in habitual clickbait. For a warm UK product this settles it: <b>write the real thing</b>. Say what it is, and she'll tap it <em>and</em> trust you.</p>
+  <p>Per NN/g's "4 Ss", a summary that <b>restates the title is worse than nothing</b> — it's the empty space we were trying to fix, with words in it.</p>
+  <h3>ADDING beyond the ask</h3>
+  <ul>
+    <li><b>Kill any summary that restates its title</b> — a real guard in the component, not a copy note.</li>
+    <li><b>Read-time everywhere</b> — the single most decision-useful bit of metadata, on every type.</li>
+    <li><b>Written to the clamp</b> — a true 2-line snippet, not a truncated paragraph.</li>
+  </ul>
+  <p class="cap"><b>Deferred honestly to a later pass:</b> <b>"why this, for you"</b> + <b>scrutability</b>. Research is strong (a one-sided, positive, personal reason beat two-sided on trust; and the thing <em>everyone</em> misses is shipping the reason as <b>decoration rather than a control</b> — let her correct it). We're not shipping it yet because <code>getLifestyleFeed</code> returns no reason field — inventing one would be a fake explanation, which is exactly the trust-breaker the research warns about. It needs a real signal first.</p>
+</div>
+
 <div class="foot">
   FemWell · Motherboard component #2 — media &amp; readers craft · 16 Jul 2026<br>
-  Builds on <code>brand/expandCards.jsx</code> (§6.7.7). No new backend. The six live Lifestyle boards, Save, and actions keep working.
+  Builds on <code>brand/expandCards.jsx</code> (§6.7.7). No new backend. The six live Lifestyle boards, Save, and actions keep working.<br>
+  Research: <code>mnt/femwell/research_inline_media_ux.md</code> · <code>mnt/femwell/research_reader_and_cards.md</code>
 </div>
 
 </div></body></html>

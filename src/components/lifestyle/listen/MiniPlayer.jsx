@@ -43,8 +43,8 @@ export default function MiniPlayer() {
         zIndex: 90,
         margin: '0 12px',
         height: MINI_HEIGHT,
-        background: 'var(--plum-deep, #2b1e16)',
-        color: 'var(--cream, #f7f0e6)',
+        background: '#7A1A12',
+        color: '#F4EFE3',
         borderRadius: 14,
         boxShadow: '0 8px 22px -10px rgba(43,30,22,0.45)',
         display: 'flex',
@@ -74,7 +74,7 @@ export default function MiniPlayer() {
           borderRadius: 8,
           overflow: 'hidden',
           flexShrink: 0,
-          background: 'var(--cream-2, #ede2d4)',
+          background: '#D8CFBC',
         }}
         aria-hidden="true"
       >
@@ -104,7 +104,7 @@ export default function MiniPlayer() {
         <div
           style={{
             fontSize: 12,
-            color: 'var(--cream-2, #ede2d4)',
+            color: '#D8CFBC',
             opacity: 0.7,
             lineHeight: 1.25,
             whiteSpace: 'nowrap',
@@ -132,8 +132,8 @@ export default function MiniPlayer() {
             display: 'flex', alignItems: 'center', gap: 5,
             height: 36, padding: '0 12px',
             borderRadius: 9999,
-            background: 'var(--rose-primary, #D45E52)',
-            color: 'var(--cream, #f7f0e6)',
+            background: '#BC2E27',
+            color: '#F4EFE3',
             border: 'none',
             textDecoration: 'none',
             fontSize: 12, fontWeight: 700, letterSpacing: '0.08em',

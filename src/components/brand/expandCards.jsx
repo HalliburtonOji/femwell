@@ -44,6 +44,7 @@ import React, { useState, useEffect, useRef, useCallback } from "react";
 import { T, SERIF, UI, PAPER_BG, Heart } from "@/components/journal/Editorial";
 import { OXBLOOD } from "@/components/brand/SliderKit";
 import { base44 } from "@/api/base44Client";
+import { usePodcastPlayer } from "@/hooks/usePodcastPlayer";
 import FloraCover from "@/components/brand/FloraCover";
 import { cwOf, Pollinator, floraKeyframes, FlowerGlyph } from "@/components/brand/flora";
 import {
@@ -206,9 +207,25 @@ function StepsBlock({ steps, accent, label = "How it goes" }) {
 
 // ── §5 SUMMARY — a card must never look empty. One real, warm sentence of substance.
 // Ladder: summary → subtitle → excerpt → first line of body. Never a label, never lorem.
+//
+// RESEARCHED (16/07/2026): honesty does NOT cost taps — concreteness→clicks is an inverted-U
+// (8,977 A/B tests): being too VAGUE lowers clicks, and habitual clickbait cuts trust for
+// 54.5% of readers. So write the real thing. And per NN/g's "4 Ss", a summary that merely
+// RESTATES THE TITLE is worse than nothing — it's the empty space, with words in it. We guard
+// against it here rather than trusting copy discipline.
+const normText = (x) => String(x || "").toLowerCase().replace(/[^a-z0-9 ]/g, "").replace(/\s+/g, " ").trim();
+export function restatesTitle(s, title) {
+  const a = normText(s), b = normText(title);
+  if (!a || !b) return false;
+  return a === b || a.startsWith(b) || b.startsWith(a);
+}
 export function summaryOf(item) {
-  const s = item?.summary || item?.subtitle || item?.excerpt || (Array.isArray(item?.body) ? item.body[0] : "");
-  return typeof s === "string" ? s.trim() : "";
+  const candidates = [item?.summary, item?.subtitle, item?.excerpt, Array.isArray(item?.body) ? item.body[0] : ""];
+  for (const c of candidates) {
+    const s = typeof c === "string" ? c.trim() : "";
+    if (s && !restatesTitle(s, item?.title)) return s;
+  }
+  return "";
 }
 function SummaryBlock({ text, accent }) {
   if (!text) return null;
@@ -240,7 +257,9 @@ function MiniBloom({ size = 11, color, accent }) {
     </svg>
   );
 }
-export function FloraVisualiser({ playing, height = 66 }) {
+// `fading` — the sleep timer's final ramp: the meadow visibly FOLDS CLOSED over the same
+// ~20s the volume eases away, so the ending is watched, not suffered.
+export function FloraVisualiser({ playing, height = 66, fading = false }) {
   // oxblood · gold · sage · cream — the brand's own palette, not a rainbow
   const STEMS = [
     { h: 0.42, c: T.sage, a: T.gold, d: 1.55, p: -0.2 },
@@ -252,7 +271,11 @@ export function FloraVisualiser({ playing, height = 66 }) {
     { h: 0.72, c: T.sage, a: OXBLOOD, d: 1.6, p: -0.3 },
   ];
   return (
-    <div aria-hidden style={{ display: "flex", alignItems: "flex-end", justifyContent: "center", gap: 9, height, padding: "0 4px" }}>
+    <div aria-hidden style={{
+      display: "flex", alignItems: "flex-end", justifyContent: "center", gap: 9, height, padding: "0 4px",
+      transformOrigin: "bottom", transform: fading ? "scaleY(0.45)" : "scaleY(1)", opacity: fading ? 0.4 : 1,
+      transition: fading ? "transform 20s linear, opacity 20s linear" : "transform .4s ease, opacity .4s ease",
+    }}>
       <style>{VIZ_KEYS}</style>
       {STEMS.map((s, i) => {
         const run = playing ? "running" : "paused";
@@ -272,17 +295,43 @@ export function FloraVisualiser({ playing, height = 66 }) {
 const fmtTime = (s) => (Number.isFinite(s) ? `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, "0")}` : "0:00");
 
 // ── §2 REAL inline AUDIO + the flora visualiser ──────────────────────────────
-export function FloraAudio({ src, label, accent, initialDuration = 0 }) {
+//
+// RESEARCHED (16/07/2026) — the card does NOT own a dead-end <audio>. A great spoken-word
+// player wants scrub, ±skip, speed, resume, LOCK-SCREEN controls and background continue…
+// and `PodcastPlayerProvider` already has ALL of it (Media Session, sleep timer, speed,
+// resume-from-position via PodcastListens) with its MiniPlayer mounted globally in Layout.
+// So we ROUTE card audio into the app's real player: tap play here and it keeps playing when
+// she navigates or locks the phone, and resumes where she left off. Reuse, don't duplicate.
+// (Falls back to a local <audio> when rendered outside the provider — e.g. a standalone demo.)
+export function FloraAudio({ src, label, accent, initialDuration = 0, item = {} }) {
+  const player = usePodcastPlayer();
   const ref = useRef(null);
-  const [playing, setPlaying] = useState(false);
-  const [t, setT] = useState(0);
-  const [dur, setDur] = useState(initialDuration);
+  const [localPlaying, setLocalPlaying] = useState(false);
+  const [localT, setLocalT] = useState(0);
+  const [localDur, setLocalDur] = useState(initialDuration);
   const [err, setErr] = useState(false);
+
+  const isThis = !!player && player.currentEpisode?.id === item.id;
+  const playing = player ? (isThis && player.isPlaying) : localPlaying;
+  const t = player ? (isThis ? player.position : 0) : localT;
+  const dur = player ? (isThis ? (player.duration || initialDuration) : initialDuration) : localDur;
+
   const toggle = () => {
+    if (player) {
+      if (isThis) { player.togglePlay(); return; }
+      player.play({
+        id: item.id, audio_url: src, title: item.title || label,
+        source_name: item.sourceName || item.kind || "FemWell",
+        image_url: item.imageUrl || undefined,
+        duration_seconds: initialDuration || undefined,
+      });
+      return;
+    }
     const a = ref.current; if (!a) return;
-    if (a.paused) { a.play().then(() => setPlaying(true)).catch(() => setErr(true)); }
-    else { a.pause(); setPlaying(false); }
+    if (a.paused) { a.play().then(() => setLocalPlaying(true)).catch(() => setErr(true)); }
+    else { a.pause(); setLocalPlaying(false); }
   };
+
   const pct = dur > 0 ? Math.min(100, (t / dur) * 100) : 0;
   return (
     <div style={{ background: T.paper, border: `1px solid ${T.paperDeep}`, borderRadius: 16, padding: "12px 14px 10px", boxShadow: "inset 0 1px 0 rgba(255,253,247,0.6)" }}>
@@ -297,29 +346,64 @@ export function FloraAudio({ src, label, accent, initialDuration = 0 }) {
             <div style={{ width: `${pct}%`, height: "100%", background: accent, borderRadius: 999, transition: "width .2s linear" }} />
           </div>
           <div style={{ display: "flex", justifyContent: "space-between", fontFamily: UI, fontSize: 10.5, fontWeight: 600, color: T.muted }}>
-            <span>{fmtTime(t)}</span><span>{fmtTime(dur)}</span>
+            <span>{fmtTime(t)}</span>
+            <span>{player && isThis ? "keeps playing while you browse" : fmtTime(dur)}</span>
           </div>
         </div>
       </div>
-      <audio ref={ref} src={src} preload="metadata"
-        onLoadedMetadata={(e) => setDur(e.currentTarget.duration)}
-        onTimeUpdate={(e) => setT(e.currentTarget.currentTime)}
-        onEnded={() => { setPlaying(false); setT(0); }}
-        onError={() => setErr(true)} />
+      {/* SC 1.2.1 — audio-only wants a TRANSCRIPT (not captions). Also just kind: she may
+          want to READ the sleep story instead of hearing it. */}
+      {item.transcript && <TranscriptDisclosure text={item.transcript} accent={accent} />}
+      {!player && <audio ref={ref} src={src} preload="none"
+        onLoadedMetadata={(e) => setLocalDur(e.currentTarget.duration)}
+        onTimeUpdate={(e) => setLocalT(e.currentTarget.currentTime)}
+        onEnded={() => { setLocalPlaying(false); setLocalT(0); }}
+        onError={() => setErr(true)} />}
+    </div>
+  );
+}
+
+// "Read it instead" — the transcript, folded away until she wants it (WCAG SC 1.2.1).
+function TranscriptDisclosure({ text, accent }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <div style={{ marginTop: 10, borderTop: `1px solid ${T.paperDeep}`, paddingTop: 9 }}>
+      <button onClick={() => setOpen((o) => !o)} aria-expanded={open} style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "transparent", border: "none", padding: 0, cursor: "pointer", fontFamily: UI, fontSize: 12, fontWeight: 700, color: accent }}>
+        <BookOpen size={13} /> {open ? "Hide the words" : "Read it instead"}
+      </button>
+      {open && <p style={{ fontFamily: SERIF, fontSize: 15.5, color: T.inkSoft, lineHeight: 1.6, margin: "9px 0 2px", maxHeight: 240, overflowY: "auto" }}>{text}</p>}
     </div>
   );
 }
 
 // ── §1 REAL inline VIDEO — the FloraCover IS the poster; tap the bloom-play and the
 // real <video> takes its place and plays in-card. Never autoplays; reduced-motion safe.
+//
+// RESEARCHED (16/07/2026):
+//  • Tap-to-play is right for editorial (NN/g: users don't want to be surprised by video).
+//    iOS defeats muted-autoplay anyway (pauses when non-visible; disabled in Low Power Mode),
+//    so poster + play affordance is the ONLY consistent experience. `playsInline` is mandatory
+//    or iPhone forces fullscreen.
+//  • NATIVE `controls` beat a custom bar: free fullscreen, PiP, AirPlay, OS caption styling,
+//    keyboard. (Do NOT build a custom control bar.)
+//  • CAPTIONS are a WCAG SC 1.2.2 **Level A** requirement — and for this app they're a primary
+//    use case, not an a11y tax (watched in bed, on mute, beside a sleeping partner). A remote
+//    .vtt needs `crossOrigin` on the media element or the track is blocked.
+//  • DATA: `preload="metadata"` is NOT cheap (browsers can't predict metadata location → a
+//    range-fetch per card on her mobile data). We render NO <video> at all until she taps —
+//    and then `preload="none"`. The FloraCover poster is generative SVG: zero fetch.
+const isRemote = (u) => { try { return new URL(u, window.location.href).origin !== window.location.origin; } catch { return false; } };
 export function FloraVideo({ src, item, accent }) {
   const [started, setStarted] = useState(false);
   const [err, setErr] = useState(false);
   if (err) return null;
   if (started) {
     return (
-      <video src={src} controls autoPlay playsInline preload="metadata" onError={() => setErr(true)}
-        style={{ width: "100%", maxHeight: 260, borderRadius: 16, display: "block", background: T.ink, border: `1px solid ${T.paperDeep}` }} />
+      <video src={src} controls autoPlay playsInline preload="none" loading="lazy" onError={() => setErr(true)}
+        crossOrigin={item.captionsSrc && isRemote(item.captionsSrc) ? "anonymous" : undefined}
+        style={{ width: "100%", maxHeight: 260, borderRadius: 16, display: "block", background: T.ink, border: `1px solid ${T.paperDeep}` }}>
+        {item.captionsSrc && <track default kind="captions" srcLang={item.captionsLang || "en"} label={item.captionsLabel || "English"} src={item.captionsSrc} />}
+      </video>
     );
   }
   return (
@@ -338,7 +422,7 @@ export function FloraVideo({ src, item, accent }) {
 // (demos/no-src). External platforms (TikTok/YouTube) never fake-embed — they link out.
 function MediaBlock({ item, accent }) {
   if (item.videoSrc && !item.external) return <FloraVideo src={item.videoSrc} item={item} accent={accent} />;
-  if (item.audioSrc && !item.external) return <FloraAudio src={item.audioSrc} label={item.playerLabel || item.title} accent={accent} initialDuration={item.duration || 0} />;
+  if (item.audioSrc && !item.external) return <FloraAudio src={item.audioSrc} label={item.playerLabel || item.title} accent={accent} initialDuration={item.duration || 0} item={item} />;
   if (item.player) return <InlinePlayer label={item.playerLabel || item.title} duration={item.duration || 300} accent={accent} mediaKind={item.mediaKind || "audio"} />;
   return null;
 }
@@ -346,7 +430,20 @@ function MediaBlock({ item, accent }) {
 // ── §3 THE READING PANE — books open INTO reading (2 taps, not 3). Paginates the
 // opening pages right here; the FULL reader stays one clear button away. Reuses the
 // EXISTING `fetchGutenbergBook` function — no new backend.
+//
+// RESEARCHED (16/07/2026):
+//  • PAGINATE FOR FEEL, NOT FOR SCIENCE. A 2025 CHI study (n=100, real phones) found NO
+//    significant difference vs scrolling on comprehension, duration or workload — the old
+//    "pagination aids comprehension" line is desktop-era. What paginating DOES buy is real
+//    but qualitative: "a sense of progression", "less intimidating", "more digestible".
+//  • PROGRESS IS PERMISSION, NOT A SCORE. "62%" scores her; "~6 min left" gives her
+//    permission to start. The enemy was never comprehension — it's not opening it.
+//  • MEASURE INVERTS ON A PHONE. The risk at 390px isn't lines too LONG, it's too SHORT
+//    (under ~45 characters). v1 double-framed the text (a card inside the expand) down to
+//    ~41 CPL — so the pane is now UN-FRAMED: it reads on the page's own paper, edge to edge.
+//  • INDENT XOR SPACE (Butterick) — a book indents its paragraphs and does NOT space them.
 const READ_WORDS = 150;
+const WPM = 200;   // the reading rate behind "~N min left"
 function paginateText(text, per = READ_WORDS) {
   const words = String(text || "").replace(/\s+/g, " ").trim().split(" ").filter(Boolean);
   const out = [];
@@ -383,26 +480,40 @@ export function ReadingPane({ item, accent, onOpenFull }) {
     </button>
   );
 
+  // silent auto-resume — she returns to the page she left, with no ceremony
+  const resumeKey = `fw_readpane_${item.id}`;
+  useEffect(() => {
+    if (state !== "ready" || !pages) return;
+    try { const p = parseInt(localStorage.getItem(resumeKey) || "0", 10); if (p > 0 && p < pages.length) setPage(p); } catch { /* ignore */ }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [state, pages]);
+  useEffect(() => { try { localStorage.setItem(resumeKey, String(page)); } catch { /* ignore */ } }, [page, resumeKey]);
+
   if (state === "none") return null;
+  // "~N min left" — permission to start, not a score
+  const minsLeft = pages ? Math.max(1, Math.round(((pages.length - page) * READ_WORDS) / WPM)) : 0;
   return (
     <div style={{ marginBottom: 16 }}>
       <div style={blockHead(accent)}>Start reading</div>
-      <div style={{ background: T.paperHi, border: `1px solid ${T.paperDeep}`, borderRadius: 16, padding: "16px 16px 12px", position: "relative", overflow: "hidden" }}>
-        <span aria-hidden style={{ position: "absolute", top: -6, right: -6, opacity: 0.4, lineHeight: 0 }}><FlowerGlyph variant="camellia" size={26} color={accent} idx={`rp-${item.id}`} /></span>
+      {/* UN-FRAMED: the text reads on the page's own paper. A card-inside-the-expand starved
+          the measure to ~41 CPL — under the ~45 floor. Only a hairline holds the page. */}
+      <div style={{ position: "relative", borderTop: `1px solid ${T.paperDeep}`, paddingTop: 14 }}>
+        <span aria-hidden style={{ position: "absolute", top: 6, right: -4, opacity: 0.35, lineHeight: 0 }}><FlowerGlyph variant="camellia" size={24} color={accent} idx={`rp-${item.id}`} /></span>
         {state === "loading" && <p style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 15.5, color: T.muted, margin: "6px 0 10px" }}>Turning to the first page…</p>}
         {state === "error" && <p style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 15.5, color: T.muted, margin: "6px 0 10px" }}>The pages wouldn't come through here — the full reader will have them.</p>}
         {state === "ready" && pages && (
           <>
-            <p style={{ fontFamily: SERIF, fontSize: 17, color: T.ink, lineHeight: 1.68, margin: "0 0 12px", minHeight: 132 }}>{pages[page]}</p>
+            {/* indent XOR space (Butterick): a book indents and does not gap its paragraphs */}
+            <p style={{ fontFamily: SERIF, fontSize: 17.5, color: T.ink, lineHeight: 1.7, margin: "0 0 14px", minHeight: 150, textIndent: "1.2em", hyphens: "auto" }}>{pages[page]}</p>
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", borderTop: `1px solid ${T.paperDeep}`, paddingTop: 10 }}>
               <button onClick={() => setPage((p) => Math.max(0, p - 1))} disabled={page === 0} aria-label="Previous page" style={pageBtn(page === 0, accent)}><ChevronLeft size={16} /></button>
-              <span style={{ fontFamily: UI, fontSize: 11.5, fontWeight: 700, color: T.muted }}>Page {page + 1} of {pages.length}</span>
+              <span style={{ fontFamily: UI, fontSize: 11.5, fontWeight: 700, color: T.muted }}>~{minsLeft} min left</span>
               <button onClick={() => setPage((p) => Math.min(pages.length - 1, p + 1))} disabled={page >= pages.length - 1} aria-label="Next page" style={pageBtn(page >= pages.length - 1, accent)}><ChevronRight size={16} /></button>
             </div>
           </>
         )}
       </div>
-      {full && <div style={{ marginTop: 10 }}>{full}</div>}
+      {full && <div style={{ marginTop: 12 }}>{full}</div>}
     </div>
   );
 }

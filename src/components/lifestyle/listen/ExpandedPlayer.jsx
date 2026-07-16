@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { X, Play, Pause, SkipBack, SkipForward, ExternalLink, Gauge, Moon } from 'lucide-react';
 import { usePodcastPlayer } from '@/hooks/usePodcastPlayer';
+import { FloraVisualiser } from '@/components/brand/expandCards';
 import { useScrollLock } from '@/utils/useScrollLock';
 
 // Full-screen modal version of the podcast player. Opens when the user
@@ -66,6 +67,7 @@ export default function ExpandedPlayer() {
     cyclePlaybackRate,
     sleepRemainingSec,
     sleepTimerMin,
+    sleepFading,
     setSleepTimer,
   } = player;
 
@@ -91,7 +93,7 @@ export default function ExpandedPlayer() {
         position: 'fixed',
         inset: 0,
         zIndex: 1100,
-        background: 'var(--cream, #f7f0e6)',
+        background: '#F4EFE3',
         display: 'flex',
         flexDirection: 'column',
         padding: '24px 24px 48px',
@@ -132,7 +134,7 @@ export default function ExpandedPlayer() {
           margin: '0 auto 24px',
           borderRadius: 16,
           overflow: 'hidden',
-          background: 'var(--cream-2, #ede2d4)',
+          background: '#D8CFBC',
           boxShadow: '0 16px 40px -12px rgba(43,30,22,0.25)',
         }}
         aria-hidden="true"
@@ -143,7 +145,14 @@ export default function ExpandedPlayer() {
             alt=""
             style={{ width: '100%', height: '100%', objectFit: 'cover' }}
           />
-        ) : null}
+        ) : (
+          /* No artwork? Then the flora IS the artwork — our living-ecosystem visualiser
+             (§6.7.7): stems + blooms swaying on unsynced seeded phases while it plays, and
+             FOLDING CLOSED over the sleep timer's final fade. */
+          <div style={{ width: '100%', height: '100%', display: 'grid', placeItems: 'end center', padding: '0 10px 14px' }}>
+            <FloraVisualiser playing={isPlaying} fading={!!sleepFading} height={110} />
+          </div>
+        )}
       </div>
 
       {/* Title + source */}
@@ -154,7 +163,7 @@ export default function ExpandedPlayer() {
             fontWeight: 600,
             textTransform: 'uppercase',
             letterSpacing: '0.6px',
-            color: 'var(--plum-mute, #8a7768)',
+            color: '#2E261B',
             margin: 0,
             marginBottom: 6,
           }}
@@ -165,7 +174,7 @@ export default function ExpandedPlayer() {
           style={{
             fontSize: 22,
             fontWeight: 500,
-            color: 'var(--plum-deep, #2b1e16)',
+            color: '#7A1A12',
             margin: 0,
             lineHeight: 1.3,
             maxWidth: 480,
@@ -189,7 +198,7 @@ export default function ExpandedPlayer() {
           aria-label="Episode progress"
           style={{
             width: '100%',
-            accentColor: 'var(--rose-primary, #D45E52)',
+            accentColor: '#BC2E27',
             cursor: 'pointer',
           }}
         />
@@ -198,7 +207,7 @@ export default function ExpandedPlayer() {
             display: 'flex',
             justifyContent: 'space-between',
             fontSize: 12,
-            color: 'var(--plum-mute, #8a7768)',
+            color: '#2E261B',
             marginTop: 4,
           }}
         >
@@ -207,7 +216,7 @@ export default function ExpandedPlayer() {
         </div>
         <div
           aria-hidden="true"
-          style={{ marginTop: 2, fontSize: 12, color: 'var(--plum-mute, #8a7768)', textAlign: 'center', opacity: 0.6 }}
+          style={{ marginTop: 2, fontSize: 12, color: '#2E261B', textAlign: 'center', opacity: 0.6 }}
         >
           {Math.round(pct)}%
         </div>
@@ -241,8 +250,8 @@ export default function ExpandedPlayer() {
             ...ctrlButton,
             width: 72,
             height: 72,
-            background: 'var(--plum-deep, #2b1e16)',
-            color: 'var(--cream, #f7f0e6)',
+            background: '#7A1A12',
+            color: '#F4EFE3',
             borderRadius: 9999,
           }}
         >
@@ -305,7 +314,7 @@ export default function ExpandedPlayer() {
                 bottom: '100%',
                 left: '50%',
                 transform: 'translate(-50%, -8px)',
-                background: 'var(--cream, #f7f0e6)',
+                background: '#F4EFE3',
                 border: '1px solid var(--ink-line, #d8cfc4)',
                 borderRadius: 12,
                 padding: 8,
@@ -317,7 +326,8 @@ export default function ExpandedPlayer() {
                 zIndex: 10,
               }}
             >
-              {[5, 15, 30, 45, 60].map((min) => (
+              {/* Spotify's set + 10 (research: 5/10/15/30/45/60 + end-of-track) */}
+              {[5, 10, 15, 30, 45, 60].map((min) => (
                 <button
                   key={min}
                   type="button"
@@ -328,16 +338,31 @@ export default function ExpandedPlayer() {
                   {min} min
                 </button>
               ))}
+              {/* "End of story" — stop when this one finishes (audiobook convention) */}
+              {duration > 0 && (
+                <button
+                  type="button"
+                  role="menuitem"
+                  onClick={() => { setSleepTimer(Math.max(1, (duration - position) / 60)); setSleepMenuOpen(false); }}
+                  style={menuItem}
+                >
+                  End of story
+                </button>
+              )}
               {sleepTimerMin && (
                 <button
                   type="button"
                   role="menuitem"
                   onClick={() => { setSleepTimer(null); setSleepMenuOpen(false); }}
-                  style={{ ...menuItem, color: 'var(--rose-primary, #D45E52)' }}
+                  style={{ ...menuItem, color: '#BC2E27' }}
                 >
                   Cancel timer
                 </button>
               )}
+              {/* Tell her it won't cut — the promise is the point */}
+              <span style={{ fontFamily: "'Cormorant Garamond',Georgia,serif", fontStyle: 'italic', fontSize: 12, color: '#2E261B', textAlign: 'center', padding: '4px 2px 0', borderTop: '1px solid #D8CFBC', marginTop: 2 }}>
+                Fades out gently — never a hard stop.
+              </span>
             </div>
           )}
         </div>
@@ -352,7 +377,7 @@ export default function ExpandedPlayer() {
             gap: 6,
             fontSize: 12,
             fontWeight: 500,
-            color: 'var(--plum-mute, #8a7768)',
+            color: '#2E261B',
             textDecoration: 'none',
             padding: '6px 10px',
           }}
@@ -367,7 +392,7 @@ export default function ExpandedPlayer() {
           role="alert"
           style={{
             fontSize: 12,
-            color: 'var(--rose-primary, #D45E52)',
+            color: '#BC2E27',
             textAlign: 'center',
             margin: '16px auto 0',
             maxWidth: 360,
@@ -388,7 +413,7 @@ const ctrlButton = {
   background: 'transparent',
   border: 'none',
   cursor: 'pointer',
-  color: 'var(--plum-deep, #2b1e16)',
+  color: '#7A1A12',
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'center',
@@ -400,8 +425,8 @@ const ctrlLabel = {
   right: -2,
   fontSize: 12,
   fontWeight: 700,
-  background: 'var(--cream-2, #ede2d4)',
-  color: 'var(--plum-deep, #2b1e16)',
+  background: '#D8CFBC',
+  color: '#7A1A12',
   padding: '1px 4px',
   borderRadius: 4,
   pointerEvents: 'none',
@@ -413,8 +438,8 @@ const pillButton = {
   gap: 6,
   padding: '8px 14px',
   borderRadius: 9999,
-  background: 'var(--cream-2, #ede2d4)',
-  color: 'var(--plum-deep, #2b1e16)',
+  background: '#D8CFBC',
+  color: '#7A1A12',
   border: 'none',
   cursor: 'pointer',
   fontSize: 12,
@@ -423,8 +448,8 @@ const pillButton = {
 };
 
 const activePill = {
-  background: 'var(--plum-deep, #2b1e16)',
-  color: 'var(--cream, #f7f0e6)',
+  background: '#7A1A12',
+  color: '#F4EFE3',
 };
 
 const menuItem = {
@@ -436,7 +461,7 @@ const menuItem = {
   textAlign: 'left',
   fontSize: 13,
   fontWeight: 500,
-  color: 'var(--plum-deep, #2b1e16)',
+  color: '#7A1A12',
   cursor: 'pointer',
   borderRadius: 8,
 };
