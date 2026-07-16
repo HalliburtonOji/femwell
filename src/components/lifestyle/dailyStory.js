@@ -33,27 +33,53 @@ function dayNumber(date = new Date()) {
   return Math.floor(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()) / 86400000);
 }
 
-// every ACTIVE chapter of the series, in reading order. One query, one contract.
-export async function loadStoryChapters(seriesKey = DAILY_STORY_SERIES) {
+// every ACTIVE chapter — ALL series, in reading order. One query, one contract.
+// (Series-aware since the authored refill: a new series must be able to become the daily read
+// without a code change. Pass a seriesKey only when you want one specific series.)
+export async function loadStoryChapters(seriesKey) {
   try {
-    const rows = await base44.entities.DailyStory.filter({ series_key: seriesKey, is_active: true }, "day_number", 200);
+    const where = seriesKey ? { series_key: seriesKey, is_active: true } : { is_active: true };
+    const rows = await base44.entities.DailyStory.filter(where, "day_number", 400);
     return (Array.isArray(rows) ? rows : [])
       .filter((r) => r && r.segment_text)
       .sort((a, b) => (a.day_number || 0) - (b.day_number || 0));
   } catch { return []; }
 }
 
-// THE gate. Returns { chapter, index, total, fresh } — or null when the series is genuinely empty.
-//   fresh === true  → a chapter really was published for today (a live series).
-//   fresh === false → the evergreen chapter-a-day from the finished story (framed honestly).
+const byDay = (a, b) => (a.day_number || 0) - (b.day_number || 0);
+const seriesRows = (list, key) => list.filter((c) => c.series_key === key).sort(byDay);
+// what she may READ today — never a chapter dated in the future (that would spoil it)
+const readableRows = (list, key, today) =>
+  seriesRows(list, key).filter((c) => !c.published_date || c.published_date <= today);
+
+// THE gate. Returns { chapter, index, total, fresh, seriesKey } — null only if there is nothing.
+//   fresh === true  → a chapter really WAS published for today (a live, authored series).
+//   fresh === false → the evergreen chapter-a-day from the current series' finished back-catalogue.
+// `index` is the position within what the reader can open (published <= today) → goToChapter-safe.
 export function chapterForDay(chapters, date = new Date()) {
-  const list = (chapters || []).filter(Boolean);
+  const list = (chapters || []).filter((c) => c && c.segment_text);
   if (!list.length) return null;
   const today = isoDay(date);
+
+  // 1) a chapter genuinely published for TODAY wins — in ANY series. This is what the authored
+  //    refill produces, so seeding forward-dated chapters makes them the real daily read.
   const fresh = list.find((c) => c.published_date === today && c.is_active !== false);
-  if (fresh) return { chapter: fresh, index: list.indexOf(fresh), total: list.length, fresh: true };
-  const i = (((dayNumber(date) - EPOCH_DAY) % list.length) + list.length) % list.length;
-  return { chapter: list[i], index: i, total: list.length, fresh: false };
+  if (fresh) {
+    const key = fresh.series_key;
+    return { chapter: fresh, index: readableRows(list, key, today).findIndex((c) => c.id === fresh.id), total: seriesRows(list, key).length, fresh: true, seriesKey: key };
+  }
+
+  // 2) EVERGREEN — the safety net. Cycle the CURRENT series' READABLE back-catalogue only, so a
+  //    future-dated chapter can never be served early. "Current" = whichever series published most
+  //    recently on-or-before today (so a new series takes over the moment it starts).
+  const readable = list.filter((c) => !c.published_date || c.published_date <= today);
+  if (!readable.length) return null;
+  const newest = readable.reduce((a, c) => (!a || String(c.published_date || "") > String(a.published_date || "") ? c : a), null);
+  const key = newest.series_key;
+  const pool = readableRows(list, key, today);
+  if (!pool.length) return null;
+  const i = (((dayNumber(date) - EPOCH_DAY) % pool.length) + pool.length) % pool.length;
+  return { chapter: pool[i], index: i, total: seriesRows(list, key).length, fresh: false, seriesKey: key };
 }
 
 // tomorrow's chapter — for the gentle "what's next" tease (never a streak, never a scold)
@@ -72,16 +98,20 @@ export function markChapterRead(id) {
   if (!id) return;
   try { window.localStorage.setItem(readKeyOf(id), "read"); } catch { /* private mode — fine */ }
 }
-// how many of the series she's read (for the kind "you're N of 30 in" line — never a streak)
-export function readCount(chapters) {
-  return (chapters || []).filter((c) => c && isChapterRead(c.id)).length;
+// how many of THIS series she's read (the kind "you're N of 30 in" line — never a streak)
+export function readCount(chapters, pick) {
+  const key = pick?.seriesKey;
+  const list = key ? (chapters || []).filter((c) => c && c.series_key === key) : (chapters || []);
+  return list.filter((c) => c && isChapterRead(c.id)).length;
 }
 
-// the honest framing line — one sentence, true in both directions
+// the honest framing line — one sentence, true in both directions. Never claims "fresh today"
+// unless a chapter really was published for today.
 export function framingLine(pick) {
   if (!pick) return "Today's chapter is on its way.";
-  if (pick.fresh) return "Today's chapter, fresh off the press.";
-  return `A chapter a day from “The Long Room” — a finished story you can also read straight through.`;
+  const title = pick.chapter?.series_title || "this series";
+  if (pick.fresh) return `Today's chapter of “${title}” — new today.`;
+  return `A chapter a day from “${title}” — a finished story you can also read straight through.`;
 }
 // the chapter's own label, e.g. "Chapter 7 of 30"
 export function chapterLabel(pick) {

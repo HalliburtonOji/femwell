@@ -246,7 +246,7 @@ export default function LifestyleEliteShell() {
   const story = storyPick?.chapter || null;
   const storyNext = useMemo(() => nextChapterOf(chapters), [chapters]);
   const storyRead = story ? isChapterRead(story.id) : false;
-  const storyReadCount = useMemo(() => readCount(chapters), [chapters, expanded, readerOpen]); // eslint-disable-line react-hooks/exhaustive-deps
+  const storyReadCount = useMemo(() => readCount(chapters, storyPick), [chapters, storyPick, expanded, readerOpen]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const editorialPick = grouped.story[0] || grouped.article[0] || items[0] || null;
   const morePicks = useMemo(() => [grouped.article[0], grouped.video[0], grouped.audio[0]].filter(Boolean).slice(0, 2), [grouped]);
@@ -781,8 +781,8 @@ export default function LifestyleEliteShell() {
       {readerOpen && (
         <div style={{ position: "fixed", inset: 0, zIndex: 1200, ...PAPER_BG }}>
           <DailyStoryReader
-            seriesKey={DAILY_STORY_SERIES}
-            bookId="daily_the_long_room"
+            seriesKey={storyPick?.seriesKey || DAILY_STORY_SERIES}
+            bookId={`daily_${storyPick?.seriesKey || DAILY_STORY_SERIES}`}
             goToChapter={storyPick?.index ?? 0}
             defaultImmersive
             onExit={() => setReaderOpen(false)}
