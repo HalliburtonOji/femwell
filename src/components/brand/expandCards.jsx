@@ -62,6 +62,15 @@ export const ICON = {
   MessageCircle, Sparkles, Leaf, Play, ChevronRight, Film, UtensilsCrossed, ListChecks, Star, Sun, Wind, Quote: QuoteIcon,
 };
 
+// Decode HTML entities so a real title/body reads as text, not "&apos;The Interview&apos;:
+// Robby Hoffman". Named set covers the common ones; numeric (&#39; &#8217; …) handled
+// generically. Applied at the shared card layer (resolveCard) so EVERY card is covered.
+const HTML_ENT = { amp: "&", lt: "<", gt: ">", quot: '"', apos: "'", nbsp: " ", hellip: "…", mdash: "—", ndash: "–", rsquo: "’", lsquo: "‘", ldquo: "“", rdquo: "”", middot: "·", eacute: "é", egrave: "è", agrave: "à", ccedil: "ç", deg: "°", pound: "£", euro: "€" };
+export const decodeEntities = (s) => typeof s !== "string" ? s : s.replace(/&(#x?[0-9a-f]+|[a-z][a-z0-9]*);/gi, (m, e) => {
+  if (e[0] === "#") { const cp = (e[1] === "x" || e[1] === "X") ? parseInt(e.slice(2), 16) : parseInt(e.slice(1), 10); return Number.isFinite(cp) ? String.fromCodePoint(cp) : m; }
+  const v = HTML_ENT[e.toLowerCase()]; return v != null ? v : m;
+});
+
 // ── THE VARIATION SET — one entry per content type (§6.7.7) ──────────────────
 // kind = the card's eyebrow · Icon = its mark · cw = colourway (carries meaning)
 // category = the FloraCover scene segment · primary = the default inline action.
@@ -82,15 +91,20 @@ export const CARD_TYPE_KEYS = Object.keys(CARD_TYPES);
 // merge the type's defaults into an item — consumers can pass just the content.
 export function resolveCard(item) {
   const t = CARD_TYPES[item?.type] || {};
+  const D = decodeEntities;
   return {
     ...t, ...item,
+    // decode entities on every text field a card renders (fixes raw "&apos;"/"&amp;" etc.)
+    title: D(item.title), subtitle: D(item.subtitle), summary: D(item.summary),
+    author: D(item.author), overline: D(item.overline), excerpt: D(item.excerpt),
     kind: item.kind || t.kind,
     Icon: item.Icon || t.Icon,
     cw: item.cw || t.cw || "gold",
     category: item.category || t.category,
     meta: item.meta || [],
-    chips: item.chips || [],
-    body: item.body || [],
+    chips: (item.chips || []).map(D),
+    body: (item.body || []).map(D),
+    ...(Array.isArray(item.takeaways) ? { takeaways: item.takeaways.map(D) } : {}),
     actions: item.actions || (t.primary ? [{ ...t.primary, primary: true }] : []),
   };
 }

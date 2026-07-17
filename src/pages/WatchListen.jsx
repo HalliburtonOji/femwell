@@ -10,7 +10,7 @@ import { T, SERIF, UI, PAPER_BG } from "@/components/journal/Editorial";
 import { OXBLOOD } from "@/components/brand/SliderKit";
 import { FwFloraHero } from "@/components/brand/PageTop";
 import FloraCover from "@/components/brand/FloraCover";
-import { FloraYouTube, FloraAudio } from "@/components/brand/expandCards";
+import { FloraYouTube, FloraAudio, decodeEntities } from "@/components/brand/expandCards";
 import { cwOf } from "@/components/brand/flora";
 import { EXTERNAL_PODCASTS } from "@/components/lifestyle/listen/ExternalPodcastsRail";
 import { LIFESTYLE_VIDEOS } from "@/data/lifestyleVideos";
@@ -18,7 +18,7 @@ import { LIFESTYLE_VIDEOS } from "@/data/lifestyleVideos";
 const stripHtml = (s) => (s ? String(s).replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim() : "");
 // real third-party titles carry emoji + hashtag tails; strip them so the grid reads as OURS
 // (brand: no emoji), keeping the actual words.
-const cleanTitle = (t) => String(t || "")
+const cleanTitle = (t) => decodeEntities(String(t || ""))
   .replace(/[\u{1F000}-\u{1FAFF}\u{2600}-\u{27BF}\u{2190}-\u{21FF}\u{2B00}-\u{2BFF}\u{FE0F}\u{1F1E6}-\u{1F1FF}]/gu, "")
   .replace(/(^|\s)#[\w-]+/g, "")
   .replace(/\s+/g, " ").trim();

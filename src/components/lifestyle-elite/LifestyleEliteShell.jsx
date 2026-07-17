@@ -482,7 +482,7 @@ export default function LifestyleEliteShell() {
         await loadContent();
         loadGutenberg();          // background — never blocks the loader
         loadSkyNotes(u?.id);      // background — real sky-diary rows
-        loadCrossApp(u?.id);      // background — piece F across-app signals
+        // loadCrossApp: parked with the reverted good-life grid (2026-07-17) — no longer mounted
         if (u?.id) loadFeed(getCurrentCyclePhase(p));  // background — personalised "Reads for you"
         try { unsubItems = base44.entities.LifestyleItems.subscribe(() => loadContent()); } catch { /* no-op */ }
       } catch { /* unauth / offline — render gracefully */ }
@@ -992,23 +992,13 @@ export default function LifestyleEliteShell() {
                 <div style={{ position: "relative", height: "100%", minHeight: 0 }}>
                   <StackedShelves
                     top={
-                      // piece D — the top shelf is a 2-col grid of small doorway/do-it cards.
-                      // Every card carries a real signal; "door" cards open the FaceOverlay
-                      // below, "do" cards write for real (Planner) and tick in place.
-                      <SmallCardGrid label="What would be nice? Pick one.">
-                        <SmallCard Icon={Clock} label="Time for?" signal="A read · a listen · a wonder" accent={gold} onClick={() => setGLFace("time")} />
-                        {/* piece F — doorways that pull from ACROSS the app; every signal is real
-                            (measured live) or an honest plain doorway, never a faked number. */}
-                        <SmallCard Icon={Feather} label="A line for your journal" signal="Today's prompt, a fresh page" accent={plum} onClick={() => window.location.assign("/Journal")} />
-                        <SmallCard Icon={Soup} label="Something to cook" signal={crossApp.dinner ? `Tonight: ${crossApp.dinner}` : "Plan tonight's dinner"} accent={sage} onClick={() => window.location.assign("/Nutrition")} />
-                        <SmallCard Icon={Sun} label="A day for you" signal="Guilt-free · to your planner" accent={crimson} onClick={() => setGLFace("day")} />
-                        <SmallCard Icon={Flower2} label="Your garden" signal={crossApp.companion ? `${crossApp.companion} is in bloom` : "What's grown lately"} accent={sage} onClick={() => window.location.assign("/Garden")} />
-                        <SmallCard Icon={Compass} label="A session" signal={crossApp.program ? `${crossApp.program.title}${crossApp.program.days ? ` · ${crossApp.program.days} days` : ""}` : "A short guided thing"} accent={gold} onClick={() => window.location.assign("/ProgramsHub")} />
-                        <SmallCard Icon={Users} label="What women are talking about" signal="The lighter side · pull up a chair" accent={plum} onClick={() => window.location.assign("/Community?room=lighter")} />
-                        <SmallCard Icon={Sparkles} label="A small wonder" signal="Today's awe drop" accent={sage} done={!!gLDone.awe} onClick={() => glTick("awe", TIME_BANDS[0].make.title)} />
-                        <SmallCard Icon={Coffee} label="Romance the mundane" signal="A tiny make, done fully" accent={gold} done={!!gLDone.tea} onClick={() => glTick("tea", TIME_BANDS[1].make.title)} />
-                        <SmallCard Icon={Moon} label="A quiet hour" signal="An evening that's yours" accent={plum} done={!!gLDone.quiet} onClick={() => glTick("quiet", "A quiet hour, just for you", "day")} />
-                      </SmallCardGrid>
+                      // REVERTED (Halli, 2026-07-17): the good-life top shelf is the single
+                      // "What have you got time for?" prompt → tap → the time picker opens
+                      // IN-BOARD (FaceOverlay). The piece-D grid + piece-F across-app doorways
+                      // are parked (code stays in-tree, reversible) — not mounted here.
+                      <PeekShelf label="What do you have time for?" accent={gold}>
+                        <TimePromptCard onOpen={() => setGLFace("time")} />
+                      </PeekShelf>
                     }
                     bottom={
                       // piece E — a permission/joy card opens IN-BOARD (FaceOverlay) into the
@@ -1273,9 +1263,25 @@ function PhasePicksLens({ items, phaseKey, isSaved, onSave, onOpen }) {
 }
 
 // ── The good life — dopamine-menu picker (bounded, by time; not a feed) ──
-// piece D — the good-life top shelf is now a SmallCardGrid of doorway/do-it cards
-// (see BOARD 0). The two doorways below feed the ONE FaceOverlay on that board.
-
+// The good-life TOP shelf is the single "What have you got time for?" prompt card →
+// tap → the time picker opens IN-BOARD (FaceOverlay). (Halli reverted the piece-D
+// small-card grid here 2026-07-17 — "didn't turn out how I wanted"; this is the prior
+// form, restored. The grid primitive + the across-app pull infra stay in the tree,
+// reversible, but are no longer mounted on this board.)
+function TimePromptCard({ onOpen }) {
+  const gold = cwOf("gold").petal;
+  return (
+    <button onClick={onOpen} className="fw-elite-press" aria-label="What have you got time for?"
+      style={{ width: "100%", height: "100%", textAlign: "left", border: `1px solid ${T.paperDeep}`, borderRadius: 18, cursor: "pointer",
+        background: `linear-gradient(165deg, ${T.paperHi} 0%, ${gold}14 100%)`, boxShadow: "0 6px 22px rgba(58,44,26,.10), 0 1px 4px rgba(58,44,26,.06)",
+        display: "flex", flexDirection: "column", padding: "16px 16px 15px" }}>
+      <span style={{ width: 42, height: 42, borderRadius: 13, background: `${gold}1F`, display: "grid", placeItems: "center", marginBottom: 12 }}><Clock size={22} color={gold} /></span>
+      <div style={{ fontFamily: SERIF, fontWeight: 600, fontSize: 21, lineHeight: 1.14, color: OXBLOOD, marginBottom: 5 }}>What have you got time for?</div>
+      <div style={{ fontFamily: SERIF, fontSize: 15, color: T.inkSoft, lineHeight: 1.5, flex: 1 }}>A few minutes or a whole evening — pick a little joy that fits. A read, a listen, a small wonder, chosen for you.</div>
+      <span style={{ display: "inline-flex", alignItems: "center", gap: 5, fontFamily: UI, fontSize: 13, fontWeight: 800, color: gold, marginTop: 10 }}>Choose <ChevronRight size={16} /></span>
+    </button>
+  );
+}
 // "A day for you" doorway — pick a whole guilt-free day; it writes a real wellbeing
 // PlannerItem and ticks in place. Reuses the A_DAY seed (same source as ritualCards).
 function DayForYouLens({ onSave }) {
