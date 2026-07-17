@@ -84,6 +84,9 @@ const PHASE_BLOOM = {
 };
 const phaseMeta = (key) => PHASE_BLOOM[key] || PHASE_BLOOM.follicular;
 
+// which controller chip drives the hero — module-scoped so the choice survives the route’s remounts
+let _lifeHeroCard = 0;
+
 // ── seeded fallbacks (only used when an entity surface returns nothing — keeps every lens warm) ──
 const TRY_THIS = [
   { title: "Write one line you're proud of", cw: "crimson" },
@@ -222,6 +225,7 @@ export default function LifestyleEliteShell() {
   const [expanded, setExpanded] = useState(null);   // the tap-to-expand card item (§6.7.7)
   const [readerOpen, setReaderOpen] = useState(false); // the REAL immersive Daily Story reader
   const [skyOpen, setSkyOpen] = useState(false);       // the REAL horoscope reader + birth-chart onboarding
+  const [heroCard, setHeroCard] = useState(() => _lifeHeroCard); // the controller-hero’s active chip
   const [toast, setToast] = useState(null);
   const sliderRef = useRef(null);
 
@@ -434,6 +438,33 @@ export default function LifestyleEliteShell() {
     { t: "The good life", sub: "What do you have time for · permission & small joys" },
     { t: "Yours", sub: "Saved · for your phase" },
   ];
+
+  // ── THE CONTROLLER-HERO's destinations (§6.8.2 band 1) ───────────────────────────────────
+  // One per section of the page. Tapping a chip re-blooms + re-titles the hero; its CTA is that
+  // section's real action — which is also the jump-to-section (indices match BOARDS above).
+  // `openness` drives HOW MANY blooms are open along the bough (one→many), never the size.
+  const HERO_CARDS = useMemo(() => [
+    { id: "read", Icon: BookOpen, label: "Read", title: firstName ? `${firstName}'s reading` : "Something to read",
+      line: "Essays, guides and stories for a spare ten minutes.", openness: 0.72, cw: "plum", creature: "bee",
+      action: { label: "Open your reads", on: () => jumpTo(0) } },
+    { id: "listen", Icon: Headphones, label: "Listen", title: "Something to hear",
+      line: "Real episodes that play right here — and keep playing while you browse.", openness: 0.86, cw: "sage", creature: "dragonfly",
+      action: { label: "Open Listen & watch", on: () => jumpTo(1) } },
+    { id: "books", Icon: Book, label: "Books", title: "Your shelf",
+      line: "Something longer — and a shelf of free classics to fall into.", openness: 0.6, cw: "sky", creature: "ladybird",
+      action: { label: "Open your shelf", on: () => jumpTo(2) } },
+    { id: "story", Icon: Feather, label: "Story", title: "Today's chapter",
+      line: story?.cliffhanger ? `"${story.cliffhanger}"` : "A chapter a day — a finished story you can also read straight through.",
+      openness: 1, cw: "crimson", creature: "butterfly",
+      action: { label: "Read today's chapter", on: () => setChapterOpen(true) } },
+    { id: "sky", Icon: Moon, label: "Sky", title: moonToday ? `The moon is ${moonToday.name.toLowerCase()}` : "Your sky today",
+      line: moonToday ? `${moonToday.illumination}% lit tonight — your sky, and how it meets your week.` : "Your sky, and how it meets your week.",
+      openness: 0.5, cw: "lavender", creature: "moth",
+      action: { label: "Open your sky", on: () => setSkyOpen(true) } },
+    { id: "good", Icon: Clock, label: "Good life", title: "The good life",
+      line: "What do you have time for? A small joy, and permission to enjoy it.", openness: 0.92, cw: "gold", creature: "butterfly",
+      action: { label: "Open the good life", on: () => jumpTo(4) } },
+  ], [firstName, story, moonToday]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // First name for the hero — fall back to "Lifestyle" if it looks like a handle/username.
   const rawFirst = (user?.full_name || "").split(" ")[0] || "";
@@ -713,18 +744,50 @@ export default function LifestyleEliteShell() {
       <TopChrome onJump={() => setJumpOpen(true)} onCalendar={() => setCalOpen(true)} />
 
       <div style={{ maxWidth: 430, margin: "0 auto", padding: "16px 16px 0" }} className="fw-elite-in">
-        {/* lush flora hero — phase bloom + bouquet + resting creature */}
-        <FwFloraHero title={firstName ? `${firstName}'s world` : "Your world"} colorway={ph.cw} bloom={ph.bloom} flankL="iris" flankR="sunflower" titleColor={OXBLOOD} creature="butterfly"
-          line="A few good things to read, hear and feel today — whenever you have a moment." />
-        <div style={{ display: "flex", justifyContent: "center", marginTop: -6, marginBottom: 2 }}>
-          <Bouquet items={[{ form: ph.bloom, colorway: ph.cw }, { form: "fern", colorway: "sage" }, { form: "marigold", colorway: "gold" }]} size={150} animate idx="elite-bq" />
-        </div>
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, margin: "2px 0 16px" }}>
-          <span style={{ width: 9, height: 9, borderRadius: 99, background: ph.hue }} />
-          <span style={{ fontFamily: UI, fontSize: 13, fontWeight: 700, color: T.inkSoft }}>
-            {phaseKey ? `${phaseLabel(phaseKey)}${cycleDay ? ` · Day ${cycleDay}` : ""} · ${ph.day}` : "A few good things today"}
-          </span>
-        </div>
+        {/* ══ THE CONTROLLER-HERO (§6.8.2 band 1 · the Nutrition "Your plate" pattern) ══════
+            Overdue: Nutrition has had this for weeks and Lifestyle never got it. The chips ARE
+            the controller — tap one and the SAME flower re-blooms (openness), the hero re-titles,
+            the colourway re-tints, and the primary CTA below becomes that section's action. The
+            chips also double as the jump-to-section: each CTA lands you on that board.
+            The old crowding Bouquet is gone (the controller sits where it was, per §6.8.2) and
+            the two focus pills are folded IN — their exact actions are now the Story and
+            Good-life chips, one tap away, so nothing is lost, just consolidated. */}
+        {(() => {
+          const active = HERO_CARDS[heroCard] || HERO_CARDS[0];
+          const aCol = cwOf(active.cw).petal;
+          return (
+            <>
+              <FwFloraHero title={active.title} colorway={active.cw} bloom={ph.bloom} openness={active.openness}
+                creature={active.creature} flankL="iris" flankR="sunflower" titleColor={OXBLOOD} line={active.line} />
+              {/* the controller — UNIFORM 72×64 chips (§6.7.0), horizontally scrollable */}
+              <div className="fw-hero-ctl" style={{ display: "flex", gap: 8, overflowX: "auto", padding: "12px 2px 2px" }}>
+                <style>{`.fw-hero-ctl{scrollbar-width:none}.fw-hero-ctl::-webkit-scrollbar{display:none}`}</style>
+                {HERO_CARDS.map((c, i) => {
+                  const on = i === heroCard; const col = cwOf(c.cw).petal;
+                  return (
+                    <button key={c.id} onClick={() => { _lifeHeroCard = i; setHeroCard(i); }} aria-pressed={on} className="fw-elite-press"
+                      style={{ flex: "0 0 72px", height: 64, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 5, borderRadius: 14, cursor: "pointer", background: on ? `linear-gradient(160deg, ${T.paperHi} 0%, ${col}20 100%)` : T.paperHi, border: `1px solid ${on ? col : T.paperDeep}`, boxShadow: on ? `0 0 0 1px ${col}, 0 2px 8px ${col}30` : "0 1px 3px rgba(58,44,26,0.08)", transform: on ? "translateY(-1px)" : "none", transition: "border-color .15s, box-shadow .15s, transform .15s" }}>
+                      <span style={{ width: 27, height: 27, borderRadius: 8, background: `${col}1F`, display: "grid", placeItems: "center" }}><c.Icon size={15} color={col} /></span>
+                      <span style={{ fontFamily: UI, fontSize: 10.5, fontWeight: 700, color: on ? col : T.muted }}>{c.label}</span>
+                    </button>
+                  );
+                })}
+              </div>
+              {/* phase pill — the day's tint, kept from the old hero */}
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, margin: "11px 0 10px" }}>
+                <span style={{ width: 9, height: 9, borderRadius: 99, background: ph.hue }} />
+                <span style={{ fontFamily: UI, fontSize: 13, fontWeight: 700, color: T.inkSoft }}>
+                  {phaseKey ? `${phaseLabel(phaseKey)}${cycleDay ? ` · Day ${cycleDay}` : ""} · ${ph.day}` : "A few good things today"}
+                </span>
+              </div>
+              {/* the selected chip's ONE primary action — also the jump-to-section */}
+              <button onClick={active.action.on} className="fw-elite-press"
+                style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 8, width: "100%", boxSizing: "border-box", background: aCol, color: "#fff", border: "none", borderRadius: 14, padding: "13px 16px", fontFamily: UI, fontSize: 14, fontWeight: 700, cursor: "pointer", transition: "background .35s ease", marginBottom: 16 }}>
+                <active.Icon size={16} /> {active.action.label}
+              </button>
+            </>
+          );
+        })()}
 
         <SummaryCard eyebrow="A few good things today" accent={gold} rows={[
           { Icon: Feather, label: "Today's chapter", text: story ? `${story.series_title || story.title || "Today's chapter"}${story.cliffhanger ? ` — "${story.cliffhanger}"` : ""}` : "Today's chapter is on its way — tap to open the Daily Story.", onClick: () => setChapterOpen(true) },
