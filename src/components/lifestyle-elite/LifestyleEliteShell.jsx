@@ -28,7 +28,7 @@
 import { useState, useMemo, useEffect, useRef, useCallback } from "react";
 import {
   BookOpen, Feather, Book, Film, Headphones, Moon, Heart, Sparkles, Sun, Bookmark,
-  Wind, ChevronRight, ChevronLeft, Music2, Compass, Loader, ExternalLink, Clock, Coffee, Sunset, Check,
+  Wind, ChevronRight, ChevronLeft, Music2, Compass, Loader, ExternalLink, Clock, Coffee, Sunset, Check, Star,
 } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import LifestyleMedia from "@/components/lifestyle-elite/LifestyleMedia";
