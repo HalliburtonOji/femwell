@@ -191,6 +191,24 @@ const CARD_TYPE_OF = (i) => {
 };
 const metaOf = (i) => [i?.source_name || i?.author_name, i?.category].filter(Boolean).join(" · ") || "FemWell Editorial";
 
+// piece G — the OPEN state's fuller body, from the item's OWN real fields. Measured
+// (mnt/femwell/measure_piece_g_body_fields.md): `lede` is the ONLY long field (~4,300ch
+// articles) and is never equal to `summary`; ~85% of articles have no lede but 91% carry
+// real `takeaways`. So: full body = the chapter bodies OR a substantial lede; anything
+// shorter is NOT a body (it would just echo the teaser) → returns [] and the expand leans
+// on the teaser + takeaways + an honest reader note. Never invents.
+const G_BODY_MIN = 800;
+const contentBodyOf = (r) => {
+  const chapters = Array.isArray(r?.chapters_json) ? r.chapters_json.map((c) => stripHtml(c?.body || "")).filter(Boolean) : [];
+  if (chapters.length) return chapters;
+  const lede = stripHtml(r?.lede || "");
+  return lede.length >= G_BODY_MIN ? [lede] : [];
+};
+const takeawaysOf = (r) => {
+  const arr = Array.isArray(r?.takeaways) ? r.takeaways : [];
+  return arr.map((t) => stripHtml(typeof t === "string" ? t : (t?.text || t?.point || t?.title || ""))).filter(Boolean).slice(0, 6);
+};
+
 // ════════════════════════════════════════════════════════════════════════════
 // ── PEEK SHELF — one half of a StackedCard: a horizontal peek sub-slider of tap-to-expand
 // cover-cards (edge-peek + dots + subtle ‹ ›). Mirrors the approved /StackedExpandDemo geometry.
@@ -550,16 +568,23 @@ export default function LifestyleEliteShell() {
   // site) are never fake-embedded: they keep their honest link-out action.
   const playableMedia = (url) => /^https?:\/\/\S+\.(mp4|webm|mov|m4v|mp3|m4a|aac|ogg|wav)(\?|#|$)/i.test(String(url || ""));
 
-  const rowCard = useCallback((r, type) => ({
+  const rowCard = useCallback((r, type) => {
+    // piece G — collapsed teaser vs open body are now DISTINCT sources so the open says more:
+    //   subtitle / summary = the SHORT teasers (why_it_matters · summary), never the lede;
+    //   body = the item's OWN full text (chapters / substantial lede), or [] on a content gap.
+    const g_body = contentBodyOf(r);
+    const g_takes = takeawaysOf(r);
+    return {
     id: r.id, type,
     title: r.title,
-    subtitle: stripHtml(r.why_it_matters || r.summary || r.lede || "") || metaOf(r),
+    subtitle: stripHtml(r.why_it_matters || r.summary || "") || metaOf(r),
     // §5 a real hook so a card is never empty — the substance, distinct from the short subtitle
-    summary: stripHtml(r.summary || r.lede || "") || undefined,
+    summary: stripHtml(r.summary || r.why_it_matters || "") || undefined,
     category: r.category || undefined,
     meta: [["Clock", r.duration_label || ((type === "audio" || type === "video") ? "A short listen" : "A few minutes")], ["BookOpen", r.source_name || r.author_name || "FemWell Editorial"]],
     chips: [r.category, r.emotional_tag].filter(Boolean).slice(0, 3),
-    body: [stripHtml(r.lede || r.summary || "") || "Open it full-screen to read the whole thing."],
+    body: g_body,
+    ...(g_takes.length ? { takeaways: g_takes } : {}),
     // §1/§2 play INLINE when the source is a real media file; off-platform stays an honest link-out
     // A real media FILE plays as <video>; a YOUTUBE row (all 284 live ones) plays via the
     // inline facade — it is embeddable, so it must NOT link out. `is_embeddable` is undefined
@@ -586,7 +611,8 @@ export default function LifestyleEliteShell() {
       primary: true,
       onClick: () => (type === "audio" && r.episode_url) ? openExternal(r.episode_url) : openItem(r),
     }],
-  }), [openItem, openExternal]);
+    };
+  }, [openItem, openExternal]);
 
   const articleCards = useMemo(() => [...(grouped.article || []), ...(grouped.guide || [])].slice(0, 6).map((r) => rowCard(r, "article")), [grouped, rowCard]);
   const storyCards = useMemo(() => (grouped.story || []).slice(0, 6).map((r) => rowCard(r, "daily_story")), [grouped, rowCard]);

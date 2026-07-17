@@ -250,6 +250,43 @@ export function paragraphsOf(item) {
   // one lump. (No length threshold: if the author put a paragraph break there, honour it.)
   return out.flatMap((p) => (/\n\s*\n/.test(p) ? p.split(/\n\s*\n+/).map((s) => s.trim()).filter(Boolean) : [p]));
 }
+// piece G — the OPEN state's prose reads the item's OWN body ONLY, never falling back to
+// the summary/subtitle (that echoed the collapsed teaser — the exact "open just repeats the
+// card" bug). Consumers feed `body` the real full text (the ~4,300-char lede / chapter
+// bodies); a summary-only item renders NO prose here and leans on its "In short" + takeaways
+// blocks instead. Same paragraph-splitting + de-dup as paragraphsOf, minus the fallback.
+export function bodyParagraphs(item) {
+  const seen = new Set();
+  const out = [];
+  const push = (s) => {
+    const t = (typeof s === "string" ? s : "").trim();
+    if (!t) return;
+    const k = t.slice(0, 60).toLowerCase();
+    if (seen.has(k)) return;
+    seen.add(k); out.push(t);
+  };
+  (Array.isArray(item?.body) ? item.body : [item?.body]).forEach(push);
+  return out.flatMap((p) => (/\n\s*\n/.test(p) ? p.split(/\n\s*\n+/).map((s) => s.trim()).filter(Boolean) : [p]));
+}
+// piece G — real takeaways from the item's OWN data. For the 85% of articles with no
+// full lede but real `takeaways`, this is how the open still says MORE than the teaser —
+// without inventing a word. (Never renders unless the item carries them.)
+function TakeawaysBlock({ items, accent }) {
+  if (!items || !items.length) return null;
+  return (
+    <div style={{ background: T.paperHi, border: `1px solid ${T.paperDeep}`, borderLeft: `4px solid ${accent}`, borderRadius: 16, padding: "14px 15px", marginBottom: 16 }}>
+      <div style={blockHead(accent)}>Worth taking away</div>
+      <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+        {items.map((t, i) => (
+          <div key={i} style={{ display: "flex", gap: 11, alignItems: "flex-start" }}>
+            <span style={{ width: 22, height: 22, borderRadius: 999, background: `${accent}1F`, color: accent, display: "grid", placeItems: "center", flexShrink: 0, marginTop: 1 }}><Leaf size={12} /></span>
+            <span style={{ fontFamily: SERIF, fontSize: 15.5, color: T.ink, lineHeight: 1.5 }}>{t}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
 function SummaryBlock({ text, accent }) {
   if (!text) return null;
   return (
@@ -704,6 +741,7 @@ export function ExpandDetailCard({ item: raw, onClose, saved: savedProp, onSave 
           {item.excerpt && <ExcerptBlock excerpt={item.excerpt} accent={c.petal} label={item.excerptLabel} />}
           {item.ingredients && <IngredientsBlock ingredients={item.ingredients} accent={c.petal} />}
           {item.steps && <StepsBlock steps={item.steps} accent={c.petal} label={item.stepsLabel} />}
+          {item.takeaways && <TakeawaysBlock items={item.takeaways} accent={c.petal} />}
 
           {item.meta.length > 0 && (
             <div style={{ display: "flex", flexDirection: "column", gap: 1, background: T.paperHi, border: `1px solid ${T.paperDeep}`, borderRadius: 14, overflow: "hidden", marginBottom: 16 }}>
@@ -729,18 +767,34 @@ export function ExpandDetailCard({ item: raw, onClose, saved: savedProp, onSave 
           )}
 
           {/* §6.7.8 — the expand's body reads through the shared column (spaced paragraphs;
-              `card` variant). paddingInline:0 because the expand already owns the gutter. */}
+              `card` variant). piece G: this is the item's OWN full body (the ~4,300-char lede /
+              chapter bodies), de-duped against the "In short" block above so it never stutters —
+              and it NEVER falls back to the summary/subtitle, so open always says MORE, not the
+              same. paddingInline:0 because the expand already owns the gutter. */}
           {(() => {
-            // Every real paragraph the item carries — not just `body`. An item whose text lives
-            // in summary/excerpt/subtitle used to render NOTHING here; now it reads as prose.
-            // De-duped against the summary block above so the page never stutters.
             const shown = (!item.quote && item.summary && item.summary !== item.subtitle) ? item.summary.trim() : null;
-            const paras = paragraphsOf(item).filter((p) => p !== shown);
+            const paras = bodyParagraphs(item).filter((p) => p !== shown);
             if (!paras.length) return null;
             return (
               <ReadingColumn variant="card" size={16.5} style={{ paddingInline: 0, marginBottom: 4 }}>
                 {paras.map((p, i) => <p key={i}>{p}</p>)}
               </ReadingColumn>
+            );
+          })()}
+          {/* piece G — the honest content-gap fallback: an item with NO real body and NO typed
+              blocks (the ~8% of articles that are truly bare) says so plainly and points to the
+              reader, rather than echoing its own teaser or inventing a body. */}
+          {(() => {
+            const hasBody = bodyParagraphs(item).length > 0;
+            const hasBlocks = item.quote || item.reading || item.excerpt || item.ingredients || item.steps
+              || item.videoSrc || item.audioSrc || item.player || (item.takeaways && item.takeaways.length)
+              || item.gutenbergId || item.readingText;
+            if (hasBody || hasBlocks || !(item.summary || item.subtitle)) return null;
+            const openLabel = (item.actions && item.actions[0] && item.actions[0].label) || "Read this";
+            return (
+              <p style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 15.5, color: T.muted, lineHeight: 1.55, margin: "2px 0 6px" }}>
+                The whole piece opens in the reader — tap “{openLabel}” below.
+              </p>
             );
           })()}
 
