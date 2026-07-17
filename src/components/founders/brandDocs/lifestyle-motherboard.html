@@ -288,6 +288,19 @@
     <li data-done><b>Personalisation</b> — getLifestyleFeed + recordLifestyleAction wired (interests + behaviour + gentle phase). <span class="tag t-done">live</span></li>
   </ol>
 
+  <div class="track" style="background:#7A1A12;color:#fff;">Track R — board restructure <span class="tag t-done">approved 2026-07-17 · BUILDING NOW</span></div>
+  <p class="muted" style="margin:2px 0 6px;">Halli's items 2–9 + the Sky-title fix, folded in as the active stream. Built in this order, one at a time, each smoke-gated + live-verified + deployed before the next. Full spec: <b>LIFESTYLE-BOARD-RESTRUCTURE.html</b> (its own Ideas entry).</p>
+  <ol class="bo" style="counter-reset:none;">
+    <li><b>A · Sizing + Sky-title fix</b> — cards 82%/max300 → 88%/max360; board body 820→900; cover 120→150; title 18→20; hook 14→15. Plus a minHeight on the Sky hero title so one/two-line chips stop jumping. <span class="tag t-thin">cheap, first</span></li>
+    <li><b>B · The good life leads</b> — board order → good life · Read · Listen &amp; watch · Books · Story &amp; sky · Yours. <b>Hazard:</b> reordering silently breaks every <code>jumpTo(n)</code> (hero chips, SummaryCard rows, JumpSheet all index the array) — they move together.</li>
+    <li><b>C · FaceOverlay tap-to-cover + back</b> — tap a small card → an overlay covers the whole StackedCard face (translateY 101%→0, ~.32s, back arrow / Escape / scrim). In-board, not full-screen: choosing, not consuming.</li>
+    <li><b>D · Top shelf → 2-col grid of small cards</b> — 6–8 focused small cards, each carrying a real signal ("3 saved · 12 min"), never a bare label.</li>
+    <li><b>E · Permission opens up</b> — the slip big + why it's good (cited where real evidence exists, plainly kind where not) + one doable thing that writes to Planner and ticks in place.</li>
+    <li><b>F · Across-the-app pulls</b> — the good life becomes a doorway: a journal line · something to cook · a day for you · the Community room · a session · your garden. <b>Rule:</b> measure every source before shipping it.</li>
+    <li><b>G · Open says more</b> — collapsed = a short hook; open = standfirst (<code>why_it_matters</code>) + the full real body + an extracted pull-quote + <code>takeaways[]</code>. Fixes the echo bug (de-dupe against the hook shown, not <code>item.summary</code>). <code>openAddsMore()</code> guard → no expand + a content-gap count when a body is missing. Never invented.</li>
+    <li><b>H · Listen &amp; watch contents page</b> — one watch+listen model; a designed full-screen contents page in our language (flora covers, Fraunces, no YouTube chrome), filter by length/channel, folding in the 29 real episodes + 12 Spotify/Apple shows. Retire the Unsplash stock artwork.</li>
+  </ol>
+
   <div class="track">Track A — restore &amp; deepen what exists (high ROI, mostly no backend)</div>
   <ol class="bo" start="5">
     <li><b>Daily Story reader restore</b> — mount the real DailyStoryReader from the Story tile (flip, cliffhanger countdown) + fix the Today reel deep-links.</li>
