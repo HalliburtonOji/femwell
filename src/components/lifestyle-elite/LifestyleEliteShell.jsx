@@ -32,7 +32,6 @@ import {
 } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import LifestyleMedia from "@/components/lifestyle-elite/LifestyleMedia";
-import LifestyleArticleDeck, { toDeckItem } from "@/components/lifestyle/LifestyleArticleDeck";
 // the clipboard's card language (§6.7.7) — consumed, never duplicated
 import { CoverCard, ExpandDetailCard } from "@/components/brand/expandCards";
 // the Daily Story — ONE gating contract + the real immersive reader (component #5)
@@ -255,13 +254,6 @@ export default function LifestyleEliteShell() {
 
   const editorialPick = grouped.story[0] || grouped.article[0] || items[0] || null;
   const morePicks = useMemo(() => [grouped.article[0], grouped.video[0], grouped.audio[0]].filter(Boolean).slice(0, 2), [grouped]);
-  // featured "Reads for you" deck — PERSONALISED via getLifestyleFeed (ranked by her interests +
-  // interaction history + freshness + a gentle phase fit); falls back to the page's already-loaded
-  // reads if the feed is empty/unavailable, then to the deck's own seeded fallback (never empty).
-  const articleDeckItems = useMemo(() => {
-    const source = (feed && feed.length) ? feed : [...(grouped.article || []), ...(grouped.story || [])];
-    return source.slice(0, 6).map(toDeckItem);
-  }, [feed, grouped]);
   const savedItems = useMemo(() => (items || []).filter((i) => savedIds.includes(i.id)), [items, savedIds]);
   const isSaved = useCallback((id) => savedIds.includes(id), [savedIds]);
 
@@ -630,6 +622,44 @@ export default function LifestyleEliteShell() {
       actions: [{ label: "Book a quiet hour", Icon: "Moon", primary: true, onClick: () => { savePlannerDay("A quiet hour, just for you"); setExpanded(null); } }],
     }));
   }, [phaseKey, savePlannerDay]);
+  // ── THE "FOR YOU" DECK (pass d) — a taste of EVERYTHING, not a reads list ────────────────
+  // One personalised pick from a DIFFERENT section each: Story · Read · Listen & watch · Sky ·
+  // Books · The good life. Ranked by getLifestyleFeed (her interests + what she's opened/saved
+  // + freshness + a gentle phase fit) — the same engine piece 4 wired; opening or saving any of
+  // these records back through openItem/toggleSave, so tomorrow's deck is chosen better.
+  //
+  // HONEST ABOUT THE GAPS (measured, not assumed): there are ZERO published podcasts, guides or
+  // FemWell fiction. So a section with nothing real is SKIPPED, never faked and never an empty
+  // card — Listen & watch resolves to a real video, Books to a real classic. Story, Sky and the
+  // good life always have something, so a brand-new woman with an empty library still gets a
+  // warm cross-section deck rather than a hollow one.
+  const forYouItems = useMemo(() => {
+    // her ranked library if the feed answered; otherwise whatever the page already loaded
+    const ranked = (feed && feed.length) ? feed : [...(grouped.article || []), ...(grouped.story || []), ...(grouped.video || []), ...(grouped.audio || [])];
+    const firstOf = (t) => ranked.find((r) => CARD_TYPE_OF(r) === t);
+    const out = [];
+    const seen = new Set();
+    const push = (card, section) => {
+      if (!card || seen.has(card.id)) return;
+      seen.add(card.id);
+      out.push({ ...card, forYouSection: section });
+    };
+    // 1 · Story — today's chapter, the daily ritual
+    push(dailyStoryCards[0], "Today's chapter");
+    // 2 · Read — her top personalised article
+    const a = firstOf("article"); push(a ? rowCard(a, "article") : articleCards[0], "A read for you");
+    // 3 · Listen & watch — real audio if it ever exists, else a real video (audio is empty today)
+    const au = firstOf("audio"); const vi = firstOf("video");
+    push(au ? rowCard(au, "audio") : (vi ? rowCard(vi, "video") : videoCards[0]), au ? "A listen" : "Something to watch");
+    // 4 · Sky — the glimpse (always real: the moon is computed)
+    push(horoscopeCards[0], "Your sky");
+    // 5 · Books — the shelf, then the free classics
+    push(shelfBookCards.find((c) => c.type === "book") || classicCards[0], "From the shelf");
+    // 6 · The good life — one small joy
+    push(ritualCards[0], "A small joy");
+    return out.filter(Boolean).slice(0, 6);
+  }, [feed, grouped, rowCard, dailyStoryCards, articleCards, videoCards, horoscopeCards, shelfBookCards, classicCards, ritualCards]);
+
   const savedCards = useMemo(() => (savedItems || []).slice(0, 8).map((r) => rowCard(r, CARD_TYPE_OF(r))), [savedItems, rowCard]);
   const phaseCards = useMemo(() => {
     const picks = [grouped.article?.[1] || grouped.article?.[0], grouped.audio?.[0], grouped.video?.[0]].filter(Boolean).slice(0, 3);
@@ -683,18 +713,29 @@ export default function LifestyleEliteShell() {
           <button onClick={() => jumpTo(4)} className="fw-elite-press" style={focusPill(plum)}><Clock size={16} /> What do you have time for?</button>
         </div>
 
-        {/* featured READS — the big-card article deck (piece 3): FloraCover + hook + save + open.
-            Fed by the reads this page already loads; graceful seeded fallback so it's never empty.
-            The full "Read" board below (Articles · Stories · Books · Guides) stays intact. */}
-        <div style={{ marginTop: 20 }}>
-          <LifestyleArticleDeck
-            label="Reads for you"
-            items={articleDeckItems}
-            onOpen={(it) => openItem(it.raw || it)}
-            onSave={(it) => toggleSave(it.raw || it)}
-            isSaved={(it) => isSaved(it.id)}
-            maxItems={5}
-          />
+        {/* ── "FOR YOU" (pass d) — a taste of EVERYTHING, one pick per SECTION ──────────────
+            Was "Reads for you" (articles only). Now a cross-section digest: today's chapter ·
+            a read · something to watch/listen · your sky · a book · a small joy — each chosen
+            for her by getLifestyleFeed, each on the same tap-to-expand card language as the
+            boards below. Sections with no real content are skipped, never faked (there are 0
+            published podcasts/guides/fiction). The boards below stay intact. */}
+        <div style={{ marginTop: 22 }}>
+          <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", padding: "0 2px 8px" }}>
+            <span style={{ fontFamily: SERIF, fontStyle: "italic", fontWeight: 600, fontSize: 19, color: OXBLOOD }}>For you</span>
+            <span style={{ fontFamily: UI, fontSize: 11.5, fontWeight: 700, color: T.muted }}>A little of everything &rarr;</span>
+          </div>
+          <div style={{ height: 384 }}>
+            <PeekShelf accent={gold}>
+              {forYouItems.map((it) => (
+                <div key={it.id} style={{ height: "100%", display: "flex", flexDirection: "column" }}>
+                  <div style={{ ...lbl, marginBottom: 6, color: cwOf(it.cw || "gold").petal, flexShrink: 0 }}>{it.forYouSection}</div>
+                  <div style={{ flex: 1, minHeight: 0 }}>
+                    <CoverCard item={it} compact onOpen={() => setExpanded(it)} />
+                  </div>
+                </div>
+              ))}
+            </PeekShelf>
+          </div>
         </div>
 
         <div ref={sliderRef} style={{ marginTop: 20, position: "relative" }}>
