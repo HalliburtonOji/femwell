@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Lock } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import useEntitlements from "../hooks/useEntitlements";
+import { plusUnlocked } from "@/config/plusTier";
 import SectionWrap from "../SectionWrap";
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -80,6 +81,9 @@ function sanitiseLetterHtml(html) {
 
 export default function AtelierReading({ userId, user }) {
   const { hasAtelier, loading } = useEntitlements(userId);
+  // Plus is PARKED until the sale window → the monthly letter is free for now.
+  // Re-lock = set PLUS_PARKED false in src/config/plusTier.js. Nothing else.
+  const unlocked = plusUnlocked(hasAtelier, !!user?.is_operator);
   const [letter, setLetter] = useState(null);     // published row (draft: false)
   const [draftRow, setDraftRow] = useState(null); // current-month draft row
   const [operatorDrafts, setOperatorDrafts] = useState([]);
@@ -89,7 +93,7 @@ export default function AtelierReading({ userId, user }) {
   // Pull the latest published letter + any current-month draft.
   useEffect(() => {
     if (!userId) return undefined;
-    if (!hasAtelier && !isOperator) return undefined;
+    if (!unlocked) return undefined;
     let cancelled = false;
     (async () => {
       try {
@@ -107,7 +111,7 @@ export default function AtelierReading({ userId, user }) {
       } catch { /* silent */ }
     })();
     return () => { cancelled = true; };
-  }, [userId, hasAtelier, isOperator]);
+  }, [userId, unlocked, isOperator]);
 
   // Operator-only — list ALL draft rows (any user) so the operator can sign
   // off the monthly cron output. Only fetched when isOperator is true.
@@ -173,7 +177,7 @@ export default function AtelierReading({ userId, user }) {
   };
 
   // ── UNLOCKED variant ────────────────────────────────────────────────────
-  if (hasAtelier) {
+  if (unlocked) {
     // LC-2 (D6): AI-final for now — letters publish directly. No
     // "Awaiting Astra's sign-off" banner ever surfaces to the user.
     // If a current-month letter exists it renders; if not, the placeholder

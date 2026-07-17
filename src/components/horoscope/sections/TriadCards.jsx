@@ -53,7 +53,7 @@ function SectionHead({ title, emphasis, link }) {
 
 const ICON_FOR = { sun: Sun, moon: Moon, rising: Sunrise };
 
-function TriadCard({ slot, eyebrow, sign, trait, desc, locked, onUnlock }) {
+function TriadCard({ slot, eyebrow, sign, trait, desc, locked, onUnlock, estimated }) {
   const [open, setOpen] = useState(false);
   const Icon = ICON_FOR[slot];
 
@@ -85,13 +85,23 @@ function TriadCard({ slot, eyebrow, sign, trait, desc, locked, onUnlock }) {
       </div>
       <p style={eyebrowStyle}>{eyebrow}</p>
       <p style={signStyle}>{sign}</p>
+      {/* HONEST LABELLING (Halli's call, 2026-07-17). Sun sign is real arithmetic from the
+          birth date, so it's stated plainly. Moon/rising are ESTIMATED by a language model
+          from date+time+place — we do NOT run an ephemeris — so they must never be presented
+          with the same certainty. This chip is the whole difference between a warm symbolic
+          reading and a false claim about the sky. Remove it only if a real ephemeris lands. */}
+      {estimated && !locked && sign && sign !== "—" && (
+        <p style={estimatedStyle} title="Worked out by our astrology model from your birth details — not calculated from an astronomical ephemeris.">
+          estimated
+        </p>
+      )}
       {trait && <p style={traitStyle}>{trait}</p>}
 
       {locked && (
         <>
           <p style={lockedBodyStyle}>
-            Birth time unlocks your {slot === "rising" ? "rising" : "moon"}. We need the minute,
-            not the second.
+            Add your birth time and we'll estimate your {slot === "rising" ? "rising" : "moon"} from it —
+            roughly, the way an astrologer would, not to the second.
           </p>
           <button type="button" onClick={onUnlock} style={addBtnStyle}>
             + Add birth time
@@ -127,7 +137,7 @@ export default function TriadCards({ chart, astro, reading, onAddBirthTime }) {
         <h2 style={{ fontWeight: 400, fontSize: 22, color: INK_NIGHT, margin: 0 }}>
           Your <GlossaryTip term="natal chart"><em style={{ fontStyle: "italic", color: ACCENT_NIGHT }}>triad</em></GlossaryTip>
         </h2>
-        {!hasBT && <span style={{ fontSize: 11, fontWeight: 500, color: ACCENT_NIGHT }}>Birth time unlocks moon + rising →</span>}
+        {!hasBT && <span style={{ fontSize: 11, fontWeight: 500, color: ACCENT_NIGHT }}>Birth time lets us estimate your moon + rising →</span>}
       </div>
       <div style={rowStyle}>
         <TriadCard
@@ -144,6 +154,7 @@ export default function TriadCards({ chart, astro, reading, onAddBirthTime }) {
           sign={chart?.moonSign || "—"}
           trait={traitFor(chart?.moonSign)}
           desc={moonDesc}
+          estimated
           locked={moonLocked}
           onUnlock={onAddBirthTime}
         />
@@ -153,6 +164,7 @@ export default function TriadCards({ chart, astro, reading, onAddBirthTime }) {
           sign={chart?.risingSign || "—"}
           trait={traitFor(chart?.risingSign)}
           desc={risingDesc}
+          estimated
           locked={risingLocked}
           onUnlock={onAddBirthTime}
         />
@@ -216,6 +228,19 @@ const signStyle = {
   fontWeight: 500,
   color: INK_NIGHT,
   margin: "4px 0 4px",
+};
+// quiet, not apologetic — it should read as craft honesty, never as a disclaimer shouting
+const estimatedStyle = {
+  display: "inline-block",
+  fontSize: 8.5,
+  letterSpacing: "0.1em",
+  textTransform: "uppercase",
+  fontWeight: 700,
+  color: "rgba(245,230,211,0.62)",
+  border: "1px solid rgba(245,230,211,0.22)",
+  borderRadius: 999,
+  padding: "1px 7px",
+  margin: "0 0 4px",
 };
 const traitStyle = {
   fontSize: 10,

@@ -16,6 +16,11 @@ export default function ScienceFooter() {
         <p style={bodyStyle}>
           Helfrich-Förster 2021 (<em>Science Advances</em>) found ~24% of women under 35 sync their cycle to lunar phase, stronger when artificial light is low. Cajochen 2013 (<em>Current Biology</em>) found a 30% reduction in NREM delta sleep around the full moon. We cite these honestly; astrology beyond moon-phase remains symbolic.
         </p>
+        {/* HOW WE WORK IT OUT (Halli's call, 2026-07-17) — plain about which parts are computed
+            and which are estimated. We do NOT run an ephemeris, so we don't imply we do. */}
+        <p style={bodyStyle}>
+          <strong>How we work it out.</strong> Two things here are calculated, not guessed: your <em>sun sign</em>, which is arithmetic from your birth date, and the <em>moon&rsquo;s phase</em>, from a standard synodic formula. Your <em>moon</em>, <em>rising</em> and <em>Mercury</em> are <em>estimated</em> by our astrology model from the birth details you give us &mdash; we don&rsquo;t run an astronomical ephemeris, so treat those as an astrologer&rsquo;s reading rather than a measurement. Where a placement is estimated, we mark it.
+        </p>
         <p style={lineageStyle}>
           Astra&rsquo;s craft is trained in the London School of Astrology tradition (est. 1948 lineage).
         </p>
