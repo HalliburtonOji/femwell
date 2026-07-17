@@ -197,12 +197,31 @@ const metaOf = (i) => [i?.source_name || i?.author_name, i?.category].filter(Boo
 // real `takeaways`. So: full body = the chapter bodies OR a substantial lede; anything
 // shorter is NOT a body (it would just echo the teaser) → returns [] and the expand leans
 // on the teaser + takeaways + an honest reader note. Never invents.
-const G_BODY_MIN = 800;
+const G_BODY_MIN = 800;   // below this, it's a teaser not a body → no prose, lean on takeaways
+const G_BODY_MAX = 4800;  // a generous magazine taster; the whole piece lives in the reader
+// Clean an HTML/markdown body into PLAIN PARAGRAPHS — crucially preserving paragraph breaks
+// (stripHtml collapses ALL whitespace, which would flatten a 4,300-char lede into one wall of
+// text) and stripping markdown chrome (## headings, **bold**, list bullets) so the expand reads
+// as magazine prose, not raw source.
+const toParas = (s) => String(s || "")
+  .replace(/\r/g, "")
+  .replace(/<\s*br\s*\/?>/gi, "\n")
+  .replace(/<\/\s*(p|div|h[1-6]|li|blockquote)\s*>/gi, "\n\n")
+  .replace(/<[^>]+>/g, "")
+  .replace(/^\s{0,3}#{1,6}\s+/gm, "")       // markdown ATX headings
+  .replace(/\*\*(.+?)\*\*/g, "$1")          // bold
+  .replace(/`([^`]+)`/g, "$1")              // inline code
+  .replace(/^\s*[-*+]\s+/gm, "• ")          // list bullets → a real bullet
+  .replace(/[ \t]+/g, " ")
+  .split(/\n\s*\n+/).map((p) => p.replace(/\n/g, " ").trim()).filter(Boolean);
 const contentBodyOf = (r) => {
-  const chapters = Array.isArray(r?.chapters_json) ? r.chapters_json.map((c) => stripHtml(c?.body || "")).filter(Boolean) : [];
-  if (chapters.length) return chapters;
-  const lede = stripHtml(r?.lede || "");
-  return lede.length >= G_BODY_MIN ? [lede] : [];
+  const paras = (Array.isArray(r?.chapters_json) && r.chapters_json.length)
+    ? r.chapters_json.flatMap((c) => toParas(c?.body || ""))
+    : toParas(r?.lede || "");
+  if (paras.join(" ").length < G_BODY_MIN) return [];   // content gap → the expand says so honestly
+  const out = []; let n = 0;                             // cap to a taster, whole paragraphs only
+  for (const p of paras) { if (n && n + p.length > G_BODY_MAX) break; out.push(p); n += p.length; }
+  return out;
 };
 const takeawaysOf = (r) => {
   const arr = Array.isArray(r?.takeaways) ? r.takeaways : [];
