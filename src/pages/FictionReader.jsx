@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import DailyStoryReader, { TEXT_SIZES } from "@/components/lifestyle/DailyStoryReader";
+import { buildBookChapters } from "@/components/lifestyle/bookChapters";
 import { getBookCover } from "@/utils/bookCover";
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -144,45 +145,9 @@ export default function FictionReader() {
     return () => { cancelled = true; };
   }, [itemId]);
 
-  const chapters = useMemo(() => {
-    if (!item) return [];
-
-    // Reader v3: pass ONE entry per chapter. The reader does measured
-    // pagination on the chapter body and slices it into pages that fit the
-    // viewport. No more word-count guessing — fonts can grow and the reader
-    // just re-measures.
-    if (Array.isArray(item.chapters_json) && item.chapters_json.length > 0) {
-      return item.chapters_json.map((chap, chIdx) => {
-        const heading = chap?.title || `Chapter ${chIdx + 1}`;
-        return {
-          id: `${item.id}-ch${chIdx + 1}`,
-          day_number: chIdx + 1,
-          title: heading,
-          heading,
-          body: chap?.body || "",
-          cliffhanger: "",
-          series_title: item.title || "",
-          chapter_context: {
-            chapterIndex: chIdx + 1,
-            chapterCount: item.chapters_json.length,
-            chapterTitle: heading,
-          },
-        };
-      });
-    }
-
-    // Fallback: legacy single-chapter — wrap the whole body as one chapter.
-    const text = item.body || item.lede || item.summary || "";
-    return [{
-      id: `${item.id}-only`,
-      day_number: 1,
-      title: item.title || "",
-      heading: item.title || "",
-      body: text,
-      cliffhanger: "",
-      series_title: item.title || "",
-    }];
-  }, [item]);
+  // Reader v3: ONE entry per chapter; the reader measures + paginates each body to the
+  // viewport. Shared with the in-place Lifestyle reader via buildBookChapters (one source).
+  const chapters = useMemo(() => buildBookChapters(item), [item]);
 
   if (loading) {
     return (

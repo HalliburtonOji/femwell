@@ -40,6 +40,7 @@ import SmallCardGrid, { SmallCard } from "@/components/brand/SmallCardGrid";
 // the Daily Story — ONE gating contract + the real immersive reader (component #5)
 import { DAILY_STORY_SERIES, loadStoryChapters, chapterForDay, nextChapterOf, chapterLabel, framingLine, markChapterRead, isChapterRead, readCount } from "@/components/lifestyle/dailyStory";
 import DailyStoryReader from "@/components/lifestyle/DailyStoryReader";
+import { buildBookChapters } from "@/components/lifestyle/bookChapters";
 // the sky (component #6) — the REAL horoscope reader (15 sections + birth-chart onboarding),
 // dark since ~2026-06-20. Moon phase is computed client-side (synodic, no backend).
 import HoroscopeTab from "@/components/horoscope/HoroscopeTab";
@@ -344,6 +345,7 @@ export default function LifestyleEliteShell() {
   const [gLFace, setGLFace] = useState(null);
   const [gLDone, setGLDone] = useState({});
   const [readerOpen, setReaderOpen] = useState(false); // the REAL immersive Daily Story reader
+  const [bookReader, setBookReader] = useState(null);  // #4 — a FemWell fiction book, read IN PLACE (no route)
   const [skyOpen, setSkyOpen] = useState(false);       // the REAL horoscope reader + birth-chart onboarding
   const [heroCard, setHeroCard] = useState(() => _lifeHeroCard); // the controller-hero’s active chip
   const [toast, setToast] = useState(null);
@@ -572,6 +574,18 @@ export default function LifestyleEliteShell() {
     if (kind === "day") savePlannerDay(title); else saveTryThis(title);
   }, [savePlannerDay, saveTryThis]);
 
+  // #4 — open a book at OUR reader standard, IN PLACE (no navigation to a slow route).
+  // FemWell fiction is already loaded (its chapters live on the row), so we mount the
+  // immersive DailyStoryReader right here — instant, no re-fetch. Gutenberg classics still
+  // need their external text fetch, so they keep the /BookReader route (its own taster).
+  const openBook = useCallback((it) => {
+    if (!it) return;
+    recordAction(it, "open");
+    const raw = it._raw || it;
+    if (it._book === "gutenberg" || it.gutenbergId) { window.location.assign(`/BookReader?gutenberg_id=${it._gutenbergId || raw._gutenbergId}`); return; }
+    setBookReader(raw);
+  }, [recordAction]);
+
   // open the exact item full-screen (deep-link parity with live Lifestyle: LifestyleDetail / readers)
   const openItem = useCallback((it) => {
     if (!it) return;
@@ -675,10 +689,10 @@ export default function LifestyleEliteShell() {
         : type === "audio" ? "Open episode" : type === "book" ? "Open reader" : "Read this",
       Icon: type === "video" ? "Film" : type === "audio" ? "Headphones" : type === "book" ? "Book" : "BookOpen",
       primary: true,
-      onClick: () => (type === "audio" && r.episode_url) ? openExternal(r.episode_url) : openItem(r),
+      onClick: () => type === "book" ? openBook(r) : (type === "audio" && r.episode_url) ? openExternal(r.episode_url) : openItem(r),
     }],
     };
-  }, [openItem, openExternal]);
+  }, [openItem, openExternal, openBook]);
 
   const articleCards = useMemo(() => [...(grouped.article || []), ...(grouped.guide || [])].slice(0, 6).map((r) => rowCard(r, "article")), [grouped, rowCard]);
   const storyCards = useMemo(() => (grouped.story || []).slice(0, 6).map((r) => rowCard(r, "daily_story")), [grouped, rowCard]);
@@ -1183,6 +1197,18 @@ export default function LifestyleEliteShell() {
           />
         </div>
       )}
+      {/* #4 — a FemWell fiction book opens IN PLACE at our reader standard (ReadingColumn:
+          cream paper, oxblood, flora, proper measure) — no navigation to a slow route. Same
+          immersive DailyStoryReader as the daily story, fed the book's own chapters. */}
+      {bookReader && (() => {
+        const chs = buildBookChapters(bookReader);
+        return (
+          <div style={{ position: "fixed", inset: 0, zIndex: 1200, ...PAPER_BG }}>
+            <DailyStoryReader source={{ kind: "book", items: chs, currentIndex: 0 }} totalCount={chs.length}
+              defaultImmersive onExit={() => setBookReader(null)} bookId={bookReader.id} />
+          </div>
+        );
+      })()}
       {readingOpen && (
         <ReadingSheet
           reading={horoscope} phaseKey={phaseKey}
