@@ -112,19 +112,21 @@ export default function WatchListen() {
   useEffect(() => {
     let alive = true;
     (async () => {
-      // audio (the 29 real episodes) is FEW next to ~900 videos, so an engagement-sorted cap
-      // buries it — fetch podcasts on their OWN query so they always show, then the videos.
-      const [pods, rows] = await Promise.all([
-        base44.entities.LifestyleItems.filter({ status: "PUBLISHED", media_type: "PODCAST" }, "-created_date", 60).catch(() => []),
+      // audio (the ~29 real episodes) is FEW next to ~900 videos, so an engagement-sorted cap
+      // buries it, and the media_type label varies — so we fetch a RECENT set too (the episodes
+      // were seeded recently) and treat ANY item carrying an audio_url as audio, whatever its
+      // media_type says. Merge + dedup with the engagement set.
+      const [recent, rows] = await Promise.all([
+        base44.entities.LifestyleItems.filter({ status: "PUBLISHED" }, "-created_date", 90).catch(() => []),
         base44.entities.LifestyleItems.filter({ status: "PUBLISHED" }, "-engagement_score", 160).catch(() => []),
       ]);
       if (!alive) return;
       const out = [];
       const seen = new Set();
       const push = (o) => { if (o && o.title && !seen.has(o.id)) { seen.add(o.id); out.push(o); } };
-      [...(Array.isArray(pods) ? pods : []), ...(Array.isArray(rows) ? rows : [])].forEach((r) => {
+      [...(Array.isArray(recent) ? recent : []), ...(Array.isArray(rows) ? rows : [])].forEach((r) => {
         const m = String(r.media_type || "").toUpperCase();
-        if (/PODCAST|AUDIO/.test(m) && r.audio_url) {
+        if (r.audio_url && !/VIDEO/.test(m)) {
           push({ id: r.id, kind: "audio", title: cleanTitle(r.title), source: r.source_name || r.channel_name || "FemWell", audioSrc: r.audio_url, seconds: Number(r.duration_seconds) || 0, mins: minutesOf(r), category: "listen podcast rest" });
         } else if (m === "VIDEO" && r.video_id && r.is_embeddable !== false) {
           push({ id: r.id, kind: "video", title: cleanTitle(r.title), source: r.channel_name || r.source_name || "", youtubeId: r.video_id, mins: minutesOf(r), category: "creative watch make" });
