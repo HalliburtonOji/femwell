@@ -12,6 +12,7 @@ import {
 import { useBirthChart } from "./hooks/useBirthChart";
 import useHoroscopeToast from "./hooks/useHoroscopeToast";
 import BirthDataSheet from "./BirthDataSheet";
+import SkyPreview from "./SkyPreview";
 import HoroscopeToast from "./HoroscopeToast";
 import SectionSkeleton from "./SectionSkeleton";
 import TwilightHero from "./sections/TwilightHero";
@@ -94,9 +95,14 @@ export default function HoroscopeTab(props) {
   }
 
   if (!astro) {
+    // PASS 6c — this used to be a lone OnboardingCard, so a woman with no chart (and there are
+    // only 3 AstroProfiles in the whole database) saw ONE card while fifteen sections sat behind
+    // this early return. That is why the surface read as "stripped". She now gets a real sky:
+    // the computed moon, her sun sign from the birthday her profile already holds, and an honest
+    // list of everything that opens up — no empty cards (6a).
     return (
       <div style={tabShellStyle}>
-        <OnboardingCard onOpen={() => setSheetOpen(true)} />
+        <SkyPreview userProfile={userProfile} onOpen={() => setSheetOpen(true)} />
         <BirthDataSheet
           open={sheetOpen}
           onClose={() => setSheetOpen(false)}
