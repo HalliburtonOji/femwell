@@ -227,6 +227,19 @@ const takeawaysOf = (r) => {
   const arr = Array.isArray(r?.takeaways) ? r.takeaways : [];
   return arr.map((t) => stripHtml(typeof t === "string" ? t : (t?.text || t?.point || t?.title || ""))).filter(Boolean).slice(0, 6);
 };
+// daily-story card taster (piece G) — clean markdown + real paragraphs (not a stripHtml wall),
+// lift a short opening line as the excerpt pull-quote, keep the rest (capped) as the body so the
+// two never duplicate. The full chapter still lives in the reader.
+const storyTaster = (segmentText) => {
+  const p = toParas(segmentText || "");
+  if (!p.length) return { excerpt: undefined, body: [] };
+  const useLead = p[0].length <= 300;
+  const excerpt = (useLead ? p[0] : p[0].slice(0, 240)) || undefined;
+  const rest = useLead ? p.slice(1) : p;
+  const body = []; let n = 0;
+  for (const x of rest) { if (n && n + x.length > G_BODY_MAX) break; body.push(x); n += x.length; }
+  return { excerpt, body };
+};
 
 // ════════════════════════════════════════════════════════════════════════════
 // ── PEEK SHELF — one half of a StackedCard: a horizontal peek sub-slider of tap-to-expand
@@ -708,14 +721,14 @@ export default function LifestyleEliteShell() {
     onOpenFullReader: () => openItem(b),
     actions: [{ label: "Open reader", Icon: "Book", primary: true, onClick: () => openItem(b) }],
   })), [gutenberg, openItem]);
-  const dailyStoryCards = useMemo(() => (story ? [{
+  const dailyStoryCards = useMemo(() => (story ? (() => { const t = storyTaster(story.segment_text); return [{
     id: "story-today", type: "daily_story", title: story.series_title || story.title || "Today's chapter",
     subtitle: story.cliffhanger ? `"${story.cliffhanger}"` : "Today's chapter is ready to read.",
     meta: [["Feather", story.day_number ? `Day ${story.day_number}` : "Today"], ["Clock", "A few minutes"]],
-    chips: ["daily story", "fiction"], excerpt: stripHtml(story.segment_text || "").slice(0, 240) || undefined,
-    body: [stripHtml(story.segment_text || "") || "Today's chapter is being written — check back soon."],
+    chips: ["daily story", "fiction"], excerpt: t.excerpt,
+    body: t.body.length ? t.body : ["Today's chapter is being written — check back soon."],
     actions: [{ label: "Read today's chapter", Icon: "Feather", primary: true, onClick: () => { setExpanded(null); setChapterOpen(true); } }],
-  }] : [{
+  }]; })() : [{
     id: "story-soon", type: "daily_story", title: "Today's chapter is on its way",
     subtitle: "A new chapter lands each morning.", meta: [["Clock", "Back tomorrow"]], chips: ["daily story"],
     body: ["Your serialised story is being written — it'll be here shortly."], actions: [],
