@@ -227,6 +227,15 @@ const takeawaysOf = (r) => {
   const arr = Array.isArray(r?.takeaways) ? r.takeaways : [];
   return arr.map((t) => stripHtml(typeof t === "string" ? t : (t?.text || t?.point || t?.title || ""))).filter(Boolean).slice(0, 6);
 };
+// a SHORT summary (piece #3, audio cards) — the PLAYER is the content, not a wall of
+// podcast description. First ~2 sentences, cut cleanly at a sentence/word boundary.
+const shortSummary = (text, max = 260) => {
+  const s = stripHtml(text || "");
+  if (s.length <= max) return s;
+  const cut = s.slice(0, max);
+  const stop = Math.max(cut.lastIndexOf(". "), cut.lastIndexOf("! "), cut.lastIndexOf("? "));
+  return stop > max * 0.5 ? cut.slice(0, stop + 1) : cut.replace(/\s+\S*$/, "") + "…";
+};
 // daily-story card taster (piece G) — clean markdown + real paragraphs (not a stripHtml wall),
 // lift a short opening line as the excerpt pull-quote, keep the rest (capped) as the body so the
 // two never duplicate. The full chapter still lives in the reader.
@@ -379,14 +388,21 @@ export default function LifestyleEliteShell() {
   // Essential content (real entities) — this gates the initial render. Kept off the external
   // gutendex fetch so a slow public-domain API can never hold the whole page on the loader.
   const loadContent = useCallback(async () => {
-    const [rows, chs, ho] = await Promise.all([
+    const [rows, chs, ho, pods] = await Promise.all([
       base44.entities.LifestyleItems.filter({ status: "PUBLISHED" }, "-engagement_score", 60).catch(() => []),
       // ONE gating contract (dailyStory.js) — never the newest-ever row, never a stale
       // chapter dressed up as "today's". The whole series; the gate picks the day's chapter.
       loadStoryChapters(),
       base44.entities.HoroscopeReading.filter({}, "-reading_date", 1).catch(() => []),
+      // piece #3 — the real podcast episodes have engagement_score 0, so the engagement cap
+      // above misses them; fetch them by media_type so the Listen board + the For-you "A listen"
+      // pick have real audio to play + rotate through (measured: 87 PODCAST/PUBLISHED episodes).
+      base44.entities.LifestyleItems.filter({ media_type: "PODCAST", status: "PUBLISHED" }, "-created_date", 60).catch(() => []),
     ]);
-    setItems((Array.isArray(rows) ? rows : []).filter((i) => i && i.title));
+    const seen = new Set();
+    const merged = [...(Array.isArray(rows) ? rows : []), ...(Array.isArray(pods) ? pods : [])]
+      .filter((i) => i && i.title && !seen.has(i.id) && seen.add(i.id));
+    setItems(merged);
     setChapters(Array.isArray(chs) ? chs : []);
     setHoroscope((Array.isArray(ho) ? ho[0] : null) || null);
   }, []);
@@ -624,12 +640,14 @@ export default function LifestyleEliteShell() {
     id: r.id, type,
     title: r.title,
     subtitle: stripHtml(r.why_it_matters || r.summary || "") || metaOf(r),
-    // §5 a real hook so a card is never empty — the substance, distinct from the short subtitle
-    summary: stripHtml(r.summary || r.why_it_matters || "") || undefined,
+    // §5 a real hook so a card is never empty — the substance, distinct from the short subtitle.
+    // Audio (piece #3): a SHORT summary — the flora player IS the content, not a wall of text.
+    summary: (type === "audio" ? shortSummary(r.summary || r.lede) : stripHtml(r.summary || r.why_it_matters || "")) || undefined,
     category: r.category || undefined,
     meta: [["Clock", r.duration_label || ((type === "audio" || type === "video") ? "A short listen" : "A few minutes")], ["BookOpen", r.source_name || r.author_name || "FemWell Editorial"]],
     chips: [r.category, r.emotional_tag].filter(Boolean).slice(0, 3),
-    body: g_body,
+    // audio: no prose body (the player carries it); everything else gets its real body (piece G)
+    body: type === "audio" ? [] : g_body,
     ...(g_takes.length ? { takeaways: g_takes } : {}),
     // §1/§2 play INLINE when the source is a real media file; off-platform stays an honest link-out
     // A real media FILE plays as <video>; a YOUTUBE row (all 284 live ones) plays via the
@@ -641,7 +659,9 @@ export default function LifestyleEliteShell() {
       : (r.video_id && r.is_embeddable !== false && !isTikTok(r)) ? { youtubeId: r.video_id }
       : { external: true }
     ) : {}),
-    ...(type === "audio" && playableMedia(r.audio_url) ? { audioSrc: r.audio_url } : {}),
+    // audio (piece #3): a podcast audio_url IS a real media file (mp3 from RSS) — play it in the
+    // flora player (FloraAudio errors gracefully if a URL won't play), don't gate it out to a wall.
+    ...(type === "audio" && r.audio_url ? { audioSrc: r.audio_url } : {}),
     // captions (video · WCAG SC 1.2.2 Level A) + transcript (audio-only · SC 1.2.1) when we have them
     ...(r.captions_url ? { captionsSrc: r.captions_url } : {}),
     ...(r.transcript ? { transcript: stripHtml(r.transcript) } : {}),
@@ -833,8 +853,11 @@ export default function LifestyleEliteShell() {
     push(dailyStoryCards[0], "Today's chapter");
     // 2 · Read — her top personalised article
     const a = firstOf("article"); push(a ? rowCard(a, "article") : articleCards[0], "A read for you");
-    // 3 · Listen & watch — real audio if it ever exists, else a real video (audio is empty today)
-    const au = firstOf("audio"); const vi = firstOf("video");
+    // 3 · Listen & watch — a real episode, ROTATING BY THE DAY (piece #3): a different one each
+    // day from the loaded episodes, so "A listen" is fresh rather than always the same top pick.
+    const auList = grouped.audio || [];
+    const au = auList.length ? auList[Math.floor(Date.now() / 86400000) % auList.length] : firstOf("audio");
+    const vi = firstOf("video");
     push(au ? rowCard(au, "audio") : (vi ? rowCard(vi, "video") : videoCards[0]), au ? "A listen" : "Something to watch");
     // 4 · Sky — the glimpse (always real: the moon is computed)
     push(horoscopeCards[0], "Your sky");
