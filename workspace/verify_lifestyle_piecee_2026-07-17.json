@@ -2,75 +2,72 @@
   "mp": "Lifestyle piece E — permission & small-joy slips open in-board into a fuller slip",
   "url": "https://femwells.com/Lifestyle",
   "authedUser": "ojihalliburton57",
-  "publishedCommit": "fec6da1 (live bundle index-DbD-I9MD.js)",
-  "checkedAt": "2026-07-17T18:51:15.446Z",
-  "viewports": [
-    "mobile-390"
-  ],
-  "verdict": "FAIL",
-  "rootCause": "ReferenceError: Star is not defined — src/components/lifestyle-elite/LifestyleEliteShell.jsx line 1214 (PermissionSlipLens) renders <Star size={15}/> but 'Star' is NOT in the lucide-react import block (lines 30-31). Tapping ANY permission/small-joy cover card renders PermissionSlipLens, throws, and the top-level ErrorBoundary replaces the WHOLE Lifestyle page with 'Something went wrong'. Piece E is completely non-functional live. One-line fix: add Star to the lucide import.",
+  "viewport": "mobile-390x844",
+  "run": "RE-VERIFY after Star-import fix",
+  "publishedCommit": "live bundle index-DeT38xfF.js (was index-DbD-I9MD.js at first walk)",
+  "checkedAt": "2026-07-17T18:57:24.935Z",
+  "verdict": "PASS",
+  "priorDefect": "FIXED — first walk (bundle index-DbD-I9MD.js) found 'ReferenceError: Star is not defined' (LifestyleEliteShell.jsx:1214, PermissionSlipLens) crashing the whole Lifestyle page via the top-level ErrorBoundary. Star has since been added to the lucide import and redeployed; the crash is gone.",
   "assertions": [
     {
       "name": "1-bottom-shelf-intact",
       "viewport": "mobile-390",
-      "expected": "'Permission & small joys' label + a row of cover cards (slow Sunday / outside / walk / gentler pace etc.)",
-      "got": "label visible; cover titles found: A slow Sunday just for you, A long walk somewhere new, Cook something that takes all afternoon, Visit a gallery alone, A film and an early night, Ten minutes outside no phone (+ permission slips)",
+      "expected": "'Permission & small joys' label + a row of cover cards",
+      "got": "label visible; cover titles: A slow Sunday just for you, A long walk somewhere new, Cook something that takes all afternoon, Visit a gallery alone, A film and an early night, Ten minutes outside no phone (+ permission slips)",
       "pass": true
     },
     {
-      "name": "2-slip-opens-in-board",
+      "name": "2-cited-slip-opens-in-board",
       "viewport": "mobile-390",
-      "expected": "Tap a cover (e.g. 'You're allowed a slow Sunday.') -> role=dialog FaceOverlay covers board face; big serif title ~24-26px; 'Why this is good for you' block; italic source line; doable button; URL unchanged (no /LifestyleDetail)",
-      "got": "NO overlay. Tap throws 'ReferenceError: Star is not defined' -> ErrorBoundary shows full-page 'Something went wrong / We're on it. A quick reload usually fixes it.' with Reload/Go Home. No slip title/why-block/source/doable rendered. URL stayed /Lifestyle (crash, not a route).",
-      "pass": false,
-      "note": "P0 crash — see rootCause and screenshot pieceE_slip_crash.png."
+      "expected": "role=dialog FaceOverlay covers board face; big serif title ~24-26px; 'Why this is good for you' block; italic citation source line; doable button; URL unchanged (no /LifestyleDetail)",
+      "got": "dialog=true; title='You're allowed a slow Sunday.' @25px Cormorant Garamond; header='Why this is good for you'; source='Sonnentag & Fritz, J. Organizational Behavior (2015)' (italic); doable=['Book a quiet hour']; url stayed /Lifestyle",
+      "pass": true,
+      "note": "In-board overlay, not a route. Screenshot cited_slip.png."
     },
     {
       "name": "3-honesty-split-kindness-not-claim",
       "viewport": "mobile-390",
-      "expected": "gentler-pace slip overlay header reads 'A kindness, not a claim' (NOT 'Why this is good for you') AND no citation/source line",
-      "got": "UNTESTABLE LIVE — the slip overlay crashes before any content renders (same Star error). Source logic IS correct: whyFor('...gentler pace...') -> WHY.cycle (kindness, no cite) -> header 'A kindness, not a claim', no source line (LifestyleEliteShell.jsx lines 148,159,1203-1205). Must be RE-VERIFIED live after the Star fix.",
-      "pass": false,
-      "note": "Blocked by the crash; not independently confirmable at pixel level. Anti-fake-science logic is correct in source but unverified live."
+      "expected": "gentler-pace slip header reads EXACTLY 'A kindness, not a claim' (NOT 'Why this is good for you') AND no citation/source line",
+      "got": "dialog=true; title='A gentler pace today isn't falling behind.'; headerExact='A kindness, not a claim'; hasWhyGood=false; sourceLinePresent=false (no et al, no year). Body: 'There's no study that says slow down for your cycle — but real, documented symptoms can make a gentler pace the sensible, kind choice. This is permission, not a prescription.'",
+      "pass": true,
+      "note": "ANTI-FAKE-SCIENCE GATE PASSES — honest kindness, no laundered citation. Verified live (pixels) + screenshot kindness_slip.png."
     },
     {
       "name": "4-doable-ticks-no-nav",
       "viewport": "mobile-390",
-      "expected": "In an open slip, tap doable -> flips to checked 'In your planner' + bloom; URL unchanged; board not scrolled away",
-      "got": "UNTESTABLE — no slip overlay renders (crash). No doable button reachable.",
-      "pass": false,
-      "note": "Blocked by the crash."
+      "expected": "tap doable -> checked 'In your planner' + bloom; URL unchanged; board not scrolled away",
+      "got": "inPlanner=true; dialog svg count=4 (Pollinator bloom rendered); url stayed /Lifestyle; scrollDelta=0",
+      "pass": true,
+      "note": "Screenshot doable_ticked.png."
     },
     {
       "name": "5-back-returns",
       "viewport": "mobile-390",
-      "expected": "Tap Back (aria-label 'Back') -> dialog gone, good-life board visible",
-      "got": "No FaceOverlay and no Back arrow — the page is in the top-level ErrorBoundary state (only 'Reload' / 'Go Home'). Good-life board NOT visible after the crash.",
-      "pass": false,
-      "note": "Blocked by the crash."
+      "expected": "tap Back (aria-label 'Back') -> dialog gone, good-life board visible",
+      "got": "dialogPresent=false; boardVisible=true (Permission & small joys back on screen)",
+      "pass": true
     },
     {
       "name": "6-regression-piece-d-time-for",
       "viewport": "mobile-390",
-      "expected": "Tap top-shelf 'Time for?' -> FaceOverlay opens with time bands; Back closes",
-      "got": "PASS. On a fresh load, 'Time for?' opens the FaceOverlay: 'What have you got time for?' + 'Pick by the time you have — a small, chosen handful'. 'A day for you' also opens ('A whole day that's just yours'). Board + top-shelf grid render intact. (Overlay open takes up to ~1-2s incl. a smooth-scroll; a single short wait misses it.)",
+      "expected": "tap top-shelf 'Time for?' -> FaceOverlay opens with time bands",
+      "got": "dialog=true; 'What have you got time for? / A read · a listen · a little joy / Pick by the time you have — a small, chosen handful, never an endless...' ; url stayed /Lifestyle",
       "pass": true,
-      "note": "Piece D unaffected. Screenshot pieceD_time_overlay_open.png."
+      "note": "Piece D intact. Overlay opens after ~1-2s smooth-scroll; polled. Screenshot time_overlay_open.png."
     },
     {
       "name": "7-no-horizontal-page-overflow",
       "viewport": "mobile-390",
       "expected": "scrollWidth <= innerWidth + 2",
-      "got": "scrollWidth=390, innerWidth=390, delta=0 (measured on fresh load pre-crash)",
+      "got": "scrollWidth=390, innerWidth=390, delta=0",
       "pass": true
     },
     {
       "name": "8-console-error-classification",
       "viewport": "mobile-390",
       "expected": "no NEW ReferenceError/TDZ/app-code error beyond baseline",
-      "got": "NEW (regression): 'ReferenceError: Star is not defined at Drn (index-DbD-I9MD.js:3343:41451)' + 'UI ErrorBoundary caught: ReferenceError: Star is not defined' — fired on slip tap. PRE-EXISTING baseline (ignored per brief): 'N.entities.User.me is not a function', 'App not found', apps/null 404s, connect_error/socket 'Connection rejected by server'.",
-      "pass": false,
-      "note": "The Star ReferenceError is the P0."
+      "got": "NEW errors: NONE. The Star ReferenceError is gone. Baseline only (ignored per brief): 'N.entities.User.me is not a function', 'App not found', apps/null 404s, connect_error/socket 'Connection rejected by server'.",
+      "pass": true
     }
   ],
   "preExistingBaseline": [
@@ -79,29 +76,21 @@
     "404 apps/null resource loads",
     "connect_error/socket 'Connection rejected by server'"
   ],
-  "newErrors": [
-    "ReferenceError: Star is not defined (LifestyleEliteShell PermissionSlipLens, line 1214) -> full-page ErrorBoundary"
-  ],
+  "newErrors": [],
   "summary": {
-    "passed": 3,
-    "failed": 5,
+    "passed": 8,
+    "failed": 0,
     "total": 8
   },
   "screenshots": [
-    "C:/Users/Halli/femwell-work/workspace/verify_screenshots/lifestyle_piecee_2026-07-17/mobile/bottomshelf.png",
-    "C:/Users/Halli/femwell-work/workspace/verify_screenshots/lifestyle_piecee_2026-07-17/mobile/pieceE_slip_crash.png",
-    "C:/Users/Halli/femwell-work/workspace/verify_screenshots/lifestyle_piecee_2026-07-17/mobile/cited_slip.png",
-    "C:/Users/Halli/femwell-work/workspace/verify_screenshots/lifestyle_piecee_2026-07-17/mobile/kindness_slip.png",
-    "C:/Users/Halli/femwell-work/workspace/verify_screenshots/lifestyle_piecee_2026-07-17/mobile/doable_ticked.png",
-    "C:/Users/Halli/femwell-work/workspace/verify_screenshots/lifestyle_piecee_2026-07-17/mobile/pieceD_time_overlay_open.png",
-    "C:/Users/Halli/femwell-work/workspace/verify_screenshots/lifestyle_piecee_2026-07-17/mobile/pieceD_timefor_fresh.png",
-    "C:/Users/Halli/femwell-work/workspace/verify_screenshots/lifestyle_piecee_2026-07-17/mobile/time_regression.png"
+    "C:/Users/Halli/femwell-work/workspace/verify_screenshots/lifestyle_piecee_2026-07-17/mobile_postfix/bottomshelf.png",
+    "C:/Users/Halli/femwell-work/workspace/verify_screenshots/lifestyle_piecee_2026-07-17/mobile_postfix/cited_slip.png",
+    "C:/Users/Halli/femwell-work/workspace/verify_screenshots/lifestyle_piecee_2026-07-17/mobile_postfix/kindness_slip.png",
+    "C:/Users/Halli/femwell-work/workspace/verify_screenshots/lifestyle_piecee_2026-07-17/mobile_postfix/doable_ticked.png",
+    "C:/Users/Halli/femwell-work/workspace/verify_screenshots/lifestyle_piecee_2026-07-17/mobile_postfix/time_overlay_open.png"
   ],
-  "fixTarget": {
-    "file": "src/components/lifestyle-elite/LifestyleEliteShell.jsx",
-    "line": "30-31 (lucide-react import block)",
-    "change": "Add 'Star' to the imported lucide icons. Used as <Star size={15}/> at line 1214 in PermissionSlipLens.",
-    "owner": "Mr Fix-it (trivial 1-file edit)"
-  },
-  "notes": "Piece E is DOA on live: tapping any 'Permission & small joys' cover card throws ReferenceError: Star is not defined (PermissionSlipLens, LifestyleEliteShell.jsx:1214 — Star never imported), and the top-level ErrorBoundary blanks the whole Lifestyle page ('Something went wrong'). Bottom shelf renders (A1) and piece D doorways still work (A6), so this is one missing import, not a structural break. Assertions 2-5 and 8 fail; 3 (the honesty split) is correct in source but could not be pixel-verified because the overlay crashes first. Fix: add Star to the lucide import, redeploy, then re-run this walk to confirm the slip renders, the cited/kindness split shows correctly, and the doable ticks. Verification harness: headless Chromium via playwright-core against the persisted test-user profile (Chrome MCP tools were not loaded this session)."
+  "historicalScreenshots": [
+    "C:/Users/Halli/femwell-work/workspace/verify_screenshots/lifestyle_piecee_2026-07-17/mobile/pieceE_slip_crash.png (pre-fix crash, index-DbD-I9MD.js)"
+  ],
+  "notes": "Re-verify after the Star import fix: piece E now works end-to-end on live (bundle index-DeT38xfF.js). Tapping a 'Permission & small joys' cover opens the in-board FaceOverlay with the slip big (25px Cormorant Garamond), the correct why-block, and one doable that writes to the planner and ticks + blooms with no navigation. The honesty split is honoured: cited slips ('You're allowed a slow Sunday.') show 'Why this is good for you' + a real italic citation (Sonnentag & Fritz, 2015); the cycle slip ('A gentler pace today isn't falling behind.') shows 'A kindness, not a claim' with NO source line — the anti-fake-science gate passes. Back returns to the board; piece D 'Time for?' still opens; no horizontal overflow; no NEW console errors (User.me baseline only). All 8 assertions pass. Exit gate: PASS."
 }
