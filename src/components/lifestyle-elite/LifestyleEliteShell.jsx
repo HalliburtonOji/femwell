@@ -430,11 +430,11 @@ export default function LifestyleEliteShell() {
   const gold = cwOf("gold").petal, sky = cwOf("sky").petal, crimson = cwOf("crimson").petal, plum = cwOf("plum").petal, sage = cwOf("sage").petal;
   // the SIX reorganised boards (one board = one room = one job) — also drives the Jump sheet
   const BOARDS = [
+    { t: "The good life", sub: "What do you have time for · permission & small joys" },
     { t: "Read", sub: "Articles & guides · stories & fiction" },
     { t: "Listen & watch", sub: "Podcasts & shows · watch & trending" },
     { t: "Books", sub: "Your shelf · free classics" },
     { t: "Story & sky", sub: "Today's chapter · your sky" },
-    { t: "The good life", sub: "What do you have time for · permission & small joys" },
     { t: "Yours", sub: "Saved · for your phase" },
   ];
 
@@ -695,13 +695,13 @@ export default function LifestyleEliteShell() {
   const HERO_CARDS = useMemo(() => [
     { id: "read", Icon: BookOpen, label: "Read", title: firstName ? `${firstName}'s reading` : "Something to read",
       line: "Essays, guides and stories for a spare ten minutes.", openness: 0.72, cw: "plum", creature: "bee",
-      action: { label: "Open your reads", on: () => jumpTo(0) } },
+      action: { label: "Open your reads", on: () => jumpTo(1) } },
     { id: "listen", Icon: Headphones, label: "Listen", title: "Something to hear",
       line: "Real episodes that play right here — and keep playing while you browse.", openness: 0.86, cw: "sage", creature: "dragonfly",
-      action: { label: "Open Listen & watch", on: () => jumpTo(1) } },
+      action: { label: "Open Listen & watch", on: () => jumpTo(2) } },
     { id: "books", Icon: Book, label: "Books", title: "Your shelf",
       line: "Something longer — and a shelf of free classics to fall into.", openness: 0.6, cw: "sky", creature: "ladybird",
-      action: { label: "Open your shelf", on: () => jumpTo(2) } },
+      action: { label: "Open your shelf", on: () => jumpTo(3) } },
     { id: "story", Icon: Feather, label: "Story", title: "Today's chapter",
       line: story?.cliffhanger ? `"${story.cliffhanger}"` : "A chapter a day — a finished story you can also read straight through.",
       openness: 1, cw: "crimson", creature: "butterfly",
@@ -712,7 +712,7 @@ export default function LifestyleEliteShell() {
       action: { label: "Open your sky", on: () => setSkyOpen(true) } },
     { id: "good", Icon: Clock, label: "Good life", title: "The good life",
       line: "What do you have time for? A small joy, and permission to enjoy it.", openness: 0.92, cw: "gold", creature: "butterfly",
-      action: { label: "Open the good life", on: () => jumpTo(4) } },
+      action: { label: "Open the good life", on: () => jumpTo(0) } },
   ], [firstName, story, moonToday]);
 
   const savedCards = useMemo(() => (savedItems || []).slice(0, 8).map((r) => rowCard(r, CARD_TYPE_OF(r))), [savedItems, rowCard]);
@@ -786,14 +786,14 @@ export default function LifestyleEliteShell() {
 
         <SummaryCard eyebrow="A few good things today" accent={gold} rows={[
           { Icon: Feather, label: "Today's chapter", text: story ? `${story.series_title || story.title || "Today's chapter"}${story.cliffhanger ? ` — "${story.cliffhanger}"` : ""}` : "Today's chapter is on its way — tap to open the Daily Story.", onClick: () => setChapterOpen(true) },
-          { Icon: BookOpen, label: "Your reading", text: savedItems.length ? `${savedItems.length} saved to come back to · ${grouped.article.length} fresh reads` : (editorialPick ? editorialPick.title : "Fresh reads land here as they're published."), onClick: () => jumpTo(0) },
+          { Icon: BookOpen, label: "Your reading", text: savedItems.length ? `${savedItems.length} saved to come back to · ${grouped.article.length} fresh reads` : (editorialPick ? editorialPick.title : "Fresh reads land here as they're published."), onClick: () => jumpTo(1) },
           { Icon: Moon, label: "Your sky", text: horoscope ? (horoscope.headline || horoscope.narrative || "Today's reading is ready.") : "Add your birth details to read today's sky.", onClick: () => setReadingOpen(true) },
         ]} />
 
         {/* two focus pills (out of cards) — Lifestyle's two daily rituals */}
         <div style={{ display: "flex", gap: 10, marginTop: 14 }}>
           <button onClick={() => setChapterOpen(true)} className="fw-elite-press" style={focusPill(crimson)}><Feather size={16} /> Today's chapter</button>
-          <button onClick={() => jumpTo(4)} className="fw-elite-press" style={focusPill(plum)}><Clock size={16} /> What do you have time for?</button>
+          <button onClick={() => jumpTo(0)} className="fw-elite-press" style={focusPill(plum)}><Clock size={16} /> What do you have time for?</button>
         </div>
 
         {/* ── "FOR YOU" (pass d) — a taste of EVERYTHING, one pick per SECTION ──────────────
@@ -828,49 +828,7 @@ export default function LifestyleEliteShell() {
             {/* ══ THE SIX BOARDS — each a StackedCard of two peek shelves of tap-to-expand
                  cover-cards (§6.7.7). One board = one room = one job. Nothing stripped. ══ */}
 
-            {/* ── BOARD 0 — READ ────────────────────────────────────────────── */}
-            <Clipboard title="Read" sub="ARTICLES & GUIDES · STORIES & FICTION" accent={plum} flower="iris" idx="cb-read" titleColor={OXBLOOD}>
-              <BoardBody h={900}>
-                <StackedShelves
-                  top={<PeekShelf label="Articles & guides" accent={plum}>{articleCards.map((it) => <CoverCard key={it.id} item={it} compact onOpen={() => setExpanded(it)} />)}</PeekShelf>}
-                  bottom={<PeekShelf label="Stories & fiction" accent={crimson}>{storyCards.map((it) => <CoverCard key={it.id} item={it} compact onOpen={() => setExpanded(it)} />)}</PeekShelf>} />
-              </BoardBody>
-            </Clipboard>
-
-            {/* ── BOARD 1 — LISTEN & WATCH ──────────────────────────────────── */}
-            <Clipboard title="Listen & watch" sub="PODCASTS & SHOWS · WATCH & TRENDING" accent={sage} flower="bluebell" idx="cb-listen" titleColor={OXBLOOD}>
-              <BoardBody h={900}>
-                <StackedShelves
-                  top={<PeekShelf label="Podcasts & shows" accent={sage}>{audioCards.map((it) => <CoverCard key={it.id} item={it} compact onOpen={() => setExpanded(it)} />)}</PeekShelf>}
-                  bottom={<PeekShelf label="Watch & trending" accent={gold}>{videoCards.map((it) => <CoverCard key={it.id} item={it} compact onOpen={() => setExpanded(it)} />)}</PeekShelf>} />
-              </BoardBody>
-            </Clipboard>
-
-            {/* ── BOARD 2 — BOOKS ───────────────────────────────────────────── */}
-            <Clipboard title="Books" sub="YOUR SHELF · FREE CLASSICS" accent={sky} flower="camellia" idx="cb-books" titleColor={OXBLOOD}>
-              <BoardBody h={900}>
-                <StackedShelves
-                  top={<PeekShelf label="Your shelf" accent={sky}>{shelfBookCards.map((it) => <CoverCard key={it.id} item={it} compact onOpen={() => setExpanded(it)} />)}</PeekShelf>}
-                  bottom={<PeekShelf label="Free classics" accent={sky}>{classicCards.map((it) => <CoverCard key={it.id} item={it} compact onOpen={() => setExpanded(it)} />)}</PeekShelf>} />
-              </BoardBody>
-            </Clipboard>
-
-            {/* ── BOARD 3 — STORY & SKY (the two daily rituals) ─────────────── */}
-            <Clipboard title="Story & sky" sub="TODAY'S CHAPTER · YOUR SKY" accent={crimson} flower="poppy" idx="cb-story" titleColor={OXBLOOD}>
-              <BoardBody h={900}>
-                <StackedShelves
-                  top={<PeekShelf label="Today's chapter" accent={crimson}>{dailyStoryCards.map((it) => <CoverCard key={it.id} item={it} compact onOpen={() => setExpanded(it)} />)}</PeekShelf>}
-                  bottom={
-                    <PeekShelf label="Your sky" accent={sky}>
-                      {horoscopeCards.map((it) => <CoverCard key={it.id} item={it} compact onOpen={() => setExpanded(it)} />)}
-                      {/* the sky diary stays a real WRITE surface — a cover-card can't hold a composer */}
-                      <Panel key="diary" label="Sky diary" Icon={Feather} accent={sky}><SkyDiaryLens notes={skyNotes} onNote={addSkyNote} /></Panel>
-                    </PeekShelf>
-                  } />
-              </BoardBody>
-            </Clipboard>
-
-            {/* ── BOARD 4 — THE GOOD LIFE (the doing room) ──────────────────── */}
+            {/* ── BOARD 0 — THE GOOD LIFE (the doing room) ──────────────────── */}
             <Clipboard title="The good life" sub="WHAT DO YOU HAVE TIME FOR · PERMISSION & SMALL JOYS" accent={gold} flower="marigold" idx="cb-goodlife" titleColor={OXBLOOD}>
               <BoardBody h={900}>
                 <StackedShelves
@@ -883,6 +841,48 @@ export default function LifestyleEliteShell() {
                   bottom={
                     <PeekShelf label="Permission & small joys" accent={plum}>
                       {[...ritualCards, ...permissionCards].map((it) => <CoverCard key={it.id} item={it} compact onOpen={() => setExpanded(it)} />)}
+                    </PeekShelf>
+                  } />
+              </BoardBody>
+            </Clipboard>
+
+            {/* ── BOARD 1 — READ ────────────────────────────────────────────── */}
+            <Clipboard title="Read" sub="ARTICLES & GUIDES · STORIES & FICTION" accent={plum} flower="iris" idx="cb-read" titleColor={OXBLOOD}>
+              <BoardBody h={900}>
+                <StackedShelves
+                  top={<PeekShelf label="Articles & guides" accent={plum}>{articleCards.map((it) => <CoverCard key={it.id} item={it} compact onOpen={() => setExpanded(it)} />)}</PeekShelf>}
+                  bottom={<PeekShelf label="Stories & fiction" accent={crimson}>{storyCards.map((it) => <CoverCard key={it.id} item={it} compact onOpen={() => setExpanded(it)} />)}</PeekShelf>} />
+              </BoardBody>
+            </Clipboard>
+
+            {/* ── BOARD 2 — LISTEN & WATCH ──────────────────────────────────── */}
+            <Clipboard title="Listen & watch" sub="PODCASTS & SHOWS · WATCH & TRENDING" accent={sage} flower="bluebell" idx="cb-listen" titleColor={OXBLOOD}>
+              <BoardBody h={900}>
+                <StackedShelves
+                  top={<PeekShelf label="Podcasts & shows" accent={sage}>{audioCards.map((it) => <CoverCard key={it.id} item={it} compact onOpen={() => setExpanded(it)} />)}</PeekShelf>}
+                  bottom={<PeekShelf label="Watch & trending" accent={gold}>{videoCards.map((it) => <CoverCard key={it.id} item={it} compact onOpen={() => setExpanded(it)} />)}</PeekShelf>} />
+              </BoardBody>
+            </Clipboard>
+
+            {/* ── BOARD 3 — BOOKS ───────────────────────────────────────────── */}
+            <Clipboard title="Books" sub="YOUR SHELF · FREE CLASSICS" accent={sky} flower="camellia" idx="cb-books" titleColor={OXBLOOD}>
+              <BoardBody h={900}>
+                <StackedShelves
+                  top={<PeekShelf label="Your shelf" accent={sky}>{shelfBookCards.map((it) => <CoverCard key={it.id} item={it} compact onOpen={() => setExpanded(it)} />)}</PeekShelf>}
+                  bottom={<PeekShelf label="Free classics" accent={sky}>{classicCards.map((it) => <CoverCard key={it.id} item={it} compact onOpen={() => setExpanded(it)} />)}</PeekShelf>} />
+              </BoardBody>
+            </Clipboard>
+
+            {/* ── BOARD 4 — STORY & SKY (the two daily rituals) ─────────────── */}
+            <Clipboard title="Story & sky" sub="TODAY'S CHAPTER · YOUR SKY" accent={crimson} flower="poppy" idx="cb-story" titleColor={OXBLOOD}>
+              <BoardBody h={900}>
+                <StackedShelves
+                  top={<PeekShelf label="Today's chapter" accent={crimson}>{dailyStoryCards.map((it) => <CoverCard key={it.id} item={it} compact onOpen={() => setExpanded(it)} />)}</PeekShelf>}
+                  bottom={
+                    <PeekShelf label="Your sky" accent={sky}>
+                      {horoscopeCards.map((it) => <CoverCard key={it.id} item={it} compact onOpen={() => setExpanded(it)} />)}
+                      {/* the sky diary stays a real WRITE surface — a cover-card can't hold a composer */}
+                      <Panel key="diary" label="Sky diary" Icon={Feather} accent={sky}><SkyDiaryLens notes={skyNotes} onNote={addSkyNote} /></Panel>
                     </PeekShelf>
                   } />
               </BoardBody>
@@ -983,7 +983,7 @@ export default function LifestyleEliteShell() {
           reading={horoscope} phaseKey={phaseKey}
           onClose={() => setReadingOpen(false)}
           onSaveReading={() => { savePlannerDay(horoscope?.headline || "Tonight's reading"); setReadingOpen(false); }}
-          onSkyDiary={() => { setReadingOpen(false); jumpTo(3); }}
+          onSkyDiary={() => { setReadingOpen(false); jumpTo(4); }}
         />
       )}
       {toast && <div className="fw-elite-in" style={{ position: "fixed", left: "50%", bottom: "calc(110px + env(safe-area-inset-bottom))", transform: "translateX(-50%)", zIndex: 9999, background: T.ink, color: T.paperHi, fontFamily: UI, fontSize: 13, fontWeight: 600, padding: "10px 16px", borderRadius: 999, boxShadow: "0 4px 16px rgba(11,8,5,0.3)" }}>{toast}</div>}
