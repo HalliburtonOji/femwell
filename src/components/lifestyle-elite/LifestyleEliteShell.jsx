@@ -29,14 +29,12 @@ import { useState, useMemo, useEffect, useRef, useCallback } from "react";
 import {
   BookOpen, Feather, Book, Film, Headphones, Moon, Heart, Sparkles, Sun, Bookmark,
   Wind, ChevronRight, ChevronLeft, Music2, Compass, Loader, ExternalLink, Clock, Coffee, Sunset, Check, Star,
-  Soup, Flower2, Users,
 } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import LifestyleMedia from "@/components/lifestyle-elite/LifestyleMedia";
 // the clipboard's card language (§6.7.7) — consumed, never duplicated
 import { CoverCard, ExpandDetailCard } from "@/components/brand/expandCards";
 import FaceOverlay from "@/components/brand/FaceOverlay";
-import SmallCardGrid, { SmallCard } from "@/components/brand/SmallCardGrid";
 // the Daily Story — ONE gating contract + the real immersive reader (component #5)
 import { DAILY_STORY_SERIES, loadStoryChapters, chapterForDay, nextChapterOf, chapterLabel, framingLine, markChapterRead, isChapterRead, readCount } from "@/components/lifestyle/dailyStory";
 import DailyStoryReader from "@/components/lifestyle/DailyStoryReader";
@@ -120,15 +118,6 @@ const SKY_DIARY_SEED = ["Last new moon — 'started the side project'", "Full mo
 // ── helpers for the new persistence (PlannerItems · SkyNote) ──
 const nowISO = () => new Date().toISOString();
 const todayKey = () => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`; };
-
-// piece F — read tonight's dinner from an active MealPlan the SAME way the Nutrition
-// shell does (plan_days indexed by weekday, Mon=0; dinner is an array of names).
-const lfCellName = (cell) => Array.isArray(cell) ? cell[0] : (typeof cell === "string" ? cell : cell?.name || "");
-const tonightDinnerOf = (plan) => {
-  const days = (plan?.plan_days || []).filter(Boolean);
-  const idx = (new Date().getDay() + 6) % 7;
-  return lfCellName(days.find((d) => d?.day === idx)?.dinner) || "";
-};
 
 // the dopamine-menu picker — "what do you have time for?" → a bounded set by time band.
 // Each band offers a read · a listen · a make/awe prompt (the read/listen come from loaded content;
@@ -331,7 +320,6 @@ export default function LifestyleEliteShell() {
   const [savedIds, setSavedIds] = useState([]);    // UserProfile.saved_item_ids (the SAVE field)
   const [skyNotes, setSkyNotes] = useState([]);    // recent SkyNote rows (real, persisted)
   const [feed, setFeed] = useState(null);          // personalised reads from getLifestyleFeed (or null)
-  const [crossApp, setCrossApp] = useState({});    // piece F — real across-app signals (cook · session · garden)
 
   // overlays
   const [calOpen, setCalOpen] = useState(false);
@@ -339,9 +327,9 @@ export default function LifestyleEliteShell() {
   const [chapterOpen, setChapterOpen] = useState(false);
   const [readingOpen, setReadingOpen] = useState(false);
   const [expanded, setExpanded] = useState(null);   // the tap-to-expand card item (§6.7.7)
-  // good-life TOP shelf (piece D) — a 2-col grid of small doorway/do-it cards.
-  // gLFace = which doorway's FaceOverlay is open (null | "time" | "day"); gLDone = which
-  // do-it cards (awe/tea/quiet) have been ticked in place this session.
+  // good-life bottom shelf (piece E) — a tapped permission/joy slip opens IN-BOARD via the
+  // FaceOverlay. gLFace holds the tapped slip ({slip}); gLDone tracks which slips' "one doable
+  // thing" has been ticked in place this session.
   const [gLFace, setGLFace] = useState(null);
   const [gLDone, setGLDone] = useState({});
   const [readerOpen, setReaderOpen] = useState(false); // the REAL immersive Daily Story reader
@@ -460,32 +448,6 @@ export default function LifestyleEliteShell() {
     } catch { /* leave books to FemWell fiction */ }
   }, []);
 
-  // piece F — real signals for the across-app doorway cards (cook · session · garden).
-  // BACKGROUND, fully guarded — each source is independent, and a miss just omits THAT
-  // card's signal (it falls back to a plain doorway, never a faked number). Measured
-  // live first (mnt/femwell/measure_piece_f_crossapp_sources.md): the ONLY durable
-  // "tonight" is the active MealPlan dinner; Programs' minute fields are null so we
-  // show duration_days not minutes; the companion NAME is server-persisted (the
-  // "blooms this month" count is localStorage-derived + stale, so we don't claim it).
-  const loadCrossApp = useCallback(async (uid) => {
-    try {
-      const [plans, progs, comp] = await Promise.all([
-        uid ? base44.entities.MealPlans.filter({ user_id: uid, is_active: true }, "-created_date", 1).catch(() => []) : Promise.resolve([]),
-        base44.entities.Programs.list("-created_date", 20).catch(() => []),
-        uid ? base44.entities.CompanionState.filter({ user_id: uid }, "-updated_date", 1).catch(() => []) : Promise.resolve([]),
-      ]);
-      const next = {};
-      const dinner = tonightDinnerOf(Array.isArray(plans) ? plans[0] : null);
-      if (dinner) next.dinner = dinner;
-      const progList = (Array.isArray(progs) ? progs : []).filter(Boolean);
-      const prog = progList.find((p) => p.is_featured) || progList[0];
-      if (prog?.title) next.program = { title: prog.title, days: prog.duration_days || 0 };
-      const c = Array.isArray(comp) ? comp[0] : null;
-      if (c?.name) next.companion = c.name;
-      setCrossApp(next);
-    } catch { /* leave crossApp empty → those cards stay plain doorways */ }
-  }, []);
-
   // ── init ───────────────────────────────────────────────────────────────────
   useEffect(() => {
     let alive = true; let unsubItems;
@@ -503,14 +465,13 @@ export default function LifestyleEliteShell() {
         await loadContent();
         loadGutenberg();          // background — never blocks the loader
         loadSkyNotes(u?.id);      // background — real sky-diary rows
-        // loadCrossApp: parked with the reverted good-life grid (2026-07-17) — no longer mounted
         if (u?.id) loadFeed(getCurrentCyclePhase(p));  // background — personalised "Reads for you"
         try { unsubItems = base44.entities.LifestyleItems.subscribe(() => loadContent()); } catch { /* no-op */ }
       } catch { /* unauth / offline — render gracefully */ }
       if (alive) setLoading(false);
     })();
     return () => { alive = false; unsubItems?.(); };
-  }, [loadContent, loadGutenberg, loadSkyNotes, loadFeed, loadCrossApp]);
+  }, [loadContent, loadGutenberg, loadSkyNotes, loadFeed]);
 
   // ── SAVE toggle (persists to UserProfile.saved_item_ids — optimistic + rollback) ──
   const toggleSave = useCallback(async (item) => {
@@ -1049,17 +1010,14 @@ export default function LifestyleEliteShell() {
                         {[...ritualCards, ...permissionCards].map((it) => <CoverCard key={it.id} item={it} compact onOpen={() => setGLFace({ slip: it })} />)}
                       </PeekShelf>
                     } />
-                  {/* ONE FaceOverlay serves every good-life door: the two top-shelf doorways
-                      (time / a-day) AND a tapped permission slip. Content switches on gLFace. */}
+                  {/* piece E — a tapped permission/joy slip opens IN-BOARD in this FaceOverlay. */}
                   {(() => {
-                    const f = gLFace, slip = (f && typeof f === "object") ? f.slip : null;
-                    const title = slip ? (slip.type === "quote" ? "Permission" : "A small joy") : f === "day" ? "A day for you" : "What have you got time for?";
-                    const sub = slip ? "The slip · why it's good · one doable thing" : f === "day" ? "Pick one — it lands softly in your planner" : "A read · a listen · a little joy";
-                    const acc = slip ? (slip.type === "quote" ? plum : gold) : f === "day" ? crimson : gold;
+                    const slip = gLFace && typeof gLFace === "object" ? gLFace.slip : null;
                     return (
-                      <FaceOverlay open={!!f} onClose={() => setGLFace(null)} accent={acc} title={title} sub={sub}>
-                        {f === "time" && <TimePickerLens pickFor={pickFor} isSaved={isSaved} onSave={toggleSave} onOpen={openItem} onTry={saveTryThis} />}
-                        {f === "day" && <DayForYouLens onSave={savePlannerDay} />}
+                      <FaceOverlay open={!!slip} onClose={() => setGLFace(null)}
+                        accent={slip && slip.type === "quote" ? plum : gold}
+                        title={slip && slip.type === "quote" ? "Permission" : "A small joy"}
+                        sub="The slip · why it's good · one doable thing">
                         {slip && <PermissionSlipLens item={slip} done={!!gLDone[slip.id]} onDo={glTick} />}
                       </FaceOverlay>
                     );
@@ -1318,29 +1276,7 @@ function PhasePicksLens({ items, phaseKey, isSaved, onSave, onOpen }) {
 // ── The good life — dopamine-menu picker (bounded, by time; not a feed) ──
 // The good-life TOP shelf renders TimePickerLens INLINE (three time-of-day chips + a real
 // filtered list). The piece-D grid + the "Choose ›" prompt card were reverted 2026-07-18.
-// "A day for you" doorway — pick a whole guilt-free day; it writes a real wellbeing
-// PlannerItem and ticks in place. Reuses the A_DAY seed (same source as ritualCards).
-function DayForYouLens({ onSave }) {
-  const [chosen, setChosen] = useState(null);
-  const days = [A_DAY.title, ...A_DAY.alts];
-  const crimson = cwOf("crimson").petal;
-  return (
-    <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
-      <p style={{ fontFamily: SERIF, fontSize: 15, color: T.inkSoft, lineHeight: 1.5, margin: "0 0 12px" }}>A whole day that's just yours — no streaks, no catching up. Pick one and it lands softly in your planner.</p>
-      <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>{days.map((d, i) => {
-        const on = chosen === i;
-        return (
-          <button key={i} onClick={() => { setChosen(i); onSave(d); }} className="fw-elite-press"
-            style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", textAlign: "left", ...subCard(crimson), background: on ? `${crimson}12` : T.paper, padding: "11px 12px", cursor: "pointer" }}>
-            <span style={{ width: 28, height: 28, borderRadius: 9, background: `${crimson}1F`, display: "grid", placeItems: "center", flexShrink: 0 }}>{on ? <Check size={15} color={crimson} /> : <Sun size={15} color={crimson} />}</span>
-            <span style={{ flex: 1, minWidth: 0, fontFamily: SERIF, fontSize: 15.5, fontWeight: 600, color: T.ink, lineHeight: 1.25 }}>{d}</span>
-            <span style={{ fontFamily: UI, fontSize: 12, fontWeight: 700, color: crimson, flexShrink: 0 }}>{on ? "Saved" : "Save"}</span>
-          </button>
-        );
-      })}</div>
-    </div>
-  );
-}
+
 // Permission & small-joy slip — the fuller in-board view (piece E). Opens via the
 // FaceOverlay into: the slip BIG (Cormorant, roomy) · "why this is good for you"
 // (a real citation where evidence exists, an honest kindness where it doesn't —
