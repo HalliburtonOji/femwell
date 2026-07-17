@@ -1,0 +1,82 @@
+<!-- Component #6 — the Horoscope + birth-chart reader. Research per sub-piece + what shipped + the ephemeris flag. 2026-07-17. Phone-readable, no emoji. -->
+<style>
+  .sk { font-family:'Inter',system-ui,sans-serif; color:#2E261B; background:#ECE7DA; max-width:820px; margin:0 auto; padding:20px 15px 70px; line-height:1.5; }
+  .sk h1 { font-family:'Fraunces',Georgia,serif; font-size:27px; color:#7A1A12; margin:4px 0 5px; letter-spacing:-.3px; }
+  .sk h2 { font-family:'Fraunces',Georgia,serif; font-size:20px; color:#0B0805; margin:30px 0 8px; border-bottom:2px solid #D8CFBC; padding-bottom:5px; }
+  .sk h3 { font-family:'Fraunces',Georgia,serif; font-size:16.5px; color:#7A1A12; margin:20px 0 4px; }
+  .sk p,.sk li { font-size:14px; }
+  .sk .box { background:#F4EFE3; border:1px solid #D8CFBC; border-radius:12px; padding:12px 14px; margin:11px 0; }
+  .sk .gap { border-left:5px solid #BC2E27; } .sk .now { border-left:5px solid #8FAF8F; }
+  .sk .warn { border-left:5px solid #A8893F; } .sk .new { border-left:5px solid #7A1A12; background:#F6EEE6; }
+  .sk table { width:100%; border-collapse:collapse; margin:8px 0; font-size:12.5px; }
+  .sk th { text-align:left; background:#E4DCC9; padding:6px 8px; font-size:10.5px; text-transform:uppercase; letter-spacing:.4px; border-bottom:2px solid #D8CFBC; }
+  .sk td { padding:6px 8px; border-bottom:1px solid #E0D8C6; vertical-align:top; }
+  .sk .tw { overflow-x:auto; -webkit-overflow-scrolling:touch; }
+  .sk code { background:#E4DCC9; border-radius:4px; padding:1px 5px; font-size:11.5px; font-family:ui-monospace,Menlo,monospace; }
+  .sk .tag { display:inline-block; font-size:10px; font-weight:800; padding:2px 7px; border-radius:999px; text-transform:uppercase; white-space:nowrap; }
+  .sk .t-real { background:#8FAF8F; color:#fff; } .sk .t-guess { background:#BC2E27; color:#fff; }
+  .sk .t-flag { background:#A8893F; color:#fff; } .sk .t-ship { background:#5C7A52; color:#fff; }
+  .sk .muted { color:#6B5E48; font-size:12.4px; }
+  .sk .big { font-size:15px; font-weight:800; }
+  .sk .kicker { font-size:11px; font-weight:800; letter-spacing:1px; text-transform:uppercase; color:#A8893F; }
+</style>
+<div class="sk">
+  <div class="kicker">FemWell · Lifestyle · component #6</div>
+  <h1>Your sky — the reader, mounted at last</h1>
+  <p class="muted">Research per sub-piece, then the build. The full horoscope reader and the birth-chart onboarding existed, worked, and were <b>unreachable</b>. Now they're live from Story &amp; sky. Plus the one thing I will not build without your sign-off. 2026-07-17.</p>
+
+  <div class="box new">
+    <p class="big" style="margin:0 0 4px;">The headline</p>
+    <p style="margin:0 0 6px;"><b>Almost nothing needed building — it needed mounting.</b> 15 sections, 7 hooks and a complete birth-data onboarding sheet were already written and working. They were dark, so: (a) no new user could set up a chart <i>at all</i>, and (b) <b>readings stopped being generated on 2026-06-20</b> — because the generator is fired by the client when this tab opens, and nothing had opened it since.</p>
+    <p style="margin:0;"><b>The one real problem I found:</b> moon sign, rising sign and Mercury are <b>estimated by a language model</b>, not computed from an ephemeris. That is flagged below, not built on.</p>
+  </div>
+
+  <h2>Sub-piece 1 · Birth-chart onboarding <span class="tag t-ship">shipped</span></h2>
+  <div class="box now">
+    <p style="margin:0 0 6px;"><b>Research:</b> <code>BirthDataSheet.jsx</code> (18KB) already exists and already has the shape you asked for — <b>date required, time optional</b> ("optional — unlocks moon + rising"), <b>place</b> via OpenStreetMap Nominatim (free, no key). It writes <code>AstroProfile</code> {birth_date, birth_time|null, birth_place|null}.</p>
+    <p style="margin:0 0 6px;"><b>Privacy — already correct, and worth stating:</b> birth place is <b>not</b> current location and is never used as such; it's a one-off free-text city that stays optional; time is skippable; <b>sun sign works from the date alone</b>. Stored minimally (three fields, per-user). No tracking, no geolocation API, no coordinates.</p>
+    <p style="margin:0;"><b>What I added:</b> nothing to the sheet — it was fine. The fix was <b>reachability</b>: it only ever opened from inside the horoscope tab, which wasn't mounted. It now opens from Story &amp; sky. <b>The onboarding dead-end is closed.</b></p>
+  </div>
+
+  <h2>Sub-piece 2 · The reading — where it comes from <span class="tag t-flag">flag</span></h2>
+  <div class="box warn">
+    <p style="margin:0 0 6px;"><b>Research:</b> <code>generateHoroscopeReading</code> (438 lines, deployed) writes one <code>HoroscopeReading</code> per user per day: a warm LLM narrative (its system prompt is genuinely good — "warm, literary, present-tense, UK English… no emoji… never invent statistics… no melodrama"), plus power/pressure/trouble cards and a cycle↔moon tie.</p>
+    <p style="margin:0 0 6px;"><b>Is it run-dry like the Daily Story? No — and this matters.</b> Rows run <b>2026-05-12 → 2026-06-20</b>, none since, none for today. But it isn't a series that ended: the function is <b>fired by the client on tab open</b> (<code>useBirthChart</code>), and the tab has been dark since ~20 June. <b>Nothing had asked it for a reading.</b> Mounting the reader revives the supply — no seeding, no authoring, no new function.</p>
+    <p style="margin:0;"><b>Dependency to know:</b> it needs <code>OPENAI_API_KEY</code> in the function env; if that ever lapses the narrative won't write. The sky itself does <b>not</b> depend on it (see sub-piece 3), so the surface degrades honestly instead of going blank.</p>
+  </div>
+
+  <h2>Sub-piece 3 · Your sky / the almanac <span class="tag t-real">real, free</span></h2>
+  <div class="box now">
+    <p style="margin:0 0 6px;"><b>Research:</b> <code>src/utils/astrology.js</code> already computes <b>moon phase client-side</b> — a synodic formula anchored to a known new moon (2000-01-06 18:14 UTC), accurate to <b>~±1% illumination</b>. No backend, no key, no cost. <code>MoonPhaseGlyph.jsx</code> draws it as pure SVG (eight phases, <b>no emoji codepoints</b>). <code>getSunSign(date)</code> is exact date arithmetic.</p>
+    <p style="margin:0;"><b>What I added:</b> the Story &amp; sky card now shows the <b>real moon, computed live</b> — "The moon is waning gibbous · 62% lit" — instead of echoing whatever the last stored reading said. So the card is <b>true today even with no reading at all</b>, and a woman with no birth details still gets a real sky plus a warm invitation. The moon never lies and never costs anything.</p>
+  </div>
+
+  <h2>Sub-piece 4 · The ties <span class="tag t-ship">shipped</span></h2>
+  <ul style="margin:0;">
+    <li><b>Lives in Story &amp; sky</b> — the <code>horoscope</code> card variation → tap-to-expand → the real reader (was a headline-and-narrative sheet).</li>
+    <li><b>Mark-as-read → Garden</b> via the existing <code>recordProgress()</code> (component #3's contract) — the same signal the Daily Story uses.</li>
+    <li><b>Reused, not duplicated:</b> HoroscopeTab · BirthDataSheet · all 15 sections · <code>getMoonPhase</code>/<code>MoonPhaseGlyph</code> · the expand-card language · <code>recordProgress</code>.</li>
+    <li><b>Nothing stripped</b> — the quick <code>ReadingSheet</code> stays reachable from the summary row; the card's door is now the deep reader.</li>
+  </ul>
+
+  <h2>The flag — the natal chart is guessed, not computed <span class="tag t-guess">needs your call</span></h2>
+  <div class="box gap">
+    <p style="margin:0 0 6px;"><b>What I found in <code>generateHoroscopeReading</code>:</b> its chart step sends the birth details to an LLM with the system prompt <i>"You estimate the moon sign, rising sign, and Mercury sign at a person's birth from their date, time and place."</i> That is <b>not an ephemeris</b>. Rising changes roughly every two hours and moon sign every ~2.5 days — a language model cannot compute those; it produces a plausible sign. Planets elsewhere use "APPROXIMATE — VSOP87-equivalent mean-longitude estimates", which drift.</p>
+    <p style="margin:0 0 6px;"><b>The evidence, from live data:</b> one real <code>AstroProfile</code> reads <code>sun=Gemini moon=Pisces rising=Aquarius</code> from <code>birth_place: "United Kingdom, United Kingdom"</code> — a place string that isn't a place. A precise-sounding rising sign was returned from unusable input. Meanwhile the UI says <i>"Birth time unlocks your rising. We need the minute"</i> — precision language for a derivation that isn't precise.</p>
+    <p style="margin:0 0 6px;"><b>In fairness:</b> the app is already honest at the edges — <code>ScienceFooter</code> says plainly <i>"astrology beyond moon-phase remains symbolic"</i> and cites Helfrich-Förster 2021 / Cajochen 2013 for the moon claim, and moon/rising stay locked without a birth time. So this is not a lie; it's <b>fabricated precision inside a symbolic frame</b>.</p>
+    <p style="margin:0;"><b>My recommendation — tasteful and real:</b> keep <b>sun sign + moon phase</b> as the spine (both genuinely computed, both free) and the warm reading on top. Then pick one for moon/rising: <b>(a)</b> relabel them honestly as <i>estimated</i> and drop the "we need the minute" precision language — no backend, small copy change; or <b>(b)</b> compute them properly with a real ephemeris library (e.g. an astronomy/ephemeris package) — that is a <b>new dependency and almost certainly a function change</b>, so it needs your sign-off and I have not built it. <b>What I won't do is build more on top of the guess.</b></p>
+  </div>
+
+  <h2>Also flagged (not built)</h2>
+  <ul style="margin:0;">
+    <li><b>The reader isn't on the ReadingColumn standard.</b> Components #3/#4 put every reading surface on the shared column; <code>HoroscopeTab</code> predates that and is a 15-section dashboard rather than long-form prose. Its narrative is short, so the mismatch is mild — but the daily narrative should move onto the column in a follow-up. Owner: the reading-craft session, to avoid two sessions editing the same sections.</li>
+    <li><b>Data hygiene:</b> Nominatim let "United Kingdom, United Kingdom" through as a birth place. Worth a light validation if we keep place at all.</li>
+  </ul>
+
+  <h2>What shipped</h2>
+  <ul style="margin:0;">
+    <li>The <b>real horoscope reader</b> mounts full-screen from Story &amp; sky (back button + mark-as-read), carrying the triad, today's weather, the cycle-moon dial, sky diary, ask-the-sky, quiet mode, the science footer <b>and the birth-chart onboarding</b>.</li>
+    <li>The sky card shows a <b>real, client-computed moon phase</b> — honest with or without a reading; copy adapts ("Open your sky" / "Set up your sky").</li>
+    <li><b>No new entity, no new function, no schema change.</b> Reversible in one commit.</li>
+  </ul>
+</div>

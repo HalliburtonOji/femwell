@@ -38,6 +38,10 @@ import { CoverCard, ExpandDetailCard } from "@/components/brand/expandCards";
 // the Daily Story — ONE gating contract + the real immersive reader (component #5)
 import { DAILY_STORY_SERIES, loadStoryChapters, chapterForDay, nextChapterOf, chapterLabel, framingLine, markChapterRead, isChapterRead, readCount } from "@/components/lifestyle/dailyStory";
 import DailyStoryReader from "@/components/lifestyle/DailyStoryReader";
+// the sky (component #6) — the REAL horoscope reader (15 sections + birth-chart onboarding),
+// dark since ~2026-06-20. Moon phase is computed client-side (synodic, no backend).
+import HoroscopeTab from "@/components/horoscope/HoroscopeTab";
+import { getMoonPhase } from "@/utils/astrology";
 import ReadingColumn from "@/components/brand/ReadingColumn";
 import { LIFESTYLE_VIDEOS } from "@/data/lifestyleVideos";
 import { T, SERIF, UI, PAPER_BG, Eyebrow } from "@/components/journal/Editorial";
@@ -215,6 +219,7 @@ export default function LifestyleEliteShell() {
   const [readingOpen, setReadingOpen] = useState(false);
   const [expanded, setExpanded] = useState(null);   // the tap-to-expand card item (§6.7.7)
   const [readerOpen, setReaderOpen] = useState(false); // the REAL immersive Daily Story reader
+  const [skyOpen, setSkyOpen] = useState(false);       // the REAL horoscope reader + birth-chart onboarding
   const [toast, setToast] = useState(null);
   const sliderRef = useRef(null);
 
@@ -553,15 +558,34 @@ export default function LifestyleEliteShell() {
     subtitle: "A new chapter lands each morning.", meta: [["Clock", "Back tomorrow"]], chips: ["daily story"],
     body: ["Your serialised story is being written — it'll be here shortly."], actions: [],
   }]), [story]);
-  const horoscopeCards = useMemo(() => [{
-    id: "sky-today", type: "horoscope", title: horoscope?.headline || "Your sky today",
-    subtitle: horoscope ? (horoscope.moon_phase ? `The moon is ${horoscope.moon_phase}` : "Today's reading is ready.") : "Add your birth details to read today's sky.",
-    meta: [["Moon", horoscope?.moon_phase || "The sky"], ["Sparkles", phaseKey ? phaseLabel(phaseKey) : "Your phase"]],
-    chips: ["sky", "moon"].concat(phaseKey ? [phaseLabel(phaseKey).toLowerCase()] : []),
-    reading: horoscope ? { headline: horoscope.headline || "Your sky today", lines: [stripHtml(horoscope.narrative || ""), stripHtml(horoscope.cycle_moon_body || "")].filter(Boolean) } : undefined,
-    body: [stripHtml(horoscope?.narrative || "") || "Add your birth details and a reading appears here each day."],
-    actions: [{ label: "Read your full reading", Icon: "Moon", primary: true, onClick: () => { setExpanded(null); setReadingOpen(true); } }],
-  }], [horoscope, phaseKey]);
+  // ── YOUR SKY (component #6) ──────────────────────────────────────────────
+  // The moon is REAL and free: getMoonPhase() is a synodic formula (±1% illumination,
+  // client-side, no backend). So the card is honest and never blank even when today's
+  // generated reading hasn't been written yet — the sky doesn't depend on an LLM.
+  const moonToday = useMemo(() => { try { return getMoonPhase(new Date()); } catch { return null; } }, []);
+  const horoscopeCards = useMemo(() => {
+    const moonLine = moonToday ? `${moonToday.name} · ${moonToday.illumination}% lit` : (horoscope?.moon_phase || "The sky");
+    const hasReading = !!(horoscope && (horoscope.narrative || horoscope.headline));
+    return [{
+      id: "sky-today", type: "horoscope",
+      title: horoscope?.headline || (moonToday ? `The moon is ${moonToday.name.toLowerCase()}` : "Your sky today"),
+      subtitle: hasReading
+        ? moonLine
+        : "Your moon is here. Add your birth date and a reading joins it each day.",
+      meta: [["Moon", moonLine], ["Sparkles", phaseKey ? phaseLabel(phaseKey) : "Your phase"]],
+      chips: ["sky", "moon"].concat(phaseKey ? [phaseLabel(phaseKey).toLowerCase()] : []),
+      reading: hasReading
+        ? { headline: horoscope.headline || "Your sky today", lines: [stripHtml(horoscope.narrative || ""), stripHtml(horoscope.cycle_moon_body || "")].filter(Boolean) }
+        : undefined,
+      body: [
+        stripHtml(horoscope?.narrative || "")
+          || `Tonight the moon is ${moonToday ? `${moonToday.name.toLowerCase()}, ${moonToday.illumination}% lit` : "turning as it always does"}. Add your birth date — just the date is enough — and a warm reading joins it here each day.`,
+      ],
+      // opens the REAL reader (triad · cycle-moon dial · sky diary · ask the sky …),
+      // which also carries the birth-chart onboarding. Was a shallow headline sheet.
+      actions: [{ label: hasReading ? "Open your sky" : "Set up your sky", Icon: "Moon", primary: true, onClick: () => { setExpanded(null); setSkyOpen(true); } }],
+    }];
+  }, [horoscope, phaseKey, moonToday]);
   const ritualCards = useMemo(() => {
     const aday = [{ title: A_DAY.title, line: A_DAY.line }, ...A_DAY.alts.map((a) => ({ title: a, line: "A day that's just yours — guilt-free." }))]
       .map((d, i) => ({
@@ -774,6 +798,27 @@ export default function LifestyleEliteShell() {
           }}
           onReflect={() => { setChapterOpen(false); window.location.assign(createPageUrl("Journal")); }}
         />
+      )}
+      {/* THE SKY (component #6) — the REAL horoscope reader, mounted at last. It carries the
+          triad, today's weather, the cycle-moon dial, the sky diary, ask-the-sky, quiet mode,
+          the science footer AND the birth-chart onboarding (BirthDataSheet) — which was
+          unreachable while this was dark, so no new user could set up a chart at all.
+          It self-loads (useBirthChart) and fires generateHoroscopeReading on open, which is
+          why readings stopped on 2026-06-20: nothing had mounted this since. */}
+      {skyOpen && (
+        <div style={{ position: "fixed", inset: 0, zIndex: 1200, ...PAPER_BG, overflowY: "auto" }}>
+          <div style={{ position: "sticky", top: 0, zIndex: 3, display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 14px", background: `linear-gradient(180deg, ${T.paperHi}, ${T.paperHi}00)` }}>
+            <button onClick={() => setSkyOpen(false)} aria-label="Back" className="fw-elite-press"
+              style={{ width: 40, height: 40, borderRadius: 999, background: "rgba(244,239,227,0.9)", border: `1px solid ${T.paperDeep}`, color: T.ink, display: "grid", placeItems: "center", cursor: "pointer" }}>
+              <ChevronLeft size={19} />
+            </button>
+            <button onClick={() => { recordProgress("your-sky", 0, user?.id); flash("Marked as read — it counts in your garden"); }}
+              className="fw-elite-press" style={{ ...focusPill(cwOf("sky").petal), flex: "0 0 auto", padding: "10px 14px" }}>
+              <Check size={15} /> Mark as read
+            </button>
+          </div>
+          <HoroscopeTab userProfile={profile} />
+        </div>
       )}
       {/* the REAL immersive reader (component #5) — the finished series, straight through.
           Opens AT today's gated chapter; position/bookmarks persist; reaching a chapter marks
