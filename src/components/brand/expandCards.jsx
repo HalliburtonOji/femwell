@@ -220,13 +220,35 @@ export function restatesTitle(s, title) {
   if (!a || !b) return false;
   return a === b || a.startsWith(b) || b.startsWith(a);
 }
+// The card's hook AT REST. A card with room must not show two lines and a void — so we don't
+// take the FIRST candidate (that let a one-line `subtitle` beat a full body), we take the first
+// genuinely SUBSTANTIAL one, and fall back to the richest text we actually have.
+// Never invents: everything here is the item's own words.
+const SUBSTANTIAL = 160; // chars — roughly three lines on a card; below this a card looks starved
 export function summaryOf(item) {
-  const candidates = [item?.summary, item?.subtitle, item?.excerpt, Array.isArray(item?.body) ? item.body[0] : ""];
-  for (const c of candidates) {
-    const s = typeof c === "string" ? c.trim() : "";
-    if (s && !restatesTitle(s, item?.title)) return s;
-  }
-  return "";
+  const cands = [item?.summary, item?.excerpt, item?.subtitle, ...(Array.isArray(item?.body) ? item.body : [item?.body])]
+    .map((c) => (typeof c === "string" ? c.trim() : ""))
+    .filter((s) => s && !restatesTitle(s, item?.title));
+  if (!cands.length) return "";
+  return cands.find((s) => s.length >= SUBSTANTIAL) || cands.slice().sort((a, b) => b.length - a.length)[0];
+}
+// The FULL read for the expand — every distinct paragraph the item carries, richest first,
+// de-duplicated (the hook is usually also body[0], and repeating it reads like a stutter).
+export function paragraphsOf(item) {
+  const seen = new Set();
+  const out = [];
+  const push = (s) => {
+    const t = (typeof s === "string" ? s : "").trim();
+    if (!t) return;
+    const key = t.slice(0, 60).toLowerCase();
+    if (seen.has(key)) return;
+    seen.add(key); out.push(t);
+  };
+  (Array.isArray(item?.body) ? item.body : [item?.body]).forEach(push);
+  if (!out.length) { push(item?.summary); push(item?.excerpt); push(item?.subtitle); }
+  // a blob carrying real paragraph breaks → split it, so the expand reads as prose rather than
+  // one lump. (No length threshold: if the author put a paragraph break there, honour it.)
+  return out.flatMap((p) => (/\n\s*\n/.test(p) ? p.split(/\n\s*\n+/).map((s) => s.trim()).filter(Boolean) : [p]));
 }
 function SummaryBlock({ text, accent }) {
   if (!text) return null;
@@ -542,17 +564,27 @@ export function CoverCard({ item: raw, onOpen, compact = false }) {
   const I = ICON[item.Icon] || Sparkles;
   return (
     <button onClick={onOpen} className="fw-ce-press" style={{ width: "100%", height: "100%", textAlign: "left", padding: 0, border: `1px solid ${T.paperDeep}`, borderRadius: 18, overflow: "hidden", cursor: "pointer", background: `linear-gradient(165deg, ${T.paperHi} 0%, ${c.petal}12 100%)`, boxShadow: "0 6px 22px rgba(58,44,26,.10), 0 1px 4px rgba(58,44,26,.06)", display: "flex", flexDirection: "column" }}>
-      <FloraCover title={item.title} category={item.category} colorway={item.cw} seed={item.id} height={compact ? 120 : 158} roundTop showTitle={false} idx={`cov-${item.id}`} />
+      {/* When an item genuinely carries no text to summarise (e.g. an ingested video whose row
+          has a title and nothing else), the flora art GROWS to fill the card rather than leaving
+          a void under two lines. The art is real content — a blank rectangle isn't. */}
+      <FloraCover title={item.title} category={item.category} colorway={item.cw} seed={item.id}
+        height={summaryOf(item) ? (compact ? 120 : 158) : (compact ? 172 : 216)}
+        roundTop showTitle={false} idx={`cov-${item.id}`} />
       <div style={{ padding: compact ? "10px 13px 12px" : "13px 15px 15px", flex: 1, display: "flex", flexDirection: "column" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 6, fontFamily: UI, fontSize: 10, fontWeight: 800, letterSpacing: ".1em", textTransform: "uppercase", color: c.petal }}><I size={12} /> {item.kind}</div>
         <div style={{ fontFamily: FRAUNCES, fontWeight: 600, fontSize: compact ? 18 : 22, lineHeight: 1.12, color: OXBLOOD, margin: "5px 0 3px" }}>{item.title}</div>
-        {/* §5 — a real hook at rest: a card should never look empty (summary → subtitle → excerpt → body) */}
+        {/* THE HOOK AT REST. Previously clamped to 2 lines, which is exactly why a card with
+            plenty of room showed two lines and then a void. It now FILLS the space the card
+            actually has (flex + overflow) and shows as many real lines as fit, with a soft fade
+            where the text runs past the edge so a truncation reads as "there's more", not a cut. */}
         {(() => {
           const s = summaryOf(item);
           if (!s) return null;
-          const lines = compact ? 2 : 3;
           return (
-            <div style={{ fontFamily: SERIF, fontSize: compact ? 13.5 : 14.5, color: T.inkSoft, lineHeight: 1.4, display: "-webkit-box", WebkitLineClamp: lines, WebkitBoxOrient: "vertical", overflow: "hidden" }}>{s}</div>
+            <div style={{ position: "relative", flex: "1 1 auto", minHeight: 0, overflow: "hidden", marginTop: 1 }}>
+              <div style={{ fontFamily: SERIF, fontSize: compact ? 14 : 15, color: T.inkSoft, lineHeight: 1.45 }}>{s}</div>
+              <div aria-hidden style={{ position: "absolute", left: 0, right: 0, bottom: 0, height: 20, background: `linear-gradient(180deg, ${T.paperHi}00, ${T.paperHi}E6)` }} />
+            </div>
           );
         })()}
         <div style={{ display: "flex", alignItems: "center", gap: 12, marginTop: "auto", paddingTop: 9 }}>
@@ -656,11 +688,19 @@ export function ExpandDetailCard({ item: raw, onClose, saved: savedProp, onSave 
 
           {/* §6.7.8 — the expand's body reads through the shared column (spaced paragraphs;
               `card` variant). paddingInline:0 because the expand already owns the gutter. */}
-          {item.body.length > 0 && (
-            <ReadingColumn variant="card" size={16.5} style={{ paddingInline: 0, marginBottom: 4 }}>
-              {item.body.map((p, i) => <p key={i}>{p}</p>)}
-            </ReadingColumn>
-          )}
+          {(() => {
+            // Every real paragraph the item carries — not just `body`. An item whose text lives
+            // in summary/excerpt/subtitle used to render NOTHING here; now it reads as prose.
+            // De-duped against the summary block above so the page never stutters.
+            const shown = (!item.quote && item.summary && item.summary !== item.subtitle) ? item.summary.trim() : null;
+            const paras = paragraphsOf(item).filter((p) => p !== shown);
+            if (!paras.length) return null;
+            return (
+              <ReadingColumn variant="card" size={16.5} style={{ paddingInline: 0, marginBottom: 4 }}>
+                {paras.map((p, i) => <p key={i}>{p}</p>)}
+              </ReadingColumn>
+            );
+          })()}
 
           <div style={{ display: "grid", placeItems: "center", margin: "18px 0 0" }}>
             <Pollinator kind="butterfly" size={30} color={c.petal} color2={T.gold} pattern="bands" animate idx={`xcr-${item.id}`} />

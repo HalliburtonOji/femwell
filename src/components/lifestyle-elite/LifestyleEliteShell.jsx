@@ -321,6 +321,10 @@ export default function LifestyleEliteShell() {
       setGutenberg((Array.isArray(d?.results) ? d.results : []).map((b) => ({
         id: `gut-${b.id}`, _gutenbergId: b.id, _book: "gutenberg",
         title: b.title || "", author: (b.authors?.[0]?.name) || "Public domain", tag: "Public domain", stars: 4,
+        // gutendex ships a real précis per book — we were fetching it and throwing it away, which
+        // is why the book cards had a placeholder line and a void. This is the book's own summary.
+        summary: (Array.isArray(b.summaries) && b.summaries[0]) ? String(b.summaries[0]).replace(/\s+/g, " ").trim() : "",
+        subjects: Array.isArray(b.subjects) ? b.subjects.slice(0, 3) : [],
       })));
     } catch { /* leave books to FemWell fiction */ }
   }, []);
@@ -541,7 +545,8 @@ export default function LifestyleEliteShell() {
     id: b.id, type: "book", title: b.title, subtitle: b.author || "Public domain",
     summary: b.summary || "A free, public-domain classic — start reading here, or open the full reader for chapters, reflections and the club.",
     meta: [["Book", b.tag || "Public domain"], ["Star", b.stars ? "★".repeat(b.stars) : "A classic"]],
-    chips: ["free", "classic"], body: [],
+    chips: ["free", "classic", ...(b.subjects || []).map((x) => String(x).split("--")[0].trim().toLowerCase()).filter(Boolean)].slice(0, 4),
+    body: [],
     gutenbergId: b._gutenbergId,
     onOpenFullReader: () => openItem(b),
     actions: [{ label: "Open reader", Icon: "Book", primary: true, onClick: () => openItem(b) }],
