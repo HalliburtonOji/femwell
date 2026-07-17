@@ -89,31 +89,76 @@ const phaseMeta = (key) => PHASE_BLOOM[key] || PHASE_BLOOM.follicular;
 let _lifeHeroCard = 0; // which controller chip drives the hero (module-scoped: survives remounts)
 
 // ── seeded fallbacks (only used when an entity surface returns nothing — keeps every lens warm) ──
+// Track A "de-hardcode + rotate" — WHOLE-LIFE pools (Mx Storyteller, content_good_life_pools.md),
+// rotated daily via rotateDaily() so the good-life room is fresh, not the same three forever.
 const TRY_THIS = [
   { title: "Write one line you're proud of", cw: "crimson" },
   { title: "Ten minutes outside, no phone", cw: "sage" },
   { title: "Text the friend you've been meaning to", cw: "gold" },
+  { title: "Wear the good earrings on a nothing day", cw: "blush" },
+  { title: "Play the song you loved at fifteen", cw: "plum" },
+  { title: "Buy the flowers, not for an occasion", cw: "crimson" },
+  { title: "Learn the name of a tree on your street", cw: "sage" },
+  { title: "Send a voice note instead of a text", cw: "gold" },
+  { title: "Take the long way home for no reason", cw: "sky" },
+  { title: "Start the book you keep circling", cw: "plum" },
+  { title: "Tuck a little something away for future-you", cw: "sage" },
+  { title: "Dance to one song in the kitchen", cw: "crimson" },
+  { title: "Move one thing back to where it makes you happy", cw: "blush" },
+  { title: "Say the idea out loud in the meeting", cw: "gold" },
+  { title: "Read one poem, out loud, to no one", cw: "plum" },
+  { title: "Watch the sky change for five whole minutes", cw: "sky" },
+];
+const PERMISSION_SLIPS = [
+  "You're allowed a slow Sunday.",
+  "Rest isn't the reward for the work — it's part of it.",
+  "You're allowed to want more — and to say so out loud.",
+  "You're allowed to change your mind. Yesterday's plan isn't a promise.",
+  "You're allowed to take up room — the whole of it.",
+  "You're allowed a joy that hasn't earned its keep.",
+  "You're allowed to say no without a paragraph after it.",
+  "You're allowed to be a beginner. That's the price of the fun.",
+  "You're allowed to want the quiet life and the big one, both.",
+  "You're allowed to leave the party early.",
+  "You're allowed to outgrow the version of you people got used to.",
+  "You're allowed a day where good enough is the whole goal.",
 ];
 const GUIDES_FALLBACK = [
   { title: "How to start cycle-syncing", source: "Guide · 4 min", why: "the gentle version" },
   { title: "A 5-minute evening reset", source: "Guide · 3 min", why: "wind down without a whole routine" },
   { title: "Reading your luteal week", source: "Guide · 6 min", why: "what to expect, kindly" },
+  { title: "Starting a hobby you'll actually keep", source: "Guide · 5 min", why: "low stakes, high joy" },
+  { title: "A calmer hour with your money", source: "Guide · 7 min", why: "no dread, no spreadsheet spiral" },
+  { title: "Making a friend as a grown-up", source: "Guide · 6 min", why: "it's meant to feel a bit awkward" },
+  { title: "Finding your own style, not a trend's", source: "Guide · 5 min", why: "dress a little more like yourself" },
+  { title: "Making a room feel like you", source: "Guide · 4 min", why: "small changes, real warmth" },
+  { title: "Learning something just for the joy of it", source: "Guide · 5 min", why: "no exam at the end" },
 ];
 const TIKTOKS_FALLBACK = [
   { title: "The 5-minute tidy reset", channel: "@tidyhome", cw: "crimson" },
   { title: "Luteal-week snack ideas", channel: "@cyclefood", cw: "gold" },
   { title: "One-line journaling", channel: "@quietpages", cw: "plum" },
 ];
-const EXTERNAL_PODS = [
-  { title: "Huberman Lab", note: "Apple · Spotify · YouTube" },
-  { title: "We Can Do Hard Things", note: "Apple · Spotify" },
-];
 const A_DAY = {
   title: "A slow Sunday, just for you", line: "A bath, a book, and nowhere to be.",
-  alts: ["A long walk somewhere new", "Cook something that takes all afternoon", "Visit a gallery alone", "A film and an early night"],
+  alts: ["A long walk somewhere new", "Cook something that takes all afternoon", "Visit a gallery alone", "A film and an early night",
+    "A pottering day — small jobs you actually like, in no order", "A making day — paint, write, bake, nobody watching",
+    "A whole day with a friend and no plan", "A wander through town with nowhere to be",
+    "A duvet, a stack of books, and the door shut", "A morning market, a long lunch, an afternoon nap"],
 };
 // seeded sky-diary lines — shown only until the user writes real SkyNotes (which then replace them)
 const SKY_DIARY_SEED = ["Last new moon — 'started the side project'", "Full moon felt heavy; rested instead", "A note for tonight's waning moon…"];
+
+// Track A "de-hardcode + rotate": pick `n` items from a pool, offset BY THE DAY, so the
+// good-life room's small joys / permission slips / guides are fresh each day rather than the
+// same three forever. Deterministic per calendar day (no persistence, cycles through the pool).
+const dayOffset = () => Math.floor(Date.now() / 86400000);
+const rotateDaily = (pool, n = 3) => {
+  const arr = Array.isArray(pool) ? pool.filter(Boolean) : [];
+  if (arr.length <= n) return arr;
+  const start = dayOffset() % arr.length;
+  return Array.from({ length: n }, (_, i) => arr[(start + i) % arr.length]);
+};
 
 // ── helpers for the new persistence (PlannerItems · SkyNote) ──
 const nowISO = () => new Date().toISOString();
@@ -774,7 +819,9 @@ export default function LifestyleEliteShell() {
     }];
   }, [horoscope, phaseKey, moonToday]);
   const ritualCards = useMemo(() => {
-    const aday = [{ title: A_DAY.title, line: A_DAY.line }, ...A_DAY.alts.map((a) => ({ title: a, line: "A day that's just yours — guilt-free." }))]
+    // rotate a fresh handful of "a day for you" ideas + "try this" joys each day (Track A)
+    const dayPool = [{ title: A_DAY.title, line: A_DAY.line }, ...A_DAY.alts.map((a) => ({ title: a, line: "A day that's just yours — guilt-free." }))];
+    const aday = rotateDaily(dayPool, 3)
       .map((d, i) => ({
         id: `aday-${i}`, type: "ritual", title: d.title, subtitle: d.line,
         meta: [["Sun", "A day for you"], ["Heart", "No streaks, no pressure"]], chips: ["a day for you"],
@@ -782,7 +829,7 @@ export default function LifestyleEliteShell() {
         why: whyFor(d.title), doable: { label: "Save it for the day", title: d.title, kind: "day" },
         actions: [{ label: "Save it for the day", Icon: "Star", primary: true, onClick: () => { savePlannerDay(d.title); setExpanded(null); } }],
       }));
-    const trys = TRY_THIS.map((t, i) => ({
+    const trys = rotateDaily(TRY_THIS, 3).map((t, i) => ({
       id: `try-${i}`, type: "ritual", title: t.title, subtitle: "Small, doable, just for today.", cw: t.cw,
       meta: [["Wind", "A small thing"], ["Heart", "No streaks"]], chips: ["try this"],
       body: ["Tap to keep it — it lands softly in your planner. Try it when you fancy it; leave it if you don't."],
@@ -792,9 +839,9 @@ export default function LifestyleEliteShell() {
     return [...aday, ...trys];
   }, [savePlannerDay, saveTryThis]);
   const permissionCards = useMemo(() => {
+    // two rotating whole-life slips + the gentle phase-tinted line (kept dynamic, a gentle few)
     const slips = [
-      "You're allowed a slow Sunday.",
-      "Rest isn't the reward for the work — it's part of it.",
+      ...rotateDaily(PERMISSION_SLIPS, 2),
       phaseKey ? `Your ${phaseLabel(phaseKey).toLowerCase()} week asks for a gentler pace. That's not falling behind.` : "A gentler pace today isn't falling behind.",
     ];
     return slips.map((sl, i) => ({
@@ -1245,10 +1292,11 @@ function SavedLens({ items, onOpen, onUnsave }) {
 }
 function TryThisLens({ onDo }) {
   const [done, setDone] = useState({});   // local "saved" ticks (the write persists to PlannerItems)
+  const trys = rotateDaily(TRY_THIS, 5);  // a fresh handful each day (Track A)
   return (
     <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
       <p style={{ fontFamily: SERIF, fontSize: 15, color: T.inkSoft, lineHeight: 1.5, margin: "0 0 12px" }}>Small, doable, just-for-today. Tap one to keep it — it lands softly in your planner. No streaks, no pressure.</p>
-      <div style={{ display: "flex", flexDirection: "column", gap: 9 }}>{TRY_THIS.map((t, i) => { const c = cwOf(t.cw).petal; const saved = done[i]; return (
+      <div style={{ display: "flex", flexDirection: "column", gap: 9 }}>{trys.map((t, i) => { const c = cwOf(t.cw).petal; const saved = done[i]; return (
         <button key={i} onClick={() => { setDone((d) => ({ ...d, [i]: true })); onDo(t.title); }} className="fw-elite-press" style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", textAlign: "left", ...subCard(c), padding: "10px 12px", cursor: "pointer" }}>
           <span style={{ width: 28, height: 28, borderRadius: 9, background: saved ? c : `${c}1F`, display: "grid", placeItems: "center", flexShrink: 0 }}>{saved ? <Check size={14} color="#fff" /> : <Wind size={14} color={c} />}</span>
           <span style={{ fontFamily: SERIF, fontSize: 15, color: T.ink, flex: 1 }}>{t.title}</span>
@@ -1342,8 +1390,7 @@ function TimePickerLens({ pickFor, isSaved, onSave, onOpen, onTry }) {
 }
 function PermissionLens({ phaseKey, onQuietHour }) {
   const slips = [
-    "You're allowed a slow Sunday.",
-    "Rest isn't the reward for the work — it's part of it.",
+    ...rotateDaily(PERMISSION_SLIPS, 2),
     phaseKey ? `Your ${phaseLabel(phaseKey).toLowerCase()} week asks for a gentler pace. That's not falling behind.` : "A gentler pace today isn't falling behind.",
   ];
   return (
@@ -1408,7 +1455,7 @@ function GuidesLens({ items, onOpen }) {
       <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
         {list
           ? list.map((g) => <ContentRow key={g.id} Icon={Compass} accent={accent} title={g.title} meta={metaOf(g)} cta="Read" onOpen={() => onOpen(g)} />)
-          : GUIDES_FALLBACK.map((g, i) => <ContentRow key={i} Icon={Compass} accent={accent} title={g.title} meta={`${g.source} · ${g.why}`} cta="Read" onOpen={() => {}} />)}
+          : rotateDaily(GUIDES_FALLBACK, 4).map((g, i) => <ContentRow key={i} Icon={Compass} accent={accent} title={g.title} meta={`${g.source} · ${g.why}`} cta="Read" onOpen={() => {}} />)}
       </div>
     </div>
   );
@@ -1471,16 +1518,23 @@ function TikTokLens({ items }) {
   );
 }
 function ExternalLens() {
+  // the REAL curated shows (12), rotated daily — retires the 2 hardcoded pods.
+  const shows = rotateDaily(EXTERNAL_PODCASTS, 4);
   return (
     <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
       <p style={{ fontFamily: SERIF, fontSize: 15, color: T.inkSoft, lineHeight: 1.5, margin: "0 0 12px" }}>Shows worth following — open in your podcast app of choice.</p>
-      <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>{EXTERNAL_PODS.map((p, i) => (
-        <div key={i} style={{ display: "flex", alignItems: "center", gap: 10, ...subCard(cwOf("sage").petal), padding: "9px 11px" }}>
-          <Compass size={16} color={cwOf("sage").petal} style={{ flexShrink: 0 }} />
-          <span style={{ flex: 1, minWidth: 0 }}><span style={{ fontFamily: SERIF, fontSize: 15, fontWeight: 600, color: T.ink, display: "block", lineHeight: 1.2 }}>{p.title}</span><span style={{ fontFamily: UI, fontSize: 12, color: T.muted }}>{p.note}</span></span>
-          <ExternalLink size={13} color={T.muted} style={{ flexShrink: 0 }} />
-        </div>
-      ))}</div>
+      <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>{shows.map((p) => {
+        const plat = p.platforms || {};
+        const href = plat.spotify || plat.apple || plat.youtube || plat.pocketcasts;
+        const note = [plat.apple && "Apple", plat.spotify && "Spotify"].filter(Boolean).join(" · ") || "Listen";
+        return (
+          <a key={p.id} href={href} target="_blank" rel="noopener noreferrer" style={{ display: "flex", alignItems: "center", gap: 10, textDecoration: "none", ...subCard(cwOf("sage").petal), padding: "9px 11px" }}>
+            <Compass size={16} color={cwOf("sage").petal} style={{ flexShrink: 0 }} />
+            <span style={{ flex: 1, minWidth: 0 }}><span style={{ fontFamily: SERIF, fontSize: 15, fontWeight: 600, color: T.ink, display: "block", lineHeight: 1.2 }}>{p.show}</span><span style={{ fontFamily: UI, fontSize: 12, color: T.muted }}>{note}</span></span>
+            <ExternalLink size={13} color={T.muted} style={{ flexShrink: 0 }} />
+          </a>
+        );
+      })}</div>
     </div>
   );
 }
