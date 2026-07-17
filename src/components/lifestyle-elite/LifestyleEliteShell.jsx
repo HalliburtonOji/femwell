@@ -131,6 +131,36 @@ const TIME_BANDS = [
     make: { title: "A quiet hour, permission granted", line: "You're allowed an evening that's just yours." } },
 ];
 
+// ── "Why this is good for you" (piece E) ─────────────────────────────────────
+// The honest split, from mnt/femwell/research_piece_e_permission_evidence.md
+// (every citation web-checked 2026-07-17): where there's REAL evidence we cite it
+// (author + finding), mirroring the sky reader's Helfrich-Förster/Cajochen pattern;
+// where there ISN'T we say so plainly as a KINDNESS — never a slogan dressed as
+// science. The cycle-phase line is deliberately kindness: no study says pace to your
+// cycle, but real documented symptoms make gentleness reasonable (that's the exact
+// trap a prior pass nearly shipped as fake science).
+const WHY = {
+  rest: { cite: { finding: "Properly switching off from work — real mental detachment — predicts better mood, more next-day energy and higher life satisfaction. The rest isn't wasted; it's what lets the rest of you work.", source: "Sonnentag & Fritz, J. Organizational Behavior (2015)" } },
+  nature: { cite: { finding: "Time outdoors is tied to better wellbeing — the effect tends to show around two hours across a week, so a short go outside genuinely counts toward it.", source: "White et al., Scientific Reports (2019)" } },
+  walk: { cite: { finding: "A single walk reliably lifts mood and eases low feelings, and regular walking is linked to less depression and anxiety.", source: "Meta-analysis, JMIR Public Health (2024)" } },
+  savouring: { cite: { finding: "Giving your full attention to one small pleasure — savouring it rather than rushing past — is linked to more positive emotion and wellbeing.", source: "Bryant & Veroff, Savoring (2007)" } },
+  connection: { cite: { finding: "Reaching out is valued far more than we expect it to be — and close ties are among the strongest predictors of a long, well life.", source: "Liu et al. (2022); Holt-Lunstad et al. (2010)" } },
+  cycle: { kindness: "There's no study that says slow down for your cycle — but real, documented symptoms can make a gentler pace the sensible, kind choice. This is permission, not a prescription." },
+  plain: { kindness: "No study here — just a kindness. Leisure is the point; it doesn't have to earn its keep to be allowed." },
+};
+// title → evidence key (substring match; anything unmapped falls to KINDNESS, never
+// to fake science). Awe has its own strong citation but lives on the top-shelf grid.
+function whyFor(title = "") {
+  const t = title.toLowerCase();
+  if (/\bten minutes outside\b|no phone|outside/.test(t)) return WHY.nature;
+  if (/long walk|\bwalk\b/.test(t)) return WHY.walk;
+  if (/text the friend|friend/.test(t)) return WHY.connection;
+  if (/cook something|make a proper cup|tea/.test(t)) return WHY.savouring;
+  if (/gentler pace|your .* week|luteal|menstrual|follicular|ovulatory/.test(t)) return WHY.cycle;
+  if (/slow sunday|rest|quiet hour|early night|reward for the work/.test(t)) return WHY.rest;
+  return WHY.plain;
+}
+
 // ── small helpers (mirror Lifestyle.jsx) ─────────────────────────────────────
 function stripHtml(str) { return str ? str.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim() : ""; }
 const lfTypeOf = (i) => {
@@ -641,12 +671,14 @@ export default function LifestyleEliteShell() {
         id: `aday-${i}`, type: "ritual", title: d.title, subtitle: d.line,
         meta: [["Sun", "A day for you"], ["Heart", "No streaks, no pressure"]], chips: ["a day for you"],
         body: ["Leisure is the point — this lands softly in your planner, and nothing nags you if the day goes another way."],
+        why: whyFor(d.title), doable: { label: "Save it for the day", title: d.title, kind: "day" },
         actions: [{ label: "Save it for the day", Icon: "Star", primary: true, onClick: () => { savePlannerDay(d.title); setExpanded(null); } }],
       }));
     const trys = TRY_THIS.map((t, i) => ({
       id: `try-${i}`, type: "ritual", title: t.title, subtitle: "Small, doable, just for today.", cw: t.cw,
       meta: [["Wind", "A small thing"], ["Heart", "No streaks"]], chips: ["try this"],
       body: ["Tap to keep it — it lands softly in your planner. Try it when you fancy it; leave it if you don't."],
+      why: whyFor(t.title), doable: { label: "Keep it for today", title: t.title, kind: "try" },
       actions: [{ label: "Keep it for today", Icon: "Star", primary: true, onClick: () => { saveTryThis(t.title); setExpanded(null); } }],
     }));
     return [...aday, ...trys];
@@ -661,6 +693,7 @@ export default function LifestyleEliteShell() {
       id: `slip-${i}`, type: "quote", title: sl, subtitle: "A permission slip, not a to-do.",
       meta: [["Heart", "Permission"]], chips: ["permission"], quote: { text: sl, attrib: "FemWell" },
       body: ["No streaks here — leisure is the point, and guilt isn't invited."],
+      why: whyFor(sl), doable: { label: "Book a quiet hour", title: "A quiet hour, just for you", kind: "day" },
       actions: [{ label: "Book a quiet hour", Icon: "Moon", primary: true, onClick: () => { savePlannerDay("A quiet hour, just for you"); setExpanded(null); } }],
     }));
   }, [phaseKey, savePlannerDay]);
@@ -861,17 +894,28 @@ export default function LifestyleEliteShell() {
                       </SmallCardGrid>
                     }
                     bottom={
+                      // piece E — a permission/joy card opens IN-BOARD (FaceOverlay) into the
+                      // fuller slip (slip big · why-it's-good · one doable thing), not the
+                      // full-screen consume view. The CHOOSE surface, per §6.7.7.
                       <PeekShelf label="Permission & small joys" accent={plum}>
-                        {[...ritualCards, ...permissionCards].map((it) => <CoverCard key={it.id} item={it} compact onOpen={() => setExpanded(it)} />)}
+                        {[...ritualCards, ...permissionCards].map((it) => <CoverCard key={it.id} item={it} compact onOpen={() => setGLFace({ slip: it })} />)}
                       </PeekShelf>
                     } />
-                  {/* ONE FaceOverlay serves every "door" card — its content switches on gLFace */}
-                  <FaceOverlay open={!!gLFace} onClose={() => setGLFace(null)} accent={gLFace === "day" ? crimson : gold}
-                    title={gLFace === "day" ? "A day for you" : "What have you got time for?"}
-                    sub={gLFace === "day" ? "Pick one — it lands softly in your planner" : "A read · a listen · a little joy"}>
-                    {gLFace === "time" && <TimePickerLens pickFor={pickFor} isSaved={isSaved} onSave={toggleSave} onOpen={openItem} onTry={saveTryThis} />}
-                    {gLFace === "day" && <DayForYouLens onSave={savePlannerDay} />}
-                  </FaceOverlay>
+                  {/* ONE FaceOverlay serves every good-life door: the two top-shelf doorways
+                      (time / a-day) AND a tapped permission slip. Content switches on gLFace. */}
+                  {(() => {
+                    const f = gLFace, slip = (f && typeof f === "object") ? f.slip : null;
+                    const title = slip ? (slip.type === "quote" ? "Permission" : "A small joy") : f === "day" ? "A day for you" : "What have you got time for?";
+                    const sub = slip ? "The slip · why it's good · one doable thing" : f === "day" ? "Pick one — it lands softly in your planner" : "A read · a listen · a little joy";
+                    const acc = slip ? (slip.type === "quote" ? plum : gold) : f === "day" ? crimson : gold;
+                    return (
+                      <FaceOverlay open={!!f} onClose={() => setGLFace(null)} accent={acc} title={title} sub={sub}>
+                        {f === "time" && <TimePickerLens pickFor={pickFor} isSaved={isSaved} onSave={toggleSave} onOpen={openItem} onTry={saveTryThis} />}
+                        {f === "day" && <DayForYouLens onSave={savePlannerDay} />}
+                        {slip && <PermissionSlipLens item={slip} done={!!gLDone[slip.id]} onDo={glTick} />}
+                      </FaceOverlay>
+                    );
+                  })()}
                 </div>
               </BoardBody>
             </Clipboard>
@@ -1134,6 +1178,43 @@ function DayForYouLens({ onSave }) {
           </button>
         );
       })}</div>
+    </div>
+  );
+}
+// Permission & small-joy slip — the fuller in-board view (piece E). Opens via the
+// FaceOverlay into: the slip BIG (Cormorant, roomy) · "why this is good for you"
+// (a real citation where evidence exists, an honest kindness where it doesn't —
+// the two are visibly different so no slogan is laundered as science) · ONE doable
+// thing that writes to the Planner and ticks + blooms in place, no navigation.
+function PermissionSlipLens({ item, done, onDo }) {
+  const isQuote = item.type === "quote";
+  const accent = cwOf(isQuote ? "plum" : (item.cw || "gold")).petal;
+  const why = item.why || WHY.plain;
+  const cited = !!why.cite;
+  const evAccent = cwOf(cited ? "sage" : (isQuote ? "plum" : "gold")).petal;
+  return (
+    <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
+      {/* the slip, big — the whole point */}
+      <p style={{ fontFamily: SERIF, fontSize: 25, lineHeight: 1.3, color: OXBLOOD, fontWeight: 600, margin: "2px 0 6px" }}>{item.title}</p>
+      {item.body?.[0] && <p style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 15.5, color: T.inkSoft, lineHeight: 1.5, margin: "0 0 16px" }}>{item.body[0]}</p>}
+
+      {/* why this is good for you — cited (real evidence) OR an honest kindness */}
+      <div style={{ ...subCard(evAccent), background: `${evAccent}0D`, padding: "12px 13px", marginBottom: 16 }}>
+        <div style={{ ...lbl, marginBottom: 6, color: evAccent }}>{cited ? "Why this is good for you" : "A kindness, not a claim"}</div>
+        <p style={{ fontFamily: SERIF, fontSize: 15.5, color: T.ink, lineHeight: 1.5, margin: 0 }}>{cited ? why.cite.finding : why.kindness}</p>
+        {cited && <p style={{ fontFamily: UI, fontSize: 11.5, color: T.muted, margin: "7px 0 0", fontStyle: "italic" }}>{why.cite.source}</p>}
+      </div>
+
+      {/* one doable thing — writes for real, ticks + blooms, no navigation */}
+      {item.doable && (
+        <button onClick={() => { if (!done) onDo(item.id, item.doable.title, item.doable.kind); }} disabled={done} className="fw-elite-press"
+          style={{ width: "100%", padding: "12px", borderRadius: 13, border: "none", cursor: done ? "default" : "pointer",
+            background: done ? `${accent}1A` : accent, color: done ? accent : "#fff", fontFamily: UI, fontSize: 14, fontWeight: 700,
+            display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
+          {done ? <><Check size={16} /> In your planner</> : <><Star size={15} /> {item.doable.label}</>}
+        </button>
+      )}
+      {done && <div style={{ display: "grid", placeItems: "center", marginTop: 10 }}><Pollinator kind="butterfly" size={28} color={accent} color2={cwOf("gold").petal} pattern="bands" animate idx={`slipbloom-${item.id}`} /></div>}
     </div>
   );
 }
