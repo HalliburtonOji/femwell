@@ -43,6 +43,9 @@ import HoroscopeTab from "@/components/horoscope/HoroscopeTab";
 import { getMoonPhase } from "@/utils/astrology";
 import ReadingColumn from "@/components/brand/ReadingColumn";
 import { LIFESTYLE_VIDEOS } from "@/data/lifestyleVideos";
+// the REAL curated shows (12, with Apple/Spotify deep-links) — the rail already owned them;
+// this page had been carrying a 2-item stub instead. Correcting that.
+import { EXTERNAL_PODCASTS } from "@/components/lifestyle/listen/ExternalPodcastsRail";
 import { T, SERIF, UI, PAPER_BG, Eyebrow } from "@/components/journal/Editorial";
 import { FwFloraHero } from "@/components/brand/PageTop";
 import { SummaryCard } from "@/components/brand/Card";
@@ -502,14 +505,36 @@ export default function LifestyleEliteShell() {
 
   const articleCards = useMemo(() => [...(grouped.article || []), ...(grouped.guide || [])].slice(0, 6).map((r) => rowCard(r, "article")), [grouped, rowCard]);
   const storyCards = useMemo(() => (grouped.story || []).slice(0, 6).map((r) => rowCard(r, "daily_story")), [grouped, rowCard]);
+  // ── LISTEN — the REAL podcast feature, wired at last ─────────────────────────────────────
+  // Correction (2026-07-17): my earlier "0 audio" measured LifestyleItems media_type only. The
+  // podcast subsystem was always real — 12 curated, ACTIVE sources with live RSS feeds
+  // (How To Fail · Slow Burn · Esther Perel · On Being …), a global player with background +
+  // lock-screen, PodcastListens, PodcastCard/Rail/ExpandedPlayer. What was missing was the
+  // EPISODES: seedPodcasts (pure RSS, no LLM, no cost, idempotent) had simply never been run.
+  // Ran it → 29 real episodes, every one PUBLISHED, with an audio_url AND a 600-char summary.
+  //
+  // So: IN-APP episodes first (they play through the real global player), then the curated
+  // SHOWS as honest Spotify/Apple link-outs — the 12-show list the rail already owned, not the
+  // 2-item stub this page had been carrying.
   const audioCards = useMemo(() => {
-    const real = (grouped.audio || []).slice(0, 5).map((r) => rowCard(r, "audio"));
-    const ext = EXTERNAL_PODS.map((pd, i) => ({
-      id: `ext-${i}`, type: "audio", title: pd.title, subtitle: "A show worth following — open it in your podcast app.",
-      meta: [["Headphones", pd.note]], chips: ["podcast"], body: [`${pd.title} — find it on ${pd.note}.`], actions: [],
+    const real = (grouped.audio || []).slice(0, 6).map((r) => rowCard(r, "audio"));
+    const ext = EXTERNAL_PODCASTS.slice(0, 6).map((pd) => ({
+      id: pd.id, type: "audio", title: pd.title,
+      subtitle: pd.show, category: "listen podcast rest",
+      // the show's own blurb — real words, so the card is never thin (6a)
+      summary: pd.summary || "",
+      meta: [["Headphones", pd.show], ["Clock", pd.duration || "A long listen"]],
+      chips: ["podcast", "show"],
+      body: pd.summary ? [pd.summary] : [],
+      // honest: this one lives on Spotify/Apple, so we say so and send her there properly
+      external: true,
+      actions: [
+        pd.platforms?.spotify && { label: "Spotify", Icon: "Headphones", primary: true, onClick: () => openExternal(pd.platforms.spotify) },
+        pd.platforms?.apple && { label: "Apple", Icon: "Play", primary: false, onClick: () => openExternal(pd.platforms.apple) },
+      ].filter(Boolean),
     }));
     return [...real, ...ext];
-  }, [grouped, rowCard]);
+  }, [grouped, rowCard, openExternal]);
   const videoCards = useMemo(() => {
     const real = (grouped.video || []).slice(0, 4).map((r) => rowCard(r, "video"));
     // off-platform watches (YouTube/TikTok) are `external` — never fake-embedded, always an honest link-out

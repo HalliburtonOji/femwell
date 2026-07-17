@@ -64,7 +64,7 @@ const PLATFORM_META = {
 // Curated for FemWell's UK women's-wellness audience. The `platforms`
 // object lists only the platforms each show is actually on. If a platform
 // isn't listed, no button is rendered for it.
-const EXTERNAL_PODCASTS = [
+export const EXTERNAL_PODCASTS = [
   {
     id: 'ext-huberman-hormones',
     show: 'Huberman Lab',
