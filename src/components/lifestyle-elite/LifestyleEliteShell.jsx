@@ -1032,12 +1032,13 @@ export default function LifestyleEliteShell() {
                 <div style={{ position: "relative", height: "100%", minHeight: 0 }}>
                   <StackedShelves
                     top={
-                      // REVERTED (Halli, 2026-07-17): the good-life top shelf is the single
-                      // "What have you got time for?" prompt → tap → the time picker opens
-                      // IN-BOARD (FaceOverlay). The piece-D grid + piece-F across-app doorways
-                      // are parked (code stays in-tree, reversible) — not mounted here.
+                      // TRUE REVERT (Halli, 2026-07-18) to the genuine pre-restructure state
+                      // (commit 4f409b5, before the piece-D grid AND the piece-C prompt-card):
+                      // the picker renders INLINE — three time-of-day chips + a real filtered
+                      // list of content — filling the shelf, no empty placeholder card.
                       <PeekShelf label="What do you have time for?" accent={gold}>
-                        <TimePromptCard onOpen={() => setGLFace("time")} />
+                        {/* an interactive picker — kept as a real lens (a cover-card can't pick) */}
+                        <Panel key="picker" label="Pick by the time you have" Icon={Clock} accent={gold}><TimePickerLens pickFor={pickFor} isSaved={isSaved} onSave={toggleSave} onOpen={openItem} onTry={saveTryThis} /></Panel>
                       </PeekShelf>
                     }
                     bottom={
@@ -1315,25 +1316,8 @@ function PhasePicksLens({ items, phaseKey, isSaved, onSave, onOpen }) {
 }
 
 // ── The good life — dopamine-menu picker (bounded, by time; not a feed) ──
-// The good-life TOP shelf is the single "What have you got time for?" prompt card →
-// tap → the time picker opens IN-BOARD (FaceOverlay). (Halli reverted the piece-D
-// small-card grid here 2026-07-17 — "didn't turn out how I wanted"; this is the prior
-// form, restored. The grid primitive + the across-app pull infra stay in the tree,
-// reversible, but are no longer mounted on this board.)
-function TimePromptCard({ onOpen }) {
-  const gold = cwOf("gold").petal;
-  return (
-    <button onClick={onOpen} className="fw-elite-press" aria-label="What have you got time for?"
-      style={{ width: "100%", height: "100%", textAlign: "left", border: `1px solid ${T.paperDeep}`, borderRadius: 18, cursor: "pointer",
-        background: `linear-gradient(165deg, ${T.paperHi} 0%, ${gold}14 100%)`, boxShadow: "0 6px 22px rgba(58,44,26,.10), 0 1px 4px rgba(58,44,26,.06)",
-        display: "flex", flexDirection: "column", padding: "16px 16px 15px" }}>
-      <span style={{ width: 42, height: 42, borderRadius: 13, background: `${gold}1F`, display: "grid", placeItems: "center", marginBottom: 12 }}><Clock size={22} color={gold} /></span>
-      <div style={{ fontFamily: SERIF, fontWeight: 600, fontSize: 21, lineHeight: 1.14, color: OXBLOOD, marginBottom: 5 }}>What have you got time for?</div>
-      <div style={{ fontFamily: SERIF, fontSize: 15, color: T.inkSoft, lineHeight: 1.5, flex: 1 }}>A few minutes or a whole evening — pick a little joy that fits. A read, a listen, a small wonder, chosen for you.</div>
-      <span style={{ display: "inline-flex", alignItems: "center", gap: 5, fontFamily: UI, fontSize: 13, fontWeight: 800, color: gold, marginTop: 10 }}>Choose <ChevronRight size={16} /></span>
-    </button>
-  );
-}
+// The good-life TOP shelf renders TimePickerLens INLINE (three time-of-day chips + a real
+// filtered list). The piece-D grid + the "Choose ›" prompt card were reverted 2026-07-18.
 // "A day for you" doorway — pick a whole guilt-free day; it writes a real wellbeing
 // PlannerItem and ticks in place. Reuses the A_DAY seed (same source as ritualCards).
 function DayForYouLens({ onSave }) {
