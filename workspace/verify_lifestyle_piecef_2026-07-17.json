@@ -1,0 +1,100 @@
+{
+  "mp": "Lifestyle piece F — good-life top-shelf grid pulls doorways from ACROSS the app",
+  "url": "https://femwells.com/Lifestyle",
+  "authedUser": "ojihalliburton57",
+  "viewport": "mobile-390x844",
+  "publishedCommit": "live bundle index-CTW7vDmQ.js",
+  "checkedAt": "2026-07-17T19:24:35.649Z",
+  "verdict": "PASS (with 1 environment-blocked: live cross-app signal VALUES not verifiable in this headless harness)",
+  "environmentCaveat": "CRITICAL: in this headless Playwright session the base44 DATA API returns 404 'App not found' for EVERY entity — measured: User 404, LifestyleItems 404, DailyStory 404, HoroscopeReading 404, Programs 404. Because base44.auth.me() 404s, uid is null, so loadCrossApp never even queries MealPlans/CompanionState (they are uid-guarded) and Programs 404s. Result: crossApp stays empty and the three data-backed signals render their HONEST plain-doorway fallback. This is the documented 'apps-null / App not found' baseline of the sandboxed verify browser, NOT a confirmed piece-F defect. The signal-building code is correct per source (LifestyleEliteShell.jsx:931/933/934) and the fallback contains NO faked numbers. The real signal values (Tonight: <dish> / <name> is in bloom / <title> · N days) must be confirmed in a real logged-in browser or the base44 Preview device-toggle.",
+  "assertions": [
+    {
+      "name": "1-cross-app-cards-real-signals",
+      "viewport": "mobile-390",
+      "expected": "5 cross-app cards with REAL signals: journal 'Today's prompt…'; cook 'Tonight: <dish>'; garden '<name> is in bloom'; session '<title> · N days' (no minutes); community 'lighter side…'. None faked.",
+      "got": "journal='Today's prompt, a fresh page' (OK, static); community='The lighter side · pull up a chair' (OK, static); cook='Plan tonight's dinner' (FALLBACK — data API 404); garden='What's grown lately' (FALLBACK); session='A short guided thing' (FALLBACK). Data-backed values UNVERIFIABLE here: all base44 entity endpoints 404 in this harness (auth.me 404 -> no uid -> MealPlans/CompanionState never queried; Programs 404).",
+      "pass": false,
+      "note": "BLOCKED BY ENVIRONMENT, not a confirmed defect. 2 static signals correct; 3 data signals show the honest fallback (no faked numbers). Real values need a real-browser / base44-Preview check. Code contract is correct."
+    },
+    {
+      "name": "2-more-below-cue-and-scroll",
+      "viewport": "mobile-390",
+      "expected": ".fw-smallgrid scroll area + more-below affordance (ChevronDown and/or bottom fade mask); lower do-it cards reachable after scroll",
+      "got": "gridExists=true; overflow=111px; ChevronDown present=true; bottom fade mask applied=true; after scroll: 'A small wonder', 'Romance the mundane', 'A quiet hour' all reachable",
+      "pass": true
+    },
+    {
+      "name": "3-doorways-navigate",
+      "viewport": "mobile-390",
+      "expected": "'Something to cook' -> /Nutrition ; 'A session' -> /ProgramsHub",
+      "got": "cook -> https://femwells.com/Nutrition ; session -> https://femwells.com/ProgramsHub (landed on the real 'Your programmes' page). Other three targets per source: journal->/Journal, garden->/Garden, community->/Community?room=lighter (window.location.assign).",
+      "pass": true,
+      "note": "Screenshots nav_nutrition.png, nav_programshub.png."
+    },
+    {
+      "name": "4a-regression-piece-d-time",
+      "viewport": "mobile-390",
+      "expected": "'Time for?' opens FaceOverlay with time bands; Back closes",
+      "got": "opened=true; 'What have you got time for? … Pick by the time you have'; closed after Back=true; url stayed /Lifestyle",
+      "pass": true
+    },
+    {
+      "name": "4b-regression-piece-e-slip",
+      "viewport": "mobile-390",
+      "expected": "a Permission & small joys card opens the slip overlay; Back closes",
+      "got": "opened=true; 'Permission · The slip · why it's good · one doable thing / You're allowed a slow Sunday…'; closed after Back=true; url stayed /Lifestyle",
+      "pass": true
+    },
+    {
+      "name": "5-no-horizontal-page-overflow",
+      "viewport": "mobile-390",
+      "expected": "scrollWidth <= innerWidth + 2",
+      "got": "scrollWidth=390, innerWidth=390, delta=0",
+      "pass": true
+    },
+    {
+      "name": "6-console-no-new-errors",
+      "viewport": "mobile-390",
+      "expected": "no NEW errors beyond User.me baseline; specifically NO MealPlans/Programs/CompanionState entity-method errors from loadCrossApp",
+      "got": "NEW errors: NONE. No 'MealPlans/Programs/CompanionState is not a function' — loadCrossApp fails gracefully (try/catch + per-call .catch). Baseline only: 'N.entities.User.me is not a function', 'App not found', apps/null 404s, connect_error/socket, 'Programs elite init failed: App not found'.",
+      "pass": true,
+      "note": "loadCrossApp swallows the 404s cleanly — no crash, no new console error."
+    }
+  ],
+  "entityApiStatus": {
+    "User": "404 (x3)",
+    "LifestyleItems": "404",
+    "DailyStory": "404",
+    "HoroscopeReading": "404",
+    "Programs": "404",
+    "MealPlans": "never called (uid null)",
+    "CompanionState": "never called (uid null)"
+  },
+  "crossAppSignalsObserved": {
+    "A line for your journal": "Today's prompt, a fresh page",
+    "Something to cook": "Plan tonight's dinner (fallback)",
+    "Your garden": "What's grown lately (fallback)",
+    "A session": "A short guided thing (fallback)",
+    "What women are talking about": "The lighter side · pull up a chair"
+  },
+  "preExistingBaseline": [
+    "N.entities.User.me is not a function",
+    "App not found (Base44Error) — all entity endpoints 404",
+    "apps/null 404s",
+    "connect_error/socket 'Connection rejected by server'"
+  ],
+  "newErrors": [],
+  "summary": {
+    "passed": 6,
+    "failed": 0,
+    "blocked": 1,
+    "total": 7
+  },
+  "screenshots": [
+    "C:/Users/Halli/femwell-work/workspace/verify_screenshots/lifestyle_piecef_2026-07-17/mobile/piecef_grid.png",
+    "C:/Users/Halli/femwell-work/workspace/verify_screenshots/lifestyle_piecef_2026-07-17/mobile/piecef_grid_scrolled.png",
+    "C:/Users/Halli/femwell-work/workspace/verify_screenshots/lifestyle_piecef_2026-07-17/mobile/nav_nutrition.png",
+    "C:/Users/Halli/femwell-work/workspace/verify_screenshots/lifestyle_piecef_2026-07-17/mobile/nav_programshub.png"
+  ],
+  "notes": "Piece F structural + wiring verified live on index-CTW7vDmQ.js: the good-life top-shelf grid renders all 10 cards (5 originals + 5 cross-app doorways) in a .fw-smallgrid 2-col scroll area with a real more-below cue (ChevronDown + bottom fade, 111px overflow) and the lower do-it cards reachable after scroll. Doorways navigate correctly — cook->/Nutrition, session->/ProgramsHub (real ProgramsHub render). Piece D ('Time for?') and piece E (permission slip) both still open + Back-close. No horizontal overflow. No NEW console errors — loadCrossApp fails gracefully with no MealPlans/Programs/CompanionState error. THE ONE GAP: the three data-backed signal VALUES (Tonight:<dish> / <name> is in bloom / <title>·N days) could not be confirmed because this headless verify browser cannot reach the base44 data API (every entity 404s 'App not found'; auth.me 404s so MealPlans/CompanionState are never queried). The signal code is correct in source and the fallbacks are honest (no faked numbers). Recommend confirming the live signals in a real logged-in browser or the base44 Preview device-toggle before declaring piece F fully done."
+}
