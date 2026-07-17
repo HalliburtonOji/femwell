@@ -29,6 +29,7 @@ import { useState, useMemo, useEffect, useRef, useCallback } from "react";
 import {
   BookOpen, Feather, Book, Film, Headphones, Moon, Heart, Sparkles, Sun, Bookmark,
   Wind, ChevronRight, ChevronLeft, Music2, Compass, Loader, ExternalLink, Clock, Coffee, Sunset, Check, Star,
+  Soup, Flower2, Users,
 } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import LifestyleMedia from "@/components/lifestyle-elite/LifestyleMedia";
@@ -118,6 +119,15 @@ const SKY_DIARY_SEED = ["Last new moon — 'started the side project'", "Full mo
 // ── helpers for the new persistence (PlannerItems · SkyNote) ──
 const nowISO = () => new Date().toISOString();
 const todayKey = () => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`; };
+
+// piece F — read tonight's dinner from an active MealPlan the SAME way the Nutrition
+// shell does (plan_days indexed by weekday, Mon=0; dinner is an array of names).
+const lfCellName = (cell) => Array.isArray(cell) ? cell[0] : (typeof cell === "string" ? cell : cell?.name || "");
+const tonightDinnerOf = (plan) => {
+  const days = (plan?.plan_days || []).filter(Boolean);
+  const idx = (new Date().getDay() + 6) % 7;
+  return lfCellName(days.find((d) => d?.day === idx)?.dinner) || "";
+};
 
 // the dopamine-menu picker — "what do you have time for?" → a bounded set by time band.
 // Each band offers a read · a listen · a make/awe prompt (the read/listen come from loaded content;
@@ -247,6 +257,7 @@ export default function LifestyleEliteShell() {
   const [savedIds, setSavedIds] = useState([]);    // UserProfile.saved_item_ids (the SAVE field)
   const [skyNotes, setSkyNotes] = useState([]);    // recent SkyNote rows (real, persisted)
   const [feed, setFeed] = useState(null);          // personalised reads from getLifestyleFeed (or null)
+  const [crossApp, setCrossApp] = useState({});    // piece F — real across-app signals (cook · session · garden)
 
   // overlays
   const [calOpen, setCalOpen] = useState(false);
@@ -364,6 +375,32 @@ export default function LifestyleEliteShell() {
     } catch { /* leave books to FemWell fiction */ }
   }, []);
 
+  // piece F — real signals for the across-app doorway cards (cook · session · garden).
+  // BACKGROUND, fully guarded — each source is independent, and a miss just omits THAT
+  // card's signal (it falls back to a plain doorway, never a faked number). Measured
+  // live first (mnt/femwell/measure_piece_f_crossapp_sources.md): the ONLY durable
+  // "tonight" is the active MealPlan dinner; Programs' minute fields are null so we
+  // show duration_days not minutes; the companion NAME is server-persisted (the
+  // "blooms this month" count is localStorage-derived + stale, so we don't claim it).
+  const loadCrossApp = useCallback(async (uid) => {
+    try {
+      const [plans, progs, comp] = await Promise.all([
+        uid ? base44.entities.MealPlans.filter({ user_id: uid, is_active: true }, "-created_date", 1).catch(() => []) : Promise.resolve([]),
+        base44.entities.Programs.list("-created_date", 20).catch(() => []),
+        uid ? base44.entities.CompanionState.filter({ user_id: uid }, "-updated_date", 1).catch(() => []) : Promise.resolve([]),
+      ]);
+      const next = {};
+      const dinner = tonightDinnerOf(Array.isArray(plans) ? plans[0] : null);
+      if (dinner) next.dinner = dinner;
+      const progList = (Array.isArray(progs) ? progs : []).filter(Boolean);
+      const prog = progList.find((p) => p.is_featured) || progList[0];
+      if (prog?.title) next.program = { title: prog.title, days: prog.duration_days || 0 };
+      const c = Array.isArray(comp) ? comp[0] : null;
+      if (c?.name) next.companion = c.name;
+      setCrossApp(next);
+    } catch { /* leave crossApp empty → those cards stay plain doorways */ }
+  }, []);
+
   // ── init ───────────────────────────────────────────────────────────────────
   useEffect(() => {
     let alive = true; let unsubItems;
@@ -381,13 +418,14 @@ export default function LifestyleEliteShell() {
         await loadContent();
         loadGutenberg();          // background — never blocks the loader
         loadSkyNotes(u?.id);      // background — real sky-diary rows
+        loadCrossApp(u?.id);      // background — piece F across-app signals
         if (u?.id) loadFeed(getCurrentCyclePhase(p));  // background — personalised "Reads for you"
         try { unsubItems = base44.entities.LifestyleItems.subscribe(() => loadContent()); } catch { /* no-op */ }
       } catch { /* unauth / offline — render gracefully */ }
       if (alive) setLoading(false);
     })();
     return () => { alive = false; unsubItems?.(); };
-  }, [loadContent, loadGutenberg, loadSkyNotes, loadFeed]);
+  }, [loadContent, loadGutenberg, loadSkyNotes, loadFeed, loadCrossApp]);
 
   // ── SAVE toggle (persists to UserProfile.saved_item_ids — optimistic + rollback) ──
   const toggleSave = useCallback(async (item) => {
@@ -887,7 +925,14 @@ export default function LifestyleEliteShell() {
                       // below, "do" cards write for real (Planner) and tick in place.
                       <SmallCardGrid label="What would be nice? Pick one.">
                         <SmallCard Icon={Clock} label="Time for?" signal="A read · a listen · a wonder" accent={gold} onClick={() => setGLFace("time")} />
+                        {/* piece F — doorways that pull from ACROSS the app; every signal is real
+                            (measured live) or an honest plain doorway, never a faked number. */}
+                        <SmallCard Icon={Feather} label="A line for your journal" signal="Today's prompt, a fresh page" accent={plum} onClick={() => window.location.assign("/Journal")} />
+                        <SmallCard Icon={Soup} label="Something to cook" signal={crossApp.dinner ? `Tonight: ${crossApp.dinner}` : "Plan tonight's dinner"} accent={sage} onClick={() => window.location.assign("/Nutrition")} />
                         <SmallCard Icon={Sun} label="A day for you" signal="Guilt-free · to your planner" accent={crimson} onClick={() => setGLFace("day")} />
+                        <SmallCard Icon={Flower2} label="Your garden" signal={crossApp.companion ? `${crossApp.companion} is in bloom` : "What's grown lately"} accent={sage} onClick={() => window.location.assign("/Garden")} />
+                        <SmallCard Icon={Compass} label="A session" signal={crossApp.program ? `${crossApp.program.title}${crossApp.program.days ? ` · ${crossApp.program.days} days` : ""}` : "A short guided thing"} accent={gold} onClick={() => window.location.assign("/ProgramsHub")} />
+                        <SmallCard Icon={Users} label="What women are talking about" signal="The lighter side · pull up a chair" accent={plum} onClick={() => window.location.assign("/Community?room=lighter")} />
                         <SmallCard Icon={Sparkles} label="A small wonder" signal="Today's awe drop" accent={sage} done={!!gLDone.awe} onClick={() => glTick("awe", TIME_BANDS[0].make.title)} />
                         <SmallCard Icon={Coffee} label="Romance the mundane" signal="A tiny make, done fully" accent={gold} done={!!gLDone.tea} onClick={() => glTick("tea", TIME_BANDS[1].make.title)} />
                         <SmallCard Icon={Moon} label="A quiet hour" signal="An evening that's yours" accent={plum} done={!!gLDone.quiet} onClick={() => glTick("quiet", "A quiet hour, just for you", "day")} />

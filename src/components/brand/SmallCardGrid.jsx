@@ -48,7 +48,8 @@ export function SmallCard({ Icon, label, signal, accent = T.gold, done = false, 
           : <ChevronRight size={16} color={T.paperDeep} style={{ flexShrink: 0 }} />}
       </span>
       <span style={{ fontFamily: SERIF, fontWeight: 600, fontSize: 16, lineHeight: 1.16, color: OXBLOOD }}>{label}</span>
-      <span style={{ fontFamily: UI, fontSize: 11.5, fontWeight: 600, color: done ? accent : T.muted, marginTop: 4, lineHeight: 1.3 }}>
+      <span style={{ fontFamily: UI, fontSize: 11.5, fontWeight: 600, color: done ? accent : T.muted, marginTop: 4, lineHeight: 1.3,
+        display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>
         {done ? "Saved — it's in your planner" : signal}
       </span>
     </button>
