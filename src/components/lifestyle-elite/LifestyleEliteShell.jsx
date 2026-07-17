@@ -35,6 +35,7 @@ import LifestyleMedia from "@/components/lifestyle-elite/LifestyleMedia";
 // the clipboard's card language (§6.7.7) — consumed, never duplicated
 import { CoverCard, ExpandDetailCard } from "@/components/brand/expandCards";
 import FaceOverlay from "@/components/brand/FaceOverlay";
+import SmallCardGrid, { SmallCard } from "@/components/brand/SmallCardGrid";
 // the Daily Story — ONE gating contract + the real immersive reader (component #5)
 import { DAILY_STORY_SERIES, loadStoryChapters, chapterForDay, nextChapterOf, chapterLabel, framingLine, markChapterRead, isChapterRead, readCount } from "@/components/lifestyle/dailyStory";
 import DailyStoryReader from "@/components/lifestyle/DailyStoryReader";
@@ -223,7 +224,11 @@ export default function LifestyleEliteShell() {
   const [chapterOpen, setChapterOpen] = useState(false);
   const [readingOpen, setReadingOpen] = useState(false);
   const [expanded, setExpanded] = useState(null);   // the tap-to-expand card item (§6.7.7)
-  const [gLTimeOpen, setGLTimeOpen] = useState(false); // good-life "time for?" FaceOverlay (piece C — in-board choose)
+  // good-life TOP shelf (piece D) — a 2-col grid of small doorway/do-it cards.
+  // gLFace = which doorway's FaceOverlay is open (null | "time" | "day"); gLDone = which
+  // do-it cards (awe/tea/quiet) have been ticked in place this session.
+  const [gLFace, setGLFace] = useState(null);
+  const [gLDone, setGLDone] = useState({});
   const [readerOpen, setReaderOpen] = useState(false); // the REAL immersive Daily Story reader
   const [skyOpen, setSkyOpen] = useState(false);       // the REAL horoscope reader + birth-chart onboarding
   const [heroCard, setHeroCard] = useState(() => _lifeHeroCard); // the controller-hero’s active chip
@@ -411,6 +416,13 @@ export default function LifestyleEliteShell() {
       await withTimeout(base44.entities.PlannerItems.create({ user_id: user.id, title: title, date: todayKey(), category: "wellbeing", notes: "A soft intention from Lifestyle — try it when you fancy it.", is_completed: false, created_at: nowISO(), updated_at: nowISO() }), 6000, "planner-try");
     } catch { flash("Couldn't save — try again"); }
   }, [user]);
+
+  // good-life do-it small cards (piece D): tick in place (optimistic) + the REAL write.
+  // awe/tea are soft intentions (saveTryThis); quiet hour is a wellbeing day (savePlannerDay).
+  const glTick = useCallback((key, title, kind = "try") => {
+    setGLDone((d) => (d[key] ? d : { ...d, [key]: true }));
+    if (kind === "day") savePlannerDay(title); else saveTryThis(title);
+  }, [savePlannerDay, saveTryThis]);
 
   // open the exact item full-screen (deep-link parity with live Lifestyle: LifestyleDetail / readers)
   const openItem = useCallback((it) => {
@@ -837,19 +849,28 @@ export default function LifestyleEliteShell() {
                 <div style={{ position: "relative", height: "100%", minHeight: 0 }}>
                   <StackedShelves
                     top={
-                      <PeekShelf label="What do you have time for?" accent={gold}>
-                        {/* tap → the picker opens IN-BOARD (FaceOverlay) with room to breathe */}
-                        <TimePromptCard onOpen={() => setGLTimeOpen(true)} />
-                      </PeekShelf>
+                      // piece D — the top shelf is a 2-col grid of small doorway/do-it cards.
+                      // Every card carries a real signal; "door" cards open the FaceOverlay
+                      // below, "do" cards write for real (Planner) and tick in place.
+                      <SmallCardGrid label="What would be nice? Pick one.">
+                        <SmallCard Icon={Clock} label="Time for?" signal="A read · a listen · a wonder" accent={gold} onClick={() => setGLFace("time")} />
+                        <SmallCard Icon={Sun} label="A day for you" signal="Guilt-free · to your planner" accent={crimson} onClick={() => setGLFace("day")} />
+                        <SmallCard Icon={Sparkles} label="A small wonder" signal="Today's awe drop" accent={sage} done={!!gLDone.awe} onClick={() => glTick("awe", TIME_BANDS[0].make.title)} />
+                        <SmallCard Icon={Coffee} label="Romance the mundane" signal="A tiny make, done fully" accent={gold} done={!!gLDone.tea} onClick={() => glTick("tea", TIME_BANDS[1].make.title)} />
+                        <SmallCard Icon={Moon} label="A quiet hour" signal="An evening that's yours" accent={plum} done={!!gLDone.quiet} onClick={() => glTick("quiet", "A quiet hour, just for you", "day")} />
+                      </SmallCardGrid>
                     }
                     bottom={
                       <PeekShelf label="Permission & small joys" accent={plum}>
                         {[...ritualCards, ...permissionCards].map((it) => <CoverCard key={it.id} item={it} compact onOpen={() => setExpanded(it)} />)}
                       </PeekShelf>
                     } />
-                  <FaceOverlay open={gLTimeOpen} onClose={() => setGLTimeOpen(false)} accent={gold}
-                    title="What have you got time for?" sub="A read · a listen · a little joy">
-                    <TimePickerLens pickFor={pickFor} isSaved={isSaved} onSave={toggleSave} onOpen={openItem} onTry={saveTryThis} />
+                  {/* ONE FaceOverlay serves every "door" card — its content switches on gLFace */}
+                  <FaceOverlay open={!!gLFace} onClose={() => setGLFace(null)} accent={gLFace === "day" ? crimson : gold}
+                    title={gLFace === "day" ? "A day for you" : "What have you got time for?"}
+                    sub={gLFace === "day" ? "Pick one — it lands softly in your planner" : "A read · a listen · a little joy"}>
+                    {gLFace === "time" && <TimePickerLens pickFor={pickFor} isSaved={isSaved} onSave={toggleSave} onOpen={openItem} onTry={saveTryThis} />}
+                    {gLFace === "day" && <DayForYouLens onSave={savePlannerDay} />}
                   </FaceOverlay>
                 </div>
               </BoardBody>
@@ -1090,20 +1111,30 @@ function PhasePicksLens({ items, phaseKey, isSaved, onSave, onOpen }) {
 }
 
 // ── The good life — dopamine-menu picker (bounded, by time; not a feed) ──
-// piece C — the good-life top-shelf prompt. Tap → the time picker opens IN-BOARD
-// (FaceOverlay covers the whole card face), with room to breathe. Back returns.
-function TimePromptCard({ onOpen }) {
-  const gold = cwOf("gold").petal;
+// piece D — the good-life top shelf is now a SmallCardGrid of doorway/do-it cards
+// (see BOARD 0). The two doorways below feed the ONE FaceOverlay on that board.
+
+// "A day for you" doorway — pick a whole guilt-free day; it writes a real wellbeing
+// PlannerItem and ticks in place. Reuses the A_DAY seed (same source as ritualCards).
+function DayForYouLens({ onSave }) {
+  const [chosen, setChosen] = useState(null);
+  const days = [A_DAY.title, ...A_DAY.alts];
+  const crimson = cwOf("crimson").petal;
   return (
-    <button onClick={onOpen} className="fw-elite-press" aria-label="What have you got time for?"
-      style={{ width: "100%", height: "100%", textAlign: "left", border: `1px solid ${T.paperDeep}`, borderRadius: 18, cursor: "pointer",
-        background: `linear-gradient(165deg, ${T.paperHi} 0%, ${gold}14 100%)`, boxShadow: "0 6px 22px rgba(58,44,26,.10), 0 1px 4px rgba(58,44,26,.06)",
-        display: "flex", flexDirection: "column", padding: "16px 16px 15px" }}>
-      <span style={{ width: 42, height: 42, borderRadius: 13, background: `${gold}1F`, display: "grid", placeItems: "center", marginBottom: 12 }}><Clock size={22} color={gold} /></span>
-      <div style={{ fontFamily: SERIF, fontWeight: 600, fontSize: 21, lineHeight: 1.14, color: OXBLOOD, marginBottom: 5 }}>What have you got time for?</div>
-      <div style={{ fontFamily: SERIF, fontSize: 15, color: T.inkSoft, lineHeight: 1.5, flex: 1 }}>A few minutes or a whole evening — pick a little joy that fits. A read, a listen, a small wonder, chosen for you.</div>
-      <span style={{ display: "inline-flex", alignItems: "center", gap: 5, fontFamily: UI, fontSize: 13, fontWeight: 800, color: gold, marginTop: 10 }}>Choose <ChevronRight size={16} /></span>
-    </button>
+    <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
+      <p style={{ fontFamily: SERIF, fontSize: 15, color: T.inkSoft, lineHeight: 1.5, margin: "0 0 12px" }}>A whole day that's just yours — no streaks, no catching up. Pick one and it lands softly in your planner.</p>
+      <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>{days.map((d, i) => {
+        const on = chosen === i;
+        return (
+          <button key={i} onClick={() => { setChosen(i); onSave(d); }} className="fw-elite-press"
+            style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", textAlign: "left", ...subCard(crimson), background: on ? `${crimson}12` : T.paper, padding: "11px 12px", cursor: "pointer" }}>
+            <span style={{ width: 28, height: 28, borderRadius: 9, background: `${crimson}1F`, display: "grid", placeItems: "center", flexShrink: 0 }}>{on ? <Check size={15} color={crimson} /> : <Sun size={15} color={crimson} />}</span>
+            <span style={{ flex: 1, minWidth: 0, fontFamily: SERIF, fontSize: 15.5, fontWeight: 600, color: T.ink, lineHeight: 1.25 }}>{d}</span>
+            <span style={{ fontFamily: UI, fontSize: 12, fontWeight: 700, color: crimson, flexShrink: 0 }}>{on ? "Saved" : "Save"}</span>
+          </button>
+        );
+      })}</div>
+    </div>
   );
 }
 function TimePickerLens({ pickFor, isSaved, onSave, onOpen, onTry }) {
