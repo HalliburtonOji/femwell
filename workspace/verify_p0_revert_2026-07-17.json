@@ -1,0 +1,35 @@
+{
+  "bundle": "index-DNPaimkn.js",
+  "url": "https://femwells.com",
+  "checkedAt": "2026-07-17T00:00:00Z",
+  "viewport": "mobile-390",
+  "auth": "unauthenticated clean Chromium (valid signal — the crash reproduced here on index-qrhXpj6G.js)",
+  "routes": [
+    {"route": "/",          "renders": true, "note": "Today shell. 'Good morning' + 'YOUR DAY, IN A FEW'. No ErrorBoundary."},
+    {"route": "/Today",     "renders": true, "note": "Identical to /. No ErrorBoundary."},
+    {"route": "/Lifestyle", "renders": true, "note": "Full normal content restored. No ErrorBoundary."},
+    {"route": "/Journal",   "renders": true, "note": "'your journal today' + A FRESH PAGE. No ErrorBoundary."},
+    {"route": "/Community", "renders": true, "note": "Renders the 'Adults only' 18+ age gate — expected pre-entry interstitial, not a crash."},
+    {"route": "/Nutrition", "renders": true, "note": "'Your plate' hero + full glance panel (14.6k chars). No ErrorBoundary."},
+    {"route": "/Profile",   "renders": true, "note": "'YOUR FEMWELL — This is you — tended, not measured'. No ErrorBoundary."}
+  ],
+  "lifestyleAssertions": [
+    {"name": "flora-hero-renders", "expected": "flora hero present", "got": "629 SVG nodes; 'Your world' + blossom branch + sunflower visible in screenshot", "pass": true},
+    {"name": "for-you-deck", "expected": "'For you' deck present", "got": "'For you — A little of everything ->' present", "pass": true},
+    {"name": "clipboard-boards", "expected": "clipboard boards present", "got": "all 6 found: A FEW GOOD THINGS TODAY, TODAY'S CHAPTER, SOMETHING TO WATCH, YOUR SKY, FROM THE SHELF, A SMALL JOY", "pass": true},
+    {"name": "six-controller-chips-GONE", "expected": "no button labelled exactly Read/Listen/Books/Story/Sky/Good life", "got": "[] — zero of six found", "pass": true},
+    {"name": "no-error-boundary", "expected": "no 'Something went wrong'", "got": "not present", "pass": true},
+    {"name": "page-scrolls", "expected": "real content height", "got": "scrollHeight 2945px", "pass": true}
+  ],
+  "consoleErrors": [],
+  "consoleErrorsNonBlocking": [
+    "'App not found' 404s from the base44 SDK + 'N.entities.User.me is not a function' + socket 'Connection rejected by server' — present on ALL 7 routes; these are the expected unauthenticated-session data-layer failures, NOT the TDZ crash. Pages render through them."
+  ],
+  "verdict": "RESOLVED",
+  "evidence": "femwells.com serves index-DNPaimkn.js (confirmed via curl AND via every network response captured during the walk — only that one bundle hash was ever requested). All 7 routes render at 390px with zero ErrorBoundary hits. Zero ReferenceError / 'before initialization' / 'Cannot access' across all 7 routes. /Lifestyle shows flora hero + For you deck + all 6 clipboard boards, and all six controller chips are absent as expected from the revert. git log confirms ef089dc reverted 3224cc8.",
+  "screenshots": [
+    "C:/Users/Halli/femwell-work/workspace/verify_screenshots/p0_revert_2026-07-17/lifestyle_390_top.png",
+    "C:/Users/Halli/femwell-work/workspace/verify_screenshots/p0_revert_2026-07-17/lifestyle_390_deck.png"
+  ],
+  "notes": "One caveat worth flagging: app.base44.com/apps/69a9891a6ccccc1822bbb4bc returns index-nbravnTi.js, but that is the BUILDER app's own bundle, not FemWell's — it is not a second host of the app and is not a stale-serve signal. I could not resolve a separate *.base44.app host for FemWell to cross-check, so the 'both hosts' claim is verified for femwells.com only."
+}

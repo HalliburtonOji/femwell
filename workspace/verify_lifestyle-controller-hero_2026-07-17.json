@@ -1,0 +1,259 @@
+{
+  "url": "https://femwells.com/Lifestyle",
+  "bundle": "index-DS8ggJ36.js",
+  "publishedCommit": "610640b",
+  "checkedAt": "2026-07-17T10:58:00Z",
+  "viewports": [
+    "mobile-390"
+  ],
+  "method": "playwright-core + local Chromium, clean unauthenticated context, 390x844, cache-busted",
+  "outage": {
+    "routes": [
+      {
+        "route": "/",
+        "renders": true,
+        "note": "4033 chars real content, 13574 nodes, no boundary, no TDZ"
+      },
+      {
+        "route": "/Today",
+        "renders": true,
+        "note": "4033 chars, 13575 nodes, no boundary, no TDZ"
+      },
+      {
+        "route": "/Lifestyle",
+        "renders": true,
+        "note": "7359 chars, 13585 nodes, hero + chips + 6 boards, no TDZ"
+      },
+      {
+        "route": "/Journal",
+        "renders": true,
+        "note": "989 chars (thin unauthenticated), renders, no TDZ"
+      },
+      {
+        "route": "/Nutrition",
+        "renders": true,
+        "note": "14495 chars, 18400 nodes, no TDZ"
+      },
+      {
+        "route": "/Profile",
+        "renders": true,
+        "note": "1987 chars, 13585 nodes, no TDZ"
+      }
+    ],
+    "errorBoundaryCount": 0,
+    "referenceErrorCount": 0,
+    "beforeInitializationCount": 0,
+    "verdict": "CLEAR - the outage is not back on any of the six routes"
+  },
+  "hero": [
+    {
+      "chip": "Read",
+      "title": "Something to read",
+      "line": "Essays, guides and stories for a spare ten minutes.",
+      "tint": "rgb(142,110,142) plum",
+      "cta": "Open your reads",
+      "ctaFullWidth": true,
+      "blooms": "4/5 open (openness 0.72)"
+    },
+    {
+      "chip": "Listen",
+      "title": "Something to hear",
+      "line": "Real episodes that play right here - and keep playing while you browse.",
+      "tint": "rgb(143,175,143) sage",
+      "cta": "Open Listen & watch",
+      "ctaFullWidth": true,
+      "blooms": "5/5 open (openness 0.86)"
+    },
+    {
+      "chip": "Books",
+      "title": "Your shelf",
+      "line": "Something longer - and a shelf of free classics to fall into.",
+      "tint": "rgb(159,182,201) sky-blue",
+      "cta": "Open your shelf",
+      "ctaFullWidth": true,
+      "blooms": "4/5 open (openness 0.6)"
+    },
+    {
+      "chip": "Story",
+      "title": "Today's chapter",
+      "line": "A chapter a day - a finished story you can also read straight through. [FALLBACK - no live cliffhanger]",
+      "tint": "rgb(188,46,39) crimson",
+      "cta": "Read today's chapter",
+      "ctaFullWidth": true,
+      "blooms": "5/5 open (openness 1.0)"
+    },
+    {
+      "chip": "Sky",
+      "title": "The moon is waxing crescent [LIVE]",
+      "line": "8% lit tonight - your sky, and how it meets your week. [LIVE]",
+      "tint": "rgb(182,166,201) lavender",
+      "cta": "Open your sky",
+      "ctaFullWidth": true,
+      "blooms": "3/5 open (openness 0.5)"
+    },
+    {
+      "chip": "Good life",
+      "title": "The good life",
+      "line": "What do you have time for? A small joy, and permission to enjoy it.",
+      "tint": "rgb(212,175,55) gold",
+      "cta": "Open the good life",
+      "ctaFullWidth": true,
+      "blooms": "5/5 open (openness 0.92)"
+    }
+  ],
+  "chips": {
+    "count": 6,
+    "labels": [
+      "Read",
+      "Listen",
+      "Books",
+      "Story",
+      "Sky",
+      "Good life"
+    ],
+    "uniformSize": true,
+    "sizeEach": "72x64",
+    "horizontallyScrollable": true,
+    "scrollWidth": 476,
+    "clientWidth": 358,
+    "pageOverflowAt390": false,
+    "pass": true
+  },
+  "blooms": {
+    "mechanism": "per-bloom opacity crossfade - open head vs bud, driven by bloomLocalOpen(openness, order)",
+    "sizeConstant": true,
+    "headWidthsEveryChip": [
+      99,
+      108,
+      123,
+      129
+    ],
+    "countChanges": true,
+    "skyVsStory": "Sky 3/5 open vs Story 5/5 open - visibly different, confirmed in screenshots",
+    "pass": true
+  },
+  "ctas": [
+    {
+      "name": "Open the good life",
+      "expected": "scrolls clipboard to The good life board",
+      "got": "track.scrollLeft 1520 -> landed board 4 'The good life'",
+      "pass": true
+    },
+    {
+      "name": "Open your reads",
+      "expected": "jump to Read board",
+      "got": "scrollLeft 2 -> board 0 'Read'",
+      "pass": true
+    },
+    {
+      "name": "Open Listen & watch",
+      "expected": "jump to Listen board",
+      "got": "scrollLeft 383 -> board 1 'Listen & watch'",
+      "pass": true
+    },
+    {
+      "name": "Open your shelf",
+      "expected": "jump to Books board",
+      "got": "scrollLeft 762 -> board 2 'Books'",
+      "pass": true
+    },
+    {
+      "name": "Read today's chapter",
+      "expected": "opens chapter sheet",
+      "got": "fixed sheet opened: 'DAILY STORY - TODAY / Today's chapter...'",
+      "pass": true
+    },
+    {
+      "name": "Open your sky",
+      "expected": "opens horoscope reader",
+      "got": "fixed sheet opened: 'TONIGHT'S SKY / The moon is waxing crescent / 8% lit - 3 days into her round'",
+      "pass": true
+    }
+  ],
+  "liveData": [
+    {
+      "name": "sky-moon-phase",
+      "expected": "real moon phase named in title + % lit in line",
+      "got": "'The moon is waxing crescent' / '8% lit tonight'; reader agrees: '8% lit - 3 days into her round'",
+      "pass": true,
+      "note": "computed client-side, works unauthenticated"
+    },
+    {
+      "name": "story-cliffhanger",
+      "expected": "quotes today's actual chapter cliffhanger",
+      "got": "fallback line - story object null (0 published fiction; SummaryCard reads 'Today's chapter is on its way')",
+      "pass": null,
+      "note": "NOT VERIFIABLE unauthenticated + no published content. Code path story?.cliffhanger is correct; unproven live."
+    },
+    {
+      "name": "read-title-personalisation",
+      "expected": "{firstName}'s reading when signed in",
+      "got": "'Something to read' (firstName absent unauthenticated)",
+      "pass": null,
+      "note": "fallback correct; personalised branch unproven"
+    }
+  ],
+  "regressions": [
+    {
+      "name": "bouquet-gone",
+      "expected": "no Bouquet on Lifestyle",
+      "got": "no Bouquet import/render in LifestyleEliteShell; none in DOM",
+      "pass": true
+    },
+    {
+      "name": "phase-pill-under-chips",
+      "expected": "phase pill below chip row",
+      "got": "'A few good things today' pill sits directly under the chips",
+      "pass": true
+    },
+    {
+      "name": "summarycard-glance",
+      "expected": "renders",
+      "got": "'A FEW GOOD THINGS TODAY' with Today's chapter / Your reading / Your sky rows",
+      "pass": true
+    },
+    {
+      "name": "for-you-deck",
+      "expected": "renders",
+      "got": "'For you' present",
+      "pass": true
+    },
+    {
+      "name": "six-boards",
+      "expected": "all six boards render",
+      "got": "6 boards: Read / Listen & watch / Books / Story & sky / The good life / Yours (track scrollWidth 2294)",
+      "pass": true
+    }
+  ],
+  "consoleErrors": [
+    {
+      "text": "N.entities.User.me is not a function",
+      "verdict": "PRE-EXISTING - fires on all six routes incl. untouched /Profile, /Nutrition; unauthenticated SDK artifact, not this commit"
+    },
+    {
+      "text": "Base44Error: App not found (404s) - 'App state check failed', 'Profile page init failed', 'JournalHub init failed'",
+      "verdict": "PRE-EXISTING - unauthenticated data fetches, all routes"
+    },
+    {
+      "text": "connect_error: Connection rejected by server (socket)",
+      "verdict": "PRE-EXISTING - unauthenticated socket, all routes"
+    }
+  ],
+  "tdzErrors": [],
+  "verdict": "PASS",
+  "notes": "The re-land is clean. All six routes render with zero ErrorBoundary and zero TDZ - the outage is not back. All six chips retitle, re-line, re-tint and re-CTA correctly; the flower changes HOW MANY blooms are open (Sky 3/5 vs Story 5/5) with head widths constant at every chip, which is the spec. All six CTAs work. No regressions. Two items unverifiable unauthenticated: the Story cliffhanger (no published fiction) and the firstName title. One cosmetic snag: the Sky title wraps to two lines at 390px, so hero height shifts between chips.",
+  "screenshots": [
+    "C:/Users/Halli/femwell-work/workspace/verify_screenshots/lifestyle-controller-hero_2026-07-17/mobile/hero_at_rest.png",
+    "C:/Users/Halli/femwell-work/workspace/verify_screenshots/lifestyle-controller-hero_2026-07-17/mobile/chip_3_Story.png",
+    "C:/Users/Halli/femwell-work/workspace/verify_screenshots/lifestyle-controller-hero_2026-07-17/mobile/chip_4_Sky.png",
+    "C:/Users/Halli/femwell-work/workspace/verify_screenshots/lifestyle-controller-hero_2026-07-17/mobile/cta_chapter.png",
+    "C:/Users/Halli/femwell-work/workspace/verify_screenshots/lifestyle-controller-hero_2026-07-17/mobile/cta_sky.png",
+    "C:/Users/Halli/femwell-work/workspace/verify_screenshots/lifestyle-controller-hero_2026-07-17/mobile/jump2_Goodlife.png",
+    "C:/Users/Halli/femwell-work/workspace/verify_screenshots/lifestyle-controller-hero_2026-07-17/mobile/route_.png",
+    "C:/Users/Halli/femwell-work/workspace/verify_screenshots/lifestyle-controller-hero_2026-07-17/mobile/route_Today.png",
+    "C:/Users/Halli/femwell-work/workspace/verify_screenshots/lifestyle-controller-hero_2026-07-17/mobile/route_Lifestyle.png",
+    "C:/Users/Halli/femwell-work/workspace/verify_screenshots/lifestyle-controller-hero_2026-07-17/mobile/route_Journal.png",
+    "C:/Users/Halli/femwell-work/workspace/verify_screenshots/lifestyle-controller-hero_2026-07-17/mobile/route_Nutrition.png",
+    "C:/Users/Halli/femwell-work/workspace/verify_screenshots/lifestyle-controller-hero_2026-07-17/mobile/route_Profile.png"
+  ]
+}

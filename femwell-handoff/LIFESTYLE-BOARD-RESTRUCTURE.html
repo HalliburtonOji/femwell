@@ -30,7 +30,7 @@
 
   <div class="box new">
     <p class="big" style="margin:0 0 4px;">The shape</p>
-    <p style="margin:0;">The clipboard keeps its bones — a horizontal slider of <b>StackedCard boards</b>, each split top/bottom by the gold hairline, each half a peek sub-slider. What changes: <b>the good life leads</b>, the boards <b>pull from the whole app</b> (not just Lifestyle's own library), the <b>top shelf holds a set of small cards</b> instead of one, tapping a small card <b>covers the card face</b> with real actions (with a back button), content cards get <b>magazine craft</b>, and everything gets <b>bigger</b>.</p>
+    <p style="margin:0;">The clipboard keeps its bones — a horizontal slider of <b>StackedCard boards</b>, each split top/bottom by the gold hairline, each half a peek sub-slider. What changes: <b>the good life leads</b>, the boards <b>pull from the whole app</b> (not just Lifestyle's own library), the <b>top shelf holds a set of small cards</b> instead of one, tapping a small card <b>covers the card face</b> with real actions (with a back button), opening a card <b>says genuinely more</b> instead of echoing it, and everything gets <b>bigger</b>.</p>
   </div>
 
   <h2>2 · The good life leads <span class="tag t-now">cheap</span></h2>
@@ -54,7 +54,7 @@
     <tr><td><b>A line for your journal</b></td><td>Journal — today's prompt / a fresh page</td><td><span class="tag t-now">yes</span></td></tr>
     <tr><td><b>Something to cook</b></td><td>Nutrition — tonight's recipe</td><td><span class="tag t-now">yes</span></td></tr>
     <tr><td><b>A day for you</b></td><td>Planner — writes a real wellbeing block</td><td><span class="tag t-now">yes</span></td></tr>
-    <tr><td><b>What women are talking about</b></td><td>Community — the lighter-side room</td><td><span class="tag t-flag">consent — see item 7</span></td></tr>
+    <tr><td><b>What women are talking about</b></td><td>Community — the lighter-side room</td><td><span class="tag t-now">yes</span> — the room, not anyone's words</td></tr>
     <tr><td><b>A session</b></td><td>Programs — a short guided thing</td><td><span class="tag t-flag">check for content</span></td></tr>
     <tr><td><b>Your garden</b></td><td>Garden — what's grown this month</td><td><span class="tag t-now">yes</span></td></tr>
   </table></div>
@@ -75,30 +75,48 @@
   <ul style="margin:0 0 6px;">
     <li><b>The slip, big</b> — Cormorant, roomy, the whole point.</li>
     <li><b>Why this is good for you</b> — the honest version. Where there's real evidence we cite it (the sky reader already does this well — Helfrich-Förster, Cajochen). Where there isn't, we say it plainly as a kindness, not dressed as science.</li>
-    <li><b>What women say</b> — <span class="tag t-stop">only if real</span> see item 7.</li>
     <li><b>One doable thing</b> — "book a quiet hour" → writes to Planner, ticks, blooms. No navigation.</li>
   </ul>
 
-  <h2>7 · Magazine-grade content cards <span class="tag t-flag">craft + one hard rule</span></h2>
-  <p style="margin:0 0 6px;"><b>The craft (what magazines actually do):</b></p>
-  <div class="tw"><table>
-    <tr><th>Device</th><th>Job</th><th>Our source — all REAL, none invented</th></tr>
-    <tr><td><b>Standfirst</b></td><td>the line under the title that sells the piece</td><td><code>why_it_matters</code> (already on the row)</td></tr>
-    <tr><td><b>The hook</b></td><td>opening para; drops you mid-scene, opens a curiosity gap</td><td>the item's real first paragraph — our articles average <b>4,529 chars</b> of real lede</td></tr>
-    <tr><td><b>Pull-quote</b></td><td>interrupts the scanner and re-hooks them</td><td>a real sentence <b>selected</b> from the body (longest clean sentence in the first third) — extracted, never written</td></tr>
-    <tr><td><b>Read-time</b></td><td>the "I can afford this" signal</td><td><code>readTimeLabel()</code> — already exists</td></tr>
-    <tr><td><b>Social proof</b></td><td>"other women found this worth it"</td><td><b>see the rule below</b></td></tr>
-  </table></div>
-  <div class="box gap">
-    <p style="margin:0 0 6px;"><b class="big">The hard rule on "women in the UK are saying…"</b></p>
-    <p style="margin:0 0 6px;">That line is a <b>claim about real people</b>. Three ways to source it, and only two are allowed:</p>
+  <h2>7 · Opening a card must SAY MORE <span class="tag t-flag">the real bug</span></h2>
+  <div class="box warn">
+    <p style="margin:0 0 6px;"><b class="big">Today, opening a card echoes it.</b> Not a theory — the code does this:</p>
     <ul style="margin:0 0 6px;">
-      <li><span class="tag t-stop">no</span> <b>Invented.</b> Never. It's a fabricated testimonial — the worst thing we could put on a wellness app.</li>
-      <li><span class="tag t-stop">no</span> <b>Quoting Community posts.</b> <code>CommunityPost</code>/<code>Comment</code> exist, so it's technically easy — but those women posted <b>anonymously into a screened support room</b>. They did not consent to being quoted on a content card in another part of the app. That's a <b>consent problem, not a copy problem</b>, and I won't build it without Halli's explicit call.</li>
-      <li><span class="tag t-now">yes</span> <b>Real aggregates.</b> "<b>38 women saved this</b>" / "read most on Sunday mornings" — from <code>engagement_score</code> + <code>LifestyleInteractions</code>, which we already write (piece 4). No quoting, no consent issue, and it's true. <b>Show only above a floor (say ≥10)</b> so it's never "2 women saved this".</li>
-      <li><span class="tag t-now">yes</span> <b>Real citations.</b> Named research, the way the science footer already does it.</li>
+      <li>The collapsed card calls <code>summaryOf(item)</code>, which returns the first substantial text it finds — for a real article that's <b>the lede's opening paragraph</b>.</li>
+      <li>The open calls <code>paragraphsOf(item)</code>, which returns <b>the same body, starting with that same paragraph</b>.</li>
+      <li>The only de-dupe (<code>expandCards.jsx:738</code>) filters <code>item.summary</code> — <b>not the hook the collapsed card actually showed</b>.</li>
     </ul>
-    <p style="margin:0;"><b>Recommendation:</b> ship aggregates + citations now; take the Community-quote question to Halli separately as a consent decision (it could be done properly with an opt-in "share this line" — that's a feature, not a copy tweak).</p>
+    <p style="margin:0;">So she taps expecting the piece and gets <b>the sentence she just read</b>. That's the bug. The fix is editorial, not decorative.</p>
+  </div>
+
+  <p style="margin:0 0 6px;"><b>The rule: the summary is the teaser, the open is the article.</b> Opening must reveal <b>more AND different</b> — never a duplicate of the collapsed text.</p>
+  <div class="tw"><table>
+    <tr><th></th><th>Collapsed</th><th>Opened</th></tr>
+    <tr><td><b>Job</b></td><td>make her want it</td><td>give her the thing</td></tr>
+    <tr><td><b>Shows</b></td><td><b>a short enticing hook</b> — a standfirst-length teaser, a few lines</td><td><b>the fuller story, properly formatted</b> — why it matters, the context, the takeaway</td></tr>
+    <tr><td><b>First words she reads</b></td><td>the hook</td><td><b>something new</b> — the open leads on <code>why_it_matters</code>, so the top of the open is never the bottom of the card</td></tr>
+  </table></div>
+
+  <p style="margin:0 0 6px;"><b>Where the extra depth comes from — the item's own real body. Nothing is written by us, nothing is invented.</b></p>
+  <div class="tw"><table>
+    <tr><th>In the open</th><th>Real field, already on the row</th></tr>
+    <tr><td><b>Standfirst</b> — the line that sells the piece</td><td><code>why_it_matters</code></td></tr>
+    <tr><td><b>The full read</b> — every paragraph, in a proper reading column</td><td><code>lede</code> / body — our articles average <b>4,529 chars</b> of real writing that the card currently never shows</td></tr>
+    <tr><td><b>Pull-quote</b> — re-hooks the scanner mid-read</td><td>a real sentence <b>selected</b> from the body (longest clean sentence in the first third) — extracted, never authored</td></tr>
+    <tr><td><b>The takeaway</b> — what to actually do with it</td><td><code>takeaways[]</code></td></tr>
+    <tr><td><b>Read-time</b> — the "I can afford this" signal</td><td><code>readTimeLabel()</code> — already exists</td></tr>
+  </table></div>
+  <p style="margin:0 0 6px;">All four of those fields exist on <code>LifestyleItems</code> today. <b>The depth is already in the database — the card just isn't showing it.</b> The magazine voice is in how it's <b>set</b> (standfirst, reading column, pull-quote, numbered takeaways — the same devices <code>LifestyleDetail</code> already uses), not in new prose.</p>
+
+  <div class="box gap">
+    <p style="margin:0 0 6px;"><b class="big">The guard: <code>openAddsMore(item)</code></b></p>
+    <p style="margin:0 0 6px;">Before a card offers to open, check the open would carry <b>substantially more text than the hook</b>. If it wouldn't, the item <b>genuinely has no fuller body</b> — and then:</p>
+    <ul style="margin:0 0 6px;">
+      <li><span class="tag t-now">yes</span> the card <b>doesn't pretend</b> — no expand affordance, no tap that leads to an echo.</li>
+      <li><span class="tag t-now">yes</span> it's <b>reported as a content gap</b> with a count, so we know what needs writing.</li>
+      <li><span class="tag t-stop">no</span> we never <b>invent</b> the missing depth to fill the space.</li>
+    </ul>
+    <p style="margin:0;"><b>The gap I already know about:</b> the <b>284 videos</b> carry ~78 chars of description — no body at all. They can't be opened up until they have one. That's exactly what the video summariser backfill is for, and it's <b>parked on Halli's cost/risk decision</b> — this item doesn't move it.</p>
   </div>
 
   <h2>8 · Bigger, bolder <span class="tag t-now">cheap</span></h2>
@@ -133,14 +151,14 @@
     <li><b>Top shelf → small-card grid</b>, wired to the overlay.</li>
     <li><b>Permission opens up</b> (the overlay's first real content).</li>
     <li><b>Across-the-app pulls</b> — measure every source first; skip what's empty.</li>
-    <li><b>Magazine craft</b> — standfirst/hook/pull-quote extraction + real aggregates.</li>
+    <li><b>Open says more</b> — hook collapsed; standfirst + full body + pull-quote + takeaways on open, all extracted from the real row. Plus the <code>openAddsMore()</code> guard + a content-gap count.</li>
     <li><b>The watch/listen contents page</b> + retire the stock artwork.</li>
   </ol>
 
   <div class="box warn">
     <p class="big" style="margin:0 0 4px;">Flags before any of this is built</p>
     <ul style="margin:0;">
-      <li><b>Community quotes = a consent decision</b> (item 7). Halli's call, not mine.</li>
+      <li><b>Items with no fuller body can't be opened up</b> (item 7) — that's a content gap to report, never to fill with invented copy.</li>
       <li><b>Across-the-app sources must be measured first</b> (item 3). I've mis-declared "empty" three times by measuring the output of a pipeline that never ran — not again.</li>
       <li><b>No new entity or function</b> is needed for any of this. If one turns out to be, I stop and flag (the 50-fn cap is already blown at ~118).</li>
       <li><b>Every piece runs <code>scripts/smokeRender.cjs</code> BEFORE deploy</b>, then a live pass. A green build and a 200 are not verification.</li>
