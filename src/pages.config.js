@@ -90,6 +90,7 @@ import Saved from './pages/Saved';
 import Deals from './pages/Deals';
 import Events from './pages/Events';
 import LifestyleDetail from './pages/LifestyleDetail';
+import WatchListen from './pages/WatchListen';
 import BookReader from './pages/BookReader';
 import FictionReader from './pages/FictionReader';
 import Track from './pages/Track';
@@ -340,6 +341,7 @@ export const PAGES = {
     "Deals": Deals,
     "Events": Events,
     "LifestyleDetail": LifestyleDetail,
+    "WatchListen": WatchListen,
     "BookReader": BookReader,
     "FictionReader": FictionReader,
     "Track": Track,

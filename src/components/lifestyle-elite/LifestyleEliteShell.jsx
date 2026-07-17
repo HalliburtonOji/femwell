@@ -283,6 +283,20 @@ function PeekShelf({ label, accent, children }) {
 }
 const navBtnSm = (disabled) => ({ width: 28, height: 28, borderRadius: 999, border: `1px solid ${T.paperDeep}`, background: disabled ? "transparent" : "rgba(244,239,227,0.9)", color: disabled ? T.paperDeep : T.muted, display: "grid", placeItems: "center", cursor: disabled ? "default" : "pointer", opacity: disabled ? 0.5 : 1, flexShrink: 0 });
 
+// piece H — the doorway from the Listen & watch board to the full "Everything to watch &
+// listen" contents page (flora covers, our language, filters). A peek-shelf tail card.
+function MoreTile({ label, sub, accent }) {
+  return (
+    <button onClick={() => window.location.assign("/WatchListen")} className="fw-elite-press" aria-label={label}
+      style={{ width: "100%", height: "100%", minHeight: 150, textAlign: "left", border: `1px dashed ${accent}`, borderRadius: 18, cursor: "pointer",
+        background: `linear-gradient(165deg, ${T.paperHi} 0%, ${accent}12 100%)`, display: "flex", flexDirection: "column", justifyContent: "center", padding: "16px" }}>
+      <span style={{ width: 42, height: 42, borderRadius: 13, background: `${accent}1F`, display: "grid", placeItems: "center", marginBottom: 12 }}><Compass size={22} color={accent} /></span>
+      <div style={{ fontFamily: SERIF, fontWeight: 600, fontSize: 19, lineHeight: 1.15, color: OXBLOOD }}>{label}</div>
+      <div style={{ fontFamily: SERIF, fontSize: 14.5, color: T.inkSoft, lineHeight: 1.45, marginTop: 4 }}>{sub}</div>
+      <span style={{ display: "inline-flex", alignItems: "center", gap: 5, fontFamily: UI, fontSize: 13, fontWeight: 800, color: accent, marginTop: 10 }}>See everything <ChevronRight size={16} /></span>
+    </button>
+  );
+}
 // ── the StackedCard structure: TOP shelf + the quiet gold hairline + BOTTOM shelf ──
 function StackedShelves({ top, bottom }) {
   return (
@@ -1036,8 +1050,9 @@ export default function LifestyleEliteShell() {
             <Clipboard title="Listen & watch" sub="PODCASTS & SHOWS · WATCH & TRENDING" accent={sage} flower="bluebell" idx="cb-listen" titleColor={OXBLOOD}>
               <BoardBody h={900}>
                 <StackedShelves
-                  top={<PeekShelf label="Podcasts & shows" accent={sage}>{audioCards.map((it) => <CoverCard key={it.id} item={it} compact onOpen={() => setExpanded(it)} />)}</PeekShelf>}
-                  bottom={<PeekShelf label="Watch & trending" accent={gold}>{videoCards.map((it) => <CoverCard key={it.id} item={it} compact onOpen={() => setExpanded(it)} />)}</PeekShelf>} />
+                  top={<PeekShelf label="Podcasts & shows" accent={sage}>{audioCards.map((it) => <CoverCard key={it.id} item={it} compact onOpen={() => setExpanded(it)} />)}<MoreTile key="more-listen" label="Everything to listen" sub="Every episode + shows to follow, by length." accent={sage} /></PeekShelf>}
+                  bottom={<PeekShelf label="Watch & trending" accent={gold}>{videoCards.map((it) => <CoverCard key={it.id} item={it} compact onOpen={() => setExpanded(it)} />)}<MoreTile key="more-watch" label="Everything to watch" sub="Our own contents page — flora covers, filters, no clutter." accent={gold} /></PeekShelf>}
+                />
               </BoardBody>
             </Clipboard>
 
