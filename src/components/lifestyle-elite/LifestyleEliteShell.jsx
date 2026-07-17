@@ -34,6 +34,7 @@ import { base44 } from "@/api/base44Client";
 import LifestyleMedia from "@/components/lifestyle-elite/LifestyleMedia";
 // the clipboard's card language (§6.7.7) — consumed, never duplicated
 import { CoverCard, ExpandDetailCard } from "@/components/brand/expandCards";
+import FaceOverlay from "@/components/brand/FaceOverlay";
 // the Daily Story — ONE gating contract + the real immersive reader (component #5)
 import { DAILY_STORY_SERIES, loadStoryChapters, chapterForDay, nextChapterOf, chapterLabel, framingLine, markChapterRead, isChapterRead, readCount } from "@/components/lifestyle/dailyStory";
 import DailyStoryReader from "@/components/lifestyle/DailyStoryReader";
@@ -222,6 +223,7 @@ export default function LifestyleEliteShell() {
   const [chapterOpen, setChapterOpen] = useState(false);
   const [readingOpen, setReadingOpen] = useState(false);
   const [expanded, setExpanded] = useState(null);   // the tap-to-expand card item (§6.7.7)
+  const [gLTimeOpen, setGLTimeOpen] = useState(false); // good-life "time for?" FaceOverlay (piece C — in-board choose)
   const [readerOpen, setReaderOpen] = useState(false); // the REAL immersive Daily Story reader
   const [skyOpen, setSkyOpen] = useState(false);       // the REAL horoscope reader + birth-chart onboarding
   const [heroCard, setHeroCard] = useState(() => _lifeHeroCard); // the controller-hero’s active chip
@@ -831,18 +833,25 @@ export default function LifestyleEliteShell() {
             {/* ── BOARD 0 — THE GOOD LIFE (the doing room) ──────────────────── */}
             <Clipboard title="The good life" sub="WHAT DO YOU HAVE TIME FOR · PERMISSION & SMALL JOYS" accent={gold} flower="marigold" idx="cb-goodlife" titleColor={OXBLOOD}>
               <BoardBody h={900}>
-                <StackedShelves
-                  top={
-                    <PeekShelf label="What do you have time for?" accent={gold}>
-                      {/* an interactive picker — kept as a real lens (a cover-card can't pick) */}
-                      <Panel key="picker" label="Pick by the time you have" Icon={Clock} accent={gold}><TimePickerLens pickFor={pickFor} isSaved={isSaved} onSave={toggleSave} onOpen={openItem} onTry={saveTryThis} /></Panel>
-                    </PeekShelf>
-                  }
-                  bottom={
-                    <PeekShelf label="Permission & small joys" accent={plum}>
-                      {[...ritualCards, ...permissionCards].map((it) => <CoverCard key={it.id} item={it} compact onOpen={() => setExpanded(it)} />)}
-                    </PeekShelf>
-                  } />
+                {/* position:relative → the FaceOverlay (piece C) covers exactly this card face */}
+                <div style={{ position: "relative", height: "100%", minHeight: 0 }}>
+                  <StackedShelves
+                    top={
+                      <PeekShelf label="What do you have time for?" accent={gold}>
+                        {/* tap → the picker opens IN-BOARD (FaceOverlay) with room to breathe */}
+                        <TimePromptCard onOpen={() => setGLTimeOpen(true)} />
+                      </PeekShelf>
+                    }
+                    bottom={
+                      <PeekShelf label="Permission & small joys" accent={plum}>
+                        {[...ritualCards, ...permissionCards].map((it) => <CoverCard key={it.id} item={it} compact onOpen={() => setExpanded(it)} />)}
+                      </PeekShelf>
+                    } />
+                  <FaceOverlay open={gLTimeOpen} onClose={() => setGLTimeOpen(false)} accent={gold}
+                    title="What have you got time for?" sub="A read · a listen · a little joy">
+                    <TimePickerLens pickFor={pickFor} isSaved={isSaved} onSave={toggleSave} onOpen={openItem} onTry={saveTryThis} />
+                  </FaceOverlay>
+                </div>
               </BoardBody>
             </Clipboard>
 
@@ -1081,6 +1090,22 @@ function PhasePicksLens({ items, phaseKey, isSaved, onSave, onOpen }) {
 }
 
 // ── The good life — dopamine-menu picker (bounded, by time; not a feed) ──
+// piece C — the good-life top-shelf prompt. Tap → the time picker opens IN-BOARD
+// (FaceOverlay covers the whole card face), with room to breathe. Back returns.
+function TimePromptCard({ onOpen }) {
+  const gold = cwOf("gold").petal;
+  return (
+    <button onClick={onOpen} className="fw-elite-press" aria-label="What have you got time for?"
+      style={{ width: "100%", height: "100%", textAlign: "left", border: `1px solid ${T.paperDeep}`, borderRadius: 18, cursor: "pointer",
+        background: `linear-gradient(165deg, ${T.paperHi} 0%, ${gold}14 100%)`, boxShadow: "0 6px 22px rgba(58,44,26,.10), 0 1px 4px rgba(58,44,26,.06)",
+        display: "flex", flexDirection: "column", padding: "16px 16px 15px" }}>
+      <span style={{ width: 42, height: 42, borderRadius: 13, background: `${gold}1F`, display: "grid", placeItems: "center", marginBottom: 12 }}><Clock size={22} color={gold} /></span>
+      <div style={{ fontFamily: SERIF, fontWeight: 600, fontSize: 21, lineHeight: 1.14, color: OXBLOOD, marginBottom: 5 }}>What have you got time for?</div>
+      <div style={{ fontFamily: SERIF, fontSize: 15, color: T.inkSoft, lineHeight: 1.5, flex: 1 }}>A few minutes or a whole evening — pick a little joy that fits. A read, a listen, a small wonder, chosen for you.</div>
+      <span style={{ display: "inline-flex", alignItems: "center", gap: 5, fontFamily: UI, fontSize: 13, fontWeight: 800, color: gold, marginTop: 10 }}>Choose <ChevronRight size={16} /></span>
+    </button>
+  );
+}
 function TimePickerLens({ pickFor, isSaved, onSave, onOpen, onTry }) {
   const [band, setBand] = useState(TIME_BANDS[0]);
   const picks = pickFor(band.key);
