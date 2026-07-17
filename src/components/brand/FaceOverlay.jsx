@@ -3,6 +3,7 @@ import { ArrowLeft } from "lucide-react";
 import { T, UI, SERIF } from "@/components/journal/Editorial";
 import { OXBLOOD } from "@/components/brand/SliderKit";
 import { reduceMotion } from "@/components/brand/expandCards";
+import { FlowerGlyph } from "@/components/brand/flora";
 
 // ── FaceOverlay — an IN-BOARD cover for a StackedCard face ────────────────────
 // The clipboard's cards have TWO expand modes now, and they mean different things:
@@ -56,10 +57,16 @@ export default function FaceOverlay({ open, onClose, title, sub, accent = T.gold
             {sub && <div style={{ fontFamily: UI, fontSize: 11.5, fontWeight: 600, letterSpacing: ".02em", color: T.muted, marginTop: 1 }}>{sub}</div>}
           </div>
         </div>
-        {/* body — scrolls if the choices overflow the face */}
-        <div className="fw-face-body" style={{ flex: 1, minHeight: 0, overflowY: "auto", WebkitOverflowScrolling: "touch", padding: "13px 14px 16px" }}>
+        {/* body — scrolls if the choices overflow the face; a botanical close sits at the
+            foot so a face with short content reads as calm space, never an empty box (§brand) */}
+        <div className="fw-face-body" style={{ flex: 1, minHeight: 0, overflowY: "auto", WebkitOverflowScrolling: "touch",
+          padding: "13px 14px 18px", display: "flex", flexDirection: "column" }}>
           <style>{`.fw-face-body::-webkit-scrollbar{width:0}`}</style>
-          {children}
+          <div style={{ flex: "0 0 auto" }}>{children}</div>
+          <div aria-hidden style={{ marginTop: "auto", paddingTop: 22, display: "flex", flexDirection: "column", alignItems: "center", gap: 7, opacity: 0.6 }}>
+            <FlowerGlyph variant="marigold" size={24} color={accent} color2={T.gold} idx="faceclose" />
+            <span style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 13, color: T.muted }}>Tap back when you're done.</span>
+          </div>
         </div>
       </div>
     </div>
