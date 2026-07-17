@@ -18,21 +18,31 @@ import { FlowerGlyph } from "@/components/brand/flora";
 // inside that relative wrapper. Slides up translateY(101%)→0; scrim rises behind it.
 export default function FaceOverlay({ open, onClose, title, sub, accent = T.gold, children }) {
   const backRef = useRef(null);
+  const rootRef = useRef(null);
   const close = useCallback(() => { onClose && onClose(); }, [onClose]);
 
   useEffect(() => {
     if (!open) return;
     const onKey = (e) => { if (e.key === "Escape") { e.stopPropagation(); close(); } };
     window.addEventListener("keydown", onKey);
-    const t = setTimeout(() => { try { backRef.current && backRef.current.focus(); } catch (_) {} }, 40);
-    return () => { window.removeEventListener("keydown", onKey); clearTimeout(t); };
+    const t = setTimeout(() => { try { backRef.current && backRef.current.focus({ preventScroll: true }); } catch (_) {} }, 40);
+    // the board face is tall (900px); if it was mid-scroll, the header (back arrow) can sit
+    // above the fold. Bring the overlay's top just below the top chrome so BACK is always reachable.
+    const t2 = setTimeout(() => {
+      try {
+        const el = rootRef.current; if (!el) return;
+        const r = el.getBoundingClientRect(); const target = 66;
+        if (r.top < 8 || r.top > target + 24) window.scrollBy({ top: r.top - target, behavior: reduceMotion() ? "auto" : "smooth" });
+      } catch (_) {}
+    }, 60);
+    return () => { window.removeEventListener("keydown", onKey); clearTimeout(t); clearTimeout(t2); };
   }, [open, close]);
 
   if (!open) return null;
   const rm = reduceMotion();
 
   return (
-    <div role="dialog" aria-modal="true" aria-label={title || "Choices"}
+    <div ref={rootRef} role="dialog" aria-modal="true" aria-label={title || "Choices"}
       style={{ position: "absolute", inset: 0, zIndex: 40 }}>
       <style>{`@keyframes fwFaceUp{from{transform:translateY(101%)}to{transform:translateY(0)}}@keyframes fwFaceScrim{from{opacity:0}to{opacity:1}}`}</style>
       {/* scrim over the card behind — visible as the panel rises, and a tap-target to go back */}
