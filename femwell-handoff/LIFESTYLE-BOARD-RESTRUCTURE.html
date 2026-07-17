@@ -1,0 +1,149 @@
+<!-- Lifestyle board restructure — items 2–9, ONE coherent plan. 2026-07-17. Phone-readable, no emoji. PLAN ONLY. -->
+<style>
+  .br { font-family:'Inter',system-ui,sans-serif; color:#2E261B; background:#ECE7DA; max-width:820px; margin:0 auto; padding:20px 15px 70px; line-height:1.5; }
+  .br h1 { font-family:'Fraunces',Georgia,serif; font-size:26px; color:#7A1A12; margin:4px 0 5px; letter-spacing:-.3px; }
+  .br h2 { font-family:'Fraunces',Georgia,serif; font-size:19px; color:#0B0805; margin:28px 0 8px; border-bottom:2px solid #D8CFBC; padding-bottom:5px; }
+  .br h3 { font-family:'Fraunces',Georgia,serif; font-size:16px; color:#7A1A12; margin:18px 0 4px; }
+  .br p,.br li { font-size:14px; }
+  .br .box { background:#F4EFE3; border:1px solid #D8CFBC; border-radius:12px; padding:12px 14px; margin:11px 0; }
+  .br .gap { border-left:5px solid #BC2E27; } .br .now { border-left:5px solid #8FAF8F; }
+  .br .warn { border-left:5px solid #A8893F; } .br .new { border-left:5px solid #7A1A12; background:#F6EEE6; }
+  .br table { width:100%; border-collapse:collapse; margin:8px 0; font-size:12.4px; }
+  .br th { text-align:left; background:#E4DCC9; padding:6px 8px; font-size:10px; text-transform:uppercase; letter-spacing:.4px; border-bottom:2px solid #D8CFBC; }
+  .br td { padding:6px 8px; border-bottom:1px solid #E0D8C6; vertical-align:top; }
+  .br .tw { overflow-x:auto; -webkit-overflow-scrolling:touch; }
+  .br code { background:#E4DCC9; border-radius:4px; padding:1px 5px; font-size:11.4px; font-family:ui-monospace,Menlo,monospace; }
+  .br .tag { display:inline-block; font-size:9.5px; font-weight:800; padding:2px 7px; border-radius:999px; text-transform:uppercase; white-space:nowrap; }
+  .br .t-now { background:#8FAF8F; color:#fff; } .br .t-flag { background:#A8893F; color:#fff; }
+  .br .t-stop { background:#BC2E27; color:#fff; } .br .t-new { background:#7A1A12; color:#fff; }
+  .br .muted { color:#6B5E48; font-size:12.3px; }
+  .br .big { font-size:15px; font-weight:800; }
+  .br .kicker { font-size:11px; font-weight:800; letter-spacing:1px; text-transform:uppercase; color:#A8893F; }
+  .br ol.b { counter-reset:s; list-style:none; padding-left:0; }
+  .br ol.b > li { position:relative; padding:9px 12px 9px 42px; margin:8px 0; background:#F4EFE3; border:1px solid #D8CFBC; border-radius:11px; font-size:13.4px; }
+  .br ol.b > li::before { counter-increment:s; content:counter(s); position:absolute; left:9px; top:9px; width:24px; height:24px; background:#7A1A12; color:#fff; border-radius:999px; display:grid; place-items:center; font-weight:800; font-size:11.5px; }
+</style>
+<div class="br">
+  <div class="kicker">FemWell · Lifestyle · items 2–9</div>
+  <h1>The board restructure — one plan</h1>
+  <p class="muted">Halli's consolidated refinements as a single coherent change, not nine piecemeal ones. Plan only — nothing built. The controller-hero (item 1) is already live and verified. 2026-07-17.</p>
+
+  <div class="box new">
+    <p class="big" style="margin:0 0 4px;">The shape</p>
+    <p style="margin:0;">The clipboard keeps its bones — a horizontal slider of <b>StackedCard boards</b>, each split top/bottom by the gold hairline, each half a peek sub-slider. What changes: <b>the good life leads</b>, the boards <b>pull from the whole app</b> (not just Lifestyle's own library), the <b>top shelf holds a set of small cards</b> instead of one, tapping a small card <b>covers the card face</b> with real actions (with a back button), content cards get <b>magazine craft</b>, and everything gets <b>bigger</b>.</p>
+  </div>
+
+  <h2>2 · The good life leads <span class="tag t-now">cheap</span></h2>
+  <p style="margin:0 0 6px;">New board order — <b>the good life first</b>, because the page's first question is "what have I got time for / what would be nice", not "here is a library":</p>
+  <div class="tw"><table>
+    <tr><th>#</th><th>Board</th><th>Top shelf</th><th>Bottom shelf</th></tr>
+    <tr><td>0</td><td><b>The good life</b></td><td>Small focused cards (item 4)</td><td>Permission &amp; small joys (item 6)</td></tr>
+    <tr><td>1</td><td>Read</td><td>Articles &amp; guides</td><td>Stories &amp; fiction</td></tr>
+    <tr><td>2</td><td>Listen &amp; watch</td><td>Episodes &amp; shows</td><td>Watch (+ the contents page, item 9)</td></tr>
+    <tr><td>3</td><td>Books</td><td>Your shelf</td><td>Free classics</td></tr>
+    <tr><td>4</td><td>Story &amp; sky</td><td>Today's chapter</td><td>Your sky + diary</td></tr>
+    <tr><td>5</td><td>Yours</td><td>Saved</td><td>For your phase</td></tr>
+  </table></div>
+  <p class="muted"><b>Watch out:</b> reordering breaks every <code>jumpTo(n)</code> — the six hero chips, the SummaryCard rows and the JumpSheet all index into this array. They must move together, and the smoke gate must run (a wrong index is silent, not a crash).</p>
+
+  <h2>3 · The boards pull from across the app <span class="tag t-flag">needs sources</span></h2>
+  <p style="margin:0 0 6px;">Halli: the time-filter is <b>one lens, not the whole content</b>. Today "The good life" is a time-picker and three static slips. It should be a doorway into her whole life — Lifestyle is the whole-life room, so its boards should surface the rest of the app.</p>
+  <div class="tw"><table>
+    <tr><th>Small card</th><th>Pulls from</th><th>Real today?</th></tr>
+    <tr><td><b>What have you got time for</b></td><td>the ranked feed, by minutes (the lens we already have)</td><td><span class="tag t-now">yes</span></td></tr>
+    <tr><td><b>A line for your journal</b></td><td>Journal — today's prompt / a fresh page</td><td><span class="tag t-now">yes</span></td></tr>
+    <tr><td><b>Something to cook</b></td><td>Nutrition — tonight's recipe</td><td><span class="tag t-now">yes</span></td></tr>
+    <tr><td><b>A day for you</b></td><td>Planner — writes a real wellbeing block</td><td><span class="tag t-now">yes</span></td></tr>
+    <tr><td><b>What women are talking about</b></td><td>Community — the lighter-side room</td><td><span class="tag t-flag">consent — see item 7</span></td></tr>
+    <tr><td><b>A session</b></td><td>Programs — a short guided thing</td><td><span class="tag t-flag">check for content</span></td></tr>
+    <tr><td><b>Your garden</b></td><td>Garden — what's grown this month</td><td><span class="tag t-now">yes</span></td></tr>
+  </table></div>
+  <p class="muted"><b>Rule (learned the hard way, three times):</b> before a card ships, <b>measure its source</b>. If the entity is empty the card is skipped, never faked. I will report the counts per surface before building, not after.</p>
+
+  <h2>4 · The top shelf holds MORE little cards <span class="tag t-now">cheap</span></h2>
+  <p style="margin:0;">Today the top half of a StackedCard is <b>one</b> lens (or one cover). It becomes a <b>2-column grid of small focused cards</b> — icon + label + a real one-line signal (e.g. "3 saved · 12 min"), ~6–8 per board, scrollable within the half. Small ≠ thin: each carries a real signal, never a bare label (the 6a rule applies to small cards too).</p>
+
+  <h2>5 · Tap a small card → it covers the card face <span class="tag t-new">the new interaction</span></h2>
+  <div class="box new">
+    <p style="margin:0 0 6px;"><b>The mechanic:</b> tap a small card → a panel slides up and <b>covers the WHOLE StackedCard face</b> (not the screen) → it holds <b>real recommendations + todos</b> for that thing → a <b>small back arrow, top-left</b>, returns to the small-card list. The board never navigates; the clipboard never moves.</p>
+    <p style="margin:0 0 6px;"><b>Why in-board, not full-screen:</b> we already have the full-screen <code>ExpandDetailCard</code> for <i>consuming</i> one item. This is for <i>choosing</i> — she stays in the board, so the back button is a real return, not a route pop. Breeze × StackedCard, per §6.7.7.</p>
+    <p style="margin:0;"><b>Build:</b> a new <code>FaceOverlay</code> in the shared card language — <code>position:absolute; inset:0</code> inside the board frame, <code>transform: translateY(101%) → 0</code>, ~.32s <code>cubic-bezier(.32,.72,.24,1)</code>, reduced-motion → instant. Back arrow + Escape + tap-scrim. <b>Contents:</b> a hook line, 2–4 <b>real</b> recommendations (from the ranked feed), and 1–3 <b>todos</b> that write for real (Planner/Journal) and tick in place — §6.7.6, no navigation.</p>
+  </div>
+
+  <h2>6 · Permission &amp; small joys open up <span class="tag t-now">mostly cheap</span></h2>
+  <p style="margin:0 0 6px;">Today a permission slip is one line in a tile. It should open (via the face overlay) into:</p>
+  <ul style="margin:0 0 6px;">
+    <li><b>The slip, big</b> — Cormorant, roomy, the whole point.</li>
+    <li><b>Why this is good for you</b> — the honest version. Where there's real evidence we cite it (the sky reader already does this well — Helfrich-Förster, Cajochen). Where there isn't, we say it plainly as a kindness, not dressed as science.</li>
+    <li><b>What women say</b> — <span class="tag t-stop">only if real</span> see item 7.</li>
+    <li><b>One doable thing</b> — "book a quiet hour" → writes to Planner, ticks, blooms. No navigation.</li>
+  </ul>
+
+  <h2>7 · Magazine-grade content cards <span class="tag t-flag">craft + one hard rule</span></h2>
+  <p style="margin:0 0 6px;"><b>The craft (what magazines actually do):</b></p>
+  <div class="tw"><table>
+    <tr><th>Device</th><th>Job</th><th>Our source — all REAL, none invented</th></tr>
+    <tr><td><b>Standfirst</b></td><td>the line under the title that sells the piece</td><td><code>why_it_matters</code> (already on the row)</td></tr>
+    <tr><td><b>The hook</b></td><td>opening para; drops you mid-scene, opens a curiosity gap</td><td>the item's real first paragraph — our articles average <b>4,529 chars</b> of real lede</td></tr>
+    <tr><td><b>Pull-quote</b></td><td>interrupts the scanner and re-hooks them</td><td>a real sentence <b>selected</b> from the body (longest clean sentence in the first third) — extracted, never written</td></tr>
+    <tr><td><b>Read-time</b></td><td>the "I can afford this" signal</td><td><code>readTimeLabel()</code> — already exists</td></tr>
+    <tr><td><b>Social proof</b></td><td>"other women found this worth it"</td><td><b>see the rule below</b></td></tr>
+  </table></div>
+  <div class="box gap">
+    <p style="margin:0 0 6px;"><b class="big">The hard rule on "women in the UK are saying…"</b></p>
+    <p style="margin:0 0 6px;">That line is a <b>claim about real people</b>. Three ways to source it, and only two are allowed:</p>
+    <ul style="margin:0 0 6px;">
+      <li><span class="tag t-stop">no</span> <b>Invented.</b> Never. It's a fabricated testimonial — the worst thing we could put on a wellness app.</li>
+      <li><span class="tag t-stop">no</span> <b>Quoting Community posts.</b> <code>CommunityPost</code>/<code>Comment</code> exist, so it's technically easy — but those women posted <b>anonymously into a screened support room</b>. They did not consent to being quoted on a content card in another part of the app. That's a <b>consent problem, not a copy problem</b>, and I won't build it without Halli's explicit call.</li>
+      <li><span class="tag t-now">yes</span> <b>Real aggregates.</b> "<b>38 women saved this</b>" / "read most on Sunday mornings" — from <code>engagement_score</code> + <code>LifestyleInteractions</code>, which we already write (piece 4). No quoting, no consent issue, and it's true. <b>Show only above a floor (say ≥10)</b> so it's never "2 women saved this".</li>
+      <li><span class="tag t-now">yes</span> <b>Real citations.</b> Named research, the way the science footer already does it.</li>
+    </ul>
+    <p style="margin:0;"><b>Recommendation:</b> ship aggregates + citations now; take the Community-quote question to Halli separately as a consent decision (it could be done properly with an opt-in "share this line" — that's a feature, not a copy tweak).</p>
+  </div>
+
+  <h2>8 · Bigger, bolder <span class="tag t-now">cheap</span></h2>
+  <p style="margin:0 0 6px;">The wasted space has a specific cause: <b>cards are capped at <code>maxWidth: 300</code></b> inside a 430 container, so on a modern phone they sit small in a wide frame.</p>
+  <div class="tw"><table>
+    <tr><th>Thing</th><th>Now</th><th>Proposed</th><th>Why</th></tr>
+    <tr><td>Card width</td><td><code>82%</code>, max <b>300</b></td><td><code>88%</code>, max <b>360</b></td><td>the cap is the wasted space; keeps a real edge-peek</td></tr>
+    <tr><td>Board body</td><td><code>820</code> (410/shelf)</td><td><b>900</b> (450/shelf)</td><td>room for the grid + a hook that breathes</td></tr>
+    <tr><td>Compact cover</td><td><b>120</b></td><td><b>150</b></td><td>the flora is the art; let it land</td></tr>
+    <tr><td>Card title</td><td>18</td><td><b>20</b></td><td>bolder at a glance</td></tr>
+    <tr><td>Hook</td><td>14</td><td><b>15</b>, ~4–6 lines</td><td>6a: fill the space with real words</td></tr>
+    <tr><td>Board title</td><td>—</td><td>+2 &amp; heavier</td><td>the boards should announce themselves</td></tr>
+  </table></div>
+  <p class="muted">Uniform-size-per-row (§6.7.0) still holds — everything scales together, and the smoke gate + a 390px pass must confirm no overflow.</p>
+
+  <h2>9 · Listen &amp; watch — one model <span class="tag t-now">mostly done</span></h2>
+  <ul style="margin:0 0 6px;">
+    <li><b>Video plays inline</b> — already shipped (the YouTube facade: tap the poster, the iframe swaps in and plays; ~1.5MB of player JS never loads until she taps). Nothing more needed; it just needs to be seen.</li>
+    <li><b>The contents page (new):</b> a full-screen <b>"Everything to watch"</b> — a 2-col grid of FloraCover video cards in our own language (<code>PAPER_BG</code>, Fraunces, flora covers — <b>no YouTube chrome</b>), filtered by <b>length</b> (under 5 / 15 / long) and <b>channel</b>, tap → plays inline. Reached from the Watch shelf and the Listen chip.</li>
+    <li><b>Audio folded into the same model:</b> the same page gains a <b>Listen</b> tab — <b>29 real episodes</b> (in-app, global player, background + lock-screen) and the <b>12 curated shows</b> (Spotify/Apple link-outs). One page, two tabs, one card language.</li>
+    <li><span class="tag t-flag">flag</span> <b>The shows use Unsplash stock artwork</b> — breaks the no-stock rule. Swap for FloraCover in this pass.</li>
+  </ul>
+
+  <h2>+ The Sky title height-jump <span class="tag t-now">cheap, same pass</span></h2>
+  <p style="margin:0;">Ms Verify caught it: the Sky chip's title ("The moon is waning gibbous") wraps to two lines at 390px, so the hero <b>changes height</b> as you tap between chips — jumpy. <b>Fix:</b> a <code>minHeight</code> on the hero title block sized to two lines, so every chip reserves the same space. One line of CSS.</p>
+
+  <h2>Build order — small pieces, each smoke-gated</h2>
+  <ol class="b">
+    <li><b>Sizing + the Sky fix</b> — pure numbers; instantly visible; lowest risk.</li>
+    <li><b>Board reorder</b> (good life first) + retarget every <code>jumpTo</code> index together.</li>
+    <li><b>The FaceOverlay</b> — the new interaction, in the shared card language.</li>
+    <li><b>Top shelf → small-card grid</b>, wired to the overlay.</li>
+    <li><b>Permission opens up</b> (the overlay's first real content).</li>
+    <li><b>Across-the-app pulls</b> — measure every source first; skip what's empty.</li>
+    <li><b>Magazine craft</b> — standfirst/hook/pull-quote extraction + real aggregates.</li>
+    <li><b>The watch/listen contents page</b> + retire the stock artwork.</li>
+  </ol>
+
+  <div class="box warn">
+    <p class="big" style="margin:0 0 4px;">Flags before any of this is built</p>
+    <ul style="margin:0;">
+      <li><b>Community quotes = a consent decision</b> (item 7). Halli's call, not mine.</li>
+      <li><b>Across-the-app sources must be measured first</b> (item 3). I've mis-declared "empty" three times by measuring the output of a pipeline that never ran — not again.</li>
+      <li><b>No new entity or function</b> is needed for any of this. If one turns out to be, I stop and flag (the 50-fn cap is already blown at ~118).</li>
+      <li><b>Every piece runs <code>scripts/smokeRender.cjs</code> BEFORE deploy</b>, then a live pass. A green build and a 200 are not verification.</li>
+    </ul>
+  </div>
+</div>
