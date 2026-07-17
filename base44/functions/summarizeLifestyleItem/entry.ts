@@ -228,7 +228,18 @@ async function fetchYouTubeMeta(videoId) {
   // ONE API call returns snippet + status + contentDetails (duration, region, age rating).
   const url = `https://www.googleapis.com/youtube/v3/videos?part=status,contentDetails,snippet&id=${videoId}&key=${YT_KEY}`;
   const res = await fetch(url, { signal: AbortSignal.timeout(8000) });
-  if (!res.ok) return null;
+  // Surface the REAL API failure (status + reason) instead of collapsing it to
+  // null — "quotaExceeded" and "keyInvalid" need different fixes. A null return
+  // is reserved for a genuinely missing video (items[] empty).
+  if (!res.ok) {
+    let reason = '', detail = '';
+    try {
+      const body = await res.json();
+      reason = body?.error?.errors?.[0]?.reason || body?.error?.status || '';
+      detail = body?.error?.message || '';
+    } catch { /* non-JSON body */ }
+    throw new Error(`YouTube API HTTP ${res.status} reason=${reason || 'unknown'} :: ${String(detail).slice(0, 200)}`);
+  }
   const data = await res.json();
   const v = data.items?.[0];
   if (!v) return null;
@@ -331,7 +342,13 @@ Return JSON: { summary: string, phase_tags: string[], try_this_content_key: stri
   };
 }
 
-async function processVideoItem(base44, item) {
+// backfill=true (opt-in, default false): enrich an ALREADY-PUBLISHED library
+// without ever shrinking or re-ordering it —
+//   • duration-based hiding is SKIPPED (Shorts AND >60min podcasts stay visible)
+//   • published_at is NOT re-stamped (feed recency preserved)
+// The embeddability gate still runs: a genuinely unplayable video must not sit
+// in the feed pretending to play. Summary + is_embeddable are written as normal.
+async function processVideoItem(base44, item, backfill = false) {
   // Step A: ONE YouTube API call returns everything we need
   let meta;
   try {
@@ -354,9 +371,11 @@ async function processVideoItem(base44, item) {
   if (meta.regionBlockedForGB)             { await applyRejectEmbed(base44, item, 'region_blocked');   return { outcome: 'rejected_embed' }; }
   if (meta.ageRestricted)                  { await applyRejectEmbed(base44, item, 'age_gated');        return { outcome: 'rejected_embed' }; }
 
-  // Step C: duration rules
-  if (meta.duration_seconds < 60)          { await applyHide(base44, item, 'shorts_under_60s');        return { outcome: 'hidden' }; }
-  if (meta.duration_seconds > 3600)        { await applyHide(base44, item, 'over_60_minutes');         return { outcome: 'hidden' }; }
+  // Step C: duration rules — SKIPPED in backfill mode (never hide existing library rows)
+  if (!backfill) {
+    if (meta.duration_seconds < 60)        { await applyHide(base44, item, 'shorts_under_60s');        return { outcome: 'hidden' }; }
+    if (meta.duration_seconds > 3600)      { await applyHide(base44, item, 'over_60_minutes');         return { outcome: 'hidden' }; }
+  }
 
   // Step D: write embed_url for in-app player
   const embedUrl = `https://www.youtube.com/embed/${item.video_id}`;
@@ -405,9 +424,10 @@ async function processVideoItem(base44, item) {
     phase_tags: inferredPhaseTags,
     try_this_content_key: validatedTryThisKey,
     status: 'PUBLISHED',
-    published_at: new Date().toISOString(),
     updated_at: new Date().toISOString(),
   };
+  // Backfill must not re-date an already-published library (would reshuffle the feed).
+  if (!backfill) updatePayload.published_at = new Date().toISOString();
   if (needsFreeImage(item.image_url)) {
     try {
       const picked = await pickFreeImage({
@@ -426,7 +446,7 @@ async function processVideoItem(base44, item) {
   return { outcome: 'published' };
 }
 
-async function processArticleItem(base44, item) {
+async function processArticleItem(base44, item, backfill = false) {
   try {
     const articleText = await fetchArticleText(item.content_url);
     const textToUse = articleText || item.summary || item.title;
@@ -489,9 +509,9 @@ Return JSON with:
       phase_tags: phaseTagsArr,
       try_this_content_key: validatedTryThisKey,
       status: 'PUBLISHED',
-      published_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
     };
+    if (!backfill) updatePayload.published_at = new Date().toISOString();
     if (needsFreeImage(item.image_url)) {
       try {
         const picked = await pickFreeImage({
@@ -524,7 +544,8 @@ Deno.serve(async (req) => {
     }
 
     const body = await req.json().catch(() => ({}));
-    const { item_id, batch_size = 5 } = body;
+    // backfill defaults FALSE — pipelineOrchestrator/ingest callers are unchanged.
+    const { item_id, batch_size = 5, backfill = false } = body;
 
     let items;
     if (item_id) {
@@ -539,9 +560,9 @@ Deno.serve(async (req) => {
       let result;
       try {
         if (item.media_type === 'VIDEO' && item.video_id) {
-          result = await processVideoItem(base44, item);
+          result = await processVideoItem(base44, item, backfill);
         } else {
-          result = await processArticleItem(base44, item);
+          result = await processArticleItem(base44, item, backfill);
         }
       } catch (err) {
         await logIngestError(base44, 'summarizeLifestyleItem', 'enrichment',
