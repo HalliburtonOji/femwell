@@ -390,7 +390,7 @@ export default function LifestyleEliteShell() {
   // Essential content (real entities) — this gates the initial render. Kept off the external
   // gutendex fetch so a slow public-domain API can never hold the whole page on the loader.
   const loadContent = useCallback(async () => {
-    const [rows, chs, ho, pods] = await Promise.all([
+    const [rows, chs, ho, pods, fic] = await Promise.all([
       base44.entities.LifestyleItems.filter({ status: "PUBLISHED" }, "-engagement_score", 60).catch(() => []),
       // ONE gating contract (dailyStory.js) — never the newest-ever row, never a stale
       // chapter dressed up as "today's". The whole series; the gate picks the day's chapter.
@@ -400,9 +400,12 @@ export default function LifestyleEliteShell() {
       // above misses them; fetch them by media_type so the Listen board + the For-you "A listen"
       // pick have real audio to play + rotate through (measured: 87 PODCAST/PUBLISHED episodes).
       base44.entities.LifestyleItems.filter({ media_type: "PODCAST", status: "PUBLISHED" }, "-created_date", 60).catch(() => []),
+      // #4 — FemWell fiction (content_type FICTION) is likewise missed by the engagement cap;
+      // fetch it so the Books "Your shelf" has real fiction to open IN PLACE (measured: 102).
+      base44.entities.LifestyleItems.filter({ content_type: "FICTION", status: "PUBLISHED" }, "-created_date", 24).catch(() => []),
     ]);
     const seen = new Set();
-    const merged = [...(Array.isArray(rows) ? rows : []), ...(Array.isArray(pods) ? pods : [])]
+    const merged = [...(Array.isArray(rows) ? rows : []), ...(Array.isArray(pods) ? pods : []), ...(Array.isArray(fic) ? fic : [])]
       .filter((i) => i && i.title && !seen.has(i.id) && seen.add(i.id));
     setItems(merged);
     setChapters(Array.isArray(chs) ? chs : []);
