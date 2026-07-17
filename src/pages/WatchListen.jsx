@@ -16,6 +16,12 @@ import { EXTERNAL_PODCASTS } from "@/components/lifestyle/listen/ExternalPodcast
 import { LIFESTYLE_VIDEOS } from "@/data/lifestyleVideos";
 
 const stripHtml = (s) => (s ? String(s).replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim() : "");
+// real third-party titles carry emoji + hashtag tails; strip them so the grid reads as OURS
+// (brand: no emoji), keeping the actual words.
+const cleanTitle = (t) => String(t || "")
+  .replace(/[\u{1F000}-\u{1FAFF}\u{2600}-\u{27BF}\u{2190}-\u{21FF}\u{2B00}-\u{2BFF}\u{FE0F}\u{1F1E6}-\u{1F1FF}]/gu, "")
+  .replace(/(^|\s)#[\w-]+/g, "")
+  .replace(/\s+/g, " ").trim();
 // minutes from duration_seconds, else parse a label ("20 min" / "2h 14min" / "1:02:30")
 const minutesOf = (it) => {
   const s = Number(it?.duration_seconds);
@@ -106,22 +112,26 @@ export default function WatchListen() {
   useEffect(() => {
     let alive = true;
     (async () => {
-      let rows = [];
-      try { rows = await base44.entities.LifestyleItems.filter({ status: "PUBLISHED" }, "-engagement_score", 200).catch(() => []); } catch { rows = []; }
+      // audio (the 29 real episodes) is FEW next to ~900 videos, so an engagement-sorted cap
+      // buries it — fetch podcasts on their OWN query so they always show, then the videos.
+      const [pods, rows] = await Promise.all([
+        base44.entities.LifestyleItems.filter({ status: "PUBLISHED", media_type: "PODCAST" }, "-created_date", 60).catch(() => []),
+        base44.entities.LifestyleItems.filter({ status: "PUBLISHED" }, "-engagement_score", 160).catch(() => []),
+      ]);
       if (!alive) return;
       const out = [];
       const seen = new Set();
-      const push = (o) => { if (o && !seen.has(o.id)) { seen.add(o.id); out.push(o); } };
-      (Array.isArray(rows) ? rows : []).forEach((r) => {
+      const push = (o) => { if (o && o.title && !seen.has(o.id)) { seen.add(o.id); out.push(o); } };
+      [...(Array.isArray(pods) ? pods : []), ...(Array.isArray(rows) ? rows : [])].forEach((r) => {
         const m = String(r.media_type || "").toUpperCase();
         if (/PODCAST|AUDIO/.test(m) && r.audio_url) {
-          push({ id: r.id, kind: "audio", title: r.title, source: r.source_name || r.channel_name || "FemWell", audioSrc: r.audio_url, seconds: Number(r.duration_seconds) || 0, mins: minutesOf(r), category: "listen podcast rest" });
+          push({ id: r.id, kind: "audio", title: cleanTitle(r.title), source: r.source_name || r.channel_name || "FemWell", audioSrc: r.audio_url, seconds: Number(r.duration_seconds) || 0, mins: minutesOf(r), category: "listen podcast rest" });
         } else if (m === "VIDEO" && r.video_id && r.is_embeddable !== false) {
-          push({ id: r.id, kind: "video", title: r.title, source: r.channel_name || r.source_name || "", youtubeId: r.video_id, mins: minutesOf(r), category: "creative watch make" });
+          push({ id: r.id, kind: "video", title: cleanTitle(r.title), source: r.channel_name || r.source_name || "", youtubeId: r.video_id, mins: minutesOf(r), category: "creative watch make" });
         }
       });
       // fold in the curated, verified-embeddable videos (our whole-life watch lane)
-      LIFESTYLE_VIDEOS.forEach((v) => push({ id: v.id, kind: "video", title: v.title, source: v.channel_name || "", youtubeId: v.video_id, mins: minutesOf(v), category: "creative watch make" }));
+      LIFESTYLE_VIDEOS.forEach((v) => push({ id: v.id, kind: "video", title: cleanTitle(v.title), source: v.channel_name || "", youtubeId: v.video_id, mins: minutesOf(v), category: "creative watch make" }));
       if (alive) { setItems(out); setLoading(false); }
     })();
     return () => { alive = false; };
