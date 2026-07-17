@@ -27,6 +27,7 @@ export function FwFloraHero({
   title, line, bloom = "daisy", colorway = "gold",
   flankL = "iris", flankR = "sunflower", butterfly = true, creature = "butterfly",
   ringSize = 244, bloomSize = 170, idx = "hero", titleColor = T.ink, openness = 1, variant,
+  titleMinHeight,
 }) {
   const cw = cwOf(colorway);
   // the hero wants BIG, lush, colourful blooms on every phase — small/pale/pendant
@@ -81,7 +82,7 @@ export function FwFloraHero({
         )}
       </div>
       {/* carved heart (§3) + Ephesis script title + flanking meaning-blooms */}
-      <div style={{ display: "flex", alignItems: "center", gap: 9, marginTop: 2, flexWrap: "wrap", justifyContent: "center" }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 9, marginTop: 2, flexWrap: "wrap", justifyContent: "center", ...(titleMinHeight ? { minHeight: titleMinHeight } : null) }}>
         {flankL && <FlowerGlyph variant={flankL} size={22} color={cwOf("plum").petal} color2={cwOf("plum").tip} idx={`${idx}-fl-${uid}`} />}
         <BrandHeart size={16} />
         <div style={{ fontFamily: SCRIPT, fontWeight: 400, fontSize: 44, lineHeight: 1.05, color: titleColor }}>{title}</div>

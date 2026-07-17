@@ -610,11 +610,11 @@ export function CoverCard({ item: raw, onOpen, compact = false }) {
           has a title and nothing else), the flora art GROWS to fill the card rather than leaving
           a void under two lines. The art is real content — a blank rectangle isn't. */}
       <FloraCover title={item.title} category={item.category} colorway={item.cw} seed={item.id}
-        height={summaryOf(item) ? (compact ? 120 : 158) : (compact ? 172 : 216)}
+        height={summaryOf(item) ? (compact ? 150 : 180) : (compact ? 200 : 240)}
         roundTop showTitle={false} idx={`cov-${item.id}`} />
       <div style={{ padding: compact ? "10px 13px 12px" : "13px 15px 15px", flex: 1, display: "flex", flexDirection: "column" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 6, fontFamily: UI, fontSize: 10, fontWeight: 800, letterSpacing: ".1em", textTransform: "uppercase", color: c.petal }}><I size={12} /> {item.kind}</div>
-        <div style={{ fontFamily: FRAUNCES, fontWeight: 600, fontSize: compact ? 18 : 22, lineHeight: 1.12, color: OXBLOOD, margin: "5px 0 3px" }}>{item.title}</div>
+        <div style={{ fontFamily: FRAUNCES, fontWeight: 600, fontSize: compact ? 20 : 24, lineHeight: 1.14, color: OXBLOOD, margin: "5px 0 3px" }}>{item.title}</div>
         {/* THE HOOK AT REST. Previously clamped to 2 lines, which is exactly why a card with
             plenty of room showed two lines and then a void. It now FILLS the space the card
             actually has (flex + overflow) and shows as many real lines as fit, with a soft fade
@@ -624,7 +624,7 @@ export function CoverCard({ item: raw, onOpen, compact = false }) {
           if (!s) return null;
           return (
             <div style={{ position: "relative", flex: "1 1 auto", minHeight: 0, overflow: "hidden", marginTop: 1 }}>
-              <div style={{ fontFamily: SERIF, fontSize: compact ? 14 : 15, color: T.inkSoft, lineHeight: 1.45 }}>{s}</div>
+              <div style={{ fontFamily: SERIF, fontSize: compact ? 15 : 16, color: T.inkSoft, lineHeight: 1.5 }}>{s}</div>
               <div aria-hidden style={{ position: "absolute", left: 0, right: 0, bottom: 0, height: 20, background: `linear-gradient(180deg, ${T.paperHi}00, ${T.paperHi}E6)` }} />
             </div>
           );

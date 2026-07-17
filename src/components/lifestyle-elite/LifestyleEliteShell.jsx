@@ -173,7 +173,7 @@ function PeekShelf({ label, accent, children }) {
         style={{ flex: 1, minHeight: 0, display: "flex", gap: 12, overflowX: "auto", scrollSnapType: "x mandatory", WebkitOverflowScrolling: "touch", overscrollBehaviorX: "contain", scrollbarWidth: "none", padding: "2px 0" }}>
         <style>{`.fw-peek-track::-webkit-scrollbar{display:none}`}</style>
         {arr.map((c, i) => (
-          <div key={i} style={{ flex: "0 0 82%", maxWidth: 300, scrollSnapAlign: "start", display: "flex", flexDirection: "column", minWidth: 0 }}>{c}</div>
+          <div key={i} style={{ flex: "0 0 88%", maxWidth: 360, scrollSnapAlign: "start", display: "flex", flexDirection: "column", minWidth: 0 }}>{c}</div>
         ))}
         <div aria-hidden style={{ flex: "0 0 4px" }} />
       </div>
@@ -756,7 +756,7 @@ export default function LifestyleEliteShell() {
           return (
             <>
               <FwFloraHero title={active.title} colorway={active.cw} bloom={ph.bloom} openness={active.openness}
-                creature={active.creature} flankL="iris" flankR="sunflower" titleColor={OXBLOOD} line={active.line} />
+                creature={active.creature} flankL="iris" flankR="sunflower" titleColor={OXBLOOD} line={active.line} titleMinHeight={92} />
               <div className="fw-hero-ctl" style={{ display: "flex", gap: 8, overflowX: "auto", padding: "12px 2px 2px" }}>
                 <style>{`.fw-hero-ctl{scrollbar-width:none}.fw-hero-ctl::-webkit-scrollbar{display:none}`}</style>
                 {HERO_CARDS.map((c, i) => {
@@ -830,7 +830,7 @@ export default function LifestyleEliteShell() {
 
             {/* ── BOARD 0 — READ ────────────────────────────────────────────── */}
             <Clipboard title="Read" sub="ARTICLES & GUIDES · STORIES & FICTION" accent={plum} flower="iris" idx="cb-read" titleColor={OXBLOOD}>
-              <BoardBody>
+              <BoardBody h={900}>
                 <StackedShelves
                   top={<PeekShelf label="Articles & guides" accent={plum}>{articleCards.map((it) => <CoverCard key={it.id} item={it} compact onOpen={() => setExpanded(it)} />)}</PeekShelf>}
                   bottom={<PeekShelf label="Stories & fiction" accent={crimson}>{storyCards.map((it) => <CoverCard key={it.id} item={it} compact onOpen={() => setExpanded(it)} />)}</PeekShelf>} />
@@ -839,7 +839,7 @@ export default function LifestyleEliteShell() {
 
             {/* ── BOARD 1 — LISTEN & WATCH ──────────────────────────────────── */}
             <Clipboard title="Listen & watch" sub="PODCASTS & SHOWS · WATCH & TRENDING" accent={sage} flower="bluebell" idx="cb-listen" titleColor={OXBLOOD}>
-              <BoardBody>
+              <BoardBody h={900}>
                 <StackedShelves
                   top={<PeekShelf label="Podcasts & shows" accent={sage}>{audioCards.map((it) => <CoverCard key={it.id} item={it} compact onOpen={() => setExpanded(it)} />)}</PeekShelf>}
                   bottom={<PeekShelf label="Watch & trending" accent={gold}>{videoCards.map((it) => <CoverCard key={it.id} item={it} compact onOpen={() => setExpanded(it)} />)}</PeekShelf>} />
@@ -848,7 +848,7 @@ export default function LifestyleEliteShell() {
 
             {/* ── BOARD 2 — BOOKS ───────────────────────────────────────────── */}
             <Clipboard title="Books" sub="YOUR SHELF · FREE CLASSICS" accent={sky} flower="camellia" idx="cb-books" titleColor={OXBLOOD}>
-              <BoardBody>
+              <BoardBody h={900}>
                 <StackedShelves
                   top={<PeekShelf label="Your shelf" accent={sky}>{shelfBookCards.map((it) => <CoverCard key={it.id} item={it} compact onOpen={() => setExpanded(it)} />)}</PeekShelf>}
                   bottom={<PeekShelf label="Free classics" accent={sky}>{classicCards.map((it) => <CoverCard key={it.id} item={it} compact onOpen={() => setExpanded(it)} />)}</PeekShelf>} />
@@ -857,7 +857,7 @@ export default function LifestyleEliteShell() {
 
             {/* ── BOARD 3 — STORY & SKY (the two daily rituals) ─────────────── */}
             <Clipboard title="Story & sky" sub="TODAY'S CHAPTER · YOUR SKY" accent={crimson} flower="poppy" idx="cb-story" titleColor={OXBLOOD}>
-              <BoardBody>
+              <BoardBody h={900}>
                 <StackedShelves
                   top={<PeekShelf label="Today's chapter" accent={crimson}>{dailyStoryCards.map((it) => <CoverCard key={it.id} item={it} compact onOpen={() => setExpanded(it)} />)}</PeekShelf>}
                   bottom={
@@ -872,7 +872,7 @@ export default function LifestyleEliteShell() {
 
             {/* ── BOARD 4 — THE GOOD LIFE (the doing room) ──────────────────── */}
             <Clipboard title="The good life" sub="WHAT DO YOU HAVE TIME FOR · PERMISSION & SMALL JOYS" accent={gold} flower="marigold" idx="cb-goodlife" titleColor={OXBLOOD}>
-              <BoardBody>
+              <BoardBody h={900}>
                 <StackedShelves
                   top={
                     <PeekShelf label="What do you have time for?" accent={gold}>
@@ -890,7 +890,7 @@ export default function LifestyleEliteShell() {
 
             {/* ── BOARD 5 — YOURS ───────────────────────────────────────────── */}
             <Clipboard title="Yours" sub="SAVED · FOR YOUR PHASE" accent={gold} flower="daisy" idx="cb-yours" titleColor={OXBLOOD}>
-              <BoardBody>
+              <BoardBody h={900}>
                 <StackedShelves
                   top={
                     <PeekShelf label="Saved" accent={gold}>
