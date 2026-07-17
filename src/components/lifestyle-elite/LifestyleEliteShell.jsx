@@ -481,7 +481,15 @@ export default function LifestyleEliteShell() {
     chips: [r.category, r.emotional_tag].filter(Boolean).slice(0, 3),
     body: [stripHtml(r.lede || r.summary || "") || "Open it full-screen to read the whole thing."],
     // §1/§2 play INLINE when the source is a real media file; off-platform stays an honest link-out
-    ...(type === "video" ? (playableMedia(r.content_url) ? { videoSrc: r.content_url } : { external: true }) : {}),
+    // A real media FILE plays as <video>; a YOUTUBE row (all 284 live ones) plays via the
+    // inline facade — it is embeddable, so it must NOT link out. `is_embeddable` is undefined
+    // on every live row (the embed-gate never ran), so we treat unknown as playable and honour
+    // only an explicit false. TikTok/Instagram genuinely cannot be embedded → real link-out.
+    ...(type === "video" ? (
+      playableMedia(r.content_url) ? { videoSrc: r.content_url }
+      : (r.video_id && r.is_embeddable !== false && !isTikTok(r)) ? { youtubeId: r.video_id }
+      : { external: true }
+    ) : {}),
     ...(type === "audio" && playableMedia(r.audio_url) ? { audioSrc: r.audio_url } : {}),
     // captions (video · WCAG SC 1.2.2 Level A) + transcript (audio-only · SC 1.2.1) when we have them
     ...(r.captions_url ? { captionsSrc: r.captions_url } : {}),
@@ -492,7 +500,8 @@ export default function LifestyleEliteShell() {
     duration: Number(r.duration_seconds) || undefined,
     _raw: r,
     actions: [{
-      label: type === "video" ? "Watch" : type === "audio" ? "Open episode" : type === "book" ? "Open reader" : "Read this",
+      label: type === "video" ? ((r.video_id && r.is_embeddable !== false && !isTikTok(r)) ? "Open full-screen" : "Watch")
+        : type === "audio" ? "Open episode" : type === "book" ? "Open reader" : "Read this",
       Icon: type === "video" ? "Film" : type === "audio" ? "Headphones" : type === "book" ? "Book" : "BookOpen",
       primary: true,
       onClick: () => (type === "audio" && r.episode_url) ? openExternal(r.episode_url) : openItem(r),
@@ -513,11 +522,12 @@ export default function LifestyleEliteShell() {
     const real = (grouped.video || []).slice(0, 4).map((r) => rowCard(r, "video"));
     // off-platform watches (YouTube/TikTok) are `external` — never fake-embedded, always an honest link-out
     const curated = real.length ? [] : LIFESTYLE_VIDEOS.slice(0, 4).map((v) => ({
-      id: v.id, type: "video", title: v.title, subtitle: v.channel_name, external: true,
+      // hand-picked and verified embeddable → it plays HERE, like everything else
+      id: v.id, type: "video", title: v.title, subtitle: v.channel_name, youtubeId: v.video_id,
       summary: v.summary || "A hand-picked watch from a channel we trust — it opens on YouTube, where it lives.",
       meta: [["Film", v.duration_label || "A short watch"], ["Play", v.channel_name]], chips: ["watch"],
       body: [],
-      actions: [{ label: "Watch", Icon: "Film", primary: true, onClick: () => openExternal(v.content_url) }],
+      actions: [{ label: "Open on YouTube", Icon: "Film", primary: false, onClick: () => openExternal(v.content_url) }],
     }));
     const tik = (grouped.tiktok || []).slice(0, 3).map((t) => ({
       id: t.id, type: "video", title: t.title, subtitle: t.source_name || "Trending", external: true,

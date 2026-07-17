@@ -441,10 +441,52 @@ export function FloraVideo({ src, item, accent }) {
   );
 }
 
-// picks the right media for the item: real video → real audio → the simulated player
-// (demos/no-src). External platforms (TikTok/YouTube) never fake-embed — they link out.
+// ── REAL inline YOUTUBE — the facade pattern. The library is 284 YouTube rows; sending her
+// out to youtube.com was 3+ taps and lost the page. This plays IN the card in 2.
+//
+// RESEARCHED (17/07/2026):
+//  • FACADE, not a cold iframe: a YouTube embed pulls ~1.5MB+ of player JS on mount. Mounting
+//    one per card is why the boards loaded slowly. We render NO iframe until she taps — the
+//    poster is the generative FloraCover (zero fetch) — then swap in the iframe with autoplay=1
+//    so her ONE tap both loads and plays it. This is the lite-embed pattern.
+//  • youtube-nocookie.com: no tracking cookie until playback (privacy + her page stays clean).
+//  • playsinline=1 or iPhone forces fullscreen; rel=0 keeps suggestions to the same channel.
+//  • allow="autoplay" is required for the tap-to-play swap to actually start.
+//  • NOT gated on `is_embeddable === true`: that field is undefined on all 284 live rows (the
+//    embed-gate never ran over them), and gating on it is exactly why every video link-outs
+//    today. We treat unknown as playable and only honour an explicit `false`. YouTube itself
+//    degrades gracefully with its own "watch on YouTube" if a video ever refuses to embed.
+export function FloraYouTube({ videoId, item, accent }) {
+  const [started, setStarted] = useState(false);
+  if (started) {
+    return (
+      <iframe
+        src={`https://www.youtube-nocookie.com/embed/${videoId}?autoplay=1&rel=0&modestbranding=1&playsinline=1`}
+        title={item.title || "Video"} loading="lazy" allowFullScreen
+        allow="autoplay; encrypted-media; picture-in-picture; fullscreen"
+        style={{ width: "100%", aspectRatio: "16 / 9", maxHeight: 260, border: `1px solid ${T.paperDeep}`, borderRadius: 16, display: "block", background: T.ink }}
+      />
+    );
+  }
+  return (
+    <button onClick={() => setStarted(true)} aria-label={`Play ${item.title || "video"}`} className="fw-ce-press"
+      style={{ position: "relative", width: "100%", padding: 0, border: `1px solid ${T.paperDeep}`, borderRadius: 16, overflow: "hidden", cursor: "pointer", display: "block", background: "transparent" }}>
+      <FloraCover title={item.title} category={item.category} colorway={item.cw} seed={`${item.id}-poster`} height={180} radius={0} showTitle={false} idx={`ypost-${item.id}`} />
+      <span style={{ position: "absolute", inset: 0, display: "grid", placeItems: "center", background: "rgba(28,20,12,0.16)" }}>
+        <span style={{ width: 60, height: 60, borderRadius: 999, background: "rgba(244,239,227,0.94)", border: `1px solid ${accent}`, display: "grid", placeItems: "center", boxShadow: "0 6px 20px rgba(58,44,26,0.28)" }}>
+          <Play size={26} color={accent} style={{ marginLeft: 3 }} />
+        </span>
+      </span>
+    </button>
+  );
+}
+
+// picks the right media for the item: real video file → YouTube (inline facade) → real audio
+// → the simulated player (demos/no-src). Only TikTok/Instagram link out — they genuinely
+// can't be embedded honestly, so `external` stays a real escape hatch.
 function MediaBlock({ item, accent }) {
   if (item.videoSrc && !item.external) return <FloraVideo src={item.videoSrc} item={item} accent={accent} />;
+  if (item.youtubeId && !item.external) return <FloraYouTube videoId={item.youtubeId} item={item} accent={accent} />;
   if (item.audioSrc && !item.external) return <FloraAudio src={item.audioSrc} label={item.playerLabel || item.title} accent={accent} initialDuration={item.duration || 0} item={item} />;
   if (item.player) return <InlinePlayer label={item.playerLabel || item.title} duration={item.duration || 300} accent={accent} mediaKind={item.mediaKind || "audio"} />;
   return null;
