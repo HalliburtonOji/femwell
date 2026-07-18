@@ -1064,7 +1064,8 @@ export default function LifestyleEliteShell() {
           return (
             <>
               <FwFloraHero title={active.title} colorway={active.cw} bloom={ph.bloom} openness={active.openness}
-                creature={active.creature} flankL="iris" flankR="sunflower" titleColor={OXBLOOD} line={active.line} titleMinHeight={92} />
+                creature={active.creature} flankL="iris" flankR="sunflower" titleColor={OXBLOOD} line={active.line}
+                garden="lifestyle" />
               <div className="fw-hero-ctl" style={{ display: "flex", gap: 8, overflowX: "auto", padding: "12px 2px 2px" }}>
                 <style>{`.fw-hero-ctl{scrollbar-width:none}.fw-hero-ctl::-webkit-scrollbar{display:none}`}</style>
                 {HERO_CARDS.map((c, i) => {
