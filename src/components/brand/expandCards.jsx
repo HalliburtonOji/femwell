@@ -100,10 +100,17 @@ export const CARD_TYPE_KEYS = Object.keys(CARD_TYPES);
 export function resolveCard(item) {
   const t = CARD_TYPES[item?.type] || {};
   const D = decodeEntities;
+  // Headline fields also get emoji + hashtag tails stripped — ingested third-party titles carry
+  // them ("Family Reif over the years ♥️", "#yoga") and the brand is no-emoji anywhere. Applied
+  // to title/subtitle ONLY, never to body prose.
+  const H = (s) => (typeof s === "string"
+    ? D(s).replace(/[\u{1F000}-\u{1FAFF}\u{2600}-\u{27BF}\u{2190}-\u{21FF}\u{2B00}-\u{2BFF}\u{FE0F}\u{1F1E6}-\u{1F1FF}\u{2764}]/gu, "")
+        .replace(/(^|\s)#[\w-]+/g, "").replace(/\s+/g, " ").trim()
+    : s);
   return {
     ...t, ...item,
     // decode entities on every text field a card renders (fixes raw "&apos;"/"&amp;" etc.)
-    title: D(item.title), subtitle: D(item.subtitle), summary: D(item.summary),
+    title: H(item.title), subtitle: H(item.subtitle), summary: D(item.summary),
     author: D(item.author), overline: D(item.overline), excerpt: D(item.excerpt),
     kind: item.kind || t.kind,
     Icon: item.Icon || t.Icon,

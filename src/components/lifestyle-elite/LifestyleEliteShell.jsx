@@ -286,6 +286,15 @@ const takeawaysOf = (r) => {
   const arr = Array.isArray(r?.takeaways) ? r.takeaways : [];
   return arr.map((t) => stripHtml(typeof t === "string" ? t : (t?.text || t?.point || t?.title || ""))).filter(Boolean).slice(0, 6);
 };
+// Playable videos, BEST FIRST. Measured (measure_usable_videos.md): all 919 rows render, but
+// only 138 carry a real (>=120-char) summary — those are the considered ones. The rest are
+// thin (often Shorts / personal clips), so we prefer the bodied ones for a flagship slot and
+// only fall back to the thin tail when there's nothing better. Never shows an unplayable row.
+const playableVideos = (list) => {
+  const playable = (list || []).filter((r) => r && r.video_id && r.is_embeddable !== false);
+  const bodied = playable.filter((r) => stripHtml(r.summary || "").length >= 120);
+  return bodied.length ? bodied : playable;
+};
 // a SHORT summary (piece #3, audio cards) — the PLAYER is the content, not a wall of
 // podcast description. First ~2 sentences, cut cleanly at a sentence/word boundary.
 const shortSummary = (text, max = 260) => {
@@ -796,8 +805,8 @@ export default function LifestyleEliteShell() {
     return [...real, ...ext];
   }, [grouped, rowCard, openExternal]);
   const videoCards = useMemo(() => {
-    // rotate a fresh handful of real watches each day out of the loaded video pool
-    const real = rotateDaily(grouped.video || [], 4).map((r) => rowCard(r, "video"));
+    // rotate a fresh handful of real watches each day — bodied ones first (see playableVideos)
+    const real = rotateDaily(playableVideos(grouped.video), 4).map((r) => rowCard(r, "video"));
     // off-platform watches (YouTube/TikTok) are `external` — never fake-embedded, always an honest link-out
     const curated = real.length ? [] : LIFESTYLE_VIDEOS.slice(0, 4).map((v) => ({
       // hand-picked and verified embeddable → it plays HERE, like everything else
@@ -946,7 +955,7 @@ export default function LifestyleEliteShell() {
     // 3b · Watch — its OWN slot, also rotating daily. These USED to share one slot with the
     // listen, so once real episodes existed a video NEVER appeared here — despite ~800 usable
     // ones. Only genuinely playable rows (video_id, not explicitly un-embeddable).
-    const viList = (grouped.video || []).filter((r) => r.video_id && r.is_embeddable !== false);
+    const viList = playableVideos(grouped.video);
     const vi = viList.length ? rotateDaily(viList, 1)[0] : firstOf("video");
     if (vi) push(rowCard(vi, "video"), "Something to watch");
     else if (!au) push(videoCards[0], "Something to watch");
