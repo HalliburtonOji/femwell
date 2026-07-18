@@ -2998,7 +2998,7 @@ function RedesignHome({ presence, lifeStage, profile, user, onEnter, onCrisis, o
       </div>
 
       {/* 1 · FLORA HERO + shelf CONTROLLER cards (tap-to-rebloom = the shelf switcher) */}
-      <FwFloraHero title={active.title} colorway={active.cw} bloom={active.flower} openness={active.openness} creature={active.creature} flankL="chamomile" flankR="cosmos" titleColor={OXBLOOD} line={active.line} garden="community" />
+      <FwFloraHero title={active.title} colorway={active.cw} bloom={active.flower} openness={active.openness} creature={active.creature} flankL="chamomile" flankR="cosmos" titleColor={OXBLOOD} line={active.line} />
       <div className="fw-cm-ctl" style={{ display: "flex", gap: 8, overflowX: "auto", padding: "12px 2px 2px", justifyContent: "center" }}>
         <style>{`.fw-cm-ctl{scrollbar-width:none}.fw-cm-ctl::-webkit-scrollbar{display:none}`}</style>
         {SHELVES.map((c, i) => { const on = i === shelfIdx; const col = cwOf(c.cw).petal; return (

@@ -56,6 +56,10 @@ const GARDENS = {
     ground: [18, 46, 82],   // broken anchors — bare cream between, never a lawn stripe
     front: [95, 126],       // blades crossing IN FRONT of the bough foot
   },
+  // ── PARKED (Halli 2026-07-18): ONLY Lifestyle is in scope for now. The defs below are
+  // built + were live-verified, but their pages are NOT mounted (no `garden` prop) — the
+  // rollout to other pages is a FUTURE item for when we move to those pages. Inert until
+  // a page opts in; delete on request. ────────────────────────────────────────────────
   // Nutrition — the kitchen-garden potager. The ONE garden with IMPLIED ROWS: order,
   // not wild (§5.3 "herbs + grasses"). Rows read through EVEN spacing at a UNIFORM
   // height/size in the back plane + evenly-pitched ground anchors — the opposite of

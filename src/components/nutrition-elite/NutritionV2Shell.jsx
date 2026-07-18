@@ -1020,7 +1020,7 @@ export default function NutritionV2Shell() {
           const aCol = cwOf(active.cw).petal;
           return (
             <>
-              <FwFloraHero title={active.title} colorway={active.cw} bloom={ph.bloom} openness={active.openness} creature={active.creature} flankL="chamomile" flankR="sunflower" titleColor={OXBLOOD} line={active.line} garden="nutrition" />
+              <FwFloraHero title={active.title} colorway={active.cw} bloom={ph.bloom} openness={active.openness} creature={active.creature} flankL="chamomile" flankR="sunflower" titleColor={OXBLOOD} line={active.line} />
               {/* controller cards — UNIFORM size — sit where the little bloom used to be; tap to re-bloom + re-title the hero */}
               <div className="fw-hero-ctl" style={{ display: "flex", gap: 8, overflowX: "auto", padding: "12px 2px 2px", justifyContent: "center" }}>
                 <style>{`.fw-hero-ctl{scrollbar-width:none}.fw-hero-ctl::-webkit-scrollbar{display:none}`}</style>
