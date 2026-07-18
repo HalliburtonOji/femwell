@@ -474,10 +474,17 @@ export default function LifestyleEliteShell() {
   const loadPhase = useCallback(async (phase) => {
     if (!phase || !CANON_PHASES.includes(phase)) { setPhaseFeed([]); return; }
     try {
-      const rows = await base44.entities.LifestyleItems.filter({ phase_tags: phase, status: "PUBLISHED" }, "-published_at", 12).catch(() => []);
-      const clean = (Array.isArray(rows) ? rows : []).filter((i) => i && i.title && phaseTagsOf(i).includes(phase));
+      // base44's scalar filter can't array-CONTAINS on `phase_tags`, and the phase-tagged content
+      // lives mostly in STORY (measured: 54% of stories, ~2.5% of articles) — so fetch a batch of
+      // stories + a few recent articles and filter client-side against the canonical allow-list.
+      const [stories, arts] = await Promise.all([
+        base44.entities.LifestyleItems.filter({ content_type: "STORY", status: "PUBLISHED" }, "-published_at", 120).catch(() => []),
+        base44.entities.LifestyleItems.filter({ content_type: "ARTICLE", status: "PUBLISHED" }, "-published_at", 60).catch(() => []),
+      ]);
+      const clean = [...(Array.isArray(stories) ? stories : []), ...(Array.isArray(arts) ? arts : [])]
+        .filter((i) => i && i.title && phaseTagsOf(i).includes(phase));
       setPhaseFeed(clean);
-    } catch { /* leave empty → the shelf shows its honest empty state */ }
+    } catch { setPhaseFeed([]); }
   }, []);
 
   // record a real action (open / save) so the feed LEARNS — fire-and-forget, never blocks UX,
