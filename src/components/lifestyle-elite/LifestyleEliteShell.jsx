@@ -373,7 +373,6 @@ export default function LifestyleEliteShell() {
   const [savedIds, setSavedIds] = useState([]);    // UserProfile.saved_item_ids (the SAVE field)
   const [skyNotes, setSkyNotes] = useState([]);    // recent SkyNote rows (real, persisted)
   const [feed, setFeed] = useState(null);          // personalised reads from getLifestyleFeed (or null)
-  const [phaseFeed, setPhaseFeed] = useState([]);  // real phase-tagged items for her cycle phase
 
   // overlays
   const [calOpen, setCalOpen] = useState(false);
@@ -468,25 +467,6 @@ export default function LifestyleEliteShell() {
     } catch { /* leave feed null → deck falls back to loaded reads */ }
   }, []);
 
-  // real phase-tuned content for HER cycle phase (Track A). The engagement cap in loadContent
-  // misses the phase-tagged stories (low engagement), so fetch by phase_tags — then RE-CHECK
-  // client-side against the canonical allow-list (the field is polluted with theme junk).
-  const loadPhase = useCallback(async (phase) => {
-    if (!phase || !CANON_PHASES.includes(phase)) { setPhaseFeed([]); return; }
-    try {
-      // base44's scalar filter can't array-CONTAINS on `phase_tags`, and the phase-tagged content
-      // lives mostly in STORY (measured: 54% of stories, ~2.5% of articles) — so fetch a batch of
-      // stories + a few recent articles and filter client-side against the canonical allow-list.
-      const [stories, arts] = await Promise.all([
-        base44.entities.LifestyleItems.filter({ content_type: "STORY", status: "PUBLISHED" }, "-published_at", 120).catch(() => []),
-        base44.entities.LifestyleItems.filter({ content_type: "ARTICLE", status: "PUBLISHED" }, "-published_at", 60).catch(() => []),
-      ]);
-      const clean = [...(Array.isArray(stories) ? stories : []), ...(Array.isArray(arts) ? arts : [])]
-        .filter((i) => i && i.title && phaseTagsOf(i).includes(phase));
-      setPhaseFeed(clean);
-    } catch { setPhaseFeed([]); }
-  }, []);
-
   // record a real action (open / save) so the feed LEARNS — fire-and-forget, never blocks UX,
   // never records the seeded fallback (no raw id). Reuses recordLifestyleAction (existing fn).
   const recordAction = useCallback((rawOrItem, action) => {
@@ -540,13 +520,12 @@ export default function LifestyleEliteShell() {
         loadGutenberg();          // background — never blocks the loader
         loadSkyNotes(u?.id);      // background — real sky-diary rows
         if (u?.id) loadFeed(getCurrentCyclePhase(p));  // background — personalised "Reads for you"
-        loadPhase(getCurrentCyclePhase(p));            // background — real phase-tuned picks
         try { unsubItems = base44.entities.LifestyleItems.subscribe(() => loadContent()); } catch { /* no-op */ }
       } catch { /* unauth / offline — render gracefully */ }
       if (alive) setLoading(false);
     })();
     return () => { alive = false; unsubItems?.(); };
-  }, [loadContent, loadGutenberg, loadSkyNotes, loadFeed, loadPhase]);
+  }, [loadContent, loadGutenberg, loadSkyNotes, loadFeed]);
 
   // ── SAVE toggle (persists to UserProfile.saved_item_ids — optimistic + rollback) ──
   const toggleSave = useCallback(async (item) => {
@@ -976,9 +955,13 @@ export default function LifestyleEliteShell() {
   const phaseCards = useMemo(() => {
     const ph = phaseKey && CANON_PHASES.includes(phaseKey) ? phaseKey : null;
     if (!ph) return [];
-    const real = phaseFeed.length ? phaseFeed : (items || []).filter((i) => phaseTagsOf(i).includes(ph));
-    return real.slice(0, 6).map((r) => rowCard(r, CARD_TYPE_OF(r)));
-  }, [phaseFeed, items, phaseKey, rowCard]);
+    // genuinely phase-tagged content from the loaded library (incl. today's story). phase_tags is
+    // only ~5.6% populated (a measured content gap), so this stays honestly empty until tagged.
+    const pool = [...(story ? [story] : []), ...(items || [])];
+    const real = pool.filter((i) => i && i.title && phaseTagsOf(i).includes(ph));
+    const seen = new Set();
+    return real.filter((i) => !seen.has(i.id) && seen.add(i.id)).slice(0, 6).map((r) => rowCard(r, CARD_TYPE_OF(r)));
+  }, [items, story, phaseKey, rowCard]);
 
   // save from inside an expanded card → the REAL persistence + the feed's learning loop
   const isCardSaved = useCallback((it) => !!(it?._raw?.id && savedIds.includes(it._raw.id)), [savedIds]);
