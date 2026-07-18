@@ -56,6 +56,23 @@ const GARDENS = {
     ground: [18, 46, 82],   // broken anchors — bare cream between, never a lawn stripe
     front: [95, 126],       // blades crossing IN FRONT of the bough foot
   },
+  // Nutrition — the kitchen-garden potager. The ONE garden with IMPLIED ROWS: order,
+  // not wild (§5.3 "herbs + grasses"). Rows read through EVEN spacing at a UNIFORM
+  // height/size in the back plane + evenly-pitched ground anchors — the opposite of
+  // Lifestyle's varied cottage spires. Species are the classic potager trio.
+  nutrition: {
+    back: [
+      { x: 12, y: 54, s: 12, v: "chamomile" }, { x: 31, y: 54, s: 12, v: "lavender" },
+      { x: 50, y: 53, s: 12, v: "chamomile" }, { x: 69, y: 54, s: 12, v: "lavender" },
+      { x: 88, y: 53, s: 12, v: "chamomile" },
+    ],
+    mid: [
+      { x: 14, y: 76, s: 36, v: "chamomile" }, { x: 52, y: 80, s: 34, v: "lavender" },
+      { x: 86, y: 74, s: 35, v: "marigold" },
+    ],
+    ground: [14, 38, 62, 86],   // evenly pitched = the row rhythm (still broken, never a strip)
+    front: [95, 126],
+  },
 };
 
 // one grass tuft: a few few-point paths (never per-petal circles — node budget)
