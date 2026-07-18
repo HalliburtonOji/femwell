@@ -77,11 +77,26 @@ function FwGardenPlanes({ def, cw, idx, uid, plane }) {
     zIndex: z, opacity: op, pointerEvents: "none",
   });
   if (plane === "back") {
-    return (<>{def.back.map((b, i) => (
-      <div key={`gb${i}`} aria-hidden style={pos(b, 0, 0.44)}>
-        <FlowerGlyph variant={b.v} size={b.s} color={lighten(cw.petal, 0.5)} color2={lighten(GARDEN_LEAF, 0.3)} idx={`${idx}-gb${i}-${uid}`} />
-      </div>
-    ))}</>);
+    // Distance is drawn as SILHOUETTE, not detail — few-point paths + a couple of small
+    // heads each (a full FlowerGlyph here blows the node budget for shapes you can't
+    // resolve at 12px anyway). Lifted toward the paper so it recedes by COLOUR, not blur.
+    const petal = lighten(cw.petal, 0.5), leaf = lighten(GARDEN_LEAF, 0.3);
+    return (
+      <svg aria-hidden viewBox={`0 0 ${FLORA_STAGE.w} ${FLORA_STAGE.h}`}
+        style={{ position: "absolute", inset: 0, width: "100%", height: "100%", zIndex: 0, overflow: "visible", opacity: 0.44, pointerEvents: "none" }}>
+        {def.back.map((b, i) => {
+          const x = (b.x / 100) * FLORA_STAGE.w, y = (b.y / 100) * FLORA_STAGE.h, r = b.s / 3.4;
+          return (
+            <g key={`gb${i}`}>
+              <path d={`M${x} ${y + b.s * 1.9} Q ${x - 2} ${y + b.s} ${x} ${y}`} stroke={leaf} strokeWidth="1.1" fill="none" strokeLinecap="round" />
+              <circle cx={x} cy={y} r={r} fill={petal} />
+              <circle cx={x - r * 0.9} cy={y + r * 0.8} r={r * 0.66} fill={petal} opacity="0.8" />
+              <circle cx={x + r * 0.9} cy={y + r * 0.6} r={r * 0.58} fill={petal} opacity="0.7" />
+            </g>
+          );
+        })}
+      </svg>
+    );
   }
   if (plane === "mid") {
     return (<>{def.mid.map((b, i) => (
