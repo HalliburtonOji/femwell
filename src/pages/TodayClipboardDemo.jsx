@@ -367,10 +367,10 @@ export default function TodayClipboardDemo() {
         const e = (rows || []).filter((r) => r && r.body)[0]; if (alive && e) setContent((c) => ({ ...c, echo: e }));
       }).catch(() => {});
       // ── PLANNER — today's real plan (DailyPlan narrative + PlannerItems list) ──
-      withTimeout(base44.entities.DailyPlan.filter({ user_id: id, day_key: todayISO }, null, 1)).then((rows) => {
+      withTimeout(base44.entities.DailyPlan.filter({ user_id: id, day_key: todayKey() }, null, 1)).then((rows) => {
         const p = (rows || []).filter(Boolean)[0]; if (alive && p) setContent((c) => ({ ...c, plan: p }));
       }).catch(() => {});
-      withTimeout(base44.entities.PlannerItems.filter({ user_id: id, date: todayISO }, "-created_date", 12)).then((rows) => {
+      withTimeout(base44.entities.PlannerItems.filter({ user_id: id, date: todayKey() }, "-created_date", 12)).then((rows) => {
         const arr = (rows || []).filter((r) => r && r.title); if (alive && arr.length) setContent((c) => ({ ...c, planItems: arr }));
       }).catch(() => {});
       // ── PULSE — real weekly narrative + recent pattern cards ──
@@ -381,7 +381,7 @@ export default function TodayClipboardDemo() {
         const arr = (rows || []).filter((r) => r && (r.insight_text || r.content || r.title)); if (alive && arr.length) setContent((c) => ({ ...c, insights: arr }));
       }).catch(() => {});
       // ── HOROSCOPE — today's real reading (graceful empty if none for this user) ──
-      withTimeout(base44.entities.HoroscopeReading.filter({ user_id: id, reading_date: todayISO }, "-created_date", 1)).then((rows) => {
+      withTimeout(base44.entities.HoroscopeReading.filter({ user_id: id, reading_date: todayKey() }, "-created_date", 1)).then((rows) => {
         const h = (rows || []).filter(Boolean)[0]; if (alive && h) setContent((c) => ({ ...c, horoscope: h }));
       }).catch(() => {});
       // ── LISTEN — a real published podcast episode (the Lifestyle Listen source: LifestyleItems media_type PODCAST) ──
