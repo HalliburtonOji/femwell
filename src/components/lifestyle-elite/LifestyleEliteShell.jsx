@@ -168,6 +168,22 @@ const CANON_PHASES = ["menstrual", "follicular", "ovulatory", "luteal"];
 const phaseTagsOf = (i) => (Array.isArray(i?.phase_tags) ? i.phase_tags : [])
   .map((t) => String(t).toLowerCase()).filter((t) => CANON_PHASES.includes(t));
 
+// Track A "Read board → big cards" — CONTINUE READING. The readers already persist her place
+// device-locally as `fw_reader_pos_{bookId}` = {chapterIndex, pageInChapter, paragraphIndex, ts}
+// (DailyStoryReader). We read those back, newest first, so the Read board can offer "pick up
+// where you left off" — no new entity, no server state, just her own device.
+const CONTINUE_PREFIX = "fw_reader_pos_";
+const readContinuePositions = (max = 3) => {
+  try {
+    return Object.keys(localStorage)
+      .filter((k) => k.startsWith(CONTINUE_PREFIX))
+      .map((k) => { try { return { bookId: k.slice(CONTINUE_PREFIX.length), ...JSON.parse(localStorage.getItem(k) || "{}") }; } catch { return null; } })
+      .filter((p) => p && p.bookId)
+      .sort((a, b) => (Number(b.ts) || 0) - (Number(a.ts) || 0))
+      .slice(0, max);
+  } catch { return []; }
+};
+
 // ── helpers for the new persistence (PlannerItems · SkyNote) ──
 const nowISO = () => new Date().toISOString();
 const todayKey = () => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`; };
@@ -373,6 +389,7 @@ export default function LifestyleEliteShell() {
   const [savedIds, setSavedIds] = useState([]);    // UserProfile.saved_item_ids (the SAVE field)
   const [skyNotes, setSkyNotes] = useState([]);    // recent SkyNote rows (real, persisted)
   const [feed, setFeed] = useState(null);          // personalised reads from getLifestyleFeed (or null)
+  const [continueItems, setContinueItems] = useState([]); // books she's part-way through (device-local)
 
   // overlays
   const [calOpen, setCalOpen] = useState(false);
@@ -467,6 +484,20 @@ export default function LifestyleEliteShell() {
     } catch { /* leave feed null → deck falls back to loaded reads */ }
   }, []);
 
+  // CONTINUE READING — resolve her device-local saved positions into real rows (a tiny by-id
+  // fetch, ≤3). Guarded; if a book has since gone it's simply dropped, never a broken card.
+  const loadContinue = useCallback(async () => {
+    const positions = readContinuePositions();
+    if (!positions.length) { setContinueItems([]); return; }
+    try {
+      const rows = await Promise.all(positions.map((p) =>
+        withTimeout(base44.entities.LifestyleItems.filter({ id: p.bookId }, undefined, 1), 6000, "continue")
+          .then((r) => (Array.isArray(r) ? r[0] : null)).catch(() => null)
+      ));
+      setContinueItems(positions.map((p, i) => (rows[i] && rows[i].title ? { item: rows[i], pos: p } : null)).filter(Boolean));
+    } catch { setContinueItems([]); }
+  }, []);
+
   // record a real action (open / save) so the feed LEARNS — fire-and-forget, never blocks UX,
   // never records the seeded fallback (no raw id). Reuses recordLifestyleAction (existing fn).
   const recordAction = useCallback((rawOrItem, action) => {
@@ -519,13 +550,14 @@ export default function LifestyleEliteShell() {
         await loadContent();
         loadGutenberg();          // background — never blocks the loader
         loadSkyNotes(u?.id);      // background — real sky-diary rows
+        loadContinue();           // background — "pick up where you left off"
         if (u?.id) loadFeed(getCurrentCyclePhase(p));  // background — personalised "Reads for you"
         try { unsubItems = base44.entities.LifestyleItems.subscribe(() => loadContent()); } catch { /* no-op */ }
       } catch { /* unauth / offline — render gracefully */ }
       if (alive) setLoading(false);
     })();
     return () => { alive = false; unsubItems?.(); };
-  }, [loadContent, loadGutenberg, loadSkyNotes, loadFeed]);
+  }, [loadContent, loadGutenberg, loadSkyNotes, loadFeed, loadContinue]);
 
   // ── SAVE toggle (persists to UserProfile.saved_item_ids — optimistic + rollback) ──
   const toggleSave = useCallback(async (item) => {
@@ -714,6 +746,21 @@ export default function LifestyleEliteShell() {
 
   const articleCards = useMemo(() => [...(grouped.article || []), ...(grouped.guide || [])].slice(0, 6).map((r) => rowCard(r, "article")), [grouped, rowCard]);
   const storyCards = useMemo(() => (grouped.story || []).slice(0, 6).map((r) => rowCard(r, "daily_story")), [grouped, rowCard]);
+  // CONTINUE READING cards — lead the Read board with what she's part-way through. The eyebrow
+  // says "Continue reading", the meta says where she is, and tapping resumes IN PLACE (the same
+  // immersive reader as #4, which restores her saved position from fw_reader_pos_{bookId}).
+  const continueCards = useMemo(() => continueItems.map(({ item, pos }) => {
+    const ch = Number(pos?.chapterIndex) || 0;
+    const where = ch > 0 ? `Chapter ${ch + 1}` : "Back to the beginning";
+    return {
+      ...rowCard(item, CARD_TYPE_OF(item)),
+      kind: "Continue reading", overline: "Continue reading", cw: "gold",
+      meta: [["Book", where], ["Clock", "Pick up where you left off"]],
+      chips: ["reading now"],
+      _continue: item,
+      actions: [{ label: "Continue reading", Icon: "Book", primary: true, onClick: () => openBook(item) }],
+    };
+  }), [continueItems, rowCard, openBook]);
   // ── LISTEN — the REAL podcast feature, wired at last ─────────────────────────────────────
   // Correction (2026-07-17): my earlier "0 audio" measured LifestyleItems media_type only. The
   // podcast subsystem was always real — 12 curated, ACTIVE sources with live RSS feeds
@@ -1028,7 +1075,11 @@ export default function LifestyleEliteShell() {
 
         <SummaryCard eyebrow="A few good things today" accent={gold} rows={[
           { Icon: Feather, label: "Today's chapter", text: story ? `${story.series_title || story.title || "Today's chapter"}${story.cliffhanger ? ` — "${story.cliffhanger}"` : ""}` : "Today's chapter is on its way — tap to open the Daily Story.", onClick: () => setChapterOpen(true) },
-          { Icon: BookOpen, label: "Your reading", text: savedItems.length ? `${savedItems.length} saved to come back to · ${grouped.article.length} fresh reads` : (editorialPick ? editorialPick.title : "Fresh reads land here as they're published."), onClick: () => jumpTo(1) },
+          { Icon: BookOpen, label: "Your reading",
+            text: continueCards.length ? `${continueCards.length} on the go · ${grouped.article.length} fresh reads`
+              : savedItems.length ? `${savedItems.length} saved to come back to · ${grouped.article.length} fresh reads`
+              : (editorialPick ? editorialPick.title : "Fresh reads land here as they're published."),
+            onClick: () => jumpTo(1) },
           { Icon: Moon, label: "Your sky", text: horoscope ? (horoscope.headline || horoscope.narrative || "Today's reading is ready.") : "Add your birth details to read today's sky.", onClick: () => setReadingOpen(true) },
         ]} />
 
@@ -1112,10 +1163,19 @@ export default function LifestyleEliteShell() {
 
             {/* ── BOARD 1 — READ ────────────────────────────────────────────── */}
             <Clipboard title="Read" sub="ARTICLES & GUIDES · STORIES & FICTION" accent={plum} flower="iris" idx="cb-read" titleColor={OXBLOOD}>
+              {/* Track A — BIG cards on the Read board (full-size FloraCovers + titles, no
+                  `compact`), led by what she's part-way through. A continue card resumes
+                  IN PLACE in one tap; everything else opens its expand. */}
               <BoardBody h={900}>
                 <StackedShelves
-                  top={<PeekShelf label="Articles & guides" accent={plum}>{articleCards.map((it) => <CoverCard key={it.id} item={it} compact onOpen={() => setExpanded(it)} />)}</PeekShelf>}
-                  bottom={<PeekShelf label="Stories & fiction" accent={crimson}>{storyCards.map((it) => <CoverCard key={it.id} item={it} compact onOpen={() => setExpanded(it)} />)}</PeekShelf>} />
+                  top={
+                    <PeekShelf label={continueCards.length ? "Reading now & fresh reads" : "Articles & guides"} accent={plum}>
+                      {[...continueCards, ...articleCards].map((it) => (
+                        <CoverCard key={it.id} item={it} onOpen={() => (it._continue ? openBook(it._continue) : setExpanded(it))} />
+                      ))}
+                    </PeekShelf>
+                  }
+                  bottom={<PeekShelf label="Stories & fiction" accent={crimson}>{storyCards.map((it) => <CoverCard key={it.id} item={it} onOpen={() => setExpanded(it)} />)}</PeekShelf>} />
               </BoardBody>
             </Clipboard>
 
