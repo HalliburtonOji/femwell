@@ -73,6 +73,22 @@ const GARDENS = {
     ground: [14, 38, 62, 86],   // evenly pitched = the row rhythm (still broken, never a strip)
     front: [95, 126],
   },
+  // Community — the shared allotment: MANY plants, none dominant (§5.3 sage/meadow +
+  // clover/bee). Its signature is the WIDEST, most horizontal spread of the set —
+  // edge to edge at a gently varied low height, so no single plant owns the bed.
+  community: {
+    back: [
+      { x: 6, y: 52, s: 12 }, { x: 20, y: 47, s: 11 }, { x: 34, y: 50, s: 12 },
+      { x: 50, y: 45, s: 11 }, { x: 66, y: 49, s: 12 }, { x: 80, y: 46, s: 11 },
+      { x: 94, y: 51, s: 12 },
+    ],
+    mid: [
+      { x: 18, y: 76, s: 35, v: "clover" }, { x: 52, y: 80, s: 33, v: "marigold" },
+      { x: 86, y: 74, s: 34, v: "chamomile" },
+    ],
+    ground: [10, 34, 58, 84],   // wide + broken — an allotment, not a lawn
+    front: [95, 126],
+  },
 };
 
 // one grass tuft: a few few-point paths (never per-petal circles — node budget)
