@@ -449,7 +449,7 @@ export default function LifestyleEliteShell() {
   // Essential content (real entities) — this gates the initial render. Kept off the external
   // gutendex fetch so a slow public-domain API can never hold the whole page on the loader.
   const loadContent = useCallback(async () => {
-    const [rows, chs, ho, pods, fic] = await Promise.all([
+    const [rows, chs, ho, pods, fic, vids] = await Promise.all([
       base44.entities.LifestyleItems.filter({ status: "PUBLISHED" }, "-engagement_score", 60).catch(() => []),
       // ONE gating contract (dailyStory.js) — never the newest-ever row, never a stale
       // chapter dressed up as "today's". The whole series; the gate picks the day's chapter.
@@ -462,9 +462,13 @@ export default function LifestyleEliteShell() {
       // #4 — FemWell fiction (content_type FICTION) is likewise missed by the engagement cap;
       // fetch it so the Books "Your shelf" has real fiction to open IN PLACE (measured: 102).
       base44.entities.LifestyleItems.filter({ content_type: "FICTION", status: "PUBLISHED" }, "-created_date", 24).catch(() => []),
+      // VIDEO — measured: ALL 919 published videos are usable as-is (800 distinct). Fetch a real
+      // pool on its own query so the Watch shelf + the For-you "Something to watch" pick have
+      // something to ROTATE through, instead of whatever the engagement cap happened to catch.
+      base44.entities.LifestyleItems.filter({ media_type: "VIDEO", status: "PUBLISHED" }, "-engagement_score", 80).catch(() => []),
     ]);
     const seen = new Set();
-    const merged = [...(Array.isArray(rows) ? rows : []), ...(Array.isArray(pods) ? pods : []), ...(Array.isArray(fic) ? fic : [])]
+    const merged = [...(Array.isArray(rows) ? rows : []), ...(Array.isArray(pods) ? pods : []), ...(Array.isArray(fic) ? fic : []), ...(Array.isArray(vids) ? vids : [])]
       .filter((i) => i && i.title && !seen.has(i.id) && seen.add(i.id));
     setItems(merged);
     setChapters(Array.isArray(chs) ? chs : []);
@@ -792,7 +796,8 @@ export default function LifestyleEliteShell() {
     return [...real, ...ext];
   }, [grouped, rowCard, openExternal]);
   const videoCards = useMemo(() => {
-    const real = (grouped.video || []).slice(0, 4).map((r) => rowCard(r, "video"));
+    // rotate a fresh handful of real watches each day out of the loaded video pool
+    const real = rotateDaily(grouped.video || [], 4).map((r) => rowCard(r, "video"));
     // off-platform watches (YouTube/TikTok) are `external` — never fake-embedded, always an honest link-out
     const curated = real.length ? [] : LIFESTYLE_VIDEOS.slice(0, 4).map((v) => ({
       // hand-picked and verified embeddable → it plays HERE, like everything else
@@ -934,19 +939,24 @@ export default function LifestyleEliteShell() {
     push(dailyStoryCards[0], "Today's chapter");
     // 2 · Read — her top personalised article
     const a = firstOf("article"); push(a ? rowCard(a, "article") : articleCards[0], "A read for you");
-    // 3 · Listen & watch — a real episode, ROTATING BY THE DAY (piece #3): a different one each
-    // day from the loaded episodes, so "A listen" is fresh rather than always the same top pick.
+    // 3 · Listen — a real episode, ROTATING BY THE DAY so it's fresh, not the same top pick.
     const auList = grouped.audio || [];
-    const au = auList.length ? auList[Math.floor(Date.now() / 86400000) % auList.length] : firstOf("audio");
-    const vi = firstOf("video");
-    push(au ? rowCard(au, "audio") : (vi ? rowCard(vi, "video") : videoCards[0]), au ? "A listen" : "Something to watch");
+    const au = auList.length ? rotateDaily(auList, 1)[0] : firstOf("audio");
+    if (au) push(rowCard(au, "audio"), "A listen");
+    // 3b · Watch — its OWN slot, also rotating daily. These USED to share one slot with the
+    // listen, so once real episodes existed a video NEVER appeared here — despite ~800 usable
+    // ones. Only genuinely playable rows (video_id, not explicitly un-embeddable).
+    const viList = (grouped.video || []).filter((r) => r.video_id && r.is_embeddable !== false);
+    const vi = viList.length ? rotateDaily(viList, 1)[0] : firstOf("video");
+    if (vi) push(rowCard(vi, "video"), "Something to watch");
+    else if (!au) push(videoCards[0], "Something to watch");
     // 4 · Sky — the glimpse (always real: the moon is computed)
     push(horoscopeCards[0], "Your sky");
     // 5 · Books — the shelf, then the free classics
     push(shelfBookCards.find((c) => c.type === "book") || classicCards[0], "From the shelf");
     // 6 · The good life — one small joy
     push(ritualCards[0], "A small joy");
-    return out.filter(Boolean).slice(0, 6);
+    return out.filter(Boolean).slice(0, 7);   // 7 sections now that watch has its own slot
   }, [feed, grouped, rowCard, dailyStoryCards, articleCards, videoCards, horoscopeCards, shelfBookCards, classicCards, ritualCards]);
 
   // ── THE CONTROLLER-HERO's destinations (§6.8.2 band 1) ──────────────────────────────────
