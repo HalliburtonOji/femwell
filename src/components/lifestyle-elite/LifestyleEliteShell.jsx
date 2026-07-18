@@ -160,6 +160,14 @@ const rotateDaily = (pool, n = 3) => {
   return Array.from({ length: n }, (_, i) => arr[(start + i) % arr.length]);
 };
 
+// Track A "personalise For-you" — real phase-tuning. Measured (measure_phase_tags_coverage.md):
+// `phase_tags` is only ~5.6% populated (mostly STORY) AND polluted with non-phase junk
+// ("Empowerment", "Communication"…), so we ALLOW-LIST the four canonical phases and only ever
+// treat those as a phase. Anything else is not a phase → the shelf stays honestly empty.
+const CANON_PHASES = ["menstrual", "follicular", "ovulatory", "luteal"];
+const phaseTagsOf = (i) => (Array.isArray(i?.phase_tags) ? i.phase_tags : [])
+  .map((t) => String(t).toLowerCase()).filter((t) => CANON_PHASES.includes(t));
+
 // ── helpers for the new persistence (PlannerItems · SkyNote) ──
 const nowISO = () => new Date().toISOString();
 const todayKey = () => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`; };
@@ -365,6 +373,7 @@ export default function LifestyleEliteShell() {
   const [savedIds, setSavedIds] = useState([]);    // UserProfile.saved_item_ids (the SAVE field)
   const [skyNotes, setSkyNotes] = useState([]);    // recent SkyNote rows (real, persisted)
   const [feed, setFeed] = useState(null);          // personalised reads from getLifestyleFeed (or null)
+  const [phaseFeed, setPhaseFeed] = useState([]);  // real phase-tagged items for her cycle phase
 
   // overlays
   const [calOpen, setCalOpen] = useState(false);
@@ -414,7 +423,8 @@ export default function LifestyleEliteShell() {
   const storyRead = story ? isChapterRead(story.id) : false;
   const storyReadCount = useMemo(() => readCount(chapters, storyPick), [chapters, storyPick, expanded, readerOpen]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const editorialPick = grouped.story[0] || grouped.article[0] || items[0] || null;
+  // Track A — the editor pick is now the feed's TOP personalised read (not just the first story).
+  const editorialPick = (feed && feed[0]) || grouped.story[0] || grouped.article[0] || items[0] || null;
   const morePicks = useMemo(() => [grouped.article[0], grouped.video[0], grouped.audio[0]].filter(Boolean).slice(0, 2), [grouped]);
   const savedItems = useMemo(() => (items || []).filter((i) => savedIds.includes(i.id)), [items, savedIds]);
   const isSaved = useCallback((id) => savedIds.includes(id), [savedIds]);
@@ -456,6 +466,18 @@ export default function LifestyleEliteShell() {
       const reads = (Array.isArray(rows) ? rows : []).filter((r) => r && r.title && /ARTICLE|STORY|GUIDE|FICTION/.test(String(r.content_type || "").toUpperCase()));
       if (reads.length) setFeed(reads);
     } catch { /* leave feed null → deck falls back to loaded reads */ }
+  }, []);
+
+  // real phase-tuned content for HER cycle phase (Track A). The engagement cap in loadContent
+  // misses the phase-tagged stories (low engagement), so fetch by phase_tags — then RE-CHECK
+  // client-side against the canonical allow-list (the field is polluted with theme junk).
+  const loadPhase = useCallback(async (phase) => {
+    if (!phase || !CANON_PHASES.includes(phase)) { setPhaseFeed([]); return; }
+    try {
+      const rows = await base44.entities.LifestyleItems.filter({ phase_tags: phase, status: "PUBLISHED" }, "-published_at", 12).catch(() => []);
+      const clean = (Array.isArray(rows) ? rows : []).filter((i) => i && i.title && phaseTagsOf(i).includes(phase));
+      setPhaseFeed(clean);
+    } catch { /* leave empty → the shelf shows its honest empty state */ }
   }, []);
 
   // record a real action (open / save) so the feed LEARNS — fire-and-forget, never blocks UX,
@@ -511,12 +533,13 @@ export default function LifestyleEliteShell() {
         loadGutenberg();          // background — never blocks the loader
         loadSkyNotes(u?.id);      // background — real sky-diary rows
         if (u?.id) loadFeed(getCurrentCyclePhase(p));  // background — personalised "Reads for you"
+        loadPhase(getCurrentCyclePhase(p));            // background — real phase-tuned picks
         try { unsubItems = base44.entities.LifestyleItems.subscribe(() => loadContent()); } catch { /* no-op */ }
       } catch { /* unauth / offline — render gracefully */ }
       if (alive) setLoading(false);
     })();
     return () => { alive = false; unsubItems?.(); };
-  }, [loadContent, loadGutenberg, loadSkyNotes, loadFeed]);
+  }, [loadContent, loadGutenberg, loadSkyNotes, loadFeed, loadPhase]);
 
   // ── SAVE toggle (persists to UserProfile.saved_item_ids — optimistic + rollback) ──
   const toggleSave = useCallback(async (item) => {
@@ -920,11 +943,35 @@ export default function LifestyleEliteShell() {
       action: { label: "Open the good life", on: () => jumpTo(0) } },
   ], [firstName, story, moonToday]);
 
-  const savedCards = useMemo(() => (savedItems || []).slice(0, 8).map((r) => rowCard(r, CARD_TYPE_OF(r))), [savedItems, rowCard]);
+  // Track A — Saved is now COLLECTIONS-READY: grouped by kind (Reads · Listens · Watches · Books)
+  // so it clusters into auto-shelves instead of a flat dump. `savedCollections` also drives the
+  // count in the summary; `savedCards` keeps the same card list, just ordered by collection.
+  const SAVED_ORDER = ["article", "story", "book", "audio", "video"];
+  const savedCollections = useMemo(() => {
+    const g = {};
+    (savedItems || []).forEach((i) => { const t = CARD_TYPE_OF(i); (g[t] = g[t] || []).push(i); });
+    return g;
+  }, [savedItems]);
+  const savedCards = useMemo(() =>
+    SAVED_ORDER.flatMap((t) => savedCollections[t] || []).concat(
+      (savedItems || []).filter((i) => !SAVED_ORDER.includes(CARD_TYPE_OF(i)))
+    ).slice(0, 10).map((r) => rowCard(r, CARD_TYPE_OF(r))),
+  [savedCollections, savedItems, rowCard]);
+  const savedSummary = useMemo(() => {
+    const c = { read: 0, listen: 0, watch: 0, book: 0 };
+    (savedItems || []).forEach((i) => { const t = CARD_TYPE_OF(i); if (t === "audio") c.listen++; else if (t === "video") c.watch++; else if (t === "book") c.book++; else c.read++; });
+    const p = (n, w) => `${n} ${w}${n === 1 ? "" : "s"}`;
+    return [c.read && p(c.read, "read"), c.listen && p(c.listen, "listen"), c.watch && p(c.watch, "watch"), c.book && p(c.book, "book")].filter(Boolean).join(" · ");
+  }, [savedItems]);
+  // Track A — REAL phase-tuned picks: genuinely phase-tagged content for HER cycle phase only
+  // (allow-listed). If nothing's tagged for her phase, the shelf shows its honest empty state —
+  // no faking a phase tint out of unrelated content.
   const phaseCards = useMemo(() => {
-    const picks = [grouped.article?.[1] || grouped.article?.[0], grouped.audio?.[0], grouped.video?.[0]].filter(Boolean).slice(0, 3);
-    return picks.map((r) => rowCard(r, CARD_TYPE_OF(r)));
-  }, [grouped, rowCard]);
+    const ph = phaseKey && CANON_PHASES.includes(phaseKey) ? phaseKey : null;
+    if (!ph) return [];
+    const real = phaseFeed.length ? phaseFeed : (items || []).filter((i) => phaseTagsOf(i).includes(ph));
+    return real.slice(0, 6).map((r) => rowCard(r, CARD_TYPE_OF(r)));
+  }, [phaseFeed, items, phaseKey, rowCard]);
 
   // save from inside an expanded card → the REAL persistence + the feed's learning loop
   const isCardSaved = useCallback((it) => !!(it?._raw?.id && savedIds.includes(it._raw.id)), [savedIds]);
@@ -1121,15 +1168,17 @@ export default function LifestyleEliteShell() {
               <BoardBody h={900}>
                 <StackedShelves
                   top={
-                    <PeekShelf label="Saved" accent={gold}>
+                    // collections-ready: the label breaks the saves into their auto-shelves
+                    <PeekShelf label={savedCards.length ? `Saved · ${savedSummary}` : "Saved"} accent={gold}>
                       {savedCards.length ? savedCards.map((it) => <CoverCard key={it.id} item={it} compact onOpen={() => setExpanded(it)} />)
                         : <Panel key="nosaved" label="Saved" Icon={Bookmark} accent={gold}><EmptyLine>Nothing saved yet — tap the heart on any read and it waits for you here.</EmptyLine></Panel>}
                     </PeekShelf>
                   }
                   bottom={
-                    <PeekShelf label="For your phase" accent={sage}>
+                    // real phase name when we have genuinely phase-tagged picks for her
+                    <PeekShelf label={phaseCards.length && phaseKey ? `For your ${phaseLabel(phaseKey).toLowerCase()} week` : "For your phase"} accent={sage}>
                       {phaseCards.length ? phaseCards.map((it) => <CoverCard key={it.id} item={it} compact onOpen={() => setExpanded(it)} />)
-                        : <Panel key="nophase" label="For your phase" Icon={Heart} accent={sage}><EmptyLine>Phase-tuned picks appear here as the library fills out.</EmptyLine></Panel>}
+                        : <Panel key="nophase" label="For your phase" Icon={Heart} accent={sage}><EmptyLine>Phase-tuned reads land here as they're tagged — for now, your For-you deck already leans into your week.</EmptyLine></Panel>}
                     </PeekShelf>
                   } />
               </BoardBody>
