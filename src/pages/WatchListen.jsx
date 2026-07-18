@@ -116,20 +116,26 @@ export default function WatchListen() {
       // audio-bearing items are PODCAST/PUBLISHED, engagement_score 0 so an engagement cap
       // buries them, and only ~29 are recent). So fetch podcasts on their OWN media_type query
       // to get ALL of them, and the videos on the engagement query. Client-keep audio_url.
-      const [pods, rows] = await Promise.all([
+      // MEASURED (measure_usable_videos.md): ALL 919 published VIDEO rows are usable as-is —
+      // every one has a video_id + title and none is explicitly is_embeddable:false. So fetch the
+      // video library on its OWN query rather than leaving it to the engagement cap.
+      const [pods, vids, rows] = await Promise.all([
         base44.entities.LifestyleItems.filter({ media_type: "PODCAST", status: "PUBLISHED" }, "-created_date", 120).catch(() => []),
+        base44.entities.LifestyleItems.filter({ media_type: "VIDEO", status: "PUBLISHED" }, "-engagement_score", 200).catch(() => []),
         base44.entities.LifestyleItems.filter({ status: "PUBLISHED" }, "-engagement_score", 160).catch(() => []),
       ]);
       if (!alive) return;
       const out = [];
       const seen = new Set();
-      const push = (o) => { if (o && o.title && !seen.has(o.id)) { seen.add(o.id); out.push(o); } };
-      [...(Array.isArray(pods) ? pods : []), ...(Array.isArray(rows) ? rows : [])].forEach((r) => {
+      // videos dedup on video_id (measured: 919 rows → 800 distinct; 106 ids repeat)
+      const push = (o, dedupKey) => { const k = dedupKey || o?.id; if (o && o.title && !seen.has(k)) { seen.add(k); out.push(o); } };
+      [...(Array.isArray(pods) ? pods : []), ...(Array.isArray(vids) ? vids : []), ...(Array.isArray(rows) ? rows : [])].forEach((r) => {
         const m = String(r.media_type || "").toUpperCase();
         if (r.audio_url && !/VIDEO/.test(m)) {
           push({ id: r.id, kind: "audio", title: cleanTitle(r.title), source: r.source_name || r.channel_name || "FemWell", audioSrc: r.audio_url, seconds: Number(r.duration_seconds) || 0, mins: minutesOf(r), category: "listen podcast rest" });
         } else if (m === "VIDEO" && r.video_id && r.is_embeddable !== false) {
-          push({ id: r.id, kind: "video", title: cleanTitle(r.title), source: r.channel_name || r.source_name || "", youtubeId: r.video_id, mins: minutesOf(r), category: "creative watch make" });
+          // hook: a real summary where we have one (138), else the channel — never padded
+          push({ id: r.id, kind: "video", title: cleanTitle(r.title), source: r.channel_name || r.source_name || "", youtubeId: r.video_id, mins: minutesOf(r), category: "creative watch make" }, `v-${r.video_id}`);
         }
       });
       // fold in the curated, verified-embeddable videos (our whole-life watch lane)
@@ -140,10 +146,17 @@ export default function WatchListen() {
   }, []);
 
   const gold = cwOf("gold").petal;
+  const byKind = useMemo(() => items.filter((it) => kind === "all" || it.kind === kind), [items, kind]);
+  // MEASURED: videos carry NO duration at all (duration_seconds/label are 0/0 on all 919 — that
+  // one field genuinely IS YouTube-API-blocked). So the length filter only means something where
+  // durations exist (the podcast episodes). Where they don't, we neither apply it nor show it —
+  // otherwise picking a length silently hides the entire watch library.
+  const hasDurations = useMemo(() => byKind.some((it) => it.mins > 0), [byKind]);
   const shown = useMemo(() => {
+    if (!hasDurations) return byKind;
     const lt = LENGTHS.find((l) => l.key === length) || LENGTHS[0];
-    return items.filter((it) => (kind === "all" || it.kind === kind) && lt.test(it.mins));
-  }, [items, length, kind]);
+    return byKind.filter((it) => lt.test(it.mins));
+  }, [byKind, hasDurations, length]);
 
   return (
     <div style={{ ...PAPER_BG, minHeight: "100vh", overflowX: "clip", paddingBottom: "calc(96px + env(safe-area-inset-bottom))" }}>
@@ -167,11 +180,13 @@ export default function WatchListen() {
 
         {tab === "media" ? (
           <>
-            {/* filters — length + kind */}
-            <div style={{ display: "flex", gap: 7, overflowX: "auto", padding: "4px 0 6px", scrollbarWidth: "none" }} className="fw-wl-filters">
-              <style>{`.fw-wl-filters::-webkit-scrollbar{display:none}`}</style>
-              {LENGTHS.map((l) => <Chip key={l.key} on={length === l.key} accent={gold} onClick={() => setLength(l.key)}>{l.label}</Chip>)}
-            </div>
+            {/* filters — length (only where durations exist) + kind */}
+            {hasDurations && (
+              <div style={{ display: "flex", gap: 7, overflowX: "auto", padding: "4px 0 6px", scrollbarWidth: "none" }} className="fw-wl-filters">
+                <style>{`.fw-wl-filters::-webkit-scrollbar{display:none}`}</style>
+                {LENGTHS.map((l) => <Chip key={l.key} on={length === l.key} accent={gold} onClick={() => setLength(l.key)}>{l.label}</Chip>)}
+              </div>
+            )}
             <div style={{ display: "flex", gap: 7, padding: "0 0 12px" }}>
               {KINDS.map((k) => <Chip key={k.key} on={kind === k.key} accent={cwOf("sage").petal} onClick={() => setKind(k.key)}>{k.label}</Chip>)}
             </div>

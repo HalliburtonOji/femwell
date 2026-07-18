@@ -1504,11 +1504,12 @@ function GuidesLens({ items, onOpen }) {
 function MediaLens({ items, kind, onOpen }) {
   const Icon = kind === "audio" ? Headphones : Film, accent = cwOf(kind === "audio" ? "sage" : "gold").petal;
   const real = (items || []).slice(0, 4);
-  // Videos: many real LifestyleItems videos are link-out only (is_embeddable false / no video_id).
-  // When NONE of the real ones actually play in-card, prepend a small hand-picked, verified-embeddable
-  // set so inline video is visibly REAL (they play via youtube-nocookie through the same <LifestyleMedia>).
-  // Real items are kept too — nothing is stripped.
-  const realPlayableVideos = real.filter((r) => String(r.media_type || "").toUpperCase() === "VIDEO" && r.is_embeddable && (r.video_id || r.embed_url));
+  // Videos: the hand-picked set is a LAST RESORT, only when nothing real can play in-card.
+  // FIX (2026-07-18): this used a TRUTHY `is_embeddable` gate — but that field is undefined on
+  // every live row (the embed-gate never ran), so it wrongly classed EVERY real video as
+  // unplayable and always substituted the hand-picked clips. Consistent with rowCard +
+  // FloraYouTube: undefined = playable; only an explicit `false` links out.
+  const realPlayableVideos = real.filter((r) => String(r.media_type || "").toUpperCase() === "VIDEO" && r.is_embeddable !== false && (r.video_id || r.embed_url));
   const usingCurated = kind === "video" && realPlayableVideos.length === 0;
   const isCurated = (it) => String(it?.id || "").startsWith("lv-");
   const list = kind !== "video" ? real : (usingCurated ? [...LIFESTYLE_VIDEOS.slice(0, 4), ...real] : real);

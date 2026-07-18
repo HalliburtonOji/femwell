@@ -66,10 +66,18 @@ export const ICON = {
 // Robby Hoffman". Named set covers the common ones; numeric (&#39; &#8217; …) handled
 // generically. Applied at the shared card layer (resolveCard) so EVERY card is covered.
 const HTML_ENT = { amp: "&", lt: "<", gt: ">", quot: '"', apos: "'", nbsp: " ", hellip: "…", mdash: "—", ndash: "–", rsquo: "’", lsquo: "‘", ldquo: "“", rdquo: "”", middot: "·", eacute: "é", egrave: "è", agrave: "à", ccedil: "ç", deg: "°", pound: "£", euro: "€" };
-export const decodeEntities = (s) => typeof s !== "string" ? s : s.replace(/&(#x?[0-9a-f]+|[a-z][a-z0-9]*);/gi, (m, e) => {
+const decodeOnce = (s) => s.replace(/&(#x?[0-9a-f]+|[a-z][a-z0-9]*);/gi, (m, e) => {
   if (e[0] === "#") { const cp = (e[1] === "x" || e[1] === "X") ? parseInt(e.slice(2), 16) : parseInt(e.slice(1), 10); return Number.isFinite(cp) ? String.fromCodePoint(cp) : m; }
   const v = HTML_ENT[e.toLowerCase()]; return v != null ? v : m;
 });
+// Ingested titles are sometimes DOUBLE-encoded ("Legs &amp;amp; Back" → "&amp;" → "&"), so decode
+// repeatedly until it settles (capped, so a literal "&amp;" in prose can't loop).
+export const decodeEntities = (s) => {
+  if (typeof s !== "string") return s;
+  let out = s, prev;
+  for (let i = 0; i < 3 && out !== prev; i++) { prev = out; out = decodeOnce(out); }
+  return out;
+};
 
 // ── THE VARIATION SET — one entry per content type (§6.7.7) ──────────────────
 // kind = the card's eyebrow · Icon = its mark · cw = colourway (carries meaning)
