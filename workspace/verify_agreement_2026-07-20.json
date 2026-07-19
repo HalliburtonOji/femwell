@@ -1,0 +1,53 @@
+{
+  "url": "https://femwells.com",
+  "publishedBundle": "index-CwEBM20x.js",
+  "bundleProvenance": "local `npx vite build` at HEAD fa62061 produced byte-identical index-CwEBM20x.js -> live bundle IS HEAD, fix is deployed",
+  "measuredAtLocal": "2026-07-20 00:36-00:47 BST (UTC+1)",
+  "measuredAtUTC": "2026-07-19 23:36-23:47Z",
+  "insideUtcLocalBoundaryWindow": true,
+  "auth": {"jwt_sub": "ojihalliburton57@gmail.com", "UserProfile_query_status": 200, "rows_returned": 13, "rows_owned_by_test_user": 5},
+  "groundTruth": {
+    "pickedProfileId": "6a0716bdcbe7ea5d0e04e60f",
+    "last_period_start_date": "2026-04-23", "cycle_avg_length": 27, "period_length": 4,
+    "elapsedDaysLocal": 88, "cycleDayLocal": 8,
+    "elapsedDaysUTC": 87, "cycleDayUTC": 7,
+    "expectedPhase": "follicular"
+  },
+  "assertions": [
+    {"name": "agreement-morning-brief-overlay", "measured": "FOLLICULAR · DAY 8", "expected": "Day 8 (local)", "pass": true},
+    {"name": "agreement-lifestyle-pill", "measured": "Follicular · Day 8 · a fresh-start, bright kind of day", "expected": "Day 8", "pass": true},
+    {"name": "agreement-planner", "measured": "Follicular · Day 8", "expected": "Day 8", "pass": true},
+    {"name": "agreement-today", "measured": "Tell me where you are in your cycle (no cycle day/phase rendered)", "expected": "Follicular · Day 8", "pass": false},
+    {"name": "all-four-agree", "measured": "3 of 4 (overlay 8, Lifestyle 8, Planner 8, Today absent)", "expected": "4 of 4", "pass": false},
+    {"name": "planner-not-demo-values", "measured": "Follicular · Day 8 (not luteal/Day 25, not Day 1)", "pass": true},
+    {"name": "no-Halli-demo-const-leak", "measured": "/\bHalli\b(?!burton)/ false on all 5 routes; only real name 'Halliburton'", "pass": true},
+    {"name": "pulse-cycle-text", "measured": "Follicular (phase only, no day number)", "note": "real phase, matches maths; no day shown by design or omission - not determined", "pass": true},
+    {"name": "garden-cycle-text", "measured": "no own cycle/phase text; only generic word 'ovulation' in copy", "note": "DAY 8 seen on Garden came from the overlay, not Garden UI", "pass": null},
+    {"name": "no-crash-or-blank", "measured": "0 pageerrors on all 5 routes; no blank regions", "pass": true},
+    {"name": "lifestyle-hero-title", "measured": "Halliburton's reading", "pass": true},
+    {"name": "lifestyle-video-header", "measured": "err=null, paused=false, readyState=4, currentTime 0.481575 -> 4.5 across two samples", "pass": true},
+    {"name": "lifestyle-phase-rail-label", "measured": "(not measured - selector matched nothing)", "pass": null},
+    {"name": "lifestyle-card-count", "measured": "(not measured - selector [class*=card] matched 0, selector fault not a zero-card finding)", "pass": null},
+    {"name": "scroll-actually-moved", "measured": "scrollY 0->1200 on all 3; screenshot bytes non-identical", "pass": true}
+  ],
+  "consoleErrors": {
+    "allRoutes": "Failed to load resource: the server responded with a status of 500 ()",
+    "capturedRequestURLs": [
+      "500 GET /api/apps/69a9891a6ccccc1822bbb4bc/entities/LifestyleItems?q={\"id\":\"514\"}&limit=1",
+      "500 GET /api/apps/69a9891a6ccccc1822bbb4bc/entities/LifestyleItems?q={\"id\":\"1342\"}&limit=1",
+      "500 POST /api/apps/69a9891a6ccccc1822bbb4bc/functions/getLifestyleFeed"
+    ],
+    "pageErrors": "none on any route"
+  },
+  "screenshots": [
+    "C:/Users/Halli/femwell-work/workspace/verify_screenshots/agreement_2026-07-20/Today_isolated.png",
+    "C:/Users/Halli/femwell-work/workspace/verify_screenshots/agreement_2026-07-20/Today_overlay_full.png",
+    "C:/Users/Halli/femwell-work/workspace/verify_screenshots/agreement_2026-07-20/overlay_morningbrief.png",
+    "C:/Users/Halli/femwell-work/workspace/verify_screenshots/agreement_2026-07-20/Planner_mobile390.png",
+    "C:/Users/Halli/femwell-work/workspace/verify_screenshots/agreement_2026-07-20/Pulse_mobile390.png",
+    "C:/Users/Halli/femwell-work/workspace/verify_screenshots/agreement_2026-07-20/Garden_mobile390.png",
+    "C:/Users/Halli/femwell-work/workspace/verify_screenshots/agreement_2026-07-20/Lifestyle_final_nooverlay.png",
+    "C:/Users/Halli/femwell-work/workspace/verify_screenshots/agreement_2026-07-20/Lifestyle_mobile390.png"
+  ],
+  "verdict": "FAIL - 3 of 4 agree at Day 8 (up from 2 of 4). Planner fixed. /Today still renders no cycle."
+}

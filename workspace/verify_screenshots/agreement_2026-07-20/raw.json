@@ -1,0 +1,322 @@
+{
+  "measuredAtLocal": "Mon Jul 20 2026 00:38:16 GMT+0100 (British Summer Time)",
+  "profileQuery": {
+    "status": 200,
+    "count": 13,
+    "rows": [
+      {
+        "id": "6a293cd6ffe7ab2dbc625e2a",
+        "user_id": "69d9404d7fecc1f8ff194da1",
+        "last_period_start_date": null,
+        "cycle_avg_length": null,
+        "period_length": null,
+        "life_stage": "reproductive",
+        "created_date": "2026-06-10T10:30:46.959000"
+      },
+      {
+        "id": "6a293cd05d8a6694d41aa0a6",
+        "user_id": "69d9404d7fecc1f8ff194da1",
+        "last_period_start_date": null,
+        "cycle_avg_length": null,
+        "period_length": null,
+        "life_stage": "none",
+        "created_date": "2026-06-10T10:30:40.178000"
+      },
+      {
+        "id": "6a293ccfb48344f480a6d212",
+        "user_id": "69d9404d7fecc1f8ff194da1",
+        "last_period_start_date": null,
+        "cycle_avg_length": null,
+        "period_length": null,
+        "life_stage": "none",
+        "created_date": "2026-06-10T10:30:39.764000"
+      },
+      {
+        "id": "6a0716bdcbe7ea5d0e04e60f",
+        "user_id": "69d9404d7fecc1f8ff194da1",
+        "last_period_start_date": "2026-04-23",
+        "cycle_avg_length": 27,
+        "period_length": 4,
+        "life_stage": "reproductive",
+        "created_date": "2026-05-15T12:51:09.004000"
+      },
+      {
+        "id": "69ff2ab78a1bb42e066b1ded",
+        "user_id": "69ff2a9edf31d6278f44dea8",
+        "last_period_start_date": "2026-05-09",
+        "cycle_avg_length": 28,
+        "period_length": 5,
+        "life_stage": "none",
+        "created_date": "2026-05-09T12:38:15.597000"
+      },
+      {
+        "id": "69fe9adf08f1fbcefe498d6d",
+        "user_id": "69fe9ad0c32e3642ee9ea080",
+        "last_period_start_date": "2026-05-09",
+        "cycle_avg_length": 28,
+        "period_length": 5,
+        "life_stage": "none",
+        "created_date": "2026-05-09T02:24:31.673000"
+      },
+      {
+        "id": "69d94075aa54b958a8a6eba5",
+        "user_id": "69d9404d7fecc1f8ff194da1",
+        "last_period_start_date": null,
+        "cycle_avg_length": null,
+        "period_length": null,
+        "life_stage": "reproductive",
+        "created_date": "2026-04-10T18:24:53.799000"
+      },
+      {
+        "id": "69d56fb6caa326713d3bcac1",
+        "user_id": "69d56e908b086ec1dd1fe8d5",
+        "last_period_start_date": null,
+        "cycle_avg_length": null,
+        "period_length": null,
+        "life_stage": "none",
+        "created_date": "2026-04-07T20:57:26.662000"
+      },
+      {
+        "id": "69d56e918a2818e50d613c61",
+        "user_id": "69d56e7c47c15ae9c1ac9a0c",
+        "last_period_start_date": null,
+        "cycle_avg_length": null,
+        "period_length": null,
+        "life_stage": "none",
+        "created_date": "2026-04-07T20:52:33.332000"
+      },
+      {
+        "id": "69b1bb9a89af8e26ddd8dd4b",
+        "user_id": "69b1bb5bfd990e3c98d97371",
+        "last_period_start_date": null,
+        "cycle_avg_length": 28,
+        "period_length": 6,
+        "life_stage": "none",
+        "created_date": "2026-03-11T18:59:38.672000"
+      },
+      {
+        "id": "69b1b73803e914d9a24af4d3",
+        "user_id": "69b1b7161998e4afb7f39825",
+        "last_period_start_date": "2026-04-02",
+        "cycle_avg_length": 25,
+        "period_length": 5,
+        "life_stage": "pregnant-t3",
+        "created_date": "2026-03-11T18:40:56.730000"
+      },
+      {
+        "id": "69aa9486f104c55d725f9914",
+        "user_id": "69aa94299b1fb8bb06ba9d4e",
+        "last_period_start_date": "2026-02-11",
+        "cycle_avg_length": 26,
+        "period_length": 5,
+        "life_stage": "none",
+        "created_date": "2026-03-06T08:47:02.454000"
+      },
+      {
+        "id": "69a98d2d1cc19b912374ba75",
+        "user_id": "69a9891a6ccccc1822bbb4bd",
+        "last_period_start_date": "2026-04-01",
+        "cycle_avg_length": 25,
+        "period_length": 5,
+        "life_stage": "reproductive",
+        "created_date": "2026-03-05T14:03:25.696000"
+      }
+    ]
+  },
+  "routes": {
+    "Today": {
+      "url": "https://femwells.com/Today",
+      "textLen": 4233,
+      "cycleMatches": [
+        "DAY 20",
+        "day\n\n1",
+        "day 20",
+        "Day 1"
+      ],
+      "allMatches": [
+        "DAY 20",
+        "day\n\n1",
+        "day 20",
+        "Day 1"
+      ],
+      "hasHalli": false,
+      "videos": [
+        {
+          "src": "https://femwells.com/media/garden/lifestyle-dusk-720.mp4",
+          "err": null,
+          "ct": 0,
+          "paused": true
+        }
+      ],
+      "screenshot": "C:/Users/Halli/femwell-work/workspace/verify_screenshots/agreement_2026-07-20/Today_mobile390.png",
+      "consoleErrors": [
+        "[error] Failed to load resource: the server responded with a status of 500 ()"
+      ],
+      "pageErrors": [],
+      "failedRequests": [
+        "500 GET https://femwells.com/api/apps/69a9891a6ccccc1822bbb4bc/entities/LifestyleItems?q=%7B%22id%22:%22514%22%7D&limit=1",
+        "500 GET https://femwells.com/api/apps/69a9891a6ccccc1822bbb4bc/entities/LifestyleItems?q=%7B%22id%22:%221342%22%7D&limit=1"
+      ],
+      "textSample": "TODAY\nJump to\nMORNING · MONDAY 20 JULY\nJump to\nGood morning\nTell me where you are in your cycle\n“I'm here with you today. We can rest, and still tend a little.”\nYOUR DAY, IN A FEW WORDS\n\nHere's your day. We'll find your rhythm together. Nothing logged yet — a warm breakfast would be a kind start. It's been 19 days since you wrote; a sentence is plenty if you fancy it. Energy's returning — a good day to begin something small.\n\n— Jess\nTODAY'S ALMANAC\nA bee at the window. They say it means a visitor's coming — and the old custom is you tell the bees your news, so they don't take offence and leave.\nTap to read ›\nSlide through your day →\nYour day\n\n1 tended — each fed your garden\n\nEach one fed your garden.\n\nRead today's chapter of Little Women\nIN APP\nAnswer the Question of the Day\nIN APP\nLeave a line in your journal\nIN APP\nLog breakfast\nIN APP\nA gentle 20-minute walk\nA glass of water now\nAn early wind-down tonight (tonight)\nAdd\nToday's loop\n\nswipe through your loop →\n\nPLANT THE DAY\nWhat do you want to plant today?\n\nA 10-second morning ritual — a value, not a to-do. It rides your day as a quiet compass.\n\nSet today's intention\nTHE LINE OF THE DAY\nMonday 20 July\n\nA snowdrop morning — and yo"
+    },
+    "Planner": {
+      "url": "https://femwells.com/Planner",
+      "textLen": 3055,
+      "cycleMatches": [
+        "Follicular",
+        "Day 8",
+        "DAY\n0",
+        "follicular",
+        "day\n0",
+        "Menstrual",
+        "Ovulatory",
+        "Luteal",
+        "FOLLICULAR"
+      ],
+      "allMatches": [
+        "Follicular",
+        "Day 8",
+        "DAY\n0",
+        "follicular",
+        "day\n0",
+        "Menstrual",
+        "Follicular",
+        "Ovulatory",
+        "Luteal",
+        "FOLLICULAR"
+      ],
+      "hasHalli": false,
+      "videos": [
+        {
+          "src": "https://femwells.com/media/garden/lifestyle-dusk-720.mp4",
+          "err": null,
+          "ct": 0,
+          "paused": true
+        }
+      ],
+      "screenshot": "C:/Users/Halli/femwell-work/workspace/verify_screenshots/agreement_2026-07-20/Planner_mobile390.png",
+      "consoleErrors": [
+        "[error] Failed to load resource: the server responded with a status of 500 ()"
+      ],
+      "pageErrors": [],
+      "failedRequests": [
+        "500 GET https://femwells.com/api/apps/69a9891a6ccccc1822bbb4bc/entities/LifestyleItems?q=%7B%22id%22:%221342%22%7D&limit=1",
+        "500 GET https://femwells.com/api/apps/69a9891a6ccccc1822bbb4bc/entities/LifestyleItems?q=%7B%22id%22:%22514%22%7D&limit=1"
+      ],
+      "textSample": "Jump to\nYour day\nOne day, tended to your energy. Build it, hold what matters, and leave room to rest.\nFollicular · Day 8\nTODAY, AT A GLANCE\nYOUR DAY\n0 on the plan · your peak window is 12pm\nRESERVES\n0% of a follicular day — room for more\nTHE LOAD\n0 invisible · 0 admin to triage\nSpeak your plan\nPlan a day\nSlide your planner →\nThe day\n\nBUILD IT · TEND IT TO YOUR ENERGY\n\nMon 20 Jul · Today\n0% full\nAGENDA\nDAILY ANCHORS\nSunlight + water\nMove 5 minutes\nName today's intention\nPhone down by 10\nRead 10 pages\nNothing planned yet — a soft, open day. Add the first thing above, or speak it.\n\nTap a block to edit · tick to complete · the dot is its energy.\n\nHOUR BY HOUR\n7am\nAdd\n8am\nAdd\n9am\nAdd\n10am\nAdd\n11am\nAdd\n12pm\nAdd\n1pm\nAdd\n2pm\nAdd\n3pm\nAdd\n4pm\nAdd\n5pm\nAdd\n6pm\nAdd\n7pm\nAdd\n8pm\nAdd\n9pm\nAdd\n10pm\nAdd\nTHE WEEK\nThis week — each day carries its phase. Lean into the bright days, soften the tender ones.\nMo\n20\n–\nTu\n21\n·\nWe\n22\n·\nTh\n23\n·\nFr\n24\n·\nSa\n25\n·\nSu\n26\n·\nMenstrual\nFollicular\nOvulatory\nLuteal\n\nTap a day to plan it. For the wider month, open the calendar.\n\nReserves\n\nTWO TOPICS · EACH SLIDES SIDEWAYS\n\nLOAD\nHow full is today?\n0%\n\nWithin capacity — you've planned 0 of about 11 units of energy.\n\nTHE FINI"
+    },
+    "Pulse": {
+      "url": "https://femwells.com/Pulse",
+      "textLen": 3299,
+      "cycleMatches": [
+        "Follicular",
+        "luteal",
+        "OVULATION",
+        "FOLLICULAR"
+      ],
+      "allMatches": [
+        "Follicular",
+        "luteal",
+        "OVULATION",
+        "FOLLICULAR"
+      ],
+      "hasHalli": true,
+      "videos": [
+        {
+          "src": "https://femwells.com/media/garden/lifestyle-dusk-720.mp4",
+          "err": null,
+          "ct": 0,
+          "paused": true
+        }
+      ],
+      "screenshot": "C:/Users/Halli/femwell-work/workspace/verify_screenshots/agreement_2026-07-20/Pulse_mobile390.png",
+      "consoleErrors": [
+        "[error] Failed to load resource: the server responded with a status of 500 ()"
+      ],
+      "pageErrors": [],
+      "failedRequests": [
+        "500 GET https://femwells.com/api/apps/69a9891a6ccccc1822bbb4bc/entities/LifestyleItems?q=%7B%22id%22:%221342%22%7D&limit=1",
+        "500 GET https://femwells.com/api/apps/69a9891a6ccccc1822bbb4bc/entities/LifestyleItems?q=%7B%22id%22:%22514%22%7D&limit=1"
+      ],
+      "textSample": "Jump to\nHalliburton's pulse\nYour week, read back gently — patterns, not scores. Slide sideways for the deeper trends.\nFollicular\nTHIS WEEK, AT A GLANCE\nMOOD\n0 reflections · 0 check-ins this week\nREST\nSleep & mood tracked — see the trend\nAHEAD\nLog your period to unlock predictions\nReflect\nExport PDF\nOVER\n3 months\n6 months\nSlide your pulse →\nThis week\n\nPREDICTIONS · SUMMARY · REFLECT\n\nPERIOD COUNTDOWN\n\nCOMING UP\n\nPeriod in 20 days\n\nPredicted Sunday, Aug 9 · Based on your average cycle\n\n20\nPREDICTIVE · JESS\n\nPREDICTIVE ANALYSIS\n\nYour next 14 days\n\nSYMPTOM FORECAST\n\nToday\nFOL\n21\nFOL\n22\nFOL\n23\nFOL\n24\nFOL\n25\nOVU\n26\nOVU\n27\nOVU\n28\nLUT\n29\nLUT\n30\nLUT\n31\nLUT\n1\nLUT\n2\nLUT\nHigh load\nModerate\nLow load\n\nHIGH-SYMPTOM DAYS AHEAD\n\nYour luteal phase begins in 8 days. Based on your history, this is typically a higher-load window. Preparing now can make a real difference.\n\n3 high-load days in the next 10 days.\n\nIN 5 DAYS — OVULATION APPROACHING\n\nWatch for: Energy surge then crash · Heightened sensitivity\n\nAlso possible: Possible chin breakout\n\nPREPARE NOW — FOLLICULAR PHASE\n\nSESSIONS\n\nEnergising HIIT\n\nWORKOUT\n\nBreathwork Focus\n\nBREATHWORK\n\nNUTRITION ADJUSTMENTS\n\nFermented foods for oestrogen metabolism\n"
+    },
+    "Garden": {
+      "url": "https://femwells.com/Garden",
+      "textLen": 4653,
+      "cycleMatches": [
+        "ovulation"
+      ],
+      "allMatches": [
+        "ovulation"
+      ],
+      "hasHalli": false,
+      "videos": [
+        {
+          "src": "https://femwells.com/media/garden/lifestyle-dusk-720.mp4",
+          "err": null,
+          "ct": 0,
+          "paused": true
+        }
+      ],
+      "screenshot": "C:/Users/Halli/femwell-work/workspace/verify_screenshots/agreement_2026-07-20/Garden_mobile390.png",
+      "consoleErrors": [
+        "[error] Failed to load resource: the server responded with a status of 429 ()",
+        "[error] Failed to load resource: the server responded with a status of 500 ()"
+      ],
+      "pageErrors": [],
+      "failedRequests": [
+        "429 GET https://femwells.com/api/apps/69a9891a6ccccc1822bbb4bc/entities/JournalEntries?q=%7B%22user_id%22:%2269d9404d7fecc1f8ff194da1%22%7D&sort=-created_date&limit=80",
+        "429 GET https://femwells.com/api/apps/69a9891a6ccccc1822bbb4bc/entities/DailyStory?q=%7B%22is_active%22:true%7D&sort=day_number&limit=400",
+        "429 GET https://femwells.com/api/apps/69a9891a6ccccc1822bbb4bc/entities/SymptomLogs?q=%7B%22user_id%22:%2269d9404d7fecc1f8ff194da1%22%7D&sort=-date&limit=40",
+        "429 GET https://femwells.com/api/apps/69a9891a6ccccc1822bbb4bc/entities/Programs?q=%7B%22program_key%22:%22prog_sleep_reset_rebuilt%22%7D&limit=1",
+        "429 GET https://femwells.com/api/apps/69a9891a6ccccc1822bbb4bc/entities/CompanionState?q=%7B%22user_id%22:%2269d9404d7fecc1f8ff194da1%22%7D&sort=-updated_date&limit=1",
+        "429 GET https://femwells.com/api/apps/69a9891a6ccccc1822bbb4bc/entities/GardenChapter?q=%7B%22user_id%22:%2269d9404d7fecc1f8ff194da1%22%7D&sort=-chapter_key&limit=200",
+        "429 GET https://femwells.com/api/apps/69a9891a6ccccc1822bbb4bc/entities/SkyNote?q=%7B%22user_id%22:%2269d9404d7fecc1f8ff194da1%22%7D&sort=-created_date&limit=8",
+        "429 GET https://femwells.com/api/apps/69a9891a6ccccc1822bbb4bc/entities/LifestyleItems?q=%7B%22id%22:%22514%22%7D&limit=1",
+        "429 GET https://femwells.com/api/apps/69a9891a6ccccc1822bbb4bc/entities/LifestyleItems?q=%7B%22id%22:%221342%22%7D&limit=1",
+        "500 POST https://femwells.com/api/apps/69a9891a6ccccc1822bbb4bc/functions/getLifestyleFeed"
+      ],
+      "textSample": "Jump to\nYour garden\nA living thing, unique to you — grown from everything you already do, and it never dies.\nMeadowlight · your companion\nYOUR GARDEN TODAY\nTHIS SEASON\nYou're in bloom — a season of small attentions showing.\nWHAT FED IT\nYour journal, meals, check-ins and plans feed it. Tend it below.\nRARE BLOOMS\n4 earned — your kept chapters.\nTend\nShare\nSlide through your garden →\nThis season\n\nTHE SAME FLOWER, AT THE STAGE YOU'RE IN\n\nWHERE YOU ARE\nBud\nBloom\n· you ·\nSeed\nRest\nBLOOM · THIS WEEK\n\nOpen. Peak and expression — ovulation, a win, a day you felt like yourself. You're here this week.\n\nYOUR COMPANION\n\nMeadowlight grows from your real self-care — journalling, meals & water, check-ins, your cycle, your plans. The acts are the tending.\n\nLeave a line\nREST IS A STAGE\n\nRest is a stage, not a failure — the garden never draws nothing. A bud on old wood is still the rose.\n\nYour species\n\n64 RECOGNISABLE FLOWERS — A REAL GARDEN\n\nA BOUQUET FROM YOUR GARDEN\nRose\nSunflower\nHibiscus\nIris\nLily\nPeony\n…AND MORE\nDahlia\nFoxglove\nDaisy\nLavender\nWHY IT MATTERS\n\nA rose reads as a rose; an iris as an iris. Your garden draws its blooms, companions and chapters from the whole library — colour carries m"
+    },
+    "Lifestyle": {
+      "url": "https://femwells.com/Lifestyle",
+      "textLen": 7568,
+      "cycleMatches": [
+        "menstrual"
+      ],
+      "allMatches": [
+        "menstrual"
+      ],
+      "hasHalli": false,
+      "videos": [
+        {
+          "src": "https://femwells.com/media/garden/lifestyle-dusk-720.mp4",
+          "err": null,
+          "ct": 4.38613,
+          "paused": false
+        }
+      ],
+      "screenshot": "C:/Users/Halli/femwell-work/workspace/verify_screenshots/agreement_2026-07-20/Lifestyle_mobile390.png",
+      "consoleErrors": [
+        "[error] Failed to load resource: the server responded with a status of 429 ()",
+        "[error] Failed to load resource: the server responded with a status of 500 ()"
+      ],
+      "pageErrors": [],
+      "failedRequests": [
+        "429 GET https://femwells.com/api/apps/69a9891a6ccccc1822bbb4bc/entities/UserProfile?q=%7B%22user_id%22:%2269d9404d7fecc1f8ff194da1%22%7D&limit=1",
+        "429 GET https://femwells.com/api/apps/69a9891a6ccccc1822bbb4bc/entities/UserProfile?q=%7B%22user_id%22:%2269d9404d7fecc1f8ff194da1%22%7D",
+        "429 GET https://femwells.com/api/apps/69a9891a6ccccc1822bbb4bc/entities/Intention?q=%7B%22user_id%22:%2269d9404d7fecc1f8ff194da1%22,%22day_key%22:%222026-07-20%22%7D&sort=-created_date&limit=1",
+        "429 GET https://femwells.com/api/apps/69a9891a6ccccc1822bbb4bc/entities/DailyCheckins?q=%7B%22user_id%22:%2269d9404d7fecc1f8ff194da1%22%7D",
+        "429 GET https://femwells.com/api/apps/69a9891a6ccccc1822bbb4bc/entities/HabitLogs?q=%7B%22user_id%22:%2269d9404d7fecc1f8ff194da1%22,%22date%22:%222026-07-20%22,%22habit_type%22:%22mission:m-walk%22%7D&sort=-created_date&limit=1",
+        "429 GET https://femwells.com/api/apps/69a9891a6ccccc1822bbb4bc/entities/CompanionState?q=%7B%22user_id%22:%2269d9404d7fecc1f8ff194da1%22%7D&sort=-updated_date&limit=1",
+        "429 GET https://femwells.com/api/apps/69a9891a6ccccc1822bbb4bc/entities/UserPreferences?q=%7B%22user_id%22:%2269d9404d7fecc1f8ff194da1%22%7D",
+        "429 GET https://femwells.com/api/apps/69a9891a6ccccc1822bbb4bc/entities/MealLog?q=%7B%22user_id%22:%2269d9404d7fecc1f8ff194da1%22%7D&sort=-day_key&limit=300",
+        "429 GET https://femwells.com/api/apps/69a9891a6ccccc1822bbb4bc/entities/PlannerItems?q=%7B%22user_id%22:%2269d9404d7fecc1f8ff194da1%22%7D&sort=-date&limit=300",
+        "429 GET https://femwells.com/api/apps/69a9891a6ccccc1822bbb4bc/entities/HydrationLog?q=%7B%22user_id%22:%2269d9404d7fecc1f8ff194da1%22%7D&sort=-day_key&limit=300",
+        "429 GET https://femwells.com/api/apps/69a9891a6ccccc1822bbb4bc/entities/HabitLogs?q=%7B%22user_id%22:%2269d9404d7fecc1f8ff194da1%22%7D&sort=-date&limit=300",
+        "429 GET https://femwells.com/api/apps/69a9891a6ccccc1822bbb4bc/entities/SymptomLogs?q=%7B%22user_id%22:%2269d9404d7fecc1f8ff194da1%22%7D&sort=-date&limit=300"
+      ],
+      "textSample": "Jump to\nSomething to read\nEssays, guides and stories for a spare ten minutes.\nRead\nListen\nBooks\nStory\nSky\nGood life\nA few good things today\nOpen your reads\nTODAY, AT A GLANCE\nTODAY'S CHAPTER\nToday's chapter is on its way — tap to open the Daily Story.\nYOUR READING\nFresh reads land here as they're published.\nYOUR SKY\nAdd your birth details to read today's sky.\nJESS · YOUR LIFE TODAY\n\nHello there — The moon's waxing crescent tonight, if you fancy reading your sky. You're allowed to just browse and close it again.\n\nOpen Jess's full read\nswipe for Jess's read →\nToday's chapter\nWhat do you have time for?\nFor you\nA little of everything →\nTODAY'S CHAPTER\nDAILY STORY · TODAY\nToday's chapter is on its way\nYour serialised story is being written — it'll be here shortly.\nBack tomorrow\nOpen\nSOMETHING TO WATCH\nWATCH · FILM\nYoga For Complete Beginners — 20-Minute Home Yoga\nA hand-picked watch from a channel we trust — it opens on YouTube, where it lives.\n20 min\nOpen\nYOUR SKY\nYOUR SKY · ALMANAC\nThe moon is waxing crescent\nTonight the moon is waxing crescent, 28% lit. Add your birth date — just the date is enough — and a warm reading joins it here each day.\nWaxing crescent · 28% lit\nOpen\nFROM THE S"
+    }
+  }
+}

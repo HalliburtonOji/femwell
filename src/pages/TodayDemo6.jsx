@@ -306,7 +306,9 @@ export default function TodayDemo6() {
     // first-open ceremony decision (before data, so it can play immediately)
     try { if (!localStorage.getItem(SEEN_KEY)) { setCeremony(true); } } catch { /* ignore */ }
     (async () => {
-      const me = await withTimeout(base44.auth.me());
+      // same reasoning as the profile read below — an unguarded reject here aborted the
+      // WHOLE loader and surfaced as a silently empty page, not an error.
+      const me = await withTimeout(base44.auth.me(), 12000, "auth").catch(() => null);
       const id = me?.id || null;
       if (!alive) return;
       setUid(id);
@@ -319,7 +321,16 @@ export default function TodayDemo6() {
       // THIS is the live /Today profile load — pages.config maps the "Today" route to
       // TodayDemo6, so the loader in pages/Today.jsx never runs for the live route.
       // pickProfile, not [0]: only one of her several rows carries the cycle anchor.
-      const profs = await withTimeout(base44.entities.UserProfile.filter({ user_id: id }));
+      // This read was UNGUARDED behind a 6s withTimeout. A slow response didn't just lose
+      // her cycle — it rejected inside an IIFE with no catch, so every load AFTER it
+      // (nutrition, journal, symptoms) died too, silently, with no pageerror to show for it.
+      // Her cycle anchor is worth a longer wait and one plain retry.
+      let profs = [];
+      try {
+        profs = await withTimeout(base44.entities.UserProfile.filter({ user_id: id }), 12000, "profile");
+      } catch {
+        try { profs = await base44.entities.UserProfile.filter({ user_id: id }); } catch { profs = []; }
+      }
       const prof = pickProfile(profs);
       if (!alive) return;
       setProfile(prof);

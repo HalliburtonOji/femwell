@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
+import { pickProfile } from "@/utils/userProfile";
 import { RefreshCw, ChevronDown, ChevronUp, AlertCircle } from "lucide-react";
 import { subDays, format } from "date-fns";
 import { createPageUrl } from "@/utils";
@@ -94,9 +95,9 @@ export default function WeeklyInsightCard({ user }) {
     try {
       const [insights, profiles] = await Promise.all([
         base44.entities.WeeklyInsights.filter({ user_id: user.id }, "-generated_at", 1).catch(() => []),
-        base44.entities.UserProfile.filter({ user_id: user.id }, null, 1).catch(() => []),
+        base44.entities.UserProfile.filter({ user_id: user.id }).catch(() => []),
       ]);
-      const profile = profiles?.[0] || null;
+      const profile = pickProfile(profiles);   // not [0] — see utils/userProfile
       const stage = profile?.life_stage || "reproductive";
       const conds = profile?.conditions || profile?.condition_flags || [];
       setCurrentStage(stage);
@@ -136,7 +137,7 @@ export default function WeeklyInsightCard({ user }) {
       base44.entities.HabitLogs.filter({ user_id: user.id }),
       base44.entities.SymptomLogs.filter({ user_id: user.id }),
       base44.entities.CycleEvents.filter({ user_id: user.id }),
-      base44.entities.UserProfile.filter({ user_id: user.id }, null, 1).catch(() => []),
+      base44.entities.UserProfile.filter({ user_id: user.id }).catch(() => []),
     ]);
 
     const recentJournals = journals.filter(j => (j.session_date || j.created_date?.split("T")[0]) >= weekStart);
@@ -147,7 +148,7 @@ export default function WeeklyInsightCard({ user }) {
 
     // Stage context — drives both the writer-style instruction and the
     // explicit "do not assume cycle" guard for non-cycle stages.
-    const profile = profiles?.[0] || null;
+    const profile = pickProfile(profiles);   // not [0] — see utils/userProfile
     const lifeStage = profile?.life_stage || "reproductive";
     const conditions = profile?.conditions || profile?.condition_flags || [];
     const conditionsLabel = Array.isArray(conditions) && conditions.length > 0 ? conditions.join(", ") : "none";
