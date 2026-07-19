@@ -50,7 +50,8 @@ import { LIFESTYLE_VIDEOS } from "@/data/lifestyleVideos";
 import { EXTERNAL_PODCASTS } from "@/components/lifestyle/listen/ExternalPodcastsRail";
 import { T, SERIF, UI, PAPER_BG, Eyebrow } from "@/components/journal/Editorial";
 import { FwFloraHero } from "@/components/brand/PageTop";
-import { SummaryCard } from "@/components/brand/Card";
+import { FwCard } from "@/components/brand/Card";
+import { GlanceJessSwipe, JessSheet, JessOpenCTA, GLANCE_SWIPE_H } from "@/components/brand/GlanceJessRow";
 import { ClipboardSlider, Clipboard } from "@/components/brand/ClipboardSlider";
 import { cwOf, floraKeyframes, Bouquet, Pollinator } from "@/components/brand/flora";
 import MonthlyCalendarCard from "@/components/planner/MonthlyCalendarCard";
@@ -183,6 +184,40 @@ const readContinuePositions = (max = 3) => {
       .slice(0, max);
   } catch { return []; }
 };
+
+// ── §6.8.2 band 3+4 — Jess's WRITTEN read for Lifestyle. Signal-driven from what's actually
+// loaded (her reading, her saves, today's chapter, her sky, the phase) and rotates every load.
+// CLIENT-SIDE only — no new backend function (Nutrition's equivalent is client-side too, and
+// Base44 is over the ~50-function cap). Never states a signal she doesn't have.
+const LIFE_GREETINGS = ["Hi", "Hello there", "Right then", "Okay", "Hey", "Evening"];
+const LIFE_ASIDES = [
+  "No streaks here, by the way — this isn't that kind of app.",
+  "None of it's homework. Pick one thing, or none.",
+  "Leisure is the point; it doesn't have to earn its keep.",
+  "If today's a nothing day, that counts too.",
+  "You're allowed to just browse and close it again.",
+];
+const pickSeeded = (arr, seed) => arr[Math.abs(seed) % arr.length];
+function lifestyleJessSummary(seed, ctx) {
+  const { firstName, onTheGo, savedCount, freshReads, hasStory, cliffhanger, moon, phaseKey, listens, watches } = ctx;
+  const signal = [];
+  if (onTheGo) signal.push(`You're ${onTheGo} book${onTheGo > 1 ? "s" : ""} in — your place is saved, so you can slip back mid-sentence.`);
+  if (hasStory && cliffhanger) signal.push(`Today's chapter is waiting, and it left you on "${cliffhanger}".`);
+  else if (hasStory) signal.push("Today's chapter is waiting whenever you've got ten quiet minutes.");
+  if (savedCount >= 3) signal.push(`${savedCount} things saved for later — that's an evening already planned.`);
+  else if (freshReads) signal.push(`${freshReads} fresh reads landed; tap the heart on any of them and it waits for you.`);
+  if (listens) signal.push("There's a real episode queued that plays right here — no app-hopping.");
+  if (watches) signal.push("A short watch or two, for when reading feels like too much.");
+  if (moon) signal.push(`The moon's ${String(moon).toLowerCase()} tonight, if you fancy reading your sky.`);
+  if (phaseKey === "luteal") signal.push("Luteal week — a slower read and an early night is a perfectly good plan.");
+  if (phaseKey === "menstrual") signal.push("Bleed week. Be gentle with what you ask of yourself today.");
+  const g = pickSeeded(LIFE_GREETINGS, seed);
+  const s = signal.length ? pickSeeded(signal, seed) : "Nothing urgent here — just a few good things, whenever you want them.";
+  return { eyebrow: "Jess · your life today", body: `${firstName ? `${g} ${firstName} — ` : `${g} — `}${s} ${pickSeeded(LIFE_ASIDES, seed + 2)}` };
+}
+// the per-LOAD seed lives in a module var so the digest rotates on each visit but stays
+// stable across the shell's frequent re-renders (same trick as the V2 Nutrition row).
+let _lifeLoadSeed = 0;
 
 // ── helpers for the new persistence (PlannerItems · SkyNote) ──
 const nowISO = () => new Date().toISOString();
@@ -413,6 +448,8 @@ export default function LifestyleEliteShell() {
   const [gLDone, setGLDone] = useState({});
   const [readerOpen, setReaderOpen] = useState(false); // the REAL immersive Daily Story reader
   const [bookReader, setBookReader] = useState(null);  // #4 — a FemWell fiction book, read IN PLACE (no route)
+  const [jessOpen, setJessOpen] = useState(false);     // Track B — Jess's full-read inner sheet
+  const [loadSeed] = useState(() => (_lifeLoadSeed = (_lifeLoadSeed + 7) % 9973)); // rotates per visit
   const [skyOpen, setSkyOpen] = useState(false);       // the REAL horoscope reader + birth-chart onboarding
   const [heroCard, setHeroCard] = useState(() => _lifeHeroCard); // the controller-hero’s active chip
   const [toast, setToast] = useState(null);
@@ -1093,15 +1130,62 @@ export default function LifestyleEliteShell() {
           );
         })()}
 
-        <SummaryCard eyebrow="A few good things today" accent={gold} rows={[
-          { Icon: Feather, label: "Today's chapter", text: story ? `${story.series_title || story.title || "Today's chapter"}${story.cliffhanger ? ` — "${story.cliffhanger}"` : ""}` : "Today's chapter is on its way — tap to open the Daily Story.", onClick: () => setChapterOpen(true) },
-          { Icon: BookOpen, label: "Your reading",
-            text: continueCards.length ? `${continueCards.length} on the go · ${grouped.article.length} fresh reads`
-              : savedItems.length ? `${savedItems.length} saved to come back to · ${grouped.article.length} fresh reads`
-              : (editorialPick ? editorialPick.title : "Fresh reads land here as they're published."),
-            onClick: () => jumpTo(1) },
-          { Icon: Moon, label: "Your sky", text: horoscope ? (horoscope.headline || horoscope.narrative || "Today's reading is ready.") : "Add your birth details to read today's sky.", onClick: () => setReadingOpen(true) },
-        ]} />
+        {/* ══ §6.8.2 BAND 3+4 — the TOP SLIDING ROW (uniform panels, no dead space).
+             Slide 1 = today at a glance (the same three rows the SummaryCard carried —
+             nothing dropped). Slide 2 = Jess's written read + an upward inner sheet. ══ */}
+        {(() => {
+          const jess = lifestyleJessSummary(loadSeed, {
+            firstName, onTheGo: continueCards.length, savedCount: savedItems.length,
+            freshReads: (grouped.article || []).length, hasStory: !!story, cliffhanger: story?.cliffhanger,
+            moon: moonToday?.name, phaseKey, listens: (grouped.audio || []).length, watches: playableVideos(grouped.video).length,
+          });
+          const glanceRows = [
+            { Icon: Feather, label: "Today's chapter", text: story ? `${story.series_title || story.title || "Today's chapter"}${story.cliffhanger ? ` — "${story.cliffhanger}"` : ""}` : "Today's chapter is on its way — tap to open the Daily Story.", onClick: () => setChapterOpen(true) },
+            { Icon: BookOpen, label: "Your reading",
+              text: continueCards.length ? `${continueCards.length} on the go · ${grouped.article.length} fresh reads`
+                : savedItems.length ? `${savedItems.length} saved to come back to · ${grouped.article.length} fresh reads`
+                : (editorialPick ? editorialPick.title : "Fresh reads land here as they're published."),
+              onClick: () => jumpTo(1) },
+            { Icon: Moon, label: "Your sky", text: horoscope ? (horoscope.headline || horoscope.narrative || "Today's reading is ready.") : "Add your birth details to read today's sky.", onClick: () => setReadingOpen(true) },
+          ];
+          // the deep read — only sections we genuinely have signal for, never padded
+          const sheetSections = [
+            { label: "What's on", text: continueCards.length ? `You've ${continueCards.length} on the go and ${grouped.article.length} fresh reads waiting. Your place is saved in each, so none of it needs starting over.` : `${grouped.article.length} fresh reads are in, and ${savedItems.length} saved for later. Nothing here expires.` },
+            story ? { label: "If you've ten minutes", text: `Today's chapter${story.cliffhanger ? ` picks up on "${story.cliffhanger}"` : " is ready"} — a finished story you can also read straight through whenever you fancy it.` } : null,
+            moonToday ? { label: "Your sky", text: `The moon is ${moonToday.name.toLowerCase()}, ${moonToday.illumination}% lit tonight${phaseKey ? `, and you're in your ${phaseLabel(phaseKey).toLowerCase()} week` : ""}. Folklore, held lightly.` } : null,
+          ].filter(Boolean);
+          return (
+            <div style={{ marginTop: 14 }}>
+              <GlanceJessSwipe accent={gold}
+                glancePanel={
+                  <FwCard snap={false} minHeight={GLANCE_SWIPE_H} accent={gold} Icon={Sparkles} eyebrow="Today, at a glance" flower="marigold" idx="life-glance">
+                    <div style={{ display: "flex", flexDirection: "column", gap: 2, marginTop: 2 }}>
+                      {glanceRows.map((r) => (
+                        <button key={r.label} onClick={r.onClick} className="fw-elite-press"
+                          style={{ display: "flex", alignItems: "flex-start", gap: 11, width: "100%", textAlign: "left", background: "transparent", border: "none", borderTop: `1px solid ${T.paperDeep}`, padding: "11px 2px", cursor: "pointer" }}>
+                          <span style={{ width: 30, height: 30, borderRadius: 9, background: `${gold}1C`, display: "grid", placeItems: "center", flexShrink: 0 }}><r.Icon size={15} color={gold} /></span>
+                          <span style={{ flex: 1, minWidth: 0 }}>
+                            <span style={{ ...lbl, display: "block", marginBottom: 2 }}>{r.label}</span>
+                            <span style={{ fontFamily: SERIF, fontSize: 15, color: T.ink, lineHeight: 1.4, display: "block" }}>{r.text}</span>
+                          </span>
+                          <ChevronRight size={15} color={T.paperDeep} style={{ flexShrink: 0, marginTop: 8 }} />
+                        </button>
+                      ))}
+                    </div>
+                  </FwCard>
+                }
+                jessPanel={
+                  <div style={{ position: "relative" }}>
+                    <FwCard snap={false} minHeight={GLANCE_SWIPE_H} accent={plum} Icon={Heart} eyebrow={jess.eyebrow} flower="camellia" idx="life-jess">
+                      <p style={{ fontFamily: SERIF, fontSize: 15.5, color: T.inkSoft, lineHeight: 1.55, margin: "2px 0 12px" }}>{jess.body}</p>
+                      <div style={{ marginTop: "auto" }}><JessOpenCTA accent={plum} onClick={() => setJessOpen(true)} /></div>
+                    </FwCard>
+                    <JessSheet open={jessOpen} onClose={() => setJessOpen(false)} accent={plum} sections={sheetSections} />
+                  </div>
+                } />
+            </div>
+          );
+        })()}
 
         {/* two focus pills (out of cards) — Lifestyle's two daily rituals */}
         <div style={{ display: "flex", gap: 10, marginTop: 14 }}>
