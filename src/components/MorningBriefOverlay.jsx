@@ -77,7 +77,10 @@ function prettyDate(d = new Date()) {
 
 function resolveDisplayName(user, profile) {
   if (profile?.display_name) return profile.display_name;
-  if (user?.full_name) return user.full_name;
+  // `full_name` can be a raw account handle like "ojihalliburton57" — greeting her with
+  // that reads worse than the email-derived name below, so apply the same guard the rest
+  // of the app uses and fall through when it looks like a username.
+  if (user?.full_name && !/\d/.test(user.full_name)) return user.full_name;
   if (user?.email) {
     const prefix = String(user.email).split("@")[0];
     const words = prefix.split(/[0-9_.\-]+/).filter(Boolean);
@@ -115,8 +118,10 @@ export default function MorningBriefOverlay({ user, profile, onDismiss }) {
 
     const cacheKey = `jess_daily_open_${user.id}_${todayISO()}`;
     const cached = loadDailyCache(cacheKey);
-    const fallback = (PHASE_FALLBACK[cycle.phase] || PHASE_FALLBACK.follicular)
-      .replace("{n}", String(cycle.cycleDay || 1));
+    // No cycle data → don't state a cycle position we don't have (see useCycleDay).
+    const fallback = (cycle.phase && cycle.cycleDay)
+      ? PHASE_FALLBACK[cycle.phase].replace("{n}", String(cycle.cycleDay))
+      : "Good morning. However today is starting for you, it's a good day to be kind to yourself.";
 
     // If JessDailyOpener already wrote a greeting today, use it.
     if (cached?.text) { setText(cached.text); return; }

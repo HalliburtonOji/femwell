@@ -1,0 +1,59 @@
+{
+  "url": "https://femwells.com/Lifestyle",
+  "publishedBundle": "index-DCJAeTWU.js",
+  "cssBundle": "index-W4RVc9gt.css",
+  "checkedAt": "2026-07-19T23:14:00Z",
+  "localClockAtMeasurement": "Mon 20 Jul 2026 00:14 BST",
+  "viewports": ["mobile-380"],
+  "auth": {
+    "method": "persisted Chrome profile mcp-chrome-7fe4e47, channel chrome, playwright-core 1.61.1",
+    "authMeEndpointProbe": "401/404 on all three guessed paths - endpoint path unknown, NOT a session failure",
+    "provenBy": "base44_access_token JWT sub=ojihalliburton57@gmail.com; UserProfile entity query returned 200 with 13 owned rows; no login gate; personalised DOM",
+    "pass": true
+  },
+  "profileTruth": {
+    "pickedRow": "6a0716bdcbe7ea5d0e04e60f",
+    "last_period_start_date": "2026-04-23",
+    "cycle_avg_length": 27,
+    "period_length": 4,
+    "display_name": "Halliburton",
+    "newestRowsAreEmpty": ["6a293cd6ffe7ab2dbc625e2a", "6a293cd05d8a6694d41aa0a6", "6a293ccfb48344f480a6d212"],
+    "note": "confirms the limit-1 premise - the three newest rows all have last_period_start_date null"
+  },
+  "assertions": [
+    {"id": 1, "name": "overlay-appeared", "expected": "morning-brief overlay renders on /Lifestyle", "got": "present, position fixed, z-index 200", "pass": true,
+     "note": "appeared naturally (no seen-key for 2026-07-20); also force-cleared the key to guarantee it"},
+    {"id": 1, "name": "overlay-phase-day-line", "expected": "FOLLICULAR . DAY 7 (matching shell), not DAY 1", "got": "FOLLICULAR · DAY 8", "pass": "PARTIAL",
+     "note": "the DAY 1 fake is GONE. Value is now real and derived. But it is 8, and the shell says 7."},
+    {"id": 1, "name": "overlay-greeting-no-raw-handle", "expected": "must not contain ojihalliburton57", "got": "Good morning, Halliburton.", "pass": true},
+    {"id": 2, "name": "overlay-vs-shell-agreement", "expected": "identical phase/day", "got": "overlay 'Follicular · Day 8' vs shell 'Follicular · Day 7 · a fresh-start, bright kind of day'", "pass": false,
+     "note": "still disagree, now by 1 not by 7. Cause: two independent derivations, UTC-vs-local date boundary. Measured inside the 00:00-01:00 BST window."},
+    {"id": 3, "name": "shell-phase-pill", "expected": "Follicular · Day 7 · a fresh-start, bright kind of day", "got": "Follicular · Day 7 · a fresh-start, bright kind of day", "pass": true},
+    {"id": 3, "name": "shell-hero-title", "expected": "Halliburton's reading", "got": "Halliburton's reading", "pass": true},
+    {"id": 3, "name": "shell-phase-rail-label", "expected": "For your follicular week", "got": "(not found)", "pass": "VOID",
+     "note": "string absent from rendered innerText this run; rail region not reached by my scroll-free capture. Not measured, not a claimed regression."},
+    {"id": 3, "name": "shell-phase-rail-card-count", "expected": "8 cards", "got": "(count indeterminate)", "pass": "VOID", "note": "dependent on the rail label above"},
+    {"id": 4, "name": "video-present", "expected": "<video> present", "got": "present, src /media/garden/lifestyle-dusk-720.mp4", "pass": true},
+    {"id": 4, "name": "video-error-null", "expected": "null", "got": "null", "pass": true},
+    {"id": 4, "name": "video-playing", "expected": "currentTime advancing", "got": "readyState 4, paused false; t1=3.909s t2=1.966s (wrapped - short looping clip)", "pass": true,
+     "note": "decrease is loop wrap, not a stall; paused false and readyState 4 confirm playback"},
+    {"id": 5, "name": "no-entities-User-me-error", "expected": "absent", "got": "absent", "pass": true},
+    {"id": 5, "name": "no-new-pageerrors", "expected": "no null phase/cycleDay throws", "got": "zero pageerror events on /Lifestyle, /Today, /Planner", "pass": true},
+    {"id": 5, "name": "console-errors", "expected": "clean", "got": "5x 'Failed to load resource: 500' -> /api/apps/.../entities/LifestyleItems?q={id:514|1342}&limit=1; 1x 404 from my own auth/me probe", "pass": false,
+     "note": "pre-existing LifestyleItems 500s, unrelated to this fix. The 404 is mine, ignore."},
+    {"id": 6, "name": "today-page-cycle-text", "expected": "no faked Day 1", "got": "'Tell me where you are in your cycle' - no phase, no day anywhere; zero Follicular hits", "pass": "PARTIAL",
+     "note": "no fake shown (good), but no real cycle either despite data existing. Today.jsx:367 still uses filter(..., null, 1)."},
+    {"id": 6, "name": "planner-page-cycle-text", "expected": "no faked Day 1", "got": "'Follicular · Day 1' and '0% of a follicular day - room for more'", "pass": false,
+     "note": "the Day 1 fake SURVIVES on Planner via a different fallback chain. Planner.jsx:591 and :615 still use filter(..., null, 1)."},
+    {"id": 6, "name": "no-crash-or-blank-region", "expected": "pages render", "got": "/Today 4233 chars, /Planner 3055 chars, both rendered, no pageerrors", "pass": true}
+  ],
+  "summary": {"passed": 9, "failed": 3, "partial": 2, "void": 2, "total": 16},
+  "screenshots": [
+    "C:/Users/Halli/femwell-work/workspace/verify_screenshots/morningbrief_2026-07-20/mobile_overlay.png",
+    "C:/Users/Halli/femwell-work/workspace/verify_screenshots/morningbrief_2026-07-20/mobile_shell.png",
+    "C:/Users/Halli/femwell-work/workspace/verify_screenshots/morningbrief_2026-07-20/mobile_shell_full.png",
+    "C:/Users/Halli/femwell-work/workspace/verify_screenshots/morningbrief_2026-07-20/mobile_today.png",
+    "C:/Users/Halli/femwell-work/workspace/verify_screenshots/morningbrief_2026-07-20/mobile_planner.png"
+  ],
+  "notes": "Fixes 1, 3 and 4 landed. Fix 2 landed but exposed a second derivation. Overlay uses useCycleDay (local-midnight normalised) giving Day 8; LifestyleEliteShell.jsx:465 has its own inline Date.now() wall-clock formula giving Day 7. They diverge only while UTC date lags local date. Planner and Today were never repointed at pickProfile and still fetch limit-1."
+}

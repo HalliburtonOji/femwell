@@ -46,6 +46,7 @@ import {
 // Shared phase recommendation data — also consumed by PlannerV2Shell
 // Body Today chip strip (Phase 2 P2-4). See src/data/phaseRecs.js.
 import { PHASE_RECS, NEXT_PHASE_PREVIEW } from "@/data/phaseRecs";
+import { pickProfile } from "@/utils/userProfile";
 // Jess v2 J2-3 — sensitive topic classifier + referral copy.
 // (Legacy URGENCY_REFERRAL / DISTRESS_REFERRAL / classifyJessInput
 // imports trimmed after Sprint 5 — the new classifySensitiveTopic +
@@ -164,7 +165,13 @@ const PHASE_COPY = {
 
 // ─── Helpers ──────────────────────────────────────────────────────────────
 function derivePhase(profile) {
-  if (!profile?.last_period_start_date) return { phase: "follicular", dayInCycle: 1 };
+  // NO FAKE PHASE. This used to return {phase:"follicular", dayInCycle:1} when her cycle
+  // anchor was missing, which then went into the LLM context below as a literal
+  // "Today: Day 1 of cycle · follicular phase" — so Jess spoke to her with confidence about
+  // a cycle position that had been invented. In a wellness app that is not a cosmetic
+  // default, it's the assistant making something up about her body. Returning null routes
+  // her to the same honest no-cycle line the meno/peri stages already use.
+  if (!profile?.last_period_start_date) return { phase: null, dayInCycle: null };
   const cycleLen  = profile.cycle_avg_length || 28;
   const periodLen = profile.period_length    || 5;
   const start = new Date(profile.last_period_start_date);
@@ -239,9 +246,13 @@ function buildJessContext({ user, profile, todayCheckin, recentCheckins, symptom
   // bypassing the persona extension. Swap the cycle line for a stage
   // line in those cases.
   const isMenoStageCtx = !!lifeStage && ["perimenopause", "menopause", "post-menopause"].includes(lifeStage);
+  // `phase` is now null when her cycle anchor is missing (see derivePhase) — say so plainly
+  // rather than inventing a day. Jess can still be useful without knowing where she is.
   const todayLine = isMenoStageCtx
     ? `Today: life stage = ${lifeStage} (no cycle phase — periods are irregular or absent)`
-    : `Today: Day ${dayInCycle} of cycle · ${phase} phase`;
+    : (phase && dayInCycle)
+      ? `Today: Day ${dayInCycle} of cycle · ${phase} phase`
+      : `Today: life stage = ${lifeStage} (cycle dates not recorded — do NOT state or guess a cycle day or phase)`;
 
   const lines = [
     "[JESS CONTEXT — do not mention this block to the user]",
@@ -474,7 +485,17 @@ function fillTemplate(template, ctx) {
 }
 
 // Build the full substitution context for the current user state.
+// When her cycle anchor is missing, `phase`/`dayInCycle` are null (see derivePhase) and the
+// scripted templates below — "You're on day {cycleDay} of your {phase} phase" — have nothing
+// truthful to say. Rather than print "day null of your null phase", or silently invent a day
+// as this file used to, Jess says she doesn't know and offers the one-tap way to tell her.
+const NO_CYCLE_REPLIES = [
+  "I don't have your cycle dates yet, so I won't guess where you are — I'd rather be useful than confident. Add your last period date in Cycle Settings and I'll tailor this properly.\n\nIn the meantime: what's actually on your mind today?",
+  "I can't see your cycle dates, so I'm not going to pretend I know how today should feel.\n\nTell me what's going on and I'll help with what's in front of you — and if you add your dates in Cycle Settings, I can be a lot more specific next time.",
+];
+
 function buildScriptedContext({ phase, dayInCycle, profile }) {
+  const hasCycle = !!phase && Number.isFinite(dayInCycle);
   const cycleLen  = profile?.cycle_avg_length || 28;
   const periodLen = profile?.period_length    || 5;
   const next = phase === "menstrual" ? "follicular"
@@ -498,10 +519,12 @@ function buildScriptedContext({ phase, dayInCycle, profile }) {
                 :                            "rest-as-strategy, light reflection";
   const info = NEXT_PHASE_INFO[phase] || NEXT_PHASE_INFO.follicular;
   return {
+    hasCycle,
     cycleDay: dayInCycle,
     tomorrowDay,
     phase,
-    phaseTitle: phase.charAt(0).toUpperCase() + phase.slice(1),
+    // null-safe: `phase` can now legitimately be null, and this threw on .charAt before
+    phaseTitle: phase ? phase.charAt(0).toUpperCase() + phase.slice(1) : "",
     progesteroneContext: PROGESTERONE_CONTEXT[phase],
     energyReturnDay: ENERGY_RETURN_DAY[phase],
     hormoneState: HORMONE_STATE[phase],
@@ -877,7 +900,10 @@ function JessDemoPanelInner({ initialPrompt = null } = {}) {
           base44.entities.JournalEntries.filter({ user_id: u.id }, "-created_date", 1).catch(() => []),
         ]);
         if (cancelled) return;
-        if (profiles[0]) setProfile(profiles[0]);
+        // NOT [0] — she can have several profile rows and only one carries her cycle data
+        // (measured: 5 rows for the test user, the real one at index 3). See utils/userProfile.
+        const realProfile = pickProfile(profiles);
+        if (realProfile) setProfile(realProfile);
         if (ciToday[0]) setTodayCheckin(ciToday[0]);
         setRecentCheckins(recent || []);
         setTasks((ts || []).filter((t) => !t?.completed && !t?.is_completed).slice(0, 5));
@@ -2021,7 +2047,11 @@ function JessDemoPanelInner({ initialPrompt = null } = {}) {
         const ctx = buildScriptedContext({ phase, dayInCycle, profile });
         const idx = defaultResponseIdxRef.current % DEFAULT_RESPONSES.length;
         defaultResponseIdxRef.current += 1;
-        const fallback = fillTemplate(DEFAULT_RESPONSES[idx], ctx);
+        // every DEFAULT_RESPONSE is a cycle-phase script — with no cycle data they'd
+        // render "day null of your null phase", so say the honest thing instead.
+        const fallback = ctx.hasCycle
+          ? fillTemplate(DEFAULT_RESPONSES[idx], ctx)
+          : NO_CYCLE_REPLIES[idx % NO_CYCLE_REPLIES.length];
         setMessages((prev) => [...prev, {
           id: uid(), role: "jess", type: "bubble",
           text: fallback, time: fmtTimeAmPm(),
@@ -2183,9 +2213,14 @@ function JessDemoPanelInner({ initialPrompt = null } = {}) {
     setTimeout(() => {
       const ctx = buildScriptedContext({ phase, dayInCycle, profile });
       const template = SUGGESTION_RESPONSES[chipLabel];
-      const text = template
-        ? fillTemplate(template, ctx)
-        : "Tell me more about that — I'm listening.";
+      // a template that leans on {phase}/{cycleDay} can't be filled truthfully without
+      // her dates — fall back to the honest reply rather than printing nulls.
+      const needsCycle = !!template && /\{(phase|cycleDay|tomorrowDay|daysToNextPhase|nextPhase)\}/.test(template);
+      const text = !template
+        ? "Tell me more about that — I'm listening."
+        : (needsCycle && !ctx.hasCycle)
+          ? NO_CYCLE_REPLIES[0]
+          : fillTemplate(template, ctx);
       // Track which chips have been used across the whole session so the
       // follow-up strip on this new bubble shows fresh suggestions only.
       setMessages((prev) => {

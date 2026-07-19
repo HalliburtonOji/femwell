@@ -244,7 +244,7 @@ export default function BloomprintDemo() {
     let alive = true;
     (async () => {
       try {
-        const me = await base44.entities.User.me().catch(() => null);
+        const me = await base44.auth.me().catch(() => null);
         const id = me?.id || "demo-bloomprint";
         if (!alive) return;
         setUserId(id);

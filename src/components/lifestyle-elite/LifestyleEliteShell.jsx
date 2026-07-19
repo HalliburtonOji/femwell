@@ -57,6 +57,8 @@ import { cwOf, floraKeyframes, Bouquet, Pollinator } from "@/components/brand/fl
 import MonthlyCalendarCard from "@/components/planner/MonthlyCalendarCard";
 import DayDetailSheet from "@/components/planner/DayDetailSheet";
 import { getCurrentCyclePhase, phaseLabel } from "@/utils/cyclePhase";
+import { pickProfile, displayFirstName } from "@/utils/userProfile";
+import { useCycleDay } from "@/hooks/useCycleDay";
 import { withTimeout } from "@/utils/safeEntity";
 import { createPageUrl } from "@/utils";
 // "Mark as read" must actually MARK IT READ — this is the same recorder the Garden reads
@@ -461,13 +463,12 @@ export default function LifestyleEliteShell() {
   // ── cycle phase (graceful if absent) ──────────────────────────────────────
   const phaseKey = useMemo(() => getCurrentCyclePhase(profile), [profile]);
   const ph = phaseMeta(phaseKey || "follicular");
-  const cycleDay = useMemo(() => {
-    if (!profile?.last_period_start_date) return null;
-    const len = profile.cycle_avg_length || 28;
-    const diff = Math.floor((Date.now() - new Date(profile.last_period_start_date).getTime()) / 86400000);
-    if (!Number.isFinite(diff) || diff < 0) return null;
-    return (diff % len) + 1;
-  }, [profile]);
+  // Use the SHARED hook, not a local formula. This used to do its own wall-clock
+  // `Date.now() - start` maths, which is not normalised to local midnight — so between
+  // local midnight and the UTC day boundary it reported a day one BEHIND every other
+  // surface (measured live at 00:14 BST: this shell said Day 7, the morning brief said
+  // Day 8). One derivation, one answer.
+  const cycleDay = useCycleDay(profile).cycleDay;
 
   // ── grouped content (per-type rows, like LifestyleForYou) ─────────────────
   const grouped = useMemo(() => {
@@ -611,7 +612,10 @@ export default function LifestyleEliteShell() {
         if (u?.id) {
           const profiles = await base44.entities.UserProfile.filter({ user_id: u.id }).catch(() => []);
           if (!alive) return;
-          p = (profiles || []).filter(Boolean)[0] || null;
+          // NOT [0]. She can have several profile rows and `filter` returns newest-first —
+          // measured: 5 rows for the test user, and the ONLY one carrying her cycle data was
+          // at index 3. Taking [0] read an empty row, which is why phaseKey was null.
+          p = pickProfile(profiles);
           setProfile(p);
           setSavedIds(Array.isArray(p?.saved_item_ids) ? p.saved_item_ids : []);
         }
@@ -738,9 +742,11 @@ export default function LifestyleEliteShell() {
     { t: "Yours", sub: "Saved · for your phase" },
   ];
 
-  // First name for the hero — fall back to "Lifestyle" if it looks like a handle/username.
-  const rawFirst = (user?.full_name || "").split(" ")[0] || "";
-  const firstName = (/\d/.test(rawFirst) || rawFirst.length > 16) ? "" : (rawFirst ? rawFirst.charAt(0).toUpperCase() + rawFirst.slice(1) : "");
+  // First name for the hero. Prefers her OWN UserProfile.display_name over the auth
+  // account's full_name: the handle/username guard below is right (nobody wants
+  // "Ojihalliburton57's reading") but on its own it meant an account named like a handle
+  // could NEVER show a name, however well she'd filled her profile in.
+  const firstName = displayFirstName(user, profile);
 
   // books lane: today's daily story chip → FemWell fiction → gutendex
   const booksRow = useMemo(() => [

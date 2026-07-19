@@ -423,7 +423,7 @@ async function saveVoiceIntent(intent) {
   // was triggering base44's preview-mode lint into a persistent
   // "missing import" auto-fix loop that blocked the UI Publish button.
   const nowISO = new Date().toISOString();
-  const me = await base44.entities.User.me().catch(() => null);
+  const me = await base44.auth.me().catch(() => null);
   const user_id = me?.id;
   if (!user_id) return { ok: false, reason: "auth" };
   const date = _resolveDate(intent.date);
@@ -744,7 +744,7 @@ export function DetailForm({ type, onCancel, onSaved }) {
     const todayISO = new Date().toISOString().split("T")[0];
     const nowISO   = new Date().toISOString();
     try {
-      const me = await base44.entities.User.me().catch(() => null);
+      const me = await base44.auth.me().catch(() => null);
       const user_id = me?.id;
       if (!user_id) { onSaved(); return; }
 
@@ -1552,7 +1552,7 @@ function MealMacroBar() {
   const [stats, setStats] = useState({ kcal: null, protein: null, carbs: null, drinks: null });
   const loadStats = useMemo(() => async () => {
     try {
-      const me = await base44.entities.User.me().catch(() => null);
+      const me = await base44.auth.me().catch(() => null);
       if (!me?.id) return;
       const day = new Date().toISOString().split("T")[0];
       const [meals, drinks] = await Promise.all([
@@ -1623,7 +1623,7 @@ function DrinkChipsRow() {
   const [popping, setPopping] = useState({});
   async function logDrink(d) {
     try {
-      const me = await base44.entities.User.me().catch(() => null);
+      const me = await base44.auth.me().catch(() => null);
       if (!me?.id) return;
       const todayISO = new Date().toISOString().split("T")[0];
       const nowISO   = new Date().toISOString();

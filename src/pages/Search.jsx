@@ -65,7 +65,7 @@ export default function Search() {
     (async () => {
       setLoading(true);
       try {
-        const me = await base44.entities.User.me().catch(() => null);
+        const me = await base44.auth.me().catch(() => null);
         if (!me?.id) { setRaw({}); setLoading(false); return; }
         const [journal, symptoms, meals, tasks] = await Promise.all([
           base44.entities.JournalEntries.filter({ user_id: me.id }, "-session_date", 400).catch(() => []),

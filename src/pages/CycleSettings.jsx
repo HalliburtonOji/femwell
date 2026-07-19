@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
+import { pickProfile } from "@/utils/userProfile";
 import { ArrowLeft } from "lucide-react";
 import TeenSafetyNudge from "@/components/compliance/TeenSafetyNudge";
 
@@ -24,8 +25,11 @@ export default function CycleSettings() {
         const u = await base44.auth.me();
         setUser(u);
         const profiles = await base44.entities.UserProfile.filter({ user_id: u.id }).catch(() => []);
-        if (profiles[0]) {
-          const p = profiles[0];
+        // pickProfile, not [0] — this page both READS and WRITES her cycle anchor. Editing
+        // whichever row happened to be newest is what split her data across rows; saving here
+        // must land on the same profile every other surface reads.
+        const p = pickProfile(profiles);
+        if (p) {
           setProfile(p);
           setCycleLength(p.cycle_avg_length || 28);
           setPeriodLength(p.period_length || 5);

@@ -27,7 +27,7 @@ export function BloomprintLine({ userId: userIdProp = null }) {
   useEffect(() => {
     if (userIdProp) return;
     let alive = true;
-    base44.entities.User.me().then((me) => { if (alive && me?.id) setId(me.id); }).catch(() => {});
+    base44.auth.me().then((me) => { if (alive && me?.id) setId(me.id); }).catch(() => {});
     return () => { alive = false; };
   }, [userIdProp]);
   if (!id) return null;
@@ -50,7 +50,7 @@ export default function BloomprintCard({ userId: userIdProp = null }) {
     let alive = true;
     (async () => {
       let id = userIdProp;
-      if (!id) { const me = await base44.entities.User.me().catch(() => null); id = me?.id || null; }
+      if (!id) { const me = await base44.auth.me().catch(() => null); id = me?.id || null; }
       if (!id || !alive) return;
       setUserId(id);
       await loadCompanionState(id).catch(() => {});

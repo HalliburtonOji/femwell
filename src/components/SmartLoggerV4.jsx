@@ -83,7 +83,7 @@ const now   = () => new Date().toISOString();
 
 async function getUserId() {
   try {
-    const me = await base44.entities.User.me();
+    const me = await base44.auth.me();
     return me?.id || null;
   } catch { return null; }
 }

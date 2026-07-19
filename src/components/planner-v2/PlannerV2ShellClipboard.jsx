@@ -3413,7 +3413,7 @@ function MorningStackCard({ user }) {
       try {
         let uid = user?.id;
         if (!uid) {
-          const me = await base44.entities.User.me().catch(() => null);
+          const me = await base44.auth.me().catch(() => null);
           uid = me?.id;
         }
         if (!uid || cancelled) return;

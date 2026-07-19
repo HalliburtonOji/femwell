@@ -6,12 +6,13 @@
 // Every write is guarded (.catch) so a failure never crashes the sheet; callers reload
 // the month afterward to refresh the dots.
 import { base44 } from "@/api/base44Client";
+import { pickProfile } from "@/utils/userProfile";
 
 const nowISO = () => new Date().toISOString();
 const todayISO = () => new Date().toISOString().split("T")[0];
 
 async function uid() {
-  try { const me = await base44.entities.User.me(); return me?.id || null; } catch { return null; }
+  try { const me = await base44.auth.me(); return me?.id || null; } catch { return null; }
 }
 
 // ── per-type writers (date = YYYY-MM-DD chosen day) ─────────────────────────────
@@ -97,15 +98,18 @@ export async function writePeriod(user_id, date, { type = "PeriodStart", flow = 
   await base44.entities.CycleEvents.create(payload).catch(() => {});
   if (type === "PeriodStart") {
     try {
+      // MUST be pickProfile, not [0]: logging a period start is what SETS the anchor every
+      // phase calc reads. Writing it to whichever row happened to be newest is how her data
+      // ended up split across rows in the first place — this keeps it on her real profile.
       const profs = await base44.entities.UserProfile.filter({ user_id }).catch(() => []);
-      const p = (profs || [])[0];
+      const p = pickProfile(profs);
       if (p?.id) await base44.entities.UserProfile.update(p.id, { last_period_start_date: date }).catch(() => {});
     } catch { /* ignore */ }
   }
 }
 
 export async function loadProfile(user_id) {
-  try { const profs = await base44.entities.UserProfile.filter({ user_id }).catch(() => []); return (profs || [])[0] || null; } catch { return null; }
+  try { const profs = await base44.entities.UserProfile.filter({ user_id }).catch(() => []); return pickProfile(profs); } catch { return null; }
 }
 
 export async function writeTask(user_id, date, { title, time_of_day = null }) {

@@ -40,6 +40,7 @@ import BookReader from './pages/BookReader';
 import UnifiedTabLogger from './components/UnifiedTabLogger';
 import CalendarOverlay from './components/calendar/CalendarOverlay';
 import MorningBriefSheet from './components/planner/MorningBriefSheet';
+import { pickProfile } from '@/utils/userProfile';
 import JessErrorBoundary from '@/components/jess/JessErrorBoundary';
 
 
@@ -136,12 +137,15 @@ const AuthenticatedApp = () => {
         const u = await base44.auth.me().catch(() => null);
         if (!u?.id || cancelled) return;
         if (hasSeenMorningBrief(u.id)) return;
+        // NO limit-1, and NOT [0]: limit-1 returns only the newest row, which for a user
+        // with several profile rows is usually an empty one. That's why the morning brief
+        // greeted her with a faked "Follicular · Day 1" and her raw account handle.
         const profiles = await base44.entities.UserProfile
-          .filter({ user_id: u.id }, null, 1)
+          .filter({ user_id: u.id })
           .catch(() => []);
         if (cancelled) return;
         setBriefUser(u);
-        setBriefProfile(profiles?.[0] || null);
+        setBriefProfile(pickProfile(profiles));
         setShowBrief(true);
       } catch { /* silent */ }
     })();
@@ -331,7 +335,7 @@ function App() {
         if (!me?.id || cancelled) return;
         const profiles = await base44.entities.UserProfile.filter({ user_id: me.id }).catch(() => []);
         if (cancelled) return;
-        await scheduleNotifications(profiles?.[0] || null);
+        await scheduleNotifications(pickProfile(profiles));
       } catch { /* silent */ }
     })();
     return () => { cancelled = true; };

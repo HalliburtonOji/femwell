@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import { base44 } from "@/api/base44Client";
+import { pickProfile } from "@/utils/userProfile";
 
 import { subMonths, subDays, parseISO, differenceInDays, format } from "date-fns";
 import {
@@ -111,7 +112,7 @@ export default function Pulse() {
       const u = await base44.auth.me();
       setUser(u);
       const userProfiles = await base44.entities.UserProfile.filter({ user_id: u.id }).catch(() => []);
-      setProfile(userProfiles[0] || null);
+      setProfile(pickProfile(userProfiles));
 
       const [events, ckins, slogs, hlogs, journalEntries, mealLogs, wiRecords] = await Promise.all([
         base44.entities.CycleEvents.filter({ user_id: u.id }).catch(() => []),

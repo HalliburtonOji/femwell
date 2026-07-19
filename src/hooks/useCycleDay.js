@@ -35,10 +35,20 @@ export function phaseForDay(cycleDay, periodLen = 5, cycleLen = 28) {
 
 export function computeCycleDay(profile /*, dailyCheckins */) {
   if (!profile?.last_period_start_date) {
+    // NO FAKE CYCLE. This used to return {phase:"follicular", cycleDay:1} — which is where
+    // the "FOLLICULAR · DAY 1" on the morning brief came from. It is not a harmless default:
+    // it tells a woman where she is in her cycle when we have no idea, and several callers
+    // had already grown defensive `profile?.last_period_start_date ? ... : null` guards
+    // around this hook rather than trust it.
+    //
+    // `hasCycle` is the flag consumers should branch on. `phase`/`cycleDay` are null so any
+    // caller that forgets renders nothing rather than something invented — the existing
+    // callers already guard with `cycleDay ? ... : ""` and `PHASE_LABEL[phase] || unknown`.
     return {
-      phase: "follicular",
-      cycleDay: 1,
-      dayInCycle: 1,
+      hasCycle: false,
+      phase: null,
+      cycleDay: null,
+      dayInCycle: null,
       daysUntilPeriod: null,
       periodLen: 5,
       cycleLen: 28,
@@ -59,6 +69,7 @@ export function computeCycleDay(profile /*, dailyCheckins */) {
   else if (normDay <= Math.floor(cycleLen * 0.5))  phase = "ovulatory";
   else phase = "luteal";
   return {
+    hasCycle: true,
     phase,
     cycleDay: normDay,
     dayInCycle: normDay,

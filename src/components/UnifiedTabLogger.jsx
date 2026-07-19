@@ -68,7 +68,7 @@ const nowISO   = () => new Date().toISOString();
 
 async function getUserId() {
   try {
-    const me = await base44.entities.User.me();
+    const me = await base44.auth.me();
     return me?.id || null;
   } catch { return null; }
 }
@@ -872,7 +872,7 @@ function NourishCard({ showToast }) {
     let cancelled = false;
     (async () => {
       try {
-        const me = await base44.entities.User.me().catch(() => null);
+        const me = await base44.auth.me().catch(() => null);
         if (!me?.id || cancelled) return;
         const date = todayISO();
         const [profiles, nutProfiles, checkins, mealLogs, drinks, hydration] = await Promise.all([
@@ -1988,7 +1988,7 @@ function RitualsCard({ showToast }) {
     let cancelled = false;
     (async () => {
       try {
-        const me = await base44.entities.User.me().catch(() => null);
+        const me = await base44.auth.me().catch(() => null);
         if (!me?.id || cancelled) return;
         setUserId(me.id);
         const [today, history] = await Promise.all([

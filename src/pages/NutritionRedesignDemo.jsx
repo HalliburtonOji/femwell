@@ -180,7 +180,7 @@ export default function NutritionRedesignDemo() {
     let cancelled = false;
     (async () => {
       try {
-        const me = (await base44.auth.me().catch(() => null)) || (await base44.entities.User.me().catch(() => null));
+        const me = (await base44.auth.me().catch(() => null)) || (await base44.auth.me().catch(() => null));
         if (cancelled) return;
         setUser(me);
         if (!me?.id) return;
@@ -215,7 +215,7 @@ export default function NutritionRedesignDemo() {
     try {
       let me = user;
       if (!me?.id) { me = await base44.auth.me().catch(() => null); }
-      if (!me?.id) { me = await base44.entities.User.me().catch(() => null); }
+      if (!me?.id) { me = await base44.auth.me().catch(() => null); }
       if (!me?.id) { flash("Couldn't find your account — try again"); return; }
       await base44.entities.HydrationLog.create({ user_id: me.id, day_key: new Date().toISOString().split("T")[0], amount_ml: ml, logged_at: new Date().toISOString(), source: "quick" });
       flash(`Logged ${ml} ml of water`);

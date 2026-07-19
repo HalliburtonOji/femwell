@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo, useRef } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
+import { pickProfile } from "@/utils/userProfile";
 import { Calendar, Plus, Clock, Trash2, Check, ChevronLeft, ChevronRight, X, Sparkles, ListTodo, Repeat, Pill, Sparkle, BookHeart } from "lucide-react";
 import PlannerTabs, { readInitialView, writeStoredView, resolveViewId } from "@/components/planner/PlannerTabs";
 import ConfidencePill from "@/components/planner/ConfidencePill";
@@ -588,15 +589,18 @@ export default function Planner({ shellVariant = "elite" } = {}) {
     const targetUid = uid || user?.id;
     if (!targetUid) return;
     try {
-      const rows = await base44.entities.UserProfile.filter({ user_id: targetUid }, null, 1);
-      if (rows && rows[0]) {
+      // no limit-1 + pickProfile — the newest row is often empty (see utils/userProfile),
+      // which is why Planner showed a faked "Follicular · Day 1".
+      const rows = await base44.entities.UserProfile.filter({ user_id: targetUid });
+      const picked = pickProfile(rows);
+      if (picked) {
         // Only update if the relevant fields actually changed. Spares us
         // a re-render storm on the focus / visibility / poll triggers.
         setProfile((prev) => {
-          if (!prev) return rows[0];
-          const same = prev.life_stage === rows[0].life_stage
-            && JSON.stringify(prev.conditions || prev.condition_flags || []) === JSON.stringify(rows[0].conditions || rows[0].condition_flags || []);
-          return same ? prev : rows[0];
+          if (!prev) return picked;
+          const same = prev.life_stage === picked.life_stage
+            && JSON.stringify(prev.conditions || prev.condition_flags || []) === JSON.stringify(picked.conditions || picked.condition_flags || []);
+          return same ? prev : picked;
         });
       }
     } catch { /* silent */ }
@@ -612,14 +616,14 @@ export default function Planner({ shellVariant = "elite" } = {}) {
         setUser(u);
 
         const [profiles, allItems, allTasks, programs, habits] = await Promise.all([
-          base44.entities.UserProfile.filter({ user_id: u.id }, null, 1).catch(() => []),
+          base44.entities.UserProfile.filter({ user_id: u.id }).catch(() => []),
           base44.entities.PlannerItems.filter({ user_id: u.id }, "-created_date", 200).catch(() => []),
           base44.entities.PersonalTasks.filter({ user_id: u.id }, "-created_date", 200).catch(() => []),
           base44.entities.UserPrograms.filter({ user_id: u.id, is_completed: false }, "-created_date", 5).catch(() => []),
           base44.entities.HabitLogs.filter({ user_id: u.id }, "-created_date", 60).catch(() => []),
         ]);
 
-        setProfile(profiles[0] || null);
+        setProfile(pickProfile(profiles));
         setItems(allItems);
         setPersonalTasks(allTasks);
         // Phase 2 QA fix #3 — stage-filter active programmes so we never

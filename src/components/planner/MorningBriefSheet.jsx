@@ -21,6 +21,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { useCycleDay } from "@/hooks/useCycleDay";
+import { displayFirstName } from "@/utils/userProfile";
 import { Frown, Meh, Smile, Zap, Moon, Check, ArrowRight, ListChecks, Utensils } from "lucide-react";
 
 const C = {
@@ -86,7 +87,9 @@ export default function MorningBriefSheet({ user, profile, onDismiss }) {
   const cycleDay = cycle?.cycleDay || cycle?.dayInCycle || cycle?.day || null;
 
   const greeting = useMemo(timeOfDayGreeting, []);
-  const displayName = (profile?.display_name || profile?.first_name || user?.full_name?.split(" ")[0] || "there").trim();
+  // displayFirstName applies the handle guard: the raw account name can be a username like
+  // "ojihalliburton57", and greeting her with that is worse than not using a name at all.
+  const displayName = displayFirstName(user, profile) || "there";
 
   // ── Check-in strip — load today's row (if any) so the tiles
   // come up pre-selected when re-opening within the same day.

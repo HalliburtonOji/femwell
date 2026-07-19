@@ -65,9 +65,12 @@ export default function JessDailyOpener({ user, profile }) {
       return;
     }
 
-    // Fresh fetch.
-    const fallback = (PHASE_FALLBACK[phase] || PHASE_FALLBACK.follicular)
-      .replace("{n}", String(cycleDay || 1));
+    // Fresh fetch. With no cycle data, `phase`/`cycleDay` are null — falling back to
+    // "Day 1 of your follicular phase" would state a cycle position we don't know. Greet
+    // her warmly without one instead.
+    const fallback = (phase && cycleDay)
+      ? PHASE_FALLBACK[phase].replace("{n}", String(cycleDay))
+      : "Good morning. However today is starting for you, it's a good day to be kind to yourself.";
 
     const system =
       "You are Jess, a warm UK-based women's health companion. " +

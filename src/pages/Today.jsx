@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
+import { pickProfile } from "@/utils/userProfile";
 import { PageLoader } from "../components/common/LoadingSpinner";
 import { createPageUrl } from "@/utils";
 import { isCycleLifeStage, filterProgramsByStage } from "@/utils/plannerAdapter";
@@ -302,7 +303,9 @@ export default function Today() {
           base44.entities.DailyPlan.filter({ user_id: u.id, day_key: todayStr }).catch(() => []),
         ]);
 
-        if (profiles[0]) setProfile(profiles[0]);
+        // pickProfile, not [0] — several rows can exist and only one holds her cycle data
+        const realProfile = pickProfile(profiles);
+        if (realProfile) setProfile(realProfile);
         const ci = checkins[0] || null;
         if (ci) {
           setTodayCheckin(ci);
@@ -337,9 +340,11 @@ export default function Today() {
       Promise.all([
         base44.entities.UserPrograms.filter({ user_id: u.id }).catch(() => []),
         base44.entities.Programs.list("-created_date", 50).catch(() => []),
-        base44.entities.UserProfile.filter({ user_id: u.id }, null, 1).catch(() => []),
+        // NO limit-1 here: it returns only the NEWEST row, which for a user with several
+        // profile rows is often the empty one — pickProfile needs to see them all.
+        base44.entities.UserProfile.filter({ user_id: u.id }).catch(() => []),
       ]).then(([userPrograms, allPrograms, profiles2]) => {
-        const stage2 = profiles2?.[0]?.life_stage || "reproductive";
+        const stage2 = pickProfile(profiles2)?.life_stage || "reproductive";
         // Phase 2 QA fix #3 — stage-filter active programmes so we never
         // surface "Perimenopause Foundations" on TTC/postpartum, "PMS
         // Relief" on pregnancy, etc.
@@ -359,9 +364,10 @@ export default function Today() {
         try {
           const [recs, profiles2] = await Promise.all([
             base44.entities.TodayRecommendations.filter({ user_id: u.id, date: todayStr }).catch(() => []),
-            base44.entities.UserProfile.filter({ user_id: u.id }, null, 1).catch(() => []),
+            // no limit-1 — the newest row is often an empty one (see utils/userProfile)
+            base44.entities.UserProfile.filter({ user_id: u.id }).catch(() => []),
           ]);
-          const stage = profiles2?.[0]?.life_stage || stageForRecs || "reproductive";
+          const stage = pickProfile(profiles2)?.life_stage || stageForRecs || "reproductive";
           const list = recs.length > 0 ? recs.slice(0, 3) : fallbackTodayRecommendations;
           // Soft filter: drop fallback PROGRAMME rows whose copy contradicts
           // the user's stage. Cast through filterProgramsByStage using the

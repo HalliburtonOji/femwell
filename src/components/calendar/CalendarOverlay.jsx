@@ -276,7 +276,7 @@ export default function CalendarOverlay() {
     let alive = true;
     (async () => {
       try {
-        const me = await base44.entities.User.me();
+        const me = await base44.auth.me();
         if (!alive || !me?.id) return;
         setUserId(me.id);
         try { setLiveProfile(await loadProfile(me.id)); setPhaseTick((t) => t + 1); } catch { /* ignore */ }
