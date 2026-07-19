@@ -557,7 +557,10 @@ export default function LifestyleEliteShell() {
   const loadPhaseFeed = useCallback(async (phase) => {
     if (!phase || !CANON_PHASES.includes(phase)) { setPhaseFeed([]); return; }
     try {
-      const res = await withTimeout(base44.functions.invoke("getLifestyleFeed", { mode: "for_you", page: 0, page_size: 12, phase }), 6000, "phasefeed");
+      // 14s, not 6: measured live, getLifestyleFeed answers 200 but takes >6s cold, so the
+      // old 6s guard aborted it and the rail stayed empty. This is a BACKGROUND fetch — it
+      // never blocks paint, so a longer leash costs nothing and actually lets the rail fill.
+      const res = await withTimeout(base44.functions.invoke("getLifestyleFeed", { mode: "for_you", page: 0, page_size: 12, phase }), 14000, "phasefeed");
       const rows = res?.data?.items || res?.items || [];
       setPhaseFeed((Array.isArray(rows) ? rows : []).filter((r) => r && r.title));
     } catch { setPhaseFeed([]); }
@@ -617,13 +620,18 @@ export default function LifestyleEliteShell() {
         loadSkyNotes(u?.id);      // background — real sky-diary rows
         loadContinue();           // background — "pick up where you left off"
         if (u?.id) loadFeed(getCurrentCyclePhase(p));  // background — personalised "Reads for you"
-        loadPhaseFeed(getCurrentCyclePhase(p));        // background — the real "For your phase" rail
         try { unsubItems = base44.entities.LifestyleItems.subscribe(() => loadContent()); } catch { /* no-op */ }
       } catch { /* unauth / offline — render gracefully */ }
       if (alive) setLoading(false);
     })();
     return () => { alive = false; unsubItems?.(); };
-  }, [loadContent, loadGutenberg, loadSkyNotes, loadFeed, loadContinue, loadPhaseFeed]);
+  }, [loadContent, loadGutenberg, loadSkyNotes, loadFeed, loadContinue]);
+
+  // The phase rail is driven REACTIVELY off `phaseKey`, not off the init closure's profile:
+  // init's local `p` can still be null//incomplete when it runs (measured — the fetch never
+  // fired because the guard saw a non-canonical phase), whereas `phaseKey` is the same value
+  // the phase pill renders, so it's correct by the time it settles. Re-runs if her phase changes.
+  useEffect(() => { loadPhaseFeed(phaseKey); }, [phaseKey, loadPhaseFeed]);
 
   // ── SAVE toggle (persists to UserProfile.saved_item_ids — optimistic + rollback) ──
   const toggleSave = useCallback(async (item) => {
