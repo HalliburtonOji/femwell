@@ -27,6 +27,7 @@ import { SummaryCard } from "@/components/brand/Card";
 import { ClipboardSlider, Clipboard } from "@/components/brand/ClipboardSlider";
 import { cwOf, floraKeyframes, Bouquet, Pollinator } from "@/components/brand/flora";
 import { phaseForDay } from "@/hooks/useCycleDay";
+import { pickProfile } from "@/utils/userProfile";
 import MonthlyCalendarCard from "@/components/planner/MonthlyCalendarCard";
 import DayDetailSheet from "@/components/planner/DayDetailSheet";
 import {
@@ -189,7 +190,11 @@ export default function PlannerEliteShell() {
     (async () => {
       try {
         const u = await base44.auth.me(); if (!alive) return; setUser(u);
-        const p = await base44.entities.UserProfile.filter({ user_id: u.id }, null, 1); const prof = p?.[0] || null;
+        // THIS is the live /Planner profile load (Planner.jsx defaults to shellVariant
+        // "elite" and returns this shell, so the loader in Planner.jsx never runs for the
+        // live route). No limit-1, and pickProfile not [0] — the newest row is usually an
+        // empty one, which is why Planner showed a faked "Follicular · Day 1".
+        const p = await base44.entities.UserProfile.filter({ user_id: u.id }); const prof = pickProfile(p);
         if (!alive) return; setProfile(prof); setSeason(prof?.life_season || "steady");
         await Promise.all([loadBlocks(u.id, 0), loadToday(u.id)]);
       } catch { /* unauth / offline — render gracefully */ }

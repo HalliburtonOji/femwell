@@ -17,6 +17,7 @@
 // One-line revert: pages.config "Garden" → Garden.
 import { useState, useEffect, useRef } from "react";
 import { base44 } from "@/api/base44Client";
+import { pickProfile } from "@/utils/userProfile";
 import { Sparkles, Sprout, Leaf, Feather, BookOpen, X, Share2, Flower2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
@@ -84,7 +85,9 @@ export default function GardenEliteShell() {
       try {
         const u = await base44.auth.me(); if (!alive) return;
         setUser(u); setUid(u.id);
-        base44.entities.UserProfile.filter({ user_id: u.id }, "-created_date", 1).catch(() => []).then((p) => { if (alive) setProfile(p?.[0] || u); });
+        // no "-created_date"/limit-1 + pickProfile: sorting newest-first and taking one row
+        // returns an EMPTY profile for users with several rows (see utils/userProfile).
+        base44.entities.UserProfile.filter({ user_id: u.id }).catch(() => []).then((p) => { if (alive) setProfile(pickProfile(p) || u); });
         setComp(getCompanion(u.id)); setTendedT(tendedToday(u.id));
         loadCompanionState(u.id).then(() => { if (alive) { setComp(getCompanion(u.id)); setTendedT(tendedToday(u.id)); } }).catch(() => {});
         setMs(localMilestones(u.id));

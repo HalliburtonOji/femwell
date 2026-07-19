@@ -18,6 +18,7 @@ import {
   PHASE_COLORS, PHASE_LABEL,
 } from "@/components/journal/Editorial";
 import { base44 } from "@/api/base44Client";
+import { pickProfile } from "@/utils/userProfile";
 import { computeCycleDay } from "@/hooks/useCycleDay";
 import { nutritionToday } from "@/utils/nutritionSummary";
 import { communityHash } from "@/components/community/communityAnon";
@@ -315,8 +316,11 @@ export default function TodayDemo6() {
       loadCompanionState(id).catch(() => {});
       try { setCompanion(getCompanion(id)); } catch { /* ignore */ }
       // profile → cycle
+      // THIS is the live /Today profile load — pages.config maps the "Today" route to
+      // TodayDemo6, so the loader in pages/Today.jsx never runs for the live route.
+      // pickProfile, not [0]: only one of her several rows carries the cycle anchor.
       const profs = await withTimeout(base44.entities.UserProfile.filter({ user_id: id }));
-      const prof = (profs || []).filter(Boolean)[0] || null;
+      const prof = pickProfile(profs);
       if (!alive) return;
       setProfile(prof);
       void nm;

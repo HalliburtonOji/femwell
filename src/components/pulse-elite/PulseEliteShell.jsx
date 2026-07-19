@@ -13,6 +13,7 @@
 //   ContentActionBar. Over-time charts (metric-by-phase · time-series · habit completion · sleep/mood) ported.
 import { useState, useEffect, useMemo, useRef } from "react";
 import { base44 } from "@/api/base44Client";
+import { pickProfile } from "@/utils/userProfile";
 import { subMonths, subDays, parseISO, differenceInDays, format } from "date-fns";
 import {
   ResponsiveContainer, BarChart, Bar, Cell, XAxis, YAxis, CartesianGrid, Tooltip, LineChart, Line,
@@ -117,7 +118,7 @@ export default function PulseEliteShell() {
       try {
         const u = await base44.auth.me(); if (!alive) return; setUser(u);
         const profs = await base44.entities.UserProfile.filter({ user_id: u.id }).catch(() => []);
-        if (alive) setProfile(profs?.[0] || null);
+        if (alive) setProfile(pickProfile(profs));   // not [0] — see utils/userProfile
         const [events, ckins, slogs, hlogs, journalEntries, mealLogs, wiRecords] = await Promise.all([
           base44.entities.CycleEvents.filter({ user_id: u.id }).catch(() => []),
           base44.entities.DailyCheckins.filter({ user_id: u.id }).catch(() => []),
