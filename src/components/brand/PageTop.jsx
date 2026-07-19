@@ -13,6 +13,7 @@
 import { useId, useMemo } from "react";
 import { T, SCRIPT, Heart as BrandHeart } from "@/components/journal/Editorial";
 import { RichBloomV2, Pollinator, FlowerGlyph, cwOf, floraKeyframes, lighten } from "@/components/brand/flora";
+import { FwPhotoBand, heroMediaMode } from "@/components/brand/PhotoHero";
 import { FLORA_STAGE, FLORA_SCENE_DEFS, FLORA_SCENE, FLORA_BLOOMS, FLORA_CREATURE, FLORA_HEAD_OFF, bloomLocalOpen, Bud, FLORA_SCENE_KEYFRAMES } from "@/components/brand/floraScene";
 
 // FwFloraHero — the signature flora hero (finalised: realistic bough · dusk
@@ -161,8 +162,15 @@ export function FwFloraHero({
   // shunt the summary card below it. Pass a number to override.
   titleMinHeight = 92,
   garden,   // opt-in garden key (see GARDENS) — absent → the hero renders exactly as before
+  // opt-in photoreal band (see PhotoHero.jsx). Absent → the SVG stage, exactly as before.
+  // Present but the visitor prefers reduced motion → ALSO the SVG stage, because the
+  // interactive bloom that answers the hero chips is the richer experience for her, not a
+  // consolation prize. Revert = delete this one prop at the call site.
+  photo,
 }) {
   const cw = cwOf(colorway);
+  const photoMode = useMemo(() => (photo ? heroMediaMode() : null), [photo]);
+  const usePhoto = !!photo && photoMode !== "svg";
   const gardenDef = garden ? GARDENS[garden] : null;
   // Positions come from a 300-wide stage but the SVG scales to its container, so ABSOLUTE px
   // left/top drift off the bough below 300px. Express them as % of the stage instead.
@@ -188,6 +196,11 @@ export function FwFloraHero({
   return (
     <div className="fw-hero" style={{ display: "flex", flexDirection: "column", alignItems: "center", marginTop: 8 }}>
       <style>{floraKeyframes + FLORA_SCENE_KEYFRAMES}</style>
+      {usePhoto ? (
+        <div style={{ width: "100%", maxWidth: 560, margin: "0 auto 2px" }}>
+          <FwPhotoBand garden={photo} colorway={colorway} />
+        </div>
+      ) : (
       <div style={{ position: "relative", width: FLORA_STAGE.w, maxWidth: "100%", height: FLORA_STAGE.h, margin: "0 auto" }}>
         {/* soft warm glow — grounds the scene without a ring */}
         <div aria-hidden style={{ position: "absolute", top: "40%", left: "56%", width: 240, height: 210, transform: "translate(-50%,-50%)", borderRadius: "50%", background: `radial-gradient(circle, ${cw.petal}26 0%, ${T.sage}16 46%, transparent 70%)`, animation: "fwcGlow 7s ease-in-out infinite", pointerEvents: "none", zIndex: 0 }} />
@@ -225,6 +238,7 @@ export function FwFloraHero({
           </div>
         )}
       </div>
+      )}
       {/* carved heart (§3) + Ephesis script title + flanking meaning-blooms */}
       <div style={{ display: "flex", alignItems: "center", gap: 9, marginTop: 2, flexWrap: "wrap", justifyContent: "center", ...(titleMinHeight ? { minHeight: titleMinHeight } : null) }}>
         {flankL && <FlowerGlyph variant={flankL} size={22} color={cwOf("plum").petal} color2={cwOf("plum").tip} idx={`${idx}-fl-${uid}`} />}
