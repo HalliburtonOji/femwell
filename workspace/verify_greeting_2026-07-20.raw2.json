@@ -1,0 +1,47 @@
+{
+  "http": [
+    {
+      "s": 500,
+      "u": "https://femwells.com/api/apps/69a9891a6ccccc1822bbb4bc/entities/LifestyleItems?q=%7B%22id%22:%221342%22%7D&limit=1"
+    },
+    {
+      "s": 500,
+      "u": "https://femwells.com/api/apps/69a9891a6ccccc1822bbb4bc/entities/LifestyleItems?q=%7B%22id%22:%22514%22%7D&limit=1"
+    },
+    {
+      "s": 500,
+      "u": "https://femwells.com/api/apps/69a9891a6ccccc1822bbb4bc/entities/LifestyleItems?q=%7B%22id%22:%221342%22%7D&limit=1"
+    },
+    {
+      "s": 500,
+      "u": "https://femwells.com/api/apps/69a9891a6ccccc1822bbb4bc/entities/LifestyleItems?q=%7B%22id%22:%22514%22%7D&limit=1"
+    }
+  ],
+  "events": [],
+  "today": {
+    "greetingNodeText": "\"Good morning, Halliburton\"",
+    "greetingNodeTag": "SPAN",
+    "cycleNodeText": "\"Day 8 · Follicular\"",
+    "cycleNodeTag": "SPAN",
+    "nameHits": 2,
+    "nameContexts": [
+      "Good morning, Halliburton",
+      "Here's your day, Halliburton. You're in your follicular "
+    ],
+    "dayNumbers": [
+      "8"
+    ]
+  },
+  "community": {
+    "full": "Jump to\nFEMWELL · COMMUNITY\nThe rooms\nDrop into a room and say it plainly — silly to serious, no names.\nTalk\nCircles\nTogether\nQuietly\nyour cycling years\nAsk the Lounge\nALIVE HERE TODAY\nTODAY'S QUESTION\nWhat would make tomorrow 5% kinder to yourself?\nWHO'S AROUND\nIt's quiet here tonight — a good time to leave the first word for whoever comes next.\nCLOSE THE WEEK\nOne line to let this week go, together.\nTODAY IN THE COMMUNITY\nThe question\nWhat would make tomorrow 5% kinder to yourself?\nAround today\nGentle in here — leave the first word.\nClose the week\nOne line to let this week go, together.\nAnswer today\nAsk the room\nLeave an echo\nTonight's game\nJESS · IN THE ROOMS TODAY\n\nHello, you. — Today's question is \"What would make tomorrow 5% kinder to yourself?\" — a line is plenty. Whatever you bring, someone here has been there.\n\nROOMSSix warm rooms, all anonymous\nTODAYWhat would make tomorrow 5% kinder to yourself?\nYOU'RE AMONGyour cycling years\nKIND + SAFEEvery line screened; heavy stuff routes to real help\nOpen Jess's full read\nJess's full read\nWHAT THE ROOM'S FOR\n\nThis is the whole of your life, not just your cycle — the love and the laugh, the money question, the late-night vent. Health is one room here, never the house. No handles, no DMs, no likes, no leaderboards.\n\nYOU'RE LOOKED AFTER HERE\n\nYou're anonymous — no name, ever. Kindness is kept quietly in the background so you don't h",
+    "stageWords": [
+      "cycling years",
+      "pregnancy",
+      "menopause"
+    ]
+  },
+  "meta": {
+    "localTime": "Mon Jul 20 2026 01:25:44 GMT+0100 (British Summer Time)",
+    "utc": "2026-07-20T00:25:44.588Z"
+  }
+}

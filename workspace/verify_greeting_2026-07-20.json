@@ -1,0 +1,44 @@
+{
+  "bundle": "index-BnSxWnqh.js",
+  "bundleConfirmedLive": true,
+  "measuredAtLocal": "Mon 20 Jul 2026 01:23 - 01:26 BST (UTC+1)",
+  "measuredAtUTC": "2026-07-20T00:23Z - 2026-07-20T00:26Z",
+  "viewport": "mobile-390x844",
+  "auth": "persisted session mcp-chrome-7fe4e47, real Chrome channel:chrome - AUTHENTICATED",
+  "rateLimiting": {"http429Count": 0, "note": "Zero 429s across 8 page loads. No re-walk needed; readings trustworthy."},
+  "groundTruth": {
+    "profile": "6a0716bdcbe7ea5d0e04e60f", "lastPeriod": "2026-04-23", "cycleLength": 27,
+    "localDate": "2026-07-20", "utcDate": "2026-07-20", "datesConverged": true,
+    "daysElapsed": 88, "mod27": 7, "arithmeticDay": 8, "phase": "follicular"
+  },
+  "assertions": [
+    {"id":1,"assertion":"/Today greeting VERBATIM carries her name","expected":"Good morning, Halliburton","measured":"Good morning, Halliburton","node":"SPAN, leaf node, textContent exactly \"Good morning, Halliburton\"","result":"PASS"},
+    {"id":1,"assertion":"/Today name appears on page","expected":">=1 hit","measured":"2 hits: \"Good morning, Halliburton\" and \"Here's your day, Halliburton. You're in your follicular phase\"","result":"PASS"},
+    {"id":2,"assertion":"/Today cycle text NOT regressed","expected":"Day 8 / Follicular","measured":"SPAN textContent \"Day 8 · Follicular\"; renders as \"DAY 8 · FOLLICULAR\" via CSS text-transform. Only day number on page is 8.","result":"PASS"},
+    {"id":2,"assertion":"rendered day == arithmetic day","expected":"8","measured":"8 (88 days elapsed, 88 mod 27 = 7, +1 = 8)","result":"PASS"},
+    {"id":3,"assertion":"Lifestyle pill","expected":"day 8 follicular","measured":"Follicular · Day 8 · a fresh-start, bright kind of day","result":"PASS"},
+    {"id":3,"assertion":"Lifestyle hero title","expected":"Halliburton's reading","measured":"Halliburton's reading","result":"PASS"},
+    {"id":3,"assertion":"Lifestyle video header","expected":"error null, currentTime advancing","measured":"error null, readyState 4, paused false, currentTime 0.033 -> 0.528 over 5s","result":"PASS"},
+    {"id":3,"assertion":"Planner day","expected":"day 8 follicular","measured":"Follicular · Day 8","result":"PASS"},
+    {"id":3,"assertion":"Journal day","expected":"day 8 follicular","measured":"GOOD MORNING · FOLLICULAR · DAY 8 · 20 JULY","result":"PASS"},
+    {"id":3,"assertion":"Community season line still reproductive","expected":"reproductive variant","measured":"\"your cycling years\" x2 (incl. YOU'RE AMONG block); \"monthly tides\" line present","result":"PASS"},
+    {"id":4,"assertion":"NEW pageerrors vs baseline","expected":"none","measured":"zero pageerror events across all loads","result":"PASS"},
+    {"id":4,"assertion":"NEW unhandled rejections","expected":"none","measured":"none observed","result":"PASS"},
+    {"id":4,"assertion":"HTTP errors vs the two documented 500s","expected":"only ids 514 + 1342","measured":"14 x 500, all LifestyleItems id 514 or 1342. No other non-2xx. No new failures.","result":"PASS (pre-existing 500s unchanged)"},
+    {"id":5,"assertion":"/Today screenshot saved","expected":"file on disk","measured":"today_final.png 394287 bytes, md5 129d3d49...; 3 shots all distinct by md5","result":"PASS"}
+  ],
+  "correctionsToMyOwnEarlierReadings": [
+    "Pass-1 this run: I reported /Today cycleLine as \"DAY 20 JULY\". WRONG - regex artefact, \"DAY 20 JULY\" is a substring of the header \"MORNING · MONDAY 20 JULY\". True value is \"Day 8 · Follicular\".",
+    "Pass-1 this run: greeting node reported as a SCRIPT tag. WRONG - my leaf-node regex alternative \"Hi\" matched \"history\" inside an inline analytics script. Re-queried with SCRIPT/STYLE excluded: real node is a SPAN.",
+    "Pass-1 this run: Community stageWrong=true. FALSE POSITIVE - the only match is the static room-list label \"TTC · pregnancy · peri · menopause\", not a user-stage leak.",
+    "Pass-2 this run: I briefly read \"monthly tides\" as absent. WRONG - it was beyond my 1400-char text slice. It is present.",
+    "Prior run (verify_personalisation_2026-07-20.json) assertion \"/Today greeting carries her name\" = FAIL is now superseded: PASS on this bundle. All other prior findings stand."
+  ],
+  "summary": {"pass": 14, "fail": 0, "void": 0, "total": 14},
+  "screenshots": [
+    "C:/Users/Halli/femwell-work/workspace/verify_screenshots/greeting_2026-07-20/mobile/today_final.png",
+    "C:/Users/Halli/femwell-work/workspace/verify_screenshots/greeting_2026-07-20/mobile/today.png",
+    "C:/Users/Halli/femwell-work/workspace/verify_screenshots/greeting_2026-07-20/mobile/community.png"
+  ],
+  "notes": "The one open item is closed. The greeting now reads \"Good morning, Halliburton\" verbatim and the name also carries into the narrative line, so displayFirstName() is resolving display_name on both call paths. Day 8 follicular holds on Today, Lifestyle, Planner and Journal, matching the arithmetic. No new console errors; the two LifestyleItems 500s (514, 1342) persist unchanged and remain a separate data defect."
+}

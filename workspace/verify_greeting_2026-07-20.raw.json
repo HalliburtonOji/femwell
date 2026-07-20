@@ -1,0 +1,142 @@
+{
+  "events": [
+    {
+      "t": "consoleerror",
+      "m": "Failed to load resource: the server responded with a status of 500 ()"
+    },
+    {
+      "t": "consoleerror",
+      "m": "Failed to load resource: the server responded with a status of 500 ()"
+    },
+    {
+      "t": "consoleerror",
+      "m": "Failed to load resource: the server responded with a status of 500 ()"
+    },
+    {
+      "t": "consoleerror",
+      "m": "Failed to load resource: the server responded with a status of 500 ()"
+    },
+    {
+      "t": "consoleerror",
+      "m": "Failed to load resource: the server responded with a status of 500 ()"
+    },
+    {
+      "t": "consoleerror",
+      "m": "Failed to load resource: the server responded with a status of 500 ()"
+    },
+    {
+      "t": "consoleerror",
+      "m": "Failed to load resource: the server responded with a status of 500 ()"
+    },
+    {
+      "t": "consoleerror",
+      "m": "Failed to load resource: the server responded with a status of 500 ()"
+    },
+    {
+      "t": "consoleerror",
+      "m": "Failed to load resource: the server responded with a status of 500 ()"
+    },
+    {
+      "t": "consoleerror",
+      "m": "Failed to load resource: the server responded with a status of 500 ()"
+    }
+  ],
+  "http": [
+    {
+      "s": 500,
+      "u": "https://femwells.com/api/apps/69a9891a6ccccc1822bbb4bc/entities/LifestyleItems?q=%7B%22id%22:%22514%22%7D&limit=1"
+    },
+    {
+      "s": 500,
+      "u": "https://femwells.com/api/apps/69a9891a6ccccc1822bbb4bc/entities/LifestyleItems?q=%7B%22id%22:%221342%22%7D&limit=1"
+    },
+    {
+      "s": 500,
+      "u": "https://femwells.com/api/apps/69a9891a6ccccc1822bbb4bc/entities/LifestyleItems?q=%7B%22id%22:%22514%22%7D&limit=1"
+    },
+    {
+      "s": 500,
+      "u": "https://femwells.com/api/apps/69a9891a6ccccc1822bbb4bc/entities/LifestyleItems?q=%7B%22id%22:%221342%22%7D&limit=1"
+    },
+    {
+      "s": 500,
+      "u": "https://femwells.com/api/apps/69a9891a6ccccc1822bbb4bc/entities/LifestyleItems?q=%7B%22id%22:%221342%22%7D&limit=1"
+    },
+    {
+      "s": 500,
+      "u": "https://femwells.com/api/apps/69a9891a6ccccc1822bbb4bc/entities/LifestyleItems?q=%7B%22id%22:%22514%22%7D&limit=1"
+    },
+    {
+      "s": 500,
+      "u": "https://femwells.com/api/apps/69a9891a6ccccc1822bbb4bc/entities/LifestyleItems?q=%7B%22id%22:%22514%22%7D&limit=1"
+    },
+    {
+      "s": 500,
+      "u": "https://femwells.com/api/apps/69a9891a6ccccc1822bbb4bc/entities/LifestyleItems?q=%7B%22id%22:%221342%22%7D&limit=1"
+    },
+    {
+      "s": 500,
+      "u": "https://femwells.com/api/apps/69a9891a6ccccc1822bbb4bc/entities/LifestyleItems?q=%7B%22id%22:%22514%22%7D&limit=1"
+    },
+    {
+      "s": 500,
+      "u": "https://femwells.com/api/apps/69a9891a6ccccc1822bbb4bc/entities/LifestyleItems?q=%7B%22id%22:%221342%22%7D&limit=1"
+    }
+  ],
+  "results": {
+    "today": {
+      "greetingLine": "Good morning, Halliburton",
+      "greetingNodeText": "if (window.self === window.top) {\n  let lastPath = \"\";\n  function getPageNameFromPath(path) {\n    const segments = path.split(\"/\").filter(Boolean);\n    return segments[0] || null;\n  }\n  function trackPageView() {\n    const path = window.location.pathname;\n    if (path === lastPath) return;\n    lastPath = path;\n    const pageName = getPageNameFromPath(path) || \"home\";\n    const appId = \"\";\n    if (!appId) return;\n    fetch(`/api/app-logs/${appId}/log-user-in-app/${pageName}`, {\n      method: \"POST\",\n    }).catch(() => {});\n  }\n  const originalPushState = history.pushState.bind(history);\n  history.pushState = function (...args) {\n    originalPushState(...args);\n    trackPageView();\n  };\n  const originalReplaceState = history.replaceState.bind(history);\n  history.replaceState = function (...args) {\n    originalReplaceState(...args);\n    trackPageView();\n  };\n  window.addEventListener(\"popstate\", trackPageView);\n  trackPageView();\n}",
+      "greetingNodeTag": "SCRIPT.",
+      "nameHits": [
+        "Halliburton",
+        "Halliburton"
+      ],
+      "nameHitCount": 2,
+      "cycleLine": "DAY 20 JULY",
+      "phaseHits": [
+        "FOLLICULAR",
+        "FOLLICULAR",
+        "follicular",
+        "follicular",
+        "Follicular",
+        "Follicular",
+        "follicular",
+        "follicular"
+      ],
+      "len": 4450,
+      "sample": "TODAY · FOLLICULAR\nJump to\nMORNING · MONDAY 20 JULY\nJump to\nGood morning, Halliburton\nDAY 8 · FOLLICULAR\nInner Spring\n“I'm here with you today. We can rest, and still tend a little.”\nYOUR DAY, IN A FEW WORDS\n\nHere's your day, Halliburton. You're in your follicular phase — Inner Spring — day 8. Nothing logged yet — a warm breakfast would be a kind start. It's been 20 days since you wrote; a sentenc"
+    },
+    "lifestyle": {
+      "pill": "Follicular · Day 8 · a fresh-start, bright kind of day",
+      "heroTitle": "Halliburton's reading",
+      "video": {
+        "error": null,
+        "readyState": 4,
+        "paused": false,
+        "t0": 0.032941,
+        "t1": 0.527733
+      },
+      "len": 18702
+    },
+    "planner": {
+      "day": "Follicular · Day 8",
+      "len": 3055
+    },
+    "journal": {
+      "day": "DAY 8 · 20 JULY",
+      "head": "Jump to\nGOOD MORNING · FOLLICULAR · DAY 8 · 20 JULY\nyour journal today\nInner Spring · Something new wants to begin.\nYOUR PAGES, TODAY\nLAST ENTRY · 30 JUNE\nSomething warm with greens and protein\nON THI",
+      "len": 1083
+    },
+    "community": {
+      "seasonLine": null,
+      "cyclingYears": true,
+      "stageWrong": true,
+      "len": 3659
+    }
+  },
+  "meta": {
+    "localTime": "Mon Jul 20 2026 01:24:38 GMT+0100 (British Summer Time)",
+    "utc": "2026-07-20T00:24:38.520Z"
+  }
+}
