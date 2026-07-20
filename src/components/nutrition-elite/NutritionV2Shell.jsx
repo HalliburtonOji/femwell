@@ -31,6 +31,7 @@ import { FwFloraHero } from "@/components/brand/PageTop";
 import { SummaryCard, HeroPromoteRail, ExpandableCard, FwCard, FwCardCTA, FW_OXBLOOD } from "@/components/brand/Card";
 import { ClipboardSlider, Clipboard } from "@/components/brand/ClipboardSlider";
 import { cwOf, floraKeyframes, Bouquet, Pollinator, FlowerGlyph, SprigDivider } from "@/components/brand/flora";
+import { QuickRow } from "@/components/brand/QuickRow";
 import MonthlyCalendarCard from "@/components/planner/MonthlyCalendarCard";
 import DayDetailSheet from "@/components/planner/DayDetailSheet";
 import UnifiedLogger from "@/components/nutrition/UnifiedLogger";
@@ -344,25 +345,9 @@ function JessGlanceSwipe({ accent, glancePanel, jessPanel }) {
   );
 }
 
-// ── V2 · below-main = a horizontal row of COMPACT one-line cards. Every one is a real jump/action. ──
-function V2QuickRow({ items }) {
-  return (
-    <div className="fw-v2-quick" style={{ display: "flex", gap: 9, overflowX: "auto", padding: "2px 2px 8px", WebkitOverflowScrolling: "touch", overscrollBehaviorX: "contain" }}>
-      <style>{`.fw-v2-quick{scrollbar-width:none}.fw-v2-quick::-webkit-scrollbar{display:none}`}</style>
-      {items.map((it) => {
-        const c = cwOf(it.cw).petal;
-        return (
-          <button key={it.label} onClick={it.onClick} className="fw-elite-press" style={{ flex: "0 0 auto", display: "inline-flex", alignItems: "center", gap: 9, background: `linear-gradient(160deg, ${T.paperHi} 0%, ${c}12 100%)`, border: `1px solid ${T.paperDeep}`, borderLeft: `3px solid ${c}`, borderRadius: 13, padding: "10px 13px", cursor: "pointer", whiteSpace: "nowrap" }}>
-            <span style={{ width: 26, height: 26, borderRadius: 8, background: `${c}1F`, display: "grid", placeItems: "center", flexShrink: 0 }}><it.Icon size={13} color={c} /></span>
-            <span style={{ fontFamily: UI, fontSize: 13, fontWeight: 700, color: T.ink }}>{it.label}</span>
-            <ChevronRight size={15} color={T.muted} />
-          </button>
-        );
-      })}
-      <span style={{ flex: "0 0 2px" }} aria-hidden />
-    </div>
-  );
-}
+// ── V2 · below-main = a horizontal row of COMPACT one-line cards. Every one is a real
+// jump/action. Now the shared brand QuickRow (was an identical local copy — see brand/QuickRow). ──
+const V2QuickRow = QuickRow;
 
 // ════════════════════════════════════════════════════════════════════════════
 export default function NutritionV2Shell() {

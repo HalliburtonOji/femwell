@@ -59,6 +59,7 @@ import DayDetailSheet from "@/components/planner/DayDetailSheet";
 import { getCurrentCyclePhase, phaseLabel } from "@/utils/cyclePhase";
 import { pickProfile, displayFirstName } from "@/utils/userProfile";
 import { useCycleDay } from "@/hooks/useCycleDay";
+import { QuickRow } from "@/components/brand/QuickRow";
 import { withTimeout } from "@/utils/safeEntity";
 import { createPageUrl } from "@/utils";
 // "Mark as read" must actually MARK IT READ — this is the same recorder the Garden reads
@@ -1373,6 +1374,22 @@ export default function LifestyleEliteShell() {
             </Clipboard>
 
           </ClipboardSlider>
+        </div>
+
+        {/* HANDY RIGHT NOW — a compact row of one-line jumps into the boards + the two overlays.
+            Every chip is a REAL jump (no dead labels); spans the whole-life spread, not just
+            reading — story, a small joy, listen/watch, your sky, your saved. Mirrors Nutrition's
+            "Handy right now" via the shared QuickRow. */}
+        <div style={{ marginTop: 22 }}>
+          <div style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 18, fontWeight: 600, color: OXBLOOD, margin: "0 2px 9px" }}>Handy right now</div>
+          <QuickRow items={[
+            { Icon: Feather, cw: "crimson", label: "Today's chapter", onClick: () => setChapterOpen(true) },
+            { Icon: Clock, cw: "gold", label: "What've you got time for?", onClick: () => jumpTo(0) },
+            { Icon: BookOpen, cw: "plum", label: "Something to read", onClick: () => jumpTo(1) },
+            { Icon: Headphones, cw: "sage", label: "Listen & watch", onClick: () => jumpTo(2) },
+            { Icon: Moon, cw: "sky", label: "Your sky tonight", onClick: () => setSkyOpen(true) },
+            { Icon: Bookmark, cw: "plum", label: "Your saved", onClick: () => jumpTo(5) },
+          ]} />
         </div>
 
         <div style={{ display: "grid", placeItems: "center", margin: "18px 0 0" }}><Pollinator kind="butterfly" size={36} color={cwOf(ph.cw).petal} color2={cwOf(ph.cw).tip} pattern="bands" animate idx="elite-close" /></div>
