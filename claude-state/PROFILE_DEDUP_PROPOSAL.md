@@ -203,3 +203,21 @@ is re-run converges to the same state.
   Ms Data leans **(A)** given the snapshot rollback and the fact these are the user's own duplicate rows.
 
 **AWAITING HALLI SIGN-OFF. No mutation will run until Halli approves the algorithm and picks option A or B.**
+
+---
+
+## ✅ FK VERIFICATION — COMPLETE (2026-07-21, done by orchestrator, not Halli)
+
+**Question 2 ("does anything foreign-key on `UserProfile.id`?") is answered: NO. Nothing does.** Deleting donor rows after merge is safe.
+
+Evidence (all measured against the current tree):
+1. **Schema:** the ONLY schema reference to "UserProfile" is its own `"name": "UserProfile"` definition. No other entity has a field FK-ing to `UserProfile.id`. Every user-scoped entity keys on **`user_id` (→ User)** — 197 `user_id` fields across the entity schemas. `HoroscopeReading.astro_profile_id` is an FK to **AstroProfile**, not UserProfile.
+2. **No persisted reference:** no field anywhere named `user_profile_id` / `profileRef` / `up_id` etc.; nothing stores a `UserProfile.id` as a value in another entity.
+3. **No read-by-profile-id:** zero code filters any entity by a stored profile row id (`filter({... profile_id ...})` returns nothing).
+4. **All `UserProfile.id` usages are transient:** every `UserProfile.update(profile.id, …)` / `.delete(profile.id)` targets the **currently-loaded** row in-session; the id is never persisted elsewhere.
+5. **Partner linking uses a share CODE, not the row id:** `PartnerSync` links partners via a minted `partner_share_code`, so deleting a donor row (which has no share code) cannot break a partner link.
+6. **Life-stage profiles are separate entities:** `MenopauseProfile` / `PregnancyProfile` `.update(profile.id, …)` calls use the life-stage row's OWN id (that component's `profile` prop is the life-stage row, using its `.stage`/`.care_focus` fields), keyed additionally by `user_id` — not a UserProfile cross-reference.
+
+**Conclusion for the write session:** the survivor keeps its id; the 4 donor rows (all empty duplicates with no share codes / no unique refs) can be hard-deleted after merging their non-null fields onto the survivor, with the rollback snapshot as the only safety net needed. The `bulkCreate`-mints-new-ids caveat is moot **because nothing references those ids in the first place.**
+
+**Still awaiting Halli:** decision (A) hard-delete + snapshot vs (B) soft-delete via schema MP. FK risk = none either way.
