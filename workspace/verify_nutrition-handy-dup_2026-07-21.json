@@ -1,0 +1,30 @@
+{
+  "url": "https://femwells.com/Nutrition",
+  "bundle": "index-BRB3zpi6.js",
+  "checkedAt": "2026-07-21",
+  "session": "warm persisted profile ms-playwright-mcp/mcp-chrome-7fe4e47 (channel chrome), viewport 390x844, hydration wait 9s",
+  "question": "Is the second 'Handy right now' row on /Nutrition a VISIBLE duplicate (bug) or display:none keep-alive DOM (not a bug)?",
+  "assertions": [
+    {"name": "handy-right-now-total-in-dom", "expected": "2 present (one lifestyle, one nutrition)", "got": "2", "pass": true},
+    {"name": "handy-right-now-visible-count", "query": "offsetParent!==null && rect.w>0 && rect.h>0", "expected": "1 visible", "got": "1", "pass": true},
+    {"name": "lifestyle-row-hidden-offsetParent", "query": "el.offsetParent === null", "expected": "null (hidden)", "got": "null", "pass": true},
+    {"name": "lifestyle-row-hidden-rect", "query": "getBoundingClientRect()", "expected": "0x0", "got": "w:0 h:0 top:0", "pass": true},
+    {"name": "lifestyle-row-ancestor-display-none", "query": "getComputedStyle up the chain", "expected": "an ancestor display:none", "got": "div[data-keepalive=Lifestyle] display:none", "pass": true},
+    {"name": "lifestyle-row-inside-keepalive-Lifestyle", "query": "ancestor with data-keepalive=Lifestyle", "expected": "true", "got": "true (that same ancestor is the display:none one)", "pass": true},
+    {"name": "lifestyle-row-chip-identity", "query": "container innerText", "expected": "lifestyle chips", "got": "Today's chapter / Something to read / Listen & watch / Your sky tonight", "pass": true},
+    {"name": "nutrition-row-visible", "query": "offsetParent!==null, no display:none ancestor, not in keepalive", "expected": "visible", "got": "offsetParent!=null, rect 339x28 @ docTop 2318, no hidden ancestor", "pass": true},
+    {"name": "nutrition-row-chip-identity", "query": "container innerText", "expected": "nutrition chips", "got": "Log tonight's dinner / This week's shopping / Cook videos / Saved weeks / 0 of 30 plants", "pass": true},
+    {"name": "keepalive-wrapper-enumeration", "query": "[data-keepalive] computed display + containsHandy", "expected": "Lifestyle hidden holds the extra row", "got": "Today display:none (no Handy); Lifestyle display:none (containsHandy=true); Profile display:none (no Handy)", "pass": true}
+  ],
+  "verdict": "NOT A BUG",
+  "summary": {"visibleHandyRows": 1, "hiddenHandyRows": 1, "isVisibleDuplicate": false},
+  "screenshots": {
+    "note": "Pixel capture unreliable on this keep-alive/nested-fixed-scroll page in headed mode; captures resolved to the fixed page-top greeting hero, not the scrolled nutrition row. Verdict rests on DOM measurements, not pixels.",
+    "attempts": [
+      "scratchpad/nutrition_handy_390.png",
+      "scratchpad/nutrition_viewport_at_handy.png",
+      "scratchpad/nutrition_row_final.png"
+    ]
+  },
+  "notes": "Two 'Handy right now' nodes exist in the /Nutrition DOM. Exactly ONE is rendered/visible (the nutrition-chips row). The lifestyle-chips row is inside div[data-keepalive=Lifestyle] whose computed display is 'none' — offsetParent null, boundingRect 0x0. This is the mounted-but-hidden keep-alive Lifestyle tab, exactly as the wrapper hypothesis predicted. A user scrolling /Nutrition sees ONE 'Handy right now' row. No visible duplicate."
+}
