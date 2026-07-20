@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
+import { pickProfile } from "@/utils/userProfile";
 import GuideVoiceMode from "../components/guide/GuideVoiceMode";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -170,8 +171,13 @@ export default function Onboarding() {
         user_email: user.email,
         ...payload,
       };
-      if (profiles[0]) {
-        await base44.entities.UserProfile.update(profiles[0].id, data);
+      // pickProfile, not [0]. This is HALF of onboarding's two-phase write: this phase writes
+      // the cycle anchor, handleFinish writes name/stage/goals. If they target different rows
+      // (a bare row can appear newest between them) her data ends up SPLIT — which is the root
+      // of the multiple-rows bug. Both phases must converge on the same richest row.
+      const primary = pickProfile(profiles);
+      if (primary) {
+        await base44.entities.UserProfile.update(primary.id, data);
       } else {
         await base44.entities.UserProfile.create(data);
       }
@@ -217,12 +223,17 @@ export default function Onboarding() {
         ...(locationCity ? { location_city: locationCity } : {}),
         ...(cycleBasics || {}),
       };
-      if (profiles[0]) {
-        await base44.entities.UserProfile.update(profiles[0].id, pData);
+      // pickProfile, not [0] — the other half of the two-phase write (see saveCycleBasics).
+      // Because saveCycleBasics wrote the cycle anchor, its row now scores highest, so this
+      // converges on that SAME row and merges the rest of onboarding into it.
+      const primary = pickProfile(profiles);
+      if (primary) {
+        await base44.entities.UserProfile.update(primary.id, pData);
         // If duplicate rows exist, mark them all complete too so the guard never loops.
         const alignFields = { onboarding_complete: true, goals, tone_preference: tone, ai_assistant_name: assistantName || "Guide", life_stage: lifeStage, life_stage_focus: lifeStageFocus, hydration_target_ml: hydrationTarget };
-        for (let i = 1; i < profiles.length; i++) {
-          await base44.entities.UserProfile.update(profiles[i].id, alignFields).catch(() => {});
+        for (const p of profiles) {
+          if (p.id === primary.id) continue;
+          await base44.entities.UserProfile.update(p.id, alignFields).catch(() => {});
         }
       } else {
         await base44.entities.UserProfile.create(pData);

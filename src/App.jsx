@@ -168,9 +168,13 @@ const AuthenticatedApp = () => {
         const isComplete = profiles.some(p => p?.onboarding_complete === true);
         const hasData = checkins.length > 0;
         if (isComplete || hasData) {
-          if (hasData && !isComplete && profiles[0]) {
-            base44.entities.UserProfile.update(profiles[0].id, { onboarding_complete: true }).catch(() => {});
-          } else if (hasData && !profiles[0]) {
+          const primary = pickProfile(profiles);
+          if (hasData && !isComplete && primary) {
+            // mark the RICHEST row complete, not [0] — [0] can be a bare newest row, and
+            // completing it while her real profile stays incomplete is one more way the app
+            // ended up reading an empty row (see utils/userProfile).
+            base44.entities.UserProfile.update(primary.id, { onboarding_complete: true }).catch(() => {});
+          } else if (hasData && !primary) {
             base44.entities.UserProfile.create({ user_id: user.id, onboarding_complete: true }).catch(() => {});
           }
           sessionStorage.setItem('fw_ob_ok', '1');

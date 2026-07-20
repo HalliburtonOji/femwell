@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
+import { pickProfile } from "@/utils/userProfile";
 import { Search, SlidersHorizontal, X, Lock } from "lucide-react";
 import { PageLoader } from "../components/common/LoadingSpinner";
 import { differenceInDays, parseISO } from "date-fns";
@@ -299,7 +300,7 @@ export default function Explore() {
           ...(savedContent || []).map((s) => s.item_id),
         ].filter(Boolean)));
         setContent(items);
-        if (profileResult?.[0]) setUserProfile(profileResult[0]);
+        { const p = pickProfile(profileResult); if (p) setUserProfile(p); }   // not [0] — see utils/userProfile
         const oneWeekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
         setNewThisWeek(items.filter(i => (i.created_date || i.created_at || "") >= oneWeekAgo).slice(0, 6));
         setRecommendations(recs);

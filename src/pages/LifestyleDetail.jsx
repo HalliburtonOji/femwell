@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { base44 } from "@/api/base44Client";
+import { pickProfile } from "@/utils/userProfile";
 import { ArrowLeft, Bookmark, BookmarkCheck, Heart, HeartOff, Loader2, PlayCircle } from "lucide-react";
 import { format } from "date-fns";
 import { getCategoryGradient, attachFallbackOverlay } from "@/utils/imageFallback";
@@ -191,7 +192,7 @@ export default function LifestyleDetail() {
         ]);
         if (cancelled) return;
         const fetched = items[0] || null;
-        const nextProfile = profiles[0] || null;
+        const nextProfile = pickProfile(profiles);   // not [0] — see utils/userProfile
         setItem(fetched);
         setProfile(nextProfile);
         setProfileId(nextProfile?.id || null);
