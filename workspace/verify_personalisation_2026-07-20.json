@@ -1,0 +1,61 @@
+{
+  "bundle": "index-C8fA6aV_.js",
+  "bundleConfirmedLive": true,
+  "measuredAtUTC": "2026-07-20T00:11:21Z - 2026-07-20T00:16:20Z",
+  "measuredAtLocal": "Mon 20 Jul 2026 01:11 - 01:16 BST (UTC+1)",
+  "viewport": "mobile-390x844",
+  "auth": "persisted session mcp-chrome-7fe4e47, real Chrome 149 channel:chrome",
+  "rateLimiting": {"http429Count": 0, "note": "No 429s on any request. Prior false-regression condition not present; readings are trustworthy."},
+  "groundTruth": {
+    "profile": "6a0716bdcbe7ea5d0e04e60f",
+    "lastPeriod": "2026-04-23", "cycleLength": 27,
+    "daysElapsed": 88, "arithmeticDay": 8, "phase": "follicular",
+    "localDate": "2026-07-20", "utcDate": "2026-07-20",
+    "insideBoundaryWindow": false,
+    "boundaryNote": "Local and UTC dates converged 71 min before first measurement. Both yield day 8, so no ambiguity. BST=UTC+1 means between 00:00-01:00 local the UTC date lags one day, yielding local=8/UTC=7 - the likely mechanism behind the historical (8,7) split."
+  },
+  "assertions": [
+    {"id":1,"name":"AGREEMENT - Lifestyle pill","expected":"day 8 follicular","got":"Follicular · Day 8 · a fresh-start, bright kind of day","pass":"PASS"},
+    {"id":1,"name":"AGREEMENT - /Planner","expected":"day 8 follicular","got":"Follicular · Day 8","pass":"PASS"},
+    {"id":1,"name":"AGREEMENT - /Today","expected":"day 8 follicular","got":"DAY 8 · FOLLICULAR","pass":"PASS"},
+    {"id":1,"name":"AGREEMENT - morning-brief overlay","expected":"renders","got":"(not found) - absent on all 3 loads this run, 9+ cumulative","pass":"VOID"},
+    {"id":1,"name":"AGREEMENT - bonus /Journal","expected":"day 8 follicular","got":"GOOD MORNING · FOLLICULAR · DAY 8 · 20 JULY","pass":"PASS"},
+    {"id":2,"name":"/Today no-cycle branch removed","expected":"absent","got":"absent - no 'Tell me where you are in your cycle' / 'We'll find your rhythm together'","pass":"PASS"},
+    {"id":2,"name":"/Today real phase/day","expected":"DAY 8 · FOLLICULAR","got":"DAY 8 · FOLLICULAR / 'Inner Spring' / narrative 'follicular phase - Inner Spring - day 8'","pass":"PASS"},
+    {"id":2,"name":"/Today greeting carries her name","expected":"greeting includes user name","got":"'Good morning' - bare. Greeting DOM node textContent === 'Good morning'. Name matches anywhere on /Today: [] (zero)","pass":"FAIL"},
+    {"id":3,"name":"GROUND TRUTH - rendered vs arithmetic","expected":"8","got":"Today 8, Lifestyle 8, Planner 8, Journal 8","pass":"PASS"},
+    {"id":4,"name":"/Community season line (cross-user fix)","expected":"reproductive line","got":"Other women riding the same monthly tides are here. You're in good company. No handles, no likes, no scoreboard - just women and honesty.","pass":"PASS"},
+    {"id":4,"name":"/Community stage-consistent copy","expected":"reproductive","got":"'your cycling years' in rooms header","pass":"PASS"},
+    {"id":4,"name":"/Community init not broken by user?.id dep","expected":"loads + renders","got":"3658 chars, rooms/question/prompt render, seasonLine derives from profile so effect demonstrably ran","pass":"PASS"},
+    {"id":5,"name":"/Journal loads","expected":"loads, real cycle text","got":"1083 chars, DAY 8 · FOLLICULAR · 20 JULY, real (matches maths)","pass":"PASS"},
+    {"id":5,"name":"/Settings loads","expected":"loads","got":"265 chars, account form renders, no cycle text (correct for surface)","pass":"PASS"},
+    {"id":5,"name":"/Insights loads","expected":"loads","got":"719 chars, renders; phase words are chart legend only; 0 days logged so no day value to check","pass":"PASS"},
+    {"id":6,"name":"NOT REGRESSED - Lifestyle hero title","expected":"present","got":"Halliburton's reading","pass":"PASS"},
+    {"id":6,"name":"NOT REGRESSED - Lifestyle video header","expected":"present, error null, currentTime advancing","got":"present, error null, readyState 4, paused false, currentTime 3.588 -> 4.084 over 5s","pass":"PASS"},
+    {"id":6,"name":"NOT REGRESSED - Planner day","expected":"day 8","got":"Follicular · Day 8","pass":"PASS"},
+    {"id":6,"name":"NOT REGRESSED - Pulse phase","expected":"follicular","got":"Follicular (+ 'Halliburton's pulse')","pass":"PASS"},
+    {"id":7,"name":"No new pageerrors","expected":"none","got":"zero pageerror events across 8 page loads","pass":"PASS"},
+    {"id":7,"name":"No unhandled rejections","expected":"none","got":"none observed","pass":"PASS"},
+    {"id":7,"name":"HTTP errors","expected":"none","got":"500 on /entities/LifestyleItems?q={id:514} and {id:1342} - identical on every page, pre-existing data issue, not from this change","pass":"FAIL-PREEXISTING"}
+  ],
+  "correctionsToMyEarlierReadings": [
+    "Planner 'Perimenopause' is NOT a wrong life_stage: it is an unselected chip in the 'YOUR SEASON OF LIFE' picker (Steady | New baby | Perimenopause | Caregiving). Not the cross-user bug.",
+    "Lifestyle 'teen' was a substring of 'Fifteen minutes'. Pure false positive.",
+    "Lifestyle 'Day 4' x3 are reading-progress badges on content cards (serial/book club), not cycle day. No contradiction with Day 8."
+  ],
+  "summary": {"pass": 18, "fail": 1, "failPreexisting": 1, "void": 1, "total": 21},
+  "screenshots": [
+    "workspace/verify_screenshots/personalisation_2026-07-20/mobile/today.png",
+    "workspace/verify_screenshots/personalisation_2026-07-20/mobile/today_greeting.png",
+    "workspace/verify_screenshots/personalisation_2026-07-20/mobile/lifestyle.png",
+    "workspace/verify_screenshots/personalisation_2026-07-20/mobile/lifestyle_video.png",
+    "workspace/verify_screenshots/personalisation_2026-07-20/mobile/planner.png",
+    "workspace/verify_screenshots/personalisation_2026-07-20/mobile/pulse.png",
+    "workspace/verify_screenshots/personalisation_2026-07-20/mobile/community.png",
+    "workspace/verify_screenshots/personalisation_2026-07-20/mobile/journal.png",
+    "workspace/verify_screenshots/personalisation_2026-07-20/mobile/settings.png",
+    "workspace/verify_screenshots/personalisation_2026-07-20/mobile/insights.png"
+  ],
+  "screenshotIntegrity": "All 10 distinct by md5. No stuck captures.",
+  "notes": "Agreement achieved: every measurable surface reads day 8 follicular, matching arithmetic. The routed-file fix landed. Cross-user leak is gone - Community shows the reproductive line. One assertion still fails: the /Today greeting is bare 'Good morning' with the name absent from the entire page, while Lifestyle and Pulse both render 'Halliburton's ...'. Morning brief remains VOID, not carried forward."
+}

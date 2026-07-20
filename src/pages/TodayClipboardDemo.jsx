@@ -22,7 +22,7 @@ import {
   PHASE_COLORS, PHASE_LABEL,
 } from "@/components/journal/Editorial";
 import { base44 } from "@/api/base44Client";
-import { pickProfile } from "@/utils/userProfile";
+import { pickProfile, displayFirstName } from "@/utils/userProfile";
 import { loadStoryChapters, chapterForDay } from "@/components/lifestyle/dailyStory";
 import { computeCycleDay } from "@/hooks/useCycleDay";
 import { nutritionToday } from "@/utils/nutritionSummary";
@@ -303,6 +303,9 @@ export default function TodayClipboardDemo() {
 
   // ── real data ────────────────────────────────────────────────────────────────────────────────
   const [uid, setUid] = useState(null);
+  // the auth record was fetched in the loader and thrown away, so the greeting had no name
+  // source at all once the profile's own name fields came back empty. Keep it.
+  const [me, setMe] = useState(null);
   const [profile, setProfile] = useState(null);
   const [nut, setNut] = useState(null);
   const [journal, setJournal] = useState(null);       // { count, lastDays, lastText }
@@ -323,6 +326,7 @@ export default function TodayClipboardDemo() {
       const id = me?.id || null;
       if (!alive) return;
       setUid(id);
+      setMe(me);
       const nm = profileName(profile, me);
       if (!id) { setDataReady(true); return; }
       // companion (real bloom) — load then resolve from cache
@@ -477,7 +481,7 @@ export default function TodayClipboardDemo() {
   const phase = cycle.phase;
   const phaseColor = PHASE_COLORS[phase] || T.sage;
   const season = SEASON[phase] || "your season";
-  const name = useMemo(() => profileName(profile, null), [profile]);
+  const name = useMemo(() => profileName(profile, me), [profile, me]);
   const cName = companion?.name || "your companion";
   const cForm = useMemo(() => FORM_LIST.find((f) => f.key === (companion?.form?.key || companion?.form)) || PEONY, [companion]);
   const cAccent = companion?.accent || T.blush;
@@ -955,11 +959,16 @@ export default function TodayClipboardDemo() {
 
 // ── helpers for name + date ──────────────────────────────────────────────────────────────────────
 function profileName(profile, me) {
+  // display_name is the field UserProfile actually has — this checked first_name /
+  // preferred_name / name (none of which exist on the schema) and then fell through to a
+  // `me` that the call site was passing as null, so the greeting was permanently nameless.
+  // displayFirstName owns the order + the handle guard for the whole app.
+  const shared = displayFirstName(me, profile);
+  if (shared) return shared;
   const cap = (s) => (s ? s.charAt(0).toUpperCase() + s.slice(1) : s);
-  const n = profile?.first_name || profile?.preferred_name || profile?.name
-    || (me?.full_name ? String(me.full_name).split(" ")[0] : null)
-    || (me?.email ? String(me.email).split("@")[0].replace(/[._].*$/, "") : null);
-  return n && n.length <= 18 ? cap(n) : "";
+  // last resort: the email local-part, minus any digits/handle tail
+  const fromEmail = me?.email ? String(me.email).split("@")[0].replace(/[._\-0-9].*$/, "") : "";
+  return fromEmail && fromEmail.length <= 18 ? cap(fromEmail) : "";
 }
 function longDate() {
   try { return new Date().toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long" }); }
