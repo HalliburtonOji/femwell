@@ -66,9 +66,13 @@ import Profile from './pages/Profile';
 import ProgramDay from './pages/ProgramDay';
 import ProgramDetail from './pages/ProgramDetail';
 import ProgramsHub from './pages/ProgramsHub';
-// LOCK+SWAP (2026-06-17): the "Today" route now renders TodayDemo6 (the chosen
-// synthesised Today — real data + full brand image). The old ./pages/Today below
-// is the intentional UNROUTED FALLBACK — to revert, map "Today" back to it.
+// LOCK+SWAP: the "Today" route renders **TodayClipboardDemo** (see the Pages map below —
+// superseded TodayDemo6 on 2026-06-22). BOTH ./pages/Today and TodayDemo6 are intentional
+// UNROUTED FALLBACKS — to revert, map "Today" back to whichever you want.
+// ⚠️ THE MAP BELOW IS THE ONLY SOURCE OF TRUTH. This comment previously still named
+// TodayDemo6 months after the swap and cost a real debugging session: a fix was written
+// into TodayDemo6, verified as "shipped", and changed nothing live because the route
+// never loaded that file. Before editing ANY page, grep the Pages map for its route key.
 import Today from './pages/Today';
 
 import Trends from './pages/Trends';

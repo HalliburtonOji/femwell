@@ -22,6 +22,7 @@ import {
   PHASE_COLORS, PHASE_LABEL,
 } from "@/components/journal/Editorial";
 import { base44 } from "@/api/base44Client";
+import { pickProfile } from "@/utils/userProfile";
 import { loadStoryChapters, chapterForDay } from "@/components/lifestyle/dailyStory";
 import { computeCycleDay } from "@/hooks/useCycleDay";
 import { nutritionToday } from "@/utils/nutritionSummary";
@@ -328,8 +329,18 @@ export default function TodayClipboardDemo() {
       loadCompanionState(id).catch(() => {});
       try { setCompanion(getCompanion(id)); } catch { /* ignore */ }
       // profile → cycle
-      const profs = await withTimeout(base44.entities.UserProfile.filter({ user_id: id }));
-      const prof = (profs || []).filter(Boolean)[0] || null;
+      // THIS is the live /Today profile load (pages.config maps "Today" -> this file).
+      // pickProfile, not [0]: the test user has 5 rows and only index 3 carries her cycle
+      // anchor, so [0] read an empty row and /Today fell to its no-cycle branch while
+      // Lifestyle, Planner and Pulse all showed a real Day 8. Guarded + retried because an
+      // unguarded reject here aborts the rest of this loader with no pageerror to show.
+      let profs = [];
+      try {
+        profs = await withTimeout(base44.entities.UserProfile.filter({ user_id: id }), 12000, "profile");
+      } catch {
+        try { profs = await base44.entities.UserProfile.filter({ user_id: id }); } catch { profs = []; }
+      }
+      const prof = pickProfile(profs);
       if (!alive) return;
       setProfile(prof);
       void nm;

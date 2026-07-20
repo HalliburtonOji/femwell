@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { base44 } from "@/api/base44Client";
+import { pickProfile } from "@/utils/userProfile";
 import { ArrowLeft, Play, Lock, BookmarkCheck, Bookmark, Flower2, Sparkles } from "lucide-react";
 
 const PHASE_ACCENTS = {
@@ -96,7 +97,7 @@ export default function ContentPlayer() {
           base44.entities.SavedItems.filter({ user_id: u.id, item_type: "CONTENT" }, "-created_at", 50).catch(() => []),
           base44.entities.UserProfile.filter({ user_id: u.id }).catch(() => []),
         ]);
-        setUserProfile(profiles[0] || null);
+        setUserProfile(pickProfile(profiles));   // not [0] — see utils/userProfile
         if (ents[0]) setUserPlan(ents[0].plan || "free");
 
         let ci = null;

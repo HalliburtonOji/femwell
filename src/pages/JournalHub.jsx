@@ -23,6 +23,7 @@
 // NO EMOJI, gentle glances not scoreboards/streaks, Jess present, phone-first, UK voice.
 import { useState, useEffect, useRef } from "react";
 import { base44 } from "@/api/base44Client";
+import { pickProfile } from "@/utils/userProfile";
 import { format, parseISO } from "date-fns";
 import { useNavigate } from "react-router-dom";
 import { computeCycleDay } from "@/hooks/useCycleDay";
@@ -213,7 +214,7 @@ export default function JournalHub() {
           base44.entities.UserProfile.filter({ user_id: u.id }).catch(() => []),
         ]);
         setEntries(Array.isArray(data) ? data : []);
-        setProfile((profiles || [])[0] || null);
+        setProfile(pickProfile(profiles));   // not [0] — see utils/userProfile
       } catch (err) {
         console.error("JournalHub init failed:", err);
       } finally {

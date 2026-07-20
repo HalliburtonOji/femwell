@@ -28,6 +28,7 @@ import { useNavigate } from "react-router-dom";
 import { MessageCircle, Mail, Lock, ShieldCheck, Users, Heart, Feather, Check, MapPinOff, HandHeart,
   Coffee, Sparkles, Star, Gamepad2, BookOpen, Library, Waves, Loader, SlidersHorizontal } from "lucide-react";
 import { base44 } from "@/api/base44Client";
+import { pickProfile } from "@/utils/userProfile";
 import { createPageUrl } from "@/utils";
 import { T, SERIF, UI, PAPER_BG } from "@/components/journal/Editorial";
 import { FwFloraHero } from "@/components/brand/PageTop";
@@ -105,12 +106,12 @@ function CommunityEliteInner() {
       try { setAnswered(answeredQotd(qotd.day)); } catch { /* noop */ }
       if (me?.id) {
         const [prof, posts, prefRows] = await Promise.all([
-          base44.entities.UserProfile.filter({ user_id: me.id }, "-created_date", 1).catch(() => []),
+          base44.entities.UserProfile.filter({ user_id: me.id }).catch(() => []),
           base44.entities.CommunityPost.filter({ hidden: false }, "-created_date", 60).catch(() => []),
           base44.entities.ConnectionPref.filter({ user_id: me.id }, "-created_date", 1).catch(() => []),
         ]);
         if (!alive) return;
-        setProfile(prof?.[0] || null);
+        setProfile(pickProfile(prof));   // not [0] — see utils/userProfile
         try {
           const since = Date.now() - 12 * 3600 * 1000;
           const active = new Set((posts || []).filter((p) => new Date(p.created_date).getTime() > since && p.author_hash).map((p) => p.author_hash));

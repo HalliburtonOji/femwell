@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { ArrowLeft, LineChart, X } from "lucide-react";
 import { Link } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
+import { pickProfile } from "@/utils/userProfile";
 import { createPageUrl } from "@/utils";
 import { symptomLabel } from "@/utils/symptomLabels";
 import KpiCard from "@/components/insights/KpiCard";
@@ -198,7 +199,7 @@ export default function Insights() {
           base44.entities.UserProfile.filter({ user_id: user.id }).catch(() => []),
           base44.entities.DailyCheckins.filter({ user_id: user.id }, "-date", 90).catch(() => []),
         ]);
-        setProfile(profiles[0] || null);
+        setProfile(pickProfile(profiles));   // not [0] — see utils/userProfile
         setCheckins(ci || []);
       } finally {
         setLoading(false);

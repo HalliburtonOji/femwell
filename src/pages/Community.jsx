@@ -21,6 +21,7 @@ import {
   HeartHandshake, Waves, MoreHorizontal, EyeOff,
 } from "lucide-react";
 import { base44 } from "@/api/base44Client";
+import { pickProfile } from "@/utils/userProfile";
 import {
   T, SERIF, UI, Eyebrow, Rule, Script, Hand, InkFilter, EditorialFooter,
   useEditorialFonts, PAPER_BG,
@@ -3184,10 +3185,15 @@ export function CommunityInner({ initialView = null, embedded = false, homeVaria
 
   useEffect(() => { base44.auth.me().then(setUser).catch(() => setUser(null)); }, []);
   useEffect(() => {
-    base44.entities.UserProfile.filter({}, "-created_date", 1)
-      .then((r) => { const p = Array.isArray(r) ? r[0] : null; setProfile(p || null); setLifeStage(p?.life_stage || null); })
+    // filter({}) with NO user_id read whichever profile row was newest ACROSS ALL USERS —
+    // so this could bind another woman's life_stage to her Community view. Scope it to her,
+    // then pickProfile the row that actually carries her data.
+    // (runs once `user` resolves — it can't be scoped to her before we know who she is)
+    if (!user?.id) return;
+    base44.entities.UserProfile.filter({ user_id: user.id })
+      .then((r) => { const p = pickProfile(r); setProfile(p); setLifeStage(p?.life_stage || null); })
       .catch(() => { setProfile(null); setLifeStage(null); });
-  }, []);
+  }, [user?.id]);
 
   const load = useCallback(async () => {
     try {

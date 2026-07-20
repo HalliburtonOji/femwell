@@ -27,6 +27,7 @@ import {
   ShieldAlert, Lock, Check,
 } from "lucide-react";
 import { base44 } from "@/api/base44Client";
+import { pickProfile } from "@/utils/userProfile";
 import {
   T, UI, SERIF, Eyebrow, Rule, Script, Hand, Heart as BrandHeart, InkFilter, EditorialFooter,
   useEditorialFonts, PAPER_BG, useEscape,
@@ -480,10 +481,13 @@ function CommunityHubInner() {
   // ── init: auth + profile/life stage + the feed (all guarded) ─────────────────
   useEffect(() => { base44.auth.me().then(setUser).catch(() => setUser(null)); }, []);
   useEffect(() => {
-    base44.entities.UserProfile.filter({}, "-created_date", 1)
-      .then((r) => { const p = Array.isArray(r) ? r[0] : null; setProfile(p || null); setLifeStage(p?.life_stage || null); })
+    // filter({}) with NO user_id read the newest profile ACROSS ALL USERS — see Community.jsx.
+    // (runs once `user` resolves — it can't be scoped to her before we know who she is)
+    if (!user?.id) return;
+    base44.entities.UserProfile.filter({ user_id: user.id })
+      .then((r) => { const p = pickProfile(r); setProfile(p); setLifeStage(p?.life_stage || null); })
       .catch(() => { setProfile(null); setLifeStage(null); });
-  }, []);
+  }, [user?.id]);
   useEffect(() => {
     base44.entities.CommunityPost.filter({ hidden: false }, "-created_date", 200)
       .then((rows) => setPosts(Array.isArray(rows) ? rows : []))

@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
+import { pickProfile } from "@/utils/userProfile";
 import {
   User as UserIcon, Bell, Lock, Database, Info,
   Download, FileText, ChevronRight, Heart, Check,
@@ -579,7 +580,7 @@ export default function Settings() {
       setUser(u);
       if (u) {
         const profiles = await base44.entities.UserProfile.filter({ user_id: u.id }).catch(() => []);
-        setProfile(profiles[0] || null);
+        setProfile(pickProfile(profiles));   // not [0] — see utils/userProfile
       }
       setLoading(false);
     })();
