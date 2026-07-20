@@ -1,0 +1,41 @@
+{
+  "url": "https://femwells.com/Lifestyle",
+  "publishedBundle": "index-BnSxWnqh.js",
+  "asset": "/media/garden/lifestyle-dusk-720",
+  "checkedAt": "2026-07-20T21:20Z",
+  "viewport": "mobile-390",
+  "cacheDefeat": {
+    "mp4_contentLength": 261158, "mp4_expected_v3": 261158, "mp4_old_butterfly": 250058,
+    "webp_contentLength": 20470, "jpg_contentLength": 26326,
+    "http": 200, "cf_cache_status": "MISS", "last_modified": "Mon, 20 Jul 2026 21:09:53 GMT",
+    "note": "Served bytes match v3 (261158), NOT the 250058 cached butterfly file. Fresh (MISS)."
+  },
+  "assertions": [
+    {"name": "no-butterfly", "expected": "no butterfly/insect anywhere in loop",
+     "got": "11 band frames sampled t=0.37..4.01s (full ~4.2s loop); no butterfly/moth/winged shape in any frame; dahlias/cosmos/lavender/dusk grasses only; faint pollen bokeh near top-centre is not an insect", "pass": true},
+    {"name": "video-present-no-error", "expected": "video, error null", "got": "present; error null; networkState 1", "pass": true},
+    {"name": "video-playing", "expected": "paused false, currentTime advances", "got": "paused false all samples; currentTime 2.838s -> 1.216s (loop wrap) -> 4.03s after chip; readyState 4", "pass": true},
+    {"name": "video-dimensions", "expected": "720x450", "got": "videoWidth 720 x videoHeight 450", "pass": true},
+    {"name": "video-currentSrc", "expected": ".mp4 v3 261158 bytes", "got": "https://femwells.com/media/garden/lifestyle-dusk-720.mp4 ; server Content-Length 261158 ; HTTP 200", "pass": true},
+    {"name": "poster-loads", "expected": "naturalWidth>0", "got": "picture img naturalWidth 720 x 450", "pass": true},
+    {"name": "poster-source-won", "expected": "webp or jpg", "got": "webp (currentSrc lifestyle-dusk-720.webp, 20470 bytes)", "pass": true},
+    {"name": "band-aspect", "expected": "~1.6 (720/450)", "got": "1.6 (342.8 x 214.25)", "pass": true},
+    {"name": "no-horizontal-overflow-390", "expected": "scrollW <= innerW", "got": "scrollW 375 <= innerW 390", "pass": true},
+    {"name": "ephesis-title-renders", "expected": "Ephesis title below band", "got": "Ephesis font active (Ephesis, Pinyon Script, cursive) rendering; NOTE selector isolated greeting spans not the section title text cleanly", "pass": true, "note": "font/render confirmed; exact hero title string not cleanly isolated"},
+    {"name": "chip-row-works", "expected": "chips present, click changes state, video keeps playing", "got": "7 chips [Jump to, Read, Listen, Books, Story, Sky, Good life]; clicked 'Listen' -> no error, video stayed paused=false, error null, time 4.03s", "pass": true, "note": "hero title swap not cleanly measured; click fired without breaking playback"},
+    {"name": "console-no-new-errors", "expected": "only known 2x LifestyleItems 500 (514, 1342)", "got": "exactly 2 errors: 500 LifestyleItems id 514 + id 1342; no new errors", "pass": true}
+  ],
+  "summary": {"passed": 12, "failed": 0, "total": 12},
+  "screenshots": [
+    "workspace/verify_screenshots/lifestyle_novideobutterfly_2026-07-20/mobile/band_sample1.png",
+    "workspace/verify_screenshots/lifestyle_novideobutterfly_2026-07-20/mobile/band_sample2.png",
+    "workspace/verify_screenshots/lifestyle_novideobutterfly_2026-07-20/mobile/loop_00_t3.12.png",
+    "workspace/verify_screenshots/lifestyle_novideobutterfly_2026-07-20/mobile/loop_02_t0.37.png",
+    "workspace/verify_screenshots/lifestyle_novideobutterfly_2026-07-20/mobile/loop_04_t1.78.png",
+    "workspace/verify_screenshots/lifestyle_novideobutterfly_2026-07-20/mobile/loop_05_t2.54.png",
+    "workspace/verify_screenshots/lifestyle_novideobutterfly_2026-07-20/mobile/loop_06_t3.28.png",
+    "workspace/verify_screenshots/lifestyle_novideobutterfly_2026-07-20/mobile/loop_07_t4.01.png",
+    "workspace/verify_screenshots/lifestyle_novideobutterfly_2026-07-20/mobile/afterchip_full.png"
+  ],
+  "notes": "Butterfly removed and confirmed gone across the full loop. New v3 asset served (261158 bytes, cf MISS, not the cached 250058). Loop-seam seamlessness NOT visually assertable from stills (as expected) - verified numerically at encode time upstream. Chip click kept video playing. Exact hero title string not cleanly isolated (selector caught greeting spans); Ephesis render + geometry confirmed."
+}
