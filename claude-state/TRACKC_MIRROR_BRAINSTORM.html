@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mirror — Track C Board #1 — Research + Brainstorm</title>
+<style>
+  :root{
+    --paper:#ECE7DA; --paperHi:#F4EFE3; --paperDeep:#D8CFBC;
+    --ink:#0B0805; --muted:#2E261B; --gold:#A8893F; --crimson:#BC2E27;
+    --blush:#E8B4B8; --sage:#8FAF8F;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0; background:var(--paper); color:var(--ink);
+    font-family:Georgia,"Iowan Old Style",serif; line-height:1.62;
+    -webkit-font-smoothing:antialiased; padding:0 0 64px;
+  }
+  .wrap{max-width:680px; margin:0 auto; padding:22px 20px}
+  header.hero{
+    background:linear-gradient(180deg,var(--paperHi),var(--paper));
+    border-bottom:1px solid var(--paperDeep); padding:34px 20px 26px;
+  }
+  header.hero .k{font-family:"Helvetica Neue",Arial,sans-serif; text-transform:uppercase;
+    letter-spacing:.22em; font-size:11px; color:var(--gold); font-weight:700}
+  h1{font-size:34px; line-height:1.08; margin:.35em 0 .2em; font-weight:600; letter-spacing:-.01em}
+  .sub{color:var(--muted); font-size:15px; margin:0}
+  h2{font-size:23px; margin:2.1em 0 .5em; letter-spacing:-.01em; border-bottom:2px solid var(--gold);
+    padding-bottom:.25em; font-weight:600}
+  h3{font-size:17px; margin:1.5em 0 .35em; color:var(--crimson); font-weight:600}
+  h4{font-size:14px; margin:1.2em 0 .3em; font-family:"Helvetica Neue",Arial,sans-serif;
+    text-transform:uppercase; letter-spacing:.1em; color:var(--gold)}
+  p,li{font-size:16px}
+  .lead{font-size:17px; color:var(--muted)}
+  a{color:var(--crimson); word-break:break-word}
+  .card{background:var(--paperHi); border:1px solid var(--paperDeep); border-radius:14px;
+    padding:16px 18px; margin:14px 0; box-shadow:0 1px 0 rgba(0,0,0,.03)}
+  .card.gold{border-left:4px solid var(--gold)}
+  .card.crimson{border-left:4px solid var(--crimson)}
+  .card.sage{border-left:4px solid var(--sage)}
+  .tag{display:inline-block; font-family:"Helvetica Neue",Arial,sans-serif; font-size:10.5px;
+    letter-spacing:.08em; text-transform:uppercase; padding:2px 9px; border-radius:999px;
+    background:var(--paperDeep); color:var(--muted); margin:0 6px 6px 0; font-weight:700}
+  .tag.sci{background:#dfeadf; color:#31562f}
+  .tag.soft{background:#f3e4d6; color:#8a5a24}
+  .tag.kind{background:#f6dede; color:#8f2420}
+  table{width:100%; border-collapse:collapse; margin:12px 0; font-size:13.5px}
+  th,td{text-align:left; padding:8px 8px; border-bottom:1px solid var(--paperDeep); vertical-align:top}
+  th{font-family:"Helvetica Neue",Arial,sans-serif; text-transform:uppercase; letter-spacing:.06em;
+    font-size:11px; color:var(--gold)}
+  .src{font-size:12.5px; color:var(--muted)}
+  .src a{color:var(--muted)}
+  blockquote{margin:10px 0; padding:8px 14px; border-left:3px solid var(--blush);
+    background:var(--paperHi); font-style:italic; color:var(--muted); border-radius:0 10px 10px 0}
+  ul{padding-left:20px} li{margin:5px 0}
+  .flag{background:#fbeaea; border:1px solid #e6bcbc; border-radius:12px; padding:12px 16px; margin:12px 0}
+  .flag b{color:var(--crimson)}
+  hr{border:0; border-top:1px solid var(--paperDeep); margin:26px 0}
+  .foot{color:var(--muted); font-size:13px; margin-top:30px}
+  .pill{display:inline-block; background:var(--ink); color:var(--paperHi); border-radius:999px;
+    padding:3px 12px; font-family:"Helvetica Neue",Arial,sans-serif; font-size:11px; letter-spacing:.05em}
+</style>
+</head>
+<body>
+<header class="hero">
+  <div class="wrap" style="padding:0">
+    <div class="k">Track C · Board #1 · Ms Deep Search</div>
+    <h1>Mirror</h1>
+    <p class="sub">Fashion · beauty · style · self-image · confidence-dressing — a cycle-aware board that serves getting-dressed as <em>joy and self-expression</em>, never as symptoms to fix. Research + brainstorm. Compiled 21 July 2026. UK English.</p>
+  </div>
+</header>
+
+<div class="wrap">
+
+<div class="card gold">
+  <b>Content base is real and deep (measured, confirmed):</b> 4,351 published LifestyleItems · "style" 567 hits · "fashion" 212 · Beauty category 192 (184 article / 8 video) · Fashion category 31 · wardrobe 40 · Body Image 25 · outfit 15 · Skin &amp; Hair 3. Article-heavy — Mirror is an <em>editorial</em> board first. <b>Hard constraint:</b> no new entity/function. Build from existing LifestyleItems + UserProfile (<span class="pill">last_period_start_date</span> <span class="pill">followed_categories</span> <span class="pill">life_stage</span> <span class="pill">saved_item_ids</span>).
+</div>
+
+<h2>1 · The one return-worthy idea</h2>
+<p class="lead">A woman returns to Mirror because it reads her week back to her and says: <em>"Here's how to dress <b>for how you're about to feel</b>, and here's why your skin is doing what it's doing — none of it is a flaw."</em> Nobody else pairs a cycle-attuned <b>getting-dressed</b> read with a warm, non-clinical voice. That daily "what does today want me to wear?" hook is the return loop.</p>
+
+<h3>The honest science ledger (label everything)</h3>
+<p>FemWell's standing rule: never launder a slogan as science. Here is exactly what is <span class="tag sci">evidenced</span>, what is <span class="tag soft">soft / mixed</span>, and what is <span class="tag kind">kindness, not science</span>.</p>
+
+<div class="card">
+  <h4><span class="tag sci">Evidenced</span> Skin genuinely shifts across the cycle</h4>
+  <ul>
+    <li><b>Follicular / ovulatory "glow":</b> rising oestrogen before ovulation drives collagen, hydration and barrier function — skin looks softer and more radiant. Dermatologist-authored. <span class="src">(source: <a href="https://www.dralexisgranite.com/journal/menstrual-cycle-skin-changes/">dralexisgranite.com</a>, fetched 21/07/2026)</span></li>
+    <li><b>Luteal / premenstrual oil + breakouts:</b> post-ovulation progesterone stimulates sebum, clogging pores; oestrogen no longer balances it, so skin runs oilier and blemish-prone. <b>~63% of women report worsening acne in the days before menstruation.</b> <span class="src">(source: <a href="https://murad.co.uk/blogs/skin-care-library/dr-hazel-skin-and-the-menstrual-cycle">murad.co.uk / Dr Hazel</a>; <a href="https://www.dralexisgranite.com/journal/menstrual-cycle-skin-changes/">Dr Granite</a>, fetched 21/07/2026)</span></li>
+    <li><b>Menstrual phase:</b> oestrogen + progesterone drop sharply, collagen dips, skin is drier and more reactive. <span class="src">(source: <a href="https://www.dralexisgranite.com/journal/menstrual-cycle-skin-changes/">Dr Granite</a>, fetched 21/07/2026)</span></li>
+  </ul>
+  <p class="src"><b>Honesty caveat:</b> a 2025 scoping review of 26 studies found robust changes in <b>elasticity</b> (higher at ovulation) and <b>luteal skin temperature / blood flow</b>, but <b>no significant change in skin hydration</b> across phases, and did <b>not</b> measure sebum directly — so the "glow"/"oil" story is dermatologist consensus, not a settled instrument-measured fact. Present it as "many women notice", not "your skin will". (source: <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC11703644/">PMC11703644</a>, fetched 21/07/2026)</p>
+</div>
+
+<div class="card">
+  <h4><span class="tag soft">Soft / mixed</span> Does the cycle change how women <em>dress</em>?</h4>
+  <ul>
+    <li>The famous finding (Durante/Haselton 2008): near ovulation, women chose more revealing, "sexier" outfits — moderated by relationship status and sociosexuality. <span class="src">(source: <a href="https://pubmed.ncbi.nlm.nih.gov/18719219/">PubMed 18719219</a>; <a href="https://www.cbsnews.com/news/womens-dress-to-impress-runs-in-cycles/">CBS News</a>, fetched 21/07/2026)</span></li>
+    <li><b>But it largely failed to replicate.</b> A 2024 <em>British Journal of Social Psychology</em> study with larger samples found <b>no compelling evidence</b> for cycle shifts in clothing/grooming — two studies even trended the opposite way. <span class="src">(source: <a href="https://bpspsychub.onlinelibrary.wiley.com/doi/10.1111/bjso.12681">BJSP 2024, Stern et al.</a>, fetched 21/07/2026)</span></li>
+  </ul>
+  <p class="src"><b>What this means for Mirror:</b> do <b>not</b> build "dress sexier because you're ovulating" — it's evolutionary-psych framing that didn't hold and reads as appearance-policing anyway. Keep only the safe, self-directed kernel: <em>"many women feel more outward-facing mid-cycle and more cocooning premenstrually — dress for whichever you actually feel."</em></p>
+</div>
+
+<div class="card">
+  <h4><span class="tag soft">Soft / mixed</span> Enclothed cognition &amp; "dopamine dressing"</h4>
+  <ul>
+    <li>Adam &amp; Galinsky (2012): wearing a lab coat improved attention — clothing's <em>symbolic meaning + physical wearing</em> shapes cognition. <span class="src">(source: <a href="https://utstat.utoronto.ca/reid/sta2201s/2012/labcoatarticle.pdf">Adam &amp; Galinsky 2012 PDF</a>, fetched 21/07/2026)</span></li>
+    <li><b>Replication is shaky:</b> multiple failed replications of the original Stroop result; authors conceded issues in 2019 but held the core principle; a 2023 meta-analysis found "evidential value" mainly for post-2015 studies. <span class="src">(source: <a href="https://en.wikipedia.org/wiki/Enclothed_cognition">Wikipedia: Enclothed cognition</a>, fetched 21/07/2026)</span></li>
+    <li>"Dopamine dressing" = colour psychology + enclothed cognition applied to joy; a 2022 post-lockdown trend, popular but <b>not</b> a clinical mechanism. <span class="src">(source: <a href="https://www.johnlewis.com/content/fashion/women/what-is-dopamine-dressing">John Lewis</a>; <a href="https://www.libertylondon.com/us/features/fashion/psychology-of-colour-in-clothing.html">Liberty London</a>, fetched 21/07/2026)</span></li>
+  </ul>
+  <p class="src"><b>Framing:</b> "what you wear can nudge how you feel" is <em>directionally</em> supported and lovely — but label it as "many women find", not "science says".</p>
+</div>
+
+<div class="flag">
+  <b>The return-worthy hook, stated plainly:</b> Mirror's daily card is <b>"What to wear to how you feel today"</b> — a phase-aware + mood-aware getting-dressed prompt, backed by a "why your skin's doing that" read. The cycle gives it a reason to change every few days (so it's never stale), the mood-picker keeps it self-directed (so it's never prescriptive), and the editorial content gives it depth. That's a genuine daily reason to return that no fashion app and no cycle app currently offers together.
+</div>
+
+<h2>2 · Board anatomy — the real sections</h2>
+<p class="lead">Rich, not a thin shell. Signature top, then real editorial + interactive sections, all fed by <em>existing</em> content. For each: what feeds it, and why she returns.</p>
+
+<h3>Signature top — <span style="color:var(--muted)">FwFloraHero → one SummaryCard</span></h3>
+<p>Canonical page top per BRAND §6.8: <span class="pill">FwFloraHero</span> flora hero → <b>one SummaryCard</b> that reads her week back: <em>"You're in your luteal days — skin may run a little oilier, and you might feel more cocooning. Here's a soft, put-together look and three things worth reading."</em> Data: derived client-side from <span class="pill">last_period_start_date</span>. No entity needed. <b>Return reason:</b> it's personal and it moves — different every few days.</p>
+
+<h3>A · "What to wear to how you feel today"</h3>
+<p><span class="tag">daily · interactive · client-side</span></p>
+<p>A mood-picker (calm / bold / cosy / pulled-together / playful / invisible-day) crossed with her current phase, returning a short styling nudge + 2–3 matching editorial items. <b>Feeds from:</b> Fashion (31) + style-tagged articles (567 "style" hits) + outfit (15). <b>Why return:</b> it answers the universal 8am question — "what do I actually put on?" — and respects that she, not her hormones, decides. Keep the phase input as a gentle <em>tint</em> (BRAND rule), never the driver.</p>
+
+<h3>B · Your skin this week (the beauty read)</h3>
+<p><span class="tag">shifts weekly · editorial</span></p>
+<p>A phase-attuned skin/beauty read: follicular "glow, keep it simple"; luteal "oilier, gentle + non-comedogenic"; menstrual "dry + reactive, comfort over correction". <b>Feeds from:</b> Beauty category (192: 184 article + 8 video) + Skin &amp; Hair (3). <b>Why return:</b> it names what she's already noticing in the mirror and reframes it as normal rhythm, not a flaw. <span class="tag kind">frame as joy/understanding, never "fix"</span></p>
+<div class="flag"><b>Content flag — measure before build:</b> only <b>3</b> items in "Skin &amp; Hair" and 8 Beauty videos. The skin-read leans on the 184 Beauty <em>articles</em> — good, but confirm enough are genuinely skincare (not makeup/product-launch) to fill four phase buckets. If thin, this section becomes an editorial rail rather than a phase-rotating one. <b>Ask Ms Data for a phase-fillability count.</b></div>
+
+<h3>C · Style editorial rail (Read / Watch)</h3>
+<p><span class="tag">deep · evergreen</span></p>
+<p>The workhorse. Fashion + Beauty long-reads and the 8 videos, in branded Article/Video cards with hook + real snippet + inline play (BRAND §6.7). <b>Feeds from:</b> the 567 "style" + 212 "fashion" hits — real depth. <b>Why return:</b> genuine editorial worth coming back to, not filler.</p>
+
+<h3>D · Wardrobe &amp; capsule confidence</h3>
+<p><span class="tag">evergreen · practical</span></p>
+<p>"Fewer things, worn with confidence" — capsule thinking, cost-per-wear mindset, dressing you already own. <b>Feeds from:</b> wardrobe (40) + outfit (15). <b>Why return:</b> practical, repeatable, anti-consumerist — aligns with FemWell's wholesome positioning and sidesteps "buy more". <b>Explicitly NOT</b> "dress for your body type" (see §4).</p>
+
+<h3>E · Body-image kindness</h3>
+<p><span class="tag kind">handle with care · body-neutral</span></p>
+<p>The Body Image content (25), framed toward <b>body neutrality</b> — appreciating what your body does, not demanding you love how it looks (a gentler, more reachable stance than forced positivity). <span class="src">(source: <a href="https://health.clevelandclinic.org/body-positivity-vs-body-neutrality">Cleveland Clinic</a>, fetched 21/07/2026)</span> <b>Why return:</b> the mirror is loaded for many women; a board literally called Mirror <em>must</em> hold this with care or it fails its own thesis. Keep it opt-in-feeling, never the front door.</p>
+
+<h3>F · Colour &amp; season play (lighthearted)</h3>
+<p><span class="tag">fun · low-stakes</span></p>
+<p>Dopamine-dressing colour play, "wear the thing that makes you grin", seasonal palettes. <b>Feeds from:</b> style/fashion articles tagged colour. <b>Why return:</b> pure joy, no cycle, no rules — proves Mirror isn't secretly a tracker. Lighthearted-by-default (WHOLE-LIFE rule).</p>
+
+<h3>G · The getting-ready ritual</h3>
+<p><span class="tag">ritual · optional</span></p>
+<p>A short "getting ready" moment — a look, a song-adjacent mood, one small act of care — reframing dressing as a ritual of self-regard, not a performance for others. <b>Feeds from:</b> curated Beauty/Fashion picks. <b>Why return:</b> ritual = habit; a warm 60-second close to the board.</p>
+
+<div class="card gold"><b>Jump-to switcher (UX rule):</b> Mirror is multi-layer, so it needs the canonical "Jump to" bottom-sheet (à la <span class="pill">JournalHubSheet</span> / <span class="pill">CommunityHubSheet</span>) with a 2-col icon grid to A–G. Reuse, don't reinvent.</div>
+
+<h2>3 · Whole-life spread + cross-surface wiring</h2>
+<p class="lead">FemWell rule: name Mirror's role on <em>every</em> surface, not just the 2–3 obvious ones.</p>
+<table>
+  <tr><th>Surface</th><th>Mirror's role</th></tr>
+  <tr><td><b>Today</b></td><td>A "Mirror moment" glance card — today's phase-aware dressing nudge + skin read, deep-linking into board section A/B.</td></tr>
+  <tr><td><b>Journal</b></td><td>A "how I felt in what I wore" thread + an outfit-of-the-day / confidence check-in prompt. Ties enclothed-cognition to her own lived data over time.</td></tr>
+  <tr><td><b>Community</b></td><td>A "Style &amp; getting-ready" room — outfit shares, "help me pick", charity-shop wins, dopamine-dressing show-and-tell. Anonymous-safe, lighthearted, NOT a "PMDD skin support" room.</td></tr>
+  <tr><td><b>Nutrition</b></td><td>Soft cross-link only: skin-supportive foods content where it already exists — no "eat this to fix your face" claims.</td></tr>
+  <tr><td><b>Lifestyle</b></td><td>Mirror IS a Lifestyle board; sits alongside For You / Read / Listen / Daily Story / Horoscope, feeding the same LifestyleItem pool (Fashion + Beauty slices).</td></tr>
+  <tr><td><b>Health</b></td><td>One-way link out: if she wants the clinical skin/hormone detail, Health holds it — Mirror stays joyful and points there rather than going clinical itself.</td></tr>
+  <tr><td><b>Pulse / Trends / Insights</b></td><td>Optional gentle pattern: "you tend to save bolder looks mid-cycle" from <span class="pill">saved_item_ids</span> + phase — a mirror-back, never a verdict.</td></tr>
+  <tr><td><b>Planner</b></td><td>"Dressing for what's ahead" — an event on Thursday? A phase-aware "feel-good look" nudge tied to the calendar.</td></tr>
+  <tr><td><b>Profile</b></td><td>Reads <span class="pill">followed_categories</span> / <span class="pill">life_stage</span> to tune the rail (teen vs perimenopause style content differs); saved looks live in <span class="pill">saved_item_ids</span>.</td></tr>
+  <tr><td><b>Programs</b></td><td>A light "7 days of getting-ready" or "capsule reset" sequence drawing on existing Fashion/Beauty items.</td></tr>
+  <tr><td><b>Jess</b></td><td>Jess as a getting-ready friend: "I've got a work thing and feel meh — help?" Jess reads phase + saved items and suggests from real content. Warm, not stylist-bossy.</td></tr>
+  <tr><td><b>Events</b></td><td>Local style/beauty/charity-shop or clothes-swap events surfaced where they exist.</td></tr>
+  <tr><td><b>Deals</b></td><td>Fashion + beauty offers — the most natural monetisation fit of any board — kept tasteful, never "fix your flaws" upsell.</td></tr>
+</table>
+
+<h2>4 · Tone + anti-patterns</h2>
+<p>Voice: warm smart-friend, joyful, UK English, £, no emoji, body-neutral, size- and age-inclusive. Dressing = self-expression and pleasure, full stop.</p>
+<h4>Hard anti-patterns — do NOT ship</h4>
+<ul>
+  <li><b>Diet culture / shrinking language.</b> No "flattering" (code for slimming), no "hide", no "problem areas".</li>
+  <li><b>"Dress for your body type."</b> It implies a "wrong" way to dress your body and breeds self-surveillance — explicitly rejected. <span class="src">(source: <a href="https://www.thecourieronline.co.uk/the-idea-of-dressing-for-your-body-type-is-problematic-heres-why/">The Courier</a>; <a href="https://anuschkarees.com/blog/2015/03/25/why-i-dont-believe-in-dressing-for-my-body-type">Anuschka Rees</a>, fetched 21/07/2026)</span></li>
+  <li><b>Anti-ageing shame.</b> No "combat wrinkles / fight the signs". Perimenopause/menopause/post-menopause stages get style joy, not decline framing.</li>
+  <li><b>Thin-ideal / single body imagery.</b> Inclusive across sizes, ages, skin tones, abilities.</li>
+  <li><b>Ovulatory "dress sexier" nudges.</b> Failed replication + appearance-policing. Cut it. <span class="src">(source: <a href="https://bpspsychub.onlinelibrary.wiley.com/doi/10.1111/bjso.12681">BJSP 2024</a>)</span></li>
+  <li><b>Laundering slogans as science.</b> "Dopamine dressing" and enclothed cognition are "many women find…", not "clinically proven".</li>
+  <li><b>Skin as flaws to fix.</b> Luteal oil is a rhythm to understand, not a defect. Never "banish breakouts".</li>
+  <li><b>Forced body positivity.</b> Body <em>neutrality</em> is the safer, more reachable default for a surface named Mirror. <span class="src">(source: <a href="https://www.psychologytoday.com/us/blog/meaningfull/202406/which-is-better-for-you-body-positivity-or-neutrality">Psychology Today</a>, fetched 21/07/2026)</span></li>
+</ul>
+
+<h2>5 · Competitive scan (web-verified 21/07/2026)</h2>
+<table>
+  <tr><th>Product</th><th>What it does</th><th>Gap it leaves</th></tr>
+  <tr><td><b>Whering</b> (free, iOS/Android)</td><td>Digital closet, AI outfit shuffle, cost-per-wear, resale. <span class="src"><a href="https://www.myindyx.com/blog/the-best-wardrobe-apps">indyx</a></span></td><td>No cycle/mood/skin awareness; no editorial; no wellbeing framing.</td></tr>
+  <tr><td><b>Indyx</b> (TikTok-hot)</td><td>Unlimited closet, outfit boards, calendar, real-stylist Lookbook ($150+).</td><td>Utility/logistics tool — nothing about how she <em>feels</em>.</td></tr>
+  <tr><td><b>Stylebook</b> ($4.99 one-time)</td><td>Manual digital wardrobe, gold standard since 2010.</td><td>Pure cataloguing; no attunement, no joy layer.</td></tr>
+  <tr><td><b>Cladwell</b> (freemium)</td><td>Capsule logic, weather/activity daily outfits.</td><td>Weather-aware, not <em>self</em>-aware; no beauty/skin/body-image.</td></tr>
+  <tr><td><b>Stardust</b> (cycle app)</td><td>Phase tracking + per-phase beauty/skincare <em>tips</em> (e.g. AHAs, gentle cleanser); astrology/lunar. <span class="src"><a href="https://apps.apple.com/us/app/stardust-period-tracker/id1495829322">App Store</a></span></td><td>Tips are thin add-ons inside a clinical tracker; no wardrobe, no editorial, no getting-dressed hook.</td></tr>
+  <tr><td><b>Flo / Clue</b></td><td>Symptom-led cycle tracking; skin as a <em>symptom</em> to log.</td><td>Clinical framing — the exact "health is the whole house" trap FemWell rejects.</td></tr>
+</table>
+<div class="card sage"><b>The white space FemWell owns:</b> wardrobe apps are <em>logistics</em> (what's in my closet); cycle apps are <em>clinical</em> (log your symptom). <b>Nobody</b> pairs a cycle- and mood-attuned <em>getting-dressed + skin-understanding</em> experience with warm, editorial, joy-first, body-neutral wellbeing content — inside an app the woman already opens for her whole life. Mirror is the boldest proof of "health is one room, not the house."</div>
+
+<h2>Content-gap flags (measure before building)</h2>
+<div class="flag">
+  <ul style="margin:0">
+    <li><b>Skin-read fillability:</b> only 3 "Skin &amp; Hair" items + 8 Beauty videos. Confirm how many of the 184 Beauty articles are genuinely <em>skincare</em> (vs makeup/launches) and can fill 4 phase buckets. → <b>Ms Data count.</b></li>
+    <li><b>Fashion depth:</b> Fashion category is only 31, but "style" (567) + "fashion" (212) keyword hits suggest far more sits under other categories. Confirm the real addressable pool for sections A/C/D. → <b>Ms Data count.</b></li>
+    <li><b>Body Image (25):</b> small but sensitive. Confirm tone of existing items is body-neutral-compatible before surfacing (some legacy content may be diet-culture-adjacent → exclude).</li>
+    <li><b>Video scarcity:</b> 8 Beauty videos total — Mirror is an <em>editorial/read</em> board, not a video board. Don't design video-first surfaces.</li>
+  </ul>
+</div>
+
+<hr>
+<p class="foot"><b>Sources consulted (all fetched 21/07/2026):</b>
+Durante/Haselton dress-cycle study — <a href="https://pubmed.ncbi.nlm.nih.gov/18719219/">PubMed 18719219</a>, <a href="https://www.cbsnews.com/news/womens-dress-to-impress-runs-in-cycles/">CBS</a> ·
+2024 replication — <a href="https://bpspsychub.onlinelibrary.wiley.com/doi/10.1111/bjso.12681">BJSP, Stern et al.</a> ·
+Enclothed cognition — <a href="https://utstat.utoronto.ca/reid/sta2201s/2012/labcoatarticle.pdf">Adam &amp; Galinsky 2012</a>, <a href="https://en.wikipedia.org/wiki/Enclothed_cognition">replication caveats</a> ·
+Dopamine dressing — <a href="https://www.johnlewis.com/content/fashion/women/what-is-dopamine-dressing">John Lewis</a>, <a href="https://www.libertylondon.com/us/features/fashion/psychology-of-colour-in-clothing.html">Liberty</a> ·
+Cycle skin — <a href="https://www.dralexisgranite.com/journal/menstrual-cycle-skin-changes/">Dr Granite</a>, <a href="https://murad.co.uk/blogs/skin-care-library/dr-hazel-skin-and-the-menstrual-cycle">Murad/Dr Hazel</a>, <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC11703644/">2025 scoping review PMC11703644</a> ·
+Body neutrality — <a href="https://health.clevelandclinic.org/body-positivity-vs-body-neutrality">Cleveland Clinic</a>, <a href="https://www.psychologytoday.com/us/blog/meaningfull/202406/which-is-better-for-you-body-positivity-or-neutrality">Psychology Today</a> ·
+Body-type critique — <a href="https://www.thecourieronline.co.uk/the-idea-of-dressing-for-your-body-type-is-problematic-heres-why/">The Courier</a>, <a href="https://anuschkarees.com/blog/2015/03/25/why-i-dont-believe-in-dressing-for-my-body-type">Anuschka Rees</a> ·
+Competitors — <a href="https://www.myindyx.com/blog/the-best-wardrobe-apps">Indyx roundup</a>, <a href="https://apps.apple.com/us/app/stardust-period-tracker/id1495829322">Stardust</a>.
+</p>
+<p class="foot">Ms Deep Search · research feeds MPs via Mr Lead Manager · no code, no MP authored here.</p>
+
+</div>
+</body>
+</html>
