@@ -16,7 +16,7 @@ const fs = require("fs");
 const path = require("path");
 
 const DIST = path.join(process.cwd(), "dist");
-const ROUTES = ["/", "/Today", "/Lifestyle", "/Journal", "/Nutrition", "/Profile", "/WatchListen", "/Mirror", "/Move"];
+const ROUTES = ["/", "/Today", "/Lifestyle", "/Journal", "/Nutrition", "/Profile", "/WatchListen", "/Mirror", "/Move", "/Kindred"];
 const PORT = 4178;
 
 const MIME = { ".html": "text/html", ".js": "text/javascript", ".css": "text/css", ".svg": "image/svg+xml", ".json": "application/json", ".woff2": "font/woff2", ".png": "image/png", ".jpg": "image/jpeg", ".ico": "image/x-icon" };
