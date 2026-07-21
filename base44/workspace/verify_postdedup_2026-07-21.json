@@ -1,0 +1,25 @@
+{
+  "context": "Post-dedup DB-only health check (no deploy). Bundle index-BRB3zpi6.js.",
+  "url": "https://femwells.com",
+  "user_id": "69d9404d7fecc1f8ff194da1",
+  "measuredAt_UTC": "2026-07-21T00:44:53Z",
+  "measuredAt_local": "2026-07-21 01:44:53 BST",
+  "viewport": "desktop-1280 only (data-integrity check, viewport-independent)",
+  "assertions": [
+    {"name":"one-profile-resolves","expected":"exactly 1 row, id 6a0716bdcbe7ea5d0e04e60f, last_period 2026-04-23","got":"count=1, id 6a0716bdcbe7ea5d0e04e60f, last_period_start_date 2026-04-23, cycle 27, period_length 4, display_name Halliburton, location_city Greater London, partner_share_code VYNADN, for_you_item_ids=10","pass":true},
+    {"name":"arithmetic-day","expected":"day 9 follicular (89 days since 2026-04-23, 89 mod 27 = 8, +1 = 9)","got":"computed day 9 follicular","pass":true},
+    {"name":"four-surface-agreement-today","expected":"FOLLICULAR DAY 9","got":"FOLLICULAR · DAY 9","pass":true},
+    {"name":"four-surface-agreement-planner","expected":"FOLLICULAR DAY 9","got":"FOLLICULAR · DAY 9","pass":true},
+    {"name":"four-surface-agreement-journal","expected":"FOLLICULAR DAY 9","got":"FOLLICULAR · DAY 9","pass":true},
+    {"name":"four-surface-agreement-lifestyle-pill","expected":"FOLLICULAR DAY 9","got":"FOLLICULAR · DAY 9","pass":true},
+    {"name":"today-greeting-name-real-phase","expected":"Good morning Halliburton + real phase, not no-cycle branch","got":"'Good morning, Halliburton' + FOLLICULAR · DAY 9; noCycleBranch=false","pass":true},
+    {"name":"lifestyle-hero-reading","expected":"Halliburton's reading","got":"Halliburton's reading","pass":true},
+    {"name":"lifestyle-video-plays","expected":"present, error null, currentTime advancing, no butterfly","got":"present, error null, 4.2s loop, currentTime 0.648->3.728 monotonic (paused=false, readyState=4), butterfly=false","pass":true},
+    {"name":"handy-right-now-row-6-chips","expected":"row present with 6 chips","got":"present; chips: Today's chapter, What've you got time for?, Something to read, Listen & watch, Your sky tonight, Your saved = 6","pass":true},
+    {"name":"personalisation-merged-fields","expected":"reflects location_city and/or for_you_item_ids","got":"'For you' row present on Lifestyle (consistent with for_you_item_ids=10); location_city 'Greater London' NOT surfaced in visible text on Today/Planner/Journal/Lifestyle","pass":true,"note":"partial-surfacing, expected"},
+    {"name":"console-new-errors","expected":"no new pageerrors beyond known LifestyleItems 500s (id 514, 1342)","got":"only 'Failed to load resource: 500' (the known LifestyleItems 514/1342); zero pageerrors/unhandled rejections; zero 429s","pass":true}
+  ],
+  "summary": {"passed": 12, "failed": 0, "total": 12},
+  "screenshots": ["C:/Users/Halli/femwell-work/base44/workspace/verify_screenshots/postdedup_2026-07-21/desktop/today.png"],
+  "notes": "App HEALTHY after dedup. Single UserProfile row now resolves unambiguously; personalisation intact across all four surfaces (all agree FOLLICULAR DAY 9, arithmetic-correct). UTC/local boundary: measured 44 min past UTC midnight but both zones read 2026-07-21, so no split-day risk. location_city not rendered in any visible surface walked. Known LifestyleItems 500s (514, 1342) persist, unrelated to dedup."
+}

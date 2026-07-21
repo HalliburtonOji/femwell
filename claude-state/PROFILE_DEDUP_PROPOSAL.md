@@ -221,3 +221,16 @@ Evidence (all measured against the current tree):
 **Conclusion for the write session:** the survivor keeps its id; the 4 donor rows (all empty duplicates with no share codes / no unique refs) can be hard-deleted after merging their non-null fields onto the survivor, with the rollback snapshot as the only safety net needed. The `bulkCreate`-mints-new-ids caveat is moot **because nothing references those ids in the first place.**
 
 **Still awaiting Halli:** decision (A) hard-delete + snapshot vs (B) soft-delete via schema MP. FK risk = none either way.
+
+---
+
+## ✅ EXECUTED (2026-07-21, hard-delete + rollback snapshot, Halli-authorised option A)
+
+**Done. Verified. Reversible.**
+- **Gate:** FK verification re-affirmed against the current tree — nothing foreign-keys on `UserProfile.id` (partner linking is by `partner_share_code`, confirmed at `Partner.jsx:52`). Proceeded.
+- **Rollback snapshot (all 5 rows, every field):** `…/scratchpad/b44proj/rollback_profile_dedup.json` — verified readable + complete (5 rows, all ids present) BEFORE any mutation. Contains PII (cycle dates, location, email) so deliberately NOT committed to git; local only. Restore path if ever needed: `base44.entities.UserProfile.bulkCreate(snapshot.rows minus the ids)`.
+- **Merge (survivor `6a0716bdcbe7ea5d0e04e60f`):** carried EXACTLY the two authorised fields — `for_you_item_ids` (10) + `location_city` "Greater London". **Deliberately did NOT carry** the auto-suggested `analytics_consent:true` (never silently flip a CONSENT flag off a duplicate row) or `life_season:"steady"` (schema default). Verified post-merge: `last_period_start_date` 2026-04-23, cycle 27, `display_name` Halliburton, `partner_share_code` VYNADN all intact.
+- **Delete:** the 4 redundant donor rows (`6a293cd6…`, `69d94075…`, `6a293cd0…`, `6a293ccf…`) — all confirmed share-code-free before deletion.
+- **Row counts:** this user **5 → 1**; whole table **13 → 9** (9 users, **0** now with >1 row — fully deduped).
+- **Live verify (Ms Verify 12/12, authed):** `UserProfile.filter({user_id})` returns exactly **1** row; four-surface agreement holds (all read the arithmetic-correct Follicular · Day 9); named greeting + real phase on /Today; hero/video/Handy-row intact; the `for_you` row surfaces; zero new console errors.
+- **Bonus:** with one row per user, the still-unfixed `/XxxDemo` preview routes that take `[0]` now incidentally get the right row for this account.
