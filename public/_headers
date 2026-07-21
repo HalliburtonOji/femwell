@@ -1,0 +1,17 @@
+# Cache policy for the SPA. The ENTRY HTML must never be heuristically cached, or an
+# installed/PWA client keeps loading an old index.html that points at a stale (content-hashed)
+# bundle — the "nothing I ship reaches the phone" bug. Hashed assets are immutable and cache hard.
+# (Cloudflare Pages / Netlify `_headers` syntax. If the host ignores this file it is harmless —
+# the in-app liveBuildGuard in src/main.jsx is the belt-and-braces that self-heals regardless.)
+
+/
+  Cache-Control: no-cache
+
+/index.html
+  Cache-Control: no-cache
+
+/manifest.json
+  Cache-Control: no-cache
+
+/assets/*
+  Cache-Control: public, max-age=31536000, immutable

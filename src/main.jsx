@@ -17,13 +17,26 @@ import '@/index.css'
       .match(/index-[A-Za-z0-9_-]+\.js/)?.[0];
     if (!running) return; // dev (unhashed entry) — nothing to guard
     const check = async () => {
-      if (sessionStorage.getItem('fw_build_reloaded') === '1') return;
       try {
         const html = await fetch('/', { cache: 'no-store' }).then((r) => (r.ok ? r.text() : ''));
         const latest = html.match(/index-[A-Za-z0-9_-]+\.js/)?.[0];
-        if (latest && latest !== running) {
-          sessionStorage.setItem('fw_build_reloaded', '1');
-          location.reload();
+        // Guard PER-HASH, not once-per-session: two deploys in one session each get picked up,
+        // and we can never loop because after reloading for `latest`, running === latest.
+        const already = sessionStorage.getItem('fw_build_reloaded_hash');
+        if (latest && latest !== running && already !== latest) {
+          sessionStorage.setItem('fw_build_reloaded_hash', latest);
+          // NOT a plain location.reload() — that re-reads index.html from the browser's
+          // heuristic cache (it ships with NO Cache-Control) and can serve the SAME stale
+          // HTML → the old bundle again → stuck forever (the exact "nothing changes" bug).
+          // A per-build query param gives the document a fresh cache key, forcing a real
+          // network fetch of the new index.html. It self-replaces each deploy (never
+          // accumulates) and `replace` adds no history entry.
+          const hash = latest.match(/index-([A-Za-z0-9_-]+)\.js/)?.[1] || String(Date.now());
+          try {
+            const u = new URL(location.href);
+            u.searchParams.set('b', hash);
+            location.replace(u.toString());
+          } catch { location.reload(); }
         }
       } catch { /* offline — ignore */ }
     };

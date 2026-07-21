@@ -666,10 +666,69 @@ export function ReadingPane({ item, accent, onOpenFull }) {
 const pageBtn = (disabled, accent) => ({ width: 34, height: 34, borderRadius: 999, border: `1px solid ${disabled ? T.paperDeep : accent}`, background: disabled ? "transparent" : T.paper, color: disabled ? T.paperDeep : accent, display: "grid", placeItems: "center", cursor: disabled ? "default" : "pointer", opacity: disabled ? 0.5 : 1 });
 
 // ── COLLAPSED cover card — `compact` = the StackedCard-half variant ───────────
+// Is this item playable media whose player should sit ON THE CARD FACE (never behind an
+// expand)? Video (a real file or a YouTube id) and podcast audio all qualify; TikTok/Instagram
+// and anything explicitly `external` genuinely can't embed, so they keep the link-out.
+function facePlayable(item) {
+  if (item.external) return null;
+  if (item.videoSrc) return "video-file";
+  if (item.youtubeId) return "youtube";
+  if (item.audioSrc) return "audio";
+  return null;
+}
+
+// The play surface that lives on the card face. ONE tap starts playback IN PLACE — the
+// FloraCover poster IS the artwork, tapping the bloom-play swaps in the real <video>/iframe
+// (autoplay) or the flora audio player, with no expand and no page navigation.
+function CardMediaFace({ item, accent, kind, compact }) {
+  const h = compact ? 150 : 180;
+  if (kind === "video-file") {
+    return <div style={{ borderRadius: "18px 18px 0 0", overflow: "hidden" }}><FloraVideo src={item.videoSrc} item={item} accent={accent} /></div>;
+  }
+  if (kind === "youtube") {
+    return <div style={{ borderRadius: "18px 18px 0 0", overflow: "hidden" }}><FloraYouTube videoId={item.youtubeId} item={item} accent={accent} /></div>;
+  }
+  // audio: the poster stays as identity, the flora player sits right under it — its play
+  // button is on the face, so it's one tap to hear it (with the visualiser), in place.
+  return (
+    <div>
+      <FloraCover title={item.title} category={item.category} colorway={item.cw} seed={item.id}
+        height={compact ? 120 : 140} roundTop showTitle={false} idx={`cov-${item.id}`} />
+      <div style={{ padding: "8px 12px 4px" }}>
+        <FloraAudio src={item.audioSrc} label={item.playerLabel || item.title} accent={accent} initialDuration={item.duration || 0} item={item} />
+      </div>
+    </div>
+  );
+}
+
 export function CoverCard({ item: raw, onOpen, compact = false }) {
   const item = resolveCard(raw);
   const c = cwOf(item.cw);
   const I = ICON[item.Icon] || Sparkles;
+  const playKind = facePlayable(item);
+
+  // ── playable media: player ON THE FACE (§ audit fix). The whole card is no longer one
+  // "Open" button — the media area plays in place in ONE tap; the text area below is a
+  // SEPARATE, secondary tap that opens the full detail. (A button can't nest a button, so
+  // the card is a div with two independent controls.)
+  if (playKind) {
+    return (
+      <div className="fw-ce-press" style={{ width: "100%", height: "100%", textAlign: "left", padding: 0, border: `1px solid ${T.paperDeep}`, borderRadius: 18, overflow: "hidden", background: `linear-gradient(165deg, ${T.paperHi} 0%, ${c.petal}12 100%)`, boxShadow: "0 6px 22px rgba(58,44,26,.10), 0 1px 4px rgba(58,44,26,.06)", display: "flex", flexDirection: "column" }}>
+        <CardMediaFace item={item} accent={c.petal} kind={playKind} compact={compact} />
+        <button onClick={onOpen} className="fw-ce-press" style={{ textAlign: "left", padding: compact ? "8px 13px 12px" : "10px 15px 15px", flex: 1, display: "flex", flexDirection: "column", background: "transparent", border: "none", cursor: "pointer", width: "100%" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 6, fontFamily: UI, fontSize: 10, fontWeight: 800, letterSpacing: ".1em", textTransform: "uppercase", color: c.petal }}><I size={12} /> {item.kind}</div>
+          <div style={{ fontFamily: FRAUNCES, fontWeight: 600, fontSize: compact ? 18 : 21, lineHeight: 1.14, color: OXBLOOD, margin: "4px 0 3px" }}>{item.title}</div>
+          <div style={{ display: "flex", alignItems: "center", gap: 12, marginTop: "auto", paddingTop: 8 }}>
+            {(compact ? item.meta.slice(0, 1) : item.meta).map(([ic, label]) => { const M = ICON[ic] || Clock; return (
+              <span key={label} style={{ display: "inline-flex", alignItems: "center", gap: 5, fontFamily: UI, fontSize: 11.5, fontWeight: 600, color: T.muted }}><M size={13} color={c.accent} /> {label}</span>
+            ); })}
+            <span style={{ marginLeft: "auto", display: "inline-flex", alignItems: "center", gap: 3, fontFamily: UI, fontSize: 12, fontWeight: 800, color: c.petal }}>Details <ChevronRight size={15} /></span>
+          </div>
+        </button>
+      </div>
+    );
+  }
+
   return (
     <button onClick={onOpen} className="fw-ce-press" style={{ width: "100%", height: "100%", textAlign: "left", padding: 0, border: `1px solid ${T.paperDeep}`, borderRadius: 18, overflow: "hidden", cursor: "pointer", background: `linear-gradient(165deg, ${T.paperHi} 0%, ${c.petal}12 100%)`, boxShadow: "0 6px 22px rgba(58,44,26,.10), 0 1px 4px rgba(58,44,26,.06)", display: "flex", flexDirection: "column" }}>
       {/* When an item genuinely carries no text to summarise (e.g. an ingested video whose row
@@ -753,7 +812,7 @@ export function ExpandDetailCard({ item: raw, onClose, saved: savedProp, onSave 
           {/* typed blocks — presence renders the block */}
           {/* §1/§2 media: real inline video (FloraCover poster) · real inline audio + the
               flora visualiser · the simulated player when there's no src (demos). */}
-          {(item.videoSrc || item.audioSrc || item.player) && (
+          {(item.videoSrc || item.youtubeId || item.audioSrc || item.player) && !item.external && (
             <div style={{ marginBottom: 16 }}><MediaBlock item={item} accent={c.petal} /></div>
           )}
           {/* §3 books open INTO reading — 2 taps, with the full reader one clear button away */}
@@ -816,7 +875,7 @@ export function ExpandDetailCard({ item: raw, onClose, saved: savedProp, onSave 
           {(() => {
             const hasBody = bodyParagraphs(item).length > 0;
             const hasBlocks = item.quote || item.reading || item.excerpt || item.ingredients || item.steps
-              || item.videoSrc || item.audioSrc || item.player || (item.takeaways && item.takeaways.length)
+              || item.videoSrc || item.youtubeId || item.audioSrc || item.player || (item.takeaways && item.takeaways.length)
               || item.gutenbergId || item.readingText;
             if (hasBody || hasBlocks || !(item.summary || item.subtitle)) return null;
             const openLabel = (item.actions && item.actions[0] && item.actions[0].label) || "Read this";
