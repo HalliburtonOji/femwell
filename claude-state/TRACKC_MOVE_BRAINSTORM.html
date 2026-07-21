@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MOVE — Track C Board #2 — Research &amp; Brainstorm</title>
+<style>
+  :root{
+    --paper:#ECE7DA; --paperHi:#F4EFE3; --paperDeep:#D8CFBC;
+    --ink:#0B0805; --muted:#2E261B; --gold:#A8893F; --crimson:#BC2E27; --sage:#8FAF8F;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--paper);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,sans-serif;
+    line-height:1.55;font-size:17px}
+  .wrap{max-width:720px;margin:0 auto;padding:22px 18px 80px}
+  h1{font-family:Georgia,"Times New Roman",serif;font-size:30px;line-height:1.15;margin:0 0 4px}
+  h2{font-family:Georgia,serif;font-size:22px;margin:34px 0 6px;color:var(--muted);
+    border-bottom:2px solid var(--gold);padding-bottom:5px}
+  h3{font-size:18px;margin:20px 0 4px;color:var(--crimson)}
+  .kicker{text-transform:uppercase;letter-spacing:.14em;font-size:12px;color:var(--gold);font-weight:700}
+  .meta{font-size:13px;color:var(--muted);margin:6px 0 0}
+  p{margin:8px 0}
+  ul{margin:8px 0;padding-left:20px}
+  li{margin:5px 0}
+  a{color:var(--crimson);word-break:break-word}
+  .card{background:var(--paperHi);border:1px solid var(--paperDeep);border-radius:14px;
+    padding:14px 16px;margin:12px 0;box-shadow:0 1px 0 var(--paperDeep)}
+  .lede{background:var(--paperHi);border-left:4px solid var(--crimson);border-radius:0 12px 12px 0;
+    padding:12px 16px;margin:14px 0;font-size:17px}
+  .tag{display:inline-block;background:var(--paperDeep);border-radius:999px;padding:2px 10px;
+    font-size:12px;font-weight:700;color:var(--muted);margin:2px 4px 2px 0}
+  .deny{background:#fbeceb;border:1px solid #e6b8b4;border-radius:12px;padding:12px 16px;margin:12px 0}
+  .deny strong{color:var(--crimson)}
+  .keep{background:#eef3ee;border:1px solid #bcd0bc;border-radius:12px;padding:12px 16px;margin:12px 0}
+  table{width:100%;border-collapse:collapse;margin:12px 0;font-size:14.5px}
+  th,td{border:1px solid var(--paperDeep);padding:7px 9px;text-align:left;vertical-align:top}
+  th{background:var(--paperDeep);font-family:Georgia,serif}
+  .flag{background:#fff6e6;border:1px solid var(--gold);border-radius:10px;padding:10px 14px;margin:10px 0;font-size:14.5px}
+  .flag b{color:var(--gold)}
+  .src{font-size:13.5px;color:var(--muted)}
+  code{background:var(--paperDeep);border-radius:5px;padding:1px 5px;font-size:14px}
+  hr{border:none;border-top:1px solid var(--paperDeep);margin:26px 0}
+  .lbl-weak{display:inline-block;background:#fff6e6;border:1px solid var(--gold);color:#7a5f17;
+    border-radius:6px;padding:1px 7px;font-size:12px;font-weight:700}
+  .lbl-real{display:inline-block;background:#eef3ee;border:1px solid var(--sage);color:#3f5a3f;
+    border-radius:6px;padding:1px 7px;font-size:12px;font-weight:700}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<div class="kicker">Ms Deep Search · Track C · Board #2</div>
+<h1>MOVE</h1>
+<p class="meta">Movement for strength, energy, mood, pleasure and capability. Research + brainstorm.
+Prepared 21 July 2026. UK whole-life wellness — health is one room, not the house.</p>
+
+<div class="lede">
+The single hardest tone job in the app. Movement is the domain that carries the most diet culture,
+so the bar is: <b>a woman should want to return, and should never once feel movement is punishment
+or shrinking.</b> Every section below is framed around capability, energy, mood and pleasure —
+never calorie-burn, "bounce back", or aesthetics. The denylist (48+ items stripped) is the floor,
+not the ceiling; this doc is the positive frame that sits on top of it.
+</div>
+
+<p class="src"><b>Measured content base (build to these):</b> SAFE pool = 596 movement items,
+394 playable videos. Sub-types: strength 194 · yoga 52 · pilates 48 · dance 39 · run 29 · walk 26 ·
+mobility 8 · barre 6 · swim 6 · stretch 4. Phase_tags on only ~13/518 items → a phase-<i>filtered</i>
+feed is NOT possible. No new entity/function; self-loads real LifestyleItems + UserProfile cycle phase.</p>
+
+<hr>
+
+<h2>1 · The one return-worthy idea</h2>
+
+<div class="card">
+<h3>"How do you want to move today?" — a feeling-led picker, never a plan</h3>
+<p>Mirror asks "what to wear to how you feel." Move asks the same of the body:
+<b>she tells us her energy/mood, and we surface movement that <i>matches</i> it — we never
+prescribe.</b> The reason this is return-worthy is that it inverts every other fitness product:
+those tell you what you <i>should</i> do (a plan, a streak, a readiness score); Move meets you where
+you already are. Low energy is a valid answer that gets a real, joyful response (a 6-minute stretch,
+a slow walk audio), not a guilt trip.</p>
+<p><b>Picker moods (feeling, not intensity plan):</b>
+<span class="tag">Restless / need to shake it off</span>
+<span class="tag">Heavy / low battery</span>
+<span class="tag">Strong / want to feel powerful</span>
+<span class="tag">Tender / be gentle with me</span>
+<span class="tag">Playful / want fun</span>
+<span class="tag">Foggy / clear my head</span>
+Each maps to real content in the pool (dance 39 &amp; run 29 for restless; yoga/stretch/mobility ~64
+for tender; strength 194 for strong; dance for playful; walk 26 for foggy).</p>
+</div>
+
+<h3>The cycle × exercise science — honest, not a slogan</h3>
+<p>"Cycle syncing your workouts" is a huge marketing trend. The honest read of the literature is:
+<b>real, mixed, and mostly weaker than the slogans claim.</b> We label each claim's strength inline so we
+never launder a fitness slogan as science.</p>
+
+<ul>
+<li><span class="lbl-weak">WEAK / CONTESTED</span> <b>Strength &amp; the cycle.</b> The best current
+evidence — an umbrella review and meta-analyses — finds <b>trivial effects</b> of cycle phase on strength
+and on muscle adaptation (Hedges <i>g</i> &lt; 0.2; effect sizes 0.01–0.14, the largest being early-vs-late
+follicular at 0.14). ~90% of moderate-to-high-quality studies found no significant difference between phases.
+The reviewers call it "premature to conclude" hormones meaningfully change performance, and recommend
+<b>individualising, not phase-programming.</b> So: <i>do NOT</i> tell a woman she's "stronger in her follicular
+phase" as fact.
+(<a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC10076834/">Colenso-Semple 2023, Frontiers/PMC10076834</a>;
+<a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC10818650/">Meta-analysis, PMC10818650</a>)</li>
+
+<li><span class="lbl-real">REAL, CONDITIONAL</span> <b>Luteal heat / fatigue.</b> Core temperature is
+genuinely ~0.3–0.7°C higher in the luteal phase (progesterone's thermogenic effect). In <b>hot, humid</b>
+conditions this measurably shortens time-to-fatigue in prolonged exercise; in <b>temperate</b> conditions
+there's no performance difference, and in well-trained women no difference even in heat. So the honest note is
+narrow: "if you're exercising in heat and feel like you're running warmer in the back half of your cycle,
+that's real — ease off, hydrate," not "the luteal phase makes you weak."
+(<a href="https://pubmed.ncbi.nlm.nih.gov/22776870/">Janse de Jonge 2012, PubMed 22776870</a>;
+<a href="https://www.sciencedirect.com/science/article/abs/pii/S0306456524002547">MC thermoregulation review 2024</a>)</li>
+
+<li><span class="lbl-weak">MODERATE BUT MIXED</span> <b>Injury / joint laxity.</b> Knee (ACL) laxity is
+lowest in the follicular phase and rises through ovulation/luteal; a meta-analysis found <b>moderate</b>
+evidence of higher ACL-injury incidence around the ovulatory phase. But the authors call it "mixed and
+conflicting," and this matters mainly for high-impact, cutting/pivoting sport — not a walk or a mobility flow.
+Frame only as gentle body-awareness, never fear.
+(<a href="https://pubmed.ncbi.nlm.nih.gov/28795075/">Herzberg 2017 meta-analysis</a>;
+<a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC9879429/">Neuromuscular surrogates review, PMC9879429</a>)</li>
+
+<li><span class="lbl-real">STRONG</span> <b>Movement for mood.</b> This is the best-evidenced claim on the
+board and should be the emotional spine. Meta-analyses put exercise's effect on depression and anxiety at a
+<b>moderate SMD ≈ −0.4 to −0.45</b>, with sessions of 30–40 min, 3–5×/week most effective — but benefits
+appear even from short bouts. This is our licence to say "move because it changes how you feel today,"
+truthfully.
+(<a href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC11309647/">Exercise &amp; depression/anxiety meta-analysis, PMC11309647</a>)</li>
+</ul>
+
+<div class="lede"><b>The frame:</b> "Move <i>with</i> your energy, not against it." Self-directed, never a rule.
+The one cycle-aware element is an <b>honest editorial note</b> ("many women notice more energy in the first
+half, more tenderness before their period — but bodies differ, and the science on 'cycle-syncing workouts' is
+thinner than the internet says"), NOT a filtered feed.</div>
+
+<hr>
+
+<h2>2 · Board anatomy — sections, content feed &amp; why she returns</h2>
+
+<table>
+<tr><th>Section</th><th>What feeds it (measured)</th><th>Why she returns</th></tr>
+<tr><td><b>"How do you want to move today?"</b> feeling picker (top, signature)</td>
+<td>All 394 videos, routed by mood→sub-type mapping</td>
+<td>She's met where she is; low-energy is a valid answer with a kind response, not shame</td></tr>
+<tr><td><b>Movement snack</b> — one short joyful thing</td>
+<td>Shortest dance/stretch/walk/mobility videos; a 5-min pick</td>
+<td>Genuinely evidence-backed (below) &amp; frictionless — the "I've got 5 minutes" return hook</td></tr>
+<tr><td><b>Strength as capability</b></td>
+<td>194 strength items — the deepest pool</td>
+<td>"Getting stronger, not smaller" — carry the shopping, open the jar, feel powerful</td></tr>
+<tr><td><b>Gentle / restorative — rest is training</b></td>
+<td>yoga 52 + mobility 8 + stretch 4 + slow walk (~64+)</td>
+<td>Legitimises the low-battery day; counters the "no days off" toxic script</td></tr>
+<tr><td><b>Move for your mood</b></td>
+<td>Curated cross-cut of dance/walk/yoga, tagged to feeling</td>
+<td>Strongest science; the "I feel rubbish, help" door — reliably delivers a lift</td></tr>
+<tr><td><b>This week's energy</b> — honest cycle note</td>
+<td>UserProfile phase → editorial copy only (NOT a filter)</td>
+<td>Feels seen &amp; respected by an app that won't lie to her about the science</td></tr>
+<tr><td><b>Play &amp; joy</b> — dance / fun</td>
+<td>dance 39</td>
+<td>Movement as fun, not a task; the whole-life, non-clinical heartbeat</td></tr>
+</table>
+
+<div class="card"><b>Why "movement snack" earns its place:</b> short bursts (≤5 min, 2×/day) measurably improve
+fitness, strength, glucose control, <i>and</i> mood, with ~91% adherence; a 2022 <i>Nature Medicine</i> study
+tied three short daily bouts to 48–49% lower cardiovascular-death risk. It's the return mechanic that's
+honest AND joyful — no "workout" required.
+(<a href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC12732512/">Exercise-snacks systematic review, PMC12732512</a>;
+<a href="https://www.nbcnews.com/health/health-news/exercise-snacks-short-activity-bursts-heart-health-muscle-strength-rcna236192">NBC summary, 2025</a>)</div>
+
+<div class="flag"><b>CONTENT FLAGS.</b>
+<b>1)</b> No phase-filtered feed — phase_tags on ~13/518 only; "This week's energy" must be editorial copy,
+not a query.
+<b>2)</b> Thin sub-types — <code>mobility 8 · barre 6 · swim 6 · stretch 4</code>. Do NOT build a section that
+needs a deep swim/barre/stretch library; fold these into "gentle/restorative" and "snack" rather than giving
+them their own shelves.
+<b>3)</b> "Move for your mood" needs a small hand-curated feeling→item map (client-side) since mood tags don't
+exist in the data — flag to Mr Lead Manager as the one bit of editorial tagging required.</div>
+
+<hr>
+
+<h2>3 · Whole-life + cross-surface roles</h2>
+<p>Move is a life domain, not a gym. Every surface gets a named role:</p>
+<ul>
+<li><b>Today:</b> the feeling picker + one "movement snack" card, tinted (not dictated) by cycle phase &amp; time of day.</li>
+<li><b>Journal:</b> "how did moving make you <i>feel</i>?" prompt (mood, not metrics) — feeds the mood evidence loop, never logs calories or weight.</li>
+<li><b>Community:</b> a <b>Movement room</b> — "shook it off today", couch-to-anything, dance wins, ability-inclusive; anonymous-safe, celebratory not competitive.</li>
+<li><b>Nutrition:</b> gentle bridge to "fuelling for energy" (energy, not restriction) — must inherit the same anti-diet denylist.</li>
+<li><b>Lifestyle:</b> Move is a domain board here; its videos live in the existing For You / Listen (walk audios) / Read surfaces.</li>
+<li><b>Health:</b> movement's real clinical wins framed as capability — bone density, pelvic floor, perimenopause strength, mood — sourced, never aesthetic.</li>
+<li><b>Pulse / Trends:</b> "you tend to move most when you feel restless" — pattern reflection about mood, not a performance dashboard or streak.</li>
+<li><b>Planner:</b> book a walk with a friend, block 15 min for a stretch — movement as a plan you <i>keep</i>, life-integrated.</li>
+<li><b>Profile:</b> her movement fingerprint — favourite feelings/sub-types — no fitness "level" ranking.</li>
+<li><b>Jess:</b> the <b>"I don't want to but…" companion</b> — talks her into the smallest kind thing, never nags; "want a 5-minute one?" This is Move's signature Jess role.</li>
+<li><b>Events:</b> local UK classes — dance, walking groups, swimming, women-only sessions.</li>
+<li><b>Deals:</b> kit, classes, trainers — inclusive sizing surfaced first; never weight-loss products.</li>
+</ul>
+
+<hr>
+
+<h2>4 · Tone + anti-patterns</h2>
+<p>Warm smart-friend, joyful, UK English, no emoji, size/age/ability-inclusive. The test for every card:
+<b>"would she do this even if it changed nothing about her body?"</b> If the copy only makes sense as a
+means to shrink, it fails.</p>
+
+<div class="deny"><strong>HARD DENY — these framings never ship:</strong>
+<ul>
+<li>Calorie-burn / "torch" / "burn fat" framing</li>
+<li>"Bounce back" / postpartum-shrink / "get your body back"</li>
+<li>Weight loss as motivation or reward</li>
+<li>"No excuses" / "earn it" / punishment / guilt / streak-shaming</li>
+<li>Before/after imagery or "transformation"</li>
+<li>Aesthetic "tone / sculpt / lean / snatched / red-carpet-ready"</li>
+<li>Thin-ideal or single body type as the visual default</li>
+<li>Ability-shaming ("if she can, no excuse") or intensity as the only virtue</li>
+</ul></div>
+
+<div class="keep"><strong>POSITIVE REFRAMES — the vocabulary we build in:</strong>
+strength &amp; capability · energy &amp; aliveness · mood &amp; head-clearing · pleasure &amp; play ·
+longevity &amp; bone/heart/brain health · "rest is training" · "shake it off" · feeling powerful ·
+being able to do the things you love for longer · <b>movement you'd do even if it changed nothing about
+your body.</b></div>
+
+<p class="src">This isn't only ethics — it's the market. The Global Wellness Summit named the
+"over-optimization backlash" its defining 2026 trend: a shift away from measurement and performance toward
+joy, connection and embodied care.
+(<a href="https://www.integrativenutrition.com/blog/over-optimization-backlash-wellness-2026">GWS trend, 2026</a>)</p>
+
+<hr>
+
+<h2>5 · Competitive scan (web-verified, July 2026)</h2>
+<table>
+<tr><th>Product</th><th>What they ship</th><th>Frame</th><th>Verified</th></tr>
+<tr><td><b>Wild.AI</b></td><td>Cycle/hormone-synced "readiness score", adaptive training, injury stats
+("6× more likely to injure pre-menstrually"), 450+ papers cited</td>
+<td>Performance-first, athlete. "Turn your hormones into your superpower." No aesthetics — but
+prescriptive &amp; high logging friction; users doubt score accuracy</td><td>21 Jul 2026</td></tr>
+<tr><td><b>FitrWoman</b></td><td>Cycle-phase training/nutrition/recovery tips, "grounded in peer-reviewed research"</td>
+<td>Elite-athlete, evidence-branded, but leans into the very phase-programming the umbrella reviews call premature</td><td>21 Jul 2026</td></tr>
+<tr><td><b>Apple Fitness+</b></td><td>HIIT, Strength, Yoga, Dance, Pilates, Kickboxing; 10–45 min</td>
+<td>Broad, polished, gender-neutral; <b>no</b> cycle/women's-health layer; metric-forward</td><td>21 Jul 2026</td></tr>
+<tr><td><b>Peloton (app)</b></td><td>Strength, yoga, barre, Pilates, outdoor walks/runs, meditation, sleep</td>
+<td>Studio-energy, leaderboard/metrics culture; no cycle awareness</td><td>21 Jul 2026</td></tr>
+</table>
+
+<div class="lede"><b>The white space FemWell owns.</b> Everyone splits into two camps: <i>performance-optimisers</i>
+(Wild, FitrWoman — athlete-first, prescriptive, readiness scores, phase-programming the science doesn't fully
+support) and <i>generic aesthetic/metric libraries</i> (Apple, Peloton — no cycle, streak/leaderboard culture).
+<b>Nobody serves the ordinary woman who wants movement to feel good, honestly.</b> FemWell's unclaimed corner:
+<b>joyful + non-aesthetic + cycle-aware-but-HONEST (we label the weak evidence) + whole-life + size/age/ability-inclusive
++ feeling-led (mood picker) not score-led (readiness).</b> The over-optimisation backlash means this corner is
+also where the market is <i>moving</i> — FemWell can be early.</p></div>
+
+<hr>
+
+<h2>Sentiment / market signal</h2>
+<ul>
+<li>User of a cycle-fitness app (via review synthesis, 2026): praises "train smarter rather than harder" but
+others are "frustrated by manual logging friction" and "don't find the readiness score that accurate."
+(<a href="https://marlvel.ai/intel-report/health-fitness/wild-ai-hormones-fitness">Wild.AI review synthesis, 2026</a>)
+— <b>lesson: don't out-score the scorers; win on feeling &amp; zero friction.</b></li>
+</ul>
+
+<p class="src"><b>For Mr Lead Manager:</b> the one bit of new editorial work is a client-side feeling→item map
+(no entity). Everything else self-loads existing LifestyleItems + UserProfile phase. Recommend the feeling
+picker + movement snack as the MVP spine (both return-tested &amp; evidence-backed), "This week's energy" as
+honest copy only, and Community Movement room + Jess "I don't want to but…" as the whole-life anchors.</p>
+
+</div>
+</body>
+</html>

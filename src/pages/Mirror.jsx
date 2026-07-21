@@ -35,7 +35,9 @@ const rotateDaily = (pool, n = 4) => {
 
 const txtOf = (r) => {
   const tags = Array.isArray(r.tags) ? r.tags.join(" ") : (typeof r.tags === "string" ? r.tags : "");
-  return `${r.title || ""} ${r.subtitle || ""} ${tags} ${r.category || ""}`.toLowerCase();
+  // include summary/excerpt so the body-neutral denylist catches diet-culture that hides in
+  // body copy (which renders on the card), not only in the title. Err toward safety.
+  return `${r.title || ""} ${r.subtitle || ""} ${r.summary || ""} ${r.excerpt || ""} ${tags} ${r.category || ""}`.toLowerCase();
 };
 const hasAny = (r, kws) => kws.some((k) => txtOf(r).includes(k));
 

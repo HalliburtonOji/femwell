@@ -1389,6 +1389,7 @@ export default function LifestyleEliteShell() {
             { Icon: Headphones, cw: "sage", label: "Listen & watch", onClick: () => jumpTo(2) },
             { Icon: Moon, cw: "sky", label: "Your sky tonight", onClick: () => setSkyOpen(true) },
             { Icon: Sparkles, cw: "blush", label: "The Mirror", onClick: () => window.location.assign(createPageUrl("Mirror")) },
+            { Icon: Sun, cw: "sage", label: "Move", onClick: () => window.location.assign(createPageUrl("Move")) },
             { Icon: Bookmark, cw: "plum", label: "Your saved", onClick: () => jumpTo(5) },
           ]} />
         </div>
