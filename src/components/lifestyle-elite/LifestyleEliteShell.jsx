@@ -1632,7 +1632,19 @@ function TimePickerLens({ pickFor, isSaved, onSave, onOpen, onTry }) {
       <div style={{ ...lbl, marginBottom: 6 }}>For {band.label.toLowerCase()}</div>
       <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
         {read ? <ContentRow Icon={lfTypeOf(read) === "story" ? Feather : BookOpen} accent={cwOf("plum").petal} title={read.title} meta={`Read · ${metaOf(read)}`} saved={isSaved(read.id)} onSave={() => onSave(read)} onOpen={() => onOpen(read)} /> : <EmptyLine>A read lands here as the library fills out.</EmptyLine>}
-        {listen ? <ContentRow Icon={lfTypeOf(listen) === "video" ? Film : Headphones} accent={cwOf("sage").petal} title={listen.title} meta={`Listen · ${metaOf(listen)}${listen.duration_label ? ` · ${listen.duration_label}` : ""}`} saved={isSaved(listen.id)} onSave={() => onSave(listen)} onOpen={() => onOpen(listen)} /> : <EmptyLine>A listen lands here as podcasts are added.</EmptyLine>}
+        {listen ? (
+          // A listen PLAYS IN PLACE here — the last reachable surface that used to route to
+          // /LifestyleDetail. Title line for context + the real inline player (LifestyleMedia:
+          // VIDEO → autoplay iframe, PODCAST/CLIP → real <audio>), one tap on the face.
+          <div>
+            <div style={{ display: "flex", alignItems: "center", gap: 6, fontFamily: UI, fontSize: 11.5, fontWeight: 700, color: cwOf("sage").petal, margin: "0 0 5px" }}>
+              {lfTypeOf(listen) === "video" ? <Film size={13} /> : <Headphones size={13} />}
+              <span style={{ color: T.ink, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{listen.title}</span>
+              <span style={{ color: T.muted, fontWeight: 600, flexShrink: 0 }}>· {listen.duration_label || metaOf(listen)}</span>
+            </div>
+            <LifestyleMedia item={listen} accent={cwOf("sage").petal} />
+          </div>
+        ) : <EmptyLine>A listen lands here as podcasts are added.</EmptyLine>}
         {/* the make / awe prompt — saves as a soft intention */}
         <button onClick={() => onTry(band.make.title)} className="fw-elite-press" style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", textAlign: "left", ...subCard(cwOf("gold").petal), padding: "10px 12px", cursor: "pointer" }}>
           <span style={{ width: 28, height: 28, borderRadius: 9, background: `${cwOf("gold").petal}1F`, display: "grid", placeItems: "center", flexShrink: 0 }}><Sparkles size={14} color={cwOf("gold").petal} /></span>
