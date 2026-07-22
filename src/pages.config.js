@@ -100,6 +100,7 @@ import Move from './pages/Move';
 import Kindred from './pages/Kindred';
 import Curious from './pages/Curious';
 import Delight from './pages/Delight';
+import Nest from './pages/Nest';
 import BookReader from './pages/BookReader';
 import FictionReader from './pages/FictionReader';
 import Track from './pages/Track';
@@ -356,6 +357,7 @@ export const PAGES = {
     "Kindred": Kindred,
     "Curious": Curious,
     "Delight": Delight,
+    "Nest": Nest,
     "BookReader": BookReader,
     "FictionReader": FictionReader,
     "Track": Track,
