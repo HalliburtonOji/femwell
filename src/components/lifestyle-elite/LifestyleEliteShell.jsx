@@ -1394,6 +1394,7 @@ export default function LifestyleEliteShell() {
             { Icon: Compass, cw: "sky", label: "Curious", onClick: () => window.location.assign(createPageUrl("Curious")) },
             { Icon: Sparkles, cw: "gold", label: "Delight", onClick: () => window.location.assign(createPageUrl("Delight")) },
             { Icon: Coffee, cw: "gold", label: "Nest", onClick: () => window.location.assign(createPageUrl("Nest")) },
+            { Icon: Moon, cw: "lavender", label: "Tonight", onClick: () => window.location.assign(createPageUrl("Tonight")) },
             { Icon: Bookmark, cw: "plum", label: "Your saved", onClick: () => jumpTo(5) },
           ]} />
         </div>
