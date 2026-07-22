@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DELIGHT — Track C Board #5 — Research + Brainstorm</title>
+<style>
+  :root{
+    --paper:#ECE7DA; --paperHi:#F4EFE3; --paperDeep:#D8CFBC;
+    --ink:#0B0805; --muted:#2E261B; --gold:#A8893F; --crimson:#BC2E27;
+    --sage:#8FAF8F; --plum:#8E6E8E;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0; background:var(--paper); color:var(--ink);
+    font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+    font-size:17px; line-height:1.62; -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:680px; margin:0 auto; padding:28px 20px 96px}
+  h1,h2,h3{font-family:'Fraunces',Georgia,'Times New Roman',serif; font-weight:600; line-height:1.15; letter-spacing:-0.01em}
+  h1{font-size:34px; margin:8px 0 4px}
+  h2{font-size:25px; margin:40px 0 6px; color:var(--muted)}
+  h3{font-size:20px; margin:26px 0 4px}
+  .kicker{font-family:'Inter',sans-serif; text-transform:uppercase; letter-spacing:.16em; font-size:12px; color:var(--gold); font-weight:600}
+  .lede{font-size:19px; color:var(--muted); margin:10px 0 4px}
+  p{margin:10px 0}
+  a{color:var(--crimson); text-decoration:none; border-bottom:1px solid rgba(188,46,39,.28)}
+  hr{border:0; border-top:1px solid var(--paperDeep); margin:26px 0}
+  .card{background:var(--paperHi); border:1px solid var(--paperDeep); border-radius:16px; padding:16px 18px; margin:16px 0}
+  .card.crimson{border-left:4px solid var(--crimson)}
+  .card.gold{border-left:4px solid var(--gold)}
+  .card.sage{border-left:4px solid var(--sage)}
+  .card.plum{border-left:4px solid var(--plum)}
+  ul,ol{margin:8px 0 8px; padding-left:22px}
+  li{margin:6px 0}
+  .pill{display:inline-block; background:var(--paperDeep); color:var(--muted); border-radius:999px; padding:3px 11px; font-size:13px; margin:3px 4px 3px 0; font-weight:500}
+  .pill.hot{background:var(--crimson); color:#fff}
+  table{width:100%; border-collapse:collapse; font-size:14px; margin:12px 0}
+  th,td{text-align:left; padding:9px 8px; border-bottom:1px solid var(--paperDeep); vertical-align:top}
+  th{font-family:'Inter'; text-transform:uppercase; letter-spacing:.08em; font-size:11px; color:var(--gold)}
+  .src{font-size:13px; color:var(--muted)}
+  .src a{border:none}
+  .flag{background:#F7E9C9; border:1px solid var(--gold); border-radius:12px; padding:12px 14px; margin:14px 0; font-size:15px}
+  .deny{color:var(--crimson); font-weight:600}
+  .yes{color:var(--sage); font-weight:600; filter:brightness(.82)}
+  .meta{font-size:13px; color:var(--muted); margin-top:2px}
+  blockquote{margin:12px 0; padding:8px 16px; border-left:3px solid var(--gold); color:var(--muted); font-style:italic}
+  code{background:var(--paperDeep); padding:1px 6px; border-radius:6px; font-size:14px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<div class="kicker">Track C — whole-life domain board #5 · Ms Deep Search</div>
+<h1>DELIGHT</h1>
+<p class="lede">Joy, fun, play and entertainment — for their <em>own</em> sake. Not to recharge, not to be productive after, not earned. A woman should feel <strong>permission</strong> to enjoy something for no reason at all, with zero guilt and zero payoff.</p>
+<p class="meta">Researched 22 July 2026 (en-GB). Method: measured content base + fresh web-fetched studies and competitor pages. Follows the Mirror / Move / Kindred / Curious pattern (picker + per-board content-safety denylist + real self-loaded LifestyleItems, no new entity/function; "play" deep-links to Community).</p>
+
+<div class="card crimson">
+<strong>The defining principle.</strong> Fun here needs no justification and no apology. It is <strong>not</strong> a wellness tool, <strong>not</strong> productive relaxation, <strong>not</strong> a reward you unlock by being good. Watching "trash" telly, having a proper laugh, a nose at the gossip, a daft game — all complete in themselves. The correct outcome of a Delight visit is: <em>she enjoyed something and nothing was earned, measured or owed.</em> This is the domain's line in the sand — its diet-culture equivalent is the word "guilty" attached to a pleasure.
+</div>
+
+<h2>1. The one return-worthy idea</h2>
+
+<p>Two mechanics, one spirit — both echo the earlier boards' pickers and both pull from the real content pool. Nothing bespoke to author, nothing to maintain.</p>
+
+<div class="card gold">
+<h3 style="margin-top:2px">"What do you fancy?" picker</h3>
+<p>The signature control, mirroring Mirror/Move/Kindred/Curious:</p>
+<span class="pill">something to watch</span><span class="pill">a good laugh</span><span class="pill">pop culture &amp; gossip</span><span class="pill">to play</span><span class="pill hot">surprise me</span>
+<p style="margin-top:10px"><strong>"Surprise me" is the heart of it</strong> — a random joyful thing from the whole safe pool. It answers the real friction (decision fatigue in front of endless streaming menus) the way Reelgood's "roulette" does, but without the collector/score baggage. <span class="src">Reelgood explicitly targets streaming "decision fatigue" and the "guilt for wasting time" it breeds (source: <a href="https://data.reelgood.com/how-reelgood-is-putting-an-end-to-decision-fatigue/">Reelgood</a>, fetched 22/07/26).</span> We keep the serendipity, drop the guilt.</p>
+</div>
+
+<div class="card gold">
+<h3 style="margin-top:2px">One purely joyful thing (daily)</h3>
+<p>A single, rotating invitation to a bit of fun — a comedy clip, a feel-good watch, a "did you see what she wore to Cannes" bit of pop culture, a song to blast. No streak, no "day 4 of 30", no completion bar. If she taps, lovely. If she doesn't, nothing is lost and nothing nags. The hook is the <em>joy</em>, not a task.</p>
+</div>
+
+<h3>Is "pointless" fun genuinely good for us? Yes — and here's the honest read.</h3>
+
+<ul>
+<li><strong>Adult playfulness tracks with a happier life.</strong> Proyer's programme finds trait playfulness robustly relates to <em>life satisfaction</em> and "an inclination to enjoyable activities and an active way of life" <span class="src">(source: <a href="https://www.frontiersin.org/journals/psychology/articles/10.3389/fpsyg.2018.01440/full">Frontiers in Psychology 2018</a>; foundational paper <a href="https://www.researchgate.net/publication/254256930_The_well-being_of_playful_adults_Adult_playfulness_subjective_well-being_physical_well-being_and_the_pursuit_of_enjoyable_activities">"The well-being of playful adults"</a>, fetched 22/07/26).</span> Playfulness is (re)framing a moment as entertaining and interesting for its own sake — exactly this board.</li>
+
+<li><strong>And it can be deliberately increased.</strong> Proyer's randomised, placebo-controlled online playfulness intervention (2021) showed self-directed playful activities <em>raised</em> playfulness and nudged wellbeing up / depressive symptoms down <span class="src">(source: <a href="https://iaap-journals.onlinelibrary.wiley.com/doi/full/10.1111/aphw.12220"><em>Applied Psychology: Health and Well-Being</em> 2021</a>).</span> <em>Honesty label: causal design, but small effects — treat as "this genuinely helps," never "do this, get happy."</em></li>
+
+<li><strong>Joy sparks the urge to play — and that's the point.</strong> Fredrickson's broaden-and-build theory names it directly: "joy sparks the urge to play, interest sparks the urge to explore, contentment sparks the urge to savour" <span class="src">(source: <a href="https://positivepsychology.com/broaden-build-theory/">broaden-and-build overview</a>; original <a href="https://peplab.web.unc.edu/wp-content/uploads/sites/18901/2018/11/fredricksonampsyc2001.pdf">Fredrickson 2001 (PDF)</a>).</span> Positive emotion is not filler between useful things — it is its own broadening, momentary end.</li>
+
+<li><strong>The benefit lives in the savouring, not the ticking-off.</strong> Bryant &amp; Veroff's work on savouring finds the peak benefit of a positive event is gained only through the act of <em>savouring</em> it — being present to the enjoyment <span class="src">(source: <a href="https://positivepsychology.com/savoring/">savouring in positive psychology</a>; review <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC8712667/">PMC 2021</a>).</span> This is the scientific case <em>against</em> completionism: bingeing to finish beats presence; one savoured episode beats six ticked off.</li>
+
+<li><strong>"Pure leisure" = freely chosen and intrinsically motivated — and that's what pays.</strong> The leisure-wellbeing literature defines pure leisure as activity freely chosen and done for itself, and finds it supports subjective wellbeing through autonomy, choice and interest <span class="src">(source: <a href="https://digitalcommons.unomaha.edu/cgi/viewcontent.cgi?article=1298&context=psychfacpub">"The Importance of Leisure for Subjective Well-Being"</a>; <a href="https://link.springer.com/article/10.1007/s12646-015-0327-5">Leisure Motivation &amp; Well-being 2015</a>).</span> The freedom <em>is</em> the active ingredient — so any nag we add would remove the very thing that works.</li>
+
+<li><strong>Laughter, in real daily life.</strong> An intensive longitudinal (daily-diary) study found more frequent laughter buffered the link between stressful events and stress symptoms <span class="src">(source: <a href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC7347187/">PMC 2020</a>);</span> a physiology review catalogues laughter's mood, tension-release and social-bonding effects <span class="src">(source: <a href="https://journals.physiology.org/doi/full/10.1152/advan.00030.2017"><em>Advances in Physiology Education</em> 2017</a>).</span></li>
+</ul>
+
+<div class="flag">
+<strong>Critical firewall — the trap we refuse.</strong> Almost all of this literature is written in an <span class="deny">instrumental register</span>: playfulness "improves work performance and coping", laughter "buffers stress", leisure "restores you for Monday". We cite the evidence and <strong>reject the frame.</strong> The moment fun is justified as recharging, coping, or being a better worker/partner/mum, it becomes another task on the optimisation list — the exact anti-pattern. In Delight's copy, fun is worth it <span class="yes">because it's fun.</span> No "so you can…", no restore-to-perform, ever. (Same discipline as Curious's rejection of the "keep your brain young" frame.)
+</div>
+
+<div class="flag">
+<strong>Honesty labels for the build.</strong> Causal but small: Proyer's playfulness intervention. Solid but correlational: playfulness↔life-satisfaction; laughter's daily stress-buffering (observational). Framework, not FemWell-specific effect: broaden-and-build, savouring, pure-leisure — present as <em>why this feels good</em>, never as a promise on a card.
+</div>
+
+<h2>2. Board anatomy — fed by the measured content</h2>
+
+<p>Content base: <strong>189 SAFE items</strong> (150 article · 25 podcast · 14 video), tightened to genuine entertainment — ideas and relationships excluded (those are Curious / Kindred). Sub-themes: watch (TV/film) 96 · comedy 51 · pop culture &amp; people 46 · music/joy 24 · play (games) 15.</p>
+<p class="meta">Sub-themes overlap (items carry multiple tags). It is entertainment-journalism-heavy — TV recaps, celebrity, film, Cannes — so shelves are browse-and-read by nature, with 25 podcasts + 14 videos sprinkled, not promised as rooms.</p>
+
+<table>
+<tr><th>Shelf</th><th>Fed by</th><th>Why she returns — for pure fun</th></tr>
+<tr><td><strong>Something to watch</strong><br><span class="pill">96</span></td><td>The dominant pool — TV/film journalism, recaps, "what to watch", comfort-telly writing.</td><td>The default open, and the answer to "I've got an hour and the menu's paralysing me." Permission to pick the daft, cosy, "trash" thing with no apology.</td></tr>
+<tr><td><strong>A good laugh</strong><br><span class="pill">51</span></td><td>Comedy writing, stand-up, funny people, the reliably-silly.</td><td>The quickest hit of joy. Comes in when she wants to feel lighter <em>right now</em> — the in-card clip or read that actually makes her smile.</td></tr>
+<tr><td><strong>Pop culture &amp; gossip</strong><br><span class="pill">46</span></td><td>Celebrity, red carpet, "who wore what", the harmless nose-at-it.</td><td>"Harmless gossip" is a named FemWell life-domain — joyful venting and delicious low-stakes chatter, <em>not</em> cruelty. Research frames gossip as social grooming and entertainment, a bonding function <span class="src">(<a href="https://allegatifac.unipv.it/ziorufus/Dunbar%20gossip.pdf">Dunbar</a>; <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC12225781/">Gossip Functions 2024</a>).</span> The "did you SEE" pleasure, shared.</td></tr>
+<tr><td><strong>Music &amp; joy</strong><br><span class="pill">24</span></td><td>Music writing, feel-good tracks, "songs to blast".</td><td>The mood-lifter with your hands free. Modest pool — cross-cut with podcasts, not a standalone room. <em>Flag: thinnest content shelf.</em></td></tr>
+<tr><td><strong>To play</strong><br><span class="pill">→ Community</strong></td><td>NOT the content pool (only 15 items, starved). Deep-links to FemWell's own <strong>Community arcade / games</strong>.</td><td>Play is inherently interactive — a content shelf can't deliver it. Route her to the real thing: the anonymous, joyful games room she can actually play in. <em>Flag: hard-wire to Community, do not build a games content shelf.</em></td></tr>
+</table>
+
+<div class="flag">
+<strong>Content gaps to flag (before build):</strong>
+<ul>
+<li><strong>"To play" has no viable content pool (15).</strong> Do not fake a shelf — deep-link to Community arcade. This is a design decision, not a content ask.</li>
+<li><strong>Video is thin (14) and cross-cut</strong> — sprinkle inline players into Watch / Laugh, don't promise a "video room".</li>
+<li><strong>Music &amp; joy (24) is the thinnest real shelf</strong> — viable, but weight "surprise me" and the daily joyful thing slightly toward it so it isn't empty on repeat visits.</li>
+<li><strong>The daily "one joyful thing" is a real item's own title/hook, not bespoke microcopy.</strong> Accept item-titles-as-hooks (cheap, honest) or flag a small copy pass for ~30 rotating one-liners. Recommend starting with item-titles, as with Curious.</li>
+<li><strong>The pool is journalism-heavy (150/189 articles).</strong> It reads well but is light on the <em>live/participatory</em> joy of fun — which is precisely why Community (games, "what are you watching" room) and Events (gigs, comedy nights) carry the doing.</li>
+</ul>
+</div>
+
+<h2>3. Whole-life + cross-surface</h2>
+<p>Delight is a <em>room in the house, wired to every other room</em> — never health-only, per the whole-life rule.</p>
+
+<table>
+<tr><th>Surface</th><th>Delight's role</th></tr>
+<tr><td><strong>Today</strong></td><td>The daily "one purely joyful thing" lands as one gentle card — an invitation, dismissible, never a to-do and never a streak.</td></tr>
+<tr><td><strong>Journal</strong></td><td>"Savour it" — a light seed capturing a moment of joy ("this made me laugh today"). Directly enacts the savouring evidence; no gratitude-homework framing.</td></tr>
+<tr><td><strong>Community</strong></td><td>The doing-together home: the <strong>games / arcade room</strong> (where "to play" lands) and a <strong>"what are you watching?"</strong> room — anonymous, low-stakes, joyful. Gossip-as-fun lives here too, kindly moderated.</td></tr>
+<tr><td><strong>Nutrition</strong></td><td>The <strong>food-as-joy</strong> edge — a genuinely lovely thing to eat/drink for pleasure. Firewalled from diet-culture: <em>no</em> "treat you've earned", "cheat day", "guilt-free". Just: this is delicious, enjoy it.</td></tr>
+<tr><td><strong>Lifestyle</strong></td><td>Home surface. Delight is a sibling of Read / Listen / Daily Story / Horoscope — the "joy &amp; fun" doorway within Lifestyle.</td></tr>
+<tr><td><strong>Health</strong></td><td>Deliberate firewall: no symptom/tracking framing. Delight borrows nothing clinical — the one place in the app where the body isn't the subject.</td></tr>
+<tr><td><strong>Pulse / Trends / Insights</strong></td><td>A soft, non-judgemental mirror: "you had a proper laugh 5 times this month" — a reflection of joy, never a scorecard or a streak to protect.</td></tr>
+<tr><td><strong>Planner</strong></td><td>Optional "book joy in" — actually schedule the gig, the film night, the nothing-useful Sunday. Fun as a real appointment, framed as a treat, not a task.</td></tr>
+<tr><td><strong>Profile</strong></td><td>Life-stage phase gently <em>tints</em> defaults (cosier picks in later luteal; nothing gated). Delight is the most stage-agnostic board — joy belongs to everyone equally.</td></tr>
+<tr><td><strong>Jess</strong></td><td>The killer companion move: <strong>"make me laugh"</strong> and <strong>"recommend me something fun"</strong> — Jess as the friend with great taste and no agenda. Never "you should really…", never productivity nudges.</td></tr>
+<tr><td><strong>Events</strong></td><td>Gigs, comedy nights, club nights, a singalong screening, a quiz — UK-local joy out in the world. The participatory fun the content pool can't give.</td></tr>
+<tr><td><strong>Deals</strong></td><td>Cinema tickets, a streaming month, gig tickets, board games — framed as treats to enjoy, never "invest in yourself".</td></tr>
+</table>
+
+<h2>4. Tone + anti-patterns</h2>
+<p>Warm smart-friend, UK English, £, no emoji, inclusive. Joy is not a reward for the productive or the well-behaved — it belongs to everyone, on any kind of day.</p>
+
+<div class="card crimson">
+<strong>Hard denies (this board's diet-culture equivalent — reinforce the existing denylist):</strong>
+<ul>
+<li><span class="deny">Guilt framing</span> — "guilty pleasure", "guilt-free". Both imply joy needs absolving. Deny even the <em>reassuring</em> use of "guilt-free": naming guilt plants it.</li>
+<li><span class="deny">Productive relaxation</span> — "recharge to perform", "rest so you can…", "self-care so you're a better mum", fun-as-a-wellness-tool. Any "so that…" attached to fun.</li>
+<li><span class="deny">FOMO / completionism</span> — "must-watch", "you NEED to see this", "binge the entire", "keep up", "before it leaves". No finishing bars, no catch-up pressure.</li>
+<li><span class="deny">Consumption-as-status</span> — "everyone's obsessed", "iconic must-have", the thing you're lesser for not having seen.</li>
+<li><span class="deny">Diet-culture on food-joy</span> — "treat you've earned", "cheat day", "guilt-free", "you deserve it (because you were good)". Food-joy needs no ledger.</li>
+</ul>
+</div>
+
+<div class="card sage">
+<strong>Positive reframes (what the copy DOES say):</strong>
+<ul>
+<li><span class="yes">Joy needs no reason.</span> No payoff, no productivity, nothing owed after.</li>
+<li><span class="yes">Watch the "trash" telly.</span> Comfort-watching is a perfectly good way to spend an evening — full stop.</li>
+<li><span class="yes">Gossip as harmless fun.</span> A delicious nose at pop culture — bonding and light, never cruelty.</li>
+<li><span class="yes">Permission to do nothing useful.</span> An hour that produces nothing is not wasted. It was fun. That's the whole point.</li>
+<li><span class="yes">Enjoy the food because it's lovely.</span> No earning it, no making up for it.</li>
+</ul>
+</div>
+<p class="meta">Reuse the Track C content-safety pattern: extend the denylist to check <em>title + subtitle + summary + excerpt + tags + category</em> for the terms above (incl. "guilty pleasure", "guilt-free", "must-watch", "binge", "cheat day", "you deserve"), verify live that zero bad-tone text leaks, then tighten. Delight's gate targets guilt / completionist / status / diet-culture language.</p>
+
+<h2>5. Competitive scan</h2>
+<p class="meta">Positioning verified via fresh fetch/search, 22 July 2026.</p>
+<table>
+<tr><th>Product</th><th>How it frames entertainment</th><th>Anti-pattern it embodies</th></tr>
+<tr><td><strong>TV Time</strong><br><span class="meta">(shut down Jul 2026)</span></td><td>Mark every episode watched; all-time stats, streaks, badges, character voting; ~26M installs.</td><td>The collector/completionist engine — joy converted into a tracked backlog. Its shutdown stranded millions mid-collection. <span class="src"><a href="https://www.achriom.com/blog/best-tv-tracking-apps/">Achriom 2026</a></span></td></tr>
+<tr><td><strong>Trakt / Hobi / Serializd / Simkl</strong></td><td>The successor trackers: automatic scrobbling, "episodes watched", "time spent", streaks, season reviews.</td><td>Same completionism, more precise. Hobi headlines "streaks" and "time spent" as features. <span class="src"><a href="https://hobiapp.com/blog/best-tv-show-tracker-apps">Hobi 2026</a></span></td></tr>
+<tr><td><strong>Letterboxd</strong></td><td>Film diary, lists, ratings, social feed — the collector-diarist's home for film.</td><td>Beautiful, but built around logging/rating/curating a public record — the watch becomes an entry. <span class="src"><a href="https://en.uptodown.com/android/tv-movie-trackers">tracker landscape</a></span></td></tr>
+<tr><td><strong>JustWatch / Reelgood</strong></td><td>Streaming aggregators — "where to watch", combined watchlists, and Reelgood's "roulette" to beat decision fatigue.</td><td>Closest to our "surprise me" — but pure utility (find/aggregate), no warmth, no permission, no whole-life context. <span class="src"><a href="https://www.justwatch.com/">JustWatch</a>; <a href="https://data.reelgood.com/how-reelgood-is-putting-an-end-to-decision-fatigue/">Reelgood</a></span></td></tr>
+<tr><td><strong>Wellness apps</strong><br>(Calm, Headspace, Finch, Fabulous)</td><td>Calm/mood/habit. "Fun" only ever appears as <em>self-care to recover and perform</em> — productive relaxation.</td><td>The exact firewall we refuse. No joy-for-its-own-sake surface exists in wellness.</td></tr>
+</table>
+
+<div class="card plum">
+<strong>The white space FemWell owns.</strong> Every entertainment app turns joy into a <em>collection</em> (watched-lists, streaks, ratings, badges) or a <em>utility</em> (where-to-watch). Every wellness app turns fun into <em>productive recovery</em>. <strong>No one offers entertainment as pure permission — non-completionist, non-optimising, unscored — inside a woman's whole-life context.</strong> Delight is the only board where the correct outcome is "she watched the daft thing, had a laugh, and nothing was logged or owed." That is the moat: <em>joy without a ledger.</em></p>
+</div>
+
+<h2>Recommended next step (for Mr Lead Manager)</h2>
+<ul>
+<li>Spec a single board that self-loads real entertainment LifestyleItems (ideas/relationships excluded) + UserProfile phase — <strong>no new entity/function</strong>, per Mirror/Move/Kindred/Curious.</li>
+<li>Signature top: the <strong>"what do you fancy?" picker</strong> (something to watch · a good laugh · pop culture &amp; gossip · to play · <em>surprise me</em>) + a <strong>daily "one purely joyful thing"</strong> card.</li>
+<li>Shelves per §2; <strong>hard-wire "to play" to the Community arcade</strong> (do not build a games content shelf on 15 items); weight "surprise me"/daily toward the thin Music pool (24).</li>
+<li>Extend the content-safety denylist to guilt / completionist / status / diet-culture language; live-verify zero leaks before ship.</li>
+<li>Resolve the content flags (item-titles-as-hooks vs a small copy pass; video/music treated as cross-cut, not rooms).</li>
+<li>Wire the cross-surface roles in §3 — especially Jess's "make me laugh / recommend me something fun", the Community "what are you watching?" + arcade rooms, and Events for real-world joy.</li>
+<li>Link the demo into FoundersOS Ideas (IDEAS pill) the same session, per the standing delivery rule.</li>
+</ul>
+
+<hr>
+<p class="src"><strong>Sources (all fetched 22/07/2026):</strong>
+<a href="https://www.frontiersin.org/journals/psychology/articles/10.3389/fpsyg.2018.01440/full">Proyer, playfulness &amp; health (Frontiers 2018)</a> ·
+<a href="https://www.researchgate.net/publication/254256930_The_well-being_of_playful_adults_Adult_playfulness_subjective_well-being_physical_well-being_and_the_pursuit_of_enjoyable_activities">Proyer et al, well-being of playful adults</a> ·
+<a href="https://iaap-journals.onlinelibrary.wiley.com/doi/full/10.1111/aphw.12220">Proyer, playfulness intervention RCT (2021)</a> ·
+<a href="https://positivepsychology.com/broaden-build-theory/">Broaden-and-build overview</a> ·
+<a href="https://peplab.web.unc.edu/wp-content/uploads/sites/18901/2018/11/fredricksonampsyc2001.pdf">Fredrickson 2001 (PDF)</a> ·
+<a href="https://positivepsychology.com/savoring/">Savouring (positive psychology)</a> ·
+<a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC8712667/">Savoring review (PMC 2021)</a> ·
+<a href="https://digitalcommons.unomaha.edu/cgi/viewcontent.cgi?article=1298&context=psychfacpub">Importance of leisure for SWB</a> ·
+<a href="https://link.springer.com/article/10.1007/s12646-015-0327-5">Leisure motivation &amp; well-being (2015)</a> ·
+<a href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC7347187/">Laughter stress-buffering (PMC 2020)</a> ·
+<a href="https://journals.physiology.org/doi/full/10.1152/advan.00030.2017">Humour &amp; health review (2017)</a> ·
+<a href="https://allegatifac.unipv.it/ziorufus/Dunbar%20gossip.pdf">Dunbar, gossip as social grooming</a> ·
+<a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC12225781/">Gossip Functions Questionnaire (2024)</a> ·
+<a href="https://www.achriom.com/blog/best-tv-tracking-apps/">TV Time shutdown / trackers (Achriom 2026)</a> ·
+<a href="https://hobiapp.com/blog/best-tv-show-tracker-apps">Best TV trackers (Hobi 2026)</a> ·
+<a href="https://www.justwatch.com/">JustWatch</a> ·
+<a href="https://data.reelgood.com/how-reelgood-is-putting-an-end-to-decision-fatigue/">Reelgood / decision fatigue</a>.
+</p>
+
+</div>
+</body>
+</html>

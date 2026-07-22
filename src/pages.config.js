@@ -99,6 +99,7 @@ import Mirror from './pages/Mirror';
 import Move from './pages/Move';
 import Kindred from './pages/Kindred';
 import Curious from './pages/Curious';
+import Delight from './pages/Delight';
 import BookReader from './pages/BookReader';
 import FictionReader from './pages/FictionReader';
 import Track from './pages/Track';
@@ -354,6 +355,7 @@ export const PAGES = {
     "Move": Move,
     "Kindred": Kindred,
     "Curious": Curious,
+    "Delight": Delight,
     "BookReader": BookReader,
     "FictionReader": FictionReader,
     "Track": Track,
