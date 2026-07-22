@@ -98,6 +98,7 @@ import WatchListen from './pages/WatchListen';
 import Mirror from './pages/Mirror';
 import Move from './pages/Move';
 import Kindred from './pages/Kindred';
+import Curious from './pages/Curious';
 import BookReader from './pages/BookReader';
 import FictionReader from './pages/FictionReader';
 import Track from './pages/Track';
@@ -352,6 +353,7 @@ export const PAGES = {
     "Mirror": Mirror,
     "Move": Move,
     "Kindred": Kindred,
+    "Curious": Curious,
     "BookReader": BookReader,
     "FictionReader": FictionReader,
     "Track": Track,
