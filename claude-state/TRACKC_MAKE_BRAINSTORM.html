@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MAKE — Track C Board #9 — Research + Brainstorm</title>
+<style>
+  :root{
+    --paper:#ECE7DA; --paperHi:#F4EFE3; --paperDeep:#D8CFBC;
+    --ink:#0B0805; --muted:#2E261B; --gold:#A8893F; --crimson:#BC2E27;
+    --sage:#8FAF8F; --plum:#8E6E8E;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0; background:var(--paper); color:var(--ink);
+    font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+    font-size:17px; line-height:1.62; -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:680px; margin:0 auto; padding:28px 20px 96px}
+  h1,h2,h3{font-family:'Fraunces',Georgia,'Times New Roman',serif; font-weight:600; line-height:1.15; letter-spacing:-0.01em}
+  h1{font-size:34px; margin:8px 0 4px}
+  h2{font-size:25px; margin:40px 0 6px; color:var(--muted)}
+  h3{font-size:20px; margin:26px 0 4px}
+  .kicker{font-family:'Inter',sans-serif; text-transform:uppercase; letter-spacing:.16em; font-size:12px; color:var(--gold); font-weight:600}
+  .lede{font-size:19px; color:var(--muted); margin:10px 0 4px}
+  p{margin:10px 0}
+  a{color:var(--crimson); text-decoration:none; border-bottom:1px solid rgba(188,46,39,.28)}
+  hr{border:0; border-top:1px solid var(--paperDeep); margin:26px 0}
+  .card{background:var(--paperHi); border:1px solid var(--paperDeep); border-radius:16px; padding:16px 18px; margin:16px 0}
+  .card.crimson{border-left:4px solid var(--crimson)}
+  .card.gold{border-left:4px solid var(--gold)}
+  .card.sage{border-left:4px solid var(--sage)}
+  .card.plum{border-left:4px solid var(--plum)}
+  ul,ol{margin:8px 0 8px; padding-left:22px}
+  li{margin:6px 0}
+  .pill{display:inline-block; background:var(--paperDeep); color:var(--muted); border-radius:999px; padding:3px 11px; font-size:13px; margin:3px 4px 3px 0; font-weight:500}
+  .pill.hot{background:var(--crimson); color:#fff}
+  table{width:100%; border-collapse:collapse; font-size:14px; margin:12px 0}
+  th,td{text-align:left; padding:9px 8px; border-bottom:1px solid var(--paperDeep); vertical-align:top}
+  th{font-family:'Inter'; text-transform:uppercase; letter-spacing:.08em; font-size:11px; color:var(--gold)}
+  .src{font-size:13px; color:var(--muted)}
+  .src a{border:none}
+  .flag{background:#F7E9C9; border:1px solid var(--gold); border-radius:12px; padding:12px 14px; margin:14px 0; font-size:15px}
+  .deny{color:var(--crimson); font-weight:600}
+  .yes{color:var(--sage); font-weight:600; filter:brightness(.82)}
+  .meta{font-size:13px; color:var(--muted); margin-top:2px}
+  blockquote{margin:12px 0; padding:8px 16px; border-left:3px solid var(--gold); color:var(--muted); font-style:italic}
+  code{background:var(--paperDeep); padding:1px 6px; border-radius:6px; font-size:14px}
+  .ritual{background:var(--paperHi); border:1px dashed var(--gold); border-radius:12px; padding:6px 14px; margin:6px 0; font-size:15.5px; color:var(--muted)}
+  .strong-lab{display:inline-block; background:var(--sage); color:#12200f; border-radius:6px; padding:1px 8px; font-size:11px; font-weight:700; letter-spacing:.04em; text-transform:uppercase; filter:brightness(1.05)}
+  .weak-lab{display:inline-block; background:var(--crimson); color:#fff; border-radius:6px; padding:1px 8px; font-size:11px; font-weight:700; letter-spacing:.04em; text-transform:uppercase}
+  .mod-lab{display:inline-block; background:var(--gold); color:#241a05; border-radius:6px; padding:1px 8px; font-size:11px; font-weight:700; letter-spacing:.04em; text-transform:uppercase}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<div class="kicker">Track C — whole-life domain board #9 · Ms Deep Search</div>
+<h1>MAKE</h1>
+<p class="lede">Making things with your hands for the <em>pleasure</em> of it — creativity, crafting, doing. Badly is allowed. Finishing is optional. No one has to see it. It doesn't have to be good, useful or sellable. <strong>Process over product; permission to be a beginner forever.</strong></p>
+<p class="meta">Researched 25 July 2026 (en-GB). Method: measured content base + fresh web-fetched studies and competitor pages. Follows the Mirror / Move / Kindred / Curious / Delight / Nest / Tonight / Outside pattern (picker + per-board content-safety denylist + real self-loaded content, no new entity/function). <strong>This is the LEANEST board of the whole track — the confirmed craft/creativity content pool is ~5–10 real items (craft 4, knit 0). Flagged honestly throughout. The prompt spine is the engine, and Mx Storyteller owns it — this doc is the cited science, anti-patterns, competitive scan and light framing, NOT the prompts.</strong></p>
+
+<div class="card crimson">
+<strong>The defining principle.</strong> Make is creativity as <strong>pleasure and absorption</strong>, never as self-improvement, output or a side-hustle. The correct outcome of a Make visit: <em>she made something — a doodle, a clumsy stitch, a paper aeroplane, a bad little poem — for no reason, and it didn't have to be good, finished, or seen by anyone.</em> This board's line in the sand is doubled: <strong>perfectionism</strong> ("get good", master, before/after) on one side and <strong>monetisation</strong> ("turn your hobby into a side-hustle", sell on Etsy) on the other. Both are the wolf. The whole creative-app industry runs on exactly these two engines (§5). Make refuses both at the root: a biro and an envelope is enough, and the making <em>is</em> the point.
+</div>
+
+<h2>1. The science — is making-for-its-own-sake genuinely good for us?</h2>
+<p>Short answer: yes, with real evidence for the <em>process</em>, and — crucially — with the strongest single finding being that it works <strong>regardless of skill</strong>. That is the scientific permission to be bad at it. Labelled honestly by strength below.</p>
+
+<ul>
+<li><span class="strong-lab">Strong (the keystone)</span> <strong>45 minutes of art-making lowered cortisol — and prior skill made no difference.</strong> Kaimal, Ray &amp; Muniz (2016, <em>Art Therapy</em>) had 39 adults (18–59) make art for 45 minutes with markers, clay and collage — no instructions, no brief, make whatever you like. Salivary cortisol was measured before and after: <strong>75% of participants showed lowered cortisol</strong>, and — the finding this whole board rests on — <strong>there was no correlation between prior art experience and the drop</strong>. Skill did not matter. Kaimal: "everyone is creative and can be expressive in the visual arts when working in a supportive setting." <span class="src">(source: <a href="https://www.tandfonline.com/doi/full/10.1080/07421656.2016.1166832">Kaimal et al., <em>Art Therapy</em> 2016</a>; <a href="https://drexel.edu/news/archive/2016/june/art_hormone_levels_lower">Drexel summary</a>, fetched 25/07/26).</span> <em>Honesty label: small (n=39), no inactive control, within-subject — so "making art tends to calm the body," not a dose-response cure. But the no-skill-correlation result is robust to those limits and is the exact evidence we need: you do not have to be good for it to do you good.</em>
+<div class="meta">Note on the brief: this landmark "no skill needed" study is <strong>Kaimal, Ray &amp; Muniz (2016)</strong>, not "Kaufman/Bell" — corrected and cited to source.</div></li>
+
+<li><span class="mod-lab">Plausible / mechanism</span> <strong>Flow explains <em>why</em> making absorbs.</strong> Csikszentmihályi's flow — full absorption, merging of action and awareness, loss of self-consciousness, the distortion of time — is by definition <em>autotelic</em>: "a self-contained activity, one that is done not with the expectation of some future benefit, but simply because the doing itself is the reward." That sentence is Make's entire thesis in academic form. A 2022 scoping review maps flow's link to wellbeing across domains. <span class="src">(source: <a href="https://positivepsychology.com/mihaly-csikszentmihalyi-father-of-flow/">Csikszentmihályi &amp; autotelic activity overview</a>; <a href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC9022035/">Scoping review of flow research, <em>Frontiers in Psychology</em> 2022</a>, fetched 25/07/26).</span> <em>Honesty label: flow is a well-established construct with a large literature, but it's a mechanism/description, not proof that any given craft "improves" you. We use it to say making absorbs and quiets the self — not to promise an outcome.</em></li>
+
+<li><span class="mod-lab">Growing</span> <strong>Everyday creativity predicts next-day flourishing — and the arrow points one way.</strong> Conner, DeYoung &amp; Silvia (2018, <em>Journal of Positive Psychology</em>) ran a 13-day daily-diary study of 658 young adults. On days people did <em>more</em> creative activity than usual, they reported higher activated positive affect and flourishing <strong>the next day</strong> — and the reverse (feeling good → more creativity) was <em>not</em> supported. So the everyday creative act appears to <em>lead</em> wellbeing, not merely follow a good mood. <span class="src">(source: <a href="https://www.tandfonline.com/doi/abs/10.1080/17439760.2016.1257049">Conner, DeYoung &amp; Silvia, "Everyday creative activity as a path to flourishing," <em>J. Positive Psychology</em> 2018</a>, fetched 25/07/26).</span> <em>Honesty label: a strong design (lagged, directional) but a young-adult sample and self-report; "everyday" ordinary creativity, explicitly not talent. This is the best evidence that small, un-serious making genuinely feeds wellbeing.</em></li>
+
+<li><span class="mod-lab">Framework</span> <strong>Behavioural activation — doing precedes feeling.</strong> A core, evidence-based principle in depression treatment is that engaging in valued, pleasurable, absorbing activity lifts mood, and waiting to "feel like it" first keeps you stuck. Making something small is a textbook behavioural-activation move: low-stakes, do-able, intrinsically rewarding. <em>Honesty label: BA is well-evidenced <strong>as a therapy</strong>; we borrow the principle (start, and the mood follows) as framing, never as a claim that crafting treats depression. If it's clinical, it's Health's, not Make's (§3).</em></li>
+
+<li><span class="weak-lab">Soft / observational</span> <strong>Crafters report they feel better — but it's survey data.</strong> Riley, Corkhill &amp; Morris (2013, <em>British Journal of Occupational Therapy</em>) surveyed 3,545 knitters: <strong>81% reported feeling happier</strong> and frequent knitters more often felt calm and happy; a 2026 textile-craft-and-wellbeing review echoes the "deeply focused, lost the distractions, calm and serene" theme. <span class="src">(source: <a href="https://journals.sagepub.com/doi/10.4276/030802213X13603244419077">Riley et al., <em>Br. J. Occupational Therapy</em> 2013</a>; <a href="https://www.tandfonline.com/doi/full/10.1080/14759756.2026.2629438">Crafting Wellbeing review 2026</a>, fetched 25/07/26).</span> <em>Honesty label: self-selected (people recruited from a knitting site — already fans), cross-sectional, no control — this is "crafters love crafting," lovely but weak. Real signal, weak proof.</em></li>
+
+<li><span class="weak-lab">Big but soft</span> <strong>The WHO's arts-and-health evidence base is vast — and honestly mixed.</strong> Fancourt &amp; Finn's WHO scoping review (2019, HEN Synthesis Report 67) mapped 900+ publications and 200+ reviews covering 3,000+ studies, concluding the arts play a role across prevention, promotion and treatment of illness across the lifespan. <span class="src">(source: <a href="https://www.ncbi.nlm.nih.gov/books/NBK553773/">Fancourt &amp; Finn, WHO HEN Report 67, 2019</a>; <a href="https://pubmed.ncbi.nlm.nih.gov/32091683/">PubMed 32091683</a>, fetched 25/07/26).</span> <em>Honesty label: a scoping review deliberately maps breadth, not proves cause — much of the underlying evidence is observational and heterogeneous, and the report says so. Use it to say "the arts and wellbeing are seriously, widely linked," never "the arts will fix you."</em></li>
+</ul>
+
+<div class="flag">
+<strong>Firewall — the science says process, so we say process.</strong> Every genuine finding above is about the <em>act</em> of making, in the moment or the next day, at <em>any</em> skill level (Kaimal), for its <em>own</em> sake (flow/autotelic), as ordinary everyday creativity (Conner). <strong>Nothing here supports "get good," "unlock your potential," "become more creative," or "monetise it."</strong> The evidence is the opposite: the benefit held for people with no art experience, and evaporates the moment making becomes a performance with a grade or a price. So Make's copy stays in the register the science actually supports — <em>making is good for you NOW because it's absorbing and pleasurable</em> — and never smuggles in self-improvement or output. The Kaimal no-skill result is our permission slip; print it on the wall.
+</div>
+
+<h2>2. Board anatomy — the leanest board, honestly</h2>
+
+<div class="flag">
+<strong>Honest content reality (build to this).</strong> The confirmed hands-on craft/creativity pool is <strong>~5–10 genuine items (craft 4, knit 0)</strong>. The rest of the raw pool that clusters near "creativity" is <em>fashion, grief and food</em> — off-domain for Make. So there is <strong>no shelf to lean on</strong>. This is the leanest board on Track C by a distance: it is <strong>a prompt spine with a tiny shelf clipped to it and a Community door</strong> — not a content room. Do not fake depth; do not pad with fashion/food/grief to look full. The engine is <strong>Mx Storyteller's "make something" prompt spine</strong> — this doc does not write it. Ms Deep Search's job here is the science firewall (§1), the tone denylist (§4) and the framing below.
+</div>
+
+<table>
+<tr><th>Element</th><th>Fed by</th><th>Why she returns</th></tr>
+<tr><td><strong>The "make something" prompt spine</strong><br><span class="pill hot">editorial · the engine · Mx Storyteller owns</span></td><td>A rotating pool of tiny, silly, no-kit making invitations — authored by Mx Storyteller, not here. Cheap, endlessly re-servable, no new entity. Rooted in §1: no skill needed, process not product, five-minute absorption.</td><td>The whole reason to come back. Always a small doable thing <em>today</em>, with what's already on the table — a biro, an envelope, a scrap. This is Make's answer to Move's "movement snack" and Outside's "get outside" nudge. It carries the board single-handed.</td></tr>
+<tr><td><strong>"Things to make &amp; makers" shelf</strong><br><span class="pill">~5–10 items · tiny</span></td><td>The handful of genuine craft/creativity LifestyleItems that actually exist, hand-filtered for tone. Self-loaded. Small on purpose — and honestly small.</td><td>Something to read or try when the nudge lands. Treated as a <em>modest side-shelf</em>, never the main event. If it reads thin, that's honest — the spine is the engine, not this.</td></tr>
+<tr><td><strong>"What are you making?" — Community door</strong><br><span class="pill">deep-link · the honest live lever</span></td><td>A deep-link into a Community maker room — process shots, half-finished things, "made this badly and I love it", "what's everyone making this week?". No new surface; the one genuinely refreshing feed on the board.</td><td>Because the shelf can't refresh and the spine is finite, <strong>Community is the board's living pulse</strong> — other women's clumsy, joyful, unfinished making. Anti-flex by design: the wonkier the better. This is the compensating strength for the thin shelf.</td></tr>
+</table>
+
+<div class="card gold">
+<h3 style="margin-top:2px">Suggested picker — "What do you fancy making?" (frame for Mr Lead Manager)</h3>
+<p>The signature control in the family of the earlier boards, tuned to <em>pleasure and no-kit</em>, never medium-as-skill-tier:</p>
+<span class="pill">make with your hands</span><span class="pill">make with words</span><span class="pill">make something silly</span><span class="pill">just ten minutes</span><span class="pill">make with what's here</span><span class="pill hot">surprise me</span>
+<p style="margin-top:10px">"Just ten minutes" is the floor — the lowest bar, for the tired and the busy. "Make with what's here" is the anti-gatekeeping promise made literal (a biro, an envelope, a scrap of foil). "Surprise me" pulls one thing from the whole safe pool. No completion, no streak, no gallery, no score, no "finished" state. Final wording of the prompts themselves is Mx Storyteller's.</p>
+</div>
+
+<h2>3. Whole-life + cross-surface</h2>
+<p>Make is <em>the door to doing-with-your-hands, wired into every other room</em> — pleasure and absorption, never a skill ladder and never a clinical intervention (Health owns art-therapy-as-treatment; Pulse owns nothing here at all).</p>
+
+<table>
+<tr><th>Surface</th><th>Make's role</th></tr>
+<tr><td><strong>Today</strong></td><td>One gentle <strong>"make something" card</strong> from the spine — a single tiny invitation, dismissible, never a to-do, never a streak, never "you didn't make anything today".</td></tr>
+<tr><td><strong>Journal</strong></td><td><strong>The place to make with words.</strong> Journal is Make's biggest natural ally — a bad little poem, a list of six ridiculous things, a paragraph nobody will read. Making, not logging. "Write something badly on purpose" lives beautifully here.</td></tr>
+<tr><td><strong>Community</strong></td><td><strong>The live engine (§2).</strong> A "what are you making?" maker room — process over product, half-finished things celebrated, zero critique culture. The compensating strength for the thin shelf; the wonkier the better.</td></tr>
+<tr><td><strong>Nutrition</strong></td><td>Light, joy-only touch: making as <em>play with food</em> — decorating a wonky cake, a silly sandwich, potato-stamp biscuits — never "healthy", never a recipe to nail. Making, not nutrition. Keep it firmly on the pleasure side.</td></tr>
+<tr><td><strong>Lifestyle</strong></td><td>Home surface. Make is a sibling of Read / Listen / Daily Story / Horoscope, self-loading Lifestyle's few real craft items as its tiny shelf. Lifestyle owns the library; Make is the doorway to the (small) making corner of it.</td></tr>
+<tr><td><strong>Health</strong></td><td><strong>Deliberate firewall / handoff.</strong> Anything clinical — art therapy as treatment, making as a prescribed intervention for depression/anxiety — is Health's, softly signposted. Make is pleasure, never prescription. It never says "craft to cure your anxiety".</td></tr>
+<tr><td><strong>Pulse / Trends / Insights</strong></td><td><strong>The hard firewall — Make gets NO tracking, ever.</strong> No "creativity streak", no "things made this month", no projects-finished count, no medium-mastery progress bar. Counting is the death of making-for-pleasure. At most a soft, non-numeric echo elsewhere; Pulse itself stays silent on Make.</td></tr>
+<tr><td><strong>Planner</strong></td><td><strong>"An hour to make something"</strong> — a real, bookable, no-pressure pocket of time: a Sunday-afternoon mess-about, a ten-minute doodle before bed. A treat in the diary, framed as play, never a project deadline or a "practice" block.</td></tr>
+<tr><td><strong>Profile</strong></td><td>Life-stage gently <em>tints</em> the spine (gentler, one-handed, five-minute making in postpartum; tactile calm in perimenopause) — never gated by ability, budget or "artistic type". The "make with what's here" floor is always available.</td></tr>
+<tr><td><strong>Jess</strong></td><td>The companion move, and a strong one: <strong>"give me something silly to make in ten minutes"</strong>, <strong>"I've only got a biro and an envelope — what can I make?"</strong>, <strong>"talk me out of needing it to be good"</strong>. Jess as the friend who hands you a daft idea and zero expectations.</td></tr>
+<tr><td><strong>Events</strong></td><td><strong>A live deep-link.</strong> Classes and workshops — a pottery taster, a life-drawing evening, a knit-and-natter, a collage night — framed as <em>a lovely couple of hours</em>, never "learn a skill" or "level up". Making as company, in the world. A second refreshing lever alongside Community.</td></tr>
+<tr><td><strong>Deals</strong></td><td>Tiny, low-cost enablers only — a pad of paper, a set of £2 felt-tips, a ball of wool, air-dry clay — framed as <em>ways to play</em>, explicitly cheap-first, never "invest in proper supplies" and never a haul. A biro is enough; this is a bonus, not a prerequisite.</td></tr>
+</table>
+
+<h2>4. Tone + anti-patterns</h2>
+<p>Warm smart-friend, UK English, £, no emoji, radically inclusive on <strong>skill and cost</strong>. The register is invitation and permission, never instruction, aspiration or "you should be more creative". Assume the reader thinks she "isn't creative", "can't draw", has no supplies, no time and no talent — and make her feel making is fully hers on those terms. A biro and an envelope is enough.</p>
+
+<div class="card crimson">
+<strong>Hard denies (per-board denylist — screen title + subtitle + summary + excerpt + tags + category):</strong>
+<ul>
+<li><span class="deny">Monetisation / side-hustle.</span> No "monetise your craft", "turn your hobby into income", "sell on Etsy", "start a creative business", "profitable crafts", "side-hustle". The moment making has a price it stops being for pleasure.</li>
+<li><span class="deny">Perfectionism / mastery.</span> No "get good at", "master", "level up", "improve your technique", "before &amp; after", "beginner → pro", "10 mistakes to avoid", "how to draw <em>properly</em>". Badly is allowed; beginner forever is the goal.</li>
+<li><span class="deny">Creativity-as-self-improvement.</span> No "you should be more creative", "unlock your creative potential", "creativity is a skill you can build", "become a more creative person". Making is not a self-optimisation project.</li>
+<li><span class="deny">Productivity / outcome framing.</span> No "finish your project", "be more productive", "make something useful", "declutter your craft stash and get organised", results/output language. Finishing is optional; the process is the whole thing.</li>
+<li><span class="deny">Gatekeeping / kit-culture.</span> No "essential supplies", "proper materials", "you'll need…", assumed skill or a studio. A biro, an envelope, a scrap of foil — that's the whole shopping list.</li>
+</ul>
+</div>
+
+<div class="card sage">
+<strong>Positive reframes (what the copy DOES say):</strong>
+<ul>
+<li><span class="yes">Make it badly.</span> On purpose. Wonky is welcome, first-try is fine, ugly counts. The science says skill doesn't matter (§1) — so neither do we.</li>
+<li><span class="yes">Finishing is optional.</span> Abandon it half-done. Make a mess and walk away. There is no "finished", no deadline, no project to complete.</li>
+<li><span class="yes">No one has to see it.</span> This is for you. Bin it, hide it, keep it in a drawer. It doesn't have to be shared, and it definitely doesn't have to be sold.</li>
+<li><span class="yes">Beginner forever.</span> You're allowed to never get good. You can do the same easy thing a hundred times because it's nice. There is no ladder.</li>
+<li><span class="yes">A biro and an envelope is enough.</span> You don't need supplies, a talent, a Pinterest board or a spare room. You need your hands and ten minutes.</li>
+</ul>
+</div>
+<p class="meta">Reuse the Track C content-safety pattern: extend the denylist to the monetisation + perfectionism + self-improvement + productivity + gatekeeping token set — "monetise", "side-hustle", "sell", "Etsy", "profit", "master", "get good", "level up", "before and after", "improve your", "essential supplies", "proper materials", "unlock your potential", "more productive", "finish your project". Verify live that zero perfectionism/monetisation text leaks into the tiny shelf or Community room, then tighten. Make's gate guards two leaks at once: <em>perfectionism</em> and <em>monetisation</em> — the two engines the whole competitive set runs on (§5).</p>
+
+<h2>5. Competitive scan</h2>
+<p class="meta">Positioning verified via fresh fetch/search, 25 July 2026.</p>
+<table>
+<tr><th>Product</th><th>How it frames making</th><th>Anti-pattern it embodies</th></tr>
+<tr><td><strong>Skillshare</strong></td><td>All-you-can-learn subscription (~$99–165/yr), 30,000–35,000+ project-based classes; ~1-hour courses in 10-minute segments so you "quickly apply what you've learned" and finish a project.</td><td><strong>Get good, finish the project.</strong> Making framed as skill acquisition with a deliverable at the end. Lovely for learning; the opposite of "make it badly and abandon it". <span class="src"><a href="https://tinyworkshops.com/skillshare-vs-domestika/">Skillshare vs Domestika 2026</a></span></td></tr>
+<tr><td><strong>Domestika</strong></td><td>Pay-per-course ($10–40, lifetime access) or Plus ($83.88/yr); ~76% of courses in art &amp; design; premium production, taught by professionals, "master the craft".</td><td><strong>Mastery + a purchase per skill.</strong> Making as a course you buy and complete to a professional standard. Skill-tiered, outcome-shaped, product-first. <span class="src"><a href="https://whop.com/blog/domestika-review/">Domestika review 2026</a></span></td></tr>
+<tr><td><strong>Pinterest</strong></td><td>Aspirational visual boards; ~69.5% female audience; high buying intent; creators monetise via affiliate links and it's a top traffic-driver <em>to</em> Etsy shops.</td><td><strong>Aspiration + the gap + the sell.</strong> Always a prettier version of your thing; increasingly a shopfront funnel. The comparison-and-monetise machine Make firewalls out. <span class="src"><a href="https://www.growingyourcraft.com/blog/pinterest-marketing-strategies-for-etsy-sellers">Pinterest for Etsy sellers 2026</a></span></td></tr>
+<tr><td><strong>Etsy</strong></td><td>"The global destination for unique and creative goods" — the handmade marketplace; the whole app is <em>make → list → sell</em>.</td><td><strong>The literal monetisation engine.</strong> Making only exists here as a product with a price and a buyer. The purest form of the side-hustle framing Make denies. <span class="src"><a href="https://www.etsy.com/market/monetize_pinterest">Etsy</a></span></td></tr>
+<tr><td><strong>Wellness apps</strong><br>(Calm, Headspace, habit apps)</td><td>Creativity appears, if at all, as a "mindful colouring" feature or a habit to streak — a calming input, tracked.</td><td><strong>Creativity-as-tracked-wellness-task.</strong> Making reduced to a streak or a mindfulness widget — the counting Make explicitly refuses (Pulse firewall, §3). <span class="src">(category framing)</span></td></tr>
+</table>
+
+<div class="card plum">
+<strong>The white space FemWell owns.</strong> Every creative app frames making as a <em>skill to master</em> (Domestika), a <em>project to finish</em> (Skillshare), an <em>aspiration to chase</em> (Pinterest), or a <em>product to sell</em> (Etsy) — and the wellness apps reduce it to a <em>streak</em>. All five run on the two engines Make bans: <strong>perfectionism and monetisation</strong>. <strong>No one offers making purely for the pleasure of it — badly-is-allowed, finishing-optional, no-one-has-to-see-it, never-sold, never-tracked, and folded into a woman's whole life</strong> (her Journal poem, her ten-minute Jess doodle, her Community "made this badly and I love it", her Planner hour-to-mess-about, an actual class she could reach). Make is the only board where the correct outcome is "she made something for no reason, it wasn't good, she didn't finish it, and no one saw it — and that was the entire point." The moat is precisely the anti-perfectionism, anti-monetisation stance the Kaimal science licenses: <em>making as pleasure and absorption, for everyone, at any skill, forever a beginner.</em>
+</div>
+
+<h2>Recommended next step (for Mr Lead Manager)</h2>
+<ul>
+<li>Spec the <strong>leanest</strong> Track C board — engine is <strong>Mx Storyteller's "make something" prompt spine</strong> (authored separately, not here), backed by the honestly-tiny <strong>~5–10-item shelf</strong> (self-loaded craft LifestyleItems, hand-filtered) and the one live lever, the <strong>Community "what are you making?" deep-link</strong>. <strong>No new entity/function.</strong> Flag the thin content openly; scope and praise it as the smallest, quietest room on the track.</li>
+<li>Signature top: a <strong>"what do you fancy making?" picker</strong> (make with your hands · make with words · make something silly · just ten minutes · make with what's here · surprise me). Floor = "just ten minutes"; the anti-gatekeeping promise = "make with what's here". Final prompt wording is Mx Storyteller's.</li>
+<li>Elements per §2: <strong>prompt spine</strong> (the engine, Mx Storyteller) · <strong>tiny "things to make &amp; makers" shelf</strong> (~5–10) · <strong>Community maker-room deep-link</strong> (the compensating live strength) · plus the <strong>Events</strong> classes/workshops deep-link as a second refreshing lever.</li>
+<li><strong>Guard two leaks.</strong> Extend the content-safety denylist to the perfectionism set AND the monetisation set (§4). Live-verify zero "get good / master / level up / before-and-after / monetise / sell / Etsy / side-hustle / essential supplies" text reaches the shelf or the Community room before ship.</li>
+<li><strong>Firewalls:</strong> <strong>Pulse gets NO creativity streak or tracking, ever</strong>; <strong>Health owns clinical art-therapy</strong> (handoff, not Make). Journal is Make's biggest ally (make with words); Community + Events are the two live levers that offset the thin shelf.</li>
+<li>Print the Kaimal no-skill finding on the wall — it's the scientific permission to be bad at it, and it should shape every line of copy Mx Storyteller writes.</li>
+<li>Link the demo into FoundersOS Ideas (IDEAS pill) the same session, per the standing delivery rule.</li>
+</ul>
+
+<hr>
+<p class="src"><strong>Sources (all fetched 25/07/2026):</strong>
+<a href="https://www.tandfonline.com/doi/full/10.1080/07421656.2016.1166832">Kaimal, Ray &amp; Muniz, cortisol &amp; art-making, no-skill finding (Art Therapy 2016)</a> ·
+<a href="https://drexel.edu/news/archive/2016/june/art_hormone_levels_lower">— Drexel summary</a> ·
+<a href="https://positivepsychology.com/mihaly-csikszentmihalyi-father-of-flow/">Csikszentmihályi &amp; autotelic activity / flow</a> ·
+<a href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC9022035/">Scoping review of flow research (Frontiers 2022)</a> ·
+<a href="https://www.tandfonline.com/doi/abs/10.1080/17439760.2016.1257049">Conner, DeYoung &amp; Silvia, everyday creativity &amp; flourishing (J. Positive Psychology 2018)</a> ·
+<a href="https://journals.sagepub.com/doi/10.4276/030802213X13603244419077">Riley, Corkhill &amp; Morris, knitting &amp; wellbeing (Br. J. Occ. Therapy 2013)</a> ·
+<a href="https://www.tandfonline.com/doi/full/10.1080/14759756.2026.2629438">Crafting Wellbeing: textile craft &amp; wellbeing review (2026)</a> ·
+<a href="https://www.ncbi.nlm.nih.gov/books/NBK553773/">Fancourt &amp; Finn, WHO arts &amp; health scoping review, HEN 67 (2019)</a> ·
+<a href="https://pubmed.ncbi.nlm.nih.gov/32091683/">— PubMed 32091683</a> ·
+<a href="https://tinyworkshops.com/skillshare-vs-domestika/">Skillshare vs Domestika 2026 (pricing/courses)</a> ·
+<a href="https://whop.com/blog/domestika-review/">Domestika review 2026</a> ·
+<a href="https://www.growingyourcraft.com/blog/pinterest-marketing-strategies-for-etsy-sellers">Pinterest for Etsy sellers 2026</a> ·
+<a href="https://www.etsy.com/market/monetize_pinterest">Etsy positioning</a>.
+</p>
+
+</div>
+</body>
+</html>

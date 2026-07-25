@@ -104,6 +104,7 @@ import Nest from './pages/Nest';
 import Tonight from './pages/Tonight';
 import Becoming from './pages/Becoming';
 import Outside from './pages/Outside';
+import Make from './pages/Make';
 import BookReader from './pages/BookReader';
 import FictionReader from './pages/FictionReader';
 import Track from './pages/Track';
@@ -364,6 +365,7 @@ export const PAGES = {
     "Tonight": Tonight,
     "Becoming": Becoming,
     "Outside": Outside,
+    "Make": Make,
     "BookReader": BookReader,
     "FictionReader": FictionReader,
     "Track": Track,
