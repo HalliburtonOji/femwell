@@ -28,7 +28,7 @@
 import { useState, useMemo, useEffect, useRef, useCallback } from "react";
 import {
   BookOpen, Feather, Book, Film, Headphones, Moon, Heart, Sparkles, Sun, Bookmark,
-  Wind, ChevronRight, ChevronLeft, Music2, Compass, Loader, ExternalLink, Clock, Coffee, Sunset, Check, Star, Sprout, Leaf,
+  Wind, ChevronRight, ChevronLeft, Music2, Compass, Loader, ExternalLink, Clock, Coffee, Sunset, Check, Star, Sprout, Leaf, Coins,
 } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import LifestyleMedia from "@/components/lifestyle-elite/LifestyleMedia";
@@ -1398,6 +1398,7 @@ export default function LifestyleEliteShell() {
             { Icon: Sprout, cw: "plum", label: "Becoming", onClick: () => window.location.assign(createPageUrl("Becoming")) },
             { Icon: Leaf, cw: "sage", label: "Outside", onClick: () => window.location.assign(createPageUrl("Outside")) },
             { Icon: Feather, cw: "blush", label: "Make", onClick: () => window.location.assign(createPageUrl("Make")) },
+            { Icon: Coins, cw: "sage", label: "Money", onClick: () => window.location.assign(createPageUrl("Money")) },
             { Icon: Bookmark, cw: "plum", label: "Your saved", onClick: () => jumpTo(5) },
           ]} />
         </div>
