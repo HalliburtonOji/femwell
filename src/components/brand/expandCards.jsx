@@ -750,7 +750,9 @@ export function CoverCard({ item: raw, onOpen, compact = false }) {
           return (
             <div style={{ position: "relative", flex: "1 1 auto", minHeight: 0, overflow: "hidden", marginTop: 1 }}>
               <div style={{ fontFamily: SERIF, fontSize: compact ? 15 : 16, color: T.inkSoft, lineHeight: 1.5 }}>{s}</div>
-              <div aria-hidden style={{ position: "absolute", left: 0, right: 0, bottom: 0, height: 20, background: `linear-gradient(180deg, ${T.paperHi}00, ${T.paperHi}E6)` }} />
+              {/* fade must FULLY hide the half-cut last line — was 20px @ 90% opacity, which left cut
+                  text bleeding through above the footer. Now ~1.8 lines tall, ramping to solid paper. */}
+              <div aria-hidden style={{ position: "absolute", left: 0, right: 0, bottom: 0, height: 56, background: `linear-gradient(180deg, ${T.paperHi}00 0%, ${T.paperHi} 62%)` }} />
             </div>
           );
         })()}

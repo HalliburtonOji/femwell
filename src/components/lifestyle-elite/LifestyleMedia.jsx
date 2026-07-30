@@ -121,7 +121,8 @@ function AudioPlayer({ item, accent }) {
             style={{ width: "100%", accentColor: accent, cursor: "pointer", margin: 0 }} />
           <div style={{ display: "flex", justifyContent: "space-between", fontFamily: UI, fontSize: 11, color: T.muted, marginTop: 1 }}>
             <span>{fmt(cur)}</span>
-            <span>{item?.duration_label || fmt(dur)}</span>
+            {/* never show a raw-seconds duration_label like "2700" — only trust a real label */}
+            <span>{(item?.duration_label && !/^\d+$/.test(String(item.duration_label).trim())) ? item.duration_label : fmt(dur)}</span>
           </div>
         </div>
       </div>

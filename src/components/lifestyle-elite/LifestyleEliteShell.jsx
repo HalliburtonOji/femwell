@@ -287,6 +287,16 @@ const CARD_TYPE_OF = (i) => {
   return t === "video" ? "video" : t === "audio" ? "audio" : t === "book" ? "book" : t === "story" ? "daily_story" : "article";
 };
 const metaOf = (i) => [i?.source_name || i?.author_name, i?.category].filter(Boolean).join(" · ") || "FemWell Editorial";
+// A HUMAN duration. Some rows store duration_label as raw seconds ("2700") — never show that;
+// format seconds → "45 min" and only trust duration_label when it's genuinely a label.
+const durLabel = (i) => {
+  const dl = i?.duration_label;
+  if (dl && !/^\d+$/.test(String(dl).trim())) return dl;
+  const s = Number(i?.duration_seconds || (/^\d+$/.test(String(dl || "")) ? dl : 0)) || 0;
+  if (!s) return "";
+  const m = Math.round(s / 60);
+  return m >= 60 ? `${Math.floor(m / 60)}h ${m % 60}m` : `${m} min`;
+};
 
 // piece G — the OPEN state's fuller body, from the item's OWN real fields. Measured
 // (mnt/femwell/measure_piece_g_body_fields.md): `lede` is the ONLY long field (~4,300ch
@@ -373,11 +383,28 @@ function PeekShelf({ label, accent, children }) {
     if (best !== active) setActive(best);
   };
   const goTo = (i) => { const idx = Math.max(0, Math.min(last, i)); setActive(idx); const el = trackRef.current; const c = kids()[idx]; if (el && c) el.scrollLeft = c.offsetLeft - el.offsetLeft; };
+  // EMPTY GUARD: an empty shelf must NOT render a blank track (that was the huge blank "Free
+  // classics" card in Halli's screenshot — gutendex was slow/empty so classicCards was []).
+  // Render a quiet, honest line at a natural height instead of a void.
+  if (arr.length === 0) {
+    return (
+      <div style={{ height: "100%", minHeight: 0, display: "flex", flexDirection: "column" }}>
+        {label && <div style={{ ...lbl, marginBottom: 7, flexShrink: 0 }}>{label}</div>}
+        <div style={{ flex: 1, minHeight: 120, display: "grid", placeItems: "center", border: `1px dashed ${T.paperDeep}`, borderRadius: 16, background: `${T.paperHi}`, padding: "18px 16px" }}>
+          <span style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 14.5, color: T.muted, textAlign: "center", lineHeight: 1.45 }}>Filling out soon — check back as the shelf grows.</span>
+        </div>
+      </div>
+    );
+  }
   return (
     <div style={{ height: "100%", minHeight: 0, display: "flex", flexDirection: "column" }}>
       {label && <div style={{ ...lbl, marginBottom: 7, flexShrink: 0 }}>{label}</div>}
       <div ref={trackRef} onScroll={onScroll} className="fw-peek-track"
-        style={{ flex: 1, minHeight: 0, display: "flex", gap: 12, overflowX: "auto", scrollSnapType: "x mandatory", WebkitOverflowScrolling: "touch", overscrollBehaviorX: "contain", scrollbarWidth: "none", padding: "2px 0" }}>
+        style={{ flex: 1, minHeight: 0, display: "flex", gap: 12, overflowX: "auto", scrollSnapType: "x mandatory", WebkitOverflowScrolling: "touch", overscrollBehaviorX: "contain", scrollbarWidth: "none", padding: "2px 0",
+          // the next card PEEKS at the right edge — fade it so it reads as "more, swipe over"
+          // instead of hard-clipped cut-off letters (Halli's screenshot). ~24px soft edge.
+          WebkitMaskImage: "linear-gradient(90deg, #000 0, #000 calc(100% - 26px), transparent 100%)",
+          maskImage: "linear-gradient(90deg, #000 0, #000 calc(100% - 26px), transparent 100%)" }}>
         <style>{`.fw-peek-track::-webkit-scrollbar{display:none}`}</style>
         {arr.map((c, i) => (
           <div key={i} style={{ flex: "0 0 88%", maxWidth: 360, scrollSnapAlign: "start", display: "flex", flexDirection: "column", minWidth: 0 }}>{c}</div>
@@ -1118,7 +1145,7 @@ export default function LifestyleEliteShell() {
   }
 
   return (
-    <div style={{ ...PAPER_BG, minHeight: "100vh", overflowX: "clip", paddingBottom: "calc(96px + env(safe-area-inset-bottom))" }}>
+    <div style={{ ...PAPER_BG, minHeight: "100vh", overflowX: "clip", paddingBottom: "calc(124px + env(safe-area-inset-bottom))" }}>
       <style>{floraKeyframes}{ELITE_MOTION}</style>
       <TopChrome onJump={() => setJumpOpen(true)} onCalendar={() => setCalOpen(true)} />
 
@@ -1651,7 +1678,7 @@ function TimePickerLens({ pickFor, isSaved, onSave, onOpen, onTry }) {
             <div style={{ display: "flex", alignItems: "center", gap: 6, fontFamily: UI, fontSize: 11.5, fontWeight: 700, color: cwOf("sage").petal, margin: "0 0 5px" }}>
               {lfTypeOf(listen) === "video" ? <Film size={13} /> : <Headphones size={13} />}
               <span style={{ color: T.ink, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{listen.title}</span>
-              <span style={{ color: T.muted, fontWeight: 600, flexShrink: 0 }}>· {listen.duration_label || metaOf(listen)}</span>
+              <span style={{ color: T.muted, fontWeight: 600, flexShrink: 0 }}>· {durLabel(listen) || metaOf(listen)}</span>
             </div>
             <LifestyleMedia item={listen} accent={cwOf("sage").petal} />
           </div>
