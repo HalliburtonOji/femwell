@@ -10,7 +10,7 @@ import { cwOf } from "@/components/brand/flora";
 
 export function QuickRow({ items }) {
   return (
-    <div className="fw-quick-row" style={{ display: "flex", gap: 9, overflowX: "auto", padding: "2px 2px 8px", WebkitOverflowScrolling: "touch", overscrollBehaviorX: "contain" }}>
+    <div className="fw-quick-row" style={{ display: "flex", gap: 9, overflowX: "auto", padding: "2px 2px 8px", WebkitOverflowScrolling: "touch", overscrollBehaviorX: "contain", WebkitMaskImage: "linear-gradient(90deg, #000 0, #000 calc(100% - 24px), transparent 100%)", maskImage: "linear-gradient(90deg, #000 0, #000 calc(100% - 24px), transparent 100%)" }}>
       <style>{`.fw-quick-row{scrollbar-width:none}.fw-quick-row::-webkit-scrollbar{display:none}`}</style>
       {items.map((it) => {
         const c = cwOf(it.cw).petal;
