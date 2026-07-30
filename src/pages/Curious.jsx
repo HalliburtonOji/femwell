@@ -23,6 +23,8 @@ import { CoverCard, ExpandDetailCard, decodeEntities } from "@/components/brand/
 import { cwOf } from "@/components/brand/flora";
 import { pickProfile } from "@/utils/userProfile";
 import { createPageUrl } from "@/utils";
+import { fmtDuration } from "@/utils/duration";
+import { isClickbait } from "@/utils/clickbait";
 
 const dayOffset = () => Math.floor(Date.now() / 86400000);
 const rotateDaily = (pool, n = 6) => {
@@ -67,7 +69,7 @@ export default function Curious() {
     (async () => {
       try {
         const rows = await base44.entities.LifestyleItems.filter({ status: "PUBLISHED" }, "-engagement_score", 500).catch(() => []);
-        if (alive) setItems(Array.isArray(rows) ? rows : []);
+        if (alive) setItems((Array.isArray(rows) ? rows : []).filter((r) => !isClickbait(r && r.title)));
         const pods = await base44.entities.LifestyleItems.filter({ status: "PUBLISHED", media_type: "PODCAST" }, "-created_date", 60).catch(() => []);
         if (alive) setPodcasts(Array.isArray(pods) ? pods : []);
       } catch { /* graceful */ }
@@ -100,7 +102,7 @@ export default function Curious() {
       category: r.category || "Culture", cw,
       Icon: isVid ? "Film" : isAudio ? "Headphones" : "Sparkles",
       kind: isVid ? "Watch · Curious" : isAudio ? "Listen · Curious" : "Read · Curious",
-      meta: [["Clock", r.duration_label || "a curious few minutes"]],
+      meta: [["Clock", fmtDuration(r) || "a curious few minutes"]],
       ...(isVid ? { youtubeId: r.video_id } : {}),
       ...(isAudio ? { audioSrc: r.audio_url, playerLabel: decodeEntities(r.title || "") } : {}),
     };

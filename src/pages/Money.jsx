@@ -22,6 +22,8 @@ import { CoverCard, ExpandDetailCard, decodeEntities } from "@/components/brand/
 import { cwOf } from "@/components/brand/flora";
 import { pickProfile } from "@/utils/userProfile";
 import { createPageUrl } from "@/utils";
+import { fmtDuration } from "@/utils/duration";
+import { isClickbait } from "@/utils/clickbait";
 
 const dayOffset = () => Math.floor(Date.now() / 86400000);
 const rotateDaily = (pool, n = 4) => {
@@ -85,7 +87,7 @@ export default function Money() {
     (async () => {
       try {
         const rows = await base44.entities.LifestyleItems.filter({ status: "PUBLISHED" }, "-engagement_score", 500).catch(() => []);
-        if (alive) setItems(Array.isArray(rows) ? rows : []);
+        if (alive) setItems((Array.isArray(rows) ? rows : []).filter((r) => !isClickbait(r && r.title)));
       } catch { /* graceful */ }
       try {
         const u = await base44.auth.me().catch(() => null);
@@ -117,7 +119,7 @@ export default function Money() {
     id: r.id, title: decodeEntities(r.title || ""), subtitle: r.source_name || r.channel_name || r.subtitle || "",
     summary: (r.summary || r.excerpt || "").replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim(),
     category: r.category || "Career & Money", cw: "sage", Icon: "Wallet", kind: "Read · Money",
-    meta: [["Clock", r.duration_label || "a calm few minutes"]],
+    meta: [["Clock", fmtDuration(r) || "a calm few minutes"]],
   })), [items]);
   const rituals = useMemo(() => rotateDaily(RITUALS, 4), []);
 

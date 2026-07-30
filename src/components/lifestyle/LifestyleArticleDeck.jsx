@@ -16,6 +16,7 @@ import { FwCard, FwCardCTA } from "@/components/brand/Card";
 import FloraCover from "@/components/brand/FloraCover";
 import { T, SERIF, UI } from "@/components/journal/Editorial";
 import { withTimeout } from "@/utils/safeEntity";
+import { fmtDuration } from "@/utils/duration";
 
 const OXBLOOD = "#7A1A12";
 const TYPE_ACCENT = { article: "#8E6E8E", story: "#BC2E27", guide: "#A8893F", book: "#5F7E8E", read: "#8E6E8E" };
@@ -38,7 +39,7 @@ const FALLBACK = [
 export function toDeckItem(row) {
   const ct = String(row.content_type || "").toUpperCase();
   const type = ct === "FICTION" ? "story" : ct === "STORY" ? "story" : ct === "GUIDE" ? "guide" : "article";
-  const mins = row.duration_label || (row.read_minutes ? `${row.read_minutes} min` : "");
+  const mins = fmtDuration(row) || (row.read_minutes ? `${row.read_minutes} min` : "");
   const typeLabel = type === "story" ? "Story" : type === "guide" ? "Guide" : "Essay";
   return {
     id: row.id, type, category: row.category || "",

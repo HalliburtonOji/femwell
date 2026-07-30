@@ -22,6 +22,8 @@ import { cwOf } from "@/components/brand/flora";
 import { pickProfile } from "@/utils/userProfile";
 import { computeCycleDay, phaseForDay } from "@/hooks/useCycleDay";
 import { createPageUrl } from "@/utils";
+import { fmtDuration } from "@/utils/duration";
+import { isClickbait } from "@/utils/clickbait";
 
 // deterministic per-calendar-day slice — the same rotation helper the shell uses, so a
 // woman sees a fresh-but-stable handful each day (no persistence, no new entity).
@@ -84,7 +86,7 @@ export default function Mirror() {
         // fashion/beauty/body content — one broad pull, filtered client-side to the measured pools
         const rows = await base44.entities.LifestyleItems
           .filter({ status: "PUBLISHED" }, "-engagement_score", 400).catch(() => []);
-        if (alive) setItems(Array.isArray(rows) ? rows : []);
+        if (alive) setItems((Array.isArray(rows) ? rows : []).filter((r) => !isClickbait(r && r.title)));
       } catch { /* render gracefully */ }
       try {
         const u = await base44.auth.me().catch(() => null);
@@ -122,7 +124,7 @@ export default function Mirror() {
     category: r.category || "Beauty",
     cw, Icon: kind === "skin" ? "Sparkles" : kind === "body" ? "HeartHandshake" : "Shirt",
     kind: kind === "skin" ? "Skin · Read" : kind === "body" ? "Reflection · Read" : "Style · Read",
-    meta: [["Clock", r.duration_label || "a few minutes"]],
+    meta: [["Clock", fmtDuration(r) || "a few minutes"]],
   }), []);
 
   const moodPicks = useMemo(() => {

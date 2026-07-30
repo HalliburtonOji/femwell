@@ -47,6 +47,7 @@ import { base44 } from "@/api/base44Client";
 import { usePodcastPlayer } from "@/hooks/usePodcastPlayer";
 import ReadingColumn from "@/components/brand/ReadingColumn";
 import FloraCover from "@/components/brand/FloraCover";
+import { ChapterBlock } from "@/utils/chapterProse";
 import { cwOf, Pollinator, floraKeyframes, FlowerGlyph } from "@/components/brand/flora";
 import {
   ChevronRight, ChevronLeft, ArrowLeft, Play, Pause, Bookmark, BookmarkCheck, Quote as QuoteIcon,
@@ -649,7 +650,8 @@ export function ReadingPane({ item, accent, onOpenFull }) {
                 indent-XOR-space via `variant="book"`. It is the SOLE padding owner, so it
                 bleeds out of this pane's own padding rather than being framed by it. */}
             <ReadingColumn variant="book" size={17.5} style={{ minHeight: 150, marginBottom: 14, paddingInline: 0 }}>
-              {pages[page].map((para, i) => <p key={i} style={{ hyphens: "auto" }}>{para}</p>)}
+              {/* authored chapters carry markdown (## heading, **bold**) — render it, not raw */}
+              {pages[page].map((para, i) => <ChapterBlock key={i} keyIndex={i} block={para} accent={accent} pStyle={{ hyphens: "auto" }} />)}
             </ReadingColumn>
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", borderTop: `1px solid ${T.paperDeep}`, paddingTop: 10 }}>
               <button onClick={() => setPage((p) => Math.max(0, p - 1))} disabled={page === 0} aria-label="Previous page" style={pageBtn(page === 0, accent)}><ChevronLeft size={16} /></button>

@@ -24,6 +24,8 @@ import { cwOf } from "@/components/brand/flora";
 import { pickProfile } from "@/utils/userProfile";
 import { computeCycleDay } from "@/hooks/useCycleDay";
 import { createPageUrl } from "@/utils";
+import { fmtDuration } from "@/utils/duration";
+import { isClickbait } from "@/utils/clickbait";
 
 const dayOffset = () => Math.floor(Date.now() / 86400000);
 const rotateDaily = (pool, n = 6) => {
@@ -70,7 +72,7 @@ export default function Kindred() {
     (async () => {
       try {
         const rows = await base44.entities.LifestyleItems.filter({ status: "PUBLISHED" }, "-engagement_score", 500).catch(() => []);
-        if (alive) setItems(Array.isArray(rows) ? rows : []);
+        if (alive) setItems((Array.isArray(rows) ? rows : []).filter((r) => !isClickbait(r && r.title)));
       } catch { /* graceful */ }
       try {
         const u = await base44.auth.me().catch(() => null);
@@ -104,7 +106,7 @@ export default function Kindred() {
     subtitle: r.source_name || r.channel_name || r.subtitle || "",
     summary: (r.summary || r.excerpt || "").replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim(),
     category: r.category || "Relationships", cw, Icon: "Heart", kind: "Read · Kindred",
-    meta: [["Clock", r.duration_label || "a few minutes"]],
+    meta: [["Clock", fmtDuration(r) || "a few minutes"]],
   }), []);
 
   const heartPicks = useMemo(() => {

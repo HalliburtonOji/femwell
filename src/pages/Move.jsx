@@ -25,6 +25,8 @@ import { cwOf } from "@/components/brand/flora";
 import { pickProfile } from "@/utils/userProfile";
 import { computeCycleDay } from "@/hooks/useCycleDay";
 import { createPageUrl } from "@/utils";
+import { fmtDuration } from "@/utils/duration";
+import { isClickbait } from "@/utils/clickbait";
 
 const dayOffset = () => Math.floor(Date.now() / 86400000);
 const rotateDaily = (pool, n = 4) => {
@@ -90,7 +92,7 @@ export default function Move() {
     (async () => {
       try {
         const rows = await base44.entities.LifestyleItems.filter({ status: "PUBLISHED" }, "-engagement_score", 500).catch(() => []);
-        if (alive) setItems(Array.isArray(rows) ? rows : []);
+        if (alive) setItems((Array.isArray(rows) ? rows : []).filter((r) => !isClickbait(r && r.title)));
       } catch { /* graceful */ }
       try {
         const u = await base44.auth.me().catch(() => null);
@@ -130,7 +132,7 @@ export default function Move() {
       category: r.category || "Fitness", cw,
       Icon: isVid ? "Film" : "HeartPulse",
       kind: isVid ? "Watch · Move" : "Read · Move",
-      meta: [["Clock", r.duration_label || "a short one"]],
+      meta: [["Clock", fmtDuration(r) || "a short one"]],
       ...(isVid ? { youtubeId: r.video_id } : {}),
     };
   }, []);

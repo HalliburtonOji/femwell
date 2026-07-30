@@ -25,6 +25,8 @@ import { CoverCard, ExpandDetailCard, decodeEntities } from "@/components/brand/
 import { cwOf } from "@/components/brand/flora";
 import { pickProfile } from "@/utils/userProfile";
 import { createPageUrl } from "@/utils";
+import { fmtDuration } from "@/utils/duration";
+import { isClickbait } from "@/utils/clickbait";
 
 const dayOffset = () => Math.floor(Date.now() / 86400000);
 const rotateDaily = (pool, n = 6) => {
@@ -66,7 +68,7 @@ export default function Delight() {
     (async () => {
       try {
         const rows = await base44.entities.LifestyleItems.filter({ status: "PUBLISHED" }, "-engagement_score", 500).catch(() => []);
-        if (alive) setItems(Array.isArray(rows) ? rows : []);
+        if (alive) setItems((Array.isArray(rows) ? rows : []).filter((r) => !isClickbait(r && r.title)));
       } catch { /* graceful */ }
       try {
         const u = await base44.auth.me().catch(() => null);
@@ -95,7 +97,7 @@ export default function Delight() {
       category: r.category || "Culture", cw,
       Icon: isVid ? "Film" : isAudio ? "Headphones" : "Sparkles",
       kind: isVid ? "Watch · Delight" : isAudio ? "Listen · Delight" : "Read · Delight",
-      meta: [["Clock", r.duration_label || "a bit of fun"]],
+      meta: [["Clock", fmtDuration(r) || "a bit of fun"]],
       ...(isVid ? { youtubeId: r.video_id } : {}),
       ...(isAudio ? { audioSrc: r.audio_url, playerLabel: decodeEntities(r.title || "") } : {}),
     };

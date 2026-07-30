@@ -8,6 +8,7 @@ import { SERIF, UI } from '@/components/journal/Editorial';
 import { getCategoryGradient, attachFallbackOverlay } from '@/utils/imageFallback';
 import { T } from '@/components/journal/Editorial';
 import { CardFrame } from '@/components/brand/flora';
+import { fmtDuration } from '@/utils/duration';
 
 // Shared play indicator — used by inline video card
 function PlayIndicator() {
@@ -122,7 +123,7 @@ function VideoCard({ item, saved, hasPhaseTag, onSave, onUntag }) {
           padding: '4px 10px', borderRadius: 9999,
           pointerEvents: 'none',
         }}>
-          {`VIDEO${item.duration_label ? ' · ' + item.duration_label : ''}`}
+          {`VIDEO${fmtDuration(item) ? ' · ' + fmtDuration(item) : ''}`}
         </div>
 
         {/* Top-right: Save heart */}

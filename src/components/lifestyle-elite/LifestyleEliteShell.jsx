@@ -62,6 +62,9 @@ import { useCycleDay } from "@/hooks/useCycleDay";
 import { QuickRow } from "@/components/brand/QuickRow";
 import { withTimeout } from "@/utils/safeEntity";
 import { createPageUrl } from "@/utils";
+import { fmtDuration } from "@/utils/duration";
+import { isClickbait } from "@/utils/clickbait";
+import { ChapterProse } from "@/utils/chapterProse";
 // "Mark as read" must actually MARK IT READ — this is the same recorder the Garden reads
 // (readingDaySet), so a chapter she finishes really does feed her garden.
 import { recordProgress } from "@/components/community/readingActivity";
@@ -287,16 +290,10 @@ const CARD_TYPE_OF = (i) => {
   return t === "video" ? "video" : t === "audio" ? "audio" : t === "book" ? "book" : t === "story" ? "daily_story" : "article";
 };
 const metaOf = (i) => [i?.source_name || i?.author_name, i?.category].filter(Boolean).join(" · ") || "FemWell Editorial";
-// A HUMAN duration. Some rows store duration_label as raw seconds ("2700") — never show that;
-// format seconds → "45 min" and only trust duration_label when it's genuinely a label.
-const durLabel = (i) => {
-  const dl = i?.duration_label;
-  if (dl && !/^\d+$/.test(String(dl).trim())) return dl;
-  const s = Number(i?.duration_seconds || (/^\d+$/.test(String(dl || "")) ? dl : 0)) || 0;
-  if (!s) return "";
-  const m = Math.round(s / 60);
-  return m >= 60 ? `${Math.floor(m / 60)}h ${m % 60}m` : `${m} min`;
-};
+// A HUMAN duration — the ONE shared formatter (src/utils/duration.js), so a raw-seconds label
+// like "2700" can never leak again from any surface. `durLabel` stays as the local alias the
+// call sites already use.
+const durLabel = fmtDuration;
 
 // piece G — the OPEN state's fuller body, from the item's OWN real fields. Measured
 // (mnt/femwell/measure_piece_g_body_fields.md): `lede` is the ONLY long field (~4,300ch
@@ -545,7 +542,7 @@ export default function LifestyleEliteShell() {
     ]);
     const seen = new Set();
     const merged = [...(Array.isArray(rows) ? rows : []), ...(Array.isArray(pods) ? pods : []), ...(Array.isArray(fic) ? fic : []), ...(Array.isArray(vids) ? vids : [])]
-      .filter((i) => i && i.title && !seen.has(i.id) && seen.add(i.id));
+      .filter((i) => i && i.title && !isClickbait(i.title) && !seen.has(i.id) && seen.add(i.id));
     setItems(merged);
     setChapters(Array.isArray(chs) ? chs : []);
     setHoroscope((Array.isArray(ho) ? ho[0] : null) || null);
@@ -569,12 +566,21 @@ export default function LifestyleEliteShell() {
   const loadContinue = useCallback(async () => {
     const positions = readContinuePositions();
     if (!positions.length) { setContinueItems([]); return; }
+    // A saved position's bookId is whatever reader wrote it: a real LifestyleItems id (FemWell
+    // fiction), a `daily_<series>` key (the Daily Story), or a BARE GUTENBERG ID like "514" /
+    // "1342" (public-domain books, read on /BookReader). Only the first kind lives in
+    // LifestyleItems — querying that entity with a Gutenberg id 500s on EVERY page load (it's
+    // the wrong id-space, not a missing row). So we only resolve real LifestyleItems ids here;
+    // daily + Gutenberg positions have their own homes and never hit this query.
+    const isLsId = (id) => { const s = String(id || ""); return s.length >= 12 && !s.startsWith("daily_") && !/^\d{1,9}$/.test(s); };
+    const dbPositions = positions.filter((p) => isLsId(p.bookId));
+    if (!dbPositions.length) { setContinueItems([]); return; }
     try {
-      const rows = await Promise.all(positions.map((p) =>
+      const rows = await Promise.all(dbPositions.map((p) =>
         withTimeout(base44.entities.LifestyleItems.filter({ id: p.bookId }, undefined, 1), 6000, "continue")
           .then((r) => (Array.isArray(r) ? r[0] : null)).catch(() => null)
       ));
-      setContinueItems(positions.map((p, i) => (rows[i] && rows[i].title ? { item: rows[i], pos: p } : null)).filter(Boolean));
+      setContinueItems(dbPositions.map((p, i) => (rows[i] && rows[i].title ? { item: rows[i], pos: p } : null)).filter(Boolean));
     } catch { setContinueItems([]); }
   }, []);
 
@@ -816,7 +822,7 @@ export default function LifestyleEliteShell() {
     // Audio (piece #3): a SHORT summary — the flora player IS the content, not a wall of text.
     summary: (type === "audio" ? shortSummary(r.summary || r.lede) : stripHtml(r.summary || r.why_it_matters || "")) || undefined,
     category: r.category || undefined,
-    meta: [["Clock", r.duration_label || ((type === "audio" || type === "video") ? "A short listen" : "A few minutes")], ["BookOpen", r.source_name || r.author_name || "FemWell Editorial"]],
+    meta: [["Clock", durLabel(r) || ((type === "audio" || type === "video") ? "A short listen" : "A few minutes")], ["BookOpen", r.source_name || r.author_name || "FemWell Editorial"]],
     chips: [r.category, r.emotional_tag].filter(Boolean).slice(0, 3),
     // audio: no prose body (the player carries it); everything else gets its real body (piece G)
     body: type === "audio" ? [] : g_body,
@@ -907,7 +913,7 @@ export default function LifestyleEliteShell() {
       // hand-picked and verified embeddable → it plays HERE, like everything else
       id: v.id, type: "video", title: v.title, subtitle: v.channel_name, youtubeId: v.video_id,
       summary: v.summary || "A hand-picked watch from a channel we trust — it opens on YouTube, where it lives.",
-      meta: [["Film", v.duration_label || "A short watch"], ["Play", v.channel_name]], chips: ["watch"],
+      meta: [["Film", durLabel(v) || "A short watch"], ["Play", v.channel_name]], chips: ["watch"],
       body: [],
       actions: [{ label: "Open on YouTube", Icon: "Film", primary: false, onClick: () => openExternal(v.content_url) }],
     }));
@@ -1165,7 +1171,7 @@ export default function LifestyleEliteShell() {
               <FwFloraHero title={active.title} colorway={active.cw} bloom={ph.bloom} openness={active.openness}
                 creature={active.creature} flankL="iris" flankR="sunflower" titleColor={OXBLOOD} line={active.line}
                 garden="lifestyle" photo="lifestyle" />
-              <div className="fw-hero-ctl" style={{ display: "flex", gap: 8, overflowX: "auto", padding: "12px 2px 2px" }}>
+              <div className="fw-hero-ctl" style={{ display: "flex", gap: 8, overflowX: "auto", padding: "12px 2px 2px", WebkitMaskImage: "linear-gradient(90deg, #000 0, #000 calc(100% - 22px), transparent 100%)", maskImage: "linear-gradient(90deg, #000 0, #000 calc(100% - 22px), transparent 100%)" }}>
                 <style>{`.fw-hero-ctl{scrollbar-width:none}.fw-hero-ctl::-webkit-scrollbar{display:none}`}</style>
                 {HERO_CARDS.map((c, i) => {
                   const on = i === heroCard; const col = cwOf(c.cw).petal;
@@ -1789,7 +1795,7 @@ function MediaLens({ items, kind, onOpen }) {
             <Icon size={15} color={accent} style={{ flexShrink: 0 }} />
             <button onClick={() => isCurated(it) ? window.open(it.content_url, "_blank", "noopener,noreferrer") : onOpen(it)} className="fw-elite-press" style={{ flex: 1, minWidth: 0, textAlign: "left", background: "transparent", border: "none", cursor: "pointer", padding: 0 }}>
               <span style={{ fontFamily: SERIF, fontSize: 15, fontWeight: 600, color: T.ink, display: "block", lineHeight: 1.2, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{it.title}</span>
-              <span style={{ fontFamily: UI, fontSize: 12, color: T.muted }}>{isCurated(it) ? it.channel_name : metaOf(it)}{it.duration_label ? ` · ${it.duration_label}` : ""}</span>
+              <span style={{ fontFamily: UI, fontSize: 12, color: T.muted }}>{isCurated(it) ? it.channel_name : metaOf(it)}{durLabel(it) ? ` · ${durLabel(it)}` : ""}</span>
             </button>
           </div>
           {/* REAL inline player (audio <audio> / youtube-nocookie / link-out) by media_type */}
@@ -1939,7 +1945,11 @@ function SkyDiaryLens({ notes, onNote }) {
 function ChapterSheet({ story, pick, nextPick, readSoFar = 0, onImmersive, onClose, onMarkRead, onReflect }) {
   const title = story?.series_title || story?.title || "Today's chapter";
   const cliff = story?.cliffhanger || "";
-  const body = stripHtml(story?.segment_text || "") || "Today's chapter is being written — check back soon. In the meantime, the Daily Story library is one tap away on the Lifestyle page.";
+  // strip HTML tags but KEEP newlines — stripHtml() collapses \n\n (it's \s+→" "), which is
+  // exactly why the whole chapter ran together as one block. ChapterProse needs the blank-line
+  // breaks to split paragraphs and lift the `## Chapter N` heading.
+  const body = (String(story?.segment_text || "").replace(/<[^>]+>/g, "").replace(/[ \t]+/g, " ").trim())
+    || "Today's chapter is being written — check back soon. In the meantime, the Daily Story library is one tap away on the Lifestyle page.";
   const crimsonC = cwOf("crimson").petal;
   // HONEST framing — "Chapter 7 of 30", and we say plainly it's a finished story served a
   // chapter a day. Never "fresh today" unless it genuinely is.
@@ -1950,7 +1960,9 @@ function ChapterSheet({ story, pick, nextPick, readSoFar = 0, onImmersive, onClo
       {/* §6.7.8 — today's chapter is FICTION: it reads through the shared column with the
           indent variant (indent, no paragraph gaps). The sheet already owns the gutter. */}
       <ReadingColumn variant="dailyStory" size={17} style={{ paddingInline: 0, marginBottom: 16 }}>
-        {String(body || "").split(/\n\s*\n+/).filter(Boolean).map((para, i) => <p key={i}>{para}</p>)}
+        {/* authored chapters carry markdown (## Chapter N — Title, **bold**) — render it, don't
+            dump it raw (was printing a literal "## Chapter 14 — The Envelope"). */}
+        <ChapterProse text={body} accent={crimsonC} />
       </ReadingColumn>
       {cliff && <p style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 17, color: crimsonC, margin: "0 0 16px" }}>"{cliff}"</p>}
       {/* the kind return model: where she's up to + a gentle tease. No streak, no scold. */}

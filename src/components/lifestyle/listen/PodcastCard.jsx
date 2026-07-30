@@ -6,6 +6,7 @@ import { usePodcastPlayer } from '@/hooks/usePodcastPlayer';
 import PodcastListenSheet from './PodcastListenSheet';
 import { T } from '@/components/journal/Editorial';
 import { CardFrame } from '@/components/brand/flora';
+import { fmtDuration } from '@/utils/duration';
 
 function PlayIndicator() {
   return (
@@ -146,7 +147,7 @@ export default function PodcastCard({ item, saved, hasPhaseTag, onSave, onUntag 
           padding: '4px 10px', borderRadius: 9999,
           pointerEvents: 'none',
         }}>
-          {`${pillKind}${item.duration_label ? ' · ' + item.duration_label : ' · ' + pillFallback}`}
+          {`${pillKind}${fmtDuration(item) ? ' · ' + fmtDuration(item) : ' · ' + pillFallback}`}
         </div>
 
         {/* Top-right: Save heart */}

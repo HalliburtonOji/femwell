@@ -25,6 +25,8 @@ import { CoverCard, ExpandDetailCard, decodeEntities } from "@/components/brand/
 import { cwOf } from "@/components/brand/flora";
 import { pickProfile } from "@/utils/userProfile";
 import { createPageUrl } from "@/utils";
+import { fmtDuration } from "@/utils/duration";
+import { isClickbait } from "@/utils/clickbait";
 
 const dayOffset = () => Math.floor(Date.now() / 86400000);
 const rotateDaily = (pool, n = 6) => {
@@ -83,7 +85,7 @@ export default function Tonight() {
     (async () => {
       try {
         const rows = await base44.entities.LifestyleItems.filter({ status: "PUBLISHED" }, "-engagement_score", 500).catch(() => []);
-        if (alive) setItems(Array.isArray(rows) ? rows : []);
+        if (alive) setItems((Array.isArray(rows) ? rows : []).filter((r) => !isClickbait(r && r.title)));
       } catch { /* graceful */ }
       // the nightly assembly — a chapter + the sky, both refresh on their own
       try { const ds = await base44.entities.DailyStory.filter({ is_active: true }, "-day_number", 1).catch(() => []); if (alive && ds?.[0]) setStory(ds[0]); } catch { /* no story tonight */ }
@@ -113,7 +115,7 @@ export default function Tonight() {
           summary: (r.summary || r.excerpt || "").replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim(),
           category: r.category || "Mindfulness", cw: "lavender", Icon: isVid ? "Film" : isAudio ? "Headphones" : "Wind",
           kind: isVid ? "Watch · Tonight" : isAudio ? "Listen · Tonight" : "Read · Tonight",
-          meta: [["Clock", r.duration_label || "a calm few minutes"]],
+          meta: [["Clock", fmtDuration(r) || "a calm few minutes"]],
           ...(isVid ? { youtubeId: r.video_id } : {}), ...(isAudio ? { audioSrc: r.audio_url, playerLabel: decodeEntities(r.title || "") } : {}),
         };
       }), [items]);

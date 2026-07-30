@@ -16,6 +16,7 @@
 import { useState, useRef, useCallback } from "react";
 import { Play, Pause, ExternalLink, Headphones, Film, Music2 } from "lucide-react";
 import { T, UI } from "@/components/journal/Editorial";
+import { fmtDuration } from "@/utils/duration";
 
 const mt = (item) => String(item?.media_type || "").toUpperCase();
 
@@ -46,7 +47,7 @@ function VideoPlayer({ item, accent }) {
 
   // not actually embeddable → link out tastefully
   if (!item?.is_embeddable || (!videoId && !embedUrl)) {
-    return <LinkOutCard href={open} label="Watch" sub={item?.channel_name || item?.duration_label || "Opens in a new tab"} Icon={Film} accent={accent} thumb={item?.image_url} />;
+    return <LinkOutCard href={open} label="Watch" sub={item?.channel_name || fmtDuration(item) || "Opens in a new tab"} Icon={Film} accent={accent} thumb={item?.image_url} />;
   }
 
   const src = videoId
@@ -102,7 +103,7 @@ function AudioPlayer({ item, accent }) {
   const seek = useCallback((e) => { const el = ref.current; if (!el || !dur) return; const v = Number(e.target.value); el.currentTime = v; setCur(v); }, [dur]);
 
   if (!item?.audio_url) {
-    return <LinkOutCard href={open} label="Listen" sub={item?.channel_name || item?.duration_label || "Opens in your podcast app"} Icon={Headphones} accent={accent} thumb={item?.image_url} />;
+    return <LinkOutCard href={open} label="Listen" sub={item?.channel_name || fmtDuration(item) || "Opens in your podcast app"} Icon={Headphones} accent={accent} thumb={item?.image_url} />;
   }
 
   return (
@@ -148,5 +149,5 @@ export default function LifestyleMedia({ item, accent = "#A8893F" }) {
   if (type === "PODCAST" || type === "CLIP") return <AudioPlayer item={item} accent={accent} />;
 
   // ARTICLE or unknown → open link
-  return <LinkOutCard href={item?.content_url} label="Open" sub={item?.channel_name || item?.duration_label} Icon={Film} accent={accent} thumb={item?.image_url} />;
+  return <LinkOutCard href={item?.content_url} label="Open" sub={item?.channel_name || fmtDuration(item)} Icon={Film} accent={accent} thumb={item?.image_url} />;
 }
