@@ -55,4 +55,14 @@ export function ChapterProse({ text, accent, pStyle }) {
   ));
 }
 
+// storyPreview — a PLAIN one-line teaser from authored chapter markdown: drop the leading
+// `## Chapter N — Title` heading (the reader shows that separately) and strip stray markdown
+// glyphs, so a clipped preview reads as prose, not "## Chapter 14 — The Envelope The env…".
+export const storyPreview = (text) =>
+  String(text || "")
+    .replace(/^\s*#{1,6}\s+[^\n]*(?:\n+|$)/, "")   // drop a leading heading line
+    .replace(/[*_`>#]+/g, "")                         // strip remaining md glyphs
+    .replace(/\s+/g, " ")
+    .trim();
+
 export default ChapterProse;

@@ -23,6 +23,7 @@ import {
 } from "@/components/journal/Editorial";
 import { base44 } from "@/api/base44Client";
 import { pickProfile, displayFirstName } from "@/utils/userProfile";
+import { storyPreview } from "@/utils/chapterProse";
 import { loadStoryChapters, chapterForDay } from "@/components/lifestyle/dailyStory";
 import { computeCycleDay } from "@/hooks/useCycleDay";
 import { nutritionToday } from "@/utils/nutritionSummary";
@@ -609,7 +610,7 @@ export default function TodayClipboardDemo() {
         { tag: "Your moon", hook: `Tonight: ${moon.name.toLowerCase()}`, line: `${moon.line}. Your sky, read against where you are.`, visual: <MoonGlyph frac={moon.frac} size={92} />, flower: "violet", action: { type: "deeplink", Icon: Star, label: horo ? "Today's reading" : "Read your sky", href: "/Lifestyle?tab=horoscope" } },
         listen && { tag: "Listen", hook: clip(listen.title, 52), line: listen.source_name ? `${listen.source_name} · play it right here` : "A new episode — play it right here, no leaving the page.", flower: "bluebell", action: { type: "audio", url: audioUrl, title: listen.title, href: listenHref, Icon: Headphones } },
         content.book && { tag: "Book of the day", hook: clip(content.book.title, 46), line: content.book.author ? `${content.book.author} — opens straight in the reader, full screen.` : "Opens straight in the reader, full screen.", flower: "rose", action: { type: "deeplink", Icon: BookOpen, label: "Open in the reader", href: bookHref } },
-        content.story && { tag: "Daily story", hook: clip(storyTitle, 44), line: content.story.segment_text ? clip(content.story.segment_text, 80) : "A short instalment, released daily.", flower: "poppy", action: { type: "deeplink", Icon: Feather, label: "Read today's chapter", href: "/Lifestyle?tab=daily_story" } },
+        content.story && { tag: "Daily story", hook: clip(storyTitle, 44), line: content.story.segment_text ? clip(storyPreview(content.story.segment_text), 80) : "A short instalment, released daily.", flower: "poppy", action: { type: "deeplink", Icon: Feather, label: "Read today's chapter", href: "/Lifestyle?tab=daily_story" } },
         foryouItem && { tag: "For you", hook: clip(foryouItem.title, 50), line: `Gathered for you${phaseWord ? `, tuned to your ${phaseWord} phase` : ""}.`, flower: "primrose", action: { type: "deeplink", Icon: Sparkles, label: "Open this", href: foryouHref } },
       ];
       const m = pickMode(modes, 0) || modes[0];
