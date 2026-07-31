@@ -1,6 +1,14 @@
 # FEMWELL — CANONICAL STATUS INDEX (read first · updated 2026-06-30)
 **This file is the single source of truth AND the index to every plan doc. If anything else disagrees, this wins.** (The long ship-log history continues below the index.)
 
+## 📐 CLIPBOARD/CARD SIZE + FRAME PASS — PREVIEW SHIPPED, ⏸ PAUSED FOR HALLI (2026-07-31)
+Halli: boards/cards read too small, frames too heavy → fill ~85% + lighten frame. **Preview on Lifestyle shell + ONE board (Curious) ONLY — do NOT roll to the other 10 until approved.**
+- **MEASURED baseline (live):** Curious cards were fixed **250px = 69%@360 / 64%@390 / 58%@430** (shrink as % on bigger screens); Lifestyle inner cards ~80%; clipboard board fixed 365px.
+- **AFTER (live-measured):** Curious cards **85% at all widths** (306/332/366px); Lifestyle inner cards **~84-85%**. **No page overflow at 360/390/430** (scrollW==vw), console 0, net 0.
+- **CHANGES (all OPT-IN, default off, reversible, no new entity/fn):** `ClipboardSlider` gained `wide` (board → `min(88vw,430px)` responsive, real edge-peek) + `light` (cloned to boards); `Clipboard` gained `light` frame (padding 24/18→18/13, spine 4→3px, corner sprigs 0.55/44→0.4/34, quieter clip, softer shadow — toward §6.7 cream-on-cream). **Shared callers (Community, Doctor Export, demos) UNCHANGED** (props default off). Lifestyle shell opts in `<ClipboardSlider wide light>` + PeekShelf cards 88%→92%. Curious owns its Shelf: cards 250px→`85vw` capped 366, rabbit-hole 300→`min(88vw,384)`. Shared `CoverCard` NOT touched (stays 1px hairline).
+- **PROOF:** `scratchpad/visualqa/{BEFORE_,A_}{Lifestyle,Curious}.png` + `_curious_cmp.png` (64%→85%) + `_clip_cmp.png` (frame before/after). Deployed `npx base44 site deploy -y`, build EXIT 0.
+- **⏸ AWAITING HALLI:** approve look → roll to the other 10 boards (Mirror/Move/Kindred/Delight/Nest/Tonight/Becoming/Make/Outside/Money — same `85vw` card + `light`/`wide` where they use clipboards).
+
 ## 🧪 LIFESTYLE EXHAUSTIVE ADVERSARIAL QA — PHASE 2 (Batch A+B) SHIPPED + RE-PROVEN (2026-07-30)
 Deep adversarial sweep of the Lifestyle shell + 11 boards + every reader/flow (real pixels + real taps at 360/390/430). Phase-1 catalogue in `femwell-handoff/LIFESTYLE-QA-CATALOGUE.html`. Harnesses: `scripts/lifestyle{Audit,Interact,Probe,Probe2}.cjs`.
 - **✅ P1 MARKDOWN reader:** authored chapters carry markdown (`## Chapter N — Title`, `**bold**`). `ChapterSheet` did `stripHtml()` → left `##` literal AND collapsed `\n\n` so heading+body ran together. New **`src/utils/chapterProse.jsx`** (`ChapterProse`/`ChapterBlock`/`mdInline`/`storyPreview`) renders headings + emphasis; ChapterSheet now strips TAGS-but-keeps-newlines; shared `ReadingPane` (Tonight's chapter) uses `ChapterBlock`. **VERIFIED live:** reader shows "Chapter 14 — The Envelope" as a styled crimson heading, indented paragraphs, no literal `##` (screenshot Q_reader_md).
