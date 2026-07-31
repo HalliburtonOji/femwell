@@ -1,0 +1,71 @@
+{
+ "Lifestyle@360": {
+  "vw": 360,
+  "boardW": null,
+  "boardPct": null,
+  "section": null,
+  "innerCardW": 289,
+  "innerCardPct": 80.3,
+  "containerMaxW": "480px",
+  "containerPad": "8px"
+ },
+ "Curious@360": {
+  "vw": 360,
+  "cardW": 250,
+  "cardPct": 69.4,
+  "cover": {
+   "border": "1px",
+   "radius": "18px",
+   "pad": "0px",
+   "shadow": "rgba(58, 44, 26, 0.1) 0px 6px 22px 0px, "
+  },
+  "containerMaxW": "480px",
+  "containerPad": "16px"
+ },
+ "Lifestyle@390": {
+  "vw": 390,
+  "boardW": null,
+  "boardPct": null,
+  "section": null,
+  "innerCardW": 315,
+  "innerCardPct": 80.8,
+  "containerMaxW": "480px",
+  "containerPad": "8px"
+ },
+ "Curious@390": {
+  "vw": 390,
+  "cardW": 250,
+  "cardPct": 64.1,
+  "cover": {
+   "border": "1px",
+   "radius": "18px",
+   "pad": "0px",
+   "shadow": "rgba(58, 44, 26, 0.1) 0px 6px 22px 0px, "
+  },
+  "containerMaxW": "480px",
+  "containerPad": "16px"
+ },
+ "Lifestyle@430": {
+  "vw": 430,
+  "boardW": null,
+  "boardPct": null,
+  "section": null,
+  "innerCardW": 350,
+  "innerCardPct": 81.4,
+  "containerMaxW": "480px",
+  "containerPad": "8px"
+ },
+ "Curious@430": {
+  "vw": 430,
+  "cardW": 250,
+  "cardPct": 58.1,
+  "cover": {
+   "border": "1px",
+   "radius": "18px",
+   "pad": "0px",
+   "shadow": "rgba(58, 44, 26, 0.1) 0px 6px 22px 0px, "
+  },
+  "containerMaxW": "480px",
+  "containerPad": "16px"
+ }
+}

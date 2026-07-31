@@ -404,7 +404,7 @@ function PeekShelf({ label, accent, children }) {
           maskImage: "linear-gradient(90deg, #000 0, #000 calc(100% - 26px), transparent 100%)" }}>
         <style>{`.fw-peek-track::-webkit-scrollbar{display:none}`}</style>
         {arr.map((c, i) => (
-          <div key={i} style={{ flex: "0 0 88%", maxWidth: 360, scrollSnapAlign: "start", display: "flex", flexDirection: "column", minWidth: 0 }}>{c}</div>
+          <div key={i} style={{ flex: "0 0 92%", maxWidth: 400, scrollSnapAlign: "start", display: "flex", flexDirection: "column", minWidth: 0 }}>{c}</div>
         ))}
         <div aria-hidden style={{ flex: "0 0 4px" }} />
       </div>
@@ -1288,7 +1288,7 @@ export default function LifestyleEliteShell() {
 
         <div ref={sliderRef} style={{ marginTop: 20, position: "relative" }}>
           <SliderArrows sliderRef={sliderRef} />
-          <ClipboardSlider hint="Slide your shelf →" accent={gold}>
+          <ClipboardSlider hint="Slide your shelf →" accent={gold} wide light>
 
             {/* ══ THE SIX BOARDS — each a StackedCard of two peek shelves of tap-to-expand
                  cover-cards (§6.7.7). One board = one room = one job. Nothing stripped. ══ */}

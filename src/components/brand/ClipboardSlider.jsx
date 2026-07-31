@@ -15,7 +15,7 @@
 //     <Clipboard title="Your rituals" sub="…" accent={T.gold} flower="lavender">{listTwo}</Clipboard>
 //   </ClipboardSlider>
 
-import { Children, useRef, useState } from "react";
+import { Children, cloneElement, isValidElement, useRef, useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { T, UI, Script } from "@/components/journal/Editorial";
 import { CardCorner, FlowerGlyph } from "@/components/brand/flora";
@@ -33,30 +33,35 @@ function Frame4({ color, opacity = 0.55, size = 44 }) {
 }
 
 // The little gold "clip" at the top-centre of a clipboard (§6.10 anatomy). Pure CSS, no blur.
-function ClipDetail() {
+// `light` = a smaller, quieter clip so the frame reads as chrome, not furniture.
+function ClipDetail({ light = false }) {
+  const w = light ? 40 : 50, h = light ? 11 : 14;
   return (
-    <div aria-hidden style={{ position: "absolute", top: -8, left: "50%", transform: "translateX(-50%)", zIndex: 3, display: "flex", flexDirection: "column", alignItems: "center" }}>
-      <span style={{ width: 50, height: 14, borderRadius: 8, background: "linear-gradient(180deg, #CDB06A 0%, #A8893F 70%, #8C7235 100%)", border: "1px solid rgba(58,44,26,0.28)", boxShadow: "0 2px 5px rgba(58,44,26,0.20), inset 0 1px 0 rgba(255,253,247,0.5)" }} />
-      <span style={{ width: 11, height: 7, borderRadius: "0 0 5px 5px", background: "#A8893F", marginTop: -1, border: "1px solid rgba(58,44,26,0.22)", borderTop: "none" }} />
+    <div aria-hidden style={{ position: "absolute", top: light ? -6 : -8, left: "50%", transform: "translateX(-50%)", zIndex: 3, display: "flex", flexDirection: "column", alignItems: "center" }}>
+      <span style={{ width: w, height: h, borderRadius: 8, background: "linear-gradient(180deg, #CDB06A 0%, #A8893F 70%, #8C7235 100%)", border: "1px solid rgba(58,44,26,0.24)", boxShadow: light ? "0 1px 3px rgba(58,44,26,0.14), inset 0 1px 0 rgba(255,253,247,0.45)" : "0 2px 5px rgba(58,44,26,0.20), inset 0 1px 0 rgba(255,253,247,0.5)" }} />
+      <span style={{ width: light ? 9 : 11, height: light ? 6 : 7, borderRadius: "0 0 5px 5px", background: "#A8893F", marginTop: -1, border: "1px solid rgba(58,44,26,0.2)", borderTop: "none" }} />
     </div>
   );
 }
 
 // ── one clipboard — a big Card.jsx-framed surface holding a stack/grid (the `children`) ──────────────
-export function Clipboard({ title, sub, accent = T.gold, flower = "lavender", idx = "cb", titleColor = T.ink, children }) {
+// `light` (opt-in, default off so every existing caller is byte-unchanged) = the lighter-frame
+// pass: trimmed padding, a 3px spine (was 4), quieter corner sprigs + clip, and a softer shadow —
+// so the CONTENT dominates, not the frame (BRAND §6.7 "cream-on-cream, hairline + a tiny shadow").
+export function Clipboard({ title, sub, accent = T.gold, flower = "lavender", idx = "cb", titleColor = T.ink, light = false, children }) {
   return (
     <section
       aria-label={title}
       style={{
         position: "relative", overflow: "hidden", width: "100%", boxSizing: "border-box",
         background: `linear-gradient(165deg, ${T.paperHi} 0%, ${accent}14 100%)`,
-        border: `1px solid ${T.paperDeep}`, borderLeft: `4px solid ${accent}`, borderRadius: 20,
-        padding: "24px 18px 18px", minHeight: FW_CARD_MINH,
-        boxShadow: "0 4px 20px rgba(58,44,26,0.12), 0 1px 4px rgba(58,44,26,0.08)",
+        border: `1px solid ${T.paperDeep}`, borderLeft: `${light ? 3 : 4}px solid ${accent}`, borderRadius: light ? 18 : 20,
+        padding: light ? "18px 13px 14px" : "24px 18px 18px", minHeight: FW_CARD_MINH,
+        boxShadow: light ? "0 3px 14px rgba(58,44,26,0.09), 0 1px 3px rgba(58,44,26,0.05)" : "0 4px 20px rgba(58,44,26,0.12), 0 1px 4px rgba(58,44,26,0.08)",
       }}
     >
-      <Frame4 color={accent} />
-      <ClipDetail />
+      <Frame4 color={accent} opacity={light ? 0.4 : 0.55} size={light ? 34 : 44} />
+      <ClipDetail light={light} />
       <div style={{ position: "relative", zIndex: 1 }}>
         <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: 8 }}>
           <Script size={30} color={titleColor}>{title}</Script>
@@ -71,8 +76,14 @@ export function Clipboard({ title, sub, accent = T.gold, flower = "lavender", id
 }
 
 // ── the slider — a horizontal scroll-snap pager of clipboards, edge-peek + dots ──────────────────────
-export function ClipboardSlider({ children, hint, accent = T.gold }) {
-  const boards = Children.toArray(children).filter(Boolean);
+// `wide` (opt-in) = the focused board fills ~88% of the viewport (responsive, capped) with a real
+// edge-peek, instead of a fixed 365px that reads small on wider phones. `light` = pass the lighter
+// frame down to every board. Both default OFF so existing callers (Community, Doctor Export, demos)
+// are unchanged until the pass is approved to roll wider.
+export function ClipboardSlider({ children, hint, accent = T.gold, wide = false, light = false }) {
+  const boards = Children.toArray(children).filter(Boolean)
+    .map((b, i) => (light && isValidElement(b) ? cloneElement(b, { light: true, key: b.key ?? i }) : b));
+  const boardBasis = wide ? "min(88vw, 430px)" : `${FW_CARD_W}px`;
   const trackRef = useRef(null);
   const [active, setActive] = useState(0);
   const last = boards.length - 1;
@@ -113,7 +124,7 @@ export function ClipboardSlider({ children, hint, accent = T.gold }) {
         <style>{`.fw-clipboard-track::-webkit-scrollbar{display:none}`}</style>
         {boards.map((b, i) => (
           <div key={i} style={{
-            flex: `0 0 ${FW_CARD_W}px`, width: FW_CARD_W, display: "flex", scrollSnapAlign: "start", borderRadius: 20,
+            flex: `0 0 ${boardBasis}`, width: boardBasis, display: "flex", scrollSnapAlign: "start", borderRadius: 20,
             transform: reduceMotion() ? "none" : (i === active ? "translateY(0) scale(1)" : "translateY(2px) scale(0.985)"),
             opacity: i === active ? 1 : 0.9,
             transition: reduceMotion() ? "none" : "transform 260ms ease-out, opacity 260ms ease-out",

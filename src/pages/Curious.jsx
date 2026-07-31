@@ -145,7 +145,9 @@ export default function Curious() {
     cards.length ? (
       <div className="fw-cur-shelf" style={{ display: "flex", gap: 12, overflowX: "auto", padding: "2px 2px 8px", scrollbarWidth: "none", WebkitMaskImage: "linear-gradient(90deg, #000 0, #000 calc(100% - 26px), transparent 100%)", maskImage: "linear-gradient(90deg, #000 0, #000 calc(100% - 26px), transparent 100%)" }}>
         <style>{`.fw-cur-shelf::-webkit-scrollbar{display:none}`}</style>
-        {cards.map((it) => <div key={it.id} style={{ flex: "0 0 250px", height: 368 }}><CoverCard item={it} compact onOpen={() => setExpanded(it)} /></div>)}
+        {/* PASS: ~85% of the viewport (was a fixed 250px that read small — 64% @390, 58% @430),
+            capped so it stays a card on tablets, keeping a real edge-peek for the slide affordance. */}
+        {cards.map((it) => <div key={it.id} style={{ flex: "0 0 85vw", maxWidth: 366, height: 368 }}><CoverCard item={it} compact onOpen={() => setExpanded(it)} /></div>)}
       </div>
     ) : <p style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 14, color: T.muted, margin: "0 2px" }}>{empty}</p>
   );
@@ -180,7 +182,7 @@ export default function Curious() {
         {rabbitHole && (
           <Section Icon={Shuffle} title="Down a rabbit hole" accent={cwOf("gold").petal}
             sub="Today's one fascinating thing. No reason. That's the reason.">
-            <div style={{ maxWidth: 300 }}><CoverCard item={rabbitHole} onOpen={() => setExpanded(rabbitHole)} /></div>
+            <div style={{ maxWidth: "min(88vw, 384px)" }}><CoverCard item={rabbitHole} onOpen={() => setExpanded(rabbitHole)} /></div>
           </Section>
         )}
 
