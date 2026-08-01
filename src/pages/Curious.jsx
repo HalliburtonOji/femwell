@@ -144,9 +144,9 @@ export default function Curious() {
   );
   const Shelf = ({ cards, empty }) => (
     cards.length ? (
-      {/* bleed the shelf to the screen edges so a ~89vw card still leaves a visible peek sliver
-          (the container's 16px side padding would otherwise swallow it) — first card stays aligned
-          with the headings at 16px; trims wasted outer margin too. */}
+      // bleed the shelf to the screen edges so a ~89vw card still leaves a visible peek sliver
+      // (the container's 16px side padding would otherwise swallow it); first card stays aligned
+      // with the headings at 16px, and it trims wasted outer margin too.
       <div className="fw-cur-shelf" style={{ display: "flex", gap: 12, overflowX: "auto", padding: "2px 0 8px 16px", margin: "0 -16px", scrollbarWidth: "none", WebkitMaskImage: "linear-gradient(90deg, #000 0, #000 calc(100% - 26px), transparent 100%)", maskImage: "linear-gradient(90deg, #000 0, #000 calc(100% - 26px), transparent 100%)" }}>
         <style>{`.fw-cur-shelf::-webkit-scrollbar{display:none}`}</style>
         {/* PASS: ~85% of the viewport (was a fixed 250px that read small — 64% @390, 58% @430),
