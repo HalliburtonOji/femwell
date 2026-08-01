@@ -83,7 +83,7 @@ export function Clipboard({ title, sub, accent = T.gold, flower = "lavender", id
 export function ClipboardSlider({ children, hint, accent = T.gold, wide = false, light = false }) {
   const boards = Children.toArray(children).filter(Boolean)
     .map((b, i) => (light && isValidElement(b) ? cloneElement(b, { light: true, key: b.key ?? i }) : b));
-  const boardBasis = wide ? "min(88vw, 430px)" : `${FW_CARD_W}px`;
+  const boardBasis = wide ? "min(90vw, 440px)" : `${FW_CARD_W}px`;
   const trackRef = useRef(null);
   const [active, setActive] = useState(0);
   const last = boards.length - 1;

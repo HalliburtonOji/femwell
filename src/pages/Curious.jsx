@@ -25,6 +25,7 @@ import { pickProfile } from "@/utils/userProfile";
 import { createPageUrl } from "@/utils";
 import { fmtDuration } from "@/utils/duration";
 import { isClickbait } from "@/utils/clickbait";
+import { cleanTitle } from "@/utils/cleanTitle";
 
 const dayOffset = () => Math.floor(Date.now() / 86400000);
 const rotateDaily = (pool, n = 6) => {
@@ -69,7 +70,7 @@ export default function Curious() {
     (async () => {
       try {
         const rows = await base44.entities.LifestyleItems.filter({ status: "PUBLISHED" }, "-engagement_score", 500).catch(() => []);
-        if (alive) setItems((Array.isArray(rows) ? rows : []).filter((r) => !isClickbait(r && r.title)));
+        if (alive) setItems((Array.isArray(rows) ? rows : []).filter((r) => !isClickbait(r && r.title)).map((r) => (r ? { ...r, title: cleanTitle(r.title) } : r)));
         const pods = await base44.entities.LifestyleItems.filter({ status: "PUBLISHED", media_type: "PODCAST" }, "-created_date", 60).catch(() => []);
         if (alive) setPodcasts(Array.isArray(pods) ? pods : []);
       } catch { /* graceful */ }
@@ -147,7 +148,7 @@ export default function Curious() {
         <style>{`.fw-cur-shelf::-webkit-scrollbar{display:none}`}</style>
         {/* PASS: ~85% of the viewport (was a fixed 250px that read small — 64% @390, 58% @430),
             capped so it stays a card on tablets, keeping a real edge-peek for the slide affordance. */}
-        {cards.map((it) => <div key={it.id} style={{ flex: "0 0 85vw", maxWidth: 366, height: 368 }}><CoverCard item={it} compact onOpen={() => setExpanded(it)} /></div>)}
+        {cards.map((it) => <div key={it.id} style={{ flex: "0 0 89vw", maxWidth: 400, height: 368 }}><CoverCard item={it} compact onOpen={() => setExpanded(it)} /></div>)}
       </div>
     ) : <p style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 14, color: T.muted, margin: "0 2px" }}>{empty}</p>
   );
@@ -182,7 +183,7 @@ export default function Curious() {
         {rabbitHole && (
           <Section Icon={Shuffle} title="Down a rabbit hole" accent={cwOf("gold").petal}
             sub="Today's one fascinating thing. No reason. That's the reason.">
-            <div style={{ maxWidth: "min(88vw, 384px)" }}><CoverCard item={rabbitHole} onOpen={() => setExpanded(rabbitHole)} /></div>
+            <div style={{ maxWidth: "min(90vw, 404px)" }}><CoverCard item={rabbitHole} onOpen={() => setExpanded(rabbitHole)} /></div>
           </Section>
         )}
 

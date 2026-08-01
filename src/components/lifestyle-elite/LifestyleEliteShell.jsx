@@ -64,6 +64,7 @@ import { withTimeout } from "@/utils/safeEntity";
 import { createPageUrl } from "@/utils";
 import { fmtDuration } from "@/utils/duration";
 import { isClickbait } from "@/utils/clickbait";
+import { cleanTitle } from "@/utils/cleanTitle";
 import { ChapterProse } from "@/utils/chapterProse";
 // "Mark as read" must actually MARK IT READ — this is the same recorder the Garden reads
 // (readingDaySet), so a chapter she finishes really does feed her garden.
@@ -404,7 +405,7 @@ function PeekShelf({ label, accent, children }) {
           maskImage: "linear-gradient(90deg, #000 0, #000 calc(100% - 26px), transparent 100%)" }}>
         <style>{`.fw-peek-track::-webkit-scrollbar{display:none}`}</style>
         {arr.map((c, i) => (
-          <div key={i} style={{ flex: "0 0 92%", maxWidth: 400, scrollSnapAlign: "start", display: "flex", flexDirection: "column", minWidth: 0 }}>{c}</div>
+          <div key={i} style={{ flex: "0 0 94%", maxWidth: 420, scrollSnapAlign: "start", display: "flex", flexDirection: "column", minWidth: 0 }}>{c}</div>
         ))}
         <div aria-hidden style={{ flex: "0 0 4px" }} />
       </div>
@@ -542,7 +543,8 @@ export default function LifestyleEliteShell() {
     ]);
     const seen = new Set();
     const merged = [...(Array.isArray(rows) ? rows : []), ...(Array.isArray(pods) ? pods : []), ...(Array.isArray(fic) ? fic : []), ...(Array.isArray(vids) ? vids : [])]
-      .filter((i) => i && i.title && !isClickbait(i.title) && !seen.has(i.id) && seen.add(i.id));
+      .filter((i) => i && i.title && !isClickbait(i.title) && !seen.has(i.id) && seen.add(i.id))
+      .map((i) => ({ ...i, title: cleanTitle(i.title) }));  // strip stray *emphasis*/_marks_ from ingested titles
     setItems(merged);
     setChapters(Array.isArray(chs) ? chs : []);
     setHoroscope((Array.isArray(ho) ? ho[0] : null) || null);
