@@ -25,6 +25,7 @@ import { pickProfile } from "@/utils/userProfile";
 import { createPageUrl } from "@/utils";
 import { fmtDuration } from "@/utils/duration";
 import { isClickbait } from "@/utils/clickbait";
+import { cleanTitle } from "@/utils/cleanTitle";
 
 const dayOffset = () => Math.floor(Date.now() / 86400000);
 const rotateDaily = (pool, n = 6) => {
@@ -85,7 +86,7 @@ export default function Nest() {
     (async () => {
       try {
         const rows = await base44.entities.LifestyleItems.filter({ status: "PUBLISHED" }, "-engagement_score", 500).catch(() => []);
-        if (alive) setItems((Array.isArray(rows) ? rows : []).filter((r) => !isClickbait(r && r.title)));
+        if (alive) setItems((Array.isArray(rows) ? rows : []).filter((r) => !isClickbait(r && r.title)).map((r) => (r ? { ...r, title: cleanTitle(r.title) } : r)));
       } catch { /* graceful */ }
       try {
         const u = await base44.auth.me().catch(() => null);
@@ -137,9 +138,9 @@ export default function Nest() {
   );
   const Shelf = ({ cards, empty }) => (
     cards.length ? (
-      <div className="fw-nest-shelf" style={{ display: "flex", gap: 12, overflowX: "auto", padding: "2px 2px 8px", scrollbarWidth: "none", WebkitMaskImage: "linear-gradient(90deg, #000 0, #000 calc(100% - 26px), transparent 100%)", maskImage: "linear-gradient(90deg, #000 0, #000 calc(100% - 26px), transparent 100%)" }}>
+      <div className="fw-nest-shelf" style={{ display: "flex", gap: 12, overflowX: "auto", padding: "2px 0 8px 16px", margin: "0 -16px", scrollbarWidth: "none", WebkitMaskImage: "linear-gradient(90deg, #000 0, #000 calc(100% - 26px), transparent 100%)", maskImage: "linear-gradient(90deg, #000 0, #000 calc(100% - 26px), transparent 100%)" }}>
         <style>{`.fw-nest-shelf::-webkit-scrollbar{display:none}`}</style>
-        {cards.map((it) => <div key={it.id} style={{ flex: "0 0 250px", height: 366 }}><CoverCard item={it} compact onOpen={() => setExpanded(it)} /></div>)}
+        {cards.map((it) => <div key={it.id} style={{ flex: "0 0 89vw", maxWidth: 400, height: 366 }}><CoverCard item={it} compact onOpen={() => setExpanded(it)} /></div>)}
       </div>
     ) : <p style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 14, color: T.muted, margin: "0 2px" }}>{empty}</p>
   );

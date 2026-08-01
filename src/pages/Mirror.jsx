@@ -24,6 +24,7 @@ import { computeCycleDay, phaseForDay } from "@/hooks/useCycleDay";
 import { createPageUrl } from "@/utils";
 import { fmtDuration } from "@/utils/duration";
 import { isClickbait } from "@/utils/clickbait";
+import { cleanTitle } from "@/utils/cleanTitle";
 
 // deterministic per-calendar-day slice — the same rotation helper the shell uses, so a
 // woman sees a fresh-but-stable handful each day (no persistence, no new entity).
@@ -86,7 +87,7 @@ export default function Mirror() {
         // fashion/beauty/body content — one broad pull, filtered client-side to the measured pools
         const rows = await base44.entities.LifestyleItems
           .filter({ status: "PUBLISHED" }, "-engagement_score", 400).catch(() => []);
-        if (alive) setItems((Array.isArray(rows) ? rows : []).filter((r) => !isClickbait(r && r.title)));
+        if (alive) setItems((Array.isArray(rows) ? rows : []).filter((r) => !isClickbait(r && r.title)).map((r) => (r ? { ...r, title: cleanTitle(r.title) } : r)));
       } catch { /* render gracefully */ }
       try {
         const u = await base44.auth.me().catch(() => null);
@@ -156,9 +157,9 @@ export default function Mirror() {
 
   const Shelf = ({ cards, empty }) => (
     cards.length ? (
-      <div className="fw-mirror-shelf" style={{ display: "flex", gap: 12, overflowX: "auto", padding: "2px 2px 8px", scrollbarWidth: "none", WebkitMaskImage: "linear-gradient(90deg, #000 0, #000 calc(100% - 26px), transparent 100%)", maskImage: "linear-gradient(90deg, #000 0, #000 calc(100% - 26px), transparent 100%)" }}>
+      <div className="fw-mirror-shelf" style={{ display: "flex", gap: 12, overflowX: "auto", padding: "2px 0 8px 16px", margin: "0 -16px", scrollbarWidth: "none", WebkitMaskImage: "linear-gradient(90deg, #000 0, #000 calc(100% - 26px), transparent 100%)", maskImage: "linear-gradient(90deg, #000 0, #000 calc(100% - 26px), transparent 100%)" }}>
         <style>{`.fw-mirror-shelf::-webkit-scrollbar{display:none}`}</style>
-        {cards.map((it) => <div key={it.id} style={{ flex: "0 0 240px", height: 360 }}><CoverCard item={it} compact onOpen={() => setExpanded(it)} /></div>)}
+        {cards.map((it) => <div key={it.id} style={{ flex: "0 0 89vw", maxWidth: 400, height: 360 }}><CoverCard item={it} compact onOpen={() => setExpanded(it)} /></div>)}
       </div>
     ) : <p style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 14, color: T.muted, margin: "0 2px" }}>{empty}</p>
   );

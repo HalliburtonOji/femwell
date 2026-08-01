@@ -27,6 +27,7 @@ import { pickProfile } from "@/utils/userProfile";
 import { createPageUrl } from "@/utils";
 import { fmtDuration } from "@/utils/duration";
 import { isClickbait } from "@/utils/clickbait";
+import { cleanTitle } from "@/utils/cleanTitle";
 
 const dayOffset = () => Math.floor(Date.now() / 86400000);
 const rotateDaily = (pool, n = 6) => {
@@ -85,7 +86,7 @@ export default function Tonight() {
     (async () => {
       try {
         const rows = await base44.entities.LifestyleItems.filter({ status: "PUBLISHED" }, "-engagement_score", 500).catch(() => []);
-        if (alive) setItems((Array.isArray(rows) ? rows : []).filter((r) => !isClickbait(r && r.title)));
+        if (alive) setItems((Array.isArray(rows) ? rows : []).filter((r) => !isClickbait(r && r.title)).map((r) => (r ? { ...r, title: cleanTitle(r.title) } : r)));
       } catch { /* graceful */ }
       // the nightly assembly — a chapter + the sky, both refresh on their own
       try { const ds = await base44.entities.DailyStory.filter({ is_active: true }, "-day_number", 1).catch(() => []); if (alive && ds?.[0]) setStory(ds[0]); } catch { /* no story tonight */ }
@@ -181,7 +182,7 @@ export default function Tonight() {
         {chapterCard && (
           <Section Icon={BookOpen} title="Tonight's chapter" accent={cwOf("crimson").petal}
             sub="A few pages of a story, a chapter a night. The oldest wind-down there is.">
-            <div style={{ maxWidth: 300 }}><CoverCard item={chapterCard} onOpen={() => setExpanded(chapterCard)} /></div>
+            <div style={{ maxWidth: "min(90vw, 404px)" }}><CoverCard item={chapterCard} onOpen={() => setExpanded(chapterCard)} /></div>
           </Section>
         )}
 
@@ -189,7 +190,7 @@ export default function Tonight() {
         {skyCard && (
           <Section Icon={Stars} title="The night sky" accent={lav}
             sub="Where the moon is tonight, and a little folklore to close on — held lightly, just for the comfort of it.">
-            <div style={{ maxWidth: 300 }}><CoverCard item={skyCard} onOpen={() => setExpanded(skyCard)} /></div>
+            <div style={{ maxWidth: "min(90vw, 404px)" }}><CoverCard item={skyCard} onOpen={() => setExpanded(skyCard)} /></div>
           </Section>
         )}
 
@@ -197,9 +198,9 @@ export default function Tonight() {
         <Section Icon={Wind} title="Something calm to end on" accent={cwOf("sage").petal}
           sub="A short meditation, a slow stretch, a soft voice — press play right here and let your shoulders drop.">
           {calmCards.length ? (
-            <div className="fw-ton-shelf" style={{ display: "flex", gap: 12, overflowX: "auto", padding: "2px 2px 8px", scrollbarWidth: "none", WebkitMaskImage: "linear-gradient(90deg, #000 0, #000 calc(100% - 26px), transparent 100%)", maskImage: "linear-gradient(90deg, #000 0, #000 calc(100% - 26px), transparent 100%)" }}>
+            <div className="fw-ton-shelf" style={{ display: "flex", gap: 12, overflowX: "auto", padding: "2px 0 8px 16px", margin: "0 -16px", scrollbarWidth: "none", WebkitMaskImage: "linear-gradient(90deg, #000 0, #000 calc(100% - 26px), transparent 100%)", maskImage: "linear-gradient(90deg, #000 0, #000 calc(100% - 26px), transparent 100%)" }}>
               <style>{`.fw-ton-shelf::-webkit-scrollbar{display:none}`}</style>
-              {calmCards.map((it) => <div key={it.id} style={{ flex: "0 0 250px", height: 366 }}><CoverCard item={it} compact onOpen={() => setExpanded(it)} /></div>)}
+              {calmCards.map((it) => <div key={it.id} style={{ flex: "0 0 89vw", maxWidth: 400, height: 366 }}><CoverCard item={it} compact onOpen={() => setExpanded(it)} /></div>)}
             </div>
           ) : <p style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 14, color: T.muted, margin: "0 2px" }}>A calm thing lands here as the library fills out.</p>}
         </Section>
