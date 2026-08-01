@@ -1,7 +1,18 @@
 # FEMWELL — CANONICAL STATUS INDEX (read first · updated 2026-06-30)
 **This file is the single source of truth AND the index to every plan doc. If anything else disagrees, this wins.** (The long ship-log history continues below the index.)
 
-## 📐 CLIPBOARD/CARD SIZE + FRAME PASS — PREVIEW SHIPPED, ⏸ PAUSED FOR HALLI (2026-07-31)
+## 📐 CLIPBOARD/CARD SIZE + FRAME PASS — ✅ ROLLED TO ALL 11 BOARDS + VERIFIED (2026-08-01)
+Halli approved the direction, asked for a notch bigger (~88-90%) + roll to all boards + strip ingested title emphasis.
+- **Sizes bumped:** board content cards → **89vw (89% at 360/390/430), 15px peek**; Lifestyle shell in-clipboard cards ~86-87% (20-24px peek); clipboard board → `min(90vw,440)`; PeekShelf 94%.
+- **PEEK FIX (key):** at 89vw the container's 16px side padding swallowed the peek → **shelves now bleed to the screen edges** (`margin:0 -16px`, `padding-left:16` keeps cards aligned with headings), so the wide card keeps a visible sliver AND wasted outer margin is trimmed. Guarded by the page's `overflowX:clip`.
+- **ROLLED to all 9 content boards** (Mirror/Move/Kindred/Delight/Nest/Tonight/Becoming/Outside/Money) + Curious; **Make is editorial (no shelf) = no-op**. Each: 250/240px→89vw, shelf bleed, feature cards 300→`min(90vw,404)`, `cleanTitle()`.
+- **cleanTitle util** (`src/utils/cleanTitle.js`) strips ingested `*emphasis*`/`_marks_`/`~` from titles (the "The *PERFECT* Wellness Routine" case) at each board's item source + the shell. **Live-confirmed: 0 asterisk leaks** across boards.
+- **VERIFIED (real pixels, all 11):** card% **89** everywhere, peek **15px** (single-card shelves correctly no-peek e.g. Money "Worth a read"), **no page overflow at 360/390/430**, no persistent console/net errors (Tonight/Money/Make showed transient 500s once, gone on clean re-run — flaky backend, not the change), no stray asterisks, on-brand. Screenshots `scratchpad/visualqa/R_<board>.png`.
+- **NOTHING OUTSIDE LIFESTYLE CHANGED — code-confirmed:** `wide`/`light` default OFF; grep shows **only `LifestyleEliteShell` opts in**. Every other `ClipboardSlider`/`Clipboard` caller (Community, Doctor Export, JournalHub, all demos) renders byte-identical. Shared `CoverCard` untouched.
+- **Commits:** size bump + cleanTitle + Curious bleed + 9-board roll. Deployed `npx base44 site deploy -y`, build EXIT 0. Reversible, no new entity/function.
+- **⚠️ Build-fail caught + fixed:** a `{/* */}` JSX comment inside a ternary branch broke the Curious build (EXIT 1) — fixed to `//`, rebuilt EXIT 0, redeployed. (Lesson: `{/* */}` can't sit as a bare sibling inside `cond ? ( … )`.)
+
+## 📐 CLIPBOARD/CARD SIZE + FRAME PASS — PREVIEW SHIPPED (superseded by the roll above) (2026-07-31)
 Halli: boards/cards read too small, frames too heavy → fill ~85% + lighten frame. **Preview on Lifestyle shell + ONE board (Curious) ONLY — do NOT roll to the other 10 until approved.**
 - **MEASURED baseline (live):** Curious cards were fixed **250px = 69%@360 / 64%@390 / 58%@430** (shrink as % on bigger screens); Lifestyle inner cards ~80%; clipboard board fixed 365px.
 - **AFTER (live-measured):** Curious cards **85% at all widths** (306/332/366px); Lifestyle inner cards **~84-85%**. **No page overflow at 360/390/430** (scrollW==vw), console 0, net 0.
