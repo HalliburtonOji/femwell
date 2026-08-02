@@ -26,7 +26,7 @@ A woman's life is a **garden, not a chart.** It has **seasons** (the cycle), **l
 
 ## ✅ AGREED vs ⏳ PROPOSED (this file is ONE bible; build only to AGREED)
 **This is the single source of truth — edited IN PLACE; do NOT spawn parallel brand docs.** The flora system and the "ecosystem" are NOT separate things — they're §5 and §10 here. Phone-readable export: `femwell-handoff/BRAND-BIBLE.html` (= the in-app **"Brand Bible"** in Ideas — the only brand entry; the old "Living Ecosystem / Brand Identity / Flora & Meaning" entries are folded into it).
-- **✅ AGREED (locked canon — §0–§9 + §10.1–§10.5 + §11):** north star/soul · **voice — warm · funny · nurturing · soulful, *with* the omen/almanac flavour (Halli confirmed 2026-06-20: "keep it", locked)** · typography · colour (+ WCAG) · the FULL flora system incl. the **64-flower library** (§5.4) + recognisability (§5.0) + the **lifecycle stages** (§10.1) + meaning/fingerprint/page-character · cards + the **quick-action popup** (§6.7.6) · **the Clipboard Stack Slider** (§6.10) · **the OMEN FEATURE — the rotating tap-to-reveal omen headers + the fauna/omen meanings + the safety rails (Halli APPROVED 2026-06-27 → §10.2–10.4 are now canon; rides existing signals, no new function)** · page structure · components/motion/nav · **the GLOBAL PAGE STANDARDS (§11) — the Lifestyle-proven PER-PAGE BUILD LIFECYCLE (§11.0: motherboard → per-piece researched builds → measured content → drop live & deploy per piece → real-pixel verify → deep adversarial audit → no new fn) + card-sizing/light-frame · one-tap media · in-place reader · content-safety · formatting hygiene · the real-pixel QA gate · delivery cache-buster (Halli 2026-08-01)**.
+- **✅ AGREED (locked canon — §0–§9 + §10.1–§10.5 + §11):** north star/soul · **voice — warm · funny · nurturing · soulful, *with* the omen/almanac flavour (Halli confirmed 2026-06-20: "keep it", locked)** · typography · colour (+ WCAG) · the FULL flora system incl. the **64-flower library** (§5.4) + recognisability (§5.0) + the **lifecycle stages** (§10.1) + meaning/fingerprint/page-character · cards + the **quick-action popup** (§6.7.6) · **the Clipboard Stack Slider** (§6.10) · **the OMEN FEATURE — the rotating tap-to-reveal omen headers + the fauna/omen meanings + the safety rails (Halli APPROVED 2026-06-27 → §10.2–10.4 are now canon; rides existing signals, no new function)** · page structure · components/motion/nav · **PART II — THE OPERATING BRAIN (§11–§18, how we build; Lifestyle = reference implementation): §11 the PER-PAGE BUILD LIFECYCLE · §12 content system · §13 interaction/layout · §14 engineering constraints · §15 QA gate · §16 personalisation model · §17 reversibility discipline · §18 the doc map (Halli 2026-08-01)**.
 - **⏳ PROPOSED (NOT canon — needs Halli's explicit yes; §10.6):** the **wax-seal / sealed-letter / growing-vine / pressed-flower craft** (§10.6) · the formal **Caregiver-Sage-Innocent archetype**. Do NOT build these as canon until signed off.
 
 **APPENDICES (deep + cited; this master is self-sufficient without them):**
@@ -34,7 +34,7 @@ A woman's life is a **garden, not a chart.** It has **seasons** (the cycle), **l
 - `claude-state/BRAND_IMAGE_RESEARCH.md` — the botanical-system research (Aesop/Art Nouveau/Morris/fleuron).
 
 **MASTER INDEX:**
-0. Pre-build checklist · 1. Typography (fonts + `.fw-*` cascade + role scale) · 2. Colour (tokens + retired + phase hues + **2.5 colourways**) · 3. The heart mark · 4. Botanical brand-image system (leaves/corners/dividers/flourishes) · 5. Bloom craft (RichBloomV2) + **5.0 recognisability** · 5.1 Flora backbone & meaning · 5.2 Variety + flora fingerprint · 5.3 Page character · **5.4 THE BOTANICAL LIBRARY (60+ named species — `floraLibrary.jsx`)** · **6. Surfaces & components** (incl. **6.7.0 the CARD LANGUAGE — the card-type vocabulary** · **6.7.6 the quick-action popup** · **6.10 the Clipboard Stack Slider**) (6.1 cards · 6.2 backgrounds/scrims · 6.3 buttons · 6.4 chips/inputs/sheets/toggles · 6.5 nav · 6.6 icons/links) · 7. How it's applied · **8. Component map** · **10. THE LIVING ECOSYSTEM** (v4 — lifecycle stages · fauna/omens · the rotating omen engine · safety rails · the soulful voice · craft-that-means) · **11. GLOBAL PAGE STANDARDS** (Lifestyle-proven, page-agnostic — **11.0 the per-page BUILD LIFECYCLE** · card-sizing/light-frame · one-tap media · in-place reader · magazine cards · content-safety · formatting hygiene · real-pixel QA gate · delivery) · 9. Appendices & in-app mirrors.
+0. Pre-build checklist · 1. Typography (fonts + `.fw-*` cascade + role scale) · 2. Colour (tokens + retired + phase hues + **2.5 colourways**) · 3. The heart mark · 4. Botanical brand-image system (leaves/corners/dividers/flourishes) · 5. Bloom craft (RichBloomV2) + **5.0 recognisability** · 5.1 Flora backbone & meaning · 5.2 Variety + flora fingerprint · 5.3 Page character · **5.4 THE BOTANICAL LIBRARY (60+ named species — `floraLibrary.jsx`)** · **6. Surfaces & components** (incl. **6.7.0 the CARD LANGUAGE — the card-type vocabulary** · **6.7.6 the quick-action popup** · **6.10 the Clipboard Stack Slider**) (6.1 cards · 6.2 backgrounds/scrims · 6.3 buttons · 6.4 chips/inputs/sheets/toggles · 6.5 nav · 6.6 icons/links) · 7. How it's applied · **8. Component map** · **10. THE LIVING ECOSYSTEM** (v4 — lifecycle stages · fauna/omens · the rotating omen engine · safety rails · the soulful voice · craft-that-means) · **— PART II · THE OPERATING BRAIN (how we build) — 11. the PER-PAGE BUILD LIFECYCLE · 12. Content system (measure/denylist/never-fake · tone firewalls · magazine cards · whole-life map) · 13. Interaction & layout (89%-card/peek/edge-bleed/light-frame · one-tap media · reader-in-place · pickers · formatting) · 14. Engineering constraints & gotchas (50-fn cap · deploy surfaces · cache-buster · delegation gotcha) · 15. QA & verification (real-pixel gate · catalogues · agent roster) · 16. Personalisation model (pickProfile · phase · cross-user rule) · 17. Reversibility discipline · 18. THE DOC MAP (index to every canonical doc)** · 9. Appendices → folded into §18.
 
 ---
 
@@ -713,66 +713,196 @@ Every section is **headed by a flower/bouquet** that reflects the section + her 
 
 ---
 
-## 11. GLOBAL PAGE STANDARDS — the LIFESTYLE-PROVEN canon (page-agnostic · ✅ AGREED · Halli 2026-08-01) · v1
-> **These are not Lifestyle rules — they are the rules Lifestyle PROVED, promoted to app-wide canon so EVERY future page inherits them.** §6.8.2 gives the page *skeleton*; **§11.0 gives the PROCESS every page is built by**; §11.1–§11.8 give the *standards of craft, safety and proof* each piece must meet. Each was earned against real pixels + real taps on the Lifestyle shell + its 11 whole-life boards. Build every page this way; a page that misses one is a fix target, not a variant.
+# PART II — THE OPERATING BRAIN (how we build) · §11–§18
+> **§1–§10 above are THE BRAND — what FemWell *is* and looks like. §11–§18 are THE OPERATING BRAIN — the workflows, constraints and proof-standards a future session reads to understand how everything works and how to build.** All of it was earned on the Lifestyle page + its 11 whole-life boards: **Lifestyle is the reference implementation.** These sections are an INDEX, not a dump — where a detailed doc already exists, they point to it (see §18 THE DOC MAP), and only carry fresh prose where no canonical doc does. **§11** = the lifecycle (the process) · **§12–§15** = the standards each step meets (content · interaction · engineering · QA) · **§16–§17** = the data model + change discipline · **§18** = the index to everything.
 
-### 11.0 THE PER-PAGE BUILD LIFECYCLE — how EVERY page is built (Lifestyle is the reference implementation) — ✅ AGREED · Halli 2026-08-01
-> **This is the PROCESS, not just the product. Every future page goes through the EXACT lifecycle Lifestyle did — it does not merely inherit the visual tokens below.** The order is load-bearing: skipping a step is how thin shells, faked shelves and DOM-only "green" got shipped before. Run all seven, in order, per page.
-1. **MOTHERBOARD FIRST.** Lay the WHOLE page out as one board — every section, every surface it must serve (Today · Journal · Community · Nutrition · Lifestyle · Health · Pulse · Planner · Profile · Programs · Jess · Events · Deals — CLAUDE.md "wire ALL the surfaces") — **then strip it into tiny, independently-buildable pieces.** Plan the whole before building any part.
-2. **PER-PIECE: RESEARCH → BRAINSTORM → BUILD WITH SUBSTANCE, ONE AT A TIME.** For each piece, a focused **researched brainstorm FIRST** (best-practice + **cited science where relevant** — dispatch Ms Deep Search; never generic) BEFORE a line is built. Then build that ONE piece with **real substance** — real content, real chrome, a real action. **Never fan thin shells across many names** (the single most-repeated failure); one substantial piece beats five hollow ones.
-3. **MEASURE CONTENT BEFORE BUILDING ANY CONTENT SURFACE (§11.5).** Raw entity counts **overstate usable content 3–5×** once pollution is filtered — count what actually passes the **domain denylist** (`title+subtitle+summary+excerpt+tags+category`), per section, first. **Never fake a shelf:** thin → lean-editorial or deep-link to a real destination; **honest empty-states**, never a blank card.
-4. **DROP EACH FINISHED PIECE STRAIGHT ONTO THE LIVE PAGE — reversible, nothing stripped.** No parallel "demo shells" that never land (a `/XxxDemo` the user can't reach is a FAILURE — CLAUDE.md); build INTO the live page as an additive, revertible change. **Deploy PER PIECE** (git push + `npx base44 site deploy -y` + the per-build cache-buster §11.8). Default is ADD/IMPROVE — never strip an existing feature without explicit sign-off.
-5. **VERIFY EACH PIECE WITH REAL PIXELS + REAL INTERACTION (§11.7).** The headless screenshot pipeline at **360/390/430** + **actual taps** — never DOM-asserts alone. A piece isn't landed until its pixels *and* behaviour are proven, then re-screenshot.
-6. **END WITH A DEEP ADVERSARIAL AUDIT of the WHOLE page** — visual + functional + content + console/network — assume it's broken until proven otherwise. Produce a **severity-ranked defect catalogue (P0/P1/P2) with a screenshot or interaction-log per issue**, fix in priority order, and **re-prove each fix**. A page is not "done" — and is **not reported as done** — until that audit passes.
-7. **NO NEW BASE44 ENTITY/FUNCTION WITHOUT EXPLICIT SIGN-OFF** (the ~50-function cap is real). Fold new behaviour into **existing dispatchers**; a schema/function delta is an MP for sign-off (Ms Data / Mr Lead Manager), never a silent add.
+## 11. THE PER-PAGE BUILD LIFECYCLE — how EVERY page is built (Lifestyle = reference implementation · ✅ AGREED · Halli 2026-08-01) · v1
+> **This is the PROCESS, not just the product. Every future page goes through the EXACT lifecycle Lifestyle did — it does not merely inherit the visual tokens.** §6.8.2 gives the page *skeleton*; this gives the *order of operations*. It is load-bearing: skipping a step is how thin shells, faked shelves and DOM-only "green" got shipped before. Run all seven, in order, per page; the craft each step must meet lives in §12 (content) · §13 (interaction) · §14 (engineering) · §15 (QA).
 
-**Lifestyle IS the reference implementation of all seven** — motherboard → per-piece researched builds (the 11 whole-life boards, one at a time, real substance) → measured content + denylists + honest empty-states → dropped live and deployed per piece → real-pixel/real-tap verification → the deep adversarial QA catalogue (P0–P2, fixed + re-proven) → zero new entities/functions. **Bring any page to standard by walking this list; §11.1–§11.8 are the bar each piece clears.**
+### 11.1 MOTHERBOARD FIRST
+Lay the WHOLE page out as one board — every section, every surface it must serve (Today · Journal · Community · Nutrition · Lifestyle · Health · Pulse · Planner · Profile · Programs · Jess · Events · Deals — CLAUDE.md "wire ALL the surfaces") — **then strip it into tiny, independently-buildable pieces.** Plan the whole before building any part. (Lifestyle's board: `femwell-handoff/LIFESTYLE-MOTHERBOARD.html`.)
 
-### 11.1 CARD & CLIPBOARD SIZING + LIGHT FRAME (supersedes any small-fixed-px card) — ✅ AGREED
-- **In-focus card = ~89% of the VIEWPORT** (measured 89% at 360/390/430 — never a fixed px like `250px`, which reads small AND *shrinks as a %* on wider phones: 250px was 69%@360 but 58%@430). Express the width in `vw`; cap with a `maxWidth` (~400) so it stays a card on tablets.
+### 11.2 PER-PIECE: RESEARCH → BRAINSTORM → BUILD WITH SUBSTANCE, ONE AT A TIME
+A focused **researched brainstorm FIRST** (best-practice + **cited science where relevant** — dispatch **Ms Deep Search**; never generic) BEFORE a line is built. Then build that ONE piece with **real substance** — real content, real chrome, a real action. **Never fan thin shells across many names** (the single most-repeated failure); one substantial piece beats five hollow ones. (The 10 board brainstorms live at `claude-state/TRACKC_*_BRAINSTORM.html` — §18.3.)
+
+### 11.3 MEASURE CONTENT BEFORE BUILDING → §12
+Raw entity counts **overstate usable content 3–5×** once pollution is filtered — count what actually passes the **domain denylist** per section BEFORE designing the shelf; **never fake a shelf.** Full pattern: **§12 THE CONTENT SYSTEM**.
+
+### 11.4 DROP EACH FINISHED PIECE STRAIGHT ONTO THE LIVE PAGE — deploy per piece → §14, §17
+Reversible, nothing stripped; **no parallel "demo shells" that never land** (an unreachable `/XxxDemo` is a FAILURE — CLAUDE.md). Build INTO the live page as an additive, revertible change; **deploy PER PIECE** (git push + `npx base44 site deploy -y` + the cache-buster). Deploy surfaces = **§14.2**; reversibility = **§17**.
+
+### 11.5 VERIFY EACH PIECE — real pixels + real interaction → §15
+The headless screenshot pipeline at **360/390/430** + **actual taps**, never DOM-asserts alone. A piece isn't landed until its pixels *and* behaviour are proven, then re-screenshot. Full gate: **§15 QA & VERIFICATION**.
+
+### 11.6 END WITH A DEEP ADVERSARIAL AUDIT of the WHOLE page → §15
+Visual + functional + content + console/network; assume broken until proven. Produce a **severity-ranked catalogue (P0/P1/P2) with proof per issue**, fix in priority order, **re-prove each fix**. A page is not "done" — and is **not reported as done** — until it passes. Reference catalogue: `femwell-handoff/LIFESTYLE-QA-CATALOGUE.html`.
+
+### 11.7 NO NEW BASE44 ENTITY/FUNCTION WITHOUT SIGN-OFF → §14
+The ~50-function cap is real. Fold new behaviour into **existing dispatchers**; a schema/function delta is an MP for sign-off (Ms Data / Mr Lead Manager), never a silent add. Detail: **§14.1**.
+
+**Lifestyle IS the reference implementation of all seven** — motherboard → per-piece researched builds (11 boards, one at a time, real substance) → measured content + denylists + honest empty-states → dropped live + deployed per piece → real-pixel/real-tap verification → the deep adversarial catalogue (fixed + re-proven) → zero new entities/functions.
+
+## 12. THE CONTENT SYSTEM — substance, safety, tone (✅ AGREED · v1)
+> **A page is only as good as the content in its shelves.** The single most-repeated content failure: building a shelf against RAW counts, shipping a half-empty or off-tone rail. Every content surface clears §12 BEFORE it ships. (Deep source: `femwell-handoff/COMMUNITY-SUBSTANCE-MASTER.html`, `research_lifestyle_whole_setup.md`, `WHOLE_LIFE_REBALANCE.html`.)
+
+### 12.1 MEASURE-BEFORE-BUILD + the 3–5× pollution rule
+**Measure real per-section content FIRST.** Raw entity counts **overstate usable content 3–5×** once pollution (wrong-domain, near-duplicate, unpublished, malformed) is filtered. Count what actually passes the denylist, per section, before designing the shelf. (This is §11.3; here is the full rule.)
+
+### 12.2 THE DOMAIN DENYLIST
+A **domain-specific denylist checked against `title + subtitle + summary + excerpt + tags + category`** — never the title alone; pollution hides in the body. Each surface owns its denylist. (Ref: the per-board `DENY`/`hasAny` in `src/pages/{Move,Curious,…}.jsx`.)
+
+### 12.3 NEVER FAKE A SHELF
+Thin section → **lean-editorial** (a prompt/ritual spine + an **honest empty-state**) or **deep-link to a real destination** (Community/Events/Deals) — never a blank card, never filler, never a stock image. (Lifestyle's Free-Classics fallback + the leanest boards Make/Money are the pattern.)
+
+### 12.4 CITE SCIENCE HONESTLY
+Real claims with sources; **no vendor "+40%"-style figures**; say "well-evidenced" only where it genuinely is. (Cited examples live in the TRACKC brainstorms — §18.3.)
+
+### 12.5 ANTI-FRAME COPY NEVER NAMES THE JARGON IT REJECTS
+"Rest counts even when sleep doesn't come" — **not** "no orthosomnia here." **Naming the frame plants it.** Whole-life, lighthearted-by-default; let life-stage gently *tint*, never dominate.
+
+### 12.6 PER-DOMAIN TONE FIREWALLS
+Each content domain carries a **firewall** — the failure mode it must never slip into, enforced by copy + denylist + what it refuses to surface:
+- **Nutrition ≠ diet-culture** — never calories-as-score/shrinking; "room for ~X, a friendly heads-up, not a target."
+- **Tonight/sleep ≠ orthosomnia** — ZERO sleep scores/debt/trackers; rest counts even when sleep doesn't come (documented anxiety from sleep-*tracking*).
+- **Move ≠ shrinking** — "movement lifts mood, the best-evidenced part; not calories, not size."
+- **Community ≠ pile-on** — anonymity proven server-side, comment-level safety parity, crisis-gated (§16.5, `femwell-community-authorhash-bearer-token`).
+- **Health ≠ overreach** — clinical claims stay in Health/Doctor-Export; other pages never diagnose. "Not medical advice — Jess is a wellness companion."
+> These are hard firewalls, not vibes; the whole-life domain list + each domain's warmth is CLAUDE.md's "whole-life wellness, not a clinical tracker."
+
+### 12.7 THE MAGAZINE CONTENT-CARD STANDARD
+**Collapsed card = a real hook/teaser** (a genuine snippet from the item, never an empty container — §6.7.2). **Opening reveals MORE than the summary, drawn from the item's OWN body** — never an echo of the hook, never invented text to fill space. If the body genuinely has no more, the card **deep-links to the real destination** rather than padding.
+
+### 12.8 THE WHOLE-LIFE DOMAIN MAP
+FemWell is a **whole-life wellness app, not a health tracker — health is one room, not the house.** Every feature spans life domains: relationships · dating/marriage · friendship · career/work · money · interests/hobbies · fashion/beauty · creativity · identity · joy/fun · entertainment · community/venting — *alongside* health/cycle. Lifestyle's 11 boards ARE this map made concrete (Mirror·Move·Kindred·Curious·Delight·Nest·Tonight·Becoming·Make·Outside·Money). Reference: CLAUDE.md "WHOLE-LIFE WELLNESS" + `WHOLE_LIFE_REBALANCE.html`.
+
+## 13. INTERACTION & LAYOUT STANDARDS (✅ AGREED · v1)
+> The look-and-feel bars every piece clears. (Card *taxonomy/anatomy* is §6.7; this is *behaviour + sizing*.)
+
+### 13.1 CARD & CLIPBOARD SIZING
+- **In-focus card = ~89% of the VIEWPORT** (measured 89% at 360/390/430 — never a fixed px like `250px`, which reads small AND *shrinks as a %* on wider phones: 250px was 69%@360 but 58%@430). Express width in `vw`; cap with a `maxWidth` (~400) so it stays a card on tablets.
 - **Keep a ~15px PEEK SLIVER of the next card** — the only honest signal that the row slides. A card that fills the whole width kills the affordance; a single-card shelf correctly shows no peek.
-- **SHELVES BLEED to the screen edges** (`margin: 0 -16px`, `padding-left: 16` so the first card still aligns with the section headings). This is what makes a ~89% card *and* a peek both fit inside a 16px-padded container — and it trims wasted outer margin (a card must feel generous, not a small box floating in cream). **Guard the page with `overflowX: clip`** so the bleed never becomes a horizontal page scroll.
+- **SHELVES BLEED to the screen edges** (`margin: 0 -16px`, `padding-left: 16` so the first card still aligns with the section headings). This is what makes a ~89% card *and* a peek both fit inside a 16px-padded container — and it trims wasted outer margin. **Guard the page with `overflowX: clip`** so the bleed never becomes a horizontal page scroll.
+
+### 13.2 THE LIGHT FRAME + the `wide`/`light` mechanism
 - **FRAMES ARE LIGHT — content dominates, frame recedes (§6.1 "cream-on-cream, hairline + a *tiny* shadow").** Thin borders (1px hairline; a 3px accent spine, not 4), reduced nesting/chrome, quiet corner sprigs + binder-clip, softer shadow, trimmed padding. A heavy nested frame eats space and adds noise; the frame is furniture for the content, never the subject.
-- **MECHANISM:** the `wide` + `light` opt-in props on `ClipboardSlider`/`Clipboard` (§6.10 · `src/components/brand/ClipboardSlider.jsx`) are the reference — `wide` = responsive board `min(90vw,440)` with a real peek; `light` = the trimmed frame, passed down to boards. **Opt-in props default OFF** so a shared component upgrades page-by-page without silently changing every caller (Community/Doctor Export/demos stayed byte-identical while Lifestyle adopted it). Board pages that own their own `Shelf` apply the same `89vw` + bleed directly.
+- **MECHANISM:** the `wide` + `light` opt-in props on `ClipboardSlider`/`Clipboard` (§6.10 · `src/components/brand/ClipboardSlider.jsx`) are the reference — `wide` = responsive board `min(90vw,440)` with a real peek; `light` = the trimmed frame, passed down to boards. **Opt-in props default OFF** so a shared component upgrades page-by-page without silently changing every caller (Community/Doctor Export/demos stayed byte-identical while Lifestyle adopted it — §17.1). Board pages that own their own `Shelf` apply the same `89vw` + bleed directly.
 
-### 11.2 MEDIA = ONE TAP ON THE CARD FACE — ✅ AGREED
-- **Video and audio play IN PLACE on a SINGLE tap on the card face** — never expand-then-play, never a route away. The card face itself carries the player affordance (a bloom-play over the FloraCover poster).
-- Video → **`FloraYouTube`** (lite-facade: no iframe until the tap, then `autoplay=1` swaps in `youtube-nocookie` in-card) or **`FloraVideo`** (poster → real `<video autoPlay playsInline>`). Audio → **`FloraAudio`** (play button on the face; the global podcast player keeps it playing while she browses). All in `expandCards.jsx`.
-- **PROOF BAR:** "plays" means **frames / `currentTime` actually advance on a real tap** (measured), not "an iframe/`<video>` is present." Tap-count is the KPI — the recurring failure was 3-taps-and-a-navigation dressed up as inline.
+### 13.3 ONE-TAP CARD-FACE MEDIA
+- **Video and audio play IN PLACE on a SINGLE tap on the card face** — never expand-then-play, never a route away. Video → **`FloraYouTube`** (lite-facade: no iframe until the tap, then `autoplay=1` swaps in `youtube-nocookie` in-card) or **`FloraVideo`** (poster → real `<video autoPlay playsInline>`); audio → **`FloraAudio`** (play on the face; global podcast player keeps it going while she browses). All in `expandCards.jsx`.
+- **PROOF BAR:** "plays" means **frames / `currentTime` actually advance on a real tap** (measured) — not "an iframe/`<video>` is present." Tap-count is the KPI; the recurring failure was 3-taps-and-a-navigation dressed up as inline.
 
-### 11.3 READER IN PLACE (≤2 taps, no slow route) — ✅ AGREED
-- **A reader opens IN PLACE in ≤2 taps** — a sheet/overlay over the current page, never a navigation to a slow detail route (`/…Detail`-style routes are demoted to a secondary "open full-screen", never the primary path).
-- **Authored chapters carry markdown — render it, never dump it raw.** `## Chapter N — Title` → a styled heading, `**bold**` → bold, via `src/utils/chapterProse.jsx` (`ChapterProse`/`ChapterBlock`); a preview clips through `storyPreview()`. **`stripHtml()` is NOT enough** — it strips tags but leaves `##` literal *and* collapses the `\n\n` that separates paragraphs. Reading craft itself is §6.7.8.
+### 13.4 READER IN PLACE (≤2 taps, no slow route)
+- **A reader opens IN PLACE in ≤2 taps** — a sheet/overlay over the current page, never a navigation to a slow detail route (`/…Detail`-style routes demoted to a secondary "open full-screen").
+- **Authored chapters carry markdown — render it, never dump it raw.** `## Chapter N — Title` → styled heading, `**bold**` → bold, via `src/utils/chapterProse.jsx` (`ChapterProse`/`ChapterBlock`); previews clip through `storyPreview()`. **`stripHtml()` is NOT enough** — it strips tags but leaves `##` literal *and* collapses the `\n\n` that separates paragraphs. Reading *craft* (measure/leading/indent-xor-space) is §6.7.8.
 
-### 11.4 MAGAZINE CONTENT CARDS — collapsed teases, open reveals MORE — ✅ AGREED
-- **Collapsed card = a real hook/teaser** (a genuine snippet from the item, never an empty container — §6.7.2). **Opening reveals MORE than the summary, drawn from the item's OWN body** — never an echo of the hook, never invented text to fill space. If the body genuinely has no more, the card deep-links to the real destination rather than padding.
+### 13.5 PICKERS / JUMP-TO SWITCHER
+- **A picker/chip must actually switch content** (proven by a real tap, §15) — never a dead label. **Every multi-layer page carries a central "Jump to" switcher** (the canonical `JournalHubSheet` bottom-sheet pattern; CLAUDE.md UX rule) in addition to its tabs/doors.
 
-### 11.5 CONTENT-SAFETY PATTERN — mandatory for EVERY content surface — ✅ AGREED
-> The single most-repeated content failure: building a shelf against RAW counts, then shipping a half-empty or off-tone rail. Every content surface follows this BEFORE it ships.
-1. **MEASURE real per-section content FIRST.** Raw entity counts **overstate usable content 3–5×** once pollution (wrong-domain, near-duplicate, unpublished, malformed) is filtered. Count what actually passes the denylist, per section, before designing the shelf.
-2. **DOMAIN-SPECIFIC DENYLIST, checked against `title + subtitle + summary + excerpt + tags + category`** — not the title alone; pollution hides in the body. Each surface owns its denylist.
-3. **NEVER FAKE A SHELF.** If a section is genuinely thin, go **lean-editorial** (a prompt/ritual spine + honest empty-state) or **deep-link to a real destination** (Community/Events/Deals) — never a blank card, never filler, never a stock image.
-4. **CITE SCIENCE HONESTLY** — real claims with sources; no vendor "+40%"-style figures; say "well-evidenced" only where it is.
-5. **ANTI-FRAME COPY MUST NOT NAME THE JARGON IT REJECTS.** "Rest counts even when sleep doesn't come" — **not** "no orthosomnia here." Naming the frame plants it. (Whole-life, lighthearted-by-default; let life-stage gently *tint*, never dominate — CLAUDE.md.)
+### 13.6 FORMATTING HYGIENE — no raw data on the face
+- **Durations through the ONE shared formatter** `src/utils/duration.js` `fmtDuration()` — **never print `duration_label`/`duration_seconds` raw** (rows store raw seconds like `"2700"`). Every board, the shell, media players and the listen grid import it.
+- **`cleanTitle()`** (`src/utils/cleanTitle.js`) strips stray `*asterisks*`/`_marks_`/`~` from INGESTED titles at the item source (a creator's "The \*PERFECT\* Routine" must not surface literal asterisks), preserving legit `file_name`/`A&E`.
 
-### 11.6 FORMATTING HYGIENE — shared formatters, no raw data on the face — ✅ AGREED
-- **Durations through the ONE shared formatter** `src/utils/duration.js` `fmtDuration()` — **never print `duration_label`/`duration_seconds` raw** (rows store raw seconds like `"2700"`; printing them leaks "2700" onto a card). Every board, the shell, media players and the listen grid import it.
-- **`cleanTitle()`** (`src/utils/cleanTitle.js`) strips stray `*asterisks*`/`_marks_`/`~` from INGESTED titles at the item source (a creator's "The \*PERFECT\* Routine" must not surface literal asterisks), while preserving legit `file_name`/`A&E`.
+## 14. ENGINEERING CONSTRAINTS & GOTCHAS (✅ AGREED · v1)
+> The platform realities that bite. Each line is a scar; the cited memory/doc holds the full autopsy. (Platform deep-dive: `research_base44_platform.md`.)
 
-### 11.7 VISUAL QA GATE — real pixels + real interaction, never DOM-asserts alone — ✅ AGREED (hard gate)
-- **"Verified" REQUIRES a real screenshot AND a real interaction.** DOM presence/counts are NOT proof — empty-but-present containers, text overflow, right-edge clipping, z-index spill and invisible text all pass a DOM assert while looking broken. This was a real process failure; it is now a hard gate.
-- **The pipeline:** a headless Chromium reusing the persisted authed profile (`scripts/visualQA.cjs`-style) that **screenshots every component / every board full-page at 360 / 390 / 430**, drives the pickers / play-buttons / readers / deep-links as **real taps**, and asserts playback / navigation / state actually happened. Catalogue every defect with a screenshot + the fix, then **re-screenshot to prove** it. **No DOM-only "green."**
-- **Honest limits are part of the gate:** if the session can't authenticate (headless OTP/OAuth isn't completable and entering credentials is prohibited), say so and get the human to foreground an authed browser — never mark an auth-gated write "verified" from an unauthed run.
+### 14.1 THE 50-FUNCTION CAP — fold into existing dispatchers
+Base44 is **over the ~50-function cap**, so **no new entity/function without explicit sign-off.** Fold new behaviour into an **existing dispatcher** (e.g. the Community `entry.ts` action router; `getLifestyleFeed`); a schema/function delta is an MP for Ms Data / Mr Lead Manager, never a silent add.
 
-### 11.8 DELIVERY — the per-build cache-buster (deploys must reach devices) — ✅ AGREED
-- **`index.html` ships with NO `Cache-Control` and base44 does NOT honour `public/_headers`** (measured) — so a plain `location.reload()` re-reads the *cached* stale HTML and the device stays on an old bundle ("nothing's changing"). **The in-app `liveBuildGuard` does a per-build cache-busting reload** (`location.replace` with `?b=<hash>`, keyed per-hash so two deploys/session each land and it can never loop) — that is the real fix, kept in `main.jsx`. Deploy with `node scripts/deploy.mjs` / `npx base44 site deploy -y`; a no-op redeploy keeping the same `index-*.js` hash is success, not failure (deterministic build).
+### 14.2 DEPLOY SURFACES — three separate deploys
+`npx base44 site deploy -y` / `node scripts/deploy.mjs` = **frontend ONLY**; `functions deploy <name>` = backend fns; `entities push` = schemas/RLS. **Don't ship a server fix with a site deploy alone.** New *routes* go live only via `site deploy` from local `dist` — a bare `POST /deploy` drops repo-only routes → 404. Auth is a **platform OAuth token, NOT the api_key** (`base44 login` → `~/.base44/auth/auth.json`, auto-refreshes). Memory: `femwell-base44-deploy-surfaces`, `femwell-preview-route-deploy-method`, `base44-deploy-auth-mechanism`, `femwell-app-jsonc-deploy-config`.
 
----
+### 14.3 CACHE-BUSTER / STALE-BUNDLE
+`index.html` ships with **NO `Cache-Control` and base44 does NOT honour `public/_headers`** (measured) — a plain `location.reload()` re-reads the *cached* stale HTML and the device stays on an old bundle ("nothing's changing"). The in-app **`liveBuildGuard` does a per-build cache-busting reload** (`location.replace` with `?b=<hash>`, keyed per-hash so it can't loop) in `main.jsx`. A no-op redeploy keeping the same `index-*.js` hash is **success, not failure** (deterministic build).
 
-## 9. APPENDICES & IN-APP MIRROR
-- **The ONE in-app brand home:** the **"Brand Bible"** entry in the Ideas page (`components/founders/brandDocs/brand-bible.html`) = the single phone-readable export of this file. There is **exactly one** brand entry now — the former "Living Ecosystem", "Brand Identity" and "Flora & Meaning" entries are **folded into it** (the `BrandIdentityDoc.jsx`/`FloraMeaningDoc.jsx`/`living-ecosystem.html` are retired).
-- **`claude-state/BRAND_FLORA.md`** — deep flora map, floriography + colour-symbolism research, the fingerprint permutation math (§7.1), full sources (a cited *appendix* to §5/§10, not a separate brand doc).
-- **`claude-state/BRAND_IMAGE_RESEARCH.md`** — the botanical-system research brief (Aesop restraint, Art Nouveau whiplash line, William Morris, the fleuron, women's-wellness palette), with sources.
-- **`workspace/CARD_PATTERNS_RESEARCH_2026-06-25.md`** — cited modern-mobile card-pattern research (M3/Carbon/Polaris/NN-g/Apple HIG/EightShapes) behind the §6.7.0 card language, incl. the nested-horizontal-scroll safeguards.
-- **Live flora catalogue:** `/FloraLabDemo` — the full 64-flower library + foliage + lifecycle, rendered.
-- This master is **self-sufficient for building** without opening the appendices; the appendices add the cited "why" and the exhaustive lists.
+### 14.4 THE ROUTED-FILE DELEGATION GOTCHA — read before editing ANY page
+The live route often renders a DIFFERENT file than the page name suggests, and **`pages.config.js`'s prose comments go STALE and LIE** — **grep the Pages MAP, never the comment.** Known: `/Today`→`TodayClipboardDemo` · `/Planner`→`PlannerEliteShell` · `/Lifestyle`→`LifestyleEliteShell` (the unrouted `Lifestyle.jsx` is a DECOY — fixes there never load) · `/Pulse`→`PulseEliteShell` · `/Community`→`Community.jsx` (was `CommunityEliteShell`; flipped). Resolve route→component→file before editing (the audit resolver caught **23 defective files** editing dead code). Memory: `femwell-routed-file-delegation-gotcha`.
+
+### 14.5 base44 PLATFORM NOTES + the small gotchas
+- `base44.entities.User.me()` **does not exist** on the entity client → use **`base44.auth.me()`**. `base44 exec` (from `base44/`) for read/write scripts.
+- `served.js` — the **generated deployed-bundle artifact**; do not hand-edit (it is regenerated on deploy). Treat `dist/` + `served.js` as build output; edit source only. *(Platform specifics: `research_base44_platform.md`.)*
+- **Scalar filter can't array-CONTAINS** (`phase_tags` filter returns 0) → rank via the `getLifestyleFeed` fn instead (§16.3).
+- **`seededRng()` is stateful** — calling it in a React render body drifts values across re-renders; **freeze seeded values in a `useMemo`** (`femwell-seededrng-in-render-drift`).
+- **Single-letter CSS class collisions** — a bare `.d{…}` collides with `class="section d"`; measure section widths headlessly to catch per-word wrap (`femwell-single-letter-class-collision`).
+- **Every sheet/modal must use `.fw-sheet-safe`/`var(--fw-sheet-safe)`** so its last control clears the floating nav (`femwell-sheet-nav-clearance-contract`).
+- **Dev loops:** iterate flora/components via headless Chromium + esbuild SSR of the real component — no deploy (`femwell-flora-render-loop`); literal-390px live QA via Playwright + persisted session (`femwell-390px-qa-playwright-path`).
+
+## 15. QA & VERIFICATION (✅ AGREED · v1 · hard gate)
+> This is §11.5–§11.6 made rigorous. (Reference catalogue: `femwell-handoff/LIFESTYLE-QA-CATALOGUE.html`.)
+
+### 15.1 VERIFIED = real pixels + real interaction, never DOM-asserts
+**"Verified" REQUIRES a real screenshot AND a real interaction.** DOM presence/counts are NOT proof — empty-but-present containers, text overflow, right-edge clipping, z-index spill and invisible text all pass a DOM assert while looking broken. This was a real process failure; it is now a hard gate. **No DOM-only "green."**
+
+### 15.2 THE REAL-PIXEL PIPELINE
+A headless Chromium reusing the **persisted authed profile** (`scripts/visualQA.cjs`-style + `lifestyleAudit`/`lifestyleInteract`/`lifestyleProbe`) that **screenshots every component / every board full-page at 360 / 390 / 430**, drives pickers / play-buttons / readers / deep-links as **real taps**, and asserts playback / navigation / state actually happened (e.g. `currentTime` advanced, URL unchanged, next-card peek px).
+
+### 15.3 SEVERITY-RANKED CATALOGUES
+Every audit ends in a **P0 (broken) / P1 (bad) / P2 (polish)** catalogue — **one screenshot or interaction-log per issue** + the component/file + the fix — fixed in priority order and **re-screenshot to prove**. False positives are dispositioned honestly (e.g. a keep-alive-tab DOM hit is not a live defect).
+
+### 15.4 HONEST AUTH LIMITS
+If the session can't authenticate (headless OTP/OAuth isn't completable, and entering credentials is prohibited), **say so** and get the human to foreground an authed browser — never mark an auth-gated write "verified" from an unauthed run, and never mark a server-403 path "verified" from trace alone without flagging it wasn't black-boxed.
+
+### 15.5 THE NAMED-AGENT QA ROSTER
+**Ms Verify** = the live exit gate after every build (never trusts "vite + eslint green"); **Ms Atelier** = the UI/craft + brand-gate reviewer before ship. Dispatch by name; specs in `.claude/agents/*.md` + `TEAM.md`. (Full roster: §18.6.)
+
+## 16. THE PERSONALISATION MODEL (✅ AGREED · v1)
+> How the app knows *her* — the layer that silently broke for months, now the canon that keeps it working. Evidence trail: STATUS.md "PERSONALISATION ROOT CAUSE" + memory `femwell-userprofile-multiple-rows`.
+
+### 16.1 `pickProfile` — the ONE-profile-row rule
+A user can have **multiple `UserProfile` rows** (the test account has 5) and **only ONE holds her cycle anchor** (`last_period_start_date`). `filter()` returns them newest-first. **NEVER `rows[0]`, NEVER a `limit-1` read** (both miss the real row). Always **`pickProfile()`** (`src/utils/userProfile.js`) — scores rows by completeness (cycle anchor dominates), tie-breaks on newest so single-row users behave exactly as before. Onboarding's two write-phases must both converge on `pickProfile`'s richest row or they split it again.
+
+### 16.2 THE PHASE SYSTEM — never fake a cycle
+Cycle-day/phase derive from the **shared `useCycleDay` hook** off the picked profile; when there is no cycle anchor it returns **`null` + `hasCycle:false`** and the UI routes to honest no-cycle copy. **Never invent a phase** (three separate surfaces once fabricated "Day 1 · follicular" and fed it to the LLM — all deleted). One derivation, normalised (UTC-vs-local split once made two surfaces disagree by a day).
+
+### 16.3 `phase_tags` + `getLifestyleFeed`
+Base44's **scalar filter can't array-CONTAINS `phase_tags`** (measured: returns 0). Do NOT query it directly — rank by phase **server-side via the existing `getLifestyleFeed` function** (no new fn). Guarded, background, ≤14s leash (cold answers can exceed 6s).
+
+### 16.4 NAME / HANDLE RESOLUTION
+Prefer **`UserProfile.display_name`**, then `user.full_name`; the **handle guard blanks anything containing digits** (so `ojihalliburton57` never shows as a name). Use `displayFirstName()`. Do NOT read fields that aren't on the schema (`first_name`/`preferred_name`/`name` don't exist).
+
+### 16.5 CROSS-USER BLEED RULE — always scope by `user_id`
+**Every profile/content read is scoped to `user_id`.** A `UserProfile.filter({}, "-created_date", 1)` with NO `user_id` reads whichever row is newest **across ALL users** (measured: bound a stranger's `life_stage` to the viewer) — this was worse than the personalisation bug. Device-local mirrors (bookshelf, reader positions) are keyed **per `user_id`** too; Community identity is proven **server-side** from the authenticated `me.id` + device secret, never trusted from the request body (`femwell-community-authorhash-bearer-token`).
+
+## 17. REVERSIBILITY & CHANGE DISCIPLINE (✅ AGREED · v1)
+> Every change lands so it can be un-landed. This is why shipping to live is safe.
+- **17.1 OPT-IN PROPS DEFAULT OFF.** Upgrade a shared component page-by-page via a new prop that defaults to the old behaviour (`wide`/`light`) — so a shared caller is byte-identical until it opts in. Verify the non-adopters didn't move (grep + a live check).
+- **17.2 ONE-LINE REVERTS / self-contained commits.** Each piece is a revertible commit (`git revert <hash>`); a route change is a one-line `pages.config` flip. State the revert path in the commit + STATUS.
+- **17.3 NOTHING STRIPPED — ADD/IMPROVE by default.** Before reworking an existing page, **read it IN FULL and inventory every feature**; carry them all forward. Only remove on explicit sign-off. Never overwrite something you didn't create that contradicts the described change — surface it instead.
+- **17.4 DEMO-FIRST WHERE RISKY — but always land it live.** A big rework may preview as a seeded `/XxxDemo` for sign-off (`femwell-card-system-demo-first`), but a demo the user can't reach from the app is a **FAILURE**, not a delivery — wire it into the IDEAS pill and, once approved, drop it onto the live page.
+- **17.5 THE BATON RULE.** Update **`STATUS.md` IMMEDIATELY** after every build/fix/ship (what changed + commit, shipped-vs-demo, live bundle hash, verification) — not batched at session end. State lives in STATUS.md, not here; this file holds the *rules*, STATUS holds the *state*.
+
+## 18. THE DOC MAP — the index to every canonical doc (link, don't copy) (✅ AGREED · v1)
+> **The brain is an INDEX.** Where depth exists, it lives in the doc named here — this section says *where*, not *what*. (Absorbs the former §9 Appendices.) The `→` pointers throughout §11–§17 resolve here.
+
+### 18.1 State & onboarding
+- **`claude-state/STATUS.md`** — the single source of truth for CURRENT state + the ship-log baton (read its top block first).
+- **`claude-state/ONBOARDING_READ_FIRST.md`** — the 2-minute self-onboard after a reset.
+- **`CLAUDE.md`** (repo root) — the workflow RULES (deploy, delivery rules, whole-life mandate, agent roster, brand gate). Deliberately holds NO state.
+
+### 18.2 Brand (Part I depth)
+- **`claude-state/BRAND_FLORA.md`** — deep flora map, floriography + colour-symbolism, the fingerprint permutation math (§7.1), sources (appendix to §5/§10).
+- **`claude-state/BRAND_IMAGE_RESEARCH.md`** — botanical-system research (Aesop restraint, Art Nouveau whiplash line, William Morris, the fleuron, palette), with sources.
+- **`workspace/CARD_PATTERNS_RESEARCH_2026-06-25.md`** — cited card-pattern research (M3/Carbon/Polaris/NN-g/Apple HIG/EightShapes) behind §6.7.0.
+- **In-app mirror:** the single **"Brand Bible"** entry in Ideas = `src/components/founders/brandDocs/brand-bible.html` (the phone-readable export of THIS file; the old Living-Ecosystem/Brand-Identity/Flora-Meaning entries are folded in). **Live flora catalogue:** `/FloraLabDemo`.
+
+### 18.3 Per-page specs & brainstorms
+| Page/domain | Canonical doc(s) |
+|---|---|
+| Lifestyle | `brandDocs/lifestyle-motherboard.html` · `lifestyle-audit-plan.html` · `LIFESTYLE-QA-CATALOGUE.html` · the 11 boards `claude-state/TRACKC_{Mirror,Move,Kindred,Curious,Delight,Nest,Tonight,Becoming,Make,Outside,Money}_BRAINSTORM.html` |
+| Community | `COMMUNITY_MEGA_PLAN.md` · `COMMUNITY_BUILD_SPEC.md` · `COMMUNITY_HOME_REDESIGN.html` · `brandDocs/community-*.html` (safety-principle · talk-rooms · circles · together · games · library · dm-spec) |
+| Nutrition | `NUTRITION_MASTER_PLAN.html` · `brandDocs/nutrition-{plan,levelup}.html` (`NutritionV2Shell` = the §6.8.2 reference) |
+| Journal | `JOURNAL_BUILD_SPEC.md` · `JOURNAL_AUDIT.html` |
+| Health · Doctor Export · Garden · Jess | `brandDocs/{health-plan,doctor-export-plan,garden-plan,jess-plan}.html` · `DOCTOR_EXPORT_SPEC.md` · `EXPERT_LAYER_SCOPE.md` |
+| Media/readers craft | `brandDocs/media-readers-craft.html` · `daily-story-pass.html` · `pagination-measure-pass.html` · `atelier_reader_*` |
+
+### 18.4 QA & audits
+`LIFESTYLE-QA-CATALOGUE.html` (the reference catalogue) · `brandDocs/page-brand-audit.html` · `community-final-qa.html` · `APP_HEALTH_AUDIT.html` · `APP_CONNECTIVITY_MAP.html` · the `atelier_*_review.md` craft sign-offs.
+
+### 18.5 Research
+`research_base44_platform.md` (platform) · `research_ereader_ux.md` · `research_horoscope_v2_*.md` · `research_planner_*.md` · `research_podcast_strategy_*.md` · `research_lifestyle_whole_setup.md` · `research_first_feed.md`.
+
+### 18.6 The memory system + the named-agent roster
+- **Auto-memory:** `.claude/projects/…/memory/MEMORY.md` (index) + one fact per file — the persistent gotcha/decision store (deploy surfaces, profile rows, delegation, cache-buster, DM identity, seededRng, class-collision, sheet-safe…). Read the index each session.
+- **Agent roster:** `TEAM.md` (repo root) + `.claude/agents/*.md` — Mr Lead Manager · Ms Deep Search · Ms Verify · Mr Fix-it · Ms Atelier · Mx Storyteller · Ms Accessibility · Mr Performance · Ms Data · Mr Tester · Ms Strategy. Dispatch by name; read the spec before dispatching.
+
+### 18.7 In-app mirrors
+`src/components/founders/brandDocs/*.html` (the in-app Ideas-page copies) and `C:\Users\Halli\femwell-handoff\*.html` (the phone-readable exports). Every plan/audit ships as a phone-readable styled-HTML doc AND is wired into the FoundersOS "Ideas" page (CLAUDE.md delivery rule). **This master (§1–§18) is self-sufficient for building; the docs above add the cited "why" and the exhaustive depth.**
