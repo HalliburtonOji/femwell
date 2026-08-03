@@ -2694,10 +2694,12 @@ function CQuickRow({ items }) {
 }
 
 // one shelf board (a tile grid inside a Clipboard, §6.10) — no dead space, real jumps
-function ShelfBoard({ shelf, onEnter }) {
+function ShelfBoard({ shelf, onEnter, light }) {
   const acc = cwOf(shelf.cw).petal;
   return (
-    <Clipboard title={shelf.title} sub={shelf.sub} accent={acc} flower={shelf.flower} idx={`cm-${shelf.id}`} titleColor={OXBLOOD}>
+    // `light` is cloned onto us by ClipboardSlider (wide+light) — forward it to the Clipboard frame,
+    // else the lighter-frame pass (§13.2) never reaches the board and the spine/padding stay heavy.
+    <Clipboard title={shelf.title} sub={shelf.sub} accent={acc} flower={shelf.flower} idx={`cm-${shelf.id}`} titleColor={OXBLOOD} light={light}>
       <p style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 15, color: T.inkSoft, lineHeight: 1.5, margin: "0 0 14px" }}>{shelf.line}</p>
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 9 }}>
         {shelf.tiles.map((t, i) => (
