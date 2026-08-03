@@ -2701,12 +2701,14 @@ function ShelfBoard({ shelf, onEnter, light }) {
     // else the lighter-frame pass (§13.2) never reaches the board and the spine/padding stay heavy.
     <Clipboard title={shelf.title} sub={shelf.sub} accent={acc} flower={shelf.flower} idx={`cm-${shelf.id}`} titleColor={OXBLOOD} light={light}>
       <p style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 15, color: T.inkSoft, lineHeight: 1.5, margin: "0 0 14px" }}>{shelf.line}</p>
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 9 }}>
+      {/* A3: nav tiles (doors, not content cards — Halli's call) given room to breathe now the board
+          is wider + lighter — more padding + gap + a touch more note legibility; hairline border stays. */}
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 11 }}>
         {shelf.tiles.map((t, i) => (
-          <button key={t.name + i} onClick={() => onEnter(t.key)} style={{ textAlign: "left", background: `linear-gradient(160deg, ${T.paperHi} 0%, ${acc}10 100%)`, border: `1px solid ${T.paperDeep}`, borderRadius: 13, padding: "12px 12px", cursor: "pointer" }}>
-            <span style={{ width: 30, height: 30, borderRadius: 9, background: `${acc}1F`, display: "grid", placeItems: "center", marginBottom: 8 }}><t.Icon size={16} color={acc} /></span>
-            <div style={{ fontFamily: SERIF, fontWeight: 600, fontSize: 15.5, color: T.ink, lineHeight: 1.15, marginBottom: 2 }}>{t.name}</div>
-            <div style={{ fontFamily: UI, fontSize: 11, color: T.muted, lineHeight: 1.35 }}>{t.note}</div>
+          <button key={t.name + i} onClick={() => onEnter(t.key)} style={{ textAlign: "left", background: `linear-gradient(160deg, ${T.paperHi} 0%, ${acc}10 100%)`, border: `1px solid ${T.paperDeep}`, borderRadius: 14, padding: "14px 13px 16px", cursor: "pointer" }}>
+            <span style={{ width: 32, height: 32, borderRadius: 9, background: `${acc}1F`, display: "grid", placeItems: "center", marginBottom: 9 }}><t.Icon size={16} color={acc} /></span>
+            <div style={{ fontFamily: SERIF, fontWeight: 600, fontSize: 16, color: T.ink, lineHeight: 1.18, marginBottom: 3 }}>{t.name}</div>
+            <div style={{ fontFamily: UI, fontSize: 11.5, color: T.muted, lineHeight: 1.4 }}>{t.note}</div>
           </button>
         ))}
       </div>
