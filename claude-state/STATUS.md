@@ -1,6 +1,17 @@
 # FEMWELL — CANONICAL STATUS INDEX (read first · updated 2026-06-30)
 **This file is the single source of truth AND the index to every plan doc. If anything else disagrees, this wins.** (The long ship-log history continues below the index.)
 
+## 🏘️ COMMUNITY — §11 LIFECYCLE · PHASE 0 AUDIT COMPLETE, motherboard proposed, ⏸ AWAITING PRIORITIES (2026-08-03)
+Taking Community through the full §11 lifecycle. Phase 0 = real-pixel + functional audit (headless pipeline `scripts/communityAudit.cjs`) before building. **Nothing built yet — reported to Halli for priorities.**
+- **ROUTE (§14.4 verified):** `/Community` → `src/pages/Community.jsx` (`AgeGate` → `CommunityInner homeVariant="redesign"`, 3323 lines). Elite-shell decoy parked at `/CommunityElite`. Audited the LIVE file, not the decoy.
+- **✅ IDENTITY/SAFETY MODEL INTACT (code-confirmed, must not regress):** `createCommunityPost/entry.ts` `verifyIdentity()` recomputes `sha256("community::"+me.id+"::"+device_secret)` from the AUTHENTICATED caller and **403s any `dm.*`/`game.*` with a mismatched `author_hash`** (entry.ts:190/226). **Note/post screening before delivery present** (dm.send + note.create screen crisis→banned→OpenAI, hold risky, never return held). Dispatcher folds ~30 actions into ONE fn (50-fn-cap pattern §14.1). Live non-admin 403 NOT black-boxable from here (§15.4) → confirmed by code+trace, flagged.
+- **✅ LIVE + WORKING (pixel/functional):** renders, **console 0 / net 0** at 360/390/430; opening a room works (composer + header); Jump-to switcher opens (15 items); all surfaces reachable (rooms·circles·together/events/library/games·quietly/echo/letters/DM/connect-prefs·qotd·rituals·resonance·Jess); safety framing + crisis link present.
+- **🔴 P1 DEFECTS (new, real-pixel):** (1) **horizontal PAGE OVERFLOW at all widths** — docScrollW 443/458/478 vs 360/390/430 (+83/+68/+48px; a ~443px FIXED-WIDTH element + missing §13.1 `overflowX:clip`; a "Jess · in the rooms today" section +348px). (2) **Clipboard boards are the OLD fixed-365 heavy-frame, NO peek** (cardPct 93.6%, peek −8) — Community never got the §13.1/§13.2 `wide`/`light` pass (cramped room tiles in a thick frame).
+- **🟡 P2 / ambiguous:** board-slider arrow didn't move the track (moved:false — selector miss or dead arrow, needs re-tap); Jess "full read" inner-sheet not detected (long-read text renders inline — verify vs §6.8.2 inner-sheet).
+- **⚠️ UNVERIFIED (pipeline auth limit §15.4):** personalization greeting (name/phase) — persisted session de-authed since the Lifestyle work (showed "Luteal · Day 21, Halliburton" days ago, now generic); needs a foreground authed check. Cross-user `user_id` scoping is code-confirmed fixed.
+- **PARKED (corpus/STATUS):** member-created Clubs (OSA/ICO legal floor), push/notify (needs fn), PresenceBloom (code-present, visual unverified), mentorship pairing.
+- **MOTHERBOARD + piece order proposed in the report; screenshots `scratchpad/visualqa/COMM_{360,390,430}.png` + `COMM_room.png`.** Corpus map by a sub-agent (surfaces/identity/dispatcher).
+
 ## 📐 CLIPBOARD/CARD SIZE + FRAME PASS — ✅ ROLLED TO ALL 11 BOARDS + VERIFIED (2026-08-01)
 Halli approved the direction, asked for a notch bigger (~88-90%) + roll to all boards + strip ingested title emphasis.
 - **Sizes bumped:** board content cards → **89vw (89% at 360/390/430), 15px peek**; Lifestyle shell in-clipboard cards ~86-87% (20-24px peek); clipboard board → `min(90vw,440)`; PeekShelf 94%.
