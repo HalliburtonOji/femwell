@@ -11,6 +11,7 @@ Taking Community through the full §11 lifecycle. Phase 0 = real-pixel + functio
 - **⚠️ UNVERIFIED (pipeline auth limit §15.4):** personalization greeting (name/phase) — persisted session de-authed since the Lifestyle work (showed "Luteal · Day 21, Halliburton" days ago, now generic); needs a foreground authed check. Cross-user `user_id` scoping is code-confirmed fixed.
 - **PARKED (corpus/STATUS):** member-created Clubs (OSA/ICO legal floor), push/notify (needs fn), PresenceBloom (code-present, visual unverified), mentorship pairing.
 - **MOTHERBOARD + piece order proposed in the report; screenshots `scratchpad/visualqa/COMM_{360,390,430}.png` + `COMM_room.png`.** Corpus map by a sub-agent (surfaces/identity/dispatcher).
+- **✅ A1 SHIPPED (trivial P1 fix, Halli-authorised) — page overflow FIXED.** Added `overflowX: "clip"` to the non-embedded page container (`Community.jsx:3241`). **VERIFIED live-pixel:** docScrollW == vw at 360/390/430 (was +83/+68/+48px), console 0 / net 0, page renders intact (nothing clipped — internal sliders untouched, still overflowX:auto). Deployed `npx base44 site deploy -y`, build EXIT 0. Reversible (revert the commit). Screenshot `COMM_A1_after.png`. **A2 (boards→wide/light) + A3 (tile density, keep-as-nav + light frame) + A4 (glance/Jess containment) HELD for Halli's go.**
 
 ## 📐 CLIPBOARD/CARD SIZE + FRAME PASS — ✅ ROLLED TO ALL 11 BOARDS + VERIFIED (2026-08-01)
 Halli approved the direction, asked for a notch bigger (~88-90%) + roll to all boards + strip ingested title emphasis.
