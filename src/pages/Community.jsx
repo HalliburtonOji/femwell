@@ -3072,7 +3072,7 @@ function RedesignHome({ presence, lifeStage, profile, user, onEnter, onCrisis, o
 
       {/* 4 · THE SHELVES — clipboard slider of the 4 boards (the deep content) */}
       <div style={{ marginTop: 22 }}>
-        <ClipboardSlider hint="Slide the shelves →" accent={aCol}>
+        <ClipboardSlider hint="Slide the shelves →" accent={aCol} wide light>
           {SHELVES.map((s) => <ShelfBoard key={s.id} shelf={s} onEnter={onEnter} />)}
         </ClipboardSlider>
       </div>
