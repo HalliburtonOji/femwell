@@ -3238,7 +3238,7 @@ export function CommunityInner({ initialView = null, embedded = false, homeVaria
   return (
     // embedded (rendered inside a HubSheet): no own page background or 100vh — inherit
     // the sheet's single flat surface so there are no nested/mismatched background edges.
-    <div style={embedded ? { minHeight: 0, background: "transparent" } : { minHeight: "100vh", ...PAPER_BG }}>
+    <div style={embedded ? { minHeight: 0, background: "transparent" } : { minHeight: "100vh", overflowX: "clip", ...PAPER_BG }}>
       <InkFilter />
       <div style={{ maxWidth: 460, margin: "0 auto", padding: view === "home" ? "30px 18px 50px" : "0 0 50px" }}>
         {view === "home"
