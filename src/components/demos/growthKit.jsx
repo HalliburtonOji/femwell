@@ -105,11 +105,15 @@ export const DAYOFF_ACTIVITIES = [
   { id: "d-read", title: "A reading nook + the chapter you're on", why: "Carry on today's Daily Story somewhere comfortable, with a pot of tea.", kind: "Quiet · solo", flower: "bluebell", accent: "#5F7E8E" },
 ];
 
-// Tier 0 — "someone like you" resonance (k-anon, NO contact). Connection by feeling.
+// Tier 0 — "someone like you" resonance (belonging by feeling, NO contact).
+// HONESTY (C3): these are warm belonging lines, NOT live counts — so they must NOT state a
+// specific fabricated number ("4 women…") or imply LOCATION ("nearby", which Community promises it
+// never uses). A real k-anon aggregate ("N women in your season") needs a backend count and is a
+// future signed-off item; until then the copy stays true-in-spirit without false precision.
 export const RESONANCE = [
-  { count: 4, line: "4 women in your season left a line like yours this week.", sub: "You're tending the same weather. No names, no contact — just company." },
-  { count: 12, line: "12 women your age planted a 'be brave about work' intention today.", sub: "The bees have been busy. You're not the only garden with this going on." },
-  { count: 7, line: "7 new mums nearby felt overwhelmed this morning, then did one small thing.", sub: "Shared, gently. You're in good company." },
+  { line: "Others in your season left lines like yours this week.", sub: "You're tending the same weather. No names, no contact — just company." },
+  { line: "Women your age are planting brave-about-work intentions too.", sub: "The bees have been busy. You're not the only garden with this going on." },
+  { line: "Other new mums felt overwhelmed this morning, then did one small thing.", sub: "Shared, gently. You're in good company." },
 ];
 
 // Tier 0 — async season/domain prompt rooms (everyone answers the SAME prompt;
