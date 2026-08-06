@@ -343,11 +343,12 @@ function Thread({ user, myHash, conv, onBack, onCrisis, onConvChanged }) {
 }
 
 // ── main ──────────────────────────────────────────────────────────────────────
-export default function DMView({ user, onBack, onCrisis }) {
+export default function DMView({ user, onBack, onCrisis, initialConversationId }) {
   const [myHash, setMyHash] = useState(null);
   const [convs, setConvs] = useState([]);
   const [busy, setBusy] = useState(true);
   const [open, setOpen] = useState(null);   // the open conversation, or null (list)
+  const [autoOpened, setAutoOpened] = useState(false);
 
   useEffect(() => { let a = true; communityHash(user?.id).then((h) => { if (a) setMyHash(h); }).catch(() => {}); return () => { a = false; }; }, [user?.id]);
 
@@ -357,6 +358,12 @@ export default function DMView({ user, onBack, onCrisis }) {
     catch { setConvs([]); } finally { setBusy(false); }
   }, [user]);
   useEffect(() => { reload(); }, [reload]);
+  // deep-open a specific thread once (e.g. the "message your mentor" button passes its conversation_id)
+  useEffect(() => {
+    if (autoOpened || open || !initialConversationId || !convs.length) return;
+    const c = convs.find((x) => x.id === initialConversationId);
+    if (c) { setOpen(c); setAutoOpened(true); }
+  }, [initialConversationId, convs, open, autoOpened]);
 
   if (open) {
     // refresh the open conversation's shape from the list if it changed

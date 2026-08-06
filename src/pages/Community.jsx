@@ -76,6 +76,7 @@ import { withTimeout } from "@/utils/safeEntity";
 import { FwFloraHero } from "@/components/brand/PageTop";
 import PresenceBloom from "@/components/brand/PresenceBloom";
 import DMView from "@/components/community/DMView";
+import MentorshipView from "@/components/community/MentorshipView";
 import { dmApi } from "@/components/community/dm";
 import { togetherApi, participantsLabel } from "@/components/community/together";
 import { Clipboard, ClipboardSlider } from "@/components/brand/ClipboardSlider";
@@ -2593,6 +2594,7 @@ const SHELVES = [
       { key: "witness", Icon: Eye, name: "Witness", note: "one sister holds your entry (in Journal)" },
       { key: "sealed", Icon: Mail, name: "Sealed letter", note: "a slow letter, opened later" },
       { key: "share", Icon: Send, name: "Share a thought", note: "into a space that's yours" },
+      { key: "mentor", Icon: HeartHandshake, name: "Walk with someone", note: "quietly paired, one further along" },
       { key: "twin", Icon: Users, name: "Phase Twin", note: "twelve days, paired (in Journal)" },
       { key: "connect", Icon: SlidersHorizontal, name: "How you connect", note: "who can reach you · block" },
     ] },
@@ -2749,6 +2751,10 @@ const QUIETLY_SURFACES = [
     what: "Drop a thought into a space that’s simply yours.",
     safe: "Anonymous by default — a soft place to put something down.",
     driver: "Say the small thing you don’t need answered.", cta: "Share a thought" },
+  { key: "mentor", Icon: HeartHandshake, cw: "sage", name: "Walk with someone",
+    what: "A quiet pairing with one woman in a similar season — one a little further along, one earlier in it. Company, not expert advice.",
+    safe: "Anonymous both ways, matched on your season — never your location. Every message is screened; end or report any time.",
+    driver: "Be accompanied, or accompany someone who's where you were.", cta: "Find your pairing" },
   { key: "twin", Icon: Users, cw: "plum", name: "Phase Twin",
     what: "Twelve days gently paired with one woman in a similar season.",
     safe: "Anonymous, softly matched on where you are — never your location, never your details.",
@@ -3121,6 +3127,7 @@ export function CommunityInner({ initialView = null, embedded = false, homeVaria
   const [letterOpen, setLetterOpen] = useState(false);   // sealed-letter pen-pal (ported from elite)
   const [connectOpen, setConnectOpen] = useState(false); // connection prefs + block (ported from elite)
   const [hubOpen, setHubOpen] = useState(false);
+  const [dmInitial, setDmInitial] = useState("");   // conversation_id to deep-open in DMView (e.g. from mentorship)
   const navigate = useNavigate();
   const onHubSelect = (id) => {
     if (id === "witness") { navigate(createPageUrl("Journal?open=witness")); return; }
@@ -3161,6 +3168,7 @@ export function CommunityInner({ initialView = null, embedded = false, homeVaria
       // /Community?view=bookclub → straight into the Book Club discussion (the club pick's
       // own thread). Used by the reader's "Discuss this book in the Book Club" link.
       if (sp.get("view") === "bookclub") setView("bookclub");
+      if (sp.get("view") === "mentor") setView("mentor");
     } catch { /* ignore */ }
   }, []);
 
@@ -3286,7 +3294,10 @@ export function CommunityInner({ initialView = null, embedded = false, homeVaria
               <EchoWall user={user} profile={profile} lifeStage={lifeStage} />
             </div>
           : view === "dm"
-          ? <DMView user={user} onBack={goBack} onCrisis={() => setCrisis(true)} />
+          ? <DMView user={user} onBack={goBack} onCrisis={() => setCrisis(true)} initialConversationId={dmInitial} />
+          : view === "mentor"
+          ? <MentorshipView user={user} lifeStage={lifeStage} onBack={goBack} onCrisis={() => setCrisis(true)}
+              onOpenMessages={(cid) => { setDmInitial(cid || ""); setView("dm"); }} />
           : view === "quietly"
           ? <QuietlyHub onOpen={enterShelf} onBack={goBack} />
           : <RoomView key={tick} roomKey={view} posts={posts} loading={loading} error={loadErr} user={user} onNav={setView} onHome={goBack} onCrisis={() => setCrisis(true)} onReload={reload} onPostCreated={onPostCreated} seed={roomSeed} initialCircle={initialCircle} profile={profile}

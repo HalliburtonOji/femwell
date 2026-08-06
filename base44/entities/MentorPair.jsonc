@@ -1,0 +1,50 @@
+{
+  // Community v2 · MENTORSHIP PAIRING (F1). A consented, ANONYMOUS, season/stage-matched (NEVER
+  // location) pairing where a woman a bit further along quietly accompanies one earlier in a
+  // journey — peer companionship, NOT expert/clinical advice. Messaging REUSES the DM `Conversation`
+  // path, so every message inherits the identity-403 gate + crisis→banned→OpenAI screening.
+  //
+  // ONE record models BOTH the opt-in POOL and the completed pair:
+  //   • opt in  → a half-record { status:"seeking", seeking_role, <role>_hash/_alias/_user_id, season }
+  //   • matched → the server fills the OTHER side, links a Conversation, sets status:"active"
+  //   • ended   → status:"ended" + ended_by/ended_reason
+  //
+  // PRIVACY: fully private — ALL access is service-role via the createCommunityPost dispatcher
+  // (mentor.* actions); a client never reads or writes MentorPair directly (RLS admin-only, like
+  // Conversation). Everything USER-FACING is the anonymous hash + botanical alias. The `*_user_id`
+  // fields are SERVER-ONLY accountability (moderation/removal for the mentor↔mentee power dynamic,
+  // Halli-approved 2026-08-06) — never returned to the client.
+  "name": "MentorPair",
+  "type": "object",
+  "properties": {
+    "mentor_hash": { "type": "string", "description": "Mentor's anonymous author_hash (display identity). Never a user id." },
+    "mentee_hash": { "type": "string", "description": "Mentee's anonymous author_hash. Empty on a mentor-seeking half-record." },
+    "mentor_alias": { "type": "string", "description": "Botanical alias snapshot for the mentor (display only; deterministic from mentor_hash)." },
+    "mentee_alias": { "type": "string", "description": "Botanical alias snapshot for the mentee." },
+    "mentor_user_id": { "type": "string", "description": "SERVER-ONLY accountability — the real user behind the mentor hash (moderation/removal). Never returned to the client." },
+    "mentee_user_id": { "type": "string", "description": "SERVER-ONLY accountability — the real user behind the mentee hash. Never returned to the client." },
+    "seeking_role": { "type": "string", "enum": ["mentor", "mentee"], "description": "On a `seeking` half-record: which side is waiting to be matched (a mentor waiting for a mentee, or vice-versa)." },
+    "season": { "type": "string", "description": "Match key — cycle/life SEASON or STAGE only (e.g. ttc, perimenopause, new-mum). NEVER location, never her details." },
+    "circle_key": { "type": "string", "description": "Optional: the circle this pairing formed inside (context only)." },
+    "status": { "type": "string", "enum": ["seeking", "active", "ended"], "default": "seeking", "description": "seeking = a half-record in the opt-in pool; active = matched, both can message via the linked Conversation; ended = one ended it (or moderation)." },
+    "conversation_id": { "type": "string", "description": "The reused DM `Conversation` id for this pairing's messages (set when status → active). Inherits DM screening + the identity gate." },
+    "ended_by": { "type": "string", "description": "author_hash of whoever ended the pairing (status ended)." },
+    "ended_reason": { "type": "string", "description": "Optional audit reason (left / moderation / completed)." },
+    "reported": { "type": "boolean", "default": false, "description": "Flagged for human review via mentor.report; not auto-deleted." },
+    "last_activity_at": { "type": "string", "format": "date-time", "description": "For freshness / stale-pair sweeps; updated on a delivered message or a status change." }
+  },
+  "required": ["status"],
+  "indexes": [
+    { "fields": ["mentor_hash"] },
+    { "fields": ["mentee_hash"] },
+    { "fields": ["status"] },
+    { "fields": ["season"] },
+    { "fields": ["created_date"] }
+  ],
+  "rls": {
+    "read": { "user_condition": { "role": "admin" } },
+    "create": { "user_condition": { "role": "admin" } },
+    "update": { "user_condition": { "role": "admin" } },
+    "delete": { "user_condition": { "role": "admin" } }
+  }
+}

@@ -223,7 +223,7 @@ Deno.serve(async (req) => {
   // The body can no longer just ASSERT who you are: a forged/harvested hash is rejected here,
   // before any thread is read or any move is made. Non-identity public actions (post/comment/…)
   // are unaffected. Admins bypass (moderation tooling).
-  if ((action.startsWith('dm.') || action.startsWith('game.')) && me.role !== 'admin') {
+  if ((action.startsWith('dm.') || action.startsWith('game.') || action.startsWith('mentor.')) && me.role !== 'admin') {
     const proven = await verifyIdentity(me.id, String(author_hash || ''), String(p.device_secret || ''));
     if (!proven) return Response.json({ error: 'identity', message: 'We couldn\'t verify your identity for this action. Please reload and try again.' }, { status: 403 });
   }
@@ -417,6 +417,110 @@ Deno.serve(async (req) => {
     }
 
     return Response.json({ error: 'unknown dm action' }, { status: 400 });
+  }
+
+  // ════════════════════════════════════════════════════════════════════════════════════════════
+  // MENTORSHIP PAIRING (F1, 2026-08-06). A consented, ANONYMOUS, season/stage-matched (NEVER location)
+  // pairing — a woman a bit further along quietly accompanies one earlier; peer companionship, NOT
+  // expert/clinical advice. Identity-gated (mentor.* is in the P0 gate above). Messaging REUSES the DM
+  // `Conversation` + dm.send/dm.messages, so every mentor message inherits crisis→banned→OpenAI
+  // screening + the identity gate for free. ONE MentorPair row models both the opt-in POOL (status
+  // 'seeking') and the active pair. The *_user_id fields are SERVER-ONLY accountability — pubPair
+  // NEVER returns them. No free-text opt-in field (nothing unscreened); all text flows via dm.send.
+  // ════════════════════════════════════════════════════════════════════════════════════════════
+  if (action.startsWith('mentor.')) {
+    const ah = String(author_hash || '');
+    if (!ah) return Response.json({ error: 'author_hash required' }, { status: 400 });
+    const sbm = base44.asServiceRole;
+    const MP = sbm.entities.MentorPair;
+    const Conv = sbm.entities.Conversation;
+    const nowISO = new Date().toISOString();
+    // what the client may see — NEVER the *_user_id accountability fields.
+    const pubPair = (m: any) => m && ({
+      id: m.id, status: m.status,
+      mentor_alias: m.mentor_alias || botanicalAlias(m.mentor_hash),
+      mentee_alias: m.mentee_alias || botanicalAlias(m.mentee_hash),
+      season: m.season || '', circle_key: m.circle_key || '',
+      conversation_id: m.conversation_id || '',
+      my_role: m.mentor_hash === ah ? 'mentor' : (m.mentee_hash === ah ? 'mentee' : ''),
+      created_date: m.created_date,
+    });
+    const myPairs = async () => {
+      const rows = await withTimeout(MP.filter({}, '-created_date', 400), 5000, 'mp-list').catch(() => []);
+      return (rows || []).filter((m: any) => m.mentor_hash === ah || m.mentee_hash === ah);
+    };
+
+    // — mentor.mine: my current active-or-seeking pairing (if any) —
+    if (action === 'mentor.mine') {
+      const mine = await myPairs();
+      const active = mine.find((m: any) => m.status === 'active');
+      const seeking = mine.find((m: any) => m.status === 'seeking');
+      return Response.json({ ok: true, pair: pubPair(active || seeking) || null }, { status: 200 });
+    }
+
+    // — mentor.optin: opt in as mentor OR mentee; try to MATCH a complementary seeker (opposite role,
+    //   same season if both set, not me). Matched → active Conversation + active pair. Else → a seeking
+    //   half-record. Idempotent: an existing active/seeking pair is returned rather than duplicated. —
+    if (action === 'mentor.optin') {
+      const role = p.role === 'mentor' ? 'mentor' : 'mentee';
+      const season = String(p.season || '').slice(0, 40).trim();
+      const circle_key = String(p.circle_key || '').slice(0, 40).trim();
+      const myAlias = botanicalAlias(ah);
+      const mine = await myPairs();
+      const existing = mine.find((m: any) => m.status === 'active' || m.status === 'seeking');
+      if (existing) return Response.json({ ok: true, pair: pubPair(existing), existed: true }, { status: 200 });
+      const pool = await withTimeout(MP.filter({ status: 'seeking' }, '-created_date', 400), 5000, 'mp-pool').catch(() => []);
+      const wantRole = role === 'mentor' ? 'mentee' : 'mentor';
+      const match = (pool || []).find((m: any) =>
+        m.seeking_role === wantRole && m.mentor_hash !== ah && m.mentee_hash !== ah
+        && (!season || !m.season || m.season === season));
+      if (match) {
+        const mentor_hash = role === 'mentor' ? ah : match.mentor_hash;
+        const mentor_alias = role === 'mentor' ? myAlias : match.mentor_alias;
+        const mentor_user_id = role === 'mentor' ? me.id : match.mentor_user_id;
+        const mentee_hash = role === 'mentee' ? ah : match.mentee_hash;
+        const mentee_alias = role === 'mentee' ? myAlias : match.mentee_alias;
+        const mentee_user_id = role === 'mentee' ? me.id : match.mentee_user_id;
+        const conv = await withTimeout(Conv.create({
+          a_hash: mentor_hash, b_hash: mentee_hash, a_alias: mentor_alias, b_alias: mentee_alias,
+          initiator_hash: ah, context: 'Mentorship — quietly accompanying each other', status: 'active',
+        }), 6000, 'mp-conv').catch(() => null);
+        await withTimeout(MP.update(match.id, {
+          mentor_hash, mentor_alias, mentor_user_id, mentee_hash, mentee_alias, mentee_user_id,
+          season: season || match.season || '', circle_key: circle_key || match.circle_key || '',
+          status: 'active', conversation_id: conv?.id || '', last_activity_at: nowISO, seeking_role: '',
+        }), 6000, 'mp-activate').catch(() => {});
+        const fresh = await MP.get(match.id).catch(() => ({ ...match, status: 'active', conversation_id: conv?.id }));
+        return Response.json({ ok: true, pair: pubPair(fresh), matched: true }, { status: 200 });
+      }
+      const half: any = { status: 'seeking', seeking_role: role, season, circle_key, last_activity_at: nowISO };
+      if (role === 'mentor') { half.mentor_hash = ah; half.mentor_alias = myAlias; half.mentor_user_id = me.id; }
+      else { half.mentee_hash = ah; half.mentee_alias = myAlias; half.mentee_user_id = me.id; }
+      const created = await withTimeout(MP.create(half), 6000, 'mp-seek').catch((e: any) => { console.error('mentor.optin failed:', e?.message || e); return null; });
+      if (!created) return Response.json({ error: 'optin failed' }, { status: 500 });
+      return Response.json({ ok: true, pair: pubPair(created), seeking: true }, { status: 200 });
+    }
+
+    // — mentor.end: end my pairing (either side); closes the linked Conversation too. —
+    if (action === 'mentor.end') {
+      const id = String(p.pair_id || '');
+      const m = await withTimeout(MP.get(id), 3000, 'mp-get').catch(() => null);
+      if (!m || (m.mentor_hash !== ah && m.mentee_hash !== ah)) return Response.json({ error: 'not found' }, { status: 404 });
+      await withTimeout(MP.update(id, { status: 'ended', ended_by: ah, ended_reason: String(p.reason || 'left').slice(0, 80), last_activity_at: nowISO }), 6000, 'mp-end').catch(() => {});
+      if (m.conversation_id) await Conv.update(m.conversation_id, { status: 'left', left_by: ah }).catch(() => {});
+      return Response.json({ ok: true, ended: true }, { status: 200 });
+    }
+
+    // — mentor.report: flag a pairing for human review (never auto-deleted). —
+    if (action === 'mentor.report') {
+      const id = String(p.pair_id || '');
+      const m = await withTimeout(MP.get(id), 3000, 'mp-getr').catch(() => null);
+      if (!m || (m.mentor_hash !== ah && m.mentee_hash !== ah)) return Response.json({ error: 'not found' }, { status: 404 });
+      await withTimeout(MP.update(id, { reported: true }), 6000, 'mp-report').catch(() => {});
+      return Response.json({ ok: true, reported: true }, { status: 200 });
+    }
+
+    return Response.json({ error: 'unknown mentor action' }, { status: 400 });
   }
 
   // ════════════════════════════════════════════════════════════════════════════════════════════
