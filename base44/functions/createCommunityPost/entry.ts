@@ -37,6 +37,9 @@ const CIRCLE_KEYS = new Set([
   'pcos', 'endo', 'pmdd', 'books', 'career', 'creativity', 'movement',
 ]);
 const CLUB_KEYS = new Set(['slow-mornings', 'creativity-corner']);
+// F2 · member-created Clubs SHIP BEHIND THIS FLAG until the OSA/ICO floor is verified. Keep in
+// sync with the client's clubsConfig.CLUBS_USER_CREATE_ENABLED. Admins bypass (to verify the floor).
+const CLUBS_USER_CREATE_ENABLED = false;
 const KINDS = ['held', 'me too', 'hear you', 'saved'];
 const MAX_POST_LEN = 800;
 const MAX_COMMENT_LEN = 400;
@@ -521,6 +524,92 @@ Deno.serve(async (req) => {
     }
 
     return Response.json({ error: 'unknown mentor action' }, { status: 400 });
+  }
+
+  // ════════════════════════════════════════════════════════════════════════════════════════════
+  // MEMBER-CREATED CLUBS (F2, 2026-08-06). SHIPPED BEHIND CLUBS_USER_CREATE_ENABLED=false until the
+  // OSA/ICO legal floor is verified. The floor, baked in here:
+  //   • NAMED OWNER — host_user_id (the accountable person behind the anonymous host_hash); SERVER-ONLY,
+  //     never returned by pubClub. Set on create from the authenticated me.id.
+  //   • PROACTIVE SCREENING — name + line + intro run through crisis→banned→OpenAI BEFORE the club exists.
+  //   • REACTIVE REMOVAL — club.report → report_count auto-hide at AUTOHIDE_THRESHOLD; club.remove
+  //     (OWNER via verified identity, OR admin) → archived + hidden + removed_reason.
+  //   • 18+ AgeGate (client, all Community) · anonymous + NO location (data minimisation).
+  // Club POSTS/COMMENTS reuse the existing post/comment actions (already screened + reportable).
+  // ════════════════════════════════════════════════════════════════════════════════════════════
+  if (action.startsWith('club.')) {
+    const ah = String(author_hash || '');
+    const sbc = base44.asServiceRole;
+    const Club = sbc.entities.Club;
+    const isAdmin = me.role === 'admin';
+    // screen a club's OWN words before it can exist (same floor as posts/DMs)
+    const screenClub = async (text: string): Promise<{ ok: boolean; reason?: string }> => {
+      const t = String(text || '');
+      if (!t.trim()) return { ok: true };
+      if (isCrisis(t)) return { ok: false, reason: 'crisis' };
+      if (localScreen(t).remove) return { ok: false, reason: 'unkind' };
+      const ai = await dmOpenaiModerate(t);
+      if (ai.available && ai.flagged) {
+        const hit = DM_REMOVE_CATEGORIES.filter((cat) => ai.categories[cat]);
+        const onlySexual = hit.length > 0 && hit.every((cat) => cat.startsWith('sexual')) && !hit.includes('sexual/minors');
+        if (hit.length > 0 && !(onlySexual && dmIsHealthContext(t))) return { ok: false, reason: 'flagged' };
+      }
+      return { ok: true };
+    };
+    // what a client may see — NEVER host_user_id (server-only accountability).
+    const pubClub = (c: any) => c && ({
+      id: c.id, club_key: c.club_key, name: c.name, line: c.line, category: c.category,
+      host: c.host, host_alias: botanicalAlias(c.host_hash), privacy: c.privacy, status: c.status,
+      intro: c.intro || '', hidden: !!c.hidden, mine: c.host_hash === ah, created_date: c.created_date,
+    });
+
+    // — club.create: a member starts a Club. Gated + identity-proven owner + full screening. —
+    if (action === 'club.create') {
+      if (!CLUBS_USER_CREATE_ENABLED && !isAdmin) return Response.json({ ok: false, disabled: true, message: 'Starting your own space is coming soon — for now, join one of the hosted circles.' }, { status: 200 });
+      const proven = isAdmin || await verifyIdentity(me.id, ah, String(p.device_secret || ''));
+      if (!proven) return Response.json({ error: 'identity' }, { status: 403 });
+      const name = String(p.name || '').slice(0, 80).trim();
+      const line = String(p.line || '').slice(0, 160).trim();
+      const intro = String(p.intro || '').slice(0, 600).trim();
+      const category = ['Reading', 'Together', 'Games'].includes(String(p.category)) ? String(p.category) : 'Together';
+      if (!name || name.length < 2) return Response.json({ error: 'name required' }, { status: 400 });
+      const sc = await screenClub(`${name}\n${line}\n${intro}`);
+      if (!sc.ok) return Response.json({ ok: false, held: true, reason: sc.reason, message: sc.reason === 'crisis' ? "It sounds like you're carrying something heavy — you don't have to hold it alone." : "That didn't pass our community care rules — try describing your space more gently." }, { status: 200 });
+      const mineRows = await withTimeout(Club.filter({ host: 'member' }, '-created_date', 300), 5000, 'club-mine').catch(() => []);
+      const myToday = (mineRows || []).filter((c: any) => c.host_hash === ah && (c.created_date || '') >= startOfTodayISO());
+      if (myToday.length >= 3) return Response.json({ ok: false, message: "You've started a few spaces today — give them room to grow first." }, { status: 200 });
+      const club_key = `member-${Date.now().toString(36)}-${Math.abs(ah.charCodeAt(0) || 65).toString(36)}`.slice(0, 48);
+      const created = await withTimeout(Club.create({
+        club_key, name, line, intro, category, host: 'member', host_hash: ah, host_user_id: me.id,
+        privacy: 'open', status: 'forming', hidden: false, report_count: 0,
+      }), 6000, 'club-create').catch((e: any) => { console.error('club.create failed:', e?.message || e); return null; });
+      if (!created) return Response.json({ error: 'create failed' }, { status: 500 });
+      return Response.json({ ok: true, club: pubClub(created) }, { status: 200 });
+    }
+
+    // — club.report: flag a whole Club; auto-hide at AUTOHIDE_THRESHOLD (reactive removal). —
+    if (action === 'club.report') {
+      const id = String(p.club_id || '');
+      const c = await withTimeout(Club.get(id), 3000, 'club-get').catch(() => null);
+      if (!c) return Response.json({ error: 'not found' }, { status: 404 });
+      const report_count = (c.report_count || 0) + 1;
+      const hidden = !!c.hidden || report_count >= AUTOHIDE_THRESHOLD;
+      await withTimeout(Club.update(id, { report_count, hidden, ...(hidden && !c.hidden ? { removed_reason: 'reported' } : {}) }), 6000, 'club-report').catch(() => {});
+      return Response.json({ ok: true, hidden }, { status: 200 });
+    }
+
+    // — club.remove: the OWNER (identity-verified) or an ADMIN removes the Club. —
+    if (action === 'club.remove') {
+      const id = String(p.club_id || '');
+      const c = await withTimeout(Club.get(id), 3000, 'club-getr').catch(() => null);
+      if (!c) return Response.json({ error: 'not found' }, { status: 404 });
+      const ownerProven = c.host_hash === ah && (isAdmin || await verifyIdentity(me.id, ah, String(p.device_secret || '')));
+      if (!ownerProven && !isAdmin) return Response.json({ error: 'forbidden' }, { status: 403 });
+      await withTimeout(Club.update(id, { status: 'archived', hidden: true, removed_reason: (isAdmin && c.host_hash !== ah) ? 'admin' : 'owner-left' }), 6000, 'club-remove').catch(() => {});
+      return Response.json({ ok: true, removed: true }, { status: 200 });
+    }
+
+    return Response.json({ error: 'unknown club action' }, { status: 400 });
   }
 
   // ════════════════════════════════════════════════════════════════════════════════════════════

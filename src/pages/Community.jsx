@@ -77,6 +77,7 @@ import { FwFloraHero } from "@/components/brand/PageTop";
 import PresenceBloom from "@/components/brand/PresenceBloom";
 import DMView from "@/components/community/DMView";
 import MentorshipView from "@/components/community/MentorshipView";
+import ClubCreateSheet from "@/components/community/ClubCreateSheet";
 import { dmApi } from "@/components/community/dm";
 import { togetherApi, participantsLabel } from "@/components/community/together";
 import { Clipboard, ClipboardSlider } from "@/components/brand/ClipboardSlider";
@@ -2089,9 +2090,21 @@ function ClubView({ clubKey, user, onCrisis, onBack, clubTitle = "" }) {
 
 function ClubsView({ user, onCrisis, onBack, initialActive = null, clubTitle = "" }) {
   const [active, setActive] = useState(initialActive);
-  return active
-    ? <ClubView clubKey={active} user={user} onCrisis={onCrisis} onBack={() => setActive(null)} clubTitle={clubTitle} />
-    : <ClubsDirectory onOpen={setActive} onBack={onBack} user={user} />;
+  const [creating, setCreating] = useState(false);
+  if (active) return <ClubView clubKey={active} user={user} onCrisis={onCrisis} onBack={() => setActive(null)} clubTitle={clubTitle} />;
+  return (
+    <>
+      {/* Member-created spaces — GATED behind CLUBS_USER_CREATE_ENABLED until the OSA/ICO floor is
+          verified (server also gates club.create). Hidden entirely while the flag is off. */}
+      {CLUBS_USER_CREATE_ENABLED && (
+        <button onClick={() => setCreating(true)} style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 7, width: "100%", boxSizing: "border-box", background: T.paperHi, border: `1px dashed ${cwOf("sage").petal}`, borderRadius: 12, padding: "12px 14px", marginBottom: 14, fontFamily: UI, fontSize: 13.5, fontWeight: 700, color: cwOf("sage").petal, cursor: "pointer" }}>
+          <Plus size={16} /> Start a space of your own
+        </button>
+      )}
+      <ClubsDirectory onOpen={setActive} onBack={onBack} user={user} />
+      {creating && <ClubCreateSheet user={user} onClose={() => setCreating(false)} onCreated={() => setCreating(false)} />}
+    </>
+  );
 }
 
 // ── The Library room — reading home (Book Club + reading) ─────────────────────

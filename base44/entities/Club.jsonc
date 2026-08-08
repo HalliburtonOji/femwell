@@ -23,7 +23,10 @@
     "book_author": { "type": "string", "description": "Optional author for a user-started book club." },
     "book_cover": { "type": "string", "description": "Optional cover image URL for a user-started book club." },
     "intro": { "type": "string", "description": "Host intro / welcome." },
-    "hidden": { "type": "boolean", "default": false, "description": "Suppressed (moderation)." }
+    "hidden": { "type": "boolean", "default": false, "description": "Suppressed (moderation)." },
+    "host_user_id": { "type": "string", "description": "OSA/ICO legal floor (F2, 2026-08-06): the REAL, accountable/NAMED owner behind the anonymous host_hash — for moderation contact + legal accountability of a member-created space. SERVER-ONLY: set on club.create from the authenticated me.id, never returned to the client (the client only ever sees host_hash/alias)." },
+    "removed_reason": { "type": "string", "description": "Moderation audit: why a Club was removed/archived (owner-left / reported / admin). Set by club.remove." },
+    "report_count": { "type": "number", "default": 0, "description": "How many times this Club was reported (club.report). At the auto-hide threshold the Club is set hidden:true pending human review." }
   },
   "required": ["club_key", "name", "category"],
   "indexes": [{ "fields": ["created_date"] }, 
