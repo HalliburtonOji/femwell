@@ -1,0 +1,34 @@
+{
+  // F3 · WEB PUSH (2026-08-06). One row per browser/device push subscription (the W3C Push API
+  // subscription — endpoint + the two encryption keys). Written ONLY via the createCommunityPost
+  // dispatcher's push.subscribe (service-role); a client never writes it directly. Used by the
+  // inline real-time sends (reply/DM/your-turn) + the scheduled pushSweep. Deactivated (active:false)
+  // when the push service returns 404/410 (gone). Data minimisation: no message content is stored
+  // here — only the transport keys; what was sent is logged (title/body) in NotificationLog.
+  "name": "PushSubscription",
+  "type": "object",
+  "properties": {
+    "user_id": { "type": "string", "description": "Whose device this subscription belongs to (RLS + future app-wide sends)." },
+    "author_hash": { "type": "string", "description": "The subscriber's anonymous Community author_hash (proven via device_secret at subscribe). COMMUNITY notifications target by THIS, never user_id — so a reply/DM/your-turn push stays inside the same anonymous model the rooms use (no hash→user_id map is ever needed to notify)." },
+    "endpoint": { "type": "string", "description": "The push service endpoint URL (unique per subscription)." },
+    "p256dh": { "type": "string", "description": "The subscription's public key (base64url) — for payload encryption." },
+    "auth": { "type": "string", "description": "The subscription's auth secret (base64url) — for payload encryption." },
+    "platform": { "type": "string", "description": "ios-pwa | android | desktop | web — for reach diagnostics (never location)." },
+    "active": { "type": "boolean", "default": true, "description": "false once the push service reports the subscription gone (404/410) or the user turns notifications off." },
+    "last_sent_at": { "type": "string", "format": "date-time", "description": "When we last delivered to this endpoint (for cleanup of stale subs)." }
+  },
+  "required": ["user_id", "endpoint"],
+  "indexes": [
+    { "fields": ["user_id"] },
+    { "fields": ["author_hash"] },
+    { "fields": ["endpoint"] },
+    { "fields": ["active"] },
+    { "fields": ["created_date"] }
+  ],
+  "rls": {
+    "read": { "user_condition": { "role": "admin" } },
+    "create": { "user_condition": { "role": "admin" } },
+    "update": { "user_condition": { "role": "admin" } },
+    "delete": { "user_condition": { "role": "admin" } }
+  }
+}

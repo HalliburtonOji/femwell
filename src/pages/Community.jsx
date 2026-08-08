@@ -78,6 +78,7 @@ import PresenceBloom from "@/components/brand/PresenceBloom";
 import DMView from "@/components/community/DMView";
 import MentorshipView from "@/components/community/MentorshipView";
 import ClubCreateSheet from "@/components/community/ClubCreateSheet";
+import NotifyOptIn from "@/components/community/NotifyOptIn";
 import { dmApi } from "@/components/community/dm";
 import { togetherApi, participantsLabel } from "@/components/community/together";
 import { Clipboard, ClipboardSlider } from "@/components/brand/ClipboardSlider";
@@ -2454,6 +2455,9 @@ function ConnectPrefsSheet({ user, onClose }) {
       <div onClick={(e) => e.stopPropagation()} role="dialog" aria-label="How you want to connect" style={{ width: "100%", maxWidth: 460, background: T.paper, borderRadius: "14px 14px 0 0", padding: "20px 18px 28px", paddingBottom: "var(--fw-sheet-safe)", maxHeight: "88vh", overflowY: "auto" }}>
         <Eyebrow color={T.gold} mb={8}>How you want to connect</Eyebrow>
         <Script size={26} style={{ marginBottom: 12 }}>On your terms</Script>
+        {/* F3 · gentle background nudges (opt-in; in-app markers stay primary). Renders the iOS
+            add-to-home-screen nudge where web push can't work, and nothing where unsupported. */}
+        <div style={{ marginBottom: 14 }}><NotifyOptIn user={user} /></div>
         <div style={{ fontFamily: UI, fontSize: 11.5, fontWeight: 700, letterSpacing: ".06em", textTransform: "uppercase", color: T.muted, marginBottom: 7 }}>I'm open to</div>
         {[["open", "Messages + letters"], ["letters", "Sealed letters only"], ["paused", "Paused for now"]].map(([v, l]) => (
           <button key={v} onClick={() => save({ ...prefs, mode: v })} style={{ textAlign: "left", width: "100%", background: prefs.mode === v ? `${crimson}14` : T.paperHi, border: `1px solid ${prefs.mode === v ? crimson : T.paperDeep}`, borderRadius: 11, padding: "11px 13px", cursor: "pointer", fontFamily: SERIF, fontSize: 15.5, fontWeight: 600, color: T.ink, display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 7 }}>{l}{prefs.mode === v && <Check size={15} color={crimson} />}</button>

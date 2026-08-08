@@ -16,7 +16,11 @@
         "insight_ready",
         "panic_followup",
         "symptom_alert",
-        "hydration_nudge"
+        "hydration_nudge",
+        "community_reply",
+        "community_message",
+        "community_turn",
+        "community_nudge"
       ]
     },
     "title": {

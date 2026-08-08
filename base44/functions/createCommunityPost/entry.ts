@@ -9,6 +9,7 @@
 // (Merged faithfully from createCommunityPost/addComment/reactCommunity/reportCommunity.)
 
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
+import webpush from 'npm:web-push@3.6.7';
 
 const CRISIS_PATTERNS = [
   /\bkill(ing)?\s+myself\b/i, /\bend(ing)?\s+(it|my life|things)\b/i,
@@ -209,6 +210,46 @@ function botanicalAlias(hash: string): string {
   return `${ALIAS_ADJ[h % ALIAS_ADJ.length]} ${ALIAS_NOUN[(h >> 5) % ALIAS_NOUN.length]}`;
 }
 
+// ── WEB PUSH (F3, 2026-08-06) ────────────────────────────────────────────────────────────────
+// Real-time notifications fire INLINE from the actions below (a delivered DM, a reply on your post),
+// so there is NO new function for real-time push. VAPID keys live in env secrets. Targeting is by
+// anonymous author_hash (see PushSubscription) so a push never needs a hash→user_id map. Every send
+// is fire-and-forget: a push failure must NEVER break the underlying community action.
+let _vapidReady = false;
+function ensureVapid(): boolean {
+  if (_vapidReady) return true;
+  try {
+    const pub = Deno.env.get('VAPID_PUBLIC_KEY') || '';
+    const priv = Deno.env.get('VAPID_PRIVATE_KEY') || '';
+    const sub = Deno.env.get('VAPID_SUBJECT') || 'mailto:hello@femwells.com';
+    if (!pub || !priv) return false;
+    webpush.setVapidDetails(sub, pub, priv);
+    _vapidReady = true;
+    return true;
+  } catch { return false; }
+}
+async function sendPushToHash(base44: any, authorHash: string, payload: { title: string; body: string; route?: string; type?: string }): Promise<void> {
+  try {
+    if (!authorHash || !ensureVapid()) return;
+    const sb = base44.asServiceRole;
+    const subs = await sb.entities.PushSubscription.filter({ author_hash: authorHash, active: true }, '-created_date', 20).catch(() => []);
+    if (!Array.isArray(subs) || !subs.length) return;
+    const data = JSON.stringify({ title: payload.title, body: payload.body, route: payload.route || '/Community', type: payload.type || 'community_message' });
+    const nowISO = new Date().toISOString();
+    for (const s of subs) {
+      try {
+        await webpush.sendNotification({ endpoint: s.endpoint, keys: { p256dh: s.p256dh, auth: s.auth } }, data);
+        await sb.entities.PushSubscription.update(s.id, { last_sent_at: nowISO }).catch(() => {});
+      } catch (e: any) {
+        const code = e?.statusCode || e?.status;
+        if (code === 404 || code === 410) await sb.entities.PushSubscription.update(s.id, { active: false }).catch(() => {});
+      }
+    }
+    const uid = subs[0]?.user_id || '';
+    if (uid) await sb.entities.NotificationLog.create({ user_id: uid, notification_type: payload.type || 'community_message', title: payload.title, body: payload.body, action_route: payload.route || '/Community', sent_at: nowISO, is_read: false }).catch(() => {});
+  } catch { /* a push failure never breaks the action that triggered it */ }
+}
+
 Deno.serve(async (req) => {
   const base44 = createClientFromRequest(req);
   const me = await base44.auth.me().catch(() => null);
@@ -226,7 +267,7 @@ Deno.serve(async (req) => {
   // The body can no longer just ASSERT who you are: a forged/harvested hash is rejected here,
   // before any thread is read or any move is made. Non-identity public actions (post/comment/…)
   // are unaffected. Admins bypass (moderation tooling).
-  if ((action.startsWith('dm.') || action.startsWith('game.') || action.startsWith('mentor.')) && me.role !== 'admin') {
+  if ((action.startsWith('dm.') || action.startsWith('game.') || action.startsWith('mentor.') || action === 'push.subscribe') && me.role !== 'admin') {
     const proven = await verifyIdentity(me.id, String(author_hash || ''), String(p.device_secret || ''));
     if (!proven) return Response.json({ error: 'identity', message: 'We couldn\'t verify your identity for this action. Please reload and try again.' }, { status: 403 });
   }
@@ -374,6 +415,9 @@ Deno.serve(async (req) => {
       const patch: any = { last_message_at: nowISO, last_message_snippet: body.slice(0, 80) };
       if (c.a_hash === ah) patch.a_last_read = nowISO; else patch.b_last_read = nowISO;
       await Conv.update(conversation_id, patch).catch(() => {});
+      // notify the RECIPIENT (their anon hash) — never the content, just that a message arrived.
+      const recipientHash = c.a_hash === ah ? c.b_hash : c.a_hash;
+      await sendPushToHash(base44, recipientHash, { title: 'A quiet new message', body: 'Someone replied in your conversation.', route: '/Community?view=dm', type: 'community_message' });
       return Response.json({ ok: true, delivered: true, message: pubMsg(msg) }, { status: 200 });
     }
 
@@ -610,6 +654,38 @@ Deno.serve(async (req) => {
     }
 
     return Response.json({ error: 'unknown club action' }, { status: 400 });
+  }
+
+  // ── WEB PUSH subscribe/unsubscribe (F3). Stores THIS device's push subscription against the
+  //    subscriber's identity-proven anonymous author_hash; Community pushes target that hash. ──
+  if (action.startsWith('push.')) {
+    const ah = String(author_hash || '');
+    const PS = base44.asServiceRole.entities.PushSubscription;
+    if (action === 'push.subscribe') {
+      if (!ah) return Response.json({ error: 'author_hash required' }, { status: 400 });
+      const sub = p.subscription || {};
+      const endpoint = String(sub.endpoint || '').slice(0, 800);
+      const p256dh = String(sub.keys?.p256dh || '').slice(0, 200);
+      const auth = String(sub.keys?.auth || '').slice(0, 200);
+      const platform = String(p.platform || 'web').slice(0, 20);
+      if (!endpoint || !p256dh || !auth) return Response.json({ error: 'bad subscription' }, { status: 400 });
+      const existing = await withTimeout(PS.filter({ endpoint }, '-created_date', 1), 5000, 'ps-dedup').catch(() => []);
+      if (Array.isArray(existing) && existing[0]) {
+        await PS.update(existing[0].id, { user_id: me.id, author_hash: ah, p256dh, auth, platform, active: true }).catch(() => {});
+        return Response.json({ ok: true, updated: true }, { status: 200 });
+      }
+      const created = await withTimeout(PS.create({ user_id: me.id, author_hash: ah, endpoint, p256dh, auth, platform, active: true }), 6000, 'ps-create').catch((e: any) => { console.error('push.subscribe failed:', e?.message || e); return null; });
+      if (!created) return Response.json({ error: 'subscribe failed' }, { status: 500 });
+      return Response.json({ ok: true, subscribed: true }, { status: 200 });
+    }
+    if (action === 'push.unsubscribe') {
+      const endpoint = String(p.endpoint || '').slice(0, 800);
+      if (!endpoint) return Response.json({ error: 'endpoint required' }, { status: 400 });
+      const rows = await withTimeout(PS.filter({ endpoint }, '-created_date', 3), 5000, 'ps-un').catch(() => []);
+      for (const r of (rows || [])) await PS.update(r.id, { active: false }).catch(() => {});
+      return Response.json({ ok: true, unsubscribed: true }, { status: 200 });
+    }
+    return Response.json({ error: 'unknown push action' }, { status: 400 });
   }
 
   // ════════════════════════════════════════════════════════════════════════════════════════════
@@ -1015,6 +1091,10 @@ Deno.serve(async (req) => {
         .catch((e: any) => { createErr = e?.message || String(e); console.error('addComment core create failed:', createErr); return null; });
     }
     if (!comment) return Response.json({ error: 'Write failed', detail: createErr }, { status: 500 });
+    // notify the POST AUTHOR a reply landed (never on your own post; only when the reply is visible).
+    if (status === 'visible' && post.author_hash && String(post.author_hash) !== String(author_hash)) {
+      await sendPushToHash(base44, String(post.author_hash), { title: 'Someone replied', body: 'A woman answered your post in the community.', route: '/Community', type: 'community_reply' });
+    }
     return Response.json({ ok: true, comment: { id: comment.id, post_id: comment.post_id, parent_id: comment.parent_id || '', body: comment.body, by: comment.by, status: comment.status, created_date: comment.created_date } });
   }
 
