@@ -1,6 +1,12 @@
 # FEMWELL — CANONICAL STATUS INDEX (read first · updated 2026-06-30)
 **This file is the single source of truth AND the index to every plan doc. If anything else disagrees, this wins.** (The long ship-log history continues below the index.)
 
+## 🎨 LIFESTYLE REDESIGN DEMOS (post-UX-audit) — #3 EDITORIAL BUILT, ⛔ BLOCKED ON DEPLOY-AUTH (2026-08-09)
+Four Lifestyle redesign demos to kill overwhelm + findability (theses approved): 3 Editorial · 1 Calm · 2 Findable · 4 Guided. Build order Editorial-first (forges the shared kit). Full UX audit at `femwell-handoff/APP-UX-AUDIT.html`.
+- **✅ #3 EDITORIAL — BUILT + committed + pushed + in built dist (`index-ga7VPgPL.js`); NOT yet live.** `src/pages/LifestyleEditorialDemo.jsx` (single column, ZERO horizontal sliders / controller-chips; 9 curated whole-life picks top-to-bottom; in-place reader; seeded/self-contained; live `/Lifestyle` untouched, reversible). Route added to `pages.config` (import + PAGES `"LifestyleEditorialDemo"`), wired into FoundersOS Ideas (CURRENT group). **Shared baseline-fix kit `src/components/lifestyle-demos/kit.jsx`** (the other 3 reuse): AA-contrast tokens (label `#6b5518` ~6:1 vs live `#A8893F` ~2:1), 44px `Tap` wrapper, labelled `DemoNav` (worded back), `ActionButton` ≥48px, `Eyebrow`/`ThesisNote`.
+- **⛔ BLOCKED: base44 deploy OAuth token EXPIRED** — `npx base44 site deploy` + `functions list` now fail auth and demand an interactive **device-code login** (`base44 login` → confirm at app.base44.com/login/device) which can't run headless. A NEW route needs `site deploy` (local dist); the live bundle (`index-BbLLZjcA.js`) predates the route so `/LifestyleEditorialDemo` 404s until deployed. **ACTION: Halli runs `base44 login` in an interactive terminal; then deploy + verify immediately.** Nothing lost; build is complete + pushed.
+- **⏸ #1 Calm / #2 Findable / #4 Guided — queued** (build after Halli's nod on the full set + after auth restored).
+
 ## 🏘️ COMMUNITY — §11 LIFECYCLE · PHASE 0 AUDIT COMPLETE, motherboard proposed, ⏸ AWAITING PRIORITIES (2026-08-03)
 Taking Community through the full §11 lifecycle. Phase 0 = real-pixel + functional audit (headless pipeline `scripts/communityAudit.cjs`) before building. **Nothing built yet — reported to Halli for priorities.**
 - **ROUTE (§14.4 verified):** `/Community` → `src/pages/Community.jsx` (`AgeGate` → `CommunityInner homeVariant="redesign"`, 3323 lines). Elite-shell decoy parked at `/CommunityElite`. Audited the LIVE file, not the decoy.
