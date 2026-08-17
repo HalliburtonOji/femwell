@@ -196,6 +196,9 @@ const CATALOG = [
   // (The live Nutrition + Today pages used to be listed here — removed; they're
   //  reachable from the real bottom nav, so listing them in the Ideas hub was
   //  pure clutter. Everything below is a demo/preview/plan/tool.)
+  // ── Lifestyle REDESIGNS (post-UX-audit — kill overwhelm + findability) ─────
+  { kind: "route", href: "/LifestyleEditorialDemo", group: CAT.CURRENT, sub: "Lifestyle redesigns (UX audit)", status: "new", accent: "crimson",
+    title: "Lifestyle · Editorial (single column)", desc: "The magazine cut — ONE vertical column, no horizontal sliders, no controller-chips; the whole-life breadth flows top-to-bottom, curated (fewer, better). Demo #3 of 4. Baseline audit fixes baked in: AA-contrast, ≥44px targets, labelled nav, no dev-pill." },
   // ── Today (home) directions ───────────────────────────────────────────
   { kind: "route", href: "/TodayOption2", group: CAT.ARCHIVE, sub: "Today (home) directions", status: "new", accent: "gold",
     title: "Today — Option 2 (single smart slider)", desc: "One sliding row, one card per app section, daily-changing suggestions + inline actions (play a podcast, log water, answer the room). Compare with the live Today." },
