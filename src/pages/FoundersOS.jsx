@@ -199,6 +199,12 @@ const CATALOG = [
   // ── Lifestyle REDESIGNS (post-UX-audit — kill overwhelm + findability) ─────
   { kind: "route", href: "/LifestyleEditorialDemo", group: CAT.CURRENT, sub: "Lifestyle redesigns (UX audit)", status: "new", accent: "crimson",
     title: "Lifestyle · Editorial (single column)", desc: "The magazine cut — ONE vertical column, no horizontal sliders, no controller-chips; the whole-life breadth flows top-to-bottom, curated (fewer, better). Demo #3 of 4. Baseline audit fixes baked in: AA-contrast, ≥44px targets, labelled nav, no dev-pill." },
+  { kind: "route", href: "/LifestyleCalmDemo", group: CAT.CURRENT, sub: "Lifestyle redesigns (UX audit)", status: "new", accent: "sage",
+    title: "Lifestyle · Calm (progressive disclosure)", desc: "Shows ~3 things — one hero pick, one action, one labelled 'more'. The whole-life breadth stays folded until you ask. Demo #1 of 4. One decision at a time (Hick's law)." },
+  { kind: "route", href: "/LifestyleFindableDemo", group: CAT.CURRENT, sub: "Lifestyle redesigns (UX audit)", status: "new", accent: "gold",
+    title: "Lifestyle · Findable (all doors)", desc: "Every life-room a visible LABELLED door with scent — a hub, not a hidden carousel. All 11 rooms in the open; pick one, its content opens. Demo #2 of 4. Recognition over recall." },
+  { kind: "route", href: "/LifestyleGuidedDemo", group: CAT.CURRENT, sub: "Lifestyle redesigns (UX audit)", status: "new", accent: "plum",
+    title: "Lifestyle · Guided (task-first)", desc: "Starts from 'what do you feel like?' — six human intents (read·watch·listen·move·connect·treat) route to the right content. The domains are the machinery behind them. Demo #4 of 4." },
   // ── Today (home) directions ───────────────────────────────────────────
   { kind: "route", href: "/TodayOption2", group: CAT.ARCHIVE, sub: "Today (home) directions", status: "new", accent: "gold",
     title: "Today — Option 2 (single smart slider)", desc: "One sliding row, one card per app section, daily-changing suggestions + inline actions (play a podcast, log water, answer the room). Compare with the live Today." },
