@@ -197,13 +197,13 @@ const CATALOG = [
   //  reachable from the real bottom nav, so listing them in the Ideas hub was
   //  pure clutter. Everything below is a demo/preview/plan/tool.)
   // ── Lifestyle REDESIGNS (post-UX-audit — kill overwhelm + findability) ─────
-  { kind: "route", href: "/LifestyleEditorialDemo", group: CAT.CURRENT, sub: "Lifestyle redesigns (UX audit)", status: "new", accent: "crimson",
+  { kind: "route", href: "/LifestyleEditorialDemo", group: CAT.CURRENT, sub: "Lifestyle redesigns (UX audit)", status: "new", added: "2026-08-09", accent: "crimson",
     title: "Lifestyle · Editorial (single column)", desc: "The magazine cut — ONE vertical column, no horizontal sliders, no controller-chips; the whole-life breadth flows top-to-bottom, curated (fewer, better). Demo #3 of 4. Baseline audit fixes baked in: AA-contrast, ≥44px targets, labelled nav, no dev-pill." },
-  { kind: "route", href: "/LifestyleCalmDemo", group: CAT.CURRENT, sub: "Lifestyle redesigns (UX audit)", status: "new", accent: "sage",
+  { kind: "route", href: "/LifestyleCalmDemo", group: CAT.CURRENT, sub: "Lifestyle redesigns (UX audit)", status: "new", added: "2026-08-09", accent: "sage",
     title: "Lifestyle · Calm (progressive disclosure)", desc: "Shows ~3 things — one hero pick, one action, one labelled 'more'. The whole-life breadth stays folded until you ask. Demo #1 of 4. One decision at a time (Hick's law)." },
-  { kind: "route", href: "/LifestyleFindableDemo", group: CAT.CURRENT, sub: "Lifestyle redesigns (UX audit)", status: "new", accent: "gold",
+  { kind: "route", href: "/LifestyleFindableDemo", group: CAT.CURRENT, sub: "Lifestyle redesigns (UX audit)", status: "new", added: "2026-08-09", accent: "gold",
     title: "Lifestyle · Findable (all doors)", desc: "Every life-room a visible LABELLED door with scent — a hub, not a hidden carousel. All 11 rooms in the open; pick one, its content opens. Demo #2 of 4. Recognition over recall." },
-  { kind: "route", href: "/LifestyleGuidedDemo", group: CAT.CURRENT, sub: "Lifestyle redesigns (UX audit)", status: "new", accent: "plum",
+  { kind: "route", href: "/LifestyleGuidedDemo", group: CAT.CURRENT, sub: "Lifestyle redesigns (UX audit)", status: "new", added: "2026-08-09", accent: "plum",
     title: "Lifestyle · Guided (task-first)", desc: "Starts from 'what do you feel like?' — six human intents (read·watch·listen·move·connect·treat) route to the right content. The domains are the machinery behind them. Demo #4 of 4." },
   // ── Today (home) directions ───────────────────────────────────────────
   { kind: "route", href: "/TodayOption2", group: CAT.ARCHIVE, sub: "Today (home) directions", status: "new", accent: "gold",
@@ -590,6 +590,7 @@ const CURRENT_SUB_ORDER = [
 // a new entry surface at the top of the dashboard, give it a date (either set
 // `added:"YYYY-MM-DD"` on the entry, or add one line to RECENT_DATES below).
 const SECTION = {
+  lsredesign:{ id:"lsredesign",title:"Lifestyle redesign — 4 directions to compare", accent:"crimson", icon:"page", blurb:"Post-UX-audit: four genuinely-distinct rebuilds of the Lifestyle page, to kill overwhelm + findability. Open each and compare — Editorial · Calm · Findable · Guided." },
   brand:     { id:"brand",     title:"Brand, cards & flora",       accent:"crimson",  icon:"bloom",  blurb:"The Brand Bible, the card system and every flora / header treatment." },
   pages:     { id:"pages",     title:"Page level-ups & demos",     accent:"gold",     icon:"page",   blurb:"Per-page +2 plans and their approval demos — Nutrition, Lifestyle, Health, Pulse, Programs, Garden, Jess, Planner." },
   community: { id:"community", title:"Community program",          accent:"crimson",  icon:"people", blurb:"The deep Community build — Talk rooms, Circles, Together, Events, Library, Games, DMs, safety." },
@@ -602,10 +603,11 @@ const SECTION = {
   more:      { id:"more",      title:"More — active",              accent:"gold",     icon:"doc",    blurb:"Active entries that don't yet fit a named section (curate these into one)." },
   archive:   { id:"archive",   title:"Archive",                    accent:"espresso", icon:"box",    blurb:"Superseded demos (the page shipped live-elite) + older / passed-on previews — kept for history, nothing deleted." },
 };
-const SECTION_ORDER = ["brand","pages","community","calendar","identity","data","crossapp","specs","build","more","archive"];
+const SECTION_ORDER = ["lsredesign","brand","pages","community","calendar","identity","data","crossapp","specs","build","more","archive"];
 
 // A CURRENT-group entry routes to a section by its `sub`.
 const SUB_TO_SECTION = {
+  "Lifestyle redesigns (UX audit)":   "lsredesign",
   "Data hygiene":                     "data",
   "QA & safety":                      "data",
   "Calendar + logger plans":          "calendar",
