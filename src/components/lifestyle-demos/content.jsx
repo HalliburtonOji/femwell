@@ -71,6 +71,34 @@ export const INTENTS = [
   { key: "treat", label: "Treat myself", sub: "make · money · the sky", Icon: Sparkles, accent: AA.label },
 ];
 
+// The 11 whole-life ROOMS (the domains the live app buries in a 17-chip scroller) — for the bento
+// overview. Each carries a live-feeling "fresh today" line + a short room body.
+import { Shirt, Users, PartyPopper, Home, Sprout, Palette, Trees } from "lucide-react";
+export const ROOMS = [
+  { key: "mirror", label: "Mirror", sub: "Fashion & meeting yourself", fresh: "What to wear to how you feel", Icon: Shirt, accent: AA.crimson,
+    body: ["Style, beauty and how you meet yourself in the mirror — for the joy of it, never a flaw to fix.", "Inside: dress for how you FEEL today, a skin read for your week, gentle get-ready company."] },
+  { key: "move", label: "Move", sub: "Movement for your mood", fresh: "A five-minute dance snack", Icon: Dumbbell, accent: AA.sage,
+    body: ["Movement for strength, energy and mood — never to shrink. A body that can, met where it is.", "Inside: pick a feeling and it meets you there; five-minute snacks; gentle-is-training-too."] },
+  { key: "kindred", label: "Kindred", sub: "Friendship & belonging", fresh: "The friendships nobody warns you about", Icon: Users, accent: AA.crimson,
+    body: ["Friendship, family, love and belonging — held as equals. However you're connected today, you belong.", "Inside: what your heart's asking for, honest reads on friendship, and the rooms."] },
+  { key: "curious", label: "Curious", sub: "Learn for the joy of it", fresh: "Fall down a rabbit hole", Icon: Compass, accent: AA.label,
+    body: ["Learning for the sheer aliveness of it — no test, no deadline, no reason it has to be useful.", "Inside: follow a curiosity, a rabbit hole, learn while your hands are busy."] },
+  { key: "delight", label: "Delight", sub: "Fun, gossip & play", fresh: "Something silly to watch", Icon: PartyPopper, accent: AA.crimson,
+    body: ["Joy, fun and play — for no reason at all. You don't have to earn or get anything out of it.", "Inside: what do you fancy, something to watch, a good laugh, a bit of gossip, a game."] },
+  { key: "nest", label: "Nest", sub: "A soft place to land", fresh: "Something on the stove", Icon: Home, accent: AA.sage,
+    body: ["Home as a soft place to land — cosy for your comfort, never to be presentable. No budget, no Pinterest.", "Inside: small cosy rituals, a cosy home, something on the stove, a soft place for people."] },
+  { key: "tonight", label: "Tonight", sub: "The evening wind-down", fresh: "Tonight's chapter + your sky", Icon: Moon, accent: AA.label,
+    body: ["A soft landing at the end of the day. Rest for its own sake — nothing to nail, no sleep to score.", "Inside: tonight's wind-down, tonight's chapter, the night sky, something calm to end on."] },
+  { key: "becoming", label: "Becoming", sub: "Growth, gently", fresh: "An honest question for today", Icon: Sprout, accent: AA.sage,
+    body: ["Growth as unfolding, not repair — becoming more yourself, never rejecting yourself. No 'best version'.", "Inside: an honest question, where you're becoming, being kind to yourself, holding your ground."] },
+  { key: "make", label: "Make", sub: "Create for the pleasure", fresh: "Make something badly, on purpose", Icon: Palette, accent: AA.sage,
+    body: ["Making for the pleasure of it — badly, pointlessly, unfinished, unseen. The doing is the whole reward.", "Inside: tiny invitations to make a thing today, and permission to be no good at it."] },
+  { key: "outside", label: "Outside", sub: "A breath of air", fresh: "Notice the sky once today", Icon: Trees, accent: AA.sage,
+    body: ["A bit of green, a breath of air — nature as it actually is for you. A window, a street tree, a bench.", "Inside: get outside today, into the green, no-garden nature, outside with others."] },
+  { key: "money", label: "Money", sub: "Money, gently", fresh: "Open the app, look, close it", Icon: Coins, accent: AA.label,
+    body: ["A calm, kind corner for the most emotional subject there is. No shame, no lectures, no dread.", "Inside: a gentle money thing today, a gentle money intention, a read worth your time."] },
+];
+
 // Shared in-place reader (audit fixes: AA contrast, ≥44px labelled Close).
 export function ItemReader({ item, onClose }) {
   useEffect(() => { const k = (e) => e.key === "Escape" && onClose(); window.addEventListener("keydown", k); return () => window.removeEventListener("keydown", k); }, [onClose]);

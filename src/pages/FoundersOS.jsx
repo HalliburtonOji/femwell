@@ -197,6 +197,8 @@ const CATALOG = [
   //  reachable from the real bottom nav, so listing them in the Ideas hub was
   //  pure clutter. Everything below is a demo/preview/plan/tool.)
   // ── Lifestyle REDESIGNS (post-UX-audit — kill overwhelm + findability) ─────
+  { kind: "route", href: "/LifestyleAlmanacDemo", group: CAT.CURRENT, sub: "Lifestyle redesigns (UX audit)", status: "new", added: "2026-08-22", accent: "crimson",
+    title: "★ Lifestyle · The Almanac (editorial) — CALIBRATION BUILD", desc: "The full-polish redesign: RETAINS the flora/video header, then an editorial magazine below — one lede → 'For you today' → the 11 rooms as a bento → every content board as a named capped 'See all' shelf with a peeking card. Every feature relocated, nothing deleted. AA contrast, ≥44px, 8-pt rhythm. This is the bar-setter — compare against the live Lifestyle." },
   { kind: "route", href: "/LifestyleEditorialDemo", group: CAT.CURRENT, sub: "Lifestyle redesigns (UX audit)", status: "new", added: "2026-08-09", accent: "crimson",
     title: "Lifestyle · Editorial (single column)", desc: "The magazine cut — ONE vertical column, no horizontal sliders, no controller-chips; the whole-life breadth flows top-to-bottom, curated (fewer, better). Demo #3 of 4. Baseline audit fixes baked in: AA-contrast, ≥44px targets, labelled nav, no dev-pill." },
   { kind: "route", href: "/LifestyleCalmDemo", group: CAT.CURRENT, sub: "Lifestyle redesigns (UX audit)", status: "new", added: "2026-08-09", accent: "sage",
