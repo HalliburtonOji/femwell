@@ -16,6 +16,7 @@ export const AA = {
   crimson: "#9a1f17",    // AA crimson for SMALL text.
   crimsonBig: "#BC2E27", // bright crimson — LARGE / decorative headings only.
   sage: "#3f5f38",       // AA sage for small text.
+  plum: "#5f3f56",       // AA plum for small text (darkened #8E6E8E to clear ~4.5:1 on cream).
   line: "#d8cfbc",
 };
 export const SERIF = "'Fraunces', Georgia, serif";

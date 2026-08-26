@@ -592,7 +592,7 @@ const CURRENT_SUB_ORDER = [
 // a new entry surface at the top of the dashboard, give it a date (either set
 // `added:"YYYY-MM-DD"` on the entry, or add one line to RECENT_DATES below).
 const SECTION = {
-  lsredesign:{ id:"lsredesign",title:"Lifestyle redesign — 4 directions to compare", accent:"crimson", icon:"page", blurb:"Post-UX-audit: four genuinely-distinct rebuilds of the Lifestyle page, to kill overwhelm + findability. Open each and compare — Editorial · Calm · Findable · Guided." },
+  lsredesign:{ id:"lsredesign",title:"Lifestyle redesign — start with ★ The Almanac", accent:"crimson", icon:"page", blurb:"Post-UX-audit rebuilds of the Lifestyle page, to kill overwhelm + keep every feature findable. START with ★ The Almanac (the full-polish calibration bar-setter — retains the flora header, editorial magazine below). The four earlier sketches (Editorial · Calm · Findable · Guided) are kept below to compare against." },
   brand:     { id:"brand",     title:"Brand, cards & flora",       accent:"crimson",  icon:"bloom",  blurb:"The Brand Bible, the card system and every flora / header treatment." },
   pages:     { id:"pages",     title:"Page level-ups & demos",     accent:"gold",     icon:"page",   blurb:"Per-page +2 plans and their approval demos — Nutrition, Lifestyle, Health, Pulse, Programs, Garden, Jess, Planner." },
   community: { id:"community", title:"Community program",          accent:"crimson",  icon:"people", blurb:"The deep Community build — Talk rooms, Circles, Together, Events, Library, Games, DMs, safety." },

@@ -7,8 +7,8 @@
 // contrast, ≥44px. RETAINS the real FwFloraHero header untouched. Seeded/self-contained; live untouched.
 import React, { useState, useRef, useEffect } from "react";
 import { Feather, BookOpen, Headphones, Play, Library, Moon, Sparkles, Coins, ChevronRight, ArrowRight, X, Clock, Bookmark, Grid2x2, Compass } from "lucide-react";
-import { T, PAPER_BG } from "@/components/journal/Editorial";
-import { cwOf } from "@/components/brand/flora";
+import { T, PAPER_BG, PAPER_TEX } from "@/components/journal/Editorial";
+import { cwOf, CardFrame, clampLines } from "@/components/brand/flora";
 import FloraCover from "@/components/brand/FloraCover";
 import { FwFloraHero } from "@/components/brand/PageTop";
 import { AA, SERIF, UI, Tap, ActionButton } from "@/components/lifestyle-demos/kit";
@@ -92,14 +92,18 @@ function Shelf({ items, accent, onOpen }) {
   return (
     <div className="alm-shelf" style={{ display: "flex", gap: 12, overflowX: "auto", padding: "2px 2px 10px", margin: "0 -18px", paddingLeft: 18, paddingRight: 18, scrollbarWidth: "none", WebkitMaskImage: "linear-gradient(90deg,#000 0,#000 calc(100% - 30px),transparent 100%)", maskImage: "linear-gradient(90deg,#000 0,#000 calc(100% - 30px),transparent 100%)", scrollSnapType: "x proximity" }}>
       <style>{`.alm-shelf::-webkit-scrollbar{display:none}`}</style>
-      {items.map((it) => (
-        <button key={it.id} onClick={() => onOpen(it)} className="fw-ce-press" style={{ scrollSnapAlign: "start", flex: "0 0 clamp(220px, 78vw, 300px)", textAlign: "left", cursor: "pointer", background: `linear-gradient(165deg, ${AA.paperHi} 0%, ${cwOf(accent).petal}0f 100%)`, border: `1px solid ${AA.line}`, borderTop: `3px solid ${cwOf(accent).petal}`, borderRadius: 16, padding: "15px 15px 14px", boxShadow: "0 4px 18px rgba(58,44,26,.07), 0 1px 3px rgba(58,44,26,.05)", display: "flex", flexDirection: "column", minHeight: 172 }}>
-          <div style={{ fontFamily: UI, fontSize: 10.5, fontWeight: 800, letterSpacing: ".06em", textTransform: "uppercase", color: at, marginBottom: 6 }}>{it.kicker}</div>
-          <div style={{ fontFamily: SERIF, fontSize: 19, fontWeight: 600, color: AA.ink, lineHeight: 1.18, margin: "0 0 6px" }}>{it.hook}</div>
-          <div style={{ fontFamily: SERIF, fontSize: 14.5, color: AA.inkSoft, lineHeight: 1.45, flex: 1 }}>{it.line}</div>
-          <div style={{ display: "inline-flex", alignItems: "center", gap: 5, marginTop: 12, fontFamily: UI, fontSize: 13, fontWeight: 800, color: at }}>{it.act} <ChevronRight size={15} /></div>
+      {items.map((it) => { const petal = cwOf(accent).petal; return (
+        <button key={it.id} onClick={() => onOpen(it)} className="fw-ce-press" style={{ position: "relative", overflow: "hidden", scrollSnapAlign: "start", flex: "0 0 clamp(224px, 78vw, 296px)", height: 202, textAlign: "left", cursor: "pointer", background: `linear-gradient(165deg, ${AA.paperHi} 0%, ${petal}12 100%)`, border: `1px solid ${AA.line}`, borderLeft: `4px solid ${petal}`, borderRadius: 18, padding: 16, boxShadow: "0 6px 22px rgba(58,44,26,.10), 0 1px 3px rgba(58,44,26,.05)", display: "flex", flexDirection: "column" }}>
+          <span aria-hidden style={{ position: "absolute", inset: 0, backgroundImage: `url(${PAPER_TEX})`, backgroundSize: "170px", mixBlendMode: "multiply", opacity: 0.45, pointerEvents: "none" }} />
+          <CardFrame color={petal} opacity={0.42} size={38} />
+          <span style={{ position: "relative", display: "flex", flexDirection: "column", height: "100%" }}>
+            <span style={{ fontFamily: UI, fontSize: 10.5, fontWeight: 800, letterSpacing: ".06em", textTransform: "uppercase", color: at, marginBottom: 6 }}>{it.kicker}</span>
+            <span style={{ fontFamily: SERIF, fontSize: 19, fontWeight: 600, color: AA.ink, lineHeight: 1.18, margin: "0 0 6px", ...clampLines(2) }}>{it.hook}</span>
+            <span style={{ fontFamily: SERIF, fontSize: 14.5, color: AA.inkSoft, lineHeight: 1.45, flex: 1, ...clampLines(3) }}>{it.line}</span>
+            <span style={{ display: "inline-flex", alignItems: "center", gap: 5, marginTop: 12, fontFamily: UI, fontSize: 13, fontWeight: 800, color: at }}>{it.act} <ChevronRight size={15} /></span>
+          </span>
         </button>
-      ))}
+      ); })}
       <span style={{ flex: "0 0 6px" }} aria-hidden />
     </div>
   );
@@ -196,39 +200,46 @@ export default function LifestyleAlmanacDemo() {
             </button>
           ); })}
         </div>
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, margin: "12px 0 14px" }}>
-          <span style={{ width: 9, height: 9, borderRadius: 99, background: cwOf("sage").petal }} />
-          <span style={{ fontFamily: UI, fontSize: 13, fontWeight: 700, color: AA.inkSoft }}>Follicular · Day 10 · a building week</span>
+        <div style={{ display: "flex", justifyContent: "center", margin: "12px 0 16px" }}>
+          <span style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "6px 14px", background: AA.paperHi, border: `1px solid ${AA.line}`, borderRadius: 999 }}>
+            <span style={{ width: 8, height: 8, borderRadius: 99, background: cwOf("sage").petal }} />
+            <span style={{ fontFamily: UI, fontSize: 12.5, fontWeight: 700, letterSpacing: ".01em", color: AA.inkSoft }}>Follicular · Day 10 · a building week</span>
+          </span>
         </div>
 
         {/* ══ BAND 1 · THE LEDE — one big editorial pick ══ */}
-        <button onClick={() => setOpen(lede)} className="fw-ce-press" style={{ display: "block", width: "100%", textAlign: "left", cursor: "pointer", padding: 0, border: `1px solid ${AA.line}`, borderRadius: 20, overflow: "hidden", background: AA.paperHi, boxShadow: "0 8px 30px rgba(58,44,26,.12), 0 2px 6px rgba(58,44,26,.06)" }}>
+        <button onClick={() => setOpen(lede)} className="fw-ce-press" style={{ position: "relative", display: "block", width: "100%", textAlign: "left", cursor: "pointer", padding: 0, border: `1px solid ${AA.line}`, borderRadius: 20, overflow: "hidden", background: AA.paperHi, boxShadow: "0 10px 34px rgba(58,44,26,.14), 0 2px 6px rgba(58,44,26,.06)" }}>
           <FloraCover title="Small Mends" category="Fiction" colorway="crimson" seed="alm-lede" height={188} roundTop showTitle={false} idx="alm-lede" />
-          <div style={{ padding: "16px 17px 17px" }}>
+          <CardFrame color={cwOf("crimson").petal} opacity={0.5} size={46} />
+          <div style={{ position: "relative", padding: 18 }}>
+            <span aria-hidden style={{ position: "absolute", inset: 0, backgroundImage: `url(${PAPER_TEX})`, backgroundSize: "200px", mixBlendMode: "multiply", opacity: 0.4, pointerEvents: "none" }} />
+            <div style={{ position: "relative" }}>
             <div style={{ fontFamily: UI, fontSize: 11, fontWeight: 800, letterSpacing: ".08em", textTransform: "uppercase", color: AA.crimson, marginBottom: 6 }}>Today's chapter · new this morning</div>
-            <div style={{ fontFamily: SERIF, fontSize: 27, fontWeight: 600, color: AA.ink, lineHeight: 1.14, margin: "0 0 8px", letterSpacing: -0.4 }}>Small Mends — The Envelope</div>
+            <div style={{ fontFamily: SERIF, fontSize: 32, fontWeight: 600, color: AA.ink, lineHeight: 1.1, margin: "0 0 9px", letterSpacing: -0.5 }}>Small Mends — The Envelope</div>
             <div style={{ fontFamily: SERIF, fontSize: 16.5, color: AA.inkSoft, lineHeight: 1.5, marginBottom: 15 }}>The envelope had sat on Hilary's desk since Wednesday, propped against the tin. She had not opened it — which Alison thought, afterwards, was the most honest thing about it.</div>
             <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 8, minHeight: 48, width: "100%", boxSizing: "border-box", background: AA.crimsonBig, color: "#fff", borderRadius: 12, fontFamily: UI, fontSize: 15, fontWeight: 700 }}><Feather size={17} /> Read today's chapter</span>
+            </div>
           </div>
         </button>
 
         {/* ══ BAND 2 · FOR YOU TODAY — short capped strip + See all ══ */}
-        <div style={{ marginTop: 34 }}>
+        <div style={{ marginTop: 44 }}>
           <SectionHead title="For you today" sub="Gathered for your follicular week" accent="gold" Icon={Sparkles} count={9} onSeeAll={() => setSeeAll({ title: "For you today", cw: "gold", items: SHELVES.flatMap((s) => s.items).slice(0, 9) })} />
           <Shelf items={forYou} accent="gold" onOpen={setOpen} />
         </div>
 
         {/* ══ BAND 3 · YOUR ROOMS — the 11 domains as a bento (findability fix) ══ */}
-        <div style={{ marginTop: 34 }}>
+        <div style={{ marginTop: 44 }}>
           <SectionHead title="Your rooms" sub="Eleven corners of your life — tap to step in" accent="crimson" Icon={Grid2x2} />
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
             {ROOMS.map((r, i) => {
-              const feature = i === 0; // one featured tile spans both columns
+              const feature = i === 0; // one featured tile spans both columns; it OWNS the section accent
+              const crim = AA.crimsonBig;
               return (
-                <button key={r.key} onClick={() => setRoom(r)} className="fw-ce-press" style={{ gridColumn: feature ? "1 / -1" : "auto", textAlign: "left", cursor: "pointer", display: "flex", alignItems: "center", gap: 12, padding: feature ? "16px 16px" : "13px 13px", minHeight: feature ? 84 : 96, flexDirection: feature ? "row" : "column", justifyContent: "flex-start", alignItems: feature ? "center" : "flex-start", background: `linear-gradient(160deg, ${AA.paperHi} 0%, ${r.accent}10 100%)`, border: `1px solid ${AA.line}`, borderLeft: `4px solid ${r.accent}`, borderRadius: 14 }}>
-                  <span style={{ width: feature ? 44 : 36, height: feature ? 44 : 36, borderRadius: 11, background: `${r.accent}1f`, display: "grid", placeItems: "center", flexShrink: 0 }}><r.Icon size={feature ? 22 : 19} color={r.accent} /></span>
+                <button key={r.key} onClick={() => setRoom(r)} className="fw-ce-press" style={{ gridColumn: feature ? "1 / -1" : "auto", textAlign: "left", cursor: "pointer", display: "flex", flexDirection: feature ? "row" : "column", alignItems: feature ? "center" : "flex-start", justifyContent: "flex-start", gap: feature ? 14 : 9, padding: 14, minHeight: feature ? 104 : 96, background: feature ? `linear-gradient(160deg, ${AA.paperHi} 0%, ${crim}0f 100%)` : AA.paperHi, border: `1px solid ${AA.line}`, ...(feature ? { borderLeft: `4px solid ${crim}` } : {}), borderRadius: 14 }}>
+                  <span style={{ width: feature ? 46 : 38, height: feature ? 46 : 38, borderRadius: 11, background: feature ? `${crim}1f` : `${AA.label}14`, display: "grid", placeItems: "center", flexShrink: 0 }}><r.Icon size={feature ? 23 : 19} color={feature ? AA.crimson : AA.muted} /></span>
                   <span style={{ minWidth: 0 }}>
-                    <span style={{ display: "block", fontFamily: SERIF, fontSize: feature ? 21 : 18, fontWeight: 600, color: AA.ink, lineHeight: 1.1 }}>{r.label}</span>
+                    <span style={{ display: "block", fontFamily: SERIF, fontSize: feature ? 22 : 18, fontWeight: 600, color: AA.ink, lineHeight: 1.1 }}>{r.label}</span>
                     <span style={{ display: "block", fontFamily: UI, fontSize: 12, color: AA.muted, lineHeight: 1.3, marginTop: 2 }}>{feature ? r.sub + " · " + r.fresh : r.fresh}</span>
                   </span>
                 </button>
@@ -239,14 +250,14 @@ export default function LifestyleAlmanacDemo() {
 
         {/* ══ BAND 4 · THE CONTENT — named, capped, See-all shelves ══ */}
         {SHELVES.map((s) => (
-          <section key={s.key} ref={(el) => (refs.current[s.key] = el)} style={{ marginTop: 36, scrollMarginTop: 12 }}>
+          <section key={s.key} ref={(el) => (refs.current[s.key] = el)} style={{ marginTop: 44, scrollMarginTop: 12 }}>
             <SectionHead title={s.title} sub={s.sub} accent={s.cw} Icon={s.Icon} count={s.items.length} onSeeAll={() => setSeeAll(s)} />
             <Shelf items={s.items} accent={s.cw} onOpen={setOpen} />
           </section>
         ))}
 
         {/* ══ BAND 5 · HANDY (slim) + CLOSING ══ */}
-        <div style={{ marginTop: 38 }}>
+        <div style={{ marginTop: 44 }}>
           <div style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 18, fontWeight: 600, color: OX, margin: "0 0 10px" }}>Handy right now</div>
           <div style={{ display: "flex", gap: 9, flexWrap: "wrap" }}>
             {[["Today's chapter", Feather, "crimson", () => setOpen(lede)], ["Your sky tonight", Moon, "gold", () => setOpen(SHELVES[3].items[1])], ["Your saved", Bookmark, "plum", () => jump("yours")], ["Jump to…", Compass, "sage", () => jump("read")]].map(([label, Ic, cw, on]) => (
