@@ -203,14 +203,16 @@ const CATALOG = [
     title: "★ Lifestyle · B · The Rooms (whole-life-first)", desc: "Full-polish direction B — whole-life-DOMAIN-first. RETAINS the flora header, then the 11 rooms ARE the spine: a 'room of the moment' + a rich room gallery. The content boards, for-you deck and readers are all preserved below under 'browse by kind'. Nothing deleted. One of 4 to compare." },
   { kind: "route", href: "/LifestyleTodayDemo", group: CAT.CURRENT, sub: "Lifestyle redesigns (UX audit)", status: "new", added: "2026-08-26", accent: "gold",
     title: "★ Lifestyle · A · Today, first (progressive disclosure)", desc: "Full-polish direction A — a calm 'here's your today' moment first (the lede + a few phase-tuned picks in a focused column), then EVERYTHING else — 11 rooms, 6 boards, for-you, readers — preserved behind a clearly-labelled 'open the rest of your life' reveal. Progressive disclosure done right: nothing deleted, just calmly out of the way. One of 4 to compare." },
-  { kind: "route", href: "/LifestyleEditorialDemo", group: CAT.CURRENT, sub: "Lifestyle redesigns (UX audit)", status: "new", added: "2026-08-09", accent: "crimson",
-    title: "Lifestyle · Editorial (single column)", desc: "The magazine cut — ONE vertical column, no horizontal sliders, no controller-chips; the whole-life breadth flows top-to-bottom, curated (fewer, better). Demo #3 of 4. Baseline audit fixes baked in: AA-contrast, ≥44px targets, labelled nav, no dev-pill." },
-  { kind: "route", href: "/LifestyleCalmDemo", group: CAT.CURRENT, sub: "Lifestyle redesigns (UX audit)", status: "new", added: "2026-08-09", accent: "sage",
-    title: "Lifestyle · Calm (progressive disclosure)", desc: "Shows ~3 things — one hero pick, one action, one labelled 'more'. The whole-life breadth stays folded until you ask. Demo #1 of 4. One decision at a time (Hick's law)." },
-  { kind: "route", href: "/LifestyleFindableDemo", group: CAT.CURRENT, sub: "Lifestyle redesigns (UX audit)", status: "new", added: "2026-08-09", accent: "gold",
-    title: "Lifestyle · Findable (all doors)", desc: "Every life-room a visible LABELLED door with scent — a hub, not a hidden carousel. All 11 rooms in the open; pick one, its content opens. Demo #2 of 4. Recognition over recall." },
-  { kind: "route", href: "/LifestyleGuidedDemo", group: CAT.CURRENT, sub: "Lifestyle redesigns (UX audit)", status: "new", added: "2026-08-09", accent: "plum",
-    title: "Lifestyle · Guided (task-first)", desc: "Starts from 'what do you feel like?' — six human intents (read·watch·listen·move·connect·treat) route to the right content. The domains are the machinery behind them. Demo #4 of 4." },
+  { kind: "route", href: "/LifestyleCompassDemo", group: CAT.CURRENT, sub: "Lifestyle redesigns (UX audit)", status: "new", added: "2026-08-26", accent: "sage",
+    title: "★ Lifestyle · D · The Compass (intent-first)", desc: "Full-polish direction D — human-INTENT-first wayfinding. Opens with 'what do you feel like?' and six directions (read·watch·listen·move·connect·treat); tap one and the picks for that mood surface. RETAINS the flora header; the 11 rooms, 6 boards, for-you and readers are all preserved below under 'or explore it all'. Nothing deleted. One of 4 to compare." },
+  { kind: "route", href: "/LifestyleEditorialDemo", group: CAT.CURRENT, sub: "Lifestyle redesigns — earlier sketches", status: "idea", added: "2026-08-09", accent: "muted",
+    title: "Lifestyle · (earlier sketch) Editorial", desc: "EARLIER low-fi sketch (pre-full-polish). The magazine cut — ONE vertical column, no sliders. Superseded by the four full-polish directions above; kept only for reference." },
+  { kind: "route", href: "/LifestyleCalmDemo", group: CAT.CURRENT, sub: "Lifestyle redesigns — earlier sketches", status: "idea", added: "2026-08-09", accent: "muted",
+    title: "Lifestyle · (earlier sketch) Calm", desc: "EARLIER low-fi sketch. Shows ~3 things then folds the rest. Superseded by the four full-polish directions above; kept only for reference." },
+  { kind: "route", href: "/LifestyleFindableDemo", group: CAT.CURRENT, sub: "Lifestyle redesigns — earlier sketches", status: "idea", added: "2026-08-09", accent: "muted",
+    title: "Lifestyle · (earlier sketch) Findable", desc: "EARLIER low-fi sketch. Every life-room a visible labelled door. Superseded by the four full-polish directions above; kept only for reference." },
+  { kind: "route", href: "/LifestyleGuidedDemo", group: CAT.CURRENT, sub: "Lifestyle redesigns — earlier sketches", status: "idea", added: "2026-08-09", accent: "muted",
+    title: "Lifestyle · (earlier sketch) Guided", desc: "EARLIER low-fi sketch. Starts from 'what do you feel like?' — six intents. Superseded by the four full-polish directions above (its idea lives on in D · The Compass); kept only for reference." },
   // ── Today (home) directions ───────────────────────────────────────────
   { kind: "route", href: "/TodayOption2", group: CAT.ARCHIVE, sub: "Today (home) directions", status: "new", accent: "gold",
     title: "Today — Option 2 (single smart slider)", desc: "One sliding row, one card per app section, daily-changing suggestions + inline actions (play a podcast, log water, answer the room). Compare with the live Today." },
@@ -596,7 +598,8 @@ const CURRENT_SUB_ORDER = [
 // a new entry surface at the top of the dashboard, give it a date (either set
 // `added:"YYYY-MM-DD"` on the entry, or add one line to RECENT_DATES below).
 const SECTION = {
-  lsredesign:{ id:"lsredesign",title:"Lifestyle redesign — start with ★ The Almanac", accent:"crimson", icon:"page", blurb:"Post-UX-audit rebuilds of the Lifestyle page, to kill overwhelm + keep every feature findable. START with ★ The Almanac (the full-polish calibration bar-setter — retains the flora header, editorial magazine below). The four earlier sketches (Editorial · Calm · Findable · Guided) are kept below to compare against." },
+  lsredesign:{ id:"lsredesign",title:"Lifestyle redesign — 4 to compare (A · B · C · D)", accent:"crimson", icon:"page", blurb:"FOUR full-polish rebuilds of the Lifestyle page — same flora header, same features preserved, four different ways to organise them. Open all four and pick the most suitable. A · Today, first (calm today then reveal the rest) · B · The Rooms (whole-life-domain-first) · C · The Almanac (editorial magazine) · D · The Compass (start from how you feel). Each retains the header and deletes nothing." },
+  lssketches:{ id:"lssketches",title:"Lifestyle redesign — earlier sketches", accent:"espresso", icon:"box", blurb:"The four EARLIER low-fi sketches (Editorial · Calm · Findable · Guided), superseded by the four full-polish directions above. Kept for reference only." },
   brand:     { id:"brand",     title:"Brand, cards & flora",       accent:"crimson",  icon:"bloom",  blurb:"The Brand Bible, the card system and every flora / header treatment." },
   pages:     { id:"pages",     title:"Page level-ups & demos",     accent:"gold",     icon:"page",   blurb:"Per-page +2 plans and their approval demos — Nutrition, Lifestyle, Health, Pulse, Programs, Garden, Jess, Planner." },
   community: { id:"community", title:"Community program",          accent:"crimson",  icon:"people", blurb:"The deep Community build — Talk rooms, Circles, Together, Events, Library, Games, DMs, safety." },
@@ -609,11 +612,12 @@ const SECTION = {
   more:      { id:"more",      title:"More — active",              accent:"gold",     icon:"doc",    blurb:"Active entries that don't yet fit a named section (curate these into one)." },
   archive:   { id:"archive",   title:"Archive",                    accent:"espresso", icon:"box",    blurb:"Superseded demos (the page shipped live-elite) + older / passed-on previews — kept for history, nothing deleted." },
 };
-const SECTION_ORDER = ["lsredesign","brand","pages","community","calendar","identity","data","crossapp","specs","build","more","archive"];
+const SECTION_ORDER = ["lsredesign","brand","pages","community","calendar","identity","data","crossapp","specs","build","more","lssketches","archive"];
 
 // A CURRENT-group entry routes to a section by its `sub`.
 const SUB_TO_SECTION = {
   "Lifestyle redesigns (UX audit)":   "lsredesign",
+  "Lifestyle redesigns — earlier sketches": "lssketches",
   "Data hygiene":                     "data",
   "QA & safety":                      "data",
   "Calendar + logger plans":          "calendar",

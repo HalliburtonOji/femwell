@@ -122,6 +122,7 @@ import LifestyleGuidedDemo from './pages/LifestyleGuidedDemo';
 import LifestyleAlmanacDemo from './pages/LifestyleAlmanacDemo';
 import LifestyleRoomsDemo from './pages/LifestyleRoomsDemo';
 import LifestyleTodayDemo from './pages/LifestyleTodayDemo';
+import LifestyleCompassDemo from './pages/LifestyleCompassDemo';
 import Insights from './pages/Insights.jsx';
 import OneShotThankYou from './pages/OneShotThankYou';
 // `Ideas` (the Design Lab component) is no longer routed — Halli's
@@ -394,6 +395,7 @@ export const PAGES = {
     "LifestyleAlmanacDemo": LifestyleAlmanacDemo,
     "LifestyleRoomsDemo": LifestyleRoomsDemo,
     "LifestyleTodayDemo": LifestyleTodayDemo,
+    "LifestyleCompassDemo": LifestyleCompassDemo,
     "Insights": Insights,
     "OneShotThankYou": OneShotThankYou,
     // /Ideas now renders FoundersOS — that's the path the in-app
