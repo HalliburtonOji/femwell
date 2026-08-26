@@ -73,7 +73,7 @@ export const INTENTS = [
 
 // The 11 whole-life ROOMS (the domains the live app buries in a 17-chip scroller) — for the bento
 // overview. Each carries a live-feeling "fresh today" line + a short room body.
-import { Shirt, Users, PartyPopper, Home, Sprout, Palette, Trees } from "lucide-react";
+import { Shirt, Users, PartyPopper, Home, Sprout, Palette, Trees, Compass } from "lucide-react";
 export const ROOMS = [
   { key: "mirror", label: "Mirror", sub: "Fashion & meeting yourself", fresh: "What to wear to how you feel", Icon: Shirt, accent: AA.crimson,
     body: ["Style, beauty and how you meet yourself in the mirror — for the joy of it, never a flaw to fix.", "Inside: dress for how you FEEL today, a skin read for your week, gentle get-ready company."] },
