@@ -3,13 +3,13 @@
 // the 11 rooms, the 6 content boards, for-you, readers — preserved but DEMOTED below a clear
 // "the rest of your life, when you want it" divider (progressive disclosure done right: nothing is
 // deleted, it is just calmly out of the way until asked for). RETAINS the FwFloraHero header.
-import React, { useState, useRef } from "react";
-import { Feather, Moon, Bookmark, Compass, Sun, Grid2x2, DoorOpen, ChevronDown, ChevronRight } from "lucide-react";
+import React, { useState } from "react";
+import { Feather, Moon, Bookmark, Compass, Sun, DoorOpen, ChevronDown, LayoutGrid } from "lucide-react";
 import { AA, SERIF, UI } from "@/components/lifestyle-demos/kit";
 import {
-  OX, accentText, cwOf, SHELVES, HERO, forYouDeck, ledeItem,
-  Page, DemoRibbon, FloraHeader, ControllerChips, PhaseChip, LedeCard, StackCard,
-  SectionHead, Shelf, SeeAllOverlay, RoomReader, RoomsBento, ItemReader, ClosingLine,
+  OX, accentText, cwOf, SHELVES, forYouDeck,
+  Page, DemoRibbon, FloraHeader, PhaseChip, LedeCard, StackCard,
+  SectionHead, SectionDeck, SeeAllOverlay, RoomReader, RoomsBento, ItemReader, ClosingLine,
 } from "@/components/lifestyle-demos/shelfkit";
 
 // a quiet section divider — the hinge between "today" and "everything else".
@@ -28,10 +28,8 @@ export default function LifestyleTodayDemo() {
   const [seeAll, setSeeAll] = useState(null);
   const [room, setRoom] = useState(null);
   const [expanded, setExpanded] = useState(false); // the "rest of your life" reveal
-  const refs = useRef({});
   const todayPicks = [SHELVES[3].items[0], SHELVES[1].items[0], SHELVES[4].items[0]]; // story · a listen/watch · a small joy
   const forYou = forYouDeck().slice(0, 4);
-  const jump = (key) => { setExpanded(true); requestAnimationFrame(() => { const el = refs.current[key]; if (el) el.scrollIntoView({ behavior: "smooth", block: "start" }); }); };
 
   return (
     <Page>
@@ -66,23 +64,19 @@ export default function LifestyleTodayDemo() {
             <RoomsBento onOpen={setRoom} />
           </div>
 
-          {/* for-you deck (preserved) */}
+          {/* for-you — a few more picks, as a focused set */}
           <div style={{ marginTop: 44 }}>
             <SectionHead title="For you today" sub="A few more, from across your life" accent="gold" Icon={Compass} count={9} onSeeAll={() => setSeeAll({ title: "For you today", cw: "gold", items: SHELVES.flatMap((s) => s.items).slice(0, 9) })} />
-            <Shelf items={forYou} accent="gold" onOpen={setOpen} />
+            <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+              {forYou.map((it, i) => <StackCard key={it.id} item={it} accent={["sage", "gold", "plum", "crimson"][i % 4]} onOpen={setOpen} />)}
+            </div>
           </div>
 
-          {/* the 6 content boards (preserved) with the by-kind switcher */}
+          {/* the 6 content boards as the reveal-in-place SECTION DECK (preserved) */}
           <div style={{ marginTop: 44 }}>
-            <SectionHead title="Browse by kind" sub="Every board, reader and player — all still here" accent="plum" Icon={Grid2x2} />
-            <ControllerChips activeKey={null} onJump={(key) => { const el = refs.current[key]; if (el) el.scrollIntoView({ behavior: "smooth", block: "start" }); }} />
+            <SectionHead title="Browse by kind" sub="Tap a section — its cards open right here" accent="plum" Icon={LayoutGrid} />
+            <SectionDeck shelves={SHELVES} onOpen={setOpen} onSeeAll={setSeeAll} />
           </div>
-          {SHELVES.map((s) => (
-            <section key={s.key} ref={(el) => (refs.current[s.key] = el)} style={{ marginTop: 34, scrollMarginTop: 12 }}>
-              <SectionHead title={s.title} sub={s.sub} accent={s.cw} Icon={s.Icon} count={s.items.length} onSeeAll={() => setSeeAll(s)} />
-              <Shelf items={s.items} accent={s.cw} onOpen={setOpen} />
-            </section>
-          ))}
         </>
       )}
 
@@ -90,7 +84,7 @@ export default function LifestyleTodayDemo() {
       <div style={{ marginTop: 44 }}>
         <div style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 18, fontWeight: 600, color: OX, margin: "0 0 10px" }}>Handy right now</div>
         <div style={{ display: "flex", gap: 9, flexWrap: "wrap" }}>
-          {[["Today's chapter", Feather, "crimson", () => setOpen(SHELVES[0].items[0])], ["Your sky tonight", Moon, "gold", () => setOpen(SHELVES[3].items[1])], ["Your saved", Bookmark, "plum", () => jump("yours")], ["Open everything", DoorOpen, "sage", () => jump("read")]].map(([label, Ic, cw, on]) => (
+          {[["Today's chapter", Feather, "crimson", () => setOpen(SHELVES[0].items[0])], ["Your sky tonight", Moon, "gold", () => setOpen(SHELVES[3].items[1])], ["Your saved", Bookmark, "plum", () => setOpen(SHELVES[5].items[0])], ["Open everything", DoorOpen, "sage", () => setExpanded(true)]].map(([label, Ic, cw, on]) => (
             <button key={label} onClick={on} className="fw-elite-press" style={{ display: "inline-flex", alignItems: "center", gap: 7, minHeight: 44, padding: "10px 14px", background: AA.paperHi, border: `1px solid ${AA.line}`, borderLeft: `3px solid ${cwOf(cw).petal}`, borderRadius: 12, fontFamily: UI, fontSize: 13.5, fontWeight: 700, color: AA.ink, cursor: "pointer" }}><Ic size={15} color={accentText(cw)} /> {label}</button>
           ))}
         </div>

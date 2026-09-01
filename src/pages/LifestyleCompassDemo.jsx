@@ -4,12 +4,12 @@
 // content boards, for-you, readers) is preserved below under "or explore it all", so nothing is
 // deleted — the page just routes by what you WANT instead of by content-kind or room. Retains the
 // FwFloraHero header. Craft + primitives shared via ./shelfkit.
-import React, { useState, useRef } from "react";
-import { BookOpen, Play, Headphones, Dumbbell, MessagesSquare, Sparkles, Feather, Moon, Bookmark, Compass, Grid2x2, DoorOpen, ChevronRight } from "lucide-react";
+import React, { useState } from "react";
+import { BookOpen, Play, Headphones, Dumbbell, MessagesSquare, Sparkles, Feather, Moon, Bookmark, Compass, LayoutGrid, DoorOpen, ChevronRight } from "lucide-react";
 import { AA, SERIF, UI } from "@/components/lifestyle-demos/kit";
 import {
   OX, accentText, cwOf, SHELVES, ROOMS, forYouDeck,
-  Page, DemoRibbon, FloraHeader, PhaseChip, StackCard, ControllerChips,
+  Page, DemoRibbon, FloraHeader, PhaseChip, StackCard, SectionDeck,
   SectionHead, Shelf, SeeAllOverlay, RoomReader, RoomsBento, ItemReader, ClosingLine,
 } from "@/components/lifestyle-demos/shelfkit";
 
@@ -29,10 +29,8 @@ export default function LifestyleCompassDemo() {
   const [seeAll, setSeeAll] = useState(null);
   const [room, setRoom] = useState(null);
   const [sel, setSel] = useState(null); // selected intent key
-  const refs = useRef({});
   const active = COMPASS.find((c) => c.key === sel);
   const forYou = forYouDeck().slice(0, 4);
-  const jump = (key) => { const el = refs.current[key]; if (el) el.scrollIntoView({ behavior: "smooth", block: "start" }); };
 
   return (
     <Page>
@@ -85,21 +83,15 @@ export default function LifestyleCompassDemo() {
         <RoomsBento onOpen={setRoom} />
       </div>
       <div style={{ marginTop: 44 }}>
-        <SectionHead title="Browse by kind" sub="Every board, reader and player" accent="plum" Icon={Grid2x2} />
-        <ControllerChips activeKey={null} onJump={jump} />
+        <SectionHead title="Browse by kind" sub="Tap a section — its cards open right here" accent="plum" Icon={LayoutGrid} />
+        <SectionDeck shelves={SHELVES} onOpen={setOpen} onSeeAll={setSeeAll} />
       </div>
-      {SHELVES.map((s) => (
-        <section key={s.key} ref={(el) => (refs.current[s.key] = el)} style={{ marginTop: 34, scrollMarginTop: 12 }}>
-          <SectionHead title={s.title} sub={s.sub} accent={s.cw} Icon={s.Icon} count={s.items.length} onSeeAll={() => setSeeAll(s)} />
-          <Shelf items={s.items} accent={s.cw} onOpen={setOpen} />
-        </section>
-      ))}
 
       {/* ══ HANDY + CLOSING ══ */}
       <div style={{ marginTop: 44 }}>
         <div style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 18, fontWeight: 600, color: OX, margin: "0 0 10px" }}>Handy right now</div>
         <div style={{ display: "flex", gap: 9, flexWrap: "wrap" }}>
-          {[["Today's chapter", Feather, "crimson", () => setOpen(SHELVES[0].items[0])], ["Your sky tonight", Moon, "gold", () => setOpen(SHELVES[3].items[1])], ["Your saved", Bookmark, "plum", () => jump("yours")], ["Explore it all", Compass, "sage", () => jump("read")]].map(([label, Ic, cw, on]) => (
+          {[["Today's chapter", Feather, "crimson", () => setOpen(SHELVES[0].items[0])], ["Your sky tonight", Moon, "gold", () => setOpen(SHELVES[3].items[1])], ["Your saved", Bookmark, "plum", () => setOpen(SHELVES[5].items[0])]].map(([label, Ic, cw, on]) => (
             <button key={label} onClick={on} className="fw-elite-press" style={{ display: "inline-flex", alignItems: "center", gap: 7, minHeight: 44, padding: "10px 14px", background: AA.paperHi, border: `1px solid ${AA.line}`, borderLeft: `3px solid ${cwOf(cw).petal}`, borderRadius: 12, fontFamily: UI, fontSize: 13.5, fontWeight: 700, color: AA.ink, cursor: "pointer" }}><Ic size={15} color={accentText(cw)} /> {label}</button>
           ))}
         </div>

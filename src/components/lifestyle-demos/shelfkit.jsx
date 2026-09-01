@@ -7,7 +7,7 @@
 // Craft contract (to/above §6.7/§6.8/§6.10): 8-pt rhythm · greyscale-first + ONE accent per
 // section · whitespace confidence · named capped See-all shelves + peeking card (no dot-only) ·
 // AA contrast · ≥44px targets · corner sprigs + paper-grain + double-shadow cards. Seeded.
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { Feather, BookOpen, Headphones, Play, Library, Moon, Sparkles, Clock, Bookmark, ChevronRight, ArrowRight, X } from "lucide-react";
 import { PAPER_BG, PAPER_TEX } from "@/components/journal/Editorial";
 import { cwOf, CardFrame, clampLines } from "@/components/brand/flora";
@@ -255,6 +255,46 @@ export function RoomReader({ room, onClose }) {
 // ══ closing line ════════════════════════════════════════════════════════════════════════════════
 export function ClosingLine({ children }) {
   return <p style={{ textAlign: "center", fontFamily: SERIF, fontStyle: "italic", fontSize: 15.5, color: AA.muted, margin: "34px auto 0", maxWidth: 340, lineHeight: 1.55 }}>{children}</p>;
+}
+
+// ══ SECTION DECK — the core two-level reveal-in-place interaction ════════════════════════════════
+// A row of SECTION cards (the content boards). TAP a section → its focused cards open IN PLACE right
+// beneath the row (a focused vertical set, staying on the page — no navigation). TAP a card → the
+// exact item opens (onOpen). This is the progressive-disclosure "reveal in place" pattern.
+export function SectionDeck({ shelves, onOpen, onSeeAll, startKey }) {
+  const [act, setAct] = useState(startKey !== undefined ? startKey : shelves[0].key);
+  const active = shelves.find((s) => s.key === act) || null;
+  return (
+    <div>
+      {/* the section row — tappable cards, horizontally scrollable with a peek cue */}
+      <div className="sk-secrow" style={{ display: "flex", gap: 9, overflowX: "auto", padding: "2px 2px 4px", scrollbarWidth: "none", WebkitMaskImage: "linear-gradient(90deg,#000 0,#000 calc(100% - 24px),transparent 100%)", maskImage: "linear-gradient(90deg,#000 0,#000 calc(100% - 24px),transparent 100%)" }}>
+        <style>{`.sk-secrow::-webkit-scrollbar{display:none}`}</style>
+        {shelves.map((s) => {
+          const on = s.key === act; const petal = cwOf(s.cw).petal; const at = accentText(s.cw);
+          return (
+            <button key={s.key} onClick={() => setAct(on ? null : s.key)} aria-pressed={on} className="fw-elite-press" style={{ flex: "0 0 auto", display: "flex", flexDirection: "column", alignItems: "flex-start", justifyContent: "center", gap: 5, minHeight: 62, padding: "10px 13px", borderRadius: 13, cursor: "pointer", background: on ? `linear-gradient(160deg, ${AA.paperHi} 0%, ${petal}1e 100%)` : AA.paperHi, border: `1px solid ${on ? petal : AA.line}`, boxShadow: on ? `0 0 0 1px ${petal}, 0 2px 8px ${petal}30` : "0 1px 3px rgba(58,44,26,.07)", transform: on ? "translateY(-1px)" : "none", transition: "all .15s" }}>
+              <span style={{ display: "flex", alignItems: "center", gap: 7 }}>
+                <span style={{ width: 26, height: 26, borderRadius: 8, background: on ? `${petal}22` : `${AA.label}14`, display: "grid", placeItems: "center" }}><s.Icon size={15} color={on ? at : AA.muted} /></span>
+                <span style={{ fontFamily: SERIF, fontSize: 15.5, fontWeight: 600, color: AA.ink, whiteSpace: "nowrap" }}>{s.title}</span>
+              </span>
+              <span style={{ fontFamily: UI, fontSize: 10.5, fontWeight: 700, letterSpacing: ".02em", color: on ? at : AA.muted, marginLeft: 33 }}>{s.items.length} inside</span>
+            </button>
+          );
+        })}
+      </div>
+
+      {/* the reveal — the active section's focused cards, in place */}
+      {active && (
+        <div key={active.key} className="sk-reveal" style={{ marginTop: 16 }}>
+          <style>{`@keyframes skReveal{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}.sk-reveal{animation:skReveal .22s ease-out}`}</style>
+          <SectionHead title={active.title} sub={active.sub} accent={active.cw} count={active.items.length} onSeeAll={onSeeAll ? () => onSeeAll(active) : undefined} />
+          <div style={{ display: "flex", flexDirection: "column", gap: 11 }}>
+            {active.items.map((it) => <StackCard key={it.id} item={it} accent={active.cw} onOpen={onOpen} />)}
+          </div>
+        </div>
+      )}
+    </div>
+  );
 }
 
 // ══ the 11 rooms as a compact 2-col bento (featured tile spans both cols, owns the accent) ═══════
