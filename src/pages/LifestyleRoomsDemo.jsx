@@ -75,19 +75,19 @@ export default function LifestyleRoomsDemo() {
       </div>
 
       {/* ══ FOR YOU TODAY · a cross-room teaser strip (preserved) ══ */}
-      <div style={{ marginTop: 44 }}>
+      <div style={{ marginTop: 48 }}>
         <SectionHead title="For you today" sub="A few picks from across your rooms" accent="gold" Icon={Sparkles} count={9} onSeeAll={() => setSeeAll({ title: "For you today", cw: "gold", items: SHELVES.flatMap((s) => s.items).slice(0, 9) })} />
         <Shelf items={forYou} accent="gold" onOpen={setOpen} />
       </div>
 
       {/* ══ OR BROWSE BY KIND · the 6 boards as the reveal-in-place SECTION DECK (preserved) ══ */}
-      <div style={{ marginTop: 44 }}>
+      <div style={{ marginTop: 48 }}>
         <SectionHead title="Or browse by kind" sub="Tap a section — its cards open right here" accent="plum" Icon={LayoutGrid} />
         <SectionDeck shelves={SHELVES} onOpen={setOpen} onSeeAll={setSeeAll} />
       </div>
 
       {/* ══ HANDY + CLOSING ══ */}
-      <div style={{ marginTop: 44 }}>
+      <div style={{ marginTop: 48 }}>
         <div style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 18, fontWeight: 600, color: OX, margin: "0 0 10px" }}>Handy right now</div>
         <div style={{ display: "flex", gap: 9, flexWrap: "wrap" }}>
           {[["Today's chapter", Feather, "crimson", () => setOpen(SHELVES[0].items[0])], ["Your sky tonight", Moon, "gold", () => setOpen(SHELVES[3].items[1])], ["Your saved", Bookmark, "plum", () => setOpen(SHELVES[5].items[0])]].map(([label, Ic, cw, on]) => (

@@ -115,7 +115,7 @@ export function ItemReader({ item, onClose }) {
       <div style={{ maxWidth: 620, margin: "0 auto", padding: "18px 18px 60px" }}>
         <h1 style={{ fontFamily: SERIF, fontSize: 27, fontWeight: 600, color: AA.ink, lineHeight: 1.2, margin: "4px 0 16px" }}>{item.hook}</h1>
         {item.body.map((p, i) => <p key={i} style={{ fontFamily: SERIF, fontSize: 18, color: AA.inkSoft, lineHeight: 1.62, margin: "0 0 15px" }}>{p}</p>)}
-        <div style={{ marginTop: 20 }}><ActionButton bg={item.accent} onClick={onClose}>Done</ActionButton></div>
+        <div style={{ marginTop: 20 }}><ActionButton bg={AA.crimsonBig} onClick={onClose}>Done</ActionButton></div>
       </div>
     </div>
   );

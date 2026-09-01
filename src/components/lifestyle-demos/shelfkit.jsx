@@ -70,16 +70,6 @@ export const SHELVES = [
 export const forYouDeck = () => [SHELVES[3].items[0], SHELVES[1].items[0], SHELVES[0].items[1], SHELVES[4].items[1], SHELVES[2].items[0]];
 export const ledeItem = () => SHELVES[0].items[0];
 
-// content-type controller (the retained header chips — a jump-to-section switcher)
-export const HERO = [
-  { key: "read", label: "Read", Icon: BookOpen, cw: "plum" },
-  { key: "watch", label: "Listen", Icon: Headphones, cw: "sage" },
-  { key: "books", label: "Books", Icon: Library, cw: "gold" },
-  { key: "story", label: "Story & sky", Icon: Feather, cw: "crimson" },
-  { key: "good", label: "Good life", Icon: Clock, cw: "gold" },
-  { key: "yours", label: "Yours", Icon: Bookmark, cw: "plum" },
-];
-
 // ══ shared chrome ══════════════════════════════════════════════════════════════════════════════
 export function DemoRibbon({ label }) {
   return (
@@ -104,21 +94,6 @@ export function PhaseChip({ style }) {
         <span style={{ width: 8, height: 8, borderRadius: 99, background: cwOf("sage").petal }} />
         <span style={{ fontFamily: UI, fontSize: 12.5, fontWeight: 700, letterSpacing: ".01em", color: AA.inkSoft }}>Follicular · Day 10 · a building week</span>
       </span>
-    </div>
-  );
-}
-
-// content-type controller chips — jump to a section. active chip is accent-ringed.
-export function ControllerChips({ activeKey, onJump }) {
-  return (
-    <div className="sk-ctl" style={{ display: "flex", gap: 8, overflowX: "auto", padding: "12px 2px 2px", scrollbarWidth: "none", WebkitMaskImage: "linear-gradient(90deg,#000 0,#000 calc(100% - 22px),transparent 100%)", maskImage: "linear-gradient(90deg,#000 0,#000 calc(100% - 22px),transparent 100%)" }}>
-      <style>{`.sk-ctl::-webkit-scrollbar{display:none}`}</style>
-      {HERO.map((c) => { const on = c.key === activeKey; const col = cwOf(c.cw).petal; return (
-        <button key={c.key} onClick={() => onJump(c.key)} aria-pressed={on} className="fw-elite-press" style={{ flex: "0 0 74px", minHeight: 64, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 5, borderRadius: 14, cursor: "pointer", background: on ? `linear-gradient(160deg, ${AA.paperHi} 0%, ${col}20 100%)` : AA.paperHi, border: `1px solid ${on ? col : AA.line}`, boxShadow: on ? `0 0 0 1px ${col}, 0 2px 8px ${col}30` : "0 1px 3px rgba(58,44,26,0.07)", transform: on ? "translateY(-1px)" : "none", transition: "all .15s" }}>
-          <span style={{ width: 27, height: 27, borderRadius: 8, background: `${col}1f`, display: "grid", placeItems: "center" }}><c.Icon size={15} color={accentText(c.cw)} /></span>
-          <span style={{ fontFamily: UI, fontSize: 10.5, fontWeight: 700, color: on ? accentText(c.cw) : AA.muted }}>{c.label}</span>
-        </button>
-      ); })}
     </div>
   );
 }
@@ -171,7 +146,7 @@ export function Shelf({ items, accent, onOpen }) {
 export function StackCard({ item, accent, onOpen }) {
   const petal = cwOf(accent).petal; const at = accentText(accent);
   return (
-    <button onClick={() => onOpen(item)} className="fw-ce-press" style={{ position: "relative", overflow: "hidden", width: "100%", textAlign: "left", cursor: "pointer", background: `linear-gradient(165deg, ${AA.paperHi} 0%, ${petal}12 100%)`, border: `1px solid ${AA.line}`, borderLeft: `4px solid ${petal}`, borderRadius: 16, padding: "15px 16px", boxShadow: "0 4px 16px rgba(58,44,26,.08)", display: "block" }}>
+    <button onClick={() => onOpen(item)} className="fw-ce-press" style={{ position: "relative", overflow: "hidden", width: "100%", textAlign: "left", cursor: "pointer", background: `linear-gradient(165deg, ${AA.paperHi} 0%, ${petal}12 100%)`, border: `1px solid ${AA.line}`, borderLeft: `4px solid ${petal}`, borderRadius: 16, padding: "15px 16px", boxShadow: "0 6px 22px rgba(58,44,26,.10), 0 1px 3px rgba(58,44,26,.05)", display: "block" }}>
       <span aria-hidden style={{ position: "absolute", inset: 0, backgroundImage: `url(${PAPER_TEX})`, backgroundSize: "170px", mixBlendMode: "multiply", opacity: 0.4, pointerEvents: "none" }} />
       <CardFrame color={petal} opacity={0.4} size={34} />
       <span style={{ position: "relative", display: "block" }}>
@@ -246,7 +221,7 @@ export function RoomReader({ room, onClose }) {
           <div><div style={{ fontFamily: UI, fontSize: 11, fontWeight: 800, letterSpacing: ".06em", textTransform: "uppercase", color: at }}>The {room.label} room</div><h1 style={{ fontFamily: SERIF, fontSize: 26, fontWeight: 600, color: AA.ink, lineHeight: 1.15, margin: "1px 0 0" }}>{room.sub}</h1></div>
         </div>
         {room.body.map((p, i) => <p key={i} style={{ fontFamily: SERIF, fontSize: 18, color: AA.inkSoft, lineHeight: 1.6, margin: "0 0 14px" }}>{p}</p>)}
-        <div style={{ marginTop: 16 }}><ActionButton bg={room.accent} onClick={onClose}>Enter {room.label}</ActionButton></div>
+        <div style={{ marginTop: 16 }}><ActionButton bg={AA.crimsonBig} onClick={onClose}>Enter {room.label}</ActionButton></div>
       </div>
     </div>
   );
@@ -262,7 +237,7 @@ export function ClosingLine({ children }) {
 // beneath the row (a focused vertical set, staying on the page — no navigation). TAP a card → the
 // exact item opens (onOpen). This is the progressive-disclosure "reveal in place" pattern.
 export function SectionDeck({ shelves, onOpen, onSeeAll, startKey }) {
-  const [act, setAct] = useState(startKey !== undefined ? startKey : shelves[0].key);
+  const [act, setAct] = useState(startKey !== undefined ? startKey : null); // closed until tapped
   const active = shelves.find((s) => s.key === act) || null;
   return (
     <div>
@@ -289,8 +264,13 @@ export function SectionDeck({ shelves, onOpen, onSeeAll, startKey }) {
           <style>{`@keyframes skReveal{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}.sk-reveal{animation:skReveal .22s ease-out}`}</style>
           <SectionHead title={active.title} sub={active.sub} accent={active.cw} count={active.items.length} onSeeAll={onSeeAll ? () => onSeeAll(active) : undefined} />
           <div style={{ display: "flex", flexDirection: "column", gap: 11 }}>
-            {active.items.map((it) => <StackCard key={it.id} item={it} accent={active.cw} onOpen={onOpen} />)}
+            {active.items.slice(0, 3).map((it) => <StackCard key={it.id} item={it} accent={active.cw} onOpen={onOpen} />)}
           </div>
+          {active.items.length > 3 && onSeeAll && (
+            <button onClick={() => onSeeAll(active)} className="fw-elite-press" style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 6, width: "100%", minHeight: 46, marginTop: 11, background: "transparent", border: `1px dashed ${cwOf(active.cw).petal}`, borderRadius: 12, cursor: "pointer", fontFamily: UI, fontSize: 13.5, fontWeight: 700, color: accentText(active.cw) }}>
+              See all {active.items.length} in {active.title} <ArrowRight size={15} />
+            </button>
+          )}
         </div>
       )}
     </div>
@@ -305,7 +285,8 @@ export function RoomsBento({ onOpen }) {
       {ROOMS.map((r, i) => {
         const feature = i === 0; const crim = AA.crimsonBig;
         return (
-          <button key={r.key} onClick={() => onOpen(r)} className="fw-ce-press" style={{ gridColumn: feature ? "1 / -1" : "auto", textAlign: "left", cursor: "pointer", display: "flex", flexDirection: feature ? "row" : "column", alignItems: feature ? "center" : "flex-start", justifyContent: "flex-start", gap: feature ? 14 : 9, padding: 14, minHeight: feature ? 104 : 96, background: feature ? `linear-gradient(160deg, ${AA.paperHi} 0%, ${crim}0f 100%)` : AA.paperHi, border: `1px solid ${AA.line}`, ...(feature ? { borderLeft: `4px solid ${crim}` } : {}), borderRadius: 14 }}>
+          <button key={r.key} onClick={() => onOpen(r)} className="fw-ce-press" style={{ position: "relative", overflow: "hidden", gridColumn: feature ? "1 / -1" : "auto", textAlign: "left", cursor: "pointer", display: "flex", flexDirection: feature ? "row" : "column", alignItems: feature ? "center" : "flex-start", justifyContent: "flex-start", gap: feature ? 14 : 9, padding: 14, minHeight: feature ? 104 : 96, background: feature ? `linear-gradient(160deg, ${AA.paperHi} 0%, ${crim}0f 100%)` : AA.paperHi, border: `1px solid ${AA.line}`, ...(feature ? { borderLeft: `4px solid ${crim}` } : {}), borderRadius: 14 }}>
+            {feature && <CardFrame color={cwOf("crimson").petal} opacity={0.4} size={38} />}
             <span style={{ width: feature ? 46 : 38, height: feature ? 46 : 38, borderRadius: 11, background: feature ? `${crim}1f` : `${AA.label}14`, display: "grid", placeItems: "center", flexShrink: 0 }}><r.Icon size={feature ? 23 : 19} color={feature ? AA.crimson : AA.muted} /></span>
             <span style={{ minWidth: 0 }}>
               <span style={{ display: "block", fontFamily: SERIF, fontSize: feature ? 22 : 18, fontWeight: 600, color: AA.ink, lineHeight: 1.1 }}>{r.label}</span>

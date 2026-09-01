@@ -35,7 +35,7 @@ export default function LifestyleCompassDemo() {
   return (
     <Page>
       <DemoRibbon label="Lifestyle redesign · D · The Compass" />
-      <FloraHeader colorway={active ? active.cw : "crimson"} />
+      <FloraHeader colorway="crimson" />
       <PhaseChip />
 
       {/* ══ THE COMPASS · what do you feel like? ══ */}
@@ -56,7 +56,7 @@ export default function LifestyleCompassDemo() {
       </div>
 
       {/* ══ THE PICKS · for the chosen intent (or a little of everything by default) ══ */}
-      <div style={{ marginTop: 26 }}>
+      <div style={{ marginTop: 24 }}>
         {active ? (
           <>
             <SectionHead title={active.label} sub="Chosen for that mood, tuned to your week" accent={active.cw} Icon={active.Icon} />
@@ -78,17 +78,17 @@ export default function LifestyleCompassDemo() {
       </div>
 
       {/* ══ OR EXPLORE IT ALL · rooms + boards preserved ══ */}
-      <div style={{ marginTop: 44 }}>
+      <div style={{ marginTop: 48 }}>
         <SectionHead title="Or explore it all" sub="Your rooms and every board — still all here" accent="crimson" Icon={DoorOpen} />
         <RoomsBento onOpen={setRoom} />
       </div>
-      <div style={{ marginTop: 44 }}>
+      <div style={{ marginTop: 48 }}>
         <SectionHead title="Browse by kind" sub="Tap a section — its cards open right here" accent="plum" Icon={LayoutGrid} />
         <SectionDeck shelves={SHELVES} onOpen={setOpen} onSeeAll={setSeeAll} />
       </div>
 
       {/* ══ HANDY + CLOSING ══ */}
-      <div style={{ marginTop: 44 }}>
+      <div style={{ marginTop: 48 }}>
         <div style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 18, fontWeight: 600, color: OX, margin: "0 0 10px" }}>Handy right now</div>
         <div style={{ display: "flex", gap: 9, flexWrap: "wrap" }}>
           {[["Today's chapter", Feather, "crimson", () => setOpen(SHELVES[0].items[0])], ["Your sky tonight", Moon, "gold", () => setOpen(SHELVES[3].items[1])], ["Your saved", Bookmark, "plum", () => setOpen(SHELVES[5].items[0])]].map(([label, Ic, cw, on]) => (

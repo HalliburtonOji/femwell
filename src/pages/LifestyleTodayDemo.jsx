@@ -15,7 +15,7 @@ import {
 // a quiet section divider — the hinge between "today" and "everything else".
 function Divider({ children }) {
   return (
-    <div style={{ display: "flex", alignItems: "center", gap: 12, margin: "40px 0 18px" }}>
+    <div style={{ display: "flex", alignItems: "center", gap: 12, margin: "48px 0 16px" }}>
       <span style={{ flex: 1, height: 1, background: AA.line }} />
       <span style={{ fontFamily: UI, fontSize: 11, fontWeight: 800, letterSpacing: ".08em", textTransform: "uppercase", color: AA.label, whiteSpace: "nowrap" }}>{children}</span>
       <span style={{ flex: 1, height: 1, background: AA.line }} />
@@ -28,8 +28,8 @@ export default function LifestyleTodayDemo() {
   const [seeAll, setSeeAll] = useState(null);
   const [room, setRoom] = useState(null);
   const [expanded, setExpanded] = useState(false); // the "rest of your life" reveal
-  const todayPicks = [SHELVES[3].items[0], SHELVES[1].items[0], SHELVES[4].items[0]]; // story · a listen/watch · a small joy
-  const forYou = forYouDeck().slice(0, 4);
+  const todayPicks = [SHELVES[1].items[0], SHELVES[4].items[0], SHELVES[0].items[2]]; // a listen · a small joy · a read (lede already IS today's chapter)
+  const forYou = forYouDeck().slice(1, 5); // skip [0] — today's chapter, already the lede
 
   return (
     <Page>
@@ -65,15 +65,15 @@ export default function LifestyleTodayDemo() {
           </div>
 
           {/* for-you — a few more picks, as a focused set */}
-          <div style={{ marginTop: 44 }}>
+          <div style={{ marginTop: 48 }}>
             <SectionHead title="For you today" sub="A few more, from across your life" accent="gold" Icon={Compass} count={9} onSeeAll={() => setSeeAll({ title: "For you today", cw: "gold", items: SHELVES.flatMap((s) => s.items).slice(0, 9) })} />
             <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-              {forYou.map((it, i) => <StackCard key={it.id} item={it} accent={["sage", "gold", "plum", "crimson"][i % 4]} onOpen={setOpen} />)}
+              {forYou.map((it) => <StackCard key={it.id} item={it} accent="gold" onOpen={setOpen} />)}
             </div>
           </div>
 
           {/* the 6 content boards as the reveal-in-place SECTION DECK (preserved) */}
-          <div style={{ marginTop: 44 }}>
+          <div style={{ marginTop: 48 }}>
             <SectionHead title="Browse by kind" sub="Tap a section — its cards open right here" accent="plum" Icon={LayoutGrid} />
             <SectionDeck shelves={SHELVES} onOpen={setOpen} onSeeAll={setSeeAll} />
           </div>
@@ -81,7 +81,7 @@ export default function LifestyleTodayDemo() {
       )}
 
       {/* ══ HANDY + CLOSING ══ */}
-      <div style={{ marginTop: 44 }}>
+      <div style={{ marginTop: 48 }}>
         <div style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 18, fontWeight: 600, color: OX, margin: "0 0 10px" }}>Handy right now</div>
         <div style={{ display: "flex", gap: 9, flexWrap: "wrap" }}>
           {[["Today's chapter", Feather, "crimson", () => setOpen(SHELVES[0].items[0])], ["Your sky tonight", Moon, "gold", () => setOpen(SHELVES[3].items[1])], ["Your saved", Bookmark, "plum", () => setOpen(SHELVES[5].items[0])], ["Open everything", DoorOpen, "sage", () => setExpanded(true)]].map(([label, Ic, cw, on]) => (
