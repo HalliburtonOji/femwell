@@ -43,7 +43,7 @@ export default function LifestyleRoomsDemo() {
 
   return (
     <Page>
-      <DemoRibbon label="Lifestyle redesign · B · The Rooms" />
+      <DemoRibbon label="Lifestyle redesign · B · The Rooms" current="B" />
       <FloraHeader colorway="crimson" />
       <PhaseChip />
 

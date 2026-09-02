@@ -71,11 +71,33 @@ export const forYouDeck = () => [SHELVES[3].items[0], SHELVES[1].items[0], SHELV
 export const ledeItem = () => SHELVES[0].items[0];
 
 // ══ shared chrome ══════════════════════════════════════════════════════════════════════════════
-export function DemoRibbon({ label }) {
+// The four directions and their PUBLIC routes — the ribbon carries an A·B·C·D switcher so the four
+// can be compared by tapping, with no dependence on the (founder-gated, flaky) Ideas pill.
+export const DIRECTIONS = [
+  { letter: "A", name: "Today, first", href: "/LifestyleTodayDemo" },
+  { letter: "B", name: "The Rooms", href: "/LifestyleRoomsDemo" },
+  { letter: "C", name: "The Almanac", href: "/LifestyleAlmanacDemo" },
+  { letter: "D", name: "The Compass", href: "/LifestyleCompassDemo" },
+];
+export function DemoRibbon({ label, current }) {
   return (
-    <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
-      <a href="/Ideas" style={{ display: "inline-flex", alignItems: "center", gap: 5, minHeight: 36, padding: "6px 12px 6px 9px", border: `1px solid ${AA.paperDeep}`, borderRadius: 999, background: AA.paperHi, color: AA.ink, textDecoration: "none", fontFamily: UI, fontSize: 13, fontWeight: 700 }}>‹ Ideas</a>
-      <span style={{ fontFamily: UI, fontSize: 11, fontWeight: 800, letterSpacing: ".06em", textTransform: "uppercase", color: AA.label }}>{label}</span>
+    <div style={{ marginBottom: 10 }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
+        <a href="/Ideas" style={{ display: "inline-flex", alignItems: "center", gap: 5, minHeight: 36, padding: "6px 12px 6px 9px", border: `1px solid ${AA.paperDeep}`, borderRadius: 999, background: AA.paperHi, color: AA.ink, textDecoration: "none", fontFamily: UI, fontSize: 13, fontWeight: 700 }}>‹ Ideas</a>
+        <span style={{ fontFamily: UI, fontSize: 11, fontWeight: 800, letterSpacing: ".06em", textTransform: "uppercase", color: AA.label }}>{label}</span>
+      </div>
+      {/* A·B·C·D switcher — compare the four directions, no pill needed */}
+      <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
+        <span style={{ fontFamily: UI, fontSize: 11, fontWeight: 700, color: AA.muted, marginRight: 2 }}>Compare:</span>
+        {DIRECTIONS.map((d) => {
+          const on = d.letter === current;
+          return (
+            <a key={d.letter} href={d.href} aria-current={on ? "page" : undefined} style={{ display: "inline-flex", alignItems: "center", gap: 5, minHeight: 34, padding: "6px 11px", borderRadius: 999, textDecoration: "none", fontFamily: UI, fontSize: 12.5, fontWeight: 700, background: on ? AA.crimsonBig : AA.paperHi, color: on ? "#fff" : AA.ink, border: `1px solid ${on ? AA.crimsonBig : AA.line}`, cursor: "pointer" }}>
+              <span style={{ fontWeight: 800 }}>{d.letter}</span> <span style={{ opacity: on ? 1 : 0.85 }}>{d.name}</span>
+            </a>
+          );
+        })}
+      </div>
     </div>
   );
 }

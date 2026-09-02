@@ -20,7 +20,7 @@ export default function LifestyleAlmanacDemo() {
 
   return (
     <Page>
-      <DemoRibbon label="Lifestyle redesign · C · The Almanac" />
+      <DemoRibbon label="Lifestyle redesign · C · The Almanac" current="C" />
 
       {/* ══ HEADER (RETAINED — the real FwFloraHero, untouched) ══ */}
       <FloraHeader colorway="crimson" />

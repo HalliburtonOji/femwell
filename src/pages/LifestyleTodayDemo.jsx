@@ -33,7 +33,7 @@ export default function LifestyleTodayDemo() {
 
   return (
     <Page>
-      <DemoRibbon label="Lifestyle redesign · A · Today, first" />
+      <DemoRibbon label="Lifestyle redesign · A · Today, first" current="A" />
       <FloraHeader colorway="crimson" />
       <PhaseChip />
 

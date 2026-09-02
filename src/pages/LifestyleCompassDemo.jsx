@@ -34,7 +34,7 @@ export default function LifestyleCompassDemo() {
 
   return (
     <Page>
-      <DemoRibbon label="Lifestyle redesign · D · The Compass" />
+      <DemoRibbon label="Lifestyle redesign · D · The Compass" current="D" />
       <FloraHeader colorway="crimson" />
       <PhaseChip />
 
