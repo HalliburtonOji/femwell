@@ -158,6 +158,16 @@ const ALLOWED = new Set([
 
 const HOME = "__home__";
 
+// Running build hash (read from the loaded bundle) — shown as a small stamp so we can tell at a
+// glance whether a device is on the current deploy or a stale cached one. 'dev' in unhashed dev.
+const BUILD_HASH = (() => {
+  try {
+    return (([...document.querySelectorAll("script[src]")].map((x) => x.src)
+      .find((x) => /\/assets\/index-[A-Za-z0-9_-]+\.js/.test(x)) || "")
+      .match(/index-([A-Za-z0-9_-]+)\.js/)?.[1]) || "dev";
+  } catch { return "dev"; }
+})();
+
 // ─── CATALOG (single source of truth for the whole OS) ───────────────────
 // Every reachable thing — previews, demos, specs, plans, tools — is ONE entry.
 // The home screen renders + searches this; nothing else drives navigation.
@@ -1049,7 +1059,7 @@ export default function FoundersOS() {
   }
 
   if (!ALLOWED.has(email)) {
-    return <NotAuthorised />;
+    return <NotAuthorised email={email} />;
   }
 
   return <FoundersInner user={user} />;
@@ -1067,7 +1077,7 @@ function FullBleed({ children }) {
   );
 }
 
-function NotAuthorised() {
+function NotAuthorised({ email }) {
   return (
     <FullBleed>
       <div style={{
@@ -1082,8 +1092,13 @@ function NotAuthorised() {
           <div style={{
             fontSize: 22, fontWeight: 600, color: T.gold, marginBottom: 10,
           }}>This page is private</div>
-          <div style={{ color: T.textMuted, fontSize: 14, lineHeight: 1.6, marginBottom: 22 }}>
+          <div style={{ color: T.textMuted, fontSize: 14, lineHeight: 1.6, marginBottom: 18 }}>
             Founders OS is only accessible to the FemWell founder. If you reached here by accident, head back to the rest of the app.
+          </div>
+          {/* diagnostic: which account is signed in (a non-founder email is why the gate blocks) */}
+          <div style={{ fontSize: 12.5, color: T.textMuted, lineHeight: 1.6, marginBottom: 22, padding: "10px 12px", background: T.bg, borderRadius: 10, border: `1px solid ${T.border}` }}>
+            Signed in as: <span style={{ color: T.textHi, fontWeight: 700 }}>{email || "— (not signed in)"}</span><br />
+            <span style={{ opacity: 0.7 }}>build {BUILD_HASH}</span>
           </div>
           <a href="/Today" style={{
             display: "inline-block", padding: "10px 18px", borderRadius: 999,
@@ -1486,7 +1501,7 @@ function FoundersInner({ user }) {
                 Founder OS
               </div>
               <div style={{ color: T.textMuted, fontSize: 12, marginTop: 2, ...CLAMP2, WebkitLineClamp: 1 }}>
-                Everything in one place — search or jump to a section
+                Everything in one place — search or jump to a section · <span style={{ opacity: 0.7 }}>build {BUILD_HASH}</span>
               </div>
             </div>
             {tab !== HOME && (

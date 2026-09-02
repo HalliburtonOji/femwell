@@ -40,7 +40,8 @@ import '@/index.css'
         }
       } catch { /* offline — ignore */ }
     };
-    setTimeout(check, 4000);
+    check();                 // fire immediately on boot (a stale client heals ASAP, not after 4s)
+    setTimeout(check, 4000);  // and again shortly after, in case the first fetch raced boot
     document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') check(); });
   } catch { /* never let the guard break boot */ }
 })();
