@@ -25,10 +25,10 @@
 //   • gutendex (women/en) → free public-domain books for the Books lane (guarded, timeboxed).
 //   • SAVE/BOOKMARK toggle → persists to UserProfile.saved_item_ids (exact live mechanism; see
 //     Lifestyle.jsx ArticleSheet.handleSave) — optimistic + rollback + flash, like Nutrition's toggleShop.
-import { useState, useMemo, useEffect, useRef, useCallback } from "react";
+import { useState, useMemo, useEffect, useRef, useCallback, Children, isValidElement } from "react";
 import {
   BookOpen, Feather, Book, Film, Headphones, Moon, Heart, Sparkles, Sun, Bookmark,
-  Wind, ChevronRight, ChevronLeft, Music2, Compass, Loader, ExternalLink, Clock, Coffee, Sunset, Check, Star, Sprout, Leaf, Coins,
+  Wind, ChevronRight, ChevronLeft, Music2, Compass, Loader, ExternalLink, Clock, Coffee, Sunset, Check, Star, Sprout, Leaf, Coins, X,
 } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 import LifestyleMedia from "@/components/lifestyle-elite/LifestyleMedia";
@@ -448,10 +448,29 @@ function StackedShelves({ top, bottom }) {
   );
 }
 
-export default function LifestyleEliteShell() {
+// The six boards: the horizontal swipe-slider by default (live), OR — in chip-focus mode — just the
+// ONE focused board shown full-width (no swipe). `focusBoard == null` keeps the exact live slider.
+function FocusableBoards({ focusBoard, sliderRef, gold, children }) {
+  if (focusBoard == null) {
+    return (
+      <div ref={sliderRef} style={{ marginTop: 20, position: "relative" }}>
+        <SliderArrows sliderRef={sliderRef} />
+        <ClipboardSlider hint="Slide your shelf →" accent={gold} wide light>{children}</ClipboardSlider>
+      </div>
+    );
+  }
+  const boards = Children.toArray(children).filter(isValidElement);
+  return <div style={{ marginTop: 20 }}>{boards[focusBoard] || null}</div>;
+}
+
+export default function LifestyleEliteShell({ enableFocus = false } = {}) {
   const [user, setUser] = useState(null);
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
+  // CHIP-FOCUS (demo-flag, default OFF → live /Lifestyle is byte-identical). When on, tapping a
+  // controller chip focuses the whole page onto that section: For-you filters to it, the boards
+  // collapse to that ONE board shown full, the glance stays global. `null` = the full page.
+  const [focusSection, setFocusSection] = useState(null);
 
   // real content (grouped per type, mirrors LifestyleForYou)
   const [items, setItems] = useState([]);          // all PUBLISHED LifestyleItems
@@ -973,7 +992,7 @@ export default function LifestyleEliteShell() {
     const hasReading = !!(horoscope && (horoscope.narrative || horoscope.headline));
     return [{
       id: "sky-today", type: "horoscope",
-      title: horoscope?.headline || (moonToday ? `The moon is ${moonToday.name.toLowerCase()}` : "Your sky today"),
+      title: cleanTitle(horoscope?.headline) || (moonToday ? `The moon is ${moonToday.name.toLowerCase()}` : "Your sky today"),
       subtitle: hasReading
         ? moonLine
         : "Your moon is here. Add your birth date and a reading joins it each day.",
@@ -1140,6 +1159,20 @@ export default function LifestyleEliteShell() {
   const isCardSaved = useCallback((it) => !!(it?._raw?.id && savedIds.includes(it._raw.id)), [savedIds]);
   const onCardSave = useCallback((_next, it) => { if (it?._raw) toggleSave(it._raw); }, [toggleSave]);
 
+  // ── CHIP-FOCUS wiring (only live when enableFocus) ────────────────────────────────────────────
+  // chip id → { the board index it collapses to, its display label, the For-you sections it keeps }.
+  const FOCUS_MAP = {
+    read:   { board: 1, label: "Read",           forYou: ["A read for you"] },
+    listen: { board: 2, label: "Listen & watch", forYou: ["A listen", "Something to watch"] },
+    books:  { board: 3, label: "Books",          forYou: ["From the shelf"] },
+    story:  { board: 4, label: "Story",          forYou: ["Today's chapter"] },
+    sky:    { board: 4, label: "Sky",            forYou: ["Your sky"] },
+    good:   { board: 0, label: "Good life",      forYou: ["A small joy"] },
+  };
+  const focus = (enableFocus && focusSection) ? (FOCUS_MAP[focusSection] || null) : null;
+  const focusBoard = focus ? focus.board : null;
+  const forYouShown = focus ? forYouItems.filter((it) => focus.forYou.includes(it.forYouSection)) : forYouItems;
+
   if (loading) {
     return (
       <div style={{ ...PAPER_BG, minHeight: "100vh", display: "grid", placeItems: "center" }}>
@@ -1178,7 +1211,7 @@ export default function LifestyleEliteShell() {
                 {HERO_CARDS.map((c, i) => {
                   const on = i === heroCard; const col = cwOf(c.cw).petal;
                   return (
-                    <button key={c.id} onClick={() => { _lifeHeroCard = i; setHeroCard(i); }} aria-pressed={on} className="fw-elite-press"
+                    <button key={c.id} onClick={() => { _lifeHeroCard = i; setHeroCard(i); if (enableFocus) setFocusSection(c.id); }} aria-pressed={on} className="fw-elite-press"
                       style={{ flex: "0 0 72px", height: 64, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 5, borderRadius: 14, cursor: "pointer", background: on ? `linear-gradient(160deg, ${T.paperHi} 0%, ${col}20 100%)` : T.paperHi, border: `1px solid ${on ? col : T.paperDeep}`, boxShadow: on ? `0 0 0 1px ${col}, 0 2px 8px ${col}30` : "0 1px 3px rgba(58,44,26,0.08)", transform: on ? "translateY(-1px)" : "none", transition: "border-color .15s, box-shadow .15s, transform .15s" }}>
                       <span style={{ width: 27, height: 27, borderRadius: 8, background: `${col}1F`, display: "grid", placeItems: "center" }}><c.Icon size={15} color={col} /></span>
                       <span style={{ fontFamily: UI, fontSize: 10.5, fontWeight: 700, color: on ? col : T.muted }}>{c.label}</span>
@@ -1200,6 +1233,18 @@ export default function LifestyleEliteShell() {
           );
         })()}
 
+        {/* CHIP-FOCUS return control — clear, reversible ("Showing: Read · ✕ Everything"). */}
+        {focus && (
+          <div style={{ display: "flex", alignItems: "center", gap: 8, margin: "0 0 4px" }}>
+            <span style={{ display: "inline-flex", alignItems: "center", gap: 7, padding: "7px 12px", borderRadius: 999, background: `${cwOf(HERO_CARDS[heroCard]?.cw || "gold").petal}14`, border: `1px solid ${cwOf(HERO_CARDS[heroCard]?.cw || "gold").petal}`, fontFamily: UI, fontSize: 12.5, fontWeight: 700, color: T.ink }}>
+              Showing: {focus.label}
+            </span>
+            <button onClick={() => setFocusSection(null)} className="fw-elite-press" style={{ display: "inline-flex", alignItems: "center", gap: 5, minHeight: 34, padding: "7px 12px", borderRadius: 999, background: T.paperHi, border: `1px solid ${T.paperDeep}`, color: T.inkSoft, fontFamily: UI, fontSize: 12.5, fontWeight: 700, cursor: "pointer" }}>
+              <X size={14} /> Everything
+            </button>
+          </div>
+        )}
+
         {/* ══ §6.8.2 BAND 3+4 — the TOP SLIDING ROW (uniform panels, no dead space).
              Slide 1 = today at a glance (the same three rows the SummaryCard carried —
              nothing dropped). Slide 2 = Jess's written read + an upward inner sheet. ══ */}
@@ -1216,7 +1261,7 @@ export default function LifestyleEliteShell() {
                 : savedItems.length ? `${savedItems.length} saved to come back to · ${grouped.article.length} fresh reads`
                 : (editorialPick ? editorialPick.title : "Fresh reads land here as they're published."),
               onClick: () => jumpTo(1) },
-            { Icon: Moon, label: "Your sky", text: horoscope ? (horoscope.headline || horoscope.narrative || "Today's reading is ready.") : "Add your birth details to read today's sky.", onClick: () => setReadingOpen(true) },
+            { Icon: Moon, label: "Your sky", text: horoscope ? cleanTitle(horoscope.headline || horoscope.narrative || "Today's reading is ready.") : "Add your birth details to read today's sky.", onClick: () => setReadingOpen(true) },
           ];
           // the deep read — only sections we genuinely have signal for, never padded
           const sheetSections = [
@@ -1269,14 +1314,15 @@ export default function LifestyleEliteShell() {
             for her by getLifestyleFeed, each on the same tap-to-expand card language as the
             boards below. Sections with no real content are skipped, never faked (there are 0
             published podcasts/guides/fiction). The boards below stay intact. */}
+        {(!focus || forYouShown.length > 0) && (
         <div style={{ marginTop: 22 }}>
           <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", padding: "0 2px 8px" }}>
-            <span style={{ fontFamily: SERIF, fontStyle: "italic", fontWeight: 600, fontSize: 19, color: OXBLOOD }}>For you</span>
-            <span style={{ fontFamily: UI, fontSize: 11.5, fontWeight: 700, color: T.muted }}>A little of everything &rarr;</span>
+            <span style={{ fontFamily: SERIF, fontStyle: "italic", fontWeight: 600, fontSize: 19, color: OXBLOOD }}>{focus ? `For you · ${focus.label}` : "For you"}</span>
+            <span style={{ fontFamily: UI, fontSize: 11.5, fontWeight: 700, color: T.muted }}>{focus ? "This section" : "A little of everything"} &rarr;</span>
           </div>
           <div style={{ height: 384 }}>
             <PeekShelf accent={gold}>
-              {forYouItems.map((it) => (
+              {forYouShown.map((it) => (
                 <div key={it.id} style={{ height: "100%", display: "flex", flexDirection: "column" }}>
                   <div style={{ ...lbl, marginBottom: 6, color: cwOf(it.cw || "gold").petal, flexShrink: 0 }}>{it.forYouSection}</div>
                   <div style={{ flex: 1, minHeight: 0 }}>
@@ -1287,16 +1333,16 @@ export default function LifestyleEliteShell() {
             </PeekShelf>
           </div>
         </div>
+        )}
 
-        <div ref={sliderRef} style={{ marginTop: 20, position: "relative" }}>
-          <SliderArrows sliderRef={sliderRef} />
-          <ClipboardSlider hint="Slide your shelf →" accent={gold} wide light>
+        <FocusableBoards focusBoard={focusBoard} sliderRef={sliderRef} gold={gold}>
 
             {/* ══ THE SIX BOARDS — each a StackedCard of two peek shelves of tap-to-expand
-                 cover-cards (§6.7.7). One board = one room = one job. Nothing stripped. ══ */}
+                 cover-cards (§6.7.7). One board = one room = one job. Nothing stripped.
+                 In chip-focus mode the page collapses to just the ONE matching board, shown full. ══ */}
 
             {/* ── BOARD 0 — THE GOOD LIFE (the doing room) ──────────────────── */}
-            <Clipboard title="The good life" sub="WHAT DO YOU HAVE TIME FOR · PERMISSION & SMALL JOYS" accent={gold} flower="marigold" idx="cb-goodlife" titleColor={OXBLOOD}>
+            <Clipboard key="cb0" title="The good life" sub="WHAT DO YOU HAVE TIME FOR · PERMISSION & SMALL JOYS" accent={gold} flower="marigold" idx="cb-goodlife" titleColor={OXBLOOD}>
               <BoardBody h={900}>
                 {/* position:relative → the FaceOverlay (piece C) covers exactly this card face */}
                 <div style={{ position: "relative", height: "100%", minHeight: 0 }}>
@@ -1336,7 +1382,7 @@ export default function LifestyleEliteShell() {
             </Clipboard>
 
             {/* ── BOARD 1 — READ ────────────────────────────────────────────── */}
-            <Clipboard title="Read" sub="ARTICLES & GUIDES · STORIES & FICTION" accent={plum} flower="iris" idx="cb-read" titleColor={OXBLOOD}>
+            <Clipboard key="cb1" title="Read" sub="ARTICLES & GUIDES · STORIES & FICTION" accent={plum} flower="iris" idx="cb-read" titleColor={OXBLOOD}>
               {/* Track A — BIG cards on the Read board (full-size FloraCovers + titles, no
                   `compact`), led by what she's part-way through. A continue card resumes
                   IN PLACE in one tap; everything else opens its expand. */}
@@ -1354,7 +1400,7 @@ export default function LifestyleEliteShell() {
             </Clipboard>
 
             {/* ── BOARD 2 — LISTEN & WATCH ──────────────────────────────────── */}
-            <Clipboard title="Listen & watch" sub="PODCASTS & SHOWS · WATCH & TRENDING" accent={sage} flower="bluebell" idx="cb-listen" titleColor={OXBLOOD}>
+            <Clipboard key="cb2" title="Listen & watch" sub="PODCASTS & SHOWS · WATCH & TRENDING" accent={sage} flower="bluebell" idx="cb-listen" titleColor={OXBLOOD}>
               <BoardBody h={900}>
                 <StackedShelves
                   top={<PeekShelf label="Podcasts & shows" accent={sage}>{audioCards.map((it) => <CoverCard key={it.id} item={it} compact onOpen={() => setExpanded(it)} />)}<MoreTile key="more-listen" label="Everything to listen" sub="Every episode + shows to follow, by length." accent={sage} /></PeekShelf>}
@@ -1364,7 +1410,7 @@ export default function LifestyleEliteShell() {
             </Clipboard>
 
             {/* ── BOARD 3 — BOOKS ───────────────────────────────────────────── */}
-            <Clipboard title="Books" sub="YOUR SHELF · FREE CLASSICS" accent={sky} flower="camellia" idx="cb-books" titleColor={OXBLOOD}>
+            <Clipboard key="cb3" title="Books" sub="YOUR SHELF · FREE CLASSICS" accent={sky} flower="camellia" idx="cb-books" titleColor={OXBLOOD}>
               <BoardBody h={900}>
                 <StackedShelves
                   top={<PeekShelf label="Your shelf" accent={sky}>{shelfBookCards.map((it) => <CoverCard key={it.id} item={it} compact onOpen={() => setExpanded(it)} />)}</PeekShelf>}
@@ -1373,7 +1419,7 @@ export default function LifestyleEliteShell() {
             </Clipboard>
 
             {/* ── BOARD 4 — STORY & SKY (the two daily rituals) ─────────────── */}
-            <Clipboard title="Story & sky" sub="TODAY'S CHAPTER · YOUR SKY" accent={crimson} flower="poppy" idx="cb-story" titleColor={OXBLOOD}>
+            <Clipboard key="cb4" title="Story & sky" sub="TODAY'S CHAPTER · YOUR SKY" accent={crimson} flower="poppy" idx="cb-story" titleColor={OXBLOOD}>
               <BoardBody h={900}>
                 <StackedShelves
                   top={<PeekShelf label="Today's chapter" accent={crimson}>{dailyStoryCards.map((it) => <CoverCard key={it.id} item={it} compact onOpen={() => setExpanded(it)} />)}</PeekShelf>}
@@ -1388,7 +1434,7 @@ export default function LifestyleEliteShell() {
             </Clipboard>
 
             {/* ── BOARD 5 — YOURS ───────────────────────────────────────────── */}
-            <Clipboard title="Yours" sub="SAVED · FOR YOUR PHASE" accent={gold} flower="daisy" idx="cb-yours" titleColor={OXBLOOD}>
+            <Clipboard key="cb5" title="Yours" sub="SAVED · FOR YOUR PHASE" accent={gold} flower="daisy" idx="cb-yours" titleColor={OXBLOOD}>
               <BoardBody h={900}>
                 <StackedShelves
                   top={
@@ -1408,8 +1454,7 @@ export default function LifestyleEliteShell() {
               </BoardBody>
             </Clipboard>
 
-          </ClipboardSlider>
-        </div>
+        </FocusableBoards>
 
         {/* HANDY RIGHT NOW — a compact row of one-line jumps into the boards + the two overlays.
             Every chip is a REAL jump (no dead labels); spans the whole-life spread, not just
@@ -1897,7 +1942,7 @@ function HoroscopeLens({ reading, phaseKey, onRead }) {
           {phaseKey && <div style={{ flex: 1, textAlign: "center", ...subCard(cwOf("crimson").petal), padding: "10px 6px" }}><div style={{ ...lbl, fontSize: 12, color: cwOf("crimson").petal }}>Your phase</div><div style={{ fontFamily: SERIF, fontSize: 14, fontWeight: 600, color: T.ink, marginTop: 2 }}>{phaseLabel(phaseKey)}</div></div>}
         </div>
       )}
-      <div style={{ ...subCard(cwOf("sky").petal), marginBottom: 10 }}><div style={{ ...lbl, fontSize: 12, color: cwOf("sky").petal, marginBottom: 3 }}>{headline}</div><p style={{ fontFamily: SERIF, fontSize: 15, color: T.ink, margin: 0, lineHeight: 1.5, display: "-webkit-box", WebkitLineClamp: 4, WebkitBoxOrient: "vertical", overflow: "hidden" }}>{stripHtml(weather)}</p></div>
+      <div style={{ ...subCard(cwOf("sky").petal), marginBottom: 10 }}><div style={{ ...lbl, fontSize: 12, color: cwOf("sky").petal, marginBottom: 3 }}>{headline}</div><p style={{ fontFamily: SERIF, fontSize: 15, color: T.ink, margin: 0, lineHeight: 1.5, display: "-webkit-box", WebkitLineClamp: 4, WebkitBoxOrient: "vertical", overflow: "hidden" }}>{cleanTitle(stripHtml(weather))}</p></div>
       {cycleMoon && <div style={{ ...subCard(cwOf("crimson").petal), background: `${cwOf("crimson").petal}0D` }}><div style={{ ...lbl, fontSize: 12, color: cwOf("crimson").petal, marginBottom: 3 }}>{cmTitle}</div><p style={{ fontFamily: SERIF, fontSize: 14, color: T.inkSoft, margin: 0, lineHeight: 1.45, display: "-webkit-box", WebkitLineClamp: 3, WebkitBoxOrient: "vertical", overflow: "hidden" }}>{stripHtml(cycleMoon)}</p></div>}
       <button onClick={onRead} className="fw-elite-press" style={{ marginTop: "auto", width: "100%", padding: "12px", borderRadius: 12, background: cwOf("sky").petal, color: "#fff", border: "none", fontFamily: UI, fontSize: 14, fontWeight: 700, cursor: "pointer" }}>Read your full reading</button>
     </div>
