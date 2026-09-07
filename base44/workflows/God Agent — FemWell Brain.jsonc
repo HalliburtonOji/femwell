@@ -1,0 +1,44 @@
+{
+  "name": "God Agent \u2014 FemWell Brain",
+  "description": "I will run the godAgent function which verifies all content links, removes expired events, generates FemWell AI stories and articles, pre-builds each user's For You feed, and creates daily skin and hair tips. This keeps the app fresh, accurate, and personalised 24 hours a day.",
+  "trigger": {
+    "condition": null,
+    "config": {
+      "trigger_type": "scheduled",
+      "events": [],
+      "schedule_mode": "interval",
+      "cron_expression": null,
+      "one_time_date": null,
+      "timezone": "UTC",
+      "interval_value": 4,
+      "interval_unit": "hours",
+      "interval_anchor": "2026-04-05T23:00:00",
+      "ends_type": "never",
+      "ends_on_date": null,
+      "ends_after_count": null
+    }
+  },
+  "definition": {
+    "document": {
+      "dsl": "1.0.0",
+      "name": "god_agent_femwell_brain",
+      "version": "1.0",
+      "namespace": "base44"
+    },
+    "do": [
+      {
+        "run_function": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "godAgent",
+            "args": {}
+          },
+          "then": "end"
+        }
+      }
+    ]
+  },
+  "x-base44-migrated-from-automation": {
+    "legacy_payload_function": "godAgent"
+  }
+}
