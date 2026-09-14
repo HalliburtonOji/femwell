@@ -28,6 +28,8 @@ const Eyebrow = ({ children, color }) => (
   <div style={{ fontFamily: UI, fontSize: 11, fontWeight: 800, letterSpacing: ".06em", textTransform: "uppercase", color, margin: "0 2px 6px" }}>{children}</div>
 );
 
+const emptyStyle = { fontFamily: SERIF, fontStyle: "italic", fontSize: 15, color: T.muted, margin: "2px 2px 0", lineHeight: 1.5 };
+
 // ── STACKS — the section's real sub-groups, kept but turned vertical + labelled. Full-width cards
 //    flow straight down; the old peek shelves become clean labelled lists. No sliding. ────────────
 function FocusStacks({ groups }) {
@@ -58,11 +60,109 @@ function FocusStacks({ groups }) {
   );
 }
 
+// ── COLUMN — one flowing editorial column: a big lede card, then a compact continuous feed. No
+//    group labels, no shelves — a magazine section-front you read straight down. ─────────────────
+function FocusColumn({ groups }) {
+  const flat = [];
+  groups.forEach((g) => {
+    if (g.lens) flat.push({ kind: "lens", key: g.key + "-lens", node: g.lens });
+    (g.items || []).forEach((it) => flat.push({ kind: "card", it, open: g.open, section: g.sectioned ? it.forYouSection : null }));
+    if ((!g.items || !g.items.length) && !g.lens && g.empty) flat.push({ kind: "empty", key: g.key + "-empty", text: g.empty });
+  });
+  const firstCard = flat.findIndex((f) => f.kind === "card");
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+      {flat.map((f, i) => {
+        if (f.kind === "lens") return <div key={f.key}>{f.node}</div>;
+        if (f.kind === "empty") return <p key={f.key} style={emptyStyle}>{f.text}</p>;
+        const isLede = i === firstCard;
+        return (
+          <div key={f.it.id}>
+            {isLede ? <Eyebrow color={cwOf("crimson").petal}>Start here</Eyebrow> : (f.section ? <Eyebrow color={cwOf(f.it.cw || "gold").petal}>{f.section}</Eyebrow> : null)}
+            <CoverCard item={f.it} compact={!isLede} onOpen={() => f.open(f.it)} />
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+// ── BENTO — a 2-col mosaic: the first item is a featured tile spanning both columns, the rest are
+//    smaller tiles, everything visible at once. Interactive lenses render full-width above. ───────
+function FocusBento({ groups }) {
+  const items = [], lenses = [], empties = [];
+  groups.forEach((g) => {
+    if (g.lens) lenses.push({ key: g.key + "-lens", node: g.lens });
+    (g.items || []).forEach((it) => items.push({ it, open: g.open, section: g.sectioned ? it.forYouSection : null }));
+    if ((!g.items || !g.items.length) && !g.lens && g.empty) empties.push({ key: g.key + "-empty", text: g.empty });
+  });
+  return (
+    <div>
+      {lenses.map((l) => <div key={l.key} style={{ marginBottom: 14 }}>{l.node}</div>)}
+      {items.length ? (
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, alignItems: "start" }}>
+          {items.map((f, i) => (
+            <div key={f.it.id} style={{ gridColumn: i === 0 ? "1 / -1" : "auto", minWidth: 0 }}>
+              {f.section ? <Eyebrow color={cwOf(f.it.cw || "gold").petal}>{f.section}</Eyebrow> : null}
+              <CoverCard item={f.it} compact={i !== 0} onOpen={() => f.open(f.it)} />
+            </div>
+          ))}
+        </div>
+      ) : null}
+      {empties.map((e) => <p key={e.key} style={emptyStyle}>{e.text}</p>)}
+    </div>
+  );
+}
+
+// ── MOOD — re-groups the section's items by how you feel / time you have, not by shelf. A quick
+//    play · a longer settle-in · fresh reads. Lenses (time-picker, sky diary) lead as their own mood. ─
+const MOODS = [
+  { key: 0, label: "A quick moment", accent: "sage" },
+  { key: 1, label: "Settle in", accent: "plum" },
+  { key: 2, label: "Fresh & new", accent: "gold" },
+];
+const moodOf = (it) => {
+  const t = String(it.type || "").toLowerCase();
+  if (t === "video" || t === "audio") return 0;                 // something to play, right now
+  if (t === "book" || t === "daily_story" || t === "story") return 1; // longer, settle in
+  return 2;                                                     // articles/guides/other — fresh reads
+};
+function FocusMood({ groups }) {
+  const all = [], lenses = [], empties = [];
+  groups.forEach((g) => {
+    if (g.lens) lenses.push({ key: g.key + "-lens", node: g.lens, label: g.label, accent: g.accent });
+    (g.items || []).forEach((it) => all.push({ it, open: g.open }));
+    if ((!g.items || !g.items.length) && !g.lens && g.empty) empties.push({ key: g.key + "-empty", text: g.empty });
+  });
+  const buckets = MOODS.map((m) => ({ ...m, items: all.filter((f) => moodOf(f.it) === m.key) })).filter((b) => b.items.length);
+  return (
+    <div>
+      {lenses.map((l) => (
+        <section key={l.key} style={{ marginBottom: 22 }}>
+          <GroupHead label={l.label} accent={l.accent} />
+          {l.node}
+        </section>
+      ))}
+      {buckets.map((b) => (
+        <section key={b.label} style={{ marginTop: 22 }}>
+          <GroupHead label={b.label} accent={b.accent} />
+          <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+            {b.items.map((f) => <CoverCard key={f.it.id} item={f.it} compact onOpen={() => f.open(f.it)} />)}
+          </div>
+        </section>
+      ))}
+      {!buckets.length && !lenses.length ? empties.map((e) => <p key={e.key} style={emptyStyle}>{e.text}</p>) : null}
+    </div>
+  );
+}
+
 export function FocusLayout({ layout, groups }) {
   switch (layout) {
+    case "column": return <FocusColumn groups={groups} />;
+    case "bento":  return <FocusBento groups={groups} />;
+    case "mood":   return <FocusMood groups={groups} />;
     case "stacks":
-    default:
-      return <FocusStacks groups={groups} />;
+    default:       return <FocusStacks groups={groups} />;
   }
 }
 
