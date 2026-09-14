@@ -20,12 +20,15 @@ import { OXBLOOD } from "@/components/brand/SliderKit";
 const GroupHead = ({ label, accent }) => (
   <div style={{ display: "flex", alignItems: "center", gap: 8, margin: "0 2px 12px" }}>
     <span style={{ width: 8, height: 8, borderRadius: 99, background: cwOf(accent || "gold").petal, flexShrink: 0 }} />
-    <h3 style={{ fontFamily: SERIF, fontStyle: "italic", fontWeight: 600, fontSize: 20, color: OXBLOOD, margin: 0, lineHeight: 1.15 }}>{label}</h3>
+    <h3 style={{ fontFamily: SERIF, fontStyle: "italic", fontWeight: 600, fontSize: 20, color: OXBLOOD, margin: 0, lineHeight: 1.2 }}>{label}</h3>
   </div>
 );
 
-const Eyebrow = ({ children, color }) => (
-  <div style={{ fontFamily: UI, fontSize: 11, fontWeight: 800, letterSpacing: ".06em", textTransform: "uppercase", color, margin: "0 2px 6px" }}>{children}</div>
+// §2.2 chrome gold — the ONE sanctioned eyebrow/caption colour (clears AA on cream). One accent for
+// every section eyebrow; cross-section identity is carried by the label TEXT, not per-card colour.
+const EYEBROW = "#A8893F";
+const Eyebrow = ({ children }) => (
+  <div style={{ fontFamily: UI, fontSize: 12, fontWeight: 700, letterSpacing: ".14em", textTransform: "uppercase", color: EYEBROW, margin: "0 2px 6px" }}>{children}</div>
 );
 
 const emptyStyle = { fontFamily: SERIF, fontStyle: "italic", fontSize: 15, color: T.muted, margin: "2px 2px 0", lineHeight: 1.5 };
@@ -38,14 +41,14 @@ function FocusStacks({ groups }) {
       {groups.map((g) => {
         const hasItems = Array.isArray(g.items) && g.items.length > 0;
         return (
-          <section key={g.key} style={{ marginTop: 26 }}>
+          <section key={g.key} style={{ marginTop: 24 }}>
             <GroupHead label={g.label} accent={g.accent} />
-            {g.lens ? <div style={{ marginBottom: hasItems ? 14 : 0 }}>{g.lens}</div> : null}
+            {g.lens ? <div style={{ marginBottom: hasItems ? 16 : 0 }}>{g.lens}</div> : null}
             {hasItems ? (
-              <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+              <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
                 {g.items.map((it) => (
                   <div key={it.id}>
-                    {g.sectioned && it.forYouSection ? <Eyebrow color={cwOf(it.cw || "gold").petal}>{it.forYouSection}</Eyebrow> : null}
+                    {g.sectioned && it.forYouSection ? <Eyebrow>{it.forYouSection}</Eyebrow> : null}
                     <CoverCard item={it} onOpen={() => g.open(it)} />
                   </div>
                 ))}
@@ -78,7 +81,7 @@ function FocusColumn({ groups }) {
         const isLede = i === firstCard;
         return (
           <div key={f.it.id}>
-            {isLede ? <Eyebrow color={cwOf("crimson").petal}>Start here</Eyebrow> : (f.section ? <Eyebrow color={cwOf(f.it.cw || "gold").petal}>{f.section}</Eyebrow> : null)}
+            {isLede ? <Eyebrow>Start here</Eyebrow> : (f.section ? <Eyebrow>{f.section}</Eyebrow> : null)}
             <CoverCard item={f.it} compact={!isLede} onOpen={() => f.open(f.it)} />
           </div>
         );
@@ -98,12 +101,12 @@ function FocusBento({ groups }) {
   });
   return (
     <div>
-      {lenses.map((l) => <div key={l.key} style={{ marginBottom: 14 }}>{l.node}</div>)}
+      {lenses.map((l) => <div key={l.key} style={{ marginBottom: 16 }}>{l.node}</div>)}
       {items.length ? (
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, alignItems: "start" }}>
           {items.map((f, i) => (
             <div key={f.it.id} style={{ gridColumn: i === 0 ? "1 / -1" : "auto", minWidth: 0 }}>
-              {f.section ? <Eyebrow color={cwOf(f.it.cw || "gold").petal}>{f.section}</Eyebrow> : null}
+              {f.section ? <Eyebrow>{f.section}</Eyebrow> : null}
               <CoverCard item={f.it} compact={i !== 0} onOpen={() => f.open(f.it)} />
             </div>
           ))}
@@ -138,16 +141,17 @@ function FocusMood({ groups }) {
   return (
     <div>
       {lenses.map((l) => (
-        <section key={l.key} style={{ marginBottom: 22 }}>
+        <section key={l.key} style={{ marginBottom: 24 }}>
           <GroupHead label={l.label} accent={l.accent} />
           {l.node}
         </section>
       ))}
       {buckets.map((b) => (
-        <section key={b.label} style={{ marginTop: 22 }}>
-          <GroupHead label={b.label} accent={b.accent} />
-          <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-            {b.items.map((f) => <CoverCard key={f.it.id} item={f.it} compact onOpen={() => f.open(f.it)} />)}
+        <section key={b.label} style={{ marginTop: 24 }}>
+          {/* one bucket = don't label it (would alias to Stacks); each mood gets a non-compact anchor */}
+          {buckets.length > 1 ? <GroupHead label={b.label} accent={b.accent} /> : null}
+          <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+            {b.items.map((f, i) => <CoverCard key={f.it.id} item={f.it} compact={i !== 0} onOpen={() => f.open(f.it)} />)}
           </div>
         </section>
       ))}
