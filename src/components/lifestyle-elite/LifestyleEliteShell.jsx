@@ -1501,10 +1501,18 @@ export default function LifestyleEliteShell({ enableFocus = false, layout = null
         </FocusableBoards>
         )}
 
-        {/* ══ SLIDER-FREE FOCUS LAYOUT (the four demos: stacks · column · bento · mood) ══
+        {/* ══ FOCUS SURFACE (slider-free) ══
              When `layout` is set: the landing = a slider-free "For you today" deck; tapping a chip
-             focuses the page onto that section's real content, laid out per `layout`, no carousel. */}
-        {layout && (
+             focuses the page onto that section. Each section is growing its OWN complete bespoke
+             surface (pulls everything, no button-gating). SKY is the reference implementation — it
+             renders the full rich horoscope (all 15 Track-R sections) INLINE, not the old button-gated
+             reader. Sections without a bespoke surface yet fall back to the generic slider-free layout. */}
+        {layout && focus && focusSection === "sky" && (
+          <div style={{ marginTop: 18 }}>
+            <HoroscopeTab userProfile={profile} />
+          </div>
+        )}
+        {layout && !(focus && focusSection === "sky") && (
           <div style={{ marginTop: 22 }}>
             <FocusLayout layout={layout} groups={focus ? focusGroupsOf(focusSection) : landingGroups} />
           </div>
