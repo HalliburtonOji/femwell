@@ -46,7 +46,6 @@ import DailyStoryReader from "@/components/lifestyle/DailyStoryReader";
 import { buildBookChapters } from "@/components/lifestyle/bookChapters";
 // the sky (component #6) — the REAL horoscope reader (15 sections + birth-chart onboarding),
 // dark since ~2026-06-20. Moon phase is computed client-side (synodic, no backend).
-import HoroscopeTab from "@/components/horoscope/HoroscopeTab";
 import { getMoonPhase } from "@/utils/astrology";
 import ReadingColumn from "@/components/brand/ReadingColumn";
 import { LIFESTYLE_VIDEOS } from "@/data/lifestyleVideos";
@@ -1613,7 +1612,10 @@ export default function LifestyleEliteShell({ enableFocus = false, layout = null
               <Check size={15} /> Mark as read
             </button>
           </div>
-          <HoroscopeTab userProfile={profile} />
+          {/* §19: the cream SkyFocus (NOT the old dark HoroscopeTab) — zero paths to the old design. */}
+          <div style={{ maxWidth: 430, margin: "0 auto", padding: "2px 16px 44px" }}>
+            <SkyFocus userProfile={profile} />
+          </div>
         </div>
       )}
       {/* the REAL immersive reader (component #5) — the finished series, straight through.
