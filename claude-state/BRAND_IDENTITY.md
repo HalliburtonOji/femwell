@@ -928,3 +928,16 @@ Prefer **`UserProfile.display_name`**, then `user.full_name`; the **handle guard
 
 ### 18.7 In-app mirrors
 `src/components/founders/brandDocs/*.html` (the in-app Ideas-page copies) and `C:\Users\Halli\femwell-handoff\*.html` (the phone-readable exports). Every plan/audit ships as a phone-readable styled-HTML doc AND is wired into the FoundersOS "Ideas" page (CLAUDE.md delivery rule). **This master (§1–§18) is self-sufficient for building; the docs above add the cited "why" and the exhaustive depth.**
+
+## 19. THE SMARTNESS STANDARD — every section surface must be SMART, not a shelf (✅ AGREED · Halli 2026-09-19 · v1 · HARD GATE)
+**The North-Star test for any focused / section / "open this" surface: is it a *smart, bespoke, complete experience purpose-built for THIS section* — or a boring "jump to" + a generic filtered shelf?** The second is a FAILURE, not a delivery. This gate applies to every section surface we build from here (Lifestyle focus surfaces are the reference; the same bar binds every page's sections).
+
+**The six requirements (all six, every time):**
+1. **BESPOKE & COMPLETE — never a generic shelf.** Each section's surface is purpose-built for that section and pulls EVERYTHING for it, in the section's own design. No reused one-size layout, no "jump to", no "see more →" hiding the substance behind a button. If a section owns a rich sub-experience (e.g. the horoscope's 15 parts), ALL of it renders in the surface.
+2. **DELIBERATE ORDER — internal AND cross-section.** The order of things *inside* a section, and the order of the sections themselves, is reasoned and well-organised (now→body→identity→arcs→interactive→reflective is a typical spine), never arbitrary or source-order. State the rationale.
+3. **READS FROM REAL USER STATE — personalised & stateful.** The surface reflects her actual data: cycle phase, chart/profile, history, saves, continue-where-she-left-off, entitlements. It is responsive to how she's used the app — not a static template. (Ties to §16 Personalisation.)
+4. **SECTION-SPECIFIC SUMMARY.** The summary/glance/header text for a section speaks to THAT section from her state — never generic boilerplate. ("Your Leo sun, follicular week, a waxing crescent climbing" — not "Here's your content.")
+5. **CORRECTLY WIRED — real data, real actions, no dead ends.** Everything works end-to-end on real data. No old button-gated version left in place, no placeholder that goes nowhere, no action that no-ops.
+6. **REBUILD, DON'T EMBED.** When an existing surface's design clashes with the new one, REBUILD it in the new design (keeping all data/logic) — never embed the old design inside the new. Reuse the DATA layer (hooks/utils), rebuild the PRESENTATION.
+
+**DoD add-on (per §11.0):** a section surface is not "done" until it passes all six above AND the standard gates (real-pixel verify, brand gate, reversible, live untouched). "It renders" is not "it's smart." The **horoscope/Sky rebuilt-from-scratch-in-the-new-design** is the canonical reference implementation of this standard.

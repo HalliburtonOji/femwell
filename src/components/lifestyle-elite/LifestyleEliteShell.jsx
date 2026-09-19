@@ -33,6 +33,7 @@ import {
 import { base44 } from "@/api/base44Client";
 import LifestyleMedia from "@/components/lifestyle-elite/LifestyleMedia";
 import { FocusLayout } from "@/components/lifestyle-elite/FocusLayouts";
+import SkyFocus from "@/components/lifestyle-elite/SkyFocus";
 // the clipboard's card language (§6.7.7) — consumed, never duplicated
 import { CoverCard, ExpandDetailCard } from "@/components/brand/expandCards";
 import FaceOverlay from "@/components/brand/FaceOverlay";
@@ -1509,7 +1510,7 @@ export default function LifestyleEliteShell({ enableFocus = false, layout = null
              reader. Sections without a bespoke surface yet fall back to the generic slider-free layout. */}
         {layout && focus && focusSection === "sky" && (
           <div style={{ marginTop: 18 }}>
-            <HoroscopeTab userProfile={profile} />
+            <SkyFocus userProfile={profile} />
           </div>
         )}
         {layout && !(focus && focusSection === "sky") && (
