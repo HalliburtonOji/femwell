@@ -37,6 +37,7 @@ import SkyFocus from "@/components/lifestyle-elite/SkyFocus";
 import SectionHeader from "@/components/lifestyle-elite/SectionHeader";
 import StoryFocus from "@/components/lifestyle-elite/StoryFocus";
 import ListenFocus from "@/components/lifestyle-elite/ListenFocus";
+import ReadFocus from "@/components/lifestyle-elite/ReadFocus";
 // the clipboard's card language (§6.7.7) — consumed, never duplicated
 import { CoverCard, ExpandDetailCard } from "@/components/brand/expandCards";
 import FaceOverlay from "@/components/brand/FaceOverlay";
@@ -1522,6 +1523,7 @@ export default function LifestyleEliteShell({ enableFocus = false, layout = null
           if (sec === "sky") return <div style={{ marginTop: 18 }}><SkyFocus userProfile={profile} /></div>;
           if (sec === "story") return <div style={{ marginTop: 18 }}><StoryFocus chapters={chapters} story={story} pick={storyPick} nextPick={storyNext} onRead={(i) => { setReaderStart(i); setReaderOpen(true); }} /></div>;
           if (sec === "listen") return <div style={{ marginTop: 18 }}><ListenFocus audioCards={audioCards} videoCards={videoCards} onOpen={setExpanded} /></div>;
+          if (sec === "read") return <div style={{ marginTop: 18 }}><ReadFocus continueCards={continueCards} articleCards={articleCards} storyCards={storyCards} phaseWord={phaseKey ? phaseLabel(phaseKey).toLowerCase() : null} onOpen={openReadCard} /></div>;
           // sections without a bespoke surface yet → the generic slider-free layout
           return <div style={{ marginTop: 22 }}><FocusLayout layout={layout} groups={focus ? focusGroupsOf(focusSection) : landingGroups} /></div>;
         })()}
