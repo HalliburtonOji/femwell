@@ -35,6 +35,7 @@ import LifestyleMedia from "@/components/lifestyle-elite/LifestyleMedia";
 import { FocusLayout } from "@/components/lifestyle-elite/FocusLayouts";
 import SkyFocus from "@/components/lifestyle-elite/SkyFocus";
 import SectionHeader from "@/components/lifestyle-elite/SectionHeader";
+import StoryFocus from "@/components/lifestyle-elite/StoryFocus";
 // the clipboard's card language (§6.7.7) — consumed, never duplicated
 import { CoverCard, ExpandDetailCard } from "@/components/brand/expandCards";
 import FaceOverlay from "@/components/brand/FaceOverlay";
@@ -498,6 +499,7 @@ export default function LifestyleEliteShell({ enableFocus = false, layout = null
   const [gLFace, setGLFace] = useState(null);
   const [gLDone, setGLDone] = useState({});
   const [readerOpen, setReaderOpen] = useState(false); // the REAL immersive Daily Story reader
+  const [readerStart, setReaderStart] = useState(null); // chapter index to open the reader at (StoryFocus)
   const [bookReader, setBookReader] = useState(null);  // #4 — a FemWell fiction book, read IN PLACE (no route)
   const [jessOpen, setJessOpen] = useState(false);     // Track B — Jess's full-read inner sheet
   const [loadSeed] = useState(() => (_lifeLoadSeed = (_lifeLoadSeed + 7) % 9973)); // rotates per visit
@@ -1514,16 +1516,14 @@ export default function LifestyleEliteShell({ enableFocus = false, layout = null
              surface (pulls everything, no button-gating). SKY is the reference implementation — it
              renders the full rich horoscope (all 15 Track-R sections) INLINE, not the old button-gated
              reader. Sections without a bespoke surface yet fall back to the generic slider-free layout. */}
-        {layout && focus && focusSection === "sky" && (
-          <div style={{ marginTop: 18 }}>
-            <SkyFocus userProfile={profile} />
-          </div>
-        )}
-        {layout && !(focus && focusSection === "sky") && (
-          <div style={{ marginTop: 22 }}>
-            <FocusLayout layout={layout} groups={focus ? focusGroupsOf(focusSection) : landingGroups} />
-          </div>
-        )}
+        {layout && (() => {
+          const sec = focus ? focusSection : null;
+          // BESPOKE section surfaces (§19). Each pulls everything for its section, in the new design.
+          if (sec === "sky") return <div style={{ marginTop: 18 }}><SkyFocus userProfile={profile} /></div>;
+          if (sec === "story") return <div style={{ marginTop: 18 }}><StoryFocus chapters={chapters} story={story} pick={storyPick} nextPick={storyNext} onRead={(i) => { setReaderStart(i); setReaderOpen(true); }} /></div>;
+          // sections without a bespoke surface yet → the generic slider-free layout
+          return <div style={{ marginTop: 22 }}><FocusLayout layout={layout} groups={focus ? focusGroupsOf(focusSection) : landingGroups} /></div>;
+        })()}
 
         {/* the good-life permission slip opens IN-PLACE (the FocusLayout path has no board FaceOverlay) */}
         {layout && (() => {
@@ -1622,7 +1622,7 @@ export default function LifestyleEliteShell({ enableFocus = false, layout = null
           <DailyStoryReader
             seriesKey={storyPick?.seriesKey || DAILY_STORY_SERIES}
             bookId={`daily_${storyPick?.seriesKey || DAILY_STORY_SERIES}`}
-            goToChapter={storyPick?.index ?? 0}
+            goToChapter={readerStart ?? (storyPick?.index ?? 0)}
             defaultImmersive
             onExit={() => setReaderOpen(false)}
             onChapterReached={(i) => {
