@@ -34,6 +34,7 @@ import { base44 } from "@/api/base44Client";
 import LifestyleMedia from "@/components/lifestyle-elite/LifestyleMedia";
 import { FocusLayout } from "@/components/lifestyle-elite/FocusLayouts";
 import SkyFocus from "@/components/lifestyle-elite/SkyFocus";
+import SectionHeader from "@/components/lifestyle-elite/SectionHeader";
 // the clipboard's card language (§6.7.7) — consumed, never duplicated
 import { CoverCard, ExpandDetailCard } from "@/components/brand/expandCards";
 import FaceOverlay from "@/components/brand/FaceOverlay";
@@ -1247,9 +1248,14 @@ export default function LifestyleEliteShell({ enableFocus = false, layout = null
           const aCol = cwOf(active.cw).petal;
           return (
             <>
-              <FwFloraHero title={active.title} colorway={active.cw} bloom={ph.bloom} openness={active.openness}
-                creature={active.creature} flankL="iris" flankR="sunflower" titleColor={OXBLOOD} line={active.line}
-                garden="lifestyle" photo="lifestyle" />
+              {/* Per-section artful floral STILL + flower profile when its image is delivered; else
+                  the flora/video hero (default/fallback). Architected for a clean drop-in — see
+                  SectionHeader.jsx SECTION_HEADER. Swaps automatically because it reads `active`. */}
+              <SectionHeader active={active} title={active.title} fallback={
+                <FwFloraHero title={active.title} colorway={active.cw} bloom={ph.bloom} openness={active.openness}
+                  creature={active.creature} flankL="iris" flankR="sunflower" titleColor={OXBLOOD} line={active.line}
+                  garden="lifestyle" photo="lifestyle" />
+              } />
               <div className="fw-hero-ctl" style={{ display: "flex", gap: 8, overflowX: "auto", padding: "12px 2px 2px", WebkitMaskImage: "linear-gradient(90deg, #000 0, #000 calc(100% - 22px), transparent 100%)", maskImage: "linear-gradient(90deg, #000 0, #000 calc(100% - 22px), transparent 100%)" }}>
                 <style>{`.fw-hero-ctl{scrollbar-width:none}.fw-hero-ctl::-webkit-scrollbar{display:none}`}</style>
                 {HERO_CARDS.map((c, i) => {
