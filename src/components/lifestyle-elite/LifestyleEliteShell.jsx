@@ -1281,10 +1281,14 @@ export default function LifestyleEliteShell({ enableFocus = false, layout = null
                   {phaseKey ? `${phaseLabel(phaseKey)}${cycleDay ? ` · Day ${cycleDay}` : ""} · ${ph.day}` : "A few good things today"}
                 </span>
               </div>
-              <button onClick={active.action.on} className="fw-elite-press"
-                style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 8, width: "100%", boxSizing: "border-box", background: aCol, color: "#fff", border: "none", borderRadius: 14, padding: "13px 16px", fontFamily: UI, fontSize: 14, fontWeight: 700, cursor: "pointer", transition: "background .35s ease", marginBottom: 16 }}>
-                <active.Icon size={16} /> {active.action.label}
-              </button>
+              {/* Controller CTA — hidden once a section is focused (the bespoke surface shows inline
+                  with its own actions, so this would be a duplicate path). */}
+              {!(enableFocus && focusSection) && (
+                <button onClick={active.action.on} className="fw-elite-press"
+                  style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 8, width: "100%", boxSizing: "border-box", background: aCol, color: "#fff", border: "none", borderRadius: 14, padding: "13px 16px", fontFamily: UI, fontSize: 14, fontWeight: 700, cursor: "pointer", transition: "background .35s ease", marginBottom: 16 }}>
+                  <active.Icon size={16} /> {active.action.label}
+                </button>
+              )}
             </>
           );
         })()}
