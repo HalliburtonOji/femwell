@@ -515,6 +515,36 @@ export function LeafDivider({ color = T.gold, my = 22 }) {
   );
 }
 
+// header flourish — two mirrored mini-sprigs flanking a page title or the heart mark (§4.3).
+// Promoted here from pages/BrandCraftSample.jsx so production surfaces use the one engine.
+export function HeaderFlourish({ children, color = T.gold, w = 56, opacity = 0.62, gap = 12 }) {
+  const sprig = (flip) => (
+    <svg width={w} height={Math.round(w * 20 / 56)} viewBox="0 0 56 20" aria-hidden fill="none" stroke={color} strokeWidth="1" strokeLinecap="round" opacity={opacity} style={{ transform: flip ? "scaleX(-1)" : "none" }}>
+      <path d="M54 10 C 38 9 26 11 8 10" />
+      <path d="M30 10 C 26 5 26 3 28 -0.5" strokeWidth="0.8" transform="translate(0 1.5)" />
+      <path d="M22 10 C 18 6 16 5 12 4 C 14 8 18 10 22 10 Z" />
+      <path d="M34 10 C 38 6 40 5 44 4 C 42 8 38 10 34 10 Z" />
+      <circle cx="8" cy="10" r="1.5" fill={color} stroke="none" />
+    </svg>
+  );
+  return (
+    <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap }}>
+      {sprig(false)}{children}{sprig(true)}
+    </div>
+  );
+}
+
+// meaning-rosette — a tiny five-petal colourway mark beside a card eyebrow (the per-card
+// floral detail Halli kept in the clean reset: colour carries meaning, §2.5).
+export function MeaningRosette({ color = T.crimson, size = 11, centre = T.gold }) {
+  return (
+    <svg width={size} height={size} viewBox="-6 -6 12 12" aria-hidden style={{ flexShrink: 0 }}>
+      {[0, 72, 144, 216, 288].map((a) => <ellipse key={a} cx="0" cy="-3.2" rx="1.7" ry="3" fill={color} transform={`rotate(${a})`} />)}
+      <circle cx="0" cy="0" r="1.3" fill={centre} />
+    </svg>
+  );
+}
+
 // sprig divider — a fading stem with alternating leaves
 export function SprigDivider({ color = T.gold, w = 240, my = 22 }) {
   const u = `sf${String(color).replace("#", "")}`;

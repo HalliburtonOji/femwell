@@ -60,6 +60,7 @@ Before you add or change anything visual, confirm:
 > - **Rich cards.** Layered depth, a colourway tint, a faint botanical watermark, a coloured accent header + a meaning-bloom — crafted, not flat text boxes.
 > - **Generous display type.** Use the Ephesis script (`.fw-display`/`Script`) warmly for greetings and section headers.
 > Rule of thumb: if a screen reads as plain/monochrome/sparse, it is **off-brand** — push it richer.
+> **CLEAN & CLASSY amendment (✅ AGREED 2026-09-21, Halli — see §2.7):** "lush" is delivered by the *botanicals and the colourways*, NOT by a cream-on-cream ground, a paper-grain multiply on every card, oxblood running text or the letterpress text-shadow. Those read as "burnt" and low-contrast and are retired. The ground goes clean (alabaster + white), the type goes high-contrast and un-shadowed, and the flora stays **present** — the phase-flower posy hero, the ONE carved heart + flourish, botanical dividers, a BrandFrame feature card with a colourway wash, and **a meaning-rosette on every card eyebrow (per-card floral details are kept — Halli's explicit instruction)**. Clean ground + lush flora is the brand; not one or the other.
 
 ---
 
@@ -181,6 +182,30 @@ The same colourways drive the **creatures** (white butterfly = the divine/ancest
 | **Periwinkle + Gold** | `#7C8CC8` → `#C0CAE6` / `#E8C766` | calm + uncommon — cool periwinkle-blue with a warm gold heart |
 | **Blush → Deep-rose** | `#E098B0` → `#F8DCE6` / `#A83E5E` | tender with depth — blush petals over a deep-rose throat |
 > **Rule:** one combo per bloom/spray (the whole spray shares a combo — the petal→tip gradient IS the two-tone; don't also multi-colour within one flower). Colour still carries meaning (§2.5) — pick the combo for the mood, not at random.
+
+### 2.7 CLEAN & CLASSY — the visual reset (✅ AGREED 2026-09-21 · rolling out surface by surface)
+> Halli: *"cream on cream doesn't look good"* · *"remove that burnt look the app has — clean and classy everywhere"* · reference = a single refined subject on a soft, restful ground; restraint = luxury. Exemplar (approved, iterated ×3): `femwell-handoff/SKY-CLEAN-CLASSY-EXEMPLAR.html`; spec + reasoning: `femwell-handoff/CLEAN-CLASSY-VISUAL-RESET.html`. **First live surface: `SkyFocus` (Lifestyle · Sky).**
+>
+> **The four faults it retires:** (1) cream-on-cream (cards `#F4EFE3` on page `#ECE7DA`, ~4% apart — no edges); (2) the burnt overlay (`PAPER_TEX` at 40% multiply on every card + warm double shadows → amber cast); (3) warm-brown / oxblood **running** text (`#7A1A12`, `#2E261B` as text colours) and the global **letterpress text-shadow** on headings; (4) everything-is-a-box (a 4px colourway stripe + double shadow + frame + texture on every card).
+>
+> **The clean tokens — `src/components/brand/cleanTokens.js` (`C`, `CLEAN_BG`, `CLEAN_SHADOW`, `CLEAN_CSS`, `PHASE_CLEAN`). ADDITIVE: migrated surfaces import these; un-migrated pages keep `T` until they're rolled.**
+> | Role | Retire | Adopt |
+> |---|---|---|
+> | Page ground | cream `#ECE7DA` + `PAPER_BG` grain/vignette | **alabaster `#F5F4F1`** · `CLEAN_BG` (a soft top light, no grain) |
+> | Card surface | `paperHi #F4EFE3` | **white `#FFFFFF`** — cards lift off the ground |
+> | Hairline | `paperDeep #D8CFBC` | `#EAE7E0` · gold hairline `#D9C79B` for fine rules |
+> | Primary text | `#0B0805` (warm) | **ink `#191510`** |
+> | Secondary text | `muted #2E261B` (brown) | **slate `#6E6A61`** · tertiary `faint #A6A197` |
+> | Emphasis text | oxblood `#7A1A12` running text | weight + crimson `#BC2E27` **once** (an italic lead-in) |
+> | Card chrome | per-card colourway `borderLeft` stripes, `CardFrame` on every card | ONE neutral lift (`CLEAN_SHADOW`); `BrandFrame` corner sprigs on the **feature** card only |
+> | Texture | `PAPER_TEX` on cards | none |
+> | Headings | 700 + letterpress `text-shadow` | 600, **no shadow** (scoped via `.fw-clean` + `CLEAN_CSS`, not global) |
+> | Body | 600 | 500 (Cormorant 19/1.72) |
+> | Phase hues (data-viz only) | follicular `#8FAF8F` · ovulatory `#D4AF37` | deepened for AA on white: `#5F8A6B` · `#B8912E` (menstrual/luteal unchanged) |
+>
+> **Composition rules:** section rhythm 24–28px (was 16); card padding 22–26 (was 16); **fewer boxes** — sections are open editorial blocks divided by `LeafDivider` (everyday) / `FleuronDivider` (chapter-grade), and only content that earns enclosure (a dial, a module) gets a white card. Eyebrows: 10px/800/.22em gold, **centred**, each with its `MeaningRosette` in the section's colourway (per-card floral, KEPT). Titles: Cormorant 24/600 centred. **ONE CTA per surface** — slim, outlined (`1px ink`), letter-spaced uppercase; Share is the masthead `ShareButton iconOnly`. Masthead = eyebrow + gold rule · share icon · **her phase-flower posy** (`Bouquet` of 3 × `RichBloomV2` in the phase colourway: menstrual→poppy/crimson · follicular→snowdrop/sage · ovulatory→sunflower/gold · luteal→dahlia/plum) on a soft colourway glow · display headline 36/600 · `HeaderFlourish` flanking the ONE `Heart` · a fine state line (text + gold dots, not pills). The reading signs off in Ephesis ("Astra", gold). Sign icons = `getSignIcon` (Lucide; unicode zodiac glyphs stay retired — they render as emoji).
+>
+> **Roll-out order (one at a time, each verified 360/390/430):** SkyFocus ✅ → the other six Lifestyle focus surfaces + the Lifestyle shell (hero/chips/glance) → the primary hubs. Live `/Lifestyle` keeps `PAPER_BG` until its surfaces migrate (`layout ? CLEAN_BG : PAPER_BG`).
 
 ### 2.6 ACCESSIBILITY — contrast on a warm palette (HARD RULE)
 Warm cream palettes fail WCAG AA easily because the tones are naturally close, and **the naked eye is unreliable** on them (ratios come from relative luminance — use a checker). AA = **4.5:1** normal text, **3:1** large (≥18.66px bold / 24px+).

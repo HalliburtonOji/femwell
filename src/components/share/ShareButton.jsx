@@ -8,7 +8,9 @@ import { useState } from "react";
 import { Share2, Download, Link2, MessageCircle } from "lucide-react";
 import { shareArtifact, downloadBlob, whatsappHref, ShareBlockedError } from "@/lib/shareCard";
 
-export default function ShareButton({ artifact, label = "Share", tone = "default" }) {
+// `iconOnly` — a quiet hairline circle icon (the masthead share affordance in the clean reset);
+// the fallback row (save / copy / WhatsApp) still expands in place after a tap.
+export default function ShareButton({ artifact, label = "Share", tone = "default", iconOnly = false }) {
   const [busy, setBusy] = useState(false);
   const [fallback, setFallback] = useState(null);   // { blob, shareText, url }
   const [copied, setCopied] = useState(false);
@@ -56,6 +58,14 @@ export default function ShareButton({ artifact, label = "Share", tone = "default
     );
   }
 
+  if (iconOnly) {
+    return (
+      <button onClick={onShare} disabled={busy} aria-label={label} title={label}
+        style={{ width: 34, height: 34, borderRadius: "50%", border: "1px solid #EAE7E0", background: "#FFFFFF", display: "grid", placeItems: "center", cursor: "pointer", padding: 0, opacity: busy ? 0.6 : 1, flexShrink: 0 }}>
+        <Share2 size={14} color="#6E6A61" strokeWidth={1.6} />
+      </button>
+    );
+  }
   return (
     <button onClick={onShare} disabled={busy} style={{ ...pill, opacity: busy ? 0.6 : 1 }}>
       <Share2 className="w-3.5 h-3.5" /> {busy ? "Preparing…" : label}

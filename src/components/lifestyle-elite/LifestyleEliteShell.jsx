@@ -34,6 +34,7 @@ import { base44 } from "@/api/base44Client";
 import LifestyleMedia from "@/components/lifestyle-elite/LifestyleMedia";
 import { FocusLayout } from "@/components/lifestyle-elite/FocusLayouts";
 import SkyFocus from "@/components/lifestyle-elite/SkyFocus";
+import { C, CLEAN_BG } from "@/components/brand/cleanTokens";
 import SectionHeader from "@/components/lifestyle-elite/SectionHeader";
 import StoryFocus from "@/components/lifestyle-elite/StoryFocus";
 import ListenFocus from "@/components/lifestyle-elite/ListenFocus";
@@ -1237,7 +1238,9 @@ export default function LifestyleEliteShell({ enableFocus = false, layout = null
   }
 
   return (
-    <div style={{ ...PAPER_BG, minHeight: "100vh", overflowX: "clip", paddingBottom: "calc(124px + env(safe-area-inset-bottom))" }}>
+    // Clean & classy ground (§2.7) on the focus/layout demos only — live /Lifestyle passes no
+    // `layout`, so it keeps PAPER_BG byte-for-byte until its surfaces migrate.
+    <div style={{ ...(layout ? CLEAN_BG : PAPER_BG), minHeight: "100vh", overflowX: "clip", paddingBottom: "calc(124px + env(safe-area-inset-bottom))" }}>
       <style>{floraKeyframes}{ELITE_MOTION}</style>
       <TopChrome onJump={() => setJumpOpen(true)} onCalendar={() => setCalOpen(true)} />
 
@@ -1532,7 +1535,7 @@ export default function LifestyleEliteShell({ enableFocus = false, layout = null
           if (sec === "listen") return <div style={{ marginTop: 18 }}><ListenFocus audioCards={audioCards} videoCards={videoCards} onOpen={setExpanded} /></div>;
           if (sec === "read") return <div style={{ marginTop: 18 }}><ReadFocus continueCards={continueCards} articleCards={articleCards} storyCards={storyCards} phaseWord={phaseKey ? phaseLabel(phaseKey).toLowerCase() : null} onOpen={openReadCard} /></div>;
           if (sec === "books") return <div style={{ marginTop: 18 }}><BooksFocus continueCards={continueCards} shelfBookCards={shelfBookCards} classicCards={classicCards} onOpen={(it) => openBook(it._continue || it._raw || it)} /></div>;
-          if (sec === "good") return <div style={{ marginTop: 18 }}><GoodLifeFocus timeLens={<TimePickerLens pickFor={pickFor} isSaved={isSaved} onSave={toggleSave} onOpen={openItem} onTry={saveTryThis} />} joys={[...ritualCards, ...permissionCards]} onSlip={(it) => setGLFace({ slip: it })} /></div>;
+          if (sec === "good") { const h = new Date().getHours(); const timeOfDay = h < 12 ? "morning" : h < 18 ? "afternoon" : "evening"; return <div style={{ marginTop: 18 }}><GoodLifeFocus timeOfDay={timeOfDay} timeLens={<TimePickerLens pickFor={pickFor} isSaved={isSaved} onSave={toggleSave} onOpen={openItem} onTry={saveTryThis} />} joys={[...ritualCards, ...permissionCards]} onSlip={(it) => setGLFace({ slip: it })} /></div>; }
           if (sec === "yours") return <div style={{ marginTop: 18 }}><YoursFocus savedCards={savedCards} savedSummary={savedSummary} phaseCards={phaseCards} phaseWord={phaseKey ? phaseLabel(phaseKey).toLowerCase() : null} onOpen={setExpanded} /></div>;
           // sections without a bespoke surface yet → the generic slider-free layout
           return <div style={{ marginTop: 22 }}><FocusLayout layout={layout} groups={focus ? focusGroupsOf(focusSection) : landingGroups} /></div>;
@@ -1613,10 +1616,10 @@ export default function LifestyleEliteShell({ enableFocus = false, layout = null
           It self-loads (useBirthChart) and fires generateHoroscopeReading on open, which is
           why readings stopped on 2026-06-20: nothing had mounted this since. */}
       {skyOpen && (
-        <div style={{ position: "fixed", inset: 0, zIndex: 1200, ...PAPER_BG, overflowY: "auto" }}>
-          <div style={{ position: "sticky", top: 0, zIndex: 3, display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 14px", background: `linear-gradient(180deg, ${T.paperHi}, ${T.paperHi}00)` }}>
+        <div style={{ position: "fixed", inset: 0, zIndex: 1200, ...CLEAN_BG, overflowY: "auto" }}>
+          <div style={{ position: "sticky", top: 0, zIndex: 3, display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 14px", background: `linear-gradient(180deg, ${C.ground}, ${C.ground}00)` }}>
             <button onClick={() => setSkyOpen(false)} aria-label="Back" className="fw-elite-press"
-              style={{ width: 40, height: 40, borderRadius: 999, background: "rgba(244,239,227,0.9)", border: `1px solid ${T.paperDeep}`, color: T.ink, display: "grid", placeItems: "center", cursor: "pointer" }}>
+              style={{ width: 40, height: 40, borderRadius: 999, background: C.surface, border: `1px solid ${C.hair}`, color: C.ink, display: "grid", placeItems: "center", cursor: "pointer" }}>
               <ChevronLeft size={19} />
             </button>
             <button onClick={() => { recordProgress("your-sky", 0, user?.id); flash("Marked as read — it counts in your garden"); }}
