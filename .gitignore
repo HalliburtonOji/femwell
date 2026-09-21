@@ -36,3 +36,4 @@ qa-path-check-*.png
 build.log
 brandp2-*.png
 base44/.app.jsonc
+.tmp/

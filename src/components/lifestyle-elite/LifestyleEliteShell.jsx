@@ -36,10 +36,9 @@ import { FocusLayout } from "@/components/lifestyle-elite/FocusLayouts";
 import SkyFocus from "@/components/lifestyle-elite/SkyFocus";
 import { C, CLEAN_BG } from "@/components/brand/cleanTokens";
 import SectionHeader from "@/components/lifestyle-elite/SectionHeader";
-import StoryFocus from "@/components/lifestyle-elite/StoryFocus";
+import BooksStoryFocus from "@/components/lifestyle-elite/BooksStoryFocus";
 import ListenFocus from "@/components/lifestyle-elite/ListenFocus";
 import ReadFocus from "@/components/lifestyle-elite/ReadFocus";
-import BooksFocus from "@/components/lifestyle-elite/BooksFocus";
 import GoodLifeFocus from "@/components/lifestyle-elite/GoodLifeFocus";
 import YoursFocus from "@/components/lifestyle-elite/YoursFocus";
 // the clipboard's card language (§6.7.7) — consumed, never duplicated
@@ -1128,6 +1127,16 @@ export default function LifestyleEliteShell({ enableFocus = false, layout = null
       line: "What do you have time for? A small joy, and permission to enjoy it.", openness: 0.92, cw: "gold", creature: "butterfly",
       action: { label: "Open the good life", on: () => jumpTo(0) } },
   ], [firstName, story, moonToday]);
+  // On the focus/layout demos Books + Story are ONE chip (the merged surface); live keeps its six.
+  const heroCards = useMemo(() => {
+    if (!layout) return HERO_CARDS;
+    return HERO_CARDS.filter((c) => c.id !== "story").map((c) => c.id !== "books" ? c : {
+      ...c, label: "Books", title: story ? "Today's chapter & your shelf" : "Your shelf",
+      line: story?.cliffhanger ? `"${story.cliffhanger}"` : "A chapter a day through the month — and a shelf of free classics to fall into.",
+      openness: 0.8, cw: "crimson", creature: "butterfly",
+      action: { label: story ? "Read today's chapter" : "Open your shelf", on: () => (story ? setChapterOpen(true) : jumpTo(3)) },
+    });
+  }, [HERO_CARDS, layout, story]);
 
   // Track A — Saved is now COLLECTIONS-READY: grouped by kind (Reads · Listens · Watches · Books)
   // so it clusters into auto-shelves instead of a flat dump. `savedCollections` also drives the
@@ -1176,53 +1185,19 @@ export default function LifestyleEliteShell({ enableFocus = false, layout = null
   const FOCUS_MAP = {
     read:   { board: 1, label: "Read",           forYou: ["A read for you"] },
     listen: { board: 2, label: "Listen & watch", forYou: ["A listen", "Something to watch"] },
-    books:  { board: 3, label: "Books",          forYou: ["From the shelf"] },
-    story:  { board: 4, label: "Story",          forYou: ["Today's chapter"] },
+    // Books + Story are ONE section (Halli 2026-09-21): the serial is a chapter a day inside a
+    // monthly run — it belongs on the shelf. "story" stays as an alias so every jumpTo/board resolves.
+    books:  { board: 3, label: "Books & story", forYou: ["From the shelf", "Today's chapter"] },
+    story:  { board: 3, label: "Books & story", forYou: ["From the shelf", "Today's chapter"] },
     sky:    { board: 4, label: "Sky",            forYou: ["Your sky"] },
     good:   { board: 0, label: "Good life",      forYou: ["A small joy"] },
     yours:  { board: 5, label: "Yours",          forYou: [] },
   };
-  const BOARD_TO_SECTION = { 0: "good", 1: "read", 2: "listen", 3: "books", 4: "story", 5: "yours" };
+  const BOARD_TO_SECTION = { 0: "good", 1: "read", 2: "listen", 3: "books", 4: "books", 5: "yours" };
   const focus = (enableFocus && focusSection) ? (FOCUS_MAP[focusSection] || null) : null;
   const focusBoard = focus ? focus.board : null;
   const forYouShown = focus ? forYouItems.filter((it) => focus.forYou.includes(it.forYouSection)) : forYouItems;
 
-  // The focused section's REAL content as slider-free groups (see FocusLayouts.jsx for the shape).
-  // Every card array + lens already exists above; this just regroups them without any carousel.
-  const openReadCard = (it) => (it._continue ? openBook(it._continue) : setExpanded(it));
-  const focusGroupsOf = (sec) => {
-    switch (sec) {
-      case "read": return [
-        { key: "read-a", label: continueCards.length ? "Reading now & fresh reads" : "Articles & guides", accent: "plum", items: [...continueCards, ...articleCards], open: openReadCard },
-        { key: "read-s", label: "Stories & fiction", accent: "crimson", items: storyCards, open: setExpanded },
-      ];
-      case "listen": return [
-        { key: "listen-p", label: "Podcasts & shows", accent: "sage", items: audioCards, open: setExpanded },
-        { key: "listen-w", label: "Watch & trending", accent: "gold", items: videoCards, open: setExpanded },
-      ];
-      case "books": return [
-        { key: "books-s", label: "Your shelf", accent: "sky", items: shelfBookCards, open: setExpanded, empty: "Your shelf fills as you add and open books." },
-        { key: "books-c", label: "Free classics", accent: "sky", items: classicCards, open: setExpanded },
-      ];
-      case "story": return [
-        { key: "story-c", label: "Today's chapter", accent: "crimson", items: dailyStoryCards, open: setExpanded },
-        { key: "story-sky", label: "Your sky", accent: "sky", items: horoscopeCards, open: setExpanded, lens: <SkyDiaryLens notes={skyNotes} onNote={addSkyNote} /> },
-      ];
-      case "sky": return [
-        { key: "sky-sky", label: "Your sky", accent: "sky", items: horoscopeCards, open: setExpanded, lens: <SkyDiaryLens notes={skyNotes} onNote={addSkyNote} /> },
-        { key: "sky-c", label: "Today's chapter", accent: "crimson", items: dailyStoryCards, open: setExpanded },
-      ];
-      case "good": return [
-        { key: "good-time", label: "What do you have time for?", accent: "gold", items: [], lens: <TimePickerLens pickFor={pickFor} isSaved={isSaved} onSave={toggleSave} onOpen={openItem} onTry={saveTryThis} /> },
-        { key: "good-joy", label: "Permission & small joys", accent: "plum", items: [...ritualCards, ...permissionCards], open: (it) => setGLFace({ slip: it }) },
-      ];
-      case "yours": return [
-        { key: "yours-saved", label: savedCards.length ? `Saved · ${savedSummary}` : "Saved", accent: "gold", items: savedCards, open: setExpanded, empty: "Nothing saved yet — tap the heart on any read and it waits for you here." },
-        { key: "yours-phase", label: phaseCards.length && phaseKey ? `For your ${phaseLabel(phaseKey).toLowerCase()} week` : "For your phase", accent: "sage", items: phaseCards, open: setExpanded, empty: "Phase-tuned reads land here as they're tagged — your For-you deck already leans into your week." },
-      ];
-      default: return [];
-    }
-  };
   const landingGroups = [{ key: "foryou", label: "For you today", accent: "gold", items: forYouItems, open: setExpanded, sectioned: true }];
 
   if (loading) {
@@ -1253,7 +1228,7 @@ export default function LifestyleEliteShell({ enableFocus = false, layout = null
             per §6.8.2) and the two focus pills are folded in — their actions are now the Story
             and Good-life chips. */}
         {(() => {
-          const active = HERO_CARDS[heroCard] || HERO_CARDS[0];
+          const active = heroCards[heroCard] || heroCards[0];
           const aCol = cwOf(active.cw).petal;
           return (
             <>
@@ -1267,7 +1242,7 @@ export default function LifestyleEliteShell({ enableFocus = false, layout = null
               } />
               <div className="fw-hero-ctl" style={{ display: "flex", gap: 8, overflowX: "auto", padding: "12px 2px 2px", WebkitMaskImage: "linear-gradient(90deg, #000 0, #000 calc(100% - 22px), transparent 100%)", maskImage: "linear-gradient(90deg, #000 0, #000 calc(100% - 22px), transparent 100%)" }}>
                 <style>{`.fw-hero-ctl{scrollbar-width:none}.fw-hero-ctl::-webkit-scrollbar{display:none}`}</style>
-                {HERO_CARDS.map((c, i) => {
+                {heroCards.map((c, i) => {
                   const on = i === heroCard; const col = cwOf(c.cw).petal;
                   return (
                     <button key={c.id} onClick={() => { _lifeHeroCard = i; setHeroCard(i); if (enableFocus) setFocusSection(c.id); }} aria-pressed={on} className="fw-elite-press"
@@ -1299,7 +1274,7 @@ export default function LifestyleEliteShell({ enableFocus = false, layout = null
         {/* CHIP-FOCUS return control — clear, reversible ("Showing: Read · ✕ Everything"). */}
         {focus && (
           <div style={{ display: "flex", alignItems: "center", gap: 8, margin: "0 0 4px" }}>
-            <span style={{ display: "inline-flex", alignItems: "center", gap: 7, padding: "7px 12px", borderRadius: 999, background: `${cwOf(HERO_CARDS[heroCard]?.cw || "gold").petal}14`, border: `1px solid ${cwOf(HERO_CARDS[heroCard]?.cw || "gold").petal}`, fontFamily: UI, fontSize: 12.5, fontWeight: 700, color: T.ink }}>
+            <span style={{ display: "inline-flex", alignItems: "center", gap: 7, padding: "7px 12px", borderRadius: 999, background: `${cwOf(heroCards[heroCard]?.cw || "gold").petal}14`, border: `1px solid ${cwOf(heroCards[heroCard]?.cw || "gold").petal}`, fontFamily: UI, fontSize: 12.5, fontWeight: 700, color: T.ink }}>
               Showing: {focus.label}
             </span>
             <button onClick={() => setFocusSection(null)} className="fw-elite-press" style={{ display: "inline-flex", alignItems: "center", gap: 5, minHeight: 34, padding: "7px 12px", borderRadius: 999, background: T.paperHi, border: `1px solid ${T.paperDeep}`, color: T.inkSoft, fontFamily: UI, fontSize: 12.5, fontWeight: 700, cursor: "pointer" }}>
@@ -1531,14 +1506,14 @@ export default function LifestyleEliteShell({ enableFocus = false, layout = null
           const sec = focus ? focusSection : null;
           // BESPOKE section surfaces (§19). Each pulls everything for its section, in the new design.
           if (sec === "sky") return <div style={{ marginTop: 18 }}><SkyFocus userProfile={profile} /></div>;
-          if (sec === "story") return <div style={{ marginTop: 18 }}><StoryFocus chapters={chapters} story={story} pick={storyPick} nextPick={storyNext} onRead={(i) => { setReaderStart(i); setReaderOpen(true); }} /></div>;
+          if (sec === "story" || sec === "books") return <div style={{ marginTop: 18 }}><BooksStoryFocus chapters={chapters} story={story} pick={storyPick} nextPick={storyNext} onRead={(i) => { setReaderStart(i); setReaderOpen(true); }}
+            continueCards={continueCards} shelfBookCards={shelfBookCards} classicCards={classicCards} onOpenBook={(it) => openBook(it._continue || it._raw || it)} /></div>;
           if (sec === "listen") return <div style={{ marginTop: 18 }}><ListenFocus audioCards={audioCards} videoCards={videoCards} onOpen={setExpanded} /></div>;
           if (sec === "read") return <div style={{ marginTop: 18 }}><ReadFocus continueCards={continueCards} articleCards={articleCards} storyCards={storyCards} phaseWord={phaseKey ? phaseLabel(phaseKey).toLowerCase() : null} onOpen={openReadCard} /></div>;
-          if (sec === "books") return <div style={{ marginTop: 18 }}><BooksFocus continueCards={continueCards} shelfBookCards={shelfBookCards} classicCards={classicCards} onOpen={(it) => openBook(it._continue || it._raw || it)} /></div>;
           if (sec === "good") { const h = new Date().getHours(); const timeOfDay = h < 12 ? "morning" : h < 18 ? "afternoon" : "evening"; return <div style={{ marginTop: 18 }}><GoodLifeFocus timeOfDay={timeOfDay} timeLens={<TimePickerLens pickFor={pickFor} isSaved={isSaved} onSave={toggleSave} onOpen={openItem} onTry={saveTryThis} />} joys={[...ritualCards, ...permissionCards]} onSlip={(it) => setGLFace({ slip: it })} /></div>; }
           if (sec === "yours") return <div style={{ marginTop: 18 }}><YoursFocus savedCards={savedCards} savedSummary={savedSummary} phaseCards={phaseCards} phaseWord={phaseKey ? phaseLabel(phaseKey).toLowerCase() : null} onOpen={setExpanded} /></div>;
-          // sections without a bespoke surface yet → the generic slider-free layout
-          return <div style={{ marginTop: 22 }}><FocusLayout layout={layout} groups={focus ? focusGroupsOf(focusSection) : landingGroups} /></div>;
+          // every section is bespoke — the generic slider-free layout is only ever the LANDING deck
+          return <div style={{ marginTop: 22 }}><FocusLayout layout={layout} groups={landingGroups} /></div>;
         })()}
 
         {/* the good-life permission slip opens IN-PLACE (the FocusLayout path has no board FaceOverlay) */}
