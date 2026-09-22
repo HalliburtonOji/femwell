@@ -7,8 +7,8 @@
 // Section → species + meaning (§5.1 floriography), chosen for the section's job:
 //   read   → iris        (a message; the courage to begin a page)
 //   listen → bluebell    (constancy; a sound that keeps)
-//   books  → honeysuckle (devoted, the story that keeps)
-//   story  → honeysuckle (merged with books)
+//   books  → jasmine     (devoted attachment; the story that keeps)
+//   story  → jasmine     (merged with books)
 //   sky    → morning-glory (the day's turning; the sky's flower)
 //   good   → marigold    (warmth, the small joy)
 //   yours  → forget-me-not (what she keeps)
@@ -19,8 +19,8 @@ import { C } from "@/components/brand/cleanTokens";
 export const SECTION_STILL = {
   read:   { species: "iris",          tint: "#EEF0F4", flower: { name: "Iris",          note: "the courage to begin a page" } },
   listen: { species: "bluebell",      tint: "#EDEFF3", flower: { name: "Bluebell",      note: "constancy — a sound that keeps" } },
-  books:  { species: "honeysuckle",   tint: "#F3EFEA", flower: { name: "Honeysuckle",   note: "devoted — the story that keeps" } },
-  story:  { species: "honeysuckle",   tint: "#F3EFEA", flower: { name: "Honeysuckle",   note: "devoted — the story that keeps" } },
+  books:  { species: "jasmine",   tint: "#F3EFEA", flower: { name: "Jasmine",      note: "devoted — the story that keeps" } },
+  story:  { species: "jasmine",   tint: "#F3EFEA", flower: { name: "Jasmine",      note: "devoted — the story that keeps" } },
   sky:    { species: "morning-glory", tint: "#EEEEF4", flower: { name: "Morning glory", note: "the day's turning — the sky's flower" } },
   good:   { species: "marigold",      tint: "#F5F1E6", flower: { name: "Marigold",      note: "warmth — the small joy" } },
   yours:  { species: "forget-me-not", tint: "#EEF1F4", flower: { name: "Forget-me-not", note: "what she keeps" } },

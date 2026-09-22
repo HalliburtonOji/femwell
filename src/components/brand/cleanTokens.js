@@ -42,11 +42,15 @@ export const CLEAN_CSS = [
   `.fw-clean .fw-card{background:${C.surface}!important;border-top-color:${C.hair}!important;border-right-color:${C.hair}!important;border-bottom-color:${C.hair}!important;border-left-width:3px!important;box-shadow:${CLEAN_SHADOW}!important}`,
   `.fw-clean .fw-card button{border-top-color:${C.hair}!important}`,
   `.fw-clean .fw-ce-press{background:${C.surface}!important;border-color:${C.hair}!important;box-shadow:${CLEAN_SHADOW}!important}`,
-  `.fw-clean .fw-ce-press [style*="7A1A12"]{color:${C.ink}!important}`,
+  // every cover/expand title in the card language is oxblood — in the clean world it's ink
+  `.fw-clean .fw-ce-press div,.fw-clean .fw-ce-press p,.fw-clean .fw-ce-press h3{color:${C.ink}}`,
+  `.fw-clean .fw-ce-press [style*="rgb(122, 26, 18)"]{color:${C.ink}!important}`,
   `.fw-clean .fw-quick-row>button{background:${C.surface}!important;border-top-color:${C.hair}!important;border-right-color:${C.hair}!important;border-bottom-color:${C.hair}!important;box-shadow:none!important}`,
   `.fw-clean .fw-topchrome{background:${C.surface}!important;border-color:${C.hair}!important;color:${C.ink}!important;box-shadow:0 2px 12px rgba(25,21,16,.10)!important}`,
   `.fw-clean .fw-corner{opacity:.55}`,
 ].join("");
 
 // Page-level (outside the shell tree): the Layout footer + body ground. Added/removed on the body.
-export const CLEAN_PAGE_CSS = `body.fw-clean-page{background:${C.ground}!important}body.fw-clean-page footer[role="contentinfo"]{color:${C.slate}!important}body.fw-clean-page footer[role="contentinfo"] a,body.fw-clean-page footer[role="contentinfo"] span{color:${C.faint}!important}`;
+export const CLEAN_PAGE_CSS = `html:has(body.fw-clean-page){background:${C.ground}!important}body.fw-clean-page{background:${C.ground}!important}` +
+  // the app-wide paper grain lives on #main-content > div (index.css) — the clean page drops it
+  `body.fw-clean-page #main-content > div{background-image:none!important;background-color:${C.ground}!important}` + `body.fw-clean-page footer[role="contentinfo"]{color:${C.slate}!important}body.fw-clean-page footer[role="contentinfo"] a,body.fw-clean-page footer[role="contentinfo"] span{color:${C.faint}!important}`;

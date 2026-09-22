@@ -6,27 +6,25 @@
 import React from "react";
 import { Headphones, Play } from "lucide-react";
 import { CoverCard } from "@/components/brand/expandCards";
-import { T, SERIF, UI, PAPER_TEX } from "@/components/journal/Editorial";
-import { cwOf, CardFrame } from "@/components/brand/flora";
+import { SERIF, UI } from "@/components/journal/Editorial";
+import { cwOf } from "@/components/brand/flora";
+import { C } from "@/components/brand/cleanTokens";
+import { Eyebrow, Title, Card as CleanCard, Summary, Foot } from "@/components/brand/cleanKit";
 
-const OX = "#7A1A12";
 const durOf = (it) => {
   const m = (it?.meta || []).find((row) => /min|hr|:/.test(String(row?.[1] || "")));
   return m ? String(m[1]) : null;
 };
 
-function ListenCard({ eyebrow, title, accent = "sage", children }) {
-  const petal = cwOf(accent).petal;
+function ListenCard({ eyebrow, title, accent = "sage", children, style }) {
+  // CLEAN (§2.7): one shared clean surface — white, a single soft lift, a gold eyebrow carrying its
+  // colourway meaning-rosette (the per-card floral detail Halli kept). No texture, no rainbow rim.
   return (
-    <section style={{ position: "relative", overflow: "hidden", background: T.paperHi || "#F4EFE3", border: `1px solid ${T.line || "#d8cfbc"}`, borderLeft: `4px solid ${petal}`, borderRadius: 18, padding: "16px 17px", boxShadow: "0 6px 22px rgba(58,44,26,.08), 0 1px 3px rgba(58,44,26,.05)" }}>
-      <span aria-hidden style={{ position: "absolute", inset: 0, backgroundImage: `url(${PAPER_TEX})`, backgroundSize: "180px", mixBlendMode: "multiply", opacity: 0.4, pointerEvents: "none" }} />
-      <CardFrame color={petal} opacity={0.4} size={40} />
-      <div style={{ position: "relative" }}>
-        {eyebrow ? <div style={{ fontFamily: UI, fontSize: 12, fontWeight: 700, letterSpacing: ".14em", textTransform: "uppercase", color: "#A8893F", marginBottom: 6 }}>{eyebrow}</div> : null}
-        {title ? <h3 style={{ fontFamily: SERIF, fontSize: 21, fontWeight: 600, color: T.ink, lineHeight: 1.2, margin: "0 0 12px" }}>{title}</h3> : null}
-        {children}
-      </div>
-    </section>
+    <CleanCard style={style}>
+      {eyebrow ? <Eyebrow cw={accent} align="left">{eyebrow}</Eyebrow> : null}
+      {title ? <Title align="left" size={21}>{title}</Title> : null}
+      {children}
+    </CleanCard>
   );
 }
 
@@ -38,7 +36,7 @@ export default function ListenFocus({ audioCards = [], videoCards = [], onOpen }
   if (!hasAny) {
     return (
       <ListenCard eyebrow="Something to hear" title="Fresh listens land here">
-        <p style={{ fontFamily: SERIF, fontSize: 16, color: T.inkSoft, lineHeight: 1.6, margin: 0 }}>Podcasts, shows and short listens will appear here as they're published — press play and they keep going while you wander the app.</p>
+        <p style={{ fontFamily: SERIF, fontSize: 16, color: C.ink, lineHeight: 1.6, margin: 0 }}>Podcasts, shows and short listens will appear here as they're published — press play and they keep going while you wander the app.</p>
       </ListenCard>
     );
   }
@@ -49,12 +47,9 @@ export default function ListenFocus({ audioCards = [], videoCards = [], onOpen }
     : "Something to hear — press play and it keeps going while you wander the app.";
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+    <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
       {/* 0 · section-specific, stateful summary */}
-      <div style={{ display: "flex", alignItems: "flex-start", gap: 11, padding: "2px 2px" }}>
-        <span style={{ width: 34, height: 34, borderRadius: 10, background: `${cwOf("sage").petal}1f`, display: "grid", placeItems: "center", flexShrink: 0, marginTop: 2 }}><Headphones size={18} color={cwOf("sage").petal} /></span>
-        <p style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 16.5, color: OX, lineHeight: 1.5, margin: 0 }}>{summary}</p>
-      </div>
+      <Summary Icon={Headphones} cw="sage">{summary}</Summary>
 
       {/* 1 · NOW — the featured listen, player-forward (plays inline, keeps going) */}
       {featured ? (
@@ -81,7 +76,7 @@ export default function ListenFocus({ audioCards = [], videoCards = [], onOpen }
         </ListenCard>
       ) : null}
 
-      <p style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 15, color: T.muted, textAlign: "center", margin: "2px 14px 0", lineHeight: 1.55 }}>Press play and let it run — it keeps going, on the lock screen too, while you read or wander.</p>
+      <Foot>Press play and let it run — it keeps going, on the lock screen too, while you read or wander.</Foot>
     </div>
   );
 }

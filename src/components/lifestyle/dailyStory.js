@@ -116,6 +116,32 @@ export function readCount(chapters, pick) {
   return list.filter((c) => c && isChapterRead(c.id)).length;
 }
 
+// ── HER READING POSITION (Halli 2026-09-22: "smart to the individual user, not the calendar") ──
+// Chapters UNLOCK by the calendar (chapterForDay), but her POSITION is her own: if she misses days,
+// reopening must NOT jump ahead — it waits at her next unread chapter, and she catches up one at a
+// time. Returns { index, chapter, waiting, caughtUp, unlockedCount, total } — `waiting` = how many
+// unlocked chapters she hasn't read yet (the gentle "3 waiting for you"), never a scold.
+export function readingPosition(chapters, pick, date = new Date()) {
+  if (!pick) return null;
+  const key = pick.seriesKey;
+  const today = isoDay(date);
+  const pool = readableRows(chapters || [], key, today);         // this run's chapters, in order
+  if (!pool.length) return null;
+  const unlockedCount = Math.min(pool.length, pick.complete ? pool.length : (pick.dayOfMonth || pool.length));
+  const unlocked = pool.slice(0, unlockedCount);                  // what the calendar has opened
+  const firstUnread = unlocked.findIndex((c) => c?.id && !isChapterRead(c.id));
+  const caughtUp = firstUnread === -1;                            // she's read everything open to her
+  // caught up → hold on the newest unlocked chapter (re-readable); else wait at her first unread
+  const index = caughtUp ? unlockedCount - 1 : firstUnread;
+  const waiting = caughtUp ? 0 : unlocked.slice(firstUnread).filter((c) => c?.id && !isChapterRead(c.id)).length;
+  return { index, chapter: pool[index], waiting, caughtUp, unlockedCount, total: pool.length, seriesKey: key, pool };
+}
+// the chapter she should be offered next — her position, never the calendar's chapter.
+export function chapterForHer(chapters, pick, date = new Date()) {
+  const p = readingPosition(chapters, pick, date);
+  return p ? p.chapter : (pick?.chapter || null);
+}
+
 // the honest framing line — one sentence, true in both directions. Never claims "fresh today"
 // unless a chapter really was published for today.
 export function framingLine(pick) {

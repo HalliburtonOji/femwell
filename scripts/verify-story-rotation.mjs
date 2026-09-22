@@ -51,7 +51,34 @@ expect("label Sep 21", chapterLabel(chapterForDay(series, at(2026, 9, 21))), "Ch
 expect("framing mid-run mentions the close", /closes on the 30th/.test(framingLine(chapterForDay(series, at(2026, 9, 21)))), true);
 expect("framing when complete mentions the 1st", /new run begins on the 1st/.test(framingLine(oct31)), true);
 
-const fails = checks.filter((c) => !c.ok);
+
+// ── HER POSITION (added 2026-09-22) — unlock by calendar, position by her ──────────────────────
+const { readingPosition } = await import(pathToFileURL(tmp.pathname.replace(/^\/([A-Za-z]:)/, "$1")).href);
+const read = new Set();
+globalThis.window = { localStorage: { getItem: (k) => (read.has(k) ? "read" : null), setItem: (k) => read.add(k) } };
+const K = (i) => `fw_read_chapter_ch${i}`;
+const posAt = (y, m, d) => readingPosition(series, chapterForDay(series, at(y, m, d)), at(y, m, d));
+// day 12, she's read 1-8 → waits at 9 (not 12), 4 waiting
+[1,2,3,4,5,6,7,8].forEach((i) => read.add(K(i)));
+const p12 = posAt(2026, 9, 12);
+expect("day 12, read 1-8 → waits at ch9 (NOT ch12)", p12.chapter.day_number, 9);
+expect("day 12 → 4 waiting (9,10,11,12)", p12.waiting, 4);
+expect("day 12 → not caught up", p12.caughtUp, false);
+// she reads 9 → moves to 10, one at a time
+read.add(K(9));
+expect("after reading 9 → waits at ch10", posAt(2026, 9, 12).chapter.day_number, 10);
+// caught up → holds on the newest unlocked, 0 waiting
+[10,11,12].forEach((i) => read.add(K(i)));
+const pc = posAt(2026, 9, 12);
+expect("caught up → holds on ch12, 0 waiting", [pc.chapter.day_number, pc.waiting, pc.caughtUp], [12, 0, true]);
+// never offers a locked chapter
+expect("never past the unlock line", posAt(2026, 9, 12).chapter.day_number <= 12, true);
+// a long absence: back on day 25 having read to 12 → waits at 13, 13 waiting
+const p25 = posAt(2026, 9, 25);
+expect("back on day 25 → waits at ch13", p25.chapter.day_number, 13);
+expect("back on day 25 → 13 waiting", p25.waiting, 13);
+const f2 = checks.filter((c) => !c.ok);
 for (const c of checks) console.log(`${c.ok ? "PASS" : "FAIL"}  ${c.name}${c.ok ? "" : `  got=${JSON.stringify(c.got)} want=${JSON.stringify(c.want)}`}`);
-console.log(`\n${checks.length - fails.length}/${checks.length} passed`);
-process.exit(fails.length ? 1 : 0);
+console.log(`
+${checks.length - f2.length}/${checks.length} passed (rotation + her position)`);
+process.exit(f2.length ? 1 : 0);

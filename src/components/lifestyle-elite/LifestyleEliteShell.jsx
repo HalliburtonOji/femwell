@@ -1204,6 +1204,8 @@ export default function LifestyleEliteShell({ enableFocus = false, layout = null
   const focusBoard = focus ? focus.board : null;
   const forYouShown = focus ? forYouItems.filter((it) => focus.forYou.includes(it.forYouSection)) : forYouItems;
 
+  // a continue-card resumes IN PLACE; everything else opens its expand.
+  const openReadCard = (it) => (it._continue ? openBook(it._continue) : setExpanded(it));
   const landingGroups = [{ key: "foryou", label: "For you today", accent: "gold", items: forYouItems, open: setExpanded, sectioned: true }];
 
   if (loading) {
@@ -1526,8 +1528,8 @@ export default function LifestyleEliteShell({ enableFocus = false, layout = null
           const sec = focus ? focusSection : null;
           // BESPOKE section surfaces (§19). Each pulls everything for its section, in the new design.
           if (sec === "sky") return <div style={{ marginTop: 18 }}><SkyFocus userProfile={profile} /></div>;
-          if (sec === "story" || sec === "books") return <div style={{ marginTop: 18 }}><BooksStoryFocus chapters={chapters} story={story} pick={storyPick} nextPick={storyNext} onRead={(i) => { setReaderStart(i); setReaderOpen(true); }}
-            continueCards={continueCards} shelfBookCards={shelfBookCards} classicCards={classicCards} onOpenBook={(it) => openBook(it._continue || it._raw || it)} /></div>;
+          if (sec === "story" || sec === "books") return <div style={{ marginTop: 18 }}><BooksStoryFocus chapters={chapters} story={story} pick={storyPick} onRead={(i) => { setReaderStart(i); setReaderOpen(true); }}
+            continueCards={continueCards} shelfBookCards={shelfBookCards} classicCards={classicCards} onOpenBook={(it) => (it && it._library ? setFocusSection("yours") : openBook(it._continue || it._raw || it))} /></div>;
           if (sec === "listen") return <div style={{ marginTop: 18 }}><ListenFocus audioCards={audioCards} videoCards={videoCards} onOpen={setExpanded} /></div>;
           if (sec === "read") return <div style={{ marginTop: 18 }}><ReadFocus continueCards={continueCards} articleCards={articleCards} storyCards={storyCards} phaseWord={phaseKey ? phaseLabel(phaseKey).toLowerCase() : null} onOpen={openReadCard} /></div>;
           if (sec === "good") { const h = new Date().getHours(); const timeOfDay = h < 12 ? "morning" : h < 18 ? "afternoon" : "evening"; return <div style={{ marginTop: 18 }}><GoodLifeFocus timeOfDay={timeOfDay} timeLens={<TimePickerLens pickFor={pickFor} isSaved={isSaved} onSave={toggleSave} onOpen={openItem} onTry={saveTryThis} />} joys={[...ritualCards, ...permissionCards]} onSlip={(it) => setGLFace({ slip: it })} /></div>; }
