@@ -62,6 +62,7 @@ export function FwCard({
 }) {
   return (
     <section
+      className="fw-card"
       onClick={onClick}
       style={{
         ...(snap ? { scrollSnapAlign: "center", flex: `0 0 ${width}px`, width } : { width: "100%" }),

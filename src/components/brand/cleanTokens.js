@@ -33,4 +33,20 @@ export const CLEAN_SHADOW = "0 1px 3px rgba(25,21,16,0.03), 0 18px 42px -18px rg
 // Scoped type override — wrap a migrated surface in `.fw-clean` and render <style>{CLEAN_CSS}</style>
 // once. Lifts the global letterpress text-shadow + 700 headings + 600 body (the "carved" look)
 // off that surface only: clean ink headings at 600, body at 500. Nothing app-wide changes.
-export const CLEAN_CSS = `.fw-clean{font-weight:500}.fw-clean h1,.fw-clean h2,.fw-clean h3,.fw-clean h4{text-shadow:none;font-weight:600;color:${C.ink}}.fw-clean p,.fw-clean li{font-weight:500}.fw-clean strong,.fw-clean b{font-weight:700}`;
+export const CLEAN_CSS = [
+  // type
+  `.fw-clean{font-weight:500}`,
+  `.fw-clean h1,.fw-clean h2,.fw-clean h3,.fw-clean h4{text-shadow:none;font-weight:600;color:${C.ink}}`,
+  `.fw-clean p,.fw-clean li{font-weight:500}.fw-clean strong,.fw-clean b{font-weight:700}`,
+  // the shared primitives, carried into the language through their class hooks (inline styles need !important)
+  `.fw-clean .fw-card{background:${C.surface}!important;border-top-color:${C.hair}!important;border-right-color:${C.hair}!important;border-bottom-color:${C.hair}!important;border-left-width:3px!important;box-shadow:${CLEAN_SHADOW}!important}`,
+  `.fw-clean .fw-card button{border-top-color:${C.hair}!important}`,
+  `.fw-clean .fw-ce-press{background:${C.surface}!important;border-color:${C.hair}!important;box-shadow:${CLEAN_SHADOW}!important}`,
+  `.fw-clean .fw-ce-press [style*="7A1A12"]{color:${C.ink}!important}`,
+  `.fw-clean .fw-quick-row>button{background:${C.surface}!important;border-top-color:${C.hair}!important;border-right-color:${C.hair}!important;border-bottom-color:${C.hair}!important;box-shadow:none!important}`,
+  `.fw-clean .fw-topchrome{background:${C.surface}!important;border-color:${C.hair}!important;color:${C.ink}!important;box-shadow:0 2px 12px rgba(25,21,16,.10)!important}`,
+  `.fw-clean .fw-corner{opacity:.55}`,
+].join("");
+
+// Page-level (outside the shell tree): the Layout footer + body ground. Added/removed on the body.
+export const CLEAN_PAGE_CSS = `body.fw-clean-page{background:${C.ground}!important}body.fw-clean-page footer[role="contentinfo"]{color:${C.slate}!important}body.fw-clean-page footer[role="contentinfo"] a,body.fw-clean-page footer[role="contentinfo"] span{color:${C.faint}!important}`;

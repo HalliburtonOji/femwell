@@ -17,10 +17,10 @@ import { SERIF, UI, T } from "@/components/journal/Editorial";
 import { cwOf } from "@/components/brand/flora";
 import { OXBLOOD } from "@/components/brand/SliderKit";
 
-const GroupHead = ({ label, accent }) => (
+const GroupHead = ({ label, accent, clean }) => (
   <div style={{ display: "flex", alignItems: "center", gap: 8, margin: "0 2px 12px" }}>
     <span style={{ width: 8, height: 8, borderRadius: 99, background: cwOf(accent || "gold").petal, flexShrink: 0 }} />
-    <h3 style={{ fontFamily: SERIF, fontStyle: "italic", fontWeight: 600, fontSize: 20, color: OXBLOOD, margin: 0, lineHeight: 1.2 }}>{label}</h3>
+    <h3 style={{ fontFamily: SERIF, fontStyle: clean ? "normal" : "italic", fontWeight: 600, fontSize: clean ? 22 : 20, color: clean ? "#191510" : OXBLOOD, margin: 0, lineHeight: 1.2, textShadow: "none" }}>{label}</h3>
   </div>
 );
 
@@ -35,14 +35,14 @@ const emptyStyle = { fontFamily: SERIF, fontStyle: "italic", fontSize: 15, color
 
 // ── STACKS — the section's real sub-groups, kept but turned vertical + labelled. Full-width cards
 //    flow straight down; the old peek shelves become clean labelled lists. No sliding. ────────────
-function FocusStacks({ groups }) {
+function FocusStacks({ groups, clean }) {
   return (
     <div>
       {groups.map((g) => {
         const hasItems = Array.isArray(g.items) && g.items.length > 0;
         return (
           <section key={g.key} style={{ marginTop: 24 }}>
-            <GroupHead label={g.label} accent={g.accent} />
+            <GroupHead label={g.label} accent={g.accent} clean={clean} />
             {g.lens ? <div style={{ marginBottom: hasItems ? 16 : 0 }}>{g.lens}</div> : null}
             {hasItems ? (
               <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
@@ -160,13 +160,13 @@ function FocusMood({ groups }) {
   );
 }
 
-export function FocusLayout({ layout, groups }) {
+export function FocusLayout({ layout, groups, clean = false }) {
   switch (layout) {
     case "column": return <FocusColumn groups={groups} />;
     case "bento":  return <FocusBento groups={groups} />;
     case "mood":   return <FocusMood groups={groups} />;
     case "stacks":
-    default:       return <FocusStacks groups={groups} />;
+    default:       return <FocusStacks groups={groups} clean={clean} />;
   }
 }
 

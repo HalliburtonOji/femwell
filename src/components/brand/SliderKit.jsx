@@ -135,7 +135,7 @@ export function TopChrome({ onJump }) {
   const base = { position: "fixed", top: "calc(env(safe-area-inset-top,0px) + 10px)", zIndex: 45, display: "inline-flex", alignItems: "center", gap: 6, padding: "7px 13px", borderRadius: 999, border: `1px solid ${T.paperDeep}`, background: T.paperHi, fontFamily: UI, fontSize: 12, fontWeight: 700, color: T.inkSoft, boxShadow: "0 2px 12px rgba(58,44,26,0.18)", cursor: "pointer" };
   return (
     <>
-      <button onClick={onJump} aria-label="Jump to an area" style={{ ...base, left: 12 }}><Grid2x2 size={13} style={{ color: T.gold }} /> Jump to</button>
+      <button className="fw-topchrome" onClick={onJump} aria-label="Jump to an area" style={{ ...base, left: 12 }}><Grid2x2 size={13} style={{ color: T.gold }} /> Jump to</button>
     </>
   );
 }

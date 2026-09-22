@@ -9,5 +9,7 @@ import React from "react";
 import LifestyleEliteShell from "@/components/lifestyle-elite/LifestyleEliteShell";
 
 export default function LifestyleBespokeDemo() {
-  return <LifestyleEliteShell enableFocus layout="bespoke" />;
+  // CLEAN (2026-09-22): the whole page in the §2.7 clean language behind the reversible `clean` flag —
+  // one still header, one language across every band, every focus surface. Live /Lifestyle untouched.
+  return <LifestyleEliteShell enableFocus layout="bespoke" clean />;
 }

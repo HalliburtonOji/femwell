@@ -627,7 +627,7 @@ export function CornerSprig({ variant = "sprig", color = T.gold, size = 74, opac
 // a delicate single corner ornament positioned in a card corner (absolute; pass into a relative card)
 export function CardCorner({ variant = "sprig", color = T.gold, size = 52, opacity = 0.5, corner = "tr" }) {
   const pos = { ...(corner.includes("t") ? { top: 0 } : { bottom: 0 }), ...(corner.includes("l") ? { left: 0 } : { right: 0 }) };
-  return <div style={{ position: "absolute", pointerEvents: "none", zIndex: 0, ...pos }}><CornerSprig variant={variant} color={color} corner={corner} size={size} opacity={opacity} /></div>;
+  return <div className="fw-corner" style={{ position: "absolute", pointerEvents: "none", zIndex: 0, ...pos }}><CornerSprig variant={variant} color={color} corner={corner} size={size} opacity={opacity} /></div>;
 }
 
 // ── CardFrame — the canonical "framed card" treatment (the Today bar): the §4.2 corner element in

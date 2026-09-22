@@ -34,7 +34,7 @@ import { base44 } from "@/api/base44Client";
 import LifestyleMedia from "@/components/lifestyle-elite/LifestyleMedia";
 import { FocusLayout } from "@/components/lifestyle-elite/FocusLayouts";
 import SkyFocus from "@/components/lifestyle-elite/SkyFocus";
-import { C, CLEAN_BG } from "@/components/brand/cleanTokens";
+import { C, CLEAN_BG, CLEAN_CSS, CLEAN_PAGE_CSS } from "@/components/brand/cleanTokens";
 import SectionHeader from "@/components/lifestyle-elite/SectionHeader";
 import BooksStoryFocus from "@/components/lifestyle-elite/BooksStoryFocus";
 import ListenFocus from "@/components/lifestyle-elite/ListenFocus";
@@ -61,7 +61,7 @@ import { FwFloraHero } from "@/components/brand/PageTop";
 import { FwCard } from "@/components/brand/Card";
 import { GlanceJessSwipe, JessSheet, JessOpenCTA, GLANCE_SWIPE_H } from "@/components/brand/GlanceJessRow";
 import { ClipboardSlider, Clipboard } from "@/components/brand/ClipboardSlider";
-import { cwOf, floraKeyframes, Bouquet, Pollinator } from "@/components/brand/flora";
+import { cwOf, floraKeyframes, Bouquet, Pollinator, MeaningRosette } from "@/components/brand/flora";
 import MonthlyCalendarCard from "@/components/planner/MonthlyCalendarCard";
 import DayDetailSheet from "@/components/planner/DayDetailSheet";
 import { getCurrentCyclePhase, phaseLabel } from "@/utils/cyclePhase";
@@ -471,7 +471,13 @@ function FocusableBoards({ focusBoard, sliderRef, gold, children }) {
   return <div style={{ marginTop: 20 }}>{boards[focusBoard] || null}</div>;
 }
 
-export default function LifestyleEliteShell({ enableFocus = false, layout = null } = {}) {
+export default function LifestyleEliteShell({ enableFocus = false, layout = null, clean = false } = {}) {
+  // CLEAN (§2.7 whole-page): the page-level ground + footer outside this tree follow via a body class.
+  useEffect(() => {
+    if (!clean) return undefined;
+    document.body.classList.add("fw-clean-page");
+    return () => document.body.classList.remove("fw-clean-page");
+  }, [clean]);
   const [user, setUser] = useState(null);
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -1215,8 +1221,8 @@ export default function LifestyleEliteShell({ enableFocus = false, layout = null
   return (
     // Clean & classy ground (§2.7) on the focus/layout demos only — live /Lifestyle passes no
     // `layout`, so it keeps PAPER_BG byte-for-byte until its surfaces migrate.
-    <div style={{ ...(layout ? CLEAN_BG : PAPER_BG), minHeight: "100vh", overflowX: "clip", paddingBottom: "calc(124px + env(safe-area-inset-bottom))" }}>
-      <style>{floraKeyframes}{ELITE_MOTION}</style>
+    <div className={clean ? "fw-clean" : undefined} style={{ ...((layout || clean) ? CLEAN_BG : PAPER_BG), minHeight: "100vh", overflowX: "clip", paddingBottom: "calc(124px + env(safe-area-inset-bottom))" }}>
+      <style>{floraKeyframes}{ELITE_MOTION}{clean ? CLEAN_CSS + CLEAN_PAGE_CSS : ""}</style>
       <TopChrome onJump={() => setJumpOpen(true)} onCalendar={() => setCalOpen(true)} />
 
       <div style={{ maxWidth: 430, margin: "0 auto", padding: "16px 16px 0" }} className="fw-elite-in">
@@ -1235,27 +1241,31 @@ export default function LifestyleEliteShell({ enableFocus = false, layout = null
               {/* Per-section artful floral STILL + flower profile when its image is delivered; else
                   the flora/video hero (default/fallback). Architected for a clean drop-in — see
                   SectionHeader.jsx SECTION_HEADER. Swaps automatically because it reads `active`. */}
-              <SectionHeader active={active} title={active.title} fallback={
+              <SectionHeader active={active} title={active.title} clean={clean} fallback={
                 <FwFloraHero title={active.title} colorway={active.cw} bloom={ph.bloom} openness={active.openness}
                   creature={active.creature} flankL="iris" flankR="sunflower" titleColor={OXBLOOD} line={active.line}
                   garden="lifestyle" photo="lifestyle" />
               } />
-              <div className="fw-hero-ctl" style={{ display: "flex", gap: 8, overflowX: "auto", padding: "12px 2px 2px", WebkitMaskImage: "linear-gradient(90deg, #000 0, #000 calc(100% - 22px), transparent 100%)", maskImage: "linear-gradient(90deg, #000 0, #000 calc(100% - 22px), transparent 100%)" }}>
+              <div className="fw-hero-ctl" style={clean ? { display: "flex", gap: 7, padding: "14px 0 0" } : { display: "flex", gap: 8, overflowX: "auto", padding: "12px 2px 2px", WebkitMaskImage: "linear-gradient(90deg, #000 0, #000 calc(100% - 22px), transparent 100%)", maskImage: "linear-gradient(90deg, #000 0, #000 calc(100% - 22px), transparent 100%)" }}>
                 <style>{`.fw-hero-ctl{scrollbar-width:none}.fw-hero-ctl::-webkit-scrollbar{display:none}`}</style>
                 {heroCards.map((c, i) => {
                   const on = i === heroCard; const col = cwOf(c.cw).petal;
                   return (
                     <button key={c.id} onClick={() => { _lifeHeroCard = i; setHeroCard(i); if (enableFocus) setFocusSection(c.id); }} aria-pressed={on} className="fw-elite-press"
-                      style={{ flex: "0 0 72px", height: 64, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 5, borderRadius: 14, cursor: "pointer", background: on ? `linear-gradient(160deg, ${T.paperHi} 0%, ${col}20 100%)` : T.paperHi, border: `1px solid ${on ? col : T.paperDeep}`, boxShadow: on ? `0 0 0 1px ${col}, 0 2px 8px ${col}30` : "0 1px 3px rgba(58,44,26,0.08)", transform: on ? "translateY(-1px)" : "none", transition: "border-color .15s, box-shadow .15s, transform .15s" }}>
-                      <span style={{ width: 27, height: 27, borderRadius: 8, background: `${col}1F`, display: "grid", placeItems: "center" }}><c.Icon size={15} color={col} /></span>
-                      <span style={{ fontFamily: UI, fontSize: 10.5, fontWeight: 700, color: on ? col : T.muted }}>{c.label}</span>
+                      style={clean
+                        ? { flex: "1 0 64px", height: 62, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 5, borderRadius: 13, cursor: "pointer", background: C.surface, border: `1px solid ${on ? C.ink : C.hair}`, boxShadow: on ? "none" : "none", transition: "border-color .15s" }
+                        : { flex: "0 0 72px", height: 64, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 5, borderRadius: 14, cursor: "pointer", background: on ? `linear-gradient(160deg, ${T.paperHi} 0%, ${col}20 100%)` : T.paperHi, border: `1px solid ${on ? col : T.paperDeep}`, boxShadow: on ? `0 0 0 1px ${col}, 0 2px 8px ${col}30` : "0 1px 3px rgba(58,44,26,0.08)", transform: on ? "translateY(-1px)" : "none", transition: "border-color .15s, box-shadow .15s, transform .15s" }}>
+                      {clean
+                        ? <span style={{ display: "grid", placeItems: "center", height: 20 }}>{on ? <MeaningRosette color={col} centre={C.gold} size={12} /> : <c.Icon size={16} color={C.slate} strokeWidth={1.7} />}</span>
+                        : <span style={{ width: 27, height: 27, borderRadius: 8, background: `${col}1F`, display: "grid", placeItems: "center" }}><c.Icon size={15} color={col} /></span>}
+                      <span style={{ fontFamily: UI, fontSize: clean ? 12 : 10.5, fontWeight: 700, color: clean ? (on ? C.ink : C.slate) : (on ? col : T.muted) }}>{c.label}</span>
                     </button>
                   );
                 })}
               </div>
-              <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, margin: "11px 0 10px" }}>
-                <span style={{ width: 9, height: 9, borderRadius: 99, background: ph.hue }} />
-                <span style={{ fontFamily: UI, fontSize: 13, fontWeight: 700, color: T.inkSoft }}>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, margin: clean ? "12px 0 14px" : "11px 0 10px" }}>
+                <span style={{ width: clean ? 6 : 9, height: clean ? 6 : 9, borderRadius: 99, background: clean ? C.goldHair : ph.hue }} />
+                <span style={{ fontFamily: UI, fontSize: clean ? 12 : 13, fontWeight: clean ? 600 : 700, color: clean ? C.slate : T.inkSoft, letterSpacing: clean ? ".04em" : 0 }}>
                   {phaseKey ? `${phaseLabel(phaseKey)}${cycleDay ? ` · Day ${cycleDay}` : ""} · ${ph.day}` : "A few good things today"}
                 </span>
               </div>
@@ -1263,8 +1273,10 @@ export default function LifestyleEliteShell({ enableFocus = false, layout = null
                   with its own actions, so this would be a duplicate path). */}
               {!(enableFocus && focusSection) && (
                 <button onClick={active.action.on} className="fw-elite-press"
-                  style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 8, width: "100%", boxSizing: "border-box", background: aCol, color: "#fff", border: "none", borderRadius: 14, padding: "13px 16px", fontFamily: UI, fontSize: 14, fontWeight: 700, cursor: "pointer", transition: "background .35s ease", marginBottom: 16 }}>
-                  <active.Icon size={16} /> {active.action.label}
+                  style={clean
+                    ? { display: "flex", alignItems: "center", justifyContent: "center", gap: 9, width: "100%", boxSizing: "border-box", minHeight: 46, background: "transparent", color: C.ink, border: `1px solid ${C.ink}`, borderRadius: 13, padding: "12px 14px", fontFamily: UI, fontSize: 13, fontWeight: 700, letterSpacing: ".08em", textTransform: "uppercase", cursor: "pointer", marginBottom: 18 }
+                    : { display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 8, width: "100%", boxSizing: "border-box", background: aCol, color: "#fff", border: "none", borderRadius: 14, padding: "13px 16px", fontFamily: UI, fontSize: 14, fontWeight: 700, cursor: "pointer", transition: "background .35s ease", marginBottom: 16 }}>
+                  <active.Icon size={clean ? 14 : 16} strokeWidth={clean ? 1.7 : 2} /> {active.action.label}
                 </button>
               )}
             </>
@@ -1274,10 +1286,14 @@ export default function LifestyleEliteShell({ enableFocus = false, layout = null
         {/* CHIP-FOCUS return control — clear, reversible ("Showing: Read · ✕ Everything"). */}
         {focus && (
           <div style={{ display: "flex", alignItems: "center", gap: 8, margin: "0 0 4px" }}>
-            <span style={{ display: "inline-flex", alignItems: "center", gap: 7, padding: "7px 12px", borderRadius: 999, background: `${cwOf(heroCards[heroCard]?.cw || "gold").petal}14`, border: `1px solid ${cwOf(heroCards[heroCard]?.cw || "gold").petal}`, fontFamily: UI, fontSize: 12.5, fontWeight: 700, color: T.ink }}>
+            <span style={clean
+              ? { display: "inline-flex", alignItems: "center", gap: 7, padding: "7px 12px", borderRadius: 999, background: C.ink, border: `1px solid ${C.ink}`, fontFamily: UI, fontSize: 12, fontWeight: 700, color: "#fff", letterSpacing: ".03em" }
+              : { display: "inline-flex", alignItems: "center", gap: 7, padding: "7px 12px", borderRadius: 999, background: `${cwOf(heroCards[heroCard]?.cw || "gold").petal}14`, border: `1px solid ${cwOf(heroCards[heroCard]?.cw || "gold").petal}`, fontFamily: UI, fontSize: 12.5, fontWeight: 700, color: T.ink }}>
               Showing: {focus.label}
             </span>
-            <button onClick={() => setFocusSection(null)} className="fw-elite-press" style={{ display: "inline-flex", alignItems: "center", gap: 5, minHeight: 34, padding: "7px 12px", borderRadius: 999, background: T.paperHi, border: `1px solid ${T.paperDeep}`, color: T.inkSoft, fontFamily: UI, fontSize: 12.5, fontWeight: 700, cursor: "pointer" }}>
+            <button onClick={() => setFocusSection(null)} className="fw-elite-press" style={clean
+              ? { display: "inline-flex", alignItems: "center", gap: 5, minHeight: 34, padding: "7px 12px", borderRadius: 999, background: C.surface, border: `1px solid ${C.hair}`, color: C.slate, fontFamily: UI, fontSize: 12, fontWeight: 700, cursor: "pointer" }
+              : { display: "inline-flex", alignItems: "center", gap: 5, minHeight: 34, padding: "7px 12px", borderRadius: 999, background: T.paperHi, border: `1px solid ${T.paperDeep}`, color: T.inkSoft, fontFamily: UI, fontSize: 12.5, fontWeight: 700, cursor: "pointer" }}>
               <X size={14} /> Everything
             </button>
           </div>
@@ -1285,8 +1301,10 @@ export default function LifestyleEliteShell({ enableFocus = false, layout = null
 
         {/* ══ §6.8.2 BAND 3+4 — the TOP SLIDING ROW (uniform panels, no dead space).
              Slide 1 = today at a glance (the same three rows the SummaryCard carried —
-             nothing dropped). Slide 2 = Jess's written read + an upward inner sheet. ══ */}
-        {(() => {
+             nothing dropped). Slide 2 = Jess's written read + an upward inner sheet. ══
+             CLEAN whole-page rule: this row is the LANDING's summary. When a section is focused the
+             section carries its own summary (§19.4), so the row is hidden — one summary per view. */}
+        {!(clean && focus) && (() => {
           const jess = lifestyleJessSummary(loadSeed, {
             firstName, onTheGo: continueCards.length, savedCount: savedItems.length,
             freshReads: (grouped.article || []).length, hasStory: !!story, cliffhanger: story?.cliffhanger,
@@ -1340,11 +1358,13 @@ export default function LifestyleEliteShell({ enableFocus = false, layout = null
           );
         })()}
 
-        {/* two focus pills (out of cards) — Lifestyle's two daily rituals */}
+        {/* two focus pills (out of cards) — Lifestyle's two daily rituals. CLEAN: landing only, flat. */}
+        {!(clean && focus) && (
         <div style={{ display: "flex", gap: 10, marginTop: 14 }}>
-          <button onClick={() => setChapterOpen(true)} className="fw-elite-press" style={focusPill(crimson)}><Feather size={16} /> Today's chapter</button>
-          <button onClick={() => jumpTo(0)} className="fw-elite-press" style={focusPill(plum)}><Clock size={16} /> What do you have time for?</button>
+          <button onClick={() => setChapterOpen(true)} className="fw-elite-press" style={clean ? { ...focusPill(plum), background: plum, boxShadow: "none", border: "none" } : focusPill(crimson)}><Feather size={16} /> Today's chapter</button>
+          <button onClick={() => jumpTo(0)} className="fw-elite-press" style={clean ? { ...focusPill(gold), background: C.gold, boxShadow: "none", border: "none" } : focusPill(plum)}><Clock size={16} /> What do you have time for?</button>
         </div>
+        )}
 
         {/* ── "FOR YOU" (pass d) — a taste of EVERYTHING, one pick per SECTION ──────────────
             Was "Reads for you" (articles only). Now a cross-section digest: today's chapter ·
@@ -1513,7 +1533,7 @@ export default function LifestyleEliteShell({ enableFocus = false, layout = null
           if (sec === "good") { const h = new Date().getHours(); const timeOfDay = h < 12 ? "morning" : h < 18 ? "afternoon" : "evening"; return <div style={{ marginTop: 18 }}><GoodLifeFocus timeOfDay={timeOfDay} timeLens={<TimePickerLens pickFor={pickFor} isSaved={isSaved} onSave={toggleSave} onOpen={openItem} onTry={saveTryThis} />} joys={[...ritualCards, ...permissionCards]} onSlip={(it) => setGLFace({ slip: it })} /></div>; }
           if (sec === "yours") return <div style={{ marginTop: 18 }}><YoursFocus savedCards={savedCards} savedSummary={savedSummary} phaseCards={phaseCards} phaseWord={phaseKey ? phaseLabel(phaseKey).toLowerCase() : null} onOpen={setExpanded} /></div>;
           // every section is bespoke — the generic slider-free layout is only ever the LANDING deck
-          return <div style={{ marginTop: 22 }}><FocusLayout layout={layout} groups={landingGroups} /></div>;
+          return <div style={{ marginTop: 22 }}><FocusLayout layout={layout} groups={landingGroups} clean={clean} /></div>;
         })()}
 
         {/* the good-life permission slip opens IN-PLACE (the FocusLayout path has no board FaceOverlay) */}
@@ -1534,7 +1554,7 @@ export default function LifestyleEliteShell({ enableFocus = false, layout = null
             reading — story, a small joy, listen/watch, your sky, your saved. Mirrors Nutrition's
             "Handy right now" via the shared QuickRow. */}
         <div style={{ marginTop: 22 }}>
-          <div style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 18, fontWeight: 600, color: OXBLOOD, margin: "0 2px 9px" }}>Handy right now</div>
+          <div style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 18, fontWeight: 600, color: clean ? C.ink : OXBLOOD, margin: "0 2px 9px" }}>Handy right now</div>
           <QuickRow items={[
             { Icon: Feather, cw: "crimson", label: "Today's chapter", onClick: () => setChapterOpen(true) },
             { Icon: Clock, cw: "gold", label: "What've you got time for?", onClick: () => jumpTo(0) },
@@ -1557,7 +1577,7 @@ export default function LifestyleEliteShell({ enableFocus = false, layout = null
         </div>
 
         <div style={{ display: "grid", placeItems: "center", margin: "18px 0 0" }}><Pollinator kind="butterfly" size={36} color={cwOf(ph.cw).petal} color2={cwOf(ph.cw).tip} pattern="bands" animate idx="elite-close" /></div>
-        <p style={{ textAlign: "center", fontFamily: SERIF, fontStyle: "italic", fontSize: 15, color: T.muted, margin: "6px auto 0", maxWidth: 300, lineHeight: 1.55 }}>A little to read, a little to feel — whenever the moment's yours.</p>
+        <p style={{ textAlign: "center", fontFamily: SERIF, fontStyle: "italic", fontSize: 15, color: clean ? C.faint : T.muted, margin: "6px auto 0", maxWidth: 300, lineHeight: 1.55 }}>A little to read, a little to feel — whenever the moment's yours.</p>
       </div>
 
       {jumpOpen && <JumpSheet boards={BOARDS} onClose={() => setJumpOpen(false)} onJump={jumpTo} />}
