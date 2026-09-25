@@ -1,40 +1,57 @@
-// BooksStoryFocus — Books + Story as ONE composed surface in the clean language (§2.7 · §19).
+// BooksStoryFocus — Books + Story as ONE composed surface in the clean language (§2.7 · §19),
+// rebuilt from the cited research pass (mnt/femwell/research_books_section.md, 2026-09-25).
 //
-// Halli 2026-09-22, three corrections that shape this file:
-//  1. SMART TO HER, NOT THE CALENDAR. Chapters unlock daily, but her reading POSITION is her own
-//     (`readingPosition`): if she misses days, reopening waits at her next unread chapter and she
-//     catches up one at a time via a booklike ‹ › flip — never auto-advanced past unread. If she's
-//     behind: a gentle "3 waiting for you". Caught up: "chapter 13 opens tomorrow."
-//  2. NO WALL, NO DUPLICATES. The old list rendered every active series interleaved ("Chapter 9 of
-//     60, Chapter 9 of 60") — a real bug. The run is now scoped to THIS run's series (pick.seriesKey
-//     via readingPosition's pool) and drawn as a compact numbered strip: read / next / open /
-//     unlocks-daily, + at most two "up next" rows + one quiet straight-through link.
-//  3. BOOKS = FEW, CURATED. Four a month: one featured (a real hook, starts reading in place), two
-//     compact, and the month's last book REVEALED on a set day ("tiny reveals"). Her own shelf and
-//     the whole free library sit behind one quiet link, not on the page.
-import React, { useMemo } from "react";
-import { Feather, BookOpen, ChevronLeft, ChevronRight, Check, Library, Play } from "lucide-react";
-import { readingPosition, isChapterRead, framingLine } from "@/components/lifestyle/dailyStory";
+// THE JOB (the research's reframe): the barrier to reading is CAPACITY, not motivation — 7.3m UK
+// adults say mental-health issues prevent them reading; 4.96m stopped after life events, ill health
+// or bereavement (new parenthood named); women are likelier to read to reduce stress. That spikes at
+// exactly FemWell's life stages. So this is a reading corner that costs nothing on a bad week: it
+// holds her place without comment and always has a way in for ten minutes at bedtime.
+//
+// THE ARRANGEMENT (deliberate, §19.2):
+//   0 summary · 1 her next chapter (+ an authored "Previously", + read-time as permission)
+//   2 the run (navigation, never a score) · 3 "Not much in the tank?" — the differentiator
+//   4 this month's book, SINGULAR + life-stage aware + "Not for me"
+//   5 read it with others — the ALREADY-BUILT Book Club, position-gated
+//   6 also this month (quiet alternates + the mature reveal) · 7 what you wrote · 8 the doorway
+//
+// RULES HELD: no integers except Halli's "N waiting" (no books-read, no %, no streak, no "Day N");
+// NO generative AI writing about her reading (Fable, Jan 2025 — the "Previously" is the author's own
+// last line); never fake a shelf (0 published FemWell fiction → curated public-domain classics);
+// no new entity or function (device-local storage + an authored module, like the club seed).
+import React, { useMemo, useState } from "react";
+import { Feather, BookOpen, ChevronLeft, ChevronRight, Check, Users, Coffee, RotateCcw, Sparkles } from "lucide-react";
+import { readingPosition, isChapterRead } from "@/components/lifestyle/dailyStory";
+import { monthlySet, DOORWAYS, DOORWAY_KEYS, getDoorway, setDoorway, passBook } from "@/components/lifestyle/booksMonthly";
+import { SEED_PICK, clubReached } from "@/components/community/bookClubConfig";
+import { readTimeLabel, countWords } from "@/components/brand/ReadingColumn";
+import { createPageUrl } from "@/utils";
 import { SERIF, UI } from "@/components/journal/Editorial";
 import { C } from "@/components/brand/cleanTokens";
-import { Eyebrow, Title, Body, Card, Block, Summary, Cta, Quiet, Foot, Leaf, Fleuron } from "@/components/brand/cleanKit";
+import { Eyebrow, Title, Body, Card, Summary, Cta, Quiet, Foot, Leaf, Fleuron } from "@/components/brand/cleanKit";
 
 const clean = (s) => String(s || "").replace(/<[^>]+>/g, "").replace(/\*(.+?)\*/g, "$1").replace(/\s+/g, " ").trim();
 const paras = (s) => String(s || "").replace(/<[^>]+>/g, "").split(/\n\n+/).map((p) => p.trim()).filter(Boolean);
 const isBook = (c) => /book/i.test(c?.type || "") || !!c?._book || /book/i.test(c?._continue?.type || "") || !!c?._continue?._book;
 const isSerial = (c) => /daily_story|story/i.test(c?.type || "") || c?.id === "daily-chapter";
 const ord = (n) => (n % 10 === 1 && n !== 11 ? "st" : n % 10 === 2 && n !== 12 ? "nd" : n % 10 === 3 && n !== 13 ? "rd" : "th");
-// the month's last book is REVEALED on the 4th Sunday — a paced surfacing, not a shelf dump
-function revealDay(date = new Date()) {
-  const d = new Date(date.getFullYear(), date.getMonth(), 1);
-  let sundays = 0;
-  for (let i = 1; i <= new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate(); i++) {
-    d.setDate(i); if (d.getDay() === 0) { sundays++; if (sundays === 4) return i; }
-  }
-  return 28;
+
+// ── a flora book cover (never a photo — §6.7.7 hard rule 1) ────────────────────────────────────
+function Cover({ title, w = 84, h = 118 }) {
+  const t = [["#F3EADF", "#DCC7B0"], ["#E9EFE8", "#BACCBA"], ["#EEE7EF", "#CAB8CC"], ["#F5EEE0", "#E3C692"]][String(title || "").length % 4];
+  return (
+    <div style={{ width: w, height: h, borderRadius: 10, flexShrink: 0, position: "relative", overflow: "hidden", background: `linear-gradient(160deg, ${t[0]}, ${t[1]})` }}>
+      <svg viewBox="0 0 84 118" style={{ position: "absolute", inset: 0, width: "100%", height: "100%" }} aria-hidden>
+        <path d="M42 118 C42 98 40 86 42 72" stroke="#6F9A78" strokeWidth="1.6" fill="none" />
+        <g transform="translate(42 66)" fill="#C97A84" opacity=".92">
+          <path d="M0 0 C-10 -6 -16 -20 -8 -30 C-1 -22 0 -10 0 0Z" /><path d="M0 0 C10 -6 16 -20 8 -30 C1 -22 0 -10 0 0Z" /><path d="M0 -3 C-6 -14 -3 -26 0 -29 C3 -26 6 -14 0 -3Z" />
+        </g>
+        <circle cx="42" cy="63" r="3.5" fill="#B8912E" />
+      </svg>
+    </div>
+  );
 }
 
-// ── the run strip — this run's series only, compact, never a wall ──────────────────────────────
+// ── the run strip — this run's series only; navigation, never a score ──────────────────────────
 function RunStrip({ pool, unlockedCount, nextIndex, onOpen }) {
   return (
     <div style={{ display: "grid", gridTemplateColumns: "repeat(10, 1fr)", gap: "7px 5px", margin: "4px 0 12px" }}>
@@ -42,14 +59,14 @@ function RunStrip({ pool, unlockedCount, nextIndex, onOpen }) {
         const read = c?.id ? isChapterRead(c.id) : false;
         const locked = i >= unlockedCount;
         const isNext = i === nextIndex;
-        const s = { aspectRatio: "1", borderRadius: 999, display: "grid", placeItems: "center", fontFamily: UI, fontSize: 10, fontWeight: 700, cursor: locked ? "default" : "pointer", border: "none", padding: 0 };
-        const style = isNext ? { ...s, background: C.ink, color: "#fff", boxShadow: `0 0 0 2px ${C.ground}, 0 0 0 3.5px ${C.ink}` }
-          : read ? { ...s, background: "#DCE8DC", color: "#3E6B4A" }
-          : locked ? { ...s, background: "transparent", border: `1px dashed ${C.hair}`, color: C.faint }
-          : { ...s, background: "transparent", border: `1px solid ${C.ink}`, color: C.ink };
+        const base = { aspectRatio: "1", borderRadius: 999, display: "grid", placeItems: "center", fontFamily: UI, fontSize: 10, fontWeight: 700, cursor: locked ? "default" : "pointer", border: "none", padding: 0 };
+        const style = isNext ? { ...base, background: C.ink, color: "#fff", boxShadow: `0 0 0 2px ${C.ground}, 0 0 0 3.5px ${C.ink}` }
+          : read ? { ...base, background: "#DCE8DC", color: "#3E6B4A" }
+          : locked ? { ...base, background: "transparent", border: `1px dashed ${C.hair}`, color: C.faint }
+          : { ...base, background: "transparent", border: `1px solid ${C.ink}`, color: C.ink };
         return (
           <button key={c.id || i} disabled={locked} onClick={() => !locked && onOpen && onOpen(i)} className="fw-elite-press"
-            aria-label={`Chapter ${c.day_number || i + 1}${read ? " — read" : locked ? " — unlocks later" : ""}`} style={style}>
+            aria-label={`Chapter ${c.day_number || i + 1}${read ? " — read" : locked ? " — opens later" : ""}`} style={style}>
             {read && !isNext ? <Check size={11} /> : (c.day_number || i + 1)}
           </button>
         );
@@ -58,8 +75,8 @@ function RunStrip({ pool, unlockedCount, nextIndex, onOpen }) {
   );
 }
 const Legend = () => (
-  <div style={{ display: "flex", gap: 12, justifyContent: "center", fontFamily: UI, fontSize: 11, color: C.slate, margin: "0 0 12px" }}>
-    {[["#DCE8DC", "read", false], [C.ink, "next", false], ["transparent", "open", "solid"], ["transparent", "unlocks daily", "dashed"]].map(([bg, label, border]) => (
+  <div style={{ display: "flex", gap: 12, justifyContent: "center", fontFamily: UI, fontSize: 11, color: C.slate, margin: "0 0 12px", flexWrap: "wrap" }}>
+    {[["#DCE8DC", "read", null], [C.ink, "next", null], ["transparent", "open", "solid"], ["transparent", "opens daily", "dashed"]].map(([bg, label, border]) => (
       <span key={label} style={{ display: "inline-flex", alignItems: "center", gap: 5 }}>
         <i style={{ width: 9, height: 9, borderRadius: 99, background: bg, border: border ? `1px ${border} ${border === "dashed" ? C.hair : C.ink}` : "none", display: "inline-block" }} />{label}
       </span>
@@ -67,76 +84,110 @@ const Legend = () => (
   </div>
 );
 
-// ── a book cover (flora, never a photo — §6.7.7 hard rule 1) ───────────────────────────────────
-function Cover({ item, w = 84, h = 118 }) {
-  const seed = String(item?.title || "").length % 4;
-  const tints = [["#F3EADF", "#DCC7B0"], ["#E9EFE8", "#BACCBA"], ["#EEE7EF", "#CAB8CC"], ["#F5EEE0", "#E3C692"]];
-  const [a, b] = tints[seed];
+// ── a quiet one-line way in (the capacity row) ─────────────────────────────────────────────────
+function WayIn({ Icon, title, line, onClick, first }) {
   return (
-    <div style={{ width: w, height: h, borderRadius: 10, flexShrink: 0, position: "relative", overflow: "hidden", background: `linear-gradient(160deg, ${a}, ${b})` }}>
-      <svg viewBox="0 0 84 118" style={{ position: "absolute", inset: 0, width: "100%", height: "100%" }} aria-hidden>
-        <path d={`M42 ${h} C42 ${h * 0.82} 40 ${h * 0.72} 42 ${h * 0.6}`} stroke="#6F9A78" strokeWidth="1.6" fill="none" />
-        <g transform={`translate(42 ${h * 0.56})`} fill="#C97A84" opacity=".92">
-          <path d="M0 0 C-10 -6 -16 -20 -8 -30 C-1 -22 0 -10 0 0Z" /><path d="M0 0 C10 -6 16 -20 8 -30 C1 -22 0 -10 0 0Z" /><path d="M0 -3 C-6 -14 -3 -26 0 -29 C3 -26 6 -14 0 -3Z" />
-        </g>
-        <circle cx="42" cy={h * 0.53} r="3.5" fill="#B8912E" />
-      </svg>
-    </div>
+    <button onClick={onClick} className="fw-elite-press"
+      style={{ display: "flex", alignItems: "center", gap: 12, width: "100%", textAlign: "left", background: "transparent", border: "none", borderTop: first ? "none" : `1px solid ${C.hair}`, padding: "12px 2px", cursor: "pointer" }}>
+      <span style={{ width: 30, height: 30, borderRadius: 9, background: C.sunk, border: `1px solid ${C.hair}`, display: "grid", placeItems: "center", flexShrink: 0 }}><Icon size={15} color={C.ink} strokeWidth={1.7} /></span>
+      <span style={{ flex: 1, minWidth: 0 }}>
+        <span style={{ display: "block", fontFamily: SERIF, fontSize: 17, fontWeight: 600, color: C.ink, lineHeight: 1.25 }}>{title}</span>
+        <span style={{ display: "block", fontFamily: SERIF, fontSize: 14.5, color: C.slate, lineHeight: 1.4, marginTop: 1 }}>{line}</span>
+      </span>
+      <ChevronRight size={15} color={C.faint} />
+    </button>
   );
 }
 
-export default function BooksStoryFocus({ chapters = [], story, pick, onRead, continueCards = [], shelfBookCards = [], classicCards = [], onOpenBook }) {
+export default function BooksStoryFocus({ chapters = [], story, pick, onRead, continueCards = [], shelfBookCards = [], classicCards = [], onOpenBook, lifeStage }) {
   const pos = useMemo(() => readingPosition(chapters, pick), [chapters, pick, story]);
-  const contBooks = (continueCards || []).filter(isBook);
-  const shelf = (shelfBookCards || []).filter((c) => !isSerial(c));   // BOOKS ONLY — the serial is a serial
-  // FEW + CURATED: four a month. Continue-reading leads when it exists; the last is a paced reveal.
-  const pool = [...contBooks, ...shelf, ...classicCards];
-  const monthly = pool.slice(0, 4);
-  const reveal = revealDay();
-  const revealed = new Date().getDate() >= reveal;
-  const shown = revealed ? monthly : monthly.slice(0, 3);
-  const featured = shown[0] || null;
-  const rest = shown.slice(1, 3);
-  const hidden = !revealed && monthly.length >= 4;
+  const [doorway, setDoor] = useState(() => getDoorway());
+  const [passTick, setPassTick] = useState(0);
+  const set = useMemo(() => monthlySet(new Date(), lifeStage, doorway), [lifeStage, doorway, passTick]);
 
-  const series = story?.series_title || pos?.chapter?.series_title || "Today's story";
+  const contBooks = (continueCards || []).filter(isBook);
   const her = pos?.chapter || story || null;
   const herN = her?.day_number ?? (pos ? pos.index + 1 : 1);
   const total = pos?.total ?? chapters.length;
   const waiting = pos?.waiting || 0;
   const caughtUp = !!pos?.caughtUp;
+  const series = story?.series_title || her?.series_title || "the serial";
+  const openBook = (b, extra) => onOpenBook && onOpenBook({ _gutenbergId: b.gutenberg_id, _book: "gutenberg", title: b.title, ...extra });
 
-  const summary = !pos && !pool.length
-    ? "Today's chapter lands each morning, and your shelf fills as you add books — a chapter a day, at your pace."
-    : pos
-      ? (pick?.complete
-        ? `“${series}” has closed for ${pick.monthName || "the month"} — read it straight through whenever; a new run begins on the 1st.`
-        : caughtUp
-          ? `You're up to date with “${series}” — chapter ${Math.min(herN + 1, total)} opens tomorrow.`
-          : waiting > 1
-            ? `You're at chapter ${herN} of ${series} — ${waiting} chapters have opened while you were busy. They'll wait. One at a time.`
-            : `Chapter ${herN} of ${series} is waiting for you.`)
-      : `${shown.length} on this month's shelf${classicCards.length ? ` · free classics inside` : ""}.`;
+  // read-time as PERMISSION when small; hidden past the threshold (the reader standard, §6.7.8)
+  const chapterTime = her?.segment_text ? readTimeLabel(countWords(her.segment_text)) : null;
 
-  const taster = paras(her?.segment_text).slice(0, 1);
+  // "Previously…" — the last line of the chapter she actually read, in the AUTHOR'S words. Never a
+  // model writing about her reading (Fable, Jan 2025). Only when she's behind: a hand back in.
+  const previously = useMemo(() => {
+    if (!pos || pos.index <= 0 || caughtUp) return null;
+    const prev = pos.pool[pos.index - 1];
+    if (!prev?.id || !isChapterRead(prev.id)) return null;
+    const last = paras(prev.segment_text).slice(-1)[0] || "";
+    if (!last) return null;
+    const t = clean(last);
+    return t.length > 180 ? `${t.slice(0, 180)}…` : t;
+  }, [pos, caughtUp]);
+
+  // the shortest unread chapter open to her — the capacity row's first way in
+  const shortest = useMemo(() => {
+    if (!pos) return null;
+    const open = pos.pool.slice(0, pos.unlockedCount).map((c, i) => ({ c, i })).filter(({ c }) => c?.id && !isChapterRead(c.id));
+    if (!open.length) return null;
+    return open.reduce((a, b) => (countWords(b.c.segment_text) < countWords(a.c.segment_text) ? b : a));
+  }, [pos]);
+
+  // the club — ALREADY BUILT, finally surfaced. Her checkpoint is self-attested + device-local
+  // (clubReached), so the conversation is gated by her own position: it structurally cannot spoil.
+  const reached = clubReached(SEED_PICK.pick_key);
+  const nextCp = SEED_PICK.checkpoints[Math.min(SEED_PICK.checkpoints.length - 1, Math.max(0, reached + 1))];
+
+  // her own words — the ONLY progress artefact in this section. No counts anywhere.
+  const herWords = useMemo(() => {
+    try {
+      const out = [];
+      for (let i = 0; i < localStorage.length; i++) {
+        const k = localStorage.key(i);
+        if (k && k.startsWith("fw_read_reflect_")) { const v = localStorage.getItem(k); if (v && v.trim()) out.push(v.trim()); }
+      }
+      return out.slice(-1)[0] || null;
+    } catch { return null; }
+  }, [passTick]);
+
+  const summary = pos
+    ? (pick?.complete
+      ? `“${series}” has closed for ${pick.monthName || "the month"} — read it straight through whenever you like; a new one begins on the 1st.`
+      : caughtUp
+        ? `You're up to date with “${series}”. Chapter ${Math.min(herN + 1, total)} opens tomorrow${set.featured ? `, and ${set.featured.title} is waiting whenever you want it` : ""}.`
+        : waiting > 1
+          ? `You're at chapter ${herN} of “${series}” — ${waiting} have opened while you were busy. They'll wait. One at a time.`
+          : `Chapter ${herN} of “${series}” is waiting for you.`)
+    : `${set.featured ? `This month it's ${set.featured.title}.` : "This month's book is being chosen."} Read a little, or not at all — it keeps.`;
 
   return (
     <div style={{ display: "flex", flexDirection: "column" }}>
       <Summary Icon={Feather} cw="crimson">{summary}</Summary>
 
-      {/* I · YOUR NEXT CHAPTER — hers, never the calendar's */}
+      {/* 1 · YOUR NEXT CHAPTER — hers, never the calendar's */}
       {pos && her ? (
         <Card wash="crimson">
           <Eyebrow cw="crimson" align="left">Your next chapter</Eyebrow>
           <Title align="left" size={25} style={{ margin: "0 0 4px" }}>{clean(her.title) || `Chapter ${herN}`}</Title>
-          <div style={{ fontFamily: UI, fontSize: 12, fontWeight: 600, color: C.slate, letterSpacing: ".03em", margin: "0 0 10px" }}>{series} · chapter {herN} of {total}</div>
+          <div style={{ fontFamily: UI, fontSize: 12, fontWeight: 600, color: C.slate, letterSpacing: ".03em", margin: "0 0 10px" }}>
+            {series} · chapter {herN} of {total}{chapterTime ? ` · ${chapterTime}` : ""}
+          </div>
           {waiting > 1 ? (
             <span style={{ display: "inline-flex", alignItems: "center", gap: 6, fontFamily: UI, fontSize: 12, fontWeight: 700, color: C.crimson, background: "#FBEDEB", borderRadius: 999, padding: "4px 10px", marginBottom: 12 }}>{waiting} waiting for you</span>
           ) : caughtUp ? (
             <span style={{ display: "inline-flex", alignItems: "center", gap: 6, fontFamily: UI, fontSize: 12, fontWeight: 700, color: C.slate, background: C.sunk, border: `1px solid ${C.hair}`, borderRadius: 999, padding: "4px 10px", marginBottom: 12 }}>Up to date</span>
           ) : null}
-          {taster.map((p, i) => <Body key={i} size={16.5} style={{ margin: "0 0 14px" }}>{p}</Body>)}
-          {/* the booklike flip — one at a time, forward only once this one's read */}
+          {previously ? (
+            <div style={{ margin: "0 0 12px", paddingLeft: 12, borderLeft: `2px solid ${C.goldHair}` }}>
+              <div style={{ fontFamily: UI, fontSize: 11, fontWeight: 800, letterSpacing: ".16em", textTransform: "uppercase", color: C.gold, marginBottom: 3 }}>Previously</div>
+              <p style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 15.5, fontWeight: 500, color: C.slate, lineHeight: 1.5, margin: 0 }}>{previously}</p>
+            </div>
+          ) : null}
+          {paras(her.segment_text).slice(0, 1).map((p, i) => <Body key={i} size={16.5} style={{ margin: "0 0 14px" }}>{p}</Body>)}
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
             <button onClick={() => onRead && onRead(Math.max(0, pos.index - 1))} disabled={pos.index === 0} aria-label="Previous chapter" className="fw-elite-press"
               style={{ width: 44, height: 44, borderRadius: 12, border: `1px solid ${C.hair}`, background: C.surface, color: C.ink, display: "grid", placeItems: "center", cursor: pos.index === 0 ? "default" : "pointer", opacity: pos.index === 0 ? 0.35 : 1, flexShrink: 0 }}><ChevronLeft size={18} /></button>
@@ -148,17 +199,17 @@ export default function BooksStoryFocus({ chapters = [], story, pick, onRead, co
         </Card>
       ) : (
         <Card>
-          <Eyebrow cw="crimson" align="left">Today's chapter</Eyebrow>
-          <Title align="left">On its way</Title>
-          <Body>Today's instalment lands each morning — a chapter a day through the month, and you can always read the story straight through.</Body>
+          <Eyebrow cw="crimson" align="left">The serial</Eyebrow>
+          <Title align="left">A chapter a day, when you want it</Title>
+          <Body style={{ margin: 0 }}>Today's instalment lands each morning through the month. Miss a week and nothing is lost — it waits at the one you haven't read.</Body>
         </Card>
       )}
 
       {pos ? <Leaf my={22} /> : null}
 
-      {/* II · THE RUN — compact, this series only */}
+      {/* 2 · THE RUN — navigation, not a score */}
       {pos ? (
-        <Block>
+        <section>
           <Eyebrow cw="plum">{pick?.monthName ? `${pick.monthName}'s run` : "The run"} · {total} chapters</Eyebrow>
           <RunStrip pool={pos.pool} unlockedCount={pos.unlockedCount} nextIndex={pos.index} onOpen={(i) => onRead && onRead(i)} />
           <Legend />
@@ -177,50 +228,144 @@ export default function BooksStoryFocus({ chapters = [], story, pick, onRead, co
             })}
           </div>
           <Quiet onClick={() => onRead && onRead(0)}>Read straight through from chapter 1 ›</Quiet>
-          <div style={{ fontFamily: UI, fontSize: 11, color: C.faint, textAlign: "center", marginTop: 8 }}>{clean(framingLine(pick))}</div>
-        </Block>
+        </section>
       ) : null}
 
       <Fleuron my={24} />
 
-      {/* III · THIS MONTH'S SHELF — few, curated, one paced reveal */}
-      <Block>
-        <Eyebrow cw="gold">This month's shelf{shown.length ? ` · ${monthly.length} books` : ""}</Eyebrow>
-        {featured ? (
-          <>
+      {/* 3 · NOT MUCH IN THE TANK? — capacity, not motivation. The section's differentiator. */}
+      <section>
+        <Eyebrow cw="sage">Not much in the tank?</Eyebrow>
+        <Title>A way in that costs nothing</Title>
+        <Card>
+          {shortest ? (
+            <WayIn first Icon={Coffee} title="The shortest one waiting"
+              line={`Chapter ${shortest.c.day_number || shortest.i + 1} · ${readTimeLabel(countWords(shortest.c.segment_text)) || "a few minutes"}`}
+              onClick={() => onRead && onRead(shortest.i)} />
+          ) : null}
+          <WayIn first={!shortest} Icon={RotateCcw} title="Something you already know"
+            line={contBooks.length ? `Pick up ${clean(contBooks[0].title)} where you left it — re-reading counts.` : "Re-reading a favourite is reading. It asks nothing new of you."}
+            onClick={() => (contBooks.length ? onOpenBook && onOpenBook(contBooks[0]) : onOpenBook && onOpenBook({ _library: true }))} />
+          <WayIn Icon={BookOpen} title="Just a page" line="Open it, read one page, close it. That counts."
+            onClick={() => (pos ? onRead && onRead(pos.index) : set.featured ? openBook(set.featured) : onOpenBook && onOpenBook({ _library: true }))} />
+        </Card>
+        <p style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 14.5, color: C.faint, textAlign: "center", lineHeight: 1.5, margin: "10px 14px 0" }}>Some weeks there's no room for a book. This is here for those weeks.</p>
+      </section>
+
+      <Fleuron my={24} />
+
+      {/* 4 · THIS MONTH'S BOOK — singular; the featured one is the product */}
+      <section>
+        <Eyebrow cw="gold">{set.monthName}'s book</Eyebrow>
+        {set.featured ? (
+          <Card>
             <div style={{ display: "flex", gap: 14 }}>
-              <Cover item={featured} />
+              <Cover title={set.featured.title} />
               <div style={{ minWidth: 0, display: "flex", flexDirection: "column" }}>
-                <div style={{ fontFamily: SERIF, fontWeight: 600, fontSize: 19, lineHeight: 1.15, color: C.ink }}>{clean(featured.title)}</div>
-                <div style={{ fontFamily: UI, fontSize: 11.5, color: C.slate, margin: "2px 0 8px" }}>{clean(featured.subtitle) || "Free classic"}</div>
-                <p style={{ fontFamily: SERIF, fontSize: 15, fontWeight: 500, lineHeight: 1.5, color: C.ink, margin: "0 0 10px" }}>{clean(featured.summary || featured.excerpt || "").slice(0, 150) || "A long read to fall into — your place is saved in every one."}</p>
-                <button onClick={() => onOpenBook && onOpenBook(featured)} className="fw-elite-press" style={{ display: "inline-flex", alignItems: "center", gap: 7, background: "transparent", border: "none", padding: 0, cursor: "pointer", fontFamily: UI, fontSize: 12, fontWeight: 700, color: C.ink, marginTop: "auto" }}><Play size={13} /> {featured._continue ? "Pick up where you left off" : "Start reading"}</button>
+                <div style={{ fontFamily: SERIF, fontWeight: 600, fontSize: 21, lineHeight: 1.12, color: C.ink }}>{set.featured.title}</div>
+                <div style={{ fontFamily: UI, fontSize: 11.5, color: C.slate, margin: "3px 0 7px" }}>{set.featured.author} · free to read</div>
+                <div style={{ display: "inline-flex", alignItems: "center", gap: 6, fontFamily: UI, fontSize: 11, fontWeight: 700, letterSpacing: ".08em", textTransform: "uppercase", color: C.gold, marginBottom: 6 }}>
+                  <Sparkles size={11} /> {DOORWAYS[set.featured.doorway]?.label}
+                </div>
+                <p style={{ fontFamily: SERIF, fontSize: 15.5, fontWeight: 500, lineHeight: 1.5, color: C.ink, margin: 0 }}>{set.featured.why}</p>
               </div>
             </div>
-            {(rest.length || hidden) ? (
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 10, marginTop: 16, paddingTop: 16, borderTop: `1px solid ${C.hair}` }}>
-                {rest.map((b) => (
-                  <button key={b.id} onClick={() => onOpenBook && onOpenBook(b)} className="fw-elite-press" style={{ background: "transparent", border: "none", padding: 0, cursor: "pointer", textAlign: "left" }}>
-                    <Cover item={b} w="100%" h={96} />
-                    <div style={{ fontFamily: SERIF, fontWeight: 600, fontSize: 13.5, lineHeight: 1.15, color: C.ink, margin: "7px 0 2px" }}>{clean(b.title)}</div>
-                    <div style={{ fontFamily: UI, fontSize: 10.5, color: C.slate }}>{clean(b.subtitle) || "Free classic"}</div>
-                  </button>
-                ))}
-                {hidden ? (
-                  <div>
-                    <div style={{ border: `1px dashed ${C.goldHair}`, borderRadius: 10, height: 96, display: "grid", placeItems: "center", textAlign: "center", fontFamily: SERIF, fontStyle: "italic", fontSize: 13, color: C.slate, padding: 8, lineHeight: 1.3 }}>A new book arrives on the {reveal}{ord(reveal)}</div>
-                    <div style={{ fontFamily: SERIF, fontWeight: 600, fontSize: 13.5, color: C.faint, margin: "7px 0 2px" }}>Not yet</div>
-                    <div style={{ fontFamily: UI, fontSize: 10.5, color: C.faint }}>the month's last reveal</div>
-                  </div>
+            {set.featured.notes ? (
+              <div style={{ marginTop: 12, paddingTop: 10, borderTop: `1px solid ${C.hair}`, fontFamily: UI, fontSize: 11.5, color: C.slate, lineHeight: 1.5 }}>
+                <b style={{ color: C.ink, fontWeight: 700 }}>Worth knowing:</b> {set.featured.notes}.
+              </div>
+            ) : null}
+            <div style={{ marginTop: 14 }}><Cta filled Icon={BookOpen} onClick={() => openBook(set.featured)}>Start reading</Cta></div>
+            <Quiet onClick={() => { passBook(set.featured.gutenberg_id); setPassTick((t) => t + 1); }}>Not for me — show me another ›</Quiet>
+          </Card>
+        ) : (
+          <Card><Body style={{ textAlign: "center", color: C.slate, margin: 0 }}>You've passed on this month's picks — nothing owed. The whole library is a tap away, and a new set arrives on the 1st.</Body></Card>
+        )}
+      </section>
+
+      {/* 5 · READ IT WITH OTHERS — the Book Club we already built */}
+      <section style={{ marginTop: 24 }}>
+        <Eyebrow cw="blush">Read it with others</Eyebrow>
+        <Title>The book club</Title>
+        <Card>
+          <div style={{ display: "flex", alignItems: "baseline", gap: 8, flexWrap: "wrap", marginBottom: 6 }}>
+            <span style={{ fontFamily: SERIF, fontSize: 19, fontWeight: 600, color: C.ink }}>{SEED_PICK.title}</span>
+            <span style={{ fontFamily: UI, fontSize: 11.5, color: C.slate }}>{SEED_PICK.author} · {SEED_PICK.cadence}</span>
+          </div>
+          <Body size={16} style={{ margin: "0 0 12px", color: C.slate }}>{clean(SEED_PICK.host_intro).slice(0, 160)}…</Body>
+          <div style={{ background: C.sunk, border: `1px solid ${C.hair}`, borderRadius: 13, padding: "12px 14px" }}>
+            <div style={{ fontFamily: UI, fontSize: 11, fontWeight: 800, letterSpacing: ".16em", textTransform: "uppercase", color: C.gold, marginBottom: 4 }}>{reached < 0 ? "It starts at" : "Your next checkpoint"}</div>
+            <div style={{ fontFamily: SERIF, fontSize: 17, fontWeight: 600, color: C.ink, lineHeight: 1.3 }}>{nextCp?.label}</div>
+            <p style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 15, fontWeight: 500, color: C.slate, lineHeight: 1.5, margin: "6px 0 0" }}>{clean(nextCp?.jess_prompt)}</p>
+          </div>
+          <div style={{ fontFamily: UI, fontSize: 11, color: C.faint, textAlign: "center", margin: "10px 0 0", lineHeight: 1.5 }}>Each checkpoint's conversation opens when <em>you</em> say you've reached it — so nothing can spoil it.</div>
+          <div style={{ marginTop: 12 }}><Cta Icon={Users} onClick={() => window.location.assign(createPageUrl("Community?view=bookclub"))}>Open the book club</Cta></div>
+        </Card>
+      </section>
+
+      {/* 6 · ALSO THIS MONTH — quiet alternates + the mature reveal (synopsis now, book on the day) */}
+      {(set.alternates.length || set.reveal) ? (
+        <section style={{ marginTop: 24 }}>
+          <Eyebrow cw="sky">Also this month</Eyebrow>
+          <div style={{ display: "flex", flexDirection: "column" }}>
+            {set.alternates.map((b, i) => (
+              <button key={b.gutenberg_id} onClick={() => openBook(b)} className="fw-elite-press"
+                style={{ display: "flex", alignItems: "center", gap: 12, width: "100%", textAlign: "left", background: "transparent", border: "none", borderTop: i === 0 ? "none" : `1px solid ${C.hair}`, padding: "12px 2px", cursor: "pointer" }}>
+                <Cover title={b.title} w={44} h={62} />
+                <span style={{ flex: 1, minWidth: 0 }}>
+                  <span style={{ display: "block", fontFamily: SERIF, fontSize: 17, fontWeight: 600, color: C.ink, lineHeight: 1.2 }}>{b.title}</span>
+                  <span style={{ display: "block", fontFamily: UI, fontSize: 11, color: C.slate, margin: "2px 0 3px" }}>{b.author} · {DOORWAYS[b.doorway]?.label}</span>
+                  <span style={{ display: "block", fontFamily: SERIF, fontSize: 14.5, color: C.slate, lineHeight: 1.4 }}>{b.why}</span>
+                </span>
+                <ChevronRight size={15} color={C.faint} style={{ flexShrink: 0 }} />
+              </button>
+            ))}
+            {set.reveal ? (
+              <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "12px 2px", borderTop: set.alternates.length ? `1px solid ${C.hair}` : "none" }}>
+                {set.reveal.revealed ? <Cover title={set.reveal.title} w={44} h={62} /> : (
+                  <span style={{ width: 44, height: 62, borderRadius: 8, border: `1px dashed ${C.goldHair}`, display: "grid", placeItems: "center", flexShrink: 0, fontFamily: UI, fontSize: 10, fontWeight: 700, color: C.faint }}>{set.reveal.day}{ord(set.reveal.day)}</span>
+                )}
+                <span style={{ flex: 1, minWidth: 0 }}>
+                  <span style={{ display: "block", fontFamily: SERIF, fontSize: 17, fontWeight: 600, color: set.reveal.revealed ? C.ink : C.slate, lineHeight: 1.2 }}>{set.reveal.revealed ? set.reveal.title : "The last one of the month"}</span>
+                  <span style={{ display: "block", fontFamily: UI, fontSize: 11, color: C.slate, margin: "2px 0 3px" }}>{set.reveal.revealed ? `${set.reveal.author} · ${DOORWAYS[set.reveal.doorway]?.label}` : `${DOORWAYS[set.reveal.doorway]?.label} · arrives on the ${set.reveal.day}${ord(set.reveal.day)}`}</span>
+                  <span style={{ display: "block", fontFamily: SERIF, fontSize: 14.5, color: C.slate, lineHeight: 1.4 }}>{set.reveal.why}</span>
+                </span>
+                {set.reveal.revealed ? (
+                  <button onClick={() => openBook(set.reveal)} className="fw-elite-press" aria-label={`Open ${set.reveal.title}`} style={{ background: "transparent", border: "none", cursor: "pointer", padding: 0, flexShrink: 0 }}><ChevronRight size={15} color={C.faint} /></button>
                 ) : null}
               </div>
             ) : null}
-          </>
-        ) : (
-          <Body style={{ textAlign: "center", color: C.slate }}>This month's shelf is being chosen — a few books, not a wall. Your saved reads are always in Yours.</Body>
-        )}
-        <Quiet onClick={() => onOpenBook && onOpenBook({ _library: true })}>Yours &amp; the whole library ›</Quiet>
-      </Block>
+          </div>
+          <Quiet onClick={() => onOpenBook && onOpenBook({ _library: true })}>Yours &amp; the whole library ›</Quiet>
+        </section>
+      ) : null}
+
+      {/* 7 · WHAT YOU WROTE — the ONLY progress artefact here. No counts anywhere. */}
+      {herWords ? (
+        <section style={{ marginTop: 24 }}>
+          <Eyebrow cw="plum">What you wrote</Eyebrow>
+          <p style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 17, fontWeight: 500, color: C.ink, lineHeight: 1.55, textAlign: "center", margin: "0 auto", maxWidth: "28em" }}>“{clean(herWords).slice(0, 220)}”</p>
+          <div style={{ fontFamily: UI, fontSize: 11, color: C.faint, textAlign: "center", marginTop: 8 }}>the last thing you left at the end of a chapter</div>
+        </section>
+      ) : null}
+
+      {/* 8 · THE DOORWAY — asked once; it orders, it never filters, it profiles nothing */}
+      {!doorway ? (
+        <section style={{ marginTop: 24 }}>
+          <Eyebrow cw="gold">One question, once</Eyebrow>
+          <Title size={21}>What draws you into a book?</Title>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 9 }}>
+            {DOORWAY_KEYS.map((k) => (
+              <button key={k} onClick={() => { setDoorway(k); setDoor(k); }} className="fw-elite-press"
+                style={{ textAlign: "left", background: C.surface, border: `1px solid ${C.hair}`, borderRadius: 14, padding: "13px 14px", cursor: "pointer" }}>
+                <span style={{ display: "block", fontFamily: SERIF, fontSize: 16.5, fontWeight: 600, color: C.ink }}>{DOORWAYS[k].label}</span>
+                <span style={{ display: "block", fontFamily: SERIF, fontSize: 13.5, color: C.slate, lineHeight: 1.35, marginTop: 2 }}>{DOORWAYS[k].line}</span>
+              </button>
+            ))}
+          </div>
+          <div style={{ fontFamily: UI, fontSize: 11, color: C.faint, textAlign: "center", marginTop: 9 }}>It only sorts what's shown here. Nothing about you is saved.</div>
+        </section>
+      ) : null}
 
       <Foot>A chapter a day while the run's open — but your place is yours. No streaks, no “you're behind.”</Foot>
     </div>
