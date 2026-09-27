@@ -34,7 +34,8 @@ describe("chapterForDay — the one gating contract", () => {
   it("NEVER presents a stale chapter as fresh (the original bug)", () => {
     const pick = chapterForDay(LONG_ROOM, on("2026-07-17")); // 38 days after the series ended
     expect(pick.fresh).toBe(false);
-    expect(framingLine(pick)).toContain("a finished story you can also read straight through");
+    expect(framingLine(pick)).toContain("A chapter a day");
+    expect(framingLine(pick)).toContain("read it straight through");
     expect(framingLine(pick)).not.toContain("new today");
   });
 

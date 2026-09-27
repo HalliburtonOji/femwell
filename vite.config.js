@@ -1,9 +1,14 @@
 import base44 from "@base44/vite-plugin"
 import react from '@vitejs/plugin-react'
-import { defineConfig } from 'vite'
+import { defineConfig, loadEnv } from 'vite'
 
 // https://vite.dev/config/
-export default defineConfig({
+export default defineConfig(({ command, mode }) => {
+  const env = loadEnv(mode, process.cwd(), 'VITE_');
+  if (command === 'build' && !env.VITE_BASE44_APP_ID?.trim()) {
+    throw new Error('VITE_BASE44_APP_ID is required for a release build. Set it in .env.local or the build environment before publishing.');
+  }
+  return {
   logLevel: 'error', // Suppress warnings, only show errors
   plugins: [
     base44({
@@ -17,4 +22,5 @@ export default defineConfig({
     }),
     react(),
   ]
+  };
 });

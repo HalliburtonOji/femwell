@@ -2,14 +2,13 @@
 // MONTHLY run that CLOSES at month-end, and a fresh chapter published for today always wins.
 // Runs the real module (base44 client stubbed) against fixed dates. `node scripts/verify-story-rotation.mjs`
 import { readFileSync, writeFileSync, mkdirSync } from "node:fs";
-import { pathToFileURL } from "node:url";
 
 const src = readFileSync(new URL("../src/components/lifestyle/dailyStory.js", import.meta.url), "utf8")
   .replace(/import \{ base44 \} from "@\/api\/base44Client";/, "const base44 = { entities: { DailyStory: { filter: async () => [] } } };");
 mkdirSync(new URL("../.tmp/", import.meta.url), { recursive: true });
 const tmp = new URL("../.tmp/dailyStory.proof.mjs", import.meta.url);
 writeFileSync(tmp, src);
-const { chapterForDay, nextChapterOf, framingLine, chapterLabel } = await import(pathToFileURL(tmp.pathname.replace(/^\/([A-Za-z]:)/, "$1")).href);
+const { chapterForDay, nextChapterOf, framingLine, chapterLabel } = await import(tmp.href);
 
 // a 30-chapter finished series, all published in the past
 const series = Array.from({ length: 30 }, (_, i) => ({ id: `ch${i + 1}`, series_key: "the_long_room", series_title: "The Long Room", day_number: i + 1, segment_text: `Chapter ${i + 1} text`, published_date: "2026-05-01", is_active: true }));
@@ -53,7 +52,7 @@ expect("framing when complete mentions the 1st", /new run begins on the 1st/.tes
 
 
 // ── HER POSITION (added 2026-09-22) — unlock by calendar, position by her ──────────────────────
-const { readingPosition } = await import(pathToFileURL(tmp.pathname.replace(/^\/([A-Za-z]:)/, "$1")).href);
+const { readingPosition } = await import(tmp.href);
 const read = new Set();
 globalThis.window = { localStorage: { getItem: (k) => (read.has(k) ? "read" : null), setItem: (k) => read.add(k) } };
 const K = (i) => `fw_read_chapter_ch${i}`;

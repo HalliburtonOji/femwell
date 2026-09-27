@@ -861,6 +861,8 @@ The cap is a **HARD limit of 50 functions per app, and FemWell is AT it** — a 
 `npx base44 site deploy -y` / `node scripts/deploy.mjs` = **frontend ONLY**; `functions deploy <name>` = backend fns; `entities push` = schemas/RLS. **Don't ship a server fix with a site deploy alone.** New *routes* go live only via `site deploy` from local `dist` — a bare `POST /deploy` drops repo-only routes → 404. Auth is a **platform OAuth token, NOT the api_key** (`base44 login` → `~/.base44/auth/auth.json`, auto-refreshes). Memory: `femwell-base44-deploy-surfaces`, `femwell-preview-route-deploy-method`, `base44-deploy-auth-mechanism`, `femwell-app-jsonc-deploy-config`.
 
 ### 14.3 CACHE-BUSTER / STALE-BUNDLE
+**Release configuration (2026-09-27 correction):** local frontend builds require `VITE_BASE44_APP_ID` for FemWell (`69a9891a6ccccc1822bbb4bc`); keep the deployment link in ignored `base44/.app.jsonc` and build settings in ignored `.env.local`. A CLI deployment target alone does not configure the browser SDK. Reject a missing build app ID before publishing. Profile sign-out must let the SDK's server logout redirect finish; a second redirect can cancel cookie clearing.
+
 `index.html` ships with **NO `Cache-Control` and base44 does NOT honour `public/_headers`** (measured) — a plain `location.reload()` re-reads the *cached* stale HTML and the device stays on an old bundle ("nothing's changing"). The in-app **`liveBuildGuard` does a per-build cache-busting reload** (`location.replace` with `?b=<hash>`, keyed per-hash so it can't loop) in `main.jsx`. A no-op redeploy keeping the same `index-*.js` hash is **success, not failure** (deterministic build).
 
 ### 14.4 THE ROUTED-FILE DELEGATION GOTCHA — read before editing ANY page
@@ -888,6 +890,8 @@ A headless Chromium reusing the **persisted authed profile** (`scripts/visualQA.
 Every audit ends in a **P0 (broken) / P1 (bad) / P2 (polish)** catalogue — **one screenshot or interaction-log per issue** + the component/file + the fix — fixed in priority order and **re-screenshot to prove**. False positives are dispositioned honestly (e.g. a keep-alive-tab DOM hit is not a live defect).
 
 ### 15.4 HONEST AUTH LIMITS
+**Halli's test setup (2026-09-27):** tests use the same FemWell app at `femwells.com`. Treat a generic "You" profile as unknown identity, not evidence of a signed-in test account. Distinguish anonymous login-gate checks from a proven authenticated sign-out/sign-in cycle; report the latter as pending until performed in an authenticated session.
+
 If the session can't authenticate (headless OTP/OAuth isn't completable, and entering credentials is prohibited), **say so** and get the human to foreground an authed browser — never mark an auth-gated write "verified" from an unauthed run, and never mark a server-403 path "verified" from trace alone without flagging it wasn't black-boxed.
 
 ### 15.5 THE NAMED-AGENT QA ROSTER

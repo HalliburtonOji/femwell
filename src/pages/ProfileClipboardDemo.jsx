@@ -354,7 +354,15 @@ export default function ProfileClipboardDemo() {
   // Quick-edit popup config + the Health & conditions full-screen overlay.
   const [editing, setEditing] = useState(null);
   const [showCond, setShowCond] = useState(false);
-  const handleLogout = async () => { try { await base44.auth.logout(); } catch { /* ignore */ } window.location.href = "/"; };
+  const handleLogout = async () => {
+    try {
+      // The SDK navigates through the server endpoint that clears session cookies.
+      // A second redirect here cancels that request and can leave the session active.
+      await base44.auth.logout(window.location.origin);
+    } catch {
+      flash(false, "Couldn't sign out — please try again.");
+    }
+  };
 
   const handlePhotoUpload = async (e) => {
     const file = e.target.files?.[0];
