@@ -37,3 +37,7 @@ build.log
 brandp2-*.png
 base44/.app.jsonc
 .tmp/
+
+# agent-collab: raw session transcripts are archive-only (245MB) — never commit them
+claude-state/agent-collab/transcripts/*.jsonl
+claude-state/agent-collab/transcripts/*.tar.gz

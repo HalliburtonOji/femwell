@@ -1,5 +1,19 @@
-# FEMWELL — CANONICAL STATUS INDEX (read first · updated 2026-06-30)
+# FEMWELL — CANONICAL STATUS INDEX (read first · updated 2026-09-27)
 **This file is the single source of truth AND the index to every plan doc. If anything else disagrees, this wins.** (The long ship-log history continues below the index.)
+
+> ## 🤝 SHARED MEMORY — Claude + Codex (added 2026-09-27)
+> **Two agents build FemWell. This file is their shared memory. Read `AGENTS.md` (repo root) first — it is the cross-agent contract.**
+> **Baton read-order, every session:** `AGENTS.md` → `CLAUDE.md` → `claude-state/ONBOARDING_READ_FIRST.md` → **this file's top block** → the relevant `claude-state/` plan doc → `claude-state/BRAND_IDENTITY.md`. Then verify reality: `git log -8 --oneline` must match what this file claims, and `curl -s https://femwells.com/ | grep -oE 'index-[A-Za-z0-9_-]+\.js'` must match the recorded bundle hash.
+> **APPEND, never rewrite:** add a NEW block at the top of the current-state section (so merges stay trivial), immediately after every build/fix/ship — never batched. Each entry: what changed + commit · shipped-vs-demo · live bundle hash · how it was verified.
+> **Full context for the other agent:** `claude-state/agent-collab/HANDOFF.md` (+ the IN FLIGHT claim table — claim a surface before editing it). Raw transcripts are archive-only: `claude-state/agent-collab/transcripts/MANIFEST.md`.
+>
+> ### CURRENT STATE — 2026-09-27
+> - **Live bundle `index-BujbrBaE.js`** · local HEAD `aa549050` · branch `main`.
+> - **⚠️ GIT DIVERGENCE: local is ahead 53, behind 3.** The 3 remote commits are Base44 **platform** commits (*Migrated 29 workflows* · *boilerplate auth templates* · *Update base44 packages*) — the Base44↔GitHub mirror, not another agent. **Claude cannot push** (non-fast-forward, and Cowork has no push path). **Codex: `git pull --rebase`, then apply Claude's patch, then push.** Never force-push to resolve mirror drift — Halli reconnects it.
+> - **JUST SHIPPED — Books connected across the app** (`21c0a173`, live): four disconnected book systems unified — Lifestyle Books ↔ the Community `UserBook` shelf ↔ the Book Club ↔ Planner ↔ Today's live pick ↔ Garden; **`?tab=` revived** (Today's, DailyStoryReel's and Jess's book links finally land); the **first Community→Lifestyle link** ever; **schema delta pushed** (`PlannerItems.source`/`.ref`, so any content type can schedule itself); **weekly curator PARKED**. Preceded by a **regression fix** (`a6d3fec5`) restoring the summary card + Jess digest + ritual pills.
+> - **IN FLIGHT / NEXT:** Books **notification nudge** HELD (edits `sendNotificationReminders`, awaiting Halli) → then the **Read** deep research pass → Listen · Story · Good life · Yours (Sky audited against the same bar).
+> - **OPEN DECISIONS FOR HALLI:** (1) **flip the clean Lifestyle live** — one-line prop change in `src/pages/LifestyleElite.jsx`; it is demo-only at `/LifestyleBespokeDemo`; (2) "3 waiting for you" vs a **silent backlog** (one-line swap); (3) the reading **notification nudge**; (4) two clean-header nits (title wraps at 390 leaving the heart mid-line; the Sky jump strip's last chip clips).
+> - **UNVERIFIABLE FROM HEADLESS (§15.4):** `PlannerItems` writes are guarded on `user.id` so unauthed localhost can't prove the rows land; Community sits behind the **18+ age gate** (not tapped on Halli's behalf). Both need his logged-in pass.
 
 ## 🔗 BOOKS — CONNECTED ACROSS THE APP + a regression fixed (2026-09-27)
 **Halli: "Books threads through the WHOLE app and none of it is connected — it still feels mid because it's siloed."** A full code sweep found **four parallel book systems** and a class of dead links. Map: `femwell-handoff/BOOKS-CONNECTED-MAP.html`. Commits `a6d3fec5` (regression) + `21c0a173` (wiring). **LIVE `index-BujbrBaE.js`; `npx base44 entities push` done** (the approved schema delta).

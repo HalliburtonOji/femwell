@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Lifestyle — One Page</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--ground:#F5F4F1;--surface:#fff;--hair:#EAE7E0;--goldhair:#D9C79B;--ink:#191510;--slate:#6E6A61;--faint:#A6A197;--crimson:#BC2E27;--gold:#A8893F;--sage:#5F8A6B;--serif:"Cormorant Garamond",Georgia,serif;--ui:"Inter",system-ui,sans-serif}
+*{box-sizing:border-box}body{margin:0;background:var(--ground);color:var(--ink);font-family:var(--ui);-webkit-font-smoothing:antialiased;padding:0 0 70px}
+.wrap{max-width:640px;margin:0 auto;padding:0 20px}
+.kick{font-size:10.5px;font-weight:800;letter-spacing:.24em;text-transform:uppercase;color:var(--gold);margin:0 0 12px}
+h1{font-family:var(--serif);font-weight:600;font-size:40px;line-height:1.05;letter-spacing:-.4px;margin:44px 0 12px}h1 em{font-style:italic;color:var(--crimson);font-weight:500}
+.lede{font-family:var(--serif);font-size:20px;line-height:1.5;color:var(--slate);margin:0 0 30px}
+h2{font-family:var(--serif);font-weight:600;font-size:28px;letter-spacing:-.3px;margin:38px 0 6px}h2 .n{display:block;font-family:var(--ui);font-size:11px;font-weight:800;letter-spacing:.16em;color:var(--gold);margin-bottom:8px}
+h3{font-family:var(--serif);font-weight:600;font-size:21px;margin:24px 0 6px}
+p{font-family:var(--serif);font-size:17.5px;line-height:1.65;margin:0 0 14px}p.m{color:var(--slate)}
+.card{background:var(--surface);border-radius:18px;padding:20px;box-shadow:0 1px 3px rgba(25,21,16,.03),0 18px 42px -18px rgba(25,21,16,.12);margin:14px 0}
+ul.c{list-style:none;padding:0;margin:8px 0}ul.c li{font-family:var(--serif);font-size:17px;line-height:1.5;padding:9px 0 9px 24px;position:relative;border-bottom:1px solid var(--hair)}ul.c li:before{content:"";position:absolute;left:2px;top:17px;width:7px;height:7px;border-radius:99px;background:var(--crimson)}
+ul.c.g li:before{background:var(--gold)}ul.c.s li:before{background:var(--sage)}
+b{font-weight:600}.mono{font-family:ui-monospace,monospace;font-size:12.5px;color:var(--slate)}
+.shots{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:14px 0}.shots img{width:100%;border-radius:14px;border:1px solid var(--hair);background:#fff}.shots figcaption{font-size:11.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--faint);text-align:center;margin-top:8px}
+@media(max-width:520px){.shots{grid-template-columns:1fr}}
+table{width:100%;border-collapse:collapse;font-family:var(--ui);font-size:13px;margin:10px 0}th,td{text-align:left;padding:9px 8px;border-bottom:1px solid var(--hair);vertical-align:top}th{font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--faint)}
+.band{display:flex;gap:12px;align-items:flex-start;padding:14px 0;border-bottom:1px solid var(--hair)}.band .no{flex:0 0 34px;height:34px;border-radius:99px;background:var(--surface);border:1px solid var(--hair);display:grid;place-items:center;font-family:var(--serif);font-weight:600;font-size:16px}
+.band h4{font-family:var(--serif);font-size:19px;font-weight:600;margin:4px 0 4px}.band p{font-size:16px;margin:0 0 6px}
+.pill{display:inline-block;font-size:10.5px;font-weight:800;letter-spacing:.08em;padding:3px 8px;border-radius:999px;margin-left:6px;vertical-align:2px}.dead{background:#FBE9E7;color:#B0281B}.keep{background:#EEF5EF;color:#3E7A54}.new{background:#FBF3E2;color:#8A6A1E}
+.foot{margin-top:40px;padding-top:20px;border-top:1px solid var(--hair);font-size:12.5px;color:var(--faint);line-height:1.6}
+</style></head><body><div class="wrap">
+
+<p class="kick" style="margin-top:44px">FemWell · Lifestyle · whole-page redesign · report before build</p>
+<h1>One page. <em>One language.</em> One direction.</h1>
+<p class="lede">The Lifestyle page has been built piece by piece on local context, and it now fights itself: three header moments stacked, two visual languages on one screen, and a horoscope that is a stack of “read this” with no direction. This is the whole-page synthesis and the design to fix it as ONE thing — reported before a line is built.</p>
+
+<h2><span class="n">STEP 1 · THE FULL PICTURE</span>What's fighting, top to bottom</h2>
+<p class="m">Captured live at 390px on the authed test account (left: <span class="mono">/Lifestyle</span> as shipped · right: the demo route with Sky focused). Read them top to bottom.</p>
+<div class="shots">
+  <figure style="margin:0"><img src="wp-live-lifestyle-390.png" alt="Live Lifestyle page, full length, 390px"><figcaption>Live /Lifestyle</figcaption></figure>
+  <figure style="margin:0"><img src="wp-demo-sky-390.png" alt="Demo route with the Sky section focused, full length, 390px"><figcaption>Demo · Sky focused</figcaption></figure>
+</div>
+
+<div class="card">
+<ul class="c">
+<li><b>1 · THREE header moments, not one.</b> (a) the framed dusk-garden <b>photo hero</b> (the “video/garden” header — <span class="mono">media/garden/lifestyle-dusk-720.jpg</span> via the flora hero's photo mode) → (b) a <b>second title block</b> beneath it: the oxblood Ephesis script title + carved heart + two flanking meaning-blooms + an italic line → (c) when Sky is focused, a <b>third flower hero</b> (the phase-flower posy) with its own headline + heart flourish. Halli's “two flower headers stacked” is actually three hero moments on one scroll.</li>
+<li><b>2 · Two languages on one screen.</b> Everything above the Sky surface is the old register — cream chips with grain, the gold-bordered <b>“Today, at a glance”</b> card with paper texture, corner sprigs and <b>letterpress</b> headings, the two filled action pills, the cream “Handy right now” row, the textured footer band — while the Sky surface below is the approved §2.7 clean language on an alabaster ground. The seam is a hard line across the page.</li>
+<li><b>3 · The glance card contradicts the focus.</b> With Sky focused, the global glance card still sits above it, repeating “Your sky · add your birth details” and “Today's chapter” — a summary of the whole page stacked on top of a section that carries its own summary. Two summaries, one of them about other sections.</li>
+<li><b>4 · The horoscope is a stack, not a page.</b> Read with a chart (Halli's account), the Sky surface is: reading → chart → dial → goddess → “your longer arc” → footer. Each block is designed, but the sequence has no <em>direction</em> — nothing tells her where she is, why the order is what it is, or what to <em>do</em> with any of it. Only 6 of the original 18 elements are re-authored; the remaining 12 sit as a shallow placeholder line. It reads as “a bunch of read this and that.”</li>
+<li><b>5 · The boards below the fold are the old card system.</b> The “For you” deck, the clipboard boards, the panels — gradient cream, texture, heavy corner frames, 4px rims. Fine in isolation; they just aren't the language the page now leads with.</li>
+<li><b>6 · Still-image header not honoured.</b> The <span class="mono">SectionHeader</span> architecture (per-section still + flower profile) is wired but every section falls back to the photo/flora hero because no still exists yet — so the old header persists by default, exactly what Halli said to stop.</li>
+</ul>
+</div>
+
+<p class="m"><b>Honest state notes.</b> The test account has no cycle anchor and no birth chart, so both captures show the honest empty/onboarding states (that's §16.2 working, not a defect). Halli's account renders the full horoscope. The demo captures are on <span class="mono">/LifestyleBespokeDemo</span>; live <span class="mono">/Lifestyle</span> still shows the six original chips and the cream language everywhere — it has not been touched by the clean work.</p>
+
+<h2><span class="n">STEP 2 · THE DESIGN</span>The whole page, as one thing</h2>
+<p>Principles that govern every band, so nothing is decided locally again: <b>one header</b> · <b>one language</b> (§2.7 clean/classy, migrated together) · <b>one summary per view</b> · <b>the flora is present but placed once</b> (the still, then meaning-rosettes and one framed feature card — never a second hero) · <b>every control does something real</b> · <b>the page reads top to bottom as a directed sequence</b> (§6.8.2 bands, §19 spine).</p>
+
+<h3>The page, band by band (§6.8.2 skeleton, in the clean language)</h3>
+<div class="band"><div class="no">0</div><div><h4>Top chrome</h4><p>Jump-to pill + calendar icon, restyled clean (white pill, hairline, ink). Page ground = alabaster, no grain, no vignette.</p></div></div>
+<div class="band"><div class="no">1</div><div><h4>ONE header — the section still</h4><p><b>The photo/video hero and the separate script-title block are removed entirely.</b> The header is <span class="mono">SectionHeader</span> only: one clean still per section, ~16:10, soft radius, with the section title (Cormorant, ink) + the ONE carved heart + the flower-profile line in a quiet band beneath. Tapping a chip crossfades to that section's still + title. <b>Until Halli's Higgsfield stills land</b>, each section gets a <b>rendered placeholder still</b> — a static, print-like composition of that section's signature species from the real engine (<span class="mono">SpeciesBloom</span>/<span class="mono">Bouquet</span>, no animation) on the alabaster ground — so the slot is designed, never the video, never a fallback flora hero. Drop-in contract unchanged: when a real still arrives, the placeholder is replaced by config alone.</p></div></div>
+<div class="band"><div class="no">1b</div><div><h4>The controller</h4><p>Five chips (Read · Listen · Books · Sky · Good life) as clean white chips with a hairline; the active chip carries an ink border + its colourway meaning-rosette. Under them the state line (phase · day, or the gentle default). On the <b>landing</b> the active section's ONE action button shows (clean outlined). In <b>focus</b>, the chip is the door and the section surface owns its own CTA — no second button.</p></div></div>
+<div class="band"><div class="no">2</div><div><h4>Glance ⇆ Jess row — landing only</h4><p>Restyled to a white card: soft icon discs, gold eyebrows, ink rows, the dot pager, the Jess digest panel with its inner sheet. <b>When a section is focused this row is hidden</b> — the section carries its own summary (§19.4), so there is exactly one summary per view. Same for the two action pills (§6.7.0a plum/gold, rendered flat and clean): landing only.</p></div></div>
+<div class="band"><div class="no">3</div><div><h4>Content — landing boards or the focused section</h4><p>Landing: the “For you” deck + the clipboard boards, migrated to clean chrome (white boards, hairline, quiet corner sprigs, gold hairline divider, 3px accent spine, one neutral shadow — no gradient wash, no texture). Focus: the section's bespoke §19 surface (Read · Listen · Books&nbsp;+&nbsp;story · Sky · Good life · Yours), all six migrated to the clean language together with the meaning-rosette per eyebrow kept.</p></div></div>
+<div class="band"><div class="no">4</div><div><h4>Handy right now</h4><p>Compact white one-line cards, hairline, accent spine 3px, every chip a real jump (kept as is functionally).</p></div></div>
+<div class="band"><div class="no">5</div><div><h4>Closing signature + footer</h4><p>Pollinator + one Cormorant-italic line; the footer band loses its paper texture and sits on the alabaster ground with the heart signature.</p></div></div>
+
+<h3>The horoscope — ONE composed page with direction and function</h3>
+<p>Not a stack. A directed reading in <b>eight movements</b>, each with a job and a real action, with a slim <b>jump strip</b> at the top (Today · You · Tides · Year · Ask · Atelier · Yours) that scrolls to any movement — the CLAUDE.md multi-layer switcher, so she always knows where she is. Fleuron dividers mark the movements; numbered gold eyebrows carry the direction. <b>No flower hero inside the surface</b> — the Sky still above is the header. Full 18-element parity, each element designed for what it is:</p>
+
+<table>
+<tr><th>Movement</th><th>What it does (function)</th><th>Original elements carried (18 + glossary)</th></tr>
+<tr><td><b>I · Tonight</b> (masthead)</td><td>Where she is right now: the reading's headline, heart flourish, state line (phase · moon · sun), ONE CTA “Edit your chart”, share icon. The Jess→Astra handoff banner appears here only when she arrives from Jess.</td><td>1 Hero · 18 Share · 16 JessAstraBanner</td></tr>
+<tr><td><b>II · Today</b> (read → act)</td><td>The editorial reading with its crimson lead-in and Astra's signature; Energy/Mood; “A sound for today” (Spotify); Notice/watch-for. Then the <b>carry-it-with-you</b> row — Reflect (seeded Journal composer) · Discuss (Community room) · Ask Jess — and “Mark as read” (Garden). The reading does something.</td><td>3 Today's weather · 17 ContentActionBar</td></tr>
+<tr><td><b>III · You</b> (identity)</td><td>The chart triad as hairline columns (tap → 80–120-word reading; locked → add birth time), the goddess bench (six orbs, tap → archetype + sign, the goddess line), and the <b>red/white moon archetype</b> (moon glyph + name + body; honest empty state).</td><td>2 Triad · 5 Goddess bench · 7 RedWhiteMoon</td></tr>
+<tr><td><b>IV · Your tides</b> (body)</td><td>The cycle × moon dial in the one framed feature card (corner sprigs, her phase colourway wash) + the <b>void-of-course moon pip</b> when live. No cycle → “add your dates” deep-links to the real logger.</td><td>4 Cycle-moon dial · 10 SkyDiary (VoC pip)</td></tr>
+<tr><td><b>V · Your year</b> (arcs)</td><td>Annual profections (house + time-lord), the <b>Saturn-return letter</b> at 27–30, and the <b>12-cycle transit timeline</b> (phase-tinted columns, planet dots) with the “Right now” observation; tap a column → its note.</td><td>6 Profections + Saturn · 10 SkyDiary (timeline + right-now)</td></tr>
+<tr><td><b>VI · Ask &amp; connect</b> (interactive)</td><td><b>Ask the sky</b> — notebook-ruled input, chips, “THE SKY SAYS”, persisted history (AdviceThreads/Messages, the real function). <b>Compatibility</b> — name + day/month/year drum → Talk/Touch/Trust/Time bars + the reading, copy-link (?compat=), the <i>synastry</i> glossary tip.</td><td>9 AskTheSky · 8 Compatibility · GlossaryTip</td></tr>
+<tr><td><b>VII · The atelier</b> (paid)</td><td>The Atelier letter — locked (attribution chip, specimen, “Unlock · £8.99/mo” → real Stripe checkout; operator panel) / unlocked (the month's letter, awaiting-sign-off banner) — and the <b>paid shelf</b> (Year ahead £19 · Chart atelier £29 · Choose the day £55, real one-shot checkout). Designed as a quiet, classy shelf, not a sales banner.</td><td>14 AtelierReading · 15 PaidShelf</td></tr>
+<tr><td><b>VIII · Your sky, your way</b> (settings + honesty)</td><td>Quiet mode + Soft sky toggles (UserPreferences, Soft sky nested + disabled when Quiet is off) · the science footer with its two citations · the privacy line. The honest close.</td><td>11 QuietMode · 12 ScienceFooter · 13 PrivacyLine</td></tr>
+</table>
+<p class="m">Order rationale (§19.2): now → act → identity → body → long arcs → interactive → paid → settings/honesty. Everything she can <em>do</em> today sits in the first two movements; identity and body come before the year; the interactive tools sit after she's grounded; money comes late and quiet; honesty closes.</p>
+
+<h3>Books &amp; story — smart to her, not the calendar (rendered mock: <span class="mono">BOOKS-STORY-EXEMPLAR.html</span>)</h3>
+<div class="card">
+<p><b>The miss, named honestly.</b> The merge's rotation proof passed, but the <em>rendered</em> list was broken: <span class="mono">loadStoryChapters()</span> loads every active series and the surface listed them all, sorted by day number — two 30-chapter series interleave as 1,1,2,2… → “Chapter 9 of 60, Chapter 9 of 60”. The gate picked one series; the list never scoped to it. And even scoped, a 30-row strip on cream texture is a wall, not a design.</p>
+<ul class="c">
+<li><b>Model — unlock by calendar, position by her.</b> Chapter N still unlocks on day N of the month's run. Her <b>reading position</b> = the first unread chapter (read-marks, device + user keyed). Reopening never jumps ahead; it lands on <em>her next chapter</em>. Behind → “<b>3 waiting for you</b>”; the flip control moves one at a time, forward only once the current chapter is read (‹ re-reads a finished one). Caught up → “Chapter 22 opens tomorrow.” Run closed → the finale + “a new run begins on the 1st.” Never auto-advanced.</li>
+<li><b>Surface order.</b> her summary → <b>YOUR NEXT CHAPTER</b> (the hero: title, chapter n of 30, waiting pill, drop-cap taster, Read + ‹ ›) → <b>THE RUN</b> (a 3×10 strip of the <em>current series only</em>: read / next / open / unlocks-daily; tap any open dot; at most two “up next” rows; one quiet straight-through link) → <b>THIS MONTH'S SHELF</b> (four books: one featured with a hook + minutes-per-chapter, two compact, the month's last book <em>revealed</em> on a Sunday — paced surfacing) → “Yours &amp; the whole library ›” (a sheet: her additions + the free library, off the page).</li>
+<li><b>Coherence of counts.</b> A run = the current series' chapter count (30 for The Long Room); the strip, the label and the summary all read from one number. If a second series is active, it is the <em>next</em> run, not extra rows.</li>
+<li><b>Wired.</b> Read / ‹ / › → the immersive reader at that chapter; mark-as-read → read-mark + Garden; run dots → reader; featured book → in-place reading pane; reveal → nothing until its day (an honest “arrives Sunday”); library link → the sheet.</li>
+</ul>
+</div>
+
+<h3>Every control, wired</h3>
+<table>
+<tr><th>Control</th><th>Does</th><th>Status</th></tr>
+<tr><td>Chips (5)</td><td>focus that section; swap the still + title</td><td><span class="pill keep">LIVE</span></td></tr>
+<tr><td>Jump strip (Sky)</td><td>scrollIntoView to the movement</td><td><span class="pill new">NEW</span></td></tr>
+<tr><td>Edit your chart · + add birth time · Set up your sky</td><td>open BirthDataSheet; save → setAstro</td><td><span class="pill keep">LIVE</span></td></tr>
+<tr><td>Share (icon)</td><td>ShareButton → Web Share / fallbacks</td><td><span class="pill keep">LIVE</span></td></tr>
+<tr><td>A sound for today</td><td>Spotify playlist (moon sign)</td><td><span class="pill keep">LIVE</span></td></tr>
+<tr><td>Reflect · Discuss · Ask Jess</td><td>seeded Journal composer / Community room / assistant event</td><td><span class="pill new">RESTORED</span></td></tr>
+<tr><td>Mark as read</td><td>recordProgress → Garden</td><td><span class="pill new">RESTORED</span></td></tr>
+<tr><td>Triad column · goddess orb · timeline column</td><td>expand in place</td><td><span class="pill keep">LIVE</span> / <span class="pill new">NEW</span></td></tr>
+<tr><td>Dial “add your dates”</td><td>deep-link to the period logger</td><td><span class="pill new">NEW</span></td></tr>
+<tr><td>Ask the sky — submit / chips</td><td>functions.invoke; persists thread + messages</td><td><span class="pill new">RESTORED</span></td></tr>
+<tr><td>Compatibility — run / copy link</td><td>functions.invoke; CompatibilityReading; clipboard</td><td><span class="pill new">RESTORED</span></td></tr>
+<tr><td>Unlock the Atelier · Buy (×3)</td><td>stripeCheckout / createOneShotCheckout (simulated when env missing, logged)</td><td><span class="pill new">RESTORED</span></td></tr>
+<tr><td>Quiet mode · Soft sky</td><td>UserPreferences create/update</td><td><span class="pill new">RESTORED</span></td></tr>
+<tr><td>Publish letter (operator)</td><td>AtelierLetters.update</td><td><span class="pill new">RESTORED</span></td></tr>
+<tr><td>Landing: glance rows · action pills · For-you · boards · Handy</td><td>existing jumps/openers, unchanged</td><td><span class="pill keep">LIVE</span> (re-audited on build)</td></tr>
+</table>
+
+<h3>Mechanism — reversible, no new entity/function</h3>
+<ul class="c g">
+<li><b>One flag.</b> <span class="mono">LifestyleEliteShell</span> gains a <span class="mono">clean</span> prop (default OFF). The demo route <span class="mono">/LifestyleBespokeDemo</span> passes <span class="mono">enableFocus layout="bespoke" clean</span>. Live <span class="mono">/Lifestyle</span> passes nothing → byte-identical until Halli approves; approval = one line in <span class="mono">LifestyleElite.jsx</span>.</li>
+<li><b>One theme, whole tree.</b> The shell wrapper gets <span class="mono">.fw-clean</span>; a scoped stylesheet (<span class="mono">CLEAN_CSS</span>, extended) restyles the shared primitives through class hooks added to <span class="mono">FwCard</span> / <span class="mono">Clipboard</span> / <span class="mono">StackedCard</span> / the glance panels (additive <span class="mono">className</span>s; they render identically outside <span class="mono">.fw-clean</span>). Per §17.1 opt-in-off.</li>
+<li><b>Header.</b> <span class="mono">SectionHeader</span> becomes the only header when <span class="mono">clean</span>; placeholder stills are rendered compositions from the real engine; the drop-in contract for real stills is unchanged.</li>
+<li><b>Horoscope.</b> <span class="mono">SkyFocus</span> re-authored as the eight movements; batches 2–4 reuse the original sections' data/logic (hooks, entities, functions) and rebuild the presentation (§19.6). No new entity/function.</li>
+<li><b>Bible.</b> §6.8 (Lifestyle header = the section still), §6.8.2 (clean variant of the bands), §19 (the Sky as the reference composition) updated in the same cycle.</li>
+</ul>
+
+<h3>Verification before it's shown</h3>
+<p class="m">Full-page screenshots at 360/390/430 on the authed pipeline (test account = empty/onboarding states; a sample chart injected temporarily for the full horoscope, then reverted); real taps on every control in the table above; the parity checklist 18/18 old-vs-new; a P0/P1/P2 catalogue. Then the complete page is shown as the single exemplar before anything rolls to live.</p>
+
+<div class="foot">Lifestyle whole-page redesign · report before build · 2026-09-21. Screenshots: <span class="mono">femwell-handoff/wp-live-lifestyle-390.png</span> · <span class="mono">wp-demo-sky-390.png</span>. Nothing built yet.</div>
+</div></body></html>

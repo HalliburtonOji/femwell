@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Books &amp; Story — Your Next Chapter</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600&family=Inter:wght@400;500;600;700;800&family=Ephesis&display=swap" rel="stylesheet">
+<style>
+:root{--ground:#F4F3EF;--surface:#fff;--sunk:#FAF9F6;--hair:#EAE7E0;--goldhair:#D9C79B;--ink:#191510;--slate:#6E6A61;--faint:#A6A197;--crimson:#BC2E27;--gold:#A8893F;--sage:#5F8A6B;--plum:#7E6A8E;--serif:"Cormorant Garamond",Georgia,serif;--ui:"Inter",system-ui,sans-serif;--script:"Ephesis",cursive}
+*{box-sizing:border-box}body{margin:0;background:var(--ground);color:var(--ink);font-family:var(--ui);-webkit-font-smoothing:antialiased;padding:0 0 60px}
+.intro{text-align:center;padding:40px 22px 4px}.kick{font-size:10.5px;font-weight:800;letter-spacing:.26em;text-transform:uppercase;color:var(--gold);margin:0 0 12px}
+.intro h1{font-family:var(--serif);font-weight:600;font-size:36px;line-height:1.05;letter-spacing:-.4px;margin:0 0 10px}.intro h1 em{font-style:italic;color:var(--crimson);font-weight:500}
+.intro p{font-family:var(--serif);font-size:18px;line-height:1.5;color:var(--slate);max-width:30em;margin:0 auto}
+.stage{display:flex;justify-content:center;padding:26px 0 8px}
+.phone{width:390px;max-width:100%;background:var(--ground);border-radius:42px;padding:20px 0 26px;box-shadow:0 40px 90px -30px rgba(25,21,16,.34),0 10px 24px -12px rgba(25,21,16,.16);border:1px solid rgba(0,0,0,.05)}
+.notch{width:104px;height:5px;border-radius:99px;background:rgba(0,0,0,.10);margin:0 auto 16px}.scr{padding:0 22px}
+/* ── the ONE header: section still (placeholder = rendered print) ── */
+.still{position:relative;border-radius:20px;overflow:hidden;aspect-ratio:16/10;background:linear-gradient(170deg,#FBFAF7,#EEF1EA 60%,#E6EBE2);box-shadow:0 1px 3px rgba(25,21,16,.03),0 18px 42px -18px rgba(25,21,16,.14)}
+.still svg{position:absolute;inset:0;width:100%;height:100%}
+.tband{display:flex;align-items:center;justify-content:space-between;padding:12px 4px 0}
+.tband .t{font-family:var(--serif);font-weight:600;font-size:26px;letter-spacing:-.3px;color:var(--ink);line-height:1.1;display:flex;align-items:center;gap:9px}
+.tband .f{font-family:var(--serif);font-style:italic;font-size:14px;color:var(--slate);text-align:right;line-height:1.3;max-width:11em}
+/* chips */
+.chips{display:flex;gap:7px;margin:14px 0 8px;overflow:hidden}
+.chip{flex:1;display:flex;flex-direction:column;align-items:center;gap:5px;padding:9px 4px;border-radius:13px;background:var(--surface);border:1px solid var(--hair);font-size:10.5px;font-weight:700;color:var(--slate)}
+.chip.on{border-color:var(--ink);color:var(--ink)}.chip svg{width:16px;height:16px}
+.state{display:flex;align-items:center;justify-content:center;gap:10px;font-size:11px;font-weight:600;color:var(--slate);letter-spacing:.04em;margin:8px 0 16px}.state .d{width:3px;height:3px;border-radius:99px;background:var(--goldhair)}
+/* surface */
+.sum{display:flex;gap:10px;align-items:flex-start;margin:0 0 18px}.sum .ic{width:30px;height:30px;border-radius:9px;background:var(--surface);border:1px solid var(--hair);display:grid;place-items:center;flex-shrink:0}
+.sum p{font-family:var(--serif);font-style:italic;font-size:17px;line-height:1.45;color:var(--ink);margin:0}
+.eye{display:flex;align-items:center;gap:7px;font-size:10px;font-weight:800;letter-spacing:.22em;text-transform:uppercase;color:var(--gold);margin:0 0 8px}
+.ros{width:11px;height:11px}
+.card{background:var(--surface);border-radius:20px;padding:20px;box-shadow:0 1px 3px rgba(25,21,16,.03),0 18px 42px -18px rgba(25,21,16,.12);margin:0 0 16px;position:relative;overflow:hidden}
+.h{font-family:var(--serif);font-weight:600;font-size:24px;letter-spacing:-.2px;line-height:1.1;margin:0 0 4px}
+.h small{display:block;font-family:var(--ui);font-size:11px;font-weight:600;letter-spacing:.04em;color:var(--slate);margin-top:5px}
+.wait{display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:700;color:var(--crimson);background:#FBEDEB;border-radius:999px;padding:4px 10px;margin:8px 0 12px}
+.taster{font-family:var(--serif);font-size:16.5px;line-height:1.62;color:var(--ink);margin:0 0 14px}.taster .cap{font-family:var(--serif);font-size:38px;font-weight:600;float:left;line-height:.8;margin:5px 6px 0 0;color:var(--crimson)}
+.flip{display:flex;align-items:center;gap:8px}
+.cta{flex:1;display:flex;align-items:center;justify-content:center;gap:8px;padding:13px;border-radius:13px;background:var(--ink);color:#fff;font-size:12.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase}
+.pg{width:44px;height:44px;border-radius:12px;border:1px solid var(--hair);background:var(--surface);display:grid;place-items:center;color:var(--ink)}.pg.off{opacity:.35}
+/* the run strip — one row per ten */
+.run{display:grid;grid-template-columns:repeat(10,1fr);gap:7px 5px;margin:12px 0 10px}
+.dot{aspect-ratio:1;border-radius:99px;display:grid;place-items:center;font-size:9px;font-weight:700;color:var(--slate)}
+.dot.read{background:#DCE8DC;color:#3E6B4A}.dot.next{background:var(--ink);color:#fff;box-shadow:0 0 0 2px #fff,0 0 0 3.5px var(--ink)}.dot.open{border:1px solid var(--ink);color:var(--ink)}.dot.lock{border:1px dashed var(--hair);color:var(--faint)}
+.legend{display:flex;gap:12px;justify-content:center;font-size:10.5px;color:var(--slate);margin:0 0 14px}.legend span{display:flex;align-items:center;gap:5px}.legend i{width:9px;height:9px;border-radius:99px;display:inline-block}
+.up{display:flex;flex-direction:column}.up a{display:flex;align-items:center;gap:10px;padding:10px 2px;border-top:1px solid var(--hair);text-decoration:none;color:var(--ink)}
+.up .n{width:26px;height:26px;border-radius:8px;border:1px solid var(--hair);display:grid;place-items:center;font-size:11px;font-weight:800;color:var(--slate)}.up b{font-family:var(--serif);font-size:16px;font-weight:600}.up small{font-size:10.5px;color:var(--faint);margin-left:auto}
+.quiet{display:block;text-align:center;font-size:11.5px;font-weight:700;color:var(--slate);letter-spacing:.04em;margin:12px 0 0}
+/* shelf */
+.feat{display:flex;gap:14px}.cov{width:84px;height:118px;border-radius:10px;flex-shrink:0;position:relative;overflow:hidden;background:linear-gradient(160deg,#F1E9DF,#D9C7B4)}
+.cov.b{background:linear-gradient(160deg,#E7EDE6,#B9CBB9)}.cov.c{background:linear-gradient(160deg,#EDE6EE,#C9B7CB)}.cov.d{background:linear-gradient(160deg,#F5EBDD,#E2C58F)}
+.cov svg{position:absolute;inset:0;width:100%;height:100%}
+.ft{font-family:var(--serif);font-weight:600;font-size:19px;line-height:1.15;margin:0 0 2px}.fa{font-size:11px;color:var(--slate);margin:0 0 8px}.fh{font-family:var(--serif);font-size:15px;line-height:1.5;color:var(--ink);margin:0 0 10px}
+.mini{display:flex;align-items:center;gap:6px;font-size:11px;font-weight:700;color:var(--ink)}
+.row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-top:16px;padding-top:16px;border-top:1px solid var(--hair)}
+.sm .cov{width:100%;height:96px}.sm .t{font-family:var(--serif);font-weight:600;font-size:13.5px;line-height:1.15;margin:7px 0 2px}.sm .a{font-size:10px;color:var(--slate)}
+.reveal{border:1px dashed var(--goldhair);border-radius:10px;height:96px;display:grid;place-items:center;text-align:center;font-family:var(--serif);font-style:italic;font-size:13px;color:var(--slate);padding:8px;line-height:1.3}
+.foot{font-family:var(--serif);font-style:italic;font-size:13.5px;color:var(--faint);text-align:center;line-height:1.5;margin:6px 16px 0}
+.cap{text-align:center;font-size:11px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--faint);margin:18px 0 0}
+.wrap{max-width:560px;margin:0 auto;padding:0 22px}.ul{list-style:none;padding:0;margin:14px 0 0}.ul li{font-family:var(--serif);font-size:16.5px;line-height:1.5;padding:10px 0 10px 24px;position:relative;border-bottom:1px solid var(--hair)}.ul li:before{content:"";position:absolute;left:2px;top:17px;width:7px;height:7px;border-radius:99px;background:var(--crimson)}.ul b{font-weight:600}
+</style></head><body>
+
+<svg width="0" height="0" style="position:absolute"><defs>
+<g id="rosette"><ellipse cx="0" cy="-3.2" rx="1.7" ry="3"/><ellipse cx="0" cy="-3.2" rx="1.7" ry="3" transform="rotate(72)"/><ellipse cx="0" cy="-3.2" rx="1.7" ry="3" transform="rotate(144)"/><ellipse cx="0" cy="-3.2" rx="1.7" ry="3" transform="rotate(216)"/><ellipse cx="0" cy="-3.2" rx="1.7" ry="3" transform="rotate(288)"/><circle r="1.3" fill="#A8893F"/></g>
+<linearGradient id="pet" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#F9E4E6"/><stop offset="1" stop-color="#D98E96"/></linearGradient>
+<linearGradient id="lf" x1="0" y1="1" x2="0" y2="0"><stop offset="0" stop-color="#5F8A6B"/><stop offset="1" stop-color="#B6CDB6"/></linearGradient>
+</defs></svg>
+
+<div class="intro"><p class="kick">FemWell · Books &amp; story · the surface, designed</p><h1>Your next chapter <em>waits for you.</em></h1><p>Smart to her, not the calendar: chapters unlock daily, but her place is her own. One prominent next chapter, a compact run strip instead of a wall, and a shelf of three or four books that arrive one at a time.</p></div>
+
+<div class="stage"><div class="phone"><div class="notch"></div><div class="scr">
+
+  <!-- ONE header: the section still (placeholder = a rendered print of the section's species) -->
+  <div class="still">
+    <svg viewBox="0 0 390 244" preserveAspectRatio="xMidYMid slice">
+      <ellipse cx="200" cy="160" rx="170" ry="70" fill="#DCE5D8" opacity=".5"/>
+      <g fill="none" stroke="#6F9A78" stroke-width="2" stroke-linecap="round"><path d="M200 244 C196 190 186 150 172 112"/><path d="M204 244 C214 196 232 160 252 128"/><path d="M198 244 C188 210 168 190 142 176"/></g>
+      <path d="M186 200 C160 196 140 182 128 160 C154 158 176 172 186 200Z" fill="url(#lf)"/><path d="M212 190 C240 184 262 168 272 146 C246 146 224 162 212 190Z" fill="url(#lf)" opacity=".9"/>
+      <g transform="translate(172 108)"><g fill="url(#pet)" stroke="#C97A84" stroke-width=".6">
+        <path d="M0 0 C-14 -8 -22 -26 -12 -40 C-2 -30 0 -14 0 0Z"/><path d="M0 0 C14 -8 22 -26 12 -40 C2 -30 0 -14 0 0Z"/><path d="M0 0 C-22 2 -34 -12 -30 -28 C-14 -22 -4 -10 0 0Z"/><path d="M0 0 C22 2 34 -12 30 -28 C14 -22 4 -10 0 0Z"/><path d="M0 0 C-10 14 -24 16 -32 6 C-18 -2 -8 -2 0 0Z"/><path d="M0 0 C10 14 24 16 32 6 C18 -2 8 -2 0 0Z"/><path d="M0 -4 C-8 -18 -4 -34 0 -38 C4 -34 8 -18 0 -4Z"/></g><circle r="6" fill="#B8912E"/><circle r="2.4" fill="#F5E0A0"/></g>
+      <g transform="translate(252 126) scale(.78)"><g fill="url(#pet)" stroke="#C97A84" stroke-width=".6"><path d="M0 0 C-14 -8 -22 -26 -12 -40 C-2 -30 0 -14 0 0Z"/><path d="M0 0 C14 -8 22 -26 12 -40 C2 -30 0 -14 0 0Z"/><path d="M0 0 C-22 2 -34 -12 -30 -28 C-14 -22 -4 -10 0 0Z"/><path d="M0 0 C22 2 34 -12 30 -28 C14 -22 4 -10 0 0Z"/><path d="M0 -4 C-8 -18 -4 -34 0 -38 C4 -34 8 -18 0 -4Z"/></g><circle r="6" fill="#B8912E"/></g>
+      <g transform="translate(142 172) scale(.5)"><g fill="url(#pet)" stroke="#C97A84" stroke-width=".6"><path d="M0 0 C-14 -8 -22 -26 -12 -40 C-2 -30 0 -14 0 0Z"/><path d="M0 0 C14 -8 22 -26 12 -40 C2 -30 0 -14 0 0Z"/><path d="M0 -4 C-8 -18 -4 -34 0 -38 C4 -34 8 -18 0 -4Z"/></g><circle r="6" fill="#B8912E"/></g>
+    </svg>
+  </div>
+  <div class="tband">
+    <div class="t">Books &amp; story <svg width="15" height="15" viewBox="0 0 24 24"><path d="M12 20.3C7 16.6 3.6 13.8 3.6 9.7 3.6 7.2 5.5 5.4 7.9 5.4c1.6 0 3.1.9 3.9 2.3.2.3.6.3.8 0 .8-1.4 2.3-2.3 3.9-2.3 2.4 0 4.3 1.8 4.3 4.3 0 4.1-3.4 6.9-8.4 10.6-.2.1-.4.1-.6 0Z" fill="#BC2E27" transform="rotate(-6 12 12)"/><circle cx="9.2" cy="9.4" r="1.5" fill="#fff" opacity=".85"/></svg></div>
+    <div class="f">Honeysuckle — devoted, the story that keeps</div>
+  </div>
+
+  <div class="chips">
+    <div class="chip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2zM22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>Read</div>
+    <div class="chip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M3 18v-6a9 9 0 0 1 18 0v6"/><path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3zM3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z"/></svg>Listen</div>
+    <div class="chip on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>Books</div>
+    <div class="chip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>Sky</div>
+    <div class="chip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>Good life</div>
+  </div>
+  <div class="state"><span>Follicular · Day 9</span><span class="d"></span><span>September's run · day 21</span></div>
+
+  <!-- summary — hers, not the calendar's -->
+  <div class="sum"><span class="ic"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#BC2E27" stroke-width="1.7"><path d="M20.2 4.2c-2.5 0-4.9 1-6.7 2.7L12 8.4 10.5 6.9C8.7 5.2 6.3 4.2 3.8 4.2"/><path d="M12 8.4V21"/></svg></span><p>You're at chapter 9 of The Long Room — three chapters have opened while you were busy. They'll wait. One at a time.</p></div>
+
+  <!-- I · YOUR NEXT CHAPTER — the hero -->
+  <div class="card">
+    <div class="eye"><svg class="ros" viewBox="-6 -6 12 12" fill="#BC2E27"><use href="#rosette"/></svg> Your next chapter</div>
+    <h2 class="h">Chapter 9 · The night the lamps went out<small>The Long Room · chapter 9 of 30</small></h2>
+    <span class="wait"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg> 3 waiting for you</span>
+    <p class="taster"><span class="cap">S</span>he had been counting the lamps along the corridor since she was small — eleven, always eleven — and tonight there were ten. The tenth stood cold in its bracket, wick trimmed, glass clean, as if someone had simply decided against it.</p>
+    <div class="flip"><span class="pg off">‹</span><a class="cta"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2zM22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg> Read chapter 9</a><span class="pg">›</span></div>
+    <p style="font-family:var(--ui);font-size:10.5px;color:var(--faint);text-align:center;margin:10px 0 0">‹ re-read · › moves on only once this one's read</p>
+  </div>
+
+  <!-- II · THE RUN — a compact strip, not a wall -->
+  <div class="card">
+    <div class="eye"><svg class="ros" viewBox="-6 -6 12 12" fill="#7E6A8E"><use href="#rosette"/></svg> September's run · 30 chapters</div>
+    <div class="run">
+      <span class="dot read">1</span><span class="dot read">2</span><span class="dot read">3</span><span class="dot read">4</span><span class="dot read">5</span><span class="dot read">6</span><span class="dot read">7</span><span class="dot read">8</span><span class="dot next">9</span><span class="dot open">10</span>
+      <span class="dot open">11</span><span class="dot open">12</span><span class="dot open">13</span><span class="dot open">14</span><span class="dot open">15</span><span class="dot open">16</span><span class="dot open">17</span><span class="dot open">18</span><span class="dot open">19</span><span class="dot open">20</span>
+      <span class="dot open">21</span><span class="dot lock">22</span><span class="dot lock">23</span><span class="dot lock">24</span><span class="dot lock">25</span><span class="dot lock">26</span><span class="dot lock">27</span><span class="dot lock">28</span><span class="dot lock">29</span><span class="dot lock">30</span>
+    </div>
+    <div class="legend"><span><i style="background:#DCE8DC"></i>read</span><span><i style="background:#191510"></i>next</span><span><i style="border:1px solid #191510"></i>open</span><span><i style="border:1px dashed #C9C5BC"></i>unlocks daily</span></div>
+    <div class="up">
+      <a><span class="n">10</span><b>The letter under the door</b><small>up next</small></a>
+      <a><span class="n">11</span><b>What Ada wouldn't say</b><small>after that</small></a>
+    </div>
+    <a class="quiet">Read straight through from chapter 1 ›</a>
+  </div>
+
+  <!-- III · THIS MONTH'S SHELF — few, curated, revealed one at a time -->
+  <div class="card">
+    <div class="eye"><svg class="ros" viewBox="-6 -6 12 12" fill="#D4AF37"><use href="#rosette"/></svg> This month's shelf · 4 books</div>
+    <div class="feat">
+      <div class="cov"><svg viewBox="0 0 84 118"><g transform="translate(42 70)" fill="#C97A84" opacity=".9"><path d="M0 0 C-10 -6 -16 -20 -8 -30 C-1 -22 0 -10 0 0Z"/><path d="M0 0 C10 -6 16 -20 8 -30 C1 -22 0 -10 0 0Z"/><path d="M0 -3 C-6 -14 -3 -26 0 -29 C3 -26 6 -14 0 -3Z"/></g><circle cx="42" cy="66" r="3.5" fill="#B8912E"/><path d="M42 118 C42 100 40 88 42 72" stroke="#6F9A78" stroke-width="1.6" fill="none"/></svg></div>
+      <div style="min-width:0"><p class="ft">Middlemarch</p><p class="fa">George Eliot · free classic</p><p class="fh">A town, a marriage that isn't what it looked like, and a woman who wanted a life bigger than the one on offer.</p><span class="mini"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 3l14 9-14 9z"/></svg> Start reading · ~9 min a chapter</span></div>
+    </div>
+    <div class="row3">
+      <div class="sm"><div class="cov b"><svg viewBox="0 0 84 96"><g transform="translate(42 58)" fill="#8FAF8F"><path d="M0 0 C-9 -5 -14 -18 -7 -26 C-1 -19 0 -9 0 0Z"/><path d="M0 0 C9 -5 14 -18 7 -26 C1 -19 0 -9 0 0Z"/><path d="M0 -3 C-5 -12 -3 -22 0 -25 C3 -22 5 -12 0 -3Z"/></g><circle cx="42" cy="55" r="3" fill="#B8912E"/></svg></div><p class="t">The Long Room</p><p class="a">FemWell fiction</p></div>
+      <div class="sm"><div class="cov c"><svg viewBox="0 0 84 96"><g transform="translate(42 58)" fill="#8E6E8E"><path d="M0 0 C-9 -5 -14 -18 -7 -26 C-1 -19 0 -9 0 0Z"/><path d="M0 0 C9 -5 14 -18 7 -26 C1 -19 0 -9 0 0Z"/><path d="M0 -3 C-5 -12 -3 -22 0 -25 C3 -22 5 -12 0 -3Z"/></g><circle cx="42" cy="55" r="3" fill="#D4AF37"/></svg></div><p class="t">Persuasion</p><p class="a">Jane Austen</p></div>
+      <div class="sm"><div class="reveal">A new book arrives on Sunday the 28th</div><p class="t" style="color:var(--faint)">Not yet</p><p class="a">the month's last reveal</p></div>
+    </div>
+    <a class="quiet">Yours &amp; the whole library ›</a>
+  </div>
+
+  <p class="foot">A chapter a day while the run's open — but your place is yours. No streaks, no “you're behind.”</p>
+</div></div></div>
+<p class="cap">The Books &amp; story surface — clean language, one header</p>
+
+<div class="wrap">
+<ul class="ul">
+<li><b>Smart to her.</b> Chapters unlock one per day of the month's run (the calendar); her <em>position</em> is the first unread (her own, device + user keyed). Reopening never jumps ahead — it lands on her next chapter. When she's behind: <em>“3 waiting for you”</em>, and the flip control moves one at a time, forward only once the current one is read (‹ re-reads). Caught up → “Chapter 22 opens tomorrow.” Run closed → the finale + “a new run begins on the 1st.”</li>
+<li><b>No wall.</b> The run is a 3×10 strip of the current series only (the duplicate bug was two series interleaving — now the list is scoped to the run's series, so it's 30 of 30, never “of 60”). Read / next / open / unlocks-daily states; tap any open dot to jump; at most two “up next” rows; one quiet straight-through link.</li>
+<li><b>Few, curated books.</b> Four per month — one featured (with a hook and a ~minutes-per-chapter line, starts reading in place), two compact, and the month's last book <em>revealed</em> on a Sunday (paced surfacing, “tiny reveals”). Continue-reading, when it exists, takes the featured slot. Her own additions and the full free library sit behind one quiet link (a sheet), not on the page.</li>
+<li><b>One header, one language.</b> The section still (placeholder print of honeysuckle — devotion — until the Higgsfield still lands) with the title, the one heart and the flower line; clean chips; no second flower anywhere on the surface; meaning-rosettes per card kept.</li>
+</ul>
+</div>
+</body></html>

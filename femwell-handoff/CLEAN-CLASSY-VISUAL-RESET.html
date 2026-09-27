@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Clean &amp; Classy — Visual Reset</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Inter:wght@400;500;600;700;800&family=Ephesis&display=swap" rel="stylesheet">
+<style>
+  :root{
+    /* PROPOSED clean palette (the reset) */
+    --ground:#F5F4F1;      /* alabaster page — calm, restful, NOT cream */
+    --surface:#FFFFFF;     /* cards lift off the ground with real contrast */
+    --sunk:#FAF9F7;        /* insets */
+    --hair:#E7E5DF;        /* single hairline */
+    --ink:#17140F;         /* near-black text — high contrast */
+    --slate:#6B675F;       /* secondary text (neutral, not brown) */
+    --faint:#9A968C;       /* labels / meta */
+    --crimson:#BC2E27;     /* THE heart — sole hero accent */
+    --gold:#A8893F;        /* fine eyebrow / hairline only */
+    --sage:#5F8A6B; --luteal:#7E6A8E; --ovul:#B8912E; /* phase hues, deepened for AA on white */
+    /* legacy 'burnt cream' — shown only for the before/after */
+    --old-paper:#ECE7DA; --old-card:#F4EFE3; --old-ink:#0B0805; --old-ox:#7A1A12; --old-muted:#2E261B;
+    --serif:"Cormorant Garamond",Georgia,serif;
+    --ui:"Inter",ui-sans-serif,system-ui,sans-serif;
+    --script:"Ephesis",cursive;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;background:var(--ground);color:var(--ink);font-family:var(--ui);-webkit-font-smoothing:antialiased}
+  body{padding:0 0 80px}
+  .wrap{max-width:720px;margin:0 auto;padding:0 20px}
+  /* ── masthead ── */
+  .mast{padding:52px 0 34px;border-bottom:1px solid var(--hair);margin-bottom:34px}
+  .kicker{font-family:var(--ui);font-size:11.5px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--gold);margin:0 0 14px}
+  h1{font-family:var(--serif);font-weight:600;font-size:46px;line-height:1.04;letter-spacing:-.5px;margin:0 0 16px}
+  .lede{font-family:var(--serif);font-size:22px;line-height:1.5;color:var(--slate);max-width:34em;margin:0}
+  .sig{font-family:var(--script);font-size:34px;color:var(--crimson);line-height:1;margin:22px 0 0}
+  /* ── section shell ── */
+  section{margin:0 0 46px}
+  h2{font-family:var(--serif);font-weight:600;font-size:30px;letter-spacing:-.3px;margin:0 0 6px;padding-top:8px}
+  h2 .n{font-family:var(--ui);font-size:13px;font-weight:800;color:var(--gold);letter-spacing:.14em;display:block;margin-bottom:10px}
+  .sub{font-family:var(--serif);font-size:19px;color:var(--slate);line-height:1.55;margin:0 0 22px;max-width:40em}
+  p.body{font-family:var(--serif);font-size:18px;line-height:1.68;color:var(--ink);max-width:40em;margin:0 0 16px}
+  p.body.mut{color:var(--slate)}
+  .rule{height:1px;background:var(--hair);border:0;margin:38px 0}
+  strong{font-weight:600}
+  .em{color:var(--crimson);font-weight:600}
+  /* ── before/after rows ── */
+  .ba{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:20px 0}
+  @media(max-width:560px){.ba{grid-template-columns:1fr}}
+  .card{background:var(--surface);border:1px solid var(--hair);border-radius:16px;padding:20px;box-shadow:0 1px 2px rgba(20,18,15,.04),0 12px 28px rgba(20,18,15,.05)}
+  .card.old{background:var(--old-card);border-color:#D8CFBC;box-shadow:0 6px 22px rgba(58,44,26,.10),0 1px 3px rgba(58,44,26,.05);position:relative;overflow:hidden}
+  .card.old:before{content:"";position:absolute;inset:0;background:repeating-linear-gradient(135deg,rgba(120,80,40,.05) 0 3px,transparent 3px 6px);pointer-events:none}
+  .tag{font-family:var(--ui);font-size:10.5px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;margin:0 0 12px}
+  .tag.b{color:#9A7B4E}.tag.a{color:var(--sage)}
+  /* swatch strips */
+  .swatches{display:flex;gap:0;border-radius:12px;overflow:hidden;border:1px solid var(--hair);margin:8px 0 4px}
+  .sw{flex:1;height:56px;display:flex;align-items:flex-end;padding:6px 7px;font-family:var(--ui);font-size:9.5px;font-weight:700;color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.35)}
+  .swd{color:var(--ink);text-shadow:none}
+  /* token table */
+  table{width:100%;border-collapse:collapse;font-family:var(--ui);font-size:13.5px;margin:14px 0}
+  th,td{text-align:left;padding:10px 10px;border-bottom:1px solid var(--hair);vertical-align:middle}
+  th{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--faint);font-weight:700}
+  td.chip{white-space:nowrap}
+  .dot{display:inline-block;width:13px;height:13px;border-radius:4px;vertical-align:-2px;margin-right:7px;border:1px solid rgba(0,0,0,.12)}
+  .mono{font-family:ui-monospace,monospace;font-size:12px;color:var(--slate)}
+  .strike{color:#B24A3C;text-decoration:line-through}
+  /* type scale demo */
+  .scale div{margin:0 0 10px;line-height:1.1}
+  /* ── the phone exemplar ── */
+  .stage{background:linear-gradient(180deg,#EFEEEA,#E6E4DE);border-radius:28px;padding:30px 16px;display:flex;gap:26px;justify-content:center;flex-wrap:wrap;margin:12px 0}
+  .phone{width:340px;max-width:100%;background:var(--ground);border-radius:34px;padding:14px 0 20px;box-shadow:0 30px 70px rgba(20,18,15,.22),0 6px 16px rgba(20,18,15,.12);border:1px solid rgba(0,0,0,.06)}
+  .phone.before{background:var(--old-paper)}
+  .notch{width:120px;height:6px;border-radius:99px;background:rgba(0,0,0,.14);margin:0 auto 14px}
+  .scr{padding:0 16px}
+  .cap{text-align:center;font-family:var(--ui);font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;margin:14px 0 0}
+  .cap.a{color:var(--sage)}.cap.b{color:#9A7B4E}
+  /* exemplar internals (AFTER) */
+  .x-kick{font-family:var(--ui);font-size:10.5px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--gold);margin:6px 0 9px;display:flex;align-items:center;justify-content:space-between}
+  .x-share{width:30px;height:30px;border-radius:9px;border:1px solid var(--hair);background:var(--surface);display:grid;place-items:center}
+  .x-h{font-family:var(--serif);font-weight:600;font-size:29px;line-height:1.14;letter-spacing:-.4px;color:var(--ink);margin:0 0 13px}
+  .x-chips{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 4px}
+  .x-chip{font-family:var(--ui);font-size:11.5px;font-weight:600;color:var(--slate);background:var(--surface);border:1px solid var(--hair);border-radius:999px;padding:5px 11px}
+  .x-cta{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;margin:16px 0 6px;background:var(--ink);color:#fff;border:0;border-radius:13px;padding:14px;font-family:var(--ui);font-size:14px;font-weight:600}
+  .x-div{height:1px;background:var(--hair);margin:22px 2px}
+  .x-card{background:var(--surface);border:1px solid var(--hair);border-radius:18px;padding:20px;box-shadow:0 1px 2px rgba(20,18,15,.04),0 10px 24px rgba(20,18,15,.045);margin:0 0 16px}
+  .x-eye{font-family:var(--ui);font-size:10.5px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--gold);margin:0 0 7px}
+  .x-t{font-family:var(--serif);font-weight:600;font-size:21px;color:var(--ink);margin:0 0 11px;letter-spacing:-.2px}
+  .x-p{font-family:var(--serif);font-size:16.5px;line-height:1.62;color:var(--ink);margin:0 0 11px}
+  .x-meta{display:flex;gap:7px;flex-wrap:wrap;margin-top:2px}
+  .x-lab{font-family:var(--ui);font-size:11.5px;font-weight:600;color:var(--slate);background:var(--sunk);border:1px solid var(--hair);border-radius:999px;padding:4px 10px}
+  .x-lab.snd{color:var(--sage);border-color:#CFE0D3;background:#F1F6F1}
+  .x-tri{display:flex;gap:9px}
+  .x-col{flex:1;text-align:center;background:var(--sunk);border:1px solid var(--hair);border-radius:13px;padding:13px 6px}
+  .x-gly{font-family:var(--serif);font-size:24px;color:var(--ink);line-height:1}
+  .x-cl{font-family:var(--ui);font-size:9.5px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--faint);margin-top:7px}
+  .x-cs{font-family:var(--serif);font-size:16px;font-weight:600;color:var(--ink);margin-top:1px}
+  .x-ct{font-family:var(--serif);font-style:italic;font-size:11.5px;color:var(--slate);margin-top:2px;line-height:1.25}
+  .x-note{margin-top:11px;padding-top:11px;border-top:1px dashed var(--hair)}
+  .x-nt{font-family:var(--serif);font-size:14.5px;font-weight:600;color:var(--ink)}
+  .x-nb{font-family:var(--serif);font-size:14px;color:var(--slate);line-height:1.5;margin-top:2px}
+  .x-dialrow{display:flex;align-items:center;gap:14px}
+  .x-leg{font-family:var(--ui);font-size:11.5px;color:var(--slate);line-height:1.7}
+  .x-leg b{color:var(--ink)}
+  .x-orbs{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin-bottom:11px}
+  .x-orb{display:flex;flex-direction:column;align-items:center;gap:5px}
+  .x-od{width:30px;height:30px;border-radius:99px}
+  .x-ol{font-family:var(--ui);font-size:9px;font-weight:700;color:var(--slate);text-align:center;line-height:1.1}
+  .x-foot{font-family:var(--serif);font-style:italic;font-size:13px;color:var(--faint);text-align:center;line-height:1.5;margin:6px 12px 0}
+  /* BEFORE internals (compressed, muddy) */
+  .o-card{background:var(--old-card);border:1px solid #D8CFBC;border-left:4px solid #8E6E8E;border-radius:18px;padding:15px;box-shadow:0 6px 22px rgba(58,44,26,.10);margin:0 0 12px;position:relative;overflow:hidden}
+  .o-card:before{content:"";position:absolute;inset:0;background:repeating-linear-gradient(135deg,rgba(120,80,40,.06) 0 2px,transparent 2px 5px);pointer-events:none}
+  .o-eye{font-family:var(--ui);font-size:11px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--gold)}
+  .o-t{font-family:var(--serif);font-weight:600;font-size:20px;color:var(--old-ink)}
+  .o-p{font-family:var(--serif);font-size:15px;color:var(--old-muted);line-height:1.55;margin:6px 0 0}
+  .o-ox{font-family:var(--serif);font-style:italic;font-size:15px;color:var(--old-ox);margin:6px 0 0}
+  .o-btn{display:block;text-align:center;background:#8E6E8E;color:#fff;border-radius:11px;padding:11px;font-family:var(--ui);font-size:13px;font-weight:700;margin-top:10px}
+  /* callout */
+  .call{background:var(--sunk);border:1px solid var(--hair);border-left:3px solid var(--crimson);border-radius:12px;padding:16px 18px;margin:18px 0}
+  .call h4{font-family:var(--ui);font-size:12px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--crimson);margin:0 0 8px}
+  .call p{font-family:var(--serif);font-size:16.5px;line-height:1.6;color:var(--ink);margin:0}
+  ul.clean{list-style:none;padding:0;margin:12px 0}
+  ul.clean li{font-family:var(--serif);font-size:17px;line-height:1.55;color:var(--ink);padding:9px 0 9px 26px;position:relative;border-bottom:1px solid var(--hair)}
+  ul.clean li:before{content:"";position:absolute;left:2px;top:16px;width:8px;height:8px;border-radius:99px;background:var(--gold)}
+  ul.clean li b{font-weight:600}
+  .pill{display:inline-block;font-family:var(--ui);font-size:11px;font-weight:700;padding:3px 9px;border-radius:999px;margin-left:6px;vertical-align:1px}
+  .pill.dead{background:#FBE9E7;color:#B0281B}
+  .pill.live{background:#EEF5EF;color:#3E7A54}
+  .pill.q{background:#FBF3E2;color:#8A6A1E}
+  .foot{margin-top:52px;padding-top:24px;border-top:1px solid var(--hair);font-family:var(--ui);font-size:13px;color:var(--faint);line-height:1.7}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="mast">
+    <p class="kicker">FemWell · Brand-level proposal · awaiting sign-off</p>
+    <h1>Clean &amp; classy.<br>The burnt look, retired.</h1>
+    <p class="lede">A refined visual language for the whole app — high-contrast and readable, calm and uncluttered, restraint as luxury. The cream stays warm at heart, but it stops sitting on cream, and it stops looking burnt.</p>
+    <p class="sig">a quieter, more expensive room</p>
+  </div>
+
+  <!-- ═══ A · THE PROBLEM ═══ -->
+  <section>
+    <h2><span class="n">A · WHAT'S WRONG NOW</span>The four faults, named</h2>
+    <p class="sub">Before proposing the cure, here's the honest diagnosis — the specific things that read as low-rent, in your words "cream on cream" and "burnt."</p>
+
+    <ul class="clean">
+      <li><b>1 · Cream on cream.</b> Cards (<span class="mono">#F4EFE3</span>) sit on a cream page (<span class="mono">#ECE7DA</span>) — a ~4% lightness gap. Nothing separates; the eye can't find edges, so it reads as flat and cheap.</li>
+      <li><b>2 · The burnt overlay.</b> Every card carries a paper-grain texture at 40% multiply plus warm brown shadows. Multiplied over cream it muddies the white and casts the whole app amber — the "burnt" cast.</li>
+      <li><b>3 · Warm-brown text.</b> Emphasis lines are oxblood (<span class="mono">#7A1A12</span>); labels are warm brown (<span class="mono">#2E261B</span>). Warm-on-warm lowers contrast and dates the type.</li>
+      <li><b>4 · Everything is a box.</b> Each element is a bordered card with a 4px coloured stripe, double shadow, flora frame and texture — five rainbow stripes down one screen. No breathing room; the opposite of restraint.</li>
+    </ul>
+  </section>
+
+  <hr class="rule">
+
+  <!-- ═══ B · THE PROPOSED LANGUAGE ═══ -->
+  <section>
+    <h2><span class="n">B · THE NEW LANGUAGE</span>Clean, classy, high-contrast</h2>
+    <p class="sub">Six moves. Each keeps the FemWell identity — the crimson heart, the flora, the Cormorant voice — and elevates it. This section <em>is</em> the language, shown before → after.</p>
+
+    <!-- B1 -->
+    <h3 style="font-family:var(--serif);font-size:22px;font-weight:600;margin:26px 0 4px">B1 · Ground &amp; surface</h3>
+    <p class="body mut">Swap the warm cream page for a calm <b>alabaster</b> ground, and make cards <b>pure white</b>. White on alabaster gives real, clean separation — the single move that kills "cream on cream." Cards now lift instead of blend.</p>
+    <div class="ba">
+      <div class="card old"><p class="tag b">Before · cream on cream</p>
+        <div class="swatches"><div class="sw" style="background:#ECE7DA"><span class="swd">page #ECE7DA</span></div><div class="sw" style="background:#F4EFE3"><span class="swd">card #F4EFE3</span></div></div>
+        <p style="font-family:var(--serif);font-size:14px;color:#2E261B;margin:8px 0 0">4% gap · edges vanish · amber cast</p></div>
+      <div class="card"><p class="tag a">After · white lifts off alabaster</p>
+        <div class="swatches"><div class="sw" style="background:#F5F4F1"><span class="swd">page #F5F4F1</span></div><div class="sw" style="background:#FFFFFF"><span class="swd">card #FFFFFF</span></div></div>
+        <p style="font-family:var(--serif);font-size:14px;color:var(--slate);margin:8px 0 0">clear separation · no texture · clean</p></div>
+    </div>
+
+    <!-- B2 -->
+    <h3 style="font-family:var(--serif);font-size:22px;font-weight:600;margin:30px 0 4px">B2 · Contrast &amp; text</h3>
+    <p class="body mut">Retire warm-brown and oxblood text. Primary type becomes near-black <b>ink #17140F</b>; secondary becomes a neutral <b>slate #6B675F</b>. Emphasis comes from weight and the crimson heart — never from warm-red running text. High contrast, quietly.</p>
+    <div class="ba">
+      <div class="card old"><p class="tag b">Before</p>
+        <div style="font-family:var(--serif)"><div style="font-size:19px;font-weight:600;color:#0B0805">Heading in near-black</div><div style="font-size:15px;font-style:italic;color:#7A1A12;margin-top:4px">Emphasis in oxblood — warm, muddy</div><div style="font-size:14px;color:#2E261B;margin-top:4px">Label in warm brown</div></div></div>
+      <div class="card"><p class="tag a">After</p>
+        <div style="font-family:var(--serif)"><div style="font-size:19px;font-weight:600;color:#17140F">Heading in clean ink</div><div style="font-size:15px;color:#6B675F;margin-top:4px">Emphasis by weight, not warm colour</div><div style="font-size:14px;color:#9A968C;margin-top:4px">Label in neutral slate</div></div></div>
+    </div>
+
+    <!-- B3 -->
+    <h3 style="font-family:var(--serif);font-size:22px;font-weight:600;margin:30px 0 4px">B3 · Accent &amp; restraint</h3>
+    <p class="body mut">One hero accent: the <span class="em">crimson heart #BC2E27</span>, used as punctuation — a single CTA, a rule, a mark. Gold <span class="mono">#A8893F</span> only as a fine eyebrow. The per-card rainbow stripes (plum/sage/gold/crimson/sky all at once) are retired. Phase hues live <em>only</em> inside the cycle dial, where they carry data — not as card chrome.</p>
+
+    <!-- B4 -->
+    <h3 style="font-family:var(--serif);font-size:22px;font-weight:600;margin:30px 0 4px">B4 · Type scale</h3>
+    <p class="body mut">Same voice (Cormorant Garamond display, Ephesis for the signature flourish, system sans for chrome) — a confident role-based scale, bigger headlines, more generous body leading.</p>
+    <div class="card scale" style="margin-top:8px">
+      <div style="font-family:var(--serif);font-weight:600;font-size:30px;letter-spacing:-.4px;color:var(--ink)">Display · 30 / 1.12</div>
+      <div style="font-family:var(--serif);font-weight:600;font-size:21px;color:var(--ink)">Title · 21 / 1.2</div>
+      <div style="font-family:var(--serif);font-size:17px;line-height:1.65;color:var(--ink)">Body · 17 / 1.65 — long enough to breathe, dark enough to read at a glance.</div>
+      <div style="font-family:var(--ui);font-size:11.5px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--gold)">Eyebrow · 11.5 tracked · gold</div>
+      <div style="font-family:var(--ui);font-size:12.5px;color:var(--slate)">Meta · 12.5 · slate</div>
+    </div>
+
+    <!-- B5 -->
+    <h3 style="font-family:var(--serif);font-size:22px;font-weight:600;margin:30px 0 4px">B5 · Spacing &amp; elevation</h3>
+    <p class="body mut">The biggest lever for "classy." Section rhythm goes <b>16 → 26px</b>; card padding <b>16 → 22px</b>. Elevation is one clean, neutral shadow — no warm double-glow, no texture, no flora frame on every card. Fewer boxes per screen. Air is the luxury.</p>
+
+    <!-- B6 -->
+    <h3 style="font-family:var(--serif);font-size:22px;font-weight:600;margin:30px 0 4px">B6 · Flora, elevated</h3>
+    <p class="body mut">The flora identity stays — but as a single fine botanical <em>line</em>-mark used once per screen (a masthead motif), drawn in ink or gold hairline. Not a muddy filled frame multiplied on every card. Clean line = elevated, not warm-and-busy.</p>
+
+    <!-- token table -->
+    <h3 style="font-family:var(--serif);font-size:22px;font-weight:600;margin:32px 0 6px">The token changes (old → new)</h3>
+    <table>
+      <tr><th>Role</th><th>Retire</th><th>Adopt</th></tr>
+      <tr><td>Page ground</td><td class="chip"><span class="dot" style="background:#ECE7DA"></span><span class="strike mono">#ECE7DA</span></td><td class="chip"><span class="dot" style="background:#F5F4F1"></span><span class="mono">#F5F4F1</span> alabaster</td></tr>
+      <tr><td>Card surface</td><td class="chip"><span class="dot" style="background:#F4EFE3"></span><span class="strike mono">#F4EFE3</span></td><td class="chip"><span class="dot" style="background:#fff"></span><span class="mono">#FFFFFF</span> white</td></tr>
+      <tr><td>Hairline</td><td class="chip"><span class="dot" style="background:#D8CFBC"></span><span class="strike mono">#D8CFBC</span></td><td class="chip"><span class="dot" style="background:#E7E5DF"></span><span class="mono">#E7E5DF</span></td></tr>
+      <tr><td>Primary text</td><td class="chip"><span class="dot" style="background:#0B0805"></span><span class="mono">#0B0805</span> (keep, warm→)</td><td class="chip"><span class="dot" style="background:#17140F"></span><span class="mono">#17140F</span> neutral ink</td></tr>
+      <tr><td>Secondary text</td><td class="chip"><span class="dot" style="background:#2E261B"></span><span class="strike mono">#2E261B</span> brown</td><td class="chip"><span class="dot" style="background:#6B675F"></span><span class="mono">#6B675F</span> slate</td></tr>
+      <tr><td>Emphasis text</td><td class="chip"><span class="dot" style="background:#7A1A12"></span><span class="strike mono">#7A1A12</span> oxblood</td><td class="chip">weight + <span class="dot" style="background:#BC2E27"></span>crimson accent</td></tr>
+      <tr><td>Hero accent</td><td>rainbow stripes</td><td class="chip"><span class="dot" style="background:#BC2E27"></span><span class="mono">#BC2E27</span> crimson only</td></tr>
+      <tr><td>Texture</td><td class="chip"><span class="strike">PAPER_TEX @40%</span></td><td>none</td></tr>
+      <tr><td>Follicular hue*</td><td class="chip"><span class="dot" style="background:#8FAF8F"></span><span class="strike mono">#8FAF8F</span></td><td class="chip"><span class="dot" style="background:#5F8A6B"></span><span class="mono">#5F8A6B</span></td></tr>
+      <tr><td>Ovulatory hue*</td><td class="chip"><span class="dot" style="background:#D4AF37"></span><span class="strike mono">#D4AF37</span></td><td class="chip"><span class="dot" style="background:#B8912E"></span><span class="mono">#B8912E</span></td></tr>
+    </table>
+    <p class="body mut" style="font-size:14px">*Phase hues only deepen so they pass AA contrast on white; menstrual&nbsp;#BC2E27 and luteal&nbsp;#7E6A8E already do.</p>
+  </section>
+
+  <hr class="rule">
+
+  <!-- ═══ C · THE EXEMPLAR ═══ -->
+  <section>
+    <h2><span class="n">C · THE EXEMPLAR</span>The horoscope, redesigned</h2>
+    <p class="sub">One screen, rebuilt end-to-end in the new language, so the direction is concrete before anything ships app-wide. Same content and features — just clean. Before (left) → after (right).</p>
+
+    <div class="stage">
+      <!-- ── BEFORE ── -->
+      <div>
+        <div class="phone before">
+          <div class="notch"></div>
+          <div class="scr">
+            <div style="display:flex;gap:8px;margin-bottom:10px">
+              <div style="flex:1;text-align:center;background:#F4EFE3;border:1px solid #D8CFBC;border-radius:11px;padding:9px;font-family:var(--ui);font-size:12px;font-weight:700;color:#0B0805">✎ Edit chart</div>
+              <div style="flex:1;text-align:center;background:#F4EFE3;border:1px solid #D8CFBC;border-radius:11px;padding:9px;font-family:var(--ui);font-size:12px;font-weight:700;color:#0B0805">Share</div>
+            </div>
+            <div class="o-ox" style="margin:0 0 10px">Maya, your Scorpio sun leads today — a waxing gibbous, over your follicular week.</div>
+            <div class="o-card" style="border-left-color:#8E6E8E;background:linear-gradient(160deg,#F4EFE3,#efe6f0)">
+              <div class="o-eye" style="position:relative">Your sky today</div>
+              <div class="o-t" style="position:relative;font-size:22px;margin-top:4px">A day that rewards the quiet start.</div>
+            </div>
+            <div class="o-card" style="border-left-color:#A8893F">
+              <div class="o-eye" style="position:relative">Your chart</div>
+              <div class="o-t" style="position:relative">Sun, moon &amp; rising</div>
+              <div class="o-p" style="position:relative">♏ Scorpio · ♓ Pisces · ♌ Leo</div>
+            </div>
+            <div class="o-card" style="border-left-color:#BC2E27">
+              <div class="o-eye" style="position:relative">Today's weather</div>
+              <div class="o-p" style="position:relative">Begin the thing you've been circling. The pull is toward depth, not speed…</div>
+              <div class="o-ox" style="position:relative">Notice · a message you've put off</div>
+            </div>
+            <a class="o-btn">Open your sky</a>
+          </div>
+        </div>
+        <p class="cap b">Before — cream-on-cream, burnt, 3 stacked CTAs</p>
+      </div>
+
+      <!-- ── AFTER ── -->
+      <div>
+        <div class="phone">
+          <div class="notch"></div>
+          <div class="scr">
+            <!-- masthead, open (no box) -->
+            <div class="x-kick"><span>Your sky · today</span>
+              <span class="x-share" title="Share"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6B675F" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.6" y1="13.5" x2="15.4" y2="17.5"/><line x1="15.4" y1="6.5" x2="8.6" y2="10.5"/></svg></span>
+            </div>
+            <!-- fine botanical line-mark -->
+            <svg width="70" height="20" viewBox="0 0 70 20" style="margin-bottom:6px" fill="none" stroke="#A8893F" stroke-width="1" stroke-linecap="round"><path d="M2 10 H30"/><path d="M35 10 C40 3, 46 3, 50 10 C46 17, 40 17, 35 10Z"/><circle cx="42.5" cy="10" r="1.4" fill="#BC2E27" stroke="none"/><path d="M55 10 H68"/></svg>
+            <h1 class="x-h">A day that rewards<br>the quiet start.</h1>
+            <div class="x-chips">
+              <span class="x-chip">Follicular · Day 9</span>
+              <span class="x-chip">Waxing gibbous</span>
+              <span class="x-chip">Scorpio sun</span>
+            </div>
+            <!-- ONE consolidated CTA -->
+            <button class="x-cta"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg> Edit your chart</button>
+
+            <div class="x-div"></div>
+
+            <!-- the reading -->
+            <div class="x-card">
+              <div class="x-eye">Today's weather · from Astra</div>
+              <p class="x-p">Begin the thing you've been circling. Today's pull is toward depth, not speed — one real conversation will do more than a busy afternoon.</p>
+              <div class="x-meta">
+                <span class="x-lab">Energy · steady</span>
+                <span class="x-lab">Focused, a little tender</span>
+                <span class="x-lab snd">♪ A sound for today</span>
+              </div>
+              <div class="x-note">
+                <div class="x-nt">Notice · watch for</div>
+                <div class="x-nb">A message you've been putting off — it'll go easier than you fear.</div>
+              </div>
+            </div>
+
+            <!-- the chart triad -->
+            <div class="x-card">
+              <div class="x-eye">Your chart</div>
+              <div class="x-t">Sun, moon &amp; rising</div>
+              <div class="x-tri">
+                <div class="x-col"><div class="x-gly">♏</div><div class="x-cl">Sun</div><div class="x-cs">Scorpio</div><div class="x-ct">deep water, no shallows</div></div>
+                <div class="x-col"><div class="x-gly">♓</div><div class="x-cl">Moon</div><div class="x-cs">Pisces</div><div class="x-ct">tender, intuitive</div></div>
+                <div class="x-col"><div class="x-gly">♌</div><div class="x-cl">Rising</div><div class="x-cs">Leo</div><div class="x-ct">warm, sovereign</div></div>
+              </div>
+              <div style="font-family:var(--ui);font-size:11px;color:var(--faint);text-align:center;margin-top:10px">Water · Fixed · ruled by Mars &amp; Pluto</div>
+            </div>
+
+            <!-- cycle × moon dial -->
+            <div class="x-card">
+              <div class="x-eye">Cycle × moon</div>
+              <div class="x-t">Your two tides</div>
+              <div class="x-dialrow">
+                <svg width="112" height="112" viewBox="0 0 130 130" style="flex-shrink:0">
+                  <circle cx="65" cy="65" r="58" fill="none" stroke="#EDEBE5" stroke-width="6"/>
+                  <circle cx="65" cy="65" r="58" fill="none" stroke="#17140F" stroke-width="6" stroke-dasharray="270 365" transform="rotate(-90 65 65)" opacity=".85"/>
+                  <g transform="rotate(266 65 65)"><circle cx="65" cy="7" r="5" fill="#17140F"/></g>
+                  <circle cx="65" cy="65" r="42" fill="none" stroke="#EDEBE5" stroke-width="6"/>
+                  <circle cx="65" cy="65" r="42" fill="none" stroke="#5F8A6B" stroke-width="6" stroke-dasharray="84 264" transform="rotate(-90 65 65)"/>
+                  <g transform="rotate(115 65 65)"><circle cx="65" cy="23" r="5" fill="#5F8A6B"/></g>
+                  <text x="65" y="61" text-anchor="middle" style="font-family:var(--ui);font-size:8px;font-weight:800;letter-spacing:1px;fill:#A8893F">TODAY</text>
+                  <text x="65" y="74" text-anchor="middle" style="font-family:var(--serif);font-size:12px;font-weight:600;fill:#17140F">Sat 14</text>
+                </svg>
+                <div class="x-leg">
+                  <div>● <b>Lunar</b> · waxing gibbous · 74%</div>
+                  <div style="color:#5F8A6B">● <b style="color:#17140F">Cycle</b> · Follicular · Day 9</div>
+                  <div style="font-family:var(--serif);font-style:italic;color:var(--slate);margin-top:5px;font-size:12.5px">Both climbing — a building week, under a building moon.</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- goddess bench -->
+            <div class="x-card">
+              <div class="x-eye">Beside you today</div>
+              <div class="x-t">Your goddess bench</div>
+              <div class="x-orbs">
+                <div class="x-orb"><span class="x-od" style="background:radial-gradient(circle at 30% 30%,#C77 0,#C7776 60%,#C7771a 100%)"></span><span class="x-ol">Nurture</span></div>
+                <div class="x-orb"><span class="x-od" style="background:radial-gradient(circle at 30% 30%,#7D8668 0,#7D866866 60%,#7D86681a 100%)"></span><span class="x-ol">Devotion</span></div>
+                <div class="x-orb"><span class="x-od" style="background:radial-gradient(circle at 30% 30%,#D98E7E 0,#D98E7E66 60%,#D98E7E1a 100%)"></span><span class="x-ol">Commitment</span></div>
+              </div>
+              <p style="font-family:var(--serif);font-style:italic;font-size:14px;color:var(--ink);margin:0;padding-top:9px;border-top:1px dashed var(--hair)">Ceres in Taurus asks you to feed yourself well before you feed anyone else.</p>
+            </div>
+
+            <p class="x-foot">Held lightly — folklore and your own chart, never fate or a score.</p>
+          </div>
+        </div>
+        <p class="cap a">After — white on alabaster, one CTA, air</p>
+      </div>
+    </div>
+
+    <div class="call">
+      <h4>What carried over — nothing dropped</h4>
+      <p>Every batch-1 feature is present: hero headline + state chips, the tap-to-expand chart triad, the editorial reading with energy/mood + "a sound for today" + notice-to-watch, the composite cycle×moon dial, and the goddess bench. The redesign is <em>only</em> palette, contrast, spacing and CTA — the parity work stands.</p>
+    </div>
+  </section>
+
+  <hr class="rule">
+
+  <!-- ═══ D · THE FOLDED FIXES ═══ -->
+  <section>
+    <h2><span class="n">D · FOLDED FIXES</span>Four repairs in the same pass</h2>
+
+    <h3 style="font-family:var(--serif);font-size:22px;font-weight:600;margin:24px 0 6px">D1 · CTA consolidation</h3>
+    <p class="body mut">On the Sky surface there were up to three CTAs stacked: the top row (<b>Edit chart</b> + <b>Share</b>) and the controller's <b>“Open your sky”</b> button below. “Open your sky” is self-referential — it opens the surface you're already on. Resolution: <b>one</b> primary CTA. The exemplar keeps <b>Edit your chart</b> as the single primary action and folds <b>Share</b> into a quiet icon in the masthead corner; the redundant “Open your sky” is removed. (You said “replace the top with the one below” — flagging that the “one below” is the self-referential one, so I've kept the genuinely useful action instead. Say the word if you'd rather I follow it literally.)</p>
+
+    <h3 style="font-family:var(--serif);font-size:22px;font-weight:600;margin:26px 0 6px">D2 · Merge Books + Story — wiring verified</h3>
+    <p class="body mut" id="d2">Verified the plumbing. The honest finding on your “not sure it's wired correctly”: <b>the daily Story does <span class="em">not</span> run to month-end.</b> It rotates a <b>new chapter every single calendar day</b> — a deterministic day-index modulo the number of chapters (<span class="mono">dailyStory.js:81</span>) — then silently loops back to chapter 1 after the series length, with no month boundary and no “series complete” state. There is no month/month-end logic anywhere in the story code.</p>
+    <div class="call"><h4>One product decision for you</h4><p>Which model do you want? <b>(a) A chapter a day</b> — current behaviour; I'd just add a clean month/series boundary instead of the silent loop. <b>(b) One chapter held to month-end</b> — a slower serial; not built today, I'd add the hold logic. Tell me (a) or (b) and I'll wire it in the merge.</p></div>
+    <p class="body mut">Books is wired cleanly: FemWell fiction (<span class="mono">LifestyleItems</span>), free classics (Gutendex), and device-local “continue reading” — <span class="mono">BooksFocus</span> is purely presentational. Books and Story <b>already share the same reader</b> (<span class="mono">DailyStoryReader</span> + <span class="mono">buildBookChapters</span>), so the merge is <b>presentational + routing only — no entity/schema change</b>. Collapse the two chips into one section ordered <em>today's chapter → continue → your shelf → free classics</em>, and clean up the leak in D3-bug-1 below.</p>
+
+    <h3 style="font-family:var(--serif);font-size:22px;font-weight:600;margin:26px 0 6px">D3 · Dead-button audit — done</h3>
+    <p class="body mut" id="d3">Traced every control across the seven focus surfaces + the shell. Good news: <b>no button leads to a 404 and no handler is left unpassed</b> — all 11 Good-life room links resolve, every card's open/read/share handler is wired. But four real defects surfaced (three are “looks/leads wrong,” one is dead copy):</p>
+    <table>
+      <tr><th>#</th><th>Defect</th><th>Where</th><th>Fix</th></tr>
+      <tr><td>1</td><td><span class="pill dead">breaks</span> The daily-Story card is injected into the <b>Books “your shelf”</b> row; tapping it runs the book-reader on a non-book (its body is an array) → a garbled reader.</td><td class="mono">shell 961–969 · bookChapters.js:27</td><td>Stop prepending it to the shelf; present the serial as a serial. Resolves inside the Books+Story merge.</td></tr>
+      <tr><td>2</td><td><span class="pill q">dead copy</span> Good-life's morning/evening greeting variants never fire — <span class="mono">timeOfDay</span> is never passed, so it's permanently “…right now?”.</td><td class="mono">shell 1535</td><td>Pass <span class="mono">timeOfDay</span>, or drop the unused variants.</td></tr>
+      <tr><td>3</td><td><span class="pill q">dead code</span> <span class="mono">focusGroupsOf</span> + its <span class="mono">SkyDiaryLens</span> are unreachable in the focused state (the bespoke surfaces return first). Not user-visible; just dead branches.</td><td class="mono">shell 1192 · 1538 · 1208</td><td>Remove the dead branch (or route the Sky-diary lens into SkyFocus, where it belongs — that's a batch-2 parity item anyway).</td></tr>
+      <tr><td>4</td><td><span class="pill q">verify</span> Listen's copy says audio “keeps playing while you wander,” but the tap opens the expand-detail card; inline persistence depends on that card. Wired, not dead — flag to confirm on-device.</td><td class="mono">ListenFocus 62–79</td><td>Confirm inline playback visually, or soften the copy.</td></tr>
+    </table>
+    <p class="body mut" style="font-size:15px"><b>Honest architecture note:</b> these seven bespoke surfaces render only with the <span class="mono">layout</span> prop — i.e. only on the demo routes you're reviewing. Live <span class="mono">/Lifestyle</span> still shows the slider boards; none of this is on the consumer app yet. That's by design (demo-first), and it's why “live untouched” holds.</p>
+
+    <h3 style="font-family:var(--serif);font-size:22px;font-weight:600;margin:26px 0 6px">D4 · Quality bar</h3>
+    <p class="body mut">The reset above <em>is</em> the quality answer: real hierarchy, generous air, one accent, high-contrast type. Held to your reference — a single refined subject on a restful ground.</p>
+  </section>
+
+  <hr class="rule">
+
+  <!-- ═══ E · ON APPROVAL ═══ -->
+  <section>
+    <h2><span class="n">E · IF YOU APPROVE</span>What happens next</h2>
+    <ul class="clean">
+      <li><b>1 ·</b> The token table (§B) is written into <span class="mono">BRAND_IDENTITY.md</span> §2 as the new canon — alabaster ground, white cards, neutral ink/slate, texture retired, one accent.</li>
+      <li><b>2 ·</b> The live SkyFocus is rebuilt to the exemplar (the first screen shipped in the new language), then verified at 360 / 390 / 430.</li>
+      <li><b>3 ·</b> The other six focus surfaces + the shell follow, one at a time, each verified — no big-bang.</li>
+      <li><b>4 ·</b> The CTA + dead-button + Books/Story fixes ship inside that same pass.</li>
+    </ul>
+    <p class="body mut">Nothing is applied until you approve the direction. The live app is untouched by this proposal.</p>
+  </section>
+
+  <div class="foot">
+    FemWell · clean/classy visual reset · proposal for approval — no code applied yet.<br>
+    Reachable from the IDEAS pill once wired; source doc in <span class="mono">femwell-handoff/</span>.
+  </div>
+
+</div>
+</body>
+</html>

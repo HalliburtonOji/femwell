@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Books — the connected map</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--ground:#F5F4F1;--surface:#fff;--hair:#EAE7E0;--gold:#A8893F;--ink:#191510;--slate:#6E6A61;--faint:#A6A197;--crimson:#BC2E27;--sage:#5F8A6B;--serif:"Cormorant Garamond",Georgia,serif;--ui:"Inter",system-ui,sans-serif}
+*{box-sizing:border-box}body{margin:0;background:var(--ground);color:var(--ink);font-family:var(--ui);-webkit-font-smoothing:antialiased;padding:0 0 70px}
+.wrap{max-width:760px;margin:0 auto;padding:0 20px}
+.kick{font-size:10.5px;font-weight:800;letter-spacing:.24em;text-transform:uppercase;color:var(--gold);margin:44px 0 12px}
+h1{font-family:var(--serif);font-weight:600;font-size:40px;line-height:1.05;letter-spacing:-.4px;margin:0 0 12px}h1 em{font-style:italic;color:var(--crimson);font-weight:500}
+.lede{font-family:var(--serif);font-size:20px;line-height:1.5;color:var(--slate);margin:0 0 26px}
+h2{font-family:var(--serif);font-weight:600;font-size:28px;margin:36px 0 6px}h2 .n{display:block;font-family:var(--ui);font-size:11px;font-weight:800;letter-spacing:.16em;color:var(--gold);margin-bottom:8px}
+h3{font-family:var(--serif);font-weight:600;font-size:21px;margin:24px 0 6px}
+p{font-family:var(--serif);font-size:17.5px;line-height:1.65;margin:0 0 14px}p.m{color:var(--slate)}
+.card{background:var(--surface);border-radius:18px;padding:20px;box-shadow:0 1px 3px rgba(25,21,16,.03),0 18px 42px -18px rgba(25,21,16,.12);margin:14px 0}
+table{width:100%;border-collapse:collapse;font-family:var(--ui);font-size:12.5px;margin:10px 0}th,td{text-align:left;padding:8px 7px;border-bottom:1px solid var(--hair);vertical-align:top}th{font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--faint)}
+ul.c{list-style:none;padding:0;margin:8px 0}ul.c li{font-family:var(--serif);font-size:17px;line-height:1.55;padding:10px 0 10px 24px;position:relative;border-bottom:1px solid var(--hair)}ul.c li:before{content:"";position:absolute;left:2px;top:18px;width:7px;height:7px;border-radius:99px;background:var(--crimson)}
+ul.c.g li:before{background:var(--gold)}
+b{font-weight:600}.mono{font-family:ui-monospace,monospace;font-size:11.5px;color:var(--slate)}
+.pill{display:inline-block;font-size:9.5px;font-weight:800;letter-spacing:.07em;padding:3px 7px;border-radius:999px;text-transform:uppercase;white-space:nowrap}
+.free{background:#EEF5EF;color:#3E7A54}.flagp{background:#FBF3E2;color:#8A6A1E}.dead{background:#FBE9E7;color:#B0281B}
+.flag{background:#FAF9F6;border:1px solid var(--hair);border-left:3px solid var(--crimson);border-radius:12px;padding:15px 17px;margin:16px 0}
+.flag h4{font-family:var(--ui);font-size:11.5px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--crimson);margin:0 0 7px}
+.flag p{font-size:16px;margin:0 0 8px}
+.foot{margin-top:40px;padding-top:20px;border-top:1px solid var(--hair);font-size:12.5px;color:var(--faint);line-height:1.6}
+</style></head><body><div class="wrap">
+
+<p class="kick">FemWell · Books · the connected map · before any more building</p>
+<h1>Four book systems. <em>None of them speak.</em></h1>
+<p class="lede">You were right, and it's worse than "siloed": the sweep found four separate book systems, a whole class of dead links between them, and an orphaned curator writing weekly data nobody reads. Here's every touchpoint I found in the code, and the plan to make it one system.</p>
+
+<h2><span class="n">A · WHAT EXISTS</span>The four systems, and the proof they're disconnected</h2>
+<div class="card">
+<table>
+<tr><th>System</th><th>Where</th><th>What it owns</th><th>State</th></tr>
+<tr><td><b>1 · Lifestyle Books</b></td><td><span class="mono">lifestyle-elite/BooksStoryFocus.jsx</span></td><td>The serial, her position, the capacity row, the month's picks (my <span class="mono">booksMonthly.js</span>), device-local reading positions.</td><td><span class="pill dead">dark on /Lifestyle</span></td></tr>
+<tr><td><b>2 · Community Library</b></td><td><span class="mono">community/LibraryTogether.jsx</span> + <span class="mono">bookshelf.js</span></td><td>A <b>real cross-device shelf</b> — <span class="mono">UserBook</span> entity, statuses <em>reading / want / finished / set aside</em> — plus <b>buddy reads</b> and an anonymous k-floored "reading along" cohort.</td><td><span class="pill free">live</span></td></tr>
+<tr><td><b>3 · The Book Club</b></td><td><span class="mono">Community.jsx:838</span> + <span class="mono">bookClubConfig.js</span></td><td><span class="mono">BookClubPick</span> / <span class="mono">ClubCheckpoint</span> / <span class="mono">ClubNote</span>, spoiler-safe self-attested checkpoints.</td><td><span class="pill free">live</span> (rendered twice — see flags)</td></tr>
+<tr><td><b>4 · The weekly curator</b></td><td><span class="mono">functions/weeklyBookCurator</span> → <span class="mono">WeeklyBookPick</span></td><td>A phase-tagged weekly pick across 5 categories with <span class="mono">read_time_mins</span>, <span class="mono">key_lessons</span>, <span class="mono">femwell_connection</span>.</td><td><span class="pill dead">zero consumers</span></td></tr>
+</table>
+<p class="m" style="margin:12px 0 0"><b>The silo, proven by grep:</b> nothing in Lifestyle reads <span class="mono">UserBook</span>, <span class="mono">WeeklyBookPick</span> or the shelf API. <b>Community contains no navigation to /Lifestyle at all</b> — for books or anything else. Every Community book exit goes to <span class="mono">/BookReader</span>.</p>
+</div>
+
+<div class="flag"><h4>The blocker you should know first</h4>
+<p><b>Everything I built for Books is currently unreachable from live /Lifestyle.</b> <span class="mono">BooksStoryFocus</span> only renders when the shell gets <span class="mono">enableFocus</span> + <span class="mono">layout</span> — i.e. the demo routes. Live <span class="mono">/Lifestyle</span> passes none. So its "Open the book club" CTA — <b>the only Lifestyle→Community book link in the entire codebase</b> — never renders. The one-line live flip you have queued is what makes any of this real.</p>
+</div>
+
+<h2><span class="n">B · THE DEAD LINKS</span>A whole class of them, all the same bug</h2>
+<div class="card">
+<ul class="c">
+<li><b><span class="mono">/Lifestyle?tab=…</span> is universally dead.</b> The live shell never reads a <span class="mono">tab</span> param — no <span class="mono">URLSearchParams</span> anywhere in it. Yet it's emitted by <b>Today</b> (<span class="mono">?tab=daily_story</span>, <span class="mono">?tab=listen</span>, <span class="mono">?tab=horoscope</span>), by <b>DailyStoryReel</b> (3 links), and by <b>Jess</b> via <span class="mono">routeRegistry</span> (<span class="mono">LifestyleBooks → ?tab=books</span>, <span class="mono">LifestyleFiction → ?tab=femwell</span>). <b>Jess can already recommend books and the link lands nowhere.</b></li>
+<li><b>Today hardcodes Little Women.</b> <span class="mono">TodayClipboardDemo.jsx:513</span> ships "Read today's chapter of Little Women" → <span class="mono">gutenberg_id=514</span>, and <span class="mono">:534</span> falls back to 514 — <b>even though the same file already fetched the live <span class="mono">BookClubPick</span> at :379</b>. Change the club pick and Today still says Little Women.</li>
+<li><b>"The Books circle is reading X" links to the reader</b>, not to the <span class="mono">books</span> Circle (<span class="mono">:689</span>).</li>
+<li><b>"Read it in the Library"</b> (two places) goes to <span class="mono">/BookReader</span>, not to the Library — a stale label from before <span class="mono">LibraryTogether</span> existed.</li>
+<li><b>An unreachable second Library</b> (<span class="mono">Community.jsx:2112</span>) — intercepted before it can render.</li>
+</ul>
+</div>
+
+<h2><span class="n">C · THE CONNECTED MAP</span>What connects to what, both directions</h2>
+<p class="m">Roles, so nothing duplicates: <b>Lifestyle Books = her reading corner</b> (what she's reading, what's next, what costs nothing today) · <b>Community = reading together</b> (club, buddies, corners) · <b>Today = the daily door</b> · <b>Planner = when she'll read</b> · <b>Garden = what reading grew</b> · <b>Jess = can point at it</b>.</p>
+<div class="card">
+<table>
+<tr><th>#</th><th>From → To</th><th>What crosses</th><th>Cost</th><th>Files</th></tr>
+<tr><td>1</td><td><b>Books → Community</b></td><td>The club (already coded), the <b>readers' corner for the book she's actually reading</b> (<span class="mono">dailyReadClubKey</span>), and <b>find a buddy</b> on it.</td><td><span class="pill free">free</span> existing routes</td><td><span class="mono">BooksStoryFocus</span> · <span class="mono">clubsConfig</span></td></tr>
+<tr><td>2</td><td><b>Community → Books</b> <em>(new direction — none exists today)</em></td><td>"Your reading corner" from <span class="mono">LibraryTogether</span> and from the club, landing on the Books section with the book in context.</td><td><span class="pill free">free</span> (needs §D-1)</td><td><span class="mono">LibraryTogether.jsx</span> · <span class="mono">Community.jsx</span></td></tr>
+<tr><td>3</td><td><b>Books ↔ the shelf</b></td><td>Adopt <span class="mono">UserBook</span> as THE shelf. Adding from Books appears in Community's Library and vice versa; "reading / want / finished / set aside" is one state, cross-device.</td><td><span class="pill free">free</span> entity exists</td><td><span class="mono">community/bookshelf.js</span></td></tr>
+<tr><td>4</td><td><b>Books → Planner</b></td><td>"Read at 9pm" / a weekly reading hour → a real <span class="mono">PlannerItems</span> row (<span class="mono">date</span>, <span class="mono">time</span>, <span class="mono">repeat</span>). <b>Club checkpoint dates</b> land as planner rows across the six weeks.</td><td><span class="pill free">free</span> — direct entity write, no dispatcher exists or is needed</td><td><span class="mono">PlannerItems</span> · pattern already at <span class="mono">LifestyleEliteShell:751</span></td></tr>
+<tr><td>5</td><td><b>Planner → Books</b></td><td>Tapping the reading block opens the exact chapter/book.</td><td><span class="pill flagp">needs a back-reference</span> — see §D-2</td><td><span class="mono">Planner.jsx</span> · <span class="mono">loggerWrites.js</span></td></tr>
+<tr><td>6</td><td><b>Today → Books</b></td><td>Today's book/chapter cards read the <b>live club pick</b> (already fetched, currently ignored) and deep-link into the Books section — plus a real <b>"continue reading"</b> row, which Today has never had.</td><td><span class="pill free">free</span> (needs §D-1)</td><td><span class="mono">TodayClipboardDemo.jsx</span></td></tr>
+<tr><td>7</td><td><b>Books → Garden</b></td><td>Already wired: <span class="mono">recordProgress</span> → <span class="mono">readingDaySet</span> → the garden's <b>reading</b> area (forget-me-not, "time with a book"). Books should <b>show it back</b> — read-only.</td><td><span class="pill free">free</span></td><td><span class="mono">readingActivity.js</span> · <span class="mono">nurture/garden.js</span></td></tr>
+<tr><td>8</td><td><b>Books → Jess</b></td><td>Fix <span class="mono">routeRegistry</span> so Jess's existing book links land on the real section.</td><td><span class="pill free">free</span> — 2 lines</td><td><span class="mono">src/lib/routeRegistry.js:26-27</span></td></tr>
+<tr><td>9</td><td><b>Notifications → Books</b></td><td>A gentle "your next chapter is waiting" (never a streak).</td><td><span class="pill flagp">flag</span> — edits the existing scheduled fn, no new function</td><td><span class="mono">sendNotificationReminders</span></td></tr>
+<tr><td>10</td><td><b>Listen ↔ Books</b></td><td><b>Nothing to wire honestly.</b> No audiobook, no narrated chapter, no audio field on any book — confirmed. Propose TTS later; claim nothing now.</td><td>—</td><td>—</td></tr>
+</table>
+</div>
+
+<h2><span class="n">D · THE TWO THINGS THAT NEED A DECISION</span></h2>
+<div class="flag"><h4>D-1 · Revive <span class="mono">?tab=</span> — one small fix, many links restored</h4>
+<p>Teach the live shell to read <span class="mono">?tab=</span>/<span class="mono">?section=</span> and focus that section. That single change makes Today's links, DailyStoryReel's three links, Jess's book suggestions and every future cross-link land correctly — instead of dumping her on the Lifestyle landing. <b>Recommend: do it.</b> It's additive and reversible.</p></div>
+
+<div class="flag"><h4>D-2 · Planner can't point back at a book</h4>
+<p><span class="mono">PlannerItems</span> has <b>no</b> <span class="mono">source</span>/<span class="mono">item_id</span>/<span class="mono">content_type</span> field, so a reading block is just a title string. Two options: <b>(a)</b> encode the reference in <span class="mono">notes</span> — ugly but <b>zero schema change</b>, ships now; <b>(b)</b> add two optional fields (<span class="mono">source</span>, <span class="mono">ref</span>) — clean, and it unlocks every other content type scheduling itself, but it's a <b>schema delta needing your sign-off</b>. <b>Recommend (a) now, (b) proposed properly</b> — the calendar-sync plan already asks for the same fields.</p></div>
+
+<div class="flag"><h4>D-3 · The orphaned weekly curator — your call</h4>
+<p><span class="mono">weeklyBookCurator</span> runs and writes <span class="mono">WeeklyBookPick</span> every week, and <b>nothing has ever read it</b>. Its books are commercial (ISBNs) — they can't be read in-app, so surfacing them turns the reading corner into a shop, which is off-brand. <b>Recommend: park it</b> (stop paying for it) <b>or</b> repoint the curator at readable public-domain picks so it feeds the month's set instead of my authored constant. I won't touch it without your word.</p></div>
+
+<div class="flag"><h4>D-4 · Books lives on the demo until you flip live</h4>
+<p>None of this is reachable from <span class="mono">/Lifestyle</span> until the one-line clean flip lands. The wiring can be built and verified on the demo first — but it only becomes real on that flip.</p></div>
+
+<h2><span class="n">E · BUDGET</span>Functions, entities, cap</h2>
+<ul class="c g">
+<li><b>Net-new functions: ZERO.</b> Planner is a direct entity write (there is no planner dispatcher and none is needed). Community rides <span class="mono">createCommunityPost</span>, which already has <span class="mono">readingActivity.record / .cohort / .prediction</span> — and whose own header notes the cap blocks new function <em>names</em>, not updates to it.</li>
+<li><b>Net-new entities: ZERO.</b> <span class="mono">UserBook</span>, <span class="mono">PlannerItems</span>, <span class="mono">BookClubPick</span>, <span class="mono">ReadingActivity</span> all exist.</li>
+<li><b>Flagged, not silently done:</b> D-2(b) schema delta · D-3 the curator · the reading nudge in <span class="mono">sendNotificationReminders</span> · adding book entities to Jess's agent grants.</li>
+<li><b>Constraint noted:</b> <span class="mono">ReadingActivity</span> RLS is admin-only on all four operations, so every read/write must go through the dispatcher — no direct client access.</li>
+</ul>
+
+<h2><span class="n">F · BUILD ORDER</span>If you approve</h2>
+<p class="m">Each step is separately revertible and verified before the next.</p>
+<ol style="font-family:var(--serif);font-size:17px;line-height:1.6">
+<li><b>Revive <span class="mono">?tab=</span></b> (D-1) + fix <span class="mono">routeRegistry</span> — restores Jess's and Today's existing links.</li>
+<li><b>Adopt <span class="mono">UserBook</span> as the shelf</b> in Books — one shelf, cross-device, shared with Community.</li>
+<li><b>Two-way Community links</b> — Books → corner/buddy/club; Library + club → the reading corner.</li>
+<li><b>Planner</b> — reading blocks + club checkpoint dates, with the notes-encoded back-reference.</li>
+<li><b>Today</b> — use the live club pick, add "continue reading", deep-link into Books.</li>
+<li><b>Garden read-back</b> in Books; then the notification nudge if you approve it.</li>
+</ol>
+
+<div class="foot">Books · connected map · swept from the code, file:line verified · reported before building, 2026-09-25. Nothing built from this plan yet.</div>
+</div></body></html>

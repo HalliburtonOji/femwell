@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Sky — Clean, Classy &amp; in Bloom</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600&family=Inter:wght@400;500;600;700;800&family=Ephesis&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ground:#F4F3EF; --surface:#FFFFFF; --sunk:#FAF9F6;
+    --hair:#EAE7E0; --goldhair:#D9C79B;
+    --ink:#191510; --slate:#6E6A61; --faint:#A6A197;
+    --crimson:#BC2E27; --gold:#A8893F;
+    /* colourways (§2.5) — colour carries meaning */
+    --cw-sage:#8FAF8F; --cw-sage-deep:#5F8A6B; --cw-sage-tip:#B6CDB6;
+    --cw-blush:#E8B4B8; --cw-plum:#8E6E8E; --cw-gold:#D4AF37; --cw-sky:#9FB6C9;
+    --serif:"Cormorant Garamond",Georgia,serif;
+    --ui:"Inter",ui-sans-serif,system-ui,sans-serif;
+    --script:"Ephesis",cursive;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;background:var(--ground);color:var(--ink);font-family:var(--ui);-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+  body{padding:0 0 70px}
+  .wrap{max-width:560px;margin:0 auto;padding:0 22px}
+
+  .intro{padding:44px 22px 6px;text-align:center}
+  .intro .kick{font-size:10.5px;font-weight:800;letter-spacing:.26em;text-transform:uppercase;color:var(--gold);margin:0 0 14px}
+  .intro h1{font-family:var(--serif);font-weight:600;font-size:38px;line-height:1.05;letter-spacing:-.4px;margin:0 0 12px}
+  .intro h1 em{font-style:italic;color:var(--crimson);font-weight:500}
+  .intro p{font-family:var(--serif);font-size:19px;line-height:1.55;color:var(--slate);max-width:30em;margin:0 auto}
+  .note{font-size:12.5px;color:var(--faint);text-align:center;margin:26px auto 6px;max-width:32em;line-height:1.6}
+
+  .stage{display:flex;justify-content:center;padding:28px 0 8px}
+  .phone{width:390px;max-width:100%;background:var(--ground);border-radius:42px;padding:22px 0 26px;
+    box-shadow:0 40px 90px -30px rgba(25,21,16,.34), 0 10px 24px -12px rgba(25,21,16,.16);border:1px solid rgba(0,0,0,.05)}
+  .notch{width:104px;height:5px;border-radius:99px;background:rgba(0,0,0,.10);margin:0 auto 18px}
+  .scr{padding:0 24px}
+
+  /* masthead */
+  .top{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
+  .eye{display:flex;align-items:center;gap:11px}
+  .eye .lab{font-size:10px;font-weight:800;letter-spacing:.24em;text-transform:uppercase;color:var(--gold)}
+  .eye .rule{width:34px;height:1px;background:var(--goldhair)}
+  .iconbtn{width:34px;height:34px;border-radius:50%;border:1px solid var(--hair);background:var(--surface);display:grid;place-items:center;flex-shrink:0}
+
+  .hero{display:flex;justify-content:center;margin:0 0 4px}
+  .head{font-family:var(--serif);font-weight:600;font-size:36px;line-height:1.08;letter-spacing:-.5px;color:var(--ink);margin:0 0 10px;text-align:center}
+  .head em{font-style:italic;font-weight:500}
+  .sig{display:flex;align-items:center;justify-content:center;gap:10px;margin:0 0 14px}
+  .state{display:flex;align-items:center;justify-content:center;gap:12px;font-size:11px;font-weight:600;color:var(--slate);letter-spacing:.04em;margin:0 0 20px}
+  .state .d{width:3px;height:3px;border-radius:99px;background:var(--goldhair)}
+  .cta{display:flex;align-items:center;justify-content:center;gap:9px;width:100%;padding:14px;border-radius:13px;background:transparent;border:1px solid var(--ink);color:var(--ink);font-size:12.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase}
+
+  .div{display:flex;justify-content:center;margin:24px 0}
+
+  .blk{margin:0 0 28px}
+  .beye{display:flex;align-items:center;justify-content:center;gap:7px;font-size:10px;font-weight:800;letter-spacing:.22em;text-transform:uppercase;color:var(--gold);margin:0 0 9px}
+  .bt{font-family:var(--serif);font-weight:600;font-size:24px;letter-spacing:-.2px;color:var(--ink);margin:0 0 15px;text-align:center}
+
+  .read{font-family:var(--serif);font-size:19px;line-height:1.72;color:var(--ink);margin:0}
+  .read .lead{font-style:italic;color:var(--crimson)}
+  .astra{font-family:var(--script);font-size:30px;color:var(--gold);text-align:right;line-height:1;margin:6px 4px 0}
+  .tags{display:flex;flex-wrap:wrap;justify-content:center;gap:9px;margin:12px 0 0}
+  .tag{font-size:11px;font-weight:600;color:var(--slate);letter-spacing:.03em}
+  .tag.sep{color:var(--faint)}.tag.snd{color:var(--cw-sage-deep);font-weight:700}
+  .notice{margin:18px auto 0;max-width:30em;text-align:center;padding-top:14px;border-top:1px solid var(--hair)}
+  .notice .nt{font-size:10px;font-weight:800;letter-spacing:.18em;text-transform:uppercase;color:var(--gold);margin:0 0 5px}
+  .notice .nb{font-family:var(--serif);font-style:italic;font-size:17px;line-height:1.5;color:var(--ink);margin:0}
+
+  .tri{display:flex;align-items:stretch}
+  .tcol{flex:1;text-align:center;padding:4px 8px;position:relative}
+  .tcol+.tcol:before{content:"";position:absolute;left:0;top:8px;bottom:8px;width:1px;background:var(--hair)}
+  .tgly{font-family:var(--serif);font-size:32px;line-height:1;color:var(--ink)}
+  .tlab{font-size:9px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--faint);margin-top:10px}
+  .tsign{font-family:var(--serif);font-size:19px;font-weight:600;color:var(--ink);margin-top:2px}
+  .ttrait{font-family:var(--serif);font-style:italic;font-size:13px;color:var(--slate);margin-top:3px;line-height:1.3}
+  .tfoot{font-size:10.5px;letter-spacing:.06em;color:var(--faint);text-align:center;margin-top:16px}
+
+  /* the feature card — colourway tint (sage = follicular) + BrandFrame corner sprigs */
+  .card{position:relative;background:linear-gradient(165deg,#FFFFFF 0%,#F4F8F3 100%);border-radius:22px;padding:26px 22px 24px;
+    box-shadow:0 1px 3px rgba(25,21,16,.03), 0 18px 42px -18px rgba(25,21,16,.12);overflow:hidden}
+  .corner{position:absolute;width:44px;height:44px;opacity:.7}
+  .corner.tl{left:8px;top:8px}.corner.tr{right:8px;top:8px;transform:scaleX(-1)}
+  .corner.bl{left:8px;bottom:8px;transform:scaleY(-1)}.corner.br{right:8px;bottom:8px;transform:scale(-1,-1)}
+  .dial{display:flex;align-items:center;justify-content:center;gap:20px;position:relative}
+  .leg{font-size:12px;color:var(--slate);line-height:1}
+  .leg .row{display:flex;align-items:center;gap:9px;margin-bottom:11px}
+  .leg .dot{width:8px;height:8px;border-radius:99px}
+  .leg b{color:var(--ink);font-weight:700}
+  .leg .say{font-family:var(--serif);font-style:italic;font-size:15px;color:var(--slate);line-height:1.45;margin-top:3px;max-width:15em}
+
+  .orbs{display:flex;justify-content:center;gap:26px;margin:2px 0 16px}
+  .orb{display:flex;flex-direction:column;align-items:center;gap:8px}
+  .od{width:34px;height:34px;border-radius:99px}
+  .ol{font-size:9.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--slate)}
+  .gsay{font-family:var(--serif);font-style:italic;font-size:16px;line-height:1.5;color:var(--ink);text-align:center;max-width:26em;margin:0 auto;padding-top:14px;border-top:1px solid var(--hair)}
+  .foot{font-family:var(--serif);font-style:italic;font-size:13.5px;color:var(--faint);text-align:center;line-height:1.5;margin:8px 16px 0}
+
+  .cap{text-align:center;font-size:11px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--faint);margin:20px 0 0}
+  .changes{margin:20px auto 0;max-width:34em;padding:0}
+  .changes li{list-style:none;font-family:var(--serif);font-size:16.5px;line-height:1.5;color:var(--ink);padding:11px 0 11px 24px;position:relative;border-bottom:1px solid var(--hair)}
+  .changes li:before{content:"";position:absolute;left:2px;top:18px;width:7px;height:7px;border-radius:99px;background:var(--crimson)}
+  .changes li b{font-weight:600}
+  .changes .ref{font-family:var(--ui);font-size:10.5px;font-weight:700;letter-spacing:.08em;color:var(--gold);margin-left:6px}
+</style>
+</head>
+<body>
+
+<!-- shared brand symbols (one hand: hairline botanicals, §4) -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <radialGradient id="glow" cx="50%" cy="55%" r="50%"><stop offset="0" stop-color="#8FAF8F" stop-opacity=".26"/><stop offset=".65" stop-color="#8FAF8F" stop-opacity=".07"/><stop offset="1" stop-color="#8FAF8F" stop-opacity="0"/></radialGradient>
+    <linearGradient id="pet" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFFFFF"/><stop offset="1" stop-color="#EDF1E9"/></linearGradient>
+    <linearGradient id="pet2" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFFFFF"/><stop offset="1" stop-color="#E6ECE2"/></linearGradient>
+    <linearGradient id="leaf" x1="0" y1="1" x2="0" y2="0"><stop offset="0" stop-color="#6F9A78"/><stop offset="1" stop-color="#B6CDB6"/></linearGradient>
+    <!-- a snowdrop head, hanging from its origin (§5.1: follicular → snowdrop · hope) -->
+    <g id="sd">
+      <path d="M0 1 C-4.2 7 -4.2 19 0 27 C4.2 19 4.2 7 0 1Z" fill="url(#pet2)" stroke="#B6CDB6" stroke-width=".55"/>
+      <path d="M-3.4 5 L3.4 5 L3.9 16.5 C2.2 18.6 -2.2 18.6 -3.9 16.5Z" fill="#F7F9F4" stroke="#A9C6A9" stroke-width=".5"/>
+      <path d="M-2.3 14.4 L0 17 L2.3 14.4" fill="none" stroke="#5F8A6B" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M-1 1 C-8 5 -11.5 15 -7.5 25.5 C-4 20 -1.8 11 -0.6 3Z" fill="url(#pet)" stroke="#B6CDB6" stroke-width=".55"/>
+      <path d="M1 1 C8 5 11.5 15 7.5 25.5 C4 20 1.8 11 0.6 3Z" fill="url(#pet)" stroke="#B6CDB6" stroke-width=".55"/>
+      <ellipse cx="0" cy=".4" rx="2.4" ry="2" fill="#8FAF8F"/>
+    </g>
+    <!-- header-flourish mini-sprig (§4.3) -->
+    <g id="sprig" fill="none" stroke="#A8893F" stroke-width=".9" stroke-linecap="round">
+      <path d="M0 7 C9 7 16 5 24 0"/>
+      <path d="M7 6.6 C7.6 3.4 10 1.8 12.6 2.4 C11.6 4.8 9.6 6.4 7 6.6Z"/>
+      <path d="M14 4.4 C14.4 1.4 16.8 -0.2 19.4 .4 C18.4 2.8 16.6 4.2 14 4.4Z"/>
+      <path d="M9 6.4 C9.8 5.2 10.6 4.4 11.4 3.6"/>
+    </g>
+    <!-- corner sprig (§4.2) — drawn top-left, rotated for the others -->
+    <g id="corner" fill="none" stroke="#A8893F" stroke-width=".95" stroke-linecap="round">
+      <path d="M2 2 C6 12 14 20 30 24"/>
+      <path d="M8 10 C9.6 5.8 13.6 4 17.4 5.6 C15.4 9 12 10.6 8 10Z"/>
+      <path d="M9.4 9.6 C11 8.2 12.6 7 14.2 6.2"/>
+      <path d="M16 18.6 C15.4 14 18 10.8 22 10.8 C22.2 14.8 20 17.8 16 18.6Z"/>
+      <path d="M17 17.6 C18 15.6 19.2 13.8 20.6 12.2"/>
+      <circle cx="30.6" cy="24.4" r="1.2" fill="#A8893F" stroke="none"/>
+    </g>
+    <!-- a tiny colourway rosette — the meaning-bloom beside an eyebrow -->
+    <g id="rosette">
+      <ellipse cx="0" cy="-3.2" rx="1.7" ry="3"/><ellipse cx="0" cy="-3.2" rx="1.7" ry="3" transform="rotate(72)"/><ellipse cx="0" cy="-3.2" rx="1.7" ry="3" transform="rotate(144)"/><ellipse cx="0" cy="-3.2" rx="1.7" ry="3" transform="rotate(216)"/><ellipse cx="0" cy="-3.2" rx="1.7" ry="3" transform="rotate(288)"/>
+      <circle cx="0" cy="0" r="1.3" fill="#A8893F"/>
+    </g>
+  </defs>
+</svg>
+
+  <div class="intro">
+    <p class="kick">FemWell · The visual reset — in bloom</p>
+    <h1>Clean, classy — <em>and ours.</em></h1>
+    <p>The elevated page, with the brand bible back in it: a recognisable meaning-bloom, the carved heart, botanical dividers, corner sprigs and the colourways — crafted and present, never muddy.</p>
+  </div>
+
+  <div class="stage">
+    <div class="phone">
+      <div class="notch"></div>
+      <div class="scr">
+
+        <div class="top">
+          <div class="eye"><span class="lab">Your sky</span><span class="rule"></span></div>
+          <span class="iconbtn" title="Share"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6E6A61" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="2.6"/><circle cx="6" cy="12" r="2.6"/><circle cx="18" cy="19" r="2.6"/><line x1="8.3" y1="13.4" x2="15.7" y2="17.6"/><line x1="15.7" y1="6.4" x2="8.3" y2="10.6"/></svg></span>
+        </div>
+
+        <!-- THE FLORA HERO — her phase flower, big, lush, lit (§0.5 · §5.1 · §6.8) -->
+        <div class="hero">
+          <svg width="176" height="168" viewBox="0 0 176 168" aria-label="Snowdrops — hope">
+            <circle cx="88" cy="84" r="74" fill="url(#glow)"/>
+            <!-- strap leaves -->
+            <path d="M86 166 C74 128 62 96 66 52 C72 96 80 130 88 166Z" fill="url(#leaf)" opacity=".9"/>
+            <path d="M90 166 C104 132 114 104 110 60 C106 104 98 134 90 166Z" fill="url(#leaf)" opacity=".85"/>
+            <path d="M84 166 C70 140 52 122 40 92 C56 118 72 138 86 166Z" fill="url(#leaf)" opacity=".7"/>
+            <!-- stems: whiplash up, then the arch + nodding pedicel -->
+            <g fill="none" stroke="#6F9A78" stroke-width="1.5" stroke-linecap="round">
+              <path d="M88 166 C86 126 78 96 76 62 C75 52 82 46 88 50 C92 53 91 58 87 62"/>
+              <path d="M87 166 C78 132 60 112 52 84 C50 76 56 70 62 73 C66 75 65 80 61 84"/>
+              <path d="M89 166 C98 130 116 110 122 82 C124 74 118 68 112 71 C108 73 109 78 113 82"/>
+            </g>
+            <!-- spathes -->
+            <g fill="#8FAF8F" opacity=".9">
+              <path d="M84 50 C86 45 90 44 92 46 C90 49 87 50 84 50Z"/>
+              <path d="M58 72 C60 67 64 66 66 68 C64 71 61 72 58 72Z"/>
+              <path d="M116 70 C114 65 110 64 108 66 C110 69 113 70 116 70Z"/>
+            </g>
+            <!-- the three heads -->
+            <use href="#sd" transform="translate(87 62) rotate(-6)"/>
+            <use href="#sd" transform="translate(61 84) rotate(-18) scale(.92)"/>
+            <use href="#sd" transform="translate(113 82) rotate(16) scale(.9)"/>
+          </svg>
+        </div>
+
+        <h1 class="head">A day that rewards<br>the <em>quiet</em> start.</h1>
+
+        <!-- the brand signature: header flourish flanking the ONE carved heart (§3 · §4.3) -->
+        <div class="sig">
+          <svg width="26" height="9" viewBox="0 0 26 9" opacity=".8"><use href="#sprig"/></svg>
+          <svg width="17" height="17" viewBox="0 0 24 24"><path d="M12 20.3C7 16.6 3.6 13.8 3.6 9.7 3.6 7.2 5.5 5.4 7.9 5.4c1.6 0 3.1.9 3.9 2.3.2.3.6.3.8 0 .8-1.4 2.3-2.3 3.9-2.3 2.4 0 4.3 1.8 4.3 4.3 0 4.1-3.4 6.9-8.4 10.6-.2.1-.4.1-.6 0Z" fill="#BC2E27" transform="rotate(-6 12 12)"/><circle cx="9.2" cy="9.4" r="1.5" fill="#fff" opacity=".85"/><circle cx="6.6" cy="14.3" r=".9" fill="#BC2E27" opacity=".55"/></svg>
+          <svg width="26" height="9" viewBox="0 0 26 9" opacity=".8" style="transform:scaleX(-1)"><use href="#sprig"/></svg>
+        </div>
+
+        <div class="state">
+          <span>Follicular · Day 9</span><span class="d"></span>
+          <span>Waxing gibbous</span><span class="d"></span>
+          <span>Scorpio sun</span>
+        </div>
+
+        <button class="cta"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#191510" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg> Edit your chart</button>
+
+        <!-- LEAF RULE divider (§4.3 — the everyday section break) -->
+        <div class="div">
+          <svg width="300" height="16" viewBox="0 0 300 16" fill="none" stroke="#A8893F" stroke-linecap="round">
+            <path d="M8 8 H132" stroke-width=".8" opacity=".35"/><path d="M168 8 H292" stroke-width=".8" opacity=".35"/>
+            <g opacity=".7" stroke-width=".9"><path d="M134 8 C140 2 154 1 166 8 C154 15 140 14 134 8Z"/><path d="M136 8 H164" stroke-width=".7"/><path d="M143 8 C144 5.6 146 4.2 148 3.6"/><path d="M143 8 C144 10.4 146 11.8 148 12.4"/><path d="M151 8 C152 5.4 154 4 156.5 3.4"/><path d="M151 8 C152 10.6 154 12 156.5 12.6"/></g>
+          </svg>
+        </div>
+
+        <!-- THE READING (eyebrow carries a crimson meaning-rosette: from the heart) -->
+        <div class="blk">
+          <div class="beye"><svg width="11" height="11" viewBox="-6 -6 12 12" fill="#BC2E27" opacity=".9"><use href="#rosette"/></svg> Today's weather</div>
+          <p class="read"><span class="lead">Begin the thing you've been circling.</span> Today's pull is toward depth, not speed — one real conversation will do more than a busy afternoon. Let the morning stay slow; it's earning its keep.</p>
+          <div class="astra">Astra</div>
+          <div class="tags">
+            <span class="tag">Energy · steady</span><span class="tag sep">·</span>
+            <span class="tag">Focused, a little tender</span><span class="tag sep">·</span>
+            <span class="tag snd">♪ A sound for today</span>
+          </div>
+          <div class="notice">
+            <div class="nt">Notice</div>
+            <p class="nb">A message you've been putting off — it'll go easier than you fear.</p>
+          </div>
+        </div>
+
+        <!-- FLEURON divider (§4.3 — the chapter-grade break) -->
+        <div class="div">
+          <svg width="300" height="20" viewBox="0 0 300 20" fill="none" stroke="#A8893F" stroke-linecap="round">
+            <path d="M40 10 H128" stroke-width=".8" opacity=".35"/><path d="M172 10 H260" stroke-width=".8" opacity=".35"/>
+            <g opacity=".75" stroke-width=".9" transform="translate(150 10)">
+              <path d="M0 -2 C-2.4 -5 -2.4 -9.5 0 -12 C2.4 -9.5 2.4 -5 0 -2Z"/><path d="M0 2 C-2.4 5 -2.4 9.5 0 12 C2.4 9.5 2.4 5 0 2Z"/>
+              <path d="M-2 0 C-5 -2.4 -9.5 -2.4 -12 0 C-9.5 2.4 -5 2.4 -2 0Z"/><path d="M2 0 C5 -2.4 9.5 -2.4 12 0 C9.5 2.4 5 2.4 2 0Z"/>
+              <circle cx="0" cy="0" r="1.6" fill="#A8893F" stroke="none"/>
+            </g>
+          </svg>
+        </div>
+
+        <!-- THE CHART (gold meaning-rosette: joy / radiance — the sun) -->
+        <div class="blk">
+          <div class="beye"><svg width="11" height="11" viewBox="-6 -6 12 12" fill="#D4AF37"><use href="#rosette"/></svg> Your chart</div>
+          <div class="bt">Sun, moon &amp; rising</div>
+          <div class="tri">
+            <div class="tcol"><div class="tgly">&#9807;&#xFE0E;</div><div class="tlab">Sun</div><div class="tsign">Scorpio</div><div class="ttrait">deep water,<br>no shallows</div></div>
+            <div class="tcol"><div class="tgly">&#9811;&#xFE0E;</div><div class="tlab">Moon</div><div class="tsign">Pisces</div><div class="ttrait">tender,<br>intuitive</div></div>
+            <div class="tcol"><div class="tgly">&#9804;&#xFE0E;</div><div class="tlab">Rising</div><div class="tsign">Leo</div><div class="ttrait">warm,<br>sovereign</div></div>
+          </div>
+          <div class="tfoot">Water · Fixed · ruled by Mars &amp; Pluto</div>
+        </div>
+
+        <!-- THE FEATURE CARD — sage colourway tint (her phase) + BrandFrame corner sprigs (§4.2 · §6.7) -->
+        <div class="blk">
+          <div class="card">
+            <svg class="corner tl" viewBox="0 0 44 44"><use href="#corner"/></svg>
+            <svg class="corner tr" viewBox="0 0 44 44"><use href="#corner"/></svg>
+            <svg class="corner bl" viewBox="0 0 44 44"><use href="#corner"/></svg>
+            <svg class="corner br" viewBox="0 0 44 44"><use href="#corner"/></svg>
+            <div class="beye"><svg width="11" height="11" viewBox="-6 -6 12 12" fill="#8FAF8F"><use href="#rosette"/></svg> Cycle × moon</div>
+            <div class="bt">Your two tides</div>
+            <div class="dial">
+              <svg width="126" height="126" viewBox="0 0 130 130" style="flex-shrink:0">
+                <circle cx="65" cy="65" r="56" fill="none" stroke="#E6EBE3" stroke-width="3.5"/>
+                <circle cx="65" cy="65" r="56" fill="none" stroke="#191510" stroke-width="3.5" stroke-dasharray="260 352" transform="rotate(-90 65 65)" opacity=".9" stroke-linecap="round"/>
+                <g transform="rotate(266 65 65)"><circle cx="65" cy="9" r="4" fill="#191510"/></g>
+                <circle cx="65" cy="65" r="41" fill="none" stroke="#E6EBE3" stroke-width="3.5"/>
+                <circle cx="65" cy="65" r="41" fill="none" stroke="#5F8A6B" stroke-width="3.5" stroke-dasharray="83 258" transform="rotate(-90 65 65)" stroke-linecap="round"/>
+                <g transform="rotate(115 65 65)"><circle cx="65" cy="24" r="4" fill="#5F8A6B"/></g>
+                <text x="65" y="60" text-anchor="middle" style="font-family:var(--ui);font-size:7.5px;font-weight:800;letter-spacing:1.5px;fill:#A8893F">TODAY</text>
+                <text x="65" y="75" text-anchor="middle" style="font-family:var(--serif);font-size:14px;font-weight:600;fill:#191510">Sat 14</text>
+              </svg>
+              <div class="leg">
+                <div class="row"><span class="dot" style="background:#191510"></span><span><b>Lunar</b> · 74% lit</span></div>
+                <div class="row"><span class="dot" style="background:#5F8A6B"></span><span><b>Cycle</b> · Day 9</span></div>
+                <div class="say">Both climbing — a building week under a building moon.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- GODDESS BENCH (blush meaning-rosette: grace / tenderness) -->
+        <div class="blk" style="margin-bottom:22px">
+          <div class="beye"><svg width="11" height="11" viewBox="-6 -6 12 12" fill="#E8B4B8"><use href="#rosette"/></svg> Beside you today</div>
+          <div class="bt">Your goddess bench</div>
+          <div class="orbs">
+            <div class="orb"><span class="od" style="background:radial-gradient(circle at 32% 28%,#C88A7E,#B06B5E 62%,#8f5044)"></span><span class="ol">Nurture</span></div>
+            <div class="orb"><span class="od" style="background:radial-gradient(circle at 32% 28%,#8B9575,#6E7A58 62%,#565f43)"></span><span class="ol">Devotion</span></div>
+            <div class="orb"><span class="od" style="background:radial-gradient(circle at 32% 28%,#D69A8B,#BE7767 62%,#9c5a4b)"></span><span class="ol">Commitment</span></div>
+          </div>
+          <p class="gsay">Ceres in Taurus asks you to feed yourself well before you feed anyone else.</p>
+        </div>
+
+        <p class="foot">Held lightly — folklore and your own chart, never fate or a score.</p>
+
+      </div>
+    </div>
+  </div>
+
+  <p class="cap">After — clean, classy, in bloom</p>
+
+  <div class="wrap">
+    <p class="note">What came back from the brand bible, and where — each is canon, not decoration:</p>
+    <ul class="changes">
+      <li><b>A real meaning-bloom hero.</b> Her phase flower — follicular → <em>snowdrop</em> (hope), three nodding heads on whiplash stems, strap leaves, a soft sage glow. Recognisable as a snowdrop, big and lit, and it changes with her phase. <span class="ref">§0.5 · §5.0 · §5.1</span></li>
+      <li><b>The carved crimson heart — exactly one.</b> The hand-cut mark with its specular highlight, tilted −6°, beneath the title, flanked by the mirrored header flourish. <span class="ref">§3 · §4.3</span></li>
+      <li><b>Botanical dividers, not plain rules.</b> A veined leaf-rule for the everyday break; a quatrefoil fleuron with a gold dot for the chapter-grade break before the chart. One motif per fold. <span class="ref">§4.3 · §4.4</span></li>
+      <li><b>A framed feature card.</b> The dial card carries BrandFrame corner sprigs in all four corners and a faint sage colourway wash — her phase's colour, so the tint means something. <span class="ref">§4.2 · §6.7</span></li>
+      <li><b>Colourways as meaning-accents.</b> A tiny rosette beside each eyebrow in its colourway — crimson (from the heart), gold (radiance), sage (renewal), blush (tenderness). Colour, not flat cream; still one hand. <span class="ref">§2.5</span></li>
+      <li><b>The display voice.</b> Astra signs her reading in Ephesis, in gold — the script as signature, not body. <span class="ref">§1</span></li>
+      <li><b>Kept from the reset.</b> Alabaster ground, white surfaces, neutral ink/slate, no paper texture, air between sections, one quiet CTA. Clean and classy — and unmistakably FemWell.</li>
+    </ul>
+    <p class="note" style="margin-top:26px">Still a proposal — nothing applied. In the real build these are the actual engine components (<em>RichBloomV2 / SpeciesBloom · Heart · LeafDivider · FleuronDivider · HeaderFlourish · BrandFrame · cwOf</em>), not hand-drawn copies.</p>
+  </div>
+
+</body>
+</html>

@@ -5,6 +5,9 @@
 > Keeping state out of this file is intentional — it's what stops CLAUDE.md and STATUS.md from contradicting
 > each other and making Halli re-explain things after a reset.
 
+## TWO AGENTS BUILD THIS APP — READ `AGENTS.md` (repo root) FIRST
+> Claude (Cowork/Dispatch) + Codex (laptop, has git push) share this repo. **`AGENTS.md` is the cross-agent contract**: the baton read-order, the hard gates, the engineering constraints, who owns what, and how a patch is exchanged. Full context for the other agent: `claude-state/agent-collab/HANDOFF.md`. Claude CANNOT push — it commits locally and exports a patch for Codex to apply and push.
+
 ## IF YOU ARE STARTING A NEW SESSION OR JUST RESET:
 1. Read `claude-state/ONBOARDING_READ_FIRST.md` (2-minute self-onboard).
 2. Read the top block of `claude-state/STATUS.md` (authoritative current state + ship log).
