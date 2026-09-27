@@ -510,7 +510,10 @@ export default function TodayClipboardDemo() {
   const addCustom = () => { const v = draft.trim(); if (!v) return; setCustom((prev) => [...prev, { id: "c" + Date.now(), label: v, kind: "outapp" }]); setDraft(""); };
 
   const ITEMS = [
-    { id: "chapter", label: "Read today's chapter of Little Women", kind: "inapp", Icon: BookOpen, href: "/BookReader?gutenberg_id=514" },
+    // the LIVE club pick — this file already fetches BookClubPick; it used to ignore it and ship a
+    // hardcoded "Little Women"/514, so changing the club pick never changed Today.
+    { id: "chapter", label: content.book?.title ? `Read today's chapter of ${content.book.title}` : "Read today's chapter", kind: "inapp", Icon: BookOpen,
+      href: content.book?.gutenberg_id ? `/BookReader?gutenberg_id=${content.book.gutenberg_id}` : "/Lifestyle?tab=books" },
     { id: "qotd", label: "Answer the Question of the Day", kind: "inapp", Icon: Users, href: "/Community" },
     { id: "line", label: "Leave a line in your journal", kind: "inapp", Icon: PenLine, href: "/Journal" },
     { id: "breakfast", label: "Log breakfast", kind: "inapp", Icon: Coffee, href: "/Nutrition" },
@@ -531,7 +534,21 @@ export default function TodayClipboardDemo() {
   //    (deterministic QOTD + guarded entity reads; the synthesis is done in the build*Insight helpers).
   const qotd = qotdForDay(todayKey());
   const storyTitle = content.story ? (content.story.series_title || "Today's chapter") : "Today's instalment";
-  const bookHref = content.book?.gutenberg_id ? `/BookReader?gutenberg_id=${content.book.gutenberg_id}` : "/BookReader?gutenberg_id=514";
+  const bookHref = content.book?.gutenberg_id ? `/BookReader?gutenberg_id=${content.book.gutenberg_id}` : "/Lifestyle?tab=books";
+  // "continue reading" — Today has never had one. Device-local reader positions (fw_reader_pos_*),
+  // the same source the Lifestyle corner uses; deep-links into the Books section (?tab= resolves now).
+  const continueRead = (() => {
+    try {
+      let best = null;
+      for (let i = 0; i < localStorage.length; i++) {
+        const k = localStorage.key(i);
+        if (!k || !k.startsWith("fw_reader_pos_")) continue;
+        const v = JSON.parse(localStorage.getItem(k) || "null");
+        if (v && typeof v.ts === "number" && (!best || v.ts > best.ts)) best = { ...v, id: k.slice(14) };
+      }
+      return best;
+    } catch { return null; }
+  })();
   const planItems = content.planItems || [];
   const planFocus = content.plan?.focus_for_today || null;
   const weekly = content.weekly;
@@ -686,7 +703,11 @@ export default function TodayClipboardDemo() {
       if (sname) out.push({ Icon: Stethoscope, accent: "#8E6E8E", text: `You noted ${sname} today — your Health letters have gentle, phase-aware steps for it.`, href: "/Health" });
     }
     // reading — real book pick
-    if (content.book?.title) out.push({ Icon: BookOpen, accent: T.crimson, text: `The Books circle is reading ${content.book.title} — read along.`, href: bookHref });
+    // continue reading leads — picking up beats starting (her own saved position)
+    if (continueRead) out.push({ Icon: BookOpen, accent: T.crimson, text: "You're part-way through a chapter — pick it up where you left it.", href: "/Lifestyle?tab=books" });
+    if (content.book?.title) out.push({ Icon: BookOpen, accent: T.crimson, text: `The book club is reading ${content.book.title} — read along.`, href: "/Community?view=bookclub" });
+    // the Books circle link now actually goes to the circle
+    if (content.book?.title) out.push({ Icon: BookOpen, accent: T.crimson, text: "The Books circle is talking about what everyone's reading.", href: "/Community?circle=books" });
     // weekly pattern — real
     if (pulseLine) out.push({ Icon: TrendingUp, accent: "#8E6E8E", text: clip(pulseLine, 92), href: "/Pulse" });
     // community echo — real

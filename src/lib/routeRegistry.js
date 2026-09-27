@@ -23,7 +23,8 @@ export const ROUTES = {
   NutritionHydration: "/Nutrition?tab=hydration",
   NutritionToday:     "/Nutrition?tab=today",
   NutritionPlan:      "/Nutrition?tab=plan",
-  LifestyleFiction:   "/Lifestyle?tab=femwell",
+  // both land on Books & story (the shell resolves ?tab= since 2026-09-27)
+  LifestyleFiction:   "/Lifestyle?tab=books",
   LifestyleBooks:     "/Lifestyle?tab=books",
 };
 

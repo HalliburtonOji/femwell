@@ -45,7 +45,7 @@ import YoursFocus from "@/components/lifestyle-elite/YoursFocus";
 import { CoverCard, ExpandDetailCard } from "@/components/brand/expandCards";
 import FaceOverlay from "@/components/brand/FaceOverlay";
 // the Daily Story — ONE gating contract + the real immersive reader (component #5)
-import { DAILY_STORY_SERIES, loadStoryChapters, chapterForDay, nextChapterOf, chapterLabel, framingLine, markChapterRead, isChapterRead, readCount } from "@/components/lifestyle/dailyStory";
+import { DAILY_STORY_SERIES, isoDay, loadStoryChapters, chapterForDay, nextChapterOf, chapterLabel, framingLine, markChapterRead, isChapterRead, readCount } from "@/components/lifestyle/dailyStory";
 import DailyStoryReader from "@/components/lifestyle/DailyStoryReader";
 import { buildBookChapters } from "@/components/lifestyle/bookChapters";
 // the sky (component #6) — the REAL horoscope reader (15 sections + birth-chart onboarding),
@@ -77,6 +77,7 @@ import { ChapterProse } from "@/utils/chapterProse";
 // "Mark as read" must actually MARK IT READ — this is the same recorder the Garden reads
 // (readingDaySet), so a chapter she finishes really does feed her garden.
 import { recordProgress } from "@/components/community/readingActivity";
+import { dailyReadClubKey } from "@/components/community/clubsConfig";
 import {
   OXBLOOD, lbl, subCard, focusPill, inputBase, Pill, Panel, StackedCard, BoardBody, TopChrome, SheetShell,
   JumpSheet, SliderArrows, makeCalendarOverlay,
@@ -747,6 +748,31 @@ export default function LifestyleEliteShell({ enableFocus = false, layout = null
     } catch { setSkyNotes((xs) => xs.filter((x) => x.id !== temp.id)); flash("Couldn't save — try again"); }
   }, [user, horoscope]);
 
+  // ── Reading → PlannerItems.create (a real block she can tap back into) ────────────────────────
+  // One evening block for a book, or the club's whole six weeks as one row per checkpoint. Rides the
+  // existing entity (no planner dispatcher exists); source+ref let the planner deep-link back.
+  const scheduleReading = useCallback(async (arg) => {
+    if (!user?.id || !arg) return;
+    const mk = (title, date, ref, notes, time) => base44.entities.PlannerItems.create({
+      user_id: user.id, title, date, time: time || "21:00", category: "personal", repeat: "once",
+      notes, source: "books", ref, is_completed: false, created_at: nowISO(), updated_at: nowISO(),
+    });
+    try {
+      if (arg.club) {
+        const cps = arg.club.checkpoints || [];
+        const start = new Date();
+        await Promise.all(cps.map((cp, i) => {
+          const d = new Date(start); d.setDate(d.getDate() + (i + 1) * 10);   // ~six weeks across the checkpoints
+          return mk(`Book club · ${cp.label}`, isoDay(d), `club:${arg.club.pick_key}`, "The book club checkpoint — no rush, no streak.", "20:00");
+        }));
+        flash(`${arg.club.title} — the six weeks are in your planner`);
+      } else {
+        await mk(arg.title, todayKey(), arg.ref, "A reading hour, from your reading corner.");
+        flash("Tonight at 9 — it's in your planner");
+      }
+    } catch { flash("Couldn't reach your planner just now"); }
+  }, [user, flash]);
+
   // ── A day for you → PlannerItems.create (a gentle planned day-off block) ──
   const savePlannerDay = useCallback(async (title) => {
     if (!user?.id) { flash("Sign in to save it to your planner"); return; }
@@ -1200,6 +1226,29 @@ export default function LifestyleEliteShell({ enableFocus = false, layout = null
     yours:  { board: 5, label: "Yours",          forYou: [] },
   };
   const BOARD_TO_SECTION = { 0: "good", 1: "read", 2: "listen", 3: "books", 4: "books", 5: "yours" };
+  // ── DEEP LINKS (2026-09-27) — ?tab= / ?section= finally resolve here ──────────────────────────
+  // The whole app already emits these (Today's chapter/listen/horoscope cards, DailyStoryReel's
+  // three links, and Jess via routeRegistry's LifestyleBooks/LifestyleFiction) but this shell never
+  // read the param, so every one of them dumped her on the landing. One map, additive, reversible.
+  const TAB_TO_SECTION = {
+    books: "books", browse: "books", femwell: "books", daily_story: "books", story: "books",
+    read: "read", for_you: "read", listen: "listen", watch: "listen",
+    horoscope: "sky", sky: "sky", good: "good", good_life: "good", yours: "yours", saved: "yours",
+  };
+  useEffect(() => {
+    if (!enableFocus) return;            // the landing shell has no focus mode to deep-link into
+    try {
+      const q = new URLSearchParams(window.location.search);
+      const want = TAB_TO_SECTION[String(q.get("tab") || q.get("section") || "").toLowerCase()];
+      if (!want) return;
+      setFocusSection(want);
+      const i = HERO_CARDS.findIndex((c) => c.id === want);
+      if (i >= 0) { _lifeHeroCard = i; setHeroCard(i); }
+    } catch { /* a malformed URL just lands on the landing, as before */ }
+    // once, on mount — re-running would fight her taps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [enableFocus]);
+
   const focus = (enableFocus && focusSection) ? (FOCUS_MAP[focusSection] || null) : null;
   const focusBoard = focus ? focus.board : null;
   const forYouShown = focus ? forYouItems.filter((it) => focus.forYou.includes(it.forYouSection)) : forYouItems;
@@ -1539,6 +1588,7 @@ export default function LifestyleEliteShell({ enableFocus = false, layout = null
           // BESPOKE section surfaces (§19). Each pulls everything for its section, in the new design.
           if (sec === "sky") return <div style={{ marginTop: 18 }}><SkyFocus userProfile={profile} /></div>;
           if (sec === "story" || sec === "books") return <div style={{ marginTop: 18 }}><BooksStoryFocus chapters={chapters} story={story} pick={storyPick} onRead={(i) => { setReaderStart(i); setReaderOpen(true); }}
+            userId={user?.id} onSchedule={scheduleReading} onCorner={(b) => window.location.assign(createPageUrl(`Community?club=${dailyReadClubKey(b.gutenberg_id)}&title=${encodeURIComponent(b.title || "")}`))}
             continueCards={continueCards} shelfBookCards={shelfBookCards} classicCards={classicCards} onOpenBook={(it) => (it && it._library ? setFocusSection("yours") : openBook(it._continue || it._raw || it))} lifeStage={profile?.life_stage} /></div>;
           if (sec === "listen") return <div style={{ marginTop: 18 }}><ListenFocus audioCards={audioCards} videoCards={videoCards} onOpen={setExpanded} /></div>;
           if (sec === "read") return <div style={{ marginTop: 18 }}><ReadFocus continueCards={continueCards} articleCards={articleCards} storyCards={storyCards} phaseWord={phaseKey ? phaseLabel(phaseKey).toLowerCase() : null} onOpen={openReadCard} /></div>;

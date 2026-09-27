@@ -36,6 +36,14 @@
       ],
       "default": "once"
     },
+    "source": {
+      "type": "string",
+      "description": "Which surface created this row (e.g. 'books', 'lifestyle', 'programs'). Optional; existing rows have none."
+    },
+    "ref": {
+      "type": "string",
+      "description": "Back-reference to the exact item this row is for, as 'kind:id' (e.g. 'gutenberg:1342', 'chapter:s9', 'club:littlewomen-2026q3'). Lets the planner deep-link back to the content. Optional."
+    },
     "notes": {
       "type": "string"
     },

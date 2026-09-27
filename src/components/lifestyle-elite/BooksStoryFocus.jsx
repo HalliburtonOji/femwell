@@ -18,11 +18,14 @@
 // NO generative AI writing about her reading (Fable, Jan 2025 — the "Previously" is the author's own
 // last line); never fake a shelf (0 published FemWell fiction → curated public-domain classics);
 // no new entity or function (device-local storage + an authored module, like the club seed).
-import React, { useMemo, useState } from "react";
-import { Feather, BookOpen, ChevronLeft, ChevronRight, Check, Users, Coffee, RotateCcw, Sparkles } from "lucide-react";
+import React, { useEffect, useMemo, useState } from "react";
+import { Feather, BookOpen, ChevronLeft, ChevronRight, Check, Users, Coffee, RotateCcw, Sparkles, MessageCircle, BookMarked, CalendarPlus } from "lucide-react";
 import { readingPosition, isChapterRead } from "@/components/lifestyle/dailyStory";
+import { readingDaySet } from "@/components/community/readingActivity";
 import { monthlySet, DOORWAYS, DOORWAY_KEYS, getDoorway, setDoorway, passBook } from "@/components/lifestyle/booksMonthly";
 import { SEED_PICK, clubReached } from "@/components/community/bookClubConfig";
+import { loadShelf, addBook, setStatus as setShelfStatus } from "@/components/community/bookshelf";
+import { dailyReadClubKey } from "@/components/community/clubsConfig";
 import { readTimeLabel, countWords } from "@/components/brand/ReadingColumn";
 import { createPageUrl } from "@/utils";
 import { SERIF, UI } from "@/components/journal/Editorial";
@@ -33,6 +36,7 @@ const clean = (s) => String(s || "").replace(/<[^>]+>/g, "").replace(/\*(.+?)\*/
 const paras = (s) => String(s || "").replace(/<[^>]+>/g, "").split(/\n\n+/).map((p) => p.trim()).filter(Boolean);
 const isBook = (c) => /book/i.test(c?.type || "") || !!c?._book || /book/i.test(c?._continue?.type || "") || !!c?._continue?._book;
 const isSerial = (c) => /daily_story|story/i.test(c?.type || "") || c?.id === "daily-chapter";
+const doorBtnStyle = () => ({ flex: 1, display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 6, minHeight: 40, background: "transparent", border: `1px solid ${C.hair}`, borderRadius: 11, fontFamily: UI, fontSize: 11.5, fontWeight: 700, color: C.ink, cursor: "pointer", padding: "0 6px", whiteSpace: "nowrap" });
 const ord = (n) => (n % 10 === 1 && n !== 11 ? "st" : n % 10 === 2 && n !== 12 ? "nd" : n % 10 === 3 && n !== 13 ? "rd" : "th");
 
 // ── a flora book cover (never a photo — §6.7.7 hard rule 1) ────────────────────────────────────
@@ -99,10 +103,17 @@ function WayIn({ Icon, title, line, onClick, first }) {
   );
 }
 
-export default function BooksStoryFocus({ chapters = [], story, pick, onRead, continueCards = [], shelfBookCards = [], classicCards = [], onOpenBook, lifeStage }) {
+export default function BooksStoryFocus({ chapters = [], story, pick, onRead, continueCards = [], shelfBookCards = [], classicCards = [], onOpenBook, lifeStage, userId, onSchedule, onCorner }) {
   const pos = useMemo(() => readingPosition(chapters, pick), [chapters, pick, story]);
   const [doorway, setDoor] = useState(() => getDoorway());
   const [passTick, setPassTick] = useState(0);
+  // THE ONE SHELF (2026-09-27): Books and Community's Library now read/write the SAME UserBook
+  // rows via the existing bookshelf API — adding here shows up there, and her status (reading /
+  // want / finished / set aside) is one cross-device truth instead of two device-local copies.
+  const [shelf, setShelf] = useState([]);
+  useEffect(() => { let dead = false; (async () => { try { const s = await loadShelf(userId); if (!dead) setShelf(s); } catch { /* the shelf is a nicety */ } })(); return () => { dead = true; }; }, [userId, passTick]);
+  const onShelf = (gid) => shelf.find((b) => b.gutenberg_id === String(gid)) || null;
+  const shelve = async (bk, status) => { try { await addBook(userId, { title: bk.title, author: bk.author, gutenberg_id: bk.gutenberg_id, status, source: "curated" }); setPassTick((t) => t + 1); } catch { /* ignore */ } };
   const set = useMemo(() => monthlySet(new Date(), lifeStage, doorway), [lifeStage, doorway, passTick]);
 
   const contBooks = (continueCards || []).filter(isBook);
@@ -276,6 +287,20 @@ export default function BooksStoryFocus({ chapters = [], story, pick, onRead, co
               </div>
             ) : null}
             <div style={{ marginTop: 14 }}><Cta filled Icon={BookOpen} onClick={() => openBook(set.featured)}>Start reading</Cta></div>
+            {/* the three doors out — shelf (UserBook, shared with Community) · plan a time
+                (PlannerItems) · talk about it (this book's readers' corner in Community). */}
+            <div style={{ display: "flex", gap: 8, marginTop: 10 }}>
+              {(() => { const on = onShelf(set.featured.gutenberg_id); return (
+                <button onClick={() => shelve(set.featured, on ? "reading" : "want")} className="fw-elite-press" style={doorBtnStyle()}>
+                  <BookMarked size={14} color={on ? "#5F8A6B" : C.ink} strokeWidth={1.7} />{on ? (on.status === "reading" ? "Reading" : "On your shelf") : "Add to shelf"}
+                </button>); })()}
+              <button onClick={() => onSchedule && onSchedule({ title: `Read ${set.featured.title}`, ref: `gutenberg:${set.featured.gutenberg_id}` })} className="fw-elite-press" style={doorBtnStyle()}>
+                <CalendarPlus size={14} color={C.ink} strokeWidth={1.7} />Plan a time
+              </button>
+              <button onClick={() => onCorner && onCorner(set.featured)} className="fw-elite-press" style={doorBtnStyle()}>
+                <MessageCircle size={14} color={C.ink} strokeWidth={1.7} />Talk about it
+              </button>
+            </div>
             <Quiet onClick={() => { passBook(set.featured.gutenberg_id); setPassTick((t) => t + 1); }}>Not for me — show me another ›</Quiet>
           </Card>
         ) : (
@@ -300,6 +325,7 @@ export default function BooksStoryFocus({ chapters = [], story, pick, onRead, co
           </div>
           <div style={{ fontFamily: UI, fontSize: 11, color: C.faint, textAlign: "center", margin: "10px 0 0", lineHeight: 1.5 }}>Each checkpoint's conversation opens when <em>you</em> say you've reached it — so nothing can spoil it.</div>
           <div style={{ marginTop: 12 }}><Cta Icon={Users} onClick={() => window.location.assign(createPageUrl("Community?view=bookclub"))}>Open the book club</Cta></div>
+          <Quiet onClick={() => onSchedule && onSchedule({ club: SEED_PICK })}>Put the six weeks in my planner ›</Quiet>
         </Card>
       </section>
 
@@ -339,6 +365,25 @@ export default function BooksStoryFocus({ chapters = [], story, pick, onRead, co
           <Quiet onClick={() => onOpenBook && onOpenBook({ _library: true })}>Yours &amp; the whole library ›</Quiet>
         </section>
       ) : null}
+
+      {/* 6b · WHAT READING GREW — the garden already counts her reading days (forget-me-not);
+              this just shows it back, in her own garden's language. Read-only. */}
+      {(() => {
+        const days = readingDaySet();
+        if (!days || days.size < 2) return null;
+        const month = new Date().toISOString().slice(0, 7);
+        const thisMonth = [...days].filter((d) => d.startsWith(month)).length;
+        if (thisMonth < 2) return null;
+        return (
+          <section style={{ marginTop: 24 }}>
+            <Eyebrow cw="sage">In your garden</Eyebrow>
+            <p style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 16.5, fontWeight: 500, color: C.ink, lineHeight: 1.55, textAlign: "center", margin: "0 auto", maxWidth: "26em" }}>
+              Time with a book has grown forget-me-nots in your garden this month — they cluster, because reading is something you do in company.
+            </p>
+            <Quiet onClick={() => window.location.assign(createPageUrl("Garden"))}>See your garden ›</Quiet>
+          </section>
+        );
+      })()}
 
       {/* 7 · WHAT YOU WROTE — the ONLY progress artefact here. No counts anywhere. */}
       {herWords ? (
