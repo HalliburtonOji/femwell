@@ -1,0 +1,108 @@
+{
+  "url": "https://femwells.com/login",
+  "publishedCommit": "8caf8bc",
+  "publishedBundleReportedByParent": "index-4gdnQ-zJ.js",
+  "checkedAt": "2026-09-27T13:27:52.6820028Z",
+  "status": "pass_anonymous_gate_only",
+  "evidenceProvenance": "Parent performed live navigation, non-submitting field taps and screenshots; Ms Verify independently visually inspected all three saved images because subagent IAB unavailable.",
+  "viewports": [
+    "mobile-360",
+    "mobile-390",
+    "mobile-430"
+  ],
+  "assertions": [
+    {
+      "name": "anonymous-login-gate-visible",
+      "viewport": "mobile-360",
+      "expected": "Recognisable FemWell login screen, without generic signed-in app shell",
+      "got": "Welcome to FemWell / Sign in to continue with complete authentication form",
+      "pass": true
+    },
+    {
+      "name": "login-controls-fit-viewport",
+      "viewport": "mobile-360",
+      "expected": "Visible and unclipped labels, inputs, sign-in and recovery controls",
+      "got": "All controls fit screenshot; no horizontal clipping or bottom obstruction observed",
+      "pass": true
+    },
+    {
+      "name": "real-field-focus",
+      "viewport": "mobile-360",
+      "expected": "Actual non-submitting tap focuses a form field",
+      "got": "Email field visibly focused in screenshot after parent-performed tap",
+      "pass": true
+    },
+    {
+      "name": "anonymous-login-gate-visible",
+      "viewport": "mobile-390",
+      "expected": "Recognisable FemWell login screen, without generic signed-in app shell",
+      "got": "Welcome to FemWell / Sign in to continue with complete authentication form",
+      "pass": true
+    },
+    {
+      "name": "login-controls-fit-viewport",
+      "viewport": "mobile-390",
+      "expected": "Visible and unclipped labels, inputs, sign-in and recovery controls",
+      "got": "All controls fit screenshot; no horizontal clipping or bottom obstruction observed",
+      "pass": true
+    },
+    {
+      "name": "real-field-focus",
+      "viewport": "mobile-390",
+      "expected": "Actual non-submitting tap focuses a form field",
+      "got": "Password field visibly focused in screenshot after parent-performed tap",
+      "pass": true
+    },
+    {
+      "name": "anonymous-login-gate-visible",
+      "viewport": "mobile-430",
+      "expected": "Recognisable FemWell login screen, without generic signed-in app shell",
+      "got": "Welcome to FemWell / Sign in to continue with complete authentication form",
+      "pass": true
+    },
+    {
+      "name": "login-controls-fit-viewport",
+      "viewport": "mobile-430",
+      "expected": "Visible and unclipped labels, inputs, sign-in and recovery controls",
+      "got": "All controls fit screenshot; no horizontal clipping or bottom obstruction observed",
+      "pass": true
+    },
+    {
+      "name": "real-field-focus",
+      "viewport": "mobile-430",
+      "expected": "Actual non-submitting tap focuses a form field",
+      "got": "Password field visibly focused in screenshot after parent-performed tap",
+      "pass": true
+    }
+  ],
+  "summary": {
+    "passed": 9,
+    "failed": 0,
+    "total": 9
+  },
+  "severityCatalogue": {
+    "P0": [],
+    "P1": [],
+    "P2": [],
+    "scope": "No defect observed within anonymous login-screen and focus checks only; not a whole-app audit."
+  },
+  "screenshots": [
+    "workspace/verify_screenshots/auth_2026-09-27/postdeploy-login-360.png",
+    "workspace/verify_screenshots/auth_2026-09-27/postdeploy-login-390.png",
+    "workspace/verify_screenshots/auth_2026-09-27/postdeploy-login-430.png"
+  ],
+  "limits": [
+    "No authenticated session or authenticated logout tested",
+    "No internal app pages or writes verified",
+    "No credentials entered or submitted",
+    "Screenshots are mobile-width browser evidence, not physical iPhone/WebKit verification",
+    "No assertion about console errors from image review alone"
+  ],
+  "conformance": [
+    "AGENTS 3.2 real pixels at360/390/430 with actual interaction",
+    "BRAND_IDENTITY 15.1",
+    "BRAND_IDENTITY 15.3",
+    "BRAND_IDENTITY 15.4"
+  ],
+  "notes": "Anonymous gate regression resolves visually: signed-out browsing reaches login rather than generic Today/Profile shell. Earlier blocked report records the subagent browser limitation and is superseded for visual evidence by this parent-assisted review."
+}

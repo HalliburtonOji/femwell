@@ -1,0 +1,48 @@
+{
+  "url": "https://femwells.com/",
+  "checkedAt": "2026-09-27T12:40:43.012Z",
+  "publishedBundle": "index-BujbrBaE.js",
+  "viewports": [
+    "mobile-390"
+  ],
+  "assertions": [
+    {
+      "name": "sign-out-ends-at-auth-screen",
+      "expected": "A signed-out login screen or clear signed-out state",
+      "got": "Actual Profile Sign out click navigated to /, showed Loading, then full Today shell with Profile link; no login screen",
+      "pass": false
+    },
+    {
+      "name": "known-authenticated-identity",
+      "expected": "Evidence identifying an authenticated test account",
+      "got": "Fresh isolated browser profile displayed generic You, no email, zero check-ins; authentication not established",
+      "pass": false
+    },
+    {
+      "name": "app-settings-load",
+      "expected": "No app configuration error",
+      "got": "App state check failed: Error: App not found",
+      "pass": false
+    }
+  ],
+  "issues": [
+    {
+      "severity": "P0",
+      "name": "App configuration unavailable",
+      "proof": "App state check and Profile init both report App not found in index-BujbrBaE.js",
+      "component": "src/lib/app-params.js + src/lib/AuthContext.jsx",
+      "suggestedFix": "Restore correct build-time app ID and fail visibly if settings load fails."
+    },
+    {
+      "severity": "P1",
+      "name": "Sign out appears ineffective",
+      "proof": "Actual click returns to generic Today shell",
+      "component": "src/pages/ProfileClipboardDemo.jsx:357",
+      "suggestedFix": "Verify after valid app configuration; ensure clear signed-out destination."
+    }
+  ],
+  "screenshots": [
+    "C:/Users/Halli/OneDrive/المستندات/ChatGPT/Femwell/workspace/verify_screenshots/auth_2026-09-27/predeploy-after-signout-390.png"
+  ],
+  "notes": "Baseline only; no known authenticated account. No tokens or storage read. No data writes except requested sign-out. Post-deploy verification pending."
+}

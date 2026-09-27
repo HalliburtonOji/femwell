@@ -1,0 +1,19 @@
+{
+  "url": "https://femwells.com/?releasecheck=8caf8bc",
+  "publishedCommit": "8caf8bc",
+  "publishedBundleReportedByParent": "index-4gdnQ-zJ.js",
+  "checkedAt": "2026-09-27T13:25:03.4363136Z",
+  "status": "blocked",
+  "error": "browser_unavailable",
+  "viewports": [],
+  "assertions": [
+    {
+      "name": "postdeploy-auth-gate",
+      "expected": "Login screen at 360/390/430 with real non-submitting taps",
+      "got": "Subagent browser unavailable before navigation; inventory browsers empty; fresh IAB tab creation failed",
+      "pass": false
+    }
+  ],
+  "screenshots": [],
+  "notes": "Baseline screenshot and reproduction remain available. No postdeploy visual verification performed by Ms Verify. Parent must perform live checks. Authenticated logout remains unverified."
+}
