@@ -1304,9 +1304,11 @@ export default function LifestyleEliteShell({ enableFocus = false, layout = null
         {/* ══ §6.8.2 BAND 3+4 — the TOP SLIDING ROW (uniform panels, no dead space).
              Slide 1 = today at a glance (the same three rows the SummaryCard carried —
              nothing dropped). Slide 2 = Jess's written read + an upward inner sheet. ══
-             CLEAN whole-page rule: this row is the LANDING's summary. When a section is focused the
-             section carries its own summary (§19.4), so the row is hidden — one summary per view. */}
-        {!(clean && focus) && (() => {
+             NO-STRIP (Halli 2026-09-27): this row is NEVER hidden. Hiding it when a section was
+             focused read as a stripped feature — it is the page's summary card + Jess digest. When a
+             section IS focused the glance goes SECTION-AWARE (its rows lead with that section), so it
+             complements the section's own summary instead of contradicting it. */}
+        {(() => {
           const jess = lifestyleJessSummary(loadSeed, {
             firstName, onTheGo: continueCards.length, savedCount: savedItems.length,
             freshReads: (grouped.article || []).length, hasStory: !!story, cliffhanger: story?.cliffhanger,
@@ -1321,6 +1323,14 @@ export default function LifestyleEliteShell({ enableFocus = false, layout = null
               onClick: () => jumpTo(1) },
             { Icon: Moon, label: "Your sky", text: horoscope ? cleanTitle(horoscope.headline || horoscope.narrative || "Today's reading is ready.") : "Add your birth details to read today's sky.", onClick: () => setReadingOpen(true) },
           ];
+          // SECTION-AWARE (no-strip fix, 2026-09-27): when a section is focused the glance keeps ALL
+          // its rows but leads with that section's — so it reads as "today, at a glance, starting with
+          // what you're looking at" rather than a summary about other sections sitting on top of one
+          // that already summarises itself.
+          const focusRowLabel = { read: "Your reading", books: "Today's chapter", story: "Today's chapter", sky: "Your sky" }[focusSection] || null;
+          const orderedGlance = focusRowLabel
+            ? [...glanceRows].sort((a, b) => (b.label === focusRowLabel) - (a.label === focusRowLabel))
+            : glanceRows;
           // the deep read — only sections we genuinely have signal for, never padded
           const sheetSections = [
             { label: "What's on", text: continueCards.length ? `You've ${continueCards.length} on the go and ${grouped.article.length} fresh reads waiting. Your place is saved in each, so none of it needs starting over.` : `${grouped.article.length} fresh reads are in, and ${savedItems.length} saved for later. Nothing here expires.` },
@@ -1333,7 +1343,7 @@ export default function LifestyleEliteShell({ enableFocus = false, layout = null
                 glancePanel={
                   <FwCard snap={false} minHeight={GLANCE_SWIPE_H} accent={gold} Icon={Sparkles} eyebrow="Today, at a glance" flower="marigold" idx="life-glance">
                     <div style={{ display: "flex", flexDirection: "column", gap: 2, marginTop: 2 }}>
-                      {glanceRows.map((r) => (
+                      {orderedGlance.map((r) => (
                         <button key={r.label} onClick={r.onClick} className="fw-elite-press"
                           style={{ display: "flex", alignItems: "flex-start", gap: 11, width: "100%", textAlign: "left", background: "transparent", border: "none", borderTop: `1px solid ${T.paperDeep}`, padding: "11px 2px", cursor: "pointer" }}>
                           <span style={{ width: 30, height: 30, borderRadius: 9, background: `${gold}1C`, display: "grid", placeItems: "center", flexShrink: 0 }}><r.Icon size={15} color={gold} /></span>
@@ -1360,8 +1370,8 @@ export default function LifestyleEliteShell({ enableFocus = false, layout = null
           );
         })()}
 
-        {/* two focus pills (out of cards) — Lifestyle's two daily rituals. CLEAN: landing only, flat. */}
-        {!(clean && focus) && (
+        {/* two focus pills (out of cards) — Lifestyle's two daily rituals. Always present (no-strip). */}
+        {(
         <div style={{ display: "flex", gap: 10, marginTop: 14 }}>
           <button onClick={() => setChapterOpen(true)} className="fw-elite-press" style={clean ? { ...focusPill(plum), background: plum, boxShadow: "none", border: "none" } : focusPill(crimson)}><Feather size={16} /> Today's chapter</button>
           <button onClick={() => jumpTo(0)} className="fw-elite-press" style={clean ? { ...focusPill(gold), background: C.gold, boxShadow: "none", border: "none" } : focusPill(plum)}><Clock size={16} /> What do you have time for?</button>
