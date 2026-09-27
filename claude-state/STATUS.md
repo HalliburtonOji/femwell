@@ -7,6 +7,12 @@
 > **APPEND, never rewrite:** add a NEW block at the top of the current-state section (so merges stay trivial), immediately after every build/fix/ship — never batched. Each entry: what changed + commit · shipped-vs-demo · live bundle hash · how it was verified.
 > **Full context for the other agent:** `claude-state/agent-collab/HANDOFF.md` (+ the IN FLIGHT claim table — claim a surface before editing it). Raw transcripts are archive-only: `claude-state/agent-collab/transcripts/MANIFEST.md`.
 >
+> ### CURRENT STATE — 2026-09-27 · Codex integration started
+> - **Applied:** all 54 commits from `femwell_full_unpushed_2026-09-27.patch` on top of `origin/main` `860e095`, ending at `3f449e9`. No conflicts; the smaller shared-memory patch is already commit 54 and was not applied twice. The three Base44 platform commits are preserved. Push and deploy pending validation.
+> - **Observed live:** `index-BujbrBaE.js`. Browser console reports `App not found` during app-settings and profile lookup. Halli reports Sign out does not work; generic profile rendering is not proof of a valid session. Investigating build app-ID configuration and logout flow.
+> - **Release scope:** preserve the clean Lifestyle demo flag, backlog wording and held reading-notification decision. No new backend function or schema change is planned in this integration.
+> - **Done:** authenticated GitHub and Base44 CLI access; fresh local checkout; patch imported; integration/auth surface claimed in HANDOFF. **Queued:** build/test, sign-out diagnosis, push, site deploy, live 360/390/430 verification and hash record. Read deep research remains next feature work.
+>
 > ### CURRENT STATE — 2026-09-27
 > - **Live bundle `index-BujbrBaE.js`** · local HEAD `aa549050` · branch `main`.
 > - **⚠️ GIT DIVERGENCE: local is ahead 53, behind 3.** The 3 remote commits are Base44 **platform** commits (*Migrated 29 workflows* · *boilerplate auth templates* · *Update base44 packages*) — the Base44↔GitHub mirror, not another agent. **Claude cannot push** (non-fast-forward, and Cowork has no push path). **Codex: `git pull --rebase`, then apply Claude's patch, then push.** Never force-push to resolve mirror drift — Halli reconnects it.
