@@ -162,7 +162,7 @@ the landing in STATUS.md). If a surface is claimed, don't touch its files — pr
 
 | Agent | Surface | Files | Started | State |
 |---|---|---|---|---|
-| Codex | Patch integration, release configuration and sign-out diagnosis | `scripts/`, `vite.config.js`, `package.json`, `src/lib/`, `src/api/base44Client.js`, `src/pages/ProfileClipboardDemo.jsx`, `claude-state/STATUS.md`, `claude-state/BRAND_IDENTITY.md` | 2026-09-27 | In flight; 54-commit patch applied, no product decision flags changed |
+| Codex | Patch integration, release configuration and sign-out diagnosis | `scripts/`, `vite.config.js`, `package.json`, `src/lib/`, `src/api/base44Client.js`, `src/pages/ProfileClipboardDemo.jsx`, `src/components/lifestyle/__tests__/dailyStory.test.js`, `claude-state/STATUS.md`, `claude-state/BRAND_IDENTITY.md` | 2026-09-27 | In flight; 54-commit patch applied, no product decision flags changed |
 | Claude | Books (Lifestyle) | `BooksStoryFocus.jsx`, `booksMonthly.js`, `LifestyleEliteShell.jsx` | 2026-09-25 | **Landed** `21c0a173` — released |
 | — | *(free)* | | | |
 
