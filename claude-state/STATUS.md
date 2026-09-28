@@ -7,6 +7,10 @@
 > **APPEND, never rewrite:** add a NEW block at the top of the current-state section (so merges stay trivial), immediately after every build/fix/ship — never batched. Each entry: what changed + commit · shipped-vs-demo · live bundle hash · how it was verified.
 > **Full context for the other agent:** `claude-state/agent-collab/HANDOFF.md` (+ the IN FLIGHT claim table — claim a surface before editing it). Raw transcripts are archive-only: `claude-state/agent-collab/transcripts/MANIFEST.md`.
 >
+> ### CURRENT STATE — 2026-09-28 · Continuous Lifestyle Sky correction deployed; verification in progress
+> - **Source `b774950`, claim `f8e0327`:** `/SkyConceptDemo` now renders the existing complete connected Lifestyle shell focused on Sky, not the reduced sample clone. Default-off `continuousSky` removes the redundant inner strip/duplicate chart CTA; headings/content remain inline. Summary focuses the real reading; Ask/Edit use existing direct handlers. Lifestyle controls fit narrow phones. Main and earlier Bespoke preview flags remain unchanged.
+> - **Deployed:** production build and Base44 deploy passed; live bundle `index-Bj9cfOG9.js`. Done: full shell/Sky inventory, Brand §§2.7.1–4/17/19 and CLAUDE correction, Ms Atelier static review, five new behavioural tests pass. Queued: full suite and live 360/390/430 checks. Account-connected preview is labelled honestly; known original data/wiring defects remain open.
+>
 > ### CURRENT STATE — 2026-09-28 · Halli rejected the nested, reduced Sky concept
 > - **Correction:** four chapter gates and extra popup steps made a Lifestyle subsection into another navigation hierarchy; the sample clone omitted existing depth. Rebuild this preview from the complete existing Lifestyle/Sky surface, inline, with direct actions. Canonical Brand Bible and CLAUDE corrected this cycle.
 > - **Claim:** `f8e0327`; source correction in progress, live still `index-Dkg-Olf7.js`. Done: full source parity inventory and craft review. Queued: restored preview, phone taps and deployment. Existing backend/wiring defects are not fixed by restoration; no main promotion.

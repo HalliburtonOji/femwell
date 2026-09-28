@@ -1,134 +1,147 @@
-import React from "react";
-import { readFileSync } from "node:fs";
-import path from "node:path";
+import React, { useState } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 
-vi.mock("@/components/lifestyle-elite/SectionHeader", () => ({ default: () => <header>Your sky preview</header> }));
-// Importing account services in an isolated specimen is a regression, even without a request.
-vi.mock("@/api/base44Client", () => { throw new Error("Sky concept must not import the account client"); });
-import SkyConceptDemo from "./SkyConceptDemo";
+const data = vi.hoisted(() => ({ birth: null, filter: vi.fn(async () => []), create: vi.fn(), update: vi.fn(), invoke: vi.fn(), progress: vi.fn() }));
+vi.mock("@/components/horoscope/hooks/useBirthChart", () => ({ useBirthChart: () => data.birth }));
+vi.mock("@/components/horoscope/hooks/useProfections", () => ({ default: () => ({
+  profection: { age: 29, house: 4, house_label: "Fourth house", time_lord: "Moon", theme: "Room for home and belonging." },
+  saturn: { started: "2026-01-01", ends: "2026-12-31" },
+}) }));
+vi.mock("@/components/horoscope/hooks/useAsteroids", () => ({ default: () => ({ ceres: "Virgo", pallas: "Aries" }) }));
+vi.mock("@/api/base44Client", () => ({ base44: {
+  entities: new Proxy({}, { get: () => ({ filter: data.filter, create: data.create, update: data.update }) }),
+  functions: { invoke: data.invoke },
+} }));
+vi.mock("@/components/community/readingActivity", () => ({ recordProgress: data.progress }));
 
-const tap = (name, scope = screen) => fireEvent.click(scope.getByRole("button", { name, exact: true }));
-const chapter = (name) => tap(name, within(screen.getByRole("navigation", { name: "Sky chapters" })));
-const showScenarios = () => fireEvent.click(screen.getByText("Try a different state"));
-const closePanel = async () => {
-  tap("Close preview panel");
-  await waitFor(() => expect(screen.queryByRole("dialog")).not.toBeInTheDocument());
-};
-const openPanel = async (name, title = name) => {
-  tap(name);
-  return within(await screen.findByRole("dialog", { name: title }));
-};
+// Test the real connected Sky and its movements, not a mocked rendering of the old sample.
+// Lifestyle shell routing and visual layout remain browser-level coverage.
+import SkyFocus from "@/components/lifestyle-elite/SkyFocus";
+import FocusedSectionActions from "@/components/lifestyle-elite/FocusedSectionActions";
 
-describe("SkyConceptDemo — isolated review state", () => {
-  let requests;
+function ActionHarness() {
+  const [request, setRequest] = useState(null);
+  return <>
+    <button onClick={() => setRequest({ type: "reading" })}>Read from the summary</button>
+    <nav aria-label="Focused Sky actions"><FocusedSectionActions plum="#8E6E8E" actions={[
+      { label: "Ask the sky", run: () => setRequest({ type: "ask" }) },
+      { label: "Edit your chart", run: () => setRequest({ type: "chart" }) },
+    ]} /></nav>
+    <SkyFocus continuous portalChart actionRequest={request} onActionHandled={setRequest} />
+  </>;
+}
+
+describe("Sky review restoration — one connected continuous section", () => {
+  let scroll;
+  let fetchSpy;
   beforeEach(() => {
-    requests = vi.fn(() => Promise.reject(new Error("No network is allowed in the sample preview")));
-    vi.stubGlobal("fetch", requests);
+    vi.clearAllMocks();
+    window.history.replaceState({}, "", "/SkyConceptDemo");
+    data.birth = {
+      user: { id: "test-user", has_atelier: false },
+      astro: { id: "chart-1", birth_date: "1997-06-17", sun_sign: "Gemini", moon_sign: "Libra", rising_sign: "Virgo" },
+      reading: {
+        headline: "A little room for the life you want.",
+        narrative: "Take the gentler opening. There is time for a conversation.\n\nA small idea can have a place in your day.",
+        weather_energy: "steady", weather_mood: "open", triad_sun_desc: "A curious way of meeting the day.", goddess_read: "Care and creativity can sit beside each other.",
+      },
+      userProfile: { last_period_start_date: "2026-09-20", cycle_avg_length: 28 },
+      loading: false, generatingReading: false, setAstro: vi.fn(),
+    };
+    scroll = vi.fn();
+    vi.stubGlobal("fetch", fetchSpy = vi.fn());
+    vi.spyOn(window, "scrollTo").mockImplementation(() => {});
+    Object.defineProperty(HTMLElement.prototype, "scrollIntoView", { configurable: true, value: scroll });
   });
   afterEach(() => {
-    expect(requests).not.toHaveBeenCalled();
+    // Reading, opening and cancelling must not generate, purchase or save anything.
+    [data.create, data.update, data.invoke, data.progress, fetchSpy].forEach(spy => expect(spy).not.toHaveBeenCalled());
+    vi.restoreAllMocks();
     vi.unstubAllGlobals();
+    delete HTMLElement.prototype.scrollIntoView;
   });
 
-  it("should keep a newly authored note visible in sparse history and revisit, even when its text matches a sample", async () => {
-    render(<SkyConceptDemo />);
-    showScenarios();
-    tap("Little history");
-    chapter("Your patterns");
-    expect(screen.getByText("A beginning is enough.")).toBeInTheDocument();
-    let panel = await openPanel("Revisit your notes", "Your sky notes");
-    expect(panel.getByText("No notes in this example yet. A first line is enough.")).toBeInTheDocument();
-    tap("Add a note", panel);
-    panel = within(screen.getByRole("dialog", { name: "Leave a sky note" }));
-    const note = "Said yes to dinner with an old friend. Glad I went.";
-    fireEvent.change(panel.getByLabelText("Your preview note"), { target: { value: note } });
-    tap("Keep note in this preview", panel);
+  it("should expose every existing Sky movement inline without chapter gates or a second navigation strip", async () => {
+    const { container } = render(<SkyFocus continuous />);
+    ["Today's weather", "Sun, moon & rising", "Your goddess bench", "Red & white moon", "Your two tides", "The house your year is in", "Your Saturn return", "The last twelve cycles", "Put a question to it", "How you two run", "A letter each month, in her hand", "How much you want to hear"].forEach(text => expect(screen.getByText(text)).toBeVisible());
+    expect(screen.getByText("A small idea can have a place in your day.")).toBeVisible();
+    expect(screen.getByRole("textbox", { name: "Your question for the sky" })).toBeVisible();
+    ["Reflect", "Discuss", "Ask Jess", "Mark read"].forEach(name => expect(screen.getByRole("button", { name, exact: true })).toBeVisible());
+    expect(screen.getByRole("link", { name: "A sound for today" })).toBeVisible();
+    expect(screen.getByRole("button", { name: "Share today's sky" })).toBeVisible();
+    expect(container.querySelector(".fw-sky-jump")).toBeNull();
+    expect(screen.queryByRole("tablist")).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Edit your chart", exact: true })).not.toBeInTheDocument();
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+    await waitFor(() => expect(data.filter).toHaveBeenCalledWith({ user_id: "test-user", topic: "horoscope" }, "-created_date", 5));
+  });
+
+  it("should focus reading and Ask in place, and preserve a typed question when chart editing is cancelled", async () => {
+    render(<ActionHarness />);
+    const reading = screen.getByText("Today's weather").closest("section");
+    const question = screen.getByRole("textbox", { name: "Your question for the sky" });
+    fireEvent.click(screen.getByRole("button", { name: "Read from the summary" }));
+    await waitFor(() => expect(reading).toHaveFocus());
+    expect(scroll).toHaveBeenLastCalledWith({ block: "start", behavior: "auto" });
+    const actions = within(screen.getByRole("navigation", { name: "Focused Sky actions" }));
+    fireEvent.click(actions.getByRole("button", { name: "Ask the sky" }));
+    await waitFor(() => expect(question).toHaveFocus());
+    expect(scroll).toHaveBeenLastCalledWith({ block: "center", behavior: "auto" });
+    fireEvent.change(question, { target: { value: "What would make room for friendship?" } });
+    expect(screen.getByText("The house your year is in")).toBeVisible();
+    expect(screen.getByText("How much you want to hear")).toBeVisible();
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+    fireEvent.click(actions.getByRole("button", { name: "Edit your chart" }));
+    const sheet = await screen.findByRole("dialog", { name: "Set your birth details" });
+    fireEvent.click(within(sheet).getByRole("button", { name: "Cancel" }));
     await waitFor(() => expect(screen.queryByRole("dialog")).not.toBeInTheDocument());
-    expect(screen.getByText(note)).toBeInTheDocument();
-    expect(screen.getByText("This preview · your preview note")).toBeInTheDocument();
-    expect(screen.queryByText("24 September · sample")).not.toBeInTheDocument();
-
-    panel = await openPanel("Revisit your notes", "Your sky notes");
-    expect(panel.getAllByText(note)).toHaveLength(1);
-    expect(panel.getByText("This preview · your preview note")).toBeInTheDocument();
-    expect(panel.queryByText(/authored sample/)).not.toBeInTheDocument();
+    expect(question).toHaveValue("What would make room for friendship?");
+    expect(screen.getByText("Your two tides")).toBeVisible();
   });
 
-  it("should keep Planner and Community drafts independent when each is revisited", async () => {
-    render(<SkyConceptDemo />);
-    let panel = await openPanel("Bring it to your day");
-    fireEvent.change(panel.getByLabelText("Your example intention"), { target: { value: "A walk with Jo" } });
-    tap("Try the planner handoff", panel);
-    await waitFor(() => expect(screen.queryByRole("dialog")).not.toBeInTheDocument());
-    expect(screen.getByRole("status")).toHaveTextContent("A walk with Jo. Nothing added to your real planner.");
-
-    panel = await openPanel("Start a conversation");
-    expect(panel.getByLabelText("Your example draft")).toHaveValue("");
-    fireEvent.change(panel.getByLabelText("Your example draft"), { target: { value: "Making room for friendship" } });
-    tap("Keep draft", panel);
-    await waitFor(() => expect(screen.queryByRole("dialog")).not.toBeInTheDocument());
-    panel = await openPanel("Bring it to your day");
-    expect(panel.getByLabelText("Your example intention")).toHaveValue("A walk with Jo");
-    await closePanel();
-    panel = await openPanel("Start a conversation");
-    expect(panel.getByLabelText("Your example draft")).toHaveValue("Making room for friendship");
+  it("should preserve the original navigation and chart editing when continuous mode is not requested", async () => {
+    const { container } = render(<SkyFocus />);
+    const navigation = container.querySelector(".fw-sky-jump");
+    expect(navigation).not.toBeNull();
+    expect(within(navigation).getAllByRole("button")).toHaveLength(7);
+    fireEvent.click(within(navigation).getByRole("button", { name: "Ask", exact: true }));
+    expect(scroll).toHaveBeenLastCalledWith({ behavior: "smooth", block: "start" });
+    expect(screen.getByRole("textbox", { name: "Your question for the sky" })).toBeVisible();
+    fireEvent.click(screen.getByRole("button", { name: "Edit your chart", exact: true }));
+    const sheet = await screen.findByRole("dialog", { name: "Set your birth details" });
+    fireEvent.click(within(sheet).getByRole("button", { name: "Cancel" }));
+    expect(screen.getByText("Your two tides")).toBeVisible();
   });
 
-  it.each(["Little history", "Reading unavailable"])("should retain %s when unknown birth time is saved and withhold time-dependent placements", async (scenario) => {
-    render(<SkyConceptDemo />);
-    showScenarios();
-    tap(scenario);
-    const panel = await openPanel("Edit your chart");
-    fireEvent.click(panel.getByRole("checkbox", { name: "I know the birth time" }));
-    expect(panel.queryByLabelText("Birth time")).not.toBeInTheDocument();
-    tap("Use these example details", panel);
-    await waitFor(() => expect(screen.queryByRole("dialog")).not.toBeInTheDocument());
-    expect(screen.getByRole("button", { name: scenario })).toHaveAttribute("aria-pressed", "true");
-    if (scenario === "Reading unavailable") expect(screen.getByText("A little patience with the sky.")).toBeInTheDocument();
-    chapter("Your chart");
-    expect(screen.getByRole("button", { name: /Rising\s*Time needed/ })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /Moon\s*Uncertain/ })).toBeInTheDocument();
-    expect(screen.queryByText("Virgo")).not.toBeInTheDocument();
-    if (scenario === "Little history") {
-      chapter("Your patterns");
-      expect(screen.getByText("A beginning is enough.")).toBeInTheDocument();
-      expect(screen.queryByText("24 September · sample")).not.toBeInTheDocument();
-    }
+  it("should wait for loading before consuming a reading request and avoid replaying it on rerender", async () => {
+    data.birth.loading = true;
+    const handled = vi.fn();
+    const props = { continuous: true, actionRequest: { type: "reading" }, onActionHandled: handled };
+    const { rerender } = render(<SkyFocus {...props} />);
+    expect(screen.getByText("Reading the sky…")).toBeVisible();
+    expect(handled).not.toHaveBeenCalled();
+    data.birth.loading = false;
+    rerender(<SkyFocus {...props} />);
+    await waitFor(() => expect(screen.getByText("Today's weather").closest("section")).toHaveFocus());
+    expect(handled).toHaveBeenCalledExactlyOnceWith(null);
+    const question = screen.getByRole("textbox", { name: "Your question for the sky" });
+    question.focus();
+    rerender(<SkyFocus {...props} />);
+    expect(question).toHaveFocus();
+    expect(handled).toHaveBeenCalledTimes(1);
   });
 
-  it("should change the actual reading and transit note with preferences, then restore defaults on reset", async () => {
-    render(<SkyConceptDemo />);
-    const initialReading = screen.getByText(/Not every good thing begins with a big decision/).textContent;
-    let panel = await openPanel("Your way", "Your sky, your way");
-    fireEvent.click(panel.getByRole("switch", { name: "Quiet mode" }));
-    fireEvent.click(panel.getByRole("switch", { name: "Soft sky" }));
-    expect(panel.getByRole("switch", { name: "Quiet mode" })).toHaveAttribute("aria-checked", "true");
-    expect(panel.getByRole("switch", { name: "Soft sky" })).toHaveAttribute("aria-checked", "true");
-    await closePanel();
-    expect(screen.getByText("A little less to carry.")).toBeInTheDocument();
-    expect(screen.getByText(/There is no grand instruction for today/)).toBeInTheDocument();
-    expect(screen.queryByText(initialReading)).not.toBeInTheDocument();
-    expect(screen.queryByText("A little friction? Hold it lightly.")).not.toBeInTheDocument();
-    tap("Mark this reading read");
-    expect(screen.getByRole("button", { name: "Read today · undo" })).toBeInTheDocument();
-    showScenarios();
-    tap("Reset sample changes");
-    expect(screen.getByText(initialReading)).toBeInTheDocument();
-    expect(screen.getByText("A little friction? Hold it lightly.")).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Mark this reading read" })).toBeInTheDocument();
-    panel = await openPanel("Your way", "Your sky, your way");
-    expect(panel.getByRole("switch", { name: "Quiet mode" })).toHaveAttribute("aria-checked", "false");
-    expect(panel.getByRole("switch", { name: "Soft sky" })).toHaveAttribute("aria-checked", "false");
-  });
-
-  it("should import no backend services and label results as sample content", () => {
-    const source = readFileSync(path.resolve("src/pages/SkyConceptDemo.jsx"), "utf8");
-    const imports = source.match(/(?:from\s+|import\s*\(\s*)["'][^"']+["']/g) || [];
-    expect(imports.join("\n")).not.toMatch(/@base44|api\/|integrations\/|entities\//);
-    render(<SkyConceptDemo />);
-    expect(screen.getByText("Sample preview")).toBeInTheDocument();
-    expect(screen.getByText("Try the proposed design. All content and results are examples.")).toBeInTheDocument();
+  it("should keep the real birth setup reachable when no chart exists", async () => {
+    data.birth.astro = null;
+    data.birth.reading = null;
+    render(<SkyFocus continuous portalChart />);
+    expect(screen.getByText("A daily reading from your own chart")).toBeVisible();
+    expect(screen.queryByRole("textbox", { name: "Your question for the sky" })).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "Set up your sky" }));
+    const sheet = await screen.findByRole("dialog", { name: "Set your birth details" });
+    expect(within(sheet).getByRole("button", { name: "Tell us when" })).toBeDisabled();
+    fireEvent.click(within(sheet).getByRole("button", { name: "Cancel" }));
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
   });
 });
