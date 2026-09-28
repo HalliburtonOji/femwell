@@ -64,8 +64,7 @@ per view" rule silently hid the Lifestyle summary card, the Jess digest and both
    research is Ms Deep Search's job; every claim carries a URL.
 3. **Substance, not shells** — *fewer and deeper* beats *many and hollow*. A page with twenty
    half-built surfaces is worse than five real ones.
-4. **Drop each finished piece straight onto the live page** — additive and revertible. No parallel
-   demo shells that never land (an unreachable `/XxxDemo` is a failure, not a delivery).
+4. **Publish each build to organised Ideas · Dev for Halli's verification first** (Halli, 28 September 2026). Include its preview, research/plan, verification status and known gaps. A deployed preview is not approval to promote it: the main page changes only after Halli's explicit go-ahead. Keep every preview reachable from the Ideas pill.
 5. **Real-pixel verify** — headless at **360 / 390 / 430** with **actual taps**, never DOM-asserts
    alone. **Halli reviews on an iPhone**, so mobile/webkit-shaped viewports are the truth; a 390px
    desktop window reads ~40% larger than the phone.

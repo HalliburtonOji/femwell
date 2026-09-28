@@ -209,7 +209,7 @@ The same colourways drive the **creatures** (white butterfly = the divine/ancest
 >
 > **§2.7.1 ONE HEADER — the Lifestyle header rule (✅ AGREED 2026-09-22, supersedes §6.8's flora hero ON THIS PAGE).** Halli: "TWO flower headers stacked… remove the old VIDEO flower header." A page carries **exactly ONE header moment**. On Lifestyle in clean mode that is **`SectionHeader` only** — the section's still (the real Higgsfield image when its config is filled, else a **rendered placeholder still**: a static print-like composition of that section's signature species from `floraLibrary`) with a quiet band beneath carrying the **title · the ONE carved heart · the flower profile**. The `FwFloraHero` photo/video hero and the separate Ephesis-title block are **not rendered**. Never two flower headers; never a hero inside a section surface as well as above it. Section species: read→iris · listen→bluebell · books/story→jasmine · sky→morning-glory · good→marigold · yours→forget-me-not. (Check a species exists in `floraLibrary` before naming it — an unknown name silently falls back.)
 >
-> **§2.7.2 ONE SUMMARY PER VIEW (✅ AGREED 2026-09-22).** The glance⇆Jess row + the two action pills are the LANDING's summary and are **hidden when a section is focused** — the focused surface carries its own stateful summary (§19.4). A page-level glance stacked on top of a section that summarises itself is a defect.
+> **§2.7.2 SECTION-AWARE SUMMARY AND ACTIONS (corrected 2026-09-28; §19.9 overrides the retired hiding rule).** Keep the glance⇆Jess row and both action pills when a section is focused. Their content and real actions follow that section. Never hide these shipped capabilities to satisfy a summary-count rule. New builds remain in Ideas · Dev until Halli explicitly approves main-page promotion.
 >
 > **§2.7.3 THE SHARED CLEAN KIT.** Every clean surface composes from **`src/components/brand/cleanKit.jsx`** (Eyebrow+MeaningRosette · Title · Body · Card `framed` · Block · Summary · Cta · Quiet · Row · Chip · Tag · Leaf/Fleuron · Foot) — never a hand-rolled section card. Shared primitives (`FwCard`, `CoverCard`, `QuickRow`, `TopChrome`, corner sprigs) are carried into the language by `CLEAN_CSS` through class hooks; the page ground + Layout footer by `CLEAN_PAGE_CSS` on `body.fw-clean-page`.
 
@@ -479,6 +479,7 @@ FemWell's motion is **calm and organic** — the feel comes from slow ease + the
 - **Colour pills + sub-card styles live WITHIN big cards** — a board may hold rim sub-cards, tile grids, a lens-deck and a pair of action pills. That richness *is* the language. **Don't default to a plain card when a typed one fits.**
 
 #### 6.7.0a THE FOCUSED ACTION PILLS — the two-pill primary CTA (reusable component)
+**Section contract (Halli, 28 September 2026):** keep BOTH pills, but change their labels, icons and actual actions with the focused section. A Sky pill must open a Sky action; it must not retain the Books chapter or unrelated time-picker action. Landing-page actions remain available on the landing page. Preserve the underlying capabilities, use truthful empty/loading/error states, and test the destination/effect of each pill rather than its label alone.
 > **A reusable pair of big, filled, colour ACTION PILLS** — the canonical example is the planner's **purple "Speak your plan" + gold "Plan a day"** — used as the **1–2 primary actions** on a board/page. Standardise them as one shared component (e.g. `FwActionPills` / `ActionPill`) so every surface that needs a strong "do this" pair reuses the same thing, never a hand-rolled button.
 - **Anatomy (each pill):** `border-radius 999` (full stadium), a **solid colour fill**, **white label** (UI **15–16/700**, `letter-spacing 0.01–0.02em`), an optional leading Lucide icon, **tap height ≥48px** (44pt floor), `padding ~14×20`, a soft shadow. Pills sit **side by side** (equal width) or stack on very narrow widths.
 - **The two roles / colours (use brand tokens, not new hex):** **(1) the "voice / speak" pill = the plum/violet family** (`plum #8E6E8E` — the Jess/voice/expression accent); **(2) the "plan / do" pill = the brand `gold #A8893F`**. They read as a clear primary pair without competing. **Heading oxblood and the heart crimson are NOT pill fills** (oxblood = headings; crimson = the heart).
@@ -761,7 +762,7 @@ Every section is **headed by a flower/bouquet** that reflects the section + her 
   2. ☐ **Researched brainstorm done?** — a focused, cited brainstorm BEFORE building (§11.2); Ms Deep Search where non-generic.
   3. ☐ **Real substance, not a shell?** — real content/chrome/action with depth (§11.2); fewer-and-deeper, never many-and-hollow.
   4. ☐ **Conforms to the bible §s?** — LIST them; a non-conforming atom is not done (conformance gate · §15.6).
-  5. ☐ **Dropped live + deployed + cache-buster?** — into the LIVE page, reversible, per piece (§11.4 · §14.2–14.3).
+  5. ☐ **Published in Ideas · Dev + deployed + cache-buster?** — reachable, organised and reversible (§11.4 · §14.2–14.3). Main-page promotion requires Halli's separate explicit go-ahead.
   6. ☐ **Real-pixel + real-tap verified?** — headless pipeline at 360/390/430 + actual interaction, never DOM-only (§11.5 · §15).
   7. ☐ **Bible/STATUS updated with any new direction?** — the Living-Bible rule + the baton (§17.5); durable rules → memory.
   > **Any box unchecked → the atom is NOT done. Do not report it as done.**
@@ -776,8 +777,8 @@ A focused **researched brainstorm FIRST** (best-practice + **cited science where
 ### 11.3 MEASURE CONTENT BEFORE BUILDING → §12
 Raw entity counts **overstate usable content 3–5×** once pollution is filtered — count what actually passes the **domain denylist** per section BEFORE designing the shelf; **never fake a shelf.** Full pattern: **§12 THE CONTENT SYSTEM**.
 
-### 11.4 DROP EACH FINISHED PIECE STRAIGHT ONTO THE LIVE PAGE — deploy per piece → §14, §17
-Reversible, nothing stripped; **no parallel "demo shells" that never land** (an unreachable `/XxxDemo` is a FAILURE — CLAUDE.md). Build INTO the live page as an additive, revertible change; **deploy PER PIECE** (git push + `npx base44 site deploy -y` + the cache-buster). Deploy surfaces = **§14.2**; reversibility = **§17**.
+### 11.4 IDEAS REVIEW FIRST; MAIN PAGE ONLY AFTER HALLI'S GO-AHEAD (Halli, 28 September 2026)
+Every build is published as a reachable preview in the organised **Ideas · Dev** area, alongside its research, plan, verification checklist and remaining issues. Halli reviews and verifies it there. Only his explicit go-ahead promotes it to the main page. Deploy each reviewable piece (git push + site deploy + record the bundle), but distinguish **preview deployed**, **agent verified**, **awaiting Halli**, and **approved/promoted**. No feature stripping or unreachable preview routes. This supersedes previous automatic live-promotion wording in this bible and older plans.
 
 ### 11.5 VERIFY EACH PIECE — real pixels + real interaction → §15
 The headless screenshot pipeline at **360/390/430** + **actual taps**, never DOM-asserts alone. A piece isn't landed until its pixels *and* behaviour are proven, then re-screenshot. Full gate: **§15 QA & VERIFICATION**.

@@ -12,6 +12,7 @@ A UK women's wellness app — cycle / hormone / perimenopause-menopause tracking
 - **git push is the Code side's lane.** Cowork sandboxes often have NO git credentials — if `git push` fails with "could not read Username", that's expected: commit + export a patch (`git format-patch`) to the workspace and hand it to Code, who pushes. Cowork's lane is deploy-via-API + Chrome publish, not push.
 
 ## 3. Where state lives (and the anti-staleness rule)
+**28 September 2026 release correction:** builds and research are organised under Ideas · Dev for Halli's verification. Main-page promotion requires his explicit go-ahead; a successful deploy or automated check does not grant approval. Read STATUS's latest block for the current section: do not infer progress from old next-task lists.
 - **`claude-state/STATUS.md` top block = the single source of truth** for "where we are / what's next / what shipped." If anything else disagrees, STATUS wins.
 - **`CLAUDE.md` = workflow rules only, no state** (on purpose — prevents contradictions).
 - **THE BATON RULE:** every commit that lands on `main` gets a SHIP LOG line in STATUS.md: commit hash + summary, shipped-vs-demo, live bundle hash after deploy, verification. Always. This is what keeps the baton from going stale.

@@ -115,7 +115,7 @@ export function RedWhiteMoon({ rw }) {
 
 // ── VI · ASK THE SKY — the real askStars function + persisted history ──────────────────────────
 const ASK_CHIPS = ["What should I put my energy into this week?", "Why does this feel harder than it should?", "What am I not seeing?"];
-export function AskTheSky({ userId }) {
+export function AskTheSky({ userId, inputRef }) {
   const [q, setQ] = useState("");
   const [answer, setAnswer] = useState("");
   const [history, setHistory] = useState([]);
@@ -166,7 +166,7 @@ export function AskTheSky({ userId }) {
       <Eyebrow cw="lavender" align="left">Ask the sky</Eyebrow>
       <Title align="left" size={21}>Ask it anything</Title>
       {/* notebook-ruled input — the original's signature */}
-      <textarea value={q} onChange={(e) => setQ(e.target.value)} rows={3} placeholder="What's on your mind?"
+      <textarea ref={inputRef} aria-label="Your question for the sky" value={q} onChange={(e) => setQ(e.target.value)} rows={3} placeholder="What's on your mind?"
         style={{ ...input, resize: "vertical", lineHeight: "1.7em", backgroundImage: `repeating-linear-gradient(${C.surface} 0px, ${C.surface} calc(1.7em - 1px), ${C.hair} calc(1.7em - 1px), ${C.hair} 1.7em)`, backgroundAttachment: "local" }} />
       <div style={{ display: "flex", flexWrap: "wrap", gap: 7, margin: "10px 0 12px" }}>
         {ASK_CHIPS.map((c) => <Chip key={c} onClick={() => { setQ(c); submit(c); }} style={{ fontSize: 11.5, fontWeight: 600 }}>{c.length > 34 ? c.slice(0, 32) + "…" : c}</Chip>)}

@@ -191,7 +191,7 @@ const CAT = {
 };
 const GROUP_ORDER = [CAT.CURRENT, CAT.BRANDDOCS, CAT.SPECS, CAT.BRAND, CAT.VISION, CAT.BUILD, CAT.ARCHIVE];
 const GROUP_BLURB = {
-  [CAT.CURRENT]:   "Active plans awaiting your reaction — the per-page level-up (+2) plans, then cross-app plans & pending decisions. (The 12 pages are live-elite; their demos are in Archive.)",
+  [CAT.CURRENT]:   "Builds, research and verification for your review. Sky is the current unfinished build. Every build stays here until you explicitly approve its move to the main page.",
   [CAT.BRANDDOCS]: "One brand home — the consolidated Brand Bible (the old Living-Ecosystem / Brand Identity / Flora docs are folded into it).",
   [CAT.SPECS]:     "Standing plans, specs and audits — the reference for what we're building.",
   [CAT.BRAND]:     "Companion vision, cross-app UX patterns and the PWA/widget plan.",
@@ -203,12 +203,16 @@ const GROUP_BLURB = {
 const COLLAPSED_BY_DEFAULT = new Set([CAT.ARCHIVE]);
 
 const CATALOG = [
+  { kind: "route", href: "/sky-review/index.html", group: CAT.CURRENT, sub: "Sky · review before main", status: "updated", added: "2026-09-28", accent: "plum",
+    title: "Sky · research, wiring audit & build plan", desc: "Start here: what works, what is incomplete, the two contextual actions, source-by-source findings, mobile verification and the ordered repair plan. Unfinished; main-page promotion needs your go-ahead." },
+  { kind: "route", href: "/LifestyleBespokeDemo?section=sky", group: CAT.CURRENT, sub: "Sky · review before main", status: "updated", added: "2026-09-28", accent: "gold",
+    title: "Sky · open the current review build", desc: "Try Ask the sky and Edit your chart (or setup guidance before a chart exists). Switch sections to review their own action pairs. Preview only: the main Lifestyle page has not been promoted. See the adjacent audit for known Sky gaps." },
   // (The live Nutrition + Today pages used to be listed here — removed; they're
   //  reachable from the real bottom nav, so listing them in the Ideas hub was
   //  pure clutter. Everything below is a demo/preview/plan/tool.)
   // ── Lifestyle REDESIGNS (post-UX-audit — kill overwhelm + findability) ─────
   { kind: "route", href: "/LifestyleBespokeDemo", group: CAT.CURRENT, sub: "Lifestyle redesigns (UX audit)", status: "new", added: "2026-09-16", accent: "crimson",
-    title: "★★★ Lifestyle · FOCUS · BESPOKE per section — SKY exemplar (new direction)", desc: "THE deepening Halli asked for: each focused section opens its OWN complete, section-specific surface that pulls EVERYTHING for that section (new design, nothing behind buttons) — not a generic filtered layout. SKY is the REFERENCE IMPLEMENTATION and is done here: tap the Sky chip → the FULL rich horoscope renders INLINE (all 15 Track-R sections — triad · today's weather · cycle+moon · your year · compatibility · ask the sky · sky diary · monthly letter), no old button-gated reader. REAL DATA: shows your actual chart when logged in (localhost shows the birth-setup + section list). Other sections still fall back to the slider-free stacks layout until their bespoke surfaces are built (per-section plan reported). Live /Lifestyle untouched." },
+    title: "Lifestyle · all sections · ongoing preview", desc: "The full Lifestyle preview with its existing section surfaces, summary and Jess digest. Sky remains unfinished: use the Sky review group above for research, wiring gaps and verification. Contextual actions are available per section. Main Lifestyle promotion requires Halli's explicit go-ahead." },
   { kind: "route", href: "/LifestyleStacksDemo", group: CAT.CURRENT, sub: "Lifestyle redesigns (UX audit)", status: "new", added: "2026-09-14", accent: "crimson",
     title: "Lifestyle · FOCUS · The Stacks (slider-free) — layout study 1 of 4", desc: "Slider-free LAYOUT study (superseded framing — see BESPOKE above; kept for the layout comparison): the section's sub-groups as labelled full-width vertical lists. Base = header → chip → focus → tap card → open item. One of four layouts (Stacks · Column · Bento · Mood). Live /Lifestyle untouched." },
   { kind: "route", href: "/LifestyleColumnDemo", group: CAT.CURRENT, sub: "Lifestyle redesigns (UX audit)", status: "new", added: "2026-09-14", accent: "plum",

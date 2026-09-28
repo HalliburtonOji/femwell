@@ -34,6 +34,7 @@ import { base44 } from "@/api/base44Client";
 import LifestyleMedia from "@/components/lifestyle-elite/LifestyleMedia";
 import { FocusLayout } from "@/components/lifestyle-elite/FocusLayouts";
 import SkyFocus from "@/components/lifestyle-elite/SkyFocus";
+import FocusedSectionActions from "@/components/lifestyle-elite/FocusedSectionActions";
 import { C, CLEAN_BG, CLEAN_CSS, CLEAN_PAGE_CSS } from "@/components/brand/cleanTokens";
 import SectionHeader from "@/components/lifestyle-elite/SectionHeader";
 import BooksStoryFocus from "@/components/lifestyle-elite/BooksStoryFocus";
@@ -472,7 +473,7 @@ function FocusableBoards({ focusBoard, sliderRef, gold, children }) {
   return <div style={{ marginTop: 20 }}>{boards[focusBoard] || null}</div>;
 }
 
-export default function LifestyleEliteShell({ enableFocus = false, layout = null, clean = false } = {}) {
+export default function LifestyleEliteShell({ enableFocus = false, layout = null, clean = false, previewActions = false } = {}) {
   // CLEAN (§2.7 whole-page): the page-level ground + footer outside this tree follow via a body class.
   useEffect(() => {
     if (!clean) return undefined;
@@ -486,6 +487,8 @@ export default function LifestyleEliteShell({ enableFocus = false, layout = null
   // controller chip focuses the whole page onto that section: For-you filters to it, the boards
   // collapse to that ONE board shown full, the glance stays global. `null` = the full page.
   const [focusSection, setFocusSection] = useState(null);
+  const [skyActionRequest, setSkyActionRequest] = useState(null);
+  const [skyActionState, setSkyActionState] = useState({ loading: true, hasChart: false });
 
   // real content (grouped per type, mirrors LifestyleForYou)
   const [items, setItems] = useState([]);          // all PUBLISHED LifestyleItems
@@ -1242,7 +1245,7 @@ export default function LifestyleEliteShell({ enableFocus = false, layout = null
       const want = TAB_TO_SECTION[String(q.get("tab") || q.get("section") || "").toLowerCase()];
       if (!want) return;
       setFocusSection(want);
-      const i = HERO_CARDS.findIndex((c) => c.id === want);
+      const i = (previewActions ? heroCards : HERO_CARDS).findIndex((c) => c.id === want);
       if (i >= 0) { _lifeHeroCard = i; setHeroCard(i); }
     } catch { /* a malformed URL just lands on the landing, as before */ }
     // once, on mount — re-running would fight her taps
@@ -1255,6 +1258,17 @@ export default function LifestyleEliteShell({ enableFocus = false, layout = null
 
   // a continue-card resumes IN PLACE; everything else opens its expand.
   const openReadCard = (it) => (it._continue ? openBook(it._continue) : setExpanded(it));
+  const choose = (label, items, open = setExpanded, empty) => ({ label, items, open, empty });
+  const actionSavedCards = savedItems.map((item) => rowCard(item, CARD_TYPE_OF(item)));
+  const sectionActions = {
+    read: [choose("Choose a read", [...articleCards, ...storyCards], openReadCard), choose("Saved reads", actionSavedCards.filter((i) => ["article", "daily_story"].includes(i.type)), openReadCard, "No saved reads yet. Save a piece you enjoy and it will appear here.")],
+    listen: [choose("Choose a listen", audioCards), choose("Choose a watch", videoCards)],
+    books: [{ label: "Today's chapter", run: () => setChapterOpen(true) }, choose("Choose a book", [...shelfBookCards, ...classicCards])],
+    good: [{ label: "Time for yourself", description: "Choose the time you have, then open a suggestion. Saving closes this picker and shows confirmation on the page.", content: (afterClose) => <TimePickerLens pickFor={pickFor} isSaved={isSaved} onSave={(it) => afterClose(toggleSave, it)} onOpen={(it) => afterClose(openItem, it)} onTry={(title) => afterClose(saveTryThis, title)} /> }, choose("A small joy", [...ritualCards, ...permissionCards], (it) => setGLFace({ slip: it }))],
+    yours: [choose("Open your saves", actionSavedCards), choose("Continue reading", continueCards, openReadCard, "No reading in progress yet. Start a book and your place will appear here.")],
+    sky: [skyActionState.hasChart ? { label: "Ask the sky", disabled: skyActionState.loading, run: () => setSkyActionRequest({ type: "ask" }) } : { label: "Set up your sky", disabled: skyActionState.loading, run: () => setSkyActionRequest({ type: "chart" }) }, skyActionState.hasChart ? { label: "Edit your chart", disabled: skyActionState.loading, run: () => setSkyActionRequest({ type: "chart" }) } : { label: "What you'll need", description: "Your birth date starts your sky. Add time and place only if you know them; do not guess. Unknown birth time limits what can be calculated.", content: <p style={{ lineHeight: 1.6 }}>Use Set up your sky when you are ready. You can review your details in the chart sheet before saving.</p> }],
+  };
+  sectionActions.story = sectionActions.books;
   const landingGroups = [{ key: "foryou", label: "For you today", accent: "gold", items: forYouItems, open: setExpanded, sectioned: true }];
 
   if (loading) {
@@ -1420,7 +1434,7 @@ export default function LifestyleEliteShell({ enableFocus = false, layout = null
         })()}
 
         {/* two focus pills (out of cards) — Lifestyle's two daily rituals. Always present (no-strip). */}
-        {(
+        {previewActions && clean && focus ? <FocusedSectionActions key={focusSection} section={focusSection} plum={plum} actions={sectionActions[focusSection]} /> : (
         <div style={{ display: "flex", gap: 10, marginTop: 14 }}>
           <button onClick={() => setChapterOpen(true)} className="fw-elite-press" style={clean ? { ...focusPill(plum), background: plum, boxShadow: "none", border: "none" } : focusPill(crimson)}><Feather size={16} /> Today's chapter</button>
           <button onClick={() => jumpTo(0)} className="fw-elite-press" style={clean ? { ...focusPill(gold), background: C.gold, boxShadow: "none", border: "none" } : focusPill(plum)}><Clock size={16} /> What do you have time for?</button>
@@ -1586,7 +1600,7 @@ export default function LifestyleEliteShell({ enableFocus = false, layout = null
         {layout && (() => {
           const sec = focus ? focusSection : null;
           // BESPOKE section surfaces (§19). Each pulls everything for its section, in the new design.
-          if (sec === "sky") return <div style={{ marginTop: 18 }}><SkyFocus userProfile={profile} /></div>;
+          if (sec === "sky") return <div style={{ marginTop: 18 }}><SkyFocus userProfile={profile} actionRequest={previewActions ? skyActionRequest : undefined} onActionState={previewActions ? setSkyActionState : undefined} onActionHandled={previewActions ? setSkyActionRequest : undefined} /></div>;
           if (sec === "story" || sec === "books") return <div style={{ marginTop: 18 }}><BooksStoryFocus chapters={chapters} story={story} pick={storyPick} onRead={(i) => { setReaderStart(i); setReaderOpen(true); }}
             userId={user?.id} onSchedule={scheduleReading} onCorner={(b) => window.location.assign(createPageUrl(`Community?club=${dailyReadClubKey(b.gutenberg_id)}&title=${encodeURIComponent(b.title || "")}`))}
             continueCards={continueCards} shelfBookCards={shelfBookCards} classicCards={classicCards} onOpenBook={(it) => (it && it._library ? setFocusSection("yours") : openBook(it._continue || it._raw || it))} lifeStage={profile?.life_stage} /></div>;

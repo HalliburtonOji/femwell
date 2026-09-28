@@ -14,7 +14,7 @@
 //   VIII Your way — quiet mode · soft sky · the science footer · the privacy line   [11, 12, 13]
 //   (16 JessAstraBanner rides the ?from=jess arrival, rendered at the top when present.)
 // No flower hero inside the surface — the page's ONE header is the section still above it.
-import React, { useMemo, useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { Moon, Sun, Sunrise, Sparkles, Music2, Pencil, ChevronDown, Check, PenLine, MessageCircle } from "lucide-react";
 import { getSunSign, getSunDegree, getRulingPlanet, getElement, getModality, getMoonPhase } from "@/utils/astrology";
 import { getSignIcon } from "@/lib/astrology/glyphs";
@@ -176,7 +176,7 @@ function CarryItWithYou({ seed, onMarkRead, read }) {
   );
 }
 
-export default function SkyFocus({ userProfile }) {
+export default function SkyFocus({ userProfile, actionRequest, onActionState, onActionHandled }) {
   const { user, astro, reading, userProfile: up, loading, generatingReading, setAstro } = useBirthChart(userProfile);
   const prof = userProfile || up;
   const chart = useMemo(() => deriveChart(astro, prof), [astro, prof]);
@@ -187,6 +187,19 @@ export default function SkyFocus({ userProfile }) {
   const [sheetOpen, setSheetOpen] = useState(false);
   const [markedRead, setMarkedRead] = useState(false);
   const refs = useRef({});
+  const questionRef = useRef(null);
+  const consumedAction = useRef(null);
+  useEffect(() => { onActionState?.({ loading, hasChart: !!astro }); }, [loading, !!astro, onActionState]);
+  useEffect(() => {
+    if (loading || !actionRequest || consumedAction.current === actionRequest) return;
+    consumedAction.current = actionRequest;
+    onActionHandled?.(null);
+    if (actionRequest.type === "chart" || !astro) setSheetOpen(true);
+    else {
+      questionRef.current?.focus({ preventScroll: true });
+      questionRef.current?.scrollIntoView({ block: "center", behavior: "auto" });
+    }
+  }, [actionRequest, loading, astro, onActionHandled]);
 
   // the 12-cycle sky diary + its "right now" observation (the SkyDiary section's job, rebuilt)
   const diary = useMemo(() => {
@@ -324,7 +337,7 @@ export default function SkyFocus({ userProfile }) {
       <Movement id="ask" refs={refs}>
         <Eyebrow cw="lavender">Ask &amp; connect</Eyebrow>
         <Title>Put a question to it</Title>
-        <AskTheSky userId={user?.id} />
+        <AskTheSky userId={user?.id} inputRef={questionRef} />
         <Compatibility userId={user?.id} />
       </Movement>
 
