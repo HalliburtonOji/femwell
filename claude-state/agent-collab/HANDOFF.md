@@ -162,7 +162,7 @@ the landing in STATUS.md). If a surface is claimed, don't touch its files — pr
 
 | Agent | Surface | Files | Started | State |
 |---|---|---|---|---|
-| Codex | Patch integration, release configuration and sign-out diagnosis | `scripts/`, `vite.config.js`, `package.json`, `src/lib/`, `src/api/base44Client.js`, `src/pages/ProfileClipboardDemo.jsx`, `src/components/lifestyle/__tests__/dailyStory.test.js`, `claude-state/STATUS.md`, `claude-state/BRAND_IDENTITY.md` | 2026-09-27 | Implementation released: `8caf8bc`, live `index-4gdnQ-zJ.js`; claim released. Anonymous login gate verified 360/390/430; authenticated logout check pending Halli's signed-in session. Held product decisions unchanged. |
+| Codex | Authentication verification record | `claude-state/STATUS.md` | 2026-09-28 | In flight: recording signed-in test and follow-up account reappearance; no source changes. |
 | Claude | Books (Lifestyle) | `BooksStoryFocus.jsx`, `booksMonthly.js`, `LifestyleEliteShell.jsx` | 2026-09-25 | **Landed** `21c0a173` — released |
 | — | *(free)* | | | |
 
