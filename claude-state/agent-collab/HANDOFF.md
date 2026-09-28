@@ -162,6 +162,7 @@ the landing in STATUS.md). If a surface is claimed, don't touch its files — pr
 
 | Agent | Surface | Files | Started | State |
 |---|---|---|---|---|
+| Codex team | Sky visual concept + founders boards | `src/pages/SkyConceptDemo.jsx`, `src/pages/FoundersOS.jsx`, `src/pages.config.js`, `claude-state/sky-review-2026-09-28/`, `claude-state/BRAND_IDENTITY.md`, `claude-state/STATUS.md`, `CLAUDE.md` | 2026-09-28 | In flight: interactive sample demo and concise demo-first founders boards; no main promotion. |
 | Codex team | Sky audit, focused actions and Ideas review workflow | `AGENTS.md`, `CLAUDE.md`, `claude-state/ONBOARDING_READ_FIRST.md`, `claude-state/STATUS.md`, `claude-state/BRAND_IDENTITY.md`, `src/components/lifestyle-elite/`, `src/pages/FoundersOS.jsx`, `public/sky-review/`, `claude-state/sky-review-2026-09-28/`, `C:/Users/Halli/femwell-handoff/sky-review-2026-09-28.html` | 2026-09-28 | Released 2026-09-28: scoped preview actions/research/audit delivered in Ideas; source a533e24, live index-CKvtIwXQ.js. Full Sky repairs remain queued; no main promotion without Halli. |
 | Codex | Authentication verification record | `claude-state/STATUS.md` | 2026-09-28 | Record complete; claim released. Signed-in logout reaches login but account reappeared when Profile reopened. Cause unresolved; see STATUS top. No source changes. |
 | Claude | Books (Lifestyle) | `BooksStoryFocus.jsx`, `booksMonthly.js`, `LifestyleEliteShell.jsx` | 2026-09-25 | **Landed** `21c0a173` — released |
