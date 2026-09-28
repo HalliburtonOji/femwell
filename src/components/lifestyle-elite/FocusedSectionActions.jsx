@@ -26,7 +26,7 @@ export default function FocusedSectionActions({ actions, plum, section }) {
     <Dialog.Root open={active !== null} onOpenChange={(open) => { if (!open) setActive(null); }}>
       <Dialog.Portal>
         <Dialog.Overlay style={{ position: "fixed", inset: 0, background: "rgba(25,20,28,.3)", zIndex: 10000 }} />
-        <Dialog.Content className="fw-dialog-cap" onCloseAutoFocus={(event) => {
+        <Dialog.Content className="fw-clean fw-dialog-cap" onCloseAutoFocus={(event) => {
           event.preventDefault();
           opener.current?.focus({ preventScroll: true });
           if (selected) { const next = selected; setSelected(null); next.run(next.item); }

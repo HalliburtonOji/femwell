@@ -622,7 +622,8 @@ const CURRENT_SUB_ORDER = [
 // a new entry surface at the top of the dashboard, give it a date (either set
 // `added:"YYYY-MM-DD"` on the entry, or add one line to RECENT_DATES below).
 const SECTION = {
-  lsredesign:{ id:"lsredesign",title:"Lifestyle — FOCUS: BESPOKE per-section surfaces (Sky exemplar)", accent:"crimson", icon:"page", blurb:"The current direction: the live page + the confirmed base (header → tap a section chip → the page FOCUSES on that section → tap an item → open it), where EACH section opens its OWN complete bespoke surface that pulls everything for it (no button-hiding). START with ★★★ BESPOKE — SKY is the reference implementation (full rich horoscope inline). The four slider-free LAYOUT studies (Stacks · Column · Bento · Mood) sit below as the layout comparison; the four radical A/B/C/D rebuilds are parked further down." },
+  skyreview: { id:"skyreview", title:"Sky · review before main", accent:"plum", icon:"doc", blurb:"Current unfinished build: open the preview, research, wiring audit, design plan and verification. Main-page promotion waits for your explicit go-ahead." },
+  lsredesign:{ id:"lsredesign",title:"Lifestyle · section previews & layout studies", accent:"crimson", icon:"page", blurb:"The complete Lifestyle preview and earlier layout comparisons. Sky is still being built: use Sky · review before main for its current actions, research and outstanding repairs. All existing studies remain available here." },
   lssketches:{ id:"lssketches",title:"Lifestyle redesign — earlier sketches", accent:"espresso", icon:"box", blurb:"The four EARLIER low-fi sketches (Editorial · Calm · Findable · Guided), superseded by the four full-polish directions above. Kept for reference only." },
   brand:     { id:"brand",     title:"Brand, cards & flora",       accent:"crimson",  icon:"bloom",  blurb:"The Brand Bible, the card system and every flora / header treatment." },
   pages:     { id:"pages",     title:"Page level-ups & demos",     accent:"gold",     icon:"page",   blurb:"Per-page +2 plans and their approval demos — Nutrition, Lifestyle, Health, Pulse, Programs, Garden, Jess, Planner." },
@@ -636,10 +637,11 @@ const SECTION = {
   more:      { id:"more",      title:"More — active",              accent:"gold",     icon:"doc",    blurb:"Active entries that don't yet fit a named section (curate these into one)." },
   archive:   { id:"archive",   title:"Archive",                    accent:"espresso", icon:"box",    blurb:"Superseded demos (the page shipped live-elite) + older / passed-on previews — kept for history, nothing deleted." },
 };
-const SECTION_ORDER = ["lsredesign","brand","pages","community","calendar","identity","data","crossapp","specs","build","more","lssketches","archive"];
+const SECTION_ORDER = ["skyreview","lsredesign","brand","pages","community","calendar","identity","data","crossapp","specs","build","more","lssketches","archive"];
 
 // A CURRENT-group entry routes to a section by its `sub`.
 const SUB_TO_SECTION = {
+  "Sky · review before main":          "skyreview",
   "Lifestyle redesigns (UX audit)":   "lsredesign",
   "Lifestyle redesigns — earlier sketches": "lssketches",
   "Data hygiene":                     "data",

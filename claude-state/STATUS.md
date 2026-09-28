@@ -7,6 +7,12 @@
 > **APPEND, never rewrite:** add a NEW block at the top of the current-state section (so merges stay trivial), immediately after every build/fix/ship — never batched. Each entry: what changed + commit · shipped-vs-demo · live bundle hash · how it was verified.
 > **Full context for the other agent:** `claude-state/agent-collab/HANDOFF.md` (+ the IN FLIGHT claim table — claim a surface before editing it). Raw transcripts are archive-only: `claude-state/agent-collab/transcripts/MANIFEST.md`.
 >
+> ### CURRENT STATE — 2026-09-28 · Contextual preview verified; full Sky still blocked
+> - **Confirmed deployment:** `b94aef5` / live `index-CltNMQ0M.js`. Actual Ask and chart open/cancel at 360/390/430 passed after the preview-only portal repair. Six private captures independently inspected by Ms Verify; no private captures published.
+> - **Other action paths:** real Read/Listen/Watch/Books/joy choices, selected book and joy, chapter sheet, time-band changes, saved/continue empty states and no Sky action replay observed. No profile, payment, question or Planner submission. Full test suite 36/36; product-wide persistence or iPhone Safari is not certified.
+> - **Delivery:** full cited research, button audit and design plan in organised Ideas review pack, plus `verification.md` in `claude-state/sky-review-2026-09-28/`. A dedicated Sky dashboard section and honest public verification summary are queued for final publication. Local handoff copy: `C:/Users/Halli/femwell-handoff/sky-review-2026-09-28.html`.
+> - **Remaining:** full Sky repairs and state matrix remain queued; P0 candidates not exploitation proof. P2 Ideas pill overlaps history on narrow screens; older time picker duration mismatch also recorded. Main promotion and previously held choices remain with Halli. Do not advance to Read.
+>
 > ### CURRENT STATE — 2026-09-28 · Preview deployed; live tap caught chart-sheet containment defect
 > - **Deployed preview:** source `90fef6d`, live bundle `index-BdjvhrFU.js`, verified by HTTP; Sky review HTML returns 200. Direct Node24 Base44 deployment succeeded after the package-manager shim upload failed. No main-page promotion.
 > - **Actual taps:** Ask focuses the real question at 390 and 360; Books chooser opens actual selected Pride and Prejudice content; switching Books→Sky does not replay a consumed action. However the old BirthDataSheet lives below a transformed shell ancestor: at 360 its fixed overlay measured 6902px tall and the dialog began at y5662, leaving controls offscreen. Earlier AX-only chart-open success is NOT a visual pass.
