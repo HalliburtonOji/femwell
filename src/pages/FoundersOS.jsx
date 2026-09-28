@@ -204,7 +204,7 @@ const COLLAPSED_BY_DEFAULT = new Set([CAT.ARCHIVE]);
 
 const CATALOG = [
   { kind: "route", href: "/SkyConceptDemo", group: CAT.CURRENT, sub: "Sky · review before main", status: "new", added: "2026-09-28", accent: "crimson",
-    title: "Try the Sky design", desc: "Start here. Tap through the proposed reading, chart, history and connection flows. Sample data; no account changes." },
+    title: "Sky within Lifestyle · revised", desc: "Start here. The complete connected Sky in one continuous Lifestyle section, with direct actions and no nested chapter tabs. Uses your account; still unfinished." },
   { kind: "route", href: "/LifestyleBespokeDemo?section=sky", group: CAT.CURRENT, sub: "Sky · review before main", status: "updated", added: "2026-09-28", accent: "gold",
     title: "Compare the connected build", desc: "The current Sky preview with your signed-in data. Still unfinished; main-page approval is held." },
   { kind: "route", href: "/sky-review/index.html", group: CAT.CURRENT, sub: "Sky · review before main", status: "updated", added: "2026-09-28", accent: "gold",

@@ -73,8 +73,8 @@ function JumpStrip({ refs }) {
     </div>
   );
 }
-const Movement = ({ id, refs, children }) => (
-  <section ref={(el) => { refs.current[id] = el; }} style={{ scrollMarginTop: 14 }}>{children}</section>
+const Movement = ({ id, refs, children, focusable = false }) => (
+  <section ref={(el) => { refs.current[id] = el; }} tabIndex={focusable ? -1 : undefined} style={{ scrollMarginTop: focusable ? 70 : 14 }}>{children}</section>
 );
 
 // ── the chart triad — three hairline columns; tap one to unfold its reading ─────────────────────
@@ -177,7 +177,7 @@ function CarryItWithYou({ seed, onMarkRead, read }) {
   );
 }
 
-export default function SkyFocus({ userProfile, actionRequest, onActionState, onActionHandled, portalChart = false }) {
+export default function SkyFocus({ userProfile, actionRequest, onActionState, onActionHandled, portalChart = false, continuous = false }) {
   const { user, astro, reading, userProfile: up, loading, generatingReading, setAstro } = useBirthChart(userProfile);
   const prof = userProfile || up;
   const chart = useMemo(() => deriveChart(astro, prof), [astro, prof]);
@@ -196,7 +196,10 @@ export default function SkyFocus({ userProfile, actionRequest, onActionState, on
     consumedAction.current = actionRequest;
     onActionHandled?.(null);
     if (actionRequest.type === "chart" || !astro) setSheetOpen(true);
-    else {
+    else if (actionRequest.type === "reading") {
+      refs.current.today?.focus({ preventScroll: true });
+      refs.current.today?.scrollIntoView({ block: "start", behavior: "auto" });
+    } else {
       questionRef.current?.focus({ preventScroll: true });
       questionRef.current?.scrollIntoView({ block: "center", behavior: "auto" });
     }
@@ -271,13 +274,13 @@ export default function SkyFocus({ userProfile, actionRequest, onActionState, on
         {stateBits.map((b, i) => (<React.Fragment key={b}>{i ? <span style={{ width: 3, height: 3, borderRadius: 99, background: C.goldHair }} /> : null}<span>{b}</span></React.Fragment>))}
         {generatingReading ? <span style={{ fontStyle: "italic", color: C.faint }}>reading the sky…</span> : null}
       </div>
-      <Cta Icon={Pencil} onClick={() => setSheetOpen(true)}>Edit your chart</Cta>
-      <div style={{ marginTop: 14 }}><JumpStrip refs={refs} /></div>
+      {!continuous && <><Cta Icon={Pencil} onClick={() => setSheetOpen(true)}>Edit your chart</Cta>
+      <div style={{ marginTop: 14 }}><JumpStrip refs={refs} /></div></>}
 
       <Leaf my={14} />
 
       {/* II · TODAY — the reading, and what to do with it */}
-      <Movement id="today" refs={refs}>
+      <Movement id="today" refs={refs} focusable={continuous}>
         <Eyebrow cw="crimson">Today's weather</Eyebrow>
         {weather.length ? (
           <>

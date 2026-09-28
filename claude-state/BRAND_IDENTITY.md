@@ -223,6 +223,8 @@ Warm cream palettes fail WCAG AA easily because the tones are naturally close, a
 
 ---
 
+> **§2.7.4 SKY STAYS WITHIN LIFESTYLE (Halli, 2026-09-28, agreed).** Sky is already a Lifestyle subsection. Its full content belongs in one continuous surface with inline headings and direct actions. No nested chapter tabs, destination menus or reading-only popup gates. Do not reduce features to short sample substitutes. Keep the Lifestyle context, section summary/Jess and both contextual action pills. This correction supersedes the internal Sky jump-strip requirement in §19.7 and the generic multi-layer switcher rule; it does not remove Lifestyle's own section selector.
+
 ## 3. THE HEART / LOVE BRAND MARK
 The brand mark is the **carved crimson heart** — `Heart` in `Editorial.jsx` (a hand-cut SVG path, `fill #BC2E27`, tilted `-6°`, a white specular highlight). It is **not** the Lucide outline heart.
 

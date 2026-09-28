@@ -473,7 +473,7 @@ function FocusableBoards({ focusBoard, sliderRef, gold, children }) {
   return <div style={{ marginTop: 20 }}>{boards[focusBoard] || null}</div>;
 }
 
-export default function LifestyleEliteShell({ enableFocus = false, layout = null, clean = false, previewActions = false } = {}) {
+export default function LifestyleEliteShell({ enableFocus = false, layout = null, clean = false, previewActions = false, initialSection = null, continuousSky = false } = {}) {
   // CLEAN (§2.7 whole-page): the page-level ground + footer outside this tree follow via a body class.
   useEffect(() => {
     if (!clean) return undefined;
@@ -1242,13 +1242,13 @@ export default function LifestyleEliteShell({ enableFocus = false, layout = null
     if (!enableFocus) return;            // the landing shell has no focus mode to deep-link into
     try {
       const q = new URLSearchParams(window.location.search);
-      const want = TAB_TO_SECTION[String(q.get("tab") || q.get("section") || "").toLowerCase()];
+      const want = TAB_TO_SECTION[String(q.get("tab") || q.get("section") || "").toLowerCase()] || TAB_TO_SECTION[initialSection];
       if (!want) return;
       setFocusSection(want);
       const i = (previewActions ? heroCards : HERO_CARDS).findIndex((c) => c.id === want);
       if (i >= 0) { _lifeHeroCard = i; setHeroCard(i); }
     } catch { /* a malformed URL just lands on the landing, as before */ }
-    // once, on mount — re-running would fight her taps
+    // Once on mount: URL wins, then the opt-in review landing. Re-running would fight her taps.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [enableFocus]);
 
@@ -1318,7 +1318,7 @@ export default function LifestyleEliteShell({ enableFocus = false, layout = null
                   return (
                     <button key={c.id} onClick={() => { _lifeHeroCard = i; setHeroCard(i); if (enableFocus) setFocusSection(c.id); }} aria-pressed={on} className="fw-elite-press"
                       style={clean
-                        ? { flex: "1 0 64px", height: 62, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 5, borderRadius: 13, cursor: "pointer", background: C.surface, border: `1px solid ${on ? C.ink : C.hair}`, boxShadow: on ? "none" : "none", transition: "border-color .15s" }
+                        ? { flex: continuousSky ? "1 1 0" : "1 0 64px", minWidth: continuousSky ? 0 : undefined, height: 62, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 5, borderRadius: 13, cursor: "pointer", background: C.surface, border: `1px solid ${on ? C.ink : C.hair}`, boxShadow: on ? "none" : "none", transition: "border-color .15s" }
                         : { flex: "0 0 72px", height: 64, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 5, borderRadius: 14, cursor: "pointer", background: on ? `linear-gradient(160deg, ${T.paperHi} 0%, ${col}20 100%)` : T.paperHi, border: `1px solid ${on ? col : T.paperDeep}`, boxShadow: on ? `0 0 0 1px ${col}, 0 2px 8px ${col}30` : "0 1px 3px rgba(58,44,26,0.08)", transform: on ? "translateY(-1px)" : "none", transition: "border-color .15s, box-shadow .15s, transform .15s" }}>
                       {clean
                         ? <span style={{ display: "grid", placeItems: "center", height: 20 }}>{on ? <MeaningRosette color={col} centre={C.gold} size={12} /> : <c.Icon size={16} color={C.slate} strokeWidth={1.7} />}</span>
@@ -1384,7 +1384,7 @@ export default function LifestyleEliteShell({ enableFocus = false, layout = null
                 : savedItems.length ? `${savedItems.length} saved to come back to · ${grouped.article.length} fresh reads`
                 : (editorialPick ? editorialPick.title : "Fresh reads land here as they're published."),
               onClick: () => jumpTo(1) },
-            { Icon: Moon, label: "Your sky", text: horoscope ? cleanTitle(horoscope.headline || horoscope.narrative || "Today's reading is ready.") : "Add your birth details to read today's sky.", onClick: () => setReadingOpen(true) },
+            { Icon: Moon, label: "Your sky", text: horoscope ? cleanTitle(horoscope.headline || horoscope.narrative || "Today's reading is ready.") : "Add your birth details to read today's sky.", onClick: () => continuousSky && focusSection === "sky" ? setSkyActionRequest({ type: "reading" }) : setReadingOpen(true) },
           ];
           // SECTION-AWARE (no-strip fix, 2026-09-27): when a section is focused the glance keeps ALL
           // its rows but leads with that section's — so it reads as "today, at a glance, starting with
@@ -1600,7 +1600,7 @@ export default function LifestyleEliteShell({ enableFocus = false, layout = null
         {layout && (() => {
           const sec = focus ? focusSection : null;
           // BESPOKE section surfaces (§19). Each pulls everything for its section, in the new design.
-          if (sec === "sky") return <div style={{ marginTop: 18 }}><SkyFocus userProfile={profile} portalChart={previewActions} actionRequest={previewActions ? skyActionRequest : undefined} onActionState={previewActions ? setSkyActionState : undefined} onActionHandled={previewActions ? setSkyActionRequest : undefined} /></div>;
+          if (sec === "sky") return <div style={{ marginTop: 18 }}><SkyFocus userProfile={profile} continuous={continuousSky} portalChart={previewActions} actionRequest={previewActions ? skyActionRequest : undefined} onActionState={previewActions ? setSkyActionState : undefined} onActionHandled={previewActions ? setSkyActionRequest : undefined} /></div>;
           if (sec === "story" || sec === "books") return <div style={{ marginTop: 18 }}><BooksStoryFocus chapters={chapters} story={story} pick={storyPick} onRead={(i) => { setReaderStart(i); setReaderOpen(true); }}
             userId={user?.id} onSchedule={scheduleReading} onCorner={(b) => window.location.assign(createPageUrl(`Community?club=${dailyReadClubKey(b.gutenberg_id)}&title=${encodeURIComponent(b.title || "")}`))}
             continueCards={continueCards} shelfBookCards={shelfBookCards} classicCards={classicCards} onOpenBook={(it) => (it && it._library ? setFocusSection("yours") : openBook(it._continue || it._raw || it))} lifeStage={profile?.life_stage} /></div>;

@@ -7,6 +7,10 @@
 > **APPEND, never rewrite:** add a NEW block at the top of the current-state section (so merges stay trivial), immediately after every build/fix/ship — never batched. Each entry: what changed + commit · shipped-vs-demo · live bundle hash · how it was verified.
 > **Full context for the other agent:** `claude-state/agent-collab/HANDOFF.md` (+ the IN FLIGHT claim table — claim a surface before editing it). Raw transcripts are archive-only: `claude-state/agent-collab/transcripts/MANIFEST.md`.
 >
+> ### CURRENT STATE — 2026-09-28 · Halli rejected the nested, reduced Sky concept
+> - **Correction:** four chapter gates and extra popup steps made a Lifestyle subsection into another navigation hierarchy; the sample clone omitted existing depth. Rebuild this preview from the complete existing Lifestyle/Sky surface, inline, with direct actions. Canonical Brand Bible and CLAUDE corrected this cycle.
+> - **Claim:** `f8e0327`; source correction in progress, live still `index-Dkg-Olf7.js`. Done: full source parity inventory and craft review. Queued: restored preview, phone taps and deployment. Existing backend/wiring defects are not fixed by restoration; no main promotion.
+>
 > ### CURRENT STATE — 2026-09-28 · DELIVERED: interactive Sky demo in founder's corner
 > - **Source:** `fc12e00` + mobile clearance fix `ffc5237`, pushed to GitHub. Base44 deployment confirmed by HTTP: **`index-Dkg-Olf7.js`**. Preview only; main Lifestyle and connected Sky unchanged.
 > - **Review:** `/Ideas?section=skyreview` → Try the Sky design (`/SkyConceptDemo`), then connected build, then optional research. Founder dashboard retains all 14 groups. Short explanations; canonical Brand Bible and CLAUDE updated this cycle.
