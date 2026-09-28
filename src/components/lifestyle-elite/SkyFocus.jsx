@@ -15,6 +15,7 @@
 //   (16 JessAstraBanner rides the ?from=jess arrival, rendered at the top when present.)
 // No flower hero inside the surface — the page's ONE header is the section still above it.
 import React, { useEffect, useMemo, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { Moon, Sun, Sunrise, Sparkles, Music2, Pencil, ChevronDown, Check, PenLine, MessageCircle } from "lucide-react";
 import { getSunSign, getSunDegree, getRulingPlanet, getElement, getModality, getMoonPhase } from "@/utils/astrology";
 import { getSignIcon } from "@/lib/astrology/glyphs";
@@ -176,7 +177,7 @@ function CarryItWithYou({ seed, onMarkRead, read }) {
   );
 }
 
-export default function SkyFocus({ userProfile, actionRequest, onActionState, onActionHandled }) {
+export default function SkyFocus({ userProfile, actionRequest, onActionState, onActionHandled, portalChart = false }) {
   const { user, astro, reading, userProfile: up, loading, generatingReading, setAstro } = useBirthChart(userProfile);
   const prof = userProfile || up;
   const chart = useMemo(() => deriveChart(astro, prof), [astro, prof]);
@@ -200,6 +201,12 @@ export default function SkyFocus({ userProfile, actionRequest, onActionState, on
       questionRef.current?.scrollIntoView({ block: "center", behavior: "auto" });
     }
   }, [actionRequest, loading, astro, onActionHandled]);
+  // The shell's animated ancestor creates a containing block for fixed children.
+  // In the review build the chart sheet must belong to the viewport, not the long page.
+  const birthSheet = (initial) => {
+    const sheet = <BirthDataSheet open={sheetOpen} onClose={() => setSheetOpen(false)} userId={user?.id} initial={initial} userProfile={prof} onSaved={(saved) => { setAstro(saved); setSheetOpen(false); }} />;
+    return portalChart ? createPortal(<div className="fw-clean" style={{ position: "relative", zIndex: 10020, "--cream": C.surface, "--cream-2": C.sunk }}>{sheet}</div>, document.body) : sheet;
+  };
 
   // the 12-cycle sky diary + its "right now" observation (the SkyDiary section's job, rebuilt)
   const diary = useMemo(() => {
@@ -232,7 +239,7 @@ export default function SkyFocus({ userProfile, actionRequest, onActionState, on
           <Body size={16} style={{ color: C.slate }}>Your birth date is all we need to begin. Birth time and place are optional; they unlock your moon and rising. We never track your location.</Body>
           <div style={{ marginTop: 6 }}><Cta filled Icon={Sparkles} onClick={() => setSheetOpen(true)}>Set up your sky</Cta></div>
         </section>
-        <BirthDataSheet open={sheetOpen} onClose={() => setSheetOpen(false)} userId={user?.id} initial={null} userProfile={prof} onSaved={(saved) => { setAstro(saved); setSheetOpen(false); }} />
+        {birthSheet(null)}
       </div>
     );
   }
@@ -352,7 +359,7 @@ export default function SkyFocus({ userProfile, actionRequest, onActionState, on
       <Movement id="yours" refs={refs}><YourWay userId={user?.id} /></Movement>
 
       <Foot>Held lightly — folklore and your own chart, never fate or a score.</Foot>
-      <BirthDataSheet open={sheetOpen} onClose={() => setSheetOpen(false)} userId={user?.id} initial={astro} userProfile={prof} onSaved={(saved) => { setAstro(saved); setSheetOpen(false); }} />
+      {birthSheet(astro)}
     </div>
   );
 }
