@@ -39,6 +39,7 @@ A woman's life is a **garden, not a chart.** It has **seasons** (the cycle), **l
 ---
 
 ## 0. PRE-BUILD CHECKLIST (the 60-second gate)
+> **Founder review format (Halli, 2026-09-28):** Ideas · Dev is the founder's corner. Every work area has its own organised review board: interactive demo first, brief summary next, optional detailed evidence behind it. Demonstrate proposed design with clearly labelled sample states and real local interactions; never imply those prove account persistence or production wiring. Keep explanations concise. Main-page promotion still requires Halli's explicit go-ahead.
 > **STANDING DELIVERY RULES also apply (see CLAUDE.md):** (1) every plan/brainstorm ships as a phone-readable styled-HTML doc **and** is linked into the FoundersOS Ideas page (reachable via the IDEAS pill, never a dead route); (2) before re-working/demoing an existing page, **read it in full first — default ADD/IMPROVE, never strip existing features** unless told; (3) every update ends with a done/queued breakdown.
 
 Before you add or change anything visual, confirm:

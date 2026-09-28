@@ -203,10 +203,12 @@ const GROUP_BLURB = {
 const COLLAPSED_BY_DEFAULT = new Set([CAT.ARCHIVE]);
 
 const CATALOG = [
-  { kind: "route", href: "/sky-review/index.html", group: CAT.CURRENT, sub: "Sky · review before main", status: "updated", added: "2026-09-28", accent: "plum",
-    title: "Sky · research, wiring audit & build plan", desc: "Start here: what works, what is incomplete, the two contextual actions, source-by-source findings, mobile verification and the ordered repair plan. Unfinished; main-page promotion needs your go-ahead." },
+  { kind: "route", href: "/SkyConceptDemo", group: CAT.CURRENT, sub: "Sky · review before main", status: "new", added: "2026-09-28", accent: "crimson",
+    title: "Try the Sky design", desc: "Start here. Tap through the proposed reading, chart, history and connection flows. Sample data; no account changes." },
   { kind: "route", href: "/LifestyleBespokeDemo?section=sky", group: CAT.CURRENT, sub: "Sky · review before main", status: "updated", added: "2026-09-28", accent: "gold",
-    title: "Sky · open the current review build", desc: "Try Ask the sky and Edit your chart (or setup guidance before a chart exists). Switch sections to review their own action pairs. Preview only: the main Lifestyle page has not been promoted. See the adjacent audit for known Sky gaps." },
+    title: "Compare the connected build", desc: "The current Sky preview with your signed-in data. Still unfinished; main-page approval is held." },
+  { kind: "route", href: "/sky-review/index.html", group: CAT.CURRENT, sub: "Sky · review before main", status: "updated", added: "2026-09-28", accent: "gold",
+    title: "Details · research & checks", desc: "Optional background: findings, sources, repair plan and what has been tested." },
   // (The live Nutrition + Today pages used to be listed here — removed; they're
   //  reachable from the real bottom nav, so listing them in the Ideas hub was
   //  pure clutter. Everything below is a demo/preview/plan/tool.)
@@ -622,7 +624,7 @@ const CURRENT_SUB_ORDER = [
 // a new entry surface at the top of the dashboard, give it a date (either set
 // `added:"YYYY-MM-DD"` on the entry, or add one line to RECENT_DATES below).
 const SECTION = {
-  skyreview: { id:"skyreview", title:"Sky · review before main", accent:"plum", icon:"doc", blurb:"Current unfinished build: open the preview, research, wiring audit, design plan and verification. Main-page promotion waits for your explicit go-ahead." },
+  skyreview: { id:"skyreview", title:"Sky · your review board", accent:"gold", icon:"page", blurb:"Try the design. Compare the build. Give the go-ahead when you are happy." },
   lsredesign:{ id:"lsredesign",title:"Lifestyle · section previews & layout studies", accent:"crimson", icon:"page", blurb:"The complete Lifestyle preview and earlier layout comparisons. Sky is still being built: use Sky · review before main for its current actions, research and outstanding repairs. All existing studies remain available here." },
   lssketches:{ id:"lssketches",title:"Lifestyle redesign — earlier sketches", accent:"espresso", icon:"box", blurb:"The four EARLIER low-fi sketches (Editorial · Calm · Findable · Guided), superseded by the four full-polish directions above. Kept for reference only." },
   brand:     { id:"brand",     title:"Brand, cards & flora",       accent:"crimson",  icon:"bloom",  blurb:"The Brand Bible, the card system and every flora / header treatment." },
@@ -1278,7 +1280,7 @@ function SectionTile({ section, count, onOpen }) {
         <span style={{ fontSize: 12, fontWeight: 700, color: accent, background: T.surfaceHi, border: `1px solid ${T.border}`, borderRadius: 999, padding: "2px 9px", flexShrink: 0 }}>{count}</span>
       </div>
       <div style={{ fontSize: 12.5, color: T.textMid, lineHeight: 1.5, ...CLAMP2 }}>{section.blurb}</div>
-      <div style={{ marginTop: 9, fontSize: 12, fontWeight: 700, color: accent }}>Open section →</div>
+      <div style={{ marginTop: 9, fontSize: 12, fontWeight: 700, color: accent }}>Open board →</div>
     </button>
   );
 }
@@ -1289,7 +1291,7 @@ function Dashboard({ counts, recent, onOpenSection, onOpen }) {
     <div>
       {recent.length > 0 && (
         <section style={{ marginBottom: 24 }}>
-          <SectionLabel>New &amp; recently added</SectionLabel>
+          <SectionLabel>Ready to try</SectionLabel>
           <div style={{ display: "flex", gap: 10, overflowX: "auto", scrollbarWidth: "none", WebkitOverflowScrolling: "touch", padding: "0 2px 4px", margin: "0 -2px" }}>
             {recent.map((e) => (
               <div key={(e.href || e.key) + e.title} style={{ flex: "0 0 82%", maxWidth: 300, minWidth: 240 }}>
@@ -1299,7 +1301,7 @@ function Dashboard({ counts, recent, onOpenSection, onOpen }) {
           </div>
         </section>
       )}
-      <SectionLabel>Sections · tap to open</SectionLabel>
+      <SectionLabel>Your boards · everything in its place</SectionLabel>
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(240px, 1fr))", gap: 12 }}>
         {SECTION_ORDER.filter((id) => counts[id]).map((id) => (
           <SectionTile key={id} section={SECTION[id]} count={counts[id]} onOpen={() => onOpenSection(id)} />
@@ -1379,7 +1381,10 @@ function SearchResults({ results, q, onOpen }) {
 
 function FoundersInner({ user }) {
   const [tab, setTab] = useState(HOME);
-  const [section, setSection] = useState(null);   // null = dashboard; else a SECTION id
+  const [section, setSection] = useState(() => {
+    const requested = new URLSearchParams(window.location.search).get("section");
+    return requested && Object.prototype.hasOwnProperty.call(SECTION, requested) ? requested : null;
+  });   // null = dashboard; else a validated SECTION id
   const [q, setQ] = useState("");
 
   // Merge the recency dates in (entry `added` wins, else the RECENT_DATES map).
@@ -1514,10 +1519,10 @@ function FoundersInner({ user }) {
             <HeartMark size={22} />
             <div style={{ flex: 1, minWidth: 0 }}>
               <div style={{ fontFamily: SERIF_STACK, fontSize: 23, fontWeight: 700, color: T.textHi, lineHeight: 1.05, letterSpacing: 0.2 }}>
-                Founder OS
+                Founder's corner
               </div>
               <div style={{ color: T.textMuted, fontSize: 12, marginTop: 2, ...CLAMP2, WebkitLineClamp: 1 }}>
-                Everything in one place — search or jump to a section · <span style={{ opacity: 0.7 }}>build {BUILD_HASH}</span>
+                Your boards, demos &amp; decisions · <span style={{ opacity: 0.7 }}>build {BUILD_HASH}</span>
               </div>
             </div>
             {tab !== HOME && (
@@ -1537,7 +1542,7 @@ function FoundersInner({ user }) {
                   value={q}
                   onChange={(e) => setQ(e.target.value)}
                   placeholder="Search everything — type “card”, “nutrition”, “calendar”…"
-                  aria-label="Search Founder OS"
+                  aria-label="Search founder boards"
                   style={{
                     width: "100%", boxSizing: "border-box",
                     padding: "11px 38px 11px 14px",
