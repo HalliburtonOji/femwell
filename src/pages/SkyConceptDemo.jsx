@@ -36,6 +36,7 @@ const css = `
 .sky-concept .demo-chapters{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:22px 0}
 .sky-concept .demo-section{scroll-margin-top:80px}.sky-concept .demo-triad{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
 .sky-concept .demo-link{color:${C.ink};font:600 15px ${UI};text-underline-offset:4px;display:inline-flex;align-items:center;min-height:48px}
+body:has(.sky-concept) a[aria-label="Open Ideas (Design Lab — dev only)"]{position:relative!important;inset:auto!important;display:flex!important;width:fit-content;margin:0 auto 120px!important;transform:none!important}
 @media(min-width:620px){.sky-concept .demo-chapters{grid-template-columns:repeat(4,1fr)}}
 `;
 
@@ -110,7 +111,7 @@ export default function SkyConceptDemo() {
   return <div className="sky-concept fw-clean" style={{ ...CLEAN_BG, "--demo-plum": cwOf("plum").petal, minHeight: "100vh", padding: "16px 16px 150px" }}>
     <style>{CLEAN_CSS + css}</style>
     <div style={{ maxWidth: 660, margin: "0 auto" }}>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10, marginBottom: 12 }}><a className="demo-link" href="/Ideas?section=skyreview"><ArrowLeft size={16} /> Sky review board</a><span className="demo-small" style={{ fontWeight: 700 }}>Sample preview</span></div>
+      <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "space-between", alignItems: "center", gap: 10, paddingRight: 48, marginBottom: 12 }}><a className="demo-link" href="/Ideas?section=skyreview"><ArrowLeft size={16} /> Sky review board</a><span className="demo-small" style={{ fontWeight: 700 }}>Sample preview</span></div>
       <p className="demo-small" style={{ margin: "0 0 16px" }}>Try the proposed design. All content and results are examples.</p>
       <SectionHeader clean active={{ id: "sky", title: "Your sky" }} />
       <details style={{ margin: "20px 0" }}><summary style={{ minHeight: 44, cursor: "pointer", font: `600 15px ${UI}` }}>Try a different state</summary><div style={{ display: "flex", flexWrap: "wrap", gap: 8, paddingTop: 8 }}>{[["complete", "Example chart"], ["date-only", "Unknown time"], ["new", "No chart yet"], ["sparse", "Little history"], ["error", "Reading unavailable"]].map(([key, label]) => <button className="demo-control" aria-pressed={scenario === key} key={key} onClick={() => applyScenario(key)}>{label}</button>)}<button className="demo-control" onClick={resetDemo}>Reset sample changes</button></div></details>
