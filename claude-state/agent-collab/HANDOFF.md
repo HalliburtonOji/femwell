@@ -162,7 +162,7 @@ the landing in STATUS.md). If a surface is claimed, don't touch its files — pr
 
 | Agent | Surface | Files | Started | State |
 |---|---|---|---|---|
-| Codex | Authentication verification record | `claude-state/STATUS.md` | 2026-09-28 | In flight: recording signed-in test and follow-up account reappearance; no source changes. |
+| Codex | Authentication verification record | `claude-state/STATUS.md` | 2026-09-28 | Record complete; claim released. Signed-in logout reaches login but account reappeared when Profile reopened. Cause unresolved; see STATUS top. No source changes. |
 | Claude | Books (Lifestyle) | `BooksStoryFocus.jsx`, `booksMonthly.js`, `LifestyleEliteShell.jsx` | 2026-09-25 | **Landed** `21c0a173` — released |
 | — | *(free)* | | | |
 
