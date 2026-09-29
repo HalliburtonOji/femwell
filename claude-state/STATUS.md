@@ -7,6 +7,11 @@
 > **APPEND, never rewrite:** add a NEW block at the top of the current-state section (so merges stay trivial), immediately after every build/fix/ship — never batched. Each entry: what changed + commit · shipped-vs-demo · live bundle hash · how it was verified.
 > **Full context for the other agent:** `claude-state/agent-collab/HANDOFF.md` (+ the IN FLIGHT claim table — claim a surface before editing it). Raw transcripts are archive-only: `claude-state/agent-collab/transcripts/MANIFEST.md`.
 >
+> ### CURRENT STATE — 2026-09-29 · Dream garden deployed; final visual polish
+> - **Source `b1e2fda`**, pushed, production-built and deployed. HTTP-confirmed **index-w4N8sc3e.js**. Ideas → Brand, cards & flora → Floral ecosystem · the dream garden; also Ready to try. Exact scene remains a proposal; main held.
+> - **Tests:** targeted7/7; clean full58/58 after one infrastructure worker-start timeout. Actual360/390/430 browser taps verified atmosphere, visitor, meaning/Escape, motion start, lifecycle, placement controls and Ideas-board route. Artwork loaded live.
+> - **Independent audit:** no P0/P1 observed. TwoP2 craft findings: moth hangs below rim; at360 the title heart detaches between lines. Source corrections reduce/reposition visitor and keep heart with final word; rebuilt final proof follows. Art review approves the new coherent scene family for Ideas; coverage gaps remain documented.
+>
 > ### CURRENT STATE — 2026-09-29 · Sky refinements live; botanical dream study in progress
 > - **Sky shipped `efc9c4b`**, pushed/deployed; HTTP-confirmed **index-BpDmhQbc.js**. Generated botanical lunar clock, compact two-reading diary with full history access, inline meaning dots. Full51/51 and final targeted15/15 tests; actual360/390/430 taps and independent7-image audit passed. Main remains held; older Sky trust/data/checkout issues remain open.
 > - **Halli correction / flora claim57924dd:** rejected generic rose specimen; wants realistic, artsy personality and deeper inspiration. New original iris-glass observatory has dawn/night/rest art variants. Isolated FloralDreamDemo and Ideas Brand entry built; tests and phone verification underway. Primary-source research, atomic plan, ecosystem audit and generation prompts in claude-state/flora-dream/.
