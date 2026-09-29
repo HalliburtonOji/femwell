@@ -33,6 +33,8 @@ import { C, PHASE_CLEAN } from "@/components/brand/cleanTokens";
 import { Eyebrow, Title, Body, Card, Summary, Cta, Quiet, Foot, Leaf, Fleuron, Tag, Sep } from "@/components/brand/cleanKit";
 import { YearMovement, RedWhiteMoon, AskTheSky, Compatibility, Atelier, YourWay } from "@/components/lifestyle-elite/sky/SkyMovements";
 import { phaseLabel } from "@/utils/cyclePhase";
+import { CELESTIAL_CSS, MoonLesson } from "@/components/lifestyle-elite/sky/CelestialSky";
+import ObservedSkyDiary from "@/components/lifestyle-elite/sky/ObservedSkyDiary";
 
 const cap = (s) => (s ? String(s).charAt(0).toUpperCase() + String(s).slice(1) : s);
 const clean = (s) => String(s || "").replace(/<[^>]+>/g, "").replace(/\*(.+?)\*/g, "$1").replace(/\s+/g, " ").trim();
@@ -73,25 +75,26 @@ function JumpStrip({ refs }) {
     </div>
   );
 }
-const Movement = ({ id, refs, children, focusable = false }) => (
-  <section ref={(el) => { refs.current[id] = el; }} tabIndex={focusable ? -1 : undefined} style={{ scrollMarginTop: focusable ? 70 : 14 }}>{children}</section>
+const Movement = ({ id, refs, children, focusable = false, className }) => (
+  <section className={className} ref={(el) => { refs.current[id] = el; }} tabIndex={focusable ? -1 : undefined} style={{ scrollMarginTop: focusable ? 70 : 14 }}>{children}</section>
 );
 
 // ── the chart triad — three hairline columns; tap one to unfold its reading ─────────────────────
-function TriadColumn({ Icon, label, sign, trait, desc, locked, onUnlock, first }) {
+function TriadColumn({ Icon, label, sign, trait, desc, locked, onUnlock, first, celestial = false }) {
   const [open, setOpen] = useState(false);
   const SignIcon = !locked && sign ? getSignIcon(sign) : Icon;
   return (
     <div style={{ flex: 1, minWidth: 0, padding: "4px 6px", borderLeft: first ? "none" : `1px solid ${C.hair}` }}>
       <button onClick={() => { if (locked) return onUnlock && onUnlock(); if (desc) setOpen((v) => !v); }} className="fw-elite-press" aria-expanded={open}
         style={{ width: "100%", textAlign: "center", cursor: (desc || locked) ? "pointer" : "default", background: "transparent", border: "none", padding: 0 }}>
-        <div style={{ display: "flex", justifyContent: "center", lineHeight: 1 }}><SignIcon size={26} color={locked ? C.faint : C.ink} strokeWidth={1.4} /></div>
+        <div className={celestial ? "sky-triad-icon" : undefined} style={{ display: "flex", justifyContent: "center", lineHeight: 1 }}><SignIcon size={26} color={locked ? C.faint : C.ink} strokeWidth={1.4} /></div>
         <div style={{ fontFamily: UI, fontSize: 12, fontWeight: 800, letterSpacing: ".12em", textTransform: "uppercase", color: C.faint, marginTop: 9 }}>{label}</div>
         <div style={{ fontFamily: SERIF, fontSize: 18, fontWeight: 600, color: C.ink, marginTop: 2 }}>{locked ? "—" : (sign || "—")}</div>
         {!locked && trait ? <div style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 13, color: C.slate, marginTop: 3, lineHeight: 1.3 }}>{trait}</div> : null}
         {locked ? <div style={{ fontFamily: UI, fontSize: 12, fontWeight: 700, color: C.gold, marginTop: 6 }}>+ add birth time</div>
           : desc ? <ChevronDown size={13} color={C.faint} style={{ marginTop: 6, transform: open ? "rotate(180deg)" : "none", transition: "transform .2s" }} /> : null}
       </button>
+      {celestial && <p style={{font:`500 13px/1.4 ${UI}`,color:C.ink,textAlign:"center",margin:"10px 0 0"}}>{{Sun:"Your sense of self",Moon:"Your inner weather",Rising:"How you meet the world"}[label]}</p>}
       {open && desc ? <p style={{ fontFamily: SERIF, fontSize: 14.5, fontWeight: 500, color: C.ink, lineHeight: 1.55, margin: "10px 2px 0", textAlign: "left" }}>{clean(desc)}</p> : null}
     </div>
   );
@@ -177,7 +180,7 @@ function CarryItWithYou({ seed, onMarkRead, read }) {
   );
 }
 
-export default function SkyFocus({ userProfile, actionRequest, onActionState, onActionHandled, portalChart = false, continuous = false }) {
+export default function SkyFocus({ userProfile, actionRequest, onActionState, onActionHandled, portalChart = false, continuous = false, celestial = false }) {
   const { user, astro, reading, userProfile: up, loading, generatingReading, setAstro } = useBirthChart(userProfile);
   const prof = userProfile || up;
   const chart = useMemo(() => deriveChart(astro, prof), [astro, prof]);
@@ -232,23 +235,25 @@ export default function SkyFocus({ userProfile, actionRequest, onActionState, on
   // ── no chart → the onboarding, in the same language ──
   if (!astro) {
     return (
-      <div style={{ display: "flex", flexDirection: "column" }}>
+      <div className={celestial ? "sky-celestial" : undefined} style={{ display: "flex", flexDirection: "column" }}>
+        {celestial && <style>{CELESTIAL_CSS}</style>}
         <JessAstraBanner />
         <Summary Icon={Moon} cw="lavender">{moon?.name ? `The moon is ${moon.name.toLowerCase()}${moon.illumination != null ? `, ${moon.illumination}% lit` : ""} tonight — your own sky opens once you add your birth date.` : "Your own sky opens once you add your birth date."}</Summary>
         <section>
           <Eyebrow cw="lavender">Read me the sky</Eyebrow>
-          <Title>A daily reading from your own chart</Title>
-          <Body>FemWell writes you a daily reading from your own chart and your own cycle — not a sign-shaped horoscope written for a twelfth of the world.</Body>
-          <Body size={16} style={{ color: C.slate }}>Your birth date is all we need to begin. Birth time and place are optional; they unlock your moon and rising. We never track your location.</Body>
+          <Title>{celestial ? "Your sky starts with a birthday." : "A daily reading from your own chart"}</Title>
+          <Body>{celestial ? "A little chart language for the life you're actually living. Your date of birth gets us started." : "FemWell writes you a daily reading from your own chart and your own cycle — not a sign-shaped horoscope written for a twelfth of the world."}</Body>
+          <Body size={16} style={{ color: C.slate }}>{celestial ? "Time and place add detail. Don't know the time? Leave it blank; rising and houses need it, and your Moon sign may be uncertain." : "Your birth date is all we need to begin. Birth time and place are optional; they unlock your moon and rising. We never track your location."}</Body>
           <div style={{ marginTop: 6 }}><Cta filled Icon={Sparkles} onClick={() => setSheetOpen(true)}>Set up your sky</Cta></div>
         </section>
+        {celestial && <MoonLesson moon={moon} />}
         {birthSheet(null)}
       </div>
     );
   }
 
-  const headline = clean(reading?.headline) || `A steady day. The moon is ${moon?.waxing ? "climbing" : "releasing"}.`;
-  const weather = paras(reading?.narrative).slice(0, 3);
+  const headline = clean(reading?.headline) || (celestial ? "A moment under the same moon." : `A steady day. The moon is ${moon?.waxing ? "climbing" : "releasing"}.`);
+  const weather = celestial ? paras(reading?.narrative) : paras(reading?.narrative).slice(0, 3);
   const energy = reading?.weather_energy || null;
   const mood = reading?.weather_mood ? clean(reading.weather_mood) : null;
   const playlist = chart.moonSign ? MOON_SIGN_PLAYLIST[String(chart.moonSign).toLowerCase()] : null;
@@ -259,7 +264,8 @@ export default function SkyFocus({ userProfile, actionRequest, onActionState, on
   const cw = phaseCw(cyc.phase);
 
   return (
-    <div style={{ display: "flex", flexDirection: "column" }}>
+    <div className={celestial ? "sky-celestial" : undefined} style={{ display: "flex", flexDirection: "column" }}>
+      {celestial && <style>{CELESTIAL_CSS}</style>}
       <JessAstraBanner />
 
       {/* I · TONIGHT — the masthead (the page's ONE header sits above this) */}
@@ -280,14 +286,14 @@ export default function SkyFocus({ userProfile, actionRequest, onActionState, on
       <Leaf my={14} />
 
       {/* II · TODAY — the reading, and what to do with it */}
-      <Movement id="today" refs={refs} focusable={continuous}>
+      <Movement id="today" refs={refs} focusable={continuous} className={celestial ? "sky-reading" : undefined}>
         <Eyebrow cw="crimson">Today's weather</Eyebrow>
         {weather.length ? (
           <>
             <Body size={18}>{lead ? <><span style={{ fontStyle: "italic", color: C.crimson }}>{lead[1]}</span> {lead[3]}</> : weather[0]}</Body>
             {weather.slice(1).map((p, i) => <Body key={i} size={18}>{p}</Body>)}
           </>
-        ) : <Body size={18}>{`A steady ${chart.sun || "quiet"} day — begin the thing you've been thinking about.`}</Body>}
+        ) : <Body size={18}>{celestial ? "Your reading isn't available yet. Your chart and the moon notes are still here to explore." : `A steady ${chart.sun || "quiet"} day — begin the thing you've been thinking about.`}</Body>}
         <div style={{ fontFamily: SCRIPT, fontSize: 30, color: C.gold, textAlign: "right", lineHeight: 1, margin: "-2px 4px 0" }}>Astra</div>
         {(energy || mood || playlist) ? (
           <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "center", alignItems: "center", gap: 9, margin: "12px 0 0" }}>
@@ -314,14 +320,15 @@ export default function SkyFocus({ userProfile, actionRequest, onActionState, on
       <Movement id="you" refs={refs}>
         <Eyebrow cw="gold">Your chart</Eyebrow>
         <Title>Sun, moon &amp; rising</Title>
+        {celestial && <p className="sky-note" style={{textAlign:"center"}}>Three lenses, one very unrepeatable you. In astrology, each has a different part to play.</p>}
         <div style={{ display: "flex", alignItems: "stretch" }}>
-          <TriadColumn first Icon={Sun} label="Sun" sign={chart.sun ? cap(chart.sun) : null} trait={SIGN_TRAITS[cap(chart.sun)]} desc={reading?.triad_sun_desc} />
-          <TriadColumn Icon={Moon} label="Moon" sign={chart.moonSign ? cap(chart.moonSign) : null} trait={SIGN_TRAITS[cap(chart.moonSign)]} desc={reading?.triad_moon_desc} locked={!chart.moonSign} onUnlock={() => setSheetOpen(true)} />
-          <TriadColumn Icon={Sunrise} label="Rising" sign={chart.risingSign ? cap(chart.risingSign) : null} trait={SIGN_TRAITS[cap(chart.risingSign)]} desc={reading?.triad_rising_desc} locked={!chart.risingSign} onUnlock={() => setSheetOpen(true)} />
+          <TriadColumn celestial={celestial} first Icon={Sun} label="Sun" sign={chart.sun ? cap(chart.sun) : null} trait={SIGN_TRAITS[cap(chart.sun)]} desc={reading?.triad_sun_desc} />
+          <TriadColumn celestial={celestial} Icon={Moon} label="Moon" sign={chart.moonSign ? cap(chart.moonSign) : null} trait={SIGN_TRAITS[cap(chart.moonSign)]} desc={reading?.triad_moon_desc} locked={!chart.moonSign} onUnlock={() => setSheetOpen(true)} />
+          <TriadColumn celestial={celestial} Icon={Sunrise} label="Rising" sign={chart.risingSign ? cap(chart.risingSign) : null} trait={SIGN_TRAITS[cap(chart.risingSign)]} desc={reading?.triad_rising_desc} locked={!chart.risingSign} onUnlock={() => setSheetOpen(true)} />
         </div>
         <div style={{ fontFamily: UI, fontSize: 11, letterSpacing: ".06em", color: C.faint, textAlign: "center", marginTop: 14 }}>{[chart.element, chart.modality, chart.sunRuler ? `ruled by ${chart.sunRuler}` : null].filter(Boolean).join(" · ")}</div>
         <GoddessBench signs={asteroids} goddessRead={reading?.goddess_read} />
-        <RedWhiteMoon rw={null} />
+        <RedWhiteMoon celestial={celestial} rw={null} />
       </Movement>
 
       <Fleuron my={24} />
@@ -332,6 +339,7 @@ export default function SkyFocus({ userProfile, actionRequest, onActionState, on
           <Eyebrow cw={cw}>Cycle × moon</Eyebrow>
           <Title>Your two tides</Title>
           <CycleMoonDial moon={moon} cyclePhase={cyc.phase} cycleDay={cyc.day} cycleLen={cyc.len || 28} body={reading?.cycle_moon_body} />
+          {celestial && <MoonLesson moon={moon} />}
           {!cyc.phase ? <Quiet onClick={() => window.location.assign(createPageUrl("Health"))}>Add your dates to see both tides ›</Quiet> : null}
         </Card>
       </Movement>
@@ -339,7 +347,7 @@ export default function SkyFocus({ userProfile, actionRequest, onActionState, on
       <Fleuron my={24} />
 
       {/* V · YOUR YEAR — profections · Saturn letter · the sky diary */}
-      <Movement id="year" refs={refs}><YearMovement profections={profections} diary={diary} /></Movement>
+      <Movement id="year" refs={refs}><YearMovement celestial={celestial} profections={profections} diary={celestial ? null : diary} />{celestial && <ObservedSkyDiary userId={user?.id} />}</Movement>
 
       <Fleuron my={24} />
 
@@ -347,19 +355,19 @@ export default function SkyFocus({ userProfile, actionRequest, onActionState, on
       <Movement id="ask" refs={refs}>
         <Eyebrow cw="lavender">Ask &amp; connect</Eyebrow>
         <Title>Put a question to it</Title>
-        <AskTheSky userId={user?.id} inputRef={questionRef} />
-        <Compatibility userId={user?.id} />
+        <AskTheSky celestial={celestial} userId={user?.id} inputRef={questionRef} />
+        <Compatibility celestial={celestial} userId={user?.id} />
       </Movement>
 
       <Fleuron my={24} />
 
       {/* VII · THE ATELIER — the letter + the shelf */}
-      <Movement id="atelier" refs={refs}><Atelier userId={user?.id} hasAtelier={!!user?.has_atelier} letter={null} /></Movement>
+      <Movement id="atelier" refs={refs}><Atelier celestial={celestial} userId={user?.id} hasAtelier={!!user?.has_atelier} letter={null} /></Movement>
 
       <Fleuron my={24} />
 
       {/* VIII · YOUR SKY, YOUR WAY — quiet mode · science · privacy */}
-      <Movement id="yours" refs={refs}><YourWay userId={user?.id} /></Movement>
+      <Movement id="yours" refs={refs}><YourWay celestial={celestial} userId={user?.id} /></Movement>
 
       <Foot>Held lightly — folklore and your own chart, never fate or a score.</Foot>
       {birthSheet(astro)}

@@ -16,7 +16,7 @@ const cap = (s) => (s ? String(s).charAt(0).toUpperCase() + String(s).slice(1) :
 const input = { width: "100%", background: C.surface, border: `1px solid ${C.hair}`, borderRadius: 11, padding: "11px 13px", fontFamily: SERIF, fontSize: 16, color: C.ink, outline: "none" };
 
 // ── V · YOUR YEAR — profections + the Saturn-return letter + the transit timeline ──────────────
-export function YearMovement({ profections, diary }) {
+export function YearMovement({ profections, diary, celestial = false }) {
   const p = profections?.profection || null;
   const saturn = profections?.saturn || null;
   const age = p?.age;
@@ -31,8 +31,8 @@ export function YearMovement({ profections, diary }) {
             <span style={{ fontFamily: SERIF, fontSize: 34, fontWeight: 600, color: C.ink, lineHeight: 1 }}>{p.house_label || `House ${p.house}`}</span>
             {p.time_lord ? <Meta>ruled by {p.time_lord}</Meta> : null}
           </div>
-          {p.theme ? <Body size={16.5} style={{ textAlign: "center", margin: 0 }}>{clean(p.theme)}</Body> : null}
-          <div style={{ fontFamily: UI, fontSize: 11, color: C.faint, textAlign: "center", marginTop: 10 }}>Annual profections move the emphasis one house each birthday.</div>
+          {(p.theme || (celestial && p.lit_house_copy)) ? <Body size={16.5} style={{ textAlign: "center", margin: 0 }}>{clean(p.theme || p.lit_house_copy)}</Body> : null}
+          <div style={{ fontFamily: UI, fontSize: celestial ? 12 : 11, color: celestial ? C.slate : C.faint, textAlign: "center", marginTop: 10 }}>{celestial ? "In this tradition, each birthday turns the spotlight to another part of life. No homework attached." : "Annual profections move the emphasis one house each birthday."}</div>
         </Card>
       ) : (
         <Body size={16.5} style={{ textAlign: "center", color: C.slate }}>Add your birth date and your year's house opens here.</Body>
@@ -42,13 +42,13 @@ export function YearMovement({ profections, diary }) {
         <Card style={{ marginTop: 14 }}>
           <Eyebrow cw="gold" align="left">Your Saturn return</Eyebrow>
           <Body size={16.5} style={{ fontStyle: "italic" }}>
-            Saturn comes back to where it stood when you were born — roughly once every twenty-nine years.
+            {celestial ? <>In astrology, Saturn's return is a coming-of-age chapter: what still fits, and what you've outgrown. Roughly every 29 years; no need to reinvent yourself by Thursday.</> : <>Saturn comes back to where it stood when you were born — roughly once every twenty-nine years.
             It isn't a punishment; it's a structural review. What you built on borrowed shapes gets tested,
             and what's genuinely yours holds. Expect the ground to feel less certain and your own judgement
-            to feel more so. Nothing here needs deciding this week.
+            to feel more so. Nothing here needs deciding this week.</>}
           </Body>
           <div style={{ fontFamily: UI, fontSize: 11.5, color: C.slate, textAlign: "right" }}>
-            {saturn.started ? `From ${new Date(saturn.started).toLocaleDateString("en-GB", { month: "short", year: "numeric" })}` : ""}
+            {celestial ? "Approximate age-based window · " : ""}{saturn.started ? `From ${new Date(saturn.started).toLocaleDateString("en-GB", { month: "short", year: "numeric" })}` : ""}
             {saturn.ends ? ` — ${new Date(saturn.ends).toLocaleDateString("en-GB", { month: "short", year: "numeric" })}` : ""} · Astra
           </div>
         </Card>
@@ -87,7 +87,7 @@ export function YearMovement({ profections, diary }) {
 }
 
 // ── III (tail) · RED / WHITE MOON — the archetype, honest when there isn't enough data ─────────
-export function RedWhiteMoon({ rw }) {
+export function RedWhiteMoon({ rw, celestial = false }) {
   const map = {
     red_moon: { name: "Red moon", body: "You tend to bleed with the full moon — the old name for the woman who turns her energy outward, teaching and making, rather than inward." },
     white_moon: { name: "White moon", body: "You tend to bleed with the new moon — the old name for the inward season, the one that draws energy home and mothers what's close." },
@@ -107,7 +107,7 @@ export function RedWhiteMoon({ rw }) {
           <Body size={16} style={{ margin: 0 }}>{a.body}</Body>
         </>
       ) : (
-        <Body size={16} style={{ margin: 0, color: C.slate }}>Once you've logged a few cycles, the old red/white-moon reading appears here — whether you tend to bleed with the full moon or the new. Folklore, held lightly.</Body>
+        <Body size={16} style={{ margin: 0, color: C.slate }}>{celestial ? "Full-moon and new-moon bleeding have their own names in lunar folklore. Your pattern isn't connected here yet. Neither timing is better; your body keeps its own calendar." : "Once you've logged a few cycles, the old red/white-moon reading appears here — whether you tend to bleed with the full moon or the new. Folklore, held lightly."}</Body>
       )}
     </Card>
   );
@@ -115,7 +115,7 @@ export function RedWhiteMoon({ rw }) {
 
 // ── VI · ASK THE SKY — the real askStars function + persisted history ──────────────────────────
 const ASK_CHIPS = ["What should I put my energy into this week?", "Why does this feel harder than it should?", "What am I not seeing?"];
-export function AskTheSky({ userId, inputRef }) {
+export function AskTheSky({ userId, inputRef, celestial = false }) {
   const [q, setQ] = useState("");
   const [answer, setAnswer] = useState("");
   const [history, setHistory] = useState([]);
@@ -165,11 +165,12 @@ export function AskTheSky({ userId, inputRef }) {
     <Card>
       <Eyebrow cw="lavender" align="left">Ask the sky</Eyebrow>
       <Title align="left" size={21}>Ask it anything</Title>
+      {celestial && <p className="sky-note">A question for the sky. You still get the deciding vote.</p>}
       {/* notebook-ruled input — the original's signature */}
       <textarea ref={inputRef} aria-label="Your question for the sky" value={q} onChange={(e) => setQ(e.target.value)} rows={3} placeholder="What's on your mind?"
         style={{ ...input, resize: "vertical", lineHeight: "1.7em", backgroundImage: `repeating-linear-gradient(${C.surface} 0px, ${C.surface} calc(1.7em - 1px), ${C.hair} calc(1.7em - 1px), ${C.hair} 1.7em)`, backgroundAttachment: "local" }} />
       <div style={{ display: "flex", flexWrap: "wrap", gap: 7, margin: "10px 0 12px" }}>
-        {ASK_CHIPS.map((c) => <Chip key={c} onClick={() => { setQ(c); submit(c); }} style={{ fontSize: 11.5, fontWeight: 600 }}>{c.length > 34 ? c.slice(0, 32) + "…" : c}</Chip>)}
+        {ASK_CHIPS.map((c) => <Chip key={c} onClick={() => { setQ(c); if (!celestial) submit(c); else inputRef?.current?.focus(); }} style={{ fontSize: celestial ? 12 : 11.5, fontWeight: 600 }}>{celestial ? c : c.length > 34 ? c.slice(0, 32) + "…" : c}</Chip>)}
       </div>
       <Cta Icon={Send} onClick={() => submit()} disabled={asking}>{asking ? "Asking…" : "Ask the sky"}</Cta>
       {error ? <div style={{ fontFamily: UI, fontSize: 12, color: C.crimson, marginTop: 10, textAlign: "center" }}>{error}</div> : null}
@@ -203,7 +204,7 @@ const Bar = ({ label, val }) => (
     <div style={{ height: 4, borderRadius: 99, background: C.hair, overflow: "hidden" }}><div style={{ width: `${Math.max(0, Math.min(10, val || 0)) * 10}%`, height: "100%", background: C.ink }} /></div>
   </div>
 );
-export function Compatibility({ userId }) {
+export function Compatibility({ userId, celestial = false }) {
   const [name, setName] = useState("");
   const [d, setD] = useState(""); const [m, setM] = useState(""); const [y, setY] = useState("");
   const [reading, setReading] = useState(null);
@@ -247,6 +248,7 @@ export function Compatibility({ userId }) {
     <Card style={{ marginTop: 14 }}>
       <Eyebrow cw="blush" align="left">You &amp; someone</Eyebrow>
       <Title align="left" size={21}>How you two run</Title>
+      {celestial && <p className="sky-note">Two charts, plenty to talk about. A conversation starter, never a verdict on someone you love.</p>}
       <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Their name" style={{ ...input, marginBottom: 9 }} />
       <div style={{ display: "flex", gap: 8, marginBottom: 12 }}>
         <input value={d} onChange={(e) => setD(e.target.value.replace(/\D/g, "").slice(0, 2))} placeholder="Day" inputMode="numeric" aria-label="Day" style={{ ...input, flex: 1, textAlign: "center" }} />
@@ -281,7 +283,7 @@ const PRODUCTS = [
   { key: "chart_atelier", title: "The chart atelier", price: "£29", line: "Your whole chart read as one piece, in Astra's hand." },
   { key: "choose_the_day", title: "Choose the day", price: "£55", line: "A date chosen with you — a move, a launch, a conversation." },
 ];
-export function Atelier({ userId, hasAtelier, letter }) {
+export function Atelier({ userId, hasAtelier, letter, celestial = false }) {
   const [busy, setBusy] = useState("");
   const checkout = async (fn, payload) => {
     setBusy(payload.product_key || "plus");
@@ -304,7 +306,7 @@ export function Atelier({ userId, hasAtelier, letter }) {
         {hasAtelier && letter ? (
           <>
             <Title align="left" size={20}>{clean(letter.title) || "This month's letter"}</Title>
-            <Body size={16.5} style={{ fontStyle: "italic" }}>{clean(letter.body).slice(0, 460)}</Body>
+            <Body size={16.5} style={{ fontStyle: "italic" }}>{celestial ? clean(letter.body) : clean(letter.body).slice(0, 460)}</Body>
           </>
         ) : (
           <>
@@ -351,7 +353,7 @@ function Toggle({ on, onChange, label, sub, disabled }) {
     </button>
   );
 }
-export function YourWay({ userId }) {
+export function YourWay({ userId, celestial = false }) {
   const [quiet, setQuiet] = useState(false);
   const [soft, setSoft] = useState(false);
   const [rowId, setRowId] = useState(null);
@@ -396,14 +398,14 @@ export function YourWay({ userId }) {
       <div style={{ marginTop: 16, padding: "14px 16px", border: `1px dashed ${C.hair}`, borderRadius: 14 }}>
         <div style={{ fontFamily: UI, fontSize: 11, fontWeight: 800, letterSpacing: ".16em", textTransform: "uppercase", color: C.gold, marginBottom: 6 }}>Where the science sits</div>
         <p style={{ fontFamily: SERIF, fontSize: 15, fontWeight: 500, color: C.ink, lineHeight: 1.55, margin: 0 }}>
-          There is real evidence that the lunar cycle can nudge sleep and, for some women, menstrual timing
+          {celestial ? <>Moon phases are astronomy. Chart readings are symbolism. Enjoy the perspective; keep your own judgement. <a href="/sky-review/index.html#research" style={{color:C.ink}}>Read the evidence and its limits.</a></> : <>There is real evidence that the lunar cycle can nudge sleep and, for some women, menstrual timing
           (Helfrich-Förster et al., 2021; Cajochen et al., 2013). Astrology beyond the moon's phase remains
-          symbolic — a language for noticing, not a mechanism. We write it that way on purpose.
+          symbolic — a language for noticing, not a mechanism. We write it that way on purpose.</>}
         </p>
       </div>
       <p style={{ fontFamily: UI, fontSize: 11, color: C.faint, textAlign: "center", lineHeight: 1.6, margin: "14px 10px 0" }}>
-        Your birth details and cycle dates stay yours — never sold, never used to target you, and never needed to read your sky.
-        We don't track your location. Payments are handled by Stripe (PCI-DSS Level 1); we never see your card.
+        {celestial ? <>Your birth details help personalise this reading. <a href="/Privacy" style={{color:C.ink}}>How your information is used</a> · <a href="/Terms" style={{color:C.ink}}>Terms</a></> : <>Your birth details and cycle dates stay yours — never sold, never used to target you, and never needed to read your sky.
+        We don't track your location. Payments are handled by Stripe (PCI-DSS Level 1); we never see your card.</>}
       </p>
     </Block>
   );

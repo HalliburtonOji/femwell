@@ -204,7 +204,8 @@ const COLLAPSED_BY_DEFAULT = new Set([CAT.ARCHIVE]);
 
 const CATALOG = [
   { kind: "route", href: "/SkyConceptDemo", group: CAT.CURRENT, sub: "Sky · review before main", status: "new", added: "2026-09-28", accent: "crimson",
-    title: "Sky within Lifestyle · revised", desc: "Start here. The complete connected Sky in one continuous Lifestyle section, with direct actions and no nested chapter tabs. Uses your account; still unfinished." },
+    title: "Sky · celestial design & human voice", desc: "Start here. Moon-led design, small sky lessons, clearer chart language and your real diary. Complete Sky within Lifestyle; connected to your account. Still in review." },
+  { kind: "route", href: "/sky-review/voice.html", group: CAT.CURRENT, sub: "Sky · review before main", status: "new", added: "2026-09-29", accent: "gold", title: "A little wonder · voice & Brand Bible", desc: "A short visual change note, whole-app wording examples and the new Bible principles. Detailed sources are optional." },
   { kind: "route", href: "/LifestyleBespokeDemo?section=sky", group: CAT.CURRENT, sub: "Sky · review before main", status: "updated", added: "2026-09-28", accent: "gold",
     title: "Compare the connected build", desc: "The current Sky preview with your signed-in data. Still unfinished; main-page approval is held." },
   { kind: "route", href: "/sky-review/index.html", group: CAT.CURRENT, sub: "Sky · review before main", status: "updated", added: "2026-09-28", accent: "gold",

@@ -19,6 +19,22 @@ vi.mock("@/components/community/readingActivity", () => ({ recordProgress: data.
 // Lifestyle shell routing and visual layout remain browser-level coverage.
 import SkyFocus from "@/components/lifestyle-elite/SkyFocus";
 import FocusedSectionActions from "@/components/lifestyle-elite/FocusedSectionActions";
+import { CelestialHeader, MoonDisc, MoonLesson } from "@/components/lifestyle-elite/sky/CelestialSky";
+import { getMoonPhase } from "@/utils/astrology";
+
+// Measure the area enclosed by the emitted semicircular/elliptical SVG arcs.
+// This checks rendered geometry against known illumination, not a path snapshot.
+function illuminatedFraction(svg) {
+  const path = svg.querySelector("g[transform] > path[fill]");
+  expect(path).not.toBeNull();
+  const arcs = [...path.getAttribute("d").matchAll(/A\s*([^A-Z]+)/g)]
+    .map(match => match[1].trim().split(/\s+/).map(Number));
+  expect(arcs).toHaveLength(2);
+  const [outer, terminator] = arcs;
+  const outerArea = outer[0] * outer[1];
+  const innerArea = terminator[0] * terminator[1] * (terminator[4] ? 1 : -1);
+  return (outerArea + innerArea) / (2 * outerArea);
+}
 
 function ActionHarness() {
   const [request, setRequest] = useState(null);
@@ -143,5 +159,80 @@ describe("Sky review restoration — one connected continuous section", () => {
     expect(within(sheet).getByRole("button", { name: "Tell us when" })).toBeDisabled();
     fireEvent.click(within(sheet).getByRole("button", { name: "Cancel" }));
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+  });
+
+  it("should teach all eight phases inline while keeping Today attached to the current phase", () => {
+    const { container } = render(<MoonLesson moon={{ key: "first_quarter", position: .25 }} />);
+    const names = ["New moon", "Waxing crescent", "First quarter", "Waxing gibbous", "Full moon", "Waning gibbous", "Last quarter", "Waning crescent"];
+    const todayButton = screen.getByRole("button", { name: "Learn about first quarter" });
+    const facts = new Set();
+    expect(screen.getAllByRole("button")).toHaveLength(8);
+    for (const name of names) {
+      const button = screen.getByRole("button", { name: `Learn about ${name.toLowerCase()}` });
+      fireEvent.click(button);
+      expect(button).toHaveAttribute("aria-pressed", "true");
+      expect(screen.getAllByRole("button", { pressed: true })).toEqual([button]);
+      const fact = container.querySelector('[aria-live="polite"]');
+      expect(fact).toHaveTextContent(`${name}.`);
+      expect(fact.textContent.length).toBeGreaterThan(40);
+      facts.add(fact.textContent);
+      expect(screen.getByText("Today").closest("button")).toBe(todayButton);
+      expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+    }
+    expect(facts.size).toBe(8);
+  });
+
+  it("should agree with the calculated phase at a bucket boundary instead of rounding Today into the next phase", () => {
+    const moon = getMoonPhase(new Date("2000-01-12T18:14:00Z"));
+    expect(moon.key).toBe("waxing_crescent");
+    render(<><CelestialHeader moon={moon} /><MoonLesson moon={moon} /></>);
+    const image = screen.getByRole("img", { name: `${moon.name}, approximately ${moon.illumination}% illuminated` });
+    expect(illuminatedFraction(image) * 100).toBeCloseTo(moon.illumination, 0);
+    expect(screen.getByText("Today").closest("button")).toBe(screen.getByRole("button", { name: "Learn about waxing crescent" }));
+  });
+
+  it("should draw new, crescent, quarter, gibbous and full discs with the correct lit areas and waning orientation", () => {
+    const fractions = [0, .1464466, .5, .8535534, 1, .8535534, .5, .1464466];
+    const { rerender } = render(<MoonDisc position={0} label="Phase under test" />);
+    fractions.forEach((fraction, index) => {
+      rerender(<MoonDisc position={index / 8} label="Phase under test" />);
+      const image = screen.getByRole("img", { name: "Phase under test" });
+      expect(image).not.toHaveAttribute("aria-hidden", "true");
+      expect(illuminatedFraction(image)).toBeCloseTo(fraction, 3);
+      const orientation = image.querySelector("g[transform]").getAttribute("transform");
+      expect(orientation).toBe(index > 4 ? "scale(-1 1)" : "scale(1 1)");
+    });
+    rerender(<MoonDisc position={1.5} label="Wrapped full moon" />);
+    expect(illuminatedFraction(screen.getByRole("img", { name: "Wrapped full moon" }))).toBeCloseTo(1, 3);
+  });
+
+  it("should keep a long reading complete in the celestial preview and leave default callers unchanged", async () => {
+    const paragraphs = ["Begin with the conversation.", "Make room for friendship.", "Give an idea some time.", "The fourth paragraph must remain available.", "The fifth paragraph closes the complete reading."];
+    data.birth.reading.narrative = paragraphs.join("\n\n");
+    const { rerender } = render(<SkyFocus continuous celestial />);
+    const reading = screen.getByText("Today's weather").closest("section");
+    paragraphs.forEach(text => expect(reading).toHaveTextContent(text));
+    ["Your sense of self", "Your inner weather", "How you meet the world"].forEach(text => expect(screen.getByText(text)).toBeVisible());
+    expect(await screen.findByText("No cycle dates loaded. Nothing filled in on your behalf.")).toBeVisible();
+    expect(screen.queryByText("The last twelve cycles")).not.toBeInTheDocument();
+    rerender(<SkyFocus continuous />);
+    expect(screen.queryByText(paragraphs[3])).not.toBeInTheDocument();
+    expect(screen.queryByText("Your sense of self")).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Learn about full moon" })).not.toBeInTheDocument();
+    expect(screen.getByText("The last twelve cycles")).toBeVisible();
+  });
+
+  it("should let a celestial Ask suggestion prefill an editable question without sending it", async () => {
+    render(<SkyFocus continuous celestial />);
+    const question = screen.getByRole("textbox", { name: "Your question for the sky" });
+    const suggestion = "What should I put my energy into this week?";
+    fireEvent.click(screen.getByRole("button", { name: suggestion, exact: true }));
+    expect(question).toHaveValue(suggestion);
+    expect(question).toHaveFocus();
+    fireEvent.change(question, { target: { value: "What could make room for friendship?" } });
+    expect(question).toHaveValue("What could make room for friendship?");
+    expect(data.invoke).not.toHaveBeenCalled();
+    expect(screen.queryByText("The sky says")).not.toBeInTheDocument();
+    await screen.findByText("No past readings loaded yet. A blank page is a perfectly good beginning.");
   });
 });
