@@ -2,7 +2,7 @@
 
 Built-in image generation, 29 September 2026. Decorative artwork, not a photograph or scientific surface map. The application calculates phase geometry separately.
 
-Workspace assets: `public/images/sky/botanical-lunar-frame-v1.png` and `public/images/sky/moon-surface-v1.png`. Original alpha retained. No user/private images supplied.
+Originals preserved locally: `output/imagegen/sky/botanical-lunar-frame-v1.png` and `output/imagegen/sky/moon-surface-v1.png`. Delivery: the same names as WebP in `public/images/sky/`, encoded/resized with Sharp without repainting (~300 KB combined). Original alpha retained. No user/private images supplied.
 
 ## Final prompts
 
