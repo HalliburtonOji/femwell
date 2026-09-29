@@ -21,6 +21,7 @@ import SkyFocus from "@/components/lifestyle-elite/SkyFocus";
 import FocusedSectionActions from "@/components/lifestyle-elite/FocusedSectionActions";
 import { CelestialHeader, MoonDisc, MoonLesson } from "@/components/lifestyle-elite/sky/CelestialSky";
 import { getMoonPhase } from "@/utils/astrology";
+import ObservedSkyDiary from "@/components/lifestyle-elite/sky/ObservedSkyDiary";
 
 // Measure the area enclosed by the emitted semicircular/elliptical SVG arcs.
 // This checks rendered geometry against known illumination, not a path snapshot.
@@ -234,5 +235,31 @@ describe("Sky review restoration — one connected continuous section", () => {
     expect(data.invoke).not.toHaveBeenCalled();
     expect(screen.queryByText("The sky says")).not.toBeInTheDocument();
     await screen.findByText("No past readings loaded yet. A blank page is a perfectly good beginning.");
+  });
+
+  it("should show each logged calendar day once and open the complete reading without raw markup", async () => {
+    data.filter.mockResolvedValueOnce([
+      { id: "start-1", type: "period_start", date: "2026-09-04T09:00:00" },
+      { id: "start-duplicate", type: "period_start", date: "2026-09-04T16:30:00" },
+      { id: "next-start", type: "period_start", date: "2026-09-20T10:00:00" },
+    ]).mockResolvedValueOnce([{
+      id: "reading-1", reading_date: "2026-09-28",
+      headline: "Room for **friendship** and *rest*.",
+      narrative: "<p>**First** thought.</p>\n\n*A second* invitation.\n\nThird paragraph stays.\n\n**Fourth paragraph** closes the whole reading.",
+    }]);
+    render(<ObservedSkyDiary userId="test-user" />);
+    const reading = await screen.findByRole("button", { name: /Room for friendship and rest\./ });
+    const dates = screen.getAllByRole("listitem");
+    expect(dates).toHaveLength(2);
+    expect(dates[0]).toHaveTextContent(/4 Sept? 2026/);
+    expect(dates[1]).toHaveTextContent(/20 Sept? 2026/);
+    expect(reading).not.toHaveTextContent("*");
+    expect(reading).toHaveAttribute("aria-expanded", "false");
+    fireEvent.click(reading);
+    expect(reading).toHaveAttribute("aria-expanded", "true");
+    const narrative = screen.getByText(/First thought\./);
+    expect(narrative.textContent).toBe("First thought.\n\nA second invitation.\n\nThird paragraph stays.\n\nFourth paragraph closes the whole reading.");
+    expect(narrative).not.toHaveTextContent("*");
+    expect(narrative).not.toHaveTextContent("<p>");
   });
 });
