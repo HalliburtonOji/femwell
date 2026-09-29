@@ -41,7 +41,7 @@ export const PHASE_LESSONS = [
 export function CelestialHeader({ moon }) {
   const current = moon || getMoonPhase(new Date());
   return <header className="sky-moon-header" style={{ textAlign:"center", color:C.ink }}>
-    <div style={{ position:"relative", height:226, overflow:"hidden", borderRadius:"48% 48% 18px 18px", background:"radial-gradient(ellipse at 50% 47%, #E7DFEA 0%, #F5F4F1 65%)", display:"grid", placeItems:"center" }}>
+    <div style={{ position:"relative", height:226, overflow:"visible", borderRadius:"48% 48% 18px 18px", background:"radial-gradient(ellipse at 50% 47%, #E7DFEA 0%, #F5F4F1 65%)", display:"grid", placeItems:"center" }}>
       <svg aria-hidden="true" viewBox="0 0 360 240" style={{ position:"absolute", inset:0, width:"100%", height:"100%" }} fill="none" stroke={C.goldHair}>
         <ellipse cx="180" cy="121" rx="132" ry="92" transform="rotate(-18 180 121)"/>
         <ellipse cx="180" cy="121" rx="109" ry="103" strokeDasharray="2 8"/>
