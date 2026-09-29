@@ -7,6 +7,10 @@
 > **APPEND, never rewrite:** add a NEW block at the top of the current-state section (so merges stay trivial), immediately after every build/fix/ship — never batched. Each entry: what changed + commit · shipped-vs-demo · live bundle hash · how it was verified.
 > **Full context for the other agent:** `claude-state/agent-collab/HANDOFF.md` (+ the IN FLIGHT claim table — claim a surface before editing it). Raw transcripts are archive-only: `claude-state/agent-collab/transcripts/MANIFEST.md`.
 >
+> ### CURRENT STATE — 2026-09-29 · Botanical lunar clock, compact diary and meaning dots underway
+> - **Halli correction / claim e8a9699:** higher craft plant/moon fusion, small clocklike motion, shorter diary, bespoke question-mark help. Four atoms and fresh WAI/NASA research in lunar-clock-plan.md; generated asset provenance/prompts in lunar-clock-assets.md. Bible§10.5.3 and in-app mirror updated same cycle.
+> - **Built for Ideas:** generated morning-glory orbit and moon texture over computed phase; finite optional four-second arrival; floral meaning dots; two-reading diary with complete inline history/date access. Production build and tests underway; live remains index-DsQRGZUI.js until new deployment. No main promotion or backend/schema changes.
+>
 > ### CURRENT STATE — 2026-09-29 · VERIFIED: celestial Sky and human voice direction in Ideas
 > - **Shipped preview:** source `58fc34f` + `9d30ba8` + `6123b3a`, pushed and production-built; Base44 deployment succeeded on retry after transient fetch failure. HTTP-confirmed live **`index-DsQRGZUI.js`**. Ideas → Sky review board → **Sky · celestial design & human voice**; short voice guide at `/sky-review/voice.html`. Main promotion remains held.
 > - **Delivered:** phase-shaped lunar masthead, orbital/botanical craft, eight inline factual phase lessons, clear chart roles and full-width expanded readings, complete daily prose, real observed diary with unique dates/clean text, shorter human interface voice. Summary/Jess/pills and original continuous Sky capabilities preserved. Bible §§10.5.1–2 and its in-app mirror carry app-wide voice principles; exact executions remain Halli's review candidates.

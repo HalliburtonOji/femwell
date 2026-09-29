@@ -22,6 +22,7 @@ import FocusedSectionActions from "@/components/lifestyle-elite/FocusedSectionAc
 import { CelestialHeader, MoonDisc, MoonLesson } from "@/components/lifestyle-elite/sky/CelestialSky";
 import { getMoonPhase } from "@/utils/astrology";
 import ObservedSkyDiary from "@/components/lifestyle-elite/sky/ObservedSkyDiary";
+import SkyMeaning from "@/components/lifestyle-elite/sky/SkyMeaning";
 
 // Measure the area enclosed by the emitted semicircular/elliptical SVG arcs.
 // This checks rendered geometry against known illumination, not a path snapshot.
@@ -214,7 +215,9 @@ describe("Sky review restoration — one connected continuous section", () => {
     const reading = screen.getByText("Today's weather").closest("section");
     paragraphs.forEach(text => expect(reading).toHaveTextContent(text));
     ["Your sense of self", "Your inner weather", "How you meet the world"].forEach(text => expect(screen.getByText(text)).toBeVisible());
-    expect(await screen.findByText("No cycle dates loaded. Nothing filled in on your behalf.")).toBeVisible();
+    expect(await screen.findByText("No cycle dates loaded. Nothing filled in on your behalf.")).not.toBeVisible();
+    fireEvent.click(screen.getByRole("button", { name: "Cycle dates", exact: true }));
+    expect(screen.getByText("No cycle dates loaded. Nothing filled in on your behalf.")).toBeVisible();
     expect(screen.queryByText("The last twelve cycles")).not.toBeInTheDocument();
     rerender(<SkyFocus continuous />);
     expect(screen.queryByText(paragraphs[3])).not.toBeInTheDocument();
@@ -287,6 +290,11 @@ describe("Sky review restoration — one connected continuous section", () => {
     }]);
     render(<ObservedSkyDiary userId="test-user" />);
     const reading = await screen.findByRole("button", { name: /Room for friendship and rest\./ });
+    const disclosure = screen.getByRole("button", { name: "Cycle dates · 2" });
+    expect(disclosure).toHaveAttribute("aria-expanded", "false");
+    expect(screen.queryAllByRole("listitem")).toHaveLength(0);
+    fireEvent.click(disclosure);
+    expect(disclosure).toHaveAttribute("aria-expanded", "true");
     const dates = screen.getAllByRole("listitem");
     expect(dates).toHaveLength(2);
     expect(dates[0]).toHaveTextContent(/4 Sept? 2026/);
@@ -299,5 +307,103 @@ describe("Sky review restoration — one connected continuous section", () => {
     expect(narrative.textContent).toBe("First thought.\n\nA second invitation.\n\nThird paragraph stays.\n\nFourth paragraph closes the whole reading.");
     expect(narrative).not.toHaveTextContent("*");
     expect(narrative).not.toHaveTextContent("<p>");
+    fireEvent.click(screen.getByRole("button", { name: "Hide cycle dates" }));
+    expect(screen.queryAllByRole("listitem")).toHaveLength(0);
+    expect(narrative).toBeVisible();
+  });
+
+  it("should keep twelve diary entries reachable inline while initially showing only two and resetting disclosure state", async () => {
+    const readings = Array.from({ length: 12 }, (_, i) => ({
+      id: `reading-${i}`, reading_date: `2026-09-${String(28 - i).padStart(2, "0")}`,
+      headline: `A moment kept ${i + 1}`,
+      narrative: `Opening thought ${i + 1}.\n\nA second paragraph.\n\nA third paragraph.\n\nThe complete ending ${i + 1}.`,
+    }));
+    data.filter.mockResolvedValueOnce([]).mockResolvedValueOnce(readings);
+    render(<ObservedSkyDiary userId="test-user" />);
+    const all = await screen.findByRole("button", { name: "View all 12 readings" });
+    const titles = () => screen.getAllByRole("button", { name: /A moment kept/ });
+    expect(titles()).toHaveLength(2);
+    expect(titles()[0]).toHaveTextContent("A moment kept 1");
+    expect(titles()[1]).toHaveTextContent("A moment kept 2");
+    titles().forEach(button => expect(button).toHaveAttribute("aria-expanded", "false"));
+    fireEvent.click(all);
+    expect(titles()).toHaveLength(12);
+    expect(all).toHaveAttribute("aria-expanded", "true");
+    const oldest = screen.getByRole("button", { name: /A moment kept 12$/ });
+    fireEvent.click(oldest);
+    const fullReading = screen.getByText(/Opening thought 12\./);
+    expect(fullReading.textContent).toBe(readings[11].narrative);
+    expect(fullReading).toBeVisible();
+    expect(oldest).toHaveAttribute("aria-expanded", "true");
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "Show fewer readings" }));
+    expect(titles()).toHaveLength(2);
+    expect(screen.queryByText(/Opening thought 12\./)).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "View all 12 readings" }));
+    expect(titles()).toHaveLength(12);
+    titles().forEach(button => expect(button).toHaveAttribute("aria-expanded", "false"));
+    expect(screen.queryByText(/Opening thought 12\./)).not.toBeInTheDocument();
+  });
+
+  it("should provide a labelled native help button with a generous target and return focus when Escape closes its explanation", () => {
+    render(<SkyMeaning label="your chart" explanation={<p>A reflective lens. <a href="#more">More context</a></p>}><span>Your chart</span></SkyMeaning>);
+    const button = screen.getByRole("button", { name: "About your chart" });
+    expect(button.tagName).toBe("BUTTON");
+    expect(button).toHaveAttribute("type", "button");
+    expect(button).toHaveStyle({ width: "44px", height: "44px" });
+    expect(button).toHaveAttribute("aria-expanded", "false");
+    const explanation = document.getElementById(button.getAttribute("aria-controls"));
+    expect(explanation).not.toBeVisible();
+    button.focus();
+    // A keyboard-generated native click has detail 0; Escape is handled explicitly.
+    fireEvent.click(button, { detail: 0 });
+    expect(button).toHaveAttribute("aria-expanded", "true");
+    expect(explanation).toBeVisible();
+    const link = screen.getByRole("link", { name: "More context" });
+    link.focus();
+    fireEvent.keyDown(link, { key: "Escape" });
+    expect(button).toHaveAttribute("aria-expanded", "false");
+    expect(explanation).not.toBeVisible();
+    expect(button).toHaveFocus();
+  });
+
+  it("should still and replay the lunar artwork without changing its phase and include reduced-motion overrides", () => {
+    const { container } = render(<CelestialHeader moon={{ name: "First quarter", key: "first_quarter", position: .25, illumination: 50 }} />);
+    const moonName = "First quarter, approximately 50% illuminated";
+    const firstMoon = screen.getByRole("img", { name: moonName });
+    const firstArtwork = container.querySelector(".sky-clock-art");
+    const motionButton = screen.getByRole("button", { name: "Still the lunar artwork" });
+    motionButton.focus();
+    fireEvent.click(motionButton, { detail: 0 });
+    expect(container.querySelector(".sky-clock-still")).toContainElement(screen.getByRole("img", { name: moonName }));
+    expect(screen.getByRole("img", { name: moonName })).toBe(firstMoon);
+    expect(container.querySelector(".sky-clock-art")).not.toBe(firstArtwork);
+    expect(screen.getByRole("button", { name: "Replay lunar movement" })).toBe(motionButton);
+    expect(motionButton).toHaveFocus();
+    const stillArtwork = container.querySelector(".sky-clock-art");
+    fireEvent.click(motionButton, { detail: 0 });
+    expect(container.querySelector(".sky-clock-still")).toBeNull();
+    expect(container.querySelector(".sky-clock-art")).not.toBe(stillArtwork);
+    expect(screen.getByRole("button", { name: "Still the lunar artwork" })).toBe(motionButton);
+    expect(motionButton).toHaveFocus();
+    // jsdom lacks AnimationEvent; React 18 consequently listens to the vendor event.
+    const animationEnd = "AnimationEvent" in window ? "animationend" : "webkitAnimationEnd";
+    fireEvent(container.querySelector(".sky-clock-art"), new Event(animationEnd, { bubbles: true }));
+    expect(screen.getByRole("button", { name: "Replay lunar movement" })).toBe(motionButton);
+    expect(motionButton).toHaveFocus();
+    expect(container.querySelector(".sky-clock-still")).toContainElement(firstMoon);
+    expect(illuminatedFraction(screen.getByRole("img", { name: moonName }))).toBeCloseTo(.5, 3);
+
+    // CSSOM coverage establishes the override exists; browser media/pixels are separate.
+    const rules = [...container.querySelector("style").sheet.cssRules];
+    const reduced = rules.find(rule => rule.conditionText?.replace(/\s/g, "") === "(prefers-reduced-motion:reduce)");
+    expect(reduced).toBeDefined();
+    const animation = [...reduced.cssRules].find(rule => rule.selectorText.includes(".sky-clock-art"));
+    expect(animation.selectorText).toContain(".sky-clock-arrival");
+    expect(animation.style.getPropertyValue("animation")).toBe("none");
+    expect(animation.style.getPropertyPriority("animation")).toBe("important");
+    const toggle = [...reduced.cssRules].find(rule => rule.selectorText === ".sky-clock-motion");
+    expect(toggle.style.getPropertyValue("display")).toBe("none");
+    expect(toggle.style.getPropertyPriority("display")).toBe("important");
   });
 });

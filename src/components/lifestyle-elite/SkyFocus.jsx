@@ -34,6 +34,7 @@ import { Eyebrow, Title, Body, Card, Summary, Cta, Quiet, Foot, Leaf, Fleuron, T
 import { YearMovement, RedWhiteMoon, AskTheSky, Compatibility, Atelier, YourWay } from "@/components/lifestyle-elite/sky/SkyMovements";
 import { phaseLabel } from "@/utils/cyclePhase";
 import { CELESTIAL_CSS, MoonLesson } from "@/components/lifestyle-elite/sky/CelestialSky";
+import SkyMeaning from "@/components/lifestyle-elite/sky/SkyMeaning";
 import ObservedSkyDiary from "@/components/lifestyle-elite/sky/ObservedSkyDiary";
 
 const cap = (s) => (s ? String(s).charAt(0).toUpperCase() + String(s).slice(1) : s);
@@ -321,7 +322,7 @@ export default function SkyFocus({ userProfile, actionRequest, onActionState, on
 
       {/* III · YOU — chart · goddess bench · red & white moon */}
       <Movement id="you" refs={refs}>
-        <Eyebrow cw="gold">Your chart</Eyebrow>
+        {celestial ? <SkyMeaning label="your chart" explanation="In astrology, Sun speaks to identity, Moon to your inner world, and rising to how you meet life. Tap a symbol for its reading; these are reflective lenses, not a verdict."><Eyebrow cw="gold" style={{margin:0}}>Your chart</Eyebrow></SkyMeaning> : <Eyebrow cw="gold">Your chart</Eyebrow>}
         <Title>Sun, moon &amp; rising</Title>
         {celestial && <p className="sky-note" style={{textAlign:"center"}}>Three lenses, one very unrepeatable you. In astrology, each has a different part to play.</p>}
         <div style={{ display: "flex", alignItems: "stretch" }}>
@@ -340,7 +341,7 @@ export default function SkyFocus({ userProfile, actionRequest, onActionState, on
       {/* IV · YOUR TIDES — the dial in the ONE framed feature card */}
       <Movement id="tides" refs={refs}>
         <Card framed wash={cw}>
-          <Eyebrow cw={cw}>Cycle × moon</Eyebrow>
+          {celestial ? <SkyMeaning label="your two tides" explanation="The outer ring follows the lunar phase; the inner ring uses your logged cycle dates. Side by side does not mean one causes the other—bodies keep their own time."><Eyebrow cw={cw} style={{margin:0}}>Cycle × moon</Eyebrow></SkyMeaning> : <Eyebrow cw={cw}>Cycle × moon</Eyebrow>}
           <Title>Your two tides</Title>
           <CycleMoonDial moon={moon} cyclePhase={cyc.phase} cycleDay={cyc.day} cycleLen={cyc.len || 28} body={reading?.cycle_moon_body} />
           {celestial && <MoonLesson moon={moon} />}
