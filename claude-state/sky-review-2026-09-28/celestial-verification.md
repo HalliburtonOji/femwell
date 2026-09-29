@@ -27,3 +27,7 @@ Screenshots kept private in `.tmp/sky-celestial/`: headers at360/390/430; phase 
 Sky is not finished: prior chart/cycle accuracy, classification, paid authorship/credentials, checkout/entitlement, compatibility contracts, cross-app save/recovery and old preference behaviour remain in the original audit. The diary hook still returns empty arrays on load failure; preview says nothing was loaded and offers Refresh rather than asserting the user has no history. No full mutation/persistence or payment certification. Existing generated readings are preserved; app-wide voice direction does not mean every screen or generation prompt has been migrated.
 
 Conformance: §§2.7.4,10.5.1–2 (one celestial masthead and human, lightly mythical voice),11 (research/build/review),17.3 and19 (preservation and one continuous Lifestyle subsection). NASA supplies phase facts; Mailchimp supplies referenced tone/education principles; visual execution is FemWell's review proposal.
+
+## Final reproof
+
+Source6123b3a; deployed index-DsQRGZUI.js. Final targeted suite12/12 passes, including independent full-width triad expansion and unchanged default. Final actual Sun and diary taps rechecked at360; date headers re-captured360/390/430; summary/Jess/pills captured430. Ms Verify confirmed both P1/P2 resolved and diary cleanup visible, with no new blocking visual issue. Full suite46/46 preceded the two added targeted regressions. Main remains held; all inherited limits above still apply.

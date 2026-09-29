@@ -223,6 +223,44 @@ describe("Sky review restoration — one connected continuous section", () => {
     expect(screen.getByText("The last twelve cycles")).toBeVisible();
   });
 
+  it("should expand chart readings below the whole preview row independently while preserving the default columns", async () => {
+    const sunDescription = data.birth.reading.triad_sun_desc;
+    const moonDescription = "A little space for your private inner weather.";
+    data.birth.reading.triad_moon_desc = moonDescription;
+    const { rerender } = render(<SkyFocus continuous celestial />);
+    const sun = screen.getByRole("button", { name: /Sun.*Gemini/ });
+    const moon = screen.getByRole("button", { name: /Moon.*Libra/ });
+    const row = sun.parentElement.parentElement;
+    fireEvent.click(sun);
+    fireEvent.click(moon);
+    expect(sun).toHaveAttribute("aria-expanded", "true");
+    expect(moon).toHaveAttribute("aria-expanded", "true");
+    const sunReading = screen.getByText(sunDescription);
+    const moonReading = screen.getByText(moonDescription);
+    expect(sunReading).toBeVisible();
+    expect(moonReading).toBeVisible();
+    // Readings must escape the narrow third-width columns and follow the row.
+    expect(row).not.toContainElement(sunReading);
+    expect(row).not.toContainElement(moonReading);
+    expect(row.nextElementSibling).toBe(sunReading.parentElement);
+    expect(sunReading.parentElement.nextElementSibling).toBe(moonReading.parentElement);
+    fireEvent.click(sun);
+    expect(sun).toHaveAttribute("aria-expanded", "false");
+    expect(screen.queryByText(sunDescription)).not.toBeInTheDocument();
+    expect(moon).toHaveAttribute("aria-expanded", "true");
+    expect(moonReading).toBeVisible();
+    expect(row.nextElementSibling).toBe(moonReading.parentElement);
+    await screen.findByText("No cycle dates loaded. Nothing filled in on your behalf.");
+
+    rerender(<SkyFocus continuous />);
+    const defaultSun = screen.getByRole("button", { name: /Sun.*Gemini/ });
+    expect(defaultSun).toHaveAttribute("aria-expanded", "false");
+    expect(screen.queryByText(moonDescription)).not.toBeInTheDocument();
+    fireEvent.click(defaultSun);
+    expect(defaultSun).toHaveAttribute("aria-expanded", "true");
+    expect(defaultSun.parentElement).toContainElement(screen.getByText(sunDescription));
+  });
+
   it("should let a celestial Ask suggestion prefill an editable question without sending it", async () => {
     render(<SkyFocus continuous celestial />);
     const question = screen.getByRole("textbox", { name: "Your question for the sky" });
