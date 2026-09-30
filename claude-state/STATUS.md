@@ -7,6 +7,10 @@
 > **APPEND, never rewrite:** add a NEW block at the top of the current-state section (so merges stay trivial), immediately after every build/fix/ship — never batched. Each entry: what changed + commit · shipped-vs-demo · live bundle hash · how it was verified.
 > **Full context for the other agent:** `claude-state/agent-collab/HANDOFF.md` (+ the IN FLIGHT claim table — claim a surface before editing it). Raw transcripts are archive-only: `claude-state/agent-collab/transcripts/MANIFEST.md`.
 >
+> ### CURRENT STATE — 2026-09-30 · Integrated preview deployed; phone verification underway
+> - Source8997028 pushed and production-built; Base44 site deployment succeeded. Live **index-4LyJS9sU.js**. FloralDreamDemo now opens the full connected Lifestyle surface with art-only edge fades, section-specific header/title/profile and existing controls intact. Main promotion held; previous art study retained at ?study=art.
+> - Tests: 62/62 across eight files; targeted11/11. Atelier source review approved integration, required canonical heading role corrected before deployment. Actual phone-width taps and image review underway; not yet a final visual sign-off.
+>
 > ### CURRENT STATE — 2026-09-30 · Rejected gallery framing; integration correction underway
 > - Halli rejected the standalone picture presentation and missing original header/section-selection language. Claims79be615+c759c50. FloralDreamDemo now reuses complete LifestyleEliteShell with a default-off header treatment; the earlier art study stays available at ?study=art.
 > - Art-only soft fades; Sky retains morning glory/calculated phase; Read retains iris; other sections retain correct existing species. Selector, summary/Jess, contextual pills and content preserved by using the connected shell. Canonical Bible§10.5.5 and in-app mirror updated. Research and mapped atoms: flora-dream/integration-correction.md.

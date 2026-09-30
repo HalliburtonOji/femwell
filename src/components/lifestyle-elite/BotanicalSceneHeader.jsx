@@ -15,7 +15,7 @@ export default function BotanicalSceneHeader({ active, moon }) {
     <style>{`
       .botanical-scene{position:relative;color:${C.ink};background:radial-gradient(ellipse 70% 42% at 48% 37%,${still.tint}bb,${C.ground}00 100%)}
       .botanical-scene-stage{position:relative;height:250px;isolation:isolate}
-      .botanical-scene-art{position:absolute;inset:0;pointer-events:none;mask-image:radial-gradient(ellipse 64% 62% at 50% 46%,#000 36%,#000b 58%,transparent 85%);-webkit-mask-image:radial-gradient(ellipse 64% 62% at 50% 46%,#000 36%,#000b 58%,transparent 85%)}
+      .botanical-scene-art{position:absolute;inset:0;pointer-events:none;mask-image:radial-gradient(ellipse 64% 58% at 50% 50%,#000 36%,#000b 58%,transparent 85%);-webkit-mask-image:radial-gradient(ellipse 64% 58% at 50% 50%,#000 36%,#000b 58%,transparent 85%)}
       .botanical-scene-art img{width:100%;height:100%;object-fit:cover;object-position:37% 48%;display:block}
       .botanical-scene-art [aria-hidden]{background:transparent!important}
       .botanical-scene-art [aria-hidden]>div:last-child{display:none}
