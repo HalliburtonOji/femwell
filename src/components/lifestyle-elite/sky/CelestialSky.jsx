@@ -40,7 +40,7 @@ export const PHASE_LESSONS = [
   ["Waning crescent", "A slim crescent remains before the cycle begins again."],
 ];
 
-export function CelestialHeader({ moon }) {
+export function CelestialHeader({ moon, title = "Your sky", flowerProfile }) {
   const current = moon || getMoonPhase(new Date());
   const [motion, setMotion] = useState(true);
   const [arrival, setArrival] = useState(0);
@@ -56,7 +56,7 @@ export function CelestialHeader({ moon }) {
       @media(prefers-reduced-motion:reduce){.sky-clock-art,.sky-clock-arrival{animation:none!important}.sky-clock-motion{display:none!important}}
     `}</style>
     <p style={{font:`600 12px/1.4 ${UI}`,letterSpacing:".14em",textTransform:"uppercase",margin:"8px 0 0"}}>{new Date().toLocaleDateString("en-GB",{day:"numeric",month:"long"})} · above us</p>
-    <div className={motion ? undefined : "sky-clock-still"} style={{position:"relative",width:"min(100%,280px)",height:280,margin:"0 auto",background:`radial-gradient(ellipse,${C.surface} 0%,${C.ground}00 70%)`}}>
+    <div className={`sky-clock-stage${motion ? "" : " sky-clock-still"}`} style={{position:"relative",width:"min(100%,280px)",height:280,margin:"0 auto",background:`radial-gradient(ellipse,${C.surface} 0%,${C.ground}00 70%)`}}>
       <svg aria-hidden="true" viewBox="0 0 280 280" style={{position:"absolute",inset:0,width:"100%",height:"100%"}} fill="none">
         <circle cx="160" cy="140" r="103" stroke={C.goldHair} strokeWidth=".65"/>
         <circle cx="160" cy="140" r="88" stroke={C.goldHair} strokeWidth=".5"/>
@@ -67,8 +67,8 @@ export function CelestialHeader({ moon }) {
       <img key={arrival} onAnimationEnd={()=>setMotion(false)} className="sky-clock-art" src="/images/sky/botanical-lunar-frame-v1.webp" alt="" width="280" height="280" fetchPriority="high" style={{position:"absolute",inset:0,width:"100%",height:"100%",objectFit:"contain",pointerEvents:"none"}}/>
       <button className="sky-clock-motion" type="button" aria-label={motion ? "Still the lunar artwork" : "Replay lunar movement"} onClick={()=>{setMotion(!motion);setArrival(v=>v+1);}} style={{position:"absolute",bottom:0,right:0,minWidth:44,minHeight:44,padding:8,border:0,borderRadius:99,background:C.surface,color:C.ink,font:`600 12px ${UI}`,cursor:"pointer"}}>{motion ? "Still" : "Replay"}</button>
     </div>
-    <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:10,marginTop:0}}><h1 style={{font:`400 clamp(44px,9.5vw,56px)/1.14 ${SCRIPT}`,margin:0}}>Your sky</h1><Heart size={16}/></div>
-    <p style={{font:`500 17px/1.55 ${SERIF}`,fontStyle:"italic",margin:"2px 0 4px"}}>A little wonder. Both feet on the ground.</p>
+    <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:10,marginTop:0}}><h1 style={{font:`400 clamp(44px,9.5vw,56px)/1.14 ${SCRIPT}`,margin:0}}>{title}</h1><Heart size={16}/></div>
+    <p style={{font:`500 17px/1.55 ${SERIF}`,fontStyle:"italic",margin:"2px 0 4px"}}>{flowerProfile || "A little wonder. Both feet on the ground."}</p>
     <SkyMeaning label="the lunar clock" explanation="A month on a dial: the hand marks our place in the roughly 29½-day moon-phase cycle. The flowers are art; the moon's shape is calculated. A northern-view illustration, not your local sky angle.">
       <p style={{font:`600 12px/1.4 ${UI}`,margin:0}}>{current.name} · about {current.illumination}% lit</p>
     </SkyMeaning>

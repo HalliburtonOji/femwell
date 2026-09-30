@@ -7,12 +7,14 @@ vi.mock("@/api/base44Client", () => ({ base44: {
   entities: new Proxy({}, { get: () => new Proxy({}, { get: () => backend.call }) }),
   functions: { invoke: backend.call }, auth: { me: backend.call, updateMe: backend.call },
 } }));
-import FloralDreamDemo from "./FloralDreamDemo";
+vi.mock("@/components/lifestyle-elite/LifestyleEliteShell", () => ({ default: () => <main aria-label="Connected Lifestyle shell" /> }));
+import FloralDreamDemoPage, { FloralArtStudy as FloralDreamDemo } from "./FloralDreamDemo";
 
 describe("Floral garden concept interactions", () => {
   let fetchSpy;
   beforeEach(() => {
     vi.clearAllMocks();
+    window.history.replaceState({}, "", "/FloralDreamDemo");
     vi.stubGlobal("fetch", fetchSpy = vi.fn());
   });
   afterEach(() => {
@@ -132,5 +134,21 @@ describe("Floral garden concept interactions", () => {
     expect(screen.getByRole("link", { name: "Open the connected Sky preview" })).toHaveAttribute("href", "/SkyConceptDemo");
     expect(rooms.getAllByRole("button", { pressed: true })).toEqual([rooms.getByRole("button", { name: "Sky", exact: true })]);
     expect(screen.getByRole("img", { name: /violet iris growing through/i })).toBeVisible();
+  });
+
+  it("should open the connected preview by default while keeping the earlier interactive art study reachable", () => {
+    const { unmount } = render(<FloralDreamDemoPage />);
+    expect(screen.getByRole("main", { name: "Connected Lifestyle shell" })).toBeInTheDocument();
+    expect(screen.getByText("Connected Lifestyle preview · actions use your account.")).toBeVisible();
+    expect(screen.queryByRole("group", { name: "Garden atmosphere" })).not.toBeInTheDocument();
+    const studyHref = screen.getByRole("link", { name: "Earlier art study" }).getAttribute("href");
+    expect(studyHref).toBe("/FloralDreamDemo?study=art");
+    unmount();
+    window.history.replaceState({}, "", studyHref);
+    render(<FloralDreamDemoPage />);
+    expect(screen.queryByRole("main", { name: "Connected Lifestyle shell" })).not.toBeInTheDocument();
+    expect(screen.getByRole("group", { name: "Garden atmosphere" })).toBeVisible();
+    fireEvent.click(within(screen.getByRole("group", { name: "Garden atmosphere" })).getByRole("button", { name: "After hours" }));
+    expect(screen.getByRole("img", { name: /violet evening light/i })).toBeVisible();
   });
 });

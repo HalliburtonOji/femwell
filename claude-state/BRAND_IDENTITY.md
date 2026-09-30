@@ -773,6 +773,15 @@ Halli rejected a generic rose stem even when well rendered: **realistic, artsy, 
 
 **Research principles (primary sources):** [V&A Art Nouveau glass](https://www.vam.ac.uk/articles/objects-of-beauty-art-nouveau-glass-and-jewellery): botany shapes an object's structure. [Mary Delany, Sea Daffodil](https://www.britishmuseum.org/collection/object/P_1897-0505-645): layered edges and deliberate botanical arrangement. [V&A Anna Atkins cyanotypes](https://www.vam.ac.uk/blog/caring-for-our-collections/a-blueprint-for-the-future-cyanotypes-by-anna-atkins): plant form transformed through light. [teamLab Floating Flower Garden](https://www.teamlab.art/w/ffgarden/): space that makes room around a person. These inform design principles, not copied artwork. Asset prompts, implementation audit and atomic plan: `claude-state/flora-dream/`.
 
+### 10.5.5 INTEGRATION, NOT AN ART GALLERY — Halli correction, 30 September 2026
+The standalone dream study was rejected: its rectangular images looked pasted onto a page and its framing omitted the existing header/section-selection language. **Improve the existing Bible and app grammar. Do not invent a replacement identity or call an isolated picture study the completed app design.**
+
+Demonstrate floral improvements inside the connected Lifestyle shell. Preserve its section selector, active section/title/species/profile, one carved heart, summary/Jess, both contextual action pills and complete section content. Only the header's decorative treatment changes. Sky stays one inline Lifestyle subsection. A prior art study may remain a clearly labelled optional reference.
+
+Artwork should blend into the alabaster ground: open edges, soft colour falloff, restrained atmosphere and no rectangular photograph frame, border or box shadow. Apply static alpha masks only to non-interactive art layers; title, profile, state labels and buttons remain fully visible outside the mask. Keep the subject legible and avoid cutting off its recognisable silhouette. Motion is optional and respects reduced motion.
+
+Retain section identity from §2.7.1: Sky uses morning glory with its separately calculated lunar phase; Read uses iris. Other sections retain their actual species and current illustration until reviewed replacements exist. Do not reuse one iris picture across sections or claim the entire library is regenerated. This correction supersedes the standalone presentation in §10.5.4, not its preservation requirements. Main promotion remains held.
+
 ### 10.6 CRAFT THAT CARRIES MEANING (format = feeling) — ⏳ PROPOSED (awaiting sign-off)
 - **Wax rose seal + sealed letters:** Health becomes *correspondence* — each letter arrives **sealed with a wax rose** (her signature flower, phase-coloured); opening breaks the seal (once-only lift). Extends to a monthly **"letter from your body,"** a milestone certificate, a sealed **"letter to future you"** in Journal, Jess's notes as folds.
 - **Vines that grow with progress** (a leaf per session, a bloom at the end — growth, not a progress bar).

@@ -5,6 +5,7 @@ import { Card } from "@/components/brand/cleanKit";
 import { Moth } from "@/components/brand/flora";
 import { LifecycleStage, SpeciesBloom } from "@/components/brand/floraLibrary";
 import SkyMeaning from "@/components/lifestyle-elite/sky/SkyMeaning";
+import LifestyleEliteShell from "@/components/lifestyle-elite/LifestyleEliteShell";
 
 export const DREAM_SCENES = [
   {id:"dawn",label:"Dawn",line:"It grew around the clock. Quite right, too.",alt:"A violet iris growing through an opaline glass petal observatory, with ferns and a small pearl moon held by a stem."},
@@ -24,7 +25,7 @@ const ROOMS = [
   {label:"Sky",line:"The garden keeps its own time.",detail:"A lunar garden around a real phase dial, with a quiet explanation when you want it."},
 ];
 
-export default function FloralDreamDemo() {
+export function FloralArtStudy() {
   const [scene,setScene] = useState(0);
   const [visitor,setVisitor] = useState(false);
   const [moving,setMoving] = useState(false);
@@ -64,7 +65,7 @@ export default function FloralDreamDemo() {
       @media(prefers-reduced-motion:reduce){.dream-study .dream-moving,.dream-study .dream-visitor{animation:none!important}.dream-study .dream-motion{display:none!important}}
       body:has(.dream-study) a[aria-label="Open Ideas (Design Lab — dev only)"]{position:relative!important;inset:auto!important;display:flex!important;width:fit-content;margin:0 auto 110px!important;transform:none!important}
     `}</style>
-    <nav className="dream-pad" style={{display:"flex",justifyContent:"space-between",alignItems:"center",gap:12}}><a className="dream-link" href="/Ideas?section=brand">Ideas · botanical study</a><span className="dream-meta">Concept 01</span></nav>
+    <nav className="dream-pad" style={{display:"flex",justifyContent:"space-between",alignItems:"center",gap:12}}><a className="dream-link" href="/Ideas?section=brand">Ideas · botanical study</a><a className="dream-link" href="/FloralDreamDemo">Lifestyle preview</a></nav>
     <div className="dream-pad" style={{textAlign:"center",paddingTop:12}}><p className="dream-kicker">FemWell · an imagined garden</p><h1>Wildly, quietly <span style={{whiteSpace:"nowrap"}}>yours <Heart size={16} style={{display:"inline-block",verticalAlign:"middle"}}/></span></h1><p style={{fontStyle:"italic",margin:"8px 0 18px"}}>The garden keeps its own time.</p></div>
     <div ref={sceneRef} style={{position:"relative",overflow:"hidden",aspectRatio:"3 / 2",background:C.sunk}}>
       {failed ? <div role="status" style={{height:"100%",display:"grid",placeContent:"center",textAlign:"center"}}><SpeciesBloom name="iris" size={100}/><p>The artwork couldn't load.</p><button className="dream-link" onClick={()=>{setRetry(v=>v+1);setFailed(false);}}>Reload artwork</button></div> : <img key={`${current.id}-${retry}-${replay}`} onError={()=>setFailed(true)} onAnimationEnd={()=>setMoving(false)} className={moving ? "dream-moving" : undefined} src={`/images/flora-dream/observatory-${current.id}.webp${retry ? `?retry=${retry}` : ""}`} alt={current.alt} width="1200" height="800" fetchPriority="high" style={{width:"100%",height:"100%",objectFit:"cover",display:"block"}}/>}
@@ -101,4 +102,16 @@ export default function FloralDreamDemo() {
       <nav style={{display:"flex",flexWrap:"wrap",gap:"4px 18px",marginTop:18}}><a className="dream-link" href="/FloraLabDemo">Existing flora library</a><a className="dream-link" href="/BloomprintDemo">Bloomprint study</a><a className="dream-link" href="/Ideas?section=brand">Brand Bible &amp; review board</a></nav>
     </section>
   </main>;
+}
+
+export default function FloralDreamDemo() {
+  if (new URLSearchParams(window.location.search).get("study") === "art") return <FloralArtStudy/>;
+  return <div className="fw-floral-review">
+    <style>{`.fw-floral-review [aria-label="Section actions"] button{color:${C.ink}!important}body:has(.fw-floral-review) a[aria-label="Open Ideas (Design Lab — dev only)"]{position:relative!important;inset:auto!important;display:flex!important;width:fit-content;margin:0 auto 120px!important;transform:none!important}`}</style>
+    <div style={{background:C.ground,color:C.ink,fontFamily:UI,maxWidth:430,margin:"0 auto",padding:"52px 64px 0 16px",fontSize:12,lineHeight:1.5}}>
+      <nav style={{display:"flex",gap:18,flexWrap:"wrap"}}><a href="/Ideas?section=brand" style={{color:C.ink,minHeight:44,display:"inline-flex",alignItems:"center"}}>Ideas · floral review</a><a href="/FloralDreamDemo?study=art" style={{color:C.ink,minHeight:44,display:"inline-flex",alignItems:"center"}}>Earlier art study</a></nav>
+      <p style={{margin:0}}>Connected Lifestyle preview · actions use your account.</p>
+    </div>
+    <LifestyleEliteShell enableFocus layout="bespoke" clean previewActions initialSection="sky" continuousSky celestialSky botanicalHeader />
+  </div>;
 }

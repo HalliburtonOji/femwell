@@ -203,7 +203,7 @@ const GROUP_BLURB = {
 const COLLAPSED_BY_DEFAULT = new Set([CAT.ARCHIVE]);
 
 const CATALOG = [
-  { kind:"route", href:"/FloralDreamDemo", group:CAT.CURRENT, sub:"Brand + card language", status:"new", added:"2026-09-29", accent:"sage", title:"Floral ecosystem · the dream garden", desc:"An original botanical-glass world, three atmospheres, living-state and visitor previews. Research, whole-ecosystem audit and proposed Bible upgrades, with the art first." },
+  { kind:"route", href:"/FloralDreamDemo", group:CAT.CURRENT, sub:"Brand + card language", status:"new", added:"2026-09-29", accent:"sage", title:"Floral ecosystem · within Lifestyle", desc:"Softly blended section headers inside the complete Lifestyle page. Original selector, summary/Jess and contextual actions retained. Earlier art study and research remain available." },
   { kind: "route", href: "/SkyConceptDemo", group: CAT.CURRENT, sub: "Sky · review before main", status: "new", added: "2026-09-28", accent: "crimson",
     title: "Sky · botanical lunar clock", desc: "Start here. Generated botanical lunar clock, subtle motion, meaning dots and a shorter diary. Complete Sky within Lifestyle; connected to your account. Still in review." },
   { kind: "route", href: "/sky-review/voice.html", group: CAT.CURRENT, sub: "Sky · review before main", status: "new", added: "2026-09-29", accent: "gold", title: "A little wonder · voice & Brand Bible", desc: "A short visual change note, whole-app wording examples and the new Bible principles. Detailed sources are optional." },

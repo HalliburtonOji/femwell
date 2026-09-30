@@ -7,6 +7,11 @@
 > **APPEND, never rewrite:** add a NEW block at the top of the current-state section (so merges stay trivial), immediately after every build/fix/ship — never batched. Each entry: what changed + commit · shipped-vs-demo · live bundle hash · how it was verified.
 > **Full context for the other agent:** `claude-state/agent-collab/HANDOFF.md` (+ the IN FLIGHT claim table — claim a surface before editing it). Raw transcripts are archive-only: `claude-state/agent-collab/transcripts/MANIFEST.md`.
 >
+> ### CURRENT STATE — 2026-09-30 · Rejected gallery framing; integration correction underway
+> - Halli rejected the standalone picture presentation and missing original header/section-selection language. Claims79be615+c759c50. FloralDreamDemo now reuses complete LifestyleEliteShell with a default-off header treatment; the earlier art study stays available at ?study=art.
+> - Art-only soft fades; Sky retains morning glory/calculated phase; Read retains iris; other sections retain correct existing species. Selector, summary/Jess, contextual pills and content preserved by using the connected shell. Canonical Bible§10.5.5 and in-app mirror updated. Research and mapped atoms: flora-dream/integration-correction.md.
+> - Tests/build/phone verification underway. Live remains index-DNclx9An.js until deployment. Main promotion held; no global ecosystem repair claimed.
+>
 > ### CURRENT STATE — 2026-09-29 · VERIFIED: botanical dream garden in Ideas
 > - **Source `b1e2fda` + `938d9ca`**, pushed, production-built and deployed. HTTP-confirmed **`index-DNclx9An.js`**. Ideas → Brand, cards & flora → **Floral ecosystem · the dream garden**; also Ready to try. Generated original iris/opaline-glass world in three atmospheres, optional finite motion, visitor and lifecycle samples, concise inline meaning. Main promotion remains held.
 > - **Proof:** full58/58 tests (one infrastructure timeout retried successfully), actual360/390/430 taps, loadedassets and Ideasboardroute. Independent finalpixelreview found no remainingP0/P1/P2 after detachedtitleheart and visitorplacement corrections. Artelier review accepted scenes as Ideas study. Detail/evidence/limits: `claude-state/flora-dream/verification.md`.
