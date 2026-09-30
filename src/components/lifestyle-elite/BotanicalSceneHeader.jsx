@@ -11,6 +11,8 @@ export default function BotanicalSceneHeader({ active, moon }) {
   const [imageFailed, setImageFailed] = useState(false);
   const [retry, setRetry] = useState(0);
   const sky = section === "sky";
+  const titleWords = (active?.title || "Something to read").trim().split(/\s+/);
+  const lastWord = titleWords.pop();
   return <div className={`botanical-scene${sky ? " botanical-scene--sky" : ""}`} data-section={section}>
     <style>{`
       .botanical-scene{position:relative;color:${C.ink};background:radial-gradient(ellipse 70% 42% at 48% 37%,${still.tint}bb,${C.ground}00 100%)}
@@ -38,7 +40,7 @@ export default function BotanicalSceneHeader({ active, moon }) {
         </div>
       </div>
       <div className="botanical-scene-band">
-        <h1>{active?.title || "Something to read"} <Heart size={15}/></h1>
+        <h1>{titleWords.join(" ")}{titleWords.length > 0 && " "}<span style={{whiteSpace:"nowrap"}}>{lastWord} <Heart size={15}/></span></h1>
         <p className="botanical-scene-profile">{still.flower.name} — {still.flower.note}</p>
         {section === "read" && imageFailed && <button onClick={()=>{setRetry(v=>v+1);setImageFailed(false);}} style={{minHeight:44,background:"transparent",border:0,color:C.ink,font:`600 12px ${UI}`,textDecoration:"underline"}}>Reload iris artwork</button>}
       </div>
