@@ -48,8 +48,8 @@ export default function GardenHeader({ active, moon }) {
       .little-garden-profile{font:italic 500 17px/1.3 'FemWell Editorial',Georgia,serif!important;line-height:1.3!important;color:#51444E!important;margin:12px 0 0!important}
       .little-garden-profile strong{font-weight:600!important}
       .little-garden[data-garden=read] .little-garden-copy{left:44%;top:21%;width:47%}
-      .little-garden[data-garden=listen] .little-garden-copy{left:23%;top:28%;width:48%}
-      .little-garden[data-garden=books] .little-garden-copy{left:29%;top:15%;width:45%}
+      .little-garden[data-garden=listen] .little-garden-copy{left:26%;top:21%;width:46%}
+      .little-garden[data-garden=books] .little-garden-copy{left:29%;top:10%;width:49%}
       .little-garden[data-garden=sky] .little-garden-stage{background:radial-gradient(ellipse 70% 65% at 65% 36%,#E8E3ED90,transparent 84%)}
       .little-garden[data-garden=sky] .little-garden-copy{left:48%;top:29%;width:43%}
       .little-garden[data-garden=good] .little-garden-copy{left:44%;top:29%;width:46%}
