@@ -42,9 +42,9 @@ export default function AlmanacHeader({ active, moon, variant="almanac" }) {
       .almanac-flower strong{font-weight:600!important;color:#51444E}
       .almanac-art{position:relative;align-self:stretch;min-height:205px;pointer-events:none}
       .almanac-art:before{content:'';position:absolute;inset:12% -10% 0 -12%;background:radial-gradient(ellipse,var(--botanical-tint),transparent 70%);z-index:-1}
-      .almanac-specimen{position:absolute;inset:-8px -18px -4px -24px;display:grid;place-content:center;pointer-events:none}
+      .almanac-specimen{position:absolute;inset:-8px 0 -4px -16px;display:grid;place-content:center;pointer-events:none}
       .almanac-specimen img{display:block;width:100%;height:100%;object-fit:contain;filter:drop-shadow(2px 7px 5px #392B3610)}
-      .almanac-header[data-section=sky] .almanac-specimen{inset:42px -24px -10px -36px;z-index:1}
+      .almanac-header[data-section=sky] .almanac-specimen{inset:46px 0 0 -22px;z-index:1}
       .almanac-moon{position:absolute;right:7px;top:15px;z-index:2;filter:drop-shadow(0 5px 12px #44304618)}
       .almanac-orbit{position:absolute;right:-8px;top:0;width:128px;height:128px;opacity:.75}
       .almanac-footer{border-top:1px solid #E0DDD6;display:flex;align-items:flex-start;gap:8px;min-height:44px}
@@ -53,13 +53,16 @@ export default function AlmanacHeader({ active, moon, variant="almanac" }) {
       .almanac-fact{font:500 12px/1.4 ui-sans-serif,system-ui,sans-serif!important;letter-spacing:0;margin:0!important;color:#51444E}
       .almanac-motion,.almanac-retry{min-height:44px;min-width:44px;background:none;border:0;padding:0 3px;color:#51444E;font:500 12px/1.4 ui-sans-serif,system-ui,sans-serif;text-decoration:underline;text-underline-offset:3px;cursor:pointer;pointer-events:auto}
       .almanac-retry{position:absolute;bottom:0;right:0;background:#F5F4F1}
-      .almanac-header--canopy .almanac-composition{min-height:245px;grid-template-columns:58% 42%;align-items:end;background:radial-gradient(ellipse 90% 80% at 100% 20%,var(--botanical-tint),transparent 78%)}
-      .almanac-header--canopy .almanac-heading{padding:104px 0 18px}
-      .almanac-header--canopy .almanac-art{position:absolute;right:-4px;top:-3px;width:68%;height:225px;min-height:0;z-index:0}
-      .almanac-header--canopy .almanac-specimen{inset:-25px -18px 0 8px;transform:rotate(14deg)}
-      .almanac-header--canopy[data-section=sky] .almanac-specimen{inset:30px -24px -12px 0}
-      .almanac-header--canopy .almanac-moon{right:38px;top:4px}
-      .almanac-header--canopy .almanac-orbit{right:23px;top:-11px}
+      .almanac-header--canopy .almanac-composition{display:block;min-height:0;padding-top:150px;background:radial-gradient(ellipse 80% 50% at 70% 24%,var(--botanical-tint),transparent 80%)}
+      .almanac-header--canopy .almanac-heading{padding:6px 0 18px}
+      .almanac-header--canopy .almanac-flower{max-width:none;margin-top:8px!important}
+      .almanac-header--canopy .almanac-flower br{display:none}
+      .almanac-header--canopy .almanac-flower strong:after{content:' — '}
+      .almanac-header--canopy .almanac-art{position:absolute;right:0;top:0;width:100%;height:150px;min-height:0;z-index:0}
+      .almanac-header--canopy .almanac-specimen{inset:4px 24px 0 70px;transform:rotate(24deg)}
+      .almanac-header--canopy[data-section=sky] .almanac-specimen{inset:8px 28px 0 56px;transform:rotate(34deg)}
+      .almanac-header--canopy .almanac-moon{right:54px;top:13px}
+      .almanac-header--canopy .almanac-orbit{right:39px;top:-2px}
       .almanac-header--canopy h1{font-size:38px!important}
       @keyframes almanacUnfurl{from{transform:translateY(5px) rotate(-3deg)}to{transform:none}}
       @media(prefers-reduced-motion:no-preference){.almanac-growing{animation:almanacUnfurl 3s cubic-bezier(.2,.7,.3,1) both}}
