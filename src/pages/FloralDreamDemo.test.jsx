@@ -7,7 +7,10 @@ vi.mock("@/api/base44Client", () => ({ base44: {
   entities: new Proxy({}, { get: () => new Proxy({}, { get: () => backend.call }) }),
   functions: { invoke: backend.call }, auth: { me: backend.call, updateMe: backend.call },
 } }));
-vi.mock("@/components/lifestyle-elite/LifestyleEliteShell", () => ({ default: () => <main aria-label="Connected Lifestyle shell" /> }));
+vi.mock("@/components/lifestyle-elite/LifestyleEliteShell", () => ({ default: function MockShell() {
+  const [draft, setDraft] = React.useState("");
+  return <main aria-label="Connected Lifestyle shell"><input aria-label="Preserved draft" value={draft} onChange={event => setDraft(event.target.value)}/></main>;
+} }));
 import FloralDreamDemoPage, { FloralArtStudy as FloralDreamDemo } from "./FloralDreamDemo";
 
 describe("Floral garden concept interactions", () => {
@@ -139,7 +142,8 @@ describe("Floral garden concept interactions", () => {
   it("should open the connected preview by default while keeping the earlier interactive art study reachable", () => {
     const { unmount } = render(<FloralDreamDemoPage />);
     expect(screen.getByRole("main", { name: "Connected Lifestyle shell" })).toBeInTheDocument();
-    expect(screen.getByText("Connected Lifestyle preview · actions use your account.")).toBeVisible();
+    fireEvent.click(screen.getByText("About these two proposals"));
+    expect(screen.getByText(/Connected Lifestyle preview · actions use your account\./)).toBeVisible();
     expect(screen.queryByRole("group", { name: "Garden atmosphere" })).not.toBeInTheDocument();
     const studyHref = screen.getByRole("link", { name: "Earlier art study" }).getAttribute("href");
     expect(studyHref).toBe("/FloralDreamDemo?study=art");
@@ -150,5 +154,23 @@ describe("Floral garden concept interactions", () => {
     expect(screen.getByRole("group", { name: "Garden atmosphere" })).toBeVisible();
     fireEvent.click(within(screen.getByRole("group", { name: "Garden atmosphere" })).getByRole("button", { name: "After hours" }));
     expect(screen.getByRole("img", { name: /violet evening light/i })).toBeVisible();
+  });
+
+  it("should compare compositions without remounting the connected shell or discarding its draft", () => {
+    window.history.replaceState({}, "", "/FloralDreamDemo?section=books&direction=canopy");
+    render(<FloralDreamDemoPage />);
+    const choices = within(screen.getByRole("group", { name: "Design direction" }));
+    expect(choices.getByRole("button", { name: "Canopy" })).toHaveAttribute("aria-pressed", "true");
+    const shell = screen.getByRole("main", { name: "Connected Lifestyle shell" });
+    fireEvent.change(screen.getByRole("textbox", { name: "Preserved draft" }), { target: { value: "Keep this thought" } });
+    for (const name of ["Almanac", "Canopy"]) {
+      fireEvent.click(choices.getByRole("button", { name }));
+      expect(choices.getAllByRole("button", { pressed: true })).toEqual([choices.getByRole("button", { name })]);
+      expect(screen.getByRole("main", { name: "Connected Lifestyle shell" })).toBe(shell);
+      expect(screen.getByRole("textbox", { name: "Preserved draft" })).toHaveValue("Keep this thought");
+      const params = new URLSearchParams(window.location.search);
+      expect(params.get("direction")).toBe(name.toLowerCase());
+      expect(params.get("section")).toBe("books");
+    }
   });
 });

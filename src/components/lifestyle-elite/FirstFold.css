@@ -1,0 +1,79 @@
+.fw-lifestyle-fold {
+  --ff-ui: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --ff-serif: "FemWell Editorial", "Cormorant Garamond", Georgia, serif;
+  --ff-ink: #191510;
+  --ff-muted: #57515a;
+  --ff-line: #d9d3da;
+  --ff-plum: #614b64;
+}
+.fw-lifestyle-fold .fw-ff-sections {
+  display: flex; width: 100%; border-bottom: 1px solid var(--ff-line); margin: 10px 0 0;
+}
+.fw-lifestyle-fold .fw-ff-sections button {
+  flex: 1 1 0; min-width: 0; min-height: 52px; padding: 7px 1px;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px;
+  border: 0; border-bottom: 2px solid transparent; margin-bottom: -1px; border-radius: 0;
+  color: var(--ff-muted); background: transparent; font: 600 12px/1.3 var(--ff-ui); cursor: pointer;
+}
+.fw-lifestyle-fold .fw-ff-sections button[aria-pressed=true] { color: var(--ff-ink); border-bottom-color: var(--ff-plum); }
+.fw-lifestyle-fold .fw-ff-section-icon { height: 16px; display: grid; place-items: center; }
+.fw-lifestyle-fold .fw-ff-status {
+  display: flex; align-items: center; justify-content: space-between; gap: 10px;
+  min-height: 44px; color: var(--ff-muted); font: 500 12px/1.4 var(--ff-ui);
+}
+.fw-lifestyle-fold .fw-ff-status > span { min-width: 0; }
+.fw-lifestyle-fold .fw-ff-status button {
+  flex-shrink: 0; display: inline-flex; align-items: center; gap: 3px; padding: 0 2px;
+  min-height: 44px; border: 0; background: transparent; color: var(--ff-ink);
+  font: 600 12px/1.4 var(--ff-ui); cursor: pointer;
+}
+.fw-lifestyle-fold .fw-ff-actions [aria-label="Section actions"] { margin-top: 0!important; gap: 8px!important; }
+.fw-lifestyle-fold .fw-ff-actions [aria-label="Section actions"] > button {
+  min-height: 50px!important; padding: 10px 12px!important;
+  font: 700 14px/1.3 var(--ff-ui)!important; color: #fff!important;
+  background: var(--ff-plum)!important; border: 1px solid var(--ff-plum)!important;
+}
+.fw-lifestyle-fold .fw-ff-actions [aria-label="Section actions"] > button + button { background: transparent!important; color: var(--ff-plum)!important; }
+.fw-lifestyle-fold .fw-ff-summary { margin: 20px 0 0; color: var(--ff-ink); }
+.fw-lifestyle-fold .fw-ff-summary-nav { display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--ff-line); }
+.fw-lifestyle-fold .fw-ff-summary-nav button {
+  display: inline-flex; align-items: center; gap: 4px; min-height: 44px; padding: 8px 0;
+  border: 0; border-bottom: 2px solid transparent; background: transparent; color: var(--ff-muted);
+  font: 600 13px/1.4 var(--ff-ui); cursor: pointer;
+}
+.fw-lifestyle-fold .fw-ff-summary-nav button[aria-pressed=true] { border-bottom-color: var(--ff-plum); color: var(--ff-ink); }
+.fw-lifestyle-fold .fw-ff-summary-track {
+  display: flex; align-items: stretch; overflow-x: auto; scroll-snap-type: x mandatory;
+  overscroll-behavior-x: contain; scrollbar-width: none; -webkit-overflow-scrolling: touch;
+}
+.fw-lifestyle-fold .fw-ff-summary-track::-webkit-scrollbar { display: none; }
+.fw-lifestyle-fold .fw-ff-summary-panel { flex: 0 0 100%; min-width: 0; position: relative; scroll-snap-align: start; }
+.fw-lifestyle-fold .fw-ff-glance-row {
+  display: grid; grid-template-columns: 18px minmax(0, 1fr) 15px; align-items: start; gap: 10px;
+  width: 100%; min-height: 44px; text-align: left; padding: 13px 0; border: 0;
+  border-bottom: 1px solid var(--ff-line); background: transparent; color: var(--ff-ink); cursor: pointer;
+}
+.fw-lifestyle-fold .fw-ff-glance-row > svg { margin-top: 3px; color: var(--ff-plum); }
+.fw-lifestyle-fold .fw-ff-row-label { display: block; font: 700 12px/1.4 var(--ff-ui); margin-bottom: 4px; }
+.fw-lifestyle-fold .fw-ff-row-text { display: block; font: 500 18px/1.4 var(--ff-serif); overflow-wrap: anywhere; }
+.fw-lifestyle-fold .fw-ff-jess { display: flex; flex-direction: column; padding: 16px 0; }
+.fw-lifestyle-fold .fw-ff-jess-eyebrow { font: 700 12px/1.4 var(--ff-ui); margin: 0 0 9px; }
+.fw-lifestyle-fold .fw-ff-jess-body { font: italic 500 18px/1.4 var(--ff-serif); margin: 0 0 14px; }
+.fw-lifestyle-fold .fw-ff-jess-open {
+  display: flex; align-items: center; justify-content: space-between; min-height: 44px;
+  margin-top: auto; border: 0; padding: 8px 0; background: transparent; color: var(--ff-plum);
+  font: 700 13px/1.4 var(--ff-ui); cursor: pointer;
+}
+.fw-lifestyle-fold .fw-ff-jess-sheet > div { background: #f5f4f1!important; border-radius: 0!important; }
+.fw-lifestyle-fold .fw-ff-jess-sheet button { min-width: 44px!important; min-height: 44px!important; }
+.fw-lifestyle-fold .fw-ff-jess-sheet p { font: 500 18px/1.4 var(--ff-serif)!important; }
+.fw-lifestyle-fold .fw-ff-jess-sheet p + div,
+.fw-lifestyle-fold .fw-ff-jess-sheet div[style*="text-transform"] { font-size: 12px!important; font-family: var(--ff-ui)!important; }
+.fw-lifestyle-fold .fw-ff-swipe-hint { text-align: right; font: 500 12px/1.4 var(--ff-ui); color: var(--ff-muted); margin: 7px 0 0; }
+.fw-lifestyle-fold[data-fold="canopy"] .fw-ff-summary { background: #eee8ee; border-radius: 22px; padding: 4px 16px 12px; }
+.fw-lifestyle-fold[data-fold="canopy"] .fw-ff-summary-nav { border-bottom-color: #d6cbd7; }
+.fw-lifestyle-fold[data-fold="canopy"] .fw-ff-glance-row:last-child { border-bottom: 0; }
+.fw-lifestyle-fold[data-fold="canopy"] .fw-ff-actions [aria-label="Section actions"] > button { background: #49364e!important; border-color: #49364e!important; }
+.fw-lifestyle-fold[data-fold="canopy"] .fw-ff-actions [aria-label="Section actions"] > button + button { background: #eee8ee!important; color: #49364e!important; }
+.fw-lifestyle-fold :is(.fw-ff-sections,.fw-ff-status,.fw-ff-summary,.fw-ff-actions) button:focus-visible { outline: 2px solid var(--ff-ink); outline-offset: 3px; }
+@media (prefers-reduced-motion: reduce) { .fw-lifestyle-fold .fw-ff-summary-track { scroll-behavior: auto; } }

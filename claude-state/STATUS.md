@@ -7,6 +7,11 @@
 > **APPEND, never rewrite:** add a NEW block at the top of the current-state section (so merges stay trivial), immediately after every build/fix/ship — never batched. Each entry: what changed + commit · shipped-vs-demo · live bundle hash · how it was verified.
 > **Full context for the other agent:** `claude-state/agent-collab/HANDOFF.md` (+ the IN FLIGHT claim table — claim a surface before editing it). Raw transcripts are archive-only: `claude-state/agent-collab/transcripts/MANIFEST.md`.
 >
+> ### CURRENT STATE — 2026-10-02 · IN REVIEW BUILD: full Lifestyle composition reset
+> - Halli rejected all previous designs, including Sky. Earlier technical/pixel approvals did not establish aesthetic acceptance. Claim9f8a292; main remains held. Existing live index-Lv48dQNS.js until new deploy.
+> - Four atoms mapped in flora-dream/composition-reset.md. Ms Atelier, Ms Deep Search and lead manager identified poor hierarchy, excessive header height and conflicting type/art/control treatments. Default-off Almanac/Canopy proposals preserve capabilities, with actions before full summary/Jess and six original transparent botanical specimens.
+> - Bible§10.5.6 records the correction; neither exact execution is approved. Functional/mobile/aesthetic checks pending. Prompt provenance in specimens-v2-prompts.json.
+>
 > ### CURRENT STATE — 2026-09-30 · VERIFIED: integrated flora within the original Lifestyle structure
 > - **Source8997028 + b3e59d3 + 07e6234**, pushed and production-built. Base44 deploy succeeded on retry after transient network failure; HTTP-confirmed **index-Lv48dQNS.js**. Ideas → Brand, cards & flora → **Floral ecosystem · within Lifestyle** opens the complete connected preview. Main promotion remains held.
 > - **Preserved:** changing title/species/profile, one heart, original section selector, Everything, glance/Jess, both contextual pills and full section content. Read's iris dissolves into alabaster; Sky keeps morning glory and its calculated moon. Other section artwork retains its existing species; no claim of library-wide regeneration. Earlier standalone study remains at ?study=art.

@@ -105,13 +105,19 @@ export function FloralArtStudy() {
 }
 
 export default function FloralDreamDemo() {
+  const [direction, setDirection] = useState(() => new URLSearchParams(window.location.search).get("direction") === "canopy" ? "canopy" : "almanac");
   if (new URLSearchParams(window.location.search).get("study") === "art") return <FloralArtStudy/>;
+  const previous = new URLSearchParams(window.location.search).get("study") === "integrated";
+  const changeDirection = value => {
+    setDirection(value);
+    const url = new URL(window.location.href);
+    url.searchParams.set("direction", value);
+    window.history.replaceState(window.history.state, "", url);
+  };
   return <div className="fw-floral-review">
-    <style>{`.fw-floral-review [aria-label="Section actions"] button{color:${C.ink}!important}body:has(.fw-floral-review) a[aria-label="Open Ideas (Design Lab — dev only)"]{position:relative!important;inset:auto!important;display:flex!important;width:fit-content;margin:0 auto 120px!important;transform:none!important}`}</style>
-    <div style={{background:C.ground,color:C.ink,fontFamily:UI,maxWidth:430,margin:"0 auto",padding:"52px 64px 0 16px",fontSize:12,lineHeight:1.5}}>
-      <nav style={{display:"flex",gap:18,flexWrap:"wrap"}}><a href="/Ideas?section=brand" style={{color:C.ink,minHeight:44,display:"inline-flex",alignItems:"center"}}>Ideas · floral review</a><a href="/FloralDreamDemo?study=art" style={{color:C.ink,minHeight:44,display:"inline-flex",alignItems:"center"}}>Earlier art study</a></nav>
-      <p style={{margin:0}}>Connected Lifestyle preview · actions use your account.</p>
-    </div>
-    <LifestyleEliteShell enableFocus layout="bespoke" clean previewActions initialSection="sky" continuousSky celestialSky botanicalHeader />
+    <style>{`.fw-floral-review [aria-label="Section actions"] button{color:${C.ink}!important}.floral-review-nav{max-width:430px;margin:auto;display:flex;align-items:center;justify-content:space-between;gap:8px;padding:46px 16px 0;color:${C.ink};font:500 12px/1.4 ui-sans-serif,system-ui,sans-serif}.floral-review-nav a{color:inherit;min-height:44px;display:flex;align-items:center}.floral-review-nav button{font:inherit;min-height:44px;padding:0 10px;border:0;background:transparent;color:#6E6A61;border-bottom:2px solid transparent;cursor:pointer}.floral-review-nav button[aria-pressed=true]{color:#51444E;border-bottom-color:#51444E}.floral-review-notes{max-width:430px;margin:auto;padding:0 18px 24px;font:500 12px/1.6 ui-sans-serif,system-ui,sans-serif}.floral-review-notes summary,.floral-review-notes a{min-height:44px;align-content:center;color:#51444E}.floral-review-notes a{display:inline-block;margin-right:16px}body:has(.fw-floral-review) a[aria-label="Open Ideas (Design Lab — dev only)"]{position:relative!important;inset:auto!important;display:flex!important;width:fit-content;margin:0 auto 120px!important;transform:none!important}`}</style>
+    <nav className="floral-review-nav" aria-label="Founder design comparison"><a href="/Ideas?section=brand">Ideas · review</a><div role="group" aria-label="Design direction"><button aria-pressed={direction==="almanac"} onClick={()=>changeDirection("almanac")}>Almanac</button><button aria-pressed={direction==="canopy"} onClick={()=>changeDirection("canopy")}>Canopy</button></div></nav>
+    <LifestyleEliteShell enableFocus layout="bespoke" clean previewActions initialSection="sky" continuousSky celestialSky botanicalHeader firstFoldVariant={previous ? null : direction} />
+    <aside className="floral-review-notes"><details><summary>About these two proposals</summary><p>Connected Lifestyle preview · actions use your account. Same features, two compositions. Main-page promotion is held for your approval.</p><p>Almanac pairs a compact editorial heading with a botanical specimen. Canopy gives the garden more room around the same content. Both bring section actions ahead of the full summary and Jess.</p><p>Research informed hierarchy and artwork with a purpose; it does not prove you will prefer these designs.</p><a href="https://maybedesignstudio.com/projects/baseline" target="_blank" rel="noreferrer">BaseLine · coherent UI</a><a href="https://www.pentagram.com/work/phenology" target="_blank" rel="noreferrer">Phenology · botanical personality</a><a href="/FloralDreamDemo?study=integrated">Previous integrated version</a><a href="/FloralDreamDemo?study=art">Earlier art study</a></details></aside>
   </div>;
 }

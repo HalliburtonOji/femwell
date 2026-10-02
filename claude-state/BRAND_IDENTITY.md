@@ -782,6 +782,16 @@ Artwork should blend into the alabaster ground: open edges, soft colour falloff,
 
 Retain section identity from §2.7.1: Sky uses morning glory with its separately calculated lunar phase; Read uses iris. Other sections retain their actual species and current illustration until reviewed replacements exist. Do not reuse one iris picture across sections or claim the entire library is regenerated. This correction supersedes the standalone presentation in §10.5.4, not its preservation requirements. Main promotion remains held.
 
+### 10.5.6 WHOLE COMPOSITION, NOT ANOTHER HEADER PATCH — Halli correction, 2 October 2026
+
+Halli rejected all the integrated designs, explicitly including the Sky header. Do not treat the earlier no-clipping/seam audits as aesthetic acceptance. The whole composition—type scale, hierarchy, artwork, section controls, actions and summary—must read as one deliberate page. A new image alone does not resolve a poor layout.
+
+Preserve the changing title, heart, correct species and profile, selectors, phase context, Everything, full summary/Jess, both contextual actions and complete section content. Reordering and recomposition are permitted in the review proposals; this supersedes §10.5.5's header-only execution limit. No feature may disappear to meet an invented first-screen height target.
+
+Compare complete connected screens in Ideas. Artwork should be distinct, realistic and artsy, integrated through actual transparent edges or controlled colour falloff, with recognisable plant detail at phone size. Text and controls remain clear. Check rendered font scale: the shared 150% size adjustment is not a reason to accept oversized or incoherent typography. Reusing the same Cormorant files with explicit preview sizing is a proposed implementation, not a new type identity.
+
+Current proposals: **Almanac** (compact asymmetric editorial header, open summary rows) and **Canopy** (larger botanical gesture, soft plum summary). Six generated specimens preserve the section species map. Neither execution is approved; main promotion and broader ecosystem rollout remain held. Research, prompts, preservation inventory and verification live in `claude-state/flora-dream/composition-reset.md`.
+
 ### 10.6 CRAFT THAT CARRIES MEANING (format = feeling) — ⏳ PROPOSED (awaiting sign-off)
 - **Wax rose seal + sealed letters:** Health becomes *correspondence* — each letter arrives **sealed with a wax rose** (her signature flower, phase-coloured); opening breaks the seal (once-only lift). Extends to a monthly **"letter from your body,"** a milestone certificate, a sealed **"letter to future you"** in Journal, Jess's notes as folds.
 - **Vines that grow with progress** (a leaf per session, a bloom at the end — growth, not a progress bar).

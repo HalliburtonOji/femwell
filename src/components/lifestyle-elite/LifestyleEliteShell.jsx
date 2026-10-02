@@ -39,6 +39,8 @@ import FocusedSectionActions from "@/components/lifestyle-elite/FocusedSectionAc
 import { C, CLEAN_BG, CLEAN_CSS, CLEAN_PAGE_CSS } from "@/components/brand/cleanTokens";
 import SectionHeader from "@/components/lifestyle-elite/SectionHeader";
 import BotanicalSceneHeader from "@/components/lifestyle-elite/BotanicalSceneHeader";
+import AlmanacHeader from "@/components/lifestyle-elite/AlmanacHeader";
+import { FirstFoldNavigation, FirstFoldSummary } from "@/components/lifestyle-elite/FirstFold";
 import BooksStoryFocus from "@/components/lifestyle-elite/BooksStoryFocus";
 import ListenFocus from "@/components/lifestyle-elite/ListenFocus";
 import ReadFocus from "@/components/lifestyle-elite/ReadFocus";
@@ -475,7 +477,8 @@ function FocusableBoards({ focusBoard, sliderRef, gold, children }) {
   return <div style={{ marginTop: 20 }}>{boards[focusBoard] || null}</div>;
 }
 
-export default function LifestyleEliteShell({ enableFocus = false, layout = null, clean = false, previewActions = false, initialSection = null, continuousSky = false, celestialSky = false, botanicalHeader = false } = {}) {
+export default function LifestyleEliteShell({ enableFocus = false, layout = null, clean = false, previewActions = false, initialSection = null, continuousSky = false, celestialSky = false, botanicalHeader = false, firstFoldVariant = null } = {}) {
+  const foldVariant = clean && ["almanac", "canopy"].includes(firstFoldVariant) ? firstFoldVariant : null;
   // CLEAN (§2.7 whole-page): the page-level ground + footer outside this tree follow via a body class.
   useEffect(() => {
     if (!clean) return undefined;
@@ -1272,6 +1275,13 @@ export default function LifestyleEliteShell({ enableFocus = false, layout = null
   };
   sectionActions.story = sectionActions.books;
   const landingGroups = [{ key: "foryou", label: "For you today", accent: "gold", items: forYouItems, open: setExpanded, sectioned: true }];
+  // One action pair, in the review's earlier position OR the original position.
+  const focusedActions = previewActions && clean && focus ? <FocusedSectionActions key={focusSection} section={focusSection} plum={plum} actions={sectionActions[focusSection]} /> : (
+    <div aria-label={foldVariant ? "Section actions" : undefined} style={{ display: "flex", gap: 10, marginTop: 14 }}>
+      <button onClick={() => setChapterOpen(true)} className="fw-elite-press" style={clean ? { ...focusPill(plum), background: plum, boxShadow: "none", border: "none" } : focusPill(crimson)}><Feather size={16} /> Today's chapter</button>
+      <button onClick={() => jumpTo(0)} className="fw-elite-press" style={clean ? { ...focusPill(gold), background: C.gold, boxShadow: "none", border: "none" } : focusPill(plum)}><Clock size={16} /> What do you have time for?</button>
+    </div>
+  );
 
   if (loading) {
     return (
@@ -1288,7 +1298,7 @@ export default function LifestyleEliteShell({ enableFocus = false, layout = null
   return (
     // Clean & classy ground (§2.7) on the focus/layout demos only — live /Lifestyle passes no
     // `layout`, so it keeps PAPER_BG byte-for-byte until its surfaces migrate.
-    <div className={clean ? "fw-clean" : undefined} style={{ ...((layout || clean) ? CLEAN_BG : PAPER_BG), minHeight: "100vh", overflowX: "clip", paddingBottom: "calc(124px + env(safe-area-inset-bottom))" }}>
+    <div className={clean ? `fw-clean${foldVariant ? " fw-lifestyle-fold" : ""}` : undefined} data-fold={foldVariant || undefined} style={{ ...((layout || clean) ? CLEAN_BG : PAPER_BG), minHeight: "100vh", overflowX: "clip", paddingBottom: "calc(124px + env(safe-area-inset-bottom))" }}>
       <style>{floraKeyframes}{ELITE_MOTION}{clean ? CLEAN_CSS + CLEAN_PAGE_CSS : ""}</style>
       <TopChrome onJump={() => setJumpOpen(true)} onCalendar={() => setCalOpen(true)} />
 
@@ -1308,11 +1318,15 @@ export default function LifestyleEliteShell({ enableFocus = false, layout = null
               {/* Per-section artful floral STILL + flower profile when its image is delivered; else
                   the flora/video hero (default/fallback). Architected for a clean drop-in — see
                   SectionHeader.jsx SECTION_HEADER. Swaps automatically because it reads `active`. */}
-              {botanicalHeader ? <BotanicalSceneHeader active={active} moon={moonToday} /> : celestialSky && active.id === "sky" ? <CelestialHeader moon={moonToday} /> : <SectionHeader active={active} title={active.title} clean={clean} fallback={
+              {foldVariant ? <AlmanacHeader active={active} moon={moonToday} variant={foldVariant} /> : botanicalHeader ? <BotanicalSceneHeader active={active} moon={moonToday} /> : celestialSky && active.id === "sky" ? <CelestialHeader moon={moonToday} /> : <SectionHeader active={active} title={active.title} clean={clean} fallback={
                 <FwFloraHero title={active.title} colorway={active.cw} bloom={ph.bloom} openness={active.openness}
                   creature={active.creature} flankL="iris" flankR="sunflower" titleColor={OXBLOOD} line={active.line}
                   garden="lifestyle" photo="lifestyle" />
               } />}
+              {foldVariant ? <FirstFoldNavigation cards={heroCards} activeIndex={heroCard}
+                onSelect={(card, index) => { _lifeHeroCard = index; setHeroCard(index); if (enableFocus) setFocusSection(card.id); }}
+                phaseLine={phaseKey ? `${phaseLabel(phaseKey)}${cycleDay ? ` · Day ${cycleDay}` : ""} · ${ph.day}` : "A few good things today"}
+                focusLabel={focus?.label} onClear={() => setFocusSection(null)} /> : <>
               <div className="fw-hero-ctl" style={clean ? { display: "flex", gap: 7, padding: "14px 0 0" } : { display: "flex", gap: 8, overflowX: "auto", padding: "12px 2px 2px", WebkitMaskImage: "linear-gradient(90deg, #000 0, #000 calc(100% - 22px), transparent 100%)", maskImage: "linear-gradient(90deg, #000 0, #000 calc(100% - 22px), transparent 100%)" }}>
                 <style>{`.fw-hero-ctl{scrollbar-width:none}.fw-hero-ctl::-webkit-scrollbar{display:none}`}</style>
                 {heroCards.map((c, i) => {
@@ -1336,6 +1350,7 @@ export default function LifestyleEliteShell({ enableFocus = false, layout = null
                   {phaseKey ? `${phaseLabel(phaseKey)}${cycleDay ? ` · Day ${cycleDay}` : ""} · ${ph.day}` : "A few good things today"}
                 </span>
               </div>
+              </>}
               {/* Controller CTA — hidden once a section is focused (the bespoke surface shows inline
                   with its own actions, so this would be a duplicate path). */}
               {!(enableFocus && focusSection) && (
@@ -1351,7 +1366,7 @@ export default function LifestyleEliteShell({ enableFocus = false, layout = null
         })()}
 
         {/* CHIP-FOCUS return control — clear, reversible ("Showing: Read · ✕ Everything"). */}
-        {focus && (
+        {!foldVariant && focus && (
           <div style={{ display: "flex", alignItems: "center", gap: 8, margin: "0 0 4px" }}>
             <span style={clean
               ? { display: "inline-flex", alignItems: "center", gap: 7, padding: "7px 12px", borderRadius: 999, background: C.ink, border: `1px solid ${C.ink}`, fontFamily: UI, fontSize: 12, fontWeight: 700, color: "#fff", letterSpacing: ".03em" }
@@ -1365,6 +1380,8 @@ export default function LifestyleEliteShell({ enableFocus = false, layout = null
             </button>
           </div>
         )}
+
+        {foldVariant && <div className="fw-ff-actions">{focusedActions}</div>}
 
         {/* ══ §6.8.2 BAND 3+4 — the TOP SLIDING ROW (uniform panels, no dead space).
              Slide 1 = today at a glance (the same three rows the SummaryCard carried —
@@ -1402,6 +1419,8 @@ export default function LifestyleEliteShell({ enableFocus = false, layout = null
             story ? { label: "If you've ten minutes", text: `Today's chapter${story.cliffhanger ? ` picks up on "${story.cliffhanger}"` : " is ready"} — a finished story you can also read straight through whenever you fancy it.` } : null,
             moonToday ? { label: "Your sky", text: `The moon is ${moonToday.name.toLowerCase()}, ${moonToday.illumination}% lit tonight${phaseKey ? `, and you're in your ${phaseLabel(phaseKey).toLowerCase()} week` : ""}. Folklore, held lightly.` } : null,
           ].filter(Boolean);
+          if (foldVariant) return <FirstFoldSummary orderedGlance={orderedGlance} jess={jess} sheetSections={sheetSections}
+            jessOpen={jessOpen} onJessOpen={() => setJessOpen(true)} onJessClose={() => setJessOpen(false)} />;
           return (
             <div style={{ marginTop: 14 }}>
               <GlanceJessSwipe accent={gold}
@@ -1436,12 +1455,7 @@ export default function LifestyleEliteShell({ enableFocus = false, layout = null
         })()}
 
         {/* two focus pills (out of cards) — Lifestyle's two daily rituals. Always present (no-strip). */}
-        {previewActions && clean && focus ? <FocusedSectionActions key={focusSection} section={focusSection} plum={plum} actions={sectionActions[focusSection]} /> : (
-        <div style={{ display: "flex", gap: 10, marginTop: 14 }}>
-          <button onClick={() => setChapterOpen(true)} className="fw-elite-press" style={clean ? { ...focusPill(plum), background: plum, boxShadow: "none", border: "none" } : focusPill(crimson)}><Feather size={16} /> Today's chapter</button>
-          <button onClick={() => jumpTo(0)} className="fw-elite-press" style={clean ? { ...focusPill(gold), background: C.gold, boxShadow: "none", border: "none" } : focusPill(plum)}><Clock size={16} /> What do you have time for?</button>
-        </div>
-        )}
+        {!foldVariant && focusedActions}
 
         {/* ── "FOR YOU" (pass d) — a taste of EVERYTHING, one pick per SECTION ──────────────
             Was "Reads for you" (articles only). Now a cross-section digest: today's chapter ·
