@@ -792,6 +792,16 @@ Compare complete connected screens in Ideas. Artwork should be distinct, realist
 
 Current proposals: **Almanac** (compact asymmetric editorial header, open summary rows) and **Canopy** (larger botanical gesture, soft plum summary). Six generated specimens preserve the section species map. Neither execution is approved; main promotion and broader ecosystem rollout remain held. Research, prompts, preservation inventory and verification live in `claude-state/flora-dream/composition-reset.md`.
 
+### 10.5.7 EACH HEADER IS A LITTLE GARDEN — Halli workflow, 2 October 2026
+
+The **whole header** is a small, deliberately composed garden. Its wording lives inside the composition, with its own clear space. Think through the signature plants, supporting foliage, fallen petals, meaningful section objects, depth, colour falloff and restrained movement together. An isolated specimen beside a title, or a flower above a title, does not fulfil this direction.
+
+**Workflow for every section:** name its story → choose its correct signature species and supporting details → choose objects that belong to that section → reserve the full title/write-up area before generation → compose the entire garden around that space → integrate real HTML text and existing controls → test long titles, all phone widths and real taps → put the complete connected preview in Ideas for Halli. Do not merely swap the flower in an otherwise generic template.
+
+Sky specifically includes a lunar/celestial garden: Moon, stars, solar/orbital rings and botanical details. Keep calculated moon phase separate from decorative art; ornamental star/ring placement must not pretend to be a measured chart. Other sections require their own considered story. Fallen petals are part of the garden language, not a loss/streak indicator. Keep open edges and soft colour transitions; no rectangular illustration pasted on the page. Never fade wording or controls.
+
+This is agreed direction and workflow; individual scenes remain review proposals. Preserve all section selection, the full header wording/heart/profile, summary/Jess, contextual actions and complete content. Main promotion still requires Halli's go-ahead.
+
 ### 10.6 CRAFT THAT CARRIES MEANING (format = feeling) — ⏳ PROPOSED (awaiting sign-off)
 - **Wax rose seal + sealed letters:** Health becomes *correspondence* — each letter arrives **sealed with a wax rose** (her signature flower, phase-coloured); opening breaks the seal (once-only lift). Extends to a monthly **"letter from your body,"** a milestone certificate, a sealed **"letter to future you"** in Journal, Jess's notes as folds.
 - **Vines that grow with progress** (a leaf per session, a bloom at the end — growth, not a progress bar).

@@ -40,6 +40,7 @@ import { C, CLEAN_BG, CLEAN_CSS, CLEAN_PAGE_CSS } from "@/components/brand/clean
 import SectionHeader from "@/components/lifestyle-elite/SectionHeader";
 import BotanicalSceneHeader from "@/components/lifestyle-elite/BotanicalSceneHeader";
 import AlmanacHeader from "@/components/lifestyle-elite/AlmanacHeader";
+import GardenHeader from "@/components/lifestyle-elite/GardenHeader";
 import { FirstFoldNavigation, FirstFoldSummary } from "@/components/lifestyle-elite/FirstFold";
 import BooksStoryFocus from "@/components/lifestyle-elite/BooksStoryFocus";
 import ListenFocus from "@/components/lifestyle-elite/ListenFocus";
@@ -478,7 +479,7 @@ function FocusableBoards({ focusBoard, sliderRef, gold, children }) {
 }
 
 export default function LifestyleEliteShell({ enableFocus = false, layout = null, clean = false, previewActions = false, initialSection = null, continuousSky = false, celestialSky = false, botanicalHeader = false, firstFoldVariant = null } = {}) {
-  const foldVariant = clean && ["almanac", "canopy"].includes(firstFoldVariant) ? firstFoldVariant : null;
+  const foldVariant = clean && ["garden", "almanac", "canopy"].includes(firstFoldVariant) ? firstFoldVariant : null;
   // CLEAN (§2.7 whole-page): the page-level ground + footer outside this tree follow via a body class.
   useEffect(() => {
     if (!clean) return undefined;
@@ -1318,7 +1319,7 @@ export default function LifestyleEliteShell({ enableFocus = false, layout = null
               {/* Per-section artful floral STILL + flower profile when its image is delivered; else
                   the flora/video hero (default/fallback). Architected for a clean drop-in — see
                   SectionHeader.jsx SECTION_HEADER. Swaps automatically because it reads `active`. */}
-              {foldVariant ? <AlmanacHeader active={active} moon={moonToday} variant={foldVariant} /> : botanicalHeader ? <BotanicalSceneHeader active={active} moon={moonToday} /> : celestialSky && active.id === "sky" ? <CelestialHeader moon={moonToday} /> : <SectionHeader active={active} title={active.title} clean={clean} fallback={
+              {foldVariant === "garden" ? <GardenHeader active={active} moon={moonToday} /> : foldVariant ? <AlmanacHeader active={active} moon={moonToday} variant={foldVariant} /> : botanicalHeader ? <BotanicalSceneHeader active={active} moon={moonToday} /> : celestialSky && active.id === "sky" ? <CelestialHeader moon={moonToday} /> : <SectionHeader active={active} title={active.title} clean={clean} fallback={
                 <FwFloraHero title={active.title} colorway={active.cw} bloom={ph.bloom} openness={active.openness}
                   creature={active.creature} flankL="iris" flankR="sunflower" titleColor={OXBLOOD} line={active.line}
                   garden="lifestyle" photo="lifestyle" />

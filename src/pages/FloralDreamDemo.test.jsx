@@ -142,7 +142,8 @@ describe("Floral garden concept interactions", () => {
   it("should open the connected preview by default while keeping the earlier interactive art study reachable", () => {
     const { unmount } = render(<FloralDreamDemoPage />);
     expect(screen.getByRole("main", { name: "Connected Lifestyle shell" })).toBeInTheDocument();
-    fireEvent.click(screen.getByText("About these two proposals"));
+    expect(screen.getByRole("button", { name: "Garden", exact: true })).toHaveAttribute("aria-pressed", "true");
+    fireEvent.click(screen.getByText("The little-garden workflow"));
     expect(screen.getByText(/Connected Lifestyle preview · actions use your account\./)).toBeVisible();
     expect(screen.queryByRole("group", { name: "Garden atmosphere" })).not.toBeInTheDocument();
     const studyHref = screen.getByRole("link", { name: "Earlier art study" }).getAttribute("href");
@@ -163,7 +164,7 @@ describe("Floral garden concept interactions", () => {
     expect(choices.getByRole("button", { name: "Canopy" })).toHaveAttribute("aria-pressed", "true");
     const shell = screen.getByRole("main", { name: "Connected Lifestyle shell" });
     fireEvent.change(screen.getByRole("textbox", { name: "Preserved draft" }), { target: { value: "Keep this thought" } });
-    for (const name of ["Almanac", "Canopy"]) {
+    for (const name of ["Garden", "Almanac", "Canopy", "Garden"]) {
       fireEvent.click(choices.getByRole("button", { name }));
       expect(choices.getAllByRole("button", { pressed: true })).toEqual([choices.getByRole("button", { name })]);
       expect(screen.getByRole("main", { name: "Connected Lifestyle shell" })).toBe(shell);

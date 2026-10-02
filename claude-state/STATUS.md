@@ -7,6 +7,14 @@
 > **APPEND, never rewrite:** add a NEW block at the top of the current-state section (so merges stay trivial), immediately after every build/fix/ship — never batched. Each entry: what changed + commit · shipped-vs-demo · live bundle hash · how it was verified.
 > **Full context for the other agent:** `claude-state/agent-collab/HANDOFF.md` (+ the IN FLIGHT claim table — claim a surface before editing it). Raw transcripts are archive-only: `claude-state/agent-collab/transcripts/MANIFEST.md`.
 >
+> ### CURRENT STATE — 2026-10-02 · SOURCE READY: five little gardens
+> - Claim669ad8b. Each section now has a complete square garden with a deliberate HTML text clearing: Read/lens, Listen/ripple dish, Books/book terrace, Sky/observatory and live Moon, Good life/tea nook. v3 originals retained; v4 recomposed for phones, preserved aspect ratio. Browser rendering confirmed the apparent coloured fringes in raw transparent-image viewers are not present on alabaster.
+> - Full74/74 suite passed; after final asset/position changes, affected13/13 passed. Local390 all five and360 longest Books/Sky checked; live connected phone/tap verification follows deployment. Bible§10.5.7, in-app mirror and workflow plan updated. Main held. Prior live index-CXIn92F5.js until new deploy.
+>
+> ### CURRENT STATE — 2026-10-02 · NEW DIRECTION: each whole header is a little garden
+> - Halli clarified the required workflow: compose the complete header, its wording, fallen petals, foliage and section-specific objects as one little garden. Sky: Moon, stars, solar/orbital rings. Each section individually considered; reserve real space for the complete write-up before generation. Bible§10.5.7 records this agreed direction; exact scenes remain review proposals.
+> - Claim669ad8b. Prior preview still live index-CXIn92F5.js; main held. Atelier maps scenes; Deep Search finds composition references; root builds connected Garden preview. Existing selectors, summary/Jess, action pair and full section content retained. Done: workflow recorded. Next: composed assets, integrated preview, phone verification.
+>
 > ### CURRENT STATE — 2026-10-02 · DEPLOYED FOR REVIEW: Lifestyle Almanac / Canopy
 > - Sourcec6a2350 + 6f6c3fd + 6c380c2 + 9bcb55c pushed and built; Base44 deployment succeeded. HTTP-confirmed **index-CXIn92F5.js**. Ideas → Brand, cards & flora → **Lifestyle · Almanac / Canopy** opens both connected proposals. Main Lifestyle unchanged; Halli taste approval pending.
 > - Six new transparent botanical specimens, measured Cormorant typography, quieter selector, contextual actions before full summary/Jess. Same real data/actions; prior integrated and standalone studies retained. Prompt provenance: flora-dream/specimens-v2-prompts.json; originals and WebPs saved in repo.
