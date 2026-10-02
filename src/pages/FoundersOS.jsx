@@ -203,7 +203,7 @@ const GROUP_BLURB = {
 const COLLAPSED_BY_DEFAULT = new Set([CAT.ARCHIVE]);
 
 const CATALOG = [
-  { kind:"route", href:"/FloralDreamDemo?direction=garden", group:CAT.CURRENT, sub:"Brand + card language", status:"new", added:"2026-10-02", accent:"sage", title:"Lifestyle · five little gardens", desc:"Whole headers composed around their wording: iris reading nook, bluebell listening garden, jasmine story terrace, celestial observatory and marigold tea nook. Full Lifestyle retained. Earlier proposals and workflow inside; awaiting Halli's review." },
+  { kind:"route", href:"/FloralDreamDemo?direction=living&section=sky", group:CAT.CURRENT, sub:"Brand + card language", status:"new", added:"2026-10-02", accent:"sage", title:"Lifestyle · Sky as a living page", desc:"Sky first: open morning-glory growth, live Moon and connected typography, controls and reading. Full Lifestyle retained. Earlier gardens, research and workflow inside; awaiting Halli's aesthetic review." },
   { kind: "route", href: "/SkyConceptDemo", group: CAT.CURRENT, sub: "Sky · review before main", status: "new", added: "2026-09-28", accent: "crimson",
     title: "Sky · botanical lunar clock", desc: "Start here. Generated botanical lunar clock, subtle motion, meaning dots and a shorter diary. Complete Sky within Lifestyle; connected to your account. Still in review." },
   { kind: "route", href: "/sky-review/voice.html", group: CAT.CURRENT, sub: "Sky · review before main", status: "new", added: "2026-09-29", accent: "gold", title: "A little wonder · voice & Brand Bible", desc: "A short visual change note, whole-app wording examples and the new Bible principles. Detailed sources are optional." },

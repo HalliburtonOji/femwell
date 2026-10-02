@@ -802,6 +802,12 @@ Sky specifically includes a lunar/celestial garden: Moon, stars, solar/orbital r
 
 This is agreed direction and workflow; individual scenes remain review proposals. Preserve all section selection, the full header wording/heart/profile, summary/Jess, contextual actions and complete content. Main promotion still requires Halli's go-ahead.
 
+### 10.5.8 THE GARDEN MUST BELONG TO THE PAGE — Halli correction, 2 October 2026
+
+Halli rejected the five square garden compositions as generic pictures stamped onto the page. Transparent edges and a text opening are insufficient when the art has its own closed silhouette, floor and visual language. The whole connected screen must share typography, spacing, colour and material/light relationships. Compose imagery and interface together; do not finish an illustration and fit controls below it.
+
+Keep the little-garden direction and all preserved functions. Use open asymmetric growth, thoughtful crops and separated botanical incidents where they help connect the header, selection, actions and reading. No generic U-shaped floral border or isolated miniature landscape as the default template. Text and controls stay sharp, readable and directly usable. Sky is the first revised proof; extending a treatment to other sections waits for review. Existing variants remain references, never approved canon. Main promotion remains held.
+
 ### 10.6 CRAFT THAT CARRIES MEANING (format = feeling) — ⏳ PROPOSED (awaiting sign-off)
 - **Wax rose seal + sealed letters:** Health becomes *correspondence* — each letter arrives **sealed with a wax rose** (her signature flower, phase-coloured); opening breaks the seal (once-only lift). Extends to a monthly **"letter from your body,"** a milestone certificate, a sealed **"letter to future you"** in Journal, Jess's notes as folds.
 - **Vines that grow with progress** (a leaf per session, a bloom at the end — growth, not a progress bar).

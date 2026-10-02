@@ -7,6 +7,14 @@
 > **APPEND, never rewrite:** add a NEW block at the top of the current-state section (so merges stay trivial), immediately after every build/fix/ship — never batched. Each entry: what changed + commit · shipped-vs-demo · live bundle hash · how it was verified.
 > **Full context for the other agent:** `claude-state/agent-collab/HANDOFF.md` (+ the IN FLIGHT claim table — claim a surface before editing it). Raw transcripts are archive-only: `claude-state/agent-collab/transcripts/MANIFEST.md`.
 >
+> ### CURRENT STATE — 2026-10-02 · SOURCE READY: Sky living-page proposal
+> - Claim a719720. New separate morning-glory and petal layers, larger calculated Moon/open orbit, shared page wash and typography across selector/actions/summary/reading. Full titles, flower profile, controls, full glance/Jess and earlier designs retained. Ideas entry updated; main held.
+> - All78 tests pass and production build succeeds: index-5rTngpIJ.js. Local pixels caught and fixed petal/data overlap, Moon/flower collision and hard artwork top. Deployment and actual connected360/390/430 verification follow; aesthetic acceptance remains pending.
+>
+> ### CURRENT STATE — 2026-10-02 · REJECTED: stamped garden / SKY PAGE RECOMPOSITION
+> - Halli rejected s30mKDzI gardens as generic pictures stamped onto the page, not fitting the surrounding design. Technical gates did not establish aesthetic acceptance. Claim a719720; main remains held. Bible§10.5.8 records correction.
+> - Four atoms mapped in flora-dream/living-page-plan.md: open masthead, integrated selector/context, contextual actions, continuous reading. Named team supplied current primary research, craft direction and preservation inventory. Sky first; earlier variants and other sections retained. Next: separate botanical layers, connected preview, actual phone/tap and adversarial checks.
+>
 > ### CURRENT STATE — 2026-10-02 · SHIPPED FOR REVIEW: five little gardens
 > - Source290b22d + spacing924f3d1/34d9947/3afd475 pushed and deployed successfully. HTTP-confirmed **index-s30mKDzI.js**. Ideas → Brand, cards & flora → **Lifestyle · five little gardens** opens Garden; earlier directions stay reachable. Main Lifestyle held pending Halli approval.
 > - Five square, transparent, realistically painted gardens composed around complete live HTML title/heart/flower profile: iris/lens, bluebell/tuning fork, jasmine/book, morning-glory/observatory with calculated Moon, marigold/tea. Meaning dot and finite replay/reduced-motion support. Full selectors, contextual pairs, summary/Jess and content retained.
@@ -4419,3 +4427,4 @@ Built sequentially per Halli; read each live page in full first (nothing strippe
 - **/ProgramsClipboardDemo** (commit `7811117`) — flora-hero + summary (continue/for-now/new) + Continue/Browse primaries + search + pinned Jump-to. Two sliders: **Your journeys** (Continue active+progress+reminder · other-active mini-cards · Featured · For-your-phase CardDeck) + **Library** (collections sleep/PMDD/peri · Browse-all+search). Rich program cards (thumbnail · meta · tier Free/Plus+Lock · progress · CTA) + detail popup → day-by-day list. @390 verified: 7 boards, overflow 0, no crash.
 - **Pill-reachable:** all three are `{kind:route, group:CAT.CURRENT, status:new}` in FoundersOS — confirmed in the live bundle (the data IDEAS pill→FoundersOS renders) + each route HTTP 200. (Founder-gated click-through needs Halli's session — documented limitation.) Routes registered in pages.config; lint 0 errors / build 0 each; deployed via `npx base44 site deploy -y`. Did NOT touch flora.jsx/BRAND_IDENTITY.md.
 - **⏭ awaiting Halli:** open IDEAS pill → review each → approve → live click-test/go-live happens later one-at-a-time (like Planner/Nutrition).
+

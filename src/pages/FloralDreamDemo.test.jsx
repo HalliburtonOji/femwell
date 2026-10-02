@@ -142,7 +142,7 @@ describe("Floral garden concept interactions", () => {
   it("should open the connected preview by default while keeping the earlier interactive art study reachable", () => {
     const { unmount } = render(<FloralDreamDemoPage />);
     expect(screen.getByRole("main", { name: "Connected Lifestyle shell" })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Garden", exact: true })).toHaveAttribute("aria-pressed", "true");
+    expect(screen.getByRole("combobox", { name: "Design direction" })).toHaveValue("living");
     fireEvent.click(screen.getByText("The little-garden workflow"));
     expect(screen.getByText(/Connected Lifestyle preview · actions use your account\./)).toBeVisible();
     expect(screen.queryByRole("group", { name: "Garden atmosphere" })).not.toBeInTheDocument();
@@ -160,17 +160,17 @@ describe("Floral garden concept interactions", () => {
   it("should compare compositions without remounting the connected shell or discarding its draft", () => {
     window.history.replaceState({}, "", "/FloralDreamDemo?section=books&direction=canopy");
     render(<FloralDreamDemoPage />);
-    const choices = within(screen.getByRole("group", { name: "Design direction" }));
-    expect(choices.getByRole("button", { name: "Canopy" })).toHaveAttribute("aria-pressed", "true");
+    const choices = screen.getByRole("combobox", { name: "Design direction" });
+    expect(choices).toHaveValue("canopy");
     const shell = screen.getByRole("main", { name: "Connected Lifestyle shell" });
     fireEvent.change(screen.getByRole("textbox", { name: "Preserved draft" }), { target: { value: "Keep this thought" } });
-    for (const name of ["Garden", "Almanac", "Canopy", "Garden"]) {
-      fireEvent.click(choices.getByRole("button", { name }));
-      expect(choices.getAllByRole("button", { pressed: true })).toEqual([choices.getByRole("button", { name })]);
+    for (const name of ["living", "garden", "almanac", "canopy", "living"]) {
+      fireEvent.change(choices, { target: { value: name } });
+      expect(choices).toHaveValue(name);
       expect(screen.getByRole("main", { name: "Connected Lifestyle shell" })).toBe(shell);
       expect(screen.getByRole("textbox", { name: "Preserved draft" })).toHaveValue("Keep this thought");
       const params = new URLSearchParams(window.location.search);
-      expect(params.get("direction")).toBe(name.toLowerCase());
+      expect(params.get("direction")).toBe(name);
       expect(params.get("section")).toBe("books");
     }
   });

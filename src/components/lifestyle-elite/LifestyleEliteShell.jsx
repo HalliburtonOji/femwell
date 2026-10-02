@@ -41,6 +41,7 @@ import SectionHeader from "@/components/lifestyle-elite/SectionHeader";
 import BotanicalSceneHeader from "@/components/lifestyle-elite/BotanicalSceneHeader";
 import AlmanacHeader from "@/components/lifestyle-elite/AlmanacHeader";
 import GardenHeader from "@/components/lifestyle-elite/GardenHeader";
+import LivingSkyHeader from "@/components/lifestyle-elite/LivingSkyHeader";
 import { FirstFoldNavigation, FirstFoldSummary } from "@/components/lifestyle-elite/FirstFold";
 import BooksStoryFocus from "@/components/lifestyle-elite/BooksStoryFocus";
 import ListenFocus from "@/components/lifestyle-elite/ListenFocus";
@@ -479,7 +480,7 @@ function FocusableBoards({ focusBoard, sliderRef, gold, children }) {
 }
 
 export default function LifestyleEliteShell({ enableFocus = false, layout = null, clean = false, previewActions = false, initialSection = null, continuousSky = false, celestialSky = false, botanicalHeader = false, firstFoldVariant = null } = {}) {
-  const foldVariant = clean && ["garden", "almanac", "canopy"].includes(firstFoldVariant) ? firstFoldVariant : null;
+  const foldVariant = clean && ["living", "garden", "almanac", "canopy"].includes(firstFoldVariant) ? firstFoldVariant : null;
   // CLEAN (§2.7 whole-page): the page-level ground + footer outside this tree follow via a body class.
   useEffect(() => {
     if (!clean) return undefined;
@@ -1299,7 +1300,7 @@ export default function LifestyleEliteShell({ enableFocus = false, layout = null
   return (
     // Clean & classy ground (§2.7) on the focus/layout demos only — live /Lifestyle passes no
     // `layout`, so it keeps PAPER_BG byte-for-byte until its surfaces migrate.
-    <div className={clean ? `fw-clean${foldVariant ? " fw-lifestyle-fold" : ""}` : undefined} data-fold={foldVariant || undefined} style={{ ...((layout || clean) ? CLEAN_BG : PAPER_BG), minHeight: "100vh", overflowX: "clip", paddingBottom: "calc(124px + env(safe-area-inset-bottom))" }}>
+    <div className={clean ? `fw-clean${foldVariant ? " fw-lifestyle-fold" : ""}` : undefined} data-fold={foldVariant || undefined} data-section={heroCards[heroCard]?.id} style={{ ...((layout || clean) ? CLEAN_BG : PAPER_BG), minHeight: "100vh", overflowX: "clip", paddingBottom: "calc(124px + env(safe-area-inset-bottom))" }}>
       <style>{floraKeyframes}{ELITE_MOTION}{clean ? CLEAN_CSS + CLEAN_PAGE_CSS : ""}</style>
       <TopChrome onJump={() => setJumpOpen(true)} onCalendar={() => setCalOpen(true)} />
 
@@ -1319,7 +1320,7 @@ export default function LifestyleEliteShell({ enableFocus = false, layout = null
               {/* Per-section artful floral STILL + flower profile when its image is delivered; else
                   the flora/video hero (default/fallback). Architected for a clean drop-in — see
                   SectionHeader.jsx SECTION_HEADER. Swaps automatically because it reads `active`. */}
-              {foldVariant === "garden" ? <GardenHeader active={active} moon={moonToday} /> : foldVariant ? <AlmanacHeader active={active} moon={moonToday} variant={foldVariant} /> : botanicalHeader ? <BotanicalSceneHeader active={active} moon={moonToday} /> : celestialSky && active.id === "sky" ? <CelestialHeader moon={moonToday} /> : <SectionHeader active={active} title={active.title} clean={clean} fallback={
+              {foldVariant === "living" && active.id === "sky" ? <LivingSkyHeader active={active} moon={moonToday} /> : ["living", "garden"].includes(foldVariant) ? <GardenHeader active={active} moon={moonToday} /> : foldVariant ? <AlmanacHeader active={active} moon={moonToday} variant={foldVariant} /> : botanicalHeader ? <BotanicalSceneHeader active={active} moon={moonToday} /> : celestialSky && active.id === "sky" ? <CelestialHeader moon={moonToday} /> : <SectionHeader active={active} title={active.title} clean={clean} fallback={
                 <FwFloraHero title={active.title} colorway={active.cw} bloom={ph.bloom} openness={active.openness}
                   creature={active.creature} flankL="iris" flankR="sunflower" titleColor={OXBLOOD} line={active.line}
                   garden="lifestyle" photo="lifestyle" />

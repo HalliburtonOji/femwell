@@ -1,0 +1,41 @@
+.fw-lifestyle-fold[data-fold=living][data-section=sky]{overflow-x:clip;--living-plum:#51444E;--living-line:#D9C79B;background:radial-gradient(ellipse 460px 480px at calc(50% + 100px) 180px,#E7E0EB90,transparent 82%),linear-gradient(180deg,#F5F4F1 0,#F5F4F1 420px,#FFFFFF 880px)!important}
+.fw-lifestyle-fold[data-fold=living][data-section=sky]>.fw-elite-in{position:relative;isolation:isolate}
+.living-sky-header{position:relative;color:#191510;--living-ui:ui-sans-serif,system-ui,-apple-system,'Segoe UI',sans-serif}
+.living-sky-folio{position:relative;z-index:4;display:flex;align-items:center;justify-content:space-between;gap:12px;font:600 12px/1.4 var(--living-ui);color:#6E6A61;letter-spacing:.08em;text-transform:uppercase}
+.living-sky-stage{position:relative;isolation:isolate;min-height:260px;display:grid;grid-template-columns:58% 42%;align-items:end}
+.living-sky-growth{position:absolute;z-index:0;top:0;right:-32px;width:220px;height:274px;object-fit:contain;pointer-events:none;mask-image:linear-gradient(to bottom,transparent 0,#000 12%,#000 80%,transparent 100%);-webkit-mask-image:linear-gradient(to bottom,transparent 0,#000 12%,#000 80%,transparent 100%)}
+.living-sky-copy{position:relative;z-index:3;padding:76px 0 28px;min-width:0}
+.living-sky-copy h1{font:italic 600 clamp(27px,6.4vw,34px)/1.18 'FemWell Editorial',Georgia,serif!important;color:var(--fw-heading-color,#7A1A12)!important;letter-spacing:-.02em;filter:none!important;text-shadow:none!important;margin:0!important;overflow-wrap:anywhere}
+.living-sky-last{white-space:nowrap}.living-sky-last svg{display:inline-block;vertical-align:middle;margin-left:5px}
+.living-sky-profile{font:italic 500 17px/1.4 'FemWell Editorial',Georgia,serif!important;color:#51444E!important;line-height:1.4!important;margin:14px 0 0!important}
+.living-sky-profile strong{font-weight:600!important}
+.living-sky-lunar{position:absolute;z-index:2;top:8px;right:54px;width:116px;height:116px;pointer-events:none;filter:drop-shadow(0 7px 18px #51444E18)}
+.living-sky-orbit{position:absolute;inset:-28px;width:172px;height:172px;color:#A8893F}
+.living-sky-caption{position:relative;display:flex;align-items:flex-start;gap:8px;margin-top:-2px;font:500 12px/1.4 var(--living-ui);color:#51444E}
+.living-sky-caption .sky-meaning{flex:1;min-width:0}.living-sky-caption .sky-meaning>div:first-child{justify-content:flex-start!important;padding-left:0!important}
+.living-sky-motion,.living-sky-fallback button{background:transparent;border:0;min-width:44px;min-height:44px;padding:8px 0;color:#51444E;font:500 12px/1.4 var(--living-ui);text-decoration:underline;text-underline-offset:3px;cursor:pointer}
+.living-sky-fallback{position:absolute;right:0;top:130px;z-index:4;display:flex;flex-direction:column;align-items:center}.living-sky-fallback button{background:#F5F4F1}
+.living-sky-header button:focus-visible{outline:2px solid #51444E;outline-offset:3px}
+@keyframes livingOrbitArrival{from{transform:rotate(-12deg)}to{transform:rotate(0)}}
+@media(prefers-reduced-motion:no-preference){.living-sky-orbit.is-moving{animation:livingOrbitArrival 3s ease-out both;transform-origin:50% 50%}}
+@media(prefers-reduced-motion:reduce){.living-sky-motion{display:none}}
+.fw-lifestyle-fold[data-fold=living][data-section=sky] .fw-ff-sections{position:relative;margin-top:8px;border-color:#D9C79B80;gap:4px}
+.fw-lifestyle-fold[data-fold=living][data-section=sky] .fw-ff-sections button{min-height:52px;border-radius:16px 16px 0 0;color:#51444E}
+.fw-lifestyle-fold[data-fold=living][data-section=sky] .fw-ff-sections button[aria-pressed=true]{background:linear-gradient(#E8E1EA90,#E8E1EA20);border-bottom-color:#8E6E8E}
+.fw-lifestyle-fold[data-fold=living][data-section=sky] .fw-ff-status{padding:6px 0;gap:14px;line-height:1.4}
+.fw-lifestyle-fold[data-fold=living][data-section=sky] .fw-ff-actions [aria-label="Section actions"]{gap:8px!important}
+.fw-lifestyle-fold[data-fold=living][data-section=sky] .fw-ff-actions [aria-label="Section actions"]>button{min-height:46px!important;padding:10px 12px!important;font:600 14px/1.3 var(--ff-ui)!important;background:#51444E!important;border-color:#51444E!important;color:white!important;box-shadow:none!important}
+.fw-lifestyle-fold[data-fold=living][data-section=sky] .fw-ff-actions [aria-label="Section actions"]>button+button{background:#FFFFFF70!important;color:#51444E!important;border-color:#D4CBD8!important}
+.fw-lifestyle-fold[data-fold=living][data-section=sky] .fw-ff-summary{margin-top:26px}
+.fw-lifestyle-fold[data-fold=living][data-section=sky] .fw-ff-summary-nav{border-color:#D9C79B80}.fw-lifestyle-fold[data-fold=living][data-section=sky] .fw-ff-summary-nav button[aria-pressed=true]{border-color:#8E6E8E}
+.fw-lifestyle-fold[data-fold=living][data-section=sky] .fw-ff-glance-row{border-color:#D9C79B60;padding:14px 0;gap:12px}
+.fw-lifestyle-fold[data-fold=living][data-section=sky] .fw-ff-row-text{font-size:18px;line-height:1.4}
+.fw-lifestyle-fold[data-fold=living][data-section=sky] .sky-celestial h2{font:italic 600 clamp(27px,6.4vw,34px)/1.18 'FemWell Editorial',Georgia,serif!important;text-shadow:none!important}
+.fw-lifestyle-fold[data-fold=living][data-section=sky] .sky-celestial h3{font:italic 600 20px/1.2 'FemWell Editorial',Georgia,serif!important;text-shadow:none!important}
+.fw-lifestyle-fold[data-fold=living][data-section=sky] .sky-celestial .sky-reading{padding:22px 18px;border-color:#D9C79B80;background:linear-gradient(125deg,#ECE6EF70,#FFFFFFA0);border-radius:0 22px 22px 0}
+.fw-lifestyle-fold[data-fold=living][data-section=sky] .sky-celestial .sky-reading p{font-family:'FemWell Editorial',Georgia,serif!important;font-size:17px!important;line-height:1.55!important}
+
+.fw-lifestyle-fold[data-fold=living][data-section=sky] .fw-ff-actions{position:relative;isolation:isolate}
+.fw-lifestyle-fold[data-fold=living][data-section=sky] .fw-ff-actions:after{content:'';position:absolute;pointer-events:none;z-index:-1;left:16px;bottom:-24px;width:86px;height:58px;background:url('/images/flora-dream/living-petals-v1.webp') left bottom/contain no-repeat;opacity:.6}
+
+
