@@ -7,6 +7,10 @@
 > **APPEND, never rewrite:** add a NEW block at the top of the current-state section (so merges stay trivial), immediately after every build/fix/ship — never batched. Each entry: what changed + commit · shipped-vs-demo · live bundle hash · how it was verified.
 > **Full context for the other agent:** `claude-state/agent-collab/HANDOFF.md` (+ the IN FLIGHT claim table — claim a surface before editing it). Raw transcripts are archive-only: `claude-state/agent-collab/transcripts/MANIFEST.md`.
 >
+> ### CURRENT STATE — 2026-10-02 · SOURCE READY: two connected composition proposals
+> - c6a2350 pushed. Full70/70 tests passed; first production build passed. Independent art review caught Canopy layering, small folio text and potential moon occlusion; source corrected before deployment. Final rebuild underway; live still index-Lv48dQNS.js until deploy.
+> - No backend/schema changes. All new presentation defaults off on main routes. Next: live 360/390/430 taps and candid full-screen visual critique, then record actual shipped hash. Halli taste approval remains open.
+>
 > ### CURRENT STATE — 2026-10-02 · IN REVIEW BUILD: full Lifestyle composition reset
 > - Halli rejected all previous designs, including Sky. Earlier technical/pixel approvals did not establish aesthetic acceptance. Claim9f8a292; main remains held. Existing live index-Lv48dQNS.js until new deploy.
 > - Four atoms mapped in flora-dream/composition-reset.md. Ms Atelier, Ms Deep Search and lead manager identified poor hierarchy, excessive header height and conflicting type/art/control treatments. Default-off Almanac/Canopy proposals preserve capabilities, with actions before full summary/Jess and six original transparent botanical specimens.
