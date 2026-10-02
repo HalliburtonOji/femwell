@@ -38,13 +38,13 @@ export default function AlmanacHeader({ active, moon, variant="almanac" }) {
       .almanac-heading{position:relative;z-index:2;padding:18px 0}
       .almanac-header h1{font:italic 500 34px/1.02 'FemWell Editorial',Georgia,serif!important;letter-spacing:-.025em!important;filter:none!important;text-shadow:none!important;margin:0!important;overflow-wrap:anywhere}
       .almanac-heart{white-space:nowrap}.almanac-heart svg{display:inline-block;vertical-align:middle;margin-left:3px}
-      .almanac-flower{font:italic 500 17px/1.25 'FemWell Editorial',Georgia,serif!important;color:#6E6A61!important;margin:12px 0 0!important;max-width:210px}
+      .almanac-flower{font:italic 500 17px/1.25 'FemWell Editorial',Georgia,serif!important;color:#6E6A61!important;margin:12px 0 0!important;max-width:100%}
       .almanac-flower strong{font-weight:600!important;color:#51444E}
       .almanac-art{position:relative;align-self:stretch;min-height:205px;pointer-events:none}
       .almanac-art:before{content:'';position:absolute;inset:12% -10% 0 -12%;background:radial-gradient(ellipse,var(--botanical-tint),transparent 70%);z-index:-1}
-      .almanac-specimen{position:absolute;inset:-8px 0 -4px -16px;display:grid;place-content:center;pointer-events:none}
+      .almanac-specimen{position:absolute;inset:0;display:grid;grid-template-columns:minmax(0,1fr);grid-template-rows:minmax(0,1fr);place-content:center;pointer-events:none}
       .almanac-specimen img{display:block;width:100%;height:100%;object-fit:contain;filter:drop-shadow(2px 7px 5px #392B3610)}
-      .almanac-header[data-section=sky] .almanac-specimen{inset:46px 0 0 -22px;z-index:1}
+      .almanac-header[data-section=sky] .almanac-specimen{inset:46px 0 0 0;z-index:1}
       .almanac-moon{position:absolute;right:7px;top:15px;z-index:2;filter:drop-shadow(0 5px 12px #44304618)}
       .almanac-orbit{position:absolute;right:-8px;top:0;width:128px;height:128px;opacity:.75}
       .almanac-footer{border-top:1px solid #E0DDD6;display:flex;align-items:flex-start;gap:8px;min-height:44px}
