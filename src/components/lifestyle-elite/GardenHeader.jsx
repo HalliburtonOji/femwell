@@ -51,8 +51,10 @@ export default function GardenHeader({ active, moon }) {
       .little-garden[data-garden=listen] .little-garden-copy{left:23%;top:28%;width:48%}
       .little-garden[data-garden=books] .little-garden-copy{left:29%;top:15%;width:45%}
       .little-garden[data-garden=sky] .little-garden-stage{background:radial-gradient(ellipse 70% 65% at 65% 36%,#E8E3ED90,transparent 84%)}
-      .little-garden[data-garden=sky] .little-garden-copy{left:45%;top:29%;width:46%}
-      .little-garden[data-garden=good] .little-garden-copy{left:44%;top:29%;width:39%}
+      .little-garden[data-garden=sky] .little-garden-copy{left:48%;top:29%;width:43%}
+      .little-garden[data-garden=good] .little-garden-copy{left:44%;top:29%;width:46%}
+      .little-garden[data-garden=sky] .little-garden-profile{margin-top:8px!important}
+      .little-garden[data-garden=good] .little-garden-profile{max-width:90%}
       .little-garden-moon{position:absolute;top:8%;left:65%;width:23%;aspect-ratio:1;z-index:1;pointer-events:none}
       .little-garden-moon>svg{width:100%;height:100%;filter:drop-shadow(0 4px 8px #3A274026)}
       .little-garden-orbits{position:absolute;top:0;left:51%;width:46%;height:34%;z-index:0;pointer-events:none}
