@@ -7,6 +7,12 @@
 > **APPEND, never rewrite:** add a NEW block at the top of the current-state section (so merges stay trivial), immediately after every build/fix/ship — never batched. Each entry: what changed + commit · shipped-vs-demo · live bundle hash · how it was verified.
 > **Full context for the other agent:** `claude-state/agent-collab/HANDOFF.md` (+ the IN FLIGHT claim table — claim a surface before editing it). Raw transcripts are archive-only: `claude-state/agent-collab/transcripts/MANIFEST.md`.
 >
+> ### CURRENT STATE — 2026-10-02 · DEPLOYED FOR REVIEW: Lifestyle Almanac / Canopy
+> - Sourcec6a2350 + 6f6c3fd + 6c380c2 + 9bcb55c pushed and built; Base44 deployment succeeded. HTTP-confirmed **index-CXIn92F5.js**. Ideas → Brand, cards & flora → **Lifestyle · Almanac / Canopy** opens both connected proposals. Main Lifestyle unchanged; Halli taste approval pending.
+> - Six new transparent botanical specimens, measured Cormorant typography, quieter selector, contextual actions before full summary/Jess. Same real data/actions; prior integrated and standalone studies retained. Prompt provenance: flora-dream/specimens-v2-prompts.json; originals and WebPs saved in repo.
+> - Full70/70 tests pass. Live360/390/430 taps verified selectors, comparison, both Read dialogs, Jess full read, Sky chart open/cancel and Ask focus, help/Escape, motion, Everything, Ideas discovery. Final phone captures and independent review resolved clipping/profile collisions. No writes to chart/questions/payment/Community during tests. Proof and limitations: flora-dream/composition-verification.md.
+> - Bible§10.5.6 + in-app mirror updated. Independent critique: Almanac clearer; Canopy cleaner but now more emblem-like than immersive. Neither is declared dream-level or aesthetically approved. Actual iPhone/Safari and wider flora-engine work remain open. Claim released.
+>
 > ### CURRENT STATE — 2026-10-02 · SOURCE READY: two connected composition proposals
 > - c6a2350 pushed. Full70/70 tests passed; first production build passed. Independent art review caught Canopy layering, small folio text and potential moon occlusion; source corrected before deployment. Final rebuild underway; live still index-Lv48dQNS.js until deploy.
 > - No backend/schema changes. All new presentation defaults off on main routes. Next: live 360/390/430 taps and candid full-screen visual critique, then record actual shipped hash. Halli taste approval remains open.

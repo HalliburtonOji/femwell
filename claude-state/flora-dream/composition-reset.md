@@ -25,4 +25,4 @@ Built-in image-generation tool, six independent prompts. Exact prompts and origi
 
 ## Review status
 
-Implementation in progress; functional and visual verification pending. Halli's aesthetic approval remains open. Shared Bible §§1, 2.7.1–4, 10.5.1–6, 17.3 and 19.7–9 govern this work. Physical iPhone/Safari verification is not implied by desktop phone-sized captures.
+Deployed as an Ideas-only proposal: source9bcb55c, live index-CXIn92F5.js. 70 tests pass; actual 360/390/430 interaction and visual checks plus independent critique recorded in `composition-verification.md`. Halli's aesthetic approval remains open. Shared Bible §§1, 2.7.1–4, 10.5.1–6, 17.3 and 19.7–9 govern this work. Physical iPhone/Safari verification is not implied by desktop phone-sized captures.
