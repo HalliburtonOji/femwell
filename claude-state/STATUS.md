@@ -7,6 +7,19 @@
 > **APPEND, never rewrite:** add a NEW block at the top of the current-state section (so merges stay trivial), immediately after every build/fix/ship — never batched. Each entry: what changed + commit · shipped-vs-demo · live bundle hash · how it was verified.
 > **Full context for the other agent:** `claude-state/agent-collab/HANDOFF.md` (+ the IN FLIGHT claim table — claim a surface before editing it). Raw transcripts are archive-only: `claude-state/agent-collab/transcripts/MANIFEST.md`.
 >
+> ### CURRENT STATE — 2026-10-02 · SHIPPED FOR REVIEW: five little gardens
+> - Source290b22d + spacing924f3d1/34d9947/3afd475 pushed and deployed successfully. HTTP-confirmed **index-s30mKDzI.js**. Ideas → Brand, cards & flora → **Lifestyle · five little gardens** opens Garden; earlier directions stay reachable. Main Lifestyle held pending Halli approval.
+> - Five square, transparent, realistically painted gardens composed around complete live HTML title/heart/flower profile: iris/lens, bluebell/tuning fork, jasmine/book, morning-glory/observatory with calculated Moon, marigold/tea. Meaning dot and finite replay/reduced-motion support. Full selectors, contextual pairs, summary/Jess and content retained.
+> - Full74/74 tests, affected13/13 after asset change, successful final build. Settled live360/390/430 captures with real section taps; Read choose/saved dialogs, chart open/cancel, meaning/Escape, movement, Jess full read, Everything and Ideas discovery verified. Independent reviews closed Books/Listen foliage collisions and missing-art evidence gap. Apparent right clipping was inconsistent image-tool display, withdrawn after unique-file review and direct live checks. P0/P1 none confirmed remaining within this scope. P2 taste: some tight floral clearances; Books symmetry/Sky jewellery density remain review choices.
+> - Proof: flora-dream/little-gardens-verification.md; unique final garden-s30-{section}-{width}.png in C:/Users/Halli/femwell-handoff. Bible§10.5.7 + in-app mirror + phone plan updated. Physical iPhone/Safari and Halli aesthetic acceptance remain open. Claim released.
+>
+> ### CURRENT STATE — 2026-10-02 · ADVERSARIAL PHONE FIXES
+> - Source924f3d1 deployed as index-CtouK8Ed.js. Independent actual-pixel review found Books/Listen profiles touching foliage at360px including desktop scrollbar. Source34d9947 widens Books title to keep two lines and raises both sections into their clearings; local313px content proof confirms Books fix. New build/deploy in progress.
+> - Batch browser captures sometimes ran before image paint or viewport settlement; blank Good360 and cropped390 proofs are invalid evidence, not accepted as passes. Replace with separately settled captures. All15 live selectors changed correct titles/action pairs with no document overflow. Main held.
+>
+> ### CURRENT STATE — 2026-10-02 · DEPLOYED / SPACING FOLLOW-UP
+> - Source290b22d deployed successfully; HTTP-confirmed index-CLw5HsoR.js. Live connected review begins. Local360 exposed two note/foliage near-collisions; source924f3d1 pushed with wider Good life title, narrower note measure and higher/inset Sky wording. Final rebuild underway; main held.
+>
 > ### CURRENT STATE — 2026-10-02 · SOURCE READY: five little gardens
 > - Claim669ad8b. Each section now has a complete square garden with a deliberate HTML text clearing: Read/lens, Listen/ripple dish, Books/book terrace, Sky/observatory and live Moon, Good life/tea nook. v3 originals retained; v4 recomposed for phones, preserved aspect ratio. Browser rendering confirmed the apparent coloured fringes in raw transparent-image viewers are not present on alabaster.
 > - Full74/74 suite passed; after final asset/position changes, affected13/13 passed. Local390 all five and360 longest Books/Sky checked; live connected phone/tap verification follows deployment. Bible§10.5.7, in-app mirror and workflow plan updated. Main held. Prior live index-CXIn92F5.js until new deploy.
