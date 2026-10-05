@@ -26,9 +26,9 @@
 .fw-lifestyle-fold[data-fold=letter] .fw-ff-glance-row{grid-template-columns:18px minmax(0,1fr) 15px;padding:12px 0}
 .fw-lifestyle-fold[data-fold=letter] .fw-living-content{padding-top:12px}
 .fw-lifestyle-fold[data-fold=horizon] .fw-living-stage{min-height:213px;background:radial-gradient(ellipse 75% 70% at 100% 80%,#E0E8DE90,transparent)}
-.fw-lifestyle-fold[data-fold=horizon] .fw-living-copy{width:64%;padding-top:57px;padding-bottom:22px}
-.fw-lifestyle-fold[data-fold=horizon] .fw-living-growth{width:187px;height:225px;top:-9px;right:-63px;transform:rotate(-16deg)}
-.fw-lifestyle-fold[data-fold=horizon] .fw-living-object{width:88px;height:88px;right:26px;top:1px}
+.fw-lifestyle-fold[data-fold=horizon] .fw-living-copy{width:85%;padding-top:22px;padding-bottom:95px}
+.fw-lifestyle-fold[data-fold=horizon] .fw-living-growth{width:172px;height:175px;top:auto;bottom:-4px;right:-56px;transform:rotate(-22deg)}
+.fw-lifestyle-fold[data-fold=horizon] .fw-living-object{width:72px;height:72px;right:auto;left:18px;top:auto;bottom:8px}
 .fw-lifestyle-fold[data-fold=horizon] .fw-living-flower{margin-top:12px!important;font-size:16px!important}
 .fw-lifestyle-fold[data-fold=horizon] .fw-ff-sections{margin-top:0;background:#FFFFFF80;border-radius:16px 16px 0 0;border-bottom-color:#D1DBC9}
 .fw-lifestyle-fold[data-fold=horizon] .fw-ff-actions [aria-label="Section actions"]>button{border-radius:14px!important}
@@ -60,8 +60,8 @@
 .fw-lifestyle-fold[data-fold=field] .fw-ff-glance-row{padding:10px 0}.fw-lifestyle-fold[data-fold=field] .fw-ff-glance-row>span{display:grid;grid-template-columns:72px minmax(0,1fr);gap:9px}.fw-lifestyle-fold[data-fold=field] .fw-ff-row-text{font-size:17px}.fw-lifestyle-fold[data-fold=field] .fw-ff-row-label{font-size:12px;margin-bottom:2px;padding-top:4px}
 .fw-lifestyle-fold[data-fold=field] .sky-reading{border-left:0;background:none;border-bottom:1px solid #D9C79B;border-radius:0;padding:18px 0}
 .fw-lifestyle-fold[data-fold=path] .fw-living-stage{min-height:295px;background:radial-gradient(ellipse at 0% 75%,#E3E9DD80,transparent 75%)}
-.fw-lifestyle-fold[data-fold=path] .fw-living-copy{width:78%;padding:122px 0 22px 32px}
-.fw-lifestyle-fold[data-fold=path] .fw-living-growth{right:auto;left:-90px;top:15px;width:235px;height:297px;transform:rotate(28deg)}
+.fw-lifestyle-fold[data-fold=path] .fw-living-copy{width:calc(100% - 68px);margin-left:68px;padding:122px 0 22px}
+.fw-lifestyle-fold[data-fold=path] .fw-living-growth{right:auto;left:-68px;top:76px;width:166px;height:242px;transform:rotate(10deg);mask-image:linear-gradient(90deg,#000 0,#000 50%,transparent 100%);-webkit-mask-image:linear-gradient(90deg,#000 0,#000 50%,transparent 100%)}
 .fw-lifestyle-fold[data-fold=path] .fw-living-object{top:6px;right:23px;width:103px;height:103px}
 .fw-lifestyle-fold[data-fold=path] .fw-living-petals{width:86px;right:1px;bottom:12px;transform:rotate(-30deg)}
 .fw-lifestyle-fold[data-fold=path] .fw-ff-actions{padding-left:12px;border-left:1px solid #D9C79B}
