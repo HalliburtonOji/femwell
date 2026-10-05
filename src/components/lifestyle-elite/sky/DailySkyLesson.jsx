@@ -8,7 +8,7 @@ import { MoonLesson } from "./CelestialSky";
 import { SKY_LESSONS, LESSON_VERSION, dailyLessonDeck, localSkyDay, skyLessonKey, skyLessonRoute } from "./skyLessons";
 import "./DailySkyLesson.css";
 
-function useLessonSaves(userId) {
+export function useLessonSaves(userId) {
   const [rows,setRows] = useState([]);
   const [error,setError] = useState(false);
   const [loading,setLoading] = useState(!!userId);

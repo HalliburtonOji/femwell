@@ -43,7 +43,7 @@ import AlmanacHeader from "@/components/lifestyle-elite/AlmanacHeader";
 import GardenHeader from "@/components/lifestyle-elite/GardenHeader";
 import LivingSkyHeader from "@/components/lifestyle-elite/LivingSkyHeader";
 import LivingDirectionHeader, { isLivingDirection } from "@/components/lifestyle-elite/LivingDirections";
-import { SavedSkyLessons } from "@/components/lifestyle-elite/sky/DailySkyLesson";
+import { SavedSkyLessons, useLessonSaves } from "@/components/lifestyle-elite/sky/DailySkyLesson";
 import { FirstFoldNavigation, FirstFoldSummary } from "@/components/lifestyle-elite/FirstFold";
 import BooksStoryFocus from "@/components/lifestyle-elite/BooksStoryFocus";
 import ListenFocus from "@/components/lifestyle-elite/ListenFocus";
@@ -484,7 +484,6 @@ function FocusableBoards({ focusBoard, sliderRef, gold, children }) {
 export default function LifestyleEliteShell({ enableFocus = false, layout = null, clean = false, previewActions = false, initialSection = null, continuousSky = false, celestialSky = false, botanicalHeader = false, firstFoldVariant = null, dailySkyLessons = false } = {}) {
   const foldVariant = clean && (["living", "garden", "almanac", "canopy"].includes(firstFoldVariant) || isLivingDirection(firstFoldVariant)) ? firstFoldVariant : null;
   const livingDemo = isLivingDirection(foldVariant);
-  const [skySavedCount,setSkySavedCount] = useState(0);
   // CLEAN (§2.7 whole-page): the page-level ground + footer outside this tree follow via a body class.
   useEffect(() => {
     if (!clean) return undefined;
@@ -492,6 +491,8 @@ export default function LifestyleEliteShell({ enableFocus = false, layout = null
     return () => document.body.classList.remove("fw-clean-page");
   }, [clean]);
   const [user, setUser] = useState(null);
+  const {rows:keptSkyLessons,loading:skySavesLoading,error:skySavesError} = useLessonSaves(livingDemo ? user?.id : null);
+  const skySavedCount = !skySavesLoading && !skySavesError ? keptSkyLessons.filter(row=>row.user_id===user?.id).length : 0;
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
   // CHIP-FOCUS (demo-flag, default OFF → live /Lifestyle is byte-identical). When on, tapping a
@@ -1401,7 +1402,7 @@ export default function LifestyleEliteShell({ enableFocus = false, layout = null
              complements the section's own summary instead of contradicting it. */}
         {(() => {
           const jess = lifestyleJessSummary(loadSeed, {
-            firstName, onTheGo: continueCards.length, savedCount: savedItems.length,
+            firstName, onTheGo: continueCards.length, savedCount: savedItems.length + (livingDemo ? skySavedCount : 0),
             freshReads: (grouped.article || []).length, hasStory: !!story, cliffhanger: story?.cliffhanger,
             moon: moonToday?.name, phaseKey, listens: (grouped.audio || []).length, watches: playableVideos(grouped.video).length,
           });
@@ -1635,7 +1636,7 @@ export default function LifestyleEliteShell({ enableFocus = false, layout = null
           if (sec === "listen") return <div className={livingDemo ? "fw-living-content" : undefined} style={{ marginTop: 18 }}>{livingDemo && <nav aria-label="Full media directories" style={{display:"flex",justifyContent:"space-between",gap:12,marginBottom:12,fontFamily:UI,fontSize:12}}><a href="/WatchListen?mode=listen" style={{color:C.ink,minHeight:44,alignContent:"center"}}>All listens & shows</a><a href="/WatchListen?mode=watch" style={{color:C.ink,minHeight:44,alignContent:"center"}}>All watches</a></nav>}<ListenFocus audioCards={audioCards} videoCards={videoCards} onOpen={setExpanded} /></div>;
           if (sec === "read") return <div className={livingDemo ? "fw-living-content" : undefined} style={{ marginTop: 18 }}><ReadFocus continueCards={continueCards} articleCards={articleCards} storyCards={storyCards} phaseWord={phaseKey ? phaseLabel(phaseKey).toLowerCase() : null} onOpen={openReadCard} /></div>;
           if (sec === "good") { const h = new Date().getHours(); const timeOfDay = h < 12 ? "morning" : h < 18 ? "afternoon" : "evening"; return <div className={livingDemo ? "fw-living-content" : undefined} style={{ marginTop: 18 }}><GoodLifeFocus timeOfDay={timeOfDay} timeLens={<TimePickerLens pickFor={pickFor} isSaved={isSaved} onSave={toggleSave} onOpen={openItem} onTry={saveTryThis} />} joys={[...ritualCards, ...permissionCards]} onSlip={(it) => setGLFace({ slip: it })} /></div>; }
-          if (sec === "yours") return <div className={livingDemo ? "fw-living-content" : undefined} style={{ marginTop: 18 }}>{livingDemo && <SavedSkyLessons userId={user?.id} direction={foldVariant} onCount={setSkySavedCount}/>}<YoursFocus savedCards={savedCards} savedSummary={savedSummary} phaseCards={phaseCards} phaseWord={phaseKey ? phaseLabel(phaseKey).toLowerCase() : null} onOpen={setExpanded} skySavedCount={livingDemo ? skySavedCount : 0} /></div>;
+          if (sec === "yours") return <div className={livingDemo ? "fw-living-content" : undefined} style={{ marginTop: 18 }}>{livingDemo && <SavedSkyLessons userId={user?.id} direction={foldVariant}/>}<YoursFocus savedCards={savedCards} savedSummary={savedSummary} phaseCards={phaseCards} phaseWord={phaseKey ? phaseLabel(phaseKey).toLowerCase() : null} onOpen={setExpanded} skySavedCount={livingDemo ? skySavedCount : 0} /></div>;
           // every section is bespoke — the generic slider-free layout is only ever the LANDING deck
           return <div style={{ marginTop: 22 }}><FocusLayout layout={layout} groups={landingGroups} clean={clean} /></div>;
         })()}
