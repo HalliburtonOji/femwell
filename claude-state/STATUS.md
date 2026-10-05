@@ -7,6 +7,10 @@
 > **APPEND, never rewrite:** add a NEW block at the top of the current-state section (so merges stay trivial), immediately after every build/fix/ship — never batched. Each entry: what changed + commit · shipped-vs-demo · live bundle hash · how it was verified.
 > **Full context for the other agent:** `claude-state/agent-collab/HANDOFF.md` (+ the IN FLIGHT claim table — claim a surface before editing it). Raw transcripts are archive-only: `claude-state/agent-collab/transcripts/MANIFEST.md`.
 >
+> ### CURRENT STATE — 2026-10-05 · LIVE PERSISTENCE PROVED / FINAL REPAIR
+> - Botanical clearing **a3ba932** pushed/deployed; live **index-CrpZS1it.js** confirmed. Native pixel captures resolve the earlier advanced-screenshot stale-frame/missing-flora proof gaps; final matrix must use native screenshots, with image/heading state checked.
+> - Actual signed-in taps kept a sourced lesson and a harmless labelled demo reflection. Backend read-back confirms one exact versioned SavedItems route and its JournalEntries content key. Yours exposes the exact lesson link. Found a real contradiction: the legacy Yours summary said the drawer was empty beside the new kept lesson. Repair in progress: its count/summary now reads the canonical Sky shelf while retaining all existing collections/phase cards. No public post or DM sent.
+>
 > ### CURRENT STATE — 2026-10-05 · FINAL FIVE-DIRECTION PREVIEW DEPLOYED
 > - Source **4043f8a** pushed; stable frontend deploy succeeded. HTTP confirms **index-DfMSk4bB.js**. Horizon now uses a title-first garden band, Path clears the copy, Field has consistent selector icons, and daily lessons use a shorter composition with every action/source retained. Demo-only, main held. Independent final source reproof finds no remaining identified demo P0/P1; final live pixels and persistence checks continue.
 >

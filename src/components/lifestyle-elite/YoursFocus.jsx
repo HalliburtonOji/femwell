@@ -31,17 +31,19 @@ function YoursCard({ eyebrow, title, accent = "gold", children, style }) {
   );
 }
 
-export default function YoursFocus({ savedCards = [], savedSummary, phaseCards = [], phaseWord, onOpen }) {
+export default function YoursFocus({ savedCards = [], savedSummary, phaseCards = [], phaseWord, onOpen, skySavedCount = 0 }) {
   const groups = KINDS.map((k) => ({ ...k, items: savedCards.filter((c) => k.test(String(c.type || ""))) })).filter((g) => g.items.length);
   const hasSaved = savedCards.length > 0;
-  if (!hasSaved && !phaseCards.length) {
+  if (!hasSaved && !skySavedCount && !phaseCards.length) {
     return (
       <YoursCard eyebrow="Yours" title="Your saved things live here">
         <p style={{ fontFamily: SERIF, fontSize: 16, color: C.ink, lineHeight: 1.6, margin: 0 }}>Tap the heart on any read, listen, watch or book and it waits for you here — grouped by kind, ready when the moment's right. Nothing owed.</p>
       </YoursCard>
     );
   }
-  const summary = hasSaved
+  const summary = skySavedCount
+    ? `${skySavedCount} Sky ${skySavedCount === 1 ? "lesson" : "lessons"} kept above${hasSaved ? ` · ${savedCards.length} more saved finds` : ""}${phaseCards.length ? " — and this week's set below" : ""}.`
+    : hasSaved
     ? `${savedCards.length} saved${savedSummary ? ` · ${savedSummary}` : ""}${phaseCards.length ? ` — and this week's set` : ""}.`
     : `Your saved drawer's empty — but here's a set tuned to your ${phaseWord || "week"}.`;
 

@@ -26,8 +26,9 @@ function useLessonSaves(userId) {
   return {rows,error,loading,retry:()=>setAttempt(n=>n+1)};
 }
 
-export function SavedSkyLessons({userId,direction}) {
+export function SavedSkyLessons({userId,direction,onCount}) {
   const {rows,error,loading,retry}=useLessonSaves(userId);
+  useEffect(()=>{if(onCount)onCount(loading || error ? 0 : rows.length);},[rows,loading,error,onCount]);
   return <Card className="daily-sky saved-sky-lessons" style={{marginTop:20}}>
     <Eyebrow cw="lavender" align="left">Your sky keepsakes</Eyebrow><Title align="left" size={26}>Little things you kept.</Title>
     {loading ? <p role="status">Opening your lessons…</p> : error ? <><p role="alert">Your saved lessons couldn’t load.</p><button onClick={retry}>Try again</button></> : rows.length ? rows.map(row=>{
