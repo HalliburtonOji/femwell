@@ -53,6 +53,7 @@ export default function AtelierHeader({ active, moon }) {
       </svg></div>}
     </div>
     <div className="fw-atelier-header-words"><h1 className={words.length < 4 ? "fw-display" : "fw-heading"}>{words.join(" ")}{words.length>0 && " "}<span>{last}<Heart size={14}/></span></h1>
+      {sky && <svg className="fw-atelier-thread" viewBox="0 0 60 90" fill="none" aria-hidden="true"><path d="M52 1C55 25 45 36 27 40S2 59 18 72c8 7 21 6 27-3"/><path d="M45 69c-3-5-6-6-10-5 1 5 4 7 10 5Z"/></svg>}
       <p className="fw-atelier-flower"><strong>{plant.flower.name}</strong><span>{plant.flower.note}</span></p>
     </div>
     <div className="fw-atelier-caption"><SkyMeaning label={`${active?.label?.toLowerCase() || "sky"} artwork`} explanation={explanation}><span>{sky ? moon ? `${moon.illumination}% illuminated · astronomy` : "Moon data unavailable" : NOTES[section]}</span></SkyMeaning>

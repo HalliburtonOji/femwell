@@ -7,6 +7,12 @@
 > **APPEND, never rewrite:** add a NEW block at the top of the current-state section (so merges stay trivial), immediately after every build/fix/ship — never batched. Each entry: what changed + commit · shipped-vs-demo · live bundle hash · how it was verified.
 > **Full context for the other agent:** `claude-state/agent-collab/HANDOFF.md` (+ the IN FLIGHT claim table — claim a surface before editing it). Raw transcripts are archive-only: `claude-state/agent-collab/transcripts/MANIFEST.md`.
 >
+> ### CURRENT STATE — 2026-10-06 · INDEPENDENT P1 CLEARANCE REPAIR
+> - Atelier mobile critique found the floating Ideas pill covering reading/phase/tide controls. Demo-scoped fix places it in the reserved top review strip, retains persistent access and clears body content. Tiny original drawn line connects the canopy edge into the header-word clearing; no plant behind letters. Final build/reproof in progress; still live **index-BDO_kVdd.js** atab4a37b. Main held.
+>
+> ### CURRENT STATE — 2026-10-06 · FINAL VISUAL CANDIDATE LIVE
+> - Source **ab4a37b** pushed/deployed; production build succeeds, HTTP **index-BDO_kVdd.js**. Targeted lint clean; full99/99 atf165efd, later changes limited to scoped composition/current-context/date presentation and unused-import removal. Final Ideas/mobile/source/craft proof underway. Demo-only, main held; four additional worlds still concepts and broader connections staged.
+>
 > ### CURRENT STATE — 2026-10-06 · LOWER-PAGE POLISH / FINAL CANDIDATE
 > - Actual CH7RoGv3 taps prove artwork meaning/Escape/finite replay, daily Next, private-note composer/close and first-quarter definition. Cycle context now matches Day5 and reading explicitly labelled5Oct. Named Creative source/pixels review says canopy is a credible candidate; whole-app aesthetics remain Halli's decision.
 > - Final polish: stronger open-glance specificity (prior equal-specificity override still lost), left lesson metadata, open goddess/folklore/chart-tail rather than repeated cards, dated-year marginal line and direct question form. All content/controls remain. Unused import removed; targeted lint clean. Final production build in progress; 360/390/430 matrix, Ideas-path proof and final craft audit queued. Main held; still live **index-CH7RoGv3.js**, no backend/schema changes.
