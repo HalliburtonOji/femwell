@@ -29,7 +29,7 @@ function useLessonSaves(userId) {
 export function SavedSkyLessons({userId,direction}) {
   const {rows,error,loading,retry}=useLessonSaves(userId);
   return <Card className="daily-sky saved-sky-lessons" style={{marginTop:20}}>
-    <Eyebrow cw="lavender" align="left">Your sky keepsakes</Eyebrow><Title align="left" size={22}>Little things you kept.</Title>
+    <Eyebrow cw="lavender" align="left">Your sky keepsakes</Eyebrow><Title align="left" size={26}>Little things you kept.</Title>
     {loading ? <p role="status">Opening your lessons…</p> : error ? <><p role="alert">Your saved lessons couldn’t load.</p><button onClick={retry}>Try again</button></> : rows.length ? rows.map(row=>{
       const meta=parseSavedMeta(row);const lesson=SKY_LESSONS.find(item=>item.id===meta.lessonId && item.version===meta.lessonVersion);
       return <a className="saved-sky-row" key={row.id} href={lesson ? skyLessonRoute(lesson,direction) : `${meta.route || "/LivingLifestyleDemo?section=sky"}`}><span>{row.title}</span><ArrowRight size={16} aria-hidden="true"/></a>;
@@ -61,14 +61,14 @@ export default function DailySkyLesson({userId,moon,direction="letter"}) {
   const key=skyLessonKey(lesson);
   const kept=saves.some(row=>row.item_id===key);
   const draft=drafts[key] || "";
-  const previousNote=notes.find(note=>note.content_key===key);
+  const previousNote=notes.find(note=>note.user_id===userId && note.content_key===key);
 
   useEffect(()=>{const check=()=>{const current=localSkyDay();if(current!==day)setNextDay(current);};document.addEventListener("visibilitychange",check);const timer=setInterval(check,60000);return()=>{document.removeEventListener("visibilitychange",check);clearInterval(timer);};},[day]);
   useEffect(()=>{
     let cancelled=false;
     if(!userId){setNotes([]);return;}
     base44.entities.JournalEntries.filter({user_id:userId,tags:{$in:["Sky lesson"]}},"-created_date",100)
-      .then(entries=>{if(!cancelled){setNotes(current=>[...current.filter(note=>!entries.some(entry=>entry.id===note.id)),...entries]);setNotesError(false);}})
+      .then(entries=>{if(!cancelled){setNotes(current=>[...current.filter(note=>note.user_id===userId && !entries.some(entry=>entry.id===note.id)),...entries]);setNotesError(false);}})
       .catch(()=>{if(!cancelled)setNotesError(true);});
     return()=>{cancelled=true;};
   },[userId,notesAttempt]);
@@ -125,7 +125,7 @@ export default function DailySkyLesson({userId,moon,direction="letter"}) {
 // The existing SkyNote store, carried into the continuous demo; no new diary system.
 export function PrivateSkyNotes({userId,moon}) {
   const [notes,setNotes]=useState([]);const [draft,setDraft]=useState("");const [busy,setBusy]=useState(false);const [status,setStatus]=useState("");const [error,setError]=useState(false);const [attempt,setAttempt]=useState(0);
-  useEffect(()=>{let cancelled=false;if(!userId)return;base44.entities.SkyNote.filter({user_id:userId},"-created_date",40).then(rows=>{if(!cancelled){setNotes(current=>[...current.filter(note=>!rows.some(row=>row.id===note.id)),...rows]);setError(false);}}).catch(()=>{if(!cancelled)setError(true);});return()=>{cancelled=true;};},[userId,attempt]);
+  useEffect(()=>{let cancelled=false;if(!userId){setNotes([]);return;}base44.entities.SkyNote.filter({user_id:userId},"-created_date",40).then(rows=>{if(!cancelled){setNotes(current=>[...current.filter(note=>note.user_id===userId && !rows.some(row=>row.id===note.id)),...rows]);setError(false);}}).catch(()=>{if(!cancelled)setError(true);});return()=>{cancelled=true;};},[userId,attempt]);
   const write=async event=>{event.preventDefault();if(!userId || busy || !draft.trim())return;setBusy(true);setStatus("");try{const now=new Date().toISOString();const row=await base44.entities.SkyNote.create({user_id:userId,text:draft.trim(),moon_phase:moon?.name || "",date:localSkyDay(),created_at:now,updated_at:now});setNotes(current=>[row,...current]);setDraft("");setStatus("A moment kept in your Sky diary.");}catch{setStatus("Couldn’t keep this note. Your words are still here.");}finally{setBusy(false);}};
-  return <Card className="daily-sky" style={{marginTop:18,padding:"18px"}}><Eyebrow cw="lavender" align="left">In your own words</Eyebrow><Title align="left" size={23}>A moment under this sky.</Title><form className="daily-sky-form" onSubmit={write}><label htmlFor="private-sky-note">Anything you’d like to keep?</label><textarea id="private-sky-note" readOnly={busy} rows={2} maxLength={4000} value={draft} onChange={event=>setDraft(event.target.value)}/><button disabled={!userId || busy || !draft.trim()}>{busy ? "Keeping…" : "Keep in Sky diary"}</button></form>{!userId && <p>Sign in to keep your own notes.</p>}{status && <p role="status">{status}</p>}{error ? <p role="alert">Your diary couldn’t load. <button onClick={()=>setAttempt(n=>n+1)}>Try again</button></p> : <>{notes.slice(0,2).map(note=><details key={note.id} className="daily-sky-kept-note"><summary>{note.date || "A moment kept"} · your note</summary><p>{note.text}</p></details>)}{notes.length>2 && <details className="daily-sky-kept-note"><summary>Earlier moments · {notes.length-2}</summary>{notes.slice(2).map(note=><div key={note.id}><small>{note.date}</small><p>{note.text}</p></div>)}</details>}</>}</Card>;
+  return <Card className="daily-sky" style={{marginTop:18,padding:"18px"}}><Eyebrow cw="lavender" align="left">In your own words</Eyebrow><Title align="left" size={26}>A moment under this sky.</Title><form className="daily-sky-form" onSubmit={write}><label htmlFor="private-sky-note">Anything you’d like to keep?</label><textarea id="private-sky-note" readOnly={busy} rows={2} maxLength={4000} value={draft} onChange={event=>setDraft(event.target.value)}/><button disabled={!userId || busy || !draft.trim()}>{busy ? "Keeping…" : "Keep in Sky diary"}</button></form>{!userId && <p>Sign in to keep your own notes.</p>}{status && <p role="status">{status}</p>}{error ? <p role="alert">Your diary couldn’t load. <button onClick={()=>setAttempt(n=>n+1)}>Try again</button></p> : <>{notes.filter(note=>note.user_id===userId).slice(0,2).map(note=><details key={note.id} className="daily-sky-kept-note"><summary>{note.date || "A moment kept"} · your note</summary><p>{note.text}</p></details>)}{notes.length>2 && <details className="daily-sky-kept-note"><summary>Earlier moments · {notes.length-2}</summary>{notes.filter(note=>note.user_id===userId).slice(2).map(note=><div key={note.id}><small>{note.date}</small><p>{note.text}</p></div>)}</details>}</>}</Card>;
 }

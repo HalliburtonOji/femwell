@@ -316,7 +316,7 @@ export default function SkyFocus({ userProfile, actionRequest, onActionState, on
             {notice.b ? <p style={{ fontFamily: SERIF, fontStyle: "italic", fontSize: 16, fontWeight: 500, color: C.ink, lineHeight: 1.5, margin: "3px 0 0" }}>{notice.b}</p> : null}
           </div>
         ) : null}
-        {dailyLessons && [["Power",reading?.power_title,reading?.power_body],["Pressure",reading?.pressure_title,reading?.pressure_body],["Trouble",reading?.trouble_title,reading?.trouble_body]].map(([label,title,body])=>title || body ? <div key={label} style={{borderTop:`1px solid ${C.hair}`,padding:"14px 0 0",marginTop:14}}><Eyebrow cw="gold" align="left">{label}</Eyebrow>{title && <Title align="left" size={22}>{clean(title)}</Title>}{body && <Body>{clean(body)}</Body>}</div> : null)}
+        {dailyLessons && [["Power",reading?.power_title,reading?.power_body],["Pressure",reading?.pressure_title,reading?.pressure_body],["Trouble",reading?.trouble_title,reading?.trouble_body]].map(([label,title,body])=>title || body ? <div key={label} style={{borderTop:`1px solid ${C.hair}`,padding:"14px 0 0",marginTop:14}}><Eyebrow cw="gold" align="left">{label}</Eyebrow>{title && <Title align="left" size={26}>{clean(title)}</Title>}{body && <Body>{clean(body)}</Body>}</div> : null)}
         <CarryItWithYou connectedDemo={dailyLessons} seed={headline} read={markedRead} onMarkRead={() => { setMarkedRead(true); try { recordProgress("your-sky", 0, user?.id); } catch { /* the garden write is a nicety, never a blocker */ } }} />
       </Movement>
 
