@@ -7,6 +7,12 @@
 > **APPEND, never rewrite:** add a NEW block at the top of the current-state section (so merges stay trivial), immediately after every build/fix/ship — never batched. Each entry: what changed + commit · shipped-vs-demo · live bundle hash · how it was verified.
 > **Full context for the other agent:** `claude-state/agent-collab/HANDOFF.md` (+ the IN FLIGHT claim table — claim a surface before editing it). Raw transcripts are archive-only: `claude-state/agent-collab/transcripts/MANIFEST.md`.
 >
+> ### CURRENT STATE — 2026-10-05 · FINAL CANONICAL-SAVE ACTION REPAIR
+> - Live tap audit found the demo's inherited “Open your saves” picker used only profile saves, missing the newly kept Sky lesson. Demo now opens the canonical Saved page directly; old inline collections remain. Source **1bfd3de** also makes every demo/Jess summary read the same owner-scoped Sky saves, even before visiting Yours. Final action patch/build and live reproof pending; no main promotion.
+>
+> ### CURRENT STATE — 2026-10-05 · CONTENT-FITTED DAILY LESSON LIVE
+> - Source **0e4e4fb** pushed/deployed; live **index-DvdB0hsn.js** confirmed. Carousel measures its active authored lesson rather than leaving the longest-card blank space; all five cards/actions/sources remain. Lesson suite10/10 passes. Independent final Observatory/Path six-section390 craft reproof passes. Completing wider native matrix and direct-action proof; demo-only/main held.
+>
 > ### CURRENT STATE — 2026-10-05 · OBSERVATORY FINAL CLEARANCE LIVE
 > - Source **46a4519** pushed/deployed; live **index-B6BU2X16.js** confirmed. Shorter botanical extent keeps the Observatory flower-name/profile band clear. Final double native screenshots resolve the browser's one-frame capture lag; independent Letter six-section390 craft reproof passes. Remaining matrix and direct-return checks continue, demo-only/main held.
 >
