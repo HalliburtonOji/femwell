@@ -162,6 +162,7 @@ the landing in STATUS.md). If a surface is claimed, don't touch its files — pr
 
 | Agent | Surface | Files | Started | State |
 |---|---|---|---|---|
+| Codex team | Approved Living base: five directions, daily lessons and connected-life plan | claude-state/connected-life/, claude-state/{STATUS,BRAND_IDENTITY}.md, src/components/founders/brandDocs/brand-bible.html, public/connected-life/, src/pages/FoundersOS.jsx; demo scope recorded in plan before source changes | 2026-10-05 | IN FLIGHT: root plan/canon/review board; Lead Manager wiring inventory; Deep Search primary research; Atelier five-direction craft. Main promotion held. |
 | Codex team | Sky garden as page composition after stamped-image rejection | `src/components/lifestyle-elite/`, `src/pages/FloralDreamDemo*`, `src/pages/FoundersOS.jsx`, `public/images/flora-dream/`, `output/imagegen/flora-dream/`, `claude-state/flora-dream/`, `claude-state/{STATUS,BRAND_IDENTITY}.md`, brand Bible HTML mirror | 2026-10-02 | RELEASED: source516f816 / live5rTngpIJ; phone/tap and independent audit recorded in living-page-verification.md. P2 art risks and Halli review open; main held. |
 | Codex team | Each whole header as a little garden | `src/components/lifestyle-elite/{GardenHeader*,LifestyleEliteShell.jsx}`, `src/pages/{FloralDreamDemo*,FoundersOS.jsx}`, `public/images/flora-dream/`, `output/imagegen/flora-dream/`, `claude-state/flora-dream/`, `claude-state/{BRAND_IDENTITY,STATUS}.md`, `src/components/founders/brandDocs/brand-bible.html` | 2026-10-02 | RELEASED: source3afd475 deployed index-s30mKDzI.js; five gardens in Ideas, final360/390/430 proofs and independent audit completed. Main held; Halli aesthetic review pending. |
 | Codex team | Full Lifestyle composition comparison after Halli rejection | `src/pages/FloralDreamDemo*`, `src/components/lifestyle-elite/{LifestyleEliteShell,FirstFold*,AlmanacHeader}*`, `public/images/flora-dream/`, `output/imagegen/flora-dream/`, `src/pages/FoundersOS.jsx`, `claude-state/flora-dream/`, `claude-state/{BRAND_IDENTITY,STATUS}.md`, `src/components/founders/brandDocs/brand-bible.html` | 2026-10-02 | Released: source9bcb55c, index-CXIn92F5.js, 70/70 tests and phone360/390/430. Two proposals in Ideas; aesthetic approval and main promotion held. composition-verification.md records proof and design tradeoffs. |
@@ -190,4 +191,5 @@ Halli) · the **Read** deep pass (next) · the **live clean flip** (one line, aw
 transcript is a raw, un-distilled archive of one session — useful only to answer "why did we decide
 X?" when the docs don't say. **If a transcript and STATUS.md/the bible disagree, the docs win** (the
 transcript is a point-in-time record and may contain superseded reasoning).
+
 
