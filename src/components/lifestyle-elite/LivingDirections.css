@@ -54,7 +54,7 @@
 .fw-lifestyle-fold[data-fold=field] .fw-living-object{width:57px;height:57px;right:10px;top:1px}.fw-lifestyle-fold[data-fold=field] .fw-living-orbit{inset:-15px;width:87px;height:87px}
 .fw-lifestyle-fold[data-fold=field] .fw-living-flower{font-size:16px!important;margin-top:12px!important;max-width:84%}
 .fw-lifestyle-fold[data-fold=field] .fw-living-petals{width:65px;right:0;bottom:-8px}
-.fw-lifestyle-fold[data-fold=field] .fw-ff-sections button{flex-direction:row;gap:4px;font-size:12px}
+.fw-lifestyle-fold[data-fold=field] .fw-ff-sections button{flex-direction:column;gap:5px;font-size:12px}
 .fw-lifestyle-fold[data-fold=field] .fw-ff-actions [aria-label="Section actions"]>button{border-radius:10px!important;min-height:48px!important;font-size:13px!important;padding:9px!important}
 .fw-lifestyle-fold[data-fold=field] .fw-ff-summary{margin-top:12px;padding-left:14px;border-left:1px solid #D9C79B}
 .fw-lifestyle-fold[data-fold=field] .fw-ff-glance-row{padding:10px 0}.fw-lifestyle-fold[data-fold=field] .fw-ff-glance-row>span{display:grid;grid-template-columns:72px minmax(0,1fr);gap:9px}.fw-lifestyle-fold[data-fold=field] .fw-ff-row-text{font-size:17px}.fw-lifestyle-fold[data-fold=field] .fw-ff-row-label{font-size:12px;margin-bottom:2px;padding-top:4px}
