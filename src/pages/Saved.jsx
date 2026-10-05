@@ -22,7 +22,10 @@ const sLabel = {
 export default function Saved() {
   const [user, setUser] = useState(null);
   const [items, setItems] = useState([]);
-  const [tab, setTab] = useState("ADVICE");
+  const [tab, setTab] = useState(() => {
+    const requested = new URLSearchParams(window.location.search).get("tab")?.toUpperCase();
+    return BASE_TABS.some(item => item.id === requested) || requested === "EVENT" ? requested : "ADVICE";
+  });
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {

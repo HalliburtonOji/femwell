@@ -35,7 +35,7 @@ export function SavedSkyLessons({userId,direction,onCount}) {
       const meta=parseSavedMeta(row);const lesson=SKY_LESSONS.find(item=>item.id===meta.lessonId && item.version===meta.lessonVersion);
       return <a className="saved-sky-row" key={row.id} href={lesson ? skyLessonRoute(lesson,direction) : `${meta.route || "/LivingLifestyleDemo?section=sky"}`}><span>{row.title}</span><ArrowRight size={16} aria-hidden="true"/></a>;
     }) : <Body>Your saved Sky lessons will settle here. No collection invented on your behalf.</Body>}
-    <a className="daily-sky-link" href="/Saved">All your saved things</a>
+    <a className="daily-sky-link" href="/Saved?tab=LIFESTYLE">All your Lifestyle saves</a>
   </Card>;
 }
 
